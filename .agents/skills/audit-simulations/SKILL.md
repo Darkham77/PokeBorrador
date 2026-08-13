@@ -55,9 +55,31 @@ The **ABSOLUTE PRIMARY OBJECTIVE** of this skill is to perform a **SOURCE CODE C
 ### PROHIBITION 5 — NEVER reconstruct lost content from scratch without reading the transcript first
 
 - If content is lost, the MANDATORY recovery path is:
-  ```
-  <appDataDir>\brain\<conversation-id>\.system_generated\logs\transcript.jsonl
-  ```
+```
+<appDataDir>\brain\<conversation-id>\.system_generated\logs\transcript.jsonl
+```
+
+### MANDATE — Audit Objective-Driven Cooperative Fuzzer Heuristics
+
+When auditing fuzzer coverage, verify that the scripted seats cooperatively
+prioritize legal actions that trigger the mechanic being certified. A scenario
+for a poison-curing item must deliberately prioritize a legal poison source; a
+type-sensitive item must deliberately prioritize the matching legal move. Random
+or passive occurrence is insufficient evidence when a direct legal trigger is
+available.
+
+- Heuristics may configure a certified scenario and choose priorities only
+  through the normal Showdown request/choice path.
+- They must not fabricate outcomes, rewrite accepted choices/history, relax
+  legality, or bypass the FSM. The resulting immutable case is the only
+  permitted decision source for a Playwright combat replay.
+- Certified fuzzers use direct deterministic heuristic AI, not the complete
+  combat AI. Playwright combat does not run a manual or real-AI alternative: it
+  reproduces the certified `history`, `playerChoices`, and `enemyChoices` with
+  the shared `ShowdownBattleRunner` and visible official controls.
+- Audit coverage reports for false PASS conditions such as `equipped => PASS`.
+  A coverage PASS needs raw Showdown protocol evidence or a deterministic
+  same-seed control difference attributable to the item under test.
 
 ---
 
@@ -274,6 +296,10 @@ During the audit, the agent **MUST AUDIT THAT THE FUZZER AND SIMULATIONS SHARE T
 
 - It is strictly forbidden to duplicate logic, structures, helpers, or flow control across fuzzers, replayers, Playwright E2E browser simulations, and workers.
 - Headless fuzzer replayers (`fuzzer_case_replayer.ts`) and Playwright E2E browser simulations MUST import and execute the **LITERALLY SAME shared battle execution modules** (`showdownExecutor.ts`, `showdownBattleRunner.ts`).
+- Audit every Playwright combat for a current certified source case and reject
+  manual team construction, manual combat starts, real-AI choice streams, or
+  divergent action arrays. Non-combat suites are governed by their own domain
+  contracts.
 
 ---
 
@@ -290,4 +316,3 @@ During the audit, the agent **MUST AUDIT THAT THE FUZZER AND SIMULATIONS SHARE T
 
 - **Never Prioritize Speed Over Correctness**: It is strictly forbidden to rush fixes, implement quick patches, or invent fallbacks to force simulations or tests to pass quickly.
 - **Showdown as Single Source of Truth**: Showdown produces all valid choices and requests. If a choice is rejected by Showdown (`[Invalid choice]`), it represents an actual state/request desynchronization or a bug in how application code parses/dispatches Showdown's state. Diagnose the root cause at the source.
-

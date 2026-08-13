@@ -1,5 +1,6 @@
 // fallow-ignore-file security-sink
 import type { BattleContext } from '../../types/battle/battleContext.ts';
+import type { BattleSide } from '../../types/battle/battle.ts';
 import type { Pokemon } from '../../types/pokemon/pokemon.ts';
 import { logger } from '../utils/logger.ts';
 import type { SBCtx } from './showdownBridgeCtx.ts';
@@ -128,7 +129,7 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
   const e = store.activeBattle.value?.enemy;
   if (!p || !e) return;
 
-  const getSide = (rawId: string): 'player' | 'enemy' | null => {
+  const getSide = (rawId: string): BattleSide | null => {
     if (/^p1[a-d]?:/.test(rawId)) return 'player';
     if (/^p2[a-d]?:/.test(rawId)) return 'enemy';
     return null;
@@ -160,9 +161,9 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
           ? (key.startsWith('player') || key === 'ally') 
           : key.startsWith('enemy');
         if (matchesSide) {
-          const val = Reflect.get(battle, key) as Record<string, unknown> | null | undefined; // open-record
-          if (val && typeof val === 'object' && 'uid' in val && (val as { uid?: string }).uid === found.uid) {
-            return { val: val as unknown as Pokemon, found }; // domain-ok
+          const val = Reflect.get(battle, key) as Pokemon | null | undefined;
+          if (val && typeof val === 'object' && val.uid === found.uid) {
+            return { val, found };
           }
         }
       }

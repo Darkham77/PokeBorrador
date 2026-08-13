@@ -6,6 +6,10 @@ import IndividualPokemonEditor from './IndividualPokemonEditor.vue'
 import { useDebugTrainers, ARCHETYPE_PRESETS } from './useDebugTrainers.ts'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 
+const emit = defineEmits<{
+  close: []
+}>()
+
 const {
   trainerName,
   trainerSprite,
@@ -33,9 +37,18 @@ const {
   loadPolicePreset,
   addPokemonToTeam,
   removePokemonFromTeam,
-  startCombat,
+  startCombat: startDebugCombat,
   availableSpriteList
 } = useDebugTrainers()
+
+async function startCombat() {
+  if (enemyTeam.value.length === 0) {
+    await startDebugCombat()
+    return
+  }
+  emit('close')
+  await startDebugCombat()
+}
 
 function handleSpriteError(e: Event, id: string, isShiny = false) {
   const target = e.target as HTMLImageElement
@@ -448,4 +461,3 @@ onMounted(() => {
 </template>
 
 <style src="./DebugTrainersTab.styles.scss" scoped lang="scss"></style>
-

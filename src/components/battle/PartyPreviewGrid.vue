@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import type { PartySlotStatus } from '@/types/battle/battle'
+
 defineProps<{
-  teamBallsStatus: ('active' | 'fainted' | 'empty')[]
+  teamBallsStatus: PartySlotStatus[]
 }>()
 </script>
 

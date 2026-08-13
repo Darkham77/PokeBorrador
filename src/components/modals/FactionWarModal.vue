@@ -8,10 +8,10 @@ import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
 import WarDashboard from '@/components/war/WarDashboard.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { isFactionId } from '@/types/system/game'
 
 // Expose to template
 const getAssetUrlLocal = getAssetUrl
-const ASSET_TYPES_LOCAL = ASSET_TYPES
 
 const handleImgError = (e: Event) => {
   (e.target as HTMLImageElement).style.display = 'none'
@@ -44,7 +44,7 @@ onMounted(async () => {
 watch(
   () => gameStore.state.faction,
   async (newFaction) => {
-    warStore.faction = (newFaction as 'union' | 'poder' | null) || null
+    warStore.faction = isFactionId(newFaction) ? newFaction : null
     await warStore.loadWarData()
   }
 )
@@ -96,7 +96,7 @@ const openFactionChoice = () => {
             <div class="shields-art">
               <img
                 v-gsap-loop="{ effect: 'bounce', y: -8, duration: 3 }"
-                :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, 'union')"
+                :src="getAssetUrlLocal(ASSET_TYPES.FACTION, 'union')"
                 class="faction-logo union-logo"
                 alt="Team Unión"
                 @error="handleImgError"
@@ -104,7 +104,7 @@ const openFactionChoice = () => {
               <span class="vs-text">VS</span>
               <img
                 v-gsap-loop="{ effect: 'bounce', y: -8, duration: 3, delay: 1.5 }"
-                :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, 'poder')"
+                :src="getAssetUrlLocal(ASSET_TYPES.FACTION, 'poder')"
                 class="faction-logo poder-logo"
                 alt="Team Poder"
                 @error="handleImgError"
@@ -293,3 +293,4 @@ const openFactionChoice = () => {
 }
 
 </style>
+

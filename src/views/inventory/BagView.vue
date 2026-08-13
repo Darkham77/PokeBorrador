@@ -5,6 +5,7 @@ import { useGameStore } from '@/stores/game'
 import { formatCurrency } from '@/logic/utils/formatters'
 import { gsap } from 'gsap'
 import BagItemCard from '@/components/inventory/BagItemCard.vue'
+import type { BagMainTab } from '@/types/inventory/items'
 
 const inventoryStore = useInventoryStore()
 const gameStore = useGameStore()
@@ -56,7 +57,7 @@ const onUseItem = (itemId: string) => {
 }
 
 // GSAP Interactions
-const onMainTabClick = (tabId: 'productos' | 'materiales') => {
+const onMainTabClick = (tabId: BagMainTab) => {
   activeMainTab.value = tabId
 }
 

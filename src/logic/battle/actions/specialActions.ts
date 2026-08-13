@@ -1,4 +1,4 @@
-import type { MoveAction } from '@/types/battle/battle';
+import type { MoveAction, BattleSide } from '@/types/battle/battle';
 import { STATUS_ACTIONS } from './statusActions.ts';
 import { logger } from '@/logic/utils/logger';
 import { gameBus } from '@/logic/events/gameBus';
@@ -322,8 +322,19 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
   'future_sight_simple': (src, tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     const b = battleCtx?.activeBattle.value;
     if (!b) return;
-    b.futureSightTurns = 3;
-    b.futureSightTarget = tgt;
+    if (!b.pendingSlotEffects) b.pendingSlotEffects = [];
+    const side: BattleSide = tgt.uid === b.player?.uid ? 'player' : 'enemy';
+    const FUTURE_SIGHT_TURNS = 2;
+    const FUTURE_SIGHT_DMG_RATIO = 0.15;
+    const FUTURE_SIGHT_MIN_DMG = 10;
+    b.pendingSlotEffects.push({
+      move: 'futuresight',
+      side,
+      targetSlot: 0,
+      turnsLeft: FUTURE_SIGHT_TURNS,
+      damage: Math.max(FUTURE_SIGHT_MIN_DMG, Math.floor(tgt.maxHp * FUTURE_SIGHT_DMG_RATIO)),
+      sourceName: src.name,
+    });
     addLogFn(`¡${src.name} lanzó una premonición!`, 'log-info', src);
   },
   'trick': (src, tgt, _srcStages, _tgtStages, addLogFn) => {

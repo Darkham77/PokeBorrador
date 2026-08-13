@@ -144,7 +144,7 @@ export async function backupSupabaseDb() {
           SELECT *
           FROM auth.users;
         `;
-        authUsers = usersRes as unknown as Record<string, unknown>[];
+        authUsers = usersRes as Record<string, unknown>[];
         console.log(styleText('gray', `   ✔️ auth.users: ${authUsers.length} usuarios respaldados.`));
       } catch (authErr: unknown) {
         console.error(styleText('yellow', `   ⚠️ Advertencia: No se pudo respaldar auth.users: ${(authErr as Error).message}`));
@@ -156,7 +156,7 @@ export async function backupSupabaseDb() {
           SELECT *
           FROM auth.identities;
         `;
-        authIdentities = idRes as unknown as Record<string, unknown>[];
+        authIdentities = idRes as Record<string, unknown>[];
         console.log(styleText('gray', `   ✔️ auth.identities: ${authIdentities.length} identidades respaldadas.`));
       } catch (authErr: unknown) {
         console.error(styleText('yellow', `   ⚠️ Advertencia: No se pudo respaldar auth.identities: ${(authErr as Error).message}`));

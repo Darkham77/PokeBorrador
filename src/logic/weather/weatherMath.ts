@@ -14,7 +14,8 @@
 
 // ── Day Cycle ────────────────────────────────────────────────────────────────
 
-export type DayPhase = 'morning' | 'day' | 'dusk' | 'night';
+import type { DayPhase } from '../utils/timeUtils.ts';
+export type { DayPhase };
 
 /**
  * Deterministically maps an epoch-millisecond timestamp to a day phase.

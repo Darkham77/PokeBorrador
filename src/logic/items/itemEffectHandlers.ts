@@ -25,11 +25,13 @@ export function revive(p: Pokemon, amount: number): ItemEffectResult {
 
 import type { PokemonStatus } from '@/types/pokemon/pokemon';
 
-export function clearStatus(p: Pokemon, type: PokemonStatus | 'any'): ItemEffectResult {
+export function clearStatus(p: Pokemon, type: PokemonStatus | 'any' | 'poison'): ItemEffectResult {
   if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
   if (!p.status) return { success: false, message: 'No tiene problemas de estado.' };
 
-  const isMatch = type === 'any' || p.status === type;
+  const isMatch = type === 'any'
+    || p.status === type
+    || (type === 'poison' && (p.status === 'psn' || p.status === 'tox'));
 
   if (!isMatch) return { success: false, message: 'No tiene ese estado.' };
 

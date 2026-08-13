@@ -324,7 +324,7 @@ export function pickBestSwitch(
 
     let bestMyDmg = HEURISTIC_EVAL_DEFAULT_WIN_SCORE;
     for (const mv of pokemon.moves) {
-      try { bestMyDmg = Math.max(bestMyDmg, calc.calcDamage(pokemon, oppActive, mv, snapshot.field).maxPercent); } catch { /* skip */ }
+      try { bestMyDmg = Math.max(bestMyDmg, calc.calcDamage(pokemon, oppActive, mv.id, snapshot.field).maxPercent); } catch { /* skip */ }
     }
     score += (bestMyDmg / HEURISTIC_THRESHOLDS.PERCENTAGE_BASE_SCALE) * HEURISTIC_THRESHOLDS.SWITCH_WEIGHT_OFFENSE;
 

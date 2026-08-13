@@ -5,6 +5,7 @@ import path from 'node:path';
 import { runFuzzerSuite } from '../core/fuzzer_runner.ts';
 import { processGymVictory, type Gym } from '../../../../src/logic/gym/gymEngine.ts';
 import type { GameState } from '../../../../src/types/system/game.ts';
+import type { GymId } from '../../../../src/data/world/gyms.ts';
 
 const REPORT_FILE = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_gyms_coverage_report.json');
 
@@ -29,18 +30,17 @@ async function runGymsFuzzer() {
     { id: 'viridian', leader: 'Giovanni', rewardTM: 'TM26', level: 50 },
   ];
 
-  const createMockGameState = (defeated: string[]): GameState => {
+  const createMockGameState = (defeated: string[]): Partial<GameState> => {
     return {
-      userId: 'test-user',
       money: 1000,
-      defeatedGyms: defeated,
+      defeatedGyms: defeated as GymId[],
       gymProgress: defeated.reduce((acc, gid) => ({ ...acc, [gid]: 3 }), {}),
       team: [],
       box: [],
       starterChosen: true,
       eggs: [],
-      bag: {},
-    } as unknown as GameState;
+      inventory: {},
+    };
   };
 
   const difficulties = ['easy', 'normal', 'hard'] as const;

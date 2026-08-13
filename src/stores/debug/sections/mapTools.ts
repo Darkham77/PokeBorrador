@@ -7,6 +7,7 @@ import { requireFactionId } from '@/types/system/game'
 import type { MapRouteId } from '@/data/world/map-assets'
 import { requireMapRouteId } from '@/data/world/map-assets'
 import { requireWeatherId } from '@/logic/weather/weatherRegistry'
+import type { DayPhase } from '@/logic/utils/timeUtils'
 export function registerMapTools(debug: DebugSystem) {
   const map = useMapStore()
   const ui = useUIStore()
@@ -61,8 +62,8 @@ export function registerMapTools(debug: DebugSystem) {
     label: 'SET WEATHER',
     command: 'setWeather',
     category: 'map',
-    action: (w: string) => {
-      const weatherId = w === 'none' ? null : requireWeatherId(w)
+    action: (w: string | null) => {
+      const weatherId = w === null || w === 'none' ? null : requireWeatherId(w)
       map.setGlobalWeather(weatherId)
       console.debug(`[VITE_DEBUG] Weather forced to: ${weatherId || 'deterministic'}`)
       ui.notify(`Debug: Clima forzado a ${w}`, '⛅')
@@ -76,7 +77,7 @@ export function registerMapTools(debug: DebugSystem) {
     label: 'SET CYCLE',
     command: 'setCycle',
     category: 'map',
-    action: (c: 'morning' | 'day' | 'dusk' | 'night' | null) => {
+    action: (c: DayPhase | null) => {
       map.forcedCycle = c
       ui.notify(`Debug: Ciclo forzado a ${c}`, '☀️')
     },

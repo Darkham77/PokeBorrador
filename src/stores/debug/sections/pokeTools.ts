@@ -5,7 +5,7 @@ import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import { useBreedingStore } from '@/stores/breeding'
 import { POKEMON_STAT_KEYS } from '@/types/pokemon/pokemon'
-import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { Pokemon, PokedexStatus } from '@/types/pokemon/pokemon'
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB'
 import { EVOLUTION_TABLE, TRADE_EVOLUTIONS, getStoneEvolution } from '@/data/pokemon/evolutionData'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
@@ -29,7 +29,7 @@ export function registerPokeTools(debug: DebugSystem) {
         await game.loadGame()
         ui.notify('Pokedex REAL RESTAURADA', '✅')
       } else {
-        ui.debugPokedexMode = mode as 'caught' | 'seen' | 'none' | null
+        ui.debugPokedexMode = mode as PokedexStatus | null
         ui.notify(`Pokedex modo: ${mode.toUpperCase()}`, '👁️') // text-ok
       }
     },
@@ -48,7 +48,7 @@ export function registerPokeTools(debug: DebugSystem) {
       const seenIds = new Set<PokemonSpeciesId>()
       game.state.team.forEach((p: Pokemon) => { if (p?.id) { caughtIds.add(p.id); seenIds.add(p.id) } })
       if (game.state.box) {
-        game.state.box.forEach((p: Pokemon) => { if (p?.id) { caughtIds.add(p.id); seenIds.add(p.id) } })
+        game.state.box.forEach(p => { if (p?.id) { caughtIds.add(p.id); seenIds.add(p.id) } })
       }
       game.state.pokedex = Array.from(caughtIds)
       game.state.seenPokedex = Array.from(seenIds)

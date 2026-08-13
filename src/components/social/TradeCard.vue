@@ -7,9 +7,9 @@ import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 import TradeAssetsGrid from './TradeAssetsGrid.vue';
-import type { TradeOffer } from '@/types/system/stores';
+import type { TradeOffer, TradeCardMode } from '@/types/system/stores';
 
-type CardMode = 'incoming' | 'outgoing' | 'accepted';
+type CardMode = TradeCardMode;
 
 const props = defineProps<{
   trade: TradeOffer;

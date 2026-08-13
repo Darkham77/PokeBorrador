@@ -5,11 +5,12 @@ import { useBattleStore } from '@/stores/battle/battle'
 import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
 
-import { SHOP_ITEMS } from '@/data/inventory/items'
+import { requireItemId, SHOP_ITEMS, type ItemId } from '@/data/inventory/items'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { isValidTarget } from '@/logic/items/itemEffects'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { ItemTier } from '@/types/inventory/items'
 
 const gameStore = useGameStore()
 const battleStore = useBattleStore()
@@ -18,7 +19,7 @@ const modalStore = useModalStore()
 
 
 interface BattleItem {
-  id: string
+  id: ItemId
   name: string
   desc: string
   cat: string
@@ -42,10 +43,11 @@ const battleItems = computed<BattleItem[]>(() => {
     if (itemData.cat === 'potions' || (itemData.cat === 'pokeballs' && !isTrainer)) {
       items.push({ 
         ...itemData, 
+        id: requireItemId(itemData.id),
         qty: count,
         desc: itemData.desc ?? '',
         sprite: itemData.sprite ?? '',
-        tier: (itemData.tier || 'common') as 'common' | 'rare' | 'epic' | 'legend'
+        tier: (itemData.tier || 'common') as ItemTier
       })
     }
   })
@@ -132,6 +134,7 @@ const getTierColor = (t?: string) => {
     <div class="quick-bag-grid">
       <div
         v-for="item in battleItems"
+        :id="`battle-item-${item.id}`"
         :key="item.id"
         :class="['quick-item-card', 'tier-' + (item.tier || 'common'), { 'is-disabled': !canUseItems }]"
         :data-item-id="item.id"

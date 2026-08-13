@@ -2,13 +2,13 @@ import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { useUIStore } from '@/stores/ui'
 import type { GameState } from '@/types/system/game'
-import type { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon'
+import type { Pokemon, PokemonEgg, PokemonStorageLocation } from '@/types/pokemon/pokemon'
 import { MAX_POKEMON_VIGOR, CRIADOR_VIGOR_RESTORE_CHANCE } from '@/logic/constants/gameplay'
 
 export function useBreedingActions(
   state: GameState, 
   scheduleSave: () => Promise<void>, 
-  addPokemon: (pokemon: Pokemon, options?: { notify: boolean }) => { success: boolean, target: 'team' | 'box' | null }
+  addPokemon: (pokemon: Pokemon, options?: { notify: boolean }) => { success: boolean, target: PokemonStorageLocation | null }
 ) {
   async function executeHatch(egg: PokemonEgg) {
     const { recalcPokemonStats } = await import('@/logic/pokemon/pokemonFactory')

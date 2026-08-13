@@ -48,12 +48,6 @@ class GymProgressionSimulation extends BaseBattleSimulation {
 }
 
 test.describe('Gym Progression & Badges Challenge Simulation', () => {
-  test.beforeEach(({ page }) => {
-    page.on('console', msg => {
-      console.log(`[BROWSER-${msg.type().toUpperCase()}] ${msg.text()}`);
-    });
-  });
-
   test('should challenge Pewter Gym, defeat Brock, and earn the Rock Badge', async ({ page }) => {
     test.setTimeout(MAX_SUITE_TOTAL_TIMEOUT_MS);
     const testUser = `TEST_GYM_${Temporal.Now.instant().epochMilliseconds.toString()}`;

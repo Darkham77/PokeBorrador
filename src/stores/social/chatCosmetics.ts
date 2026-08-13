@@ -34,7 +34,7 @@ export const useChatCosmeticsStore = defineStore('chatCosmetics', () => {
     () => {
       if (authStore.user?.id) {
         profileCosmetics.value[authStore.user.id] = {
-          username: gameStore.state.trainer || authStore.user.user_metadata?.username || 'Entrenador',
+          username: gameStore.state.trainer || (authStore.user.user_metadata?.username as string) || 'Entrenador',
           player_class: gameStore.state.playerClass || 'entrenador',
           trainer_level: gameStore.state.trainerLevel || 1,
           avatar_style: gameStore.state.avatar_style || '',
@@ -53,7 +53,7 @@ export const useChatCosmeticsStore = defineStore('chatCosmetics', () => {
     // Populate own cosmetics
     if (authStore.user?.id) {
       profileCosmetics.value[authStore.user.id] = {
-        username: gameStore.state.trainer || authStore.user.user_metadata?.username || 'Entrenador',
+        username: gameStore.state.trainer || (authStore.user.user_metadata?.username as string) || 'Entrenador',
         player_class: gameStore.state.playerClass || 'entrenador',
         trainer_level: gameStore.state.trainerLevel || 1,
         avatar_style: gameStore.state.avatar_style || '',

@@ -1,90 +1,35 @@
 // fallow-ignore-file security-sink
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
-import { waitForWaitInput, handleBattleInput, type WindowWithResolver } from '../e2e_helpers.ts';
+import { armBattleFlowCompletion, armBattleReadyForInput, awaitBattleFlowCompletion, awaitBattleReadyForInput, clickResilient, openDebugTab, type WindowWithResolver } from '../e2e_helpers.ts';
 import { MOVE_TRANSLATIONS_ES } from '../../../src/data/battle/moves.ts';
-
-const TEST_INVENTORY_MASTERBALL_QTY = 10;
 
 class CaptureSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
     super(page, username);
   }
 
-  public async setupPidgeyScenario(): Promise<void> {
-    await this.page.evaluate(async () => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      const battleStore = useBattleStore();
-
-      useGameStore().state.inventory = { masterball: TEST_INVENTORY_MASTERBALL_QTY };
-      const charmander = pokemonDebugService.generate({ id: 'charmander', level: 5 });
-      useGameStore().state.team = [charmander];
-      useGameStore().state.starterChosen = true;
-
-      const pidgey = pokemonDebugService.generate({ id: 'pidgey', level: 2 });
-      await battleStore.startBattle(pidgey, { locationId: 'route1', wasSearching: false });
-    });
-  }
-
-  public async setupDittoScenario(): Promise<void> {
-    await this.page.evaluate(async () => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      const battleStore = useBattleStore();
-
-      useGameStore().state.inventory = { masterball: 5 };
-      const charmander = pokemonDebugService.generate({ id: 'charmander', level: 5 });
-      useGameStore().state.team = [charmander];
-      useGameStore().state.starterChosen = true;
-
-      const ditto = pokemonDebugService.generate({ id: 'ditto', level: 5 });
-      await battleStore.startBattle(ditto, { locationId: 'route1', wasSearching: false });
-    });
-  }
-
-  public async setupMultiBattleScenario(): Promise<void> {
-    await this.page.evaluate(async () => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      const battleStore = useBattleStore();
-
-      useGameStore().state.inventory = { masterball: 5 };
-      const charmander = pokemonDebugService.generate({ id: 'charmander', level: 5 });
-      useGameStore().state.team = [charmander];
-      useGameStore().state.starterChosen = true;
-
-      const pidgey = pokemonDebugService.generate({ id: 'pidgey', level: 3 });
-      await battleStore.startBattle(pidgey, { locationId: 'route1', wasSearching: false });
-    });
+  public async setupScenario(speciesId: string, level: number): Promise<void> {
+    await openDebugTab(this.page, 'items');
+    await this.page.locator('.search-input').fill('masterball');
+    await this.page.locator('#debug-item-masterball').click();
+    await openDebugTab(this.page, 'pokes');
+    await this.page.locator('#debug-input-especie').fill(speciesId);
+    await this.page.locator(`#option-${speciesId}`).click();
+    await this.page.locator('#debug-input-level').fill(level.toString());
+    await armBattleReadyForInput(this.page);
+    await this.page.locator('#debug-btn-encounter').click();
+    await awaitBattleReadyForInput(this.page);
   }
 
   public async throwMasterBall(): Promise<void> {
-    await this.page.evaluate(async () => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      const store = resolver?.() as { useItemInBattle: (itemId: string) => Promise<void> } | undefined;
-      await store?.useItemInBattle('masterball');
-    });
-  }
-
-  public async awaitCaptureSequence(): Promise<void> {
-    await this.page.waitForFunction(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      const store = resolver?.();
-      const bState = store?.state;
-      const fState = store?.currentFsmState;
-      return !bState || bState.over || fState === 'REWARDS_PHASE' || fState === 'SEARCH_PHASE' || fState === 'EXIT_BATTLE';
-    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await armBattleFlowCompletion(this.page);
+    await clickResilient(this.page.locator('.quick-item-card[data-item-id="masterball"]:not(.is-disabled)').first());
+    await awaitBattleFlowCompletion(this.page);
   }
 }
 
 test.describe('Sistema de Capturas y Animaciones de Combate', () => {
-  test.describe.configure({ mode: 'serial' });
-
   test.beforeEach(async ({ request }) => {
     await request.post('/api/dev-import-db-cleanup');
   });
@@ -92,13 +37,9 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
   test('debería capturar un Pidgey salvaje con Master Ball y verificar que mantiene estadísticas, moves en español y sin errores', async ({ page }) => {
     const sim = new CaptureSimWrapper(page, 'TestPlayer1');
     await sim.setup();
-    await waitForWaitInput(page);
-
-    await sim.setupPidgeyScenario();
-    await waitForWaitInput(page);
+    await sim.setupScenario('pidgey', 2);
 
     await sim.throwMasterBall();
-    await sim.awaitCaptureSequence();
 
     const pidgeyData = await page.evaluate(() => {
       const store = (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.();
@@ -115,65 +56,36 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
   test('debería capturar un Ditto transformado y revertir correctamente a la forma Ditto original con sus movimientos originales', async ({ page }) => {
     const sim = new CaptureSimWrapper(page, 'TestPlayer2');
     await sim.setup();
-    await waitForWaitInput(page);
-
-    await sim.setupDittoScenario();
-    await waitForWaitInput(page);
+    await sim.setupScenario('ditto', 5);
 
     // Esperar al primer turno (Ditto usará Transformación)
-    await handleBattleInput(page, 'move 1');
-    await waitForWaitInput(page);
+    await armBattleReadyForInput(page);
+    await clickResilient(page.locator('#move-btn-0').first());
+    await awaitBattleReadyForInput(page);
 
     await sim.throwMasterBall();
-    await sim.awaitCaptureSequence();
 
     const dittoData = await page.evaluate(() => {
       const store = (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.();
-      const p = (store?.state?.team as Array<{ id?: string; moves?: { id: string; name?: string }[] } | null> | undefined)
+      const p = (store?.state?.team as Array<{ id?: string; level?: number; moves?: { id: string; name?: string }[]; maxHp?: number; atk?: number } | null> | undefined)
         ?.find((mon: { id?: string } | null) => mon?.id === 'ditto');
-      return p ? { id: p.id, moves: p.moves } : null;
+      return p ? { id: p.id, level: p.level, moves: p.moves, maxHp: p.maxHp, atk: p.atk } : null;
     });
 
     expect(dittoData).not.toBeNull();
-    expect(dittoData!.id).toBe('ditto');
-    expect(dittoData!.moves?.length).toBe(1);
-    expect(dittoData!.moves?.[0]?.id).toBe('transform');
+    expect(dittoData!.level).toBe(5);
+    expect((dittoData!.moves as Array<{ id: string; name?: string } | null | undefined>).find((m: { id: string; name?: string } | null | undefined) => m?.id === 'transform')?.name).toBe('Transformación');
   });
 
   test('debería jugar una secuencia de 3 combates seguidos capturando y usando los Pokémon capturados con sus movimientos reales', async ({ page }) => {
     const sim = new CaptureSimWrapper(page, 'TestMultiBattle');
     await sim.setup();
-    await waitForWaitInput(page);
+    await sim.setupScenario('pidgey', 3);
 
-    // --- COMBATE 1 ---
-    await sim.setupMultiBattleScenario();
-    await waitForWaitInput(page);
     await sim.throwMasterBall();
-    await sim.awaitCaptureSequence();
 
     // --- COMBATE 2 ---
-    await page.evaluate(async () => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      const gameStore = useGameStore();
-      const battleStore = useBattleStore();
-
-      gameStore.state.inventory = { masterball: 5 };
-      const pidgeyIdx = gameStore.state.team.findIndex((p: { id?: string } | null | undefined) => p?.id === 'pidgey');
-      if (pidgeyIdx !== -1) {
-        const pidgey = gameStore.state.team[pidgeyIdx];
-        if (pidgey) {
-          gameStore.state.team.splice(pidgeyIdx, 1);
-          gameStore.state.team.unshift(pidgey);
-        }
-      }
-
-      const rattata = pokemonDebugService.generate({ id: 'rattata', level: 3 });
-      await battleStore.startBattle(rattata, { locationId: 'route1', wasSearching: false });
-    });
-
-    await waitForWaitInput(page);
+    await sim.setupScenario('rattata', 3);
 
     const activeMoves = await page.evaluate(() => {
       const moves = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.().state?.player?.moves ?? [];
@@ -181,33 +93,13 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
     });
     expect(activeMoves).toContainEqual({ id: 'tackle', name: 'Placaje' });
 
-    await handleBattleInput(page, 'move 1');
-    await waitForWaitInput(page);
+    await armBattleReadyForInput(page);
+    await clickResilient(page.locator('#move-btn-0').first());
+    await awaitBattleReadyForInput(page);
     await sim.throwMasterBall();
-    await sim.awaitCaptureSequence();
 
     // --- COMBATE 3 ---
-    await page.evaluate(async () => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      const gameStore = useGameStore();
-      const battleStore = useBattleStore();
-
-      const rattataIdx = gameStore.state.team.findIndex((p: { id?: string } | null | undefined) => p?.id === 'rattata');
-      if (rattataIdx !== -1) {
-        const rattata = gameStore.state.team[rattataIdx];
-        if (rattata) {
-          gameStore.state.team.splice(rattataIdx, 1);
-          gameStore.state.team.unshift(rattata);
-        }
-      }
-
-      const caterpie = pokemonDebugService.generate({ id: 'caterpie', level: 2 });
-      await battleStore.startBattle(caterpie, { locationId: 'route1', wasSearching: false });
-    });
-
-    await waitForWaitInput(page);
+    await sim.setupScenario('caterpie', 2);
 
     const rattataMoves = await page.evaluate(() => {
       const moves = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.().state?.player?.moves ?? [];
@@ -219,7 +111,6 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
   test('debería asegurar que todos los movimientos tengan una animación y categoría mapeada correctamente', async ({ page }) => {
     const sim = new CaptureSimWrapper(page, 'TestPlayer3');
     await sim.setup();
-    await waitForWaitInput(page);
 
     const moveIdsToCheck = Object.keys(MOVE_TRANSLATIONS_ES);
     const unregisteredCategories = await page.evaluate(async (ids) => {

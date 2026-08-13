@@ -9,10 +9,13 @@ import type { BaseStats } from '../pokemon/statsMath.ts';
 
 export const statsMap = new Map<string, Record<string, number>>();
 
+const SPREAD_MODIFY_PATCH_MARKER = Symbol.for('pokevicio.showdown.spread-modify-patched');
+
 /**
  * Aplica el monkey-patch spreadModify a Battle de Showdown para inyectar estadísticas custom.
  */
 export function patchShowdownSpreadModify(_getIsE2eMode: () => boolean) {
+  if (Reflect.get(Battle.prototype, SPREAD_MODIFY_PATCH_MARKER) === true) return;
   const originalSpreadModify = Battle.prototype.spreadModify;
   Battle.prototype.spreadModify = function (baseStats, set) {
 
@@ -44,6 +47,7 @@ export function patchShowdownSpreadModify(_getIsE2eMode: () => boolean) {
     }
     return originalSpreadModify.call(this, baseStats, set);
   };
+  Reflect.set(Battle.prototype, SPREAD_MODIFY_PATCH_MARKER, true);
 }
 
 /**

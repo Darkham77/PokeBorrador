@@ -5,6 +5,7 @@
 
 import { requireVolatileStatusKey, type Pokemon, type PokemonStatus } from '@/types/pokemon/pokemon'
 import type { BattleContext } from '@/types/battle/battleContext'
+import type { BattleSide } from '@/types/battle/battle'
 
 const BAD_POISON_DENOMINATOR = 16;
 
@@ -25,7 +26,7 @@ export function getStatusIcon(status: PokemonStatus): string {
  * Procesa los efectos permanentes y temporales al final del turno.
  * @returns {boolean} True si el Pokémon sigue en combate, False si se debilitó (aunque las funciones de daño usualmente no despachan muerte aquí)
  */
-export async function tickStatus(pokemon: Pokemon, ctx: BattleContext, role: 'player' | 'enemy' | 'info' = 'info') {
+export async function tickStatus(pokemon: Pokemon, ctx: BattleContext, role: BattleSide | 'info' = 'info') {
   if (!pokemon) return false;
   const addLogFn = ctx.addLog;
   const side = role === 'player' ? 'player' : 'enemy';
@@ -278,8 +279,6 @@ export function clearVolatileStatus(poke: Pokemon) {
   poke.focusEnergy = false
   poke.lockOn = false
   poke.ingrain = false
-  poke.futureSightTurns = 0
-  poke.futureSightDmg = 0
   poke.badPoison = 0
   poke.chargingMove = null
   poke.choiceMove = undefined

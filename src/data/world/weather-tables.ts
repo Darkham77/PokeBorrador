@@ -1,8 +1,9 @@
 import { kantoWeather } from '../weather/kanto/index.ts';
 import type { WeatherId } from '@/logic/weather/weatherRegistry.ts';
+import type { DayPhase } from '@/logic/utils/timeUtils';
 
 export type WeatherSeasonId = 'spring' | 'summer' | 'autumn' | 'winter';
-export type WeatherCycleId = 'morning' | 'day' | 'dusk' | 'night';
+export type WeatherCycleId = DayPhase;
 export type WeatherTableRouteId = keyof typeof kantoWeather;
 export type WeatherChanceTable = Partial<Record<WeatherId, number>>;
 export type RouteWeatherTable = Record<WeatherSeasonId, Record<WeatherCycleId, WeatherChanceTable>>;

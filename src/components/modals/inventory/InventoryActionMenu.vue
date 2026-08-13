@@ -6,6 +6,7 @@ import { getItemById } from '@/data/inventory/items'
 import { isItemUsableOutsideCombat } from '@/stores/inventory/inventory'
 import { isEquippableHeldItem } from '@/stores/inventory/inventoryHelpers'
 import type { Item } from '@/stores/inventory/inventory'
+import type { ItemMenuAction } from '@/types/inventory/items'
 
 interface Props {
   show: boolean
@@ -19,7 +20,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'action', type: 'use' | 'sell' | 'release'): void
+  (e: 'action', type: ItemMenuAction): void
 }>()
 
 const uiStore = useUIStore()
@@ -38,7 +39,7 @@ const isItemHeld = computed(() => {
   return isEquippableHeldItem(dbItem)
 })
 
-const handleSelect = (actionType: 'use' | 'sell' | 'release') => {
+const handleSelect = (actionType: ItemMenuAction) => {
   emit('action', actionType)
 }
 </script>

@@ -37,6 +37,8 @@
     "sim:fuzzer:ai": "node --permission --import tsx --allow-worker --allow-fs-read=* --allow-fs-write=* scripts/e2e/fuzzer/runners/run_ai_fuzzer.ts",
     "sim:fuzzer:trace": "node --permission --import tsx --allow-worker --allow-fs-read=* --allow-fs-write=* scripts/e2e/fuzzer/runners/fuzzer_case_replayer.ts",
     "sim:e2e": "npx tsx scripts/e2e/run_sequential_simulations.ts",
+    "sim:e2e:table": "npx tsx scripts/e2e/run_sequential_simulations.ts --table",
+    "sim:e2e:list": "npx tsx scripts/e2e/run_sequential_simulations.ts --list",
     "sim:e2e:combat": "playwright test scripts/e2e/battle/battle_fsm_sync.simulation.ts scripts/e2e/battle/battle_manual_scenarios.simulation.ts",
     "sim:e2e:combat:report": "playwright test scripts/e2e/battle/battle_fsm_sync.simulation.ts scripts/e2e/battle/battle_manual_scenarios.simulation.ts > scratch/playwright_combat.log",
     "sim:e2e:ai": "playwright test scripts/e2e/battle/heuristic_ai.simulation.ts",

@@ -6,7 +6,8 @@ import { useAuthStore } from '@/stores/auth.ts'
 import { useGameStore } from '@/stores/game.ts'
 import { useUIStore } from '@/stores/ui.ts'
 import { getWeekId, getPreviousWeekId, isDisputePhase, getPointReward, FACTION_CHANGE_COST, DAILY_MAP_CAP, WEEKLY_REWARD_MILESTONES, DAILY_COIN_CAP, WAR_POINTS_PER_COIN, GUARDIAN_DEFEAT_POINTS_MULTIPLIER, FACTION_VICTORY_BONUS_COINS } from '@/logic/war/warEngine'
-import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine'
+import { getGuardianData } from '@/logic/war/guardianEngine'
+import { GUARDIAN_ENCOUNTER_CHANCE_PERCENT } from '@/logic/constants/gameplay'
 
 import type { DominanceInfo } from '@/types/system/stores'
 import { requireFactionId, requireISODateKey, type FactionId } from '@/types/system/game'
@@ -288,7 +289,7 @@ export const useWarStore = defineStore('war', () => {
     const routeId = requireMapRouteId(mapId)
     const routeIds = allMapIds.map(id => requireMapRouteId(id))
     if (dailyGuardianCaptures.value.includes(routeId)) return null
-    if (Math.random() > GUARDIAN_CHANCE) return null
+    if (Math.random() > GUARDIAN_ENCOUNTER_CHANCE_PERCENT) return null
 
     return getGuardianData(routeId, routeIds)
   }

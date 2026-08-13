@@ -24,7 +24,7 @@ export const useAudioStore = defineStore('audio', () => {
     if (isInitialized.value) return;
 
     try {
-      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext; // domain-ok
+      const AudioContextClass = window.AudioContext || (window as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (!AudioContextClass) return;
       const ctx = new AudioContextClass();
       context.value = ctx;

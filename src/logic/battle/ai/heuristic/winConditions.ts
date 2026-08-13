@@ -42,14 +42,14 @@ export function evaluateWinConditions(
       let canKO = false;
       for (const move of pokemon.moves) {
         try {
-          const dmg = calc.calcDamage(pokemon, opp, move, snapshot.field);
+          const dmg = calc.calcDamage(pokemon, opp, move.id, snapshot.field);
           if (dmg.isOHKO) { canKO = true; break; }
           if (dmg.is2HKO) coverageScore += 0.3;
         } catch { /* skip */ }
       }
       if (canKO) canKOCount++;
 
-      const oppMoves = [...opp.knownMoves];
+      const oppMoves = [...(opp.knownMoves || [])];
       for (const { move } of inference.getLikelyUnrevealed(opp.species, 0.4)) oppMoves.push(move);
       for (const mv of oppMoves) {
         try {
@@ -73,7 +73,7 @@ const LOW_OPPONENT_DAMAGE_THRESHOLD_PCT = 40
       (coverageScore / n * WIN_COND_COVERAGE_WEIGHT) +
       (hasSetup ? WIN_COND_SETUP_WEIGHT : 0) +
       (hasPriority ? WIN_COND_PRIORITY_WEIGHT : 0) +
-      (pokemon.hpPercent / 100 * WIN_COND_HP_WEIGHT) +
+      ((pokemon.hpPercent ?? 100) / 100 * WIN_COND_HP_WEIGHT) +
       Math.min(defensiveScore, 0.2),
     );
 

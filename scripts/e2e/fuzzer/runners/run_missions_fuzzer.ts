@@ -6,6 +6,10 @@ import { Dex } from '@pkmn/sim';
 import { runFuzzerSuite } from '../core/fuzzer_runner.ts';
 import { generateMission, validateMissionPokemon } from '../../../../src/logic/breeding/missionEngine.ts';
 import type { Pokemon } from '../../../../src/types/pokemon/pokemon.ts';
+import type { PokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';
+import type { NatureId } from '../../../../src/data/battle/natures.ts';
+import type { AbilityId } from '../../../../src/data/battle/abilities.ts';
+import type { PokemonType } from '../../../../src/data/battle/types.ts';
 
 const REPORT_FILE = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_missions_coverage_report.json');
 
@@ -19,24 +23,34 @@ async function runMissionsFuzzer() {
 
   console.log(`🎯 Ejecutando fuzzer de Misiones sobre 200 misiones aleatorias...`);
 
-  const createMockPoke = (speciesName: string, level: number, ivs: number, nature = 'Serious'): Pokemon => {
+  const createMockPoke = (speciesName: string, level: number, ivs: number, nature = 'serious'): Pokemon => {
+    const sId = Dex.toID(speciesName) as PokemonSpeciesId;
     return {
       uid: `mock-${speciesName}-${Math.random().toString(36).substring(2, 7)}`,
-      id: Dex.toID(speciesName),
+      id: sId,
+      species: sId,
       name: speciesName,
       level,
-      gender: 'M',
-      ability: 'illuminate',
-      nature,
+      gender: 'm',
+      ability: 'illuminate' as AbilityId,
+      nature: nature.toLowerCase() as NatureId,
       ivs: { hp: ivs, atk: ivs, def: ivs, spa: ivs, spd: ivs, spe: ivs },
       evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
       moves: [],
       hp: 100,
       maxHp: 100,
-      status: null,
+      type: 'normal' as PokemonType,
+      atk: 10,
+      def: 10,
+      spa: 10,
+      spd: 10,
+      spe: 10,
+      expNeeded: 1000,
+      volatileCounters: {},
+      status: '',
       exp: 0,
       isShiny: false,
-    } as unknown as Pokemon;
+    };
   };
 
   const dateStr = Temporal.Now.plainDateISO().toString();

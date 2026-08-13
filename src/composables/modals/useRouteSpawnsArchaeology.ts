@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import type { MapLocation } from '@/types/pokemon/encounters'
+import type { ArchaeologyCategory } from '@/logic/utils/archaeologyHelpers'
 
 const TOOL_BUDGET_GOOD = 500
 const TOOL_BUDGET_SUPER = 1000
@@ -26,10 +26,9 @@ export interface ArchaeologyRewardData {
   baseTotalWeight: number
   activeTotalWeight: number
 }
+import type { RouteSpawnsProps } from '@/composables/modals/useRouteSpawnsCalculation'
 
-export function useRouteSpawnsArchaeology(
-  props: { map: MapLocation; weather: string; cycle: string }
-) {
+export function useRouteSpawnsArchaeology(props: RouteSpawnsProps) {
   const gameStore = useGameStore()
 
   const archaeologyRewards = computed(() => {
@@ -67,7 +66,7 @@ export function useRouteSpawnsArchaeology(
         } else {
           added = Math.round(remaining * PERCENTAGE_HALF_SPLIT_RATIO)
         }
-        activeCategoryWeights[item.key as 'rare' | 'common' | 'stone'] += added
+        activeCategoryWeights[item.key as ArchaeologyCategory] += added
         remaining -= added
       }
     }

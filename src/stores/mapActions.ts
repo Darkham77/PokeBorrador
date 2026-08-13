@@ -12,7 +12,7 @@ import type { ItemId } from '@/data/inventory/items.ts';
 import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import { logger } from '@/logic/utils/logger';
 import { buildRivalEncounter, buildTrainerEncounter } from '@/logic/battle/trainerSpawner';
-import { calculateArchaeologyWeights } from '@/logic/utils/archaeologyHelpers';
+import { calculateArchaeologyWeights, type ArchaeologyCategory } from '@/logic/utils/archaeologyHelpers';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { MapLocation } from '@/types/pokemon/encounters';
 
@@ -190,7 +190,7 @@ export async function executeArchaeologyRewards(locId: string, gs: ReturnType<ty
     }
 
     const rand = Math.random() * totalWeight;
-    let selectedCategory: 'fossil' | 'stone' | 'common' | 'rare' = 'common';
+    let selectedCategory: ArchaeologyCategory = 'common';
     
     if (rand < categoryWeights.fossil) {
       selectedCategory = 'fossil';

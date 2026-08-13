@@ -6,6 +6,11 @@ import { useGameStore } from '@/stores/game';
 import type { Pokemon, PokemonMove } from '@/types/pokemon/pokemon';
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
+export interface EvolutionCompletePayload {
+  pokemon: Pokemon;
+  pendingMoves: PokemonMove[];
+}
+
 export const useEvolutionStore = defineStore('evolution', () => {
   const gameStore = useGameStore();
 
@@ -14,7 +19,7 @@ export const useEvolutionStore = defineStore('evolution', () => {
   const sourcePokemon = ref<Pokemon | null>(null);
   const targetId = ref<PokemonSpeciesId | null>(null);
   const itemName = ref<string>('');
-  const onComplete = ref<((data: { pokemon: Pokemon, pendingMoves: PokemonMove[] }) => void) | null>(null);
+  const onComplete = ref<((data: EvolutionCompletePayload) => void) | null>(null);
   const pendingMoves = ref<PokemonMove[]>([]);
 
   // --- ACTIONS ---
@@ -30,7 +35,7 @@ export const useEvolutionStore = defineStore('evolution', () => {
     pokemon: Pokemon, 
     targetSpeciesId: string, 
     evItemName = '', 
-    callback: ((data: { pokemon: Pokemon, pendingMoves: PokemonMove[] }) => void) | null = null
+    callback: ((data: EvolutionCompletePayload) => void) | null = null
   ) {
     sourcePokemon.value = pokemon;
     targetId.value = requirePokemonSpeciesId(targetSpeciesId);

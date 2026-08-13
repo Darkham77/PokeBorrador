@@ -20,7 +20,10 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
   >
     <!-- MODULAR ACTION DEBUG PANEL -->
     <Transition name="slide-up">
-      <DebugActionPanel v-if="isOpen" />
+      <DebugActionPanel
+        v-if="isOpen"
+        @close="isOpen = false"
+      />
     </Transition>
 
     <!-- EFFECTS PANEL -->
@@ -33,6 +36,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
           <span class="icon">✨</span>
           <span class="title">BATTLE EFFECTS & AUDIO</span>
           <button
+            id="battle-debug-effects-close-btn"
             class="close-mini"
             @click.stop="isEffectsOpen = false"
           >
@@ -71,6 +75,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
     <div class="debug-triggers-row">
       <PVTooltip title="Debug Menu">
         <button
+          id="battle-debug-menu-btn"
           class="debug-trigger"
           :class="{ active: isOpen }"
           @click.stop="isOpen = !isOpen; isEffectsOpen = false; isTimeOpen = false"
@@ -82,6 +87,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
 
       <PVTooltip title="Audio & Visual Effects">
         <button
+          id="battle-debug-effects-btn"
           class="effects-trigger"
           :class="{ active: isEffectsOpen }"
           @click.stop="isEffectsOpen = !isEffectsOpen; isOpen = false; isTimeOpen = false"

@@ -13,6 +13,10 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { hasAnimatedSpriteId } from '@/data/pokemon/animatedSpriteDatabase'
 import { requireFeetPoints } from '@/data/pokemon/pokemonFeetDatabase'
 
+const emit = defineEmits<{
+  (event: 'close'): void
+}>()
+
 const ALL_PDEX: readonly PokemonSpeciesId[] = [...PDEX_ORDER, ...GEN2_PDEX_ORDER]
 
 const battleStore = useBattleStore()
@@ -265,6 +269,13 @@ const toggleStatus = (side: string, type: string) => {
 
 <template>
   <div class="debug-menu custom-scrollbar-vicio">
+    <button
+      id="battle-debug-menu-close-btn"
+      class="close-mini"
+      @click.stop="emit('close')"
+    >
+      ✕
+    </button>
     <!-- Quick Actions -->
     <DebugActionPanelQuickButtons />
 

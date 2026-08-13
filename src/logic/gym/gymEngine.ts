@@ -6,6 +6,7 @@
 
 import { requireGymId, type GymId } from '@/data/world/gyms';
 import type { GameState } from '@/types/system/game';
+import type { BattleDifficulty } from '@/types/battle/battle';
 
 export interface Gym {
   id: GymId;
@@ -37,11 +38,11 @@ export interface GymVictoryResult {
  * @param {GameState} state - Current player state
  * @returns {GymVictoryResult} { tmDropped, extraCoins, newProgress, isFirstTime }
  */
-export function processGymVictory(gym: Gym, difficulty: 'easy' | 'normal' | 'hard', state: GameState): GymVictoryResult {
+export function processGymVictory(gym: Gym, difficulty: BattleDifficulty, state: Partial<GameState>): GymVictoryResult {
   const diffMap: Record<string, number> = { easy: 1, normal: 2, hard: 3 };
   const diffValue = diffMap[difficulty] || 1;
   const gymId = requireGymId(gym.id);
-  const isFirstTime = !state.defeatedGyms.includes(gymId);
+  const isFirstTime = !state.defeatedGyms?.includes(gymId);
   
   let tmDropped = false;
   let extraCoins = 0;

@@ -8,6 +8,7 @@ import { useLoadingStore } from '@/stores/loading.ts'
 import { safeStorage } from '@/logic/utils/storage'
 import { SESSION_ID } from '@/logic/auth/sessionId'
 import { requireUserRole, type AuthUser, type SessionMode } from '@/types/auth/auth'
+import { requireGenderId, type GenderId } from '@/types/system/game'
 import type { Session } from '@supabase/supabase-js'
 import { AUTH_RETRY_DELAY_MS, HTTP_STATUS_UNAUTHORIZED } from '@/logic/constants/gameplay'
 
@@ -123,7 +124,7 @@ export const useAuthStore = defineStore('auth', () => {
         
         let sessionValid = true
         if (data?.session?.user) {
-          const rawUser = data.session.user as unknown as AuthUser // domain-ok
+          const rawUser = data.session.user as AuthUser
           const isLocalId = rawUser?.id === 'local_user' || rawUser?.id?.startsWith('local_')
           
           let dbVersion = 1
@@ -153,7 +154,7 @@ export const useAuthStore = defineStore('auth', () => {
             // Fetch profile meta con timeout (10s)
             try {
               const profilePromise = supabase.from('profiles').select('db_version, is_banned, ban_reason, gender, role').eq('id', rawUser?.id).single()
-              const profileRes = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 10000))]) as { data: { db_version: number; is_banned: boolean; ban_reason: string | null; gender: 'h' | 'm'; role?: string } | null; error?: { message?: string; status?: number; code?: string } | null }
+              const profileRes = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 10000))]) as { data: { db_version: number; is_banned: boolean; ban_reason: string | null; gender: GenderId; role?: string } | null; error?: { message?: string; status?: number; code?: string } | null }
               const profile = profileRes.data
               const profileError = profileRes.error
               
@@ -192,7 +193,10 @@ export const useAuthStore = defineStore('auth', () => {
 
           // Build and assign the fully-configured user object AT THE VERY END
           rawUser.db_version = dbVersion
-          rawUser.user_metadata.gender = userGender as 'h' | 'm'
+          if (!rawUser.user_metadata) {
+            rawUser.user_metadata = { username: rawUser.email || 'user' }
+          }
+          rawUser.user_metadata.gender = requireGenderId(userGender)
           if (userRole) rawUser.role = requireUserRole(userRole)
 
           session.value = data.session
@@ -248,7 +252,7 @@ export const useAuthStore = defineStore('auth', () => {
       if (error) throw error
       
       session.value = data.session
-      user.value = data.user as unknown as AuthUser // domain-ok
+      user.value = data.user as AuthUser
       sessionMode.value = 'online'
       safeStorage.setItem('pokevicio_session_mode', 'online')
       if (supabase && typeof supabase.setMode === 'function') {
@@ -267,7 +271,7 @@ export const useAuthStore = defineStore('auth', () => {
         db_version: number;
         is_banned: boolean;
         ban_reason: string | null;
-        gender?: 'h' | 'm';
+        gender?: GenderId;
       }
       const profileRes = await supabase.from('profiles').select('db_version, is_banned, ban_reason, gender').eq('id', data.user.id).single() as { data: ProfileData | null, error?: { message?: string } | null }
       const profile = profileRes.data
@@ -289,6 +293,9 @@ export const useAuthStore = defineStore('auth', () => {
 
       if (profile && user.value) {
         user.value.db_version = profile.db_version || 1
+        if (!user.value.user_metadata) {
+          user.value.user_metadata = { username: user.value.email || 'user' }
+        }
         user.value.user_metadata.gender = profile.gender || 'h'
       }
       
@@ -300,7 +307,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function signup(email: string, password: string, username: string, gender: 'h' | 'm' = 'h') {
+  async function signup(email: string, password: string, username: string, gender: GenderId = 'h') {
     const { data, error } = await supabase.auth.signUp({ 
       email, 
       password, 
@@ -367,7 +374,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
 
-  async function localLogin(name: string, gender: 'h' | 'm' = 'h') {
+  async function localLogin(name: string, gender: GenderId = 'h') {
     loading.value = true
     const loadingStore = useLoadingStore()
     loadingStore.start('auth_action', 'Entrando como invitado...', 'Preparando partida local', true, '🎮')

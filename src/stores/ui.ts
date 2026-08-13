@@ -6,10 +6,11 @@ import { useBattleStore } from '@/stores/battle/battle.ts'
 import { useLoadingStore } from '@/stores/loading'
 import { safeStorage } from '@/logic/utils/storage'
 import { useNotificationStore } from '@/stores/notifications.ts'
-import type { Pokemon, Move } from '@/types/pokemon/pokemon'
+import type { Pokemon, Move, PokemonStorageLocation, PokedexStatus } from '@/types/pokemon/pokemon'
 import { MODAL_METADATA } from '@/logic/modals/registry'
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { SMALL_SCREEN_BREAKPOINT_PX, MOBILE_SCREEN_BREAKPOINT_PX } from '@/logic/constants/gameplay.ts'
+import type { LowPowerModeSetting } from '@/types/system/game'
 
 
 interface EvolutionData {
@@ -54,8 +55,8 @@ export const useUIStore = defineStore('ui', () => {
   })
 
   // Low Power Mode
-  const lowPowerMode = ref<'auto' | 'enabled' | 'disabled'>(
-    (safeStorage.getItem('low-power-mode') as 'auto' | 'enabled' | 'disabled') || 'auto'
+  const lowPowerMode = ref<LowPowerModeSetting>(
+    (safeStorage.getItem('low-power-mode') as LowPowerModeSetting) || 'auto'
   )
   const isLowPowerActive = computed(() => {
     if (lowPowerMode.value === 'enabled') return true
@@ -68,7 +69,7 @@ export const useUIStore = defineStore('ui', () => {
     if (lowPowerMode.value === 'disabled') return false
     return windowWidth.value < MOBILE_SCREEN_BREAKPOINT_PX
   })
-  function setLowPowerMode(mode: 'auto' | 'enabled' | 'disabled') {
+  function setLowPowerMode(mode: LowPowerModeSetting) {
     lowPowerMode.value = mode
     safeStorage.setItem('low-power-mode', mode)
   }
@@ -105,17 +106,17 @@ export const useUIStore = defineStore('ui', () => {
   const evolutionData = ref<EvolutionData | null>(null)
   const currentMoveToLearn = ref<LearnItem | null>(null)
   const learnQueue = ref<LearnItem[]>([])
-  const activePokemonForNature = ref<{ context: 'team' | 'box'; index: number } | null>(null)
-  const ppUpTarget = ref<{ context: 'team' | 'box'; index: number } | null>(null)
+  const activePokemonForNature = ref<{ context: PokemonStorageLocation; index: number } | null>(null)
+  const ppUpTarget = ref<{ context: PokemonStorageLocation; index: number } | null>(null)
   const activeItemForPPUp = ref<string | null>(null)
-  const activePokemonForAbility = ref<{ context: 'team' | 'box'; index: number } | null>(null)
+  const activePokemonForAbility = ref<{ context: PokemonStorageLocation; index: number } | null>(null)
   
   // Detalle data
   const selectedPokemon = ref<Pokemon | null>(null)
   const selectedMove = ref<string | null>(null)
 
   // Item Target context (for using items from Box Menu, etc)
-  const inventoryTarget = ref<{ context: 'team' | 'box'; index: number } | null>(null) // { context: 'team' | 'box', index: number }
+  const inventoryTarget = ref<{ context: PokemonStorageLocation; index: number } | null>(null)
 
   // Zoom initialization
   const getInitialZoom = () => {
@@ -173,7 +174,7 @@ export const useUIStore = defineStore('ui', () => {
 
   const hasDismissedSessionLock = ref(false)
 
-  function toggleInventory(context: 'team' | 'box' | null = null, index: number | null = null) {
+  function toggleInventory(context: PokemonStorageLocation | null = null, index: number | null = null) {
     const modalStore = useModalStore()
     if (context !== null && index !== null) {
       inventoryTarget.value = { context, index }
@@ -376,7 +377,7 @@ export const useUIStore = defineStore('ui', () => {
     },
     
     // fallow-ignore-next-line unused-store-member
-    setDebugPokedex: (mode: 'none' | 'seen' | 'caught' | null) => { debugPokedexMode.value = mode },
+    setDebugPokedex: (mode: PokedexStatus | null) => { debugPokedexMode.value = mode },
     
     pvpAutoFillDisabled,
     warAutoFillDisabled,

@@ -91,7 +91,7 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
     const team = gameStore.state.team || [];
     const box = gameStore.state.box || [];
     const all = [...team, ...box];
-    const pokemon = all.find(p => p.uid === pokemonUid);
+    const pokemon = all.find((p): p is Pokemon => p != null && p.uid === pokemonUid);
 
     if (!pokemon) return;
     if (!validateMissionPokemon(pokemon, mission)) {

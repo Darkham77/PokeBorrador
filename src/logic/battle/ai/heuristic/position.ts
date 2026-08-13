@@ -78,7 +78,7 @@ export function evaluatePosition(
   if (myActive && oppActive) {
     let ourBest = POSITION_WEIGHTS.POSITION_MIN_DEFAULT_SCORE, theirBest = POSITION_WEIGHTS.POSITION_MIN_DEFAULT_SCORE;
     for (const mv of myActive.moves) {
-      try { ourBest = Math.max(ourBest, calc.calcDamage(myActive, oppActive, mv, snapshot.field).maxPercent); } catch { /* skip */ }
+      try { ourBest = Math.max(ourBest, calc.calcDamage(myActive, oppActive, mv.id, snapshot.field).maxPercent); } catch { /* skip */ }
     }
     for (const mv of oppActive.knownMoves) {
       try { theirBest = Math.max(theirBest, calc.calcDamage(oppActive, myActive, mv, snapshot.field).maxPercent); } catch { /* skip */ }

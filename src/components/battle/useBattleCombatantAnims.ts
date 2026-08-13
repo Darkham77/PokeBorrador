@@ -2,7 +2,7 @@ import { watch, type Ref, nextTick, type ComputedRef, computed, onMounted, onUnm
 import { gsap } from 'gsap'
 import { gameBus } from '@/logic/events/gameBus'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
-import type { BattleCombatantProps } from '@/types/battle/battle'
+import type { BattleCombatantProps, BattleSide } from '@/types/battle/battle'
 import { isFlying } from '@/composables/battle/useBattleShadows'
 import {
   GSAP_FAST_DURATION_SEC,
@@ -89,7 +89,9 @@ import {
   POKEBALL_BLINK_DURATION_SEC,
   POKEBALL_SPRITE_SHAKE_REPEAT,
   BALL_LEAVE_SCALE,
-  BALL_LEAVE_DURATION_SEC
+  BALL_LEAVE_DURATION_SEC,
+  SCALE_FULL,
+  SCALE_ZERO,
 } from '@/logic/constants/animations'
 
 const RECOIL_EASE_BACK_OVERSHOOT = 1.7
@@ -101,8 +103,6 @@ const HEAL_SEPIA_NONE = 0
 const RANDOM_DIRECTION_PROBABILITY_HALF = 0.5;
 const OPACITY_INVISIBLE = 0;
 const OPACITY_FULL = 1;
-const SCALE_ZERO = 0;
-const SCALE_FULL = 1;
 
 const FAINT_BLINK_STEPS: readonly { t: number; op: number }[] = [ // no-magic
   { t: 0.05, op: 0 }, { t: 0.13, op: 1 },
@@ -763,7 +763,7 @@ export function onBallEnter(el: Element, done: () => void) {
   )
 }
 
-export function onBallLeave(el: Element, side: 'player' | 'enemy', done: () => void) {
+export function onBallLeave(el: Element, side: BattleSide, done: () => void) {
   const tween = gsap.to(el, { 
     opacity: 0, 
     scale: BALL_LEAVE_SCALE, 

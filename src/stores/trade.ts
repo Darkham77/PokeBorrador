@@ -108,10 +108,10 @@ export const useTradeStore = defineStore('trade', () => {
     const error = saveRes.error
     
     if (error || !data) {
-      tradeFriendSave.value = ({ team: [], box: [], inventory: {}, money: 0 } as unknown as GameState) // domain-ok
+      tradeFriendSave.value = null
       uiStore.notify('No se pudo cargar el inventario del amigo.', '⚠️')
     } else {
-      tradeFriendSave.value = data.save_data as GameState // domain-ok
+      tradeFriendSave.value = data.save_data
     }
     uiStore.open('Trade')
   }

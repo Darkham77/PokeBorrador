@@ -1,8 +1,9 @@
 import type { Move } from '@/types/pokemon/pokemon'
-import type { BattleState } from '@/types/battle/battle'
+import type { BattleState, BattleSide } from '@/types/battle/battle'
+import type { MoveCategory } from '@/data/battle/moves'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
-export function syncActiveMovesFromRequest(active: BattleState | null, side: 'player' | 'enemy') {
+export function syncActiveMovesFromRequest(active: BattleState | null, side: BattleSide) {
   if (!active) return
 
   const request = side === 'player' ? active.playerRequest : active.enemyRequest
@@ -37,7 +38,7 @@ export function syncActiveMovesFromRequest(active: BattleState | null, side: 'pl
       id: moveId,
       name: md.name,
       type: md.type || 'normal',
-      cat: (md.cat || 'physical') as 'physical' | 'special' | 'status',
+      cat: (md.cat || 'physical') as MoveCategory,
       power: md.power,
       acc: md.acc,
       pp: reqMove.pp ?? 0,

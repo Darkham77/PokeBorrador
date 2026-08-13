@@ -118,7 +118,7 @@ async function main() {
     // Comparar Tipos
     const coreTypes: string[] = [];
     if (corePoke.type) coreTypes.push(TYPE_MAP[corePoke.type] || corePoke.type);
-    const type2 = (corePoke as unknown as { type2?: string }).type2;
+    const type2 = Reflect.get(corePoke, 'type2') as string | undefined;
     if (type2) coreTypes.push(TYPE_MAP[type2] || type2);
 
     const sdTypes = sdPoke.types || [];

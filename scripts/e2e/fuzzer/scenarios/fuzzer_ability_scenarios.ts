@@ -3635,5 +3635,41 @@ export const ABILITY_SCENARIOS: ScriptedScenario[] = [
       const abilitiesSet = new Set(['triage', 'turboblaze', 'victorystar', 'wanderingspirit']);
       return sim.p1.pokemon.some((p: { ability: string }) => abilitiesSet.has(p.ability));
     }
+  },
+  {
+    name: 'Contact Reaction Abilities',
+    abilities: ['lingeringaroma', 'perishbody'],
+    playerTeam: [
+      {
+        name: 'P-Contact',
+        species: 'Mew',
+        level: 100,
+        gender: 'M',
+        item: '',
+        ability: 'Lingering Aroma',
+        nature: 'Serious',
+        evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 0, spe: 0 },
+        ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+        moves: ['Swords Dance']
+      }
+    ],
+    enemyTeam: [
+      {
+        name: 'E-ContactAttacker',
+        species: 'Mew',
+        level: 100,
+        gender: 'M',
+        item: '',
+        ability: 'illuminate',
+        nature: 'Serious',
+        evs: { hp: 0, atk: 252, def: 0, spa: 0, spd: 0, spe: 252 },
+        ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+        moves: ['Body Slam']
+      }
+    ],
+    actions: [
+      { p1: 'move 1', p2: 'move 1' }
+    ]
   }
 ];
+

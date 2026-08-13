@@ -5,6 +5,7 @@ import { useUIStore } from '@/stores/ui'
 import { useInventoryStore } from '@/stores/inventory/inventory'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver'
+import type { ItemTier } from '@/types/inventory/items'
 
 interface ReputationShopItem {
   id: string
@@ -14,7 +15,7 @@ interface ReputationShopItem {
   sprite?: string
   givesId: string
   givesQty: number
-  tier: 'common' | 'rare' | 'epic' | 'legend'
+  tier: ItemTier
   cat: string
 }
 

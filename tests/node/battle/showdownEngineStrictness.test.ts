@@ -11,12 +11,12 @@ const LOW_HP = 1;
 const CERTIFIED_HEAL_TURN = 2;
 const CERTIFIED_SEED = [1, 2, 3, 4];
 
-function createReplayEngine(cheats?: FuzzerCheat[]): ShowdownBattleEngine {
+function createReplayEngine(cheats?: FuzzerCheat[], enemyMove = 'splash'): ShowdownBattleEngine {
   const engine = new ShowdownBattleEngine({ mode: 'replayer', cheats });
   const battle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, CERTIFIED_SEED);
   ShowdownLogEnricher.setupRealtimeEnrichment(battle);
   battle.setPlayer('p1', { name: 'P1', team: [{ name: 'Bulbasaur', species: 'Bulbasaur', item: '', ability: 'Overgrow', moves: ['tackle'], nature: 'Hardy', gender: 'M', level: 50, evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } }] });
-  battle.setPlayer('p2', { name: 'P2', team: [{ name: 'Blissey', species: 'Blissey', item: '', ability: 'NaturalCure', moves: ['splash'], nature: 'Hardy', gender: 'M', level: 100, evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 0, spe: 0 }, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } }] });
+  battle.setPlayer('p2', { name: 'P2', team: [{ name: 'Blissey', species: 'Blissey', item: '', ability: 'NaturalCure', moves: [enemyMove], nature: 'Hardy', gender: 'M', level: 100, evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 0, spe: 0 }, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } }] });
   Object.defineProperty(engine, 'battle', { value: battle });
   return engine;
 }
@@ -92,5 +92,27 @@ describe('ShowdownBattleEngine strict fail-loud integrity', () => {
     assert.doesNotThrow(() => {
       engine.executeTurn({ p1Choice: 'move 1', p2Choice: 'move 1', p1Skip: true });
     }, 'executeTurn with p1Skip=true must not throw Not all choices done');
+  });
+
+  it('does not turn a bag-medicine response into an unrecorded player attack', () => {
+    const engine = createReplayEngine(undefined, 'tackle');
+    const player = engine.battle.p1.active[0];
+    const enemy = engine.battle.p2.active[0];
+    assert.ok(player, 'P1 active Pokémon must exist');
+    assert.ok(enemy, 'P2 active Pokémon must exist');
+    const playerHpBeforeMedicineResponse = player.hp;
+    const hpBeforeMedicineResponse = enemy.hp;
+
+    engine.executeTurn({ p2Choice: 'move 1', p1Skip: true, p1UsedBattleItem: true });
+
+    assert.equal(
+      enemy.hp,
+      hpBeforeMedicineResponse,
+      'A medicine action consumes the player action; the simulated response must not execute an implicit player move.'
+    );
+    assert.ok(
+      player.hp < playerHpBeforeMedicineResponse,
+      'The certified enemy response must still resolve through Showdown after the medicine action.'
+    );
   });
 });

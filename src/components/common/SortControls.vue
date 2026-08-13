@@ -1,6 +1,6 @@
 <script setup lang="ts">
-type SortKey = 'name' | 'price' | 'rarity'
-type SortOrder = 'asc' | 'desc'
+import type { SortOrder, ItemSortKey } from '@/types/system/game'
+type SortKey = ItemSortKey
 
 interface Props {
   modelValue: SortKey

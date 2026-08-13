@@ -73,9 +73,9 @@ export function useBattleCaptureAnimations(
       const gameStore = useGameStore()
       if (!gameStore?.state) return
 
-      let pokemon = gameStore.state.team.find(p => p && p.uid === pokemonUid)
+      let pokemon: Pokemon | null | undefined = gameStore.state.team.find(p => p && p.uid === pokemonUid)
       if (!pokemon && gameStore.state.box) {
-        pokemon = gameStore.state.box.find(p => p && p.uid === pokemonUid)
+        pokemon = gameStore.state.box.find((p): p is Pokemon => p !== null && p.uid === pokemonUid)
       }
 
       if (pokemon) {

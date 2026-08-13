@@ -26,7 +26,10 @@ class AshSaveSimWrapper extends BaseBattleSimulation {
 
   public async rotateTeam(): Promise<void> {
     const battleState = await this.getBattleStoreState();
-    const teamUids = (battleState?.playerTeam ?? []).map((p: { uid: string }) => p.uid).filter(Boolean);
+    const activeUid = battleState?.activePlayerUid;
+    const teamUids = (battleState?.playerTeam ?? [])
+      .map((p: { uid: string }) => p.uid)
+      .filter((uid: string) => Boolean(uid) && uid !== activeUid);
 
     for (const uid of teamUids) {
       await waitForWaitInput(this.page);
@@ -40,20 +43,10 @@ test.beforeEach(async ({ request }) => {
 });
 
 test('Debug ash save switch issue', async ({ page, request }) => {
-  page.on('console', msg => {
-    console.log(`[BROWSER-${msg.type().toUpperCase()}] ${msg.text()}`);
-  });
-
   const sim = new AshSaveSimWrapper(page, 'ash');
   await sim.loadAshSave(request);
 
-  await page.evaluate(async () => {
-    const debug = (window as unknown as { __VITE_DEBUG__?: { spawnEncounter?: (config: { id: string; level: number }) => Promise<void> } }).__VITE_DEBUG__;
-    if (debug && debug.spawnEncounter) {
-      await debug.spawnEncounter({ id: 'rattata', level: 5 });
-    }
-  });
-
+  await page.locator('#map-card-route1').click();
   await confirmAndStartBattle(page);
   await waitForWaitInput(page);
 

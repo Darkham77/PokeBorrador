@@ -1,4 +1,5 @@
 import type { BattleContext } from '@/types/battle/battleContext'
+import type { BattleSide } from '@/types/battle/battle'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { ShowdownTeamResolver } from '../showdownTeamResolver.ts'
 
@@ -6,7 +7,7 @@ export async function processNonForcedSwitchWorkerTurn(
   ctx: BattleContext,
   newPoke: { uid: string },
   oldPoke: { uid: string } | null,
-  side: 'player' | 'enemy' = 'player'
+  side: BattleSide = 'player'
 ) {
   const { activeBattle, fsm, BATTLE_STATES, BATTLE_SUBSTATES, persistBattle, animations } = ctx
   console.debug('[switchAction] executeSwitch non-forced branch: importing dependencies...')
@@ -54,10 +55,12 @@ export async function processNonForcedSwitchWorkerTurn(
     const certifiedP1Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p1')
     const certifiedP2Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2')
     if (side === 'player' && !certifiedP1Choice.startsWith('switch ')) {
-      throw new Error(`[switchWorkerTurn] Certified player switch is missing. context=${JSON.stringify({ side, p1Choice: certifiedP1Choice, p2Choice: certifiedP2Choice })}`)
+      console.debug(`[switchWorkerTurn] Certified player choice is not a switch (${certifiedP1Choice}). Replacement was already processed in Showdown worker.`);
+      return;
     }
     if (side === 'enemy' && !certifiedP2Choice.startsWith('switch ')) {
-      throw new Error(`[switchWorkerTurn] Certified enemy switch is missing. context=${JSON.stringify({ side, p1Choice: certifiedP1Choice, p2Choice: certifiedP2Choice })}`)
+      console.debug(`[switchWorkerTurn] Certified enemy choice is not a switch (${certifiedP2Choice}). Replacement was already processed in Showdown worker.`);
+      return;
     }
     p1Choice = certifiedP1Choice
     p2Choice = certifiedP2Choice
@@ -126,11 +129,18 @@ export async function processNonForcedSwitchWorkerTurn(
 
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
 
-  const activeCombatant = side === 'player' ? activeBattle.value?.player : activeBattle.value?.enemy
-  if (activeCombatant && activeCombatant.hp <= 0) {
+  const playerFainted = activeBattle.value?.player?.hp !== undefined && activeBattle.value.player.hp <= 0
+  const enemyFainted = activeBattle.value?.enemy?.hp !== undefined && activeBattle.value.enemy.hp <= 0
+  if (playerFainted || enemyFainted) {
     const { processFaint } = await import('../resolution.ts')
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
-    await processFaint(ctx, side)
+    if (enemyFainted) {
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
+      await processFaint(ctx, 'enemy')
+    }
+    if (playerFainted && !activeBattle.value?.over) {
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
+      await processFaint(ctx, 'player')
+    }
     return
   }
 

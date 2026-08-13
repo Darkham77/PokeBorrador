@@ -19,7 +19,7 @@ import PokemonStatsTab from '@/components/pokemon-detail/PokemonStatsTab.vue'
 import PokemonMovesTab from '@/components/pokemon-detail/PokemonMovesTab.vue'
 import PokemonStatusSection from '@/components/pokemon-detail/PokemonStatusSection.vue'
 import PokemonActionFooter from '@/components/pokemon-detail/PokemonActionFooter.vue'
-import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon'
 
 
 const DEFAULT_SPECIES_RANGE_VARIATION_FACTOR = 0.15;
@@ -131,7 +131,7 @@ const handleEvolve = () => {
   inventoryStore.activeMainTab = 'productos'
   inventoryStore.activeCategory = 'stones'
   emit('close')
-  uiStore.toggleInventory(finalContext.value as 'team' | 'box', finalIndex.value)
+  uiStore.toggleInventory(finalContext.value as PokemonStorageLocation, finalIndex.value)
 }
 
 const HEX_RGB_HEX_START_INDEX = 1

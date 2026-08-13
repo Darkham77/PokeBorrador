@@ -145,6 +145,7 @@ function getGenderClass(gender: string) {
 <template>
   <div
     ref="cardRef"
+    :data-pokemon-uid="pokemon.uid"
     :class="[cardClasses, { 'disable-click': disableCardClick }]"
     :style="{ 
       '--tier-color': tierInfo.color,
@@ -286,6 +287,7 @@ function getGenderClass(gender: string) {
       <div class="pdc-action-grid">
         <button
           v-if="actions.includes('item')"
+          :id="`pokemon-use-item-${pokemon.uid}`"
           class="footer-btn item-btn"
           @click.stop="emit('openItem', index)"
         >

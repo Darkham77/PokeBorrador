@@ -28,9 +28,9 @@ const uiStore = useUIStore();
 const isProcessing = ref(false);
 const isCooldown = ref(false);
 
-const pokemonAsset = computed(() => props.claim.asset_data.type === 'pokemon' ? (props.claim.asset_data.data as unknown as PokemonAssetData) : null); // domain-ok
-const itemAsset = computed(() => props.claim.asset_data.type === 'item' ? (props.claim.asset_data.data as unknown as ItemAssetData) : null); // domain-ok
-const moneyAsset = computed(() => props.claim.asset_data.type === 'money' ? (props.claim.asset_data.data as unknown as number) : 0); // domain-ok
+const pokemonAsset = computed(() => props.claim.asset_data.type === 'pokemon' ? (props.claim.asset_data.data as PokemonAssetData) : null);
+const itemAsset = computed(() => props.claim.asset_data.type === 'item' ? (props.claim.asset_data.data as ItemAssetData) : null);
+const moneyAsset = computed(() => props.claim.asset_data.type === 'money' ? (props.claim.asset_data.data as number) : 0);
 
 const getFriendlySourceType = (sourceType: string) => {
   switch (sourceType) {
@@ -48,7 +48,7 @@ const getFriendlySourceType = (sourceType: string) => {
 const getAssetIcon = (asset: ClaimItem['asset_data']) => {
   if (asset.type === 'money') return getAssetUrl(ASSET_TYPES.ITEM, 'nugget');
   if (asset.type === 'item') {
-    const itemData = asset.data as unknown as ItemAssetData; // domain-ok
+    const itemData = asset.data as ItemAssetData;
     const dbItem = SHOP_ITEMS.find(i => i.id === itemData.name || i.name === itemData.name);
     const slug = dbItem?.sprite || dbItem?.id || itemData.name;
     return getAssetUrl(ASSET_TYPES.ITEM, slug);

@@ -9,8 +9,10 @@ import { syncTeamHP } from './battleStateSync.ts'
 import { sleep } from '@/logic/utils/timeUtils'
 import { gameBus } from '@/logic/events/gameBus'
 
+import type { BattleSide } from '@/types/battle/battle'
+
 interface EnemyFaintResolutionActions {
-  processFaint: (ctx: BattleContext, side: 'player' | 'enemy') => Promise<void>
+  processFaint: (ctx: BattleContext, side: BattleSide) => Promise<void>
   terminateBattle: (ctx: BattleContext, winParam: boolean, fled?: boolean) => Promise<void>
 }
 
@@ -20,6 +22,8 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
 
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
+  const isCurrentActiveBattle = () => ctx.activeBattle.value === active && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE
+  if (!isCurrentActiveBattle()) return
   const isTr = active.isTrainer || active.isGym || active.isPvP
   const enemyName = isTr ? pokemon.name : `¡${pokemon.name} salvaje`
   ctx.addLog(`${enemyName} fue derrotado!`, 'log-enemy', pokemon)
@@ -36,6 +40,7 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
     } else {
       await sleep(FAINT_ANIMATION_FALLBACK_DELAY_MS)
     }
+    if (!isCurrentActiveBattle()) return
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ENEMY_FAINT)
   } else {
     // isTrainer / isNpc: Recall animation — trainer calls back their fainted pokemon
@@ -46,6 +51,7 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
       gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
       await sleep(WITHDRAW_ANIMATION_FALLBACK_DELAY_MS)
     }
+    if (!isCurrentActiveBattle()) return
   }
 
   // CLEANUP_MEMORY
@@ -57,6 +63,7 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
     if (isTr && ctx.animations?.playBallFadeOut) {
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FADEOUT_BALL)
       await ctx.animations.playBallFadeOut('enemy')
+      if (!isCurrentActiveBattle()) return
     }
     active.enemy = null
     if (!isTr || !active.enemyTeam || !active.enemyTeam.some(p => p.hp > 0)) {
@@ -81,23 +88,37 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
         // must close the visual battle without inventing a choice.
         certifiedEnemySwitchChoice = null
       } else {
-        const { p1Choice: rawP1Choice, p2Choice: rawChoice } = pendingEntry
-      if (rawP1Choice !== '') {
-        throw new Error(`[battleFaintSequence] Certified enemy replacement must be P2-only. context=${JSON.stringify({ p1Choice: rawP1Choice, p2Choice: rawChoice })}`)
-      }
-      certifiedEnemySwitchChoice = rawChoice
-      if (rawChoice.startsWith('switch ')) {
-        const slotIdx = parseInt(rawChoice.replace('switch ', '').trim(), 10) - 1
-        const reqPokemon = (active.enemyRequest as { side?: { pokemon?: Array<{ ident?: string }> } })?.side?.pokemon
-        const rawIdent = reqPokemon?.[slotIdx]?.ident || ''
-        const candidateUid = rawIdent.split(': ')[1] || ''
-        if (candidateUid) {
-          nextEnemy = active.enemyTeam.find((p: Pokemon) => p.uid && isMatchingUid(p.uid, candidateUid)) || null
+        const history = Reflect.get(debugObj, 'history') as Array<{ p1Choice?: string; p2Choice?: string }> | undefined
+        const historyIndex = Reflect.get(debugObj, 'replayHistoryIdx') as number | undefined
+        
+        let targetChoice = pendingEntry.p2Choice || ''
+        if (!targetChoice.startsWith('switch ') && Array.isArray(history) && typeof historyIndex === 'number') {
+          for (let i = historyIndex; i < history.length; i++) {
+            const candidate = history[i]?.p2Choice
+            if (candidate && candidate.startsWith('switch ')) {
+              targetChoice = candidate
+              break
+            }
+          }
+        }
+
+        certifiedEnemySwitchChoice = targetChoice
+        if (targetChoice.startsWith('switch ')) {
+          const slotIdx = parseInt(targetChoice.replace('switch ', '').trim(), 10) - 1
+          const reqPokemon = (active.enemyRequest as { side?: { pokemon?: Array<{ ident?: string }> } })?.side?.pokemon
+          const rawIdent = reqPokemon?.[slotIdx]?.ident || ''
+          const candidateUid = rawIdent.split(': ')[1] || ''
+          if (candidateUid) {
+            nextEnemy = active.enemyTeam.find((p: Pokemon) => p.uid && isMatchingUid(p.uid, candidateUid)) || null
+          }
+          if (!nextEnemy) {
+            nextEnemy = active.enemyTeam.find((p: Pokemon) => !p.fainted && p.hp > 0) || null
+          }
         }
       }
-      }
     }
-    if (!nextEnemy && typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode && window.__VITE_DEBUG__.certifiedReplayWorkerEnded !== true) {
+    const hasLiveEnemy = active.enemyTeam.some((p: Pokemon) => !p.fainted && p.hp > 0)
+    if (!nextEnemy && hasLiveEnemy && typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode && window.__VITE_DEBUG__.certifiedReplayWorkerEnded !== true) {
       throw new Error(`[battleFaintSequence] Certified enemy replacement does not resolve to a live Pokémon. context=${JSON.stringify({ choice: certifiedEnemySwitchChoice })}`)
     }
     if (!nextEnemy && !(typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode)) {
@@ -125,6 +146,7 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.STABILIZE_STAGE)
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EMPTY_WAIT)
     await sleep(200) // organic sleep
+    if (!isCurrentActiveBattle()) return
     
     const s = ctx.enemyStages.value
     ctx.enemyStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, 
@@ -148,6 +170,7 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
       active.switchingToEnemy = nextEnemy
       const p2Choice = certifiedEnemySwitchChoice ?? `switch ${ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)}`
       const result = await executeTurnInWorker('', p2Choice, true, false)
+      if (!isCurrentActiveBattle()) return
       if (result) {
         active.playerRequest = result.p1Request
         active.enemyRequest = result.p2Request
@@ -179,6 +202,7 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
       gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
     }
 
+    if (!isCurrentActiveBattle()) return
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     return
   }

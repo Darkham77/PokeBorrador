@@ -1,7 +1,14 @@
+<script setup lang="ts">
 const MILESTONE_CARD_ENTER_X_PX = 4
 const MILESTONE_SPRITE_ENTER_Y_PX = -4
 const MILESTONE_SPRITE_ENTER_SCALE = 1.2
 const MILESTONE_PILL_ENTER_Y_PX = -1
+const MILESTONE_LIST_ENTER_X_PX = 4
+const MILESTONE_LIST_INITIAL_SCALE = 0.95
+const MILESTONE_LIST_DURATION_SEC = 0.4
+const MILESTONE_LIST_STAGGER_SEC = 0.05
+const MILESTONE_HOVER_DURATION_SEC = 0.2
+const MILESTONE_SPRITE_DURATION_SEC = 0.3
 import { ref, onMounted, nextTick } from 'vue'
 import { usePvPStore } from '@/stores/pvp'
 import { RANKED_REWARD_MILESTONES } from '@/data/system/rankedData'

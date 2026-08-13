@@ -22,6 +22,16 @@ function createLocalPoke(name: string, species: string) {
 }
 
 describe('ShowdownBridge Unhandled Logs Regression Tests', () => {
+  it('keeps every provided enemy combatant in the reactive mock battle state', () => {
+    const p1 = createLocalPoke('P-Poke1', 'Mew');
+    const p2 = createLocalPoke('E-Poke1', 'Blissey');
+    const enemyBench = createLocalPoke('E-Poke2', 'Gengar');
+
+    const mockStore = createMockBattleContext(p1, p2, [p1], [p2, enemyBench]);
+
+    expect(mockStore.activeBattle.value?.enemyTeam).toEqual([p2, enemyBench]);
+  });
+
   it('debería manejar el evento de fin de combate |win| sin reportar logs no controlados', async () => {
     const p1 = createLocalPoke('P-Poke1', 'Mew');
     const p2 = createLocalPoke('E-Poke1', 'Blissey');

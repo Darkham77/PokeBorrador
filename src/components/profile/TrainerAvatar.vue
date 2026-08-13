@@ -9,19 +9,19 @@ const CONTAINER_BORDER_WIDTH_PX = 2
 const INTERSECTION_OBSERVER_THRESHOLD_PCT = 0.05
 const AVATAR_BOX_SHADOW_DIVISOR = 4
 const AVATAR_FONT_SIZE_DIVISOR = 2
-const FACE_WRAPPER_Z_INDEX = 2
-const BORDER_WHITE_OPACITY_LOW = 0.25
-const SHADOW_WHITE_OPACITY_SUBTLE = 0.08
-const SQUARE_FRAME_BORDER_RADIUS_PX = 6
-const GHOST_FADE_INITIAL_OPACITY = 1
+const BORDER_WHITE_OPACITY_LOW = 0.2
+const HEX_ALPHA_OPAQUE_SUFFIX = 'ff'
+const SHADOW_WHITE_OPACITY_SUBTLE = 0.25
 const BORDER_RADIUS_CIRCLE_PCT = '50%'
+const SQUARE_FRAME_BORDER_RADIUS_PX = 6
 const REVERSE_ROTATION_DEG = -360
-const HEX_ALPHA_OPAQUE_SUFFIX = '44';
-const HEX_PARSING_RADIX = 16;
+const GHOST_FADE_INITIAL_OPACITY = 1
+const HEX_PARSING_RADIX = 16
 import { computed, type CSSProperties, ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { PLAYER_CLASSES } from '@/data/player/playerClasses';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import gsap from 'gsap';
+import { Z_LAYERS } from '@/logic/constants/visuals';
 import { DEFAULT_AVATAR_SIZE_PX, AVATAR_CLASS_SPIN_DURATIONS_SEC, AVATAR_TYPE_SPIN_DURATIONS_SEC, AVATAR_SHADOW_DURATIONS_SEC, FULL_ROTATION_DEG } from '@/logic/constants/animations';
 
 interface Props {
@@ -175,7 +175,7 @@ const faceStyles = computed((): CSSProperties => {
     justifyContent: 'center',
     boxSizing: 'border-box',
     borderRadius: rad,
-    zIndex: FACE_WRAPPER_Z_INDEX,
+    zIndex: Z_LAYERS.BASE + 2,
     fontSize: `${sizePx / AVATAR_FONT_SIZE_DIVISOR}px`
   };
 
@@ -257,7 +257,7 @@ const SPIN_CONFIGS: Record<string, SpinConfig> = {
   admin: { duration: AVATAR_CLASS_SPIN_DURATIONS_SEC.admin! }
 };
 
-const TYPE_SPIN_DURATIONS: Record<string, number> = AVATAR_TYPE_SPIN_DURATIONS_SEC;
+
 
 interface ShadowConfig {
   from: string;
@@ -355,7 +355,7 @@ const SHADOW_CONFIGS: Record<string, ShadowConfig> = {
   }
 };
 
-const TYPE_SHADOW_DURATIONS: Record<string, number> = AVATAR_SHADOW_DURATIONS_SEC;
+
 
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
@@ -417,8 +417,8 @@ function initAnimations() {
 
     if (cleanStyle.startsWith('type-')) {
       const typeName = cleanStyle.replace('type-', '');
-      if (TYPE_SPIN_DURATIONS[typeName] !== undefined) {
-        spinDuration = TYPE_SPIN_DURATIONS[typeName]!;
+      if (AVATAR_TYPE_SPIN_DURATIONS_SEC[typeName] !== undefined) {
+        spinDuration = AVATAR_TYPE_SPIN_DURATIONS_SEC[typeName]!;
       }
     }
 
@@ -439,11 +439,11 @@ function initAnimations() {
   } else if (cleanStyle.startsWith('type-')) {
     const typeName = cleanStyle.replace('type-', '');
     const colors = ELEMENT_COLORS[typeName];
-    if (colors && TYPE_SHADOW_DURATIONS[typeName] !== undefined) {
+      if (colors && AVATAR_SHADOW_DURATIONS_SEC[typeName] !== undefined) {
       shadowAnim = {
         from: `0 0 0 3px ${colors.base}, 0 0 10px rgba(${hexToRgb(colors.base)}, 0.35), inset 0 0 5px rgba(${hexToRgb(colors.base)}, 0.15)`,
         to: `0 0 0 3px ${colors.light}, 0 0 22px rgba(${hexToRgb(colors.base)}, 0.7), inset 0 0 10px rgba(${hexToRgb(colors.base)}, 0.3)`,
-        duration: TYPE_SHADOW_DURATIONS[typeName]!
+        duration: AVATAR_SHADOW_DURATIONS_SEC[typeName]!
       };
     }
   }

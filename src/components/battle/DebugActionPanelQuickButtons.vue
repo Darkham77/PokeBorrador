@@ -54,24 +54,28 @@ const drainPP = () => {
   <div>
     <div class="debug-row">
       <button
+        id="battle-debug-kill-enemy-btn"
         class="debug-btn kill-btn"
         @click.stop="defeatEnemy"
       >
         KILL ENEMY
       </button>
       <button
+        id="battle-debug-kill-player-btn"
         class="debug-btn kill-btn"
         @click.stop="defeatPlayer"
       >
         KILL ME
       </button>
       <button
+        id="battle-debug-heal-player-btn"
         class="debug-btn heal-btn"
         @click.stop="healPlayer"
       >
         HEAL ME
       </button>
       <button
+        id="battle-debug-heal-enemy-btn"
         class="debug-btn heal-btn"
         @click.stop="healEnemy"
       >

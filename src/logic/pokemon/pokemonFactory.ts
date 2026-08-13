@@ -45,24 +45,39 @@ const WILD_HELD_ITEMS: Record<string, { common?: string; rare?: string }> = {
   dragonite: { rare: 'dragonscale' }
 };
 
-const GENDERLESS = ['articuno', 'ditto', 'electrode', 'magnemite', 'magneton', 'mew', 'mewtwo', 'moltres', 'porygon', 'starmie', 'staryu', 'voltorb', 'zapdos'] as const satisfies readonly PokemonSpeciesId[];
-const MALE_ONLY_SPECIES = ['nidoranm'] as const satisfies readonly PokemonSpeciesId[];
-const FEMALE_ONLY_SPECIES = ['nidoranf'] as const satisfies readonly PokemonSpeciesId[];
+const GENDERLESS: readonly PokemonSpeciesId[] = ['articuno', 'ditto', 'electrode', 'magnemite', 'magneton', 'mew', 'mewtwo', 'moltres', 'porygon', 'starmie', 'staryu', 'voltorb', 'zapdos'];
+const MALE_ONLY_SPECIES: readonly PokemonSpeciesId[] = ['nidoranm'];
+const FEMALE_ONLY_SPECIES: readonly PokemonSpeciesId[] = ['nidoranf'];
 
 function isGenderlessSpeciesId(id: PokemonSpeciesId): boolean {
-  return (GENDERLESS as readonly PokemonSpeciesId[]).includes(id);
+  return GENDERLESS.includes(id);
 }
 
 export function assignGender(id: PokemonSpeciesId): PokemonGender {
+  const normId = toID(id);
+  const spec = Dex.species.get(normId);
+  if (spec && spec.exists) {
+    if (spec.gender === 'N' || isGenderlessSpeciesId(id)) return null;
+    if (spec.gender === 'M' || MALE_ONLY_SPECIES.includes(id)) return 'm';
+    if (spec.gender === 'F' || FEMALE_ONLY_SPECIES.includes(id)) return 'f';
+    if (spec.genderRatio) {
+      return Math.random() < spec.genderRatio.M ? 'm' : 'f';
+    }
+  }
   if (isGenderlessSpeciesId(id)) return null;
-  if ((MALE_ONLY_SPECIES as readonly PokemonSpeciesId[]).includes(id)) return 'm';
-  if ((FEMALE_ONLY_SPECIES as readonly PokemonSpeciesId[]).includes(id)) return 'f';
+  if (MALE_ONLY_SPECIES.includes(id)) return 'm';
+  if (FEMALE_ONLY_SPECIES.includes(id)) return 'f';
   return Math.random() < 0.5 ? 'm' : 'f';
 }
 
 export function ensurePokemonGender(p: Pokemon): boolean {
   if (!p) return false;
-  if (p.gender === undefined) { p.gender = assignGender(p.id); return true; }
+  const spec = Dex.species.get(toID(p.id));
+  const isGenderless = spec?.gender === 'N' || isGenderlessSpeciesId(p.id);
+  if (p.gender === undefined || (!p.gender && !isGenderless)) {
+    p.gender = assignGender(p.id);
+    return true;
+  }
   return false;
 }
 
@@ -257,7 +272,10 @@ export function validatePokemon(p: Pokemon, bypassWhitelist = false): void {
   }
 
   // 3. Validar consistencia básica
-  if (!p.gender && !isGenderlessSpeciesId(p.id)) {
+  ensurePokemonGender(p);
+  const spec = Dex.species.get(toID(p.id));
+  const isGenderless = spec?.gender === 'N' || isGenderlessSpeciesId(p.id);
+  if (!p.gender && !isGenderless) {
     throw new Error(`[pokemonFactory] Pokémon ${p.id} (UID: ${p.uid}) no tiene género definido.`);
   }
   if (p.hp === undefined || isNaN(p.hp)) {
@@ -381,7 +399,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
   const eventStore = useEventStore();
   let isShiny = options.isShiny;
   if (isShiny === undefined) {
-    const isDebugShiny = typeof window !== 'undefined' && window.__VITE_DEBUG__?.forceShiny100;
+    const isDebugShiny = typeof window !== 'undefined' && ((window.__VITE_DEBUG__ as Record<string, unknown> | undefined)?.forceShiny100 as boolean | undefined); // open-record
     
     if (isDebugShiny) {
       isShiny = true;

@@ -8,6 +8,7 @@
  */
 
 import { BUSH_FAMILIES, type BushFamily } from './bushCatalog.ts';
+export type BushLayerDepth = 'front' | 'back';
 import { FIRE_RED_MAPS } from '../../data/world/maps.ts';
 import { mulberry32 } from '../utils/math.ts';
 import {
@@ -151,7 +152,7 @@ export const BACK_LAYER_SEED_OFFSET = 2000;
 export function resolveBushesForLayer(
   baseBushes: Array<{ id: number; cls: string; tx: number; ty: number; ad: string; ay: string }>,
   sessionSeed: number,
-  layer: 'front' | 'back',
+  layer: BushLayerDepth,
   mapId: string
 ): ResolvedBushConfig[] {
   const biomeConfig = getBiomeConfigForMap(mapId);
@@ -223,7 +224,7 @@ export function resolveBushesForLayer(
 
 export function getActiveBushesForMap(
   locationId: string,
-  layer: 'front' | 'back',
+  layer: BushLayerDepth,
   sessionSeed: number,
   baseBushes: Array<{ id: number; cls: string; scale?: number; tx?: number; ty?: number; ad?: string; ay?: string }>
 ): ResolvedBushConfig[] {

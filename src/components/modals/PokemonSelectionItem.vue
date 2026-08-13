@@ -13,9 +13,8 @@ import { useBreedingStore } from '@/stores/breeding'
 import { COMPAT_TEXT } from '@/logic/breeding/breedingData'
 import { checkCompatibility } from '@/logic/breeding/breedingEngine'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import type { Pokemon, PokemonSelectionSource } from '@/types/pokemon/pokemon'
 import { toPokemonType, type PokemonType } from '@/data/battle/types'
-
-import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils'
 
 const { getHpColor } = useBattleVisuals()
@@ -25,7 +24,7 @@ const breedingStore = useBreedingStore()
 interface Props {
   item: {
     pokemon: Pokemon
-    _source: 'team' | 'box' | 'market'
+    _source: PokemonSelectionSource
     index: number
   }
   isSelected?: boolean
@@ -45,7 +44,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'select', item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market', index: number }): void
+  (e: 'select', item: { pokemon: Pokemon, _source: PokemonSelectionSource, index: number }): void
 }>()
 
 const tierData = computed(() => getPokemonTier(props.item.pokemon))

@@ -1,5 +1,4 @@
-// src/logic/battle/helpers/showdownTeamMapper.ts
-import type { Battle } from '@pkmn/sim';
+import type { Battle, SideID } from '@pkmn/sim';
 import { findPokemonByShowdownName } from '../showdownUidMapper.ts';
 import { statsMap } from '../showdownAdapter.ts';
 
@@ -54,7 +53,7 @@ export class ShowdownTeamMapper {
    */
   static injectUidsIntoRequest(
     battle: Battle | null,
-    player: 'p1' | 'p2',
+    player: SideID,
     req: ShowdownRequest | null | undefined
   ): ShowdownRequest | null {
     if (!req) return null;

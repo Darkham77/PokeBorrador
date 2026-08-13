@@ -90,6 +90,7 @@ function onBtnDown(e: Event) {
         title="Haz clic para añadir 10 unidades de este objeto a tu inventario."
       >
         <div
+          :id="`debug-item-${item.id}`"
           class="debug-item-card"
           @click.stop="addItem(item)"
         >

@@ -3,8 +3,6 @@ import type { BattleStages } from '../../../types/battle/battle.ts'
 import type { BattleContext } from '../../../types/battle/battleContext.ts'
 import type { CombatAI } from './combatAI.ts'
 import { ShowdownTeamResolver } from '../showdownTeamResolver.ts'
-import { ShowdownBattleRunner } from '../helpers/showdownBattleRunner.ts'
-import { isRevivingForceSwitchRequest } from '../helpers/requestHelper.ts'
 
 
 export class ScriptedAI implements CombatAI {
@@ -72,93 +70,4 @@ export class ScriptedAI implements CombatAI {
     console.debug('[DEBUG-AI] [E2E-MOCK] ScriptedAI evaluateAndUseItem returning false (items disabled during E2E simulation)')
     return false
   }
-}
-
-export async function executeScriptedPlayerAction(_ctx: BattleContext): Promise<boolean> {
-  if (typeof window === 'undefined' || !window.__VITE_DEBUG__?.isScriptedReplayMode) return false
-
-  const debugObj = window.__VITE_DEBUG__
-
-  const { useBattleStore } = await import('../../../stores/battle/battle')
-  const battleStore = useBattleStore()
-  const active = battleStore.state
-  if (!active) return false
-
-  const p1HistoryChoice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p1')
-  const p2HistoryChoice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2')
-  if (p1HistoryChoice === '' && p2HistoryChoice !== '') {
-
-    const { executeTurnInWorker, syncTeamsFromLastWorkerState } = await import('../showdownWorkerClient.ts')
-    const { filterShowdownLogs, parseShowdownLogLine } = await import('../showdownBridge.ts')
-    const result = await executeTurnInWorker('', p2HistoryChoice, true, false)
-    active.playerRequest = result.p1Request
-    active.enemyRequest = result.p2Request
-    const logs = filterShowdownLogs(result.logs)
-    for (const log of logs) await parseShowdownLogLine(_ctx, log, logs)
-    await syncTeamsFromLastWorkerState()
-    ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(debugObj)
-    console.debug(`[E2E-SCRIPTED-AI] Executed certified P2-only history step "${p2HistoryChoice}".`)
-    return true
-  }
-
-  const choiceStr = p1HistoryChoice
-
-  if (choiceStr === 'pass') {
-    console.debug(`[E2E-SCRIPTED-AI] Choice is 'pass' (noop). Replay completed or player requires no action.`);
-    return true;
-  }
-
-  const clean = choiceStr.trim().toLowerCase()
-
-  console.debug(`[E2E-SCRIPTED-AI] Resolved certified player history choice: "${choiceStr}"`)
-
-  if (clean === 'struggle') {
-    await battleStore.executeStruggle()
-    return true
-  }
-
-  if (clean.startsWith('move ')) {
-    const splitPart = clean.split(' ')[1] || '1'
-    const moveIdx = parseInt(splitPart, 10) - 1
-    await battleStore.executeMove(moveIdx)
-    return true
-  }
-
-  if (clean.startsWith('switch ')) {
-    const splitPart = clean.split(' ')[1] || '2'
-    const slotNum = parseInt(splitPart, 10)
-    const { useGameStore } = await import('../../../stores/game')
-    const gameStore = useGameStore()
-
-    const targetPoke = ShowdownTeamResolver.getPokemonByShowdownSlot(
-      gameStore.state.team,
-      active.playerRequest,
-      slotNum
-    )
-    if (!targetPoke) {
-      throw new Error(`[E2E-SCRIPTED-AI] Pokémon target for slot ${slotNum} not resolved.`)
-    }
-
-    const teamIndex = gameStore.state.team.findIndex(p => p && p.uid === targetPoke.uid)
-    if (teamIndex === -1) {
-      throw new Error(`[E2E-SCRIPTED-AI] Pokémon ${targetPoke.name} not found in player team.`)
-    }
-
-    const req = active.playerRequest
-    const isRevivingTarget = isRevivingForceSwitchRequest(req as Parameters<typeof isRevivingForceSwitchRequest>[0])
-    const isForced = !!(
-      !isRevivingTarget && (
-        (req && req.forceSwitch && ((req.forceSwitch as unknown) === true || (Array.isArray(req.forceSwitch) && req.forceSwitch.some(x => !!x)))) ||
-        battleStore.currentSubState === 'SWITCH_MENU' ||
-        battleStore.currentSubState === 'PLAYER_FAINT_SEQ' ||
-        (active.player && active.player.hp <= 0)
-      )
-    )
-
-    console.debug(`[E2E-SCRIPTED-AI] Switching to ${targetPoke.name} (teamIndex: ${teamIndex}, isForced: ${isForced})`)
-    await battleStore.executeSwitch(teamIndex, isForced)
-    return true
-  }
-
-  throw new Error(`[E2E-SCRIPTED-AI] Unknown choice format: "${choiceStr}"`)
 }

@@ -168,9 +168,34 @@ describe('BattleCheatManager - Unit Tests', () => {
     if (!p1Mon) throw new Error('Pokemon not found');
     p1Mon.hp = 1;
 
-    manager.applyPostTurnCheats(battle, 2);
+    manager.applyPostTurnCheats(battle, { turnCount: 2, battleTurn: 2 });
 
     assert.strictEqual(p1Mon.hp, 1);
     assert.strictEqual(manager.getAppliedCheatsCount(), 0);
+  });
+
+  it('supports all 4 seats (p1, p2, p3, p4) generically for heals and PP refills', () => {
+    const manager = new BattleCheatManager([
+      { turnCount: 1, p1Heal: true, p2Heal: true, p3Heal: true, p4Heal: true, p1PpRefill: true, p2PpRefill: true, p3PpRefill: true, p4PpRefill: true }
+    ]);
+
+    const healMap = (manager as any).postHealMap as Map<number, Record<string, boolean>>;
+    const ppMap = (manager as any).ppMap as Map<number, Record<string, boolean>>;
+
+    const healEntry = healMap.get(1);
+    const ppEntry = ppMap.get(1);
+
+    assert.ok(healEntry, 'Heal map entry for turn 1 must exist');
+    assert.ok(ppEntry, 'PP map entry for turn 1 must exist');
+
+    assert.strictEqual(healEntry.p1, true);
+    assert.strictEqual(healEntry.p2, true);
+    assert.strictEqual(healEntry.p3, true);
+    assert.strictEqual(healEntry.p4, true);
+
+    assert.strictEqual(ppEntry.p1, true);
+    assert.strictEqual(ppEntry.p2, true);
+    assert.strictEqual(ppEntry.p3, true);
+    assert.strictEqual(ppEntry.p4, true);
   });
 });

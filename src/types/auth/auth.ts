@@ -1,3 +1,5 @@
+import type { GenderId } from '@/types/system/game';
+
 export type UserRole = 'user' | 'admin';
 
 const USER_ROLES = ['user', 'admin'] as const satisfies readonly UserRole[];
@@ -14,11 +16,12 @@ export function requireUserRole(value: string): UserRole {
 export interface AuthUser {
   id: string; // domain-ok
   email?: string; // domain-ok
-  user_metadata: {
-    username: string; // domain-ok
+  user_metadata?: {
+    username?: string; // domain-ok
     full_name?: string; // domain-ok
     role?: UserRole;
-    gender?: 'h' | 'm';
+    gender?: GenderId;
+    [key: string]: unknown; // open-record
   };
   last_save_id?: string; // domain-ok
   db_version?: number;

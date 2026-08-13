@@ -3,6 +3,7 @@ import '../../helpers/battleMockSetup'
 import { handleBattleFlowCompletion } from '@/logic/battle/searchLoop'
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine'
 import type { BattleContext } from '@/types/battle/battleContext'
+import { BATTLE_UI_EVENTS, type BattleFlowCompletedDetail } from '@/types/battle/battleEvents'
 
 describe('searchLoop.js - handleBattleFlowCompletion (Flujo Directo)', () => {
   let mockCtx: BattleContext
@@ -52,5 +53,18 @@ describe('searchLoop.js - handleBattleFlowCompletion (Flujo Directo)', () => {
 
     expect(mockCtx.activeBattle.value!.fled).toBe(false)
     expect(mockCtx.activeBattle.value!.playerFled).toBe(false)
+  })
+
+  it('emits battle-flow completion after the real map cleanup', async () => {
+    const received: BattleFlowCompletedDetail[] = []
+    const onCompleted = (event: Event) => {
+      received.push((event as CustomEvent<BattleFlowCompletedDetail>).detail)
+    }
+    window.addEventListener(BATTLE_UI_EVENTS.FLOW_COMPLETED, onCompleted, { once: true })
+
+    await handleBattleFlowCompletion(mockCtx, 'map')
+
+    expect(mockCtx.activeBattle.value).toBeNull()
+    expect(received).toEqual([{ destination: 'map' }])
   })
 })

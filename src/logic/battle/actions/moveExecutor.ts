@@ -8,13 +8,14 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { Dex } from '@pkmn/sim'
 import { ACTIVE_GENERATION } from '@/data/system/constants'
 import type { BattleContext } from '@/types/battle/battleContext'
+import type { BattleSide } from '@/types/battle/battle'
 import type { Move } from '@/types/pokemon/pokemon'
 import { checkMoveAccuracy } from './moveAccuracyHelper.ts'
 import { logger } from '@/logic/utils/logger'
 
 export async function executeMoveAction(
   store: BattleContext,
-  side: 'player' | 'enemy',
+  side: BattleSide,
   move: Move
 ) {
   const p = store.activeBattle.value?.player

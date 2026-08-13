@@ -108,6 +108,13 @@ describe('Debug System (Commands & Tools)', () => {
       expect(weatherSpy).toHaveBeenCalledWith('rain')
     })
 
+    it('clears forced weather through the typed debug command', () => {
+      const map = useMapStore()
+      const weatherSpy = vi.spyOn(map, 'setGlobalWeather')
+      callDebug('setWeather', null)
+      expect(weatherSpy).toHaveBeenCalledWith(null)
+    })
+
     it('handles item addition', () => {
       const game = useGameStore()
       game.state.inventory = {}

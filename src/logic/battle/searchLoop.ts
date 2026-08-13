@@ -7,6 +7,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import { nextTick } from 'vue'
 import { requireMapRouteId } from '@/data/world/map-assets'
 import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
+import { emitBattleFlowCompleted } from '@/logic/events/battleUiEvents'
 
 /**
  * Handles the completion of a battle flow (either going to map or search loop).
@@ -21,6 +22,17 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
   }
 
   const isGym = ctx.activeBattle.value?.isGym ?? false
+
+  if (option === 'map') {
+    ctx.isProcessing.value = true
+    await fsm.transition(BATTLE_STATES.EXIT_BATTLE)
+    ctx.activeBattle.value = null
+    ctx.isProcessing.value = false
+    ctx.clearLogs()
+    uiStore.activeTab = isGym ? 'gyms' : 'map'
+    emitBattleFlowCompleted('map')
+    return
+  }
 
   if (option === 'search' && !ctx.activeBattle.value) {
     const defaultLoc = requireMapRouteId(ctx.gs.state.map.currentMap)
@@ -202,6 +214,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
 
   if (option === 'map') {
     uiStore.activeTab = isGym ? 'gyms' : 'map'
+    emitBattleFlowCompleted('map')
   }
 }
 
@@ -239,26 +252,38 @@ export async function startEncounter(ctx: BattleContext) {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
 
-  if (fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE || fsm.currentState.value === BATTLE_STATES.REWARDS_PHASE) {
-    await fsm.transition(BATTLE_STATES.EXIT_BATTLE)
+  const isSearchConfirmation = fsm.currentState.value === BATTLE_STATES.SEARCH_PHASE &&
+    fsm.currentSubState.value === BATTLE_SUBSTATES.COMBAT_OR_FLEE
+  const isMinigameCompletion = fsm.currentState.value === BATTLE_STATES.INITIALIZING &&
+    fsm.currentSubState.value === BATTLE_SUBSTATES.MINIGAME_CHECK
+
+  if (!isSearchConfirmation && !isMinigameCompletion) {
+    throw new Error(`[Battle] startEncounter requires SEARCH_PHASE/COMBAT_OR_FLEE or INITIALIZING/MINIGAME_CHECK; received ${fsm.currentState.value}/${fsm.currentSubState.value ?? 'none'}.`)
   }
 
-  const isMinigame = ctx.activeBattle.value?.isFishing || ctx.activeBattle.value?.isArchaeology
-  const enemyPoke = ctx.activeBattle.value?.enemy || ctx.activeBattle.value?._initialEnemy
-
-  if (isMinigame) {
-    if (ctx.activeBattle.value && enemyPoke) {
-      ctx.activeBattle.value.enemy = enemyPoke
-      ctx.activeBattle.value._initialEnemy = enemyPoke
-    }
-    await fsm.transition(BATTLE_STATES.INITIALIZING)
-    await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MINIGAME_CHECK)
+  if (ctx.isProcessing.value) {
     return
   }
 
-  ctx.isIntroAnimating.value = true
-  
-  await ctx.initBattle();
-  
-  ctx.isIntroAnimating.value = false
+  ctx.isProcessing.value = true
+  try {
+    const isMinigame = ctx.activeBattle.value?.isFishing || ctx.activeBattle.value?.isArchaeology
+    const enemyPoke = ctx.activeBattle.value?.enemy || ctx.activeBattle.value?._initialEnemy
+
+    if (isMinigame) {
+      if (ctx.activeBattle.value && enemyPoke) {
+        ctx.activeBattle.value.enemy = enemyPoke
+        ctx.activeBattle.value._initialEnemy = enemyPoke
+      }
+      await fsm.transition(BATTLE_STATES.INITIALIZING)
+      await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MINIGAME_CHECK)
+      return
+    }
+
+    ctx.isIntroAnimating.value = true
+    await ctx.initBattle()
+    ctx.isIntroAnimating.value = false
+  } finally {
+    ctx.isProcessing.value = false
+  }
 }

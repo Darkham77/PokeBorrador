@@ -10,7 +10,7 @@ import { parseShowdownSeedForBattle } from './seedInitializer.ts';
 export function createShowdownBattle(
   format: string,
   seed: string | number[] | null | undefined,
-  strictChoices = true
+  strictChoices = false
 ): Battle {
   const genMatch = format.match(/gen(\d+)/);
   const genNum = genMatch ? parseInt(genMatch[1] || '5', 10) : undefined;

@@ -2,7 +2,7 @@
 
 // fallow-ignore-file unused-class-member
 
-import { createClient, type SupabaseClient, type RealtimeChannel, type User, type Session } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient, type RealtimeChannel, type REALTIME_SUBSCRIBE_STATES, type User, type Session } from '@supabase/supabase-js';
 import { ProxyQuery } from './proxyQuery.ts';
 import { gsap } from 'gsap';
 import { initSQLite, queryLocal, type LoadingStore } from './sqliteEngine.ts';
@@ -292,63 +292,46 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
   }
 
   /**
-   * Emulates Supabase Realtime Channels.
+   * Emulates Supabase Realtime Channels using BroadcastChannel in offline mode.
    */
   channel(name: string): RealtimeChannel {
     if (this.mode === 'offline') {
-      // Usar BroadcastChannel nativo del navegador para emular Supabase Realtime entre pestañas locales
       const bc = new BroadcastChannel(name);
-      type RealtimeCallback = (payload: { type: string; event: string; payload: Record<string, unknown>; [key: string]: unknown }) => void;
-      let broadcastCallback: RealtimeCallback | null = null;
-
-      bc.onmessage = (event) => {
-        const payload = event.data as { type?: string; event?: string; payload?: Record<string, unknown> } | null;
-        if (broadcastCallback && payload?.type === 'broadcast') {
-          broadcastCallback(payload as Parameters<RealtimeCallback>[0]);
-        }
-      };
-
-      const mockChannel = {
-        on: (
-          type: 'broadcast' | 'presence' | 'postgres_changes',
-          _filter: Record<string, unknown> | string,
-          callback: RealtimeCallback
-        ) => {
-          logger.info('DBRouter', `Mock Channel '${name}' subscribed to: ${type}`);
-          if (type === 'broadcast') {
-            broadcastCallback = callback;
-          }
-          return mockChannel; 
+      const mock: Partial<RealtimeChannel> = {
+        on(_type: unknown, _filter: unknown, cb: unknown) {
+          bc.onmessage = (ev) => {
+            if (ev.data && typeof ev.data === 'object') {
+              (cb as (payload: unknown) => void)(ev.data);
+            }
+          };
+          return mock as RealtimeChannel;
         },
-        subscribe: (cb?: (status: string) => void) => {
-          if (cb) gsap.delayedCall(0.01, () => cb('SUBSCRIBED'));
-          return mockChannel;
+        subscribe(cb?: (status: REALTIME_SUBSCRIBE_STATES, err?: Error) => void) {
+          if (cb) gsap.delayedCall(0.01, () => cb('SUBSCRIBED' as REALTIME_SUBSCRIBE_STATES));
+          return mock as RealtimeChannel;
         },
-        send: (args: unknown) => {
+        async send(args: unknown) {
           bc.postMessage(args);
-          return Promise.resolve('ok');
+          return 'ok' as const;
         },
-        unsubscribe: () => {
-          bc.close();
-        }
+        async unsubscribe() { bc.close(); return 'ok' as const; }
       };
-      return mockChannel as unknown as RealtimeChannel; // domain-ok
+      return mock as RealtimeChannel;
     }
 
     const client = this.realClient;
     if (!client) {
       logger.warn('DBRouter', `Channel '${name}' requested but online client not ready. Returning mock.`);
-      // Return a basic mock that doesn't do anything to avoid crashes
-      const basicMock = {
-        on: () => basicMock,
-        subscribe: (cb?: (status: string) => void) => {
-          if (cb) gsap.delayedCall(0.01, () => cb('SUBSCRIBED'));
-          return basicMock;
+      const noop: Partial<RealtimeChannel> = {
+        on() { return noop as RealtimeChannel; },
+        subscribe(cb?: (status: REALTIME_SUBSCRIBE_STATES, err?: Error) => void) {
+          if (cb) gsap.delayedCall(0.01, () => cb('SUBSCRIBED' as REALTIME_SUBSCRIBE_STATES));
+          return noop as RealtimeChannel;
         },
-        send: async () => 'ok' as const,
-        unsubscribe: () => {}
+        async send() { return 'ok' as const; },
+        async unsubscribe() { return 'ok' as const; }
       };
-      return basicMock as unknown as RealtimeChannel; // domain-ok
+      return noop as RealtimeChannel;
     }
 
     return client.channel(name);
@@ -458,7 +441,7 @@ export interface AppCompatibilityResponse {
 function parseAppVersion(val: unknown): string {
   if (!val) return '';
   try {
-    const parsed = (typeof val === 'string' ? JSON.parse(val) : val) as unknown;
+    const parsed: unknown = typeof val === 'string' ? JSON.parse(val) : val;
     if (typeof parsed === 'string') return parsed;
     if (parsed && typeof parsed === 'object') {
       return (parsed as Record<string, string>).app_version || ''; // open-record

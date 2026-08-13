@@ -1,6 +1,5 @@
 import { type Page } from '@playwright/test';
 import { loginE2ETestUser, waitForStoreReady, flushE2ELogs } from './e2e_helpers.ts';
-import { MAX_PER_ACTION_TIMEOUT_MS } from './simulation_config.ts';
 
 const SIMULATION_VIEWPORT_WIDTH_PX = 1600;
 const SIMULATION_VIEWPORT_HEIGHT_PX = 900;
@@ -40,8 +39,8 @@ export abstract class BaseE2ESimulation {
    */
   public async syncDevDb(request: unknown, dbBuffer: Buffer): Promise<void> {
     const playwrightRequest = request as { post: (url: string, opts: unknown) => Promise<unknown> };
-    await playwrightRequest.post(`/api/dev-export-db?db_key=${encodeURIComponent(this.sqliteKey)}`, {
-      headers: { 'Content-Type': 'application/octet-stream' },
+    await playwrightRequest.post('http://127.0.0.1:5174/api/dev-export-db', {
+      headers: { 'Content-Type': 'application/octet-stream', 'x-db-key': this.sqliteKey },
       data: dbBuffer
     });
   }
@@ -66,21 +65,12 @@ export abstract class BaseE2ESimulation {
     flushE2ELogs(this.logBuffer, testName, status, durationMs);
   }
 
-  /**
-   * Ejecuta saveGame y espera deterministamente a que el dev-export-db responda antes de continuar
-   */
+  /** Persists the local game database; cross-context tests sync it explicitly through syncDevDb. */
   public async saveGameAndAwaitExport(): Promise<void> {
-    const exportPromise = this.page.waitForResponse(
-      res => res.url().includes('/api/dev-export-db') && res.status() === 200,
-      { timeout: MAX_PER_ACTION_TIMEOUT_MS }
-    ).catch(() => null);
-
     await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../src/stores/game.ts');
       await useGameStore().saveGame();
     });
-
-    await exportPromise;
   }
 
   /**
@@ -107,6 +97,16 @@ export abstract class BaseE2ESimulation {
     await this.page.evaluate(async (name) => {
       const { useModalStore } = await import('../../src/stores/modals.ts');
       useModalStore().open(name);
+    }, modalName);
+  }
+
+  /**
+   * Cierra un modal del juego directamente utilizando el ModalStore en el cliente
+   */
+  public async closeModal(modalName: string): Promise<void> {
+    await this.page.evaluate(async (name) => {
+      const { useModalStore } = await import('../../src/stores/modals.ts');
+      useModalStore().close(name);
     }, modalName);
   }
 }

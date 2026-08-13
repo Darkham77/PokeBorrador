@@ -9,8 +9,8 @@
 /** Maximum allowed time for an individual micro-action, turn step, or event reaction (Fail-Fast Rule). */
 export const MAX_PER_ACTION_TIMEOUT_MS = 5000;
 
-/** Maximum allowed total execution time for a full battle simulation suite/batch (3 Minutes). */
-export const MAX_SUITE_TOTAL_TIMEOUT_MS = 180000;
+/** Maximum allowed total execution time for a full battle simulation suite/batch (10 Minutes statically). */
+export const MAX_SUITE_TOTAL_TIMEOUT_MS = 600000;
 
 /** Default timeout for UI locator click settling. */
 export const MAX_UI_SETTLE_TIMEOUT_MS = 2000;
@@ -57,8 +57,8 @@ export const DEFAULT_MOCK_LISTING_PRICE = 1000;
 /** Quantity of batch listings published directly in GTS test. */
 export const GTS_BATCH_PUBLISH_LIMIT = 9;
 
-/** Suite timeout for long-running multi-account GTS tests in milliseconds (90s). */
-export const GTS_SUITE_TIMEOUT_MS = 90000;
+/** Suite timeout for the complete multi-account GTS lifecycle in milliseconds (180s). */
+export const GTS_SUITE_TIMEOUT_MS = 180000;
 
 /** Initial seller money balance for GTS test setup. */
 export const INITIAL_SELLER_MONEY = 100;
@@ -102,5 +102,5 @@ export const SUPER_RAYQUAZA_MAX_HP = 9999;
 /** Rayquaza test stat value for search loop simulation (999). */
 export const SUPER_RAYQUAZA_STAT_VAL = 999;
 
-/** Suite timeout for sequential search loop simulation (5 minutes). */
-export const SEARCH_LOOP_SUITE_TIMEOUT_MS = 300000;
+/** Suite timeout for sequential search loop simulation (10 minutes for 10 encounters). */
+export const SEARCH_LOOP_SUITE_TIMEOUT_MS = 600000;

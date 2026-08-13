@@ -18,6 +18,8 @@ test('certified history keeps P2-only switches atomic before the following norma
   assert.equal(ShowdownBattleRunner.requireHistoryChoice(debug, 'p2'), 'switch 2');
   ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(debug);
   assert.equal(Reflect.get(debug, 'replayHistoryIdx'), NORMAL_HISTORY_INDEX);
+  assert.equal(Reflect.get(debug, 'p1ChoiceIdx'), P2_ONLY_HISTORY_INDEX);
+  assert.equal(Reflect.get(debug, 'p2ChoiceIdx'), NORMAL_HISTORY_INDEX);
   assert.equal(ShowdownBattleRunner.requireHistoryChoice(debug, 'p1'), 'move 3');
   assert.equal(ShowdownBattleRunner.requireHistoryChoice(debug, 'p2'), 'move 1');
 });

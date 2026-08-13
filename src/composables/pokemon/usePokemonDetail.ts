@@ -5,7 +5,7 @@ import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping'
-import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS } from '@/data/pokemon/evolutionData'
+import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS, type EvolutionTriggerType } from '@/data/pokemon/evolutionData'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getItemName } from '@/data/inventory/items'
 import type { Pokemon } from '@/types/pokemon/pokemon'
@@ -13,17 +13,18 @@ import type { MoveBaseData } from '@/types/system/database'
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 import { toPokemonType } from '@/data/battle/types'
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
+import type { MoveCategory } from '@/data/battle/moves'
 
 const MAX_BASE_STAT_VALUE = 255;
 
-function requireMoveCategory(value: string | undefined): 'physical' | 'special' | 'status' {
+function requireMoveCategory(value: string | undefined): MoveCategory {
   if (value === undefined) return 'physical'
   if (value === 'physical' || value === 'special' || value === 'status') return value
   throw new Error(`Invalid move category: ${value}`)
 }
 
 interface EvolutionEntry {
-  type: 'level' | 'stone' | 'trade';
+  type: EvolutionTriggerType;
   requirement: string;
   to: string;
   isSeen: boolean;
@@ -101,7 +102,7 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
     const caught = gameStore.state.pokedex || []
     const seen = gameStore.state.seenPokedex || []
 
-    const enrichEvo = (evo: { type: 'level' | 'stone' | 'trade', requirement: string, to: string }): EvolutionEntry => {
+    const enrichEvo = (evo: { type: EvolutionTriggerType, requirement: string, to: string }): EvolutionEntry => { // type-ok
       const toId = requirePokemonSpeciesId(evo.to)
       const isCaught = caught.includes(toId)
       const isSeen = isCaught || seen.includes(toId)

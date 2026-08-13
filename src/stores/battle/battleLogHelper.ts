@@ -1,12 +1,12 @@
 import { sleep } from '@/logic/utils/timeUtils'
-import type { BattleLog, BattleSource, BattleState } from '@/types/battle/battle'
+import type { BattleLog, BattleSource, BattleState, BattleSide } from '@/types/battle/battle'
 import { formatBattleLog } from '@/logic/battle/battleLogger'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 export function createBattleLoggerHelper(
   gs: { state: { playerClass: string | null; avatar_style?: string | null; team: Pokemon[] } },
   activeBattle: { value: unknown },
-  attackerSide: { value: 'player' | 'enemy' | null },
+  attackerSide: { value: BattleSide | null },
   battleLogs: { value: BattleLog[] },
   logQueue: { value: BattleLog[] },
   isProcessingLogs: { value: boolean },
@@ -15,7 +15,7 @@ export function createBattleLoggerHelper(
   activeMove: { value: unknown },
   initialStages: Record<string, number>
 ) {
-  const addLog = (msg: string, type = 'log-info', source: BattleSource | null = null, sideOverride: 'player' | 'enemy' | null = null) => {
+  const addLog = (msg: string, type = 'log-info', source: BattleSource | null = null, sideOverride: BattleSide | null = null) => {
     const ctx = {
       gs,
       activeBattle: activeBattle.value as BattleState | null,

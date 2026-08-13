@@ -44,8 +44,10 @@ async function loadImageBitmap(url: string): Promise<ImageBitmap> {
   return createImageBitmap(blob);
 }
 
+import type { SpriteOutlineType } from './spriteOutliner.ts';
+
 // Process sprite outlines or silhouettes
-async function processSprite(img: ImageBitmap, type: 'outline' | 'silhouette'): Promise<Blob> {
+async function processSprite(img: ImageBitmap, type: SpriteOutlineType): Promise<Blob> {
   const r = type === 'silhouette' ? 1 : 3;
   const padding = type === 'silhouette' ? 4 : r;
   
@@ -127,7 +129,7 @@ interface SpriteOutlinerMessage {
   jobId: string;
   action: 'sprite' | 'aura';
   url: string;
-  type: 'outline' | 'silhouette';
+  type: SpriteOutlineType;
   fillColor: string;
   blurRadius: number;
 }

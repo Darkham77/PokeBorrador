@@ -131,7 +131,8 @@ export function getWeatherModifiersDescription(weather: string): string {
 }
 
 import { isDisputePhase } from '@/logic/war/warEngine';
-import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine';
+import { getGuardianData } from '@/logic/war/guardianEngine';
+import { GUARDIAN_ENCOUNTER_CHANCE_PERCENT } from '@/logic/constants/gameplay';
 import { getActivePinia } from 'pinia';
 import { useGameStore } from '@/stores/game';
 import { GAME_RATIOS } from '@/data/system/constants';
@@ -215,7 +216,7 @@ export function getNpcEncounterChances(
   }
   const isGuardianForced = hasGuardian && !!debug?.forceGuardian80;
   const DEBUG_FORCED_GUARDIAN_PCT = 80.0;
-  const finalGuardianChance = isGuardianForced ? DEBUG_FORCED_GUARDIAN_PCT : (hasGuardian ? GUARDIAN_CHANCE * 100 : 0.0);
+  const finalGuardianChance = isGuardianForced ? DEBUG_FORCED_GUARDIAN_PCT : (hasGuardian ? GUARDIAN_ENCOUNTER_CHANCE_PERCENT * 100 : 0.0);
   result.push({
     name: 'Guardián (Alfa)',
     chance: finalGuardianChance,

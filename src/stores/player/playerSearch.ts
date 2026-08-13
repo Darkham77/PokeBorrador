@@ -64,7 +64,7 @@ export const usePlayerSearchStore = defineStore('playerSearch', () => {
         profiles = (profRes.data || []).filter((p: ProfileRow) => {
           if (p.id === authStore.user!.id) return false
           
-          const save = (allSavesRes.data?.find((s: GameSaveRow) => s.user_id === p.id)?.save_data as unknown as GameState) || {} // domain-ok
+          const save = (allSavesRes.data?.find((s: GameSaveRow) => s.user_id === p.id)?.save_data as Partial<GameState>) || {}
           const trainerName = (save.trainer as string) || p.username || ''
           const originalUsername = p.username || ''
           
@@ -126,7 +126,7 @@ export const usePlayerSearchStore = defineStore('playerSearch', () => {
 
       if (profiles && profiles.length > 0) {
         searchResults.value = (profiles as ProfileRow[]).map((p: ProfileRow) => {
-          const save = (saveRes.data?.find((s: GameSaveRow) => s.user_id === p.id)?.save_data as unknown as GameState) || {} // domain-ok
+          const save = (saveRes.data?.find((s: GameSaveRow) => s.user_id === p.id)?.save_data as Partial<GameState>) || {}
           const rel = relRes.data?.find((f: FriendshipRow) => 
             (f.requester_id === authStore.user!.id && f.addressee_id === p.id) ||
             (f.requester_id === p.id && f.addressee_id === authStore.user!.id)

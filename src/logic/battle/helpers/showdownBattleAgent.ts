@@ -1,4 +1,4 @@
-// src/logic/battle/helpers/showdownBattleAgent.ts
+import type { SideID } from '@pkmn/sim';
 import { ChoiceRequest, classifyRequest } from './requestHelper.ts';
 
 export type ActiveSlotRequest = NonNullable<ChoiceRequest['active']>[number];
@@ -8,7 +8,7 @@ export abstract class ShowdownBattleAgent {
   protected justSwitched = false;
 
   constructor(
-    public sideId: 'p1' | 'p2',
+    public sideId: SideID,
     public periodicSwitchEvery: number = 4
   ) {}
 
@@ -20,12 +20,13 @@ export abstract class ShowdownBattleAgent {
     if (kind === 'none' || kind === 'wait') return 'pass';
 
     this.turnCount++;
-    this.justSwitched = false;
 
     if (kind === 'team-preview') return 'team 1';
 
     if (kind === 'force-switch' || kind === 'revive-target') {
-      return this.decideForcedSwitch(request!);
+      const choice = this.decideForcedSwitch(request!);
+      this.justSwitched = true;
+      return choice;
     }
 
     // Move request
@@ -36,7 +37,13 @@ export abstract class ShowdownBattleAgent {
       const defaultTargetLocation = isDoubles ? (slotIdx === 0 ? 1 : 2) : undefined;
       return this.decideSingleSlot(slotReq, slotIdx, request!, defaultTargetLocation);
     });
-    return actions.join(', ') || 'pass';
+    const result = actions.join(', ') || 'pass';
+    if (result.startsWith('move')) {
+      this.justSwitched = false;
+    } else if (result.startsWith('switch')) {
+      this.justSwitched = true;
+    }
+    return result;
   }
 
   /**
@@ -64,7 +71,7 @@ export abstract class ShowdownBattleAgent {
         return 'pass';
       }
 
-      const move = validMoves[Math.floor(Math.random() * validMoves.length)];
+      const move = validMoves[(this.turnCount - 1) % validMoves.length];
       const moveIdx = move ? slotReq.moves.indexOf(move) + 1 : 1;
       
       // Showdown accepts at most ONE event modifier per move choice (mega, terastallize, zmove, ultra, etc.)
@@ -82,8 +89,8 @@ export abstract class ShowdownBattleAgent {
       if (Reflect.get(slotReq, 'canUltraBurst')) availableModifiers.push(' ultra');
       if (Reflect.get(slotReq, 'canDynamax')) availableModifiers.push(' dynamax');
 
-      if (availableModifiers.length > 0 && Math.random() < 0.5) {
-        modifier = availableModifiers[Math.floor(Math.random() * availableModifiers.length)] || '';
+      if (availableModifiers.length > 0) {
+        modifier = availableModifiers[0] || '';
       }
 
       const targetStr = targetLocation !== undefined ? ` ${targetLocation}` : '';
@@ -111,7 +118,7 @@ export abstract class ShowdownBattleAgent {
       // Find the first valid bench pokemon (fainted if reviving, non-fainted otherwise) that hasn't been chosen yet
       const targetIdx = team.findIndex((p, idx) => {
         if (p.active || chosenIndices.has(idx)) return false;
-        const fainted = this.isFainted(p.condition);
+        const fainted = this.isFainted(p);
         return isReviving ? fainted : !fainted;
       });
       if (targetIdx !== -1) {
@@ -128,14 +135,21 @@ export abstract class ShowdownBattleAgent {
     return !!(slotReq.trapped || slotReq.maybeTrapped);
   }
 
-  protected isFainted(condition?: string): boolean {
-    return !!condition?.endsWith(' fnt');
+  protected isFainted(target?: string | { condition?: string; hp?: number; fainted?: boolean } | null): boolean {
+    if (!target) return false;
+    if (typeof target === 'object') {
+      if (target.fainted === true || target.hp === 0 || String(target.hp) === '0') return true;
+      if (target.condition) return this.isFainted(target.condition);
+      return false;
+    }
+    const cond = String(target).trim().toLowerCase();
+    return cond === 'fnt' || cond.endsWith('fnt') || cond === '0' || cond.startsWith('0/') || cond.startsWith('0 ') || cond.includes('fnt') || cond.includes('0 hp');
   }
 
   protected findBenchCandidate(team: NonNullable<ChoiceRequest['side']>['pokemon']): number | null {
     for (let i = 0; i < team.length; i++) {
       const mon = team[i]!;
-      if (!mon.active && !this.isFainted(mon.condition)) return i + 1;
+      if (!mon.active && !this.isFainted(mon)) return i + 1;
     }
     return null;
   }

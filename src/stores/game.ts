@@ -18,6 +18,7 @@ import { useTeamActions } from '@/stores/game/actions/teamActions.ts'
 
 import { DBRouter } from '@/logic/db/dbRouter'
 import { requireMapRouteId } from '@/data/world/map-assets'
+import { GAME_UI_EVENTS, type GameStoreReadyDetail } from '@/types/system/gameEvents.ts'
 
 export const useGameStore = defineStore('game', () => {
   const authStore = useAuthStore()
@@ -30,6 +31,12 @@ export const useGameStore = defineStore('game', () => {
   const isReady = computed(() => isDataLoaded.value && isEngineReady.value)
   const isSandboxActive = ref(false)
   const realStateBackup = ref<GameState | null>(null)
+
+  watch(isReady, (ready) => {
+    if (!ready || typeof window === 'undefined') return
+    const detail: GameStoreReadyDetail = { ready: true }
+    window.dispatchEvent(new CustomEvent<GameStoreReadyDetail>(GAME_UI_EVENTS.STORE_READY, { detail }))
+  })
 
   function updateState(newData: Partial<GameState>) {
     if (newData.team && newData.team.length > 0) newData.starterChosen = true

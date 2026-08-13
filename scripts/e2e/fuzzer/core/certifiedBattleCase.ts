@@ -8,6 +8,7 @@ import {
   type TestBatch,
   generateBatchHash,
 } from '../generators/fuzzer_team_generator.ts';
+import { isCertifiedBattleGameAction } from '../../../../src/types/battle/certifiedBattleActions.ts';
 
 function isObject(value: unknown): value is object {
   return typeof value === 'object' && value !== null;
@@ -54,13 +55,25 @@ function isFinalState(value: unknown): value is CertifiedBattleFinalState {
 }
 
 function isHistoryEntry(value: unknown): value is CertifiedBattleHistoryEntry {
+  const p1GameAction = isObject(value) ? read(value, 'p1GameAction') : undefined;
   return isObject(value)
     && typeof read(value, 'turnCount') === 'number'
     && typeof read(value, 'p1Choice') === 'string'
     && typeof read(value, 'p2Choice') === 'string'
     && typeof read(value, 'battleTurn') === 'number'
+    && (p1GameAction === undefined || (
+      isCertifiedBattleGameAction(p1GameAction)
+      && read(value, 'p1Choice') === ''
+      && read(value, 'p2Choice') !== ''
+    ))
     && (read(value, 'p1Heal') === undefined || read(value, 'p1Heal') === true)
-    && (read(value, 'p2Heal') === undefined || read(value, 'p2Heal') === true);
+    && (read(value, 'p2Heal') === undefined || read(value, 'p2Heal') === true)
+    && (read(value, 'p3Heal') === undefined || read(value, 'p3Heal') === true)
+    && (read(value, 'p4Heal') === undefined || read(value, 'p4Heal') === true)
+    && (read(value, 'p1PpRefill') === undefined || read(value, 'p1PpRefill') === true)
+    && (read(value, 'p2PpRefill') === undefined || read(value, 'p2PpRefill') === true)
+    && (read(value, 'p3PpRefill') === undefined || read(value, 'p3PpRefill') === true)
+    && (read(value, 'p4PpRefill') === undefined || read(value, 'p4PpRefill') === true);
 }
 
 function projectChoicesFromHistory(
@@ -140,8 +153,7 @@ export function isCertifiedBattleCase(value: unknown): value is CertifiedBattleC
 
 export function isCertifiedBattleCaseDocument(raw: unknown): raw is CertifiedBattleCaseDocument {
   return isObject(raw)
-    && Object.keys(raw).length === 1
-    && Object.keys(raw)[0] === 'battle'
+    && Array.isArray(read(raw, 'battle'))
     && isArrayOf(read(raw, 'battle'), isCertifiedBattleCase);
 }
 

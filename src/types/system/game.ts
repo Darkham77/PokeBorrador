@@ -7,6 +7,9 @@ import type { MapRouteId } from '@/data/world/map-assets';
 import type { PlayerClassId } from '@/data/player/playerClasses';
 import type { ItemId } from '@/data/inventory/items';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { MarketAssetType } from '@/logic/economy/market';
+
+export type ToolQualityTier = 'standard' | 'good' | 'super';
 
 export interface NotificationItem {
   id: string; // domain-ok
@@ -32,8 +35,8 @@ export interface ClaimItem {
   id: string | number; // domain-ok
   type: 'pokemon' | 'item' | 'currency';
   asset_data: {
-    type: 'pokemon' | 'item' | 'money';
-    data: Record<string, unknown>; // open-record
+    type: MarketAssetType;
+    data: unknown; // open-record
   };
   source_type: string; // domain-ok
   source_id: string; // domain-ok
@@ -73,8 +76,8 @@ export type GameStatKey =
 const FACTION_IDS = ['union', 'poder'] as const;
 export type FactionId = (typeof FACTION_IDS)[number];
 
-function isFactionId(value: string): value is FactionId {
-  return (FACTION_IDS as readonly string[]).includes(value); // domain-ok
+export function isFactionId(value: unknown): value is FactionId {
+  return typeof value === 'string' && (FACTION_IDS as readonly string[]).includes(value); // domain-ok
 }
 
 export function requireFactionId(value: string): FactionId {
@@ -84,7 +87,21 @@ export function requireFactionId(value: string): FactionId {
 
 export type { PlayerClassId } from '@/data/player/playerClasses';
 
-export type GenderId = 'h' | 'm';
+const GENDER_IDS = ['h', 'm'] as const;
+export type GenderId = (typeof GENDER_IDS)[number];
+
+export function isGenderId(value: unknown): value is GenderId {
+  return typeof value === 'string' && (GENDER_IDS as readonly string[]).includes(value); // domain-ok
+}
+
+export function requireGenderId(value: unknown, fallback: GenderId = 'h'): GenderId {
+  return isGenderId(value) ? value : fallback;
+}
+export type AdventureMinigameType = 'archaeology' | 'fishing';
+export type LowPowerModeSetting = 'auto' | 'enabled' | 'disabled';
+export type SortOrder = 'asc' | 'desc';
+export type ItemSortKey = 'name' | 'price' | 'rarity';
+export type PillFxType = 'glow' | 'drift' | 'shake' | '';
 
 export interface GameState {
   trainer: string; // domain-ok
@@ -106,7 +123,7 @@ export interface GameState {
     lastNavigateAt: number;
   };
   team: Pokemon[];
-  box: Pokemon[];
+  box: (Pokemon | null)[];
   pokedex: PokemonSpeciesId[];
   seenPokedex: PokemonSpeciesId[];
   defeatedGyms: GymId[];
@@ -136,11 +153,11 @@ export interface GameState {
   mewtwoTicketSecs: number;
   repelSecs: number;
   fishingRodSecs: number;
-  fishingRodType: 'standard' | 'good' | 'super' | null;
+  fishingRodType: ToolQualityTier | null;
   pickaxeSecs: number;
-  pickaxeType: 'standard' | 'good' | 'super' | null;
+  pickaxeType: ToolQualityTier | null;
   brushSecs: number;
-  brushType: 'standard' | 'good' | 'super' | null;
+  brushType: ToolQualityTier | null;
   shinyBoostSecs: number;
   amuletCoinSecs: number;
   luckyEggSecs: number;

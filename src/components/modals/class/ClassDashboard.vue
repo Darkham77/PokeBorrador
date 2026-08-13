@@ -3,6 +3,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { gsap } from 'gsap'
 import { type ClassDefinition } from '@/stores/player/playerClass'
 import { useModalStore } from '@/stores/modals'
+import type { GenderId } from '@/types/system/game'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 interface Props {
@@ -31,7 +32,7 @@ const openMissionsModal = () => {
   modalStore.open('EventMissions')
 }
 
-const getTrainerSprite = (id: string | number | undefined, gender: 'h' | 'm' = 'h') => {
+const getTrainerSprite = (id: string | number | undefined, gender: GenderId = 'h') => {
   return getAssetUrl(ASSET_TYPES.TRAINER, id as string, { trainerSuffix: 'front', gender });
 }
 

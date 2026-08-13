@@ -6,6 +6,7 @@ import { useUIStore } from '@/stores/ui'
 import { TRAINER_RANKS } from '@/data/player/trainer'
 import { requireFactionId } from '@/types/system/game'
 import { requirePlayerClassId } from '@/data/player/playerClasses'
+import type { BattleDifficulty } from '@/types/battle/battle'
 
 
 export function registerStatsTools(debug: DebugSystem) {
@@ -168,7 +169,7 @@ export function registerStatsTools(debug: DebugSystem) {
     label: 'WIN GYM (SIMULATE)',
     command: 'winGym',
     category: 'stats',
-    action: async (gymId: string, difficulty: 'easy' | 'normal' | 'hard' = 'easy') => {
+    action: async (gymId: string, difficulty: BattleDifficulty = 'easy') => {
       const resolvedGymId = requireGymId(gymId)
       const gymsStore = (await import('@/stores/gyms')).useGymsStore()
       const gym = gymsStore.gyms.find(g => g.id === resolvedGymId)

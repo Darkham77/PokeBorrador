@@ -17,60 +17,69 @@ class DaycareMissionsSimulation extends BaseE2ESimulation {
   }
 
   public async setupMissionsScenario(): Promise<void> {
-    await this.page.evaluate(async () => {
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      
-      const gameStore = useGameStore();
+    await this.page.evaluate(
+      async (opts) => {
+        const { useGameStore } = await import('../../../src/stores/game.ts');
+        const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+        
+        const gameStore = useGameStore();
 
-      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+        const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
 
-      // Caterpie frágil (no cumplirá nivel alto si se requiere)
-      const babyCaterpie = pokemonDebugService.generate({ id: requirePokemonSpeciesId('caterpie'), level: SIMULATION_BABY_LEVEL });
-      babyCaterpie.nickname = 'BABY_CATERPIE';
+        // Caterpie frágil (no cumplirá nivel alto si se requiere)
+        const babyCaterpie = pokemonDebugService.generate({ id: requirePokemonSpeciesId('caterpie'), level: opts.babyLevel });
+        babyCaterpie.nickname = 'BABY_CATERPIE';
 
-      // Caterpie experto
-      const masterCaterpie = pokemonDebugService.generate({ id: requirePokemonSpeciesId('caterpie'), level: SIMULATION_MASTER_LEVEL });
-      masterCaterpie.nickname = 'MASTER_CATERPIE';
+        // Caterpie experto
+        const masterCaterpie = pokemonDebugService.generate({ id: requirePokemonSpeciesId('caterpie'), level: opts.masterLevel });
+        masterCaterpie.nickname = 'MASTER_CATERPIE';
 
-      // Para evitar que el Save Shield bloquee el guardado:
-      gameStore.state.starterChosen = true;
-      gameStore.state.team = [pokemonDebugService.generate({ id: requirePokemonSpeciesId('caterpie'), level: SIMULATION_ACTIVE_LEVEL })];
+        // Para evitar que el Save Shield bloquee el guardado:
+        gameStore.state.starterChosen = true;
+        gameStore.state.team = [pokemonDebugService.generate({ id: requirePokemonSpeciesId('caterpie'), level: opts.activeLevel })];
 
-      // Agregar ambos a la caja
-      gameStore.state.box = [babyCaterpie, masterCaterpie];
+        // Agregar ambos a la caja
+        gameStore.state.box = [babyCaterpie, masterCaterpie];
 
-      // Inicializar el inventario con 0 caramelos raros para determinismo del test
-      gameStore.state.inventory = { rarecandy: 0 };
+        // Inicializar el inventario con 0 caramelos raros para determinismo del test
+        gameStore.state.inventory = { rarecandy: 0 };
 
-      // Forzar misiones diarias estáticas para hacer el test predecible
-      // Misión: Entregar un Caterpie con nivel mínimo de 30 a cambio de 1 Caramelo Raro
-      const today = Temporal.Now.plainDateISO().toString();
-      gameStore.state.daycare_missions = [
-        {
-          date: today,
-          targetId: 'caterpie',
-          requirement: {
-            type: 'level',
-            minLevel: SIMULATION_MIN_LEVEL_REQ
-          },
-          reqText: `Caterpie con nivel superior a ${SIMULATION_MIN_LEVEL_REQ}`,
-          reward: {
-            id: 'rarecandy',
-            name: 'Caramelo Raro',
-            qty: SIMULATION_REWARD_CANDY_QTY,
-            icon: '🍬'
-          },
-          completed: false,
-          trainerType: 'cazabichos',
-          trainerName: 'Juan',
-          trainerSprite: 'bugcatcher',
-          dialogue: `Se busca un Caterpie con nivel superior a ${SIMULATION_MIN_LEVEL_REQ}.`
-        }
-      ];
+        // Forzar misiones diarias estáticas para hacer el test predecible
+        // Misión: Entregar un Caterpie con nivel mínimo de 30 a cambio de 1 Caramelo Raro
+        const today = Temporal.Now.plainDateISO().toString();
+        gameStore.state.daycare_missions = [
+          {
+            date: today,
+            targetId: 'caterpie',
+            requirement: {
+              type: 'level',
+              minLevel: opts.minLevelReq
+            },
+            reqText: `Caterpie con nivel superior a ${opts.minLevelReq}`,
+            reward: {
+              id: 'rarecandy',
+              name: 'Caramelo Raro',
+              qty: opts.rewardCandyQty,
+              icon: '🍬'
+            },
+            completed: false,
+            trainerType: 'cazabichos',
+            trainerName: 'Juan',
+            trainerSprite: 'bugcatcher',
+            dialogue: `Se busca un Caterpie con nivel superior a ${opts.minLevelReq}.`
+          }
+        ];
 
-      await gameStore.saveGame();
-    });
+        await gameStore.saveGame();
+      },
+      {
+        babyLevel: SIMULATION_BABY_LEVEL,
+        masterLevel: SIMULATION_MASTER_LEVEL,
+        activeLevel: SIMULATION_ACTIVE_LEVEL,
+        minLevelReq: SIMULATION_MIN_LEVEL_REQ,
+        rewardCandyQty: SIMULATION_REWARD_CANDY_QTY
+      }
+    );
 
     const mapaBtn = this.page.locator('#nav-map-btn').filter({ visible: true }).first();
     await mapaBtn.waitFor({ state: 'visible', timeout: SIMULATION_NAV_TIMEOUT_MS });
@@ -128,7 +137,7 @@ test.describe('Daycare Daily Missions Daily Flow Simulation', () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const store = useGameStore().state;
       const allPkmn = [...(store.team || []), ...(store.box || [])];
-      const caterpie = allPkmn.find((p: { id?: string; nickname?: string | null; level?: number; uid?: string }) => (p?.nickname as string) === 'MASTER_CATERPIE' || (p?.id === 'caterpie' && ((p?.level as number) || 0) >= 30));
+      const caterpie = allPkmn.find((p) => p !== null && (p.nickname === 'MASTER_CATERPIE' || (p.id === 'caterpie' && (p.level || 0) >= 30)));
       if (!caterpie || !caterpie.uid) {
         throw new Error('[daycare_missions] MASTER_CATERPIE missing from team and box state');
       }
@@ -139,11 +148,9 @@ test.describe('Daycare Daily Missions Daily Flow Simulation', () => {
     await masterOption.waitFor({ state: 'visible', timeout: SIMULATION_SELECTION_TIMEOUT_MS });
     await clickResilient(masterOption);
 
-    await page.waitForFunction(async () => {
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const gameStore = useGameStore();
-      return gameStore.state.daycare_missions[0]?.completed === true;
-    }, undefined, { timeout: SIMULATION_COMPLETION_TIMEOUT_MS });
+    await expect.poll(async () => {
+      return await sim.getCompletedStatus();
+    }, { timeout: SIMULATION_COMPLETION_TIMEOUT_MS }).toBe(true);
 
     const stateCheck = await sim.getInventoryState();
 

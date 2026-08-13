@@ -5,6 +5,10 @@ import path from 'node:path';
 import { Dex } from '@pkmn/sim';
 import { runFuzzerSuite } from '../core/fuzzer_runner.ts';
 import type { Pokemon } from '../../../../src/types/pokemon/pokemon.ts';
+import type { PokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';
+import type { NatureId } from '../../../../src/data/battle/natures.ts';
+import type { AbilityId } from '../../../../src/data/battle/abilities.ts';
+import type { PokemonType } from '../../../../src/data/battle/types.ts';
 
 const REPORT_FILE = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_gts_coverage_report.json');
 
@@ -26,23 +30,33 @@ async function runGTSFuzzer() {
   console.log(`💰 Ejecutando fuzzer de GTS sobre 200 operaciones financieras lógicas...`);
 
   const createMockPoke = (speciesName: string): Pokemon => {
+    const sId = Dex.toID(speciesName) as PokemonSpeciesId;
     return {
       uid: `mock-${speciesName}-${Math.random().toString(36).substring(2, 7)}`,
-      id: Dex.toID(speciesName),
+      id: sId,
+      species: sId,
       name: speciesName,
       level: 30,
-      gender: 'M',
-      ability: 'illuminate',
-      nature: 'Serious',
+      gender: 'm',
+      ability: 'illuminate' as AbilityId,
+      nature: 'serious' as NatureId,
       ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
       evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
       moves: [],
       hp: 100,
       maxHp: 100,
-      status: null,
+      type: 'normal' as PokemonType,
+      atk: 10,
+      def: 10,
+      spa: 10,
+      spd: 10,
+      spe: 10,
+      expNeeded: 1000,
+      volatileCounters: {},
+      status: '',
       exp: 0,
       isShiny: false,
-    } as unknown as Pokemon;
+    };
   };
 
   let playerMoney = 5000;

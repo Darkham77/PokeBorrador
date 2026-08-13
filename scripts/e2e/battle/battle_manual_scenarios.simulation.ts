@@ -43,10 +43,8 @@ test.describe('Battle Manual E2E Scenarios', () => {
   test('debería consumir un Revivir en un Pokémon de la banca debilitado y jugar el combate hasta el final', async ({ page }) => {
     const sim = new ManualScenariosSimWrapper(page, 'TestManual_Revive');
     await sim.setup();
-    await waitForWaitInput(page);
-
     await sim.setupReviveScenario();
-    await sim.startBattle();
+    await waitForWaitInput(page);
 
     const charmanderUid = await page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
@@ -54,13 +52,6 @@ test.describe('Battle Manual E2E Scenarios', () => {
     });
 
     await sim.useItemOnPokemon('revive', charmanderUid);
-
-    await page.waitForFunction(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      if (!resolver) return false;
-      const store = resolver();
-      return store.currentSubState === 'WAIT_INPUT' || !!(store.state && store.state.player && store.state.player.hp === 0);
-    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     expect(await sim.getCharmanderHp()).toBeGreaterThan(0);
 

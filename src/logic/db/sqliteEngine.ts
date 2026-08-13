@@ -4,6 +4,7 @@
  * Unified SQL.js (SQLite WASM) Engine with IndexedDB Persistence.
  */
 import { getFromIDB, setToIDB } from './idbHelper.ts'
+import { saveToOPFS, loadFromOPFS } from './opfsHelper.ts'
 import { TABLES_SCHEMA } from './schema.ts'
 import { DATABASE_MIGRATIONS } from './migrations_data.ts'
 import { logger } from '../utils/logger.ts'
@@ -37,6 +38,13 @@ let _initPromise: Promise<SQLiteDatabase | null> | null = null
 let _sqliteKey = 'pokevicio_sqlite_v2'
 let _isInMemory = false
 
+export function canUseDevDatabaseBridge(isDevelopment: boolean, _isE2E: boolean): boolean {
+  return isDevelopment && (!_isE2E || (typeof window !== 'undefined' && window.__GTS_SIMULATION__ === true))
+}
+
+export function canRefreshCleanDatabaseTemplate(isDevelopment: boolean, isE2E: boolean): boolean {
+  return isDevelopment && isE2E
+}
 
 
 
@@ -74,13 +82,15 @@ export async function persistSQLite(): Promise<void> {
   try {
     const binary = _sqliteDb.export()
     if (!_isInMemory) {
+      await saveToOPFS(_sqliteKey, binary)
       await setToIDB(_sqliteKey, binary)
       // Shadow Backup for DB
       await setToIDB(_sqliteKey + '_backup', binary)
-      logger.success('SQLite', `Persistence successful (Main + Backup)`)
+      logger.success('SQLite', `Persistence successful (OPFS + Main + Backup)`)
     }
 
-    if (import.meta.env.DEV && typeof window !== 'undefined' && window.__E2E__) {
+    const isE2E = typeof window !== 'undefined' && window.__E2E__ === true
+    if (canUseDevDatabaseBridge(import.meta.env.DEV, isE2E)) {
       try {
         await devFetch('/api/dev-export-db', _sqliteKey, {
           method: 'POST',
@@ -95,6 +105,35 @@ export async function persistSQLite(): Promise<void> {
   } catch (e: unknown) {
     throw new Error(`[sqliteEngine] SQLite persistence failed: ${(e as Error).message}`)
   }
+}
+
+export async function executeAtomicSaveTransaction(queries: { sql: string; params?: unknown[] }[]): Promise<void> {
+  if (!_sqliteDb) await initSQLite();
+  if (!_sqliteDb) {
+    throw new Error('[sqliteEngine] SQLite database engine is not initialized');
+  }
+
+  _sqliteDb.run('BEGIN TRANSACTION');
+  try {
+    for (const q of queries) {
+      _sqliteDb.run(q.sql, q.params);
+    }
+    _sqliteDb.run('COMMIT');
+    await persistSQLite();
+  } catch (err) {
+    try {
+      _sqliteDb.run('ROLLBACK');
+    } catch (_rbErr) {
+      // Ignore rollback errors if transaction was already aborted
+    }
+    throw new Error(`[sqliteEngine] Atomic save transaction failed: ${(err as Error).message}`);
+  }
+}
+
+/** Returns a serializable snapshot for explicit cross-context E2E database transfer. */
+export function exportSQLiteSnapshot(): number[] {
+  if (!_sqliteDb) throw new Error('[sqliteEngine] Cannot export an uninitialized SQLite database')
+  return Array.from(_sqliteDb.export())
 }
 
 export async function initSQLite(options: { sqliteKey?: string, inMemory?: boolean, forceReload?: boolean } = {}): Promise<SQLiteDatabase | null> {
@@ -121,7 +160,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
     const SQL = await window.initSqlJs({ locateFile: (file: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/${file}` })
 
     if (_isInMemory) {
-      if (import.meta.env.DEV) {
+      if (canUseDevDatabaseBridge(import.meta.env.DEV, isE2E)) {
         try {
           const importCheck = await devFetch('/api/dev-import-db-check', _sqliteKey, { cache: 'no-store' })
           if (importCheck.ok) {
@@ -155,12 +194,17 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
         }
       }
 
-      const localBinary = await getFromIDB(_sqliteKey)
-      if (localBinary) {
-        _sqliteDb = new SQL.Database(new Uint8Array(localBinary)) as SQLiteDatabase // domain-ok
-        await ensureSchemaIntegrity(_sqliteDb)
-        await runMigrations()
-        return _sqliteDb
+      if (!isE2E) {
+        const localBinary = await getFromIDB(_sqliteKey)
+        if (localBinary) {
+          _sqliteDb = new SQL.Database(new Uint8Array(localBinary)) as SQLiteDatabase // domain-ok
+          await ensureSchemaIntegrity(_sqliteDb)
+          const appliedMigrations = await runMigrations()
+          if (appliedMigrations && canRefreshCleanDatabaseTemplate(import.meta.env.DEV, isE2E)) {
+            await publishCleanDatabaseTemplate(_sqliteDb)
+          }
+          return _sqliteDb
+        }
       }
 
       try {
@@ -182,16 +226,8 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
       TABLES_SCHEMA.forEach(schema => { if (_sqliteDb) _sqliteDb.run(`CREATE TABLE IF NOT EXISTS ${schema}`) })
       await runMigrations()
 
-      try {
-        const binary = _sqliteDb.export()
-        await devFetch('/api/dev-export-clean-db', undefined, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/octet-stream' },
-          body: binary as BodyInit // domain-ok
-        })
-        logger.success('SQLite', 'Clean DB template successfully generated and uploaded to Vite server.')
-      } catch (err) {
-        throw new Error(`[sqliteEngine] Failed to upload generated clean DB template: ${String(err)}`)
+      if (import.meta.env.DEV) {
+        await publishCleanDatabaseTemplate(_sqliteDb)
       }
       return _sqliteDb
     }
@@ -259,12 +295,19 @@ const IMPORT_RELOAD_DELAY_MS = 1500;
       }
     }
 
-    let savedBinary = await getFromIDB(_sqliteKey)
+    let savedBinary = await loadFromOPFS(_sqliteKey)
+    let loadedFromSource = 'OPFS'
+
+    if (!savedBinary) {
+      savedBinary = await getFromIDB(_sqliteKey)
+      loadedFromSource = 'IndexedDB'
+    }
 
     if (!savedBinary) {
       logger.warn('SQLite', 'Primary database missing, checking Shadow Backup...')
       savedBinary = await getFromIDB(_sqliteKey + '_backup')
       if (savedBinary) {
+        loadedFromSource = 'Shadow Backup'
         logger.info('SQLite', 'Restored from Shadow Backup!')
       }
     }
@@ -272,7 +315,7 @@ const IMPORT_RELOAD_DELAY_MS = 1500;
     if (savedBinary) {
       try {
         _sqliteDb = new SQL.Database(new Uint8Array(savedBinary)) as SQLiteDatabase; // domain-ok
-        logger.info('SQLite', 'Loaded from IndexedDB')
+        logger.info('SQLite', `Loaded from ${loadedFromSource}`)
       } catch (dbErr) {
         logger.error('SQLite', 'Database corruption detected! Attempting Backup Rescue...')
         const backupBinary = await getFromIDB(_sqliteKey + '_backup')
@@ -297,8 +340,22 @@ const IMPORT_RELOAD_DELAY_MS = 1500;
   return _initPromise
 }
 
-async function runMigrations(): Promise<void> {
-  if (!_sqliteDb) return
+async function publishCleanDatabaseTemplate(db: SQLiteDatabase): Promise<void> {
+  try {
+    const binary = db.export()
+    await devFetch('/api/dev-export-clean-db', undefined, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/octet-stream' },
+      body: binary as BodyInit // domain-ok
+    })
+    logger.success('SQLite', 'Clean DB template successfully generated and uploaded to Vite server.')
+  } catch (err) {
+    throw new Error(`[sqliteEngine] Failed to upload generated clean DB template: ${String(err)}`)
+  }
+}
+
+async function runMigrations(): Promise<boolean> {
+  if (!_sqliteDb) return false
   _sqliteDb.run("PRAGMA foreign_keys = OFF") // Disable FKs during structural changes
   _sqliteDb.run("CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))")
   const appliedRes = _sqliteDb.exec("SELECT id FROM _migrations")
@@ -314,6 +371,7 @@ async function runMigrations(): Promise<void> {
     // Fail silently in node test context
   }
   
+  let hasAppliedMigrations = false
   for (const m of DATABASE_MIGRATIONS as { id: string, sql: string, sqlite_sql?: string }[]) {
     if (!applied.includes(m.id)) {
       logger.info('SQLite', `Applying migration: ${m.id}`)
@@ -344,14 +402,17 @@ async function runMigrations(): Promise<void> {
           }
         })
         _sqliteDb.run("INSERT OR IGNORE INTO _migrations (id) VALUES (?)", [m.id])
+        hasAppliedMigrations = true
         logger.success('SQLite', `Migration applied successfully: ${m.id}`)
-        await persistSQLite()
         if (loadingStore) loadingStore.finish('db_migration')
       } catch (e: unknown) { 
         if (loadingStore) loadingStore.finish('db_migration')
         logger.error('SQLite', `Migration ${m.id} failed: ${(e as Error).message}`) 
       }
     }
+  }
+  if (hasAppliedMigrations) {
+    await persistSQLite()
   }
   // Update system_config.db_version to match the latest migration
   if (DATABASE_MIGRATIONS.length > 0) {
@@ -362,6 +423,7 @@ async function runMigrations(): Promise<void> {
   }
 
   _sqliteDb.run("PRAGMA foreign_keys = ON")
+  return hasAppliedMigrations
 }
 
 import { splitSQLStatements, translatePostgresToSqlite } from './sqlTranslator.ts'

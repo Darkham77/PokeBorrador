@@ -9,6 +9,7 @@ import MarketItemCard from './MarketItemCard.vue'
 import { getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
 
 import { GTS_ITEMS_PER_PAGE } from '@/logic/economy/market'
+import type { SortOrder, ItemSortKey } from '@/types/system/game'
 
 const game = useGameStore()
 const gtsStore = useGTSStore()
@@ -24,8 +25,8 @@ const filterCompatibleOnly = ref(false)
 
 // Item Filters
 const itemSearchQuery = ref('')
-const itemSortKey = ref<'name' | 'price' | 'rarity'>('name')
-const itemSortOrder = ref<'asc' | 'desc'>('asc')
+const itemSortKey = ref<ItemSortKey>('name')
+const itemSortOrder = ref<SortOrder>('asc')
 
 import { useMarketPublishPokemon } from './useMarketPublishPokemon.ts'
 

@@ -79,4 +79,25 @@ describe('BattleCheatManager - Unit & Integrity Tests', () => {
     expect(battle.p1.pokemon[0]!.fainted).toBe(false);
     expect(battle.p1.pokemon[0]!.hp).toBe(battle.p1.pokemon[0]!.maxhp);
   });
+
+  it('should register heal entries by both battleTurn and turnCount for pre/post turn consistency', () => {
+    const history = [
+      { turnCount: 19, p1Choice: 'switch 2', p2Choice: 'move 1', battleTurn: 20, p1Heal: true as const, p1ForceSwitch: true }
+    ];
+
+    const cheatManager = new BattleCheatManager(history);
+    const battle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, [1, 2, 3, 4]);
+    battle.setPlayer('p1', { name: 'Player', team: [makePoke('Mew', ['tackle'])] });
+    battle.setPlayer('p2', { name: 'Enemy', team: [makePoke('Blissey', ['tackle'])] });
+
+    battle.p1.pokemon[0]!.hp = 0;
+    battle.p1.pokemon[0]!.fainted = true;
+    battle.turn = 20;
+
+    // Both battleTurn (20) and turnCount (19) must trigger pre-turn heal
+    cheatManager.applyPreTurnCheats(battle, true);
+    expect(cheatManager.getAppliedCheatsCount()).toBe(1);
+    expect(battle.p1.pokemon[0]!.fainted).toBe(false);
+    expect(battle.p1.pokemon[0]!.hp).toBe(battle.p1.pokemon[0]!.maxhp);
+  });
 });

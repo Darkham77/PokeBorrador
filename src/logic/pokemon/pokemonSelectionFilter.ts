@@ -1,4 +1,4 @@
-import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { Pokemon, PokemonSelectionSource } from '@/types/pokemon/pokemon'
 import { hasPokemonTag } from '@/logic/constants/tags'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
@@ -25,7 +25,7 @@ export function getPokemonTotalPower(p: Pokemon): number {
 }
 
 export function filterAndSortPokemon(
-  sourceList: { pokemon: Pokemon; _source: 'team' | 'box' | 'market'; index: number }[],
+  sourceList: { pokemon: Pokemon; _source: PokemonSelectionSource; index: number }[],
   criteria: PokemonFilterCriteria
 ) {
   const filtered = sourceList.filter(item => {

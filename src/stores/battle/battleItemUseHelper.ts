@@ -2,7 +2,9 @@ import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachi
 import { handleItemUsage } from '@/logic/battle/battleItems'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { BattleSource } from '@/types/battle/battle'
+import type { BattleSource, BattleSide } from '@/types/battle/battle'
+import { requireItemId } from '@/data/inventory/items'
+import { requireCertifiedBattleTeamSlot, type CertifiedBagItemGameAction } from '@/types/battle/certifiedBattleActions'
 
 export async function processUseItemInBattle(
   ctx: BattleContext,
@@ -10,7 +12,7 @@ export async function processUseItemInBattle(
   targetIndex: number | null = null,
   options: {
     eventStore: unknown
-    addLog: (text: string, type?: string, source?: BattleSource | null, sideOverride?: 'player' | 'enemy' | null) => void
+    addLog: (text: string, type?: string, source?: BattleSource | null, sideOverride?: BattleSide | null) => void
     audio: unknown
     consumeItem: (itemName: string) => void
     fsm: unknown
@@ -18,7 +20,7 @@ export async function processUseItemInBattle(
       state: {
         team: Pokemon[]
         playerClass?: string | null
-        box: Pokemon[]
+        box: (Pokemon | null)[]
       }
       addPokemon: (poke: Pokemon | null, opts?: { notify: boolean }) => void
     }
@@ -26,8 +28,8 @@ export async function processUseItemInBattle(
       notify: (msg: string, icon: string) => void
     }
     endBattle: (win: boolean, fled: boolean) => Promise<void>
-    handleFaint: (side: 'player' | 'enemy') => Promise<void>
-    runEnemyAction: (ctx: BattleContext) => Promise<void>
+    handleFaint: (side: BattleSide) => Promise<void>
+    runEnemyAction: (ctx: BattleContext, bagAction?: CertifiedBagItemGameAction) => Promise<void>
     persistBattle: () => void
     syncTeamHP: () => void
   }
@@ -116,7 +118,13 @@ export async function processUseItemInBattle(
     }
     options.persistBattle()
     await ctx.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
-    await options.runEnemyAction(ctx)
+    const targetSlotIndex = targetIndex ?? activeBattle.playerTeamIndex
+    const bagAction: CertifiedBagItemGameAction = {
+      kind: 'bag-item',
+      itemId: requireItemId(itemId),
+      targetSlot: requireCertifiedBattleTeamSlot(targetSlotIndex + 1),
+    }
+    await options.runEnemyAction(ctx, bagAction)
 
     if (activeBattle.over) {
       if (activeBattle.fled) {

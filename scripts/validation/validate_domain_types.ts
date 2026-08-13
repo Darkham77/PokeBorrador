@@ -56,6 +56,7 @@ const P_MAP_STRING = /\bnew\s+Map\s*(?:<[^>]+>)?\s*\(\s*\[\s*\[\s*['"`]/g;
 const P_LITERAL_ARRAY_DECL = /\b(?:(?:export\s+)?const|let|var)\s+([A-Z_a-z]\w*)\s*(?::\s*(?:readonly\s+)?(?:string\[\]|Array\s*<\s*string\s*>|ReadonlyArray\s*<\s*string\s*>))?\s*=\s*\[\s*['"`][\s\S]*?\](?:\s+as\s+const)?/g;
 const P_TYPED_STRING_ARRAY_DECL = /\b(?:(?:export\s+)?const|let|var)\s+([A-Z_a-z]\w*)\s*:\s*(?:readonly\s+)?(?:string\[\]|Array\s*<\s*string\s*>|ReadonlyArray\s*<\s*string\s*>)/g;
 const P_TYPE_ALIAS_STRING = /\b(?:export\s+)?type\s+\w+\s*=\s*string\s*;/g;
+const P_BOOLEAN_LITERAL_TYPE_ANNOTATION = /\b(?:(?:export\s+)?const|let|var)\s+[A-Z_a-z]\w*\s*:\s*(?:true|false)\b|\b(?:export\s+)?type\s+[A-Z_a-z]\w*\s*=\s*(?:true|false)\s*;|^\s*(?:readonly\s+)?[A-Z_a-z]\w*\??:\s*(?:true|false)\s*;|\(\s*[A-Z_a-z]\w*\??:\s*(?:true|false)\b/gm;
 const P_STRING_SINK_UNION = /\b(?:export\s+)?type\s+\w+\s*=\s*(?=[^;\n]*['"`][^'"`]+['"`])[^;\n]*\|\s*string\s*;/g;
 const P_FIELD_WILDCARD_STRING_UNION = /^\s*(?:readonly\s+)?([A-Z_a-z]\w*)\??:\s*(?!\s*string\s*(?:\[\])?\s*[;,]?)[^;\n]*\|\s*string\b[^;\n]*[;,]?/gm;
 const P_OPEN_STRING_INTERSECTION = /\b(?:export\s+)?type\s+\w+\s*=[^;\n]*string\s*&\s*\{\s*\}[^;\n]*;/g;
@@ -73,6 +74,16 @@ const P_TYPECAST_INLINE_DOMAIN_ID = /\bas\s+(?:[A-Z]\w*Id|keyof\s+typeof\s+[A-Z_
 const P_TYPECAST_RECORD_STRING = /\bas\s+Record\s*<\s*string\s*,/g;
 const P_TYPECAST_ARRAY_ANY_UNKNOWN = /\bas\s+(?:any|unknown)\[\]/g;
 const P_OBJECT_KEYS_CAST = /\bObject\.(?:keys|entries)\s*\([^)]+\)\s+as\s+(?:\([|\w\s]+\)|[A-Za-z]\w*)\[\]/g;
+
+// Java-Style & Phase 2/3 Advanced Strict Typing Patterns
+const P_INLINE_ANONYMOUS_OBJECT_PARAM = /\(\s*(?:[A-Z_a-z]\w*\s*,\s*)*[A-Z_a-z]\w*\??\s*:\s*\{\s*(?:readonly\s+)?[A-Z_a-z]\w*\??\s*:\s*(?:string|number|boolean|unknown|any|[A-Z]\w*)(?:\[\])?\s*(?:;|,)\s*(?:readonly\s+)?[A-Z_a-z]\w*\??\s*:[^\n}]*\}\s*[,)]/g;
+const P_UNNAMED_POSITIONAL_TUPLE_RETURN = /\breturn\s*\[\s*[A-Z_a-z]\w*(?:\.[A-Z_a-z]\w*)*\s*,\s*[A-Z_a-z]\w*(?:\.[A-Z_a-z]\w*)*\s*\]\s*;/g;
+const P_UNBRANDED_DOMAIN_ID_ALIAS = /\b(?:export\s+)?type\s+[A-Z]\w*Id\s*=\s*string\s*;/g;
+const P_AMBIGUOUS_NULL_DOMAIN_RETURN = /^\s*(?:export\s+)?function\s+(?:get|find|lookup|resolve)[A-Z]\w*\([^)]*\)\s*:\s*(?:Promise<)?[A-Z]\w*\s*\|\s*(?:null|undefined)/gm;
+const P_UNENFORCED_STATIC_MAP = /\bexport\s+const\s+[A-Z][A-Z0-9_]{3,}\s*=\s*\{/g;
+const P_FLOATING_PROMISE = /^\s*(?!(?:await|void|return|const|let|var)\s+)(?:[A-Z_a-z]\w*\.)?[a-z]\w*Async\s*\([^)]*\)\s*;/gm;
+const P_LEAKED_GLOBAL_MUTABLE = /^(?:export\s+)?let\s+[a-z]\w*\s*=/gm;
+const P_DYNAMIC_IMPORT_IN_HOT_PATH = /\b(?:for|while)\s*\([^)]*\)[\s\S]*?\bimport\s*\(/g;
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface Finding {
@@ -222,6 +233,14 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     rel,
     P_TYPE_ALIAS_STRING,
     'Type alias directly to `string` — defeats domain enforcement',
+    'ERROR'
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_BOOLEAN_LITERAL_TYPE_ANNOTATION,
+    'Literal boolean type annotation (true/false) used instead of boolean type contract (MUST use `: boolean`)',
     'ERROR'
   ));
 
@@ -388,6 +407,78 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     (_match, line) => !/\bfunction\s+is[A-Z_a-z]\w*/.test(line) && !line.includes('// domain-ok')
   ));
 
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_INLINE_ANONYMOUS_OBJECT_PARAM,
+    'Inline anonymous object type in function parameter prohibited — define a named interface or type contract',
+    'ERROR',
+    (_match, line) => !line.includes('// type-ok') && !line.includes('// domain-ok') && !line.includes('withDefaults')
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_UNNAMED_POSITIONAL_TUPLE_RETURN,
+    'Positional array return without tuple type annotation — declare explicit tuple return type `: readonly [T1, T2]` or `as const`',
+    'WARN',
+    (_match, line) => !line.includes('// type-ok') && !line.includes('as const')
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_UNBRANDED_DOMAIN_ID_ALIAS,
+    'Unbranded domain ID alias detected — domain IDs should consume Brand<string, "IdName"> for nominal compile-time safety',
+    'WARN',
+    (_match, line) => !line.includes('// brand-ok') && !line.includes('// domain-ok') && !line.includes('string-ok')
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_AMBIGUOUS_NULL_DOMAIN_RETURN,
+    'Ambiguous null/undefined domain return — consider returning Option<T> or Result<T, E> for explicit absence/error handling',
+    'WARN',
+    (_match, line) => !line.includes('// result-ok') && !line.includes('// domain-ok')
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_UNENFORCED_STATIC_MAP,
+    'Static domain map declared without explicit Record<DomainId, T> annotation — consider enforcing domain key exhaustiveness',
+    'WARN',
+    (_match, line) => !line.includes('Record<') && !line.includes('satisfies') && !line.includes('// map-ok') && !line.includes('// domain-ok')
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_FLOATING_PROMISE,
+    'Floating promise detected — async call must be handled with await, void, or .catch()',
+    'WARN',
+    (_match, line) => !line.includes('// promise-ok') && !line.includes('// domain-ok')
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_LEAKED_GLOBAL_MUTABLE,
+    'Mutable top-level let variable at module scope detected — move state inside Pinia store, class, or mark // singleton-ok',
+    'WARN',
+    (_match, line) => !line.includes('// singleton-ok') && !line.includes('// domain-ok') && !rel.includes('stores/') && !rel.includes('data/')
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_DYNAMIC_IMPORT_IN_HOT_PATH,
+    'Dynamic import() inside loop detected — pre-import modules at file scope to avoid combat animation jank',
+    'WARN',
+    (_match, line) => !line.includes('// import-ok') && !line.includes('// domain-ok')
+  ));
+
   return findings;
 }
 
@@ -403,85 +494,156 @@ function formatFinding(finding: Finding, color = true): string {
   return `  ${sev}  ${loc}\n         ${pattern}\n         ${finding.snippet}`;
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
-const allFindings: Finding[] = [];
-for (const scanRoot of SCAN_ROOTS) {
-  for await (const file of walkFiles(scanRoot)) {
-    allFindings.push(...await auditFile(file));
-  }
-}
+export function detectRepeatedStringUnions(
+  files: Array<{ file: string; content: string }>
+): Map<string, Finding[]> {
+  const P_GENERIC_STRING_UNION = /\b(?:as\s+|:\s*|\btype\s+[A-Za-z]\w*\s*=\s*)\(?(?:\s*['"`][a-zA-Z0-9_-]+['"`]\s*\|)+\s*['"`][a-zA-Z0-9_-]+['"`]\)?/g;
+  const unionOccurrences = new Map<string, Finding[]>();
 
-const visibleFindings = allFindings;
-const errors = allFindings.filter(finding => finding.severity === 'ERROR');
-const warnings = allFindings.filter(finding => finding.severity === 'WARN');
+  for (const { file, content } of files) {
+    const lines = content.split('\n');
+    P_GENERIC_STRING_UNION.lastIndex = 0;
+    let match: RegExpExecArray | null;
 
-const byFile = new Map<string, Finding[]>();
-for (const finding of visibleFindings) {
-  const existing = byFile.get(finding.file);
-  if (existing) existing.push(finding);
-  else byFile.set(finding.file, [finding]);
-}
+    while ((match = P_GENERIC_STRING_UNION.exec(content)) !== null) {
+      const before = content.slice(0, match.index);
+      const lineNum = (before.match(/\n/g) ?? []).length + 1;
+      const lastNl = before.lastIndexOf('\n');
+      const col = match.index - lastNl;
+      const line = lines[lineNum - 1] ?? '';
 
-// ─── Output ───────────────────────────────────────────────────────────────────
-const lines: string[] = [];
-const scannedRoots = SCAN_ROOTS.map(root => path.relative(ROOT, root).split(path.sep).join(path.posix.sep)).join(', ');
+      if (isCommentLine(line) || isTestFile(file) || hasEscapeHatch(line)) continue;
 
-lines.push('');
-lines.push(styleText('bold', '━━━ DOMAIN TYPE AUDIT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
-lines.push(`  Scanned: ${styleText('cyan', scannedRoots)}`);
-lines.push('');
+      const rawLiterals = match[0].match(/['"`][a-zA-Z0-9_-]+['"`]/g);
+      if (!rawLiterals || rawLiterals.length < 2) continue;
 
-if (!summaryOnly) {
-  for (const [file, findings] of byFile) {
-    lines.push(styleText('bold', `  📄 ${file}`));
-    for (const finding of findings) {
-      lines.push(formatFinding(finding));
+      const literals = Array.from(new Set(rawLiterals.map(l => l.replace(/['"`]/g, '')))).sort();
+      if (literals.length < 2) continue;
+      const signatureKey = literals.join('|');
+
+      const finding: Finding = {
+        file,
+        line: lineNum,
+        col,
+        pattern: `Repeated ad-hoc string literal union '${signatureKey}' — refactor into canonical domain type alias`,
+        snippet: match[0].slice(0, 100).replace(/\n/g, '↵'),
+        severity: 'ERROR',
+      };
+
+      const existing = unionOccurrences.get(signatureKey);
+      if (existing) existing.push(finding);
+      else unionOccurrences.set(signatureKey, [finding]);
     }
-    lines.push('');
   }
+
+  const repeatedMap = new Map<string, Finding[]>();
+  for (const [signatureKey, occurrences] of unionOccurrences) {
+    if (occurrences.length >= 2) {
+      repeatedMap.set(signatureKey, occurrences);
+    }
+  }
+
+  return repeatedMap;
 }
 
-lines.push('━━━ SUMMARY ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-lines.push(`  Files with visible issues : ${styleText('cyan', String(byFile.size))}`);
-lines.push(`  Total findings            : ${styleText('cyan', String(allFindings.length))}`);
-lines.push(`  Visible findings          : ${styleText('cyan', String(visibleFindings.length))}`);
-lines.push(`  ${styleText('red', 'ERRORS')}                    : ${errors.length}`);
-lines.push(`  ${styleText('yellow', 'WARNINGS')}                  : ${warnings.length}`);
-lines.push('');
+export async function runCliAudit(): Promise<void> {
+  const allFindings: Finding[] = [];
+  const scannedFiles: Array<{ file: string; content: string }> = [];
 
-const byPattern = new Map<string, number>();
-for (const finding of allFindings) {
-  byPattern.set(finding.pattern, (byPattern.get(finding.pattern) ?? 0) + 1);
+  for (const scanRoot of SCAN_ROOTS) {
+    for await (const filePath of walkFiles(scanRoot)) {
+      const rel = toRepoPath(filePath);
+      allFindings.push(...await auditFile(filePath));
+
+      const content = await fs.readFile(filePath, 'utf8');
+      scannedFiles.push({ file: rel, content });
+    }
+  }
+
+  const repeatedUnions = detectRepeatedStringUnions(scannedFiles);
+  for (const [signatureKey, occurrences] of repeatedUnions) {
+    for (const occurrence of occurrences) {
+      occurrence.pattern = `Repeated ad-hoc string literal union '${signatureKey}' (${occurrences.length} occurrences) — MUST refactor to canonical domain type alias`;
+      allFindings.push(occurrence);
+    }
+  }
+
+  const visibleFindings = allFindings;
+  const errors = allFindings.filter(finding => finding.severity === 'ERROR');
+  const warnings = allFindings.filter(finding => finding.severity === 'WARN');
+
+  const byFile = new Map<string, Finding[]>();
+  for (const finding of visibleFindings) {
+    const existing = byFile.get(finding.file);
+    if (existing) existing.push(finding);
+    else byFile.set(finding.file, [finding]);
+  }
+
+  // ─── Output ───────────────────────────────────────────────────────────────────
+  const lines: string[] = [];
+  const scannedRoots = SCAN_ROOTS.map(root => path.relative(ROOT, root).split(path.sep).join(path.posix.sep)).join(', ');
+
+  lines.push('');
+  lines.push(styleText('bold', '━━━ DOMAIN TYPE AUDIT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
+  lines.push(`  Scanned: ${styleText('cyan', scannedRoots)}`);
+  lines.push('');
+
+  if (!summaryOnly) {
+    for (const [file, findings] of byFile) {
+      lines.push(styleText('bold', `  📄 ${file}`));
+      for (const finding of findings) {
+        lines.push(formatFinding(finding));
+      }
+      lines.push('');
+    }
+  }
+
+  lines.push('━━━ SUMMARY ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  lines.push(`  Files with visible issues : ${styleText('cyan', String(byFile.size))}`);
+  lines.push(`  Total findings            : ${styleText('cyan', String(allFindings.length))}`);
+  lines.push(`  Visible findings          : ${styleText('cyan', String(visibleFindings.length))}`);
+  lines.push(`  ${styleText('red', 'ERRORS')}                    : ${errors.length}`);
+  lines.push(`  ${styleText('yellow', 'WARNINGS')}                  : ${warnings.length}`);
+  lines.push('');
+
+  const byPattern = new Map<string, number>();
+  for (const finding of allFindings) {
+    byPattern.set(finding.pattern, (byPattern.get(finding.pattern) ?? 0) + 1);
+  }
+  lines.push('  Pattern breakdown:');
+  for (const [pattern, count] of [...byPattern.entries()].sort((a, b) => b[1] - a[1])) {
+    lines.push(`    ${styleText('dim', String(count).padStart(4))}  ${pattern}`);
+  }
+  lines.push('');
+
+  if (errors.length === 0) {
+    lines.push(styleText('green', '  ✅ No ERROR-level domain type violations found.'));
+  } else {
+    lines.push(styleText('red', `  ❌ ${errors.length} ERROR(s) must be fixed before commit.`));
+  }
+  lines.push('');
+  lines.push('  💡 Escape hatches (for intentional exceptions — use sparingly):');
+  lines.push('    // domain-ok    → field genuinely accepts any string (open text)');
+  lines.push('    // string-ok    → type alias to string is intentional');
+  lines.push('    // open-record  → Record<string, ...> key is intentionally open');
+  lines.push('    // runtime-set  → Set used for runtime lookup (not domain typing)');
+  lines.push('    // runtime-map  → Map used for runtime lookup (not domain typing)');
+  lines.push('    // no-domain    → string array is dynamic data, not a finite domain');
+  lines.push('');
+
+  const report = lines.join('\n');
+  console.log(report);
+
+  if (outputFile) {
+    // eslint-disable-next-line no-control-regex
+    const plain = report.replace(/\x1B\[[0-9;]*m/g, '');
+    await fs.writeFile(path.resolve(ROOT, outputFile), plain, 'utf8');
+    console.log(styleText('dim', `  Report saved to: ${outputFile}`));
+  }
+
+  if (errors.length > 0) process.exit(1);
 }
-lines.push('  Pattern breakdown:');
-for (const [pattern, count] of [...byPattern.entries()].sort((a, b) => b[1] - a[1])) {
-  lines.push(`    ${styleText('dim', String(count).padStart(4))}  ${pattern}`);
+
+if (process.env.NODE_ENV !== 'test') {
+  void runCliAudit();
 }
-lines.push('');
-
-if (errors.length === 0) {
-  lines.push(styleText('green', '  ✅ No ERROR-level domain type violations found.'));
-} else {
-  lines.push(styleText('red', `  ❌ ${errors.length} ERROR(s) must be fixed before commit.`));
-}
-lines.push('');
-lines.push('  💡 Escape hatches (for intentional exceptions — use sparingly):');
-lines.push('    // domain-ok    → field genuinely accepts any string (open text)');
-lines.push('    // string-ok    → type alias to string is intentional');
-lines.push('    // open-record  → Record<string, ...> key is intentionally open');
-lines.push('    // runtime-set  → Set used for runtime lookup (not domain typing)');
-lines.push('    // runtime-map  → Map used for runtime lookup (not domain typing)');
-lines.push('    // no-domain    → string array is dynamic data, not a finite domain');
-lines.push('');
-
-const report = lines.join('\n');
-console.log(report);
-
-if (outputFile) {
-  // eslint-disable-next-line no-control-regex
-  const plain = report.replace(/\x1B\[[0-9;]*m/g, '');
-  await fs.writeFile(path.resolve(ROOT, outputFile), plain, 'utf8');
-  console.log(styleText('dim', `  Report saved to: ${outputFile}`));
-}
-
-if (errors.length > 0) process.exit(1);

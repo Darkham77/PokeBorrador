@@ -33,10 +33,11 @@ const filteredMoves = computed(() => {
   const s = moveSearch.value.toLowerCase().trim()
   if (!s) return props.speciesMoves as string[] // no-domain
   
+  const MOVE_SEARCH_MAX_RESULTS = 30;
   return allMovesList
     .filter(m => m.id.toLowerCase().includes(s) || m.nameEs.toLowerCase().includes(s))
     .map(m => m.id)
-    .slice(0, 30)
+    .slice(0, MOVE_SEARCH_MAX_RESULTS)
 })
 
 function getMoveDisplayName(id: string | null | undefined): string {
@@ -93,6 +94,7 @@ function removeMove(slotIndex: number) {
     <div class="move-slots">
       <div
         v-for="i in 4"
+        :id="`debug-move-slot-${i}`"
         :key="i"
         class="move-slot"
       >
@@ -103,6 +105,7 @@ function removeMove(slotIndex: number) {
         >
           <span class="mv-name">{{ getMoveDisplayName(modelValue[i-1]) }}</span>
           <button
+            :id="`debug-move-remove-${i}`"
             class="remove-move"
             @click.stop="removeMove(i-1)"
           >
@@ -122,6 +125,7 @@ function removeMove(slotIndex: number) {
           class="move-picker custom-scrollbar"
         >
           <input
+            id="debug-move-search-input"
             v-model="moveSearch"
             type="text"
             placeholder="BUSCAR..."
@@ -139,7 +143,8 @@ function removeMove(slotIndex: number) {
             </div>
             <div 
               v-for="m in filteredMoves" 
-              :key="m" 
+              :id="`debug-move-option-${m}`" 
+              :key="m"
               class="move-item"
               @click.stop="addMove(m, i-1)"
             >

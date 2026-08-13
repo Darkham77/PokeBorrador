@@ -3,7 +3,7 @@ import { test, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { waitForWaitInput, type CertifiedTestBatch } from '../e2e_helpers.ts';
+import { type CertifiedTestBatch } from '../e2e_helpers.ts';
 import { MAX_SUITE_TOTAL_TIMEOUT_MS } from '../simulation_config.ts';
 import { requireCertifiedBattleCaseDocument } from '../fuzzer/core/certifiedBattleCase.ts';
 
@@ -97,11 +97,10 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
         const logBuffer: string[] = [];
         const sim = new FSMSyncSimWrapper(page, `TestBatchFSM_${index}`, logBuffer);
         await sim.setup();
-        await waitForWaitInput(page);
 
         try {
           await sim.setupFuzzerScenario(batch);
-          await sim.playBattle(batch.finalState);
+          await sim.replayCertifiedBattle(batch);
           reportProgress(index, false);
         } catch (error: unknown) {
           reportProgress(index, true);

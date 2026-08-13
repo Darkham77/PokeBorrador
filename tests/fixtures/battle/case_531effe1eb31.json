@@ -1,0 +1,205 @@
+{
+  "id": "case-8e50e455b2a5",
+  "idx": 1,
+  "playerTeam": [
+    {
+      "name": "a2e8f4c1",
+      "species": "mew",
+      "level": 100,
+      "gender": "N",
+      "item": "abilityshield",
+      "ability": "noability",
+      "nature": "serious",
+      "evs": {
+        "hp": 252,
+        "atk": 252,
+        "def": 252,
+        "spa": 252,
+        "spd": 252,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "flamethrower",
+        "surf",
+        "closecombat",
+        "thunderwave"
+      ],
+      "uid": "a2e8f4c1-750d-4710-8d0a-ceacf07ae9a9",
+      "stats": {
+        "maxHp": 404,
+        "atk": 299,
+        "def": 299,
+        "spa": 299,
+        "spd": 299,
+        "spe": 299
+      }
+    }
+  ],
+  "enemyTeam": [
+    {
+      "name": "646d7e65",
+      "species": "mew",
+      "level": 100,
+      "gender": "F",
+      "item": "",
+      "ability": "naturalcure",
+      "nature": "serious",
+      "evs": {
+        "hp": 252,
+        "atk": 0,
+        "def": 252,
+        "spa": 0,
+        "spd": 4,
+        "spe": 0
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "worryseed",
+        "flamethrower",
+        "surf",
+        "toxic"
+      ],
+      "uid": "646d7e65-76b6-4c53-9e6a-9267bca820cd",
+      "stats": {
+        "maxHp": 404,
+        "atk": 236,
+        "def": 299,
+        "spa": 236,
+        "spd": 237,
+        "spe": 236
+      }
+    }
+  ],
+  "movesToTest": [],
+  "abilitiesToTest": [],
+  "seed": [
+    18588,
+    21544,
+    54523,
+    34263
+  ],
+  "playerChoices": [
+    "move 1",
+    "move 2",
+    "move 3",
+    "move 4",
+    "move 3",
+    "move 3",
+    "move 3",
+    "move 3"
+  ],
+  "enemyChoices": [
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1"
+  ],
+  "history": [
+    {
+      "turnCount": 1,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 2
+    },
+    {
+      "turnCount": 2,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 3
+    },
+    {
+      "turnCount": 3,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 4
+    },
+    {
+      "turnCount": 4,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 5
+    },
+    {
+      "turnCount": 5,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 6
+    },
+    {
+      "turnCount": 6,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 7
+    },
+    {
+      "turnCount": 7,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 8
+    },
+    {
+      "turnCount": 8,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 8
+    }
+  ],
+  "steps": [
+    "Turno 1: ataca a2e8f4c1 con Flamethrower a 646d7e65",
+    "Turno 1: ataca 646d7e65 con Worry Seed a a2e8f4c1",
+    "Turno 2: ataca a2e8f4c1 con Surf a 646d7e65",
+    "Turno 2: ataca 646d7e65 con Worry Seed a a2e8f4c1",
+    "Turno 3: ataca a2e8f4c1 con Close Combat a 646d7e65",
+    "Turno 3: ataca 646d7e65 con Worry Seed a a2e8f4c1",
+    "Turno 4: ataca a2e8f4c1 con Thunder Wave a 646d7e65",
+    "Turno 5: ataca a2e8f4c1 con Close Combat a 646d7e65",
+    "Turno 5: ataca 646d7e65 con Worry Seed a a2e8f4c1",
+    "Turno 6: ataca a2e8f4c1 con Close Combat a 646d7e65",
+    "Turno 6: ataca 646d7e65 con Worry Seed a a2e8f4c1",
+    "Turno 7: ataca a2e8f4c1 con Close Combat a 646d7e65",
+    "Turno 7: ataca 646d7e65 con Worry Seed a a2e8f4c1",
+    "Turno 8: ataca a2e8f4c1 con Close Combat a 646d7e65",
+    "Turno 8: 646d7e65 se debilitó"
+  ],
+  "ended": true,
+  "winner": "p1",
+  "finalState": {
+    "isOver": true,
+    "winner": "p1",
+    "p1": [
+      {
+        "name": "a2e8f4c1",
+        "hp": 404,
+        "maxHp": 404,
+        "fainted": false
+      }
+    ],
+    "p2": [
+      {
+        "name": "646d7e65",
+        "hp": 0,
+        "maxHp": 404,
+        "fainted": true
+      }
+    ]
+  }
+}

@@ -283,7 +283,7 @@ async function runFallowDupes(): Promise<Violation[]> {
           if (first) {
             const firstPath = first.file || first.path || '';
             const firstLine = first.start_line || first.line || 0;
-            const locations = instances.slice(1).map((i: { file?: string; path?: string; start_line?: number; line?: number }) => `${i.file || i.path || ''}:${i.start_line || i.line || 0}`).join(', ');
+            const locations = instances.slice(1).map((i: { file?: string; path?: string; start_line?: number; line?: number }) => `${i.file || i.path || ''}:${i.start_line || i.line || 0}`).join(', '); // type-ok
             const isTriplicate = instances.length >= 3;
             const prefix = isTriplicate ? 'Código triplicado crítico' : 'Código duplicado crítico';
             violations.push({

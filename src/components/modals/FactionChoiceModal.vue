@@ -44,7 +44,6 @@ const handleImgError = (e: Event) => {
 
 // Expose to template
 const getAssetUrlLocal = getAssetUrl
-const ASSET_TYPES_LOCAL = ASSET_TYPES
 </script>
 
 <template>
@@ -78,7 +77,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
         >
           <div class="faction-icon-wrap">
             <img
-              :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, 'union')"
+              :src="getAssetUrlLocal(ASSET_TYPES.FACTION, 'union')"
               class="faction-icon-large"
               @error="handleImgError"
             >
@@ -96,7 +95,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
         >
           <div class="faction-icon-wrap">
             <img
-              :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, 'poder')"
+              :src="getAssetUrlLocal(ASSET_TYPES.FACTION, 'poder')"
               class="faction-icon-large"
               @error="handleImgError"
             >
@@ -212,3 +211,4 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 .union-text { color: #60a5fa; }
 .poder-text { color: #f87171; }
 </style>
+

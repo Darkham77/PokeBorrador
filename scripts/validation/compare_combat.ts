@@ -168,7 +168,7 @@ function executeComparison(options: RunOptions): ComparisonResult {
   const battle = new Battle({ formatid: 'gen3customgame' as never });
   
   if (battle.actions) {
-    (battle.actions as unknown as { checkAccuracy: () => boolean }).checkAccuracy = function() {
+    (battle.actions as { checkAccuracy?: () => boolean }).checkAccuracy = function() {
       return true;
     };
   }

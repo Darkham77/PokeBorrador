@@ -161,7 +161,7 @@ export function translatePostgresToSqlite(sql: string): string {
     // 4. SQL Patterns
     .replace(/FOR\s+UPDATE/gi, '')
     .replace(/DEFAULT\s+strftime\('%Y-%m-%dT%H:%M:%SZ',\s*'now'\)/gi, "DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))")
-    .replace(/DEFAULT\s+hex\(randomblob\(16\)\)/gi, "DEFAULT (hex(randomblob(16)))") // no-magic
+    .replace(/DEFAULT\s+hex\(randomblob\(16\)\)/gi, "DEFAULT (hex(randomblob(16)))")
     .replace(/RAISE\s+EXCEPTION\s+'[^']*'/gi, 'SELECT 1')
     .replace(/\bADD\s+COLUMN\s+IF\s+NOT\s+EXISTS\b/gi, 'ADD COLUMN')
     // 5. References & Schemas

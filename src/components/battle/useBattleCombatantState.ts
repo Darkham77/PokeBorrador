@@ -20,7 +20,7 @@ import { useCombatShadowStore } from '@/stores/battle/combatShadows';
 import { useBattleStore } from '@/stores/battle/battle';
 import { gameBus } from '@/logic/events/gameBus';
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
-import type { BattleCombatantProps } from '@/types/battle/battle';
+import type { BattleCombatantProps, BattleEscapeType } from '@/types/battle/battle';
 import {
   COMBATANT_DISPLAY_SIZE_ENEMY_MULT,
   COMBATANT_DISPLAY_SIZE_PLAYER_MULT,
@@ -399,7 +399,7 @@ const BALL_TARGET_X_CENTER_OFFSET = 0.5;
   // Escape Smoke Particles
   const smokeParticles = ref<SmokeParticle[]>([]);
 
-  const runEscapeAnimation = (type: 'teleport' | 'flee') => {
+  const runEscapeAnimation = (type: BattleEscapeType) => {
     if (!spriteRef.value) return;
 
 const GSAP_TELEPORT_SCALEY_TARGET = 2.0;
@@ -480,7 +480,7 @@ const GSAP_TELEPORT_SCALEX_TARGET = 0.1;
   };
 
   const handleEscapeEvent = (e: Event) => {
-    const data = (e as CustomEvent).detail as { side: string; pokemon?: Pokemon | null; type: 'flee' | 'teleport' } | undefined;
+    const data = (e as CustomEvent).detail as { side: string; pokemon?: Pokemon | null; type: BattleEscapeType } | undefined;
     if (data && data.side === props.side && (!data.pokemon || data.pokemon.uid === props.pokemon?.uid)) {
       const stateVal = toValue(battleStore.state);
       const isTrainerCombat = !!stateVal?.isTrainer || !!stateVal?.isGym;

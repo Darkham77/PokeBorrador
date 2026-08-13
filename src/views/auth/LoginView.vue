@@ -282,14 +282,15 @@ watch(error, (newVal) => {
       const card = document.querySelector('.auth-ban-card')
       if (card) {
         gsap.killTweensOf(card)
+        const BAN_SHAKE_STEP_SEC = 0.05;
         const tl = gsap.timeline()
-        tl.to(card, { x: -4, duration: 0.05 }) // magic-ok
-          .to(card, { x: 4, duration: 0.05 }) // magic-ok
-          .to(card, { x: -4, duration: 0.05 }) // magic-ok
-          .to(card, { x: 4, duration: 0.05 }) // magic-ok
-          .to(card, { x: -2, duration: 0.05 }) // magic-ok
-          .to(card, { x: 2, duration: 0.05 }) // magic-ok
-          .to(card, { x: 0, duration: 0.05 }) // magic-ok
+        tl.to(card, { x: -4, duration: BAN_SHAKE_STEP_SEC })
+          .to(card, { x: 4, duration: BAN_SHAKE_STEP_SEC })
+          .to(card, { x: -4, duration: BAN_SHAKE_STEP_SEC })
+          .to(card, { x: 4, duration: BAN_SHAKE_STEP_SEC })
+          .to(card, { x: -2, duration: BAN_SHAKE_STEP_SEC })
+          .to(card, { x: 2, duration: BAN_SHAKE_STEP_SEC })
+          .to(card, { x: 0, duration: BAN_SHAKE_STEP_SEC })
       }
     })
   }

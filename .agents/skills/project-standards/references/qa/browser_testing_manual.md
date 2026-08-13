@@ -27,13 +27,16 @@ If there is no active session:
 
 > Do not use `evaluate` to skip the login; it is necessary to initialize `window.__VITE_DEBUG__` through the normal UI flow.
 
-### 3. Fast Navigation (CLI-First)
+### 3. Visible Navigation
 
-Once logged in, use commands to clear the UI and jump to the target:
+Once logged in, use the visible official HUD, menu, navigation, and modal
+controls. Debug globals are read-only diagnostics; they must not close layers,
+navigate, open modals, or mutate gameplay.
 
-- `window.__VITE_DEBUG__.closeAllModals()`
-- `window.__VITE_DEBUG__.navigate(tabId)`
-- `window.__VITE_DEBUG__.openModal(modalName)`
+When a hover tooltip makes an official focused control move, select it by its
+unique ID, focus it, and press `Enter`. This is the same genuine keyboard
+activation available to a player; never replace it with a force-click,
+coordinate click, or synthetic DOM event.
 
 ---
 
@@ -48,12 +51,29 @@ To avoid lag and IDE saturation:
 
 ## ⚔️ Combat and State Simulation
 
-When testing complex states (e.g., defeat), verify the Pinia state directly:
+Every Playwright combat must initialize a current fuzzer-certified case and
+replay its immutable seed, atomic `history`, `playerChoices`, `enemyChoices`,
+recorded game actions, and IPB flags through the shared
+`ShowdownBattleRunner`. After initialization, every action is a visible
+official UI interaction: buttons, menus, bag selection, target selection,
+movement, confirmations, and exit. Do not construct manual battles, replace a
+recorded action with a convenient alternative, or use real AI as an alternate
+browser decision source. A bag medicine remains a certified game action: it is
+not rewritten as a synthetic Showdown move choice.
+
+The initialization exception is deliberately narrow: it establishes only the
+starting state of the current certified case. It cannot drive an interaction,
+dismiss a modal, choose a move, switch, flee, target, confirm, move the player,
+or exit the battle. The only related allowance is the recorded IPB healing flag;
+it is deterministic parity instrumentation and never replaces a visible action.
+
+For read-only verification of complex states (e.g., defeat):
 
 1. Check store state via `window.__VITE_DEBUG__.battleStore.state`.
 2. Verify DOM updates in the Vue UI.
-3. Prioritize using `BattleDebugTools.vue` before injecting states manually via console.
-4. **CLI Combat Debug Commands**: When interacting with battle state via console tools, note that functions (like `damagePlayer`, `switchPlayerPokemon`, etc.) are defined under the active store. You must resolve them through the store namespace, for example using the resolver pattern: `window.__VITE_DEBUG__.battle.store().damagePlayer(30)` or `window.__VITE_DEBUG__.battle.store().switchPlayerPokemon(idx)` rather than executing them directly on the `window.__VITE_DEBUG__.battle` parent namespace.
+3. Use visible `BattleDebugTools.vue` controls only where the certified replay
+   itself permits a recorded cheat. Never inject HP, status, switching, or
+   choices through console/store commands.
 
 ### 4. UI Overrides vs. Database State
 

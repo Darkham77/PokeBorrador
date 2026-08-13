@@ -9,6 +9,7 @@ export interface ShowdownExecutorOptions {
   p2Choice: string;
   p1Skip?: boolean;
   p2Skip?: boolean;
+  p1UsedBattleItem?: boolean;
   p1Hps?: Record<string, number>;
   p2Hps?: Record<string, number>;
   p1Statuses?: Record<string, string>;
@@ -18,6 +19,7 @@ export interface ShowdownExecutorOptions {
   runner?: ShowdownBattleRunner | null;
   isFuzzerSimulation?: boolean;
   currentStep?: number;
+  certifiedHistoryStep?: { p1Heal?: boolean; p2Heal?: boolean; turnCount?: number };
 }
 
 export interface ExecuteBattleTurnResult {
@@ -50,13 +52,14 @@ export function executeBattleTurn(options: ShowdownExecutorOptions): ExecuteBatt
     p2Choice: options.p2Choice,
     p1Skip: options.p1Skip,
     p2Skip: options.p2Skip,
+    p1UsedBattleItem: options.p1UsedBattleItem,
     p1Hps: options.p1Hps,
     p2Hps: options.p2Hps,
     p1Statuses: options.p1Statuses,
     p2Statuses: options.p2Statuses,
     weather: options.weather,
     ipbActive: options.isFuzzerSimulation ? true : undefined,
-    certifiedHistoryStep: options.currentStep,
+    certifiedHistoryStep: options.certifiedHistoryStep,
   });
 
   if (options.runner) {

@@ -35,6 +35,43 @@ If it is finite, design the domain type first.
 - **Canonical Pattern**: `const ARCHAEOLOGY_CAVE_BASE_WEIGHT = 10;`, `const DEFAULT_DEBUG_FRIENDSHIP = 70;` (CORRECT — semantic & generic).
 - **Audit Rule**: The rule `badConstantNames` automatically flags any `const CONST_NAME_123` containing numeric value suffixes in `src/` and `scripts/`.
 
+## Absolute Prohibition on Literal Boolean Type Annotations (`noLiteralBooleanType`)
+
+- **Canonical Boolean Mandate**: It is STRICTLY FORBIDDEN to use boolean literals (`true`, `false`) as type annotations when declaring variables, interface/type fields, type aliases, or function parameters (e.g. `var hola: true`, `let flag: false`, `field: true;`).
+- **Forbidden Pattern**: `var hola: true`, `type Flag = false;`, `interface Event { ready: true; }` (WRONG — types as literal boolean instead of boolean type).
+- **Canonical Pattern**: `var hola: boolean`, `type Flag = boolean;`, `interface Event { ready: boolean; }` (CORRECT — canonical boolean contract).
+## Nominal Branded Types for Domain IDs (`Brand<T, B>`)
+
+- **Nominal Safety Mandate**: Finite domain identifiers (`PokemonSpeciesId`, `ItemId`, `PokemonMoveId`) SHOULD be defined as Nominal Branded Types using `Brand<T, B>` from `@/types/system/branding` to prevent accidental assignability across distinct domains.
+- **Example**:
+  ```ts
+  import { type Brand, toBrand } from '@/types/system/branding';
+  export type PokemonSpeciesId = Brand<string, 'PokemonSpeciesId'>;
+  export const makePokemonSpeciesId = (raw: string): PokemonSpeciesId => toBrand(requirePokemonSpeciesId(raw));
+  ```
+
+## Result & Option Monad Standard (`Result<T, E>` / `Option<T>`)
+
+- **Zero Null-Ambiguity Mandate**: Domain boundary functions performing fallible computations or lookups SHOULD consume or return `Option<T>` or `Result<T, E>` from `@/types/system/result` and `@/logic/utils/resultUtils`.
+- **Example**:
+  ```ts
+  import { ok, err, type Result } from '@/logic/utils/resultUtils';
+  export function parseItemQuantity(raw: unknown): Result<number, string> {
+    const num = Number(raw);
+    return !isNaN(num) && num > 0 ? ok(num) : err('Cantidad inválida');
+  }
+  ```
+
+## Floating Promise & Architecture Rules (`noFloatingPromises`, `noLeakedGlobalState`, `noDynamicImportInHotPath`)
+
+- **Floating Promise Guard (`noFloatingPromises`)**: Async calls MUST be handled explicitly with `await`, `void`, or `.catch()` (e.g. `void saveStateAsync();`).
+- **Module Global State Guard (`noLeakedGlobalState`)**: Mutable `let`/`var` variables at top-level module scope are prohibited unless encapsulated in Pinia stores, classes, or marked `// singleton-ok`.
+- **Hot-Path Import Guard (`noDynamicImportInHotPath`)**: Dynamic `import()` inside loops, Vue computed properties, or GSAP timelines is prohibited to avoid combat animation stutter.
+- **Auto-Fixer Command**: Mechanical rules can be auto-repaired across the codebase by running:
+  ```bash
+  npm run audit:fix
+  ```
+
 ## Canonical Patterns
 
 Use one of these patterns as the source of truth.
@@ -147,6 +184,7 @@ Do not use these for finite domains:
 - `new Map<string, ...>(...)` to represent a domain map.
 - Type assertions such as `as DomainId`, `as unknown as Record<...>`, `(OBJ as Record<string, T>)[key]`, `(ARRAY as readonly string[]).includes(...)`, or `as any` to force values into domain contracts or bypass index/inclusion checks during lookup.
 - **Tuple Inclusion Cast Prohibition**: Casting tuple constants (e.g. `(REPLAY_SEATS as readonly string[]).includes(val)`) in business logic to bypass TypeScript's tuple inclusion check is STRICTLY FORBIDDEN. Annotate parameters with the domain union type directly (e.g. `val: ReplaySeat`) or encapsulate the check inside a dedicated `isDomainId` type guard.
+- **Ad-Hoc String Literal Union Prohibition**: Defining or casting string literal unions inline (e.g. `as 'p1' | 'p2'`, `: 'p1' | 'p2'`, `as 'player' | 'enemy'`) instead of consuming canonical domain types (e.g. `SideID`) is STRICTLY FORBIDDEN. The `validate:domain-types` auditor flags all such occurrences as ERRORs. Whenever a finite domain union is needed, consume or define a named canonical domain type alias exported from `@pkmn/sim` or domain contracts.
 - **Helper Cast Wrappers / Anti-Cheat Prohibition**: Creating helper functions, arrow getters, or composables (e.g. `const toPokemon = (d: unknown) => d as unknown as Pokemon // domain-ok`) solely to wrap and conceal double type assertions is STRICTLY FORBIDDEN. Refactor the underlying types using Discriminated Unions (e.g. `type Listing = { type: 'pokemon'; data: Pokemon } | { type: 'item'; data: Item }`) so TypeScript infers types naturally without any casts.
 
 If code seems to need an inline cast (e.g., `(DATABASE as Record<string, T>)[key]`), it means the data boundary lacks a typed accessor helper or boundary guard. Instead of casting inline:
@@ -176,10 +214,20 @@ Examples:
 
 Before finishing a task that creates or modifies domain data:
 
+## Ad-Hoc String Literal Union Auditor (`P_TYPECAST_STRING_UNION` & `P_AD_HOC_STRING_UNION_ANNOTATION`)
+
+- **Purpose**: Detects inline string literal union casts (`as 'p1' | 'p2'`, `as 'player' | 'enemy'`) and inline string union type annotations (`: 'p1' | 'p2'`, `: 'player' | 'enemy'`) defined ad-hoc across files instead of consuming canonical domain types (e.g., `SideID` from `@pkmn/sim` or `BattleSide` from `@/types/battle/battle`).
+- **Enforcement**: Integrated into both `scripts/validation/validate_domain_types.ts` (`npm run validate:domain-types`) and `.agents/skills/domain-type-first/scripts/audit_domain_types_portable.mjs`.
+- **Severity**: `ERROR`. Flags every inline seat or combatant union assertion or parameter annotation as an error.
+- **Resolution**:
+  1. Replace inline `: 'player' | 'enemy'` parameter or property annotations with canonical `BattleSide`.
+  2. Replace inline `: 'p1' | 'p2'` worker/engine annotations with `SideID`.
+  3. Replace inline `as 'player' | 'enemy'` or `as 'p1' | 'p2'` casts with `as BattleSide` or `as SideID`.
+
 1. Search for loose patterns in touched files:
 
 ```bash
-rg -n "type .* = string|\\| string|string & \\{\\}|Record<string|Record<PropertyKey|\\[.*: string\\]|new Set|new Map|string\\[\\]|Array<string>|ReadonlyArray<string>" <touched paths>
+rg -n "type .* = string|\\| string|string & \\{\\}|Record<string|Record<PropertyKey|\\[.*: string\\]|new Set|new Map|string\\[\\]|Array<string>|ReadonlyArray<string>|as\\s+['\"\`]p1['\"\`]|:\\s*['\"\`]player['\"\`]" <touched paths>
 ```
 
 2. Run the project validator:

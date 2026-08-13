@@ -20,19 +20,18 @@ const BUSH_BACK_QUATERNARY_SCALE = 1.1
 const BUSH_BACK_QUINARY_SCALE = 0.95
 const FIRST_ELEMENT_INDEX = 0;
 const FULL_OPACITY = 1;
-const SCALE_FULL = 1;
 const ZERO_OPACITY = 0;
 const BUSH_TRANSFORM_ORIGIN_BOTTOM_CENTER = 'bottom center';
 
 import { computed, ref, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
-import { GSAP_FAST_DURATION_SEC, COMBATANT_EMERGE_SPARKLE_FADE_DURATION_SEC } from '@/logic/constants/animations'
+import { GSAP_FAST_DURATION_SEC, COMBATANT_EMERGE_SPARKLE_FADE_DURATION_SEC, SCALE_FULL } from '@/logic/constants/animations'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { getActiveBushesForMap, type ResolvedBushConfig, BUSH_FAMILIES, type BushFamily } from '@/logic/environment/bushLibrary'
+import { getActiveBushesForMap, type ResolvedBushConfig, BUSH_FAMILIES, type BushFamily, type BushLayerDepth } from '@/logic/environment/bushLibrary'
 
 interface Props {
   locationId?: string
-  layer: 'back' | 'front'
+  layer: BushLayerDepth
   groundY: string
   /** Semilla de azar única por combate, generada por el padre. */
   seed?: number
@@ -69,19 +68,30 @@ interface BushConfig {
   ay: string
 }
 
+const BUSH_POS = {
+  FRONT_1_TX: -60, FRONT_1_TY: 10,
+  FRONT_2_TX: 60,  FRONT_2_TY: 10,
+  FRONT_3_TX: 0,   FRONT_3_TY: 22,
+  BACK_1_TX: -80,  BACK_1_TY: -10,
+  BACK_2_TX: 80,   BACK_2_TY: -10,
+  BACK_3_TX: 0,    BACK_3_TY: -22,
+  BACK_4_TX: -40,  BACK_4_TY: -17,
+  BACK_5_TX: 40,   BACK_5_TY: -17,
+} as const;
+
 // Configuraciones base de las posiciones para mantener consistencia visual absoluta
-const bushes: Record<'front' | 'back', BushConfig[]> = { // no-magic
+const bushes: Record<'front' | 'back', BushConfig[]> = {
   front: [
-    { id: 1, cls: 'bush-front-1', scale: BUSH_FRONT_PRIMARY_SCALE, tx: -60, ty: 10, ad: '1.2s', ay: '0s' },
-    { id: 2, cls: 'bush-front-2', scale: BUSH_FRONT_SECONDARY_SCALE, tx: 60, ty: 10, ad: '1.5s', ay: '-0.4s' },
-    { id: 3, cls: 'bush-front-3', scale: BUSH_FRONT_TERTIARY_SCALE, tx: 0, ty: 22, ad: '1.8s', ay: '-0.2s' }
+    { id: 1, cls: 'bush-front-1', scale: BUSH_FRONT_PRIMARY_SCALE, tx: BUSH_POS.FRONT_1_TX, ty: BUSH_POS.FRONT_1_TY, ad: '1.2s', ay: '0s' },
+    { id: 2, cls: 'bush-front-2', scale: BUSH_FRONT_SECONDARY_SCALE, tx: BUSH_POS.FRONT_2_TX, ty: BUSH_POS.FRONT_2_TY, ad: '1.5s', ay: '-0.4s' },
+    { id: 3, cls: 'bush-front-3', scale: BUSH_FRONT_TERTIARY_SCALE, tx: BUSH_POS.FRONT_3_TX, ty: BUSH_POS.FRONT_3_TY, ad: '1.8s', ay: '-0.2s' }
   ],
   back: [
-    { id: 1, cls: 'bush-back-1', scale: BUSH_BACK_PRIMARY_SCALE, tx: -80, ty: -10, ad: '1.8s', ay: '-0.8s' },
-    { id: 2, cls: 'bush-back-2', scale: BUSH_BACK_SECONDARY_SCALE, tx: 80, ty: -10, ad: '2.1s', ay: '-0.2s' },
-    { id: 3, cls: 'bush-back-3', scale: BUSH_BACK_TERTIARY_SCALE, tx: 0, ty: -22, ad: '1.6s', ay: '-0.5s' },
-    { id: 4, cls: 'bush-back-4', scale: BUSH_BACK_QUATERNARY_SCALE, tx: -40, ty: -17, ad: '1.9s', ay: '-0.1s' },
-    { id: 5, cls: 'bush-back-5', scale: BUSH_BACK_QUINARY_SCALE, tx: 40, ty: -17, ad: '1.7s', ay: '-0.3s' }
+    { id: 1, cls: 'bush-back-1', scale: BUSH_BACK_PRIMARY_SCALE, tx: BUSH_POS.BACK_1_TX, ty: BUSH_POS.BACK_1_TY, ad: '1.8s', ay: '-0.8s' },
+    { id: 2, cls: 'bush-back-2', scale: BUSH_BACK_SECONDARY_SCALE, tx: BUSH_POS.BACK_2_TX, ty: BUSH_POS.BACK_2_TY, ad: '2.1s', ay: '-0.2s' },
+    { id: 3, cls: 'bush-back-3', scale: BUSH_BACK_TERTIARY_SCALE, tx: BUSH_POS.BACK_3_TX, ty: BUSH_POS.BACK_3_TY, ad: '1.6s', ay: '-0.5s' },
+    { id: 4, cls: 'bush-back-4', scale: BUSH_BACK_QUATERNARY_SCALE, tx: BUSH_POS.BACK_4_TX, ty: BUSH_POS.BACK_4_TY, ad: '1.9s', ay: '-0.1s' },
+    { id: 5, cls: 'bush-back-5', scale: BUSH_BACK_QUINARY_SCALE, tx: BUSH_POS.BACK_5_TX, ty: BUSH_POS.BACK_5_TY, ad: '1.7s', ay: '-0.3s' }
   ]
 }
 

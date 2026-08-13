@@ -88,33 +88,34 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
   }
 
   public async setupUserInventory(money: number, pokemonCount: number): Promise<void> {
-    await this.page.evaluate(async ({ money, pokemonCount }) => {
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      
-      const game = useGameStore();
-      game.state.money = money;
+    await this.page.evaluate(
+      async ({ money, pokemonCount, setupLevel }) => {
+        const { useGameStore } = await import('../../../src/stores/game.ts');
+        const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+        
+        const game = useGameStore();
+        game.state.money = money;
 
-      const team: typeof game.state.team = [];
-      const box: typeof game.state.box = [];
-      const species = ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'ekans', 'sandshrew'];
-      for (let k = 0; k < pokemonCount; k++) {
-        const sp = species[k % species.length]!;
-        const pkmn = pokemonDebugService.generate({ id: sp, level: SIMULATION_SETUP_POKEMON_LEVEL });
-        pkmn.nickname = `GTS_TEST_${sp.toUpperCase()}_${k}`;
-        if (k === 0) {
-          team.push(pkmn);
-        } else {
-          box.push(pkmn);
+        const team: typeof game.state.team = [];
+        const box: typeof game.state.box = [];
+        const species = ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'ekans', 'sandshrew'];
+        for (let k = 0; k < pokemonCount; k++) {
+          const sp = species[k % species.length]!;
+          const pkmn = pokemonDebugService.generate({ id: sp, level: setupLevel });
+          pkmn.nickname = `GTS_TEST_${sp.toUpperCase()}_${k}`;
+          if (k === 0) {
+            team.push(pkmn);
+          } else {
+            box.push(pkmn);
+          }
         }
-      }
-      game.state.team = team;
-      game.state.box = box;
-      game.state.starterChosen = true;
-      await game.saveGame();
-    }, { money, pokemonCount });
-
-    await this.reloadAndSync();
+        game.state.team = team;
+        game.state.box = box;
+        game.state.starterChosen = true;
+        await game.saveGame();
+      },
+      { money, pokemonCount, setupLevel: SIMULATION_SETUP_POKEMON_LEVEL }
+    );
   }
 
   public async openGTS(): Promise<void> {
@@ -122,48 +123,42 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
   }
 
   public async publishNineDirectly(): Promise<void> {
-    await this.page.evaluate(async () => {
-      const { useGTSStore } = await import('../../../src/stores/gts.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const gts = useGTSStore();
-      const game = useGameStore();
-      // MANDATORY: Ensure initial game save exists in SQLite game_saves table before RPC calls
-      await game.save(false);
+    await this.page.evaluate(
+      async ({ publishLimit, listingPrice }) => {
+        const { useGTSStore } = await import('../../../src/stores/gts.ts');
+        const { useGameStore } = await import('../../../src/stores/game.ts');
+        const gts = useGTSStore();
+        const game = useGameStore();
+        // MANDATORY: Ensure initial game save exists in SQLite game_saves table before RPC calls
+        await game.save(false);
 
-      const toPublish = [...game.state.box].slice(0, GTS_BATCH_PUBLISH_LIMIT);
-      for (const p of toPublish) {
-        await gts.publishListing('pokemon', p, DEFAULT_MOCK_LISTING_PRICE);
-      }
+        const toPublish = [...game.state.box].slice(0, publishLimit);
+        for (const p of toPublish) {
+          if (!p) continue;
+          await gts.publishListing('pokemon', p, listingPrice);
+        }
 
-      // Force-refresh myListings directly from DB for this active seller
-      const { useAuthStore } = await import('../../../src/stores/auth.ts');
-      const auth = useAuthStore();
-      const currentUserId = auth.user?.id || 'local_seller';
-      const { data } = await game.db
-        .from('market_listings')
-        .select('*')
-        .eq('seller_id', currentUserId)
-        .neq('status', 'sold')
-        .order('created_at', { ascending: false }) as { data: typeof gts.myListings | null };
-      if (data) gts.myListings = data;
-    });
-  }
-
-  public override async saveGameAndAwaitExport(): Promise<void> {
-    const exportPromise = this.page.waitForResponse(response => 
-      response.url().includes('/api/dev-export-db') && response.status() === 200
+        // Force-refresh myListings directly from DB for this active seller
+        const { useAuthStore } = await import('../../../src/stores/auth.ts');
+        const auth = useAuthStore();
+        const currentUserId = auth.user?.id || 'local_seller';
+        const { data } = await game.db
+          .from('market_listings')
+          .select('*')
+          .eq('seller_id', currentUserId)
+          .neq('status', 'sold')
+          .order('created_at', { ascending: false }) as { data: typeof gts.myListings | null };
+        if (data) gts.myListings = data;
+      },
+      { publishLimit: GTS_BATCH_PUBLISH_LIMIT, listingPrice: DEFAULT_MOCK_LISTING_PRICE }
     );
-    await this.page.evaluate(async () => {
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      await useGameStore().saveGame();
-    });
-    await exportPromise;
   }
+
 }
 
 test.describe('GTS Multi-Account Transactions Simulation', () => {
   test.beforeEach(async ({ request }) => {
-    await request.post('/api/dev-import-db-cleanup');
+    await request.post('http://127.0.0.1:5174/api/dev-import-db-cleanup');
   });
 
   test('should allow listing limits, pagination check, and successful purchase', async ({ browser, request }) => {
@@ -188,16 +183,8 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     // 3. Publicar los primeros 9 Pokémon en background
     await seller.publishNineDirectly();
 
-    // Sincronización basada en eventos: Esperar a que finalicen las operaciones de red/RPC y el store
-    await pageSeller.waitForFunction(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      const store = resolver?.();
-      const storeObj = store as unknown as Record<string, { isLoading?: boolean }>;
-      return store && !store.isProcessing && !storeObj.loadingStore?.isLoading;
-    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS }).catch(() => {});
-
-    // Esperar a que el loading overlay desaparezca
-    await pageSeller.locator('#pv-loading-overlay').waitFor({ state: 'detached', timeout: MAX_PER_ACTION_TIMEOUT_MS }).catch(() => {});
+    // Sincronización basada en eventos: Esperar a que el loading overlay desaparezca
+    await pageSeller.locator('#pv-loading-overlay').waitFor({ state: 'detached', timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     // Verificar que las 9 publicaciones directas se registraron antes de continuar
     const activeListingsCount = await pageSeller.evaluate(async () => {
@@ -228,13 +215,6 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     // Esperar que se limpie la selección (10/10 alcanzados)
     await expect(pageSeller.locator('#gts-selection-hint')).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-    // 4. Intentar publicar el 11º y verificar Toast de rechazo
-    // Esperar que el store deje de procesar y la lista reactiva se repopule
-    await pageSeller.waitForFunction(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
-      return resolver && !resolver.isProcessing;
-    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS }).catch(() => { void 0; });
-
     const nextSelectionItem = pageSeller.locator('[id^="pokemon-select-"]').first();
     await nextSelectionItem.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await nextSelectionItem.scrollIntoViewIfNeeded();
@@ -249,11 +229,18 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     // Guardar partida para exportar
     await seller.saveGameAndAwaitExport();
 
-    // 5. Inundar mercado con 50 ofertas mockeadas en la DB del servidor ANTES del setup del comprador
+    // 5. Export the seller's in-memory SQLite explicitly before seeding the shared market.
+    const sellerDbBytes = await pageSeller.evaluate(async () => {
+      const { exportSQLiteSnapshot } = await import('../../../src/logic/db/sqliteEngine.ts');
+      return exportSQLiteSnapshot();
+    });
+    const fs = await import('node:fs');
+    fs.writeFileSync(seller.getDbPath(), Buffer.from(sellerDbBytes));
+
+    // Inundar mercado con 50 ofertas mockeadas en la DB del servidor ANTES del setup del comprador
     seedMockListings(seller.getDbPath(), MOCK_LISTINGS_POOL_SIZE);
 
     // Sync disk changes back to Vite dev server's RAM cache so subsequent GET requests see them
-    const fs = await import('node:fs');
     const updatedDbBuffer = fs.readFileSync(seller.getDbPath());
     await seller.syncDevDb(request, updatedDbBuffer);
 
@@ -269,7 +256,6 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     await buyer.setup();
     await waitForStoreReady(pageBuyer);
     await buyer.setupUserInventory(INITIAL_BUYER_MONEY, 1);
-    await buyer.reloadAndSync();
 
     // Comprador abre GTS
     await buyer.openGTS();
@@ -280,12 +266,15 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     await clickResilient(explorarBtn);
 
     // Explicitly fetch listings in buyer store to load updated market mocks
-    await pageBuyer.evaluate(async () => {
-      const { initSQLite } = await import('../../../src/logic/db/sqliteEngine.ts');
-      await initSQLite({ forceReload: true });
+    const buyerListingCount = await pageBuyer.evaluate(async () => {
       const { useGTSStore } = await import('../../../src/stores/gts.ts');
-      await useGTSStore().fetchListings();
+      const gts = useGTSStore();
+      await gts.fetchListings();
+      return gts.filteredListings.length;
     });
+    if (buyerListingCount <= MOCK_LISTINGS_POOL_SIZE) {
+      throw new Error(`[GTS TEST] Expected seller listings plus ${MOCK_LISTINGS_POOL_SIZE} mocks, received ${buyerListingCount}.`);
+    }
 
     // Verificar paginación por ID único
     const pagination = pageBuyer.locator('#gts-explorer-pagination').first();
@@ -312,10 +301,9 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     await clickResilient(buyBtn);
 
     // Esperar a procesar compra (saldos actualizados)
-    await pageBuyer.waitForFunction((expectedMoney) => {
-      const store = (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.();
-      return store?.state?.money === expectedMoney;
-    }, EXPECTED_BUYER_MONEY_AFTER_PURCHASE, { timeout: E2E_MONEY_PURCHASE_TIMEOUT_MS });
+    await expect.poll(async () => {
+      return pageBuyer.evaluate(() => (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.()?.state?.money);
+    }, { timeout: E2E_MONEY_PURCHASE_TIMEOUT_MS }).toBe(EXPECTED_BUYER_MONEY_AFTER_PURCHASE);
 
     const buyerMoney = await pageBuyer.evaluate(() => {
       return (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.()?.state?.money;

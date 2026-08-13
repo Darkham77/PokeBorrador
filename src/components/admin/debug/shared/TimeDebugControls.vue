@@ -29,7 +29,7 @@ interface GameDB {
 const getDB = () => game.db as GameDB // domain-ok
 const timeOffsetLabel = ref(`${getDB()?.getTimeOffset?.() || 0}ms`)
 
-interface ViteDebugBridge {
+interface ViteDebugBridge extends Record<string, unknown> { // open-record
   setMockTime: (date: string) => void;
   resetTime: () => void;
   addHours: (h: number) => void;
@@ -38,7 +38,7 @@ interface ViteDebugBridge {
   setCycle: (c: string | null) => void;
 }
 
-const getDebugBridge = () => window.__VITE_DEBUG__ as unknown as ViteDebugBridge // domain-ok
+const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge
 
 function updateMockTime() {
   getDebugBridge().setMockTime(debugDate.value)

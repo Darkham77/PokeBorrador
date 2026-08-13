@@ -1,0 +1,37 @@
+{
+  "id": "case-sample-id",
+  "seed": [12345, 67890, 54321, 9876],
+  "playerTeam": [
+    {
+      "name": "Mew",
+      "species": "Mew",
+      "level": 100,
+      "ability": "Color Change",
+      "item": "",
+      "moves": ["aquaring", "aquastep", "aquatail", "armorcannon"],
+      "nature": "Hardy",
+      "ivs": { "hp": 31, "atk": 31, "def": 31, "spa": 31, "spd": 31, "spe": 31 },
+      "evs": { "hp": 85, "atk": 85, "def": 85, "spa": 85, "spd": 85, "spe": 85 }
+    }
+  ],
+  "enemyTeam": [
+    {
+      "name": "Blissey",
+      "species": "Blissey",
+      "level": 100,
+      "ability": "Natural Cure",
+      "item": "",
+      "moves": ["thunderbolt", "surf", "flamethrower", "bodyslam"],
+      "nature": "Hardy",
+      "ivs": { "hp": 31, "atk": 31, "def": 31, "spa": 31, "spd": 31, "spe": 31 },
+      "evs": { "hp": 85, "atk": 85, "def": 85, "spa": 85, "spd": 85, "spe": 85 }
+    }
+  ],
+  "history": [
+    { "turnCount": 1, "p1Choice": "move 1", "p2Choice": "move 1", "battleTurn": 1 },
+    { "turnCount": 2, "p1Choice": "move 2", "p2Choice": "move 1", "battleTurn": 2 }
+  ],
+  "finalState": {
+    "winner": "Player"
+  }
+}

@@ -1,0 +1,1376 @@
+{
+  "id": "case-068de4c4f38f",
+  "idx": 1,
+  "playerTeam": [
+    {
+      "name": "9ffc7397",
+      "species": "mew",
+      "level": 100,
+      "gender": "M",
+      "item": "",
+      "ability": "airlock",
+      "nature": "serious",
+      "evs": {
+        "hp": 4,
+        "atk": 252,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "absorb",
+        "accelerock",
+        "acid",
+        "acidarmor"
+      ],
+      "uid": "9ffc7397-c8f3-4069-b023-0d0d8304031e",
+      "stats": {
+        "maxHp": 342,
+        "atk": 299,
+        "def": 236,
+        "spa": 236,
+        "spd": 236,
+        "spe": 299
+      }
+    },
+    {
+      "name": "74cc2d8f",
+      "species": "mew",
+      "level": 100,
+      "gender": "M",
+      "item": "",
+      "ability": "angershell",
+      "nature": "serious",
+      "evs": {
+        "hp": 4,
+        "atk": 252,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "acidspray",
+        "acrobatics",
+        "acupressure",
+        "aerialace"
+      ],
+      "uid": "74cc2d8f-6301-4f39-a26f-c1cf6f08bf3f",
+      "stats": {
+        "maxHp": 342,
+        "atk": 299,
+        "def": 236,
+        "spa": 236,
+        "spd": 236,
+        "spe": 299
+      }
+    },
+    {
+      "name": "7cfcf7e1",
+      "species": "mew",
+      "level": 100,
+      "gender": "M",
+      "item": "",
+      "ability": "aurabreak",
+      "nature": "serious",
+      "evs": {
+        "hp": 4,
+        "atk": 252,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "aeroblast",
+        "afteryou",
+        "agility",
+        "aircutter"
+      ],
+      "uid": "7cfcf7e1-c20d-40af-a134-18ee2baa2b6b",
+      "stats": {
+        "maxHp": 342,
+        "atk": 299,
+        "def": 236,
+        "spa": 236,
+        "spd": 236,
+        "spe": 299
+      }
+    },
+    {
+      "name": "a600bdf6",
+      "species": "mew",
+      "level": 100,
+      "gender": "M",
+      "item": "",
+      "ability": "beadsofruin",
+      "nature": "serious",
+      "evs": {
+        "hp": 4,
+        "atk": 252,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "airslash",
+        "alluringvoice",
+        "allyswitch",
+        "amnesia"
+      ],
+      "uid": "a600bdf6-ed6b-4dbe-bfa9-1e801e98f71c",
+      "stats": {
+        "maxHp": 342,
+        "atk": 299,
+        "def": 236,
+        "spa": 236,
+        "spd": 236,
+        "spe": 299
+      }
+    },
+    {
+      "name": "34a27da2",
+      "species": "mew",
+      "level": 100,
+      "gender": "M",
+      "item": "",
+      "ability": "cloudnine",
+      "nature": "serious",
+      "evs": {
+        "hp": 4,
+        "atk": 252,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "ancientpower",
+        "appleacid",
+        "aquacutter",
+        "aquajet"
+      ],
+      "uid": "34a27da2-5e44-4693-b027-5f885e101e87",
+      "stats": {
+        "maxHp": 342,
+        "atk": 299,
+        "def": 236,
+        "spa": 236,
+        "spd": 236,
+        "spe": 299
+      }
+    },
+    {
+      "name": "f8f605c0",
+      "species": "mew",
+      "level": 100,
+      "gender": "M",
+      "item": "",
+      "ability": "colorchange",
+      "nature": "serious",
+      "evs": {
+        "hp": 4,
+        "atk": 252,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "aquaring",
+        "aquastep",
+        "aquatail",
+        "armorcannon"
+      ],
+      "uid": "f8f605c0-6144-4c4a-9002-08f6c236a859",
+      "stats": {
+        "maxHp": 342,
+        "atk": 299,
+        "def": 236,
+        "spa": 236,
+        "spd": 236,
+        "spe": 299
+      }
+    }
+  ],
+  "enemyTeam": [
+    {
+      "name": "b47acc51",
+      "species": "blissey",
+      "level": 100,
+      "gender": "F",
+      "item": "",
+      "ability": "naturalcure",
+      "nature": "serious",
+      "evs": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "thunderbolt",
+        "surf",
+        "flamethrower",
+        "bodyslam"
+      ],
+      "uid": "b47acc51-f016-4d80-b14b-655c530c2b34",
+      "stats": {
+        "maxHp": 651,
+        "atk": 56,
+        "def": 56,
+        "spa": 186,
+        "spd": 306,
+        "spe": 209
+      }
+    },
+    {
+      "name": "c42c960b",
+      "species": "blissey",
+      "level": 100,
+      "gender": "F",
+      "item": "",
+      "ability": "naturalcure",
+      "nature": "serious",
+      "evs": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "thunderbolt",
+        "surf",
+        "flamethrower",
+        "bodyslam"
+      ],
+      "uid": "c42c960b-7a8f-4a33-9cdf-b944a760688e",
+      "stats": {
+        "maxHp": 651,
+        "atk": 56,
+        "def": 56,
+        "spa": 186,
+        "spd": 306,
+        "spe": 209
+      }
+    },
+    {
+      "name": "c22287eb",
+      "species": "blissey",
+      "level": 100,
+      "gender": "F",
+      "item": "",
+      "ability": "naturalcure",
+      "nature": "serious",
+      "evs": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "thunderbolt",
+        "surf",
+        "flamethrower",
+        "bodyslam"
+      ],
+      "uid": "c22287eb-5cfd-4d78-8ac9-42d8e01636ee",
+      "stats": {
+        "maxHp": 651,
+        "atk": 56,
+        "def": 56,
+        "spa": 186,
+        "spd": 306,
+        "spe": 209
+      }
+    },
+    {
+      "name": "876d8eda",
+      "species": "blissey",
+      "level": 100,
+      "gender": "F",
+      "item": "",
+      "ability": "naturalcure",
+      "nature": "serious",
+      "evs": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "thunderbolt",
+        "surf",
+        "flamethrower",
+        "bodyslam"
+      ],
+      "uid": "876d8eda-1339-4923-b4d5-d1a95f50b529",
+      "stats": {
+        "maxHp": 651,
+        "atk": 56,
+        "def": 56,
+        "spa": 186,
+        "spd": 306,
+        "spe": 209
+      }
+    },
+    {
+      "name": "768fd98c",
+      "species": "blissey",
+      "level": 100,
+      "gender": "F",
+      "item": "",
+      "ability": "naturalcure",
+      "nature": "serious",
+      "evs": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "thunderbolt",
+        "surf",
+        "flamethrower",
+        "bodyslam"
+      ],
+      "uid": "768fd98c-066f-45bd-bfcf-5dd84f3cbf10",
+      "stats": {
+        "maxHp": 651,
+        "atk": 56,
+        "def": 56,
+        "spa": 186,
+        "spd": 306,
+        "spe": 209
+      }
+    },
+    {
+      "name": "ee7da3dc",
+      "species": "blissey",
+      "level": 100,
+      "gender": "F",
+      "item": "",
+      "ability": "naturalcure",
+      "nature": "serious",
+      "evs": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "thunderbolt",
+        "surf",
+        "flamethrower",
+        "bodyslam"
+      ],
+      "uid": "ee7da3dc-c66b-4339-85b1-dde5161ef976",
+      "stats": {
+        "maxHp": 651,
+        "atk": 56,
+        "def": 56,
+        "spa": 186,
+        "spd": 306,
+        "spe": 209
+      }
+    }
+  ],
+  "movesToTest": [
+    "absorb",
+    "accelerock",
+    "acid",
+    "acidarmor",
+    "acidspray",
+    "acrobatics",
+    "acupressure",
+    "aerialace",
+    "aeroblast",
+    "afteryou",
+    "agility",
+    "aircutter",
+    "airslash",
+    "alluringvoice",
+    "allyswitch",
+    "amnesia",
+    "ancientpower",
+    "appleacid",
+    "aquacutter",
+    "aquajet",
+    "aquaring",
+    "aquastep",
+    "aquatail",
+    "armorcannon"
+  ],
+  "abilitiesToTest": [
+    "airlock",
+    "angershell",
+    "aurabreak",
+    "beadsofruin",
+    "cloudnine",
+    "colorchange"
+  ],
+  "seed": [
+    18588,
+    21544,
+    54523,
+    34263
+  ],
+  "playerChoices": [
+    "move 1",
+    "move 2",
+    "move 3",
+    "switch 2",
+    "move 1",
+    "move 2",
+    "move 3",
+    "switch 2",
+    "move 4",
+    "switch 3",
+    "move 1",
+    "switch 2",
+    "move 4",
+    "switch 4",
+    "move 1",
+    "switch 2",
+    "move 2",
+    "move 3",
+    "move 4",
+    "switch 2",
+    "move 2",
+    "move 3",
+    "move 4",
+    "switch 2",
+    "move 1",
+    "switch 5",
+    "move 1",
+    "switch 2",
+    "move 2",
+    "switch 6",
+    "move 1",
+    "switch 2",
+    "move 2",
+    "move 3",
+    "move 4",
+    "switch 2",
+    "move 2",
+    "move 3",
+    "move 4",
+    "move 4",
+    "move 4",
+    "move 4",
+    "move 4",
+    "switch 2",
+    "move 2",
+    "move 2",
+    "move 2",
+    "move 2",
+    "move 2",
+    "move 2",
+    "move 2",
+    "switch 3",
+    "move 2",
+    "move 2",
+    "move 2",
+    "move 2",
+    "move 2",
+    "move 2",
+    "move 2",
+    "move 2",
+    "switch 4",
+    "move 4",
+    "move 4",
+    "move 4",
+    "move 4",
+    "move 4",
+    "move 4",
+    "move 4",
+    "move 4",
+    "move 4"
+  ],
+  "enemyChoices": [
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "switch 2",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 2",
+    "move 2",
+    "move 2",
+    "move 2",
+    "move 2",
+    "move 2",
+    "move 2",
+    "switch 2",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "switch 2",
+    "move 2",
+    "move 2",
+    "move 2",
+    "move 2",
+    "switch 3",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "switch 4",
+    "move 1",
+    "move 1",
+    "move 1",
+    "switch 5",
+    "move 1",
+    "move 1",
+    "move 1",
+    "switch 6",
+    "move 1",
+    "move 1"
+  ],
+  "history": [
+    {
+      "turnCount": 1,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 2
+    },
+    {
+      "turnCount": 2,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 3
+    },
+    {
+      "turnCount": 3,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 4
+    },
+    {
+      "turnCount": 4,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 5
+    },
+    {
+      "turnCount": 5,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 6
+    },
+    {
+      "turnCount": 6,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 6
+    },
+    {
+      "turnCount": 7,
+      "p1Choice": "",
+      "p2Choice": "switch 2",
+      "battleTurn": 7,
+      "p2ForceSwitch": true
+    },
+    {
+      "turnCount": 8,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 8
+    },
+    {
+      "turnCount": 9,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 9,
+      "p1Heal": true
+    },
+    {
+      "turnCount": 10,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 10
+    },
+    {
+      "turnCount": 11,
+      "p1Choice": "switch 3",
+      "p2Choice": "move 1",
+      "battleTurn": 11
+    },
+    {
+      "turnCount": 12,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 12
+    },
+    {
+      "turnCount": 13,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 13
+    },
+    {
+      "turnCount": 14,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 14
+    },
+    {
+      "turnCount": 15,
+      "p1Choice": "switch 4",
+      "p2Choice": "move 1",
+      "battleTurn": 15
+    },
+    {
+      "turnCount": 16,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 16
+    },
+    {
+      "turnCount": 17,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 17
+    },
+    {
+      "turnCount": 18,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 18
+    },
+    {
+      "turnCount": 19,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 19,
+      "p1Heal": true
+    },
+    {
+      "turnCount": 20,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 20
+    },
+    {
+      "turnCount": 21,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 21
+    },
+    {
+      "turnCount": 22,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 22,
+      "p2Heal": true
+    },
+    {
+      "turnCount": 23,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 23
+    },
+    {
+      "turnCount": 24,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 24
+    },
+    {
+      "turnCount": 25,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 25
+    },
+    {
+      "turnCount": 26,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 26
+    },
+    {
+      "turnCount": 27,
+      "p1Choice": "switch 5",
+      "p2Choice": "move 1",
+      "battleTurn": 27
+    },
+    {
+      "turnCount": 28,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 28
+    },
+    {
+      "turnCount": 29,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 29,
+      "p1Heal": true
+    },
+    {
+      "turnCount": 30,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 30
+    },
+    {
+      "turnCount": 31,
+      "p1Choice": "switch 6",
+      "p2Choice": "move 1",
+      "battleTurn": 31
+    },
+    {
+      "turnCount": 32,
+      "p1Choice": "move 1",
+      "p2Choice": "move 2",
+      "battleTurn": 32
+    },
+    {
+      "turnCount": 33,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 2",
+      "battleTurn": 33
+    },
+    {
+      "turnCount": 34,
+      "p1Choice": "move 2",
+      "p2Choice": "move 2",
+      "battleTurn": 34
+    },
+    {
+      "turnCount": 35,
+      "p1Choice": "move 3",
+      "p2Choice": "move 2",
+      "battleTurn": 35,
+      "p2Heal": true
+    },
+    {
+      "turnCount": 36,
+      "p1Choice": "move 4",
+      "p2Choice": "move 2",
+      "battleTurn": 36
+    },
+    {
+      "turnCount": 37,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 2",
+      "battleTurn": 37
+    },
+    {
+      "turnCount": 38,
+      "p1Choice": "move 2",
+      "p2Choice": "move 2",
+      "battleTurn": 37
+    },
+    {
+      "turnCount": 39,
+      "p1Choice": "",
+      "p2Choice": "switch 2",
+      "battleTurn": 38,
+      "p2ForceSwitch": true
+    },
+    {
+      "turnCount": 40,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 39,
+      "p1Heal": true,
+      "p2Heal": true
+    },
+    {
+      "turnCount": 41,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 40
+    },
+    {
+      "turnCount": 42,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 41
+    },
+    {
+      "turnCount": 43,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 42
+    },
+    {
+      "turnCount": 44,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 43
+    },
+    {
+      "turnCount": 45,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 43
+    },
+    {
+      "turnCount": 46,
+      "p1Choice": "switch 2",
+      "p2Choice": "",
+      "battleTurn": 44,
+      "p1ForceSwitch": true
+    },
+    {
+      "turnCount": 47,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 45
+    },
+    {
+      "turnCount": 48,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 46
+    },
+    {
+      "turnCount": 49,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 47
+    },
+    {
+      "turnCount": 50,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 48
+    },
+    {
+      "turnCount": 51,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 49
+    },
+    {
+      "turnCount": 52,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 50
+    },
+    {
+      "turnCount": 53,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 50
+    },
+    {
+      "turnCount": 54,
+      "p1Choice": "switch 3",
+      "p2Choice": "",
+      "battleTurn": 51,
+      "p1ForceSwitch": true
+    },
+    {
+      "turnCount": 55,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 51
+    },
+    {
+      "turnCount": 56,
+      "p1Choice": "",
+      "p2Choice": "switch 2",
+      "battleTurn": 52,
+      "p2ForceSwitch": true
+    },
+    {
+      "turnCount": 57,
+      "p1Choice": "move 2",
+      "p2Choice": "move 2",
+      "battleTurn": 53
+    },
+    {
+      "turnCount": 58,
+      "p1Choice": "move 2",
+      "p2Choice": "move 2",
+      "battleTurn": 54
+    },
+    {
+      "turnCount": 59,
+      "p1Choice": "move 2",
+      "p2Choice": "move 2",
+      "battleTurn": 55
+    },
+    {
+      "turnCount": 60,
+      "p1Choice": "move 2",
+      "p2Choice": "move 2",
+      "battleTurn": 55
+    },
+    {
+      "turnCount": 61,
+      "p1Choice": "",
+      "p2Choice": "switch 3",
+      "battleTurn": 56,
+      "p2ForceSwitch": true
+    },
+    {
+      "turnCount": 62,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 57
+    },
+    {
+      "turnCount": 63,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 58
+    },
+    {
+      "turnCount": 64,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 58
+    },
+    {
+      "turnCount": 65,
+      "p1Choice": "switch 4",
+      "p2Choice": "",
+      "battleTurn": 59,
+      "p1ForceSwitch": true
+    },
+    {
+      "turnCount": 66,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 59
+    },
+    {
+      "turnCount": 67,
+      "p1Choice": "",
+      "p2Choice": "switch 4",
+      "battleTurn": 60,
+      "p2ForceSwitch": true
+    },
+    {
+      "turnCount": 68,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 61
+    },
+    {
+      "turnCount": 69,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 62
+    },
+    {
+      "turnCount": 70,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 62
+    },
+    {
+      "turnCount": 71,
+      "p1Choice": "",
+      "p2Choice": "switch 5",
+      "battleTurn": 63,
+      "p2ForceSwitch": true
+    },
+    {
+      "turnCount": 72,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 64
+    },
+    {
+      "turnCount": 73,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 65
+    },
+    {
+      "turnCount": 74,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 65
+    },
+    {
+      "turnCount": 75,
+      "p1Choice": "",
+      "p2Choice": "switch 6",
+      "battleTurn": 66,
+      "p2ForceSwitch": true
+    },
+    {
+      "turnCount": 76,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 67
+    },
+    {
+      "turnCount": 77,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 67
+    }
+  ],
+  "steps": [
+    "Turno 1: ataca 9ffc7397 con Absorb a b47acc51",
+    "Turno 1: ataca b47acc51 con Thunderbolt a 9ffc7397",
+    "Turno 2: ataca 9ffc7397 con Accelerock a b47acc51",
+    "Turno 2: ataca b47acc51 con Thunderbolt a 9ffc7397",
+    "Turno 3: ataca b47acc51 con Thunderbolt a 9ffc7397",
+    "Turno 3: ataca 9ffc7397 con Acid a b47acc51",
+    "Turno 4: ataca b47acc51 con Thunderbolt a 74cc2d8f",
+    "Turno 5: ataca 74cc2d8f con Acid Spray a b47acc51",
+    "Turno 5: ataca b47acc51 con Thunderbolt a 74cc2d8f",
+    "Turno 6: ataca 74cc2d8f con Acrobatics a b47acc51",
+    "Turno 6: b47acc51 se debilitó",
+    "Turno 8: ataca 74cc2d8f con Acupressure a 74cc2d8f",
+    "Turno 8: ataca c42c960b con Thunderbolt a 74cc2d8f",
+    "Turno 8: 74cc2d8f activa su habilidad Anger Shell",
+    "Turno 9: 9ffc7397 activa su habilidad Air Lock",
+    "Turno 9: ataca c42c960b con Thunderbolt a 9ffc7397",
+    "Turno 10: ataca 9ffc7397 con Acid Armor a 9ffc7397",
+    "Turno 10: ataca c42c960b con Thunderbolt a 9ffc7397",
+    "Turno 11: 7cfcf7e1 activa su habilidad Aura Break",
+    "Turno 11: ataca c42c960b con Thunderbolt a 7cfcf7e1",
+    "Turno 12: ataca c42c960b con Thunderbolt a 7cfcf7e1",
+    "Turno 12: ataca 7cfcf7e1 con Aeroblast a c42c960b",
+    "Turno 13: ataca c42c960b con Thunderbolt a 74cc2d8f",
+    "Turno 14: ataca 74cc2d8f con Aerial Ace a c42c960b",
+    "Turno 14: ataca c42c960b con Thunderbolt a 74cc2d8f",
+    "Turno 15: a600bdf6 activa su habilidad Beads of Ruin",
+    "Turno 15: ataca c42c960b con Thunderbolt a a600bdf6",
+    "Turno 16: ataca a600bdf6 con Air Slash a c42c960b",
+    "Turno 16: ataca c42c960b con Thunderbolt a a600bdf6",
+    "Turno 17: 7cfcf7e1 activa su habilidad Aura Break",
+    "Turno 17: ataca c42c960b con Thunderbolt a 7cfcf7e1",
+    "Turno 18: ataca c42c960b con Thunderbolt a 7cfcf7e1",
+    "Turno 18: ataca 7cfcf7e1 con After You",
+    "Turno 18: 7cfcf7e1 pero falló",
+    "Turno 19: ataca c42c960b con Thunderbolt a 7cfcf7e1",
+    "Turno 19: ataca 7cfcf7e1 con Agility a 7cfcf7e1",
+    "Turno 20: ataca 7cfcf7e1 con Air Cutter a c42c960b",
+    "Turno 20: ataca c42c960b con Thunderbolt a 7cfcf7e1",
+    "Turno 21: a600bdf6 activa su habilidad Beads of Ruin",
+    "Turno 21: ataca c42c960b con Thunderbolt a a600bdf6",
+    "Turno 22: ataca a600bdf6 con Alluring Voice a c42c960b",
+    "Turno 22: ataca c42c960b con Thunderbolt a a600bdf6",
+    "Turno 23: ataca a600bdf6 con Ally Switch",
+    "Turno 23: a600bdf6 pero falló",
+    "Turno 23: ataca c42c960b con Thunderbolt a a600bdf6",
+    "Turno 24: ataca c42c960b con Thunderbolt a a600bdf6",
+    "Turno 24: ataca a600bdf6 con Amnesia a a600bdf6",
+    "Turno 25: 7cfcf7e1 activa su habilidad Aura Break",
+    "Turno 25: ataca c42c960b con Thunderbolt a 7cfcf7e1",
+    "Turno 26: ataca 7cfcf7e1 con Aeroblast a c42c960b",
+    "Turno 26: ataca c42c960b con Thunderbolt a 7cfcf7e1",
+    "Turno 27: 34a27da2 activa su habilidad Cloud Nine",
+    "Turno 27: ataca c42c960b con Thunderbolt a 34a27da2",
+    "Turno 28: ataca 34a27da2 con Ancient Power a c42c960b",
+    "Turno 28: ataca c42c960b con Thunderbolt a 34a27da2",
+    "Turno 29: a600bdf6 activa su habilidad Beads of Ruin",
+    "Turno 29: ataca c42c960b con Thunderbolt a a600bdf6",
+    "Turno 30: ataca a600bdf6 con Alluring Voice a c42c960b",
+    "Turno 30: ataca c42c960b con Thunderbolt a a600bdf6",
+    "Turno 31: ataca c42c960b con Thunderbolt a f8f605c0",
+    "Turno 32: ataca f8f605c0 con Aqua Ring a f8f605c0",
+    "Turno 32: ataca c42c960b con Surf a f8f605c0",
+    "Turno 33: 34a27da2 activa su habilidad Cloud Nine",
+    "Turno 33: ataca c42c960b con Surf a 34a27da2",
+    "Turno 34: ataca 34a27da2 con Apple Acid a c42c960b",
+    "Turno 34: ataca c42c960b con Surf a 34a27da2",
+    "Turno 35: ataca 34a27da2 con Aqua Cutter a c42c960b",
+    "Turno 35: ataca c42c960b con Surf a 34a27da2",
+    "Turno 36: ataca 34a27da2 con Aqua Jet a c42c960b",
+    "Turno 36: ataca c42c960b con Surf a 34a27da2",
+    "Turno 37: ataca c42c960b con Surf a f8f605c0",
+    "Turno 38: ataca f8f605c0 con Aqua Step a c42c960b",
+    "Turno 38: c42c960b se debilitó",
+    "Turno 40: ataca f8f605c0 con Aqua Tail a b47acc51",
+    "Turno 40: ataca b47acc51 con Thunderbolt a f8f605c0",
+    "Turno 41: ataca f8f605c0 con Armor Cannon a b47acc51",
+    "Turno 41: ataca b47acc51 con Thunderbolt a f8f605c0",
+    "Turno 42: ataca f8f605c0 con Armor Cannon a b47acc51",
+    "Turno 42: ataca b47acc51 con Thunderbolt a f8f605c0",
+    "Turno 43: ataca f8f605c0 con Armor Cannon a b47acc51",
+    "Turno 43: ataca b47acc51 con Thunderbolt a f8f605c0",
+    "Turno 44: ataca f8f605c0 con Armor Cannon a b47acc51",
+    "Turno 44: ataca b47acc51 con Thunderbolt a f8f605c0",
+    "Turno 45: ataca f8f605c0 con Armor Cannon a b47acc51",
+    "Turno 45: ataca b47acc51 con Thunderbolt a f8f605c0",
+    "Turno 45: f8f605c0 se debilitó",
+    "Turno 46: 34a27da2 activa su habilidad Cloud Nine",
+    "Turno 47: ataca 34a27da2 con Apple Acid a b47acc51",
+    "Turno 47: ataca b47acc51 con Thunderbolt a 34a27da2",
+    "Turno 48: ataca b47acc51 con Thunderbolt a 34a27da2",
+    "Turno 48: ataca 34a27da2 con Apple Acid a b47acc51",
+    "Turno 49: ataca b47acc51 con Thunderbolt a 34a27da2",
+    "Turno 50: ataca b47acc51 con Thunderbolt a 34a27da2",
+    "Turno 51: ataca b47acc51 con Thunderbolt a 34a27da2",
+    "Turno 51: ataca 34a27da2 con Apple Acid a b47acc51",
+    "Turno 52: ataca b47acc51 con Thunderbolt a 34a27da2",
+    "Turno 53: ataca b47acc51 con Thunderbolt a 34a27da2",
+    "Turno 53: 34a27da2 se debilitó",
+    "Turno 54: 9ffc7397 activa su habilidad Air Lock",
+    "Turno 55: ataca 9ffc7397 con Accelerock a b47acc51",
+    "Turno 55: b47acc51 se debilitó",
+    "Turno 57: ataca 9ffc7397 con Accelerock a c42c960b",
+    "Turno 57: ataca c42c960b con Surf a 9ffc7397",
+    "Turno 58: ataca 9ffc7397 con Accelerock a c42c960b",
+    "Turno 58: ataca c42c960b con Surf a 9ffc7397",
+    "Turno 59: ataca 9ffc7397 con Accelerock a c42c960b",
+    "Turno 59: ataca c42c960b con Surf a 9ffc7397",
+    "Turno 60: ataca 9ffc7397 con Accelerock a c42c960b",
+    "Turno 60: c42c960b se debilitó",
+    "Turno 62: ataca 9ffc7397 con Accelerock a c22287eb",
+    "Turno 62: ataca c22287eb con Thunderbolt a 9ffc7397",
+    "Turno 63: ataca 9ffc7397 con Accelerock a c22287eb",
+    "Turno 63: ataca c22287eb con Thunderbolt a 9ffc7397",
+    "Turno 64: ataca 9ffc7397 con Accelerock a c22287eb",
+    "Turno 64: ataca c22287eb con Thunderbolt a 9ffc7397",
+    "Turno 64: 9ffc7397 se debilitó",
+    "Turno 66: ataca 74cc2d8f con Aerial Ace a c22287eb",
+    "Turno 66: c22287eb se debilitó",
+    "Turno 68: ataca 74cc2d8f con Aerial Ace a 876d8eda",
+    "Turno 68: ataca 876d8eda con Thunderbolt a 74cc2d8f",
+    "Turno 69: ataca 74cc2d8f con Aerial Ace a 876d8eda",
+    "Turno 69: ataca 876d8eda con Thunderbolt a 74cc2d8f",
+    "Turno 70: ataca 74cc2d8f con Aerial Ace a 876d8eda",
+    "Turno 70: 876d8eda se debilitó",
+    "Turno 72: ataca 74cc2d8f con Aerial Ace a 768fd98c",
+    "Turno 72: ataca 768fd98c con Thunderbolt a 74cc2d8f",
+    "Turno 73: ataca 74cc2d8f con Aerial Ace a 768fd98c",
+    "Turno 73: ataca 768fd98c con Thunderbolt a 74cc2d8f",
+    "Turno 73: 74cc2d8f activa su habilidad Anger Shell",
+    "Turno 74: ataca 74cc2d8f con Aerial Ace a 768fd98c",
+    "Turno 74: 768fd98c se debilitó",
+    "Turno 76: ataca 74cc2d8f con Aerial Ace a ee7da3dc",
+    "Turno 76: ataca ee7da3dc con Thunderbolt a 74cc2d8f",
+    "Turno 77: ataca 74cc2d8f con Aerial Ace a ee7da3dc",
+    "Turno 77: ee7da3dc se debilitó"
+  ],
+  "ended": true,
+  "winner": "p1",
+  "finalState": {
+    "isOver": true,
+    "winner": "p1",
+    "p1": [
+      {
+        "name": "74cc2d8f",
+        "hp": 35,
+        "maxHp": 342,
+        "fainted": false
+      },
+      {
+        "name": "f8f605c0",
+        "hp": 0,
+        "maxHp": 342,
+        "fainted": true
+      },
+      {
+        "name": "34a27da2",
+        "hp": 0,
+        "maxHp": 342,
+        "fainted": true
+      },
+      {
+        "name": "9ffc7397",
+        "hp": 0,
+        "maxHp": 342,
+        "fainted": true
+      },
+      {
+        "name": "7cfcf7e1",
+        "hp": 342,
+        "maxHp": 342,
+        "fainted": false
+      },
+      {
+        "name": "a600bdf6",
+        "hp": 342,
+        "maxHp": 342,
+        "fainted": false
+      }
+    ],
+    "p2": [
+      {
+        "name": "ee7da3dc",
+        "hp": 0,
+        "maxHp": 651,
+        "fainted": true
+      },
+      {
+        "name": "b47acc51",
+        "hp": 0,
+        "maxHp": 651,
+        "fainted": true
+      },
+      {
+        "name": "c42c960b",
+        "hp": 0,
+        "maxHp": 651,
+        "fainted": true
+      },
+      {
+        "name": "c22287eb",
+        "hp": 0,
+        "maxHp": 651,
+        "fainted": true
+      },
+      {
+        "name": "876d8eda",
+        "hp": 0,
+        "maxHp": 651,
+        "fainted": true
+      },
+      {
+        "name": "768fd98c",
+        "hp": 0,
+        "maxHp": 651,
+        "fainted": true
+      }
+    ]
+  }
+}

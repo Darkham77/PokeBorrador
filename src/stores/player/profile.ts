@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { AuthUser } from '@/types/auth/auth'
-import type { GameState, NotificationItem } from '@/types/system/game'
+import type { GameState, NotificationItem, GenderId } from '@/types/system/game'
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 
 
@@ -19,7 +19,7 @@ interface ProfileData {
   notificationHistory: NotificationItem[];
   lastSave: string;
   last_renamed_at?: string;
-  gender: 'h' | 'm';
+  gender: GenderId;
 }
 
 export const useProfileStore = defineStore('profile', () => {
@@ -70,7 +70,7 @@ export const useProfileStore = defineStore('profile', () => {
     }
 
     updateProfile({
-      username: state.trainer || user.user_metadata?.username || 'Entrenador',
+      username: state.trainer || (user.user_metadata?.username as string) || 'Entrenador',
       email: user.email || '—',
       isAdmin: user.user_metadata?.role === 'admin',
       level: state.trainerLevel || 1,

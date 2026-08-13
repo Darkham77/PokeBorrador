@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import { useInputAnimations } from '@/composables/ui/useInputAnimations'
+import type { GenderId } from '@/types/system/game'
 
 interface Props {
   loading: boolean
   usernameValue: string
-  genderValue: 'h' | 'm'
+  genderValue: GenderId
 }
 
 defineProps<Props>()
 
 const emit = defineEmits<{
   (e: 'update:usernameValue', val: string): void
-  (e: 'update:genderValue', val: 'h' | 'm'): void
+  (e: 'update:genderValue', val: GenderId): void
   (e: 'localSignup'): void
 }>()
 

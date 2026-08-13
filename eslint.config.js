@@ -34,6 +34,13 @@ export default tseslint.config(
           'objectLiteralTypeAssertions': 'never'
         }
       ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'TSAsExpression[typeAnnotation.type="TSUnknownKeyword"]',
+          message: 'Está ESTRICTAMENTE PROHIBIDO usar doble casteo (as unknown as). Usa guardas de tipo, augmentations de interfaz o tipado estricto.'
+        }
+      ],
       'unused-imports/no-unused-imports': 'error',
       'unused-imports/no-unused-vars': [
         'warn',

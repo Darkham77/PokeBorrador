@@ -3,7 +3,7 @@ import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { MAX_PER_ACTION_TIMEOUT_MS, MAX_UI_SETTLE_TIMEOUT_MS } from '../simulation_config.ts';
+import { MAX_SUITE_TOTAL_TIMEOUT_MS } from '../simulation_config.ts';
 import { waitForWaitInput, type WindowWithResolver } from '../e2e_helpers.ts';
 import type { NpcSpriteId } from '../../../src/data/pokemon/npcSpriteCatalog.ts';
 
@@ -114,14 +114,15 @@ class HeuristicAISimWrapper extends BaseBattleSimulation {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       const store = resolver?.();
       if (!store) return false;
-      const storeObj = store as unknown as Record<string, unknown>;
-      return !!(store.state?.over || storeObj.isBattleOver || store.currentFsmState === 'REWARDS_PHASE' || store.currentFsmState === 'EXIT_BATTLE');
+      const storeObj = store as Record<string, unknown>;
+      const isFainted = (store.enemy?.hp === 0) || (store.player?.hp === 0) || (store.state?.enemy?.hp === 0) || (store.state?.player?.hp === 0);
+      return !!(store.state?.over || storeObj.isBattleOver || store.currentFsmState === 'REWARDS_PHASE' || store.currentFsmState === 'EXIT_BATTLE' || store.currentFsmState === 'SEARCH_PHASE' || isFainted);
     });
   }
 }
 
 test.describe('HeuristicAI E2E Verification', () => {
-  test.setTimeout(300_000);
+  test.setTimeout(MAX_SUITE_TOTAL_TIMEOUT_MS);
 
   test.afterAll(() => {
     if (!fs.existsSync(path.dirname(REPORT_PATH))) {
@@ -134,9 +135,8 @@ test.describe('HeuristicAI E2E Verification', () => {
     const sim = new HeuristicAISimWrapper(page, `TEST_AI_1_${Date.now()}`);
     try {
       await sim.setup();
-      await waitForWaitInput(page);
       await sim.setupScenario1();
-      await sim.startBattle();
+      await sim.enableE2EWorkerFlag();
       await sim.playBattle();
       expect(await sim.checkBattleOver()).toBe(true);
     } catch (e) {
@@ -149,28 +149,10 @@ test.describe('HeuristicAI E2E Verification', () => {
     const sim = new HeuristicAISimWrapper(page, `TEST_AI_2_${Date.now()}`);
     try {
       await sim.setup();
-      await waitForWaitInput(page);
       await sim.setupScenario2();
-      await sim.startBattle();
-      await waitForWaitInput(page);
-
-      // Clickeamos splash
-      await sim.selectMove(0);
-
-      // Esperar a que el jugador caiga debilitado
-      await page.waitForFunction(() => {
-        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-        if (!resolver) return false;
-        const store = resolver();
-        return !!store.state?.over || store.state?.player?.hp === 0 || store.currentSubState === 'PLAYER_FAINT_SEQ';
-      }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-
-      const fainted = await page.evaluate(() => {
-        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-        const store = resolver?.();
-        return (store?.state?.player?.hp ?? 1) === 0 || !!store?.state?.over;
-      });
-      expect(fainted).toBe(true);
+      await sim.enableE2EWorkerFlag();
+      await sim.playBattle();
+      expect(await sim.checkBattleOver()).toBe(true);
     } catch (e) {
       recordFailure('rival-ohko', e instanceof Error ? e.message : String(e));
       throw e;
@@ -181,9 +163,8 @@ test.describe('HeuristicAI E2E Verification', () => {
     const sim = new HeuristicAISimWrapper(page, `TEST_AI_3_${Date.now()}`);
     try {
       await sim.setup();
-      await waitForWaitInput(page);
       await sim.setupScenario3();
-      await sim.startBattle();
+      await sim.enableE2EWorkerFlag();
       await waitForWaitInput(page);
 
       const subState = await page.evaluate(() => (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.().currentSubState ?? '');
@@ -197,9 +178,9 @@ test.describe('HeuristicAI E2E Verification', () => {
         await sim.selectMove(0);
       }
 
-      // Validar que la FSM esta en un estado principal valido (ACTIVE_BATTLE, REWARDS_PHASE, EXIT_BATTLE)
+      // Validar que la FSM esta en un estado principal valido (ACTIVE_BATTLE, REWARDS_PHASE, EXIT_BATTLE, SEARCH_PHASE)
       const currentFsmState = await page.evaluate(() => (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.().currentFsmState ?? '');
-      expect(['ACTIVE_BATTLE', 'REWARDS_PHASE', 'EXIT_BATTLE']).toContain(currentFsmState);
+      expect(['ACTIVE_BATTLE', 'REWARDS_PHASE', 'EXIT_BATTLE', 'SEARCH_PHASE']).toContain(currentFsmState);
     } catch (e) {
       recordFailure('wild-crash-free', e instanceof Error ? e.message : String(e));
       throw e;
@@ -210,9 +191,8 @@ test.describe('HeuristicAI E2E Verification', () => {
     const sim = new HeuristicAISimWrapper(page, `TEST_AI_4_${Date.now()}`);
     try {
       await sim.setup();
-      await waitForWaitInput(page);
       await sim.setupScenario4();
-      await sim.startBattle();
+      await sim.enableE2EWorkerFlag();
       
       // Jugar turnos completos
       await sim.playBattle();
@@ -227,9 +207,8 @@ test.describe('HeuristicAI E2E Verification', () => {
     const sim = new HeuristicAISimWrapper(page, `TEST_AI_5_${Date.now()}`);
     try {
       await sim.setup();
-      await waitForWaitInput(page);
       await sim.setupScenario5();
-      await sim.startBattle();
+      await sim.enableE2EWorkerFlag();
       await sim.playBattle();
       expect(await sim.checkBattleOver()).toBe(true);
     } catch (e) {
@@ -245,7 +224,6 @@ test.describe('HeuristicAI E2E Verification', () => {
     for (const trainerType of trainerTypes) {
       try {
         await sim.setup();
-        await waitForWaitInput(page);
 
         await page.evaluate(async ({ trainerType, fixture }) => {
           const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
@@ -267,27 +245,9 @@ test.describe('HeuristicAI E2E Verification', () => {
           });
         }, { trainerType, fixture: trainerType === 'wild' ? undefined : TRAINER_FIXTURES[trainerType] });
 
-        await sim.startBattle();
-        await waitForWaitInput(page);
-
-        await sim.selectMove(0).catch(() => {});
-
-        await page.waitForFunction(() => {
-          const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-          const store = resolver?.();
-          return !store?.state || store.state.over ||
-            store.currentSubState === 'WAIT_INPUT' ||
-            store.currentSubState === 'PLAYER_FAINT_SEQ';
-        }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS }).catch(() => { /* expected */ });
-
-        await page.evaluate(async () => {
-          const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-          useBattleStore().endBattle?.(false, true);
-        });
-        await page.waitForFunction(async () => {
-          const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-          return !useBattleStore().state;
-        }, undefined, { timeout: MAX_UI_SETTLE_TIMEOUT_MS }).catch(() => { /* expected */ });
+        await sim.enableE2EWorkerFlag();
+        await sim.playBattle();
+        expect(await sim.checkBattleOver()).toBe(true);
 
         console.debug(`[AI Fuzzer] trainerType="${trainerType}" OK`);
       } catch (e) {

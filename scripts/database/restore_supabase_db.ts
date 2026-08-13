@@ -158,15 +158,7 @@ export async function restoreSupabaseDb() {
   try {
     // 3.5. Obtener lista de tablas existentes en el destino
     interface TableRow { table_name: string }
-    interface LegacyPassiveBattleResult {
-      id: string;
-      attacker_id: string;
-      defender_id: string;
-      result: string;
-      attacker_elo_change?: number;
-      defender_elo_change?: number;
-      created_at: string;
-    }
+
 
     const tables = await sql<TableRow[]>`
       SELECT table_name 
@@ -395,16 +387,16 @@ const UUID_STRING_LENGTH_EXPECTED = 36;
         if (!existingTables.has(tableName)) {
           if (tableName === 'passive_battle_results' && existingTables.has('passive_battle_reports')) {
             console.log(styleText('cyan', `   🔄 Mapeando passive_battle_results a passive_battle_reports (${rows.length} filas)...`));
-            const mappedRows = (rows as unknown as LegacyPassiveBattleResult[]).map((r) => ({
-              id: r.id,
-              user_id: r.attacker_id,
-              opponent_id: r.defender_id,
-              result: r.result,
+            const mappedRows = (rows as Record<string, unknown>[]).map((r) => ({
+              id: r.id as string,
+              user_id: r.attacker_id as string,
+              opponent_id: r.defender_id as string,
+              result: r.result as string,
               report_data: {
-                attacker_elo_change: r.attacker_elo_change ?? 0,
-                defender_elo_change: r.defender_elo_change ?? 0
+                attacker_elo_change: (r.attacker_elo_change as number) ?? 0,
+                defender_elo_change: (r.defender_elo_change as number) ?? 0
               },
-              created_at: r.created_at
+              created_at: (r.created_at as string) || null
             }));
 
             // Podar columnas inválidas para passive_battle_reports

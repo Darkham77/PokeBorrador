@@ -46,6 +46,15 @@ const execShowBattleSwitch = () => {
   const isForced = uiStore.isBattleSwitchForced
   uiStore.isBattleSwitchForced = false
 
+  const team = (gameStore.state.team || []) as (Pokemon | null)[]
+  const activeUid = player.value?.uid
+  const hasBenchPokemon = team.some(p => p && p.hp > 0 && p.uid !== activeUid)
+
+  if (!hasBenchPokemon) {
+    uiStore.notify('No hay Pokémon disponibles para cambiar', '⚠️')
+    return
+  }
+
   modalStore.open('PokemonSelection', {
     title: '⚡ CAMBIAR POKÉMON',
     isBattleSwitch: true,
@@ -55,7 +64,6 @@ const execShowBattleSwitch = () => {
     activePokemonUid: player.value?.uid,
     onConfirm: (pokes: Pokemon[]) => {
       if (pokes.length > 0 && pokes[0]) {
-        const team = (gameStore.state.team || []) as (Pokemon | null)[]
         const index = team.findIndex(p => p && p.uid === pokes[0]?.uid)
         if (index !== -1) {
           if (livePvP.battleState.active) {
@@ -94,10 +102,6 @@ const BATTLE_SWITCH_RECHECK_DELAY_SEC = 0.1
 
 watch(() => uiStore.isBattleSwitchForced, (val) => {
   if (val) {
-    if (typeof window !== 'undefined' && (window as typeof window & { __E2E__?: boolean }).__E2E__) {
-      uiStore.isBattleSwitchForced = false
-      return
-    }
     if (battleStore.isProcessing) {
       const checkReady = () => {
         if (!battleStore.isProcessing) {
@@ -112,6 +116,12 @@ watch(() => uiStore.isBattleSwitchForced, (val) => {
     }
   }
 })
+
+watch(() => battleStore.currentSubState, (subState) => {
+  if (subState === 'SWITCH_MENU' && !uiStore.isBattleSwitchForced) {
+    uiStore.isBattleSwitchForced = true
+  }
+}, { immediate: true })
 
 // Auto-combatir: Inicia el encuentro automáticamente si está activado
 watch(() => [

@@ -30,3 +30,14 @@ export function parseShowdownSeedForBattle(seed: unknown): `${number},${string}`
   const parsed = parseShowdownSeed(seed);
   return parsed as `${number},${string}` | undefined; // domain-ok
 }
+
+const DEFAULT_RNG_INITIAL_SEED = 12345;
+let rngSeed = DEFAULT_RNG_INITIAL_SEED;
+export function resetDeterministicMathRandom(initialSeed = DEFAULT_RNG_INITIAL_SEED) {
+  rngSeed = initialSeed;
+  Math.random = () => {
+    const x = Math.sin(rngSeed++) * 10000;
+    return x - Math.floor(x);
+  };
+}
+

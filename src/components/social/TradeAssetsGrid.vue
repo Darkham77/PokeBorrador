@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { TradeOffer } from '@/types/system/stores';
+import type { TradeOffer, TradeCardMode } from '@/types/system/stores';
 
 const props = defineProps<{
   trade: TradeOffer;
-  mode: 'incoming' | 'outgoing' | 'accepted';
+  mode: TradeCardMode;
 }>();
 
 const hasOffer = computed(() =>

@@ -12,10 +12,10 @@
   - [ ] Note scratch directory path: `<appDataDir>/brain/<conversation-id>/scratch/`
 - [ ] **Phase 1: Initial Snapshot Commit**
   - [ ] `git status` (Record modified/untracked files)
-  - [ ] `git diff` (Review full changes)
+  - [ ] `git diff` & Session Artifacts Review (Review full diff + inspect session artifacts in `<appDataDir>/brain/<conversation-id>/`)
   - [ ] AGENTS.md chain review
   - [ ] `npx fallow health --score` (Record BASELINE_HEALTH)
-  - [ ] Compose commit message (The Elegant Protocol)
+  - [ ] Compose commit message (The Elegant Protocol synthesis)
   - [ ] `git add .`
   - [ ] `git commit -m "<message>"`
 - [ ] **Phase 2: Test Gap Analysis**

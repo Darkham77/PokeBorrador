@@ -189,14 +189,11 @@ describe('randomSet() — rival pool species produce valid competitive sets', ()
 //    and verifies that every included set is valid per @pkmn/sim.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Species with gen9randombattle data — all rival pool species after pool update. */
-const RIVAL_POOL_GEN9 = RIVAL_POOL;
-
 describe('Rival team — ace + getTeam() fill is valid at every sampled level', () => {
   for (const rivalLevel of SAMPLED_LEVELS) {
     it(`Level ${rivalLevel}: ace set + fill sets are all sim-valid`, () => {
       // Only pick ace from species that have gen9 data (others go via makePokemon fallback)
-      const aceBase = RIVAL_POOL_GEN9[Math.floor(Math.random() * RIVAL_POOL_GEN9.length)]!;
+      const aceBase = RIVAL_POOL[Math.floor(Math.random() * RIVAL_POOL.length)]!;
 
       // Build ace set
       const aceSet = gen.randomSet(aceBase);
@@ -223,7 +220,7 @@ describe('Rival team — ace + getTeam() fill is valid at every sampled level', 
       }
 
       // Pool-fallback: only use gen9-data species for randomSet() in fill
-      const poolFallback = RIVAL_POOL_GEN9.filter(id => !usedSpecies.has(toID(id)));
+      const poolFallback = RIVAL_POOL.filter((id: string) => !usedSpecies.has(toID(id)));
       for (const poolId of poolFallback) {
         if (validFill.length + 1 >= 5) break; // teamSize − 1 (ace already counted)
         usedSpecies.add(toID(poolId));

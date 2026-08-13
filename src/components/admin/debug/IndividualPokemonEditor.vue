@@ -18,6 +18,7 @@ import PokemonPreview from './PokemonPreview.vue'
 import PokemonBaseStats from './PokemonBaseStats.vue'
 
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { MoveCategory } from '@/data/battle/moves'
 import type { PokemonStatKey, PokemonMoveId } from '@/types/pokemon/pokemon'
 
 const props = defineProps<{
@@ -100,7 +101,7 @@ const activePokeMoves = computed({
         type: mData.type || 'normal',
         power: mData.power || 0,
         acc: mData.acc || 100,
-        cat: (mData.cat || 'physical') as 'physical' | 'special' | 'status'
+        cat: (mData.cat || 'physical') as MoveCategory
       }
     }).filter(Boolean) as Pokemon['moves']
     activePoke.value.moves = formatted

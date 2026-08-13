@@ -22,13 +22,16 @@ interface MarketListingBase {
   created_at: string;
 }
 
+export type MarketListingType = 'pokemon' | 'item';
+export type MarketAssetType = 'pokemon' | 'item' | 'money';
+
 export type MarketListing =
   | (MarketListingBase & { listing_type: 'pokemon'; data: Pokemon })
   | (MarketListingBase & { listing_type: 'item'; data: MarketItemData });
 
 
 export interface MarketFilters {
-  mode: 'pokemon' | 'item';
+  mode: MarketListingType;
   search: string;
   priceMin: number;
   priceMax: number;

@@ -5,7 +5,7 @@ export { getPokemonTier } from '@/logic/pokemon/tierEngine';
 import type { Pokemon, PokemonMove, PokemonIVs } from '@/types/pokemon/pokemon';
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
-import { MOVE_TRANSLATIONS_ES } from '@/data/battle/moves';
+import { MOVE_TRANSLATIONS_ES, type MoveCategory } from '@/data/battle/moves';
 import {
   MAX_LEARNED_MOVES_SLOTS,
   ROCKET_SELL_LEVEL_MULTIPLIER,
@@ -134,7 +134,7 @@ export function getMovesAtLevel(id: string, level: number, bypassWhitelist = fal
       type: moveData.type || 'normal',
       power: moveData.power || 0,
       acc: moveData.acc || DEFAULT_ACCURACY_BASE_STAT,
-      cat: moveData.cat as 'physical' | 'special' | 'status',
+      cat: moveData.cat as MoveCategory,
       priority: moveData.priority,
       effect: moveData.effect,
       recoil: moveData.recoil,

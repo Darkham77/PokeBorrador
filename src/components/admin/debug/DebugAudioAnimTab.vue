@@ -21,11 +21,11 @@ import {
   DEBUG_SPECIAL_MODES
 } from './debugConstants.ts'
 
-interface ViteDebugBridge {
+interface ViteDebugBridge extends Record<string, unknown> { // open-record
   setStatStage: (side: string, stat: string, val: number) => void;
   playSound: (id: string) => void;
   triggerAnim: (id: string, side: string, options?: Record<string, unknown>) => void;
-  setStatus: (side: string, status: string) => void;
+  setStatus: (side: string, status: string) => Promise<void>;
   setSecondaryStatus: (side: string, type: string) => void;
   modifyStatStage: (side: string, stat: string, delta: number) => void;
   setFieldEffect: (side: string, effect: string, val: number) => void;
@@ -36,7 +36,7 @@ const battleStore = useBattleStore()
 
 const activeSide = ref<'player' | 'enemy'>('enemy')
 
-const getDebugBridge = () => window.__VITE_DEBUG__ as unknown as ViteDebugBridge // domain-ok
+const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge
 
 const setStatStage = (side: string, stat: string, val: number) => {
   getDebugBridge().setStatStage(side, stat, val)
@@ -67,8 +67,8 @@ const triggerAttack = (cat?: string) => {
   }
 }
 
-const setStatus = (status: string) => {
-  getDebugBridge().setStatus(activeSide.value, status)
+const setStatus = async (status: string) => {
+  await getDebugBridge().setStatus(activeSide.value, status)
 }
 
 const toggleSecondary = (type: string) => {
@@ -170,12 +170,14 @@ const isEffectActive = (type: string, category: string) => {
       <span class="section-label">BANDO OBJETIVO</span>
       <div class="side-toggle">
         <button 
+          id="debug-effect-side-player"
           :class="{ active: activeSide === 'player' }"
           @click.stop="activeSide = 'player'"
         >
           JUGADOR (BACK)
         </button>
         <button 
+          id="debug-effect-side-enemy"
           :class="{ active: activeSide === 'enemy' }"
           @click.stop="activeSide = 'enemy'"
         >
@@ -192,6 +194,7 @@ const isEffectActive = (type: string, category: string) => {
       <div class="button-grid-small">
         <button
           v-for="st in DEBUG_STATUS_CONDITIONS"
+          :id="`debug-status-${st.id}`"
           :key="st.id"
           class="debug-btn status-btn"
           :class="{ active: isEffectActive(st.id, 'status') }"

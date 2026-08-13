@@ -6,10 +6,15 @@ import type { ItemId } from '@/data/inventory/items';
 import type { GymId } from '@/data/world/gyms';
 import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import type { MapRouteId } from '@/data/world/map-assets';
+import type { MoveCategory } from '@/data/battle/moves';
 
 
 export type CoreBattleStatKey = 'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'accuracy' | 'evasion' | 'reflect' | 'lightScreen' | 'safeguard' | 'mist' | 'spikes';
 export type BattleSide = 'player' | 'enemy';
+export type BattleDifficulty = 'easy' | 'normal' | 'hard';
+export type BattleActionType = 'move' | 'switch';
+export type PartySlotStatus = 'active' | 'fainted' | 'empty';
+export type BattleEscapeType = 'flee' | 'teleport';
 export type BattleParticipantUid = Pokemon['uid'];
 export const BATTLE_CONDITION_KEYS = [
   'auroraveil',
@@ -80,6 +85,21 @@ export interface BattleWeather {
   turns: number;
 }
 
+/**
+ * A delayed slot-based move effect (Future Sight, Doom Desire).
+ * Fires on the Pokémon occupying the target slot when turnsLeft reaches 0,
+ * regardless of which Pokémon originally received the effect.
+ * Canonical model: Showdown `slotCondition` on `target.side.slotConditions[position]`.
+ */
+export interface PendingSlotEffect {
+  move: 'futuresight' | 'doomdesire';
+  side: BattleSide;
+  targetSlot: number; // 0-indexed position on target side
+  turnsLeft: number;  // fires when this reaches 0
+  damage: number;     // pre-computed damage
+  sourceName?: string; // domain-ok — for log message only
+}
+
 export interface BattleState {
   player: Pokemon | null;
   enemy: Pokemon | null;
@@ -100,16 +120,15 @@ export interface BattleState {
   turnCount: number;
   over: boolean;
   fled?: boolean;
-  turn?: 'player' | 'enemy' | null;
+  turn?: BattleSide | null;
   isCapture?: boolean;
   isRival?: boolean;
   escapeAttempts: number;
   initialMapWeather?: WeatherId | null;
   rarity?: number;
-  futureSightTurns?: number;
-  futureSightTarget?: Pokemon | null;
   terrain?: string | null; // domain-ok
   fieldConditions?: Partial<Record<BattleConditionKey, BattleTimedCondition>>;
+  pendingSlotEffects?: PendingSlotEffect[];
   playerSideConditions?: Partial<Record<BattleConditionKey, BattleTimedCondition>>;
   enemySideConditions?: Partial<Record<BattleConditionKey, BattleTimedCondition>>;
   playerTeam?: Pokemon[];
@@ -118,6 +137,7 @@ export interface BattleState {
   _rewardCombatants?: Pokemon[];
   isFishing?: boolean;
   isArchaeology?: boolean;
+  isExecutingSwitch?: boolean;
   lastDamage?: number;
   enemyUsedItem?: boolean;
   playerUsedItem?: boolean;
@@ -133,10 +153,10 @@ export interface BattleState {
   battleLogs?: BattleLog[];
   rewardsProcessed?: boolean;
   persistenceMode?: 'local' | 'remote';
-  winnerResult?: 'player' | 'enemy' | 'tie';
+  winnerResult?: BattleSide | 'tie';
   learnQueue?: unknown[];
   isPvP?: boolean;
-  difficulty?: 'easy' | 'normal' | 'hard';
+  difficulty?: BattleDifficulty;
   _lastActivePlayer?: Pokemon | null;
   seed?: number[];
   battleHistory?: Array<{
@@ -194,7 +214,7 @@ export interface SparkleData {
 }
 
 export interface BattleCombatantProps {
-  side: 'player' | 'enemy';
+  side: BattleSide;
   pokemon?: Pokemon | null;
   position: { x: number; y: number };
   targetPosition?: { x: number; y: number } | null;
@@ -211,7 +231,7 @@ export interface BattleCombatantProps {
   activeMove?: {
     id?: PokemonMoveId;
     side: BattleSide;
-    cat: 'physical' | 'special' | 'status' | 'selfKO';
+    cat: MoveCategory | 'selfKO';
     name: string; // domain-ok
     selfKO?: boolean;
     recoil?: boolean | number;

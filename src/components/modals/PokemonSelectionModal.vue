@@ -12,7 +12,7 @@ import { useBreedingStore } from '@/stores/breeding'
 import { checkCompatibility } from '@/logic/breeding/breedingEngine'
 import PokemonSelectionItem from './PokemonSelectionItem.vue'
 import PokemonSelectionFilters from './PokemonSelectionFilters.vue'
-import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { Pokemon, PokemonStorageLocation, PokemonSelectionSource } from '@/types/pokemon/pokemon'
 import {
   isBabyPokemonSpeciesId,
   isFossilPokemonSpeciesId,
@@ -116,11 +116,11 @@ watch([sortBy, sortOrder, activeTags, searchQuery], () => {
   }))
 }, { deep: true })
 
-const availablePokemon = computed<{ pokemon: Pokemon, _source: 'team' | 'box' | 'market', index: number }[]>(() => {
+const availablePokemon = computed<{ pokemon: Pokemon, _source: PokemonSelectionSource, index: number }[]>(() => {
   const box = (gameStore.state.box || []) as (Pokemon | null)[]
   const team = (gameStore.state.team || []) as (Pokemon | null)[]
   
-  let sourceList: { pokemon: Pokemon, _source: 'team' | 'box', index: number }[] = []
+  let sourceList: { pokemon: Pokemon, _source: PokemonStorageLocation, index: number }[] = []
   
   if (props.customList && props.customList.length > 0) {
     sourceList = props.customList.map((p, i) => ({ pokemon: p, _source: 'box' as const, index: i }))
@@ -203,7 +203,13 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: 'team' | 'box' | 
   return result
 })
 
-function toggleSelection(item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market', index: number }) {
+export interface PokemonSelectionItemEntry {
+  pokemon: Pokemon;
+  _source: PokemonSelectionSource;
+  index: number;
+}
+
+function toggleSelection(item: PokemonSelectionItemEntry) {
   const uid = item.pokemon.uid
   const sIdx = selectedUids.value.indexOf(uid)
   if (sIdx > -1) {
@@ -263,7 +269,7 @@ if (typeof window !== 'undefined') {
   })
 }
 
-function openDetail(item: { pokemon: Pokemon, _source: 'team' | 'box' | 'market', index: number }) {
+function openDetail(item: PokemonSelectionItemEntry) {
   uiStore.openPokemonDetail(item.pokemon, item.index, item._source, { source: 'selection' })
 }
 </script>

@@ -33,6 +33,8 @@
     "strictFunctionTypes": true,
     "strictBindCallApply": true,
     "strictPropertyInitialization": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
 
     /* Incremental JS Support */
     "allowJs": false,

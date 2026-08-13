@@ -137,19 +137,19 @@ export const GUARDIAN_ENCOUNTER_CHANCE_PERCENT = 0.015;
 
 /** Standard levels for conflict zone guardian tiers. */
 export const GUARDIAN_LEVELS = {
-  TIER_40: 40,
-  TIER_41: 41,
-  TIER_42: 42,
-  TIER_43: 43,
-  TIER_44: 44,
-  TIER_45: 45,
-  TIER_46: 46,
-  TIER_47: 47,
-  TIER_48: 48,
-  TIER_50: 50,
-  TIER_52: 52,
-  TIER_55: 55,
-  TIER_60: 60
+  COMMON_MIN: 40,
+  COMMON_LOW: 41,
+  COMMON_MID_LOW: 42,
+  COMMON_MID: 43,
+  COMMON_MID_HIGH: 44,
+  COMMON_HIGH: 45,
+  RARE_MIN: 46,
+  RARE_LOW: 47,
+  RARE_MID: 48,
+  RARE_HIGH: 50,
+  ELITE_LOW: 52,
+  ELITE_MID: 55,
+  ELITE_HIGH: 60
 } as const;
 
 /** Maximum simulated points for local dominance calculation. */

@@ -1,3 +1,8 @@
+<script lang="ts">
+const DEFAULT_SPARKLE_COUNT = 5
+const DEFAULT_RADIUS_PX = 40
+</script>
+
 <script setup lang="ts">
 /**
  * PVSpriteFX.vue
@@ -32,8 +37,6 @@ const GUARDIAN_FX_DURATION_SEC = 2
 
 const FLINCHED_FX_REPEATS = 10
 const GUARDIAN_DELAY_MULTIPLIER = -2
-const DEFAULT_SPARKLE_COUNT = 5
-const DEFAULT_RADIUS_PX = 40
 
 interface FXData {
   type: string;

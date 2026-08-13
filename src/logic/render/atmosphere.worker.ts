@@ -21,6 +21,60 @@ import {
   FULL_CIRCLE_RAD
 } from '@/logic/constants/visuals';
 
+type OpacityPresetKey =
+  | 'FOG_MIN'
+  | 'FOG_MAX'
+  | 'MIST_LOW_POWER_BASE'
+  | 'MIST_LOW_POWER_MAX'
+  | 'MIST_NORMAL_BASE'
+  | 'MIST_NORMAL_MAX'
+  | 'WIND_MIN'
+  | 'WIND_MAX'
+  | 'STRONG_MIN'
+  | 'STRONG_MAX'
+  | 'DUST'
+  | 'SAND_OP1'
+  | 'SAND_OP2';
+
+const ATMOSPHERE_OPACITY_PRESETS: Record<OpacityPresetKey, number> = {
+  FOG_MIN: 0.8,
+  FOG_MAX: 0.85,
+  MIST_LOW_POWER_BASE: 0.75,
+  MIST_LOW_POWER_MAX: 0.9,
+  MIST_NORMAL_BASE: 0.4,
+  MIST_NORMAL_MAX: 0.6,
+  WIND_MIN: 0.15,
+  WIND_MAX: 0.25,
+  STRONG_MIN: 0.55,
+  STRONG_MAX: 0.75,
+  DUST: 0.8,
+  SAND_OP1: 0.5,
+  SAND_OP2: 0.55,
+};
+
+/** Physics divisors for fog/mist drift speed calculations. */
+const ATMOSPHERE_DRIFT = {
+  FOG_MIST_DIVISOR: 80,
+  WIND_DIVISOR: 8,
+  DUST_DIVISOR: 3,
+  SEED_FAST_BASE: 2.5,
+  SEED_FAST_MULT: 0.5,
+  SEED_SLOW_BASE: 0.6,
+  SEED_SLOW_MULT: 0.2,
+  GOLDEN_RATIO: 1.618,
+  SAND_FACTOR_NORMAL: 1.5,
+  SAND_FACTOR_STRONG: 1.2,
+  SAND_SEED_BASE: 0.7,
+  SAND_SEED_MULT: 0.8,
+  SAND_DUR2_BASE: 1.1,
+  SAND_DUR2_MULT: 0.4,
+} as const;
+
+/** Pulse cycle duration in seconds for non-strong weather. */
+const ATMOSPHERE_CYCLE_DURATION_CALM = 5;
+/** Pulse cycle base for strong weather (added to animSeed). */
+const ATMOSPHERE_CYCLE_DURATION_STRONG_BASE = 1.5;
+
 let canvas: OffscreenCanvas | null = null;
 let ctx: OffscreenCanvasRenderingContext2D | null = null;
 let isPaused = false;
@@ -70,21 +124,23 @@ function render(time: number) {
   let driftY2 = 0;
 
   if (isFog || isMist) {
-    driftX1 = (TEXTURE_TILE_SIZE_BASE * speedVar) / (80 * (2.5 + params.animSeed * 0.5)); // magic-ok
-    driftY1 = (TEXTURE_TILE_SIZE_BASE * speedVar) / (80 * (2.5 + params.animSeed * 0.5)); // magic-ok
-    driftX2 = (TEXTURE_TILE_SIZE_LARGE * speedVar) / (80 * (0.6 + params.animSeed * 0.2)); // magic-ok
-    driftY2 = (TEXTURE_TILE_SIZE_LARGE * speedVar) / (80 * (0.6 + params.animSeed * 0.2)); // magic-ok
+    const fogFastDen = ATMOSPHERE_DRIFT.FOG_MIST_DIVISOR * (ATMOSPHERE_DRIFT.SEED_FAST_BASE + params.animSeed * ATMOSPHERE_DRIFT.SEED_FAST_MULT);
+    const fogSlowDen = ATMOSPHERE_DRIFT.FOG_MIST_DIVISOR * (ATMOSPHERE_DRIFT.SEED_SLOW_BASE + params.animSeed * ATMOSPHERE_DRIFT.SEED_SLOW_MULT);
+    driftX1 = (TEXTURE_TILE_SIZE_BASE * speedVar) / fogFastDen;
+    driftY1 = (TEXTURE_TILE_SIZE_BASE * speedVar) / fogFastDen;
+    driftX2 = (TEXTURE_TILE_SIZE_LARGE * speedVar) / fogSlowDen;
+    driftY2 = (TEXTURE_TILE_SIZE_LARGE * speedVar) / fogSlowDen;
   } else if (isWind) {
-    driftX1 = (-TEXTURE_TILE_SIZE_BASE * speedVar) / (8 * (2.5 + params.animSeed * 0.5)); // magic-ok
-    driftX2 = (-TEXTURE_TILE_SIZE_LARGE * speedVar) / (8 * (0.6 + params.animSeed * 0.2)); // magic-ok
+    driftX1 = (-TEXTURE_TILE_SIZE_BASE * speedVar) / (ATMOSPHERE_DRIFT.WIND_DIVISOR * (ATMOSPHERE_DRIFT.SEED_FAST_BASE + params.animSeed * ATMOSPHERE_DRIFT.SEED_FAST_MULT));
+    driftX2 = (-TEXTURE_TILE_SIZE_LARGE * speedVar) / (ATMOSPHERE_DRIFT.WIND_DIVISOR * (ATMOSPHERE_DRIFT.SEED_SLOW_BASE + params.animSeed * ATMOSPHERE_DRIFT.SEED_SLOW_MULT));
   } else if (isDust) {
-    driftX1 = (-TEXTURE_TILE_SIZE_BASE * speedVar) / (3 * (2.5 + params.animSeed * 0.5)); // magic-ok
-    driftX2 = (-TEXTURE_TILE_SIZE_LARGE * speedVar) / (3 * (0.6 + params.animSeed * 0.2)); // magic-ok
+    driftX1 = (-TEXTURE_TILE_SIZE_BASE * speedVar) / (ATMOSPHERE_DRIFT.DUST_DIVISOR * (ATMOSPHERE_DRIFT.SEED_FAST_BASE + params.animSeed * ATMOSPHERE_DRIFT.SEED_FAST_MULT));
+    driftX2 = (-TEXTURE_TILE_SIZE_LARGE * speedVar) / (ATMOSPHERE_DRIFT.DUST_DIVISOR * (ATMOSPHERE_DRIFT.SEED_SLOW_BASE + params.animSeed * ATMOSPHERE_DRIFT.SEED_SLOW_MULT));
   } else if (isSand || isStrong) {
-    const factor = isStrong ? 1.2 : 1.5;
-    const dur1 = (0.7 + params.animSeed * 0.8) * factor; // magic-ok
-    const seed2 = (params.animSeed * 1.618) % 1; // magic-ok
-    const dur2 = dur1 * (1.1 + seed2 * 0.4); // magic-ok
+    const factor = isStrong ? ATMOSPHERE_DRIFT.SAND_FACTOR_STRONG : ATMOSPHERE_DRIFT.SAND_FACTOR_NORMAL;
+    const dur1 = (ATMOSPHERE_DRIFT.SAND_SEED_BASE + params.animSeed * ATMOSPHERE_DRIFT.SAND_SEED_MULT) * factor;
+    const seed2 = (params.animSeed * ATMOSPHERE_DRIFT.GOLDEN_RATIO) % 1;
+    const dur2 = dur1 * (ATMOSPHERE_DRIFT.SAND_DUR2_BASE + seed2 * ATMOSPHERE_DRIFT.SAND_DUR2_MULT);
     driftX1 = -TEXTURE_TILE_SIZE_LARGE / dur1;
     driftX2 = -TEXTURE_TILE_SIZE_HUGE / dur2;
   }
@@ -94,35 +150,32 @@ function render(time: number) {
 
   // Opacity & Pulsing logic
   const hasPulse = isStrong;
-  const cycleDuration = hasPulse ? (1.5 + params.animSeed) : 5;
+  const cycleDuration = hasPulse ? (ATMOSPHERE_CYCLE_DURATION_STRONG_BASE + params.animSeed) : ATMOSPHERE_CYCLE_DURATION_CALM;
   const pulse = (Math.sin((time / MILLISECONDS_PER_SECOND) * FULL_CIRCLE_RAD / cycleDuration) + 1) / 2;
 
-  const ATMOSPHERE_PRIMARY_OPACITY = 0.25;
-  const ATMOSPHERE_SECONDARY_OPACITY = 0.15;
-
-  let op1 = ATMOSPHERE_PRIMARY_OPACITY;
-  let op2 = ATMOSPHERE_SECONDARY_OPACITY;
+  let op1 = ATMOSPHERE_OPACITY_PRESETS.WIND_MAX;
+  let op2 = ATMOSPHERE_OPACITY_PRESETS.WIND_MIN;
 
   if (isFog) {
-    op1 = 0.8 + (0.85 - 0.8) * pulse; // magic-ok
+    op1 = ATMOSPHERE_OPACITY_PRESETS.FOG_MIN + (ATMOSPHERE_OPACITY_PRESETS.FOG_MAX - ATMOSPHERE_OPACITY_PRESETS.FOG_MIN) * pulse;
     op2 = op1;
   } else if (isMist) {
-    const baseOp = params.isLowPower ? 0.75 : 0.4; // magic-ok
-    const maxOp = params.isLowPower ? 0.9 : 0.6; // magic-ok
+    const baseOp = params.isLowPower ? ATMOSPHERE_OPACITY_PRESETS.MIST_LOW_POWER_BASE : ATMOSPHERE_OPACITY_PRESETS.MIST_NORMAL_BASE;
+    const maxOp = params.isLowPower ? ATMOSPHERE_OPACITY_PRESETS.MIST_LOW_POWER_MAX : ATMOSPHERE_OPACITY_PRESETS.MIST_NORMAL_MAX;
     op1 = baseOp + (maxOp - baseOp) * pulse;
     op2 = op1;
   } else if (w === 'wind') {
-    op1 = 0.15 + (0.25 - 0.15) * pulse; // magic-ok
+    op1 = ATMOSPHERE_OPACITY_PRESETS.WIND_MIN + (ATMOSPHERE_OPACITY_PRESETS.WIND_MAX - ATMOSPHERE_OPACITY_PRESETS.WIND_MIN) * pulse;
     op2 = op1;
   } else if (isStrong) {
-    op1 = 0.55 + (0.75 - 0.55) * pulse; // magic-ok
+    op1 = ATMOSPHERE_OPACITY_PRESETS.STRONG_MIN + (ATMOSPHERE_OPACITY_PRESETS.STRONG_MAX - ATMOSPHERE_OPACITY_PRESETS.STRONG_MIN) * pulse;
     op2 = op1;
   } else if (isDust) {
-    op1 = 0.8; // magic-ok
-    op2 = 0.8; // magic-ok
+    op1 = ATMOSPHERE_OPACITY_PRESETS.DUST;
+    op2 = ATMOSPHERE_OPACITY_PRESETS.DUST;
   } else if (isSand) {
-    op1 = 0.5; // magic-ok
-    op2 = 0.55; // magic-ok
+    op1 = ATMOSPHERE_OPACITY_PRESETS.SAND_OP1;
+    op2 = ATMOSPHERE_OPACITY_PRESETS.SAND_OP2;
   }
 
   // Target sizes based on original CSS

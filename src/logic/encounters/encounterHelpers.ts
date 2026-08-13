@@ -6,7 +6,8 @@ import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { getActivePinia } from 'pinia';
 import { useGameStore } from '@/stores/game';
 import { isDisputePhase } from '@/logic/war/warEngine';
-import { getGuardianData, GUARDIAN_CHANCE } from '@/logic/war/guardianEngine';
+import { getGuardianData } from '@/logic/war/guardianEngine';
+import { GUARDIAN_ENCOUNTER_CHANCE_PERCENT } from '@/logic/constants/gameplay';
 import { getWeatherFamily } from '@/data/system/weatherFamilies.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { MapLocation, Encounter, EncounterOptions, EncounterState } from '@/types/pokemon/encounters';
@@ -45,8 +46,7 @@ import {
   DEFAULT_WEATHER_MULTIPLIER_NORMAL,
   DEBUG_MOCK_MAGIKARP_STATS,
   DEBUG_MOCK_KABUTO_STATS,
-  DEBUG_MOCK_PIDGEY_STATS,
-  DEBUG_MOVE_BASE_POWER
+  DEBUG_MOCK_PIDGEY_STATS
 } from '@/logic/constants/encounters';
 
 type WeightedSpeciesSource = PokemonSpeciesId[] | Partial<Record<PokemonSpeciesId, number>>;
@@ -189,81 +189,17 @@ export function checkSpecialEncounters(
   const debug = win?.__VITE_DEBUG__;
   
 const DEBUG_MOCK_MAGIKARP_UID = 'magikarp-fishing-debug';
-const SPLASH_MAX_PP = 40;
-const ARCHAEOLOGY_SCRATCH_MAX_PP = 35;
 
   if (debug?.forceEncounterType) {
     if (debug.forceEncounterType === 'fishing') {
-      return {
-        type: 'fishing',
-        pokemon: {
-          id: 'magikarp',
-          uid: DEBUG_MOCK_MAGIKARP_UID,
-          name: 'Magikarp',
-          level: DEBUG_MOCK_MAGIKARP_STATS.LEVEL,
-          hp: DEBUG_MOCK_MAGIKARP_STATS.HP,
-          maxHp: DEBUG_MOCK_MAGIKARP_STATS.HP,
-          moves: [{ id: 'splash', name: 'Salpicadura', type: 'water', cat: 'status', pp: SPLASH_MAX_PP, maxPP: SPLASH_MAX_PP, priority: 0, power: null, acc: null, effect: '', target: 'normal' }],
-          stats: {
-            hp: DEBUG_MOCK_MAGIKARP_STATS.HP,
-            atk: DEBUG_MOCK_MAGIKARP_STATS.ATK,
-            def: DEBUG_MOCK_MAGIKARP_STATS.DEF,
-            spa: DEBUG_MOCK_MAGIKARP_STATS.SPA,
-            spd: DEBUG_MOCK_MAGIKARP_STATS.SPD,
-            spe: DEBUG_MOCK_MAGIKARP_STATS.SPE
-          },
-          maxStats: {
-            hp: DEBUG_MOCK_MAGIKARP_STATS.HP,
-            atk: DEBUG_MOCK_MAGIKARP_STATS.ATK,
-            def: DEBUG_MOCK_MAGIKARP_STATS.DEF,
-            spa: DEBUG_MOCK_MAGIKARP_STATS.SPA,
-            spd: DEBUG_MOCK_MAGIKARP_STATS.SPD,
-            spe: DEBUG_MOCK_MAGIKARP_STATS.SPE
-          },
-          exp: DEBUG_MOCK_MAGIKARP_STATS.EXP,
-          nextLevelExp: DEBUG_MOCK_MAGIKARP_STATS.NEXT_LEVEL_EXP,
-          gender: 'm',
-          nature: 'hardy',
-          ability: 'swiftswim',
-          isShiny: false
-        } as unknown as Pokemon // domain-ok
-      };
+      const p = makePokemon('magikarp', DEBUG_MOCK_MAGIKARP_STATS.LEVEL, { bypassWhitelist: true }) as Pokemon;
+      p.uid = DEBUG_MOCK_MAGIKARP_UID;
+      return { type: 'fishing', pokemon: p };
     }
     if (debug.forceEncounterType === 'archaeology') {
-      return {
-        type: 'archaeology',
-        pokemon: {
-          id: 'kabuto',
-          uid: 'kabuto-archaeology-1234', // no-magic
-          name: 'Kabuto',
-          level: DEBUG_MOCK_KABUTO_STATS.LEVEL,
-          hp: DEBUG_MOCK_KABUTO_STATS.HP,
-          maxHp: DEBUG_MOCK_KABUTO_STATS.HP,
-          moves: [{ id: 'scratch', name: 'Arañazo', type: 'normal', cat: 'physical', pp: ARCHAEOLOGY_SCRATCH_MAX_PP, maxPP: ARCHAEOLOGY_SCRATCH_MAX_PP, priority: 0, power: DEBUG_MOVE_BASE_POWER, acc: 100, effect: '', target: 'normal' }],
-          stats: {
-            hp: DEBUG_MOCK_KABUTO_STATS.HP,
-            atk: DEBUG_MOCK_KABUTO_STATS.ATK,
-            def: DEBUG_MOCK_KABUTO_STATS.DEF,
-            spa: DEBUG_MOCK_KABUTO_STATS.SPA,
-            spd: DEBUG_MOCK_KABUTO_STATS.SPD,
-            spe: DEBUG_MOCK_KABUTO_STATS.SPE
-          },
-          maxStats: {
-            hp: DEBUG_MOCK_KABUTO_STATS.HP,
-            atk: DEBUG_MOCK_KABUTO_STATS.ATK,
-            def: DEBUG_MOCK_KABUTO_STATS.DEF,
-            spa: DEBUG_MOCK_KABUTO_STATS.SPA,
-            spd: DEBUG_MOCK_KABUTO_STATS.SPD,
-            spe: DEBUG_MOCK_KABUTO_STATS.SPE
-          },
-          exp: DEBUG_MOCK_KABUTO_STATS.EXP,
-          nextLevelExp: DEBUG_MOCK_KABUTO_STATS.NEXT_LEVEL_EXP,
-          gender: 'm',
-          nature: 'hardy',
-          ability: 'battlearmor',
-          isShiny: false
-        } as unknown as Pokemon // domain-ok
-      };
+      const p = makePokemon('kabuto', DEBUG_MOCK_KABUTO_STATS.LEVEL, { bypassWhitelist: true }) as Pokemon;
+      p.uid = 'kabuto-archaeology-1234'; // no-magic
+      return { type: 'archaeology', pokemon: p };
     }
     if (debug.forceEncounterType === 'trainer') {
       return { type: 'trainer' };
@@ -272,40 +208,9 @@ const ARCHAEOLOGY_SCRATCH_MAX_PP = 35;
       return { type: 'rival' };
     }
     if (debug.forceEncounterType === 'wild') {
-      return {
-        type: 'wild',
-        pokemon: {
-          id: 'pidgey',
-          uid: 'pidgey-wild-1234', // no-magic
-          name: 'Pidgey',
-          level: DEBUG_MOCK_PIDGEY_STATS.LEVEL,
-          hp: DEBUG_MOCK_PIDGEY_STATS.HP,
-          maxHp: DEBUG_MOCK_PIDGEY_STATS.HP,
-          moves: [{ id: 'tackle', name: 'Placaje', type: 'normal', cat: 'physical', pp: ARCHAEOLOGY_SCRATCH_MAX_PP, maxPP: ARCHAEOLOGY_SCRATCH_MAX_PP, priority: 0, power: DEBUG_MOVE_BASE_POWER, acc: 100, effect: '', target: 'normal' }],
-          stats: {
-            hp: DEBUG_MOCK_PIDGEY_STATS.HP,
-            atk: DEBUG_MOCK_PIDGEY_STATS.ATK,
-            def: DEBUG_MOCK_PIDGEY_STATS.DEF,
-            spa: DEBUG_MOCK_PIDGEY_STATS.SPA,
-            spd: DEBUG_MOCK_PIDGEY_STATS.SPD,
-            spe: DEBUG_MOCK_PIDGEY_STATS.SPE
-          },
-          maxStats: {
-            hp: DEBUG_MOCK_PIDGEY_STATS.HP,
-            atk: DEBUG_MOCK_PIDGEY_STATS.ATK,
-            def: DEBUG_MOCK_PIDGEY_STATS.DEF,
-            spa: DEBUG_MOCK_PIDGEY_STATS.SPA,
-            spd: DEBUG_MOCK_PIDGEY_STATS.SPD,
-            spe: DEBUG_MOCK_PIDGEY_STATS.SPE
-          },
-          exp: DEBUG_MOCK_PIDGEY_STATS.EXP,
-          nextLevelExp: DEBUG_MOCK_PIDGEY_STATS.NEXT_LEVEL_EXP,
-          gender: 'f',
-          nature: 'hardy',
-          ability: 'tangledfeet',
-          isShiny: false
-        } as unknown as Pokemon // domain-ok
-      };
+      const p = makePokemon('pidgey', DEBUG_MOCK_PIDGEY_STATS.LEVEL, { bypassWhitelist: true }) as Pokemon;
+      p.uid = 'pidgey-wild-1234'; // no-magic
+      return { type: 'wild', pokemon: p };
     }
   }
 
@@ -369,7 +274,7 @@ const ARCHAEOLOGY_SCRATCH_MAX_PP = 35;
   if (guardian && !options.forceEncounter) {
     const dailyCaptures = state.dailyGuardianCaptures || (getActivePinia() ? useGameStore().dailyGuardianCaptures : []);
     const capturedToday = (dailyCaptures || []).includes(locId);
-    if (!capturedToday && Math.random() < GUARDIAN_CHANCE) {
+    if (!capturedToday && Math.random() < GUARDIAN_ENCOUNTER_CHANCE_PERCENT) {
       return { 
         type: 'guardian', 
         pokemon: makePokemon(guardian.id, guardian.lv, { shinyMultiplier: options.shinyMultiplier }) as Pokemon,
@@ -588,7 +493,7 @@ export interface SpawnPoolResult {
 
 export function getMapSpawnPoolData(
   loc: MapLocation,
-  cycle: 'morning' | 'day' | 'dusk' | 'night',
+  cycle: DayPhase,
   activeWeather: WeatherId,
   activeEvents: GameEvent[] = []
 ): SpawnPoolResult {

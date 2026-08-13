@@ -13,6 +13,7 @@ This document governs TypeScript standards, domain type definitions, data wrappe
 - **Strict Type-First Mandate**: Every data type, domain constant, schema, DTO, or boundary contract MUST strictly follow the `@/domain-type-first` skill (`.agents/skills/domain-type-first/SKILL.md`). Unconstrained raw `string` declarations for finite domains, open index signatures (`[key: string]: unknown`), wildcard unions (`| string`), open sets/maps (`new Set<string>()`/`new Map()`), and inline type casts are STRICTLY FORBIDDEN.
 - **No Naked Strings for Finite Domains**: It is STRICTLY FORBIDDEN to declare any field, parameter, or constant with type `string` when its value belongs to a finite domain. The domain type MUST be declared FIRST (via `as const` + `keyof`, `(typeof ARRAY)[number]`, or explicit union), and used at every declaration and call site.
   - Examples of domains requiring strict types: Pokémon natures (`NatureId`), Pokémon types (`PokemonType`), battle weather mechanics (`WeatherMechanical`), NPC archetypes (`NpcArchetype`), player classes (`PlayerClassId`), ranked tiers (`RankedTierId`), item categories, obtained methods (`ObtainedMethod`), volatile status keys (`VolatileStatusKey`), move categories, stat names, faction IDs (`FactionId`), mission IDs (`MissionId`).
+- **Absolute Prohibition on Ad-Hoc String Literal Unions**: Defining or casting string literal unions inline (e.g. `as 'p1' | 'p2'`, `: 'p1' | 'p2'`, `as 'player' | 'enemy'`) instead of consuming canonical domain types (e.g. `SideID`) is STRICTLY FORBIDDEN. The `npm run validate:domain-types` script audits all files and fails with ERROR when any ad-hoc literal union is used. Whenever a finite domain union is needed, consume or define a named canonical domain type alias exported from `@pkmn/sim` or domain contracts.
 - **Absolute Prohibition on `Set`/`Map` for Domain Types**: It is STRICTLY FORBIDDEN to use `new Set<string>()`, `new Map()`, or any other mutable runtime data structure to represent or validate a finite domain of string values. The canonical pattern is:
   1. `export const MY_DOMAIN = ['a', 'b', 'c'] as const;`
   2. `export type MyDomain = (typeof MY_DOMAIN)[number];`
@@ -35,6 +36,16 @@ This document governs TypeScript standards, domain type definitions, data wrappe
   - Stat floor/ceiling business values: `ivFloor: 5` ➔ `const MISSION_6H_IV_FLOOR = 5`
   - Clamping bounds from game design: `Math.min(STAGE_MAX_BOUND, ...)` with undeclared bounds
 - **Strict Data Schema & Zero-Ambiguity Rule**: It is STRICTLY FORBIDDEN to define ambiguous union types that mix multiple representations of missing or default data (e.g. mixing `''` and `null` in the same type definition for the same context). All domain types MUST follow single canonical representations.
+- **Java-Style Strict Typing Mandate**:
+  1. **Canonical Return Types (`mandatoryExplicitReturnTypes`)**: Exported functions, composables, and store methods MUST declare an explicit return type annotation (`: ReturnType`).
+  2. **No Anonymous Inline Object Parameters (`noInlineAnonymousObjectTypes`)**: Function parameters MUST consume named `interface` or `type` contracts instead of inline anonymous `{ id: string }` shapes.
+  3. **Exhaustive Switch Checking (`exhaustiveSwitchCheck`)**: Switches on domain unions MUST include exhaustiveness verification (`default: const _ex: never = val;`).
+  4. **Strict Catch Narrowing (`strictCatchTypeNarrowing`)**: Accessing `.message` or `.code` on `catch (err)` variables without explicit narrowing (`if (err instanceof Error)`) is strictly forbidden.
+  5. **Guarded Dynamic Indexing (`noUntypedDynamicIndex`)**: Dynamic bracket access `obj[key]` requires `key` to be a domain union or guarded with `in` / `isDomainId()`.
+  6. **Typed Positional Tuples (`noLoosePositionalTuples`)**: Functions returning multi-element arrays MUST annotate explicit tuple return types (`: readonly [T1, T2]`) or `as const`.
+  7. **Floating Promise Guard (`noFloatingPromises`)**: Async function calls MUST be explicitly handled with `await`, `void`, or `.catch()`.
+  8. **Module Global State Guard (`noLeakedGlobalState`)**: Top-level `let`/`var` variables at module scope are prohibited outside of Pinia stores or classes (`// singleton-ok`).
+  9. **Hot-Path Import Guard (`noDynamicImportInHotPath`)**: Dynamic `import()` inside loops, Vue computed properties, or GSAP timelines is prohibited to prevent combat animation jank.
 
 ## 3. Mandatory Typed Domain Data Wrappers for JSON Files
 

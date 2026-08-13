@@ -29,7 +29,6 @@ export interface AnimatedSpriteData {
 /** Frame size (px) of the largest sprite in Front/Back. Used for relative combat scaling. */
 export const MAX_ANIMATED_SPRITE_SIZE_FRONT = 250 as const;
 export const MAX_ANIMATED_SPRITE_SIZE_BACK = 172 as const;
-export const MAX_ANIMATED_SPRITE_SIZE = MAX_ANIMATED_SPRITE_SIZE_FRONT;
 
 const RAW = dbJson.RAW;
 export type AnimatedSpriteId = keyof typeof RAW;

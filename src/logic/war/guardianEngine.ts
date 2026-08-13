@@ -19,7 +19,6 @@ import {
   LEGENDARY_GUARDIAN_POINTS,
   LOCAL_DOMINANCE_MAX_POINTS,
   HASH_SHIFT_BITS,
-  GUARDIAN_ENCOUNTER_CHANCE_PERCENT,
   GUARDIAN_LEVELS
 } from '@/logic/constants/gameplay'
 
@@ -40,33 +39,30 @@ export interface GuardianData extends GuardianBase {
 
 const GUARDIAN_POOL: Record<GuardianTier, readonly GuardianBase[]> = {
   common: [
-    { id: 'arcanine',   lv: GUARDIAN_LEVELS.TIER_45, pts: BASE_GUARDIAN_POINTS }, { id: 'pidgeot',    lv: GUARDIAN_LEVELS.TIER_42, pts: BASE_GUARDIAN_POINTS },
-    { id: 'nidoking',   lv: GUARDIAN_LEVELS.TIER_44, pts: BASE_GUARDIAN_POINTS }, { id: 'nidoqueen',  lv: GUARDIAN_LEVELS.TIER_44, pts: BASE_GUARDIAN_POINTS },
-    { id: 'victreebel', lv: GUARDIAN_LEVELS.TIER_43, pts: BASE_GUARDIAN_POINTS }, { id: 'vileplume',  lv: GUARDIAN_LEVELS.TIER_43, pts: BASE_GUARDIAN_POINTS },
-    { id: 'sandslash',  lv: GUARDIAN_LEVELS.TIER_41, pts: BASE_GUARDIAN_POINTS }, { id: 'fearow',     lv: GUARDIAN_LEVELS.TIER_42, pts: BASE_GUARDIAN_POINTS },
-    { id: 'golem',      lv: GUARDIAN_LEVELS.TIER_45, pts: BASE_GUARDIAN_POINTS }, { id: 'raichu',     lv: GUARDIAN_LEVELS.TIER_45, pts: BASE_GUARDIAN_POINTS },
-    { id: 'weezing',    lv: GUARDIAN_LEVELS.TIER_40, pts: BASE_GUARDIAN_POINTS }, { id: 'muk',        lv: GUARDIAN_LEVELS.TIER_40, pts: BASE_GUARDIAN_POINTS },
-    { id: 'starmie',    lv: GUARDIAN_LEVELS.TIER_44, pts: BASE_GUARDIAN_POINTS }, { id: 'rapidash',   lv: GUARDIAN_LEVELS.TIER_44, pts: BASE_GUARDIAN_POINTS },
-    { id: 'hypno',      lv: GUARDIAN_LEVELS.TIER_42, pts: BASE_GUARDIAN_POINTS }
+    { id: 'arcanine',   lv: GUARDIAN_LEVELS.COMMON_HIGH, pts: BASE_GUARDIAN_POINTS },     { id: 'pidgeot',   lv: GUARDIAN_LEVELS.COMMON_MID_LOW, pts: BASE_GUARDIAN_POINTS },
+    { id: 'nidoking',   lv: GUARDIAN_LEVELS.COMMON_MID_HIGH, pts: BASE_GUARDIAN_POINTS }, { id: 'nidoqueen', lv: GUARDIAN_LEVELS.COMMON_MID_HIGH, pts: BASE_GUARDIAN_POINTS },
+    { id: 'victreebel', lv: GUARDIAN_LEVELS.COMMON_MID, pts: BASE_GUARDIAN_POINTS },      { id: 'vileplume', lv: GUARDIAN_LEVELS.COMMON_MID, pts: BASE_GUARDIAN_POINTS },
+    { id: 'sandslash',  lv: GUARDIAN_LEVELS.COMMON_LOW, pts: BASE_GUARDIAN_POINTS },      { id: 'fearow',    lv: GUARDIAN_LEVELS.COMMON_MID_LOW, pts: BASE_GUARDIAN_POINTS },
+    { id: 'golem',      lv: GUARDIAN_LEVELS.COMMON_HIGH, pts: BASE_GUARDIAN_POINTS },     { id: 'raichu',    lv: GUARDIAN_LEVELS.COMMON_HIGH, pts: BASE_GUARDIAN_POINTS },
+    { id: 'weezing',    lv: GUARDIAN_LEVELS.COMMON_MIN, pts: BASE_GUARDIAN_POINTS },      { id: 'muk',       lv: GUARDIAN_LEVELS.COMMON_MIN, pts: BASE_GUARDIAN_POINTS },
+    { id: 'starmie',    lv: GUARDIAN_LEVELS.COMMON_MID_HIGH, pts: BASE_GUARDIAN_POINTS }, { id: 'rapidash',  lv: GUARDIAN_LEVELS.COMMON_MID_HIGH, pts: BASE_GUARDIAN_POINTS },
+    { id: 'hypno',      lv: GUARDIAN_LEVELS.COMMON_MID_LOW, pts: BASE_GUARDIAN_POINTS }
   ],
   rare: [
-    { id: 'gyarados',   lv: GUARDIAN_LEVELS.TIER_50, pts: RARE_GUARDIAN_POINTS }, { id: 'alakazam',   lv: GUARDIAN_LEVELS.TIER_48, pts: RARE_GUARDIAN_POINTS },
-    { id: 'machamp',    lv: GUARDIAN_LEVELS.TIER_48, pts: RARE_GUARDIAN_POINTS }, { id: 'gengar',     lv: GUARDIAN_LEVELS.TIER_48, pts: RARE_GUARDIAN_POINTS },
-    { id: 'exeggutor',  lv: GUARDIAN_LEVELS.TIER_46, pts: RARE_GUARDIAN_POINTS }, { id: 'pinsir',     lv: GUARDIAN_LEVELS.TIER_47, pts: RARE_GUARDIAN_POINTS },
-    { id: 'scyther',    lv: GUARDIAN_LEVELS.TIER_47, pts: RARE_GUARDIAN_POINTS }, { id: 'kangaskhan', lv: GUARDIAN_LEVELS.TIER_45, pts: RARE_GUARDIAN_POINTS },
-    { id: 'tauros',     lv: GUARDIAN_LEVELS.TIER_45, pts: RARE_GUARDIAN_POINTS }, { id: 'slowbro',    lv: GUARDIAN_LEVELS.TIER_46, pts: RARE_GUARDIAN_POINTS }, 
-    { id: 'jolteon',    lv: GUARDIAN_LEVELS.TIER_48, pts: RARE_GUARDIAN_POINTS }, { id: 'vaporeon',   lv: GUARDIAN_LEVELS.TIER_48, pts: RARE_GUARDIAN_POINTS }, 
-    { id: 'flareon',    lv: GUARDIAN_LEVELS.TIER_48, pts: RARE_GUARDIAN_POINTS }
+    { id: 'gyarados',   lv: GUARDIAN_LEVELS.RARE_HIGH, pts: RARE_GUARDIAN_POINTS }, { id: 'alakazam',   lv: GUARDIAN_LEVELS.RARE_MID, pts: RARE_GUARDIAN_POINTS },
+    { id: 'machamp',    lv: GUARDIAN_LEVELS.RARE_MID, pts: RARE_GUARDIAN_POINTS },  { id: 'gengar',     lv: GUARDIAN_LEVELS.RARE_MID, pts: RARE_GUARDIAN_POINTS },
+    { id: 'exeggutor',  lv: GUARDIAN_LEVELS.RARE_MIN, pts: RARE_GUARDIAN_POINTS },  { id: 'pinsir',     lv: GUARDIAN_LEVELS.RARE_LOW, pts: RARE_GUARDIAN_POINTS },
+    { id: 'scyther',    lv: GUARDIAN_LEVELS.RARE_LOW, pts: RARE_GUARDIAN_POINTS },  { id: 'kangaskhan', lv: GUARDIAN_LEVELS.COMMON_HIGH, pts: RARE_GUARDIAN_POINTS },
+    { id: 'tauros',     lv: GUARDIAN_LEVELS.COMMON_HIGH, pts: RARE_GUARDIAN_POINTS }, { id: 'slowbro',    lv: GUARDIAN_LEVELS.RARE_MIN, pts: RARE_GUARDIAN_POINTS }, 
+    { id: 'jolteon',    lv: GUARDIAN_LEVELS.RARE_MID, pts: RARE_GUARDIAN_POINTS },  { id: 'vaporeon',   lv: GUARDIAN_LEVELS.RARE_MID, pts: RARE_GUARDIAN_POINTS }, 
+    { id: 'flareon',    lv: GUARDIAN_LEVELS.RARE_MID, pts: RARE_GUARDIAN_POINTS }
   ],
   elite: [
-    { id: 'dragonite',  lv: GUARDIAN_LEVELS.TIER_60, pts: LEGENDARY_GUARDIAN_POINTS }, { id: 'snorlax',    lv: GUARDIAN_LEVELS.TIER_55, pts: LEGENDARY_GUARDIAN_POINTS },
-    { id: 'lapras',     lv: GUARDIAN_LEVELS.TIER_55, pts: LEGENDARY_GUARDIAN_POINTS }, { id: 'chansey',    lv: GUARDIAN_LEVELS.TIER_50, pts: LEGENDARY_GUARDIAN_POINTS },
-    { id: 'cloyster',   lv: GUARDIAN_LEVELS.TIER_52, pts: LEGENDARY_GUARDIAN_POINTS }
+    { id: 'dragonite',  lv: GUARDIAN_LEVELS.ELITE_HIGH, pts: LEGENDARY_GUARDIAN_POINTS }, { id: 'snorlax',    lv: GUARDIAN_LEVELS.ELITE_MID, pts: LEGENDARY_GUARDIAN_POINTS },
+    { id: 'lapras',     lv: GUARDIAN_LEVELS.ELITE_MID, pts: LEGENDARY_GUARDIAN_POINTS },  { id: 'chansey',    lv: GUARDIAN_LEVELS.RARE_HIGH, pts: LEGENDARY_GUARDIAN_POINTS },
+    { id: 'cloyster',   lv: GUARDIAN_LEVELS.ELITE_LOW, pts: LEGENDARY_GUARDIAN_POINTS }
   ]
 }
-
-/** Chance factor of encountering a guardian in war zones. */
-export const GUARDIAN_CHANCE = GUARDIAN_ENCOUNTER_CHANCE_PERCENT
 
 /**
  * Deterministic hash function for date-based seeds.

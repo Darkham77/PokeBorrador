@@ -270,7 +270,7 @@ function transformRow(
       val = 3;
     } else if (tableName === 'market_listings' && col === 'data') {
       try {
-        const parsed = (typeof val === 'string' ? JSON.parse(val) : val) as unknown;
+        const parsed: unknown = typeof val === 'string' ? JSON.parse(val) : val;
         const transformed = replaceUserIds(parsed, mapping);
         val = JSON.stringify(transformed);
       } catch {

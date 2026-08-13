@@ -1,5 +1,6 @@
 import { onUnmounted } from 'vue'
 import { gsap } from 'gsap'
+import type { ParticleShape } from '@/data/battle/fx-configs'
 
 const PARTICLE_CENTER_PERCENT = 50
 const RECT_DEFAULT_Y_RANGE: [number, number] = [-10, 10]
@@ -61,7 +62,7 @@ export function useParticleEngine() {
   const randomizePosition = (
     el: HTMLElement, 
     area: { x: [number, number]; y?: [number, number] }, 
-    shape: 'rect' | 'circle' = 'circle',
+    shape: ParticleShape = 'circle',
     offset?: { x: number; y: number }
   ) => {
     let baseLeft = PARTICLE_CENTER_PERCENT

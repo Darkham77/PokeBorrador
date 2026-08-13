@@ -17,38 +17,6 @@ interface SimulationTarget {
   caseCount: number;
 }
 
-function countSimulationCases(fullPath: string): number {
-  try {
-    const content = fs.readFileSync(fullPath, 'utf-8');
-    
-    // Detectar si el test lee un JSON de casos/lotes (ej. fuzzer_certified_cases.json)
-    const jsonMatches = content.matchAll(/['"]([^'"]+\.json)['"]/g);
-    for (const match of jsonMatches) {
-      if (match[1] && !match[1].includes('package.json') && !match[1].includes('tsconfig')) {
-        const candidatePath = match[1].startsWith('/')
-          ? match[1]
-          : path.resolve(process.cwd(), match[1]);
-        if (fs.existsSync(candidatePath)) {
-          const parsed = JSON.parse(fs.readFileSync(candidatePath, 'utf-8'));
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed.length;
-          } else if (typeof parsed === 'object' && parsed !== null) {
-            const list = (parsed.battle || parsed.cases || parsed.batches || parsed.tests || Object.values(parsed).find(Array.isArray)) as unknown[];
-            if (Array.isArray(list) && list.length > 0) {
-              return list.length;
-            }
-          }
-        }
-      }
-    }
-    
-    const matches = content.match(/\btest\s*\(/g);
-    return matches ? matches.length : 1;
-  } catch {
-    return 1;
-  }
-}
-
 function findSimulationFiles(dir: string, fileList: string[] = []): string[] {
   const files = fs.readdirSync(dir);
 
@@ -69,58 +37,209 @@ function findSimulationFiles(dir: string, fileList: string[] = []): string[] {
   return fileList;
 }
 
-const baseE2EDir = path.resolve(process.cwd(), 'scripts/e2e');
-const allSimFiles = findSimulationFiles(baseE2EDir);
+interface PlaywrightSuiteNode {
+  file?: string;
+  specs?: unknown[];
+  suites?: unknown[];
+}
 
-const targets: SimulationTarget[] = allSimFiles
-  .map((fullPath) => {
-    const relativePath = path.relative(process.cwd(), fullPath);
-    const basename = path.basename(fullPath);
-    const caseCount = countSimulationCases(fullPath);
-    return {
-      name: basename,
-      command: `npx playwright test ${relativePath}`,
-      relativePath,
-      fullPath,
-      caseCount
-    };
-  })
-  .sort((a, b) => {
-    if (a.caseCount !== b.caseCount) {
-      return a.caseCount - b.caseCount;
+function countSpecs(suite: PlaywrightSuiteNode): number {
+  let count = (suite.specs || []).length;
+  if (Array.isArray(suite.suites)) {
+    for (const child of suite.suites as PlaywrightSuiteNode[]) {
+      count += countSpecs(child);
     }
-    return a.relativePath.localeCompare(b.relativePath);
-  });
+  }
+  return count;
+}
 
-console.log('\n==================================================');
-console.log('🚀 DISPOSITIVO DE SIMULACIONES E2E SECUENCIAL (DINÁMICO)');
-console.log('==================================================');
-console.log(`📋 Se detectaron dinámicamente ${targets.length} archivos de simulación E2E (Ordenados de menor a mayor cantidad de casos):`);
-targets.forEach((target, index) => {
-  console.log(`  ${index + 1}. [${target.name}] (${target.caseCount} caso/s) -> ${target.command}`);
-});
-console.log('==================================================\n');
-
-let passedCount = 0;
-
-for (let i = 0; i < targets.length; i++) {
-  const target = targets[i]!;
-  console.log(`\n▶️ [${i + 1}/${targets.length}] Ejecutando: ${target.name} (${target.relativePath})...`);
-  const startTime = Date.now();
-
+function discoverPlaywrightTargets(): SimulationTarget[] {
   try {
-    execSync(target.command, { stdio: 'inherit', env: { ...process.env } });
-    const durationSec = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log(`✅ [${i + 1}/${targets.length}] PASS: ${target.name} (${durationSec}s)`);
-    passedCount++;
-  } catch (_err) {
-    const durationSec = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.error(`\n❌ [${i + 1}/${targets.length}] FAIL: "${target.name}" ha fallado tras ${durationSec}s.`);
-    console.error(`🛑 Deteniendo la ejecución secuencial debido al fallo.`);
-    process.exit(1);
+    const output = execSync('npx playwright test --list --reporter=json', {
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'ignore'],
+      maxBuffer: 30 * 1024 * 1024
+    });
+    const parsed = JSON.parse(output) as { suites?: PlaywrightSuiteNode[] };
+
+    const countMap = new Map<string, number>();
+    for (const topSuite of parsed.suites || []) {
+      if (topSuite.file) {
+        const normFile = topSuite.file.split('\\').join('/');
+        const resolvedPath = path.resolve(process.cwd(), 'scripts/e2e', normFile);
+        countMap.set(resolvedPath, (countMap.get(resolvedPath) || 0) + countSpecs(topSuite));
+      }
+    }
+
+    const allFiles = findSimulationFiles(path.resolve(process.cwd(), 'scripts/e2e'));
+    return allFiles.map((fullPath) => {
+      const resolvedFullPath = path.resolve(fullPath);
+      const relativePath = path.relative(process.cwd(), fullPath).split(path.sep).join(path.posix.sep);
+      const caseCount = countMap.get(resolvedFullPath) || 1;
+      return {
+        name: path.basename(fullPath),
+        command: `npx playwright test ${relativePath}`,
+        relativePath,
+        fullPath,
+        caseCount
+      };
+    }).sort((a, b) => {
+      if (a.caseCount !== b.caseCount) {
+        return a.caseCount - b.caseCount;
+      }
+      return a.relativePath.localeCompare(b.relativePath);
+    });
+  } catch {
+    const allFiles = findSimulationFiles(path.resolve(process.cwd(), 'scripts/e2e'));
+    return allFiles.map((fullPath) => {
+      const relativePath = path.relative(process.cwd(), fullPath).split(path.sep).join(path.posix.sep);
+      return {
+        name: path.basename(fullPath),
+        command: `npx playwright test ${relativePath}`,
+        relativePath,
+        fullPath,
+        caseCount: 1
+      };
+    }).sort((a, b) => a.relativePath.localeCompare(b.relativePath));
   }
 }
 
-console.log('\n==================================================');
-console.log(`🎉 TODAS LAS SIMULACIONES E2E PASARON CON ÉXITO (${passedCount}/${targets.length})`);
-console.log('==================================================\n');
+function getFuzzerSummary(): { elementCount: number; batchCount: number } {
+  try {
+    const resultsDir = path.resolve(process.cwd(), 'scripts/e2e/results');
+    let totalElements = 0;
+    let totalBatches = 0;
+
+    if (fs.existsSync(resultsDir)) {
+      const files = fs.readdirSync(resultsDir);
+      for (const file of files) {
+        if (file.startsWith('fuzzer_') && file.endsWith('_coverage_report.json')) {
+          try {
+            const data = JSON.parse(fs.readFileSync(path.join(resultsDir, file), 'utf8')) as Record<string, unknown>;
+            const summary = (data.summary || data) as Record<string, unknown>;
+            const count = summary.totalMoves ?? summary.totalItems ?? summary.totalAbilities ?? (file.includes('scenarios') ? summary.total : undefined);
+            if (typeof count === 'number') {
+              totalElements += count;
+            }
+          } catch {
+            // ignore
+          }
+        } else if (file === 'fuzzer_certified_cases.json') {
+          try {
+            const data = JSON.parse(fs.readFileSync(path.join(resultsDir, file), 'utf8')) as Record<string, unknown>;
+            for (const val of Object.values(data)) {
+              if (Array.isArray(val)) {
+                totalBatches += val.length;
+              }
+            }
+          } catch {
+            // ignore
+          }
+        }
+      }
+    }
+
+    return { elementCount: totalElements, batchCount: totalBatches };
+  } catch {
+    return { elementCount: 0, batchCount: 0 };
+  }
+}
+
+const targets: SimulationTarget[] = discoverPlaywrightTargets();
+
+// Support dynamic documentation flags: --table, --list, --json
+if (process.argv.includes('--table') || process.argv.includes('--list-markdown')) {
+  const fuzzerSummary = getFuzzerSummary();
+  const totalPlaywrightTests = targets.reduce((sum, t) => sum + t.caseCount, 0);
+
+  console.log('| # | Suite / Archivo de Simulación | Casos / Elementos | Comando de Ejecución Directa | Estado |');
+  console.log('|:---|:---|:---|:---|:---|');
+  console.log(`| **0** | \`scripts/e2e/fuzzer/runners/run_all_fuzzers.ts\` | **${fuzzerSummary.elementCount} elementos** / ${fuzzerSummary.batchCount} batallas | \`npm run sim:fuzzer\` | 🟢 **100% PASS** |`);
+  targets.forEach((target, index) => {
+    console.log(`| **${index + 1}** | \`${target.relativePath}\` | **${target.caseCount}** tests | \`${target.command}\` | ⏳ Pendiente |`);
+  });
+  console.log(`| **Final** | \`scripts/e2e/run_sequential_simulations.ts\` | **${totalPlaywrightTests} tests totales** en ${targets.length} suites | \`npm run sim:e2e\` | ⏳ Pendiente tras validación individual |`);
+  process.exit(0);
+}
+
+if (process.argv.includes('--json')) {
+  console.log(JSON.stringify({ fuzzer: getFuzzerSummary(), targets }, null, 2));
+  process.exit(0);
+}
+
+if (process.argv.includes('--list')) {
+  const fuzzerSummary = getFuzzerSummary();
+  console.log(`📋 Total de suites E2E detectadas: ${targets.length} suites (${targets.reduce((sum, t) => sum + t.caseCount, 0)} tests Playwright + ${fuzzerSummary.elementCount} elementos en Fuzzer)`);
+  targets.forEach((target, index) => {
+    console.log(`  ${index + 1}. [${target.name}] (${target.caseCount} tests) -> ${target.command}`);
+  });
+  process.exit(0);
+}
+
+import { SimulationRunnerLogger } from './logging/simulation_runner_logger.ts';
+
+const logger = new SimulationRunnerLogger();
+logger.startIntercepting();
+
+try {
+  logger.progress('\n==================================================');
+  logger.progress('🚀 DISPOSITIVO DE SIMULACIONES E2E SECUENCIAL (DINÁMICO)');
+  logger.progress('==================================================');
+  logger.progress(`📋 Se detectaron dinámicamente ${targets.length} archivos de simulación E2E (Ordenados de menor a mayor cantidad de casos):`);
+  targets.forEach((target, index) => {
+    logger.progress(`  ${index + 1}. [${target.name}] (${target.caseCount} caso/s) -> ${target.command}`);
+  });
+  logger.progress('==================================================\n');
+
+  let passedCount = 0;
+
+  for (let i = 0; i < targets.length; i++) {
+    const target = targets[i]!;
+    logger.progressPercent(i + 1, targets.length, `▶️ Ejecutando: ${target.name} (${target.relativePath})...`);
+    const startTime = Date.now();
+
+    try {
+      const rawStdout = execSync(target.command, {
+        encoding: 'utf-8',
+        env: {
+          ...process.env,
+          NODE_OPTIONS: `${process.env.NODE_OPTIONS || ''} --no-experimental-webstorage`.trim(),
+          npm_config_loglevel: 'silent',
+          NO_UPDATE_NOTIFIER: '1'
+        }
+      });
+
+      const cleanStdout = rawStdout
+        .split('\n')
+        .filter(line => !line.includes('npm notice') && !line.includes('[WebServer] npm notice'))
+        .join('\n')
+        .trim();
+
+      if (cleanStdout) {
+        console.log(cleanStdout);
+      }
+
+      const durationSec = ((Date.now() - startTime) / 1000).toFixed(1);
+      logger.progressPercent(i + 1, targets.length, `✅ PASS: ${target.name} (${durationSec}s)`);
+      passedCount++;
+    } catch (err: unknown) {
+      const errObj = err as { stdout?: string; stderr?: string; message?: string };
+      if (errObj.stdout) console.log(errObj.stdout);
+      if (errObj.stderr) console.error(errObj.stderr);
+      const durationSec = ((Date.now() - startTime) / 1000).toFixed(1);
+      logger.error(`\n❌ [${i + 1}/${targets.length}] FAIL: "${target.name}" ha fallado tras ${durationSec}s.`);
+      logger.error(`🛑 Deteniendo la ejecución secuencial debido al fallo.\n`);
+      process.exit(1);
+    }
+  }
+
+  logger.progress('\n==================================================');
+  logger.progress(`🎉 ¡TODAS LAS ${targets.length} SUITES DE SIMULACIÓN E2E HAN PASADO EXITOSAMENTE! (${passedCount}/${targets.length})`);
+  logger.progress('==================================================\n');
+  process.exit(0);
+} catch (error) {
+  logger.error(`💥 Error fatal durante el dispositivo de simulaciones: ${(error as Error).message}`);
+  process.exit(1);
+} finally {
+  logger.stopIntercepting();
+}

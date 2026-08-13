@@ -14,16 +14,27 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   (e: 'switch'): void
   (e: 'bag'): void
+  (e: 'run'): void
   (e: 'catch'): void
   (e: 'select-ball', ballId: string): void
 }>()
 
 import { computed } from 'vue'
+import { useGameStore } from '@/stores/game'
+
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 const battleStore = useBattleStore()
+const gameStore = useGameStore()
 
 const isLocked = computed(() => {
   return isPokemonLocked(battleStore.player)
+})
+
+const hasAvailableBenchPokemon = computed(() => {
+  const team = (gameStore.state?.team || []) as (Pokemon | null)[]
+  const activeUid = battleStore.player?.uid
+  return team.some((p) => p && p.hp > 0 && p.uid !== activeUid)
 })
 
 // Eliminamos onHoverBtn manual para usar los estados nativos del mixin btn-vicio
@@ -39,7 +50,7 @@ const isLocked = computed(() => {
       <button
         id="battle-switch-btn"
         class="action-btn switch-btn"
-        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || !!(battleStore.player?.volatileCounters?.['partiallytrapped']) || !!(battleStore.player?.trapped) || isLocked"
+        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || !!(battleStore.player?.volatileCounters?.['partiallytrapped']) || !!(battleStore.player?.trapped) || isLocked || !hasAvailableBenchPokemon || battleStore.currentFsmState === 'REORDER_TEAM' || battleStore.currentSubState !== 'WAIT_INPUT'"
         @click.stop="emit('switch')"
       >
         <span class="icon">🔄</span> <span class="text">CAMBIAR</span>
@@ -59,6 +70,15 @@ const isLocked = computed(() => {
         @click.stop="emit('bag')"
       >
         <span class="icon">🎒</span> <span class="text">MOCHILA</span>
+      </button>
+
+      <button
+        id="battle-flee-btn"
+        class="action-btn flee-btn"
+        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || isLocked"
+        @click.stop="emit('run')"
+      >
+        <span class="icon">💨</span> <span class="text">HUIR</span>
       </button>
     </div>
   </div>
@@ -103,6 +123,10 @@ const isLocked = computed(() => {
 
     &.bag-btn {
       @include btn-vicio('success', 'sm');
+    }
+
+    &.flee-btn {
+      @include btn-vicio('danger', 'sm');
     }
   }
 }

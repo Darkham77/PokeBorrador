@@ -2,6 +2,9 @@ import type { PokemonMoveId } from '@/types/pokemon/pokemon';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { ItemId } from '@/data/inventory/items';
 export type ItemCategory = 'pokeballs' | 'potions' | 'stones' | 'combat_held' | 'breeding_held' | 'raw_material' | 'refined_material' | 'component' | 'machinery' | 'tools' | 'tms' | 'otros';
+export type BagMainTab = 'productos' | 'materiales';
+export type ItemMenuAction = 'use' | 'sell' | 'release';
+export type ItemDiscardAction = 'sell' | 'release';
 
 export type ItemTier = 'common' | 'rare' | 'epic' | 'legend';
 export type ItemKind = 'held' | 'usable' | 'stone' | 'booster';

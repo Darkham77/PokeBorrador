@@ -7,7 +7,7 @@ import { useUIStore } from '@/stores/ui.ts'
 import { useAudioStore } from '@/stores/audio.ts'
 import { logger } from '@/logic/utils/logger'
 import { applyMarketFilters, markMarketSoldSeen, isMarketSoldSeen, GTS_MAX_ACTIVE_LISTINGS, GTS_MARKET_FEE, GTS_EXPLORE_LISTINGS_LIMIT, GTS_SALES_HISTORY_LIMIT } from '@/logic/economy/market'
-import type { MarketFilters, MarketListing } from '@/logic/economy/market'
+import type { MarketFilters, MarketListing, MarketListingType } from '@/logic/economy/market'
 import { SHOP_ITEMS } from '@/data/inventory/items'
 import type { GameState } from '@/types/system/game'
 import type { Pokemon } from '@/types/pokemon/pokemon'
@@ -46,10 +46,6 @@ export const useGTSStore = defineStore('gts', () => {
     ivAny31: false,
     itemCat: 'all'
   })
-
-  // Constants
-  const MARKET_FEE = GTS_MARKET_FEE
-  const MAX_LISTINGS = GTS_MAX_ACTIVE_LISTINGS
 
   let salesChannel: RealtimeChannel | null = null
 
@@ -203,9 +199,9 @@ export const useGTSStore = defineStore('gts', () => {
     }
   }
 
-  async function publishListing(type: 'pokemon' | 'item', selection: Pokemon | { name: string; qty: number }, price: number) {
-    if (activeMyListings.value.length >= MAX_LISTINGS) {
-      ui.notify(`Límite de publicaciones alcanzado (${MAX_LISTINGS})`, '⚠️')
+  async function publishListing(type: MarketListingType, selection: Pokemon | { name: string; qty: number }, price: number) {
+    if (activeMyListings.value.length >= GTS_MAX_ACTIVE_LISTINGS) {
+      ui.notify(`Límite de publicaciones alcanzado (${GTS_MAX_ACTIVE_LISTINGS})`, '⚠️')
       return false
     }
 
@@ -292,7 +288,8 @@ export const useGTSStore = defineStore('gts', () => {
 
   return {
     listings, myListings, salesHistory, loading, publishing, filters,
-    MARKET_FEE, MAX_LISTINGS,
+    MARKET_FEE: GTS_MARKET_FEE,
+    MAX_LISTINGS: GTS_MAX_ACTIVE_LISTINGS,
     filteredListings, activeMyListings, unseenSalesCount,
     fetchListings, fetchUserData, initRealtime, stopRealtime,
     buyListing, publishListing, cancelListing

@@ -81,7 +81,7 @@ export function evaluateThreats(
     for (const my of myAlive) {
       let bestMyDmg = 0;
       for (const mv of my.moves) {
-        try { bestMyDmg = Math.max(bestMyDmg, calc.calcDamage(my, opp, mv, snapshot.field).maxPercent); } catch { /* skip */ }
+        try { bestMyDmg = Math.max(bestMyDmg, calc.calcDamage(my, opp, mv.id, snapshot.field).maxPercent); } catch { /* skip */ }
       }
       if (bestMyDmg < DEFENSIVE_WALL_MAX_DAMAGE_THRESHOLD) wallScore += DEFENSIVE_WALL_SCORE_STEP;
     }

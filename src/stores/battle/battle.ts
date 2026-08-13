@@ -23,10 +23,16 @@ import { applyEndTurnEffects as executeEndTurnEffects } from '@/logic/battle/bat
 import { executeFlee } from '@/logic/battle/battleFlee.ts'
 import { setupBattleDebug } from '@/logic/battle/battleDebug.ts'
 import { executeSwitch as switchAction } from '@/logic/battle/actions/switchAction.ts'
+import type { BattleSide } from '@/types/battle/battle'
 import { classifyRequest, requiresAction } from '@/logic/battle/helpers/requestHelper.ts'
 import { canExecuteScriptedReplayAction } from '@/logic/battle/helpers/scriptedReplayReadiness.ts'
+import { isBattleCompletionReady } from '@/logic/battle/helpers/battleCompletionReadiness.ts'
+import { nextBattleReadyEventKey } from '@/logic/battle/helpers/battleReadyEventKey.ts'
+import { projectBattleReadySwitchSlots } from '@/logic/battle/helpers/battleReadySwitchSlots.ts'
 import { createBattleLoggerHelper } from './battleLogHelper.ts'
 import { requireWeatherId } from '@/logic/weather/weatherRegistry.ts'
+import { BATTLE_UI_EVENTS, type BattleForcedSwitchDetail, type BattleReadyForInputDetail } from '@/types/battle/battleEvents.ts'
+import { GAME_UI_EVENTS, type BattleEnteringDetail } from '@/types/system/gameEvents.ts'
 
 import type { GameStore, EventStore, AudioStore, UIStore, BattleOptions } from '@/types/system/stores'
 import type { BattleContext } from '@/types/battle/battleContext'
@@ -95,7 +101,7 @@ export const useBattleStore = defineStore('battle', () => {
     safeStorage.setItem('pvs_combat_zoom', String(newZoom))
   })
 
-  const syncActiveMovesFromRequest = async (side: 'player' | 'enemy') => {
+  const syncActiveMovesFromRequest = async (side: BattleSide) => {
     const { syncActiveMovesFromRequest: syncMoves } = await import('./battleMoveSync.ts')
     syncMoves(activeBattle.value, side)
   }
@@ -189,12 +195,12 @@ export const useBattleStore = defineStore('battle', () => {
   const isPvP = computed(() => !!activeBattle.value?.isPvP)
 
   const getContext = (): BattleContext => ({
-    gs: gs as unknown as GameStore, // domain-ok
+    gs: gs as GameStore,
     warStore, 
-    eventStore: eventStore as unknown as EventStore, // domain-ok
+    eventStore: eventStore as EventStore,
     classStore, 
-    audio: audio as unknown as AudioStore, // domain-ok
-    uiStore: uiStore as unknown as UIStore, // domain-ok
+    audio: audio as AudioStore,
+    uiStore: uiStore as UIStore,
     activeBattle, 
     player, 
     enemy, 
@@ -238,6 +244,12 @@ export const useBattleStore = defineStore('battle', () => {
 
   const startBattle = async (enemyPoke: Pokemon, options?: BattleOptions) => {
     logger.info('BattleStore', `startBattle called for ${enemyPoke.name}`, options)
+    uiStore.closeAll()
+    if (typeof window !== 'undefined') {
+      const detail: BattleEnteringDetail = { source: 'battle-store' }
+      window.dispatchEvent(new CustomEvent<BattleEnteringDetail>(GAME_UI_EVENTS.BATTLE_ENTERING, { detail }))
+    }
+    await nextTick()
     return startBattleSequence(getContext(), enemyPoke, options)
   }
     
@@ -342,7 +354,7 @@ export const useBattleStore = defineStore('battle', () => {
 
   const applyEndTurnEffects = async () => await executeEndTurnEffects(getContext())
 
-  const handleFaint = async (side: 'player' | 'enemy') => await processFaint(getContext(), side)
+  const handleFaint = async (side: BattleSide) => await processFaint(getContext(), side)
 
   const useItemInBattle = async (itemId: string, targetIndex: number | null = null) => {
     if (isProcessing.value || !isBattleActive.value || !activeBattle.value) return
@@ -379,9 +391,21 @@ export const useBattleStore = defineStore('battle', () => {
   const syncTeamHP = () => {
     const team = gs.state.team;
     const active = activeBattle.value;
-    if (active?.player && team && team[active.playerTeamIndex]) {
+    if (!active || !team) return;
+
+    if (active.player && team[active.playerTeamIndex]) {
       const p = team[active.playerTeamIndex];
-      if (p) p.hp = active.player.hp
+      if (p) p.hp = active.player.hp;
+    }
+
+    if (Array.isArray(active.playerTeam)) {
+      for (const bp of active.playerTeam) {
+        if (!bp) continue;
+        const matchingMon = team.find(p => p && (p.uid === bp.uid || p.id === bp.id));
+        if (matchingMon && typeof bp.hp === 'number') {
+          matchingMon.hp = bp.hp;
+        }
+      }
     }
   }
   const _executeSwitch = async (teamIndex: number, isForced = false) => {
@@ -465,26 +489,57 @@ export const useBattleStore = defineStore('battle', () => {
   })
 
   let lastEmittedStateKey = '';
+  let lastForcedSwitchUid = '';
 
   watch(
-    [fsm.currentSubState, isProcessing, isIntroAnimating],
+    [fsm.currentState, fsm.currentSubState, player],
+    ([state, subState, activePlayer]) => {
+      const isForcedPlayerSwitch =
+        state === BATTLE_STATES.ACTIVE_BATTLE &&
+        subState === BATTLE_SUBSTATES.SWITCH_MENU &&
+        !!activePlayer &&
+        activePlayer.hp <= 0;
+      if (!isForcedPlayerSwitch) {
+        lastForcedSwitchUid = '';
+        return;
+      }
+      if (lastForcedSwitchUid === activePlayer.uid || typeof window === 'undefined') return;
+      lastForcedSwitchUid = activePlayer.uid;
+      const detail: BattleForcedSwitchDetail = { side: 'player' };
+      window.dispatchEvent(new CustomEvent<BattleForcedSwitchDetail>(BATTLE_UI_EVENTS.FORCED_SWITCH_REQUIRED, { detail }));
+    },
+  );
+
+  watch(
+    [
+      fsm.currentSubState,
+      isProcessing,
+      isIntroAnimating,
+      () => activeBattle.value?.playerRequest,
+      () => activeBattle.value?.enemyRequest,
+    ],
     ([subState, processing, intro]) => {
       const req = activeBattle.value?.playerRequest;
       const enemyReq = activeBattle.value?.enemyRequest;
+      if (processing || intro || fsm.currentState.value !== BATTLE_STATES.ACTIVE_BATTLE || (!req && !enemyReq) || activeBattle.value?.over) {
+        lastEmittedStateKey = '';
+        return;
+      }
+      const isInputSubState = subState === BATTLE_SUBSTATES.WAIT_INPUT || subState === BATTLE_SUBSTATES.SWITCH_MENU
+      if (!isInputSubState) {
+        lastEmittedStateKey = nextBattleReadyEventKey(lastEmittedStateKey, false, '') ?? ''
+        return;
+      }
       if (
         fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE &&
-        !processing &&
-        !intro &&
         (req || enemyReq)
       ) {
         const p1NeedsAction = requiresAction(req);
-        const p2NeedsAction = requiresAction(enemyReq);
-        if (!p1NeedsAction && !p2NeedsAction) return;
+        const anySeatNeedsAction = [req, enemyReq].some(r => requiresAction(r));
+        if (!anySeatNeedsAction) return;
 
         const kind = p1NeedsAction ? classifyRequest(req) : classifyRequest(enemyReq);
         const hasPendingSwitch = Boolean(Reflect.get(activeBattle.value!, 'switchingToPlayer')) || Boolean(Reflect.get(activeBattle.value!, 'switchingToEnemy'));
-
-        if (activeBattle.value?.over) return;
 
         const activePoke = activeBattle.value?.player;
         const isMoveReady = kind !== 'move' || !p1NeedsAction || (!!activePoke && activePoke.hp > 0);
@@ -494,6 +549,7 @@ export const useBattleStore = defineStore('battle', () => {
           isProcessing: processing,
           isIntroAnimating: intro,
           hasPendingSwitch,
+          hasPendingPlayerAction: p1NeedsAction,
         })) && isMoveReady;
 
         if (isReady && typeof window !== 'undefined') {
@@ -501,18 +557,21 @@ export const useBattleStore = defineStore('battle', () => {
           const p2Idx = window.__VITE_DEBUG__?.p2ChoiceIdx ?? 0;
           const reqRqid = (req as { rqid?: number } | undefined)?.rqid ?? 0;
           const emitKey = `${subState}_${kind}_${p1Idx}_${p2Idx}_${reqRqid}`;
-          if (lastEmittedStateKey === emitKey) return;
-          lastEmittedStateKey = emitKey;
+          const nextKey = nextBattleReadyEventKey(lastEmittedStateKey, true, emitKey)
+          if (nextKey === null) return;
+          lastEmittedStateKey = nextKey;
 
-          console.debug(`[BATTLE-EVENT] Emitting battle-ready-for-input. SubState: ${subState}, kind: ${kind}, key: ${emitKey}`);
+          const detail: BattleReadyForInputDetail = {
+            subState: subState ?? '',
+            p1ChoiceIdx: p1Idx,
+            p2ChoiceIdx: p2Idx,
+            over: false,
+            playerSwitchSlots: projectBattleReadySwitchSlots(req),
+          }
+          console.debug(`[BATTLE-EVENT] Emitting ${BATTLE_UI_EVENTS.READY_FOR_INPUT}. SubState: ${subState}, kind: ${kind}, key: ${emitKey}`);
           window.dispatchEvent(
-            new CustomEvent('battle-ready-for-input', {
-              detail: {
-                subState,
-                p1ChoiceIdx: p1Idx,
-                p2ChoiceIdx: p2Idx,
-                over: false
-              }
+            new CustomEvent<BattleReadyForInputDetail>(BATTLE_UI_EVENTS.READY_FOR_INPUT, {
+              detail,
             })
           );
         }
@@ -521,18 +580,25 @@ export const useBattleStore = defineStore('battle', () => {
   );
 
   watch(
-    () => activeBattle.value?.over,
-    (isOver) => {
-      if (isOver && typeof window !== 'undefined') {
-        console.debug('[BATTLE-EVENT] Emitting battle-ready-for-input due to battle over.');
+    [() => activeBattle.value?.over, fsm.currentState, fsm.currentSubState],
+    ([isOver, fsmState, fsmSubState]) => {
+      if (typeof window !== 'undefined' && isBattleCompletionReady({
+        hasActiveBattle: activeBattle.value !== null,
+        isOver: isOver === true,
+        fsmState,
+        fsmSubState,
+      })) {
+        const detail: BattleReadyForInputDetail = {
+          subState: '',
+          p1ChoiceIdx: window.__VITE_DEBUG__?.p1ChoiceIdx ?? 0,
+          p2ChoiceIdx: window.__VITE_DEBUG__?.p2ChoiceIdx ?? 0,
+          over: true,
+          playerSwitchSlots: [],
+        }
+        console.debug(`[BATTLE-EVENT] Emitting ${BATTLE_UI_EVENTS.READY_FOR_INPUT} due to battle over.`);
         window.dispatchEvent(
-          new CustomEvent('battle-ready-for-input', {
-            detail: {
-              subState: '',
-              p1ChoiceIdx: window.__VITE_DEBUG__?.p1ChoiceIdx ?? 0,
-              p2ChoiceIdx: window.__VITE_DEBUG__?.p2ChoiceIdx ?? 0,
-              over: true
-            }
+          new CustomEvent<BattleReadyForInputDetail>(BATTLE_UI_EVENTS.READY_FOR_INPUT, {
+            detail,
           })
         );
       }
@@ -540,7 +606,7 @@ export const useBattleStore = defineStore('battle', () => {
   );
 
   if (typeof window !== 'undefined') {
-    window.__VITE_DEBUG_STORE_RESOLVER__ = () => useBattleStore() as unknown as DebugStore // domain-ok
+    window.__VITE_DEBUG_STORE_RESOLVER__ = () => useBattleStore() as DebugStore
     setupBattleDebug(getContext())
   }
 

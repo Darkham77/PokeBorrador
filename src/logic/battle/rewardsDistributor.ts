@@ -13,6 +13,7 @@ const TRAINER_EXP_FACTOR_PER_LEVEL = 2
 const BATTLE_COINS_PER_LEVEL_FACTOR = 2
 const AMULET_COIN_MONEY_MULTIPLIER = 2
 import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
+import type { BattleDifficulty } from '@/types/battle/battle'
 import { calculateBaseExp, processExpGain, calculateMoneyGain } from './battleRewards.ts'
 import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
 import type { BattleContext } from '@/types/battle/battleContext'
@@ -126,7 +127,7 @@ const RIVAL_DROP_PROB_MAX_PERCENT = 100;
       const gymsStore = useGymsStore()
       const gym = gymsStore.gyms.find(g => g.id === gid)
       if (gym && gym.rewardTM) {
-        const key = diff as 'easy' | 'normal' | 'hard'
+        const key = diff as BattleDifficulty
         let tmChance = 0
         if (key === 'normal') tmChance = REMATCH_TM_CHANCE_NORMAL
         else if (key === 'hard') tmChance = REMATCH_TM_CHANCE_HARD
@@ -147,7 +148,7 @@ const RIVAL_DROP_PROB_MAX_PERCENT = 100;
     }
     const prog = ctx.gs.state.gymProgress[gid]
     if (prog) {
-      const key = diff as 'easy' | 'normal' | 'hard'
+      const key = diff as BattleDifficulty
       if (!prog[key]) {
         prog[key] = true
         ctx.addLog(`¡Superaste el gimnasio en dificultad ${diff.toUpperCase()}!`, 'log-success', '🏆')
@@ -233,7 +234,7 @@ const RIVAL_DROP_PROB_MAX_PERCENT = 100;
   const isGymRematch = active.isGym && active.gymId && ctx.gs.state.defeatedGyms.includes(active.gymId)
 
   for (const e of combatants) {
-    if (active.isCapture) await ctx.eventStore.submitCompetitionEntry(e, 'hourly_competition')
+    if (active.isCapture) await ctx.eventStore.submitCompetitionEntry('hourly_competition', e.uid)
 
     const baseExp = calculateBaseExp(e)
     for (const p of ctx.gs.state.team) {

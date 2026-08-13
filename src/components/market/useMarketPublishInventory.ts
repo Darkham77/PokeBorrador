@@ -3,6 +3,8 @@ import { SHOP_ITEMS } from '@/data/inventory/items'
 import type { useGameStore } from '@/stores/game'
 import type { useGTSStore } from '@/stores/gts'
 import type { MarketListing } from '@/logic/economy/market'
+import type { SortOrder, ItemSortKey } from '@/types/system/game'
+import type { ItemTier } from '@/types/inventory/items'
 
 export interface InventoryItem {
   id: string
@@ -10,15 +12,15 @@ export interface InventoryItem {
   qty: number
   desc: string
   price: number
-  tier: 'common' | 'rare' | 'epic' | 'legend'
+  tier: ItemTier
 }
 
 export function useMarketPublishInventory(
   game: ReturnType<typeof useGameStore>,
   gtsStore: ReturnType<typeof useGTSStore>,
   itemSearchQuery: Ref<string>,
-  itemSortKey: Ref<'name' | 'price' | 'rarity'>,
-  itemSortOrder: Ref<'asc' | 'desc'>
+  itemSortKey: Ref<ItemSortKey>,
+  itemSortOrder: Ref<SortOrder>
 ) {
   const inventory = computed<InventoryItem[]>(() => {
     return Object.entries(game.state.inventory as Record<string, number>) // open-record
@@ -31,7 +33,7 @@ export function useMarketPublishInventory(
           qty,
           desc: dbItem?.desc ?? 'Objeto sin descripción.',
           price: dbItem?.price || 0,
-          tier: (dbItem?.tier as 'common' | 'rare' | 'epic' | 'legend') || 'common'
+          tier: (dbItem?.tier as ItemTier) || 'common'
         }
       })
   })

@@ -1,4 +1,5 @@
 import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { MoveCategory } from '@/data/battle/moves';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { ACTIVE_AI_TEAM_GENERATION_GEN } from '@/data/system/constants';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
@@ -32,7 +33,7 @@ export async function applyCompetitiveSet(
     type: m.type || 'normal',
     power: m.power || 0,
     acc: m.acc || 100,
-    cat: (m.cat as 'physical' | 'special' | 'status') || 'physical',
+    cat: (m.cat as MoveCategory) || 'physical',
     priority: m.priority,
     effect: m.effect,
     recoil: m.recoil,
@@ -67,7 +68,9 @@ export async function buildTrainerTeam(
 
   // Inicializa el generador competitivo
   const generator = TeamGenerators.getTeamGenerator(`gen${ACTIVE_AI_TEAM_GENERATION_GEN}randombattle`);
-  const generatorWithRandomSet = generator as unknown as { randomSet: (s: string) => { moves: string[]; ability: string; item: string } }; // domain-ok
+  type RandSet = (species: string) => { moves: string[]; ability: string; item: string };
+  type GetTeam = () => Array<{ species: string; moves: string[]; ability: string; item: string }>;
+  const getRandomSet = (s: string) => (Reflect.get(generator, 'randomSet') as RandSet).call(generator, s);
 
   const enemyTeam: Pokemon[] = [];
   const usedSpecies: PokemonSpeciesId[] = [];
@@ -86,12 +89,12 @@ export async function buildTrainerTeam(
     const p = makePokemon(pId, trainerLv, { bypassWhitelist: true }) as Pokemon;
     if (p) {
       try {
-        const set = generatorWithRandomSet.randomSet(pId);
+        const set = getRandomSet(pId);
         await applyCompetitiveSet(p, set);
       } catch {
         // Fallback si no tiene set: intentamos obtener uno genérico de getTeam()
-        const rawTeam = generator.getTeam();
-        const setMatch = rawTeam.find(s => toID(s.species) === toID(pId));
+        const rawTeam = (Reflect.get(generator, 'getTeam') as GetTeam).call(generator);
+        const setMatch = rawTeam.find((s) => toID(s.species) === toID(pId));
         if (setMatch) {
           await applyCompetitiveSet(p, setMatch);
         }

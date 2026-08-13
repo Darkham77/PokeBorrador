@@ -6,6 +6,11 @@ import type { BattleState } from '@/types/battle/battle'
 import type { ChoiceRequest } from './helpers/requestHelper.ts'
 import { ShowdownBattleRunner } from './helpers/showdownBattleRunner.ts'
 
+interface ShowdownRequestMove {
+  id?: string
+  disabled?: boolean | string
+}
+
 function computeP1Choice(active: BattleState | null, move: Move | null, isStruggle: boolean): string {
   let p1Choice = isStruggle ? 'struggle' : `move ${move?.id ?? 'struggle'}`
   const pReq = active?.playerRequest as ChoiceRequest | undefined
@@ -49,21 +54,17 @@ export async function computeP2Choice(
       }
     }
   } else {
-    const reqMoves = active?.enemyRequest?.active?.[0]?.moves
-    if (eMove && reqMoves) {
-      const idx = reqMoves.findIndex((m: { id?: string }) => m.id === eMove.id)
-      if (idx !== -1) {
-        p2Choice = `move ${idx + 1}`
-      } else {
-        p2Choice = `move ${eMove.id}`
-      }
-    } else if (eMove) {
+    const reqMoves = active?.enemyRequest?.active?.[0]?.moves as ShowdownRequestMove[] | undefined
+    const preferredMoveIndex = eMove
+      ? reqMoves?.findIndex(move => move.id === eMove.id && !move.disabled) ?? -1
+      : -1
+    const legalMoveIndex = preferredMoveIndex !== -1
+      ? preferredMoveIndex
+      : reqMoves?.findIndex(move => !move.disabled) ?? -1
+    if (legalMoveIndex !== -1) {
+      p2Choice = `move ${legalMoveIndex + 1}`
+    } else if (eMove?.id) {
       p2Choice = `move ${eMove.id}`
-    } else if (reqMoves) {
-      const idx = reqMoves.findIndex((m: { disabled?: boolean | string }) => !m.disabled)
-      if (idx !== -1) {
-        p2Choice = `move ${idx + 1}`
-      }
     }
   }
 
@@ -105,7 +106,7 @@ export async function resolveTurnChoices(
   let p2Choice = await computeP2Choice(store, p, e, isWild, p2Skip, eMove)
 
   if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
-    const debugObj = window.__VITE_DEBUG__
+    const debugObj = window.__VITE_DEBUG__ as Record<string, unknown> // open-record
     p1Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p1')
     p2Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2')
     console.debug(`[E2E-CERTIFIED-REPLAY] Resolved the complete Showdown submission from certified history. context=${JSON.stringify({ historyIndex: debugObj.replayHistoryIdx, p1Choice, p2Choice })}`)

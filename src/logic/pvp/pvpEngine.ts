@@ -5,7 +5,7 @@ import { getStatMultiplier, getAccuracyMultiplier } from '@/logic/pokemon/statEn
 import { applyMoveEffect } from '@/logic/battle/battleMoves'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { BattleStages } from '@/types/battle/battle'
+import type { BattleStages, BattleActionType } from '@/types/battle/battle'
 import type { MoveBaseData } from '@/types/system/database'
 
 /**
@@ -13,13 +13,13 @@ import type { MoveBaseData } from '@/types/system/database'
  */
 
 export interface PvPAction {
-  type: 'move' | 'switch';
+  type: BattleActionType;
   moveIndex?: number;
   switchIndex?: number;
 }
 
 export interface PvPActionResult {
-  type: 'move' | 'switch';
+  type: BattleActionType;
   moveName?: string;
   actorIsHost: boolean;
   damage?: number;

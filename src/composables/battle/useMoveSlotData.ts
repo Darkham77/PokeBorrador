@@ -3,6 +3,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { useBattleStore } from '@/stores/battle/battle'
 import { getCombinedEffectiveness } from '@/logic/pokemon/typeEngine'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
+import type { MoveCategory } from '@/data/battle/moves'
 import {
   getCombatEnvState,
   calculateFinalPower,
@@ -25,7 +26,7 @@ export function useMoveSlotData(
       type: move.type || md.type || 'normal',
       power: move.power !== undefined ? move.power : md.power,
       acc: move.acc !== undefined ? move.acc : md.acc,
-      cat: (move.cat || md.cat || 'physical') as 'physical' | 'special' | 'status'
+      cat: (move.cat || md.cat || 'physical') as MoveCategory
     }
   })
 

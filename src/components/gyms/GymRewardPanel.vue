@@ -10,7 +10,6 @@ const props = defineProps<{
 }>()
 
 // Expose to template
-const _ASSET_TYPES = ASSET_TYPES
 const _getAssetUrl = getAssetUrl
 
 const gymsStore = useGymsStore()
@@ -56,7 +55,7 @@ const tmRewardText = computed(() => {
 <template>
   <div class="medal-reward-box">
     <img 
-      :src="_getAssetUrl(_ASSET_TYPES.BADGE, gym.id)" 
+      :src="_getAssetUrl(ASSET_TYPES.BADGE, gym.id)" 
       :alt="gym.badgeName"
       class="reward-badge-img"
       :class="{ 'claimed-badge': isGymDefeated }"
@@ -229,3 +228,4 @@ const tmRewardText = computed(() => {
   }
 }
 </style>
+

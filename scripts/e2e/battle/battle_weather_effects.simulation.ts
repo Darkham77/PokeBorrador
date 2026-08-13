@@ -1,7 +1,7 @@
 // fallow-ignore-file security-sink
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { waitForWaitInput, type WindowWithResolver } from '../e2e_helpers.ts';
+import { armBattleReadyForInput, awaitBattleReadyForInput, clickResilient, openDebugTab, type WindowWithResolver } from '../e2e_helpers.ts';
 
 const PELIPPER_WEATHER_TEST_LEVEL = 50;
 
@@ -12,59 +12,28 @@ class WeatherSimWrapper extends BaseBattleSimulation {
 
   public async setupRainScenario(): Promise<void> {
     await this.disableAutoMode();
-    await this.closeBattleModal();
-    await this.awaitReturnToMap();
-    await this.page.evaluate(async () => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { useMapStore } = await import('../../../src/stores/map.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-
-      useMapStore().setGlobalWeather('rain');
-
-      const pelipper = pokemonDebugService.generate({
-        id: 'pelipper',
-        level: PELIPPER_WEATHER_TEST_LEVEL,
-        ability: 'drizzle',
-        moves: ['surf']
-      });
-      const caterpie = pokemonDebugService.generate({
-        id: 'caterpie',
-        level: 5,
-        moves: ['tackle']
-      });
-
-      useGameStore().state.team = [pelipper];
-      useGameStore().state.starterChosen = true;
-      await useBattleStore().startBattle(caterpie, { locationId: 'route1', wasSearching: false });
-    });
+    await openDebugTab(this.page, 'tiempo');
+    await this.page.locator('#debug-weather-btn-rain').click();
+    await openDebugTab(this.page, 'pokes');
+    await this.page.locator('#debug-input-especie').fill('snorlax');
+    await this.page.locator('#option-snorlax').click();
+    await this.page.locator('#debug-input-level').fill('5');
+    await armBattleReadyForInput(this.page);
+    await this.page.locator('#debug-btn-encounter').click();
+    await awaitBattleReadyForInput(this.page);
   }
 
   public async setupSandstormScenario(): Promise<void> {
     await this.disableAutoMode();
-    await this.closeBattleModal();
-    await this.awaitReturnToMap();
-    await this.page.evaluate(async () => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { useMapStore } = await import('../../../src/stores/map.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-
-      const bulbasaur = pokemonDebugService.generate({
-        id: 'bulbasaur',
-        level: PELIPPER_WEATHER_TEST_LEVEL,
-        moves: ['splash']
-      });
-      const enemyBulbasaur = pokemonDebugService.generate({
-        id: 'bulbasaur',
-        level: PELIPPER_WEATHER_TEST_LEVEL,
-        moves: ['splash']
-      });
-
-      useGameStore().state.team = [bulbasaur];
-      useMapStore().setGlobalWeather('sandstorm');
-      await useBattleStore().startBattle(enemyBulbasaur, { locationId: 'route1', enemyTeam: [enemyBulbasaur], wasSearching: false });
-    });
+    await openDebugTab(this.page, 'tiempo');
+    await this.page.locator('#debug-weather-btn-sandstorm').click();
+    await openDebugTab(this.page, 'pokes');
+    await this.page.locator('#debug-input-especie').fill('bulbasaur');
+    await this.page.locator('#option-bulbasaur').click();
+    await this.page.locator('#debug-input-level').fill(PELIPPER_WEATHER_TEST_LEVEL.toString());
+    await armBattleReadyForInput(this.page);
+    await this.page.locator('#debug-btn-encounter').click();
+    await awaitBattleReadyForInput(this.page);
   }
 
   public async getEnemyHpInfo(): Promise<{ hp: number; maxHp: number }> {
@@ -77,38 +46,38 @@ class WeatherSimWrapper extends BaseBattleSimulation {
 
 test.describe('Weather Effects Verification Simulation', () => {
 
-  test('should trigger rain weather with Drizzle and clean DOM after battle', async ({ page }) => {
+  test('should render rain weather set through visible controls and clean DOM after battle', async ({ page }) => {
     const sim = new WeatherSimWrapper(page, 'TestWeatherRain');
     await sim.setup();
     await sim.setupRainScenario();
-    await waitForWaitInput(page);
 
     const atmosphere = page.locator('.battle-arena .atmosphere-container, .battle-arena canvas').first();
     await expect(atmosphere).toBeAttached();
 
     await sim.forceFleeDebugger();
-    await sim.awaitReturnToMap();
   });
 
   test('should apply sandstorm damage to non-immune pokemon at turn end', async ({ page }) => {
     const sim = new WeatherSimWrapper(page, 'TestWeatherSand');
     await sim.setup();
     await sim.setupSandstormScenario();
-    await waitForWaitInput(page);
 
     // Execute single turn
-    await sim.selectMove(0);
+    await armBattleReadyForInput(page);
+    await clickResilient(page.locator('#move-btn-0').first());
+    await awaitBattleReadyForInput(page);
 
     const hpInfo = await sim.getEnemyHpInfo();
     expect(hpInfo.hp).toBeLessThan(hpInfo.maxHp);
+
+    await sim.playBattle();
+    await sim.closeBattleModal();
+    await sim.awaitReturnToMap();
   });
 
   test.afterEach(async ({ page }) => {
-    await page.evaluate(async () => {
-      try {
-        const { useMapStore } = await import('../../../src/stores/map.ts');
-        useMapStore().setGlobalWeather(null);
-      } catch (_e: unknown) { /* expected */ }
-    });
+    await openDebugTab(page, 'tiempo');
+    const activeWeatherButton = page.locator('#debug-weather-btn-rain.active, #debug-weather-btn-sandstorm.active').first();
+    if (await activeWeatherButton.isVisible()) await activeWeatherButton.click();
   });
 });

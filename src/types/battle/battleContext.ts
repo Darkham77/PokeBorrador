@@ -1,5 +1,5 @@
 import { Ref } from 'vue';
-import { BattleState, BattleStages, BattleLog, type BattleSource } from '@/types/battle/battle';
+import { BattleState, BattleStages, BattleLog, type BattleSource, type BattleSide } from '@/types/battle/battle';
 import { Pokemon, Move } from '@/types/pokemon/pokemon';
 import { GameStore, BattleStore, UIStore, WarStore, EventStore, PlayerClassStore, AudioStore, BattleOptions } from '@/types/system/stores';
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
@@ -31,7 +31,7 @@ export interface BattleContext {
   playerStages: Ref<BattleStages>;
   enemyStages: Ref<BattleStages>;
   battleLogs: Ref<BattleLog[]>;
-  attackerSide: Ref<'player' | 'enemy' | null>;
+  attackerSide: Ref<BattleSide | null>;
   activeMove: Ref<Move | null>;
   faintedSides: Ref<Set<string>>;
   exitingPlayer: Ref<Pokemon | null>;
@@ -40,8 +40,8 @@ export interface BattleContext {
   isIndoors?: boolean;
   isCrystalCave?: boolean;
   
-  handleFaint: (side: 'player' | 'enemy') => Promise<void>;
-  addLog: (msg: string, type?: string, source?: BattleSource | null, sideOverride?: 'player' | 'enemy' | null) => void;
+  handleFaint: (side: BattleSide) => Promise<void>;
+  addLog: (msg: string, type?: string, source?: BattleSource | null, sideOverride?: BattleSide | null) => void;
   endBattle: (win: boolean, fled: boolean) => Promise<void>;
   completeBattleFlow: (option?: string) => Promise<void>;
   persistBattle: () => void;

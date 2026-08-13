@@ -220,21 +220,26 @@ export async function applyEndTurnEffects(ctx: BattleContext) {
   const { useMapStore } = await import('@/stores/map.ts')
   const mapStore = useMapStore()
 
-  if (active.futureSightTurns && active.futureSightTurns > 0) {
-    active.futureSightTurns--
-    if (active.futureSightTurns === 0) {
-      const fsTarget = active.futureSightTarget
-      if (fsTarget && fsTarget.hp > 0) {
-        const dmg = Math.max(10, Math.floor(fsTarget.maxHp * 0.15))
-        fsTarget.hp = Math.max(0, fsTarget.hp - dmg)
-        ctx.addLog(`¡Se cumplió la premonición! ${fsTarget.name} recibió daño.`, 'log-info', fsTarget)
-        
-        const side = fsTarget.uid === ctx.activeBattle.value?.player?.uid ? 'player' : 'enemy'
-        if (ctx.animations?.handleBlinkRequest) {
-          await ctx.animations.handleBlinkRequest({ side })
+  if (active.pendingSlotEffects?.length) {
+    const resolved: typeof active.pendingSlotEffects = [];
+    for (const effect of active.pendingSlotEffects) {
+      effect.turnsLeft--;
+      if (effect.turnsLeft <= 0) {
+        const fsTarget = effect.side === 'player' ? active.player : active.enemy;
+        if (fsTarget && fsTarget.hp > 0) {
+          fsTarget.hp = Math.max(0, fsTarget.hp - effect.damage);
+          const fromText = effect.sourceName ? ` de ${effect.sourceName}` : '';
+          ctx.addLog(`¡Se cumplió la premonición${fromText}! ${fsTarget.name} recibió daño.`, 'log-info', fsTarget);
+          const side = effect.side;
+          if (ctx.animations?.handleBlinkRequest) {
+            await ctx.animations.handleBlinkRequest({ side });
+          }
         }
+      } else {
+        resolved.push(effect);
       }
     }
+    active.pendingSlotEffects = resolved;
   }
 
   await tickStatus(p, ctx, 'player')

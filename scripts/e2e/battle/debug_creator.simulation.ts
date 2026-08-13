@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
-import { setupE2ESession, loginTestUser, confirmAndStartBattle, waitForWaitInput, openDebugTab } from '../e2e_helpers.ts';
+import { setupE2ESession, loginTestUser, openDebugTab, armBattleReadyForInput, awaitBattleReadyForInput, type WindowWithResolver } from '../e2e_helpers.ts';
 
 const CHARMANDER_EXPECTED_HP = 97;
 const CHARMANDER_EXPECTED_ATK = 46;
@@ -20,50 +20,27 @@ const E2E_TEST_IV_SPA_MAX = 31;
 const E2E_TEST_IV_SPD_CUSTOM = 20;
 const E2E_TEST_IV_SPE_MAX = 31;
 
-interface E2EWindow {
-  __VITE_DEBUG_STORE_RESOLVER__?: () => {
-    state: {
-      isTrainer?: boolean;
-      trainerName?: string;
-      enemy?: { id: string; level: number };
-      weather?: { type: string; turns: number; visual: string };
-    } | null;
-  };
-  __VITE_DEBUG__?: {
-    getGameStore?: () => {
-      state: {
-        team: Array<{
-          id: string;
-          level: number;
-          nature: string;
-          ability: string;
-          nickname?: string | null;
-          name: string;
-          ivs: { hp: number; atk: number; def: number; spa: number; spd: number; spe: number };
-          maxHp: number;
-          atk: number;
-          def: number;
-          spa: number;
-          spd: number;
-          spe: number;
-          moves: Array<{
-            id?: string;
-            name: string;
-          } | null>;
-        }>;
-      };
-    };
-  };
+interface E2ECharmander {
+  id?: string;
+  level?: number;
+  nature?: string;
+  ability?: string;
+  nickname?: string | null;
+  name?: string;
+  ivs?: { hp?: number; atk?: number; def?: number; spa?: number; spd?: number; spe?: number };
+  maxHp?: number;
+  atk?: number;
+  def?: number;
+  spa?: number;
+  spd?: number;
+  spe?: number;
+  moves?: Array<{ id?: string; name?: string } | null>;
 }
 
-
-
 test.describe('Admin Debug Panel E2E Simulations', () => {
-  test.beforeEach(async ({ page, request }) => {
-    await request.post('/api/dev-import-db-cleanup');
-    await setupE2ESession(page);
-    const testUser = `DEBUG_ADMIN_${Temporal.Now.instant().epochMilliseconds.toString()}`;
-    await loginTestUser(page, testUser);
+  test.beforeEach(async ({ page }) => {
+    await setupE2ESession(page, []);
+    await loginTestUser(page, 'DEBUG_ADMIN');
   });
 
   test('should create a custom pokemon and verify its properties in battle', async ({ page }) => {
@@ -112,27 +89,23 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     const closeBtn = page.locator('#debug-panel-modal-close-btn');
     await closeBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await closeBtn.click();
+    await closeBtn.waitFor({ state: 'detached', timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-    // 11. Start a wild encounter combat to inspect player pokemon state
-    await page.evaluate(async (lvl) => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      const caterpie = pokemonDebugService.generate({
-        id: 'caterpie',
-        level: lvl,
-        moves: ['tackle']
-      });
-      await useBattleStore().startBattle(caterpie, { locationId: 'route1' });
-    }, E2E_WILD_CATERPIE_LEVEL);
-
-    await confirmAndStartBattle(page);
-    await waitForWaitInput(page);
+    // 11. Create the inspection encounter through the visible debug controls.
+    await openDebugTab(page, 'POKES');
+    await page.locator('#debug-input-especie').fill('caterpie');
+    const caterpieOption = page.locator('#option-caterpie').first();
+    await caterpieOption.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await caterpieOption.click();
+    await page.locator('#debug-input-level').fill(E2E_WILD_CATERPIE_LEVEL.toString());
+    await armBattleReadyForInput(page);
+    await page.locator('#debug-btn-encounter').click();
+    await awaitBattleReadyForInput(page);
 
     // 12. Verify active player pokemon stats/properties in combat store matches config
     const activePokemonState = await page.evaluate(() => {
-      const win = window as unknown as E2EWindow;
-      const gameStore = win.__VITE_DEBUG__?.getGameStore?.();
-      // Find the Charmander we just created in the team
+      const win = window as WindowWithResolver;
+      const gameStore = win.__VITE_DEBUG__?.getGameStore?.() as { state?: { team?: E2ECharmander[] } } | undefined;
       const charmander = gameStore?.state?.team?.find((p) => p?.id === 'charmander');
       return {
         id: charmander?.id ?? '',
@@ -163,7 +136,6 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     expect(activePokemonState.ivs.spd).toBe(E2E_TEST_IV_SPD_CUSTOM);
     expect(activePokemonState.ivs.spe).toBe(E2E_TEST_IV_SPE_MAX);
     
-    // exact stat assertions based on base stats, level 42, nature modest, and custom IVs
     expect(activePokemonState.maxHp).toBe(CHARMANDER_EXPECTED_HP);
     expect(activePokemonState.atk).toBe(CHARMANDER_EXPECTED_ATK);
     expect(activePokemonState.def).toBe(CHARMANDER_EXPECTED_DEF);
@@ -192,15 +164,15 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     await levelInput.fill(E2E_BULBASAUR_LEVEL.toString());
 
     // 4. Click "ENCONTRAR"
+    await armBattleReadyForInput(page);
     await page.locator('#debug-btn-encounter').click();
 
-    // 5. Wait for combat to prompt and start it
-    await confirmAndStartBattle(page);
-    await waitForWaitInput(page);
+    // 5. Wait for combat to start and become ready for input
+    await awaitBattleReadyForInput(page);
 
     // 6. Verify enemy pokemon state in battle matches bulbasaur level 33
     const enemyState = await page.evaluate(() => {
-      const win = window as unknown as E2EWindow;
+      const win = window as WindowWithResolver;
       const battleStore = win.__VITE_DEBUG_STORE_RESOLVER__?.();
       const enemy = battleStore?.state?.enemy;
       return {
@@ -230,15 +202,19 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     await nameInput.fill('BROCK_TEST');
 
     // 5. Iniciar Combate (uses 'map' location type by default, which preserves name)
+    await armBattleReadyForInput(page);
     await page.locator('#debug-battle-start-btn').click();
 
-    // 6. Wait and start combat
-    await confirmAndStartBattle(page);
-    await waitForWaitInput(page);
+    // 6. Battle startup closes its initiating modal before rendering the arena.
+    const closeBtn = page.locator('#debug-panel-modal-close-btn');
+    await closeBtn.waitFor({ state: 'detached', timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-    // 7. Verify trainer properties in battle store
+    // 7. Wait for battle ready input
+    await awaitBattleReadyForInput(page);
+
+    // 8. Verify trainer properties in battle store
     const battleTrainerState = await page.evaluate(() => {
-      const win = window as unknown as E2EWindow;
+      const win = window as WindowWithResolver;
       const battleStore = win.__VITE_DEBUG_STORE_RESOLVER__?.();
       return {
         isTrainer: !!battleStore?.state?.isTrainer,
@@ -259,29 +235,21 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     await sandstormBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await sandstormBtn.click();
 
-    // 3. Close debug modal using the close button
-    const closeBtn = page.locator('#debug-panel-modal-close-btn');
-    await closeBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await closeBtn.click();
+    // 3. Switch through the official tab control and create the inspection encounter.
+    await openDebugTab(page, 'POKES');
+    await page.locator('#debug-input-especie').fill('bulbasaur');
+    const bulbasaurOption = page.locator('#option-bulbasaur').first();
+    await bulbasaurOption.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await bulbasaurOption.click();
+    await page.locator('#debug-input-level').fill(E2E_WILD_BULBASAUR_LEVEL.toString());
+    await armBattleReadyForInput(page);
+    await page.locator('#debug-btn-encounter').click();
 
-    // 4. Start quick battle
-    await page.evaluate(async (lvl) => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      const bulbasaur = pokemonDebugService.generate({
-        id: 'bulbasaur',
-        level: lvl,
-        moves: ['splash']
-      });
-      await useBattleStore().startBattle(bulbasaur, { locationId: 'route1' });
-    }, E2E_WILD_BULBASAUR_LEVEL);
+    await awaitBattleReadyForInput(page);
 
-    await confirmAndStartBattle(page);
-    await waitForWaitInput(page);
-
-    // 5. Verify weather in combat state is sandstorm
+    // 4. Verify weather in combat state is sandstorm
     const weatherState = await page.evaluate(() => {
-      const win = window as unknown as E2EWindow;
+      const win = window as WindowWithResolver;
       const battleStore = win.__VITE_DEBUG_STORE_RESOLVER__?.();
       return battleStore?.state?.weather?.type ?? '';
     });

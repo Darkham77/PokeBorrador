@@ -5,7 +5,7 @@ import { itemEffects as ITEM_EFFECTS, getDynamicItemEffect } from '@/logic/items
 import { isGlobalItem } from '@/logic/providers/itemProvider.ts';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { consumeItem } from '@/stores/inventory/inventoryHelpers.ts';
-import type { Pokemon, Move } from '@/types/pokemon/pokemon';
+import type { Pokemon, Move, PokemonStorageLocation } from '@/types/pokemon/pokemon';
 import type { ItemEffectResult } from '@/types/inventory/items';
 import { useAudioStore } from '@/stores/audio.ts';
 import type { GameState } from '@/types/system/game';
@@ -28,7 +28,7 @@ function isHealItemId(value: ItemId): value is HealItemId {
 
 export function executeUseItem(
   itemName: ItemId | string,
-  context: 'team' | 'box' | null = null,
+  context: PokemonStorageLocation | null = null,
   index: number | null = null
 ): ItemEffectResult {
   try {
@@ -128,16 +128,16 @@ export function executeUseItem(
         });
       }
     } else if (result.resultType === 'nature_patch') {
-      uiStore.activePokemonForNature = context !== null && index !== null ? { context: context as 'team' | 'box', index } : null;
+      uiStore.activePokemonForNature = context !== null && index !== null ? { context: context as PokemonStorageLocation, index } : null;
       uiStore.isNaturePatchOpen = true;
       shouldConsumeImmediately = false; // Handled by NaturePatchModal on confirm
     } else if (result.resultType === 'pp_up' || result.resultType === 'ppmax') {
-      uiStore.activePokemonForPPUp = context !== null && index !== null ? { context: context as 'team' | 'box', index } : null;
+      uiStore.activePokemonForPPUp = context !== null && index !== null ? { context: context as PokemonStorageLocation, index } : null;
       uiStore.activeItemForPPUp = itemId;
       uiStore.isPPUpOpen = true;
       shouldConsumeImmediately = false; // Handled by PPUpModal on confirm
     } else if (result.resultType === 'ability_pill') {
-      uiStore.activePokemonForAbility = context !== null && index !== null ? { context: context as 'team' | 'box', index } : null;
+      uiStore.activePokemonForAbility = context !== null && index !== null ? { context: context as PokemonStorageLocation, index } : null;
       uiStore.isAbilityPillOpen = true;
       shouldConsumeImmediately = false; // Handled by AbilityPillModal on confirm
     }

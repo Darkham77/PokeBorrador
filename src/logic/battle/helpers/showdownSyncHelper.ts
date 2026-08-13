@@ -77,11 +77,8 @@ export function syncSidePokemon(
             const targetStatus = (rawStatus || '') as ID;
             console.debug(`[SYNC-SIDE-STATUS] Mon: ${p.name} (uid:${uid}), current status: "${p.status}", targetStatus: "${targetStatus}"`);
             const cureFn = Reflect.get(p, 'cureStatus') as ((silent?: boolean) => boolean) | undefined;
-            const setFn = Reflect.get(p, 'setStatus') as ((s: string) => boolean) | undefined;
             if (targetStatus === '' && typeof cureFn === 'function') {
               cureFn.call(p, true);
-            } else if (typeof setFn === 'function') {
-              setFn.call(p, targetStatus);
             } else {
               p.status = targetStatus;
             }

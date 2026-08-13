@@ -12,7 +12,7 @@ const HELD_ITEM_TYPE_BOOST_MULTIPLIER = 1.2
 const SOLARBEAM_CLIMATE_PENALTY_MULTIPLIER = 0.5
 const STAGE_MATH_BASE_ACCURACY = 3
 const STAGE_MATH_BASE_REGULAR = 2
-/** Pokémon Showdown acc/eva stage base multiplier (shared for net stage calc) */
+import type { DayPhase } from '@/logic/utils/timeUtils'
 const STAGE_MATH_BASE = 3
 /** Pokémon Showdown stat stage bounds: stages range from -6 to +6 */
 const STAGE_MIN_BOUND = -6
@@ -111,7 +111,7 @@ export function calculateMovePower(
   defender: PurePokemon | null,
   weather: { type: string; turns: number } | null,
   mechWeather: string,
-  _cycle: 'morning' | 'day' | 'dusk' | 'night' | undefined,
+  _cycle: DayPhase | undefined,
   basePower: number,
   moveType: string
 ): { base: number; final: number; list: { label: string; mult: number }[]; class: string } {
@@ -230,7 +230,7 @@ export function calculateMoveAccuracy(
   move: Move,
   weather: { type: string; turns: number } | null,
   mechWeather: string,
-  _cycle: 'morning' | 'day' | 'dusk' | 'night' | undefined,
+  _cycle: DayPhase | undefined,
   baseAcc: number,
   accStage: number,
   evaStage: number
@@ -318,7 +318,7 @@ export function calculateMoveEffectivenessAndDamage(
   attacker: PurePokemon,
   defender: PurePokemon | null,
   weather: { type: string; turns: number } | null,
-  cycle: 'morning' | 'day' | 'dusk' | 'night' | undefined,
+  cycle: DayPhase | undefined,
   basePower: number,
   playerStages: { atk?: number } | null,
   enemyStages: { def?: number } | null

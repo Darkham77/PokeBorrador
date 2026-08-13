@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import type { SortOrder } from '@/types/system/game'
+
 interface Props {
   currentGen: number
   sortBy: string
-  sortOrder: 'asc' | 'desc'
+  sortOrder: SortOrder
   searchQuery: string
 }
 
@@ -11,7 +13,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   (e: 'update:currentGen', gen: number): void
   (e: 'update:sortBy', sortBy: string): void
-  (e: 'update:sortOrder', sortOrder: 'asc' | 'desc'): void
+  (e: 'update:sortOrder', sortOrder: SortOrder): void
   (e: 'update:searchQuery', query: string): void
 }>()
 

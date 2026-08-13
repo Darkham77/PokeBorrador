@@ -9,8 +9,9 @@
 
 import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
-import { generateItemTestBatches } from '../../../scripts/e2e/fuzzer/generators/fuzzer_item_generator.ts';
-import { getItemById, requireItemId } from '../../../src/data/inventory/items.ts';
+import { generateItemBatches, generateItemTestBatches, ITEM_FUZZER_ACTIVE_HOLDER_COUNT } from '../../../scripts/e2e/fuzzer/generators/fuzzer_item_generator.ts';
+import { hasCertifiedItemProtocolEvidence, hasControlDivergedBeforeNextCertifiedDecision, isControlChoiceRejection } from '../../../scripts/e2e/fuzzer/core/fuzzer_engine.ts';
+import { getItemById, requireItemId, SHOP_ITEMS } from '../../../src/data/inventory/items.ts';
 
 describe('Fuzzer Item Generator — Strict Item ID Normalization', () => {
   it('generates item batches with strictly valid, normalized ItemIds readable by getItemById', () => {
@@ -35,4 +36,390 @@ describe('Fuzzer Item Generator — Strict Item ID Normalization', () => {
       }
     }
   });
+
+  it('generates held-battle batches without inventory-only potions or Poké Balls', () => {
+    const batches = generateItemTestBatches(6);
+
+    for (const batch of batches) {
+      for (const itemId of batch.itemsToTest) {
+        const item = SHOP_ITEMS.find(candidate => candidate.id === itemId);
+        assert.ok(item, `Generated item "${itemId}" must exist in the shop catalog`);
+        assert.equal(
+          item.cat,
+          'combat_held',
+          `Held-battle fuzzer must not treat the ${item.cat} item "${itemId}" as an equipped battle effect`
+        );
+      }
+    }
+  });
+
+  it('can generate a certified battle with exactly one active item holder', () => {
+    const batches = generateItemTestBatches(ITEM_FUZZER_ACTIVE_HOLDER_COUNT);
+
+    for (const batch of batches) {
+      assert.equal(batch.itemsToTest.length, ITEM_FUZZER_ACTIVE_HOLDER_COUNT);
+      assert.equal(batch.playerTeam[0]?.item, batch.itemsToTest[0]);
+      assert.equal(batch.playerTeam.filter(pokemon => pokemon.item !== '').length, ITEM_FUZZER_ACTIVE_HOLDER_COUNT);
+    }
+  });
+
+  it('generates each supported held battle ItemId exactly once', () => {
+    const generatedIds = generateItemTestBatches(ITEM_FUZZER_ACTIVE_HOLDER_COUNT).flatMap(batch => batch.itemsToTest);
+
+    assert.equal(new Set(generatedIds).size, generatedIds.length);
+  });
+
+  it('recognizes a rejected control choice as item-effect divergence without masking unrelated errors', () => {
+    assert.equal(isControlChoiceRejection(new Error('[ShowdownBattleEngine] Elección "switch 2" rechazada para p1. Cause: trapped')), true);
+    assert.equal(isControlChoiceRejection(new Error('Unexpected bridge failure')), false);
+  });
+
+  it('configures a legal super-effective enemy objective for a type-resistance berry', () => {
+    const batch = generateItemBatches(['occaberry'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Occa Berry must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    const enemy = batch.enemyTeam[0];
+    assert.ok(player, 'The item holder must be active');
+    assert.ok(enemy, 'The cooperating enemy must be active');
+    assert.equal(player.species, 'scizor');
+    assert.equal(batch.enemyPriorityMove, 'flamethrower');
+    assert.equal(enemy.moves[0], 'flamethrower');
+  });
+
+  it('keeps out-of-battle held catalog entries out of the Showdown battle scope', () => {
+    const generatedIds = new Set(generateItemTestBatches(ITEM_FUZZER_ACTIVE_HOLDER_COUNT).flatMap(batch => batch.itemsToTest));
+
+    assert.equal(generatedIds.has('bignugget'), false, 'Big Nugget is an economy item, not a Showdown battle mechanic');
+    assert.equal(generatedIds.has('bindingband'), true, 'Binding Band still has a Showdown battle mechanic');
+  });
+
+  it('uses the official restricted species when a battle item requires one', () => {
+    const batch = generateItemBatches(['adamantorb'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Adamant Orb must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    assert.ok(player, 'The restricted item holder must be active');
+    assert.equal(player.species, 'dialga');
+    assert.equal(player.moves[0], 'flashcannon');
+  });
+
+  it('prioritizes the matching terrain to trigger a terrain seed', () => {
+    const batch = generateItemBatches(['electricseed'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Electric Seed must generate a certified trigger batch');
+    const enemy = batch.enemyTeam[0];
+    assert.ok(enemy, 'The cooperating enemy must be active');
+    assert.equal(batch.enemyPriorityMove, 'electricterrain');
+    assert.equal(enemy.moves[0], 'electricterrain');
+  });
+
+  it('prioritizes a legal draining move for Big Root instead of treating it as passively covered', () => {
+    const batch = generateItemBatches(['bigroot'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Big Root must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    assert.ok(player, 'The item holder must be active');
+    assert.equal(batch.playerPriorityMove, 'gigadrain');
+    assert.equal(player.moves[0], 'gigadrain');
+  });
+
+  it('has the cooperating enemy use an Electric hit to trigger Cell Battery', () => {
+    const batch = generateItemBatches(['cellbattery'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Cell Battery must generate a certified trigger batch');
+    const enemy = batch.enemyTeam[0];
+    assert.ok(enemy, 'The cooperating enemy must be active');
+    assert.equal(batch.enemyPriorityMove, 'thunderbolt');
+    assert.equal(enemy.moves[0], 'thunderbolt');
+  });
+
+  it('uses Pikachu as the legal Light Ball holder', () => {
+    const batch = generateItemBatches(['lightball'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Light Ball must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    assert.ok(player, 'The item holder must be active');
+    assert.equal(player.species, 'pikachu');
+  });
+
+  it('uses Protosynthesis so Booster Energy can activate through its official hook', () => {
+    const batch = generateItemBatches(['boosterenergy'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Booster Energy must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    assert.ok(player, 'The item holder must be active');
+    assert.equal(player.ability, 'protosynthesis');
+  });
+
+  it('uses a genuine Intimidate opponent to exercise Clear Amulet', () => {
+    const batch = generateItemBatches(['clearamulet'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Clear Amulet must generate a certified trigger batch');
+    const enemy = batch.enemyTeam[0];
+    assert.ok(enemy, 'The opponent must be active');
+    assert.equal(enemy.ability, 'intimidate');
+  });
+
+  it('has the opponent apply Taunt to trigger Mental Herb through the official status hook', () => {
+    const batch = generateItemBatches(['mentalherb'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Mental Herb must generate a certified trigger batch');
+    const enemy = batch.enemyTeam[0];
+    assert.ok(enemy, 'The opponent must be active');
+    assert.equal(batch.enemyPriorityMove, 'taunt');
+    assert.equal(enemy.moves[0], 'taunt');
+  });
+
+  it('accepts certified Showdown item protocol evidence without requiring an invalid no-item replay', () => {
+    const chestoConsumptionLogs = [
+      '|-enditem|p1a: Mew|Chesto Berry|[eat]|[from] move: Rest',
+    ];
+
+    assert.equal(hasCertifiedItemProtocolEvidence('chestoberry', chestoConsumptionLogs), true);
+  });
+
+  it('stops a no-item control at the first certified prefix divergence before replaying an invalid later choice', () => {
+    assert.equal(
+      hasControlDivergedBeforeNextCertifiedDecision(
+        ['|turn|1', '|-damage|p1a: Holder|1/100'],
+        ['|turn|1', '|-damage|p1a: Holder|50/100'],
+        2
+      ),
+      true
+    );
+  });
+
+  it('uses a Poison-vulnerable holder for Kebia Berry before requesting Sludge Bomb', () => {
+    const batch = generateItemBatches(['kebiaberry'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Kebia Berry must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    const enemy = batch.enemyTeam[0];
+    assert.ok(player && enemy, 'Both active seats must exist');
+    assert.equal(player.species, 'meganium');
+    assert.equal(batch.enemyPriorityMove, 'sludgebomb');
+    assert.equal(enemy.moves[0], 'sludgebomb');
+  });
+
+  it('uses a super-effective Fire hit for Weakness Policy instead of a passive battle', () => {
+    const batch = generateItemBatches(['weaknesspolicy'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Weakness Policy must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    const enemy = batch.enemyTeam[0];
+    assert.ok(player && enemy, 'Both active seats must exist');
+    assert.equal(player.species, 'scizor');
+    assert.equal(batch.enemyPriorityMove, 'flamethrower');
+    assert.equal(enemy.moves[0], 'flamethrower');
+  });
+
+  it('uses a multi-hit move to exercise Loaded Dice through its official move hook', () => {
+    const batch = generateItemBatches(['loadeddice'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Loaded Dice must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    assert.ok(player, 'The item holder must be active');
+    assert.equal(batch.playerPriorityMove, 'bulletseed');
+    assert.equal(player.moves[0], 'bulletseed');
+  });
+
+  it('adds an itemless legal bench before asking the opponent to trigger Eject Button', () => {
+    const batch = generateItemBatches(['ejectbutton'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Eject Button must generate a certified trigger batch');
+    const enemy = batch.enemyTeam[0];
+    assert.ok(enemy, 'The opponent must be active');
+    assert.equal(batch.itemsToTest.length, ITEM_FUZZER_ACTIVE_HOLDER_COUNT);
+    assert.equal(batch.playerTeam.length, 2);
+    assert.equal(batch.playerTeam[1]?.item, '');
+    assert.equal(batch.enemyPriorityMove, 'tackle');
+    assert.equal(enemy.moves[0], 'tackle');
+  });
+
+  it('uses Giratina and a Ghost move for Griseous Orb', () => {
+    const batch = generateItemBatches(['griseousorb'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Griseous Orb must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    const enemy = batch.enemyTeam[0];
+    assert.ok(player && enemy, 'Both active seats must exist');
+    assert.equal(player.species, 'giratina');
+    assert.equal(batch.playerPriorityMove, 'shadowball');
+    assert.equal(player.moves[0], 'shadowball');
+    assert.equal(enemy.species, 'alakazam');
+  });
+
+  it('routes Spell Tag through the Ghost target plan instead of an immune Blissey', () => {
+    const batch = generateItemBatches(['spelltag'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Spell Tag must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    const enemy = batch.enemyTeam[0];
+    assert.ok(player && enemy, 'Both active seats must exist');
+    assert.equal(batch.playerPriorityMove, 'shadowball');
+    assert.equal(player.moves[0], 'shadowball');
+    assert.equal(enemy.species, 'alakazam');
+  });
+
+  it('uses a physical attack so Choice Band modifies a certified battle outcome', () => {
+    const batch = generateItemBatches(['choiceband'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Choice Band must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    assert.ok(player, 'The item holder must be active');
+    assert.equal(batch.playerPriorityMove, 'closecombat');
+    assert.equal(player.moves[0], 'closecombat');
+  });
+
+  it('uses Choice Scarf to deterministically reverse the move order against a faster opponent', () => {
+    const batch = generateItemBatches(['choicescarf'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Choice Scarf must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    const enemy = batch.enemyTeam[0];
+    assert.ok(player && enemy, 'Both active seats must exist');
+    assert.equal(player.species, 'lucario');
+    assert.equal(enemy.species, 'jolteon');
+    assert.equal(batch.playerPriorityMove, 'closecombat');
+  });
+
+  it('uses Low Kick against Float Stone so the official weight hook is observable', () => {
+    const batch = generateItemBatches(['floatstone'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Float Stone must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    const enemy = batch.enemyTeam[0];
+    assert.ok(player && enemy, 'Both active seats must exist');
+    assert.equal(player.species, 'aggron');
+    assert.equal(batch.enemyPriorityMove, 'lowkick');
+    assert.equal(enemy.moves[0], 'lowkick');
+  });
+
+  it('uses Ground against a Flying holder to exercise Iron Ball effectiveness', () => {
+    const batch = generateItemBatches(['ironball'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Iron Ball must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    const enemy = batch.enemyTeam[0];
+    assert.ok(player && enemy, 'Both active seats must exist');
+    assert.equal(player.species, 'charizard');
+    assert.equal(batch.enemyPriorityMove, 'earthquake');
+    assert.equal(enemy.moves[0], 'earthquake');
+  });
+
+  it('uses a sufficiently strong Fire attacker so Focus Sash prevents a real knockout', () => {
+    const batch = generateItemBatches(['focussash'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Focus Sash must generate a certified trigger batch');
+    const enemy = batch.enemyTeam[0];
+    assert.ok(enemy, 'The opponent must be active');
+    assert.equal(enemy.species, 'charizard');
+    assert.equal(enemy.evs.spa, 252);
+    assert.equal(batch.enemyPriorityMove, 'flamethrower');
+  });
+
+  it('uses a legal Magnet Pull opponent and itemless bench to exercise Shed Shell escape', () => {
+    const batch = generateItemBatches(['shedshell'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Shed Shell must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    const enemy = batch.enemyTeam[0];
+    assert.ok(player && enemy, 'Both active seats must exist');
+    assert.equal(player.species, 'scizor');
+    assert.equal(enemy.species, 'magnezone');
+    assert.equal(enemy.ability, 'magnetpull');
+    assert.equal(batch.playerTeam.length, 2);
+    assert.equal(batch.playerPeriodicSwitchEvery, 1);
+    assert.equal(batch.playerVoluntarySwitchObjective, true);
+  });
+
+  it('uses Worry Seed to exercise Ability Shield through an official ability-change attempt', () => {
+    const batch = generateItemBatches(['abilityshield'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Ability Shield must generate a certified trigger batch');
+    const enemy = batch.enemyTeam[0];
+    assert.ok(enemy, 'The opponent must be active');
+    assert.equal(batch.enemyPriorityMove, 'worryseed');
+    assert.equal(enemy.moves[0], 'worryseed');
+  });
+
+  it('starts Rain with the opponent before the holder uses Surf for Utility Umbrella', () => {
+    const batch = generateItemBatches(['utilityumbrella'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Utility Umbrella must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    const enemy = batch.enemyTeam[0];
+    assert.ok(player && enemy, 'Both active seats must exist');
+    assert.equal(batch.playerTeam[0]?.species, 'charizard');
+    assert.equal(batch.playerTeam[0]?.ability, 'solarpower');
+    assert.equal(batch.enemyPriorityMove, 'sunnyday');
+    assert.equal(enemy.moves[0], 'sunnyday');
+    assert.equal(player.moves[0], 'flamethrower');
+  });
+
+  it('uses Ghost damage against a Normal holder to exercise Ring Target immunity negation', () => {
+    const batch = generateItemBatches(['ringtarget'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Ring Target must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    const enemy = batch.enemyTeam[0];
+    assert.ok(player && enemy, 'Both active seats must exist');
+    assert.equal(player.species, 'snorlax');
+    assert.equal(batch.enemyPriorityMove, 'shadowball');
+    assert.equal(enemy.moves[0], 'shadowball');
+  });
+
+  it('uses False Swipe to bring the Custap Berry holder to its deterministic activation threshold', () => {
+    const batch = generateItemBatches(['custapberry'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Custap Berry must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    const enemy = batch.enemyTeam[0];
+    assert.ok(player && enemy, 'Both active seats must exist');
+    assert.equal(player.species, 'abra');
+    assert.equal(player.evs.def, 0, 'Custap must not receive defensive EVs that prevent its low-HP trigger');
+    assert.equal(player.evs.spe, 0, 'Custap must be slower than its cooperating False Swipe attacker');
+    assert.equal(batch.disableIpbHealing, true, 'Custap must preserve its low-HP threshold across turns');
+    assert.equal(enemy.species, 'kartana');
+    assert.equal(enemy.evs.atk, 252);
+    assert.equal(batch.enemyPriorityMove, 'falseswipe');
+  });
+
+  it('prioritizes a real low-accuracy move for accuracy-modifying held items', () => {
+    for (const itemId of ['blunderpolicy', 'widelens', 'zoomlens'] as const) {
+      const batch = generateItemBatches([itemId], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+      assert.ok(batch, `${itemId} must generate a certified trigger batch`);
+      assert.equal(batch.playerPriorityMove, 'zapcannon');
+      assert.equal(batch.playerTeam[0]?.moves[0], 'zapcannon');
+    }
+  });
+
+  it('uses a slower holder against a faster opponent so Zoom Lens can activate', () => {
+    const batch = generateItemBatches(['zoomlens'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Zoom Lens must generate a certified trigger batch');
+    assert.equal(batch.playerTeam[0]?.species, 'snorlax');
+    assert.equal(batch.enemyTeam[0]?.species, 'jolteon');
+    assert.equal(batch.playerPriorityMove, 'zapcannon');
+  });
+
+  it('sets Micle Berry below its HP threshold before its low-accuracy attack', () => {
+    const batch = generateItemBatches(['micleberry'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Micle Berry must generate a certified trigger batch');
+    assert.equal(batch.playerTeam[0]?.species, 'abra');
+    assert.equal(batch.playerTeam[0]?.moves[0], 'zapcannon');
+    assert.equal(batch.playerTeam[0]?.evs.spe, 0);
+    assert.equal(batch.enemyPriorityMove, 'falseswipe');
+    assert.equal(batch.disableIpbHealing, true);
+  });
+
+  it('uses a real Rocky Helmet opponent against a contact move for Protective Pads', () => {
+    const batch = generateItemBatches(['protectivepads'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Protective Pads must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    const enemy = batch.enemyTeam[0];
+    assert.ok(player && enemy, 'Both active seats must exist');
+    assert.equal(batch.playerPriorityMove, 'tackle');
+    assert.equal(player.moves[0], 'tackle');
+    assert.equal(enemy.item, 'rockyhelmet');
+  });
+
+  it('sets Stealth Rock then cycles a vulnerable holder through an itemless bench for Heavy-Duty Boots', () => {
+    const batch = generateItemBatches(['heavydutyboots'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Heavy-Duty Boots must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    const enemy = batch.enemyTeam[0];
+    assert.ok(player && enemy, 'Both active seats must exist');
+    assert.equal(player.species, 'charizard');
+    assert.equal(batch.playerTeam.length, 2);
+    assert.equal(batch.enemyPriorityMove, 'stealthrock');
+    assert.equal(enemy.moves[0], 'stealthrock');
+    assert.equal(batch.playerPeriodicSwitchEvery, 1);
+  });
+
+  it('uses Smeargle Sketch to exhaust one PP and activate Leppa Berry legally', () => {
+    const batch = generateItemBatches(['leppaberry'], ITEM_FUZZER_ACTIVE_HOLDER_COUNT)[0];
+    assert.ok(batch, 'Leppa Berry must generate a certified trigger batch');
+    const player = batch.playerTeam[0];
+    assert.ok(player, 'The holder must be active');
+    assert.equal(player.species, 'smeargle');
+    assert.equal(batch.playerPriorityMove, 'sketch');
+    assert.equal(player.moves[0], 'sketch');
+  });
+
 });

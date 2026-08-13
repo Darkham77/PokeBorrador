@@ -10,7 +10,7 @@
  * @module itemMath
  */
 
-import type { Pokemon } from '../../types/pokemon/pokemon.ts';
+import type { Pokemon, PokemonStatus } from '../../types/pokemon/pokemon.ts';
 import type { ItemEffectResult } from '../../types/inventory/items.ts';
 
 // ── Target Validation ─────────────────────────────────────────────────────────
@@ -29,11 +29,13 @@ export function canHeal(p: Pokemon): boolean {
  * Returns true if a status-clearing item targets the right status.
  * Pass `'any'` to match any non-null status.
  */
-export function canClearStatus(p: Pokemon, type: string): boolean {
+export function canClearStatus(p: Pokemon, type: PokemonStatus | 'any' | 'poison'): boolean {
   if (!p.status) return false;
   if (p.hp <= 0) return false;
   if (type === 'any') return true;
-  return p.status === type;
+  return type === 'poison'
+    ? p.status === 'psn' || p.status === 'tox'
+    : p.status === type;
 }
 
 export function canRevive(p: Pokemon): boolean {
@@ -131,13 +133,14 @@ export function restorePPPure(
 
 // ── Trainer EXP Formula ───────────────────────────────────────────────────────
 
+import type { StatSpread } from '@/types/pokemon/pokemon';
+
 /**
  * Calculates total power of a Pokémon (BST + IV sum).
- * Requires passing the base stats explicitly — no provider call.
  */
 export function calcTotalPower(
-  base: { hp: number; atk: number; def: number; spa: number; spd: number; spe: number },
-  ivs: { hp: number; atk: number; def: number; spa: number; spd: number; spe: number },
+  base: StatSpread,
+  ivs: StatSpread,
 ): number {
   const bst = base.hp + base.atk + base.def + base.spa + base.spd + base.spe;
   const totalIvs = ivs.hp + ivs.atk + ivs.def + ivs.spa + ivs.spd + ivs.spe;

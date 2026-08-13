@@ -28,6 +28,7 @@ import { AI_CONFIG_PRESETS } from '../../../src/logic/battle/ai/heuristic/types.
 import type {
   HeuristicBattleSnapshot,
   HeuristicPokemonState,
+  HeuristicPokemonMove,
   HeuristicMoveInfo,
   HeuristicFieldState,
   StrategicState,
@@ -48,6 +49,20 @@ function makeVolatiles(values: Iterable<HeuristicPokemonState['volatiles'] exten
   return new Set(values);
 }
 
+function makeMove(id: string): HeuristicPokemonMove {
+  return {
+    id,
+    name: id,
+    type: 'normal',
+    category: 'physical',
+    basePower: 50,
+    accuracy: 100,
+    pp: 10,
+    maxpp: 10,
+    target: 'normal',
+  };
+}
+
 function makePoke(
   name: string,
   overrides: Partial<HeuristicPokemonState> = {},
@@ -57,13 +72,15 @@ function makePoke(
     species: name.toLowerCase().replace(/[^a-z0-9]/g, ''),
     level: 50,
     hp: 150,
-    maxHp: 150,
+    maxhp: 150,
     hpPercent: 100,
-    status: '',
+    status: null,
     active: true,
     fainted: false,
+    types: ['normal'],
+    baseStats: { hp: 150, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
     stats: { hp: 150, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
-    moves: ['tackle', 'growl', 'thunderbolt', 'flamethrower'],
+    moves: [makeMove('tackle'), makeMove('growl'), makeMove('thunderbolt'), makeMove('flamethrower')],
     knownMoves: [],
     ability: 'blaze',
     knownAbility: null,
@@ -538,11 +555,13 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
         species: randElement(SPECIES),
         level: randInt(1, 100),
         hp,
-        maxHp,
+        maxhp: maxHp,
         hpPercent: Math.round((hp / maxHp) * 100),
         status: randElement(STATUSES),
         active,
         fainted: false,
+        types: ['normal'],
+        baseStats: { hp: maxHp, atk: 100, def: 100, spa: 100, spd: 100, spe: 100 },
         stats: {
           hp: maxHp,
           atk: randInt(50, 200),
@@ -551,7 +570,7 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
           spd: randInt(50, 200),
           spe: randInt(20, 180),
         },
-        moves: [randElement(MOVE_POOL), randElement(MOVE_POOL), randElement(MOVE_POOL), randElement(MOVE_POOL)],
+        moves: [makeMove(randElement(MOVE_POOL)), makeMove(randElement(MOVE_POOL)), makeMove(randElement(MOVE_POOL)), makeMove(randElement(MOVE_POOL))],
         knownMoves: [randElement(MOVE_POOL)],
         ability: 'blaze',
         knownAbility: null,
@@ -559,7 +578,7 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
         knownItem: Math.random() > 0.5 ? item : null,
         itemConsumed: Math.random() > 0.8,
         boosts: randBoosts(),
-        volatiles: makeVolatiles(Math.random() > 0.7 ? ['trapped'] : []),
+        volatiles: makeVolatiles(Math.random() > 0.7 ? ['taunt'] : []),
       };
     }
 

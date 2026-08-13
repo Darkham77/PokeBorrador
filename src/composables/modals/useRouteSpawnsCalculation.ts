@@ -32,9 +32,13 @@ interface ExtendedMapLocation extends MapLocation {
   isUrban?: boolean
 }
 
-export function useRouteSpawnsCalculation(
-  props: { map: MapLocation; weather: WeatherId; cycle: DayPhase }
-) {
+export interface RouteSpawnsProps {
+  map: MapLocation;
+  weather: WeatherId;
+  cycle: DayPhase;
+}
+
+export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
   const gameStore = useGameStore()
   const eventStore = useEventStore()
 

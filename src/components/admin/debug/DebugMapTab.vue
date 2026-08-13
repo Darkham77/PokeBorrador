@@ -5,12 +5,12 @@ import { useDebugStore } from '@/stores/debug'
 const ui = useUIStore()
 const debugStore = useDebugStore()
 
-interface ViteDebug {
+interface ViteDebug extends Record<string, unknown> { // open-record
   toggleGrid: () => void
   togglePerf: () => void
 }
 
-const getDebug = () => window.__VITE_DEBUG__ as unknown as ViteDebug // domain-ok
+const getDebug = () => window.__VITE_DEBUG__ as ViteDebug
 
 const toggleGrid = () => getDebug().toggleGrid()
 const togglePerf = () => getDebug().togglePerf()

@@ -1,4 +1,5 @@
 import type { DebugSystem } from '@/stores/debug'
+import type { PokemonStorageLocation } from '@/types/pokemon/pokemon'
 
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
@@ -201,7 +202,7 @@ export function registerSystemTools(debug: DebugSystem) {
     label: 'INSPECCIONAR POKE',
     command: 'inspectPokemon',
     category: 'navigation',
-    action: (index: number, context: 'team' | 'box' = 'team') => {
+    action: (index: number, context: PokemonStorageLocation = 'team') => {
       const pokes = context === 'team' ? game.state.team : game.state.box
       const p = pokes[index]
       if (p) ui.openPokemonDetail(p, index, context)

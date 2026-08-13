@@ -3,7 +3,7 @@ import { getItemById, requireItemId } from '@/data/inventory/items';
 import { itemEffects as ITEM_EFFECTS, getDynamicItemEffect } from '@/logic/items/itemEffects';
 import { isGlobalItem } from '@/logic/providers/itemProvider.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { Inventory, Item as ItemData, ItemCategory } from '@/types/inventory/items';
+import type { Inventory, Item as ItemData, ItemCategory, BagMainTab } from '@/types/inventory/items';
 
 import type { ItemId } from '@/data/inventory/items';
 
@@ -64,8 +64,13 @@ export function consumeItem(gameStore: ReturnType<typeof useGameStore>, itemId: 
     gameStore.state.inventory = { ...inv };
   }
 }
+export interface ItemTierQuery {
+  cat?: ItemCategory;
+  sprite?: string;
+  craftingTier?: number;
+}
 
-export function getItemTier(item: { cat?: ItemCategory; sprite?: string; craftingTier?: number }): number {
+export function getItemTier(item: ItemTierQuery): number {
   if (item.craftingTier !== undefined) return item.craftingTier;
   const cat = item.cat || 'otros';
   if (cat === 'raw_material' || item.sprite?.includes('crafting/tier0/')) return 0;
@@ -138,7 +143,7 @@ export interface Item extends ItemData {
 export function mapInventoryToItems(
   inventory: Inventory,
   isBattleActive: boolean,
-  mainTab: 'productos' | 'materiales'
+  mainTab: BagMainTab
  ): Item[] {
    let items: Item[] = Object.entries(inventory)
      .filter((entry): entry is [string, number] => entry[1] !== undefined && entry[1] > 0)

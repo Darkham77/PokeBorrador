@@ -6,13 +6,13 @@ import { useDebugStore } from '@/stores/debug'
 import { getSpritesForArchetype, type NpcArchetype, type NpcSpriteId } from '@/logic/utils/npcSpriteRouter'
 import { ARCHETYPE_SPRITES } from '@/data/pokemon/npcSpriteCatalog'
 import { usePlayerClassStore } from '@/stores/player/playerClass'
-import { useModalStore } from '@/stores/modals'
 import { pokemonDebugService } from '@/logic/debug/pokemonDebugService'
 import { GYMS } from '@/data/world/gyms'
 import { TRAINER_TYPES, isTrainerTypeKey, requireNpcArchetype } from '@/data/player/trainerTypes'
 import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
 import { generateNpcName, type NpcNameOptions } from '@/logic/utils/npcNameGenerator'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { BattleDifficulty } from '@/types/battle/battle'
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { BattleOptions } from '@/types/system/stores'
@@ -64,7 +64,6 @@ export function useDebugTrainers() {
   const battleStore = useBattleStore()
   const gameStore = useGameStore()
   const classStore = usePlayerClassStore()
-  const modalStore = useModalStore()
   const debugStore = useDebugStore()
 
   const trainerName = ref('Entrenador Vicio')
@@ -77,7 +76,7 @@ export function useDebugTrainers() {
   const combatLocationType = ref<'map' | 'gym'>('map')
   const selectedMapId = ref('route1')
   const selectedGymId = ref('pewter')
-  const gymDifficulty = ref<'easy' | 'normal' | 'hard'>('normal')
+  const gymDifficulty = ref<BattleDifficulty>('normal')
 
   const genTeamSize = ref(3)
   const genMinLevel = ref(10)
@@ -304,7 +303,6 @@ export function useDebugTrainers() {
     }
 
     await battleStore.startBattle(firstEnemy, opts as BattleOptions) // domain-ok
-    modalStore.closeAll()
   }
 
   return {

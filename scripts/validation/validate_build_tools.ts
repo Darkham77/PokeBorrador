@@ -33,7 +33,7 @@ function findBinary(): boolean {
   }
 
   if (isWin && process.env.APPDATA) {
-    const cleanAppData = process.env.APPDATA.replace(/[^a-zA-Z0-9_:\\\-\.\s]/g, '');
+    const cleanAppData = process.env.APPDATA.replace(/[^a-zA-Z0-9_:\\\-\s.]/g, '');
     if (fs.existsSync(`${cleanAppData}\\npm\\css-checker.exe`)) return true;
     if (fs.existsSync(`${cleanAppData}\\npm\\css-checker.cmd`)) return true;
   }

@@ -4,7 +4,11 @@ import { useBreedingStore } from '@/stores/breeding'
 import { useUIStore } from '@/stores/ui'
 import { incrementRecordKey, addToField } from '@/logic/utils/mapUtils'
 
-function handleStolenResources(ctx: BattleContext, active: NonNullable<BattleContext['activeBattle']['value']>, uiStore: ReturnType<typeof useUIStore>) {
+function hasExitedBattle(ctx: BattleContext): boolean {
+  return ctx.fsm.currentState.value === ctx.BATTLE_STATES.EXIT_BATTLE
+}
+
+async function handleStolenResources(ctx: BattleContext, active: NonNullable<BattleContext['activeBattle']['value']>, uiStore: ReturnType<typeof useUIStore>) {
   if (!active.stolenResources) return
   const stolen = active.stolenResources
   if (stolen.money && stolen.money > 0) {
@@ -13,7 +17,8 @@ function handleStolenResources(ctx: BattleContext, active: NonNullable<BattleCon
     uiStore.notify(`¡Recuperaste ₽${stolen.money}!`, '💰')
   }
   if (stolen.items) {
-    import('@/data/inventory/items').then(({ getItemById, requireItemId }) => {
+    try {
+      const { getItemById, requireItemId } = await import('@/data/inventory/items')
       for (const [itemId, qty] of Object.entries(stolen.items || {})) {
         if (qty && (qty as number) > 0) {
           incrementRecordKey(ctx.gs.state.inventory, itemId, qty as number)
@@ -24,7 +29,9 @@ function handleStolenResources(ctx: BattleContext, active: NonNullable<BattleCon
           uiStore.notify(`¡Recuperaste ${qty}x ${itemDef.name}!`, '🎒')
         }
       }
-    }).catch(() => {})
+    } catch (err: unknown) {
+      console.error('Failed to resolve stolen items:', err)
+    }
   }
   delete active.stolenResources
 }
@@ -48,7 +55,7 @@ export async function processBattleRewardsPhase(ctx: BattleContext, win: boolean
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
   const active = ctx.activeBattle.value
-  if (!active) return
+  if (!active || hasExitedBattle(ctx)) return
 
   const uiStore = useUIStore()
 
@@ -59,9 +66,11 @@ export async function processBattleRewardsPhase(ctx: BattleContext, win: boolean
       ctx.audio.play('victoryTrainer')
     }
     await calculateBattleRewards(ctx)
-    handleStolenResources(ctx, active, uiStore)
+    if (ctx.activeBattle.value !== active || hasExitedBattle(ctx)) return
+    await handleStolenResources(ctx, active, uiStore)
     handleHatchTimers(active)
   }
 
+  if (ctx.activeBattle.value !== active || hasExitedBattle(ctx)) return
   await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_OUTCOME)
 }

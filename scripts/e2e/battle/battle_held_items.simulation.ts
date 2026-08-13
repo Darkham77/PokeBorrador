@@ -4,8 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import { waitForWaitInput, verifyHpParity, type CertifiedTestBatch, type WindowWithResolver } from '../e2e_helpers.ts';
+import { MAX_SUITE_TOTAL_TIMEOUT_MS } from '../simulation_config.ts';
 
-const E2E_HELD_ITEM_TEST_TIMEOUT_MS = 360000;
 const E2E_SNORLAX_LEVEL = 50;
 const E2E_CATERPIE_LEVEL = 5;
 const E2E_MEWTWO_LEVEL = 100;
@@ -104,15 +104,13 @@ class HeldItemsSimWrapper extends BaseBattleSimulation {
 
 test.describe('E2E Held Items Verification', () => {
   test.beforeEach(async () => {
-    test.setTimeout(E2E_HELD_ITEM_TEST_TIMEOUT_MS);
+    test.setTimeout(MAX_SUITE_TOTAL_TIMEOUT_MS);
   });
 
   test('should apply passive healing from Leftovers at the end of a turn', async ({ page }) => {
     const sim = new HeldItemsSimWrapper(page, 'TestPlayerItems');
     await sim.setup();
-    await waitForWaitInput(page);
     await sim.setupLeftoversScenario();
-    await sim.startBattle();
     await waitForWaitInput(page);
 
     // Turno 1: Substitute
@@ -131,9 +129,8 @@ test.describe('E2E Held Items Verification', () => {
   test('should apply Life Orb recoil damage after attacking', async ({ page }) => {
     const sim = new HeldItemsSimWrapper(page, 'TestPlayerLifeOrb');
     await sim.setup();
-    await waitForWaitInput(page);
     await sim.setupLifeOrbScenario();
-    await sim.startBattle();
+    await waitForWaitInput(page);
     
     // Execute turn
     await sim.selectMove(0);
@@ -145,9 +142,8 @@ test.describe('E2E Held Items Verification', () => {
   test('should activate Focus Sash on a fatal blow and survive with 1 HP', async ({ page }) => {
     const sim = new HeldItemsSimWrapper(page, 'TestPlayerSash');
     await sim.setup();
-    await waitForWaitInput(page);
     await sim.setupFocusSashScenario();
-    await sim.startBattle();
+    await waitForWaitInput(page);
 
     // Execute turn
     await sim.selectMove(0);
@@ -156,16 +152,15 @@ test.describe('E2E Held Items Verification', () => {
   });
 
   // Cargar y ejecutar lotes fuzzer
-  const consolidatorPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_auxiliary_cases.json');
-  let itemBatches: CertifiedTestBatch[] = [];
-  if (fs.existsSync(consolidatorPath)) {
-    try {
-      const content = JSON.parse(fs.readFileSync(consolidatorPath, 'utf8')) as Record<string, unknown>;
-      if (content.items) {
-        itemBatches = content.items as CertifiedTestBatch[];
-      }
-    } catch (_e: unknown) { /* expected */ }
+  const consolidatorPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_certified_cases.json');
+  if (!fs.existsSync(consolidatorPath)) {
+    throw new Error(`[E2E] Missing regenerated fuzzer item artifacts: ${consolidatorPath}`);
   }
+  const content = JSON.parse(fs.readFileSync(consolidatorPath, 'utf8')) as Record<string, unknown>;
+  if (!Array.isArray(content.items)) {
+    throw new Error('[E2E] Regenerated fuzzer artifacts do not contain an items array.');
+  }
+  const itemBatches = content.items as CertifiedTestBatch[];
 
   const caseFilter = process.env.TEST_CASE;
   const caseIdFilter = process.env.TEST_CASE_ID;
@@ -177,7 +172,8 @@ test.describe('E2E Held Items Verification', () => {
     const foundIdx = itemBatches.findIndex((b) => b.id === startFromCaseId.trim());
     if (foundIdx !== -1) startIdx = foundIdx;
   } else if (startFromIndex) {
-    startIdx = Number(startFromIndex.trim()) - 1;
+    const parsed = Number(startFromIndex);
+    if (!Number.isNaN(parsed) && parsed > 0) startIdx = parsed - 1;
   }
 
   const filteredItemBatches = itemBatches.map((b, idx) => ({ b, idx })).filter(({ b, idx }) => {
@@ -189,17 +185,15 @@ test.describe('E2E Held Items Verification', () => {
   if (filteredItemBatches.length > 0) {
     filteredItemBatches.forEach(({ b: batch, idx: index }) => {
       test(`debería ejecutar el lote de fuzzer de items #${index + 1} (${batch.playerTeam.length} Pokémon) de forma determinista`, async ({ page }) => {
-        test.setTimeout(E2E_HELD_ITEM_TEST_TIMEOUT_MS);
+        test.setTimeout(MAX_SUITE_TOTAL_TIMEOUT_MS);
         const sim = new HeldItemsSimWrapper(page, `TestBatchItems_${index}`);
         await sim.setup();
-        await waitForWaitInput(page);
 
         // Inyectar el lote usando la clase base unificada
         await sim.setupFuzzerScenario(batch);
 
         try {
-          await sim.startBattle();
-          await sim.playBattle(batch.finalState);
+          await sim.replayCertifiedBattle(batch);
         } catch (error: unknown) {
           const caseId = batch.id || `lote-items-${index + 1}`;
           if (process.env.CONTINUE_ON_ERROR === 'true') {

@@ -6,6 +6,12 @@ import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
 import { requireNpcSpriteId, type NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
+import { buildTrainerTeam } from './trainerFactory.ts';
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
+import { getSpritesForArchetype } from '@/logic/utils/npcSpriteRouter';
+import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases';
+import { generateNpcName } from '@/logic/utils/npcNameGenerator';
+
 // Configuración genérica por defecto de probabilidades y pesos
 const DEFAULT_ARCHETYPE_WEIGHTS: Record<TrainerTypeKey, number> = {
   rival: 0.001,      // 0.1% de probabilidad absoluta
@@ -130,13 +136,14 @@ export async function buildRivalEncounter(playerTeam: Pokemon[]): Promise<RivalE
 
   // 2. Init randombattle generator based on active generation setting
   const generator = TeamGenerators.getTeamGenerator(`gen${ACTIVE_AI_TEAM_GENERATION_GEN}randombattle`);
+  type RandSet = (species: string) => { moves: string[]; ability: string; item: string };
+  type GetTeam = () => Array<{ species: string; moves: string[]; ability: string; item: string }>;
+  const getRandomSet = (s: string) => (Reflect.get(generator, 'randomSet') as RandSet).call(generator, s);
 
   const { applyCompetitiveSet } = await import('./trainerFactory');
 
   // 3. Build ace: 1 random Pokémon from rival pool + its competitive randomSet
-  // Cast needed: TeamGenerator interface is minimal; underlying RandomTeams class exposes randomSet
-  const generatorWithRandomSet = generator as unknown as { randomSet: (s: string) => { moves: string[]; ability: string; item: string } }; // domain-ok
-  const aceSet = generatorWithRandomSet.randomSet(aceBase);
+  const aceSet = getRandomSet(aceBase);
 
   const acePokemon = makePokemon(aceBase, rivalLevel, { bypassWhitelist: true }) as Pokemon;
   if (!acePokemon) {
@@ -148,7 +155,7 @@ export async function buildRivalEncounter(playerTeam: Pokemon[]): Promise<RivalE
   // 4. Fill remaining slots from getTeam() — only species that exist in our DB
   const enemyTeam: Pokemon[] = [acePokemon];
   const usedSpecies: PokemonSpeciesId[] = [requirePokemonSpeciesId(toID(aceBase))];
-  const rawTeam = generator.getTeam();
+  const rawTeam = (Reflect.get(generator, 'getTeam') as GetTeam).call(generator);
 
   for (const set of rawTeam) {
     if (enemyTeam.length >= teamSize) break;
@@ -178,7 +185,7 @@ export async function buildRivalEncounter(playerTeam: Pokemon[]): Promise<RivalE
     if (!p) continue;
 
     try {
-      const fallbackSet = generatorWithRandomSet.randomSet(speciesId);
+      const fallbackSet = getRandomSet(speciesId);
       await applyCompetitiveSet(p, fallbackSet);
       (p as Pokemon & { _revealed?: boolean })._revealed = true;
       usedSpecies.push(speciesId);
@@ -208,12 +215,6 @@ export async function buildTrainerEncounter(
   locId: MapRouteId
 ): Promise<TrainerEncounter> {
   gsState.trainerChance = 5;
-
-  const { buildTrainerTeam } = await import('./trainerFactory');
-  const { pokemonDataProvider } = await import('@/logic/providers/pokemonDataProvider');
-  const { getSpritesForArchetype } = await import('@/logic/utils/npcSpriteRouter');
-  const { getRandomQuoteForTrainer } = await import('@/data/player/trainerPhrases');
-  const { generateNpcName } = await import('@/logic/utils/npcNameGenerator');
 
   const mapsList = pokemonDataProvider.getMaps() as MapLocation[];
   const targetMap = mapsList.find(m => m.id === locId);

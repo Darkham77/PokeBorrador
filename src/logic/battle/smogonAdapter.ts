@@ -95,15 +95,15 @@ function resolveSpecies(id: string): string {
   return map[normalized] ?? (id.charAt(0).toUpperCase() + id.slice(1));
 }
 
-import type { PokemonStatus } from '@/types/pokemon/pokemon';
+import type { PokemonStatus, ActivePokemonStatus } from '@/types/pokemon/pokemon';
 
 function toSmogonStatus(
   status: string | null | undefined
-): '' | 'par' | 'brn' | 'psn' | 'slp' | 'frz' | 'tox' {
+): PokemonStatus {
   if (!status) return '';
   const s = status as PokemonStatus;
   if (s === 'par' || s === 'brn' || s === 'psn' || s === 'slp' || s === 'frz' || s === 'tox') {
-    return s as 'par' | 'brn' | 'psn' | 'slp' | 'frz' | 'tox';
+    return s as ActivePokemonStatus;
   }
   return '';
 }

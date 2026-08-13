@@ -240,18 +240,18 @@ function normalizeData(state: GameState): GameState {
   if (!state.gender) state.gender = 'h';
   if (state.fishingRodSecs === undefined) state.fishingRodSecs = 0;
   if (state.fishingRodType === undefined) state.fishingRodType = null;
-  if (state.fishingRodType === ('silver' as unknown)) state.fishingRodType = 'good';
-  if (state.fishingRodType === ('gold' as unknown)) state.fishingRodType = 'super';
+  if ((state.fishingRodType as string) === 'silver') state.fishingRodType = 'good';
+  if ((state.fishingRodType as string) === 'gold') state.fishingRodType = 'super';
   
   if (state.pickaxeSecs === undefined) state.pickaxeSecs = 0;
   if (state.pickaxeType === undefined) state.pickaxeType = null;
-  if (state.pickaxeType === ('silver' as unknown)) state.pickaxeType = 'good';
-  if (state.pickaxeType === ('gold' as unknown)) state.pickaxeType = 'super';
+  if ((state.pickaxeType as string) === 'silver') state.pickaxeType = 'good';
+  if ((state.pickaxeType as string) === 'gold') state.pickaxeType = 'super';
 
   if (state.brushSecs === undefined) state.brushSecs = 0;
   if (state.brushType === undefined) state.brushType = null;
-  if (state.brushType === ('silver' as unknown)) state.brushType = 'good';
-  if (state.brushType === ('gold' as unknown)) state.brushType = 'super';
+  if ((state.brushType as string) === 'silver') state.brushType = 'good';
+  if ((state.brushType as string) === 'gold') state.brushType = 'super';
 
   // Ensure arrays exist
   if (!Array.isArray(state.team)) state.team = [];
@@ -262,7 +262,12 @@ function normalizeData(state: GameState): GameState {
   // Data fix: ensure UID and Gender for all Pokemon
   const fixPoke = (p: Pokemon): Pokemon | null => {
     if (!p) return null;
-    if (!p.uid) p.uid = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9) + Temporal.Now.instant().epochMilliseconds.toString(36); // no-magic
+    if (!p.uid) {
+      const UUID_FALLBACK_RADIX = 36;
+      const UUID_FALLBACK_START = 2;
+      const UUID_FALLBACK_LENGTH = 9;
+      p.uid = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(UUID_FALLBACK_RADIX).substr(UUID_FALLBACK_START, UUID_FALLBACK_LENGTH) + Temporal.Now.instant().epochMilliseconds.toString(UUID_FALLBACK_RADIX);
+    }
     
     if (Object.is(p.gender, 'M')) p.gender = 'm';
     if (Object.is(p.gender, 'F')) p.gender = 'f';
@@ -296,8 +301,13 @@ function normalizeData(state: GameState): GameState {
     }
 
     // Backfill capture date if missing
-    const pRaw = p as unknown as Record<string, unknown>; // domain-ok
-    if (!p.obtainedAt && !pRaw.created_at && !pRaw.captureDate && !pRaw.timestamp && !pRaw.date) {
+    const hasLegacyDate = Boolean(
+      Reflect.get(p, 'created_at') ||
+      Reflect.get(p, 'captureDate') ||
+      Reflect.get(p, 'timestamp') ||
+      Reflect.get(p, 'date')
+    );
+    if (!p.obtainedAt && !hasLegacyDate) {
       p.obtainedAt = Temporal.Now.instant().epochMilliseconds;
     }
 
@@ -305,7 +315,7 @@ function normalizeData(state: GameState): GameState {
   };
 
   state.team = state.team.map((p: Pokemon) => fixPoke(p)).filter((p: Pokemon | null): p is Pokemon => p !== null);
-  state.box = state.box.map((p: Pokemon) => fixPoke(p)).filter((p: Pokemon | null): p is Pokemon => p !== null);
+  state.box = state.box.map((p: Pokemon | null) => (p ? fixPoke(p) : null)).filter((p: Pokemon | null): p is Pokemon => p !== null);
   state.eggs = state.eggs.map(egg => {
     if (Object.is(egg.gender, 'M')) egg.gender = 'm';
     if (Object.is(egg.gender, 'F')) egg.gender = 'f';

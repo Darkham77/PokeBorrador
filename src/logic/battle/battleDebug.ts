@@ -6,37 +6,22 @@ import { useAudioStore } from '@/stores/audio'
 import { useBattleStore } from '@/stores/battle/battle'
 import type { BattleContext } from '@/types/battle/battleContext'
 import { requirePokemonStatus, requireVolatileStatusKey, type Pokemon } from '@/types/pokemon/pokemon'
-import type { BattleStages } from '@/types/battle/battle'
+import type { BattleStages, BattleSide } from '@/types/battle/battle'
+import type { MoveCategory } from '@/data/battle/moves'
 import { requireBattleConditionKey } from '@/types/battle/battle'
 import { requireWeatherId } from '@/logic/weather/weatherRegistry'
 import { canExecuteScriptedReplayAction } from './helpers/scriptedReplayReadiness.ts'
+import { isBattleCompletionReady } from './helpers/battleCompletionReadiness.ts'
+import { requiresAction } from './helpers/requestHelper.ts'
+import { projectBattleReadySwitchSlots } from './helpers/battleReadySwitchSlots.ts'
+import { BATTLE_UI_EVENTS, isBattleReadyForInputDetail, type BattleReadyForInputDetail } from '@/types/battle/battleEvents.ts'
 
 export { canExecuteScriptedReplayAction } from './helpers/scriptedReplayReadiness.ts'
 
 const DEBUG_INDEFINITE_WEATHER_TURNS = 99;
 
-interface BattleReadyDetail {
-  subState: string
-  p1ChoiceIdx: number
-  p2ChoiceIdx: number
-  over: boolean
-}
-
-interface ScriptedReplayReadinessDetail extends BattleReadyDetail {
+interface ScriptedReplayReadinessDetail extends BattleReadyForInputDetail {
   isReady: boolean
-}
-
-function isBattleReadyDetail(value: unknown): value is BattleReadyDetail {
-  return typeof value === 'object' &&
-    value !== null &&
-    'subState' in value &&
-    typeof value.subState === 'string' &&
-    'p1ChoiceIdx' in value &&
-    typeof value.p1ChoiceIdx === 'number' &&
-    'p2ChoiceIdx' in value &&
-    typeof value.p2ChoiceIdx === 'number' &&
-    'over' in value &&
-    typeof value.over === 'boolean'
 }
 
 export function setupBattleDebug(ctx: BattleContext) {
@@ -56,10 +41,10 @@ export function setupBattleDebug(ctx: BattleContext) {
         return
       }
       const bStore = useBattleStore()
-      bStore.attackerSide = side as 'player' | 'enemy'
+      bStore.attackerSide = side as BattleSide
       bStore.activeMove = {
         name: options.cat === 'selfKO' ? 'Autodestrucción' : 'Ataque Debug',
-        cat: options.cat === 'selfKO' ? 'special' : ((options.cat as 'physical' | 'special' | 'status' | undefined) || 'physical'),
+        cat: options.cat === 'selfKO' ? 'special' : ((options.cat as MoveCategory | undefined) || 'physical'),
         selfKO: options.cat === 'selfKO',
         pp: 5,
         maxPP: 5
@@ -90,9 +75,21 @@ export function setupBattleDebug(ctx: BattleContext) {
     useAudioStore().play(id)
   }
 
-  win.__VITE_DEBUG__.setStatus = (side: string, status: string) => {
+  win.__VITE_DEBUG__.setStatus = async (side: string, status: string) => {
     const target = side === 'player' ? ctx.activeBattle.value?.player : ctx.activeBattle.value?.enemy
-    if (target) target.status = (status === 'null' || status === 'clear') ? '' : requirePokemonStatus(status)
+    if (!target) return
+
+    const resolvedStatus = (status === 'null' || status === 'clear') ? '' : requirePokemonStatus(status)
+    target.status = resolvedStatus
+    if (side === 'player') {
+      const teamTarget = ctx.gs.state.team.find(pokemon => pokemon?.uid === target.uid)
+      if (!teamTarget) {
+        throw new Error(`[battleDebug] Active player ${target.uid} is missing from the game team`)
+      }
+      teamTarget.status = resolvedStatus
+    }
+    const { applyDebugStatusInWorker } = await import('./showdownWorkerClient.ts')
+    await applyDebugStatusInWorker(side === 'player' ? 'p1' : 'p2', target.uid, resolvedStatus)
   }
 
   win.__VITE_DEBUG__.setSecondaryStatus = (side: string, type: string) => {
@@ -142,17 +139,23 @@ export function setupBattleDebug(ctx: BattleContext) {
     await ctx.endBattle(false, true)
   }
 
-  win.__VITE_DEBUG__.executeScriptedAction = async () => {
-    const { executeScriptedPlayerAction } = await import('./ai/scriptedAI')
-    return await executeScriptedPlayerAction(ctx)
-  }
-
   const getScriptedReplayReadiness = (): ScriptedReplayReadinessDetail => {
     const active = ctx.activeBattle.value
-    if (!active || active.over) {
-      return { subState: '', p1ChoiceIdx: win.__VITE_DEBUG__?.p1ChoiceIdx ?? 0, p2ChoiceIdx: win.__VITE_DEBUG__?.p2ChoiceIdx ?? 0, over: true, isReady: true }
+    if (isBattleCompletionReady({
+      hasActiveBattle: active !== null,
+      isOver: active?.over === true,
+      fsmState: ctx.fsm.currentState.value,
+      fsmSubState: ctx.fsm.currentSubState.value,
+    })) {
+      return { subState: '', p1ChoiceIdx: win.__VITE_DEBUG__?.p1ChoiceIdx ?? 0, p2ChoiceIdx: win.__VITE_DEBUG__?.p2ChoiceIdx ?? 0, over: true, playerSwitchSlots: [], isReady: true }
     }
-    const subStateVal = ctx.fsm.currentSubState.value ? String(ctx.fsm.currentSubState.value) : ''
+    if (!active) {
+      throw new Error('[battleDebug] Active battle disappeared before completion readiness was evaluated')
+    }
+    if (active.over) {
+      return { subState: '', p1ChoiceIdx: win.__VITE_DEBUG__?.p1ChoiceIdx ?? 0, p2ChoiceIdx: win.__VITE_DEBUG__?.p2ChoiceIdx ?? 0, over: true, playerSwitchSlots: projectBattleReadySwitchSlots(active.playerRequest), isReady: true }
+    }
+    const subStateVal = ctx.fsm.currentSubState.value ?? ''
     const hasPendingSwitch = Boolean(Reflect.get(active, 'switchingToPlayer')) || Boolean(Reflect.get(active, 'switchingToEnemy'))
     const isReady = canExecuteScriptedReplayAction({
       isActiveBattle: ctx.fsm.currentState.value === ctx.BATTLE_STATES.ACTIVE_BATTLE,
@@ -160,6 +163,7 @@ export function setupBattleDebug(ctx: BattleContext) {
       isProcessing: ctx.isProcessing.value,
       isIntroAnimating: ctx.isIntroAnimating.value,
       hasPendingSwitch,
+      hasPendingPlayerAction: requiresAction(active.playerRequest),
     })
     if (!isReady && subStateVal === 'SWITCH_MENU' && win.__VITE_DEBUG__?.isScriptedReplayMode) {
       console.debug(`[E2E-CERTIFIED-REPLAY] SWITCH_MENU is not actionable. context=${JSON.stringify({
@@ -175,6 +179,7 @@ export function setupBattleDebug(ctx: BattleContext) {
       p1ChoiceIdx: win.__VITE_DEBUG__?.p1ChoiceIdx ?? 0,
       p2ChoiceIdx: win.__VITE_DEBUG__?.p2ChoiceIdx ?? 0,
       over: false,
+      playerSwitchSlots: projectBattleReadySwitchSlots(active.playerRequest),
       isReady,
     }
   }
@@ -202,25 +207,25 @@ export function setupBattleDebug(ctx: BattleContext) {
       let unwatch: (() => void) | null = null
 
       const onReady = (detail: unknown) => {
-        if (!isBattleReadyDetail(detail)) {
-          throw new Error('[battleDebug] Invalid battle-ready-for-input detail payload')
+        if (!isBattleReadyForInputDetail(detail)) {
+          throw new Error(`[battleDebug] Invalid ${BATTLE_UI_EVENTS.READY_FOR_INPUT} detail payload`)
         }
         if (unwatch) unwatch()
-        window.removeEventListener('battle-ready-for-input', handler)
+        window.removeEventListener(BATTLE_UI_EVENTS.READY_FOR_INPUT, handler)
         resolve(detail)
       }
 
       const handler = (e: Event) => {
         if (!(e instanceof CustomEvent)) {
-          throw new Error('[battleDebug] battle-ready-for-input must be a CustomEvent')
+          throw new Error(`[battleDebug] ${BATTLE_UI_EVENTS.READY_FOR_INPUT} must be a CustomEvent`)
         }
         onReady(e.detail)
       }
 
-      window.addEventListener('battle-ready-for-input', handler, { once: true })
+      window.addEventListener(BATTLE_UI_EVENTS.READY_FOR_INPUT, handler, { once: true })
 
       unwatch = watch(
-        [ctx.fsm.currentSubState, ctx.isProcessing, ctx.isIntroAnimating],
+        [ctx.fsm.currentState, ctx.fsm.currentSubState, ctx.isProcessing, ctx.isIntroAnimating],
         () => {
           const res = checkCurrentReady()
           if (res) {

@@ -27,4 +27,4 @@ export interface RandomSetEntry {
  * Strongly-typed random sets dataset.
  * TypeScript will throw a compile error if any entity ID in random-sets.json is not a valid domain ID.
  */
-export const RANDOM_SETS_DATA: readonly RandomSetEntry[] = dbJson as unknown as RandomSetEntry[]; // domain-ok
+export const RANDOM_SETS_DATA: readonly RandomSetEntry[] = dbJson as RandomSetEntry[];

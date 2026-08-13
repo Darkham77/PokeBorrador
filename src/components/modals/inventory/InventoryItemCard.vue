@@ -185,6 +185,7 @@ onMounted(() => {
 
 <template>
   <div 
+    :id="`inventory-item-${item.id}`"
     ref="cardRef"
     class="inventory-item-card"
     :class="{ 

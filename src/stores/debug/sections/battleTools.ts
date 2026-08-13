@@ -1,6 +1,8 @@
 import { gameBus } from '@/logic/events/gameBus'
 import { useAudioStore } from '@/stores/audio'
 import { useBattleStore } from '@/stores/battle/battle'
+import type { BattleSide } from '@/types/battle/battle'
+import type { MoveCategory } from '@/data/battle/moves'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 import { levelUpPokemon } from '@/logic/pokemon/pokemonFactory'
@@ -102,10 +104,10 @@ export function registerBattleTools(debug: DebugSystem) {
       // Manejo especial para animación de ataque (incluyendo physical, special, status, selfKO y recoil)
       if (type === 'attack') {
         const battle = useBattleStore()
-        battle.attackerSide = side as 'player' | 'enemy'
+        battle.attackerSide = side as BattleSide
         battle.activeMove = {
           name: options.cat === 'selfKO' ? 'Autodestrucción' : (options.cat === 'recoil' ? 'Retroceso' : 'Ataque Debug'),
-          cat: options.cat === 'selfKO' ? 'special' : ((options.cat as 'physical' | 'special' | 'status' | undefined) || 'physical'),
+          cat: options.cat === 'selfKO' ? 'special' : ((options.cat as MoveCategory | undefined) || 'physical'),
           selfKO: options.cat === 'selfKO',
           recoil: options.cat === 'recoil' ? true : undefined,
           pp: 5,

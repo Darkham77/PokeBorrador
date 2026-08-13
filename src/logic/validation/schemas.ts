@@ -199,6 +199,7 @@ const DEFAULT_SCHEMA_FALLBACK_HP = 10;
 const pokemonSchema = object({
   uid: fallback(string(), ''),
   id: string(),
+  species: fallback(string(), ''),
   name: fallback(string(), ''),
   nickname: fallback(nullable(string()), null),
   level: fallback(pipe(number(), minValue(1), maxValue(100)), 5),
@@ -277,8 +278,6 @@ const pokemonSchema = object({
   trapped: optional(boolean()),
   identified: optional(boolean()),
   pts: optional(number()),
-  futureSightTurns: optional(number()),
-  futureSightDmg: optional(number()),
   chargingMove: optional(nullable(moveSchema)),
   aura: optional(string()),
   isAncestral: optional(boolean()),

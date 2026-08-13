@@ -33,11 +33,11 @@ export interface ClassDefinition {
   color: string
   colorDark: string
   description: string
-  bonuses?: string[]
-  bonusLevels?: number[]
-  penalties?: string[]
-  technicalBonuses?: string[]
-  technicalPenalties?: string[]
+  bonuses?: readonly string[]
+  bonusLevels?: readonly number[]
+  penalties?: readonly string[]
+  technicalBonuses?: readonly string[]
+  technicalPenalties?: readonly string[]
   showdownSpriteId?: string
   avatarSpriteId?: string
 }
@@ -74,7 +74,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   
   const currentClassDef = computed<ClassDefinition | null>(() => {
     if (!playerClass.value) return null
-    return (PLAYER_CLASSES[playerClass.value as keyof typeof PLAYER_CLASSES] as unknown as ClassDefinition) || null // domain-ok
+    return (PLAYER_CLASSES[playerClass.value as keyof typeof PLAYER_CLASSES] as ClassDefinition) || null // domain-ok
   })
 
   const activeMission = computed(() => classData.value.activeMission || null)
@@ -117,7 +117,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
    */
   async function selectClass(classId: string) {
     const resolvedClassId = requirePlayerClassId(classId)
-    const cls = PLAYER_CLASSES[resolvedClassId as keyof typeof PLAYER_CLASSES] as unknown as ClassDefinition | undefined // domain-ok
+    const cls = PLAYER_CLASSES[resolvedClassId as keyof typeof PLAYER_CLASSES] as ClassDefinition | undefined // domain-ok
     if (!cls) return { success: false, msg: 'Clase no válida' }
 
     const isChange = !!playerClass.value

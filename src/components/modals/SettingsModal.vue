@@ -75,6 +75,7 @@ const handleZoomInput = (e: Event) => {
         </label>
         <div class="power-buttons">
           <button 
+            id="settings-auto-battle-on-btn"
             type="button"
             class="btn-vicio-sm" 
             :class="uiStore.lowPowerMode === 'auto' ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
@@ -83,6 +84,7 @@ const handleZoomInput = (e: Event) => {
             AUTO
           </button>
           <button 
+            id="settings-auto-battle-off-btn"
             type="button"
             class="btn-vicio-sm" 
             :class="uiStore.lowPowerMode === 'enabled' ? 'btn-vicio-primary' : 'btn-vicio-neutral'"
@@ -178,6 +180,7 @@ const handleZoomInput = (e: Event) => {
 
       <div class="settings-actions">
         <button 
+          id="settings-save-close-btn"
           class="btn-vicio-primary btn-vicio-full"
           @click.stop="emit('close')"
         >

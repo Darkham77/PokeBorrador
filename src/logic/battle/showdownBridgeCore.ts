@@ -1,7 +1,7 @@
 import { toID } from '@pkmn/sim';
 import type { SBCtx } from './showdownBridgeCtx.ts';
 import type { Move, Pokemon, PokemonStatus } from '../../types/pokemon/pokemon.ts';
-import { requirePokemonMoveId } from '@/data/battle/moves';
+import { requirePokemonMoveId, type MoveCategory } from '@/data/battle/moves';
 
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 
@@ -72,7 +72,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
               id: cleanMoveId,
               name: translatedName,
               type: moveData?.type || 'normal',
-              cat: (moveData?.cat || 'physical') as 'physical' | 'special' | 'status',
+              cat: (moveData?.cat || 'physical') as MoveCategory,
               power: moveData?.power,
               acc: moveData?.acc,
               pp: 0,

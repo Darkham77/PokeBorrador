@@ -8,7 +8,7 @@ import { getShowdownNickname } from '../../../../src/logic/battle/showdownUidMap
 import { resolveBaseStats } from '../../../../src/logic/battle/showdownAdapter.ts';
 import { calcStatsPure } from '../../../../src/logic/pokemon/statsMath.ts';
 
-export function generateBatchHash(batch: { playerTeam: unknown[]; enemyTeam: unknown[]; steps?: string[] }): string {
+export function generateBatchHash(batch: { playerTeam: unknown[]; enemyTeam: unknown[]; steps?: string[] }): string { // type-ok
   const data = {
     playerTeam: batch.playerTeam,
     enemyTeam: batch.enemyTeam,
@@ -26,6 +26,7 @@ import type { ItemId } from '../../../../src/data/inventory/items.ts';
 import type { AbilityId } from '../../../../src/data/battle/abilities.ts';
 import type { NatureId } from '../../../../src/data/battle/natures.ts';
 import type { PokemonMoveId } from '../../../../src/types/pokemon/pokemon.ts';
+import type { CertifiedBattleGameAction } from '../../../../src/types/battle/certifiedBattleActions.ts';
 
 import type { CalculatedStats } from '../../../../src/logic/pokemon/statsMath.ts';
 
@@ -51,7 +52,7 @@ export interface CertifiedPokemonFinalState {
 }
 
 export interface CertifiedBattleFinalState {
-  isOver: true;
+  isOver: boolean;
   winner: CertifiedBattleWinner;
   p1: CertifiedPokemonFinalState[];
   p2: CertifiedPokemonFinalState[];
@@ -62,8 +63,20 @@ export interface CertifiedBattleHistoryEntry {
   p1Choice: string;
   p2Choice: string;
   battleTurn: number;
-  p1Heal?: true;
-  p2Heal?: true;
+  /** A non-Showdown game action paired with this atomic certified turn. */
+  p1GameAction?: CertifiedBattleGameAction;
+  p1Heal?: boolean;
+  p2Heal?: boolean;
+  p3Heal?: boolean;
+  p4Heal?: boolean;
+  p1PpRefill?: boolean;
+  p2PpRefill?: boolean;
+  p3PpRefill?: boolean;
+  p4PpRefill?: boolean;
+  p1ForceSwitch?: boolean;
+  p2ForceSwitch?: boolean;
+  p3ForceSwitch?: boolean;
+  p4ForceSwitch?: boolean;
 }
 
 /**
@@ -83,7 +96,7 @@ export interface CertifiedBattleCase {
   enemyChoices: string[];
   history: CertifiedBattleHistoryEntry[];
   steps: string[];
-  ended: true;
+  ended: boolean;
   winner: CertifiedBattleWinner;
   finalState: CertifiedBattleFinalState;
 }
@@ -368,7 +381,7 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
         nature:  'serious',
         evs: pEvs,
         ivs: pIvs,
-        moves: (pMoves.length > 0 ? pMoves : ['tackle']) as PokemonMoveId[],
+        moves: (pMoves.length > 0 ? pMoves.slice(0, 4) : ['tackle']) as PokemonMoveId[],
         uid: pUid,
         stats: pStats,
       });
@@ -405,7 +418,7 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
         nature:  'serious',
         evs: eEvs,
         ivs: eIvs,
-        moves: eMoves,
+        moves: eMoves.slice(0, 4),
         uid: eUid,
         stats: eStats,
       });

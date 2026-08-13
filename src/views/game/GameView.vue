@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { gsap } from 'gsap'
 import { GSAP_FAST_DURATION_SEC } from '@/logic/constants/animations.ts'
+import { useUIStore } from '@/stores/ui.ts'
 
 const GAME_VIEW_TRANSITION_Y_PX = 10
+const uiStore = useUIStore()
 
 const onBeforeEnter = (el: Element) => {
   gsap.set(el, { opacity: 0, y: GAME_VIEW_TRANSITION_Y_PX })
@@ -83,16 +85,17 @@ const onNavItemMouseLeave = (event: MouseEvent) => {
           <span>🗺️</span>
           <span>Mapa</span>
         </router-link>
-        <router-link
-          to="/"
+        <button
+          id="nav-team-management"
+          type="button"
           class="nav-item"
-          active-class="active"
+          @click="uiStore.toggleTeamManagement"
           @mouseenter="onNavItemMouseEnter"
           @mouseleave="onNavItemMouseLeave"
         >
           <span>⚡</span>
           <span>Equipo</span>
-        </router-link>
+        </button>
         <router-link
           to="/pokedex"
           class="nav-item"

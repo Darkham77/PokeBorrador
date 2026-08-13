@@ -5,7 +5,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { ShowdownPlayerRequest } from '@/types/battle/battle'
 import {
   showdownWorker,
-  setShowdownWorker,
+  preloadShowdownWorker,
   getSimulatorState
 } from './showdownWorkerClient.ts'
 import { prepareSeatPayload } from './orchestratorPayloadHelper.ts'
@@ -17,11 +17,8 @@ export async function initWorkerForBattle(
 ) {
   if (typeof window === 'undefined' || typeof Worker === 'undefined') return
 
-  if (showdownWorker) {
-    showdownWorker.terminate()
-  }
-  const workerInstance = new Worker(new URL('./showdown.worker.ts', import.meta.url), { type: 'module' })
-  setShowdownWorker(workerInstance)
+  preloadShowdownWorker()
+  const workerInstance = showdownWorker!
   if (typeof window !== 'undefined') {
     window.__showdownWorker__ = workerInstance;
   }
@@ -53,6 +50,20 @@ export async function initWorkerForBattle(
 
   const worker = showdownWorker!
 
+  const handleWorkerError = (event: ErrorEvent) => {
+    const errorText = event.message || 'Showdown worker failed before initializing the battle'
+    logger.error('ShowdownWorker', `Error del worker al inicializar batalla: ${errorText}`)
+    if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
+      window.__VITE_DEBUG__.lastWorkerInitError = errorText
+    }
+    if (worker.removeEventListener) {
+      worker.removeEventListener('error', handleWorkerError)
+    }
+  }
+  if (worker.addEventListener) {
+    worker.addEventListener('error', handleWorkerError)
+  }
+
   const initHandler = async (e: MessageEvent) => {
     const data = e.data as {
       type: string
@@ -65,7 +76,11 @@ export async function initWorkerForBattle(
     }
     const { type: responseType, payload: responsePayload } = data
     if (responseType === 'WORKER_LOG') {
-      console.debug(`[WORKER] ${responsePayload}`)
+      const stage = responsePayload?.message ?? 'missing-stage'
+      console.debug(`[WORKER] ${stage}`)
+      if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
+        window.__VITE_DEBUG__.lastWorkerInitStage = stage
+      }
       return
     }
     const activeWorker = showdownWorker!
@@ -92,14 +107,19 @@ export async function initWorkerForBattle(
       }
       if (activeWorker.removeEventListener) {
         activeWorker.removeEventListener('message', initHandler)
+        activeWorker.removeEventListener('error', handleWorkerError)
       } else {
         activeWorker.onmessage = null
       }
     } else if (responseType === 'ERROR') {
       const errorText = responsePayload?.message || 'Error desconocido'
       logger.error('ShowdownWorker', `Error del simulador al inicializar batalla: ${errorText}`)
+      if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
+        window.__VITE_DEBUG__.lastWorkerInitError = errorText
+      }
       if (activeWorker.removeEventListener) {
         activeWorker.removeEventListener('message', initHandler)
+        activeWorker.removeEventListener('error', handleWorkerError)
       } else {
         activeWorker.onmessage = null
       }
@@ -117,7 +137,7 @@ export async function initWorkerForBattle(
     worker.onmessage = initHandler
   }
 
-  worker.postMessage({
+  const initPayload = {
     type: 'INIT_BATTLE',
     payload: {
       p1: { name: p1Data.name, team: p1Data.team },
@@ -129,7 +149,12 @@ export async function initWorkerForBattle(
       weather: initialWeatherOfficial,
       seed: seedArr,
       isDeterministicSimulation: !!(typeof window !== 'undefined' && window.__VITE_DEBUG__ && window.__VITE_DEBUG__.isDeterministicSimulation),
-      history: (typeof window !== 'undefined' && window.__VITE_DEBUG__ && window.__VITE_DEBUG__.history) || []
+      history: (typeof window !== 'undefined' && window.__VITE_DEBUG__ && ((window.__VITE_DEBUG__ as Record<string, unknown>).history as unknown[])) || [] // open-record // no-domain
     }
-  })
+  }
+  try {
+    worker.postMessage(initPayload)
+  } catch (error: unknown) {
+    throw new Error(`[ShowdownWorker] INIT_BATTLE payload could not be transferred: ${(error as Error).message}`, { cause: error })
+  }
 }

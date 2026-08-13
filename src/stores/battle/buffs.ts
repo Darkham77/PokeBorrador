@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game.ts'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import type { ToolQualityTier } from '@/types/system/game'
 
 export const useBuffsStore = defineStore('buffs', () => {
   const gameStore = useGameStore()
@@ -85,17 +86,17 @@ export const useBuffsStore = defineStore('buffs', () => {
     if (buffName === 'repel') s.repelSecs = (s.repelSecs || 0) + seconds
     else if (buffName === 'fishing-rod') {
       s.fishingRodSecs = seconds
-      s.fishingRodType = (extraData as 'standard' | 'good' | 'super' | null) || 'standard'
+      s.fishingRodType = (extraData as ToolQualityTier | null) || 'standard'
     }
     else if (buffName === 'pickaxe') {
       s.pickaxeSecs = seconds
-      s.pickaxeType = (extraData as 'standard' | 'good' | 'super' | null) || 'standard'
+      s.pickaxeType = (extraData as ToolQualityTier | null) || 'standard'
       s.brushSecs = 0
       s.brushType = null
     }
     else if (buffName === 'brush') {
       s.brushSecs = seconds
-      s.brushType = (extraData as 'standard' | 'good' | 'super' | null) || 'standard'
+      s.brushType = (extraData as ToolQualityTier | null) || 'standard'
       s.pickaxeSecs = 0
       s.pickaxeType = null
     }

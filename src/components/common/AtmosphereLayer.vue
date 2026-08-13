@@ -53,13 +53,15 @@ let atmosphereContext: gsap.Context | null = null
 let worker: Worker | null = null
 let resizeObserver: ResizeObserver | null = null
 
+import { Z_LAYERS } from '@/logic/constants/visuals'
+
 const props = withDefaults(defineProps<AtmosphereLayerProps>(), {
   weather: 'clear',
   cycle: 'day',
   season: 'spring',
   isPerformanceMode: false,
   isLocked: false,
-  zIndex: 0,
+  zIndex: Z_LAYERS.BASE,
   animSeed: 0.5,
   isVisible: false,
   isLowPower: false
@@ -106,11 +108,18 @@ const applyParallaxLayer = (
 }
 
 const initWorker = async () => {
-  destroyWorker()
-
   if (!canvasRef.value) return
 
-  if (!('transferControlToOffscreen' in canvasRef.value)) {
+  // If worker is already active, just update parameters instead of re-creating worker & re-transferring canvas
+  if (worker) {
+    updateWorkerParams()
+    return
+  }
+
+  const canvasEl = canvasRef.value as HTMLCanvasElement & { __offscreenTransferred?: boolean }
+  if (canvasEl.__offscreenTransferred) return
+
+  if (!('transferControlToOffscreen' in canvasEl)) {
     console.error('[AtmosphereLayer] OffscreenCanvas is not supported.')
     return
   }
@@ -128,7 +137,14 @@ const initWorker = async () => {
 
   if (!canvasRef.value) return
 
-  const offscreen = canvasRef.value.transferControlToOffscreen()
+  let offscreen: OffscreenCanvas
+  try {
+    offscreen = canvasEl.transferControlToOffscreen()
+    canvasEl.__offscreenTransferred = true
+  } catch (e) {
+    console.warn('[AtmosphereLayer] Cannot transfer canvas control:', e)
+    return
+  }
   
   worker = new Worker(
     new URL('../../logic/render/atmosphere.worker.ts', import.meta.url),

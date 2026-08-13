@@ -12,6 +12,20 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 - **Zero Audit Failures & Warnings-Diff Mandate**: Under NO circumstances are audit failures allowed in any commit. You MUST run `npm run audit:warnings-diff` before committing, and it MUST return exactly 0 issues (0 errors across the entire project, and 0 new warnings in modified/added/untracked files compared to `origin/main`).
 - **Mandatory DOX Navigation**: You MUST always use the `dox-navigator` skill (or trigger the `/dox-navigator` command) to analyze the project context, search for files, components, and manuals, and update any index or documentation within the project.
 
+- **Objective-Driven Fuzzer Coverage Mandate**: Every certified fuzzer scenario
+  MUST configure the scripted seats to prioritize legal actions that exercise
+  the mechanic under test as quickly as possible. For example, an enemy must
+  prefer a legal poison-inflicting move when certifying poison cure; matching
+  legal typed moves must be preferred for type-sensitive item effects. This is
+  cooperative coverage generation, never outcome injection: seeds, accepted
+  choices, history, and legality remain immutable evidence. A report may mark
+  PASS only from observed Showdown evidence or a deterministic same-seed control
+  difference, never because an item was merely equipped. This directive applies
+  to direct deterministic heuristic certified AI only. Every Playwright combat
+  simulation replays the resulting immutable certified choices through visible
+  UI controls; real AI is not an alternative decision source for browser combat
+  replays.
+
 ---
 
 ## 🏛️ Core Architectural & Quality Mandates
@@ -67,12 +81,16 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 
 ### 5. Event-Driven Simulation Sync & Zero-Timer Policy
 - **Event-Driven Architecture**: Application logic, state transitions, save loading, and component orchestration MUST be 100% event-driven (using promises, GSAP timelines, custom events, or store state changes).
+- **Battle Modal Exclusivity**: Before opening the battle arena/modal, the battle-entry flow MUST close every currently open modal that is not part of the battle flow. The close must complete before the arena opens, leaving the battle as the only active modal layer. This releases obsolete controls, prevents stale overlays from intercepting pointer input, and keeps all player and simulator interactions on the visible official UI.
 - **Zero-Timer Mandate**: `setTimeout`, `setInterval`, numeric timers, or race timeouts are strictly forbidden in application and game logic. Timers are ONLY permitted in utility scripts (`node:timers/promises`) or in E2E tests as a maximum fail-safe cap to terminate stuck test runs.
+- **Public Event Contract for Simulators**: Playwright simulators must arm a listener before each visible UI action and resume only from a typed public application event emitted after the genuine domain/UI transition. Polling stores, FSM fields, DOM conditions, or private refs (`page.waitForFunction`, repeated locator-state checks, sleeps, or turn counters) is forbidden for synchronization. If a lifecycle has no suitable event, add one in `src/` at its real completion boundary; tests may observe it but never dispatch or forge it.
+- **Passive UI Driver**: A simulator is never an alternate state machine. It may inspect read-only diagnostics for assertions, but it must not infer readiness from low-level state, force a transition, or compensate for a missed event. After an event, it uses only the visible official control that a player would use.
 
 ### 6. Zero-Tolerance Turn Failure & Anti-Hasty-Patch Mandate
 - **Fail-Fast Turn Execution**: In Playwright E2E simulations, a single turn failure, unhandled rejection, or desync MUST immediately abort execution with a descriptive error. Retries, silent skips, and spin-loops are strictly forbidden.
+- **Mandatory Isolated Reproduction Test Mandate (RED-to-GREEN)**: Whenever ANY E2E test, browser simulation, battle scenario, worker task, or feature execution fails anywhere across the entire project, the agent **MUST FIRST** create an isolated, self-contained unit or integration test in `tests/node/` reproducing the exact failure in **RED**. The test MUST **extract and inline the failing case data** (or store it in a static fixture file) so regenerating the fuzzer never breaks the unit test. The extracted turn-by-turn choice streams (`step.p1Choice`, `step.p2Choice`), `seed`, and history MUST be executed sequentially to reproduce in RED, and verify empirical repair in GREEN once `src/` is fixed.
 - **Prohibition on Hasty Patches & Fallbacks**: Inventing hasty fallbacks (e.g. returning `'default'`, fallback moves, or mock objects) or swallowing errors (`.catch(() => true)`) to force tests or simulations to pass is strictly forbidden. Root causes MUST be diagnosed and fixed in `src/`.
-- **100% Shared Execution Code**: Headless fuzzer replayers (`fuzzer_case_replayer.ts`) and Playwright E2E simulations MUST consume the same choices via the literally same `ShowdownBattleRunner` class to guarantee absolute execution parity.
+- **Certified Combat Replay**: Every browser combat is a replay, never an independently decided test. It MUST consume a current fuzzer-certified case through the literally same `ShowdownBattleRunner`: identical seed, atomic history, native choices, recorded game actions (such as a bag medicine), and IPB flags. The browser may translate each recorded action only to its matching visible official control. A manual setup, manually authored choice stream, or real-AI browser decision stream is invalid; expand the objective-driven fuzzer first.
 - **Mandatory ID-Based UI Selection**: Locating UI components in Playwright tests by text matching or regex labels is strictly forbidden. All interactive UI components MUST have unique HTML `id` attributes (`#start-encounter-btn`, `#confirm-battle-btn`, etc.).
 
 ### 7. Database Isolation & Persistence Safety

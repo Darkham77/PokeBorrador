@@ -1,9 +1,10 @@
+import type { BattleSide } from '../battle/battle.ts';
 import type { PokemonType } from '@/data/battle/types';
 import type { NatureId } from '@/data/battle/natures';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { ItemId } from '@/data/inventory/items';
 import type { WeatherId } from '@/logic/weather/weatherRegistry';
-import type { PokemonMoveId } from '@/data/battle/moves';
+import type { PokemonMoveId, MoveCategory } from '@/data/battle/moves';
 import type { AbilityId } from '@/data/battle/abilities';
 
 export type { PokemonMoveId };
@@ -13,6 +14,9 @@ export const POKEMON_STAT_KEYS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as co
 export type ActivePokemonStatus = 'par' | 'brn' | 'psn' | 'slp' | 'frz' | 'tox';
 export type PokemonStatus = ActivePokemonStatus | '';
 export type PokemonGender = 'm' | 'f' | null;
+export type PokedexStatus = 'none' | 'seen' | 'caught';
+export type PokemonStorageLocation = 'team' | 'box';
+export type PokemonSelectionSource = 'team' | 'box' | 'market';
 export type VolatileStatusKey = string; // string-ok Showdown dynamic volatile status key (e.g. toID(move.name))
 
 export function isVolatileStatusKey(value: string): value is VolatileStatusKey {
@@ -46,6 +50,8 @@ export interface BreedingCompatibility {
 }
 
 
+
+export type StatSpread = Record<PokemonStatKey, number>;
 
 export type PokemonIVs = Record<PokemonStatKey, number>;
 
@@ -86,7 +92,7 @@ export interface Move {
   id?: PokemonMoveId;
   name: string; // domain-ok
   type?: PokemonType;
-  cat?: 'physical' | 'special' | 'status';
+  cat?: MoveCategory;
   power?: number;
   acc?: number;
   pp: number;
@@ -111,7 +117,7 @@ export interface Move {
   hits?: number | [number, number] | '2-5';
   recoil?: number | boolean;
   selfKO?: boolean;
-  side?: 'player' | 'enemy';
+  side?: BattleSide;
   ohko?: boolean;
   endeavor?: boolean;
   counter?: boolean;
@@ -214,8 +220,7 @@ export interface Pokemon {
   identified?: boolean;
   originalForm?: Pokemon | null;
   pts?: number;
-  futureSightTurns?: number;
-  futureSightDmg?: number;
+
   chargingMove?: Move | null;
   aura?: string; // domain-ok
   isAncestral?: boolean;

@@ -1,6 +1,9 @@
 import { queryLocal, persistSQLite } from '../sqliteEngine.ts';
 import type { SQLiteDatabase } from '../sqliteEngine.ts';
 import type { DBResponse } from '@/types/system/database';
+import type { MarketListingType, MarketAssetType } from '@/logic/economy/market';
+
+export type MarketClaimAssetType = MarketAssetType;
 
 interface OfflineSaveData {
   box?: Record<string, unknown>[];
@@ -11,7 +14,7 @@ interface OfflineSaveData {
 }
 
 interface ClaimAssetPayload {
-  type: 'pokemon' | 'money' | 'item';
+  type: MarketClaimAssetType;
   data: Record<string, unknown> | number | string;
 }
 
@@ -20,7 +23,7 @@ export async function emulatePublishListing(
   params: Record<string, unknown>,
   context: { userId: string; username: string }
 ): Promise<DBResponse> {
-  const { p_listing_type, p_asset_data, p_price } = params as { p_listing_type: 'pokemon' | 'item', p_asset_data: Record<string, unknown>, p_price: number };
+  const { p_listing_type, p_asset_data, p_price } = params as { p_listing_type: MarketListingType, p_asset_data: Record<string, unknown>, p_price: number };
   const { userId, username } = context;
 
 const MAX_MARKET_LISTINGS_PER_USER = 10;
@@ -89,7 +92,7 @@ export async function emulateBuyListing(
 
   const listings = await queryLocal("SELECT * FROM market_listings WHERE id = ? AND status = 'active'", [p_listing_id]);
   if (listings.length === 0) return { data: null, error: { message: 'La publicación ya no está disponible o fue vendida.' } };
-  const listing = listings[0] as { id: string | number; seller_id: string; listing_type: 'pokemon' | 'item'; price: number; data: string | Record<string, unknown> };
+  const listing = listings[0] as { id: string | number; seller_id: string; listing_type: MarketListingType; price: number; data: string | Record<string, unknown> };
   if (listing.seller_id === userId) return { data: null, error: { message: 'No puedes comprar tu propia oferta.' } };
 
   const buyerSaves = await queryLocal("SELECT save_data FROM game_saves WHERE user_id = ?", [userId]);
@@ -156,7 +159,7 @@ export async function emulateCancelListing(
 
   const listings = await queryLocal("SELECT * FROM market_listings WHERE id = ? AND status = 'active'", [p_listing_id]);
   if (listings.length === 0) return { data: null, error: { message: 'Publicación no encontrada o procesada.' } };
-  const listing = listings[0] as { id: string | number; seller_id: string; listing_type: 'pokemon' | 'item'; data: string | Record<string, unknown> };
+  const listing = listings[0] as { id: string | number; seller_id: string; listing_type: MarketListingType; data: string | Record<string, unknown> };
   if (listing.seller_id !== userId) return { data: null, error: { message: 'No autorizado.' } };
 
   let assetDataObj = listing.data;

@@ -80,7 +80,7 @@ export function calculateSackOrder(
     for (const opp of oppAlive) {
       for (const mv of pokemon.moves) {
         try {
-          if (calc.calcDamage(pokemon, opp, mv, snapshot.field).maxPercent > SACK_WEIGHT_MATCHUP_MOVE_THRESHOLD) { matchupScore += SACK_WEIGHT_MATCHUP_BONUS_PER_POKEMON; break; }
+          if (calc.calcDamage(pokemon, opp, mv.id, snapshot.field).maxPercent > SACK_WEIGHT_MATCHUP_MOVE_THRESHOLD) { matchupScore += SACK_WEIGHT_MATCHUP_BONUS_PER_POKEMON; break; }
         } catch { /* skip */ }
       }
     }

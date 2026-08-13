@@ -6,9 +6,7 @@ import { useEventStore } from '@/stores/events'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { type WeatherId } from '@/logic/weather/weatherRegistry'
-import { DAY_PHASES, type DayPhase } from '@/logic/utils/timeUtils'
-import type { MapLocation } from '@/types/pokemon/encounters'
+import { DAY_PHASES } from '@/logic/utils/timeUtils'
 import type { EventConfig } from '@/logic/events/eventEngine'
 import {
   getPokedexVisibility,
@@ -19,12 +17,11 @@ import {
   buildRouteSpawnItem,
   type RouteSpawnMappedItem
 } from '@/logic/utils/routeSpawnHelpers'
+import type { RouteSpawnsProps } from '@/composables/modals/useRouteSpawnsCalculation'
 
 const DEFAULT_WILD_SPAWN_RATE_WEIGHT = 10;
 
-export function useRouteSpawnsWild(
-  props: { map: MapLocation; weather: WeatherId; cycle: DayPhase }
-) {
+export function useRouteSpawnsWild(props: RouteSpawnsProps) {
   const gameStore = useGameStore()
   const eventStore = useEventStore()
   const uiStore = useUIStore()

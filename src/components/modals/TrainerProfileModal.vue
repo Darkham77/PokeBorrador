@@ -155,7 +155,6 @@ watch(loading, (newVal) => {
 
 // Asset loaders
 const getAssetUrlLocal = getAssetUrl
-const ASSET_TYPES_LOCAL = ASSET_TYPES
 </script>
 
 <template>
@@ -252,7 +251,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
             >
               <img
                 v-if="faction && faction !== 'null' && faction !== 'undefined' && faction.trim() !== ''"
-                :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.FACTION, faction)"
+                :src="getAssetUrlLocal(ASSET_TYPES.FACTION, faction)"
                 class="faction-img"
                 @error="(e: Event) => { if (e.target) (e.target as HTMLImageElement).style.display = 'none' }"
               >
@@ -274,7 +273,7 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
               :title="badge.name"
             >
               <img 
-                :src="getAssetUrlLocal(ASSET_TYPES_LOCAL.BADGE, badge.id)" 
+                :src="getAssetUrlLocal(ASSET_TYPES.BADGE, badge.id)" 
                 class="badge-img"
                 :class="{ 'locked-badge': !isGymDefeated(badge.id) }"
               >
@@ -354,3 +353,4 @@ const ASSET_TYPES_LOCAL = ASSET_TYPES
 </template>
 
 <style src="./TrainerProfileModal.styles.scss" scoped lang="scss"></style>
+

@@ -154,7 +154,7 @@ describe('Backup Full validation and Dex compatibility test', () => {
 
       const team = saveData.team || [];
       const box = saveData.box || [];
-      const allPokes = [...team, ...box].filter(Boolean);
+      const allPokes = [...team, ...box].filter((p): p is NonNullable<typeof p> => p != null);
 
       for (const poke of allPokes) {
         const tag = `[User: ${userId}] Pokémon: ${poke.name || poke.id} (Lvl ${poke.level})`;

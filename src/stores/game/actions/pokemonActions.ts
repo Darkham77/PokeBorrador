@@ -3,7 +3,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { useUIStore } from '@/stores/ui'
 import { useLoadingStore } from '@/stores/loading'
 import type { GameState } from '@/types/system/game'
-import type { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon'
+import type { Pokemon, PokemonEgg, PokemonStorageLocation } from '@/types/pokemon/pokemon'
 import { BUFF_FIELDS, getItemById, getMaxBuffDuration, requireItemId } from '@/data/inventory/items'
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { logger } from '@/logic/utils/logger'
@@ -48,7 +48,7 @@ export function usePokemonActions(
     if (!pokemon) return { success: false, target: null }
     registerPokedex(pokemon.id, true)
 
-    let target: 'team' | 'box' = 'team'
+    let target: PokemonStorageLocation = 'team'
     if (state.team.length < 6) {
       state.team.push(pokemon)
     } else {
@@ -78,7 +78,7 @@ export function usePokemonActions(
       scheduleSave()
       return true
     }
-    const boxIdx = state.box.findIndex(p => p.uid === uid)
+    const boxIdx = state.box.findIndex(p => p != null && p.uid === uid)
     if (boxIdx !== -1) {
       const p = state.box[boxIdx]
       if (!p || p.onMission) return false
@@ -129,7 +129,7 @@ export function usePokemonActions(
     return true
   }
 
-  function togglePokeTag(context: 'team' | 'box', index: number, tagId: string) {
+  function togglePokeTag(context: PokemonStorageLocation, index: number, tagId: string) {
     const p = context === 'team' ? state.team[index] : (state.box ? state.box[index] : null)
     if (!p) return
     

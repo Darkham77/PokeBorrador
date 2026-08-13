@@ -8,6 +8,7 @@ import BattleInfoCardIvRadar from './BattleInfoCardIvRadar.vue'
 import PartyPreviewGrid from './PartyPreviewGrid.vue'
 import HPBar from './HPBar.vue'
 import { useBattleStore } from '@/stores/battle/battle'
+import type { PartySlotStatus } from '@/types/battle/battle'
 import { useProfileStore } from '@/stores/player/profile'
 import { supabase } from '@/logic/db/supabase'
 import { getStatBreakdown } from '@/logic/battle/battleEngine'
@@ -138,7 +139,7 @@ const teamBallsStatus = computed(() => {
     ? (battleStore.state.playerTeam || []) 
     : (battleStore.state.enemyTeam || [])
   
-  const statuses: ('active' | 'fainted' | 'empty')[] = []
+  const statuses: PartySlotStatus[] = []
   for (let i = 0; i < MAX_TEAM_CAPACITY; i++) {
     if (i < team.length) {
       const poke = team[i]

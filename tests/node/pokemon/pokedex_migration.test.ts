@@ -20,11 +20,11 @@ function filterSquirtle(list: PokemonSpeciesId[] | undefined): PokemonSpeciesId[
   return (list || []).filter((id) => id !== 'squirtle');
 }
 
-function hasSquirtle(box: Pokemon[] | undefined): boolean {
-  return (box || []).some((p) => p.id === 'squirtle');
+function hasSquirtle(box: (Pokemon | null)[] | undefined): boolean {
+  return (box || []).some((p) => p?.id === 'squirtle');
 }
 
-function getPokemonIds(team: Pokemon[] | undefined, box: Pokemon[] | undefined): PokemonSpeciesId[] {
+function getPokemonIds(team: (Pokemon | null)[] | undefined, box: (Pokemon | null)[] | undefined): PokemonSpeciesId[] {
   const ids: PokemonSpeciesId[] = [];
   if (team) {
     for (const p of team) {

@@ -22,7 +22,7 @@ function isBattleStateName(val: string): val is BattleStateName {
   return (Object.values(BATTLE_STATES) as readonly string[]).includes(val); // domain-ok
 }
 
-function isBattleSubStateName(val: string): val is BattleSubStateName {
+export function isBattleSubStateName(val: string): val is BattleSubStateName {
   return (Object.values(BATTLE_SUBSTATES) as readonly string[]).includes(val); // domain-ok
 }
 
@@ -171,6 +171,8 @@ export function createBattleStateMachine() {
     [BATTLE_STATES.EXIT_BATTLE]: [BATTLE_STATES.CONTEXT_SETUP, BATTLE_STATES.INITIALIZING]
   };
 
+  let pendingResolve: (() => void) | null = null;
+
   /**
    * Translates to a specific state or substate.
    * If a delay is provided, returns a Promise that resolves when the transition happens.
@@ -180,9 +182,16 @@ export function createBattleStateMachine() {
       if (transitionCall) {
         transitionCall.kill();
         transitionCall = null;
+        if (pendingResolve) {
+          pendingResolve();
+          pendingResolve = null;
+        }
       }
 
+      pendingResolve = resolve;
+
       const executeTransition = () => {
+        pendingResolve = null;
         // Validation check (can be expanded for strict enforcement)
         if (newState && isBattleStateName(newState)) {
           const isSameState = currentState.value === newState;

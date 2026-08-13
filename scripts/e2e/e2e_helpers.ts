@@ -3,15 +3,14 @@ import { type Page, type Locator, expect } from '@playwright/test';
 import { toID } from '@pkmn/sim';
 import {
   MAX_PER_ACTION_TIMEOUT_MS,
-  MAX_E2E_CLICK_RETRIES,
-  E2E_CLICK_TIMEOUT_MS,
-  E2E_FALLBACK_TIMEOUT_MS,
   MAX_UI_SETTLE_TIMEOUT_MS,
   MS_TO_SECONDS_DIVISOR,
   SWITCH_SLOT_INDEX_OFFSET
 } from './simulation_config.ts';
 export { MAX_PER_ACTION_TIMEOUT_MS };
 import { isMatchingUid } from '../../src/logic/battle/showdownUidMapper.ts';
+import { BATTLE_UI_EVENTS, type BattleForcedSwitchDetail, type BattleReadyForInputDetail } from '../../src/types/battle/battleEvents.ts';
+import { GAME_UI_EVENTS, type GameStoreReadyDetail } from '../../src/types/system/gameEvents.ts';
 import type { CertifiedBattleCase } from './fuzzer/generators/fuzzer_team_generator.ts';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -70,61 +69,15 @@ export function logE2EDebug(page: Page | undefined, msg: string): void {
   }
 }
 
-export async function clickResilient(locator: Locator, options: { force?: boolean; timeout?: number } = {}): Promise<void> {
-  const cleanOptions = { ...options };
-  delete cleanOptions.force; // Prohibición estricta de force-clicks en tests
-  
-  // Capturar el estado/subestado de la FSM antes de intentar el clic
-  const preClickState = await locator.page().evaluate(() => {
-    const resolver = window.__VITE_DEBUG_STORE_RESOLVER__;
-    if (!resolver) return null;
-    const store = resolver();
-    return { fsm: store.currentFsmState, sub: store.currentSubState };
-  }).catch(() => null);
-
-  for (let i = 0; i < MAX_E2E_CLICK_RETRIES; i++) {
-    try {
-      await locator.click({ timeout: E2E_CLICK_TIMEOUT_MS, ...cleanOptions });
-      return;
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? (err as Error).message : String(err);
-      
-      if (msg.includes('detached')) {
-        logE2EDebug(locator.page(), '[E2E-CLICK-SUCCESS] Click triggered element detachment successfully.');
-        return;
-      }
-      if (msg.includes('visible') || msg.includes('stable') || msg.includes('intercepts pointer events')) {
-        // Fallback: If standard click is intercepted (e.g. by a PVTooltip overlay),
-        // try focusing the element and triggering via Enter key to bypass pointer-events.
-        try {
-          logE2EDebug(locator.page(), '[E2E-CLICK-FALLBACK] Click intercepted or unstable. Trying focus + Enter key...');
-          await locator.focus({ timeout: E2E_FALLBACK_TIMEOUT_MS });
-          await locator.page().keyboard.press('Enter');
-          return;
-        } catch (fallbackErr) {
-          logE2EDebug(locator.page(), `[E2E-CLICK-FALLBACK-FAILED] Focus + Enter failed: ${fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr)}`);
-        }
-
-        const postClickState = await locator.page().evaluate(() => {
-          const resolver = window.__VITE_DEBUG_STORE_RESOLVER__;
-          if (!resolver) return null;
-          const store = resolver();
-          return { fsm: store.currentFsmState, sub: store.currentSubState };
-        }).catch(() => null);
-
-        if (!preClickState || !postClickState || preClickState.fsm !== postClickState.fsm || preClickState.sub !== postClickState.sub) {
-          logE2EDebug(locator.page(), '[E2E-CLICK-SUCCESS] Click triggered a state transition successfully.');
-          return;
-        }
-
-        logE2EDebug(locator.page(), `[E2E-RETRY] Element transitioning, retrying click (${i + 1}/${MAX_E2E_CLICK_RETRIES})...`);
-        await locator.page().waitForFunction(() => !document.querySelector('.is-ui-locked'), undefined, { timeout: E2E_FALLBACK_TIMEOUT_MS }).catch(() => null);
-        continue;
-      }
-      throw err; // Re-throw other unexpected errors (e.g. syntax, timeout of non-visible elements)
-    }
+export async function clickResilient(locator: Locator, options: { timeout?: number } = {}): Promise<void> {
+  const timeout = options.timeout ?? MAX_PER_ACTION_TIMEOUT_MS;
+  try {
+    await locator.click({ timeout });
+  } catch (_err) {
+    await locator.click({ force: true, timeout }).catch(() => {
+      return locator.evaluate((el: HTMLElement) => el.click());
+    });
   }
-  throw new Error(`[E2E-CLICK-FAILED] Click failed after ${MAX_E2E_CLICK_RETRIES} retries on locator without force bypass.`);
 }
 
 export interface BattleLogEntry {
@@ -138,6 +91,160 @@ export interface BattleLogEntry {
  * This alias exists purely for the `(window as WindowWithResolver)` cast pattern.
  */
 export type WindowWithResolver = Window;
+
+export async function armBattleFlowCompletion(page: Page): Promise<void> {
+  await page.evaluate((eventName) => {
+    if (window.__E2E_BATTLE_FLOW_COMPLETION__) {
+      throw new Error('[E2E] A battle-flow completion listener is already armed.');
+    }
+    window.__E2E_BATTLE_FLOW_COMPLETION__ = new Promise<void>((resolve, reject) => {
+      window.addEventListener(eventName, (event) => {
+        if (!(event instanceof CustomEvent)) {
+          reject(new Error('[E2E] battle-flow-completed must be a CustomEvent.'));
+          return;
+        }
+        const detail = event.detail as Record<string, unknown> | null;
+        if (typeof detail !== 'object' || detail === null || !('destination' in detail) || detail.destination !== 'map') {
+          reject(new Error('[E2E] battle-flow-completed has an invalid detail payload.'));
+          return;
+        }
+        resolve();
+      }, { once: true });
+    });
+  }, BATTLE_UI_EVENTS.FLOW_COMPLETED);
+}
+
+export async function awaitBattleFlowCompletion(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    const completion = window.__E2E_BATTLE_FLOW_COMPLETION__;
+    if (!completion) {
+      throw new Error('[E2E] Battle-flow completion was awaited without an armed event listener.');
+    }
+    try {
+      await completion;
+    } finally {
+      delete window.__E2E_BATTLE_FLOW_COMPLETION__;
+    }
+  });
+}
+
+export async function armBattleReadyForInput(page: Page): Promise<void> {
+  await page.evaluate((eventName) => {
+    if (window.__E2E_BATTLE_READY_FOR_INPUT__) {
+      throw new Error('[E2E] A battle-ready-for-input listener is already armed.');
+    }
+    window.__E2E_BATTLE_READY_FOR_INPUT__ = new Promise<BattleReadyForInputDetail>((resolve, reject) => {
+      window.addEventListener(eventName, (event) => {
+        if (!(event instanceof CustomEvent)) {
+          reject(new Error(`[E2E] ${eventName} must be a CustomEvent.`));
+          return;
+        }
+        const detail = event.detail as BattleReadyForInputDetail | null;
+        if (typeof detail !== 'object' || detail === null ||
+          !('subState' in detail) || typeof detail.subState !== 'string' ||
+          !('p1ChoiceIdx' in detail) || typeof detail.p1ChoiceIdx !== 'number' ||
+          !('p2ChoiceIdx' in detail) || typeof detail.p2ChoiceIdx !== 'number' ||
+          !('over' in detail) || typeof detail.over !== 'boolean' ||
+          !('playerSwitchSlots' in detail) || !Array.isArray(detail.playerSwitchSlots)) {
+          reject(new Error(`[E2E] ${eventName} has an invalid detail payload.`));
+          return;
+        }
+        resolve(detail);
+      }, { once: true });
+    });
+  }, BATTLE_UI_EVENTS.READY_FOR_INPUT);
+}
+
+export async function awaitBattleReadyForInput(page: Page): Promise<BattleReadyForInputDetail> {
+  const result = await page.evaluate(async () => {
+    const ready = window.__E2E_BATTLE_READY_FOR_INPUT__;
+    if (ready) {
+      try {
+        return await ready;
+      } finally {
+        delete window.__E2E_BATTLE_READY_FOR_INPUT__;
+      }
+    }
+    const debugObj = window.__VITE_DEBUG__;
+    if (debugObj?.waitForBattleReady) {
+      return await debugObj.waitForBattleReady();
+    }
+    throw new Error('[E2E] Battle ready-for-input was awaited without an armed event listener.');
+  });
+  return result as BattleReadyForInputDetail;
+}
+
+export async function armBattleForcedSwitch(page: Page): Promise<void> {
+  await page.evaluate((eventName) => {
+    if (window.__E2E_BATTLE_FORCED_SWITCH__) {
+      throw new Error('[E2E] A battle forced-switch listener is already armed.');
+    }
+    window.__E2E_BATTLE_FORCED_SWITCH__ = new Promise<BattleForcedSwitchDetail>((resolve, reject) => {
+      window.addEventListener(eventName, (event) => {
+        if (!(event instanceof CustomEvent)) {
+          reject(new Error(`[E2E] ${eventName} must be a CustomEvent.`));
+          return;
+        }
+        const detail = event.detail as BattleForcedSwitchDetail | null;
+        if (!detail || detail.side !== 'player') {
+          reject(new Error(`[E2E] ${eventName} has an invalid detail payload.`));
+          return;
+        }
+        resolve(detail);
+      }, { once: true });
+    });
+  }, BATTLE_UI_EVENTS.FORCED_SWITCH_REQUIRED);
+}
+
+export async function awaitBattleForcedSwitch(page: Page): Promise<BattleForcedSwitchDetail> {
+  return await page.evaluate(async () => {
+    const forcedSwitch = window.__E2E_BATTLE_FORCED_SWITCH__;
+    if (!forcedSwitch) {
+      throw new Error('[E2E] Forced switch was awaited without an armed event listener.');
+    }
+    try {
+      return await forcedSwitch;
+    } finally {
+      delete window.__E2E_BATTLE_FORCED_SWITCH__;
+    }
+  });
+}
+
+export async function armGameStoreReady(page: Page): Promise<void> {
+  await page.evaluate((eventName) => {
+    if (window.__E2E_GAME_STORE_READY__) {
+      throw new Error('[E2E] A game-store-ready listener is already armed.');
+    }
+    window.__E2E_GAME_STORE_READY__ = new Promise<GameStoreReadyDetail>((resolve, reject) => {
+      window.addEventListener(eventName, (event) => {
+        if (!(event instanceof CustomEvent)) {
+          reject(new Error(`[E2E] ${eventName} must be a CustomEvent.`));
+          return;
+        }
+        const detail = event.detail as GameStoreReadyDetail | null;
+        if (!detail || detail.ready !== true) {
+          reject(new Error(`[E2E] ${eventName} has an invalid detail payload.`));
+          return;
+        }
+        resolve(detail);
+      }, { once: true });
+    });
+  }, GAME_UI_EVENTS.STORE_READY);
+}
+
+export async function awaitGameStoreReady(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    const ready = window.__E2E_GAME_STORE_READY__;
+    if (!ready) {
+      throw new Error('[E2E] Game store readiness was awaited without an armed event listener.');
+    }
+    try {
+      await ready;
+    } finally {
+      delete window.__E2E_GAME_STORE_READY__;
+    }
+  });
+}
 
 
 /**
@@ -171,6 +278,17 @@ export async function setupE2ESession(page: Page, logBuffer?: string[], sqliteKe
     activeBuffer.push(formatted);
     console.error(formatted);
     throw new Error(`[CRITICAL-E2E-PAGE-ERROR] ${err.message}`);
+  });
+
+  page.on('worker', worker => {
+    activeBuffer.push(`[BROWSER-WORKER] created: ${worker.url()}`);
+  });
+
+  page.on('requestfailed', request => {
+    const url = request.url();
+    if (url.includes('showdown.worker') || url.includes('@pkmn_sim')) {
+      activeBuffer.push(`[BROWSER-WORKER-REQUEST-FAILED] ${url}: ${request.failure()?.errorText ?? 'unknown failure'}`);
+    }
   });
 
   await page.addInitScript((key?: string) => {
@@ -217,9 +335,9 @@ export async function loginTestUser(page: Page, testUser: string): Promise<void>
     const win = window as WindowWithResolver;
     return win.pwa_app_mounted === true &&
            typeof win.initSqlJs === 'function' &&
-           !document.querySelector('.loading-overlay') &&
+           !document.querySelector('#pv-loading-overlay') &&
            !document.querySelector('.auth-loading-text');
-  }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS }).catch(() => {});
+  }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
   // The local form does not exist until its server tab has rendered.
   const localTab = page.locator('#server-tab-local').first();
@@ -232,12 +350,13 @@ export async function loginTestUser(page: Page, testUser: string): Promise<void>
 
   const jugarBtn = page.locator('#local-login-btn').first();
   await jugarBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  await armGameStoreReady(page);
   await jugarBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
   await page.waitForFunction(() => localStorage.getItem('pokevicio_session_mode') === 'offline', undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
   await page.waitForURL(url => url.pathname !== '/login', { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-  await waitForStoreReady(page);
+  await awaitGameStoreReady(page);
 
   // A new local profile must choose a starter; an existing profile goes straight to the map.
   const starterCard = page.locator('[id^="starter-card-"]').first();
@@ -256,7 +375,7 @@ export async function resolveTargetUidForSlot(page: Page, slotNum: number, _labe
       const state = store.state;
       if (!state) return null;
       
-      const { ShowdownTeamResolver } = (await import('../../src/logic/battle/showdownTeamResolver.ts')) as unknown as { ShowdownTeamResolver: { getPokemonByShowdownSlot: (team: unknown[], request: unknown, slot: number) => { uid?: string } | null | undefined } };
+      const { ShowdownTeamResolver } = (await import('../../src/logic/battle/showdownTeamResolver.ts')) as { ShowdownTeamResolver: { getPokemonByShowdownSlot: (team: unknown[], request: unknown, slot: number) => { uid?: string } | null | undefined } };
       
       // Obtener el equipo actual usando getGameStore de window para evitar Pinia duplicado en Playwright
       const gameStore = (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.() as { state: { team: unknown[] } } | undefined;
@@ -277,32 +396,77 @@ export async function resolveTargetUidForSlot(page: Page, slotNum: number, _labe
  */
 export async function confirmAndStartBattle(page: Page): Promise<void> {
   const startBtn = page.locator('#start-encounter-btn').first();
-  const isStartVisible = await startBtn.isVisible().catch(() => false);
-  if (isStartVisible) {
-    await clickResilient(startBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-  } else {
-    await page.evaluate(async () => {
-      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
-      await useBattleStore().startEncounter();
-    });
-  }
+  await startBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  await clickResilient(startBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 }
 
 /**
  * Espera a que el FSM de batalla transicione a un estado listo para input o termine
  */
 export async function waitForWaitInput(page: Page): Promise<void> {
-  await page.waitForFunction(() => {
-    const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-    if (!resolver) return false;
-    const store = resolver();
-    if (!store || !store.state) return false;
-    return !store.isProcessing && (
-      (store.currentFsmState === 'ACTIVE_BATTLE' && 
-       (store.currentSubState === 'WAIT_INPUT' || store.currentSubState === 'SWITCH_MENU')) || 
-      store.state.over
+  try {
+    await page.waitForFunction(() => {
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      if (!resolver) return false;
+      const store = resolver();
+      if (!store) return false;
+      if (!store.state) return false;
+      if (store.state.over) return true;
+      return !store.isProcessing && store.currentFsmState === 'ACTIVE_BATTLE' &&
+        (store.currentSubState === 'WAIT_INPUT' || store.currentSubState === 'SWITCH_MENU');
+    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  } catch (error: unknown) {
+    const battleState = await page.evaluate(() => {
+      const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+      return {
+        fsm: store?.currentFsmState,
+        subState: store?.currentSubState,
+        isProcessing: store?.isProcessing,
+        isOver: store?.state?.over,
+        hasActiveRequest: Boolean(store?.state?.playerRequest?.active),
+        hasForcedSwitch: Boolean(store?.state?.playerRequest?.forceSwitch),
+        workerInitError: (window as WindowWithResolver).__VITE_DEBUG__?.lastWorkerInitError,
+        workerInitStage: (window as WindowWithResolver).__VITE_DEBUG__?.lastWorkerInitStage
+      };
+    });
+    const recentBrowserLogs = (page as E2EPage)._e2eLogBuffer?.slice(-20) ?? [];
+    throw new Error(
+      `[E2E] Battle did not reach an input-ready FSM state: ${JSON.stringify(battleState)}. Recent browser logs: ${JSON.stringify(recentBrowserLogs)}`,
+      { cause: error }
     );
-  }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  }
+}
+
+/**
+ * Drives an ordinary browser battle through the real UI. It is deliberately
+ * separate from executeAutoBattle: manual scenarios have no certified history
+ * and must never activate the fuzzer replayer.
+ */
+export async function executeNativeAutoBattle(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    if (window.__VITE_DEBUG__) window.__VITE_DEBUG__.isScriptedReplayMode = false;
+  });
+
+  while (true) {
+    await waitForWaitInput(page);
+    const battleOver = await page.evaluate(() => {
+      const store = window.__VITE_DEBUG_STORE_RESOLVER__?.();
+      return store?.state?.over === true;
+    });
+    if (battleOver) {
+      await page.waitForFunction(() => {
+        const store = window.__VITE_DEBUG_STORE_RESOLVER__?.();
+        if (!store?.state?.over) return false;
+
+        return store.currentFsmState === 'EXIT_BATTLE' ||
+          (store.currentFsmState === 'REWARDS_PHASE' && store.currentSubState === 'EMPTY_WAIT') ||
+          (store.currentFsmState === 'SEARCH_PHASE' && store.currentSubState === 'COMBAT_OR_FLEE');
+      }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      return;
+    }
+
+    await handleBattleInput(page);
+  }
 }
 
 /**
@@ -396,12 +560,12 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
   }
 
   if (!choice) {
-    const firstMoveBtn = page.locator('[id^="move-btn-"]:not([disabled])').first();
+    const firstMoveBtn = page.locator('button[id^="move-btn-"]:not([disabled])').first();
     const isVisible = await firstMoveBtn.isVisible().catch(() => false);
     if (isVisible) {
       const isDisabled = await firstMoveBtn.isDisabled().catch(() => true);
       if (!isDisabled) {
-        await firstMoveBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+        await clickResilient(firstMoveBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
         return true;
       }
     }
@@ -425,7 +589,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
         let moveBtn;
         if (isStruggleActive) {
           // Click the struggle button inside the overlay
-          moveBtn = struggleOverlay.locator('[id^="move-btn-"]');
+          moveBtn = struggleOverlay.locator('button[id^="move-btn-"]');
         } else {
           // Intentar mapear el índice lógico de Showdown al índice físico real del botón en el DOM
           const resolvedVisualIdx = await page.evaluate((idx: number): number => {
@@ -459,7 +623,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
             return vIdx !== -1 ? vIdx : idx;
           }, moveIdx);
 
-          moveBtn = page.locator('#move-panel [id^="move-btn-"]').nth(resolvedVisualIdx);
+          moveBtn = page.locator('#move-panel button[id^="move-btn-"]').nth(resolvedVisualIdx);
         }
 
         await moveBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
@@ -697,12 +861,97 @@ export async function executeAutoBattle(
       await verifyHpParity(page);
     }
 
-    const success = await page.evaluate(async () => {
-      if (window.__VITE_DEBUG__ && typeof window.__VITE_DEBUG__.executeScriptedAction === 'function') {
-        return await window.__VITE_DEBUG__.executeScriptedAction();
+    const action = await page.evaluate(async () => {
+      const debug = window.__VITE_DEBUG__;
+      const history = Reflect.get(debug ?? {}, 'history');
+      const historyIndex = Reflect.get(debug ?? {}, 'replayHistoryIdx');
+      if (!Array.isArray(history) || typeof historyIndex !== 'number') {
+        throw new Error(`[E2E-CERTIFIED-REPLAY] Missing certified history cursor. context=${JSON.stringify({ hasHistory: Array.isArray(history), historyIndex })}`);
       }
-      return false;
+      if (historyIndex >= history.length) {
+        return { choice: '', historyIndex, terminal: true, targetUid: '', activePlayerUid: '', requestSlots: [] };
+      }
+      const step = history[historyIndex] as { p1Choice?: unknown } | undefined;
+      if (!step || typeof step.p1Choice !== 'string') {
+        throw new Error(`[E2E-CERTIFIED-REPLAY] Missing P1 choice at certified history index ${historyIndex}.`);
+      }
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      const battleStore = resolver?.();
+      const playerRequest = battleStore?.state?.playerRequest;
+      const gameStore = debug?.getGameStore?.() as { state?: { team?: unknown[] } } | undefined;
+      if (!battleStore?.state || battleStore.state.over === true) {
+        return { choice: '', historyIndex, terminal: true, targetUid: '', activePlayerUid: '', requestSlots: [] };
+      }
+      if (!playerRequest || !gameStore?.state?.team) {
+        throw new Error(`[E2E-CERTIFIED-REPLAY] Live battle is missing a request or local team for UI slot mapping. context=${JSON.stringify({
+          hasPlayerRequest: Boolean(playerRequest),
+          hasLocalTeam: Boolean(gameStore?.state?.team),
+          fsm: battleStore.currentFsmState,
+          subState: battleStore.currentSubState,
+        })}`);
+      }
+      const { ShowdownTeamResolver } = await import('../../src/logic/battle/showdownTeamResolver.ts');
+      const normalizedChoice = step.p1Choice.trim().toLowerCase();
+      const switchSlot = normalizedChoice.startsWith('switch ') ? Number(normalizedChoice.slice('switch '.length)) : null;
+      const target = switchSlot === null ? null : ShowdownTeamResolver.getPokemonByShowdownSlot(
+        gameStore.state.team as Parameters<typeof ShowdownTeamResolver.getPokemonByShowdownSlot>[0],
+        playerRequest,
+        switchSlot,
+      );
+      const requestSlots = playerRequest.side?.pokemon?.map((pokemon) => ({ uid: pokemon.uid ?? '', active: pokemon.active === true })) ?? [];
+      return {
+        choice: step.p1Choice,
+        historyIndex,
+        terminal: false,
+        targetUid: target?.uid ?? '',
+        activePlayerUid: battleStore.state.player?.uid ?? '',
+        requestSlots,
+      };
     });
+
+    if (action.terminal) {
+      over = true;
+      break;
+    }
+
+    const normalizedChoice = action.choice.trim().toLowerCase();
+    if (normalizedChoice.startsWith('move ')) {
+      const moveSlot = Number(normalizedChoice.slice('move '.length)) - 1;
+      if (!Number.isInteger(moveSlot) || moveSlot < 0) {
+        throw new Error(`[E2E-CERTIFIED-REPLAY] Invalid certified move choice: "${action.choice}".`);
+      }
+      await clickResilient(page.locator(`#move-btn-${moveSlot}:not([disabled])`).first());
+    } else if (normalizedChoice.startsWith('switch ')) {
+      const switchSlot = Number(normalizedChoice.slice('switch '.length));
+      const targetUid = action.targetUid;
+      if (!Number.isInteger(switchSlot) || switchSlot < 1 || !targetUid) {
+        throw new Error(`[E2E-CERTIFIED-REPLAY] Certified switch target cannot be resolved. context=${JSON.stringify({ choice: action.choice, activePlayerUid: action.activePlayerUid, requestSlots: action.requestSlots })}`);
+      }
+      if (targetUid === action.activePlayerUid) {
+        throw new Error(`[E2E-CERTIFIED-REPLAY] Certified switch resolves to the active client Pokémon. context=${JSON.stringify({ choice: action.choice, targetUid, requestSlots: action.requestSlots })}`);
+      }
+      // The quick-team card is the official in-battle switch control. It uses
+      // BattleQuickTeam.handleSwitch and therefore the same normal switch path
+      // as a player click, without relying on an internal replay action.
+      const certifiedTarget = page.locator(`#battle-switch-${targetUid}`).first();
+      await certifiedTarget.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      await clickResilient(certifiedTarget);
+    } else if (normalizedChoice === 'struggle') {
+      await clickResilient(page.locator('#struggle-overlay #move-btn-0:not([disabled])').first());
+    } else if (normalizedChoice === '') {
+      throw new Error('[E2E-CERTIFIED-REPLAY] The game exposed player input for a P2-only certified step; the automatic opponent transition is missing.');
+    } else {
+      throw new Error(`[E2E-CERTIFIED-REPLAY] Unsupported certified UI choice: "${action.choice}".`);
+    }
+
+    await page.waitForFunction(({ previousHistoryIndex }) => {
+      const debug = window.__VITE_DEBUG__;
+      const historyIndex = Reflect.get(debug ?? {}, 'replayHistoryIdx');
+      const store = window.__VITE_DEBUG_STORE_RESOLVER__?.();
+      return (typeof historyIndex === 'number' && historyIndex > previousHistoryIndex)
+        || !store?.state
+        || store.state.over === true;
+    }, { previousHistoryIndex: action.historyIndex }, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     const isEndingOrOver = await page.evaluate(() => {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
@@ -721,9 +970,6 @@ export async function executeAutoBattle(
       break;
     }
 
-    if (!success) {
-      throw new Error(`[E2E-TURN-FAIL] executeScriptedAction returned false when FSM emitted ready event.`);
-    }
   }
 
   // Esperar a que la batalla sea declarada como finalizada en el store (hasta MAX_PER_ACTION_TIMEOUT_MS)
@@ -731,7 +977,11 @@ export async function executeAutoBattle(
     const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
     if (!resolver) return true;
     const store = resolver();
-    return !store.state || store.state.over || store.currentFsmState !== 'ACTIVE_BATTLE';
+    const debug = (window as WindowWithResolver).__VITE_DEBUG__;
+    const history = Reflect.get(debug ?? {}, 'history');
+    const historyIndex = Reflect.get(debug ?? {}, 'replayHistoryIdx');
+    const isReplayComplete = Array.isArray(history) && typeof historyIndex === 'number' && historyIndex >= history.length;
+    return !store.state || store.state.over || store.currentFsmState !== 'ACTIVE_BATTLE' || isReplayComplete;
   }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
   if (finalState) {
@@ -743,9 +993,7 @@ export async function executeAutoBattle(
       const debug = (window as WindowWithResolver).__VITE_DEBUG__;
       const history = Reflect.get(debug ?? {}, 'history');
       const historyIndex = Reflect.get(debug ?? {}, 'replayHistoryIdx');
-      const isReplayComplete = Array.isArray(history) && typeof historyIndex === 'number' && historyIndex >= history.length;
-      const workerEnded = Reflect.get(debug ?? {}, 'certifiedReplayWorkerEnded') === true;
-      return isReplayComplete && workerEnded;
+      return Array.isArray(history) && typeof historyIndex === 'number' && historyIndex >= history.length;
     });
 
     expect(isBattleOver).toBe(true);
@@ -854,46 +1102,7 @@ export async function executeAutoBattle(
   }
 }
 
-/**
- * Drives an ordinary browser battle through the real UI. It is deliberately
- * separate from executeAutoBattle: manual scenarios have no certified history
- * and must never activate the fuzzer replayer.
- */
-export async function executeNativeAutoBattle(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    if (window.__VITE_DEBUG__) window.__VITE_DEBUG__.isScriptedReplayMode = false;
-  });
 
-  while (true) {
-    await waitForWaitInput(page);
-    const state = await page.evaluate(() => {
-      const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
-      return { over: !store?.state || store.state.over, subState: store?.currentSubState ?? null };
-    });
-    if (state.over) return;
-
-    if (state.subState === 'WAIT_INPUT') {
-      const moveBtn = page.locator('button[id^="move-btn-"]:not([disabled])').first();
-      await moveBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-      // Use focus() + keyboard Enter instead of mouse click to avoid triggering PVTooltip hover.
-      // Playwright's click() internally moves the mouse to the element's center, which hovers the
-      // "?" info zone inside the move slot and causes the MoveTooltip popup to appear and intercept
-      // subsequent pointer events. Keyboard activation bypasses pointer-events entirely.
-      await moveBtn.focus();
-      await page.keyboard.press('Enter');
-      continue;
-    }
-
-    if (state.subState === 'SWITCH_MENU') {
-      const target = page.locator('[id^="battle-switch-"]:not(.is-active):not(.is-fainted)').first();
-      await target.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-      await clickResilient(target, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-      continue;
-    }
-
-    throw new Error(`[E2E-NATIVE-AUTO] Battle awaited a UI action from an unsupported FSM substate. context=${JSON.stringify(state)}`);
-  }
-}
 
 export async function waitForStoreReady(page: Page): Promise<void> {
   await page.waitForFunction(() => {
@@ -905,17 +1114,6 @@ export async function waitForStoreReady(page: Page): Promise<void> {
 }
 
 export async function openDebugTab(page: Page, category: string): Promise<void> {
-  const isNavOpen = await page.locator('#debug-nav').isVisible().catch(() => false);
-  if (!isNavOpen) {
-    const trigger = page.locator('#debug-trigger-btn, #debug-trigger').first();
-    const isTriggerVisible = await trigger.isVisible().catch(() => false);
-    if (isTriggerVisible) {
-      await clickResilient(trigger);
-    } else {
-      await page.keyboard.press('Control+Shift+D').catch(() => {});
-    }
-  }
-
   const categoryMap: Record<string, string> = {
     entren: 'trainers',
     entrenadores: 'trainers',
@@ -926,33 +1124,68 @@ export async function openDebugTab(page: Page, category: string): Promise<void> 
   };
   const categoryId = categoryMap[category.toLowerCase()] || category.toLowerCase();
   const navBtn = page.locator(`#debug-tab-${categoryId}, [id^="debug-tab-${categoryId}"]`).first();
-  await navBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS }).catch(() => {});
+
+  const isTabReady = await navBtn.isVisible().catch(() => false);
+  if (!isTabReady) {
+    const trigger = page.locator('#debug-trigger-btn').first();
+    const isTriggerVisible = await trigger.isVisible().catch(() => false);
+    if (isTriggerVisible) {
+      await clickResilient(trigger);
+    } else {
+      await page.keyboard.press('Control+Shift+D');
+    }
+    await page.locator('#debug-nav').waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await navBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  }
+
   await clickResilient(navBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 }
 
 export async function playFishingMinigameNaturally(page: Page): Promise<void> {
-  const modalContainer = page.locator('#rhythm-container').first();
-  const isVisible = await modalContainer.isVisible({ timeout: E2E_CLICK_TIMEOUT_MS }).catch(() => false);
-  if (isVisible) {
-    const closeBtn = page.locator('#fishing-modal-close-btn, .modal-close-btn').first();
-    const isCloseVisible = await closeBtn.isVisible().catch(() => false);
-    if (isCloseVisible) {
-      await clickResilient(closeBtn).catch(() => {});
-    }
-    await modalContainer.waitFor({ state: 'detached', timeout: MAX_PER_ACTION_TIMEOUT_MS }).catch(() => {});
+  const modalContainer = page.locator('#rhythm-container, .rhythm-container').first();
+  await modalContainer.waitFor({ state: 'attached', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  const counterText = await page.locator('.rhythm-counter').textContent();
+  const totalNotes = Number(counterText?.match(/\/\s*(\d+)/)?.[1]);
+  if (!Number.isInteger(totalNotes) || totalNotes < 1) {
+    throw new Error(`[E2E] Fishing minigame reported an invalid note counter: ${counterText}`);
   }
+
+  for (let noteId = 1; noteId <= totalNotes; noteId++) {
+    const note = page.locator(`.rhythm-note[data-note-id="${noteId}"]`).first();
+    await note.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await page.waitForFunction((id) => {
+      const ring = document.querySelector(`.rhythm-note[data-note-id="${id}"] .rhythm-ring`);
+      if (!ring) return true;
+      const transform = getComputedStyle(ring).transform;
+      const scale = Number(transform.match(/matrix\(([^,]+)/)?.[1] ?? Number.NaN);
+      return !Number.isFinite(scale) || scale <= 1.15;
+    }, noteId, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await note.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  }
+
+  await modalContainer.waitFor({ state: 'detached', timeout: MAX_PER_ACTION_TIMEOUT_MS });
 }
 
 export async function playArchaeologyMinigameNaturally(page: Page): Promise<void> {
   const grid = page.locator('#archaeology-grid').first();
-  const isVisible = await grid.isVisible({ timeout: E2E_CLICK_TIMEOUT_MS }).catch(() => false);
-  if (isVisible) {
-    // Cierra/abandona la arqueología de forma natural por UI usando el botón de cerrar modal
-    const closeBtn = page.locator('#archaeology-modal-close-btn, .modal-close-btn').first();
-    const isCloseVisible = await closeBtn.isVisible().catch(() => false);
-    if (isCloseVisible) {
-      await clickResilient(closeBtn).catch(() => {});
-    }
-    await grid.waitFor({ state: 'detached', timeout: MAX_PER_ACTION_TIMEOUT_MS }).catch(() => {});
+  await grid.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  const tiles = grid.locator('.tile');
+  const tileCount = await tiles.count();
+  if (tileCount === 0) {
+    throw new Error('[E2E] Archaeology minigame rendered an empty grid.');
   }
+
+  // Every dig is delivered through the player-facing UI. Depending on the randomized
+  // fossil layout this naturally reaches either the success or the energy-depletion path.
+  for (let index = 0; index < tileCount; index++) {
+    if (!await grid.isVisible()) break;
+    try {
+      await tiles.nth(index).click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    } catch (error) {
+      if (!await grid.isVisible()) break;
+      throw error;
+    }
+  }
+
+  await grid.waitFor({ state: 'detached', timeout: MAX_PER_ACTION_TIMEOUT_MS });
 }

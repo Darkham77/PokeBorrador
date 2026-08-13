@@ -1,10 +1,10 @@
-import type { LogFn } from '@/types/battle/battle'
+import type { LogFn, BattleSide } from '@/types/battle/battle'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { gameBus } from '@/logic/events/gameBus'
 
 export async function callPokemonToBattle(
-  side: 'player' | 'enemy',
+  side: BattleSide,
   pokemon: Pokemon,
   logMsg: string,
   logTarget: Pokemon | string | null,

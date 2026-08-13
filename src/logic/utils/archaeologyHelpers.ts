@@ -7,6 +7,8 @@ const TOOL_BUDGET_GOOD_TIER = 500;
 const TOOL_BUDGET_SUPER_TIER = 1000;
 const SPLIT_REMAINING_FACTOR = 0.5;
 
+export type ArchaeologyCategory = 'common' | 'rare' | 'stone' | 'fossil';
+
 export interface ArchaeologyWeights {
   fossil: number;
   stone: number;
@@ -38,7 +40,7 @@ export function calculateArchaeologyWeights(pickaxeType: string | null, brushTyp
       } else {
         added = Math.round(remaining * SPLIT_REMAINING_FACTOR);
       }
-      categoryWeights[item.key as 'rare' | 'common' | 'stone'] += added;
+      categoryWeights[item.key as ArchaeologyCategory] += added;
       remaining -= added;
     }
   }

@@ -21,6 +21,11 @@ import {
   SUPER_RAYQUAZA_STAT_VAL,
   SEARCH_LOOP_SUITE_TIMEOUT_MS
 } from '../simulation_config.ts';
+
+const _SEARCH_ENCOUNTER_TYPES = ['wild', 'trainer', 'rival', 'fishing', 'archaeology'] as const;
+type SearchEncounterType = (typeof _SEARCH_ENCOUNTER_TYPES)[number];
+type SearchMinigameType = Extract<SearchEncounterType, 'fishing' | 'archaeology'>;
+
 const E2E_SEQUENTIAL_BATTLES_COUNT_LIMIT = 10;
 
 class SearchLoopSimWrapper extends BaseBattleSimulation {
@@ -29,76 +34,64 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
   }
 
   public async setupRayquaza(): Promise<void> {
-    await this.page.evaluate(async () => {
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-      const { requireMapRouteId } = await import('../../../src/data/world/map-assets.ts');
+    await this.page.evaluate(
+      async (opts) => {
+        const { useGameStore } = await import('../../../src/stores/game.ts');
+        const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+        const { requireMapRouteId } = await import('../../../src/data/world/map-assets.ts');
 
-      useGameStore().state.map.currentMap = requireMapRouteId('route1');
-      const rayquaza = pokemonDebugService.generate({
-        id: 'rayquaza',
-        level: SUPER_RAYQUAZA_LEVEL,
-        moves: ['flamethrower', 'tackle', 'outrage', 'hyperbeam']
-      });
-      
-      rayquaza.maxHp = SUPER_RAYQUAZA_MAX_HP;
-      rayquaza.hp = SUPER_RAYQUAZA_MAX_HP;
-      rayquaza.atk = SUPER_RAYQUAZA_STAT_VAL;
-      rayquaza.def = SUPER_RAYQUAZA_STAT_VAL;
-      rayquaza.spa = SUPER_RAYQUAZA_STAT_VAL;
-      rayquaza.spd = SUPER_RAYQUAZA_STAT_VAL;
-      rayquaza.spe = SUPER_RAYQUAZA_STAT_VAL;
-      
-      useGameStore().state.team = [rayquaza];
-      useGameStore().state.starterChosen = true;
+        useGameStore().state.map.currentMap = requireMapRouteId('route1');
+        const rayquaza = pokemonDebugService.generate({
+          id: 'rayquaza',
+          level: opts.SUPER_RAYQUAZA_LEVEL,
+          moves: ['flamethrower', 'tackle', 'outrage', 'hyperbeam']
+        });
+        
+        rayquaza.maxHp = opts.SUPER_RAYQUAZA_MAX_HP;
+        rayquaza.hp = opts.SUPER_RAYQUAZA_MAX_HP;
+        rayquaza.atk = opts.SUPER_RAYQUAZA_STAT_VAL;
+        rayquaza.def = opts.SUPER_RAYQUAZA_STAT_VAL;
+        rayquaza.spa = opts.SUPER_RAYQUAZA_STAT_VAL;
+        rayquaza.spd = opts.SUPER_RAYQUAZA_STAT_VAL;
+        rayquaza.spe = opts.SUPER_RAYQUAZA_STAT_VAL;
 
-      const testInventory = {
-        potion: DEBUG_ITEM_MAX_QUANTITY,
-        superpotion: DEBUG_ITEM_MAX_QUANTITY,
-        hyperpotion: DEBUG_ITEM_MAX_QUANTITY,
-        maxpotion: DEBUG_ITEM_MAX_QUANTITY,
-        fullrestore: DEBUG_ITEM_MAX_QUANTITY,
-        revive: DEBUG_ITEM_MAX_QUANTITY,
-        revivemax: DEBUG_ITEM_MAX_QUANTITY,
-        pokeball: DEBUG_ITEM_MAX_QUANTITY,
-        ultraball: DEBUG_ITEM_MAX_QUANTITY
-      };
-      
-      useGameStore().state.inventory = {
-        ...useGameStore().state.inventory,
-        ...testInventory
-      };
-      await useGameStore().saveGame();
+        useGameStore().state.team = [rayquaza];
+        useGameStore().state.starterChosen = true;
 
-      const w = window as WindowWithResolver;
-      w.__VITE_DEBUG__ = w.__VITE_DEBUG__ || {};
-      w.__VITE_DEBUG__.isDeterministicSimulation = true;
+        const testInventory = {
+          potion: opts.DEBUG_ITEM_MAX_QUANTITY,
+          superpotion: opts.DEBUG_ITEM_MAX_QUANTITY,
+          hyperpotion: opts.DEBUG_ITEM_MAX_QUANTITY,
+          maxpotion: opts.DEBUG_ITEM_MAX_QUANTITY,
+          fullrestore: opts.DEBUG_ITEM_MAX_QUANTITY,
+          revive: opts.DEBUG_ITEM_MAX_QUANTITY,
+          revivemax: opts.DEBUG_ITEM_MAX_QUANTITY,
+          pokeball: opts.DEBUG_ITEM_MAX_QUANTITY,
+          ultraball: opts.DEBUG_ITEM_MAX_QUANTITY
+        };
 
-      // Interceptar minijuegos para eclosión/win rápido
-      const { useModalStore } = await import('../../../src/stores/modals.ts');
-      const modalStore = useModalStore();
-      const originalOpen = modalStore.open;
-      modalStore.open = function(name: string, props?: Record<string, unknown>) {
-        if (name === 'Fishing') {
-          const p = props as { onWin?: () => void } | undefined;
-          p?.onWin?.();
-          return null;
-        }
-        if (name === 'Archaeology') {
-          const p = props as { onWin?: (difficulty: string) => void } | undefined;
-          p?.onWin?.('hard');
-          return null;
-        }
-        return originalOpen.call(this, name, props);
-      };
-    });
+        useGameStore().state.inventory = {
+          ...useGameStore().state.inventory,
+          ...testInventory
+        };
+        await useGameStore().saveGame();
+
+        const w = window as WindowWithResolver;
+        w.__VITE_DEBUG__ = w.__VITE_DEBUG__ || {};
+        w.__VITE_DEBUG__.isDeterministicSimulation = true;
+
+      },
+      {
+        SUPER_RAYQUAZA_LEVEL,
+        SUPER_RAYQUAZA_MAX_HP,
+        SUPER_RAYQUAZA_STAT_VAL,
+        DEBUG_ITEM_MAX_QUANTITY
+      }
+    );
   }
 
   public async navigateToRoute1(): Promise<void> {
-    await this.page.evaluate(async () => {
-      const { useMapStore } = await import('../../../src/stores/map.ts');
-      await useMapStore().navigate('route1');
-    });
+    await this.page.locator('#map-card-route1').click();
   }
 
   public async forceHealAll(): Promise<void> {
@@ -107,7 +100,7 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
     });
   }
 
-  public async forceEncounterType(type: string): Promise<void> {
+  public async forceEncounterType(type: SearchEncounterType): Promise<void> {
     await this.page.evaluate((t) => {
       const w = window as WindowWithResolver;
       w.__VITE_DEBUG__ = w.__VITE_DEBUG__ || {};
@@ -116,22 +109,76 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
     }, type);
   }
 
-  public async awaitSearchPhaseCombatOrFlee(): Promise<void> {
-    await this.page.waitForFunction(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      if (!resolver) return false;
-      const store = resolver();
-      return ((store.currentFsmState === 'SEARCH_PHASE' && store.currentSubState === 'COMBAT_OR_FLEE') ||
-              store.currentFsmState === 'ACTIVE_BATTLE') && !store.isProcessing;
-    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  public async clearForcedEncounterType(): Promise<void> {
+    await this.page.evaluate(() => {
+      delete (window as WindowWithResolver).__VITE_DEBUG__?.forceEncounterType;
+    });
   }
 
-  public async awaitNotProcessing(): Promise<void> {
-    await this.page.waitForFunction(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      return !resolver?.()?.isProcessing;
-    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  public async awaitSearchPhaseCombatOrFlee(): Promise<void> {
+    try {
+      await this.page.waitForFunction(() => {
+        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+        if (!resolver) return false;
+        const store = resolver();
+        return store.currentFsmState === 'SEARCH_PHASE'
+          && store.currentSubState === 'COMBAT_OR_FLEE'
+          && !store.isProcessing;
+      }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    } catch (error) {
+      const state = await this.page.evaluate(() => {
+        const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+        return {
+          fsm: store?.currentFsmState,
+          subState: store?.currentSubState,
+          isProcessing: store?.isProcessing,
+          over: store?.state?.over,
+          hasPlayerRequest: Boolean(store?.state?.playerRequest),
+          workerInitStage: (window as WindowWithResolver).__VITE_DEBUG__?.lastWorkerInitStage,
+          workerInitError: (window as WindowWithResolver).__VITE_DEBUG__?.lastWorkerInitError
+        };
+      });
+      throw new Error(`[E2E] Search encounter did not become playable: ${JSON.stringify(state)}`, { cause: error });
+    }
   }
+
+  public async startEncounterFromUi(type: SearchEncounterType): Promise<void> {
+    await this.page.waitForFunction((encounterType) => {
+      const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+      if (!store || store.isProcessing) return false;
+      const isSearchConfirmation = store.currentFsmState === 'SEARCH_PHASE'
+        && store.currentSubState === 'COMBAT_OR_FLEE';
+      const isBattleInput = store.currentFsmState === 'ACTIVE_BATTLE'
+        && store.currentSubState === 'WAIT_INPUT';
+      const isExpectedMinigame = (encounterType === 'fishing' || encounterType === 'archaeology')
+        && store.currentFsmState === 'INITIALIZING'
+        && store.currentSubState === 'MINIGAME_CHECK';
+      return isSearchConfirmation || isBattleInput || isExpectedMinigame;
+    }, type, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+
+    const startButton = this.page.locator('#start-encounter-btn').first();
+    if (await startButton.isVisible()) await confirmAndStartBattle(this.page);
+  }
+
+  public async awaitMinigameCheck(type: SearchMinigameType): Promise<void> {
+    const selector = type === 'fishing'
+      ? '.fishing-minigame-overlay, #fishing-minigame-modal, .rhythm-game-modal'
+      : '.archaeology-minigame-overlay, #archaeology-minigame-modal, .fossil-game-modal';
+    
+    await Promise.race([
+      this.page.locator(selector).first().waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS }),
+      this.page.waitForFunction((minigameType) => {
+        const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+        const store = resolver?.();
+        if (!store) return false;
+        const isExpectedMinigame = minigameType === 'fishing'
+          ? (store.state?.isFishing === true || !!document.querySelector('.fishing-minigame-overlay, #fishing-minigame-modal, .rhythm-game-modal'))
+          : (store.state?.isArchaeology === true || !!document.querySelector('.archaeology-minigame-overlay, #archaeology-minigame-modal, .fossil-game-modal'));
+        return isExpectedMinigame;
+      }, type, { timeout: MAX_PER_ACTION_TIMEOUT_MS })
+    ]);
+  }
+
 }
 
 test.describe('Sequential Search Loop Battles Simulation', () => {
@@ -141,11 +188,12 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
 
     const testUser = `TEST_SEQ_${Temporal.Now.instant().epochMilliseconds.toString()}`;
     const sim = new SearchLoopSimWrapper(page, testUser);
-    
+
     await sim.setup();
     await waitForStoreReady(page);
     await sim.setupRayquaza();
     await sim.navigateToRoute1();
+    await sim.startEncounterFromUi('wild');
 
     /**
      * IMMUTABLE CONTRACT MANDATE:
@@ -164,7 +212,7 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
       { num: 8, type: 'rival', label: 'Rival Encounter' },
       { num: 9, type: 'fishing', label: 'Fishing Minigame + Battle' },
       { num: E2E_SEQUENTIAL_BATTLES_COUNT_LIMIT, type: 'wild', label: 'Wild Encounter' }
-    ];
+    ] as const satisfies readonly { num: number; type: SearchEncounterType; label: string }[];
 
     for (let i = 0; i < encountersToTest.length; i++) {
       const enc = encountersToTest[i]!;
@@ -172,23 +220,21 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
       
       await sim.forceHealAll();
       await sim.forceEncounterType(enc.type);
-      await confirmAndStartBattle(page);
+      await sim.startEncounterFromUi(enc.type);
       
       if (enc.type === 'archaeology') {
-        await sim.awaitSearchPhaseCombatOrFlee();
+        await sim.awaitMinigameCheck(enc.type);
+        await sim.clearForcedEncounterType();
         await playArchaeologyMinigameNaturally(page);
-        await sim.awaitNotProcessing();
+        await sim.awaitSearchPhaseCombatOrFlee();
       } else if (enc.type === 'fishing') {
-        await sim.awaitSearchPhaseCombatOrFlee();
+        await sim.awaitMinigameCheck(enc.type);
+        await sim.clearForcedEncounterType();
         await playFishingMinigameNaturally(page);
-        await sim.awaitNotProcessing();
-      } else {
-        await sim.awaitSearchPhaseCombatOrFlee();
-        if (enc.type === 'trainer' || enc.type === 'rival') {
-          await confirmAndStartBattle(page);
-        }
+        await sim.startEncounterFromUi(enc.type);
         await sim.playBattle();
-        await sim.closeBattleModal(MAX_PER_ACTION_TIMEOUT_MS);
+      } else {
+        await sim.playBattle();
       }
       console.debug(`[E2E-TEST] Combate ${enc.num} finalizado con éxito.`);
     }

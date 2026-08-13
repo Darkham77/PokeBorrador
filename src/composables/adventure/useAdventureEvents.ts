@@ -8,6 +8,7 @@ import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle/battle'
 import { useInventoryStore } from '@/stores/inventory/inventory'
 import { useShopStore } from '@/stores/inventory/shop'
+import type { AdventureMinigameType } from '@/types/system/game'
 import { useMapStore } from '@/stores/map'
 import { isMapRouteId, requireMapRouteId } from '@/data/world/map-assets'
 import type { AdventureNodeId } from '../../../test aventura/kantoGraph.ts'
@@ -32,7 +33,7 @@ interface AdventureEventsConfig {
   injectedItems: Ref<Set<string>>
   activeTravelModifiers: Ref<{ encounterRateMod: number; expMultiplier: number; moneyMultiplier: number; shinyChanceMod: number; typeFocus: string | null }>
   activeSweetScent: Ref<boolean>
-  startMinigame: (type: 'archaeology' | 'fishing') => void
+  startMinigame: (type: AdventureMinigameType) => void
   triggerExtraLoot: (itemId: string, defaultQtyValue?: number) => void
   resumeTravelAfterEvent: () => void
   cancelTravel: () => void

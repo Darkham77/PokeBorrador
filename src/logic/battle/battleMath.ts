@@ -12,6 +12,7 @@ const CRIT_ROLL_DENOMINATOR_GEN5_BASE = 16;
 const DAMAGE_ROLL_MIN_INT = 85;
 const DAMAGE_ROLL_RANGE_INT = 16;
 import { Dex, toID } from '@pkmn/sim';
+import type { DayPhase } from '@/logic/utils/timeUtils';
 import type {
   PurePokemon,
   PureMove,
@@ -138,7 +139,7 @@ export function getEffectiveStatPure(
   statKey: keyof PurePokemon,
   stages: PureBattleStages,
   weather: PureBattleWeather | null,
-  _dayCycle: 'morning' | 'day' | 'dusk' | 'night' = 'day',
+  _dayCycle: DayPhase = 'day',
   isGym: boolean = false
 ): number {
   const isMoveWeather = !!(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1);
@@ -205,7 +206,7 @@ export function calculateDamagePure(
   defender: PurePokemon,
   move: PureMove,
   ctx: PureDamageOptions = {},
-  dayCycle: 'morning' | 'day' | 'dusk' | 'night' = 'day',
+  dayCycle: DayPhase = 'day',
   randomFactor?: number,
   forceCrit?: boolean
 ): PureDamageResult {
@@ -430,7 +431,7 @@ export function calculateDamageRangePure(
   defender: PurePokemon,
   move: PureMove,
   ctx: PureDamageOptions,
-  dayCycle: 'morning' | 'day' | 'dusk' | 'night' = 'day'
+  dayCycle: DayPhase = 'day'
 ): { effectiveness: { value: number; label: string; class: string } | null; damageRange: PureDamageRange | null } {
   const sim = calculateDamagePure(attacker, defender, move, ctx, dayCycle, 1.0, false);
   const eff = sim.eff;

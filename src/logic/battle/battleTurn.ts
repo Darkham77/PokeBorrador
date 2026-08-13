@@ -5,6 +5,7 @@ import { logger } from '../utils/logger.ts'
 import { executeMoveAction } from './actions/moveExecutor.ts'
 import { resolveTurnChoices } from './battleTurnChoiceHelper.ts'
 import { updateCastformForm } from './battleFlow.ts'
+import type { CertifiedBagItemGameAction } from '@/types/battle/certifiedBattleActions'
 
 const ESCAPE_FALLBACK_DELAY_MS = 800;
 
@@ -170,11 +171,13 @@ export async function runPlayerAction(store: BattleContext, moveIndex: number) {
   await executeMoveAction(store, 'player', move)
 }
 
-export async function runEnemyAction(store: BattleContext) {
+export async function runEnemyAction(store: BattleContext, bagAction?: CertifiedBagItemGameAction) {
   const p = store.activeBattle.value?.player
   const e = store.activeBattle.value?.enemy
   if (!p || !e || e.hp <= 0) return
 
+  const replayDebug = typeof window !== 'undefined' ? window.__VITE_DEBUG__ : undefined
+  const isCertifiedReplay = replayDebug?.isScriptedReplayMode === true
   const isWild = !store.activeBattle.value?.isTrainer && !store.activeBattle.value?.isGym
   
   if (store.activeBattle.value) {
@@ -182,26 +185,27 @@ export async function runEnemyAction(store: BattleContext) {
     store.activeBattle.value.enemyUsedItem = false;
   }
 
-  if (!isWild && store.activeBattle.value && shouldEnemySwitch(e, p, store.activeBattle.value.enemyTeam, store)) {
-    const bestIdx = findBestSwitchIndex(store.activeBattle.value.enemyTeam || [], p, e.uid, store)
-    if (store.activeBattle.value.enemyTeam && bestIdx !== -1) {
-      const { executeEnemySwitch } = await import('./actions/switchActions.ts')
-      await executeEnemySwitch(store, bestIdx)
-      return
-    }
-  }
-
   let p2Skip = false
-  if (!isWild && await evaluateAndUseNPCItem(store, e)) {
-    p2Skip = true
-    if (store.activeBattle.value) {
-      store.activeBattle.value.enemyUsedItem = true
+  let enemyMove = null
+  if (!isCertifiedReplay) {
+    if (!isWild && store.activeBattle.value && shouldEnemySwitch(e, p, store.activeBattle.value.enemyTeam, store)) {
+      const bestIdx = findBestSwitchIndex(store.activeBattle.value.enemyTeam || [], p, e.uid, store)
+      if (store.activeBattle.value.enemyTeam && bestIdx !== -1) {
+        const { executeEnemySwitch } = await import('./actions/switchActions.ts')
+        await executeEnemySwitch(store, bestIdx)
+        return
+      }
     }
-  }
-
-  let enemyMove = p2Skip ? null : decideEnemyMove(e, p, store.playerStages.value, isWild, store)
-  if (!p2Skip && e.volatileCounters?.['lockedmove'] && e.volatileCounters['lockedmove'] > 0 && e.lastMove) {
-    enemyMove = e.lastMove
+    if (!isWild && await evaluateAndUseNPCItem(store, e)) {
+      p2Skip = true
+      if (store.activeBattle.value) {
+        store.activeBattle.value.enemyUsedItem = true
+      }
+    }
+    enemyMove = p2Skip ? null : decideEnemyMove(e, p, store.playerStages.value, isWild, store)
+    if (!p2Skip && e.volatileCounters?.['lockedmove'] && e.volatileCounters['lockedmove'] > 0 && e.lastMove) {
+      enemyMove = e.lastMove
+    }
   }
 
   const { showdownWorker, executeTurnInWorker } = await import('./showdownWorkerClient.ts')
@@ -220,21 +224,9 @@ export async function runEnemyAction(store: BattleContext) {
     }
 
     const active = store.activeBattle.value;
-    const playerRequest = active?.playerRequest as ShowdownPlayerRequest | undefined;
     const enemyRequest = active?.enemyRequest as ShowdownPlayerRequest | undefined;
 
-    let p1Choice = 'struggle';
-    if (playerRequest?.active?.[0]?.moves) {
-      const validMove = playerRequest.active[0].moves.find((m: ShowdownMoveRequest) => !m.disabled);
-      if (validMove) {
-        p1Choice = `move ${validMove.id}`;
-      }
-    } else if (p && p.moves && p.moves.length > 0) {
-      const firstMove = p.moves[0];
-      if (firstMove && firstMove.id) {
-        p1Choice = `move ${firstMove.id}`;
-      }
-    }
+    const p1Choice = '';
 
     let p2Choice = 'struggle';
     if (p2Skip && enemyRequest?.active?.[0]?.moves) {
@@ -245,37 +237,28 @@ export async function runEnemyAction(store: BattleContext) {
     } else if (!p2Skip && enemyMove) {
       p2Choice = `move ${enemyMove.id}`;
     }
-    // Interceptar elección de enemigo si está en modo de reproducción de test determinista
-    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
-      if (p2Skip) {
-        p2Choice = 'pass';
-        console.debug('[E2E-MOCK-CENTRAL-DEBUG] Preserved the certified history cursor because runEnemyAction skipped P2.');
-      } else {
-        const debugObj = window.__VITE_DEBUG__;
-        const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts');
-        const certifiedP1Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p1');
-        p2Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2');
-        if (certifiedP1Choice !== '') {
-          throw new Error(`[BattleTurn] Enemy-only action does not match the certified history. context=${JSON.stringify({ p1Choice: certifiedP1Choice, p2Choice })}`);
-        }
-        console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Resolved enemy choice from the certified history: "${p2Choice}".`);
+    if (isCertifiedReplay) {
+      if (!bagAction) {
+        throw new Error('[BattleTurn] A certified replay bag response requires the visible bag action context.');
       }
-    } else if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
-      p2Choice = window.__VITE_DEBUG__.nextEnemyChoice;
-      console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Intercepted enemy choice via nextEnemyChoice: ${p2Choice}`);
-      window.__VITE_DEBUG__.nextEnemyChoice = undefined;
-    } else if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.enemyChoicesQueue?.length) {
-      p2Choice = window.__VITE_DEBUG__.enemyChoicesQueue.shift() ?? p2Choice;
+      if (!replayDebug) {
+        throw new Error('[BattleTurn] Certified replay state disappeared before the bag response.');
+      }
+      const { requireCertifiedBagItemResponse } = await import('./helpers/certifiedBagItemActionResolver.ts');
+      p2Choice = requireCertifiedBagItemResponse(replayDebug, bagAction.itemId, bagAction.targetSlot);
     }
     
     console.debug(`[BattleTurn] [runEnemyAction] Sending choices: p1Choice: "${p1Choice}", p2Choice: "${p2Choice}", p1Skip: true, p2Skip: ${p2Skip}`);
     console.debug(`[BattleTurn] [runEnemyAction] PlayerRequest:`, JSON.stringify(active?.playerRequest || {}));
     console.debug(`[BattleTurn] [runEnemyAction] EnemyRequest:`, JSON.stringify(active?.enemyRequest || {}));
 
-    const result = await executeTurnInWorker(p1Choice, p2Choice, true, p2Skip)
-    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+    const result = await executeTurnInWorker(p1Choice, p2Choice, true, p2Skip, true)
+    if (isCertifiedReplay) {
+      if (!replayDebug) {
+        throw new Error('[BattleTurn] Certified replay state disappeared before advancing the history cursor.');
+      }
       const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts')
-      ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__)
+      ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(replayDebug)
     }
     if (active) {
       active.playerRequest = result.p1Request;

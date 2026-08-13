@@ -1,14 +1,15 @@
 // fallow-ignore-file security-sink
-import { Battle, Pokemon, Side, type PokemonSet } from '@pkmn/sim';
+import { Battle, Pokemon, Side, type PokemonSet, type SideID } from '@pkmn/sim';
 import { statsMap, patchShowdownSpreadModify } from './showdownAdapter.ts';
 import { parseToNumericSeed, formatToShowdownSeed } from './battleSeedManager.ts';
-import { applyHealCheatToSide, syncRequestConditionsWithSimulator } from './cheats.ts';
+import { applyHealCheatToSide, applyStatusCheatToSide, syncRequestConditionsWithSimulator } from './cheats.ts';
 import { createShowdownBattle } from './helpers/showdownBattleFactory.ts';
 import { ShowdownTeamMapper } from './helpers/showdownTeamMapper.ts';
 import { ShowdownLogEnricher } from './helpers/showdownLogEnricher.ts';
 import { executeBattleTurn } from './helpers/showdownExecutor.ts';
 import { syncSidePokemon } from './helpers/showdownSyncHelper.ts';
 import { ACTIVE_SHOWDOWN_FORMAT } from '../../data/system/constants.ts';
+import { resetDeterministicMathRandom } from './helpers/seedInitializer.ts';
 
 export interface ExtendedPokemon extends Pokemon {
   uid?: string;
@@ -34,6 +35,10 @@ function logDebug(msg: string) {
   console.debug(msg);
 }
 
+function reportInitStage(stage: string): void {
+  self.postMessage({ type: 'WORKER_LOG', payload: { message: stage } });
+}
+
 let isDeterministicSimulation = false;
 
 // Aplicar el monkey-patch unificado de spreadModify
@@ -48,21 +53,21 @@ export function setTestingBattle(battle: Battle | null): void {
 }
 
 export function injectUidsIntoRequest(
-  playerOrBattle: 'p1' | 'p2' | Battle,
+  playerOrBattle: SideID | Battle,
   requestOrPlayer: unknown,
   request?: unknown
 ): ShowdownRequest | null {
   let battle: Battle | null = null;
-  let player: 'p1' | 'p2';
+  let player: SideID;
   let req: ShowdownRequest | null = null;
 
   if (playerOrBattle instanceof Battle) {
     battle = playerOrBattle;
-    player = requestOrPlayer as 'p1' | 'p2';
+    player = requestOrPlayer as SideID;
     req = request as ShowdownRequest;
   } else {
     battle = currentBattle;
-    player = playerOrBattle as 'p1' | 'p2';
+    player = playerOrBattle;
     req = requestOrPlayer as ShowdownRequest;
   }
 
@@ -106,14 +111,16 @@ interface WorkerEventPayload {
   p2Choice?: string;
   p1Skip?: boolean;
   p2Skip?: boolean;
+  p1UsedBattleItem?: boolean;
   p1Hps?: Record<string, number>;
   p2Hps?: Record<string, number>;
   p1Statuses?: Record<string, string>;
   p2Statuses?: Record<string, string>;
   weather?: string;
-  side?: 'p1' | 'p2';
+  debugStatus?: { side: SideID; uid: string; status: string };
+  side?: SideID;
   type?: 'heal';
-  cheats?: Array<{ turn: number; side: 'p1' | 'p2'; type: 'heal' }>;
+  cheats?: Array<{ turn: number; side: SideID; type: 'heal' }>;
   history?: Array<{ turnCount: number; p1Choice: string; p2Choice: string; battleTurn: number; p1Heal?: true; p2Heal?: true }>;
   certifiedHistoryStep?: number;
   isDeterministicSimulation?: boolean;
@@ -133,6 +140,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
     switch (type) {
       case 'INIT_BATTLE': {
         debugLogs.length = 0;
+        reportInitStage('received');
         isDeterministicSimulation = !!payload.isDeterministicSimulation;
         logDebug(`[E2E-WORKER-DEBUG] INIT_BATTLE received. payload.isDeterministicSimulation: ${payload.isDeterministicSimulation}, module isDeterministicSimulation set to: ${isDeterministicSimulation}`);
         const { p1, p2 } = payload;
@@ -167,8 +175,12 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
         ShowdownLogEnricher.setupRealtimeEnrichment(battleInstance);
 
         // Configure players (this automatically triggers the battle in pkmn/sim)
+        reportInitStage('before-p1-set-player');
         battleInstance.setPlayer('p1', { name: p1.name || 'Player 1', team: p1.team });
+        reportInitStage('after-p1-set-player');
+        resetDeterministicMathRandom();
         battleInstance.setPlayer('p2', { name: p2.name || 'Player 2', team: p2.team });
+        reportInitStage('after-p2-set-player');
 
         // Associate UIDs of sets to the simulator instances using direct slot index
         if (Array.isArray(p1.team)) {
@@ -257,10 +269,29 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
         break;
       }
 
+      case 'APPLY_DEBUG_STATUS': {
+        if (!currentBattle) throw new Error('currentBattle is null');
+        const debugStatus = payload.debugStatus;
+        if (!debugStatus) throw new Error('APPLY_DEBUG_STATUS requires debugStatus payload');
+        const side = debugStatus.side === 'p1' ? currentBattle.p1 : currentBattle.p2;
+        applyStatusCheatToSide(side, debugStatus.uid, debugStatus.status);
+        syncRequestConditionsWithSimulator(side);
+        self.postMessage({
+          type: 'APPLY_DEBUG_STATUS_DONE',
+          payload: {
+            p1Request: injectUidsIntoRequest('p1', currentBattle.p1.activeRequest),
+            p2Request: injectUidsIntoRequest('p2', currentBattle.p2.activeRequest),
+            p1TeamState: getSideTeamState(currentBattle.p1 as ExtendedSide),
+            p2TeamState: getSideTeamState(currentBattle.p2 as ExtendedSide)
+          }
+        });
+        break;
+      }
+
       case 'EXECUTE_TURN': {
         if (!currentBattle) throw new Error('currentBattle is null');
         const battle = currentBattle;
-        const { p1Choice, p2Choice, p1Skip, p2Skip, p1Hps, p2Hps, p1Statuses, p2Statuses, history, certifiedHistoryStep } = payload;
+        const { p1Choice, p2Choice, p1Skip, p2Skip, p1UsedBattleItem, p1Hps, p2Hps, p1Statuses, p2Statuses, history, certifiedHistoryStep } = payload;
 
         currentBattleExecuteTurnCount++;
 
@@ -270,6 +301,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
           p2Choice: p2Choice || '',
           p1Skip: !!p1Skip,
           p2Skip: !!p2Skip,
+          p1UsedBattleItem: !!p1UsedBattleItem,
           p1Hps,
           p2Hps,
           p1Statuses,

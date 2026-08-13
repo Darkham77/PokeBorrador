@@ -116,7 +116,7 @@ async function main() {
     // B. Validar tipos
     const coreTypes: string[] = [];
     if (corePoke.type) coreTypes.push(corePoke.type);
-    const type2 = (corePoke as unknown as { type2?: string }).type2;
+    const type2 = (corePoke as { type2?: string }).type2;
     if (type2) coreTypes.push(type2);
 
     const sdTypesEng = sdPoke.types.map((t: string) => REVERSE_TYPE_MAP[t] || t.toLowerCase());

@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 
-interface ViteDebugBridge {
+interface ViteDebugBridge extends Record<string, unknown> { // open-record
   setClassLevel: (val: number) => void;
   setReputation: (val: number) => void;
   setPlayerClass: (cls: string) => void;
@@ -14,7 +14,7 @@ const game = useGameStore()
 const debugClassLevel = ref(game.state.classLevel || 1)
 const debugReputation = ref(game.state.classData?.reputation || 0)
 
-const getDebugBridge = () => window.__VITE_DEBUG__ as unknown as ViteDebugBridge // domain-ok
+const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge
 
 const setClassLevel = () => getDebugBridge().setClassLevel(debugClassLevel.value)
 const setReputation = () => getDebugBridge().setReputation(debugReputation.value)

@@ -1,10 +1,10 @@
 import { Ref } from 'vue';
 import { GameState } from '@/types/system/game';
-import { Pokemon } from '@/types/pokemon/pokemon';
-import { BattleState, BattleStages, BattleLog, BattleSource } from '@/types/battle/battle';
+import { Pokemon, type PokemonSelectionSource } from '@/types/pokemon/pokemon';
+import { BattleState, BattleStages, BattleLog, BattleSource, BattleSide, BattleDifficulty } from '@/types/battle/battle';
 import { BattleStateName, BattleSubStateName } from '@/logic/battle/battleStateMachine';
 import { Event, GlobalMultipliers } from '@/logic/events/eventEngine';
-import { AuthUser } from '@/types/auth/auth';
+import { AuthUser, SessionMode } from '@/types/auth/auth';
 import { DBRouter } from '@/logic/db/dbRouter';
 import { DayPhase, Season } from '@/logic/utils/timeUtils';
 import type { Inventory } from '@/types/inventory/items';
@@ -58,7 +58,7 @@ export interface BattleOptions {
   isGuardian?: boolean;
   pts?: number;
   isDebug?: boolean;
-  difficulty?: 'easy' | 'normal' | 'hard';
+  difficulty?: BattleDifficulty;
   rewardTM?: ItemId;
   trainerSprite?: NpcSpriteId;
   trainerArchetype?: NpcArchetype;
@@ -78,19 +78,17 @@ export interface GameStore {
   addPokemon: (p: Pokemon, options?: { silent?: boolean; source?: string; notify?: boolean }) => void;
   removePokemon: (uid: string) => void;
   scheduleSave: () => void;
-  save: (showNotif?: boolean) => Promise<void>;
+  save: (showNotif?: boolean) => Promise<{ success: boolean; migrated?: boolean; lastSaveId?: string; rollback?: boolean; outOfSync?: boolean; error?: string; remote?: boolean } | void>;
   loadGame: () => Promise<void>;
   registerPokedex: (speciesId: string) => void;
   addTrainerExp: (amount: number) => void;
   checkLevelUp: (pokemon: Pokemon) => void;
   updateState: (newData: Partial<GameState>) => void;
   chooseStarter: (pokeId: string) => void;
-  togglePokeTag: (context: 'team' | 'box' | 'market', index: number, tagId: string) => void;
+  togglePokeTag: (context: PokemonSelectionSource, index: number, tagId: string) => void;
   reorderMoves: (pokemon: Pokemon, from: number, to: number) => void;
   fetchClaimQueue: () => Promise<void>;
-  saveGame: (showNotif?: boolean) => Promise<void>;
-  chats: Record<string, unknown>; // open-record
-  eloRating: number;
+  saveGame: (showNotif?: boolean) => Promise<{ success: boolean; migrated?: boolean; lastSaveId?: string; rollback?: boolean; outOfSync?: boolean; error?: string; remote?: boolean } | void>;
 }
 
 export interface BattleStore {
@@ -111,12 +109,12 @@ export interface BattleStore {
     currentSubState: Ref<BattleSubStateName | null>;
     transition: (newState: BattleStateName | BattleSubStateName, newSubState?: BattleSubStateName | null, delayMs?: number) => Promise<void>;
   };
-  addLog: (msg: string, type?: string, source?: BattleSource | null, sideOverride?: 'player' | 'enemy' | null) => void;
+  addLog: (msg: string, type?: string, source?: BattleSource | null, sideOverride?: BattleSide | null) => void;
   startBattle: (enemy: Pokemon, options?: BattleOptions) => Promise<void>;
   _startBattle: (enemy: Pokemon, options?: BattleOptions) => Promise<void>;
   executeMove: (moveIndex: number) => Promise<void>;
   endBattle: (win: boolean, fled: boolean) => Promise<void>;
-  handleFaint: (side: 'player' | 'enemy') => Promise<void>;
+  handleFaint: (side: BattleSide) => Promise<void>;
   persistBattle: () => void;
   triggerSearchEncounter: () => Promise<void>;
   useItemInBattle: (itemName: string, targetIndex: number | null) => Promise<void>;
@@ -157,8 +155,8 @@ export interface UIStore {
   autoBattle: boolean;
   setAutoBattle: (val: boolean) => void;
   notify: (msg: string, icon?: string) => void;
-  openConfirm: (options: ConfirmOptions) => void;
-  openPrompt: (options: PromptOptions) => void;
+  openConfirm: (options: Record<string, unknown>) => string | null; // open-record
+  openPrompt: (options: Record<string, unknown>) => string | null; // open-record
   open: (name: string, props?: Record<string, unknown>) => void; // open-record
   close: (name: string) => void;
   closeAll: () => void;
@@ -197,7 +195,7 @@ export interface EventStore {
   globalMultipliers: Partial<GlobalMultipliers>;
   fetchEvents: () => Promise<void>;
   checkPendingAwards: () => Promise<void>;
-  submitCompetitionEntry: (pokemon: Pokemon, eventId: string) => Promise<void>;
+  submitCompetitionEntry: (eventId: string, pokemonUid: string) => Promise<void>;
   claimAward: (awardId: string) => Promise<string | null>;
 }
 
@@ -237,13 +235,15 @@ export interface AudioStore {
 
 export interface AuthStore {
   user: AuthUser | null;
-  sessionMode: 'online' | 'offline';
+  sessionMode: SessionMode;
   sessionId: string; // domain-ok
   isOnline: boolean;
   connectionLost: boolean;
   sessionConflict: boolean;
   logout: () => Promise<void>;
 }
+export type TradeCardMode = 'incoming' | 'outgoing' | 'accepted';
+
 export interface TradeOffer {
   id: string; // domain-ok
   sender_id: string; // domain-ok

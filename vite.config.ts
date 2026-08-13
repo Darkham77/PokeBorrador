@@ -27,13 +27,6 @@ function migrationsPlugin() {
     name: 'migrations-generator',
     async buildStart() {
       await generateMigrations()
-      try {
-        const templatePath = path.resolve(import.meta.dirname, 'database/temp/clean_template.db')
-        if (fs.existsSync(templatePath)) {
-          fs.unlinkSync(templatePath)
-          console.log('🗑️ [DevDB] clean_template.db cleaned up at build start.')
-        }
-      } catch (_e) { /* ignore */ }
     },
     handleHotUpdate({ file }: { file: string }) {
       if (file.includes('database/migrations')) {

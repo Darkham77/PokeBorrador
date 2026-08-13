@@ -22,6 +22,7 @@ import { gsapNick } from '@/directives/gsapNick'
 import { gsapLoop } from '@/directives/gsapLoop'
 import { gsapHover } from '@/directives/gsapHover'
 import { initGlobalHoverSystem } from '@/logic/hover/globalHover'
+import { preloadShowdownWorker } from '@/logic/battle/showdownWorkerClient.ts'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -55,6 +56,7 @@ app.config.errorHandler = (err, _instance, info) => {
 
 app.mount('#app')
 window.pwa_app_mounted = true
+preloadShowdownWorker()
 
 // Initialize global hover animations
 initGlobalHoverSystem()
@@ -67,6 +69,5 @@ if (typeof window !== 'undefined') {
     });
   }
 }
-
 
 

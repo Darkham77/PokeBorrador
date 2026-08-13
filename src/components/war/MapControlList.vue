@@ -5,6 +5,7 @@ import { useMapStore } from '@/stores/map'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { MAP_ROUTE_MAPPING, requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { isFactionId, type FactionId } from '@/types/system/game'
 
 const warStore = useWarStore()
 const mapStore = useMapStore()
@@ -33,7 +34,8 @@ const allMaps = computed(() => {
     const data = warStore.mapDominance[mapId] || { union: 0, poder: 0, winner: null }
     const total = (Number(data.union ?? 0)) + (Number(data.poder ?? 0))
     const unionPct = total > 0 ? ((data.union ?? 0) / total) * 100 : 50
-    const winner = data.winner || ((data.union ?? 0) > (data.poder ?? 0) ? 'union' : (data.poder ?? 0) > (data.union ?? 0) ? 'poder' : null) as 'union' | 'poder' | null
+    const rawWinner = data.winner || ((data.union ?? 0) > (data.poder ?? 0) ? 'union' : (data.poder ?? 0) > (data.union ?? 0) ? 'poder' : null)
+    const winner: FactionId | null = isFactionId(rawWinner) ? rawWinner : null
     
     return {
       id: mapId,

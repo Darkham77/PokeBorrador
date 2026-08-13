@@ -82,7 +82,6 @@ export const ONE_HOUR_MS = 3_600_000;
 
 /** Duration of 24 hours in milliseconds (24 * 3600 * 1000). */
 export const DURATION_24_HOURS_MS = 86_400_000;
-export const ONE_DAY_MS = DURATION_24_HOURS_MS;
 
 /** Duration of 2 minutes in milliseconds (2 * 60 * 1000). */
 export const TWO_MINUTES_MS = 120_000;

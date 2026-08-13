@@ -4,7 +4,7 @@
 // ============================================================
 
 import { Generations, Pokemon, Move, Field, calculate, type Result, type GenerationNum } from '@smogon/calc';
-import { toID } from '@pkmn/sim';
+import { toID, type SideID } from '@pkmn/sim';
 import { requireItemId } from '../../../../data/inventory/items.ts';
 import { requireAbilityId } from '../../../../data/battle/abilities.ts';
 import type { HeuristicPokemonState, HeuristicFieldState, DamageResult, DamageMatchup, HeuristicMoveInfo, HeuristicBattleSnapshot } from './types.ts';
@@ -108,13 +108,13 @@ export class HeuristicDamageCalculator {
     return { myAttacking, oppAttacking };
   }
 
-  getEffectiveSpeed(pokemon: HeuristicPokemonState, field: HeuristicFieldState, side: 'p1' | 'p2'): number {
+  getEffectiveSpeed(pokemon: HeuristicPokemonState, field: HeuristicFieldState, side: SideID): number {
     let spd = pokemon.stats.spe || DEFAULT_BASE_SPEED_STAT;
     const boost = pokemon.boosts.spe;
     if (boost > 0) spd = Math.floor(spd * (STAGE_BASE_FACTOR_DIVISOR + boost) / STAGE_BASE_FACTOR_DIVISOR);
     else if (boost < 0) spd = Math.floor(spd * STAGE_BASE_FACTOR_DIVISOR / (STAGE_BASE_FACTOR_DIVISOR - boost));
     if (pokemon.status === 'par') spd = Math.floor(spd * PARALYSIS_SPEED_PENALTY_MULT);
-    if (field.tailwind[side] > 0) spd *= TAILWIND_SPEED_BOOST_MULT;
+    if ((field.tailwind?.[side] ?? 0) > 0) spd *= TAILWIND_SPEED_BOOST_MULT;
     if (field.trickRoom) spd = -spd;
     return spd;
   }

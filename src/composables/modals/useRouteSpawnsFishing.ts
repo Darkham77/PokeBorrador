@@ -6,9 +6,6 @@ import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getSpeciesEntries } from '@/logic/encounters/encounters'
 import { type PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { type WeatherId } from '@/logic/weather/weatherRegistry'
-import { type DayPhase } from '@/logic/utils/timeUtils'
-import type { MapLocation } from '@/types/pokemon/encounters'
 import type { EventConfig } from '@/logic/events/eventEngine'
 import {
   getPokedexVisibility,
@@ -23,14 +20,13 @@ import {
 } from '@/logic/utils/routeSpawnHelpers'
 
 import { DEFAULT_EXCLUSIVE_SPAWN_WEIGHT } from '@/logic/constants/encounters'
+import type { RouteSpawnsProps } from '@/composables/modals/useRouteSpawnsCalculation'
 
 const DEFAULT_FISHING_RATE_WEIGHT = 10;
 const ROD_GOOD_BONUS_POINTS = 500;
 const ROD_SUPER_BONUS_POINTS = 1000;
 
-export function useRouteSpawnsFishing(
-  props: { map: MapLocation; weather: WeatherId; cycle: DayPhase }
-) {
+export function useRouteSpawnsFishing(props: RouteSpawnsProps) {
   const gameStore = useGameStore()
   const eventStore = useEventStore()
   const uiStore = useUIStore()

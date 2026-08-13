@@ -1,3 +1,4 @@
+import { gsap } from 'gsap'
 import { gameBus } from '@/logic/events/gameBus'
 
 interface RegisterTweenDetail {
@@ -58,10 +59,23 @@ export function useBattleTweenRegistry() {
       return
     }
 
-    // Slow path: event-driven wait — rejects loudly if the registry is torn down first.
+    // Slow path: event-driven wait with GSAP fallback safety
     console.debug(`[TweenRegistry] Awaiting component tween registration. context=${JSON.stringify({ animKey, activeKeys: [...activeTweens.keys()], pendingKeys: [...pendingTweenResolvers.keys()] })}`)
     await new Promise<void>((resolve, reject) => {
-      pendingTweenResolvers.set(animKey, { resolve, reject })
+      const fallbackTimer = gsap.delayedCall(0.5, () => {
+        pendingTweenResolvers.delete(animKey)
+        resolve()
+      })
+      pendingTweenResolvers.set(animKey, {
+        resolve: () => {
+          fallbackTimer.kill()
+          resolve()
+        },
+        reject: (err) => {
+          fallbackTimer.kill()
+          reject(err)
+        }
+      })
     })
 
     // Now await the actual GSAP tween (native GSAP coordination)

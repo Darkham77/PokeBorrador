@@ -67,4 +67,27 @@ describe('ShowdownBattleAgent & Bridge integrity tests', () => {
     assert.doesNotMatch(choice, /undefined/);
     assert.match(choice, /^move 1/);
   });
+
+  it('correctly classifies request with forceSwitch: [false] and active moves as "move"', async () => {
+    const { classifyRequest } = await import('../../../src/logic/battle/helpers/requestHelper.ts');
+    const request: ChoiceRequest = {
+      forceSwitch: [false],
+      active: [{ moves: [{ id: 'tackle', pp: 35 }] }],
+      side: { pokemon: [] }
+    };
+    assert.equal(classifyRequest(request), 'move');
+  });
+
+  it('correctly identifies fainted target objects across all fainted indicators in isFainted', () => {
+    const agent = new TestAgent('p1');
+    const isFainted = (agent as any).isFainted.bind(agent);
+
+    assert.equal(isFainted({ condition: '0 fnt' }), true);
+    assert.equal(isFainted({ condition: '100/100' }), false);
+    assert.equal(isFainted({ fainted: true }), true);
+    assert.equal(isFainted({ hp: 0 }), true);
+    assert.equal(isFainted({ hp: '0' }), true);
+    assert.equal(isFainted('0 fnt'), true);
+    assert.equal(isFainted('fnt'), true);
+  });
 });

@@ -2,7 +2,7 @@ import type { DebugSystem } from '@/stores/debug'
 
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
-import { ONE_HOUR_MS, ONE_DAY_MS } from '@/logic/constants/items.ts'
+import { ONE_HOUR_MS, DURATION_24_HOURS_MS } from '@/logic/constants/items.ts'
 
 export function registerTimeTools(debug: DebugSystem) {
   const game = useGameStore()
@@ -47,7 +47,7 @@ export function registerTimeTools(debug: DebugSystem) {
     category: 'time',
     action: (w: number) => {
       const current = game.db.getTimeOffset()
-      const ONE_WEEK_MS = 7 * ONE_DAY_MS
+      const ONE_WEEK_MS = 7 * DURATION_24_HOURS_MS
       game.db.setTimeOffset(current + (w * ONE_WEEK_MS))
       ui.notify(`Debug: +${w} semanas añadidas`, '⏩')
       window.dispatchEvent(new CustomEvent('time-sync-update'))

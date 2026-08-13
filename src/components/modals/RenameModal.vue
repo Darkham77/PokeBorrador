@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/auth'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { gsap } from 'gsap'
 import { validateTrainerName } from '@/logic/validation/schemas'
+import type { GenderId } from '@/types/system/game'
 
 interface Props {
   show?: boolean
@@ -27,12 +28,12 @@ const authStore = useAuthStore()
 
 const newUsername = ref('')
 const isRenaming = ref(false)
-const selectedGender = ref<'h' | 'm'>('h')
+const selectedGender = ref<GenderId>('h')
 
 const SCALE_GENDER_CLICK = 0.85
 const RENAME_COOLDOWN_DAYS = 30
 
-const setGender = (newGender: 'h' | 'm', event: MouseEvent) => {
+const setGender = (newGender: GenderId, event: MouseEvent) => {
   gsap.fromTo(event.currentTarget, 
     { scale: SCALE_GENDER_CLICK },
     { scale: 1, duration: 0.3, ease: 'back.out(2)' }

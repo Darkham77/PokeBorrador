@@ -128,7 +128,7 @@ async function buildRandomPokemonSet(): Promise<PokemonSet> {
     ? { hp: 252, atk: 128, def: 64, spa: 0, spd: 0, spe: 64 }
     : { hp: 252, atk: 0, def: 0, spa: 128, spd: 64, spe: 64 };
 
-  return {
+  const set: PokemonSet = {
     name: nickname,
     species: toID(speciesData.name),
     level: MAX_POKEMON_LEVEL,
@@ -139,11 +139,12 @@ async function buildRandomPokemonSet(): Promise<PokemonSet> {
     evs,
     ivs,
     moves: moveset,
-    uid,
     // Note: do NOT include pre-calculated 'stats' — Showdown computes them
     // from evs/ivs/level/species internally. Including stats.hp=undefined
     // causes Showdown to start every Pokémon at 0 HP (immediately fainted).
-  } as unknown as PokemonSet;
+  };
+  Reflect.set(set, 'uid', uid);
+  return set;
 }
 
 // ---------------------------------------------------------------------------

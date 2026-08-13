@@ -9,6 +9,7 @@ import { FIRE_RED_MAPS } from '@/data/world/maps'
 import { logger } from '../utils/logger.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { BattleSide } from '@/types/battle/battle'
 import { mapVisualToOfficialWeather } from '../weather/weatherGenerationProvider.ts'
 import { requireWeatherId } from '../weather/weatherRegistry.ts'
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts'
@@ -60,7 +61,7 @@ export interface BattleOptions {
   wasSearching?: boolean;
   isDebug?: boolean;
   over?: boolean;
-  turn?: 'player' | 'enemy' | null;
+  turn?: BattleSide | null;
   trainerSprite?: NpcSpriteId;
   trainerArchetype?: NpcArchetype;
   isRival?: boolean;

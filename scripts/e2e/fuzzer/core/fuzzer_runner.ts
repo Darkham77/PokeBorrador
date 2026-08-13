@@ -1,6 +1,5 @@
-// fallow-ignore-file security-sink
-// scripts/e2e/fuzzer/core/fuzzer_runner.ts
 import { styleText } from 'node:util';
+import { FuzzerRunnerLogger } from '../../logging/fuzzer_runner_logger.ts';
 
 export interface FuzzerResult {
   label: string;
@@ -17,7 +16,10 @@ export interface FuzzerSuiteConfig {
 }
 
 export async function runFuzzerSuite(config: FuzzerSuiteConfig): Promise<void> {
-  console.log(styleText('bold', `\n--- 🧪 FUZZER: ${config.suiteName} ---`));
+  const logger = new FuzzerRunnerLogger();
+  logger.startIntercepting();
+
+  logger.progress(styleText('bold', `\n--- 🧪 FUZZER: ${config.suiteName} ---`));
 
   try {
     const results = await config.run();
@@ -41,19 +43,26 @@ export async function runFuzzerSuite(config: FuzzerSuiteConfig): Promise<void> {
     }
 
     if (!anyFailed && !anyUntested) {
-      console.log(styleText('green', '  ✅ PASS (100% Cobertura Probada)'));
+      const { fuzzerMemoryStore } = await import('./fuzzerMemoryStore.ts');
+      await fuzzerMemoryStore.flushToDisk();
+      logger.progress(styleText('green', '  ✅ PASS (100% Cobertura Probada)'));
     }
 
     if (anyFailed) {
-      console.error(styleText('red', `❌ CRITICAL: Se detectaron fallos en el fuzzer "${config.suiteName}".`));
+      logger.error(styleText('red', `❌ CRITICAL: Se detectaron fallos en el fuzzer "${config.suiteName}".`));
+      logger.close(`FUZZER SUITE: ${config.suiteName} (FAILED)`);
       process.exit(1);
     }
     if (anyUntested) {
-      console.error(styleText('yellow', `❌ CRITICAL: Hay entradas UNTESTED en el fuzzer "${config.suiteName}".`));
+      logger.error(styleText('yellow', `❌ CRITICAL: Hay entradas UNTESTED en el fuzzer "${config.suiteName}".`));
+      logger.close(`FUZZER SUITE: ${config.suiteName} (UNTESTED)`);
       process.exit(1);
     }
   } catch (err) {
-    console.error(styleText('red', `❌ CRITICAL: Error inesperado ejecutando fuzzer "${config.suiteName}":`), err);
+    logger.error(styleText('red', `❌ CRITICAL: Error inesperado ejecutando fuzzer "${config.suiteName}": ${err instanceof Error ? err.message : String(err)}`));
+    logger.close(`FUZZER SUITE: ${config.suiteName} (ERROR)`);
     process.exit(1);
+  } finally {
+    logger.close(`FUZZER SUITE: ${config.suiteName}`);
   }
 }

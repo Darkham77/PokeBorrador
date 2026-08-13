@@ -15,7 +15,7 @@ export type StoneEvolutionKey = keyof typeof STONE_EVOLUTIONS;
 
 export const TRADE_EVOLUTIONS = dbJson.TRADE_EVOLUTIONS;
 export type TradeEvolutionSpeciesId = keyof typeof TRADE_EVOLUTIONS;
-
+export type EvolutionTriggerType = 'level' | 'stone' | 'trade';
 function isLevelEvolutionSpeciesId(id: string): id is LevelEvolutionSpeciesId {
   return Object.hasOwn(EVOLUTION_TABLE, id);
 }

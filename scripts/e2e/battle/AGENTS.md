@@ -9,7 +9,7 @@ QA / Automation Engineers.
 ## Local Contracts
 
 - Playwright simulations run turn-by-turn until the battle reaches absolute completion (over === true).
-- Use local debug commands (`__VITE_DEBUG__`) to inject custom combat scenarios without map traversal.
+- Every Playwright combat must initialize one current fuzzer-certified scenario and reproduce its immutable seed, `history`, `playerChoices`, `enemyChoices`, recorded game actions, and IPB flags through the shared `ShowdownBattleRunner`. All subsequent gameplay, including opening/closing UI, move selection, switching, bag use, targeting, fleeing, confirmation, movement, and battle exit, must use visible official controls. A manual combat setup or real-AI browser decision stream is invalid. Certified IPB healing flags remain permitted deterministic parity instrumentation.
 
 ## Work Guidance
 

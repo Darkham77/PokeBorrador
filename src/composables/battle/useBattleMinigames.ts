@@ -1,5 +1,6 @@
 import { logger } from '@/logic/utils/logger'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import type { ItemId } from '@/data/inventory/items'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 interface BattleStoreMinigameRef {
@@ -75,7 +76,6 @@ export function useBattleMinigames(
   const handleArchaeologySuccess = async (difficulty: string) => {
     logger.success('BattleArenaView', `Archaeology SUCCESS: ${difficulty}`)
     const locId = battleStore.state?.locationId || 'route1'
-    await mapStore.triggerArchaeologyRewards(locId, difficulty)
 
     if (battleStore.state) {
       battleStore.state.isArchaeology = false
@@ -86,20 +86,31 @@ export function useBattleMinigames(
     battleStore.activeMove = null
     battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
 
+    await mapStore.triggerArchaeologyRewards(locId, difficulty)
     await battleStore.completeBattleFlow('search')
   }
 
   const handleArchaeologyFail = async () => {
     logger.warn('BattleArenaView', 'Archaeology FAIL')
-    let fossilId = 'oldamber'
+    const enemyId = enemy.value?.id
+    let fossilId: ItemId = 'oldamber'
     let emoji = '💎'
-    if (enemy.value?.id === 'kabuto') {
+    if (enemyId === 'kabuto') {
       fossilId = 'domefossil'
       emoji = '🛡'
-    } else if (enemy.value?.id === 'omanyte') {
+    } else if (enemyId === 'omanyte') {
       fossilId = 'helixfossil'
       emoji = '🐚'
     }
+
+    if (battleStore.state) {
+      battleStore.state.isArchaeology = false
+      battleStore.state.isFishing = false
+    }
+    resetAll()
+    battleStore.attackerSide = null
+    battleStore.activeMove = null
+    battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
 
     const { getItemName, SHOP_ITEMS } = await import('@/data/inventory/items')
     const fossilName = getItemName(fossilId)
@@ -107,17 +118,7 @@ export function useBattleMinigames(
     const itemSprite = (itemData && itemData.sprite) ? getAssetUrl(ASSET_TYPES.ITEM, itemData.sprite) : emoji
 
     uiStore.notify(`El ${fossilName} se desmoronó...`, itemSprite)
-    battleStore.addLog(`El ${fossilName} se desmoronó...`, 'log-info', fossilName)
-
-    if (battleStore.state) {
-      battleStore.state.isArchaeology = false
-      battleStore.state.isFishing = false
-    }
-    resetAll()
-    battleStore.attackerSide = null
-    battleStore.activeMove = null
-    battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
-
+    battleStore.addLog(`El ${fossilName} se desmoronó...`, 'log-info', fossilId)
     await battleStore.completeBattleFlow('search')
   }
 

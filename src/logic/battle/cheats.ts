@@ -49,14 +49,11 @@ export function applyHealCheatToSide(side: CheatSide | null | undefined): void {
 
       const maxHpVal = p.maxhp !== undefined ? p.maxhp : (p.maxHp !== undefined ? p.maxHp : 0);
       p.hp = maxHpVal;
-      p.status = '';
-
-      if (Array.isArray(p.moveSlots)) {
-        p.moveSlots.forEach(slot => {
-          if (slot) {
-            slot.pp = slot.maxpp;
-          }
-        });
+      const cureFn = Reflect.get(p, 'cureStatus') as ((silent?: boolean) => boolean) | undefined;
+      if (typeof cureFn === 'function') {
+        cureFn.call(p, true);
+      } else {
+        p.status = '';
       }
     }
   });
@@ -64,6 +61,41 @@ export function applyHealCheatToSide(side: CheatSide | null | undefined): void {
   if (side.pokemonLeft !== undefined) {
     side.pokemonLeft = side.pokemon.length;
   }
+  syncRequestConditionsWithSimulator(side);
+}
+
+/**
+ * Applies explicit PP refill cheat to all move slots of all Pokémon on the specified side/team.
+ * Kept strictly decoupled from HP healing to preserve 1:1 replay parity.
+ */
+export function applyPpRefillCheatToSide(side: CheatSide | null | undefined): void {
+  if (!side || !Array.isArray(side.pokemon)) return;
+
+  side.pokemon.forEach(p => {
+    if (p && Array.isArray(p.moveSlots)) {
+      p.moveSlots.forEach(slot => {
+        if (slot) {
+          slot.pp = slot.maxpp;
+        }
+      });
+    }
+  });
+}
+
+/** Applies a visible Debug status action to the matching simulator team member. */
+export function applyStatusCheatToSide(side: CompatibleSide | null | undefined, pokemonUid: string, status: string): void {
+  if (!side || !Array.isArray(side.pokemon)) {
+    throw new Error('[cheats] Cannot apply a status without a simulator side')
+  }
+
+  const target = side.pokemon.find(pokemon => {
+    if (!pokemon || !('uid' in pokemon) || typeof pokemon.uid !== 'string') return false
+    return isMatchingUid(pokemon.uid, pokemonUid)
+  })
+  if (!target) {
+    throw new Error(`[cheats] Cannot find simulator Pokémon ${pokemonUid} for status synchronization`)
+  }
+  target.status = status
 }
 
 /**
@@ -81,9 +113,16 @@ export function syncRequestConditionsWithSimulator(side: CompatibleSide | null |
 
   reqPokemons.forEach((reqMon, i) => {
     if (reqMon) {
-      const simMon = reqMon.uid
-        ? (simPokemons as Array<CheatPokemon | null>).find(p => p && isMatchingUid(p.uid, reqMon.uid))
-        : (simPokemons as Array<CheatPokemon | null>)[i];
+      const reqId = reqMon.uid || reqMon.ident?.replace(/^p[1-4]a?:\s*/, '') || '';
+      const simMon = (simPokemons as Array<(CheatPokemon & { name?: string; ident?: string }) | null>).find(p => {
+        if (!p) return false;
+        if (reqMon.uid && p.uid && isMatchingUid(p.uid, reqMon.uid)) return true;
+        if (reqId) {
+          const pId = p.uid || p.name || p.ident?.replace(/^p[1-4]a?:\s*/, '') || '';
+          if (pId && isMatchingUid(pId, reqId)) return true;
+        }
+        return false;
+      }) || (simPokemons as Array<CheatPokemon | null>)[i];
       if (simMon) {
         const hp = simMon.hp;
         const maxhp = simMon.maxhp !== undefined ? simMon.maxhp : (simMon.maxHp !== undefined ? simMon.maxHp : 0);
@@ -113,6 +152,4 @@ export function syncRequestConditionsWithSimulator(side: CompatibleSide | null |
     });
   }
 }
-
-
 

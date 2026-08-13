@@ -7,6 +7,12 @@
 /** Full rotation angle in degrees (360°). */
 export const FULL_ROTATION_DEG = 360;
 
+/** Full scale value (1.0) — normal/identity scale for GSAP animations. */
+export const SCALE_FULL = 1;
+
+/** Zero scale value (0) — collapsed/invisible scale for GSAP animations. */
+export const SCALE_ZERO = 0;
+
 /** Fast GSAP transition duration in seconds (0.15s). */
 export const GSAP_FAST_DURATION_SEC = 0.15;
 

@@ -12,25 +12,27 @@ export function createMockBattleContext(
   playerTeam?: Pokemon[],
   enemyTeam?: Pokemon[]
 ): BattleContext {
-  const activeBattle = ref<BattleState | null>({
-    id: 'mock-battle',
-    mode: 'offline',
-    type: 'wild',
+  const mockBattleState: BattleState = {
     player: playerPoke,
     enemy: enemyPoke,
-    playerTeam: playerTeam || [playerPoke],
-    enemyTeam: enemyTeam || [enemyPoke],
+    playerTeam: playerTeam ?? [playerPoke],
+    enemyTeam: enemyTeam ?? [enemyPoke],
+    playerTeamIndex: 0,
+    enemyTeamIndex: 0,
+    participants: [playerPoke.uid, enemyPoke.uid],
+    locationId: 'route1',
+    isTrainer: false,
+    turnCount: 1,
+    over: false,
+    escapeAttempts: 0,
     turn: 'player',
-    turns: 1,
-    weather: { type: 'clear', turns: 0 },
-    terrain: null,
-    startedAt: '',
-    updatedAt: ''
-  } as unknown as BattleState);
+    weather: { type: 'clear', turns: 0 }
+  };
+  const activeBattle = ref<BattleState | null>(mockBattleState);
 
   const gameStore = useGameStore();
   if (gameStore) {
-    (gameStore as unknown as { state: { team: Pokemon[] } }).state = { team: playerTeam || [playerPoke] };
+    (gameStore as { state: { team: Pokemon[] } }).state = { team: playerTeam || [playerPoke] };
   }
 
   const playerRef = ref<Pokemon | null | undefined>(playerPoke);
@@ -42,6 +44,8 @@ export function createMockBattleContext(
     logs.push(`[${type || 'info'}] ${msg}`);
   };
 
+  const initialStages: BattleStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 };
+
   const context: Partial<BattleContext> = {
     activeBattle,
     player: playerRef,
@@ -49,8 +53,8 @@ export function createMockBattleContext(
     attackerSide: ref<'player' | 'enemy' | null>(null),
     activeMove: ref<Move | null>(null),
     faintedSides: ref(new Set<string>()),
-    playerStages: ref<BattleStages>({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0 } as unknown as BattleStages),
-    enemyStages: ref<BattleStages>({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0 } as unknown as BattleStages),
+    playerStages: ref<BattleStages>({ ...initialStages }),
+    enemyStages: ref<BattleStages>({ ...initialStages }),
     battleLogs: ref<BattleLog[]>([]),
     isBattleActive: ref(true),
     isFinishing: ref(false),

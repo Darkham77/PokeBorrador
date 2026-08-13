@@ -1,5 +1,6 @@
 
 import { ITEM_PRICES, INVENTORY_LEVEL_TIERS } from '../constants/items.ts';
+import type { BattleDifficulty } from '@/types/battle/battle';
 
 const POKEBALL_BUDGET_HALF_RATIO = 0.5;
 const CURE_PURCHASE_ROLL_THRESHOLD = 0.8;
@@ -16,7 +17,7 @@ interface PurchaseCandidate {
  */
 export function generateNPCInventory(
   maxLevel: number,
-  difficulty: 'easy' | 'normal' | 'hard' = 'easy',
+  difficulty: BattleDifficulty = 'easy',
   isGym = false,
   isRival = false,
   archetype?: string
@@ -155,7 +156,7 @@ export function calculateNPCBaseBudget(maxLevel: number, isGym: boolean, isSpeci
 /**
  * Calcula el presupuesto final aplicando dificultad y factor aleatorio.
  */
-export function calculateNPCFinalBudget(baseBudget: number, difficulty: 'easy' | 'normal' | 'hard', randomFactor: number): number {
+export function calculateNPCFinalBudget(baseBudget: number, difficulty: BattleDifficulty, randomFactor: number): number {
   let difficultyMult = 1.0;
   if (difficulty === 'normal') difficultyMult = 1.5;
   if (difficulty === 'hard') difficultyMult = 3.0;
@@ -167,7 +168,7 @@ export function calculateNPCFinalBudget(baseBudget: number, difficulty: 'easy' |
  */
 export function calculateNPCMaxItems(
   maxLevel: number,
-  difficulty: 'easy' | 'normal' | 'hard',
+  difficulty: BattleDifficulty,
   isGym: boolean,
   isSpecial: boolean
 ): number {

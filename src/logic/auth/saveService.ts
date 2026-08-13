@@ -44,7 +44,7 @@ export interface SaveData {
   trainerExpNeeded: number;
   inventory: Partial<Record<string, number>>;
   team: Pokemon[];
-  box: Pokemon[];
+  box: (Pokemon | null)[];
   pokedex: string[];
   seenPokedex: string[];
   defeatedGyms: string[];
@@ -187,7 +187,7 @@ function serializeSaveGenderCodes(data: SaveData): unknown {
   return {
     ...data,
     team: data.team.map(withPersistedPokemonGender),
-    box: data.box.map(withPersistedPokemonGender),
+    box: data.box.map((p) => (p ? withPersistedPokemonGender(p) : null)),
     eggs: data.eggs.map(egg => {
       if (!egg || typeof egg !== 'object' || !('gender' in egg)) return egg;
       return withPersistedEggGender(egg as PokemonEgg);
@@ -249,8 +249,18 @@ export function serializeState(state: GameState): SaveData {
       logger.warn('SAVE', `Error serializando batalla activa: ${(e as Error).message}`);
       activeBattle = null;
     }
-  } else if (state.activeBattle && Reflect.get(state.activeBattle, 'isPvP')) {
-    activeBattle = { ...state.activeBattle } as unknown as ActiveBattleSerialized; // domain-ok
+  } else if (state.activeBattle && state.activeBattle.isPvP) {
+    const b = state.activeBattle;
+    activeBattle = {
+      isGym: Boolean(b.isGym),
+      gymId: b.gymId || null,
+      isTrainer: Boolean(b.isTrainer),
+      trainerName: b.trainerName || null,
+      locationId: b.locationId || null,
+      enemyTeam: null,
+      timestamp: Temporal.Now.instant().epochMilliseconds,
+      isPvP: true
+    };
   }
 
   return {
@@ -350,7 +360,7 @@ let lastValidatedBox: Pokemon[] = [];
  * Validates the state before saving to prevent cache hacking or data corruption.
  */
 export function validateAndSanitize(data: SaveData): { valid: boolean, data: SaveData, hadDuplicates?: boolean, issues: string[], error?: string } {
-  if (!data) { const empty: SaveData = ({} as unknown) as SaveData; return { valid: false, data: empty, issues: [], error: 'No data' }; }
+  if (!data) { return { valid: false, data, issues: [], error: 'No data' }; }
   
   const issues: string[] = []; // no-domain
 
@@ -388,9 +398,9 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
   }
 
   // Sanitized data from Valibot (with fallbacks applied!)
-  const sanitizedData = parsedResult.output as unknown as SaveData; // domain-ok
+  const sanitizedData = parsedResult.output as SaveData; // domain-ok
   sanitizedData.team?.forEach(normalizeRuntimePokemonGender);
-  sanitizedData.box?.forEach(normalizeRuntimePokemonGender);
+  sanitizedData.box?.forEach((p) => { if (p) normalizeRuntimePokemonGender(p); });
   
   // 1. Basic numeric validation
   if (sanitizedData.money < 0) { sanitizedData.money = 0; issues.push('Dinero negativo corregido'); }
@@ -412,7 +422,7 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
   const uids = new Set<string>();
   const duplicateUids = new Set<string>();
   
-  const checkPoke = (p: Pokemon, listName: string) => {
+  const checkPoke = (p: Pokemon | null, listName: string) => {
     if (!p || !p.uid) return;
     if (uids.has(p.uid)) {
       duplicateUids.add(p.uid);
@@ -424,12 +434,14 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
   try {
     if (sanitizedData.team) {
       sanitizedData.team.forEach((p) => {
+        if (!p) return;
         checkPoke(p, 'equipo');
         validatePokemon(p);
       });
     }
     if (sanitizedData.box) {
       sanitizedData.box.forEach((p) => {
+        if (!p) return;
         checkPoke(p, 'caja');
         validatePokemon(p);
       });
@@ -449,7 +461,7 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
     const finalUids = new Set<string>();
     if (Array.isArray(sanitizedData.team)) {
       sanitizedData.team = sanitizedData.team.filter((p) => {
-        if (!p.uid) return true;
+        if (!p || !p.uid) return true;
         if (finalUids.has(p.uid)) return false;
         finalUids.add(p.uid);
         return true;
@@ -457,7 +469,7 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
     }
     if (Array.isArray(sanitizedData.box)) {
       sanitizedData.box = sanitizedData.box.filter((p) => {
-        if (!p.uid) return true;
+        if (!p || !p.uid) return true;
         if (finalUids.has(p.uid)) return false;
         finalUids.add(p.uid);
         return true;
@@ -598,7 +610,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
           throw new Error('Datos del perfil inválidos: ' + (profileValidation.issues[0]?.message || 'Esquema incorrecto'));
         }
 
-        const shinyCount = ((save_data.team || []).filter(p => p.isShiny).length) + ((save_data.box || []).filter(p => p.isShiny).length);
+        const shinyCount = ((save_data.team || []).filter(p => p?.isShiny).length) + ((save_data.box || []).filter(p => p?.isShiny).length);
         const statsRecord = (save_data.stats || {}) as Record<string, unknown>; // open-record
         const maxDamage = Number(statsRecord.maxDamage) || 0;
         const totalBattles = Number(statsRecord.totalBattles) || 0;

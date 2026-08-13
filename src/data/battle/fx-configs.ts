@@ -18,8 +18,10 @@ export interface WobbleConfig {
   ease?: string // domain-ok
 }
 
+export type ParticleShape = 'circle' | 'rect';
+
 export interface EffectSettings {
-  shape: 'circle' | 'rect'
+  shape: ParticleShape
   area: ParticleArea
   offset: { x: number; y: number }
   activeRange: [number, number]

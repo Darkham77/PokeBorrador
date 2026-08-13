@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import SortControls from '@/components/common/SortControls.vue'
+import type { SortOrder, ItemSortKey } from '@/types/system/game'
 
 defineProps<{
   itemSearchQuery: string
-  itemSortKey: 'name' | 'price' | 'rarity'
-  itemSortOrder: 'asc' | 'desc'
+  itemSortKey: ItemSortKey
+  itemSortOrder: SortOrder
 }>()
 
 const emit = defineEmits<{
   (e: 'update:itemSearchQuery', val: string): void
-  (e: 'update:itemSortKey', val: 'name' | 'price' | 'rarity'): void
-  (e: 'update:itemSortOrder', val: 'asc' | 'desc'): void
+  (e: 'update:itemSortKey', val: ItemSortKey): void
+  (e: 'update:itemSortOrder', val: SortOrder): void
 }>()
 </script>
 

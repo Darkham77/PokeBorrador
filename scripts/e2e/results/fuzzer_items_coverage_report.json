@@ -1,923 +1,841 @@
 {
-  "generatedAt": "2026-08-06T06:36:35.868864014-03:00[America/Buenos_Aires]",
+  "generatedAt": "2026-08-13T16:37:35.735635986-03:00[America/Buenos_Aires]",
   "summary": {
-    "totalItems": 228,
-    "passedItems": 228,
+    "totalItems": 166,
+    "passedItems": 166,
     "failedItems": 0,
     "untestedItems": 0
   },
   "items": [
     {
       "id": "abilityshield",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "shedshell",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "luminousmoss",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "absorbbulb",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "adamantcrystal",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "adamantorb",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "adrenalineorb",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "aguavberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "airballoon",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "apicotberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "aspearberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "assaultvest",
-      "status": "PASS"
-    },
-    {
-      "id": "auspiciousarmor",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "babiriberry",
-      "status": "PASS"
-    },
-    {
-      "id": "beastball",
-      "status": "PASS"
-    },
-    {
-      "id": "berrysweet",
-      "status": "PASS"
-    },
-    {
-      "id": "bignugget",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "bigroot",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "bindingband",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "blackbelt",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "blackglasses",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "blacksludge",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "blunderpolicy",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "boosterenergy",
-      "status": "PASS"
-    },
-    {
-      "id": "bottlecap",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "brightpowder",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "cellbattery",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "chartiberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "cheriberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "chestoberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "chilanberry",
-      "status": "PASS"
-    },
-    {
-      "id": "chippedpot",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "chopleberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "clearamulet",
-      "status": "PASS"
-    },
-    {
-      "id": "cloversweet",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "cobaberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "colburberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "cornerstonemask",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "covertcloak",
-      "status": "PASS"
-    },
-    {
-      "id": "crackedpot",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "custapberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "damprock",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "dracoplate",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "dreadplate",
-      "status": "PASS"
-    },
-    {
-      "id": "dreamball",
-      "status": "PASS"
-    },
-    {
-      "id": "dubiousdisc",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "earthplate",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "ejectbutton",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "ejectpack",
-      "status": "PASS"
-    },
-    {
-      "id": "electirizer",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "electricseed",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "enigmaberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "expertbelt",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "fairyfeather",
-      "status": "PASS"
-    },
-    {
-      "id": "fastball",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "figyberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "fistplate",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "flameorb",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "flameplate",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "floatstone",
-      "status": "PASS"
-    },
-    {
-      "id": "flowersweet",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "focusband",
-      "status": "PASS"
-    },
-    {
-      "id": "friendball",
-      "status": "PASS"
-    },
-    {
-      "id": "galaricacuff",
-      "status": "PASS"
-    },
-    {
-      "id": "galaricawreath",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "ganlonberry",
-      "status": "PASS"
-    },
-    {
-      "id": "goldbottlecap",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "grassyseed",
-      "status": "PASS"
-    },
-    {
-      "id": "grepaberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "gripclaw",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "griseouscore",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "griseousorb",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "habanberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "hardstone",
-      "status": "PASS"
-    },
-    {
-      "id": "healball",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "hearthflamemask",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "heatrock",
-      "status": "PASS"
-    },
-    {
-      "id": "heavyball",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "heavydutyboots",
-      "status": "PASS"
-    },
-    {
-      "id": "hondewberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "iapapaberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "icicleplate",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "icyrock",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "insectplate",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "ironball",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "ironplate",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "jabocaberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "kasibberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "kebiaberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "keeberry",
-      "status": "PASS"
-    },
-    {
-      "id": "kelpsyberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "kingsrock",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "laggingtail",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "lansatberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "leppaberry",
-      "status": "PASS"
-    },
-    {
-      "id": "levelball",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "lightclay",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "loadeddice",
-      "status": "PASS"
-    },
-    {
-      "id": "loveball",
-      "status": "PASS"
-    },
-    {
-      "id": "lovesweet",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "lumberry",
-      "status": "PASS"
-    },
-    {
-      "id": "lureball",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "lustrousglobe",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "lustrousorb",
-      "status": "PASS"
-    },
-    {
-      "id": "magmarizer",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "magoberry",
-      "status": "PASS"
-    },
-    {
-      "id": "maliciousarmor",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "marangaberry",
-      "status": "PASS"
-    },
-    {
-      "id": "masterpieceteacup",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "meadowplate",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "mentalherb",
-      "status": "PASS"
-    },
-    {
-      "id": "metalalloy",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "metalcoat",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "metronome",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "micleberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "mindplate",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "mirrorherb",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "mistyseed",
-      "status": "PASS"
-    },
-    {
-      "id": "moonball",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "muscleband",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "nevermeltice",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "normalgem",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "occaberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "oranberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "passhoberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "payapaberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "pechaberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "persimberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "petayaberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "pixieplate",
-      "status": "PASS"
-    },
-    {
-      "id": "pomegberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "powerherb",
-      "status": "PASS"
-    },
-    {
-      "id": "premierball",
-      "status": "PASS"
-    },
-    {
-      "id": "prettyfeather",
-      "status": "PASS"
-    },
-    {
-      "id": "prismscale",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "protectivepads",
-      "status": "PASS"
-    },
-    {
-      "id": "protector",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "psychicseed",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "punchingglove",
-      "status": "PASS"
-    },
-    {
-      "id": "qualotberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "quickclaw",
-      "status": "PASS"
-    },
-    {
-      "id": "rarebone",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "rawstberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "razorclaw",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "razorfang",
-      "status": "PASS"
-    },
-    {
-      "id": "reapercloth",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "redcard",
-      "status": "PASS"
-    },
-    {
-      "id": "repeatball",
-      "status": "PASS"
-    },
-    {
-      "id": "ribbonsweet",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "rindoberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "ringtarget",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "rockyhelmet",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "roomservice",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "roseliberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "rowapberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "rustedshield",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "rustedsword",
-      "status": "PASS"
-    },
-    {
-      "id": "safariball",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "safetygoggles",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "sharpbeak",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "shucaberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "silkscarf",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "sitrusberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "skyplate",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "smoothrock",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "snowball",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "softsand",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "souldew",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "splashplate",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "spookyplate",
-      "status": "PASS"
-    },
-    {
-      "id": "sportball",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "starfberry",
-      "status": "PASS"
-    },
-    {
-      "id": "starsweet",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "stickybarb",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "stoneplate",
-      "status": "PASS"
-    },
-    {
-      "id": "strawberrysweet",
-      "status": "PASS"
-    },
-    {
-      "id": "sweetapple",
-      "status": "PASS"
-    },
-    {
-      "id": "syrupyapple",
-      "status": "PASS"
-    },
-    {
-      "id": "tamatoberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "tangaberry",
-      "status": "PASS"
-    },
-    {
-      "id": "tartapple",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "terrainextender",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "throatspray",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "toxicorb",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "toxicplate",
-      "status": "PASS"
-    },
-    {
-      "id": "unremarkableteacup",
-      "status": "PASS"
-    },
-    {
-      "id": "upgrade",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "utilityumbrella",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "wacanberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "weaknesspolicy",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "wellspringmask",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "whiteherb",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "widelens",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "wikiberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "wiseglasses",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "yacheberry",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "zapplate",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "zoomlens",
-      "status": "PASS"
-    },
-    {
-      "id": "pokeball",
-      "status": "PASS"
-    },
-    {
-      "id": "greatball",
-      "status": "PASS"
-    },
-    {
-      "id": "ultraball",
-      "status": "PASS"
-    },
-    {
-      "id": "netball",
-      "status": "PASS"
-    },
-    {
-      "id": "duskball",
-      "status": "PASS"
-    },
-    {
-      "id": "timerball",
-      "status": "PASS"
-    },
-    {
-      "id": "masterball",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "leftovers",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "shellbell",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "choiceband",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "focussash",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "scopelens",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "magnet",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "lightball",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "twistedspoon",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "spelltag",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "charcoal",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "choicescarf",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "choicespecs",
-      "status": "PASS"
-    },
-    {
-      "id": "diveball",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "dragonfang",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "eviolite",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "lifeorb",
-      "status": "PASS"
-    },
-    {
-      "id": "luxuryball",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "showdown-log"
     },
     {
       "id": "miracleseed",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "mysticwater",
-      "status": "PASS"
-    },
-    {
-      "id": "nestball",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "poisonbarb",
-      "status": "PASS"
-    },
-    {
-      "id": "quickball",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     },
     {
       "id": "silverpowder",
-      "status": "PASS"
+      "status": "PASS",
+      "evidence": "same-seed-control"
     }
   ]
 }

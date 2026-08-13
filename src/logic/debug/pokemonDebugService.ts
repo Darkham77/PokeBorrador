@@ -9,7 +9,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import type { Pokemon, PokemonEgg, PokemonGender } from '@/types/pokemon/pokemon';
 import { logger } from '../utils/logger.ts';
 import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
-import { requirePokemonMoveId } from '@/data/battle/moves';
+import { requirePokemonMoveId, type MoveCategory } from '@/data/battle/moves';
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 const DEFAULT_DEBUG_MOVE_PP = 35;
@@ -94,7 +94,7 @@ export const pokemonDebugService = {
       obtainedMethod: isEgg ? 'egg' : 'wild',
       bypassWhitelist: true
     });
-    if (!p) { const empty: Pokemon = ({} as unknown) as Pokemon; return empty }
+    if (!p) { throw new Error(`[pokemonDebugService] Failed to generate debug Pokemon '${id}'`); }
 
     if (uid) {
       p.uid = uid;
@@ -131,7 +131,7 @@ export const pokemonDebugService = {
             type: mData?.type || 'normal',
             power: mData?.power || 0,
             acc: mData?.acc || DEFAULT_DEBUG_MOVE_ACC,
-            cat: (mData?.cat || 'physical') as 'physical' | 'special' | 'status'
+            cat: (mData?.cat || 'physical') as MoveCategory
           };
         }).slice(0, 4);
     }

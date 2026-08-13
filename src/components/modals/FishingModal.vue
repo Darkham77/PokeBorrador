@@ -76,6 +76,24 @@ const activePositions = ref<{ x: number; y: number }[]>([])
 const activeTweens = new Map<number, gsap.core.Tween[]>()
 const fishingIconRef = ref<HTMLElement | null>(null)
 
+function getAnimationClockMs(): number {
+  return performance.now()
+}
+
+function createGameplayTween(target: gsap.TweenTarget, vars: gsap.TweenVars): gsap.core.Tween {
+  const tween = gsap.to(target, vars)
+  const globalScale = gsap.globalTimeline.timeScale()
+  if (globalScale > 0) tween.timeScale(1 / globalScale)
+  return tween
+}
+
+function scheduleGameplayDelay(delaySec: number, callback: () => void): gsap.core.Tween {
+  const tween = gsap.delayedCall(delaySec, callback)
+  const globalScale = gsap.globalTimeline.timeScale()
+  if (globalScale > 0) tween.timeScale(1 / globalScale)
+  return tween
+}
+
 const spawnNext = () => {
   if (!gameActive.value || spawnedNotesCount.value >= totalNotes) return
 
@@ -112,14 +130,14 @@ const spawnNext = () => {
     id: noteId,
     x,
     y,
-    startTime: performance.now(),
+    startTime: getAnimationClockMs(),
     clicked: false
   }
 
   activeNotes.value.push(note)
 
   // Fail timer if not clicked
-  const failCall = gsap.delayedCall((speedBase + MINIGAME_FAIL_TIMER_BUFFER_MS) / MS_PER_SECOND, () => {
+  const failCall = scheduleGameplayDelay((speedBase + MINIGAME_FAIL_TIMER_BUFFER_MS) / MS_PER_SECOND, () => {
     if (!note.clicked && gameActive.value) {
       activePositions.value = activePositions.value.filter(p => p !== myPos)
       failGame('¡Perdiste el ritmo!')
@@ -130,21 +148,19 @@ const spawnNext = () => {
   nextTick(() => {
     const el = document.querySelector(`.rhythm-note[data-note-id="${noteId}"] .rhythm-ring`)
     if (el) {
-      const ringAnim = gsap.fromTo(el, 
-        { scale: INITIAL_RING_SCALE, opacity: 0 },
-        { 
+      gsap.set(el, { scale: INITIAL_RING_SCALE, opacity: 0 })
+      const ringAnim = createGameplayTween(el, {
           scale: 1.0, 
           opacity: 1, 
           duration: speedBase / MS_PER_SECOND, 
           ease: 'none',
           onComplete: () => { gsap.to(el, { opacity: 0, duration: RING_FADE_OUT_DURATION_SEC }) }
-        }
-      )
+      })
       activeTweens.set(noteId, [failCall, ringAnim])
     }
   })
 
-  gameCall = gsap.delayedCall(spawnInterval / MS_PER_SECOND, spawnNext)
+  gameCall = scheduleGameplayDelay(spawnInterval / MS_PER_SECOND, spawnNext)
 }
 
 const handleNoteClick = (note: Note) => {
@@ -155,7 +171,7 @@ const handleNoteClick = (note: Note) => {
     return
   }
 
-  const elapsed = performance.now() - note.startTime
+  const elapsed = getAnimationClockMs() - note.startTime
   const accuracy = Math.abs(elapsed - speedBase)
 
   if (accuracy < hitWindow) {
@@ -212,7 +228,7 @@ const finishGame = (success: boolean) => {
 }
 
 onMounted(() => {
-  gsap.delayedCall(INITIAL_SPAWN_DELAY_SEC, spawnNext)
+  gameCall = scheduleGameplayDelay(INITIAL_SPAWN_DELAY_SEC, spawnNext)
 
   nextTick(() => {
     if (fishingIconRef.value) {

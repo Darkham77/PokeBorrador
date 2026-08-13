@@ -6,6 +6,7 @@ import { Dex } from '@pkmn/sim'
 import { ACTIVE_GENERATION, isEnabledPokemonId } from '@/data/system/constants'
 import type { PokemonType } from '@/data/battle/types'
 import type { ItemId } from '@/data/inventory/items'
+import type { PokedexStatus } from '@/types/pokemon/pokemon'
 import {
   REPEL_ENCOUNTER_RATE_MODIFIER,
   SUPER_REPEL_ENCOUNTER_RATE_MODIFIER,
@@ -125,7 +126,7 @@ export function calculateActiveTravelModifiers(items: ReadonlySet<TravelBuffItem
 
 export function getPokedexVisibility(
   id: string,
-  debugPokedexMode: 'none' | 'seen' | 'caught' | null,
+  debugPokedexMode: PokedexStatus | null,
   seenPokedex: string[],
   caughtPokedex: string[]
 ): VisibilityResult {

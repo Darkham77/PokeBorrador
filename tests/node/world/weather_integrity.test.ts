@@ -45,11 +45,8 @@ type CycleData = Record<string, WeatherTable>;
 type SeasonData = Record<string, CycleData>;
 type LandmarkWeather = Record<string, SeasonData>;
 
-const TYPED_MAPS = FIRE_RED_MAPS as unknown as MapData[];
-const TYPED_WEATHER = ROUTE_WEATHER_TABLES as unknown as LandmarkWeather;
-
 describe('Weather Integrity & Biome Restrictions', () => {
-  TYPED_MAPS.forEach(map => {
+  (FIRE_RED_MAPS as unknown as MapData[]).forEach(map => {
     const mapId = map.id;
     const isIndoors = !!map.isIndoors;
     const isCave = !!map.isCave;
@@ -57,7 +54,7 @@ describe('Weather Integrity & Biome Restrictions', () => {
     // Extract all biome tags from the map object
     const activeBiomes = Object.keys(BIOME_BANNED).filter(tag => !!map[tag]);
 
-    const weatherData = TYPED_WEATHER[mapId];
+    const weatherData = (ROUTE_WEATHER_TABLES as LandmarkWeather)[mapId];
 
     if (!weatherData) return;
 
@@ -205,11 +202,11 @@ describe('Weather Integrity & Biome Restrictions', () => {
             // Verificamos si es un clima soleado y si es posible por la noche en este mapa
             let isSunnyAtNight = false;
             if (weatherType === 'sun' || weatherType === 'intense_sun') {
-              const weatherData = TYPED_WEATHER[mapId];
+              const weatherData = (ROUTE_WEATHER_TABLES as unknown as LandmarkWeather)[mapId];
               if (weatherData) {
-                Object.values(weatherData).forEach(seasonData => {
-                  const nightTable = seasonData['night'];
-                  if (nightTable && nightTable?.[weatherType] !== undefined && nightTable[weatherType] > 0) {
+                Object.values(weatherData).forEach((seasonData) => {
+                  const nightTable = (seasonData as CycleData)['night'];
+                  if (nightTable && typeof nightTable === 'object' && nightTable[weatherType] !== undefined && (nightTable[weatherType] as unknown as number) > 0) {
                     isSunnyAtNight = true;
                   }
                 });

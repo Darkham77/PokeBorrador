@@ -125,13 +125,15 @@ const WEBP_QUALITY_MAX_DIM_THRESHOLD_MID = 1000;
   if (isLossless) {
     webpOptions.lossless = true;
   } else {
+    const WEBP_QUALITY_HIGH = 95;
+    const WEBP_QUALITY_NORMAL = 80;
     const maxDim = Math.max(metadata.width || 0, metadata.height || 0);
     if (maxDim < WEBP_QUALITY_MAX_DIM_THRESHOLD_LOW) {
-      webpOptions.quality = 100; // magic-ok
+      webpOptions.quality = 100;
     } else if (maxDim < WEBP_QUALITY_MAX_DIM_THRESHOLD_MID) {
-      webpOptions.quality = 95; // magic-ok
+      webpOptions.quality = WEBP_QUALITY_HIGH;
     } else {
-      webpOptions.quality = 80; // magic-ok
+      webpOptions.quality = WEBP_QUALITY_NORMAL;
     }
   }
 
@@ -201,7 +203,7 @@ async function calculateFeetPointsWorker(filePath: string): Promise<{ feetY: num
       for (let x = 0; x < size; x++) {
         const index = (y * width + x) * channels;
         const alpha = data[index + 3] ?? 0;
-        if (alpha > 50) { // magic-ok
+        if (alpha > ALPHA_PIXEL_THRESHOLD_LIMIT) {
           if (x < minX) minX = x;
           if (x > maxX) maxX = x;
         }
@@ -214,7 +216,7 @@ async function calculateFeetPointsWorker(filePath: string): Promise<{ feetY: num
       for (let x = 0; x < size; x++) {
         const index = (y * width + x) * channels;
         const alpha = data[index + 3] ?? 0;
-        if (alpha > 50) { // magic-ok
+        if (alpha > ALPHA_PIXEL_THRESHOLD_LIMIT) {
           rowHasOpaque = true;
           break;
         }
@@ -758,7 +760,6 @@ export type PokemonCryId = keyof typeof POKEMON_CRIES_DATABASE;
   const npcCatalogPath = safeResolve(process.cwd(), 'src/data/pokemon/npcSpriteCatalog.ts');
   
   const { ARCHETYPE_KEYWORDS } = await import('../../src/logic/utils/npcSpriteRouter');
-  const ARCHETYPE_KEYWORDS_LOCAL = ARCHETYPE_KEYWORDS;
 
   // Las claves se derivan de TRAINER_TYPES para mantener sincronía automática
   const catalogLists: Record<string, string[]> = Object.fromEntries(
@@ -778,7 +779,7 @@ export type PokemonCryId = keyof typeof POKEMON_CRIES_DATABASE;
         const normalized = baseName.toLowerCase().replace(/[-_]/g, '');
 
         let classified = false;
-        for (const [archetype, keywords] of Object.entries(ARCHETYPE_KEYWORDS_LOCAL)) {
+        for (const [archetype, keywords] of Object.entries(ARCHETYPE_KEYWORDS)) {
           for (const keyword of keywords) {
             if (normalized.includes(keyword)) {
               if (keyword === 'bea' && normalized.includes('beauty')) continue;
@@ -963,7 +964,6 @@ export const VALID_NPC_SPRITES = Object.values(ARCHETYPE_SPRITES).flat();
     `/** Frame size (px) of the largest sprite in Front/Back. Used for relative combat scaling. */`,
     `export const MAX_ANIMATED_SPRITE_SIZE_FRONT = ${maxAnimatedSizeFront} as const;`,
     `export const MAX_ANIMATED_SPRITE_SIZE_BACK = ${maxAnimatedSizeBack} as const;`,
-    `export const MAX_ANIMATED_SPRITE_SIZE = MAX_ANIMATED_SPRITE_SIZE_FRONT;`,
     '',
     'const RAW = dbJson.RAW;',
     'export type AnimatedSpriteId = keyof typeof RAW;',
@@ -1030,3 +1030,4 @@ export const VALID_NPC_SPRITES = Object.values(ARCHETYPE_SPRITES).flat();
 if (isMainThread) {
   main();
 }
+

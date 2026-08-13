@@ -46,6 +46,31 @@ export function getClassModifier(playerClass: string, type: string, context: Mod
   }
 }
 
+const CAZABICHOS_MISSION_DATA: Record<string, Record<string, unknown>> = {
+  mission_6h: { cost: 5000, ivFloor: 5, shinyDiv: 2 },
+  mission_12h: { cost: 10000, ivFloor: 10, shinyDiv: 4 },
+  mission_24h: { cost: 20000, ivFloor: 15, shinyDiv: 8 }
+};
+
+const ROCKET_MISSION_DATA: Record<string, Record<string, unknown>> = {
+  mission_6h: { pokReq: 1, mult: 1.0 },
+  mission_12h: { pokReq: 2, mult: 1.3 },
+  mission_24h: { pokReq: 3, mult: 1.8 }
+};
+
+const ENTRENADOR_MISSION_DATA: Record<string, Record<string, unknown>> = {
+  mission_6h: { cost: 5000, blocks: 1, bonusLevel: false },
+  mission_12h: { cost: 10000, blocks: 2, bonusLevel: false },
+  mission_24h: { cost: 20000, blocks: 4, bonusLevel: true }
+};
+
+const CRIADOR_VIGOR_SAVE_CHANCE_24H = 0.10;
+const CRIADOR_MISSION_DATA: Record<string, Record<string, unknown>> = {
+  mission_6h: { cost: 300, blocks: 1, vigorSaveChance: 0 },
+  mission_12h: { cost: 600, blocks: 2, vigorSaveChance: 0 },
+  mission_24h: { cost: 1000, blocks: 4, vigorSaveChance: CRIADOR_VIGOR_SAVE_CHANCE_24H }
+};
+
 /**
  * Calculates the rewards and costs for a passive mission.
  */
@@ -54,39 +79,19 @@ export function getMissionCostInfo(missionId: string, playerClass: string): Reco
   if (!cls) return null;
 
   if (playerClass === 'cazabichos') {
-    const data: Record<string, Record<string, unknown>> = {
-      mission_6h: { cost: 5000, ivFloor: 5, shinyDiv: 2 }, // magic-ok
-      mission_12h: { cost: 10000, ivFloor: 10, shinyDiv: 4 }, // magic-ok
-      mission_24h: { cost: 20000, ivFloor: 15, shinyDiv: 8 } // magic-ok
-    };
-    return { type: 'money', ...data[missionId] };
+    return { type: 'money', ...CAZABICHOS_MISSION_DATA[missionId] };
   }
   
   if (playerClass === 'rocket') {
-    const data: Record<string, Record<string, unknown>> = {
-      mission_6h: { pokReq: 1, mult: 1.0 },
-      mission_12h: { pokReq: 2, mult: 1.3 }, // magic-ok
-      mission_24h: { pokReq: 3, mult: 1.8 } // magic-ok
-    };
-    return { type: 'pokemon_sacrifice', ...data[missionId] };
+    return { type: 'pokemon_sacrifice', ...ROCKET_MISSION_DATA[missionId] };
   }
 
   if (playerClass === 'entrenador') {
-    const data: Record<string, Record<string, unknown>> = {
-      mission_6h: { cost: 5000, blocks: 1, bonusLevel: false }, // magic-ok
-      mission_12h: { cost: 10000, blocks: 2, bonusLevel: false }, // magic-ok
-      mission_24h: { cost: 20000, blocks: 4, bonusLevel: true } // magic-ok
-    };
-    return { type: 'money_pokemon', ...data[missionId] };
+    return { type: 'money_pokemon', ...ENTRENADOR_MISSION_DATA[missionId] };
   }
 
   if (playerClass === 'criador') {
-    const data: Record<string, Record<string, unknown>> = {
-      mission_6h: { cost: 300, blocks: 1, vigorSaveChance: 0 }, // magic-ok
-      mission_12h: { cost: 600, blocks: 2, vigorSaveChance: 0 }, // magic-ok
-      mission_24h: { cost: 1000, blocks: 4, vigorSaveChance: 0.10 } // magic-ok
-    };
-    return { type: 'bc_pokemon', ...data[missionId] };
+    return { type: 'bc_pokemon', ...CRIADOR_MISSION_DATA[missionId] };
   }
 
   return null;

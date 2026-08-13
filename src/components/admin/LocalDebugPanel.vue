@@ -1,7 +1,8 @@
 <script setup lang="ts">
 
-import { ref, computed } from 'vue'
+import { ref, computed, onBeforeUnmount, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { GAME_UI_EVENTS } from '@/types/system/gameEvents.ts'
 
 // Sub-components
 import DebugStatsTab from './debug/DebugStatsTab.vue'
@@ -14,6 +15,7 @@ import DebugMapTab from './debug/DebugMapTab.vue'
 import DebugMissionsTab from './debug/DebugMissionsTab.vue'
 import DebugAudioAnimTab from './debug/DebugAudioAnimTab.vue'
 import DebugTrainersTab from './debug/DebugTrainersTab.vue'
+import { DEBUG_PANEL_CATEGORIES } from './debug/debugPanelCategories.ts'
 
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -26,6 +28,13 @@ const canAccess = computed(() => debugStore.canAccess)
 
 const isOpen = ref(false)
 const selectedCategory = ref('stats')
+
+const closeForBattleEntry = () => {
+  isOpen.value = false
+}
+
+onMounted(() => window.addEventListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry))
+onBeforeUnmount(() => window.removeEventListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry))
 </script>
 
 <template>
@@ -86,17 +95,7 @@ const selectedCategory = ref('stats')
           class="debug-nav"
         >
           <PVTooltip
-            v-for="cat in [
-              { id: 'stats', label: 'STATS', desc: 'Atributos del jugador, dinero, elo y facción.' },
-              { id: 'class', label: 'CLASE', desc: 'Control de clase del jugador, nivel y reputación.' },
-              { id: 'items', label: 'ITEMS', desc: 'Añadir objetos al inventario.' },
-              { id: 'pokes', label: 'POKES', desc: 'Gestión de Pokedex y equipo.' },
-              { id: 'trainers', label: 'ENTREN', desc: 'Simular combates contra entrenadores, policías y líderes.' },
-              { id: 'map', label: 'MAPA', desc: 'Visualización de grilla y rendimiento.' },
-              { id: 'missions', label: 'MISI', desc: 'Control de misiones de guardería.' },
-              { id: 'time', label: 'TIEMPO', desc: 'Simulación de ciclos y climas.' },
-              { id: 'modals', label: 'MODAL', desc: 'Tests de ventanas y errores.' }
-            ]" 
+            v-for="cat in DEBUG_PANEL_CATEGORIES" 
             :key="cat.id"
             :title="cat.desc"
           >
@@ -135,6 +134,7 @@ const selectedCategory = ref('stats')
           />
           <DebugTrainersTab
             v-if="selectedCategory === 'trainers'"
+            @close="isOpen = false"
           />
           <DebugMapTab
             v-if="selectedCategory === 'map'"

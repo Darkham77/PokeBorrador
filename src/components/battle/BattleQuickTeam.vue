@@ -6,6 +6,7 @@ import { useUIStore } from '@/stores/ui'
 import BoxPokemonCard from '@/components/box/BoxPokemonCard.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
+import { isRevivingForceSwitchRequest } from '@/logic/battle/helpers/requestHelper.ts'
 
 const gameStore = useGameStore()
 const battleStore = useBattleStore()
@@ -17,8 +18,14 @@ const team = computed<Pokemon[]>(() => {
 })
 const activePokemonUid = computed(() => battleStore.state?.player?.uid)
 
+const hasPendingForcedSwitch = computed(() => {
+  const forceSwitch = battleStore.state?.playerRequest?.forceSwitch
+  return Array.isArray(forceSwitch) ? forceSwitch.some(Boolean) : forceSwitch === true
+})
+const isSelectingReviveTarget = computed(() => isRevivingForceSwitchRequest(battleStore.state?.playerRequest))
+
 const canSwitch = computed(() => {
-  if (battleStore.currentSubState === 'SWITCH_MENU') return true // Si la FSM pide cambio, siempre permitir
+  if (battleStore.currentSubState === 'SWITCH_MENU' || hasPendingForcedSwitch.value) return true
   
   const p = battleStore.state?.player
   if (!p) return false
@@ -48,7 +55,7 @@ const handleSwitch = (index: number) => {
   const isForced = uiStore.isBattleSwitchForced || battleStore.currentSubState === 'SWITCH_MENU'
   console.debug(`[BattleQuickTeam] handleSwitch clicked for index: ${index} (original: ${originalIndex}), pokemon: ${pokemon.name}, hp: ${pokemon.hp}, activeUid: ${activePokemonUid.value}, canSwitch: ${canSwitch.value}, isForced: ${isForced}`);
   
-  if (pokemon.hp <= 0 || pokemon.uid === activePokemonUid.value) {
+  if ((pokemon.hp <= 0 && !isSelectingReviveTarget.value) || pokemon.uid === activePokemonUid.value) {
     console.debug(`[BattleQuickTeam] handleSwitch early return check failed`);
     return
   }
@@ -80,7 +87,8 @@ const handleSwitch = (index: number) => {
         :data-pokemon-uid="pokemon.uid"
         :class="{ 
           'is-active': pokemon.uid === activePokemonUid,
-          'is-fainted': pokemon.hp <= 0,
+          'is-fainted': pokemon.hp <= 0 && !isSelectingReviveTarget,
+          'is-revive-target': pokemon.hp <= 0 && isSelectingReviveTarget,
           'is-disabled': !canSwitch && pokemon.uid !== activePokemonUid
         }"
         @click.stop="handleSwitch(index)"

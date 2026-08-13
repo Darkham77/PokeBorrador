@@ -42,7 +42,7 @@ function getValidMovesFromRequest(enemy: Pokemon, store?: BattleContext): Heuris
   return enemy.moves
     .filter((m): m is Move => !!m && m.pp > 0 && !(enemy.disabledMove && m.id === enemy.disabledMove.id))
     .map(m => {
-      const reqMove = reqMoves.find((r: { id?: string; disabled?: boolean | string; pp?: number }) => r.id === m.id);
+      const reqMove = reqMoves.find((r: { id?: string; disabled?: boolean | string; pp?: number }) => r.id === m.id); // type-ok
       if (!m.id) throw new Error(`[HeuristicAI] Move is missing an id: ${JSON.stringify(m)}`);
       return {
         id: m.id,
@@ -107,7 +107,7 @@ export class HeuristicAI implements CombatAI {
       : { winConditions: [], threats: [], position: { score: 0, factors: { pokemonAdvantage: 0, hpAdvantage: 0, hazardAdvantage: 0, speedAdvantage: 0, typeMatchupAdvantage: 0, statusAdvantage: 0, winConditionViability: 0 } }, sackOrder: [] };
 
     // Alive non-active team members (switch candidates)
-    const switchOptions = snapshot.mySide.pokemon.filter((p: { active: boolean; fainted: boolean }) => !p.active && !p.fainted);
+    const switchOptions = snapshot.mySide.pokemon.filter((p) => !p.active && p.hp > 0);
     const isTrapped = !!(snapshot.mySide.activePokemon?.volatiles.has('trapped') || snapshot.mySide.activePokemon?.volatiles.has('ingrain'));
 
     // Run heuristic engine
@@ -149,7 +149,7 @@ export class HeuristicAI implements CombatAI {
 
     if (!snapshot) return false;
 
-    const activeMoves = snapshot.mySide.activePokemon?.moves.map((id: string) => ({ id, pp: 1, disabled: false })) ?? [];
+    const activeMoves = snapshot.mySide.activePokemon?.moves.map((m) => ({ id: m.id, pp: 1, disabled: false })) ?? [];
     const matchup = this.calc.calcMatchup(snapshot, activeMoves);
     const bestOppDmg = matchup.oppAttacking[0]?.maxPercent ?? 0;
     const bestMyDmg = matchup.myAttacking[0]?.maxPercent ?? 0;
@@ -172,7 +172,7 @@ export class HeuristicAI implements CombatAI {
     const oppActive = snapshot.opponentSide.activePokemon;
     if (!oppActive) return this.fallbackSwitchIndex(enemyTeam, currentEnemyUid);
 
-    const candidates = snapshot.mySide.pokemon.filter((p: { active: boolean; fainted: boolean }) => !p.active && !p.fainted);
+    const candidates = snapshot.mySide.pokemon.filter((p) => !p.active && p.hp > 0);
     const strategic = evaluateStrategicState(snapshot, this.calc, this.inference);
     const decision = pickBestSwitch(snapshot, candidates, strategic, this.calc, this.inference, oppActive);
 

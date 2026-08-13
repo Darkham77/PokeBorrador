@@ -66,6 +66,31 @@ const patterns = [
     regex: /\btype\s+[A-Z]\w*\s*=\s*string\b/g,
   },
   {
+    label: 'Literal boolean type annotation (true/false) used instead of boolean type contract (MUST use `: boolean`)',
+    severity: 'ERROR',
+    regex: /\b(?:(?:export\s+)?const|let|var)\s+[A-Z_a-z]\w*\s*:\s*(?:true|false)\b|\b(?:export\s+)?type\s+[A-Z_a-z]\w*\s*=\s*(?:true|false)\s*;|^\s*(?:readonly\s+)?[A-Z_a-z]\w*\??:\s*(?:true|false)\s*;|\(\s*[A-Z_a-z]\w*\??:\s*(?:true|false)\b/gm,
+  },
+  {
+    label: 'Inline anonymous object type in function parameter prohibited — define a named interface or type contract',
+    severity: 'ERROR',
+    regex: /\(\s*(?:[A-Z_a-z]\w*\s*,\s*)*[A-Z_a-z]\w*\??\s*:\s*\{\s*(?:readonly\s+)?[A-Z_a-z]\w*\??\s*:\s*(?:string|number|boolean|unknown|any|[A-Z]\w*)(?:\[\])?\s*(?:;|,)\s*(?:readonly\s+)?[A-Z_a-z]\w*\??\s*:[^\n}]*\}\s*[,)]/g,
+  },
+  {
+    label: 'Positional array return without tuple type annotation — declare explicit tuple return type `: readonly [T1, T2]` or `as const`',
+    severity: 'WARN',
+    regex: /\breturn\s*\[\s*[A-Z_a-z]\w*(?:\.[A-Z_a-z]\w*)*\s*,\s*[A-Z_a-z]\w*(?:\.[A-Z_a-z]\w*)*\s*\]\s*;/g,
+  },
+  {
+    label: 'Floating promise detected — async call must be handled with await, void, or .catch()',
+    severity: 'WARN',
+    regex: /^\s*(?!(?:await|void|return|const|let|var)\s+)(?:[A-Z_a-z]\w*\.)?[a-z]\w*Async\s*\([^)]*\)\s*;/gm,
+  },
+  {
+    label: 'Mutable top-level let variable at module scope detected — move state inside Pinia store, class, or mark // singleton-ok',
+    severity: 'WARN',
+    regex: /^(?:export\s+)?let\s+[a-z]\w*\s*=/gm,
+  },
+  {
     label: 'Silent domain ID fallback assignment (|| \'\', ?? \'\', condition ? id : \'\') prohibited; must use strict boundary validator (e.g. requireItemId)',
     severity: 'ERROR',
     regex: /(?:heldItem|item|species|ability|move)\s*(?:=|:)\s*.*(?:\?|\|\||\?\?)\s*['"]['"]/g,

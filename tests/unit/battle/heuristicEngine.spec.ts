@@ -12,6 +12,7 @@ import type {
   HeuristicBattleSnapshot,
   HeuristicMoveInfo,
   HeuristicPokemonState,
+  HeuristicPokemonMove,
   StrategicState,
   DamageMatchup,
   DamageResult,
@@ -21,19 +22,35 @@ import type {
 // Synthetic state builders
 // ──────────────────────────────────────────
 
+function makeMove(id: string): HeuristicPokemonMove {
+  return {
+    id,
+    name: id,
+    type: 'normal',
+    category: 'physical',
+    basePower: 50,
+    accuracy: 100,
+    pp: 10,
+    maxpp: 10,
+    target: 'normal',
+  };
+}
+
 function makePokemon(overrides: Partial<HeuristicPokemonState> = {}): HeuristicPokemonState {
   return {
     name: 'Charizard',
     species: 'charizard',
     level: 50,
     hp: 150,
-    maxHp: 150,
+    maxhp: 150,
     hpPercent: 100,
-    status: '',
+    status: null,
     active: true,
     fainted: false,
+    types: ['fire', 'flying'],
+    baseStats: { hp: 150, atk: 109, def: 80, spa: 130, spd: 85, spe: 100 },
     stats: { hp: 150, atk: 109, def: 80, spa: 130, spd: 85, spe: 100 },
-    moves: ['flamethrower', 'airslash', 'earthquake', 'dragonpulse'],
+    moves: [makeMove('flamethrower'), makeMove('airslash'), makeMove('earthquake'), makeMove('dragonpulse')],
     knownMoves: ['flamethrower'],
     ability: 'blaze',
     knownAbility: 'blaze',

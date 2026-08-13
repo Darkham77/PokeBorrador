@@ -51,6 +51,20 @@ Frontend Developers / Systems Engineers.
 - **Combat Log Sprite Source Mapping**: Trainer-initiated events (challenges, switches, Rocket ambushes, item usage) must strictly use `'enemy_trainer'` or `'player'` as the `source` argument for `addLog`.
 - **ShowdownBattleRunner & Manual Scenario Separation**: `ShowdownBattleRunner` strictly resolves pre-recorded choice stream indices for fuzzer batch replays (`playerChoices` present). It MUST NEVER be patched with ad-hoc choice fallbacks (e.g. forcing `'move 1'`) to force manual UI scenario tests (e.g. `battle_manual_scenarios.simulation.ts`) to pass. Manual scenario tests test dynamic UI/FSM workflows and MUST execute native game AI logic (`CombatAI` / `ScriptedAI`). `ShowdownBattleRunner` encapsulates readiness checks internally to avoid repeating FSM substate guards at invocation sites.
 
+- **Battle State Persistence (Volatile vs Non-Volatile)**:
+  - **ALL volatile statuses MUST be cleared when a battle ends** (win, lose, or flee). This is the canonical Pokémon rule.
+  - Only non-volatile statuses (`burn`, `psn`, `par`, `slp`, `frz`, `tox`) and base stats (`hp`, `pp`, `item`) survive between battles.
+  - `clearVolatileStatus(poke)` in `battleStatus.ts` is the authoritative function for Pokémon-level volatile clearing. Call it for every team member on `terminateBattle` (`resolution.ts`) and at the start of every new battle (`orchestrator.ts`).
+  - `resetActiveBattleState(ctx, player, isGym)` in `orchestratorStateHelper.ts` is the authoritative function for BattleState-level clearing. It resets `weather`, `terrain`, `fieldConditions`, `playerSideConditions`, `enemySideConditions`, `pendingSlotEffects`, `playerRequest`, `enemyRequest`, and stat stages.
+
+- **Future Sight / Doom Desire — Slot Condition Model**:
+  - Future Sight and Doom Desire are **slot conditions**, NOT Pokémon volatiles. They live on `BattleState.pendingSlotEffects: PendingSlotEffect[]`.
+  - The `PendingSlotEffect` interface is defined in `src/types/battle/battle.ts`. Each entry holds `{ move, side, targetSlot, turnsLeft, damage, sourceName? }`.
+  - `damage` is pre-computed at cast time (15% of target's `maxHp`, minimum 10). It is stored in the effect, not re-computed on resolution.
+  - The effect fires on the **Pokémon currently occupying `targetSlot`** on `side` when `turnsLeft` reaches 0 — regardless of which Pokémon was originally targeted. This matches official game behavior.
+  - Do NOT add `futureSightTurns` or `futureSightDmg` to the `Pokemon` type — those fields have been removed.
+  - `pendingSlotEffects` is ticked in `battleFlow.ts` during upkeep. `resetActiveBattleState` clears it to `[]` between battles.
+
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.

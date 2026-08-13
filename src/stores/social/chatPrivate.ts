@@ -327,7 +327,7 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
       outboxChannels[friendId]?.send({ type: 'broadcast', event: 'private_message', payload })
     }
 
-    handleIncomingPrivate({ ...payload, senderId: authStore.user.id }, friendId)
+    handleIncomingPrivate({ ...payload, senderName: (payload.senderName as string) || 'Entrenador', senderId: authStore.user.id }, friendId)
     audioStore.play('sentMsg')
 
     const dbPayload = {

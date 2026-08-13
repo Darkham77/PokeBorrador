@@ -10,7 +10,7 @@ import { BATTLE_CONDITION_KEYS, type BattleState, type BattleStages, type Battle
 import type { Pokemon, PokemonMove } from '@/types/pokemon/pokemon';
 import { requireItemId } from '@/data/inventory/items';
 import { requireAbilityId } from '@/data/battle/abilities';
-import type { HeuristicBattleSnapshot, HeuristicPokemonState, HeuristicSideState, HeuristicFieldState, HeuristicVolatileKey } from './types.ts';
+import type { HeuristicBattleSnapshot, HeuristicPokemonState, HeuristicSideState, HeuristicFieldState, HeuristicVolatileKey, HeuristicPokemonMove } from './types.ts';
 
 /**
  * Builds a HeuristicBattleSnapshot from the live BattleContext.
@@ -42,8 +42,10 @@ export function buildSnapshot(store: BattleContext): HeuristicBattleSnapshot {
 // Side builder
 // ──────────────────────────────────────────
 
+import type { SideID } from '@pkmn/sim';
+
 function buildSide(
-  id: 'p1' | 'p2',
+  id: SideID,
   team: Pokemon[],
   stages: BattleStages,
   activePoke: Pokemon | null | undefined,
@@ -82,21 +84,41 @@ function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): H
   const rawItem = p.heldItem || p.item;
   const heldItem = rawItem ? requireItemId(rawItem) : ''; // domain-ok
   const validMoves = (p.moves || []).filter((m): m is PokemonMove => Boolean(m));
-  const moveIds = validMoves.map(m => {
-    if (!m.id) throw new Error(`[snapshotBuilder] PokemonMove missing immutable ID for move '${m.name}' on ${p.name}`);
-    return toID(m.id);
+  const moveInfos: HeuristicPokemonMove[] = validMoves.map(m => {
+    const id = toID(m.id);
+    return {
+      id,
+      name: m.name,
+      type: m.type || 'normal',
+      category: m.cat || 'physical',
+      basePower: m.power || 0,
+      accuracy: m.acc || 100,
+      pp: m.pp,
+      maxpp: m.maxPP,
+      target: 'normal',
+    };
   });
+  const moveIds = moveInfos.map(m => m.id);
 
   return {
     name: p.nickname || p.name,
     species: toID(p.id ?? (() => { throw new Error(`[snapshotBuilder] Pokemon missing id: ${p.name}`); })()),
     level: p.level,
     hp: p.hp,
-    maxHp: p.maxHp,
+    maxhp: p.maxHp,
     hpPercent: p.maxHp > 0 ? (p.hp / p.maxHp) * 100 : 100, // AI-1 Fix: default 100% for unrevealed
-    status: p.status ?? '',
+    status: p.status ?? null,
     active,
     fainted,
+    types: [p.type, ...(p.type2 ? [p.type2] : [])],
+    baseStats: {
+      hp: p.maxHp,
+      atk: p.atk,
+      def: p.def,
+      spa: p.spa,
+      spd: p.spd,
+      spe: p.spe,
+    },
     stats: {
       hp: p.maxHp,
       atk: p.atk,
@@ -105,15 +127,13 @@ function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): H
       spd: p.spd,
       spe: p.spe,
     },
-    moves: moveIds,
-    // For the enemy, all moves are "revealed" in our game (trainer has fixed team)
-    // knownMoves tracks what the engine has seen — start with all known moves
+    moves: moveInfos,
     knownMoves: moveIds,
     // AI-12 Fix: prefer current ability over baseAbility if present
     ability: p.ability ? requireAbilityId(p.ability) : '', // domain-ok
     knownAbility: p.ability ? requireAbilityId(p.ability) : null,
-    item: heldItem ? requireItemId(heldItem) : '', // domain-ok
-    knownItem: heldItem ? requireItemId(heldItem) : null,
+    item: heldItem,
+    knownItem: heldItem || null,
     // AI-11 Fix: itemConsumed should only be true if explicitly lost via volatile/log
     itemConsumed: Boolean(p.volatileCounters?.['itemconsumed'] || p.volatileCounters?.['enditem']),
     boosts: {

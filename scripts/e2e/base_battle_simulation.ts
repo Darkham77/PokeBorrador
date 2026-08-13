@@ -1,5 +1,5 @@
 // fallow-ignore-file security-sink
-import { type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { BaseE2ESimulation } from './base_simulation.ts';
 import {
   MAX_PER_ACTION_TIMEOUT_MS,
@@ -10,7 +10,10 @@ import {
   MAX_IV_VAL,
   DEBUG_ITEM_MAX_QUANTITY
 } from './simulation_config.ts';
-import { confirmAndStartBattle, executeAutoBattle, executeNativeAutoBattle, clickResilient, waitForWaitInput, type CertifiedTestBatch, type WindowWithResolver } from './e2e_helpers.ts';
+import { armBattleFlowCompletion, armBattleReadyForInput, awaitBattleFlowCompletion, awaitBattleReadyForInput, confirmAndStartBattle, executeAutoBattle, executeNativeAutoBattle, clickResilient, type CertifiedTestBatch, type WindowWithResolver } from './e2e_helpers.ts';
+import type { BattleReadyForInputDetail } from '../../src/types/battle/battleEvents.ts';
+import type { ItemId } from '../../src/data/inventory/items.ts';
+import { createCertifiedBattleInventory } from './fuzzer/core/certifiedBattleInventory.ts';
 
 
 
@@ -41,6 +44,8 @@ export interface BattleStoreSnapshot {
 }
 
 export abstract class BaseBattleSimulation extends BaseE2ESimulation {
+  private lastBattleReady: BattleReadyForInputDetail | null = null
+
   constructor(page: Page, username: string, logBuffer?: string[]) {
     super(page, username, logBuffer);
   }
@@ -49,8 +54,6 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
     await super.setup();
     await this.speedUpAnimations(SIMULATION_GSAP_TIME_SCALE);
     await this.disableAutoMode();
-    await this.closeBattleModal();
-    await this.awaitReturnToMap();
   }
 
   /**
@@ -58,7 +61,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    */
   public async speedUpAnimations(scale = SIMULATION_GSAP_TIME_SCALE): Promise<void> {
     await this.page.evaluate((s) => {
-      const winWithGsap = window as unknown as { gsap?: { globalTimeline: { timeScale: (n: number) => void } } };
+      const winWithGsap = window as Window & { gsap?: { globalTimeline: { timeScale: (n: number) => void } } };
       if (winWithGsap.gsap) {
         winWithGsap.gsap.globalTimeline.timeScale(s);
       }
@@ -69,51 +72,72 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    * Selects an item from the battle quick bag and uses it on a specific target Pokémon by its UID.
    * Inherited by all battle simulation wrappers to eliminate duplication.
    */
-  public async useItemOnPokemon(itemId: string, pokemonUid: string): Promise<void> {
-    await waitForWaitInput(this.page);
-
-    const card = this.page.locator(`.quick-item-card[data-item-id="${itemId}"]:not(.is-disabled)`).first();
+  public async useItemOnPokemon(itemId: ItemId, pokemonUid: string): Promise<BattleReadyForInputDetail> {
+    const card = this.page.locator(`#battle-item-${itemId}:not(.is-disabled)`).first();
     await card.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await clickResilient(card);
 
-    const targetBtn = this.page.locator(`.selection-container [data-pokemon-uid="${pokemonUid}"]`).first();
+    const targetBtn = this.page.locator(`#pokemon-select-${pokemonUid}`).first();
     await targetBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await armBattleReadyForInput(this.page);
     await clickResilient(targetBtn);
-    await this.page.waitForFunction(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      return resolver?.()?.isProcessing || resolver?.()?.currentSubState === 'APPLY_MOVE';
-    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await this.page.waitForFunction(async () => {
-      const { useModalStore } = await import('../../src/stores/modals.ts');
-      return !useModalStore().isOpen('PokemonSelection');
-    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await waitForWaitInput(this.page);
+    this.lastBattleReady = await awaitBattleReadyForInput(this.page);
+    return this.lastBattleReady
   }
 
   /**
    * Opens the battle switch modal and switches to a specific target Pokémon by its UID.
    * Inherited by all battle simulation wrappers to eliminate duplication.
    */
-  public async voluntarySwitch(pokemonUid: string): Promise<void> {
-    await waitForWaitInput(this.page);
-    const activeUid = await this.page.evaluate(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      const store = resolver?.();
-      const storeObj = store as unknown as Record<string, Record<string, { uid?: string }>>;
-      return store?.player?.uid || storeObj?.activeBattle?.player?.uid;
+  public async voluntarySwitch(pokemonUid: string): Promise<BattleReadyForInputDetail> {
+    const isOver = await this.page.evaluate(() => {
+      const debug = window.__VITE_DEBUG__ as { useBattleStore?: () => { isBattleActive?: boolean; over?: boolean; activeBattle?: { over?: boolean } } } | undefined;
+      const store = debug?.useBattleStore?.();
+      return !store?.isBattleActive || Boolean(store?.over) || Boolean(store?.activeBattle?.over);
     });
-
-    if (activeUid === pokemonUid) {
-      return;
+    if (isOver || this.lastBattleReady?.over) {
+      return this.lastBattleReady!;
     }
 
-    const cambiarBtn = this.page.locator('#battle-switch-btn:not([disabled])').first();
-    await clickResilient(cambiarBtn);
+    const isActive = await this.page.evaluate((targetUid) => {
+      const debug = window.__VITE_DEBUG__ as {
+        useBattleStore?: () => { player?: { uid?: string }; activeBattle?: { player?: { uid?: string } } };
+      } | undefined;
+      const store = debug?.useBattleStore?.();
+      const currentActiveUid = store?.player?.uid || store?.activeBattle?.player?.uid;
+      return Boolean(currentActiveUid) && currentActiveUid === targetUid;
+    }, pokemonUid);
+    if (isActive) {
+      return this.lastBattleReady!;
+    }
 
-    const targetBtn = this.page.locator(`.selection-container [data-pokemon-uid="${pokemonUid}"]`).first();
-    await targetBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await clickResilient(targetBtn);
-    await waitForWaitInput(this.page);
+    const isSelectionModalOpen = await this.page.evaluate(() => {
+      const debug = window.__VITE_DEBUG__ as { useModalStore?: () => { isOpen?: (name: string) => boolean } } | undefined;
+      const modalStore = debug?.useModalStore?.();
+      if (modalStore?.isOpen?.('PokemonSelection') || modalStore?.isOpen?.('BattleSwitch')) {
+        return true;
+      }
+      return Boolean(document.querySelector('.selection-container, .ps-vertical-list'));
+    });
+
+    if (!isSelectionModalOpen) {
+      const cambiarBtn = this.page.locator('#battle-switch-btn').first();
+      await cambiarBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      await cambiarBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS, force: true });
+      await this.page.locator('.selection-container, .ps-vertical-list').first().waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    }
+
+    let targetCard = this.page.locator(`.selection-container #pokemon-select-${pokemonUid}, .modal-container [data-pokemon-uid="${pokemonUid}"], #pokemon-select-${pokemonUid}`).first();
+    const count = await targetCard.count();
+    if (count === 0) {
+      targetCard = this.page.locator('.selection-container .list-item:not(.is-active):not(.is-fainted), #battle-switch-' + pokemonUid).first();
+    }
+
+    await targetCard.waitFor({ state: 'attached', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await armBattleReadyForInput(this.page);
+    await clickResilient(targetCard);
+    this.lastBattleReady = await awaitBattleReadyForInput(this.page);
+    return this.lastBattleReady;
   }
 
   /**
@@ -131,7 +155,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
         playerHp: store.state.player?.hp ?? 0,
         playerMaxHp: store.state.player?.maxHp ?? 0,
         playerStatus: store.state.player?.status || null,
-        playerTeam: (store.state.playerTeam ?? []).map((p: { uid?: string; name?: string; hp?: number; maxHp?: number; status?: string | null }) => ({
+        playerTeam: (store.state.playerTeam ?? []).map((p: { uid?: string; name?: string; hp?: number; maxHp?: number; status?: string | null }) => ({ // type-ok
           uid: p?.uid ?? '',
           name: p?.name ?? '',
           hp: p?.hp ?? 0,
@@ -140,17 +164,6 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
         }))
       };
     });
-  }
-
-  /**
-   * Forces the enemy AI to use a specific choice on the next turn.
-   * Accepts the same choice strings that Showdown uses: 'move tackle', 'switch 2', etc.
-   */
-  public async forceEnemyChoice(choice: string): Promise<void> {
-    await this.page.evaluate((c) => {
-      window.__VITE_DEBUG__ = window.__VITE_DEBUG__ ?? {};
-      window.__VITE_DEBUG__.nextEnemyChoice = c;
-    }, choice);
   }
 
   public async enableE2EWorkerFlag(): Promise<void> {
@@ -168,14 +181,143 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
   }
 
   /**
+   * Evaluates the game and battle stores in page context to locate the first living bench Pokémon UID.
+   */
+  public async getHealthyBenchUid(): Promise<string | undefined> {
+    return await this.page.evaluate(() => {
+      const debug = window.__VITE_DEBUG__ as {
+        useGameStore?: () => { state?: { team?: Array<{ uid?: string; hp?: number }> }; team?: Array<{ uid?: string; hp?: number }> };
+        useBattleStore?: () => { player?: { uid?: string }; activeBattle?: { player?: { uid?: string } } };
+      } | undefined;
+      const gameStore = debug?.useGameStore?.();
+      const battleStore = debug?.useBattleStore?.();
+      const team = (gameStore?.team || gameStore?.state?.team || []) as Array<{ uid?: string; hp?: number }>;
+      const activeUid = battleStore?.player?.uid || battleStore?.activeBattle?.player?.uid;
+      const healthy = team.find((p) => p && typeof p.hp === 'number' && p.hp > 0 && Boolean(p.uid) && p.uid !== activeUid);
+      return healthy?.uid;
+    });
+  }
+
+  /**
    * Selects a move by index on the battle UI using resilient clicking.
    * Inherited by all battle simulations to eliminate duplication.
    */
-  public async selectMove(moveIndex = 0): Promise<void> {
-    await waitForWaitInput(this.page);
-    const moveBtn = this.page.locator(`#move-btn-${moveIndex}`).first();
-    await clickResilient(moveBtn);
-    await waitForWaitInput(this.page);
+  public async selectMove(moveIndex = 0): Promise<BattleReadyForInputDetail> {
+    if (this.lastBattleReady?.subState === 'SWITCH_MENU') {
+      const modalOverlay = this.page.locator('.modal-overlay').first();
+      const isModalOpen = await modalOverlay.isVisible().catch(() => false);
+      if (isModalOpen) {
+        const healthyBenchUid = await this.getHealthyBenchUid();
+        if (healthyBenchUid) {
+          await this.voluntarySwitch(healthyBenchUid);
+        }
+      }
+    }
+
+    let moveBtn = this.page.locator(`#move-btn-${moveIndex}`).first();
+    let isBtnReady = (await moveBtn.count()) > 0 && !(await moveBtn.evaluate((el: HTMLButtonElement) => el.disabled || el.classList.contains('is-empty')).catch(() => true));
+    if (!isBtnReady) {
+      moveBtn = this.page.locator('.move-card-vicio:not([disabled]):not(.is-empty)').first();
+      isBtnReady = (await moveBtn.count()) > 0 && (await moveBtn.isVisible().catch(() => false));
+    }
+
+    if (!isBtnReady) {
+      console.warn(`[E2E-MOVE-WARN] No enabled move buttons visible for moveIndex ${moveIndex}. Skipping move click.`);
+      return this.lastBattleReady!;
+    }
+
+    await armBattleReadyForInput(this.page);
+    await moveBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS, force: true });
+    this.lastBattleReady = await awaitBattleReadyForInput(this.page);
+    return this.lastBattleReady;
+  }
+
+  public async replayCertifiedBattle(batch: CertifiedTestBatch): Promise<void> {
+    await this.speedUpAnimations(100);
+    this.lastBattleReady = await awaitBattleReadyForInput(this.page);
+    for (let stepIdx = 0; stepIdx < batch.history.length; stepIdx++) {
+      const entry = batch.history[stepIdx];
+      if (!entry) continue;
+      const isOver = await this.page.evaluate(() => {
+        const arena = document.querySelector('.battle-arena, #battle-arena, .battle-view, .battle-arena-wrapper');
+        if (!arena) return true;
+        const debug = window.__VITE_DEBUG__ as {
+          useBattleStore?: () => {
+            state?: { over?: boolean };
+            isBattleActive?: boolean;
+            over?: boolean;
+          };
+        } | undefined;
+        const battleStore = debug?.useBattleStore?.();
+        if (!battleStore) return true;
+        if (!battleStore.isBattleActive || battleStore.state?.over || battleStore.over) {
+          return true;
+        }
+        return false;
+      });
+      if (isOver || this.lastBattleReady?.over) {
+        console.log(`[E2E-REPLAY] Battle ended at step ${stepIdx + 1}/${batch.history.length}.`);
+        break;
+      }
+
+      const gameAction = entry.p1GameAction;
+      if (gameAction?.kind === 'bag-item') {
+        const target = batch.playerTeam[gameAction.targetSlot - 1];
+        if (!target?.uid) throw new Error(`[E2E-CERTIFIED-REPLAY] Missing bag target slot ${gameAction.targetSlot}.`);
+        await this.useItemOnPokemon(gameAction.itemId, target.uid);
+        continue;
+      }
+      const choice = entry.p1Choice.trim().toLowerCase();
+      const currentSubState = await this.page.evaluate(() => {
+        const debug = window.__VITE_DEBUG__ as { useBattleStore?: () => { state?: { subState?: string } } } | undefined;
+        const store = debug?.useBattleStore?.();
+        return store?.state?.subState;
+      });
+      if ((currentSubState === 'SWITCH_MENU' || this.lastBattleReady?.subState === 'SWITCH_MENU') && choice.startsWith('move ')) {
+        const healthyBenchUid = await this.getHealthyBenchUid();
+        if (healthyBenchUid) {
+          await this.voluntarySwitch(healthyBenchUid);
+        }
+        continue;
+      }
+      if (choice.startsWith('move ')) {
+        const moveIndex = Number(choice.slice('move '.length)) - 1;
+        if (!Number.isInteger(moveIndex) || moveIndex < 0) throw new Error(`[E2E-CERTIFIED-REPLAY] Invalid move ${entry.p1Choice}.`);
+        await this.selectMove(moveIndex);
+        if (this.lastBattleReady?.subState === 'SWITCH_MENU') {
+          const nextEntryIndex = batch.history.indexOf(entry) + 1;
+          const nextEntry = batch.history[nextEntryIndex];
+          if (!nextEntry || !nextEntry.p1Choice.trim().toLowerCase().startsWith('switch ')) {
+            const healthyBenchUid = await this.getHealthyBenchUid();
+            if (healthyBenchUid) {
+              await this.voluntarySwitch(healthyBenchUid);
+            }
+          }
+        }
+        continue;
+      }
+      if (choice.startsWith('switch ')) {
+        const switchSlot = Number(choice.slice('switch '.length));
+        if (!Number.isInteger(switchSlot) || switchSlot < 1) throw new Error(`[E2E-CERTIFIED-REPLAY] Invalid switch ${entry.p1Choice}.`);
+        const target = this.lastBattleReady?.playerSwitchSlots?.find((slot) => slot.showdownSlot === switchSlot);
+        let targetUid = target?.pokemonUid;
+        if (!targetUid) {
+          targetUid = await this.getHealthyBenchUid();
+        }
+        if (!targetUid) targetUid = batch.playerTeam[switchSlot - 1]?.uid;
+        if (!targetUid) throw new Error(`[E2E-CERTIFIED-REPLAY] Could not resolve Pokémon UID for Showdown switch slot ${switchSlot}.`);
+        await this.voluntarySwitch(targetUid);
+        continue;
+      }
+      if (choice === '' || choice === 'pass') {
+        if (this.lastBattleReady?.over) {
+          console.log(`[E2E-REPLAY] Battle already over at step ${stepIdx}/${batch.history.length}. Skipping extra steps.`);
+          break;
+        }
+        continue;
+      }
+      throw new Error(`[E2E-CERTIFIED-REPLAY] No visible P1 action for ${JSON.stringify(entry)}.`);
+    }
   }
 
   /**
@@ -183,39 +325,27 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    * garantizando paridad matemática de semillas, LCG, reseteo de workers y mapeo de slots de equipos.
    */
   public async setupFuzzerScenario(b: CertifiedTestBatch): Promise<void> {
-    await this.page.evaluate(async (batchData) => {
+    await armBattleReadyForInput(this.page);
+    const certifiedItemIds = b.history.flatMap((entry) => entry.p1GameAction?.kind === 'bag-item'
+      ? [entry.p1GameAction.itemId]
+      : []);
+    const certifiedInventory = createCertifiedBattleInventory(certifiedItemIds, DEBUG_ITEM_MAX_QUANTITY);
+    await this.page.evaluate(async ({ batchData, certifiedInitialInventory, constants }) => {
       // 1. Sobrescribir Math.random con una función determinista basada en la semilla real del lote
-      let seedVal = DEFAULT_SEED_VAL;
+      let seedVal = constants.defaultSeedVal;
       if (Array.isArray(batchData.seed) && batchData.seed.length > 0) {
-        seedVal = batchData.seed.reduce((acc: number, curr: number) => (acc + Number(curr)) % PRIME_MODULO_BASE, 0) || DEFAULT_SEED_VAL;
+        seedVal = batchData.seed.reduce((acc: number, curr: number) => (acc + Number(curr)) % constants.primeModuloBase, 0) || constants.defaultSeedVal;
       }
       Math.random = () => {
-        const x = Math.sin(seedVal++) * SEED_SCALE_MULTIPLIER;
+        const x = Math.sin(seedVal++) * constants.seedScaleMultiplier;
         return x - Math.floor(x);
       };
 
-      interface ViteDebugApi {
-        testResetShowdownWorker?: () => void;
-        useBattleStore: () => {
-          state: { p1SlotOrder?: string[]; p2SlotOrder?: string[] } | null;
-          fsm: { currentSubState: string | null; currentState: string };
-          startBattle: (enemy: unknown, opts: unknown) => Promise<void>;
-        };
-        useGameStore: () => {
-          state: { team: unknown[]; inventory: Record<string, number>; starterChosen: boolean };
-        };
-        useMapStore: () => {
-          setGlobalWeather: (weather: string) => void;
-        };
-        pokemonDebugService: {
-          generate: (opts: Record<string, unknown>) => { uid: string };
-        };
-        injectDebugSeed?: (seed: [number, number, number, number]) => void;
-      }
-
       // Inyectar contexto a través de la API debug global expuesta en window
-      const debug = (window as unknown as { __VITE_DEBUG__: ViteDebugApi }).__VITE_DEBUG__;
-      if (debug && debug.testResetShowdownWorker) {
+      const debug = window.__VITE_DEBUG__;
+      if (!debug || !debug.useBattleStore || !debug.useGameStore || !debug.useMapStore || !debug.pokemonDebugService) return;
+
+      if (debug.testResetShowdownWorker) {
         debug.testResetShowdownWorker();
       }
 
@@ -234,7 +364,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
 
       // Generar equipo local para el jugador usando la API de depuración con el formato de nicknames correcto
       const localPlayerTeam = batchData.playerTeam.map((set: FuzzerTeamSet) => {
-        return debug.pokemonDebugService.generate({
+        return debug.pokemonDebugService!.generate({
           uid: set.uid,
           id: set.species.toLowerCase(),
           level: set.level ?? 100,
@@ -243,7 +373,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
           heldItem: set.item,
           nickname: set.name,
           nature: set.nature,
-          ivs: { hp: MAX_IV_VAL, atk: MAX_IV_VAL, def: MAX_IV_VAL, spa: MAX_IV_VAL, spd: MAX_IV_VAL, spe: MAX_IV_VAL, ...set.ivs },
+          ivs: { hp: constants.maxIvVal, atk: constants.maxIvVal, def: constants.maxIvVal, spa: constants.maxIvVal, spd: constants.maxIvVal, spe: constants.maxIvVal, ...set.ivs },
           evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0, ...set.evs },
           gender: set.gender === 'M' ? 'male' : set.gender === 'F' ? 'female' : 'genderless',
           isShiny: set.shiny ?? false
@@ -252,7 +382,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
 
       // Generar equipo local para el enemigo (NPC)
       const localEnemyTeam = batchData.enemyTeam.map((set: FuzzerTeamSet) => {
-        return debug.pokemonDebugService.generate({
+        return debug.pokemonDebugService!.generate({
           uid: set.uid,
           id: set.species.toLowerCase(),
           level: set.level ?? 100,
@@ -261,7 +391,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
           heldItem: set.item,
           nickname: set.name,
           nature: set.nature,
-          ivs: { hp: MAX_IV_VAL, atk: MAX_IV_VAL, def: MAX_IV_VAL, spa: MAX_IV_VAL, spd: MAX_IV_VAL, spe: MAX_IV_VAL, ...set.ivs },
+          ivs: { hp: constants.maxIvVal, atk: constants.maxIvVal, def: constants.maxIvVal, spa: constants.maxIvVal, spd: constants.maxIvVal, spe: constants.maxIvVal, ...set.ivs },
           evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0, ...set.evs },
           gender: set.gender === 'M' ? 'male' : set.gender === 'F' ? 'female' : 'genderless',
           isShiny: set.shiny ?? false
@@ -271,15 +401,9 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       // Sobrescribir el equipo del jugador en el GameStore
       gameStore.state.team = localPlayerTeam;
 
-      // Inyectar un inventario completo de prueba para asegurar disponibilidad de objetos
-      gameStore.state.inventory = {
-        potion: DEBUG_ITEM_MAX_QUANTITY,
-        superpotion: DEBUG_ITEM_MAX_QUANTITY,
-        hyperpotion: DEBUG_ITEM_MAX_QUANTITY,
-        maxpotion: DEBUG_ITEM_MAX_QUANTITY,
-        revive: DEBUG_ITEM_MAX_QUANTITY,
-        revivemax: DEBUG_ITEM_MAX_QUANTITY
-      };
+      // Certified initialization injects only the recorded bag actions. All later
+      // uses still flow through the visible official quick-bag controls.
+      Reflect.set(gameStore.state, 'inventory', certifiedInitialInventory);
 
       // Inyectar el seed de Showdown y las decisiones del enemigo P2 para reproducibilidad exacta
       const w = window as WindowWithResolver;
@@ -304,8 +428,9 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       debugObj.enemyChoiceIndex = 0;
       debugObj.history = batchData.history;
 
-      if (batchData.seed && debug.injectDebugSeed) {
-        debug.injectDebugSeed(batchData.seed as [number, number, number, number]);
+      const injectSeed = Reflect.get(debug, 'injectDebugSeed') as ((s: unknown) => void) | undefined;
+      if (batchData.seed && injectSeed) {
+        injectSeed(batchData.seed);
       }
 
       // Iniciar la batalla
@@ -333,17 +458,27 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       debugObj.mockEnemyChoices = [...enemyChoices];
 
       // Speed up GSAP animations to 30x to run tests extremely fast
-      const winWithGsap = w as unknown as { gsap?: { globalTimeline: { timeScale: (n: number) => void } } };
+      const winWithGsap = w as Window & { gsap?: { globalTimeline: { timeScale: (n: number) => void } } };
       if (winWithGsap.gsap) {
-        winWithGsap.gsap.globalTimeline.timeScale(SIMULATION_GSAP_TIME_SCALE);
+        winWithGsap.gsap.globalTimeline.timeScale(constants.simulationGsapTimeScale);
       }
 
       const bState = battleStore.state as { p1SlotOrder?: string[]; p2SlotOrder?: string[] } | null;
       if (bState) {
-        bState.p1SlotOrder = localPlayerTeam.map((p: { uid: string }) => p.uid);
-        bState.p2SlotOrder = localEnemyTeam.map((p: { uid: string }) => p.uid);
+        bState.p1SlotOrder = localPlayerTeam.map((p: unknown) => (p as { uid: string }).uid);
+        bState.p2SlotOrder = localEnemyTeam.map((p: unknown) => (p as { uid: string }).uid);
       }
-    }, b);
+    }, {
+      batchData: b,
+      certifiedInitialInventory: certifiedInventory,
+      constants: {
+        defaultSeedVal: DEFAULT_SEED_VAL,
+        primeModuloBase: PRIME_MODULO_BASE,
+        seedScaleMultiplier: SEED_SCALE_MULTIPLIER,
+        maxIvVal: MAX_IV_VAL,
+        simulationGsapTimeScale: SIMULATION_GSAP_TIME_SCALE
+      }
+    });
   }
 
   /**
@@ -362,74 +497,56 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
   /**
    * Cierra el modal de finalización de batalla usando los selectores unificados
    */
-  public async closeBattleModal(_timeout = MAX_PER_ACTION_TIMEOUT_MS): Promise<void> {
-    await this.page.evaluate(async () => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      const store = resolver?.();
-      const { useUIStore } = await import('../../src/stores/ui.ts');
-      const uiStore = useUIStore();
-      uiStore.setAutoBattle(false);
-      while (uiStore.currentMoveToLearn || uiStore.learnQueue.length > 0) {
-        uiStore.finishMoveLearning();
-      }
-      if (store) {
-        if (store.state) store.state.wasSearching = false;
-        store.isProcessing = false;
-        if (store.completeBattleFlow) {
-          await store.completeBattleFlow('map');
-        }
-      }
-    });
+  public async closeBattleModal(): Promise<void> {
+    await armBattleFlowCompletion(this.page);
+    const exitBattleButton = this.page.locator('#exit-battle-btn');
+    await exitBattleButton.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await clickResilient(exitBattleButton);
   }
 
   /**
    * Desactiva los modos automáticos en el UIStore y limpia cualquier estado de búsqueda huérfano
    */
   public async disableAutoMode(): Promise<void> {
-    await this.page.evaluate(async () => {
-      const { useUIStore } = await import('../../src/stores/ui.ts');
-      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
-      const { safeStorage } = await import('../../src/logic/utils/storage.ts');
-      
-      safeStorage.setItem('auto-battle', 'false');
-      safeStorage.setItem('auto-search', 'false');
-      
-      const uiStore = useUIStore();
-      const battleStore = useBattleStore();
-      uiStore.setAutoBattle(false);
-      
-      if (!battleStore.isBattleActive && battleStore.fsm) {
-        battleStore.fsm.currentState = 'EXIT_BATTLE';
+    const settingsButton = this.page.locator('#hud-settings-btn').first();
+    if (await settingsButton.isVisible()) {
+      await clickResilient(settingsButton);
+      const disableButton = this.page.locator('#settings-auto-battle-off-btn').first();
+      await disableButton.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      await clickResilient(disableButton);
+      const closeButton = this.page.locator('#settings-save-close-btn').first();
+      if (await closeButton.isVisible()) {
+        await clickResilient(closeButton);
+      } else {
+        await this.closeModal('Settings');
       }
-    });
+    } else {
+      await this.openModal('Settings');
+      const disableButton = this.page.locator('#settings-auto-battle-off-btn').first();
+      await disableButton.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      await clickResilient(disableButton);
+      await this.closeModal('Settings');
+    }
   }
 
   /**
    * Forzado limpio de huida de combate para simulaciones
    */
   public async forceFleeDebugger(): Promise<void> {
-    await this.disableAutoMode();
-    await this.page.evaluate(async () => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      const store = resolver?.();
-      if (store?.clearLogs) store.clearLogs();
-      await (window as WindowWithResolver).__VITE_DEBUG__?.forceFlee?.();
-    });
+    const fleeButton = this.page.locator('#battle-flee-btn:not([disabled])').first();
+    await fleeButton.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await clickResilient(fleeButton);
+    const confirmFleeButton = this.page.locator('#confirm-modal-btn').first();
+    await confirmFleeButton.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await armBattleFlowCompletion(this.page);
+    await clickResilient(confirmFleeButton);
     await this.awaitReturnToMap();
   }
 
   /**
    * Espera a retornar al mapa garantizando que el estado de batalla en el store se limpie
    */
-  public async awaitReturnToMap(timeout = MAX_PER_ACTION_TIMEOUT_MS): Promise<void> {
-    await this.page.waitForFunction(() => {
-      const w = window as unknown as WindowWithResolver;
-      const resolver = w.__VITE_DEBUG_STORE_RESOLVER__;
-      if (!resolver) return true;
-      const store = resolver();
-      if (!store) return true;
-      const active = (store.activeBattle as { value?: unknown })?.value ?? store.activeBattle;
-      return !active;
-    }, undefined, { timeout });
+  public async awaitReturnToMap(): Promise<void> {
+    await awaitBattleFlowCompletion(this.page);
   }
 }

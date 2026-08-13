@@ -85,6 +85,13 @@ const ARCHAEOLOGY_NORMAL_DIFFICULTY_EASY_PCT = 40
 const ARCHAEOLOGY_NORMAL_DIFFICULTY_MEDIUM_PCT = 70
 const ARCHAEOLOGY_NORMAL_DIFFICULTY_HARD_PCT = 90
 
+function scheduleGameplayDelay(delaySec: number, callback: () => void) {
+  const tween = gsap.delayedCall(delaySec, callback)
+  const globalScale = gsap.globalTimeline.timeScale()
+  if (globalScale > 0) tween.timeScale(1 / globalScale)
+  return tween
+}
+
 // Initialize Game
 function initGame() {
   // Determine difficulty automatically based on weighted probabilities & Pokemon rarity
@@ -214,10 +221,11 @@ function handleTileClick(tile: Tile) {
 
   const GRID_SHAKE_OFFSET_PX = 3
 
+  const GRID_SHAKE_STEP_SEC = 0.05
   // Click Animation: Shake Grid slightly
   gsap.fromTo('.archaeology-grid', 
     { x: -GRID_SHAKE_OFFSET_PX }, // magic-ok
-    { x: GRID_SHAKE_OFFSET_PX, duration: 0.05, repeat: 5, yoyo: true, ease: 'none', onComplete: () => { gsap.set('.archaeology-grid', { x: 0 }) } } // magic-ok
+    { x: GRID_SHAKE_OFFSET_PX, duration: GRID_SHAKE_STEP_SEC, repeat: 5, yoyo: true, ease: 'none', onComplete: () => { gsap.set('.archaeology-grid', { x: 0 }) } }
   )
 
   // Dig Animation on tile
@@ -270,7 +278,7 @@ function win() {
     duration: DIG_OUTCOME_ANIM_DURATION_SEC
   })
 
-  gsap.delayedCall(1.2, () => {
+  scheduleGameplayDelay(1.2, () => {
     emit('win', difficulty.value)
     emit('close')
   })
@@ -289,7 +297,7 @@ function fail() {
     duration: DIG_OUTCOME_ANIM_DURATION_SEC
   })
 
-  gsap.delayedCall(1.2, () => {
+  scheduleGameplayDelay(1.2, () => {
     emit('fail')
     emit('close')
   })
@@ -315,7 +323,7 @@ const DUST_PARTICLE_BORDER_RADIUS_PERCENT = 50
       pointer-events: none;
       left: ${rect.left - parent.getBoundingClientRect().left + rect.width / 2}px;
       top: ${rect.top - parent.getBoundingClientRect().top + rect.height / 2}px;
-      z-index: 100;
+      z-index: var(--z-hud);
     `
     parent.appendChild(particle)
 

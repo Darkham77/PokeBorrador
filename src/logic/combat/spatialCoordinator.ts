@@ -84,10 +84,12 @@ export function toVirtualStyles(x: number, y: number, w?: number, h?: number): C
   }
 }
 
+import type { BattleSide } from '@/types/battle/battle';
+
 /**
  * Returns the standard position for a combatant side.
  */
-export function getCombatantPosition(side: 'player' | 'enemy'): { x: number; y: number } {
+export function getCombatantPosition(side: BattleSide): { x: number; y: number } {
   const { SAFE_ZONE_X, SAFE_ZONE_Y, SAFE_ZONE_WIDTH, SAFE_ZONE_HEIGHT } = WORLD_CONSTANTS
   if (side === 'player') {
     const size = WORLD_CONSTANTS.ENTITY_SIZE_PLAYER

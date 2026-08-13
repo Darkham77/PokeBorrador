@@ -1,6 +1,7 @@
 import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import { gameBus } from '@/logic/events/gameBus'
 import type { BattleContext } from '@/types/battle/battleContext'
+import type { BattleSide } from '@/types/battle/battle'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { useUIStore } from '@/stores/ui'
 import { clearVolatileStatus } from './battleStatus.ts'
@@ -17,11 +18,16 @@ const FAINT_ANIMATION_FALLBACK_DELAY_MS = 1300;
 const DEFEAT_SCREEN_DELAY_MS = 1500;
 const POLICE_STEAL_CHANCE_PERCENT = 0.05;
 const ENEMY_FLEE_ANIMATION_DELAY_MS = 1000;
+const TERMINATING_BATTLES = new WeakSet<object>()
+
+function isCurrentBattle(ctx: BattleContext, battle: NonNullable<BattleContext['activeBattle']['value']>): boolean {
+  return ctx.activeBattle.value === battle
+}
 
 /**
  * Handles the fainting of a Pokémon.
  */
-export async function processFaint(ctx: BattleContext, side: 'player' | 'enemy') {
+export async function processFaint(ctx: BattleContext, side: BattleSide) {
   const active = ctx.activeBattle.value;
   if (!active || active.rewardsProcessed || ['SEARCH_PHASE', 'REWARDS_PHASE'].includes(ctx.fsm.currentState.value)) return;
 
@@ -96,6 +102,10 @@ const DESTINY_BOND_SLEEP_DELAY_MS = 500;
         ctx.addLog('¡Elige a tu próximo Pokémon!', 'log-info', 'player')
         ctx.faintedSides.value.delete('player')
         ctx.uiStore.isBattleSwitchForced = true
+        // SWITCH_MENU is a player-input state. Leaving the turn lock active
+        // here makes every official switch control non-interactive.
+        ctx.isProcessing.value = false
+        ctx.isIntroAnimating.value = false
         await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SWITCH_MENU)
       }
     }
@@ -117,6 +127,10 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
     await fsm.transition(BATTLE_STATES.EXIT_BATTLE)
     return
   }
+  if (TERMINATING_BATTLES.has(active)) return
+
+  TERMINATING_BATTLES.add(active)
+  try {
 
   // If Showdown's protocol provided an explicit winnerResult, rely on it over local heuristics
   const win = active.winnerResult ? (active.winnerResult === 'player') : winParam;
@@ -231,6 +245,7 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
     }
 
     await Promise.all([playerExited, enemyExited])
+    if (!isCurrentBattle(ctx, active)) return
   }
 
   // 2. Desvanecer la Poké Ball y vaciar el asiento del enemigo bajo ACTIVE_BATTLE
@@ -255,13 +270,16 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
   }
 
   // 3. Procesar recompensas (Transición a REWARDS_PHASE)
+  if (!isCurrentBattle(ctx, active)) return
   const { processBattleRewardsPhase } = await import('./battleRewardsPhase.ts')
   await processBattleRewardsPhase(ctx, win, fled)
+  if (!isCurrentBattle(ctx, active)) return
 
   if (!win && !fled) {
     await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
     await sleep(200)
     await ctx.gs.save(false)
+    if (!isCurrentBattle(ctx, active)) return
     
     ctx.audio.play('defeat')
     
@@ -277,6 +295,7 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
     ctx.clearLogs?.()
     await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.WAIT_LOG_QUEUE_ONLY)
     await ctx.waitForLogs()
+    if (!isCurrentBattle(ctx, active)) return
     
     const playerFled = active.playerFled || false
     const wasSearching = active.wasSearching || false
@@ -290,6 +309,7 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
     } else {
       await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
       await sleep(200)
+      if (!isCurrentBattle(ctx, active)) return
       await ctx.completeBattleFlow('search')
     }
     return
@@ -297,10 +317,12 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
   
   await ctx.gs.save(false)
   await ctx.waitForLogs()
+  if (!isCurrentBattle(ctx, active)) return
   
   // Esperar a que el jugador termine de aprender técnicas en el modal
   while (uiStore.learnQueue.length > 0 || uiStore.currentMoveToLearn) {
     await sleep(100)
+    if (!isCurrentBattle(ctx, active)) return
   }
   
   syncTeamHP(ctx)
@@ -318,6 +340,7 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
 
   await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
   await sleep(200) // Pausa de limpieza orgánica reducida a 200ms
+  if (!isCurrentBattle(ctx, active)) return
 
   // Reordenamiento animado: recall del incorrecto + release del correcto en paralelo
   const firstHealthy = ctx.gs.state.team.find((p: Pokemon) => p && p.hp > 0)
@@ -339,6 +362,7 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
       : Promise.resolve()
 
     await Promise.all([withdrawPromise, sendOutPromise])
+    if (!isCurrentBattle(ctx, active)) return
     ctx.exitingPlayer.value = null
   } else if (firstHealthy && !oldPlayer) {
     // No old player (first battle start) — just the release animation
@@ -382,12 +406,16 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
   }
 
   await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_PERSISTENCE)
+  if (!isCurrentBattle(ctx, active)) return
   
   if (active.wasSearching === true) {
     await ctx.completeBattleFlow('search')
   } else {
     await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
     await ctx.completeBattleFlow('map')
+  }
+  } finally {
+    TERMINATING_BATTLES.delete(active)
   }
 }
 
@@ -424,7 +452,7 @@ export async function validateAndInterceptFaintedPlayer(ctx: BattleContext): Pro
 /**
  * Handles forced switch request (e.g. from Dragon Tail or Whirlwind).
  */
-export async function handleForceSwitch(ctx: BattleContext, side: 'player' | 'enemy') {
+export async function handleForceSwitch(ctx: BattleContext, side: BattleSide) {
   const active = ctx.activeBattle.value
   if (!active || active.over) return
 
@@ -446,11 +474,15 @@ export async function handleForceSwitch(ctx: BattleContext, side: 'player' | 'en
     if (p) {
       ctx.addLog(`¡${p.name} es forzado a retirarse!`, 'log-info', p)
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM)
-      gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'player', type: 'flee' })
+      gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'player', type: 'forced-switch' })
       if (ctx.animations?.awaitTween) {
         await ctx.animations.awaitTween(`player-${p.uid}`)
       }
     }
+    // The forced replacement menu is actionable as soon as the withdrawal
+    // animation ends; it must not inherit the prior turn's UI lock.
+    ctx.isProcessing.value = false
+    ctx.isIntroAnimating.value = false
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SWITCH_MENU)
   } else {
     // Determine which Pokémon is currently active according to Showdown's request (source of truth).

@@ -1,4 +1,5 @@
 import { logger } from '../utils/logger.ts'
+import type { SideID } from '@pkmn/sim'
 import type { ShowdownPlayerRequest } from '@/types/battle/battle'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { useGameStore } from '@/stores/game'
@@ -12,6 +13,14 @@ type BattleStoreType = ReturnType<typeof useBattleStore>;
 export let showdownWorker: Worker | null = null;
 export function setShowdownWorker(worker: Worker | null) {
   showdownWorker = worker;
+}
+
+export function preloadShowdownWorker(): void {
+  if (typeof window === 'undefined' || typeof Worker === 'undefined' || showdownWorker) return
+
+  const worker = new Worker(new URL('./showdown.worker.ts', import.meta.url), { type: 'module' })
+  setShowdownWorker(worker)
+  window.__showdownWorker__ = worker
 }
 
 interface SynchronizedPokemonState {
@@ -74,8 +83,9 @@ export async function syncTeamsFromLastWorkerState(): Promise<void> {
   let gameStore: GameStoreType | null = null;
 
   if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.getGameStore) {
-    gameStore = window.__VITE_DEBUG__.getGameStore() as unknown as GameStoreType; // domain-ok
-    battleStore = (Reflect.get(gameStore, 'gs') as unknown as BattleStoreType | undefined) || (window.__VITE_DEBUG_STORE_RESOLVER__?.() as unknown as BattleStoreType) || null; // domain-ok
+    const debug = window.__VITE_DEBUG__ as Record<string, unknown>; // open-record
+    gameStore = (debug.getGameStore as () => GameStoreType)();
+    battleStore = (Reflect.get(gameStore, 'gs') as BattleStoreType | undefined) || ((window.__VITE_DEBUG_STORE_RESOLVER__ as (() => BattleStoreType) | undefined)?.()) || null;
   }
 
   if (!gameStore) {
@@ -110,11 +120,17 @@ export async function syncTeamsFromLastWorkerState(): Promise<void> {
 export async function getSimulatorState(): Promise<{ p1: unknown[]; p2: unknown[] }> {
   if (!showdownWorker) throw new Error('showdownWorker is null');
   showdownWorker.postMessage({ type: 'GET_SIMULATOR_STATE' });
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      if (showdownWorker) showdownWorker.removeEventListener('message', handler);
+      reject(new Error('[ShowdownWorkerClient] Timeout waiting for GET_SIMULATOR_STATE_RESPONSE'));
+    }, 5000);
+
     const handler = (event: MessageEvent) => {
       const data = event.data as { type: string; payload: { p1: unknown[]; p2: unknown[] } };
       const { type, payload } = data;
       if (type === 'GET_SIMULATOR_STATE_RESPONSE') {
+        clearTimeout(timer);
         showdownWorker!.removeEventListener('message', handler);
         resolve(payload);
       }
@@ -144,7 +160,8 @@ export async function executeTurnInWorker(
   p1Choice: string, 
   p2Choice?: string,
   p1Skip?: boolean,
-  p2Skip?: boolean
+  p2Skip?: boolean,
+  p1UsedBattleItem?: boolean
 ): Promise<{ logs: string[]; isOver: boolean; winner: string | null; p1ForceSwitch?: boolean; p2ForceSwitch?: boolean; p1Request?: ShowdownPlayerRequest; p2Request?: ShowdownPlayerRequest }> {
   console.debug(`[DEBUG-ORCHESTRATOR] window.__VITE_DEBUG__ keys:`, typeof window !== 'undefined' && window.__VITE_DEBUG__ ? JSON.stringify(Object.keys(window.__VITE_DEBUG__)) : 'none');
   if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
@@ -163,19 +180,20 @@ export async function executeTurnInWorker(
 
   const isSimulation = typeof window !== 'undefined' && !!window.__VITE_DEBUG__?.isScriptedReplayMode;
   const finalP2Choice = p2Choice;
-  const history = typeof window !== 'undefined' ? window.__VITE_DEBUG__?.history : undefined;
-  const certifiedHistoryIndex = isSimulation && typeof window !== 'undefined'
-    ? Reflect.get(window.__VITE_DEBUG__ ?? {}, 'replayHistoryIdx')
+  const debugObj = (typeof window !== 'undefined' ? window.__VITE_DEBUG__ : undefined) as Record<string, unknown> | undefined; // open-record
+  const history = debugObj?.history;
+  const certifiedHistoryIndex = isSimulation && debugObj
+    ? (Reflect.get(debugObj, 'replayHistoryIdx') as number | undefined)
     : undefined;
   if (isSimulation && (typeof certifiedHistoryIndex !== 'number' || certifiedHistoryIndex < 0)) {
     throw new Error(`[ShowdownWorkerClient] Certified replay submission is missing its atomic history cursor. context=${JSON.stringify({ certifiedHistoryIndex, historyLength: Array.isArray(history) ? history.length : undefined, p1Choice, p2Choice: finalP2Choice })}`);
   }
   const certifiedHistoryStep = typeof certifiedHistoryIndex === 'number' ? certifiedHistoryIndex + 1 : undefined;
-  if (isSimulation && typeof window !== 'undefined' && window.__VITE_DEBUG__) {
-    const trace = Reflect.get(window.__VITE_DEBUG__, 'certifiedReplaySubmissionTrace');
-    const entries = Array.isArray(trace) ? trace : [];
-    entries.push({ historyIndex: Reflect.get(window.__VITE_DEBUG__, 'replayHistoryIdx'), p1Choice, p2Choice: finalP2Choice ?? '', p1Skip: !!p1Skip, p2Skip: !!p2Skip });
-    Reflect.set(window.__VITE_DEBUG__, 'certifiedReplaySubmissionTrace', entries);
+  if (isSimulation && debugObj) {
+    const trace = Reflect.get(debugObj, 'certifiedReplaySubmissionTrace');
+    const entries = (Array.isArray(trace) ? trace : []) as Record<string, unknown>[]; // open-record
+    entries.push({ historyIndex: Reflect.get(debugObj, 'replayHistoryIdx'), p1Choice, p2Choice: finalP2Choice ?? '', p1Skip: !!p1Skip, p2Skip: !!p2Skip, p1UsedBattleItem: !!p1UsedBattleItem });
+    Reflect.set(debugObj, 'certifiedReplaySubmissionTrace', entries);
   }
   const replayContext = JSON.stringify({
     isSimulation,
@@ -183,6 +201,7 @@ export async function executeTurnInWorker(
     p2Choice: finalP2Choice,
     p1Skip: !!p1Skip,
     p2Skip: !!p2Skip,
+    p1UsedBattleItem: !!p1UsedBattleItem,
     p1ChoiceIdx: typeof window !== 'undefined' ? window.__VITE_DEBUG__?.p1ChoiceIdx : undefined,
     p2ChoiceIdx: typeof window !== 'undefined' ? window.__VITE_DEBUG__?.p2ChoiceIdx : undefined,
     playerChoiceCount: typeof window !== 'undefined' && Array.isArray(window.__VITE_DEBUG__?.playerChoices) ? window.__VITE_DEBUG__.playerChoices.length : undefined,
@@ -290,8 +309,9 @@ export async function executeTurnInWorker(
           let gameStore: GameStoreType | null = null;
 
           if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.getGameStore) {
-            gameStore = window.__VITE_DEBUG__.getGameStore() as unknown as GameStoreType; // domain-ok
-            battleStore = (Reflect.get(gameStore, 'gs') as unknown as BattleStoreType | undefined) || (window.__VITE_DEBUG_STORE_RESOLVER__?.() as unknown as BattleStoreType) || null; // domain-ok
+            const debug = window.__VITE_DEBUG__ as Record<string, unknown>; // open-record
+            gameStore = (debug.getGameStore as () => GameStoreType)();
+            battleStore = (Reflect.get(gameStore, 'gs') as BattleStoreType | undefined) || ((window.__VITE_DEBUG_STORE_RESOLVER__ as (() => BattleStoreType) | undefined)?.()) || null;
           }
 
           if (!gameStore) {
@@ -385,7 +405,7 @@ export async function executeTurnInWorker(
     }
     worker.postMessage({
       type: 'EXECUTE_TURN',
-      payload: { p1Choice, p2Choice: finalP2Choice, p1Skip, p2Skip, p1Hps, p2Hps, p1Statuses, p2Statuses, history, certifiedHistoryStep, weather: weatherVal, isFuzzerSimulation: isSimulation }
+      payload: { p1Choice, p2Choice: finalP2Choice, p1Skip, p2Skip, p1UsedBattleItem, p1Hps, p2Hps, p1Statuses, p2Statuses, history, certifiedHistoryStep, weather: weatherVal, isFuzzerSimulation: isSimulation }
     })
   })
 }
@@ -419,7 +439,7 @@ export async function isPlayerTrappedInWorker(): Promise<boolean> {
 }
 
 
-export async function applyCheatsInWorker(cheats: Array<{ side: 'p1' | 'p2'; type: 'heal' }>): Promise<void> {
+export async function applyCheatsInWorker(cheats: Array<{ side: SideID; type: 'heal' }>): Promise<void> {
   const worker = showdownWorker;
   if (!worker) return;
   worker.postMessage({
@@ -458,7 +478,30 @@ export async function applyCheatsInWorker(cheats: Array<{ side: 'p1' | 'p2'; typ
   });
 }
 
-export function notifyWorkerBattleWin(side: 'p1' | 'p2' = 'p1'): void {
+export async function applyDebugStatusInWorker(side: SideID, uid: string, status: string): Promise<void> {
+  const worker = showdownWorker;
+  if (!worker) return;
+  worker.postMessage({ type: 'APPLY_DEBUG_STATUS', payload: { debugStatus: { side, uid, status } } });
+  return new Promise((resolve) => {
+    const handler = async (event: MessageEvent) => {
+      const data = event.data as { type: string; payload: WorkerSuccessPayload };
+      if (data.type !== 'APPLY_DEBUG_STATUS_DONE') return;
+      worker.removeEventListener('message', handler);
+      lastSyncTeamStates.p1 = data.payload.p1TeamState ?? null;
+      lastSyncTeamStates.p2 = data.payload.p2TeamState ?? null;
+      const battleStore = useBattleStore();
+      if (battleStore.state) {
+        battleStore.state.playerRequest = data.payload.p1Request;
+        battleStore.state.enemyRequest = data.payload.p2Request;
+      }
+      await syncTeamsFromLastWorkerState();
+      resolve();
+    };
+    worker.addEventListener('message', handler);
+  });
+}
+
+export function notifyWorkerBattleWin(side: SideID = 'p1'): void {
   if (showdownWorker) {
     showdownWorker.postMessage({
       type: 'WIN_BATTLE',

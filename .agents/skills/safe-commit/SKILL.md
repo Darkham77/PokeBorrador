@@ -119,9 +119,10 @@ This commit is recovery insurance. If Phase 3 repairs accidentally corrupt a fil
 - Identify all modified, untracked, and deleted files.
 - Record the file list in `task.md`.
 
-**Step 1.2** — `git diff`
-- Read the full diff output.
-- Confirm you understand what changed in every file before proceeding.
+**Step 1.2** — `git diff` & Session Artifacts Inspection
+- Read the full `git diff` output across all modified files.
+- Inspect all session artifacts, plans, and task files in `<appDataDir>/brain/<conversation-id>/` (e.g., `implementation_plan.md`, `task.md`, `walkthrough.md`, skill artifacts, custom notes, or scratch logs).
+- Cross-reference the technical code diff with the high-level intent, features, and bug fixes documented in the conversation artifacts to build a complete, precise mental model of all changes.
 
 **Step 1.3** — AGENTS.md chain review
 - For each modified file, walk from the repo root and `view_file` every `AGENTS.md` along the path.
@@ -134,7 +135,7 @@ This commit is recovery insurance. If Phase 3 repairs accidentally corrupt a fil
 
 **Step 1.5** — Compose the commit message
 - Use the Elegant Protocol (see [commit-standards.md](./references/commit-standards.md)).
-- Derive the message from the actual `git diff` read in Step 1.2, not from memory.
+- Derive the message by synthesizing both the actual `git diff` (technical changes) and session artifacts (intent, features, and context from conversation artifacts).
 
 **Step 1.6** — `git add .` (MANDATORY `.` — SELECTIVE `git add <file>` IS STRICTLY FORBIDDEN)
 > [!CAUTION]

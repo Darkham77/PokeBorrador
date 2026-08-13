@@ -3,7 +3,7 @@ import { gsap } from 'gsap'
 import { saveGame as performSave } from '@/logic/auth/saveService'
 import { useLoadingStore } from '@/stores/loading'
 import { useUIStore } from '@/stores/ui'
-import type { GameState, ClaimItem } from '@/types/system/game'
+import { requireGenderId, type GameState, type ClaimItem } from '@/types/system/game'
 import type { AuthUser } from '@/types/auth/auth'
 import type { Ref } from 'vue'
 import { logger } from '@/logic/utils/logger'
@@ -119,8 +119,9 @@ export function useSaveActions(
     }
     
     if (data && authStore.user) {
-      if (!data.trainer && authStore.user.user_metadata?.username) {
-        data.trainer = authStore.user.user_metadata.username
+      const username = authStore.user.user_metadata?.username;
+      if (!data.trainer && username) {
+        data.trainer = username;
       }
       updateState(data)
       sessionStartTime = Temporal.Now.instant().epochMilliseconds
@@ -130,7 +131,7 @@ export function useSaveActions(
         logger.warn('LOAD', 'Saneamiento realizado:', issues)
         uiStore.notify('Partida saneada y cargada', '🛡️')
       } else {
-        uiStore.notify(`¡Bienvenido, ${state.trainer || authStore.user.user_metadata?.username}!`, '👋')
+        uiStore.notify(`¡Bienvenido, ${state.trainer || username || 'Entrenador'}!`, '👋')
       }
 
       if (authStore.user && (authStore.user.db_version || 0) < 3) {
@@ -142,8 +143,8 @@ export function useSaveActions(
         gsap.delayedCall(3.0, () => save(false))
       }
     } else if (!data && authStore.user) {
-      state.trainer = authStore.user.user_metadata?.username || 'Entrenador'
-      state.gender = authStore.user.user_metadata?.gender || 'h'
+      state.trainer = authStore.user.user_metadata?.username || 'Entrenador';
+      state.gender = requireGenderId(authStore.user.user_metadata?.gender);
       sessionStartTime = Temporal.Now.instant().epochMilliseconds
       // Guardar inmediatamente la partida inicial en la base de datos local
       save(false)

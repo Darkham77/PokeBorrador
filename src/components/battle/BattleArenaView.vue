@@ -10,6 +10,7 @@ import { useModalStore } from '@/stores/modals'
 import { useGameStore } from '@/stores/game'
 import { useAudioStore } from '@/stores/audio'
 import { getRouteWeather } from '@/logic/weather/weatherUtils'
+import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts'
 import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry'
 import { requireWeatherSeasonId } from '@/data/world/weather-tables'
 import { requireMapRouteId } from '@/data/world/map-assets'
@@ -89,6 +90,7 @@ const mapStore = useMapStore()
 const uiStore = useUIStore()
 const audioStore = useAudioStore()
 const currentWeatherSeason = computed(() => requireWeatherSeasonId(mapStore.currentSeason.id))
+const atmosphereSeed = computed(() => getWeatherAnimSeed(mapStore.currentMap))
 
 // Forzar Alta Fidelidad en el Combate
 provide('forceHighFidelity', true)
@@ -221,6 +223,8 @@ const {
   getPokemonIsHealing,
   silhouetteOpacity
 } = animations
+
+initListeners()
 
 // Reactive z-index for front bush via VirtualEntity :z-index prop.
 // Behind pokemon (+1) when emerging or in encounter intro phase; in front (+3) otherwise.
@@ -362,7 +366,7 @@ watch(
     if (newSubState === 'MINIGAME_CHECK' && enemy.value) {
       const modalStore = useModalStore()
       if (battleStore.state?.isFishing) {
-        modalStore.open('Fishing', {
+        if (!modalStore.isOpen('Fishing')) modalStore.open('Fishing', {
           pokemon: enemy.value,
           rarity: battle.value?.rarity || DEFAULT_MINIGAME_RARITY,
           onWin: handleFishingSuccess,
@@ -370,7 +374,7 @@ watch(
           onCloseCallback: handleMinigameCancel
         })
       } else if (battleStore.state?.isArchaeology) {
-        modalStore.open('Archaeology', {
+        if (!modalStore.isOpen('Archaeology')) modalStore.open('Archaeology', {
           pokemon: enemy.value,
           rarity: battle.value?.rarity || DEFAULT_MINIGAME_RARITY,
           onWin: handleArchaeologySuccess,
@@ -409,7 +413,6 @@ const triggerPreloadCoords = () => preloadCombatCoords(
 )
 
 onMounted(async () => {
-  initListeners()
   await triggerPreloadCoords()
   const tl = gsap.timeline()
   tl.to({}, { duration: ARENA_INITIAL_LOAD_DELAY_SEC })
@@ -688,7 +691,7 @@ const onDialogLeave = (el: Element, done: () => void) => {
                   :src="playerBackSpriteUrl"
                   class="trainer-sprite shadow-pixelated"
                   alt="Player Trainer"
-                />
+                >
               </div>
             </div>
 
@@ -847,7 +850,7 @@ const onDialogLeave = (el: Element, done: () => void) => {
       :cycle="mapStore.currentCycle"
       :season="currentWeatherSeason"
       :is-performance-mode="uiStore.isPerformanceMode"
-      :z-index="'calc(var(--z-base) + 20)'" <!-- // no-magic -->
+      :z-index="'calc(var(--z-base) + 20)'"
       :anim-seed="atmosphereSeed"
       :is-visible="true"
     />

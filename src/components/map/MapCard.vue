@@ -299,6 +299,7 @@ watch(
 
 <template>
   <div
+    :id="`map-card-${map.id}`"
     class="map-card-wrapper"
     @click.stop="() => {
       logger.debug('MapCard', `Click detected. isLocked: ${isCardLocked}, isPerformanceMode: ${isPerformanceMode}`);

@@ -6,8 +6,9 @@ import { safeStorage } from '@/logic/utils/storage'
 import { getItemById } from '@/data/inventory/items'
 import { isGlobalItem } from '@/logic/providers/itemProvider.ts'
 import { useBattleStore } from '@/stores/battle/battle.ts'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { ItemEffectResult } from '@/types/inventory/items'
+import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon'
+import type { ItemEffectResult, BagMainTab, ItemDiscardAction } from '@/types/inventory/items'
+import type { SortOrder, ItemSortKey } from '@/types/system/game'
 import { executeUseItem } from '@/stores/inventory/inventoryUseAction.ts'
 import {
   findInventoryKey as helperFindInventoryKey,
@@ -62,11 +63,11 @@ export const useInventoryStore = defineStore('inventory', () => {
   // --- BAG STATE ---
   const bagSellMode = ref(false)
   const bagSellSelected = ref<Record<string, number>>({}) // { itemName: quantity }
-  const activeMainTab = ref<'productos' | 'materiales'>('productos')
+  const activeMainTab = ref<BagMainTab>('productos')
   const activeCategory = ref(safeStorage.getItem('inventory_last_tab') || 'todos')
   const searchQuery = ref('')
-  const currentSort = ref<'name' | 'price' | 'rarity'>('name')
-  const currentSortOrder = ref<'asc' | 'desc'>('asc')
+  const currentSort = ref<ItemSortKey>('name')
+  const currentSortOrder = ref<SortOrder>('asc')
 
   watch(activeCategory, (newVal) => {
     safeStorage.setItem('inventory_last_tab', newVal)
@@ -256,7 +257,7 @@ export const useInventoryStore = defineStore('inventory', () => {
     gameStore.save(false)
   }
 
-  async function processBatchAction(itemMap: Map<string, number>, mode: 'sell' | 'release') {
+  async function processBatchAction(itemMap: Map<string, number>, mode: ItemDiscardAction) {
     let totalGain = 0
     const inventory = gameStore.state.inventory || {}
 
@@ -283,11 +284,11 @@ export const useInventoryStore = defineStore('inventory', () => {
   }
 
   // --- ITEM ACTIONS ---
-  function useItem(itemName: string, context: 'team' | 'box' | null = null, index: number | null = null): ItemEffectResult {
+  function useItem(itemName: string, context: PokemonStorageLocation | null = null, index: number | null = null): ItemEffectResult {
     return executeUseItem(itemName, context, index)
   }
 
-  function equipItem(itemName: string, context: 'team' | 'box', index: number) {
+  function equipItem(itemName: string, context: PokemonStorageLocation, index: number) {
     const list = context === 'team' ? gameStore.state.team : gameStore.state.box
     const pokemon = list[index]
     if (!pokemon) return false
@@ -313,7 +314,7 @@ export const useInventoryStore = defineStore('inventory', () => {
     return true
   }
 
-  function unequipItem(context: 'team' | 'box', index: number) {
+  function unequipItem(context: PokemonStorageLocation, index: number) {
     const list = context === 'team' ? gameStore.state.team : gameStore.state.box
     const pokemon = list[index]
     if (!pokemon || !pokemon.heldItem) return false

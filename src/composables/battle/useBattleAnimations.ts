@@ -274,7 +274,7 @@ export function useBattleAnimations(
     addBusListener('PLAY_HEAL', ((e: Event) => handleHealRequest((e as CustomEvent).detail as Parameters<typeof handleHealRequest>[0])) as EventListener)
     
     addBusListener('CATCH_SHAKE', ((e: Event) => {
-      const detail = (e as CustomEvent).detail as unknown
+      const detail = (e as CustomEvent<Record<string, unknown>>).detail
       handleShakeRequest(detail as Parameters<typeof handleShakeRequest>[0])
       handleBlinkRequest(detail as Parameters<typeof handleBlinkRequest>[0])
     }) as EventListener)
@@ -295,6 +295,12 @@ export function useBattleAnimations(
       const stateVal = toValue(battleStore.state)
       const isWild = stateVal ? (!stateVal.isTrainer && !stateVal.isGym) : true
       
+      if (typeof data === 'object' && data?.type === 'forced-switch') {
+        const pokemon = side === 'player' ? toValue(battleStore.player) : toValue(battleStore.enemy)
+        handleWithdrawRequest({ side, pokemon: pokemon || undefined })
+        return
+      }
+
       if (side === 'player' || !isWild) {
         const pokemon = side === 'player' ? toValue(battleStore.player) : toValue(battleStore.enemy)
         handleCatchRequest({ side, pokemon: pokemon || undefined })

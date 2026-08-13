@@ -1,5 +1,6 @@
 import { watch, onMounted, onUnmounted, nextTick, type Ref } from 'vue'
 import { gsap } from 'gsap'
+import type { PillFxType } from '@/types/system/game'
 import {
   FULL_ROTATION_DEG,
   MAP_WEATHER_DRIFT_OFFSET_PX,
@@ -55,7 +56,7 @@ export function useMapCardAnimations(options: {
       const weatherEl = options.cardRef.value?.querySelector('.location-tag') as HTMLElement | null | undefined
       if (weatherEl) {
         const weather = options.computedWeather.value
-        let type: 'glow' | 'drift' | 'shake' | '' = ''
+        let type: PillFxType = ''
         if (['clear', 'sun', 'heatwave', 'cold', 'coldwave', 'sandstorm', 'dust_storm', 'intense_sun'].includes(weather)) {
           type = 'glow'
         } else if (['mist', 'fog', 'wind', 'strong_winds'].includes(weather)) {
@@ -183,7 +184,6 @@ export function useMapCardAnimations(options: {
     if (!options.spawnGridRef.value || !options.isVisible.value) return
 
     auraContext = gsap.context(() => {
-      const AURA_CYCLE = MAP_CARD_ANIMATIONS.AURA_CYCLE_PERIOD_SEC
       const wrappers = gsap.utils.toArray('.sprite-wrapper', options.spawnGridRef.value || undefined) as HTMLElement[]
 
       wrappers.forEach((el) => {
@@ -195,7 +195,7 @@ export function useMapCardAnimations(options: {
 
         const seedAttr = el.style.getPropertyValue('--spawn-seed')
         const seed = seedAttr ? parseFloat(seedAttr) : Math.random()
-        const baseDelay = (seed % 1) * AURA_CYCLE
+        const baseDelay = (seed % 1) * MAP_CARD_ANIMATIONS.AURA_CYCLE_PERIOD_SEC
 
         if (!options.isLowPowerActive.value) {
           const scaleMax = isAtmos ? MAP_CARD_ANIMATIONS.ATMOS_SPAWN_SCALE_MAX : MAP_CARD_ANIMATIONS.RARE_SPAWN_SCALE_MAX
@@ -213,7 +213,7 @@ export function useMapCardAnimations(options: {
             delay: baseDelay
           })
 
-          const duration = AURA_CYCLE / 2
+          const duration = MAP_CARD_ANIMATIONS.AURA_CYCLE_PERIOD_SEC / 2
 
           if (options.isLowPowerActive.value) {
             if (rareAura) gsap.set(rareAura, { scale: MAP_CARD_ANIMATIONS.LOW_POWER_AURA_SCALE, rotation: 0 })

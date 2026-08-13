@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { CATEGORY_LABELS } from '@/data/inventory/items'
+import type { BagMainTab } from '@/types/inventory/items'
 
 interface Props {
   activeCategory: string
-  mainTab: 'productos' | 'materiales'
+  mainTab: BagMainTab
   availableCategories?: string[]
   accentColor?: string
 }

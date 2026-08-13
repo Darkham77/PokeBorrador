@@ -1,5 +1,5 @@
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon';
 import type { GameState } from '@/types/system/game';
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 
@@ -14,7 +14,7 @@ import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
  * @param {GameState} state - The player's game state.
  * @returns {any} { pokemon, sentTo }
  */
-export function restoreFossil(pokemonId: string, state: GameState): { pokemon: Pokemon; sentTo: 'team' | 'box' } {
+export function restoreFossil(pokemonId: string, state: GameState): { pokemon: Pokemon; sentTo: PokemonStorageLocation } {
   const speciesId = requirePokemonSpeciesId(pokemonId);
 
   // 1. Generate the Pokemon at Level 1
@@ -25,7 +25,7 @@ export function restoreFossil(pokemonId: string, state: GameState): { pokemon: P
   if (!state.pokedex.includes(speciesId)) state.pokedex.push(speciesId);
   
   // 3. Determine where to send it
-  let sentTo: 'team' | 'box' = 'team';
+  let sentTo: PokemonStorageLocation = 'team';
   if (state.team.length < 6) {
     state.team.push(pokemon);
   } else {

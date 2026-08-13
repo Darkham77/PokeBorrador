@@ -3,38 +3,65 @@
 // Adapted from external/pokemon-showdown-ai/src/types.ts
 // ============================================================
 
-import type { BattleConditionKey } from '@/types/battle/battle';
+import type { BattleConditionKey, BattleActionType } from '@/types/battle/battle';
 import type { PokemonStatus } from '@/types/pokemon/pokemon';
+import type { SideID } from '@pkmn/sim';
 
-const HEURISTIC_VOLATILE_KEYS = [
+const _HEURISTIC_VOLATILE_KEYS = [
   'choicelock',
-  'confusion',
-  'encore',
-  'focusenergy',
-  'ingrain',
-  'leechseed',
-  'mustrecharge',
-  'protect',
   'substitute',
   'taunt',
+  'encore',
+  'disable',
+  'protect',
+  'confusion',
+  'leechseed',
+  'yawn',
+  'perishsong',
+  'attract',
+  'embargo',
+  'healblock',
+  'torment',
+  'charge',
+  'magnetrise',
+  'focusenergy',
+  'stockpile',
+  'slowstart',
   'trapped',
+  'ingrain',
+  'mustrecharge',
 ] as const;
-export type HeuristicVolatileKey = (typeof HEURISTIC_VOLATILE_KEYS)[number];
+
+export type HeuristicVolatileKey = typeof _HEURISTIC_VOLATILE_KEYS[number];
+
+export interface HeuristicPokemonMove {
+  id: string;
+  name: string;
+  type: string;
+  category: string;
+  basePower: number;
+  accuracy: number | true;
+  pp: number;
+  maxpp: number;
+  target: string;
+}
 
 export interface HeuristicPokemonState {
-  name: string;
-  species: string;
-  level: number;
+  species: string;       // canonical species ID (e.g. 'pikachu')
+  name: string;          // nickname or species name
   hp: number;
-  maxHp: number;
+  maxhp: number;
   hpPercent: number;
-  status: PokemonStatus;
   active: boolean;
   fainted: boolean;
+  level: number;
+  status: PokemonStatus | null;
+  types: string[];
+  baseStats: { hp: number; atk: number; def: number; spa: number; spd: number; spe: number };
   stats: { hp: number; atk: number; def: number; spa: number; spd: number; spe: number };
-  moves: string[];       // all known move IDs
-  knownMoves: string[];  // moves revealed in battle
-  ability: string;
+  moves: HeuristicPokemonMove[];
+  knownMoves: string[];
+  ability: string;       // mapped from pokemon.ability (canonical)
   knownAbility: string | null;
   item: string;          // mapped from pokemon.heldItem (canonical)
   knownItem: string | null;
@@ -44,7 +71,7 @@ export interface HeuristicPokemonState {
 }
 
 export interface HeuristicSideState {
-  id: 'p1' | 'p2';
+  id: SideID;
   pokemon: HeuristicPokemonState[];
   activePokemon: HeuristicPokemonState | null;
   sideConditions: Map<BattleConditionKey, number>;
@@ -54,12 +81,12 @@ export interface HeuristicFieldState {
   weather: string | null;
   terrain: string | null;
   trickRoom: boolean;
-  tailwind: { p1: number; p2: number };
+  tailwind: Record<string, number>;
 }
 
 export interface HeuristicBattleSnapshot {
   turn: number;
-  myPlayer: 'p1' | 'p2';
+  myPlayer: SideID;
   mySide: HeuristicSideState;
   opponentSide: HeuristicSideState;
   field: HeuristicFieldState;
@@ -71,7 +98,7 @@ export interface HeuristicMoveInfo {
   disabled: boolean;
 }
 
-export type HeuristicDecisionType = 'move' | 'switch';
+export type HeuristicDecisionType = BattleActionType;
 export type HeuristicDecisionSource = 'heuristic' | 'fallback' | 'random';
 
 export interface HeuristicDecision {

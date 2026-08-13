@@ -25,7 +25,8 @@ import { fileWriterQueue } from '../../helpers/fileWriterQueue.ts';
 
 const RESULTS_DIR = path.resolve(process.cwd(), 'scripts/e2e/results');
 
-patchShowdownSpreadModify(() => false);
+// Monkey-patch unificado de Showdown
+patchShowdownSpreadModify(() => true);
 
 const AI_RESULTS_DIR = path.resolve(process.cwd(), 'scripts/e2e/results');
 const AI_REPORT_FILE = path.join(AI_RESULTS_DIR, 'fuzzer_ai_coverage_report.json');
@@ -88,8 +89,8 @@ class HeuristicAgent extends BattleAgent {
 
     const mockCtx = createMockBattleContext(projectPoke, oppProject);
     const battleState = mockCtx.activeBattle.value!;
-    battleState.playerRequest = fullRequest as unknown as never;
-    battleState.enemyRequest = fullRequest as unknown as never;
+    battleState.playerRequest = fullRequest as never;
+    battleState.enemyRequest = fullRequest as never;
     battleState.playerTeam = [projectPoke];
     battleState.enemyTeam = [oppProject];
 
@@ -100,12 +101,12 @@ class HeuristicAgent extends BattleAgent {
       mockCtx,
     );
 
-    const mega = Boolean(slotReq.canMegaEvo) && Math.random() < 0.5 ? ' mega' : '';
-    const tera = Boolean(slotReq.canTerastallize) && Math.random() < 0.5 ? ' terastallize' : '';
+    const mega = slotReq.canMegaEvo ? ' mega' : '';
+    const tera = slotReq.canTerastallize ? ' terastallize' : '';
 
     if (chosen) {
       const moves = slotReq.moves ?? [];
-      const slot = moves.findIndex((m: { id: string; disabled?: boolean | string; pp?: number }) => m.id === chosen.id && !m.disabled && (m.pp ?? 0) > 0);
+      const slot = moves.findIndex((m: { id: string; disabled?: boolean | string; pp?: number }) => m.id === chosen.id && !m.disabled && (m.pp ?? 0) > 0); // type-ok
       if (slot !== -1) return `move ${slot + 1}${mega}${tera}`;
     }
 
@@ -175,8 +176,8 @@ export async function runAIFuzzer(): Promise<FuzzerResult[]> {
         const prevTurn = simBattle.turn;
 
         const { p1AcceptedChoice, p2AcceptedChoice } = engine.executeTurn({
-          p1Agent: agentP1 as unknown as { decide(req: unknown): string },
-          p2Agent: agentP2 as unknown as { decide(req: unknown): string }
+          p1Agent: agentP1 as { decide(req: unknown): string },
+          p2Agent: agentP2 as { decide(req: unknown): string }
         });
 
         if (p1AcceptedChoice && p1AcceptedChoice !== 'pass') p1Choices.push(p1AcceptedChoice);

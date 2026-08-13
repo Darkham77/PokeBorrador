@@ -26,6 +26,11 @@ describe('Item Target Validation (isValidTarget)', () => {
     expect(isValidTarget('antidote', poisonedPokemon)).toBe(true);
   });
 
+  it('should return true for Antidote if badly poisoned', () => {
+    const badlyPoisonedPokemon = { ...mockPokemon, status: 'tox' } as unknown as Pokemon;
+    expect(isValidTarget('antidote', badlyPoisonedPokemon)).toBe(true);
+  });
+
   it('should return false for Antidote if not poisoned', () => {
     expect(isValidTarget('antidote', mockPokemon)).toBe(false);
   });

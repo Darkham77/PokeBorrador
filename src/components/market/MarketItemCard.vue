@@ -24,7 +24,6 @@ defineEmits<{
 }>()
 
 // Expose to template
-const _ASSET_TYPES = ASSET_TYPES
 const _getAssetUrl = getAssetUrl
 
 const tierClass = computed(() => `tier-${props.item.tier || 'common'}`)
@@ -71,9 +70,9 @@ const tierColor = computed(() => {
       <div class="item-visual">
         <div class="item-bg-glow" />
         <img 
-          :src="_getAssetUrl(_ASSET_TYPES.ITEM, item.id)" 
+          :src="_getAssetUrl(ASSET_TYPES.ITEM, item.id)" 
           class="i-sprite pixelated"
-          @error="(e: Event) => (e.target as HTMLImageElement).src = _getAssetUrl(_ASSET_TYPES.ITEM, 'potion')"
+          @error="(e: Event) => (e.target as HTMLImageElement).src = _getAssetUrl(ASSET_TYPES.ITEM, 'potion')"
         >
       </div>
       <div class="item-details">
@@ -374,3 +373,4 @@ const tierColor = computed(() => {
   }
 }
 </style>
+

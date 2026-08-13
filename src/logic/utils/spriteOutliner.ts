@@ -1,3 +1,5 @@
+export type SpriteOutlineType = 'outline' | 'silhouette';
+
 const outlineCache = new Map<string, string>();
 const processingCache = new Map<string, Promise<string>>();
 
@@ -87,7 +89,7 @@ function loadImage(url: string): Promise<HTMLImageElement> {
  */
 async function processSpriteFallback(
   originalUrl: string,
-  type: 'outline' | 'silhouette'
+  type: SpriteOutlineType
 ): Promise<string> {
   const img = await loadImage(originalUrl);
   
@@ -144,7 +146,7 @@ async function processSpriteFallback(
  */
 export function getProcessedSprite(
   originalUrl: string,
-  type: 'outline' | 'silhouette'
+  type: SpriteOutlineType
 ): Promise<string> {
   const cacheKey = `${originalUrl}-${type}`;
 

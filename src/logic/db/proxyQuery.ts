@@ -6,6 +6,8 @@ import type { DBRouter } from './dbRouter.ts';
 import type { DBResponse, ProxyQueryChainItem } from '@/types/system/database';
 import { logger } from '../utils/logger.ts';
 
+export type DBQueryResultShape = 'single' | 'maybeSingle';
+
 /**
  * Chainable Query Builder for SQLite that mimics Supabase/PostgREST API.
  */
@@ -84,56 +86,45 @@ export class ProxyQuery {
     }
   }
 
-  async execute(final: 'single' | 'maybeSingle' | null = null): Promise<DBResponse> {
+  async execute(final: DBQueryResultShape | null = null): Promise<DBResponse> {
     // If router is Online, use Supabase
     if (this.router.mode === 'online') {
       const client = this.router.realClient;
       if (!client) throw new Error('[DBRouter] Online client not available.');
 
       try {
-        interface DynamicPostgrestQuery {
-          upsert?: (data: unknown, opts?: unknown) => Promise<DBResponse>;
-          insert?: (data: unknown) => Promise<DBResponse>;
-          update?: (data: unknown) => DynamicPostgrestQuery;
-          delete?: () => DynamicPostgrestQuery;
-          then?: (onfulfilled?: (value: DBResponse) => unknown) => Promise<unknown>;
-          [key: string]: unknown; // open-record
-        }
+        type Callable = (...args: unknown[]) => unknown;
+        const q = client.from(this.table);
 
-        const q = client.from(this.table) as unknown as DynamicPostgrestQuery; // domain-ok
-        
-        if (this.action === 'upsert') return await q.upsert!(this.actionData, this.actionOpts);
-        if (this.action === 'insert') return await q.insert!(this.actionData);
-        
+        if (this.action === 'upsert') return await (Reflect.get(q, 'upsert') as Callable)(this.actionData, this.actionOpts) as Promise<DBResponse>; // domain-ok
+        if (this.action === 'insert') return await (Reflect.get(q, 'insert') as Callable)(this.actionData) as Promise<DBResponse>; // domain-ok
+
         if (this.action === 'update') {
-          let updQ = q.update!(this.actionData);
+          let updQ: unknown = (Reflect.get(q, 'update') as Callable)(this.actionData);
           this.chain.forEach(s => {
-            const fn = Reflect.get(updQ, s.type) as ((...args: unknown[]) => DynamicPostgrestQuery) | undefined;
+            const fn = Reflect.get(updQ as object, s.type) as Callable | undefined;
             if (fn) updQ = fn(...s.args);
           });
-          const updPromise = updQ as unknown as Promise<DBResponse>; // domain-ok
-          return await updPromise;
+          return await (updQ as Promise<DBResponse>); // domain-ok
         }
-        
+
         if (this.action === 'delete') {
-          let delQ = q.delete!();
+          let delQ: unknown = (Reflect.get(q, 'delete') as Callable)();
           this.chain.forEach(s => {
-            const fn = Reflect.get(delQ, s.type) as ((...args: unknown[]) => DynamicPostgrestQuery) | undefined;
+            const fn = Reflect.get(delQ as object, s.type) as Callable | undefined;
             if (fn) delQ = fn(...s.args);
           });
-          const delPromise = delQ as unknown as Promise<DBResponse>; // domain-ok
-          return await delPromise;
+          return await (delQ as Promise<DBResponse>); // domain-ok
         }
 
         // Default: select
-        let selQ = q;
-        this.chain.forEach(s => { 
-          const fn = Reflect.get(selQ, s.type) as ((...args: unknown[]) => DynamicPostgrestQuery) | undefined;
+        let selQ: unknown = q;
+        this.chain.forEach(s => {
+          const fn = Reflect.get(selQ as object, s.type) as Callable | undefined;
           if (fn) selQ = fn(...s.args);
         });
-        const finalFn = final ? (Reflect.get(selQ, final) as (() => Promise<DBResponse>) | undefined) : undefined;
-        const selPromise = selQ as unknown as Promise<DBResponse>; // domain-ok
-        return finalFn ? await finalFn() : await selPromise;
+        const finalFn = final ? (Reflect.get(selQ as object, final) as (() => Promise<DBResponse>) | undefined) : undefined;
+        return finalFn ? await finalFn() : await (selQ as Promise<DBResponse>); // domain-ok
       } catch (err: unknown) {
         logger.error('DBRouter', `Online query failed for table ${this.table}: ${(err as Error).message}`);
         
@@ -153,7 +144,7 @@ export class ProxyQuery {
     return this.executeLocal(final);
   }
 
-  async executeLocal(final: 'single' | 'maybeSingle' | null = null): Promise<DBResponse> {
+  async executeLocal(final: DBQueryResultShape | null = null): Promise<DBResponse> {
     try {
       const sqliteDb = await initSQLite();
       if (!sqliteDb) return { data: null, error: 'Database not initialized' };

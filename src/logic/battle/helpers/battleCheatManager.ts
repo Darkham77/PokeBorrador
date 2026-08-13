@@ -1,32 +1,81 @@
-import type { Battle, Side, Pokemon } from '@pkmn/sim';
-import { applyHealCheatToSide, syncRequestConditionsWithSimulator } from '../cheats.ts';
+import type { Battle, Side, Pokemon, SideID } from '@pkmn/sim';
+import { applyHealCheatToSide, applyPpRefillCheatToSide, syncRequestConditionsWithSimulator } from '../cheats.ts';
 
-interface HistoryEntry {
+export interface LegacyCheatEntry {
+  turn: number;
+  side: SideID;
+  type: 'heal' | 'preHeal' | 'ppRefill';
   turnCount?: number;
-  battleTurn: number;
-  p1Heal?: true;
-  p2Heal?: true;
+  battleTurn?: number;
 }
 
-export type FuzzerCheat = { turn: number; side: 'p1' | 'p2'; type: 'heal' } | HistoryEntry;
+interface HistoryCheatEntry {
+  turn?: number;
+  turnCount?: number;
+  battleTurn?: number;
+  p1Heal?: boolean;
+  p2Heal?: boolean;
+  p3Heal?: boolean;
+  p4Heal?: boolean;
+  p1PpRefill?: boolean;
+  p2PpRefill?: boolean;
+  p3PpRefill?: boolean;
+  p4PpRefill?: boolean;
+}
+
+export type FuzzerCheat = LegacyCheatEntry | HistoryCheatEntry;
 
 export class BattleCheatManager {
-  /** Certified heals are keyed by the atomic submission ordinal, never by a
-   * Showdown turn because forced switches may share a battle turn. */
-  private readonly healMap = new Map<number, { p1: boolean; p2: boolean }>();
-  private readonly applied = new Set<string>();
+  /** Certified post-turn heals are keyed by the atomic submission ordinal. */
+  private readonly postHealMap = new Map<number, Partial<Record<SideID, boolean>>>(); // runtime-map
+  private readonly preHealMap = new Map<number, Partial<Record<SideID, boolean>>>(); // runtime-map
+  private readonly ppMap = new Map<number, Partial<Record<SideID, boolean>>>(); // runtime-map
+  private readonly applied = new Set<string>(); // runtime-set
 
   constructor(history?: FuzzerCheat[]) {
+    const seats: SideID[] = ['p1', 'p2', 'p3', 'p4'];
     for (const h of history ?? []) {
-      const turnNum = 'turn' in h ? h.turn : (h.turnCount ?? h.battleTurn);
-      const isP1 = 'side' in h ? h.side === 'p1' : !!h.p1Heal;
-      const isP2 = 'side' in h ? h.side === 'p2' : !!h.p2Heal;
+      const turnNum = typeof h.battleTurn === 'number' ? h.battleTurn : (typeof h.turnCount === 'number' ? h.turnCount : h.turn);
+      if (turnNum === undefined) continue;
 
-      if (!isP1 && !isP2) continue;
-      const entry = this.healMap.get(turnNum) ?? { p1: false, p2: false };
-      if (isP1) entry.p1 = true;
-      if (isP2) entry.p2 = true;
-      this.healMap.set(turnNum, entry);
+      for (const sideId of seats) {
+        const ppKey = `${sideId}PpRefill` as keyof HistoryCheatEntry;
+        if ((h as HistoryCheatEntry)[ppKey]) {
+          const e = this.ppMap.get(turnNum) ?? {};
+          e[sideId] = true;
+          this.ppMap.set(turnNum, e);
+        }
+
+        const preHealKey = `${sideId}PreHeal` as keyof HistoryCheatEntry;
+        if ((h as HistoryCheatEntry)[preHealKey]) {
+          const e = this.preHealMap.get(turnNum) ?? {};
+          e[sideId] = true;
+          this.preHealMap.set(turnNum, e);
+        }
+
+        const healKey = `${sideId}Heal` as keyof HistoryCheatEntry;
+        if ((h as HistoryCheatEntry)[healKey]) {
+          const e = this.postHealMap.get(turnNum) ?? {};
+          e[sideId] = true;
+          this.postHealMap.set(turnNum, e);
+        }
+      }
+
+      if ('side' in h && h.side) {
+        if (h.type === 'ppRefill') {
+          const e = this.ppMap.get(turnNum) ?? {};
+          e[h.side] = true;
+          this.ppMap.set(turnNum, e);
+        } else if (h.type === 'preHeal') {
+          const e = this.preHealMap.get(turnNum) ?? {};
+          e[h.side] = true;
+          this.preHealMap.set(turnNum, e);
+        } else {
+          const postEntry = this.postHealMap.get(turnNum) ?? {};
+          postEntry[h.side] = true;
+          this.postHealMap.set(turnNum, postEntry);
+        }
+      }
     }
   }
 
@@ -38,57 +87,70 @@ export class BattleCheatManager {
     this.applied.clear();
   }
 
-  private executeHeal(battle: Battle, side: Side, key: string, phase: 'PRE' | 'POST'): void {
+  private executeHeal(_battle: Battle, side: Side, key: string, phase: 'PRE' | 'POST'): void {
     try {
       applyHealCheatToSide(side);
-      side.pokemon.forEach((p: Pokemon) => {
-        if (p) battle.add('-heal', p, `${p.hp}/${p.maxhp}`);
-      });
-      syncRequestConditionsWithSimulator(side as Parameters<typeof syncRequestConditionsWithSimulator>[0]); // domain-ok
+      syncRequestConditionsWithSimulator(side);
       this.applied.add(key);
-      console.debug(`[CheatManager-${phase}] Applied heal for ${side.id} at battle.turn=${battle.turn}`); // text-ok
-    } catch (err: unknown) {
+    } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       console.error(`[CheatManager-${phase}-ERROR] Failed heal for ${side.id}: ${msg}`);
     }
   }
 
-  /** Pre-turn: heal fainted Pokémon before choices are submitted. */
-  public applyPreTurnCheats(battle: Battle, isFuzzerSimulation = true): void {
-    if (!isFuzzerSimulation || battle.ended) return;
-    const entry = this.healMap.get(battle.turn);
-    if (!entry) return;
-    for (const [sideId, needs] of [['p1', entry.p1], ['p2', entry.p2]] as const) {
-      if (!needs) continue;
-      const key = `pre-${battle.turn}-${sideId}`;
-      if (this.applied.has(key)) continue;
-      const side = sideId === 'p1' ? battle.p1 : battle.p2;
-      if (side.pokemon.some(p => p.fainted || p.hp <= 0)) {
-        this.executeHeal(battle, side, key, 'PRE');
+  /** Pre-turn: heal fainted Pokémon and refill PP if recorded in history step before choices are submitted. */
+  public applyPreTurnCheats(battle: Battle, _isFuzzerSimulation = true, historyStep?: number | { [key: string]: unknown }): void {
+    if (battle.ended) return;
+    const isObj = typeof historyStep === 'object' && historyStep !== null;
+    const targetTurn = isObj ? (((historyStep.battleTurn ?? historyStep.turnCount) as number | undefined) ?? battle.turn) : (historyStep !== undefined ? historyStep : battle.turn);
+    const entryPre = !isObj ? this.preHealMap.get(targetTurn) : undefined;
+    const entryPost = !isObj ? this.postHealMap.get(targetTurn) : undefined;
+    const entryPp = !isObj ? this.ppMap.get(targetTurn) : undefined;
+
+    for (const side of battle.sides) {
+      if (!side) continue;
+      const sideId = side.id as SideID;
+      const seatPpRefillKey = `${sideId}PpRefill`;
+      const needsPpRefill = isObj ? Boolean(historyStep[seatPpRefillKey]) : (entryPp?.[sideId] ?? false);
+      if (needsPpRefill) {
+        const ppKey = `pre-pp-${targetTurn}-${sideId}`;
+        if (!this.applied.has(ppKey)) {
+          applyPpRefillCheatToSide(side);
+          this.applied.add(ppKey);
+        }
       }
+
+      const seatPreKey = `${sideId}PreHeal`;
+      const seatPostKey = `${sideId}Heal`;
+      const hasFainted = side.pokemon.some((p: Pokemon) => p && (p.fainted || p.hp === 0));
+      const needsPre = isObj ? Boolean(historyStep[seatPreKey]) : (entryPre?.[sideId] ?? false);
+      const legacyNeedsPre = (isObj ? Boolean(historyStep[seatPostKey]) : (entryPost?.[sideId] ?? false)) && hasFainted;
+      const needs = needsPre || legacyNeedsPre;
+
+      if (!needs) continue;
+      const key = `pre-${targetTurn}-${sideId}`;
+      if (this.applied.has(key)) continue;
+      this.executeHeal(battle, side, key, 'PRE');
     }
   }
 
   /** Post-turn: heal Pokémon whose HP dropped critically after choices resolved using unified processIPBHeals. */
-  public applyPostTurnCheats(battle: Battle, historyStep?: number): void {
+  public applyPostTurnCheats(battle: Battle, historyStep?: number | { [key: string]: unknown }): void {
     if (battle.ended) return;
-    const targetTurn = historyStep !== undefined ? historyStep : battle.turn;
-    const entry = this.healMap.get(targetTurn);
-    if (!entry) return;
-    const key = `post-${targetTurn}`;
-    if (this.applied.has(key)) return;
+    const isObj = typeof historyStep === 'object' && historyStep !== null;
+    const targetTurn = isObj ? (((historyStep.battleTurn ?? historyStep.turnCount) as number | undefined) ?? battle.turn) : (historyStep !== undefined ? historyStep : battle.turn);
+    const entry = !isObj ? this.postHealMap.get(targetTurn) : undefined;
 
-    if (entry.p1 || entry.p2) {
-      if (entry.p1) applyHealCheatToSide(battle.p1);
-      if (entry.p2) applyHealCheatToSide(battle.p2);
-      if (entry.p1) {
-        battle.p1.pokemon.forEach((p: Pokemon) => { if (p) battle.add('-heal', p, `${p.hp}/${p.maxhp}`); });
-        syncRequestConditionsWithSimulator(battle.p1 as Parameters<typeof syncRequestConditionsWithSimulator>[0]); // domain-ok
-      }
-      if (entry.p2) {
-        battle.p2.pokemon.forEach((p: Pokemon) => { if (p) battle.add('-heal', p, `${p.hp}/${p.maxhp}`); });
-        syncRequestConditionsWithSimulator(battle.p2 as Parameters<typeof syncRequestConditionsWithSimulator>[0]); // domain-ok
-      }
+    for (const side of battle.sides) {
+      if (!side) continue;
+      const seatKey = `${side.id}Heal`;
+      const needs = isObj ? Boolean(historyStep[seatKey]) : (entry?.[side.id as SideID] ?? false); // domain-ok
+      if (!needs) continue;
+      const key = `post-${targetTurn}-${side.id}`;
+      if (this.applied.has(key)) continue;
+      applyHealCheatToSide(side);
+      side.pokemon.forEach((p: Pokemon) => { if (p) battle.add('-heal', p, `${p.hp}/${p.maxhp}`); });
+      syncRequestConditionsWithSimulator(side as Parameters<typeof syncRequestConditionsWithSimulator>[0]); // domain-ok
       this.applied.add(key);
     }
   }

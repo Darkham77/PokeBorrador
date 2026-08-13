@@ -113,7 +113,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     const team = gameStore.state.team || [];
     const box = gameStore.state.box || [];
     const all = [...team, ...box];
-    const deposited = all.filter(p => p && p.inDaycare);
+    const deposited = all.filter((p): p is Pokemon => p != null && !!p.inDaycare);
     
     let needsSave = false;
     deposited.forEach(p => {

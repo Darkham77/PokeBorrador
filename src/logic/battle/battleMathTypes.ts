@@ -1,4 +1,5 @@
 import type { PokemonType } from '../../data/battle/types.ts';
+import type { MoveCategory } from '../../data/battle/moves.ts';
 
 export interface PurePokemon {
   id?: string;
@@ -25,7 +26,7 @@ export interface PureMove {
   name?: string;
   type?: PokemonType;
   power?: number;
-  cat?: 'physical' | 'special' | 'status';
+  cat?: MoveCategory;
   effect?: string;
   id?: string;
   fixedDmg?: number;

@@ -9,21 +9,21 @@ import { getItemById } from '@/data/inventory/items';
 import { PLAYER_CLASSES } from '@/data/player/playerClasses';
 import { logger } from '../utils/logger.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { BattleLog, BattleSource } from '@/types/battle/battle';
+import type { BattleLog, BattleSource, BattleSide } from '@/types/battle/battle';
 
 interface LogContext {
   gs: {
     state: {
-      playerClass: string | null
-      avatar_style?: string | null
       team: Pokemon[]
+      playerClass?: string | null
+      avatar_style?: string | null
     }
   }
   activeBattle?: {
     trainerSprite?: string | null
     enemy?: Pokemon | null
   } | null
-  attackerSide?: 'player' | 'enemy' | null
+  attackerSide?: BattleSide | null
 }
 
 // Re-use exported types
@@ -85,7 +85,7 @@ export function formatBattleLog(msg: string, type: string, source: BattleSource,
     }
   }
 
-  let side: 'player' | 'enemy' | null = 'enemy';
+  let side: BattleSide | null = 'enemy';
   if (source === 'player' || (source && typeof source === 'object' && gs.state.team.some((p) => p && p.uid === (source as Pokemon).uid))) {
     side = 'player';
   } else if (source === 'enemy_trainer' || (source && typeof source === 'object' && (source as Pokemon).uid === activeBattle?.enemy?.uid)) {

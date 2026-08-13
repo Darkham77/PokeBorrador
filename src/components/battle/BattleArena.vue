@@ -13,6 +13,7 @@ import { useBattleStore } from '@/stores/battle/battle'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import { useDebugStore } from '@/stores/debug'
+import type { PillFxType } from '@/types/system/game'
 import { useGameStore } from '@/stores/game'
 import { getRouteWeather, getWeatherMultiplier, getNpcEncounterChances } from '@/logic/weather/weatherUtils'
 import { getMechanicalWeather, requireWeatherId, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, type WeatherId } from '@/logic/weather/weatherRegistry'
@@ -206,7 +207,7 @@ const weatherTooltipDescription = computed(() => {
   if (fishingSpawns.value && fishingSpawns.value.length > 0) {
     lines.push('---')
     lines.push('🎣 Pesca:')
-    fishingSpawns.value.forEach((fs: { id: string; name: string; percentage: number }) => {
+    fishingSpawns.value.forEach((fs: { id: string; name: string; percentage: number }) => { // type-ok
       const realName = pokemonDataProvider.getPokemonData(fs.id)?.name || fs.name
       lines.push(`• ${realName}: ${fs.percentage.toFixed(1)}%`)
     })
@@ -216,7 +217,7 @@ const weatherTooltipDescription = computed(() => {
   if (archaeologyRewards.value && archaeologyRewards.value.length > 0) {
     lines.push('---')
     lines.push('⛏️ Arqueología:')
-    archaeologyRewards.value.forEach((ar: { name: string; percentage: number }) => {
+    archaeologyRewards.value.forEach((ar: { name: string; percentage: number }) => { // type-ok
       lines.push(`• ${ar.name}: ${ar.percentage.toFixed(1)}%`)
     })
   }
@@ -257,7 +258,7 @@ const initBattlePillAnimation = () => {
 
   pillContext = gsap.context(() => {
     const weather = computedWeather.value
-    let type: 'glow' | 'drift' | 'shake' | '' = ''
+    let type: PillFxType = ''
     if (['clear', 'sun', 'heatwave', 'cold', 'coldwave', 'sandstorm', 'dust_storm', 'intense_sun'].includes(weather)) {
       type = 'glow'
     } else if (['mist', 'fog', 'wind', 'strong_winds'].includes(weather)) {

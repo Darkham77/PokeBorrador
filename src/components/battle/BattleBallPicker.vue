@@ -208,7 +208,7 @@ defineExpose({
     </div>
 
     <button
-      v-gsap-hover="{ scale: 1.12, rotation: 5, y: 0 }" <!-- number-ok -->
+      v-gsap-hover="{ scale: 1.12, rotation: 5, y: 0 }"
       class="btn-catch-ball"
       :class="{ 'is-active': isBallMenuOpen }"
       :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || battleStore.state?.isTrainer"

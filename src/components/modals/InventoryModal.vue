@@ -14,6 +14,7 @@ import { isValidTarget } from '@/logic/items/itemEffects'
 import { isGlobalItem } from '@/logic/providers/itemProvider'
 import { isEquippableHeldItem, mapInventoryToItems, type Item as InventoryListItem } from '@/stores/inventory/inventoryHelpers'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { ItemDiscardAction } from '@/types/inventory/items'
 
 // Sub-components
 import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
@@ -359,7 +360,7 @@ const handleMultiExecute = async () => {
     message,
     confirmText: mode === 'sell' ? 'VENDER' : 'TIRAR',
     onConfirm: async () => {
-      const totalGain = await inventoryStore.processBatchAction(selectedItems, mode as 'sell' | 'release')
+      const totalGain = await inventoryStore.processBatchAction(selectedItems, mode as ItemDiscardAction)
 
       if (mode === 'sell') {
         uiStore.notify(`Venta realizada: +₱${totalGain.toLocaleString()}`, '💰')
@@ -382,7 +383,7 @@ const handleQuantityConfirm = async (qty: number) => {
       const singleMap = new Map([[itemId, qty]])
       const mode = multiSelectMode.value
       if (mode) {
-        const totalGain = await inventoryStore.processBatchAction(singleMap, mode as 'sell' | 'release')
+        const totalGain = await inventoryStore.processBatchAction(singleMap, mode as ItemDiscardAction)
         
         if (mode === 'sell') uiStore.notify(`Venta realizada: +₱${totalGain.toLocaleString()}`, '💰')
         else uiStore.notify('Objeto eliminado', '🗑️')

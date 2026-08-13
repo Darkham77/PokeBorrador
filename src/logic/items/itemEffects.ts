@@ -59,7 +59,7 @@ export const isValidTarget = (itemId: ItemId | string, pokemon: Pokemon): boolea
   }
 
   // 3. Cura de estados específicos
-  if (resolvedId === 'antidote') return canClearStatus(pokemon, 'psn');
+  if (resolvedId === 'antidote') return canClearStatus(pokemon, 'poison');
   if (resolvedId === 'burnheal') return canClearStatus(pokemon, 'brn');
   if (resolvedId === 'paralyzeheal') return canClearStatus(pokemon, 'par');
   if (resolvedId === 'awakening') return canClearStatus(pokemon, 'slp');
@@ -115,7 +115,7 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = { /
   'maxpotion': pokeEffect((p) => healHp(p, p.maxHp)),
   'revive': pokeEffect((p) => revive(p, Math.floor(p.maxHp / REVIVE_HALF_DIVISOR))),
   'revivemax': pokeEffect((p) => revive(p, p.maxHp)),
-  'antidote': pokeEffect((p) => clearStatus(p, 'psn')),
+  'antidote': pokeEffect((p) => clearStatus(p, 'poison')),
   'burnheal': pokeEffect((p) => clearStatus(p, 'brn')),
   'paralyzeheal': pokeEffect((p) => clearStatus(p, 'par')),
   'awakening': pokeEffect((p) => clearStatus(p, 'slp')),
@@ -227,4 +227,3 @@ import { healHp, revive, clearStatus, curaTotal, restorePP, handleStone } from '
 import { getDynamicItemEffect } from './helpers/itemEffectsHelpers.ts';
 
 export { healHp, clearStatus, curaTotal, restorePP, handleStone, getDynamicItemEffect };
-

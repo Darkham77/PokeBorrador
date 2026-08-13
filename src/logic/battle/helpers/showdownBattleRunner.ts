@@ -1,5 +1,6 @@
 import { ChoiceRequest, requiresAction } from './requestHelper.ts';
 import { ShowdownBattleEngine } from '../engine/showdownBattleEngine.ts';
+import { isCertifiedBattleGameAction, type CertifiedBattleGameAction } from '../../../types/battle/certifiedBattleActions.ts';
 
 export const REPLAY_SEATS = ['p1', 'p2', 'p3', 'p4'] as const;
 export type ReplaySeat = (typeof REPLAY_SEATS)[number];
@@ -8,6 +9,12 @@ export interface CertifiedReplayHistoryEntry {
   p1Choice: string;
   p2Choice: string;
   battleTurn?: number;
+  turnCount?: number;
+  p1GameAction?: CertifiedBattleGameAction;
+  p1Heal?: boolean;
+  p2Heal?: boolean;
+  p1ForceSwitch?: boolean;
+  p2ForceSwitch?: boolean;
 }
 
 /**
@@ -38,6 +45,9 @@ export class ShowdownBattleRunner {
     if (!Array.isArray(history) || typeof historyIndex !== 'number') {
       throw new Error(`[ShowdownBattleRunner] Certified replay history or cursor is missing. context=${JSON.stringify({ seat, historyIndex, hasHistory: Array.isArray(history) })}`);
     }
+    if (historyIndex >= history.length || Reflect.get(debug, 'certifiedReplayWorkerEnded') === true) {
+      return '';
+    }
     return this.requireHistoryEntry(history, historyIndex)[`${seat}Choice`];
   }
 
@@ -55,9 +65,6 @@ export class ShowdownBattleRunner {
 
     const workerEnded = Reflect.get(debug, 'certifiedReplayWorkerEnded') === true;
     if (workerEnded) {
-      if (historyIndex !== history.length) {
-        throw new Error(`[ShowdownBattleRunner] Certified worker ended with unconsumed history entries. context=${JSON.stringify({ historyIndex, historyLength: history.length })}`);
-      }
       return null;
     }
 
@@ -72,10 +79,13 @@ export class ShowdownBattleRunner {
     const p1Choice = Reflect.get(step, 'p1Choice') as string | undefined;
     const p2Choice = Reflect.get(step, 'p2Choice') as string | undefined;
     const battleTurn = Reflect.get(step, 'battleTurn') as number | undefined;
-    if (typeof p1Choice !== 'string' || typeof p2Choice !== 'string' || (battleTurn !== undefined && typeof battleTurn !== 'number')) {
-      throw new Error(`[ShowdownBattleRunner] Certified replay history entry is invalid. context=${JSON.stringify({ historyIndex, p1Choice, p2Choice, battleTurn })}`);
+    const p1GameAction: unknown = Reflect.get(step, 'p1GameAction');
+    if (typeof p1Choice !== 'string' || typeof p2Choice !== 'string' || (battleTurn !== undefined && typeof battleTurn !== 'number') || (p1GameAction !== undefined && (!isCertifiedBattleGameAction(p1GameAction) || p1Choice !== '' || p2Choice === ''))) {
+      throw new Error(`[ShowdownBattleRunner] Certified replay history entry is invalid. context=${JSON.stringify({ historyIndex, p1Choice, p2Choice, battleTurn, p1GameAction })}`);
     }
-    return { p1Choice, p2Choice, battleTurn };
+    return p1GameAction === undefined
+      ? { p1Choice, p2Choice, battleTurn }
+      : { p1Choice, p2Choice, battleTurn, p1GameAction: p1GameAction as CertifiedBattleGameAction };
   }
 
   static advanceHistoryAfterAcceptedTurn(debug: object): void {
@@ -83,7 +93,19 @@ export class ShowdownBattleRunner {
     if (typeof historyIndex !== 'number') {
       throw new Error('[ShowdownBattleRunner] Certified replay cursor is missing after an accepted Showdown turn.');
     }
-    Reflect.set(debug, 'replayHistoryIdx', historyIndex + 1);
+    const history: unknown = Reflect.get(debug, 'history');
+    if (!Array.isArray(history)) {
+      throw new Error('[ShowdownBattleRunner] Certified replay history is missing after an accepted Showdown turn.');
+    }
+    if (historyIndex >= history.length) {
+      Reflect.set(debug, 'certifiedReplayWorkerEnded', true);
+      return;
+    }
+    const nextHistoryIndex = historyIndex + 1;
+    const consumedHistory = history.slice(0, nextHistoryIndex).map((_, index) => this.requireHistoryEntry(history, index));
+    Reflect.set(debug, 'replayHistoryIdx', nextHistoryIndex);
+    Reflect.set(debug, 'p1ChoiceIdx', consumedHistory.filter(({ p1Choice }) => p1Choice !== '').length);
+    Reflect.set(debug, 'p2ChoiceIdx', consumedHistory.filter(({ p2Choice }) => p2Choice !== '').length);
   }
 
   get p1ChoiceIdx(): number {

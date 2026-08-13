@@ -6,7 +6,7 @@ import { useGymsStore } from '@/stores/gyms'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { GymId } from '@/data/world/gyms'
 
-interface ViteDebugBridge {
+interface ViteDebugBridge extends Record<string, unknown> { // open-record
   setMoney: (val: number) => void;
   setElo: (val: number) => void;
   setLevel: (val: number) => void;
@@ -44,7 +44,7 @@ const resetAllBadges = () => {
 }
 
 
-const getDebugBridge = () => window.__VITE_DEBUG__ as unknown as ViteDebugBridge // domain-ok
+const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge
 
 // Call console commands directly (they handle securityCheck internally)
 const addMoney = () => {

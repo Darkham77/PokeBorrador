@@ -1,5 +1,8 @@
+<script setup lang="ts">
 const GSAP_ANIM_Y_OFFSET_PX = 15
 const GSAP_ANIM_SCALE_START = 0.95
+const GSAP_ANIM_GRID_DURATION_SEC = 0.4
+const GSAP_ANIM_GRID_STAGGER_SEC = 0.04
 import { ref, computed, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game'
@@ -9,6 +12,7 @@ import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
 import ShopSearchControls from '@/components/common/ShopSearchControls.vue'
 import ReputationShopItemCard from './reputation-shop/ReputationShopItemCard.vue'
 import { getItemById } from '@/data/inventory/items'
+import type { ItemTier } from '@/types/inventory/items'
 
 interface Props {
   show?: boolean
@@ -32,7 +36,7 @@ interface ReputationShopItem {
   repCost: number
   givesId: string
   givesQty: number
-  tier: 'common' | 'rare' | 'epic' | 'legend'
+  tier: ItemTier
   cat: string
 }
 
@@ -116,6 +120,7 @@ const activeTab = ref('todos')
 const search = ref('')
 const sortKey = ref<'name' | 'price' | 'rarity'>('name')
 const sortOrder = ref<'asc' | 'desc'>('asc')
+const gridRef = ref<HTMLElement | null>(null)
 
 const filteredItems = computed<(ReputationShopItem & { name: string; desc: string; sprite: string })[]>(() => {
   const items = REPUTATION_SHOP_ITEMS.filter(item => {
