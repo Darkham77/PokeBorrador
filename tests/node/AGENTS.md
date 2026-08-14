@@ -9,6 +9,7 @@ Frontend Developers / Systems Engineers.
 ## Local Contracts
 
 - Follow standard repository modularity guidelines.
+- **Deterministic & Self-Contained Tests**: Vitest tests under `tests/node/` must be 100% self-contained and deterministic with frozen in-memory fixtures. They must NEVER dynamically read or depend on transient/mutable CLI output files from `scripts/e2e/results/`.
 
 ## Work Guidance
 

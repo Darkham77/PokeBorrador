@@ -5,7 +5,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils'
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import { NATURE_DATA, isNatureId } from '@/data/battle/natures'
+import { NATURE_DATA, isNatureId, getNatureInfo } from '@/data/battle/natures'
 import { useGameStore } from '@/stores/game'
 import { useInventoryStore } from '@/stores/inventory/inventory'
 import { useUIStore } from '@/stores/ui'
@@ -344,10 +344,10 @@ const heldItemSprite = computed(() => {
           </div>
           <div class="nature-line">
             <PVTooltip
-              :title="`NATURALEZA: ${pokemon.nature.toUpperCase()}`"
+              :title="`NATURALEZA: ${getNatureInfo(pokemon.nature).name.toUpperCase()}`"
               :description="getNatureDescription(pokemon.nature)"
             >
-              <span class="nature-text">{{ pokemon.nature.toUpperCase() }}</span>
+              <span class="nature-text">{{ getNatureInfo(pokemon.nature).name.toUpperCase() }}</span>
             </PVTooltip>
           </div>
         </div>

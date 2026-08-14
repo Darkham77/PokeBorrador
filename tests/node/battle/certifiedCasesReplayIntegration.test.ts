@@ -1,94 +1,81 @@
 import { describe, it, expect } from 'vitest';
-import fs from 'node:fs';
-import path from 'node:path';
 import { Battle } from '@pkmn/sim';
 import { executeBattleTurn } from '../../../src/logic/battle/helpers/showdownExecutor.ts';
 
-interface CertifiedHistoryStep {
-  turnCount?: number;
-  battleTurn?: number;
-  p1Choice: string;
-  p2Choice: string;
-  p1ForceSwitch?: boolean;
-  p2ForceSwitch?: boolean;
-  p1Heal?: boolean;
-  p2Heal?: boolean;
-}
-
-interface CertifiedCase {
-  id: string;
-  seed: number[];
-  playerTeam: any[];
-  enemyTeam: any[];
-  history: CertifiedHistoryStep[];
-  finalState?: {
-    winner?: string | null;
+/**
+ * Deterministic Replay Integration Test
+ * Verifies turn-by-turn combat replay fidelity using self-contained frozen fixtures.
+ * Does NOT depend on external fuzzer output files.
+ */
+describe('Deterministic Battle Replay Integration', () => {
+  const DETERMINISTIC_REPLAY_CASE = {
+    id: 'case-deterministic-replay-01',
+    seed: [1, 2, 3, 4],
+    playerTeam: [
+      {
+        name: 'Mew',
+        species: 'Mew',
+        level: 100,
+        gender: 'N',
+        item: '',
+        ability: 'synchronize',
+        nature: 'adamant',
+        evs: { hp: 0, atk: 252, def: 0, spa: 0, spd: 0, spe: 252 },
+        ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+        moves: ['closecombat', 'earthquake', 'psychic', 'surf'],
+        uid: 'mew-player-uid-1',
+        stats: { maxHp: 341, atk: 328, def: 236, spa: 212, spd: 236, spe: 299 }
+      }
+    ],
+    enemyTeam: [
+      {
+        name: 'Blissey',
+        species: 'Blissey',
+        level: 100,
+        gender: 'F',
+        item: '',
+        ability: 'naturalcure',
+        nature: 'bold',
+        evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 4, spe: 0 },
+        ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+        moves: ['softboiled', 'seismictoss', 'toxic', 'aromatherapy'],
+        uid: 'blissey-enemy-uid-1',
+        stats: { maxHp: 714, atk: 22, def: 130, spa: 186, spd: 307, spe: 146 }
+      }
+    ],
+    history: [
+      { p1Choice: 'move 1', p2Choice: 'move 2' },
+      { p1Choice: 'move 1', p2Choice: 'move 2' }
+    ],
+    expectedWinner: 'Player'
   };
-}
 
-describe('Certified Fuzzer Cases Replay Integration', () => {
-  const casesPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_certified_cases.json');
-  if (!fs.existsSync(casesPath)) {
-    it.skip('fuzzer_certified_cases.json not found', () => {});
-    return;
-  }
+  it('replays deterministic turn-by-turn battle to clean completion with zero desyncs', () => {
+    const testCase = DETERMINISTIC_REPLAY_CASE;
+    const battle = new Battle({ formatid: 'gen9customgame' as any, seed: testCase.seed as any });
+    battle.setPlayer('p1', { name: 'Player', team: testCase.playerTeam as any });
+    battle.setPlayer('p2', { name: 'NPC-Enemy', team: testCase.enemyTeam as any });
 
-  const rawData = JSON.parse(fs.readFileSync(casesPath, 'utf-8'));
-  const allBatches: CertifiedCase[] = [
-    ...(rawData.battle || []),
-    ...(rawData.abilities || []),
-    ...(rawData.items || []),
-    ...(rawData.medicines || [])
-  ];
+    battle.choose('p1', 'default');
+    battle.choose('p2', 'default');
 
-  it('verifies that certified fuzzer cases exist', () => {
-    expect(allBatches.length).toBeGreaterThan(0);
-  });
+    for (let i = 0; i < testCase.history.length; i++) {
+      const step = testCase.history[i]!;
+      if (battle.ended) break;
 
-  // Test across diverse representative sample of batches (first 10 of each category)
-  const sampleCases = [
-    ...(rawData.battle || []).slice(0, 5),
-    ...(rawData.abilities || []).slice(0, 3),
-    ...(rawData.items || []).slice(0, 5),
-    ...(rawData.medicines || []).slice(0, 3)
-  ];
+      const result = executeBattleTurn({
+        battle,
+        p1Choice: step.p1Choice,
+        p2Choice: step.p2Choice,
+        history: testCase.history as any,
+        currentStep: i + 1,
+        certifiedHistoryStep: step as any
+      });
 
-  sampleCases.forEach((testCase: CertifiedCase) => {
-    it(`replays ${testCase.id} with 100% turn-by-turn fidelity and zero desyncs`, () => {
-      const battle = new Battle({ formatid: 'gen9customgame' as any, seed: testCase.seed as any });
-      battle.setPlayer('p1', { name: 'Player', team: testCase.playerTeam as any });
-      battle.setPlayer('p2', { name: 'NPC-Enemy', team: testCase.enemyTeam as any });
+      expect(result).toBeDefined();
+    }
 
-      battle.choose('p1', 'default');
-      battle.choose('p2', 'default');
-
-      for (let i = 0; i < testCase.history.length; i++) {
-        const step = testCase.history[i]!;
-        if (battle.ended) break;
-
-        const result = executeBattleTurn({
-          battle,
-          p1Choice: step.p1Choice,
-          p2Choice: step.p2Choice,
-          history: testCase.history as any,
-          currentStep: i + 1,
-          certifiedHistoryStep: step as any
-        });
-
-        expect(result).toBeDefined();
-      }
-
-      expect(battle.ended).toBe(true);
-
-      if (testCase.finalState?.winner !== undefined && testCase.finalState.winner !== null) {
-        const expectedWinner = String(testCase.finalState.winner);
-        const actualWinner = battle.winner;
-        if (expectedWinner === 'p1' || expectedWinner === 'Player') {
-          expect(actualWinner).toBe('Player');
-        } else if (expectedWinner === 'p2' || expectedWinner === 'NPC-Enemy') {
-          expect(actualWinner).toBe('NPC-Enemy');
-        }
-      }
-    });
+    expect(battle.ended).toBe(true);
+    expect(battle.winner).toBe(testCase.expectedWinner);
   });
 });

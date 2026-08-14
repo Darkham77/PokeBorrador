@@ -34,8 +34,21 @@ export function isNatureId(raw: string): raw is NatureId {
 
 export const NATURES: readonly NatureId[] = Object.keys(NATURE_DATA).filter(isNatureId);
 
-/** Boundary adapter for external data (saves, DB). Throws if invalid. */
+/** Boundary adapter for external data (saves, DB). Throws loudly if invalid. */
 export function toNatureId(raw: string): NatureId {
   if (isNatureId(raw)) return raw;
   throw new Error(`[natures] Invalid NatureId: '${raw}'`);
+}
+
+/** Returns the nature details with Spanish name, modifiers and description. Fails loudly on invalid nature. */
+export function getNatureInfo(nature: NatureId) {
+  if (!nature || !(nature in NATURE_DATA)) {
+    throw new Error(`[natures] Invalid NatureId: '${nature}'. Must be a valid canonical NatureId.`);
+  }
+  return NATURE_DATA[nature];
+}
+
+/** Returns the localized Spanish name for a nature. Fails loudly on invalid nature. */
+export function getNatureName(nature: NatureId): string {
+  return getNatureInfo(nature).name;
 }

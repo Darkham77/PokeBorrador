@@ -4,7 +4,7 @@
  * Tarjeta premium de estadísticas del Pokémon eclosionado.
  */
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import { NATURE_DATA, isNatureId } from '@/data/battle/natures'
+import { getNatureInfo } from '@/data/battle/natures'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
@@ -18,13 +18,6 @@ interface Props {
 const props = defineProps<Props>()
 
 const tierInfo = computed(() => getPokemonTier(props.pokemon))
-
-const getNatureInfo = (nature: string) => {
-  if (!nature) return { desc: 'Sin datos de naturaleza.' }
-  const cleanId = nature.toLowerCase().trim()
-  const entry = isNatureId(cleanId) ? NATURE_DATA[cleanId] : undefined
-  return entry || { desc: 'Naturaleza desconocida.' }
-}
 
 const getAbilityDesc = (ability: string) => {
   if (!ability) return 'Habilidad especial de este Pokémon.'
@@ -44,11 +37,11 @@ const getAbilityName = (ability: string) => {
     <div class="stat-row">
       <span class="label">Naturaleza:</span>
       <PVTooltip
-        title="NATURALEZA"
+        :title="`NATURALEZA: ${getNatureInfo(pokemon.nature).name.toUpperCase()}`"
         :description="getNatureInfo(pokemon.nature).desc"
         position="top"
       >
-        <span class="val interactive-val m-interactive-label">{{ pokemon.nature }}</span>
+        <span class="val interactive-val m-interactive-label">{{ getNatureInfo(pokemon.nature).name }}</span>
       </PVTooltip>
     </div>
     <div class="stat-row">

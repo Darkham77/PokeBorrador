@@ -6,7 +6,7 @@ import { useBoxStore } from '@/stores/box'
 import { useInventoryStore } from '@/stores/inventory/inventory'
 import { SHOP_ITEMS } from '@/data/inventory/items'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { NATURE_DATA, isNatureId } from '@/data/battle/natures'
+import { getNatureInfo } from '@/data/battle/natures'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
@@ -36,9 +36,9 @@ const uiStore = useUIStore()
 const boxStore = useBoxStore()
 
 const pokemon = computed(() => (gameStore.state.box[props.boxIndex] || null))
-const natureDesc = computed(() => {
-  const nat = pokemon.value?.nature || ''
-  return isNatureId(nat) ? NATURE_DATA[nat].desc : ''
+const natureData = computed(() => {
+  const nat = pokemon.value?.nature
+  return nat ? getNatureInfo(nat) : null
 })
 const pokemonTypes = computed<PokemonType[]>(() => {
   const p = pokemon.value
@@ -238,15 +238,15 @@ const handleSellRocket = () => {
 
           <div class="nature-ability">
             <PVTooltip
-              v-if="pokemon?.nature"
-              :title="pokemon?.nature"
-              :description="natureDesc"
+              v-if="natureData"
+              :title="natureData.name.toUpperCase()"
+              :description="natureData.desc"
               position="top"
             >
-              <span class="interactive-text">{{ pokemon?.nature }}</span>
+              <span class="interactive-text">{{ natureData.name }}</span>
             </PVTooltip>
             <span
-              v-if="pokemon?.nature && pokemon?.ability"
+              v-if="natureData && pokemon?.ability"
               class="sep"
             >|</span>
             <PVTooltip

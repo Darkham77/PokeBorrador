@@ -185,7 +185,7 @@ const teamBallsStatus = computed(() => {
           :title="getNatureData(p.nature)?.name.toUpperCase() || 'SERIA'"
         >
           <div class="m-badge-nature">
-            {{ p.nature || 'Serio' }}
+            {{ getNatureData(p.nature)?.name || 'Seria' }}
           </div>
           <template #content>
             <div class="nature-pro-tooltip">

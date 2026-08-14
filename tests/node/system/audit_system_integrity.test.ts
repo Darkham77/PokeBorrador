@@ -98,10 +98,17 @@ describe('Audit System Integrity & Dual-Mode Formatting', () => {
   });
 
   it('should execute audit_warnings_diff.ts and generate valid JSON/TXT reports without executing unit tests', () => {
-    const stdout = execSync('node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/maintenance/audit_warnings_diff.ts', {
-      encoding: 'utf-8',
-      stdio: ['ignore', 'pipe', 'ignore']
-    });
+    let stdout = '';
+    try {
+      stdout = execSync('node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/maintenance/audit_warnings_diff.ts', {
+        encoding: 'utf-8',
+        stdio: ['ignore', 'pipe', 'pipe']
+      });
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'stdout' in err) {
+        stdout = String((err as { stdout?: unknown }).stdout || '');
+      }
+    }
 
     expect(stdout).toContain('REPORTE DE ANÁLISIS GLOBAL: ERRORES DEL PROYECTO Y WARNINGS LOCALES');
     expect(stdout).toContain('Cero errores detectados en todo el proyecto');

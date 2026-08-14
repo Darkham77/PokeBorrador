@@ -14,7 +14,7 @@ QA / Automation Engineers.
   - **FSM Coordination**: Source code emits an event after the FSM transition settles; the test observes it before sending the next visible action.
   - **Fast Failure Limit**: Interaction/click locators must use short timeouts (maximum 2 to 3 seconds for settling, unless it's a heavy initial page load) so that if something is blocked, it fails fast and loudly instead of masking latency or synchronization bugs.
 - Zero-any policy in mocks and signatures.
-- All test suites run under **Vitest** (vite-node) via `vitest.workspace.ts`.
+- All test suites run under **Vitest** (vite-node) via `vitest.workspace.ts`. Regression checks MUST ALWAYS run the full test suite (`npm run test`), never subset commands like `test:unit` or `test:node` alone.
 - Keep mock definitions in sync with backend schema updates to prevent validation failures.
 - Use the DBRouter to isolate E2E local database queries from external profiles.
 - **TypeScript Strict Mocking (No any)**: When testing components with generic wrappers or stubbed properties where props are not fully inferred, do NOT cast variables or properties to "any". Define explicit interfaces local to the spec file and cast via double assertion (e.g. `wrapper.props() as unknown as CustomProps`) to preserve the Zero-Any integrity rule.
@@ -22,7 +22,7 @@ QA / Automation Engineers.
 ## Work Guidance
 
 - Whenever a bug is presented with a reproducing example, you MUST FIRST create a unit test (or other appropriate test) that successfully reproduces the bug (verifying it fails) before writing the fix to ensure it is never reintroduced.
-- **Runner**: All tests use Vitest. `tests/node/` runs with `environment: 'node'`; `tests/unit/` and `tests/integration/` run with `environment: 'jsdom'`.
+- **Runner**: All tests use Vitest. `tests/node/` runs with `environment: 'node'`; `tests/unit/` and `tests/integration/` run with `environment: 'jsdom'`. To validate all changes across the codebase, ALWAYS execute `npm run test`.
 - **Imports**: Use `import { describe, it, vi, beforeAll, beforeEach } from 'vitest'`. Do NOT import from `node:test`.
 - **@/ aliases**: Fully supported in both environments. No workarounds needed.
 - **Mocks**: Use `vi.fn()`, `vi.spyOn()`, `vi.stubGlobal()`. Never use `node:test`'s `mock` object.

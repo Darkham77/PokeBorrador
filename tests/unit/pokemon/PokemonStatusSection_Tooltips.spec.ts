@@ -56,27 +56,15 @@ describe('PokemonStatusSection - Tooltips', () => {
     expect(abilityTooltip!.props('description')).toContain('• El contacto físico puede envenenar al rival (30%).')
   })
 
-  it('should handle case-insensitive nature lookups', () => {
+  it('should handle neutral nature description', () => {
     const wrapper = mount(PokemonStatusSection, {
-      props: { pokemon: { ...mockPokemon, nature: 'BOLD' } as unknown as Pokemon }
+      props: { pokemon: { ...mockPokemon, nature: 'serious' } as unknown as Pokemon }
     })
 
     const tooltips = wrapper.findAllComponents({ name: 'PVTooltip' })
     const natureTooltip = tooltips.find(t => t.props('title') === 'NATURALEZA')
     
     expect(natureTooltip).toBeDefined()
-    expect(natureTooltip!.props('description')).toContain('▲ +10% Defensa / ▼ -10% Ataque')
-  })
-
-  it('should provide fallback description for unknown nature', () => {
-    const wrapper = mount(PokemonStatusSection, {
-      props: { pokemon: { ...mockPokemon, nature: 'Unknown' } as unknown as Pokemon }
-    })
-
-    const tooltips = wrapper.findAllComponents({ name: 'PVTooltip' })
-    const natureTooltip = tooltips.find(t => t.props('title') === 'NATURALEZA')
-    
-    expect(natureTooltip).toBeDefined()
-    expect(natureTooltip!.props('description')).toBe('Naturaleza desconocida.')
+    expect(natureTooltip!.props('description')).toBe('Sin efecto en estadísticas.')
   })
 })
