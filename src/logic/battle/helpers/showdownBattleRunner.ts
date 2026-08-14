@@ -1,9 +1,9 @@
+import type { SideID } from '@pkmn/sim';
 import { ChoiceRequest, requiresAction } from './requestHelper.ts';
 import { ShowdownBattleEngine } from '../engine/showdownBattleEngine.ts';
 import { isCertifiedBattleGameAction, type CertifiedBattleGameAction } from '../../../types/battle/certifiedBattleActions.ts';
 
-export const REPLAY_SEATS = ['p1', 'p2', 'p3', 'p4'] as const;
-export type ReplaySeat = (typeof REPLAY_SEATS)[number];
+export const REPLAY_SEATS: readonly SideID[] = ['p1', 'p2', 'p3', 'p4']; // domain-ok
 
 export interface CertifiedReplayHistoryEntry {
   p1Choice: string;
@@ -36,7 +36,7 @@ export class ShowdownBattleRunner {
    * The certified history is the atomic replay source: one entry represents
    * one Showdown submission, including P2-only forced replacements.
    */
-  static requireHistoryChoice(debug: object, seat: ReplaySeat): string {
+  static requireHistoryChoice(debug: object, seat: SideID): string {
     if (seat !== 'p1' && seat !== 'p2') {
       throw new Error(`[ShowdownBattleRunner] Seat is not available in the current singles simulator request. context=${JSON.stringify({ seat })}`);
     }
@@ -136,7 +136,7 @@ export class ShowdownBattleRunner {
    * stream. Only the code path that submits the choice to Showdown may consume
    * it; previews must never alter replay state.
    */
-  peekNextChoice(player: ReplaySeat, activeRequest: unknown): string {
+  peekNextChoice(player: SideID, activeRequest: unknown): string {
     if (!requiresAction(activeRequest)) return 'pass';
     if (!REPLAY_SEATS.includes(player)) {
       throw new Error(`[ShowdownBattleRunner] Seat is not available in the current simulator request. context=${JSON.stringify({ seat: player, activeRequest })}`);
@@ -155,7 +155,7 @@ export class ShowdownBattleRunner {
    * based on the active simulator request. If action is consumed, advances the choice index.
    */
   resolveAndConsumeNextChoice(
-    player: ReplaySeat,
+    player: SideID,
     activeRequest: ChoiceRequest | null | undefined,
     readiness?: {
       subState?: string;

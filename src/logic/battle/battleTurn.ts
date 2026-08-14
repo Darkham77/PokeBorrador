@@ -5,7 +5,7 @@ import { logger } from '../utils/logger.ts'
 import { executeMoveAction } from './actions/moveExecutor.ts'
 import { resolveTurnChoices } from './battleTurnChoiceHelper.ts'
 import { updateCastformForm } from './battleFlow.ts'
-import type { CertifiedBagItemGameAction } from '@/types/battle/certifiedBattleActions'
+import type { CertifiedBattleGameAction } from '@/types/battle/certifiedBattleActions'
 
 const ESCAPE_FALLBACK_DELAY_MS = 800;
 
@@ -171,7 +171,7 @@ export async function runPlayerAction(store: BattleContext, moveIndex: number) {
   await executeMoveAction(store, 'player', move)
 }
 
-export async function runEnemyAction(store: BattleContext, bagAction?: CertifiedBagItemGameAction) {
+export async function runEnemyAction(store: BattleContext, bagAction?: CertifiedBattleGameAction) {
   const p = store.activeBattle.value?.player
   const e = store.activeBattle.value?.enemy
   if (!p || !e || e.hp <= 0) return

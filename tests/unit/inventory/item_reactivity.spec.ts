@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useItemOnPokemon } from '@/logic/providers/itemProvider'
 import { itemEffects } from '@/logic/items/itemEffects'
+import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 // Mock de Pinia stores para evitar errores de inicialización
@@ -51,16 +52,12 @@ describe('Item Reactivity & Integrity', () => {
   let mockPokemon: Pokemon
 
   beforeEach(() => {
-    mockPokemon = {
-      id: 'pikachu',
-      name: 'Pikachu',
-      hp: 10,
-      maxHp: 100,
-      status: 'psn',
-      moves: [
-        { name: 'Thunderbolt', pp: 5, maxPP: 15 }
-      ]
-    } as unknown as Pokemon
+    mockPokemon = makePokemon('pikachu', 50)!
+    mockPokemon.hp = 10
+    mockPokemon.status = 'psn'
+    mockPokemon.moves = [
+      { id: 'thunderbolt', name: 'Thunderbolt', pp: 5, maxPP: 15 }
+    ]
   })
 
   it('should heal HP and return the modified pokemon object', () => {
@@ -69,7 +66,7 @@ describe('Item Reactivity & Integrity', () => {
     expect(result).toBeDefined()
     expect('success' in result!).toBe(false) // El proveedor devuelve { message, pokemon }
     expect(result!.message).toContain('restauró')
-    expect(result!.pokemon.hp).toBe(100) // 10 + 200 clamped to 100
+    expect(result!.pokemon.hp).toBe(mockPokemon.maxHp)
   })
 
   it('should clear status and return the modified pokemon object', () => {
@@ -92,10 +89,12 @@ describe('Item Reactivity & Integrity', () => {
     const itemsToTest = Object.keys(itemEffects)
     
     itemsToTest.forEach(itemName => {
-      // Usamos el pokemon mock o un estado genérico
-      const effect = itemEffects[itemName];
+      const p = makePokemon('pikachu', 50)!
+      p.hp = 10
+      p.moves = [{ id: 'thunderbolt', name: 'Thunderbolt', pp: 5, maxPP: 15 }]
+      const effect = itemEffects[itemName]
       if (effect) {
-        const result = effect(mockPokemon)
+        const result = effect(p)
         
         expect(typeof result).toBe('object')
         expect(result).toHaveProperty('success')
@@ -106,7 +105,7 @@ describe('Item Reactivity & Integrity', () => {
   })
 
   it('should fail gracefully if pokemon is already at full health', () => {
-    mockPokemon.hp = 100
+    mockPokemon.hp = mockPokemon.maxHp
     const result = useItemOnPokemon('hyperpotion', mockPokemon)
     
     expect(result).toBeNull() // El proveedor devuelve null si result.success es falso

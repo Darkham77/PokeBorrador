@@ -94,7 +94,7 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
         test.setTimeout(MAX_SUITE_TOTAL_TIMEOUT_MS);
         startTimesMap[index] = Number(Temporal.Now.instant().epochMilliseconds);
 
-        const logBuffer: string[] = [];
+        const logBuffer: string[] = []; // no-domain
         const sim = new FSMSyncSimWrapper(page, `TestBatchFSM_${index}`, logBuffer);
         await sim.setup();
 
@@ -160,7 +160,7 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
           .filter((f) => f.endsWith('.json'))
           .map((f) => {
             try {
-              return JSON.parse(fs.readFileSync(path.join(failuresDir, f), 'utf8')) as Record<string, unknown>;
+              return JSON.parse(fs.readFileSync(path.join(failuresDir, f), 'utf8')) as Record<string, unknown>; // open-record
             } catch (_e: unknown) {
               return null;
             }

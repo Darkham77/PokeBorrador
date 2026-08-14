@@ -103,7 +103,7 @@ export async function armBattleFlowCompletion(page: Page): Promise<void> {
           reject(new Error('[E2E] battle-flow-completed must be a CustomEvent.'));
           return;
         }
-        const detail = event.detail as Record<string, unknown> | null;
+        const detail = event.detail as Record<string, unknown> | null; // open-record
         if (typeof detail !== 'object' || detail === null || !('destination' in detail) || detail.destination !== 'map') {
           reject(new Error('[E2E] battle-flow-completed has an invalid detail payload.'));
           return;
@@ -1122,7 +1122,7 @@ export async function openDebugTab(page: Page, category: string): Promise<void> 
     modal: 'modals',
     misi: 'missions',
   };
-  const categoryId = categoryMap[category.toLowerCase()] || category.toLowerCase();
+  const categoryId = categoryMap[category.toLowerCase()] || category.toLowerCase(); // string-ok
   const navBtn = page.locator(`#debug-tab-${categoryId}, [id^="debug-tab-${categoryId}"]`).first();
 
   const isTabReady = await navBtn.isVisible().catch(() => false);

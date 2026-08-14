@@ -1,12 +1,10 @@
 import { WEATHER_MECHANICAL, WEATHER_REGISTRY, toRegisteredWeatherId, type WeatherMechanical } from '../../logic/weather/weatherRegistry.ts';
 
-export type WeatherFamilyKey = WeatherMechanical;
-
 /**
  * Returns the canonical weather family (WeatherMechanical) for a given weather active state.
  * Accepts both game tokens ('rain', 'storm', 'mist') and Showdown weather condition IDs ('raindance', 'sunnyday', 'desolateland', etc.).
  */
-export function parseWeatherFamily(weather: string): WeatherFamilyKey | null {
+export function getWeatherFamily(weather: string): WeatherMechanical | null { // result-ok
   if (!weather) return null;
   const weatherId = toRegisteredWeatherId(weather);
   if (weatherId === null) return null;
@@ -24,5 +22,3 @@ export function parseWeatherFamily(weather: string): WeatherFamilyKey | null {
 
   return null;
 }
-
-export const getWeatherFamily = parseWeatherFamily;

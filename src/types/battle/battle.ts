@@ -10,7 +10,8 @@ import type { MoveCategory } from '@/data/battle/moves';
 
 
 export type CoreBattleStatKey = 'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'accuracy' | 'evasion' | 'reflect' | 'lightScreen' | 'safeguard' | 'mist' | 'spikes';
-export type BattleSide = 'player' | 'enemy';
+export const BATTLE_SIDES = ['player', 'enemy'] as const;
+export type BattleSide = (typeof BATTLE_SIDES)[number];
 export type BattleDifficulty = 'easy' | 'normal' | 'hard';
 export type BattleActionType = 'move' | 'switch';
 export type PartySlotStatus = 'active' | 'fainted' | 'empty';
@@ -213,6 +214,8 @@ export interface SparkleData {
   delay: string; // domain-ok
 }
 
+export type StyleZIndex = number | string; // string-ok
+
 export interface BattleCombatantProps {
   side: BattleSide;
   pokemon?: Pokemon | null;
@@ -245,7 +248,7 @@ export interface BattleCombatantProps {
   hidden?: boolean;
   hasSeat?: boolean;
   stages?: Partial<BattleStages>;
-  zIndex?: number;
+  zIndex?: StyleZIndex;
 }
 
 export interface ShowdownPlayerRequest {

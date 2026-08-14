@@ -85,7 +85,7 @@ export abstract class BaseRunnerLogger {
   public flushBlock(blockHeader?: string): void {
     if (this.memoryBuffer.length === 0) return;
 
-    const blockLines: string[] = [];
+    const blockLines: string[] = []; // no-domain
     if (blockHeader) {
       blockLines.push(`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
       blockLines.push(`[${new Date().toISOString()}] LOG BLOCK: ${blockHeader}`);

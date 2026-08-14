@@ -3,8 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 // Load translation names
-const abilitiesJson = JSON.parse(fs.readFileSync('src/data/battle/abilities.json', 'utf-8')) as Record<string, { name?: string }>;
-const movesJson = JSON.parse(fs.readFileSync('src/data/battle/moves.json', 'utf-8')) as Record<string, { name?: string }>;
+const abilitiesJson = JSON.parse(fs.readFileSync('src/data/battle/abilities.json', 'utf-8')) as Record<string, { name?: string }>; // open-record
+const movesJson = JSON.parse(fs.readFileSync('src/data/battle/moves.json', 'utf-8')) as Record<string, { name?: string }>; // open-record
 const itemsJson = JSON.parse(fs.readFileSync('src/data/inventory/items.json', 'utf-8')) as { SHOP_ITEMS?: Array<{ name?: string }> };
 
 const spanishNames = new Set<string>();
@@ -23,7 +23,7 @@ if (itemsJson.SHOP_ITEMS) {
 }
 
 // Add natures manually since it's a small TS file
-const natureNames = [
+const natureNames = [ // no-domain
   'Firme', 'Tímido', 'Osado', 'Audaz', 'Sereno', 'Cauto', 'Dócil', 'Amable', 
   'Fuerte', 'Activa', 'Agitada', 'Alegre', 'Floja', 'Huraña', 'Afable', 
   'Modesta', 'Ingenua', 'Pícara', 'Mansa', 'Rara', 'Alocada', 'Plácida', 

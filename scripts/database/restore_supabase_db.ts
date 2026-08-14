@@ -33,7 +33,7 @@ export async function restoreSupabaseDb() {
 
   const { serverConfigs, baseProfiles } = await getValidatedServerConfigs();
 
-  const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[])));
+  const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[]))); // no-domain
 
   const args = process.argv.slice(2);
   const { parseServerArguments } = await import('./backup_supabase_db.ts');
@@ -211,7 +211,7 @@ const UUID_STRING_LENGTH_EXPECTED = 36;
       }
     }
 
-    const userIdKeys = ['user_id', 'requester_id', 'addressee_id', 'sender_id', 'opponent_id', 'player_id', 'winner_id'];
+    const userIdKeys = ['user_id', 'requester_id', 'addressee_id', 'sender_id', 'opponent_id', 'player_id', 'winner_id']; // no-domain
     for (const tableName of tableNames) {
       const rows = backupData[tableName];
       if (!rows) continue;
@@ -226,7 +226,7 @@ const UUID_STRING_LENGTH_EXPECTED = 36;
     }
 
     // 4. Ordenar tablas por prioridad de dependencias (Padres primero para INSERT, Hijos primero para DELETE)
-    const priorityOrder = ['system_config', '_migrations', 'events_config', 'profiles'];
+    const priorityOrder = ['system_config', '_migrations', 'events_config', 'profiles']; // no-domain
     const orderedTables = [...tableNames].sort((a, b) => {
       const idxA = priorityOrder.indexOf(a);
       const idxB = priorityOrder.indexOf(b);
@@ -283,7 +283,7 @@ const UUID_STRING_LENGTH_EXPECTED = 36;
       if (hasAuthBackup && authBackup && Array.isArray(authBackup.users)) {
         console.log(styleText('cyan', `\n👤 Restaurando ${authBackup.users.length} usuarios auténticos en auth.users...`));
         const usersCols = authTableColumns.get('users');
-        const emptyStringCols = new Set([
+        const emptyStringCols = new Set([ // runtime-set
           'confirmation_token',
           'recovery_token',
           'email_change_token_new',
@@ -387,7 +387,7 @@ const UUID_STRING_LENGTH_EXPECTED = 36;
         if (!existingTables.has(tableName)) {
           if (tableName === 'passive_battle_results' && existingTables.has('passive_battle_reports')) {
             console.log(styleText('cyan', `   🔄 Mapeando passive_battle_results a passive_battle_reports (${rows.length} filas)...`));
-            const mappedRows = (rows as Record<string, unknown>[]).map((r) => ({
+            const mappedRows = (rows as Record<string, unknown>[]).map((r) => ({ // open-record
               id: r.id as string,
               user_id: r.attacker_id as string,
               opponent_id: r.defender_id as string,
@@ -405,7 +405,7 @@ const UUID_STRING_LENGTH_EXPECTED = 36;
               for (const r of mappedRows) {
                 for (const key of Object.keys(r)) {
                   if (!validCols.has(key)) {
-                    delete (r as Record<string, unknown>)[key];
+                    delete (r as Record<string, unknown>)[key]; // open-record
                   }
                 }
               }

@@ -1338,11 +1338,11 @@ export type NpcSpriteId = (typeof ARCHETYPE_SPRITES)[keyof typeof ARCHETYPE_SPRI
 
 export const VALID_NPC_SPRITES = Object.values(ARCHETYPE_SPRITES).flat();
 
-function isNpcSpriteId(value: string): value is NpcSpriteId {
+export function isNpcSpriteId(value: string): value is NpcSpriteId {
   return (VALID_NPC_SPRITES as readonly string[]).includes(value); // domain-ok
 }
 
 export function requireNpcSpriteId(value: string): NpcSpriteId {
   if (isNpcSpriteId(value)) return value;
-  throw new Error(`[npcSpriteCatalog] Invalid NPC sprite id: ${value}`);
+  throw new Error(`[npcSpriteCatalog] Invalid NPC Sprite ID: ${value}`);
 }

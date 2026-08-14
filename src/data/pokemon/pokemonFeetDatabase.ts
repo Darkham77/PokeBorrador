@@ -17,7 +17,8 @@ export interface FeetPoints {
 
 const PACKED_DATA = packedData;
 
-type FeetSpriteGroupKey = 'p' | 'n' | 't';
+const _FEET_SPRITE_GROUP_KEYS = ['p', 'n', 't'] as const;
+type FeetSpriteGroupKey = (typeof _FEET_SPRITE_GROUP_KEYS)[number];
 type FeetSpritePrefix = '/assets/sprites/pokemon/' | '/assets/sprites/npc/' | '/assets/sprites/trainers/';
 export type FeetDatabasePath = `${FeetSpritePrefix}${string}.webp`;
 
@@ -47,28 +48,49 @@ function hasFeetDatabasePath(value: string): value is FeetDatabasePath {
   return Object.hasOwn(POKEMON_FEET_DATABASE, value);
 }
 
+function resolveFeetPath(raw: string): FeetDatabasePath {
+  if (!raw) {
+    throw new Error('[pokemonFeetDatabase] Path cannot be empty');
+  }
+
+  let cleaned = decodeURIComponent(raw).trim();
+  if (!cleaned.endsWith('.webp')) {
+    cleaned = cleaned.replace(/\.(png|jpg|jpeg|gif)$/i, '') + '.webp';
+  }
+
+  if (hasFeetDatabasePath(cleaned)) return cleaned;
+
+  // Shiny variants share identical physical geometry with the base sprite
+  const baseSpritePath = cleaned
+    .replace('/Back shiny/', '/Back/')
+    .replace('/Front shiny/', '/Front/')
+    .replace('/Icons shiny/', '/Icons/')
+    .replace('/Back_shiny/', '/Back/')
+    .replace('/Front_shiny/', '/Front/')
+    .replace('/Icons_shiny/', '/Icons/');
+
+  if (hasFeetDatabasePath(baseSpritePath)) return baseSpritePath;
+
+  throw new Error(`[pokemonFeetDatabase] Unknown feet database path: ${raw}`);
+}
+
 export function requireFeetDatabasePath(value: string): FeetDatabasePath {
-  if (hasFeetDatabasePath(value)) return value;
-  throw new Error(`[pokemonFeetDatabase] Unknown feet database path: ${value}`);
+  return resolveFeetPath(value);
 }
 
 export function requireFeetPoints(value: string): FeetPoints {
-  const path = requireFeetDatabasePath(value);
-  const points = POKEMON_FEET_DATABASE[path];
+  const resolvedPath = resolveFeetPath(value);
+  const points = POKEMON_FEET_DATABASE[resolvedPath];
   if (points) return points;
-  throw new Error(`[pokemonFeetDatabase] Missing feet points for path: ${path}`);
+  throw new Error(`[pokemonFeetDatabase] Missing feet points for path: ${resolvedPath}`);
 }
 
-const POKEMON_CRIES_DATABASE = ((PACKED_DATA as Record<string, Record<string, string>>).c ?? {}) as Record<string, string>; // open-record
-export type PokemonCryId = keyof typeof POKEMON_CRIES_DATABASE;
+export const POKEMON_CRIES_DATABASE: Record<string, string> = PACKED_DATA.c ?? {}; // open-record
 
-function isPokemonCryId(raw: string): raw is PokemonCryId {
-  return raw in POKEMON_CRIES_DATABASE;
+export function isPokemonCryId(value: string): boolean {
+  return Object.hasOwn(POKEMON_CRIES_DATABASE, value);
 }
 
-export function getPokemonCryFilename(speciesId: string): string {
-  if (isPokemonCryId(speciesId)) {
-    return POKEMON_CRIES_DATABASE[speciesId] ?? speciesId;
-  }
-  return speciesId;
+export function getPokemonCryFilename(speciesId: string): string { // domain-ok
+  return POKEMON_CRIES_DATABASE[speciesId] ?? `${speciesId}.mp3`;
 }

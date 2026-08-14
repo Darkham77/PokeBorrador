@@ -90,8 +90,8 @@ async function main() {
   const { states: mermaidStates, transitions: mermaidTransitions } = parseMermaid(manualCode);
   const { allKeys: jsKeys, jsTransitions } = parseJsFsm(fsmCode);
 
-  const errors: string[] = [];
-  const warnings: string[] = [];
+  const errors: string[] = []; // no-domain
+  const warnings: string[] = []; // no-domain
 
   // [CHECK 1] Nodos Mermaid -> Constantes JS
   const missing = Array.from(mermaidStates).filter(s => !jsKeys.has(s));
@@ -100,7 +100,7 @@ async function main() {
   });
 
   // [CHECK 3] Constantes JS -> Nodos Mermaid (Búsqueda de Código Basura)
-  const IGNORED_JS_STATES = new Set([
+  const IGNORED_JS_STATES = new Set([ // runtime-set
     'FIRST_INTRO',
     'EXEC_TURN',
     'ANIM_SYNC',

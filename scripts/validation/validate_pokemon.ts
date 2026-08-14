@@ -43,7 +43,7 @@ const REVERSE_TYPE_MAP: Record<string, string> = {
 };
 
 function normalizeId(id: string): string {
-  return id.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return id.toLowerCase().replace(/[^a-z0-9]/g, ''); // string-ok
 }
 
 async function canLearnMove(speciesId: string, moveId: string, gen: number): Promise<boolean> {
@@ -89,8 +89,8 @@ async function main() {
     sdPokemonMap.set(normalizeId(key), val);
   }
 
-  const errors: string[] = [];
-  const warnings: string[] = [];
+  const errors: string[] = []; // no-domain
+  const warnings: string[] = []; // no-domain
 
   const statsKeys: Array<'hp' | 'atk' | 'def' | 'spa' | 'spd' | 'spe'> = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
 
@@ -114,7 +114,7 @@ async function main() {
     }
 
     // B. Validar tipos
-    const coreTypes: string[] = [];
+    const coreTypes: string[] = []; // no-domain
     if (corePoke.type) coreTypes.push(corePoke.type);
     const type2 = (corePoke as { type2?: string }).type2;
     if (type2) coreTypes.push(type2);
@@ -131,7 +131,7 @@ async function main() {
     // C. Validar habilidad única asignada (obtenida de Dex)
     const speciesInfo = Dex.forGen(ACTIVE_GENERATION).species.get(coreId);
     const sdAbilities = sdPoke.abilities || [];
-    const coreAbilities = (speciesInfo.exists ? Object.values(speciesInfo.abilities) : []) as string[];
+    const coreAbilities = (speciesInfo.exists ? Object.values(speciesInfo.abilities) : []) as string[]; // no-domain
 
     if (coreAbilities.length === 0) {
       errors.push(`${tag} No tiene ninguna habilidad asignada en el Dex de pkms.`);

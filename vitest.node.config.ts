@@ -15,8 +15,8 @@ export default defineConfig({
   },
   test: {
     globals: true,
-    environment: 'node',
     pool: 'forks',
+    fileParallelism: true,
     teardownTimeout: 2000,
     include: ['tests/node/**/*.test.ts'],
     testTimeout: 60000,

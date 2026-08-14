@@ -229,7 +229,7 @@ function executeComparison(options: RunOptions): ComparisonResult {
   }
 
   // Aplicar stages en Showdown (basado en tipos de Gen 3)
-  const physicalTypes = ['normal', 'fighting', 'flying', 'poison', 'ground', 'rock', 'bug', 'ghost', 'steel'];
+  const physicalTypes = ['normal', 'fighting', 'flying', 'poison', 'ground', 'rock', 'bug', 'ghost', 'steel']; // no-domain
   const isPhysical = physicalTypes.includes(moveSpec.type.toLowerCase());
   const statKeyAtk = isPhysical ? 'atk' : 'spa';
   const statKeyDef = isPhysical ? 'def' : 'spd';
@@ -280,9 +280,9 @@ function executeComparison(options: RunOptions): ComparisonResult {
   const ourMove: PureMove = {
     id: moveSpec.id,
     name: moveSpec.name,
-    type: toPokemonType(moveSpec.type.toLowerCase()),
+    type: toPokemonType(moveSpec.type.toLowerCase()), // string-ok
     power: moveSpec.basePower,
-    cat: getMoveCategory({ id: moveSpec.id, type: toPokemonType(moveSpec.type.toLowerCase()), power: moveSpec.basePower })
+    cat: getMoveCategory({ id: moveSpec.id, type: toPokemonType(moveSpec.type.toLowerCase()), power: moveSpec.basePower }) // string-ok
   };
 
   const weatherObj: PureBattleWeather | null = weatherType !== 'clear' ? { type: weatherType, turns: DEFAULT_WEATHER_TURNS_COUNT } : null;
@@ -339,7 +339,7 @@ export const COMPARISON_ITERATIONS_COUNT = 500;
 export const MAX_FAILURE_SAMPLES_COUNT = 10;
 
 const iterations = COMPARISON_ITERATIONS_COUNT;
-const reports: string[] = [];
+const reports: string[] = []; // no-domain
 
 console.log('Iniciando comparación por fases...');
 

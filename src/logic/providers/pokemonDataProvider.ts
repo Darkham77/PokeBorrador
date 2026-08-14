@@ -13,6 +13,7 @@ import { MOVE_TRANSLATIONS_ES, requirePokemonMoveId } from '@/data/battle/moves'
 import { toPokemonType } from '@/data/battle/types';
 
 import { getSpriteUrl, getBackSpriteUrl } from '@/logic/services/assetService';
+import { getEvYieldForSpecies, type EvYield } from '@/data/pokemon/evYields';
 import { SHOWDOWN_BOOST_STAT_KEYS, requirePokemonStatus, type MoveEffectBoosts, type ShowdownHitEffect, type ShowdownSecondaryEffect } from '@/types/pokemon/pokemon';
 import type { 
     PokemonBaseData, 
@@ -200,6 +201,15 @@ export const pokemonDataProvider = {
         
         // Retornar lista de habilidades válidas en Gen 9 de pkms
         return Object.values(species.abilities).map(a => toID(a));
+    },
+
+    /**
+     * Obtiene el rendimiento de EVs (EV Yield) de una especie al ser derrotada.
+     */
+    getEvYield(speciesId: string): EvYield {
+        if (!speciesId) return {};
+        const cleanId = requirePokemonSpeciesId(toID(speciesId));
+        return getEvYieldForSpecies(cleanId);
     },
 
     /**

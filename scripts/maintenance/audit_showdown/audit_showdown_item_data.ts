@@ -11,7 +11,7 @@ export interface ItemAuditResult {
  * y verifica que se manejen dinámicamente en los handlers de items/bridge.
  */
 export function auditShowdownItemData(itemsPath: string, battleLogicDir: string): ItemAuditResult {
-  const unhandledBattleItems: string[] = [];
+  const unhandledBattleItems: string[] = []; // no-domain
   if (!existsSync(itemsPath) || !existsSync(battleLogicDir)) {
     return { unhandledBattleItems };
   }

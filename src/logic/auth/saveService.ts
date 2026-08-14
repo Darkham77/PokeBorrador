@@ -13,6 +13,7 @@ import { validateUserProfile, validateSaveData } from '@/logic/validation/schema
 import type { DBRouter } from '@/logic/db/dbRouter';
 import { validatePokemon } from '@/logic/pokemon/pokemonFactory';
 import { requireAbilityId } from '@/data/battle/abilities';
+import type { GenderName } from '@pkmn/sim';
 
 const ELO_RATING_DEFAULT_SCORE = 1000;
 const DEFAULT_BOX_COUNT = 4;
@@ -159,11 +160,10 @@ interface ActiveBattleSerialized {
   isPvP?: boolean
 }
 
-export type PersistedPokemonGender = 'M' | 'F' | 'N';
-type PersistedPokemon = Omit<Pokemon, 'gender'> & { gender: PersistedPokemonGender };
-type PersistedPokemonEgg = Omit<PokemonEgg, 'gender'> & { gender: PersistedPokemonGender };
+type PersistedPokemon = Omit<Pokemon, 'gender'> & { gender: GenderName };
+type PersistedPokemonEgg = Omit<PokemonEgg, 'gender'> & { gender: GenderName };
 
-function toPersistedPokemonGender(gender: PokemonGender | undefined): PersistedPokemonGender {
+function toPersistedPokemonGender(gender: PokemonGender | undefined): GenderName {
   if (gender === 'm') return 'M';
   if (gender === 'f') return 'F';
   return 'N';

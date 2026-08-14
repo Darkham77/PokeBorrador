@@ -10,7 +10,7 @@ export interface UIDAuditResult {
 }
 
 export function auditUIDMappingIntegrity(targetDir: string): UIDAuditResult {
-  const fallbackViolations: string[] = [];
+  const fallbackViolations: string[] = []; // no-domain
   if (!existsSync(targetDir)) return { fallbackViolations };
 
   const files = getFilesRecursively(targetDir).filter(f => f.endsWith('.ts') || f.endsWith('.vue'));

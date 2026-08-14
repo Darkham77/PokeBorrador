@@ -5,7 +5,7 @@ import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { PokemonMoveId, PokemonStatus, MoveEffect, MoveEffectBoosts, ShowdownSecondaryEffect } from '@/types/pokemon/pokemon';
 import type { PlayerClassId } from '@/data/player/playerClasses';
 import type { FactionId, GenderId } from '@/types/system/game';
-import type { SessionMode } from '../auth/auth.ts';
+export type { SessionMode } from '../auth/auth.ts';
 import type { MoveCategory } from '@/data/battle/moves';
 
 export interface LearnsetMove {
@@ -93,7 +93,6 @@ export interface NatureBaseData {
   down: StatId | null;
   desc: string; // domain-ok
 }
-export type DBMode = SessionMode;
 
 export interface DBConfig {
   url: string; // domain-ok

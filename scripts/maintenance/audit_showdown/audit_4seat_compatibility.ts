@@ -10,7 +10,7 @@ export interface SeatAuditResult {
 }
 
 export function audit4SeatCompatibility(targetDir: string): SeatAuditResult {
-  const hardcodedTwoSeatFiles: string[] = [];
+  const hardcodedTwoSeatFiles: string[] = []; // no-domain
   const files = safeScanDirectoryFiles(targetDir);
 
   for (const file of files) {

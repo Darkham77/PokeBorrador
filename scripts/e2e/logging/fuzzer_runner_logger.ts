@@ -7,7 +7,7 @@ export class FuzzerRunnerLogger extends BaseRunnerLogger {
   }
 
   protected isProgressLog(message: string): boolean {
-    const progressPatterns = [
+    const progressPatterns = [ // no-domain
       '🚀 [FUZZER]',
       '✨ [FUZZER]',
       '[WORKER-',

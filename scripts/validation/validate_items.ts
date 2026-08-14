@@ -62,7 +62,7 @@ async function main() {
   }
   const jsonRaw = await fs.readFile(JSON_FILE, 'utf8');
   const jsonData = JSON.parse(jsonRaw) as { SHOP_ITEMS?: unknown[] };
-  const rawShopItems = (jsonData.SHOP_ITEMS ?? []) as Record<string, unknown>[];
+  const rawShopItems = (jsonData.SHOP_ITEMS ?? []) as Record<string, unknown>[]; // open-record
   const shopItems: ShopItem[] = rawShopItems
     .filter(item => typeof item === 'object' && item !== null && typeof item['id'] === 'string')
     .map((item, idx) => ({ ...item, id: item['id'] as string, _line: idx + 1 }));
@@ -76,13 +76,13 @@ async function main() {
   }
 
   // ─── Run validations ──────────────────────────────────────────────────────────
-  const errors: string[]   = [];
-  const warnings: string[] = [];
+  const errors: string[]   = []; // no-domain
+  const warnings: string[] = []; // no-domain
 
-  const MUST_BE_USABLE     = ['pociones', 'potions', 'utility', 'booster', 'stones', 'stone'];
-  const MUST_NOT_BE_USABLE = ['held', 'combat_held', 'pokeballs', 'breeding', 'breeding_held', 'raw_material', 'refined_material', 'component', 'machinery', 'tms'];
-  const REQUIRED_FIELDS    = ['id', 'name', 'cat', 'sprite', 'icon', 'desc', 'price'];
-  const VALID_CATS         = [
+  const MUST_BE_USABLE     = ['pociones', 'potions', 'utility', 'booster', 'stones', 'stone']; // no-domain
+  const MUST_NOT_BE_USABLE = ['held', 'combat_held', 'pokeballs', 'breeding', 'breeding_held', 'raw_material', 'refined_material', 'component', 'machinery', 'tms']; // no-domain
+  const REQUIRED_FIELDS    = ['id', 'name', 'cat', 'sprite', 'icon', 'desc', 'price']; // no-domain
+  const VALID_CATS         = [ // no-domain
     'pociones', 'potions', 'utility', 'tools', 'booster', 'especial', 'held', 'combat_held', 'pokeballs', 'stones', 'stone', 'breeding', 'breeding_held',
     'healing', 'tm', 'special', 'raw_material', 'refined_material', 'component', 'machinery', 'tms', 'otros'
   ];
@@ -115,8 +115,10 @@ async function main() {
     }
 
     if (item.cat && MUST_NOT_BE_USABLE.includes(item.cat) && item.id && healingItems.has(item.id)) {
-      // 'Restaurador de Vigor' (vigor_restorer) is a breeding item that is explicitly usable to restore vigor
-      if (item.id !== 'vigorrestorer') {
+      // 'Restaurador de Vigor' (vigorrestorer) is a breeding item that is explicitly usable to restore vigor
+      // EV-reducing berries are held items that are explicitly usable from bag to reduce EVs and raise friendship
+      const ALLOWED_USABLE_HELD = ['vigorrestorer', 'pomegberry', 'kelpsyberry', 'qualotberry', 'hondewberry', 'grepaberry', 'tamatoberry']; // no-domain
+      if (!ALLOWED_USABLE_HELD.includes(item.id)) {
         errors.push(`${tag} cat='${item.cat}' should NOT be in HEALING_ITEMS.`);
       }
     }
@@ -137,6 +139,23 @@ async function main() {
       warnings.push(`[PHANTOM] '${id}' is in HEALING_ITEMS but has NO entry in SHOP_ITEMS.`);
     }
   });
+
+  // ─── 3. Detect Sprite Collisions (Shared duplicate sprites) ──────────────────
+  const spriteToItems = new Map<string, string[]>();
+  shopItems.forEach(item => {
+    const sprite = item.sprite?.trim();
+    if (!sprite) return;
+    if (!spriteToItems.has(sprite)) {
+      spriteToItems.set(sprite, []);
+    }
+    spriteToItems.get(sprite)!.push(item.id);
+  });
+
+  for (const [sprite, ids] of spriteToItems.entries()) {
+    if (ids.length > 1) {
+      warnings.push(`[SPRITE_COLLISION] Sprite '${sprite}' is reused by ${ids.length} items (${ids.join(', ')}).`);
+    }
+  }
 
   await validator.finish(
     {

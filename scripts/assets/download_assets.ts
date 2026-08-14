@@ -1,154 +1,256 @@
 // fallow-ignore-file security-sink
 /**
- * scripts/download_assets.ts
- * 
+ * scripts/assets/download_assets.ts
+ *
  * UNIVERSAL ASSET DOWNLOADER (Node.js 26+)
- * 
- * Downloads sprites for Pokémon (Gens 1-9), Items, and Trainers.
- * Default behavior: Download EVERYTHING.
- * Supports flags for selective download and limits.
+ *
+ * Multi-source scraper for official Pokémon items and sprites.
+ * Sources:
+ *   1. PokéAPI canonical raw sprites
+ *   2. Serebii ItemDex (complete Gen 8 & Gen 9 SV icons)
+ *   3. PokéSprite (msikma inventory repository)
+ *   4. Pokémon Showdown item icons mirror
+ *   5. PokémonDB sprites
+ *
+ * Staging Workflow:
+ *   1. Download raw PNGs to temporary scratch directory: `scratch/item_sprites_download/`
+ *   2. Validate non-empty image headers (filter out HTML error pages).
+ *   3. Relocate verified files to `_raw-assets/public/assets/sprites/items/`.
+ *
+ * Usage:
+ *   node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-net=raw.githubusercontent.com,play.pokemonshowdown.com,img.pokemondb.net,www.serebii.net scripts/assets/download_assets.ts --items
  */
 
 import fs from 'node:fs/promises';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs, styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
+import { Dex, toID } from '@pkmn/sim';
 
-// Speed up execution
 enableCompileCache();
 
-// Permissions check (Node.js 26+)
-if (process.permission && !process.permission.has('fs.read', process.cwd())) {
-  console.error(styleText('red', '\n❌ Error: Requirements read permissions. Run with --permission --allow-fs-read=.\n'));
-  process.exit(1);
-}
-
-const DOWNLOAD_BATCH_CHUNK_SIZE = 40;
-const DOWNLOAD_CONCURRENCY_LIMIT = 50;
-
-const OUTPUT_DIR = path.resolve(process.cwd(), 'external_assets');
-const POKEAPI_SPRITE_BASE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
-const POKEAPI_ITEM_BASE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/';
-const SHOWDOWN_TRAINER_BASE = 'https://play.pokemonshowdown.com/sprites/trainers/';
-
+const CONCURRENCY_LIMIT = 20;
 const TOTAL_POKEMON_SPECIES = 1025; // Gen 1-9
 
-const ITEM_MAPPING: Record<string, string> = {
-  'pocion': 'potion',
-  'super_pocion': 'super-potion',
-  'hiper_pocion': 'hyper-potion',
-  'pocion_max': 'max-potion',
-  'restaurar_todo': 'full-restore',
-  'revivir': 'revive',
-  'revivir_max': 'max-revive',
-  'quemadura': 'burn-heal',
-  'despertar': 'awakening',
-  'cura_total': 'full-heal',
-  'elixir': 'elixir',
-  'iman': 'magnet',
-  'elixirmax': 'max-elixir',
-  'piedra_fuego': 'fire-stone',
-  'piedra_agua': 'water-stone',
-  'piedra_trueno': 'thunder-stone',
-  'piedra_hoja': 'leaf-stone',
-  'piedra_luna': 'moon-stone',
-  'piedra_solar': 'sun-stone',
-  'piedra_dia': 'shiny-stone',
-  'piedra_noche': 'dusk-stone',
-  'piedra_alba': 'dawn-stone',
-  'piedra_hielo': 'ice-stone',
-  'pokeball': 'poke-ball',
-  'superball': 'super-ball',
-  'ultraball': 'ultra-ball',
-  'masterball': 'master-ball',
-  'turnoball': 'timer-ball',
-  'velozball': 'quick-ball',
-  'ocasoball': 'dusk-ball',
-  'malla_ball': 'net-ball',
-  'nido_ball': 'nest-ball',
-  'buceo_ball': 'dive-ball',
-  'lujo_ball': 'luxury-ball',
-  'repelente': 'repel',
-  'super_repel': 'super-repel',
-  'max_repel': 'max-repel',
-  'huevo_suerte': 'lucky-egg',
-  'huevo_suerte_pequeño': 'lucky-egg',
-  'compartir_exp': 'exp-share',
-  'restos': 'leftovers',
-  'cascabel_concha': 'shell-bell',
-  'cinta_elegida': 'choice-band',
-  'gafas_elegidas': 'choice-specs',
-  'panuelo_elegido': 'choice-scarf',
-  'banda_focus': 'focus-sash',
-  'lente_zoom': 'scope-lens',
-  'caramelo_raro': 'rare-candy',
-  'subida_de_pp': 'pp-up',
-  'max_pp': 'pp-max',
-  'moneda_amuleto': 'amulet-coin',
-  'bola_luminosa': 'light-ball',
-  'hueso_grueso': 'thick-club',
-  'palo': 'stick',
-  'polvo_metalico': 'metal-powder',
-  'cuchara_torcida': 'twisted-spoon',
-  'hechizo': 'spell-tag',
-  'pesa_recia': 'power-weight',
-  'brazal_recia': 'power-bracer',
-  'cinto_recia': 'power-belt',
-  'lente_recia': 'power-lens',
-  'banda_recia': 'power-band',
-  'franja_recia': 'power-anklet',
-  'lazo_destino': 'destiny-knot',
-  'piedra_eterna': 'everstone',
-  'baya_aranja': 'oran-berry',
-  'baya_zidra': 'sitrus-berry',
-  'baya_ziuela': 'lum-berry',
-  'baya_atake': 'liechi-berry',
-  'baya_aslac': 'salac-berry',
-  'mineral_evolutivo': 'eviolite',
-  'vidaesfera': 'life-orb',
-  'refresco': 'soda-pop',
-  'limonada': 'lemonade',
-  'carbon': 'charcoal',
-  'agua_mistica': 'mystic-water',
-  'semilla_milagro': 'miracle-seed',
-  'colmillodragon': 'dragon-fang',
-  'escama_dragon': 'dragon-scale',
-  'polvo_plata': 'silver-powder',
-  'flecha_venenosa': 'poison-barb',
-  'trozo_estrella': 'star-piece',
-  'polvo_estelar': 'stardust',
-  'perla_grande': 'big-pearl',
-  'perla': 'pearl'
-};
+const SCRATCH_STAGING_DIR = path.resolve(process.cwd(), 'scratch', 'item_sprites_download');
+const RAW_ASSETS_DIR = path.resolve(process.cwd(), '_raw-assets', 'public', 'assets', 'sprites');
+const RAW_ITEMS_DIR = path.resolve(RAW_ASSETS_DIR, 'items');
 
-const showdownTrainers = [
-  'cazabichos', 'entrenador', 'criador', 'tamer', 'teamrocket',
-  'ace-trainer', 'acetrainer-f', 'acetrainer', 'beauty', 'birdkeeper',
-  'blackbelt', 'cyclist', 'dragontamer', 'elitefour', 'expert',
-  'gentleman', 'gymleader', 'hiker', 'juggler', 'lass', 'picnicker',
-  'psychic', 'ranger', 'richboy', 'roughneck', 'scientist', 'swimmer',
-  'tuber', 'veteran', 'youngster'
+const POKEAPI_SPRITE_BASE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
+
+const POKESPRITE_FOLDERS = [ // no-domain
+  'hold-item', 'battle-item', 'berry', 'medicine', 'general', 'key-item', 'ball', 'evo-item', 'tm-hm', 'other'
+] as const;
+
+// Multi-source sprite URLs for items
+const ITEM_SOURCES: Array<(name: string, cleanId: string) => string> = [
+  // 1. Serebii Direct
+  (_name, cleanId) => `https://www.serebii.net/itemdex/sprites/${cleanId}.png`,
+  (_name, cleanId) => `https://www.serebii.net/itemdex/sprites/sv/${cleanId}.png`,
+  (_name, cleanId) => `https://www.serebii.net/itemdex/sprites/swsh/${cleanId}.png`,
+
+  // 2. PokéAPI
+  (name) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${name}.png`,
+
+  // 3. PokéSprite multi-category
+  ...POKESPRITE_FOLDERS.map(f => (name: string) => `https://raw.githubusercontent.com/msikma/pokesprite/master/items/${f}/${name}.png`),
+
+  // 4. Pokémon Showdown Item Icons
+  (name) => `https://play.pokemonshowdown.com/sprites/itemicons/${name}.png`,
+  (_name, cleanId) => `https://play.pokemonshowdown.com/sprites/itemicons/${cleanId}.png`,
+  (name) => `https://play.pokemonshowdown.com/sprites/itemsprites/${name}.png`,
+
+  // 5. PokémonDB
+  (name) => `https://img.pokemondb.net/sprites/items/${name}.png`,
 ];
 
-async function downloadFile(url: string, folder: string, filename: string) {
-  await fs.mkdir(folder, { recursive: true });
-  const filepath = path.join(folder, filename);
-  
-  try {
-    await fs.access(filepath);
-    return;
-  } catch {
-    // Proceed
+interface ShopItem {
+  id: string;
+  name?: string;
+  cat?: string;
+  sprite?: string;
+  isCanon?: boolean;
+}
+
+/**
+ * Dynamically derives candidate URL slugs for an item using @pkmn/sim Showdown Dex
+ */
+export function toItemSlugCandidates(id: string): string[] {
+  const clean = id.toLowerCase().trim(); // string-ok
+  const candidates: Set<string> = new Set([clean]);
+
+  // 1. Check Pokémon Showdown Canon Dex
+  const dexItem = Dex.items.get(toID(clean));
+  if (dexItem.exists && dexItem.name) {
+    const slug = dexItem.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); // string-ok
+    candidates.add(slug);
+    candidates.add(dexItem.id);
   }
 
-  try {
-    const response = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-    if (!response.ok) throw new Error(`Status ${response.status}`);
-    const arrayBuffer = await response.arrayBuffer();
-    await fs.writeFile(filepath, Buffer.from(arrayBuffer));
-    console.log(styleText('gray', `   ✅ Saved ${filename}`));
-  } catch (_e: unknown) {
-    // console.error(styleText('red', `   ❌ Error ${url}: ${(e as Error).message}`));
+  // 2. Dynamic TM resolution
+  if (clean.startsWith('tm')) {
+    const num = parseInt(clean.replace('tm', ''), 10);
+    candidates.add(`tm${num}`);
+    candidates.add(`tm-${num}`);
+    candidates.add(`tm0${num}`);
+  }
+
+  // 3. Common Pokémon Sub-word tokenization
+  const subwordRegex = /(berry|ball|stone|feather|potion|repel|restore|cure|herb|seed|plate|incense|gem|scarf|specs|band|belt|glasses|orb|candy|scale|tooth|fang|boots|glove|mask|apple|sweet|patch|capsule|flute|letter|ticket|mail|powder|spoon|tag|bell|rock|clay|dice|vest|cloak|helmet|sash|lens|knot|moss|umbrella|spray|policy|goggles|card|service|amulet|disc|cuff|wreath|teacup|pot|egg|rod)$/;
+  if (subwordRegex.test(clean)) {
+    const matched = clean.match(subwordRegex)![0];
+    const prefix = clean.slice(0, clean.length - matched.length);
+    if (prefix.length > 0) {
+      candidates.add(`${prefix}-${matched}`);
+    }
+  }
+
+  // 4. Specific special cases
+  if (clean === 'hpup') candidates.add('hp-up');
+  if (clean === 'ppup') candidates.add('pp-up');
+  if (clean === 'ppmax') candidates.add('pp-max');
+  if (clean === 'revivemax') candidates.add('max-revive');
+  if (clean === 'elixirmax') candidates.add('max-elixir');
+  if (clean === 'expshare') candidates.add('exp-share');
+  if (clean === 'linkcable') {
+    candidates.add('linking-cord');
+    candidates.add('link-cable');
+  }
+  if (clean === 'paralyzeheal') {
+    candidates.add('parlyz-heal');
+    candidates.add('paralyze-heal');
+  }
+  if (clean === 'goldberry') candidates.add('gold-berry');
+  if (clean === 'silverberry') candidates.add('silver-berry');
+
+  return Array.from(candidates);
+}
+
+async function fetchBufferWithFallback(candidateNames: string[], cleanId: string): Promise<{ buffer: Buffer; sourceUrl: string; matchedName: string } | null> {
+  for (const name of candidateNames) {
+    for (const sourceFn of ITEM_SOURCES) {
+      const url = sourceFn(name, cleanId);
+      try {
+        const res = await fetch(url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            'Accept': 'image/png,image/webp,image/*,*/*;q=0.8',
+          }
+        });
+        if (res.ok) {
+          const contentType = res.headers.get('content-type') || '';
+          if (contentType.includes('text/html')) {
+            continue; // Ignore 404 HTML fallback pages
+          }
+          const arrayBuf = await res.arrayBuffer();
+          const buf = Buffer.from(arrayBuf);
+          // Check for valid PNG or image signature (> 50 bytes and not error page)
+          if (buf.length > 50 && buf.length !== 36570) {
+            return { buffer: buf, sourceUrl: url, matchedName: name };
+          }
+        }
+      } catch {
+        // Try next source
+      }
+    }
+  }
+  return null;
+}
+
+export async function downloadAllItems(): Promise<{
+  downloaded: number;
+  existing: number;
+  ignoredCustom: number;
+  failed: string[];
+}> {
+  const itemsJsonPath = path.resolve(process.cwd(), 'src/data/inventory/items.json');
+  if (!existsSync(itemsJsonPath)) {
+    throw new Error(`items.json not found at ${itemsJsonPath}`);
+  }
+
+  const rawJson = readFileSync(itemsJsonPath, 'utf-8');
+  const itemsData = JSON.parse(rawJson) as { SHOP_ITEMS?: ShopItem[] };
+  const allItems = itemsData.SHOP_ITEMS || [];
+
+  // Dinámicamente identificar ítems canónicos de Showdown/Dex o marcados con isCanon
+  const canonItems = allItems.filter(item => {
+    if (item.isCanon === false) return false;
+    if (item.isCanon === true) return true;
+    const dexItem = Dex.items.get(toID(item.id));
+    return dexItem.exists;
+  });
+
+  const ignoredCustomCount = allItems.length - canonItems.length;
+
+  await fs.mkdir(SCRATCH_STAGING_DIR, { recursive: true });
+  await fs.mkdir(RAW_ITEMS_DIR, { recursive: true });
+
+  console.log(styleText('yellow', `\n📦 Iniciando descarga de ${canonItems.length} ítems CANÓNICOS oficiales (multi-fuente)...`));
+  console.log(styleText('gray', `   Ítems caseros del proyecto ignorados: ${ignoredCustomCount}`));
+  console.log(styleText('gray', `   Directorio temporal staging: ${SCRATCH_STAGING_DIR}`));
+  console.log(styleText('gray', `   Directorio destino raw:      ${RAW_ITEMS_DIR}\n`));
+
+  let downloadedCount = 0;
+  let existingCount = 0;
+  const failed: string[] = []; // no-domain
+
+  for (let i = 0; i < canonItems.length; i += CONCURRENCY_LIMIT) {
+    const chunk = canonItems.slice(i, i + CONCURRENCY_LIMIT);
+    await Promise.all(chunk.map(async (item) => {
+      const finalRawPath = path.join(RAW_ITEMS_DIR, `${item.id}.png`);
+      const stagingPath = path.join(SCRATCH_STAGING_DIR, `${item.id}.png`);
+
+      // Si ya existe en _raw-assets, no re-descargar
+      if (existsSync(finalRawPath)) {
+        existingCount++;
+        return;
+      }
+
+      const candidates = toItemSlugCandidates(item.id);
+      const result = await fetchBufferWithFallback(candidates, item.id);
+
+      if (result) {
+        // 1. Guardar primero en staging temporal en scratch/
+        await fs.writeFile(stagingPath, result.buffer);
+        // 2. Reubicar en _raw-assets/public/assets/sprites/items/
+        await fs.writeFile(finalRawPath, result.buffer);
+        downloadedCount++;
+        console.log(styleText('green', `   ✅ [${item.id}]`), `${item.name || item.id} (desde ${result.sourceUrl})`);
+      } else {
+        failed.push(item.id);
+        console.log(styleText('red', `   ❌ [${item.id}]`), `No se encontró en ninguna fuente (${candidates.join(', ')})`);
+      }
+    }));
+  }
+
+  console.log(styleText('cyan', '\n───────────────────────────────────────────────────────'));
+  console.log(`Resumen ítems: ${styleText('green', `${downloadedCount} descargados`)}, ${styleText('gray', `${existingCount} ya existentes`)}, ${styleText(failed.length === 0 ? 'green' : 'yellow', `${failed.length} pendientes`)}, ${styleText('blue', `${ignoredCustomCount} custom ignorados`)}.`);
+  console.log(styleText('cyan', '───────────────────────────────────────────────────────\n'));
+
+  return { downloaded: downloadedCount, existing: existingCount, ignoredCustom: ignoredCustomCount, failed };
+}
+
+async function downloadPokemon(limit: number) {
+  const pokeFolder = path.join(RAW_ASSETS_DIR, 'pokemon');
+  await fs.mkdir(pokeFolder, { recursive: true });
+  console.log(styleText('yellow', `\n📦 Descargando sprites de Pokémon (1 a ${limit})...`));
+
+  for (let i = 1; i <= limit; i++) {
+    const filename = `${i}.png`;
+    const target = path.join(pokeFolder, filename);
+    if (existsSync(target)) continue;
+
+    const url = `${POKEAPI_SPRITE_BASE}${i}.png`;
+    try {
+      const res = await fetch(url);
+      if (res.ok) {
+        const buf = Buffer.from(await res.arrayBuffer());
+        await fs.writeFile(target, buf);
+      }
+    } catch {
+      // Ignore single failure
+    }
   }
 }
 
@@ -158,95 +260,30 @@ async function main() {
       pokemon: { type: 'boolean' },
       items: { type: 'boolean' },
       trainers: { type: 'boolean' },
-      showdown: { type: 'boolean' },
+      all: { type: 'boolean' },
       limit: { type: 'string' }
     }
   });
 
-  const noFlags = !values.pokemon && !values.items && !values.trainers && !values.showdown;
-  const doPokemon = noFlags || values.pokemon;
-  const doItems = noFlags || values.items;
-  const doTrainers = noFlags || values.trainers;
-  // --showdown es siempre opt-in: no se incluye en el "download all" para no requerir @pkmn/sim por defecto
-  const doShowdown = values.showdown ?? false;
-  const pokemonLimit = values.limit ? parseInt(values.limit) : TOTAL_POKEMON_SPECIES;
+  const doAll = values.all || (!values.pokemon && !values.items && !values.trainers);
+  const doItems = doAll || values.items;
+  const doPokemon = doAll || values.pokemon;
+  const pokemonLimit = values.limit ? parseInt(values.limit, 10) : TOTAL_POKEMON_SPECIES;
 
-  console.log(styleText('bold', '\n--- 📥 UNIVERSAL ASSET DOWNLOADER ---'));
-  if (noFlags) console.log(styleText('italic', 'No flags detected. Downloading EVERYTHING (Full Dex + Items + Trainers)...\n'));
+  console.log(styleText('bold', '\n--- 📥 UNIVERSAL ASSET DOWNLOADER & MULTI-SOURCE SCRAPER ---'));
 
-  // 1. POKEMON
-  if (doPokemon) {
-    console.log(styleText('yellow', `\n📦 Fetching Pokemon sprites (1 to ${pokemonLimit})...`));
-    const pokeFolder = path.join(OUTPUT_DIR, 'pokemon');
-    
-    let downloadPromises = [];
-    for (let i = 1; i <= pokemonLimit; i++) {
-      downloadPromises.push(downloadFile(`${POKEAPI_SPRITE_BASE}${i}.png`, pokeFolder, `${i}.png`));
-      downloadPromises.push(downloadFile(`${POKEAPI_SPRITE_BASE}shiny/${i}.png`, path.join(pokeFolder, 'shiny'), `${i}.png`));
-      downloadPromises.push(downloadFile(`${POKEAPI_SPRITE_BASE}back/${i}.png`, path.join(pokeFolder, 'back'), `${i}.png`));
-      downloadPromises.push(downloadFile(`${POKEAPI_SPRITE_BASE}back/shiny/${i}.png`, path.join(pokeFolder, 'back', 'shiny'), `${i}.png`));
-      
-      if (downloadPromises.length >= DOWNLOAD_BATCH_CHUNK_SIZE) {
-        await Promise.all(downloadPromises);
-        downloadPromises = [];
-        process.stdout.write(styleText('gray', '.'));
-      }
-    }
-    await Promise.all(downloadPromises);
-    console.log(styleText('green', '\n✅ Pokemon sprites complete.'));
-  }
-
-  // 2. ITEMS
   if (doItems) {
-    console.log(styleText('yellow', '\n📦 Fetching mapped items...'));
-    const itemFolder = path.join(OUTPUT_DIR, 'items');
-    const itemPromises = [];
-    for (const [_, slug] of Object.entries(ITEM_MAPPING)) {
-      itemPromises.push(downloadFile(`${POKEAPI_ITEM_BASE}${slug}.png`, itemFolder, `${slug}.png`));
-    }
-    itemPromises.push(downloadFile(`${POKEAPI_ITEM_BASE}egg.png`, itemFolder, 'egg.png'));
-    await Promise.all(itemPromises);
-    console.log(styleText('green', '✅ Item sprites complete.'));
+    await downloadAllItems();
   }
 
-  // 3. TRAINERS
-  if (doTrainers) {
-    console.log(styleText('yellow', '\n📦 Fetching extended trainer archetypes...'));
-    const trainerFolder = path.join(OUTPUT_DIR, 'trainers');
-    const trainerPromises = [];
-    for (const t of showdownTrainers) {
-      trainerPromises.push(downloadFile(`${SHOWDOWN_TRAINER_BASE}${t}.png`, trainerFolder, `${t}.png`));
-    }
-    await Promise.all(trainerPromises);
-    console.log(styleText('green', '✅ Trainer sprites complete.'));
+  if (doPokemon) {
+    await downloadPokemon(pokemonLimit);
   }
-
-  // 4. SHOWDOWN SPRITES (todas las generaciones, desde play.pokemonshowdown.com)
-  if (doShowdown) {
-    console.log(styleText('yellow', '\n📦 Fetching Showdown sprites + cries (all gens)...'));
-    const { Dex } = await import('@pkmn/sim');
-    const { downloadAllSprites } = await import('./fetch_sprites.ts');
-
-    // isNonstandard: null=estándar, 'Past'=Dexit (reales), 'CAP'/'LGPE'/'Unobtainable'=excluir
-    const fullDex = Dex.forGen(9);
-    let pokemonIds = fullDex.species.all()
-      .filter(s => s.isNonstandard === null || s.isNonstandard === 'Past')
-      .map(s => s.id);
-
-    if (values.limit) {
-      const lim = parseInt(values.limit);
-      if (!isNaN(lim)) pokemonIds = pokemonIds.slice(0, lim);
-    }
-
-    console.log(styleText('gray', `   ${pokemonIds.length} Pokémon found across all generations.`));
-    await downloadAllSprites(pokemonIds, 5, DOWNLOAD_CONCURRENCY_LIMIT);
-    console.log(styleText('green', '✅ Showdown sprites complete.'));
-  }
-
-  console.log(styleText('bold', styleText('green', `\n✨ ALL ASSETS UPDATED in ${OUTPUT_DIR}\n`)));
 }
 
-main().catch(err => {
-  console.error(styleText('red', `\n💥 Fatal error: ${(err as Error).message}`));
-  process.exit(1);
-});
+if (process.argv[1]?.endsWith('download_assets.ts')) {
+  main().catch(err => {
+    console.error(styleText('red', `\n💥 Error fatal: ${(err as Error).message}`));
+    process.exit(1);
+  });
+}

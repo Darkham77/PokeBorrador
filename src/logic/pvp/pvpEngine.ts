@@ -67,7 +67,7 @@ export interface PvPTurnResult {
   clientStages: BattleStages;
 }
 
-export function executePvPTurnResolution(battleState: PvPBattleState): PvPTurnResult | undefined {
+export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | undefined { // result-ok
   if (!battleState.isHost || battleState.phase === 'resolving') return
   battleState.phase = 'resolving'
   
@@ -251,5 +251,3 @@ export async function applyPvPTurnResult(battleState: PvPBattleState, result: Pv
     battleState.enemyPick = null
   }
 }
-
-export const resolvePvPTurn = executePvPTurnResolution;

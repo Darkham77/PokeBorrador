@@ -87,10 +87,10 @@ async function main() {
   console.log(styleText('cyan', `\nSecuencia detectada en el código (${executionSequence.length} pasos):`));
   console.log(executionSequence.slice(0, MAX_SEQUENCE_PREVIEW_LIMIT).join(' -> ') + (executionSequence.length > MAX_SEQUENCE_PREVIEW_LIMIT ? ' ...' : ''));
 
-  const errors: string[] = [];
-  const warnings: string[] = [];
-  const okTransitions: string[] = [];
-  const loopTransitions: string[] = [];
+  const errors: string[] = []; // no-domain
+  const warnings: string[] = []; // no-domain
+  const okTransitions: string[] = []; // no-domain
+  const loopTransitions: string[] = []; // no-domain
 
   mermaidSeqs.forEach((seq, idx) => {
     seq.forEach((step: TransitionStep) => {

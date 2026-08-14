@@ -155,7 +155,7 @@ async function main() {
           try {
             db.exec(sql);
           } catch (stmtErr: unknown) {
-            const msg = (stmtErr as Error).message.toLowerCase();
+            const msg = (stmtErr as Error).message.toLowerCase(); // string-ok
             const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
             const isMissing = msg.includes('no such column');
             if (!isDuplicate && !isMissing) {

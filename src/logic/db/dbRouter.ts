@@ -9,7 +9,7 @@ import { initSQLite, queryLocal, type LoadingStore } from './sqliteEngine.ts';
 import { emulateOfflineRpc } from './sqliteRpcEmulation.ts';
 import { DATABASE_MIGRATIONS } from './migrations_data.ts';
 import { logger } from '../utils/logger.ts';
-import type { DBConfig, DBMode, DBRouterOptions, DBCompatibilityResponse, DBResponse } from '@/types/system/database';
+import type { DBConfig, SessionMode, DBRouterOptions, DBCompatibilityResponse, DBResponse } from '@/types/system/database';
 
 export type { DBCompatibilityResponse };
 
@@ -21,7 +21,7 @@ export type { DBCompatibilityResponse };
 export class DBRouter {
   config: DBConfig;
   _realClient: SupabaseClient | null;
-  mode: DBMode;
+  mode: SessionMode;
   options: DBRouterOptions;
   _initialized: boolean;
   currentSessionId: string | null;
@@ -29,7 +29,7 @@ export class DBRouter {
   systemConfigSubscription: RealtimeChannel | null;
   _timeOffset: number;
 
-  constructor(config: DBConfig = { url: '', key: '' }, mode: DBMode = 'online', options: DBRouterOptions = {}) {
+  constructor(config: DBConfig = { url: '', key: '' }, mode: SessionMode = 'online', options: DBRouterOptions = {}) {
     this.config = config;
     this._realClient = null;
     this.mode = mode;
@@ -223,7 +223,7 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
    * Dynamically switches the router mode.
    * @param {String} mode - 'online' | 'offline'
    */
-  setMode(mode: DBMode): void {
+  setMode(mode: SessionMode): void {
     if (this.mode === mode) return;
     logger.info('DBRouter', `Switching mode from ${this.mode} to ${mode.toUpperCase()}`); // text-ok
     this.mode = mode;

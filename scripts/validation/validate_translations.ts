@@ -25,7 +25,7 @@ const SHOWDOWN_DB_ES_PATH = path.resolve(process.cwd(), 'showdown/sandbox_db/dat
 const REPORT_PATH = path.resolve(process.cwd(), 'scratch/translation_audit_report.txt');
 
 // 18 Official Spanish elements
-const VALID_SPANISH_TYPES = new Set([
+const VALID_SPANISH_TYPES = new Set([ // runtime-set
   'normal',
   'fuego',
   'agua',
@@ -92,9 +92,9 @@ async function main() {
   console.log(styleText('bold', '🛡️  AUDITORÍA DE TRADUCCIONES: CONTROL DE LEAKS Y CALIDAD 🛡️'));
   console.log(styleText('bold', '══════════════════════════════════════════════════════════════\n'));
 
-  const errors: string[] = [];
-  const warnings: string[] = [];
-  const achievements: string[] = [];
+  const errors: string[] = []; // no-domain
+  const warnings: string[] = []; // no-domain
+  const achievements: string[] = []; // no-domain
 
   // Phase 1: Check Database File
   if (!(await fileExists(SHOWDOWN_DB_ES_PATH))) {
@@ -170,7 +170,7 @@ async function main() {
   console.log(`════════════════════════════════════\n`);
 
   // Write report to scratch directory (Mandatory)
-  const reportLines = [
+  const reportLines = [ // no-domain
     `══════════════════════════════════════════════════════════════`,
     `🛡️  REPORT DE AUDITORÍA DE TRADUCCIÓN DEL SHOWDOWN SANDBOX 🛡️`,
     `══════════════════════════════════════════════════════════════`,

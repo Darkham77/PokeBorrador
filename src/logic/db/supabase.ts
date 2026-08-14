@@ -4,7 +4,7 @@
  */
 import { DBRouter } from './dbRouter.ts'
 import { safeStorage } from '../utils/storage.ts'
-import type { DBMode } from '@/types/system/database'
+import type { SessionMode } from '@/types/system/database'
 import { OFFICIAL_SERVERS, DEFAULT_SERVER } from '../../data/system/official_servers.ts'
 
 // Identify if the instance is running in a local context
@@ -15,8 +15,8 @@ const storedServerId = safeStorage.getItem('pokevicio_selected_server_id')
 const selectedServer = OFFICIAL_SERVERS.find(s => s.id === storedServerId) || DEFAULT_SERVER
 
 // Determine initial mode explicitly from session context
-const storedMode = safeStorage.getItem('pokevicio_session_mode') as DBMode
-const initialMode: DBMode = storedMode || (isLocalhost ? 'offline' : 'online')
+const storedMode = safeStorage.getItem('pokevicio_session_mode') as SessionMode
+const initialMode: SessionMode = storedMode || (isLocalhost ? 'offline' : 'online')
 
 // Export the Autonomous DB Router
 // It will handle createClient lazily only when mode is 'online'

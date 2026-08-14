@@ -366,7 +366,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       const localPlayerTeam = batchData.playerTeam.map((set: FuzzerTeamSet) => {
         return debug.pokemonDebugService!.generate({
           uid: set.uid,
-          id: set.species.toLowerCase(),
+          id: set.species.toLowerCase(), // string-ok
           level: set.level ?? 100,
           ability: set.ability,
           moves: set.moves,
@@ -384,7 +384,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       const localEnemyTeam = batchData.enemyTeam.map((set: FuzzerTeamSet) => {
         return debug.pokemonDebugService!.generate({
           uid: set.uid,
-          id: set.species.toLowerCase(),
+          id: set.species.toLowerCase(), // string-ok
           level: set.level ?? 100,
           ability: set.ability,
           moves: set.moves,
@@ -412,11 +412,11 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       debugObj.battleSeed = (batchData.seed ?? undefined) as [number, number, number, number] | undefined;
       debugObj.isDeterministicSimulation = true;
       debugObj.isScriptedReplayMode = true;
-      const enemyChoices: string[] = batchData.enemyChoices ?? [];
+      const enemyChoices: string[] = batchData.enemyChoices ?? []; // no-domain
       debugObj.enemyChoices = [...enemyChoices];
       debugObj.mockEnemyChoices = [...enemyChoices];
       
-      const playerChoices: string[] = batchData.playerChoices ?? [];
+      const playerChoices: string[] = batchData.playerChoices ?? []; // no-domain
       debugObj.playerChoices = [...playerChoices];
       
       debugObj.p1ChoiceIdx = 0;

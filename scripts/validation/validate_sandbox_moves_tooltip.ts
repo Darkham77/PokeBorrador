@@ -53,7 +53,7 @@ const STORE_PATH = path.resolve(process.cwd(), 'showdown/useShowdownSandboxStore
  * Common English words that should NOT appear in a properly localized Spanish description.
  * Weighted heuristic: if 2+ of these are found in a single description, it is flagged as English.
  */
-const ENGLISH_MARKER_WORDS = [
+const ENGLISH_MARKER_WORDS = [ // no-domain
   'the', 'user', 'target', 'opponent', 'raises', 'lowers', 'foe',
   'power', 'move', 'attack', 'damage', 'hits', 'causes', 'restores',
   'increases', 'decreases', 'boosts', 'fails', 'turn', 'chance',
@@ -103,9 +103,9 @@ async function main() {
   console.log(styleText('bold', '🛡️  AUDITORÍA INTEGRAL: TRADUCCIONES, DESCRIPCIONES & TOOLTIP 🛡️'));
   console.log(styleText('bold', '══════════════════════════════════════════════════════════════\n'));
 
-  const errors: string[] = [];
-  const warnings: string[] = [];
-  const achievements: string[] = [];
+  const errors: string[] = []; // no-domain
+  const warnings: string[] = []; // no-domain
+  const achievements: string[] = []; // no-domain
 
   // ═══════════════════════════════════════════════════════════
   // FASE 1: Infraestructura de Archivos
@@ -143,12 +143,12 @@ async function main() {
   const showdownDb = JSON.parse(showdownDbRaw) as ShowdownLocalDB;
 
   const translationsRaw = await fs.readFile(TRANSLATIONS_PATH, 'utf8');
-  const translations = JSON.parse(translationsRaw) as Record<string, string>;
+  const translations = JSON.parse(translationsRaw) as Record<string, string>; // open-record
 
   const allMoveIds = Object.keys(showdownDb.moves);
   const totalMovesInDB = allMoveIds.length;
 
-  const missingNameTranslations: string[] = [];
+  const missingNameTranslations: string[] = []; // no-domain
   for (const moveId of allMoveIds) {
     if (!translations[moveId]) {
       const move = showdownDb.moves[moveId]!;
@@ -166,10 +166,10 @@ async function main() {
   // FASE 3: Cobertura y Calidad de Descripciones en Español
   // ═══════════════════════════════════════════════════════════
   const descriptionsRaw = await fs.readFile(DESCRIPTIONS_PATH, 'utf8');
-  const descriptions = JSON.parse(descriptionsRaw) as Record<string, string>;
+  const descriptions = JSON.parse(descriptionsRaw) as Record<string, string>; // open-record
 
-  const missingDescriptions: string[] = [];
-  const englishDescriptions: string[] = [];
+  const missingDescriptions: string[] = []; // no-domain
+  const englishDescriptions: string[] = []; // no-domain
 
   for (const moveId of allMoveIds) {
     const desc = descriptions[moveId];
@@ -362,8 +362,8 @@ async function main() {
   const translationKeys = new Set(Object.keys(translations));
   const descriptionKeys = new Set(Object.keys(descriptions));
 
-  const inNamesNotInDescs: string[] = [];
-  const inDescsNotInNames: string[] = [];
+  const inNamesNotInDescs: string[] = []; // no-domain
+  const inDescsNotInNames: string[] = []; // no-domain
 
   for (const key of translationKeys) {
     if (!descriptionKeys.has(key)) {

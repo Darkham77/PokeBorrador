@@ -4,7 +4,7 @@ import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleSource, BattleSide } from '@/types/battle/battle'
 import { requireItemId } from '@/data/inventory/items'
-import { requireCertifiedBattleTeamSlot, type CertifiedBagItemGameAction } from '@/types/battle/certifiedBattleActions'
+import { requireCertifiedBattleTeamSlot, type CertifiedBattleGameAction } from '@/types/battle/certifiedBattleActions'
 
 export async function processUseItemInBattle(
   ctx: BattleContext,
@@ -18,9 +18,11 @@ export async function processUseItemInBattle(
     fsm: unknown
     gs: {
       state: {
-        team: Pokemon[]
-        playerClass?: string | null
+        team: (Pokemon | null)[]
         box: (Pokemon | null)[]
+        playerClass?: string | null
+        money: number
+        inventory: Record<string, number | undefined>
       }
       addPokemon: (poke: Pokemon | null, opts?: { notify: boolean }) => void
     }
@@ -29,7 +31,7 @@ export async function processUseItemInBattle(
     }
     endBattle: (win: boolean, fled: boolean) => Promise<void>
     handleFaint: (side: BattleSide) => Promise<void>
-    runEnemyAction: (ctx: BattleContext, bagAction?: CertifiedBagItemGameAction) => Promise<void>
+    runEnemyAction: (ctx: BattleContext, bagAction?: CertifiedBattleGameAction) => Promise<void>
     persistBattle: () => void
     syncTeamHP: () => void
   }
@@ -119,7 +121,7 @@ export async function processUseItemInBattle(
     options.persistBattle()
     await ctx.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
     const targetSlotIndex = targetIndex ?? activeBattle.playerTeamIndex
-    const bagAction: CertifiedBagItemGameAction = {
+    const bagAction: CertifiedBattleGameAction = {
       kind: 'bag-item',
       itemId: requireItemId(itemId),
       targetSlot: requireCertifiedBattleTeamSlot(targetSlotIndex + 1),

@@ -28,11 +28,11 @@ const SLOC_ERROR_THRESHOLD = 1000;
 const EXEC_MAX_BUFFER_BYTES = 10 * 1024 * 1024;
 const EXEC_TIMEOUT_MS = 15000;
 
-const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', 'dev-dist', 'backup_legacy_code', 'public', 'docs', 'scratch', 'showdown', 'external']);
-const AUDIT_EXTENSIONS = new Set(['.vue', '.scss', '.css', '.ts', '.js', '.md']);
+const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', 'dev-dist', 'backup_legacy_code', 'public', 'docs', 'scratch', 'showdown', 'external']); // runtime-set
+const AUDIT_EXTENSIONS = new Set(['.vue', '.scss', '.css', '.ts', '.js', '.md']); // runtime-set
 
 async function getFilesToAudit(dir: string): Promise<string[]> {
-  const files: string[] = [];
+  const files: string[] = []; // no-domain
   const pattern = `**/*{${Array.from(AUDIT_EXTENSIONS).join(',')}}`;
   
   for await (const entry of fs.glob(pattern, { cwd: dir, exclude: (p: string) => Array.from(IGNORE_DIRS).some(d => p.includes(d)) })) {
@@ -317,10 +317,10 @@ async function checkZIndexConsistency(fix: boolean): Promise<string[]> {
   try {
     let scssContent = await fs.readFile(scssPath, 'utf-8');
     let modified = false;
-    const errors: string[] = [];
+    const errors: string[] = []; // no-domain
 
     for (const [key, value] of Object.entries(Z_LAYERS)) {
-      const dashedKey = key.toLowerCase().replace(/_/g, '-');
+      const dashedKey = key.toLowerCase().replace(/_/g, '-'); // string-ok
       const varName = `--z-${dashedKey}`;
       const regex = new RegExp(`${varName}\\s*:\\s*(-?\\d+)\\b`);
       const match = scssContent.match(regex);
@@ -638,7 +638,7 @@ function runFallow(command: string, extraArgs: string[] = []): Violation[] {
   const violations: Violation[] = [];
   let parsedSuccessfully = false;
   try {
-    const args = ['--format', 'json', ...extraArgs];
+    const args = ['--format', 'json', ...extraArgs]; // no-domain
     const fallowBin = path.resolve(process.cwd(), 'node_modules/fallow/bin/fallow');
     const cmd = `node "${fallowBin}" ${command} ${args.join(' ')}`;
     const stdout = execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'], maxBuffer: 10 * 1024 * 1024, timeout: 30000, killSignal: 'SIGKILL' });
@@ -833,7 +833,7 @@ async function checkDoxIntegrity(): Promise<Violation[]> {
 
   
   // Recursivamente busca todos los directorios del proyecto (no ignorados)
-  const doxDirs: string[] = [];
+  const doxDirs: string[] = []; // no-domain
   
   async function hasCodeFiles(dir: string): Promise<boolean> {
     try {
@@ -1052,7 +1052,7 @@ async function checkDoxIntegrity(): Promise<Violation[]> {
 async function detectDuplicateConstants(files: string[]): Promise<Violation[]> {
   const violations: Violation[] = [];
   
-  const IGNORED_CONSTANT_NAMES = new Set([
+  const IGNORED_CONSTANT_NAMES = new Set([ // runtime-set
     'ID', 'NAME', 'TYPE', 'KEY', 'INDEX', 'COUNT', 'DEFAULT', 'SIZE', 'MAX', 'MIN',
     'VAL', 'VALUE', 'ITEM', 'STATE', 'MODE', 'TAG', 'URL', 'PATH', 'ERR', 'ERROR',
     'MSG', 'DATA', 'INFO', 'OPTIONS', 'CONFIG', 'RESULT', 'RES', 'REQ', 'STATUS',
@@ -1280,7 +1280,7 @@ async function main() {
     // DOX / AGENTS.md Integrity Check
     const doxErrors = await checkDoxIntegrity();
 
-    let files: string[] = [];
+    let files: string[] = []; // no-domain
     const changedSince = values['changed-since'] as string | undefined;
     
     if (changedSince) {

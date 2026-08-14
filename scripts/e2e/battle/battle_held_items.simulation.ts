@@ -156,7 +156,7 @@ test.describe('E2E Held Items Verification', () => {
   if (!fs.existsSync(consolidatorPath)) {
     throw new Error(`[E2E] Missing regenerated fuzzer item artifacts: ${consolidatorPath}`);
   }
-  const content = JSON.parse(fs.readFileSync(consolidatorPath, 'utf8')) as Record<string, unknown>;
+  const content = JSON.parse(fs.readFileSync(consolidatorPath, 'utf8')) as Record<string, unknown>; // open-record
   if (!Array.isArray(content.items)) {
     throw new Error('[E2E] Regenerated fuzzer artifacts do not contain an items array.');
   }

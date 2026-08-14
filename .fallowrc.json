@@ -39,10 +39,6 @@
   },
   "ignoreExports": [
     {
-      "file": "src/logic/auth/saveService.ts",
-      "exports": ["PersistedPokemonGender"]
-    },
-    {
       "file": "src/data/world/gyms.ts",
       "exports": ["Gym", "GymDifficulty"]
     },
@@ -257,10 +253,6 @@
     {
       "file": "src/logic/pokemon/pokemonFactory.ts",
       "exports": ["assignGender", "ensurePokemonGender"]
-    },
-    {
-      "file": "src/logic/providers/itemProvider.ts",
-      "exports": ["ITEM_EFFECTS"]
     },
     {
       "file": "src/logic/services/assetService.ts",
@@ -561,10 +553,6 @@
     {
       "file": "src/logic/pokemon/pokemonUtils.ts",
       "exports": ["MAX_IV_VALUE_EXCLUSIVE"]
-    },
-    {
-      "file": "src/logic/pvp/pvpEngine.ts",
-      "exports": ["executePvPTurnResolution"]
     },
     {
       "file": "src/logic/war/guardianEngine.ts",

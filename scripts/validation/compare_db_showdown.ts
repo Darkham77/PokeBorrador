@@ -38,7 +38,7 @@ const TYPE_MAP: Record<string, string> = {
 };
 
 function normalizeId(id: string): string {
-  return id.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return id.toLowerCase().replace(/[^a-z0-9]/g, ''); // string-ok
 }
 
 async function main() {
@@ -65,7 +65,7 @@ async function main() {
     process.exit(1);
   }
 
-  const reportLines: string[] = [];
+  const reportLines: string[] = []; // no-domain
   reportLines.push('# Reporte Detallado de Comparación de Bases de Datos');
   reportLines.push(`*Generado el: ${new Date().toISOString()}*\n`);
   reportLines.push('Este reporte compara los Pokémon, habilidades y movimientos del juego core frente a la extracción de Pokémon Showdown (Gen 3).\n');
@@ -80,7 +80,7 @@ async function main() {
   let moveStatsDiscrepancies = 0;
   let missingMovesInShowdown = 0;
 
-  const pokemonDiffsTable: string[] = [];
+  const pokemonDiffsTable: string[] = []; // no-domain
   pokemonDiffsTable.push('## 1. Comparación de Pokémon y Estadísticas');
   pokemonDiffsTable.push('| Pokémon | Atributo | Valor Juego | Valor Showdown | Tipo Discrepancia |');
   pokemonDiffsTable.push('| :--- | :--- | :--- | :--- | :--- |');
@@ -105,9 +105,9 @@ async function main() {
     matchingPokemon++;
 
     // Comparar Estadísticas Base
-    const statsKeys: Array<'hp' | 'atk' | 'def' | 'spa' | 'spd' | 'spe'> = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
+    const statsKeys = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
     for (const stat of statsKeys) {
-      const coreVal = corePoke[stat as keyof typeof corePoke];
+      const coreVal = Reflect.get(corePoke, stat);
       const sdVal = sdPoke.baseStats[stat];
       if (coreVal !== sdVal) {
         statsDiscrepancies++;
@@ -116,7 +116,7 @@ async function main() {
     }
 
     // Comparar Tipos
-    const coreTypes: string[] = [];
+    const coreTypes: string[] = []; // no-domain
     if (corePoke.type) coreTypes.push(TYPE_MAP[corePoke.type] || corePoke.type);
     const type2 = Reflect.get(corePoke, 'type2') as string | undefined;
     if (type2) coreTypes.push(TYPE_MAP[type2] || type2);
@@ -143,7 +143,7 @@ async function main() {
   }
 
   // Comparar Movimientos uno por uno
-  const moveDiffsTable: string[] = [];
+  const moveDiffsTable: string[] = []; // no-domain
   moveDiffsTable.push('\n## 2. Comparación de Movimientos');
   moveDiffsTable.push('| Movimiento | Propiedad | Valor Juego | Valor Showdown |');
   moveDiffsTable.push('| :--- | :--- | :--- | :--- |');

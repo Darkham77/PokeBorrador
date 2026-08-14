@@ -3,13 +3,12 @@ import type { WeatherId } from '@/logic/weather/weatherRegistry.ts';
 import type { DayPhase } from '@/logic/utils/timeUtils';
 
 export type WeatherSeasonId = 'spring' | 'summer' | 'autumn' | 'winter';
-export type WeatherCycleId = DayPhase;
 export type WeatherTableRouteId = keyof typeof kantoWeather;
 export type WeatherChanceTable = Partial<Record<WeatherId, number>>;
-export type RouteWeatherTable = Record<WeatherSeasonId, Record<WeatherCycleId, WeatherChanceTable>>;
+export type RouteWeatherTable = Record<WeatherSeasonId, Record<DayPhase, WeatherChanceTable>>;
 
 export const WEATHER_SEASON_IDS = ['spring', 'summer', 'autumn', 'winter'] as const satisfies readonly WeatherSeasonId[];
-export const WEATHER_CYCLE_IDS = ['morning', 'day', 'dusk', 'night'] as const satisfies readonly WeatherCycleId[];
+export const WEATHER_CYCLE_IDS = ['morning', 'day', 'dusk', 'night'] as const satisfies readonly DayPhase[];
 
 /**
  * Main repository for all regional weather tables.
@@ -35,13 +34,4 @@ function isWeatherSeasonId(value: string): value is WeatherSeasonId {
 export function requireWeatherSeasonId(value: string): WeatherSeasonId {
   if (isWeatherSeasonId(value)) return value;
   throw new Error(`[weather-tables] Unknown weather season id: ${value}`);
-}
-
-function isWeatherCycleId(value: string): value is WeatherCycleId {
-  return WEATHER_CYCLE_IDS.some(id => id === value);
-}
-
-export function requireWeatherCycleId(value: string): WeatherCycleId {
-  if (isWeatherCycleId(value)) return value;
-  throw new Error(`[weather-tables] Unknown weather cycle id: ${value}`);
 }

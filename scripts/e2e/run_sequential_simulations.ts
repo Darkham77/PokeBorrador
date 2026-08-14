@@ -115,8 +115,8 @@ function getFuzzerSummary(): { elementCount: number; batchCount: number } {
       for (const file of files) {
         if (file.startsWith('fuzzer_') && file.endsWith('_coverage_report.json')) {
           try {
-            const data = JSON.parse(fs.readFileSync(path.join(resultsDir, file), 'utf8')) as Record<string, unknown>;
-            const summary = (data.summary || data) as Record<string, unknown>;
+            const data = JSON.parse(fs.readFileSync(path.join(resultsDir, file), 'utf8')) as Record<string, unknown>; // open-record
+            const summary = (data.summary || data) as Record<string, unknown>; // open-record
             const count = summary.totalMoves ?? summary.totalItems ?? summary.totalAbilities ?? (file.includes('scenarios') ? summary.total : undefined);
             if (typeof count === 'number') {
               totalElements += count;
@@ -126,7 +126,7 @@ function getFuzzerSummary(): { elementCount: number; batchCount: number } {
           }
         } else if (file === 'fuzzer_certified_cases.json') {
           try {
-            const data = JSON.parse(fs.readFileSync(path.join(resultsDir, file), 'utf8')) as Record<string, unknown>;
+            const data = JSON.parse(fs.readFileSync(path.join(resultsDir, file), 'utf8')) as Record<string, unknown>; // open-record
             for (const val of Object.values(data)) {
               if (Array.isArray(val)) {
                 totalBatches += val.length;

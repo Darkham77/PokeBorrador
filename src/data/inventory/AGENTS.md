@@ -1,6 +1,6 @@
 # Purpose
 
-Static inventory item database.
+Static inventory item database, prices, shop configurations, crafting tiers, vitamins, and feather consumibles.
 
 ## Child DOX Index
 

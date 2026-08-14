@@ -446,7 +446,7 @@ export const useAuthStore = defineStore('auth', () => {
     // We do NOT unregister the Service Worker — that's what was breaking the
     // PWA standalone mode. The SW stays registered so the app remains installable
     // and the standalone layout is preserved across reloads.
-    if (!preventReload) {
+    if (!preventReload && import.meta.env.MODE !== 'test') {
       window.location.reload()
     }
   }

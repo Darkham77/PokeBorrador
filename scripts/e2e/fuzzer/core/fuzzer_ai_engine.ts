@@ -9,7 +9,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { styleText } from 'node:util';
-import type { PokemonSet } from '@pkmn/sim';
+import type { PokemonSet, SideID } from '@pkmn/sim';
 import { ShowdownBattleEngine } from '../../../../src/logic/battle/engine/showdownBattleEngine.ts';
 
 import { generateAiBattles } from '../generators/fuzzer_ai_team_generator.ts';
@@ -19,6 +19,7 @@ import { createLocalPoke } from './fuzzer_engine.ts';
 import { patchShowdownSpreadModify } from '../../../../src/logic/battle/showdownAdapter.ts';
 import { HeuristicAI } from '../../../../src/logic/battle/ai/heuristicAI.ts';
 import { createMockBattleContext } from './fuzzer_mock_battle_store.ts';
+import { requireAbilityId } from '../../../../src/data/battle/abilities.ts';
 import { MAX_POKEMON_LEVEL, MAX_BATTLE_TURNS } from '../../../../src/data/system/constants.ts';
 import type { FuzzerResult } from './fuzzer_runner.ts';
 import { fileWriterQueue } from '../../helpers/fileWriterQueue.ts';
@@ -38,7 +39,7 @@ const AI_REPORT_FILE = path.join(AI_RESULTS_DIR, 'fuzzer_ai_coverage_report.json
 class HeuristicAgent extends BattleAgent {
   private readonly ai = new HeuristicAI();
 
-  constructor(sideId: 'p1' | 'p2') {
+  constructor(sideId: SideID) {
     super(sideId, new Set(), null, 0, false);
   }
 
@@ -57,7 +58,7 @@ class HeuristicAgent extends BattleAgent {
       species: activePoke.details.split(',')[0] ?? activePoke.ident,
       level: MAX_POKEMON_LEVEL,
       moves: activePoke.moves ?? [],
-      ability: activePoke.ability ?? '',
+      ability: activePoke.ability ? requireAbilityId(activePoke.ability) : '', // domain-ok
       item: '',
       name: activePoke.ident.split(': ')[1] ?? activePoke.ident,
       gender: 'M',
@@ -76,7 +77,7 @@ class HeuristicAgent extends BattleAgent {
         species: opponentPoke.details?.split(',')[0] ?? opponentPoke.ident ?? 'Pikachu',
         level: MAX_POKEMON_LEVEL,
         moves: opponentPoke.moves ?? [],
-        ability: opponentPoke.ability ?? '',
+        ability: opponentPoke.ability ? requireAbilityId(opponentPoke.ability) : '', // domain-ok
         item: '',
         name: opponentPoke.ident?.split(': ')[1] ?? opponentPoke.ident ?? 'Opponent',
         gender: 'M',
@@ -137,7 +138,7 @@ export async function runAIFuzzer(): Promise<FuzzerResult[]> {
     p2Choices: string[];
     steps: string[];
     ended: boolean;
-    winner: 'p1' | 'p2' | null;
+    winner: SideID | null;
     turns: number;
     error: string | null;
   }> = [];
@@ -149,12 +150,12 @@ export async function runAIFuzzer(): Promise<FuzzerResult[]> {
     const batch = batches[idx]!;
     console.log(`  ⚔️  Combate ${idx + 1}/${batches.length} (${batch.id})...`);
 
-    const p1Choices: string[] = [];
-    const p2Choices: string[] = [];
-    const steps: string[] = [];
+    const p1Choices: string[] = []; // no-domain
+    const p2Choices: string[] = []; // no-domain
+    const steps: string[] = []; // no-domain
     let error: string | null = null;
     let ended = false;
-    let winner: 'p1' | 'p2' | null = null;
+    let winner: SideID | null = null;
     let battleTurns = 0;
 
     try {
@@ -190,8 +191,8 @@ export async function runAIFuzzer(): Promise<FuzzerResult[]> {
           if (line.includes('|move|')) {
             const parts = line.split('|');
             const attacker = parts[2]?.split(': ')[1] ?? parts[2] ?? '';
-            const move = parts[3] ?? '';
-            steps.push(`T${simBattle.turn}: ${attacker} → ${move}`);
+            const moveName = parts[3] ?? ''; // text-ok
+            steps.push(`T${simBattle.turn}: ${attacker} → ${moveName}`);
           } else if (line.includes('|faint|')) {
             const parts = line.split('|');
             steps.push(`T${simBattle.turn}: FAINT ${parts[2]?.split(': ')[1] ?? ''}`);

@@ -14,11 +14,11 @@ The goal is simple: invalid domain values should fail at compile time. If TypeSc
 Apply this workflow when the task involves any of these:
 
 - A new `type`, `interface`, DTO, schema, store state, generated wrapper, or data contract.
-- Finite IDs such as Pokemon species, moves, abilities, items, maps, trainers, factions, statuses, weather, ranks, categories, modes, slots, phases, classes, tables, or routes.
-- Constants declared as arrays, sets, maps, records, or object dictionaries.
-- Generated data under `src/data/**`, generated wrappers from JSON, or npm scripts that regenerate source/data files.
+- Finite IDs such as Pokemon species, moves, abilities, items, maps, trainers, factions, statuses, weather, ranks, categories, modes, slots, phases, classes, tables, or routes across `src/` and `scripts/`.
+- Constants declared as arrays, sets, maps, records, or object dictionaries in `src/` and `scripts/`.
+- Generated data under `src/data/**`, generated wrappers from JSON, or npm scripts under `scripts/**` that regenerate source/data files or execute simulations.
 - Validation logic for values that come from JSON, assets, saves, workers, APIs, or external payloads.
-- Review/audit findings from `npm run validate:domain-types`.
+- Review/audit findings from `npm run validate:domain-types` (which scans both `src/` and `scripts/`).
 
 If it is finite, design the domain type first.
 
@@ -40,6 +40,17 @@ If it is finite, design the domain type first.
 - **Canonical Boolean Mandate**: It is STRICTLY FORBIDDEN to use boolean literals (`true`, `false`) as type annotations when declaring variables, interface/type fields, type aliases, or function parameters (e.g. `var hola: true`, `let flag: false`, `field: true;`).
 - **Forbidden Pattern**: `var hola: true`, `type Flag = false;`, `interface Event { ready: true; }` (WRONG — types as literal boolean instead of boolean type).
 - **Canonical Pattern**: `var hola: boolean`, `type Flag = boolean;`, `interface Event { ready: boolean; }` (CORRECT — canonical boolean contract).
+
+## Absolute Prohibition on Local Reinvention of Library Domain Types (`noLibraryDomainDuplicates`)
+
+- **Direct Dependency Consumption**: It is STRICTLY FORBIDDEN to redeclare or invent local domain types or string literal arrays (`['p1', 'p2', 'p3', 'p4']`, `'M' | 'F' | 'N'`, `'brn' | 'par' | ...`) when an identical domain type is already exported by an installed library (`SideID`, `GenderName` from `@pkmn/sim`, `StatusName` from `@smogon/calc`, etc.).
+- **Dynamic Auditor Indexing**: The auditor `scripts/validation/validate_domain_types.ts` dynamically indexes all exported union types from `node_modules/` `.d.ts` files at runtime and will fail if local code duplicates a library domain.
+
+## Absolute Prohibition on Redundant 1:1 Type Aliases (`noRedundantTypeAliases`)
+
+- **Zero-Passthrough Mandate**: It is STRICTLY FORBIDDEN to create 1-to-1 type aliases (`export type Foo = Bar;`) that merely rename an existing type without adding structural or domain value.
+- **Forbidden Pattern**: `export type ActivePokemonStatus = StatusName;`, `export type PersistedPokemonGender = GenderName;`, `export type ReplaySeat = SideID;` (WRONG — unnecessary indirection).
+- **Canonical Pattern**: Use `StatusName`, `GenderName`, `SideID` directly at all usage sites across the repository.
 ## Nominal Branded Types for Domain IDs (`Brand<T, B>`)
 
 - **Nominal Safety Mandate**: Finite domain identifiers (`PokemonSpeciesId`, `ItemId`, `PokemonMoveId`) SHOULD be defined as Nominal Branded Types using `Brand<T, B>` from `@/types/system/branding` to prevent accidental assignability across distinct domains.
@@ -210,45 +221,36 @@ Examples:
 - Item, move, ability, species, weather, and map databases should derive `ItemId`, `MoveId`, `AbilityId`, `PokemonSpeciesId`, `WeatherId`, or `MapId` from canonical data.
 - Validation scripts may use runtime collections internally, but generated source contracts must remain type-first.
 
-## Audit Workflow
+## Audit Workflow & Command Reference
 
-Before finishing a task that creates or modifies domain data:
+The canonical domain type auditor is `scripts/validation/validate_domain_types.ts`. It scans both `src/` and `scripts/` directories automatically.
 
-## Ad-Hoc String Literal Union Auditor (`P_TYPECAST_STRING_UNION` & `P_AD_HOC_STRING_UNION_ANNOTATION`)
-
-- **Purpose**: Detects inline string literal union casts (`as 'p1' | 'p2'`, `as 'player' | 'enemy'`) and inline string union type annotations (`: 'p1' | 'p2'`, `: 'player' | 'enemy'`) defined ad-hoc across files instead of consuming canonical domain types (e.g., `SideID` from `@pkmn/sim` or `BattleSide` from `@/types/battle/battle`).
-- **Enforcement**: Integrated into both `scripts/validation/validate_domain_types.ts` (`npm run validate:domain-types`) and `.agents/skills/domain-type-first/scripts/audit_domain_types_portable.mjs`.
-- **Severity**: `ERROR`. Flags every inline seat or combatant union assertion or parameter annotation as an error.
-- **Resolution**:
-  1. Replace inline `: 'player' | 'enemy'` parameter or property annotations with canonical `BattleSide`.
-  2. Replace inline `: 'p1' | 'p2'` worker/engine annotations with `SideID`.
-  3. Replace inline `as 'player' | 'enemy'` or `as 'p1' | 'p2'` casts with `as BattleSide` or `as SideID`.
-
-1. Search for loose patterns in touched files:
+### Running the Domain Type Auditor
 
 ```bash
-rg -n "type .* = string|\\| string|string & \\{\\}|Record<string|Record<PropertyKey|\\[.*: string\\]|new Set|new Map|string\\[\\]|Array<string>|ReadonlyArray<string>|as\\s+['\"\`]p1['\"\`]|:\\s*['\"\`]player['\"\`]" <touched paths>
+# Standard in-depth audit across src/ and scripts/
+npm run validate:domain-types
+
+# Compact summary mode (shows only violation count breakdowns)
+npm run validate:domain-types -- --summary
+
+# Save structured audit report to a file
+npm run validate:domain-types -- --output=scratch/domain_types_report.txt
+
+# Direct Node execution with native permissions
+node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/validation/validate_domain_types.ts
 ```
 
-2. Run the project validator:
+### Full Verification Pipeline
+
+Always verify domain types as part of the fast verification flow:
 
 ```bash
-npm run validate:domain-types -- --errors-only --summary
+npm run lint
 ```
 
-3. If the target project does not have `validate:domain-types`, run the synchronized portable audit script from this skill:
-
-```bash
-node .agents/skills/domain-type-first/scripts/audit_domain_types_portable.mjs src --errors-only --summary
-```
-
-When using the skill outside this repository, copy `scripts/audit_domain_types_portable.mjs` into the target repo or run it directly from the skill directory with the target source roots as arguments. The script is dependency-free and accepts `--errors-only`, `--summary`/`-s`, and `--output=<path>`.
-
-The portable script `.agents/skills/domain-type-first/scripts/audit_domain_types_portable.mjs` MUST remain synchronized 1:1 in AST patterns and severities with `scripts/validation/validate_domain_types.ts`.
-
-4. If generator scripts were touched or generated data was involved, inspect the relevant npm commands in `package.json` and verify the generator template emits strict types.
-
-5. If TypeScript now reports call sites passing raw strings, fix the call sites by using the domain type or an explicit boundary guard. Do not relax the domain to make the compiler quiet.
+1. If generator scripts were touched or generated data was involved, inspect the relevant npm commands in `package.json` and verify the generator template emits strict types.
+2. If TypeScript reports call sites passing raw strings, fix the call sites by using the domain type or an explicit boundary guard. Do not relax the domain to make the compiler quiet.
 
 ## Review Heuristics
 

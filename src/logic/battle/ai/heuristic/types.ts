@@ -98,11 +98,10 @@ export interface HeuristicMoveInfo {
   disabled: boolean;
 }
 
-export type HeuristicDecisionType = BattleActionType;
 export type HeuristicDecisionSource = 'heuristic' | 'fallback' | 'random';
 
 export interface HeuristicDecision {
-  type: HeuristicDecisionType;
+  type: BattleActionType;
   moveId?: string;       // move ID (when type === 'move')
   moveIndex?: number;    // 1-based index into available moves
   switchTeamIndex?: number; // 0-based index into team array

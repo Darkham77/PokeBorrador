@@ -10,6 +10,7 @@ vi.mock('@/logic/utils/gsapHelpers', () => ({
 vi.mock('@/logic/battle/battleRewards.ts', () => ({
   calculateBaseExp: vi.fn().mockReturnValue(100),
   processExpGain: vi.fn().mockReturnValue({ gained: 50, levelUp: false, levelsGained: 0 }),
+  processEvGain: vi.fn().mockReturnValue(null),
   calculateMoneyGain: vi.fn().mockReturnValue(200)
 }))
 

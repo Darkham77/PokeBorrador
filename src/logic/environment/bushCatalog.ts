@@ -17,6 +17,9 @@ export const BUSH_FAMILIES = {
     "bush-1",
     "bush-2"
   ],
+  "bushautum": [
+    "bushautum-1"
+  ],
   "bushflower": [
     "bushflower-1",
     "bushflower-2",
@@ -26,18 +29,15 @@ export const BUSH_FAMILIES = {
   "bushsnow": [
     "bushsnow-1"
   ],
-  "crystalblack": [
-    "crystalblack-1"
-  ],
   "cactus": [
     "cactus-1",
     "cactus-2"
   ],
+  "crystalblack": [
+    "crystalblack-1"
+  ],
   "crystaldarkred": [
     "crystaldarkred-1"
-  ],
-  "bushautum": [
-    "bushautum-1"
   ],
   "crystalblue": [
     "crystalblue-1"
@@ -54,30 +54,30 @@ export const BUSH_FAMILIES = {
   "crystalviolet": [
     "crystalviolet-1"
   ],
-  "crystalwhite": [
-    "crystalwhite-1"
+  "crystalyellow": [
+    "crystalyellow-1"
   ],
   "crystalyellowgreen": [
     "crystalyellowgreen-1"
   ],
-  "crystalyellow": [
-    "crystalyellow-1"
-  ],
-  "grassflower": [
-    "grassflower-1"
+  "crystalwhite": [
+    "crystalwhite-1"
   ],
   "fern": [
     "fern-1",
     "fern-2"
-  ],
-  "grass": [
-    "grass-1"
   ],
   "rock": [
     "rock-1",
     "rock-2",
     "rock-3",
     "rock-4"
+  ],
+  "grassflower": [
+    "grassflower-1"
+  ],
+  "grass": [
+    "grass-1"
   ],
   "treebroken": [
     "treebroken-1",

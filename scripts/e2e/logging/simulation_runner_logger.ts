@@ -7,7 +7,7 @@ export class SimulationRunnerLogger extends BaseRunnerLogger {
   }
 
   protected isProgressLog(message: string): boolean {
-    const progressPatterns = [
+    const progressPatterns = [ // no-domain
       '🚀 DISPOSITIVO',
       '▶️',
       '✅ PASS',

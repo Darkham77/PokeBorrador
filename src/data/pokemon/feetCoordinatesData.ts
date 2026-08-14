@@ -2,20 +2,16 @@
  * src/data/pokemon/feetCoordinatesData.ts
  *
  * Strongly-typed domain wrapper for src/data/pokemon/pokemonFeetDatabase.json.
- * Enforces strict PokemonSpeciesId key mapping.
  */
 
 import dbJson from './pokemonFeetDatabase.json' with { type: 'json' };
-import type { PokemonSpeciesId } from './pokedex.ts';
 
-export interface FeetCoordinates {
-  x: number;
-  y: number;
+export interface PackedFeetDatabase {
+  p?: Record<string, readonly number[]>; // open-record
+  n?: Record<string, readonly number[]>; // open-record
+  t?: Record<string, readonly number[]>; // open-record
+  c?: Record<string, string>; // open-record
 }
 
-export type FeetCoordinatesMap = Record<PokemonSpeciesId, FeetCoordinates>;
+export const FEET_COORDINATES_DATA: PackedFeetDatabase = dbJson;
 
-/**
- * Strongly-typed feet coordinates database.
- */
-export const FEET_COORDINATES_DATA: Partial<FeetCoordinatesMap> = dbJson as Partial<FeetCoordinatesMap>;

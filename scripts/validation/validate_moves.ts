@@ -26,7 +26,7 @@ const UTILS_FILE = path.resolve(process.cwd(), 'src/logic/pokemon/pokemonUtils.t
 type MoveTranslationId = keyof typeof MOVE_TRANSLATIONS_ES;
 
 function isEnabledPokemonId(id: string): id is (typeof ENABLED_POKEMON_IDS)[number] {
-  return (ENABLED_POKEMON_IDS as readonly string[]).includes(id);
+  return (ENABLED_POKEMON_IDS as readonly string[]).includes(id); // no-domain
 }
 
 function hasMoveTranslation(id: string): id is MoveTranslationId {
@@ -43,8 +43,8 @@ async function main() {
 
   console.log(styleText('bold', '\n--- 🛡️  POKEMON MOVE VALIDATOR (OFFLINE - GEN 3) ---'));
 
-  const errors: string[] = [];
-  const warnings: string[] = [];
+  const errors: string[] = []; // no-domain
+  const warnings: string[] = []; // no-domain
 
   // Extraer todos los movimientos de los learnsets de especies habilitadas
   const learnsetMoves = new Set<string>();

@@ -11,8 +11,8 @@ export interface FSMParityResult {
 }
 
 export function auditFSMEventParity(workerPath: string, battleStorePath: string): FSMParityResult {
-  const unhandledWorkerEvents: string[] = [];
-  const unhandledFSMStates: string[] = [];
+  const unhandledWorkerEvents: string[] = []; // no-domain
+  const unhandledFSMStates: string[] = []; // no-domain
 
   if (!existsSync(workerPath) || !existsSync(battleStorePath)) {
     return { unhandledWorkerEvents, unhandledFSMStates };

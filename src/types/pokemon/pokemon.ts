@@ -9,10 +9,10 @@ import type { AbilityId } from '@/data/battle/abilities';
 
 export type { PokemonMoveId };
 
-export type PokemonStatKey = 'hp' | 'atk' | 'def' | 'spa' | 'spd' | 'spe';
-export const POKEMON_STAT_KEYS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const satisfies readonly PokemonStatKey[];
-export type ActivePokemonStatus = 'par' | 'brn' | 'psn' | 'slp' | 'frz' | 'tox';
-export type PokemonStatus = ActivePokemonStatus | '';
+export const POKEMON_STAT_KEYS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
+export type PokemonStatKey = (typeof POKEMON_STAT_KEYS)[number];
+export const POKEMON_STATUSES = ['par', 'brn', 'psn', 'slp', 'frz', 'tox'] as const; // lib-duplicate-ok
+export type PokemonStatus = (typeof POKEMON_STATUSES)[number] | '';
 export type PokemonGender = 'm' | 'f' | null;
 export type PokedexStatus = 'none' | 'seen' | 'caught';
 export type PokemonStorageLocation = 'team' | 'box';
@@ -126,8 +126,6 @@ export interface Move {
   disabled?: boolean;
 }
 
-export type PokemonMove = Move;
-
 export interface Pokemon {
   uid: string; // domain-ok
   id: PokemonSpeciesId;
@@ -215,7 +213,7 @@ export interface Pokemon {
   thrashTurns?: number;
   encoreMove?: Move | null;
   disabledMove?: Move | null;
-  pendingMoves?: PokemonMove[];
+  pendingMoves?: Move[];
   trapped?: boolean;
   identified?: boolean;
   originalForm?: Pokemon | null;

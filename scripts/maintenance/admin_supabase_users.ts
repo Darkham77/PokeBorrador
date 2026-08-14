@@ -30,7 +30,7 @@ export async function adminSupabaseUsers(): Promise<void> {
 
   const { serverConfigs, baseProfiles } = await getValidatedServerConfigs();
 
-  const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[])));
+  const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[]))); // no-domain
 
   const args = process.argv.slice(2);
   const { parseServerArguments } = await import('../database/backup_supabase_db.ts');

@@ -1,6 +1,6 @@
-import { isWeatherTableRouteId, ROUTE_WEATHER_TABLES, type WeatherCycleId, type WeatherSeasonId } from '@/data/world/weather-tables';
+import { isWeatherTableRouteId, ROUTE_WEATHER_TABLES, type WeatherSeasonId } from '@/data/world/weather-tables';
 import type { MapRouteId } from '@/data/world/map-assets';
-import { getDayCycle } from '@/logic/utils/timeUtils';
+import { getDayCycle, type DayPhase } from '@/logic/utils/timeUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { isWeatherId, requireWeatherId, WEATHER_REGISTRY, type WeatherId } from './weatherRegistry.ts';
 import { translateType, type PokemonType } from '@/data/battle/types';
@@ -35,7 +35,7 @@ export function getRouteWeather(
   mapId: MapRouteId,
   seasonId: WeatherSeasonId,
   epochHour: number,
-  forcedCycle?: WeatherCycleId
+  forcedCycle?: DayPhase
 ): WeatherId {
   if (!isWeatherTableRouteId(mapId)) {
     if (mapId === 'gym' || mapId === 'pvp') {
@@ -46,7 +46,7 @@ export function getRouteWeather(
   const routeTables = ROUTE_WEATHER_TABLES[mapId];
   const seasonTable = routeTables[seasonId];
   
-  const cycle: WeatherCycleId = forcedCycle || getDayCycle(epochHour * ONE_HOUR_MS);
+  const cycle: DayPhase = forcedCycle || getDayCycle(epochHour * ONE_HOUR_MS);
   const table = seasonTable[cycle];
   
   // 2. Generate Deterministic Seed

@@ -2,11 +2,12 @@
 import { ref, computed, watch, onUnmounted, nextTick, onMounted } from 'vue'
 import { gsap } from 'gsap'
 import type { WeatherId } from '@/logic/weather/weatherRegistry'
-import type { WeatherCycleId, WeatherSeasonId } from '@/data/world/weather-tables'
+import type { WeatherSeasonId } from '@/data/world/weather-tables'
+import type { DayPhase } from '@/logic/utils/timeUtils'
 
 interface AtmosphereLayerProps {
   weather?: WeatherId
-  cycle?: WeatherCycleId
+  cycle?: DayPhase
   season?: WeatherSeasonId
   isPerformanceMode?: boolean
   isLocked?: boolean

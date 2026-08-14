@@ -75,3 +75,67 @@ export function handleStone(p: Pokemon, stoneName: string): ItemEffectResult {
     targetId: nextId 
   };
 }
+
+import { applyVitamin, applyFeather, applyEvBerry } from '@/logic/pokemon/evMath';
+import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
+import type { PokemonStatKey } from '@/types/pokemon/pokemon';
+
+const MAX_FRIENDSHIP_VALUE = 255;
+const BERRY_FRIENDSHIP_INCREASE = 10;
+
+export function handleVitamin(p: Pokemon, stat: PokemonStatKey, statNameEs: string): ItemEffectResult {
+  if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
+
+  const res = applyVitamin(p.evs, stat);
+  if (!res.success) {
+    return { success: false, message: 'No tendrá ningún efecto.' };
+  }
+
+  p.evs = res.updatedEvs;
+  recalcPokemonStats(p);
+  return { success: true, message: `aumentó los EVs de ${statNameEs} (+${res.gained})` };
+}
+
+export function handleFeather(p: Pokemon, stat: PokemonStatKey, statNameEs: string): ItemEffectResult {
+  if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
+
+  const res = applyFeather(p.evs, stat);
+  if (!res.success) {
+    return { success: false, message: 'No tendrá ningún efecto.' };
+  }
+
+  p.evs = res.updatedEvs;
+  recalcPokemonStats(p);
+  return { success: true, message: `aumentó los EVs de ${statNameEs} (+${res.gained})` };
+}
+
+export function handleEvBerry(p: Pokemon, stat: PokemonStatKey, statNameEs: string): ItemEffectResult {
+  if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
+
+  const evRes = applyEvBerry(p.evs, stat);
+  let friendshipGained = false;
+
+  const currentFriendship = p.friendship ?? 70;
+  if (currentFriendship < MAX_FRIENDSHIP_VALUE) {
+    p.friendship = Math.min(MAX_FRIENDSHIP_VALUE, currentFriendship + BERRY_FRIENDSHIP_INCREASE);
+    friendshipGained = true;
+  }
+
+  if (!evRes.success && !friendshipGained) {
+    return { success: false, message: 'No tendrá ningún efecto.' };
+  }
+
+  if (evRes.success) {
+    p.evs = evRes.updatedEvs;
+    recalcPokemonStats(p);
+  }
+
+  if (evRes.success && friendshipGained) {
+    return { success: true, message: `se volvió más amigable y sus EVs de ${statNameEs} disminuyeron` };
+  } else if (evRes.success) {
+    return { success: true, message: `sus EVs de ${statNameEs} disminuyeron` };
+  } else {
+    return { success: true, message: 'se volvió más amigable' };
+  }
+}
+

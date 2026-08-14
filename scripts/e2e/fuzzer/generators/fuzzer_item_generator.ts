@@ -1,12 +1,11 @@
 // fallow-ignore-file security-sink
 // scripts/battle-tester/fuzzer-item-generator.ts
-import { Dex } from '@pkmn/sim';
+import { Dex, type GenderName } from '@pkmn/sim';
 import { SHOP_ITEMS } from '../../../../src/data/inventory/items.ts';
 import { getShowdownNickname } from '../../../../src/logic/battle/showdownUidMapper.ts';
 
 import crypto from 'node:crypto';
 
-import type { PersistedPokemonGender } from '../../../../src/logic/auth/saveService.ts';
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';
 import type { ItemId } from '../../../../src/data/inventory/items.ts';
 import type { AbilityId } from '../../../../src/data/battle/abilities.ts';
@@ -179,7 +178,7 @@ function requiresSupportBench(itemIds: readonly ItemId[], triggerItemIds: readon
   return itemIds.some(itemId => triggerItemIds.some(triggerItemId => triggerItemId === itemId));
 }
 
-function createItemlessSupportPokemon(gender: PersistedPokemonGender): FuzzerPokemonSet {
+function createItemlessSupportPokemon(gender: GenderName): FuzzerPokemonSet {
   const uid = crypto.randomUUID();
   return {
     name: getShowdownNickname(uid), species: 'mew', level: 100, gender, item: '', ability: 'noability', nature: 'serious',
@@ -378,7 +377,7 @@ export function generateItemBatches(itemPool: ItemId[], batchSize = 6): ItemTest
         item: itemId,
         ability: getRequiredHolderAbility(itemId),
         nature: 'serious',
-        evs: (MAX_ATTACK_ENEMY_ITEM_IDS as readonly string[]).includes(itemId)
+        evs: (MAX_ATTACK_ENEMY_ITEM_IDS as readonly string[]).includes(itemId) // no-domain
           ? { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
           : { hp: 252, atk: 252, def: 252, spa: 252, spd: 252, spe: 252 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },

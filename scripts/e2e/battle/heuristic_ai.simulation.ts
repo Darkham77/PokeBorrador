@@ -114,7 +114,7 @@ class HeuristicAISimWrapper extends BaseBattleSimulation {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       const store = resolver?.();
       if (!store) return false;
-      const storeObj = store as Record<string, unknown>;
+      const storeObj = store as Record<string, unknown>; // open-record
       const isFainted = (store.enemy?.hp === 0) || (store.player?.hp === 0) || (store.state?.enemy?.hp === 0) || (store.state?.player?.hp === 0);
       return !!(store.state?.over || storeObj.isBattleOver || store.currentFsmState === 'REWARDS_PHASE' || store.currentFsmState === 'EXIT_BATTLE' || store.currentFsmState === 'SEARCH_PHASE' || isFainted);
     });

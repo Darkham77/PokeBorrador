@@ -1,4 +1,5 @@
 import type { Battle, Side, Pokemon, SideID } from '@pkmn/sim';
+import { REPLAY_SEATS } from './showdownBattleRunner.ts';
 import { applyHealCheatToSide, applyPpRefillCheatToSide, syncRequestConditionsWithSimulator } from '../cheats.ts';
 
 export interface LegacyCheatEntry {
@@ -33,12 +34,11 @@ export class BattleCheatManager {
   private readonly applied = new Set<string>(); // runtime-set
 
   constructor(history?: FuzzerCheat[]) {
-    const seats: SideID[] = ['p1', 'p2', 'p3', 'p4'];
     for (const h of history ?? []) {
       const turnNum = typeof h.battleTurn === 'number' ? h.battleTurn : (typeof h.turnCount === 'number' ? h.turnCount : h.turn);
       if (turnNum === undefined) continue;
 
-      for (const sideId of seats) {
+      for (const sideId of REPLAY_SEATS) {
         const ppKey = `${sideId}PpRefill` as keyof HistoryCheatEntry;
         if ((h as HistoryCheatEntry)[ppKey]) {
           const e = this.ppMap.get(turnNum) ?? {};

@@ -32,11 +32,13 @@ export function selectNaturalFinishingMoveIndex(moves: readonly FinishingMoveReq
   return selectedIndex;
 }
 
+import type { SideID } from '@pkmn/sim';
+
 export class BattleAgent extends ShowdownBattleAgent {
   public failedSwitches = new Set<number>();
 
   constructor(
-    sideId: 'p1' | 'p2',
+    sideId: SideID,
     public movesToTest: Set<string> = new Set(),
     public abilityTriggerMoveSlot: number | null = null,
     periodicSwitchEvery: number = 4,

@@ -1,6 +1,8 @@
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { getExpNeededPure } from '../pokemon/statsMath.ts';
+import { applyEvGains, type EvGainResult } from '../pokemon/evMath.ts';
+import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 
 /**
  * battleRewards.js
@@ -73,5 +75,17 @@ export function calculateMoneyGain(enemyPoke: Pokemon, options: RewardOptions = 
   const baseMoney = enemyPoke.level * multiplier * bcMult
   return Math.floor(baseMoney * totalMoneyMult)
 }
+
+export function processEvGain(p: Pokemon, enemyPoke: Pokemon, participantsSet: Set<string> | null): EvGainResult | null {
+  if (!participantsSet?.has(p.uid) && p.heldItem !== 'expshare') return null;
+
+  const evYield = pokemonDataProvider.getEvYield(enemyPoke.id || enemyPoke.species);
+  if (!evYield || Object.keys(evYield).length === 0) return null;
+
+  const result = applyEvGains(p.evs, evYield, p.heldItem);
+  p.evs = result.updatedEvs;
+  return result;
+}
+
 
 

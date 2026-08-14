@@ -7,7 +7,7 @@
 import { toID } from '@pkmn/sim';
 import type { BattleContext } from '@/types/battle/battleContext';
 import { BATTLE_CONDITION_KEYS, type BattleState, type BattleStages, type BattleTimedCondition } from '@/types/battle/battle';
-import type { Pokemon, PokemonMove } from '@/types/pokemon/pokemon';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import { requireItemId } from '@/data/inventory/items';
 import { requireAbilityId } from '@/data/battle/abilities';
 import type { HeuristicBattleSnapshot, HeuristicPokemonState, HeuristicSideState, HeuristicFieldState, HeuristicVolatileKey, HeuristicPokemonMove } from './types.ts';
@@ -83,7 +83,7 @@ function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): H
   // heldItem or item (fallback for compatibility across test fixtures)
   const rawItem = p.heldItem || p.item;
   const heldItem = rawItem ? requireItemId(rawItem) : ''; // domain-ok
-  const validMoves = (p.moves || []).filter((m): m is PokemonMove => Boolean(m));
+  const validMoves = (p.moves || []).filter((m): m is Move => Boolean(m));
   const moveInfos: HeuristicPokemonMove[] = validMoves.map(m => {
     const id = toID(m.id);
     return {

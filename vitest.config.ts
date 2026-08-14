@@ -14,12 +14,8 @@ import { defineConfig } from 'vitest/config'
  */
 export default defineConfig({
   test: {
-    pool: 'forks',
-    poolOptions: {
-      forks: {
-        execArgv: ['--no-experimental-webstorage']
-      }
-    },
+    pool: 'threads',
+    fileParallelism: true,
     teardownTimeout: 2000,
     coverage: {
       provider: 'v8',

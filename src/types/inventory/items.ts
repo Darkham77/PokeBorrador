@@ -39,9 +39,8 @@ export interface Item {
   globalItem?: boolean;
   nonCombat?: boolean;
   craftingTier?: number;
+  isCanon?: boolean;
 }
-
-export type ShopItem = Item; // Alias for now as they share same structure in data/items.ts
 
 export interface ItemEffectResult {
   success: boolean;

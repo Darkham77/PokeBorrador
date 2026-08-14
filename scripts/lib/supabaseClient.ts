@@ -65,7 +65,7 @@ export async function readAndParseEnv(): Promise<Record<string, ServerConfig>> {
   const lines = envContent.split('\n');
   const serverConfigs: Record<string, ServerConfig> = {};
 
-  const KNOWN_SUFFIXES = [
+  const KNOWN_SUFFIXES = [ // no-domain
     'SUPABASE_PUBLIC_URL', 'API_EXTERNAL_URL', 'SUPABASE_ANON_KEY',
     'SERVICE_ROLE_KEY', 'POSTGRES_PASSWORD', 'SECRET_KEY_BASE',
     'DASHBOARD_USERNAME', 'DASHBOARD_PASSWORD', 'KONG_HTTPS_PORT',

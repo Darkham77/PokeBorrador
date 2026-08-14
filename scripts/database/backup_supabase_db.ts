@@ -57,7 +57,7 @@ export async function backupSupabaseDb() {
     process.exit(1)
   }
 
-  const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[])))
+  const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[]))) // no-domain
   const targetProfiles = parseServerArguments(process.argv.slice(2), baseProfiles, allAvailable)
 
   // Asegurar que el directorio de respaldos exista
@@ -126,7 +126,7 @@ export async function backupSupabaseDb() {
         const tableName = t.table_name;
         try {
           const rows = await sql.unsafe(`SELECT * FROM public."${tableName}"`);
-          backupData[tableName] = rows as Record<string, unknown>[];
+          backupData[tableName] = rows as Record<string, unknown>[]; // open-record
           totalRows += rows.length;
           console.log(styleText('gray', `   ✔️ ${tableName}: ${rows.length} filas respaldadas.`));
         } catch (tErr: unknown) {
@@ -144,7 +144,7 @@ export async function backupSupabaseDb() {
           SELECT *
           FROM auth.users;
         `;
-        authUsers = usersRes as Record<string, unknown>[];
+        authUsers = usersRes as Record<string, unknown>[]; // open-record
         console.log(styleText('gray', `   ✔️ auth.users: ${authUsers.length} usuarios respaldados.`));
       } catch (authErr: unknown) {
         console.error(styleText('yellow', `   ⚠️ Advertencia: No se pudo respaldar auth.users: ${(authErr as Error).message}`));
@@ -156,7 +156,7 @@ export async function backupSupabaseDb() {
           SELECT *
           FROM auth.identities;
         `;
-        authIdentities = idRes as Record<string, unknown>[];
+        authIdentities = idRes as Record<string, unknown>[]; // open-record
         console.log(styleText('gray', `   ✔️ auth.identities: ${authIdentities.length} identidades respaldadas.`));
       } catch (authErr: unknown) {
         console.error(styleText('yellow', `   ⚠️ Advertencia: No se pudo respaldar auth.identities: ${(authErr as Error).message}`));

@@ -114,7 +114,7 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
 
     const moveIdsToCheck = Object.keys(MOVE_TRANSLATIONS_ES);
     const unregisteredCategories = await page.evaluate(async (ids) => {
-      const missing: string[] = [];
+      const missing: string[] = []; // no-domain
       const { pokemonDataProvider } = await import('../../../src/logic/providers/pokemonDataProvider');
       
       ids.forEach((id) => {

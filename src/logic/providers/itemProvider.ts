@@ -9,14 +9,6 @@ import type { Item } from '@/types/inventory/items';
  * Migrado de public/js/11_battle_ui.js
  */
 
-export const ITEM_EFFECTS = itemEffects;
-
-/**
- * Intenta usar un objeto sobre un Pokémon.
- * @returns {any|null} Resultado del uso o null si no tuvo efecto.
- */
-
-
 /**
  * Intenta usar un objeto sobre un Pokémon.
  * @returns {any|null} Resultado del uso o null si no tuvo efecto.
@@ -38,7 +30,7 @@ export function useItemOnPokemon(itemName: ItemId | string, pokemon: Pokemon): {
     throw new Error(`[ItemProvider] Intento de usar un objeto inexistente: ${itemName}`);
   }
 
-  const effectFn = ITEM_EFFECTS[itemId];
+  const effectFn = itemEffects[itemId];
   if (!effectFn) return null;
   
   const result = effectFn(pokemon);

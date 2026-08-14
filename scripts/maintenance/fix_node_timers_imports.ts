@@ -14,10 +14,10 @@
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { join, extname } from 'node:path';
 
-const IGNORE_DIRS = new Set(['node_modules', 'dist', '.git', 'backup_legacy_code', 'public', 'scripts']);
+const IGNORE_DIRS = new Set(['node_modules', 'dist', '.git', 'backup_legacy_code', 'public', 'scripts']); // runtime-set
 
 function walkDir(dir: string): string[] {
-  const results: string[] = [];
+  const results: string[] = []; // no-domain
   for (const entry of readdirSync(dir)) {
     if (IGNORE_DIRS.has(entry)) continue;
     const full = join(dir, entry);
@@ -33,7 +33,7 @@ const testsDir = join(root, 'tests');
 
 let fixed = 0; // singleton-ok
 
-for (const dir of [srcDir, testsDir]) {
+for (const dir of [srcDir, testsDir]) { // import-ok
   for (const file of walkDir(dir)) {
     const content = readFileSync(file, 'utf-8');
     // Remove the line with the bad import (including its newline)

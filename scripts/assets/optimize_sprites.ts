@@ -273,7 +273,7 @@ if (!isMainThread) {
     const frontAnalysis = await analyzeVariantImage(frontPath, pokemonId, suffix);
 
     // 2. Procesar variantes
-    const folders = ['Front', 'Back', 'Front shiny', 'Back shiny'];
+    const folders = ['Front', 'Back', 'Front shiny', 'Back shiny'] as const; // no-domain
 
     const processVariant = async (folder: string): Promise<void> => {
       const varSourcePath = path.join(RAW_ASSETS_DIR, 'public', 'assets', 'sprites', 'pokemon', 'animated', folder, fileName);
@@ -495,6 +495,8 @@ if (isMainThread) {
       options: {
         all: { type: 'boolean', default: false },
         id: { type: 'string' },
+        file: { type: 'string' },
+        dir: { type: 'string' },
         range: { type: 'string' },
         // NOTE: always true — leaving bare files (e.g. 14.png) without i/v suffix
         // corrupts the convert_assets pipeline which would generate 14.webp instead of 14i.webp
@@ -503,7 +505,8 @@ if (isMainThread) {
     });
 
     try {
-      const files = await fs.readdir(FRONT_DIR);
+      const targetDir = values.dir ? safeResolve(process.cwd(), values.dir) : FRONT_DIR;
+      const files = await fs.readdir(targetDir);
       const targetFiles = files.filter(file => {
         if (!file.endsWith('.png')) return false;
         const name = path.parse(file).name;
@@ -515,7 +518,12 @@ if (isMainThread) {
       });
 
       let filteredFiles = targetFiles;
-      if (values.id) {
+      if (values.file) {
+        filteredFiles = targetFiles.filter(file => {
+          return file === values.file || path.parse(file).name === path.parse(values.file!).name;
+        });
+        console.log(`🎯 Filtrado por Archivo "${values.file}": ${filteredFiles.length} archivo(s) encontrado(s).`);
+      } else if (values.id) {
         filteredFiles = targetFiles.filter(file => {
           const name = path.parse(file).name;
           const match = name.match(/^(\d+)(.*)$/);
@@ -544,8 +552,8 @@ if (isMainThread) {
         process.exit(0);
       }
 
-      if (!values.all && !values.id && !values.range) {
-        console.log('Debes ejecutar con --all para procesamiento masivo, --id <id> para uno específico, o --range <inicio>-<fin> para un rango.');
+      if (!values.all && !values.id && !values.range && !values.file) {
+        console.log('Debes ejecutar con --all para procesamiento masivo, --file <nombre.png> para uno específico, --id <id>, o --range <inicio>-<fin>.');
         process.exit(0);
       }
 

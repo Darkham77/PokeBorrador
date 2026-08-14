@@ -9,11 +9,9 @@ import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 import TradeAssetsGrid from './TradeAssetsGrid.vue';
 import type { TradeOffer, TradeCardMode } from '@/types/system/stores';
 
-type CardMode = TradeCardMode;
-
 const props = defineProps<{
   trade: TradeOffer;
-  mode: CardMode;
+  mode: TradeCardMode;
   canFulfill?: { can: boolean; reason?: string };
 }>();
 

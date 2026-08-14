@@ -10,7 +10,7 @@ export interface GenAuditResult {
 }
 
 export function auditActiveGenSSoT(targetDir: string): GenAuditResult {
-  const hardcodedGenFiles: string[] = [];
+  const hardcodedGenFiles: string[] = []; // no-domain
   if (!existsSync(targetDir)) return { hardcodedGenFiles };
 
   const files = getFilesRecursively(targetDir).filter(f => f.endsWith('.ts') && !f.includes('.spec.') && !f.includes('.test.'));

@@ -10,7 +10,7 @@ import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
 import ShopSearchControls from '@/components/common/ShopSearchControls.vue'
 import WarShopItemCard from './WarShopItemCard.vue'
 
-import type { ShopItem } from '@/types/inventory/items'
+import type { Item } from '@/types/inventory/items'
 
 const uiStore = useUIStore()
 const warStore = useWarStore()
@@ -34,11 +34,11 @@ const search = ref('')
 const sortKey = ref<'name' | 'price' | 'rarity'>('name')
 const sortOrder = ref<'asc' | 'desc'>('asc')
 
-const filteredItems = computed<ShopItem[]>(() => {
+const filteredItems = computed<Item[]>(() => {
   const coins = warStore.warCoins || 0
   const trainerLevel = gameStore.state.trainerLevel || 1
 
-  const items = (SHOP_ITEMS as readonly ShopItem[]).filter(item => { // domain-ok
+  const items = (SHOP_ITEMS as readonly Item[]).filter(item => { // domain-ok
     if (!item.showInWarShop) return false
     const resolvedCat = item.cat || 'otros'
     if (activeTab.value !== 'todos' && resolvedCat !== activeTab.value) return false
@@ -81,7 +81,7 @@ const filteredItems = computed<ShopItem[]>(() => {
 
 const availableCategories = computed<string[]>(() => {
   const cats = new Set<string>()
-  for (const item of (SHOP_ITEMS as readonly ShopItem[])) { // domain-ok
+  for (const item of (SHOP_ITEMS as readonly Item[])) { // domain-ok
     if (!item.showInWarShop) continue
     cats.add(item.cat || 'otros')
   }

@@ -3,8 +3,6 @@ import type { SQLiteDatabase } from '../sqliteEngine.ts';
 import type { DBResponse } from '@/types/system/database';
 import type { MarketListingType, MarketAssetType } from '@/logic/economy/market';
 
-export type MarketClaimAssetType = MarketAssetType;
-
 interface OfflineSaveData {
   box?: Record<string, unknown>[];
   team?: Record<string, unknown>[];
@@ -14,7 +12,7 @@ interface OfflineSaveData {
 }
 
 interface ClaimAssetPayload {
-  type: MarketClaimAssetType;
+  type: MarketAssetType;
   data: Record<string, unknown> | number | string;
 }
 

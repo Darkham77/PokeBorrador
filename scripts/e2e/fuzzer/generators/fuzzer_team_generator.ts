@@ -1,6 +1,4 @@
-// fallow-ignore-file security-sink
-import { Dex, toID } from '@pkmn/sim';
-import type { PokemonSet, ID } from '@pkmn/sim';
+import { Dex, toID, type PokemonSet, type ID, type GenderName } from '@pkmn/sim';
 import crypto from 'node:crypto';
 import { EXCLUDED_FROM_SINGLES_REPORT } from '../scenarios/fuzzer_excluded_abilities.ts';
 import { ABILITY_SCENARIOS } from '../scenarios/fuzzer_ability_scenarios.ts';
@@ -20,7 +18,6 @@ export function generateBatchHash(batch: { playerTeam: unknown[]; enemyTeam: unk
     .substring(0, 12);
 }
 
-import type { PersistedPokemonGender } from '../../../../src/logic/auth/saveService.ts';
 import type { PokemonSpeciesId } from '../../../../src/data/pokemon/pokedex.ts';
 import type { ItemId } from '../../../../src/data/inventory/items.ts';
 import type { AbilityId } from '../../../../src/data/battle/abilities.ts';
@@ -32,7 +29,7 @@ import type { CalculatedStats } from '../../../../src/logic/pokemon/statsMath.ts
 
 export interface FuzzerPokemonSet extends Omit<PokemonSet, 'gender' | 'species' | 'item' | 'ability' | 'nature' | 'moves'> {
   species: PokemonSpeciesId;
-  gender: PersistedPokemonGender;
+  gender: GenderName;
   item: ItemId;
   ability: AbilityId;
   nature: NatureId;
@@ -282,9 +279,9 @@ export const ENEMY_TRIGGER_MOVES = [
 export function getTriggerSlot(abilityId: string): number | null {
   const trigger = ABILITY_TRIGGER_MAP[abilityId];
   if (!trigger) return null;
-  const move = trigger.enemyMove.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const move = trigger.enemyMove.toLowerCase().replace(/[^a-z0-9]/g, ''); // string-ok
   const idx = ENEMY_TRIGGER_MOVES.findIndex(
-    m => m.toLowerCase().replace(/[^a-z0-9]/g, '') === move
+    m => m.toLowerCase().replace(/[^a-z0-9]/g, '') === move // string-ok
   );
   // Si el trigger move es uno de los 4 universales, usar ese slot.
   // Si es un movimiento especial (p.ej. Charm, Earthquake, Whirlwind),
@@ -326,7 +323,7 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
     for (let p = 0; p < batchSize; p++) {
       if (moveIdx >= movePool.length && abilityIdx >= abilityPool.length) break;
 
-      const pMoves: string[] = [];
+      const pMoves: string[] = []; // no-domain
       for (let m = 0; m < 4; m++) {
         if (moveIdx < movePool.length) {
           const moveName = movePool[moveIdx]!;

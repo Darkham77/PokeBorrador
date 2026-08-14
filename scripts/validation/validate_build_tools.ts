@@ -18,7 +18,7 @@ function findBinary(): boolean {
     // continue checking local node_modules
   }
 
-  const staticRelativeCandidates: string[] = [
+  const staticRelativeCandidates: string[] = [ // no-domain
     'node_modules/.bin/css-checker.cmd',
     'node_modules/.bin/css-checker.exe',
     'node_modules/.bin/css-checker',

@@ -32,7 +32,7 @@ function seedMockListings(dbPath: string, count: number) {
       VALUES (?, ?, ?, ?, ?, 'active', strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
     `);
 
-    const species = ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'ekans', 'sandshrew'];
+    const species = ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'ekans', 'sandshrew']; // no-domain
     const speciesTypes: Record<string, { type: string, type2?: string }> = {
       caterpie: { type: 'bug' },
       weedle: { type: 'bug', type2: 'poison' },
@@ -98,7 +98,7 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
 
         const team: typeof game.state.team = [];
         const box: typeof game.state.box = [];
-        const species = ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'ekans', 'sandshrew'];
+        const species = ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'ekans', 'sandshrew']; // no-domain
         for (let k = 0; k < pokemonCount; k++) {
           const sp = species[k % species.length]!;
           const pkmn = pokemonDebugService.generate({ id: sp, level: setupLevel });

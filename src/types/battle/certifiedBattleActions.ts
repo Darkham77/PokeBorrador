@@ -6,13 +6,11 @@ export type CertifiedBattleTeamSlot = (typeof CERTIFIED_BATTLE_TEAM_SLOTS)[numbe
 export const CERTIFIED_BATTLE_GAME_ACTION_KINDS = ['bag-item'] as const;
 export type CertifiedBattleGameActionKind = (typeof CERTIFIED_BATTLE_GAME_ACTION_KINDS)[number];
 
-export interface CertifiedBagItemGameAction {
+export interface CertifiedBattleGameAction {
   readonly kind: 'bag-item';
   readonly itemId: ItemId;
   readonly targetSlot: CertifiedBattleTeamSlot;
 }
-
-export type CertifiedBattleGameAction = CertifiedBagItemGameAction;
 
 export function requireCertifiedBattleTeamSlot(value: number): CertifiedBattleTeamSlot {
   const slot = CERTIFIED_BATTLE_TEAM_SLOTS.find((candidate) => candidate === value);

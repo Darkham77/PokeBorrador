@@ -17,10 +17,10 @@
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { join, extname } from 'node:path';
 
-const IGNORE_DIRS = new Set(['node_modules', 'dist', '.git', 'backup_legacy_code', 'public', 'scripts']);
+const IGNORE_DIRS = new Set(['node_modules', 'dist', '.git', 'backup_legacy_code', 'public', 'scripts']); // runtime-set
 
 function walkDir(dir: string): string[] {
-  const results: string[] = [];
+  const results: string[] = []; // no-domain
   for (const entry of readdirSync(dir)) {
     if (IGNORE_DIRS.has(entry)) continue;
     const full = join(dir, entry);

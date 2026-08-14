@@ -2,7 +2,7 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getSpeciesHistory } from '@/logic/pokemon/evolutionEngine';
 export { getPokemonTier } from '@/logic/pokemon/tierEngine';
-import type { Pokemon, PokemonMove, PokemonIVs } from '@/types/pokemon/pokemon';
+import type { Pokemon, Move, PokemonIVs } from '@/types/pokemon/pokemon';
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
 import { MOVE_TRANSLATIONS_ES, type MoveCategory } from '@/data/battle/moves';
@@ -93,7 +93,7 @@ import type { LearnsetMove, MoveBaseData } from '@/types/system/database';
 /**
  * Get moves a pokemon knows at a given level (up to 4, most recent)
  */
-export function getMovesAtLevel(id: string, level: number, bypassWhitelist = false): PokemonMove[] {
+export function getMovesAtLevel(id: string, level: number, bypassWhitelist = false): Move[] {
   const history = getSpeciesHistory(id);
   const allPotentialMoves: LearnsetMove[] = [];
   const seenNames = new Set<string>();

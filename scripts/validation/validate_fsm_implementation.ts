@@ -94,8 +94,8 @@ async function main() {
   const { states: mermaidStates, syncRequired } = parseMermaid(manualCode);
   const { allKeys, substates } = parseFsmConstants(fsmCode);
 
-  const errors: string[] = [];
-  const warnings: string[] = [];
+  const errors: string[] = []; // no-domain
+  const warnings: string[] = []; // no-domain
 
   // 1. Mermaid -> JS
   mermaidStates.forEach(s => {

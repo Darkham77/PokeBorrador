@@ -5,13 +5,15 @@ import { NATURES, toNatureId } from '@/data/battle/natures';
 import { GAME_RATIOS, MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { DEFAULT_FALLBACK_BASE_STAT, DEFAULT_FRIENDSHIP_VALUE } from '@/logic/constants/gameplay';
 import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils';
+import { getActivePinia } from 'pinia';
 import { useEventStore } from '@/stores/events';
 import { usePlayerClassStore } from '@/stores/player/playerClass';
 import { useWarStore } from '@/stores/war';
-import type { ObtainedMethod, Pokemon, PokemonMove, PokemonIVs, PokemonGender } from '@/types/pokemon/pokemon';
+import type { ObtainedMethod, Pokemon, Move, PokemonIVs, PokemonGender } from '@/types/pokemon/pokemon';
 import { isFossilPokemonSpeciesId, isLegendaryPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { getExpNeededPure, calcStatsPure } from './statsMath.ts';
 import { generateIvPure } from './generationMath.ts';
+import { createDefaultEvs } from './evMath.ts';
 import { getItemById } from '@/data/inventory/items';
 import { Dex, toID } from '@pkmn/sim';
 import { requireAbilityId, type AbilityId } from '@/data/battle/abilities';
@@ -364,9 +366,10 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
   }
 
   // 1. IV Floor from Class (Cazabichos)
-  const classStore = usePlayerClassStore();
+  const piniaActive = getActivePinia();
+  const classStore = piniaActive ? usePlayerClassStore() : null;
   let _ivFloor = options.ivFloor || 0;
-  if (classStore.playerClass === 'cazabichos') {
+  if (classStore && classStore.playerClass === 'cazabichos') {
     const classData = classStore.classData as { captureStreak?: number };
     _ivFloor = Math.max(_ivFloor, classData.captureStreak || 0);
   }
@@ -375,9 +378,9 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
     return generateIvPure(Math.random, floor, forceReRoll, isGuardian);
   }
   
-  const warStore = useWarStore();
+  const warStore = piniaActive ? useWarStore() : null;
   const currentMapId = options.mapId;
-  const isGuardianPotential = (currentMapId && warStore.checkGuardian && warStore.checkGuardian(currentMapId, []) !== null);
+  const isGuardianPotential = (currentMapId && warStore?.checkGuardian && warStore.checkGuardian(currentMapId, []) !== null);
 
   const ivs: PokemonIVs = { 
     hp: _randIv(_ivFloor, false, !!isGuardianPotential), 
@@ -396,7 +399,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
   const gender = options.gender !== undefined ? options.gender : assignGender(id);
 
   // Shiny Calculation
-  const eventStore = useEventStore();
+  const eventStore = piniaActive ? useEventStore() : null;
   let isShiny = options.isShiny;
   if (isShiny === undefined) {
     const isDebugShiny = typeof window !== 'undefined' && ((window.__VITE_DEBUG__ as Record<string, unknown> | undefined)?.forceShiny100 as boolean | undefined); // open-record
@@ -408,7 +411,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
       let totalBonusMult = 0;
       
       // Event Bonus
-      const speciesBonuses = eventStore.getSpeciesBonuses(id);
+      const speciesBonuses = eventStore?.getSpeciesBonuses(id);
       if (speciesBonuses && speciesBonuses.shiny) {
         totalBonusMult += (speciesBonuses.shiny - 1);
       }
@@ -419,7 +422,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
       }
 
       const finalMult = Math.max(1, 1 + totalBonusMult);
-      const finalShinyRate = Math.max(1, Math.floor(baseShinyRate / (finalMult * (eventStore.globalMultipliers?.shiny || 1))));
+      const finalShinyRate = Math.max(1, Math.floor(baseShinyRate / (finalMult * (eventStore?.globalMultipliers?.shiny || 1))));
       
       isShiny = Math.random() < (1 / finalShinyRate);
     }
@@ -459,13 +462,14 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
     catchRate: base.catchRate,
     level, exp: 0, expNeeded: getExpNeeded(level),
     ivs, nature, ability, gender, isShiny,
-    moves: getMovesAtLevel(id, level, bypass) as PokemonMove[],
+    moves: getMovesAtLevel(id, level, bypass) as Move[],
     status: '', sleepTurns: 0, friendship: DEFAULT_FRIENDSHIP_VALUE, vigor, maxVigor,
     heldItem,
     nickname: null,
     tags: ['ball:pokeball'],
     obtainedAt: Temporal.Now.instant().epochMilliseconds,
     obtainedMethod: options.obtainedMethod ?? 'wild',
+    evs: createDefaultEvs(),
     hp: 0, maxHp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0
   };
 
@@ -475,7 +479,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
   return p;
 }
 
-export function levelUpPokemon(p: Pokemon): PokemonMove[] | null {
+export function levelUpPokemon(p: Pokemon): Move[] | null {
   if (p.level >= MAX_POKEMON_LEVEL) return [];
   // Everstone block
   if (p.heldItem === 'everstone') return null;
@@ -495,7 +499,7 @@ export function levelUpPokemon(p: Pokemon): PokemonMove[] | null {
 
   // Learn moves
   const base = pokemonDataProvider.getPokemonData(p.id);
-  const pendingMoves: PokemonMove[] = [];
+  const pendingMoves: Move[] = [];
   if (base && base.learnset) {
     (base.learnset).filter(m => m.lv === p.level).forEach(m => {
       if (!m.id) throw new Error(`[levelUpPokemon] El movimiento en el learnset no tiene un ID válido.`);
@@ -503,7 +507,7 @@ export function levelUpPokemon(p: Pokemon): PokemonMove[] | null {
       if (!p.moves.find(em => em && em.id === m.id)) {
         const moveData = pokemonDataProvider.getMoveData(m.id);
         if (!moveData) throw new Error(`[levelUpPokemon] No se encontró información para el movimiento: ${m.id}`);
-        const moveObj: PokemonMove = { 
+        const moveObj: Move = { 
           id: m.id, 
           name: moveData.name, 
           pp: m.pp || moveData.pp, 

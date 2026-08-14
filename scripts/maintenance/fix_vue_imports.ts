@@ -3,8 +3,8 @@ import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { join, extname } from 'node:path';
 
 function walkDir(dir: string): string[] {
-  const results: string[] = [];
-  const IGNORE = new Set(['node_modules', 'dist', '.git', 'backup_legacy_code', 'public']);
+  const results: string[] = []; // no-domain
+  const IGNORE = new Set(['node_modules', 'dist', '.git', 'backup_legacy_code', 'public']); // runtime-set
   for (const entry of readdirSync(dir)) {
     if (IGNORE.has(entry)) continue;
     const full = join(dir, entry);

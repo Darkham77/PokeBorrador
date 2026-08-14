@@ -83,7 +83,7 @@ export async function generateMigrations() {
     const checkMatch = content.match(/--\s*check:\s*({.+})/);
     if (checkMatch && checkMatch[1]) {
       try {
-        check = JSON.parse(checkMatch[1]) as Record<string, unknown>;
+        check = JSON.parse(checkMatch[1]) as Record<string, unknown>; // open-record
       } catch (e) {
         console.error(`[Migrations Generator] Error parsing check metadata in ${filename}:`, e);
       }

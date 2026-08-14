@@ -27,6 +27,8 @@ import {
 import { DEFAULT_MAX_VIGOR } from '@/logic/pokemon/pokemonUtils';
 
 import { canHeal, canClearStatus, canRevive, canFullRestore, canRestorePP } from './itemMath.ts';
+import { handleVitamin, handleFeather, handleEvBerry } from './itemEffectHandlers.ts';
+import { EV_BERRIES, VITAMINS, FEATHERS, canUseVitamin, canUseEvBerry } from '@/logic/pokemon/evMath.ts';
 
 export const isValidTarget = (itemId: ItemId | string, pokemon: Pokemon): boolean => {
   if (!pokemon) return false;
@@ -90,12 +92,34 @@ export const isValidTarget = (itemId: ItemId | string, pokemon: Pokemon): boolea
     return Number(pokemon.vigor || 0) < DEFAULT_MAX_VIGOR;
   }
 
-  // 8. Objetos Diferidos (Menús / Selección)
+  // 8. Bayas de EVs
+  if (resolvedId in EV_BERRIES) {
+    const statKey = EV_BERRIES[resolvedId];
+    if (statKey) {
+      return canUseEvBerry(pokemon.evs, statKey, pokemon.friendship);
+    }
+  }
+
+  // 9. Vitaminas y Plumas
+  if (resolvedId in VITAMINS) {
+    const statKey = VITAMINS[resolvedId];
+    if (statKey) {
+      return canUseVitamin(pokemon.evs, statKey);
+    }
+  }
+  if (resolvedId in FEATHERS) {
+    const statKey = FEATHERS[resolvedId];
+    if (statKey) {
+      return canUseVitamin(pokemon.evs, statKey);
+    }
+  }
+
+  // 10. Objetos Diferidos (Menús / Selección)
   if (['moverelearner', 'naturepatch', 'abilitypill', 'ppup', 'ppmax'].includes(resolvedId)) {
     return true;
   }
 
-  // 9. TMs / MTs dinámicas
+  // 11. TMs / MTs dinámicas
   if (isTM) {
     const dynamicRes = getDynamicItemEffect(resolvedId, pokemon);
     return !!(dynamicRes && dynamicRes.success);
@@ -157,14 +181,14 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = { /
     return { success: true, message: `subió al nivel ${p.level + SINGLE_LEVEL_GAIN}`, resultType: 'levelup' };
   }),
   'vigorcandy': pokeEffect((p) => {
-    const maxVigor = DEFAULT_MAX_VIGOR;
+    const maxVigor = p.maxVigor || DEFAULT_MAX_VIGOR;
     const currentVigor = Number(p.vigor || MIN_VIGOR_VAL);
     if (currentVigor >= maxVigor) return { success: false, message: 'Vigor al máximo.' };
     p.vigor = currentVigor + SINGLE_VIGOR_RESTORE;
     return { success: true, message: `recuperó ${SINGLE_VIGOR_RESTORE} de vigor (${p.vigor}/${maxVigor})` };
   }),
   'vigorrestorer': pokeEffect((p) => {
-    const maxVigor = DEFAULT_MAX_VIGOR;
+    const maxVigor = p.maxVigor || DEFAULT_MAX_VIGOR;
     const currentVigor = Number(p.vigor || MIN_VIGOR_VAL);
     if (currentVigor >= maxVigor) return { success: false, message: 'Vigor al máximo.' };
     p.vigor = maxVigor;
@@ -193,6 +217,30 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = { /
   'ppmax': pokeEffect((_p) => {
     return { success: true, message: 'selecciona un movimiento para maximizar sus PP', deferred: true, resultType: 'ppmax' };
   }),
+
+  // --- EV Berries ---
+  'pomegberry': pokeEffect((p) => handleEvBerry(p, 'hp', 'HP')),
+  'kelpsyberry': pokeEffect((p) => handleEvBerry(p, 'atk', 'Ataque')),
+  'qualotberry': pokeEffect((p) => handleEvBerry(p, 'def', 'Defensa')),
+  'hondewberry': pokeEffect((p) => handleEvBerry(p, 'spa', 'Ataque Especial')),
+  'grepaberry': pokeEffect((p) => handleEvBerry(p, 'spd', 'Defensa Especial')),
+  'tamatoberry': pokeEffect((p) => handleEvBerry(p, 'spe', 'Velocidad')),
+
+  // --- Vitamins ---
+  'hpup': pokeEffect((p) => handleVitamin(p, 'hp', 'HP')),
+  'protein': pokeEffect((p) => handleVitamin(p, 'atk', 'Ataque')),
+  'iron': pokeEffect((p) => handleVitamin(p, 'def', 'Defensa')),
+  'calcium': pokeEffect((p) => handleVitamin(p, 'spa', 'Ataque Especial')),
+  'zinc': pokeEffect((p) => handleVitamin(p, 'spd', 'Defensa Especial')),
+  'carbos': pokeEffect((p) => handleVitamin(p, 'spe', 'Velocidad')),
+
+  // --- Feathers ---
+  'healthfeather': pokeEffect((p) => handleFeather(p, 'hp', 'HP')),
+  'musclefeather': pokeEffect((p) => handleFeather(p, 'atk', 'Ataque')),
+  'resistfeather': pokeEffect((p) => handleFeather(p, 'def', 'Defensa')),
+  'geniusfeather': pokeEffect((p) => handleFeather(p, 'spa', 'Ataque Especial')),
+  'cleverfeather': pokeEffect((p) => handleFeather(p, 'spd', 'Defensa Especial')),
+  'swiftfeather': pokeEffect((p) => handleFeather(p, 'spe', 'Velocidad')),
 
   // --- Buffs Globales ---
   'fishingrod': stateEffect((_state) => { useBuffsStore().addBuff('fishing-rod', BUFF_DURATION_20_MIN_SEC, 'standard'); return { success: true, message: `activó una Caña de pescar (20 min)` }; }), // magic-ok

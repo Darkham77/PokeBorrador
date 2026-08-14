@@ -33,8 +33,8 @@ async function main() {
 
   await validator.checkFiles();
 
-  const errors: string[] = [];
-  const warnings: string[] = [];
+  const errors: string[] = []; // no-domain
+  const warnings: string[] = []; // no-domain
 
   // Get all unique species from Gen 9 to cover all 9 generations
   const allSpecies = Dex.forGen(9).species.all();
@@ -90,7 +90,7 @@ async function main() {
       animatedBackShiny: path.join(process.cwd(), `public/assets/sprites/pokemon/animated/Back shiny/${animFilename}`)
     };
 
-    const missingDetails: string[] = [];
+    const missingDetails: string[] = []; // no-domain
 
     // Verify static front/frontShiny
     for (const [key, filePath] of Object.entries(staticPaths)) {

@@ -1,5 +1,7 @@
-import { SPECIES_METADATA, type SpeciesMetadataId } from './speciesMetadata.ts';
+import { SPECIES_METADATA, type PokemonSpeciesId } from './speciesMetadata.ts';
 import type { PokemonMoveId } from '@/types/pokemon/pokemon';
+
+export type { PokemonSpeciesId };
 
 export const PDEX_ORDER = [
   'bulbasaur','ivysaur','venusaur',
@@ -407,7 +409,6 @@ const FOSSIL_POKEMON = [
 ] as const;
 export type FossilPokemonSpeciesId = (typeof FOSSIL_POKEMON)[number];
 
-export type PokemonSpeciesId = SpeciesMetadataId;
 export type TmId = (typeof GAME_TMS)[number]['id'];
 export type TmCompatibleSpeciesId = keyof typeof TM_COMPAT;
 

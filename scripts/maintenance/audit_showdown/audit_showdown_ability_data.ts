@@ -10,7 +10,7 @@ export interface AbilityAuditResult {
  * y verifica que tengan presencia en los adapters y bridges de batalla.
  */
 export function auditShowdownAbilityData(abilitiesPath: string, battleLogicDir: string): AbilityAuditResult {
-  const unhandledAbilities: string[] = [];
+  const unhandledAbilities: string[] = []; // no-domain
   if (!existsSync(abilitiesPath) || !existsSync(battleLogicDir)) {
     return { unhandledAbilities };
   }

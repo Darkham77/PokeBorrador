@@ -8,19 +8,20 @@
  */
 import { ref, computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
-import { isWeatherTableRouteId, ROUTE_WEATHER_TABLES, WEATHER_CYCLE_IDS, WEATHER_SEASON_IDS, type WeatherCycleId, type WeatherSeasonId, type WeatherTableRouteId } from '@/data/world/weather-tables'
+import { isWeatherTableRouteId, ROUTE_WEATHER_TABLES, WEATHER_CYCLE_IDS, WEATHER_SEASON_IDS, type WeatherSeasonId, type WeatherTableRouteId } from '@/data/world/weather-tables'
 import { FIRE_RED_MAPS } from '@/data/world/maps'
 import { getMechanicalWeather, requireWeatherId, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY, type WeatherId } from '@/logic/weather/weatherRegistry'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { MapRouteId } from '@/data/world/map-assets'
 import type { PokemonType } from '@/data/battle/types'
+import type { DayPhase } from '@/logic/utils/timeUtils'
 
 const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const cycleLabels: Record<WeatherCycleId, string> = {
+const cycleLabels: Record<DayPhase, string> = {
   morning: '🌅 Amanecer',
   day: '☀️ Día',
   dusk: '🌇 Ocaso',
@@ -63,7 +64,7 @@ interface PrecomputedRouteData {
     seasonId: WeatherSeasonId
     label: string
     cycles: {
-      cycleId: WeatherCycleId
+      cycleId: DayPhase
       label: string
       probs: {
         weather: WeatherId

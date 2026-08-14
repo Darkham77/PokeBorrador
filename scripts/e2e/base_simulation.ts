@@ -15,7 +15,7 @@ export abstract class BaseE2ESimulation {
   constructor(page: Page, username: string, logBuffer?: string[], sqliteKey?: string) {
     this.page = page;
     this.username = username;
-    this.sqliteKey = sqliteKey || `sim_db_${username.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`;
+    this.sqliteKey = sqliteKey || `sim_db_${username.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`; // string-ok
     this.logBuffer = logBuffer || [];
   }
 

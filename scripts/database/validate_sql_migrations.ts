@@ -44,7 +44,7 @@ function executeMigrationFile(
       try {
         db.exec(translated)
       } catch (sqlErr: unknown) {
-        const msg = (sqlErr as Error).message.toLowerCase()
+        const msg = (sqlErr as Error).message.toLowerCase() // string-ok
         const isDuplicate = msg.includes('already exists') || msg.includes('duplicate column')
         if (!isDuplicate) throw sqlErr
       }
@@ -100,8 +100,8 @@ async function validateMigrations() {
     .sort((a, b) => a.localeCompare(b));
 
   const translationCache = new Map<string, string>();
-  const errors: string[] = [];
-  const achievements: string[] = [];
+  const errors: string[] = []; // no-domain
+  const achievements: string[] = []; // no-domain
 
   console.log(styleText('cyan', `📦 Procesando ${files.length} archivos de migración...\n`));
 

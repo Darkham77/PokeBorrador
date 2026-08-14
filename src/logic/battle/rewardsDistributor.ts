@@ -14,10 +14,11 @@ const BATTLE_COINS_PER_LEVEL_FACTOR = 2
 const AMULET_COIN_MONEY_MULTIPLIER = 2
 import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import type { BattleDifficulty } from '@/types/battle/battle'
-import { calculateBaseExp, processExpGain, calculateMoneyGain } from './battleRewards.ts'
+import { calculateBaseExp, processExpGain, processEvGain, calculateMoneyGain } from './battleRewards.ts'
+import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory'
 import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
 import type { BattleContext } from '@/types/battle/battleContext'
-import type { Pokemon, PokemonMove } from '@/types/pokemon/pokemon'
+import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 import { useUIStore } from '@/stores/ui'
 import { getItemById, requireItemId } from '@/data/inventory/items'
 import { incrementRecordKey } from '@/logic/utils/mapUtils'
@@ -226,7 +227,7 @@ const RIVAL_DROP_PROB_MAX_PERCENT = 100;
   const participantsSet = new Set(active.participants)
 
   const expGainedMap = new Map<string, number>()
-  const levelUpMap = new Map<string, { levelsGained: number; moves: PokemonMove[] }>()
+  const levelUpMap = new Map<string, { levelsGained: number; moves: Move[] }>()
   let totalMoneyGained = 0
   let totalCoinsGained = 0
   let totalTrainerExpGained = 0
@@ -262,6 +263,14 @@ const RIVAL_DROP_PROB_MAX_PERCENT = 100;
             lvlData.moves.push(...pendingMoves)
           }
         }
+      }
+    }
+
+    // Process EV gains for all participating Pokémon and expshare holders
+    for (const p of ctx.gs.state.team) {
+      const evReward = processEvGain(p, e, participantsSet)
+      if (evReward && evReward.totalGained > 0) {
+        recalcPokemonStats(p)
       }
     }
 
@@ -439,7 +448,7 @@ export async function awardDebugExp(ctx: BattleContext) {
 
       await fsm.transition(BATTLE_STATES.LEVEL_UP_MODAL, BATTLE_SUBSTATES.CHECK_PENDING)
       
-      const allPendingMoves: PokemonMove[] = []
+      const allPendingMoves: Move[] = []
       const { levelUpPokemon } = await import('@/logic/pokemon/pokemonFactory')
       for (let i = 0; i < reward.levelsGained; i++) {
         const pendingMoves = levelUpPokemon(teamPoke)

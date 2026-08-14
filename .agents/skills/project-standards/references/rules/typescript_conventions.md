@@ -59,6 +59,18 @@ This document governs TypeScript standards, domain type definitions, data wrappe
 
 ## 5. Fallow Configuration Maintenance & Health Score Mandate (Minimum 85/100)
 
+- Every repository change must maintain or improve the codebase health score produced by Fallow. The global health score MUST remain >= 85/100.
+- All structural complexity, unused variables, dead code, and duplication flagged by Fallow must be addressed before commits.
+
+## 6. Strict Zero Error Suppression Mandate
+
+- It is STRICTLY FORBIDDEN to hide, swallow, mask, or bypass errors using:
+  - Ad-hoc silent truncations or arbitrary data cropping (e.g., arbitrarily truncating image frames or strings to avoid format errors).
+  - Silent mock fallbacks or fake default objects (e.g., returning `{ feetY: 0.9, feetX: 0.5 }` instead of resolving canonical coordinates).
+  - Empty `catch` blocks or silent swallowing of unexpected exceptions.
+- **Fail Loudly & At the Source**: When assets, schemas, simulation steps, or domain invariants violate rules or technical limits, the code MUST throw an explicit, descriptive error immediately (`throw new Error(...)`) so the issue is resolved at the source (asset generation, fuzzer setup, or canonical database).
+
+
 - **Mandatory Score**: The overall codebase health score computed by Fallow (`npx fallow health --score`) MUST be at least **85/100**. Scores below 85 are strictly non-compliant.
 - **Hotspot Optimization**: Whenever the score drops below 85, developers and AI agents MUST inspect Fallow's targets (`npx fallow health --targets --hotspots`), eliminate dead code, lower function/module complexity, and refactor iteratively until the score is strictly 85 or higher.
 - **Config Maintenance**: When refactoring files, changing directory structures, or renaming modules, update `.fallowrc.json` (especially `ignoreExports` paths) to reflect the new paths, preventing stale references.

@@ -8,11 +8,11 @@ export interface WeatherTerrainResult {
 }
 
 export function auditWeatherTerrainParity(bridgeFieldPath: string): WeatherTerrainResult {
-  const unhandledWeatherTokens: string[] = [];
+  const unhandledWeatherTokens: string[] = []; // no-domain
   if (!existsSync(bridgeFieldPath)) return { unhandledWeatherTokens };
 
   const content = readFileSync(bridgeFieldPath, 'utf-8');
-  const requiredTokens = ['rain', 'sunnyday', 'sandstorm', 'hail', 'snow', 'electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain'];
+  const requiredTokens = ['rain', 'sunnyday', 'sandstorm', 'hail', 'snow', 'electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain']; // no-domain
 
   for (const token of requiredTokens) {
     if (!content.toLowerCase().includes(token)) {

@@ -14,9 +14,9 @@ export interface UntestedEffectReport {
  * contra la totalidad de las suites de test del proyecto.
  */
 export function findUntestedShowdownEffects(showdownDataPath: string, testsPath: string): UntestedEffectReport {
-  const untestedMoves: string[] = [];
-  const untestedAbilities: string[] = [];
-  const untestedItems: string[] = [];
+  const untestedMoves: string[] = []; // no-domain
+  const untestedAbilities: string[] = []; // no-domain
+  const untestedItems: string[] = []; // no-domain
 
   if (!existsSync(showdownDataPath) || !existsSync(testsPath)) {
     return { untestedMoves, untestedAbilities, untestedItems };
@@ -26,7 +26,7 @@ export function findUntestedShowdownEffects(showdownDataPath: string, testsPath:
   const testBundleContent = testFiles.map(f => readFileSync(f, 'utf-8')).join('\n').toLowerCase();
 
   const scan = (dataFile: string): string[] => {
-    const untested: string[] = [];
+    const untested: string[] = []; // no-domain
     const fullPath = join(showdownDataPath, dataFile);
     if (!existsSync(fullPath)) return untested;
     const content = readFileSync(fullPath, 'utf-8');

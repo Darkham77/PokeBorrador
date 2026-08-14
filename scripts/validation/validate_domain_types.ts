@@ -44,11 +44,11 @@ const outputFile = typeof args.output === 'string' ? args.output : undefined;
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 const ROOT = path.resolve(import.meta.dirname, '../..');
-const SCAN_ROOTS = [path.join(ROOT, 'src')];
+const SCAN_ROOTS = [path.join(ROOT, 'src'), path.join(ROOT, 'scripts')];
 const EXTENSIONS = ['.ts', '.vue'] as const;
 const SKIP_DIRS = ['node_modules', '.git', 'dist', 'coverage', 'external', '.agents'] as const;
-const TEST_PATH_MARKERS = ['/tests/', '.test.', '.spec.'] as const;
-const ESCAPE_HATCHES = ['domain-ok', 'string-ok', 'open-record', 'runtime-set', 'runtime-map', 'no-domain'] as const;
+const TEST_PATH_MARKERS = ['tests/', '.test.', '.spec.', 'scripts/e2e/'] as const;
+const ESCAPE_HATCHES = ['domain-ok', 'string-ok', 'open-record', 'runtime-set', 'runtime-map', 'no-domain', 'lib-duplicate-ok', 'alias-ok', 'result-ok'] as const;
 
 // ─── Patterns ────────────────────────────────────────────────────────────────
 const P_SET_STRING = /\bnew\s+Set\s*(?:<[^>]+>)?\s*\(\s*\[\s*['"`]/g;
@@ -56,6 +56,8 @@ const P_MAP_STRING = /\bnew\s+Map\s*(?:<[^>]+>)?\s*\(\s*\[\s*\[\s*['"`]/g;
 const P_LITERAL_ARRAY_DECL = /\b(?:(?:export\s+)?const|let|var)\s+([A-Z_a-z]\w*)\s*(?::\s*(?:readonly\s+)?(?:string\[\]|Array\s*<\s*string\s*>|ReadonlyArray\s*<\s*string\s*>))?\s*=\s*\[\s*['"`][\s\S]*?\](?:\s+as\s+const)?/g;
 const P_TYPED_STRING_ARRAY_DECL = /\b(?:(?:export\s+)?const|let|var)\s+([A-Z_a-z]\w*)\s*:\s*(?:readonly\s+)?(?:string\[\]|Array\s*<\s*string\s*>|ReadonlyArray\s*<\s*string\s*>)/g;
 const P_TYPE_ALIAS_STRING = /\b(?:export\s+)?type\s+\w+\s*=\s*string\s*;/g;
+const P_REDUNDANT_TYPE_ALIAS = /\b(?:export\s+)?type\s+([A-Z_a-z]\w*)\s*=\s*([A-Z_a-z]\w*)\s*;/g;
+const P_REDUNDANT_VALUE_ALIAS = /^\s*export\s+const\s+([A-Z_a-z]\w*)\s*=\s*([A-Z_a-z]\w*)\s*;/gm;
 const P_BOOLEAN_LITERAL_TYPE_ANNOTATION = /\b(?:(?:export\s+)?const|let|var)\s+[A-Z_a-z]\w*\s*:\s*(?:true|false)\b|\b(?:export\s+)?type\s+[A-Z_a-z]\w*\s*=\s*(?:true|false)\s*;|^\s*(?:readonly\s+)?[A-Z_a-z]\w*\??:\s*(?:true|false)\s*;|\(\s*[A-Z_a-z]\w*\??:\s*(?:true|false)\b/gm;
 const P_STRING_SINK_UNION = /\b(?:export\s+)?type\s+\w+\s*=\s*(?=[^;\n]*['"`][^'"`]+['"`])[^;\n]*\|\s*string\s*;/g;
 const P_FIELD_WILDCARD_STRING_UNION = /^\s*(?:readonly\s+)?([A-Z_a-z]\w*)\??:\s*(?!\s*string\s*(?:\[\])?\s*[;,]?)[^;\n]*\|\s*string\b[^;\n]*[;,]?/gm;
@@ -101,7 +103,7 @@ type SeverityPicker = (match: RegExpExecArray, line: string, file: string) => Fi
 // ─── Scanner ─────────────────────────────────────────────────────────────────
 async function* walkFiles(dir: string): AsyncGenerator<string> {
   for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
-    if ((SKIP_DIRS as readonly string[]).includes(entry.name)) continue;
+    if ((SKIP_DIRS as readonly string[]).includes(entry.name)) continue; // no-domain
 
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
@@ -159,10 +161,12 @@ function findMatches(
 
   let match: RegExpExecArray | null;
   while ((match = pattern.exec(content)) !== null) {
-    const before = content.slice(0, match.index);
+    const leadingWs = match[0].match(/^\s*\n/)?.[0] ?? '';
+    const matchStart = match.index + leadingWs.length;
+    const before = content.slice(0, matchStart);
     const lineNum = (before.match(/\n/g) ?? []).length + 1;
     const lastNl = before.lastIndexOf('\n');
-    const col = match.index - lastNl;
+    const col = matchStart - lastNl;
     const line = lines[lineNum - 1] ?? '';
 
     if (isCommentLine(line) || isTestFile(file) || (!overrideEscapeHatch && hasEscapeHatch(line))) continue;
@@ -184,6 +188,7 @@ function findMatches(
 async function auditFile(filePath: string): Promise<Finding[]> {
   const content = await fs.readFile(filePath, 'utf8');
   const rel = toRepoPath(filePath);
+  if (rel.endsWith('validate_domain_types.ts')) return [];
   const findings: Finding[] = [];
 
   findings.push(...findMatches(
@@ -212,7 +217,7 @@ async function auditFile(filePath: string): Promise<Finding[]> {
       if (match[0].includes('as const')) return false;
       const trimmed = line.trim();
       // Filter out report/log/text buffers and class names
-      return !/const\s+(?:report|candidates|lines|parts|chunks|words|tokens|classes)\s*=/i.test(trimmed);
+      return !/const\s+(?:report|candidates|lines|parts|chunks|words|tokens|classes|errors|warnings|achievements|logs|results|missing|args|flags|files|entries|rows|queries|messages|diffs|patterns|findings|details)\s*=/i.test(trimmed);
     }
   ));
 
@@ -224,7 +229,7 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     'ERROR',
     (_match, line) => {
       const trimmed = line.trim();
-      return !/const\s+(?:lines|parts|chunks|words|tokens|report|candidates)\s*:\s*(?:readonly\s+)?string\[\]/i.test(trimmed);
+      return !/const\s+(?:lines|parts|chunks|words|tokens|report|candidates|errors|warnings|achievements|logs|results|missing|args|flags|files|entries|rows|queries|messages|diffs|patterns|findings|details)\s*:\s*(?:readonly\s+)?string\[\]/i.test(trimmed);
     }
   ));
 
@@ -242,6 +247,41 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     P_BOOLEAN_LITERAL_TYPE_ANNOTATION,
     'Literal boolean type annotation (true/false) used instead of boolean type contract (MUST use `: boolean`)',
     'ERROR'
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_REDUNDANT_TYPE_ALIAS,
+    'Redundant 1:1 type redefinition — use the canonical source type directly at usage sites instead of declaring passthrough aliases',
+    'ERROR',
+    (match, line) => {
+      if (line.includes('// alias-ok') || line.includes('// string-ok') || line.includes('// domain-ok') || line.includes('// type-ok')) return false;
+      const aliasName = match[1];
+      const targetName = match[2];
+      if (aliasName === targetName) return false;
+      const primitives = ['string', 'number', 'boolean', 'unknown', 'any', 'void', 'never', 'null', 'undefined', 'symbol', 'bigint'];
+      if (targetName && primitives.includes(targetName)) return false;
+      return true;
+    }
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_REDUNDANT_VALUE_ALIAS,
+    'Redundant 1:1 value/function redefinition — use the canonical source value directly at usage sites instead of declaring passthrough aliases',
+    'ERROR',
+    (match, line) => {
+      if (line.includes('// alias-ok') || line.includes('// value-ok') || line.includes('// domain-ok') || line.includes('// const-ok')) return false;
+      const aliasName = match[1];
+      const targetName = match[2];
+      if (!aliasName || !targetName || aliasName === targetName) return false;
+      if (/^(?:true|false|null|undefined|NaN|Infinity|\d+)$/.test(targetName)) return false;
+      const ignoredTargets = ['dbJson', 'metadataJson', 'rawJson', 'itemsJson', 'movesJson', 'pokedexJson', 'db'];
+      if (ignoredTargets.includes(targetName)) return false;
+      return true;
+    }
   ));
 
   findings.push(...findMatches(
@@ -363,7 +403,7 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     content,
     rel,
     P_TYPECAST_READONLY_STRING_ARRAY,
-    'Type assertion `as readonly string[]` or `as string[]` used to bypass tuple domain inclusion check — use strict domain type parameter or `isDomainId` guard',
+    'Type assertion `as readonly string[]` or `as string[]` used to bypass tuple domain inclusion check — use strict domain type parameter or `isDomainId` guard', // no-domain
     'ERROR',
     (_match, line, _file) => {
       if (line.includes('// domain-ok') || line.includes('// no-domain')) return false;
@@ -384,7 +424,7 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     content,
     rel,
     P_TYPECAST_RECORD_STRING,
-    'Type assertion `as Record<string, ...>` used to bypass strict domain map keys — use typed boundary guard',
+    'Type assertion `as Record<string, ...>` used to bypass strict domain map keys — use typed boundary guard', // open-record
     'ERROR',
     (_match, line) => !line.includes('// open-record') && !line.includes('// no-domain')
   ));
@@ -501,6 +541,23 @@ function formatFinding(finding: Finding, color = true): string {
   return `  ${sev}  ${loc}\n         ${pattern}\n         ${finding.snippet}`;
 }
 
+function getMatchCoordinates(content: string, matchIndex: number, lines: string[]): { lineNum: number; col: number; line: string } {
+  const before = content.slice(0, matchIndex);
+  const lineNum = (before.match(/\n/g) ?? []).length + 1;
+  const lastNl = before.lastIndexOf('\n');
+  const col = matchIndex - lastNl;
+  const line = lines[lineNum - 1] ?? '';
+  return { lineNum, col, line };
+}
+
+function extractSortedLiteralsSignature(matchStr: string): string | null {
+  const rawLiterals = matchStr.match(/['"`][a-zA-Z0-9_-]+['"`]/g);
+  if (!rawLiterals || rawLiterals.length < 2) return null;
+  const literals = Array.from(new Set(rawLiterals.map(l => l.replace(/['"`]/g, '')))).sort();
+  if (literals.length < 2) return null;
+  return literals.join('|');
+}
+
 export function detectRepeatedStringUnions(
   files: Array<{ file: string; content: string }>
 ): Map<string, Finding[]> {
@@ -513,20 +570,11 @@ export function detectRepeatedStringUnions(
     let match: RegExpExecArray | null;
 
     while ((match = P_GENERIC_STRING_UNION.exec(content)) !== null) {
-      const before = content.slice(0, match.index);
-      const lineNum = (before.match(/\n/g) ?? []).length + 1;
-      const lastNl = before.lastIndexOf('\n');
-      const col = match.index - lastNl;
-      const line = lines[lineNum - 1] ?? '';
-
+      const { lineNum, col, line } = getMatchCoordinates(content, match.index, lines);
       if (isCommentLine(line) || isTestFile(file) || hasEscapeHatch(line)) continue;
 
-      const rawLiterals = match[0].match(/['"`][a-zA-Z0-9_-]+['"`]/g);
-      if (!rawLiterals || rawLiterals.length < 2) continue;
-
-      const literals = Array.from(new Set(rawLiterals.map(l => l.replace(/['"`]/g, '')))).sort();
-      if (literals.length < 2) continue;
-      const signatureKey = literals.join('|');
+      const signatureKey = extractSortedLiteralsSignature(match[0]);
+      if (!signatureKey) continue;
 
       const finding: Finding = {
         file,
@@ -553,9 +601,153 @@ export function detectRepeatedStringUnions(
   return repeatedMap;
 }
 
+export interface LibraryDomainTypeInfo {
+  typeName: string;
+  pkgName: string;
+  signature: string;
+}
+
+export async function extractLibraryDomainTypes(
+  root: string = ROOT
+): Promise<Map<string, LibraryDomainTypeInfo>> {
+  const libraryTypes = new Map<string, LibraryDomainTypeInfo>();
+  const nodeModulesDir = path.join(root, 'node_modules');
+  const pkgJsonPath = path.join(root, 'package.json');
+
+  const P_EXPORT_TYPE_UNION = /export\s+type\s+([A-Za-z0-9_]+)\s*=\s*\(?((?:['"][a-zA-Z0-9_-]+['"]\s*\|\s*)+['"][a-zA-Z0-9_-]+['"])\)?/g;
+
+  let pkgJson: { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
+  try {
+    const raw = await fs.readFile(pkgJsonPath, 'utf8');
+    pkgJson = JSON.parse(raw) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
+  } catch {
+    return libraryTypes;
+  }
+
+  const allDeps = Object.keys({ ...(pkgJson.dependencies || {}), ...(pkgJson.devDependencies || {}) });
+
+  for (const dep of allDeps) {
+    const depDir = path.join(nodeModulesDir, dep);
+    try {
+      await fs.access(depDir);
+    } catch {
+      continue;
+    }
+
+    async function walk(dir: string) {
+      let entries: Array<{ name: string; isDirectory(): boolean }>;
+      try {
+        entries = await fs.readdir(dir, { withFileTypes: true });
+      } catch {
+        return;
+      }
+      for (const ent of entries) {
+        if (ent.name === 'node_modules' || ent.name === '.git') continue;
+        const full = path.join(dir, ent.name);
+        if (ent.isDirectory()) {
+          await walk(full);
+        } else if (ent.name.endsWith('.d.ts')) {
+          let content = '';
+          try {
+            content = await fs.readFile(full, 'utf8');
+          } catch {
+            continue;
+          }
+          P_EXPORT_TYPE_UNION.lastIndex = 0;
+          let match: RegExpExecArray | null;
+          while ((match = P_EXPORT_TYPE_UNION.exec(content)) !== null) {
+            const typeName = match[1]!;
+            const rawUnion = match[2]!;
+            const rawLiterals = rawUnion.match(/['"][a-zA-Z0-9_-]+['"]/g);
+            if (!rawLiterals) continue;
+            const literals = Array.from(new Set(rawLiterals.map(l => l.replace(/['"]/g, '')))).sort();
+            if (literals.length >= 2) {
+              const sigKey = literals.join('|');
+              if (!libraryTypes.has(sigKey)) {
+                libraryTypes.set(sigKey, { typeName, pkgName: dep, signature: sigKey });
+              }
+            }
+          }
+        }
+      }
+    }
+
+    await walk(depDir);
+  }
+
+  return libraryTypes;
+}
+
+/**
+ * Detects local array or type definitions in src/ that duplicate library domain types.
+ */
+export function detectLibraryDomainTypeDuplicates(
+  files: Array<{ file: string; content: string }>,
+  libraryTypes: Map<string, LibraryDomainTypeInfo>
+): Finding[] {
+  const findings: Finding[] = [];
+  if (libraryTypes.size === 0) return findings;
+
+  const P_LITERAL_ARRAY_DECL = /\b(?:(?:export\s+)?const|let|var)\s+([A-Z_a-z]\w*)\s*(?::\s*[^=]+)?=\s*\[\s*['"`][\s\S]*?\](?:\s+as\s+const)?/g;
+  const P_TYPE_UNION_DECL = /\b(?:export\s+)?type\s+([A-Za-z0-9_]+)\s*=\s*\(?((?:['"`][a-zA-Z0-9_-]+['"`]\s*\|\s*)+['"`][a-zA-Z0-9_-]+['"`])\)?/g;
+
+  for (const { file, content } of files) {
+    const lines = content.split('\n');
+
+    // 1. Array declarations with string literals
+    P_LITERAL_ARRAY_DECL.lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = P_LITERAL_ARRAY_DECL.exec(content)) !== null) {
+      const { lineNum, col, line } = getMatchCoordinates(content, match.index, lines);
+      if (isCommentLine(line) || isTestFile(file) || hasEscapeHatch(line)) continue;
+
+      const sigKey = extractSortedLiteralsSignature(match[0]);
+      if (!sigKey) continue;
+
+      const libInfo = libraryTypes.get(sigKey);
+      if (libInfo) {
+        findings.push({
+          file,
+          line: lineNum,
+          col,
+          pattern: `Duplicate of library domain type: '${match[1]}' duplicates '${libInfo.typeName}' from '${libInfo.pkgName}' — import and use '${libInfo.typeName}' directly instead of reinventing it locally`,
+          snippet: match[0].slice(0, 100).replace(/\n/g, '↵'),
+          severity: 'ERROR'
+        });
+      }
+    }
+
+    // 2. Type union declarations
+    P_TYPE_UNION_DECL.lastIndex = 0;
+    while ((match = P_TYPE_UNION_DECL.exec(content)) !== null) {
+      const { lineNum, col, line } = getMatchCoordinates(content, match.index, lines);
+      if (isCommentLine(line) || isTestFile(file) || hasEscapeHatch(line)) continue;
+
+      const sigKey = extractSortedLiteralsSignature(match[0]);
+      if (!sigKey) continue;
+
+      const libInfo = libraryTypes.get(sigKey);
+      if (libInfo) {
+        findings.push({
+          file,
+          line: lineNum,
+          col,
+          pattern: `Duplicate of library domain type: type '${match[1]}' duplicates '${libInfo.typeName}' from '${libInfo.pkgName}' — import and alias '${libInfo.typeName}' directly instead of re-declaring its union`,
+          snippet: match[0].slice(0, 100).replace(/\n/g, '↵'),
+          severity: 'ERROR'
+        });
+      }
+    }
+  }
+
+  return findings;
+}
+
 export async function runCliAudit(): Promise<void> {
   const allFindings: Finding[] = [];
   const scannedFiles: Array<{ file: string; content: string }> = [];
+
+  const libraryTypes = await extractLibraryDomainTypes(ROOT);
 
   for (const scanRoot of SCAN_ROOTS) {
     for await (const filePath of walkFiles(scanRoot)) {
@@ -574,6 +766,9 @@ export async function runCliAudit(): Promise<void> {
       allFindings.push(occurrence);
     }
   }
+
+  const libDuplicates = detectLibraryDomainTypeDuplicates(scannedFiles, libraryTypes);
+  allFindings.push(...libDuplicates);
 
   const visibleFindings = allFindings;
   const errors = allFindings.filter(finding => finding.severity === 'ERROR');

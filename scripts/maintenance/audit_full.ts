@@ -347,7 +347,7 @@ interface CodeAuditReport {
 
       if (codeAuditDetails?.summary?.byCategory) {
         md += `\n## 📊 Desglose de Reglas de Código\n\n| Categoría | Cantidad |\n| :--- | :---: |\n`;
-        Object.entries(codeAuditDetails.summary.byCategory as Record<string, number>)
+        Object.entries(codeAuditDetails.summary.byCategory as Record<string, number>) // open-record
           .sort((a, b) => b[1] - a[1])
           .forEach(([cat, count]) => {
             md += `| ${cat} | ${count} |\n`;

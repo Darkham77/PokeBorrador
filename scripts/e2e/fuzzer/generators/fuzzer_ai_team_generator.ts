@@ -22,7 +22,7 @@ const dexGen = Dex.forGen(ACTIVE_GENERATION);
 // ---------------------------------------------------------------------------
 // Species pool: all non-nonstandard Gen 9 species that are not cosmetic forms
 // ---------------------------------------------------------------------------
-const SPECIES_POOL: string[] = dexGen.species
+const SPECIES_POOL: string[] = dexGen.species // no-domain
   .all()
   .filter(s => s.exists && !s.isNonstandard && !s.forme?.includes('Totem') && !s.battleOnly)
   .map(s => s.id);
@@ -55,8 +55,8 @@ function isSafeMove(moveId: string): boolean {
 async function buildValidMoveset(speciesId: string): Promise<string[]> {
   const learnsetData = await dexGen.learnsets.get(speciesId);
 
-  const damaging: string[] = [];
-  const support: string[] = [];
+  const damaging: string[] = []; // no-domain
+  const support: string[] = []; // no-domain
 
   if (learnsetData?.learnset) {
     for (const [moveId, sources] of Object.entries(learnsetData.learnset)) {
@@ -86,7 +86,7 @@ async function buildValidMoveset(speciesId: string): Promise<string[]> {
 }
 
 // Lazily computed fallback move pools
-let _fallbackDamaging: string[] | null = null;
+let _fallbackDamaging: string[] | null = null; // no-domain
 function getFallbackDamagingMoves(): string[] {
   if (!_fallbackDamaging) {
     _fallbackDamaging = dexGen.moves

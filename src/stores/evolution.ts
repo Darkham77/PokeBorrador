@@ -3,12 +3,12 @@ import { ref } from 'vue';
 import { evolvePokemonData } from '@/logic/evolution/evolutionLogic';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { useGameStore } from '@/stores/game';
-import type { Pokemon, PokemonMove } from '@/types/pokemon/pokemon';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 export interface EvolutionCompletePayload {
   pokemon: Pokemon;
-  pendingMoves: PokemonMove[];
+  pendingMoves: Move[];
 }
 
 export const useEvolutionStore = defineStore('evolution', () => {
@@ -20,7 +20,7 @@ export const useEvolutionStore = defineStore('evolution', () => {
   const targetId = ref<PokemonSpeciesId | null>(null);
   const itemName = ref<string>('');
   const onComplete = ref<((data: EvolutionCompletePayload) => void) | null>(null);
-  const pendingMoves = ref<PokemonMove[]>([]);
+  const pendingMoves = ref<Move[]>([]);
 
   // --- ACTIONS ---
 

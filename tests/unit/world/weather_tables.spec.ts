@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { ROUTE_WEATHER_TABLES, requireWeatherCycleId, requireWeatherSeasonId, requireWeatherTableRouteId } from '@/data/world/weather-tables'
+import { ROUTE_WEATHER_TABLES, requireWeatherSeasonId, requireWeatherTableRouteId } from '@/data/world/weather-tables'
+import { requireDayPhase } from '@/logic/utils/timeUtils'
 import { WEATHER_REGISTRY, getMechanicalWeather, isWeatherId } from '@/logic/weather/weatherRegistry'
 import { FIRE_RED_MAPS } from '@/data/world/maps'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
@@ -18,7 +19,7 @@ describe('Weather tables coverage and integrity', () => {
         const seasonName = requireWeatherSeasonId(rawSeasonName)
         const phases = seasons[seasonName]
         for (const rawPhaseName in phases) {
-          const phaseName = requireWeatherCycleId(rawPhaseName)
+          const phaseName = requireDayPhase(rawPhaseName)
           const weatherProbs = phases[phaseName]
           for (const [weatherKey, probability] of Object.entries(weatherProbs)) {
             if (!isWeatherId(weatherKey)) {
@@ -220,7 +221,7 @@ describe('Weather visitor and exclusive type compatibility', () => {
         const season = requireWeatherSeasonId(rawSeason)
         const phases = seasons[season]
         for (const rawPhase in phases) {
-          const phase = requireWeatherCycleId(rawPhase)
+          const phase = requireDayPhase(rawPhase)
           const weatherProbs = phases[phase]
           for (const [wKey, prob] of Object.entries(weatherProbs)) {
             if (!isWeatherId(wKey)) {

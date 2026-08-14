@@ -11,12 +11,12 @@ export interface StatStageAuditResult {
  * (boost, unboost, setboost, clearboost, clearallboost, swapboost, copyboost).
  */
 export function auditStatStageBoosts(bridgeStagesPath: string): StatStageAuditResult {
-  const statStageDiscrepancies: string[] = [];
+  const statStageDiscrepancies: string[] = []; // no-domain
   if (!existsSync(bridgeStagesPath)) return { statStageDiscrepancies };
 
   const content = readFileSync(bridgeStagesPath, 'utf-8');
-  const requiredStats = ['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion'];
-  const requiredTokens = ['-boost', '-unboost', '-setboost', '-clearboost', '-clearallboost', '-swapboost', '-copyboost'];
+  const requiredStats = ['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion']; // no-domain
+  const requiredTokens = ['-boost', '-unboost', '-setboost', '-clearboost', '-clearallboost', '-swapboost', '-copyboost']; // no-domain
 
   for (const stat of requiredStats) {
     if (!content.toLowerCase().includes(stat)) {

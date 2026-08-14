@@ -6,8 +6,7 @@
 import dbJson from './moves.json' with { type: 'json' };
 
 export const MOVE_TRANSLATIONS_ES = dbJson;
-export type MoveId = keyof typeof MOVE_TRANSLATIONS_ES;
-export type PokemonMoveId = MoveId;
+export type PokemonMoveId = keyof typeof MOVE_TRANSLATIONS_ES;
 export type MoveCategory = 'physical' | 'special' | 'status';
 
 export function isPokemonMoveId(value: string): value is PokemonMoveId {

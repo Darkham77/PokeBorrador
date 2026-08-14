@@ -243,8 +243,8 @@ async function main() {
   const rawAbilities = await fs.readFile(path.resolve(process.cwd(), 'src/data/battle/abilities.json'), 'utf8');
   const rawMoves = await fs.readFile(path.resolve(process.cwd(), 'src/data/battle/moves.json'), 'utf8');
   const showdownDB = {
-    abilities: JSON.parse(rawAbilities) as Record<string, { name?: string }>,
-    moves: JSON.parse(rawMoves) as Record<string, { name?: string }>
+    abilities: JSON.parse(rawAbilities) as Record<string, { name?: string }>, // open-record
+    moves: JSON.parse(rawMoves) as Record<string, { name?: string }> // open-record
   };
 
   // Build Abilities Map
@@ -280,7 +280,7 @@ async function main() {
   for (const [legacy, enId] of Object.entries(legacyAbilities)) {
     abilityMap.set(normalize(legacy), enId);
   }
-  for (const [id, data] of Object.entries(showdownDB.abilities as Record<string, { name?: string }>)) {
+  for (const [id, data] of Object.entries(showdownDB.abilities as Record<string, { name?: string }>)) { // open-record
     abilityMap.set(normalize(id), id);
     if (data.name) {
       abilityMap.set(normalize(data.name), id);
@@ -345,7 +345,7 @@ async function main() {
 
   // Build Moves Map
   const moveMap = new Map<string, string>();
-  for (const [id, data] of Object.entries(showdownDB.moves as Record<string, { name?: string }>)) {
+  for (const [id, data] of Object.entries(showdownDB.moves as Record<string, { name?: string }>)) { // open-record
     moveMap.set(id, id);
     if (data.name) {
       moveMap.set(normalize(data.name), id);

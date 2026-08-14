@@ -12,7 +12,7 @@ export interface ExcludedAbilityEntry {
 
 // Habilidades que solo funcionan en formato Dobles (VGC / Doubles OU).
 // Requieren un aliado activo en el campo para tener efecto.
-export const DOUBLES_ONLY_ABILITIES: readonly string[] = [
+export const DOUBLES_ONLY_ABILITIES: readonly string[] = [ // no-domain
   'aromaveil',     // Protects team from moves that target the mind (doubles)
   'battery',       // Boosts ally's Special moves by 30% (doubles)
   'commander',     // Tatsugiri inside Dondozo — doubles-exclusive mechanic
@@ -32,7 +32,7 @@ export const DOUBLES_ONLY_ABILITIES: readonly string[] = [
 
 // Habilidades vinculadas al mecanismo de Terastallización o formas Tera exclusivas.
 // Requieren `gen9` con Tera habilitado; no disponibles en gen9customgame sin el token Tera.
-export const TERA_ONLY_ABILITIES: readonly string[] = [
+export const TERA_ONLY_ABILITIES: readonly string[] = [ // no-domain
   'embodyaspectcornerstone', // Ogerpon Cornerstone Mask — activates on Tera
   'embodyaspecthearthflame', // Ogerpon Hearthflame Mask — activates on Tera
   'embodyaspectteal',        // Ogerpon Teal Mask — activates on Tera
@@ -44,7 +44,7 @@ export const TERA_ONLY_ABILITIES: readonly string[] = [
 
 // Habilidades bloqueadas por fusiones de especie o cambios de forma por KO/switch.
 // Requieren condiciones de juego no reproducibles en el fuzzer 1v1.
-export const FUSION_LOCKED_ABILITIES: readonly string[] = [
+export const FUSION_LOCKED_ABILITIES: readonly string[] = [ // no-domain
   'asoneglastrier',  // Calyrex-Ice (fused) — combines Chilling Neigh + Unnerve
   'asonespectrier',  // Calyrex-Shadow (fused) — combines Grim Neigh + Unnerve
   'battlebond',      // Greninja: Hero form after KO — requires specific format support

@@ -16,6 +16,8 @@ import path from 'node:path';
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 
+import { type AuditSeverity } from './audit_rules.ts';
+
 enableCompileCache();
 
 const ESLINT_STDIN_MAX_BUFFER_BYTES = 50 * 1024 * 1024;
@@ -25,7 +27,7 @@ export interface Violation {
   line: number;
   message: string;
   context: string;
-  severity: 'error' | 'warning';
+  severity: AuditSeverity;
   ruleId?: string;
   isNew?: boolean;
 }
@@ -44,7 +46,7 @@ interface EslintFileResult {
 }
 
 // Extensiones a auditar
-const AUDIT_EXTENSIONS = new Set(['.vue', '.ts', '.js', '.scss', '.css']);
+const AUDIT_EXTENSIONS = ['.vue', '.ts', '.js', '.scss', '.css'] as const;
 
 export function filterNewWarnings(
   localWarnings: Violation[],
@@ -118,7 +120,7 @@ const GIT_STATUS_PREFIX_OFFSET = 3;
     for (const f of files) {
       const ext = path.extname(f).toLowerCase();
       const isConfigFile = /^(vite|vitest|playwright|eslint)\.config\./i.test(path.basename(f)) || path.basename(f).startsWith('vitest.');
-      if (AUDIT_EXTENSIONS.has(ext) && !isConfigFile && !f.includes('node_modules') && !f.startsWith('external/') && !f.startsWith('external\\') && !f.startsWith('dist/') && !f.startsWith('dev-dist/') && !f.startsWith('scratch/')) {
+      if ((AUDIT_EXTENSIONS as readonly string[]).includes(ext) && !isConfigFile && !f.includes('node_modules') && !f.startsWith('external/') && !f.startsWith('external\\') && !f.startsWith('dist/') && !f.startsWith('dev-dist/') && !f.startsWith('scratch/')) { // no-domain
         filteredFiles.add(f);
       }
     }
@@ -428,7 +430,7 @@ async function main() {
   await fs.writeFile('scratch/warnings_diff_report.json', JSON.stringify(reportData, null, 2), 'utf-8');
 
   // Imprimir reporte por pantalla y guardarlo en .txt
-  const txtLines: string[] = [];
+  const txtLines: string[] = []; // no-domain
   txtLines.push('================================================================');
   txtLines.push('📊 REPORTE DE ANÁLISIS GLOBAL: ERRORES DEL PROYECTO Y WARNINGS LOCALES');
   txtLines.push('================================================================\n');

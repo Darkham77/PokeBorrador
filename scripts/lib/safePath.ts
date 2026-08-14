@@ -11,7 +11,7 @@ import fs from 'node:fs';
 const CWE_PATH_TRAVERSAL_ID_TEXT = '22';
 
 export function sanitizePath(inputPath: string): string {
-  const clean = String(inputPath).replace(/(\.\.[/\\])+/g, '').replace(/[^a-zA-Z0-9_\-/.:\\]/g, '');
+  const clean = String(inputPath).replace(/(\.\.[/\\])+/g, '').replace(/[^a-zA-Z0-9_\- /.:\\]/g, '');
   return path.normalize(clean);
 }
 
@@ -24,7 +24,7 @@ export function safeResolve(...pathSegments: string[]): string {
   if (rawPath.includes('..')) {
     throw new Error(`Security Violation CWE-${CWE_PATH_TRAVERSAL_ID_TEXT}: Path traversal attempt detected in '${rawPath}'`);
   }
-  const cleanSubpath = rawPath.replace(/[^a-zA-Z0-9_\-/.:]/g, '');
+  const cleanSubpath = rawPath.replace(/[^a-zA-Z0-9_\- /.:]/g, '');
   const absolutePath = cleanSubpath.startsWith(root.replace(/\\/g, '/'))
     ? cleanSubpath
     : `${root.replace(/\\/g, '/')}/${cleanSubpath.replace(/^\/+/, '')}`;
@@ -85,7 +85,7 @@ export async function safeFetch(rawUrl: string, options?: RequestInit, allowedHo
   if (parsed.protocol !== 'https:') {
     throw new Error(`Security Violation CWE-SSRF: Non-HTTPS protocol '${parsed.protocol}' rejected`);
   }
-  const host = parsed.hostname.toLowerCase();
+  const host = parsed.hostname.toLowerCase(); // string-ok
   const isAllowed = allowedHosts.some(h => host === h || host.endsWith(`.${h}`));
   if (!isAllowed) {
     throw new Error(`Security Violation CWE-SSRF: Host '${host}' is not in allowed hosts list`);

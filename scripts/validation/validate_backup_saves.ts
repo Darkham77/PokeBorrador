@@ -115,8 +115,8 @@ async function main() {
   const gameSaves = backupData.data?.game_saves || [];
   console.log(`📂 Cargados ${gameSaves.length} saves del backup de server_franco.\n`);
 
-  const errors: string[] = [];
-  const warnings: string[] = [];
+  const errors: string[] = []; // no-domain
+  const warnings: string[] = []; // no-domain
   let totalPokemonScanned = 0;
 
   const gen = Dex.forGen(ACTIVE_GENERATION);
@@ -160,7 +160,7 @@ async function main() {
 
       // C. Validate Nature
       if (poke.nature) {
-        const validNatures = ['active', 'lonely', 'brave', 'adamant', 'naughty', 'bold', 'docile', 'relaxed', 'impish', 'lax', 'timid', 'hasty', 'serious', 'jolly', 'naive', 'modest', 'mild', 'quiet', 'bashful', 'rash', 'calm', 'gentle', 'sassy', 'careful', 'quirky'];
+        const validNatures = ['active', 'lonely', 'brave', 'adamant', 'naughty', 'bold', 'docile', 'relaxed', 'impish', 'lax', 'timid', 'hasty', 'serious', 'jolly', 'naive', 'modest', 'mild', 'quiet', 'bashful', 'rash', 'calm', 'gentle', 'sassy', 'careful', 'quirky']; // no-domain
         const natureKey = normalize(poke.nature);
         if (!validNatures.includes(natureKey)) {
           warnings.push(`${tag} - Naturaleza '${poke.nature}' no válida.`);

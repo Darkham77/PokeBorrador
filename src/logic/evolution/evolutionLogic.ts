@@ -1,7 +1,7 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { EVOLUTION_TABLE, STONE_EVOLUTIONS, TRADE_EVOLUTIONS, getLevelEvolution, getStoneEvolution, getTradeEvolution } from '@/data/pokemon/evolutionData';
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
-import type { Pokemon, PokemonMove } from '@/types/pokemon/pokemon';
+import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import type { PokemonData, LearnsetMove } from '@/types/system/database';
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { requireAbilityId } from '@/data/battle/abilities';
@@ -41,7 +41,7 @@ export function evolvePokemonData(pokemon: Pokemon, toId: string) {
   pokemon.hp = Math.min(pokemon.hp + (pokemon.maxHp - oldMaxHp), pokemon.maxHp);
   
   // Movimientos pendientes del nuevo learnset para el nivel actual
-  const pendingMoves: PokemonMove[] = [];
+  const pendingMoves: Move[] = [];
   if (toData.learnset) {
     (toData.learnset as LearnsetMove[]).filter(m => m.lv === pokemon.level).forEach(m => {
       if (!pokemon.moves.find(em => em && em.name === m.name)) {

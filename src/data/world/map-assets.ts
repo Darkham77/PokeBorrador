@@ -65,7 +65,7 @@ export function isMapWithCycleId(value: string): value is MapWithCycleId {
   return (MAPS_WITH_CYCLES as readonly string[]).includes(value); // domain-ok
 }
 
-const AVAILABLE_BATTLE_MAPS = [
+export const AVAILABLE_BATTLE_MAPS = [
   "bosqueviridian_amanecer",
   "bosqueviridian_atardecer",
   "bosqueviridian_dia",

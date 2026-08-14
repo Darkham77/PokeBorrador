@@ -107,20 +107,30 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
       const win = window as WindowWithResolver;
       const gameStore = win.__VITE_DEBUG__?.getGameStore?.() as { state?: { team?: E2ECharmander[] } } | undefined;
       const charmander = gameStore?.state?.team?.find((p) => p?.id === 'charmander');
+      if (!charmander || !charmander.ivs || !charmander.moves) {
+        throw new Error('Charmander not found or incomplete in gameStore team');
+      }
       return {
-        id: charmander?.id ?? '',
-        level: charmander?.level ?? 0,
-        nature: charmander?.nature ?? '',
-        ability: charmander?.ability ?? '',
-        nickname: charmander?.nickname ?? '',
-        ivs: charmander?.ivs ?? { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-        maxHp: charmander?.maxHp ?? 0,
-        atk: charmander?.atk ?? 0,
-        def: charmander?.def ?? 0,
-        spa: charmander?.spa ?? 0,
-        spd: charmander?.spd ?? 0,
-        spe: charmander?.spe ?? 0,
-        moves: (charmander?.moves ?? []).map((m) => m?.id || ''),
+        id: charmander.id,
+        level: charmander.level,
+        nature: charmander.nature,
+        ability: charmander.ability,
+        nickname: charmander.nickname,
+        ivs: {
+          hp: charmander.ivs.hp ?? 0,
+          atk: charmander.ivs.atk ?? 0,
+          def: charmander.ivs.def ?? 0,
+          spa: charmander.ivs.spa ?? 0,
+          spd: charmander.ivs.spd ?? 0,
+          spe: charmander.ivs.spe ?? 0,
+        },
+        maxHp: charmander.maxHp,
+        atk: charmander.atk,
+        def: charmander.def,
+        spa: charmander.spa,
+        spd: charmander.spd,
+        spe: charmander.spe,
+        moves: charmander.moves.map((m) => m?.id),
       };
     });
 

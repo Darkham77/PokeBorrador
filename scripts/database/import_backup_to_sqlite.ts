@@ -99,11 +99,11 @@ for (const profile of profiles as Array<{ id: string; username?: string; email?:
   if (profile.id) {
     let cleanName = '';
     if (profile.username) {
-      cleanName = profile.username.toLowerCase().replace(/\s+/g, '_');
+      cleanName = profile.username.toLowerCase().replace(/\s+/g, '_'); // string-ok
     } else if (profile.email) {
       cleanName = profile.email.split('@')[0]!.toLowerCase().replace(/\s+/g, '_');
     } else {
-      cleanName = profile.id.toLowerCase();
+      cleanName = profile.id.toLowerCase(); // string-ok
     }
     idMap.set(profile.id, `local_${cleanName}`);
   }
@@ -121,7 +121,7 @@ function replaceUserIds(value: unknown, mapping: Map<string, string>): unknown {
   if (value !== null && typeof value === 'object') {
     const newObj: Record<string, unknown> = {};
     for (const key of Object.keys(value)) {
-      newObj[key] = replaceUserIds((value as Record<string, unknown>)[key], mapping);
+      newObj[key] = replaceUserIds((value as Record<string, unknown>)[key], mapping); // open-record
     }
     return newObj;
   }
@@ -245,7 +245,7 @@ function transformRow(
           validIds.add('bicycle');
 
           const newInv: Record<string, number> = {};
-          const invObj = parsed.inventory as Record<string, number>;
+          const invObj = parsed.inventory as Record<string, number>; // open-record
           for (const [key, qty] of Object.entries(invObj)) {
             const resolvedName = resolveNormalizedName(key);
             let mappedId = itemMapping[resolvedName];
@@ -338,7 +338,7 @@ TABLES_SCHEMA.forEach(schemaStr => {
     const isPk = col.pk;
     
     colSet.add(colName);
-    if (colName === 'id' && colType.toUpperCase() === 'INTEGER' && isPk === 1) {
+    if (colName === 'id' && colType.toUpperCase() === 'INTEGER' && isPk === 1) { // string-ok
       hasIntPkId = true;
     }
   }
@@ -363,7 +363,7 @@ for (const tableName of Object.keys(backupData.data)) {
 
   // Mapear y filtrar cada fila
   const transformedRows = rows
-    .map((r: unknown) => transformRow(r as Record<string, unknown>, tableName, idMap, validCols, hasIntPkId))
+    .map((r: unknown) => transformRow(r as Record<string, unknown>, tableName, idMap, validCols, hasIntPkId)) // open-record
     .filter((row: Record<string, unknown>) => Object.keys(row).length > 0);
 
   if (transformedRows.length === 0) continue;
