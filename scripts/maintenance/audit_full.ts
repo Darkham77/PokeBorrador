@@ -163,12 +163,13 @@ interface CodeAuditReport {
 
     // Propagar argumentos relevantes a sub-tareas si aplica
     const taskArgs = [...task.args];
+    const tempJsonPath = 'scratch/audit_full_temp.json';
     if (task.name === 'Intelligent Project Audit') {
       if (values['changed-since']) taskArgs.push('--changed-since', values['changed-since'] as string);
       if (values['errors-only']) taskArgs.push('--errors-only');
       if (values.rule) taskArgs.push('--rule', values.rule as string);
       if (values.top) taskArgs.push('--top', values.top as string);
-      if (!isHumanMode) taskArgs.push('--json');
+      taskArgs.push('--output', tempJsonPath);
     }
 
     const start = performance.now();
@@ -183,15 +184,24 @@ interface CodeAuditReport {
     let errors = success ? 0 : 1;
     let warnings = 0;
 
-    if (!isHumanMode && proc.stdout) {
-      if (task.name === 'Intelligent Project Audit') {
-        try {
-          const parsed = JSON.parse(proc.stdout.trim()) as CodeAuditReport;
-          codeAuditDetails = parsed;
-          errors = parsed.summary?.errors ?? (success ? 0 : 1);
-          warnings = parsed.summary?.warnings ?? 0;
-        } catch {
-          // Ignorar fallback parse
+    if (task.name === 'Intelligent Project Audit') {
+      try {
+        const raw = await fs.readFile(tempJsonPath, 'utf-8');
+        const parsed = JSON.parse(raw) as CodeAuditReport;
+        codeAuditDetails = parsed;
+        errors = parsed.summary?.errors ?? (success ? 0 : 1);
+        warnings = parsed.summary?.warnings ?? 0;
+        await fs.rm(tempJsonPath, { force: true });
+      } catch {
+        if (!isHumanMode && proc.stdout) {
+          try {
+            const parsed = JSON.parse(proc.stdout.trim()) as CodeAuditReport;
+            codeAuditDetails = parsed;
+            errors = parsed.summary?.errors ?? (success ? 0 : 1);
+            warnings = parsed.summary?.warnings ?? 0;
+          } catch {
+            // Ignorar fallback parse
+          }
         }
       }
     }
@@ -238,18 +248,75 @@ interface CodeAuditReport {
   if (!isHumanMode) {
     console.log(JSON.stringify(consolidatedReport, null, 2));
   } else {
-    // Modo humano interactivo
+    // Modo humano interactivo con desglose por familias
     console.log(styleText('bold', '\n======================================================'));
-    console.log(styleText('bold', '📊 RESUMEN FINAL DE LA AUDITORÍA COMPLETA'));
+    console.log(styleText('bold', '📊 RESUMEN FINAL DE LA AUDITORÍA COMPLETA POR FAMILIAS'));
     console.log(styleText('bold', '======================================================'));
 
-    for (const res of results) {
-      const statusIcon = res.success ? `✅ ${styleText('green', 'ÉXITO')}` : `❌ ${styleText('red', 'FALLÓ')}`;
-      console.log(`  ${statusIcon} | ${res.name.padEnd(38)} (${res.durationMs}ms)`);
+    // 1. Familia AST y Reglas de Código
+    const byCat = codeAuditDetails?.summary?.byCategory ?? {};
+    const fallowDupesCount = (byCat['Fallow: Código duplicado'] ?? 0) + (byCat['Fallow: Código triplicado'] ?? 0);
+    const fallowSecCount = byCat['Fallow: Vulnerabilidad de seguridad'] ?? 0;
+    const fallowDeadCount = byCat['Fallow: Calidad / Dead Code'] ?? 0;
+    const fallowCompCount = byCat['Fallow: Complejidad'] ?? 0;
+    const lengthCount = byCat['Largo de archivo (>300/500 líneas)'] ?? 0;
+    const doxCount = byCat['DOX / AGENTS.md'] ?? 0;
+    
+    // Reglas AST generales
+    let astRuleWarnings = 0;
+    for (const [cat, cnt] of Object.entries(byCat)) {
+      if (!cat.startsWith('Fallow') && cat !== 'Largo de archivo (>300/500 líneas)' && cat !== 'DOX / AGENTS.md' && !cat.includes('css-checker')) {
+        astRuleWarnings += cnt;
+      }
     }
 
-    console.log(styleText('bold', '──────────────────────────────────────────────────────'));
-    console.log(`📊 TOTAL: ${totalErrors === 0 ? styleText('green', '0 Errores') : styleText('red', `${totalErrors} Errores`)} | ${styleText('yellow', `${totalWarnings} Advertencias`)} | ${suitesPassed}/${results.length} Suites aprobadas`);
+    const formatRow = (name: string, success: boolean, errors: number, warns: number, timeMs?: number) => {
+      const icon = (success && errors === 0) ? `✅ ${styleText('green', 'ÉXITO')}` : `❌ ${styleText('red', 'FALLÓ')}`;
+      const counts = warns > 0 ? styleText('yellow', ` (${warns} ⚠️)`) : '';
+      const errCounts = errors > 0 ? styleText('red', ` (${errors} ❌)`) : '';
+      const timeStr = timeMs !== undefined ? ` (${timeMs}ms)` : '';
+      console.log(`  ${icon} | ${name.padEnd(44)} ${timeStr}${errCounts}${counts}`);
+    };
+
+    console.log(styleText('bold', '\n📁 [FAMILIA 1] ESTÁNDARES ESTÁTICOS, AST Y ARQUITECTURA:'));
+    formatRow('AST & Anti-Patterns Rules', true, 0, astRuleWarnings);
+    formatRow('Modularity & File Length (>300/500L)', true, 0, lengthCount);
+    formatRow('DOX Hierarchy & AGENTS.md Integrity', true, 0, doxCount);
+    const cssRes = results.find(r => r.name.includes('CSS/SCSS'));
+    formatRow('CSS/SCSS Duplicates (css-checker)', cssRes?.success ?? true, cssRes?.errors ?? 0, cssRes?.warnings ?? 0, cssRes?.durationMs);
+
+    console.log(styleText('bold', '\n🧠 [FAMILIA 2] FALLOW CODEBASE INTELLIGENCE:'));
+    formatRow('Fallow: Duplicación de Código (Dupes)', true, 0, fallowDupesCount);
+    formatRow('Fallow: Seguridad (Vulnerabilidades CWE)', true, 0, fallowSecCount);
+    formatRow('Fallow: Calidad & Dead Code', true, 0, fallowDeadCount);
+    formatRow('Fallow: Complejidad Ciclomática/Cognitiva', true, 0, fallowCompCount);
+
+    console.log(styleText('bold', '\n🔒 [FAMILIA 3] TIPOS DE DOMINIO Y DATOS CANÓNICOS:'));
+    const domRes = results.find(r => r.name.includes('Domain Types'));
+    const itemRes = results.find(r => r.name.includes('Items'));
+    const moveRes = results.find(r => r.name.includes('Moves'));
+    const abilRes = results.find(r => r.name.includes('Abilities'));
+    formatRow('Domain Types Integrity', domRes?.success ?? true, domRes?.errors ?? 0, domRes?.warnings ?? 0, domRes?.durationMs);
+    formatRow('Items Database Integrity', itemRes?.success ?? true, itemRes?.errors ?? 0, itemRes?.warnings ?? 0, itemRes?.durationMs);
+    formatRow('Moves Database Integrity', moveRes?.success ?? true, moveRes?.errors ?? 0, moveRes?.warnings ?? 0, moveRes?.durationMs);
+    formatRow('Abilities Database Integrity', abilRes?.success ?? true, abilRes?.errors ?? 0, abilRes?.warnings ?? 0, abilRes?.durationMs);
+
+    console.log(styleText('bold', '\n💾 [FAMILIA 4] PERSISTENCIA Y MIGRACIONES:'));
+    const sqlRes = results.find(r => r.name.includes('SQL Migrations'));
+    const saveRes = results.find(r => r.name.includes('Save Migrations'));
+    formatRow('SQL Migrations (SQLite Nativo Node 26)', sqlRes?.success ?? true, sqlRes?.errors ?? 0, sqlRes?.warnings ?? 0, sqlRes?.durationMs);
+    formatRow('Save Migrations Verification', saveRes?.success ?? true, saveRes?.errors ?? 0, saveRes?.warnings ?? 0, saveRes?.durationMs);
+
+    console.log(styleText('bold', '\n🔄 [FAMILIA 5] MÁQUINA DE ESTADOS FINITO (FSM):'));
+    const fsmDiagRes = results.find(r => r.name.includes('FSM Diagrams'));
+    const fsmImplRes = results.find(r => r.name.includes('FSM Implementation'));
+    const fsmFlowRes = results.find(r => r.name.includes('FSM Flow Parity'));
+    formatRow('FSM Diagrams (Mermaid vs TS)', fsmDiagRes?.success ?? true, fsmDiagRes?.errors ?? 0, fsmDiagRes?.warnings ?? 0, fsmDiagRes?.durationMs);
+    formatRow('FSM Implementation & Dead States', fsmImplRes?.success ?? true, fsmImplRes?.errors ?? 0, fsmImplRes?.warnings ?? 0, fsmImplRes?.durationMs);
+    formatRow('FSM Flow Parity (Transitions)', fsmFlowRes?.success ?? true, fsmFlowRes?.errors ?? 0, fsmFlowRes?.warnings ?? 0, fsmFlowRes?.durationMs);
+
+    console.log(styleText('bold', '\n──────────────────────────────────────────────────────'));
+    console.log(`📊 TOTAL: ${totalErrors === 0 ? styleText('green', '0 Errores') : styleText('red', `${totalErrors} Errores`)} | ${styleText('yellow', `${totalWarnings} Advertencias`)} | ${suitesPassed}/${results.length} Suites maestras aprobadas`);
     console.log(styleText('bold', '======================================================\n'));
 
     if (anyFailed) {

@@ -34,6 +34,8 @@ Frontend UI Developers / UI Designers.
 - **Modal Metadata**: Full-screen experiences or overlays that obscure the background must be registered in the `MODAL_METADATA` registry using standard flags (`isFullscreen`, `obscuresBackground`) instead of name comparisons in stores.
 - **Tooltip Layout and Grid Closures**: When adding layout blocks inside tooltips, ensure that CSS grid wrappers (such as `.combat-stats-grid`) are closed immediately before rendering block/flex containers. Mismatched tag closures will force subsequent elements to render as grid columns, compressing the layout.
 - **Text Wrapping & Overlapping Prevention**: For percentage lists, HP ranges, or status descriptions inside compact flex/grid containers, set `white-space: nowrap` and use a `line-height` of at least `1.2` to prevent words from wrapping and overlapping on line heights.
+- **Mobile Touch Drag-and-Drop & Auto-Scroll Containment**: Draggable team slots and gridded cards must set `touch-action: none` to prevent browser gesture cancellation (`pointercancel`). When auto-scrolling during drag-and-drop within a scrollable modal container, lock `maxScroll` to the initial pre-drag `scrollHeight - clientHeight` to prevent dynamic transform expansion from allowing infinite scrolling.
+- **Card Selection & Details Separation**: In team and pokemon management modals, slot drag-and-drop or card clicking on occupied slots must not inadvertently trigger the Pokémon details modal; details modal opening must be strictly reserved for explicit action buttons (`DATOS`).
 
 ## Verification
 

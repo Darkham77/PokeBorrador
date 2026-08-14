@@ -147,6 +147,9 @@ describe('Backup Full validation and Dex compatibility test', () => {
 
     const errors: string[] = [];
 
+    const itemsDict = JSON.parse(fs.readFileSync(path.resolve('src/data/inventory/items.json'), 'utf8'));
+    const customItemIds = new Set(itemsDict.SHOP_ITEMS.map((item: { id: string }) => item.id));
+
     for (const row of rows) {
       const userId = row.user_id;
       const saveData: GameState = JSON.parse(row.save_data);
@@ -191,8 +194,7 @@ describe('Backup Full validation and Dex compatibility test', () => {
         // Validate heldItem
         if (poke.heldItem) {
           const itemObj = Dex.items.get(poke.heldItem);
-          const itemsDict = JSON.parse(fs.readFileSync(path.resolve('src/data/inventory/items.json'), 'utf8'));
-          const isCustomItem = itemsDict.SHOP_ITEMS.some((item: { id: string }) => item.id === poke.heldItem);
+          const isCustomItem = customItemIds.has(poke.heldItem);
           if (!itemObj.exists && !isCustomItem) {
             errors.push(`${tag} - Invalid held item: '${poke.heldItem}'`);
           }
@@ -212,14 +214,9 @@ describe('Backup Full validation and Dex compatibility test', () => {
 
       // Validate inventory items
       const inventory = saveData.inventory || {};
-      const itemsDict = JSON.parse(fs.readFileSync(path.resolve('src/data/inventory/items.json'), 'utf8'));
-      const validItemIds = new Set([
-        ...itemsDict.SHOP_ITEMS.map((item: { id: string }) => item.id),
-      ]);
-
       for (const itemKey of Object.keys(inventory)) {
         const isTM = itemKey.startsWith('tm') || itemKey.startsWith('hm');
-        if (!validItemIds.has(itemKey) && !isTM) {
+        if (!customItemIds.has(itemKey) && !isTM) {
           errors.push(`[User: ${userId}] Inventory - Invalid item ID: '${itemKey}'`);
         }
       }

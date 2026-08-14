@@ -16,6 +16,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    pool: 'forks',
+    teardownTimeout: 2000,
     include: ['tests/node/**/*.test.ts'],
     testTimeout: 60000,
     coverage: {

@@ -1,4 +1,4 @@
-import { vi, beforeEach } from 'vitest'
+import { vi, beforeEach, afterEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 
 /**
@@ -6,9 +6,18 @@ import { setActivePinia, createPinia } from 'pinia'
  * Global setup for Vitest environment.
  */
 
+const activeDelayedCalls = new Set<NodeJS.Timeout | number>()
+
 // Initialize Pinia for all tests
 beforeEach(() => {
   setActivePinia(createPinia())
+})
+
+afterEach(() => {
+  for (const timer of activeDelayedCalls) {
+    clearTimeout(timer)
+  }
+  activeDelayedCalls.clear()
 })
 
 // Mock Temporal.Now to work with Vitest fake timers (which mock Date.now)
@@ -100,16 +109,27 @@ vi.mock('gsap', () => {
       };
     },
     delayedCall: (delay: number, callback: () => void) => {
-      // Map to native setTimeout so Vitest fake timers can control it
-      // Return a fake Tween-like object with a kill() method
-      const timerId = setTimeout(callback, delay * 1000);
+      let timerId: NodeJS.Timeout | number | null = null
+      timerId = setTimeout(() => {
+        if (timerId !== null) activeDelayedCalls.delete(timerId)
+        if (typeof callback === 'function') callback()
+      }, delay * 1000)
+      if (typeof timerId === 'object' && timerId && 'unref' in timerId) {
+        (timerId as NodeJS.Timeout).unref()
+      }
+      activeDelayedCalls.add(timerId)
       return { 
-        kill: () => clearTimeout(timerId),
+        kill: () => {
+          if (timerId !== null) {
+            clearTimeout(timerId)
+            activeDelayedCalls.delete(timerId)
+          }
+        },
         eventCallback: vi.fn().mockReturnThis(),
         progress: vi.fn().mockReturnThis(),
         pause: vi.fn().mockReturnThis(),
         play: vi.fn().mockReturnThis()
-      };
+      }
     },
     context: (fn: (self: {
       add: (addFn: () => void) => unknown;
