@@ -132,7 +132,11 @@ export const BREEDING_CONSTANTS = {
   NATURE_INHERIT_CHANCE: 1.0, // 100% con Piedra Eterna (migrado de Gen 4+ para QoL)
   IV_INHERIT_DEFAULT: 3,
   IV_INHERIT_DESTINY_KNOT: 5,
-};
+  EGG_WAR_PTS_CHANCE: 0.1, // 10% de probabilidad de ganar war points al abrir huevos
+  EGG_WAR_PTS_AMOUNT: 5 // Cantidad de war points ganados por eclosión
+} as const;
+
+export type BreedingConstantKey = keyof typeof BREEDING_CONSTANTS;
 
 const SECONDS_PER_MINUTE = 60
 const MINUTES_PER_HOUR = 60

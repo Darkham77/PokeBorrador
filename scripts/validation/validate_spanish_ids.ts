@@ -89,7 +89,7 @@ for (const file of filesToScan) {
 
 // Generate report in workspace root scratch/
 const reportPath = 'scratch/spanish_id_report.md';
-let markdown = `# Reporte de Coincidencias de IDs Lógicos en Español\n\n`;
+let markdown = `# Reporte de Coincidencias de IDs Lógicos en Español\n\n`; // singleton-ok
 markdown += `Se encontraron **${matches.length}** posibles coincidencias de cadenas en español que podrían corresponder a comparaciones lógicas.\n\n`;
 markdown += `| Archivo | Línea | Palabra en Español | Coincidencia de Código |\n`;
 markdown += `| :--- | :--- | :--- | :--- |\n`;

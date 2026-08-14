@@ -5,6 +5,7 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
 import { useErrorStore } from '@/stores/errorStore'
+import { useEventStore } from '@/stores/events'
 
 import { logger } from '@/logic/utils/logger'
 import { gsap } from 'gsap'
@@ -80,7 +81,6 @@ export function registerSystemTools(debug: DebugSystem) {
       if (error) throw error
       ui.notify('Evento guardado (CLI)', '✅')
       try {
-        const { useEventStore } = await import('@/stores/events')
         const eventStore = useEventStore()
         await eventStore.fetchEvents()
       } catch (e) {

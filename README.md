@@ -199,35 +199,35 @@ Antes de realizar una entrega o desplegar cambios, es **MANDATORIO** que el cód
 
 ### 🛡️ Auditoría e Integridad (Node.js 26+)
 
-El proyecto utiliza un motor de auditoría inteligente y validadores semánticos para garantizar la calidad del código.
+El proyecto utiliza un sistema de auditoría unificado y validadores semánticos con salida dual (JSON estructurado para IA y formato visual para desarrolladores).
+
+#### 🔄 Flujo de Verificación Recomendado
+
+- **Durante el Desarrollo Activo**: Ejecuta `npm run lint` (~3-5 segundos) para comprobaciones rápidas de sintaxis, tipos TypeScript (`vue-tsc`), tipos de dominio y ESLint con `.eslintcache`.
+- **Antes de Realizar un Commit**: Ejecuta `npm run audit:warnings-diff` (*Single Source of Truth*) para verificar de forma exhaustiva 0 errores en todo el proyecto y 0 advertencias nuevas contra `origin/main`.
 
 | Comando | Descripción |
 | :-- | :-- |
-| `npm run audit` | **Auditoría Inteligente**: Analiza patrones legacy (Date), colisiones SASS y optimización GPU. |
-| `npm run audit:fix` | **Auto-corrección**: Aplica correcciones automáticas de estándares (Timers, Imports, SASS). |
-| `npm run audit:summary` | **Resumen de Auditoría**: Ejecuta la auditoría en modo resumen (oculta detalles de violaciones). |
-| `npm run audit:report` | **Reporte de Auditoría**: Genera un archivo detallado `scratch/audit_report.txt` con todas las violaciones. |
-| `npm run audit:full` | **Pipeline Completo**: Ejecuta TODAS las validaciones (Lints, SQL, FSM, Items, Moves, Abilities). |
+| `npm run audit` | **Auditoría Global Unificada**: Ejecuta las 12 suites (Tests Node, AST de código, FSM, Ítems, Habilidades, Moves, SQL, Saves) emitiendo JSON estructurado en `stdout` por defecto para IAs y herramientas CI. |
+| `npm run audit:human` | **Modo Consola Humano**: Ejecuta la auditoría global mostrando un árbol jerárquico visual por archivo con sangría y emojis en consola. |
+| `npm run audit:fast` | **Auditoría Rápida de Código**: Escanea reglas estáticas de AST, Fallow, CSS y modularidad en segundos (JSON). |
+| `npm run audit:fast:human` | **Auditoría Rápida en Consola**: Ejecuta la auditoría de código en modo visual para desarrollo ágil. |
+| `npm run audit:warnings-diff` | **Pre-Commit Gatekeeper**: Verifica 0 errores en todo el proyecto (incluyendo migraciones SQL, FSM, tipos de dominio) y 0 advertencias nuevas contra `origin/main`. |
+| `npm run audit:fix` | **Auto-corrección**: Aplica correcciones automáticas de estándares (Timers, Imports ESM, SASS). |
+| `npm run audit:summary` | **Resumen de Métricas**: Muestra el desglose de violaciones por categorías y top archivos afectados. |
+| `npm run audit:report` | **Reporte en Texto**: Genera un archivo detallado `scratch/audit_report.txt` con todas las violaciones. |
+| `npm run audit:md` | **Reporte Markdown**: Genera un documento Markdown enriquecido con tablas en `scratch/audit_report.md`. |
 | `npm run test:node` | **Native Test Runner**: Ejecuta pruebas de lógica pura usando el runner nativo de Node.js 26+. |
 | `npm run test:all` | **Batería Completa de Tests**: Ejecuta secuencialmente la suite nativa de Node.js (`test:node`) y los tests de componentes en Vitest (`test`). |
+| `npm run validate:domain-types` | **Domain Types Audit**: Audita el cumplimiento estricto de tipos de dominio y uniones canónicas. |
 | `npm run validate:sql` | **SQL Integrity**: Valida compatibilidad de migraciones con SQLite nativo (`node:sqlite`). |
+| `npm run validate:save-migrations` | **Save Migrations**: Valida las migraciones de partidas guardadas contra el Dex de Showdown. |
 | `npm run validate:items` | **Item Database**: Verifica IDs, tipos e iconos en la base de datos de objetos. |
-| `npm run validate:items:summary` | **Resumen de Objetos**: Valida los objetos omitiendo listados detallados en consola. |
-| `npm run validate:items:report` | **Reporte de Objetos**: Genera un archivo detallado `scratch/items_report.txt` con la validación de objetos. |
 | `npm run validate:moves` | **Move Integrity**: Valida integridad de movimientos y learnsets contra el Dex de Showdown. |
-| `npm run validate:moves:summary` | **Resumen de Movimientos**: Valida movimientos omitiendo listados detallados en consola. |
-| `npm run validate:moves:report` | **Reporte de Movimientos**: Genera un archivo detallado `scratch/moves_report.txt` con la validación de movimientos. |
 | `npm run validate:abilities` | **Ability Sync**: Valida habilidades contra la base de datos oficial. |
-| `npm run validate:abilities:summary` | **Resumen de Habilidades**: Valida habilidades omitiendo listados detallados en consola. |
-| `npm run validate:abilities:report` | **Reporte de Habilidades**: Genera un archivo detallado `scratch/abilities_report.txt` con la validación de habilidades. |
-| `npm run validate:sandbox` | **Sandbox Validate**: Valida los tooltips de movimientos en el sandbox de batalla. |
-| `npm run validate:sandbox:summary` | **Resumen de Sandbox**: Valida el sandbox omitiendo listados detallados en consola. |
-| `npm run validate:sandbox:report` | **Reporte de Sandbox**: Genera un archivo detallado `scratch/sandbox_report.txt` con la validación de sandbox. |
 | `npm run validate:fsm` | **FSM Mastery Audit**: Verifica diagramas, implementación dinámica y paridad de flujo. |
-| `npm run validate:fsm:summary` | **Resumen de FSM**: Valida la FSM omitiendo listados detallados en consola. |
-| `npm run validate:fsm:report` | **Reporte de FSM**: Genera un archivo detallado `scratch/fsm_report.txt` con la validación de FSM. |
 | `npm run migrations:generate` | **Generador de Migraciones**: Escanea las migraciones SQL locales de `database/migrations/` y las compila en el manifiesto TypeScript de producción. |
-| `npm run sync:test` | **Sincronización a Repo de Testing**: Copia el árbol de fuentes completo (`src/`, `api/`, `public/`, `scripts/`, `database/migrations/`, archivos de config) desde `PokeBorrador` al repositorio hermano `pokevicio-test`. Si `pokevicio-test` no existe, lo clona automáticamente vía SSH. Preserva `.git` y `.github` intactos. Usarlo cuando una rama de feature está estable y se quiere enviar un snapshot limpio para QA. |
+| `npm run sync:test` | **Sincronización a Repo de Testing**: Copia el árbol de fuentes completo (`src/`, `api/`, `public/`, `scripts/`, `database/migrations/`, archivos de config) desde `PokeBorrador` al repositorio hermano `pokevicio-test`. |
 
 ### ☁️ Gestión de Infraestructura Supabase y Servidores (Node.js 26+)
 
@@ -341,17 +341,26 @@ npm run assets:convert
 
 ### 🔎 Auditoría de Estándares
 
-Motor unificado para verificar Viewports dinámicos, filtros SASS, rendimiento GPU y reglas de código:
+Motor unificado para verificar Viewports dinámicos, filtros SASS, rendimiento GPU, bases de datos y reglas de código:
 
 ```bash
-# Solo escaneo de Viewports/SASS
+# Auditoría global unificada (salida JSON en stdout para IAs/CI por defecto)
 npm run audit
 
-# Auditoría completa (FSM, ítems, habilidades, movimientos, SQL)
-npm run audit:full
+# Auditoría interactiva en consola para desarrolladores (modo visual con árbol y emojis)
+npm run audit:human
 
-# Escaneo y corrección automática (Viewport, SASS filters, imports)
+# Auditoría rápida de AST de código (reglas estáticas en pocos segundos)
+npm run audit:fast
+
+# Control de errores y advertencias pre-commit
+npm run audit:warnings-diff
+
+# Escaneo y corrección automática (Viewport, SASS filters, imports ESM)
 npm run audit:fix
+
+# Exportar reporte enriquecido en Markdown
+npm run audit:md
 ```
 
 ### 🔒 Ejecución Segura

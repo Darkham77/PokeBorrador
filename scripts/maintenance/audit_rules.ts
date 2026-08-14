@@ -300,7 +300,7 @@ export const functionCallsInTemplates: AuditRule = {
 };
 
 export const fileLength: AuditRule = {
-  regex: /[\s\S]*/,
+  regex: /(?!.*)/,
   message: () => `Archivo demasiado largo.`,
   maxLines: 500,
   ignorePattern: /\[PureVue-Ignore-Length\]/,

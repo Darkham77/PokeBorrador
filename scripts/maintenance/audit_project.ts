@@ -52,13 +52,13 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
 
 
   if (isLogic || isVue) {
+    const allRules: AuditRule[] = Object.values(config) as AuditRule[];
     if (isVue) {
       const scriptBlocks = extractAllBlocks(content, 'script');
       // Procesa los bloques de script en reversa para no alterar los índices de caracteres al modificar el contenido
       for (let i = scriptBlocks.length - 1; i >= 0; i--) {
         const block = scriptBlocks[i]!;
-        const allRules: AuditRule[] = Object.values(config) as AuditRule[];
-        let rules: AuditRule[] = allRules.filter(r => r !== config.dbInTemplates && r !== config.functionCallsInTemplates);
+        let rules: AuditRule[] = allRules.filter(r => r !== config.dbInTemplates && r !== config.functionCallsInTemplates && r !== config.fileLength);
         
         if (filePath.includes('scripts' + path.sep) || filePath.includes('supabase' + path.sep) || filePath.includes('audit_project.ts')) {
           rules = rules.filter(r => r !== config.legacyDates);
@@ -94,8 +94,7 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
       }
     } else {
       // isLogic
-      const allRules: AuditRule[] = Object.values(config) as AuditRule[];
-      let rules: AuditRule[] = allRules.filter(r => r !== config.dbInTemplates && r !== config.functionCallsInTemplates);
+      let rules: AuditRule[] = allRules.filter(r => r !== config.dbInTemplates && r !== config.functionCallsInTemplates && r !== config.fileLength);
       
       if (filePath.includes('scripts' + path.sep) || filePath.includes('supabase' + path.sep) || filePath.includes('audit_project.ts')) {
         rules = rules.filter(r => r !== config.legacyDates);
@@ -362,7 +361,7 @@ function getChangedFiles(ref: string): string[] {
       .filter(f => f !== '' && AUDIT_EXTENSIONS.has(path.extname(f)) && !Array.from(IGNORE_DIRS).some(d => f.includes(d)))
       .map(f => path.resolve(process.cwd(), f));
   } catch (_e) {
-    console.log(styleText('yellow', `⚠️ No se pudo obtener la lista de archivos modificados desde git para ref: '${ref}'. Se auditará el proyecto completo.`));
+    process.stderr.write(styleText('yellow', `⚠️ No se pudo obtener la lista de archivos modificados desde git para ref: '${ref}'. Se auditará el proyecto completo.\n`));
     return [];
   }
 }
@@ -929,7 +928,7 @@ async function checkDoxIntegrity(): Promise<Violation[]> {
   }
   
   const rootAgentsPath = path.join(rootDir, 'AGENTS.md');
-  console.log(styleText('cyan', '📘 Escaneando jerarquía e integridad de índices AGENTS.md / DOX...'));
+  process.stderr.write(styleText('cyan', '📘 Escaneando jerarquía e integridad de índices AGENTS.md / DOX...\n'));
 
   if (!doxFilesMap.has(rootDir)) {
     violations.push({
@@ -1169,7 +1168,7 @@ async function detectDuplicateConstants(files: string[]): Promise<Violation[]> {
             line: decl.line,
             message: `Constante '${constName}' declarada con valores diferentes en múltiples módulos (${fileList}). Revisa si es un posible bug o si se debe unificar/renombrar según su subdominio.`,
             context: constName,
-            severity: 'warning',
+            severity: 'error',
             fixable: false
           });
         }
@@ -1180,6 +1179,45 @@ async function detectDuplicateConstants(files: string[]): Promise<Violation[]> {
   return violations;
 }
 
+function getViolationCategory(v: Violation): string {
+  const msg = v.message;
+  if (msg.includes('Número mágico') || msg.includes('mágico')) return 'Números mágicos sin constante';
+  if (msg.includes('Nombre de constante impropio') || msg.includes('hardcodear el valor')) return 'Nombres de constantes con valor numérico';
+  if (msg.includes('Domain ID fallback') || msg.includes('noDomainIdFallbacks')) return 'Fallback silencioso de Domain ID';
+  if (msg.includes('Unidad legacy')) return 'Viewport (dvh/dvw)';
+  if (msg.includes('will-change')) return 'Falta will-change (GPU)';
+  if (msg.includes('Temporal')) return 'Uso de Date (Temporal)';
+  if (msg.includes('prefijo')) return 'Import de Node sin prefijo';
+  if (msg.includes('extensión')) return 'Import relativo sin extensión';
+  if (msg.includes('Zero-Ignore')) return 'TypeScript Ignore';
+  if (msg.includes('setTimeout manual')) return 'setTimeout manual en script';
+  if (msg.includes('timer de ANIMACIÓN')) return 'setTimeout/setInterval en UI';
+  if (msg.includes('sin \'using\'')) return 'Falta explicit resource (\'using\')';
+  if (msg.includes('Animación manual')) return 'Animación/Transición manual (GSAP)';
+  if (msg.includes('Z-Index') || msg.includes('z-index')) return 'Z-Index fuera de estándar';
+  if (msg.includes('archivo tiene') || msg.includes('líneas reales') || msg.includes('SLOC')) return 'Largo de archivo (>300/500 líneas)';
+  if (msg.includes('Código duplicado')) return 'Fallow: Código duplicado';
+  if (msg.includes('Código triplicado')) return 'Fallow: Código triplicado';
+  if (msg.includes('Vulnerabilidad de seguridad')) return 'Fallow: Vulnerabilidad de seguridad';
+  if (msg.includes('Sugerencia de calidad')) return 'Fallow: Calidad / Dead Code';
+  if (msg.includes('Sugerencia de complejidad')) return 'Fallow: Complejidad';
+  if (msg.includes('AGENTS.md') || msg.includes('DOX') || msg.includes('Enlace')) return 'DOX / AGENTS.md';
+  if (msg.includes('css-checker') || msg.includes('CSS/SCSS duplicado')) return 'css-checker: SCSS/CSS duplicado';
+  if (msg.includes('Constante duplicada') || msg.includes('valores diferentes')) return 'Constantes duplicadas entre módulos';
+  if (msg.includes('Variable mutable')) return 'Variable mutable global (let)';
+  return 'Otros';
+}
+
+const MAX_CONTEXT_SNIPPET_LENGTH = 50; // no-magic
+const DEFAULT_TOP_LIMIT = 15; // no-magic
+const MAX_FILES_TO_SHOW_IN_TERMINAL = 25; // no-magic
+const MAX_VIOLATIONS_PER_FILE_IN_TERMINAL = 10; // no-magic
+
+function sanitizeContext(ctx: string): string {
+  if (!ctx) return '';
+  return ctx.replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim().slice(0, MAX_CONTEXT_SNIPPET_LENGTH);
+}
+
 async function main() {
   const { values } = parseArgs({
     options: {
@@ -1188,6 +1226,8 @@ async function main() {
       output: { type: 'string', short: 'o' },
       summary: { type: 'boolean', short: 's' },
       json: { type: 'boolean', short: 'j' },
+      human: { type: 'boolean', short: 'H' },
+      pretty: { type: 'boolean' },
       top: { type: 'string', short: 't' },
       'changed-since': { type: 'string' },
       'errors-only': { type: 'boolean' },
@@ -1195,26 +1235,35 @@ async function main() {
       rule: { type: 'string', short: 'r' }
     }
   });
-  console.log(styleText('bold', '\n--- 🔎 POKE VICIO - REGLAS DE CÓDIGO & ESTRUCTURA DOX (audit_project.ts) ---'));
-  console.log(styleText('cyan', '💡 Nota: Para ejecutar la suite completa de todos los módulos (tests, FSM, ítems, migraciones SQL), ejecuta: npm run audit:full'));
-  console.log(styleText('cyan', '💡 Info: Se puede usar "--errors-only" en todos los scripts de validación y auditoría para filtrar advertencias.'));
-  console.log(styleText('cyan', '💡 Recomendación: Se aconseja utilizar "--summary" para obtener un resumen estructurado.'));
+
+  const isHumanMode = !!(values.human || values.pretty || values.summary);
+
+  function logProgress(msg: string) {
+    if (isHumanMode) {
+      console.log(msg);
+    } else {
+      process.stderr.write(msg + '\n');
+    }
+  }
+
+  logProgress(styleText('bold', '\n--- 🔎 POKE VICIO - REGLAS DE CÓDIGO & ESTRUCTURA DOX (audit_project.ts) ---'));
+  logProgress(styleText('cyan', '💡 Modo por defecto: JSON puro para herramientas e IA. Usa "--human" o "-H" para vista de consola.'));
   
   let all: Violation[] = [];
 
   if (values['css-only']) {
-    console.log(styleText('cyan', '\nEjecutando análisis exclusivo de css-checker (SCSS duplicados)...'));
+    logProgress(styleText('cyan', '\nEjecutando análisis exclusivo de css-checker (SCSS duplicados)...'));
     all = await runCssChecker(values.path as string);
   } else {
     // Consistency Check
-    console.log(styleText('cyan', '🎨 Verificando paridad de z-index (visuals.ts <-> _variables.scss)...'));
+    logProgress(styleText('cyan', '🎨 Verificando paridad de z-index (visuals.ts <-> _variables.scss)...'));
     const syncErrors = await checkZIndexConsistency(!!values.fix);
     const syncViolations: Violation[] = [];
     if (syncErrors.length > 0) {
-      console.log(styleText('magenta', `\n[SYNC] Desincronización detectada entre visuals.ts y _variables.scss:`));
-      syncErrors.forEach(e => console.log(styleText('yellow', `  -> ${e}`)));
+      logProgress(styleText('magenta', `\n[SYNC] Desincronización detectada entre visuals.ts y _variables.scss:`));
+      syncErrors.forEach(e => logProgress(styleText('yellow', `  -> ${e}`)));
       if (!values.fix) {
-        console.log(styleText('cyan', '  (Usa --fix para sincronizar automáticamente)'));
+        logProgress(styleText('cyan', '  (Usa --fix para sincronizar automáticamente)'));
         for (const err of syncErrors) {
           syncViolations.push({
             file: path.resolve(process.cwd(), 'src/styles/core/_variables.scss'),
@@ -1236,27 +1285,26 @@ async function main() {
     
     if (changedSince) {
       files = getChangedFiles(changedSince);
-      console.log(styleText('cyan', `Auditando solo archivos cambiados desde: '${changedSince}' (${files.length} archivos)`));
+      logProgress(styleText('cyan', `Auditando solo archivos cambiados desde: '${changedSince}' (${files.length} archivos)`));
     } else {
       files = await getFilesToAudit(path.resolve(process.cwd(), values.path as string));
     }
 
     all = [...syncViolations, ...doxErrors];
-    console.log(styleText('cyan', `🔍 Auditando ${files.length} archivos...`));
+    logProgress(styleText('cyan', `🔍 Auditando ${files.length} archivos...`));
     let processed = 0;
     const total = files.length;
     for (const f of files) {
       processed++;
       if (processed % 100 === 0 || processed === total) {
-        console.log(styleText('cyan', `⏳ Progreso auditoría: ${processed}/${total} archivos (${Math.round((processed / total) * 100)}%)`));
+        logProgress(styleText('cyan', `⏳ Progreso auditoría: ${processed}/${total} archivos (${Math.round((processed / total) * 100)}%)`));
       }
       all = all.concat(await auditFile(f, !!values.fix));
     }
-    console.log('');
 
     // SASS Module Migration (solo en --fix)
     if (values.fix) {
-      console.log(styleText('cyan', '\n\u2728 Ejecutando sass-migrator (built-in-only)...'));
+      logProgress(styleText('cyan', '\n✨ Ejecutando sass-migrator (built-in-only)...'));
       const legacyScssFiles = files.filter(f => {
         if (!f.endsWith('.scss') && !f.endsWith('.css')) return false;
         try { return readFileSync(f, 'utf-8').includes('@import'); } catch { return false; }
@@ -1271,45 +1319,45 @@ async function main() {
             execSync(`sass-migrator module --built-in-only ${JSON.stringify(f)}`, { encoding: 'utf-8', stdio: 'pipe' });
           } catch (err: unknown) {
             const msg = err instanceof Error ? (err as Error).message : String(err);
-            console.log(styleText('yellow', `  \u26a0\ufe0f  [${path.relative(process.cwd(), f)}]: ${msg.split('\n')[0] ?? msg}`));
+            logProgress(styleText('yellow', `  ⚠️  [${path.relative(process.cwd(), f)}]: ${msg.split('\n')[0] ?? msg}`));
           }
         }
-        console.log(styleText('green', `  \u2705 sass-migrator aplicado sobre ${legacyScssFiles.length} archivo(s) .scss con @import.`));
+        logProgress(styleText('green', `  ✅ sass-migrator aplicado sobre ${legacyScssFiles.length} archivo(s) .scss con @import.`));
       } else {
-        console.log(styleText('green', '  \u2705 Sin @import legados en archivos .scss. \u00a1Migrado!'));
+        logProgress(styleText('green', '  ✅ Sin @import legados en archivos .scss. ¡Migrado!'));
       }
       if (legacyVueFiles.length > 0) {
-        console.log(styleText('yellow', `  \u26a0\ufe0f  ${legacyVueFiles.length} Vue SFC(s) con @import legacy (requieren @use manual, alias @/ no resuelto por migrador):` ));
+        logProgress(styleText('yellow', `  ⚠️  ${legacyVueFiles.length} Vue SFC(s) con @import legacy:`));
         for (const f of legacyVueFiles) {
-          console.log(styleText('yellow', `     - ${path.relative(process.cwd(), f)}`));
+          logProgress(styleText('yellow', `     - ${path.relative(process.cwd(), f)}`));
         }
       }
     }
 
     // Integración de Fallow
-    console.log(styleText('cyan', '\nEjecutando análisis de Fallow...'));
+    logProgress(styleText('cyan', '\nEjecutando análisis de Fallow...'));
     if (changedSince) {
-      console.log(styleText('cyan', '  -> Fallow audit & security (archivos modificados)...'));
+      logProgress(styleText('cyan', '  -> Fallow audit & security (archivos modificados)...'));
       all = all.concat(runFallow('audit', ['--changed-since', changedSince]));
       all = all.concat(runFallow('security', ['--changed-since', changedSince]));
     } else {
-      console.log(styleText('cyan', '  [1/4] Fallow: Análisis de duplicación de código...'));
+      logProgress(styleText('cyan', '  [1/4] Fallow: Análisis de duplicación de código...'));
       all = all.concat(runFallow('dupes'));
       all = all.concat(runFallow('dupes', ['--min-occurrences', '3', '--min-lines', '10', '--min-tokens', '60'])); // no-magic
-      console.log(styleText('cyan', '  [2/4] Fallow: Análisis de seguridad...'));
+      logProgress(styleText('cyan', '  [2/4] Fallow: Análisis de seguridad...'));
       all = all.concat(runFallow('security'));
-      console.log(styleText('cyan', '  [3/4] Fallow: Análisis de código muerto...'));
+      logProgress(styleText('cyan', '  [3/4] Fallow: Análisis de código muerto...'));
       all = all.concat(runFallow('dead-code'));
-      console.log(styleText('cyan', '  [4/4] Fallow: Cálculo de métricas de salud...'));
+      logProgress(styleText('cyan', '  [4/4] Fallow: Cálculo de métricas de salud...'));
       all = all.concat(runFallow('health'));
     }
 
     // Integración de css-checker
-    console.log(styleText('cyan', '\nEjecutando análisis de css-checker (SCSS duplicados)...'));
+    logProgress(styleText('cyan', '\nEjecutando análisis de css-checker (SCSS duplicados)...'));
     all = all.concat(await runCssChecker(values.path as string));
 
     // Integración de detector de constantes duplicadas
-    console.log(styleText('cyan', '\nEjecutando análisis de constantes duplicadas entre módulos...'));
+    logProgress(styleText('cyan', '\nEjecutando análisis de constantes duplicadas entre módulos...'));
     all = all.concat(await detectDuplicateConstants(files));
   }
 
@@ -1334,129 +1382,149 @@ async function main() {
     return 0;
   });
 
+  // Construir agrupaciones de archivos y categorías
+  const fileGroups: Record<string, Violation[]> = {};
+  const typeGroups: Record<string, number> = {};
 
-  if (values.json) {
-    const fileGroups: Record<string, number> = {};
-    for (const v of all) {
-      const rel = path.relative(process.cwd(), v.file);
-      fileGroups[rel] = (fileGroups[rel] || 0) + 1;
-    }
-    const topLimit = values.top ? parseInt(values.top as string, 10) : Object.keys(fileGroups).length;
-    const topFiles = Object.entries(fileGroups)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, topLimit)
-      .map(([file, count]) => ({ file, count }));
+  for (const v of all) {
+    const rel = path.relative(process.cwd(), v.file);
+    if (!fileGroups[rel]) fileGroups[rel] = [];
+    fileGroups[rel].push(v);
 
-    const outputObj = {
+    const category = getViolationCategory(v);
+    typeGroups[category] = (typeGroups[category] || 0) + 1;
+  }
+
+  const topLimit = values.top ? parseInt(values.top as string, 10) : DEFAULT_TOP_LIMIT;
+  const topFiles = Object.entries(fileGroups)
+    .map(([file, violations]) => ({
+      file,
+      errors: violations.filter(v => v.severity === 'error').length,
+      warnings: violations.filter(v => v.severity === 'warning').length,
+      total: violations.length
+    }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, topLimit);
+
+  const errorsCount = all.filter(v => v.severity === 'error').length;
+  const warningsCount = all.filter(v => v.severity === 'warning').length;
+
+  const jsonReport = {
+    status: errorsCount > 0 ? 'failed' : 'passed',
+    summary: {
       totalViolations: all.length,
-      errors: all.filter(v => v.severity === 'error').length,
-      warnings: all.filter(v => v.severity === 'warning').length,
-      topFiles,
-      violations: all.map(v => ({
-        file: path.relative(process.cwd(), v.file),
-        line: v.line,
-        severity: v.severity,
-        message: v.message,
-        context: v.context
-      }))
-    };
-    console.log(JSON.stringify(outputObj, null, 2));
-    if (values.fix) console.log(styleText('cyan', '✨ Correcciones aplicadas.'));
-    if (all.some(v => v.severity === 'error')) process.exit(1);
-    return;
-  }
+      errors: errorsCount,
+      warnings: warningsCount,
+      filesWithIssues: Object.keys(fileGroups).length,
+      byCategory: typeGroups
+    },
+    topFiles,
+    files: Object.fromEntries(
+      Object.entries(fileGroups).map(([file, violations]) => [
+        file,
+        violations.map(v => ({
+          line: v.line,
+          severity: v.severity,
+          category: getViolationCategory(v),
+          message: v.message,
+          context: sanitizeContext(v.context)
+        }))
+      ])
+    )
+  };
 
-  if (values.summary) {
-    console.log(styleText('bold', '\n--- 📊 RESUMEN DE VIOLACIONES ---'));
-    
-    const fileGroups: Record<string, number> = {};
-    const typeGroups: Record<string, number> = {};
-
-    for (const v of all) {
-      const rel = path.relative(process.cwd(), v.file);
-      fileGroups[rel] = (fileGroups[rel] || 0) + 1;
-
-      let type = 'Otros';
-      if (v.message.includes('Número mágico') || v.message.includes('mágico')) type = 'Números mágicos sin constante';
-      else if (v.message.includes('Nombre de constante impropio') || v.message.includes('hardcodear el valor')) type = 'Nombres de constantes con valor numérico';
-      else if (v.message.includes('Domain ID fallback') || v.message.includes('noDomainIdFallbacks')) type = 'Fallback silencioso de Domain ID';
-      else if (v.message.includes('Unidad legacy')) type = 'Viewport (dvh/dvw)';
-      else if (v.message.includes('will-change')) type = 'Falta will-change (GPU)';
-      else if (v.message.includes('Temporal')) type = 'Uso de Date (Temporal)';
-      else if (v.message.includes('prefijo')) type = 'Import de Node sin prefijo';
-      else if (v.message.includes('extensión')) type = 'Import relativo sin extensión';
-      else if (v.message.includes('Zero-Ignore')) type = 'TypeScript Ignore';
-      else if (v.message.includes('setTimeout manual')) type = 'setTimeout manual en script';
-      else if (v.message.includes('timer de ANIMACIÓN')) type = 'setTimeout/setInterval en UI';
-      else if (v.message.includes('sin \'using\'')) type = 'Falta explicit resource (\'using\')';
-      else if (v.message.includes('Animación manual')) type = 'Animación/Transición manual (GSAP)';
-      else if (v.message.includes('Z-Index')) type = 'Z-Index fuera de estándar';
-      else if (v.message.includes('archivo tiene') || v.message.includes('líneas reales')) type = 'Largo de archivo (>300/500 líneas)';
-      else if (v.message.includes('Código duplicado')) type = 'Fallow: Código duplicado';
-      else if (v.message.includes('Código triplicado')) type = 'Fallow: Código triplicado';
-      else if (v.message.includes('Vulnerabilidad de seguridad')) type = 'Fallow: Vulnerabilidad de seguridad';
-      else if (v.message.includes('Sugerencia de calidad')) type = 'Fallow: Calidad / Dead Code';
-      else if (v.message.includes('Sugerencia de complejidad')) type = 'Fallow: Complejidad';
-      else if (v.message.includes('AGENTS.md') || v.message.includes('DOX') || v.message.includes('Enlace')) type = 'DOX / AGENTS.md';
-      else if (v.message.includes('css-checker') || v.message.includes('CSS/SCSS duplicado')) type = 'css-checker: SCSS/CSS duplicado';
-      else if (v.message.includes('Constante duplicada')) type = 'Constantes duplicadas entre módulos';
-
-      typeGroups[type] = (typeGroups[type] || 0) + 1;
-    }
-
-    const types = Object.entries(typeGroups);
-    if (types.length > 0) {
-      console.log('\nPor tipo de regla:');
-      types
-        .sort((a, b) => b[1] - a[1])
-        .forEach(([type, count]) => {
-          console.log(`  - ${type}: ${count}`);
-        });
-    }
-
-    const filesList = Object.entries(fileGroups);
-    if (filesList.length > 0) {
-      const topLimit = values.top ? parseInt(values.top as string, 10) : 15;
-      console.log(`\nTop ${topLimit} archivos con más problemas:`);
-      filesList
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, topLimit)
-        .forEach(([file, count]) => {
-          console.log(`  - ${file}: ${count} violaciones`);
-        });
-    }
-
-    console.log(`\n❌ Errores: ${all.filter(v=>v.severity==='error').length} | ⚠️ Advertencias: ${all.filter(v=>v.severity==='warning').length}`);
+  // Salida por defecto (JSON para IAs/Herramientas)
+  if (!isHumanMode) {
+    console.log(JSON.stringify(jsonReport, null, 2));
   } else {
-    const limit = 50;
-    const toPrint = all.slice(0, limit);
-    toPrint.forEach(v => console.log(styleText(v.severity === 'error' ? 'red' : 'yellow', `[${v.severity.toUpperCase()}] ${path.relative(process.cwd(), v.file)}:${v.line} -> ${v.message} ("${v.context}")`)));
-    if (all.length > limit) {
-      console.log(styleText('cyan', `\n[INFO] Se muestran solo las primeras ${limit} violaciones de un total de ${all.length} para evitar saturar la terminal.`));
-      console.log(styleText('cyan', `👉 Para ver el resumen consolidado por archivo y regla: npm run audit -- --summary`));
-      console.log(styleText('cyan', `👉 Para exportar el reporte completo a un archivo: npm run audit -- --output=scratch/audit_report.txt`));
+    // Modo Humano / Consola interactiva
+    if (values.summary) {
+      console.log(styleText('bold', '\n--- 📊 RESUMEN DE AUDITORÍA DE CÓDIGO ---'));
+      console.log('\nPor tipo de regla:');
+      Object.entries(typeGroups)
+        .sort((a, b) => b[1] - a[1])
+        .forEach(([cat, count]) => {
+          console.log(`  - ${cat}: ${count}`);
+        });
+
+      console.log(`\nTop ${topLimit} archivos con más problemas:`);
+      topFiles.forEach(f => {
+        console.log(`  - ${f.file}: ${f.total} violaciones (${f.errors} ❌, ${f.warnings} ⚠️)`);
+      });
+    } else {
+      console.log(styleText('bold', '\n--- 🔎 DETALLE DE VIOLACIONES POR ARCHIVO ---'));
+      const entries = Object.entries(fileGroups);
+      const filesToShow = entries.slice(0, MAX_FILES_TO_SHOW_IN_TERMINAL);
+
+      for (const [file, violations] of filesToShow) {
+        const fileErrors = violations.filter(v => v.severity === 'error').length;
+        const fileWarns = violations.filter(v => v.severity === 'warning').length;
+        console.log(`\n📁 ${styleText('bold', file)} (${violations.length} avisos: ${fileErrors} ❌, ${fileWarns} ⚠️)`);
+
+        for (const v of violations.slice(0, MAX_VIOLATIONS_PER_FILE_IN_TERMINAL)) {
+          const icon = v.severity === 'error' ? '❌ ERROR' : '⚠️ WARN ';
+          const color = v.severity === 'error' ? 'red' : 'yellow';
+          const lineStr = `L${v.line}`.padEnd(5);
+          const snippet = sanitizeContext(v.context);
+          const snippetStr = snippet ? ` ("${snippet}")` : '';
+          console.log(`  ${lineStr} ${styleText(color, icon)} [${getViolationCategory(v)}] ${v.message}${snippetStr}`);
+        }
+        if (violations.length > MAX_VIOLATIONS_PER_FILE_IN_TERMINAL) {
+          console.log(styleText('cyan', `  ... y ${violations.length - MAX_VIOLATIONS_PER_FILE_IN_TERMINAL} aviso(s) más en este archivo.`));
+        }
+      }
+
+      if (entries.length > MAX_FILES_TO_SHOW_IN_TERMINAL) {
+        console.log(styleText('cyan', `\n[INFO] Se muestran ${MAX_FILES_TO_SHOW_IN_TERMINAL} de ${entries.length} archivos con avisos para evitar saturar la terminal.`));
+        console.log(styleText('cyan', `👉 Usa "npm run audit -- --summary" para vista de métricas o "--output=<archivo>" para volcado completo.`));
+      }
     }
-    console.log(`\n❌ Errores: ${all.filter(v=>v.severity==='error').length} | ⚠️ Advertencias: ${all.filter(v=>v.severity==='warning').length}`);
+
+    console.log(styleText('bold', '\n======================================================'));
+    console.log(`📊 TOTAL: ${errorsCount === 0 ? styleText('green', '0 Errores') : styleText('red', `${errorsCount} Errores`)} | ${styleText('yellow', `${warningsCount} Advertencias`)} | ${Object.keys(fileGroups).length} Archivos`);
+    console.log('======================================================\n');
   }
 
-  if (values.fix) console.log(styleText('cyan', '✨ Correcciones aplicadas.'));
-
+  // Exportar reporte si se pasa --output
   if (values.output) {
     const outputPath = path.resolve(process.cwd(), values.output as string);
     if (outputPath.endsWith('.json')) {
-      await fs.writeFile(outputPath, JSON.stringify(all, null, 2), 'utf-8');
+      await fs.writeFile(outputPath, JSON.stringify(jsonReport, null, 2), 'utf-8');
+    } else if (outputPath.endsWith('.md')) {
+      let md = `# Reporte de Auditoría del Proyecto\n\n`;
+      md += `**Estado**: ${errorsCount === 0 ? '✅ Aprobado' : '❌ Fallido'}\n\n`;
+      md += `| Métrica | Valor |\n| :--- | :--- |\n`;
+      md += `| **Errores** | \`${errorsCount}\` |\n`;
+      md += `| **Advertencias** | \`${warningsCount}\` |\n`;
+      md += `| **Archivos Afectados** | \`${Object.keys(fileGroups).length}\` |\n\n`;
+
+      md += `## 📊 Desglose por Categoría\n\n| Categoría | Cantidad |\n| :--- | :---: |\n`;
+      Object.entries(typeGroups)
+        .sort((a, b) => b[1] - a[1])
+        .forEach(([cat, count]) => {
+          md += `| ${cat} | ${count} |\n`;
+        });
+
+      md += `\n## 📁 Top Archivos con Más Avisos\n\n| Archivo | Errores | Advertencias | Total |\n| :--- | :---: | :---: | :---: |\n`;
+      topFiles.forEach(f => {
+        md += `| \`${f.file}\` | ${f.errors} | ${f.warnings} | ${f.total} |\n`;
+      });
+
+      await fs.writeFile(outputPath, md, 'utf-8');
     } else {
-      const lines = all.map(v => `[${v.severity.toUpperCase()}] ${path.relative(process.cwd(), v.file)}:${v.line} -> ${v.message} ("${v.context}")`);
+      const lines = all.map(v => `[${v.severity.toUpperCase()}] ${path.relative(process.cwd(), v.file)}:${v.line} -> [${getViolationCategory(v)}] ${v.message} ("${sanitizeContext(v.context)}")`);
       await fs.writeFile(outputPath, lines.join('\n'), 'utf-8');
     }
-    console.log(styleText('cyan', `\n✨ Reporte completo escrito en: ${values.output}`));
+    logProgress(styleText('cyan', `✨ Reporte completo escrito en: ${values.output}`));
   }
 
-  // Salir con código de error si existen violaciones con severidad de error
+  if (values.fix) logProgress(styleText('cyan', '✨ Correcciones aplicadas.'));
+
   if (all.some(v => v.severity === 'error')) {
     process.exit(1);
   }
 }
+
 main().catch(err => {
   console.error(styleText('red', `\n💥 Error fatal en el audit: ${(err as Error).message}`));
   process.exit(1);

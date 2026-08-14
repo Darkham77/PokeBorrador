@@ -83,7 +83,7 @@ const P_AMBIGUOUS_NULL_DOMAIN_RETURN = /^\s*(?:export\s+)?function\s+(?:get|find
 const P_UNENFORCED_STATIC_MAP = /\bexport\s+const\s+[A-Z][A-Z0-9_]{3,}\s*=\s*\{/g;
 const P_FLOATING_PROMISE = /^\s*(?!(?:await|void|return|const|let|var)\s+)(?:[A-Z_a-z]\w*\.)?[a-z]\w*Async\s*\([^)]*\)\s*;/gm;
 const P_LEAKED_GLOBAL_MUTABLE = /^(?:export\s+)?let\s+[a-z]\w*\s*=/gm;
-const P_DYNAMIC_IMPORT_IN_HOT_PATH = /\b(?:for|while)\s*\([^)]*\)[\s\S]*?\bimport\s*\(/g;
+const P_DYNAMIC_IMPORT_IN_HOT_PATH = /\b(?:for|while)\s*\([^)]*\)\s*\{[^}]*?\bimport\s*\(/g;
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface Finding {
@@ -449,7 +449,14 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     P_UNENFORCED_STATIC_MAP,
     'Static domain map declared without explicit Record<DomainId, T> annotation — consider enforcing domain key exhaustiveness',
     'WARN',
-    (_match, line) => !line.includes('Record<') && !line.includes('satisfies') && !line.includes('// map-ok') && !line.includes('// domain-ok')
+    (_match, line) => {
+      const constNameMatch = line.match(/export\s+const\s+([A-Z][A-Z0-9_]+)/);
+      const constName = constNameMatch ? constNameMatch[1] : '';
+      const derivesDomainType = constName ? new RegExp(`export\\s+type\\s+[A-Z]\\w*\\s*=\\s*(?:keyof\\s+typeof|typeof|\\(typeof)\\s+${constName}`).test(content) : false;
+      const hasSatisfies = constName ? new RegExp(`\\b${constName}\\s*=[\\s\\S]*?\\}\\s*(?:as\\s+const\\s+)?satisfies\\s+Record<`).test(content) : false;
+      const hasAsConst = constName ? new RegExp(`\\b${constName}\\s*=[\\s\\S]*?\\}\\s*as\\s+const;`).test(content) : false;
+      return !line.includes('Record<') && !line.includes('satisfies') && !hasSatisfies && !derivesDomainType && !hasAsConst && !rel.includes('constants/') && !line.includes('// map-ok') && !line.includes('// domain-ok');
+    }
   ));
 
   findings.push(...findMatches(

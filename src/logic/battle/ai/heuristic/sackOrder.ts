@@ -21,7 +21,7 @@ const SACK_WEIGHT_MATCHUP_MOVE_THRESHOLD = 30;
 const SACK_WEIGHT_MATCHUP_BONUS_PER_POKEMON = 0.05;
 const SACK_WEIGHT_MATCHUP_MAX = 0.15;
 
-const HAZARD_REMOVAL_MOVES: readonly string[] = [ // no-domain
+export const HAZARD_REMOVAL_MOVES: readonly string[] = [ // no-domain
   'rapidspin', 'defog', 'tidyup', 'courtchange', 'mortalspin',
 ];
 

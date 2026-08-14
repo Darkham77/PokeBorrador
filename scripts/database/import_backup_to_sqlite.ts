@@ -10,7 +10,7 @@ console.log('\n--- 📥 IMPORTADOR DE RESPALDOS A SQLITE LOCAL ---');
 
 // 1. Obtener argumentos de línea de comandos y normalizar según el .env
 const args = process.argv.slice(2);
-let serverNameInput = 'official_prod';
+let serverNameInput = 'official_prod'; // singleton-ok
 
 for (const arg of args) {
   if (arg.startsWith('--server=')) {
@@ -19,7 +19,7 @@ for (const arg of args) {
 }
 
 // Normalizar usando el .env si existe
-let serverName = serverNameInput;
+let serverName = serverNameInput; // singleton-ok
 const envPath = path.resolve(process.cwd(), '.env');
 if (fs.existsSync(envPath)) {
   const { readAndParseEnv } = await import('../lib/supabaseClient.ts');

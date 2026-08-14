@@ -493,6 +493,98 @@
     {
       "file": "src/data/world/weather-tables.ts",
       "exports": ["RouteWeatherTable"]
+    },
+    {
+      "file": "src/composables/battle/useBattleShadows.ts",
+      "exports": ["hasAnimatedShadowKey", "computeShadowCoords", "computeShadowBodyRadius"]
+    },
+    {
+      "file": "src/data/pokemon/evolutionData.ts",
+      "exports": ["parseTradeEvolution"]
+    },
+    {
+      "file": "src/data/system/constants.ts",
+      "exports": ["FACTIONS"]
+    },
+    {
+      "file": "src/data/system/weatherFamilies.ts",
+      "exports": ["parseWeatherFamily"]
+    },
+    {
+      "file": "src/logic/battle/ai/heuristic/heuristicEngine.ts",
+      "exports": ["SHOWDOWN_CHOICE_INDEX_OFFSET", "HEURISTIC_CONFIDENCE_SCORES", "HEURISTIC_THRESHOLDS"]
+    },
+    {
+      "file": "src/logic/battle/battleDebug.ts",
+      "exports": ["canExecuteScriptedReplayAction"]
+    },
+    {
+      "file": "src/logic/battle/helpers/showdownBattleRunner.ts",
+      "exports": ["REPLAY_SEATS"]
+    },
+    {
+      "file": "src/logic/battle/trainerInventory.ts",
+      "exports": ["NPC_BUDGET_CONFIG"]
+    },
+    {
+      "file": "src/logic/constants/animations.ts",
+      "exports": ["GSAP_SLOW_DURATION_SEC", "HATCH_PARTICLES_COUNT", "TRAINER_SHADOW_Y_PERCENT_OFFSET", "HOVER_EFFECT_VARIANTS", "MODAL_ANIM_INITIAL_SCALE_MIN", "MODAL_ANIM_INITIAL_Y_OFFSET"]
+    },
+    {
+      "file": "src/logic/constants/audio.ts",
+      "exports": ["DEFAULT_AUDIO_GAIN", "AUDIO_FADE_DURATION_SEC", "AUDIO_STANDARD_SAMPLE_RATE_HZ", "AUDIO_SCHEDULER_LEAD_TIME_SEC"]
+    },
+    {
+      "file": "src/logic/constants/encounters.ts",
+      "exports": ["WEATHER_MAP", "DEBUG_TRAINER_OVERRIDE_CHANCE", "DEBUG_GUARDIAN_OVERRIDE_CHANCE", "DEBUG_MOVE_BASE_POWER"]
+    },
+    {
+      "file": "src/logic/constants/gameplay.ts",
+      "exports": ["LEGENDARY_GUARDIAN_RARITY_THRESHOLD", "ELITE_GUARDIAN_POINTS", "ISO_DAY_SUNDAY", "BATTLE_STAGE_STAT_MULTIPLIERS", "BATTLE_STAGE_ACC_MULTIPLIERS", "MIN_USERNAME_LENGTH", "MAX_USERNAME_LENGTH", "MIN_TRAINER_NAME_LENGTH", "MAX_TRAINER_NAME_LENGTH", "MIN_TRAINER_LEVEL", "MAX_TRAINER_LEVEL"]
+    },
+    {
+      "file": "src/logic/constants/items.ts",
+      "exports": ["PERCENTAGE_HEAL_HALF", "X_STAT_BOOST_MULTIPLIER", "ITEM_BUFF_DURATION_TURNS", "TWO_MINUTES_MS"]
+    },
+    {
+      "file": "src/logic/constants/visuals.ts",
+      "exports": ["FLIP_CHANCE_PROBABILITY"]
+    },
+    {
+      "file": "src/logic/db/schema.ts",
+      "exports": ["DEFAULT_DB_ELO_RATING", "DEFAULT_GUARDIAN_POINTS", "DEFAULT_EGG_HATCH_STEPS"]
+    },
+    {
+      "file": "src/logic/environment/bushLibrary.ts",
+      "exports": ["isBushFamily", "getBiomeConfigForMap", "FRONT_LAYER_SEED_OFFSET", "BACK_LAYER_SEED_OFFSET", "resolveBushesForLayer"]
+    },
+    {
+      "file": "src/logic/pokemon/pokemonUtils.ts",
+      "exports": ["MAX_IV_VALUE_EXCLUSIVE"]
+    },
+    {
+      "file": "src/logic/pvp/pvpEngine.ts",
+      "exports": ["executePvPTurnResolution"]
+    },
+    {
+      "file": "src/logic/war/guardianEngine.ts",
+      "exports": ["GUARDIAN_TIERS"]
+    },
+    {
+      "file": "src/logic/war/warEngine.ts",
+      "exports": ["isWarEventType"]
+    },
+    {
+      "file": "src/types/battle/battleEvents.ts",
+      "exports": ["BATTLE_FLOW_DESTINATIONS"]
+    },
+    {
+      "file": "src/types/battle/certifiedBattleActions.ts",
+      "exports": ["CERTIFIED_BATTLE_GAME_ACTION_KINDS"]
+    },
+    {
+      "file": "src/types/system/game.ts",
+      "exports": ["isGenderId"]
     }
   ]
 }

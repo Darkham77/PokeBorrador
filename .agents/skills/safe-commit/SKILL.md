@@ -178,7 +178,12 @@ For each file from Step 1.1, ask: **"Does this file contain non-trivial logic?"*
 
 ### Step 3.1 — `npm run audit:warnings-diff`
 
-This is the primary gatekeeper. It reports all project-wide errors and new warnings in modified files vs `origin/main`.
+This is the primary pre-commit gatekeeper. It reports all project-wide errors and new warnings in modified files vs `origin/main`.
+
+> [!NOTE]
+> **Workflow Roles**:
+> - **During active feature coding**: use `npm run lint` for rapid (~3-5s) iterative feedback (ESLint cache + `vue-tsc` + domain types).
+> - **During Safe-Commit (Phase 3)**: `npm run audit:warnings-diff` is the mandatory Single Source of Truth that executes all project suites, domain validators, and diffs warnings against `origin/main`.
 
 1. Run the command and wait for it to complete.
 2. Read the full output.
@@ -188,14 +193,15 @@ This is the primary gatekeeper. It reports all project-wide errors and new warni
 **If clean** → proceed to Step 3.2.
 
 > [!TIP]
-> The audit engine supports powerful CLI flags (passed after `--`) to triage failures efficiently:
+> The audit engine is **JSON-first by default**, specifically tailored for AI agents and automated pipelines:
+> - `npm run audit` — runs the full unified audit across all 12 validation suites and emits 100% parseable structured JSON on `stdout`. Agents can immediately parse the output via `JSON.parse(stdout)`.
+> - `npm run audit:fast` — runs only the static code AST analysis in seconds, emitting structured JSON.
+> - `npm run audit:human` (or `--human` / `-H`) — renders a human-friendly hierarchical file tree with sanitized context for terminal debugging.
 > - `--rule="<partial-name>"` — filter to a single rule (e.g. `--rule="mágico"` for magic-number errors only).
-> - `--summary` — show a compact rule-count + top-files table instead of the full listing. **Always use this first to avoid terminal floods.**
-> - `--top=N` / `-t N` — control the number of offending files shown (default 15; use `--top=30` for broader sweeps).
-> - `--json` / `-j` — emit structured JSON output, pipeable into scripts or `jq` for programmatic processing.
-> - `--errors-only` — suppress warnings; print only hard errors.
+> - `--errors-only` — suppress warnings; evaluate only hard errors.
+> - `--output=scratch/report.md` (or `npm run audit:md`) — exports Markdown summary report.
 >
-> **Quick investigation recipe:** `npm run audit -- --rule="<rule>" --summary --top=30`
+> **Fast AI triage recipe:** `npm run audit:fast -- --errors-only`
 
 ### Step 3.2 — `npm run audit:fix`
 
@@ -358,7 +364,7 @@ Call `write_to_file` to create or update `<appDataDir>/brain/<conversation-id>/w
 2. For each modified file (list from Step 1.1), `view_file` the nearest `AGENTS.md` in its folder tree.
 3. If changes modified any purpose, rules, contracts, or configurations, update that `AGENTS.md`.
 4. If any new directory with an `AGENTS.md` was created, add it to its parent's Child DOX Index.
-5. Run `npm run audit` — must report **0 errors** in the `DOX (AGENTS.md) Integrity` category. If errors exist: fix and re-run.
+5. Run `npm run audit:fast -- --rule="DOX"` — must report **0 errors** in the `DOX (AGENTS.md) Integrity` category. If errors exist: fix and re-run.
 
 **✓ Completion gate**: Mark Phase 7.1 `[x]` in `task.md`. Only then proceed to Phase 8.
 

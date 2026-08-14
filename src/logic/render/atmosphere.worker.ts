@@ -75,10 +75,10 @@ const ATMOSPHERE_CYCLE_DURATION_CALM = 5;
 /** Pulse cycle base for strong weather (added to animSeed). */
 const ATMOSPHERE_CYCLE_DURATION_STRONG_BASE = 1.5;
 
-let canvas: OffscreenCanvas | null = null;
-let ctx: OffscreenCanvasRenderingContext2D | null = null;
-let isPaused = false;
-let params: AtmosphereParams = {
+let canvas: OffscreenCanvas | null = null; // singleton-ok
+let ctx: OffscreenCanvasRenderingContext2D | null = null; // singleton-ok
+let isPaused = false; // singleton-ok
+let params: AtmosphereParams = { // singleton-ok
   weather: 'clear',
   isLowPower: false,
   animSeed: 0.5,
@@ -87,7 +87,7 @@ let params: AtmosphereParams = {
 const patterns: Record<string, CanvasPattern> = {};
 const textures: Record<string, ImageBitmap> = {};
 
-let lastTime = 0;
+let lastTime = 0; // singleton-ok
 const textureOffsets = {
   layer1: { x: 0, y: 0 },
   layer2: { x: 0, y: 0 }

@@ -19,7 +19,7 @@ const DEFAULT_SHADOW_BODY_RADIUS_PCT = 0.4;
 const SHADOW_PERCENTAGE_SCALE_FACTOR = 250;
 const DEFAULT_STABLE_GROUND_Y_PCT = '75%';
 
-function resolveAnimatedKey(
+function computeAnimatedKey(
   pokemonId: string | number | null | undefined,
   isBack = false,
   gender?: string | null
@@ -61,7 +61,7 @@ function resolveAnimatedKey(
 
 function checkAnimated(pokemonId: string | null | undefined, gender?: string | null): boolean {
   if (!pokemonId) return false
-  return !!resolveAnimatedKey(pokemonId, false, gender) || !!resolveAnimatedKey(pokemonId, true, gender)
+  return !!computeAnimatedKey(pokemonId, false, gender) || !!computeAnimatedKey(pokemonId, true, gender)
 }
 
 function getFinalSpriteUrl(pokemon: { id: string | number; form?: string; gender?: string | null }, isShiny: boolean, isBack: boolean): string {
@@ -69,7 +69,7 @@ function getFinalSpriteUrl(pokemon: { id: string | number; form?: string; gender
   const isAnim = checkAnimated(spriteId, pokemon.gender)
   const url = getAssetUrl(ASSET_TYPES.POKEMON, spriteId, { isShiny, isBack, isAnimated: isAnim })
   if (isAnim && url) {
-    const key = resolveAnimatedKey(spriteId, isBack, pokemon.gender)
+    const key = computeAnimatedKey(spriteId, isBack, pokemon.gender)
     if (key) {
       const filename = key.replace(/_back$/, '')
       return url.replace(/\/([^/]+)\.webp$/i, `/${filename}.webp`)
@@ -83,6 +83,50 @@ const { ENTITY_SIZE_PLAYER, ENTITY_SIZE_ENEMY } = WORLD_CONSTANTS
 interface Position {
   x: number
   y: number
+}
+
+export function hasAnimatedShadowKey(
+  pokemonId: string | number | null | undefined,
+  gender?: string | null
+): boolean {
+  return !!computeAnimatedKey(pokemonId, false, gender) || !!computeAnimatedKey(pokemonId, true, gender)
+}
+
+export function computeShadowCoords(pokemon: Pokemon | null | undefined, isBack = false): { x: number; y: number } {
+  if (!pokemon) return { x: 50, y: 80 }
+  
+  const spriteId = String(pokemon.id).toLowerCase()
+  if (hasAnimatedShadowKey(spriteId, pokemon.gender)) {
+    const key = computeAnimatedKey(spriteId, isBack, pokemon.gender)
+    if (key) {
+      const data = requireAnimatedSpriteData(key)
+      if (data && data.feetX !== undefined) {
+        return {
+          x: Math.round(data.feetX),
+          y: Math.round(data.feetY)
+        }
+      }
+    }
+  }
+
+  // Fallback to static feet database
+  const url = getFinalSpriteUrl(pokemon, !!pokemon.isShiny, isBack)
+  const coords = getPokemonFeetCoords(url)
+  return { x: coords.feetX, y: coords.feetY }
+}
+
+export function computeShadowBodyRadius(
+  pokemon: Pokemon | null | undefined,
+  isBack = false,
+  visualRadius = DEFAULT_SHADOW_BODY_RADIUS_PCT
+): string {
+  if (!pokemon) return `${visualRadius * SHADOW_PERCENTAGE_SCALE_FACTOR}%`
+
+  const spriteId = String(pokemon.id).toLowerCase()
+  const animKey = computeAnimatedKey(spriteId, isBack, pokemon.gender) || computeAnimatedKey(spriteId, !isBack, pokemon.gender)
+  const meta = animKey ? requireAnimatedSpriteData(animKey) : null
+  const bodyRadius = meta?.bodyRadius ?? DEFAULT_SHADOW_BODY_RADIUS_PCT
+  return `${bodyRadius * SHADOW_PERCENTAGE_SCALE_FACTOR}%`
 }
 
 export function isFlying(pokemon: Pokemon | null | undefined): boolean {
@@ -103,7 +147,7 @@ function getEffectiveSpriteId(pokemon: { id: string | number; form?: string }): 
 
 function getShadowWidth(pokemon: { id: string | number; form?: string; gender?: string | null }, isBack: boolean): string {
   const spriteId = getEffectiveSpriteId(pokemon)
-  const animKey = resolveAnimatedKey(spriteId, isBack, pokemon.gender) || resolveAnimatedKey(spriteId, !isBack, pokemon.gender)
+  const animKey = computeAnimatedKey(spriteId, isBack, pokemon.gender) || computeAnimatedKey(spriteId, !isBack, pokemon.gender)
   const meta = animKey ? requireAnimatedSpriteData(animKey) : null
   const bodyRadius = meta?.bodyRadius ?? DEFAULT_SHADOW_BODY_RADIUS_PCT
   return `${bodyRadius * SHADOW_PERCENTAGE_SCALE_FACTOR}%`

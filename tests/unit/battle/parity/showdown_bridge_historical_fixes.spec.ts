@@ -82,7 +82,7 @@ describe('BUG-061 to BUG-080: Showdown 1:1 Parity Batch 4 Suite', () => {
     const dmgNormal = calculateDamagePure(attackerNormal, defender, move, { weather: null }, 'day', 1.0)
     const dmgSpecs = calculateDamagePure(attackerSpecs, defender, move, { weather: null }, 'day', 1.0)
     
-    expect(dmgSpecs.damage!).toBeGreaterThan(dmgNormal.damage!)
+    expect(dmgSpecs.dmg).toBeGreaterThan(dmgNormal.dmg)
   })
 })
 

@@ -2,8 +2,11 @@
 import { DatabaseSync } from 'node:sqlite';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { enableCompileCache } from 'node:module';
 import { Dex } from '@pkmn/sim';
 import { splitSQLStatements } from '../../src/logic/db/sqlTranslator.ts';
+
+enableCompileCache();
 
 interface SavePokemon {
   heldItem?: string;

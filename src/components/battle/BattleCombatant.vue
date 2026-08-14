@@ -94,11 +94,13 @@ const idleImageUrl = ref('')
 const variationImageUrl = ref('')
 
 // Variables de ciclos de animación de spritesheet
+const IDLE_CYCLES_MIN = 3
+const IDLE_CYCLES_VARIANCE = 2
 
-let idleCyclesTarget = Math.floor(Math.random() * 2) + 3 // 3 o 4 ciclos
+const idleCyclesTarget = ref(Math.floor(Math.random() * IDLE_CYCLES_VARIANCE) + IDLE_CYCLES_MIN)
 
 watch([idleKey, () => props.pokemon?.isShiny, () => props.pokemon?.status, isAnimated], () => {
-  idleCyclesTarget = Math.floor(Math.random() * 2) + 3
+  idleCyclesTarget.value = Math.floor(Math.random() * IDLE_CYCLES_VARIANCE) + IDLE_CYCLES_MIN
   currentMode.value = 'idle' // Forzar reinicio al estado de reposo (idle) al cambiar de Pokémon o estado
   if (!props.pokemon) return
 
@@ -208,7 +210,7 @@ const animateSpritesheet = () => {
       const endXPercent = -((totalFrames - 1) / totalFrames) * 100
       const fps = currentMode.value === 'idle' ? 8 : 10;
       const duration = totalFrames / fps;
-      const repeatCount = currentMode.value === 'idle' ? (idleCyclesTarget - 1) : 0
+      const repeatCount = currentMode.value === 'idle' ? (idleCyclesTarget.value - 1) : 0
 
       // Orquestación robusta usando Timeline de GSAP para garantizar atomicidad en transiciones y evitar parpadeos (glitches de 1-frame)
       const tl = gsap.timeline({
@@ -217,7 +219,7 @@ const animateSpritesheet = () => {
           // Hacemos el cambio de modo síncronamente antes de volver a llamar a playMode
           if (currentMode.value === 'idle' && variationMeta.value && variationMeta.value.frames > 1) {
             currentMode.value = 'variation'
-            idleCyclesTarget = Math.floor(Math.random() * 2) + 3
+            idleCyclesTarget.value = Math.floor(Math.random() * IDLE_CYCLES_VARIANCE) + IDLE_CYCLES_MIN
           } else {
             currentMode.value = 'idle'
           }

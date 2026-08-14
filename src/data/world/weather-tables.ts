@@ -15,9 +15,9 @@ export const WEATHER_CYCLE_IDS = ['morning', 'day', 'dusk', 'night'] as const sa
  * Main repository for all regional weather tables.
  * This file acts as a router that aggregates modularized regional data.
  */
-export const ROUTE_WEATHER_TABLES = {
+export const ROUTE_WEATHER_TABLES: Record<WeatherTableRouteId, RouteWeatherTable> = {
   ...kantoWeather
-} satisfies Record<WeatherTableRouteId, RouteWeatherTable>;
+};
 
 export function isWeatherTableRouteId(value: string): value is WeatherTableRouteId {
   return Object.hasOwn(ROUTE_WEATHER_TABLES, value);

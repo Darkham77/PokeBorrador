@@ -353,8 +353,13 @@ export function serializeState(state: GameState): SaveData {
   };
 }
 
-let lastBoxHash = '';
-let lastValidatedBox: Pokemon[] = [];
+const boxValidationCache: {
+  lastBoxHash: string;
+  lastValidatedBox: Pokemon[];
+} = {
+  lastBoxHash: '',
+  lastValidatedBox: [],
+};
 
 /**
  * Validates the state before saving to prevent cache hacking or data corruption.
@@ -367,10 +372,10 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
 
   // Calculate box hash to check if it's dirty
   const currentBoxHash = (data.box || []).map(p => p ? `${p.uid}_${p.level}_${p.exp}_${p.hp}` : '').join(',');
-  const isBoxDirty = !lastBoxHash || currentBoxHash !== lastBoxHash || lastValidatedBox.length !== (data.box || []).length;
+  const isBoxDirty = !boxValidationCache.lastBoxHash || currentBoxHash !== boxValidationCache.lastBoxHash || boxValidationCache.lastValidatedBox.length !== (data.box || []).length;
 
   let parsedResult;
-  if (!isBoxDirty && lastValidatedBox.length > 0) {
+  if (!isBoxDirty && boxValidationCache.lastValidatedBox.length > 0) {
     // Optimization: Skip box validation by temporarily substituting it with a validated clone
     const testData = { ...data, box: [] };
     parsedResult = validateSaveData(testData);
@@ -381,8 +386,8 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
   } else {
     parsedResult = validateSaveData(data);
     if (parsedResult.success) {
-      lastBoxHash = currentBoxHash;
-      lastValidatedBox = parsedResult.output.box as Pokemon[]; // domain-ok
+      boxValidationCache.lastBoxHash = currentBoxHash;
+      boxValidationCache.lastValidatedBox = parsedResult.output.box as Pokemon[]; // domain-ok
     }
   }
 
@@ -492,8 +497,10 @@ export function isValidState(data: SaveData): boolean {
 /**
  * Saves the game to localStorage and the database.
  */
-let _isSaving = false;
-let _isRollingBack = false;
+const saveOperationState = {
+  isSaving: false,
+  isRollingBack: false,
+};
 
 interface SaveOptions {
   showNotif?: boolean
@@ -506,16 +513,16 @@ interface SaveOptions {
 
 export async function saveGame(state: GameState, user: AuthUser, options: SaveOptions = {}): Promise<SaveResult | null> {
   const { showNotif = true, notifyFn, db } = options;
-  if (!user || _isSaving || _isRollingBack) return null;
+  if (!user || saveOperationState.isSaving || saveOperationState.isRollingBack) return null;
 
-  _isSaving = true;
+  saveOperationState.isSaving = true;
   try {
     const raw_data = serializeState(state);
     const { data: save_data, valid, hadDuplicates, issues, error: validationError } = validateAndSanitize(raw_data);
 
     if (!valid) {
       logger.error('SAVE', 'Abortando proceso de guardado por estado de datos erróneo:', validationError || issues);
-      _isSaving = false;
+      saveOperationState.isSaving = false;
       if (showNotif && notifyFn) {
         notifyFn(`Error al guardar: ${validationError || 'Datos corruptos o inválidos'}`, '🔴');
       }
@@ -534,13 +541,13 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
         const { data } = await db.from('game_saves').select('save_data').eq('user_id', user.id).single();
         const serverSave = data as { save_data: GameState } | null;
         if (serverSave?.save_data) {
-          _isRollingBack = true;
+          saveOperationState.isRollingBack = true;
           return { rollback: true, serverData: serverSave.save_data };
         }
       } catch(e) {
         logger.error('SAVE', `Error durante rollback: ${(e as Error).message}`);
       }
-      _isRollingBack = true;
+      saveOperationState.isRollingBack = true;
       return { rollback: true, error: 'Inconsistencia detectada. Recarga la página.' };
     }
 
@@ -588,7 +595,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
       const resData = res as { success: boolean; error: string; last_save_id: string } | null;
       if (resData && resData.success === false && resData.error === 'OUT_OF_SYNC') {
         logger.warn('SAVE', 'Concurrencia detectada. El servidor tiene una versión más nueva.');
-        _isRollingBack = true;
+        saveOperationState.isRollingBack = true;
         return { rollback: true, outOfSync: true };
       }
 
@@ -709,6 +716,6 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
       return { success: false, error: errMsg };
     }
   } finally {
-    _isSaving = false;
+    saveOperationState.isSaving = false;
   }
 }

@@ -45,4 +45,6 @@ export const MARKET_UNLOCKS = {
   15: ['Revivir Máximo', 'Elixir Máximo', 'Banda Focus'],
   22: ['Caramelo Raro'],
   25: ['Master Ball']
-};
+} as const satisfies Record<number, readonly string[]>;
+
+export type MarketUnlockLevel = keyof typeof MARKET_UNLOCKS;

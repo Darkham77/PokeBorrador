@@ -43,34 +43,6 @@ interface EslintFileResult {
   messages: EslintMessage[];
 }
 
-interface FallowDupeInstance {
-  file?: string;
-  path?: string;
-  start_line?: number;
-  line?: number;
-}
-
-interface FallowDupeGroup {
-  instances: FallowDupeInstance[];
-  duplicated_tokens: number;
-}
-
-interface FallowDupeData {
-  clone_groups?: FallowDupeGroup[];
-}
-
-interface FallowSecurityFinding {
-  path: string;
-  line: number;
-  cwe: number | string;
-  evidence: string;
-  kind?: string;
-}
-
-interface FallowSecurityData {
-  security_findings?: FallowSecurityFinding[];
-}
-
 // Extensiones a auditar
 const AUDIT_EXTENSIONS = new Set(['.vue', '.ts', '.js', '.scss', '.css']);
 
@@ -112,9 +84,12 @@ export function filterNewWarnings(
 
 async function getModifiedFiles(): Promise<Set<string>> {
   try {
-    // Asegurarse de tener la referencia remota actualizada
-    console.log(styleText('cyan', '🔄 Sincronizando con origin/main de GitHub...'));
-    execSync('git fetch origin main', { stdio: 'ignore' });
+    // Asegurarse de tener la referencia remota actualizada (con timeout para no bloquear)
+    try {
+      execSync('git fetch origin main --timeout=5', { stdio: 'ignore' });
+    } catch {
+      // Usar referencia local existente si falla o no hay conexión
+    }
 
     // Obtener lista de archivos modificados, agregados o sin seguimiento comparados con origin/main
     const diffOutput = execSync('git diff --name-only origin/main', { encoding: 'utf-8' });
@@ -166,7 +141,7 @@ async function getOriginFileContent(filePath: string): Promise<string | null> {
 async function runProjectEslint(): Promise<Violation[]> {
   const violations: Violation[] = [];
   try {
-    const eslintProc = spawnSync('npx', ['eslint', '--format', 'json', '.'], { encoding: 'utf-8', maxBuffer: 50 * 1024 * 1024 });
+    const eslintProc = spawnSync('npx', ['eslint', '--cache', '--format', 'json', '.'], { encoding: 'utf-8', maxBuffer: 50 * 1024 * 1024 });
     const output = eslintProc.stdout ? eslintProc.stdout.trim() : '';
     if (!output) return [];
 
@@ -265,102 +240,81 @@ async function runTypeChecking(): Promise<Violation[]> {
   return violations;
 }
 
-async function runFallowDupes(): Promise<Violation[]> {
+async function runScriptValidator(name: string, scriptPath: string, args: string[] = []): Promise<Violation[]> {
   const violations: Violation[] = [];
   try {
-    const dupesProc = spawnSync('node', ['./node_modules/fallow/bin/fallow', 'dupes', '--format', 'json'], { encoding: 'utf-8', maxBuffer: 50 * 1024 * 1024 });
-    const output = dupesProc.stdout ? dupesProc.stdout.trim() : '';
-    if (!output) return [];
-
-    const jsonStart = output.indexOf('{');
-    if (jsonStart !== -1) {
-      const data = JSON.parse(output.substring(jsonStart)) as FallowDupeData;
-      const groups = data.clone_groups || [];
-      for (const g of groups) {
-        const instances = g.instances || [];
-        if (instances.length > 0) {
-          const first = instances[0];
-          if (first) {
-            const firstPath = first.file || first.path || '';
-            const firstLine = first.start_line || first.line || 0;
-            const locations = instances.slice(1).map((i: { file?: string; path?: string; start_line?: number; line?: number }) => `${i.file || i.path || ''}:${i.start_line || i.line || 0}`).join(', '); // type-ok
-            const isTriplicate = instances.length >= 3;
-            const prefix = isTriplicate ? 'Código triplicado crítico' : 'Código duplicado crítico';
-            violations.push({
-              file: path.relative(process.cwd(), firstPath),
-              line: firstLine,
-              message: `${prefix}: Encontradas ${instances.length} coincidencias de código idéntico. Ubicaciones: ${firstPath}:${firstLine}, ${locations}`,
-              context: `${isTriplicate ? 'triplicación' : 'duplicación'} (${g.duplicated_tokens} tokens)`,
-              severity: 'error',
-              ruleId: 'fallow-dupes'
-            });
-          }
-        }
-      }
+    const proc = spawnSync('node', [
+      '--permission',
+      '--experimental-strip-types',
+      '--allow-fs-read=.',
+      '--allow-fs-write=.',
+      scriptPath,
+      ...args
+    ], { encoding: 'utf-8' });
+    if (proc.status !== 0) {
+      const errOut = (proc.stderr || proc.stdout || '').trim();
+      const firstLine = errOut.split('\n').find(l => l.trim().length > 0) ?? `Código de salida ${proc.status}`;
+      violations.push({
+        file: scriptPath,
+        line: 1,
+        message: `Fallo en validación [${name}]: ${firstLine}`,
+        context: name,
+        severity: 'error',
+        ruleId: `validator-${name.toLowerCase().replace(/\s+/g, '-')}`
+      });
     }
   } catch (err) {
-    console.error(styleText('yellow', `⚠️ Advertencia al correr fallow dupes: ${(err as Error).message}`));
-  }
-  return violations;
-}
-
-async function runFallowSecurity(): Promise<Violation[]> {
-  const violations: Violation[] = [];
-  try {
-    const secProc = spawnSync('node', ['./node_modules/fallow/bin/fallow', 'security', '--format', 'json'], { encoding: 'utf-8', maxBuffer: 50 * 1024 * 1024 });
-    const output = secProc.stdout ? secProc.stdout.trim() : '';
-    if (!output) return [];
-
-    const jsonStart = output.indexOf('{');
-    if (jsonStart !== -1) {
-      const data = JSON.parse(output.substring(jsonStart)) as FallowSecurityData;
-      const findings = data.security_findings || [];
-      for (const f of findings) {
-        violations.push({
-          file: path.relative(process.cwd(), f.path),
-          line: f.line,
-          message: `Vulnerabilidad de seguridad [CWE-${f.cwe}] en ${f.path}:${f.line} -> ${f.evidence}`,
-          context: f.kind || '',
-          severity: 'error',
-          ruleId: 'fallow-security'
-        });
-      }
-    }
-  } catch (err) {
-    console.error(styleText('yellow', `⚠️ Advertencia al correr fallow security: ${(err as Error).message}`));
+    violations.push({
+      file: scriptPath,
+      line: 1,
+      message: `Error ejecutando validador ${name}: ${(err as Error).message}`,
+      context: name,
+      severity: 'error',
+      ruleId: `validator-${name.toLowerCase().replace(/\s+/g, '-')}`
+    });
   }
   return violations;
 }
 
 async function main() {
-  console.log(styleText('bold', '\n--- 🕵️ POKE VICIO - WARNINGS DIFF & PROJECT ERRORS AUDIT ---'));
+  console.log(styleText('bold', '\n--- 🕵️ POKE VICIO - WARNINGS DIFF & PROJECT ERRORS AUDIT (Análisis Estático) ---'));
   
   const modifiedFiles = await getModifiedFiles();
   if (modifiedFiles.size === 0) {
     console.log(styleText('green', '✔ No hay archivos fuente modificados comparados con origin/main.'));
   } else {
-    console.log(styleText('cyan', `Archivos modificados detectados: (${modifiedFiles.size})`));
-    modifiedFiles.forEach(f => console.log(`  - ${f}`));
+    console.log(styleText('cyan', `Archivos modificados detectados para diff de advertencias: (${modifiedFiles.size} archivos)`));
+    if (modifiedFiles.size <= 10) {
+      modifiedFiles.forEach(f => console.log(`  - ${f}`));
+    } else {
+      const sample = Array.from(modifiedFiles).slice(0, 8);
+      sample.forEach(f => console.log(`  - ${f}`));
+      console.log(styleText('gray', `  ... y ${modifiedFiles.size - 8} archivos modificados más`));
+    }
   }
 
   // 1. Ejecutar ESLint en todo el proyecto
-  console.log(styleText('cyan', '\nEjecutando ESLint en todo el proyecto...'));
+  console.log(styleText('cyan', '\n[1/4] Ejecutando ESLint con caché en todo el proyecto...'));
   const eslintViolations = await runProjectEslint();
 
   // 2. Ejecutar Type Checking (vue-tsc)
-  console.log(styleText('cyan', 'Ejecutando validación de tipos TypeScript (vue-tsc)...'));
+  console.log(styleText('cyan', '[2/4] Ejecutando validación de tipos TypeScript (vue-tsc)...'));
   const typeErrors = await runTypeChecking();
 
-  // 3. Ejecutar Fallow Dupes
-  console.log(styleText('cyan', 'Ejecutando Fallow Dupes (duplicados)...'));
-  const dupeErrors = await runFallowDupes();
+  // 3. Ejecutar validaciones de dominio y bases de datos
+  console.log(styleText('cyan', '[3/4] Ejecutando validaciones de dominio (Types, SQL, Saves, FSM, Items, Moves, Abilities)...'));
+  const domainTypeErrors = await runScriptValidator('Domain Types', 'scripts/validation/validate_domain_types.ts', ['--errors-only']);
+  const sqlErrors = await runScriptValidator('SQL Migrations', 'scripts/database/validate_sql_migrations.ts');
+  const saveErrors = await runScriptValidator('Save Migrations', 'scripts/validation/validate_save_migrations.ts');
+  const fsmDiagramErrors = await runScriptValidator('FSM Diagrams', 'scripts/validation/validate_fsm_diagrams.ts');
+  const fsmImplErrors = await runScriptValidator('FSM Implementation', 'scripts/validation/validate_fsm_implementation.ts');
+  const fsmFlowErrors = await runScriptValidator('FSM Flow Parity', 'scripts/validation/validate_fsm_flow_parity.ts');
+  const itemsErrors = await runScriptValidator('Items Database', 'scripts/validation/validate_items.ts');
+  const abilitiesErrors = await runScriptValidator('Abilities Database', 'scripts/validation/validate_abilities.ts');
+  const movesErrors = await runScriptValidator('Moves Database', 'scripts/validation/validate_moves.ts');
 
-  // 4. Ejecutar Fallow Security
-  console.log(styleText('cyan', 'Ejecutando Fallow Security (seguridad)...'));
-  const securityErrors = await runFallowSecurity();
-
-  // 5. Ejecutar auditoría del proyecto local (audit_project.ts) en todo el proyecto
-  console.log(styleText('cyan', 'Ejecutando Auditoría del Proyecto a nivel global...'));
+  // 4. Ejecutar auditoría del proyecto local (audit_project.ts: AST, Fallow, CSS, DOX, Constantes)
+  console.log(styleText('cyan', '[4/4] Ejecutando Auditoría Integral del Proyecto (AST, Fallow Dupes/Security/DeadCode, CSS, DOX)...'));
   const auditReportJsonPath = 'scratch/audit_local.json';
   
   // Limpiar reporte previo
@@ -380,25 +334,47 @@ async function main() {
   let auditViolations: Violation[] = [];
   try {
     const rawAudit = await fs.readFile(auditReportJsonPath, 'utf-8');
-    const parsed = JSON.parse(rawAudit) as Violation[];
-    auditViolations = parsed.map((v: Violation) => ({
-      file: path.relative(process.cwd(), v.file),
-      line: v.line,
-      message: v.message,
-      context: v.context,
-      severity: v.severity,
-      ruleId: 'project-audit'
-    }));
+    const parsed = JSON.parse(rawAudit) as { files?: Record<string, Violation[]> } | Violation[];
+    if (Array.isArray(parsed)) {
+      auditViolations = parsed.map((v: Violation) => ({
+        file: path.relative(process.cwd(), v.file),
+        line: v.line,
+        message: v.message,
+        context: v.context,
+        severity: v.severity,
+        ruleId: 'project-audit'
+      }));
+    } else if (parsed && parsed.files) {
+      for (const [file, list] of Object.entries(parsed.files)) {
+        for (const v of list) {
+          auditViolations.push({
+            file: path.relative(process.cwd(), file),
+            line: v.line,
+            message: v.message,
+            context: v.context,
+            severity: v.severity,
+            ruleId: 'project-audit'
+          });
+        }
+      }
+    }
   } catch {
     // Si no se generó el archivo de auditoría, asumimos que no hubo violaciones
   }
 
-  // Combinar todas las violaciones del proyecto
+  // Combinar todas las violaciones del proyecto sin duplicaciones
   const allViolations = [
     ...eslintViolations,
     ...typeErrors,
-    ...dupeErrors,
-    ...securityErrors,
+    ...domainTypeErrors,
+    ...sqlErrors,
+    ...saveErrors,
+    ...fsmDiagramErrors,
+    ...fsmImplErrors,
+    ...fsmFlowErrors,
+    ...itemsErrors,
+    ...abilitiesErrors,
+    ...movesErrors,
     ...auditViolations
   ];
 

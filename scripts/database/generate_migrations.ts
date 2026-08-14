@@ -17,6 +17,9 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { enableCompileCache } from 'node:module';
+
+enableCompileCache();
 
 
 const MIGRATIONS_DIR = path.resolve(process.cwd(), 'database/migrations');

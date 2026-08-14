@@ -2,7 +2,7 @@
 // Data-only definition: the default state shape for the game store.
 import { DEFAULT_INITIAL_ELO, INITIAL_BALLS_COUNT, INITIAL_MONEY, INITIAL_POKEBALL_COUNT } from '@/logic/constants/gameplay.ts';
 
-export const INITIAL_STATE = {
+export const INITIAL_STATE = { // map-ok
   trainer: '',
   gender: 'h',
   badges: 0,

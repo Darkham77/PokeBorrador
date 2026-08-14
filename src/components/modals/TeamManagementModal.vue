@@ -11,6 +11,12 @@ import UnifiedTeamSlot from '@/components/team/UnifiedTeamSlot.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
+const MAX_ADVENTURE_SLOTS = 6
+const MAX_PVP_SLOTS = 3
+const DEFAULT_WAR_SLOTS = 6
+const TAB_TRANSITION_Y_PX = 4
+const TAB_TRANSITION_DURATION_SEC = 0.3
+
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 
@@ -22,7 +28,7 @@ const activeTab = ref('adventure') // 'adventure', 'pvp', 'war'
 const adventureTeam = computed(() => {
   const team = gameStore.state.team || []
   const slots: (Pokemon | null)[] = []
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < MAX_ADVENTURE_SLOTS; i++) {
     slots.push(team[i] || null)
   }
   return slots
@@ -32,7 +38,7 @@ const pvpTeam = computed(() => {
   const pvpUids = (gameStore.state.pvpTeam || []) as string[] // no-domain
   const allPokes = [...((gameStore.state.team || []) as (Pokemon | null)[]), ...((gameStore.state.box || []) as (Pokemon | null)[])].filter((p): p is Pokemon => p !== null)
   const slots: (Pokemon | null)[] = []
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < MAX_PVP_SLOTS; i++) {
     const uid = pvpUids[i]
     slots.push(allPokes.find(p => p.uid === uid) || null)
   }
@@ -41,7 +47,7 @@ const pvpTeam = computed(() => {
 
 const warTeam = computed(() => {
   const warUids = (gameStore.state.warTeam || []) as string[] // no-domain
-  const maxSlots = gameStore.state.warSlots || 6
+  const maxSlots = gameStore.state.warSlots || DEFAULT_WAR_SLOTS
   const allPokes = [...((gameStore.state.team || []) as (Pokemon | null)[]), ...((gameStore.state.box || []) as (Pokemon | null)[])].filter((p): p is Pokemon => p !== null)
   const slots: (Pokemon | null)[] = []
   for (let i = 0; i < maxSlots; i++) {
@@ -54,7 +60,7 @@ const warTeam = computed(() => {
 const adventureCount = computed(() => (gameStore.state.team || []).filter(Boolean).length)
 const pvpCount = computed(() => (gameStore.state.pvpTeam || []).length)
 const warCount = computed(() => (gameStore.state.warTeam || []).length)
-const maxWarSlots = computed(() => gameStore.state.warSlots || 6)
+const maxWarSlots = computed(() => gameStore.state.warSlots || DEFAULT_WAR_SLOTS)
 
 // Drag and Drop Logic
 const draggedIndex = ref<number | null>(null)
@@ -64,9 +70,6 @@ const isDragging = ref(false)
 function handleDragStart(index: number) {
   draggedIndex.value = index
   isDragging.value = true
-  
-  // Set global listener for drag end (safety)
-  window.addEventListener('dragend', handleDragEnd, { once: true })
 }
 
 function handleDragEnd() {
@@ -76,20 +79,39 @@ function handleDragEnd() {
 }
 
 function handleDrop(targetIndex: number) {
-  if (draggedIndex.value === null || draggedIndex.value === targetIndex) return
-  
+  const from = draggedIndex.value
+  handleDragEnd()
+  if (from === null || from === targetIndex) return
+  handleDropDirect(from, targetIndex)
+}
+
+function handleDropDirect(fromIndex: number, toIndex: number) {
+  if (fromIndex === toIndex) return
   if (activeTab.value === 'adventure') {
-    // Only reorder if there's a pokemon at the dragged source
-    if (gameStore.state.team[draggedIndex.value]) {
-      gameStore.reorderTeam(draggedIndex.value, targetIndex)
+    if (gameStore.state.team[fromIndex]) {
+      gameStore.reorderTeam(fromIndex, toIndex)
     }
   } else if (activeTab.value === 'pvp') {
-    gameStore.reorderPvpTeam(draggedIndex.value, targetIndex)
+    gameStore.reorderPvpTeam(fromIndex, toIndex)
   } else if (activeTab.value === 'war') {
-    gameStore.reorderWarTeam(draggedIndex.value, targetIndex)
+    gameStore.reorderWarTeam(fromIndex, toIndex)
   }
-  
-  handleDragEnd()
+}
+
+function handleSlotSelect(index: number) {
+  if (activeTab.value === 'adventure') {
+    if (!adventureTeam.value[index]) {
+      selectAdventure(index)
+    }
+  } else if (activeTab.value === 'pvp') {
+    if (!pvpTeam.value[index]) {
+      selectPvp(index)
+    }
+  } else if (activeTab.value === 'war') {
+    if (!warTeam.value[index]) {
+      selectWar(index)
+    }
+  }
 }
 
 function openDetail(pokemon: Pokemon | null) {
@@ -251,42 +273,42 @@ function selectAdventure(_slotIndex: number) {
           <button 
             class="tm-tab" 
             :class="{ active: activeTab === 'adventure' }"
-            @click.stop="activeTab = 'adventure'"
+            @click="activeTab = 'adventure'"
           >
             <span class="icon">🎒</span>
-            AVENTURA
+            <span>AVENTURA</span>
             <span class="tab-count">{{ adventureCount }}/6</span>
           </button>
         </PVTooltip>
 
         <PVTooltip 
-          title="EQUIPO COMPETITIVO (PVP)"
-          description="El equipo que utilizas en la Arena para subir de rango y ganar recompensas."
+          title="EQUIPO PVP"
+          description="Selecciona tus 3 Pokémon para combates online contra otros jugadores."
           position="top"
         >
           <button 
             class="tm-tab" 
             :class="{ active: activeTab === 'pvp' }"
-            @click.stop="activeTab = 'pvp'"
+            @click="activeTab = 'pvp'"
           >
             <span class="icon">⚔️</span>
-            PVP
+            <span>PVP</span>
             <span class="tab-count">{{ pvpCount }}/3</span>
           </button>
         </PVTooltip>
 
         <PVTooltip 
           title="EQUIPO DE GUERRA"
-          description="Pokémon asignados para defender y atacar en eventos de Facciones."
+          description="Tus Pokémon asignados para defender y atacar en Guerras de Clanes."
           position="top"
         >
           <button 
             class="tm-tab" 
             :class="{ active: activeTab === 'war' }"
-            @click.stop="activeTab = 'war'"
+            @click="activeTab = 'war'"
           >
             <span class="icon">🛡️</span>
-            GUERRA
+            <span>GUERRA</span>
             <span class="tab-count">{{ warCount }}/{{ maxWarSlots }}</span>
           </button>
         </PVTooltip>
@@ -296,7 +318,7 @@ function selectAdventure(_slotIndex: number) {
     <!-- ADVENTURE SECTION -->
     <Transition
       :css="false"
-      @enter="(el, done) => gsap.fromTo(el, { opacity: 0, y: 4 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out', onComplete: done })"
+      @enter="(el, done) => gsap.fromTo(el, { opacity: 0, y: TAB_TRANSITION_Y_PX }, { opacity: 1, y: 0, duration: TAB_TRANSITION_DURATION_SEC, ease: 'power2.out', onComplete: done })"
     >
       <section
         v-if="activeTab === 'adventure'"
@@ -314,7 +336,7 @@ function selectAdventure(_slotIndex: number) {
             @open-item="openItem(p)"
             @unequip-item="unequipItem(p)"
             @send-to-box="sendToBox(p)"
-            @select="selectAdventure"
+            @select="handleSlotSelect"
             @drag-start="handleDragStart"
             @drag-over="(idx) => touchOverIndex = idx"
             @drag-end="handleDragEnd"
@@ -327,7 +349,7 @@ function selectAdventure(_slotIndex: number) {
     <!-- PVP SECTION -->
     <Transition
       :css="false"
-      @enter="(el, done) => gsap.fromTo(el, { opacity: 0, y: 4 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out', onComplete: done })"
+      @enter="(el, done) => gsap.fromTo(el, { opacity: 0, y: TAB_TRANSITION_Y_PX }, { opacity: 1, y: 0, duration: TAB_TRANSITION_DURATION_SEC, ease: 'power2.out', onComplete: done })"
     >
       <section
         v-if="activeTab === 'pvp'"
@@ -345,7 +367,7 @@ function selectAdventure(_slotIndex: number) {
             @open-detail="openDetail(p)"
             @open-item="openItem(p)"
             @unequip-item="unequipItem(p)"
-            @select="selectPvp(i)"
+            @select="handleSlotSelect"
             @drag-start="handleDragStart"
             @drag-over="(idx) => touchOverIndex = idx"
             @drag-end="handleDragEnd"
@@ -358,7 +380,7 @@ function selectAdventure(_slotIndex: number) {
     <!-- WAR SECTION -->
     <Transition
       :css="false"
-      @enter="(el, done) => gsap.fromTo(el, { opacity: 0, y: 4 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out', onComplete: done })"
+      @enter="(el, done) => gsap.fromTo(el, { opacity: 0, y: TAB_TRANSITION_Y_PX }, { opacity: 1, y: 0, duration: TAB_TRANSITION_DURATION_SEC, ease: 'power2.out', onComplete: done })"
     >
       <section
         v-if="activeTab === 'war'"
@@ -376,7 +398,7 @@ function selectAdventure(_slotIndex: number) {
             @open-detail="openDetail(p)"
             @open-item="openItem(p)"
             @unequip-item="unequipItem(p)"
-            @select="selectWar(i)"
+            @select="handleSlotSelect"
             @drag-start="handleDragStart"
             @drag-over="(idx) => touchOverIndex = idx"
             @drag-end="handleDragEnd"
@@ -400,7 +422,6 @@ function selectAdventure(_slotIndex: number) {
   flex: 1;
   min-width: 0;
   -webkit-overflow-scrolling: touch;
-  
 
   @media (max-width: 600px) {
     gap: 8px;
@@ -422,7 +443,6 @@ function selectAdventure(_slotIndex: number) {
   font-size: 8px;
   white-space: nowrap;
   flex-shrink: 0;
-  
   letter-spacing: 1px;
   position: relative;
 
@@ -462,6 +482,8 @@ function selectAdventure(_slotIndex: number) {
   box-shadow: none !important;
   padding: 0 !important;
   margin: 0 !important;
+  overscroll-behavior: contain;
+  overscroll-behavior-x: none;
 }
 
 .slots-grid {
@@ -478,8 +500,6 @@ function selectAdventure(_slotIndex: number) {
   }
 }
 
-
-
 :deep(.modal-header-premium) {
   border-bottom: none !important;
   padding: 12px 16px !important;
@@ -490,11 +510,14 @@ function selectAdventure(_slotIndex: number) {
   -webkit-will-change: transform, filter, opacity;
   will-change: transform, filter, opacity;
   backdrop-filter: Blur(25px);
-  backdrop-filter: Blur(25px);
   @include gpu-layer;
+  overscroll-behavior: contain;
+  overscroll-behavior-x: none;
 }
 
 :deep(.modal-scrollable-content) {
   padding: 15px !important;
+  overscroll-behavior: contain;
+  overscroll-behavior-x: none;
 }
 </style>

@@ -190,7 +190,6 @@ Before declaring any task completed, verify code against this mandatory checklis
 - [ ] **GPU Acceleration**: Have I applied layer promotion (`will-change: transform`) and object pooling on animated/heavy elements?
 - [ ] **Pixel Parity**: Is all game content pixelated, sharp, and properly rendered with appropriate font fallbacks ('ñ' handled)?
 - [ ] **CLI-First State Verification**: Have I verified game states via `window.__VITE_DEBUG__` console commands?
-- [ ] **Zero-Warning & Zero-Error**: Do `npm run lint` and `npm run validate:sql` pass with 0 errors and 0 warnings?
+- [ ] **Zero-Warning & Zero-Error**: Does `npm run audit:warnings-diff` pass with 0 errors and 0 new warnings? (Never run `npm run lint` alongside it; `audit:warnings-diff` is the all-in-one unified validator).
 - [ ] **Fallow Score Compliance**: Does `npx fallow health --score` report a score of 85 or higher?
-- [ ] **Linter Cache Compliance**: Have I executed validation exclusively via `npm run lint` or `npm run lint:fix` to preserve `.eslintcache`?
 - [ ] **Language Parity**: Are all repository files (.ts, .vue, .md, skills) written exclusively in English?

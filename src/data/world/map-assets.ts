@@ -39,7 +39,6 @@ export const MAP_ROUTE_MAPPING = {
   saffron_city: '/test aventura/imagenes/Saffron_City_FRLG.png',
   fuchsia_city: '/test aventura/imagenes/Fuchsia_City_FRLG.png',
   cinnabar_island: '/test aventura/imagenes/Cinnabar_Island_FRLG.png',
-  // Special Battle Locations
   gym: 'gimnasio',
   pvp: 'gimnasio'
 } as const;

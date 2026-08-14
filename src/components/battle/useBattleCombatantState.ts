@@ -87,7 +87,7 @@ function resolveSpriteKey(pokemon: Pokemon | null | undefined): string {
   return String(requirePokemonSpriteValue(stringId));
 }
 
-function resolveIdleKey(spriteKeyVal: string, isPlayerSide: boolean, gender?: string | null): AnimatedSpriteId | null {
+function determineIdleSpriteKey(spriteKeyVal: string, isPlayerSide: boolean, gender?: string | null): AnimatedSpriteId | null {
   if (!spriteKeyVal) return null;
   const match = spriteKeyVal.match(/^(\d+)(.*)$/);
   if (!match) return null;
@@ -129,7 +129,7 @@ export function useBattleCombatantState(
   const isPlayer = computed(() => props.side === 'player');
   const isEnemy = computed(() => props.side === 'enemy');
   const spriteKey = computed(() => resolveSpriteKey(props.pokemon));
-  const idleKey = computed(() => resolveIdleKey(spriteKey.value, isPlayer.value, props.pokemon?.gender));
+  const idleKey = computed(() => determineIdleSpriteKey(spriteKey.value, isPlayer.value, props.pokemon?.gender));
 
   const variationKey = computed<AnimatedVariationId | null>(() => {
     if (!spriteKey.value) return null;

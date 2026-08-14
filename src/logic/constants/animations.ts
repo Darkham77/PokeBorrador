@@ -449,6 +449,10 @@ export const SPARKLE_FOUNTAIN_DOWN_DURATION_SEC = 0.5;
 
 /** Map card and aura GSAP animation thresholds and parameters. */
 export const MAP_CARD_ANIMATIONS = {
+  ENTER_DURATION_SEC: 0.8,
+  DISMISS_DURATION_SEC: 0.4,
+  HOVER_ENTER_SEC: 0.25,
+  HOVER_LEAVE_SEC: 0.35,
   FISHING_BOB_UP_Y: -8,
   FISHING_BOB_DOWN_Y: 2,
   FISHING_ROTATION_UP: 5,
@@ -475,6 +479,14 @@ export const MAP_CARD_ANIMATIONS = {
   STANDARD_AURA_SCALE_MIN: 0.1,
   STANDARD_AURA_SCALE_MAX: 3.375,
   AURA_FULL_CIRCLE_DEG: 360
+} as const;
+
+/** Hover strategies available for interactive card elements. */
+export const HOVER_EFFECT_VARIANTS = {
+  LIFT: 'lift',
+  GLOW: 'glow',
+  PULSE: 'pulse',
+  POP: 'pop',
 } as const;
 
 /** Shared UI micro-interaction hover constants. */

@@ -23,28 +23,32 @@ const needRefresh = ref(false)
 const isUpdating = ref(false)
 const isOutdatedClient = ref(false)
 const progress = ref(0)
+const progressText = ref('')
 
 const PROGRESS_STAGE_START_PERCENT = 10;
 const PROGRESS_STAGE_LOGOUT_PERCENT = 40;
 const PROGRESS_STAGE_APPLY_PERCENT = 80;
+const PROGRESS_COMPLETE_PERCENT = 100;
 
 const UPDATE_PROGRESS_STAGES = {
   START: PROGRESS_STAGE_START_PERCENT,
   LOGOUT: PROGRESS_STAGE_LOGOUT_PERCENT,
   APPLY: PROGRESS_STAGE_APPLY_PERCENT
 } as const;
-const UPDATE_CHECK_TIMEOUT_MS = 1000;
-const PROGRESS_COMPLETE_PERCENT = 100;
-const progressText = ref('')
+
+const UPDATE_CHECK_TIMEOUT_SEC = 1.5;
+const SW_UPDATE_FAILSAFE_TIMEOUT_SEC = 4.0;
+const PRESERVED_CACHE_REGEXP = /^game-(images|audio)-v\d+$/i;
 
 const updateServiceWorker = registerSW({
+  immediate: true,
   onNeedRefresh() {
     if (typeof window !== 'undefined' && window.__E2E__) {
       logger.info('PWA', 'SW Update available but bypassed in E2E session');
       return;
     }
     needRefresh.value = true
-    isOutdatedClient.value = false // SW background asset update is safe to proceed
+    isOutdatedClient.value = false
     logger.info('PWA', 'SW Update available')
   },
   onOfflineReady() {
@@ -64,15 +68,14 @@ export function usePWA() {
 
   const handleInstallPrompt = (e: Event) => {
     const installEv = e as BeforeInstallPromptEvent
-    // Prevent the mini-infobar from appearing on mobile
     installEv.preventDefault()
-    // Stash the event so it can be triggered later.
     installEvent.value = installEv
     canInstall.value = true
     logger.info('PWA', 'PWA Install Prompt captured')
   }
 
   const checkInstallState = () => {
+    if (typeof window === 'undefined') return
     if (window.matchMedia('(display-mode: standalone)').matches || 
         window.matchMedia('(display-mode: fullscreen)').matches ||
         (window.navigator as Navigator & { standalone?: boolean }).standalone) {
@@ -84,22 +87,78 @@ export function usePWA() {
   const installApp = async () => {
     if (!installEvent.value) return false
     
-    // Show the install prompt
     const event = installEvent.value;
     if (event && typeof event.prompt === 'function') {
       event.prompt()
-      
-      // Wait for the user to respond to the prompt
       const { outcome } = await event.userChoice
       logger.info('PWA', `User response to the install prompt: ${outcome}`)
-      
-      // We've used the prompt, and can't use it again, throw it away
       installEvent.value = null
       canInstall.value = false
-      
       return outcome === 'accepted'
     }
     return false
+  }
+
+  const purgeCodeCaches = async (): Promise<void> => {
+    if (typeof window === 'undefined' || !('caches' in window)) return
+    try {
+      const keys = await caches.keys()
+      await Promise.all(
+        keys.map((key) => {
+          if (PRESERVED_CACHE_REGEXP.test(key)) {
+            return Promise.resolve(false)
+          }
+          logger.info('PWA', `Purging outdated cache bucket: ${key}`)
+          return caches.delete(key)
+        })
+      )
+    } catch (e) {
+      logger.error('PWA', `Error during selective cache purge: ${(e as Error).message}`)
+    }
+  }
+
+  const forceCacheBustingReload = async () => {
+    if (typeof window === 'undefined') return
+    try {
+      const baseUrl = import.meta.env.BASE_URL || '/'
+      const cacheBuster = Temporal.Now.instant().epochMilliseconds.toString()
+      const mainUrls = [
+        window.location.origin + baseUrl,
+        window.location.origin + baseUrl + 'index.html',
+        window.location.origin + baseUrl + 'version.json',
+        window.location.origin + baseUrl + '?t=' + cacheBuster,
+        window.location.origin + baseUrl + 'index.html?t=' + cacheBuster,
+        window.location.origin + baseUrl + 'version.json?t=' + cacheBuster
+      ]
+      
+      for (const url of mainUrls) {
+        try {
+          // fallow-ignore-next-line security-sink
+          await fetch(url, {
+            headers: { 
+              'Pragma': 'no-cache', 
+              'Cache-Control': 'no-cache, no-store, must-revalidate' 
+            },
+            cache: 'reload',
+            mode: 'no-cors'
+          })
+        } catch (e) {
+          logger.warn('PWA', `Could not force-refresh HTTP cache for ${url}:`, e)
+        }
+      }
+    } catch (e) {
+      logger.error('PWA', 'Error during HTTP cache reload sequence:', e)
+    }
+
+    try {
+      const baseUrl = import.meta.env.BASE_URL || '/'
+      const cacheBuster = Temporal.Now.instant().epochMilliseconds.toString()
+      const target = `${window.location.origin}${baseUrl}?reload_t=${cacheBuster}`
+      // fallow-ignore-next-line security-sink
+      window.location.replace(target)
+    } catch {
+      window.location.reload()
+    }
   }
 
   const handleUpdate = async (options?: { forceNoSave?: boolean }) => {
@@ -108,7 +167,17 @@ export function usePWA() {
     progress.value = UPDATE_PROGRESS_STAGES.START
     progressText.value = 'Iniciando...'
 
-    // If the game is loaded and ready, we trigger a safe logout to clean session state before reload.
+    // 1. Terminate active Web Workers to avoid memory leaks or old execution logic
+    if (typeof window !== 'undefined' && window.__showdownWorker__) {
+      try {
+        window.__showdownWorker__.terminate()
+        window.__showdownWorker__ = undefined
+      } catch (e) {
+        logger.warn('PWA', 'Error terminating showdown worker:', e)
+      }
+    }
+
+    // 2. Safe logout if game session is active
     if (authStore.user && gameStore.isReady && !options?.forceNoSave) {
       progress.value = UPDATE_PROGRESS_STAGES.LOGOUT
       progressText.value = 'Cerrando sesión de forma segura...'
@@ -124,93 +193,44 @@ export function usePWA() {
     progress.value = UPDATE_PROGRESS_STAGES.APPLY
     progressText.value = 'Aplicando actualización...'
 
-    const forceCacheBustingReload = async () => {
-      try {
-        const baseUrl = import.meta.env.BASE_URL || '/'
-        const cacheBuster = Temporal.Now.instant().epochMilliseconds.toString()
-        const mainUrls = [
-          window.location.origin + baseUrl,
-          window.location.origin + baseUrl + 'index.html',
-          window.location.origin + baseUrl + 'version.json',
-          window.location.origin + baseUrl + '?t=' + cacheBuster,
-          window.location.origin + baseUrl + 'index.html?t=' + cacheBuster,
-          window.location.origin + baseUrl + 'version.json?t=' + cacheBuster
-        ]
-        
-        // Force refresh browser HTTP cache for the main documents/assets
-        for (const url of mainUrls) {
-          try {
-            // fallow-ignore-next-line security-sink
-            await fetch(url, {
-              headers: { 
-                'Pragma': 'no-cache', 
-                'Cache-Control': 'no-cache' 
-              },
-              cache: 'reload',
-              mode: 'no-cors'
-            })
-          } catch (e) {
-            logger.warn('PWA', `Could not force-refresh HTTP cache for ${url}:`, e)
-          }
-        }
-      } catch (e) {
-        logger.error('PWA', 'Error during HTTP cache reload sequence:', e)
-      }
-
-      try {
-        const baseUrl = import.meta.env.BASE_URL || '/'
-        const cacheBuster = Temporal.Now.instant().epochMilliseconds.toString()
-        const target = `${window.location.origin}${baseUrl}?t=${cacheBuster}`
-        // fallow-ignore-next-line security-sink
-        window.location.replace(target)
-      } catch {
-        window.location.reload()
-      }
-    }
-
-const SW_UPDATE_FAILSAFE_TIMEOUT_SEC = 3.5;
-
-    // Fail-safe: force physical reload if SW doesn't reload the page in 3.5 seconds
+    // Fail-safe: force reload if SW doesn't transition in time
     gsap.delayedCall(SW_UPDATE_FAILSAFE_TIMEOUT_SEC, () => {
-      logger.warn('PWA', 'La actualización automática del SW excedió el tiempo límite. Forzando recarga.')
+      logger.warn('PWA', 'SW update exceeded failsafe timeout. Executing forced clean reload.')
       forceCacheBustingReload()
     })
 
     try {
-      // --- STEP 1: Clear app-shell caches (NOT game data caches) ---
-      // We clear the cache first so the reload is guaranteed to fetch fresh files.
-      if ('caches' in window) {
-        const keys = await caches.keys()
-        for (const key of keys) {
-          // Preserve game data caches (images/audio), only wipe app-shell
-          if (!key.startsWith('game-images') && !key.startsWith('game-audio')) {
-            await caches.delete(key)
-          }
-        }
-      }
+      // 3. Purge code caches before activating new SW
+      await purgeCodeCaches()
 
-      // --- STEP 2: Activate the waiting SW via SKIP_WAITING so it takes control ---
+      // 4. Service Worker 3-state transition
       if ('serviceWorker' in navigator) {
         const registration = await navigator.serviceWorker.getRegistration()
         if (registration) {
           if (registration.waiting) {
-            logger.info('PWA', 'Encontrado Service Worker esperando. Activando...')
-            registration.waiting.postMessage({ type: 'SKIP_WAITING' })
-            await new Promise<void>((resolve) => {
+            logger.info('PWA', 'Waiting Service Worker detected. Sending SKIP_WAITING...')
+            const controllerPromise = new Promise<void>((resolve) => {
               const onControllerChange = () => {
                 navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
                 resolve()
               }
               navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
             })
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+            await Promise.race([
+              controllerPromise,
+              new Promise<void>((resolve) => {
+                gsap.delayedCall(UPDATE_CHECK_TIMEOUT_SEC, resolve)
+              })
+            ])
           } else if (registration.installing) {
-            logger.info('PWA', 'Service Worker se está instalando. Esperando instalación...')
+            logger.info('PWA', 'Installing Service Worker detected. Awaiting installation...')
             await new Promise<void>((resolve) => {
               const worker = registration.installing
               if (worker) {
                 worker.addEventListener('statechange', () => {
                   if (worker.state === 'installed') {
-                    logger.info('PWA', 'Service Worker instalado. Enviando SKIP_WAITING...')
+                    logger.info('PWA', 'Worker installed. Sending SKIP_WAITING...')
                     worker.postMessage({ type: 'SKIP_WAITING' })
                     resolve()
                   }
@@ -219,24 +239,31 @@ const SW_UPDATE_FAILSAFE_TIMEOUT_SEC = 3.5;
                 resolve()
               }
             })
-            await new Promise<void>((resolve) => {
+            const controllerPromise = new Promise<void>((resolve) => {
               const onControllerChange = () => {
                 navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
                 resolve()
               }
               navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
             })
+            await Promise.race([
+              controllerPromise,
+              new Promise<void>((resolve) => {
+                gsap.delayedCall(UPDATE_CHECK_TIMEOUT_SEC, resolve)
+              })
+            ])
           } else {
-            logger.info('PWA', 'No hay Service Worker en espera ni instalándose. Buscando actualización...')
+            logger.info('PWA', 'No waiting/installing worker. Triggering registration.update()...')
             try {
               await registration.update()
-              // Esperar un momento a ver si se detecta/instala
-              await new Promise((r) => setTimeout(r, UPDATE_CHECK_TIMEOUT_MS))
-              const waitingWorker = registration.waiting
-              if (waitingWorker) {
-                logger.info('PWA', 'Nuevo Service Worker encontrado y listo tras update. Activando...')
-                const postMsg = Reflect.get(waitingWorker, 'postMessage') as ((msg: unknown) => void) | undefined // domain-ok
-                postMsg?.({ type: 'SKIP_WAITING' })
+              await new Promise<void>((resolve) => {
+                gsap.delayedCall(UPDATE_CHECK_TIMEOUT_SEC, resolve)
+              })
+              const freshReg = await navigator.serviceWorker.getRegistration()
+              const updatedWorker = freshReg?.waiting
+              if (updatedWorker) {
+                logger.info('PWA', 'New worker ready after update. Activating...')
+                updatedWorker.postMessage({ type: 'SKIP_WAITING' })
                 await new Promise<void>((resolve) => {
                   const onControllerChange = () => {
                     navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange)
@@ -245,11 +272,11 @@ const SW_UPDATE_FAILSAFE_TIMEOUT_SEC = 3.5;
                   navigator.serviceWorker.addEventListener('controllerchange', onControllerChange)
                 })
               } else {
-                logger.info('PWA', 'No se detectó nuevo SW tras update. Desregistrando SW actual para forzar recarga limpia...')
+                logger.info('PWA', 'No updated worker appeared. Unregistering existing SW to force clean fetch on reload...')
                 await registration.unregister()
               }
             } catch (updateErr) {
-              logger.error('PWA', `Error al intentar forzar update: ${(updateErr as Error).message}`)
+              logger.error('PWA', `Error during manual update: ${(updateErr as Error).message}`)
               await registration.unregister()
             }
           }
@@ -260,7 +287,7 @@ const SW_UPDATE_FAILSAFE_TIMEOUT_SEC = 3.5;
       progressText.value = 'Reiniciando...'
       await forceCacheBustingReload()
     } catch (e) {
-      logger.error('PWA', `Error al actualizar Service Worker: ${(e as Error).message}`)
+      logger.error('PWA', `Error during forced update execution: ${(e as Error).message}`)
       await forceCacheBustingReload()
     }
   }
@@ -271,6 +298,21 @@ const SW_UPDATE_FAILSAFE_TIMEOUT_SEC = 3.5;
     needRefresh.value = true
   }
 
+  const checkUpdatesOnWakeup = async () => {
+    if (typeof window === 'undefined' || !navigator.onLine) return
+    if (document.visibilityState === 'visible' && 'serviceWorker' in navigator) {
+      try {
+        const reg = await navigator.serviceWorker.getRegistration()
+        if (reg) {
+          logger.debug('PWA', 'Checking SW updates on app wakeup/focus')
+          await reg.update()
+        }
+      } catch (e) {
+        logger.warn('PWA', 'Wakeup update check error:', e)
+      }
+    }
+  }
+
   onMounted(() => {
     window.addEventListener('beforeinstallprompt', handleInstallPrompt)
     window.addEventListener('appinstalled', () => {
@@ -279,12 +321,16 @@ const SW_UPDATE_FAILSAFE_TIMEOUT_SEC = 3.5;
       installEvent.value = null
       logger.success('PWA', 'PWA installed successfully')
     })
+    document.addEventListener('visibilitychange', checkUpdatesOnWakeup)
+    window.addEventListener('focus', checkUpdatesOnWakeup)
     gameBus.on('PWA_NEED_REFRESH', handleNeedRefresh)
     checkInstallState()
   })
 
   onUnmounted(() => {
     window.removeEventListener('beforeinstallprompt', handleInstallPrompt)
+    document.removeEventListener('visibilitychange', checkUpdatesOnWakeup)
+    window.removeEventListener('focus', checkUpdatesOnWakeup)
     gameBus.off('PWA_NEED_REFRESH', handleNeedRefresh)
   })
 

@@ -18,7 +18,7 @@ Frontend Developers / Social Systems Engineers.
 
 ## Verification
 
-- Run `npm run lint`.
+- Run `npm run audit:warnings-diff`.
 
 ## Child DOX Index
 

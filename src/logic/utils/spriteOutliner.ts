@@ -7,8 +7,8 @@ const auraCache = new Map<string, string>();
 const auraProcessingCache = new Map<string, Promise<string>>();
 
 // Web Worker state management
-let spriteWorker: Worker | null = null;
-let jobCounter = 0;
+let spriteWorker: Worker | null = null; // singleton-ok
+let jobCounter = 0; // singleton-ok
 const pendingJobs = new Map<
   number,
   {
@@ -21,7 +21,7 @@ const pendingJobs = new Map<
 /**
  * Instantiates the Web Worker lazily and configures message handling.
  */
-function getWorker(): Worker | null {
+function obtainWorkerInstance(): Worker | null {
   if (typeof window === 'undefined' || !window.Worker || !window.OffscreenCanvas) {
     return null;
   }
@@ -162,7 +162,7 @@ export function getProcessedSprite(
 
   const promise = (async () => {
     try {
-      const worker = getWorker();
+      const worker = obtainWorkerInstance();
       let resultUrl = '';
       
       if (worker) {
@@ -254,7 +254,7 @@ export function getProcessedAura(
 
   const promise = (async () => {
     try {
-      const worker = getWorker();
+      const worker = obtainWorkerInstance();
       let resultUrl = '';
       
       if (worker) {

@@ -1,6 +1,6 @@
 <script lang="ts">
 // Shared global state across all PVTooltip instances to prevent overlapping tooltips
-let activeTooltipHide: ((immediate?: boolean) => void) | null = null
+let activeTooltipHide: ((immediate?: boolean) => void) | null = null; // singleton-ok
 </script>
 
 <script setup lang="ts">
@@ -39,20 +39,23 @@ const {
   updatePosition
 } = useTooltipPosition(trigger, tooltip, props.position)
 
-let timeout: gsap.core.Tween | null = null
-let touchTimeout: gsap.core.Tween | null = null
-let isImmediateLeave = false
-let lastTouchTime = 0
-let touchStartX = 0
-let touchStartY = 0
+const tooltipState = {
+  timeout: null as gsap.core.Tween | null,
+  touchTimeout: null as gsap.core.Tween | null,
+  isImmediateLeave: false,
+  lastTouchTime: 0,
+  touchStartX: 0,
+  touchStartY: 0,
+  clickBlockTimeout: null as gsap.core.Tween | null,
+}
 
 const show = (immediate = false) => {
   if (isSimplified.value || props.disabled || isBlockedByClick.value) return 
-  if (timeout) timeout.kill()
+  if (tooltipState.timeout) tooltipState.timeout.kill()
   
   const actualDelay = (immediate || props.touchInstant) ? 0 : Math.max(DEFAULT_TOOLTIP_DELAY_MS, props.delay)
   
-  timeout = gsap.delayedCall(actualDelay / SECS_PER_MS_FACTOR, async () => {
+  tooltipState.timeout = gsap.delayedCall(actualDelay / SECS_PER_MS_FACTOR, async () => {
     // Hide previous tooltip immediately before showing this one
     if (activeTooltipHide && activeTooltipHide !== hideInstanceLogic) {
       activeTooltipHide(true)
@@ -79,13 +82,12 @@ const show = (immediate = false) => {
 }
 
 const isBlockedByClick = ref(false)
-let clickBlockTimeout: gsap.core.Tween | null = null
 
 const hide = (immediate = false) => {
-  if (timeout) timeout.kill()
-  if (touchTimeout) {
-    touchTimeout.kill()
-    touchTimeout = null
+  if (tooltipState.timeout) tooltipState.timeout.kill()
+  if (tooltipState.touchTimeout) {
+    tooltipState.touchTimeout.kill()
+    tooltipState.touchTimeout = null
   }
   
   if (activeTooltipHide === hideInstanceLogic) {
@@ -93,7 +95,7 @@ const hide = (immediate = false) => {
   }
   
   if (immediate) {
-    isImmediateLeave = true
+    tooltipState.isImmediateLeave = true
   }
   
   isVisible.value = false
@@ -122,36 +124,36 @@ const hideClickOutside = (event: Event) => {
 }
 
 const updateTouchTime = () => {
-  lastTouchTime = Temporal.Now.instant().epochMilliseconds
+  tooltipState.lastTouchTime = Temporal.Now.instant().epochMilliseconds
 }
 
 const handleTouchStart = (e: TouchEvent) => {
   updateTouchTime()
   const touch = e.touches?.[0]
   if (touch) {
-    touchStartX = touch.clientX
-    touchStartY = touch.clientY
+    tooltipState.touchStartX = touch.clientX
+    tooltipState.touchStartY = touch.clientY
   }
-  if (touchTimeout) {
-    touchTimeout.kill()
-    touchTimeout = null
+  if (tooltipState.touchTimeout) {
+    tooltipState.touchTimeout.kill()
+    tooltipState.touchTimeout = null
   }
   
   if (props.touchInstant) {
     show(true)
   } else {
-    touchTimeout = gsap.delayedCall(0.5, () => {
+    tooltipState.touchTimeout = gsap.delayedCall(0.5, () => {
       show(true)
-      touchTimeout = null
+      tooltipState.touchTimeout = null
     })
   }
 }
 
 const handleTouchEnd = () => {
   updateTouchTime()
-  if (touchTimeout) {
-    touchTimeout.kill()
-    touchTimeout = null
+  if (tooltipState.touchTimeout) {
+    tooltipState.touchTimeout.kill()
+    tooltipState.touchTimeout = null
   }
   if (props.touchInstant) {
     return // Let touchInstant tooltips stay open until a click outside
@@ -166,13 +168,13 @@ const handleTouchMove = (e: TouchEvent) => {
   const touch = e.touches?.[0]
   if (!touch) return
   
-  const deltaX = Math.abs(touch.clientX - touchStartX)
-  const deltaY = Math.abs(touch.clientY - touchStartY)
+  const deltaX = Math.abs(touch.clientX - tooltipState.touchStartX)
+  const deltaY = Math.abs(touch.clientY - tooltipState.touchStartY)
   
   if (deltaX > TOUCH_DRAG_THRESHOLD_PX || deltaY > TOUCH_DRAG_THRESHOLD_PX) {
-    if (touchTimeout) {
-      touchTimeout.kill()
-      touchTimeout = null
+    if (tooltipState.touchTimeout) {
+      tooltipState.touchTimeout.kill()
+      tooltipState.touchTimeout = null
     }
     if (isVisible.value) {
       hide()
@@ -187,8 +189,8 @@ const handleTriggerClick = (event: MouseEvent) => {
   event.stopPropagation()
   isBlockedByClick.value = true
   
-  if (clickBlockTimeout) clickBlockTimeout.kill()
-  clickBlockTimeout = gsap.delayedCall(BLOCK_CLICK_DURATION_SEC, () => {
+  if (tooltipState.clickBlockTimeout) tooltipState.clickBlockTimeout.kill()
+  tooltipState.clickBlockTimeout = gsap.delayedCall(BLOCK_CLICK_DURATION_SEC, () => {
     isBlockedByClick.value = false
   })
 }
@@ -233,7 +235,7 @@ const descriptionLines = computed(() => {
 })
 
 const handleMouseEnter = () => {
-  if (Temporal.Now.instant().epochMilliseconds - lastTouchTime < TOUCH_HOVER_COOLDOWN_MS) return
+  if (Temporal.Now.instant().epochMilliseconds - tooltipState.lastTouchTime < TOUCH_HOVER_COOLDOWN_MS) return
   if (window.matchMedia('(hover: hover)').matches) {
     show(false)
   }
@@ -287,9 +289,9 @@ const enter = (el: Element, done: () => void) => {
 }
 
 const leave = (el: Element, done: () => void) => {
-  if (isImmediateLeave) {
+  if (tooltipState.isImmediateLeave) {
     done()
-    isImmediateLeave = false
+    tooltipState.isImmediateLeave = false
     return
   }
 
@@ -318,7 +320,7 @@ const leave = (el: Element, done: () => void) => {
 
 onUnmounted(() => {
   hide(true)
-  if (clickBlockTimeout) clickBlockTimeout.kill()
+  if (tooltipState.clickBlockTimeout) tooltipState.clickBlockTimeout.kill()
 })
 </script>
 

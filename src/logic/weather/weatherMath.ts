@@ -26,7 +26,6 @@ import { ONE_HOUR_MS } from '@/logic/constants/items.ts'
 const DAY_CYCLE_TOTAL_HOURS = 8;
 const SECONDS_PER_HOUR = 3600;
 export const PROBABILITY_PERCENT_SCALE = 100;
-const DEFAULT_WEATHER_SESSION_SEED = 500;
 const WEATHER_SESSION_SEED_RANGE = 1000;
 
 /**
@@ -105,15 +104,17 @@ export function getRouteWeatherPure(
 
 import { FIRE_RED_MAPS } from '../../data/world/maps.ts';
 
-let sessionWeatherSeed = DEFAULT_WEATHER_SESSION_SEED;
-if (typeof window !== 'undefined') {
-  if (window.__WEATHER_SESSION_SEED__ === undefined) {
-    window.__WEATHER_SESSION_SEED__ = Math.random() * WEATHER_SESSION_SEED_RANGE;
+function initSessionWeatherSeed(): number {
+  if (typeof window !== 'undefined') {
+    if (window.__WEATHER_SESSION_SEED__ === undefined) {
+      window.__WEATHER_SESSION_SEED__ = Math.random() * WEATHER_SESSION_SEED_RANGE;
+    }
+    return window.__WEATHER_SESSION_SEED__;
   }
-  sessionWeatherSeed = window.__WEATHER_SESSION_SEED__;
-} else {
-  sessionWeatherSeed = Math.random() * WEATHER_SESSION_SEED_RANGE;
+  return Math.random() * WEATHER_SESSION_SEED_RANGE;
 }
+
+const sessionWeatherSeed = initSessionWeatherSeed();
 
 /**
  * Gets the shared session weather seed.

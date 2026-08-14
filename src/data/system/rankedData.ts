@@ -25,7 +25,7 @@ export const RANKED_REWARD_MILESTONES = [
   { id: 'maestro_3400', tier: 'Maestro', elo: 3400, rewards: { 'abilitypill': 2, 'naturepatch': 3, 'vigorcandy': 3 }, icon: '🌟' }
 ];
 
-export const RANKED_TYPE_META = {
+export const RANKED_TYPE_META: Partial<Record<PokemonType, { label: string; icon: string }>> = {
   normal:   { label: 'Normal', icon: '⚪' },
   fire:     { label: 'Fuego', icon: '🔥' },
   water:    { label: 'Agua', icon: '💧' },

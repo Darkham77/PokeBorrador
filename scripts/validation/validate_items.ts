@@ -14,7 +14,10 @@ import fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { styleText } from 'node:util';
+import { enableCompileCache } from 'node:module';
 import { setupValidation } from '../lib/validationBase.ts';
+
+enableCompileCache();
 
 // Runtime permission check
 if (process.permission && !process.permission.has('fs.read', process.cwd())) {

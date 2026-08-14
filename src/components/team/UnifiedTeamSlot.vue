@@ -23,18 +23,10 @@ const props = withDefaults(defineProps<Props>(), {
   isTouchOver: false
 })
 
-const TOUCH_LONG_PRESS_DELAY_SEC = 0.35
-const TOUCH_MOVE_CANCEL_THRESHOLD_PX = 15
-const SLOT_HOVER_LIFT_Y_PX = -4;
-const SLOT_HOVER_SCALE_ACTIVE = 1.02;
-const SLOT_HOVER_DURATION_FAST_SEC = 0.3;
-const SLOT_HOVER_ICON_SCALE = 1.2;
-const SLOT_HOVER_ICON_ROTATION_DEG = 90;
-const SLOT_HOVER_DURATION_SLOW_SEC = 0.4;
-const DRAG_OVERLAY_BORDER_ACTIVE_PX = 3;
-const DRAG_OVERLAY_BORDER_IDLE_PX = 2;
-const DRAG_OVERLAY_NUM_SCALE = 1.2;
-const DRAG_OVERLAY_DURATION_SEC = 0.2;
+const DRAG_MOVE_THRESHOLD_SQ = 16
+const SCROLL_MARGIN_PX = 80
+const SCROLL_BASE_SPEED_PX = 3
+const SCROLL_MAX_EXTRA_SPEED_PX = 10
 
 const emit = defineEmits<{
   select: [index: number]
@@ -49,295 +41,278 @@ const emit = defineEmits<{
 }>()
 
 const slotRef = ref<HTMLElement | null>(null)
-const touchTimer = ref<gsap.core.Tween | null>(null)
-const isTouchDragging = ref(false)
-const touchStartX = ref(0)
-const touchStartY = ref(0)
-const touchDeltaX = ref(0)
-const touchDeltaY = ref(0)
-const lastTouchOverIndex = ref<number | null>(null)
+const isDraggingCard = ref(false)
+const dragStartX = ref(0)
+const dragStartY = ref(0)
+const dragDeltaX = ref(0)
+const dragDeltaY = ref(0)
+const lastOverIndex = ref<number | null>(null)
+let hasMovedBeyondThreshold = false // singleton-ok
+let activePointerId: number | null = null
 
-const touchDragStyle = computed(() => {
-  if (!isTouchDragging.value) return {}
+const scrollContainerRef = ref<HTMLElement | null>(null)
+const initialScrollTop = ref(0)
+const currentScrollTop = ref(0)
+const currentClientY = ref(0)
+let autoScrollRaf: number | null = null
+
+const isEmpty = computed(() => !props.pokemon)
+const isPvpSlot = computed(() => props.isPvp)
+
+const cardDragStyle = computed(() => {
+  if (!isDraggingCard.value) return {}
   return {
-    transform: `translate(${touchDeltaX.value}px, ${touchDeltaY.value}px)`,
-    zIndex: Z_LAYERS.OVERLAY,
+    transform: `translate3d(${dragDeltaX.value}px, ${dragDeltaY.value}px, 0) scale(1.04)`,
+    zIndex: Z_LAYERS.CRITICAL,
     pointerEvents: 'none' as const,
-    position: 'relative' as const
+    position: 'relative' as const,
+    opacity: 0.92,
+    boxShadow: '0 16px 32px rgba(0, 0, 0, 0.6)'
   }
 })
 
-const isEmpty = computed(() => !props.pokemon)
-const isDragOver = ref(false)
+const initialMaxScroll = ref(0)
 
-function onDragStart(e: DragEvent) {
+// ── AUTO-SCROLL LOOP ──────────────────────────────────────────────────────────
+
+function startAutoScrollLoop() {
+  function step() {
+    if (!isDraggingCard.value || !scrollContainerRef.value) return
+    const container = scrollContainerRef.value
+    const rect = container.getBoundingClientRect()
+    const y = currentClientY.value
+
+    const topZone = rect.top + SCROLL_MARGIN_PX
+    const bottomZone = rect.bottom - SCROLL_MARGIN_PX
+
+    if (y < topZone && container.scrollTop > 0) {
+      const ratio = Math.max(0, Math.min(1, (topZone - y) / SCROLL_MARGIN_PX))
+      const speed = SCROLL_BASE_SPEED_PX + Math.round(ratio * SCROLL_MAX_EXTRA_SPEED_PX)
+      container.scrollTop = Math.max(0, container.scrollTop - speed)
+      currentScrollTop.value = container.scrollTop
+      const scrollDelta = currentScrollTop.value - initialScrollTop.value
+      const rawDy = (y - dragStartY.value) + scrollDelta
+      const minDyScreen = containerTop.value - initSlotTop.value
+      const maxDyScreen = (containerBottom.value - initSlotHeight.value) - initSlotTop.value
+      dragDeltaY.value = Math.max(minDyScreen + scrollDelta, Math.min(maxDyScreen + scrollDelta, rawDy))
+    } else if (y > bottomZone && container.scrollTop < initialMaxScroll.value) {
+      const ratio = Math.max(0, Math.min(1, (y - bottomZone) / SCROLL_MARGIN_PX))
+      const speed = SCROLL_BASE_SPEED_PX + Math.round(ratio * SCROLL_MAX_EXTRA_SPEED_PX)
+      container.scrollTop = Math.min(initialMaxScroll.value, container.scrollTop + speed)
+      currentScrollTop.value = container.scrollTop
+      const scrollDelta = currentScrollTop.value - initialScrollTop.value
+      const rawDy = (y - dragStartY.value) + scrollDelta
+      const minDyScreen = containerTop.value - initSlotTop.value
+      const maxDyScreen = (containerBottom.value - initSlotHeight.value) - initSlotTop.value
+      dragDeltaY.value = Math.max(minDyScreen + scrollDelta, Math.min(maxDyScreen + scrollDelta, rawDy))
+    }
+
+    autoScrollRaf = requestAnimationFrame(step)
+  }
+  autoScrollRaf = requestAnimationFrame(step)
+}
+
+function stopAutoScrollLoop() {
+  if (autoScrollRaf !== null) {
+    cancelAnimationFrame(autoScrollRaf)
+    autoScrollRaf = null
+  }
+}
+
+const minDeltaX = ref(-9999)
+const maxDeltaX = ref(9999)
+const initSlotTop = ref(0)
+const initSlotHeight = ref(0)
+const containerTop = ref(-9999)
+const containerBottom = ref(9999)
+
+// ── UNIFIED POINTER DRAG ENGINE ──────────────────────────────────────────────
+
+function handlePointerDown(e: PointerEvent) {
   if (isEmpty.value) return
-  if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'
-  emit('drag-start', props.index)
-}
-
-function onDragOver(e: DragEvent) {
-  e.preventDefault()
-  if (props.isDraggingAny) {
-    isDragOver.value = true
+  const targetEl = e.target as HTMLElement | null
+  if (targetEl?.closest('button, .action-btn, .tag-item, .item-slot, .pill-btn, .card-status-indicators, .interactive-btn')) {
+    return
   }
-}
 
-function onDragLeave() {
-  isDragOver.value = false
-}
+  activePointerId = e.pointerId
+  dragStartX.value = e.clientX
+  dragStartY.value = e.clientY
+  currentClientY.value = e.clientY
+  dragDeltaX.value = 0
+  dragDeltaY.value = 0
+  hasMovedBeyondThreshold = false
+  isDraggingCard.value = false
 
-function onDrop(e: DragEvent) {
-  e.preventDefault()
-  isDragOver.value = false
-  emit('drop-pokemon', props.index)
-}
+  const container = slotRef.value?.closest('.modal-scrollable-content, .base-modal-body, .modal-content, .pv-base-modal__body') as HTMLElement | null
+  const grid = slotRef.value?.closest('.slots-grid') as HTMLElement | null
+  scrollContainerRef.value = container
+  initialScrollTop.value = container?.scrollTop ?? 0
+  currentScrollTop.value = initialScrollTop.value
+  initialMaxScroll.value = container ? Math.max(0, container.scrollHeight - container.clientHeight) : 0
+  currentScrollTop.value = initialScrollTop.value
 
-// ── TOUCH HANDLERS (MOBILE LONG-PRESS) ───────────────────────────────────────
+  const slotRect = slotRef.value?.getBoundingClientRect()
+  const boundsTarget = grid?.getBoundingClientRect() || container?.getBoundingClientRect()
+  const viewportTarget = container?.getBoundingClientRect()
 
-function handleTouchStart(e: TouchEvent) {
-  if (isEmpty.value) return
-  const touch = e.touches?.[0]
-  if (!touch) return
-  touchStartX.value = touch.clientX
-  touchStartY.value = touch.clientY
-  touchDeltaX.value = 0
-  touchDeltaY.value = 0
-  lastTouchOverIndex.value = null
-  isTouchDragging.value = false
-  
-  const el = slotRef.value
-  if (el) {
-    el.addEventListener('touchmove', handleTouchMoveNonPassive, { passive: false })
-    el.addEventListener('touchend', handleTouchEndNonPassive)
-    el.addEventListener('touchcancel', handleTouchEndNonPassive)
+  if (slotRect && boundsTarget && viewportTarget) {
+    minDeltaX.value = boundsTarget.left - slotRect.left + 4
+    maxDeltaX.value = boundsTarget.right - slotRect.right - 4
+    initSlotTop.value = slotRect.top
+    initSlotHeight.value = slotRect.height
+    containerTop.value = viewportTarget.top + 4
+    containerBottom.value = viewportTarget.bottom - 4
   }
-  
-const TOUCH_VIBRATE_DURATION_MS = 50
 
-  touchTimer.value = gsap.delayedCall(TOUCH_LONG_PRESS_DELAY_SEC, () => {
-    isTouchDragging.value = true
-    if (el) el.style.touchAction = 'none'
-    emit('drag-start', props.index)
-    if ('vibrate' in navigator) navigator.vibrate(TOUCH_VIBRATE_DURATION_MS)
-  }) // Long press threshold
+  window.addEventListener('pointermove', onWindowPointerMove, { passive: false })
+  window.addEventListener('pointerup', onWindowPointerUp)
+  window.addEventListener('pointercancel', onWindowPointerCancel)
 }
 
-function handleTouchMoveNonPassive(e: TouchEvent) {
-  if (isTouchDragging.value) {
-    e.preventDefault() // Stop page scroll since it's registered non-passively
+function onWindowPointerMove(e: PointerEvent) {
+  if (activePointerId !== null && e.pointerId !== activePointerId) return
+  currentClientY.value = e.clientY
+  const dx = e.clientX - dragStartX.value
+  const dy = e.clientY - dragStartY.value
+
+  if (!hasMovedBeyondThreshold) {
+    if (dx * dx + dy * dy >= DRAG_MOVE_THRESHOLD_SQ) {
+      hasMovedBeyondThreshold = true
+      isDraggingCard.value = true
+      startAutoScrollLoop()
+      emit('drag-start', props.index)
+    }
   }
-  handleTouchMove(e)
-}
 
-function handleTouchEndNonPassive(e: TouchEvent) {
-  const el = slotRef.value
-  if (el) {
-    el.removeEventListener('touchmove', handleTouchMoveNonPassive)
-    el.removeEventListener('touchend', handleTouchEndNonPassive)
-    el.removeEventListener('touchcancel', handleTouchEndNonPassive)
-  }
-  handleTouchEnd(e)
-}
+  if (isDraggingCard.value) {
+    if (e.cancelable) e.preventDefault()
+    const scrollDelta = currentScrollTop.value - initialScrollTop.value
+    const rawDx = dx
+    const rawDy = dy + scrollDelta
 
-function handleTouchMove(e: TouchEvent) {
-  const touch = e.touches?.[0]
-  if (!touch) return
+    const clampedDx = Math.max(minDeltaX.value, Math.min(maxDeltaX.value, rawDx))
+    const minDyScreen = containerTop.value - initSlotTop.value
+    const maxDyScreen = (containerBottom.value - initSlotHeight.value) - initSlotTop.value
+    const clampedDy = Math.max(minDyScreen + scrollDelta, Math.min(maxDyScreen + scrollDelta, rawDy))
 
-  if (isTouchDragging.value) {
-    // Update visual displacement coordinates
-    touchDeltaX.value = touch.clientX - touchStartX.value
-    touchDeltaY.value = touch.clientY - touchStartY.value
-    
-    // Temporarily disable pointer events to detect what's UNDER the finger
-    const el = slotRef.value
-    if (el) el.style.pointerEvents = 'none'
-    
-    const target = document.elementFromPoint(touch.clientX, touch.clientY)
+    dragDeltaX.value = clampedDx
+    dragDeltaY.value = clampedDy
+
+    const target = document.elementFromPoint(e.clientX, e.clientY)
     const slot = target?.closest('.team-slot') as HTMLElement | null
-    
-    // Restore pointer events
-    if (el) el.style.pointerEvents = 'auto'
-
     if (slot && slot.dataset.index !== undefined) {
       const targetIndex = parseInt(slot.dataset.index)
-      lastTouchOverIndex.value = targetIndex
-      // Emit event so parent can manage the "over" state
+      lastOverIndex.value = targetIndex
       emit('drag-over', targetIndex)
     } else {
-      lastTouchOverIndex.value = null
+      lastOverIndex.value = null
       emit('drag-over', null)
-    }
-  } else {
-    const deltaX = Math.abs(touch.clientX - touchStartX.value)
-    const deltaY = Math.abs(touch.clientY - touchStartY.value)
-    if (deltaX > TOUCH_MOVE_CANCEL_THRESHOLD_PX || deltaY > TOUCH_MOVE_CANCEL_THRESHOLD_PX) {
-      if (touchTimer.value) touchTimer.value.kill()
     }
   }
 }
 
-function handleTouchEnd(e: TouchEvent) {
-  if (touchTimer.value) touchTimer.value.kill()
-  if (isTouchDragging.value) {
-    const el = slotRef.value
-    if (el) el.style.touchAction = ''
-    
-    // Temporarily disable pointer events to find slot under finger
-    if (el) el.style.pointerEvents = 'none'
-    
-    const touch = e.changedTouches?.[0]
-    let slot: HTMLElement | null = null
-    if (touch) {
-      const target = document.elementFromPoint(touch.clientX, touch.clientY)
-      slot = target?.closest('.team-slot') as HTMLElement | null
-    }
-    
-    if (el) el.style.pointerEvents = 'auto'
-    
+function onWindowPointerUp(e: PointerEvent) {
+  if (activePointerId !== null && e.pointerId !== activePointerId) return
+  cleanUpPointerListeners()
+  if (isDraggingCard.value) {
     let targetIndex: number | null = null
+    const target = document.elementFromPoint(e.clientX, e.clientY)
+    const slot = target?.closest('.team-slot') as HTMLElement | null
     if (slot && slot.dataset.index !== undefined) {
       targetIndex = parseInt(slot.dataset.index)
-    } else if (lastTouchOverIndex.value !== null) {
-      targetIndex = lastTouchOverIndex.value
     }
-    
-    if (targetIndex !== null) {
+
+    if (targetIndex === null && lastOverIndex.value !== null) {
+      targetIndex = lastOverIndex.value
+    }
+
+    if (targetIndex !== null && targetIndex !== props.index) {
       emit('drop-pokemon', targetIndex)
     } else {
       emit('drag-end')
     }
-    
-    isTouchDragging.value = false
-    touchDeltaX.value = 0
-    touchDeltaY.value = 0
-    lastTouchOverIndex.value = null
+  }
+  resetDragState()
+}
+
+function onWindowPointerCancel() {
+  cleanUpPointerListeners()
+  if (isDraggingCard.value) {
+    emit('drag-end')
+  }
+  resetDragState()
+}
+
+function cleanUpPointerListeners() {
+  window.removeEventListener('pointermove', onWindowPointerMove)
+  window.removeEventListener('pointerup', onWindowPointerUp)
+  window.removeEventListener('pointercancel', onWindowPointerCancel)
+  stopAutoScrollLoop()
+  activePointerId = null
+}
+
+function resetDragState() {
+  isDraggingCard.value = false
+  dragDeltaX.value = 0
+  dragDeltaY.value = 0
+  hasMovedBeyondThreshold = false
+  lastOverIndex.value = null
+}
+
+function handleSlotClick() {
+  if (!hasMovedBeyondThreshold && !isDraggingCard.value) {
+    emit('select', props.index)
   }
 }
 
 // ── GSAP HOVER HANDLERS ──────────────────────────────────────────────────────
 
-const isPvpSlot = computed(() => props.isPvp)
-
 function handlePlaceholderEnter(e: MouseEvent) {
   const el = e.currentTarget as HTMLElement
   if (!el) return
-  
-  const accentColor = isPvpSlot.value ? 'var(--purple-light)' : 'var(--blue)'
-  const shadowColor = isPvpSlot.value ? 'Rgba(199, 125, 255, 0.2)' : 'Rgba(10, 132, 255, 0.2)'
-  
   gsap.to(el, {
-    y: SLOT_HOVER_LIFT_Y_PX,
-    scale: SLOT_HOVER_SCALE_ACTIVE,
-    borderColor: accentColor,
-    boxShadow: `0 10px 25px Rgba(0, 0, 0, 0.3), 0 0 15px ${shadowColor}`,
-    backgroundColor: 'Rgba(255, 255, 255, 0.04)',
-    duration: SLOT_HOVER_DURATION_FAST_SEC,
+    scale: 1.02,
+    borderColor: isPvpSlot.value ? 'rgba(199, 125, 255, 0.6)' : 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: isPvpSlot.value ? 'rgba(199, 125, 255, 0.08)' : 'rgba(255, 255, 255, 0.05)',
+    boxShadow: isPvpSlot.value ? '0 0 15px rgba(199, 125, 255, 0.2)' : '0 0 15px rgba(255, 255, 255, 0.1)',
+    duration: 0.2,
     ease: 'power2.out'
   })
-
-  const plus = el.querySelector('.plus-icon')
-  if (plus) {
-    gsap.to(plus, {
-      scale: SLOT_HOVER_ICON_SCALE,
-      rotation: SLOT_HOVER_ICON_ROTATION_DEG,
-      filter: `Drop-Shadow(0 0 15px ${accentColor})`,
-      color: 'var(--white)',
-      duration: SLOT_HOVER_DURATION_SLOW_SEC,
-      ease: 'back.out(1.7)'
-    })
-  }
-
-  const label = el.querySelector('.label')
-  if (label) {
-    gsap.to(label, {
-      color: accentColor,
-      duration: SLOT_HOVER_DURATION_FAST_SEC,
-      ease: 'power2.out'
-    })
-  }
 }
 
 function handlePlaceholderLeave(e: MouseEvent) {
   const el = e.currentTarget as HTMLElement
   if (!el) return
-  
-  const baseBorderColor = isPvpSlot.value ? 'Rgba(199, 125, 255, 0.3)' : 'Rgba(255, 255, 255, 0.1)'
-
   gsap.to(el, {
-    y: 0,
     scale: 1,
-    borderColor: baseBorderColor,
+    borderColor: isPvpSlot.value ? 'rgba(199, 125, 255, 0.3)' : 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
     boxShadow: 'none',
-    backgroundColor: 'Rgba(255, 255, 255, 0.02)',
-    duration: SLOT_HOVER_DURATION_FAST_SEC,
+    duration: 0.2,
     ease: 'power2.out'
   })
-
-  const plus = el.querySelector('.plus-icon')
-  if (plus) {
-    gsap.to(plus, {
-      scale: 1,
-      rotation: 0,
-      filter: 'none',
-      color: 'Rgba(255, 255, 255, 0.3)',
-      duration: SLOT_HOVER_DURATION_SLOW_SEC,
-      ease: 'power2.out'
-    })
-  }
-
-  const label = el.querySelector('.label')
-  if (label) {
-    gsap.to(label, {
-      color: 'var(--gray)',
-      duration: SLOT_HOVER_DURATION_FAST_SEC,
-      ease: 'power2.out'
-    })
-  }
 }
 
-// ── WATCHERS FOR DRAG OVERLAY ANIMATIONS ──────────────────────────────────────
-
-const isOver = computed(() => isDragOver.value || props.isTouchOver)
-
-watch(isOver, (newVal) => {
-  const overlay = document.querySelector(`[data-index="${props.index}"] .drag-position-overlay`)
-  const num = document.querySelector(`[data-index="${props.index}"] .pos-number`)
-  if (!overlay || !num) return
-
+watch(() => props.isTouchOver, (newVal) => {
+  if (!slotRef.value) return
   if (newVal) {
-    gsap.to(overlay, {
-      backgroundColor: 'Rgba(10, 132, 255, 0.15)',
-      borderWidth: DRAG_OVERLAY_BORDER_ACTIVE_PX,
-      borderStyle: 'solid',
-      duration: DRAG_OVERLAY_DURATION_SEC,
+    gsap.to(slotRef.value, {
+      scale: 1.02,
+      duration: 0.2,
       ease: 'power2.out'
-    })
-    gsap.to(num, {
-      opacity: 1,
-      scale: DRAG_OVERLAY_NUM_SCALE,
-      duration: DRAG_OVERLAY_DURATION_SEC,
-      ease: 'back.out(1.5)'
     })
   } else {
-    gsap.to(overlay, {
-      backgroundColor: 'Rgba(0, 0, 0, 0.85)',
-      borderWidth: DRAG_OVERLAY_BORDER_IDLE_PX,
-      borderStyle: 'dashed',
-      duration: DRAG_OVERLAY_DURATION_SEC,
-      ease: 'power2.out'
-    })
-    gsap.to(num, {
-      opacity: 0.8,
+    gsap.to(slotRef.value, {
       scale: 1,
-      duration: DRAG_OVERLAY_DURATION_SEC,
+      duration: 0.2,
       ease: 'power2.out'
     })
   }
 })
 
 onUnmounted(() => {
-  if (touchTimer.value) touchTimer.value.kill()
+  cleanUpPointerListeners()
 })
 </script>
 
@@ -349,21 +324,16 @@ onUnmounted(() => {
       'empty': isEmpty, 
       'pvp-slot': isPvp, 
       'is-dragging-any': isDraggingAny,
-      'is-drag-over': isDragOver || isTouchOver 
+      'is-drag-over': isTouchOver
     }"
     :data-index="index"
-    :draggable="!isEmpty"
-    @dragstart="onDragStart"
-    @dragover="onDragOver"
-    @dragleave="onDragLeave"
-    @drop="onDrop"
-    @touchstart="handleTouchStart"
+    @pointerdown="handlePointerDown"
+    @click="handleSlotClick"
     @contextmenu.prevent
   >
     <div
       v-if="isEmpty"
       class="empty-placeholder"
-      @click.stop="emit('select', index)"
       @mouseenter="handlePlaceholderEnter"
       @mouseleave="handlePlaceholderLeave"
     >
@@ -374,7 +344,7 @@ onUnmounted(() => {
     <div
       v-else-if="pokemon"
       class="slot-card-wrapper"
-      :style="touchDragStyle"
+      :style="cardDragStyle"
     >
       <PokemonDisplayCard
         :pokemon="pokemon"
@@ -389,20 +359,6 @@ onUnmounted(() => {
         @select="emit('select', index)"
       />
     </div>
-
-    <!-- Overlay de número de posición durante el drag (animado por GSAP) -->
-    <Transition
-      :css="false"
-      @enter="el => gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: 'power2.out' })"
-      @leave="(el, done) => gsap.to(el, { opacity: 0, duration: 0.2, ease: 'power2.in', onComplete: done })"
-    >
-      <div
-        v-if="isDraggingAny"
-        class="drag-position-overlay"
-      >
-        <span class="pos-number">{{ index + 1 }}</span>
-      </div>
-    </Transition>
   </div>
 </template>
 
@@ -414,9 +370,23 @@ onUnmounted(() => {
   min-height: 260px;
   display: flex;
   position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  overscroll-behavior: contain;
 
   @media (max-width: 580px) {
     min-height: 190px;
+  }
+
+  &.is-drag-over {
+    outline: 2px solid var(--blue);
+    border-radius: 20px;
+    box-shadow: 0 0 20px Rgba(10, 132, 255, 0.5);
+
+    @media (max-width: 580px) {
+      border-radius: 12px;
+    }
   }
 }
 
@@ -467,44 +437,27 @@ onUnmounted(() => {
   }
 }
 
-.drag-position-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: Rgba(0, 0, 0, 0.85);
-  -webkit-will-change: transform, opacity;
-  will-change: transform, opacity;
-  @include gpu-layer;
-  border-radius: 20px;
-  z-index: var(--z-low);
-  pointer-events: none; 
-  border: 2px dashed var(--blue);
-
-  @media (max-width: 580px) {
-    border-radius: 12px;
-  }
-
-  .pos-number {
-    font-size: 80px;
-    color: var(--blue);
-    @include pixelated;
-    opacity: 0.8;
-    filter: Drop-Shadow(0 0 10px Rgba(10, 132, 255, 0.5));
-    will-change: transform, opacity;
-
-    @media (max-width: 580px) {
-      font-size: 40px;
-    }
-  }
-}
-
 .slot-card-wrapper {
   width: 100%;
   height: 100%;
   display: flex;
   position: relative;
   will-change: transform;
+
+  img {
+    pointer-events: none;
+    -webkit-user-drag: none;
+    user-select: none;
+  }
+
+  button,
+  .action-btn,
+  .tag-item,
+  .item-slot,
+  .pill-btn,
+  .card-status-indicators,
+  .interactive-btn {
+    pointer-events: auto;
+  }
 }
 </style>

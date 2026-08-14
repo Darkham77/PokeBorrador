@@ -11,7 +11,7 @@ export const STATUS_EMOJI_MAP = {
   par: '⚡',
   frz: '🧊',
   tox: '🟣'
-}
+} as const
 
 export const STATUS_SHORT_LABEL_MAP = {
   brn: 'BRN',
@@ -20,7 +20,7 @@ export const STATUS_SHORT_LABEL_MAP = {
   par: 'PAR',
   frz: 'FRZ',
   tox: 'TOX'
-}
+} as const satisfies Record<BattleStatusKey, string>
 
 export const STATUS_NAME_MAP = {
   brn: 'QUEMADURA',
@@ -29,7 +29,7 @@ export const STATUS_NAME_MAP = {
   par: 'PARÁLISIS',
   frz: 'CONGELACIÓN',
   tox: 'TÓXICO'
-}
+} as const satisfies Record<BattleStatusKey, string>
 
 
 export const STATUS_TOOLTIP_MAP = {
@@ -39,7 +39,7 @@ export const STATUS_TOOLTIP_MAP = {
   par: 'PARALIZADO: Su Velocidad se reduce al 50% y tiene un 25% de probabilidad de no atacar.', // no-magic
   frz: 'CONGELADO: No puede atacar. 20% de probabilidad de descongelarse cada turno.', // no-magic
   tox: 'TÓXICO: Envenenamiento grave cuyo daño aumenta exponencialmente cada turno.' // no-magic
-}
+} as const satisfies Record<BattleStatusKey, string>
 
 export const STAT_EMOJI_MAP = {
   atk: { icon: '⚔️', name: 'Ataque' },
@@ -49,4 +49,7 @@ export const STAT_EMOJI_MAP = {
   spe: { icon: '💨', name: 'Velocidad' },
   acc: { icon: '🎯', name: 'Precisión' },
   eva: { icon: '🌪️', name: 'Evasión' }
-}
+} as const
+
+export type BattleStatusKey = keyof typeof STATUS_EMOJI_MAP;
+export type BattleStatKey = keyof typeof STAT_EMOJI_MAP;

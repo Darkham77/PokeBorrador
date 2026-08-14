@@ -14,7 +14,6 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   (e: 'switch'): void
   (e: 'bag'): void
-  (e: 'run'): void
   (e: 'catch'): void
   (e: 'select-ball', ballId: string): void
 }>()
@@ -71,15 +70,6 @@ const hasAvailableBenchPokemon = computed(() => {
       >
         <span class="icon">🎒</span> <span class="text">MOCHILA</span>
       </button>
-
-      <button
-        id="battle-flee-btn"
-        class="action-btn flee-btn"
-        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || isLocked"
-        @click.stop="emit('run')"
-      >
-        <span class="icon">💨</span> <span class="text">HUIR</span>
-      </button>
     </div>
   </div>
 </template>
@@ -123,10 +113,6 @@ const hasAvailableBenchPokemon = computed(() => {
 
     &.bag-btn {
       @include btn-vicio('success', 'sm');
-    }
-
-    &.flee-btn {
-      @include btn-vicio('danger', 'sm');
     }
   }
 }

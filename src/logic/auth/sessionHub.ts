@@ -9,19 +9,25 @@ import { SESSION_ID } from './sessionId.ts'
  * Implements "Last-In-Wins" logic for save-game locking.
  */
 
-let sessionChannel: BroadcastChannel | null = null
-let currentUserId: string | null = null
-let isLocked = false
+const sessionState: {
+  channel: BroadcastChannel | null;
+  userId: string | null;
+  isLocked: boolean;
+} = {
+  channel: null,
+  userId: null,
+  isLocked: false,
+};
 
 export function initSessionHub(userId: string) {
   if (typeof window === 'undefined') return
-  currentUserId = userId
+  sessionState.userId = userId
   logger.info('SessionHub', `Initializing for user ${userId} | Session: ${SESSION_ID}`)
 
   // 1. Local Synchronization (BroadcastChannel)
-  if (!sessionChannel) {
-    sessionChannel = new BroadcastChannel('pv_session_hub')
-    sessionChannel.onmessage = (event) => {
+  if (!sessionState.channel) {
+    sessionState.channel = new BroadcastChannel('pv_session_hub')
+    sessionState.channel.onmessage = (event) => {
       const data = event.data as { type?: string; sessionId?: string } | null;
       if (data?.type === 'NEW_SESSION' && data.sessionId !== SESSION_ID) {
         logger.warn('SessionHub', 'Local session conflict detected!')
@@ -31,7 +37,7 @@ export function initSessionHub(userId: string) {
   }
 
   // Notify other tabs in this browser
-  sessionChannel.postMessage({ type: 'NEW_SESSION', sessionId: SESSION_ID })
+  sessionState.channel.postMessage({ type: 'NEW_SESSION', sessionId: SESSION_ID })
 
   // 2. Global Synchronization (Supabase)
   if (supabase.mode === 'online') {
@@ -46,8 +52,8 @@ export function initSessionHub(userId: string) {
 }
 
 function triggerLock() {
-  if (isLocked) return
-  isLocked = true
+  if (sessionState.isLocked) return
+  sessionState.isLocked = true
   
   logger.warn('SessionHub', 'WRITE PERMISSIONS REVOKED. Instance is now Read-Only.')
   
@@ -61,7 +67,7 @@ export function getSessionId() {
 }
 
 export function isSaveLocked() {
-  return isLocked
+  return sessionState.isLocked
 }
 
 /**
@@ -69,18 +75,17 @@ export function isSaveLocked() {
  * Updates the database and notifies other tabs.
  */
 export async function reclaimControl() {
-  if (!currentUserId) return
+  if (!sessionState.userId) return
   
-  isLocked = false
+  sessionState.isLocked = false
   logger.info('SessionHub', 'Reclaiming control of the session...');
   
-  const { supabase } = await import('../db/supabase')
   if (supabase.mode === 'online') {
-    await supabase.initSession(currentUserId, SESSION_ID)
+    await supabase.initSession(sessionState.userId, SESSION_ID)
   }
   
-  if (sessionChannel) {
-    sessionChannel.postMessage({ type: 'NEW_SESSION', sessionId: SESSION_ID })
+  if (sessionState.channel) {
+    sessionState.channel.postMessage({ type: 'NEW_SESSION', sessionId: SESSION_ID })
   }
   
   // Notify UI

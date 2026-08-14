@@ -9,6 +9,7 @@ import { TABLES_SCHEMA } from './schema.ts'
 import { DATABASE_MIGRATIONS } from './migrations_data.ts'
 import { logger } from '../utils/logger.ts'
 import { ensureSchemaIntegrity } from './sqliteSchemaIntegrity.ts'
+import { useLoadingStore } from '@/stores/loading'
 
 export interface SQLiteResult {
   columns: string[];
@@ -247,7 +248,6 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
               // Show importing overlay to the user
               try {
                 if (typeof window !== 'undefined') {
-                  const { useLoadingStore } = await import('@/stores/loading')
                   const loadingStore = useLoadingStore()
                   loadingStore.start('db_import', 'Importando Base de Datos...', 'Instalando copia de seguridad, por favor espera', true, '💾')
                 }
@@ -364,7 +364,6 @@ async function runMigrations(): Promise<boolean> {
   let loadingStore: LoadingStore | null = null
   try {
     if (typeof window !== 'undefined') {
-      const { useLoadingStore } = await import('@/stores/loading')
       loadingStore = useLoadingStore()
     }
   } catch (_) {

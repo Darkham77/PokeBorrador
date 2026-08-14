@@ -27,14 +27,16 @@ import {
   unknown
 } from 'valibot';
 
-import { DEFAULT_FRIENDSHIP_VALUE, DEFAULT_INITIAL_ELO } from '@/logic/constants/gameplay'
-
-const MIN_USERNAME_LENGTH = 3;
-const MAX_USERNAME_LENGTH = 20;
-const MIN_TRAINER_LEVEL = 1;
-const MAX_TRAINER_LEVEL = 100;
-const MIN_TRAINER_NAME_LENGTH = 3;
-const MAX_TRAINER_NAME_LENGTH = 15;
+import {
+  DEFAULT_FRIENDSHIP_VALUE,
+  DEFAULT_INITIAL_ELO,
+  MIN_USERNAME_LENGTH,
+  MAX_USERNAME_LENGTH,
+  MIN_TRAINER_LEVEL,
+  MAX_TRAINER_LEVEL,
+  MIN_TRAINER_NAME_LENGTH,
+  MAX_TRAINER_NAME_LENGTH
+} from '@/logic/constants/gameplay.ts';
 
 // User Profile validation schema
 export const userProfileSchema = object({

@@ -432,11 +432,11 @@ function getStageMultiplier(stat: TooltipStageStatId, stage: number): number {
   return STAGE_MATH_BASE_REGULAR / (STAGE_MATH_BASE_REGULAR - stage);
 }
 
-function firstBoostEntry(effect: { boosts?: MoveEffectBoosts } | undefined): [ShowdownBoostStatKey, number] | null {
+function firstBoostEntry(effect: { boosts?: MoveEffectBoosts } | undefined): readonly [ShowdownBoostStatKey, number] | null {
   if (!effect?.boosts) return null;
   for (const stat of SHOWDOWN_BOOST_STAT_KEYS) {
     const stages = effect.boosts[stat];
-    if (stages !== undefined && stages !== 0) return [stat, stages];
+    if (stages !== undefined && stages !== 0) return [stat, stages] as const;
   }
   return null;
 }

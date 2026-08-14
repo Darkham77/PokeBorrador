@@ -1,9 +1,8 @@
 import { queryLocal } from '../sqliteEngine.ts';
 import type { SQLiteDatabase } from '../sqliteEngine.ts';
 import type { DBResponse } from '@/types/system/database';
+import { MIN_TRAINER_NAME_LENGTH, MAX_TRAINER_NAME_LENGTH } from '@/logic/constants/gameplay.ts';
 
-const MIN_USERNAME_LENGTH = 3;
-const MAX_USERNAME_LENGTH = 15;
 const RENAME_COOLDOWN_DAYS = 30;
 
 export async function emulateChangeUsername(
@@ -15,8 +14,8 @@ export async function emulateChangeUsername(
   const { userId } = context;
 
   // 1. Length validation (3 to 15 characters)
-  if (!new_username || new_username.trim().length < MIN_USERNAME_LENGTH || new_username.trim().length > MAX_USERNAME_LENGTH) {
-    return { data: null, error: `El nombre de entrenador debe tener entre ${MIN_USERNAME_LENGTH} y ${MAX_USERNAME_LENGTH} caracteres.` };
+  if (!new_username || new_username.trim().length < MIN_TRAINER_NAME_LENGTH || new_username.trim().length > MAX_TRAINER_NAME_LENGTH) {
+    return { data: null, error: `El nombre de entrenador debe tener entre ${MIN_TRAINER_NAME_LENGTH} y ${MAX_TRAINER_NAME_LENGTH} caracteres.` };
   }
 
   // 2. Query current profile data for validations

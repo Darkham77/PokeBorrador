@@ -32,7 +32,7 @@ export function parseShowdownSeedForBattle(seed: unknown): `${number},${string}`
 }
 
 const DEFAULT_RNG_INITIAL_SEED = 12345;
-let rngSeed = DEFAULT_RNG_INITIAL_SEED;
+let rngSeed = DEFAULT_RNG_INITIAL_SEED; // singleton-ok
 export function resetDeterministicMathRandom(initialSeed = DEFAULT_RNG_INITIAL_SEED) {
   rngSeed = initialSeed;
   Math.random = () => {

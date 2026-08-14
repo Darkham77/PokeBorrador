@@ -15,7 +15,7 @@ function walkDir(dir: string): string[] {
 }
 
 const root = new URL('..', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1');
-let fixed = 0;
+let fixed = 0; // singleton-ok
 
 for (const file of walkDir(root)) {
   const content = readFileSync(file, 'utf-8');

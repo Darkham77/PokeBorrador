@@ -22,6 +22,24 @@ export const DEFAULT_INITIAL_ELO = 1000;
 /** Default starting friendship value for newly caught Pokémon. */
 export const DEFAULT_FRIENDSHIP_VALUE = 70;
 
+/** Minimum character length for user login / account username. */
+export const MIN_USERNAME_LENGTH = 3;
+
+/** Maximum character length for user login / account username. */
+export const MAX_USERNAME_LENGTH = 20;
+
+/** Minimum character length for in-game trainer display name. */
+export const MIN_TRAINER_NAME_LENGTH = 3;
+
+/** Maximum character length for in-game trainer display name. */
+export const MAX_TRAINER_NAME_LENGTH = 15;
+
+/** Minimum trainer level. */
+export const MIN_TRAINER_LEVEL = 1;
+
+/** Maximum trainer level. */
+export const MAX_TRAINER_LEVEL = 100;
+
 /** Default fallback base stat when undefined (100). */
 export const DEFAULT_FALLBACK_BASE_STAT = 100;
 

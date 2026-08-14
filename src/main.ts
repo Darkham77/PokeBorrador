@@ -62,6 +62,14 @@ preloadShowdownWorker()
 initGlobalHoverSystem()
 
 if (typeof window !== 'undefined') {
+  window.addEventListener('vite:preloadError', (event) => {
+    event.preventDefault()
+    console.warn('[Vite] Chunk preload error detected (stale deployment assets). Triggering PWA update flow.')
+    import('@/logic/events/gameBus.ts').then(({ gameBus }) => {
+      gameBus.emit('PWA_NEED_REFRESH')
+    })
+  })
+
   if (window.__E2E__ || window.location.search.includes('e2e=true')) {
     import('gsap').then(({ gsap }) => {
       gsap.globalTimeline.timeScale(100);

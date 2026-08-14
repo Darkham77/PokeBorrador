@@ -37,7 +37,7 @@ Frontend UI Developers / UI Designers.
 
 ## Verification
 
-- Run `npm run lint` and `npm run audit:full` to verify component type safety and syntax.
+- Run `npm run audit:warnings-diff` to verify component type safety, syntax, and project rules.
 - Visual inspection in browser across different resolutions (using mobile viewport targets if necessary).
 
 ## Child DOX Index

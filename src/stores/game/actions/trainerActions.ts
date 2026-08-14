@@ -42,7 +42,7 @@ export function useTrainerActions(state: GameState, scheduleSave: () => Promise<
         uiStore.notify(`¡Subiste al rango ${currentRank.title}! Nivel ${state.trainerLevel}`, '⭐')
       }
       
-      const unlocks = (MARKET_UNLOCKS as Record<number, string[]>)[state.trainerLevel]
+      const unlocks = (MARKET_UNLOCKS as Record<number, readonly string[]>)[state.trainerLevel]
       if (unlocks) {
         gsap.delayedCall(1.5, () => uiStore.notify(`¡Nuevos items en el Poké Market!`, '🛒'))
       }

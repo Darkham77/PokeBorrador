@@ -24,6 +24,8 @@ export const GYM_RATIOS = {
   rematchTMRateHard: GYM_REMATCH_TM_RATE_HARD
 };
 
+export type GymRatioKey = keyof typeof GYM_RATIOS;
+
 export interface GymVictoryResult {
   tmDropped: boolean;
   extraCoins: number;

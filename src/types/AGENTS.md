@@ -27,7 +27,7 @@ State & Type Architects.
 
 ## Verification
 
-- `npm run lint` or `vue-tsc --noEmit` to verify type system compilation.
+- `npm run audit:warnings-diff` to verify type system compilation and domain compliance.
 
 ## Child DOX Index
 

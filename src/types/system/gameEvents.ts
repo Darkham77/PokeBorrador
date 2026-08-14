@@ -3,6 +3,8 @@ export const GAME_UI_EVENTS = {
   STORE_READY: 'game-store-ready',
 } as const;
 
+export type GameUiEventName = typeof GAME_UI_EVENTS[keyof typeof GAME_UI_EVENTS];
+
 export interface BattleEnteringDetail {
   source: 'battle-store';
 }

@@ -39,12 +39,14 @@ import { useAuthStore } from '@/stores/auth'
 import { useAudioStore } from '@/stores/audio'
 import { useLoadingStore } from '@/stores/loading'
 import { logger } from '@/logic/utils/logger'
+import { usePWA } from '@/composables/system/usePWA'
 import { gameBus } from '@/logic/events/gameBus'
 import BaseModal from './BaseModal.vue'
 
 const authStore = useAuthStore()
 const audioStore = useAudioStore()
 const loadingStore = useLoadingStore()
+const { handleUpdate } = usePWA()
 
 const showPermissionsModal = ref(false)
 
@@ -91,19 +93,8 @@ const handlePermissions = async () => {
 }
 
 const handleForceUpdate = () => {
-  logger.info('PWA', 'Received FORCE_PWA_UPDATE from GameBus. Unregistering SW and reloading to force update...')
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(async (registrations) => {
-      for (const registration of registrations) {
-        await registration.unregister()
-      }
-      window.location.reload()
-    }).catch(() => {
-      window.location.reload()
-    })
-  } else {
-    window.location.reload()
-  }
+  logger.info('PWA', 'Received FORCE_PWA_UPDATE from GameBus. Delegating to atomic handleUpdate...')
+  handleUpdate({ forceNoSave: true })
 }
 
 onMounted(() => {

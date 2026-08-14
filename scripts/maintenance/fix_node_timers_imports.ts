@@ -31,7 +31,7 @@ const root = new URL('..', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'
 const srcDir = join(root, 'src');
 const testsDir = join(root, 'tests');
 
-let fixed = 0;
+let fixed = 0; // singleton-ok
 
 for (const dir of [srcDir, testsDir]) {
   for (const file of walkDir(dir)) {

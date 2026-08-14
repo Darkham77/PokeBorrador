@@ -11,7 +11,10 @@ import {
   REPEL_ENCOUNTER_RATE_MODIFIER,
   SUPER_REPEL_ENCOUNTER_RATE_MODIFIER,
   MAX_REPEL_ENCOUNTER_RATE_MODIFIER,
-} from '@/logic/constants/encounters'
+  SUPER_ROD_SPAWN_BUDGET,
+  STANDARD_ROD_SPAWN_BUDGET,
+  DEFAULT_FISHING_RATE_WEIGHT,
+} from '@/logic/constants/encounters.ts'
 
 const TRAVEL_INCENSE_ITEM_IDS = [
   'incensefire',
@@ -38,14 +41,14 @@ const TRAVEL_BUFF_ITEM_IDS = [
 
 export type TravelBuffItemId = (typeof TRAVEL_BUFF_ITEM_IDS)[number]
 
-export const TRAVEL_INCENSE_TYPES = {
+export const TRAVEL_INCENSE_TYPES: Record<TravelIncenseItemId, PokemonType> = {
   incensefire: 'fire',
   incensewater: 'water',
   incensegrass: 'grass',
   incensenormal: 'normal',
   incenseghost: 'ghost',
   incensepsychic: 'psychic',
-} satisfies Record<TravelIncenseItemId, PokemonType>
+};
 
 export function isTravelBuffItemId(value: ItemId): value is TravelBuffItemId {
   return (TRAVEL_BUFF_ITEM_IDS as readonly ItemId[]).includes(value)
@@ -279,10 +282,6 @@ export function redistributeWeatherSpawns(
     })
   }
 }
-
-const SUPER_ROD_SPAWN_BUDGET = 20;
-const STANDARD_ROD_SPAWN_BUDGET = 10;
-const DEFAULT_FISHING_RATE_WEIGHT = 10;
 
 export function applyFishingRodBudget(rates: number[], pool: string[], fishingRodType: string): void {
   if ((fishingRodType === 'good' || fishingRodType === 'super') && pool.length > 0) {

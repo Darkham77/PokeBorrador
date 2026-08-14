@@ -6,7 +6,10 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { styleText } from 'node:util';
+import { enableCompileCache } from 'node:module';
 import { setupValidation } from '../lib/validationBase.ts';
+
+enableCompileCache();
 
 const PARITY_SRC_ROOT = path.resolve(process.cwd(), 'src');
 const PARITY_MANUAL_PATH = path.resolve(process.cwd(), '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');

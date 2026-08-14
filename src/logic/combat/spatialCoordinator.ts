@@ -68,6 +68,8 @@ export const WORLD_CONSTANTS = {
   get PREVIEW_SIZE(): number { return this.BASE_PREVIEW_SIZE * this.OBJECT_SCALE }
 }
 
+export type WorldConstantKey = keyof typeof WORLD_CONSTANTS;
+
 import type { CSSProperties } from 'vue';
 
 /**

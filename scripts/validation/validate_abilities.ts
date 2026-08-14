@@ -10,11 +10,14 @@
 
 import path from 'node:path';
 import { styleText } from 'node:util';
+import { enableCompileCache } from 'node:module';
 import { setupValidation } from '../lib/validationBase.ts';
 import { POKEMON_DB } from '../../src/data/pokemon/pokemonDB.ts';
 import { ABILITY_TRANSLATIONS_ES } from '../../src/data/battle/abilities.ts';
 import { Dex, toID } from '@pkmn/sim';
 import { ENABLED_POKEMON_IDS } from '../../src/data/system/constants.ts';
+
+enableCompileCache();
 
 const DATA_FILE = path.resolve(process.cwd(), 'src/data/pokemon/pokemonDB.ts');
 type AbilityTranslationId = keyof typeof ABILITY_TRANSLATIONS_ES;

@@ -55,9 +55,6 @@ export type ItemCategoryId = keyof typeof CATEGORY_LABELS;
 export const MARKET_CAT_ORDER = dbJson.MARKET_CAT_ORDER;
 export type MarketCategoryId = keyof typeof MARKET_CAT_ORDER;
 
-export const MARKET_UNLOCKS = dbJson.MARKET_UNLOCKS;
-export type MarketUnlockLevel = keyof typeof MARKET_UNLOCKS;
-
 export const SHOP_ITEMS = dbJson.SHOP_ITEMS.map((item): Item => {
   const { type: rawKind, ...itemData } = item;
   return {

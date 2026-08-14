@@ -26,6 +26,7 @@ export class DBRouter {
   _initialized: boolean;
   currentSessionId: string | null;
   userSubscription: RealtimeChannel | null;
+  systemConfigSubscription: RealtimeChannel | null;
   _timeOffset: number;
 
   constructor(config: DBConfig = { url: '', key: '' }, mode: DBMode = 'online', options: DBRouterOptions = {}) {
@@ -36,6 +37,7 @@ export class DBRouter {
     this._initialized = false;
     this.currentSessionId = null;
     this.userSubscription = null;
+    this.systemConfigSubscription = null;
     this._timeOffset = 0; // ms
     this.getTimeOffset = this.getTimeOffset.bind(this);
     
@@ -174,6 +176,40 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
         }
       })
       .subscribe();
+
+    this.initSystemConfigSubscription();
+  }
+
+  /**
+   * Listens for server app_version updates in real-time.
+   */
+  initSystemConfigSubscription(): void {
+    const client = this.realClient;
+    if (this.mode === 'offline' || !client || this.systemConfigSubscription) return;
+
+    try {
+      this.systemConfigSubscription = client
+        .channel('system_config_version')
+        .on('postgres_changes', {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'system_config',
+          filter: 'key=eq.app_version'
+        }, (payload: { new?: { value?: unknown } }) => {
+          const rawVal = payload?.new?.value;
+          const newServerVer = parseAppVersion(rawVal);
+          const clientVer = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'v0.5.0';
+          if (newServerVer && clientVer && clientVer < newServerVer) {
+            logger.warn('DBRouter', `Realtime update: New server version detected (${newServerVer}) > client (${clientVer}). Emitting PWA_NEED_REFRESH.`);
+            import('../events/gameBus.ts').then(({ gameBus }) => {
+              gameBus.emit('PWA_NEED_REFRESH');
+            });
+          }
+        })
+        .subscribe();
+    } catch (e) {
+      logger.warn('DBRouter', 'Failed to subscribe to system_config realtime updates:', e);
+    }
   }
 
   handleSessionConflict(): void {

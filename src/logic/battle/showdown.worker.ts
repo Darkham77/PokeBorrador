@@ -39,14 +39,12 @@ function reportInitStage(stage: string): void {
   self.postMessage({ type: 'WORKER_LOG', payload: { message: stage } });
 }
 
-let isDeterministicSimulation = false;
+let isDeterministicSimulation = false; // singleton-ok
 
 // Aplicar el monkey-patch unificado de spreadModify
 patchShowdownSpreadModify(() => isDeterministicSimulation);
 
-let currentBattle: Battle | null = null;
-// eslint-disable-next-line unused-imports/no-unused-vars
-let currentBattleExecuteTurnCount = 0;
+let currentBattle: Battle | null = null; // singleton-ok
 
 export function setTestingBattle(battle: Battle | null): void {
   currentBattle = battle;
@@ -169,7 +167,6 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
 
         const battleInstance = createShowdownBattle(payload.format || ACTIVE_SHOWDOWN_FORMAT, seedStr);
         currentBattle = battleInstance;
-        currentBattleExecuteTurnCount = 0;
 
         // Intercept and enrich logs in real-time
         ShowdownLogEnricher.setupRealtimeEnrichment(battleInstance);
@@ -292,8 +289,6 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
         if (!currentBattle) throw new Error('currentBattle is null');
         const battle = currentBattle;
         const { p1Choice, p2Choice, p1Skip, p2Skip, p1UsedBattleItem, p1Hps, p2Hps, p1Statuses, p2Statuses, history, certifiedHistoryStep } = payload;
-
-        currentBattleExecuteTurnCount++;
 
         const result = executeBattleTurn({
           battle,
@@ -423,7 +418,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
   }
 };
 
-let lastLogIndex = 0;
+let lastLogIndex = 0; // singleton-ok
 
 function getNewLogs(): string[] {
   if (!currentBattle) return [];

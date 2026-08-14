@@ -234,7 +234,6 @@ const onEnter = (el: Element, done: () => void) => {
             :is-finishing="isControlsDisabled"
             @switch="execShowBattleSwitch"
             @bag="execShowBattleBag"
-            @run="battleStore.flee"
             @catch="execTryCatch"
             @select-ball="(id) => battleStore.useItemInBattle(id)"
           />

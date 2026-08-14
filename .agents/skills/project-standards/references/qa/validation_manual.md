@@ -41,11 +41,17 @@ Core logic modules and critical system components MUST have dedicated unit tests
 
 ## 🛠️ Standards Audit (Unified Engine)
 
-The project uses a unified audit system located in `scripts/audit_project.ts`:
+The project uses a unified audit coordinator located in `scripts/maintenance/audit_full.ts`:
 
-- **Global Audit**: `npm run audit`. Runs all SASS, GPU, and file length checks.
-- **Auto-Fix**: `npm run audit:fix`. Repairs common standard violations (Viewports, SASS filters).
-- **Full Chain**: `npm run audit:full`. Runs the complete verification chain (Lint + Audit + FSM + Items + Abilities + Moves + SQL).
+- **Fast In-Development Check**: `npm run lint`. Runs domain types, `vue-tsc` typecheck, cached ESLint, and markdownlint in ~3-5 seconds for rapid feedback during coding.
+- **Pre-Commit Gatekeeper**: `npm run audit:warnings-diff`. Evaluates all domain, database, FSM, and code standards against `origin/main` in one single pass; requires 0 project errors and 0 new warnings.
+- **Universal Caching Policy**: All quality scripts leverage persistent caches (Node.js `enableCompileCache()`, ESLint `.eslintcache`, TypeScript `incremental`).
+- **Zero-Redundancy Guarantee**: Aggregator scripts must never duplicate sub-analyzers already embedded in `audit_project.ts` or sibling validation suites.
+- **Global Unified Audit**: `npm run audit`. Runs all static project rules, FSM, items, abilities, moves, and SQL/Save migrations, outputting 100% parseable structured JSON by default.
+- **Fast Code Audit**: `npm run audit:fast`. Runs static AST, Fallow, CSS, and modularity rules in seconds with JSON output.
+- **Human-Readable Mode**: `npm run audit:human` (or `npm run audit:fast:human`). Displays formatted visual hierarchy with emojis, grouped file trees, and sanitized context lines.
+- **Auto-Fix**: `npm run audit:fix`. Repairs common standard violations (Viewports, SASS filters, ESM extensions).
+- **Markdown Export**: `npm run audit:md`. Generates formatted Markdown report at `scratch/audit_report.md`.
 
 ### 🎛️ Audit CLI Flags (pass after `--`)
 
@@ -53,20 +59,25 @@ The audit engine accepts extra flags via `npm run audit -- [flags]`:
 
 | Flag | Short | Description |
 |------|-------|-------------|
-| `--rule="<name>"` | | Filter results to a single rule by name (partial match, case-insensitive). Useful for focusing on one category of violations, e.g. `--rule="mágico"` to see only magic-number errors. |
-| `--summary` | | Print a structured summary (rule counts + top-N offending files) instead of the full per-violation listing. Always prefer this flag to avoid terminal floods. |
-| `--errors-only` | | Suppress warnings; print only hard errors. Combine with `--summary` for a minimal signal-to-noise output. |
-| `--json` | `-j` | Output the summary (or full listing when `--summary` is omitted) as machine-readable JSON. Pipe into scripts or APIs for automated processing. |
-| `--top=N` | `-t N` | Control how many files appear in the "top offenders" table. Defaults to 15. Use `--top=30` or `--top=50` for broader sweeps. |
+| `--human` | `-H` | Render formatted visual output for developers in console instead of default machine-readable JSON. |
+| `--fast` | `-f` | Run only the static code AST and quality analysis (skips external DB/FSM suites). |
+| `--rule="<name>"` | `-r` | Filter results to a single rule by name (partial match, case-insensitive), e.g. `--rule="mágico"`. |
+| `--summary` | `-s` | Print summary tables by category and top offending files. |
+| `--errors-only` | | Suppress warnings; print and evaluate only hard errors. |
+| `--output=<file>`| `-o` | Export report to `.json`, `.md` (Markdown tables) or `.txt`. |
+| `--top=N` | `-t N` | Control how many files appear in top offenders list (defaults to 15). |
 
 **Common recipes:**
 
 ```bash
-# Quick health-check: rule-filtered summary with top 30 offenders
-npm run audit -- --rule="mágico" --summary --top=30
+# Fast AI code triage (pure JSON with errors only)
+npm run audit:fast -- --errors-only
 
-# Machine-readable JSON report for a specific rule (pipe to jq, scripts, etc.)
-npm run audit -- --rule="mágico" --summary --json | jq '.topFiles'
+# Human interactive full inspection
+npm run audit:human
+
+# Export clean Markdown report for GitHub/Artifacts
+npm run audit:md
 
 # Errors-only sweep before committing (fast, no noise)
 npm run audit -- --errors-only --summary

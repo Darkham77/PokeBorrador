@@ -84,7 +84,7 @@ export function triggerLeave(el: HTMLElement) {
 const ACTIVE_ELEMENT_HOVER_LEAVE_SCALE = 0.98;
 const DEFAULT_HOVER_LEAVE_DURATION_SEC = 0.15;
 const FAST_HOVER_LEAVE_DURATION_SEC = 0.12;
-const GLOW_GRADIENT_STOP_PERCENT = 70;
+const HOVER_GLOW_GRADIENT_STOP_PERCENT = 70;
 
   let targetScale = 1
   if (el.classList.contains('is-active')) {
@@ -168,7 +168,7 @@ const GLOW_GRADIENT_STOP_PERCENT = 70;
       const resolvedColor = resolveCssColor(color, el);
       const baseGlowColor = parseToRgba(resolvedColor, 0.18, el);
       gsap.to(glow, {
-        backgroundImage: `radial-gradient(circle, ${baseGlowColor} 0%, transparent ${GLOW_GRADIENT_STOP_PERCENT}%)`,
+        backgroundImage: `radial-gradient(circle, ${baseGlowColor} 0%, transparent ${HOVER_GLOW_GRADIENT_STOP_PERCENT}%)`,
         scale: 0.8,
         opacity: 0.7,
         duration: 0.2,

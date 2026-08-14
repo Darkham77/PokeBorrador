@@ -62,6 +62,8 @@ export const MODAL_REGISTRY = {
   RouteSpawns: defineAsyncComponent(() => import('@/components/modals/RouteSpawnsModal.vue'))
 }
 
+export type ModalRegistryKey = keyof typeof MODAL_REGISTRY;
+
 export interface ModalMetadata {
   isFullscreen?: boolean;
   obscuresBackground?: boolean;

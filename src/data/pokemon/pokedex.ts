@@ -100,7 +100,7 @@ export type PokedexOrderSpeciesId = Gen1PokemonSpeciesId | Gen2PokemonSpeciesId;
 import { PDEX_TYPE_COLORS } from '../../logic/constants/pokedexConstants.ts'
 export { PDEX_TYPE_COLORS }
 
-export const POKEMON_AESTHETICS = {
+export const POKEMON_AESTHETICS: Partial<Record<PokedexOrderSpeciesId, { floating: boolean }>> = {
   // Floating species (visually not on the ground, regardless of type)
   bulbasaur: { floating: false },
   ivysaur: { floating: false },
@@ -153,7 +153,7 @@ export const POKEMON_AESTHETICS = {
   farfetchd: { floating: false },
   doduo: { floating: false },
   dodrio: { floating: false }
-};
+} as const;
 
 
 
@@ -363,7 +363,7 @@ export const TM_COMPAT = {
   dragonite: ['TM01','TM02','TM03','TM05','TM06','TM07','TM10','TM11','TM13','TM14','TM15','TM17','TM18','TM20','TM21','TM23','TM24','TM25','TM26','TM27','TM31','TM32','TM34','TM35','TM37','TM38','TM39','TM40','TM42','TM43','TM44','TM45','TM47'],
   mewtwo: ['TM01','TM03','TM04','TM06','TM07','TM10','TM11','TM12','TM13','TM14','TM15','TM16','TM17','TM18','TM19','TM20','TM21','TM22','TM23','TM24','TM25','TM26','TM27','TM29','TM30','TM31','TM32','TM33','TM34','TM35','TM38','TM40','TM42','TM43','TM44','TM45','TM48','TM49','TM50'],
   mew: ['TM01','TM02','TM03','TM04','TM05','TM06','TM07','TM08','TM09','TM10','TM11','TM12','TM13','TM14','TM15','TM16','TM17','TM18','TM19','TM20','TM21','TM22','TM23','TM24','TM25','TM26','TM27','TM28','TM29','TM30','TM31','TM32','TM33','TM34','TM35','TM36','TM37','TM38','TM39','TM40','TM41','TM42','TM43','TM44','TM45','TM46','TM47','TM48','TM49','TM50']
-};
+} as const;
 
 export const BABY_POKEMON = [
   "azurill", "bonsly", "budew", "chingling", "cleffa", "elekid", "happiny", "igglybuff", "magby", "mantyke", 

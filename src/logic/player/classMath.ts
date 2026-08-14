@@ -8,28 +8,28 @@
 import { MINIMUM_POKEMON_LEVEL, DECIMAL_PLACES_PRECISION_TWO, CLASS_XP_THRESHOLD_RANKS } from '../constants/gameplay.ts';
 
 /** Team Rocket quick steal base chance (15%). */
-export const ROCKET_QUICK_STEAL_BASE_CHANCE = 0.15;
+const ROCKET_QUICK_STEAL_BASE_CHANCE = 0.15;
 
 /** Team Rocket quick steal chance increase per level (1%). */
-export const ROCKET_QUICK_STEAL_PER_LEVEL = 0.01;
+const ROCKET_QUICK_STEAL_PER_LEVEL = 0.01;
 
 /** Team Rocket quick steal maximum cap (30%). */
-export const ROCKET_QUICK_STEAL_MAX_CAP = 0.30;
+const ROCKET_QUICK_STEAL_MAX_CAP = 0.30;
 
 /** Bug Catcher catch rate synergy base multiplier. */
-export const BUG_SYNERGY_BASE_BONUS = 1.0;
+const BUG_SYNERGY_BASE_BONUS = 1.0;
 
 /** Bug Catcher maximum active Bug Pokémon count for synergy. */
-export const BUG_SYNERGY_MAX_COUNT = 6;
+const BUG_SYNERGY_MAX_COUNT = 6;
 
 /** Bug Catcher bonus catch multiplier per Bug Pokémon (+5%). */
-export const BUG_SYNERGY_BONUS_PER_BUG = 0.05;
+const BUG_SYNERGY_BONUS_PER_BUG = 0.05;
 
 /** Trainer class high-IV threshold for catch rate calculation. */
-export const TRAINER_HIGH_IV_THRESHOLD = 120;
+const TRAINER_HIGH_IV_THRESHOLD = 120;
 
 /** Trainer class catch rate penalty multiplier for high-IV targets (90%). */
-export const TRAINER_CATCH_PENALTY_MULTIPLIER = 0.9;
+const TRAINER_CATCH_PENALTY_MULTIPLIER = 0.9;
 
 /** Maximum player class level limit. */
 export const MAX_PLAYER_CLASS_LEVEL = 30;
@@ -44,16 +44,16 @@ export const CLASS_CHANGE_COST_BATTLE_COINS = 10_000;
 export const MAX_CRIMINALITY_LEVEL = 100;
 
 /** XP cap requirement return for max-level player classes. */
-export const MAX_LEVEL_XP_CAP = 99999999;
+const MAX_LEVEL_XP_CAP = 99999999;
 
 /** Quadratic coefficient factor for NPC robbery limit (8 * L^2). */
-export const NPC_ROBBERY_LIMIT_QUADRATIC_COEFF = 8;
+const NPC_ROBBERY_LIMIT_QUADRATIC_COEFF = 8;
 
 /** Fallback XP multiplier per level if threshold rank is missing. */
-export const CLASS_LEVEL_FALLBACK_XP_MULTIPLIER = 1000;
+const CLASS_LEVEL_FALLBACK_XP_MULTIPLIER = 1000;
 
 /** Quadratic exponent factor (2). */
-export const QUADRATIC_EXPONENT = 2;
+const QUADRATIC_EXPONENT = 2;
 
 /**
  * Team Rocket:
@@ -107,8 +107,6 @@ export function hasDoubleRivalChance(
     return !!(progress && progress.hard);
   });
 }
-
-export { CLASS_XP_THRESHOLD_RANKS };
 
 /**
  * Retorna la experiencia necesaria para subir al siguiente nivel de clase.

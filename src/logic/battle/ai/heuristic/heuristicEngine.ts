@@ -15,11 +15,11 @@ import type {
 } from './types.ts';
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 import type { InferenceEngine } from './inferenceEngine.ts';
+import { HAZARD_REMOVAL_MOVES } from './sackOrder.ts';
 
-const HAZARD_REMOVAL_MOVES: readonly string[] = ['rapidspin', 'defog', 'tidyup', 'courtchange', 'mortalspin']; // no-domain
 const INVALID_MOVE_INDEX = -1;
 
-import { SETUP_MOVES } from '@/logic/constants/encounters';
+import { SETUP_MOVES } from '@/logic/constants/encounters.ts';
 
 const HAZARD_MOVES: readonly string[] = ['stealthrock', 'spikes', 'toxicspikes', 'stickyweb']; // no-domain
 

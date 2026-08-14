@@ -1,16 +1,18 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { gsap } from 'gsap'
-import { logger } from '@/logic/utils/logger'
-import { supabase } from '@/logic/db/supabase'
-import { syncServerTime } from '@/logic/utils/timeUtils'
+import { logger } from '@/logic/utils/logger.ts'
+import { supabase } from '@/logic/db/supabase.ts'
+import { syncServerTime } from '@/logic/utils/timeUtils.ts'
 import { useLoadingStore } from '@/stores/loading.ts'
-import { safeStorage } from '@/logic/utils/storage'
-import { SESSION_ID } from '@/logic/auth/sessionId'
-import { requireUserRole, type AuthUser, type SessionMode } from '@/types/auth/auth'
-import { requireGenderId, type GenderId } from '@/types/system/game'
+import { useModalStore } from '@/stores/modals.ts'
+import { useGameStore } from './game.ts'
+import { safeStorage } from '@/logic/utils/storage.ts'
+import { SESSION_ID } from '@/logic/auth/sessionId.ts'
+import { requireUserRole, type AuthUser, type SessionMode } from '@/types/auth/auth.ts'
+import { requireGenderId, type GenderId } from '@/types/system/game.ts'
 import type { Session } from '@supabase/supabase-js'
-import { AUTH_RETRY_DELAY_MS, HTTP_STATUS_UNAUTHORIZED } from '@/logic/constants/gameplay'
+import { AUTH_RETRY_DELAY_MS, HTTP_STATUS_UNAUTHORIZED } from '@/logic/constants/gameplay.ts'
 
 const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
 
@@ -46,14 +48,12 @@ export const useAuthStore = defineStore('auth', () => {
       sessionConflict.value = true
       
       // Auto-open modal via ModalStore
-      import('@/stores/modals').then(module => {
-        if (module && module.useModalStore) {
-          const modalStore = module.useModalStore()
-          modalStore.open('SessionConflict')
-        }
-      }).catch(e => {
+      try {
+        const modalStore = useModalStore()
+        modalStore.open('SessionConflict')
+      } catch (e) {
         logger.error('AuthStore', `Failed to open SessionConflict modal: ${(e as Error).message}`)
-      })
+      }
     })
     // Escuchar errores de conexión a la base de datos (Supabase unreachability)
     window.addEventListener('db-connection-error', () => {
@@ -410,7 +410,6 @@ export const useAuthStore = defineStore('auth', () => {
 
     // Safe preventative save if game is active
     try {
-      const { useGameStore } = await import('./game')
       const gameStore = useGameStore()
       if (gameStore.isReady && gameStore.save) {
         logger.info('AuthStore', 'Guardando partida de forma segura antes de cerrar sesión...')

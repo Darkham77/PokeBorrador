@@ -104,7 +104,7 @@ if (!match) {
 
 console.log('--- STARTING EXACT CERTIFIED CHOICES REPLAY ---');
 
-let turn = 0;
+let turn = 0; // singleton-ok
 
 for (let historyIndex = 0; historyIndex < match.history.length; historyIndex++) {
   const step = ShowdownBattleRunner.requireHistoryEntry(match.history, historyIndex);

@@ -533,7 +533,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    * Forzado limpio de huida de combate para simulaciones
    */
   public async forceFleeDebugger(): Promise<void> {
-    const fleeButton = this.page.locator('#battle-flee-btn:not([disabled])').first();
+    const fleeButton = this.page.locator('#battle-arena-modal-close-btn:not([disabled])').first();
     await fleeButton.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await clickResilient(fleeButton);
     const confirmFleeButton = this.page.locator('#confirm-modal-btn').first();

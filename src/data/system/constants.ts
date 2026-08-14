@@ -52,7 +52,35 @@ export const MAX_BATTLE_TURNS = 300;
 export const SHOWDOWN_DISABLE_DURATION_TURNS = 4;
 
 
-export const GAME_RATIOS = {
+export interface GameRatiosConfig {
+  maxPokemonLevel: number;
+  shinyRate: number;
+  encounters: {
+    rival: number;
+    fishing: number;
+    legendaryArticuno: number;
+    legendaryMewtwo: number;
+    trainerBase: number;
+    trainerMax: number;
+    trainerIncrement: number;
+    trainerRepel: number;
+  };
+  battle: {
+    catchFormulaParams: {
+      catchBaseMultiplier: number;
+    };
+  };
+  gym: {
+    rematchTMRateNormal: number;
+    rematchTMRateHard: number;
+  };
+  heldItems: {
+    commonRate: number;
+    rareRate: number;
+  };
+}
+
+export const GAME_RATIOS: GameRatiosConfig = {
   // --- Pokémon Level ---
   maxPokemonLevel: MAX_POKEMON_LEVEL,
 

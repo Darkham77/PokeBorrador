@@ -28,7 +28,7 @@ interface LogContext {
 
 // Re-use exported types
 
-let nextLogSequenceId = 0;
+let nextLogSequenceId = 0; // singleton-ok
 
 /**
  * Procesa un mensaje de log y devuelve el objeto listo para la cola del store.

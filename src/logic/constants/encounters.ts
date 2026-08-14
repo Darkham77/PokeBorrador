@@ -33,10 +33,10 @@ export const WEATHER_MAP: Record<string, string> = {
 };
 
 /** Spawn budget weight for fishing with a Super Rod. */
-export const SUPER_ROD_SPAWN_BUDGET = 1000;
+export const SUPER_ROD_SPAWN_BUDGET = 20;
 
 /** Spawn budget weight for fishing with a Standard/Good Rod. */
-export const STANDARD_ROD_SPAWN_BUDGET = 500;
+export const STANDARD_ROD_SPAWN_BUDGET = 10;
 
 /** Default fishing spawn rate weight multiplier. */
 export const DEFAULT_FISHING_RATE_WEIGHT = 10;

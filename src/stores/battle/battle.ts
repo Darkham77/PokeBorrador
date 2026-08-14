@@ -15,7 +15,7 @@ import { useModalStore } from '@/stores/modals.ts'
 import { useErrorStore } from '@/stores/errorStore.ts'
 import { createBattleStateMachine, BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine.ts'
 import { clearVolatileStatus } from '@/logic/battle/battleStatus.ts'
-import { startBattleSequence, initBattleSequence, restoreBattleState } from '@/logic/battle/orchestrator.ts'
+import { startBattleSequence, initBattleSequence, restoreBattleState, isPlayerTrappedInWorker } from '@/logic/battle/orchestrator.ts'
 import { processFaint, terminateBattle, syncAndPersist } from '@/logic/battle/resolution.ts'
 import { handleBattleFlowCompletion, triggerNextEncounter, startEncounter } from '@/logic/battle/searchLoop.ts'
 import { executeTurn, runEnemyAction } from '@/logic/battle/battleTurn.ts'
@@ -412,7 +412,6 @@ export const useBattleStore = defineStore('battle', () => {
     if (isProcessing.value && !isForced) return
     
     if (!isForced) {
-      const { isPlayerTrappedInWorker } = await import('@/logic/battle/orchestrator')
       const isTrapped = await isPlayerTrappedInWorker()
       if (isTrapped) {
         uiStore.notify('¡No puedes cambiar de Pokémon ahora! (Atrapado)', '🚫')

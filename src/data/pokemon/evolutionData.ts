@@ -40,10 +40,12 @@ export function getLevelEvolution(id: string): { level: number; to: PokemonSpeci
   };
 }
 
-export function getTradeEvolution(id: string): PokemonSpeciesId | null {
+export function parseTradeEvolution(id: string): PokemonSpeciesId | null {
   if (!isTradeEvolutionSpeciesId(id)) return null;
   return requirePokemonSpeciesId(TRADE_EVOLUTIONS[id as keyof typeof TRADE_EVOLUTIONS]); // domain-ok
 }
+
+export const getTradeEvolution = parseTradeEvolution;
 
 /**
  * Looks up a stone evolution entry for a given species ID.
