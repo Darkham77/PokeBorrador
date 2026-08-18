@@ -18,7 +18,7 @@ describe('Audit System Integrity & Dual-Mode Formatting', () => {
   });
 
   it('should output 100% parseable JSON on stdout by default for audit_project.ts', () => {
-    const stdout = execSync('node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/maintenance/audit_project.ts --top=5', {
+    const stdout = execSync('node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/maintenance/audit_project.ts --path=src/data/inventory --top=5', {
       encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'ignore'] // ignore stderr progress logs
     });
@@ -39,7 +39,7 @@ describe('Audit System Integrity & Dual-Mode Formatting', () => {
   });
 
   it('should render grouped tree and sanitized context when --human is passed to audit_project.ts', () => {
-    const stdout = execSync('node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/maintenance/audit_project.ts --human --top=5', {
+    const stdout = execSync('node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/maintenance/audit_project.ts --path=src/data/inventory --human --top=5', {
       encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'ignore']
     });
@@ -49,7 +49,7 @@ describe('Audit System Integrity & Dual-Mode Formatting', () => {
   });
 
   it('should export valid Markdown and JSON reports when --output is provided', () => {
-    execSync(`node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/maintenance/audit_project.ts --output=scratch/test_integrity_audit.md`, {
+    execSync(`node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/maintenance/audit_project.ts --path=src/data/inventory --output=scratch/test_integrity_audit.md`, {
       encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'ignore']
     });
@@ -59,7 +59,7 @@ describe('Audit System Integrity & Dual-Mode Formatting', () => {
     expect(mdContent).toContain('# Reporte de Auditoría del Proyecto');
     expect(mdContent).toContain('## 📊 Desglose por Categoría');
 
-    execSync(`node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/maintenance/audit_project.ts --output=scratch/test_integrity_audit.json`, {
+    execSync(`node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/maintenance/audit_project.ts --path=src/data/inventory --output=scratch/test_integrity_audit.json`, {
       encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'ignore']
     });

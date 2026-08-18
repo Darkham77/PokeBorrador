@@ -9,6 +9,7 @@ Frontend Developers / Systems Engineers.
 ## Local Contracts
 
 - Follow standard repository modularity guidelines.
+- **Global Stub Lifecycle Cleanup**: Any test using `vi.stubGlobal()` (e.g. `Worker`, `localStorage`) MUST register `afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); })` to prevent cross-suite contamination.
 
 ## Work Guidance
 

@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useBattleStore } from '@/stores/battle/battle'
 import { useGameStore } from '@/stores/game'
@@ -45,19 +45,19 @@ class DummyWorker {
   terminate() {}
   onmessage: ((ev: MessageEvent) => void) | null = null
 }
-vi.stubGlobal('Worker', DummyWorker)
-
-vi.mock('@/logic/services/assetService', () => ({
-  getAssetUrl: vi.fn(),
-  ASSET_TYPES: { ITEM: 'item' }
-}))
 
 describe('Battle Store - Turn Count Logic', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
+    vi.stubGlobal('Worker', DummyWorker)
     const gs = useGameStore()
     gs.state.trainer = 'Tester'
     gs.state.team = [{ id: 'pikachu', uid: 'p1', hp: 100, maxHp: 100, status: null, ability: 'static', nature: 'hardy', gender: 'M', vigor: 100, maxVigor: 100, moves: [{ id: 'tackle', name: 'Tackle' }] } as unknown as Pokemon]
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
   })
 
   it('should initialize turnCount at 1', async () => {
