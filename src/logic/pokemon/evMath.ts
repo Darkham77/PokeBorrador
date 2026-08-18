@@ -7,11 +7,11 @@
 
 import { POKEMON_STAT_KEYS, type PokemonEVs, type PokemonStatKey } from '@/types/pokemon/pokemon';
 import type { EvYield } from '@/data/pokemon/evYields';
+import { MAXIMUM_FRIENDSHIP_VALUE } from '@/logic/constants/gameplay';
 
 export const MAX_TOTAL_EVS = 510;
 export const MAX_STAT_EVS = 252;
 export const MIN_STAT_EVS = 0;
-export const MAX_FRIENDSHIP = 255;
 
 export const VITAMIN_EV_GAIN = 10;
 export const MOCHI_EV_GAIN = 10;
@@ -209,7 +209,7 @@ export function canUseEvBerry(
   currentEvs: PokemonEVs | undefined | null,
   stat: PokemonStatKey,
   friendship: number = 0,
-  maxFriendship: number = MAX_FRIENDSHIP
+  maxFriendship: number = MAXIMUM_FRIENDSHIP_VALUE
 ): boolean {
   const evs = currentEvs || createDefaultEvs();
   const hasEvsToReduce = (evs[stat] || 0) > MIN_STAT_EVS;

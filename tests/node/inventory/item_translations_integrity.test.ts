@@ -52,9 +52,10 @@ describe('Item Translations & Localization Integrity', () => {
     const leaks: string[] = [];
 
     for (const item of SHOP_ITEMS) {
+      const desc = item.desc || '';
       for (const pattern of FORBIDDEN_DESC_PATTERNS) {
-        if (pattern.test(item.desc)) {
-          leaks.push(`[${item.id}] desc "${item.desc}" matched English pattern ${pattern}`);
+        if (pattern.test(desc)) {
+          leaks.push(`[${item.id}] desc "${desc}" matched English pattern ${pattern}`);
         }
       }
     }
@@ -66,9 +67,10 @@ describe('Item Translations & Localization Integrity', () => {
     const leaks: string[] = [];
 
     for (const item of SHOP_ITEMS) {
+      const name = item.name || '';
       for (const pattern of FORBIDDEN_NAME_PATTERNS) {
-        if (pattern.test(item.name)) {
-          leaks.push(`[${item.id}] name "${item.name}" matched English token ${pattern}`);
+        if (pattern.test(name)) {
+          leaks.push(`[${item.id}] name "${name}" matched English token ${pattern}`);
         }
       }
     }

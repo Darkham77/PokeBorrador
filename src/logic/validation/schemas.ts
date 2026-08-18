@@ -38,7 +38,8 @@ import {
   MIN_TRAINER_LEVEL,
   MAX_TRAINER_LEVEL,
   MIN_TRAINER_NAME_LENGTH,
-  MAX_TRAINER_NAME_LENGTH
+  MAX_TRAINER_NAME_LENGTH,
+  MAXIMUM_FRIENDSHIP_VALUE
 } from '@/logic/constants/gameplay.ts';
 
 // ==========================================
@@ -136,22 +137,28 @@ export const networkActionSchema = object({
 // 3. POKÉMON & COMBAT SCHEMAS (DOMAIN-FIRST)
 // ==========================================
 
+const MIN_STAT_IV = 0;
+const MAX_STAT_IV = 31;
+const MIN_STAT_EV = 0;
+const MAX_STAT_EV = 252;
+const MIN_FRIENDSHIP = 0;
+
 export const pokemonIVsSchema = object({
-  hp: pipe(number(), minValue(0), maxValue(31)),
-  atk: pipe(number(), minValue(0), maxValue(31)),
-  def: pipe(number(), minValue(0), maxValue(31)),
-  spa: pipe(number(), minValue(0), maxValue(31)),
-  spd: pipe(number(), minValue(0), maxValue(31)),
-  spe: pipe(number(), minValue(0), maxValue(31)),
+  hp: pipe(number(), minValue(MIN_STAT_IV), maxValue(MAX_STAT_IV)),
+  atk: pipe(number(), minValue(MIN_STAT_IV), maxValue(MAX_STAT_IV)),
+  def: pipe(number(), minValue(MIN_STAT_IV), maxValue(MAX_STAT_IV)),
+  spa: pipe(number(), minValue(MIN_STAT_IV), maxValue(MAX_STAT_IV)),
+  spd: pipe(number(), minValue(MIN_STAT_IV), maxValue(MAX_STAT_IV)),
+  spe: pipe(number(), minValue(MIN_STAT_IV), maxValue(MAX_STAT_IV)),
 });
 
 export const pokemonEVsSchema = object({
-  hp: pipe(number(), minValue(0), maxValue(252)),
-  atk: pipe(number(), minValue(0), maxValue(252)),
-  def: pipe(number(), minValue(0), maxValue(252)),
-  spa: pipe(number(), minValue(0), maxValue(252)),
-  spd: pipe(number(), minValue(0), maxValue(252)),
-  spe: pipe(number(), minValue(0), maxValue(252)),
+  hp: pipe(number(), minValue(MIN_STAT_EV), maxValue(MAX_STAT_EV)),
+  atk: pipe(number(), minValue(MIN_STAT_EV), maxValue(MAX_STAT_EV)),
+  def: pipe(number(), minValue(MIN_STAT_EV), maxValue(MAX_STAT_EV)),
+  spa: pipe(number(), minValue(MIN_STAT_EV), maxValue(MAX_STAT_EV)),
+  spd: pipe(number(), minValue(MIN_STAT_EV), maxValue(MAX_STAT_EV)),
+  spe: pipe(number(), minValue(MIN_STAT_EV), maxValue(MAX_STAT_EV)),
 });
 
 export const moveEffectSchema = object({
@@ -251,7 +258,7 @@ export const pokemonSchema = object({
   nature: optional(string()),
   heldItem: optional(nullable(string())),
   item: optional(nullable(string())),
-  friendship: optional(pipe(number(), minValue(0), maxValue(255))),
+  friendship: optional(pipe(number(), minValue(MIN_FRIENDSHIP), maxValue(MAXIMUM_FRIENDSHIP_VALUE))),
   vigor: optional(number()),
   maxVigor: optional(number()),
   catchRate: optional(number()),

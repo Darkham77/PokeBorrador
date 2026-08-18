@@ -51,14 +51,15 @@ function findBinary(): boolean {
 if (!findBinary()) {
   console.log('\x1b[33m\x1b[1m⚠️ css-checker-kit no está preparado. Auto-instalando y compilando binario nativo...\x1b[0m');
   try {
+    const npmCmd = isWin ? 'npm.cmd' : 'npm';
     const pkgDir = 'node_modules/css-checker-kit';
     if (!fs.existsSync(pkgDir)) {
       console.log('📦 Instalando css-checker-kit...');
-      execFileSync('npm.cmd', ['install', '--save-dev', 'css-checker-kit', '--ignore-scripts=false'], { stdio: 'inherit', cwd: rootDir });
+      execFileSync(npmCmd, ['install', '--save-dev', 'css-checker-kit', '--ignore-scripts=false'], { stdio: 'inherit', cwd: rootDir });
     }
     
     console.log('⚡ Compilando binario nativo via postinstall...');
-    execFileSync('npm.cmd', ['run', 'postinstall', '--ignore-scripts=false'], { stdio: 'inherit', cwd: pkgDir });
+    execFileSync(npmCmd, ['run', 'postinstall', '--ignore-scripts=false'], { stdio: 'inherit', cwd: pkgDir });
 
     if (!findBinary()) {
       console.error('\x1b[31m❌ Error: No se pudo auto-compilar css-checker-kit.\x1b[0m');

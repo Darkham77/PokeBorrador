@@ -25,4 +25,5 @@ Frontend Developers / Systems Engineers.
 - [player/](./player/AGENTS.md): Domain module documentation for player.
 - [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon.
 - [system/](./system/AGENTS.md): Domain module documentation for system.
+- [validation/](./validation/AGENTS.md): Domain module documentation for validation.
 - [world/](./world/AGENTS.md): Domain module documentation for world.

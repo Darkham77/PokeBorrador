@@ -12,6 +12,7 @@ Frontend Developers / Systems Engineers.
 - **evMath.ts**: Pure stateless math functions for Effort Values (EVs), limit clamps (510 total, 252 stat), items bonuses (Macho Brace, Power items, Vitamins, Feathers, Berries).
 - **statsMath.ts**: Gen 3+ canonical stat formulas, exp curve calculations, and nature multipliers.
 - **pokemonFactory.ts**: Canonical creation, validation, and stat recalculation of Pokémon instances.
+- **Zero Constant Aliasing**: Constant aliasing (`const A = B;`) is strictly forbidden across domain modules. All modules must directly import and use the single canonical source of truth from `@/logic/constants/` per the Domain-Type-First governance mandate.
 
 ## Work Guidance
 

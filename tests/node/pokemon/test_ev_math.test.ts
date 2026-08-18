@@ -20,11 +20,23 @@ import {
   BERRY_EV_REDUCTION,
   POWER_ITEM_EV_BONUS,
   MACHO_BRACE_EV_MULTIPLIER,
-  POKERUS_EV_MULTIPLIER
+  POKERUS_EV_MULTIPLIER,
+  POWER_ITEMS,
+  MOCHIS
 } from '@/logic/pokemon/evMath';
 import { POKEMON_STAT_KEYS } from '@/types/pokemon/pokemon';
 
 describe('evMath - Pure Effort Value Mathematics & Bounds', () => {
+  it('maps all power items and mochis to valid stat keys', () => {
+    assert.strictEqual(Object.keys(POWER_ITEMS).length, 6);
+    assert.strictEqual(Object.keys(MOCHIS).length, 6);
+    for (const stat of Object.values(POWER_ITEMS)) {
+      assert.ok(POKEMON_STAT_KEYS.includes(stat));
+    }
+    for (const stat of Object.values(MOCHIS)) {
+      assert.ok(POKEMON_STAT_KEYS.includes(stat));
+    }
+  });
   it('creates default EVs with all stats initialized to 0', () => {
     const evs = createDefaultEvs();
     for (const stat of POKEMON_STAT_KEYS) {

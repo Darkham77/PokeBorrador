@@ -22,6 +22,9 @@ export const DEFAULT_INITIAL_ELO = 1000;
 /** Default starting friendship value for newly caught Pokémon. */
 export const DEFAULT_FRIENDSHIP_VALUE = 70;
 
+/** Maximum friendship value for Pokémon (255). */
+export const MAXIMUM_FRIENDSHIP_VALUE = 255;
+
 /** Minimum character length for user login / account username. */
 export const MIN_USERNAME_LENGTH = 3;
 
