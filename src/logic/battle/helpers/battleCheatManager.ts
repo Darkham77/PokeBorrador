@@ -1,5 +1,5 @@
 import type { Battle, Side, Pokemon, SideID } from '@pkmn/sim';
-import { REPLAY_SEATS } from './showdownBattleRunner.ts';
+import { REPLAY_SEATS } from './showdownSeats.ts';
 import { applyHealCheatToSide, applyPpRefillCheatToSide, syncRequestConditionsWithSimulator } from '../cheats.ts';
 
 export interface LegacyCheatEntry {

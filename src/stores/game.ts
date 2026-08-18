@@ -241,7 +241,9 @@ export const useGameStore = defineStore('game', () => {
     isEngineReady,
     isReady,
     isSaveLocked,
+    // fallow-ignore-next-line unused-store-member
     saveBlocked,
+    // fallow-ignore-next-line unused-store-member
     validationErrorDetails,
     chooseStarter,
     addTrainerExp,

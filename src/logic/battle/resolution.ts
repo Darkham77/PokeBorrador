@@ -5,18 +5,17 @@ import type { BattleSide } from '@/types/battle/battle'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { useUIStore } from '@/stores/ui'
 import { clearVolatileStatus } from './battleStatus.ts'
-import { findBestSwitchIndex } from './ai/battleAI.ts'
-import { ShowdownTeamResolver } from './showdownTeamResolver.ts'
 import { registerRewardCombatant } from './rewardsDistributor.ts'
+import {
+  handlePoliceResolution,
+  animatePlayerAutoSwap,
+  handleEnemyForceSwitchExecution
+} from './helpers/battleResolutionHelpers.ts'
 export { awardDebugExp } from './rewardsDistributor.ts'
 export { syncAndPersist } from './battleStateSync.ts'
 
-
-
-
 const FAINT_ANIMATION_FALLBACK_DELAY_MS = 1300;
 const DEFEAT_SCREEN_DELAY_MS = 1500;
-const POLICE_STEAL_CHANCE_PERCENT = 0.05;
 const ENEMY_FLEE_ANIMATION_DELAY_MS = 1000;
 const TERMINATING_BATTLES = new WeakSet<object>()
 
@@ -165,53 +164,7 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
   const uiStore = useUIStore()
   uiStore.isBattleSwitchForced = false
   
-  // Reset criminality & apply bail if fighting police officer
-  if (active.trainerName === 'Oficial de Policía') {
-    if (ctx.gs.state.playerClass === 'rocket' && ctx.gs.state.classData) {
-      const criminality = ctx.gs.state.classData.criminality || 0
-      
-      // Si el jugador pierde contra la policía (derrota), se le cobra fianza
-      if (!win && !fled) {
-        const classLevel = ctx.gs.state.classLevel || 1
-        const bailAmount = Math.floor(Math.pow(classLevel, 2) * 80 * (criminality / 100))
-        
-        if (bailAmount > 0) {
-          const prevMoney = ctx.gs.state.money || 0
-          ctx.gs.state.money = Math.max(0, prevMoney - bailAmount)
-          const moneyPaid = prevMoney - ctx.gs.state.money
-          
-          ctx.addLog(`¡Bajo arresto! Pagaste ₽${moneyPaid} de fianza.`, 'log-error', 'player')
-          uiStore.notify(`Fianza pagada: ₽${moneyPaid}`, '🚨')
-        }
-      } else if (win && !fled) {
-        // Al ganarle al Oficial, 5% de chance de robar uno de sus Pokémon
-        if (Math.random() < POLICE_STEAL_CHANCE_PERCENT) {
-          const pool = active.enemyTeam || [];
-          if (pool.length > 0) {
-            const stolen = pool[Math.floor(Math.random() * pool.length)];
-            if (stolen) {
-              const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
-              const clone = makePokemon(stolen.id, stolen.level || 5);
-              if (clone) {
-                clone.caught = true;
-                ctx.gs.state.box.push(clone);
-                
-                ctx.addLog(`¡Robaste el ${clone.name} del Oficial de Policía!`, 'log-success', 'player');
-                uiStore.notify(`¡Robaste un ${clone.name}!`, '🏴‍☠️');
-                
-                // Disparar sonido retro de robo
-                const audioStore = await import('@/stores/audio').then(m => m.useAudioStore());
-                audioStore.play('steal');
-              }
-            }
-          }
-        }
-      }
-      
-      ctx.gs.state.classData.criminality = 0
-      uiStore.notify("Tu nivel de criminalidad ha vuelto a cero.", "🚔")
-    }
-  }
+  await handlePoliceResolution(ctx, active, win, fled, uiStore)
   
   const persistenceMode = active.persistenceMode as string || 'PERSISTENT'
   const isSingle = persistenceMode === 'SINGLE' || active.isGym || active.isPvP
@@ -343,35 +296,8 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
   if (!isCurrentBattle(ctx, active)) return
 
   // Reordenamiento animado: recall del incorrecto + release del correcto en paralelo
-  const firstHealthy = ctx.gs.state.team.find((p: Pokemon) => p && p.hp > 0)
-  const oldPlayer = active.player
-  const needsSwap = firstHealthy && (!oldPlayer || oldPlayer.uid !== firstHealthy.uid)
-
-  if (needsSwap && firstHealthy) {
-    // Set exitingPlayer so BattleArenaView renders both combatants simultaneously
-    if (oldPlayer && oldPlayer.hp > 0) ctx.exitingPlayer.value = oldPlayer
-    active.player = firstHealthy
-    active.playerTeamIndex = ctx.gs.state.team.findIndex((p: Pokemon) => p.uid === firstHealthy.uid)
-
-    const withdrawPromise = oldPlayer && oldPlayer.hp > 0 && ctx.animations?.handleCatchRequest
-      ? ctx.animations.handleCatchRequest({ side: 'player', pokemon: oldPlayer })
-      : Promise.resolve()
-
-    const sendOutPromise = ctx.animations?.handleReleaseRequest
-      ? ctx.animations.handleReleaseRequest({ side: 'player', pokemon: firstHealthy })
-      : Promise.resolve()
-
-    await Promise.all([withdrawPromise, sendOutPromise])
-    if (!isCurrentBattle(ctx, active)) return
-    ctx.exitingPlayer.value = null
-  } else if (firstHealthy && !oldPlayer) {
-    // No old player (first battle start) — just the release animation
-    active.player = firstHealthy
-    active.playerTeamIndex = ctx.gs.state.team.findIndex((p: Pokemon) => p.uid === firstHealthy.uid)
-    if (ctx.animations?.handleReleaseRequest) {
-      await ctx.animations.handleReleaseRequest({ side: 'player', pokemon: firstHealthy })
-    }
-  }
+  await animatePlayerAutoSwap(ctx, active, isCurrentBattle)
+  if (!isCurrentBattle(ctx, active)) return
 
   interface LocalDebugObject {
     [key: string]: unknown;
@@ -485,90 +411,6 @@ export async function handleForceSwitch(ctx: BattleContext, side: BattleSide) {
     ctx.isIntroAnimating.value = false
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SWITCH_MENU)
   } else {
-    // Determine which Pokémon is currently active according to Showdown's request (source of truth).
-    // active.enemy?.uid can be stale after mid-battle switches, so we read the active flag from
-    // the Showdown request to guarantee we exclude the correct combatant from nextEnemy selection.
-    const activeUidPerShowdown = active.enemyRequest?.side?.pokemon
-      ?.find((p) => p?.active)?.uid
-    const activeUidToExclude = activeUidPerShowdown ?? active.enemy?.uid
-
-    let nextEnemy: Pokemon | null = null
-    if (active.enemyTeam) {
-      const activePlayer = active.player || active.enemyTeam[0]
-      if (activePlayer) {
-        const bestIdx = findBestSwitchIndex(
-          active.enemyTeam,
-          activePlayer,
-          activeUidToExclude ?? '',
-          ctx
-        )
-        if (bestIdx !== -1) {
-          nextEnemy = active.enemyTeam[bestIdx] || null
-        } else {
-          nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0 && p.uid !== activeUidToExclude) || null
-        }
-      } else {
-        nextEnemy = active.enemyTeam.find((p: Pokemon) => p.hp > 0 && p.uid !== activeUidToExclude) || null
-      }
-    }
-    if (nextEnemy) {
-      const currentEnemy = active.enemy
-      if (currentEnemy) {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
-        if (ctx.animations?.handleCatchRequest) {
-          await ctx.animations.handleCatchRequest({ side: 'enemy', pokemon: currentEnemy })
-        } else {
-          gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
-        }
-      }
-
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL)
-      
-      const { showdownWorker, executeTurnInWorker } = await import('./showdownWorkerClient.ts')
-      if (showdownWorker && active.enemyTeam) {
-        let p2Choice = ''
-        if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
-          const debugObj = window.__VITE_DEBUG__;
-          const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts');
-          const p1Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p1');
-          p2Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2');
-          if (p1Choice !== '') {
-            throw new Error(`[resolution] Certified enemy force switch must be P2-only. context=${JSON.stringify({ p1Choice, p2Choice })}`);
-          }
-          console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Resolved forceSwitch enemy choice from the certified history: "${p2Choice}".`);
-        } else {
-          const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)
-          p2Choice = `switch ${slot}`
-        }
-        const result = await executeTurnInWorker('', p2Choice)
-        active.playerRequest = result.p1Request
-        active.enemyRequest = result.p2Request
-
-        // Parsear logs para aplicar el daño/debilitación por hazards
-        const { parseShowdownLogLine, filterShowdownLogs } = await import('./showdownBridge.ts')
-        const filteredLogs = filterShowdownLogs(result.logs)
-        for (const logLine of filteredLogs) {
-          await parseShowdownLogLine(ctx, logLine, filteredLogs)
-        }
-        if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
-          const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts')
-          ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__)
-        }
-      }
-
-      active.enemy = nextEnemy
-      if (ctx.animations?.handleReleaseRequest) {
-        await ctx.animations.handleReleaseRequest({ side: 'enemy', pokemon: nextEnemy })
-      } else {
-        gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
-      }
-
-      // Si el Pokémon entrante se debilitó inmediatamente por hazards al entrar
-      if (nextEnemy.hp <= 0) {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
-        const { processFaint } = await import('./resolution.ts')
-        await processFaint(ctx, 'enemy')
-      }
-    }
+    await handleEnemyForceSwitchExecution(ctx, active, processFaint)
   }
 }

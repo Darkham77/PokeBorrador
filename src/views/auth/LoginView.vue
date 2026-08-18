@@ -14,7 +14,7 @@ import { OFFICIAL_SERVERS, DEFAULT_SERVER } from '@/data/system/official_servers
 import { switchServer } from '@/logic/db/supabase'
 import { safeStorage } from '@/logic/utils/storage'
 import { getFriendlyErrorMessage } from '@/logic/utils/friendlyErrors'
-import { validateAuthLogin, validateAuthRegister, validateTrainerName } from '@/logic/validation/schemas'
+import { useLoginHandlers } from '@/views/auth/useLoginHandlers'
 
 import AuthServerSelector from '@/components/auth/AuthServerSelector.vue'
 import AuthOnlineLogin from '@/components/auth/AuthOnlineLogin.vue'
@@ -65,125 +65,28 @@ const switchAuthTab = (tab: string) => {
   gsap.set('.auth-tab', { clearProps: 'all' })
 }
 
-const handleLogin = async () => {
-  if (serverStatus.value !== 'online') return
-  const validRes = validateAuthLogin({ email: email.value, password: password.value })
-  if (!validRes.success) {
-    error.value = validRes.issues[0]?.message || 'Credenciales inválidas'
-    return
-  }
-  loading.value = true
-  error.value = null
-  try {
-    await authStore.login(validRes.output.email, validRes.output.password)
-    await router.replace('/')
-  } catch (err: unknown) {
-    error.value = getFriendlyErrorMessage(err)
-  } finally {
-    loading.value = false
-  }
-}
-
-/**
- * Verifica si el servidor seleccionado responde (Ping)
- */
-const checkServerHealth = async () => {
-  if (typeof window !== 'undefined' && (window as typeof window & { __E2E__?: boolean }).__E2E__) {
-    serverStatus.value = 'offline'
-    serverStatusDetail.value = 'Offline E2E session'
-    return
-  }
-
-  if (!isOnline.value) {
-    serverStatus.value = 'offline'
-    return
-  }
-
-  const server = OFFICIAL_SERVERS.find(s => s.id === selectedServerId.value)
-  if (!server) return
-
-  serverStatus.value = 'checking'
-  try {
-    // Usamos el endpoint de rest/v1/ para un ping rápido
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 3000)
-    
-    const response = await fetch(`${server.url}/rest/v1/`, { 
-      signal: controller.signal,
-      headers: { 'apikey': server.anonKey }
-    })
-    
-    clearTimeout(timeout)
-    
-    serverStatus.value = (response.status < 500) ? 'online' : 'offline'
-    serverStatusDetail.value = (response.status < 500) ? 'Operativo ✅' : 'Error de Servidor 💥'
-  } catch (_e) {
-    serverStatus.value = 'offline'
-    serverStatusDetail.value = 'Inalcanzable 💤'
-  }
-}
-
-const handleSignup = async () => {
-  const validRes = validateAuthRegister({
-    email: email.value,
-    password: password.value,
-    username: username.value,
-    gender: gender.value
-  })
-  if (!validRes.success) {
-    error.value = validRes.issues[0]?.message || 'Datos de registro inválidos'
-    return
-  }
-  loading.value = true
-  error.value = null
-  try {
-    await authStore.signup(validRes.output.email, validRes.output.password, validRes.output.username, validRes.output.gender)
-    success.value = '¡Cuenta creada! Revisa tu email para confirmar.'
-    authTab.value = 'login'
-  } catch (err: unknown) {
-    error.value = (err as Error).message || 'Error al registrarse'
-  } finally {
-    loading.value = false
-  }
-}
-
-const handleLocalLogin = async () => {
-  const validName = validateTrainerName(username.value)
-  if (!validName.success) {
-    error.value = validName.issues[0]?.message || 'Ingresa un nickname válido'
-    return
-  }
-  loading.value = true
-  error.value = null
-  try {
-    // Login: el género se carga desde la partida guardada en el store
-    await authStore.localLogin(validName.output)
-    await router.replace('/')
-  } catch (_err) {
-    error.value = 'Error al entrar en modo local'
-  } finally {
-    loading.value = false
-  }
-}
-
-const handleLocalSignup = async () => {
-  const validName = validateTrainerName(username.value)
-  if (!validName.success) {
-    error.value = validName.issues[0]?.message || 'Ingresa un nickname válido'
-    return
-  }
-  loading.value = true
-  error.value = null
-  try {
-    // Signup: se crea una nueva partida con el género elegido
-    await authStore.localLogin(validName.output, gender.value)
-    window.location.replace(import.meta.env.BASE_URL)
-  } catch (_err) {
-    error.value = 'Error al crear partida local'
-  } finally {
-    loading.value = false
-  }
-}
+const {
+  handleLogin,
+  handleSignup,
+  handleLocalLogin,
+  handleLocalSignup,
+  checkServerHealth
+} = useLoginHandlers({
+  authStore,
+  router,
+  email,
+  password,
+  username,
+  gender,
+  selectedServerId,
+  serverStatus,
+  serverStatusDetail,
+  error,
+  success,
+  loading,
+  authTab,
+  getFriendlyErrorMessage
+})
 
 // Corregir bucle infinito si ya se está logueado
 onMounted(() => {

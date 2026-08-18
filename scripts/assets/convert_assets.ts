@@ -15,8 +15,19 @@ import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import { MAP_ROUTE_MAPPING } from '../../src/data/world/map-assets.ts';
 
-import { Dex, toID } from '@pkmn/sim';
-import { safeResolve, safeJoin, safeWriteFile, safeReadFile } from '../lib/safePath.ts';
+import { safeResolve, safeJoin } from '../lib/safePath.ts';
+import {
+  findFeetPointsFromBuffer,
+  analyzeImageBufferBounds
+} from './helpers/assetBoundAnalyzer.ts';
+import {
+  generateBushCatalog,
+  generateBattleMapCatalog,
+  generateFeetAndCriesDatabase,
+  generateNpcSpriteCatalog,
+  generateAnimatedSpriteDatabase,
+  type AnimatedSpriteData
+} from './helpers/catalogGenerators.ts';
 
 // Speed up execution
 enableCompileCache();
@@ -25,19 +36,13 @@ const SOURCE_DIR = safeResolve(process.cwd(), '_raw-assets');
 const PUBLIC_ASSETS_DIR = safeResolve(process.cwd(), 'public', 'assets');
 const MAP_DESKTOP_RESIZE_WIDTH_PX = 600;
 const MAP_MOBILE_RESIZE_WIDTH_PX = 400;
-const ALPHA_PIXEL_THRESHOLD_LIMIT = 50;
 const REPORT_SEPARATOR_LENGTH = 80;
 const MAX_WARNINGS_DISPLAYED = 15;
-
-export interface AnimatedSpriteData {
-  readonly frames: number;
-  readonly size: number;
-  readonly feetY: number;
-  readonly feetX: number;
-  readonly bodyH: number;
-  readonly bodyW: number;
-  readonly bodyRadius: number;
-}
+const WEBP_QUALITY_MAX_DIM_THRESHOLD_LOW = 400;
+const WEBP_QUALITY_MAX_DIM_THRESHOLD_MID = 1000;
+const WEBP_QUALITY_HIGH = 95;
+const WEBP_QUALITY_NORMAL = 80;
+const WEBP_EFFORT_LEVEL = 6;
 
 // Interfaces para comunicación de Workers
 interface ProcessTask {
@@ -113,21 +118,16 @@ async function handleProcessFile(filePath: string) {
 
   await fs.mkdir(destDir, { recursive: true });
 
-  const LOSSLESS_SEGMENTS = ['sprites', 'icons', 'badges', 'items', 'pixel'] as const; // no-domain
+  const LOSSLESS_SEGMENTS = ['sprites', 'icons', 'badges', 'items', 'pixel'] as const;
   const isLossless = LOSSLESS_SEGMENTS.some(seg => relPath.includes(seg));
 
   let image = sharp(filePath);
   const metadata = await image.metadata();
 
-const WEBP_QUALITY_MAX_DIM_THRESHOLD_LOW = 400;
-const WEBP_QUALITY_MAX_DIM_THRESHOLD_MID = 1000;
-
-  const webpOptions: sharp.WebpOptions = { effort: 6 };
+  const webpOptions: sharp.WebpOptions = { effort: WEBP_EFFORT_LEVEL };
   if (isLossless) {
     webpOptions.lossless = true;
   } else {
-    const WEBP_QUALITY_HIGH = 95;
-    const WEBP_QUALITY_NORMAL = 80;
     const maxDim = Math.max(metadata.width || 0, metadata.height || 0);
     if (maxDim < WEBP_QUALITY_MAX_DIM_THRESHOLD_LOW) {
       webpOptions.quality = 100;
@@ -186,99 +186,10 @@ const WEBP_QUALITY_MAX_DIM_THRESHOLD_MID = 1000;
 async function calculateFeetPointsWorker(filePath: string): Promise<{ feetY: number; feetX: number }> {
   try {
     const { data, info } = await sharp(filePath).raw().toBuffer({ resolveWithObject: true });
-    const width = info.width;
-    const height = info.height;
-    const channels = info.channels;
-
-    if (channels < 4) {
-      return { feetY: 0.9, feetX: 0.5 }; // magic-ok
-    }
-
-    const size = Math.min(width, height);
-    let minX = size;
-    let maxX = 0;
-    let lowestY = -1;
-
-    // Scan the first frame to find bounding box in X
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < size; x++) {
-        const index = (y * width + x) * channels;
-        const alpha = data[index + 3] ?? 0;
-        if (alpha > ALPHA_PIXEL_THRESHOLD_LIMIT) {
-          if (x < minX) minX = x;
-          if (x > maxX) maxX = x;
-        }
-      }
-    }
-
-    // Scan from bottom to top in the first frame to find the lowest non-empty pixel row (feetY)
-    for (let y = height - 1; y >= 0; y--) {
-      let rowHasOpaque = false;
-      for (let x = 0; x < size; x++) {
-        const index = (y * width + x) * channels;
-        const alpha = data[index + 3] ?? 0;
-        if (alpha > ALPHA_PIXEL_THRESHOLD_LIMIT) {
-          rowHasOpaque = true;
-          break;
-        }
-      }
-      if (rowHasOpaque) {
-        lowestY = y;
-        break;
-      }
-    }
-
-    if (lowestY !== -1) {
-      const centerX = (minX + maxX) / 2;
-      return {
-        feetY: Number((lowestY / height).toFixed(4)),
-        feetX: Number((centerX / size).toFixed(4))
-      };
-    }
+    return findFeetPointsFromBuffer(data, info.width, info.height, info.channels);
   } catch {
-    // Silently fall back
+    return { feetY: 0.9, feetX: 0.5 };
   }
-  return { feetY: 0.9, feetX: 0.5 }; // magic-ok
-}
-
-function analyzeImageBufferBounds(data: Buffer | Uint8Array, size: number, channels: number) {
-  let minX = size, maxX = 0, minY = size, maxY = 0, lowestY = -1, hasOpaque = false
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const idx = (y * size + x) * channels
-      const alpha = channels >= 4 ? (data[idx + 3] ?? 0) : 255
-      if (alpha > ALPHA_PIXEL_THRESHOLD_LIMIT) {
-        hasOpaque = true
-        if (x < minX) minX = x
-        if (x > maxX) maxX = x
-        if (y < minY) minY = y
-        if (y > maxY) maxY = y
-      }
-    }
-  }
-  if (hasOpaque) {
-    for (let y = size - 1; y >= 0; y--) {
-      let rowHasOpaque = false
-      for (let x = 0; x < size; x++) {
-        const idx = (y * size + x) * channels
-        const alpha = channels >= 4 ? (data[idx + 3] ?? 0) : 255
-        if (alpha > ALPHA_PIXEL_THRESHOLD_LIMIT) { rowHasOpaque = true; break }
-      }
-      if (rowHasOpaque) { lowestY = y; break }
-    }
-  }
-
-  let feetY = 0.9, feetX = 0.5, bodyH = 0.8, bodyW = 0.8
-  if (hasOpaque && lowestY !== -1) {
-    const centerX = (minX + maxX) / 2
-    feetY = Number((lowestY / size).toFixed(4))
-    feetX = Number((centerX / size).toFixed(4))
-    bodyH = Number(((maxY - minY + 1) / size).toFixed(4))
-    bodyW = Number(((maxX - minX + 1) / size).toFixed(4))
-  }
-  const bodyRadius = Number((bodyH / 2).toFixed(4))
-
-  return { feetY, feetX, bodyH, bodyW, bodyRadius }
 }
 
 async function handleAnalyzeAnimated(filePath: string) {
@@ -298,7 +209,11 @@ async function handleAnalyzeAnimated(filePath: string) {
       .raw()
       .toBuffer({ resolveWithObject: true });
 
-    const { feetX, feetY, bodyH, bodyW, bodyRadius } = analyzeImageBufferBounds(firstFrameBuffer.data, size, firstFrameBuffer.info.channels)
+    const { feetX, feetY, bodyH, bodyW, bodyRadius } = analyzeImageBufferBounds(
+      firstFrameBuffer.data,
+      size,
+      firstFrameBuffer.info.channels
+    );
 
     return {
       success: true,
@@ -324,7 +239,7 @@ async function handleAnalyzeAnimated(filePath: string) {
 
 async function getFilesToConvert(dir: string): Promise<string[]> {
   const files: string[] = [];
-  const pattern = '**/*.{png,jpg,jpeg,webp}'; // no-domain
+  const pattern = '**/*.{png,jpg,jpeg,webp}';
   
   for await (const entry of fs.glob(pattern, { cwd: dir })) {
     files.push(safeResolve(dir, entry));
@@ -332,7 +247,6 @@ async function getFilesToConvert(dir: string): Promise<string[]> {
   return files;
 }
 
-// Orquestador de Tareas en Pool de Workers
 function runTasksInParallel(tasks: WorkerTask[], maxWorkers: number): Promise<WorkerResult[]> {
   return new Promise((resolve) => {
     const results: WorkerResult[] = [];
@@ -349,562 +263,105 @@ function runTasksInParallel(tasks: WorkerTask[], maxWorkers: number): Promise<Wo
       const worker = new Worker(import.meta.filename, {
         execArgv: [...process.execArgv, '--no-warnings']
       });
-      workers.push(worker);
 
-      const sendNextTask = () => {
-        if (taskIndex >= tasks.length) {
+      worker.on('message', (msg: WorkerResult) => {
+        results.push(msg);
+        if (taskIndex < tasks.length) {
+          const nextTask = tasks[taskIndex++];
+          if (nextTask) worker.postMessage(nextTask);
+        } else {
           worker.terminate();
           activeWorkers--;
           if (activeWorkers === 0) {
             resolve(results);
           }
-          return;
         }
-
-        const currentTask = tasks[taskIndex++];
-        worker.postMessage(currentTask);
-      };
-
-      worker.on('message', (result: WorkerResult) => {
-        results.push(result);
-        sendNextTask();
       });
 
-      worker.on('error', (err) => {
-        console.error(`Worker error:`, err);
-        sendNextTask();
+      worker.on('error', (err: Error) => {
+        console.error(styleText('red', `Worker Error: ${err.message}`));
+        worker.terminate();
+        activeWorkers--;
+        if (activeWorkers === 0) {
+          resolve(results);
+        }
       });
 
       activeWorkers++;
-      sendNextTask();
+      const initialTask = tasks[taskIndex++];
+      if (initialTask) worker.postMessage(initialTask);
+      workers.push(worker);
     };
 
-    const numWorkers = Math.min(maxWorkers, tasks.length);
-    for (let i = 0; i < numWorkers; i++) {
+    const numWorkersToSpawn = Math.min(maxWorkers, tasks.length);
+    for (let i = 0; i < numWorkersToSpawn; i++) {
       startWorker();
     }
   });
 }
 
 async function main() {
-  console.log(styleText('bold', '\n--- 🖼️  ASSET PIPELINE (MULTICORE) ---'));
-  
+  console.log(styleText('bold', '🚀 INICIANDO CONVERSIÓN Y PROCESAMIENTO MULTICORE DE ASSETS (Node.js 26+)'));
+  const startTime = Date.now();
+
   const pipelineWarnings: string[] = []; // no-domain
   const pipelineErrors: string[] = []; // no-domain
 
-  try {
-    await fs.access(SOURCE_DIR);
-  } catch {
-    console.error(styleText('red', `Error: Directorio fuente '${SOURCE_DIR}' no encontrado.`));
-    process.exit(1);
-  }
-
-  // Limpieza determinista: borrar public/assets antes de reconstruir (no fatal si está bloqueado)
-  console.log(styleText('yellow', `   🧹 Limpiando ${path.relative(process.cwd(), PUBLIC_ASSETS_DIR)}...`));
-  try {
-    await fs.rm(PUBLIC_ASSETS_DIR, { recursive: true, force: true });
-  } catch (err) {
-    const msg = `No se pudo limpiar public/assets por completo (${(err as Error).message})`;
-    pipelineWarnings.push(msg);
-    console.log(styleText('yellow', `   ⚠️ Warning: ${msg}. Se continuará con la sobreescritura de archivos.`));
-  }
-  await fs.mkdir(PUBLIC_ASSETS_DIR, { recursive: true });
-
   const files = await getFilesToConvert(SOURCE_DIR);
-  console.log(styleText('yellow', `   Encontrados ${files.length} archivos en _raw-assets.\n`));
+  console.log(`📦 Encontrados ${files.length} archivos para procesar en ${SOURCE_DIR}`);
 
-  const maxWorkers = Math.max(1, os.availableParallelism());
-  console.log(styleText('blue', `   Iniciando pool con ${maxWorkers} workers en paralelo...`));
+  const maxWorkers = Math.max(1, os.cpus().length - 1);
+  console.log(`⚡ Usando pool de ${maxWorkers} workers en paralelo...`);
 
-  const processTasks: WorkerTask[] = files.map(file => ({ type: 'processFile', filePath: file }));
-  const processResults = await runTasksInParallel(processTasks, maxWorkers) as ProcessResult[];
+  const tasks: ProcessTask[] = files.map(f => ({ type: 'processFile', filePath: f }));
+  const results = await runTasksInParallel(tasks, maxWorkers) as ProcessResult[];
 
+  let successfulFiles = 0;
+  let generatedWebps = 0;
   const environmentFiles: string[] = []; // no-domain
-  const pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }> = {}; // no-domain
+  const pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }> = {};
 
-  for (const res of processResults) {
-    if (!res.success) {
-      console.error(styleText('red', `   [ERROR] No se pudo procesar ${res.filePath}: ${res.error}`));
-      pipelineErrors.push(`${res.filePath}: ${res.error}`);
-      continue;
-    }
-
-    for (const dest of res.destFiles) {
-      console.log(styleText('green', `   [OK] ${path.relative(process.cwd(), dest)}`));
-    }
-
-    if (res.environmentFile) {
-      environmentFiles.push(res.environmentFile);
-    }
-
-    if (res.feetPoints) {
-      const relPath = path.relative(SOURCE_DIR, res.filePath);
-      const posixRelPath = relPath.split(path.sep).join(path.posix.sep);
-      const normalizedPath = '/' + posixRelPath.replace(/^public\//, '').replace(/\.(png|jpg|jpeg|webp)$/i, '.webp');
-      pokemonFeetDatabase[normalizedPath] = res.feetPoints;
-    }
-  }
-
-  // Ordenar y autogenerar el catálogo de ex-arbustos en TypeScript
-  console.log(styleText('yellow', `\n   📦 Generando catálogo de coberturas ambientales en src/logic/environment/bushCatalog.ts...`));
-  
-  const repeatedPrefixes = new Set<string>();
-  const prefixCounts = new Map<string, number>();
-  const filePrefixes = new Map<string, string>();
-
-  for (const filename of environmentFiles) {
-    const match = filename.match(/^([a-zA-Z]+)-(\d+)$/);
-    if (match && match[1]) {
-      const prefix = match[1];
-      filePrefixes.set(filename, prefix);
-      prefixCounts.set(prefix, (prefixCounts.get(prefix) || 0) + 1);
-    }
-  }
-
-  for (const [prefix, count] of prefixCounts.entries()) {
-    if (count >= 1) {
-      repeatedPrefixes.add(prefix);
-    }
-  }
-
-  const dynamicCatalog: Record<string, string[]> = {};
-  
-  for (const prefix of repeatedPrefixes) {
-    dynamicCatalog[prefix] = [];
-  }
-
-  for (const filename of environmentFiles) {
-    const prefix = filePrefixes.get(filename);
-    if (prefix && repeatedPrefixes.has(prefix)) {
-      const catalogArr = dynamicCatalog[prefix];
-      if (catalogArr) {
-        catalogArr.push(filename);
+  for (const r of results) {
+    if (r.success) {
+      successfulFiles++;
+      generatedWebps += r.destFiles.length;
+      if (r.environmentFile) {
+        environmentFiles.push(r.environmentFile);
       }
-    }
-  }
-
-  for (const key of Object.keys(dynamicCatalog)) {
-    const catalogArr = dynamicCatalog[key];
-    if (catalogArr) {
-      catalogArr.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-    }
-  }
-
-  const catalogDir = safeResolve(process.cwd(), 'src/logic/environment');
-  await fs.mkdir(catalogDir, { recursive: true });
-  const catalogPath = safeJoin(catalogDir, 'bushCatalog.ts');
-
-  const logDetails = Object.keys(dynamicCatalog).map(k => `${dynamicCatalog[k]?.length ?? 0} ${k}`).join(', ');
-
-  const catalogContent = `/**
- * src/logic/environment/bushCatalog.ts
- * 
- * ARCHIVO AUTOGENERADO POR scripts/convert_assets.ts - NO EDITAR MANUALMENTE
- * 
- * Contiene el inventario descubierto de assets ambientales para coberturas de combate.
- */
-
-export const BUSH_FAMILIES = ${JSON.stringify(dynamicCatalog, null, 2)} as const;
-
-export type BushFamily = keyof typeof BUSH_FAMILIES;
-`;
-
-  await safeWriteFile(catalogPath, catalogContent);
-  console.log(styleText('green', `   [OK] Catálogo generado con éxito: ${logDetails || 'Ninguno'}.`));
-
-  // Escanear y autogenerar catálogo de mapas de combate en src/data/map-assets.ts
-  console.log(styleText('yellow', `\n   📦 Generando catálogo de mapas de combate en src/data/map-assets.ts...`));
-  const battleMapsSourceDir = safeResolve(SOURCE_DIR, 'public/assets/maps_battle');
-  const battleMaps: string[] = []; // no-domain
-  try {
-    const entries = await fs.readdir(battleMapsSourceDir);
-    for (const entry of entries) {
-      const ext = path.extname(entry).toLowerCase();
-      if (['.png', '.jpg', '.jpeg', '.webp'].includes(ext)) {
-        battleMaps.push(path.parse(entry).name);
+      if (r.feetPoints) {
+        const publicRel = path.relative(PUBLIC_ASSETS_DIR, r.destFiles[0] || '').split(path.sep).join('/');
+        const normalizedDbKey = `/assets/${publicRel}`;
+        pokemonFeetDatabase[normalizedDbKey] = r.feetPoints;
       }
-    }
-  } catch (err) {
-    console.log(styleText('yellow', `   ⚠️ Warning: No se pudo leer maps_battle para el catálogo: ${(err as Error).message}`));
-  }
-  battleMaps.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-
-  console.log(styleText('yellow', `   🔍 Validando correspondencia de mapas de combate...`));
-  const missingMaps: string[] = []; // no-domain
-  const suffixes = ['_dia', '_noche', '_atardecer', '_amanecer'] as const; // no-domain
-
-  for (const [routeId, baseName] of Object.entries(MAP_ROUTE_MAPPING)) {
-    if (baseName.includes('/')) continue;
-    const hasBase = battleMaps.includes(baseName);
-    const hasAnySuffix = suffixes.some(suffix => battleMaps.includes(`${baseName}${suffix}`));
-    if (!hasBase && !hasAnySuffix) {
-      missingMaps.push(`${routeId} (${baseName})`);
+    } else {
+      console.error(styleText('red', `❌ Fallo al procesar: ${r.filePath} -> ${r.error}`));
+      pipelineErrors.push(`Fallo al procesar ${r.filePath}: ${r.error}`);
     }
   }
 
-  if (missingMaps.length > 0) {
-    console.error(styleText('red', `\n   ❌ ERROR: No se encontró ningún fondo de combate para las siguientes rutas:`));
-    for (const missing of missingMaps) {
-      console.error(styleText('red', `      - ${missing}`));
-    }
-    console.error(styleText('red', `   Por favor, añade al menos la versión base o una con ciclo (_dia, _noche, etc.) en _raw-assets/public/assets/maps_battle/\n`));
-    process.exit(1);
-  }
-  console.log(styleText('green', `   [OK] Todos los mapas tienen su correspondiente fondo de combate.`));
+  const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+  console.log(styleText('green', `✅ Conversión inicial completada en ${duration}s.`));
+  console.log(`   - Archivos procesados: ${successfulFiles}/${files.length}`);
+  console.log(`   - Imágenes WebP generadas: ${generatedWebps}`);
 
-  const mapAssetsPath = safeResolve(process.cwd(), 'src/data/world/map-assets.ts');
-  let mapAssetsContent = await safeReadFile(mapAssetsPath, 'utf-8');
-  
-  const marker = 'const AVAILABLE_BATTLE_MAPS';
-  const exportMarker = 'export const AVAILABLE_BATTLE_MAPS';
-  let cutIndex = mapAssetsContent.indexOf(exportMarker);
-  if (cutIndex === -1) cutIndex = mapAssetsContent.indexOf(marker);
-  if (cutIndex !== -1) {
-    mapAssetsContent = mapAssetsContent.substring(0, cutIndex).trimEnd() + '\n';
-  } else {
-    mapAssetsContent = mapAssetsContent.trimEnd() + '\n';
-  }
+  // Generar catálogos usando helpers especializados
+  await generateBushCatalog(environmentFiles);
+  const battleMaps = await generateBattleMapCatalog(SOURCE_DIR, MAP_ROUTE_MAPPING);
 
-  const generatedContent = `${mapAssetsContent}
-export const AVAILABLE_BATTLE_MAPS = ${JSON.stringify(battleMaps, null, 2)} as const;
-export type BattleMapAssetId = (typeof AVAILABLE_BATTLE_MAPS)[number];
-
-export function isBattleMapAssetId(value: string): value is BattleMapAssetId {
-  return AVAILABLE_BATTLE_MAPS.some(id => id === value);
-}
-
-export function requireBattleMapAssetId(value: string): BattleMapAssetId {
-  if (isBattleMapAssetId(value)) return value;
-  throw new Error(\`Invalid battle map asset id: \${value}\`);
-}
-`;
-
-  await safeWriteFile(mapAssetsPath, generatedContent);
-  console.log(styleText('green', `   [OK] Catálogo de mapas de combate integrado en src/data/map-assets.ts (${battleMaps.length} mapas)`));
-
-  // Generar base de datos inmutable de anclaje de pies de Pokémon
-  console.log(styleText('yellow', `\n   📦 Generando base de datos estática de anclajes en src/data/pokemonFeetDatabase.ts...`));
   const databaseDir = safeResolve(process.cwd(), 'src/data/pokemon');
-  await fs.mkdir(databaseDir, { recursive: true });
-  const databasePath = safeJoin(databaseDir, 'pokemonFeetDatabase.ts');
-
-  const packed: {
-    p: Record<string, [number, number]>;
-    n: Record<string, [number, number]>;
-    t: Record<string, [number, number]>;
-    c: Record<string, string>;
-  } = {
-    p: {},
-    n: {},
-    t: {},
-    c: {}
-  };
-
-  // Copiar pies de variaciones de sus correspondientes idles en pokemonFeetDatabase
-  for (const key of Object.keys(pokemonFeetDatabase)) {
-    const isVariation = key.includes('v') && (key.includes('/animated/Front') || key.includes('/animated/Back'));
-    if (isVariation) {
-      const idleKey = key.replace(/v/, 'i');
-      const idleVal = pokemonFeetDatabase[idleKey];
-      if (idleVal) {
-        pokemonFeetDatabase[key] = idleVal;
-      }
-    }
-  }
-
-  for (const key of Object.keys(pokemonFeetDatabase).sort()) {
-    const val = pokemonFeetDatabase[key]!;
-    if (key.startsWith('/assets/sprites/pokemon/') && key.endsWith('.webp')) {
-      const subKey = key.slice('/assets/sprites/pokemon/'.length, -'.webp'.length);
-      packed.p[subKey] = [val.feetY, val.feetX];
-    } else if (key.startsWith('/assets/sprites/npc/') && key.endsWith('.webp')) {
-      const subKey = key.slice('/assets/sprites/npc/'.length, -'.webp'.length);
-      packed.n[subKey] = [val.feetY, val.feetX];
-    } else if (key.startsWith('/assets/sprites/trainers/') && key.endsWith('.webp')) {
-      const subKey = key.slice('/assets/sprites/trainers/'.length, -'.webp'.length);
-      packed.t[subKey] = [val.feetY, val.feetX];
-    }
-  }
-
-  // Pre-procesar cries (gritos de Pokémon) con fallbacks
-  console.log(styleText('yellow', `   🔊 Pre-procesando base de datos de gritos (cries)...`));
-  const CRIES_DIR = safeResolve(process.cwd(), 'public/cries');
-  try {
-    const cryFiles = await fs.readdir(CRIES_DIR);
-    const existingCries = new Set(
-      cryFiles
-        .filter(f => f.endsWith('.mp3') || f.endsWith('.ogg'))
-        .map(f => path.parse(f).name.toLowerCase())
-    );
-
-    const missingOfficialCries: string[] = []; // no-domain
-
-    // Obtener todas las especies de Showdown
-    const allSpecies = Dex.species.all();
-    for (const spec of allSpecies) {
-      const specId = toID(spec.name);
-
-      // 1. Si existe su propio grito, usarlo
-      if (existingCries.has(specId)) {
-        packed.c[specId] = specId;
-        continue;
-      }
-
-      // 2. Si no, intentar con baseSpecies (formas, megas, primales)
-      const baseId = spec.baseSpecies ? toID(spec.baseSpecies) : '';
-      if (baseId && existingCries.has(baseId)) {
-        packed.c[specId] = baseId;
-        if (spec.num > 0 && spec.isNonstandard !== 'CAP' && spec.isNonstandard !== 'Custom') {
-          pipelineWarnings.push(`Grito para ${spec.name} (${specId}): fallback especie base '${baseId}'`);
-          console.log(styleText('yellow', `      [WARN] Grito para ${spec.name} (${specId}) no encontrado. Usando fallback de especie base: ${baseId}`));
-        }
-        continue;
-      }
-
-      // 3. Si no, recorrer la cadena de pre-evoluciones (prevo)
-      let current = spec;
-      let resolved = false;
-      while (current.prevo) {
-        const prevSpecies = Dex.species.get(current.prevo);
-        if (prevSpecies && prevSpecies.exists) {
-          const prevId = toID(prevSpecies.name);
-          if (existingCries.has(prevId)) {
-            packed.c[specId] = prevId;
-            resolved = true;
-            if (spec.num > 0 && spec.isNonstandard !== 'CAP' && spec.isNonstandard !== 'Custom') {
-              pipelineWarnings.push(`Grito para ${spec.name} (${specId}): fallback pre-evolución '${prevId}'`);
-              console.log(styleText('yellow', `      [WARN] Grito para ${spec.name} (${specId}) no encontrado. Usando fallback de pre-evolución: ${prevId}`));
-            }
-            break;
-          }
-          current = prevSpecies;
-        } else {
-          break;
-        }
-      }
-
-      // 4. Si no se encontró ningún grito real, usar su propio ID
-      if (!resolved) {
-        packed.c[specId] = specId;
-        // Solo lanzar error si es un Pokémon oficial / estándar
-        if (spec.num > 0 && spec.isNonstandard !== 'CAP' && spec.isNonstandard !== 'Custom') {
-          missingOfficialCries.push(`${spec.name} (${specId})`);
-        }
-      }
-    }
-
-    if (missingOfficialCries.length > 0) {
-      console.error(styleText('red', `\n❌ ERROR: No se encontró ningún grito ni fallback válido para los siguientes ${missingOfficialCries.length} Pokémon oficiales:`));
-      for (const missing of missingOfficialCries) {
-        console.error(styleText('red', `   ${missing}`));
-        pipelineErrors.push(`Grito faltante oficial: ${missing}`);
-      }
-      console.error(styleText('red', `   Por favor descarga o añade los gritos correspondientes en public/cries/`));
-      process.exit(1);
-    }
-  } catch (err) {
-    console.error(styleText('red', `\n❌ ERROR: No se pudo procesar la base de datos de gritos: ${(err as Error).message}`));
-    pipelineErrors.push(`Procesamiento de gritos falló: ${(err as Error).message}`);
-    process.exit(1);
-  }
-
-  const jsonPath = safeJoin(databaseDir, 'pokemonFeetDatabase.json');
-  await safeWriteFile(jsonPath, JSON.stringify(packed, null, 2));
-
-  const databaseContent = `/**
- * src/data/pokemonFeetDatabase.ts
- * 
- * ARCHIVO INMUTABLE Y AUTOGENERADO POR scripts/convert_assets.ts - NO MODIFICAR MANUALMENTE
- * 
- * Contiene las coordenadas de anclaje de pies (feetX y feetY) precalculadas para cada sprite,
- * así como el catálogo de mapeos de gritos (cries) de Pokémon.
- */
-import { FEET_COORDINATES_DATA } from './feetCoordinatesData.ts';
-
-const packedData = FEET_COORDINATES_DATA;
-
-export interface FeetPoints {
-  readonly feetY: number;
-  readonly feetX: number;
-}
-
-const PACKED_DATA = packedData;
-
-const _FEET_SPRITE_GROUP_KEYS = ['p', 'n', 't'] as const;
-type FeetSpriteGroupKey = (typeof _FEET_SPRITE_GROUP_KEYS)[number];
-type FeetSpritePrefix = '/assets/sprites/pokemon/' | '/assets/sprites/npc/' | '/assets/sprites/trainers/';
-export type FeetDatabasePath = \`\${FeetSpritePrefix}\${string}.webp\`;
-
-const POKEMON_FEET_DATABASE: Partial<Record<FeetDatabasePath, FeetPoints>> = {};
-
-function requireFeetMetric(values: readonly number[], path: FeetDatabasePath, index: number): number {
-  const value = values[index];
-  if (value !== undefined) return value;
-  throw new Error(\`[pokemonFeetDatabase] Invalid feet tuple for path: \${path}\`);
-}
-
-for (const [key, prefix] of [
-  ['p', '/assets/sprites/pokemon/'],
-  ['n', '/assets/sprites/npc/'],
-  ['t', '/assets/sprites/trainers/']
-] as const satisfies readonly (readonly [FeetSpriteGroupKey, FeetSpritePrefix])[]) {
-  const group = (PACKED_DATA as Record<string, Record<string, readonly number[]>>)[key] ?? {}; // open-record
-  for (const [subKey, tuple] of Object.entries(group)) {
-    const dbPath: FeetDatabasePath = \`\${prefix}\${subKey}.webp\`;
-    const y = requireFeetMetric(tuple as readonly number[], dbPath, 0);
-    const x = requireFeetMetric(tuple as readonly number[], dbPath, 1);
-    POKEMON_FEET_DATABASE[dbPath] = { feetY: y, feetX: x };
-  }
-}
-
-function hasFeetDatabasePath(value: string): value is FeetDatabasePath {
-  return Object.hasOwn(POKEMON_FEET_DATABASE, value);
-}
-
-function resolveFeetPath(raw: string): FeetDatabasePath {
-  if (!raw) {
-    throw new Error('[pokemonFeetDatabase] Path cannot be empty');
-  }
-
-  let cleaned = decodeURIComponent(raw).trim();
-  if (!cleaned.endsWith('.webp')) {
-    cleaned = cleaned.replace(/\\.(png|jpg|jpeg|gif)$/i, '') + '.webp';
-  }
-
-  if (hasFeetDatabasePath(cleaned)) return cleaned;
-
-  // Shiny variants share identical physical geometry with the base sprite
-  const baseSpritePath = cleaned
-    .replace('/Back shiny/', '/Back/')
-    .replace('/Front shiny/', '/Front/')
-    .replace('/Icons shiny/', '/Icons/')
-    .replace('/Back_shiny/', '/Back/')
-    .replace('/Front_shiny/', '/Front/')
-    .replace('/Icons_shiny/', '/Icons/');
-
-  if (hasFeetDatabasePath(baseSpritePath)) return baseSpritePath;
-
-  throw new Error(\`[pokemonFeetDatabase] Unknown feet database path: \${raw}\`);
-}
-
-export function requireFeetDatabasePath(value: string): FeetDatabasePath {
-  return resolveFeetPath(value);
-}
-
-export function requireFeetPoints(value: string): FeetPoints {
-  const resolvedPath = resolveFeetPath(value);
-  const points = POKEMON_FEET_DATABASE[resolvedPath];
-  if (points) return points;
-  throw new Error(\`[pokemonFeetDatabase] Missing feet points for path: \${resolvedPath}\`);
-}
-
-export const POKEMON_CRIES_DATABASE: Record<string, string> = PACKED_DATA.c ?? {}; // open-record
-
-export function isPokemonCryId(value: string): boolean {
-  return Object.hasOwn(POKEMON_CRIES_DATABASE, value);
-}
-
-export function getPokemonCryFilename(speciesId: string): string { // domain-ok
-  return POKEMON_CRIES_DATABASE[speciesId] ?? \`\${speciesId}.mp3\`;
-}
-`;
-
-  await safeWriteFile(databasePath, databaseContent);
-  console.log(styleText('green', `   [OK] Base de datos de anclaje y gritos integrada generada con éxito.`));
-
-  // Autogenerar catálogo de sprites de NPC/Entrenadores por arquetipo en src/data/npcSpriteCatalog.ts
-  console.log(styleText('yellow', `\n   📦 Generando catálogo de sprites de NPCs en src/data/npcSpriteCatalog.ts...`));
-  const npcCatalogPath = safeResolve(process.cwd(), 'src/data/pokemon/npcSpriteCatalog.ts');
-  
-  const { ARCHETYPE_KEYWORDS } = await import('../../src/logic/utils/npcSpriteRouter.ts');
-  const { TRAINER_TYPES } = await import('../../src/data/player/trainerTypes.ts');
-
-  // Las claves se derivan de TRAINER_TYPES para mantener sincronía automática
-  const catalogLists: Record<string, string[]> = Object.fromEntries(
-    Object.keys(TRAINER_TYPES).map(key => [key, []])
+  const criesDir = safeResolve(process.cwd(), 'public/cries');
+  const packedFeetData = await generateFeetAndCriesDatabase(
+    pokemonFeetDatabase,
+    criesDir,
+    databaseDir,
+    pipelineWarnings,
+    pipelineErrors
   );
 
-  const npcSourceDir = safeResolve(SOURCE_DIR, 'public/assets/sprites/npc');
+  const npcCatalogPath = safeResolve(process.cwd(), 'src/data/pokemon/npcSpriteCatalog.ts');
+  const npcCatalogLists = await generateNpcSpriteCatalog(SOURCE_DIR, npcCatalogPath, pipelineWarnings);
 
-  try {
-    const entries = await fs.readdir(npcSourceDir);
-    for (const entry of entries) {
-      const ext = path.extname(entry).toLowerCase();
-      if (['.png', '.jpg', '.jpeg', '.webp'].includes(ext)) {
-        if (/_avatar|_back/i.test(entry)) continue;
-
-        const baseName = path.parse(entry).name;
-        const normalized = baseName.toLowerCase().replace(/[-_]/g, ''); // string-ok
-
-        let classified = false;
-        for (const [archetype, keywords] of Object.entries(ARCHETYPE_KEYWORDS)) {
-          for (const keyword of keywords) {
-            if (normalized.includes(keyword)) {
-              if (keyword === 'bea' && normalized.includes('beauty')) continue;
-              if (catalogLists[archetype]) {
-                catalogLists[archetype].push(baseName);
-                classified = true;
-              }
-              break;
-            }
-          }
-          if (classified) break;
-        }
-
-        if (!classified) {
-          if (['acerola', 'allister', 'fantina'].some(n => normalized.includes(n)) && catalogLists.medium) {
-            catalogLists.medium.push(baseName);
-          } else if (['adaman', 'irida', 'arezu', 'mai'].some(n => normalized.includes(n)) && catalogLists.default) {
-            catalogLists.default.push(baseName);
-          } else if (['lance', 'drake', 'dragontamer'].some(n => normalized.includes(n)) && catalogLists.domador) {
-            catalogLists.domador.push(baseName);
-          } else if (['koga', 'janine', 'ninja'].some(n => normalized.includes(n)) && catalogLists.luchador) {
-            catalogLists.luchador.push(baseName);
-          } else if (catalogLists.default) {
-            catalogLists.default.push(baseName);
-          }
-        }
-      }
-    }
-  } catch (err) {
-    const msg = `No se pudo escanear NPCs: ${(err as Error).message}`;
-    pipelineWarnings.push(msg);
-    console.log(styleText('yellow', `   ⚠️ Warning: ${msg}`));
-  }
-
-  for (const key of Object.keys(catalogLists)) {
-    catalogLists[key] = Array.from(new Set(catalogLists[key])).sort();
-    if (catalogLists[key]!.length === 0) {
-      catalogLists[key] = ['entrenador_h_front'];
-    }
-  }
-
-  const npcCatalogContent = `/**
- * src/data/npcSpriteCatalog.ts
- * 
- * ARCHIVO AUTOGENERADO POR scripts/convert_assets.ts - NO MODIFICAR MANUALMENTE
- */
-
-export const ARCHETYPE_SPRITES = ${JSON.stringify(catalogLists, null, 2)} as const;
-
-export type NpcSpriteId = (typeof ARCHETYPE_SPRITES)[keyof typeof ARCHETYPE_SPRITES][number];
-
-export const VALID_NPC_SPRITES = Object.values(ARCHETYPE_SPRITES).flat();
-
-export function isNpcSpriteId(value: string): value is NpcSpriteId {
-  return (VALID_NPC_SPRITES as readonly string[]).includes(value); // domain-ok
-}
-
-export function requireNpcSpriteId(value: string): NpcSpriteId {
-  if (isNpcSpriteId(value)) return value;
-  throw new Error(\`[npcSpriteCatalog] Invalid NPC Sprite ID: \${value}\`);
-}
-`;
-
-  await safeWriteFile(npcCatalogPath, npcCatalogContent);
-  console.log(styleText('green', `   [OK] Catálogo de sprites de NPCs generado con éxito.`));
-
-  // Generar base de datos de sprites animados (animated/Front y animated/Back)
+  // Analizar sprites animados
   console.log(styleText('yellow', `\n   📦 Generando base de datos de sprites animados en src/data/animatedSpriteDatabase.ts...`));
   const ANIMATED_FRONT_DIR = safeResolve(process.cwd(), 'public/assets/sprites/pokemon/animated/Front');
   const ANIMATED_BACK_DIR = safeResolve(process.cwd(), 'public/assets/sprites/pokemon/animated/Back');
@@ -921,7 +378,7 @@ export function requireNpcSpriteId(value: string): NpcSpriteId {
       backFiles = (await fs.readdir(ANIMATED_BACK_DIR))
         .filter(f => f.endsWith('.webp') || f.endsWith('.png'));
     } catch {
-      // Ignorar si no existe Back
+      // Back opcional
     }
 
     const analyzeTasks: WorkerTask[] = [
@@ -958,16 +415,14 @@ export function requireNpcSpriteId(value: string): NpcSpriteId {
         }
       }
 
-      const isVariation = res.spriteKey.includes('v');
-      if (isVariation) {
+      if (res.spriteKey.includes('v')) {
         animatedVariationFrames[key] = res.animatedData.frames;
       }
     }
 
-    // Segunda pasada: ajustar los pies de las variaciones copiándolos del idle correspondiente
+    // Ajustar pies de variaciones copiándolos del idle correspondiente
     for (const key of Object.keys(animatedDbData)) {
-      const isVariation = key.includes('v');
-      if (isVariation) {
+      if (key.includes('v')) {
         const idleKey = key.replace(/v/, 'i');
         const idleData = animatedDbData[idleKey];
         if (idleData) {
@@ -988,121 +443,22 @@ export function requireNpcSpriteId(value: string): NpcSpriteId {
     pipelineErrors.push(`Procesamiento de sprites animados falló: ${(err as Error).message}`);
   }
 
-  const animatedSpriteCount = Object.keys(animatedDbData).length;
-  const animatedDbPath = safeResolve(process.cwd(), 'src/data/pokemon/animatedSpriteDatabase.ts');
-  const animatedJsonPath = safeResolve(process.cwd(), 'src/data/pokemon/animatedSpriteDatabase.json');
+  const animatedSpriteCount = await generateAnimatedSpriteDatabase(
+    animatedDbData,
+    animatedVariationFrames,
+    maxAnimatedSizeFront,
+    maxAnimatedSizeBack
+  );
 
-  const compactDbJson = {
-    RAW: Object.fromEntries(
-      Object.entries(animatedDbData).map(([key, data]) => [
-        key,
-        [
-          data.frames,
-          data.size,
-          data.feetY,
-          data.feetX,
-          data.bodyH,
-          data.bodyW,
-          data.bodyRadius
-        ]
-      ])
-    ),
-    VARIATIONS: animatedVariationFrames
-  };
-
-  await safeWriteFile(animatedJsonPath, JSON.stringify(compactDbJson, null, 2));
-
-  const animatedDbContent = [
-    '/**',
-    ' * src/data/animatedSpriteDatabase.ts',
-    ' *',
-    ' * ARCHIVO AUTOGENERADO POR scripts/convert_assets.ts - NO MODIFICAR MANUALMENTE',
-    ' */',
-    "import dbJson from './animatedSpriteDatabase.json' with { type: 'json' };",
-    '',
-    'export interface AnimatedSpriteData {',
-    '  readonly frames: number;',
-    '  readonly size: number;',
-    '  readonly feetY: number;',
-    '  readonly feetX: number;',
-    '  readonly bodyH: number;',
-    '  readonly bodyW: number;',
-    '  readonly bodyRadius: number;',
-    '}',
-    '',
-    `/** Frame size (px) of the largest sprite in Front/Back. Used for relative combat scaling. */`,
-    `export const MAX_ANIMATED_SPRITE_SIZE_FRONT = ${maxAnimatedSizeFront} as const;`,
-    `export const MAX_ANIMATED_SPRITE_SIZE_BACK = ${maxAnimatedSizeBack} as const;`,
-    '',
-    'const RAW = dbJson.RAW;',
-    'export type AnimatedSpriteId = keyof typeof RAW;',
-    '',
-    'export function hasAnimatedSpriteId(id: string): id is AnimatedSpriteId {',
-    '  return Object.hasOwn(RAW, id);',
-    '}',
-    '',
-    'export function requireAnimatedSpriteId(id: string): AnimatedSpriteId {',
-    '  if (hasAnimatedSpriteId(id)) return id;',
-    '  throw new Error(`[animatedSpriteDatabase] Unknown animated sprite id: ${id}`);',
-    '}',
-    '',
-    'function requireAnimatedMetric(values: readonly number[], id: AnimatedSpriteId, index: number): number {',
-    '  const value = values[index];',
-    '  if (value !== undefined) return value;',
-    '  throw new Error(`[animatedSpriteDatabase] Invalid metric tuple for sprite id: ${id}`);',
-    '}',
-    '',
-    'export const ANIMATED_SPRITE_DATABASE: Partial<Record<AnimatedSpriteId, AnimatedSpriteData>> = {};',
-    '',
-    'for (const id in RAW) {',
-    '  if (!hasAnimatedSpriteId(id)) continue;',
-    '  const tuple = RAW[id];',
-    '  const frames = requireAnimatedMetric(tuple, id, 0);',
-    '  const size = requireAnimatedMetric(tuple, id, 1);',
-    '  const feetY = requireAnimatedMetric(tuple, id, 2);',
-    '  const feetX = requireAnimatedMetric(tuple, id, 3);',
-    '  const bodyH = requireAnimatedMetric(tuple, id, 4);',
-    '  const bodyW = requireAnimatedMetric(tuple, id, 5);',
-    '  const bodyRadius = requireAnimatedMetric(tuple, id, 6);',
-    '  ANIMATED_SPRITE_DATABASE[id] = { frames, size, feetY, feetX, bodyH, bodyW, bodyRadius };',
-    '}',
-    '',
-    'export function requireAnimatedSpriteData(id: AnimatedSpriteId): AnimatedSpriteData {',
-    '  const data = ANIMATED_SPRITE_DATABASE[id];',
-    '  if (data) return data;',
-    '  throw new Error(`[animatedSpriteDatabase] Missing animated sprite data for id: ${id}`);',
-    '}',
-    '',
-    `/** Variation frame counts to keep variation sprites out of coordinate databases */`,
-    `export const ANIMATED_VARIATION_FRAMES: Partial<Record<keyof typeof dbJson.VARIATIONS, number>> = dbJson.VARIATIONS;`,
-    `export type AnimatedVariationId = keyof typeof ANIMATED_VARIATION_FRAMES;`,
-    '',
-    'export function hasAnimatedVariationId(id: string): id is AnimatedVariationId {',
-    '  return Object.hasOwn(ANIMATED_VARIATION_FRAMES, id);',
-    '}',
-    '',
-    'export function requireAnimatedVariationFrameCount(id: AnimatedVariationId): number {',
-    '  const frames = ANIMATED_VARIATION_FRAMES[id];',
-    '  if (frames !== undefined) return frames;',
-    '  throw new Error(`[animatedSpriteDatabase] Missing variation frame count for id: ${id}`);',
-    '}',
-    '',
-  ].join('\n');
-
-  await safeWriteFile(animatedDbPath, animatedDbContent);
-  console.log(styleText('green', `   [OK] Base de datos animada generada: ${animatedSpriteCount} sprites, maxSize: ${maxAnimatedSizeFront}px.`));
-
-  // ==========================================================================
-  // RESUMEN FINAL DETALLADO DE ASSETS
-  // ==========================================================================
+  // Resumen final
   console.log('\n' + '━'.repeat(REPORT_SEPARATOR_LENGTH));
   console.log(styleText('bold', '📊 RESUMEN FINAL DEL PIPELINE DE ASSETS'));
   console.log('━'.repeat(REPORT_SEPARATOR_LENGTH));
   console.log(`  Sprites animados compilados   : ${animatedSpriteCount}`);
   console.log(`  Mapas de combate indexados    : ${battleMaps.length}`);
-  console.log(`  Arquetipos de NPCs generados  : ${Object.keys(catalogLists).length}`);
-  console.log(`  Entradas en POKEMON_FEET_DB   : ${Object.keys(packed.p).length}`);
-  console.log(`  Mapeos en POKEMON_CRIES_DB    : ${Object.keys(packed.c).length}`);
+  console.log(`  Arquetipos de NPCs generados  : ${Object.keys(npcCatalogLists).length}`);
+  console.log(`  Entradas en POKEMON_FEET_DB   : ${Object.keys(packedFeetData.p).length}`);
+  console.log(`  Mapeos en POKEMON_CRIES_DB    : ${Object.keys(packedFeetData.c).length}`);
   console.log('─'.repeat(REPORT_SEPARATOR_LENGTH));
   console.log(`  ⚠️  Total Advertencias (Warnings) : ${pipelineWarnings.length}`);
   console.log(`  ❌ Total Errores (Errors)         : ${pipelineErrors.length}`);

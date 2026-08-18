@@ -11,7 +11,7 @@ import { syncSidePokemon } from './helpers/showdownSyncHelper.ts';
 import { ACTIVE_SHOWDOWN_FORMAT } from '../../data/system/constants.ts';
 import { resetDeterministicMathRandom } from './helpers/seedInitializer.ts';
 
-export interface ExtendedPokemon extends Pokemon {
+interface ExtendedPokemon extends Pokemon {
   uid?: string;
   faintQueued: boolean;
 }

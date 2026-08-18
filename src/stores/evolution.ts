@@ -6,7 +6,7 @@ import { useGameStore } from '@/stores/game';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
-export interface EvolutionCompletePayload {
+interface EvolutionCompletePayload {
   pokemon: Pokemon;
   pendingMoves: Move[];
 }

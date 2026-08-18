@@ -203,7 +203,7 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: PokemonSelectionS
   return result
 })
 
-export interface PokemonSelectionItemEntry {
+interface PokemonSelectionItemEntry {
   pokemon: Pokemon;
   _source: PokemonSelectionSource;
   index: number;

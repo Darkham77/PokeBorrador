@@ -48,7 +48,3 @@ export function getNatureInfo(nature: NatureId) {
   return NATURE_DATA[nature];
 }
 
-/** Returns the localized Spanish name for a nature. Fails loudly on invalid nature. */
-export function getNatureName(nature: NatureId): string {
-  return getNatureInfo(nature).name;
-}

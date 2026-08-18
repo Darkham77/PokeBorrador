@@ -49,10 +49,6 @@ const SANDBOX_VIEW_PATH = path.resolve(process.cwd(), 'showdown/ShowdownSandboxV
 const TEAMBUILDER_PATH = path.resolve(process.cwd(), 'showdown/components/ShowdownTeambuilder.vue');
 const STORE_PATH = path.resolve(process.cwd(), 'showdown/useShowdownSandboxStore.ts');
 
-/**
- * Common English words that should NOT appear in a properly localized Spanish description.
- * Weighted heuristic: if 2+ of these are found in a single description, it is flagged as English.
- */
 const ENGLISH_MARKER_WORDS = [ // no-domain
   'the', 'user', 'target', 'opponent', 'raises', 'lowers', 'foe',
   'power', 'move', 'attack', 'damage', 'hits', 'causes', 'restores',
@@ -63,10 +59,6 @@ const ENGLISH_MARKER_WORDS = [ // no-domain
   'sharply', 'harshly', 'always', 'never', 'before', 'after'
 ];
 
-/**
- * Detects if a description string is likely written in English
- * using a word-frequency heuristic against known English markers.
- */
 function isLikelyEnglish(text: string): boolean {
   const lowerText = text.toLowerCase();
   const words = lowerText.split(/\s+/);
@@ -78,7 +70,6 @@ function isLikelyEnglish(text: string): boolean {
     }
   }
 
-  // Threshold: 2+ English marker words → flag as English
   return englishHits >= 2;
 }
 
@@ -91,25 +82,7 @@ async function fileExists(filePath: string): Promise<boolean> {
   }
 }
 
-async function main() {
-  const { values } = parseArgs({
-    options: {
-      output: { type: 'string', short: 'o' },
-      summary: { type: 'boolean', short: 's' }
-    }
-  });
-
-  console.log(styleText('bold', '\n══════════════════════════════════════════════════════════════'));
-  console.log(styleText('bold', '🛡️  AUDITORÍA INTEGRAL: TRADUCCIONES, DESCRIPCIONES & TOOLTIP 🛡️'));
-  console.log(styleText('bold', '══════════════════════════════════════════════════════════════\n'));
-
-  const errors: string[] = []; // no-domain
-  const warnings: string[] = []; // no-domain
-  const achievements: string[] = []; // no-domain
-
-  // ═══════════════════════════════════════════════════════════
-  // FASE 1: Infraestructura de Archivos
-  // ═══════════════════════════════════════════════════════════
+async function validateCriticalFiles(errors: string[], achievements: string[]): Promise<boolean> {
   const criticalFiles: Array<{ path: string; label: string }> = [
     { path: SHOWDOWN_DB_PATH, label: 'Base de datos Showdown (showdown_db.json)' },
     { path: TRANSLATIONS_PATH, label: 'Traducciones de nombres (move_translations.json)' },
@@ -129,26 +102,19 @@ async function main() {
       achievements.push(`✔ ${file.label} encontrado.`);
     }
   }
+  return criticalMissing;
+}
 
-  if (criticalMissing) {
-    console.error(styleText('red', '❌ Faltan archivos de infraestructura críticos. Abortando.'));
-    errors.forEach(e => console.error(`   - ${e}`));
-    process.exit(1);
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  // FASE 2: Cobertura de Traducciones de Nombres
-  // ═══════════════════════════════════════════════════════════
-  const showdownDbRaw = await fs.readFile(SHOWDOWN_DB_PATH, 'utf8');
-  const showdownDb = JSON.parse(showdownDbRaw) as ShowdownLocalDB;
-
-  const translationsRaw = await fs.readFile(TRANSLATIONS_PATH, 'utf8');
-  const translations = JSON.parse(translationsRaw) as Record<string, string>; // open-record
-
+function validateNameTranslations(
+  showdownDb: ShowdownLocalDB,
+  translations: Record<string, string>,
+  errors: string[],
+  achievements: string[]
+): void {
   const allMoveIds = Object.keys(showdownDb.moves);
   const totalMovesInDB = allMoveIds.length;
-
   const missingNameTranslations: string[] = []; // no-domain
+
   for (const moveId of allMoveIds) {
     if (!translations[moveId]) {
       const move = showdownDb.moves[moveId]!;
@@ -161,13 +127,16 @@ async function main() {
   } else {
     achievements.push(`100% de movimientos (${totalMovesInDB}) tienen traducción de nombre en español.`);
   }
+}
 
-  // ═══════════════════════════════════════════════════════════
-  // FASE 3: Cobertura y Calidad de Descripciones en Español
-  // ═══════════════════════════════════════════════════════════
-  const descriptionsRaw = await fs.readFile(DESCRIPTIONS_PATH, 'utf8');
-  const descriptions = JSON.parse(descriptionsRaw) as Record<string, string>; // open-record
-
+function validateMoveDescriptions(
+  showdownDb: ShowdownLocalDB,
+  descriptions: Record<string, string>,
+  errors: string[],
+  achievements: string[]
+): void {
+  const allMoveIds = Object.keys(showdownDb.moves);
+  const totalMovesInDB = allMoveIds.length;
   const missingDescriptions: string[] = []; // no-domain
   const englishDescriptions: string[] = []; // no-domain
 
@@ -193,69 +162,66 @@ async function main() {
   } else {
     achievements.push('Todas las descripciones pasaron la heurística anti-inglés. 100% español verificado.');
   }
+}
 
-  // ═══════════════════════════════════════════════════════════
-  // FASE 4: Integración del Tooltip Premium en Frontend
-  // ═══════════════════════════════════════════════════════════
+async function validateTooltipFrontendIntegration(
+  errors: string[],
+  warnings: string[],
+  achievements: string[]
+): Promise<void> {
   const tooltipCode = await fs.readFile(TOOLTIP_COMP_PATH, 'utf8');
 
-  // 4a. Verify Tooltip consumes move_descriptions.json
-  const tooltipImportsDescriptions = tooltipCode.includes('move_descriptions.json') || tooltipCode.includes('moveDescriptions');
-  if (tooltipImportsDescriptions) {
+  if (tooltipCode.includes('move_descriptions.json') || tooltipCode.includes('moveDescriptions')) {
     achievements.push('El Tooltip Premium importa y consume `move_descriptions.json` para fallback en español.');
   } else {
     errors.push('El Tooltip NO importa `move_descriptions.json`. Las descripciones en español no se mostrarán.');
   }
 
-  // 4b. Premium math calculations
-  const hasStabCalc = tooltipCode.includes('isStab') || tooltipCode.includes('STAB') || tooltipCode.includes('stabMultiplier');
-  const hasTypeEffectiveness = tooltipCode.includes('getCombinedEffectiveness') || tooltipCode.includes('effectiveness');
-  const hasGsapAnimation = tooltipCode.includes('gsap') || tooltipCode.includes('onBeforeEnter') || tooltipCode.includes('onEnter');
-  const hasEstimatedPower = tooltipCode.includes('estimatedPower');
-
-  if (hasStabCalc) {
+  if (tooltipCode.includes('isStab') || tooltipCode.includes('STAB') || tooltipCode.includes('stabMultiplier')) {
     achievements.push('El Tooltip incluye cálculo dinámico de STAB (x1.5).');
   } else {
     warnings.push('No se detectó cálculo de STAB en el Tooltip.');
   }
 
-  if (hasTypeEffectiveness) {
+  if (tooltipCode.includes('getCombinedEffectiveness') || tooltipCode.includes('effectiveness')) {
     achievements.push('El Tooltip integra cálculo cruzado de efectividades elementales.');
   } else {
     warnings.push('No se detectó cálculo de efectividad de tipos en el Tooltip.');
   }
 
-  if (hasEstimatedPower) {
+  if (tooltipCode.includes('estimatedPower')) {
     achievements.push('El Tooltip calcula la potencia estimada final (BP × STAB × Efectividad).');
   } else {
     warnings.push('No se detectó cálculo de potencia estimada en el Tooltip.');
   }
 
-  if (hasGsapAnimation) {
+  if (tooltipCode.includes('gsap') || tooltipCode.includes('onBeforeEnter') || tooltipCode.includes('onEnter')) {
     achievements.push('El Tooltip utiliza GSAP para transiciones de entrada y salida.');
   } else {
     warnings.push('No se detectaron transiciones GSAP en el Tooltip.');
   }
+}
 
-  // 4c. Verify ShowdownSandboxView integrations (supporting modular subcomponents)
+async function validateSandboxViewsAndTeambuilder(
+  errors: string[],
+  warnings: string[],
+  achievements: string[]
+): Promise<void> {
   const viewCode = await fs.readFile(SANDBOX_VIEW_PATH, 'utf8');
   let controlsCode = '';
   let battleMenuCode = '';
   try {
-    const controlsPath = path.resolve(process.cwd(), 'showdown/components/ShowdownControls.vue');
-    controlsCode = await fs.readFile(controlsPath, 'utf8');
+    controlsCode = await fs.readFile(path.resolve(process.cwd(), 'showdown/components/ShowdownControls.vue'), 'utf8');
   } catch {
-    // Fail silently if ShowdownControls.vue is not found (legacy support)
+    // Fail silently
   }
   try {
-    const battleMenuPath = path.resolve(process.cwd(), 'showdown/components/ShowdownBattleMenu.vue');
-    battleMenuCode = await fs.readFile(battleMenuPath, 'utf8');
+    battleMenuCode = await fs.readFile(path.resolve(process.cwd(), 'showdown/components/ShowdownBattleMenu.vue'), 'utf8');
   } catch {
-    // Fail silently if ShowdownBattleMenu.vue is not found
+    // Fail silently
   }
 
   const combinedCode = viewCode + '\n' + controlsCode + '\n' + battleMenuCode;
-
   const importsTooltip = combinedCode.includes('ShowdownMoveTooltip') &&
     (combinedCode.includes('./components/ShowdownMoveTooltip.vue') || 
      combinedCode.includes('./components/ShowdownMoveTooltip') ||
@@ -284,112 +250,133 @@ async function main() {
     warnings.push('No se detectó lógica para compatibilidad táctil móvil.');
   }
 
-  // 4d. Verify Teambuilder integration
   const teambuilderCode = await fs.readFile(TEAMBUILDER_PATH, 'utf8');
-  const tbImportsTranslations = teambuilderCode.includes('move_translations.json') || teambuilderCode.includes('moveTranslations');
-  const tbAlphabeticalSort = teambuilderCode.includes('localeCompare') && teambuilderCode.includes('nameEs');
-
-  if (tbImportsTranslations) {
+  if (teambuilderCode.includes('move_translations.json') || teambuilderCode.includes('moveTranslations')) {
     achievements.push('El Teambuilder importa las traducciones oficiales de nombres.');
   } else {
     warnings.push('No se detectó consumo de traducciones de nombres en el Teambuilder.');
   }
 
-  if (tbAlphabeticalSort) {
+  if (teambuilderCode.includes('localeCompare') && teambuilderCode.includes('nameEs')) {
     achievements.push('El selector de ataques del Teambuilder ordena alfabéticamente por nombre en español.');
   } else {
     warnings.push('No se detectó ordenamiento por nombre localizado en el Teambuilder.');
   }
+}
 
-  // ═══════════════════════════════════════════════════════════
-  // FASE 5: Sanitización y Auto-Poblado en el Store
-  // ═══════════════════════════════════════════════════════════
+async function validateStoreSanitization(
+  errors: string[],
+  warnings: string[],
+  achievements: string[]
+): Promise<void> {
   const storeCode = await fs.readFile(STORE_PATH, 'utf8');
+  const teambuilderCode = await fs.readFile(TEAMBUILDER_PATH, 'utf8');
 
-  // 5a. setPlayerLeader / setEnemyLeader auto-population
-  const hasSetPlayerLeader = storeCode.includes('setPlayerLeader');
-  const hasSetEnemyLeader = storeCode.includes('setEnemyLeader');
-  const hasGetRandomMoves = storeCode.includes('getRandomMoves');
-
-  if (hasSetPlayerLeader && hasSetEnemyLeader) {
+  if (storeCode.includes('setPlayerLeader') && storeCode.includes('setEnemyLeader')) {
     achievements.push('El store implementa `setPlayerLeader` y `setEnemyLeader` para auto-poblado reactivo.');
   } else {
     errors.push('Faltan las acciones `setPlayerLeader` / `setEnemyLeader` en el store.');
   }
 
-  if (hasGetRandomMoves) {
+  if (storeCode.includes('getRandomMoves')) {
     achievements.push('La función `getRandomMoves` genera movimientos aleatorios garantizando STAB.');
   } else {
     errors.push('Falta la función `getRandomMoves` en el store.');
   }
 
-  // 5b. Sanitization in generateTeam
-  const hasSanitization = storeCode.includes('sanitizedMoves') || storeCode.includes('SANITIZE');
-  const hasDeduplication = storeCode.includes('new Set(') || storeCode.includes('Set(sanitized');
-  const hasFilterEmpty = storeCode.includes("filter(m => m !== ''") || storeCode.includes('.filter(m =>');
-
-  if (hasSanitization) {
+  if (storeCode.includes('sanitizedMoves') || storeCode.includes('SANITIZE')) {
     achievements.push('`generateTeam` implementa sanitización estricta de movimientos del líder.');
   } else {
     errors.push('No se detectó sanitización de movimientos en `generateTeam`.');
   }
 
-  if (hasDeduplication) {
+  if (storeCode.includes('new Set(') || storeCode.includes('Set(sanitized')) {
     achievements.push('La sanitización elimina movimientos duplicados vía `Set`.');
   } else {
     warnings.push('No se detectó deduplicación de movimientos en la sanitización.');
   }
 
-  if (hasFilterEmpty) {
+  if (storeCode.includes("filter(m => m !== ''") || storeCode.includes('.filter(m =>')) {
     achievements.push('La sanitización filtra entradas vacías.');
   } else {
     warnings.push('No se detectó filtrado de entradas vacías.');
   }
 
-  // 5c. Teambuilder wiring
-  const tbUsesSetPlayerLeader = teambuilderCode.includes('setPlayerLeader') || teambuilderCode.includes('store.setPlayerLeader');
-  const tbUsesSetEnemyLeader = teambuilderCode.includes('setEnemyLeader') || teambuilderCode.includes('store.setEnemyLeader');
-
-  if (tbUsesSetPlayerLeader && tbUsesSetEnemyLeader) {
+  if (teambuilderCode.includes('setPlayerLeader') && teambuilderCode.includes('setEnemyLeader')) {
     achievements.push('El Teambuilder invoca `setPlayerLeader` / `setEnemyLeader` al cambiar de Pokémon.');
   } else {
     errors.push('El Teambuilder NO invoca las acciones de auto-poblado del store.');
   }
+}
 
-  // ═══════════════════════════════════════════════════════════
-  // FASE 6: Paridad Cruzada Nombres ↔ Descripciones
-  // ═══════════════════════════════════════════════════════════
+function validateCrossParity(
+  translations: Record<string, string>,
+  descriptions: Record<string, string>,
+  warnings: string[],
+  achievements: string[]
+): void {
   const translationKeys = new Set(Object.keys(translations));
   const descriptionKeys = new Set(Object.keys(descriptions));
 
-  const inNamesNotInDescs: string[] = []; // no-domain
-  const inDescsNotInNames: string[] = []; // no-domain
+  let inNamesNotInDescs = 0;
+  let inDescsNotInNames = 0;
 
   for (const key of translationKeys) {
-    if (!descriptionKeys.has(key)) {
-      inNamesNotInDescs.push(key);
-    }
+    if (!descriptionKeys.has(key)) inNamesNotInDescs++;
   }
 
   for (const key of descriptionKeys) {
-    if (!translationKeys.has(key)) {
-      inDescsNotInNames.push(key);
-    }
+    if (!translationKeys.has(key)) inDescsNotInNames++;
   }
 
-  if (inNamesNotInDescs.length > 0) {
-    warnings.push(`${inNamesNotInDescs.length} movimientos tienen nombre traducido pero NO descripción.`);
+  if (inNamesNotInDescs > 0) {
+    warnings.push(`${inNamesNotInDescs} movimientos tienen nombre traducido pero NO descripción.`);
   }
 
-  if (inDescsNotInNames.length > 0) {
-    warnings.push(`${inDescsNotInNames.length} movimientos tienen descripción pero NO nombre traducido.`);
+  if (inDescsNotInNames > 0) {
+    warnings.push(`${inDescsNotInNames} movimientos tienen descripción pero NO nombre traducido.`);
   }
 
-  if (inNamesNotInDescs.length === 0 && inDescsNotInNames.length === 0) {
+  if (inNamesNotInDescs === 0 && inDescsNotInNames === 0) {
     achievements.push('Paridad cruzada perfecta: todos los nombres traducidos tienen descripción.');
   }
+}
 
-  // Output formatting & reporting
+async function main() {
+  const { values } = parseArgs({
+    options: {
+      output: { type: 'string', short: 'o' },
+      summary: { type: 'boolean', short: 's' }
+    }
+  });
+
+  console.log(styleText('bold', '\n══════════════════════════════════════════════════════════════'));
+  console.log(styleText('bold', '🛡️  AUDITORÍA INTEGRAL: TRADUCCIONES, DESCRIPCIONES & TOOLTIP 🛡️'));
+  console.log(styleText('bold', '══════════════════════════════════════════════════════════════\n'));
+
+  const errors: string[] = [];
+  const warnings: string[] = [];
+  const achievements: string[] = [];
+
+  const criticalMissing = await validateCriticalFiles(errors, achievements);
+  if (criticalMissing) {
+    console.error(styleText('red', '❌ Faltan archivos de infraestructura críticos. Abortando.'));
+    errors.forEach(e => console.error(`   - ${e}`));
+    process.exit(1);
+  }
+
+  const showdownDb = JSON.parse(await fs.readFile(SHOWDOWN_DB_PATH, 'utf8')) as ShowdownLocalDB;
+  const translations = JSON.parse(await fs.readFile(TRANSLATIONS_PATH, 'utf8')) as Record<string, string>; // open-record
+  const descriptions = JSON.parse(await fs.readFile(DESCRIPTIONS_PATH, 'utf8')) as Record<string, string>; // open-record
+  const totalMovesInDB = Object.keys(showdownDb.moves).length;
+
+  validateNameTranslations(showdownDb, translations, errors, achievements);
+  validateMoveDescriptions(showdownDb, descriptions, errors, achievements);
+  await validateTooltipFrontendIntegration(errors, warnings, achievements);
+  await validateSandboxViewsAndTeambuilder(errors, warnings, achievements);
+  await validateStoreSanitization(errors, warnings, achievements);
+  validateCrossParity(translations, descriptions, warnings, achievements);
+
   console.log(`\n════════════════════════════════════`);
   console.log(`    SANDBOX MOVES & TOOLTIP INTEGRITY`);
   console.log(`════════════════════════════════════`);
@@ -423,31 +410,19 @@ async function main() {
   } else {
     if (achievements.length > 0) {
       console.log(styleText('green', `🌟 VALIDACIONES CORRECTAS (${achievements.length}):`));
-      const limit = 30;
-      achievements.slice(0, limit).forEach(a => console.log(`   ✅ ${a}`));
-      if (achievements.length > limit) {
-        console.log(styleText('cyan', `   ... y ${achievements.length - limit} aciertos más (usa -o para ver todos)`));
-      }
+      achievements.slice(0, 30).forEach(a => console.log(`   ✅ ${a}`));
       console.log('');
     }
 
     if (warnings.length > 0) {
       console.log(styleText('yellow', `⚠️  ADVERTENCIAS (${warnings.length}):`));
-      const limit = 30;
-      warnings.slice(0, limit).forEach(w => console.log(`   🟡 ${w}`));
-      if (warnings.length > limit) {
-        console.log(styleText('cyan', `   ... y ${warnings.length - limit} advertencias más (usa -o para ver todas)`));
-      }
+      warnings.slice(0, 30).forEach(w => console.log(`   🟡 ${w}`));
       console.log('');
     }
 
     if (errors.length > 0) {
       console.log(styleText('red', `❌ ERRORES DE INTEGRIDAD DETECTADOS (${errors.length}):`));
-      const limit = 30;
-      errors.slice(0, limit).forEach(e => console.log(`   🚨 ${e}`));
-      if (errors.length > limit) {
-        console.log(styleText('cyan', `   ... y ${errors.length - limit} errores más (usa -o para ver todos)`));
-      }
+      errors.slice(0, 30).forEach(e => console.log(`   🚨 ${e}`));
       console.log('\n' + styleText('red', 'Corrige los errores listados para asegurar la perfecta experiencia del Sandbox.'));
     } else {
       console.log(styleText('green', '✨ ¡FELICITACIONES! El Sandbox ha pasado la auditoría con éxito absoluto.'));

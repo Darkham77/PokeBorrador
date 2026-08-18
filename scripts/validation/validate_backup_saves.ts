@@ -19,12 +19,185 @@ import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
 const BACKUP_FILE = path.resolve(process.cwd(), 'tests/node/fixtures/server_franco_backup_fixture.json');
 const SHOWDOWN_DB_PATH = path.resolve(process.cwd(), 'showdown/sandbox_db/data/showdown_db_es.json');
 
+const VALID_NATURES = [ // no-domain
+  'active', 'lonely', 'brave', 'adamant', 'naughty', 'bold', 'docile', 'relaxed',
+  'impish', 'lax', 'timid', 'hasty', 'serious', 'jolly', 'naive', 'modest',
+  'mild', 'quiet', 'bashful', 'rash', 'calm', 'gentle', 'sassy', 'careful', 'quirky'
+];
+
+const LEGACY_MOVE_TRANSLATIONS: Record<string, string> = {
+  destructor: 'pound',
+  arena: 'sandattack',
+  portazo: 'slam',
+  acidificacion: 'acid',
+  bubblebeam: 'bubblebeam',
+  rodar: 'rollout',
+  huesumerang: 'bonemerang',
+  golpecabeza: 'headbutt',
+  picotazo: 'peck',
+  persecucion: 'pursuit',
+  cola: 'tailwhip',
+  chupavidas: 'leechlife',
+  envolver: 'wrap',
+  golpekaratazo: 'karatechop',
+  movsismico: 'seismictoss',
+  punolodo: 'mudslap',
+  megapuno: 'megapunch',
+  minimizar: 'minimize',
+  pantallahumo: 'smokescreen',
+  huesorus: 'bonerush'
+};
+
+interface SavePoke {
+  id: string;
+  level?: number;
+  moves?: Array<{ name: string }>;
+  ability?: string;
+  nature?: string;
+  nickname?: string;
+  name?: string;
+}
+
+interface SaveData {
+  team?: SavePoke[];
+  box?: SavePoke[];
+}
+
+interface SaveEntry {
+  user_id: string;
+  save_data?: SaveData;
+}
+
 function normalize(str: string): string {
   return str
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]/g, '');
+}
+
+function buildShowdownNameMaps(showdownDB: {
+  moves: Record<string, { name?: string }>;
+  abilities: Record<string, { name?: string }>;
+}): { moveNameToId: Map<string, string>; abilityNameToId: Map<string, string> } {
+  const moveNameToId = new Map<string, string>();
+  for (const [id, data] of Object.entries(showdownDB.moves)) {
+    if (data.name) {
+      moveNameToId.set(normalize(data.name), id);
+    }
+  }
+
+  const abilityNameToId = new Map<string, string>();
+  for (const [id, data] of Object.entries(showdownDB.abilities)) {
+    if (data.name) {
+      abilityNameToId.set(normalize(data.name), id);
+    }
+  }
+
+  return { moveNameToId, abilityNameToId };
+}
+
+function auditPokemonMoves(
+  poke: SavePoke,
+  tag: string,
+  gen: ReturnType<typeof Dex.forGen>,
+  moveNameToId: Map<string, string>,
+  errors: string[],
+  warnings: string[]
+): void {
+  const moves = poke.moves || [];
+  if (moves.length === 0) {
+    warnings.push(`${tag} - No tiene movimientos asignados.`);
+  }
+
+  for (const m of moves) {
+    if (!m || !m.name) {
+      errors.push(`${tag} - Movimiento nulo o sin nombre asignado.`);
+      continue;
+    }
+
+    const normMoveName = normalize(m.name);
+    let resolvedId = moveNameToId.get(normMoveName);
+
+    if (!resolvedId && LEGACY_MOVE_TRANSLATIONS[normMoveName]) {
+      resolvedId = LEGACY_MOVE_TRANSLATIONS[normMoveName];
+    }
+
+    if (!resolvedId) {
+      errors.push(`${tag} - Movimiento '${m.name}' no se pudo resolver a ningún ID de Showdown.`);
+      continue;
+    }
+
+    const move = gen.moves.get(resolvedId);
+    if (!move.exists) {
+      errors.push(`${tag} - Movimiento '${m.name}' (ID: ${resolvedId}) no existe en el Dex de @pkmn/sim.`);
+    }
+  }
+}
+
+function auditPokemon(
+  poke: SavePoke,
+  userId: string,
+  gen: ReturnType<typeof Dex.forGen>,
+  moveNameToId: Map<string, string>,
+  abilityNameToId: Map<string, string>,
+  errors: string[],
+  warnings: string[]
+): void {
+  const tag = `[User: ${userId}] Pokémon: ${poke.name || poke.id} (Lvl ${poke.level ?? '?'})`;
+
+  if (!poke.id) {
+    errors.push(`${tag} - No tiene especie (id) definida.`);
+    return;
+  }
+
+  const species = gen.species.get(poke.id);
+  if (!species.exists) {
+    errors.push(`${tag} - Especie '${poke.id}' no existe en el Dex de @pkmn/sim.`);
+  }
+
+  if (poke.ability) {
+    const normAbilityName = normalize(poke.ability);
+    const abilityId = abilityNameToId.get(normAbilityName) || normAbilityName;
+    const ability = gen.abilities.get(abilityId);
+    if (!ability.exists) {
+      warnings.push(`${tag} - Habilidad '${poke.ability}' (ID: ${abilityId}) no existe en el Dex de @pkmn/sim.`);
+    }
+  } else {
+    warnings.push(`${tag} - No tiene habilidad definida.`);
+  }
+
+  if (poke.nature) {
+    const natureKey = normalize(poke.nature);
+    if (!VALID_NATURES.includes(natureKey)) {
+      warnings.push(`${tag} - Naturaleza '${poke.nature}' no válida.`);
+    }
+  }
+
+  auditPokemonMoves(poke, tag, gen, moveNameToId, errors, warnings);
+}
+
+function auditSaveEntry(
+  saveEntry: SaveEntry,
+  gen: ReturnType<typeof Dex.forGen>,
+  moveNameToId: Map<string, string>,
+  abilityNameToId: Map<string, string>,
+  errors: string[],
+  warnings: string[]
+): number {
+  const userId = saveEntry.user_id;
+  const saveData = saveEntry.save_data;
+  if (!saveData) return 0;
+
+  const team = saveData.team || [];
+  const box = saveData.box || [];
+  const allPokes = [...team, ...box].filter(Boolean);
+
+  for (const poke of allPokes) {
+    auditPokemon(poke, userId, gen, moveNameToId, abilityNameToId, errors, warnings);
+  }
+
+  return allPokes.length;
 }
 
 async function main() {
@@ -35,8 +208,6 @@ async function main() {
 
   await validator.checkFiles();
 
-  // 1. Load Showdown database
-  // 1. Load Showdown database
   let showdownDB: { moves: Record<string, { name?: string }>; abilities: Record<string, { name?: string }> };
   try {
     const rawData = await fs.readFile(SHOWDOWN_DB_PATH, 'utf8');
@@ -46,63 +217,8 @@ async function main() {
     process.exit(1);
   }
 
-  // 2. Mapeos inversos usando la base de datos oficial traducida de Showdown
-  const moveNameToId = new Map<string, string>();
-  for (const [id, data] of Object.entries(showdownDB.moves) as [string, { name?: string }][]) {
-    if (data.name) {
-      moveNameToId.set(normalize(data.name), id);
-    }
-  }
+  const { moveNameToId, abilityNameToId } = buildShowdownNameMaps(showdownDB);
 
-  const abilityNameToId = new Map<string, string>();
-  for (const [id, data] of Object.entries(showdownDB.abilities) as [string, { name?: string }][]) {
-    if (data.name) {
-      abilityNameToId.set(normalize(data.name), id);
-    }
-  }
-
-  // Traducciones alternativas legacy comunes
-  const LEGACY_MOVE_TRANSLATIONS: Record<string, string> = {
-    'destructor': 'pound',
-    'arena': 'sandattack',
-    'portazo': 'slam',
-    'acidificacion': 'acid',
-    'bubblebeam': 'bubblebeam',
-    'rodar': 'rollout',
-    'huesumerang': 'bonemerang',
-    'golpecabeza': 'headbutt',
-    'picotazo': 'peck',
-    'persecucion': 'pursuit',
-    'cola': 'tailwhip',
-    'chupavidas': 'leechlife',
-    'envolver': 'wrap',
-    'golpekaratazo': 'karatechop',
-    'movsismico': 'seismictoss',
-    'punolodo': 'mudslap',
-    'megapuno': 'megapunch',
-    'minimizar': 'minimize',
-    'pantallahumo': 'smokescreen',
-    'huesorus': 'bonerush'
-  };
-
-  // 3. Load Backup file
-  interface SavePoke {
-    id: string;
-    level?: number;
-    moves?: Array<{ name: string }>;
-    ability?: string;
-    nature?: string;
-    nickname?: string;
-    name?: string;
-  }
-  interface SaveData {
-    team?: SavePoke[];
-    box?: SavePoke[];
-  }
-  interface SaveEntry {
-    user_id: string;
-    save_data?: SaveData;
-  }
   let backupData: { data?: { game_saves?: SaveEntry[] } };
   try {
     const rawBackup = await fs.readFile(BACKUP_FILE, 'utf8');
@@ -121,86 +237,10 @@ async function main() {
 
   const gen = Dex.forGen(ACTIVE_GENERATION);
 
-  // 4. Audit each save
   for (const saveEntry of gameSaves) {
-    const userId = saveEntry.user_id;
-    const saveData = saveEntry.save_data;
-    if (!saveData) continue;
-
-    const team = saveData.team || [];
-    const box = saveData.box || [];
-    const allPokes = [...team, ...box].filter(Boolean);
-
-    for (const poke of allPokes) {
-      totalPokemonScanned++;
-      const tag = `[User: ${userId}] Pokémon: ${poke.name || poke.id} (Lvl ${poke.level ?? '?'})`;
-
-      // A. Validate Species ID using Dex
-      if (!poke.id) {
-        errors.push(`${tag} - No tiene especie (id) definida.`);
-        continue;
-      }
-
-      const species = gen.species.get(poke.id);
-      if (!species.exists) {
-        errors.push(`${tag} - Especie '${poke.id}' no existe en el Dex de @pkmn/sim.`);
-      }
-
-      // B. Validate Ability using Dex
-      if (poke.ability) {
-        const normAbilityName = normalize(poke.ability);
-        const abilityId = abilityNameToId.get(normAbilityName) || normAbilityName;
-        const ability = gen.abilities.get(abilityId);
-        if (!ability.exists) {
-          warnings.push(`${tag} - Habilidad '${poke.ability}' (ID: ${abilityId}) no existe en el Dex de @pkmn/sim.`);
-        }
-      } else {
-        warnings.push(`${tag} - No tiene habilidad definida.`);
-      }
-
-      // C. Validate Nature
-      if (poke.nature) {
-        const validNatures = ['active', 'lonely', 'brave', 'adamant', 'naughty', 'bold', 'docile', 'relaxed', 'impish', 'lax', 'timid', 'hasty', 'serious', 'jolly', 'naive', 'modest', 'mild', 'quiet', 'bashful', 'rash', 'calm', 'gentle', 'sassy', 'careful', 'quirky']; // no-domain
-        const natureKey = normalize(poke.nature);
-        if (!validNatures.includes(natureKey)) {
-          warnings.push(`${tag} - Naturaleza '${poke.nature}' no válida.`);
-        }
-      }
-
-      // D. Validate Moves using Dex
-      const moves = poke.moves || [];
-      if (moves.length === 0) {
-        warnings.push(`${tag} - No tiene movimientos asignados.`);
-      }
-
-      for (const m of moves) {
-        if (!m || !m.name) {
-          errors.push(`${tag} - Movimiento nulo o sin nombre asignado.`);
-          continue;
-        }
-
-        const normMoveName = normalize(m.name);
-        let resolvedId = moveNameToId.get(normMoveName);
-
-        // Si no se encuentra, buscar por traducción alternativa
-        if (!resolvedId && LEGACY_MOVE_TRANSLATIONS[normMoveName]) {
-          resolvedId = LEGACY_MOVE_TRANSLATIONS[normMoveName];
-        }
-
-        if (!resolvedId) {
-          errors.push(`${tag} - Movimiento '${m.name}' no se pudo resolver a ningún ID de Showdown.`);
-          continue;
-        }
-
-        const move = gen.moves.get(resolvedId);
-        if (!move.exists) {
-          errors.push(`${tag} - Movimiento '${m.name}' (ID: ${resolvedId}) no existe en el Dex de @pkmn/sim.`);
-        }
-      }
-    }
+    totalPokemonScanned += auditSaveEntry(saveEntry, gen, moveNameToId, abilityNameToId, errors, warnings);
   }
 
-  // 5. Finalize and save report
   await validator.finish(
     {
       'Saves validados': gameSaves.length,

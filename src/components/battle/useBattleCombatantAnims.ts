@@ -1,12 +1,10 @@
 import { watch, type Ref, nextTick, type ComputedRef, computed, onMounted, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 import { gameBus } from '@/logic/events/gameBus'
-import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import type { BattleCombatantProps, BattleSide } from '@/types/battle/battle'
 import { isFlying } from '@/composables/battle/useBattleShadows'
+import { buildFaintTimeline, buildAttackTimeline } from './helpers/combatantActionAnims.ts'
 import {
-  GSAP_FAST_DURATION_SEC,
-  GSAP_STANDARD_DURATION_SEC,
   COMBATANT_IDLE_FLOAT_BASE_Y_PERCENT,
   COMBATANT_IDLE_FLOAT_VAR_Y_PERCENT,
   COMBATANT_IDLE_FLOAT_BASE_ROTATION_DEG,
@@ -26,10 +24,6 @@ import {
   SPARKLE_HORIZONTAL_DURATION_SEC,
   SPARKLE_FOUNTAIN_UP_DURATION_SEC,
   SPARKLE_FOUNTAIN_DOWN_DURATION_SEC,
-  COMBATANT_FAINT_Y_OFFSET,
-  COMBATANT_FAINT_DURATION_SEC,
-  ATTACK_DASH_DISTANCE_PX,
-  ATTACK_PREP_DISTANCE_PX,
   POKEBALL_APPEAR_DURATION_SEC,
   BALL_TRANSITION_DURATION_SEC,
   RECOIL_HORIZONTAL_OFFSET_PX,
@@ -50,29 +44,8 @@ import {
   EMERGE_LAND_SCALE_Y,
   EMERGE_LAND_DURATION_SEC,
   EMERGE_SETTLE_DURATION_SEC,
-  SELFKO_SHAKE_COUNT,
-  SELFKO_SHAKE_RANGE_PX,
-  SELFKO_SHAKE_DURATION_SEC,
-  SELFKO_EXPLODE_SCALE,
-  SELFKO_EXPLODE_BRIGHTNESS,
-  SELFKO_EXPLODE_SHADOW_PX,
-  SELFKO_EXPLODE_PRIMARY_COLOR,
-  SELFKO_EXPLODE_UP_DURATION_SEC,
-  SELFKO_EXPLODE_FLASH_BRIGHTNESS,
-  SELFKO_EXPLODE_FLASH_SHADOW_PX,
-  SELFKO_EXPLODE_FLASH_COLOR,
-  SELFKO_EXPLODE_DOWN_DURATION_SEC,
-  SELFKO_SETTLE_DURATION_SEC,
-  ATTACK_SPECIAL_PULSE_DISTANCE_PX,
   ATTACK_SPECIAL_SCALE,
-  ATTACK_SPECIAL_BRIGHTNESS,
   ATTACK_SPECIAL_DURATION_SEC,
-  ATTACK_STATUS_ROTATION_DEG,
-  ATTACK_STATUS_SCALE,
-  ATTACK_STATUS_BRIGHTNESS,
-  ATTACK_STATUS_DURATION_SEC,
-  ATTACK_DEFAULT_NY_PLAYER,
-  ATTACK_DEFAULT_NY_ENEMY,
   STATUS_FLASH_SHADOW_PX,
   STATUS_FLASH_DURATION_SEC,
   STATUS_FLASH_REPEAT_COUNT,
@@ -103,22 +76,6 @@ const HEAL_SEPIA_NONE = 0
 const RANDOM_DIRECTION_PROBABILITY_HALF = 0.5;
 const OPACITY_INVISIBLE = 0;
 const OPACITY_FULL = 1;
-
-const FAINT_BLINK_STEPS: readonly { t: number; op: number }[] = [ // no-magic
-  { t: 0.05, op: 0 }, { t: 0.13, op: 1 },
-  { t: 0.21, op: 0 }, { t: 0.29, op: 1 },
-  { t: 0.37, op: 0 }, { t: 0.45, op: 1 },
-  { t: 0.53, op: 0 }, { t: 0.61, op: 1 },
-  { t: 0.69, op: 0 }, { t: 0.77, op: 1 },
-  { t: 0.85, op: 0 }, { t: 0.93, op: 1 },
-  { t: 0.98, op: 0 }
-] as const
-
-const VOICE_MOVE_IDS = [
-  'growl', 'roar', 'sing', 'hypervoice', 'metalsound', 'perishsong', 'uproar',
-  'screech', 'supersonic', 'grasswhistle', 'chatter', 'snarl', 'round',
-  'disarmingvoice', 'boomburst', 'confide'
-] as const
 
 
 function isIdleSuppressed(statusRaw: string | null | undefined, confusedCount: number | undefined, animStateRaw: string | null | undefined): boolean {
@@ -361,32 +318,7 @@ export function useBattleCombatantAnims(
 
   watch(() => props.isFainting, (val) => {
     if (val && spriteRef.value) {
-      const tl = gsap.timeline()
-      
-      tl.add(() => {
-        if (props.pokemon) {
-          gameBus.emit('PLAY_CRY', { name: props.pokemon.id || props.pokemon.name, isFaint: true })
-        }
-      })
-      
-      gsap.set(spriteRef.value, { transition: "none" })
-
-      
-      if (shadowWrapperRef.value) {
-        gsap.set(shadowWrapperRef.value, { display: "none" })
-      }
-
-      tl.addLabel("fallStart")
-
-      tl.to(spriteRef.value, { 
-        y: COMBATANT_FAINT_Y_OFFSET, 
-        duration: COMBATANT_FAINT_DURATION_SEC, 
-        ease: "power2.in" 
-      }, "fallStart") 
-      
-      FAINT_BLINK_STEPS.forEach(b => {
-        tl.set(spriteRef.value, { opacity: b.op }, `fallStart+=${b.t}`)
-      })
+      buildFaintTimeline(spriteRef.value, props.pokemon, shadowWrapperRef.value)
     } else if (!val && spriteRef.value) {
       gsap.set(spriteRef.value, { clearProps: "opacity,y,transition" })
       if (shadowWrapperRef.value) {
@@ -400,130 +332,11 @@ export function useBattleCombatantAnims(
     return `${props.isAttacking}-${props.activeMove.name}-${props.activeMove.cat}`
   }, (newVal) => {
     if (newVal && spriteRef.value) {
-      const move = props.activeMove
-      if (!move) return
-      const isPlayerSide = props.side === 'player'
-      const cat = move.cat
-      const tl = gsap.timeline()
-      
-      const moveIdLookup = move.id || ''
-      const cleanMoveId = moveIdLookup
-      if ((VOICE_MOVE_IDS as readonly string[]).includes(cleanMoveId) && props.pokemon) { // domain-ok
-        tl.add(() => {
-          gameBus.emit('PLAY_CRY', { name: props.pokemon!.id || props.pokemon!.name })
-        })
+      const tl = buildAttackTimeline(spriteRef.value, spriteRotationRef.value, props)
+      if (tl) {
+        const animKey = `attack-${props.side}`
+        gameBus.emit('REGISTER_TWEEN', { key: animKey, tween: tl })
       }
-      
-      let nx = isPlayerSide ? 1 : -1
-      let ny = isPlayerSide ? ATTACK_DEFAULT_NY_PLAYER : ATTACK_DEFAULT_NY_ENEMY
-      
-      if (props.targetPosition) {
-        const scale = (WORLD_CONSTANTS as { OBJECT_SCALE: number }).OBJECT_SCALE || 2
-        const mySize = props.baseSize * scale
-        const targetBase = isPlayerSide ? (WORLD_CONSTANTS as { BASE_ENTITY_SIZE_ENEMY: number }).BASE_ENTITY_SIZE_ENEMY : (WORLD_CONSTANTS as { BASE_ENTITY_SIZE_PLAYER: number }).BASE_ENTITY_SIZE_PLAYER
-        const targetSize = targetBase * scale
-        
-const ENTITY_CENTER_HALF_FACTOR = 0.5;
-
-        const myCenterX = props.position.x + (mySize * ENTITY_CENTER_HALF_FACTOR)
-        const myCenterY = props.position.y + (mySize * ENTITY_CENTER_HALF_FACTOR)
-        
-        const targetCenterX = props.targetPosition.x + (targetSize * ENTITY_CENTER_HALF_FACTOR)
-        const targetCenterY = props.targetPosition.y + (targetSize * ENTITY_CENTER_HALF_FACTOR)
-
-        const dx = targetCenterX - myCenterX
-        const dy = targetCenterY - myCenterY
-        const length = Math.sqrt(dx * dx + dy * dy)
-        if (length > 0) {
-          nx = dx / length
-          ny = dy / length
-        }
-      }
-      
-      if (move.selfKO || cat === 'selfKO') {
-        const shakeTimeline = gsap.timeline()
-        for (let i = 0; i < SELFKO_SHAKE_COUNT; i++) {
-          const shakeX = (Math.random() - 0.5) * SELFKO_SHAKE_RANGE_PX
-          const shakeY = (Math.random() - 0.5) * SELFKO_SHAKE_RANGE_PX
-          shakeTimeline.to(spriteRef.value, {
-            x: shakeX,
-            y: shakeY,
-            duration: SELFKO_SHAKE_DURATION_SEC,
-            ease: "none"
-          })
-        }
-        tl.add(shakeTimeline)
-        
-        tl.add(() => {
-          if (props.pokemon) {
-            gameBus.emit('PLAY_CRY', { name: props.pokemon.id || props.pokemon.name, isFaint: true })
-          }
-        })
-
-
-        tl.to(spriteRef.value, {
-          scale: SELFKO_EXPLODE_SCALE,
-          filter: `Brightness(${SELFKO_EXPLODE_BRIGHTNESS}) Drop-Shadow(0 0 ${SELFKO_EXPLODE_SHADOW_PX}px ${SELFKO_EXPLODE_PRIMARY_COLOR})`,
-          duration: SELFKO_EXPLODE_UP_DURATION_SEC,
-          ease: "power2.out"
-        })
-        
-        tl.to(spriteRef.value, {
-          scale: 0,
-          opacity: 0,
-          filter: `Brightness(${SELFKO_EXPLODE_FLASH_BRIGHTNESS}) Drop-Shadow(0 0 ${SELFKO_EXPLODE_FLASH_SHADOW_PX}px ${SELFKO_EXPLODE_FLASH_COLOR})`,
-          duration: SELFKO_EXPLODE_DOWN_DURATION_SEC,
-          ease: "power2.in"
-        })
-
-        tl.to(spriteRef.value, {
-          x: 0,
-          y: 0,
-          scale: 1,
-          opacity: 1,
-          filter: "Brightness(1)",
-          clearProps: "all",
-          duration: SELFKO_SETTLE_DURATION_SEC
-        })
-      } else if (cat === 'physical' || !cat) {
-        const dashDist = ATTACK_DASH_DISTANCE_PX
-        const prepDist = ATTACK_PREP_DISTANCE_PX
-        
-        tl.to(spriteRef.value, { x: nx * prepDist, y: ny * prepDist, duration: GSAP_FAST_DURATION_SEC })
-          .to(spriteRef.value, { x: nx * dashDist, y: ny * dashDist, scale: ATTACK_SPECIAL_SCALE, duration: GSAP_STANDARD_DURATION_SEC, ease: "power2.out" })
-          .to(spriteRef.value, { x: 0, y: 0, scale: 1, duration: GSAP_STANDARD_DURATION_SEC, ease: "power1.inOut" })
-      } else if (cat === 'special') {
-        tl.fromTo(spriteRef.value, 
-          { filter: "Brightness(1)", x: 0, y: 0, scale: 1 },
-          { 
-            x: nx * ATTACK_SPECIAL_PULSE_DISTANCE_PX, 
-            y: ny * ATTACK_SPECIAL_PULSE_DISTANCE_PX, 
-            scale: ATTACK_SPECIAL_SCALE, 
-            filter: `Brightness(${ATTACK_SPECIAL_BRIGHTNESS})`, 
-            duration: ATTACK_SPECIAL_DURATION_SEC, 
-            yoyo: true, 
-            repeat: 1,
-            ease: "power2.out"
-          }
-        )
-      } else if (cat === 'status') {
-        const rot = isPlayerSide ? ATTACK_STATUS_ROTATION_DEG : -ATTACK_STATUS_ROTATION_DEG
-        tl.fromTo(spriteRotationRef.value, 
-          { filter: "Brightness(1)", rotation: 0, scale: 1 },
-          { 
-            rotation: rot, 
-            scale: ATTACK_STATUS_SCALE, 
-            filter: `Brightness(${ATTACK_STATUS_BRIGHTNESS})`, 
-            duration: ATTACK_STATUS_DURATION_SEC, 
-            yoyo: true, 
-            repeat: 1,
-            ease: "power2.out"
-          }
-        )
-      }
-      
-      const animKey = `attack-${props.side}`
-      gameBus.emit('REGISTER_TWEEN', { key: animKey, tween: tl })
     }
   })
 

@@ -49,7 +49,8 @@ export const STAT_EMOJI_MAP = {
   spe: { icon: '💨', name: 'Velocidad' },
   acc: { icon: '🎯', name: 'Precisión' },
   eva: { icon: '🌪️', name: 'Evasión' }
-} as const
+} as const;
 
 export type BattleStatusKey = keyof typeof STATUS_EMOJI_MAP;
 export type BattleStatKey = keyof typeof STAT_EMOJI_MAP;
+

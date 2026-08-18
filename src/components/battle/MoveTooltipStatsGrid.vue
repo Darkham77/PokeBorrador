@@ -1,5 +1,12 @@
 <script setup lang="ts">
 import type { ActiveMoveDetails } from '@/composables/battle/useMoveTooltip'
+import {
+  formatPowerDisplay,
+  formatAccuracyDisplay,
+  formatStatValueDisplay,
+  getArrowForClass,
+  getArrowForStage
+} from './moveTooltipStatsGridHelper.ts'
 
 defineProps<{
   activeDetails: ActiveMoveDetails
@@ -15,20 +22,12 @@ defineProps<{
         class="stat-val"
         :class="activeDetails.power.class"
       >
-        <template v-if="activeDetails.power.base === activeDetails.power.final || activeDetails.power.final === '-'">
-          {{ activeDetails.power.final }}
-        </template>
-        <template v-else>
-          {{ activeDetails.power.base }} ➔ {{ activeDetails.power.final }}
-          <span
-            v-if="activeDetails.power.class === 'boosted'"
-            class="arrow up"
-          >▲</span>
-          <span
-            v-if="activeDetails.power.class === 'penalized'"
-            class="arrow down"
-          >▼</span>
-        </template>
+        {{ formatPowerDisplay(activeDetails.power.base, activeDetails.power.final) }}
+        <span
+          v-if="getArrowForClass(activeDetails.power.class).show"
+          class="arrow"
+          :class="getArrowForClass(activeDetails.power.class).isUp ? 'up' : 'down'"
+        >{{ getArrowForClass(activeDetails.power.class).isUp ? '▲' : '▼' }}</span>
       </span>
     </div>
     
@@ -39,21 +38,12 @@ defineProps<{
         class="stat-val"
         :class="activeDetails.accuracy.class"
       >
-        <template v-if="activeDetails.accuracy.base === activeDetails.accuracy.final">
-          {{ activeDetails.accuracy.base === 1000 ? '♾️' : activeDetails.accuracy.base + '%' }}
-        </template>
-        <template v-else>
-          {{ activeDetails.accuracy.base === 1000 ? '♾️' : activeDetails.accuracy.base + '%' }} ➔ 
-          {{ activeDetails.accuracy.final === 1000 ? '♾️' : activeDetails.accuracy.final + '%' }}
-          <span
-            v-if="activeDetails.accuracy.class === 'boosted'"
-            class="arrow up"
-          >▲</span>
-          <span
-            v-if="activeDetails.accuracy.class === 'penalized'"
-            class="arrow down"
-          >▼</span>
-        </template>
+        {{ formatAccuracyDisplay(activeDetails.accuracy.base, activeDetails.accuracy.final) }}
+        <span
+          v-if="getArrowForClass(activeDetails.accuracy.class).show"
+          class="arrow"
+          :class="getArrowForClass(activeDetails.accuracy.class).isUp ? 'up' : 'down'"
+        >{{ getArrowForClass(activeDetails.accuracy.class).isUp ? '▲' : '▼' }}</span>
       </span>
     </div>
 
@@ -100,20 +90,12 @@ defineProps<{
         class="stat-val"
         :class="activeDetails.attackerStat.class"
       >
-        <template v-if="activeDetails.attackerStat.base === activeDetails.attackerStat.final">
-          {{ activeDetails.attackerStat.base }}
-        </template>
-        <template v-else>
-          {{ activeDetails.attackerStat.base }} ➔ {{ activeDetails.attackerStat.final }}
-          <span
-            v-if="activeDetails.attackerStat.stage > 0"
-            class="arrow up"
-          >▲</span>
-          <span
-            v-if="activeDetails.attackerStat.stage < 0"
-            class="arrow down"
-          >▼</span>
-        </template>
+        {{ formatStatValueDisplay(activeDetails.attackerStat.base, activeDetails.attackerStat.final) }}
+        <span
+          v-if="getArrowForStage(activeDetails.attackerStat.stage).show"
+          class="arrow"
+          :class="getArrowForStage(activeDetails.attackerStat.stage).isUp ? 'up' : 'down'"
+        >{{ getArrowForStage(activeDetails.attackerStat.stage).isUp ? '▲' : '▼' }}</span>
       </span>
     </div>
 
@@ -127,20 +109,12 @@ defineProps<{
         class="stat-val"
         :class="activeDetails.defenderStat.class"
       >
-        <template v-if="activeDetails.defenderStat.base === activeDetails.defenderStat.final">
-          {{ activeDetails.defenderStat.base }}
-        </template>
-        <template v-else>
-          {{ activeDetails.defenderStat.base }} ➔ {{ activeDetails.defenderStat.final }}
-          <span
-            v-if="activeDetails.defenderStat.stage > 0"
-            class="arrow up"
-          >▲</span>
-          <span
-            v-if="activeDetails.defenderStat.stage < 0"
-            class="arrow down"
-          >▼</span>
-        </template>
+        {{ formatStatValueDisplay(activeDetails.defenderStat.base, activeDetails.defenderStat.final) }}
+        <span
+          v-if="getArrowForStage(activeDetails.defenderStat.stage).show"
+          class="arrow"
+          :class="getArrowForStage(activeDetails.defenderStat.stage).isUp ? 'up' : 'down'"
+        >{{ getArrowForStage(activeDetails.defenderStat.stage).isUp ? '▲' : '▼' }}</span>
       </span>
     </div>
   </div>

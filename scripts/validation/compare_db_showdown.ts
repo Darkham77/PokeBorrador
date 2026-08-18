@@ -17,80 +17,117 @@ const REPORT_OUTPUT_PATH = path.resolve(process.cwd(), 'scratch/db_comparison_de
 
 // Diccionario de traducción de tipos del Core (inglés) a Showdown ES (español)
 const TYPE_MAP: Record<string, string> = {
-  'grass': 'Planta',
-  'poison': 'Veneno',
-  'fire': 'Fuego',
-  'flying': 'Volador',
-  'water': 'Agua',
-  'bug': 'Bicho',
-  'normal': 'Normal',
-  'electric': 'Eléctrico',
-  'ground': 'Tierra',
-  'fairy': 'Hada',
-  'dark': 'Siniestro',
-  'fighting': 'Lucha',
-  'steel': 'Acero',
-  'ice': 'Hielo',
-  'ghost': 'Fantasma',
-  'rock': 'Roca',
-  'psychic': 'Psíquico',
-  'dragon': 'Dragón'
+  grass: 'Planta',
+  poison: 'Veneno',
+  fire: 'Fuego',
+  flying: 'Volador',
+  water: 'Agua',
+  bug: 'Bicho',
+  normal: 'Normal',
+  electric: 'Eléctrico',
+  ground: 'Tierra',
+  fairy: 'Hada',
+  dark: 'Siniestro',
+  fighting: 'Lucha',
+  steel: 'Acero',
+  ice: 'Hielo',
+  ghost: 'Fantasma',
+  rock: 'Roca',
+  psychic: 'Psíquico',
+  dragon: 'Dragón'
 };
+
+const STAT_KEYS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
+
+interface ShowdownPokeSpec {
+  baseStats: Record<string, number>;
+  types?: string[];
+  abilities?: string[];
+}
+
+interface ShowdownMoveSpec {
+  basePower?: number;
+  accuracy?: number | boolean;
+  pp?: number;
+  priority?: number;
+}
 
 function normalizeId(id: string): string {
   return id.toLowerCase().replace(/[^a-z0-9]/g, ''); // string-ok
 }
 
-async function main() {
-  console.log(styleText('bold', '\n--- 📊 INICIANDO COMPARADOR DE BASES DE DATOS ---'));
+type CorePokemonEntry = NonNullable<(typeof POKEMON_DB)[keyof typeof POKEMON_DB]>;
 
-  // 1. Cargar la base de datos de Showdown traducida
-  interface ShowdownPokeSpec {
-    baseStats: Record<string, number>;
-    types?: string[];
-    abilities?: string[];
+function comparePokemonStats(
+  corePoke: CorePokemonEntry,
+  sdPoke: ShowdownPokeSpec,
+  pokemonDiffsTable: string[]
+): number {
+  let discrepancies = 0;
+  for (const stat of STAT_KEYS) {
+    const coreVal = Reflect.get(corePoke, stat);
+    const sdVal = sdPoke.baseStats[stat];
+    if (coreVal !== sdVal) {
+      discrepancies++;
+      pokemonDiffsTable.push(`| ${corePoke.name} | Stat: ${stat.toUpperCase()} | ${coreVal} | ${sdVal} | Diferencia de Stat |`);
+    }
   }
-  interface ShowdownMoveSpec {
-    basePower?: number;
-    accuracy?: number | boolean;
-    pp?: number;
-    priority?: number;
-  }
-  let showdownDB: { pokemon: Record<string, ShowdownPokeSpec>; moves: Record<string, ShowdownMoveSpec> };
-  try {
-    const rawData = await fs.readFile(SHOWDOWN_DB_PATH, 'utf8');
-    showdownDB = JSON.parse(rawData) as typeof showdownDB;
-  } catch (error) {
-    console.error(styleText('red', `❌ No se pudo cargar el archivo de Showdown en ${SHOWDOWN_DB_PATH}: ${(error as Error).message}`));
-    process.exit(1);
-  }
+  return discrepancies;
+}
 
-  const reportLines: string[] = []; // no-domain
-  reportLines.push('# Reporte Detallado de Comparación de Bases de Datos');
-  reportLines.push(`*Generado el: ${new Date().toISOString()}*\n`);
-  reportLines.push('Este reporte compara los Pokémon, habilidades y movimientos del juego core frente a la extracción de Pokémon Showdown (Gen 3).\n');
+function comparePokemonTypes(
+  corePoke: CorePokemonEntry,
+  sdPoke: ShowdownPokeSpec,
+  pokemonDiffsTable: string[]
+): number {
+  const coreTypes: string[] = []; // no-domain
+  if (corePoke.type) coreTypes.push(TYPE_MAP[corePoke.type] || corePoke.type);
+  const type2 = Reflect.get(corePoke, 'type2') as string | undefined;
+  if (type2) coreTypes.push(TYPE_MAP[type2] || type2);
 
-  // Contadores
+  const sdTypes = sdPoke.types || [];
+  const coreTypesStr = coreTypes.slice().sort().join(', ');
+  const sdTypesStr = sdTypes.slice().sort().join(', ');
+
+  if (coreTypesStr !== sdTypesStr) {
+    pokemonDiffsTable.push(`| ${corePoke.name} | Tipos | [${coreTypesStr}] | [${sdTypesStr}] | Diferencia de Tipos |`);
+    return 1;
+  }
+  return 0;
+}
+
+function comparePokemonAbilities(
+  coreId: string,
+  coreName: string,
+  sdPoke: ShowdownPokeSpec,
+  pokemonDiffsTable: string[]
+): number {
+  const coreAbilities = pokemonDataProvider.getSpeciesAbilities(coreId);
+  const sdAbilities = sdPoke.abilities || [];
+  const coreAbiStr = coreAbilities.slice().sort().map(a => toID(a)).join(', ');
+  const sdAbiStr = sdAbilities.slice().sort().map((a: string) => toID(a)).join(', ');
+
+  if (coreAbiStr !== sdAbiStr) {
+    pokemonDiffsTable.push(`| ${coreName} | Habilidades | [${coreAbiStr}] | [${sdAbiStr}] | Diferencia de Habilidades |`);
+    return 1;
+  }
+  return 0;
+}
+
+function comparePokemonSpecies(normalizedShowdownPoke: Map<string, ShowdownPokeSpec>) {
+  const pokemonDiffsTable: string[] = [ // no-domain
+    '## 1. Comparación de Pokémon y Estadísticas',
+    '| Pokémon | Atributo | Valor Juego | Valor Showdown | Tipo Discrepancia |',
+    '| :--- | :--- | :--- | :--- | :--- |'
+  ];
+
   let totalPokemonCore = 0;
   let matchingPokemon = 0;
   let unmatchedPokemon = 0;
   let statsDiscrepancies = 0;
   let typeDiscrepancies = 0;
   let abilityDiscrepancies = 0;
-  let moveStatsDiscrepancies = 0;
-  let missingMovesInShowdown = 0;
 
-  const pokemonDiffsTable: string[] = []; // no-domain
-  pokemonDiffsTable.push('## 1. Comparación de Pokémon y Estadísticas');
-  pokemonDiffsTable.push('| Pokémon | Atributo | Valor Juego | Valor Showdown | Tipo Discrepancia |');
-  pokemonDiffsTable.push('| :--- | :--- | :--- | :--- | :--- |');
-
-  const normalizedShowdownPoke = new Map<string, ShowdownPokeSpec>();
-  for (const key of Object.keys(showdownDB.pokemon)) {
-    normalizedShowdownPoke.set(normalizeId(key), showdownDB.pokemon[key] as ShowdownPokeSpec);
-  }
-
-  // Comparar Pokémon uno por uno
   for (const [coreId, corePoke] of Object.entries(POKEMON_DB)) {
     totalPokemonCore++;
     const normId = normalizeId(coreId);
@@ -103,62 +140,37 @@ async function main() {
     }
 
     matchingPokemon++;
-
-    // Comparar Estadísticas Base
-    const statsKeys = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
-    for (const stat of statsKeys) {
-      const coreVal = Reflect.get(corePoke, stat);
-      const sdVal = sdPoke.baseStats[stat];
-      if (coreVal !== sdVal) {
-        statsDiscrepancies++;
-        pokemonDiffsTable.push(`| ${corePoke.name} | Stat: ${stat.toUpperCase()} | ${coreVal} | ${sdVal} | Diferencia de Stat |`);
-      }
-    }
-
-    // Comparar Tipos
-    const coreTypes: string[] = []; // no-domain
-    if (corePoke.type) coreTypes.push(TYPE_MAP[corePoke.type] || corePoke.type);
-    const type2 = Reflect.get(corePoke, 'type2') as string | undefined;
-    if (type2) coreTypes.push(TYPE_MAP[type2] || type2);
-
-    const sdTypes = sdPoke.types || [];
-    const coreTypesStr = coreTypes.slice().sort().join(', ');
-    const sdTypesStr = sdTypes.slice().sort().join(', ');
-
-    if (coreTypesStr !== sdTypesStr) {
-      typeDiscrepancies++;
-      pokemonDiffsTable.push(`| ${corePoke.name} | Tipos | [${coreTypesStr}] | [${sdTypesStr}] | Diferencia de Tipos |`);
-    }
-
-    // Comparar Habilidades
-    const coreAbilities = pokemonDataProvider.getSpeciesAbilities(coreId);
-    const sdAbilities = sdPoke.abilities || [];
-    const coreAbiStr = coreAbilities.slice().sort().map(a => toID(a)).join(', ');
-    const sdAbiStr = sdAbilities.slice().sort().map((a: string) => toID(a)).join(', ');
-
-    if (coreAbiStr !== sdAbiStr) {
-      abilityDiscrepancies++;
-      pokemonDiffsTable.push(`| ${corePoke.name} | Habilidades | [${coreAbiStr}] | [${sdAbiStr}] | Diferencia de Habilidades |`);
-    }
+    statsDiscrepancies += comparePokemonStats(corePoke, sdPoke, pokemonDiffsTable);
+    typeDiscrepancies += comparePokemonTypes(corePoke, sdPoke, pokemonDiffsTable);
+    abilityDiscrepancies += comparePokemonAbilities(coreId, corePoke.name, sdPoke, pokemonDiffsTable);
   }
 
-  // Comparar Movimientos uno por uno
-  const moveDiffsTable: string[] = []; // no-domain
-  moveDiffsTable.push('\n## 2. Comparación de Movimientos');
-  moveDiffsTable.push('| Movimiento | Propiedad | Valor Juego | Valor Showdown |');
-  moveDiffsTable.push('| :--- | :--- | :--- | :--- |');
+  return {
+    totalPokemonCore,
+    matchingPokemon,
+    unmatchedPokemon,
+    statsDiscrepancies,
+    typeDiscrepancies,
+    abilityDiscrepancies,
+    pokemonDiffsTable
+  };
+}
 
-  const normalizedShowdownMoves = new Map<string, ShowdownMoveSpec>();
-  for (const key of Object.keys(showdownDB.moves)) {
-    normalizedShowdownMoves.set(normalizeId(key), showdownDB.moves[key] as ShowdownMoveSpec);
-  }
+function compareMoves(normalizedShowdownMoves: Map<string, ShowdownMoveSpec>) {
+  const moveDiffsTable: string[] = [ // no-domain
+    '\n## 2. Comparación de Movimientos',
+    '| Movimiento | Propiedad | Valor Juego | Valor Showdown |',
+    '| :--- | :--- | :--- | :--- |'
+  ];
 
+  let moveStatsDiscrepancies = 0;
+  let missingMovesInShowdown = 0;
   const allGen3Moves = Dex.forGen(ACTIVE_GENERATION).moves.all().filter(m => m.exists);
 
   for (const move of allGen3Moves) {
     const moveId = move.id;
     const coreMove = pokemonDataProvider.getMoveData(moveId);
-    if (!coreMove) continue; // solo comparamos los que provee getMoveData
+    if (!coreMove) continue;
 
     const normMoveId = normalizeId(moveId);
     const sdMove = normalizedShowdownMoves.get(normMoveId);
@@ -169,31 +181,22 @@ async function main() {
       continue;
     }
 
-    // Comparar Potencia
-    const corePower = coreMove.power;
-    const sdPower = sdMove.basePower;
-    if (corePower !== sdPower) {
+    if (coreMove.power !== sdMove.basePower) {
       moveStatsDiscrepancies++;
-      moveDiffsTable.push(`| ${coreMove.name} (${moveId}) | Potencia | ${corePower} | ${sdPower} |`);
+      moveDiffsTable.push(`| ${coreMove.name} (${moveId}) | Potencia | ${coreMove.power} | ${sdMove.basePower} |`);
     }
 
-    // Comparar Accuracy
-    const coreAcc = coreMove.acc;
     const sdAcc = sdMove.accuracy === true ? 1000 : sdMove.accuracy;
-    if (coreAcc !== sdAcc) {
+    if (coreMove.acc !== sdAcc) {
       moveStatsDiscrepancies++;
-      moveDiffsTable.push(`| ${coreMove.name} (${moveId}) | Precisión | ${coreAcc} | ${sdMove.accuracy} |`);
+      moveDiffsTable.push(`| ${coreMove.name} (${moveId}) | Precisión | ${coreMove.acc} | ${sdMove.accuracy} |`);
     }
 
-    // Comparar PP
-    const corePP = coreMove.pp;
-    const sdPP = sdMove.pp;
-    if (corePP !== sdPP) {
+    if (coreMove.pp !== sdMove.pp) {
       moveStatsDiscrepancies++;
-      moveDiffsTable.push(`| ${coreMove.name} (${moveId}) | PP | ${corePP} | ${sdPP} |`);
+      moveDiffsTable.push(`| ${coreMove.name} (${moveId}) | PP | ${coreMove.pp} | ${sdMove.pp} |`);
     }
 
-    // Comparar Prioridad
     const corePriority = coreMove.priority || 0;
     const sdPriority = sdMove.priority || 0;
     if (corePriority !== sdPriority) {
@@ -202,30 +205,65 @@ async function main() {
     }
   }
 
-  // Añadir al reporte final
-  reportLines.push('## Resumen Estadístico');
-  reportLines.push(`- **Total Pokémon en el Juego**: ${totalPokemonCore}`);
-  reportLines.push(`- **Pokémon coincidentes con Showdown**: ${matchingPokemon}`);
-  reportLines.push(`- **Pokémon no encontrados en Showdown**: ${unmatchedPokemon}`);
-  reportLines.push(`- **Discrepancias de Estadísticas Base encontradas**: ${statsDiscrepancies}`);
-  reportLines.push(`- **Discrepancias de Tipo encontradas**: ${typeDiscrepancies}`);
-  reportLines.push(`- **Discrepancias de Habilidades encontradas**: ${abilityDiscrepancies}`);
-  reportLines.push(`- **Movimientos en el Juego**: ${allGen3Moves.length}`);
-  reportLines.push(`- **Movimientos del Juego ausentes en Showdown**: ${missingMovesInShowdown}`);
-  reportLines.push(`- **Movimientos con discrepancias de stats (Potencia/Precisión/PP/Prioridad)**: ${moveStatsDiscrepancies}`);
-  reportLines.push('\n---\n');
+  return {
+    allGen3MovesCount: allGen3Moves.length,
+    moveStatsDiscrepancies,
+    missingMovesInShowdown,
+    moveDiffsTable
+  };
+}
 
-  reportLines.push(...pokemonDiffsTable);
-  reportLines.push(...moveDiffsTable);
+async function main() {
+  console.log(styleText('bold', '\n--- 📊 INICIANDO COMPARADOR DE BASES DE DATOS ---'));
 
-  // Asegurar que la carpeta de destino exista
+  let showdownDB: { pokemon: Record<string, ShowdownPokeSpec>; moves: Record<string, ShowdownMoveSpec> };
+  try {
+    const rawData = await fs.readFile(SHOWDOWN_DB_PATH, 'utf8');
+    showdownDB = JSON.parse(rawData) as typeof showdownDB;
+  } catch (error) {
+    console.error(styleText('red', `❌ No se pudo cargar el archivo de Showdown en ${SHOWDOWN_DB_PATH}: ${(error as Error).message}`));
+    process.exit(1);
+  }
+
+  const normalizedShowdownPoke = new Map<string, ShowdownPokeSpec>();
+  for (const key of Object.keys(showdownDB.pokemon)) {
+    normalizedShowdownPoke.set(normalizeId(key), showdownDB.pokemon[key] as ShowdownPokeSpec);
+  }
+
+  const normalizedShowdownMoves = new Map<string, ShowdownMoveSpec>();
+  for (const key of Object.keys(showdownDB.moves)) {
+    normalizedShowdownMoves.set(normalizeId(key), showdownDB.moves[key] as ShowdownMoveSpec);
+  }
+
+  const pokeResults = comparePokemonSpecies(normalizedShowdownPoke);
+  const moveResults = compareMoves(normalizedShowdownMoves);
+
+  const reportLines: string[] = [ // no-domain
+    '# Reporte Detallado de Comparación de Bases de Datos',
+    `*Generado el: ${new Date().toISOString()}*\n`,
+    'Este reporte compara los Pokémon, habilidades y movimientos del juego core frente a la extracción de Pokémon Showdown (Gen 3).\n',
+    '## Resumen Estadístico',
+    `- **Total Pokémon en el Juego**: ${pokeResults.totalPokemonCore}`,
+    `- **Pokémon coincidentes con Showdown**: ${pokeResults.matchingPokemon}`,
+    `- **Pokémon no encontrados en Showdown**: ${pokeResults.unmatchedPokemon}`,
+    `- **Discrepancias de Estadísticas Base encontradas**: ${pokeResults.statsDiscrepancies}`,
+    `- **Discrepancias de Tipo encontradas**: ${pokeResults.typeDiscrepancies}`,
+    `- **Discrepancias de Habilidades encontradas**: ${pokeResults.abilityDiscrepancies}`,
+    `- **Movimientos en el Juego**: ${moveResults.allGen3MovesCount}`,
+    `- **Movimientos del Juego ausentes en Showdown**: ${moveResults.missingMovesInShowdown}`,
+    `- **Movimientos con discrepancias de stats (Potencia/Precisión/PP/Prioridad)**: ${moveResults.moveStatsDiscrepancies}`,
+    '\n---\n',
+    ...pokeResults.pokemonDiffsTable,
+    ...moveResults.moveDiffsTable
+  ];
+
   await fs.mkdir(path.dirname(REPORT_OUTPUT_PATH), { recursive: true });
   await fs.writeFile(REPORT_OUTPUT_PATH, reportLines.join('\n'), 'utf8');
 
   console.log(styleText('green', `\n✅ Reporte generado con éxito en: ${REPORT_OUTPUT_PATH}`));
-  console.log(`- Pokémon core analizados: ${totalPokemonCore}`);
-  console.log(`- Discrepancias encontradas en stats: ${statsDiscrepancies}, tipos: ${typeDiscrepancies}, habilidades: ${abilityDiscrepancies}`);
-  console.log(`- Discrepancias de stats en movimientos: ${moveStatsDiscrepancies}`);
+  console.log(`- Pokémon core analizados: ${pokeResults.totalPokemonCore}`);
+  console.log(`- Discrepancias encontradas en stats: ${pokeResults.statsDiscrepancies}, tipos: ${pokeResults.typeDiscrepancies}, habilidades: ${pokeResults.abilityDiscrepancies}`);
+  console.log(`- Discrepancias de stats en movimientos: ${moveResults.moveStatsDiscrepancies}`);
 }
 
 main().catch((err) => {

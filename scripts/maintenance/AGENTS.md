@@ -9,4 +9,5 @@ General system maintenance scripts, import fixes, server configurations, and dev
 
 ## Child DOX Index
 
+- [analyzers/AGENTS.md](./analyzers/AGENTS.md)
 - [audit_showdown/AGENTS.md](./audit_showdown/AGENTS.md)

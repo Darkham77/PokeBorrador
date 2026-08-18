@@ -236,122 +236,59 @@ function normalize(str: string): string {
     .replace(/[^a-z0-9]/g, '');
 }
 
-async function main() {
-  console.log('Starting player saves migration to official Showdown IDs...');
-
-  // 1. Load local databases for translation mapping
-  const rawAbilities = await fs.readFile(path.resolve(process.cwd(), 'src/data/battle/abilities.json'), 'utf8');
-  const rawMoves = await fs.readFile(path.resolve(process.cwd(), 'src/data/battle/moves.json'), 'utf8');
-  const showdownDB = {
-    abilities: JSON.parse(rawAbilities) as Record<string, { name?: string }>, // open-record
-    moves: JSON.parse(rawMoves) as Record<string, { name?: string }> // open-record
-  };
-
-  // Build Abilities Map
+function buildAbilityMap(showdownAbilities: Record<string, { name?: string }>): Map<string, string> {
   const abilityMap = new Map<string, string>();
   for (const [esName, enId] of Object.entries(ABILITY_TO_SHOWDOWN)) {
     abilityMap.set(normalize(esName), enId);
     abilityMap.set(normalize(enId), enId);
   }
   const legacyAbilities: Record<string, string> = {
-    'metamorfosis': 'shedskin',
-    'escudopolvo': 'shielddust',
-    'polvoescudo': 'shielddust',
-    'correcaminos': 'runaway',
-    'obstruir': 'soundproof',
-    'escurridizo': 'limber',
-    'puntocura': 'naturalcure',
-    'infiltrador': 'infiltrator',
-    'fuga': 'runaway',
-    'mudar': 'shedskin',
-    'alboroto': 'soundproof',
-    'nerviosismo': 'hustle',
-    'podersolar': 'solarpower',
-    'escape': 'runaway',
-    'adaptable': 'adaptability',
-    'rafaga': 'speedboost',
-    'velohumedo': 'waterveil',
-    'humedad': 'damp',
-    'francotirador': 'sniper',
-    'rivalidad': 'rivalry',
-    'muromagico': 'magicguard',
-    'curanatural': 'naturalcure'
+    'metamorfosis': 'shedskin', 'escudopolvo': 'shielddust', 'polvoescudo': 'shielddust', 'correcaminos': 'runaway',
+    'obstruir': 'soundproof', 'escurridizo': 'limber', 'puntocura': 'naturalcure', 'infiltrador': 'infiltrator',
+    'fuga': 'runaway', 'mudar': 'shedskin', 'alboroto': 'soundproof', 'nerviosismo': 'hustle',
+    'podersolar': 'solarpower', 'escape': 'runaway', 'adaptable': 'adaptability', 'rafaga': 'speedboost',
+    'velohumedo': 'waterveil', 'humedad': 'damp', 'francotirador': 'sniper', 'rivalidad': 'rivalry',
+    'muromagico': 'magicguard', 'curanatural': 'naturalcure'
   };
   for (const [legacy, enId] of Object.entries(legacyAbilities)) {
     abilityMap.set(normalize(legacy), enId);
   }
-  for (const [id, data] of Object.entries(showdownDB.abilities as Record<string, { name?: string }>)) { // open-record
+  for (const [id, data] of Object.entries(showdownAbilities)) {
     abilityMap.set(normalize(id), id);
-    if (data.name) {
-      abilityMap.set(normalize(data.name), id);
-    }
+    if (data.name) abilityMap.set(normalize(data.name), id);
   }
+  return abilityMap;
+}
 
-  // Build Natures Map
+function buildNatureMap(): Map<string, string> {
   const natureMap = new Map<string, string>();
   for (const [esName, enId] of Object.entries(NATURE_TO_SHOWDOWN)) {
     natureMap.set(normalize(esName), enId);
     natureMap.set(normalize(enId), enId);
   }
   const legacyNatures: Record<string, string> = {
-    'activa': 'active',
-    'activo': 'active',
-    'hurana': 'lonely',
-    'hurano': 'lonely',
-    'audaz': 'brave',
-    'firme': 'adamant',
-    'picara': 'naughty',
-    'picaro': 'naughty',
-    'osada': 'bold',
-    'osado': 'bold',
-    'docil': 'docile',
-    'placida': 'relaxed',
-    'placido': 'relaxed',
-    'agitada': 'impish',
-    'agitado': 'impish',
-    'floja': 'lax',
-    'flojo': 'lax',
-    'timida': 'timid',
-    'timido': 'timid',
-    'afable': 'mild',
-    'tasa': 'quiet',
-    'seria': 'serious',
-    'serio': 'serious',
-    'alegre': 'jolly',
-    'ingenua': 'naive',
-    'ingenuo': 'naive',
-    'modesta': 'modest',
-    'modesto': 'modest',
-    'raro': 'serious',
-    'rara': 'quirky',
-    'serena': 'calm',
-    'sereno': 'calm',
-    'amable': 'gentle',
-    'grosera': 'sassy',
-    'grosero': 'sassy',
-    'cauta': 'careful',
-    'cauto': 'careful',
-    'quirky': 'quirky',
-    'manso': 'quiet',
-    'alocada': 'rash',
-    'alocado': 'rash',
-    'moderado': 'serious',
-    'jovial': 'jolly',
-    'tranquilo': 'calm'
+    'activa': 'active', 'activo': 'active', 'hurana': 'lonely', 'hurano': 'lonely', 'audaz': 'brave',
+    'firme': 'adamant', 'picara': 'naughty', 'picaro': 'naughty', 'osada': 'bold', 'osado': 'bold',
+    'docil': 'docile', 'placida': 'relaxed', 'placido': 'relaxed', 'agitada': 'impish', 'agitado': 'impish',
+    'floja': 'lax', 'flojo': 'lax', 'timida': 'timid', 'timido': 'timid', 'afable': 'mild',
+    'tasa': 'quiet', 'seria': 'serious', 'serio': 'serious', 'alegre': 'jolly', 'ingenua': 'naive',
+    'ingenuo': 'naive', 'modesta': 'modest', 'modesto': 'modest', 'raro': 'serious', 'rara': 'quirky',
+    'serena': 'calm', 'sereno': 'calm', 'amable': 'gentle', 'grosera': 'sassy', 'grosero': 'sassy',
+    'cauta': 'careful', 'cauto': 'careful', 'quirky': 'quirky', 'manso': 'quiet', 'alocada': 'rash',
+    'alocado': 'rash', 'moderado': 'serious', 'jovial': 'jolly', 'tranquilo': 'calm'
   };
   for (const [legacy, enId] of Object.entries(legacyNatures)) {
     natureMap.set(normalize(legacy), enId);
   }
+  return natureMap;
+}
 
-  // Build Moves Map
+function buildMoveMap(showdownMoves: Record<string, { name?: string }>): Map<string, string> {
   const moveMap = new Map<string, string>();
-  for (const [id, data] of Object.entries(showdownDB.moves as Record<string, { name?: string }>)) { // open-record
+  for (const [id, data] of Object.entries(showdownMoves)) {
     moveMap.set(id, id);
-    if (data.name) {
-      moveMap.set(normalize(data.name), id);
-    }
+    if (data.name) moveMap.set(normalize(data.name), id);
   }
-
   const legacyMoves: Record<string, string> = {
     'destructor': 'pound', 'arena': 'sandattack', 'portazo': 'slam', 'acidificacion': 'acidarmor', 'bubblebeam': 'bubblebeam',
     'rodar': 'rollout', 'huesumerang': 'bonemerang', 'golpecabeza': 'headbutt', 'picotazo': 'peck', 'persecucion': 'pursuit',
@@ -393,133 +330,144 @@ async function main() {
   for (const [legacy, enId] of Object.entries(legacyMoves)) {
     moveMap.set(normalize(legacy), enId);
   }
+  return moveMap;
+}
 
-  // 2. Load backup
+function migratePokemonSpecies(poke: Record<string, unknown>): void {
+  if (!poke.id) return;
+  const oldId = String(poke.id);
+  const normSpeciesId = normalize(oldId);
+  let resolvedSpecies = normSpeciesId;
+  if (SPECIES_TO_SHOWDOWN[normSpeciesId]) {
+    resolvedSpecies = SPECIES_TO_SHOWDOWN[normSpeciesId];
+  } else {
+    const species = Dex.species.get(normSpeciesId);
+    if (species.exists) resolvedSpecies = species.id;
+  }
+  poke.species = resolvedSpecies;
+}
+
+function migratePokemonAbility(poke: Record<string, unknown>, abilityMap: Map<string, string>): void {
+  if (!poke.ability || !poke.species) return;
+  const rawAbility = String(poke.ability);
+  const normAbility = normalize(rawAbility);
+  const abilityId = abilityMap.get(normAbility) || normAbility;
+  const abilityObj = Dex.abilities.get(abilityId);
+  const speciesData = Dex.species.get(String(poke.species));
+  const validAbilities = speciesData.exists
+    ? Object.values(speciesData.abilities).map(a => Dex.toID(a))
+    : ['overgrow'];
+
+  if (abilityObj.exists && validAbilities.includes(abilityObj.id)) {
+    poke.ability = abilityObj.id;
+  } else {
+    const fallbackAbility = validAbilities[0] || 'overgrow';
+    console.log(`[Heal Migration] Pokémon: ${String(poke.name || poke.species)} - Replaced illegal ability "${rawAbility}" with "${fallbackAbility}"`);
+    poke.ability = fallbackAbility;
+  }
+}
+
+function healIllegalPokemonMoves(poke: Record<string, unknown>): void {
+  if (!poke.species || !poke.moves || !Array.isArray(poke.moves)) return;
+  const speciesId = String(poke.species);
+  const legalMoves: Array<{ id: string; name: string }> = [];
+  const currentMoveIds = new Set<string>();
+  let healedAny = false;
+
+  for (const m of poke.moves as Array<{ id?: string; name?: string }>) {
+    if (m && m.id) {
+      if (canLearnMove(speciesId, m.id)) {
+        legalMoves.push({ id: m.id, name: Dex.moves.get(m.id).name || m.id });
+        currentMoveIds.add(m.id);
+      } else {
+        healedAny = true;
+      }
+    }
+  }
+
+  if (!healedAny) return;
+
+  const originalCount = poke.moves.length;
+  const level = (poke as { level?: number }).level || 5;
+  const pool = getMovesAtLevel(speciesId, level);
+
+  for (const poolMoveId of pool) {
+    if (legalMoves.length >= originalCount) break;
+    if (!currentMoveIds.has(poolMoveId)) {
+      legalMoves.push({ id: poolMoveId, name: Dex.moves.get(poolMoveId).name || poolMoveId });
+      currentMoveIds.add(poolMoveId);
+    }
+  }
+
+  if (legalMoves.length === 0 && pool.length > 0) {
+    legalMoves.push({ id: pool[0]!, name: Dex.moves.get(pool[0]!).name || pool[0]! });
+  }
+
+  console.log(`[Heal Migration] Pokémon: ${String(poke.name || poke.species)} (Lvl ${level}) - Replaced illegal moves. Result:`, legalMoves.map(m => m.id));
+  poke.moves = legalMoves;
+}
+
+function migratePokemonMoves(poke: Record<string, unknown>, moveMap: Map<string, string>): number {
+  let count = 0;
+  if (!poke.moves || !Array.isArray(poke.moves)) return count;
+
+  for (const m of poke.moves as Array<{ id?: string; name?: string } | null>) {
+    if (!m) continue;
+    count++;
+    const normMove = normalize(m.name || m.id || '');
+    const resolvedId = moveMap.get(normMove) || normMove;
+    const move = Dex.moves.get(resolvedId);
+    m.id = move.exists ? move.id : resolvedId;
+    if (move.exists && move.name) m.name = move.name;
+  }
+
+  healIllegalPokemonMoves(poke);
+  return count;
+}
+
+async function main() {
+  console.log('Starting player saves migration to official Showdown IDs...');
+
+  const rawAbilities = await fs.readFile(path.resolve(process.cwd(), 'src/data/battle/abilities.json'), 'utf8');
+  const rawMoves = await fs.readFile(path.resolve(process.cwd(), 'src/data/battle/moves.json'), 'utf8');
+  const showdownDB = {
+    abilities: JSON.parse(rawAbilities) as Record<string, { name?: string }>, // open-record
+    moves: JSON.parse(rawMoves) as Record<string, { name?: string }> // open-record
+  };
+
+  const abilityMap = buildAbilityMap(showdownDB.abilities);
+  const natureMap = buildNatureMap();
+  const moveMap = buildMoveMap(showdownDB.moves);
+
   const rawBackup = await fs.readFile(BACKUP_FILE, 'utf8');
   const backup = JSON.parse(rawBackup) as BackupPayload;
-
   const gameSaves = backup.data.game_saves || [];
   let migratedPokes = 0;
   let migratedMovesCount = 0;
 
-  const gen = Dex;
-
-  // 3. Migrate each save
   for (const save of gameSaves) {
     const saveData = save.save_data;
     if (!saveData) continue;
 
     const teams = saveData.team || [];
     const boxes = saveData.box || [];
-    const allPokes = [...teams, ...boxes].filter(Boolean);
+    const allPokes = [...teams, ...boxes].filter(Boolean) as Record<string, unknown>[]; // open-record
 
     for (const poke of allPokes) {
       migratedPokes++;
+      migratePokemonSpecies(poke);
+      migratePokemonAbility(poke, abilityMap);
 
-      // A. Migrate Pokémon ID (Species)
-      if (poke.id) {
-        const oldId = String(poke.id);
-        const normSpeciesId = normalize(oldId);
-        let resolvedSpecies = normSpeciesId;
-        if (SPECIES_TO_SHOWDOWN[normSpeciesId]) {
-          resolvedSpecies = SPECIES_TO_SHOWDOWN[normSpeciesId];
-        } else {
-          const species = gen.species.get(normSpeciesId);
-          if (species.exists) {
-            resolvedSpecies = species.id;
-          }
-        }
-        poke.species = resolvedSpecies;
-      }
-
-      // B. Migrate and Heal Ability
-      if (poke.ability && poke.species) {
-        const normAbility = normalize(poke.ability);
-        const abilityId = abilityMap.get(normAbility) || normAbility;
-        const abilityObj = gen.abilities.get(abilityId);
-        
-        const speciesData = gen.species.get(poke.species);
-        const validAbilities = speciesData.exists 
-          ? Object.values(speciesData.abilities).map(a => Dex.toID(a)) 
-          : ['overgrow'];
-
-        if (abilityObj.exists && validAbilities.includes(abilityObj.id)) {
-          poke.ability = abilityObj.id;
-        } else {
-          const fallbackAbility = validAbilities[0] || 'overgrow';
-          console.log(`[Heal Migration] Pokémon: ${poke.name || poke.species} - Replaced illegal ability "${poke.ability}" with "${fallbackAbility}"`);
-          poke.ability = fallbackAbility;
-        }
-      }
-
-      // C. Migrate Nature
       if (poke.nature) {
-        const normNature = normalize(poke.nature);
+        const normNature = normalize(String(poke.nature));
         poke.nature = natureMap.get(normNature) || normNature;
       }
 
-      // D. Migrate and Heal Moves
-      if (poke.moves && Array.isArray(poke.moves)) {
-        // Step 1: Migrate moves to official Showdown IDs
-        for (const m of poke.moves) {
-          if (!m) continue;
-          migratedMovesCount++;
-
-          const normMove = normalize(m.name || m.id || '');
-          const resolvedId = moveMap.get(normMove) || normMove;
-          const move = gen.moves.get(resolvedId);
-          m.id = move.exists ? move.id : resolvedId;
-          if (move.exists && move.name) {
-            m.name = move.name;
-          }
-        }
-
-        // Step 2: Healing block for illegal moves (One-time migration patch)
-        if (poke.species) {
-          const legalMoves: Array<{ id: string; name: string }> = [];
-          const currentMoveIds = new Set<string>();
-          let healedAny = false;
-
-          for (const m of poke.moves) {
-            if (m && m.id) {
-              if (canLearnMove(poke.species, m.id)) {
-                legalMoves.push({ id: m.id, name: gen.moves.get(m.id).name || m.id });
-                currentMoveIds.add(m.id);
-              } else {
-                healedAny = true;
-              }
-            }
-          }
-
-          if (healedAny) {
-            const originalCount = poke.moves.length;
-            const level = (poke as { level?: number }).level || 5;
-            const pool = getMovesAtLevel(poke.species, level);
-            
-            for (const poolMoveId of pool) {
-              if (legalMoves.length >= originalCount) break;
-              if (!currentMoveIds.has(poolMoveId)) {
-                legalMoves.push({ id: poolMoveId, name: gen.moves.get(poolMoveId).name || poolMoveId });
-                currentMoveIds.add(poolMoveId);
-              }
-            }
-
-            // Fallback in case of 0 moves
-            if (legalMoves.length === 0 && pool.length > 0) {
-              legalMoves.push({ id: pool[0]!, name: gen.moves.get(pool[0]!).name || pool[0]! });
-            }
-
-            console.log(`[Heal Migration] Pokémon: ${poke.name || poke.species} (Lvl ${level}) - Replaced illegal moves. Result:`, legalMoves.map(m => m.id));
-            poke.moves = legalMoves;
-          }
-        }
-      }
+      migratedMovesCount += migratePokemonMoves(poke, moveMap);
     }
   }
 
-  // 4. Save migrated backup
   await fs.writeFile(OUTPUT_FILE, JSON.stringify(backup, null, 2), 'utf8');
-
   console.log(`\n🎉 Migración completada exitosamente!`);
   console.log(`📦 Pokémon migrados: ${migratedPokes}`);
   console.log(`⚔️ Movimientos migrados: ${migratedMovesCount}`);

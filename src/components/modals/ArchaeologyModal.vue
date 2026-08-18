@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// [PureVue-Ignore-Length]
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { gsap } from 'gsap'
 
@@ -45,29 +44,22 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-// Game configuration and difficulties
-const DIFFICULTIES = {
-  easy: { grid: 5, energy: 12, parts: 3, label: 'Fácil', items: 1, color: '#4ade80' },
-  medium: { grid: 6, energy: 10, parts: 4, label: 'Medio', items: 2, color: '#facc15' },
-  hard: { grid: 7, energy: 8, parts: 5, label: 'Difícil', items: 3, color: '#fb923c' },
-  expert: { grid: 8, energy: 6, parts: 6, label: 'Experto', items: 4, color: '#f87171' }
-} as const
-
-type DifficultyKey = keyof typeof DIFFICULTIES
+import {
+  ARCHAEOLOGY_DIFFICULTIES,
+  calculateArchaeologyDifficulty,
+  generateArchaeologyGrid,
+  getDistanceToNearestFossil,
+  type ArchaeologyDifficultyKey,
+  type ArchaeologyTile
+} from './archaeologyGameHelper.ts'
 
 // State
-const difficulty = ref<DifficultyKey>('easy')
+const difficulty = ref<ArchaeologyDifficultyKey>('easy')
 const gridSize = ref(5)
 const maxEnergy = ref(12)
 const totalFossilParts = ref(3)
 
-interface Tile {
-  r: number
-  c: number
-  isFossil: boolean
-  isDug: boolean
-  clue: 'HOT' | 'COLD' | ''
-}
+type Tile = ArchaeologyTile
 
 // State
 const grid = ref<Tile[]>([])
@@ -76,14 +68,6 @@ const fossilsFound = ref(0)
 const gameActive = ref(true)
 const feedback = ref('¡Excavá las rocas con cuidado!')
 const isFailed = ref(false)
-
-const ARCHAEOLOGY_RARE_DIFFICULTY_EASY_PCT = 10
-const ARCHAEOLOGY_RARE_DIFFICULTY_MEDIUM_PCT = 35
-const ARCHAEOLOGY_RARE_DIFFICULTY_HARD_PCT = 75
-
-const ARCHAEOLOGY_NORMAL_DIFFICULTY_EASY_PCT = 40
-const ARCHAEOLOGY_NORMAL_DIFFICULTY_MEDIUM_PCT = 70
-const ARCHAEOLOGY_NORMAL_DIFFICULTY_HARD_PCT = 90
 
 function scheduleGameplayDelay(delaySec: number, callback: () => void) {
   const tween = gsap.delayedCall(delaySec, callback)
@@ -94,120 +78,19 @@ function scheduleGameplayDelay(delaySec: number, callback: () => void) {
 
 // Initialize Game
 function initGame() {
-  // Determine difficulty automatically based on weighted probabilities & Pokemon rarity
-  const isRare = (props.rarity || 50) < 15
-  const randRoll = Math.random() * 100
-  let diff: DifficultyKey = 'easy'
-  
-  if (isRare) {
-    if (randRoll < ARCHAEOLOGY_RARE_DIFFICULTY_EASY_PCT) diff = 'easy'
-    else if (randRoll < ARCHAEOLOGY_RARE_DIFFICULTY_MEDIUM_PCT) diff = 'medium'
-    else if (randRoll < ARCHAEOLOGY_RARE_DIFFICULTY_HARD_PCT) diff = 'hard'
-    else diff = 'expert'
-  } else {
-    if (randRoll < ARCHAEOLOGY_NORMAL_DIFFICULTY_EASY_PCT) diff = 'easy'
-    else if (randRoll < ARCHAEOLOGY_NORMAL_DIFFICULTY_MEDIUM_PCT) diff = 'medium'
-    else if (randRoll < ARCHAEOLOGY_NORMAL_DIFFICULTY_HARD_PCT) diff = 'hard'
-    else diff = 'expert'
-  }
-  
+  const diff = calculateArchaeologyDifficulty(props.rarity || 50)
   difficulty.value = diff
-  const config = DIFFICULTIES[diff]
+  const config = ARCHAEOLOGY_DIFFICULTIES[diff]
   gridSize.value = config.grid
   maxEnergy.value = config.energy
   totalFossilParts.value = config.parts
 
-  // Generate empty grid
-  const tempGrid: Tile[] = []
-  for (let r = 0; r < gridSize.value; r++) {
-    for (let c = 0; c < gridSize.value; c++) {
-      tempGrid.push({
-        r,
-        c,
-        isFossil: false,
-        isDug: false,
-        clue: ''
-      })
-    }
-  }
-
-  // Generate contiguous fossil shape using a DFS/random walk algorithm
-  const fossilCoords = new Set<string>()
-  let currentR = Math.floor(Math.random() * gridSize.value)
-  let currentC = Math.floor(Math.random() * gridSize.value)
-  fossilCoords.add(`${currentR},${currentC}`)
-
-  const directions = [
-    { r: -1, c: 0 },
-    { r: 1, c: 0 },
-    { r: 0, c: -1 },
-    { r: 0, c: 1 }
-  ]
-
-  while (fossilCoords.size < totalFossilParts.value) {
-    const activeList = Array.from(fossilCoords).map(str => {
-      const parts = str.split(',')
-      const r = Number(parts[0] ?? 0)
-      const c = Number(parts[1] ?? 0)
-      return { r, c }
-    })
-
-    const candidates: { r: number; c: number }[] = []
-    for (const cell of activeList) {
-      for (const dir of directions) {
-        const nr = cell.r + dir.r
-        const nc = cell.c + dir.c
-        if (nr >= 0 && nr < gridSize.value && nc >= 0 && nc < gridSize.value) {
-          const key = `${nr},${nc}`
-          if (!fossilCoords.has(key)) {
-            candidates.push({ r: nr, c: nc })
-          }
-        }
-      }
-    }
-
-    if (candidates.length === 0) {
-      // Clear and restart in the extremely rare event of getting trapped
-      fossilCoords.clear()
-      currentR = Math.floor(Math.random() * gridSize.value)
-      currentC = Math.floor(Math.random() * gridSize.value)
-      fossilCoords.add(`${currentR},${currentC}`)
-      continue
-    }
-
-    const chosen = candidates[Math.floor(Math.random() * candidates.length)]!
-    fossilCoords.add(`${chosen.r},${chosen.c}`)
-  }
-
-  // Apply fossil flag
-  tempGrid.forEach(tile => {
-    if (fossilCoords.has(`${tile.r},${tile.c}`)) {
-      tile.isFossil = true
-    }
-  })
-
-  grid.value = tempGrid
+  grid.value = generateArchaeologyGrid(gridSize.value, totalFossilParts.value)
   energy.value = maxEnergy.value
   fossilsFound.value = 0
   gameActive.value = true
   isFailed.value = false
   feedback.value = '¡Excavá las rocas con cuidado!'
-}
-
-const MANHATTAN_MAX_INITIAL_DISTANCE = 999;
-
-// Calculate Manhattan distance to nearest hidden fossil
-function getDistanceToNearestFossil(r: number, c: number): number {
-  let minDistance = MANHATTAN_MAX_INITIAL_DISTANCE
-  grid.value.forEach(tile => {
-    if (tile.isFossil && !tile.isDug) {
-      const dist = Math.abs(tile.r - r) + Math.abs(tile.c - c)
-      if (dist < minDistance) {
-        minDistance = dist
-      }
-    }
-  })
-  return minDistance
 }
 
 // Handle Tile Dig
@@ -251,7 +134,7 @@ function handleTileClick(tile: Tile) {
     }
   } else {
     // Clue
-    const dist = getDistanceToNearestFossil(tile.r, tile.c)
+    const dist = getDistanceToNearestFossil(grid.value, tile.r, tile.c)
     if (dist <= 1) {
       tile.clue = 'HOT'
       feedback.value = '¡Muy caliente! Hay un fósil cerca.'
@@ -385,9 +268,9 @@ const handleCloseModal = () => {
       <div class="stats-row">
         <div
           class="stat-pill difficulty-pill"
-          :style="{ borderColor: DIFFICULTIES[difficulty].color, color: DIFFICULTIES[difficulty].color }"
+          :style="{ borderColor: ARCHAEOLOGY_DIFFICULTIES[difficulty].color, color: ARCHAEOLOGY_DIFFICULTIES[difficulty].color }"
         >
-          {{ DIFFICULTIES[difficulty].label.toUpperCase() }}
+          {{ ARCHAEOLOGY_DIFFICULTIES[difficulty].label.toUpperCase() }}
         </div>
         <div class="stat-pill energy-counter">
           ENERGÍA: {{ energy }}

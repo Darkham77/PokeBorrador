@@ -58,6 +58,7 @@ describe('Battle EV Gains & Rewards Distribution', () => {
 
   it('awards EVs even to Level 100 Pokemon and recalculates stats immediately', () => {
     const maxLevelMon = createMon('charizard', 100);
+    maxLevelMon.nature = 'hardy';
     maxLevelMon.evs = createDefaultEvs();
     recalcPokemonStats(maxLevelMon, true);
 

@@ -56,7 +56,7 @@
     },
     {
       "file": "src/types/pokemon/pokemon.ts",
-      "exports": ["VolatileStatusKey"]
+      "exports": ["VolatileStatusKey", "POKEMON_STATUSES", "POKERUS_STATUSES", "isPokerusStatus", "requirePokerusStatus"]
     },
     {
       "file": "src/data/player/trainerTypes.ts",
@@ -573,6 +573,78 @@
     {
       "file": "src/types/system/game.ts",
       "exports": ["isGenderId"]
+    },
+    {
+      "file": "src/data/pokemon/animatedSpriteDatabase.ts",
+      "exports": ["requireAnimatedSpriteId"]
+    },
+    {
+      "file": "src/data/pokemon/npcSpriteCatalog.ts",
+      "exports": ["isNpcSpriteId"]
+    },
+    {
+      "file": "src/data/pokemon/pokemonFeetDatabase.ts",
+      "exports": ["isPokemonCryId"]
+    },
+    {
+      "file": "src/types/battle/battle.ts",
+      "exports": ["BATTLE_SIDES"]
+    },
+    {
+      "file": "src/data/pokemon/animatedSpriteDatabase.ts",
+      "exports": ["ANIMATED_SPRITE_DATABASE", "ANIMATED_VARIATION_FRAMES"]
+    },
+    {
+      "file": "src/data/pokemon/pokemonFeetDatabase.ts",
+      "exports": ["POKEMON_CRIES_DATABASE"]
+    },
+    {
+      "file": "src/data/world/map-assets.ts",
+      "exports": ["AVAILABLE_BATTLE_MAPS"]
+    },
+    {
+      "file": "src/logic/battle/helpers/showdownSeats.ts",
+      "exports": ["REPLAY_SEATS"]
+    },
+    {
+      "file": "src/components/admin/debug/debugPanelCategories.ts",
+      "exports": ["DebugPanelCategoryId"]
+    },
+    {
+      "file": "src/data/player/trainer.ts",
+      "exports": ["MarketUnlockLevel"]
+    },
+    {
+      "file": "src/logic/breeding/breedingData.ts",
+      "exports": ["BreedingConstantKey"]
+    },
+    {
+      "file": "src/logic/combat/spatialCoordinator.ts",
+      "exports": ["WorldConstantKey"]
+    },
+    {
+      "file": "src/logic/gym/gymEngine.ts",
+      "exports": ["GymRatioKey"]
+    },
+    {
+      "file": "src/logic/modals/registry.ts",
+      "exports": ["ModalRegistryKey"]
+    },
+    {
+      "file": "src/types/battle/battleEvents.ts",
+      "exports": ["BattleUiEventName"]
+    },
+    {
+      "file": "src/types/battle/certifiedBattleActions.ts",
+      "exports": ["CertifiedBattleGameActionKind"]
+    },
+    {
+      "file": "src/types/system/gameEvents.ts",
+      "exports": ["GameUiEventName"]
+    },
+    {
+      "file": "src/logic/battle/battleUiUtils.ts",
+      "exports": ["BattleStatusKey", "BattleStatKey"]
     }
   ]
 }

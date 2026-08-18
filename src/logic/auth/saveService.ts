@@ -1,24 +1,16 @@
-// [PureVue-Ignore-Length]
-/**
- * Serializes the current state into a format suitable for database storage.
- * Matches the legacy 01_auth.js structure exactly for backward compatibility.
- */
-import type { Pokemon, PokemonEgg, PokemonGender, PokemonIVs } from '@/types/pokemon/pokemon';
 import type { GameState } from '@/types/system/game';
 import type { AuthUser } from '@/types/auth/auth';
 import { compress } from '@/logic/utils/compression';
 import { writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { logger } from '@/logic/utils/logger';
-import { validateUserProfile, validateSaveData, type SaveDataDto } from '@/logic/validation/schemas';
 import type { DBRouter } from '@/logic/db/dbRouter';
-import { validatePokemon } from '@/logic/pokemon/pokemonFactory';
-import { requireAbilityId } from '@/data/battle/abilities';
-import type { GenderName } from '@pkmn/sim';
+import { serializeState, serializeSaveGenderCodes } from '@/logic/auth/saveSerializer';
+import { validateAndSanitize, isValidState } from '@/logic/auth/saveSanitizer';
+import { syncUserProfileData } from '@/logic/auth/profileSyncHelper';
 
-const ELO_RATING_DEFAULT_SCORE = 1000;
-const DEFAULT_BOX_COUNT = 4;
-const DAYCARE_REFRESHES_DEFAULT_COUNT = 3;
-const DEFAULT_POKEMON_FRIENDSHIP_FALLBACK = 70;
+import type { SaveDataDto } from '@/logic/validation/schemas';
+
+export { serializeState, isValidState, validateAndSanitize };
 
 export interface SaveResult {
   success?: boolean;
@@ -32,397 +24,106 @@ export interface SaveResult {
   lastSaveId?: string;
 }
 
-
-interface EnemyPokemonSerialized {
-  uid: string
-  id: string
-  name: string
-  type: string
-  level: number
-  hp: number
-  maxHp: number
-  atk: number
-  def: number
-  spa: number
-  spd: number
-  spe: number
-  moves: unknown[]
-  status: string | null
-  isShiny: boolean
-  gender: string | null
-  ivs: PokemonIVs
-  nature: string
-  ability: string
-  exp: number
-  expNeeded: number
-  friendship: number
-  _revealed: boolean
-  _gymLeader: string | null
-  _gymBadge: string | null
-}
-
-interface ActiveBattleSerialized {
-  isGym: boolean
-  gymId: string | null
-  isTrainer: boolean
-  trainerName: string | null
-  locationId: string | null
-  enemyTeam: EnemyPokemonSerialized[] | null
-  timestamp: number
-  isPvP?: boolean
-}
-
-type PersistedPokemon = Omit<Pokemon, 'gender'> & { gender: GenderName };
-type PersistedPokemonEgg = Omit<PokemonEgg, 'gender'> & { gender: GenderName };
-
-function toPersistedPokemonGender(gender: PokemonGender | undefined): GenderName {
-  if (gender === 'm') return 'M';
-  if (gender === 'f') return 'F';
-  return 'N';
-}
-
-function withPersistedPokemonGender(pokemon: Pokemon): PersistedPokemon {
-  return {
-    ...pokemon,
-    gender: toPersistedPokemonGender(pokemon.gender),
-  };
-}
-
-function withPersistedEggGender(egg: PokemonEgg): PersistedPokemonEgg {
-  return {
-    ...egg,
-    gender: toPersistedPokemonGender(egg.gender),
-  };
-}
-
-function serializeSaveGenderCodes(data: SaveDataDto): unknown {
-  return {
-    ...data,
-    team: data.team.map((p) => withPersistedPokemonGender(p as Pokemon)), // domain-ok
-    box: data.box.map((p) => (p ? withPersistedPokemonGender(p as Pokemon) : null)), // domain-ok
-    eggs: (data.eggs || []).map(egg => {
-      if (!egg || typeof egg !== 'object' || !('gender' in egg)) return egg;
-      return withPersistedEggGender(egg as PokemonEgg);
-    }),
-    activeBattle: serializeActiveBattleGenderCodes(data.activeBattle),
-  };
-}
-
-function serializeActiveBattleGenderCodes(activeBattle: unknown): unknown {
-  if (!activeBattle || typeof activeBattle !== 'object') return activeBattle;
-  const battle = activeBattle as ActiveBattleSerialized;
-  if (!battle.enemyTeam) return activeBattle;
-  return {
-    ...battle,
-    enemyTeam: battle.enemyTeam.map(enemy => ({
-      ...enemy,
-      gender: toPersistedPokemonGender(enemy.gender === 'm' || enemy.gender === 'f' ? enemy.gender : null),
-    })),
-  };
-}
-
-function normalizeRuntimePokemonGender(pokemon: { gender?: string | null }): void {
-  if (Object.is(pokemon.gender, 'M')) pokemon.gender = 'm';
-  if (Object.is(pokemon.gender, 'F')) pokemon.gender = 'f';
-  if (Object.is(pokemon.gender, 'N')) pokemon.gender = null;
-}
-export function serializeState(state: GameState): SaveDataDto {
-  let activeBattle: ActiveBattleSerialized | null = null;
-  const battle = state.activeBattle;
-
-  if (battle && !battle.over && (battle.isTrainer || battle.isGym)) {
-    try {
-      const serialized: ActiveBattleSerialized = {
-        isGym: battle.isGym || false,
-        gymId: battle.gymId || null,
-        isTrainer: battle.isTrainer || false,
-        trainerName: battle.trainerName || null,
-        locationId: battle.locationId || null,
-        enemyTeam: battle.enemyTeam
-          ? (battle.enemyTeam as Pokemon[]).map(p => ({
-              uid: p.uid, id: p.id, name: p.name, emoji: (p as Pokemon & { emoji?: string }).emoji, type: p.type,
-              level: p.level, hp: p.hp, maxHp: p.maxHp, atk: p.atk, def: p.def,
-              spa: p.spa, spd: p.spd, spe: p.spe, moves: p.moves,
-              status: p.status || null, isShiny: p.isShiny || false,
-              gender: p.gender || null, ivs: p.ivs, nature: p.nature,
-              ability: p.ability ? requireAbilityId(p.ability) : '', // text-ok
-              exp: p.exp || 0,
-              expNeeded: p.expNeeded || 1,
-              friendship: p.friendship || DEFAULT_POKEMON_FRIENDSHIP_FALLBACK,
-              _revealed: (p as Pokemon & { _revealed?: boolean })._revealed || false,
-              _gymLeader: (p as Pokemon & { _gymLeader?: string })._gymLeader || null,
-              _gymBadge: (p as Pokemon & { _gymBadge?: string })._gymBadge || null,
-            }))
-          : null,
-        timestamp: Temporal.Now.instant().epochMilliseconds,
-      }
-      activeBattle = serialized;
-    } catch(e) {
-      logger.warn('SAVE', `Error serializando batalla activa: ${(e as Error).message}`);
-      activeBattle = null;
-    }
-  } else if (state.activeBattle && state.activeBattle.isPvP) {
-    const b = state.activeBattle;
-    activeBattle = {
-      isGym: Boolean(b.isGym),
-      gymId: b.gymId || null,
-      isTrainer: Boolean(b.isTrainer),
-      trainerName: b.trainerName || null,
-      locationId: b.locationId || null,
-      enemyTeam: null,
-      timestamp: Temporal.Now.instant().epochMilliseconds,
-      isPvP: true
-    };
-  }
-
-  return {
-    trainer: state.trainer,
-    gender: state.gender || 'h',
-    badges: state.badges,
-    balls: state.balls,
-    money: state.money,
-    battleCoins: state.battleCoins || 0,
-    eggs: (state.eggs || []) as SaveDataDto['eggs'],
-    trainerLevel: state.trainerLevel,
-    trainerExp: state.trainerExp,
-    trainerExpNeeded: state.trainerExpNeeded,
-    inventory: (state.inventory || {}) as SaveDataDto['inventory'],
-    team: (state.team || []) as SaveDataDto['team'],
-    box: (state.box || []) as SaveDataDto['box'],
-    pokedex: state.pokedex,
-    seenPokedex: state.seenPokedex || [],
-    defeatedGyms: state.defeatedGyms,
-    gymProgress: state.gymProgress || {},
-    lastGymWins: state.lastGymWins || {},
-    lastGymAttempts: state.lastGymAttempts || {},
-    starterChosen: state.starterChosen || false,
-    lastRankedSeason: state.lastRankedSeason || null,
-    nick_style: state.nick_style || null,
-    avatar_style: state.avatar_style || null,
-    stats: state.stats || {},
-    eloRating: Number.isFinite(Number(state.eloRating)) ? Number(state.eloRating) : ELO_RATING_DEFAULT_SCORE,
-    pvpStats: {
-      wins: Number(state.pvpStats?.wins) || 0,
-      losses: Number(state.pvpStats?.losses) || 0,
-      draws: Number(state.pvpStats?.draws) || 0
-    },
-    rankedMaxElo: Number.isFinite(Number(state.rankedMaxElo))
-      ? Math.max(ELO_RATING_DEFAULT_SCORE, Math.floor(Number(state.rankedMaxElo)))
-      : Math.max(ELO_RATING_DEFAULT_SCORE, Number(state.eloRating) || ELO_RATING_DEFAULT_SCORE),
-    rankedRewardsClaimed: Array.isArray(state.rankedRewardsClaimed)
-      ? Array.from(new Set(state.rankedRewardsClaimed.map((id) => String(id))))
-      : [],
-    passiveTeamUids: state.passiveTeamUids || [],
-    passiveTeamActive: state.passiveTeamActive,
-    activeBattle: activeBattle as SaveDataDto['activeBattle'],
-    daycare_missions: (state.daycare_missions || []) as SaveDataDto['daycare_missions'],
-    daycare_mission_refreshes: state.daycare_mission_refreshes !== undefined ? state.daycare_mission_refreshes : DAYCARE_REFRESHES_DEFAULT_COUNT,
-    safariTicketSecs: state.safariTicketSecs || 0,
-    ceruleanTicketSecs: state.ceruleanTicketSecs || 0,
-    articunoTicketSecs: state.articunoTicketSecs || 0,
-    mewtwoTicketSecs: state.mewtwoTicketSecs || 0,
-    repelSecs: state.repelSecs || 0,
-    fishingRodSecs: state.fishingRodSecs || 0,
-    fishingRodType: state.fishingRodType || null,
-    pickaxeSecs: state.pickaxeSecs || 0,
-    pickaxeType: state.pickaxeType || null,
-    brushSecs: state.brushSecs || 0,
-    brushType: state.brushType || null,
-    shinyBoostSecs: state.shinyBoostSecs || 0,
-    amuletCoinSecs: state.amuletCoinSecs || 0,
-    luckyEggSecs: state.luckyEggSecs || 0,
-    ivScannerSecs: state.ivScannerSecs || 0,
-    incenseSecs: state.incenseSecs || 0,
-    incenseType: state.incenseType || null,
-    daycare_berry_egg_time: state.daycare_berry_egg_time || 0,
-    boxCount: state.boxCount || DEFAULT_BOX_COUNT,
-    chats: state.chats || {},
-    playerClass: state.playerClass || null,
-    classLevel: state.classLevel || 1,
-    classXP: state.classXP || 0,
-    classData: state.classData || {
-      captureStreak: 0,
-      longestStreak: 0,
-      reputation: 0,
-      blackMarketSales: 0,
-      criminality: 0,
-      extortedRouteId: null,
-      extortedRouteTimestamp: null,
-      lastEggScanDate: null,
-      officialRouteId: null,
-      kitCaptures: 0
-    },
-    faction: state.faction || null,
-    warCoins: state.warCoins || 0,
-    warCoinsSpent: state.warCoinsSpent || 0,
-    warDailyCap: (state.warDailyCap || {}) as SaveDataDto['warDailyCap'],
-    warDailyCoins: (state.warDailyCoins || {}) as SaveDataDto['warDailyCoins'],
-    warMyPtsLocal: state.warMyPtsLocal || {},
-    notificationHistory: state.notificationHistory || [],
-    marketSoldSeenIds: state.marketSoldSeenIds || [],
-    lastPokemonCenterHeal: state.lastPokemonCenterHeal || 0,
-    playtime: state.playtime || 0
-  };
-}
-
-const boxValidationCache: {
-  lastBoxHash: string;
-  lastValidatedBox: Pokemon[];
-} = {
-  lastBoxHash: '',
-  lastValidatedBox: [],
-};
-
-/**
- * Validates the state before saving to prevent cache hacking or data corruption.
- */
-export function validateAndSanitize(data: GameState | SaveDataDto | Record<string, unknown>): 
-  | { valid: true; data: SaveDataDto; hadDuplicates?: boolean; issues: string[]; error?: undefined }
-  | { valid: false; data?: undefined; hadDuplicates?: boolean; issues: string[]; error: string } {
-  if (!data) { return { valid: false, issues: [], error: 'No data' }; }
-  
-  const issues: string[] = []; // no-domain
-
-
-  // Calculate box hash to check if it's dirty
-  const rawData = typeof data === 'object' && data !== null ? (data as { box?: (Pokemon | null)[] }) : {};
-  const rawBox = Array.isArray(rawData.box) ? rawData.box : [];
-  const currentBoxHash = rawBox.map(p => p ? `${p.uid}_${p.level}_${p.exp}_${p.hp}` : '').join(',');
-  const isBoxDirty = !boxValidationCache.lastBoxHash || currentBoxHash !== boxValidationCache.lastBoxHash || boxValidationCache.lastValidatedBox.length !== rawBox.length;
-
-  let parsedResult;
-  if (!isBoxDirty && boxValidationCache.lastValidatedBox.length > 0) {
-    // Optimization: Skip box validation by temporarily substituting it with a validated clone
-    const testData = { ...data, box: [] };
-    parsedResult = validateSaveData(testData);
-    if (parsedResult.success) {
-      // Restore the original box array
-      parsedResult.output.box = rawBox as typeof parsedResult.output.box; // domain-ok
-    }
-  } else {
-    parsedResult = validateSaveData(data);
-    if (parsedResult.success) {
-      boxValidationCache.lastBoxHash = currentBoxHash;
-      boxValidationCache.lastValidatedBox = parsedResult.output.box as Pokemon[]; // domain-ok
-    }
-  }
-
-  if (!parsedResult.success) {
-    const errorMsg = parsedResult.issues.map(i => `${i.path?.[0]?.key || 'campo'}: ${i.message}`).join(', ');
-    logger.error('SAVE', 'Error de validación estructural crítico:', parsedResult.issues);
-    return {
-      valid: false,
-      issues: parsedResult.issues.map(i => i.message),
-      error: 'Error de validación: ' + errorMsg
-    };
-  }
-
-  // Sanitized data from Valibot
-  const sanitizedData = parsedResult.output as SaveDataDto; // domain-ok
-  sanitizedData.team?.forEach(normalizeRuntimePokemonGender);
-  sanitizedData.box?.forEach((p) => { if (p) normalizeRuntimePokemonGender(p); });
-  
-  // 1. Basic numeric validation
-  if (sanitizedData.money < 0) { sanitizedData.money = 0; issues.push('Dinero negativo corregido'); }
-  if (sanitizedData.battleCoins < 0) { sanitizedData.battleCoins = 0; issues.push('BattleCoins negativos corregidos'); }
-  if (sanitizedData.trainerLevel < 1) { sanitizedData.trainerLevel = 1; issues.push('Nivel inválido corregido'); }
-  
-  // 2. Inventory sanity
-  if (sanitizedData.inventory) {
-    Object.keys(sanitizedData.inventory).forEach(item => {
-      const qty = sanitizedData.inventory[item]
-      if (typeof qty === 'number' && qty < 0) {
-        sanitizedData.inventory[item] = 0;
-        issues.push(`Cantidad negativa de ${item} corregida`);
-      }
-    });
-  }
-
-  // 3. Unique ID (UID) integrity for Pokemon
-  const uids = new Set<string>();
-  const duplicateUids = new Set<string>();
-  
-  const checkPoke = (p: SaveDataDto['team'][number] | null, listName: string) => {
-    if (!p || !p.uid) return;
-    if (uids.has(p.uid)) {
-      duplicateUids.add(p.uid);
-      issues.push(`Duplicado de UID detectado: ${p.uid} (${p.name}) en ${listName}`);
-    }
-    uids.add(p.uid);
-  };
-
-  try {
-    if (sanitizedData.team) {
-      sanitizedData.team.forEach((p) => {
-        if (!p) return;
-        checkPoke(p, 'equipo');
-        validatePokemon(p as Pokemon); // domain-ok
-      });
-    }
-    if (sanitizedData.box) {
-      sanitizedData.box.forEach((p) => {
-        if (!p) return;
-        checkPoke(p, 'caja');
-        validatePokemon(p as Pokemon); // domain-ok
-      });
-    }
-  } catch (err) {
-    logger.error('SAVE', 'Error crítico en estructura de Pokémon al sanitizar/validar:', err);
-    return {
-      valid: false,
-      issues,
-      error: `Error de estructura de Pokémon: ${(err as Error).message}`
-    };
-  }
-
-  if (duplicateUids.size > 0) {
-    // We sanitize by removing subsequent duplicates
-    const finalUids = new Set<string>();
-    if (Array.isArray(sanitizedData.team)) {
-      sanitizedData.team = sanitizedData.team.filter((p) => {
-        if (!p || !p.uid) return true;
-        if (finalUids.has(p.uid)) return false;
-        finalUids.add(p.uid);
-        return true;
-      });
-    }
-    if (Array.isArray(sanitizedData.box)) {
-      sanitizedData.box = sanitizedData.box.filter((p) => {
-        if (!p || !p.uid) return true;
-        if (finalUids.has(p.uid)) return false;
-        finalUids.add(p.uid);
-        return true;
-      });
-    }
-  }
-
-  return { 
-    valid: true, 
-    data: sanitizedData, 
-    hadDuplicates: duplicateUids.size > 0,
-    issues 
-  };
-}
-
-export function isValidState(data: SaveDataDto): boolean {
-  return validateAndSanitize(data).valid;
-}
-
-/**
- * Saves the game to localStorage and the database.
- */
 const saveOperationState = {
   isSaving: false,
   isRollingBack: false,
 };
 
-interface SaveOptions {
-  showNotif?: boolean
-  notifyFn?: (msg: string, icon?: string) => void
-  db?: DBRouter
-  userVersion?: number
-  lastSaveId?: string
-  skipRemote?: boolean
+export interface SaveOptions {
+  showNotif?: boolean;
+  notifyFn?: (msg: string, icon?: string) => void;
+  db?: DBRouter;
+  userVersion?: number;
+  lastSaveId?: string;
+  skipRemote?: boolean;
+}
+
+async function persistSaveLocally(persistedSaveData: unknown, userId: string): Promise<void> {
+  try {
+    const json = JSON.stringify(persistedSaveData);
+    localStorage.setItem('pokemon_local_save_' + userId, json);
+
+    const compressed = await compress(json);
+    await writeOpfsFile(`save_${userId}.gz`, compressed);
+  } catch (e) {
+    logger.warn('SAVE', `Error en persistencia local (LS/OPFS): ${(e as Error).message}`);
+  }
+}
+
+async function handleDuplicatesRollback(db: DBRouter, userId: string, issues?: unknown): Promise<SaveResult> {
+  logger.error('SAVE', 'Duplicados críticos detectados en v2+. Iniciando ROLLBACK.', issues);
+  try {
+    const { data } = await db.from('game_saves').select('save_data').eq('user_id', userId).single();
+    const serverSave = data as { save_data: GameState } | null;
+    if (serverSave?.save_data) {
+      saveOperationState.isRollingBack = true;
+      return { rollback: true, serverData: serverSave.save_data };
+    }
+  } catch (e) {
+    logger.error('SAVE', `Error durante rollback: ${(e as Error).message}`);
+  }
+  saveOperationState.isRollingBack = true;
+  return { rollback: true, error: 'Inconsistencia detectada. Recarga la página.' };
+}
+
+async function performRemoteSave(
+  db: DBRouter,
+  user: AuthUser,
+  persistedSaveData: unknown,
+  saveData: SaveDataDto,
+  options: SaveOptions,
+  hadDuplicates?: boolean
+): Promise<SaveResult> {
+  const currentVersion = options.userVersion || 1;
+  const isLegacy = currentVersion < 3;
+  const { showNotif = true, notifyFn } = options;
+
+  try {
+    const { data: res, error } = await db.rpc('save_game_trusted', {
+      p_save_data: persistedSaveData,
+      p_expected_id: options.lastSaveId || null
+    });
+
+    if (error) throw error;
+
+    const resData = res as { success: boolean; error: string; last_save_id: string } | null;
+    if (resData && resData.success === false && resData.error === 'OUT_OF_SYNC') {
+      logger.warn('SAVE', 'Concurrencia detectada. El servidor tiene una versión más nueva.');
+      saveOperationState.isRollingBack = true;
+      return { rollback: true, outOfSync: true };
+    }
+
+    await syncUserProfileData(db, user, saveData);
+
+    let migrated = false;
+    if (isLegacy) {
+      try {
+        await db.from('profiles').update({ db_version: 3 }).eq('id', user.id);
+        user.db_version = 3;
+        migrated = true;
+        logger.success('SAVE', 'Account migrated to db_version v3');
+      } catch (e) {
+        logger.warn('SAVE', `Migration update failed: ${(e as Error).message}`);
+      }
+    }
+
+    if (showNotif && notifyFn) {
+      if (migrated) notifyFn('¡Cuenta migrada a Seguridad v3!', '✨');
+      else if (hadDuplicates) notifyFn('Cache saneada (duplicados eliminados)', '🛡️');
+      else notifyFn('Juego Guardado', '💾');
+    }
+
+    return {
+      success: true,
+      sanitized: hadDuplicates,
+      migrated,
+      lastSaveId: resData?.last_save_id
+    };
+  } catch (e: unknown) {
+    const errMsg = e instanceof Error ? e.message : 'Unknown error';
+    logger.warn('SAVE', `Error en DB Persistente: ${errMsg}`);
+    return { success: false, error: errMsg };
+  }
 }
 
 export async function saveGame(state: GameState, user: AuthUser, options: SaveOptions = {}): Promise<SaveResult | null> {
@@ -447,26 +148,11 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
     const hadDuplicates = validation.hadDuplicates;
     const issues = validation.issues;
 
-    // VERSIONED SECURITY LOGIC
     const currentVersion = options.userVersion || 1;
     const isLegacy = currentVersion < 3;
 
-    // IF Duplicates found AND we are ONLINE AND NOT LEGACY -> Protocol ROLLBACK
-    // Legacy accounts (v1/v2) get a "graceful cleanup" on their first save
     if (hadDuplicates && db && db.mode === 'online' && !isLegacy) {
-      logger.error('SAVE', 'Duplicados críticos detectados en v2+. Iniciando ROLLBACK.', issues);
-      try {
-        const { data } = await db.from('game_saves').select('save_data').eq('user_id', user.id).single();
-        const serverSave = data as { save_data: GameState } | null;
-        if (serverSave?.save_data) {
-          saveOperationState.isRollingBack = true;
-          return { rollback: true, serverData: serverSave.save_data };
-        }
-      } catch(e) {
-        logger.error('SAVE', `Error durante rollback: ${(e as Error).message}`);
-      }
-      saveOperationState.isRollingBack = true;
-      return { rollback: true, error: 'Inconsistencia detectada. Recarga la página.' };
+      return await handleDuplicatesRollback(db, user.id, issues);
     }
 
     const isOnlineLocalUser = db && db.mode === 'online' && (user.id === 'local_user' || user.id.startsWith('local_'));
@@ -475,18 +161,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
     const persistedSaveData = serializeSaveGenderCodes(save_data);
 
     // 1. Local Persistence (Legacy LocalStorage + Modern OPFS GZIP)
-    try {
-      const json = JSON.stringify(persistedSaveData);
-      localStorage.setItem('pokemon_local_save_' + user.id, json);
-      
-      // Modern High-Fidelity Binary Storage (OPFS)
-      const compressed = await compress(json);
-      await writeOpfsFile(`save_${user.id}.gz`, compressed);
-    } catch (e) {
-      logger.warn('SAVE', `Error en persistencia local (LS/OPFS): ${(e as Error).message}`);
-    }
-
-
+    await persistSaveLocally(persistedSaveData, user.id);
 
     // 2. Database
     if (!db || options.skipRemote || isOnlineLocalUser) {
@@ -495,144 +170,14 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
       } else {
         logger.warn('SAVE', 'No DBRouter instance provided. Skipping DB save.');
       }
-      
+
       if (showNotif && notifyFn && (options.skipRemote || isOnlineLocalUser) && user.id !== 'local_user' && !user.id.startsWith('local_')) {
         notifyFn('Progreso guardado localmente (Sesión Bloqueada)', '🟠');
       }
       return { success: true, remote: false };
     }
 
-    try {
-      const { data: res, error } = await db.rpc('save_game_trusted', {
-        p_save_data: persistedSaveData,
-        p_expected_id: options.lastSaveId || null
-      });
-
-      if (error) throw error;
-      
-      const resData = res as { success: boolean; error: string; last_save_id: string } | null;
-      if (resData && resData.success === false && resData.error === 'OUT_OF_SYNC') {
-        logger.warn('SAVE', 'Concurrencia detectada. El servidor tiene una versión más nueva.');
-        saveOperationState.isRollingBack = true;
-        return { rollback: true, outOfSync: true };
-      }
-
-      // Sincronizar campos principales en la tabla profiles para mantener consistencia
-      try {
-        const { data: existingProf } = await db.from('profiles').select('id').eq('id', user.id).maybeSingle();
-        const finalUsername = save_data.trainer || user.user_metadata?.username || 'Entrenador';
-        
-        const profileValidation = validateUserProfile({
-          id: user.id,
-          username: finalUsername,
-          level: save_data.trainerLevel,
-          is_banned: false,
-          coins: save_data.money
-        });
-
-        if (!profileValidation.success) {
-          logger.warn('SAVE', 'Sincronización de perfil abortada por validación de esquema fallida:', profileValidation.issues);
-          throw new Error('Datos del perfil inválidos: ' + (profileValidation.issues[0]?.message || 'Esquema incorrecto'));
-        }
-
-        const shinyCount = ((save_data.team || []).filter(p => p?.isShiny).length) + ((save_data.box || []).filter(p => p?.isShiny).length);
-        const statsRecord = (save_data.stats || {}) as Record<string, unknown>; // open-record
-        const maxDamage = Number(statsRecord.maxDamage) || 0;
-        const totalBattles = Number(statsRecord.totalBattles) || 0;
-        const tradeVolume = Number(statsRecord.tradeVolume) || 0;
-        const captureAttempts = Number(statsRecord.captureAttempts) || 0;
-        const captureSuccesses = Number(statsRecord.captureSuccesses) || 0;
-
-        if (existingProf) {
-          await db.from('profiles').update({
-            username: finalUsername,
-            trainer_level: save_data.trainerLevel,
-            player_class: save_data.playerClass,
-            faction: save_data.faction,
-            avatar_style: save_data.avatar_style,
-            nick_style: save_data.nick_style,
-            badges: save_data.badges || 0,
-            gender: save_data.gender || 'h',
-            playtime: save_data.playtime || 0,
-            last_played_at: Temporal.Now.instant().toString(),
-            ranked_max_elo: save_data.rankedMaxElo || ELO_RATING_DEFAULT_SCORE,
-            class_level: save_data.classLevel || 1,
-            box_count: (save_data.box || []).length,
-            pvp_draws: save_data.pvpStats?.draws || 0,
-            longest_streak: save_data.classData?.longestStreak || 0,
-            shiny_count: shinyCount,
-            max_damage: maxDamage,
-            total_battles: totalBattles,
-            trade_volume: tradeVolume,
-            capture_attempts: captureAttempts,
-            capture_successes: captureSuccesses
-          }).eq('id', user.id);
-        } else {
-          await db.from('profiles').insert({
-            id: user.id,
-            username: finalUsername,
-            email: user.email || `${user.id}@local`,
-            trainer_level: save_data.trainerLevel || 1,
-            player_class: save_data.playerClass || 'entrenador',
-            faction: save_data.faction || null,
-            avatar_style: save_data.avatar_style || '',
-            nick_style: save_data.nick_style || '',
-            badges: save_data.badges || 0,
-            role: 'user',
-            gender: save_data.gender || 'h',
-            playtime: save_data.playtime || 0,
-            created_at: Temporal.Now.instant().toString(),
-            last_played_at: Temporal.Now.instant().toString(),
-            ranked_max_elo: save_data.rankedMaxElo || ELO_RATING_DEFAULT_SCORE,
-            class_level: save_data.classLevel || 1,
-            box_count: (save_data.box || []).length,
-            pvp_draws: save_data.pvpStats?.draws || 0,
-            longest_streak: save_data.classData?.longestStreak || 0,
-            shiny_count: shinyCount,
-            max_damage: maxDamage,
-            total_battles: totalBattles,
-            trade_volume: tradeVolume,
-            capture_attempts: captureAttempts,
-            capture_successes: captureSuccesses,
-            db_version: 3
-          });
-        }
-        user.db_version = 3;
-        logger.success('SAVE', 'Campos de perfil sincronizados en la base de datos.');
-      } catch (e) {
-        logger.warn('SAVE', `Error al sincronizar campos del perfil: ${(e as Error).message}`);
-      }
-
-      // IF successful migration save, we MUST update the user's version to v3
-      let migrated = false;
-      if (isLegacy) {
-        try {
-          await db.from('profiles').update({ db_version: 3 }).eq('id', user.id);
-          user.db_version = 3;
-          migrated = true;
-          logger.success('SAVE', 'Account migrated to db_version v3');
-        } catch(e) {
-          logger.warn('SAVE', `Migration update failed: ${(e as Error).message}`);
-        }
-      }
-
-      if (showNotif && notifyFn) {
-        if (migrated) notifyFn('¡Cuenta migrada a Seguridad v3!', '✨');
-        else if (hadDuplicates) notifyFn('Cache saneada (duplicados eliminados)', '🛡️');
-        else notifyFn('Juego Guardado', '💾');
-      }
-      
-      return { 
-        success: true, 
-        sanitized: hadDuplicates, 
-        migrated,
-        lastSaveId: resData?.last_save_id 
-      };
-    } catch (e: unknown) {
-      const errMsg = e instanceof Error ? e.message : 'Unknown error';
-      logger.warn('SAVE', `Error en DB Persistente: ${errMsg}`);
-      return { success: false, error: errMsg };
-    }
+    return await performRemoteSave(db, user, persistedSaveData, save_data, options, hadDuplicates);
   } finally {
     saveOperationState.isSaving = false;
   }

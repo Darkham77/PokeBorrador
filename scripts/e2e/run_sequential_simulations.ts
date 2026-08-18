@@ -104,38 +104,48 @@ function discoverPlaywrightTargets(): SimulationTarget[] {
   }
 }
 
+function parseCoverageReportFile(resultsDir: string, file: string): number {
+  try {
+    const data = JSON.parse(fs.readFileSync(path.join(resultsDir, file), 'utf8')) as Record<string, unknown>;
+    const summary = (data.summary || data) as Record<string, unknown>;
+    const count = summary.totalMoves ?? summary.totalItems ?? summary.totalAbilities ?? (file.includes('scenarios') ? summary.total : undefined);
+    return typeof count === 'number' ? count : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function parseCertifiedCasesFile(resultsDir: string, file: string): number {
+  try {
+    const data = JSON.parse(fs.readFileSync(path.join(resultsDir, file), 'utf8')) as Record<string, unknown>;
+    let batches = 0;
+    for (const val of Object.values(data)) {
+      if (Array.isArray(val)) {
+        batches += val.length;
+      }
+    }
+    return batches;
+  } catch {
+    return 0;
+  }
+}
+
 function getFuzzerSummary(): { elementCount: number; batchCount: number } {
   try {
     const resultsDir = path.resolve(process.cwd(), 'scripts/e2e/results');
+    if (!fs.existsSync(resultsDir)) {
+      return { elementCount: 0, batchCount: 0 };
+    }
+
     let totalElements = 0;
     let totalBatches = 0;
+    const files = fs.readdirSync(resultsDir);
 
-    if (fs.existsSync(resultsDir)) {
-      const files = fs.readdirSync(resultsDir);
-      for (const file of files) {
-        if (file.startsWith('fuzzer_') && file.endsWith('_coverage_report.json')) {
-          try {
-            const data = JSON.parse(fs.readFileSync(path.join(resultsDir, file), 'utf8')) as Record<string, unknown>; // open-record
-            const summary = (data.summary || data) as Record<string, unknown>; // open-record
-            const count = summary.totalMoves ?? summary.totalItems ?? summary.totalAbilities ?? (file.includes('scenarios') ? summary.total : undefined);
-            if (typeof count === 'number') {
-              totalElements += count;
-            }
-          } catch {
-            // ignore
-          }
-        } else if (file === 'fuzzer_certified_cases.json') {
-          try {
-            const data = JSON.parse(fs.readFileSync(path.join(resultsDir, file), 'utf8')) as Record<string, unknown>; // open-record
-            for (const val of Object.values(data)) {
-              if (Array.isArray(val)) {
-                totalBatches += val.length;
-              }
-            }
-          } catch {
-            // ignore
-          }
-        }
+    for (const file of files) {
+      if (file.startsWith('fuzzer_') && file.endsWith('_coverage_report.json')) {
+        totalElements += parseCoverageReportFile(resultsDir, file);
+      } else if (file === 'fuzzer_certified_cases.json') {
+        totalBatches += parseCertifiedCasesFile(resultsDir, file);
       }
     }
 

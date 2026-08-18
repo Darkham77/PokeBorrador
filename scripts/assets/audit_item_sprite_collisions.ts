@@ -122,6 +122,64 @@ export function findMissingSprites(items: ShopItem[]): MissingSpriteError[] {
   return missing;
 }
 
+function printMissingSpritesReport(missingSprites: MissingSpriteError[]): void {
+  if (missingSprites.length === 0) return;
+  console.log(styleText('red', '─── ❌ ERRORES: SPRITES FALTANTES O NO ENCONTRADOS EN public/ ──'));
+  for (const err of missingSprites) {
+    if (err.reason === 'missing_property') {
+      console.log(styleText('red', '❌ [MISSING_SPRITE]'), `${err.name} (${err.id}) - No tiene la propiedad 'sprite' definida.`);
+    } else {
+      console.log(styleText('red', '❌ [FILE_NOT_FOUND]'), `${err.name} (${err.id}) - Archivo no existe: '${err.expectedPath}'`);
+    }
+  }
+  console.log('');
+}
+
+function printCollisionGroupsReport(collisions: SpriteCollisionGroup[]): void {
+  if (collisions.length === 0) return;
+  console.log(styleText('yellow', '─── ⚠️  COLISIONES DE SPRITES Y ESTADO EN _raw-assets/ ──────────'));
+  for (const group of collisions) {
+    const rawReadyCount = group.items.filter(i => i.hasRawAsset).length;
+    console.log(
+      styleText('yellow', `⚠️  [SPRITE_COLLISION] (${group.count} ítems)`),
+      `Sprite actual: '${styleText('bold', group.sprite)}'`,
+      styleText('gray', `[${rawReadyCount}/${group.count} listos en _raw-assets]`)
+    );
+    for (const item of group.items) {
+      const rawStatus = item.hasRawAsset
+        ? styleText('green', '📥 [RAW DISPONIBLE]')
+        : styleText('gray', '⏳ [PENDIENTE]');
+      console.log(`   - ${item.name} (${styleText('gray', item.id)}) [cat: ${item.cat}] ${rawStatus}`);
+    }
+    console.log('');
+  }
+}
+
+function printHumanSummary(
+  totalItems: number,
+  missingSprites: MissingSpriteError[],
+  collisions: SpriteCollisionGroup[],
+  totalAffectedItems: number,
+  totalRawReady: number
+): void {
+  console.log(styleText('cyan', '\n🔍 ═══════════════════════════════════════════════════════════════════'));
+  console.log(styleText('cyan', '   ITEM SPRITE INTEGRITY & RAW-ASSETS CROSS-AUDITOR'));
+  console.log(styleText('cyan', '   ═══════════════════════════════════════════════════════════════════\n'));
+
+  console.log(`📦 Total Items Scanned (items.json):           ${styleText('bold', String(totalItems))}`);
+  console.log(`❌ Missing Physical Sprites (public/):          ${missingSprites.length > 0 ? styleText('red', String(missingSprites.length)) : styleText('green', '0 (100% OK)')}`);
+  console.log(`⚠️  Sprite Collision Groups in items.json:       ${styleText('yellow', String(collisions.length))}`);
+  console.log(`🚨 Items Sharing Colliding Sprites:            ${styleText('yellow', String(totalAffectedItems))}`);
+  console.log(`📥 Ready Assets in _raw-assets/ for resolution: ${styleText('green', `${totalRawReady} / ${totalAffectedItems} (${Math.round((totalRawReady / (totalAffectedItems || 1)) * 100)}%)`)}\n`);
+
+  printMissingSpritesReport(missingSprites);
+  printCollisionGroupsReport(collisions);
+
+  console.log(styleText('cyan', '───────────────────────────────────────────────────────────────────'));
+  console.log(`Resumen: ${styleText('green', `${totalRawReady} sprites ya están en _raw-assets`)}, listos para asignarse y convertirse a public/.`);
+  console.log(styleText('cyan', '───────────────────────────────────────────────────────────────────\n'));
+}
+
 export function runCollisionAudit(isJsonOutput = false): {
   totalItems: number;
   totalErrors: number;
@@ -162,50 +220,7 @@ export function runCollisionAudit(isJsonOutput = false): {
       collisions,
     }, null, 2));
   } else {
-    console.log(styleText('cyan', '\n🔍 ═══════════════════════════════════════════════════════════════════'));
-    console.log(styleText('cyan', '   ITEM SPRITE INTEGRITY & RAW-ASSETS CROSS-AUDITOR'));
-    console.log(styleText('cyan', '   ═══════════════════════════════════════════════════════════════════\n'));
-
-    console.log(`📦 Total Items Scanned (items.json):           ${styleText('bold', String(shopItems.length))}`);
-    console.log(`❌ Missing Physical Sprites (public/):          ${missingSprites.length > 0 ? styleText('red', String(missingSprites.length)) : styleText('green', '0 (100% OK)')}`);
-    console.log(`⚠️  Sprite Collision Groups in items.json:       ${styleText('yellow', String(collisions.length))}`);
-    console.log(`🚨 Items Sharing Colliding Sprites:            ${styleText('yellow', String(totalAffectedItems))}`);
-    console.log(`📥 Ready Assets in _raw-assets/ for resolution: ${styleText('green', `${totalRawReady} / ${totalAffectedItems} (${Math.round((totalRawReady / totalAffectedItems) * 100)}%)`)}\n`);
-
-    if (missingSprites.length > 0) {
-      console.log(styleText('red', '─── ❌ ERRORES: SPRITES FALTANTES O NO ENCONTRADOS EN public/ ──'));
-      for (const err of missingSprites) {
-        if (err.reason === 'missing_property') {
-          console.log(styleText('red', `❌ [MISSING_SPRITE]`), `${err.name} (${err.id}) - No tiene la propiedad 'sprite' definida.`);
-        } else {
-          console.log(styleText('red', `❌ [FILE_NOT_FOUND]`), `${err.name} (${err.id}) - Archivo no existe: '${err.expectedPath}'`);
-        }
-      }
-      console.log('');
-    }
-
-    if (collisions.length > 0) {
-      console.log(styleText('yellow', '─── ⚠️  COLISIONES DE SPRITES Y ESTADO EN _raw-assets/ ──────────'));
-      for (const group of collisions) {
-        const rawReadyCount = group.items.filter(i => i.hasRawAsset).length;
-        console.log(
-          styleText('yellow', `⚠️  [SPRITE_COLLISION] (${group.count} ítems)`),
-          `Sprite actual: '${styleText('bold', group.sprite)}'`,
-          styleText('gray', `[${rawReadyCount}/${group.count} listos en _raw-assets]`)
-        );
-        for (const item of group.items) {
-          const rawStatus = item.hasRawAsset
-            ? styleText('green', '📥 [RAW DISPONIBLE]')
-            : styleText('gray', '⏳ [PENDIENTE]');
-          console.log(`   - ${item.name} (${styleText('gray', item.id)}) [cat: ${item.cat}] ${rawStatus}`);
-        }
-        console.log('');
-      }
-    }
-
-    console.log(styleText('cyan', '───────────────────────────────────────────────────────────────────'));
-    console.log(`Resumen: ${styleText('green', `${totalRawReady} sprites ya están en _raw-assets`)}, listos para asignarse y convertirse a public/.`);
-    console.log(styleText('cyan', '───────────────────────────────────────────────────────────────────\n'));
+    printHumanSummary(shopItems.length, missingSprites, collisions, totalAffectedItems, totalRawReady);
   }
 
   return {

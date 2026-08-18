@@ -293,7 +293,9 @@ export const useGTSStore = defineStore('gts', () => {
     listings, myListings, salesHistory, loading, publishing, filters,
     MARKET_FEE: GTS_MARKET_FEE,
     MAX_LISTINGS: GTS_MAX_ACTIVE_LISTINGS,
-    filteredListings, activeMyListings, unseenSalesCount,
+    filteredListings, activeMyListings,
+    // fallow-ignore-next-line unused-store-member
+    unseenSalesCount,
     fetchListings, fetchUserData, initRealtime, stopRealtime,
     buyListing, publishListing, cancelListing
   }

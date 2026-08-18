@@ -7,13 +7,12 @@ import { useModalStore } from '@/stores/modals'
 import { isSaveLocked } from '@/logic/auth/sessionHub'
 import { checkAppVersionCompatibility } from '@/logic/db/dbRouter'
 import { gameBus } from '@/logic/events/gameBus'
-import { writeOpfsFile } from '@/logic/utils/opfsStorage'
-import { compress } from '@/logic/utils/compression'
 import { requireGenderId, type GameState, type ClaimItem } from '@/types/system/game'
 import type { AuthUser } from '@/types/auth/auth'
 import { ref, type Ref } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import type { DBRouter } from '@/logic/db/dbRouter'
+import { canSaveState, updateSessionPlaytime, handleSaveRollback } from '@/stores/game/actions/saveActionHelpers'
 
 export function useSaveActions(
   state: GameState, 
@@ -163,23 +162,10 @@ export function useSaveActions(
   }
 
   async function save(showNotif = true) {
-    // Security Guard: Prevent writing a blank/corrupted save state
-    const pokemonCount = (state.team?.length || 0) + (state.box?.length || 0);
-    const isGtsSimulation = typeof window !== 'undefined' && window.__GTS_SIMULATION__ === true;
-    if (!isGtsSimulation && (pokemonCount === 0 || !state.starterChosen)) {
-      logger.debug('SAVE', `Guardado abortado: El jugador tiene ${pokemonCount} Pokémon y starterChosen es ${state.starterChosen}. Prevenida sobreescritura destructiva.`);
-      return { success: false, error: 'Cannot save with 0 Pokémon or unchosen starter' };
-    }
-
-    // Guard: Prevent saving during evolution or move learning to prevent state regression/loss
-    try {
-      const modalStore = useModalStore();
-      if (modalStore.isOpen('Evolution') || modalStore.isOpen('MoveLearning')) {
-        logger.warn('SAVE', 'Guardado abortado: El jugador está en medio de una evolución o aprendizaje de movimientos.');
-        return { success: false, error: 'Cannot save during evolution or move learning' };
-      }
-    } catch (e) {
-      logger.warn('SAVE', 'No se pudo validar el estado de los modales para el guardado:', e);
+    const modalStore = useModalStore()
+    const saveCheck = canSaveState(state, (name) => modalStore.isOpen(name))
+    if (!saveCheck.allowed) {
+      return { success: false, error: saveCheck.error }
     }
 
     if (isSandboxActive.value) {
@@ -190,40 +176,31 @@ export function useSaveActions(
     }
     if (!authStore.user) return { success: false }
 
-    if (sessionStartTime !== null) {
-      const now = Temporal.Now.instant().epochMilliseconds;
-      const elapsedSecs = Math.floor((now - sessionStartTime) / 1000);
-      if (elapsedSecs > 0) {
-        state.playtime = (state.playtime || 0) + elapsedSecs;
-        sessionStartTime = now;
-      }
-    } else {
-      sessionStartTime = Temporal.Now.instant().epochMilliseconds;
-    }
-    
+    sessionStartTime = updateSessionPlaytime(state, sessionStartTime)
+
     // Check session lock (Last-In-Wins)
     const locked = isSaveLocked()
-    
     if (locked) {
       logger.warn('SAVE', 'Sesión bloqueada. Solo se realizará guardado LOCAL.')
     }
+
     // Guard: Prevent saving with an outdated client version to protect DB integrity
     try {
-      const appComp = await checkAppVersionCompatibility(db.value);
+      const appComp = await checkAppVersionCompatibility(db.value)
       if (!appComp.compatible && appComp.error === 'OUTDATED_CLIENT') {
-        logger.warn('SAVE', `Guardado bloqueado: Cliente desactualizado (${appComp.client}) vs Servidor (${appComp.server}).`);
-        gameBus.emit('PWA_NEED_REFRESH');
-        uiStore.notify('Actualización requerida para guardar', '⚠️');
-        return { success: false, error: 'OUTDATED_CLIENT' };
+        logger.warn('SAVE', `Guardado bloqueado: Cliente desactualizado (${appComp.client}) vs Servidor (${appComp.server}).`)
+        gameBus.emit('PWA_NEED_REFRESH')
+        uiStore.notify('Actualización requerida para guardar', '⚠️')
+        return { success: false, error: 'OUTDATED_CLIENT' }
       }
     } catch (e) {
-      logger.warn('SAVE', 'No se pudo verificar la compatibilidad de versión en el guardado:', e);
+      logger.warn('SAVE', 'No se pudo verificar la compatibilidad de versión en el guardado:', e)
     }
 
     const notifyFn = uiStore.notify
-    const result = await performSave(state, authStore.user, { 
-      showNotif, 
-      notifyFn, 
+    const result = await performSave(state, authStore.user, {
+      showNotif,
+      notifyFn,
       db: db.value,
       userVersion: authStore.user.db_version,
       lastSaveId: authStore.user.last_save_id,
@@ -241,46 +218,9 @@ export function useSaveActions(
 
       if (result.migrated) authStore.user.db_version = 3
       if (result.lastSaveId) authStore.user.last_save_id = result.lastSaveId
-      
-      if (result.rollback) {
-        if (result.outOfSync) notifyFn('Desincronización detectada. Restaurando...', '🔄');
-        else notifyFn('Actualización detectada. Cargando partida desde la base de datos...', '📥');
-        
-        let rollbackData = (result as { serverData?: GameState }).serverData; // domain-ok
-        let freshSaveId = result.lastSaveId;
-        
-        if (!rollbackData && db.value) {
-          const freshRes = await db.value.from('game_saves').select('save_data, last_save_id').eq('user_id', authStore.user.id).single();
-          const freshSave = freshRes.data as { save_data: GameState; last_save_id: string } | null; // domain-ok
-          if (freshSave) {
-            rollbackData = freshSave.save_data;
-            freshSaveId = freshSave.last_save_id;
-          }
-        }
-        
-        if (rollbackData && authStore.user) {
-          const user = authStore.user;
-          updateState(rollbackData);
-          if (freshSaveId) {
-            user.last_save_id = freshSaveId;
-          }
-          // Actualizar localStorage y OPFS para evitar bucles de carga de datos obsoletos
-          (async () => {
-            try {
-              const json = JSON.stringify(rollbackData);
-              localStorage.setItem('pokemon_local_save_' + user.id, json);
 
-              const compressed = await compress(json);
-              await writeOpfsFile(`save_${user.id}.gz`, compressed);
-              logger.info('SAVE', 'Rollback local storage (LS/OPFS) updated successfully');
-            } catch (e) {
-              logger.warn('SAVE', 'Error al actualizar almacenamiento local (LS/OPFS) durante el rollback:', e);
-            } finally {
-              await Promise.resolve();
-              if (typeof window !== 'undefined') window.location.reload();
-            }
-          })();
-        }
+      if (result.rollback) {
+        await handleSaveRollback(result, db.value, authStore.user, notifyFn, updateState)
       }
     }
     return result || { success: false }

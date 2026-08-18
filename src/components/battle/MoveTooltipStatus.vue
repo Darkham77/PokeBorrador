@@ -1,5 +1,12 @@
 <script setup lang="ts">
 import type { ParsedStatusEffectInfo } from '@/types/battle/tooltip'
+import {
+  getTargetCssClass,
+  getDirectionCssClass,
+  getTargetArrow,
+  getDirectionArrow,
+  getStageRangeLabel
+} from './moveTooltipStatusHelper.ts'
 
 defineProps<{
   parsedStatusEffect: ParsedStatusEffectInfo
@@ -20,14 +27,14 @@ defineProps<{
           <span class="stat-lbl">APLICADO A</span>
           <span
             class="stat-val"
-            :class="parsedStatusEffect.isSelf ? 'boosted' : 'penalized'"
+            :class="getTargetCssClass(parsedStatusEffect.isSelf)"
           >
             {{ parsedStatusEffect.targetName }}
             <span
               class="arrow"
-              :class="parsedStatusEffect.isSelf ? 'up' : 'down'"
+              :class="getTargetCssClass(parsedStatusEffect.isSelf) === 'boosted' ? 'up' : 'down'"
             >
-              {{ parsedStatusEffect.isSelf ? '▲' : '▼' }}
+              {{ getTargetArrow(parsedStatusEffect.isSelf) }}
             </span>
           </span>
         </div>
@@ -37,14 +44,14 @@ defineProps<{
           <span class="stat-lbl">ESTADO</span>
           <span
             class="stat-val"
-            :class="parsedStatusEffect.isSelf ? 'boosted' : 'penalized'"
+            :class="getTargetCssClass(parsedStatusEffect.isSelf)"
           >
             {{ parsedStatusEffect.label }}
             <span
               class="arrow"
-              :class="parsedStatusEffect.direction === 'up' ? 'up' : 'down'"
+              :class="getDirectionCssClass(parsedStatusEffect.direction) === 'boosted' ? 'up' : 'down'"
             >
-              {{ parsedStatusEffect.direction === 'up' ? '▲' : '▼' }}
+              {{ getDirectionArrow(parsedStatusEffect.direction) }}
             </span>
           </span>
         </div>
@@ -67,14 +74,14 @@ defineProps<{
           <span class="stat-lbl">APLICADO A</span>
           <span
             class="stat-val"
-            :class="parsedStatusEffect.isSelf ? 'boosted' : 'penalized'"
+            :class="getTargetCssClass(parsedStatusEffect.isSelf)"
           >
             {{ parsedStatusEffect.targetName }}
             <span
               class="arrow"
-              :class="parsedStatusEffect.isSelf ? 'up' : 'down'"
+              :class="getTargetCssClass(parsedStatusEffect.isSelf) === 'boosted' ? 'up' : 'down'"
             >
-              {{ parsedStatusEffect.isSelf ? '▲' : '▼' }}
+              {{ getTargetArrow(parsedStatusEffect.isSelf) }}
             </span>
           </span>
         </div>
@@ -84,14 +91,14 @@ defineProps<{
           <span class="stat-lbl">ESTADÍSTICA</span>
           <span
             class="stat-val"
-            :class="parsedStatusEffect.direction === 'up' ? 'boosted' : 'penalized'"
+            :class="getDirectionCssClass(parsedStatusEffect.direction)"
           >
             {{ parsedStatusEffect.statName }}
             <span
               class="arrow"
-              :class="parsedStatusEffect.direction === 'up' ? 'up' : 'down'"
+              :class="getDirectionCssClass(parsedStatusEffect.direction) === 'boosted' ? 'up' : 'down'"
             >
-              {{ parsedStatusEffect.direction === 'up' ? '▲' : '▼' }}
+              {{ getDirectionArrow(parsedStatusEffect.direction) }}
             </span>
           </span>
         </div>
@@ -101,15 +108,14 @@ defineProps<{
           <span class="stat-lbl">RANGO (STAGE)</span>
           <span
             class="stat-val"
-            :class="parsedStatusEffect.direction === 'up' ? 'boosted' : 'penalized'"
+            :class="getDirectionCssClass(parsedStatusEffect.direction)"
           >
-            {{ (parsedStatusEffect.currentStage ?? 0) >= 0 ? '+' : '' }}{{ parsedStatusEffect.currentStage ?? 0 }} ➔ 
-            {{ (parsedStatusEffect.finalStage ?? 0) >= 0 ? '+' : '' }}{{ parsedStatusEffect.finalStage ?? 0 }}
+            {{ getStageRangeLabel(parsedStatusEffect.currentStage, parsedStatusEffect.finalStage) }}
             <span
               class="arrow"
-              :class="parsedStatusEffect.direction === 'up' ? 'up' : 'down'"
+              :class="getDirectionCssClass(parsedStatusEffect.direction) === 'boosted' ? 'up' : 'down'"
             >
-              {{ parsedStatusEffect.direction === 'up' ? '▲' : '▼' }}
+              {{ getDirectionArrow(parsedStatusEffect.direction) }}
             </span>
           </span>
         </div>

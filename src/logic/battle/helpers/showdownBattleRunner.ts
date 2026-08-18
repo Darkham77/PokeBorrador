@@ -2,8 +2,9 @@ import type { SideID } from '@pkmn/sim';
 import { ChoiceRequest, requiresAction } from './requestHelper.ts';
 import { ShowdownBattleEngine } from '../engine/showdownBattleEngine.ts';
 import { isCertifiedBattleGameAction, type CertifiedBattleGameAction } from '../../../types/battle/certifiedBattleActions.ts';
+import { REPLAY_SEATS, isReplaySeat } from './showdownSeats.ts';
 
-export const REPLAY_SEATS: readonly SideID[] = ['p1', 'p2', 'p3', 'p4']; // domain-ok
+export { REPLAY_SEATS };
 
 export interface CertifiedReplayHistoryEntry {
   p1Choice: string;
@@ -138,7 +139,7 @@ export class ShowdownBattleRunner {
    */
   peekNextChoice(player: SideID, activeRequest: unknown): string {
     if (!requiresAction(activeRequest)) return 'pass';
-    if (!REPLAY_SEATS.includes(player)) {
+    if (!isReplaySeat(player)) {
       throw new Error(`[ShowdownBattleRunner] Seat is not available in the current simulator request. context=${JSON.stringify({ seat: player, activeRequest })}`);
     }
     const index = this.indicesBySeat.get(player) ?? 0;
@@ -208,7 +209,7 @@ export class ShowdownBattleRunner {
       engine.choiceIdx.set(seatId, idx);
     }
 
-    if (!REPLAY_SEATS.includes(player)) {
+    if (!isReplaySeat(player)) {
       throw new Error(`[ShowdownBattleRunner] Seat is not available in the current simulator request. context=${JSON.stringify({ seat: player, activeRequest })}`);
     }
     const seatId = player;

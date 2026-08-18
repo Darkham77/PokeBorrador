@@ -99,9 +99,6 @@ export const GEN2_PDEX_ORDER = [
 export type Gen2PokemonSpeciesId = (typeof GEN2_PDEX_ORDER)[number];
 export type PokedexOrderSpeciesId = Gen1PokemonSpeciesId | Gen2PokemonSpeciesId;
 
-import { PDEX_TYPE_COLORS } from '../../logic/constants/pokedexConstants.ts'
-export { PDEX_TYPE_COLORS }
-
 export const POKEMON_AESTHETICS: Partial<Record<PokedexOrderSpeciesId, { floating: boolean }>> = {
   // Floating species (visually not on the ground, regardless of type)
   bulbasaur: { floating: false },

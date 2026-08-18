@@ -24,13 +24,8 @@ export interface ChatMessage {
   gender?: string;
 }
 
-interface PrivateChat {
-  username: string;
-  messages: ChatMessage[];
-  unreadCount: number;
-  isCollapsed: boolean;
-  lastInteraction: number;
-}
+import { parseInstantEpoch } from './chatDateHelper.ts'
+import { sanitizePrivateChats, type PrivateChat } from './chatSanitizer.ts'
 
 export const useChatPrivateStore = defineStore('chatPrivate', () => {
   const authStore = useAuthStore()
@@ -46,34 +41,8 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
   const outboxChannels: Record<string, RealtimeChannel> = {}
   let isInitialized = false
 
-  const getSanitizedChats = (chats: Record<string, PrivateChat> | undefined, forceCollapse = false): Record<string, PrivateChat> => {
-    const sanitized: Record<string, PrivateChat> = {}
-    if (chats) {
-      for (const [id, chat] of Object.entries(chats)) {
-        if (authStore.user?.id && id === authStore.user.id) continue
-        
-        const isLocalKey = id === 'local_user' || id === 'eq.local_user' || id.startsWith('local_')
-        if (authStore.sessionMode === 'online' && isLocalKey) {
-          logger.info('Chat', `Filtrando chat local contaminado en modo online: ${id}`)
-          continue
-        }
-        
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-        if (authStore.sessionMode === 'offline' && uuidRegex.test(id)) {
-          logger.info('Chat', `Filtrando chat remoto en modo offline: ${id}`)
-          continue
-        }
-
-        const currentCollapsed = isInitialized && privateChats[id] ? privateChats[id].isCollapsed : true
-
-        sanitized[id] = {
-          ...chat,
-          isCollapsed: forceCollapse ? true : currentCollapsed
-        }
-      }
-    }
-    return sanitized
-  }
+  const getSanitizedChats = (chats: Record<string, PrivateChat> | undefined, forceCollapse = false) =>
+    sanitizePrivateChats(chats, privateChats, authStore.user?.id, authStore.sessionMode, forceCollapse, isInitialized)
 
   // Initialize existing chats
   if (gameStore.state.chats) {
@@ -97,25 +66,6 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
       }
     }
   }, { deep: true })
-
-  function parseInstantEpoch(val: string | number | undefined): number {
-    if (!val) return 0
-    try {
-      if (typeof val === 'number') return val
-      let isoStr = val.trim()
-      const num = Number(isoStr)
-      if (!isNaN(num) && isoStr.length > 8) return num
-      if (isoStr.includes(' ') && !isoStr.includes('T')) {
-        isoStr = isoStr.replace(' ', 'T')
-      }
-      if (!isoStr.endsWith('Z') && !isoStr.includes('+') && !isoStr.includes('-')) {
-        isoStr += 'Z'
-      }
-      return Temporal.Instant.from(isoStr).epochMilliseconds
-    } catch {
-      return 0
-    }
-  }
 
   async function loadPrivateHistory() {
     if (!authStore.user || !gameStore.db) return
