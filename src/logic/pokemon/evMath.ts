@@ -14,10 +14,12 @@ export const MIN_STAT_EVS = 0;
 export const MAX_FRIENDSHIP = 255;
 
 export const VITAMIN_EV_GAIN = 10;
+export const MOCHI_EV_GAIN = 10;
 export const FEATHER_EV_GAIN = 1;
 export const BERRY_EV_REDUCTION = 10;
 export const POWER_ITEM_EV_BONUS = 8;
 export const MACHO_BRACE_EV_MULTIPLIER = 2;
+export const POKERUS_EV_MULTIPLIER = 2;
 
 export const POWER_ITEMS: Record<string, PokemonStatKey> = {
   powerweight: 'hp',
@@ -26,6 +28,15 @@ export const POWER_ITEMS: Record<string, PokemonStatKey> = {
   powerlens: 'spa',
   powerband: 'spd',
   poweranklet: 'spe',
+};
+
+export const MOCHIS: Record<string, PokemonStatKey> = {
+  healthmochi: 'hp',
+  musclemochi: 'atk',
+  resistmochi: 'def',
+  geniusmochi: 'spa',
+  clevermochi: 'spd',
+  swiftmochi: 'spe',
 };
 
 export const EV_BERRIES: Record<string, PokemonStatKey> = {
@@ -94,7 +105,8 @@ export interface EvGainResult {
 export function applyEvGains(
   currentEvs: PokemonEVs | undefined | null,
   baseYield: EvYield,
-  heldItem?: string | null
+  heldItem?: string | null,
+  hasPokerus?: boolean
 ): EvGainResult {
   const current: PokemonEVs = currentEvs ? { ...currentEvs } : createDefaultEvs();
   let currentTotal = calculateTotalEvs(current);
@@ -122,6 +134,9 @@ export function applyEvGains(
     }
     if (powerItemStat === stat) {
       rawGain += POWER_ITEM_EV_BONUS;
+    }
+    if (hasPokerus) {
+      rawGain *= POKERUS_EV_MULTIPLIER;
     }
 
     if (rawGain > 0) {
@@ -154,9 +169,10 @@ export function canUseVitamin(currentEvs: PokemonEVs | undefined | null, stat: P
   return (evs[stat] || 0) < MAX_STAT_EVS;
 }
 
-export function applyVitamin(
+function applyStatEvIncrement(
   currentEvs: PokemonEVs | undefined | null,
-  stat: PokemonStatKey
+  stat: PokemonStatKey,
+  gainAmount: number
 ): { updatedEvs: PokemonEVs; success: boolean; gained: number } {
   const evs: PokemonEVs = currentEvs ? { ...currentEvs } : createDefaultEvs();
   if (!canUseVitamin(evs, stat)) {
@@ -165,7 +181,7 @@ export function applyVitamin(
 
   const currentTotal = calculateTotalEvs(evs);
   const currentStat = evs[stat];
-  const maxCanGain = Math.min(VITAMIN_EV_GAIN, MAX_STAT_EVS - currentStat, MAX_TOTAL_EVS - currentTotal);
+  const maxCanGain = Math.min(gainAmount, MAX_STAT_EVS - currentStat, MAX_TOTAL_EVS - currentTotal);
 
   if (maxCanGain <= 0) {
     return { updatedEvs: evs, success: false, gained: 0 };
@@ -175,25 +191,18 @@ export function applyVitamin(
   return { updatedEvs: evs, success: true, gained: maxCanGain };
 }
 
+export function applyVitamin(
+  currentEvs: PokemonEVs | undefined | null,
+  stat: PokemonStatKey
+): { updatedEvs: PokemonEVs; success: boolean; gained: number } {
+  return applyStatEvIncrement(currentEvs, stat, VITAMIN_EV_GAIN);
+}
+
 export function applyFeather(
   currentEvs: PokemonEVs | undefined | null,
   stat: PokemonStatKey
 ): { updatedEvs: PokemonEVs; success: boolean; gained: number } {
-  const evs: PokemonEVs = currentEvs ? { ...currentEvs } : createDefaultEvs();
-  if (!canUseVitamin(evs, stat)) {
-    return { updatedEvs: evs, success: false, gained: 0 };
-  }
-
-  const currentTotal = calculateTotalEvs(evs);
-  const currentStat = evs[stat];
-  const maxCanGain = Math.min(FEATHER_EV_GAIN, MAX_STAT_EVS - currentStat, MAX_TOTAL_EVS - currentTotal);
-
-  if (maxCanGain <= 0) {
-    return { updatedEvs: evs, success: false, gained: 0 };
-  }
-
-  evs[stat] = currentStat + maxCanGain;
-  return { updatedEvs: evs, success: true, gained: maxCanGain };
+  return applyStatEvIncrement(currentEvs, stat, FEATHER_EV_GAIN);
 }
 
 export function canUseEvBerry(
@@ -224,3 +233,30 @@ export function applyEvBerry(
 
   return { updatedEvs: evs, success: true, reducedAmount };
 }
+
+export function applyMochi(
+  currentEvs: PokemonEVs | undefined | null,
+  stat: PokemonStatKey
+): { updatedEvs: PokemonEVs; success: boolean; gained: number } {
+  return applyStatEvIncrement(currentEvs, stat, MOCHI_EV_GAIN);
+}
+
+export function resetAllEvs(
+  currentEvs: PokemonEVs | undefined | null
+): { updatedEvs: PokemonEVs; success: boolean; totalCleared: number } {
+  const total = calculateTotalEvs(currentEvs);
+  if (total <= 0) {
+    return {
+      updatedEvs: currentEvs ? { ...currentEvs } : createDefaultEvs(),
+      success: false,
+      totalCleared: 0,
+    };
+  }
+
+  return {
+    updatedEvs: createDefaultEvs(),
+    success: true,
+    totalCleared: total,
+  };
+}
+

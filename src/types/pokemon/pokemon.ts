@@ -13,6 +13,8 @@ export const POKEMON_STAT_KEYS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as co
 export type PokemonStatKey = (typeof POKEMON_STAT_KEYS)[number];
 export const POKEMON_STATUSES = ['par', 'brn', 'psn', 'slp', 'frz', 'tox'] as const; // lib-duplicate-ok
 export type PokemonStatus = (typeof POKEMON_STATUSES)[number] | '';
+export const POKERUS_STATUSES = ['uninfected', 'infected', 'cured'] as const;
+export type PokerusStatus = (typeof POKERUS_STATUSES)[number];
 export type PokemonGender = 'm' | 'f' | null;
 export type PokedexStatus = 'none' | 'seen' | 'caught';
 export type PokemonStorageLocation = 'team' | 'box';
@@ -39,6 +41,16 @@ export function isPokemonStatus(status: unknown): status is PokemonStatus {
 export function requirePokemonStatus(status: string): PokemonStatus {
   if (isPokemonStatus(status)) return status;
   throw new Error(`Invalid Pokemon status: ${status}`);
+}
+
+export function isPokerusStatus(status: unknown): status is PokerusStatus {
+  if (typeof status !== 'string') return false;
+  return POKERUS_STATUSES.includes(status as PokerusStatus);
+}
+
+export function requirePokerusStatus(status: string): PokerusStatus {
+  if (isPokerusStatus(status)) return status;
+  throw new Error(`Invalid Pokerus status: ${status}`);
 }
 
 export interface BreedingCompatibility {
@@ -183,6 +195,7 @@ export interface Pokemon {
   isBoxed?: boolean;
   ivs: PokemonIVs;
   evs?: PokemonEVs;
+  pokerus?: PokerusStatus;
   nature: NatureId;
   heldItem?: ItemId | null;
   lastItem?: ItemId | null;

@@ -49,8 +49,9 @@ Upon starting work, every agent MUST load these core skills:
 - `@/project-standards` (`.agents/skills/project-standards/SKILL.md`) for core architecture governance and navigation hub.
 - `@/ponytail` (`.agents/skills/ponytail/SKILL.md`) for senior developer efficiency and minimal working code.
 - `@/dox-navigator` (`.agents/skills/dox-navigator/SKILL.md`) for directory navigation and DOX hierarchy.
+- `@/domain-type-first` (`.agents/skills/domain-type-first/SKILL.md`) for domain-type-first governance, data contracts, and union derivation.
 
-*Domain-specific skills (`@/domain-type-first`, `@/project-browser-testing`, `@/systematic-debugging`, `@/safe-commit`) MUST be loaded on-demand when performing their respective tasks.*
+*Domain-specific skills (`@/project-browser-testing`, `@/systematic-debugging`, `@/safe-commit`) MUST be loaded on-demand when performing their respective tasks.*
 
 ## 4. Specialized Project Rules Index
 

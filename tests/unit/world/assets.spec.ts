@@ -53,9 +53,13 @@ describe('AssetService & Resolver', () => {
   })
 
   describe('AssetService: Item Routing', () => {
-    it('debe resolver la URL del sprite a partir de su ID de ítem en inglés', () => {
+    it('debe resolver la URL del sprite a partir de su ID de ítem en inglés o ruta relativa', () => {
       expect(getAssetUrl(ASSET_TYPES.ITEM, 'superpotion'))
         .toBe('/assets/sprites/crafting/tier3/superpotion.webp')
+      expect(getAssetUrl(ASSET_TYPES.ITEM, 'healthmochi'))
+        .toBe('/assets/sprites/crafting/tier3/healthmochi.webp')
+      expect(getAssetUrl(ASSET_TYPES.ITEM, 'crafting/tier0/coalore'))
+        .toBe('/assets/sprites/crafting/tier0/coalore.webp')
     })
 
     it('debe devolver la ruta estándar en tier3 si no está en SHOP_ITEMS', () => {

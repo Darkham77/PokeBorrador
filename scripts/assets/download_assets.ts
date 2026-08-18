@@ -46,9 +46,9 @@ const POKESPRITE_FOLDERS = [ // no-domain
 // Multi-source sprite URLs for items
 const ITEM_SOURCES: Array<(name: string, cleanId: string) => string> = [
   // 1. Serebii Direct
-  (_name, cleanId) => `https://www.serebii.net/itemdex/sprites/${cleanId}.png`,
-  (_name, cleanId) => `https://www.serebii.net/itemdex/sprites/sv/${cleanId}.png`,
-  (_name, cleanId) => `https://www.serebii.net/itemdex/sprites/swsh/${cleanId}.png`,
+  (name) => `https://www.serebii.net/itemdex/sprites/${name}.png`,
+  (name) => `https://www.serebii.net/itemdex/sprites/sv/${name}.png`,
+  (name) => `https://www.serebii.net/itemdex/sprites/swsh/${name}.png`,
 
   // 2. PokéAPI
   (name) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${name}.png`,
@@ -97,7 +97,7 @@ export function toItemSlugCandidates(id: string): string[] {
   }
 
   // 3. Common Pokémon Sub-word tokenization
-  const subwordRegex = /(berry|ball|stone|feather|potion|repel|restore|cure|herb|seed|plate|incense|gem|scarf|specs|band|belt|glasses|orb|candy|scale|tooth|fang|boots|glove|mask|apple|sweet|patch|capsule|flute|letter|ticket|mail|powder|spoon|tag|bell|rock|clay|dice|vest|cloak|helmet|sash|lens|knot|moss|umbrella|spray|policy|goggles|card|service|amulet|disc|cuff|wreath|teacup|pot|egg|rod)$/;
+  const subwordRegex = /(berry|ball|stone|feather|mochi|potion|repel|restore|cure|herb|seed|plate|incense|gem|scarf|specs|band|belt|glasses|orb|candy|scale|tooth|fang|boots|glove|mask|apple|sweet|patch|capsule|flute|letter|ticket|mail|powder|spoon|tag|bell|rock|clay|dice|vest|cloak|helmet|sash|lens|knot|moss|umbrella|spray|policy|goggles|card|service|amulet|disc|cuff|wreath|teacup|pot|egg|rod)$/;
   if (subwordRegex.test(clean)) {
     const matched = clean.match(subwordRegex)![0];
     const prefix = clean.slice(0, clean.length - matched.length);
@@ -107,6 +107,11 @@ export function toItemSlugCandidates(id: string): string[] {
   }
 
   // 4. Specific special cases
+  if (clean === 'freshstartmochi') {
+    candidates.add('fresh-startmochi');
+    candidates.add('fresh-start-mochi');
+    candidates.add('freshstart-mochi');
+  }
   if (clean === 'hpup') candidates.add('hp-up');
   if (clean === 'ppup') candidates.add('pp-up');
   if (clean === 'ppmax') candidates.add('pp-max');

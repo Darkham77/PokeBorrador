@@ -78,4 +78,19 @@ describe('Battle EV Gains & Rewards Distribution', () => {
 
     assert.strictEqual(maxLevelMon.spa, prevSpa + 1); // 6 / 4 = 1 stat point gained!
   });
+
+  it('doubles EV rewards in battle when Pokemon is infected with Pokérus', () => {
+    const pkrsMon = createMon('pikachu', 20);
+    pkrsMon.evs = createDefaultEvs();
+    pkrsMon.pokerus = 'infected';
+
+    const enemyMon = createMon('alakazam', 50); // Alakazam gives 3 SpA
+
+    const participants = new Set<string>([pkrsMon.uid]);
+    const result = processEvGain(pkrsMon, enemyMon, participants);
+
+    assert.ok(result !== null);
+    assert.strictEqual(result.totalGained, 6); // 3 * 2 = 6
+    assert.strictEqual(pkrsMon.evs.spa, 6);
+  });
 });

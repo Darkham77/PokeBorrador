@@ -7,16 +7,20 @@ import {
   applyVitamin,
   applyFeather,
   applyEvBerry,
+  applyMochi,
+  resetAllEvs,
   canUseVitamin,
   canUseEvBerry,
   MAX_TOTAL_EVS,
   MAX_STAT_EVS,
   MIN_STAT_EVS,
   VITAMIN_EV_GAIN,
+  MOCHI_EV_GAIN,
   FEATHER_EV_GAIN,
   BERRY_EV_REDUCTION,
   POWER_ITEM_EV_BONUS,
-  MACHO_BRACE_EV_MULTIPLIER
+  MACHO_BRACE_EV_MULTIPLIER,
+  POKERUS_EV_MULTIPLIER
 } from '@/logic/pokemon/evMath';
 import { POKEMON_STAT_KEYS } from '@/types/pokemon/pokemon';
 
@@ -123,4 +127,53 @@ describe('evMath - Pure Effort Value Mathematics & Bounds', () => {
     assert.strictEqual(resZero.success, false);
     assert.strictEqual(resZero.reducedAmount, 0);
   });
+
+  it('doubles EV gains when infected with Pokérus', () => {
+    const initial = createDefaultEvs();
+    const result = applyEvGains(initial, { atk: 1, spe: 2 }, null, true);
+    assert.strictEqual(result.totalGained, (1 + 2) * POKERUS_EV_MULTIPLIER);
+    assert.strictEqual(result.updatedEvs.atk, 2);
+    assert.strictEqual(result.updatedEvs.spe, 4);
+  });
+
+  it('stacks Pokérus with Macho Brace (x4 multiplier)', () => {
+    const initial = createDefaultEvs();
+    const result = applyEvGains(initial, { atk: 2 }, 'machobrace', true);
+    // 2 * 2 (Macho Brace) * 2 (Pokérus) = 8
+    assert.strictEqual(result.totalGained, 2 * MACHO_BRACE_EV_MULTIPLIER * POKERUS_EV_MULTIPLIER);
+    assert.strictEqual(result.updatedEvs.atk, 8);
+  });
+
+  it('stacks Pokérus with Power items', () => {
+    const initial = createDefaultEvs();
+    const result = applyEvGains(initial, { spe: 1 }, 'powerbracer', true);
+    // powerbracer adds +8 Atk -> (0 + 8) * 2 (Pokérus) = 16 Atk
+    // base yield gives 1 Spe -> 1 * 2 (Pokérus) = 2 Spe
+    assert.strictEqual(result.updatedEvs.atk, POWER_ITEM_EV_BONUS * POKERUS_EV_MULTIPLIER);
+    assert.strictEqual(result.updatedEvs.spe, 1 * POKERUS_EV_MULTIPLIER);
+    assert.strictEqual(result.totalGained, (POWER_ITEM_EV_BONUS + 1) * POKERUS_EV_MULTIPLIER);
+  });
+
+  it('applies mochis with +10 EVs', () => {
+    const initial = createDefaultEvs();
+    const res = applyMochi(initial, 'spa');
+    assert.ok(res.success);
+    assert.strictEqual(res.gained, MOCHI_EV_GAIN);
+    assert.strictEqual(res.updatedEvs.spa, 10);
+  });
+
+  it('resets all EVs to 0 using resetAllEvs', () => {
+    const trained = { hp: 252, atk: 252, def: 4, spa: 0, spd: 0, spe: 0 };
+    const res = resetAllEvs(trained);
+    assert.ok(res.success);
+    assert.strictEqual(res.totalCleared, 508);
+    assert.strictEqual(calculateTotalEvs(res.updatedEvs), 0);
+
+    // If already 0, resetAllEvs returns success: false
+    const zero = createDefaultEvs();
+    const resZero = resetAllEvs(zero);
+    assert.strictEqual(resZero.success, false);
+    assert.strictEqual(resZero.totalCleared, 0);
+  });
 });
+

@@ -76,7 +76,7 @@ export function handleStone(p: Pokemon, stoneName: string): ItemEffectResult {
   };
 }
 
-import { applyVitamin, applyFeather, applyEvBerry } from '@/logic/pokemon/evMath';
+import { applyVitamin, applyFeather, applyEvBerry, applyMochi, resetAllEvs } from '@/logic/pokemon/evMath';
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import type { PokemonStatKey } from '@/types/pokemon/pokemon';
 
@@ -94,6 +94,32 @@ export function handleVitamin(p: Pokemon, stat: PokemonStatKey, statNameEs: stri
   p.evs = res.updatedEvs;
   recalcPokemonStats(p);
   return { success: true, message: `aumentó los EVs de ${statNameEs} (+${res.gained})` };
+}
+
+export function handleMochi(p: Pokemon, stat: PokemonStatKey, statNameEs: string): ItemEffectResult {
+  if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
+
+  const res = applyMochi(p.evs, stat);
+  if (!res.success) {
+    return { success: false, message: 'No tendrá ningún efecto.' };
+  }
+
+  p.evs = res.updatedEvs;
+  recalcPokemonStats(p);
+  return { success: true, message: `aumentó los EVs de ${statNameEs} (+${res.gained})` };
+}
+
+export function handleFreshStartMochi(p: Pokemon): ItemEffectResult {
+  if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
+
+  const res = resetAllEvs(p.evs);
+  if (!res.success) {
+    return { success: false, message: 'No tendrá ningún efecto.' };
+  }
+
+  p.evs = res.updatedEvs;
+  recalcPokemonStats(p);
+  return { success: true, message: `reseteó todos sus EVs a 0 (se eliminaron ${res.totalCleared} EVs)` };
 }
 
 export function handleFeather(p: Pokemon, stat: PokemonStatKey, statNameEs: string): ItemEffectResult {

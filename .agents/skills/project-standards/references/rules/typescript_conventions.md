@@ -91,3 +91,4 @@ This document governs TypeScript standards, domain type definitions, data wrappe
 ## 8. Cross-Platform Path Standard
 
 - For converting platform-specific filesystem paths (e.g., from `path.relative`) to POSIX format (such as browser URLs, assets keys, database indexes), you MUST use native split/join operations with separator tokens (`relPath.split(path.sep).join(path.posix.sep)`) instead of regex expressions or simple replace statements. This ensures generated files remain identical across Windows, Linux, and macOS.
+

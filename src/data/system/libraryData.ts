@@ -309,11 +309,85 @@ export const libraryContent = {
       <li>🧬 <strong>Rerolls de IVs</strong>: Obtienes <strong>1 + N/2</strong> tiradas de IVs por estadística (donde N es el número de fósiles de sacrificio). Si N es impar (1, 3, 5), se garantiza la parte entera y tienes un **50% de probabilidad** de obtener una tirada adicional. Se seleccionará el IV más alto de todas las tiradas.</li>
       <li>✨ <strong>Shiny Boost (Variocolor)</strong>: Cada fósil de sacrificio suma un **+25% de probabilidad Shiny** a la tasa base (de 1/4096), alcanzando hasta un multiplicador de **2.5x** (con 6 fósiles).</li>
     </ul>
+  `,
+
+  evs: `
+    <h1>Entrenamiento de Puntos de Esfuerzo (EVs)</h1>
+    <p>Los <strong>Puntos de Esfuerzo (Effort Values - EVs)</strong> son atributos dinámicos que aumentan las estadísticas finales de tus Pokémon a medida que combaten o consumen objetos nutritivos especiales. A nivel 100, cada <strong>4 EVs</strong> en una estadística otorgan <strong>+1 punto neto</strong> en ese atributo (a nivel 50, se necesitan 8 EVs por punto tras los primeros 4).</p>
+
+    <h3>Límites Oficiales</h3>
+    <ul>
+      <li><strong>Tope por Estadística:</strong> Máximo <strong>252 EVs</strong> en un único atributo (PS, Ataque, Defensa, At. Especial, Def. Especial o Velocidad).</li>
+      <li><strong>Tope Global:</strong> Máximo <strong>510 EVs</strong> acumulados en total por Pokémon.</li>
+      <li><strong>Reparto Óptimo:</strong> Permite maximizar dos estadísticas principales (252 + 252 = 504) y colocar los 6 EVs restantes en una tercera estadística (504 + 6 = 510).</li>
+    </ul>
+
+    <h3>1. Ganancia de EVs por Combate</h3>
+    <p>Cada vez que derrotas a un Pokémon enemigo en batalla (salvaje, gimnasio o entrenador), tus Pokémon participantes reciben los EVs base asignados a esa especie:</p>
+    <table class="library-table">
+      <thead><tr><th>Estadística</th><th>Ejemplos de Rendimiento Base</th></tr></thead>
+      <tbody>
+        <tr><td>❤️ PS</td><td>Chansey (+2), Blissey (+3), Snorlax (+2), Caterpie (+1)</td></tr>
+        <tr><td>⚔️ Ataque</td><td>Machop (+1), Gyarados (+2), Dragonite (+3)</td></tr>
+        <tr><td>🛡️ Defensa</td><td>Geodude (+1), Cloyster (+2), Golem (+3)</td></tr>
+        <tr><td>🔮 At. Especial</td><td>Gastly (+1), Haunter (+2), Alakazam (+3)</td></tr>
+        <tr><td>🔰 Def. Especial</td><td>Tentacool (+1), Tentacruel (+2), Blastoise (+3)</td></tr>
+        <tr><td>⚡ Velocidad</td><td>Pidgey (+1), Pikachu (+2), Jolteon (+3)</td></tr>
+      </tbody>
+    </table>
+    <p><em>Nota:</em> Si un Pokémon lleva equipado <strong>Compartir Experiencia</strong>, también recibirá el rendimiento de EVs de la batalla aunque no haya entrado al campo.</p>
+
+    <h3>2. Objetos de Entrenamiento (Potenciadores)</h3>
+    <ul>
+      <li>🥊 <strong>Brazal Firme (Macho Brace):</strong> Duplica (<strong>x2</strong>) todos los puntos de esfuerzo obtenidos en combate, a cambio de reducir la velocidad del portador a la mitad durante la batalla.</li>
+      <li>🏋️ <strong>Objetos Recios (+8 EVs por combate):</strong> Suman <strong>+8 EVs fijos</strong> en la estadística correspondiente tras cada victoria, además de los EVs otorgados por el enemigo:
+        <ul>
+          <li><em>Pesa Recia:</em> +8 PS</li>
+          <li><em>Brazalete Recio:</em> +8 Ataque</li>
+          <li><em>Cinto Recio:</em> +8 Defensa</li>
+          <li><em>Lente Recia:</em> +8 At. Especial</li>
+          <li><em>Banda Recia:</em> +8 Def. Especial</li>
+          <li><em>Franja Recia:</em> +8 Velocidad</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h3>3. Virus Benigno: Pokérus 🦠</h3>
+    <p>El Pokérus es una rara condición médica beneficiosa que duplica permanentemente la ganancia de EVs en combate:</p>
+    <ul>
+      <li><strong>Multiplicador x2:</strong> Duplica todas las ganancias de combate (incluyendo la bonificación de los objetos recios y el brazal firme).</li>
+      <li><strong>Efecto Acumulativo:</strong> Con <em>Brazal Firme + Pokérus</em> se obtiene un multiplicador de <strong>x4</strong>. Con <em>Objeto Recio + Pokérus</em> la fórmula es: <code>(EVs_Base + 8) x 2</code>.</li>
+      <li><strong>Contagio en el Equipo:</strong> Al finalizar un combate victorioso, un Pokémon infectado tiene un <strong>33% de probabilidad</strong> de contagiar el virus a los compañeros adyacentes (izquierda y derecha en el equipo).</li>
+      <li><strong>Distintivos en Ficha:</strong> Los Pokémon infectados muestran la insignia rosada <strong>[PKRS]</strong> y los curados la etiqueta <strong>[PKRS CURADO]</strong>.</li>
+    </ul>
+
+    <h3>4. Nutrición Instantánea: Vitaminas, Plumas y Mochis 🍡</h3>
+    <ul>
+      <li>💊 <strong>Vitaminas (+10 EVs):</strong> Más PS, Proteína, Hierro, Calcio, Éter y Carburante otorgan +10 EVs en su estadística respectiva de forma inmediata.</li>
+      <li>🪶 <strong>Plumas (+1 EV):</strong> Pluma Ímpetu, Músculo, Aguante, Intelecto, Mente y Vitalidad otorgan +1 EV para ajustes de máxima precisión.</li>
+      <li>🍡 <strong>Mochis de Gen 9 (+10 EVs):</strong> Deliciosos dulces de la comarca de Norfeo (<em>Mochi Vitalidad, Mochi Músculo, Mochi Aguante, Mochi Intelecto, Mochi Mente, Mochi Ímpetu</em>).</li>
+      <li>✨ <strong>Mochi Reinicio (Fresh-Start Mochi):</strong> Objeto legendario exclusivo que <strong>restablece todos los EVs a 0</strong> de una sola vez, permitiéndote reentrenar a tu Pokémon desde cero sin alterar sus IVs ni su nivel.</li>
+    </ul>
+
+    <h3>5. Corrección de EVs: Bayas Reductoras 🍓</h3>
+    <p>Si deseas reducir los EVs de una estadística puntual para redistribuirlos, puedes darle estas bayas (-10 EVs por unidad y +Felicidad):</p>
+    <ul>
+      <li><em>Baya Grana:</em> -10 EVs en PS</li>
+      <li><em>Baya Algama:</em> -10 EVs en Ataque</li>
+      <li><em>Baya Ispero:</em> -10 EVs en Defensa</li>
+      <li><em>Baya Meluce:</em> -10 EVs en At. Especial</li>
+      <li><em>Baya Jalre:</em> -10 EVs en Def. Especial</li>
+      <li><em>Baya Tamate:</em> -10 EVs en Velocidad</li>
+    </ul>
+
+    <h3>6. Visualización en la Ficha del Pokémon</h3>
+    <p>En el detalle de tu Pokémon (pestaña <strong>Stats</strong>), puedes consultar el contador en tiempo real de <strong>TOTAL: X / 510</strong>. Cuando el Pokémon alcance el límite máximo permitido, se activará el distintivo dorado <strong>✨ MAX</strong>.</p>
   `
 }
 
 export const libraryCategories = [
   { id: 'gimnasios', label: '🏆 Gimnasios' },
+  { id: 'evs', label: '💪 Puntos de Esfuerzo (EVs)' },
   { id: 'captura', label: '🔴 Captura' },
   { id: 'clases', label: '🎭 Clases' },
   { id: 'crianza', label: '🥚 Crianza' },

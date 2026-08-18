@@ -141,3 +141,23 @@ To provide clear visual feedback without redundancy, item usage logs must be spl
 - **Rarity Highlight Aesthetics**: Highlighting item rarity (tiers) is done using a `.item-bg-glow` container with a radial gradient matching the tier color (rare = `#3b82f6`, epic = `#a855f7`, legend = `var(--yellow)`) placed behind the clean item sprite. Cards should avoid having a dark background or container behind the sprite.
 - **Price Pills Grid Layout**: To prevent overlapping text in list views, display the stock count and the official purchase shop price (`TIENDA: ₱[price]`) on the top line, and the GTS statistics pills (MIN, PROM, MAX) on a separate line below it.
 - **Suggested Market Price**: When publishing items to the GTS, default the initial suggested price input in the form to the shop sell price (50% of the shop purchase price) to match the value players get when selling directly to standard shops.
+
+---
+
+## 🎨 Asset Pipeline & Crafting Tier Sprite Standards
+
+All inventory and shop item sprites in `public/assets/sprites/` MUST strictly follow the 4-tier domain hierarchy mapped from `item.craftingTier`:
+- `crafting/tier0/`: Raw materials, stones, and primary crafting inputs (`item.craftingTier === 0`).
+- `crafting/tier1/`: Refined materials and intermediate crafting items (`item.craftingTier === 1`).
+- `crafting/tier2/`: Advanced components and complex parts (`item.craftingTier === 2`).
+- `crafting/tier3/`: Finished products, consumables, TMs, Mochis, Pokéballs, and held battle items (`item.craftingTier === 3`).
+
+### Canonical Pipeline Commands
+1. **Download Missing Sprites**: `npm run assets:download:items` (`scripts/assets/download_assets.ts`).
+2. **Convert and Build Asset DB**: `npm run assets:convert` (`scripts/assets/convert_assets.ts`).
+3. **Re-tier and Organize Items**: `node --permission --experimental-strip-types --allow-addons --allow-fs-read=. --allow-fs-write=. scripts/assets/organize_item_sprites_by_tier.ts`.
+
+### Strict Prohibitions
+- **Zero Flat Directories**: It is STRICTLY FORBIDDEN to create flat asset directories (such as `items/`) or alter `items.json` sprite paths away from `crafting/tier[0-3]/`.
+- **Zero Resolver Bypass**: `assetService.ts` resolves `ASSET_TYPES.ITEM` using the explicit `item.sprite` path (`crafting/tierX/<id>`) with fallback to `crafting/tier3/<id>`. Do not introduce ad-hoc folder overrides in the resolver.
+

@@ -35,3 +35,9 @@ To ensure rigor and traceability, every complex task MUST follow the artifact li
 1. **Planning**: Create `implementation_plan.md`. Wait for approval from the user.
 2. **Execution**: Maintain `task.md` as the source of truth during implementation.
 3. **Closure**: Create `walkthrough.md` with concrete evidence (test logs, screenshots) of task success.
+
+## 7. CLI Execution Safety & No Interactive Background Tasks
+
+- **Prohibition on Multi-Line Inline Node CLI Commands (`noInteractiveCliHangs`)**: AI agents MUST NEVER run multi-line inline scripts (`npx tsx -e "..."` or `node -e "..."`) in terminal background tasks on Windows. Doing so causes child processes to hang or await interactive stdin indefinitely.
+- **Dedicated Test/Script Files Mandate**: All validations, diagnostics, and test executions MUST be conducted using dedicated Vitest test files (`npx vitest run <path>`) or dedicated script files in `scripts/` or `scratch/`.
+

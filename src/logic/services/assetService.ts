@@ -237,8 +237,8 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
     case ASSET_TYPES.ITEM: {
       const idStr = String(id).toLowerCase();
       
-      // Direct matching if they passed the full sprite path directly
-      if (idStr.startsWith('crafting/') || idStr.startsWith('ores/') || idStr.startsWith('tools/')) {
+      // Direct matching if they passed a relative sprite path with category folder
+      if (idStr.includes('/')) {
         return resolveAsset(`/assets/sprites/${idStr}${extension}`);
       }
       
@@ -248,7 +248,7 @@ export const getAssetUrl = (type: AssetType, rawId: string | number, options: As
       } catch {
         shopItem = null;
       }
-      if (shopItem) {
+      if (shopItem?.sprite) {
         return resolveAsset(`/assets/sprites/${shopItem.sprite}${extension}`);
       }
       

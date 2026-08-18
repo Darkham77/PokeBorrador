@@ -27,8 +27,8 @@ import {
 import { DEFAULT_MAX_VIGOR } from '@/logic/pokemon/pokemonUtils';
 
 import { canHeal, canClearStatus, canRevive, canFullRestore, canRestorePP } from './itemMath.ts';
-import { handleVitamin, handleFeather, handleEvBerry } from './itemEffectHandlers.ts';
-import { EV_BERRIES, VITAMINS, FEATHERS, canUseVitamin, canUseEvBerry } from '@/logic/pokemon/evMath.ts';
+import { handleVitamin, handleFeather, handleEvBerry, handleMochi, handleFreshStartMochi } from './itemEffectHandlers.ts';
+import { EV_BERRIES, VITAMINS, FEATHERS, MOCHIS, canUseVitamin, canUseEvBerry, calculateTotalEvs } from '@/logic/pokemon/evMath.ts';
 
 export const isValidTarget = (itemId: ItemId | string, pokemon: Pokemon): boolean => {
   if (!pokemon) return false;
@@ -100,7 +100,7 @@ export const isValidTarget = (itemId: ItemId | string, pokemon: Pokemon): boolea
     }
   }
 
-  // 9. Vitaminas y Plumas
+  // 9. Vitaminas, Plumas y Mochis
   if (resolvedId in VITAMINS) {
     const statKey = VITAMINS[resolvedId];
     if (statKey) {
@@ -112,6 +112,15 @@ export const isValidTarget = (itemId: ItemId | string, pokemon: Pokemon): boolea
     if (statKey) {
       return canUseVitamin(pokemon.evs, statKey);
     }
+  }
+  if (resolvedId in MOCHIS) {
+    const statKey = MOCHIS[resolvedId];
+    if (statKey) {
+      return canUseVitamin(pokemon.evs, statKey);
+    }
+  }
+  if (resolvedId === 'freshstartmochi') {
+    return calculateTotalEvs(pokemon.evs) > 0;
   }
 
   // 10. Objetos Diferidos (Menús / Selección)
@@ -241,6 +250,15 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = { /
   'geniusfeather': pokeEffect((p) => handleFeather(p, 'spa', 'Ataque Especial')),
   'cleverfeather': pokeEffect((p) => handleFeather(p, 'spd', 'Defensa Especial')),
   'swiftfeather': pokeEffect((p) => handleFeather(p, 'spe', 'Velocidad')),
+
+  // --- Mochis ---
+  'healthmochi': pokeEffect((p) => handleMochi(p, 'hp', 'HP')),
+  'musclemochi': pokeEffect((p) => handleMochi(p, 'atk', 'Ataque')),
+  'resistmochi': pokeEffect((p) => handleMochi(p, 'def', 'Defensa')),
+  'geniusmochi': pokeEffect((p) => handleMochi(p, 'spa', 'Ataque Especial')),
+  'clevermochi': pokeEffect((p) => handleMochi(p, 'spd', 'Defensa Especial')),
+  'swiftmochi': pokeEffect((p) => handleMochi(p, 'spe', 'Velocidad')),
+  'freshstartmochi': pokeEffect((p) => handleFreshStartMochi(p)),
 
   // --- Buffs Globales ---
   'fishingrod': stateEffect((_state) => { useBuffsStore().addBuff('fishing-rod', BUFF_DURATION_20_MIN_SEC, 'standard'); return { success: true, message: `activó una Caña de pescar (20 min)` }; }), // magic-ok

@@ -17,7 +17,7 @@ const url = getAssetUrl(ASSET_TYPES.POKEMON, 'pikachu', { isShiny: false });
 | Type | Source | Description |
 | :--- | :--- | :--- |
 | `POKEMON` | Local (WebP) | (Formerly PokeAPI) Resolves to local sprites in `/assets/sprites/pokemon/`. Supports `isShiny` and `isBack`. |
-| `ITEM` | Local (WebP) | (Formerly PokeAPI) Maps item names to internal IDs in `/assets/sprites/items/`. |
+| `ITEM` | Local (WebP) | Resolves to `/assets/sprites/crafting/tier[0-3]/` structured by `craftingTier`. |
 | `MAP` | Local (WebP) | Resolves map IDs to `/assets/maps/`. |
 | `TRAINER` | Local (WebP) | (Formerly Showdown) Resolves all trainer IDs (Leaders & Generic) to `/assets/sprites/trainers/`. |
 | `BANNER` | Local (WebP) | Route banners in `/assets/ui/banners/`. |
@@ -115,10 +115,28 @@ _raw-assets/
 - **Individual Files**: All assets (Banners, Backgrounds, Sprites, Icons) must be stored as individual WebP files.
 - **Batched Sprites**: For animations, use CSS sprites or sequential WebP loading. The project no longer uses JSON atlases.
 
-#### Execution
+#### Execution & Pipeline Commands
 
-To process the `_raw-assets/` folder, execute:
-`python3 .agents/skills/project-standards/scripts/convert_to_webp.py`
+To process the `_raw-assets/` folder and generate all asset databases, execute:
+
+```bash
+npm run assets:convert
+```
+
+#### Item Sprites & Crafting Tiers Hierarchy
+
+All inventory and shop item sprites in `public/assets/sprites/` MUST strictly follow the 4-tier domain hierarchy mapped from `item.craftingTier`:
+- `crafting/tier0/`: Raw materials, stones, and primary crafting inputs (`item.craftingTier === 0`).
+- `crafting/tier1/`: Refined materials and intermediate crafting items (`item.craftingTier === 1`).
+- `crafting/tier2/`: Advanced components and complex parts (`item.craftingTier === 2`).
+- `crafting/tier3/`: Finished products, consumables, TMs, Mochis, Pokéballs, and held battle items (`item.craftingTier === 3`).
+
+To download missing items or re-tier them:
+1. `npm run assets:download:items` (`scripts/assets/download_assets.ts`)
+2. `npm run assets:convert` (`scripts/assets/convert_assets.ts`)
+3. `node --permission --experimental-strip-types --allow-addons --allow-fs-read=. --allow-fs-write=. scripts/assets/organize_item_sprites_by_tier.ts`
+
+Creating flat asset directories (such as `items/`) or altering `items.json` sprite paths away from `crafting/tier[0-3]/` is STRICTLY FORBIDDEN.
 
 ---
 

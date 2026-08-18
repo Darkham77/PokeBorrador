@@ -82,7 +82,8 @@ export function processEvGain(p: Pokemon, enemyPoke: Pokemon, participantsSet: S
   const evYield = pokemonDataProvider.getEvYield(enemyPoke.id || enemyPoke.species);
   if (!evYield || Object.keys(evYield).length === 0) return null;
 
-  const result = applyEvGains(p.evs, evYield, p.heldItem);
+  const hasPokerus = p.pokerus === 'infected';
+  const result = applyEvGains(p.evs, evYield, p.heldItem, hasPokerus);
   p.evs = result.updatedEvs;
   return result;
 }

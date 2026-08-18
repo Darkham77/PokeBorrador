@@ -188,3 +188,43 @@ function stageMult(stage) {
   return STAGE_MULT[Math.max(0, Math.min(12, stage + 6))];
 }
 ```
+
+---
+
+## 🏋️ Puntos de Esfuerzo (EVs - Effort Values)
+
+Los Puntos de Esfuerzo son valores acumulativos (0 a 252 por estadística, máximo 510 global) que incrementan las estadísticas finales del Pokémon según la fórmula estándar de Gen 4+:
+
+```text
+maxHp = floor(((base.hp × 2 + iv.hp + floor(ev.hp / 4)) × level) / 100) + level + 10
+stat_base = floor(((base.stat × 2 + iv.stat + floor(ev.stat / 4)) × level) / 100) + 5
+stat_final = floor(stat_base × nature_mult)
+```
+
+### Límites Canónicos
+
+- **Tope por Stat (`MAX_STAT_EVS`):** 252
+- **Tope Total (`MAX_TOTAL_EVS`):** 510
+- A nivel 100: cada **4 EVs = +1 punto** de estadística final.
+
+### 1. Ganancia por Combate
+
+- Cada especie derrotada otorga entre 1 y 3 EVs base a los Pokémon participantes o con *Compartir Experiencia*.
+- **Brazal Firme (*Macho Brace*):** Duplica ($\times 2$) los EVs obtenidos en batalla (a costa de reducir la velocidad del usuario a la mitad en combate).
+- **Objetos Recios (*Power Items*):** Suman **+8 EVs fijos** en su estadística respectiva tras cada combate ganado.
+
+### 2. Pokérus 🦠
+
+- Condición médica que otorga un multiplicador de **$\times 2$ permanente** a todos los EVs obtenidos en batalla.
+- Acumulativo con objetos equipados:
+  - *Brazal Firme + Pokérus:* $\times 4$ EVs totales.
+  - *Objeto Recio + Pokérus:* `(EVs_Base + 8) × 2`.
+- Al finalizar un combate victorioso, un Pokémon infectado tiene un 33% de probabilidad de propagar el Pokérus a los compañeros contiguos en el equipo.
+
+### 3. Objetos Nutritivos y Consumibles
+
+- **Vitaminas (+10 EVs):** Más PS, Proteína, Hierro, Calcio, Éter, Carburante.
+- **Plumas (+1 EV):** Pluma Ímpetu, Músculo, Aguante, Intelecto, Mente, Vitalidad.
+- **Mochis de Gen 9 (+10 EVs):** Mochi Vitalidad, Músculo, Aguante, Intelecto, Mente, Ímpetu.
+- **Mochi Reinicio (*Fresh-Start Mochi*):** Restablece a 0 todos los 510 EVs del Pokémon.
+- **Bayas Reductoras (-10 EVs + Felicidad):** Grana (PS), Algama (Atk), Ispero (Def), Meluce (SpA), Jalre (SpD), Tamate (Spe).

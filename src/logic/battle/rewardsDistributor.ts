@@ -12,17 +12,27 @@ const GYM_EXP_FACTOR_PER_LEVEL = 5
 const TRAINER_EXP_FACTOR_PER_LEVEL = 2
 const BATTLE_COINS_PER_LEVEL_FACTOR = 2
 const AMULET_COIN_MONEY_MULTIPLIER = 2
+const POKERUS_SPREAD_PROBABILITY = 0.33
 import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import type { BattleDifficulty } from '@/types/battle/battle'
 import { calculateBaseExp, processExpGain, processEvGain, calculateMoneyGain } from './battleRewards.ts'
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory'
 import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
 import type { BattleContext } from '@/types/battle/battleContext'
-import type { Pokemon, Move } from '@/types/pokemon/pokemon'
+import type { Pokemon, Move, PokemonStatKey } from '@/types/pokemon/pokemon'
 import { useUIStore } from '@/stores/ui'
 import { getItemById, requireItemId } from '@/data/inventory/items'
 import { incrementRecordKey } from '@/logic/utils/mapUtils'
 import { BUFF_DURATION_30_MIN_SEC } from '@/logic/constants/items'
+
+const STAT_NAMES_ES: Record<PokemonStatKey, string> = {
+  hp: 'PS',
+  atk: 'Ataque',
+  def: 'Defensa',
+  spa: 'At. Esp.',
+  spd: 'Def. Esp.',
+  spe: 'Velocidad',
+};
 
 import type { BattleState } from '@/types/battle/battle.ts'
 
@@ -271,6 +281,11 @@ const RIVAL_DROP_PROB_MAX_PERCENT = 100;
       const evReward = processEvGain(p, e, participantsSet)
       if (evReward && evReward.totalGained > 0) {
         recalcPokemonStats(p)
+        const statGainParts = Object.entries(evReward.statGains)
+          .filter(([, v]) => (v || 0) > 0)
+          .map(([k, v]) => `+${v} ${STAT_NAMES_ES[k as PokemonStatKey] || k.toUpperCase()}`)
+          .join(', ')
+        ctx.addLog(`¡${p.nickname || p.name} ganó ${statGainParts} (EVs)!`, 'log-info', p)
       }
     }
 
@@ -355,6 +370,36 @@ const SECONDS_TO_MS_MULTIPLIER = 1000
   if (totalTrainerExpGained > 0) {
     ctx.gs.addTrainerExp(totalTrainerExpGained)
     ctx.addLog(`¡Ganaste ${totalTrainerExpGained} EXP de entrenador!`, 'log-info', 'player')
+  }
+
+  // Process Pokérus transmission to adjacent party members
+  const infectedMonIndices: number[] = []
+  ctx.gs.state.team.forEach((p, idx) => {
+    if (p.pokerus === 'infected') {
+      infectedMonIndices.push(idx)
+    }
+  })
+  if (infectedMonIndices.length > 0) {
+    const newlyInfectedNames: string[] = [] // no-domain
+    for (const idx of infectedMonIndices) {
+      if (Math.random() < POKERUS_SPREAD_PROBABILITY) {
+        const leftIdx = idx - 1
+        const leftMon = leftIdx >= 0 ? ctx.gs.state.team[leftIdx] : undefined
+        if (leftMon && (!leftMon.pokerus || leftMon.pokerus === 'uninfected')) {
+          leftMon.pokerus = 'infected'
+          newlyInfectedNames.push(leftMon.nickname || leftMon.name)
+        }
+        const rightIdx = idx + 1
+        const rightMon = rightIdx < ctx.gs.state.team.length ? ctx.gs.state.team[rightIdx] : undefined
+        if (rightMon && (!rightMon.pokerus || rightMon.pokerus === 'uninfected')) {
+          rightMon.pokerus = 'infected'
+          newlyInfectedNames.push(rightMon.nickname || rightMon.name)
+        }
+      }
+    }
+    if (newlyInfectedNames.length > 0) {
+      ctx.addLog(`¡El Pokérus se ha contagiado a ${newlyInfectedNames.join(', ')}!`, 'log-success', 'player')
+    }
   }
 
   // Print consolidated EXP and trigger Level Ups

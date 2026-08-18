@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import PokemonStatBar from '@/components/pokemon-detail/PokemonStatBar.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { calculateTotalEvs, MAX_TOTAL_EVS } from '@/logic/pokemon/evMath'
 
 interface StatDisplay {
   id: string
@@ -33,6 +35,18 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   isInstance: false,
   pokemon: null
+})
+
+const totalEvs = computed(() => {
+  return calculateTotalEvs(props.pokemon?.evs)
+})
+
+const isEvMaxed = computed(() => {
+  return totalEvs.value >= MAX_TOTAL_EVS
+})
+
+const pokerusStatus = computed(() => {
+  return props.pokemon?.pokerus
 })
 </script>
 
@@ -74,9 +88,31 @@ const props = withDefaults(defineProps<Props>(), {
       v-if="isInstance"
       class="stats-section mt-32"
     >
-      <h4 class="vp-section-title">
-        ENTRENAMIENTO (EV)
-      </h4>
+      <div class="vp-section-header-row">
+        <h4 class="vp-section-title">
+          ENTRENAMIENTO (EV)
+        </h4>
+        <div class="ev-summary-badge pixelated">
+          <span
+            v-if="pokerusStatus === 'infected'"
+            class="pkrs-badge infected"
+          >[PKRS]</span>
+          <span
+            v-else-if="pokerusStatus === 'cured'"
+            class="pkrs-badge cured"
+          >[PKRS CURADO]</span>
+          <span
+            class="ev-total-text"
+            :class="{ 'is-maxed': isEvMaxed }"
+          >
+            TOTAL: {{ totalEvs }} / {{ MAX_TOTAL_EVS }}
+          </span>
+          <span
+            v-if="isEvMaxed"
+            class="max-badge"
+          >✨ MAX</span>
+        </div>
+      </div>
       <PokemonStatBar
         v-for="s in displayStats"
         :key="'ev-'+s.id"
@@ -108,4 +144,61 @@ const props = withDefaults(defineProps<Props>(), {
 
 <style scoped lang="scss">
 @use "@/styles/components/pokemon-detail/_vicio-panes.scss";
+
+.vp-section-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+
+  .vp-section-title {
+    margin-bottom: 0;
+    flex: 1;
+  }
+}
+
+.ev-summary-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  .ev-total-text {
+    color: rgba(255, 255, 255, 0.8);
+    letter-spacing: 0.5px;
+
+    &.is-maxed {
+      color: var(--yellow, #ffd60a);
+      font-weight: bold;
+    }
+  }
+
+  .max-badge {
+    color: var(--yellow, #ffd60a);
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+
+  .pkrs-badge {
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-weight: bold;
+
+    &.infected {
+      background: rgba(236, 72, 153, 0.2);
+      color: #f472b6;
+      border: 1px solid rgba(236, 72, 153, 0.4);
+    }
+
+    &.cured {
+      background: rgba(148, 163, 184, 0.2);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+    }
+  }
+}
 </style>

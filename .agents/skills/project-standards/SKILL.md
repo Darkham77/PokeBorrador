@@ -106,6 +106,20 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 - **Autonomous Commit & Push Prohibition**: Commit flows MUST NOT be run autonomously without explicit user instructions. `git push` is forbidden for agents.
 - **Strict Zero-Hiding Security Mandate**: Suppressing or hiding security vulnerabilities (CWE path traversals, SSRF risks) using ignore files (`.fallowrc.json`), inline comments (`// fallow-ignore`), or exclusions is strictly forbidden. Every security finding MUST be resolved at its source via path sanitization and boundary checks.
 
+### 9. Asset Pipeline, Crafting Tiers & CLI Safety Mandate
+- **Mandatory Crafting Tier Hierarchy**: All inventory and shop item sprites in `public/assets/sprites/` MUST follow the 4-tier domain hierarchy (`crafting/tier0/`, `crafting/tier1/`, `crafting/tier2/`, `crafting/tier3/`) mapped from `item.craftingTier`. It is STRICTLY FORBIDDEN to create flat asset directories (such as `items/`) or alter `items.json` sprite paths without following this tier structure.
+- **Canonical Asset Pipeline Execution**:
+  - To download missing official items: `npm run assets:download:items` (`scripts/assets/download_assets.ts`).
+  - To convert and build full asset database: `npm run assets:convert` (`scripts/assets/convert_assets.ts`).
+  - To organize and re-tier item assets: `node --permission --experimental-strip-types --allow-addons --allow-fs-read=. --allow-fs-write=. scripts/assets/organize_item_sprites_by_tier.ts`.
+  - It is STRICTLY FORBIDDEN to invent or run ad-hoc scripts that flatten or alter item sprite paths away from their canonical crafting tiers.
+- **Prohibition of Multi-Line Inline Node CLI Commands (`noInteractiveCliHangs`)**:
+  - AI agents MUST NEVER run multi-line inline scripts (`npx tsx -e "..."` or `node -e "..."`) in terminal background tasks on Windows. Doing so causes child processes to hang or await interactive stdin indefinitely.
+  - All validations, diagnostic checks, and tests MUST be executed via dedicated Vitest test files (`npx vitest run <path>`) or dedicated script files in `scripts/` or `scratch/`.
+- **Fast Development Lint Pipeline (`npm run lint`)**:
+  - `npm run lint` MUST execute all 4 checks: `validate:domain-types`, `validate:types` (`vue-tsc --noEmit`), `eslint --cache`, and `lint:md`.
+  - Markdownlint MUST strictly ignore `external/**` and `.git/**` to prevent scanning external source trees.
+
 ---
 
 ## 📖 How to Use Reference Manuals & Rule Modules
