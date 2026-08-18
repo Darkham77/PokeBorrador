@@ -68,6 +68,7 @@ Frontend Developers / Systems Engineers.
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
+- **Turn & Lifecycle Helper Decomposition**: Keep `battleTurn.ts` and `orchestrator.ts` strictly modular and under SRP limits by delegating turn choices/actions into `turnActionResolver.ts` and battle initialization sequences into `battleLifecycleInitializer.ts`.
 - New Showdown log handlers go in the most specific sub-module; if none fits, add to `showdownBridgeMisc.ts` and refactor later.
 - Keep `BattleArenaControls.vue` under 500 lines by extracting overlay logic into dedicated `*Overlay.vue` components.
 
