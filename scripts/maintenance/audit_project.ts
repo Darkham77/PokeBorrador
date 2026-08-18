@@ -1361,6 +1361,12 @@ async function main() {
     all = all.concat(await detectDuplicateConstants(files));
   }
 
+  // Filtrar por ruta si la opción '--path' está activa para asegurar que herramientas globales respeten el scope
+  if (values.path) {
+    const normPath = path.normalize(values.path as string);
+    all = all.filter(v => path.normalize(v.file).includes(normPath));
+  }
+
   // Filtrar solo errores si la opción '--errors-only' está activa
   if (values['errors-only']) {
     all = all.filter(v => v.severity === 'error');

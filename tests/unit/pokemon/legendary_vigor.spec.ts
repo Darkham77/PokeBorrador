@@ -25,6 +25,7 @@ describe('Legendary Vigor Daycare Block & DB Migration', () => {
       level: 70,
       vigor: 0,
       status: '',
+      isShiny: false,
       type: 'psychic',
       hp: 200,
       maxHp: 200,

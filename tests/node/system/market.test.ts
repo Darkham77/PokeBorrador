@@ -42,6 +42,7 @@ const BASE_POKEMON: Pokemon = {
   spe: 45,
   type: 'normal',
   status: '',
+  isShiny: false,
   moves: [],
   ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
   nature: 'hardy'

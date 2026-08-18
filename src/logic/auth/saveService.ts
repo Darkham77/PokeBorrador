@@ -9,7 +9,7 @@ import type { AuthUser } from '@/types/auth/auth';
 import { compress } from '@/logic/utils/compression';
 import { writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { logger } from '@/logic/utils/logger';
-import { validateUserProfile, validateSaveData } from '@/logic/validation/schemas';
+import { validateUserProfile, validateSaveData, type SaveDataDto } from '@/logic/validation/schemas';
 import type { DBRouter } from '@/logic/db/dbRouter';
 import { validatePokemon } from '@/logic/pokemon/pokemonFactory';
 import { requireAbilityId } from '@/data/battle/abilities';
@@ -30,94 +30,6 @@ export interface SaveResult {
   sanitized?: boolean;
   migrated?: boolean;
   lastSaveId?: string;
-}
-
-export interface SaveData {
-  trainer: string;
-  gender?: 'h' | 'm';
-  badges: number;
-  balls: number;
-  money: number;
-  battleCoins: number;
-  eggs: unknown[];
-  trainerLevel: number;
-  trainerExp: number;
-  trainerExpNeeded: number;
-  inventory: Partial<Record<string, number>>;
-  team: Pokemon[];
-  box: (Pokemon | null)[];
-  pokedex: string[];
-  seenPokedex: string[];
-  defeatedGyms: string[];
-  gymProgress: Record<string, unknown>;
-  lastGymWins: Partial<Record<string, number>>;
-  lastGymAttempts: Partial<Record<string, number>>;
-  starterChosen: boolean;
-  lastRankedSeason: string | null;
-  nick_style: string | null;
-  avatar_style: string | null;
-  stats: Record<string, unknown>;
-  eloRating: number;
-  pvpStats: {
-    wins: number;
-    losses: number;
-    draws: number;
-  };
-  rankedMaxElo: number;
-  rankedRewardsClaimed: string[];
-  passiveTeamUids: string[];
-  passiveTeamActive: boolean;
-  activeBattle: unknown;
-  daycare_missions: unknown[];
-  daycare_mission_refreshes: number;
-  safariTicketSecs: number;
-  ceruleanTicketSecs: number;
-  articunoTicketSecs: number;
-  mewtwoTicketSecs: number;
-  repelSecs: number;
-  fishingRodSecs: number;
-  fishingRodType: string | null;
-  pickaxeSecs: number;
-  pickaxeType: string | null;
-  brushSecs: number;
-  brushType: string | null;
-  shinyBoostSecs: number;
-  amuletCoinSecs: number;
-  luckyEggSecs: number;
-  ivScannerSecs: number;
-  incenseSecs: number;
-  incenseType: string | null;
-  daycare_berry_egg_time: number;
-  boxCount: number;
-  chats: Record<string, unknown>;
-  playerClass: string | null;
-  classLevel: number;
-  classXP: number;
-  classData: {
-    captureStreak: number;
-    longestStreak: number;
-    reputation: number;
-    blackMarketSales: number;
-    criminality: number;
-    blackMarketDaily?: { date: string; items: string[]; purchased: string[] };
-    activeMission?: unknown;
-    extortedRouteId?: string | null;
-    extortedRouteTimestamp?: string | null;
-    lastEggScanDate?: string | null;
-    officialRouteId?: string | null;
-    kitCaptures?: number;
-  };
-  faction: string | null;
-  warCoins: number;
-  warCoinsSpent: number;
-  warDailyCap: Partial<Record<string, Partial<Record<string, number>>>>;
-  warDailyCoins: Partial<Record<string, number>>;
-  warMyPtsLocal: Record<string, number>;
-  notificationHistory: unknown[];
-  marketSoldSeenIds: string[];
-  lastPokemonCenterHeal?: number;
-  playtime?: number;
-  _last_updated?: number;
 }
 
 
@@ -183,12 +95,12 @@ function withPersistedEggGender(egg: PokemonEgg): PersistedPokemonEgg {
   };
 }
 
-function serializeSaveGenderCodes(data: SaveData): unknown {
+function serializeSaveGenderCodes(data: SaveDataDto): unknown {
   return {
     ...data,
-    team: data.team.map(withPersistedPokemonGender),
-    box: data.box.map((p) => (p ? withPersistedPokemonGender(p) : null)),
-    eggs: data.eggs.map(egg => {
+    team: data.team.map((p) => withPersistedPokemonGender(p as Pokemon)), // domain-ok
+    box: data.box.map((p) => (p ? withPersistedPokemonGender(p as Pokemon) : null)), // domain-ok
+    eggs: (data.eggs || []).map(egg => {
       if (!egg || typeof egg !== 'object' || !('gender' in egg)) return egg;
       return withPersistedEggGender(egg as PokemonEgg);
     }),
@@ -209,12 +121,12 @@ function serializeActiveBattleGenderCodes(activeBattle: unknown): unknown {
   };
 }
 
-function normalizeRuntimePokemonGender(pokemon: Pokemon): void {
+function normalizeRuntimePokemonGender(pokemon: { gender?: string | null }): void {
   if (Object.is(pokemon.gender, 'M')) pokemon.gender = 'm';
   if (Object.is(pokemon.gender, 'F')) pokemon.gender = 'f';
   if (Object.is(pokemon.gender, 'N')) pokemon.gender = null;
 }
-export function serializeState(state: GameState): SaveData {
+export function serializeState(state: GameState): SaveDataDto {
   let activeBattle: ActiveBattleSerialized | null = null;
   const battle = state.activeBattle;
 
@@ -228,7 +140,7 @@ export function serializeState(state: GameState): SaveData {
         locationId: battle.locationId || null,
         enemyTeam: battle.enemyTeam
           ? (battle.enemyTeam as Pokemon[]).map(p => ({
-              uid: p.uid, id: p.id, name: p.name, type: p.type,
+              uid: p.uid, id: p.id, name: p.name, emoji: (p as Pokemon & { emoji?: string }).emoji, type: p.type,
               level: p.level, hp: p.hp, maxHp: p.maxHp, atk: p.atk, def: p.def,
               spa: p.spa, spd: p.spd, spe: p.spe, moves: p.moves,
               status: p.status || null, isShiny: p.isShiny || false,
@@ -270,13 +182,13 @@ export function serializeState(state: GameState): SaveData {
     balls: state.balls,
     money: state.money,
     battleCoins: state.battleCoins || 0,
-    eggs: state.eggs || [],
+    eggs: (state.eggs || []) as SaveDataDto['eggs'],
     trainerLevel: state.trainerLevel,
     trainerExp: state.trainerExp,
     trainerExpNeeded: state.trainerExpNeeded,
-    inventory: state.inventory,
-    team: state.team,
-    box: state.box || [],
+    inventory: (state.inventory || {}) as SaveDataDto['inventory'],
+    team: (state.team || []) as SaveDataDto['team'],
+    box: (state.box || []) as SaveDataDto['box'],
     pokedex: state.pokedex,
     seenPokedex: state.seenPokedex || [],
     defeatedGyms: state.defeatedGyms,
@@ -302,8 +214,8 @@ export function serializeState(state: GameState): SaveData {
       : [],
     passiveTeamUids: state.passiveTeamUids || [],
     passiveTeamActive: state.passiveTeamActive,
-    activeBattle,
-    daycare_missions: state.daycare_missions || [],
+    activeBattle: activeBattle as SaveDataDto['activeBattle'],
+    daycare_missions: (state.daycare_missions || []) as SaveDataDto['daycare_missions'],
     daycare_mission_refreshes: state.daycare_mission_refreshes !== undefined ? state.daycare_mission_refreshes : DAYCARE_REFRESHES_DEFAULT_COUNT,
     safariTicketSecs: state.safariTicketSecs || 0,
     ceruleanTicketSecs: state.ceruleanTicketSecs || 0,
@@ -343,8 +255,8 @@ export function serializeState(state: GameState): SaveData {
     faction: state.faction || null,
     warCoins: state.warCoins || 0,
     warCoinsSpent: state.warCoinsSpent || 0,
-    warDailyCap: state.warDailyCap || {},
-    warDailyCoins: state.warDailyCoins || {},
+    warDailyCap: (state.warDailyCap || {}) as SaveDataDto['warDailyCap'],
+    warDailyCoins: (state.warDailyCoins || {}) as SaveDataDto['warDailyCoins'],
     warMyPtsLocal: state.warMyPtsLocal || {},
     notificationHistory: state.notificationHistory || [],
     marketSoldSeenIds: state.marketSoldSeenIds || [],
@@ -364,15 +276,19 @@ const boxValidationCache: {
 /**
  * Validates the state before saving to prevent cache hacking or data corruption.
  */
-export function validateAndSanitize(data: SaveData): { valid: boolean, data: SaveData, hadDuplicates?: boolean, issues: string[], error?: string } {
-  if (!data) { return { valid: false, data, issues: [], error: 'No data' }; }
+export function validateAndSanitize(data: GameState | SaveDataDto | Record<string, unknown>): 
+  | { valid: true; data: SaveDataDto; hadDuplicates?: boolean; issues: string[]; error?: undefined }
+  | { valid: false; data?: undefined; hadDuplicates?: boolean; issues: string[]; error: string } {
+  if (!data) { return { valid: false, issues: [], error: 'No data' }; }
   
   const issues: string[] = []; // no-domain
 
 
   // Calculate box hash to check if it's dirty
-  const currentBoxHash = (data.box || []).map(p => p ? `${p.uid}_${p.level}_${p.exp}_${p.hp}` : '').join(',');
-  const isBoxDirty = !boxValidationCache.lastBoxHash || currentBoxHash !== boxValidationCache.lastBoxHash || boxValidationCache.lastValidatedBox.length !== (data.box || []).length;
+  const rawData = typeof data === 'object' && data !== null ? (data as { box?: (Pokemon | null)[] }) : {};
+  const rawBox = Array.isArray(rawData.box) ? rawData.box : [];
+  const currentBoxHash = rawBox.map(p => p ? `${p.uid}_${p.level}_${p.exp}_${p.hp}` : '').join(',');
+  const isBoxDirty = !boxValidationCache.lastBoxHash || currentBoxHash !== boxValidationCache.lastBoxHash || boxValidationCache.lastValidatedBox.length !== rawBox.length;
 
   let parsedResult;
   if (!isBoxDirty && boxValidationCache.lastValidatedBox.length > 0) {
@@ -381,7 +297,7 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
     parsedResult = validateSaveData(testData);
     if (parsedResult.success) {
       // Restore the original box array
-      parsedResult.output.box = data.box as typeof parsedResult.output.box; // domain-ok
+      parsedResult.output.box = rawBox as typeof parsedResult.output.box; // domain-ok
     }
   } else {
     parsedResult = validateSaveData(data);
@@ -396,14 +312,13 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
     logger.error('SAVE', 'Error de validación estructural crítico:', parsedResult.issues);
     return {
       valid: false,
-      data,
       issues: parsedResult.issues.map(i => i.message),
       error: 'Error de validación: ' + errorMsg
     };
   }
 
-  // Sanitized data from Valibot (with fallbacks applied!)
-  const sanitizedData = parsedResult.output as SaveData; // domain-ok
+  // Sanitized data from Valibot
+  const sanitizedData = parsedResult.output as SaveDataDto; // domain-ok
   sanitizedData.team?.forEach(normalizeRuntimePokemonGender);
   sanitizedData.box?.forEach((p) => { if (p) normalizeRuntimePokemonGender(p); });
   
@@ -427,7 +342,7 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
   const uids = new Set<string>();
   const duplicateUids = new Set<string>();
   
-  const checkPoke = (p: Pokemon | null, listName: string) => {
+  const checkPoke = (p: SaveDataDto['team'][number] | null, listName: string) => {
     if (!p || !p.uid) return;
     if (uids.has(p.uid)) {
       duplicateUids.add(p.uid);
@@ -441,21 +356,20 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
       sanitizedData.team.forEach((p) => {
         if (!p) return;
         checkPoke(p, 'equipo');
-        validatePokemon(p);
+        validatePokemon(p as Pokemon); // domain-ok
       });
     }
     if (sanitizedData.box) {
       sanitizedData.box.forEach((p) => {
         if (!p) return;
         checkPoke(p, 'caja');
-        validatePokemon(p);
+        validatePokemon(p as Pokemon); // domain-ok
       });
     }
   } catch (err) {
     logger.error('SAVE', 'Error crítico en estructura de Pokémon al sanitizar/validar:', err);
     return {
       valid: false,
-      data: sanitizedData,
       issues,
       error: `Error de estructura de Pokémon: ${(err as Error).message}`
     };
@@ -490,7 +404,7 @@ export function validateAndSanitize(data: SaveData): { valid: boolean, data: Sav
   };
 }
 
-export function isValidState(data: SaveData): boolean {
+export function isValidState(data: SaveDataDto): boolean {
   return validateAndSanitize(data).valid;
 }
 
@@ -518,16 +432,20 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
   saveOperationState.isSaving = true;
   try {
     const raw_data = serializeState(state);
-    const { data: save_data, valid, hadDuplicates, issues, error: validationError } = validateAndSanitize(raw_data);
+    const validation = validateAndSanitize(raw_data);
 
-    if (!valid) {
-      logger.error('SAVE', 'Abortando proceso de guardado por estado de datos erróneo:', validationError || issues);
+    if (!validation.valid) {
+      logger.error('SAVE', 'Abortando proceso de guardado por estado de datos erróneo:', validation.error || validation.issues);
       saveOperationState.isSaving = false;
       if (showNotif && notifyFn) {
-        notifyFn(`Error al guardar: ${validationError || 'Datos corruptos o inválidos'}`, '🔴');
+        notifyFn(`Error al guardar: ${validation.error || 'Datos corruptos o inválidos'}`, '🔴');
       }
-      return { success: false, error: validationError || 'Datos corruptos o inválidos' };
+      return { success: false, error: validation.error || 'Datos corruptos o inválidos' };
     }
+
+    const save_data = validation.data;
+    const hadDuplicates = validation.hadDuplicates;
+    const issues = validation.issues;
 
     // VERSIONED SECURITY LOGIC
     const currentVersion = options.userVersion || 1;

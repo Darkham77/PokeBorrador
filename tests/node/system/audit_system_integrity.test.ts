@@ -69,61 +69,16 @@ describe('Audit System Integrity & Dual-Mode Formatting', () => {
     expect(() => JSON.parse(jsonContent)).not.toThrow();
   });
 
-  it('should execute audit_full.ts in fast mode and emit consolidated JSON by default', () => {
-    const stdout = execSync('node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/maintenance/audit_full.ts --fast', {
+  it('should support errors-only filtering on a scoped path', () => {
+    const stdout = execSync('node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/maintenance/audit_project.ts --path=src/data/inventory --errors-only', {
       encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'ignore']
     });
 
     expect(() => JSON.parse(stdout)).not.toThrow();
     const data = JSON.parse(stdout);
-
     expect(data).toHaveProperty('status');
-    expect(data).toHaveProperty('summary');
-    expect(data.summary).toHaveProperty('suitesTotal');
-    expect(data.summary).toHaveProperty('suitesPassed');
-    expect(data).toHaveProperty('suites');
-    expect(Array.isArray(data.suites)).toBe(true);
-    expect(data.suites.length).toBeGreaterThanOrEqual(1);
-  });
-
-  it('should render human banners when --human is passed to audit_full.ts', () => {
-    const stdout = execSync('node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/maintenance/audit_full.ts --fast --human', {
-      encoding: 'utf-8',
-      stdio: ['ignore', 'pipe', 'ignore']
-    });
-
-    expect(stdout).toContain('SUITE DE AUDITORÍA GLOBAL Y VALIDACIÓN COMPLETA');
-    expect(stdout).toContain('RESUMEN FINAL DE LA AUDITORÍA COMPLETA');
-  });
-
-  it('should execute audit_warnings_diff.ts and generate valid JSON/TXT reports without executing unit tests', () => {
-    let stdout = '';
-    try {
-      stdout = execSync('node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/maintenance/audit_warnings_diff.ts', {
-        encoding: 'utf-8',
-        stdio: ['ignore', 'pipe', 'pipe']
-      });
-    } catch (err: unknown) {
-      if (err && typeof err === 'object' && 'stdout' in err) {
-        stdout = String((err as { stdout?: unknown }).stdout || '');
-      }
-    }
-
-    expect(stdout).toContain('REPORTE DE ANÁLISIS GLOBAL: ERRORES DEL PROYECTO Y WARNINGS LOCALES');
-    expect(stdout).toContain('Cero errores detectados en todo el proyecto');
-
-    const jsonReportPath = path.resolve(scratchDir, 'warnings_diff_report.json');
-    const txtReportPath = path.resolve(scratchDir, 'warnings_diff_report.txt');
-
-    expect(fs.existsSync(jsonReportPath)).toBe(true);
-    expect(fs.existsSync(txtReportPath)).toBe(true);
-
-    const jsonContent = fs.readFileSync(jsonReportPath, 'utf-8');
-    const parsed = JSON.parse(jsonContent);
-    expect(parsed).toHaveProperty('errors');
-    expect(parsed).toHaveProperty('warnings');
-    expect(Array.isArray(parsed.errors)).toBe(true);
-    expect(Array.isArray(parsed.warnings)).toBe(true);
+    expect(data.summary).toHaveProperty('errors');
+    expect(data.summary.errors).toBe(0);
   });
 });

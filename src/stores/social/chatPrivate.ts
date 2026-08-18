@@ -238,8 +238,9 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     
     await loadPrivateHistory()
 
-    inboxChannel = db.channel(`chat-inbox-${authStore.user.id}`)
-    inboxChannel.on('broadcast', { event: 'private_message' }, ({ payload }: { payload: ChatMessage }) => {
+    const channel = db.channel(`chat-inbox-${authStore.user.id}`)
+    inboxChannel = channel
+    channel.on('broadcast', { event: 'private_message' }, ({ payload }: { payload: ChatMessage }) => {
       handleIncomingPrivate(payload)
       audioStore.play('receivedMsg')
     })

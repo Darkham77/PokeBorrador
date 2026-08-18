@@ -88,7 +88,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/abilityshield",
-      "name": "Ability Shield",
+      "name": "Escudo Habilidad",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -99,7 +99,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Ability cannot be changed, suppressed, or ignored by any effect.",
+      "desc": "Equipable. La habilidad del poseedor no puede ser cambiada, anulada ni ignorada por ningún efecto.",
       "isCanon": true
     },
     {
@@ -677,7 +677,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/adamantcrystal",
-      "name": "Adamant Crystal",
+      "name": "Gran Diamante",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -688,7 +688,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. If held by a Dialga, its Steel- and Dragon-type attacks have 1.2x power.",
+      "desc": "Equipable. Si lo lleva Dialga, potencia sus movimientos de tipo Acero y Dragón un 20%.",
       "isCanon": true
     },
     {
@@ -696,7 +696,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/adamantorb",
-      "name": "Adamant Orb",
+      "name": "Diamansfera",
       "icon": "🔮",
       "price": 30000,
       "bcPrice": 1000,
@@ -707,7 +707,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. If held by a Dialga, its Steel- and Dragon-type attacks have 1.2x power.",
+      "desc": "Equipable. Si lo lleva Dialga, potencia sus movimientos de tipo Acero y Dragón un 20%.",
       "isCanon": true
     },
     {
@@ -715,7 +715,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/adrenalineorb",
-      "name": "Adrenaline Orb",
+      "name": "Nerviosfera",
       "icon": "🔮",
       "price": 30000,
       "bcPrice": 1000,
@@ -726,7 +726,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Raises holder's Speed by 1 stage if it gets affected by Intimidate. Single use.",
+      "desc": "Equipable. Aumenta la Velocidad en 1 nivel si el poseedor es intimidado. Un solo uso.",
       "isCanon": true
     },
     {
@@ -848,7 +848,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/babiriberry",
-      "name": "Babiri Berry",
+      "name": "Baya Pasio",
       "icon": "🍒",
       "price": 500,
       "bcPrice": 17,
@@ -859,7 +859,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Halves damage taken from a supereffective Steel-type attack. Single use.",
+      "desc": "Equipable. Reduce a la mitad el daño recibido de un ataque supereficaz de tipo Acero. Un solo uso.",
       "isCanon": true
     },
     {
@@ -885,7 +885,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/berrysweet",
-      "name": "Berry Sweet",
+      "name": "Dulce Fruto",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -896,7 +896,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Evolves Milcery into Alcremie when held and spun around.",
+      "desc": "Equipable. Hace evolucionar a Milcery en Alcremie al girar sobre sí mismo sosteniéndolo.",
       "isCanon": true
     },
     {
@@ -923,7 +923,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/bigroot",
-      "name": "Big Root",
+      "name": "Raíz Grande",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -934,7 +934,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder gains 1.3x HP from draining/Aqua Ring/Ingrain/Leech Seed/Strength Sap.",
+      "desc": "Equipable. El poseedor recupera un 30% más de PS mediante movimientos de drenaje o curación.",
       "isCanon": true
     },
     {
@@ -961,7 +961,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/blackbelt",
-      "name": "Black Belt",
+      "name": "Cinturón Negro",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -972,7 +972,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Fighting-type attacks have 1.2x power.",
+      "desc": "Equipable. Potencia los movimientos de tipo Lucha un 20%.",
       "isCanon": true
     },
     {
@@ -980,7 +980,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/blackglasses",
-      "name": "Black Glasses",
+      "name": "Gafas de Sol",
       "icon": "👓",
       "price": 30000,
       "bcPrice": 1000,
@@ -991,7 +991,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Dark-type attacks have 1.2x power.",
+      "desc": "Equipable. Potencia los movimientos de tipo Siniestro un 20%.",
       "isCanon": true
     },
     {
@@ -1018,7 +1018,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/blunderpolicy",
-      "name": "Blunder Policy",
+      "name": "Seguro Fallo",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -1029,7 +1029,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. If the holder misses due to accuracy, its Speed is raised by 2 stages. Single use.",
+      "desc": "Equipable. Si el poseedor falla un ataque por precisión, aumenta su Velocidad en 2 niveles. Un solo uso.",
       "isCanon": true
     },
     {
@@ -1056,7 +1056,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/bottlecap",
-      "name": "Bottle Cap",
+      "name": "Chapa Plateada",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -1067,7 +1067,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Used for Hyper Training. One of a Pokemon's stats is calculated with an IV of 31.",
+      "desc": "Equipable. Usada para el Entrenamiento Extremo. Maximiza una característica a 31 IVs.",
       "isCanon": true
     },
     {
@@ -1264,7 +1264,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/cloversweet",
-      "name": "Clover Sweet",
+      "name": "Dulce Trébol",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -1275,7 +1275,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Evolves Milcery into Alcremie when held and spun around.",
+      "desc": "Equipable. Hace evolucionar a Milcery en Alcremie al girar sobre sí mismo sosteniéndolo.",
       "isCanon": true
     },
     {
@@ -1321,7 +1321,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/cornerstonemask",
-      "name": "Cornerstone Mask",
+      "name": "Máscara Cimiento",
       "icon": "🎭",
       "price": 30000,
       "bcPrice": 1000,
@@ -1332,7 +1332,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Ogerpon-Cornerstone: 1.2x power attacks; Terastallize to gain Embody Aspect.",
+      "desc": "Equipable. Ogerpon Máscara Cimiento: potencia sus ataques un 20% y activa Evocación en Teracristal.",
       "isCanon": true
     },
     {
@@ -1427,7 +1427,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Dragon-type attacks have 1.2x power. Judgment is Dragon type.",
+      "desc": "Equipable. Potencia los movimientos de tipo Dragón un 20%. Sentencia pasa a ser de tipo Dragón.",
       "isCanon": true
     },
     {
@@ -1446,7 +1446,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Dark-type attacks have 1.2x power. Judgment is Dark type.",
+      "desc": "Equipable. Potencia los movimientos de tipo Siniestro un 20%. Sentencia pasa a ser de tipo Siniestro.",
       "isCanon": true
     },
     {
@@ -1491,7 +1491,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/earthplate",
-      "name": "Tabla Tierra",
+      "name": "Tabla Terraja",
       "icon": "💿",
       "price": 30000,
       "bcPrice": 1000,
@@ -1502,7 +1502,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Ground-type attacks have 1.2x power. Judgment is Ground type.",
+      "desc": "Equipable. Potencia los movimientos de tipo Tierra un 20%. Sentencia pasa a ser de tipo Tierra.",
       "isCanon": true
     },
     {
@@ -1691,7 +1691,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Fighting-type attacks have 1.2x power. Judgment is Fighting type.",
+      "desc": "Equipable. Potencia los movimientos de tipo Lucha un 20%. Sentencia pasa a ser de tipo Lucha.",
       "isCanon": true
     },
     {
@@ -1729,7 +1729,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Fire-type attacks have 1.2x power. Judgment is Fire type.",
+      "desc": "Equipable. Potencia los movimientos de tipo Fuego un 20%. Sentencia pasa a ser de tipo Fuego.",
       "isCanon": true
     },
     {
@@ -1756,7 +1756,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/flowersweet",
-      "name": "Flower Sweet",
+      "name": "Dulce Flor",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -1767,7 +1767,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Evolves Milcery into Alcremie when held and spun around.",
+      "desc": "Equipable. Hace evolucionar a Milcery en Alcremie al girar sobre sí mismo sosteniéndolo.",
       "isCanon": true
     },
     {
@@ -1869,7 +1869,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/goldbottlecap",
-      "name": "Gold Bottle Cap",
+      "name": "Chapa Dorada",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -1880,7 +1880,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Used for Hyper Training. All of a Pokemon's stats are calculated with an IV of 31.",
+      "desc": "Equipable. Usada para el Entrenamiento Extremo. Maximiza todas las características a 31 IVs.",
       "isCanon": true
     },
     {
@@ -1945,7 +1945,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/griseouscore",
-      "name": "Griseous Core",
+      "name": "Gran Griseosfera",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -1956,7 +1956,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. If held by a Giratina, its Ghost- and Dragon-type attacks have 1.2x power.",
+      "desc": "Equipable. Si lo lleva Giratina, potencia sus movimientos de tipo Fantasma y Dragón un 20%.",
       "isCanon": true
     },
     {
@@ -1964,7 +1964,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/griseousorb",
-      "name": "Griseous Orb",
+      "name": "Griseosfera",
       "icon": "🔮",
       "price": 30000,
       "bcPrice": 1000,
@@ -1975,7 +1975,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. If held by a Giratina, its Ghost- and Dragon-type attacks have 1.2x power.",
+      "desc": "Equipable. Si lo lleva Giratina, potencia sus movimientos de tipo Fantasma y Dragón un 20%.",
       "isCanon": true
     },
     {
@@ -2002,7 +2002,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/hardstone",
-      "name": "Hard Stone",
+      "name": "Piedra Dura",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -2013,7 +2013,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Rock-type attacks have 1.2x power.",
+      "desc": "Equipable. Potencia los movimientos de tipo Roca un 20%.",
       "isCanon": true
     },
     {
@@ -2039,7 +2039,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/hearthflamemask",
-      "name": "Hearthflame Mask",
+      "name": "Máscara Horno",
       "icon": "🎭",
       "price": 30000,
       "bcPrice": 1000,
@@ -2050,7 +2050,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Ogerpon-Hearthflame: 1.2x power attacks; Terastallize to gain Embody Aspect.",
+      "desc": "Equipable. Ogerpon Máscara Horno: potencia sus ataques un 20% y activa Evocación en Teracristal.",
       "isCanon": true
     },
     {
@@ -2163,7 +2163,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Ice-type attacks have 1.2x power. Judgment is Ice type.",
+      "desc": "Equipable. Potencia los movimientos de tipo Hielo un 20%. Sentencia pasa a ser de tipo Hielo.",
       "isCanon": true
     },
     {
@@ -2201,7 +2201,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Bug-type attacks have 1.2x power. Judgment is Bug type.",
+      "desc": "Equipable. Potencia los movimientos de tipo Bicho un 20%. Sentencia pasa a ser de tipo Bicho.",
       "isCanon": true
     },
     {
@@ -2239,7 +2239,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Steel-type attacks have 1.2x power. Judgment is Steel type.",
+      "desc": "Equipable. Potencia los movimientos de tipo Acero un 20%. Sentencia pasa a ser de tipo Acero.",
       "isCanon": true
     },
     {
@@ -2361,7 +2361,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/laggingtail",
-      "name": "Lagging Tail",
+      "name": "Cola Plúmbea",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -2372,7 +2372,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder moves last in its priority bracket.",
+      "desc": "Equipable. El poseedor atacará siempre en último lugar dentro de su prioridad.",
       "isCanon": true
     },
     {
@@ -2492,7 +2492,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/lovesweet",
-      "name": "Love Sweet",
+      "name": "Dulce Corazón",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -2503,7 +2503,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Evolves Milcery into Alcremie when held and spun around.",
+      "desc": "Equipable. Hace evolucionar a Milcery en Alcremie al girar sobre sí mismo sosteniéndolo.",
       "isCanon": true
     },
     {
@@ -2548,7 +2548,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/lustrousglobe",
-      "name": "Lustrous Globe",
+      "name": "Gran Lustresfera",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -2559,7 +2559,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. If held by a Palkia, its Water- and Dragon-type attacks have 1.2x power.",
+      "desc": "Equipable. Si lo lleva Palkia, potencia sus movimientos de tipo Agua y Dragón un 20%.",
       "isCanon": true
     },
     {
@@ -2567,7 +2567,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/lustrousorb",
-      "name": "Lustrous Orb",
+      "name": "Lustresfera",
       "icon": "🔮",
       "price": 30000,
       "bcPrice": 1000,
@@ -2578,7 +2578,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. If held by a Palkia, its Water- and Dragon-type attacks have 1.2x power.",
+      "desc": "Equipable. Si lo lleva Palkia, potencia sus movimientos de tipo Agua y Dragón un 20%.",
       "isCanon": true
     },
     {
@@ -2692,7 +2692,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Grass-type attacks have 1.2x power. Judgment is Grass type.",
+      "desc": "Equipable. Potencia los movimientos de tipo Planta un 20%. Sentencia pasa a ser de tipo Planta.",
       "isCanon": true
     },
     {
@@ -2719,7 +2719,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/metalalloy",
-      "name": "Metal Alloy",
+      "name": "Metal Compuesto",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -2730,7 +2730,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Evolves Duraludon into Archaludon when used.",
+      "desc": "Equipable. Hace evolucionar a Duraludon en Archaludon al usarse.",
       "isCanon": true
     },
     {
@@ -2806,7 +2806,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Psychic-type attacks have 1.2x power. Judgment is Psychic type.",
+      "desc": "Equipable. Potencia los movimientos de tipo Psíquico un 20%. Sentencia pasa a ser de tipo Psíquico.",
       "isCanon": true
     },
     {
@@ -2870,7 +2870,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/muscleband",
-      "name": "Muscle Band",
+      "name": "Cinta Fuerte",
       "icon": "🎀",
       "price": 30000,
       "bcPrice": 1000,
@@ -2881,7 +2881,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's physical attacks have 1.1x power.",
+      "desc": "Equipable. Potencia los ataques físicos un 10%.",
       "isCanon": true
     },
     {
@@ -2889,7 +2889,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/nevermeltice",
-      "name": "Never-Melt Ice",
+      "name": "Antiderretir",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -2900,7 +2900,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Ice-type attacks have 1.2x power.",
+      "desc": "Equipable. Potencia los movimientos de tipo Hielo un 20%.",
       "isCanon": true
     },
     {
@@ -3098,7 +3098,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/pixieplate",
-      "name": "Tabla Ninfa",
+      "name": "Tabla Duende",
       "icon": "💿",
       "price": 30000,
       "bcPrice": 1000,
@@ -3109,7 +3109,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Fairy-type attacks have 1.2x power. Judgment is Fairy type.",
+      "desc": "Equipable. Potencia los movimientos de tipo Hada un 20%. Sentencia pasa a ser de tipo Hada.",
       "isCanon": true
     },
     {
@@ -3173,7 +3173,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/prettyfeather",
-      "name": "Pretty Feather",
+      "name": "Pluma Bella",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -3184,7 +3184,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Though this feather is beautiful, it's just a regular feather and has no effect.",
+      "desc": "Equipable. Una pluma hermosa pero corriente que no posee ningún efecto especial.",
       "isCanon": true
     },
     {
@@ -3325,7 +3325,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/rarebone",
-      "name": "Rare Bone",
+      "name": "Hueso Raro",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -3336,7 +3336,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. No competitive use other than when used with Fling.",
+      "desc": "Equipable. No tiene utilidad competitiva salvo al usarse con el movimiento Lanzamiento.",
       "isCanon": true
     },
     {
@@ -3457,7 +3457,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/ribbonsweet",
-      "name": "Ribbon Sweet",
+      "name": "Dulce Lazo",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -3468,7 +3468,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Evolves Milcery into Alcremie when held and spun around.",
+      "desc": "Equipable. Hace evolucionar a Milcery en Alcremie al girar sobre sí mismo sosteniéndolo.",
       "isCanon": true
     },
     {
@@ -3590,7 +3590,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/rustedshield",
-      "name": "Rusted Shield",
+      "name": "Escudo Oxidado",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -3601,7 +3601,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. If held by a Zamazenta, this item changes its forme to Crowned Shield.",
+      "desc": "Equipable. Si lo lleva Zamazenta, cambia a su forma Escudo Supremo.",
       "isCanon": true
     },
     {
@@ -3609,7 +3609,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/rustedsword",
-      "name": "Rusted Sword",
+      "name": "Espada Oxidada",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -3620,7 +3620,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. If held by a Zacian, this item changes its forme to Crowned Sword.",
+      "desc": "Equipable. Si lo lleva Zacian, cambia a su forma Espada Suprema.",
       "isCanon": true
     },
     {
@@ -3665,7 +3665,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/sharpbeak",
-      "name": "Sharp Beak",
+      "name": "Pico Afilado",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -3676,7 +3676,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Flying-type attacks have 1.2x power.",
+      "desc": "Equipable. Potencia los movimientos de tipo Volador un 20%.",
       "isCanon": true
     },
     {
@@ -3703,7 +3703,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/silkscarf",
-      "name": "Silk Scarf",
+      "name": "Pañuelo Seda",
       "icon": "🎗️",
       "price": 30000,
       "bcPrice": 1000,
@@ -3714,7 +3714,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Normal-type attacks have 1.2x power.",
+      "desc": "Equipable. Potencia los movimientos de tipo Normal un 20%.",
       "isCanon": true
     },
     {
@@ -3752,7 +3752,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Flying-type attacks have 1.2x power. Judgment is Flying type.",
+      "desc": "Equipable. Potencia los movimientos de tipo Volador un 20%. Sentencia pasa a ser de tipo Volador.",
       "isCanon": true
     },
     {
@@ -3798,7 +3798,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/softsand",
-      "name": "Soft Sand",
+      "name": "Arena Fina",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -3809,7 +3809,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Ground-type attacks have 1.2x power.",
+      "desc": "Equipable. Potencia los movimientos de tipo Tierra un 20%.",
       "isCanon": true
     },
     {
@@ -3836,7 +3836,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/splashplate",
-      "name": "Tabla Ninfa",
+      "name": "Tabla Linfa",
       "icon": "💿",
       "price": 30000,
       "bcPrice": 1000,
@@ -3847,7 +3847,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Water-type attacks have 1.2x power. Judgment is Water type.",
+      "desc": "Equipable. Potencia los movimientos de tipo Agua un 20%. Sentencia pasa a ser de tipo Agua.",
       "isCanon": true
     },
     {
@@ -3866,7 +3866,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Ghost-type attacks have 1.2x power. Judgment is Ghost type.",
+      "desc": "Equipable. Potencia los movimientos de tipo Fantasma un 20%. Sentencia pasa a ser de tipo Fantasma.",
       "isCanon": true
     },
     {
@@ -3911,7 +3911,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/starsweet",
-      "name": "Star Sweet",
+      "name": "Dulce Estrella",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -3922,7 +3922,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Evolves Milcery into Alcremie when held and spun around.",
+      "desc": "Equipable. Hace evolucionar a Milcery en Alcremie al girar sobre sí mismo sosteniéndolo.",
       "isCanon": true
     },
     {
@@ -3960,7 +3960,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Rock-type attacks have 1.2x power. Judgment is Rock type.",
+      "desc": "Equipable. Potencia los movimientos de tipo Roca un 20%. Sentencia pasa a ser de tipo Roca.",
       "isCanon": true
     },
     {
@@ -3986,7 +3986,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/strawberrysweet",
-      "name": "Strawberry Sweet",
+      "name": "Dulce Fresa",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -3997,7 +3997,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Evolves Milcery into Alcremie when held and spun around.",
+      "desc": "Equipable. Hace evolucionar a Milcery en Alcremie al girar sobre sí mismo sosteniéndolo.",
       "isCanon": true
     },
     {
@@ -4168,7 +4168,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Poison-type attacks have 1.2x power. Judgment is Poison type.",
+      "desc": "Equipable. Potencia los movimientos de tipo Veneno un 20%. Sentencia pasa a ser de tipo Veneno.",
       "isCanon": true
     },
     {
@@ -4271,7 +4271,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/wellspringmask",
-      "name": "Wellspring Mask",
+      "name": "Máscara Fuente",
       "icon": "🎭",
       "price": 30000,
       "bcPrice": 1000,
@@ -4282,7 +4282,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Ogerpon-Wellspring: 1.2x power attacks; Terastallize to gain Embody Aspect.",
+      "desc": "Equipable. Ogerpon Máscara Fuente: potencia sus ataques un 20% y activa Evocación en Teracristal.",
       "isCanon": true
     },
     {
@@ -4309,7 +4309,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/widelens",
-      "name": "Wide Lens",
+      "name": "Lupa",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -4320,7 +4320,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. The accuracy of attacks by the holder is 1.1x.",
+      "desc": "Equipable. Aumenta la precisión de los movimientos del poseedor un 10%.",
       "isCanon": true
     },
     {
@@ -4347,7 +4347,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/wiseglasses",
-      "name": "Wise Glasses",
+      "name": "Gafas Especiales",
       "icon": "👓",
       "price": 30000,
       "bcPrice": 1000,
@@ -4358,7 +4358,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's special attacks have 1.1x power.",
+      "desc": "Equipable. Potencia los ataques especiales un 10%.",
       "isCanon": true
     },
     {
@@ -4396,7 +4396,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. Holder's Electric-type attacks have 1.2x power. Judgment is Electric type.",
+      "desc": "Equipable. Potencia los movimientos de tipo Eléctrico un 20%. Sentencia pasa a ser de tipo Eléctrico.",
       "isCanon": true
     },
     {
@@ -4404,7 +4404,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/zoomlens",
-      "name": "Zoom Lens",
+      "name": "Telescopio",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -4415,7 +4415,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. The accuracy of attacks by the holder is 1.2x if it moves after its target.",
+      "desc": "Equipable. Aumenta la precisión de los movimientos un 20% si el poseedor ataca tras su objetivo.",
       "isCanon": true
     },
     {
@@ -4423,7 +4423,7 @@
       "craftingTier": 3,
       "cat": "combat_held",
       "sprite": "crafting/tier3/leftovers",
-      "name": "Vile Vial",
+      "name": "Frasco Vil",
       "icon": "💼",
       "price": 30000,
       "bcPrice": 1000,
@@ -4434,7 +4434,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Equipable. If held by a Venomicon, its Poison- and Flying-type attacks have 1.2x power.",
+      "desc": "Equipable. Si lo lleva Venomicon, potencia sus movimientos de tipo Veneno y Volador un 20%.",
       "isCanon": true
     },
     {
@@ -6127,7 +6127,7 @@
       "showInNormalShop": true,
       "showInBCShop": true,
       "showInWarShop": false,
-      "desc": "Sube la pesca por 60 min, bonifica raros (+1000 pts) y aumenta la chance de Shiny x1.5.",
+      "desc": "Sube la pesca por 60 min, bonifica raros (+1000 pts) y aumenta la probabilidad de Shiny x1.5.",
       "isCanon": false
     },
     {

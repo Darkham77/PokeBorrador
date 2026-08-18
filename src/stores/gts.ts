@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
-import type { RealtimeChannel } from '@supabase/supabase-js'
+import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import { useAuthStore } from '@/stores/auth.ts'
 import { useGameStore } from '@/stores/game.ts'
 import { useUIStore } from '@/stores/ui.ts'
@@ -125,14 +125,17 @@ export const useGTSStore = defineStore('gts', () => {
     const channelName = `market-sales-${auth.user.id}`
     const db = game.db
     if (!db) return
+
     salesChannel = db.channel(channelName)
-      .on<MarketListing>('postgres_changes', {
+      .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',
         table: 'market_listings',
         filter: `seller_id=eq.${auth.user.id}`
-      }, (payload) => {
-        if (payload.new?.status === 'sold' && payload.old?.status !== 'sold') {
+      }, (payload: RealtimePostgresChangesPayload<MarketListing>) => {
+        const newRecord = payload.new as MarketListing | undefined
+        const oldRecord = payload.old as Partial<MarketListing> | undefined
+        if (newRecord?.status === 'sold' && oldRecord?.status !== 'sold') {
           ui.notify('¡ Venta realizada en el GTS !', '💰')
           audio.play('money')
           

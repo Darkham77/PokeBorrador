@@ -14,6 +14,7 @@ import { OFFICIAL_SERVERS, DEFAULT_SERVER } from '@/data/system/official_servers
 import { switchServer } from '@/logic/db/supabase'
 import { safeStorage } from '@/logic/utils/storage'
 import { getFriendlyErrorMessage } from '@/logic/utils/friendlyErrors'
+import { validateAuthLogin, validateAuthRegister, validateTrainerName } from '@/logic/validation/schemas'
 
 import AuthServerSelector from '@/components/auth/AuthServerSelector.vue'
 import AuthOnlineLogin from '@/components/auth/AuthOnlineLogin.vue'
@@ -66,14 +67,15 @@ const switchAuthTab = (tab: string) => {
 
 const handleLogin = async () => {
   if (serverStatus.value !== 'online') return
-  if (!email.value || !password.value) {
-    error.value = 'Completa todos los campos'
+  const validRes = validateAuthLogin({ email: email.value, password: password.value })
+  if (!validRes.success) {
+    error.value = validRes.issues[0]?.message || 'Credenciales inválidas'
     return
   }
   loading.value = true
   error.value = null
   try {
-    await authStore.login(email.value, password.value)
+    await authStore.login(validRes.output.email, validRes.output.password)
     await router.replace('/')
   } catch (err: unknown) {
     error.value = getFriendlyErrorMessage(err)
@@ -122,14 +124,20 @@ const checkServerHealth = async () => {
 }
 
 const handleSignup = async () => {
-  if (!username.value || !email.value || !password.value) {
-    error.value = 'Completa todos los campos'
+  const validRes = validateAuthRegister({
+    email: email.value,
+    password: password.value,
+    username: username.value,
+    gender: gender.value
+  })
+  if (!validRes.success) {
+    error.value = validRes.issues[0]?.message || 'Datos de registro inválidos'
     return
   }
   loading.value = true
   error.value = null
   try {
-    await authStore.signup(email.value, password.value, username.value, gender.value)
+    await authStore.signup(validRes.output.email, validRes.output.password, validRes.output.username, validRes.output.gender)
     success.value = '¡Cuenta creada! Revisa tu email para confirmar.'
     authTab.value = 'login'
   } catch (err: unknown) {
@@ -140,15 +148,16 @@ const handleSignup = async () => {
 }
 
 const handleLocalLogin = async () => {
-  if (!username.value) {
-    error.value = 'Ingresa un nickname'
+  const validName = validateTrainerName(username.value)
+  if (!validName.success) {
+    error.value = validName.issues[0]?.message || 'Ingresa un nickname válido'
     return
   }
   loading.value = true
   error.value = null
   try {
     // Login: el género se carga desde la partida guardada en el store
-    await authStore.localLogin(username.value)
+    await authStore.localLogin(validName.output)
     await router.replace('/')
   } catch (_err) {
     error.value = 'Error al entrar en modo local'
@@ -158,15 +167,16 @@ const handleLocalLogin = async () => {
 }
 
 const handleLocalSignup = async () => {
-  if (!username.value) {
-    error.value = 'Ingresa un nickname'
+  const validName = validateTrainerName(username.value)
+  if (!validName.success) {
+    error.value = validName.issues[0]?.message || 'Ingresa un nickname válido'
     return
   }
   loading.value = true
   error.value = null
   try {
     // Signup: se crea una nueva partida con el género elegido
-    await authStore.localLogin(username.value, gender.value)
+    await authStore.localLogin(validName.output, gender.value)
     window.location.replace(import.meta.env.BASE_URL)
   } catch (_err) {
     error.value = 'Error al crear partida local'

@@ -61,7 +61,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
 
   function _pollMatchmaking() {
     if (!isSearching.value || !gameStore.db || !authStore.user) return
-    gameStore.db.from('ranked_queue').select('*').neq('user_id', authStore.user.id).order('looking_since', { ascending: true }).limit(1).then(async (res) => {
+    gameStore.db.from('ranked_queue').select('*').neq('user_id', authStore.user.id).order('looking_since', { ascending: true }).limit(1).then(async (res: { data: unknown }) => {
       const data = res.data as RankedQueueEntry[] | null // domain-ok
       if (data && data.length > 0 && authStore.user && gameStore.db) {
         const match = data[0]

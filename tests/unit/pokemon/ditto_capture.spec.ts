@@ -48,6 +48,7 @@ describe('Ditto Pre-Transformation Capture Preservation', () => {
       level: 25,
       vigor: 20,
       status: '',
+      isShiny: false,
       type: 'electric',
       hp: 60,
       maxHp: 60,

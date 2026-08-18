@@ -161,7 +161,7 @@ export interface Pokemon {
   status: PokemonStatus;
   statusTurns?: number;
   sleepTurns?: number;
-  isShiny?: boolean;
+  isShiny: boolean;
   gender?: PokemonGender;
   substitute?: number;
   protect?: boolean;

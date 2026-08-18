@@ -8,7 +8,7 @@ function createToxicPokemon(): Pokemon {
     uid: 'antidote-toxic-test', id: 'bulbasaur', species: 'bulbasaur', name: 'Bulbasaur', level: 20,
     exp: 0, expNeeded: 100, hp: 30, maxHp: 50, atk: 20, def: 20, spa: 20, spd: 20, spe: 20,
     ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, nature: 'serious', type: 'grass',
-    ability: 'overgrow', status: 'tox', volatileCounters: {}, moves: [],
+    ability: 'overgrow', status: 'tox', isShiny: false, volatileCounters: {}, moves: [],
   };
 }
 

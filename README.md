@@ -8,9 +8,9 @@ Antes de comenzar, asegúrate de tener instalado **Node.js (v26.7.0 o superior)*
 
 > [!IMPORTANT] El proyecto utiliza características modernas del motor V8 y requiere explícitamente **Node >= 26.7.0** y **npm >= 12.0.0**. Si la versión instalada es inferior, la ejecución de `npm install` o `npm ci` se interrumpirá inmediatamente lanzando un error con las instrucciones de actualización.
 
-### 🌐 Instalación y Actualización de Node.js y npm
+### 🌐 Preparación y Actualización del Entorno (Node.js y npm)
 
-#### ⚡ Método Automático Recomendado (Desde la Raíz del Proyecto)
+Para inicializar o actualizar automáticamente el entorno (instalación de NVM si falta, Node.js 26+ y npm 12+), ejecuta el script correspondiente desde la raíz del proyecto:
 
 - **En Windows (PowerShell como Administrador)**:
 
@@ -24,73 +24,14 @@ Antes de comenzar, asegúrate de tener instalado **Node.js (v26.7.0 o superior)*
   chmod +x ./setup-linux.sh && ./setup-linux.sh
   ```
 
----
-
-#### 🛠️ Método Manual (Paso a Paso)
-
-##### 🐧 Linux / macOS (usando NVM)
-
-1. **Instalar NVM**:
-
-   ```bash
-   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
-   ```
-
-   *Reinicia la terminal o ejecuta `source ~/.bashrc` / `source ~/.zshrc`.*
-
-2. **Instalar y activar Node.js 26.7+ y npm**:
-
-   ```bash
-   nvm install 26.7.0
-   nvm use 26.7.0
-   nvm alias default 26.7.0
-   npm install -g npm@latest
-   ```
-
-##### 🪟 Windows (PowerShell como Administrador)
-
-> [!CAUTION]
-> **IMPORTANTE**: Antes de instalar NVM en Windows, debes **desinstalar completamente cualquier versión previa de Node.js** instalada manualmente desde el Panel de Control / Configuración de Windows. Si mantienes una instalación manual previa, NVM no podrá gestionar los symlinks y fallará.
-
-1. **Instalar NVM via `winget`**:
-
-   ```powershell
-   winget install CoreyButler.NVMforWindows
-   ```
-
-2. **Crear directorio del Symlink de NVM**:
-
-   ```powershell
-   New-Item -ItemType Directory -Path "C:\nvm4w" -Force
-   ```
-
-3. **Instalar y activar Node 26.7+ y npm**:
-
-   ```powershell
-   nvm install 26.7.0
-   nvm use 26.7.0
-   npm install -g npm@latest
-   ```
-
-   > 📌 *En Windows (`nvm-windows`), `nvm use <versión>` ya establece la versión activa globalmente (el comando `nvm alias` no existe en Windows).*
-
-4. **Instalación Directa alternativa (sin NVM)**:
-
-   ```powershell
-   winget install OpenJS.NodeJS
-   ```
-
-> 🚨 **Solución si `npm` o `node` no se reconoce tras ejecutar `nvm use` en Windows**:
->
-> 1. **Crear directorio del Symlink de NVM**: En PowerShell como Administrador, ejecuta `New-Item -ItemType Directory -Path "C:\nvm4w" -Force` y luego `nvm use 26.7.0`. NVM necesita este directorio destino para asociar el symlink en la variable `%NVM_SYMLINK%`.
-> 2. **Permisos de Administrador**: Asegúrate de abrir PowerShell como Administrador.
-> 3. **Limpiar residuales antiguos**: Si existían archivos de una versión previa instalada manualmente en `%APPDATA%\npm` o `%APPDATA%\npm-cache`, elimina esas carpetas (`Remove-Item -Recurse -Force "$env:APPDATA\npm"`) y vuelve a ejecutar `nvm use 26.7.0`.
+> [!TIP]
+> Los scripts leen dinámicamente la versión requerida desde `package.json`, configuran NVM/symlinks automáticamente, actualizan `npm` a la última versión global, aplican las políticas de seguridad y ejecutan `npm ci` para dejar el proyecto 100% listo para desarrollar.
 
 ## 🛠️ Entorno de Desarrollo
 
-### 🛡️ Configuración de Seguridad de NPM (Recomendado)
+### 🛡️ Configuración de Seguridad de NPM
 
-Para mitigar riesgos como ataques de cadena de suministro (*supply chain attacks*), inyección de malware o ejecución de scripts maliciosos, debes modificar la configuración global de Node Package Manager ejecutando los siguientes comandos en tu terminal:
+Los scripts de preparación (`setup-windows.ps1` y `setup-linux.sh`) aplican estas directivas de seguridad automáticamente. Si necesitas configurarlas o verificarlas manualmente para mitigar riesgos de cadena de suministro (*supply chain attacks*) e inyección de código malicioso:
 
 ```bash
 # 1. Desactivar la ejecución automática de scripts (Pre/Post install)

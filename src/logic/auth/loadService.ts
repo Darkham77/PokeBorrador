@@ -1,12 +1,6 @@
 
 import type { DBRouter } from '@/logic/db/dbRouter';
-import { TRAINER_RANKS } from '@/data/player/trainer';
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { requireAbilityId } from '@/data/battle/abilities';
-
-import { validateAndSanitize, type SaveData } from './saveService.ts';
-import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { GymId } from '@/data/world/gyms';
+import { validateAndSanitize } from './saveService.ts';
 import { decompress, isGzip } from '@/logic/utils/compression';
 import { readOpfsFile, writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { logger } from '@/logic/utils/logger';
@@ -204,16 +198,12 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
 
   if (!finalSaveData) return { data: null, issues: [], lastSaveId: null, isNewerThanCloud: false };
 
-  // 3. Backfill and Deep Normalization (Legacy Parity)
-  const normalized = normalizeData(finalSaveData);
-
-  // 4. Sanitize and Validate
-  const { data: sanitized, valid, issues, error: validationError } = validateAndSanitize(normalized as SaveData);
-  if (!valid) {
+  // Direct Validation & Sanitation without runtime fallback patching
+  const { data: sanitized, valid, issues, error: validationError } = validateAndSanitize(finalSaveData);
+  if (!valid || !sanitized) {
     logger.error('LOAD', 'Error crítico de validación al cargar partida:', validationError || issues);
     throw new Error(`Carga abortada por datos corruptos o inválidos: ${validationError || issues.join(', ')}`);
   }
-
 
   return {
     data: sanitized as GameState, // domain-ok
@@ -221,141 +211,4 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
     lastSaveId: cloudSaveRow?.last_save_id || null,
     isNewerThanCloud
   };
-}
-
-/**
- * Deep normalization for legacy data compatibility.
- */
-function normalizeData(state: GameState): GameState {
-  if (!state) return state;
-
-  // Auto-heal trainerExpNeeded based on current trainerLevel
-  const level = state.trainerLevel || 1;
-  const idx = Math.min(level - 1, TRAINER_RANKS.length - 1);
-  const currentRank = TRAINER_RANKS[idx];
-  if (currentRank) {
-    state.trainerExpNeeded = currentRank.expNeeded;
-  }
-
-  if (!state.gender) state.gender = 'h';
-  if (state.fishingRodSecs === undefined) state.fishingRodSecs = 0;
-  if (state.fishingRodType === undefined) state.fishingRodType = null;
-  if ((state.fishingRodType as string) === 'silver') state.fishingRodType = 'good';
-  if ((state.fishingRodType as string) === 'gold') state.fishingRodType = 'super';
-  
-  if (state.pickaxeSecs === undefined) state.pickaxeSecs = 0;
-  if (state.pickaxeType === undefined) state.pickaxeType = null;
-  if ((state.pickaxeType as string) === 'silver') state.pickaxeType = 'good';
-  if ((state.pickaxeType as string) === 'gold') state.pickaxeType = 'super';
-
-  if (state.brushSecs === undefined) state.brushSecs = 0;
-  if (state.brushType === undefined) state.brushType = null;
-  if ((state.brushType as string) === 'silver') state.brushType = 'good';
-  if ((state.brushType as string) === 'gold') state.brushType = 'super';
-
-  // Ensure arrays exist
-  if (!Array.isArray(state.team)) state.team = [];
-  if (!Array.isArray(state.box)) state.box = [];
-  if (!Array.isArray(state.pokedex)) state.pokedex = [];
-  if (!Array.isArray(state.seenPokedex)) state.seenPokedex = [];
-
-  // Data fix: ensure UID and Gender for all Pokemon
-  const fixPoke = (p: Pokemon): Pokemon | null => {
-    if (!p) return null;
-    if (!p.uid) {
-      const UUID_FALLBACK_RADIX = 36;
-      const UUID_FALLBACK_START = 2;
-      const UUID_FALLBACK_LENGTH = 9;
-      p.uid = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(UUID_FALLBACK_RADIX).substr(UUID_FALLBACK_START, UUID_FALLBACK_LENGTH) + Temporal.Now.instant().epochMilliseconds.toString(UUID_FALLBACK_RADIX);
-    }
-    
-    if (Object.is(p.gender, 'M')) p.gender = 'm';
-    if (Object.is(p.gender, 'F')) p.gender = 'f';
-    if (Object.is(p.gender, 'N')) p.gender = null;
-
-    // Legacy gender backfill
-    if (p.gender === undefined) {
-      // Logic from legacy 02_pokemon_data.js
-      const isGenderless = ['magnemite', 'magneton', 'voltorb', 'electrode', 'staryu', 'starmie', 'ditto', 'porygon', 'mewtwo', 'mew'].includes(p.id); // no-domain
-      if (!isGenderless) {
-        p.gender = Math.random() < 0.5 ? 'm' : 'f';
-      } else {
-        p.gender = null;
-      }
-    }
-
-    // Legacy ability backfill
-    if (!p.ability) {
-      const speciesAbilities = pokemonDataProvider.getSpeciesAbilities(p.id);
-      p.ability = requireAbilityId(speciesAbilities[0] || 'overgrow');
-    }
-
-    if (p.vigor === undefined) p.vigor = 100;
-    if (p.maxVigor === undefined) p.maxVigor = 100;
-
-    // Clean legacy iv fields if corrupted
-    if (p.ivs) {
-      const ivs = p.ivs as Record<string, unknown>; // domain-ok
-      delete ivs._cost;
-      delete ivs._nature;
-    }
-
-    // Backfill capture date if missing
-    const hasLegacyDate = Boolean(
-      Reflect.get(p, 'created_at') ||
-      Reflect.get(p, 'captureDate') ||
-      Reflect.get(p, 'timestamp') ||
-      Reflect.get(p, 'date')
-    );
-    if (!p.obtainedAt && !hasLegacyDate) {
-      p.obtainedAt = Temporal.Now.instant().epochMilliseconds;
-    }
-
-    return p;
-  };
-
-  state.team = state.team.map((p: Pokemon) => fixPoke(p)).filter((p: Pokemon | null): p is Pokemon => p !== null);
-  state.box = state.box.map((p: Pokemon | null) => (p ? fixPoke(p) : null)).filter((p: Pokemon | null): p is Pokemon => p !== null);
-  state.eggs = state.eggs.map(egg => {
-    if (Object.is(egg.gender, 'M')) egg.gender = 'm';
-    if (Object.is(egg.gender, 'F')) egg.gender = 'f';
-    if (Object.is(egg.gender, 'N')) egg.gender = null;
-    return egg;
-  });
-
-  // Patch: If the team exceeds 6 pokemon, safely move the excess to the box
-  if (state.team.length > 6) {
-    const excess = state.team.slice(6);
-    state.team = state.team.slice(0, 6);
-    state.box = [...state.box, ...excess];
-  }
-
-  // Normalize legacy badges (array to count)
-  if (Array.isArray(state.badges)) {
-    state.badges = state.badges.length;
-  }
-
-  // AUTO-HEAL & MIGRATION FOR LEGACY GYM SAVES
-  if (!Array.isArray(state.defeatedGyms)) {
-    state.defeatedGyms = [];
-  }
-
-  if (state.defeatedGyms.length > 0) {
-    // Sincronizar el contador con la lista real de derrotados si hay inconsistencia
-    if (state.badges !== state.defeatedGyms.length) {
-      state.badges = state.defeatedGyms.length;
-    }
-  } else if (state.badges > 0) {
-    // Si tiene un contador de medallas heredado pero defeatedGyms está vacío,
-    // reconstruimos la lista secuencialmente según el orden de progresión de Kanto
-    const kantoGymIds: GymId[] = ['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian'];
-    const count = Math.min(8, Math.max(0, state.badges));
-    state.defeatedGyms = kantoGymIds.slice(0, count);
-  }
-
-  if (state.lastPokemonCenterHeal === undefined) {
-    state.lastPokemonCenterHeal = 0;
-  }
-
-  return state;
 }

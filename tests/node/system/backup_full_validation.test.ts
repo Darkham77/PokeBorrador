@@ -8,6 +8,7 @@ import { splitSQLStatements } from '../../../src/logic/db/sqlTranslator.ts';
 import type { GameState } from '../../../src/types/system/game.ts';
 
 import { canLearnMove } from '../../../src/logic/pokemon/pokemonFactory.ts';
+import { validateSaveData } from '../../../src/logic/validation/schemas.ts';
 
 describe('Backup Full validation and Dex compatibility test', () => {
   it('should successfully run all SQLite migrations on the server_franco backup fixture and validate all saves against the Showdown Dex', async () => {
@@ -154,6 +155,15 @@ describe('Backup Full validation and Dex compatibility test', () => {
       const userId = row.user_id;
       const saveData: GameState = JSON.parse(row.save_data);
       if (!saveData) continue;
+
+      // 4.1. Strict Valibot schema validation
+      const valibotResult = validateSaveData(saveData);
+      if (!valibotResult.success) {
+        for (const issue of valibotResult.issues) {
+          const pathStr = issue.path?.map((p) => String((p as { key?: unknown }).key ?? '')).join('.') || 'root';
+          errors.push(`[User: ${userId}] Valibot Schema Error at '${pathStr}': ${issue.message}`);
+        }
+      }
 
       const team = saveData.team || [];
       const box = saveData.box || [];

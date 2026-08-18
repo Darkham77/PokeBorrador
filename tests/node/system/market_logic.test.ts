@@ -26,6 +26,7 @@ const mockPokemon: Pokemon = {
   spe: 90,
   type: 'electric',
   status: '',
+  isShiny: false,
   moves: [],
   ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
   nature: 'hardy'

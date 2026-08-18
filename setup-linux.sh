@@ -45,10 +45,21 @@ nvm alias default "$TARGET_NODE_VER"
 echo -e "\n📦 Actualizando npm a la última versión global (npm@latest)..."
 npm install -g npm@latest
 
+# 4. Configuración de Seguridad de NPM
+echo -e "\n🛡️ Aplicando configuraciones de seguridad globales en npm..."
+npm config set ignore-scripts true
+npm config set registry https://registry.npmjs.org/
+npm config set audit-level high
+
+# 5. Instalar dependencias limpias del proyecto
+echo -e "\n📦 Instalando dependencias del proyecto con npm ci..."
+cd "$SCRIPT_DIR"
+npm ci
+
 echo "======================================================"
-echo " 🎉 ¡ENTORNO PREPARADO CON ÉXITO!"
+echo " 🎉 ¡ENTORNO Y DEPENDENCIAS PREPARADOS CON ÉXITO!"
 echo "======================================================"
 echo "Versiones activas:"
 node -v
 npm -v
-echo -e "\nYa puedes ejecutar 'npm ci' para instalar las dependencias del proyecto.\n"
+echo -e "\nTodo listo. Puedes iniciar el entorno de desarrollo ejecutando 'npm run dev'.\n"

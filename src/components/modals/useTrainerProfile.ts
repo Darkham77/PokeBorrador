@@ -200,6 +200,9 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
 
   const trainerName = computed(() => {
     const id = userId.value
+    if (isOwnProfile.value) {
+      return gameStore.state.trainer || profile.value?.username || authStore.user?.user_metadata?.username || 'Entrenador'
+    }
     const cached = id ? chatStore.profileCosmetics[id] : null
     if (cached?.username) return cached.username
     const friend = id ? socialStore.friends.find((f: Friend) => f.id === id) : null
@@ -208,10 +211,16 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
   })
 
   const faction = computed(() => {
+    if (isOwnProfile.value) {
+      return gameStore.state.faction || null
+    }
     return profile.value?.faction || saveState.value?.faction || null
   })
 
   const playerClass = computed(() => {
+    if (isOwnProfile.value) {
+      return gameStore.state.playerClass || null
+    }
     const id = userId.value
     const cached = id ? chatStore.profileCosmetics[id] : null
     if (cached?.player_class !== undefined) return cached.player_class
@@ -226,6 +235,9 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
   })
 
   const trainerLevel = computed(() => {
+    if (isOwnProfile.value) {
+      return gameStore.state.trainerLevel ?? 1
+    }
     const id = userId.value
     const cached = id ? chatStore.profileCosmetics[id] : null
     if (cached?.trainer_level !== undefined) return cached.trainer_level
@@ -235,6 +247,9 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
   })
 
   const avatarStyle = computed(() => {
+    if (isOwnProfile.value) {
+      return gameStore.state.avatar_style ?? ''
+    }
     const id = userId.value
     const cached = id ? chatStore.profileCosmetics[id] : null
     if (cached?.avatar_style !== undefined) return cached.avatar_style
@@ -244,6 +259,9 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
   })
 
   const nickStyle = computed(() => {
+    if (isOwnProfile.value) {
+      return gameStore.state.nick_style ?? ''
+    }
     const id = userId.value
     const cached = id ? chatStore.profileCosmetics[id] : null
     if (cached?.nick_style !== undefined) return cached.nick_style
@@ -253,6 +271,9 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
   })
 
   const gender = computed(() => {
+    if (isOwnProfile.value) {
+      return gameStore.state.gender ?? 'h'
+    }
     const id = userId.value
     const cached = id ? chatStore.profileCosmetics[id] : null
     if (cached?.gender !== undefined) return cached.gender
@@ -262,61 +283,98 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
   })
 
   const badgesCount = computed(() => {
+    if (isOwnProfile.value) {
+      return gameStore.state.badges ?? gameStore.state.defeatedGyms?.length ?? 0
+    }
     return saveState.value?.badges ?? saveState.value?.defeatedGyms?.length ?? 0
   })
 
   const pokedexCaught = computed(() => {
+    if (isOwnProfile.value) {
+      return gameStore.state.pokedex?.length ?? 0
+    }
     return saveState.value?.pokedex?.length ?? 0
   })
 
   const pokedexSeen = computed(() => {
+    if (isOwnProfile.value) {
+      return gameStore.state.seenPokedex?.length ?? 0
+    }
     return saveState.value?.seenPokedex?.length ?? 0
   })
 
   const trainersDefeated = computed(() => {
+    if (isOwnProfile.value) {
+      return gameStore.state.stats?.trainersDefeated ?? 0
+    }
     return saveState.value?.stats?.trainersDefeated ?? 0
   })
 
   const wildWins = computed(() => {
+    if (isOwnProfile.value) {
+      return gameStore.state.stats?.wins ?? 0
+    }
     return saveState.value?.stats?.wins ?? 0
   })
 
   const pvpWins = computed(() => {
+    if (isOwnProfile.value) {
+      return profile.value?.pvp_wins ?? gameStore.state.pvpStats?.wins ?? 0
+    }
     return profile.value?.pvp_wins ?? saveState.value?.pvpStats?.wins ?? 0
   })
 
   const pvpLosses = computed(() => {
+    if (isOwnProfile.value) {
+      return profile.value?.pvp_losses ?? gameStore.state.pvpStats?.losses ?? 0
+    }
     return profile.value?.pvp_losses ?? saveState.value?.pvpStats?.losses ?? 0
   })
 
   const eloRating = computed(() => {
+    if (isOwnProfile.value) {
+      return profile.value?.elo_rating ?? gameStore.state.eloRating ?? DEFAULT_ELO_RATING_BASE
+    }
     return profile.value?.elo_rating ?? saveState.value?.eloRating ?? DEFAULT_ELO_RATING_BASE
   })
 
   const warCoins = computed(() => {
+    if (isOwnProfile.value) {
+      return gameStore.state.warCoins ?? 0
+    }
     return saveState.value?.warCoins ?? 0
   })
 
   const criminality = computed(() => {
+    if (isOwnProfile.value) {
+      return (gameStore.state.classData as { criminality?: number } | undefined)?.criminality ?? 0
+    }
     return saveState.value?.classData?.criminality ?? 0
   })
 
   const reputation = computed(() => {
+    if (isOwnProfile.value) {
+      return (gameStore.state.classData as { reputation?: number } | undefined)?.reputation ?? 0
+    }
     return saveState.value?.classData?.reputation ?? 0
   })
 
   const captureStreak = computed(() => {
+    if (isOwnProfile.value) {
+      return (gameStore.state.classData as { longestStreak?: number } | undefined)?.longestStreak ?? 0
+    }
     return saveState.value?.classData?.longestStreak ?? 0
   })
 
   const totalWarPoints = computed<number>(() => {
-    if (!saveState.value?.warMyPtsLocal) return 0
-    const points = Object.values(saveState.value.warMyPtsLocal) as number[]
+    const warMap = isOwnProfile.value ? gameStore.state.warMyPtsLocal : saveState.value?.warMyPtsLocal
+    if (!warMap) return 0
+    const points = Object.values(warMap) as number[]
     return points.reduce((a: number, b: number) => Number(a) + Number(b), 0)
   })
 
   const isGymDefeated = (gymId: string) => {
-    const list = saveState.value?.defeatedGyms || []
+    const list = isOwnProfile.value ? (gameStore.state.defeatedGyms || []) : (saveState.value?.defeatedGyms || [])
     return list.includes(gymId)
   }
 
@@ -325,7 +383,7 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
   const factionColor = computed(() => resolveFactionColor(faction.value))
 
   const playtimeHours = computed(() => {
-    const secs = profile.value?.playtime ?? saveState.value?.playtime ?? 0
+    const secs = isOwnProfile.value ? (gameStore.state.playtime ?? 0) : (profile.value?.playtime ?? saveState.value?.playtime ?? 0)
     return Math.floor(secs / SECONDS_PER_HOUR_FACTOR)
   })
 
@@ -334,18 +392,27 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
   })
 
   const lastPlayedAt = computed(() => {
-    return profile.value?.last_played_at || null
+    return isOwnProfile.value ? Temporal.Now.instant().toString() : (profile.value?.last_played_at || null)
   })
 
   const rankedMaxElo = computed(() => {
+    if (isOwnProfile.value) {
+      return profile.value?.ranked_max_elo ?? gameStore.state.rankedMaxElo ?? DEFAULT_ELO_RATING_BASE
+    }
     return profile.value?.ranked_max_elo ?? saveState.value?.rankedMaxElo ?? DEFAULT_ELO_RATING_BASE
   })
 
   const classLevel = computed(() => {
+    if (isOwnProfile.value) {
+      return gameStore.state.classLevel ?? 1
+    }
     return profile.value?.class_level ?? saveState.value?.classLevel ?? 1
   })
 
   const classXP = computed(() => {
+    if (isOwnProfile.value) {
+      return gameStore.state.classXP ?? 0
+    }
     return profile.value?.class_xp ?? saveState.value?.classXP ?? 0
   })
 
@@ -354,43 +421,72 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
   })
 
   const boxCount = computed(() => {
+    if (isOwnProfile.value) {
+      return gameStore.state.box?.length ?? 0
+    }
     return profile.value?.box_count ?? saveState.value?.box?.length ?? 0
   })
 
   const pvpDraws = computed(() => {
+    if (isOwnProfile.value) {
+      return profile.value?.pvp_draws ?? gameStore.state.pvpStats?.draws ?? 0
+    }
     return profile.value?.pvp_draws ?? saveState.value?.pvpStats?.draws ?? 0
   })
 
   const longestStreak = computed(() => {
+    if (isOwnProfile.value) {
+      return profile.value?.longest_streak ?? (gameStore.state.classData as { longestStreak?: number } | undefined)?.longestStreak ?? 0
+    }
     return profile.value?.longest_streak ?? saveState.value?.classData?.longestStreak ?? 0
   })
 
   const shinyCount = computed(() => {
+    if (isOwnProfile.value) {
+      const teamShinies = (gameStore.state.team || []).filter(p => Boolean(p?.isShiny)).length
+      const boxShinies = (gameStore.state.box || []).filter(p => Boolean(p?.isShiny)).length
+      return teamShinies + boxShinies
+    }
     if (profile.value?.shiny_count !== undefined && profile.value?.shiny_count !== null) {
       return profile.value.shiny_count
     }
-    const teamShinies = ((saveState.value?.team || []) as { isShiny?: boolean }[]).filter(p => p.isShiny).length
-    const boxShinies = ((saveState.value?.box || []) as { isShiny?: boolean }[]).filter(p => p.isShiny).length
+    const teamShinies = ((saveState.value?.team || []) as ({ isShiny?: boolean } | null)[]).filter(p => Boolean(p?.isShiny)).length
+    const boxShinies = ((saveState.value?.box || []) as ({ isShiny?: boolean } | null)[]).filter(p => Boolean(p?.isShiny)).length
     return teamShinies + boxShinies
   })
 
   const maxDamage = computed(() => {
+    if (isOwnProfile.value) {
+      return profile.value?.max_damage ?? gameStore.state.stats?.maxDamage ?? 0
+    }
     return profile.value?.max_damage ?? saveState.value?.stats?.maxDamage ?? 0
   })
 
   const totalBattles = computed(() => {
+    if (isOwnProfile.value) {
+      return profile.value?.total_battles ?? gameStore.state.stats?.totalBattles ?? 0
+    }
     return profile.value?.total_battles ?? saveState.value?.stats?.totalBattles ?? 0
   })
 
   const tradeVolume = computed(() => {
+    if (isOwnProfile.value) {
+      return profile.value?.trade_volume ?? gameStore.state.stats?.tradeVolume ?? 0
+    }
     return profile.value?.trade_volume ?? saveState.value?.stats?.tradeVolume ?? 0
   })
 
   const captureAttempts = computed(() => {
+    if (isOwnProfile.value) {
+      return profile.value?.capture_attempts ?? gameStore.state.stats?.captureAttempts ?? 0
+    }
     return profile.value?.capture_attempts ?? saveState.value?.stats?.captureAttempts ?? 0
   })
 
   const captureSuccesses = computed(() => {
+    if (isOwnProfile.value) {
+      return profile.value?.capture_successes ?? gameStore.state.stats?.captureSuccesses ?? 0
+    }
     return profile.value?.capture_successes ?? saveState.value?.stats?.captureSuccesses ?? 0
   })
 
@@ -402,10 +498,16 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
   })
 
   const money = computed(() => {
+    if (isOwnProfile.value) {
+      return gameStore.state.money ?? 0
+    }
     return saveState.value?.money ?? 0
   })
 
   const battleCoinsCount = computed(() => {
+    if (isOwnProfile.value) {
+      return gameStore.state.battleCoins ?? 0
+    }
     return saveState.value?.battleCoins ?? 0
   })
 

@@ -1,22 +1,89 @@
 # EV Mechanics Manual
 
-> **Scope**: Reference for AI agents implementing or verifying stat calculations, team generators, fuzzer setups, and any code that touches Pokémon stats.
-> **Source of Truth**: 
-> - [Stat Mechanics](./stats.md) (Standard stat calculations, pre/post-Advance history)
-> - [EVs & Natures](./evs-natures-and-math.md) (Mathematical approach to effort values)
+> **Scope**: Comprehensive reference for Effort Value (EV) mathematics, training items, consumables, battle yield distribution, stat recalculation, and Showdown/fuzzer integration across Poké Vicio.
+> **Sources of Truth**:
+> - [`src/logic/pokemon/evMath.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/pokemon/evMath.ts) (Pure mathematical formulas & limits)
+> - [`src/data/pokemon/evYields.ts`](file:///home/franco/Trabajos/PokeBorrador/src/data/pokemon/evYields.ts) (Canonical species yield catalog)
+> - [Stat Mechanics](./stats.md) (Formulas, IVs, Level & Nature scaling)
+> - [EVs & Natures: Mathematical Approach](./evs-natures-and-math.md) (Theory of addition vs multiplication)
 > - Pokémon Showdown source at `external/pokemon-showdown-code/`.
 
 ---
 
-## 🏛️ Standard Stat Formulas & Limits
+## 1. 🏛️ Core EV Limits & Rules
 
-Standard formulas, limits (e.g. 252 EV limit per stat, 510 total EV cap), and level-scaling mechanics have been migrated to the canonical references:
-- **EV limits, Nature effects, and Stat Formulas** are detailed in [Stat Mechanics](./stats.md).
-- **Mathematical details** are in [EVs & Natures](./evs-natures-and-math.md).
+In Poké Vicio, Effort Values follow modern Gen 8/9 canonical rules:
+
+| Constant | Value | Description |
+| :--- | :--- | :--- |
+| `MAX_TOTAL_EVS` | `510` | Maximum combined EV investment across all 6 stats for a single Pokémon. |
+| `MAX_STAT_EVS` | `252` | Maximum EV investment in any single stat (Gen 6+ standard; 63 additional stat points at Lv 100). |
+| `MIN_STAT_EVS` | `0` | Minimum EV investment in any stat. |
+
+### Real-Time Stat Recalculation & Level 100 Rule
+- **Instantaneous Recalculation**: Whenever EVs change (via battle yield, vitamin, mochi, feather, or berry), `recalcPokemonStats(pokemon)` is invoked immediately.
+- **Level 100 Compatibility**: In accordance with Gen 5+ mechanics, Pokémon at Level 100 **still accumulate EVs from battles and consumables** and receive instant stat updates without requiring the legacy "box trick".
 
 ---
 
-## 5. Agent Rules for Simulators & Fuzzers
+## 2. 🏋️ Training Modifiers & Multipliers
+
+EV gains from defeating opponent Pokémon in battle can be boosted through held items and infection states:
+
+| Item / State | ID / Key | Effect on Battle EV Gains |
+| :--- | :--- | :--- |
+| **Macho Brace** | `machobrace` | Multiplies all base EV gains by **x2**. |
+| **Power Weight** | `powerweight` | Grants a flat **+8 HP EVs** in addition to defeat yields. |
+| **Power Bracer** | `powerbracer` | Grants a flat **+8 Attack EVs** in addition to defeat yields. |
+| **Power Belt** | `powerbelt` | Grants a flat **+8 Defense EVs** in addition to defeat yields. |
+| **Power Lens** | `powerlens` | Grants a flat **+8 Sp. Atk EVs** in addition to defeat yields. |
+| **Power Band** | `powerband` | Grants a flat **+8 Sp. Def EVs** in addition to defeat yields. |
+| **Power Anklet** | `poweranklet` | Grants a flat **+8 Speed EVs** in addition to defeat yields. |
+| **Pokérus** | `pokerus: 'infected'` | Multiplies all battle EV gains (including Power Item bonuses) by **x2**. |
+
+> [!NOTE]
+> **Multiplicative Stacking**: Pokérus stacks multiplicatively with training items:
+> - `Pokérus + Macho Brace`: Base yield x 4.
+> - `Pokérus + Power Item`: (Base Yield + 8) x 2.
+
+---
+
+## 3. 💊 Consumable Items, Mochis & Berries
+
+Consumables allow direct adjustment of EVs from the inventory (`src/logic/items/itemEffectHandlers.ts`):
+
+### EV Enhancers
+- **Vitamins (+10 EVs)**: `hpup`, `protein`, `iron`, `calcium`, `zinc`, `carbos`.
+  - *Gen 8+ Rule*: Vitamins can be used up to the full `MAX_STAT_EVS` (252) cap; they are no longer restricted to the legacy 100-EV ceiling.
+- **Mochis (+10 EVs)**: `healthmochi`, `musclemochi`, `resistmochi`, `geniusmochi`, `clevermochi`, `swiftmochi`.
+- **Feathers / Wings (+1 EV)**: `healthfeather`/`healthwing`, `musclefeather`/`musclewing`, `resistfeather`/`resistwing`, `geniusfeather`/`geniuswing`, `cleverfeather`/`cleverwing`, `swiftfeather`/`swiftwing`. Excellent for fine-tuning competitive spreads.
+
+### EV Reduction & Reset
+- **EV-Reducing Berries (-10 EVs & +Friendship)**:
+  - `pomegberry` (HP), `kelpsyberry` (Atk), `qualotberry` (Def), `hondewberry` (SpA), `grepaberry` (SpD), `tamatoberry` (Spe).
+  - Reduces the given stat by 10 EVs (clamped to 0) and increases friendship by +10 up to 255.
+- **Fresh-Start Mochi (`freshstartmochi`)**:
+  - Resets all 6 stats' EVs to `0` in a single transaction via `resetAllEvs()`.
+
+---
+
+## 4. ⚔️ Battle Rewards & Distribution Flow
+
+Battle EV gains are orchestrated by `processEvGain()` in [`src/logic/battle/battleRewards.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/battle/battleRewards.ts) and executed in [`rewardsDistributor.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/battle/rewardsDistributor.ts):
+
+1. **Eligible Recipients**:
+   - Any Pokémon that actively entered combat (`participantsSet.has(p.uid)`).
+   - Any benched team Pokémon holding `expshare`.
+2. **Yield Lookup**:
+   - Retrieves base species yield from `pokemonDataProvider.getEvYield(enemySpecies)` ([`evYields.ts`](file:///home/franco/Trabajos/PokeBorrador/src/data/pokemon/evYields.ts)).
+3. **Calculation & Clamping**:
+   - `applyEvGains(currentEvs, baseYield, heldItem, hasPokerus)` applies modifiers and clamps within single-stat (252) and total (510) limits.
+4. **Recalculation & Logging**:
+   - If `totalGained > 0`, invokes `recalcPokemonStats(p)` and emits an in-game action log in Spanish (e.g. `¡Pikachu ganó +2 ATQ, +1 VEL (EVs)!`).
+
+---
+
+## 5. 🤖 Agent Rules for Simulators & Fuzzers
 
 ### DO NOT pass pre-calculated `stats` to `@pkmn/sim` PokemonSets
 
@@ -40,40 +107,41 @@ return {
 } as PokemonSet;
 ```
 
-> Root cause of past bug: `calcStatsPure()` returns `{ atk, def, spa, spd, spe }` — it does **not** return `hp` (HP is handled separately in the project store). Passing this as `stats` in a Showdown set caused all Pokémon to enter battle with `hp = undefined → 0`, fainted on turn 0.
+> **Root Cause**: `calcStatsPure()` returns `{ maxHp, atk, def, spa, spd, spe }`. Showdown expects raw EVs and generates its own internal battle stats object. Injecting custom stat blocks breaks Showdown HP initialization.
 
 ### Valid EV spreads for fuzzer-generated teams
 
-The fuzzer (`fuzzer_ai_team_generator.ts`) uses these spreads — both total exactly 508 EVs (valid):
+The fuzzer (`fuzzer_ai_team_generator.ts`) uses these standard test spreads (each totaling 508 EVs):
 
-| Pokémon type | Spread |
-|---|---|
-| Physical attacker (`atk >= spa`) | `{ hp: 252, atk: 128, def: 64, spa: 0, spd: 0, spe: 64 }` |
-| Special attacker (`spa > atk`) | `{ hp: 252, atk: 0, def: 0, spa: 128, spd: 64, spe: 64 }` |
+| Pokémon Category | Test EV Spread |
+| :--- | :--- |
+| **Physical Attacker** (`atk >= spa`) | `{ hp: 252, atk: 128, def: 64, spa: 0, spd: 0, spe: 64 }` |
+| **Special Attacker** (`spa > atk`) | `{ hp: 252, atk: 0, def: 0, spa: 128, spd: 64, spe: 64 }` |
 
-The 252 HP investment is intentional: it gives sufficient bulk for battles to last **20–60 turns** rather than ending in 1 turn via OHKO, which is required for meaningful AI fuzzing.
+*The 252 HP investment is intentional to guarantee durable 20–60 turn simulations for comprehensive mechanics fuzzing.*
 
-### Self-KO and extreme-recoil moves must be excluded
+### Self-KO and extreme-recoil moves must be excluded from fuzzer generation
 
-Moves filtered from fuzzer movesets (cause instant or near-instant self-faint):
-
-| Category | Excluded moves |
-|---|---|
-| Self-faint | `selfdestruct`, `explosion`, `mistyexplosion`, `healingwish`, `lunardance`, `memento`, `perishsong`, `destinybond`, `finalgambit` |
-| Extreme recoil (≥33% HP) | `headsmash`, `volttackle`, `flareblitz`, `woodhammer`, `doubleedge`, `bravebird`, `takedown` |
+Moves filtered from fuzzer movesets (preventing trivial 1-turn self-faints):
+- **Self-Faint**: `selfdestruct`, `explosion`, `mistyexplosion`, `healingwish`, `lunardance`, `memento`, `perishsong`, `destinybond`, `finalgambit`.
+- **Extreme Recoil (≥33% HP)**: `headsmash`, `volttackle`, `flareblitz`, `woodhammer`, `doubleedge`, `bravebird`, `takedown`.
 
 ---
 
-## 6. `calcStatsPure()` — Project Helper
+## 6. 🛠️ Code Module Architecture
 
-The project's `src/logic/pokemon/statsMath.ts` exports `calcStatsPure()` which implements the deterministic stat calculation formulas. It returns `CalculatedStats` containing `{ maxHp, atk, def, spa, spd, spe }`.
+```mermaid
+graph TD
+    A[Battle Defeat / Consumable Used] --> B[evMath.ts]
+    B --> C{applyEvGains / applyVitamin / applyBerry}
+    C --> D[Clamp to 252 / 510 bounds]
+    D --> E[pokemonFactory.ts: recalcPokemonStats]
+    E --> F[statsMath.ts: calcStatsPure]
+    F --> G[Updated Pokemon Instance Stats]
+```
 
-- `maxHp` is the calculated maximum HP derived from base stats, IVs, EVs, and level.
-- Combat runtime `hp` (current health) is tracked separately on the Pokémon instance as a mutable state.
-
-Use `calcStatsPure()` for:
-- Displaying base/max stats in the UI
-- Save file stat calculation and hydration
-- Damage formula implementations
-
-**Do NOT** use it to pre-populate `PokemonSet.stats` for `@pkmn/sim` Showdown simulations (let Showdown calculate stats natively from `evs`/`ivs`/`level`).
+- [`src/logic/pokemon/evMath.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/pokemon/evMath.ts): Pure math engine for EV limits, yield modifications, and items application.
+- [`src/logic/pokemon/statsMath.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/pokemon/statsMath.ts): Canonical stat formula calculation.
+- [`src/logic/pokemon/pokemonFactory.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/pokemon/pokemonFactory.ts): Instance creation and stat recalculation triggers.
+- [`src/logic/items/itemEffectHandlers.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/items/itemEffectHandlers.ts): Inventory item dispatchers for EV consumables.
+- [`src/logic/battle/battleRewards.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/battle/battleRewards.ts): Battle reward processing and EV yield distribution.

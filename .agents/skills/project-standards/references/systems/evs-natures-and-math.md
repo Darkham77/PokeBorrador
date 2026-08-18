@@ -66,69 +66,12 @@ Pokémon battles are mostly about strategy, and a player's strategy generally re
 
 However, despite these fundamental flaws to the practical use of EV training in the lower offensive/defensive stats, the mathematical approach to EVs and natures is worth keeping in mind, or at the very least a fun thing to think about if you have a geeky mind like me.
 
-Page last modified November 20 2025 at 17:02 UTC
+---
 
-## You May Also Enjoy
+## Related Systems & Reference Manuals
 
-[**Stat Mechanics**\\
-The nitty-gritty details of everything you never wanted to know about your Pokémon's Special Attack or HP.](https://www.dragonflycave.com/mechanics/stats/)
-
-[**Stat Stages**\\
-All about what's really going on behind the scenes when your game tells you your Pokémon's Attack fell.](https://www.dragonflycave.com/mechanics/stat-stages/)
-
-[**Battling Basics**\\
-All about the basics of the Pokémon battle system, in the unlikely case you're not already familiar with them.](https://www.dragonflycave.com/mechanics/battling-basics/)
-
-[**Battle Mechanics**\\
-An explanation of the inner workings of the mainline Pokémon battle system, including turn order, accuracy, critical hits, the damage formula, and secondary effects of moves.](https://www.dragonflycave.com/mechanics/battle/)
-
-## Post comment
-
-Inflammatory or off-topic comments will be deleted; please go to the [guestbook](https://www.dragonflycave.com/guestbook/) for discussion unrelated to this page. You can use [BBCode](https://www.dragonflycave.com/evs-natures-and-math/#bbcode "Click for a list of formatting options.") (forum code) to format your messages.
-
-Giving an e-mail address is optional; if it is given, you will be notified by e-mail if I respond to your post. If you fill in a website (this should be your own website, blog or social media profile), it will be linked publicly on your post; however, messages obviously posted solely as a pretext for advertising, or advertising shady or inappropriate websites, will be deleted.
-
-- \[b\] **Bold**\[/b\]
-- \[i\] _Italic_\[/i\]
-- \[u\]Underlined\[/u\]
-- \[s\]Strikethrough\[/s\]
-- \[url=http://www.dragonflycave.com\] [Link](http://www.dragonflycave.com/)\[/url\]
-- \[spoiler\]Spoiler\[/spoiler\]
-
-Name\*
-
-E-mail
-
-Website address
-
-Website name
-
-Comments\*
-
-![234](https://www.dragonflycave.com/sprites/gen8/home-thumb/234.png)Please type the name of the above Pokémon into this box ( [don't know it?](https://www.dragonflycave.com/evs-natures-and-math/#))\*:The above sprite has a 1/8192 chance of being shiny. (Modern browsers will give it a yellow glow if so.)
-
-Submit messageReset
-
-## Comments
-
-My own messages will be signed as Butterfree, with the Admin label below my name. If someone signs as Butterfree without that label, it's probably not me.
-
-Pages:
-
-
-
-**1**
-
-> ![](https://www.dragonflycave.com/sprites/gen8/icons-unified-small/567.png)
->
-> Zhikse
->
-> this might not be useful for a competitive scene, but it's groundbreaking for my current style of play - eyeballing the training and pretending that smogon doesn't exist to throw nonsense teams against my friends' on gen4
->
-> [» Reply to this](https://www.dragonflycave.com/guestbook/reply/11117/#responding-to)\[04/05/2026 16:08:28\]
-
-Pages:
-
-
-
-**1**
+- [**Stat Mechanics**](./stats.md): The nitty-gritty details of everything about Pokémon stats, base values, and formulas.
+- [**EV Mechanics Manual**](./ev_mechanics_manual.md): Technical manual for EV items, battle distribution, Showdown integration, and stat recalculation.
+- [**Stat Stages**](../core/stat-stages.md): Complete guide to combat stat stage multipliers and in-battle buffs/debuffs.
+- [**Battling Basics**](../battle/battling-basics.md): Fundamental rules of the Pokémon battle engine.
+- [**Battle Mechanics**](../battle/battle.md): Detailed mechanics of turn order, accuracy, damage formula, and secondary effects.

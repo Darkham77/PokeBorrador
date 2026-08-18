@@ -1,4 +1,4 @@
-﻿# Script de Inicialización y Preparación de Entorno para Windows (Poké Vicio)
+# Script de Inicialización y Preparación de Entorno para Windows (Poké Vicio)
 # Requiere ejecutar PowerShell como Administrador.
 
 $ErrorActionPreference = "Stop"
@@ -112,13 +112,24 @@ if ($nodeSymlinkPath -and (Test-Path -Path $nodeSymlinkPath)) {
 Write-Host "`n📦 Actualizando npm a la última versión global (npm@latest)..." -ForegroundColor Cyan
 npm install -g npm@latest
 
+# 7. Configuración de Seguridad de NPM
+Write-Host "`n🛡️ Aplicando configuraciones de seguridad globales en npm..." -ForegroundColor Cyan
+npm config set ignore-scripts true
+npm config set registry https://registry.npmjs.org/
+npm config set audit-level high
+
+# 8. Instalar dependencias limpias del proyecto
+Write-Host "`n📦 Instalando dependencias del proyecto con npm ci..." -ForegroundColor Cyan
+Set-Location $PSScriptRoot
+npm ci
+
 Write-Host "`n======================================================" -ForegroundColor Green
-Write-Host " 🎉 ¡ENTORNO PREPARADO CON ÉXITO EN UNA SOLA EJECUCIÓN!" -ForegroundColor Green
+Write-Host " 🎉 ¡ENTORNO Y DEPENDENCIAS PREPARADOS CON ÉXITO EN UNA SOLA EJECUCIÓN!" -ForegroundColor Green
 Write-Host "======================================================" -ForegroundColor Green
 Write-Host "Versiones activas en esta sesión:"
 node -v
 npm -v
 Write-Host "`n💡 Nota: Si tienes terminales del IDE previamente abiertas, ciérralas y ábrelas de nuevo (o reinicia la terminal) para que hereden el nuevo PATH del sistema." -ForegroundColor Cyan
-Write-Host "Ya puedes ejecutar 'npm ci' para instalar las dependencias del proyecto.`n" -ForegroundColor Yellow
+Write-Host "Todo listo. Puedes iniciar el servidor de desarrollo con 'npm run dev'.`n" -ForegroundColor Yellow
 Write-Host "Presiona cualquier tecla para salir..." -ForegroundColor Gray
 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")

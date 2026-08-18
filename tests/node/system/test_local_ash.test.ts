@@ -1,6 +1,8 @@
 import { describe, it } from 'vitest';
 import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
+import fs from 'node:fs';
+import os from 'node:os';
 import assert from 'node:assert/strict';
 import { validateAndSanitize } from '../../../src/logic/auth/saveService.ts';
 import { validatePokemon } from '../../../src/logic/pokemon/pokemonFactory.ts';
@@ -10,8 +12,11 @@ const DB_PATH = path.resolve(process.cwd(), 'tests/fixtures/poke_local_ash.db');
 
 describe('Local Ash DB Diagnostics', () => {
   it('should run all SQLite migrations on poke_local_ash.db and validate all saves', async () => {
-    console.log('Opening database:', DB_PATH);
-    using db = new DatabaseSync(DB_PATH);
+    const tempDbPath = path.join(os.tmpdir(), `test_local_ash_${Date.now()}_${Math.random().toString(36).slice(2)}.db`);
+    fs.copyFileSync(DB_PATH, tempDbPath);
+
+    try {
+      using db = new DatabaseSync(tempDbPath);
     
     // 1. Run migrations first
     const { DATABASE_MIGRATIONS } = await import('../../../src/logic/db/migrations_data.ts');
@@ -63,15 +68,15 @@ describe('Local Ash DB Diagnostics', () => {
       try {
         const saveData = JSON.parse(row.save_data);
         const res = validateAndSanitize(saveData);
-        if (!res.valid) {
+        if (!res.valid || !res.data) {
           errors.push(`[User: ${row.user_id}] Save validation failed: ${res.error}`);
           continue;
         }
         
         if (res.data.team) {
-          res.data.team.forEach((p: any, idx: number) => {
+          res.data.team.forEach((p, idx: number) => {
             try {
-              validatePokemon(p);
+              validatePokemon(p as any);
             } catch (err) {
               errors.push(`[User: ${row.user_id}] Team slot ${idx} (${p.id}): ${(err as Error).message}`);
             }
@@ -79,9 +84,10 @@ describe('Local Ash DB Diagnostics', () => {
         }
         
         if (res.data.box) {
-          res.data.box.forEach((p: any, idx: number) => {
+          res.data.box.forEach((p, idx: number) => {
+            if (!p) return;
             try {
-              validatePokemon(p);
+              validatePokemon(p as any);
             } catch (err) {
               errors.push(`[User: ${row.user_id}] Box slot ${idx} (${p.id}): ${(err as Error).message}`);
             }
@@ -95,5 +101,10 @@ describe('Local Ash DB Diagnostics', () => {
 
     console.log('Errors found:', errors);
     assert.strictEqual(errors.length, 0, `There must be 0 validation errors on the local database. Found: ${errors.length}`);
+    } finally {
+      try {
+        fs.unlinkSync(tempDbPath);
+      } catch {}
+    }
   });
 });

@@ -1,8 +1,9 @@
 /**
  * src/logic/validation/schemas.ts
  * 
- * Lightweight, tree-shakable validation schemas using Valibot.
- * Secures data boundaries at network and local DB layers.
+ * Lightweight, tree-shakable, zero-fallback validation schemas using Valibot.
+ * Secures data boundaries at network, state, and local DB layers.
+ * Follows strict Domain-Type-First governance and fail-fast validation.
  */
 
 import { 
@@ -21,15 +22,17 @@ import {
   array,
   record,
   optional,
-  fallback,
   nullable,
   literal,
-  unknown
+  trim,
+  email,
+  regex,
+  unknown,
+  type InferOutput,
+  type InferInput
 } from 'valibot';
 
 import {
-  DEFAULT_FRIENDSHIP_VALUE,
-  DEFAULT_INITIAL_ELO,
   MIN_USERNAME_LENGTH,
   MAX_USERNAME_LENGTH,
   MIN_TRAINER_LEVEL,
@@ -38,123 +41,120 @@ import {
   MAX_TRAINER_NAME_LENGTH
 } from '@/logic/constants/gameplay.ts';
 
-// User Profile validation schema
+// ==========================================
+// 1. USER PROFILE & AUTH SCHEMAS
+// ==========================================
+
 export const userProfileSchema = object({
   id: string(),
   username: pipe(
     string(),
-    minLength(MIN_USERNAME_LENGTH, `Username must be at least ${MIN_USERNAME_LENGTH} characters long`),
-    maxLength(MAX_USERNAME_LENGTH, `Username cannot exceed ${MAX_USERNAME_LENGTH} characters`)
+    trim(),
+    minLength(MIN_USERNAME_LENGTH, `El nombre de usuario debe tener al menos ${MIN_USERNAME_LENGTH} caracteres`),
+    maxLength(MAX_USERNAME_LENGTH, `El nombre de usuario no puede superar los ${MAX_USERNAME_LENGTH} caracteres`)
   ),
   level: pipe(
     number(),
-    minValue(MIN_TRAINER_LEVEL, `Level must be at least ${MIN_TRAINER_LEVEL}`),
-    maxValue(MAX_TRAINER_LEVEL, `Level cannot exceed ${MAX_TRAINER_LEVEL}`)
+    minValue(MIN_TRAINER_LEVEL, `El nivel debe ser al menos ${MIN_TRAINER_LEVEL}`),
+    maxValue(MAX_TRAINER_LEVEL, `El nivel no puede superar ${MAX_TRAINER_LEVEL}`)
   ),
   is_banned: boolean(),
   coins: pipe(
     number(),
-    minValue(0, 'Coins cannot be negative')
+    minValue(0, 'Las monedas no pueden ser negativas')
   )
 });
 
-// Network Action schema (e.g. for WebSockets)
-export const networkActionSchema = object({
-  type: pipe(string(), minLength(1)),
-  payload: object({}),
-  timestamp: number()
-});
-
-// Trainer Name Schema (used in RenameModal)
 export const trainerNameSchema = pipe(
   string(),
+  trim(),
   minLength(MIN_TRAINER_NAME_LENGTH, `El nombre debe tener al menos ${MIN_TRAINER_NAME_LENGTH} caracteres`),
   maxLength(MAX_TRAINER_NAME_LENGTH, `El nombre no puede superar los ${MAX_TRAINER_NAME_LENGTH} caracteres`)
 );
 
-// Inferred TypeScript Types
+export const authLoginSchema = object({
+  email: pipe(
+    string(),
+    trim(),
+    email('Formato de correo electrónico inválido')
+  ),
+  password: pipe(
+    string(),
+    minLength(6, 'La contraseña debe tener al menos 6 caracteres')
+  )
+});
 
+export const authRegisterSchema = object({
+  email: pipe(
+    string(),
+    trim(),
+    email('Formato de correo electrónico inválido')
+  ),
+  password: pipe(
+    string(),
+    minLength(6, 'La contraseña debe tener al menos 6 caracteres')
+  ),
+  username: pipe(
+    string(),
+    trim(),
+    minLength(MIN_USERNAME_LENGTH, `El nombre de usuario debe tener al menos ${MIN_USERNAME_LENGTH} caracteres`),
+    maxLength(MAX_USERNAME_LENGTH, `El nombre de usuario no puede superar los ${MAX_USERNAME_LENGTH} caracteres`),
+    regex(/^[a-zA-Z0-9_]+$/, 'El usuario solo puede contener caracteres alfanuméricos y guión bajo')
+  ),
+  gender: optional(union([literal('h'), literal('m')]))
+});
 
-/**
- * Validates data against the User Profile Schema.
- */
-export function validateUserProfile(data: unknown) {
-  return safeParse(userProfileSchema, data);
-}
+export const authPasswordResetSchema = object({
+  password: pipe(
+    string(),
+    minLength(6, 'La contraseña debe tener al menos 6 caracteres')
+  ),
+  confirmPassword: string()
+});
 
-/**
- * Validates data against the Network Action Schema.
- */
-export function validateNetworkAction(data: unknown) {
-  return safeParse(networkActionSchema, data);
-}
+// ==========================================
+// 2. NETWORK & SOCIAL SCHEMAS
+// ==========================================
 
-/**
- * Validates trainer name.
- */
-export function validateTrainerName(data: unknown) {
-  return safeParse(trainerNameSchema, data);
-}
-
-// Chat Message validation schema
 export const chatMessageSchema = object({
   id: union([string(), number()]),
   user_id: string(),
-  username: pipe(string(), minLength(1)),
-  message: pipe(string(), minLength(1)),
+  username: pipe(string(), trim(), minLength(1, 'El nombre no puede estar vacío')),
+  message: pipe(string(), trim(), minLength(1, 'El mensaje no puede estar vacío')),
   player_class: nullish(string()),
   trainer_level: number(),
   created_at: nullish(string())
 });
 
-
-/**
- * Validates chat message.
- */
-export function validateChatMessage(data: unknown) {
-  return safeParse(chatMessageSchema, data);
-}
-
-// Trade Offer validation schema
-export const tradeOfferSchema = object({
-  id: string(),
-  sender_id: string(),
-  receiver_id: string(),
-  offer_pokemon: nullish(object({})),
-  offer_items: object({}),
-  offer_money: number(),
-  request_pokemon: nullish(object({})),
-  request_items: object({}),
-  request_money: number(),
-  message: string(),
-  status: string(),
-  created_at: string()
+export const networkActionSchema = object({
+  type: pipe(string(), minLength(1)),
+  payload: record(string(), string()),
+  timestamp: number()
 });
 
-
-/**
- * Validates trade offer.
- */
-export function validateTradeOffer(data: unknown) {
-  return safeParse(tradeOfferSchema, data);
-}
-
 // ==========================================
-// POKEMON & SAVE DATA PERSISTENCE SCHEMAS
+// 3. POKÉMON & COMBAT SCHEMAS (DOMAIN-FIRST)
 // ==========================================
 
-// Pokemon IVs validation schema
-const pokemonIVsSchema = object({
-  hp: fallback(number(), 0),
-  atk: fallback(number(), 0),
-  def: fallback(number(), 0),
-  spa: fallback(number(), 0),
-  spd: fallback(number(), 0),
-  spe: fallback(number(), 0),
+export const pokemonIVsSchema = object({
+  hp: pipe(number(), minValue(0), maxValue(31)),
+  atk: pipe(number(), minValue(0), maxValue(31)),
+  def: pipe(number(), minValue(0), maxValue(31)),
+  spa: pipe(number(), minValue(0), maxValue(31)),
+  spd: pipe(number(), minValue(0), maxValue(31)),
+  spe: pipe(number(), minValue(0), maxValue(31)),
 });
 
-// Move Effect validation schema
-const moveEffectSchema = object({
+export const pokemonEVsSchema = object({
+  hp: pipe(number(), minValue(0), maxValue(252)),
+  atk: pipe(number(), minValue(0), maxValue(252)),
+  def: pipe(number(), minValue(0), maxValue(252)),
+  spa: pipe(number(), minValue(0), maxValue(252)),
+  spd: pipe(number(), minValue(0), maxValue(252)),
+  spe: pipe(number(), minValue(0), maxValue(252)),
+});
+
+export const moveEffectSchema = object({
   type: string(),
   status: optional(nullable(union([literal('par'), literal('brn'), literal('psn'), literal('slp'), literal('frz'), literal('tox')]))),
   stat: optional(string()),
@@ -165,8 +165,7 @@ const moveEffectSchema = object({
   text: optional(string()),
 });
 
-// Move validation schema
-const moveSchema = object({
+export const moveSchema = object({
   id: optional(string()),
   name: optional(string()),
   type: optional(string()),
@@ -195,32 +194,29 @@ const moveSchema = object({
   sound: optional(boolean()),
 });
 
-const DEFAULT_SCHEMA_FALLBACK_HP = 10;
-
-// Pokemon validation schema
-const pokemonSchema = object({
-  uid: fallback(string(), ''),
+export const pokemonSchema = object({
+  uid: string(),
   id: string(),
-  species: fallback(string(), ''),
-  name: fallback(string(), ''),
-  nickname: fallback(nullable(string()), null),
-  level: fallback(pipe(number(), minValue(1), maxValue(100)), 5),
-  exp: fallback(number(), 0),
-  expNeeded: fallback(number(), 100),
-  hp: fallback(number(), DEFAULT_SCHEMA_FALLBACK_HP),
-  maxHp: fallback(number(), DEFAULT_SCHEMA_FALLBACK_HP),
-  atk: fallback(number(), 5),
-  def: fallback(number(), 5),
-  spa: fallback(number(), 5),
-  spd: fallback(number(), 5),
-  spe: fallback(number(), 5),
-  type: fallback(string(), ''),
-  type2: optional(string()),
-  isShiny: fallback(boolean(), false),
-  isGuardian: fallback(boolean(), false),
-  isFloating: fallback(boolean(), false),
-  gender: fallback(nullable(union([literal('m'), literal('f'), literal('M'), literal('F'), literal('N')])), null),
-  status: fallback(nullable(union([literal('par'), literal('brn'), literal('psn'), literal('slp'), literal('frz'), literal('tox')])), null),
+  species: string(),
+  name: string(),
+  nickname: optional(nullable(string())),
+  level: pipe(number(), minValue(1), maxValue(100)),
+  exp: number(),
+  expNeeded: number(),
+  hp: number(),
+  maxHp: number(),
+  atk: number(),
+  def: number(),
+  spa: number(),
+  spd: number(),
+  spe: number(),
+  type: string(),
+  type2: optional(nullable(string())),
+  isShiny: boolean(),
+  isGuardian: optional(boolean()),
+  isFloating: optional(boolean()),
+  gender: optional(nullable(union([literal('m'), literal('f'), literal('M'), literal('F'), literal('N'), literal('')]))),
+  status: optional(union([literal('par'), literal('brn'), literal('psn'), literal('slp'), literal('frz'), literal('tox'), literal('')])),
   sleepTurns: optional(number()),
   confused: optional(number()),
   attracted: optional(boolean()),
@@ -250,11 +246,12 @@ const pokemonSchema = object({
   moves: optional(array(nullable(moveSchema))),
   caught: optional(boolean()),
   isBoxed: optional(boolean()),
-  ivs: fallback(pokemonIVsSchema, { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }),
-  nature: fallback(string(), 'hardy'),
-  heldItem: fallback(nullable(string()), null),
-  item: fallback(nullable(string()), null),
-  friendship: fallback(number(), DEFAULT_FRIENDSHIP_VALUE),
+  ivs: optional(pokemonIVsSchema),
+  evs: optional(pokemonEVsSchema),
+  nature: optional(string()),
+  heldItem: optional(nullable(string())),
+  item: optional(nullable(string())),
+  friendship: optional(pipe(number(), minValue(0), maxValue(255))),
   vigor: optional(number()),
   maxVigor: optional(number()),
   catchRate: optional(number()),
@@ -283,25 +280,22 @@ const pokemonSchema = object({
   chargingMove: optional(nullable(moveSchema)),
   aura: optional(string()),
   isAncestral: optional(boolean()),
-  choiceMove: optional(string()),
+  choiceMove: optional(nullable(string())),
   form: optional(string()),
-  originalForm: optional(nullable(unknown())),
-  originalDitto: optional(nullable(unknown())),
 });
 
-// PokemonEgg validation schema
-const pokemonEggSchema = object({
+export const pokemonEggSchema = object({
   uid: string(),
-  id: string(),
-  pokemonId: optional(string()),
-  steps: fallback(number(), 0),
+  id: union([string(), number()]),
+  pokemonId: optional(nullable(string())),
+  steps: number(),
   totalSteps: optional(number()),
-  ready: fallback(boolean(), false),
+  ready: boolean(),
   isShiny: optional(boolean()),
   isGuardian: optional(boolean()),
   nature: optional(string()),
   abilitySlot: optional(number()),
-  gender: fallback(nullable(union([literal('m'), literal('f'), literal('M'), literal('F'), literal('N')])), null),
+  gender: optional(nullable(union([literal('m'), literal('f'), literal('M'), literal('F'), literal('N'), literal('')]))),
   ivs: optional(pokemonIVsSchema),
   movesAtBirth: optional(array(string())),
   obtainedAt: optional(number()),
@@ -316,12 +310,64 @@ const pokemonEggSchema = object({
   isNpc: optional(boolean()),
 });
 
-// ActiveBattle enemy team member schema
-const enemyPokemonSerializedSchema = object({
+// ==========================================
+// 4. GTS & TRADE SCHEMAS
+// ==========================================
+
+export const gtsItemDataSchema = object({
+  id: union([string(), number()]),
+  name: optional(string()),
+  qty: pipe(number(), minValue(1, 'La cantidad debe ser al menos 1')),
+});
+
+const gtsPokemonListingSchema = object({
+  id: string(),
+  seller_name: optional(string()),
+  seller_id: string(),
+  price: pipe(number(), minValue(1, 'El precio debe ser al menos 1')),
+  status: union([literal('active'), literal('sold'), literal('cancelled'), literal('expired')]),
+  listing_type: literal('pokemon'),
+  data: pokemonSchema,
+  created_at: string()
+});
+
+const gtsItemListingSchema = object({
+  id: string(),
+  seller_name: optional(string()),
+  seller_id: string(),
+  price: pipe(number(), minValue(1, 'El precio debe ser al menos 1')),
+  status: union([literal('active'), literal('sold'), literal('cancelled'), literal('expired')]),
+  listing_type: literal('item'),
+  data: gtsItemDataSchema,
+  created_at: string()
+});
+
+export const gtsListingSchema = union([gtsPokemonListingSchema, gtsItemListingSchema]);
+
+export const tradeOfferSchema = object({
+  id: string(),
+  sender_id: string(),
+  receiver_id: string(),
+  offer_pokemon: nullable(pokemonSchema),
+  offer_items: record(string(), pipe(number(), minValue(1))),
+  offer_money: pipe(number(), minValue(0)),
+  request_pokemon: nullable(pokemonSchema),
+  request_items: record(string(), pipe(number(), minValue(1))),
+  request_money: pipe(number(), minValue(0)),
+  message: string(),
+  status: union([literal('pending'), literal('accepted'), literal('rejected'), literal('cancelled')]),
+  created_at: string()
+});
+
+// ==========================================
+// 5. SAVE DATA SCHEMAS
+// ==========================================
+
+export const enemyPokemonSerializedSchema = object({
   uid: string(),
   id: string(),
   name: string(),
-  emoji: string(),
+  emoji: optional(string()),
   type: string(),
   level: number(),
   hp: number(),
@@ -331,7 +377,7 @@ const enemyPokemonSerializedSchema = object({
   spa: number(),
   spd: number(),
   spe: number(),
-  moves: array(unknown()),
+  moves: array(moveSchema),
   status: nullable(string()),
   isShiny: boolean(),
   gender: nullable(union([literal('m'), literal('f'), literal('M'), literal('F'), literal('N')])),
@@ -346,8 +392,7 @@ const enemyPokemonSerializedSchema = object({
   _gymBadge: nullable(string()),
 });
 
-// ActiveBattle validation schema
-const activeBattleSchema = object({
+export const activeBattleSchema = object({
   isGym: boolean(),
   gymId: nullable(string()),
   isTrainer: boolean(),
@@ -358,107 +403,188 @@ const activeBattleSchema = object({
   isPvP: optional(boolean()),
 });
 
-// Full SaveData validation schema
-const saveDataSchema = object({
+export const daycareMissionSchema = object({
+  date: optional(string()),
+  targetId: optional(string()),
+  requirement: optional(object({
+    type: optional(string()),
+    minLevel: optional(number()),
+    minIvTotal: optional(number()),
+    nature: optional(string()),
+    stat31: optional(string())
+  })),
+  reqText: optional(string()),
+  reward: optional(object({
+    id: optional(string()),
+    name: optional(string()),
+    qty: optional(number()),
+    money: optional(number()),
+    exp: optional(number()),
+    item: optional(string())
+  })),
+  completed: optional(boolean()),
+  claimed: optional(boolean())
+});
+
+export const notificationItemSchema = object({
+  id: optional(string()),
+  title: optional(string()),
+  message: optional(string()),
+  type: optional(string()),
+  timestamp: optional(number()),
+  read: optional(boolean())
+});
+
+export const saveDataSchema = object({
   trainer: string(),
-  gender: fallback(union([literal('h'), literal('m')]), 'h'),
-  badges: fallback(number(), 0),
-  balls: fallback(number(), 0),
-  money: fallback(number(), 0),
-  battleCoins: fallback(number(), 0),
+  gender: optional(union([literal('h'), literal('m')])),
+  badges: number(),
+  balls: number(),
+  money: number(),
+  battleCoins: number(),
   eggs: optional(array(pokemonEggSchema)),
-  trainerLevel: fallback(number(), 1),
-  trainerExp: fallback(number(), 0),
-  trainerExpNeeded: fallback(number(), 100),
-  inventory: fallback(record(string(), number()), {}),
-  team: optional(array(pokemonSchema)),
-  box: optional(array(pokemonSchema)),
-  pokedex: optional(array(string())),
-  seenPokedex: optional(array(string())),
-  defeatedGyms: optional(array(string())),
-  gymProgress: fallback(record(string(), unknown()), {}),
-  lastGymWins: fallback(record(string(), number()), {}),
-  lastGymAttempts: fallback(record(string(), number()), {}),
-  starterChosen: fallback(boolean(), false),
-  lastRankedSeason: fallback(nullable(string()), null),
-  nick_style: fallback(nullable(string()), null),
-  avatar_style: fallback(nullable(string()), null),
-  stats: fallback(record(string(), unknown()), {}),
-  eloRating: fallback(number(), DEFAULT_INITIAL_ELO),
-  pvpStats: fallback(object({
-    wins: fallback(number(), 0),
-    losses: fallback(number(), 0),
-    draws: fallback(number(), 0)
-  }), { wins: 0, losses: 0, draws: 0 }),
-  rankedMaxElo: fallback(number(), DEFAULT_INITIAL_ELO),
+  trainerLevel: number(),
+  trainerExp: number(),
+  trainerExpNeeded: number(),
+  inventory: record(string(), number()),
+  team: array(pokemonSchema),
+  box: array(nullable(pokemonSchema)),
+  pokedex: array(string()),
+  seenPokedex: array(string()),
+  defeatedGyms: array(string()),
+  gymProgress: optional(record(string(), unknown())),
+  lastGymWins: optional(record(string(), union([number(), string()]))),
+  lastGymAttempts: optional(record(string(), union([number(), string()]))),
+  starterChosen: boolean(),
+  lastRankedSeason: optional(nullable(string())),
+  nick_style: optional(nullable(string())),
+  avatar_style: optional(nullable(string())),
+  stats: optional(record(string(), unknown())),
+  eloRating: number(),
+  pvpStats: object({
+    wins: number(),
+    losses: number(),
+    draws: number()
+  }),
+  rankedMaxElo: number(),
   rankedRewardsClaimed: optional(array(string())),
   passiveTeamUids: optional(array(string())),
-  passiveTeamActive: fallback(boolean(), false),
-  activeBattle: fallback(nullable(activeBattleSchema), null),
-  daycare_missions: optional(array(unknown())),
-  daycare_mission_refreshes: fallback(number(), 3),
-  safariTicketSecs: fallback(number(), 0),
-  ceruleanTicketSecs: fallback(number(), 0),
-  articunoTicketSecs: fallback(number(), 0),
-  mewtwoTicketSecs: fallback(number(), 0),
-  repelSecs: fallback(number(), 0),
-  fishingRodSecs: fallback(number(), 0),
-  fishingRodType: fallback(nullable(string()), null),
-  pickaxeSecs: fallback(number(), 0),
-  pickaxeType: fallback(nullable(string()), null),
-  brushSecs: fallback(number(), 0),
-  brushType: fallback(nullable(string()), null),
-  shinyBoostSecs: fallback(number(), 0),
-  amuletCoinSecs: fallback(number(), 0),
-  luckyEggSecs: fallback(number(), 0),
-  ivScannerSecs: fallback(number(), 0),
-  incenseSecs: fallback(number(), 0),
-  incenseType: fallback(nullable(string()), null),
-  daycare_berry_egg_time: fallback(number(), 0),
-  boxCount: fallback(number(), 4),
-  chats: fallback(record(string(), unknown()), {}),
-  playerClass: fallback(nullable(string()), null),
-  classLevel: fallback(number(), 1),
-  classXP: fallback(number(), 0),
-  classData: fallback(object({
-    captureStreak: fallback(number(), 0),
-    longestStreak: fallback(number(), 0),
-    reputation: fallback(number(), 0),
-    blackMarketSales: fallback(number(), 0),
-    criminality: fallback(number(), 0),
+  passiveTeamActive: boolean(),
+  activeBattle: optional(nullable(activeBattleSchema)),
+  daycare_missions: optional(array(daycareMissionSchema)),
+  daycare_mission_refreshes: number(),
+  safariTicketSecs: optional(number()),
+  ceruleanTicketSecs: optional(number()),
+  articunoTicketSecs: optional(number()),
+  mewtwoTicketSecs: optional(number()),
+  repelSecs: optional(number()),
+  fishingRodSecs: optional(number()),
+  fishingRodType: optional(nullable(string())),
+  pickaxeSecs: optional(number()),
+  pickaxeType: optional(nullable(string())),
+  brushSecs: optional(number()),
+  brushType: optional(nullable(string())),
+  shinyBoostSecs: optional(number()),
+  amuletCoinSecs: optional(number()),
+  luckyEggSecs: optional(number()),
+  ivScannerSecs: optional(number()),
+  incenseSecs: optional(number()),
+  incenseType: optional(nullable(string())),
+  daycare_berry_egg_time: optional(number()),
+  boxCount: number(),
+  chats: optional(record(string(), unknown())),
+  playerClass: optional(nullable(string())),
+  classLevel: number(),
+  classXP: number(),
+  classData: object({
+    captureStreak: number(),
+    longestStreak: number(),
+    reputation: number(),
+    blackMarketSales: number(),
+    criminality: number(),
     blackMarketDaily: optional(object({
       date: string(),
       items: array(string()),
       purchased: array(string())
     })),
-    activeMission: optional(unknown()),
-    extortedRouteId: fallback(nullable(string()), null),
-    extortedRouteTimestamp: fallback(nullable(string()), null),
-    lastEggScanDate: fallback(nullable(string()), null),
-    officialRouteId: fallback(nullable(string()), null),
-    officialRouteTimestamp: fallback(nullable(string()), null),
-    kitCaptures: fallback(number(), 0)
-  }), {
-    captureStreak: 0, longestStreak: 0, reputation: 0, blackMarketSales: 0, criminality: 0,
-    extortedRouteId: null, extortedRouteTimestamp: null, lastEggScanDate: null, officialRouteId: null, officialRouteTimestamp: null, kitCaptures: 0
+    extortedRouteId: optional(nullable(string())),
+    extortedRouteTimestamp: optional(nullable(string())),
+    lastEggScanDate: optional(nullable(string())),
+    officialRouteId: optional(nullable(string())),
+    officialRouteTimestamp: optional(nullable(string())),
+    kitCaptures: optional(number())
   }),
-  faction: fallback(nullable(string()), null),
-  warCoins: fallback(number(), 0),
-  warCoinsSpent: fallback(number(), 0),
-  warDailyCap: fallback(record(string(), record(string(), number())), {}),
-  warDailyCoins: fallback(record(string(), number()), {}),
-  warMyPtsLocal: fallback(record(string(), number()), {}),
-  notificationHistory: fallback(array(unknown()), []),
-  marketSoldSeenIds: fallback(array(string()), []),
-  lastPokemonCenterHeal: fallback(number(), 0),
-  playtime: fallback(number(), 0),
+  faction: optional(nullable(string())),
+  warCoins: number(),
+  warCoinsSpent: number(),
+  warDailyCap: optional(record(string(), record(string(), optional(number())))),
+  warDailyCoins: optional(record(string(), optional(number()))),
+  warMyPtsLocal: optional(record(string(), number())),
+  notificationHistory: optional(array(union([notificationItemSchema, string(), record(string(), unknown())]))),
+  marketSoldSeenIds: optional(array(string())),
+  lastPokemonCenterHeal: number(),
+  playtime: number(),
   _last_updated: optional(number())
 });
 
+// ==========================================
+// 6. VALIDATION HELPER FUNCTIONS
+// ==========================================
 
-/**
- * Validates full save state data against saveDataSchema.
- */
+export function validateUserProfile(data: unknown) {
+  return safeParse(userProfileSchema, data);
+}
+
+export function validateNetworkAction(data: unknown) {
+  return safeParse(networkActionSchema, data);
+}
+
+export function validateTrainerName(data: unknown) {
+  return safeParse(trainerNameSchema, data);
+}
+
+export function validateChatMessage(data: unknown) {
+  return safeParse(chatMessageSchema, data);
+}
+
+export function validateTradeOffer(data: unknown) {
+  return safeParse(tradeOfferSchema, data);
+}
+
+export function validateGtsListing(data: unknown) {
+  return safeParse(gtsListingSchema, data);
+}
+
+export function validateAuthLogin(data: unknown) {
+  return safeParse(authLoginSchema, data);
+}
+
+export function validateAuthRegister(data: unknown) {
+  return safeParse(authRegisterSchema, data);
+}
+
+export function validateAuthPasswordReset(data: unknown) {
+  return safeParse(authPasswordResetSchema, data);
+}
+
 export function validateSaveData(data: unknown) {
   return safeParse(saveDataSchema, data);
 }
+
+// ==========================================
+// 7. INFERRED DTO TYPES (@/domain-type-first)
+// ==========================================
+
+export type UserProfileDto = InferOutput<typeof userProfileSchema>;
+export type TrainerNameDto = InferOutput<typeof trainerNameSchema>;
+export type AuthLoginDto = InferOutput<typeof authLoginSchema>;
+export type AuthRegisterDto = InferOutput<typeof authRegisterSchema>;
+export type AuthPasswordResetDto = InferOutput<typeof authPasswordResetSchema>;
+export type ChatMessageDto = InferOutput<typeof chatMessageSchema>;
+export type NetworkActionDto = InferOutput<typeof networkActionSchema>;
+export type PokemonInstanceDto = InferOutput<typeof pokemonSchema>;
+export type PokemonEggDto = InferOutput<typeof pokemonEggSchema>;
+export type GtsListingDto = InferOutput<typeof gtsListingSchema>;
+export type TradeOfferDto = InferOutput<typeof tradeOfferSchema>;
+export type SaveDataDto = InferOutput<typeof saveDataSchema>;
+export type SaveDataInputDto = InferInput<typeof saveDataSchema>;

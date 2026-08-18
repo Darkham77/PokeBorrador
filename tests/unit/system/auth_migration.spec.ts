@@ -23,6 +23,48 @@ const localStorageMock = (() => {
 })();
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
+function createMockSaveData(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    trainer: 'Hero',
+    gender: 'h',
+    badges: 0,
+    balls: 5,
+    money: 1000,
+    battleCoins: 0,
+    trainerLevel: 1,
+    trainerExp: 0,
+    trainerExpNeeded: 100,
+    inventory: {},
+    team: [],
+    box: [],
+    eggs: [],
+    pokedex: [],
+    seenPokedex: [],
+    defeatedGyms: [],
+    starterChosen: true,
+    eloRating: 1000,
+    pvpStats: { wins: 0, losses: 0, draws: 0 },
+    rankedMaxElo: 1000,
+    passiveTeamActive: false,
+    daycare_mission_refreshes: 3,
+    boxCount: 4,
+    classLevel: 1,
+    classXP: 0,
+    classData: {
+      captureStreak: 0,
+      longestStreak: 0,
+      reputation: 0,
+      blackMarketSales: 0,
+      criminality: 0
+    },
+    warCoins: 0,
+    warCoinsSpent: 0,
+    lastPokemonCenterHeal: 0,
+    playtime: 0,
+    ...overrides
+  };
+}
+
 describe('Auth Load Service (Migration v2)', () => {
   const mockUser = { id: 'test_user', email: 'test@pkv.io', db_version: 3, user_metadata: { username: 'test_user' } } as unknown as AuthUser;
   let db: DBRouter;
@@ -38,19 +80,16 @@ describe('Auth Load Service (Migration v2)', () => {
 
   it('should prefer local save if significantly newer than cloud', async () => {
     const cloudSave = {
-      save_data: { trainer: 'CloudHero', money: 100, team: [], box: [], eggs: [] },
+      save_data: createMockSaveData({ trainer: 'CloudHero', money: 100 }),
       updated_at: Temporal.Instant.fromEpochMilliseconds(Temporal.Now.instant().epochMilliseconds - 86400000).toString(),
       last_save_id: 'cloud_v1'
     };
     
-    const localSave = {
+    const localSave = createMockSaveData({
       trainer: 'LocalHero',
       money: 500,
-      team: [],
-      box: [],
-      eggs: [],
       _last_updated: Temporal.Now.instant().epochMilliseconds
-    };
+    });
     localStorageMock.setItem('pokemon_local_save_test_user', JSON.stringify(localSave));
 
     // Force online mode and mock the internal Supabase client
@@ -68,36 +107,30 @@ describe('Auth Load Service (Migration v2)', () => {
     expect(result.isNewerThanCloud).toBe(true);
   });
 
-  it('should backfill genders for legacy pokemon', async () => {
-    const legacySave = {
+  it('should reject unmigrated pokemon with missing mandatory keys (fail-fast without fallbacks)', async () => {
+    const invalidSave = createMockSaveData({
       trainer: 'OldTimer',
-      box: [],
-      eggs: [],
       team: [
-        { id: 'pikachu', level: 5, moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] } // Missing gender and UID
+        { id: 'pikachu', species: 'pikachu', name: 'Pikachu', level: 5, exp: 0, expNeeded: 100, hp: 35, maxHp: 35, atk: 55, def: 40, spa: 50, spd: 50, spe: 90, type: 'electric', status: '', isShiny: false, moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }], ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }, nature: 'hardy', ability: 'static' } // Missing uid
       ],
       _last_updated: Temporal.Now.instant().epochMilliseconds
-    };
+    });
     
     db.mode = 'offline';
-    localStorageMock.setItem('pokemon_local_save_test_user', JSON.stringify(legacySave));
+    localStorageMock.setItem('pokemon_local_save_test_user', JSON.stringify(invalidSave));
 
-    const result = await loadBestSave(mockUser, db);
-    expect(result.data!.team[0]!.gender).toBeDefined();
-    expect(result.data!.team[0]!.uid).toBeDefined();
+    await expect(loadBestSave(mockUser, db)).rejects.toThrow('Carga abortada por datos corruptos o inválidos');
   });
 
   it('should sanitize duplicate UIDs', async () => {
-    const corruptedSave = {
+    const corruptedSave = createMockSaveData({
       trainer: 'CloneMaster',
-      box: [],
-      eggs: [],
       team: [
-        { id: 'bulbasaur', name: 'Bulbasaur', uid: 'same_id', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] },
-        { id: 'squirtle', name: 'Squirtle', uid: 'same_id', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] }
+        { id: 'bulbasaur', species: 'bulbasaur', name: 'Bulbasaur', uid: 'same_id', level: 5, exp: 0, expNeeded: 100, hp: 45, maxHp: 45, atk: 49, def: 49, spa: 65, spd: 65, spe: 45, type: 'grass', status: '', isShiny: false, vigor: 100, maxVigor: 100, moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }], ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }, nature: 'hardy', ability: 'overgrow' },
+        { id: 'squirtle', species: 'squirtle', name: 'Squirtle', uid: 'same_id', level: 5, exp: 0, expNeeded: 100, hp: 44, maxHp: 44, atk: 48, def: 65, spa: 50, spd: 64, spe: 43, type: 'water', status: '', isShiny: false, vigor: 100, maxVigor: 100, moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }], ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }, nature: 'hardy', ability: 'torrent' }
       ],
       _last_updated: Temporal.Now.instant().epochMilliseconds
-    };
+    });
     
     db.mode = 'offline';
     localStorageMock.setItem('pokemon_local_save_test_user', JSON.stringify(corruptedSave));
@@ -108,41 +141,12 @@ describe('Auth Load Service (Migration v2)', () => {
     expect(result.issues).toContain('Duplicado de UID detectado: same_id (Squirtle) en equipo');
   });
 
-  it('should patch team sizes greater than 6 by moving excess to box', async () => {
-    const oversizedSave = {
-      trainer: 'OversizedTeam',
-      team: [
-        { id: 'pikachu', level: 5, uid: 'p1', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] },
-        { id: 'bulbasaur', level: 5, uid: 'p2', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] },
-        { id: 'squirtle', level: 5, uid: 'p3', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] },
-        { id: 'charmander', level: 5, uid: 'p4', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] },
-        { id: 'pidgey', level: 5, uid: 'p5', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] },
-        { id: 'rattata', level: 5, uid: 'p6', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] },
-        { id: 'weedle', level: 5, uid: 'p7', moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }] }
-      ],
-      box: [],
-      eggs: [],
-      _last_updated: Temporal.Now.instant().epochMilliseconds
-    };
-    
-    db.mode = 'offline';
-    localStorageMock.setItem('pokemon_local_save_test_user', JSON.stringify(oversizedSave));
-
-    const result = await loadBestSave(mockUser, db);
-    expect(result.data!.team.length).toBe(6);
-    expect(result.data!.box.length).toBe(1);
-    expect(result.data!.box[0]!.id).toBe('weedle');
-  });
-
   it('should auto-migrate local user with db_version < 3 in offline mode without throwing', async () => {
     const legacyUser = { id: 'local_ash', email: 'ash@local', db_version: 2, user_metadata: { username: 'ash' } } as unknown as AuthUser;
-    const legacySave = {
+    const legacySave = createMockSaveData({
       trainer: 'ash',
-      team: [],
-      box: [],
-      eggs: [],
       _last_updated: Temporal.Now.instant().epochMilliseconds
-    };
+    });
     db.mode = 'offline';
     localStorageMock.setItem('pokemon_local_save_local_ash', JSON.stringify(legacySave));
 

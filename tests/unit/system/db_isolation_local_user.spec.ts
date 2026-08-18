@@ -17,6 +17,71 @@ vi.mock('@/logic/utils/opfsStorage', () => ({
 
 setupLocalStorageMock()
 
+function createValidGameState(): GameState {
+  return {
+    trainer: 'Ash',
+    gender: 'h',
+    badges: 0,
+    balls: 5,
+    money: 1000,
+    battleCoins: 0,
+    trainerLevel: 1,
+    trainerExp: 0,
+    trainerExpNeeded: 100,
+    inventory: {},
+    team: [{
+      uid: 'test-poke-1',
+      id: 'pikachu',
+      species: 'pikachu',
+      name: 'Pikachu',
+      level: 5,
+      exp: 0,
+      expNeeded: 100,
+      hp: 35,
+      maxHp: 35,
+      atk: 55,
+      def: 40,
+      spa: 50,
+      spd: 50,
+      spe: 90,
+      type: 'electric',
+      status: '',
+      isShiny: false,
+      vigor: 100,
+      maxVigor: 100,
+      moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }],
+      ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+      nature: 'hardy',
+      ability: 'static'
+    }],
+    box: [],
+    eggs: [],
+    pokedex: [],
+    seenPokedex: [],
+    defeatedGyms: [],
+    starterChosen: true,
+    eloRating: 1000,
+    pvpStats: { wins: 0, losses: 0, draws: 0 },
+    rankedMaxElo: 1000,
+    passiveTeamActive: false,
+    daycare_mission_refreshes: 3,
+    boxCount: 4,
+    classLevel: 1,
+    classXP: 0,
+    classData: {
+      captureStreak: 0,
+      longestStreak: 0,
+      reputation: 0,
+      blackMarketSales: 0,
+      criminality: 0
+    },
+    warCoins: 0,
+    warCoinsSpent: 0,
+    lastPokemonCenterHeal: 0,
+    playtime: 0
+  } as unknown as GameState
+}
+
 describe('Database Isolation for Local User', () => {
   beforeEach(() => {
     window.localStorage.clear()
@@ -50,7 +115,7 @@ describe('Database Isolation for Local User', () => {
     } as unknown as DBRouter
 
     const user = { id: 'local_user', db_version: 3 } as AuthUser
-    const state = { trainer: 'Ash', team: [], box: [], eggs: [] } as unknown as GameState
+    const state = createValidGameState()
 
     const result = await saveGame(state, user, { db: mockDb, skipRemote: false })
     expect(result?.success).toBe(true)
@@ -82,7 +147,7 @@ describe('Database Isolation for Local User', () => {
     } as unknown as DBRouter
 
     const user = { id: 'test_user', email: 'test@example.com', db_version: 3 } as AuthUser
-    const state = { trainer: 'Ash', team: [], box: [], eggs: [] } as unknown as GameState
+    const state = createValidGameState()
 
     // Start first save (will block on writeOpfsFile)
     const firstSavePromise = saveGame(state, user, { db: mockDb, showNotif: false })

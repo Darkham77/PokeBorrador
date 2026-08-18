@@ -11,7 +11,7 @@ import { writeOpfsFile } from '@/logic/utils/opfsStorage'
 import { compress } from '@/logic/utils/compression'
 import { requireGenderId, type GameState, type ClaimItem } from '@/types/system/game'
 import type { AuthUser } from '@/types/auth/auth'
-import type { Ref } from 'vue'
+import { ref, type Ref } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import type { DBRouter } from '@/logic/db/dbRouter'
 
@@ -24,6 +24,8 @@ export function useSaveActions(
 ) {
   const uiStore = useUIStore()
   const loadingStore = useLoadingStore()
+  const saveBlocked = ref(false)
+  const validationErrorDetails = ref<string[] | null>(null)
   let sessionStartTime: number | null = null;
 
   async function loadGame() {
@@ -226,9 +228,17 @@ export function useSaveActions(
       userVersion: authStore.user.db_version,
       lastSaveId: authStore.user.last_save_id,
       skipRemote: locked
-    }) as { success: boolean, migrated?: boolean, lastSaveId?: string, rollback?: boolean, outOfSync?: boolean, error?: string, remote?: boolean }
+    }) as { success: boolean, migrated?: boolean, lastSaveId?: string, rollback?: boolean, outOfSync?: boolean, error?: string, remote?: boolean, issues?: string[] }
 
     if (result) {
+      if (result.success) {
+        saveBlocked.value = false
+        validationErrorDetails.value = null
+      } else if (result.error && (result.error.includes('Error de validación') || result.error.includes('Datos corruptos'))) {
+        saveBlocked.value = true
+        validationErrorDetails.value = result.issues || [result.error]
+      }
+
       if (result.migrated) authStore.user.db_version = 3
       if (result.lastSaveId) authStore.user.last_save_id = result.lastSaveId
       
@@ -311,5 +321,5 @@ export function useSaveActions(
     if (!error) state.claimQueue = data || []
   }
 
-  return { loadGame, save, scheduleSave, claimAsset, fetchClaimQueue }
+  return { loadGame, save, scheduleSave, claimAsset, fetchClaimQueue, saveBlocked, validationErrorDetails }
 }

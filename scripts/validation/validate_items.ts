@@ -127,6 +127,54 @@ async function main() {
       errors.push(`${tag} cat='${item.cat}' but missing 'type: held'.`);
     }
 
+    // ─── 2.1 Spanish Localization Audit ─────────────────────────────────────────
+    if (item.desc) {
+      const FORBIDDEN_DESC_PATTERNS = [ // no-domain
+        /\bholder('s)?\b/i,
+        /\braises?\b/i,
+        /\blowers?\b/i,
+        /\bboosts?\b/i,
+        /\bincreases?\b/i,
+        /\bsingle use\b/i,
+        /\battacks?\b/i,
+        /\bcannot\b/i,
+        /\bheals?\b/i,
+        /\bprevents?\b/i,
+        /\bused for\b/i,
+        /\bevolves?\b/i,
+        /\bif held by\b/i,
+        /\bgains?\b/i,
+        /\baccuracy\b/i,
+        /\bhalves\b/i,
+        /\bphysical attacks?\b/i,
+        /\bspecial attacks?\b/i,
+        /\bmoves last\b/i,
+        /\bjudgment is\b/i,
+        /\bwhen held\b/i,
+        /\bis (calculated|raised|lowered)\b/i,
+        /\bno competitive use\b/i,
+        /\bchanges its forme\b/i,
+      ];
+      for (const pattern of FORBIDDEN_DESC_PATTERNS) {
+        if (pattern.test(item.desc)) {
+          errors.push(`${tag} LEAK DETECTADO en 'desc' (patrón en inglés: ${pattern}): "${item.desc}"`);
+          break;
+        }
+      }
+    }
+
+    if (item.name) {
+      const FORBIDDEN_NAME_PATTERNS = [ // no-domain
+        /\b(Berry|Sweet|Plate|Orb|Specs|Vest|Herb|Policy|Drive|Memory|Mirror|Feather|Cap|Incense|Belt|Glasses)\b/i
+      ];
+      for (const pattern of FORBIDDEN_NAME_PATTERNS) {
+        if (pattern.test(item.name)) {
+          errors.push(`${tag} LEAK DETECTADO en 'name' (nombre en inglés: ${pattern}): "${item.name}"`);
+          break;
+        }
+      }
+    }
+
     // TMs are handled dynamically in getDynamicItemEffect, so they don't need to be in the main object
     if (item.name?.startsWith('MT')) return;
   });

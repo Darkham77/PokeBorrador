@@ -92,3 +92,10 @@ This document governs TypeScript standards, domain type definitions, data wrappe
 
 - For converting platform-specific filesystem paths (e.g., from `path.relative`) to POSIX format (such as browser URLs, assets keys, database indexes), you MUST use native split/join operations with separator tokens (`relPath.split(path.sep).join(path.posix.sep)`) instead of regex expressions or simple replace statements. This ensures generated files remain identical across Windows, Linux, and macOS.
 
+## 9. Strict Schema Governance & Zero Optional Mandate for Domain Entities
+
+- **No `optional()` on Intrinsically Mandatory Domain Fields**: Fields that are conceptually mandatory or part of core domain entities (e.g., `isShiny: boolean`, `uid: string`, `expNeeded: number`, `ready: boolean`, `status: PokemonStatus`) MUST NEVER be defined with `optional()` or `fallback()` in Valibot schemas or TypeScript domain contracts.
+- **Static Migration Backfill Requirement**: If historical data lacks mandatory fields, the schema MUST NOT be relaxed to accommodate the omission. Instead, a static database migration MUST be authored in SQL to backfill canonical default values for all existing records.
+- **Single Canonical Sentinel Policy**: Ambiguous or mixed sentinels (such as mixing `null`, `undefined`, and `''` for empty states) are strictly forbidden. For example, Pokémon status MUST strictly use empty string `''` as the sole canonical sentinel for un-afflicted status, preserving 1:1 parity with the Pokémon Showdown engine (`PokemonStatus`).
+
+

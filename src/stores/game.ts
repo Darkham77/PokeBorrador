@@ -48,7 +48,7 @@ export const useGameStore = defineStore('game', () => {
   // --- ACTIONS INITIALIZATION ---
   
   // 1. Save Actions (Basics needed for others)
-  const { loadGame: rawLoad, save, scheduleSave, claimAsset, fetchClaimQueue } = useSaveActions(
+  const { loadGame: rawLoad, save, scheduleSave, claimAsset, fetchClaimQueue, saveBlocked, validationErrorDetails } = useSaveActions(
     state, 
     authStore, 
     db as Ref<DBRouter>, 
@@ -241,6 +241,8 @@ export const useGameStore = defineStore('game', () => {
     isEngineReady,
     isReady,
     isSaveLocked,
+    saveBlocked,
+    validationErrorDetails,
     chooseStarter,
     addTrainerExp,
     checkLevelUp,

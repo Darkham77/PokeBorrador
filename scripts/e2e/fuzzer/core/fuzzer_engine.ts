@@ -136,6 +136,7 @@ export function createLocalPoke(set: PokemonSet): Pokemon {
     species: toID(set.species) as PokemonSpeciesId,
     name: set.name || set.species,
     level: set.level,
+    isShiny: false,
     exp: 0,
     expNeeded: 100,
     hp: calculated.maxHp,
