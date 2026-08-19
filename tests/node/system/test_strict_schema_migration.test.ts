@@ -6,7 +6,7 @@ import path from 'node:path';
 
 describe('Strict Schema Static SQLite Migration', () => {
   it('normalizes legacy or incomplete save data correctly via SQL', () => {
-    const db = new DatabaseSync(':memory:');
+    using db = new DatabaseSync(':memory:');
 
     // Setup base table
     db.exec(`

@@ -7,6 +7,7 @@ import { useBattleSeats } from '@/composables/battle/useBattleSeats'
 import { useBattleTweenRegistry } from '@/composables/battle/useBattleTweenRegistry'
 import { useGameStore } from '@/stores/game'
 import { logger } from '@/logic/utils/logger'
+import { COMBATANT_DAMAGE_SHAKE_DUR_SEC } from '@/logic/constants/animations'
 
 const CATCH_SPARKLE_DURATION_SEC = 1.5
 const CATCH_CELEBRATION_DURATION_SEC = 1.5
@@ -262,19 +263,22 @@ const GSAP_CAPTURE_SHAKE_ACTIVE_DUR_SEC = 0.60
 const GSAP_CAPTURE_SHAKE_REST_DUR_SEC = 0.40
 const GSAP_CAPTURE_BLINK_DUR_SEC = 0.48
 
-  const handleShakeRequest = (detail: string | { side?: string }): Promise<void> => {
+  const handleShakeRequest = (detail: string | { side?: string; isCapture?: boolean }): Promise<void> => {
     const side = typeof detail === 'string' ? detail : (detail?.side || 'enemy')
+    const isCapture = typeof detail === 'object' && detail.isCapture
     const seat = getSeat(side)
     if (seat) {
       seat.entry.isShaking = true 
       seat.exit.isShaking = true 
       const tl = createTimeline()
-      tl.to({}, { duration: GSAP_CAPTURE_SHAKE_ACTIVE_DUR_SEC })
+      tl.to({}, { duration: isCapture ? GSAP_CAPTURE_SHAKE_ACTIVE_DUR_SEC : COMBATANT_DAMAGE_SHAKE_DUR_SEC })
       tl.add(() => { 
         seat.entry.isShaking = false 
         seat.exit.isShaking = false 
       })
-      tl.to({}, { duration: GSAP_CAPTURE_SHAKE_REST_DUR_SEC })
+      if (isCapture) {
+        tl.to({}, { duration: GSAP_CAPTURE_SHAKE_REST_DUR_SEC })
+      }
       return awaitAnimation(tl)
     }
     return Promise.resolve()

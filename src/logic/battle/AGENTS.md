@@ -25,6 +25,7 @@ Frontend Developers / Systems Engineers.
   execution functions.
 - **Struggle Recoil**: Exactly `Math.floor(maxHp / 4)` damage to the attacker. Never use approximations.
 - **GSAP Exclusive**: All battle animations must use GSAP timelines/tweens. `setTimeout` is forbidden.
+- **Persistent Singleton Showdown Web Worker**: The Showdown Web Worker (`showdown.worker.ts`) MUST remain alive as a warm singleton across consecutive battles. Terminating the worker (`terminate()`) between battles is strictly forbidden as it induces multi-second module compilation delays. Battles must be reset exclusively via the native `INIT_BATTLE` message, which instantiates a fresh `@pkmn/sim` `Battle` object and resets caches in <5ms.
 - **FSM Validation**: For FSM transitions, run `validate_fsm_diagrams.ts`, `validate_fsm_implementation.ts`, and `validate_fsm_flow_parity.ts`.
 
 - **Showdown UID Mapping (showdownUidMapper.ts)**: All mappings and synchronization between the game's reactive database/store and Showdown's simulator MUST use the unifed `showdownUidMapper.ts` helper. Never implement ad-hoc UID resolutions, `.startsWith` lookups, index-based physical slot matching, or name-based fallbacks (which violate persistence shield rules).

@@ -276,8 +276,9 @@ export function useBattleAnimations(
     
     addBusListener('CATCH_SHAKE', ((e: Event) => {
       const detail = (e as CustomEvent<Record<string, unknown>>).detail
-      handleShakeRequest(detail as Parameters<typeof handleShakeRequest>[0])
-      handleBlinkRequest(detail as Parameters<typeof handleBlinkRequest>[0])
+      const side = (typeof detail === 'string' ? detail : (detail?.side as string | undefined)) || 'enemy'
+      handleShakeRequest({ side, isCapture: true })
+      handleBlinkRequest(side)
     }) as EventListener)
     
     addBusListener('CATCH_SUCCESS', ((e: Event) => {

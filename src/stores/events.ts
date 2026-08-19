@@ -221,11 +221,14 @@ export const useEventStore = defineStore('events', () => {
     isLoading,
     globalMultipliers,
     fetchEvents,
+    // fallow-ignore-next-line unused-store-members
     fetchUserEntries,
     submitCompetitionEntry,
     checkPendingAwards,
     claimAward,
+    // fallow-ignore-next-line unused-store-members
     getSpeciesBonuses,
+    // fallow-ignore-next-line unused-store-members
     isEventActive
   }
 })
