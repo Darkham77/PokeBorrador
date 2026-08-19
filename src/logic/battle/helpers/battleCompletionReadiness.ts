@@ -8,9 +8,10 @@ interface BattleCompletionReadinessInput {
 }
 
 export function isBattleCompletionReady({ hasActiveBattle, isOver, fsmState, fsmSubState }: BattleCompletionReadinessInput): boolean {
+  if (!hasActiveBattle) return false
   const isRewardsComplete = fsmState === BATTLE_STATES.REWARDS_PHASE && fsmSubState === BATTLE_SUBSTATES.EMPTY_WAIT
   const isTerminalState = fsmState === BATTLE_STATES.SEARCH_PHASE || fsmState === BATTLE_STATES.EXIT_BATTLE
-  return !hasActiveBattle || (isOver && (isTerminalState || isRewardsComplete))
+  return isOver && (isTerminalState || isRewardsComplete)
 }
 
 export { BATTLE_STATES }

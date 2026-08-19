@@ -39,6 +39,8 @@ export const INITIAL_STATE = { // map-ok
   pvpStats: { wins: 0, losses: 0, draws: 0 },
   rankedMaxElo: DEFAULT_INITIAL_ELO,
   rankedRewardsClaimed: [],
+  passiveTeamUids: [],
+  passiveTeamActive: false,
   activeBattle: null,
   daycare_missions: [],
   daycare_mission_refreshes: 3,

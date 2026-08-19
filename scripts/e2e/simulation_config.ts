@@ -25,7 +25,7 @@ export const MOCK_POKEMON_HP = 20;
 export const MOCK_POKEMON_STAT = 10;
 
 /** Animation speedup factor applied in Playwright battle simulations. */
-export const SIMULATION_GSAP_TIME_SCALE = 30;
+export const SIMULATION_GSAP_TIME_SCALE = 100;
 
 /** Maximum retries for resilient locator clicks in Playwright simulations. */
 export const MAX_E2E_CLICK_RETRIES = 5;

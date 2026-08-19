@@ -169,8 +169,7 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     await pageSeller.addInitScript(() => {
       window.__GTS_SIMULATION__ = true;
     });
-    const sellerName = `SELLER_${Temporal.Now.instant().epochMilliseconds.toString()}`;
-    const seller = new GTSSimulationWrapper(pageSeller, sellerName);
+    const seller = new GTSSimulationWrapper(pageSeller, 'GtsSeller');
 
     // 1. Login y Setup Vendedor (12 Pokémon en banca: 9 se publican directo, 1 via UI, quedan 2 disponibles para el intento del 11º)
     await seller.setup();
@@ -250,8 +249,7 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     await pageBuyer.addInitScript(() => {
       window.__GTS_SIMULATION__ = true;
     });
-    const buyerName = `BUYER_${Temporal.Now.instant().epochMilliseconds.toString()}`;
-    const buyer = new GTSSimulationWrapper(pageBuyer, buyerName, seller.getSqliteKey());
+    const buyer = new GTSSimulationWrapper(pageBuyer, 'GtsBuyer', seller.getSqliteKey());
 
     await buyer.setup();
     await waitForStoreReady(pageBuyer);

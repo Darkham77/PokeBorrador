@@ -350,7 +350,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
         p.onMission = false;
         if (p.level >= MAX_POKEMON_LEVEL) {
           p.exp = 0;
-          p.expNeeded = Infinity;
+          p.expNeeded = 0;
           msg += `¡${p.name} ya está en su nivel máximo! 🏅`
         } else {
           const TRAINER_EXP_BLOCK_MS = 6 * ONE_HOUR_MS

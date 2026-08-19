@@ -452,7 +452,7 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
                 Reflect.set(histEntry, key, true);
               }
               if (preTurnHeals[seatId]) {
-                const key = `${seatId}Heal` as keyof CertifiedBattleHistoryEntry;
+                const key = `${seatId}PreHeal` as keyof CertifiedBattleHistoryEntry;
                 Reflect.set(histEntry, key, true);
               }
               if (preTurnPpRefills[seatId]) {

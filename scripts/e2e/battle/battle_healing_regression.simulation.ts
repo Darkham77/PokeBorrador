@@ -39,7 +39,7 @@ test.describe('Certified Battle Medicine Replay (Playwright)', () => {
   for (const itemId of MEDICINE_ITEM_IDS) {
     test(`replays the current certified ${itemId} medicine case through official UI controls`, async ({ page }) => {
       const batch = requireCertifiedMedicineCase(itemId);
-      const sim = new HealingSimWrapper(page, `CertifiedMedicine_${itemId}`);
+      const sim = new HealingSimWrapper(page, `Med_${itemId}`);
       await sim.setup();
       await sim.setupFuzzerScenario(batch);
       await sim.replayCertifiedBattle(batch);

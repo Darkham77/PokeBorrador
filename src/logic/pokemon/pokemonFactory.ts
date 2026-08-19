@@ -487,7 +487,7 @@ export function levelUpPokemon(p: Pokemon): Move[] | null {
   p.level++;
   if (p.level >= MAX_POKEMON_LEVEL) {
     p.exp = 0;
-    p.expNeeded = Infinity;
+    p.expNeeded = 0;
   } else {
     p.expNeeded = getExpNeeded(p.level);
   }

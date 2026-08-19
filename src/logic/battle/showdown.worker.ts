@@ -86,10 +86,11 @@ function getSideTeamState(side: ExtendedSide | null | undefined): Array<Synchron
   if (!side || !Array.isArray(side.pokemon)) return [];
   return side.pokemon.map((p: ExtendedPokemon | null) => {
     if (!p) return null;
+    const uid = (Reflect.get(p, 'uid') as string | undefined) || p.uid || '';
     const status = p.status || '';
     const volatiles = p.volatiles ? Object.keys(p.volatiles) : [];
     return {
-      uid: p.uid || '',
+      uid,
       hp: p.hp,
       maxHp: p.maxhp,
       status: (status as string) === 'fnt' ? '' : status,
@@ -172,10 +173,10 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
         ShowdownLogEnricher.setupRealtimeEnrichment(battleInstance);
 
         // Configure players (this automatically triggers the battle in pkmn/sim)
+        resetDeterministicMathRandom();
         reportInitStage('before-p1-set-player');
         battleInstance.setPlayer('p1', { name: p1.name || 'Player 1', team: p1.team });
         reportInitStage('after-p1-set-player');
-        resetDeterministicMathRandom();
         battleInstance.setPlayer('p2', { name: p2.name || 'Player 2', team: p2.team });
         reportInitStage('after-p2-set-player');
 
@@ -350,8 +351,9 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
 
 
       case 'CHECK_TRAPPED': {
-        const activeReq = currentBattle?.p1?.activeRequest as { active?: Array<{ trapped?: boolean; maybeTrapped?: boolean } | null> } | undefined; // domain-ok
-        const trapped = !!(activeReq?.active?.[0]?.trapped || activeReq?.active?.[0]?.maybeTrapped);
+        const activeReq = currentBattle?.p1?.activeRequest as { active?: Array<{ trapped?: boolean } | null> } | undefined; // domain-ok
+        const activeMon = currentBattle?.p1?.active?.[0];
+        const trapped = Boolean(activeReq?.active?.[0]?.trapped || activeMon?.trapped);
         self.postMessage({
           type: 'CHECK_TRAPPED_RESPONSE',
           payload: { trapped }

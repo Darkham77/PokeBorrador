@@ -24,11 +24,14 @@ import { gsapHover } from '@/directives/gsapHover'
 import { initGlobalHoverSystem } from '@/logic/hover/globalHover'
 import { preloadShowdownWorker } from '@/logic/battle/showdownWorkerClient.ts'
 
+import { gsap } from 'gsap'
+
 const app = createApp(App)
 const pinia = createPinia()
 
 if (typeof window !== 'undefined') {
   window.Pinia = pinia
+  window.gsap = gsap
 }
 
 app.component('PVTooltip', PVTooltip)

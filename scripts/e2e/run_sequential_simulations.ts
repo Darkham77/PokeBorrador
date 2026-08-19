@@ -186,70 +186,102 @@ if (process.argv.includes('--list')) {
   process.exit(0);
 }
 
+import { spawn } from 'node:child_process';
 import { SimulationRunnerLogger } from './logging/simulation_runner_logger.ts';
 
 const logger = new SimulationRunnerLogger();
 logger.startIntercepting();
 
-try {
-  logger.progress('\n==================================================');
-  logger.progress('🚀 DISPOSITIVO DE SIMULACIONES E2E SECUENCIAL (DINÁMICO)');
-  logger.progress('==================================================');
-  logger.progress(`📋 Se detectaron dinámicamente ${targets.length} archivos de simulación E2E (Ordenados de menor a mayor cantidad de casos):`);
-  targets.forEach((target, index) => {
-    logger.progress(`  ${index + 1}. [${target.name}] (${target.caseCount} caso/s) -> ${target.command}`);
-  });
-  logger.progress('==================================================\n');
-
-  let passedCount = 0;
-
-  for (let i = 0; i < targets.length; i++) {
-    const target = targets[i]!;
-    logger.progressPercent(i + 1, targets.length, `▶️ Ejecutando: ${target.name} (${target.relativePath})...`);
-    const startTime = Date.now();
-
-    try {
-      const rawStdout = execSync(target.command, {
-        encoding: 'utf-8',
-        env: {
-          ...process.env,
-          NODE_OPTIONS: `${process.env.NODE_OPTIONS || ''} --no-experimental-webstorage`.trim(),
-          npm_config_loglevel: 'silent',
-          NO_UPDATE_NOTIFIER: '1'
-        }
-      });
-
-      const cleanStdout = rawStdout
-        .split('\n')
-        .filter(line => !line.includes('npm notice') && !line.includes('[WebServer] npm notice'))
-        .join('\n')
-        .trim();
-
-      if (cleanStdout) {
-        console.log(cleanStdout);
+function runCommandStreamed(command: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const parts = command.split(' ');
+    const cmd = parts[0]!;
+    const args = parts.slice(1);
+    const child = spawn(cmd, args, {
+      stdio: ['inherit', 'pipe', 'pipe'],
+      env: {
+        ...process.env,
+        NODE_OPTIONS: `${process.env.NODE_OPTIONS || ''} --no-experimental-webstorage`.trim(),
+        npm_config_loglevel: 'silent',
+        NO_UPDATE_NOTIFIER: '1'
       }
+    });
 
-      const durationSec = ((Date.now() - startTime) / 1000).toFixed(1);
-      logger.progressPercent(i + 1, targets.length, `✅ PASS: ${target.name} (${durationSec}s)`);
-      passedCount++;
-    } catch (err: unknown) {
-      const errObj = err as { stdout?: string; stderr?: string; message?: string };
-      if (errObj.stdout) console.log(errObj.stdout);
-      if (errObj.stderr) console.error(errObj.stderr);
-      const durationSec = ((Date.now() - startTime) / 1000).toFixed(1);
-      logger.error(`\n❌ [${i + 1}/${targets.length}] FAIL: "${target.name}" ha fallado tras ${durationSec}s.`);
-      logger.error(`🛑 Deteniendo la ejecución secuencial debido al fallo.\n`);
-      process.exit(1);
-    }
-  }
+    child.stdout.on('data', (chunk: Buffer) => {
+      const text = chunk.toString('utf-8');
+      const lines = text.split('\n');
+      for (const line of lines) {
+        if (!line.includes('npm notice') && !line.includes('[WebServer] npm notice') && line.trim()) {
+          console.log(line);
+        }
+      }
+    });
 
-  logger.progress('\n==================================================');
-  logger.progress(`🎉 ¡TODAS LAS ${targets.length} SUITES DE SIMULACIÓN E2E HAN PASADO EXITOSAMENTE! (${passedCount}/${targets.length})`);
-  logger.progress('==================================================\n');
-  process.exit(0);
-} catch (error) {
-  logger.error(`💥 Error fatal durante el dispositivo de simulaciones: ${(error as Error).message}`);
-  process.exit(1);
-} finally {
-  logger.stopIntercepting();
+    child.stderr.on('data', (chunk: Buffer) => {
+      const text = chunk.toString('utf-8');
+      const lines = text.split('\n');
+      for (const line of lines) {
+        if (!line.includes('npm notice') && !line.includes('[WebServer] npm notice') && line.trim()) {
+          console.error(line);
+        }
+      }
+    });
+
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`Command failed with exit code ${code}`));
+      }
+    });
+
+    child.on('error', (err) => {
+      reject(err);
+    });
+  });
 }
+
+async function runAllSequentialSuites(): Promise<void> {
+  try {
+    logger.progress('\n==================================================');
+    logger.progress('🚀 DISPOSITIVO DE SIMULACIONES E2E SECUENCIAL (DINÁMICO)');
+    logger.progress('==================================================');
+    logger.progress(`📋 Se detectaron dinámicamente ${targets.length} archivos de simulación E2E (Ordenados de menor a mayor cantidad de casos):`);
+    targets.forEach((target, index) => {
+      logger.progress(`  ${index + 1}. [${target.name}] (${target.caseCount} caso/s) -> ${target.command}`);
+    });
+    logger.progress('==================================================\n');
+
+    let passedCount = 0;
+
+    for (let i = 0; i < targets.length; i++) {
+      const target = targets[i]!;
+      logger.progressPercent(i + 1, targets.length, `▶️ Ejecutando: ${target.name} (${target.relativePath})...`);
+      const startTime = Date.now();
+
+      try {
+        await runCommandStreamed(target.command);
+        const durationSec = ((Date.now() - startTime) / 1000).toFixed(1);
+        logger.progressPercent(i + 1, targets.length, `✅ PASS: ${target.name} (${durationSec}s)`);
+        passedCount++;
+      } catch (_err: unknown) {
+        const durationSec = ((Date.now() - startTime) / 1000).toFixed(1);
+        logger.error(`\n❌ [${i + 1}/${targets.length}] FAIL: "${target.name}" ha fallado tras ${durationSec}s.`);
+        logger.error(`🛑 Deteniendo la ejecución secuencial debido al fallo.\n`);
+        process.exit(1);
+      }
+    }
+
+    logger.progress('\n==================================================');
+    logger.progress(`🎉 ¡TODAS LAS ${targets.length} SUITES DE SIMULACIÓN E2E HAN PASADO EXITOSAMENTE! (${passedCount}/${targets.length})`);
+    logger.progress('==================================================\n');
+    process.exit(0);
+  } catch (error) {
+    logger.error(`💥 Error fatal durante el dispositivo de simulaciones: ${(error as Error).message}`);
+    process.exit(1);
+  } finally {
+    logger.stopIntercepting();
+  }
+}
+
+void runAllSequentialSuites();

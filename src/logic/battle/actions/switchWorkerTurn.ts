@@ -62,7 +62,9 @@ export async function processNonForcedSwitchWorkerTurn(
       console.debug(`[switchWorkerTurn] Certified enemy choice is not a switch (${certifiedP2Choice}). Replacement was already processed in Showdown worker.`);
       return;
     }
-    p1Choice = certifiedP1Choice
+    if (side !== 'player') {
+      p1Choice = certifiedP1Choice
+    }
     p2Choice = certifiedP2Choice
     p1Skip = p1Choice === ''
     p2Skip = p2Choice === ''

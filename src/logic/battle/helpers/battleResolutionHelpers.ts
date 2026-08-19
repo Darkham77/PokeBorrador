@@ -141,19 +141,8 @@ export async function handleEnemyForceSwitchExecution(
 
   const { showdownWorker, executeTurnInWorker } = await import('../showdownWorkerClient.ts');
   if (showdownWorker && active.enemyTeam) {
-    let p2Choice = '';
-    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
-      const debugObj = window.__VITE_DEBUG__;
-      const { ShowdownBattleRunner } = await import('./showdownBattleRunner.ts');
-      const p1Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p1');
-      p2Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2');
-      if (p1Choice !== '') {
-        throw new Error(`[resolution] Certified enemy force switch must be P2-only. context=${JSON.stringify({ p1Choice, p2Choice })}`);
-      }
-    } else {
-      const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid);
-      p2Choice = `switch ${slot}`;
-    }
+    const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid);
+    const p2Choice = `switch ${slot}`;
     const result = await executeTurnInWorker('', p2Choice);
     active.playerRequest = result.p1Request;
     active.enemyRequest = result.p2Request;

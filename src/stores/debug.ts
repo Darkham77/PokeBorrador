@@ -6,6 +6,7 @@ import { useGameStore } from './game.ts'
 import { useBattleStore } from './battle/battle.ts'
 import { useMapStore } from './map.ts'
 import { pokemonDebugService } from '@/logic/debug/pokemonDebugService'
+import { testResetShowdownWorker } from '@/logic/battle/showdownWorkerClient'
 
 // Section Registrations
 import { registerStatsTools } from './debug/sections/statsTools.ts'
@@ -113,9 +114,7 @@ export const useDebugStore = defineStore('debug', () => {
     Reflect.set(window.__VITE_DEBUG__, 'useBattleStore', useBattleStore)
     Reflect.set(window.__VITE_DEBUG__, 'useGameStore', useGameStore)
     Reflect.set(window.__VITE_DEBUG__, 'useMapStore', useMapStore)
-    Reflect.set(window.__VITE_DEBUG__, 'testResetShowdownWorker', () => {
-      import('@/logic/battle/showdownWorkerClient').then(m => m.testResetShowdownWorker?.())
-    })
+    Reflect.set(window.__VITE_DEBUG__, 'testResetShowdownWorker', testResetShowdownWorker)
     Reflect.set(window.__VITE_DEBUG__, 'pokemonDebugService', pokemonDebugService)
 
     tools.value.forEach(tool => {

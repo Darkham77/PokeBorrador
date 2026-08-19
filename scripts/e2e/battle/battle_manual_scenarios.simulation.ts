@@ -39,7 +39,7 @@ class ManualScenariosSimWrapper extends BaseBattleSimulation {
 
 test.describe('Battle Manual E2E Scenarios', () => {
   test('debería consumir un Revivir en un Pokémon de la banca debilitado y jugar el combate hasta el final', async ({ page }) => {
-    const sim = new ManualScenariosSimWrapper(page, 'TestManual_Revive');
+    const sim = new ManualScenariosSimWrapper(page, 'ManualRevive');
     await sim.setup();
     await sim.setupReviveScenario();
     await waitForWaitInput(page);

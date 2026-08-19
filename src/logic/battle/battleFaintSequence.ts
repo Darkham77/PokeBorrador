@@ -109,7 +109,7 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
           const rawIdent = reqPokemon?.[slotIdx]?.ident || ''
           const candidateUid = rawIdent.split(': ')[1] || ''
           if (candidateUid) {
-            nextEnemy = active.enemyTeam.find((p: Pokemon) => p.uid && isMatchingUid(p.uid, candidateUid)) || null
+            nextEnemy = active.enemyTeam.find((p: Pokemon) => !p.fainted && p.hp > 0 && p.uid && isMatchingUid(p.uid, candidateUid)) || null
           }
           if (!nextEnemy) {
             nextEnemy = active.enemyTeam.find((p: Pokemon) => !p.fainted && p.hp > 0) || null
@@ -167,8 +167,7 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
     
     const { showdownWorker, executeTurnInWorker } = await import('./showdownWorkerClient.ts')
     if (showdownWorker && active.enemyTeam) {
-      active.switchingToEnemy = nextEnemy
-      const p2Choice = certifiedEnemySwitchChoice ?? `switch ${ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)}`
+      const p2Choice = `switch ${ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)}`
       const result = await executeTurnInWorker('', p2Choice, true, false)
       if (!isCurrentActiveBattle()) return
       if (result) {

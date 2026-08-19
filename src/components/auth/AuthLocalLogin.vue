@@ -29,7 +29,7 @@ const {
       class="auth-input"
       type="text"
       placeholder="Nombre de Entrenador"
-      maxlength="20"
+      maxlength="15"
       @input="emit('update:usernameValue', ($event.target as HTMLInputElement).value)"
       @keyup.enter="emit('localLogin')"
       @focus="handleInputFocus"

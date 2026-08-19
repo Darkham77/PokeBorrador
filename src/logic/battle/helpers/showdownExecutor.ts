@@ -59,7 +59,7 @@ export function executeBattleTurn(options: ShowdownExecutorOptions): ExecuteBatt
     p2Statuses: options.p2Statuses,
     weather: options.weather,
     ipbActive: options.isFuzzerSimulation ? true : undefined,
-    certifiedHistoryStep: options.certifiedHistoryStep,
+    certifiedHistoryStep: options.certifiedHistoryStep ?? options.currentStep,
   });
 
   if (options.runner) {

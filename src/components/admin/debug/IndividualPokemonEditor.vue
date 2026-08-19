@@ -216,7 +216,7 @@ watch(() => activePoke.value?.level, (newLv) => {
   activePoke.value.hp = activePoke.value.maxHp
   if (newLv >= MAX_POKEMON_LEVEL) {
     activePoke.value.exp = 0
-    activePoke.value.expNeeded = Infinity
+    activePoke.value.expNeeded = 0
   } else {
     activePoke.value.expNeeded = getExpNeeded(newLv)
     if (activePoke.value.exp >= activePoke.value.expNeeded) {

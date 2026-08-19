@@ -24,7 +24,8 @@ vi.mock('@/logic/battle/showdownWorkerClient', () => ({
   showdownWorker: mockWorker,
   executeTurnInWorker: vi.fn(async () => ({ logs: [], isOver: false, winner: null })),
   isPlayerTrappedInWorker: vi.fn(async () => false),
-  syncTeamsFromLastWorkerState: vi.fn(async () => {})
+  syncTeamsFromLastWorkerState: vi.fn(async () => {}),
+  testResetShowdownWorker: vi.fn(async () => {})
 }))
 
 vi.mock('@/logic/battle/showdownBridge', () => ({

@@ -62,6 +62,10 @@ export interface CertifiedBattleHistoryEntry {
   battleTurn: number;
   /** A non-Showdown game action paired with this atomic certified turn. */
   p1GameAction?: CertifiedBattleGameAction;
+  p1PreHeal?: boolean;
+  p2PreHeal?: boolean;
+  p3PreHeal?: boolean;
+  p4PreHeal?: boolean;
   p1Heal?: boolean;
   p2Heal?: boolean;
   p3Heal?: boolean;

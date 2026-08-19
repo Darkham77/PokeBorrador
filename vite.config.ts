@@ -97,7 +97,25 @@ function devDbImportPlugin() {
         }
 
         if (req.url?.startsWith('/api/dev-import-db-cleanup')) {
+          const hasSpecificKey = Boolean(req.headers['x-db-key']);
           const dbKey = getDbKey(req);
+
+          if (!hasSpecificKey || dbKey === 'default') {
+            importedDbRamBuffers.clear();
+            const tempDir = path.resolve(import.meta.dirname, 'database/temp');
+            try {
+              const files = await fsPromises.readdir(tempDir);
+              for (const file of files) {
+                if (file.startsWith('imported_') && file.endsWith('.db')) {
+                  await fsPromises.unlink(path.join(tempDir, file)).catch(() => {});
+                }
+              }
+            } catch { /* directory might not exist */ }
+            res.writeHead(200, { 'Content-Type': 'text/plain' });
+            res.end('All temporary DBs cleaned up');
+            return;
+          }
+
           importedDbRamBuffers.delete(dbKey);
           const dbPath = getDbPath(dbKey);
           try {

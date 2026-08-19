@@ -186,8 +186,7 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
   test(`should execute ${E2E_SEQUENTIAL_BATTLES_COUNT_LIMIT} sequential battles in the search loop without initialization or UID errors`, async ({ page }) => {
     test.setTimeout(SEARCH_LOOP_SUITE_TIMEOUT_MS);
 
-    const testUser = `TEST_SEQ_${Temporal.Now.instant().epochMilliseconds.toString()}`;
-    const sim = new SearchLoopSimWrapper(page, testUser);
+    const sim = new SearchLoopSimWrapper(page, 'SearchUser');
 
     await sim.setup();
     await waitForStoreReady(page);

@@ -111,8 +111,7 @@ class DaycareMissionsSimulation extends BaseE2ESimulation {
 
 test.describe('Daycare Daily Missions Daily Flow Simulation', () => {
   test('should view daily missions, attempt with invalid pokemon, and complete with valid pokemon', async ({ page }) => {
-    const testUser = `TEST_MISSIONS_${Temporal.Now.instant().epochMilliseconds.toString()}`;
-    const sim = new DaycareMissionsSimulation(page, testUser);
+    const sim = new DaycareMissionsSimulation(page, 'MissionsUser');
 
     // 1. Setup session y login
     await sim.setup();

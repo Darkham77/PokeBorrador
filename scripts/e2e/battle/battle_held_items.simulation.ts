@@ -95,9 +95,14 @@ class HeldItemsSimWrapper extends BaseBattleSimulation {
   }
 
   public async getPlayerHpInfo(): Promise<{ hp: number; maxHp: number }> {
-    return await this.page.evaluate(() => {
-      const player = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.().state?.player;
-      return { hp: player?.hp ?? 0, maxHp: player?.maxHp ?? 1 };
+    return await this.page.evaluate(async () => {
+      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const battleStore = useBattleStore();
+      const gameStore = useGameStore();
+      const player = battleStore.player || battleStore.state?.player;
+      const team0 = gameStore.state?.team?.[0];
+      return { hp: player?.hp ?? team0?.hp ?? 0, maxHp: player?.maxHp ?? team0?.maxHp ?? 1 };
     });
   }
 }
@@ -127,7 +132,7 @@ test.describe('E2E Held Items Verification', () => {
   });
 
   test('should apply Life Orb recoil damage after attacking', async ({ page }) => {
-    const sim = new HeldItemsSimWrapper(page, 'TestPlayerLifeOrb');
+    const sim = new HeldItemsSimWrapper(page, 'TestPlayerOrb');
     await sim.setup();
     await sim.setupLifeOrbScenario();
     await waitForWaitInput(page);
@@ -186,7 +191,7 @@ test.describe('E2E Held Items Verification', () => {
     filteredItemBatches.forEach(({ b: batch, idx: index }) => {
       test(`debería ejecutar el lote de fuzzer de items #${index + 1} (${batch.playerTeam.length} Pokémon) de forma determinista`, async ({ page }) => {
         test.setTimeout(MAX_SUITE_TOTAL_TIMEOUT_MS);
-        const sim = new HeldItemsSimWrapper(page, `TestBatchItems_${index}`);
+        const sim = new HeldItemsSimWrapper(page, `Item_${index}`);
         await sim.setup();
 
         // Inyectar el lote usando la clase base unificada
@@ -196,6 +201,8 @@ test.describe('E2E Held Items Verification', () => {
           await sim.replayCertifiedBattle(batch);
         } catch (error: unknown) {
           const caseId = batch.id || `lote-items-${index + 1}`;
+          const logBuf = (page as { _e2eLogBuffer?: string[] })._e2eLogBuffer || [];
+          console.error(`[E2E-FAIL-LOGS-START: ${caseId}]\n` + logBuf.join('\n') + `\n[E2E-FAIL-LOGS-END: ${caseId}]`);
           if (process.env.CONTINUE_ON_ERROR === 'true') {
             console.warn(`[E2E-WARN] Ignorando error en lote de items ${caseId}`);
             return;

@@ -183,8 +183,7 @@ test.describe('Breeding & Hatching Lifecycle Simulation', () => {
   test.use({ viewport: { width: VIEWPORT_WIDTH_PX, height: VIEWPORT_HEIGHT_PX } });
 
   test('should breed Ditto and Bulbasaur, generate an egg, and hatch it', async ({ page }) => {
-    const testUser = `TEST_BREED_${Temporal.Now.instant().epochMilliseconds.toString()}`;
-    const sim = new BreedingLifecycleSimulation(page, testUser);
+    const sim = new BreedingLifecycleSimulation(page, 'BreedTestUser');
 
     // 1. Setup session y login
     await sim.setup();

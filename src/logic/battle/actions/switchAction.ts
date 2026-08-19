@@ -40,8 +40,8 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
   const isForceBool = typeof forceSw === 'boolean' && forceSw
   const isForceArr = Array.isArray(forceSw) && forceSw.some(Boolean)
   const hasForceSwitch = !isRevivingTarget && (isForceBool || isForceArr)
-  const isFaintState = (fsm.currentState?.value as string) === 'PLAYER_FAINT_SEQ' || (fsm.currentSubState?.value as string) === 'PLAYER_FAINT_SEQ' || (fsm.currentState?.value as string) === 'SWITCH_MENU' || (fsm.currentSubState?.value as string) === 'SWITCH_MENU'
-  const reallyForced = isForced || hasForceSwitch || isFaintState || (oldPoke && oldPoke.hp <= 0)
+  const isFaintState = (fsm.currentState?.value as string) === 'PLAYER_FAINT_SEQ' || (fsm.currentSubState?.value as string) === 'PLAYER_FAINT_SEQ' || (oldPoke && oldPoke.hp <= 0)
+  const reallyForced = isForced || hasForceSwitch || isFaintState
 
   if (!reallyForced) {
     const { isPlayerTrappedInWorker } = await import('../orchestrator.ts')
@@ -57,7 +57,13 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
   await fsm.transition(BATTLE_STATES.REORDER_TEAM)
   await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.FIND_HEALTHY)
   
-  const newPoke = gs.state.team[teamIndex]
+  let targetMon = gs.state.team[teamIndex]
+  if (isRevivingTarget && targetMon && targetMon.hp > 0) {
+    targetMon = gs.state.team.find(p => p && p.hp <= 0 && p.uid !== oldPoke?.uid) ?? targetMon
+  } else if (!isRevivingTarget && targetMon && targetMon.hp <= 0) {
+    targetMon = gs.state.team.find(p => p && p.hp > 0 && p.uid !== oldPoke?.uid) ?? targetMon
+  }
+  const newPoke = targetMon
   if (!newPoke || (newPoke.hp <= 0 && !isRevivingTarget)) {
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     return
@@ -132,22 +138,9 @@ async function processForcedSwitchWorkerTurn(
   try {
     const { executeTurnInWorker } = await import('../showdownWorkerClient.ts')
     const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.playerRequest, newPoke.uid)
-    let p1Choice = `switch ${slot}`
+    const p1Choice = `switch ${slot}`
     const p2Choice = ''
     const p2Skip = true
-    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
-      const { ShowdownBattleRunner } = await import('../helpers/showdownBattleRunner.ts')
-      try {
-        const historyChoice = ShowdownBattleRunner.requireHistoryChoice(window.__VITE_DEBUG__, 'p1')
-        if (historyChoice && historyChoice.startsWith('switch ')) {
-          p1Choice = historyChoice
-        } else {
-          console.debug('[switchAction] Current replay history entry is not a switch choice, executing UI selection slot:', p1Choice)
-        }
-      } catch (_err) {
-        console.debug('[switchAction] Replay history error, fallback to UI selection slot:', p1Choice)
-      }
-    }
     const switchResult = await executeTurnInWorker(p1Choice, p2Choice, false, p2Skip)
     if (switchResult) {
       active.playerRequest = switchResult.p1Request

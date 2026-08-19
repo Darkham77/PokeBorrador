@@ -121,10 +121,9 @@ export class BattleCheatManager {
       }
 
       const seatPreKey = `${sideId}PreHeal`;
-      const seatPostKey = `${sideId}Heal`;
       const hasFainted = side.pokemon.some((p: Pokemon) => p && (p.fainted || p.hp === 0));
       const needsPre = isObj ? Boolean(historyStep[seatPreKey]) : (entryPre?.[sideId] ?? false);
-      const legacyNeedsPre = (isObj ? Boolean(historyStep[seatPostKey]) : (entryPost?.[sideId] ?? false)) && hasFainted;
+      const legacyNeedsPre = !isObj && (entryPost?.[sideId] ?? false) && hasFainted;
       const needs = needsPre || legacyNeedsPre;
 
       if (!needs) continue;

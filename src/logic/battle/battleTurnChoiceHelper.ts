@@ -107,9 +107,8 @@ export async function resolveTurnChoices(
 
   if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
     const debugObj = window.__VITE_DEBUG__ as Record<string, unknown> // open-record
-    p1Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p1')
     p2Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2')
-    console.debug(`[E2E-CERTIFIED-REPLAY] Resolved the complete Showdown submission from certified history. context=${JSON.stringify({ historyIndex: debugObj.replayHistoryIdx, p1Choice, p2Choice })}`)
+    console.debug(`[E2E-CERTIFIED-REPLAY] Resolved the enemy Showdown submission from certified history: ${p2Choice}. Player choice: ${p1Choice}`)
   }
 
   let p1Skip = false

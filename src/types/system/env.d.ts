@@ -166,8 +166,8 @@ declare global {
     isDeterministicSimulation?: boolean;
     isScriptedReplayMode?: boolean;
     playerChoices?: string[]; // domain-ok
-    waitForBattleReady?: () => Promise<{ subState: string; p1ChoiceIdx: number; p2ChoiceIdx: number; over: boolean }>;
-    getScriptedReplayReadiness?: () => { subState: string; p1ChoiceIdx: number; p2ChoiceIdx: number; over: boolean; isReady: boolean };
+    waitForBattleReady?: (timeoutMs?: number, options?: { skipImmediate?: boolean }) => Promise<import('../battle/battleEvents.ts').BattleReadyForInputDetail>;
+    getScriptedReplayReadiness?: () => import('../battle/battleEvents.ts').BattleReadyForInputDetail & { isReady: boolean };
     certifiedReplayIntroDiagnostics?: { isIntroInProgress: boolean; isWildEntryAnimation: boolean; wildRevealActive: boolean; isEmerging: boolean; upcomingIsEmerging: boolean; trainerAnimState: 'entering' | 'retreating' | 'idle' | null; isCaptureSequenceActive: boolean };
     useItemInBattle?: (itemId: string, targetUid: string) => void;
     healAll?: () => void;
@@ -216,6 +216,7 @@ declare global {
     __VITE_DEBUG_BREEDING_STORE_RESOLVER__?: () => unknown;
     showGameError?: (error: Error | string, context?: Record<string, unknown>) => void; // domain-ok // string-ok // open-record
     __WEATHER_SESSION_SEED__?: number;
+    gsap?: typeof import('gsap').gsap;
   }
 }
 

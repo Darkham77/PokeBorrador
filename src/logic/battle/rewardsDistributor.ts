@@ -207,7 +207,7 @@ const RIVAL_DROP_PROB_MAX_PERCENT = 100;
                 if (leveledUp) {
                   const diffLevels = tempLevel - p.level
                   p.level = tempLevel
-                  p.expNeeded = tempLevel >= 100 ? Infinity : tempExpNeeded
+                  p.expNeeded = tempLevel >= 100 ? 0 : tempExpNeeded
                   for (let i = 0; i < diffLevels; i++) {
                     levelUpPokemon(p)
                   }

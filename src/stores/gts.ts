@@ -194,7 +194,7 @@ export const useGTSStore = defineStore('gts', () => {
       return false
     } catch (e) {
       const err = e as Error
-      logger.error('GTS', `Error en la compra: ${err.message}`)
+      logger.warn('GTS', `Error en la compra: ${err.message}`)
       ui.notify(err.message || 'Error en la compra', '❌')
       return false
     } finally {
@@ -234,7 +234,7 @@ export const useGTSStore = defineStore('gts', () => {
       return true
     } catch (e) {
       const err = e as Error
-      logger.error('GTS', `Error al publicar: ${err.message}`)
+      logger.warn('GTS', `Error al publicar: ${err.message}`)
       ui.notify(err.message || 'Error al publicar', '❌')
       return false
     } finally {

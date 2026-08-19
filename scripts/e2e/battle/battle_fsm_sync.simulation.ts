@@ -75,6 +75,25 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
     return cleanFilter.split(',').map(Number).includes(idx + 1);
   });
 
+  function balanceBatches(rawBatches: Array<{ b: CertifiedTestBatch; idx: number }>): Array<{ b: CertifiedTestBatch; idx: number }> {
+    if (caseFilter || caseIdFilter || batchFilter || rawBatches.length <= 4) {
+      return rawBatches;
+    }
+    const heavy = rawBatches.filter(({ b }) => (b.playerTeam?.length ?? 1) >= 4);
+    const light = rawBatches.filter(({ b }) => (b.playerTeam?.length ?? 1) < 4);
+    const balanced: Array<{ b: CertifiedTestBatch; idx: number }> = [];
+    const ratio = Math.ceil(light.length / Math.max(1, heavy.length));
+    while (heavy.length > 0 || light.length > 0) {
+      if (heavy.length > 0) balanced.push(heavy.shift()!);
+      for (let i = 0; i < ratio && light.length > 0; i++) {
+        balanced.push(light.shift()!);
+      }
+    }
+    return balanced;
+  }
+
+  const scheduledBatches = balanceBatches(batches);
+
   const startTimesMap: { [key: number]: number } = {};
 
   function reportProgress(batchIndex: number, isFailed: boolean) {
@@ -88,14 +107,14 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
     fs.writeFileSync(progressFile, JSON.stringify({ isFailed, elapsedMs: elapsed, date: new Date().toISOString() }, null, 2), 'utf8');
   }
 
-  if (batches.length > 0) {
-    batches.forEach(({ b: batch, idx: index }) => {
+  if (scheduledBatches.length > 0) {
+    scheduledBatches.forEach(({ b: batch, idx: index }) => {
       test(`debería ejecutar el lote de fuzzer #${index + 1} (${batch.playerTeam.length} Pokémon) de forma determinista`, async ({ page }, testInfo) => {
         test.setTimeout(MAX_SUITE_TOTAL_TIMEOUT_MS);
         startTimesMap[index] = Number(Temporal.Now.instant().epochMilliseconds);
 
         const logBuffer: string[] = []; // no-domain
-        const sim = new FSMSyncSimWrapper(page, `TestBatchFSM_${index}`, logBuffer);
+        const sim = new FSMSyncSimWrapper(page, `FSM_${index}`, logBuffer);
         await sim.setup();
 
         try {

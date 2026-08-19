@@ -132,7 +132,7 @@ test.describe('HeuristicAI E2E Verification', () => {
   });
 
   test('Escenario 1 - NPC (5% error): batalla completa sin crash', async ({ page }) => {
-    const sim = new HeuristicAISimWrapper(page, `TEST_AI_1_${Date.now()}`);
+    const sim = new HeuristicAISimWrapper(page, 'AI_Scenario_1');
     try {
       await sim.setup();
       await sim.setupScenario1();
@@ -146,7 +146,7 @@ test.describe('HeuristicAI E2E Verification', () => {
   });
 
   test('Escenario 2 - Rival (0% error): derrota al jugador con HP critico', async ({ page }) => {
-    const sim = new HeuristicAISimWrapper(page, `TEST_AI_2_${Date.now()}`);
+    const sim = new HeuristicAISimWrapper(page, 'AI_Scenario_2');
     try {
       await sim.setup();
       await sim.setupScenario2();
@@ -160,7 +160,7 @@ test.describe('HeuristicAI E2E Verification', () => {
   });
 
   test(`Escenario 3 - Wild (${HEURISTIC_AI_ERROR_PERCENTAGE_LABEL_TEXT} error): arranca y ejecuta turnos sin crash`, async ({ page }) => {
-    const sim = new HeuristicAISimWrapper(page, `TEST_AI_3_${Date.now()}`);
+    const sim = new HeuristicAISimWrapper(page, 'AI_Scenario_3');
     try {
       await sim.setup();
       await sim.setupScenario3();
@@ -172,9 +172,9 @@ test.describe('HeuristicAI E2E Verification', () => {
 
       // Jugar turnos y verificar que el combate avanza limpiamente sin errores
       for (let i = 0; i < 3; i++) {
+        if (await sim.checkBattleOver()) break;
         await waitForWaitInput(page);
-        const over = await sim.checkBattleOver();
-        if (over) break;
+        if (await sim.checkBattleOver()) break;
         await sim.selectMove(0);
       }
 
@@ -188,7 +188,7 @@ test.describe('HeuristicAI E2E Verification', () => {
   });
 
   test('Escenario 4 - Gym (0% error): battle completa con held item (Choice Band)', async ({ page }) => {
-    const sim = new HeuristicAISimWrapper(page, `TEST_AI_4_${Date.now()}`);
+    const sim = new HeuristicAISimWrapper(page, 'AI_Scenario_4');
     try {
       await sim.setup();
       await sim.setupScenario4();
@@ -204,7 +204,7 @@ test.describe('HeuristicAI E2E Verification', () => {
   });
 
   test('Escenario 5 - Rival con equipo: no crashea con switch disponible', async ({ page }) => {
-    const sim = new HeuristicAISimWrapper(page, `TEST_AI_5_${Date.now()}`);
+    const sim = new HeuristicAISimWrapper(page, 'AI_Scenario_5');
     try {
       await sim.setup();
       await sim.setupScenario5();
@@ -218,7 +218,7 @@ test.describe('HeuristicAI E2E Verification', () => {
   });
 
   test('Escenario 6 - Fuzzer: los 4 tipos de entrenador corren sin error', async ({ page }) => {
-    const sim = new HeuristicAISimWrapper(page, `TEST_AI_6_${Date.now()}`);
+    const sim = new HeuristicAISimWrapper(page, 'AI_Scenario_6');
       const trainerTypes = ['wild', 'npc', 'gym', 'rival'] as const;
 
     for (const trainerType of trainerTypes) {

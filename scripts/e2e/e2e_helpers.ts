@@ -71,12 +71,15 @@ export function logE2EDebug(page: Page | undefined, msg: string): void {
 
 export async function clickResilient(locator: Locator, options: { timeout?: number } = {}): Promise<void> {
   const timeout = options.timeout ?? MAX_PER_ACTION_TIMEOUT_MS;
+  const fastTimeout = Math.min(timeout, 500);
   try {
-    await locator.click({ timeout });
+    await locator.click({ timeout: fastTimeout });
   } catch (_err) {
-    await locator.click({ force: true, timeout }).catch(() => {
-      return locator.evaluate((el: HTMLElement) => el.click());
-    });
+    try {
+      await locator.click({ force: true, timeout: fastTimeout });
+    } catch {
+      await locator.evaluate((el: HTMLElement) => el.click());
+    }
   }
 }
 
@@ -128,35 +131,22 @@ export async function awaitBattleFlowCompletion(page: Page): Promise<void> {
   });
 }
 
-export async function armBattleReadyForInput(page: Page): Promise<void> {
-  await page.evaluate((eventName) => {
+export async function armBattleReadyForInput(page: Page, timeoutMs = MAX_PER_ACTION_TIMEOUT_MS): Promise<void> {
+  await page.evaluate(({ tMs }) => {
     if (window.__E2E_BATTLE_READY_FOR_INPUT__) {
       throw new Error('[E2E] A battle-ready-for-input listener is already armed.');
     }
-    window.__E2E_BATTLE_READY_FOR_INPUT__ = new Promise<BattleReadyForInputDetail>((resolve, reject) => {
-      window.addEventListener(eventName, (event) => {
-        if (!(event instanceof CustomEvent)) {
-          reject(new Error(`[E2E] ${eventName} must be a CustomEvent.`));
-          return;
-        }
-        const detail = event.detail as BattleReadyForInputDetail | null;
-        if (typeof detail !== 'object' || detail === null ||
-          !('subState' in detail) || typeof detail.subState !== 'string' ||
-          !('p1ChoiceIdx' in detail) || typeof detail.p1ChoiceIdx !== 'number' ||
-          !('p2ChoiceIdx' in detail) || typeof detail.p2ChoiceIdx !== 'number' ||
-          !('over' in detail) || typeof detail.over !== 'boolean' ||
-          !('playerSwitchSlots' in detail) || !Array.isArray(detail.playerSwitchSlots)) {
-          reject(new Error(`[E2E] ${eventName} has an invalid detail payload.`));
-          return;
-        }
-        resolve(detail);
-      }, { once: true });
-    });
-  }, BATTLE_UI_EVENTS.READY_FOR_INPUT);
+    const debug = window.__VITE_DEBUG__;
+    if (debug?.waitForBattleReady) {
+      window.__E2E_BATTLE_READY_FOR_INPUT__ = debug.waitForBattleReady(tMs, { skipImmediate: true });
+      return;
+    }
+    throw new Error('[E2E] debug.waitForBattleReady is missing.');
+  }, { tMs: timeoutMs });
 }
 
-export async function awaitBattleReadyForInput(page: Page): Promise<BattleReadyForInputDetail> {
-  const result = await page.evaluate(async () => {
+export async function awaitBattleReadyForInput(page: Page, timeoutMs = MAX_PER_ACTION_TIMEOUT_MS): Promise<BattleReadyForInputDetail> {
+  const result = await page.evaluate(async (tMs) => {
     const ready = window.__E2E_BATTLE_READY_FOR_INPUT__;
     if (ready) {
       try {
@@ -167,10 +157,10 @@ export async function awaitBattleReadyForInput(page: Page): Promise<BattleReadyF
     }
     const debugObj = window.__VITE_DEBUG__;
     if (debugObj?.waitForBattleReady) {
-      return await debugObj.waitForBattleReady();
+      return await debugObj.waitForBattleReady(tMs);
     }
     throw new Error('[E2E] Battle ready-for-input was awaited without an armed event listener.');
-  });
+  }, timeoutMs);
   return result as BattleReadyForInputDetail;
 }
 
@@ -411,7 +401,7 @@ export async function waitForWaitInput(page: Page): Promise<void> {
       const store = resolver();
       if (!store) return false;
       if (!store.state) return false;
-      if (store.state.over) return true;
+      if (store.state.over || store.currentFsmState === 'REWARDS_PHASE' || store.currentFsmState === 'EXIT_BATTLE') return true;
       return !store.isProcessing && store.currentFsmState === 'ACTIVE_BATTLE' &&
         (store.currentSubState === 'WAIT_INPUT' || store.currentSubState === 'SWITCH_MENU');
     }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });

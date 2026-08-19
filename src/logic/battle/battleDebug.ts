@@ -19,6 +19,7 @@ import { BATTLE_UI_EVENTS, isBattleReadyForInputDetail, type BattleReadyForInput
 export { canExecuteScriptedReplayAction } from './helpers/scriptedReplayReadiness.ts'
 
 const DEBUG_INDEFINITE_WEATHER_TURNS = 99;
+const MAX_BATTLE_READY_TIMEOUT_MS = 5000;
 
 interface ScriptedReplayReadinessDetail extends BattleReadyForInputDetail {
   isReady: boolean
@@ -150,7 +151,7 @@ export function setupBattleDebug(ctx: BattleContext) {
       return { subState: '', p1ChoiceIdx: win.__VITE_DEBUG__?.p1ChoiceIdx ?? 0, p2ChoiceIdx: win.__VITE_DEBUG__?.p2ChoiceIdx ?? 0, over: true, playerSwitchSlots: [], isReady: true }
     }
     if (!active) {
-      throw new Error('[battleDebug] Active battle disappeared before completion readiness was evaluated')
+      return { subState: ctx.fsm.currentSubState.value ?? '', p1ChoiceIdx: 0, p2ChoiceIdx: 0, over: false, playerSwitchSlots: [], isReady: false }
     }
     if (active.over) {
       return { subState: '', p1ChoiceIdx: win.__VITE_DEBUG__?.p1ChoiceIdx ?? 0, p2ChoiceIdx: win.__VITE_DEBUG__?.p2ChoiceIdx ?? 0, over: true, playerSwitchSlots: projectBattleReadySwitchSlots(active.playerRequest), isReady: true }
@@ -186,8 +187,8 @@ export function setupBattleDebug(ctx: BattleContext) {
 
   win.__VITE_DEBUG__.getScriptedReplayReadiness = getScriptedReplayReadiness
 
-  win.__VITE_DEBUG__.waitForBattleReady = () => {
-    return new Promise((resolve) => {
+  win.__VITE_DEBUG__.waitForBattleReady = (timeoutMs = MAX_BATTLE_READY_TIMEOUT_MS, options?: { skipImmediate?: boolean }) => {
+    return new Promise((resolve, reject) => {
       const checkCurrentReady = () => {
         const detail = getScriptedReplayReadiness()
         if (detail.over || detail.isReady) {
@@ -197,30 +198,52 @@ export function setupBattleDebug(ctx: BattleContext) {
       }
 
       // 1. Chequeo sincrónico inicial
-      const immediateReady = checkCurrentReady()
-      if (immediateReady) {
-        resolve(immediateReady)
-        return
+      if (!options?.skipImmediate) {
+        const immediateReady = checkCurrentReady()
+        if (immediateReady) {
+          resolve(immediateReady)
+          return
+        }
       }
 
       // 2. Reactividad Vue (watch) y evento battle-ready-for-input
       let unwatch: (() => void) | null = null
+      let timer: ReturnType<typeof setTimeout> | null = null
+
+      const cleanup = () => {
+        if (unwatch) unwatch()
+        if (timer) clearTimeout(timer)
+        window.removeEventListener(BATTLE_UI_EVENTS.READY_FOR_INPUT, handler)
+      }
 
       const onReady = (detail: unknown) => {
         if (!isBattleReadyForInputDetail(detail)) {
-          throw new Error(`[battleDebug] Invalid ${BATTLE_UI_EVENTS.READY_FOR_INPUT} detail payload`)
+          cleanup()
+          reject(new Error(`[battleDebug] Invalid ${BATTLE_UI_EVENTS.READY_FOR_INPUT} detail payload`))
+          return
         }
-        if (unwatch) unwatch()
-        window.removeEventListener(BATTLE_UI_EVENTS.READY_FOR_INPUT, handler)
+        cleanup()
         resolve(detail)
       }
 
       const handler = (e: Event) => {
         if (!(e instanceof CustomEvent)) {
-          throw new Error(`[battleDebug] ${BATTLE_UI_EVENTS.READY_FOR_INPUT} must be a CustomEvent`)
+          cleanup()
+          reject(new Error(`[battleDebug] ${BATTLE_UI_EVENTS.READY_FOR_INPUT} must be a CustomEvent`))
+          return
         }
         onReady(e.detail)
       }
+
+      timer = setTimeout(() => {
+        cleanup()
+        const currentDetail = getScriptedReplayReadiness()
+        if (currentDetail.isReady || currentDetail.over) {
+          resolve(currentDetail)
+          return
+        }
+        reject(new Error(`[battleDebug] Timeout (${timeoutMs}ms) waiting for battle-ready-for-input. Current state: ${JSON.stringify(currentDetail)}`))
+      }, timeoutMs)
 
       window.addEventListener(BATTLE_UI_EVENTS.READY_FOR_INPUT, handler, { once: true })
 
@@ -232,7 +255,7 @@ export function setupBattleDebug(ctx: BattleContext) {
             onReady(res)
           }
         },
-        { immediate: true }
+        { immediate: !options?.skipImmediate }
       )
     })
   }

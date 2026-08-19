@@ -66,6 +66,10 @@ function isHistoryEntry(value: unknown): value is CertifiedBattleHistoryEntry {
       && read(value, 'p1Choice') === ''
       && read(value, 'p2Choice') !== ''
     ))
+    && (read(value, 'p1PreHeal') === undefined || read(value, 'p1PreHeal') === true)
+    && (read(value, 'p2PreHeal') === undefined || read(value, 'p2PreHeal') === true)
+    && (read(value, 'p3PreHeal') === undefined || read(value, 'p3PreHeal') === true)
+    && (read(value, 'p4PreHeal') === undefined || read(value, 'p4PreHeal') === true)
     && (read(value, 'p1Heal') === undefined || read(value, 'p1Heal') === true)
     && (read(value, 'p2Heal') === undefined || read(value, 'p2Heal') === true)
     && (read(value, 'p3Heal') === undefined || read(value, 'p3Heal') === true)

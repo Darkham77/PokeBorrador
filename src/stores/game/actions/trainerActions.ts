@@ -61,12 +61,12 @@ export function useTrainerActions(state: GameState, scheduleSave: () => Promise<
 
     if (pokemon.level >= MAX_POKEMON_LEVEL) {
       pokemon.exp = 0
-      pokemon.expNeeded = Infinity
+      pokemon.expNeeded = 0
       scheduleSave()
       return
     }
 
-    while (pokemon.exp >= pokemon.expNeeded && pokemon.level < MAX_POKEMON_LEVEL) {
+    while (pokemon.expNeeded > 0 && pokemon.exp >= pokemon.expNeeded && pokemon.level < MAX_POKEMON_LEVEL) {
       pokemon.exp -= pokemon.expNeeded
       const pendingMoves = levelUpPokemon(pokemon)
       

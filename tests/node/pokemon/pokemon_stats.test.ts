@@ -25,9 +25,9 @@ describe('getExpNeededPure', () => {
     assert.strictEqual(getExpNeededPure(5), 91);
   });
 
-  it('returns Infinity for level 100 or above', () => {
-    assert.strictEqual(getExpNeededPure(100), Infinity);
-    assert.strictEqual(getExpNeededPure(150), Infinity);
+  it('returns 0 for level 100 or above to ensure valid JSON serialization', () => {
+    assert.strictEqual(getExpNeededPure(100), 0);
+    assert.strictEqual(getExpNeededPure(150), 0);
   });
 });
 

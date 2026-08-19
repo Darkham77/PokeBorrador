@@ -46,11 +46,19 @@ export abstract class BaseRunnerLogger {
     this.writeToFile(formatted);
   }
 
-  /** Formatea y emite un mensaje de progreso con porcentaje calculado (ej. [ 25%] (1/4) ...) */
-  public progressPercent(current: number, total: number, message: string): void {
+  /** Formatea y emite un mensaje de progreso con porcentaje calculado y emoji al inicio */
+  public progressPercent(current: number, total: number, message: string, tag = 'SUITE'): void {
     const percent = total > 0 ? Math.round((current / total) * 100) : 0;
     const paddedPercent = `${percent}`.padStart(3, ' ');
-    const formattedMsg = `[${paddedPercent}%] (${current}/${total}) ${message}`;
+    const knownEmojis = ['▶️', '✅', '❌', '✨', '🚀', '⚠️', '⏭️', '💡', '🎉'];
+    const matchedEmoji = knownEmojis.find(e => message.startsWith(e));
+    if (matchedEmoji) {
+      const cleanMsg = message.slice(matchedEmoji.length).trim();
+      const formattedMsg = `${matchedEmoji} [${tag}] [${paddedPercent}%] (${current}/${total}) ${cleanMsg}`;
+      this.progress(formattedMsg);
+      return;
+    }
+    const formattedMsg = `▶️ [${tag}] [${paddedPercent}%] (${current}/${total}) ${message}`;
     this.progress(formattedMsg);
   }
 

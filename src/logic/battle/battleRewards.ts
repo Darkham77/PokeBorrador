@@ -36,7 +36,7 @@ export function processExpGain(p: Pokemon, baseExp: number, _participants: Set<s
 
   if (p.level >= MAX_POKEMON_LEVEL) {
     p.exp = 0;
-    p.expNeeded = Infinity;
+    p.expNeeded = 0;
     return { gained: 0, levelUp: false, levelsGained: 0 };
   }
 
@@ -49,7 +49,7 @@ export function processExpGain(p: Pokemon, baseExp: number, _participants: Set<s
   let tempLevel = p.level
   let tempExpNeeded = p.expNeeded
 
-  while (p.exp >= tempExpNeeded && tempLevel < MAX_POKEMON_LEVEL) {
+  while (tempExpNeeded > 0 && p.exp >= tempExpNeeded && tempLevel < MAX_POKEMON_LEVEL) {
     p.exp -= tempExpNeeded
     levelUp = true
     levelsGained++
@@ -63,7 +63,7 @@ export function processExpGain(p: Pokemon, baseExp: number, _participants: Set<s
 
   if (tempLevel >= MAX_POKEMON_LEVEL) {
     p.exp = 0;
-    p.expNeeded = Infinity;
+    p.expNeeded = 0;
   }
 
   return { gained, levelUp, levelsGained }

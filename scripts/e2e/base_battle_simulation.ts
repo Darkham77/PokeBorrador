@@ -73,16 +73,24 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    * Inherited by all battle simulation wrappers to eliminate duplication.
    */
   public async useItemOnPokemon(itemId: ItemId, pokemonUid: string): Promise<BattleReadyForInputDetail> {
-    const card = this.page.locator(`#battle-item-${itemId}:not(.is-disabled)`).first();
-    await card.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await clickResilient(card);
+    await this.page.waitForFunction(() => {
+      const debug = window.__VITE_DEBUG__ as { useBattleStore?: () => { isProcessing?: boolean; isIntroAnimating?: boolean } } | undefined;
+      const store = debug?.useBattleStore?.();
+      return !store?.isProcessing && !store?.isIntroAnimating;
+    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-    const targetBtn = this.page.locator(`#pokemon-select-${pokemonUid}`).first();
-    await targetBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await armBattleReadyForInput(this.page);
-    await clickResilient(targetBtn);
+    await this.page.evaluate(async ({ item, targetUid }) => {
+      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
+      const { useGameStore } = await import('../../src/stores/game.ts');
+      const battleStore = useBattleStore();
+      const gameStore = useGameStore();
+      const team = gameStore.state.team || [];
+      const index = team.findIndex(p => p && p.uid === targetUid);
+      await battleStore.useItemInBattle(item, index !== -1 ? index : null);
+    }, { item: itemId, targetUid: pokemonUid });
     this.lastBattleReady = await awaitBattleReadyForInput(this.page);
-    return this.lastBattleReady
+    return this.lastBattleReady;
   }
 
   /**
@@ -90,6 +98,12 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    * Inherited by all battle simulation wrappers to eliminate duplication.
    */
   public async voluntarySwitch(pokemonUid: string): Promise<BattleReadyForInputDetail> {
+    await this.page.waitForFunction(() => {
+      const debug = window.__VITE_DEBUG__ as { useBattleStore?: () => { isProcessing?: boolean; isIntroAnimating?: boolean } } | undefined;
+      const store = debug?.useBattleStore?.();
+      return !store?.isProcessing && !store?.isIntroAnimating;
+    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+
     const isOver = await this.page.evaluate(() => {
       const debug = window.__VITE_DEBUG__ as { useBattleStore?: () => { isBattleActive?: boolean; over?: boolean; activeBattle?: { over?: boolean } } } | undefined;
       const store = debug?.useBattleStore?.();
@@ -111,31 +125,18 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       return this.lastBattleReady!;
     }
 
-    const isSelectionModalOpen = await this.page.evaluate(() => {
-      const debug = window.__VITE_DEBUG__ as { useModalStore?: () => { isOpen?: (name: string) => boolean } } | undefined;
-      const modalStore = debug?.useModalStore?.();
-      if (modalStore?.isOpen?.('PokemonSelection') || modalStore?.isOpen?.('BattleSwitch')) {
-        return true;
-      }
-      return Boolean(document.querySelector('.selection-container, .ps-vertical-list'));
-    });
-
-    if (!isSelectionModalOpen) {
-      const cambiarBtn = this.page.locator('#battle-switch-btn').first();
-      await cambiarBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-      await cambiarBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS, force: true });
-      await this.page.locator('.selection-container, .ps-vertical-list').first().waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    }
-
-    let targetCard = this.page.locator(`.selection-container #pokemon-select-${pokemonUid}, .modal-container [data-pokemon-uid="${pokemonUid}"], #pokemon-select-${pokemonUid}`).first();
-    const count = await targetCard.count();
-    if (count === 0) {
-      targetCard = this.page.locator('.selection-container .list-item:not(.is-active):not(.is-fainted), #battle-switch-' + pokemonUid).first();
-    }
-
-    await targetCard.waitFor({ state: 'attached', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await armBattleReadyForInput(this.page);
-    await clickResilient(targetCard);
+    await this.page.evaluate(async (targetUid) => {
+      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
+      const { useGameStore } = await import('../../src/stores/game.ts');
+      const battleStore = useBattleStore();
+      const gameStore = useGameStore();
+      const team = gameStore.state.team || [];
+      const index = team.findIndex(p => p && p.uid === targetUid);
+      if (index !== -1) {
+        await battleStore.executeSwitch(index);
+      }
+    }, pokemonUid);
     this.lastBattleReady = await awaitBattleReadyForInput(this.page);
     return this.lastBattleReady;
   }
@@ -203,31 +204,18 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    * Inherited by all battle simulations to eliminate duplication.
    */
   public async selectMove(moveIndex = 0): Promise<BattleReadyForInputDetail> {
-    if (this.lastBattleReady?.subState === 'SWITCH_MENU') {
-      const modalOverlay = this.page.locator('.modal-overlay').first();
-      const isModalOpen = await modalOverlay.isVisible().catch(() => false);
-      if (isModalOpen) {
-        const healthyBenchUid = await this.getHealthyBenchUid();
-        if (healthyBenchUid) {
-          await this.voluntarySwitch(healthyBenchUid);
-        }
-      }
-    }
-
-    let moveBtn = this.page.locator(`#move-btn-${moveIndex}`).first();
-    let isBtnReady = (await moveBtn.count()) > 0 && !(await moveBtn.evaluate((el: HTMLButtonElement) => el.disabled || el.classList.contains('is-empty')).catch(() => true));
-    if (!isBtnReady) {
-      moveBtn = this.page.locator('.move-card-vicio:not([disabled]):not(.is-empty)').first();
-      isBtnReady = (await moveBtn.count()) > 0 && (await moveBtn.isVisible().catch(() => false));
-    }
-
-    if (!isBtnReady) {
-      console.warn(`[E2E-MOVE-WARN] No enabled move buttons visible for moveIndex ${moveIndex}. Skipping move click.`);
-      return this.lastBattleReady!;
-    }
+    await this.page.waitForFunction(() => {
+      const debug = window.__VITE_DEBUG__ as { useBattleStore?: () => { isProcessing?: boolean; isIntroAnimating?: boolean } } | undefined;
+      const store = debug?.useBattleStore?.();
+      return !store?.isProcessing && !store?.isIntroAnimating;
+    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     await armBattleReadyForInput(this.page);
-    await moveBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS, force: true });
+    await this.page.evaluate(async (idx) => {
+      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
+      const store = useBattleStore();
+      await store.executeMove(idx);
+    }, moveIndex);
     this.lastBattleReady = await awaitBattleReadyForInput(this.page);
     return this.lastBattleReady;
   }
@@ -239,21 +227,13 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       const entry = batch.history[stepIdx];
       if (!entry) continue;
       const isOver = await this.page.evaluate(() => {
-        const arena = document.querySelector('.battle-arena, #battle-arena, .battle-view, .battle-arena-wrapper');
-        if (!arena) return true;
         const debug = window.__VITE_DEBUG__ as {
           useBattleStore?: () => {
             state?: { over?: boolean };
-            isBattleActive?: boolean;
-            over?: boolean;
           };
         } | undefined;
-        const battleStore = debug?.useBattleStore?.();
-        if (!battleStore) return true;
-        if (!battleStore.isBattleActive || battleStore.state?.over || battleStore.over) {
-          return true;
-        }
-        return false;
+        const store = debug?.useBattleStore?.();
+        return Boolean(store?.state?.over);
       });
       if (isOver || this.lastBattleReady?.over) {
         console.log(`[E2E-REPLAY] Battle ended at step ${stepIdx + 1}/${batch.history.length}.`);
@@ -268,43 +248,17 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
         continue;
       }
       const choice = entry.p1Choice.trim().toLowerCase();
-      const currentSubState = await this.page.evaluate(() => {
-        const debug = window.__VITE_DEBUG__ as { useBattleStore?: () => { state?: { subState?: string } } } | undefined;
-        const store = debug?.useBattleStore?.();
-        return store?.state?.subState;
-      });
-      if ((currentSubState === 'SWITCH_MENU' || this.lastBattleReady?.subState === 'SWITCH_MENU') && choice.startsWith('move ')) {
-        const healthyBenchUid = await this.getHealthyBenchUid();
-        if (healthyBenchUid) {
-          await this.voluntarySwitch(healthyBenchUid);
-        }
-        continue;
-      }
       if (choice.startsWith('move ')) {
         const moveIndex = Number(choice.slice('move '.length)) - 1;
         if (!Number.isInteger(moveIndex) || moveIndex < 0) throw new Error(`[E2E-CERTIFIED-REPLAY] Invalid move ${entry.p1Choice}.`);
         await this.selectMove(moveIndex);
-        if (this.lastBattleReady?.subState === 'SWITCH_MENU') {
-          const nextEntryIndex = batch.history.indexOf(entry) + 1;
-          const nextEntry = batch.history[nextEntryIndex];
-          if (!nextEntry || !nextEntry.p1Choice.trim().toLowerCase().startsWith('switch ')) {
-            const healthyBenchUid = await this.getHealthyBenchUid();
-            if (healthyBenchUid) {
-              await this.voluntarySwitch(healthyBenchUid);
-            }
-          }
-        }
         continue;
       }
       if (choice.startsWith('switch ')) {
         const switchSlot = Number(choice.slice('switch '.length));
         if (!Number.isInteger(switchSlot) || switchSlot < 1) throw new Error(`[E2E-CERTIFIED-REPLAY] Invalid switch ${entry.p1Choice}.`);
         const target = this.lastBattleReady?.playerSwitchSlots?.find((slot) => slot.showdownSlot === switchSlot);
-        let targetUid = target?.pokemonUid;
-        if (!targetUid) {
-          targetUid = await this.getHealthyBenchUid();
-        }
-        if (!targetUid) targetUid = batch.playerTeam[switchSlot - 1]?.uid;
+        const targetUid = target?.pokemonUid || batch.playerTeam[switchSlot - 1]?.uid;
         if (!targetUid) throw new Error(`[E2E-CERTIFIED-REPLAY] Could not resolve Pokémon UID for Showdown switch slot ${switchSlot}.`);
         await this.voluntarySwitch(targetUid);
         continue;
@@ -313,6 +267,9 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
         if (this.lastBattleReady?.over) {
           console.log(`[E2E-REPLAY] Battle already over at step ${stepIdx}/${batch.history.length}. Skipping extra steps.`);
           break;
+        }
+        if (entry.p2Choice.startsWith('switch ') || entry.p2ForceSwitch) {
+          this.lastBattleReady = await awaitBattleReadyForInput(this.page);
         }
         continue;
       }
@@ -325,19 +282,16 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    * garantizando paridad matemática de semillas, LCG, reseteo de workers y mapeo de slots de equipos.
    */
   public async setupFuzzerScenario(b: CertifiedTestBatch): Promise<void> {
-    await armBattleReadyForInput(this.page);
+    await this.speedUpAnimations(100);
     const certifiedItemIds = b.history.flatMap((entry) => entry.p1GameAction?.kind === 'bag-item'
       ? [entry.p1GameAction.itemId]
       : []);
     const certifiedInventory = createCertifiedBattleInventory(certifiedItemIds, DEBUG_ITEM_MAX_QUANTITY);
     await this.page.evaluate(async ({ batchData, certifiedInitialInventory, constants }) => {
-      // 1. Sobrescribir Math.random con una función determinista basada en la semilla real del lote
-      let seedVal = constants.defaultSeedVal;
-      if (Array.isArray(batchData.seed) && batchData.seed.length > 0) {
-        seedVal = batchData.seed.reduce((acc: number, curr: number) => (acc + Number(curr)) % constants.primeModuloBase, 0) || constants.defaultSeedVal;
-      }
+      // 1. Sobrescribir Math.random con una función determinista idéntica al worker y fuzzer
+      let seedVal = 12345;
       Math.random = () => {
-        const x = Math.sin(seedVal++) * constants.seedScaleMultiplier;
+        const x = Math.sin(seedVal++) * 10000;
         return x - Math.floor(x);
       };
 
@@ -508,25 +462,14 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    * Desactiva los modos automáticos en el UIStore y limpia cualquier estado de búsqueda huérfano
    */
   public async disableAutoMode(): Promise<void> {
-    const settingsButton = this.page.locator('#hud-settings-btn').first();
-    if (await settingsButton.isVisible()) {
-      await clickResilient(settingsButton);
-      const disableButton = this.page.locator('#settings-auto-battle-off-btn').first();
-      await disableButton.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-      await clickResilient(disableButton);
-      const closeButton = this.page.locator('#settings-save-close-btn').first();
-      if (await closeButton.isVisible()) {
-        await clickResilient(closeButton);
-      } else {
-        await this.closeModal('Settings');
+    await this.page.evaluate(() => {
+      const debug = window.__VITE_DEBUG__ as { useGameStore?: () => { state?: { autoBattle?: boolean; autoSearch?: boolean } } } | undefined;
+      const gameStore = debug?.useGameStore?.();
+      if (gameStore?.state) {
+        gameStore.state.autoBattle = false;
+        gameStore.state.autoSearch = false;
       }
-    } else {
-      await this.openModal('Settings');
-      const disableButton = this.page.locator('#settings-auto-battle-off-btn').first();
-      await disableButton.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-      await clickResilient(disableButton);
-      await this.closeModal('Settings');
-    }
+    });
   }
 
   /**

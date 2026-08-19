@@ -8,9 +8,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: Math.max(1, Math.floor(os.cpus().length / 4)),
+  workers: process.env.CI ? 2 : Math.max(2, Math.floor(os.cpus().length / 4)),
   maxFailures: 1,
-  reporter: 'list',
+  reporter: [['./scripts/e2e/logging/playwright_fuzzer_reporter.ts']],
   timeout: 60000,
   use: {
     baseURL: 'http://localhost:5174',

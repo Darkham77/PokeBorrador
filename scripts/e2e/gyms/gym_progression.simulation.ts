@@ -50,8 +50,7 @@ class GymProgressionSimulation extends BaseBattleSimulation {
 test.describe('Gym Progression & Badges Challenge Simulation', () => {
   test('should challenge Pewter Gym, defeat Brock, and earn the Rock Badge', async ({ page }) => {
     test.setTimeout(MAX_SUITE_TOTAL_TIMEOUT_MS);
-    const testUser = `TEST_GYM_${Temporal.Now.instant().epochMilliseconds.toString()}`;
-    const sim = new GymProgressionSimulation(page, testUser);
+    const sim = new GymProgressionSimulation(page, 'GymTestUser');
 
     // 1. Setup session y login
     await sim.setup();
