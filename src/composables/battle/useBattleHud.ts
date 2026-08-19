@@ -152,17 +152,17 @@ export function useBattleHud(
   })
 
   const activeEnemyIsSilhouette = computed(() => {
+    if (animations.isWildSilhouette.value) return true
     if (toValue(battleStore.isSilhouetteMode)) return true
     const state = toValue(battleStore.fsm?.currentState)
-    if (state && ['INITIALIZING', 'SEARCH_PHASE', 'FIRST_INTRO'].includes(state)) {
+    if (state === 'SEARCH_PHASE') {
       const s = toValue(battleStore.state)
       if (s && !s.isTrainer && !s.isGym) return true
     }
     const sub = toValue(battleStore.fsm?.currentSubState)
     if (!sub) return false
     return [
-      'PARALLEL_PREP', 'PARALLEL_ENTRY', 'BUSH_VISIBLE', 'SILHOUETTE_MODE', 'COMBAT_OR_FLEE', 
-      'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'PARALLEL_JUMP', 'MINIGAME_CHECK'
+      'PARALLEL_PREP', 'PARALLEL_ENTRY', 'BUSH_VISIBLE', 'SILHOUETTE_MODE', 'COMBAT_OR_FLEE'
     ].includes(sub)
   })
 
@@ -211,6 +211,11 @@ export function useBattleHud(
   })
 
   const shouldShowEncounterLayers = computed(() => {
+    const state = toValue(battleStore.fsm?.currentState)
+    if (state && ['ACTIVE_BATTLE', 'REORDER_TEAM', 'REWARDS_PHASE', 'LEVEL_UP_MODAL', 'EXIT_BATTLE'].includes(state)) {
+      return false
+    }
+
     const animState = animations.enemyAnimState.value
     if (animState && ['catching', 'trapped', 'releasing'].includes(animState)) return false
     if (animations.isCaptureSequenceActive.value || animations.isFaintInProgress.value) return false
@@ -221,7 +226,7 @@ export function useBattleHud(
       return isWildEncounter.value
     }
 
-    return isWildEncounter.value && (battleStore.isSearching || animations.wildRevealActive.value)
+    return isWildEncounter.value && (toValue(battleStore.isSearching) || animations.wildRevealActive.value)
   })
 
   return {

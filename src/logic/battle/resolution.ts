@@ -137,18 +137,6 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
   active.over = true
   ctx.faintedSides.value.clear()
 
-  // Terminar el Web Worker de Showdown y limpiar clima global en el mapa
-  import('./orchestrator.ts').then(({ showdownWorker }) => {
-    if (showdownWorker) {
-      showdownWorker.terminate();
-      // Null out the reference to prevent dangling postMessage to terminated worker
-      import('./showdownWorkerClient.ts').then(({ setShowdownWorker }) => setShowdownWorker(null));
-    }
-  });
-
-
-
-
   // Limpiar todos los estados volátiles del equipo al terminar la batalla
   if (ctx.gs.state.team) {
     ctx.gs.state.team.forEach((p: Pokemon | null) => {

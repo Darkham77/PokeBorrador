@@ -33,3 +33,9 @@ This document governs DBRouter isolation, save state shields, remote DB protecti
 
 - **100% Immutable Test Fixtures**: Static test fixtures and databases (e.g., `tests/fixtures/poke_local_ash.db`, `server_franco_backup_fixture.json`) MUST remain strictly read-only and immutable.
 - **Isolated Ephemeral Execution**: Automated tests running migrations or updates MUST NEVER execute directly against fixture files on disk. Tests MUST instantiate ephemeral in-memory databases (`:memory:`) or duplicate the fixture to a temporary file (`os.tmpdir()`) with guaranteed cleanup in a `finally` block (`fs.unlinkSync`).
+
+## 7. SQL Query Adapter Key Parity & Wasm Bind Safety
+
+- **Strict Column Name Parity**: In database query proxies (`ProxyQuery`, `DBRouter`), JavaScript payload keys translate directly into SQL column identifiers. All database operations MUST use canonical `snake_case` keys matching the SQL schema. CamelCase keys are strictly forbidden in database table payloads.
+- **Wasm SQLite Bind Parameter Normalization**: WebAssembly SQLite engines (`sql.js`) reject `undefined` parameter values. Query builders MUST sanitize all bind parameters, converting `undefined` to `null` before dispatching to SQLite.
+- **Real-Schema Integration Testing**: Persistence synchronization helpers (`syncUserProfileData`, save handlers) MUST be verified with integration tests running against actual SQLite schemas (`DatabaseSync` / `:memory:`) to guarantee column parity.

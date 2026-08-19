@@ -43,6 +43,10 @@ class DummyWorker {
     }
   }
   terminate() {}
+  addEventListener(type: string, handler: (e: MessageEvent) => void) {
+    if (type === 'message') this.onmessage = handler
+  }
+  removeEventListener() {}
   onmessage: ((ev: MessageEvent) => void) | null = null
 }
 

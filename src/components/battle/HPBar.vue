@@ -28,26 +28,47 @@ const audioStore = useAudioStore()
 const displayHp = ref(props.hp)
 const displayExpPct = ref((props.exp / props.expNeeded) * 100)
 const xpAnimationActive = ref(false)
+const HP_ANIM_DURATION_SEC = 0.6
+const EXP_FILL_DURATION_SEC = 0.4
+const EXP_SETTLE_DURATION_SEC = 0.6
+const EXP_UPDATE_DURATION_SEC = 0.5
+const PERCENT_MAX = 100
 
-watch(() => props.pokemonUid, () => {
+const lastSeenUid = ref(props.pokemonUid)
+const lastSeenLevel = ref(props.level)
+
+watch(() => props.pokemonUid, (newUid) => {
+  lastSeenUid.value = newUid
+  lastSeenLevel.value = props.level
+  xpAnimationActive.value = false
   displayHp.value = props.hp
+  displayExpPct.value = props.expNeeded > 0 ? (props.exp / props.expNeeded) * PERCENT_MAX : 0
 })
 
 watch(() => props.hp, (newHp) => {
   gsap.to(displayHp, {
     value: newHp,
-    duration: 0.6,
+    duration: HP_ANIM_DURATION_SEC,
     ease: 'power2.out'
   })
 })
 
-watch(() => props.level, (newLevel, oldLevel) => {
-  if (oldLevel && newLevel > oldLevel) {
-    // Orquestación de barra de XP
+watch(() => [props.level, props.exp, props.expNeeded] as const, ([newLevel, newExp, newExpNeeded]) => {
+  if (lastSeenUid.value !== props.pokemonUid) {
+    lastSeenUid.value = props.pokemonUid
+    lastSeenLevel.value = newLevel
+    xpAnimationActive.value = false
+    displayExpPct.value = newExpNeeded > 0 ? (newExp / newExpNeeded) * PERCENT_MAX : 0
+    return
+  }
+
+  if (lastSeenLevel.value !== undefined && newLevel > lastSeenLevel.value) {
+    lastSeenLevel.value = newLevel
+    xpAnimationActive.value = true
     const tl = gsap.timeline()
     tl.to(displayExpPct, {
-      value: 100,
-      duration: 0.4,
+      value: PERCENT_MAX,
+      duration: EXP_FILL_DURATION_SEC,
       ease: 'power2.in',
       onComplete: () => {
         displayExpPct.value = 0
@@ -55,19 +76,21 @@ watch(() => props.level, (newLevel, oldLevel) => {
       }
     })
     .to(displayExpPct, {
-      value: (props.exp / props.expNeeded) * 100,
-      duration: 0.6,
+      value: newExpNeeded > 0 ? (newExp / newExpNeeded) * PERCENT_MAX : 0,
+      duration: EXP_SETTLE_DURATION_SEC,
+      ease: 'power2.out',
+      onComplete: () => {
+        xpAnimationActive.value = false
+      }
+    })
+  } else {
+    lastSeenLevel.value = newLevel
+    gsap.to(displayExpPct, {
+      value: newExpNeeded > 0 ? (newExp / newExpNeeded) * PERCENT_MAX : 0,
+      duration: EXP_UPDATE_DURATION_SEC,
       ease: 'power2.out'
     })
   }
-}, { immediate: false })
-
-watch(() => props.exp, (newExp) => {
-  gsap.to(displayExpPct, {
-    value: (newExp / props.expNeeded) * 100,
-    duration: 0.5,
-    ease: 'power2.out'
-  })
 })
 
 const HP_PCT_GREEN_THRESHOLD = 50

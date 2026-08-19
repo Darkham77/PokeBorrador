@@ -3,12 +3,13 @@ import { gameBus } from '@/logic/events/gameBus';
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator';
 import type { BattleCombatantProps } from '@/types/battle/battle';
 import {
-  GSAP_FAST_DURATION_SEC,
-  GSAP_STANDARD_DURATION_SEC,
   COMBATANT_FAINT_Y_OFFSET,
   COMBATANT_FAINT_DURATION_SEC,
   ATTACK_DASH_DISTANCE_PX,
   ATTACK_PREP_DISTANCE_PX,
+  ATTACK_PHYSICAL_PREP_DURATION_SEC,
+  ATTACK_PHYSICAL_DASH_DURATION_SEC,
+  ATTACK_PHYSICAL_RETURN_DURATION_SEC,
   SELFKO_SHAKE_COUNT,
   SELFKO_SHAKE_RANGE_PX,
   SELFKO_SHAKE_DURATION_SEC,
@@ -177,9 +178,9 @@ export function buildAttackTimeline(
     const dashDist = ATTACK_DASH_DISTANCE_PX;
     const prepDist = ATTACK_PREP_DISTANCE_PX;
 
-    tl.to(spriteEl, { x: nx * prepDist, y: ny * prepDist, duration: GSAP_FAST_DURATION_SEC })
-      .to(spriteEl, { x: nx * dashDist, y: ny * dashDist, scale: ATTACK_SPECIAL_SCALE, duration: GSAP_STANDARD_DURATION_SEC, ease: 'power2.out' })
-      .to(spriteEl, { x: 0, y: 0, scale: 1, duration: GSAP_STANDARD_DURATION_SEC, ease: 'power1.inOut' });
+    tl.to(spriteEl, { x: nx * prepDist, y: ny * prepDist, duration: ATTACK_PHYSICAL_PREP_DURATION_SEC, ease: 'power1.out' })
+      .to(spriteEl, { x: nx * dashDist, y: ny * dashDist, scale: ATTACK_SPECIAL_SCALE, duration: ATTACK_PHYSICAL_DASH_DURATION_SEC, ease: 'power2.out' })
+      .to(spriteEl, { x: 0, y: 0, scale: 1, duration: ATTACK_PHYSICAL_RETURN_DURATION_SEC, ease: 'power1.inOut' });
   } else if (cat === 'special') {
     tl.fromTo(spriteEl,
       { filter: 'Brightness(1)', x: 0, y: 0, scale: 1 },

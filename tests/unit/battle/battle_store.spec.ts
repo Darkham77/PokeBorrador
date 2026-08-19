@@ -136,10 +136,22 @@ describe('Battle Store - Weather Reset', () => {
 
     // Mock global Worker
     class MockWorker {
-      postMessage() {}
+      postMessage(data: unknown) {
+        const msg = data as { type?: string }
+        if (msg?.type === 'INIT_BATTLE') {
+          setTimeout(() => {
+            if (this.onmessage) {
+              this.onmessage({ data: { type: 'INIT_BATTLE_SUCCESS' } } as MessageEvent)
+            }
+          }, 0)
+        }
+      }
       terminate() {}
-      addEventListener() {}
+      addEventListener(type: string, handler: (e: MessageEvent) => void) {
+        if (type === 'message') this.onmessage = handler
+      }
       removeEventListener() {}
+      onmessage: ((ev: MessageEvent) => void) | null = null
     }
     (globalThis as unknown as Record<string, unknown>).Worker = MockWorker
   })

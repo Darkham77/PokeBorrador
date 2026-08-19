@@ -168,6 +168,7 @@ export function useBattleAnimations(
         case 'BUSH_FADE':
           isWildEntryAnimation.value = true
           wildRevealActive.value = true 
+          silhouetteOpacity.value = 1
           isWildSilhouette.value = true
           isEmerging.value = true
           break

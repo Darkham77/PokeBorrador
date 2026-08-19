@@ -238,6 +238,8 @@ export interface Pokemon {
   choiceMove?: PokemonMoveId;
   originalDitto?: Partial<Pokemon>;
   form?: string; // domain-ok
+  size?: string; // domain-ok
+  height?: number;
 }
 
 

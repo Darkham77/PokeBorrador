@@ -9,6 +9,7 @@ export interface PokemonFilterCriteria {
   activeTags: string[]
   excludeUids?: string[]
   allowedIds?: string[] | null
+  allowedSpecies?: string[] | null
   isBattleSwitch?: boolean
   activePokemonUid?: string | null
   allowDead?: boolean
@@ -36,6 +37,10 @@ export function filterAndSortPokemon(
     if (criteria.isBattleSwitch && p.hp <= 0 && !criteria.allowDead) return false
     
     if (criteria.allowedIds && !criteria.allowedIds.includes(p.uid)) return false
+    
+    if (criteria.allowedSpecies && criteria.allowedSpecies.length > 0) {
+      if (!criteria.allowedSpecies.includes(p.id) && !criteria.allowedSpecies.includes(p.species)) return false
+    }
     
     if (criteria.searchQuery) {
       const q = criteria.searchQuery.toLowerCase() // text-ok

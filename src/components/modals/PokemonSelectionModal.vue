@@ -43,6 +43,7 @@ interface Props {
   preventClose?: boolean
   allowDead?: boolean
   allowedIds?: string[] | null
+  allowedSpecies?: string[] | null
   isItemContext?: boolean
   customList?: Pokemon[]
   isDaycareContext?: boolean
@@ -67,6 +68,7 @@ const props = withDefaults(defineProps<Props>(), {
   preventClose: false,
   allowDead: false,
   allowedIds: null,
+  allowedSpecies: null,
   isItemContext: false,
   customList: () => [],
   isDaycareContext: false,
@@ -174,6 +176,7 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: PokemonSelectionS
     activeTags: activeTags.value,
     excludeUids: props.excludeUids,
     allowedIds: props.allowedIds,
+    allowedSpecies: props.allowedSpecies,
     isBattleSwitch: props.isBattleSwitch,
     activePokemonUid: props.activePokemonUid,
     allowDead: props.allowDead

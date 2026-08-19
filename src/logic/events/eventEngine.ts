@@ -19,7 +19,10 @@ export interface EventConfig {
   speciesRateMult?: number;
   speciesShinyMult?: number;
   ignoreTimeRestrictions?: boolean;
-  banner?: string;
+  banner?: string; // domain-ok
+  metric?: string; // domain-ok
+  hasCompetition?: boolean;
+  sortBy?: string; // domain-ok
 }
 
 export interface Event {

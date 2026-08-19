@@ -10,7 +10,8 @@ import { useMapStore } from '@/stores/map.ts'
 import { useErrorStore } from '@/stores/errorStore.ts'
 import { isEventActiveNow, getGlobalMultipliers, getSpeciesBoosts, type Event as GameEvent } from '@/logic/events/eventEngine'
 import { getServerTime } from '@/logic/utils/timeUtils'
-import type { PendingAward } from '@/types/system/stores'
+import type { PendingAward, CompetitionEntry } from '@/types/system/stores'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 export const useEventStore = defineStore('events', () => {
   const gameStore = useGameStore()
@@ -21,6 +22,7 @@ export const useEventStore = defineStore('events', () => {
   const allEvents = ref<GameEvent[]>([])
   const activeEvents = ref<GameEvent[]>([])
   const pendingAwards = ref<PendingAward[]>([])
+  const userEntries = ref<Record<string, CompetitionEntry>>({})
   const isLoading = ref(false)
 
   // Watch for game cycle ticks to re-evaluate active events
@@ -56,6 +58,9 @@ export const useEventStore = defineStore('events', () => {
       const synchronizedDate = Temporal.Instant.fromEpochMilliseconds(getServerTime())
       activeEvents.value = (events || []).filter((ev: GameEvent) => isEventActiveNow(ev, synchronizedDate))
 
+      // 3. Fetch user competition entries
+      await fetchUserEntries()
+
       // 4. Check for unclaimed prizes
       await checkPendingAwards()
     } catch (e) {
@@ -70,6 +75,31 @@ export const useEventStore = defineStore('events', () => {
   }
 
   /**
+   * Fetches competition entries belonging to the current user.
+   */
+  async function fetchUserEntries() {
+    if (!authStore.user || !gameStore.db) return
+    try {
+      const res = await gameStore.db.from('competition_entries')
+        .select('*')
+        .eq('player_id', authStore.user.id)
+      
+      const entries = res.data as CompetitionEntry[] | null // domain-ok
+      if (!res.error && entries) {
+        const entryMap: Record<string, CompetitionEntry> = {}
+        for (const e of entries) {
+          if (e.event_id) {
+            entryMap[e.event_id] = e
+          }
+        }
+        userEntries.value = entryMap
+      }
+    } catch (e) {
+      logger.warn('Events', `Error fetching competition entries: ${(e as Error).message}`)
+    }
+  }
+
+  /**
    * Submits a Pokemon to a weekly competition.
    */
   async function submitCompetitionEntry(eventId: string, pokemonUid: string) {
@@ -80,10 +110,29 @@ export const useEventStore = defineStore('events', () => {
     if (!authStore.user || !gameStore.db) return
 
     try {
-      const entryData = {
+      const box = (gameStore.state.box || []) as (Pokemon | null)[]
+      const team = (gameStore.state.team || []) as (Pokemon | null)[]
+      const pokemon = [...team, ...box].find(p => p && p.uid === pokemonUid)
+      
+      const ivs = pokemon?.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
+      const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
+
+      const entryData: CompetitionEntry = {
         event_id: eventId,
         player_id: authStore.user.id,
+        player_name: authStore.user.user_metadata?.username || authStore.user.user_metadata?.full_name || authStore.user.email?.split('@')[0] || 'Entrenador',
+        player_email: authStore.user.email || '',
         pokemon_uid: pokemonUid,
+        data: {
+          species: pokemon?.id,
+          name: pokemon?.name,
+          nickname: pokemon?.nickname,
+          level: pokemon?.level || 1,
+          total_ivs: totalIvs,
+          ivs,
+          is_shiny: pokemon?.isShiny || false,
+          size: pokemon?.size
+        },
         submitted_at: Temporal.Now.instant().toString()
       }
       
@@ -104,6 +153,7 @@ export const useEventStore = defineStore('events', () => {
           source: 'submitCompetitionEntry'
         })
       } else {
+        userEntries.value[eventId] = { ...entryData, id: entry.id }
         uiStore.notify('¡Pokémon registrado exitosamente!', '✅')
       }
     } catch (e) {
@@ -167,9 +217,11 @@ export const useEventStore = defineStore('events', () => {
     allEvents,
     activeEvents,
     pendingAwards,
+    userEntries,
     isLoading,
     globalMultipliers,
     fetchEvents,
+    fetchUserEntries,
     submitCompetitionEntry,
     checkPendingAwards,
     claimAward,

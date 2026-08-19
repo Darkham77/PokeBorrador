@@ -115,6 +115,18 @@ export const ATTACK_DASH_DISTANCE_PX = 60;
 /** Physical attack windup preparation distance in pixels. */
 export const ATTACK_PREP_DISTANCE_PX = -15;
 
+/** Snappy physical attack windup duration in seconds (0.08s). */
+export const ATTACK_PHYSICAL_PREP_DURATION_SEC = 0.08;
+
+/** Snappy physical attack forward dash strike duration in seconds (0.14s). */
+export const ATTACK_PHYSICAL_DASH_DURATION_SEC = 0.14;
+
+/** Snappy physical attack return to seat duration in seconds (0.14s). */
+export const ATTACK_PHYSICAL_RETURN_DURATION_SEC = 0.14;
+
+/** Snappy combat damage hit shake duration in seconds (0.25s). */
+export const COMBATANT_DAMAGE_SHAKE_DUR_SEC = 0.25;
+
 /** Pokeball enter scale-in animation duration in seconds. */
 export const POKEBALL_APPEAR_DURATION_SEC = 0.4;
 

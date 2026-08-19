@@ -48,113 +48,120 @@ export async function initWorkerForBattle(
 
   console.debug(`[E2E-SEED-DEBUG] Initializing worker battle. context=${JSON.stringify({ initialWeatherOfficial, debugSeed, seedArr })}`)
 
-  const worker = showdownWorker!
-
-  const handleWorkerError = (event: ErrorEvent) => {
-    const errorText = event.message || 'Showdown worker failed before initializing the battle'
-    logger.error('ShowdownWorker', `Error del worker al inicializar batalla: ${errorText}`)
-    if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
-      window.__VITE_DEBUG__.lastWorkerInitError = errorText
-    }
-    if (worker.removeEventListener) {
-      worker.removeEventListener('error', handleWorkerError)
-    }
-  }
-  if (worker.addEventListener) {
-    worker.addEventListener('error', handleWorkerError)
-  }
-
-  const initHandler = async (e: MessageEvent) => {
-    const data = e.data as {
-      type: string
-      payload?: {
-        debugLogs?: string[]
-        p1Request?: ShowdownPlayerRequest
-        p2Request?: ShowdownPlayerRequest
-        message?: string
-      }
-    }
-    const { type: responseType, payload: responsePayload } = data
-    if (responseType === 'WORKER_LOG') {
-      const stage = responsePayload?.message ?? 'missing-stage'
-      console.debug(`[WORKER] ${stage}`)
-      if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
-        window.__VITE_DEBUG__.lastWorkerInitStage = stage
-      }
-      return
-    }
-    const activeWorker = showdownWorker!
-    if (responseType === 'INIT_BATTLE_SUCCESS') {
-      logger.info('ShowdownWorker', 'Batalla inicializada con éxito en el worker.')
-      console.debug('[E2E-ORCHESTRATOR-INIT-DEBUG] responsePayload keys:', Object.keys(responsePayload || {}))
-      if (responsePayload) {
-        console.debug('[E2E-ORCHESTRATOR-INIT-DEBUG] debugLogs type:', typeof responsePayload.debugLogs, 'isArray:', Array.isArray(responsePayload.debugLogs))
-        if (responsePayload.debugLogs) {
-          console.debug('[E2E-ORCHESTRATOR-INIT-DEBUG] debugLogs length:', responsePayload.debugLogs.length)
-          responsePayload.debugLogs.forEach((l: string) => {
-            console.debug(`[E2E-WORKER-BUFFERED] ${l}`)
-          })
-        }
-      }
-      if (ctx.activeBattle.value && responsePayload) {
-        ctx.activeBattle.value.playerRequest = responsePayload.p1Request
-        ctx.activeBattle.value.enemyRequest = responsePayload.p2Request
-      }
-      if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
-        window.__VITE_DEBUG__.p1ChoiceIdx = window.__VITE_DEBUG__.p1ChoiceIdx ?? 0
-        window.__VITE_DEBUG__.p2ChoiceIdx = window.__VITE_DEBUG__.p2ChoiceIdx ?? 0
-        window.dispatchEvent(new CustomEvent('worker-init-complete'))
-      }
-      if (activeWorker.removeEventListener) {
-        activeWorker.removeEventListener('message', initHandler)
-        activeWorker.removeEventListener('error', handleWorkerError)
-      } else {
-        activeWorker.onmessage = null
-      }
-    } else if (responseType === 'ERROR') {
-      const errorText = responsePayload?.message || 'Error desconocido'
-      logger.error('ShowdownWorker', `Error del simulador al inicializar batalla: ${errorText}`)
+  return new Promise<void>((resolve, reject) => {
+    const worker = showdownWorker!
+    const handleWorkerError = (event: ErrorEvent) => {
+      const errorText = event.message || 'Showdown worker failed before initializing the battle'
+      logger.error('ShowdownWorker', `Error del worker al inicializar batalla: ${errorText}`)
       if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
         window.__VITE_DEBUG__.lastWorkerInitError = errorText
       }
-      if (activeWorker.removeEventListener) {
-        activeWorker.removeEventListener('message', initHandler)
-        activeWorker.removeEventListener('error', handleWorkerError)
+      if (worker.removeEventListener) {
+        worker.removeEventListener('error', handleWorkerError)
+        worker.removeEventListener('message', initHandler)
       } else {
-        activeWorker.onmessage = null
+        worker.onmessage = null
       }
-      const { useErrorStore } = await import('@/stores/errorStore')
-      useErrorStore().setError(new Error(errorText), { 
-        type: 'Simulator Initialization Error', 
-        source: 'ShowdownWorker INIT_BATTLE' 
-      })
+      reject(new Error(errorText))
     }
-  }
-
-  if (worker.addEventListener) {
-    worker.addEventListener('message', initHandler)
-  } else {
-    worker.onmessage = initHandler
-  }
-
-  const initPayload = {
-    type: 'INIT_BATTLE',
-    payload: {
-      p1: { name: p1Data.name, team: p1Data.team },
-      p2: { name: p2Data.name, team: p2Data.team },
-      p1Hps: p1Data.hps,
-      p2Hps: p2Data.hps,
-      p1Statuses: p1Data.statuses,
-      p2Statuses: p2Data.statuses,
-      weather: initialWeatherOfficial,
-      seed: seedArr,
-      isDeterministicSimulation: !!(typeof window !== 'undefined' && window.__VITE_DEBUG__ && window.__VITE_DEBUG__.isDeterministicSimulation),
-      history: (typeof window !== 'undefined' && window.__VITE_DEBUG__ && ((window.__VITE_DEBUG__ as Record<string, unknown>).history as unknown[])) || [] // open-record // no-domain
+    if (worker.addEventListener) {
+      worker.addEventListener('error', handleWorkerError)
     }
-  }
-  try {
-    worker.postMessage(initPayload)
-  } catch (error: unknown) {
-    throw new Error(`[ShowdownWorker] INIT_BATTLE payload could not be transferred: ${(error as Error).message}`, { cause: error })
-  }
+
+    const initHandler = async (e: MessageEvent) => {
+      const data = e.data as {
+        type: string
+        payload?: {
+          debugLogs?: string[]
+          p1Request?: ShowdownPlayerRequest
+          p2Request?: ShowdownPlayerRequest
+          message?: string
+        }
+      }
+      const { type: responseType, payload: responsePayload } = data
+      if (responseType === 'WORKER_LOG') {
+        const stage = responsePayload?.message ?? 'missing-stage'
+        console.debug(`[WORKER] ${stage}`)
+        if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
+          window.__VITE_DEBUG__.lastWorkerInitStage = stage
+        }
+        return
+      }
+      const activeWorker = showdownWorker!
+      if (responseType === 'INIT_BATTLE_SUCCESS' || responseType === 'INIT_SUCCESS') {
+        logger.info('ShowdownWorker', 'Batalla inicializada con éxito en el worker.')
+        console.debug('[E2E-ORCHESTRATOR-INIT-DEBUG] responsePayload keys:', Object.keys(responsePayload || {}))
+        if (responsePayload) {
+          console.debug('[E2E-ORCHESTRATOR-INIT-DEBUG] debugLogs type:', typeof responsePayload.debugLogs, 'isArray:', Array.isArray(responsePayload.debugLogs))
+          if (responsePayload.debugLogs) {
+            console.debug('[E2E-ORCHESTRATOR-INIT-DEBUG] debugLogs length:', responsePayload.debugLogs.length)
+            responsePayload.debugLogs.forEach((l: string) => {
+              console.debug(`[E2E-WORKER-BUFFERED] ${l}`)
+            })
+          }
+        }
+        if (ctx.activeBattle.value && responsePayload) {
+          ctx.activeBattle.value.playerRequest = responsePayload.p1Request
+          ctx.activeBattle.value.enemyRequest = responsePayload.p2Request
+        }
+        if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
+          window.__VITE_DEBUG__.p1ChoiceIdx = window.__VITE_DEBUG__.p1ChoiceIdx ?? 0
+          window.__VITE_DEBUG__.p2ChoiceIdx = window.__VITE_DEBUG__.p2ChoiceIdx ?? 0
+          window.dispatchEvent(new CustomEvent('worker-init-complete'))
+        }
+        if (activeWorker.removeEventListener) {
+          activeWorker.removeEventListener('message', initHandler)
+          activeWorker.removeEventListener('error', handleWorkerError)
+        } else {
+          activeWorker.onmessage = null
+        }
+        resolve()
+      } else if (responseType === 'ERROR') {
+        const errorText = responsePayload?.message || 'Error desconocido'
+        logger.error('ShowdownWorker', `Error del simulador al inicializar batalla: ${errorText}`)
+        if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
+          window.__VITE_DEBUG__.lastWorkerInitError = errorText
+        }
+        if (activeWorker.removeEventListener) {
+          activeWorker.removeEventListener('message', initHandler)
+          activeWorker.removeEventListener('error', handleWorkerError)
+        } else {
+          activeWorker.onmessage = null
+        }
+        const { useErrorStore } = await import('@/stores/errorStore')
+        useErrorStore().setError(new Error(errorText), { 
+          type: 'Simulator Initialization Error', 
+          source: 'ShowdownWorker INIT_BATTLE' 
+        })
+        reject(new Error(errorText))
+      }
+    }
+
+    if (worker.addEventListener) {
+      worker.addEventListener('message', initHandler)
+    } else {
+      worker.onmessage = initHandler
+    }
+
+    const initPayload = {
+      type: 'INIT_BATTLE',
+      payload: {
+        p1: { name: p1Data.name, team: p1Data.team },
+        p2: { name: p2Data.name, team: p2Data.team },
+        p1Hps: p1Data.hps,
+        p2Hps: p2Data.hps,
+        p1Statuses: p1Data.statuses,
+        p2Statuses: p2Data.statuses,
+        weather: initialWeatherOfficial,
+        seed: seedArr,
+        isDeterministicSimulation: !!(typeof window !== 'undefined' && window.__VITE_DEBUG__ && window.__VITE_DEBUG__.isDeterministicSimulation),
+        history: (typeof window !== 'undefined' && window.__VITE_DEBUG__ && ((window.__VITE_DEBUG__ as Record<string, unknown>).history as unknown[])) || [] // open-record // no-domain
+      }
+    }
+    try {
+      worker.postMessage(initPayload)
+    } catch (error: unknown) {
+      reject(new Error(`[ShowdownWorker] INIT_BATTLE payload could not be transferred: ${(error as Error).message}`, { cause: error }))
+    }
+  })
 }

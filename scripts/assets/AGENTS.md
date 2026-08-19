@@ -22,4 +22,4 @@ Automation scripts for assets downloads, multi-core WebP sprite conversion, craf
 
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- [helpers/](./helpers/AGENTS.md): Domain module documentation for asset helper utilities.

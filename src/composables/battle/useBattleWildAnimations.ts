@@ -1,8 +1,12 @@
-import { ref, toValue, type MaybeRefOrGetter, watch } from 'vue'
+import { ref, toValue, type MaybeRefOrGetter } from 'vue'
 import { gsap } from 'gsap'
 import { gameBus } from '@/logic/events/gameBus'
 import { awaitAnimation, createTimeline } from '@/logic/utils/gsapHelpers'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+
+const EMERGE_JUMP_DURATION_SEC = 0.5
+const EMERGE_SETTLE_DURATION_SEC = 0.3
+const REVEAL_DURATION_SEC = 0.6
 
 export function useBattleWildAnimations(
   enemyRef: MaybeRefOrGetter<Pokemon | null | undefined>
@@ -17,16 +21,6 @@ export function useBattleWildAnimations(
   const isInitialLoad = ref(true)
   const silhouetteOpacity = ref(0)
 
-  // Watch silhouette mode: trigger battle cry immediately when leaving silhouette/shadow state
-  watch(isWildSilhouette, (newVal, oldVal) => {
-    if (oldVal === true && newVal === false) {
-      const enemy = toValue(enemyRef)
-      if (enemy) {
-        gameBus.emit('PLAY_CRY', { name: enemy.id || enemy.name })
-      }
-    }
-  })
-
   const revealWildPokemon = async (isInstant = false) => {
     if (isInstant) {
       isWildSilhouette.value = false
@@ -40,13 +34,17 @@ export function useBattleWildAnimations(
     isWildEntryAnimation.value = true
     isEmerging.value = false 
     
+    const enemy = toValue(enemyRef)
+    if (enemy) {
+      gameBus.emit('PLAY_CRY', { name: enemy.id })
+    }
+
     const tl = createTimeline()
-    tl.to({}, { duration: 0.6 })
+    tl.to({}, { duration: REVEAL_DURATION_SEC })
     tl.add(() => {
       isWildSilhouette.value = false
       isWildEntryAnimation.value = false
       wildRevealActive.value = false
-      const enemy = toValue(enemyRef)
       if (enemy?.isShiny) {
         gameBus.emit('PLAY_SOUND', 'shiny')
       }
@@ -60,22 +58,26 @@ export function useBattleWildAnimations(
     const tl = createTimeline()
     
     isWildEntryAnimation.value = true
+    isWildSilhouette.value = true
+    wildRevealActive.value = true
     isEmerging.value = false
 
     tl.to({}, { 
-      duration: 0.5, 
-      onStart: () => { isEmerging.value = true },
-      onComplete: () => { wildRevealActive.value = false }
+      duration: EMERGE_JUMP_DURATION_SEC, 
+      onStart: () => { 
+        isEmerging.value = true
+      },
+      onComplete: () => { 
+        // Pasar de figura/silueta a normal durante el salto en el aire
+        isWildSilhouette.value = false
+        wildRevealActive.value = false
+      }
     })
     
     tl.to({}, {
-      duration: 0.4,
-      onComplete: () => { isWildSilhouette.value = false }
-    })
-
-    tl.to({}, {
-      duration: 0.3,
+      duration: EMERGE_SETTLE_DURATION_SEC,
       onComplete: () => {
+        // Al tocar el suelo, culmina la animación y queda listo para combate
         isWildEntryAnimation.value = false
         isEmerging.value = false
         const enemy = toValue(enemyRef)

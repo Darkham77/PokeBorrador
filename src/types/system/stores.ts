@@ -188,12 +188,36 @@ export interface PendingAward {
   prize_summary?: string; // domain-ok
 }
 
+export interface CompetitionEntryData {
+  species?: PokemonSpeciesId;
+  name?: string; // domain-ok
+  nickname?: string | null; // domain-ok
+  level?: number;
+  total_ivs?: number;
+  ivs?: Record<string, number>; // open-record
+  is_shiny?: boolean;
+  size?: string; // domain-ok
+}
+
+export interface CompetitionEntry {
+  id?: string; // domain-ok
+  event_id: string; // domain-ok
+  player_id: string; // domain-ok
+  player_name?: string; // domain-ok
+  player_email?: string; // domain-ok
+  pokemon_uid: string; // domain-ok
+  data?: CompetitionEntryData;
+  submitted_at?: string; // domain-ok
+}
+
 export interface EventStore {
   activeEvents: Event[];
   pendingAwards: PendingAward[];
+  userEntries: Record<string, CompetitionEntry>; // open-record
   isLoading: boolean;
   globalMultipliers: Partial<GlobalMultipliers>;
   fetchEvents: () => Promise<void>;
+  fetchUserEntries: () => Promise<void>;
   checkPendingAwards: () => Promise<void>;
   submitCompetitionEntry: (eventId: string, pokemonUid: string) => Promise<void>;
   claimAward: (awardId: string) => Promise<string | null>;

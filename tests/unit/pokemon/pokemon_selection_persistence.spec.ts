@@ -151,4 +151,32 @@ describe('PokemonSelectionModal Persistence', () => {
     expect(vm.availablePokemon).toHaveLength(1)
     expect(vm.availablePokemon[0]!.pokemon.name).toBe('Bulbasaur')
   })
+
+  it('filters available pokemon by allowedSpecies prop', async () => {
+    mockGameStore.state = {
+      team: [
+        { uid: 'u1', id: 'pikachu', name: 'Pikachu', level: 10 },
+        { uid: 'u2', id: 'magikarp', name: 'Magikarp', nickname: 'Chispa', level: 39 },
+        { uid: 'u3', id: 'pidgey', name: 'Pidgey', level: 5 }
+      ] as unknown as Pokemon[],
+      box: [] as Pokemon[],
+      pokedex: [] as string[]
+    }
+
+    const wrapper = mount(PokemonSelectionModal, {
+      props: {
+        allowedSpecies: ['magikarp']
+      },
+      global: {
+        stubs: {
+          BaseModal: true,
+          PVTooltip: true
+        }
+      }
+    })
+
+    const vm = wrapper.vm as unknown as SelectionModalInstance
+    expect(vm.availablePokemon).toHaveLength(1)
+    expect(vm.availablePokemon[0]!.pokemon.name).toBe('Magikarp')
+  })
 })

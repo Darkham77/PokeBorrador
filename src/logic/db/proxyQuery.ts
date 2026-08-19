@@ -291,7 +291,8 @@ export class ProxyQuery {
       if (final === 'maybeSingle') return { data: data[0] || null, error: null, count };
       return { data, error: null, count };
     } catch (e: unknown) {
-      logger.error('ProxyQuery', `executeLocal critical failure: ${(e as Error).message}`);
+      const errorMsg = e instanceof Error ? e.message : String(e);
+      logger.error('ProxyQuery', `executeLocal critical failure: ${errorMsg}`);
       return { data: null, error: e };
     }
   }
@@ -304,13 +305,14 @@ export class ProxyQuery {
         const r = row as Record<string, unknown>; // open-record
         const cols = Object.keys(r);
         const marks = cols.map(() => '?').join(',');
-        const vals = cols.map(c => typeof r[c] === 'object' ? JSON.stringify(r[c]) : r[c]);
+        const vals = cols.map(c => r[c] === undefined || r[c] === null ? null : typeof r[c] === 'object' ? JSON.stringify(r[c]) : r[c]);
         sqliteDb.run(`INSERT OR REPLACE INTO ${this.table} (${cols.join(',')}) VALUES (${marks})`, vals);
       }
       await persistSQLite();
       return { data: this.actionData, error: null };
     } catch (e: unknown) {
-      logger.error('ProxyQuery', `Upsert/Insert failed for ${this.table}: ${(e as Error).message}`);
+      const errorMsg = e instanceof Error ? e.message : String(e);
+      logger.error('ProxyQuery', `Upsert/Insert failed for ${this.table}: ${errorMsg}`);
       return { data: null, error: e };
     }
   }
@@ -319,14 +321,14 @@ export class ProxyQuery {
     try {
       const data = this.actionData as Record<string, unknown>; // open-record
       const setClause = Object.keys(data).map(k => `${k} = ?`).join(',');
-      const params: unknown[] = Object.values(data).map(v => typeof v === 'object' ? JSON.stringify(v) : v);
+      const params: unknown[] = Object.values(data).map(v => v === undefined || v === null ? null : typeof v === 'object' ? JSON.stringify(v) : v);
       
       const where: string[] = []; // no-domain
       this.chain.forEach(s => {
-        if (s.type === 'eq') { where.push(`${s.args[0]} = ?`); params.push(s.args[1]); }
+        if (s.type === 'eq') { where.push(`${s.args[0]} = ?`); params.push(s.args[1] ?? null); }
         if (s.type === 'match') {
           Object.entries(s.args[0] as Record<string, unknown>).forEach(([k, v]) => { // open-record
-            where.push(`${k} = ?`); params.push(v);
+            where.push(`${k} = ?`); params.push(v ?? null);
           });
         }
       });
@@ -337,7 +339,8 @@ export class ProxyQuery {
       await persistSQLite();
       return { data: this.actionData, error: null };
     } catch (e: unknown) {
-      logger.error('ProxyQuery', `Update failed for ${this.table}: ${(e as Error).message}`);
+      const errorMsg = e instanceof Error ? e.message : String(e);
+      logger.error('ProxyQuery', `Update failed for ${this.table}: ${errorMsg}`);
       return { data: null, error: e };
     }
   }
@@ -356,7 +359,8 @@ export class ProxyQuery {
       await persistSQLite();
       return { data: null, error: null };
     } catch (e: unknown) {
-      logger.error('ProxyQuery', `Delete failed for ${this.table}: ${(e as Error).message}`);
+      const errorMsg = e instanceof Error ? e.message : String(e);
+      logger.error('ProxyQuery', `Delete failed for ${this.table}: ${errorMsg}`);
       return { data: null, error: e };
     }
   }

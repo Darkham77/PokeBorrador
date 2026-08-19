@@ -129,6 +129,7 @@ const onEnter = (el: Element, done: () => void) => {
 }
 
 const onLeave = (el: Element, done: () => void) => {
+  stopWiggles()
   if (props.hideInstant) {
     gsap.set(el, { opacity: ZERO_OPACITY })
     done()
