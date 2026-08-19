@@ -51,6 +51,8 @@ QA / Automation Engineers.
 - **NPC AI Choice Testing (Math.random Mocking)**: Since default NPC AI configurations have a 50% random error rate (`errorRate: 0.50`), unit and integration tests that verify specific AI move choices must mock or spy on `Math.random` (`vi.spyOn(Math, 'random')`) to ensure deterministic evaluation of heuristics instead of random selection.
 - **GSAP Timer Mocking & Teardown in Vitest**: When mocking `gsap.delayedCall` in `tests/vitest.setup.ts`, always call `timerId.unref()` on the created `setTimeout` handles and track active timers in a set cleared in `afterEach`. This prevents unclosed timer handles from blocking Vitest worker processes from exiting or throwing stack overflows on recursive animations.
 - **Node 26 WebStorage Fork Flag**: Under Node.js 26+, child worker processes spawned via Vitest fork pools should include `execArgv: ['--no-experimental-webstorage']` in `vitest.config.ts` to prevent internal experimental WebStorage threads from keeping libuv event loops active.
+- **Streamed Simulation Runner Output Mandate**: Long-running sequential simulation drivers MUST use asynchronous `spawn` with real-time `stdout`/`stderr` chunk piping instead of blocking `execSync` buffering.
+- **Emoji-First Log Formatting**: All simulation and worker logs MUST start strictly with the action emoji at column 0 (`▶️`, `✅`, `❌`, `✨`, `🚀`, `⚠️`, `⏭️`) followed by `[TAG] [PROGRESS%] (CURRENT/TOTAL) Message`.
 
 ## Verification
 
