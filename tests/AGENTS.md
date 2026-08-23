@@ -16,8 +16,7 @@ QA / Automation Engineers.
 - Zero-any policy in mocks and signatures.
 - All test suites run under **Vitest** (vite-node) via `vitest.workspace.ts`. Regression checks MUST ALWAYS run the full test suite (`npm run test`), never subset commands like `test:unit` or `test:node` alone.
 - Keep mock definitions in sync with backend schema updates to prevent validation failures.
-- Use the DBRouter to isolate E2E local database queries from external profiles.
-- **TypeScript Strict Mocking (No any)**: When testing components with generic wrappers or stubbed properties where props are not fully inferred, do NOT cast variables or properties to "any". Define explicit interfaces local to the spec file and cast via double assertion (e.g. `wrapper.props() as unknown as CustomProps`) to preserve the Zero-Any integrity rule.
+- **TypeScript Strict Mocking (Zero Any / Zero Unknown Casts)**: When testing components, schemas, or systems, all mock structures must be fully typed and conformant to their canonical schemas (e.g. `BattleState`, `SaveDataDto`). Never use `any`, `as unknown as`, or artificial type casts to bypass type safety. Declare complete test objects or local typed helpers.
 
 ## Work Guidance
 

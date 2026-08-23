@@ -18,6 +18,7 @@ Frontend Developers / Systems Engineers.
   - `showdownBridgeCtx.ts` — shared context utilities (getPoke, getSide, etc.)
 - **smogonAdapter.ts**: Shared `@smogon/calc` wrapper for the move damage tooltip. Injects actual game stats into `rawStats` (bypassing the EV/IV formula) to ensure accuracy with the adventure-mode custom stat system. Exposes `calculateDamageForTooltip()` with a 512-entry LRU cache. Field conditions (terrain, screens) flow from the bridge into `BattleState` and are consumed here to produce accurate damage ranges, KO probabilities, recovery, and recoil.
 - **Tooltip Data Flow**: `showdownBridgeField.ts` → `BattleState.terrain`/`playerSideConditions`/`enemySideConditions` → `smogonAdapter.ts` → `useMoveTooltip.ts` (damageRange, koChance, recovery, recoil, fieldConditions) → `MoveTooltip.vue`.
+- **statBreakdownHelper.ts**: Centralized, modular stat calculation engine that computes effective stats and comprehensive breakdown metadata (base value, stages, stage multiplier, weather multiplier, ability multiplier, item multiplier, status multiplier, field multiplier, and modifier source descriptions) across combatants. Consumed by `battleMath.ts`, `battleFormulas.ts`, and `BattleInfoCard.vue`.
 - **Zero-Any Policy**: `showdown.worker.ts` uses `PkmnSimSide` interface for internal `@pkmn/sim` types — never use `any`.
 - **HP Snapshot Helper**: Use `collectHpSnapshots(store, active)` (defined in
   `battleTurn.ts`) to collect uid-keyed HP and status maps for both sides before

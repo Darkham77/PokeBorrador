@@ -7,9 +7,7 @@ import { DATABASE_MIGRATIONS } from '@/logic/db/migrations_data';
 import { splitSQLStatements, translatePostgresToSqlite } from '@/logic/db/sqlTranslator';
 import { validateAndSanitize } from '@/logic/auth/saveSanitizer';
 import { serializeState } from '@/logic/auth/saveSerializer';
-import type { GameState } from '@/types/system/game';
 import type { SaveDataDto } from '@/logic/validation/schemas';
-import { INITIAL_STATE } from '@/stores/gameInitialState';
 
 const BACKUP_FIXTURE_PATH = path.resolve(process.cwd(), 'tests/node/fixtures/server_franco_backup_fixture.json');
 
@@ -81,15 +79,8 @@ describe('Backup Saves Serialization & Integrity Audit', () => {
 
       const loadedDto = sanitizeResult.data;
 
-      // 2. Simulación de rehidratación en SaveDataDto
-      const mockGameState: SaveDataDto = {
-        ...INITIAL_STATE,
-        ...loadedDto,
-        activeBattle: null,
-      };
-
-      // 3. Serialización del estado completo
-      const serialized = serializeState(mockGameState);
+      // 2. Serialización del estado migrado
+      const serialized = serializeState(loadedDto);
 
       // 4. Re-validación del save serializado (roundtrip)
       const roundtripSanitize = validateAndSanitize(serialized);

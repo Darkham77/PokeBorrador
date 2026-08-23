@@ -2843,7 +2843,7 @@ export const FIRE_RED_MAPS: MapLocation[] = [
       },
       "cold": {
         "visitors": {
-          "haunter": 100
+          "marowak": 100
         }
       },
       "mist": {

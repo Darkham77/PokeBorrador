@@ -2,7 +2,6 @@ import type { StatIDExceptHP } from '@/logic/pokemon/statsMath'
 import type { PurePokemon, PureBattleWeather, PureBattleStages } from './battleMathTypes.ts'
 import type { DayPhase } from '@/logic/utils/timeUtils'
 import { ACTIVE_GENERATION } from '@/data/system/constants'
-import { isWeatherId } from '../weather/weatherRegistry.ts'
 
 const DEFAULT_FALLBACK_STAT = 10
 const SNOW_ICE_DEF_MULTIPLIER = 1.5
@@ -59,25 +58,13 @@ export interface DetailedStatBreakdown {
   sources: StatModifierSource[]
 }
 
+import { getMechanicalWeather } from '../weather/weatherRegistry.ts'
+
 export interface StatBreakdownOptions {
   isGym?: boolean
   dayCycle?: DayPhase
   sideConditions?: Record<string, unknown>
   fieldConditions?: Record<string, unknown>
-}
-
-function normalizeMechWeather(type: string | null | undefined): string {
-  if (!type) return 'clear'
-  const lower = isWeatherId(type) ? type : null
-  if (!lower) return 'clear'
-  if (['sun', 'heatwave', 'intense_sun', 'sunnyday', 'desolateland'].includes(lower)) return 'sun'
-  if (['rain', 'storm', 'heavy_rain', 'raindance', 'primordialsea'].includes(lower)) return 'rain'
-  if (['sandstorm', 'dust_storm'].includes(lower)) return 'sandstorm'
-  if (['snow', 'hail', 'blizzard', 'cold', 'coldwave'].includes(lower)) return 'snow'
-  if (['fog', 'mist'].includes(lower)) return 'fog'
-  if (['thunderstorm'].includes(lower)) return 'thunderstorm'
-  if (['strong_winds', 'deltastream'].includes(lower)) return 'clear'
-  return 'clear'
 }
 
 /**
@@ -93,7 +80,7 @@ export function calculateDetailedStatBreakdown(
   const { isGym = false, dayCycle = 'day', sideConditions = {}, fieldConditions = {} } = options
 
   const isMoveWeather = !!(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1)
-  const mechWeather = (isGym && !isMoveWeather) ? 'clear' : normalizeMechWeather(weather?.type)
+  const mechWeather = (isGym && !isMoveWeather) ? 'clear' : getMechanicalWeather(weather?.type)
   const rawWeatherType = weather?.type || 'clear'
 
   // 1. Base Stat

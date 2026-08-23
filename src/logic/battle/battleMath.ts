@@ -33,22 +33,8 @@ const WEATHER_KEYS = { SUN: 'sun', RAIN: 'rain', SANDSTORM: 'sandstorm', SNOW: '
 
 const dexGen = Dex.forGen(ACTIVE_GENERATION);
 
-import { isWeatherId } from '../weather/weatherRegistry.ts';
+import { getMechanicalWeather } from '../weather/weatherRegistry.ts';
 import { isPokemonType } from '../../data/battle/types.ts';
-
-function getMechWeather(type: string | null | undefined): string {
-  if (!type) return 'clear';
-  const lower = isWeatherId(type) ? type : null;
-  if (!lower) return 'clear';
-  if (['sun', 'heatwave', 'intense_sun', 'sunnyday', 'desolateland'].includes(lower)) return 'sun';
-  if (['rain', 'storm', 'heavy_rain', 'raindance', 'primordialsea'].includes(lower)) return 'rain';
-  if (['sandstorm', 'dust_storm'].includes(lower)) return 'sandstorm';
-  if (['snow', 'hail', 'blizzard', 'cold', 'coldwave'].includes(lower)) return 'snow';
-  if (['fog', 'mist'].includes(lower)) return 'fog';
-  if (['thunderstorm'].includes(lower)) return 'thunderstorm';
-  if (['strong_winds', 'deltastream'].includes(lower)) return 'clear';
-  return 'clear';
-}
 
 
 function getTypeEff(moveType: string | undefined, defType: string | undefined, scrapy = false): number {
@@ -117,7 +103,7 @@ export function getAbilityMultiplierPure(attacker: PurePokemon, move: PureMove, 
   }
 
   if (weather && weather.turns !== 0) {
-    const mech = getMechWeather(weather.type);
+    const mech = getMechanicalWeather(weather.type);
     if (ab === 'sandforce' && mech === WEATHER_KEYS.SANDSTORM) {
       if (moveType === 'ground' || moveType === 'rock' || moveType === 'steel') {
         mult *= 1.3; triggeredAbility = ab;
@@ -181,7 +167,7 @@ export function calculateDamagePure(
 
   if (power === 0) return { dmg: 0, eff, isNoEffect: eff === 0 };
 
-  const mechWeather = getMechWeather(weather?.type);
+  const mechWeather = getMechanicalWeather(weather?.type);
   const isPhysical = moveCat === 'physical';
 
   const aStages: PureBattleStages = { [isPhysical ? 'atk' : 'spa']: atkStages };
@@ -291,7 +277,7 @@ export function calculateDamagePure(
 
   // Delta Stream (strong_winds) remueve debilidades del tipo volador
   let finalEff = eff;
-  const isStrongWinds = (!isGym || isMoveWeather) && weather && weather.turns !== 0 && getMechWeather(weather.type) === 'clear' && weather.type === 'strong_winds';
+  const isStrongWinds = (!isGym || isMoveWeather) && weather && weather.turns !== 0 && (weather.type === 'strong_winds' || weather.type === 'deltastream');
   if (isStrongWinds && (defender.type === 'flying' || defender.type2 === 'flying')) {
     // Si el movimiento es super efectivo contra el defensor y este es Volador, removemos la debilidad
     if (finalEff > 1) {
@@ -316,7 +302,7 @@ export function calculateDamagePure(
   const isSolarMove = cleanMoveId === 'solarbeam' || cleanMoveId === 'solarblade';
   if (isSolarMove && weather && weather.turns !== 0) {
     const isSun = mechWeather === WEATHER_KEYS.SUN;
-    const isClear = mechWeather === WEATHER_KEYS.CLEAR;
+    const isClear = (mechWeather === WEATHER_KEYS.CLEAR || weather.type === 'clear' || weather.type === 'none') && weather.type !== 'thunderstorm';
     if ((!isGym || isMoveWeather) && !isSun && !isClear) {
       weatherMult *= 0.5;
     }

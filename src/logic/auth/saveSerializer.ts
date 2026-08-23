@@ -113,7 +113,7 @@ export function serializeState(state: GameState | SaveDataDto): SaveDataDto {
   let activeBattle: ActiveBattleSerialized | null = null;
   const battle = state.activeBattle;
 
-  if (battle && !battle.over && (battle.isTrainer || battle.isGym)) {
+  if (battle && !('over' in battle && (battle as { over?: boolean }).over) && (battle.isTrainer || battle.isGym)) {
     try {
       const serialized: ActiveBattleSerialized = {
         isGym: battle.isGym || false,

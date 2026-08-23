@@ -13,14 +13,24 @@ function requirePokemon(id: Parameters<typeof makePokemon>[0], level: number) {
 
 describe('serializeState - Active Battle serialization', () => {
   it('should serialize activeBattle successfully when a battle is active', () => {
+    const enemyPk = requirePokemon('rhydon', 50);
+    const playerPk = requirePokemon('bulbasaur', 5);
     const activeBattle: BattleState = {
+      player: playerPk,
+      enemy: enemyPk,
+      playerTeamIndex: 0,
+      enemyTeamIndex: 0,
+      turnCount: 1,
+      escapeAttempts: 0,
+      weather: { type: 'clear', visual: 'clear', turns: -1 },
       isGym: true,
       gymId: 'pewter',
       isTrainer: true,
       trainerName: 'Brock',
       locationId: 'pewter_city',
       over: false,
-      enemyTeam: [requirePokemon('rhydon', 50)]
+      enemyTeam: [enemyPk],
+      participants: [playerPk.uid, enemyPk.uid]
     };
 
     const mockState: GameState = {

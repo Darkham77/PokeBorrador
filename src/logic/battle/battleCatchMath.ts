@@ -3,22 +3,8 @@ const CATCH_MATH_65535_MAX = 65535
 const CATCH_MATH_256_MAX = 256
 import { getEffectiveStatPure } from './battleMath.ts'
 
-import { isWeatherId } from '@/logic/weather/weatherRegistry';
+import { getMechanicalWeather } from '@/logic/weather/weatherRegistry';
 import type { ItemId } from '@/data/inventory/items';
-
-function getMechWeather(type: string | null | undefined): string {
-  if (!type) return 'clear'
-  const lower = isWeatherId(type) ? type : null
-  if (!lower) return 'clear'
-  if (['sun', 'heatwave', 'intense_sun', 'sunnyday', 'desolateland'].includes(lower)) return 'sun'
-  if (['rain', 'storm', 'heavy_rain', 'raindance', 'primordialsea'].includes(lower)) return 'rain'
-  if (['sandstorm', 'dust_storm'].includes(lower)) return 'sandstorm'
-  if (['snow', 'hail', 'blizzard', 'cold', 'coldwave'].includes(lower)) return 'snow'
-  if (['fog', 'mist'].includes(lower)) return 'fog'
-  if (['thunderstorm'].includes(lower)) return 'thunderstorm'
-  if (['strong_winds', 'deltastream'].includes(lower)) return 'clear'
-  return 'clear'
-}
 
 const BALL_BEHAVIORS: Partial<Record<ItemId, { guaranteed?: boolean, mult?: number | ((p: PurePokemon, c: PureCatchOptions) => number) }>> = {
   masterball: { guaranteed: true },
@@ -27,7 +13,7 @@ const BALL_BEHAVIORS: Partial<Record<ItemId, { guaranteed?: boolean, mult?: numb
   netball: {
       mult: (p, c) => {
         const isWaterOrBug = (p.type === 'water' || p.type2 === 'water' || p.type === 'bug' || p.type2 === 'bug')
-        const mech = getMechWeather(c.weather?.type)
+        const mech = getMechanicalWeather(c.weather?.type)
         const isRain = mech === 'rain'
         return (isWaterOrBug || isRain) ? 3.5 : 1.0
       }
@@ -37,7 +23,7 @@ const BALL_BEHAVIORS: Partial<Record<ItemId, { guaranteed?: boolean, mult?: numb
         const cycle = c.cycle || 'day'
         const isNight = cycle === 'night' || cycle === 'dusk'
         const isCave = !!c.isCave
-        const mech = getMechWeather(c.weather?.type)
+        const mech = getMechanicalWeather(c.weather?.type)
         const isFog = mech === 'fog'
         return (isNight || isCave || isFog) ? 3.0 : 1.0
       }
