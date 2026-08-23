@@ -48,6 +48,13 @@ const SINGLE_FRAME_FALLBACK = 1;
 const PATH_SLICE_OFFSET = 1;
 const DEFAULT_FX_RADIUS_PX = 25;
 const FX_RADIUS_BOUND_MIN = 10;
+
+const MIN_SPECIES_SIZE_SCALE = 0.20;
+const MAX_SPECIES_SIZE_SCALE = 1.0;
+const MIN_SPECIES_SPRITE_SIZE_PX = 45;
+const MAX_SPECIES_SPRITE_SIZE_PX = 95;
+const SPECIES_SCALE_RANGE = 0.80;
+const SPECIES_SIZE_DELTA = 50;
 const FX_RADIUS_BOUND_MAX = 80;
 const FLEE_SLIDE_DURATION_SEC = 0.45;
 
@@ -193,6 +200,16 @@ export function useBattleCombatantState(
     if (!animatedMeta.value) return COMBATANT_SCALE_FACTOR_BASE;
     const maxSize = isPlayer.value ? MAX_ANIMATED_SPRITE_SIZE_BACK : MAX_ANIMATED_SPRITE_SIZE_FRONT;
     return animatedMeta.value.size / maxSize;
+  });
+
+  const speciesSizeScale = computed(() => {
+    if (!animatedMeta.value) return MAX_SPECIES_SIZE_SCALE;
+    const size = animatedMeta.value.size;
+    // 45px (Rattata/Pidgey) -> 0.20 (2 a 4 llamas)
+    // 95px+ (Charizard, Lapras, Snorlax, Onix) -> 1.0 (12 a 18 llamas completas)
+    const clampedSize = Math.max(MIN_SPECIES_SPRITE_SIZE_PX, Math.min(MAX_SPECIES_SPRITE_SIZE_PX, size));
+    const normalized = MIN_SPECIES_SIZE_SCALE + (clampedSize - MIN_SPECIES_SPRITE_SIZE_PX) * (SPECIES_SCALE_RANGE / SPECIES_SIZE_DELTA);
+    return Math.min(MAX_SPECIES_SIZE_SCALE, Math.max(MIN_SPECIES_SIZE_SCALE, normalized));
   });
 
   const displaySize = computed(() => {
@@ -525,6 +542,7 @@ const GSAP_TELEPORT_SCALEX_TARGET = 0.1;
     frames,
     frameSize,
     scaleFactor,
+    speciesSizeScale,
     displaySize,
     currentShadow,
     feetPoints,

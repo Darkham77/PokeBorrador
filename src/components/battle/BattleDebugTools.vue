@@ -167,7 +167,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
   border: 2px solid var(--purple);
   border-radius: 8px;
   width: 340px;
-  max-width: dvw;
+  max-width: 90dvw;
   max-height: 500px;
   display: flex;
   flex-direction: column;
@@ -206,7 +206,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
   border: 2px solid var(--blue);
   border-radius: 8px;
   width: 340px;
-  max-width: dvw;
+  max-width: 90dvw;
   max-height: 500px;
   display: flex;
   flex-direction: column;

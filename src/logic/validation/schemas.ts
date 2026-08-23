@@ -22,6 +22,7 @@ import {
   array,
   record,
   optional,
+  partial,
   nullable,
   literal,
   trim,
@@ -291,9 +292,11 @@ export const pokemonSchema = object({
   form: optional(string()),
 });
 
+export const partialPokemonIVsSchema = partial(pokemonIVsSchema);
+
 export const pokemonEggSchema = object({
   uid: string(),
-  id: union([string(), number()]),
+  id: string(),
   pokemonId: optional(nullable(string())),
   steps: number(),
   totalSteps: optional(number()),
@@ -303,7 +306,7 @@ export const pokemonEggSchema = object({
   nature: optional(string()),
   abilitySlot: optional(number()),
   gender: optional(nullable(union([literal('m'), literal('f'), literal('M'), literal('F'), literal('N'), literal('')]))),
-  ivs: optional(pokemonIVsSchema),
+  ivs: optional(partialPokemonIVsSchema),
   movesAtBirth: optional(array(string())),
   obtainedAt: optional(number()),
   scanned: optional(boolean()),
@@ -442,6 +445,18 @@ export const notificationItemSchema = object({
   read: optional(boolean())
 });
 
+export const claimItemSchema = object({
+  id: union([string(), number()]),
+  type: union([literal('pokemon'), literal('item'), literal('currency')]),
+  asset_data: object({
+    type: union([literal('pokemon'), literal('item'), literal('money'), literal('currency')]),
+    data: unknown()
+  }),
+  source_type: string(),
+  source_id: string(),
+  created_at: string()
+});
+
 export const saveDataSchema = object({
   trainer: string(),
   gender: optional(union([literal('h'), literal('m')])),
@@ -453,7 +468,13 @@ export const saveDataSchema = object({
   trainerLevel: number(),
   trainerExp: number(),
   trainerExpNeeded: number(),
+  trainerChance: optional(number()),
   inventory: record(string(), number()),
+  map: optional(object({
+    currentMap: string(),
+    region: string(),
+    lastNavigateAt: number()
+  })),
   team: array(pokemonSchema),
   box: array(nullable(pokemonSchema)),
   pokedex: array(string()),
@@ -467,6 +488,7 @@ export const saveDataSchema = object({
   nick_style: optional(nullable(string())),
   avatar_style: optional(nullable(string())),
   stats: optional(record(string(), unknown())),
+  guardianCaptures: optional(record(string(), string())),
   eloRating: number(),
   pvpStats: object({
     wins: number(),
@@ -500,7 +522,7 @@ export const saveDataSchema = object({
   daycare_berry_egg_time: optional(number()),
   boxCount: number(),
   chats: optional(record(string(), unknown())),
-  playerClass: optional(nullable(string())),
+  playerClass: optional(nullable(union([literal('cazabichos'), literal('criador'), literal('rocket'), literal('entrenador')]))),
   classLevel: number(),
   classXP: number(),
   classData: object({
@@ -521,16 +543,23 @@ export const saveDataSchema = object({
     officialRouteTimestamp: optional(nullable(string())),
     kitCaptures: optional(number())
   }),
-  faction: optional(nullable(string())),
+  faction: optional(nullable(union([literal('union'), literal('poder')]))),
   warCoins: number(),
   warCoinsSpent: number(),
   warDailyCap: optional(record(string(), record(string(), optional(number())))),
   warDailyCoins: optional(record(string(), optional(number()))),
   warMyPtsLocal: optional(record(string(), number())),
+  warPointsAccumulator: optional(number()),
+  lastResolvedWeek: optional(nullable(string())),
+  claimQueue: optional(array(claimItemSchema)),
+  pvpTeam: optional(array(string())),
+  warTeam: optional(array(string())),
+  warSlots: optional(number()),
   notificationHistory: optional(array(union([notificationItemSchema, string(), record(string(), unknown())]))),
   marketSoldSeenIds: optional(array(string())),
   lastPokemonCenterHeal: number(),
   playtime: number(),
+  lastSeen: optional(union([number(), string()])),
   _last_updated: optional(number())
 });
 

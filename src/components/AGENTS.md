@@ -13,6 +13,8 @@ Frontend UI Developers / UI Designers.
 
 ## Work Guidance
 
+- **Pixel Art Typography & Button Weights**: Pixel fonts (`Pokemon FireRed LeafGreen`, etc.) MUST NEVER be styled with synthetic `font-weight: bold` or `font-weight: 700`. Doing so renders blurred double-stroke outlines that destroy pixel-grid alignment. Highlighting on pixel buttons must be achieved via color gradients, distinct borders (`var(--border-relief)`), or text-shadows, never font-weight inflation.
+- **Modal Overlays & Close Buttons Standardization**: Debug and admin panels MUST use standard modal close button classes (`.modal-close-btn`), standard modal step z-index variables (`var(--z-modal-step)` / `var(--z-modal)`), and tokenized SCSS colors to ensure consistent layering and responsive click targets across all viewports.
 - Use `@include pixelated` for retro assets (sprites, badges) to keep them sharp.
 - Set container `image-rendering: pixelated` when rendering canvas or pixelated backgrounds.
 - Prevent font layout clipping on pixelated fonts (`Pokemon FireRed LeafGreen`) by setting `line-height` to at least `1.5` or `1.6` and adding top padding.

@@ -8,6 +8,7 @@ Logic Developers / Game Designers.
 
 ## Local Contracts
 
+- **100% State Serialization Completeness**: Whenever a new persisted domain field or progression property is introduced into the Pinia `GameState` / `INITIAL_STATE` (such as `playerClass`, `faction`, `classLevel`, `daycare_missions`, `map`, `claimQueue`), `serializeState()` in `src/logic/auth/saveSerializer.ts` MUST explicitly map and output the property into the `SaveDataDto` payload, and `saveDataSchema` in `src/logic/validation/schemas.ts` MUST validate it. Automated unit tests in `tests/unit/system/serialize_state.spec.ts` MUST maintain a 100% key parity assertion verifying that every non-transient property in `INITIAL_STATE` is serialized and accepted by `saveDataSchema`.
 - DBRouter-enforced isolation between online (Supabase) and offline (SQLite) data.
 - Complete separation of calculations from visual code (Pure Modules Pattern).
 - **Asset ID Immutability**: Asset/item IDs MUST pass through the system without transformation (no `.toLowerCase()`, `.replace(/_/g, '')`). The asset service resolves by exact ID. If an ID arrives malformed, throw an explicit `Error`.

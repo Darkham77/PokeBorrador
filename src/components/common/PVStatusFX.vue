@@ -7,7 +7,6 @@
 const STATUS_PARTICLE_MIN_SCALE = 0.05
 const DEFAULT_RANDOM_SCALE_MIN = 0.6
 const DEFAULT_RANDOM_SCALE_MAX = 1.3
-const STATUS_PARTICLE_COUNT_PER_EFFECT = 24
 const STATUS_GROW_DUR_RATIO = 0.8
 const DEFAULT_PARTICLE_DURATION_SEC = 0.8
 const STATUS_GROW_MAX_SCALE_MULT = 1.2
@@ -38,6 +37,7 @@ const props = defineProps({
   radius: { type: Number, required: true },
   animSeed: { type: Number, required: true },
   spriteScale: { type: Number, required: true },
+  pokeScale: { type: Number, default: 1 },
   isSimplified: { type: Boolean, required: true },
   isBattle: { type: Boolean, default: false }
 })
@@ -49,23 +49,20 @@ const engines = new Map<string, ReturnType<typeof useParticleEngine>>()
 const activeUnifiedTypes = new Map<string, number>()
 const activeStatusType = ref<string>('')
 
-const allUnifiedTypes = [
-  'shiny',
-  'confused', 'taunted', 'substitute', 'flinched', 'disabled', 'encored', 'cursed', 'attracted', 'seeded', 'trapped', 'ingrained',
-  'protected', 'enduring', 'focus', 'lockon',
-  'reflect', 'lightscreen', 'safeguard', 'mist', 'spikes'
-] as const
 
-allUnifiedTypes.forEach(type => {
-  engines.set(type, useParticleEngine())
-})
-
-const getEngine = (type: string) => engines.get(type)!
+const getEngine = (type: string) => {
+  let engine = engines.get(type)
+  if (!engine) {
+    engine = useParticleEngine()
+    engines.set(type, engine)
+  }
+  return engine
+}
 
 const applyGenericParticleSystem = (els: HTMLElement[], typeKey: string, engineInit: (els: HTMLElement[], options: ParticleSystemOptions) => void, options: { isField?: boolean, seed?: number, radius: number }) => {
   if (!els || els.length === 0) return
   
-  const settings = resolveEffectSettings(typeKey, options.radius, { isField: options.isField, isSimplified: props.isSimplified, isBattle: props.isBattle, spriteScale: props.spriteScale })
+  const settings = resolveEffectSettings(typeKey, options.radius, { isField: options.isField, isSimplified: props.isSimplified, isBattle: props.isBattle, spriteScale: props.spriteScale, pokeScale: props.pokeScale })
   
   engineInit(els, {
     seed: options.seed,
@@ -95,7 +92,7 @@ const applyGenericParticleSystem = (els: HTMLElement[], typeKey: string, engineI
         rotation: 0,
         imageRendering: 'auto',
         webkitFontSmoothing: 'none',
-        filter: typeKey === 'freeze' ? 'Drop-Shadow(0 0 8px cyan) Brightness(2)' : 'none'
+        filter: 'none'
       })
 
       const growScale = settings.randomizeVars 
@@ -226,7 +223,7 @@ const refreshAll = (forceReset = false) => {
   syncUnifiedSystems(container, forceReset)
 }
 
-watch([() => props.activeStatusEffects, () => props.isSimplified, () => props.radius], () => {
+watch([() => props.activeStatusEffects, () => props.isSimplified, () => props.radius, () => props.spriteScale, () => props.pokeScale], () => {
   nextTick(() => refreshAll(true))
 }, { immediate: true, deep: true })
 
@@ -254,10 +251,24 @@ onUnmounted(() => {
       :data-fx-type="fx.type"
     >
       <span
-        v-for="n in STATUS_PARTICLE_COUNT_PER_EFFECT"
+        v-for="n in 24"
         :key="n"
         class="status-particle"
-      >{{ fx.emoji }}</span>
+      >
+        <span
+          v-if="fx.type === 'frz' || fx.type === 'freeze'"
+          class="freeze-asset-wrapper"
+        >
+          <img
+            :src="getAssetUrl(ASSET_TYPES.FX, 'shiny')"
+            class="freeze-asset"
+            alt="Freeze"
+          >
+        </span>
+        <template v-else>
+          {{ fx.emoji }}
+        </template>
+      </span>
     </div>
 
     <!-- 2. Capas de Partículas Secundarias -->
@@ -356,7 +367,8 @@ onUnmounted(() => {
   perspective: 1000px;
 }
 
-.shiny-asset-wrapper {
+.shiny-asset-wrapper,
+.freeze-asset-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -370,6 +382,20 @@ onUnmounted(() => {
   object-fit: contain;
   // Tintado amarillo: Sepia + Saturación alta + Rotación de hue para llegar al amarillo/dorado
   filter: sepia(1) Saturate(12) hue-rotate(-15deg) Brightness(1.1);
+  @include pixelated;
+}
+
+.freeze-asset {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  // Centro blanco puro con contornos celestes (cian) a juego con el hielo del Pokémon
+  filter: Brightness(0) Invert(1)
+          Drop-Shadow(1px 0 0 Rgba(0, 255, 255, 0.95))
+          Drop-Shadow(-1px 0 0 Rgba(0, 255, 255, 0.95))
+          Drop-Shadow(0 1px 0 Rgba(0, 255, 255, 0.95))
+          Drop-Shadow(0 -1px 0 Rgba(0, 255, 255, 0.95))
+          Drop-Shadow(0 0 6px Rgba(0, 255, 255, 0.8));
   @include pixelated;
 }
 </style>

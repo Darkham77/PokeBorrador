@@ -21,6 +21,9 @@ QA / Automation Engineers.
 
 ## Work Guidance
 
+- **Save & Reload State Roundtrip Verification**: Any store feature modifying player profile, class, or progression MUST include a full roundtrip unit test simulating the entire client lifecycle: store action -> state serialization (`serializeState`) -> schema validation (`validateAndSanitize`) -> fresh Pinia store rehydration (`updateState`) to guarantee zero persistence loss on browser refresh.
+- **Immutable Backup Fixtures for Migration & Serialization Tests**: Automated test suites verifying SQL migrations, Dex compatibility, or player save serialization (`backup_saves_serialization.spec.ts`, `backup_full_validation.test.ts`) MUST exclusively load deterministic fixtures from `tests/node/fixtures/server_franco_backup_fixture.json`. Tests must NEVER load dynamic, live, or timestamped database backups from `database/backups/`, as production database snapshots evolve over time and cause test flakiness or inconsistent schema states.
+- **Exhaustive Spawn Whitelist Unit Tests**: All map encounter generators (`getFinalGroundRates`) and static map databases (`FIRE_RED_MAPS`) MUST be verified against `ENABLED_POKEMON_IDS` across all day phases (`morning`, `day`, `dusk`, `night`) and all weather conditions in `tests/unit/world/spawn_integrity.spec.ts`.
 - Whenever a bug is presented with a reproducing example, you MUST FIRST create a unit test (or other appropriate test) that successfully reproduces the bug (verifying it fails) before writing the fix to ensure it is never reintroduced.
 - **Runner**: All tests use Vitest. `tests/node/` runs with `environment: 'node'`; `tests/unit/` and `tests/integration/` run with `environment: 'jsdom'`. To validate all changes across the codebase, ALWAYS execute `npm run test`.
 - **Imports**: Use `import { describe, it, vi, beforeAll, beforeEach } from 'vitest'`. Do NOT import from `node:test`.

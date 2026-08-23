@@ -11,6 +11,7 @@ Game Designers / Data Maintainers.
 - **500/1000-Line Exemption**: Massive static databases (e.g. `pokemonFeetDatabase.ts`, `pokemonDB.ts`, `items.ts`) are completely exempt from the code modularity warning system to ensure integrity and simple copy-paste updates.
 - **Immersion Integrity**: All data attributes representing logical entity identifiers (moves, items, abilities) must be registered in English.
 - **Trainer Archetype Single Source of Truth**: All trainer type definitions must live strictly in `src/data/trainerTypes.ts`. No duplicate mappings are allowed.
+- **Map Spawns Whitelist Compliance**: All Pokémon species declared in `FIRE_RED_MAPS` (across `wild` ground pools, `fishing`, `surfing`, `rockSmash`, and `weather` visitor/exclusive tables) MUST belong strictly to `ENABLED_POKEMON_IDS` (`src/data/system/constants.ts`). Hardcoding unapproved or future generation species is strictly prohibited and validated via unit test suites.
 
 ## Work Guidance
 

@@ -94,12 +94,13 @@ export function setupBattleDebug(ctx: BattleContext) {
   }
 
   win.__VITE_DEBUG__.setSecondaryStatus = (side: string, type: string) => {
-    const target = side === 'player' ? ctx.activeBattle.value?.player : ctx.activeBattle.value?.enemy
-    if (target) {
-      if (!target.volatileCounters) target.volatileCounters = {}
-      const key = requireVolatileStatusKey(type)
-      target.volatileCounters[key] = (target.volatileCounters[key] || 0) > 0 ? 0 : 3
-    }
+    const target = (side === 'player' ? ctx.activeBattle.value?.player : ctx.activeBattle.value?.enemy) as Record<string, unknown> | undefined // open-record
+    if (!target) return
+
+    const key = requireVolatileStatusKey(type)
+    if (!target.volatileCounters) target.volatileCounters = {}
+    const vc = target.volatileCounters as Record<string, number> // open-record
+    vc[key] = vc[key] ? 0 : 3
   }
 
   win.__VITE_DEBUG__.setStatStage = (side: string, stat: keyof BattleStages, val: number) => {
@@ -113,11 +114,47 @@ export function setupBattleDebug(ctx: BattleContext) {
   }
 
   win.__VITE_DEBUG__.setFieldEffect = (side: string, effect: string, val: number) => {
-    const sideCond = side === 'player' ? ctx.activeBattle.value?.playerSideConditions : ctx.activeBattle.value?.enemySideConditions
-    if (sideCond) {
-      const key = requireBattleConditionKey(effect)
-      if (sideCond[key]) delete sideCond[key]
-      else sideCond[key] = { turns: val }
+    const key = requireBattleConditionKey(effect)
+    const stagesRef = side === 'player' ? ctx.playerStages : ctx.enemyStages
+    const active = ctx.activeBattle.value
+
+    const isScreenOrHazard = (['reflect', 'lightscreen', 'safeguard', 'mist', 'spikes', 'stealthrock', 'toxicspikes'] as const).includes(key as 'reflect' | 'lightscreen' | 'safeguard' | 'mist' | 'spikes' | 'stealthrock' | 'toxicspikes')
+    if (isScreenOrHazard) {
+      const stageKey = key === 'lightscreen' ? 'lightScreen' : key
+      const current = (stagesRef.value as Record<string, number>)[stageKey] || 0 // open-record
+      const newVal = current > 0 ? 0 : val
+      stagesRef.value = {
+        ...stagesRef.value,
+        [stageKey]: newVal
+      }
+      const sideConds = side === 'player' ? active?.playerSideConditions : active?.enemySideConditions
+      if (sideConds) {
+        if (newVal > 0) sideConds[key] = { turns: newVal }
+        else delete sideConds[key]
+      }
+      if (active) {
+        ctx.activeBattle.value = { ...active }
+      }
+      return
+    }
+
+    const CANONICAL_TERRAINS = ['electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain'] as const
+    const isTerrain = (CANONICAL_TERRAINS as readonly string[]).includes(key)
+
+    if (active) {
+      const updatedConditions = { ...(active.fieldConditions || {}) }
+      if (updatedConditions[key]) {
+        delete updatedConditions[key]
+      } else {
+        if (isTerrain) {
+          CANONICAL_TERRAINS.forEach(t => {
+            delete updatedConditions[t]
+          })
+        }
+        updatedConditions[key] = { turns: val }
+      }
+      active.fieldConditions = updatedConditions
+      ctx.activeBattle.value = { ...active, fieldConditions: updatedConditions }
     }
   }
 

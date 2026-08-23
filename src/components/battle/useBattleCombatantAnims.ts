@@ -80,8 +80,8 @@ const OPACITY_FULL = 1;
 
 function isIdleSuppressed(statusRaw: string | null | undefined, confusedCount: number | undefined, animStateRaw: string | null | undefined): boolean {
   const status = statusRaw?.toLowerCase() || ''
-  const isFrozen = status === 'freeze' || status === '🧊'
-  const isPara = status.includes('paraly') || status.includes('para') || status === '⚡'
+  const isFrozen = status === 'frz' || status === 'freeze' || status === '🧊'
+  const isPara = status === 'par' || status.includes('paraly') || status.includes('para') || status === '⚡'
   const isConfused = (confusedCount || 0) > 0
   const isTrapped = animStateRaw === 'trapped'
   const isCatching = animStateRaw === 'catching'

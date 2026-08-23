@@ -51,7 +51,7 @@ const drainPP = () => {
 </script>
 
 <template>
-  <div>
+  <div class="quick-actions-group">
     <div class="debug-row">
       <button
         id="battle-debug-kill-enemy-btn"
@@ -82,22 +82,18 @@ const drainPP = () => {
         HEAL ENEMY
       </button>
     </div>
-    <div
-      class="debug-row"
-      style="margin-top: 2px;"
-    >
+    <div class="debug-row">
       <button
+        id="battle-debug-exp-btn"
         class="debug-btn exp-btn"
         @click.stop="addExpForNextLevel"
       >
         ⚡ EXP AL SIGUIENTE NIVEL
       </button>
     </div>
-    <div
-      class="debug-row"
-      style="margin-top: 2px;"
-    >
+    <div class="debug-row">
       <button
+        id="battle-debug-pp-btn"
         class="debug-btn pp-drain-btn"
         @click.stop="drainPP"
       >

@@ -139,15 +139,29 @@ const {
   shouldShowEncounterLayers
 } = useBattleHud(animations, battleStore, enemy)
 
-const computedWeather = computed<WeatherId>(() => {
-  // Si hay un clima temporal activo en el combate, esa es la fuente de verdad visual número 1 (incluso en gimnasios)
-  if (battle.value?.weather && battle.value.weather.type !== 'clear' && battle.value.weather.type !== 'none') {
-    return requireWeatherId(battle.value.weather.visual || battle.value.weather.type)
+const effectiveBattleVisual = computed<string>(() => {
+  // 1. Terrenos y efectos de campo activos en combate (máxima prioridad visual para iluminación de arena)
+  if (battle.value?.fieldConditions) {
+    const fieldKeys = Object.keys(battle.value.fieldConditions)
+    const terrain = fieldKeys.find(k => ['electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain', 'trickroom', 'gravity'].includes(k))
+    if (terrain) return terrain
   }
-  // Bloquear clima natural en gimnasios
+
+  // 2. Efectos de bando activos como neblina (mist), stealthrock, toxicspikes
+  const sideConds = { ...battle.value?.enemySideConditions, ...battle.value?.playerSideConditions }
+  const sideField = Object.keys(sideConds).find(k => ['mist', 'stealthrock', 'toxicspikes'].includes(k))
+  if (sideField) return sideField
+
+  // 3. Si hay un clima temporal activo en el combate
+  if (battle.value?.weather && battle.value.weather.type !== 'clear' && battle.value.weather.type !== 'none') {
+    return battle.value.weather.visual || battle.value.weather.type
+  }
+
+  // 4. Bloquear clima natural en gimnasios
   if (battle.value?.isGym) return 'clear'
-  // De lo contrario, cae en el clima global o del mapa
-  if (mapStore.globalWeather) return requireWeatherId(mapStore.globalWeather)
+
+  // 5. De lo contrario, cae en el clima global o del mapa
+  if (mapStore.globalWeather) return mapStore.globalWeather
   return getRouteWeather(
     requireMapRouteId(battle.value?.locationId || 'route1'),
     requireWeatherSeasonId(mapStore.currentSeason.id),
@@ -156,8 +170,25 @@ const computedWeather = computed<WeatherId>(() => {
   )
 })
 
+const computedWeather = computed<WeatherId>(() => {
+  // Si hay un clima temporal activo en el combate, esa es la fuente de verdad para partículas (incluso en gimnasios)
+  if (battle.value?.weather && battle.value.weather.type !== 'clear' && battle.value.weather.type !== 'none') {
+    return requireWeatherId(battle.value.weather.visual || battle.value.weather.type)
+  }
+  // Bloquear clima natural en gimnasios
+  if (battle.value?.isGym) return 'clear'
+  // De lo contrario, cae en el clima global o del mapa
+  if (mapStore.globalWeather) return requireWeatherId(mapStore.globalWeather)
+  return requireWeatherId(getRouteWeather(
+    requireMapRouteId(battle.value?.locationId || 'route1'),
+    requireWeatherSeasonId(mapStore.currentSeason.id),
+    mapStore.currentEpochHour,
+    requireDayPhase(mapStore.currentCycle)
+  ))
+})
+
 const { atmosphereFilter, weatherOnlyFilter } = useWeatherVisuals({
-  weather: computedWeather,
+  weather: effectiveBattleVisual,
   cycle: computed(() => battle.value?.isGym ? 'neutral' : mapStore.currentCycle)
 })
 

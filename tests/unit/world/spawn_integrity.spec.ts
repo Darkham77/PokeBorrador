@@ -140,4 +140,79 @@ describe('Spawn integrity and Capping - Vitest Unit tests', () => {
       });
     });
   });
+
+  describe('Whitelist Compliance (ENABLED_POKEMON_IDS)', () => {
+    it('debe garantizar que el 100% de los mapas estáticos en FIRE_RED_MAPS contengan solo Pokémon de la lista blanca', async () => {
+      const { ENABLED_POKEMON_IDS } = await import('@/data/system/constants');
+      const allowedSet = new Set(ENABLED_POKEMON_IDS);
+
+      FIRE_RED_MAPS.forEach(map => {
+        // 1. Wild ground pools per cycle
+        if (map.wild) {
+          Object.entries(map.wild).forEach(([cycle, pool]) => {
+            (pool || []).forEach(speciesId => {
+              expect(
+                allowedSet.has(speciesId as never),
+                `[MAP DEFINITION ERROR] Pokémon no habilitado '${speciesId}' encontrado en mapa ${map.name} (${map.id}) ciclo '${cycle}'`
+              ).toBe(true);
+            });
+          });
+        }
+
+        // 2. Fishing pool
+        if (map.fishing?.pool) {
+          map.fishing.pool.forEach(speciesId => {
+            expect(
+              allowedSet.has(speciesId as never),
+              `[MAP DEFINITION ERROR] Pokémon no habilitado '${speciesId}' encontrado en pesca de mapa ${map.name} (${map.id})`
+            ).toBe(true);
+          });
+        }
+
+        // 5. Weather visitors and exclusives
+        if (map.weather) {
+          Object.entries(map.weather).forEach(([weatherId, config]) => {
+            if (config.visitors) {
+              Object.keys(config.visitors).forEach(speciesId => {
+                expect(
+                  allowedSet.has(speciesId as never),
+                  `[MAP DEFINITION ERROR] Pokémon no habilitado '${speciesId}' encontrado en visitantes de clima '${weatherId}' en mapa ${map.name} (${map.id})`
+                ).toBe(true);
+              });
+            }
+
+            if (config.exclusive) {
+              Object.keys(config.exclusive).forEach(speciesId => {
+                expect(
+                  allowedSet.has(speciesId as never),
+                  `[MAP DEFINITION ERROR] Pokémon no habilitado '${speciesId}' encontrado en exclusivos de clima '${weatherId}' en mapa ${map.name} (${map.id})`
+                ).toBe(true);
+              });
+            }
+          });
+        }
+      });
+    });
+
+    it('debe garantizar que el 100% de los spawns generados dinámicamente por getFinalGroundRates pertenezcan a la lista blanca', async () => {
+      const { ENABLED_POKEMON_IDS } = await import('@/data/system/constants');
+      const allowedSet = new Set(ENABLED_POKEMON_IDS);
+      const cycles: DayPhase[] = ['morning', 'day', 'dusk', 'night'];
+      const weathers: WeatherId[] = ['clear', 'rain', 'sun', 'snow', 'coldwave', 'thunderstorm', 'fog', 'mist', 'wind', 'heatwave', 'dust_storm', 'strong_winds'];
+
+      FIRE_RED_MAPS.forEach(map => {
+        cycles.forEach(cycle => {
+          weathers.forEach(weather => {
+            const { pool } = getFinalGroundRates(map, cycle, weather, []);
+            pool.forEach(speciesId => {
+              expect(
+                allowedSet.has(speciesId as never),
+                `[RUNTIME SPAWN ERROR] Pokémon '${speciesId}' generado dinámicamente en ${map.name} (${map.id}) bajo ciclo '${cycle}' y clima '${weather}' no está en ENABLED_POKEMON_IDS`
+              ).toBe(true);
+            });
+          });
+        });
+      });
+    });
+  });
 });

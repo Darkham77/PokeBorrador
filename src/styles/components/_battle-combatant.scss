@@ -56,17 +56,21 @@
 
     .debug-poke-radius-label {
       position: absolute;
-      top: -14px;
+      top: -16px;
       left: 50%;
       transform: Translatex(-50%) Scale(calc(1 / var(--camera-scale, 1)));
       transform-origin: center bottom;
-      background: Rgba(0, 0, 0, 0.85);
+      background: Rgba(0, 0, 0, 0.9);
       color: #00ffff;
-      font-size: 9px;
-      padding: 1px 4px;
-      border-radius: 2px;
+      font-family: monospace, sans-serif;
+      font-size: 10px;
+      line-height: 1.2;
+      font-weight: bold;
+      padding: 2px 5px;
+      border-radius: 3px;
       white-space: nowrap;
       border: 1px solid #00ffff;
+      z-index: var(--z-modal-step);
     }
   }
 

@@ -51,8 +51,8 @@ export const FIRE_RED_MAPS: MapLocation[] = [
     "weather": {
       "coldwave": {
         "visitors": {
-          "swinub": 50,
-          "snorunt": 50
+          "jynx": 50,
+          "cloyster": 50
         }
       },
       "rain": {
@@ -90,7 +90,7 @@ export const FIRE_RED_MAPS: MapLocation[] = [
       },
       "thunderstorm": {
         "visitors": {
-          "shinx": 100
+          "pikachu": 100
         },
         "exclusive": {
           "castform": 100
@@ -173,7 +173,7 @@ export const FIRE_RED_MAPS: MapLocation[] = [
           "castform": 30
         },
         "exclusive": {
-          "sunflora": 100
+          "bellsprout": 100
         }
       },
       "fog": {
@@ -2843,7 +2843,7 @@ export const FIRE_RED_MAPS: MapLocation[] = [
       },
       "cold": {
         "visitors": {
-          "misdreavus": 100
+          "haunter": 100
         }
       },
       "mist": {
@@ -2976,7 +2976,7 @@ export const FIRE_RED_MAPS: MapLocation[] = [
           "dragonite": 95
         },
         "exclusive": {
-          "lugia": 5
+          "articuno": 5
         }
       },
       "mist": {
@@ -3897,7 +3897,7 @@ export const FIRE_RED_MAPS: MapLocation[] = [
       "dust_storm": {
         "visitors": {
           "rhydon": 70,
-          "tyranitar": 30
+          "golem": 30
         }
       },
       "thunderstorm": {

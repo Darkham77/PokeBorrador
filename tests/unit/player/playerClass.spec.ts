@@ -237,4 +237,59 @@ describe('Player Class Logic (V3)', () => {
     // Caso 5: Es Rocket, criminalidad al 250% -> 25%
     expect(getEncounterChance('rocket', 250, 5)).toBe(25)
   })
+
+  it('debe ser completamente persistente el cambio de clase tras el guardado y recarga del estado', async () => {
+    const { serializeState } = await import('@/logic/auth/saveSerializer')
+    const { validateAndSanitize } = await import('@/logic/auth/saveSanitizer')
+
+    const classStore = usePlayerClassStore()
+    const gameStore = useGameStore()
+
+    // 1. Estado inicial sin clase
+    expect(gameStore.state.playerClass).toBeNull()
+
+    // 2. Jugador elige clase 'cazabichos'
+    const selectRes = await classStore.selectClass('cazabichos')
+    expect(selectRes.success).toBe(true)
+    expect(gameStore.state.playerClass).toBe('cazabichos')
+    expect(gameStore.state.classLevel).toBe(1)
+
+    // 3. Jugador gana XP de clase
+    classStore.addXP(500)
+    expect(gameStore.state.classXP).toBeGreaterThanOrEqual(0)
+
+    // 4. Se serializa la partida (lo que ejecuta el motor en gameStore.save())
+    const serializedSave = serializeState(gameStore.state)
+    expect(serializedSave.playerClass).toBe('cazabichos')
+    expect(serializedSave.classLevel).toBe(gameStore.state.classLevel)
+    expect(serializedSave.classXP).toBe(gameStore.state.classXP)
+
+    // 5. Se sanitiza y valida el payload (lo que ejecuta loadService al cargar desde BD/OPFS)
+    const sanitizeResult = validateAndSanitize(serializedSave)
+    expect(sanitizeResult.valid).toBe(true)
+    if (!sanitizeResult.valid) return
+
+    expect(sanitizeResult.data.playerClass).toBe('cazabichos')
+
+    // 6. Simular recarga web (nuevo GameStore restaurando desde la partida cargada)
+    setActivePinia(createPinia())
+    const freshGameStore = useGameStore()
+    const freshClassStore = usePlayerClassStore()
+
+    // Al inicio del reload la clase vuelve al estado por defecto hasta que se hidrata la partida
+    expect(freshGameStore.state.playerClass).toBeNull()
+
+    // Se hidrata el estado con los datos cargados de la BD
+    freshGameStore.updateState({
+      playerClass: sanitizeResult.data.playerClass,
+      classLevel: sanitizeResult.data.classLevel,
+      classXP: sanitizeResult.data.classXP,
+    })
+
+    // 7. Verificación de persistencia tras recarga
+    expect(freshGameStore.state.playerClass).toBe('cazabichos')
+    expect(freshClassStore.playerClass).toBe('cazabichos')
+    expect(freshClassStore.currentClassDef?.name).toBe('Cazabichos')
+    expect(freshGameStore.state.classLevel).toBe(serializedSave.classLevel)
+  })
 })

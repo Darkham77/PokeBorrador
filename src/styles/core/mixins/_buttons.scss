@@ -109,7 +109,12 @@
   $radius: 15px;
   $depth: 4px;
 
-  @if $size == 'sm' {
+  @if $size == 'xs' {
+    $padding: 4px 8px;
+    $font-size: 7px;
+    $radius: 4px;
+    $depth: 2px;
+  } @else if $size == 'sm' {
     $padding: 8px 12px;
     $font-size: 8px;
     $radius: 8px;
@@ -157,7 +162,6 @@
   $bg-render: $base-color;
   @if $variant == 'primary' {
     $bg-render: var(--yellow, #{$base-color});
-    font-weight: bold;
   }
 
   background: $bg-render;
@@ -168,7 +172,8 @@
   }
 
   $depth: 4px;
-  @if $size == 'sm' { $depth: 3px; }
+  @if $size == 'xs' { $depth: 2px; }
+  @else if $size == 'sm' { $depth: 3px; }
 
   box-shadow: 0 $depth 1.5px $shadow;
 

@@ -1,11 +1,5 @@
 const TECHNICIAN_MAX_POWER_LIMIT = 60;
 const GUTS_STATUS_ATK_MULTIPLIER = 1.5;
-const BURN_STATUS_ATK_MULTIPLIER = 0.5;
-const MARVEL_SCALE_DEF_MULTIPLIER = 1.5;
-const SOLAR_POWER_SPA_MULTIPLIER = 1.5;
-const CHOICE_SCARF_SPE_MULTIPLIER = 1.5;
-const PARALYSIS_SPEED_MULTIPLIER_GEN6_PLUS = 0.5;
-const PARALYSIS_SPEED_MULTIPLIER_LEGACY = 0.25;
 const DEFAULT_STAT_FALLBACK_VAL = 10;
 const CRIT_ROLL_DENOMINATOR_GEN6_BASE = 24;
 const CRIT_ROLL_DENOMINATOR_GEN5_BASE = 16;
@@ -134,71 +128,28 @@ export function getAbilityMultiplierPure(attacker: PurePokemon, move: PureMove, 
   return { mult, triggeredAbility };
 }
 
+import { isStatIdExceptHP } from '@/logic/pokemon/statsMath';
+import { calculateDetailedStatBreakdown } from './statBreakdownHelper.ts';
+
 export function getEffectiveStatPure(
   pokemon: PurePokemon,
   statKey: keyof PurePokemon,
   stages: PureBattleStages,
   weather: PureBattleWeather | null,
-  _dayCycle: DayPhase = 'day',
+  dayCycle: DayPhase = 'day',
   isGym: boolean = false
 ): number {
-  const isMoveWeather = !!(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1);
-  const mechWeather = (isGym && !isMoveWeather) ? 'clear' : getMechWeather(weather?.type);
-
-  let baseVal = (pokemon[statKey] as number) || DEFAULT_STAT_FALLBACK_VAL;
-  if (statKey === 'spa' && !pokemon.spa) baseVal = pokemon.atk ?? DEFAULT_STAT_FALLBACK_VAL;
-  if (statKey === 'spd' && !pokemon.spd) baseVal = pokemon.def ?? DEFAULT_STAT_FALLBACK_VAL;
-  if (statKey === 'atk' && !pokemon.atk) baseVal = pokemon.spa ?? DEFAULT_STAT_FALLBACK_VAL;
-  if (statKey === 'def' && !pokemon.def) baseVal = pokemon.spd ?? DEFAULT_STAT_FALLBACK_VAL;
-
-  if (statKey === 'def') {
-    if ((mechWeather === WEATHER_KEYS.SNOW || mechWeather === WEATHER_KEYS.HAIL) && (pokemon.type === 'ice' || pokemon.type2 === 'ice')) {
-      baseVal = Math.floor(baseVal * 1.5);
-    }
-  }
-  if (statKey === 'spd') {
-    if (mechWeather === WEATHER_KEYS.SANDSTORM && (pokemon.type === 'rock' || pokemon.type2 === 'rock')) {
-      baseVal = Math.floor(baseVal * 1.5);
-    }
+  if (typeof statKey !== 'string' || !isStatIdExceptHP(statKey)) {
+    return (pokemon[statKey] as number) || DEFAULT_STAT_FALLBACK_VAL;
   }
 
-  const rawStage = (stages as Record<string, number | undefined>)[statKey] ?? 0; // open-record
-  const stage = Math.max(-6, Math.min(6, rawStage));
-  const stageMult = (STAGE_MULTIPLIERS_STAT[String(stage)] as number) ?? 1.0;
-  let val = Math.floor(baseVal * stageMult);
-
-  const isSun  = ((!isGym || isMoveWeather) && mechWeather === WEATHER_KEYS.SUN) || (_dayCycle === 'day' && (!weather || weather.type === 'clear' || weather.type === 'none'));
-  const isRain = (!isGym || isMoveWeather) && mechWeather === WEATHER_KEYS.RAIN;
-  const ab = (pokemon.ability || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-
-  if (statKey === 'atk') {
-    let abilMult = 1;
-    if (ab === 'hugepower' || ab === 'purepower') abilMult *= 2;
-    if (ab === 'guts' && pokemon.status) abilMult *= GUTS_STATUS_ATK_MULTIPLIER;
-    val = Math.floor(val * abilMult);
-    if ((pokemon.status === 'burn' || pokemon.status === 'brn') && ab !== 'guts') val = Math.floor(val * BURN_STATUS_ATK_MULTIPLIER);
-  }
-  if (statKey === 'def') {
-    if (ab === 'marvelscale' && pokemon.status) val = Math.floor(val * MARVEL_SCALE_DEF_MULTIPLIER);
-  }
-  if (statKey === 'spa') {
-    if (ab === 'solarpower' && isSun) val = Math.floor(val * SOLAR_POWER_SPA_MULTIPLIER);
-  }
-  if (statKey === 'spe') {
-    let abilMult = 1;
-    if (ab === 'chlorophyll'   && isSun)  abilMult *= 2;
-    if (ab === 'swiftswim' && isRain) abilMult *= 2;
-    if (ab === 'sandrush' && mechWeather === WEATHER_KEYS.SANDSTORM) abilMult *= 2;
-    if (ab === 'slushrush'  && (mechWeather === WEATHER_KEYS.SNOW || mechWeather === WEATHER_KEYS.HAIL)) abilMult *= 2;
-    if (pokemon.heldItem === 'choicescarf') abilMult *= CHOICE_SCARF_SPE_MULTIPLIER;
-    val = Math.floor(val * abilMult);
-    if (pokemon.status === 'par') {
-      const mult = ACTIVE_GENERATION <= 6 ? PARALYSIS_SPEED_MULTIPLIER_LEGACY : PARALYSIS_SPEED_MULTIPLIER_GEN6_PLUS;
-      val = Math.floor(val * mult);
-    }
-  }
-
-  return Math.max(1, val);
+  return calculateDetailedStatBreakdown(
+    pokemon,
+    statKey,
+    stages,
+    weather,
+    { isGym, dayCycle }
+  ).final;
 }
 
 export function calculateDamagePure(

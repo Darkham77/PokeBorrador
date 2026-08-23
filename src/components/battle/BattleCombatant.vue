@@ -67,6 +67,7 @@ const {
   localGroundY,
   fxScale,
   fxRadius,
+  speciesSizeScale,
   debugShowPokeRadius,
   isBallVisible,
   wasCaptured,
@@ -377,19 +378,21 @@ const onGroundPopLeave = (el: Element, done: () => void) => {
             :is-silhouette="isSilhouette"
             :status="pokemon.status || undefined"
             :is-confused="!!pokemon.confused || (pokemon.volatileCounters?.['confusion'] || 0) > 0"
-            :is-taunted="(pokemon.tauntTurns || 0) > 0 || (pokemon.volatileCounters?.['tauntTurns'] || 0) > 0"
+            :is-taunted="(pokemon.tauntTurns || 0) > 0 || (pokemon.volatileCounters?.['taunt'] || 0) > 0 || (pokemon.volatileCounters?.['tauntTurns'] || 0) > 0"
             :is-substitute="!!pokemon.substitute || (pokemon.volatileCounters?.['substitute'] || 0) > 0"
             :is-flinched="(pokemon.volatileCounters?.['flinch'] || 0) > 0"
-            :is-disabled="(pokemon.disabledTurns || 0) > 0 || (pokemon.volatileCounters?.['disabledTurns'] || 0) > 0"
-            :is-encored="(pokemon.encoreTurns || 0) > 0 || (pokemon.volatileCounters?.['encoreTurns'] || 0) > 0"
-            :is-cursed="pokemon.cursed"
-            :is-seeded="pokemon.seeded"
-            :is-trapped="!!(pokemon.trapped || (pokemon.bound && pokemon.bound > 0))"
-            :attracted="pokemon.attracted"
-            :is-focus-energy="pokemon.focusEnergy"
-            :is-protected="(pokemon.protect || pokemon.detect)"
-            :is-enduring="pokemon.endure"
-            :is-lock-on="pokemon.lockOn"
+            :is-disabled="(pokemon.disabledTurns || 0) > 0 || (pokemon.volatileCounters?.['disable'] || 0) > 0 || (pokemon.volatileCounters?.['disabledTurns'] || 0) > 0"
+            :is-encored="(pokemon.encoreTurns || 0) > 0 || (pokemon.volatileCounters?.['encore'] || 0) > 0 || (pokemon.volatileCounters?.['encoreTurns'] || 0) > 0"
+            :is-cursed="!!pokemon.cursed || (pokemon.volatileCounters?.['curse'] || 0) > 0"
+            :is-seeded="!!pokemon.seeded || (pokemon.volatileCounters?.['leechseed'] || 0) > 0"
+            :is-trapped="!!(pokemon.trapped || (pokemon.bound && pokemon.bound > 0) || (pokemon.volatileCounters?.['trapped'] || 0) > 0 || (pokemon.volatileCounters?.['bound'] || 0) > 0 || (pokemon.volatileCounters?.['partiallytrapped'] || 0) > 0)"
+            :is-ingrained="!!(pokemon.ingrain || (pokemon.volatileCounters?.['ingrain'] || 0) > 0)"
+            :is-perish-song="(pokemon.perishSongCount || 0) > 0 || (pokemon.volatileCounters?.['perishsong'] || 0) > 0"
+            :attracted="!!pokemon.attracted || (pokemon.volatileCounters?.['attract'] || 0) > 0"
+            :is-focus-energy="!!pokemon.focusEnergy || (pokemon.volatileCounters?.['focusenergy'] || 0) > 0"
+            :is-protected="!!(pokemon.protect || pokemon.detect || (pokemon.volatileCounters?.['protect'] || 0) > 0)"
+            :is-enduring="!!pokemon.endure || (pokemon.volatileCounters?.['endure'] || 0) > 0"
+            :is-lock-on="!!pokemon.lockOn || (pokemon.volatileCounters?.['lockon'] || 0) > 0"
             :has-reflect="(stages.reflect || 0) > 0"
             :has-light-screen="(stages.lightScreen || 0) > 0"
             :has-safeguard="(stages.safeguard || 0) > 0"
@@ -398,6 +401,7 @@ const onGroundPopLeave = (el: Element, done: () => void) => {
             :sparkle-count="8"
             :radius="fxRadius * 1.25"
             :sprite-scale="fxScale"
+            :poke-scale="speciesSizeScale"
             :style="{
               width: (displaySize * 2) + 'px',
               height: (displaySize * 2) + 'px',

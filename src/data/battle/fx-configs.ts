@@ -48,21 +48,20 @@ type EffectConfigPreset = {
   wobble?: boolean
 }
 
-export const resolveEffectSettings = (typeKey: string, ar: number, options: { isField?: boolean, isSimplified?: boolean, isBattle?: boolean, spriteScale?: number } = {}): EffectSettings => {
+export const resolveEffectSettings = (typeKey: string, ar: number, options: { isField?: boolean, isSimplified?: boolean, isBattle?: boolean, spriteScale?: number, pokeScale?: number } = {}): EffectSettings => {
   const isField = options.isField || ['reflect', 'lightscreen', 'safeguard', 'mist', 'spikes'].includes(typeKey)
-  const isFeetEffect = ['seed', 'trapped', 'bound', 'ingrain', 'seeded', 'ingrained'] as const satisfies readonly VolatileStatusKey[] | readonly string[]; // no-domain
-  const isHeadEffect = ['sleep', 'confusion', 'attract', 'confused', 'slp'] as const satisfies readonly VolatileStatusKey[] | readonly string[]; // no-domain
+  const FEET_EFFECTS = ['seed', 'trapped', 'bound', 'ingrain', 'seeded', 'ingrained'] as const satisfies readonly VolatileStatusKey[] | readonly string[]; // no-domain
+  const HEAD_EFFECTS = ['sleep', 'confusion', 'attract', 'confused', 'slp', 'perishsong'] as const satisfies readonly VolatileStatusKey[] | readonly string[]; // no-domain
 
-  // 1. Helper para rango dinámico basado en radio
+  const isFeetEffect = (FEET_EFFECTS as readonly string[]).includes(typeKey)
+  const isHeadEffect = (HEAD_EFFECTS as readonly string[]).includes(typeKey)
+
+  // 1. Helper para rango dinámico basado en radio y tamaño del Pokémon
   const getDynamicRange = (base: [number, number]) => {
-    const baseRadius = options.isBattle ? ar / 1.25 : ar
-    const ratio = baseRadius / 40
-    let scaleFactor = Math.max(0.15, Math.min(2.5, Math.pow(ratio, 2)))
+    let scaleFactor = options.pokeScale !== undefined 
+      ? Math.min(1.0, Math.max(0.18, options.pokeScale))
+      : Math.max(0.15, Math.min(2.5, Math.pow((options.isBattle ? ar / 1.25 : ar) / 40, 2)))
 
-    if (options.spriteScale !== undefined) {
-      scaleFactor *= options.spriteScale
-    }
-    
     // Reducción extra para miniaturas (fuera de batalla o modo simplificado)
     if (typeKey === 'shiny' && (options.isSimplified || !options.isBattle)) {
       scaleFactor *= 0.3
@@ -77,11 +76,11 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
   // 2. CONFIGURACIÓN CENTRALIZADA E INDEPENDIENTE
   const configs: Record<string, EffectConfigPreset> = { // open-record
     brn: { mult: 1.0, activeRange: getDynamicRange([12, 18]), useFade: false, duration: 1.2, randomizeVars: { min: 0.6, max: 2.0 } },
-    frz: { mult: 0.4, activeRange: getDynamicRange([1, 2]), useFade: false, duration: 3.0 , randomizeVars: { min: 1.0, max: 2.0 } },
+    frz: { mult: 0.4, activeRange: getDynamicRange([4, 6]), useFade: false, duration: 3.0 , randomizeVars: { min: 1.0, max: 2.0 } },
     slp: { mult: 1.0, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 3.0, randomizeVars: { min: 1.0, max: 2.0 } },
-    par: { mult: 1.0, activeRange: getDynamicRange([3, 5]), useFade: true, duration: 0.3, randomizeVars: { min: 1.0, max: 2.0 } },
-    psn: { mult: 0.8, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 3.0, randomizeVars: { min: 1.0, max: 2.0 } },
-    tox: { mult: 0.8, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 3.0 },
+    par: { mult: 1.0, activeRange: getDynamicRange([6, 10]), useFade: true, duration: 0.3, randomizeVars: { min: 1.0, max: 2.0 } },
+    psn: { mult: 0.8, activeRange: getDynamicRange([4, 6]), useFade: true, duration: 3.0, randomizeVars: { min: 1.0, max: 2.0 } },
+    tox: { mult: 0.8, activeRange: getDynamicRange([4, 6]), useFade: true, duration: 3.0 },
     confusion: { mult: 0.8, activeRange: getDynamicRange([1, 2]), useFade: true, wobble: true, duration: 6.0 },
     confused: { mult: 0.8, activeRange: getDynamicRange([1, 2]), useFade: true, wobble: true, duration: 6.0 },
     taunted: { mult: 1.0, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 1.5 },
@@ -89,6 +88,7 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
     flinched: { mult: 1.0, activeRange: getDynamicRange([2, 3]), useFade: true, duration: 0.8 },
     disabled: { mult: 0.9, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 2.5 },
     encored: { mult: 0.9, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 2.0 },
+    perishsong: { mult: 0.9, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 2.0 },
     attracted: { mult: 0.8, activeRange: getDynamicRange([4, 6]), useFade: true, duration: 4.0, randomizeVars: { min: 1.0, max: 2.0 } },
     cursed: { mult: 0.8, activeRange: getDynamicRange([2, 3]), useFade: true, duration: 3.0 },
     seeded: { mult: 0.8, activeRange: getDynamicRange([6, 10]), useFade: true, duration: 5.0, randomizeVars: true },
@@ -109,8 +109,8 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
     mist: { mult: 1.5, activeRange: getDynamicRange([14, 20]), useFade: true, duration: 5.0, randomizeVars: { min: 0.6, max: 2.5 }, targetOpacity: 0.9 },
     spikes: { mult: 0.5, activeRange: getDynamicRange([4, 8]), useFade: true, duration: 2.5 },
 
-    // Shiny - chispas doradas orbitales (técnica wobble)
-    shiny: { mult: 0.2, activeRange: getDynamicRange([10, 16]), useFade: false, duration: 1.4, randomizeVars: { min: 0.6, max: 1.5 }, targetOpacity: 1.0, wobble: true }
+    // Shiny - chispas doradas en radio circular completo del pokemon
+    shiny: { mult: 0.35, activeRange: getDynamicRange([8, 14]), useFade: true, duration: 1.2, randomizeVars: { min: 0.6, max: 1.4 }, targetOpacity: 1.0, wobble: false }
   }
 
   const fallbackConfig: EffectConfigPreset = { 
@@ -129,8 +129,6 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
     wobbleConfig = { x: 15, rotation: 5, duration: 0.4 }
   } else if (typeKey === 'trapped') {
     wobbleConfig = { x: 5, rotation: 0, duration: 0.2 }
-  } else if (typeKey === 'shiny') {
-    wobbleConfig = { x: 0, rotation: 360, duration: 1.5, yoyo: false, ease: 'none' }
   }
   
   // 4. Área de dispersión

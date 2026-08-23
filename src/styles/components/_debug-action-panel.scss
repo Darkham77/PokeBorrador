@@ -2,127 +2,278 @@
 @use "@/styles/core/tools" as *;
 
 .debug-menu {
-  background: Rgba(15, 15, 25, 0.98);
+  background: Rgba(15, 15, 25, 0.99);
   border: 2px solid var(--yellow);
-  border-radius: 6px;
-  padding: 8px;
+  border-radius: 8px;
+  width: 340px;
+  max-width: 90dvw;
+  max-height: 500px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  width: 100%;
-  box-sizing: border-box;
-  max-height: 400px;
-  min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  box-shadow: 0 10px 40px Rgba(0,0,0,0.9);
+  overflow: hidden;
+  pointer-events: all;
+  box-shadow: 0 15px 50px Rgba(0, 0, 0, 0.9);
   -webkit-will-change: transform, opacity;
   will-change: transform, opacity;
   @include gpu-layer;
-  position: relative;
-  @include smooth-scroll;
+  margin-bottom: 12px;
 
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border: 1px solid Rgba(255, 255, 255, 0.1);
-    pointer-events: none;
+  .debug-header {
+    background: Rgba(234, 179, 8, 0.15);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
+
+    .icon {
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .title {
+      @include pixelated;
+      font-size: 8px;
+      color: var(--yellow);
+      flex: 1;
+      letter-spacing: 0.5px;
+    }
+
+    .close-mini {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      opacity: 0.5;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      border-radius: 4px;
+
+      &:hover {
+        opacity: 1;
+        background: Rgba(255, 255, 255, 0.1);
+      }
+    }
   }
+
+  .debug-scroll-area {
+    padding: 16px;
+    min-height: 0;
+    overflow-y: auto;
+    flex: 1;
+    @include smooth-scroll;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+.quick-actions-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .debug-row {
   display: flex;
-  gap: 4px;
-  .debug-btn { flex: 1; }
+  gap: 6px;
+  width: 100%;
+
+  .debug-btn {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 .debug-section {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 6px 0;
-  border-top: 1px solid Rgba(255, 255, 255, 0.1);
+  gap: 8px;
+  padding: 10px;
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
 
   .section-label {
-    font-size: 6px;
+    font-size: 7px;
     color: var(--yellow);
     text-transform: uppercase;
-    margin-bottom: 2px;
-    opacity: 0.9;
     letter-spacing: 0.5px;
+    @include pixelated;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 4px;
+      background: var(--yellow);
+      border-radius: 1px;
+    }
   }
 }
 
 .debug-btn {
-  @include btn-vicio('default', 'xs', true);
-  font-size: 7px !important;
-  height: 24px !important;
+  @include btn-vicio-base;
+  @include btn-vicio-size('xs');
+  height: 24px;
+  font-size: 7px;
   text-align: center;
-  padding: 0 4px !important;
-  
-  &.kill-btn { @include btn-vicio('danger', 'xs', true); }
-  &.heal-btn { @include btn-vicio('success', 'xs', true); }
-  &.search-btn { @include btn-vicio('info', 'xs', true); border-color: var(--yellow); }
-  &.exp-btn { @include btn-vicio('info', 'xs', true); }
-  &.catch-btn { 
-    @include btn-vicio('primary', 'xs', true); 
-    background: linear-gradient(135deg, var(--purple-light) 0%, var(--red) 100%);
-    border-color: var(--white);
-    margin-top: 2px;
+  padding: 0 6px;
+  white-space: nowrap;
+  border-radius: 6px;
+  font-weight: normal;
+
+  &.kill-btn {
+    @include btn-vicio-variant('danger', 'xs');
+    border-radius: 6px;
+  }
+
+  &.heal-btn {
+    @include btn-vicio-variant('success', 'xs');
+    border-radius: 6px;
+  }
+
+  &.exp-btn {
+    @include btn-vicio-variant('info', 'xs');
+    width: 100%;
+    border-radius: 6px;
+  }
+
+  &.pp-drain-btn {
+    @include btn-vicio-variant('secondary', 'xs');
+    width: 100%;
+    border-radius: 6px;
+  }
+
+  &.catch-btn {
+    @include btn-vicio-variant('primary', 'xs');
+    width: 100%;
+    height: 26px;
+    font-size: 7px;
+    margin-top: 4px;
+    border-radius: 6px;
+    background: var(--yellow);
+    border: 1px solid var(--yellow);
+    color: #000;
+    text-shadow: none;
+    font-weight: normal;
+    box-shadow: 0 2px 1.5px Rgba(180, 83, 9, 0.99);
+
+    &:hover:not(:disabled) {
+      filter: Brightness(1.1);
+    }
   }
 }
 
 .btn-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.btn-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 4px;
 }
 
 .mini-btn {
-  @include btn-vicio('neutral', 'xs', true);
-  height: 20px !important;
-  font-size: 6px !important;
-  padding: 0 !important;
-  border-color: Rgba(255, 255, 255, 0.2);
-  
+  @include btn-vicio-base;
+  @include btn-vicio-size('xs');
+  height: 24px;
+  font-size: 7px;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: Rgba(20, 20, 30, 0.95);
+  border: 1px solid Rgba(255, 255, 255, 0.15);
+  color: Rgba(255, 255, 255, 0.85);
+  box-shadow: 0 2px 4px Rgba(0, 0, 0, 0.3);
+  font-weight: normal;
+  text-shadow: 1px 1px 0 #000;
+
+  &:hover:not(:disabled) {
+    background: Rgba(255, 255, 255, 0.12);
+    border-color: Rgba(255, 255, 255, 0.35);
+    color: #fff;
+  }
+
   &.active {
     background: var(--yellow) !important;
-    color: $black !important;
-    border-color: $white !important;
+    border: 1px solid var(--yellow) !important;
+    color: #000 !important;
     text-shadow: none !important;
-    box-shadow: 0 0 10px Rgba(250, 204, 21, 0.4);
-    filter: none !important;
-    will-change: filter;
+    font-weight: normal !important;
+    box-shadow: 0 2px 1.5px Rgba(180, 83, 9, 0.99), 0 0 10px Rgba(250, 204, 21, 0.4) !important;
+
+    &:hover:not(:disabled) {
+      filter: Brightness(1.1) !important;
+    }
   }
 }
 
-.swap-controls {
+.swap-controls-triple {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  width: 100%;
+  height: 26px;
+}
+
+.base-swap-group {
   display: flex;
   align-items: center;
-  gap: 6px;
-  height: 24px;
-  
-  &.mt-1 { margin-top: 2px; }
-  
-  .swap-btn { 
-    @include btn-vicio('default', 'xs', true); 
-    width: 24px !important; 
-    height: 24px !important; 
-    font-size: 10px;
-    padding: 0 !important;
+  height: 100%;
+  flex: 1.5;
+  background: Rgba(0, 0, 0, 0.5);
+  border: 1px solid Rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  overflow: hidden;
+
+  &:focus-within {
+    border-color: var(--yellow);
   }
-  
-  .swap-input { 
-    width: 50px; 
-    background: $black; 
-    border: 1px solid Rgba(255, 255, 255, 0.4); 
-    color: white; 
-    @include pixelated; 
-    font-size: 10px; 
-    text-align: center; 
-    height: 100%; 
-    border-radius: 2px;
+
+  .swap-btn {
+    background: Rgba(255, 255, 255, 0.05);
+    border: none;
+    color: Rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    width: 24px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    @include pixelated;
+    font-weight: normal;
+    padding: 0;
+    box-shadow: none;
+    flex-shrink: 0;
+
+    &:hover {
+      background: var(--yellow);
+      color: #000;
+    }
+  }
+
+  .base-id-input {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: none;
+    color: white;
+    @include pixelated;
+    font-size: 8px;
+    text-align: center;
+    min-width: 0;
+    flex: 1;
+    outline: none;
 
     &::-webkit-outer-spin-button,
     &::-webkit-inner-spin-button {
@@ -136,10 +287,53 @@
   }
 }
 
-.debug-footer { 
-  font-size: 5px; 
-  text-align: center; 
-  opacity: 0.4; 
-  margin-top: 6px;
+.swap-input-mini {
+  flex: 0.8;
+  min-width: 0;
+  height: 100%;
+  background: Rgba(0, 0, 0, 0.5);
+  border: 1px solid Rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #fff;
+  text-align: center;
+  font-size: 8px;
+  @include pixelated;
+  outline: none;
+
+  &:focus {
+    border-color: var(--yellow);
+  }
+}
+
+.swap-select-mini {
+  flex: 0.9;
+  min-width: 0;
+  height: 100%;
+  background: Rgba(0, 0, 0, 0.5);
+  border: 1px solid Rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 7px;
+  @include pixelated;
+  cursor: pointer;
+  text-align: center;
+  outline: none;
+
+  &:focus {
+    border-color: var(--yellow);
+  }
+
+  option {
+    background: #14141e;
+    color: #fff;
+  }
+}
+
+.debug-footer {
+  font-size: 6px;
+  text-align: center;
+  color: Rgba(250, 204, 21, 0.6);
+  @include pixelated;
+  padding-top: 4px;
   letter-spacing: 1px;
 }

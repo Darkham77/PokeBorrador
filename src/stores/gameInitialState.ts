@@ -1,8 +1,7 @@
-// src/stores/gameInitialState.js
-// Data-only definition: the default state shape for the game store.
 import { DEFAULT_INITIAL_ELO, INITIAL_BALLS_COUNT, INITIAL_MONEY, INITIAL_POKEBALL_COUNT } from '@/logic/constants/gameplay.ts';
+import type { GameState } from '@/types/system/game';
 
-export const INITIAL_STATE = { // map-ok
+export const INITIAL_STATE: GameState = {
   trainer: '',
   gender: 'h',
   badges: 0,
@@ -48,8 +47,20 @@ export const INITIAL_STATE = { // map-ok
   ceruleanTicketSecs: 0,
   articunoTicketSecs: 0,
   mewtwoTicketSecs: 0,
+  repelSecs: 0,
+  fishingRodSecs: 0,
+  fishingRodType: null,
+  pickaxeSecs: 0,
+  pickaxeType: null,
+  brushSecs: 0,
+  brushType: null,
+  shinyBoostSecs: 0,
+  amuletCoinSecs: 0,
+  luckyEggSecs: 0,
+  ivScannerSecs: 0,
   incenseType: null,
   incenseSecs: 0,
+  daycare_berry_egg_time: 0,
   boxCount: 4,
   chats: {},
   playerClass: null,
@@ -72,11 +83,14 @@ export const INITIAL_STATE = { // map-ok
   warDailyCap: {},
   warDailyCoins: {},
   warMyPtsLocal: {},
+  warPointsAccumulator: 0,
+  lastResolvedWeek: '',
   notificationHistory: [],
   marketSoldSeenIds: [],
   claimQueue: [],
   pvpTeam: [],
   warTeam: [],
   warSlots: 6,
-  guardianCaptures: {}
+  guardianCaptures: {},
+  playtime: 0
 }

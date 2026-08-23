@@ -504,19 +504,21 @@ watch(
         class="pokeball-route-tooltip"
       >
         <div
-          ref="pokeballTriggerRef"
           class="pokeball-route-trigger"
           @click.stop.prevent="openRouteSpawnsModal"
           @mouseenter="onPokeballMouseEnter"
           @mouseleave="onPokeballMouseLeave"
         >
-          <img
-            :src="getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')"
-            class="pokeball-icon"
-            alt="Spawns"
-            @mouseenter="onPokeballMouseEnter"
-            @mouseleave="onPokeballMouseLeave"
+          <div
+            ref="pokeballTriggerRef"
+            class="pokeball-icon-wrapper"
           >
+            <img
+              :src="getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')"
+              class="pokeball-icon"
+              alt="Spawns"
+            >
+          </div>
         </div>
       </PVTooltip>
     </div>

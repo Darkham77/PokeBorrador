@@ -101,6 +101,10 @@ export function useWeatherVisuals(options: WeatherVisualOptions) {
       const p = WEATHER_EFFECT_PRESETS.GRASSY_TERRAIN;
       wBrightness = p.BRIGHTNESS; wSaturate = p.SATURATE; wContrast = p.CONTRAST; wHue = p.HUE;
     }
+    else if (cleanWeather === 'mistyterrain') {
+      const p = WEATHER_EFFECT_PRESETS.MISTY_TERRAIN;
+      wBrightness = p.BRIGHTNESS; wSaturate = p.SATURATE; wContrast = p.CONTRAST; wHue = p.HUE;
+    }
     else if (cleanWeather === 'psychicterrain') {
       const p = WEATHER_EFFECT_PRESETS.PSYCHIC_TERRAIN;
       wBrightness = p.BRIGHTNESS; wSaturate = p.SATURATE; wContrast = p.CONTRAST; wHue = p.HUE;
@@ -142,7 +146,7 @@ export function useWeatherVisuals(options: WeatherVisualOptions) {
     const finalContrast = contrast * wContrast
     const finalHue = hue + wHue
 
-    return `Brightness(${finalBrightness}) Contrast(${finalContrast}) Saturate(${finalSaturate}) hue-rotate(${finalHue}deg)`
+    return `brightness(${finalBrightness}) contrast(${finalContrast}) saturate(${finalSaturate}) hue-rotate(${finalHue}deg)`
   }
 
   return {

@@ -12,6 +12,7 @@ import { gameBus } from '@/logic/events/gameBus'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { hasAnimatedSpriteId } from '@/data/pokemon/animatedSpriteDatabase'
 import { requireFeetPoints } from '@/data/pokemon/pokemonFeetDatabase'
+import { deconstructPokemonId, constructPokemonId } from './debugActionPanelHelpers.ts'
 
 const emit = defineEmits<{
   (event: 'close'): void
@@ -30,8 +31,6 @@ const playerGender = ref('')
 const enemyBaseId = ref('1')
 const enemyVariant = ref('')
 const enemyGender = ref('')
-
-import { deconstructPokemonId, constructPokemonId } from './debugActionPanelHelpers.ts'
 
 // Sincronizar inputs bidireccionalmente con los pokemones en combate
 watch(() => battleStore.state?.player?.id, (newId) => {
@@ -57,6 +56,11 @@ watch(activeEnemyId, (newId) => {
   }
 }, { immediate: true })
 
+const DEBUG_CATCH_FALLBACK_SLEEP_MS = 1000
+const DEBUG_CATCH_SHAKE_COUNT = 3
+const DEBUG_CATCH_CELEBRATION_SLEEP_MS = 1500
+const DEBUG_CATCH_FADEOUT_SLEEP_MS = 2000
+const PARSE_INT_DECIMAL_RADIX = 10
 
 const debugCapture = async () => {
   if (!battleStore.state?.enemy || battleStore.isProcessing) return
@@ -70,8 +74,6 @@ const debugCapture = async () => {
   
   const anims = battleStore.animations
 
-const DEBUG_CATCH_FALLBACK_SLEEP_MS = 1000
-
   // 1. Ball hit
   audio.play('ballHit')
   if (anims?.handleCatchRequest) {
@@ -82,7 +84,7 @@ const DEBUG_CATCH_FALLBACK_SLEEP_MS = 1000
   }
 
   // 2. Shakes
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < DEBUG_CATCH_SHAKE_COUNT; i++) {
     audio.play('wobble')
     if (anims?.handleShakeRequest) {
       await anims.handleShakeRequest({ side: 'enemy' })
@@ -98,9 +100,6 @@ const DEBUG_CATCH_FALLBACK_SLEEP_MS = 1000
   
   battleStore.state.isCapture = true
   gameStore.addPokemon(e, { notify: true })
-  
-const DEBUG_CATCH_CELEBRATION_SLEEP_MS = 1500
-const DEBUG_CATCH_FADEOUT_SLEEP_MS = 2000
 
   // Fase de Festejo (Phase 3 de la captura)
   if (anims?.playCatchCelebration) {
@@ -153,7 +152,6 @@ const updateVisualSwap = (side = 'enemy') => {
   const targetId = constructPokemonId(targetBase, variantVal, genderVal)
 
   // VALIDACIÓN ESTRICTA: Lanza error ANTES de mutar el estado si el ID resultante es inválido
-  // Esto previene que se asigne un ID no válido y se rompa el ciclo de render de Vue 3
   const isFemale = genderVal.toLowerCase() === 'f'
   const isBack = side === 'player'
   const candIdle = `${targetBase}i${variantVal ? '_' + variantVal : ''}`
@@ -213,8 +211,6 @@ const updateVisualSwap = (side = 'enemy') => {
   }
 }
 
-const PARSE_INT_DECIMAL_RADIX = 10
-
 const incrementSwap = (side = 'enemy') => {
   const baseIdRef = side === 'player' ? playerBaseId : enemyBaseId
   const current = String(baseIdRef.value ?? '').trim()
@@ -269,324 +265,271 @@ const toggleStatus = (side: string, type: string) => {
 
 <template>
   <div class="debug-menu custom-scrollbar-vicio">
-    <button
-      id="battle-debug-menu-close-btn"
-      class="close-mini"
-      @click.stop="emit('close')"
-    >
-      ✕
-    </button>
-    <!-- Quick Actions -->
-    <DebugActionPanelQuickButtons />
-
-    <div class="debug-section">
-      <div class="section-label">
-        Environment & Behavior
-      </div>
-      <div class="debug-row">
-        <PVTooltip description="Binocs: Ver el Pokémon en COLOR (Binoculares) o en SILUETA (Normal)">
-          <button
-            class="debug-btn search-btn"
-            :class="{ active: battleStore.debugBinoculars }"
-            @click.stop="toggleBinoculars"
-          >
-            {{ battleStore.debugBinoculars ? '👁️ BINOCS: COLOR' : '🕶️ BINOCS: SILH' }}
-          </button>
-        </PVTooltip>
-        
-        <PVTooltip description="Chain: El siguiente Pokémon aparece automáticamente al ganar">
-          <button
-            class="debug-btn search-btn"
-            :class="{ active: battleStore.isSearching }"
-            @click.stop="toggleSearchMode"
-          >
-            {{ battleStore.isSearching ? '🔗 CHAIN: ON' : '🔗 CHAIN: OFF' }}
-          </button>
-        </PVTooltip>
-      </div>
-    </div>
-
-    <!-- PLAYER SECTION -->
-    <div class="debug-section">
-      <div class="section-label">
-        Player Controls
-      </div>
-      <div class="btn-grid">
-        <button
-          class="mini-btn"
-          :class="{ active: battleStore.state?.player?.isShiny }"
-          @click.stop="toggleStatus('player', 'shiny')"
-        >
-          SHINY
-        </button>
-        <button
-          class="mini-btn"
-          :class="{ active: battleStore.state?.player?.isGuardian }"
-          @click.stop="toggleStatus('player', 'guardian')"
-        >
-          GUARD
-        </button>
-      </div>
-      <div class="swap-controls-triple mt-1">
-        <div class="base-swap-group">
-          <button
-            class="swap-btn"
-            @click.stop="decrementSwap('player')"
-          >
-            -
-          </button>
-          <input
-            v-model="playerBaseId"
-            type="number"
-            min="1"
-            class="swap-input base-id-input"
-            placeholder="#"
-            @change="updateVisualSwap('player')"
-            @click.stop
-          >
-          <button
-            class="swap-btn"
-            @click.stop="incrementSwap('player')"
-          >
-            +
-          </button>
-        </div>
-        <input
-          v-model="playerVariant"
-          type="text"
-          class="swap-input-mini variant-input"
-          placeholder="Var"
-          title="Variante (ej. 1, mega, alola)"
-          @change="updateVisualSwap('player')"
-          @click.stop
-        >
-        <select
-          v-model="playerGender"
-          class="swap-select-mini gender-input"
-          title="Género"
-          @change="updateVisualSwap('player')"
-          @click.stop
-        >
-          <option value="">
-            Gender
-          </option>
-          <option value="m">
-            M
-          </option>
-          <option value="f">
-            F
-          </option>
-        </select>
-      </div>
-    </div>
-
-    <!-- ENEMY SECTION -->
-    <div class="debug-section">
-      <div class="section-label">
-        Enemy Controls
-      </div>
-      <div class="btn-grid">
-        <button
-          class="mini-btn"
-          :class="{ active: battleStore.state?.enemy?.isShiny }"
-          @click.stop="toggleStatus('enemy', 'shiny')"
-        >
-          SHINY
-        </button>
-        <button
-          class="mini-btn"
-          :class="{ active: battleStore.state?.enemy?.isGuardian }"
-          @click.stop="toggleStatus('enemy', 'guardian')"
-        >
-          GUARD
-        </button>
-      </div>
-      <div class="swap-controls-triple mt-1">
-        <div class="base-swap-group">
-          <button
-            class="swap-btn"
-            @click.stop="decrementSwap('enemy')"
-          >
-            -
-          </button>
-          <input
-            v-model="enemyBaseId"
-            type="number"
-            min="1"
-            class="swap-input base-id-input"
-            placeholder="#"
-            @change="updateVisualSwap('enemy')"
-            @click.stop
-          >
-          <button
-            class="swap-btn"
-            @click.stop="incrementSwap('enemy')"
-          >
-            +
-          </button>
-        </div>
-        <input
-          v-model="enemyVariant"
-          type="text"
-          class="swap-input-mini variant-input"
-          placeholder="Var"
-          title="Variante (ej. 1, mega, alola)"
-          @change="updateVisualSwap('enemy')"
-          @click.stop
-        >
-        <select
-          v-model="enemyGender"
-          class="swap-select-mini gender-input"
-          title="Género"
-          @change="updateVisualSwap('enemy')"
-          @click.stop
-        >
-          <option value="">
-            Gender
-          </option>
-          <option value="m">
-            M
-          </option>
-          <option value="f">
-            F
-          </option>
-        </select>
-      </div>
+    <div class="debug-header">
+      <span class="icon">🕹️</span>
+      <span class="title">BATTLE ACTIONS & DEBUG</span>
       <button
-        class="debug-btn catch-btn"
-        @click.stop="debugCapture"
+        id="battle-debug-menu-close-btn"
+        class="close-mini"
+        @click.stop="emit('close')"
       >
-        ⭐ SUPER POKEBALL
+        ✕
       </button>
     </div>
 
-    <!-- CAMERA -->
-    <div class="debug-section">
-      <div class="section-label">
-        Camera
-      </div>
-      <div class="btn-grid">
-        <button
-          class="mini-btn"
-          :class="{ active: battleStore.debugShowGuides }"
-          @click.stop="gameBus.emit('TOGGLE_CAMERA_GUIDES')"
-        >
-          GUIDES
-        </button>
-        <button
-          class="mini-btn"
-          :class="{ active: battleStore.debugShowFxRadius }"
-          @click.stop="battleStore.debugShowFxRadius = !battleStore.debugShowFxRadius"
-        >
-          FX RAD
-        </button>
-        <button
-          class="mini-btn"
-          :class="{ active: battleStore.debugShowPokeRadius }"
-          @click.stop="battleStore.debugShowPokeRadius = !battleStore.debugShowPokeRadius"
-        >
-          POKE RAD
-        </button>
-        <button
-          class="mini-btn"
-          :class="{ active: battleStore.debugZoom !== 1 }"
-          @click.stop="gameBus.emit('TOGGLE_DEBUG_ZOOM')"
-        >
-          ZOOM
-        </button>
-      </div>
-    </div>
+    <div class="debug-scroll-area">
+      <!-- Quick Actions -->
+      <DebugActionPanelQuickButtons />
 
-    <div class="debug-footer">
-      VITE_DEBUG_ACTIVE
+      <!-- ENVIRONMENT & BEHAVIOR -->
+      <div class="debug-section">
+        <div class="section-label">
+          Environment & Behavior
+        </div>
+        <div class="btn-grid">
+          <PVTooltip description="Binocs: Ver el Pokémon en COLOR (Binoculares) o en SILUETA (Normal)">
+            <button
+              id="battle-debug-binoculars-btn"
+              class="mini-btn"
+              :class="{ active: battleStore.debugBinoculars }"
+              @click.stop="toggleBinoculars"
+            >
+              {{ battleStore.debugBinoculars ? 'BINOCS: ON' : 'BINOCS: OFF' }}
+            </button>
+          </PVTooltip>
+          
+          <PVTooltip description="Chain: El siguiente Pokémon aparece automáticamente al ganar">
+            <button
+              id="battle-debug-chain-btn"
+              class="mini-btn"
+              :class="{ active: battleStore.isSearching }"
+              @click.stop="toggleSearchMode"
+            >
+              {{ battleStore.isSearching ? 'CHAIN: ON' : 'CHAIN: OFF' }}
+            </button>
+          </PVTooltip>
+        </div>
+      </div>
+
+      <!-- PLAYER SECTION -->
+      <div class="debug-section">
+        <div class="section-label">
+          Player Controls
+        </div>
+        <div class="btn-grid">
+          <button
+            id="battle-debug-player-shiny-btn"
+            class="mini-btn"
+            :class="{ active: battleStore.state?.player?.isShiny }"
+            @click.stop="toggleStatus('player', 'shiny')"
+          >
+            SHINY
+          </button>
+          <button
+            id="battle-debug-player-guard-btn"
+            class="mini-btn"
+            :class="{ active: battleStore.state?.player?.isGuardian }"
+            @click.stop="toggleStatus('player', 'guardian')"
+          >
+            GUARD
+          </button>
+        </div>
+        <div class="swap-controls-triple">
+          <div class="base-swap-group">
+            <button
+              id="battle-debug-player-swap-dec-btn"
+              class="swap-btn"
+              title="Pokémon Anterior"
+              @click.stop="decrementSwap('player')"
+            >
+              -
+            </button>
+            <input
+              id="battle-debug-player-id-input"
+              v-model="playerBaseId"
+              type="number"
+              min="1"
+              class="swap-input base-id-input"
+              placeholder="ID"
+              @change="updateVisualSwap('player')"
+              @click.stop
+            >
+            <button
+              id="battle-debug-player-swap-inc-btn"
+              class="swap-btn"
+              title="Pokémon Siguiente"
+              @click.stop="incrementSwap('player')"
+            >
+              +
+            </button>
+          </div>
+          <input
+            id="battle-debug-player-variant-input"
+            v-model="playerVariant"
+            type="text"
+            class="swap-input-mini variant-input"
+            placeholder="Var"
+            title="Variante (ej. 1, mega, alola)"
+            @change="updateVisualSwap('player')"
+            @click.stop
+          >
+          <select
+            id="battle-debug-player-gender-select"
+            v-model="playerGender"
+            class="swap-select-mini gender-input"
+            title="Género"
+            @change="updateVisualSwap('player')"
+            @click.stop
+          >
+            <option value="">
+              Género
+            </option>
+            <option value="m">
+              ♂ M
+            </option>
+            <option value="f">
+              ♀ F
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ENEMY SECTION -->
+      <div class="debug-section">
+        <div class="section-label">
+          Enemy Controls
+        </div>
+        <div class="btn-grid">
+          <button
+            id="battle-debug-enemy-shiny-btn"
+            class="mini-btn"
+            :class="{ active: battleStore.state?.enemy?.isShiny }"
+            @click.stop="toggleStatus('enemy', 'shiny')"
+          >
+            SHINY
+          </button>
+          <button
+            id="battle-debug-enemy-guard-btn"
+            class="mini-btn"
+            :class="{ active: battleStore.state?.enemy?.isGuardian }"
+            @click.stop="toggleStatus('enemy', 'guardian')"
+          >
+            GUARD
+          </button>
+        </div>
+        <div class="swap-controls-triple">
+          <div class="base-swap-group">
+            <button
+              id="battle-debug-enemy-swap-dec-btn"
+              class="swap-btn"
+              title="Pokémon Anterior"
+              @click.stop="decrementSwap('enemy')"
+            >
+              -
+            </button>
+            <input
+              id="battle-debug-enemy-id-input"
+              v-model="enemyBaseId"
+              type="number"
+              min="1"
+              class="swap-input base-id-input"
+              placeholder="ID"
+              @change="updateVisualSwap('enemy')"
+              @click.stop
+            >
+            <button
+              id="battle-debug-enemy-swap-inc-btn"
+              class="swap-btn"
+              title="Pokémon Siguiente"
+              @click.stop="incrementSwap('enemy')"
+            >
+              +
+            </button>
+          </div>
+          <input
+            id="battle-debug-enemy-variant-input"
+            v-model="enemyVariant"
+            type="text"
+            class="swap-input-mini variant-input"
+            placeholder="Var"
+            title="Variante (ej. 1, mega, alola)"
+            @change="updateVisualSwap('enemy')"
+            @click.stop
+          >
+          <select
+            id="battle-debug-enemy-gender-select"
+            v-model="enemyGender"
+            class="swap-select-mini gender-input"
+            title="Género"
+            @change="updateVisualSwap('enemy')"
+            @click.stop
+          >
+            <option value="">
+              Género
+            </option>
+            <option value="m">
+              ♂ M
+            </option>
+            <option value="f">
+              ♀ F
+            </option>
+          </select>
+        </div>
+        <button
+          id="battle-debug-super-ball-btn"
+          class="debug-btn catch-btn"
+          @click.stop="debugCapture"
+        >
+          CAPTURA INMEDIATA (100%)
+        </button>
+      </div>
+
+      <!-- CAMERA -->
+      <div class="debug-section">
+        <div class="section-label">
+          Camera Controls
+        </div>
+        <div class="btn-grid-4">
+          <button
+            id="battle-debug-cam-guides-btn"
+            class="mini-btn"
+            :class="{ active: battleStore.debugShowGuides }"
+            @click.stop="gameBus.emit('TOGGLE_CAMERA_GUIDES')"
+          >
+            GUIDES
+          </button>
+          <button
+            id="battle-debug-cam-fx-btn"
+            class="mini-btn"
+            :class="{ active: battleStore.debugShowFxRadius }"
+            @click.stop="battleStore.debugShowFxRadius = !battleStore.debugShowFxRadius"
+          >
+            FX RAD
+          </button>
+          <button
+            id="battle-debug-cam-poke-btn"
+            class="mini-btn"
+            :class="{ active: battleStore.debugShowPokeRadius }"
+            @click.stop="battleStore.debugShowPokeRadius = !battleStore.debugShowPokeRadius"
+          >
+            POKE RAD
+          </button>
+          <button
+            id="battle-debug-cam-zoom-btn"
+            class="mini-btn"
+            :class="{ active: battleStore.debugZoom !== 1 }"
+            @click.stop="gameBus.emit('TOGGLE_DEBUG_ZOOM')"
+          >
+            ZOOM
+          </button>
+        </div>
+      </div>
+
+      <div class="debug-footer">
+        ● VITE_DEBUG ACTIVE
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss" src="@/styles/components/_debug-action-panel.scss"></style>
-
-<style scoped lang="scss">
-.swap-controls-triple {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  width: 100%;
-  height: 24px;
-}
-
-.base-swap-group {
-  display: flex;
-  align-items: center;
-  height: 100%;
-  flex: 1.5;
-  background: #000;
-  border: 1px solid Rgba(255, 255, 255, 0.4);
-  border-radius: 2px;
-}
-
-.base-swap-group .swap-btn {
-  @include btn-vicio('default', 'xs', true);
-  width: 20px !important;
-  height: 100% !important;
-  font-size: 10px;
-  padding: 0 !important;
-  border: none !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  flex-shrink: 0;
-}
-
-.base-id-input {
-  width: 100%;
-  height: 100%;
-  background: transparent !important;
-  border: none !important;
-  color: white;
-  @include pixelated;
-  font-size: 10px;
-  text-align: center;
-  border-radius: 0 !important;
-  min-width: 0;
-  flex: 1;
-}
-
-.swap-input-mini {
-  flex: 0.6;
-  min-width: 0;
-  height: 100%;
-  background: #000;
-  border: 1px solid Rgba(255, 255, 255, 0.4);
-  border-radius: 2px;
-  color: #fff;
-  text-align: center;
-  font-size: 10px;
-  @include pixelated;
-}
-
-.swap-select-mini {
-  flex: 0.9;
-  min-width: 0;
-  height: 100%;
-  background: #000;
-  border: 1px solid Rgba(255, 255, 255, 0.4);
-  border-radius: 2px;
-  color: #fff;
-  font-size: 8px;
-  @include pixelated;
-  cursor: pointer;
-  text-align: center;
-
-  option {
-    background: #14141e;
-    color: #fff;
-  }
-}
-
-.pp-drain-btn {
-  width: 100%;
-  background: Rgba(180, 80, 0, 0.85) !important;
-  border-color: #ff8c00 !important;
-  color: #ffe0a0 !important;
-  &:hover { background: #ff8c00 !important; color: #000 !important; }
-}
-</style>

@@ -36,6 +36,9 @@ export interface IVs {
   spe: number;
 }
 
+export const COMBAT_STAT_IDS = ['atk', 'def', 'spa', 'spd', 'spe'] as const; // domain-ok
+export type StatIDExceptHP = (typeof COMBAT_STAT_IDS)[number];
+
 const STAT_IDS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
 export type StatId = (typeof STAT_IDS)[number];
 
@@ -107,6 +110,17 @@ export function calcStatsPure(
 
 export function isStatId(stat: string): stat is StatId {
   return (STAT_IDS as readonly string[]).includes(stat); // domain-ok
+}
+
+export function isStatIdExceptHP(stat: string): stat is StatIDExceptHP {
+  return (COMBAT_STAT_IDS as readonly string[]).includes(stat); // domain-ok
+}
+
+export function requireStatIdExceptHP(stat: string): StatIDExceptHP {
+  if (!isStatIdExceptHP(stat)) {
+    throw new Error(`[Stats] Invalid StatIDExceptHP: "${stat}". Expected one of: ${COMBAT_STAT_IDS.join(', ')}`);
+  }
+  return stat;
 }
 
 export function calculateTotalIVs(ivs?: Partial<Record<StatId, number>> | null): number {

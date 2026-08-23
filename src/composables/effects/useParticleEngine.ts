@@ -1,4 +1,4 @@
-import { onUnmounted } from 'vue'
+import { onUnmounted, getCurrentInstance } from 'vue'
 import { gsap } from 'gsap'
 import type { ParticleShape } from '@/data/battle/fx-configs'
 
@@ -213,7 +213,9 @@ export function useParticleEngine() {
     })
   }
 
-  onUnmounted(killAll)
+  if (getCurrentInstance()) {
+    onUnmounted(killAll)
+  }
 
   return {
     initSystem,

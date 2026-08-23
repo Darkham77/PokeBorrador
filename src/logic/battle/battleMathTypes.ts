@@ -20,6 +20,7 @@ export interface PurePokemon {
   catchRate?: number;
   furyCutterCount?: number;
   focusEnergy?: boolean;
+  canEvolve?: boolean;
 }
 
 export interface PureMove {

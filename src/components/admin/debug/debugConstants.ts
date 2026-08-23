@@ -43,22 +43,22 @@ export const DEBUG_STATUS_CONDITIONS: DebugItem[] = [
 ]
 
 export const DEBUG_SECONDARY_EFFECTS: DebugItem[] = [
-  { id: 'confused', label: 'CONFUSIÓN (4t)', icon: '🌀' },
-  { id: 'tauntTurns', label: 'MOFA (3t)', icon: '🤬' },
+  { id: 'confusion', label: 'CONFUSIÓN (4t)', icon: '🌀' },
+  { id: 'taunt', label: 'MOFA (3t)', icon: '🤬' },
   { id: 'substitute', label: 'SUSTITUTO', icon: '🧸' },
-  { id: 'disabledTurns', label: 'ANULADO (4t)', icon: '🔒' },
-  { id: 'encoreTurns', label: 'OTRA VEZ (3t)', icon: '🔁' },
-  { id: 'perishSongCount', label: 'CANTO MORTAL (3t)', icon: '⏳' },
+  { id: 'disable', label: 'ANULADO (4t)', icon: '🔒' },
+  { id: 'encore', label: 'OTRA VEZ (3t)', icon: '🔁' },
+  { id: 'perishsong', label: 'CANTO MORTAL (3t)', icon: '⏳' },
   { id: 'bound', label: 'ATADURA (4t)', icon: '⛓️' },
-  { id: 'attracted', label: 'ATRACCIÓN', icon: '❤️' },
-  { id: 'cursed', label: 'MALDICIÓN', icon: '👻' },
-  { id: 'seeded', label: 'DRENADORAS', icon: '🌱' },
+  { id: 'attract', label: 'ATRACCIÓN', icon: '❤️' },
+  { id: 'curse', label: 'MALDICIÓN', icon: '👻' },
+  { id: 'leechseed', label: 'DRENADORAS', icon: '🌱' },
   { id: 'trapped', label: 'ATRAPADO', icon: '🪤' },
   { id: 'ingrain', label: 'ARRAIGADO', icon: '🌳' },
   { id: 'protect', label: 'PROTECCIÓN', icon: '🛡️' },
   { id: 'endure', label: 'AGUANTE', icon: '✊' },
-  { id: 'focus_energy', label: 'FOCO ENERG.', icon: '🎯' },
-  { id: 'lock_on', label: 'F. BLANCO', icon: '👁️' }
+  { id: 'focusenergy', label: 'FOCO ENERG.', icon: '🎯' },
+  { id: 'lockon', label: 'F. BLANCO', icon: '👁️' }
 ]
 
 export const DEBUG_ENCOUNTER_ANIMS: DebugItem[] = [
@@ -109,7 +109,7 @@ export const DEBUG_FIELD_EFFECTS: DebugItem[] = [
   { id: 'trickroom', label: 'TRICK ROOM', icon: '⏳' },
   { id: 'gravity', label: 'GRAVEDAD', icon: '🌌' },
   { id: 'reflect', label: 'REFLEJO', icon: '🧱' },
-  { id: 'lightScreen', label: 'PANTALLA LUZ', icon: '🕯️' },
+  { id: 'lightscreen', label: 'PANTALLA LUZ', icon: '🕯️' },
   { id: 'safeguard', label: 'VELO SAGRADO', icon: '🛡️' },
   { id: 'mist', label: 'NEBLINA', icon: '🌫️' },
   { id: 'spikes', label: 'PÚAS', icon: '📌' },

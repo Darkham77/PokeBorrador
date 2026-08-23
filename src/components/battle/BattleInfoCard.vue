@@ -120,10 +120,13 @@ const getStatModifier = (key: string) => {
   return (stages as Record<string, number>)[key] || 0 // open-record
 }
 
+import { isStatIdExceptHP, type StatIDExceptHP } from '@/logic/pokemon/statsMath'
+
 const getBreakdown = (key: string) => {
   const stages = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages
   const weather = battleStore.state?.weather
-  return getStatBreakdown(p.value, key as 'atk' | 'def' | 'spa' | 'spd' | 'spe', stages, weather || null)
+  const statKey: StatIDExceptHP = isStatIdExceptHP(key) ? key : 'atk'
+  return getStatBreakdown(p.value, statKey, stages, weather || null)
 }
 
 const showTeamBalls = computed(() => {

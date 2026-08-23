@@ -72,12 +72,14 @@ const props = defineProps({
   hasMist: { type: Boolean, default: false },
   hasSpikes: { type: Boolean, default: false },
   isIngrained: { type: Boolean, default: false },
+  isPerishSong: { type: Boolean, default: false },
   sparkleCount: { type: Number, default: DEFAULT_SPARKLE_COUNT },
   enabled: { type: Boolean, default: true },
   vibrant: { type: Boolean, default: false },
   isSilhouette: { type: Boolean, default: false },
   radius: { type: Number, default: DEFAULT_RADIUS_PX },
   spriteScale: { type: Number, default: 1 },
+  pokeScale: { type: Number, default: 1 },
   animState: { type: String, default: null },
   isBattle: { type: Boolean, default: false }
 })
@@ -127,7 +129,8 @@ const secondaryEffects = computed(() => [
   { active: props.attracted, emoji: '💖', type: 'attracted' },
   { active: props.isSeeded, emoji: '🌱', type: 'seeded' },
   { active: props.isTrapped, emoji: '🕸️', type: 'trapped' },
-  { active: props.isIngrained, emoji: '🌳', type: 'ingrained' }
+  { active: props.isIngrained, emoji: '🌳', type: 'ingrained' },
+  { active: props.isPerishSong, emoji: '⏳', type: 'perishsong' }
 ].filter(e => e.active))
 
 const tacticalEffects = computed(() => [
@@ -245,7 +248,7 @@ const allActiveFXDebug = computed(() => {
   if (!battleStore.debugShowFxRadius) return []
   const effects = [...activeStatusEffects.value, ...secondaryEffects.value, ...tacticalEffects.value, ...fieldEffects.value]
   return effects.map((fx: FXData) => {
-    const settings = resolveEffectSettings(fx.type, props.radius, { isField: fx.isField, isSimplified: isSimplified.value, isBattle: props.isBattle, spriteScale: props.spriteScale })
+    const settings = resolveEffectSettings(fx.type, props.radius, { isField: fx.isField, isSimplified: isSimplified.value, isBattle: props.isBattle, spriteScale: props.spriteScale, pokeScale: props.pokeScale })
     const shape = settings.shape; const offset = settings.offset || { x: 0, y: 0 }; 
     const area = settings.area as { x: [number, number], y?: [number, number] }
 const BORDER_RADIUS_CIRCLE_PERCENT = '50%'
@@ -304,6 +307,7 @@ const DEBUG_CENTER_OFFSET_PERCENT = 50
       :radius="radius"
       :anim-seed="animSeed"
       :sprite-scale="spriteScale"
+      :poke-scale="pokeScale"
       :enabled="!isSimplified"
       :is-simplified="isSimplified"
       :is-battle="isBattle"
@@ -340,20 +344,21 @@ const DEBUG_CENTER_OFFSET_PERCENT = 50
 .debug-guide {
   position: absolute; top: 50%; left: 50%; transform: Translate(-50%, -50%);
   border: 1px dashed; border-radius: 50%; pointer-events: none; z-index: calc(v-bind('Z_LAYERS.OVERLAY') - 1);
-  display: flex; align-items: center; justify-content: center; @include pixelated;
+  display: flex; align-items: center; justify-content: center;
   .label {
-    position: absolute; top: -12px; background: Rgba(0, 0, 0, 0.8); color: white;
-    font-size: 9px; padding: 1px 4px; border-radius: 2px; white-space: nowrap;
+    position: absolute; bottom: -18px; background: Rgba(0, 0, 0, 0.9); color: white;
+    font-family: monospace, sans-serif; font-size: 10px; line-height: 1.2; font-weight: bold;
+    padding: 2px 5px; border-radius: 3px; white-space: nowrap;
     transform: Scale(calc(1 / var(--camera-scale, 1)));
-    transform-origin: center bottom;
+    transform-origin: center top;
   }
   &.debug-poke-radius {
-    border-color: #00ffff; background: Rgba(0, 255, 255, 0.35); border: 3px solid #00ffff;
-    .label { border: 1px solid #00ffff; background: Rgba(0, 50, 50, 0.9); }
+    border-color: #00ffff; background: Rgba(0, 255, 255, 0.25); border: 2px solid #00ffff;
+    .label { border: 1px solid #00ffff; background: Rgba(0, 40, 40, 0.9); color: #00ffff; }
   }
   &.debug-fx-radius {
-    border-color: #ff9900; background: Rgba(255, 153, 0, 0.35); border: 3px solid #ff9900;
-    .label { border: 1px solid #ff9900; background: Rgba(50, 30, 0, 0.9); }
+    border-color: #ff9900; background: Rgba(255, 153, 0, 0.2); border: 2px solid #ff9900;
+    .label { border: 1px solid #ff9900; background: Rgba(40, 20, 0, 0.9); color: #ffbb33; }
   }
 }
 </style>

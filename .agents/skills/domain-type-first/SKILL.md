@@ -1,26 +1,28 @@
 ---
 name: domain-type-first
-description: Use this skill whenever creating, modifying, reviewing, or generating a data type, domain type, finite constant list, interface field, DTO, data contract, generated database wrapper, validation script, or any code that represents a finite set of values. This skill MUST trigger for phrases such as "tipo de dato", "domain type", "data type", "constants", "ids", "status", "category", "mode", "kind", "type", "Record", "Set", "Map", "array of strings", generated JSON/TS databases, asset-generated databases, or npm scripts that regenerate data. It forces type-first design using strict TypeScript unions derived from canonical data and prevents loose runtime structures from becoming accidental domain contracts.
+description: MANDATORY governance for defining, typing, declaring, modifying, refactoring, or reviewing ANY TypeScript data type, variable, constant, function parameter, return type, component prop, interface field, DTO, schema, store state, or finite domain. This skill MUST trigger whenever the user or task mentions defining or declaring types, variables, parameters, arguments, props, fields, constants, enums, unions, branded types, or schemas, in both Spanish and English (e.g., "tipo de dato", "tipar", "variable", "variables", "parametro", "parámetros", "prop", "props", "campo", "campos", "firma", "constante", "declarar", "data type", "type", "variable", "parameter", "parameters", "args", "return type", "interface", "schema", "state", "ids", "status", "category", "mode", "kind", "Record", "Set", "Map", "array of strings", generated JSON/TS databases). Enforces strict compile-time TypeScript unions derived from canonical data, eliminating naked strings, ad-hoc literal unions, loose any/unknown casts, and runtime fallbacks.
 ---
 
 # Domain Type First
 
-Use this skill before writing or editing any code that introduces, changes, or consumes a finite data domain.
+Use this skill before writing or editing any code that introduces, changes, or consumes a finite data domain, declares variables/parameters, or adds TypeScript types.
 
 The goal is simple: invalid domain values should fail at compile time. If TypeScript accepts an invalid value, the domain was designed incorrectly.
 
 ## Trigger Checklist
 
-Apply this workflow when the task involves any of these:
+Apply this workflow whenever the task involves any of the following:
 
-- A new `type`, `interface`, DTO, schema, store state, generated wrapper, or data contract.
-- Finite IDs such as Pokemon species, moves, abilities, items, maps, trainers, factions, statuses, weather, ranks, categories, modes, slots, phases, classes, tables, or routes across `src/` and `scripts/`.
-- Constants declared as arrays, sets, maps, records, or object dictionaries in `src/` and `scripts/`.
-- Generated data under `src/data/**`, generated wrappers from JSON, or npm scripts under `scripts/**` that regenerate source/data files or execute simulations.
-- Validation logic for values that come from JSON, assets, saves, workers, APIs, or external payloads.
-- Review/audit findings from `npm run validate:domain-types` (which scans both `src/` and `scripts/`).
+- **Variables & Constants**: Declaring, typing, or modifying any variable (`const`, `let`, `ref()`, `reactive()`) holding domain values, statuses, identifiers, or configurations.
+- **Function & Method Parameters**: Typing arguments, parameters, callbacks, composables inputs, handler signatures, or return types across `src/` and `scripts/`.
+- **Component Props & State**: Declaring Vue component props, emits, Pinia store state fields, getters, or action payloads.
+- **Types, Interfaces & Schemas**: Creating or updating any `type`, `interface`, DTO, Valibot schema, database model, generated wrapper, or data contract.
+- **Finite Domain IDs & Values**: Finite identifiers such as Pokemon species, moves, abilities, items, maps, trainers, factions, statuses, weather, ranks, categories, modes, slots, phases, classes, tables, or routes across `src/` and `scripts/`.
+- **Collections & Dictionaries**: Constants declared as arrays, sets, maps, records, or object dictionaries in `src/` and `scripts/`.
+- **Generated Data & Boundary Validation**: Generated data under `src/data/**`, generated wrappers from JSON, npm scripts under `scripts/**`, or runtime boundary validators (`isDomainId`, `requireDomainId`).
+- **Audit Findings**: Review/audit findings from `npm run validate:domain-types` or `npm run audit:warnings-diff`.
 
-If it is finite, design the domain type first.
+If it represents a finite domain, design and use the domain type first.
 
 ## Absolute Prohibition on Silent Domain ID Fallbacks (`noDomainIdFallbacks`)
 

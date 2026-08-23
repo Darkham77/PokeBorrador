@@ -59,7 +59,10 @@ function getSpeciesBaseStat(key: string): number {
       v-for="st in adminStatConfig"
       :key="st.key"
       class="grid-stat-row"
-      :class="{ 'is-up': getStatModifier(st.key) > 0, 'is-down': getStatModifier(st.key) < 0 }"
+      :class="{ 
+        'is-up': getBreakdown(st.key).final > getBreakdown(st.key).base || getStatModifier(st.key) > 0, 
+        'is-down': getBreakdown(st.key).final < getBreakdown(st.key).base || getStatModifier(st.key) < 0 
+      }"
     >
       <span class="stat-name-col">{{ st.label }}</span>
       <span class="stat-bs-col">{{ getSpeciesBaseStat(st.key) }}</span>
