@@ -157,7 +157,7 @@ export function useBattleCombatantAnims(
         }
       })
       
-      const animKey = `${props.side}-${props.position.x}-${props.position.y}-${props.pokemon?.uid || 'active'}`
+      const animKey = `${props.side}-${props.pokemon?.uid || 'active'}`
       gameBus.emit('REGISTER_TWEEN', { key: animKey, tween })
     } else if (val === 'releasing') {
       const origin = getSpriteFeetOrigin()
@@ -203,7 +203,7 @@ export function useBattleCombatantAnims(
         }
       })
 
-      const animKey = `${props.side}-${props.position.x}-${props.position.y}-${props.pokemon?.uid || 'active'}`
+      const animKey = `${props.side}-${props.pokemon?.uid || 'active'}`
       gameBus.emit('REGISTER_TWEEN', { key: animKey, tween })
     }
   }

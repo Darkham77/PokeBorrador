@@ -1,5 +1,5 @@
 import type { SideID } from '@pkmn/sim';
-import type { ShowdownPlayerRequest, BattleStages, BattleSide } from '../battle/battle.ts';
+import type { ShowdownPlayerRequest, BattleStages, BattleSide, BattleMinigame } from '../battle/battle.ts';
 import type { BattleStateName, BattleSubStateName } from '../../logic/battle/battleStateMachine.ts';
 import type { BattleForcedSwitchDetail, BattleReadyForInputDetail } from '../battle/battleEvents.ts';
 import type { GameStoreReadyDetail } from './gameEvents.ts';
@@ -126,8 +126,7 @@ declare global {
       trainerName?: string;
       weather?: { type?: string; turns?: number; visual?: string } | null;
       wasSearching?: boolean;
-      isFishing?: boolean;
-      isArchaeology?: boolean;
+      minigame?: BattleMinigame | null;
       over?: boolean;
       turnCount?: number;
       playerRequest?: ShowdownPlayerRequest;

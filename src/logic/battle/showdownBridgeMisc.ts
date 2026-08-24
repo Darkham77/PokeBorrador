@@ -443,7 +443,7 @@ export function handleMiscEvents(ctx: SBCtx): boolean | Promise<boolean> {
                 const s = store.enemyStages.value;
                 store.enemyStages.value = {
                   ...s,
-                  atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0
+                  atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0
                 };
               }
 
@@ -500,7 +500,7 @@ export function handleMiscEvents(ctx: SBCtx): boolean | Promise<boolean> {
                 const s = store.playerStages.value;
                 store.playerStages.value = {
                   ...s,
-                  atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0
+                  atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0
                 };
               }
 

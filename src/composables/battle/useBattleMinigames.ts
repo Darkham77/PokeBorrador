@@ -2,11 +2,11 @@ import { logger } from '@/logic/utils/logger'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { ItemId } from '@/data/inventory/items'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { resetBattleMinigameFlags, type BattleMinigame } from '@/logic/battle/battleMinigames'
 
 interface BattleStoreMinigameRef {
   state?: {
-    isFishing?: boolean
-    isArchaeology?: boolean
+    minigame?: BattleMinigame | null
     locationId?: string
     rarity?: number
   } | null
@@ -36,21 +36,19 @@ export function useBattleMinigames(
   const handleMinigameCancel = async () => {
     logger.warn('BattleArenaView', 'Minigame CANCELLED by user')
     if (battleStore.state) {
-      battleStore.state.isFishing = false
-      battleStore.state.isArchaeology = false
+      resetBattleMinigameFlags(battleStore.state)
     }
     resetAll()
     battleStore.attackerSide = null
     battleStore.activeMove = null
-    battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
+    battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
     await battleStore.completeBattleFlow('search')
   }
 
   const handleFishingSuccess = async () => {
     logger.success('BattleArenaView', 'Fishing SUCCESS')
     if (battleStore.state) {
-      battleStore.state.isFishing = false
-      battleStore.state.isArchaeology = false
+      resetBattleMinigameFlags(battleStore.state)
     }
     resetAll()
     await battleStore.startEncounter()
@@ -62,13 +60,12 @@ export function useBattleMinigames(
     battleStore.addLog('El Pokémon escapó...', 'log-info', '💨')
 
     if (battleStore.state) {
-      battleStore.state.isFishing = false
-      battleStore.state.isArchaeology = false
+      resetBattleMinigameFlags(battleStore.state)
     }
     resetAll()
     battleStore.attackerSide = null
     battleStore.activeMove = null
-    battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
+    battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
 
     await battleStore.completeBattleFlow('search')
   }
@@ -78,13 +75,12 @@ export function useBattleMinigames(
     const locId = battleStore.state?.locationId || 'route1'
 
     if (battleStore.state) {
-      battleStore.state.isArchaeology = false
-      battleStore.state.isFishing = false
+      resetBattleMinigameFlags(battleStore.state)
     }
     resetAll()
     battleStore.attackerSide = null
     battleStore.activeMove = null
-    battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
+    battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
 
     await mapStore.triggerArchaeologyRewards(locId, difficulty)
     await battleStore.completeBattleFlow('search')
@@ -104,13 +100,12 @@ export function useBattleMinigames(
     }
 
     if (battleStore.state) {
-      battleStore.state.isArchaeology = false
-      battleStore.state.isFishing = false
+      resetBattleMinigameFlags(battleStore.state)
     }
     resetAll()
     battleStore.attackerSide = null
     battleStore.activeMove = null
-    battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
+    battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
 
     const { getItemName, SHOP_ITEMS } = await import('@/data/inventory/items')
     const fossilName = getItemName(fossilId)

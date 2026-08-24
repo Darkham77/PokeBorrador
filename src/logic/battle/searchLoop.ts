@@ -8,6 +8,7 @@ import { nextTick } from 'vue'
 import { requireMapRouteId } from '@/data/world/map-assets'
 import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
 import { emitBattleFlowCompleted } from '@/logic/events/battleUiEvents'
+import { isBattleMinigame, setBattleMinigame, resetBattleMinigameFlags, type BattleMinigame } from './battleMinigames.ts'
 
 /**
  * Handles the completion of a battle flow (either going to map or search loop).
@@ -34,27 +35,33 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     return
   }
 
-  if (option === 'search' && !ctx.activeBattle.value) {
-    const defaultLoc = requireMapRouteId(ctx.gs.state.map.currentMap)
-    ctx.activeBattle.value = {
-      player: null,
-      enemy: null,
-      playerTeamIndex: 0,
-      enemyTeamIndex: 0,
-      participants: [],
-      locationId: defaultLoc,
-      weather: { type: 'clear', turns: -1 },
-      turnCount: 0,
-      escapeAttempts: 0,
-      over: false,
-      fled: false,
-      isTrainer: false,
-      isGym: false,
-      isFishing: false,
-      isArchaeology: false,
-      rewardsProcessed: false,
-      _rewardCombatants: [],
-      wasSearching: true
+  if (option === 'search') {
+    const rawLoc = ctx.activeBattle.value?.locationId || ctx.gs.state.map?.currentMap
+    if (!rawLoc) {
+      throw new Error('[Battle] locationId or gameStore.state.map.currentMap is required for search loop')
+    }
+    const defaultLoc = requireMapRouteId(rawLoc)
+
+    if (!ctx.activeBattle.value) {
+      ctx.activeBattle.value = {
+        player: null,
+        enemy: null,
+        playerTeamIndex: 0,
+        enemyTeamIndex: 0,
+        participants: [],
+        locationId: defaultLoc,
+        weather: { type: 'clear', turns: -1 },
+        turnCount: 0,
+        escapeAttempts: 0,
+        over: false,
+        fled: false,
+        isTrainer: false,
+        isGym: false,
+        minigame: null,
+        rewardsProcessed: false,
+        _rewardCombatants: [],
+        wasSearching: true
+      }
     }
   }
 
@@ -70,8 +77,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     }
     
     // Restablecer flags de minijuegos para la fase de búsqueda
-    ctx.activeBattle.value.isFishing = false
-    ctx.activeBattle.value.isArchaeology = false
+    resetBattleMinigameFlags(ctx.activeBattle.value)
     ctx.activeBattle.value.rewardsProcessed = false
     ctx.activeBattle.value.over = false
     ctx.activeBattle.value.fled = false
@@ -104,9 +110,8 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     
     const encounter = await generateSearchLoopEncounter(ctx, locId)
     
-    let isFishing = false
-    let isArchaeology = false
     let generatedPoke: Pokemon | null = null
+    let minigame: BattleMinigame | null = null
 
     if (encounter) {
       if (encounter.type === 'trainer') {
@@ -151,8 +156,9 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
           if (encounter.type === 'guardian') {
             generatedPoke.isGuardian = true
           }
-          isFishing = encounter.type === 'fishing'
-          isArchaeology = encounter.type === 'archaeology'
+          if (encounter.type === 'fishing' || encounter.type === 'archaeology') {
+            minigame = encounter.type
+          }
         }
       }
     }
@@ -166,9 +172,8 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     }
 
     // Si el encuentro generado es un minijuego, lo jugamos de inmediato
-    if (isFishing || isArchaeology) {
-      ctx.activeBattle.value.isFishing = isFishing
-      ctx.activeBattle.value.isArchaeology = isArchaeology
+    if (minigame) {
+      setBattleMinigame(ctx.activeBattle.value, minigame)
       ctx.isProcessing.value = false
       await fsm.transition(BATTLE_STATES.INITIALIZING)
       await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MINIGAME_CHECK)
@@ -241,7 +246,7 @@ export async function triggerNextEncounter(ctx: BattleContext) {
   }
   
   await fsm.transition(BATTLE_STATES.INITIALIZING)
-  const isMinigame = ctx.activeBattle.value?.isFishing || ctx.activeBattle.value?.isArchaeology
+  const isMinigame = isBattleMinigame(ctx.activeBattle.value)
   if (isMinigame) {
     await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MINIGAME_CHECK)
   }
@@ -250,8 +255,7 @@ export async function triggerNextEncounter(ctx: BattleContext) {
     locationId: locId,
     wasSearching: true,
     isDebug: !!ctx.debugLoopPokemon.value,
-    isFishing: ctx.activeBattle.value?.isFishing,
-    isArchaeology: ctx.activeBattle.value?.isArchaeology
+    minigame: ctx.activeBattle.value?.minigame ?? null
   })
 }
 
@@ -274,7 +278,7 @@ export async function startEncounter(ctx: BattleContext) {
 
   ctx.isProcessing.value = true
   try {
-    const isMinigame = ctx.activeBattle.value?.isFishing || ctx.activeBattle.value?.isArchaeology
+    const isMinigame = isBattleMinigame(ctx.activeBattle.value)
     const enemyPoke = ctx.activeBattle.value?.enemy || ctx.activeBattle.value?._initialEnemy
 
     if (isMinigame) {

@@ -10,6 +10,7 @@ Battle Engine Team / Visual FX Programmers.
 
 - For any battle engine or FSM transitions, always conform to FSM diagrams using the validation scripts.
 - Visual state orchestrations must use GSAP timelines and deterministic promises.
+- **Active Battle Persistence Boundary**: `useBattleStore` state rehydrates via `orchestratorRestoreHelper.ts` on page reload (F5). Active battles restore directly into `ACTIVE_BATTLE / WAIT_INPUT` with exact combatants and logs, while minigames are strictly dropped and routed back to the search loop to enforce anti-cheat rules.
 
 ## Work Guidance
 

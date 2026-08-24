@@ -244,7 +244,7 @@ export const pokemonDebugService = {
               await battleStore._startBattle(p, { 
                 locationId: (p as DebugPokemon).mapId || requireMapRouteId('route12'),
                 isDebug: true,
-                isFishing: true
+                minigame: 'fishing'
               })
               const modalStore = useModalStore()
               modalStore.closeAll()
@@ -269,7 +269,7 @@ export const pokemonDebugService = {
               await battleStore._startBattle(p, { 
                 locationId: (p as DebugPokemon).mapId || requireMapRouteId('mt_moon'),
                 isDebug: true,
-                isArchaeology: true
+                minigame: 'archaeology'
               })
               const modalStore = useModalStore()
               modalStore.closeAll()

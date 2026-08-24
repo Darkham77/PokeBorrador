@@ -22,8 +22,7 @@ export async function resetActiveBattleState(ctx: BattleContext, initialPlayer: 
     ctx.activeBattle.value.lastDamage = undefined
     ctx.activeBattle.value.enemyUsedItem = false
     ctx.activeBattle.value.pendingSlotEffects = []
-    ctx.activeBattle.value.isFishing = false
-    ctx.activeBattle.value.isArchaeology = false
+    ctx.activeBattle.value.minigame = null
     ctx.activeBattle.value.rewardsProcessed = false
     ctx.activeBattle.value._rewardCombatants = []
     ctx.activeBattle.value.playerSideConditions = {}

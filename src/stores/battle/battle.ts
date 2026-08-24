@@ -174,8 +174,7 @@ export const useBattleStore = defineStore('battle', () => {
       sub === BATTLE_SUBSTATES.RESET_FLAGS
     ) {
       if (activeBattle.value) {
-        activeBattle.value.isFishing = false
-        activeBattle.value.isArchaeology = false
+        activeBattle.value.minigame = null
       }
       // Ensure minigame modals are closed on exit or reset
       try {

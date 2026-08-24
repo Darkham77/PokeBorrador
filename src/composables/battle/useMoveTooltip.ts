@@ -161,8 +161,8 @@ export function useMoveTooltip(
     const isPhysical = category === 'physical';
     const isSpecial = category === 'special';
 
-    const playerStageFull = battleStore.playerStages ?? { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 };
-    const enemyStageFull  = battleStore.enemyStages  ?? { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 };
+    const playerStageFull = battleStore.playerStages ?? { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 };
+    const enemyStageFull  = battleStore.enemyStages  ?? { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 };
 
     // Keep the legacy effectiveness calc (only used for type matchup display, not damage)
     const playerStagesEff = playerStageFull.atk !== undefined ? { atk: isPhysical ? playerStageFull.atk : playerStageFull.spa } : null;

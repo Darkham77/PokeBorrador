@@ -12,6 +12,8 @@ import type { MoveCategory } from '@/data/battle/moves';
 export type CoreBattleStatKey = 'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'accuracy' | 'evasion' | 'reflect' | 'lightScreen' | 'safeguard' | 'mist' | 'spikes';
 export const BATTLE_SIDES = ['player', 'enemy'] as const;
 export type BattleSide = (typeof BATTLE_SIDES)[number];
+export const BATTLE_MINIGAMES = ['fishing', 'archaeology'] as const;
+export type BattleMinigame = (typeof BATTLE_MINIGAMES)[number];
 export type BattleDifficulty = 'easy' | 'normal' | 'hard';
 export type BattleActionType = 'move' | 'switch';
 export type PartySlotStatus = 'active' | 'fainted' | 'empty';
@@ -136,8 +138,7 @@ export interface BattleState {
   enemyTeam?: Pokemon[];
   _initialEnemy?: Pokemon | null;
   _rewardCombatants?: Pokemon[];
-  isFishing?: boolean;
-  isArchaeology?: boolean;
+  minigame?: BattleMinigame | null;
   isExecutingSwitch?: boolean;
   lastDamage?: number;
   enemyUsedItem?: boolean;

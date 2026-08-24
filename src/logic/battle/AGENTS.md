@@ -74,6 +74,7 @@ Frontend Developers / Systems Engineers.
   - All properties of `activeBattle` (`trainerSprite`, `trainerArchetype`, `quote`, `wasSearching`, `participants`, `enemyTeamIndex`, `battleLogs`, `playerStages`, `enemyStages`) MUST be serialized in `ActiveBattleSerialized` / `activeBattleSchema` and fully restored upon rehydration in `orchestratorRestoreHelper.ts`.
   - In-combat action resolvers (such as `processSwitchSwapAnimations`, `executeSwitch`, and `executeTurnWithAction`) MUST defensively initialize `participants` as an empty array before evaluating `.includes()`.
   - When `activeBattle.wasSearching` is active, concluding the battle MUST invoke `completeBattleFlow('search')` to resume the wild encounter search loop without closing the arena modal.
+  - **Anti-Cheat Refresh & Minigame Non-Persistence**: Active battles rehydrate faithfully on F5 with exact UIDs, HP, stages, and logs. Minigames (`minigame !== null`, e.g. fishing, archaeology) are strictly excluded from `activeBattle` persistence (`saveSerializer.ts`) and are dropped on reload to prevent exploit resets, returning cleanly to `/map` search mode via `resumeSearchMode(ctx, d)`.
 
 - **Dynamic Trainer Identity in Combat Logs**:
   - All combat announcement logs for opponent trainer actions (Pokemon calls, recalls, item usage, challenges) MUST dynamically resolve the trainer name using `${active.trainerName || 'El entrenador'}` and the `'enemy_trainer'` log source, avoiding static placeholder text.

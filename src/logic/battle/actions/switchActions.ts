@@ -36,7 +36,7 @@ export async function executeEnemySwitch(store: BattleContext, newPokeIndex: num
   const s = store.enemyStages.value;
   store.enemyStages.value = {
     ...s,
-    atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0
+    atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0
   };
 
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL);

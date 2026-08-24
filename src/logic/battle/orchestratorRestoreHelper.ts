@@ -4,9 +4,11 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import { isMatchingUid } from './showdownUidMapper.ts'
 import { initWorkerForBattle } from './orchestratorWorkerInitHelper.ts'
 import { requireMapRouteId } from '@/data/world/map-assets'
+import { isBattleMinigame } from './battleMinigames.ts'
 
 /**
- * Restores a battle state from saved data.
+ * Restores a battle state from saved data upon page refresh (F5).
+ * Faithfully resumes the active combat at the exact turn, HP, and log history.
  */
 export async function restoreBattleState(ctx: BattleContext, battleData: unknown) {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
@@ -24,26 +26,27 @@ export async function restoreBattleState(ctx: BattleContext, battleData: unknown
     return
   }
 
-  // 1. Trainer / Rival / Gym Battle Restoration
-  if ((d.isTrainer || d.isGym) && d.enemyTeam && Array.isArray(d.enemyTeam) && d.enemyTeam.length > 0) {
-    const desiredIndex = typeof d.playerTeamIndex === 'number' && d.playerTeamIndex >= 0 && d.playerTeamIndex < ctx.gs.state.team.length ? d.playerTeamIndex : -1
-    const candidatePoke = desiredIndex !== -1 ? ctx.gs.state.team[desiredIndex] : null
-    const playerPoke = (candidatePoke && candidatePoke.hp > 0 && !candidatePoke.onMission && !candidatePoke.onDefense)
-      ? candidatePoke
-      : ctx.gs.state.team.find((p: Pokemon) => p && p.hp > 0 && !p.onMission && !p.onDefense)
+  // 1. Identify active player Pokemon
+  const desiredIndex = typeof d.playerTeamIndex === 'number' && d.playerTeamIndex >= 0 && d.playerTeamIndex < ctx.gs.state.team.length ? d.playerTeamIndex : -1
+  const candidatePoke = desiredIndex !== -1 ? ctx.gs.state.team[desiredIndex] : null
+  const playerPoke = (candidatePoke && candidatePoke.hp > 0 && !candidatePoke.onMission && !candidatePoke.onDefense)
+    ? candidatePoke
+    : ctx.gs.state.team.find((p: Pokemon) => p && p.hp > 0 && !p.onMission && !p.onDefense)
 
-    const enemyTeamIndex = typeof d.enemyTeamIndex === 'number' && d.enemyTeamIndex >= 0 && d.enemyTeamIndex < d.enemyTeam.length
-      ? d.enemyTeamIndex
-      : (d.enemyTeam.findIndex((p: Pokemon) => p && p.hp > 0) !== -1 ? d.enemyTeam.findIndex((p: Pokemon) => p && p.hp > 0) : 0)
-    const enemyPoke = d.enemy || d.enemyTeam[enemyTeamIndex] || d.enemyTeam[0]
+  // 2. Identify active enemy Pokemon
+  const enemyTeamIndex = typeof d.enemyTeamIndex === 'number' && d.enemyTeamIndex >= 0 && (d.enemyTeam ? d.enemyTeamIndex < d.enemyTeam.length : true)
+    ? d.enemyTeamIndex
+    : (d.enemyTeam && d.enemyTeam.findIndex((p: Pokemon) => p && p.hp > 0) !== -1 ? d.enemyTeam.findIndex((p: Pokemon) => p && p.hp > 0) : 0)
+  
+  // 3. Minigames (Fishing / Archaeology) are never restored to prevent reset cheating — return directly to search loop
+  if (isBattleMinigame(d)) {
+    await resumeSearchMode(ctx, d)
+    return
+  }
 
-    if (!playerPoke || !enemyPoke) {
-      ctx.activeBattle.value = null
-      ctx.gs.state.activeBattle = null
-      await ctx.fsm.transition(BATTLE_STATES.EXIT_BATTLE)
-      return
-    }
-
+  // 4. If an active battle with combatants was in progress, restore it faithfully
+  const enemyPoke = d.enemy || d._initialEnemy || (d.enemyTeam && (d.enemyTeam[enemyTeamIndex] || d.enemyTeam[0])) || null
+  if (playerPoke && enemyPoke) {
     d.player = playerPoke
     d.enemy = enemyPoke
     d.playerTeam = ctx.gs.state.team
@@ -52,6 +55,7 @@ export async function restoreBattleState(ctx: BattleContext, battleData: unknown
     d.enemyTeamIndex = enemyTeamIndex
     d.participants = Array.isArray(d.participants) && d.participants.length > 0 ? d.participants : [playerPoke.uid]
     d.turnCount = typeof d.turnCount === 'number' ? d.turnCount : 1
+    d.over = false
     d.escapeAttempts = typeof d.escapeAttempts === 'number' ? d.escapeAttempts : 0
     d.cannotEscape = Boolean(d.cannotEscape)
     d.weather = d.weather || { type: 'clear', visual: 'clear', turns: -1 }
@@ -65,8 +69,7 @@ export async function restoreBattleState(ctx: BattleContext, battleData: unknown
     d.stolenResources = d.stolenResources || { money: 0, items: {} }
     d.wasSearching = Boolean(d.wasSearching)
     d.isRival = Boolean(d.isRival || d.trainerArchetype === 'rival')
-    d.isFishing = Boolean(d.isFishing)
-    d.isArchaeology = Boolean(d.isArchaeology)
+    d.minigame = d.minigame ?? null
     d.isCave = Boolean(d.isCave)
     d.isIndoors = Boolean(d.isIndoors)
     d.isCrystalCave = Boolean(d.isCrystalCave)
@@ -78,48 +81,52 @@ export async function restoreBattleState(ctx: BattleContext, battleData: unknown
       ctx.battleLogs.value = [...d.battleLogs]
     }
 
-    // Re-inicializar el worker con el estado de los equipos restaurados
+    // Re-initialize Showdown Worker with the restored teams and active Pokemon
     await initWorkerForBattle(ctx, playerPoke, enemyPoke)
     await ctx.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
+    ctx.isProcessing.value = false
     return
   }
 
-  // 2. Wild / Search Phase Restoration (Anti-Cheat: continue in SEARCH_PHASE with bushes)
-  if (d.wasSearching || (!d.isTrainer && !d.isGym)) {
-    const rawLoc = d.locationId || ctx.gs.state.map?.currentMap;
-    if (!rawLoc) {
-      throw new Error('[BattleRestore] Cannot restore search phase without a valid locationId or map.currentMap');
-    }
-    const locId = requireMapRouteId(rawLoc);
-    ctx.activeBattle.value = {
-      player: null,
-      enemy: null,
-      playerTeamIndex: 0,
-      enemyTeamIndex: 0,
-      participants: [],
-      locationId: locId,
-      weather: { type: 'clear', visual: 'clear', turns: -1 },
-      turnCount: 0,
-      escapeAttempts: 0,
-      over: false,
-      fled: false,
-      isTrainer: false,
-      isGym: false,
-      isFishing: Boolean(d.isFishing),
-      isArchaeology: Boolean(d.isArchaeology),
-      isCave: Boolean(d.isCave),
-      isIndoors: Boolean(d.isIndoors),
-      isCrystalCave: Boolean(d.isCrystalCave),
-      rewardsProcessed: false,
-      _rewardCombatants: [],
-      wasSearching: true,
-    }
-    const { handleBattleFlowCompletion } = await import('./searchLoop.ts')
-    await handleBattleFlowCompletion(ctx, 'search')
+  // 5. If in search mode without an active enemy yet, continue in SEARCH_PHASE
+  if (d.wasSearching) {
+    await resumeSearchMode(ctx, d)
     return
   }
 
   ctx.activeBattle.value = null
   ctx.gs.state.activeBattle = null
   await ctx.fsm.transition(BATTLE_STATES.EXIT_BATTLE)
+}
+
+async function resumeSearchMode(ctx: BattleContext, d: Partial<BattleState>): Promise<void> {
+  const rawLoc = d.locationId || ctx.gs.state.map?.currentMap
+  if (!rawLoc) {
+    throw new Error('[BattleRestore] Cannot restore search phase without a valid locationId or map.currentMap')
+  }
+  const locId = requireMapRouteId(rawLoc)
+  ctx.activeBattle.value = {
+    player: null,
+    enemy: null,
+    playerTeamIndex: 0,
+    enemyTeamIndex: 0,
+    participants: [],
+    locationId: locId,
+    weather: { type: 'clear', visual: 'clear', turns: -1 },
+    turnCount: 0,
+    escapeAttempts: 0,
+    over: false,
+    fled: false,
+    isTrainer: false,
+    isGym: false,
+    minigame: null,
+    isCave: Boolean(d.isCave),
+    isIndoors: Boolean(d.isIndoors),
+    isCrystalCave: Boolean(d.isCrystalCave),
+    rewardsProcessed: false,
+    _rewardCombatants: [],
+    wasSearching: true,
+  }
+  const { handleBattleFlowCompletion } = await import('./searchLoop.ts')
+  await handleBattleFlowCompletion(ctx, 'search')
 }

@@ -133,6 +133,8 @@ export const battleStagesSchema = object({
   fissure: optional(number()),
 });
 
+export const battleMinigameSchema = union([literal('fishing'), literal('archaeology')]);
+
 export const activeBattleSchema = object({
   isGym: boolean(),
   gymId: nullable(string()),
@@ -157,8 +159,7 @@ export const activeBattleSchema = object({
   playerSideConditions: optional(nullable(record(string(), battleTimedConditionSchema))),
   enemySideConditions: optional(nullable(record(string(), battleTimedConditionSchema))),
   pendingSlotEffects: optional(nullable(array(pendingSlotEffectSchema))),
-  isFishing: optional(boolean()),
-  isArchaeology: optional(boolean()),
+  minigame: optional(nullable(battleMinigameSchema)),
   isCave: optional(boolean()),
   isIndoors: optional(boolean()),
   isCrystalCave: optional(boolean()),

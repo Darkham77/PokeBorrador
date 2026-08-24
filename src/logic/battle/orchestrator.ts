@@ -7,7 +7,7 @@ import { FIRE_RED_MAPS } from '@/data/world/maps'
 import { logger } from '../utils/logger.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { BattleSide } from '@/types/battle/battle'
+import type { BattleSide, BattleMinigame } from '@/types/battle/battle'
 import { mapVisualToOfficialWeather } from '../weather/weatherGenerationProvider.ts'
 import { requireWeatherId } from '../weather/weatherRegistry.ts'
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts'
@@ -49,8 +49,7 @@ export interface BattleOptions {
   enemyTeam?: Pokemon[];
   trainerName?: string;
   battleOptions?: Record<string, unknown>;
-  isFishing?: boolean;
-  isArchaeology?: boolean;
+  minigame?: BattleMinigame | null;
   wasSearching?: boolean;
   isDebug?: boolean;
   over?: boolean;
@@ -79,7 +78,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   const { 
     isGym = false, gymId = undefined,
     isTrainer = false, enemyTeam = undefined, trainerName = 'Entrenador',
-    battleOptions = {}, isFishing = false, isArchaeology = false, wasSearching: wasSearchingOpt = options.wasSearching ?? null,
+    battleOptions = {}, minigame = options.minigame ?? null, wasSearching: wasSearchingOpt = options.wasSearching ?? null,
     trainerSprite = undefined, trainerArchetype = undefined, isRival = false,
     difficulty = undefined, rewardTM = undefined, cannotEscape = false,
     trainerQuote = undefined
@@ -164,7 +163,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     isIndoors: FIRE_RED_MAPS.find(m => m.id === resolvedLocationId)?.isIndoors || false,
     isCrystalCave: FIRE_RED_MAPS.find(m => m.id === resolvedLocationId)?.isCrystalCave || false,
     turn: 'player', turnCount: 1, over: false,
-    isFishing, isArchaeology, rarity,
+    minigame, rarity,
     wasSearching,
     cannotEscape: cannotEscape || (battleOptions.cannotEscape as boolean) || false,
     weather: { 
@@ -216,7 +215,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   
   // Weight Calculation
   await fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.WEIGHT_CALCULATION)
-  if (isFishing) {
+  if (minigame === 'fishing') {
     const loc = FIRE_RED_MAPS.find(l => l.id === resolvedLocationId)
     if (loc && loc.fishing) {
       const pool = loc.fishing.pool
@@ -246,7 +245,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
 
   if (wasSearching) {
     const { processSearchPhaseSequence } = await import('./orchestratorSearchPhaseHelper.ts')
-    const handled = await processSearchPhaseSequence(ctx, finalEnemyPoke, isFishing, isArchaeology, isTrainer, isGym)
+    const handled = await processSearchPhaseSequence(ctx, finalEnemyPoke, minigame, isTrainer, isGym)
     if (handled) return
   }
 

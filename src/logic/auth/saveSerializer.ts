@@ -7,7 +7,7 @@
 
 import type { Pokemon, PokemonEgg, PokemonGender, PokemonIVs, PokemonEVs } from '@/types/pokemon/pokemon';
 import type { GameState } from '@/types/system/game';
-import type { BattleLog, BattleStages, BattleWeather, BattleTimedCondition, PendingSlotEffect, BattleConditionKey, BattleSide, BattleDifficulty } from '@/types/battle/battle';
+import type { BattleLog, BattleStages, BattleWeather, BattleTimedCondition, PendingSlotEffect, BattleConditionKey, BattleSide, BattleDifficulty, BattleMinigame, BattleState } from '@/types/battle/battle';
 import type { Inventory } from '@/types/inventory/items';
 import type { SaveDataDto } from '@/logic/validation/schemas';
 import { requireAbilityId } from '@/data/battle/abilities';
@@ -75,6 +75,7 @@ interface EnemyPokemonSerialized {
   perishSongCount?: number;
   focusEnergy?: boolean;
   isTransformed?: boolean;
+  isGuardian?: boolean;
 }
 
 interface ActiveBattleSerialized {
@@ -101,8 +102,7 @@ interface ActiveBattleSerialized {
   playerSideConditions?: Partial<Record<BattleConditionKey, BattleTimedCondition>> | null;
   enemySideConditions?: Partial<Record<BattleConditionKey, BattleTimedCondition>> | null;
   pendingSlotEffects?: PendingSlotEffect[];
-  isFishing?: boolean;
-  isArchaeology?: boolean;
+  minigame?: BattleMinigame | null;
   isCave?: boolean;
   isIndoors?: boolean;
   isCrystalCave?: boolean;
@@ -125,6 +125,7 @@ interface ActiveBattleSerialized {
   timestamp: number;
   isPvP?: boolean;
   isRival?: boolean;
+  over?: boolean;
 }
 
 type PersistedPokemon = Omit<Pokemon, 'gender'> & { gender: GenderName };
@@ -184,11 +185,15 @@ export function normalizeRuntimePokemonGender(pokemon: { gender?: string | null 
 
 export function serializeState(state: GameState | SaveDataDto): SaveDataDto {
   let activeBattle: ActiveBattleSerialized | null = null;
-  const battle = state.activeBattle;
+  const battle = state.activeBattle as (BattleState & Partial<ActiveBattleSerialized> & { enemy?: Pokemon }) | null;
 
-  if (battle && !('over' in battle && (battle as { over?: boolean }).over)) {
-    if (battle.isTrainer || battle.isGym) {
+  if (battle && !battle.over) {
+    const hasActiveEnemy = Boolean(battle.enemy || (battle.enemyTeam && battle.enemyTeam.length > 0));
+    if (battle.isTrainer || battle.isGym || hasActiveEnemy) {
       try {
+        const rawEnemyTeam = battle.enemyTeam && battle.enemyTeam.length > 0
+          ? battle.enemyTeam
+          : (battle.enemy ? [battle.enemy] : null);
         const serialized: ActiveBattleSerialized = {
           isGym: battle.isGym || false,
           gymId: battle.gymId || null,
@@ -214,7 +219,7 @@ export function serializeState(state: GameState | SaveDataDto): SaveDataDto {
           playerSideConditions: battle.playerSideConditions || null,
           enemySideConditions: battle.enemySideConditions || null,
           pendingSlotEffects: Array.isArray(battle.pendingSlotEffects)
-            ? battle.pendingSlotEffects.map(effect => ({
+            ? battle.pendingSlotEffects.map((effect: PendingSlotEffect) => ({
                 move: effect.move,
                 side: effect.side,
                 targetSlot: effect.targetSlot,
@@ -223,8 +228,7 @@ export function serializeState(state: GameState | SaveDataDto): SaveDataDto {
                 ...(effect.sourceName ? { sourceName: effect.sourceName } : {}),
               }))
             : [],
-          isFishing: Boolean(battle.isFishing),
-          isArchaeology: Boolean(battle.isArchaeology),
+          minigame: null, // minigames are strictly non-persisted for anti-cheat governance
           isCave: Boolean(battle.isCave),
           isIndoors: Boolean(battle.isIndoors),
           isCrystalCave: Boolean(battle.isCrystalCave),
@@ -236,6 +240,7 @@ export function serializeState(state: GameState | SaveDataDto): SaveDataDto {
           enemyInventory: battle.enemyInventory || null,
           stolenResources: battle.stolenResources ? { money: battle.stolenResources.money, items: { ...battle.stolenResources.items } } : null,
           fled: Boolean(battle.fled),
+          over: Boolean(battle.over),
           isCapture: Boolean(battle.isCapture),
           lastDamage: typeof battle.lastDamage === 'number' ? battle.lastDamage : undefined,
           enemyUsedItem: Boolean(battle.enemyUsedItem),
@@ -243,8 +248,8 @@ export function serializeState(state: GameState | SaveDataDto): SaveDataDto {
           battleLogs: Array.isArray(battle.battleLogs) ? battle.battleLogs : [],
           playerStages: battle.playerStages || null,
           enemyStages: battle.enemyStages || null,
-          enemyTeam: battle.enemyTeam
-            ? (battle.enemyTeam as Pokemon[]).map(p => ({
+          enemyTeam: rawEnemyTeam
+            ? (rawEnemyTeam as Pokemon[]).map(p => ({
                 uid: p.uid,
                 id: p.id,
                 name: p.name,
@@ -333,8 +338,7 @@ export function serializeState(state: GameState | SaveDataDto): SaveDataDto {
         quote: null,
         locationId: battle.locationId ? requireMapRouteId(battle.locationId) : (state.map?.currentMap ? requireMapRouteId(state.map.currentMap) : null),
         wasSearching: true,
-        isFishing: Boolean(battle.isFishing),
-        isArchaeology: Boolean(battle.isArchaeology),
+        minigame: null, // minigames are strictly non-persisted for anti-cheat governance
         isCave: Boolean(battle.isCave),
         isIndoors: Boolean(battle.isIndoors),
         isCrystalCave: Boolean(battle.isCrystalCave),

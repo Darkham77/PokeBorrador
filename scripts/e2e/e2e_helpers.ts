@@ -250,21 +250,24 @@ export async function executeNativeAutoBattle(page: Page): Promise<void> {
     if (window.__VITE_DEBUG__) window.__VITE_DEBUG__.isScriptedReplayMode = false;
   });
 
+  // Wait for battle to genuinely start and NOT be over from previous fight
+  await page.waitForFunction(() => {
+    const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+    return Boolean(store && !store.isProcessing
+      && store.currentFsmState === 'ACTIVE_BATTLE'
+      && (store.currentSubState === 'WAIT_INPUT' || store.currentSubState === 'SWITCH_MENU')
+      && store.state?.over === false);
+  }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+
   while (true) {
     await waitForWaitInput(page);
     const battleOver = await page.evaluate(() => {
-      const store = window.__VITE_DEBUG_STORE_RESOLVER__?.();
-      return store?.state?.over === true;
+      const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+      return store?.state?.over === true ||
+        store?.currentFsmState === 'EXIT_BATTLE' ||
+        store?.currentFsmState === 'REWARDS_PHASE';
     });
     if (battleOver) {
-      await page.waitForFunction(() => {
-        const store = window.__VITE_DEBUG_STORE_RESOLVER__?.();
-        if (!store?.state?.over) return false;
-
-        return store.currentFsmState === 'EXIT_BATTLE' ||
-          (store.currentFsmState === 'REWARDS_PHASE' && store.currentSubState === 'EMPTY_WAIT') ||
-          (store.currentFsmState === 'SEARCH_PHASE' && store.currentSubState === 'COMBAT_OR_FLEE');
-      }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
       return;
     }
 

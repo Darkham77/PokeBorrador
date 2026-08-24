@@ -36,9 +36,8 @@ export async function initBattleSequence(
 
   await resetActiveBattleState(ctx, initialPlayer, isGym)
   if (ctx.activeBattle.value) {
-    ctx.activeBattle.value.enemy = initialEnemy
-    if (wasSearching && !ctx.activeBattle.value.player) {
-      ctx.activeBattle.value.player = initialPlayer
+    if (!isTrainer && !isGym) {
+      ctx.activeBattle.value.enemy = initialEnemy
     }
   }
   if (!wasSearching && ctx.animations?.resetAll) {
@@ -63,7 +62,7 @@ export async function initBattleSequence(
   }
 
   const currentPlayer = ctx.activeBattle.value?.player
-  const needsCall = !wasSearching || !currentPlayer || (currentPlayer.uid !== initialPlayer.uid)
+  const needsCall = !currentPlayer || (currentPlayer.uid !== initialPlayer.uid)
 
   if (isTrainer || isGym) {
     if (wasSearching) {
@@ -133,7 +132,7 @@ export async function initBattleSequence(
       promises.push(ctx.animations.triggerSearchEncounter())
     }
 
-    if (ctx.animations?.handleReleaseRequest) {
+    if (needsCall && ctx.animations?.handleReleaseRequest) {
       if (hasRealSwap && ctx.animations.handleCatchRequest) {
         promises.push(ctx.animations.handleCatchRequest({ side: 'player', pokemon: oldPlayerBeforeSearch }))
       }

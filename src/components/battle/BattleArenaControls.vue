@@ -13,6 +13,7 @@ import BattleQuickTeam from './BattleQuickTeam.vue'
 import BattleQuickBag from './BattleQuickBag.vue'
 import StruggleOverlay from './StruggleOverlay.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { getActiveMinigame } from '@/logic/battle/battleMinigames'
 
 // Debug tools are now handled by BattleArena sidebar
 
@@ -167,14 +168,16 @@ watch(() => [
 
 // Dynamic button text/emoji for fishing & archaeology encounters
 const encounterBtnEmoji = computed(() => {
-  if (battleStore.state?.isFishing) return '🎣'
-  if (battleStore.state?.isArchaeology) return '⛏️'
+  const mg = getActiveMinigame(battleStore.state)
+  if (mg === 'fishing') return '🎣'
+  if (mg === 'archaeology') return '⛏️'
   return '⚔️'
 })
 
 const encounterBtnText = computed(() => {
-  if (battleStore.state?.isFishing) return '¡PESCAR!'
-  if (battleStore.state?.isArchaeology) return '¡EXCAVAR!'
+  const mg = getActiveMinigame(battleStore.state)
+  if (mg === 'fishing') return '¡PESCAR!'
+  if (mg === 'archaeology') return '¡EXCAVAR!'
   return '¡COMBATIR!'
 })
 

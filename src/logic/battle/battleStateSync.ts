@@ -2,6 +2,7 @@ import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { ShowdownPlayerRequest } from '@/types/battle/battle'
 import { isMatchingUid } from './showdownUidMapper.ts'
+import { isBattleMinigame } from './battleMinigames.ts'
 
 const RADIX_DECIMAL = 10;
 const RECENT_BATTLE_LOGS_MAX_KEEP = 10;
@@ -95,7 +96,7 @@ export function syncTeamHP(ctx: BattleContext) {
 
 export function syncAndPersist(ctx: BattleContext) {
   const active = ctx.activeBattle.value
-  if (!active || active.over) {
+  if (!active || active.over || isBattleMinigame(active)) {
     ctx.gs.state.activeBattle = null
     return
   }

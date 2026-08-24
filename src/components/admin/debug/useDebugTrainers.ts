@@ -12,7 +12,7 @@ import { TRAINER_TYPES, isTrainerTypeKey, requireNpcArchetype } from '@/data/pla
 import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
 import { generateNpcName, type NpcNameOptions } from '@/logic/utils/npcNameGenerator'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { BattleDifficulty } from '@/types/battle/battle'
+import type { BattleDifficulty, BattleMinigame } from '@/types/battle/battle'
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { BattleOptions } from '@/types/system/stores'
@@ -38,8 +38,7 @@ interface ExtendedBattleOptions {
   locationId?: string
   wasSearching?: boolean
   enemyTeam?: Pokemon[]
-  isFishing?: boolean
-  isArchaeology?: boolean
+  minigame?: BattleMinigame | null
   isGuardian?: boolean
   pts?: number
   isDebug?: boolean

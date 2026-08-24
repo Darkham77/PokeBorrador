@@ -39,3 +39,8 @@ This document governs DBRouter isolation, save state shields, remote DB protecti
 - **Strict Column Name Parity**: In database query proxies (`ProxyQuery`, `DBRouter`), JavaScript payload keys translate directly into SQL column identifiers. All database operations MUST use canonical `snake_case` keys matching the SQL schema. CamelCase keys are strictly forbidden in database table payloads.
 - **Wasm SQLite Bind Parameter Normalization**: WebAssembly SQLite engines (`sql.js`) reject `undefined` parameter values. Query builders MUST sanitize all bind parameters, converting `undefined` to `null` before dispatching to SQLite.
 - **Real-Schema Integration Testing**: Persistence synchronization helpers (`syncUserProfileData`, save handlers) MUST be verified with integration tests running against actual SQLite schemas (`DatabaseSync` / `:memory:`) to guarantee column parity.
+
+## 8. Anti-Cheat Combat Persistence & Minigame Exclusion Protocol
+
+- **In-Flight Combat Resumption Mandate**: Refreshing the browser (F5) during an active combat (wild, trainer, gym) MUST faithfully restore the battle at the exact turn, HP, stat stages, logs, and enemy UID. Reloading to re-roll enemies or escape combat without fleeing is strictly forbidden by the engine.
+- **Strict Non-Persistence of Minigames**: Minigames (`minigame !== null`, e.g. Fishing, Archaeology) MUST NEVER be saved into `activeBattle` in persistent storage. If a player reloads during a minigame, the minigame is dropped immediately and the engine resumes the search loop on `/map` without awarding rewards or leaving stale modal state.

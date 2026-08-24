@@ -5,6 +5,7 @@ import { DEFAULT_MINIGAME_RARITY } from '@/logic/constants/gameplay'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleState } from '@/types/battle/battle'
 import type { useBattleStore } from '@/stores/battle/battle'
+import { getActiveMinigame } from '@/logic/battle/battleMinigames'
 
 export interface BattleArenaCoordinatorParams {
   battleStore: ReturnType<typeof useBattleStore>
@@ -56,7 +57,8 @@ export function useBattleArenaCoordinator(params: BattleArenaCoordinatorParams) 
 
       if (newSubState === 'MINIGAME_CHECK' && enemy.value) {
         const modalStore = useModalStore()
-        if (battleStore.state?.isFishing) {
+        const activeMinigame = getActiveMinigame(battleStore.state)
+        if (activeMinigame === 'fishing') {
           if (!modalStore.isOpen('Fishing')) modalStore.open('Fishing', {
             pokemon: enemy.value,
             rarity: battle.value?.rarity || DEFAULT_MINIGAME_RARITY,
@@ -64,7 +66,7 @@ export function useBattleArenaCoordinator(params: BattleArenaCoordinatorParams) 
             onFail: handleFishingFail,
             onCloseCallback: handleMinigameCancel
           })
-        } else if (battleStore.state?.isArchaeology) {
+        } else if (activeMinigame === 'archaeology') {
           if (!modalStore.isOpen('Archaeology')) modalStore.open('Archaeology', {
             pokemon: enemy.value,
             rarity: battle.value?.rarity || DEFAULT_MINIGAME_RARITY,

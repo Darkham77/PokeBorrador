@@ -113,8 +113,7 @@ export async function executeNavigation(
     battleStore._startBattle(wildEnc.pokemon, { 
       locationId: locId,
       wasSearching: true,
-      isFishing: wildEnc.type === 'fishing',
-      isArchaeology: wildEnc.type === 'archaeology'
+      minigame: (wildEnc.type === 'fishing' || wildEnc.type === 'archaeology') ? wildEnc.type : null
     });
   } else if (wildEnc.type === 'guardian') {
     wildEnc.pokemon.isGuardian = true;

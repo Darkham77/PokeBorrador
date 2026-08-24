@@ -1,7 +1,7 @@
 import { Ref } from 'vue';
 import { GameState } from '@/types/system/game';
 import { Pokemon, type PokemonSelectionSource } from '@/types/pokemon/pokemon';
-import { BattleState, BattleStages, BattleLog, BattleSource, BattleSide, BattleDifficulty } from '@/types/battle/battle';
+import { BattleState, BattleStages, BattleLog, BattleSource, BattleSide, BattleDifficulty, BattleMinigame } from '@/types/battle/battle';
 import { BattleStateName, BattleSubStateName } from '@/logic/battle/battleStateMachine';
 import { Event, GlobalMultipliers } from '@/logic/events/eventEngine';
 import { AuthUser, SessionMode } from '@/types/auth/auth';
@@ -53,8 +53,7 @@ export interface BattleOptions {
   locationId?: MapRouteId;
   wasSearching?: boolean;
   enemyTeam?: Pokemon[];
-  isFishing?: boolean;
-  isArchaeology?: boolean;
+  minigame?: BattleMinigame | null;
   isGuardian?: boolean;
   pts?: number;
   isDebug?: boolean;

@@ -104,3 +104,6 @@ export const SUPER_RAYQUAZA_STAT_VAL = 999;
 
 /** Suite timeout for sequential search loop simulation (10 minutes for 10 encounters). */
 export const SEARCH_LOOP_SUITE_TIMEOUT_MS = 600000;
+
+/** Sequential battles count limit (10). */
+export const E2E_SEQUENTIAL_BATTLES_COUNT_LIMIT = 10;

@@ -70,6 +70,41 @@ describe('serializeState - Active Battle serialization', () => {
     expect(serialized.activeBattle).toBeNull();
   });
 
+  it('should always serialize minigame as null to prevent minigame state persistence and anti-cheat abuse', () => {
+    const enemyPk = requirePokemon('magikarp', 5);
+    const playerPk = requirePokemon('bulbasaur', 5);
+    const activeBattleWithMinigame: BattleState = {
+      player: playerPk,
+      enemy: enemyPk,
+      playerTeamIndex: 0,
+      enemyTeamIndex: 0,
+      turnCount: 0,
+      escapeAttempts: 0,
+      weather: { type: 'clear', visual: 'clear', turns: -1 },
+      isGym: false,
+      isTrainer: false,
+      locationId: 'route1',
+      wasSearching: true,
+      battleLogs: [],
+      over: false,
+      minigame: 'fishing',
+      participants: [playerPk.uid]
+    };
+
+    const mockState: GameState = {
+      ...INITIAL_STATE,
+      starterChosen: true,
+      team: [playerPk],
+      box: [],
+      activeBattle: activeBattleWithMinigame
+    };
+
+    const serialized = serializeState(mockState);
+    const battle = serialized.activeBattle as Record<string, unknown> | null;
+    expect(battle).not.toBeNull();
+    expect(battle?.['minigame']).toBeNull();
+  });
+
   it('should persist playerClass, faction, and class progression in serialized save data', () => {
     const mockState: GameState = {
       ...INITIAL_STATE,

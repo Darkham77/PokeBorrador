@@ -77,7 +77,7 @@ export function useBattleHud(
 
   const isEnemyHudSuppressed = computed(() => {
     const s = toValue(battleStore.state)
-    if (s?.isArchaeology) return true
+    if (s?.minigame === 'archaeology') return true
 
     const seat = seats.value.seat2
     const isCapturing = isSeatCapturing(seat)
