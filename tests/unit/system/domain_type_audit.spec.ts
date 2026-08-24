@@ -96,8 +96,8 @@ describe('Domain Type Audit Pattern Recognition', () => {
 
   describe('P_BOOLEAN_LITERAL_TYPE_ANNOTATION (noLiteralBooleanType)', () => {
     it('detects var/let/const typed as literal true or false', () => {
-      expect(testRegex(P_BOOLEAN_LITERAL_TYPE_ANNOTATION, "var hola: true")).toBe(true);
-      expect(testRegex(P_BOOLEAN_LITERAL_TYPE_ANNOTATION, "let active: false")).toBe(true);
+      expect(testRegex(P_BOOLEAN_LITERAL_TYPE_ANNOTATION, "var hola: true;")).toBe(true);
+      expect(testRegex(P_BOOLEAN_LITERAL_TYPE_ANNOTATION, "let active: false;")).toBe(true);
     });
 
     it('detects type alias assigned to boolean literal', () => {
