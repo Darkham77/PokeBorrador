@@ -1,5 +1,6 @@
 import type { BattleMinigame } from '@/types/battle/battle'
 
+// fallow-ignore-next-line unused-exports
 export const BATTLE_MINIGAMES = ['fishing', 'archaeology'] as const
 export type { BattleMinigame }
 

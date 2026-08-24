@@ -126,7 +126,7 @@ describe('orchestratorRestoreHelper - restoreBattleState', () => {
     expect(ctx.activeBattle.value?.wasSearching).toBe(true);
   });
 
-  it('should discard completed battles (over: true) and transition to EXIT_BATTLE', async () => {
+  it('should discard completed battles (over: boolean) and transition to EXIT_BATTLE', async () => {
     const ctx = createMockBattleContext();
     const savedOverBattle: Partial<BattleState> = {
       locationId: 'route1',
