@@ -6,55 +6,15 @@ by calling `claude -p` as a subprocess (same auth pattern as run_eval.py —
 uses the session's Claude Code auth, no separate ANTHROPIC_API_KEY needed).
 """
 
-try:
-    import argparse
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: argparse. Run 'pip install argparse' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import json
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: json. Run 'pip install json' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import os
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: os. Run 'pip install os' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import re
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: re. Run 'pip install re' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import subprocess
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: subprocess. Run 'pip install subprocess' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import sys
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: sys. Run 'pip install sys' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    from pathlib import Path
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: pathlib. Run 'pip install pathlib' to fix.")
-    import sys
-    sys.exit(1)
+import argparse
+import json
+import os
+import re
+import subprocess
+import sys
+from pathlib import Path
 
-try:
-    from scripts.utils import parse_skill_md
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: scripts. Run 'pip install scripts' to fix.")
-    import sys
-    sys.exit(1)
+from scripts.utils import parse_skill_md
 
 
 def _call_claude(prompt: str, model: str | None, timeout: int = 300) -> str:

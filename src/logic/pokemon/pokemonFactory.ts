@@ -19,10 +19,12 @@ import { Dex, toID } from '@pkmn/sim';
 import { requireAbilityId, type AbilityId } from '@/data/battle/abilities';
 
 
+import type { ItemId } from '@/data/inventory/items';
+
 /**
  * Probabilidades de items equipados en estado salvaje
  */
-const WILD_HELD_ITEMS: Record<string, { common?: string; rare?: string }> = {
+const WILD_HELD_ITEMS: Partial<Record<PokemonSpeciesId, { common?: ItemId; rare?: ItemId }>> = {
   butterfree: { rare: 'silverpowder' },
   beedrill: { rare: 'poisonbarb' },
   pikachu: { common: 'berrybronze', rare: 'lightball' },
@@ -340,7 +342,7 @@ export interface PokemonCreationOptions {
   ability?: string;
   abilitySlot?: number;
   gender?: PokemonGender;
-  heldItem?: string | null;
+  heldItem?: ItemId | null;
   ivFloor?: number;
   mapId?: string;
   shinyMultiplier?: number;
@@ -402,12 +404,15 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
   const eventStore = piniaActive ? useEventStore() : null;
   let isShiny = options.isShiny;
   if (isShiny === undefined) {
-    const isDebugShiny = typeof window !== 'undefined' && ((window.__VITE_DEBUG__ as Record<string, unknown> | undefined)?.forceShiny100 as boolean | undefined); // open-record
+    const debugObj = typeof window !== 'undefined' ? (window.__VITE_DEBUG__ as { forceShiny100?: boolean; shinyRateOverride?: number | null } | undefined) : undefined;
+    const isDebugShiny = debugObj?.forceShiny100 || debugObj?.shinyRateOverride === 1;
     
     if (isDebugShiny) {
       isShiny = true;
     } else {
-      const baseShinyRate = GAME_RATIOS.shinyRate;
+      const baseShinyRate = (debugObj?.shinyRateOverride && debugObj.shinyRateOverride > 1) 
+        ? debugObj.shinyRateOverride 
+        : GAME_RATIOS.shinyRate;
       let totalBonusMult = 0;
       
       // Event Bonus
@@ -444,7 +449,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
   }
   const getUidStr = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2,9) + Temporal.Now.instant().epochMilliseconds.toString(36);
 
-  let heldItem = options.heldItem || null;
+  let heldItem: ItemId | null = options.heldItem || null;
   if (!heldItem) {
     const itemData = WILD_HELD_ITEMS[id];
     if (itemData) {

@@ -11,7 +11,7 @@ import AdventureCheatPanel from '@/components/adventure/AdventureCheatPanel.vue'
 import AdventureDirectionPad from '@/components/adventure/AdventureDirectionPad.vue'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import BaseModal from '@/components/common/BaseModal.vue'
+import AdventureEventModal from '@/components/adventure/AdventureEventModal.vue'
 
 const CARD_W = 320
 const CARD_H = 220
@@ -454,64 +454,13 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Event Modal (Standard BaseModal) -->
-    <BaseModal
-      :show="!!activeEvent"
-      :title="activeEvent?.title || ''"
-      title-color="var(--yellow)"
-      max-width="500px"
-      variant="retro"
-      @close="resolveEvent"
-    >
-      <div
-        v-if="activeEvent"
-        style="display: flex; flex-direction: column; gap: 12px; font-family: var(--font-pixel); font-size: 8px; text-align: center;"
-      >
-        <p
-          class="adv-event-desc"
-          style="line-height: 1.7; color: #c5c6c7; margin: 0;"
-        >
-          {{ activeEvent.desc }}
-        </p>
-
-        <div
-          v-if="activeEvent.moRequired"
-          class="adv-mo-status"
-        >
-          Requisito: <span :class="['adv-mo-badge', { ok: activeHMs.has(activeEvent.moRequired) }]">
-            MO {{ activeEvent.moRequired.toUpperCase() }} <!-- text-ok -->
-            ({{ activeHMs.has(activeEvent.moRequired) ? 'DISPONIBLE' : 'FALTANTE' }})
-          </span>
-        </div>
-
-        <button
-          v-if="activeEvent.type === 'combat_won'"
-          class="btn-vicio-primary"
-          style="width: 100%; padding: 10px; font-size: 8px;"
-          @click="resumeTravelAfterEvent"
-        >
-          🚶 Continuar Viaje
-        </button>
-        <template v-else>
-          <button
-            v-if="!activeEvent.moRequired || activeHMs.has(activeEvent.moRequired)"
-            class="btn-vicio-primary"
-            style="width: 100%; padding: 10px; font-size: 8px;"
-            @click="resolveEvent"
-          >
-            {{ activeEvent.type === 'obstacle_rock_smash' ? '⛏️ Excavar Fósil' : activeEvent.type === 'fishing' ? '🎣 Lanzar Caña' : activeEvent.type === 'obstacle_cut' ? '✂️ Cortar Arbusto' : activeEvent.type === 'obstacle_strength' ? '💪 Empujar Roca' : '⚔️ Combatir' }}
-          </button>
-          <button
-            v-else
-            class="btn-vicio-secondary"
-            style="width: 100%; padding: 10px; font-size: 8px;"
-            @click="resolveEvent"
-          >
-            🚶 Rodear Obstáculo
-          </button>
-        </template>
-      </div>
-    </BaseModal>
+    <!-- Event Modal -->
+    <AdventureEventModal
+      :active-event="activeEvent"
+      :active-h-ms="activeHMs"
+      @resolve="resolveEvent"
+      @resume="resumeTravelAfterEvent"
+    />
 
     <!-- Pre-Travel Modal -->
     <PreTravelModal

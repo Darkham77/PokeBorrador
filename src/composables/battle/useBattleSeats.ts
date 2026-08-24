@@ -1,9 +1,10 @@
 import { ref } from 'vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { ItemId } from '@/data/inventory/items'
 
 export interface AnimSlotState {
   animState: 'catching' | 'trapped' | 'releasing' | null;
-  ballId: string;
+  ballId: ItemId;
   isCaptureActive: boolean;
   isAnimatingCapture: boolean;
   isShaking: boolean;

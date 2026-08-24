@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useProfileStore } from '@/stores/player/profile'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import BaseModal from '@/components/common/BaseModal.vue'
-import { gsap } from 'gsap'
 import { validateTrainerName } from '@/logic/validation/schemas'
+import { getDaysUntilIdentityChange, canChangeIdentity } from '@/logic/player/identityCooldown'
 import type { GenderId } from '@/types/system/game'
 
 interface Props {
   show?: boolean
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   show: false
 })
 
@@ -31,7 +31,6 @@ const isRenaming = ref(false)
 const selectedGender = ref<GenderId>('h')
 
 const SCALE_GENDER_CLICK = 0.85
-const RENAME_COOLDOWN_DAYS = 30
 
 const setGender = (newGender: GenderId, event: MouseEvent) => {
   gsap.fromTo(event.currentTarget, 
@@ -41,26 +40,32 @@ const setGender = (newGender: GenderId, event: MouseEvent) => {
   selectedGender.value = newGender
 }
 
-onMounted(() => {
+const syncState = () => {
   newUsername.value = profileStore.profileData.username || gameStore.state.trainer || ''
   selectedGender.value = gameStore.state.gender || 'h'
+}
+
+onMounted(() => {
+  syncState()
 })
 
-const daysUntilRename = computed(() => {
-  const lastRenameStr = profileStore.profileData.last_renamed_at
-  if (!lastRenameStr) return 0
-  try {
-    const lastRename = Temporal.Instant.from(lastRenameStr)
-    const now = Temporal.Now.instant()
-    const diff = now.since(lastRename, { largestUnit: 'hours' })
-    const daysPassed = Math.floor(diff.hours / 24)
-    return Math.max(0, RENAME_COOLDOWN_DAYS - daysPassed)
-  } catch (_e) {
-    return 0
+watch(() => props.show, (isOpen) => {
+  if (isOpen) {
+    syncState()
   }
 })
 
-const canRename = computed(() => daysUntilRename.value === 0)
+watch(() => gameStore.state.gender, (newGender) => {
+  if (newGender) {
+    selectedGender.value = newGender
+  }
+})
+
+const daysUntilRename = computed(() => {
+  return getDaysUntilIdentityChange(gameStore.state.last_renamed_at || profileStore.profileData.last_renamed_at)
+})
+
+const canRename = computed(() => canChangeIdentity(gameStore.state.last_renamed_at || profileStore.profileData.last_renamed_at))
 
 const nameChanged = computed(() => {
   const targetName = newUsername.value.trim()
@@ -84,18 +89,18 @@ const submitRename = async () => {
     return
   }
 
+  if (!canRename.value) {
+    uiStore.notify(`Faltan ${daysUntilRename.value} días para poder cambiar de identidad.`, '⏳')
+    return
+  }
+
   isRenaming.value = true
   
   try {
-    if (nameChanged.value) {
-      if (!canRename.value) {
-        uiStore.notify(`Faltan ${daysUntilRename.value} días para poder cambiar de nombre.`, '⏳')
-        isRenaming.value = false
-        return
-      }
+    const isLocal = authStore.sessionMode === 'offline' || authStore.user?.id.startsWith('local_')
+    const nowStr = Temporal.Now.instant().toString()
 
-      const isLocal = authStore.sessionMode === 'offline' || authStore.user?.id.startsWith('local_')
-      
+    if (nameChanged.value) {
       if (!isLocal) {
         const res = await gameStore.db.rpc('change_username', { new_username: targetName })
         if (res.error) {
@@ -105,39 +110,49 @@ const submitRename = async () => {
           return
         }
       }
-
       gameStore.state.trainer = targetName
-      profileStore.updateProfile({ 
-        username: targetName, 
-        last_renamed_at: Temporal.Now.instant().toString() 
-      })
-      
-      if (authStore.user?.id.startsWith('local_')) {
-        const localUserStr = localStorage.getItem('pokevicio_local_user')
-        if (localUserStr) {
-          interface LocalUser {
-            user_metadata?: {
-              username?: string;
-              [key: string]: unknown;
-            };
-            [key: string]: unknown;
-          }
-          const lu = JSON.parse(localUserStr) as LocalUser;
-          if (!lu.user_metadata) lu.user_metadata = {};
-          lu.user_metadata.username = targetName;
-          localStorage.setItem('pokevicio_local_user', JSON.stringify(lu));
-        } else {
-          localStorage.setItem('pokevicio_local_user', JSON.stringify({
-            id: authStore.user.id,
-            email: authStore.user?.email || 'entrenador@local',
-            user_metadata: { username: targetName }
-          }))
-        }
-      }
     }
 
     if (genderChanged) {
-      gameStore.updateState({ gender: selectedGender.value })
+      gameStore.state.gender = selectedGender.value
+    }
+
+    gameStore.state.last_renamed_at = nowStr
+    profileStore.updateProfile({ 
+      ...(nameChanged.value ? { username: targetName } : {}),
+      gender: selectedGender.value,
+      last_renamed_at: nowStr 
+    })
+    
+    if (authStore.user?.id.startsWith('local_')) {
+      const localUserStr = localStorage.getItem('pokevicio_local_user')
+      if (localUserStr) {
+        interface LocalUser {
+          user_metadata?: {
+            username?: string;
+            gender?: string;
+            last_renamed_at?: string;
+            [key: string]: unknown;
+          };
+          [key: string]: unknown;
+        }
+        const lu = JSON.parse(localUserStr) as LocalUser;
+        if (!lu.user_metadata) lu.user_metadata = {};
+        if (nameChanged.value) lu.user_metadata.username = targetName;
+        lu.user_metadata.gender = selectedGender.value;
+        lu.user_metadata.last_renamed_at = nowStr;
+        localStorage.setItem('pokevicio_local_user', JSON.stringify(lu));
+      } else {
+        localStorage.setItem('pokevicio_local_user', JSON.stringify({
+          id: authStore.user.id,
+          email: authStore.user?.email || 'entrenador@local',
+          user_metadata: { 
+            username: targetName,
+            gender: selectedGender.value,
+            last_renamed_at: nowStr 
+          }
+        }))
+      }
     }
 
     gameStore.save(false)

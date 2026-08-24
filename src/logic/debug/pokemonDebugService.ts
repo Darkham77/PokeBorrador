@@ -11,6 +11,7 @@ import { logger } from '../utils/logger.ts';
 import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
 import { requirePokemonMoveId, type MoveCategory } from '@/data/battle/moves';
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { ItemId } from '@/data/inventory/items';
 
 const DEFAULT_DEBUG_MOVE_PP = 35;
 const DEFAULT_DEBUG_MOVE_ACC = 100;
@@ -37,7 +38,7 @@ interface GenerateParams {
   moves?: string[] | null
   nickname?: string | null
   friendship?: number
-  heldItem?: string | null
+  heldItem?: ItemId | null
   mapId?: string | null
   protocol?: string | null
   name?: string | null

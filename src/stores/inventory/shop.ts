@@ -5,7 +5,7 @@ import { useGameStore } from '@/stores/game.ts'
 import { useUIStore } from '@/stores/ui.ts'
 import { useWarStore } from '@/stores/war.ts'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
-import { getItemById, SHOP_ITEMS } from '@/data/inventory/items'
+import { getItemById, SHOP_ITEMS, type ItemId } from '@/data/inventory/items'
 import { PLAYER_CLASSES } from '@/data/player/playerClasses'
 import { calculateTotalHealCost } from '@/logic/economy/economyFormulas'
 import { MAX_ITEM_PURCHASE_QTY, ROCKET_SHOP_PRICE_PENALTY_MULTIPLIER, GREAT_BALL_INVENTORY_COUNT_MULT, ULTRA_BALL_INVENTORY_COUNT_MULT, DEFAULT_MOVE_PP } from '@/logic/constants/gameplay.ts'
@@ -219,7 +219,7 @@ export const useShopStore = defineStore('shop', () => {
     return daily.items.map((id: string) => getItemById(id)).filter(Boolean)
   }
 
-  function buyBlackMarketItem(itemId: string) {
+  function buyBlackMarketItem(itemId: ItemId) {
     if (gameStore.state.playerClass !== 'rocket') return
     const daily = gameStore.state.classData.blackMarketDaily
     if (!daily || !daily.items.includes(itemId)) return

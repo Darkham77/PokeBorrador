@@ -26,6 +26,7 @@ import {
   requirePokemonSpeciesId,
 } from '@/data/pokemon/pokedex';
 import { calculateBreedingCost, executeCloneFossil } from '@/stores/breedingActions.ts';
+import type { ItemId } from '@/data/inventory/items';
 import type { DaycareSlot, DaycareEgg, DaycareMission } from '@/types/breeding/breeding';
 import type { BreedingCompatibility, Pokemon } from '@/types/pokemon/pokemon';
 import { BASE_SHINY_DENOMINATOR, EGG_SCANNER_MIN_CLASS_LEVEL, EGG_POLLER_INTERVAL_SEC, MAX_CARRIED_EGGS } from '@/logic/constants/gameplay';
@@ -423,8 +424,8 @@ export const useBreedingStore = defineStore('breeding', () => {
     }
   }
 
-  function cloneFossil(fossilName: string, extraQty: number) {
-    return executeCloneFossil(fossilName, extraQty, warehouseEggs, saveWarehouseEggs);
+  function cloneFossil(fossilId: ItemId, extraQty: number) {
+    return executeCloneFossil(fossilId, extraQty, warehouseEggs, saveWarehouseEggs);
   }
 
   let bgPoller: gsap.core.Tween | null = null;

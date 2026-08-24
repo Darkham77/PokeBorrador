@@ -5,6 +5,7 @@ import { ACTIVE_AI_TEAM_GENERATION_GEN } from '@/data/system/constants';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { TeamGenerators } from '@pkmn/randoms';
 import { toID } from '@pkmn/sim';
+import { isItemId } from '@/data/inventory/items';
 
 /**
  * Aplica un set competitivo de la librería a un Pokémon.
@@ -50,7 +51,8 @@ export async function applyCompetitiveSet(
     sound: m.sound,
   }));
 
-  p.heldItem = toID(set.item) || null;
+  const rawItemId = toID(set.item);
+  p.heldItem = isItemId(rawItemId) ? rawItemId : null;
   recalcPokemonStats(p, true);
   validatePokemon(p, true);
 }

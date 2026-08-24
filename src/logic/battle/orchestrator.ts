@@ -16,9 +16,9 @@ import { requireMapRouteId } from '@/data/world/map-assets'
 import { requireGymId } from '@/data/world/gyms'
 import { requireNpcArchetype } from '@/logic/utils/npcSpriteRouter'
 import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter'
-import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
-import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
+import { requireNpcSpriteId, type NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { requireItemId, type ItemId } from '@/data/inventory/items'
 import {
   showdownWorker,
   setShowdownWorker,
@@ -59,7 +59,7 @@ export interface BattleOptions {
   trainerArchetype?: NpcArchetype;
   isRival?: boolean;
   difficulty?: string;
-  rewardTM?: string;
+  rewardTM?: ItemId;
   cannotEscape?: boolean;
   persistenceMode?: string;
   trainerQuote?: string;
@@ -70,8 +70,14 @@ export interface BattleOptions {
  * @param {BattleContext} ctx - The battle store context (refs, state, etc)
  */
 export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon, options: BattleOptions = {}) {
+  const rawLoc = options.locationId || ctx.gs.state.map?.currentMap;
+  if (!rawLoc) {
+    throw new Error('[Battle] locationId or gameStore.state.map.currentMap is required to start a battle');
+  }
+  const resolvedLocationId = requireMapRouteId(rawLoc);
+
   const { 
-    isGym = false, gymId = undefined, locationId = 'route1', 
+    isGym = false, gymId = undefined,
     isTrainer = false, enemyTeam = undefined, trainerName = 'Entrenador',
     battleOptions = {}, isFishing = false, isArchaeology = false, wasSearching: wasSearchingOpt = options.wasSearching ?? null,
     trainerSprite = undefined, trainerArchetype = undefined, isRival = false,
@@ -85,15 +91,15 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   const resolvedTrainerArchetype = trainerArchetype
     ? requireNpcArchetype(trainerArchetype)
     : optionTrainerArchetype
-  const resolvedLocationId = requireMapRouteId(locationId)
   const resolvedGymId = gymId ? requireGymId(gymId) : undefined
   const resolvedDifficulty = difficulty === 'easy' || difficulty === 'normal' || difficulty === 'hard'
     ? difficulty
     : undefined
+  const resolvedRewardTM = rewardTM ? requireItemId(rewardTM) : undefined
 
   const { activeBiome, mapTags } = getMapBiomeAndTags(resolvedLocationId)
   const tagsStr = mapTags.join(', ') || 'ninguno'
-  logger.info('Orchestrator', `startBattleSequence starting... Biome: ${activeBiome} (Tags: ${tagsStr}) for location: ${locationId}`, { isTrainer, isGym, wasSearchingOpt })
+  logger.info('Orchestrator', `startBattleSequence starting... Biome: ${activeBiome} (Tags: ${tagsStr}) for location: ${resolvedLocationId}`, { isTrainer, isGym, wasSearchingOpt })
 
   const playerPoke = ctx.gs.state.team.find((p) => p.hp > 0 && !p.onMission && !p.onDefense)
   if (!playerPoke) {
@@ -144,7 +150,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     player: null, 
     _initialEnemy: structuredClone(toRaw(startingEnemyPoke)),
     _rewardCombatants: [],
-    isGym, gymId: resolvedGymId, isTrainer, enemyTeam: finalEnemyTeam, difficulty: resolvedDifficulty, rewardTM,
+    isGym, gymId: resolvedGymId, isTrainer, enemyTeam: finalEnemyTeam, difficulty: resolvedDifficulty, rewardTM: resolvedRewardTM,
     enemyInventory,
     enemyMoney,
     enemyMaxLevel: maxEnemyLv,

@@ -89,35 +89,37 @@ const closeTrade = () => {
   emit('close')
 }
 
-const toggleOfferItem = (itemName: string) => {
-  if (tradeStore.tradeOfferItems[itemName]) {
-    delete tradeStore.tradeOfferItems[itemName]
+import type { ItemId } from '@/data/inventory/items'
+
+const toggleOfferItem = (itemId: ItemId) => {
+  if (tradeStore.tradeOfferItems[itemId]) {
+    delete tradeStore.tradeOfferItems[itemId]
   } else {
-    tradeStore.tradeOfferItems[itemName] = 1
+    tradeStore.tradeOfferItems[itemId] = 1
   }
 }
 
-const updateOfferItemQty = (itemName: string, qty: number) => {
+const updateOfferItemQty = (itemId: ItemId, qty: number) => {
   if (qty <= 0) {
-    delete tradeStore.tradeOfferItems[itemName]
+    delete tradeStore.tradeOfferItems[itemId]
   } else {
-    tradeStore.tradeOfferItems[itemName] = qty
+    tradeStore.tradeOfferItems[itemId] = qty
   }
 }
 
-const toggleRequestItem = (itemName: string) => {
-  if (tradeStore.tradeRequestItems[itemName]) {
-    delete tradeStore.tradeRequestItems[itemName]
+const toggleRequestItem = (itemId: ItemId) => {
+  if (tradeStore.tradeRequestItems[itemId]) {
+    delete tradeStore.tradeRequestItems[itemId]
   } else {
-    tradeStore.tradeRequestItems[itemName] = 1
+    tradeStore.tradeRequestItems[itemId] = 1
   }
 }
 
-const updateRequestItemQty = (itemName: string, qty: number) => {
+const updateRequestItemQty = (itemId: ItemId, qty: number) => {
   if (qty <= 0) {
-    delete tradeStore.tradeRequestItems[itemName]
+    delete tradeStore.tradeRequestItems[itemId]
   } else {
-    tradeStore.tradeRequestItems[itemName] = qty
+    tradeStore.tradeRequestItems[itemId] = qty
   }
 }
 

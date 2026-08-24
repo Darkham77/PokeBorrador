@@ -24,14 +24,10 @@ import { executeFlee } from '@/logic/battle/battleFlee.ts'
 import { setupBattleDebug } from '@/logic/battle/battleDebug.ts'
 import { executeSwitch as switchAction } from '@/logic/battle/actions/switchAction.ts'
 import type { BattleSide } from '@/types/battle/battle'
-import { classifyRequest, requiresAction } from '@/logic/battle/helpers/requestHelper.ts'
-import { canExecuteScriptedReplayAction } from '@/logic/battle/helpers/scriptedReplayReadiness.ts'
-import { isBattleCompletionReady } from '@/logic/battle/helpers/battleCompletionReadiness.ts'
-import { nextBattleReadyEventKey } from '@/logic/battle/helpers/battleReadyEventKey.ts'
-import { projectBattleReadySwitchSlots } from '@/logic/battle/helpers/battleReadySwitchSlots.ts'
+import { setupBattleEventWatchers } from './battleEventWatchers.ts'
 import { createBattleLoggerHelper } from './battleLogHelper.ts'
 import { requireWeatherId } from '@/logic/weather/weatherRegistry.ts'
-import { BATTLE_UI_EVENTS, type BattleForcedSwitchDetail, type BattleReadyForInputDetail } from '@/types/battle/battleEvents.ts'
+import type { ItemId } from '@/data/inventory/items'
 import { GAME_UI_EVENTS, type BattleEnteringDetail } from '@/types/system/gameEvents.ts'
 
 import type { GameStore, EventStore, AudioStore, UIStore, BattleOptions } from '@/types/system/stores'
@@ -356,7 +352,7 @@ export const useBattleStore = defineStore('battle', () => {
 
   const handleFaint = async (side: BattleSide) => await processFaint(getContext(), side)
 
-  const useItemInBattle = async (itemId: string, targetIndex: number | null = null) => {
+  const useItemInBattle = async (itemId: ItemId, targetIndex: number | null = null) => {
     if (isProcessing.value || !isBattleActive.value || !activeBattle.value) return
 
     isProcessing.value = true
@@ -431,10 +427,10 @@ export const useBattleStore = defineStore('battle', () => {
     }
   }
 
-  const consumeItem = (itemName: string) => {
-    if (gs.state && gs.state.inventory[itemName]) {
-      gs.state.inventory[itemName]--
-      if (gs.state && gs.state.inventory[itemName] <= 0) delete gs.state.inventory[itemName]
+  const consumeItem = (itemId: ItemId) => {
+    if (gs.state?.inventory?.[itemId]) {
+      gs.state.inventory[itemId]!--
+      if (gs.state.inventory[itemId]! <= 0) delete gs.state.inventory[itemId]
     }
   }
 
@@ -487,122 +483,13 @@ export const useBattleStore = defineStore('battle', () => {
     }
   })
 
-  let lastEmittedStateKey = '';
-  let lastForcedSwitchUid = '';
-
-  watch(
-    [fsm.currentState, fsm.currentSubState, player],
-    ([state, subState, activePlayer]) => {
-      const isForcedPlayerSwitch =
-        state === BATTLE_STATES.ACTIVE_BATTLE &&
-        subState === BATTLE_SUBSTATES.SWITCH_MENU &&
-        !!activePlayer &&
-        activePlayer.hp <= 0;
-      if (!isForcedPlayerSwitch) {
-        lastForcedSwitchUid = '';
-        return;
-      }
-      if (lastForcedSwitchUid === activePlayer.uid || typeof window === 'undefined') return;
-      lastForcedSwitchUid = activePlayer.uid;
-      const detail: BattleForcedSwitchDetail = { side: 'player' };
-      window.dispatchEvent(new CustomEvent<BattleForcedSwitchDetail>(BATTLE_UI_EVENTS.FORCED_SWITCH_REQUIRED, { detail }));
-    },
-  );
-
-  watch(
-    [
-      fsm.currentSubState,
-      isProcessing,
-      isIntroAnimating,
-      () => activeBattle.value?.playerRequest,
-      () => activeBattle.value?.enemyRequest,
-    ],
-    ([subState, processing, intro]) => {
-      const req = activeBattle.value?.playerRequest;
-      const enemyReq = activeBattle.value?.enemyRequest;
-      if (processing || intro || fsm.currentState.value !== BATTLE_STATES.ACTIVE_BATTLE || (!req && !enemyReq) || activeBattle.value?.over) {
-        lastEmittedStateKey = '';
-        return;
-      }
-      const isInputSubState = subState === BATTLE_SUBSTATES.WAIT_INPUT || subState === BATTLE_SUBSTATES.SWITCH_MENU
-      if (!isInputSubState) {
-        lastEmittedStateKey = nextBattleReadyEventKey(lastEmittedStateKey, false, '') ?? ''
-        return;
-      }
-      if (
-        fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE &&
-        (req || enemyReq)
-      ) {
-        const p1NeedsAction = requiresAction(req);
-        const anySeatNeedsAction = [req, enemyReq].some(r => requiresAction(r));
-        if (!anySeatNeedsAction) return;
-
-        const kind = p1NeedsAction ? classifyRequest(req) : classifyRequest(enemyReq);
-        const hasPendingSwitch = Boolean(Reflect.get(activeBattle.value!, 'switchingToPlayer')) || Boolean(Reflect.get(activeBattle.value!, 'switchingToEnemy'));
-
-        const activePoke = activeBattle.value?.player;
-        const isMoveReady = kind !== 'move' || !p1NeedsAction || (!!activePoke && activePoke.hp > 0);
-        const isReady = (kind === 'team-preview' || canExecuteScriptedReplayAction({
-          isActiveBattle: fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE,
-          subState,
-          isProcessing: processing,
-          isIntroAnimating: intro,
-          hasPendingSwitch,
-          hasPendingPlayerAction: p1NeedsAction,
-        })) && isMoveReady;
-
-        if (isReady && typeof window !== 'undefined') {
-          const p1Idx = window.__VITE_DEBUG__?.p1ChoiceIdx ?? 0;
-          const p2Idx = window.__VITE_DEBUG__?.p2ChoiceIdx ?? 0;
-          const reqRqid = (req as { rqid?: number } | undefined)?.rqid ?? 0;
-          const emitKey = `${subState}_${kind}_${p1Idx}_${p2Idx}_${reqRqid}`;
-          const nextKey = nextBattleReadyEventKey(lastEmittedStateKey, true, emitKey)
-          if (nextKey === null) return;
-          lastEmittedStateKey = nextKey;
-
-          const detail: BattleReadyForInputDetail = {
-            subState: subState ?? '',
-            p1ChoiceIdx: p1Idx,
-            p2ChoiceIdx: p2Idx,
-            over: false,
-            playerSwitchSlots: projectBattleReadySwitchSlots(req),
-          }
-          console.debug(`[BATTLE-EVENT] Emitting ${BATTLE_UI_EVENTS.READY_FOR_INPUT}. SubState: ${subState}, kind: ${kind}, key: ${emitKey}`);
-          window.dispatchEvent(
-            new CustomEvent<BattleReadyForInputDetail>(BATTLE_UI_EVENTS.READY_FOR_INPUT, {
-              detail,
-            })
-          );
-        }
-      }
-    }
-  );
-
-  watch(
-    [() => activeBattle.value?.over, fsm.currentState, fsm.currentSubState],
-    ([isOver, fsmState, fsmSubState]) => {
-      if (typeof window !== 'undefined' && isBattleCompletionReady({
-        hasActiveBattle: activeBattle.value !== null,
-        isOver: isOver === true,
-        fsmState,
-        fsmSubState,
-      })) {
-        const detail: BattleReadyForInputDetail = {
-          subState: '',
-          p1ChoiceIdx: window.__VITE_DEBUG__?.p1ChoiceIdx ?? 0,
-          p2ChoiceIdx: window.__VITE_DEBUG__?.p2ChoiceIdx ?? 0,
-          over: true,
-          playerSwitchSlots: [],
-        }
-        console.debug(`[BATTLE-EVENT] Emitting ${BATTLE_UI_EVENTS.READY_FOR_INPUT} due to battle over.`);
-        window.dispatchEvent(
-          new CustomEvent<BattleReadyForInputDetail>(BATTLE_UI_EVENTS.READY_FOR_INPUT, {
-            detail,
-          })
-        );
-      }
-    }
-  );
+  setupBattleEventWatchers({
+    activeBattle,
+    fsm,
+    player,
+    isProcessing,
+    isIntroAnimating,
+  })
 
   if (typeof window !== 'undefined') {
     window.__VITE_DEBUG_STORE_RESOLVER__ = () => useBattleStore() as DebugStore

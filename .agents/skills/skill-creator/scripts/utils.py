@@ -1,11 +1,6 @@
 """Shared utilities for skill-creator scripts."""
 
-try:
-    from pathlib import Path
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: pathlib. Run 'pip install pathlib' to fix.")
-    import sys
-    sys.exit(1)
+from pathlib import Path
 
 
 

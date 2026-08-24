@@ -9,17 +9,15 @@ This document provides Node/TypeScript-specific best practices and examples for 
 ## Quick Reference
 
 ### Key Imports
-
 ```typescript
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.ts";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.ts";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.ts";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import express from "express";
 import { z } from "zod";
 ```
 
 ### Server Initialization
-
 ```typescript
 const server = new McpServer({
   name: "service-mcp-server",
@@ -28,7 +26,6 @@ const server = new McpServer({
 ```
 
 ### Tool Registration Pattern
-
 ```typescript
 server.registerTool(
   "tool_name",
@@ -53,14 +50,12 @@ server.registerTool(
 ## MCP TypeScript SDK
 
 The official MCP TypeScript SDK provides:
-
 - `McpServer` class for server initialization
 - `registerTool` method for tool registration
 - Zod schema integration for runtime input validation
 - Type-safe tool handler implementations
 
 **IMPORTANT - Use Modern APIs Only:**
-
 - **DO use**: `server.registerTool()`, `server.registerResource()`, `server.registerPrompt()`
 - **DO NOT use**: Old deprecated APIs such as `server.tool()`, `server.setRequestHandler(ListToolsRequestSchema, ...)`, or manual handler registration
 - The `register*` methods provide better type safety, automatic schema handling, and are the recommended approach
@@ -70,12 +65,10 @@ See the MCP SDK documentation in the references for complete details.
 ## Server Naming Convention
 
 Node/TypeScript MCP servers must follow this naming pattern:
-
 - **Format**: `{service}-mcp-server` (lowercase with hyphens)
 - **Examples**: `github-mcp-server`, `jira-mcp-server`, `stripe-mcp-server`
 
 The name should be:
-
 - General (not tied to specific features)
 - Descriptive of the service/API being integrated
 - Easy to infer from the task description
@@ -85,10 +78,10 @@ The name should be:
 
 Create the following structure for Node/TypeScript MCP servers:
 
-```text
+```
 {service}-mcp-server/
-├── package.tson
-├── tsconfig.tson
+├── package.json
+├── tsconfig.json
 ├── README.md
 ├── src/
 │   ├── index.ts          # Main entry point with McpServer initialization
@@ -97,7 +90,7 @@ Create the following structure for Node/TypeScript MCP servers:
 │   ├── services/         # API clients and shared utilities
 │   ├── schemas/          # Zod validation schemas
 │   └── constants.ts      # Shared constants (API_URL, CHARACTER_LIMIT, etc.)
-└── dist/                 # Built JavaScript files (entry point: dist/index.ts)
+└── dist/                 # Built JavaScript files (entry point: dist/index.js)
 ```
 
 ## Tool Implementation
@@ -107,7 +100,6 @@ Create the following structure for Node/TypeScript MCP servers:
 Use snake_case for tool names (e.g., "search_users", "create_project", "get_channel_info") with clear, action-oriented names.
 
 **Avoid Naming Conflicts**: Include the service context to prevent overlaps:
-
 - Use "slack_send_message" instead of just "send_message"
 - Use "github_create_issue" instead of just "create_issue"
 - Use "asana_list_tasks" instead of just "list_tasks"
@@ -115,7 +107,6 @@ Use snake_case for tool names (e.g., "search_users", "create_project", "get_chan
 ### Tool Structure
 
 Tools are registered using the `registerTool` method with the following requirements:
-
 - Use Zod schemas for runtime input validation and type safety
 - The `description` field must be explicitly provided - JSDoc comments are NOT automatically extracted
 - Explicitly provide `title`, `description`, `inputSchema`, and `annotations`
@@ -123,7 +114,7 @@ Tools are registered using the `registerTool` method with the following requirem
 - Type all parameters and return values explicitly
 
 ```typescript
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.ts";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
 const server = new McpServer({
@@ -349,7 +340,6 @@ const inputSchema = z.object({
 ```
 
 **Markdown format**:
-
 - Use headers, lists, and formatting for clarity
 - Convert timestamps to human-readable format
 - Show display names with IDs in parentheses
@@ -357,7 +347,6 @@ const inputSchema = z.object({
 - Group related information logically
 
 **JSON format**:
-
 - Return complete, structured data suitable for programmatic processing
 - Include all available fields and metadata
 - Use consistent field names and types
@@ -495,7 +484,7 @@ function fetchData(resourceId: string): Promise<ResourceData> {
 
 ## TypeScript Best Practices
 
-1. **Use Strict TypeScript**: Enable strict mode in tsconfig.tson
+1. **Use Strict TypeScript**: Enable strict mode in tsconfig.json
 2. **Define Interfaces**: Create clear interface definitions for all data structures
 3. **Avoid `any`**: Use proper types or `unknown` instead of `any`
 4. **Zod for Runtime Validation**: Use Zod schemas to validate external data
@@ -536,7 +525,7 @@ async function getUser(id: string): Promise<any> {
 
 ## Package Configuration
 
-### package.tson
+### package.json
 
 ```json
 {
@@ -544,9 +533,9 @@ async function getUser(id: string): Promise<any> {
   "version": "1.0.0",
   "description": "MCP server for {Service} API integration",
   "type": "module",
-  "main": "dist/index.ts",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "node dist/index.ts",
+    "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "clean": "rm -rf dist"
@@ -567,7 +556,7 @@ async function getUser(id: string): Promise<any> {
 }
 ```
 
-### tsconfig.tson
+### tsconfig.json
 
 ```json
 {
@@ -603,8 +592,8 @@ async function getUser(id: string): Promise<any> {
  * project management, and data export capabilities.
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.ts";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.ts";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import axios, { AxiosError } from "axios";
 
@@ -733,7 +722,7 @@ async function runHTTP() {
   }
 
   const app = express();
-  app.use(express.tson());
+  app.use(express.json());
 
   app.post('/mcp', async (req, res) => {
     const transport = new StreamableHTTPServerTransport({
@@ -775,7 +764,7 @@ if (transport === 'http') {
 Expose data as resources for efficient, URI-based access:
 
 ```typescript
-import { ResourceTemplate } from "@modelcontextprotocol/sdk/types.ts";
+import { ResourceTemplate } from "@modelcontextprotocol/sdk/types.js";
 
 // Register a resource with URI template
 server.registerResource(
@@ -820,7 +809,6 @@ server.registerResourceList(async () => {
 ```
 
 **When to use Resources vs Tools:**
-
 - **Resources**: For data access with simple URI-based parameters
 - **Tools**: For complex operations requiring validation and business logic
 - **Resources**: When data is relatively static or template-based
@@ -833,11 +821,11 @@ The TypeScript SDK supports two main transport mechanisms:
 #### Streamable HTTP (Recommended for Remote Servers)
 
 ```typescript
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.ts";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import express from "express";
 
 const app = express();
-app.use(express.tson());
+app.use(express.json());
 
 app.post('/mcp', async (req, res) => {
   // Create new transport for each request (stateless, prevents request ID collisions)
@@ -858,14 +846,13 @@ app.listen(3000);
 #### stdio (For Local Integrations)
 
 ```typescript
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.ts";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
 ```
 
 **Transport selection:**
-
 - **Streamable HTTP**: Web services, remote access, multiple clients
 - **stdio**: Command-line tools, local development, subprocess integration
 
@@ -930,7 +917,6 @@ Always ensure `npm run build` completes successfully before considering the impl
 Before finalizing your Node/TypeScript MCP server implementation, ensure:
 
 ### Strategic Design
-
 - [ ] Tools enable complete workflows, not just API endpoint wrappers
 - [ ] Tool names reflect natural task subdivisions
 - [ ] Response formats optimize for agent context efficiency
@@ -938,7 +924,6 @@ Before finalizing your Node/TypeScript MCP server implementation, ensure:
 - [ ] Error messages guide agents toward correct usage
 
 ### Implementation Quality
-
 - [ ] FOCUSED IMPLEMENTATION: Most important and valuable tools implemented
 - [ ] All tools registered using `registerTool` with complete configuration
 - [ ] All tools include `title`, `description`, `inputSchema`, and `annotations`
@@ -950,30 +935,26 @@ Before finalizing your Node/TypeScript MCP server implementation, ensure:
 - [ ] Error messages are clear, actionable, and educational
 
 ### TypeScript Quality
-
 - [ ] TypeScript interfaces are defined for all data structures
-- [ ] Strict TypeScript is enabled in tsconfig.tson
+- [ ] Strict TypeScript is enabled in tsconfig.json
 - [ ] No use of `any` type - use `unknown` or proper types instead
 - [ ] All async functions have explicit Promise<T> return types
 - [ ] Error handling uses proper type guards (e.g., `axios.isAxiosError`, `z.ZodError`)
 
 ### Advanced Features (where applicable)
-
 - [ ] Resources registered for appropriate data endpoints
 - [ ] Appropriate transport configured (stdio or streamable HTTP)
 - [ ] Notifications implemented for dynamic server capabilities
 - [ ] Type-safe with SDK interfaces
 
 ### Project Configuration
-
-- [ ] Package.tson includes all necessary dependencies
+- [ ] Package.json includes all necessary dependencies
 - [ ] Build script produces working JavaScript in dist/ directory
-- [ ] Main entry point is properly configured as dist/index.ts
+- [ ] Main entry point is properly configured as dist/index.js
 - [ ] Server name follows format: `{service}-mcp-server`
-- [ ] tsconfig.tson properly configured with strict mode
+- [ ] tsconfig.json properly configured with strict mode
 
 ### Code Quality
-
 - [ ] Pagination is properly implemented where applicable
 - [ ] Large responses check CHARACTER_LIMIT constant and truncate with clear messages
 - [ ] Filtering options are provided for potentially large result sets
@@ -982,9 +963,8 @@ Before finalizing your Node/TypeScript MCP server implementation, ensure:
 - [ ] Return types are consistent across similar operations
 
 ### Testing and Build
-
 - [ ] `npm run build` completes successfully without errors
-- [ ] dist/index.ts created and executable
-- [ ] Server runs: `node dist/index.ts --help`
+- [ ] dist/index.js created and executable
+- [ ] Server runs: `node dist/index.js --help`
 - [ ] All imports resolve correctly
 - [ ] Sample tool calls work as expected

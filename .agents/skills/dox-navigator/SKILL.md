@@ -135,7 +135,8 @@ Whenever persisting new knowledge, rules, lessons, or constraints:
   1. Re-check changed paths against the DOX chain.
   2. Update the nearest owning docs and any affected parents/children.
   3. Refresh every affected `Child DOX Index`.
-  4. Run `npm run audit` or `npx tsx .agents/skills/dox-navigator/scripts/audit_dox.ts` to verify there are 0 errors in the `DOX (AGENTS.md) Integrity` category.
+  4. Run `npx tsx .agents/skills/dox-navigator/scripts/audit_dox.ts` to verify there are 0 errors in the `DOX (AGENTS.md) Integrity` category.
+  5. **Strict No-Test Mandate for Documentation**: Never run `npm run test`, Vitest, or test runners when performing DOX updates, docs maintenance, or markdown edits. Verification is strictly restricted to DOX audit and markdown linting.
 
 ---
 

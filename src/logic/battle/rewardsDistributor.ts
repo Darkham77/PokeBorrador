@@ -21,7 +21,7 @@ import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon, Move, PokemonStatKey } from '@/types/pokemon/pokemon'
 import { useUIStore } from '@/stores/ui'
-import { getItemById, requireItemId } from '@/data/inventory/items'
+import { getItemById, requireItemId, type ItemId } from '@/data/inventory/items'
 import { incrementRecordKey } from '@/logic/utils/mapUtils'
 import { BUFF_DURATION_30_MIN_SEC } from '@/logic/constants/items'
 
@@ -92,7 +92,7 @@ const RIVAL_DROP_PROB_MAX_PERCENT = 100;
   // Rival special rewards (drop ticket/masterball)
   if (active.isRival) {
     const randRec = Math.random() * RIVAL_DROP_PROB_MAX_PERCENT
-    let rewardedItemKey = ''
+    let rewardedItemKey: ItemId
     if (randRec < RIVAL_DROP_PROB_MASTERBALL) {
       rewardedItemKey = 'masterball'
     } else if (randRec < RIVAL_DROP_PROB_SHINY_TICKET) {
@@ -107,13 +107,11 @@ const RIVAL_DROP_PROB_MAX_PERCENT = 100;
       rewardedItemKey = 'ticketmewtwo'
     }
 
-    if (rewardedItemKey) {
-      const itemObj = getItemById(rewardedItemKey)
-      const rewardedItemName = itemObj?.name || rewardedItemKey
-      ctx.gs.state.inventory[rewardedItemKey] = (ctx.gs.state.inventory[rewardedItemKey] || 0) + 1
-      ctx.addLog(`¡El Rival dejó caer una ${rewardedItemName}!`, 'log-catch', rewardedItemKey)
-      ctx.uiStore.notify(`¡Recibiste ${rewardedItemName}! 🎁`, '🎁')
-    }
+    const itemObj = getItemById(rewardedItemKey)
+    const rewardedItemName = itemObj.name
+    incrementRecordKey(ctx.gs.state.inventory, rewardedItemKey, 1)
+    ctx.addLog(`¡El Rival dejó caer una ${rewardedItemName}!`, 'log-catch', rewardedItemKey)
+    ctx.uiStore.notify(`¡Recibiste ${rewardedItemName}! 🎁`, '🎁')
   }
   
   if (active.isGym && active.gymId) {

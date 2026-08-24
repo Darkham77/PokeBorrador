@@ -10,7 +10,7 @@ const FISH_POKEMON_IDS = ['magikarp', 'goldeen', 'staryu'] as const
 
 interface MinigameConfig {
   inventoryStore: { addItem: (id: ItemId, qty: number) => void }
-  injectedItems: { value: Set<string> }
+  injectedItems: { value: Set<ItemId> }
   travelLog: { value: string[] }
   triggerExtraLoot: (itemId: ItemId, defaultQtyValue?: number) => void
   resumeTravelAfterEvent: () => void

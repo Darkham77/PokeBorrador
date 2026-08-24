@@ -1,20 +1,18 @@
 import { useGameStore } from '@/stores/game.ts';
-import { getItemById, requireItemId } from '@/data/inventory/items';
+import { getItemById, requireItemId, isItemId, type ItemId } from '@/data/inventory/items';
 import { itemEffects as ITEM_EFFECTS, getDynamicItemEffect } from '@/logic/items/itemEffects';
 import { isGlobalItem } from '@/logic/providers/itemProvider.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { Inventory, Item as ItemData, ItemCategory, BagMainTab } from '@/types/inventory/items';
 
-import type { ItemId } from '@/data/inventory/items';
-
-export function findInventoryKey(gameStore: ReturnType<typeof useGameStore>, id: ItemId | string): ItemId | string | null {
+export function findInventoryKey(gameStore: ReturnType<typeof useGameStore>, id: ItemId): ItemId | null { // domain-ok
   if (!id) return null;
   const inv = gameStore.state.inventory || {};
-  if (inv[id] !== undefined) return id;
+  if (isItemId(id) && inv[id] !== undefined) return id;
   return null;
 }
 
-export function isItemUsableOn(itemId: string, pokemon: Pokemon) {
+export function isItemUsableOn(itemId: ItemId, pokemon: Pokemon) {
   if (!pokemon) return false;
   
   if (isGlobalItem(itemId)) return false;
@@ -52,7 +50,7 @@ export function isEquippableHeldItem(item: Pick<ItemData, 'cat' | 'id'>): boolea
     || (item.cat === 'breeding_held' && item.id !== 'vigorrestorer' && !item.id.includes('berry'));
 }
 
-export function consumeItem(gameStore: ReturnType<typeof useGameStore>, itemId: ItemId | string) {
+export function consumeItem(gameStore: ReturnType<typeof useGameStore>, itemId: ItemId) {
   const inv = gameStore.state.inventory;
   if (!inv) return;
   const actualKey = findInventoryKey(gameStore, itemId);

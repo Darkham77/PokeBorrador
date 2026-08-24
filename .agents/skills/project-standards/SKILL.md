@@ -9,7 +9,8 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 
 - **Mandatory Skill Invocation**: ALWAYS load and follow the instructions in the `domain-type-first` skill (`@/domain-type-first` / `/.agents/skills/domain-type-first/SKILL.md`) whenever declaring, defining, typing, modifying, reviewing, or generating any data type, variable, function parameter, component prop, DTO, interface field, finite domain constant, schema, generated database, or domain boundary validation.
 - **MANUAL PUSH MANDATE**: You are FORBIDDEN from executing `git push`. You MUST inform the user that the local repository is clean and updated, and they should perform the push manually when ready.
-- **Zero Audit Failures & Warnings-Diff Mandate**: Under NO circumstances are audit failures allowed in any commit. You MUST run `npm run audit:warnings-diff` before committing, and it MUST return exactly 0 issues (0 errors across the entire project, and 0 new warnings in modified/added/untracked files compared to `origin/main`).
+- **Zero Audit Failures & Warnings-Diff Mandate (Pre-Commit Only)**: Under NO circumstances are audit failures allowed in any Git commit. You MUST run `npm run audit:warnings-diff` before committing (or during `/safe-commit`), and it MUST return exactly 0 issues (0 errors across the entire project, and 0 new warnings in modified/added/untracked files compared to `origin/main`). DO NOT run this heavy full-project audit during lightweight tasks (such as documentation/skill edits or rapid code iteration).
+- **Strict No-Test Mandate for Documentation**: Running test suites (`npm run test`, `test:node`, Vitest, or E2E Playwright simulations) when only editing `.md` documents, DOX indices, or `.agents/` skill files is STRICTLY FORBIDDEN. Verification for documentation tasks is strictly limited to `npx tsx .agents/skills/dox-navigator/scripts/audit_dox.ts` and `npm run lint:md` (or fast `npm run lint`).
 - **Mandatory DOX Navigation**: You MUST always use the `dox-navigator` skill (or trigger the `/dox-navigator` command) to analyze the project context, search for files, components, and manuals, and update any index or documentation within the project.
 
 - **Objective-Driven Fuzzer Coverage Mandate**: Every certified fuzzer scenario
@@ -108,17 +109,22 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 
 ### 9. Asset Pipeline, Crafting Tiers & CLI Safety Mandate
 - **Mandatory Crafting Tier Hierarchy**: All inventory and shop item sprites in `public/assets/sprites/` MUST follow the 4-tier domain hierarchy (`crafting/tier0/`, `crafting/tier1/`, `crafting/tier2/`, `crafting/tier3/`) mapped from `item.craftingTier`. It is STRICTLY FORBIDDEN to create flat asset directories (such as `items/`) or alter `items.json` sprite paths without following this tier structure.
-- **Canonical Asset Pipeline Execution**:
+- **Canonical Asset Pipeline Execution & Zero-Ad-Hoc Mandate**:
+  - Whenever ANY new sprite or image asset is added, modified, or replaced, it MUST be saved into `_raw-assets/public/assets/sprites/` under its canonical tier folder, and `npm run assets:convert` (`scripts/assets/convert_assets.ts`) MUST be executed immediately to build WebP files and dynamic catalogs.
   - To download missing official items: `npm run assets:download:items` (`scripts/assets/download_assets.ts`).
   - To convert and build full asset database: `npm run assets:convert` (`scripts/assets/convert_assets.ts`).
   - To organize and re-tier item assets: `node --permission --experimental-strip-types --allow-addons --allow-fs-read=. --allow-fs-write=. scripts/assets/organize_item_sprites_by_tier.ts`.
-  - It is STRICTLY FORBIDDEN to invent or run ad-hoc scripts that flatten or alter item sprite paths away from their canonical crafting tiers.
+  - Performing one-off ad-hoc conversions, bypassing `_raw-assets/`, or skipping `npm run assets:convert` is STRICTLY FORBIDDEN.
 - **Prohibition of Multi-Line Inline Node CLI Commands (`noInteractiveCliHangs`)**:
   - AI agents MUST NEVER run multi-line inline scripts (`npx tsx -e "..."` or `node -e "..."`) in terminal background tasks on Windows. Doing so causes child processes to hang or await interactive stdin indefinitely.
   - All validations, diagnostic checks, and tests MUST be executed via dedicated Vitest test files (`npx vitest run <path>`) or dedicated script files in `scripts/` or `scratch/`.
 - **Fast Development Lint Pipeline (`npm run lint`)**:
   - `npm run lint` MUST execute all 4 checks: `validate:domain-types`, `validate:types` (`vue-tsc --noEmit`), `eslint --cache`, and `lint:md`.
   - Markdownlint MUST strictly ignore `external/**` and `.git/**` to prevent scanning external source trees.
+- **Proportional Verification Protocol (Fast Lint vs Full Audit)**:
+  - **Documentation & Skills (`.md`)**: Run ONLY `npm run lint:md` (~1-2s). Running heavy audits (`npm run audit`, `npm run audit:warnings-diff`) for documentation or skill edits is strictly forbidden.
+  - **In-Development Code Iteration**: Run `npm run lint` (~3-5s) for fast developer feedback.
+  - **Pre-Commit Gatekeeper**: Run `npm run audit:warnings-diff` ONLY prior to a `git commit` or during `/safe-commit` validation.
 
 ---
 
@@ -142,7 +148,8 @@ When performing specific tasks, consult the corresponding reference manuals to o
    - Enforce the Save Shield (0-Pokémon protection) and SQLite/Supabase separation.
 
 5. **Environment Configuration, Dependency Audits, or Node Scripts**:
-   - Consult [validation_manual.md](./references/qa/validation_manual.md), [git_and_workflow_safety.md](./references/rules/git_and_workflow_safety.md), [mikrotik_routing_manual.md](./references/technical/mikrotik_routing_manual.md), and root setup scripts (`setup-windows.ps1` / `setup-linux.sh`).
+   - Consult [validation_manual.md](./references/qa/validation_manual.md), [git_and_workflow_safety.md](./references/rules/git_and_workflow_safety.md), [dependency_management_manual.md](./references/technical/dependency_management_manual.md), [mikrotik_routing_manual.md](./references/technical/mikrotik_routing_manual.md), and root setup scripts (`setup-windows.ps1` / `setup-linux.sh`).
+   - When asked to "actualizar herramientas", "update tools", "preparar entorno", or "instalar dependencias", execute the platform's root setup script (`./setup-linux.sh` on Linux/macOS or `.\setup-windows.ps1` on Windows).
 
 ---
 
@@ -204,6 +211,6 @@ Before declaring any task completed, verify code against this mandatory checklis
 - [ ] **GPU Acceleration**: Have I applied layer promotion (`will-change: transform`) and object pooling on animated/heavy elements?
 - [ ] **Pixel Parity**: Is all game content pixelated, sharp, and properly rendered with appropriate font fallbacks ('ñ' handled)?
 - [ ] **CLI-First State Verification**: Have I verified game states via `window.__VITE_DEBUG__` console commands?
-- [ ] **Zero-Warning & Zero-Error**: Does `npm run audit:warnings-diff` pass with 0 errors and 0 new warnings? (Never run `npm run lint` alongside it; `audit:warnings-diff` is the all-in-one unified validator).
+- [ ] **Proportional Verification**: For documentation/skill edits, does `npm run lint:md` pass cleanly? For code development, does `npm run lint` pass? For pre-commit validation, does `npm run audit:warnings-diff` pass with 0 errors and 0 new warnings? (Never run `npm run audit:warnings-diff` for simple documentation or skill edits).
 - [ ] **Fallow Score Compliance**: Does `npx fallow health --score` report a score of 85 or higher?
 - [ ] **Language Parity**: Are all repository files (.ts, .vue, .md, skills) written exclusively in English?

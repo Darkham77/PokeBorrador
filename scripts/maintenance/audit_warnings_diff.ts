@@ -438,14 +438,12 @@ async function main() {
   const newWarnings = finalWarnings.filter(v => v.isNew);
   const legacyWarnings = finalWarnings.filter(v => !v.isNew);
 
-  if (projectErrors.length > 0) {
-    txtLines.push(styleText('bold', styleText('red', `❌ ERRORES DETECTADOS EN EL PROYECTO (DEBEN CORREGIRSE TODOS) (${projectErrors.length}):`)));
-    projectErrors.forEach(v => {
-      txtLines.push(`  - ${v.file}:${v.line} -> ${v.message} ("${v.context}")`);
+  if (legacyWarnings.length > 0) {
+    txtLines.push(styleText('cyan', `ℹ ADVERTENCIAS PRE-EXISTENTES EN ARCHIVOS MODIFICADOS (PUEDEN IGNORARSE) (${legacyWarnings.length}):`));
+    legacyWarnings.forEach(v => {
+      txtLines.push(`  - ${v.file}:${v.line} [${v.ruleId}] -> ${v.message}`);
     });
     txtLines.push('');
-  } else {
-    txtLines.push(styleText('green', '✔ Cero errores detectados en todo el proyecto.\n'));
   }
 
   if (newWarnings.length > 0) {
@@ -458,12 +456,14 @@ async function main() {
     txtLines.push(styleText('green', '✔ Cero advertencias nuevas en los archivos modificados.\n'));
   }
 
-  if (legacyWarnings.length > 0) {
-    txtLines.push(styleText('cyan', `ℹ ADVERTENCIAS PRE-EXISTENTES EN ARCHIVOS MODIFICADOS (PUEDEN IGNORARSE) (${legacyWarnings.length}):`));
-    legacyWarnings.forEach(v => {
-      txtLines.push(`  - ${v.file}:${v.line} [${v.ruleId}] -> ${v.message}`);
+  if (projectErrors.length > 0) {
+    txtLines.push(styleText('bold', styleText('red', `❌ ERRORES DETECTADOS EN EL PROYECTO (DEBEN CORREGIRSE TODOS) (${projectErrors.length}):`)));
+    projectErrors.forEach(v => {
+      txtLines.push(`  - ${v.file}:${v.line} -> ${v.message} ("${v.context}")`);
     });
     txtLines.push('');
+  } else {
+    txtLines.push(styleText('green', '✔ Cero errores detectados en todo el proyecto.\n'));
   }
 
   const outputTxt = txtLines.join('\n');

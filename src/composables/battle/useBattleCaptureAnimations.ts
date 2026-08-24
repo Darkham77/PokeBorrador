@@ -7,6 +7,7 @@ import { useBattleSeats } from '@/composables/battle/useBattleSeats'
 import { useBattleTweenRegistry } from '@/composables/battle/useBattleTweenRegistry'
 import { useGameStore } from '@/stores/game'
 import { logger } from '@/logic/utils/logger'
+import { isItemId, type ItemId } from '@/data/inventory/items'
 import { COMBATANT_DAMAGE_SHAKE_DUR_SEC } from '@/logic/constants/animations'
 
 const CATCH_SPARKLE_DURATION_SEC = 1.5
@@ -132,7 +133,7 @@ export function useBattleCaptureAnimations(
     cleanupTweenRegistryListeners()
   }
 
-  const resolveBallId = (pokemon: Pokemon | null | undefined): string => {
+  const resolveBallId = (pokemon: Pokemon | null | undefined): ItemId => {
     if (!pokemon?.tags) return 'pokeball'
     const ballTag = pokemon.tags.find(t => t.startsWith('ball:'))
     if (!ballTag) {
@@ -141,7 +142,7 @@ export function useBattleCaptureAnimations(
       return 'pokeball'
     }
     const id = ballTag.split(':')[1]
-    if (!id) {
+    if (!id || !isItemId(id)) {
       logger.warn('useBattleCaptureAnimations', `Invalid ball tag format for pokemon uid=${pokemon.uid}: "${ballTag}". Falling back to pokeball.`)
       if (pokemon.uid) fixPokemonBallTagInSave(pokemon.uid)
       return 'pokeball'
@@ -204,7 +205,7 @@ export function useBattleCaptureAnimations(
   }
 
   // fallow-ignore-next-line complexity
-  const handleCatchRequest = async (detail: string | { side?: string, ballId?: string, pokemon?: Pokemon }) => {
+  const handleCatchRequest = async (detail: string | { side?: string, ballId?: ItemId, pokemon?: Pokemon }) => {
     const side = typeof detail === 'string' ? detail : (detail?.side || 'enemy')
     const pokemon = typeof detail === 'object' ? (detail as { pokemon?: Pokemon })?.pokemon : null
     const slot = getSeat(side).exit
@@ -215,7 +216,7 @@ export function useBattleCaptureAnimations(
       const ballTag = pokemon.tags.find(t => t.startsWith('ball:'))
       if (ballTag) {
         const id = ballTag.split(':')[1]
-        if (id) {
+        if (id && isItemId(id)) {
           slot.ballId = id
         } else {
           logger.warn('useBattleCaptureAnimations', `Invalid ball tag format on pokemon uid=${pokemon.uid}: "${ballTag}". Falling back to pokeball.`)

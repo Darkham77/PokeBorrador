@@ -11,7 +11,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import UnifiedSidebar from '@/components/common/UnifiedSidebar.vue'
 import ShopSearchControls from '@/components/common/ShopSearchControls.vue'
 import ReputationShopItemCard from './reputation-shop/ReputationShopItemCard.vue'
-import { getItemById } from '@/data/inventory/items'
+import { getItemById, type ItemId } from '@/data/inventory/items'
 import type { ItemTier } from '@/types/inventory/items'
 
 interface Props {
@@ -34,7 +34,7 @@ const isSmallScreen = computed(() => uiStore.isSmallScreen)
 interface ReputationShopItem {
   id: string
   repCost: number
-  givesId: string
+  givesId: ItemId
   givesQty: number
   tier: ItemTier
   cat: string

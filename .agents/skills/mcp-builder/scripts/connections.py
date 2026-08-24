@@ -4,30 +4,10 @@ from abc import ABC, abstractmethod
 from contextlib import AsyncExitStack
 from typing import Any
 
-try:
-    from mcp import ClientSession, StdioServerParameters
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: mcp. Run 'pip install mcp' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    from mcp.client.sse import sse_client
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: mcp. Run 'pip install mcp' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    from mcp.client.stdio import stdio_client
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: mcp. Run 'pip install mcp' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    from mcp.client.streamable_http import streamablehttp_client
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: mcp. Run 'pip install mcp' to fix.")
-    import sys
-    sys.exit(1)
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.sse import sse_client
+from mcp.client.stdio import stdio_client
+from mcp.client.streamable_http import streamablehttp_client
 
 
 class MCPConnection(ABC):

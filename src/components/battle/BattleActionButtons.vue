@@ -3,6 +3,8 @@ import { useBattleStore } from '@/stores/battle/battle'
 import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
 import BattleBallPicker from './BattleBallPicker.vue'
 
+import type { ItemId } from '@/data/inventory/items'
+
 interface Props {
   isFinishing?: boolean
 }
@@ -15,7 +17,7 @@ const emit = defineEmits<{
   (e: 'switch'): void
   (e: 'bag'): void
   (e: 'catch'): void
-  (e: 'select-ball', ballId: string): void
+  (e: 'select-ball', ballId: ItemId): void
 }>()
 
 import { computed } from 'vue'
@@ -58,7 +60,7 @@ const hasAvailableBenchPokemon = computed(() => {
       <BattleBallPicker 
         :is-finishing="props.isFinishing"
         :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || isLocked"
-        @select-ball="(id: string) => emit('select-ball', id)"
+        @select-ball="(id: ItemId) => emit('select-ball', id)"
         @catch="emit('catch')"
       />
 

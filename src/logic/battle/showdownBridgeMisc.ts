@@ -214,8 +214,8 @@ export function handleMiscEvents(ctx: SBCtx): boolean | Promise<boolean> {
       }
       const canonicalItem = requireItemId(toID(rawItem));
       target.lastItem = canonicalItem;
-      target.heldItem = '';
-      target.item = '';
+      target.heldItem = null;
+      target.item = null;
       const verb = line.includes('[eat]') ? 'comió su' : 'perdió su';
       store.addLog(`¡${target.name} ${verb} ${rawItem}!`, 'log-info', target);
       return true;
@@ -234,7 +234,7 @@ export function handleMiscEvents(ctx: SBCtx): boolean | Promise<boolean> {
       const canonicalItem = requireItemId(toID(rawItem));
       target.heldItem = canonicalItem;
       target.item = canonicalItem;
-      target.lastItem = '';
+      target.lastItem = null;
       store.addLog(`¡${target.name} tiene ${rawItem}!`, 'log-info', target);
       return true;
     }

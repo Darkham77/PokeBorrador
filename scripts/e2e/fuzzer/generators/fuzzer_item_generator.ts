@@ -108,7 +108,7 @@ function getRequiredEnemySpecies(itemId: ItemId, fallback: PokemonSpeciesId): Po
   return Object.entries(REQUIRED_ENEMY_SPECIES).find(([candidateId]) => candidateId === itemId)?.[1] ?? fallback;
 }
 
-function getRequiredEnemyItem(itemId: ItemId): ItemId {
+function getRequiredEnemyItem(itemId: ItemId): ItemId | '' {
   return Object.entries(REQUIRED_ENEMY_ITEMS).find(([candidateId]) => candidateId === itemId)?.[1] ?? '';
 }
 

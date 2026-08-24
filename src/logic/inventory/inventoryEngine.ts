@@ -32,7 +32,7 @@ export function getItemSpriteUrl(itemId: string): string {
  * @param {string} category - 'pokeballs', 'pociones', 'stones', etc.
  * @returns {Array} List of [itemName, quantity]
  */
-export function filterInventoryByCategory(inventory: Inventory, category: string): [string, number][] {
+export function filterInventoryByCategory(inventory: Inventory | Record<string, number>, category: string): [string, number][] {
   return Object.entries(inventory)
   .filter((entry): entry is [string, number] => entry[1] !== undefined)
   .filter(([name, qty]) => {

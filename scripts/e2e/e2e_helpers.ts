@@ -1,239 +1,63 @@
 // fallow-ignore-file security-sink
-import { type Page, type Locator, expect } from '@playwright/test';
+import { type Page, expect } from '@playwright/test';
 import { toID } from '@pkmn/sim';
 import {
   MAX_PER_ACTION_TIMEOUT_MS,
   MAX_UI_SETTLE_TIMEOUT_MS,
-  MS_TO_SECONDS_DIVISOR,
   SWITCH_SLOT_INDEX_OFFSET
 } from './simulation_config.ts';
 export { MAX_PER_ACTION_TIMEOUT_MS };
 import { isMatchingUid } from '../../src/logic/battle/showdownUidMapper.ts';
-import { BATTLE_UI_EVENTS, type BattleForcedSwitchDetail, type BattleReadyForInputDetail } from '../../src/types/battle/battleEvents.ts';
-import { GAME_UI_EVENTS, type GameStoreReadyDetail } from '../../src/types/system/gameEvents.ts';
+import type { GameStoreReadyDetail } from '../../src/types/system/gameEvents.ts';
 import type { CertifiedBattleCase } from './fuzzer/generators/fuzzer_team_generator.ts';
-import fs from 'node:fs';
-import path from 'node:path';
-import { sanitizePath } from '../lib/safePath.ts';
 
-/**
- * Flush buffered logs accumulated in RAM during test execution to worker-isolated log files
- * and log a clean, explicit progress line to stdout.
- */
-export function flushE2ELogs(
-  logBuffer: string[],
-  testName: string,
-  status: 'passed' | 'failed' | 'skipped' = 'passed',
-  durationMs?: number
-): void {
-  const workerId = process.env.TEST_WORKER_INDEX || '0';
-  const logDir = path.resolve('scripts/e2e/results/logs');
-  
-  try {
-    if (!fs.existsSync(logDir)) {
-      fs.mkdirSync(logDir, { recursive: true });
-    }
-    const logFilePath = path.join(logDir, sanitizePath(`worker_${workerId}.log`));
-    const timeStr = new Date().toISOString();
-    const header = `\n--- [${timeStr}] TEST: ${testName} [STATUS: ${status.toUpperCase()}] (${durationMs ? (durationMs / MS_TO_SECONDS_DIVISOR).toFixed(1) + 's' : '0s'}) ---\n`;
-    fs.appendFileSync(logFilePath, header + logBuffer.join('\n') + '\n');
-  } catch (err: unknown) {
-    console.debug('[E2E-LOGGER-WARN] Failed to write log file:', err instanceof Error ? err.message : String(err));
-  }
+import {
+  flushE2ELogs,
+  logE2EDebug,
+  clickResilient,
+  type E2EPage,
+} from './helpers/e2eLogger.ts';
 
-  const durationStr = durationMs ? ` (${(durationMs / MS_TO_SECONDS_DIVISOR).toFixed(1)}s)` : '';
+import {
+  armBattleFlowCompletion,
+  awaitBattleFlowCompletion,
+  armBattleReadyForInput,
+  awaitBattleReadyForInput,
+  armBattleForcedSwitch,
+  awaitBattleForcedSwitch,
+  armGameStoreReady,
+  awaitGameStoreReady,
+  waitForWaitInput,
+  waitForBattleReadyEvent,
+  type WindowWithResolver,
+} from './helpers/battleEventHelpers.ts';
 
-  if (status === 'passed') {
-    console.log(`[E2E-PROGRESS] ✅ ${testName}${durationStr}`);
-  } else if (status === 'failed') {
-    console.error(`\n==================================================`);
-    console.error(`❌ [E2E-FAILURE-TRACE] ${testName}${durationStr}`);
-    console.error(`==================================================`);
-    if (logBuffer.length > 0) {
-      console.error(logBuffer.join('\n'));
-    } else {
-      console.error(`(No buffered browser logs captured)`);
-    }
-    console.error(`==================================================\n`);
-  }
-}
-
-export interface E2EPage extends Page {
-  _e2eLogBuffer?: string[];
-}
-
-export function logE2EDebug(page: Page | undefined, msg: string): void {
-  const e2ePage = page as E2EPage | undefined;
-  if (e2ePage?._e2eLogBuffer) {
-    e2ePage._e2eLogBuffer.push(`[E2E-TRACE] ${msg}`);
-  }
-}
-
-export async function clickResilient(locator: Locator, options: { timeout?: number } = {}): Promise<void> {
-  const timeout = options.timeout ?? MAX_PER_ACTION_TIMEOUT_MS;
-  const fastTimeout = Math.min(timeout, 500);
-  try {
-    await locator.click({ timeout: fastTimeout });
-  } catch (_err) {
-    try {
-      await locator.click({ force: true, timeout: fastTimeout });
-    } catch {
-      await locator.evaluate((el: HTMLElement) => el.click());
-    }
-  }
-}
+export {
+  flushE2ELogs,
+  logE2EDebug,
+  clickResilient,
+  type E2EPage,
+  armBattleFlowCompletion,
+  awaitBattleFlowCompletion,
+  armBattleReadyForInput,
+  awaitBattleReadyForInput,
+  armBattleForcedSwitch,
+  awaitBattleForcedSwitch,
+  armGameStoreReady,
+  awaitGameStoreReady,
+  waitForWaitInput,
+  waitForBattleReadyEvent,
+  type WindowWithResolver,
+};
 
 export interface BattleLogEntry {
   side: 'player' | 'enemy';
   msg: string;
 }
 
-/**
- * Typed window cast for E2E Playwright evaluates.
- * All fields are declared in src/types/system/env.d.ts and available globally.
- * This alias exists purely for the `(window as WindowWithResolver)` cast pattern.
- */
-export type WindowWithResolver = Window;
-
-export async function armBattleFlowCompletion(page: Page): Promise<void> {
-  await page.evaluate((eventName) => {
-    if (window.__E2E_BATTLE_FLOW_COMPLETION__) {
-      throw new Error('[E2E] A battle-flow completion listener is already armed.');
-    }
-    window.__E2E_BATTLE_FLOW_COMPLETION__ = new Promise<void>((resolve, reject) => {
-      window.addEventListener(eventName, (event) => {
-        if (!(event instanceof CustomEvent)) {
-          reject(new Error('[E2E] battle-flow-completed must be a CustomEvent.'));
-          return;
-        }
-        const detail = event.detail as Record<string, unknown> | null; // open-record
-        if (typeof detail !== 'object' || detail === null || !('destination' in detail) || detail.destination !== 'map') {
-          reject(new Error('[E2E] battle-flow-completed has an invalid detail payload.'));
-          return;
-        }
-        resolve();
-      }, { once: true });
-    });
-  }, BATTLE_UI_EVENTS.FLOW_COMPLETED);
-}
-
-export async function awaitBattleFlowCompletion(page: Page): Promise<void> {
-  await page.evaluate(async () => {
-    const completion = window.__E2E_BATTLE_FLOW_COMPLETION__;
-    if (!completion) {
-      throw new Error('[E2E] Battle-flow completion was awaited without an armed event listener.');
-    }
-    try {
-      await completion;
-    } finally {
-      delete window.__E2E_BATTLE_FLOW_COMPLETION__;
-    }
-  });
-}
-
-export async function armBattleReadyForInput(page: Page, timeoutMs = MAX_PER_ACTION_TIMEOUT_MS): Promise<void> {
-  await page.evaluate(({ tMs }) => {
-    if (window.__E2E_BATTLE_READY_FOR_INPUT__) {
-      throw new Error('[E2E] A battle-ready-for-input listener is already armed.');
-    }
-    const debug = window.__VITE_DEBUG__;
-    if (debug?.waitForBattleReady) {
-      window.__E2E_BATTLE_READY_FOR_INPUT__ = debug.waitForBattleReady(tMs, { skipImmediate: true });
-      return;
-    }
-    throw new Error('[E2E] debug.waitForBattleReady is missing.');
-  }, { tMs: timeoutMs });
-}
-
-export async function awaitBattleReadyForInput(page: Page, timeoutMs = MAX_PER_ACTION_TIMEOUT_MS): Promise<BattleReadyForInputDetail> {
-  const result = await page.evaluate(async (tMs) => {
-    const ready = window.__E2E_BATTLE_READY_FOR_INPUT__;
-    if (ready) {
-      try {
-        return await ready;
-      } finally {
-        delete window.__E2E_BATTLE_READY_FOR_INPUT__;
-      }
-    }
-    const debugObj = window.__VITE_DEBUG__;
-    if (debugObj?.waitForBattleReady) {
-      return await debugObj.waitForBattleReady(tMs);
-    }
-    throw new Error('[E2E] Battle ready-for-input was awaited without an armed event listener.');
-  }, timeoutMs);
-  return result as BattleReadyForInputDetail;
-}
-
-export async function armBattleForcedSwitch(page: Page): Promise<void> {
-  await page.evaluate((eventName) => {
-    if (window.__E2E_BATTLE_FORCED_SWITCH__) {
-      throw new Error('[E2E] A battle forced-switch listener is already armed.');
-    }
-    window.__E2E_BATTLE_FORCED_SWITCH__ = new Promise<BattleForcedSwitchDetail>((resolve, reject) => {
-      window.addEventListener(eventName, (event) => {
-        if (!(event instanceof CustomEvent)) {
-          reject(new Error(`[E2E] ${eventName} must be a CustomEvent.`));
-          return;
-        }
-        const detail = event.detail as BattleForcedSwitchDetail | null;
-        if (!detail || detail.side !== 'player') {
-          reject(new Error(`[E2E] ${eventName} has an invalid detail payload.`));
-          return;
-        }
-        resolve(detail);
-      }, { once: true });
-    });
-  }, BATTLE_UI_EVENTS.FORCED_SWITCH_REQUIRED);
-}
-
-export async function awaitBattleForcedSwitch(page: Page): Promise<BattleForcedSwitchDetail> {
-  return await page.evaluate(async () => {
-    const forcedSwitch = window.__E2E_BATTLE_FORCED_SWITCH__;
-    if (!forcedSwitch) {
-      throw new Error('[E2E] Forced switch was awaited without an armed event listener.');
-    }
-    try {
-      return await forcedSwitch;
-    } finally {
-      delete window.__E2E_BATTLE_FORCED_SWITCH__;
-    }
-  });
-}
-
-export async function armGameStoreReady(page: Page): Promise<void> {
-  await page.evaluate((eventName) => {
-    if (window.__E2E_GAME_STORE_READY__) {
-      throw new Error('[E2E] A game-store-ready listener is already armed.');
-    }
-    window.__E2E_GAME_STORE_READY__ = new Promise<GameStoreReadyDetail>((resolve, reject) => {
-      window.addEventListener(eventName, (event) => {
-        if (!(event instanceof CustomEvent)) {
-          reject(new Error(`[E2E] ${eventName} must be a CustomEvent.`));
-          return;
-        }
-        const detail = event.detail as GameStoreReadyDetail | null;
-        if (!detail || detail.ready !== true) {
-          reject(new Error(`[E2E] ${eventName} has an invalid detail payload.`));
-          return;
-        }
-        resolve(detail);
-      }, { once: true });
-    });
-  }, GAME_UI_EVENTS.STORE_READY);
-}
-
-export async function awaitGameStoreReady(page: Page): Promise<void> {
-  await page.evaluate(async () => {
-    const ready = window.__E2E_GAME_STORE_READY__;
-    if (!ready) {
-      throw new Error('[E2E] Game store readiness was awaited without an armed event listener.');
-    }
-    try {
-      await ready;
-    } finally {
-      delete window.__E2E_GAME_STORE_READY__;
-    }
-  });
+export interface PlayerRequestPokemonSlot {
+  uid?: string;
+  active?: boolean;
 }
 
 
@@ -303,6 +127,31 @@ export async function setupE2ESession(page: Page, logBuffer?: string[], sqliteKe
         get() { return 'granted'; }
       });
     }
+
+    // Accelerate all GSAP animations 100x automatically in E2E environments (survives reloads)
+    let _gsapInstance: unknown = undefined;
+    Object.defineProperty(window, 'gsap', {
+      configurable: true,
+      enumerable: true,
+      get() { return _gsapInstance; },
+      set(val: unknown) {
+        _gsapInstance = val;
+        try {
+          if (val && typeof val === 'object' && 'globalTimeline' in val && val.globalTimeline && typeof (val.globalTimeline as { timeScale: (n: number) => void }).timeScale === 'function') {
+            (val.globalTimeline as { timeScale: (n: number) => void }).timeScale(100);
+          }
+        } catch (_e) {
+          void 0;
+        }
+      }
+    });
+
+    // Auto-arm game-store-ready listener on initial load and every reload before scripts evaluate
+    (window as WindowWithResolver).__E2E_GAME_STORE_READY__ = new Promise<GameStoreReadyDetail>((resolve) => {
+      window.addEventListener('game-store-ready', (e) => {
+        resolve((e as CustomEvent).detail as GameStoreReadyDetail);
+      }, { once: true });
+    });
   }, sqliteKey);
 }
 
@@ -390,42 +239,6 @@ export async function confirmAndStartBattle(page: Page): Promise<void> {
   await clickResilient(startBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 }
 
-/**
- * Espera a que el FSM de batalla transicione a un estado listo para input o termine
- */
-export async function waitForWaitInput(page: Page): Promise<void> {
-  try {
-    await page.waitForFunction(() => {
-      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-      if (!resolver) return false;
-      const store = resolver();
-      if (!store) return false;
-      if (!store.state) return false;
-      if (store.state.over || store.currentFsmState === 'REWARDS_PHASE' || store.currentFsmState === 'EXIT_BATTLE') return true;
-      return !store.isProcessing && store.currentFsmState === 'ACTIVE_BATTLE' &&
-        (store.currentSubState === 'WAIT_INPUT' || store.currentSubState === 'SWITCH_MENU');
-    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-  } catch (error: unknown) {
-    const battleState = await page.evaluate(() => {
-      const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
-      return {
-        fsm: store?.currentFsmState,
-        subState: store?.currentSubState,
-        isProcessing: store?.isProcessing,
-        isOver: store?.state?.over,
-        hasActiveRequest: Boolean(store?.state?.playerRequest?.active),
-        hasForcedSwitch: Boolean(store?.state?.playerRequest?.forceSwitch),
-        workerInitError: (window as WindowWithResolver).__VITE_DEBUG__?.lastWorkerInitError,
-        workerInitStage: (window as WindowWithResolver).__VITE_DEBUG__?.lastWorkerInitStage
-      };
-    });
-    const recentBrowserLogs = (page as E2EPage)._e2eLogBuffer?.slice(-20) ?? [];
-    throw new Error(
-      `[E2E] Battle did not reach an input-ready FSM state: ${JSON.stringify(battleState)}. Recent browser logs: ${JSON.stringify(recentBrowserLogs)}`,
-      { cause: error }
-    );
-  }
-}
 
 /**
  * Drives an ordinary browser battle through the real UI. It is deliberately
@@ -749,20 +562,6 @@ export async function checkIfChoiceIsInvalid(page: Page, choice: string | undefi
 
 export type CertifiedTestBatch = CertifiedBattleCase;
 
-export async function waitForBattleReadyEvent(page: Page, batchIndex: number, turnCount: number): Promise<{ subState: string; p1ChoiceIdx: number; p2ChoiceIdx: number; over: boolean }> {
-  try {
-    return await page.evaluate(async () => {
-      if (window.__VITE_DEBUG__ && typeof window.__VITE_DEBUG__.waitForBattleReady === 'function') {
-        return await window.__VITE_DEBUG__.waitForBattleReady();
-      }
-      throw new Error('window.__VITE_DEBUG__.waitForBattleReady is not defined');
-    });
-  } catch (err) {
-    await page.screenshot({ path: `scratch/lock-batch-${batchIndex}-turn-${turnCount}.png` });
-    throw new Error(`Bloqueo detectado o página destruida en el turno ${turnCount}. Captura guardada en scratch/. original: ${String(err)}`);
-  }
-}
-
 export async function verifyHpParity(page: Page) {
   try {
     await page.waitForFunction(() => {
@@ -888,7 +687,7 @@ export async function executeAutoBattle(
         playerRequest,
         switchSlot,
       );
-      const requestSlots = playerRequest.side?.pokemon?.map((pokemon) => ({ uid: pokemon.uid ?? '', active: pokemon.active === true })) ?? [];
+      const requestSlots = playerRequest.side?.pokemon?.map((pokemon: PlayerRequestPokemonSlot) => ({ uid: pokemon.uid ?? '', active: pokemon.active === true })) ?? [];
       return {
         choice: step.p1Choice,
         historyIndex,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, nextTick, onUnmounted } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 
 const SPRITE_SWAP_STRETCH_Y = 1.5;
 const SPRITE_SWAP_SQUEEZE_X = 0.15;
@@ -13,7 +13,8 @@ import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import type { BattleCombatantProps } from '@/types/battle/battle'
 import { useBattleCombatantAnims, onSparkleEnter, onBallEnter, onBallLeave } from './useBattleCombatantAnims.ts'
 import { useBattleCombatantState } from './useBattleCombatantState.ts'
-import { onGroundPopEnter } from '@/logic/combat/shadowHelpers'
+import { useBattleCombatantSpriteLoop } from './useBattleCombatantSpriteLoop.ts'
+import BattleGroundHazards from './BattleGroundHazards.vue'
 
 // Referencias DOM
 const spriteRef = ref<HTMLElement | null>(null)
@@ -88,19 +89,19 @@ const {
   variationMeta
 } = useBattleCombatantState(props, emit, spriteRef)
 
-const animTween = ref<gsap.core.Timeline | gsap.core.Tween | null>(null)
-const currentMode = ref<'idle' | 'variation'>('idle')
 const idleImageUrl = ref('')
 const variationImageUrl = ref('')
 
-// Variables de ciclos de animación de spritesheet
-const IDLE_CYCLES_MIN = 3
-const IDLE_CYCLES_VARIANCE = 2
-
-const idleCyclesTarget = ref(Math.floor(Math.random() * IDLE_CYCLES_VARIANCE) + IDLE_CYCLES_MIN)
+const { currentMode, idleCyclesTarget, animateSpritesheet } = useBattleCombatantSpriteLoop({
+  props,
+  spriteRef,
+  isAnimated,
+  frames,
+  variationMeta
+})
 
 watch([idleKey, () => props.pokemon?.isShiny, () => props.pokemon?.status, isAnimated], () => {
-  idleCyclesTarget.value = Math.floor(Math.random() * IDLE_CYCLES_VARIANCE) + IDLE_CYCLES_MIN
+  idleCyclesTarget.value = Math.floor(Math.random() * 2) + 3
   currentMode.value = 'idle' // Forzar reinicio al estado de reposo (idle) al cambiar de Pokémon o estado
   if (!props.pokemon) return
 
@@ -152,104 +153,6 @@ watch(
   }
 )
 
-const animateSpritesheet = () => {
-  if (animTween.value) {
-    animTween.value.kill()
-    animTween.value = null
-  }
-  if (!isAnimated.value || !spriteRef.value) return
-
-  const imgEl = spriteRef.value.querySelector('.pokemon-combat-image') as HTMLElement
-  if (!imgEl) return
-
-  // Si está congelado o dormido, forzar primer frame del idle y detener animación
-  if (props.pokemon?.status === 'frz' || props.pokemon?.status === 'slp') {
-    currentMode.value = 'idle'
-    const imgEl = spriteRef.value.querySelector('.pokemon-image-idle') as HTMLElement
-    if (imgEl) {
-      gsap.set(imgEl, { x: 0, xPercent: 0 })
-    }
-    return
-  }
-
-  const playMode = () => {
-    // 1. Limpiar timelines previos y detener todas las llamadas a onComplete
-    if (animTween.value) {
-      animTween.value.kill()
-      animTween.value = null
-    }
-    if (!props.pokemon) return
-
-    const startTween = () => {
-      if (!spriteRef.value) return
-      
-      // Apuntamos específicamente a la imagen correspondiente al modo actual
-      const activeClass = currentMode.value === 'idle' ? '.pokemon-image-idle' : '.pokemon-image-variation'
-      const imgEl = spriteRef.value.querySelector(activeClass) as HTMLElement
-      if (!imgEl) return
-
-      const totalFrames = currentMode.value === 'idle' 
-        ? (frames.value) 
-        : (variationMeta.value?.frames ?? 0)
-
-      // Si el modo actual no tiene frames o es variación y no hay variación, volvemos a idle
-      if (totalFrames <= 1 || (currentMode.value === 'variation' && !variationMeta.value)) {
-        currentMode.value = 'idle'
-        const idleImg = spriteRef.value.querySelector('.pokemon-image-idle') as HTMLElement
-        if (idleImg) {
-          gsap.set(idleImg, { x: 0, xPercent: 0 })
-        }
-        return
-      }
-
-      // Resetear posición de frame y limpiar transformaciones para evitar deformación temporal
-      gsap.killTweensOf(imgEl);
-      gsap.set(imgEl, { clearProps: 'x,xPercent,transform' });
-      gsap.set(imgEl, { x: 0, xPercent: 0 });
-
-      const endXPercent = -((totalFrames - 1) / totalFrames) * 100
-      const fps = currentMode.value === 'idle' ? 8 : 10;
-      const duration = totalFrames / fps;
-      const repeatCount = currentMode.value === 'idle' ? (idleCyclesTarget.value - 1) : 0
-
-      // Orquestación robusta usando Timeline de GSAP para garantizar atomicidad en transiciones y evitar parpadeos (glitches de 1-frame)
-      const tl = gsap.timeline({
-        onComplete: () => {
-          if (!props.pokemon) return
-          // Hacemos el cambio de modo síncronamente antes de volver a llamar a playMode
-          if (currentMode.value === 'idle' && variationMeta.value && variationMeta.value.frames > 1) {
-            currentMode.value = 'variation'
-            idleCyclesTarget.value = Math.floor(Math.random() * IDLE_CYCLES_VARIANCE) + IDLE_CYCLES_MIN
-          } else {
-            currentMode.value = 'idle'
-          }
-          playMode()
-        }
-      });
-
-      tl.to(imgEl, {
-        xPercent: endXPercent,
-        ease: `steps(${totalFrames - 1})`,
-        duration,
-        repeat: repeatCount
-      });
-
-      animTween.value = tl;
-    }
-
-    // Como ambas imágenes ya están renderizadas en el DOM, no necesitamos esperar un onload asíncrono
-    startTween()
-  }
-
-  playMode()
-}
-
-onUnmounted(() => {
-  if (animTween.value) {
-    animTween.value.kill()
-  }
-})
-
 // Inicializar animaciones de combate
 useBattleCombatantAnims(
   props,
@@ -267,12 +170,6 @@ useBattleCombatantAnims(
 
 const handleBallLeave = (el: Element, done: () => void) => {
   onBallLeave(el, props.side, done)
-}
-
-// Ground Pop Hooks
-
-const onGroundPopLeave = (el: Element, done: () => void) => {
-  gsap.to(el, { scale: 0, opacity: 0, duration: 0.3, onComplete: done })
 }
 </script>
 
@@ -311,44 +208,12 @@ const onGroundPopLeave = (el: Element, done: () => void) => {
       </div>
 
       <!-- Capa de Efectos de Suelo -->
-      <div 
-        class="ground-effects-container"
-        :style="{ top: localGroundY }"
-      >
-        <!-- Púas -->
-        <Transition
-          :css="false"
-          @enter="onGroundPopEnter"
-          @leave="onGroundPopLeave"
-        >
-          <div
-            v-if="(stages.spikes || 0) > 0"
-            :key="`spikes-${side}-${stages.spikes || 0}`"
-            class="ground-fx spikes"
-          >
-            <span
-              v-for="i in 3"
-              :key="i"
-              class="spike-item"
-            >🌵</span>
-          </div>
-        </Transition>
-        
-        <!-- Arraigo -->
-        <Transition
-          :css="false"
-          @enter="onGroundPopEnter"
-          @leave="onGroundPopLeave"
-        >
-          <div
-            v-if="pokemon.ingrain"
-            :key="`ingrain-${side}`"
-            class="ground-fx ingrain"
-          >
-            <span class="root-item">🌳</span>
-          </div>
-        </Transition>
-      </div>
+      <BattleGroundHazards
+        :pokemon="pokemon"
+        :side="side"
+        :stages="stages"
+        :local-ground-y="localGroundY"
+      />
 
       <div
         ref="spriteRotationRef"

@@ -1,9 +1,8 @@
 import type { BattleContext } from '@/types/battle/battleContext'
 import { incrementRecordKey } from '@/logic/utils/mapUtils'
 import { CRIMINALITY_GAINED_ON_STEAL } from '@/logic/constants/gameplay'
-
-
 import type { BattleState } from '@/types/battle/battle'
+import { getItemById, isItemId, type ItemId } from '@/data/inventory/items'
 
 export async function processRocketStealMechanics(
   ctx: BattleContext,
@@ -20,12 +19,11 @@ export async function processRocketStealMechanics(
     if (Math.random() < stealChance) {
       const maxLimit = calculateMaxNpcRobberyLimit(level)
       const enemyInv = ctx.activeBattle.value?.enemyInventory || {}
-      const { getItemById } = await import('@/data/inventory/items')
 
-      const availableItems = Object.keys(enemyInv).filter(k => (enemyInv[k] || 0) > 0)
+      const availableItems = Object.keys(enemyInv).filter(isItemId).filter(k => (enemyInv[k] || 0) > 0)
       if (availableItems.length > 0) {
         let stolenTotalCost = 0
-        const stolenItemsList: { id: string; qty: number; name: string }[] = []
+        const stolenItemsList: { id: ItemId; qty: number; name: string }[] = []
 
         const shuffled = [...availableItems].sort(() => Math.random() - 0.5)
         for (const itemId of shuffled) {
@@ -50,7 +48,7 @@ const DEFAULT_ITEM_PRICE_FALLBACK = 100
             const qtyToSteal = Math.floor(Math.random() * qtyAllowed) + 1
 
             enemyInv[itemId] = availableQty - qtyToSteal
-            if (enemyInv[itemId] <= 0) {
+            if (enemyInv[itemId]! <= 0) {
               delete enemyInv[itemId]
             }
 
@@ -91,7 +89,7 @@ const DEFAULT_ITEM_PRICE_FALLBACK = 100
 
         const { getItemById } = await import('@/data/inventory/items')
 
-        const availableItems = Object.keys(playerInventory).filter(k => {
+        const availableItems = Object.keys(playerInventory).filter(isItemId).filter(k => {
           if ((playerInventory[k] || 0) <= 0) return false
           try {
             const itemDef = getItemById(k)
@@ -102,7 +100,7 @@ const DEFAULT_ITEM_PRICE_FALLBACK = 100
         })
 
         const itemsLimit = maxLimit * 0.5
-        const stolenItems: Record<string, number> = {}
+        const stolenItems: Partial<Record<ItemId, number>> = {}
 
         if (availableItems.length > 0) {
           let stolenTotalCost = 0
@@ -116,6 +114,9 @@ const DEFAULT_ITEM_PRICE_FALLBACK = 100
               if (maxQtyAllowed >= 1) {
                 const qtyToSteal = Math.floor(Math.random() * maxQtyAllowed) + 1
                 playerInventory[itemId] = availableQty - qtyToSteal
+                if (playerInventory[itemId]! <= 0) {
+                  delete playerInventory[itemId]
+                }
                 incrementRecordKey(stolenItems, itemId, qtyToSteal)
                 stolenTotalCost += qtyToSteal * itemPrice
               }
@@ -123,7 +124,7 @@ const DEFAULT_ITEM_PRICE_FALLBACK = 100
           }
         }
 
-        let stolenTotalCost = Object.entries(stolenItems).reduce((acc, [id, qty]) => acc + (getItemById(id)?.price || 100) * qty, 0)
+        let stolenTotalCost = (Object.entries(stolenItems) as [ItemId, number][]).reduce((acc, [id, qty]) => acc + (getItemById(id)?.price || 100) * qty, 0)
         
         const remainingLimit = maxLimit - stolenTotalCost
         const playerMoney = ctx.gs.state.money || 0

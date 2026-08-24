@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import gsap from 'gsap'
-import { SHOP_ITEMS } from '@/data/inventory/items'
+import { SHOP_ITEMS, type ItemId } from '@/data/inventory/items'
 
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
@@ -17,7 +17,7 @@ const GSAP_LEAVE_DURATION_SEC = 0.15
 const GSAP_PRESS_DURATION_SEC = 0.1
 
 interface ShopItem {
-  id: string
+  id: ItemId
   name: string
   icon?: string
 }

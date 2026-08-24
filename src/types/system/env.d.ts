@@ -172,10 +172,18 @@ declare global {
     useItemInBattle?: (itemId: string, targetUid: string) => void;
     healAll?: () => void;
     forceFlee?: () => void | Promise<void>;
-    forceEncounterType?: string; // domain-ok
+    forceEncounterType?: 'none' | 'wild' | 'trainer' | 'rival' | 'fishing' | 'archaeology' | null;
     forceRival?: boolean;
     trainerChance50?: boolean;
     forceGuardian80?: boolean;
+    forceShiny100?: boolean;
+    shinyRateOverride?: number | null;
+    trainerChancePct?: number | null;
+    rivalChancePct?: number | null;
+    guardianChancePct?: number | null;
+    defenderChancePct?: number | null;
+    fishingChancePct?: number | null;
+    archaeologyChancePct?: number | null;
     testResetShowdownWorker?: () => void;
     useBattleStore?: () => { state: Record<string, unknown> | null; isBattleActive: boolean; fsm?: { currentState: string }; startBattle: (mon: unknown, opts?: unknown) => Promise<void> } & Record<string, unknown>; // open-record
     useGameStore?: () => { state: { team: unknown[]; starterChosen: boolean; money?: number } } & Record<string, unknown>; // open-record

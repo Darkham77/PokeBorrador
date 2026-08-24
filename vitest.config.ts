@@ -15,6 +15,12 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     pool: 'threads',
+    threads: {
+      execArgv: ['--no-experimental-webstorage', '--no-warnings=ExperimentalWarning'],
+    },
+    forks: {
+      execArgv: ['--no-experimental-webstorage', '--no-warnings=ExperimentalWarning'],
+    },
     fileParallelism: true,
     teardownTimeout: 2000,
     coverage: {
@@ -47,6 +53,7 @@ export default defineConfig({
           globals: true,
           environment: 'node',
           include: ['tests/node/**/*.test.ts'],
+          setupFiles: ['./tests/vitest.node.setup.ts'],
           testTimeout: 60000,
         },
       },

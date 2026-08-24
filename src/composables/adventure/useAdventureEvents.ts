@@ -13,6 +13,7 @@ import { useMapStore } from '@/stores/map'
 import { isMapRouteId, requireMapRouteId } from '@/data/world/map-assets'
 import type { AdventureNodeId } from '../../../test aventura/kantoGraph.ts'
 import { requireNpcSpriteId, type NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
+import type { ItemId } from '@/data/inventory/items'
 
 
 import { TRAINER_TYPES } from '@/data/player/trainerTypes'
@@ -30,11 +31,11 @@ interface AdventureEventsConfig {
   originMap: Ref<AdventureNodeId>
   activeHMs: Ref<Set<string>>
   travelLog: Ref<string[]>
-  injectedItems: Ref<Set<string>>
+  injectedItems: Ref<Set<ItemId>>
   activeTravelModifiers: Ref<{ encounterRateMod: number; expMultiplier: number; moneyMultiplier: number; shinyChanceMod: number; typeFocus: string | null }>
   activeSweetScent: Ref<boolean>
   startMinigame: (type: AdventureMinigameType) => void
-  triggerExtraLoot: (itemId: string, defaultQtyValue?: number) => void
+  triggerExtraLoot: (itemId: ItemId, defaultQtyValue?: number) => void
   resumeTravelAfterEvent: () => void
   cancelTravel: () => void
   hasHealthyTeam: Ref<boolean>
@@ -50,20 +51,22 @@ interface AdventureEventsConfig {
   mapStore: ReturnType<typeof useMapStore>
 }
 
+export interface ActiveAdventureEvent {
+  type: 'combat' | 'combat_won' | 'obstacle_cut' | 'obstacle_strength' | 'obstacle_rock_smash' | 'fishing'
+  title: string
+  desc: string
+  moRequired?: string
+  resolved: boolean
+  wildPokemon?: Pokemon
+  isTrainer?: boolean
+  trainerName?: string
+  trainerSprite?: NpcSpriteId
+  enemyTeam?: Pokemon[]
+  quote?: string
+}
+
 export function useAdventureEvents(config: AdventureEventsConfig) {
-  const activeEvent = ref<{
-    type: 'combat' | 'combat_won' | 'obstacle_cut' | 'obstacle_strength' | 'obstacle_rock_smash' | 'fishing';
-    title: string;
-    desc: string;
-    moRequired?: string;
-    resolved: boolean;
-    wildPokemon?: Pokemon;
-    isTrainer?: boolean;
-    trainerName?: string;
-    trainerSprite?: NpcSpriteId;
-    enemyTeam?: Pokemon[];
-    quote?: string;
-  } | null>(null)
+  const activeEvent = ref<ActiveAdventureEvent | null>(null)
 
   const pendingEscapedCombatEvent = ref(false)
 

@@ -53,7 +53,8 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
       isFishing: false,
       isArchaeology: false,
       rewardsProcessed: false,
-      _rewardCombatants: []
+      _rewardCombatants: [],
+      wasSearching: true
     }
   }
 
@@ -76,6 +77,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     ctx.activeBattle.value.fled = false
     ctx.activeBattle.value.playerFled = false
     ctx.activeBattle.value._rewardCombatants = []
+    ctx.activeBattle.value.wasSearching = true
     
     // Restablecer flags de entrenador y gimnasio de inmediato
     ctx.activeBattle.value.isGym = false
@@ -95,7 +97,10 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     // FASE: INITIALIZING
     await fsm.transition(BATTLE_STATES.INITIALIZING)
     
-    const locId = requireMapRouteId(ctx.activeBattle.value.locationId || '')
+    if (!ctx.activeBattle.value?.locationId) {
+      throw new Error('[Battle] Active battle locationId is missing for search encounter');
+    }
+    const locId = requireMapRouteId(ctx.activeBattle.value.locationId);
     
     const encounter = await generateSearchLoopEncounter(ctx, locId)
     
@@ -198,6 +203,8 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
 
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE)
     ctx.isProcessing.value = false
+    if (ctx.persistBattle) ctx.persistBattle()
+    emitBattleFlowCompleted('search')
 
     if (autoBattle) {
       await nextTick()

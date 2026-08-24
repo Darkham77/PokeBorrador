@@ -45,7 +45,7 @@ describe('Rattata Capture Verification', () => {
     
     const spy = vi.spyOn(Math, 'random').mockReturnValue(0.8)
     
-    const result = calculateCatchRate(rattata as unknown as Pokemon, 'Poke Ball')
+    const result = calculateCatchRate(rattata as unknown as Pokemon, 'pokeball')
     expect(result.caught).toBe(true)
     
     spy.mockRestore()
@@ -62,7 +62,7 @@ describe('Rattata Capture Verification', () => {
     
     const spy = vi.spyOn(Math, 'random').mockReturnValue(0.6)
     
-    const result = calculateCatchRate(lowRatePoke as unknown as Pokemon, 'Poke Ball')
+    const result = calculateCatchRate(lowRatePoke as unknown as Pokemon, 'pokeball')
     expect(result.caught).toBe(false)
     
     spy.mockRestore()

@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useGymsStore } from '@/stores/gyms'
+import { getItemById } from '@/data/inventory/items'
 import type { Gym, GymDifficultyId } from '@/data/world/gyms'
 
 const props = defineProps<{
@@ -38,17 +39,25 @@ const estimatedRewards = computed(() => {
   }
 })
 
+const tmName = computed(() => {
+  try {
+    return getItemById(props.gym.rewardTM)?.name || props.gym.rewardTM;
+  } catch {
+    return props.gym.rewardTM;
+  }
+});
+
 const tmRewardText = computed(() => {
   if (!isGymDefeated.value) {
-    return `+ ${props.gym.rewardTM} (Garantizado 1ª vez)`
+    return `+ ${tmName.value} (Garantizado 1ª vez)`
   }
   if (props.difficulty === 'normal') {
-    return `+ ${props.gym.rewardTM} (3% Prob. Rematch)`
+    return `+ ${tmName.value} (3% Prob. Rematch)`
   }
   if (props.difficulty === 'hard') {
-    return `+ ${props.gym.rewardTM} (5% Prob. Rematch)`
+    return `+ ${tmName.value} (5% Prob. Rematch)`
   }
-  return `+ ${props.gym.rewardTM} (0% Prob. Rematch)`
+  return `+ ${tmName.value} (0% Prob. Rematch)`
 })
 </script>
 

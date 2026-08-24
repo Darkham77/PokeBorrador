@@ -9,6 +9,7 @@ import { useNotificationStore } from '@/stores/notifications.ts'
 import type { Pokemon, Move, PokemonStorageLocation, PokedexStatus } from '@/types/pokemon/pokemon'
 import { MODAL_METADATA } from '@/logic/modals/registry'
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import type { ItemId } from '@/data/inventory/items'
 import { SMALL_SCREEN_BREAKPOINT_PX, MOBILE_SCREEN_BREAKPOINT_PX } from '@/logic/constants/gameplay.ts'
 import type { LowPowerModeSetting } from '@/types/system/game'
 
@@ -108,7 +109,7 @@ export const useUIStore = defineStore('ui', () => {
   const learnQueue = ref<LearnItem[]>([])
   const activePokemonForNature = ref<{ context: PokemonStorageLocation; index: number } | null>(null)
   const ppUpTarget = ref<{ context: PokemonStorageLocation; index: number } | null>(null)
-  const activeItemForPPUp = ref<string | null>(null)
+  const activeItemForPPUp = ref<ItemId | null>(null)
   const activePokemonForAbility = ref<{ context: PokemonStorageLocation; index: number } | null>(null)
   
   // Detalle data

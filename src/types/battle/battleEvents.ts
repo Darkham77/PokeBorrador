@@ -9,7 +9,7 @@ export const BATTLE_UI_EVENTS = {
 
 export type BattleUiEventName = typeof BATTLE_UI_EVENTS[keyof typeof BATTLE_UI_EVENTS];
 
-export const BATTLE_FLOW_DESTINATIONS = ['map'] as const;
+export const BATTLE_FLOW_DESTINATIONS = ['map', 'search'] as const;
 export type BattleFlowDestination = (typeof BATTLE_FLOW_DESTINATIONS)[number];
 
 export interface BattleFlowCompletedDetail {

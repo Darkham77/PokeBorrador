@@ -22,6 +22,7 @@ import {
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import type { BattleStages, BattleWeather } from '@/types/battle/battle';
 import type { DayPhase } from '@/logic/utils/timeUtils';
+import type { ItemId } from '@/data/inventory/items';
 import { useBattleStore } from '@/stores/battle/battle';
 
 export interface DamageOptions {
@@ -183,7 +184,7 @@ export function calculateDamage(attacker: Pokemon, defender: Pokemon, move: Part
   };
 }
 
-export function calculateCatchRate(pokemon: Pokemon, rawBallType = 'poke-ball', eventCatchMult = 1, ctx: CatchOptions = {}) {
+export function calculateCatchRate(pokemon: Pokemon, rawBallType: ItemId = 'pokeball', eventCatchMult = 1, ctx: CatchOptions = {}) {
   let activeWeather = ctx.weather;
   try {
     const battleStore = useBattleStore();

@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useTradeStore } from '@/stores/trade'
 import { useGameStore } from '@/stores/game'
 import type { TradeOffer } from '@/types/system/stores'
+import { isItemId, getItemById } from '@/data/inventory/items'
 
 const tradeStore = useTradeStore()
 const gameStore = useGameStore()
@@ -51,11 +52,12 @@ const canFulfillTrade = (t: TradeOffer): { can: boolean; reason?: string } => {
 
   // 3. Check Items
   if (t.request_items) {
-    for (const [name, qty] of Object.entries(t.request_items)) {
-      if (qty !== undefined && qty > 0) {
-        const ownedQty = gameStore.state.inventory?.[name] || 0
+    for (const [id, qty] of Object.entries(t.request_items)) {
+      if (isItemId(id) && qty !== undefined && qty > 0) {
+        const ownedQty = gameStore.state.inventory?.[id] || 0
         if (ownedQty < qty) {
-          return { can: false, reason: `Objeto insuficiente: ${name} (tienes ${ownedQty}/${qty})` }
+          const item = getItemById(id)
+          return { can: false, reason: `Objeto insuficiente: ${item?.name || id} (tienes ${ownedQty}/${qty})` }
         }
       }
     }

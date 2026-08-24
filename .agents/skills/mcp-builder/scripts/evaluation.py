@@ -3,80 +3,20 @@
 This script evaluates MCP servers by running test questions against them using Claude.
 """
 
-try:
-    import argparse
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: argparse. Run 'pip install argparse' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import asyncio
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: asyncio. Run 'pip install asyncio' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import json
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: json. Run 'pip install json' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import re
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: re. Run 'pip install re' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import sys
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: sys. Run 'pip install sys' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import time
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: time. Run 'pip install time' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import traceback
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: traceback. Run 'pip install traceback' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import xml.etree.ElementTree as ET
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: xml. Run 'pip install xml' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    from pathlib import Path
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: pathlib. Run 'pip install pathlib' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    from typing import Any
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: typing. Run 'pip install typing' to fix.")
-    import sys
-    sys.exit(1)
+import argparse
+import asyncio
+import json
+import re
+import sys
+import time
+import traceback
+import xml.etree.ElementTree as ET
+from pathlib import Path
+from typing import Any
 
-try:
-    from anthropic import Anthropic
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: anthropic. Run 'pip install anthropic' to fix.")
-    import sys
-    sys.exit(1)
+from anthropic import Anthropic
 
-try:
-    from connections import create_connection
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: connections. Run 'pip install connections' to fix.")
-    import sys
-    sys.exit(1)
+from connections import create_connection
 
 EVALUATION_PROMPT = """You are an AI assistant with access to tools.
 

@@ -38,7 +38,7 @@ describe('BUG-001 / BUG-002 / BUG-003: Showdown Catch Math Parity', () => {
       status: 'slp',
       type: 'grass'
     })
-    const res = calculateCatchRatePure(poke, 'ultra', 1)
+    const res = calculateCatchRatePure(poke, 'ultraball', 1)
     expect(res).toBeDefined()
     expect(typeof res.caught).toBe('boolean')
     expect(res.statusMultiplierApplied).toBe(true)

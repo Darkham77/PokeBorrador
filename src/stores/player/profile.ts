@@ -69,6 +69,8 @@ export const useProfileStore = defineStore('profile', () => {
       throw new Error(`[ProfileStore] Error reading localStorage save metadata: ${(e as Error).message}`)
     }
 
+    const lastRenamedAt = state.last_renamed_at || (user.user_metadata?.last_renamed_at as string | undefined) || profileData.value.last_renamed_at
+
     updateProfile({
       username: state.trainer || (user.user_metadata?.username as string) || 'Entrenador',
       email: user.email || '—',
@@ -81,6 +83,7 @@ export const useProfileStore = defineStore('profile', () => {
       faction: state.faction || null,
       notificationHistory: state.notificationHistory || [],
       lastSave: lastSaveStr,
+      last_renamed_at: lastRenamedAt,
       gender: state.gender || 'h'
     })
   }

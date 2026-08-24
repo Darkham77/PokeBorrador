@@ -1,5 +1,6 @@
 import type { Pokemon } from '../../../../types/pokemon/pokemon.ts'
 import type { BattleContext } from '../../../../types/battle/battleContext.ts'
+import type { ItemId } from '@/data/inventory/items'
 
 const REVIVE_MIN_HEALTH_RATIO = 0.5
 const AI_HEAL_TRIGGER_HP_RATIO = 0.25
@@ -58,7 +59,7 @@ export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promis
 
   // 2. Status check
   if (e.status) {
-    type StatusItem = [string, string, string]
+    type StatusItem = [ItemId, string, string]
     const statusItems: StatusItem[] = [
       ['fullrestore', 'Restaurar Todo', 'curó sus problemas de estado'],
       ['fullheal', 'Cura Total', 'curó sus problemas de estado'],
@@ -68,7 +69,7 @@ export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promis
       ['awakening', 'Despertar', 'se despertó'],
       ['iceheal', 'Anticongelante', 'se descongeló']
     ]
-    const statusMatch: Record<string, string[]> = {
+    const statusMatch: Partial<Record<ItemId, string[]>> = {
       fullrestore: ['par', 'brn', 'psn', 'slp', 'frz', 'tox'],
       fullheal: ['par', 'brn', 'psn', 'slp', 'frz', 'tox'],
       antidote: ['psn', 'tox'],
@@ -93,7 +94,7 @@ export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promis
 
   // 3. HP check
   if (e.hp < e.maxHp * AI_HEAL_TRIGGER_HP_RATIO) {
-    type HealItem = [string, string, number | 'full']
+    type HealItem = [ItemId, string, number | 'full']
     const healItems: HealItem[] = [
       ['fullrestore', 'Restaurar Todo', 'full'],
       ['maxpotion', 'Poción Máxima', 'full'],

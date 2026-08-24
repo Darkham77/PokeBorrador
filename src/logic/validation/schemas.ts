@@ -10,493 +10,46 @@ import {
   object, 
   string, 
   number, 
-  boolean, 
-  pipe,
   safeParse, 
-  minLength, 
-  maxLength, 
-  minValue, 
-  maxValue,
   union,
-  nullish,
   array,
   record,
   optional,
-  partial,
   nullable,
   literal,
-  trim,
-  email,
-  regex,
+  boolean,
   unknown,
   type InferOutput,
   type InferInput
 } from 'valibot';
 
+import { pokemonSchema, pokemonEggSchema } from './subschemas/pokemonSchemas.ts';
+import { activeBattleSchema } from './subschemas/battleSchemas.ts';
+import { daycareMissionSchema, claimItemSchema, notificationItemSchema, tradeOfferSchema, gtsListingSchema } from './subschemas/socialSchemas.ts';
 import {
-  MIN_USERNAME_LENGTH,
-  MAX_USERNAME_LENGTH,
-  MIN_TRAINER_LEVEL,
-  MAX_TRAINER_LEVEL,
-  MIN_TRAINER_NAME_LENGTH,
-  MAX_TRAINER_NAME_LENGTH,
-  MAXIMUM_FRIENDSHIP_VALUE
-} from '@/logic/constants/gameplay.ts';
+  userProfileSchema,
+  trainerNameSchema,
+  authLoginSchema,
+  authRegisterSchema,
+  authPasswordResetSchema,
+  chatMessageSchema,
+  networkActionSchema
+} from './subschemas/authSchemas.ts';
+
+// Re-export all subschemas and DTO types
+export * from './subschemas/authSchemas.ts';
+export * from './subschemas/pokemonSchemas.ts';
+export * from './subschemas/battleSchemas.ts';
+export * from './subschemas/socialSchemas.ts';
 
 // ==========================================
-// 1. USER PROFILE & AUTH SCHEMAS
+// SAVE DATA SCHEMAS
 // ==========================================
-
-export const userProfileSchema = object({
-  id: string(),
-  username: pipe(
-    string(),
-    trim(),
-    minLength(MIN_USERNAME_LENGTH, `El nombre de usuario debe tener al menos ${MIN_USERNAME_LENGTH} caracteres`),
-    maxLength(MAX_USERNAME_LENGTH, `El nombre de usuario no puede superar los ${MAX_USERNAME_LENGTH} caracteres`)
-  ),
-  level: pipe(
-    number(),
-    minValue(MIN_TRAINER_LEVEL, `El nivel debe ser al menos ${MIN_TRAINER_LEVEL}`),
-    maxValue(MAX_TRAINER_LEVEL, `El nivel no puede superar ${MAX_TRAINER_LEVEL}`)
-  ),
-  is_banned: boolean(),
-  coins: pipe(
-    number(),
-    minValue(0, 'Las monedas no pueden ser negativas')
-  )
-});
-
-export const trainerNameSchema = pipe(
-  string(),
-  trim(),
-  minLength(MIN_TRAINER_NAME_LENGTH, `El nombre debe tener al menos ${MIN_TRAINER_NAME_LENGTH} caracteres`),
-  maxLength(MAX_TRAINER_NAME_LENGTH, `El nombre no puede superar los ${MAX_TRAINER_NAME_LENGTH} caracteres`)
-);
-
-export const authLoginSchema = object({
-  email: pipe(
-    string(),
-    trim(),
-    email('Formato de correo electrónico inválido')
-  ),
-  password: pipe(
-    string(),
-    minLength(6, 'La contraseña debe tener al menos 6 caracteres')
-  )
-});
-
-export const authRegisterSchema = object({
-  email: pipe(
-    string(),
-    trim(),
-    email('Formato de correo electrónico inválido')
-  ),
-  password: pipe(
-    string(),
-    minLength(6, 'La contraseña debe tener al menos 6 caracteres')
-  ),
-  username: pipe(
-    string(),
-    trim(),
-    minLength(MIN_USERNAME_LENGTH, `El nombre de usuario debe tener al menos ${MIN_USERNAME_LENGTH} caracteres`),
-    maxLength(MAX_USERNAME_LENGTH, `El nombre de usuario no puede superar los ${MAX_USERNAME_LENGTH} caracteres`),
-    regex(/^[a-zA-Z0-9_]+$/, 'El usuario solo puede contener caracteres alfanuméricos y guión bajo')
-  ),
-  gender: optional(union([literal('h'), literal('m')]))
-});
-
-export const authPasswordResetSchema = object({
-  password: pipe(
-    string(),
-    minLength(6, 'La contraseña debe tener al menos 6 caracteres')
-  ),
-  confirmPassword: string()
-});
-
-// ==========================================
-// 2. NETWORK & SOCIAL SCHEMAS
-// ==========================================
-
-export const chatMessageSchema = object({
-  id: union([string(), number()]),
-  user_id: string(),
-  username: pipe(string(), trim(), minLength(1, 'El nombre no puede estar vacío')),
-  message: pipe(string(), trim(), minLength(1, 'El mensaje no puede estar vacío')),
-  player_class: nullish(string()),
-  trainer_level: number(),
-  created_at: nullish(string())
-});
-
-export const networkActionSchema = object({
-  type: pipe(string(), minLength(1)),
-  payload: record(string(), string()),
-  timestamp: number()
-});
-
-// ==========================================
-// 3. POKÉMON & COMBAT SCHEMAS (DOMAIN-FIRST)
-// ==========================================
-
-const MIN_STAT_IV = 0;
-const MAX_STAT_IV = 31;
-const MIN_STAT_EV = 0;
-const MAX_STAT_EV = 252;
-const MIN_FRIENDSHIP = 0;
-
-export const pokemonIVsSchema = object({
-  hp: pipe(number(), minValue(MIN_STAT_IV), maxValue(MAX_STAT_IV)),
-  atk: pipe(number(), minValue(MIN_STAT_IV), maxValue(MAX_STAT_IV)),
-  def: pipe(number(), minValue(MIN_STAT_IV), maxValue(MAX_STAT_IV)),
-  spa: pipe(number(), minValue(MIN_STAT_IV), maxValue(MAX_STAT_IV)),
-  spd: pipe(number(), minValue(MIN_STAT_IV), maxValue(MAX_STAT_IV)),
-  spe: pipe(number(), minValue(MIN_STAT_IV), maxValue(MAX_STAT_IV)),
-});
-
-export const pokemonEVsSchema = object({
-  hp: pipe(number(), minValue(MIN_STAT_EV), maxValue(MAX_STAT_EV)),
-  atk: pipe(number(), minValue(MIN_STAT_EV), maxValue(MAX_STAT_EV)),
-  def: pipe(number(), minValue(MIN_STAT_EV), maxValue(MAX_STAT_EV)),
-  spa: pipe(number(), minValue(MIN_STAT_EV), maxValue(MAX_STAT_EV)),
-  spd: pipe(number(), minValue(MIN_STAT_EV), maxValue(MAX_STAT_EV)),
-  spe: pipe(number(), minValue(MIN_STAT_EV), maxValue(MAX_STAT_EV)),
-});
-
-export const moveEffectSchema = object({
-  type: string(),
-  status: optional(nullable(union([literal('par'), literal('brn'), literal('psn'), literal('slp'), literal('frz'), literal('tox')]))),
-  stat: optional(string()),
-  stages: optional(number()),
-  chance: optional(number()),
-  val: optional(number()),
-  percent: optional(number()),
-  text: optional(string()),
-});
-
-export const moveSchema = object({
-  id: optional(string()),
-  name: optional(string()),
-  type: optional(string()),
-  cat: optional(union([literal('physical'), literal('special'), literal('status')])),
-  power: optional(number()),
-  acc: optional(union([number(), boolean()])),
-  pp: optional(number()),
-  maxPP: optional(number()),
-  desc: optional(string()),
-  drain: optional(union([number(), boolean()])),
-  priority: optional(number()),
-  crit: optional(number()),
-  target: optional(string()),
-  effect: optional(union([string(), moveEffectSchema, array(moveEffectSchema)])),
-  fixedDmg: optional(number()),
-  levelDmg: optional(boolean()),
-  halfHP: optional(boolean()),
-  hits: optional(union([number(), string(), array(union([number(), string()]))])),
-  recoil: optional(union([number(), boolean()])),
-  selfKO: optional(boolean()),
-  side: optional(union([literal('player'), literal('enemy')])),
-  ohko: optional(boolean()),
-  endeavor: optional(boolean()),
-  counter: optional(boolean()),
-  turns: optional(number()),
-  sound: optional(boolean()),
-});
-
-export const pokemonSchema = object({
-  uid: string(),
-  id: string(),
-  species: string(),
-  name: string(),
-  nickname: optional(nullable(string())),
-  level: pipe(number(), minValue(1), maxValue(100)),
-  exp: number(),
-  expNeeded: number(),
-  hp: number(),
-  maxHp: number(),
-  atk: number(),
-  def: number(),
-  spa: number(),
-  spd: number(),
-  spe: number(),
-  type: string(),
-  type2: optional(nullable(string())),
-  isShiny: boolean(),
-  isGuardian: optional(boolean()),
-  isFloating: optional(boolean()),
-  gender: optional(nullable(union([literal('m'), literal('f'), literal('M'), literal('F'), literal('N'), literal('')]))),
-  status: optional(union([literal('par'), literal('brn'), literal('psn'), literal('slp'), literal('frz'), literal('tox'), literal('')])),
-  sleepTurns: optional(number()),
-  confused: optional(number()),
-  attracted: optional(boolean()),
-  cursed: optional(boolean()),
-  seeded: optional(boolean()),
-  badPoison: optional(number()),
-  ingrain: optional(boolean()),
-  protect: optional(boolean()),
-  detect: optional(boolean()),
-  endure: optional(boolean()),
-  substitute: optional(number()),
-  focusEnergy: optional(boolean()),
-  lockOn: optional(boolean()),
-  isTransformed: optional(boolean()),
-  rageActive: optional(boolean()),
-  snatching: optional(boolean()),
-  tormentActive: optional(boolean()),
-  mustRecharge: optional(boolean()),
-  bound: optional(number()),
-  tauntTurns: optional(number()),
-  encoreTurns: optional(number()),
-  disabledTurns: optional(number()),
-  flinched: optional(boolean()),
-  destinyBond: optional(boolean()),
-  perishSongCount: optional(number()),
-  ability: optional(string()),
-  moves: optional(array(nullable(moveSchema))),
-  caught: optional(boolean()),
-  isBoxed: optional(boolean()),
-  ivs: optional(pokemonIVsSchema),
-  evs: optional(pokemonEVsSchema),
-  nature: optional(string()),
-  heldItem: optional(nullable(string())),
-  item: optional(nullable(string())),
-  friendship: optional(pipe(number(), minValue(MIN_FRIENDSHIP), maxValue(MAXIMUM_FRIENDSHIP_VALUE))),
-  vigor: optional(number()),
-  maxVigor: optional(number()),
-  catchRate: optional(number()),
-  obtainedAt: optional(number()),
-  obtainedMethod: optional(string()),
-  isAtmospheric: optional(boolean()),
-  weatherOrigin: optional(string()),
-  isWeatherStruggling: optional(boolean()),
-  region: optional(string()),
-  ot_id: optional(string()),
-  tags: optional(array(string())),
-  onMission: optional(boolean()),
-  onDefense: optional(boolean()),
-  inDaycare: optional(boolean()),
-  daycareSlot: optional(number()),
-  daycareDepositedAt: optional(string()),
-  furyCutterCount: optional(number()),
-  lastMove: optional(nullable(moveSchema)),
-  thrashTurns: optional(number()),
-  encoreMove: optional(nullable(moveSchema)),
-  disabledMove: optional(nullable(moveSchema)),
-  pendingMoves: optional(array(moveSchema)),
-  trapped: optional(boolean()),
-  identified: optional(boolean()),
-  pts: optional(number()),
-  chargingMove: optional(nullable(moveSchema)),
-  aura: optional(string()),
-  isAncestral: optional(boolean()),
-  choiceMove: optional(nullable(string())),
-  form: optional(string()),
-});
-
-export const partialPokemonIVsSchema = partial(pokemonIVsSchema);
-
-export const pokemonEggSchema = object({
-  uid: string(),
-  id: string(),
-  pokemonId: optional(nullable(string())),
-  steps: number(),
-  totalSteps: optional(number()),
-  ready: boolean(),
-  isShiny: optional(boolean()),
-  isGuardian: optional(boolean()),
-  nature: optional(string()),
-  abilitySlot: optional(number()),
-  gender: optional(nullable(union([literal('m'), literal('f'), literal('M'), literal('F'), literal('N'), literal('')]))),
-  ivs: optional(partialPokemonIVsSchema),
-  movesAtBirth: optional(array(string())),
-  obtainedAt: optional(number()),
-  scanned: optional(boolean()),
-  predictedInfo: optional(object({
-    name: string(),
-    ivTotal: number()
-  })),
-  tint: optional(string()),
-  isAncestral: optional(boolean()),
-  color: optional(string()),
-  isNpc: optional(boolean()),
-});
-
-// ==========================================
-// 4. GTS & TRADE SCHEMAS
-// ==========================================
-
-export const gtsItemDataSchema = object({
-  id: union([string(), number()]),
-  name: optional(string()),
-  qty: pipe(number(), minValue(1, 'La cantidad debe ser al menos 1')),
-});
-
-const gtsPokemonListingSchema = object({
-  id: string(),
-  seller_name: optional(string()),
-  seller_id: string(),
-  price: pipe(number(), minValue(1, 'El precio debe ser al menos 1')),
-  status: union([literal('active'), literal('sold'), literal('cancelled'), literal('expired')]),
-  listing_type: literal('pokemon'),
-  data: pokemonSchema,
-  created_at: string()
-});
-
-const gtsItemListingSchema = object({
-  id: string(),
-  seller_name: optional(string()),
-  seller_id: string(),
-  price: pipe(number(), minValue(1, 'El precio debe ser al menos 1')),
-  status: union([literal('active'), literal('sold'), literal('cancelled'), literal('expired')]),
-  listing_type: literal('item'),
-  data: gtsItemDataSchema,
-  created_at: string()
-});
-
-export const gtsListingSchema = union([gtsPokemonListingSchema, gtsItemListingSchema]);
-
-export const tradeOfferSchema = object({
-  id: string(),
-  sender_id: string(),
-  receiver_id: string(),
-  offer_pokemon: nullable(pokemonSchema),
-  offer_items: record(string(), pipe(number(), minValue(1))),
-  offer_money: pipe(number(), minValue(0)),
-  request_pokemon: nullable(pokemonSchema),
-  request_items: record(string(), pipe(number(), minValue(1))),
-  request_money: pipe(number(), minValue(0)),
-  message: string(),
-  status: union([literal('pending'), literal('accepted'), literal('rejected'), literal('cancelled')]),
-  created_at: string()
-});
-
-// ==========================================
-// 5. SAVE DATA SCHEMAS
-// ==========================================
-
-export const enemyPokemonSerializedSchema = object({
-  uid: string(),
-  id: string(),
-  name: string(),
-  emoji: optional(string()),
-  type: string(),
-  level: number(),
-  hp: number(),
-  maxHp: number(),
-  atk: number(),
-  def: number(),
-  spa: number(),
-  spd: number(),
-  spe: number(),
-  moves: array(moveSchema),
-  status: nullable(string()),
-  isShiny: boolean(),
-  gender: nullable(union([literal('m'), literal('f'), literal('M'), literal('F'), literal('N')])),
-  ivs: record(string(), number()),
-  nature: string(),
-  ability: string(),
-  exp: number(),
-  expNeeded: number(),
-  friendship: number(),
-  _revealed: boolean(),
-  _gymLeader: nullable(string()),
-  _gymBadge: nullable(string()),
-});
-
-export const battleLogSchema = object({
-  id: string(),
-  msg: string(),
-  type: string(),
-  side: nullable(union([literal('player'), literal('enemy')])),
-  icon: nullable(string()),
-  iconType: nullable(string()),
-});
-
-export const battleStagesSchema = object({
-  atk: number(),
-  def: number(),
-  spa: number(),
-  spd: number(),
-  spe: number(),
-  accuracy: number(),
-  evasion: number(),
-  reflect: number(),
-  lightScreen: number(),
-  safeguard: number(),
-  mist: number(),
-  spikes: number(),
-  stealthrock: optional(number()),
-  toxicspikes: optional(number()),
-  acc: optional(number()),
-  eva: optional(number()),
-});
-
-export const activeBattleSchema = object({
-  isGym: boolean(),
-  gymId: nullable(string()),
-  isTrainer: boolean(),
-  trainerName: nullable(string()),
-  trainerSprite: optional(nullable(string())),
-  trainerArchetype: optional(nullable(string())),
-  quote: optional(nullable(string())),
-  locationId: nullable(string()),
-  wasSearching: optional(boolean()),
-  participants: optional(array(string())),
-  enemyTeamIndex: optional(number()),
-  battleLogs: optional(array(battleLogSchema)),
-  playerStages: optional(nullable(battleStagesSchema)),
-  enemyStages: optional(nullable(battleStagesSchema)),
-  enemyTeam: nullable(array(enemyPokemonSerializedSchema)),
-  timestamp: number(),
-  isPvP: optional(boolean()),
-});
-
-export const daycareMissionSchema = object({
-  date: optional(string()),
-  targetId: optional(string()),
-  requirement: optional(object({
-    type: optional(string()),
-    minLevel: optional(number()),
-    minIvTotal: optional(number()),
-    nature: optional(string()),
-    stat31: optional(string())
-  })),
-  reqText: optional(string()),
-  reward: optional(object({
-    id: optional(string()),
-    name: optional(string()),
-    qty: optional(number()),
-    money: optional(number()),
-    exp: optional(number()),
-    item: optional(string())
-  })),
-  completed: optional(boolean()),
-  claimed: optional(boolean())
-});
-
-export const notificationItemSchema = object({
-  id: optional(string()),
-  title: optional(string()),
-  message: optional(string()),
-  type: optional(string()),
-  timestamp: optional(number()),
-  read: optional(boolean())
-});
-
-export const claimItemSchema = object({
-  id: union([string(), number()]),
-  type: union([literal('pokemon'), literal('item'), literal('currency')]),
-  asset_data: object({
-    type: union([literal('pokemon'), literal('item'), literal('money'), literal('currency')]),
-    data: unknown()
-  }),
-  source_type: string(),
-  source_id: string(),
-  created_at: string()
-});
 
 export const saveDataSchema = object({
   trainer: string(),
   gender: optional(union([literal('h'), literal('m')])),
+  last_renamed_at: optional(nullable(string())),
   badges: number(),
   balls: number(),
   money: number(),
@@ -601,7 +154,7 @@ export const saveDataSchema = object({
 });
 
 // ==========================================
-// 6. VALIDATION HELPER FUNCTIONS
+// VALIDATION HELPER FUNCTIONS
 // ==========================================
 
 export function validateUserProfile(data: unknown) {
@@ -644,20 +197,5 @@ export function validateSaveData(data: unknown) {
   return safeParse(saveDataSchema, data);
 }
 
-// ==========================================
-// 7. INFERRED DTO TYPES (@/domain-type-first)
-// ==========================================
-
-export type UserProfileDto = InferOutput<typeof userProfileSchema>;
-export type TrainerNameDto = InferOutput<typeof trainerNameSchema>;
-export type AuthLoginDto = InferOutput<typeof authLoginSchema>;
-export type AuthRegisterDto = InferOutput<typeof authRegisterSchema>;
-export type AuthPasswordResetDto = InferOutput<typeof authPasswordResetSchema>;
-export type ChatMessageDto = InferOutput<typeof chatMessageSchema>;
-export type NetworkActionDto = InferOutput<typeof networkActionSchema>;
-export type PokemonInstanceDto = InferOutput<typeof pokemonSchema>;
-export type PokemonEggDto = InferOutput<typeof pokemonEggSchema>;
-export type GtsListingDto = InferOutput<typeof gtsListingSchema>;
-export type TradeOfferDto = InferOutput<typeof tradeOfferSchema>;
 export type SaveDataDto = InferOutput<typeof saveDataSchema>;
 export type SaveDataInputDto = InferInput<typeof saveDataSchema>;

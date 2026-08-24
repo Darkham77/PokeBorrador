@@ -55,9 +55,9 @@ describe('Buffs Store', () => {
   });
 
   it('should handle incense with extra data (type)', () => {
-    buffsStore.addBuff('incense', 1800, 'fire');
+    buffsStore.addBuff('incense', 1800, 'incensefire');
     expect(gameStore.state.incenseSecs).toBe(1800);
-    expect(gameStore.state.incenseType).toBe('fire');
+    expect(gameStore.state.incenseType).toBe('incensefire');
     expect(buffsStore.activeBuffs[0]!.name).toBe('💨 Incienso Fuego');
   });
 

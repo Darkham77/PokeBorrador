@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle/battle'
-import { getItemById } from '@/data/inventory/items'
+import { getItemById, isItemId, type ItemId } from '@/data/inventory/items'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { gsap } from 'gsap'
@@ -22,7 +22,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'select-ball', ballName: string): void
+  (e: 'select-ball', ballId: ItemId): void
   (e: 'catch'): void
 }>()
 
@@ -34,9 +34,9 @@ const menuRef = ref<HTMLElement | null>(null)
 
 const availableBalls = computed(() => {
   const inventory = gameStore.state.inventory || {}
-  return Object.entries(inventory)
+  return (Object.entries(inventory) as [ItemId, number | undefined][])
     .filter(([id, qty]) => {
-      if (typeof qty !== 'number' || qty <= 0) return false
+      if (typeof qty !== 'number' || qty <= 0 || !isItemId(id)) return false
       const item = getItemById(id)
       return item && item.cat === 'pokeballs'
     })
@@ -129,7 +129,7 @@ const closeMenu = () => {
   })
 }
 
-const selectBall = (ballId: string) => {
+const selectBall = (ballId: ItemId) => {
   emit('select-ball', ballId)
   closeMenu()
 }

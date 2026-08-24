@@ -15,6 +15,9 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { GameState } from '@/types/system/game'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
+import type { ItemId } from '@/data/inventory/itemIds.ts'
+import { isItemId } from '@/data/inventory/items.ts'
+
 export const useTradeStore = defineStore('trade', () => {
   const authStore = useAuthStore()
   const gameStore = useGameStore()
@@ -28,8 +31,8 @@ export const useTradeStore = defineStore('trade', () => {
   
   const tradeOfferPoke = ref<Pokemon | null>(null)
   const tradeRequestPoke = ref<Pokemon | null>(null)
-  const tradeOfferItems = reactive<Record<string, number>>({})
-  const tradeRequestItems = reactive<Record<string, number>>({})
+  const tradeOfferItems = reactive<Partial<Record<ItemId, number>>>({})
+  const tradeRequestItems = reactive<Partial<Record<ItemId, number>>>({})
   
   const pendingIncoming = ref<TradeOffer[]>([])
   const pendingOutgoing = ref<TradeOffer[]>([])
@@ -100,8 +103,12 @@ export const useTradeStore = defineStore('trade', () => {
     tradeTarget.value = { id: friendId, username: friendUsername }
     tradeOfferPoke.value = null
     tradeRequestPoke.value = null
-    Object.keys(tradeOfferItems).forEach(k => delete tradeOfferItems[k])
-    Object.keys(tradeRequestItems).forEach(k => delete tradeRequestItems[k])
+    Object.keys(tradeOfferItems).forEach(k => {
+      if (isItemId(k)) delete tradeOfferItems[k]
+    })
+    Object.keys(tradeRequestItems).forEach(k => {
+      if (isItemId(k)) delete tradeRequestItems[k]
+    })
 
     const saveRes = await gameStore.db.from('game_saves').select('save_data').eq('user_id', friendId).single()
     const data = saveRes.data as { save_data: GameState } | null // domain-ok
@@ -138,7 +145,7 @@ export const useTradeStore = defineStore('trade', () => {
 
     // MANDATORY: Deduct items locally before saving to SQLite so DBs match
     for (const [itemName, qty] of Object.entries(tradeOfferItems)) {
-      if (gameStore.state.inventory[itemName]) {
+      if (isItemId(itemName) && typeof qty === 'number' && gameStore.state.inventory[itemName]) {
         gameStore.state.inventory[itemName] -= qty
         if (gameStore.state.inventory[itemName] <= 0) {
           delete gameStore.state.inventory[itemName]
@@ -173,7 +180,9 @@ export const useTradeStore = defineStore('trade', () => {
     } else {
       // ROLLBACK LOCAL: Si falla, devolver los items
       for (const [itemName, qty] of Object.entries(tradeOfferItems)) {
-        gameStore.state.inventory[itemName] = (gameStore.state.inventory[itemName] || 0) + qty
+        if (isItemId(itemName) && typeof qty === 'number') {
+          gameStore.state.inventory[itemName] = (gameStore.state.inventory[itemName] || 0) + qty
+        }
       }
       if (offerMoney > 0) {
         gameStore.state.money += offerMoney

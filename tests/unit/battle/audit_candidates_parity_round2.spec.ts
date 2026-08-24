@@ -19,8 +19,8 @@ describe('Audit Round 2 Candidates Parity Tests', () => {
     const slpMon: PurePokemon = { id: 'pikachu', hp: 10, maxHp: 10, level: 50, type: 'electric', catchRate: 45, status: 'slp' };
     const psnMon: PurePokemon = { id: 'pikachu', hp: 10, maxHp: 10, level: 50, type: 'electric', catchRate: 45, status: 'psn' };
     
-    const slpRes = calculateCatchRatePure(slpMon, 'poke-ball', 1, {});
-    const psnRes = calculateCatchRatePure(psnMon, 'poke-ball', 1, {});
+    const slpRes = calculateCatchRatePure(slpMon, 'pokeball', 1, {});
+    const psnRes = calculateCatchRatePure(psnMon, 'pokeball', 1, {});
     
     expect(slpRes.statusMultiplierApplied).toBe(true);
     expect(psnRes.statusMultiplierApplied).toBe(true);

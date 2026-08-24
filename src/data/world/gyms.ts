@@ -2,6 +2,7 @@ import type { PokemonType } from '@/data/battle/types';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import type { MapRouteId } from '@/data/world/map-assets';
+import type { ItemId } from '@/data/inventory/items';
 
 export const GYM_DIFFICULTY_IDS = ['easy', 'normal', 'hard'] as const;
 export type GymDifficultyId = (typeof GYM_DIFFICULTY_IDS)[number];
@@ -24,7 +25,7 @@ export interface Gym {
   sprite: NpcSpriteId;
   quote: string; // domain-ok
   victoryQuote: string; // domain-ok
-  rewardTM: string; // domain-ok
+  rewardTM: ItemId;
   pokemon: PokemonSpeciesId[];
   levels: number[];
   badgesRequired: number;
@@ -39,7 +40,7 @@ export const GYMS = [
     sprite: 'brock',
     quote: '¡Mis Pokémon de roca tienen una defensa impenetrable!',
     victoryQuote: 'Hay muchos tipos de entrenadores en el mundo... Tú pareces ser uno con un gran futuro. Toma esto, te ayudará en tu viaje.',
-    rewardTM: 'MT39 Tumba Rocas',
+    rewardTM: 'tm39',
     pokemon: ['geodude', 'onix'], levels: [12, 14], badgesRequired: 0,
     difficulties: {
       easy: { pokemon: ['geodude', 'onix'], levels: [12, 14] },
@@ -54,7 +55,7 @@ export const GYMS = [
     sprite: 'misty',
     quote: '¡Soy la chica sensacional del agua! ¡No te voy a perdonar!',
     victoryQuote: '¡Vaya! Eres mucho más fuerte de lo que pareces. Mi estrategia no fue suficiente... ¡Espero que esta MT te sea de utilidad!',
-    rewardTM: 'MT03 Pulso Agua',
+    rewardTM: 'tm03',
     pokemon: ['staryu', 'starmie'], levels: [18, 21], badgesRequired: 1,
     difficulties: {
       easy: { pokemon: ['staryu', 'starmie'], levels: [18, 21] },
@@ -69,7 +70,7 @@ export const GYMS = [
     sprite: 'ltsurge',
     quote: '¡La electricidad es el arma definitiva! ¡Nunca me han derrotado!',
     victoryQuote: '¡Maldita sea! ¡Me has dejado frito! Eres un recluta de primera, sí señor. ¡Lleva esto contigo al campo de batalla!',
-    rewardTM: 'MT24 Rayo',
+    rewardTM: 'tm24',
     pokemon: ['voltorb', 'pikachu', 'raichu'], levels: [21, 24, 28], badgesRequired: 2,
     difficulties: {
       easy: { pokemon: ['voltorb', 'pikachu', 'raichu'], levels: [21, 24, 28] },
@@ -84,7 +85,7 @@ export const GYMS = [
     sprite: 'erika',
     quote: '¡Mis Pokémon de planta son tan hermosos como poderosos!',
     victoryQuote: 'Vaya, me has derrotado... Tu valor es admirable. Por favor, acepta esta humilde muestra de mi respeto.',
-    rewardTM: 'MT19 Gigadrenado',
+    rewardTM: 'tm19',
     pokemon: ['victreebel', 'tangela', 'vileplume'], levels: [29, 24, 29], badgesRequired: 3,
     difficulties: {
       easy: { pokemon: ['victreebel', 'tangela', 'vileplume'], levels: [29, 24, 29] },
@@ -99,7 +100,7 @@ export const GYMS = [
     sprite: 'koga',
     quote: '¡El veneno es el arma más elegante de un ninja Pokémon!',
     victoryQuote: '¡Jajaja! Mis técnicas ninja han sido superadas. Has demostrado una gran tenacidad. ¡Usa esta técnica secreta con sabiduría!',
-    rewardTM: 'MT06 Tóxico',
+    rewardTM: 'tm06',
     pokemon: ['koffing', 'muk', 'koffing', 'weezing'], levels: [37, 39, 37, 43], badgesRequired: 4,
     difficulties: {
       easy: { pokemon: ['koffing', 'muk', 'koffing', 'weezing'], levels: [37, 39, 37, 43] },
@@ -114,7 +115,7 @@ export const GYMS = [
     sprite: 'sabrina',
     quote: '¡Puedo leer tu mente y ver cada uno de tus movimientos!',
     victoryQuote: 'Lo predije... Tu victoria estaba escrita en las estrellas. Toma esto, desarrolla tu fuerza interior tanto como la de tus Pokémon.',
-    rewardTM: 'MT04 Paz Mental',
+    rewardTM: 'tm04',
     pokemon: ['kadabra', 'mrmime', 'jynx', 'alakazam'], levels: [38, 37, 38, 43], badgesRequired: 5,
     difficulties: {
       easy: { pokemon: ['kadabra', 'mrmime', 'jynx', 'alakazam'], levels: [38, 37, 38, 43] },
@@ -129,7 +130,7 @@ export const GYMS = [
     sprite: 'blaine',
     quote: '¡Si no podés soportar el calor, ¡salí de mi gimnasio!',
     victoryQuote: '¡Fuego! ¡Me has quemado vivo! ¡Qué combate más ardiente! ¡Lleva esta MT y haz que tu pasión arda con la misma intensidad!',
-    rewardTM: 'MT38 Llamarada',
+    rewardTM: 'tm38',
     pokemon: ['growlithe', 'ponyta', 'rapidash', 'arcanine'], levels: [42, 40, 42, 47], badgesRequired: 6,
     difficulties: {
       easy: { pokemon: ['growlithe', 'ponyta', 'rapidash', 'arcanine'], levels: [42, 40, 42, 47] },
@@ -144,7 +145,7 @@ export const GYMS = [
     sprite: 'giovanni',
     quote: '¡Seré el último y más difícil obstáculo en tu camino!',
     victoryQuote: 'He perdido... Una vez más. Tu fuerza es incuestionable. No tengo nada más que enseñarte por ahora. Toma esto y sigue tu camino.',
-    rewardTM: 'MT26 Terremoto',
+    rewardTM: 'tm26',
     pokemon: ['rhyhorn', 'dugtrio', 'nidoqueen', 'nidoking', 'rhydon'], levels: [45, 42, 44, 45, 50], badgesRequired: 7,
     difficulties: {
       easy: { pokemon: ['rhyhorn', 'dugtrio', 'nidoqueen', 'nidoking', 'rhydon'], levels: [45, 42, 44, 45, 50] },

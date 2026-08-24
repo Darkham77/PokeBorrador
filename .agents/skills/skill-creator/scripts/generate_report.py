@@ -6,36 +6,11 @@ showing each description attempt with check/x for each test case.
 Distinguishes between train and test queries.
 """
 
-try:
-    import argparse
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: argparse. Run 'pip install argparse' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import html
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: html. Run 'pip install html' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import json
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: json. Run 'pip install json' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import sys
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: sys. Run 'pip install sys' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    from pathlib import Path
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: pathlib. Run 'pip install pathlib' to fix.")
-    import sys
-    sys.exit(1)
+import argparse
+import html
+import json
+import sys
+from pathlib import Path
 
 
 def generate_html(data: dict, auto_refresh: bool = False, skill_name: str = "") -> str:

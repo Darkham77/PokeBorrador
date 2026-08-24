@@ -7,8 +7,7 @@ export const DEBUG_PANEL_CATEGORIES = [
   { id: 'map', label: 'MAPA', desc: 'Visualización de grilla y rendimiento.' },
   { id: 'missions', label: 'MISI', desc: 'Control de misiones de guardería.' },
   { id: 'time', label: 'TIEMPO', desc: 'Simulación de ciclos y climas.' },
-  { id: 'modals', label: 'MODAL', desc: 'Tests de ventanas y errores.' },
-  { id: 'audio', label: 'EFECTOS', desc: 'Efectos de combate, estados, animaciones y sonido.' },
+  { id: 'modals', label: 'MODAL', desc: 'Tests de ventanas y errores.' }
 ] as const
 
 export type DebugPanelCategoryId = (typeof DEBUG_PANEL_CATEGORIES)[number]['id']

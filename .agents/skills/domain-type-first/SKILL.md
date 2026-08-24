@@ -53,6 +53,18 @@ If it represents a finite domain, design and use the domain type first.
 - **Zero-Passthrough Mandate**: It is STRICTLY FORBIDDEN to create 1-to-1 type aliases (`export type Foo = Bar;`) that merely rename an existing type without adding structural or domain value.
 - **Forbidden Pattern**: `export type ActivePokemonStatus = StatusName;`, `export type PersistedPokemonGender = GenderName;`, `export type ReplaySeat = SideID;` (WRONG — unnecessary indirection).
 - **Canonical Pattern**: Use `StatusName`, `GenderName`, `SideID` directly at all usage sites across the repository.
+
+## Absolute Prohibition on Translated String Unions & Display Names in Contracts (`noTranslatedStringUnions`)
+
+- **Canonical ID Mandate**: It is STRICTLY FORBIDDEN to create ad-hoc string literal unions or types holding translated/localized display names (e.g. `type GymReward = 'MT39 Tumba Rocas' | ...;`, `type BallName = 'Pokéball' | ...;`).
+- **Domain IDs Only**: All domain contracts, functions, parameters, store states, Valibot schemas, calculations, and persistence layers MUST strictly consume and produce canonical domain IDs (`ItemId`, `MoveId`, `PokemonSpeciesId`, `MapRouteId`). Localized texts belong exclusively in UI display helpers (`getItemById(id).name`).
+- **Forbidden Pattern**: `rewardTM: 'MT39 Tumba Rocas' | 'MT03 Pulso Agua'`, `function useItem(itemName: string)`
+- **Canonical Pattern**: `rewardTM: ItemId`, `function useItem(itemId: ItemId)`
+
+## Absolute Prohibition on `// domain-ok` Abuse on Domain Entities (`noDomainOkOnEntities`)
+
+- **Prose-Only Mandate**: The `// domain-ok` suppression directive is STRICTLY RESERVED for purely narrative prose (e.g. NPC dialogue lines, lore quotes, battle victory speech strings).
+- **Entity Prohibition**: It is STRICTLY FORBIDDEN to use `// domain-ok` on fields that represent entities, foreign keys, items, moves, pokemon, maps, gyms, or rewards to silence TypeScript errors. If TypeScript reports a mismatch, fix the underlying data contract to use the canonical domain ID.
 ## Nominal Branded Types for Domain IDs (`Brand<T, B>`)
 
 - **Nominal Safety Mandate**: Finite domain identifiers (`PokemonSpeciesId`, `ItemId`, `PokemonMoveId`) SHOULD be defined as Nominal Branded Types using `Brand<T, B>` from `@/types/system/branding` to prevent accidental assignability across distinct domains.

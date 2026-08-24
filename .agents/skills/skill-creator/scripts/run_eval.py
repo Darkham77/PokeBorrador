@@ -5,73 +5,18 @@ Tests whether a skill's description causes Claude to trigger (read the skill)
 for a set of queries. Outputs results as JSON.
 """
 
-try:
-    import argparse
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: argparse. Run 'pip install argparse' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import json
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: json. Run 'pip install json' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import os
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: os. Run 'pip install os' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import select
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: select. Run 'pip install select' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import subprocess
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: subprocess. Run 'pip install subprocess' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import sys
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: sys. Run 'pip install sys' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import time
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: time. Run 'pip install time' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import uuid
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: uuid. Run 'pip install uuid' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    from concurrent.futures import ProcessPoolExecutor, as_completed
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: concurrent. Run 'pip install concurrent' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    from pathlib import Path
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: pathlib. Run 'pip install pathlib' to fix.")
-    import sys
-    sys.exit(1)
+import argparse
+import json
+import os
+import select
+import subprocess
+import sys
+import time
+import uuid
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from pathlib import Path
 
-try:
-    from scripts.utils import parse_skill_md
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: scripts. Run 'pip install scripts' to fix.")
-    import sys
-    sys.exit(1)
+from scripts.utils import parse_skill_md
 
 
 def find_project_root() -> Path:

@@ -25,6 +25,8 @@ import { generateFishingEncounter } from './fishingEncounterHelper.ts'
 import { requireMapRouteId } from '@/data/world/map-assets'
 import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import type { ItemId } from '@/data/inventory/items'
+import type { PokemonType } from '@/data/battle/types'
 
 export { getEncounterPool, selectFromPool, clampLegendaryRates, getFinalGroundRates, getSpeciesEntries }
 
@@ -43,14 +45,25 @@ function generateGroundEncounter(
   let { pool, rates } = getFinalGroundRates(loc, cycle, weather, activeEvents);
 
   if (state.incenseSecs && state.incenseSecs > 0 && state.incenseType) {
-    const typeIndices = pool.map((id, idx) => {
-      const pData = pokemonDataProvider.getPokemonData(id);
-      return (pData && (pData.type === state.incenseType || pData.type2 === state.incenseType)) ? idx : -1;
-    }).filter(idx => idx !== -1);
+    const INCENSE_TO_TYPE: Partial<Record<ItemId, PokemonType>> = {
+      incensefire: 'fire',
+      incensewater: 'water',
+      incensegrass: 'grass',
+      incensenormal: 'normal',
+      incenseghost: 'ghost',
+      incensepsychic: 'psychic',
+    };
+    const targetType = INCENSE_TO_TYPE[state.incenseType];
+    if (targetType) {
+      const typeIndices = pool.map((id, idx) => {
+        const pData = pokemonDataProvider.getPokemonData(id);
+        return (pData && (pData.type === targetType || pData.type2 === targetType)) ? idx : -1;
+      }).filter(idx => idx !== -1);
 
-    if (typeIndices.length > 0) {
-      pool = typeIndices.map(idx => pool[idx]).filter((id): id is PokemonSpeciesId => id !== undefined);
-      rates = typeIndices.map(idx => rates[idx]).filter((r): r is number => r !== undefined);
+      if (typeIndices.length > 0) {
+        pool = typeIndices.map(idx => pool[idx]).filter((id): id is PokemonSpeciesId => id !== undefined);
+        rates = typeIndices.map(idx => rates[idx]).filter((r): r is number => r !== undefined);
+      }
     }
   }
 

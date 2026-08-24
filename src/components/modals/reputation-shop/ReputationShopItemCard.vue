@@ -6,6 +6,7 @@ import { useInventoryStore } from '@/stores/inventory/inventory'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver'
 import type { ItemTier } from '@/types/inventory/items'
+import type { ItemId } from '@/data/inventory/items'
 
 interface ReputationShopItem {
   id: string
@@ -13,7 +14,7 @@ interface ReputationShopItem {
   repCost: number
   desc: string
   sprite?: string
-  givesId: string
+  givesId: ItemId
   givesQty: number
   tier: ItemTier
   cat: string

@@ -59,7 +59,7 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
   function unequipFromTeam(uid: string) {
     const p = state.team.find(x => x?.uid === uid)
     if (!p || !p.heldItem) return
-    const item = p.heldItem as string
+    const item = p.heldItem
     state.inventory[item] = (state.inventory[item] || 0) + 1
     p.heldItem = null
     scheduleSave()
@@ -68,7 +68,7 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
   function unequipFromBox(uid: string) {
     const p = state.box.find(x => x?.uid === uid)
     if (!p || !p.heldItem) return
-    const item = p.heldItem as string
+    const item = p.heldItem
     state.inventory[item] = (state.inventory[item] || 0) + 1
     p.heldItem = null
     scheduleSave()

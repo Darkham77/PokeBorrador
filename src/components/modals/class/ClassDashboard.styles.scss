@@ -69,9 +69,41 @@
           @include pixelated;
           will-change: transform, filter, opacity;
           filter: Drop-Shadow(0 15px 30px Rgba(0,0,0,0.8));
+          cursor: pointer;
 
           &:not(:first-child) {
             margin-left: -50px;
+          }
+
+          &.active {
+            opacity: 1;
+            filter: Drop-Shadow(0 0 15px var(--cls-color)) Drop-Shadow(0 15px 30px Rgba(0,0,0,0.8));
+            z-index: calc(var(--z-base) + 2);
+          }
+
+          &.inactive {
+            opacity: 0.65;
+            will-change: transform, filter, opacity;
+            filter: Grayscale(0.4) Drop-Shadow(0 10px 20px Rgba(0,0,0,0.8));
+
+            &:hover {
+              opacity: 1;
+              will-change: transform, filter, opacity;
+              filter: Grayscale(0) Drop-Shadow(0 0 10px var(--yellow)) Drop-Shadow(0 15px 30px Rgba(0,0,0,0.8));
+            }
+
+            &.locked {
+              opacity: 0.45;
+              will-change: transform, filter, opacity;
+              filter: Grayscale(0.8) Drop-Shadow(0 10px 20px Rgba(0,0,0,0.8));
+              cursor: not-allowed;
+
+              &:hover {
+                opacity: 0.65;
+                will-change: transform, filter, opacity;
+                filter: Grayscale(0.6) Drop-Shadow(0 0 8px #ef4444) Drop-Shadow(0 10px 20px Rgba(0,0,0,0.8));
+              }
+            }
           }
         }
       }

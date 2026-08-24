@@ -6,20 +6,26 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { calculateCloningCost, calculateCloningShinyChance } from '@/logic/minigames/minigameMath'
 import EggSprite from '@/components/common/EggSprite.vue'
 import { gsap } from 'gsap'
-import { getItemName } from '@/data/inventory/items'
+import { getItemName, type ItemId } from '@/data/inventory/items'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
 const breedingStore = useBreedingStore()
 const gameStore = useGameStore()
 
+interface FossilDef {
+  id: ItemId
+  pokemonId: PokemonSpeciesId
+}
+
 // Fossil definitions
-const FOSSILS = [
+const FOSSILS: readonly FossilDef[] = [
   { id: 'domefossil', pokemonId: 'kabuto' },
   { id: 'helixfossil', pokemonId: 'omanyte' },
   { id: 'oldamber', pokemonId: 'aerodactyl' }
-]
+] as const
 
-const defaultFossil = { id: 'domefossil', pokemonId: 'kabuto' }
+const defaultFossil: FossilDef = { id: 'domefossil', pokemonId: 'kabuto' }
 const selectedFossilIndex = ref(0)
 const extraSacrifices = ref(0)
 
@@ -31,7 +37,7 @@ const renderedFossils = computed(() => {
   }))
 })
 
-const activeFossil = computed<{ name: string; id: string; pokemon: string }>(() => {
+const activeFossil = computed<{ name: string; id: ItemId; pokemon: string }>(() => {
   const f = renderedFossils.value[selectedFossilIndex.value]
   if (f) return f
   const base = defaultFossil

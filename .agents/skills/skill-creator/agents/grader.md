@@ -61,7 +61,6 @@ This catches issues that predefined expectations might miss.
 ### Step 5: Read User Notes
 
 If `{outputs_dir}/user_notes.md` exists:
-
 1. Read it and note any uncertainties or issues flagged by the executor
 2. Include relevant concerns in the grading output
 3. These may reveal problems even when expectations pass
@@ -73,7 +72,6 @@ After grading, consider whether the evals themselves could be improved. Only sur
 Good suggestions test meaningful outcomes — assertions that are hard to satisfy without actually doing the work correctly. Think about what makes an assertion *discriminating*: it passes when the skill genuinely succeeds and fails when it doesn't.
 
 Suggestions worth raising:
-
 - An assertion that passed but would also pass for a clearly wrong output (e.g., checking filename existence but not file content)
 - An important outcome you observed — good or bad — that no assertion covers at all
 - An assertion that can't actually be verified from the available outputs
@@ -82,18 +80,16 @@ Keep the bar high. The goal is to flag things the eval author would say "good ca
 
 ### Step 7: Write Grading Results
 
-Save results to `{outputs_dir}/../grading.tson` (sibling to outputs_dir).
+Save results to `{outputs_dir}/../grading.json` (sibling to outputs_dir).
 
 ## Grading Criteria
 
 **PASS when**:
-
 - The transcript or outputs clearly demonstrate the expectation is true
 - Specific evidence can be cited
 - The evidence reflects genuine substance, not just surface compliance (e.g., a file exists AND contains correct content, not just the right filename)
 
 **FAIL when**:
-
 - No evidence found for the expectation
 - Evidence contradicts the expectation
 - The expectation cannot be verified from available information
@@ -104,8 +100,8 @@ Save results to `{outputs_dir}/../grading.tson` (sibling to outputs_dir).
 
 ### Step 8: Read Executor Metrics and Timing
 
-1. If `{outputs_dir}/metrics.tson` exists, read it and include in grading output
-2. If `{outputs_dir}/../timing.tson` exists, read it and include timing data
+1. If `{outputs_dir}/metrics.json` exists, read it and include in grading output
+2. If `{outputs_dir}/../timing.json` exists, read it and include timing data
 
 ## Output Format
 
@@ -158,7 +154,7 @@ Write a JSON file with this structure:
       "claim": "The form has 12 fillable fields",
       "type": "factual",
       "verified": true,
-      "evidence": "Counted 12 fields in field_info.tson"
+      "evidence": "Counted 12 fields in field_info.json"
     },
     {
       "claim": "All required fields were populated",
@@ -198,10 +194,10 @@ Write a JSON file with this structure:
   - **failed**: Count of failed expectations
   - **total**: Total expectations evaluated
   - **pass_rate**: Fraction passed (0.0 to 1.0)
-- **execution_metrics**: Copied from executor's metrics.tson (if available)
+- **execution_metrics**: Copied from executor's metrics.json (if available)
   - **output_chars**: Total character count of output files (proxy for tokens)
   - **transcript_chars**: Character count of transcript
-- **timing**: Wall clock timing from timing.tson (if available)
+- **timing**: Wall clock timing from timing.json (if available)
   - **executor_duration_seconds**: Time spent in executor subagent
   - **total_duration_seconds**: Total elapsed time for the run
 - **claims**: Extracted and verified claims from the output

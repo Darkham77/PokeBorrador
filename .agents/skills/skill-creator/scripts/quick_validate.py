@@ -6,12 +6,7 @@ Quick validation script for skills - minimal version
 import sys
 import os
 import re
-try:
-    import yaml
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: PyYAML. Run 'pip install PyYAML' to fix.")
-    import sys
-    sys.exit(1)
+import yaml
 from pathlib import Path
 
 def validate_skill(skill_path):

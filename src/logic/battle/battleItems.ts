@@ -12,21 +12,19 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { EventStore, AudioStore, BattleStore } from '@/types/system/stores'
 import type { LogFn } from '@/types/battle/battle'
 import type { BattleContext } from '@/types/battle/battleContext'
-import { getItemName, requireItemId, type ItemId } from '@/data/inventory/items'
+import { getItemName, type ItemId } from '@/data/inventory/items'
 
 interface ItemUsageOptions {
   eventStore: EventStore;
   addLog: LogFn;
   audio: AudioStore;
-  consumeItem: (itemName: string) => void;
+  consumeItem: (itemId: ItemId) => void;
   fsm?: BattleStore['fsm'];
   ctx?: BattleContext;
-  itemId?: string;
+  itemId?: ItemId;
 }
 
-
-
-export async function handleItemUsage(itemName: ItemId | string, p: Pokemon, e: Pokemon, options: ItemUsageOptions) {
+export async function handleItemUsage(itemName: ItemId, p: Pokemon, e: Pokemon, options: ItemUsageOptions) {
   const { 
     eventStore, 
     addLog, 
@@ -34,8 +32,7 @@ export async function handleItemUsage(itemName: ItemId | string, p: Pokemon, e: 
   } = options
 
   const displayName = getItemName(itemName)
-  const nameLower = requireItemId(itemName)
-  const isBall = nameLower.includes('ball') || nameLower.includes('bola')
+  const isBall = itemName.includes('ball') || itemName.includes('bola')
 
   if (isBall) {
     if (options.fsm) {

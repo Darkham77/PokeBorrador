@@ -13,7 +13,7 @@ import { getWeatherCombatDescription } from '@/logic/weather/weatherGenerationPr
 import { useGameStore } from '@/stores/game'
 import { useProfileStore } from '@/stores/player/profile'
 import { supabase } from '@/logic/db/supabase'
-import { getItemName } from '@/data/inventory/items'
+import { getItemName, isItemId } from '@/data/inventory/items'
 import { logger } from '@/logic/utils/logger'
 
 const SUN_AFFECTED_MOVE_NAMES = ['synthesis', 'síntesis', 'morning sun', 'sol beam', 'rayo solar', 'solar beam', 'solar blade', 'cuchilla solar'] as const
@@ -224,7 +224,7 @@ export function useCombatantStatus(
       const inv = battleStore.state.enemyInventory;
       const money = battleStore.state.enemyMoney ?? 0;
       
-      const itemKeys = Object.keys(inv).filter(k => inv[k]! > 0);
+      const itemKeys = Object.keys(inv).filter(isItemId).filter(k => (inv[k] ?? 0) > 0);
       let itemsListText = '';
       if (itemKeys.length === 0) {
         itemsListText = 'Mochila Vacía';

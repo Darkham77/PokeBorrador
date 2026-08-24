@@ -17,7 +17,7 @@ const activeMainTab = computed({
 })
 
 // Definición de subcategorías por pestaña principal
-const subcategoriesByMainTab = {
+const subcategoriesByMainTab: Record<BagMainTab, { id: string; label: string; icon: string }[]> = {
   productos: [
     { id: 'todos', label: 'Todo', icon: '📦' },
     { id: 'utilizables', label: 'Utilizables', icon: '💊' },
@@ -48,11 +48,13 @@ watch(activeMainTab, () => {
   inventoryStore.activeCategory = 'todos'
 })
 
+import type { ItemId } from '@/data/inventory/items'
+
 const filteredBagItems = computed(() => {
   return inventoryStore.bagItems
 })
 
-const onUseItem = (itemId: string) => {
+const onUseItem = (itemId: ItemId) => {
   inventoryStore.useItem(itemId)
 }
 
@@ -65,11 +67,11 @@ const onTabClick = (catId: string) => {
   inventoryStore.activeCategory = catId
 }
 
-const onItemClick = (itemName: string, qty: number, event: MouseEvent) => {
+const onItemClick = (itemId: ItemId, qty: number, event: MouseEvent) => {
   if (inventoryStore.bagSellMode) {
-    inventoryStore.toggleBagSellSelect(itemName, qty)
+    inventoryStore.toggleBagSellItem(itemId, qty)
     const target = event.currentTarget as HTMLElement
-    const isSelected = !!inventoryStore.bagSellSelected[itemName]
+    const isSelected = !!inventoryStore.bagSellSelected[itemId]
     
     gsap.to(target, {
       borderColor: isSelected ? 'var(--green-bright)' : 'rgba(255, 255, 255, 0.08)',
@@ -223,15 +225,15 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
         >
           <BagItemCard
             v-for="item in filteredBagItems"
-            :key="item.name"
+            :key="item.id"
             :item="item"
-            :is-selected="!!inventoryStore.bagSellSelected[item.name]"
+            :is-selected="!!inventoryStore.bagSellSelected[item.id]"
             :sell-mode="inventoryStore.bagSellMode"
-            :sell-qty="inventoryStore.bagSellSelected[item.name] ?? undefined"
+            :sell-qty="inventoryStore.bagSellSelected[item.id] ?? undefined"
             @use="onUseItem"
-            @click="onItemClick(item.name, Number(item.qty), $event)"
-            @qty-click="inventoryStore.toggleBagSellSelect(item.name, Number(item.qty))"
-            @update-qty="(val) => inventoryStore.updateBagSellQty(item.name, val, Number(item.qty))"
+            @click="onItemClick(item.id, Number(item.qty), $event)"
+            @qty-click="inventoryStore.toggleBagSellItem(item.id, Number(item.qty))"
+            @update-qty="(val: number | string) => inventoryStore.updateBagSellQty(item.id, val, Number(item.qty))"
           />
         </div>
       </div>

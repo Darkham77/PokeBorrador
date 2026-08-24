@@ -3,16 +3,16 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useInventoryStore } from '@/stores/inventory/inventory'
 import { useShopStore } from '@/stores/inventory/shop'
-import { SHOP_ITEMS } from '@/data/inventory/items'
+import { SHOP_ITEMS, type ItemId, isItemId } from '@/data/inventory/items'
 import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 
 const props = defineProps<{
-  injectedItems: Set<string>
+  injectedItems: Set<ItemId>
 }>()
 
 const emit = defineEmits<{
   (e: 'addLog', message: string): void
-  (e: 'update:injectedItems', next: Set<string>): void
+  (e: 'update:injectedItems', next: Set<ItemId>): void
 }>()
 
 const gameStore = useGameStore()
@@ -20,10 +20,10 @@ const inventoryStore = useInventoryStore()
 const shopStore = useShopStore()
 
 const filteredShopItems = computed(() => {
-  return SHOP_ITEMS.filter(item => item.id && item.name)
+  return SHOP_ITEMS.filter((item): item is typeof item & { id: ItemId } => isItemId(item.id) && !!item.name)
 })
 
-const adjustItem = (itemId: string, amount: number) => {
+const adjustItem = (itemId: ItemId, amount: number) => {
   const nextInjected = new Set(props.injectedItems)
   if (amount > 0) {
     inventoryStore.addItem(itemId, amount)
@@ -45,11 +45,11 @@ const MAX_INVENTORY_CLEAR_QTY = 999
 const clearTestItems = () => {
   const inv = gameStore.state.inventory || {}
   props.injectedItems.forEach(itemId => {
-    if (inv[itemId]) {
+    if (isItemId(itemId) && inv[itemId]) {
       inventoryStore.removeItem(itemId, MAX_INVENTORY_CLEAR_QTY)
     }
   })
-  emit('update:injectedItems', new Set())
+  emit('update:injectedItems', new Set<ItemId>())
   emit('addLog', `🧹 Limpieza: Todos los ítems inyectados por el panel de pruebas han sido eliminados.`)
 }
 

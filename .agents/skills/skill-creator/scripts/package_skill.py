@@ -10,36 +10,11 @@ Example:
     python utils/package_skill.py skills/public/my-skill ./dist
 """
 
-try:
-    import fnmatch
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: fnmatch. Run 'pip install fnmatch' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import sys
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: sys. Run 'pip install sys' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import zipfile
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: zipfile. Run 'pip install zipfile' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    from pathlib import Path
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: pathlib. Run 'pip install pathlib' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    from scripts.quick_validate import validate_skill
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: scripts. Run 'pip install scripts' to fix.")
-    import sys
-    sys.exit(1)
+import fnmatch
+import sys
+import zipfile
+from pathlib import Path
+from scripts.quick_validate import validate_skill
 
 # Patterns to exclude when packaging skills.
 EXCLUDE_DIRS = {"__pycache__", "node_modules"}

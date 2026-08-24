@@ -43,8 +43,10 @@ Core logic modules and critical system components MUST have dedicated unit tests
 
 The project uses a unified audit coordinator located in `scripts/maintenance/audit_full.ts`:
 
-- **Fast In-Development Check**: `npm run lint`. Runs domain types, `vue-tsc` typecheck, cached ESLint, and markdownlint in ~3-5 seconds for rapid feedback during coding.
-- **Pre-Commit Gatekeeper**: `npm run audit:warnings-diff`. Evaluates all domain, database, FSM, and code standards against `origin/main` in one single pass; requires 0 project errors and 0 new warnings.
+- **Proportional Verification Protocol**:
+  - **Documentation & Skills (`.md`)**: Run ONLY `npm run lint:md` (takes ~1s). Running full project audits or `audit:warnings-diff` for documentation or skill edits is strictly forbidden.
+  - **In-Development Code**: Run `npm run lint` (takes ~3-5s) for rapid developer feedback.
+  - **Pre-Commit Gatekeeper**: Run `npm run audit:warnings-diff` ONLY prior to a `git commit` or during `/safe-commit` validation.
 - **Universal Caching Policy**: All quality scripts leverage persistent caches (Node.js `enableCompileCache()`, ESLint `.eslintcache`, TypeScript `incremental`).
 - **Zero-Redundancy Guarantee**: Aggregator scripts must never duplicate sub-analyzers already embedded in `audit_project.ts` or sibling validation suites.
 - **Global Unified Audit**: `npm run audit`. Runs all static project rules, FSM, items, abilities, moves, and SQL/Save migrations, outputting 100% parseable structured JSON by default.
@@ -120,10 +122,12 @@ npm run audit -- --summary --top=50
 
 Use these scripts to verify project standards, manage servers, and run audits:
 
-### ⚙️ Environment Setup & Node Version Management
-
-- `PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1`: Automated environment setup for Windows (creates NVM symlink dir `C:\nvm4w`, cleans orphan APPDATA files, installs NVM, and syncs Node version dynamically from `package.json`).
-- `./setup-linux.sh`: Automated environment setup for Linux/macOS (installs NVM, activates and aliases default Node version dynamically from `package.json`).
+### ⚙️ Environment Setup, Tool Updates & Node Version Management
+ 
+Whenever requested to "actualizar herramientas", "update tools", "preparar entorno", or "instalar dependencias", run the root automated setup script for the platform:
+ 
+- `PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1`: Automated environment & tool setup for Windows (elevates to Admin, creates NVM symlink dir `C:\nvm4w`, cleans orphan APPDATA files, installs NVM, installs and switches Node version dynamically from `package.json`, updates npm globally to latest, applies npm security configs, and executes `npm ci`).
+- `./setup-linux.sh`: Automated environment & tool setup for Linux/macOS (installs NVM, installs and switches Node version dynamically from `package.json`, updates npm globally to latest, applies npm security configs, and executes `npm ci`).
 - `node --experimental-strip-types scripts/maintenance/check_environment.ts`: Environment sanity check script (runs automatically during `preinstall` to validate runtime engine constraints).
 
 ### 🛡️ Core Validation

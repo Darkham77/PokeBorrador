@@ -3,18 +3,18 @@ import { handleItemUsage } from '@/logic/battle/battleItems'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleSource, BattleSide } from '@/types/battle/battle'
-import { requireItemId } from '@/data/inventory/items'
+import { requireItemId, type ItemId } from '@/data/inventory/items'
 import { requireCertifiedBattleTeamSlot, type CertifiedBattleGameAction } from '@/types/battle/certifiedBattleActions'
 
 export async function processUseItemInBattle(
   ctx: BattleContext,
-  itemId: string,
+  itemId: ItemId,
   targetIndex: number | null = null,
   options: {
     eventStore: unknown
     addLog: (text: string, type?: string, source?: BattleSource | null, sideOverride?: BattleSide | null) => void
     audio: unknown
-    consumeItem: (itemName: string) => void
+    consumeItem: (itemId: ItemId) => void
     fsm: unknown
     gs: {
       state: {

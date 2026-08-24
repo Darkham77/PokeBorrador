@@ -179,18 +179,24 @@ export function checkSpecialEncounters(
   options: EncounterOptions,
   allMapIds: MapRouteId[]
 ): Encounter | null {
-  // 0. Debug: 50% trainer override
+  // 0. Debug: configurable encounter overrides
   const win = (typeof window !== 'undefined' ? window : null) as (Window & {
     __VITE_DEBUG__?: {
       forceEncounterType?: string;
       forceRival?: boolean;
+      trainerChance50?: boolean;
+      forceGuardian80?: boolean;
+      trainerChancePct?: number | null;
+      rivalChancePct?: number | null;
+      guardianChancePct?: number | null;
+      defenderChancePct?: number | null;
     };
   }) | null;
   const debug = win?.__VITE_DEBUG__;
   
-const DEBUG_MOCK_MAGIKARP_UID = 'magikarp-fishing-debug';
+  const DEBUG_MOCK_MAGIKARP_UID = 'magikarp-fishing-debug';
 
-  if (debug?.forceEncounterType) {
+  if (debug?.forceEncounterType && debug.forceEncounterType !== 'none') {
     if (debug.forceEncounterType === 'fishing') {
       const p = makePokemon('magikarp', DEBUG_MOCK_MAGIKARP_STATS.LEVEL, { bypassWhitelist: true }) as Pokemon;
       p.uid = DEBUG_MOCK_MAGIKARP_UID;
@@ -214,20 +220,24 @@ const DEBUG_MOCK_MAGIKARP_UID = 'magikarp-fishing-debug';
     }
   }
 
-  if (debug?.forceRival) {
+  if (debug?.forceRival || debug?.rivalChancePct === 100) {
     return { type: 'rival' };
   }
 
-  if (!options.forceEncounter && debug?.trainerChance50) {
-    if (Math.random() < (DEBUG_TRAINER_CHANCE_PERCENT / 100)) {
+  const hasTrainerOverride = debug?.trainerChancePct !== undefined && debug?.trainerChancePct !== null;
+  const trainerOverrideChance = hasTrainerOverride ? (debug!.trainerChancePct! / 100) : (debug?.trainerChance50 ? (DEBUG_TRAINER_CHANCE_PERCENT / 100) : null);
+  if (!options.forceEncounter && trainerOverrideChance !== null) {
+    if (Math.random() < trainerOverrideChance) {
       return { type: 'trainer' };
     }
   }
 
-  if (!options.forceEncounter && debug?.forceGuardian80) {
+  const hasGuardianOverride = debug?.guardianChancePct !== undefined && debug?.guardianChancePct !== null;
+  const guardianOverrideChance = hasGuardianOverride ? (debug!.guardianChancePct! / 100) : (debug?.forceGuardian80 ? (DEBUG_GUARDIAN_CHANCE_PERCENT / 100) : null);
+  if (!options.forceEncounter && guardianOverrideChance !== null) {
     const dailyCaptures = state.dailyGuardianCaptures || (getActivePinia() ? useGameStore().dailyGuardianCaptures : []);
     const capturedToday = (dailyCaptures || []).includes(locId);
-    if (!capturedToday && Math.random() < (DEBUG_GUARDIAN_CHANCE_PERCENT / 100)) {
+    if (!capturedToday && Math.random() < guardianOverrideChance) {
       const guardian = getGuardianData(locId, allMapIds);
       if (guardian) {
         return { 
@@ -242,14 +252,19 @@ const DEBUG_MOCK_MAGIKARP_UID = 'magikarp-fishing-debug';
   // 0. Especial: Rival Azul
   if (!options.forceEncounter) {
     let rivalChance = GAME_RATIOS.encounters.rival;
-    const eventRivalBonus = options.eventRivalBonus || 1;
-    rivalChance *= eventRivalBonus;
+    const hasRivalRateOverride = debug?.rivalChancePct !== undefined && debug?.rivalChancePct !== null;
+    if (hasRivalRateOverride) {
+      rivalChance = debug!.rivalChancePct! / 100;
+    } else {
+      const eventRivalBonus = options.eventRivalBonus || 1;
+      rivalChance *= eventRivalBonus;
 
-    if (state.playerClass === 'entrenador' && (state.classLevel || 1) >= ENTRENATOR_DOUBLE_RIVAL_CLASS_LEVEL) {
-      const gymIds = (['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian'] as const satisfies readonly GymId[]).map(requireGymId);
-      const allGymsHard = gymIds.every(id => state.gymProgress?.[id]?.hard === true);
-      if (allGymsHard) {
-        rivalChance *= ENTRENADOR_RIVAL_CHANCE_MULTIPLIER;
+      if (state.playerClass === 'entrenador' && (state.classLevel || 1) >= ENTRENATOR_DOUBLE_RIVAL_CLASS_LEVEL) {
+        const gymIds = (['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian'] as const satisfies readonly GymId[]).map(requireGymId);
+        const allGymsHard = gymIds.every(id => state.gymProgress?.[id]?.hard === true);
+        if (allGymsHard) {
+          rivalChance *= ENTRENADOR_RIVAL_CHANCE_MULTIPLIER;
+        }
       }
     }
 
@@ -260,7 +275,9 @@ const DEBUG_MOCK_MAGIKARP_UID = 'magikarp-fishing-debug';
   
   // 1. Especial: Fase de Dominancia (Finde) - Batallas de Defensores
   if (!isDisputePhase() && !options.forceEncounter) {
-    if (Math.random() < DEFENDER_ENCOUNTER_CHANCE && state.faction) {
+    const hasDefenderOverride = debug?.defenderChancePct !== undefined && debug?.defenderChancePct !== null;
+    const defenderChance = hasDefenderOverride ? (debug!.defenderChancePct! / 100) : DEFENDER_ENCOUNTER_CHANCE;
+    if (Math.random() < defenderChance && state.faction) {
       const dominance = (options.dominanceData || {})[requireMapRouteId(locId)];
       const winner = dominance?.winner || null;
       if (winner && winner !== state.faction) {
@@ -360,6 +377,14 @@ export function calculateEncounterTypeWeights(
   state: EncounterState,
   options: EncounterOptions
 ): { groundWeight: number; fishingWeight: number; archWeight: number; totalWeight: number } {
+  const win = (typeof window !== 'undefined' ? window : null) as (Window & {
+    __VITE_DEBUG__?: {
+      fishingChancePct?: number | null;
+      archaeologyChancePct?: number | null;
+    };
+  }) | null;
+  const debug = win?.__VITE_DEBUG__;
+
   const isRainy = RAINY_WEATHERS.includes(weather);
   const climateFishingMultiplier = isRainy ? RAINY_WEATHER_FISHING_MULTIPLIER : DEFAULT_WEATHER_MULTIPLIER_NORMAL;
   const fishingBonus = (options.eventFishingBonus || 1) * climateFishingMultiplier;
@@ -368,7 +393,9 @@ export function calculateEncounterTypeWeights(
 
   let fishingWeight = 0;
   if (loc.fishing) {
-    fishingWeight = GAME_RATIOS.encounters.fishing * FISHING_WEIGHT_SCALE * fishingBonus;
+    const hasFishingOverride = debug?.fishingChancePct !== undefined && debug?.fishingChancePct !== null;
+    const baseFishing = hasFishingOverride ? (debug!.fishingChancePct! / 100) : GAME_RATIOS.encounters.fishing;
+    fishingWeight = baseFishing * FISHING_WEIGHT_SCALE * fishingBonus;
     if ((state.fishingRodSecs || 0) > 0) {
       fishingWeight += EQUIPPED_TOOL_ENCOUNTER_BONUS_WEIGHT;
     }
@@ -378,7 +405,12 @@ export function calculateEncounterTypeWeights(
   if (loc.archaeology) {
     const isCave = !!loc.isCave;
     const isMountain = !!loc.isMountain;
-    archWeight = isCave ? CAVE_ARCHAEOLOGY_WEIGHT : (isMountain ? MOUNTAIN_ARCHAEOLOGY_WEIGHT : 0);
+    const hasArchOverride = debug?.archaeologyChancePct !== undefined && debug?.archaeologyChancePct !== null;
+    if (hasArchOverride) {
+      archWeight = (debug!.archaeologyChancePct! / 100) * FISHING_WEIGHT_SCALE;
+    } else {
+      archWeight = isCave ? CAVE_ARCHAEOLOGY_WEIGHT : (isMountain ? MOUNTAIN_ARCHAEOLOGY_WEIGHT : 0);
+    }
     if ((state.pickaxeSecs || 0) > 0 || (state.brushSecs || 0) > 0) {
       archWeight += EQUIPPED_TOOL_ENCOUNTER_BONUS_WEIGHT;
     }

@@ -1,30 +1,11 @@
 import { watch, type Ref, nextTick, computed, onMounted, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 import { gameBus } from '@/logic/events/gameBus'
-import type { BattleCombatantProps, BattleSide } from '@/types/battle/battle'
+import type { BattleCombatantProps } from '@/types/battle/battle'
 import { isFlying } from '@/composables/battle/useBattleShadows'
 import { buildFaintTimeline, buildAttackTimeline } from './helpers/combatantActionAnims.ts'
 import {
-  COMBATANT_IDLE_FLOAT_BASE_Y_PERCENT,
-  COMBATANT_IDLE_FLOAT_VAR_Y_PERCENT,
-  COMBATANT_IDLE_FLOAT_BASE_ROTATION_DEG,
-  COMBATANT_IDLE_FLOAT_VAR_ROTATION_DEG,
-  COMBATANT_IDLE_FLOAT_BASE_DURATION_SEC,
-  COMBATANT_IDLE_FLOAT_VAR_DURATION_SEC,
-  COMBATANT_IDLE_GROUNDED_BASE_SCALE_X,
-  COMBATANT_IDLE_GROUNDED_VAR_SCALE_X,
-  COMBATANT_IDLE_GROUNDED_BASE_SCALE_Y,
-  COMBATANT_IDLE_GROUNDED_VAR_SCALE_Y,
-  COMBATANT_IDLE_GROUNDED_BASE_ROTATION_DEG,
-  COMBATANT_IDLE_GROUNDED_VAR_ROTATION_DEG,
-  COMBATANT_IDLE_GROUNDED_BASE_DURATION_SEC,
-  COMBATANT_IDLE_GROUNDED_VAR_DURATION_SEC,
   POKEBALL_SHAKE_DISTANCE_PX,
-  SPARKLE_FULL_ROTATION_DEG,
-  SPARKLE_HORIZONTAL_DURATION_SEC,
-  SPARKLE_FOUNTAIN_UP_DURATION_SEC,
-  SPARKLE_FOUNTAIN_DOWN_DURATION_SEC,
-  POKEBALL_APPEAR_DURATION_SEC,
   BALL_TRANSITION_DURATION_SEC,
   RECOIL_HORIZONTAL_OFFSET_PX,
   RECOIL_VERTICAL_OFFSET_PX,
@@ -61,11 +42,23 @@ import {
   POKEBALL_BLINK_HUE_ROTATE_DEG,
   POKEBALL_BLINK_DURATION_SEC,
   POKEBALL_SPRITE_SHAKE_REPEAT,
-  BALL_LEAVE_SCALE,
-  BALL_LEAVE_DURATION_SEC,
   SCALE_FULL,
   SCALE_ZERO,
 } from '@/logic/constants/animations'
+
+import {
+  isIdleSuppressed,
+  getIdleFloatingConfig,
+  getIdleGroundedConfig
+} from './helpers/combatantIdleAnims.ts'
+
+import {
+  onSparkleEnter,
+  onBallEnter,
+  onBallLeave
+} from './helpers/combatantSparkleBallHooks.ts'
+
+export { onSparkleEnter, onBallEnter, onBallLeave };
 
 const RECOIL_EASE_BACK_OVERSHOOT = 1.7
 const POKEBALL_SEPIA_RATIO = 0.5
@@ -73,45 +66,8 @@ const POKEBALL_SEPIA_SATURATE = 2
 const HEAL_SATURATION_FULL = 1
 const HEAL_BRIGHTNESS_FULL = 1
 const HEAL_SEPIA_NONE = 0
-const RANDOM_DIRECTION_PROBABILITY_HALF = 0.5;
 const OPACITY_INVISIBLE = 0;
 const OPACITY_FULL = 1;
-
-
-function isIdleSuppressed(statusRaw: string | null | undefined, confusedCount: number | undefined, animStateRaw: string | null | undefined): boolean {
-  const status = statusRaw?.toLowerCase() || ''
-  const isFrozen = status === 'frz' || status === 'freeze' || status === '🧊'
-  const isPara = status === 'par' || status.includes('paraly') || status.includes('para') || status === '⚡'
-  const isConfused = (confusedCount || 0) > 0
-  const isTrapped = animStateRaw === 'trapped'
-  const isCatching = animStateRaw === 'catching'
-  return isFrozen || isPara || isConfused || isTrapped || isCatching
-}
-
-function getIdleFloatingConfig(): gsap.TweenVars {
-  return {
-    y: () => `-${COMBATANT_IDLE_FLOAT_BASE_Y_PERCENT + Math.random() * COMBATANT_IDLE_FLOAT_VAR_Y_PERCENT}%`,
-    rotation: () => (Math.random() > RANDOM_DIRECTION_PROBABILITY_HALF ? 1 : -1) * (COMBATANT_IDLE_FLOAT_BASE_ROTATION_DEG + Math.random() * COMBATANT_IDLE_FLOAT_VAR_ROTATION_DEG),
-    duration: () => COMBATANT_IDLE_FLOAT_BASE_DURATION_SEC + Math.random() * COMBATANT_IDLE_FLOAT_VAR_DURATION_SEC,
-    repeat: -1,
-    yoyo: true,
-    repeatRefresh: true,
-    ease: 'sine.inOut'
-  }
-}
-
-function getIdleGroundedConfig(): gsap.TweenVars {
-  return {
-    scaleX: () => COMBATANT_IDLE_GROUNDED_BASE_SCALE_X + Math.random() * COMBATANT_IDLE_GROUNDED_VAR_SCALE_X,
-    scaleY: () => COMBATANT_IDLE_GROUNDED_BASE_SCALE_Y + Math.random() * COMBATANT_IDLE_GROUNDED_VAR_SCALE_Y,
-    rotation: () => (Math.random() > RANDOM_DIRECTION_PROBABILITY_HALF ? 1 : -1) * (COMBATANT_IDLE_GROUNDED_BASE_ROTATION_DEG + Math.random() * COMBATANT_IDLE_GROUNDED_VAR_ROTATION_DEG),
-    duration: () => COMBATANT_IDLE_GROUNDED_BASE_DURATION_SEC + Math.random() * COMBATANT_IDLE_GROUNDED_VAR_DURATION_SEC,
-    repeat: -1,
-    yoyo: true,
-    repeatRefresh: true,
-    ease: 'sine.inOut'
-  }
-}
 
 export function useBattleCombatantAnims(
   props: BattleCombatantProps,
@@ -512,71 +468,4 @@ export function useBattleCombatantAnims(
   })
 }
 
-export function onSparkleEnter(el: Element, done: () => void) {
-  const htmlEl = el as HTMLElement
-  const tx = parseFloat(htmlEl.dataset.tx || '0')
-  const ty = parseFloat(htmlEl.dataset.ty || '0')
-  const tf = parseFloat(htmlEl.dataset.tf || '0')
-  const delay = parseFloat((htmlEl.dataset.delay || '0s').replace('s', ''))
-  const scale = parseFloat(htmlEl.dataset.scale || '1')
 
-const SPARKLE_CENTER_OFFSET_PERCENT = -50
-
-  // Reset inicial forzado para evitar flashes o estados quietos
-  gsap.set(htmlEl, { 
-    x: 0, 
-    y: 0, 
-    xPercent: SPARKLE_CENTER_OFFSET_PERCENT, 
-    yPercent: SPARKLE_CENTER_OFFSET_PERCENT, 
-    scale: 0, 
-    opacity: 1,
-    rotation: 0
-  })
-
-  // Animación Horizontal y Rotación (Toda la duración)
-  gsap.to(htmlEl, {
-    x: tx,
-    rotation: SPARKLE_FULL_ROTATION_DEG,
-    duration: SPARKLE_HORIZONTAL_DURATION_SEC,
-    delay: delay,
-    ease: 'power1.out'
-  })
-
-  // Fase 1: Salto hacia arriba (Fountain Up)
-  gsap.to(htmlEl, {
-    y: ty,
-    scale: scale,
-    duration: SPARKLE_FOUNTAIN_UP_DURATION_SEC,
-    delay: delay,
-    ease: 'power2.out',
-    onComplete: () => {
-      // Fase 2: Caída y desvanecimiento (Fountain Down)
-      gsap.to(htmlEl, {
-        y: tf,
-        opacity: 0,
-        duration: SPARKLE_FOUNTAIN_DOWN_DURATION_SEC,
-        ease: 'power2.in',
-        onComplete: done
-      })
-    }
-  })
-}
-
-export function onBallEnter(el: Element, done: () => void) {
-  gsap.fromTo(el, 
-    { opacity: 0, scale: 0.5 }, 
-    { opacity: 1, scale: 1, duration: POKEBALL_APPEAR_DURATION_SEC, ease: 'back.out(1.7)', onComplete: done }
-  )
-}
-
-export function onBallLeave(el: Element, side: BattleSide, done: () => void) {
-  const tween = gsap.to(el, { 
-    opacity: 0, 
-    scale: BALL_LEAVE_SCALE, 
-    duration: BALL_LEAVE_DURATION_SEC,
-    ease: 'power2.in', 
-    onComplete: done 
-  })
-  const animKey = `ball-fadeout-${side}`
-  gameBus.emit('REGISTER_TWEEN', { key: animKey, tween })
-}

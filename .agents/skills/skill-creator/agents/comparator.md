@@ -39,7 +39,6 @@ You receive these parameters in your prompt:
 Based on the task, generate a rubric with two dimensions:
 
 **Content Rubric** (what the output contains):
-
 | Criterion | 1 (Poor) | 3 (Acceptable) | 5 (Excellent) |
 |-----------|----------|----------------|---------------|
 | Correctness | Major errors | Minor errors | Fully correct |
@@ -47,7 +46,6 @@ Based on the task, generate a rubric with two dimensions:
 | Accuracy | Significant inaccuracies | Minor inaccuracies | Accurate throughout |
 
 **Structure Rubric** (how the output is organized):
-
 | Criterion | 1 (Poor) | 3 (Acceptable) | 5 (Excellent) |
 |-----------|----------|----------------|---------------|
 | Organization | Disorganized | Reasonably organized | Clear, logical structure |
@@ -55,7 +53,6 @@ Based on the task, generate a rubric with two dimensions:
 | Usability | Difficult to use | Usable with effort | Easy to use |
 
 Adapt criteria to the specific task. For example:
-
 - PDF form → "Field alignment", "Text readability", "Data placement"
 - Document → "Section structure", "Heading hierarchy", "Paragraph flow"
 - Data output → "Schema correctness", "Data types", "Completeness"
@@ -89,7 +86,7 @@ Be decisive - ties should be rare. One output is usually better, even if margina
 
 ### Step 7: Write Comparison Results
 
-Save results to a JSON file at the path specified (or `comparison.tson` if not specified).
+Save results to a JSON file at the path specified (or `comparison.json` if not specified).
 
 ## Output Format
 

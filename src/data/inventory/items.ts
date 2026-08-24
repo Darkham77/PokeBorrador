@@ -55,10 +55,25 @@ export type ItemCategoryId = keyof typeof CATEGORY_LABELS;
 export const MARKET_CAT_ORDER = dbJson.MARKET_CAT_ORDER;
 export type MarketCategoryId = keyof typeof MARKET_CAT_ORDER;
 
+import { ITEM_IDS, type ItemId } from './itemIds.ts';
+export { ITEM_IDS, type ItemId };
+
+export function isItemId(value: unknown): value is ItemId {
+  return typeof value === 'string' && (ITEM_IDS as readonly string[]).includes(value); // domain-ok
+}
+
+export function requireItemId(value: string): ItemId {
+  if (isItemId(value)) return value;
+  const match = dbJson.SHOP_ITEMS.find(item => item.name === value || item.id === value);
+  if (match && isItemId(match.id)) return match.id;
+  throw new Error(`[items] Invalid item id or name: ${value}`);
+}
+
 export const SHOP_ITEMS = dbJson.SHOP_ITEMS.map((item): Item => {
   const { type: rawKind, ...itemData } = item;
   return {
     ...itemData,
+    id: requireItemId(item.id),
     cat: requireItemCategory(item.cat),
     tier: item.tier ? requireItemTier(item.tier) : undefined,
     kind: rawKind ? requireItemKind(rawKind) : undefined,
@@ -66,18 +81,6 @@ export const SHOP_ITEMS = dbJson.SHOP_ITEMS.map((item): Item => {
   };
 });
 export type ShopItemData = (typeof SHOP_ITEMS)[number];
-export type ItemId = (typeof dbJson.SHOP_ITEMS)[number]['id'];
-
-export function isItemId(value: string): value is ItemId {
-  return SHOP_ITEMS.some(item => item.id === value);
-}
-
-export function requireItemId(value: string): ItemId {
-  if (isItemId(value)) return value;
-  const match = SHOP_ITEMS.find(item => item.name === value);
-  if (match) return match.id;
-  throw new Error(`[items] Invalid item id or name: ${value}`);
-}
 
 export const getItemById = (id: string): ShopItemData => {
   if (!id) throw new Error("ID de objeto no proporcionado");

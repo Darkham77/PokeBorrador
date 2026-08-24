@@ -6,6 +6,14 @@ import { setActivePinia, createPinia } from 'pinia'
  * Global setup for Vitest environment.
  */
 
+process.removeAllListeners('warning')
+process.on('warning', (warning) => {
+  if (warning.name === 'ExperimentalWarning' || warning.message?.includes('--localstorage-file')) {
+    return
+  }
+  console.warn(warning.name, warning.message)
+})
+
 const activeDelayedCalls = new Set<NodeJS.Timeout | number>()
 
 // Initialize Pinia for all tests

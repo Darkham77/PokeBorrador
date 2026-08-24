@@ -3,7 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { useGameStore } from '@/stores/game.ts'
 import { useUIStore } from '@/stores/ui.ts'
 import { safeStorage } from '@/logic/utils/storage'
-import { getItemById } from '@/data/inventory/items'
+import { getItemById, isItemId, type ItemId } from '@/data/inventory/items'
 import { isGlobalItem } from '@/logic/providers/itemProvider.ts'
 import { useBattleStore } from '@/stores/battle/battle.ts'
 import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon'
@@ -20,7 +20,6 @@ import {
 
 export type { Item }
 
-import type { ItemId } from '@/data/inventory/items'
 import { ITEM_SELL_REFUND_FACTOR } from '@/logic/constants/items.ts'
 
 const VALUABLE_ITEM_IDS = ['nugget', 'pearl', 'bigpearl', 'stardust', 'starpiece'] as const satisfies readonly ItemId[]
@@ -73,8 +72,8 @@ export const useInventoryStore = defineStore('inventory', () => {
     safeStorage.setItem('inventory_last_tab', newVal)
   })
 
-  function findInventoryKey(name: string): string | null {
-    return helperFindInventoryKey(gameStore, name)
+  function findInventoryKey(id: ItemId): ItemId | null { // domain-ok
+    return helperFindInventoryKey(gameStore, id)
   }
 
   // --- GETTERS ---
@@ -168,26 +167,28 @@ export const useInventoryStore = defineStore('inventory', () => {
     bagSellSelected.value = {}
   }
 
-  function toggleBagSellSelect(itemName: string, maxQty: number) {
-    if (bagSellSelected.value[itemName]) {
-      delete bagSellSelected.value[itemName]
+  function toggleBagSellItem(itemId: ItemId, maxQty: number) {
+    if (bagSellSelected.value[itemId]) {
+      delete bagSellSelected.value[itemId]
     } else {
-      bagSellSelected.value[itemName] = maxQty
+      bagSellSelected.value[itemId] = maxQty
     }
   }
 
-  function updateBagSellQty(itemName: string, qty: string | number, maxQty: number) {
+  function updateBagSellQty(itemId: ItemId, qty: number | string, maxQty: number) {
     let q = typeof qty === 'string' ? parseInt(qty) : qty
     if (isNaN(q) || q < 1) q = 1
     if (q > maxQty) q = maxQty
-    bagSellSelected.value[itemName] = q
+    bagSellSelected.value[itemId] = q
   }
 
   function getBagSellTotalGain() {
     let total = 0
-    Object.entries(bagSellSelected.value).forEach(([name, q]) => {
-      const itemInfo = getItemById(name)
-      if (itemInfo) total += Math.floor((itemInfo.price || 0) * ITEM_SELL_REFUND_FACTOR) * q
+    Object.entries(bagSellSelected.value).forEach(([id, q]) => {
+      if (isItemId(id) && typeof q === 'number') {
+        const itemInfo = getItemById(id)
+        if (itemInfo) total += Math.floor((itemInfo.price || 0) * ITEM_SELL_REFUND_FACTOR) * q
+      }
     })
     return total
   }
@@ -197,13 +198,18 @@ export const useInventoryStore = defineStore('inventory', () => {
     if (selectedEntries.length === 0) return false
 
     const totalGain = getBagSellTotalGain()
-    const inv = gameStore.state.inventory || {}
+    const inv: Partial<Record<ItemId, number>> = { ...gameStore.state.inventory }
     
-    selectedEntries.forEach(([name, qty]) => {
-      const actualKey = findInventoryKey(name)
-      if (!actualKey) return
-      inv[actualKey] = (inv[actualKey] || 0) - qty
-      if (inv[actualKey] <= 0) delete inv[actualKey]
+    selectedEntries.forEach(([key, qty]) => {
+      if (isItemId(key) && typeof qty === 'number') {
+        const current = inv[key] || 0
+        const next = current - qty
+        if (next <= 0) {
+          delete inv[key]
+        } else {
+          inv[key] = next
+        }
+      }
     })
 
     gameStore.state.inventory = { ...inv }
@@ -213,19 +219,16 @@ export const useInventoryStore = defineStore('inventory', () => {
     return totalGain
   }
 
-  function removeItem(itemName: string, qty: number = 1) {
+  function removeItem(itemId: ItemId, qty: number = 1) {
     const inv = gameStore.state.inventory
-    if (!inv) return
-
-    const actualKey = findInventoryKey(itemName)
-    if (!actualKey || !inv[actualKey]) return
+    if (!inv || !inv[itemId]) return
     
     const REMOVE_ALL_ITEM_QTY_FLAG = 999
     if (qty === REMOVE_ALL_ITEM_QTY_FLAG) {
-      delete inv[actualKey]
+      delete inv[itemId]
     } else {
-      inv[actualKey] -= qty
-      if (inv[actualKey] <= 0) delete inv[actualKey]
+      inv[itemId]! -= qty
+      if (inv[itemId]! <= 0) delete inv[itemId]
     }
     
     // Force reactivity for inventory object
@@ -233,47 +236,44 @@ export const useInventoryStore = defineStore('inventory', () => {
     gameStore.save(false)
   }
 
-  function addItem(itemName: string, qty: number = 1) {
-    if (!itemName) return
+  function addItem(itemId: ItemId, qty: number = 1) {
+    if (!itemId) return
     const inventory = gameStore.state.inventory || {}
     
-    const actualKey = findInventoryKey(itemName) || itemName
-    inventory[actualKey] = (inventory[actualKey] || 0) + qty
+    inventory[itemId] = (inventory[itemId] || 0) + qty
     gameStore.state.inventory = { ...inventory } // Force reactivity
     gameStore.save(false)
   }
 
-  function sellItem(itemId: string, qty: number = 1) {
+  function sellItem(itemId: ItemId, qty: number = 1) {
     const itemInfo = getItemById(itemId)
     
-    const actualKey = findInventoryKey(itemId) || itemId
-    const inventoryQty = gameStore.state.inventory[actualKey] || 0
+    const inventoryQty = gameStore.state.inventory[itemId] || 0
     const sellQty = qty === 999 ? inventoryQty : Math.min(qty, inventoryQty)
     
     const gain = Math.floor((itemInfo.price || 0) * ITEM_SELL_REFUND_FACTOR) * sellQty
     
-    removeItem(actualKey, sellQty)
+    removeItem(itemId, sellQty)
     gameStore.state.money += gain
     gameStore.save(false)
   }
 
-  async function processBatchAction(itemMap: Map<string, number>, mode: ItemDiscardAction) {
+  async function processBatchAction(itemMap: Map<ItemId, number>, mode: ItemDiscardAction) {
     let totalGain = 0
     const inventory = gameStore.state.inventory || {}
 
-    for (const [name, qty] of itemMap.entries()) {
-      const actualKey = findInventoryKey(name)
-      if (!actualKey || !inventory[actualKey]) continue
+    for (const [id, qty] of itemMap.entries()) {
+      if (!inventory[id]) continue
       
-      const actualQty = Math.min(qty, inventory[actualKey])
+      const actualQty = Math.min(qty, inventory[id]!)
       
       if (mode === 'sell') {
-        const itemInfo = getItemById(name)
+        const itemInfo = getItemById(id)
         totalGain += Math.floor((itemInfo.price || 0) * ITEM_SELL_REFUND_FACTOR) * actualQty
       }
 
-      inventory[actualKey] -= actualQty
-      if (inventory[actualKey] <= 0) delete inventory[actualKey]
+      inventory[id]! -= actualQty
+      if (inventory[id]! <= 0) delete inventory[id]
     }
 
     gameStore.state.inventory = { ...inventory }
@@ -284,11 +284,11 @@ export const useInventoryStore = defineStore('inventory', () => {
   }
 
   // --- ITEM ACTIONS ---
-  function useItem(itemName: string, context: PokemonStorageLocation | null = null, index: number | null = null): ItemEffectResult {
-    return executeUseItem(itemName, context, index)
+  function useItem(itemId: ItemId, context: PokemonStorageLocation | null = null, index: number | null = null): ItemEffectResult {
+    return executeUseItem(itemId, context, index)
   }
 
-  function equipItem(itemName: string, context: PokemonStorageLocation, index: number) {
+  function equipItem(itemId: ItemId, context: PokemonStorageLocation, index: number) {
     const list = context === 'team' ? gameStore.state.team : gameStore.state.box
     const pokemon = list[index]
     if (!pokemon) return false
@@ -298,15 +298,13 @@ export const useInventoryStore = defineStore('inventory', () => {
     // If already has an item, return it to inventory
     if (pokemon.heldItem) {
       const oldItem = pokemon.heldItem
-      const oldItemKey = findInventoryKey(oldItem) || oldItem
-      inv[oldItemKey] = (inv[oldItemKey] || 0) + 1
+      inv[oldItem] = (inv[oldItem] || 0) + 1
     }
 
-    pokemon.heldItem = itemName
-    const actualKey = findInventoryKey(itemName)
-    if (actualKey && inv[actualKey] !== undefined) {
-      inv[actualKey] = (inv[actualKey] || 0) - 1
-      if (inv[actualKey] <= 0) delete inv[actualKey]
+    pokemon.heldItem = itemId
+    if (inv[itemId] !== undefined) {
+      inv[itemId]! -= 1
+      if (inv[itemId]! <= 0) delete inv[itemId]
     }
 
     gameStore.state.inventory = { ...inv }
@@ -321,9 +319,8 @@ export const useInventoryStore = defineStore('inventory', () => {
 
     const item = pokemon.heldItem
     const inv = gameStore.state.inventory || {}
-    const actualKey = findInventoryKey(item) || item
 
-    inv[actualKey] = (inv[actualKey] || 0) + 1;
+    inv[item] = (inv[item] || 0) + 1
     pokemon.heldItem = null
 
     gameStore.state.inventory = { ...inv }
@@ -343,10 +340,12 @@ export const useInventoryStore = defineStore('inventory', () => {
     bagItems,
     CATEGORY_LABELS,
     toggleBagSellMode,
-    toggleBagSellSelect,
+    toggleBagSellItem,
+    toggleBagSellSelect: toggleBagSellItem,
     updateBagSellQty,
     getBagSellTotalGain,
     confirmBagSell,
+    findInventoryKey,
     // Items
     useItem,
     equipItem,

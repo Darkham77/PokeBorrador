@@ -13,7 +13,6 @@ import DebugTimeTab from './debug/DebugTimeTab.vue'
 import DebugModalsTab from './debug/DebugModalsTab.vue'
 import DebugMapTab from './debug/DebugMapTab.vue'
 import DebugMissionsTab from './debug/DebugMissionsTab.vue'
-import DebugAudioAnimTab from './debug/DebugAudioAnimTab.vue'
 import DebugTrainersTab from './debug/DebugTrainersTab.vue'
 import { DEBUG_PANEL_CATEGORIES } from './debug/debugPanelCategories.ts'
 
@@ -141,9 +140,6 @@ onBeforeUnmount(() => window.removeEventListener(GAME_UI_EVENTS.BATTLE_ENTERING,
           />
           <DebugMissionsTab
             v-if="selectedCategory === 'missions'"
-          />
-          <DebugAudioAnimTab
-            v-if="selectedCategory === 'audio'"
           />
         </main>
       </div>

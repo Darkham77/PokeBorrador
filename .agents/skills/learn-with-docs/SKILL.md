@@ -29,4 +29,7 @@ When saving a new behavior, constraint, or success pattern:
    - Pass complete `ArtifactMetadata` containing `UserFacing: true`, `RequestFeedback: true`, and a detailed multi-line `Summary` describing the proposed rules/lessons.
 4. **Language Integrity Check**: Ensure the proposed rules or additions inside the `learning_proposal.md` diff blocks are written in English (matching the target files), while all descriptions, justifications, and chat explanations are in Spanish.
 5. **Get User Approval**: Stop and wait for the user's explicit approval on the proposal before applying any changes to the files.
+6. **Documentation-Only Verification**: After applying changes to `AGENTS.md` or skill files, ONLY run DOX integrity checks (`npx tsx .agents/skills/dox-navigator/scripts/audit_dox.ts`) and fast markdown linting (`npm run lint:md` or `npm run lint`).
+   - **STRICT PROHIBITION ON RUNNING TESTS FOR DOCS**: You are STRICTLY FORBIDDEN from running `npm run test`, Vitest, Node test runners, or E2E simulations when updating documentation, DOX indices, or `.md` files. Test suites are exclusively for code logic changes in `src/` or `database/`.
+
 

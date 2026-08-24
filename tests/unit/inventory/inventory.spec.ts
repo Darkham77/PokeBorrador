@@ -38,7 +38,7 @@ describe('Inventory Store', () => {
   it('calculates bagItems correctly', () => {
     const store = useInventoryStore()
     expect(store.bagItems.length).toBeGreaterThan(0)
-    const pokeball = store.bagItems.find(i => i.name === 'Pokéball')
+    const pokeball = store.bagItems.find(i => i.id === 'pokeball')
     expect(pokeball).toBeDefined()
     expect(pokeball!.qty).toBe(10)
   })

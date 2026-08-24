@@ -6,8 +6,8 @@ describe('Audit Reproduction Test - Showdown Parity Bugs', () => {
     const pNormal = { hp: 10, maxHp: 100, status: '' };
     const pSleep = { hp: 10, maxHp: 100, status: 'slp' };
 
-    const resNormal = calculateCatchRatePure(pNormal as any, 'poke-ball');
-    const resSleep = calculateCatchRatePure(pSleep as any, 'poke-ball');
+    const resNormal = calculateCatchRatePure(pNormal as any, 'pokeball');
+    const resSleep = calculateCatchRatePure(pSleep as any, 'pokeball');
 
     expect((resNormal as any).statusMultiplierApplied).toBe(false);
     expect((resSleep as any).statusMultiplierApplied).toBe(true);

@@ -16,9 +16,16 @@ export default defineConfig({
   test: {
     globals: true,
     pool: 'forks',
+    threads: {
+      execArgv: ['--no-experimental-webstorage', '--no-warnings=ExperimentalWarning'],
+    },
+    forks: {
+      execArgv: ['--no-experimental-webstorage', '--no-warnings=ExperimentalWarning'],
+    },
     fileParallelism: true,
     teardownTimeout: 2000,
     include: ['tests/node/**/*.test.ts'],
+    setupFiles: ['./tests/vitest.node.setup.ts'],
     testTimeout: 60000,
     coverage: {
       provider: 'v8',

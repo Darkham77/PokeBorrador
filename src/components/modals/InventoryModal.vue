@@ -53,7 +53,9 @@ const isSmallScreen = computed(() => ui.isSmallScreen)
 
 // State
 const multiSelectMode = ref<string | null>(null)
-const selectedItems = reactive(new Map<string, number>()) // name -> qty
+import type { ItemId } from '@/data/inventory/items'
+
+const selectedItems = reactive(new Map<ItemId, number>())
 const quantitySelectionItem = ref<InventoryListItem | null>(null)
 const itemActionMenu = ref<InventoryListItem | null>(null) // { item, type: 'sell'|'release'|'menu' }
 
@@ -562,62 +564,4 @@ const { onBeforeEnter, onEnter, onLeave } = useGridTransitions(isCategorySwitchi
   </BaseModal>
 </template>
 
-<style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-@use "@/styles/components/inventory";
-
-
-
-.is-battle-mode {
-  height: 520px !important;
-
-  .inventory-main {
-    border-radius: 0 0 24px 24px;
-    padding-top: 10px;
-  }
-
-  :deep(.item-premium-grid) {
-    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)) !important;
-  }
-}
-
-.battle-search-section {
-  padding: 0 20px 12px 20px;
-  @include gpu-layer;
-
-  .search-input-wrap {
-    @include premium-search-input;
-  }
-}
-
-.modal-main-tabs {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-  align-items: center;
-}
-
-.modal-tab-btn {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  color: var(--gray);
-  font-size: 11px;
-  padding: 6px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  @include pixelated;
-
-  &:hover {
-    color: var(--white);
-    background: Rgba(255, 255, 255, 0.06);
-  }
-
-  &.active {
-    color: var(--white);
-    background: var(--red);
-    border-color: var(--red-light);
-    box-shadow: 0 0 8px Rgba(239, 68, 68, 0.4);
-    text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
-  }
-}
-</style>
+<style scoped src="./InventoryModal.styles.scss" lang="scss"></style>

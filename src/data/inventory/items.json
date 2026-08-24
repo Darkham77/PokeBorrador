@@ -10844,6 +10844,24 @@
       "showInWarShop": false,
       "desc": "Banco de trabajo estándar para ensamblar componentes y herramientas.",
       "isCanon": false
+    },
+    {
+      "id": "bicycle",
+      "craftingTier": 3,
+      "cat": "tools",
+      "sprite": "crafting/tier3/bicycle",
+      "name": "Bicicleta",
+      "icon": "🚲",
+      "price": 10000,
+      "bcPrice": 350,
+      "warPrice": 50,
+      "unlockLv": 5,
+      "tier": "rare",
+      "showInNormalShop": true,
+      "showInBCShop": false,
+      "showInWarShop": false,
+      "desc": "Bicicleta plegable para desplazarse rápidamente por las rutas.",
+      "isCanon": true
     }
   ]
 }

@@ -41,11 +41,20 @@ Before attempting to upgrade any library in the "Core Stack", this protocol MUST
 
 ---
 
-## 🛠️ Maintenance Commands
+## 🛠️ Environment Initialization & Tool Update Mandate
 
+Whenever asked to "actualizar herramientas", "update tools", "preparar entorno", or "instalar librerías / dependencias", the agent MUST execute the dedicated root setup script corresponding to the current operating system. This script automatically handles NVM verification/installation, Node.js runtime alignment (`engines.node`), global npm update (`npm install -g npm@latest`), global npm security settings, and deterministic project dependency installation via `npm ci`:
+
+- **Linux / macOS**: `./setup-linux.sh` (or `bash setup-linux.sh`)
+- **Windows (PowerShell as Administrator)**: `PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1`
+
+### 🛠️ Diagnostic & Maintenance Commands
+
+- **Update Tools & Clean Dependencies (Single Command)**: `./setup-linux.sh` (Linux/macOS) / `.\setup-windows.ps1` (Windows)
+- **Verify Build Tools**: `npm run validate:tools` (verifies and compiles native binary `css-checker-kit`)
 - **Verify Vulnerabilities**: `npm audit`
 - **Clean Cache**: `npm cache clean --force`
-- **Clean Reinstall**: `rm -rf node_modules package-lock.tson && npm install`
+- **Clean Reinstall (Manual)**: `rm -rf node_modules package-lock.json && npm install`
 
 ---
 

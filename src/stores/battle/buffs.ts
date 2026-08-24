@@ -4,6 +4,7 @@ import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game.ts'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { ToolQualityTier } from '@/types/system/game'
+import { isItemId, type ItemId } from '@/data/inventory/items'
 
 export const useBuffsStore = defineStore('buffs', () => {
   const gameStore = useGameStore()
@@ -110,7 +111,7 @@ export const useBuffsStore = defineStore('buffs', () => {
     else if (buffName === 'iv-scanner') s.ivScannerSecs = seconds
     else if (buffName === 'incense') {
       s.incenseSecs = (s.incenseSecs || 0) + seconds
-      if (extraData) s.incenseType = extraData
+      if (extraData) s.incenseType = isItemId(extraData) ? extraData : null
     }
     gameStore.save(false)
   }
@@ -187,10 +188,24 @@ export const useBuffsStore = defineStore('buffs', () => {
     if (s.ivScannerSecs > 0) list.push({ id: 'iv-scanner', secs: s.ivScannerSecs, name: '🔍 Escáner de IVs', desc: 'Muestra los IVs totales de Pokémon salvajes.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'poke_radar') })
     
     if (s.incenseSecs > 0) {
-      const types: Record<string, string> = { fire: 'Fuego', water: 'Agua', grass: 'Planta', normal: 'Normal', ghost: 'Fantasma', psychic: 'Psíquico' }
-      const sprites: Record<string, string> = { fire: 'luck_incense', water: 'luck_incense', grass: 'luck_incense', normal: 'luck_incense', ghost: 'luck_incense', psychic: 'luck_incense' }
-      const tName = types[s.incenseType || ''] || 'Desconocido'
-      const tSprite = sprites[s.incenseType || ''] || 'luck_incense'
+      const types: Partial<Record<ItemId, string>> = {
+        incensefire: 'Fuego',
+        incensewater: 'Agua',
+        incensegrass: 'Planta',
+        incensenormal: 'Normal',
+        incenseghost: 'Fantasma',
+        incensepsychic: 'Psíquico',
+      }
+      const sprites: Partial<Record<ItemId, string>> = {
+        incensefire: 'luck_incense',
+        incensewater: 'luck_incense',
+        incensegrass: 'luck_incense',
+        incensenormal: 'luck_incense',
+        incenseghost: 'luck_incense',
+        incensepsychic: 'luck_incense',
+      }
+      const tName = (s.incenseType && types[s.incenseType]) || 'Desconocido'
+      const tSprite = (s.incenseType && sprites[s.incenseType]) || 'luck_incense'
       list.push({ 
         id: 'incense', 
         secs: s.incenseSecs, 

@@ -73,12 +73,39 @@ export const useDebugStore = defineStore('debug', () => {
   const forceRival = ref(false)
   const forceGuardian80 = ref(false)
   const forceShiny100 = ref(false)
+
+  // Configurable Spawn & Minigames Rates (null = default game calculation)
+  const forceEncounterType = ref<'none' | 'wild' | 'trainer' | 'rival' | 'fishing' | 'archaeology'>('none')
+  const shinyRateOverride = ref<number | null>(null)
+  const trainerChancePct = ref<number | null>(null)
+  const rivalChancePct = ref<number | null>(null)
+  const guardianChancePct = ref<number | null>(null)
+  const defenderChancePct = ref<number | null>(null)
+  const fishingChancePct = ref<number | null>(null)
+  const archaeologyChancePct = ref<number | null>(null)
+
   const debugMultipliers = ref({
     shiny: 1,
     trainer: 1,
     fishing: 1,
     rival: 1
   })
+
+  function resetSpawnDefaults() {
+    forceEncounterType.value = 'none'
+    shinyRateOverride.value = null
+    trainerChancePct.value = null
+    rivalChancePct.value = null
+    guardianChancePct.value = null
+    defenderChancePct.value = null
+    fishingChancePct.value = null
+    archaeologyChancePct.value = null
+    trainerChance50.value = false
+    forceRival.value = false
+    forceGuardian80.value = false
+    forceShiny100.value = false
+    updateGlobalProxy()
+  }
 
   function register(config: DebugTool) {
     if (tools.value.some(t => t.id === config.id)) return
@@ -103,10 +130,18 @@ export const useDebugStore = defineStore('debug', () => {
 
     // Bind reactive state directly to the window object so static logic can access them
     if (window.__VITE_DEBUG__) {
-      Reflect.set(window.__VITE_DEBUG__, 'trainerChance50', trainerChance50.value)
-      Reflect.set(window.__VITE_DEBUG__, 'forceRival', forceRival.value)
-      Reflect.set(window.__VITE_DEBUG__, 'forceGuardian80', forceGuardian80.value)
-      Reflect.set(window.__VITE_DEBUG__, 'forceShiny100', forceShiny100.value)
+      Reflect.set(window.__VITE_DEBUG__, 'trainerChance50', trainerChance50.value || trainerChancePct.value === 50)
+      Reflect.set(window.__VITE_DEBUG__, 'forceRival', forceRival.value || rivalChancePct.value === 100)
+      Reflect.set(window.__VITE_DEBUG__, 'forceGuardian80', forceGuardian80.value || guardianChancePct.value === 80)
+      Reflect.set(window.__VITE_DEBUG__, 'forceShiny100', forceShiny100.value || shinyRateOverride.value === 1)
+      Reflect.set(window.__VITE_DEBUG__, 'shinyRateOverride', shinyRateOverride.value)
+      Reflect.set(window.__VITE_DEBUG__, 'trainerChancePct', trainerChancePct.value)
+      Reflect.set(window.__VITE_DEBUG__, 'rivalChancePct', rivalChancePct.value)
+      Reflect.set(window.__VITE_DEBUG__, 'guardianChancePct', guardianChancePct.value)
+      Reflect.set(window.__VITE_DEBUG__, 'defenderChancePct', defenderChancePct.value)
+      Reflect.set(window.__VITE_DEBUG__, 'fishingChancePct', fishingChancePct.value)
+      Reflect.set(window.__VITE_DEBUG__, 'archaeologyChancePct', archaeologyChancePct.value)
+      Reflect.set(window.__VITE_DEBUG__, 'forceEncounterType', forceEncounterType.value === 'none' ? undefined : forceEncounterType.value)
       Reflect.set(window.__VITE_DEBUG__, 'multipliers', debugMultipliers.value)
     }
 
@@ -143,7 +178,21 @@ export const useDebugStore = defineStore('debug', () => {
     updateGlobalProxy()
   }
 
-  watch([trainerChance50, debugMultipliers, forceRival, forceGuardian80, forceShiny100], () => {
+  watch([
+    trainerChance50,
+    debugMultipliers,
+    forceRival,
+    forceGuardian80,
+    forceShiny100,
+    forceEncounterType,
+    shinyRateOverride,
+    trainerChancePct,
+    rivalChancePct,
+    guardianChancePct,
+    defenderChancePct,
+    fishingChancePct,
+    archaeologyChancePct
+  ], () => {
     updateGlobalProxy()
   }, { deep: true })
 
@@ -164,6 +213,15 @@ export const useDebugStore = defineStore('debug', () => {
     forceRival,
     forceGuardian80,
     forceShiny100,
+    forceEncounterType,
+    shinyRateOverride,
+    trainerChancePct,
+    rivalChancePct,
+    guardianChancePct,
+    defenderChancePct,
+    fishingChancePct,
+    archaeologyChancePct,
+    resetSpawnDefaults,
     // fallow-ignore-next-line unused-store-member
     debugMultipliers
   }

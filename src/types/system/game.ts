@@ -33,7 +33,8 @@ export interface PokedexItem {
 
 export interface ClaimItem {
   id: string | number; // domain-ok
-  type: 'pokemon' | 'item' | 'currency';
+  user_id?: string; // domain-ok
+  type?: 'pokemon' | 'item' | 'currency';
   asset_data: {
     type: MarketAssetType;
     data: unknown; // open-record
@@ -106,6 +107,7 @@ export type PillFxType = 'glow' | 'drift' | 'shake' | '';
 export interface GameState {
   trainer: string; // domain-ok
   gender?: GenderId;
+  last_renamed_at?: string; // domain-ok
   playtime?: number;
   badges: number;
   balls: number;

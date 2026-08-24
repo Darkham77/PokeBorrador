@@ -26,7 +26,7 @@ export function calculateBreedingCost(pA: Pokemon, pB: Pokemon): number {
 }
 
 export function executeCloneFossil(
-  fossilId: string,
+  fossilId: ItemId,
   extraQty: number,
   warehouseEggs: Ref<DaycareEgg[]>,
   saveWarehouseEggs: () => void
@@ -54,11 +54,11 @@ export function executeCloneFossil(
     return false;
   }
 
-  const FOSSIL_SPECIES_MAP: Record<ItemId, PokemonSpeciesId> = {
+  const FOSSIL_SPECIES_MAP: Partial<Record<ItemId, PokemonSpeciesId>> = {
     domefossil: 'kabuto',
     helixfossil: 'omanyte',
     oldamber: 'aerodactyl'
-  } satisfies Partial<Record<ItemId, PokemonSpeciesId>>;
+  };
   
   const validFossilId = requireItemId(fossilId);
   const speciesId = FOSSIL_SPECIES_MAP[validFossilId];

@@ -3,6 +3,7 @@ import { handleCoreEvents } from '@/logic/battle/showdownBridgeCore';
 import { handleMiscEvents } from '@/logic/battle/showdownBridgeMisc';
 import { handleFieldEvents } from '@/logic/battle/showdownBridgeField';
 import { calculateCatchRatePure } from '@/logic/battle/battleCatchMath';
+import type { ItemId } from '@/data/inventory/items';
 
 // --- From test_bug025_player_name_mapping.spec.ts ---
 describe('Audit Parity - BUG-025: player token name→side mapping inverted lookup', () => {
@@ -435,7 +436,7 @@ describe('Audit Parity - BUG-055: -enditem sets lastItem', () => {
     };
 
     handleMiscEvents(ctx as any);
-    expect(target.item).toBe('');
+    expect(target.item).toBeNull();
     expect(target.lastItem).toBe('sitrusberry');
   });
 });
@@ -443,7 +444,7 @@ describe('Audit Parity - BUG-055: -enditem sets lastItem', () => {
 // --- From test_bug056_item_resets_lastitem.spec.ts ---
 describe('Audit Parity - BUG-056: -item resets lastItem', () => {
   it('should clear lastItem when receiving a new item via -item', () => {
-    const target = { name: 'Snorlax', item: '', lastItem: 'sitrusberry' };
+    const target = { name: 'Snorlax', item: null as ItemId | null, lastItem: 'sitrusberry' as ItemId | null };
     const ctx = {
       store: { activeBattle: { value: {} }, addLog: () => {} },
       type: '-item',
@@ -454,7 +455,7 @@ describe('Audit Parity - BUG-056: -item resets lastItem', () => {
     };
     handleMiscEvents(ctx as any);
     expect(target.item).toBe('leftovers');
-    expect(target.lastItem).toBe('');
+    expect(target.lastItem).toBeNull();
   });
 });
 
@@ -682,7 +683,7 @@ describe('Audit Parity - BUG-079: anim token handled return true', () => {
 describe('Audit Parity - BUG-081: catch rate status multiplier', () => {
   it('should apply 2.5 multiplier for sleep status', () => {
     const pokeSlp = { name: 'Pikachu', hp: 10, maxHp: 100, status: 'slp', catchRate: 45 };
-    const res = calculateCatchRatePure(pokeSlp as any, 'poke-ball', 1, {});
+    const res = calculateCatchRatePure(pokeSlp as any, 'pokeball', 1, {});
     expect(res.statusMultiplierApplied).toBe(true);
   });
 });
@@ -691,7 +692,7 @@ describe('Audit Parity - BUG-081: catch rate status multiplier', () => {
 describe('Audit Parity - BUG-082: dusk ball multiplier', () => {
   it('should apply 3.0 dusk multiplier during dusk cycle', () => {
     const poke = { name: 'Pikachu', hp: 100, maxHp: 100, catchRate: 45 };
-    const res = calculateCatchRatePure(poke as any, 'dusk', 1, { cycle: 'dusk' });
+    const res = calculateCatchRatePure(poke as any, 'duskball', 1, { cycle: 'dusk' });
     expect(res).toBeDefined();
   });
 });

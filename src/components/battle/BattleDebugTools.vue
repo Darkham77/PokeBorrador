@@ -3,11 +3,13 @@ import { ref, computed } from 'vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import DebugAudioAnimTab from '@/components/admin/debug/DebugAudioAnimTab.vue'
 import TimeDebugControls from '@/components/admin/debug/shared/TimeDebugControls.vue'
+import SpawnDebugControls from '@/components/admin/debug/shared/SpawnDebugControls.vue'
 import DebugActionPanel from '@/components/battle/DebugActionPanel.vue'
 
 const isOpen = ref(false)
 const isEffectsOpen = ref(false)
 const isTimeOpen = ref(false)
+const isSpawnOpen = ref(false)
 
 const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_DEBUG__)
 </script>
@@ -16,7 +18,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
   <div
     v-if="isDebug"
     class="battle-debug-tools"
-    :class="{ 'is-open': isOpen || isEffectsOpen || isTimeOpen }"
+    :class="{ 'is-open': isOpen || isEffectsOpen || isTimeOpen || isSpawnOpen }"
   >
     <!-- MODULAR ACTION DEBUG PANEL -->
     <Transition name="slide-up">
@@ -71,6 +73,29 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
       </div>
     </Transition>
 
+    <!-- SPAWN PANEL -->
+    <Transition name="slide-up">
+      <div
+        v-if="isSpawnOpen"
+        class="spawn-menu custom-scrollbar-vicio"
+      >
+        <div class="spawn-header">
+          <span class="icon">🎲</span>
+          <span class="title">SPAWN & MINIGAMES CONDITIONS</span>
+          <button
+            id="battle-debug-spawn-close-btn"
+            class="close-mini"
+            @click.stop="isSpawnOpen = false"
+          >
+            ✕
+          </button>
+        </div>
+        <div class="spawn-scroll-area">
+          <SpawnDebugControls />
+        </div>
+      </div>
+    </Transition>
+
     <!-- TRIGGERS ROW -->
     <div class="debug-triggers-row">
       <PVTooltip title="Debug Menu">
@@ -78,7 +103,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
           id="battle-debug-menu-btn"
           class="debug-trigger"
           :class="{ active: isOpen }"
-          @click.stop="isOpen = !isOpen; isEffectsOpen = false; isTimeOpen = false"
+          @click.stop="isOpen = !isOpen; isEffectsOpen = false; isTimeOpen = false; isSpawnOpen = false"
         >
           <span class="icon">🕹️</span>
           <span class="label">DEBUG</span>
@@ -90,7 +115,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
           id="battle-debug-effects-btn"
           class="effects-trigger"
           :class="{ active: isEffectsOpen }"
-          @click.stop="isEffectsOpen = !isEffectsOpen; isOpen = false; isTimeOpen = false"
+          @click.stop="isEffectsOpen = !isEffectsOpen; isOpen = false; isTimeOpen = false; isSpawnOpen = false"
         >
           <span class="icon">✨</span>
           <span class="label">EFECTOS</span>
@@ -101,10 +126,22 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
         <button
           class="time-trigger"
           :class="{ active: isTimeOpen }"
-          @click.stop="isTimeOpen = !isTimeOpen; isOpen = false; isEffectsOpen = false"
+          @click.stop="isTimeOpen = !isTimeOpen; isOpen = false; isEffectsOpen = false; isSpawnOpen = false"
         >
           <span class="icon">⌛</span>
           <span class="label">TIEMPO</span>
+        </button>
+      </PVTooltip>
+
+      <PVTooltip title="Spawn, Encounters & Minigames">
+        <button
+          id="battle-debug-spawn-btn"
+          class="spawn-trigger"
+          :class="{ active: isSpawnOpen }"
+          @click.stop="isSpawnOpen = !isSpawnOpen; isOpen = false; isEffectsOpen = false; isTimeOpen = false"
+        >
+          <span class="icon">🎲</span>
+          <span class="label">SPAWN</span>
         </button>
       </PVTooltip>
     </div>
@@ -137,11 +174,9 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
   width: 100%;
 }
 
-.debug-trigger, .effects-trigger {
+.debug-trigger, .effects-trigger, .time-trigger, .spawn-trigger {
   @include btn-vicio('info', 'xs', true);
   background: Rgba(20, 20, 30, 0.95);
-  border: 2px solid var(--yellow);
-  color: var(--yellow);
   font-size: 7px;
   height: 24px;
   padding: 0 14px;
@@ -152,12 +187,16 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
   text-shadow: 1px 1px 0 $black;
   box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.6);
   @include pixelated;
-  
+}
+
+.debug-trigger {
+  border: 2px solid var(--yellow);
+  color: var(--yellow);
   &:hover, &.active { background: var(--yellow); color: $black; text-shadow: none; }
 }
 
 .effects-trigger {
-  border-color: var(--purple);
+  border: 2px solid var(--purple);
   color: var(--purple);
   &:hover, &.active { background: var(--purple); color: white; }
 }
@@ -239,21 +278,51 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
 }
 
 .time-trigger {
-  @include btn-vicio('info', 'xs', true);
-  background: Rgba(20, 20, 30, 0.95);
   border: 2px solid var(--blue);
   color: var(--blue);
-  font-size: 7px;
-  height: 24px;
-  padding: 0 14px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  text-shadow: 1px 1px 0 $black;
-  box-shadow: 0 4px 15px Rgba(0, 0, 0, 0.6);
-  @include pixelated;
-  
   &:hover, &.active { background: var(--blue); color: white; text-shadow: none; }
+}
+
+.spawn-menu {
+  background: Rgba(15, 15, 25, 0.99);
+  border: 2px solid var(--green);
+  border-radius: 8px;
+  width: 340px;
+  max-width: 90dvw;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  pointer-events: all;
+  box-shadow: 0 15px 50px Rgba(0,0,0,0.9);
+  @include gpu-layer;
+  margin-bottom: 12px;
+
+  .spawn-header {
+    background: Rgba(34, 197, 94, 0.15);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
+
+    .title { @include pixelated; font-size: 8px; color: var(--green); flex: 1; }
+    .close-mini { background: none; border: none; color: white; cursor: pointer; opacity: 0.5; &:hover { opacity: 1; } }
+  }
+
+  .spawn-scroll-area {
+    padding: 16px;
+    min-height: 0;
+    overflow-y: auto;
+    flex: 1;
+    @include smooth-scroll;
+  }
+}
+
+.spawn-trigger {
+  border: 2px solid var(--green);
+  color: var(--green);
+  &:hover, &.active { background: var(--green); color: $black; text-shadow: none; }
 }
 </style>

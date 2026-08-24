@@ -2,8 +2,7 @@ import { queryLocal } from '../sqliteEngine.ts';
 import type { SQLiteDatabase } from '../sqliteEngine.ts';
 import type { DBResponse } from '@/types/system/database';
 import { MIN_TRAINER_NAME_LENGTH, MAX_TRAINER_NAME_LENGTH } from '@/logic/constants/gameplay.ts';
-
-const RENAME_COOLDOWN_DAYS = 30;
+import { RENAME_COOLDOWN_DAYS } from '@/logic/player/identityCooldown.ts';
 
 export async function emulateChangeUsername(
   _sqliteDb: SQLiteDatabase,

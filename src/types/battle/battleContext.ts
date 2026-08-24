@@ -3,6 +3,7 @@ import { BattleState, BattleStages, BattleLog, type BattleSource, type BattleSid
 import { Pokemon, Move } from '@/types/pokemon/pokemon';
 import { GameStore, BattleStore, UIStore, WarStore, EventStore, PlayerClassStore, AudioStore, BattleOptions } from '@/types/system/stores';
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
+import type { ItemId } from '@/data/inventory/items';
 
 export type BattleSeatId = 'seat1' | 'seat2' | 'seat3' | 'seat4';
 
@@ -58,7 +59,7 @@ export interface BattleContext {
     revealWildPokemon: (isInstant?: boolean) => Promise<void>;
     triggerWildEmergence: () => Promise<void>;
     triggerCatchSparkles: (side: string) => Promise<void>;
-    handleCatchRequest: (detail: string | { side?: string; ballId?: string; pokemon?: Pokemon }) => Promise<void>;
+    handleCatchRequest: (detail: string | { side?: string; ballId?: ItemId; pokemon?: Pokemon }) => Promise<void>;
     handleReleaseRequest: (detail: string | { side?: string; pokemon?: Pokemon }) => Promise<void>;
     handleWithdrawRequest?: (detail: string | { side?: string; pokemon?: Pokemon }) => Promise<void>;
     handleShakeRequest: (detail: string | { side?: string; isCapture?: boolean }) => Promise<void>;

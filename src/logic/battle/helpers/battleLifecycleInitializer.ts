@@ -9,6 +9,7 @@ import { processRocketStealMechanics } from '../orchestratorRocketHelper.ts'
 import { executePokemonCallSequence } from '../orchestratorCallSequence.ts'
 import { initWorkerForBattle } from '../orchestratorWorkerInitHelper.ts'
 import type { BattleOptions } from '../orchestrator.ts'
+import { requireMapRouteId } from '@/data/world/map-assets'
 
 /**
  * Visual initialization and first turn setup.
@@ -24,7 +25,10 @@ export async function initBattleSequence(
 
   // Leemos TODA la configuración del combate estrictamente del estado inyectado en CONTEXT_SETUP
   const battleState = ctx.activeBattle.value
-  const locationId = battleState?.locationId || 'route1'
+  if (!battleState?.locationId) {
+    throw new Error('[Battle] Active battle locationId is missing during initialization');
+  }
+  const locationId = requireMapRouteId(battleState.locationId);
   const isTrainer = !!battleState?.isTrainer
   const isGym = !!battleState?.isGym
   const wasSearching = !!battleState?.wasSearching
@@ -181,5 +185,6 @@ export async function initBattleSequence(
 
   ctx.isIntroAnimating.value = false
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
+  if (ctx.persistBattle) ctx.persistBattle()
   ctx.isIntroAnimating.value = false
 }

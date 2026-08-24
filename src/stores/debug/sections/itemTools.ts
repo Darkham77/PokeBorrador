@@ -86,9 +86,9 @@ export function registerItemTools(debug: DebugSystem) {
     category: 'items',
     action: () => {
       game.state.money = DEBUG_CLONING_TEST_MONEY
-      game.state.inventory['dome_fossil'] = DEBUG_CLONING_TEST_FOSSIL_QTY
-      game.state.inventory['helix_fossil'] = DEBUG_CLONING_TEST_FOSSIL_QTY
-      game.state.inventory['old_amber'] = DEBUG_CLONING_TEST_FOSSIL_QTY
+      game.state.inventory['domefossil'] = DEBUG_CLONING_TEST_FOSSIL_QTY
+      game.state.inventory['helixfossil'] = DEBUG_CLONING_TEST_FOSSIL_QTY
+      game.state.inventory['oldamber'] = DEBUG_CLONING_TEST_FOSSIL_QTY
       ui.notify(`Debug: $${DEBUG_CLONING_TEST_MONEY.toLocaleString()} y ${DEBUG_CLONING_TEST_FOSSIL_QTY}x de cada fósil añadidos`, '🧪')
       game.saveGame(false)
     },

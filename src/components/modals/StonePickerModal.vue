@@ -9,7 +9,8 @@ import { useUIStore } from '@/stores/ui';
 import { useEvolutionStore } from '@/stores/evolution';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { STONE_EVOLUTIONS, isStoneEvolutionKey } from '@/data/pokemon/evolutionData';
-import { SHOP_ITEMS } from '@/data/inventory/items';
+import { SHOP_ITEMS, type ItemId, isItemId } from '@/data/inventory/items';
+import { type PokemonSpeciesId, isPokemonSpeciesId } from '@/data/pokemon/pokedex';
 import BaseModal from '@/components/common/BaseModal.vue';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 
@@ -31,7 +32,12 @@ const evolutionStore = useEvolutionStore();
 
 const pokemon = computed(() => uiStore.selectedPokemon);
 
-const options = computed(() => {
+interface StoneOption {
+  stone: ItemId;
+  to: PokemonSpeciesId;
+}
+
+const options = computed<StoneOption[]>(() => {
   if (!pokemon.value) return [];
   
   const p = pokemon.value;
@@ -44,21 +50,24 @@ const options = computed(() => {
   }
   
   const evo = isStoneEvolutionKey(p.id) ? STONE_EVOLUTIONS[p.id] : undefined;
-  return evo ? [evo] : [];
+  if (evo && isItemId(evo.stone) && isPokemonSpeciesId(evo.to)) {
+    return [{ stone: evo.stone, to: evo.to }];
+  }
+  return [];
 });
 
 const close = () => {
   emit('close');
 };
 
-const useStone = (stoneId: string, toId: string) => {
+const useStone = (stoneId: ItemId, toId: PokemonSpeciesId) => {
   if (!pokemon.value) return;
   const currentQty = gameStore.state.inventory[stoneId];
   if (!currentQty || currentQty <= 0) return;
 
   // Consume item
   gameStore.state.inventory[stoneId] = currentQty - 1;
-  if (gameStore.state.inventory[stoneId] <= 0) {
+  if (gameStore.state.inventory[stoneId]! <= 0) {
     delete gameStore.state.inventory[stoneId];
   }
 
@@ -109,7 +118,7 @@ const getPokemonName = (id: string) => {
           v-for="opt in options" 
           :key="opt.stone"
           class="stone-option-vicio"
-          :class="{ disabled: (gameStore.state.inventory[getStoneInfo(opt.stone).id || opt.stone] || 0) <= 0 }"
+          :class="{ disabled: (gameStore.state.inventory[opt.stone] || 0) <= 0 }"
         >
           <div class="stone-sprite-box">
             <img 
@@ -129,13 +138,13 @@ const getPokemonName = (id: string) => {
               {{ getStoneInfo(opt.stone).name }}
             </div>
             <div class="evo-target">
-              → {{ getPokemonName(opt.to) }} &nbsp;·&nbsp; x{{ gameStore.state.inventory[getStoneInfo(opt.stone).id || opt.stone] || 0 }}
+              → {{ getPokemonName(opt.to) }} &nbsp;·&nbsp; x{{ gameStore.state.inventory[opt.stone] || 0 }}
             </div>
           </div>
 
           <button 
             class="use-btn-vicio"
-            :disabled="(gameStore.state.inventory[getStoneInfo(opt.stone).id || opt.stone] || 0) <= 0"
+            :disabled="(gameStore.state.inventory[opt.stone] || 0) <= 0"
             @click.stop="useStone(opt.stone, opt.to)"
           >
             USAR

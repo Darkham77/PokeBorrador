@@ -30,7 +30,7 @@ import type { CalculatedStats } from '../../../../src/logic/pokemon/statsMath.ts
 export interface FuzzerPokemonSet extends Omit<PokemonSet, 'gender' | 'species' | 'item' | 'ability' | 'nature' | 'moves'> {
   species: PokemonSpeciesId;
   gender: GenderName;
-  item: ItemId;
+  item: ItemId | '';
   ability: AbilityId;
   nature: NatureId;
   moves: PokemonMoveId[];

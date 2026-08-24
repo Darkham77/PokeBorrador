@@ -1,5 +1,6 @@
 import { computed, type Ref } from 'vue'
 import type { AbilityId } from '@/data/battle/abilities'
+import type { ItemId } from '@/data/inventory/items'
 
 const PASSIVE_BONUS_SPEED_PCT = 0.15
 const PASSIVE_BONUS_LOOT_PCT = 0.20
@@ -47,10 +48,10 @@ export function useAdventurePassives(gameStore: { state: { team?: Array<{ hp: nu
   })
 
   function triggerExtraLoot(
-    itemId: string,
+    itemId: ItemId,
     defaultQty: number = 1,
-    inventoryStore: { addItem: (id: string, qty: number) => void },
-    injectedItems: Ref<Set<string>>,
+    inventoryStore: { addItem: (id: ItemId, qty: number) => void },
+    injectedItems: Ref<Set<ItemId>>,
     travelLog: Ref<string[]>
   ) {
     const lootBonus = activeTeamPassives.value.lootBonus

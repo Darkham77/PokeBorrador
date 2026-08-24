@@ -3,6 +3,7 @@ import { GYM_IDS, isGymId, requireGymId } from '@/data/world/gyms'
 
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
+import { useProfileStore } from '@/stores/player/profile'
 import { TRAINER_RANKS } from '@/data/player/trainer'
 import { requireFactionId } from '@/types/system/game'
 import { requirePlayerClassId } from '@/data/player/playerClasses'
@@ -271,9 +272,27 @@ export function registerStatsTools(debug: DebugSystem) {
         // Also clear active mission cooldowns if any
         game.state.classData.activeMission = null
       }
-      ui.notify('Debug: Cooldowns de clases eliminados con éxito.', '⚡')
+      game.state.last_renamed_at = undefined
+      const profile = useProfileStore()
+      profile.profileData.last_renamed_at = undefined
+      profile.updateProfile({ last_renamed_at: undefined })
+
+      const localUserStr = localStorage.getItem('pokevicio_local_user')
+      if (localUserStr) {
+        try {
+          const lu = JSON.parse(localUserStr) as { user_metadata?: Record<string, unknown> }
+          if (lu.user_metadata) {
+            delete lu.user_metadata.last_renamed_at
+            localStorage.setItem('pokevicio_local_user', JSON.stringify(lu))
+          }
+        } catch (_e: unknown) {
+          /* ignored */
+        }
+      }
+
+      ui.notify('Debug: Cooldowns eliminados con éxito (clases, misiones y cambio de identidad).', '⚡')
       game.saveGame(false)
     },
-    description: 'Elimina todos los cooldowns activos de cualquier clase (escaneo de IVs, extorsión, rutas preferidas, misiones).'
+    description: 'Elimina todos los cooldowns activos de cualquier clase (escaneo de IVs, extorsión, rutas preferidas, misiones) y reinicia el cooldown de cambio de nombre y género.'
   })
 }

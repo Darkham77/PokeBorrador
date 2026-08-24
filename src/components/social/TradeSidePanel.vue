@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 import { computed } from 'vue'
-import { getItemById } from '@/data/inventory/items'
+import { getItemById, isItemId, type ItemId } from '@/data/inventory/items'
 import PokemonDisplayCard from '@/components/pokemon/PokemonDisplayCard.vue'
 import InventoryItemCard from '@/components/modals/inventory/InventoryItemCard.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
@@ -41,8 +41,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   (e: 'open-selector'): void
-  (e: 'toggle-item', name: string): void
-  (e: 'update-item-qty', name: string, qty: number): void
+  (e: 'toggle-item', id: ItemId): void
+  (e: 'update-item-qty', id: ItemId, qty: number): void
   (e: 'update:money', val: number): void
 }>()
 
@@ -52,10 +52,10 @@ const handleMoneyInput = (e: Event) => {
 }
 
 const mappedItems = computed(() => {
-  return Object.entries(props.inventory || {})
-    .filter((entry): entry is [string, number] => entry[1] !== undefined && entry[1] > 0)
-    .map(([name, qty]) => {
-      const dbItem = getItemById(name)
+  return (Object.entries(props.inventory || {}) as [string, number | undefined][])
+    .filter((entry): entry is [ItemId, number] => typeof entry[1] === 'number' && entry[1] > 0 && isItemId(entry[0]))
+    .map(([id, qty]) => {
+      const dbItem = getItemById(id)
       return {
         id: dbItem.id,
         name: dbItem.name,

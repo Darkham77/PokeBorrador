@@ -1,5 +1,5 @@
 
-import { getItemById } from '@/data/inventory/items'
+import { getItemById, isItemId, type ItemId } from '@/data/inventory/items'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 /**
@@ -15,7 +15,7 @@ export interface TagDefinition {
   isAutomatic?: boolean;
   isActive?: boolean;
   isLocked?: boolean;
-  itemId?: string;
+  itemId?: ItemId;
 }
 
 export const TAG_DEFINITIONS: Record<string, TagDefinition> = {
@@ -124,20 +124,19 @@ export function getPokemonVisualBadges(pokemon: Partial<Pokemon> | null): TagDef
   }
 
   // 3. Automatic: Held Item
-  const heldItemRaw = pokemon.heldItem || (pokemon.item && pokemon.item !== 'none' ? pokemon.item : null)
+  const heldItem = pokemon.heldItem || pokemon.item || null
   const itemBadge = POKEMON_BADGES['item'];
-  if (heldItemRaw && itemBadge) {
-    const itemId = String(heldItemRaw);
-    const itemData = getItemById(itemId);
+  if (heldItem && isItemId(heldItem) && itemBadge) {
+    const itemData = getItemById(heldItem);
 
     badges.push({ 
       ...itemBadge, 
       id: 'item',
-      label: itemData ? itemData.name.toUpperCase() : itemId.toUpperCase(), // text-ok
+      label: itemData.name.toUpperCase(), // text-ok
       shortLabel: itemBadge.shortLabel,
-      desc: (itemData && itemData.desc) ? itemData.desc : (itemBadge.desc ?? ''),
+      desc: itemData.desc ?? itemBadge.desc ?? '',
       isAutomatic: true,
-      itemId: itemId
+      itemId: heldItem
     })
   }
 

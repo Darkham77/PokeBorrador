@@ -66,6 +66,7 @@ export async function processSearchPhaseSequence(
     ctx.activeBattle.value.enemy = finalEnemyPoke
     ctx.activeBattle.value.isFishing = isFishing
     ctx.activeBattle.value.isArchaeology = isArchaeology
+    if (ctx.persistBattle) ctx.persistBattle()
   }
   return true
 }

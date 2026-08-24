@@ -12,90 +12,20 @@ Usage:
 No dependencies beyond the Python stdlib are required.
 """
 
-try:
-    import argparse
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: argparse. Run 'pip install argparse' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import base64
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: base64. Run 'pip install base64' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import json
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: json. Run 'pip install json' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import mimetypes
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: mimetypes. Run 'pip install mimetypes' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import os
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: os. Run 'pip install os' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import re
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: re. Run 'pip install re' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import signal
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: signal. Run 'pip install signal' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import subprocess
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: subprocess. Run 'pip install subprocess' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import sys
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: sys. Run 'pip install sys' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import time
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: time. Run 'pip install time' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    import webbrowser
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: webbrowser. Run 'pip install webbrowser' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    from functools import partial
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: functools. Run 'pip install functools' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    from http.server import HTTPServer, BaseHTTPRequestHandler
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: http. Run 'pip install http' to fix.")
-    import sys
-    sys.exit(1)
-try:
-    from pathlib import Path
-except ImportError:
-    print("[PYTHON_DEPENDENCY_ERROR] Missing library: pathlib. Run 'pip install pathlib' to fix.")
-    import sys
-    sys.exit(1)
+import argparse
+import base64
+import json
+import mimetypes
+import os
+import re
+import signal
+import subprocess
+import sys
+import time
+import webbrowser
+from functools import partial
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from pathlib import Path
 
 # Files to exclude from output listings
 METADATA_FILES = {"transcript.md", "user_notes.md", "metrics.json"}

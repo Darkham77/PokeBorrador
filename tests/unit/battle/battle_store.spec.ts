@@ -161,6 +161,7 @@ describe('Battle Store - Weather Reset', () => {
     const { ref } = await import('vue')
 
     const activeBattleVal = {
+      locationId: 'route1',
       weather: { type: 'rain', visual: 'rain', turns: 5 }, // Active move weather from prev battle
       isGym: false,
       enemyTeam: [],

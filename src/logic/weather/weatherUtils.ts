@@ -174,8 +174,10 @@ export function getNpcEncounterChances(
     }
   }
 
-  const hasRivalOverride = !!debug?.forceRival;
-  const finalRivalChance = hasRivalOverride ? 1.0 : rivalChance;
+  const hasRivalOverride = debug?.rivalChancePct !== undefined && debug?.rivalChancePct !== null ? true : !!debug?.forceRival;
+  const finalRivalChance = debug?.rivalChancePct !== undefined && debug?.rivalChancePct !== null
+    ? debug.rivalChancePct / 100
+    : (debug?.forceRival ? 1.0 : rivalChance);
 
   result.push({
     name: 'Rival',
@@ -196,12 +198,15 @@ export function getNpcEncounterChances(
       }
     }
   }
+  const hasDefenderOverride = debug?.defenderChancePct !== undefined && debug?.defenderChancePct !== null;
   const FACTION_DEFENDER_ENCOUNTER_PCT = 20.0;
+  const finalDefenderChance = hasDefenderOverride ? debug!.defenderChancePct! : (hasDefender ? FACTION_DEFENDER_ENCOUNTER_PCT : 0.0);
   result.push({
     name: 'Defensor de Facción',
-    chance: hasDefender ? FACTION_DEFENDER_ENCOUNTER_PCT : 0.0,
+    chance: finalDefenderChance,
     type: 'defender',
-    active: hasDefender
+    active: hasDefender || hasDefenderOverride,
+    details: hasDefenderOverride ? 'Forzado por Debug' : undefined
   });
 
   // 3. Guardian (Alfa)
@@ -214,15 +219,17 @@ export function getNpcEncounterChances(
       hasGuardian = true;
     }
   }
-  const isGuardianForced = hasGuardian && !!debug?.forceGuardian80;
+  const hasGuardianOverride = debug?.guardianChancePct !== undefined && debug?.guardianChancePct !== null ? true : (hasGuardian && !!debug?.forceGuardian80);
   const DEBUG_FORCED_GUARDIAN_PCT = 80.0;
-  const finalGuardianChance = isGuardianForced ? DEBUG_FORCED_GUARDIAN_PCT : (hasGuardian ? GUARDIAN_ENCOUNTER_CHANCE_PERCENT * 100 : 0.0);
+  const finalGuardianChance = debug?.guardianChancePct !== undefined && debug?.guardianChancePct !== null
+    ? debug.guardianChancePct
+    : (debug?.forceGuardian80 ? DEBUG_FORCED_GUARDIAN_PCT : (hasGuardian ? GUARDIAN_ENCOUNTER_CHANCE_PERCENT * 100 : 0.0));
   result.push({
     name: 'Guardián (Alfa)',
     chance: finalGuardianChance,
     type: 'guardian',
-    active: hasGuardian,
-    details: isGuardianForced ? 'Forzado por Debug' : undefined
+    active: hasGuardian || hasGuardianOverride,
+    details: hasGuardianOverride ? 'Forzado por Debug' : undefined
   });
 
   // 4. Trainer / Policía
@@ -231,8 +238,11 @@ export function getNpcEncounterChances(
   const criminality = state.classData?.criminality || 0;
   const isRocketMaxCrim = state.playerClass === 'rocket' && criminality >= 100;
 
+  const hasTrainerOverride = debug?.trainerChancePct !== undefined && debug?.trainerChancePct !== null ? true : !!debug?.trainerChance50;
   let baseTrainerChance = 0;
-  if (repelActive) {
+  if (debug?.trainerChancePct !== undefined && debug?.trainerChancePct !== null) {
+    baseTrainerChance = debug.trainerChancePct;
+  } else if (repelActive) {
     baseTrainerChance = GAME_RATIOS.encounters.trainerRepel * 100;
   } else if (debug?.trainerChance50) {
     baseTrainerChance = DEBUG_TRAINER_CHANCE_PERCENT;
@@ -248,7 +258,7 @@ export function getNpcEncounterChances(
       chance: baseTrainerChance,
       type: 'police',
       active: true,
-      details: debug?.trainerChance50 ? 'Forzado por Debug' : (repelActive ? 'Repelente' : `Crim: ${criminality}`)
+      details: hasTrainerOverride ? 'Forzado por Debug' : (repelActive ? 'Repelente' : `Crim: ${criminality}`)
     });
   } else {
     result.push({
@@ -256,7 +266,7 @@ export function getNpcEncounterChances(
       chance: baseTrainerChance,
       type: 'trainer',
       active: true,
-      details: debug?.trainerChance50 ? 'Forzado por Debug' : (repelActive ? 'Repelente' : undefined)
+      details: hasTrainerOverride ? 'Forzado por Debug' : (repelActive ? 'Repelente' : undefined)
     });
   }
 

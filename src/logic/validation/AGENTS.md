@@ -12,4 +12,4 @@ Security and Systems Developers.
 
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- [subschemas/AGENTS.md](./subschemas/AGENTS.md): Sub-schema definitions for auth, battle, pokemon, and social domains.

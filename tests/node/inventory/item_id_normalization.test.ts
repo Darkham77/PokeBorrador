@@ -59,7 +59,7 @@ describe('Fuzzer Item Generator — Strict Item ID Normalization', () => {
     for (const batch of batches) {
       assert.equal(batch.itemsToTest.length, ITEM_FUZZER_ACTIVE_HOLDER_COUNT);
       assert.equal(batch.playerTeam[0]?.item, batch.itemsToTest[0]);
-      assert.equal(batch.playerTeam.filter(pokemon => pokemon.item !== '').length, ITEM_FUZZER_ACTIVE_HOLDER_COUNT);
+      assert.equal(batch.playerTeam.filter(pokemon => Boolean(pokemon.item)).length, ITEM_FUZZER_ACTIVE_HOLDER_COUNT);
     }
   });
 

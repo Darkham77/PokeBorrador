@@ -10,7 +10,7 @@ Poké Vicio is a hybrid retro-modern web video game built with Vue 3, Pinia, GSA
 - **Runtime Environment**: Node.js >=26 with `--permission` model (`--allow-fs-read=*` for maintenance scripts).
 - **Core Quality & Verification Commands**:
   - **Fast In-Development Check**: `npm run lint` (fast ~3-5s check using cached ESLint, `vue-tsc` type-check, domain types, and markdownlint for rapid developer iteration).
-  - **Full Automated Test Suite**: `npm run test` (executes 100% of both `unit` (Vue/JSDOM) and `node` test projects natively via `node --no-experimental-webstorage ./node_modules/vitest/vitest.mjs run` across Windows PowerShell/CMD and POSIX; running partial suites like `test:unit` or `test:node` is strictly for focused single-spec authoring, NEVER for regression validation).
+  - **Full Automated Test Suite**: `npm run test` (executes 100% of both `unit` (Vue/JSDOM) and `node` test projects natively via `node --no-experimental-webstorage ./node_modules/vitest/vitest.mjs run` across Windows PowerShell/CMD and POSIX; strictly reserved for verifying source code logic changes in `src/` or `database/`; running test suites for documentation, DOX indices, markdown, or skill files is STRICTLY FORBIDDEN).
   - **Pre-Commit Single Source of Truth**: `npm run audit:warnings-diff` (automatically runs ESLint, `vue-tsc`, Fallow Dupes/Security, domain/FSM/database validation, and project rules against `origin/main` in one single pass; requires 0 errors and 0 new warnings).
   - **Global Unified Audit Engine**: `npm run audit` (emits structured JSON for AI; use `npm run audit:human` for visual console).
   - **Database Validation**: `npm run validate:sql`
@@ -52,7 +52,7 @@ Upon starting work, every agent MUST load these core skills:
 - `@/dox-navigator` (`.agents/skills/dox-navigator/SKILL.md`) for directory navigation and DOX hierarchy.
 - `@/domain-type-first` (`.agents/skills/domain-type-first/SKILL.md`) for domain-type-first governance, data contracts, and union derivation.
 
-*Domain-specific skills (`@/project-browser-testing`, `@/systematic-debugging`, `@/safe-commit`) MUST be loaded on-demand when performing their respective tasks.*
+*Domain-specific skills (`@/project-browser-testing`, `@/systematic-debugging`, `@/safe-commit`, `@/fallow`) MUST be loaded on-demand when performing their respective tasks.*
 
 ## 4. Specialized Project Rules Index
 

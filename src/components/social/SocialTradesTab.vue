@@ -7,6 +7,7 @@ import TradeCard from '@/components/social/TradeCard.vue';
 import ClaimCard from '@/components/social/ClaimCard.vue';
 import type { TradeOffer } from '@/types/system/stores';
 import type { ClaimItem } from '@/types/system/game';
+import { isItemId, getItemById } from '@/data/inventory/items';
 
 type SubTab = 'received' | 'sent' | 'claims';
 
@@ -44,12 +45,14 @@ function canFulfill(t: TradeOffer): { can: boolean; reason?: string } {
       reason: `Créditos insuficientes (tenés ₱${gameStore.state.money.toLocaleString()} de ₱${t.request_money.toLocaleString()})`,
     };
   }
+
   if (t.request_items) {
-    for (const [name, qty] of Object.entries(t.request_items)) {
-      if (qty !== undefined && qty > 0) {
-        const owned = gameStore.state.inventory?.[name] ?? 0;
+    for (const [id, qty] of Object.entries(t.request_items)) {
+      if (isItemId(id) && qty !== undefined && qty > 0) {
+        const owned = gameStore.state.inventory?.[id] ?? 0;
         if (owned < qty) {
-          return { can: false, reason: `Objeto insuficiente: ${name} (tenés ${owned}/${qty})` };
+          const item = getItemById(id);
+          return { can: false, reason: `Objeto insuficiente: ${item?.name || id} (tenés ${owned}/${qty})` };
         }
       }
     }
