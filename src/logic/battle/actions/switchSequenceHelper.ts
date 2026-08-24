@@ -17,12 +17,14 @@ export async function processSwitchSwapAnimations(
 
   await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.SWITCHING)
   addLog(`¡Bien hecho, ${oldPoke.name}! ¡Regresa!`, 'log-info', 'player')
-  addLog(`¡Envía a ${newPoke.name}!`, 'log-info', newPoke)
 
   // 1. Asignar exitingPlayer para retirar al Pokémon viejo
   exitingPlayer.value = oldPoke
   clearVolatileStatus(oldPoke)
 
+  if (!activeBattle.value.participants) {
+    activeBattle.value.participants = []
+  }
   if (!activeBattle.value.participants.includes(newPoke.uid)) {
     activeBattle.value.participants.push(newPoke.uid)
   }

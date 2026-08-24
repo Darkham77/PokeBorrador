@@ -7,6 +7,7 @@
 
 import type { Pokemon, PokemonEgg, PokemonGender, PokemonIVs } from '@/types/pokemon/pokemon';
 import type { GameState } from '@/types/system/game';
+import type { BattleLog, BattleStages } from '@/types/battle/battle';
 import type { SaveDataDto } from '@/logic/validation/schemas';
 import { requireAbilityId } from '@/data/battle/abilities';
 import { logger } from '@/logic/utils/logger';
@@ -48,7 +49,16 @@ interface ActiveBattleSerialized {
   gymId: string | null;
   isTrainer: boolean;
   trainerName: string | null;
+  trainerSprite?: string | null;
+  trainerArchetype?: string | null;
+  quote?: string | null;
   locationId: string | null;
+  wasSearching?: boolean;
+  participants?: string[];
+  enemyTeamIndex?: number;
+  battleLogs?: BattleLog[];
+  playerStages?: BattleStages | null;
+  enemyStages?: BattleStages | null;
   enemyTeam: EnemyPokemonSerialized[] | null;
   timestamp: number;
   isPvP?: boolean;
@@ -113,14 +123,25 @@ export function serializeState(state: GameState | SaveDataDto): SaveDataDto {
   let activeBattle: ActiveBattleSerialized | null = null;
   const battle = state.activeBattle;
 
-  if (battle && !('over' in battle && (battle as { over?: boolean }).over) && (battle.isTrainer || battle.isGym)) {
+  const isBattleInSearching = battle && 'wasSearching' in battle && (battle as { wasSearching?: boolean }).wasSearching && (!('player' in battle && (battle as { player?: unknown }).player) || !('enemy' in battle && (battle as { enemy?: unknown }).enemy))
+
+  if (battle && !('over' in battle && (battle as { over?: boolean }).over) && (battle.isTrainer || battle.isGym) && !isBattleInSearching) {
     try {
       const serialized: ActiveBattleSerialized = {
         isGym: battle.isGym || false,
         gymId: battle.gymId || null,
         isTrainer: battle.isTrainer || false,
         trainerName: battle.trainerName || null,
+        trainerSprite: battle.trainerSprite || null,
+        trainerArchetype: battle.trainerArchetype || null,
+        quote: battle.quote || null,
         locationId: battle.locationId || null,
+        wasSearching: Boolean(battle.wasSearching),
+        participants: Array.isArray(battle.participants) ? battle.participants : [],
+        enemyTeamIndex: typeof battle.enemyTeamIndex === 'number' ? battle.enemyTeamIndex : 0,
+        battleLogs: Array.isArray(battle.battleLogs) ? battle.battleLogs : [],
+        playerStages: battle.playerStages || null,
+        enemyStages: battle.enemyStages || null,
         enemyTeam: battle.enemyTeam
           ? (battle.enemyTeam as Pokemon[]).map(p => ({
               uid: p.uid,

@@ -86,9 +86,13 @@ export function useBattleHud(
 
     if (isCapturing || isFainted) return true
 
-    const isTrainerIntro = s?.isTrainer || s?.isGym || s?.isPvP
-    const isFirstIntroState = toValue(battleStore.fsm?.currentState) === 'FIRST_INTRO'
-    if (isTrainerIntro && isFirstIntroState) return false
+    const isTrainer = s?.isTrainer || s?.isGym || s?.isPvP
+    const fsmState = toValue(battleStore.fsm?.currentState)
+    const fsmSub = toValue(battleStore.fsm?.currentSubState)
+    if (isTrainer) {
+      if (fsmState === 'SEARCH_PHASE' || fsmState === 'INITIALIZING') return true
+      if (fsmState === 'FIRST_INTRO' && fsmSub !== 'POKEMON_CALL') return true
+    }
 
     return !s?.enemy
   })
@@ -132,7 +136,8 @@ export function useBattleHud(
     const subState = toValue(battleStore.fsm?.currentSubState)
     const state = toValue(battleStore.fsm?.currentState)
     const inventory = gs.state.inventory || {}
-    if ((inventory.binoculars || 0) > 0) return false
+    const isWild = isWildEncounter.value
+    if (isWild && (inventory.binoculars || 0) > 0) return false
 
     return checkScrambleState(subState, state)
   })

@@ -42,7 +42,7 @@ export async function executeEnemySwitch(store: BattleContext, newPokeIndex: num
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL);
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RENDER_BALL);
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT);
-  store.addLog(`¡Envía a ${newPoke.name}!`, 'log-enemy', 'enemy_trainer');
+  store.addLog(`¡${b.trainerName || 'El entrenador'} envía a ${newPoke.name}!`, 'log-enemy', 'enemy_trainer');
   
   const releasePromise = store.animations?.handleReleaseRequest
     ? store.animations.handleReleaseRequest({ side: 'enemy', pokemon: newPoke })

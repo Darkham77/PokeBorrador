@@ -61,7 +61,7 @@ export interface BattleContext {
     handleCatchRequest: (detail: string | { side?: string; ballId?: string; pokemon?: Pokemon }) => Promise<void>;
     handleReleaseRequest: (detail: string | { side?: string; pokemon?: Pokemon }) => Promise<void>;
     handleWithdrawRequest?: (detail: string | { side?: string; pokemon?: Pokemon }) => Promise<void>;
-    handleShakeRequest: (detail: string | { side?: string }) => Promise<void>;
+    handleShakeRequest: (detail: string | { side?: string; isCapture?: boolean }) => Promise<void>;
     handleFaintAnim: (detail: string | { side?: string; isFaint?: boolean; pokemon?: Pokemon } | { detail?: string | { side: string; isFaint?: boolean; pokemon?: Pokemon } }) => Promise<void>;
     playCatchCelebration: (side: string) => Promise<void>;
     playBallFadeOut: (side: string) => Promise<void>;

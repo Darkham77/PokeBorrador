@@ -46,6 +46,9 @@ export const HUD_HEIGHT_UPDATE_DELAY_SEC = 0.1;
 /** Default avatar size in pixels. */
 export const DEFAULT_AVATAR_SIZE_PX = 40;
 
+/** Base Poké Ball diameter in pixels (10px * object_scale 2 = 20px, ~1/5 of Rattata height). */
+export const POKEBALL_BASE_SIZE_PX = 10;
+
 /** Map weather drift animation horizontal offset in pixels. */
 export const MAP_WEATHER_DRIFT_OFFSET_PX = 10;
 
@@ -325,7 +328,7 @@ export const AVATAR_SHADOW_DURATIONS_SEC: Record<string, number> = {
 };
 
 /** Pokeball wobble/shake animation offset distance in pixels. */
-export const POKEBALL_SHAKE_DISTANCE_PX = 10;
+export const POKEBALL_SHAKE_DISTANCE_PX = 4;
 
 // --- Emerging (landing) animation ---
 /** Combatant emerging squish Y offset in pixels (downward press). */

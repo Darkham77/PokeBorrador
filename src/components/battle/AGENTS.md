@@ -9,6 +9,13 @@ Frontend Developers / Systems Engineers.
 ## Local Contracts
 
 - Follow standard repository modularity guidelines.
+- **Pokéball Energy Beam Vector & TransformOrigin Geometry**:
+  - When animating energy beam transitions (`catching` and `releasing`) via GSAP, `transformOrigin` MUST be specified using valid numeric percentage values aligned with the sprite's support line on the ground: `${feetXPct}% ${localGroundY.value}` (e.g. `50% 75%`). Using complex CSS `calc()` expressions inside GSAP `transformOrigin` is strictly forbidden because GSAP cannot parse arithmetic expressions and silently falls back to `bottom center` (100%), displacing the collapse anchor to the bottom of the container.
+  - The target vector $(\Delta x, \Delta y)$ to the Pokéball center MUST be calculated relative to the ground origin as $\Delta x = 0$ and $\Delta y = -\text{pokeballSize} \times 0.35$, compensating for the Pokéball's CSS `translateY(-85%)` style.
+  - Energy transitions MUST scale purely geometrically (`scale: 0 -> 1` or `scale: 1 -> 0`) with solid `opacity: 1`, without trailing opacity fades.
+- **Lore-Proportional Item Sizing & 3D Perspective**:
+  - All combat items rendered in the 3D arena (such as Poké Balls for switches, captures, and recalls) MUST derive their dimensions from `spatialCoordinator.ts` using side-specific constants (`BASE_POKEBALL_SIZE_PLAYER = 27` / 54px vs `BASE_POKEBALL_SIZE_ENEMY = 18` / 36px) multiplied by `OBJECT_SCALE`.
+  - Sizing must preserve official lore proportions (e.g. 1:5 ratio with a 0.3m Pokémon like Rattata) and depth perspective between player foreground (300 units) and enemy background (200 units). Fixed CSS dimensions on combatant items in `.scss` files are strictly forbidden.
 
 ## Work Guidance
 

@@ -280,9 +280,6 @@ watch(trainerAnimState, async (newState) => {
     rivalExclamationRef,
     audioStore
   )
-  if (newState === 'entering') {
-    trainerAnimState.value = 'idle'
-  }
 })
 
 watch(showStandingTrainers, (show) => {

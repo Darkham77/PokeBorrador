@@ -2,7 +2,6 @@ import { toID } from '@pkmn/sim';
 import type { SBCtx } from './showdownBridgeCtx.ts';
 import type { Move, Pokemon, PokemonStatus } from '../../types/pokemon/pokemon.ts';
 import { requirePokemonMoveId, type MoveCategory } from '@/data/battle/moves';
-
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 
 /**
@@ -347,52 +346,6 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
     case 'poke':
     case 'clearpoke':
       return true;
-
-    case 'switch':
-    case 'drag': {
-      const side = getSide(parts[2] || '');
-      if (!side || !store.activeBattle.value) return true;
-      const switchedIn = getPoke(parts[2] || '');
-      if (!switchedIn) return true;
-
-      // Condition parsing: "100/100 brn" or "0 fnt"
-      const condString = parts[4] || parts[3] || '';
-      if (condString) {
-        const [hpRatio, statusAppended] = condString.trim().split(' ');
-        if (hpRatio && hpRatio.includes('/')) {
-          const partsHp = hpRatio.split('/').map(n => parseInt(n || '0', 10));
-          const curHp = partsHp[0];
-          const maxHp = partsHp[1];
-          if (curHp !== undefined && !isNaN(curHp)) switchedIn.hp = curHp;
-          if (maxHp !== undefined && !isNaN(maxHp) && maxHp > 0) switchedIn.maxHp = maxHp;
-        } else if (hpRatio && !isNaN(parseInt(hpRatio, 10))) {
-          switchedIn.hp = parseInt(hpRatio, 10);
-        }
-
-        if (statusAppended === 'fnt') {
-          switchedIn.hp = 0;
-          switchedIn.fainted = true;
-          switchedIn.status = '';
-        } else if (statusAppended && ['brn', 'psn', 'slp', 'par', 'frz', 'tox'].includes(statusAppended)) {
-          switchedIn.status = statusAppended as PokemonStatus;
-        }
-      }
-
-      if (side === 'enemy') {
-        store.activeBattle.value.enemy = switchedIn;
-      } else {
-        store.activeBattle.value.player = switchedIn;
-      }
-
-      if (!line.includes('[silent]')) {
-        if (side === 'player') {
-          store.addLog(`¡Adelante, ${switchedIn.name}!`, 'log-player', switchedIn);
-        } else {
-          store.addLog(`¡${store.activeBattle.value.trainerName || 'El entrenador'} envía a ${switchedIn.name}!`, 'log-enemy', 'enemy_trainer');
-        }
-      }
-      return true;
-    }
 
     default:
       return false;

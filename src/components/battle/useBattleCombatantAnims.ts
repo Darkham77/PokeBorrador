@@ -1,4 +1,4 @@
-import { watch, type Ref, nextTick, type ComputedRef, computed, onMounted, onUnmounted } from 'vue'
+import { watch, type Ref, nextTick, computed, onMounted, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 import { gameBus } from '@/logic/events/gameBus'
 import type { BattleCombatantProps, BattleSide } from '@/types/battle/battle'
@@ -120,10 +120,8 @@ export function useBattleCombatantAnims(
   shadowWrapperRef: Ref<HTMLElement | null>,
   pokeballImgRef: Ref<HTMLImageElement | null>,
   idleWrapperRef: Ref<HTMLElement | null>,
-  cacheKey: ComputedRef<string>,
   getSpriteFeetOrigin: () => string,
   getBallTargetCoords: () => { x: number; y: number },
-  rawCoordsCache: Map<string, { x: number; y: number }>,
   wasCaptured: Ref<boolean>
 ) {
   let successBlinkTween: gsap.core.Tween | null = null
@@ -170,8 +168,7 @@ export function useBattleCombatantAnims(
     
     if (val === 'catching') {
       const origin = getSpriteFeetOrigin()
-      const cachedRaw = rawCoordsCache.get(cacheKey.value)
-      const coords = cachedRaw || getBallTargetCoords()
+      const coords = getBallTargetCoords()
       
       if (shadowWrapperRef.value) {
         gsap.set(shadowWrapperRef.value, { display: "none" })
@@ -195,7 +192,6 @@ export function useBattleCombatantAnims(
         x: coords.x,
         y: coords.y,
         scale: SCALE_ZERO,
-        opacity: OPACITY_INVISIBLE,
         duration: BALL_TRANSITION_DURATION_SEC,
         ease: "power2.inOut",
         onComplete: () => {
@@ -205,12 +201,11 @@ export function useBattleCombatantAnims(
         }
       })
       
-      const animKey = `${props.side}-${props.pokemon?.uid || 'active'}`
+      const animKey = `${props.side}-${props.position.x}-${props.position.y}-${props.pokemon?.uid || 'active'}`
       gameBus.emit('REGISTER_TWEEN', { key: animKey, tween })
     } else if (val === 'releasing') {
       const origin = getSpriteFeetOrigin()
-      const cachedRaw = rawCoordsCache.get(cacheKey.value)
-      const coords = cachedRaw || getBallTargetCoords()
+      const coords = getBallTargetCoords()
       
       if (shadowWrapperRef.value) {
         gsap.set(shadowWrapperRef.value, { display: "none" })
@@ -226,7 +221,7 @@ export function useBattleCombatantAnims(
         x: coords.x, 
         y: coords.y, 
         scale: SCALE_ZERO, 
-        opacity: OPACITY_INVISIBLE, 
+        opacity: OPACITY_FULL, 
         filter: "url(#pixel-energy-optimized)" 
       })
       
@@ -234,7 +229,6 @@ export function useBattleCombatantAnims(
         x: 0,
         y: 0,
         scale: SCALE_FULL,
-        opacity: OPACITY_FULL,
         duration: BALL_TRANSITION_DURATION_SEC,
         ease: "power2.inOut",
         onComplete: () => {
@@ -253,7 +247,7 @@ export function useBattleCombatantAnims(
         }
       })
 
-      const animKey = `${props.side}-${props.pokemon?.uid || 'active'}`
+      const animKey = `${props.side}-${props.position.x}-${props.position.y}-${props.pokemon?.uid || 'active'}`
       gameBus.emit('REGISTER_TWEEN', { key: animKey, tween })
     }
   }
@@ -263,8 +257,7 @@ export function useBattleCombatantAnims(
     // 1-frame flash that occurs when the sprite renders before nextTick fires.
     if ((val === 'releasing' || val === 'catching') && spriteRef.value) {
       const origin = getSpriteFeetOrigin()
-      const cachedRaw = rawCoordsCache.get(cacheKey.value)
-      const coords = cachedRaw || getBallTargetCoords()
+      const coords = getBallTargetCoords()
       gsap.killTweensOf(spriteRef.value)
       if (spriteRotationRef.value) {
         gsap.set(spriteRotationRef.value, { rotation: 0, clearProps: 'transform,rotation' })
@@ -278,7 +271,7 @@ export function useBattleCombatantAnims(
           x: coords.x,
           y: coords.y,
           scale: SCALE_ZERO,
-          opacity: OPACITY_INVISIBLE,
+          opacity: OPACITY_FULL,
           filter: 'url(#pixel-energy-optimized)'
         })
       } else if (val === 'catching') {

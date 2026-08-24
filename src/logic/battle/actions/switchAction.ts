@@ -100,12 +100,16 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
     await processSwitchCallAnimations(ctx, newPoke, teamIndex)
   }
   
+  if (!activeBattle.value.participants) {
+    activeBattle.value.participants = []
+  }
   if (!activeBattle.value.participants.includes(newPoke.uid)) {
     activeBattle.value.participants.push(newPoke.uid)
   }
   
   playerStages.value = resetPlayerStages(playerStages.value)
   
+  Reflect.set(activeBattle.value, '_playerSwitchLogged', true)
   addLog(`¡Adelante, ${newPoke.name}!`, 'log-player', newPoke)
   await sleep(SWITCH_PAUSE_DELAY_MS)
 

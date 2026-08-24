@@ -19,6 +19,7 @@ All spatial logic is centralized in `@/logic/combat/spatialCoordinator.ts`. Comp
 | `TARGET_X / Y` | **Focal Point** | The camera center. `TARGET_Y` is offset to ensure bottom-alignment. |
 | `OBJECT_SCALE` | **Pixel Density** | Multiplier to maintain pixel-art crispness at various sizes. |
 | `ENTITY_SIZE_P1/P2` | **Occupancy** | Side-specific bounding boxes for combatants. |
+| `POKEBALL_SIZE_P1/P2` | **Item Scale** | Side-specific perspective size for Poké Balls (1:5 ratio to 0.3m Pokémon). |
 
 ### 2. Entity Positioning
 

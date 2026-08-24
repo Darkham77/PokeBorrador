@@ -446,6 +446,8 @@ stateDiagram-v2
     SEARCH_PHASE --> EXIT_BATTLE : Return to Map
     SEARCH_PHASE --> INITIALIZING : Fail Minigame
 
+    EXIT_BATTLE --> ACTIVE_BATTLE : Restore Active Battle from Save
+    EXIT_BATTLE --> SEARCH_PHASE : Restore Search Mode from Save
     EXIT_BATTLE --> [*]
 
     note left of CONTEXT_SETUP: Probabilities injected on area entry

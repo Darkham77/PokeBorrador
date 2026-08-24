@@ -131,7 +131,6 @@
   }
 
   &.releasing {
-    opacity: 0;
     transform: Scale(0);
   }
 }
@@ -164,8 +163,6 @@
   position: absolute;
   left: 50%;
   transform: Translatex(-50%) Translatey(-85%);
-  width: calc(var(--obj-scale, 1) * 40px);
-  height: calc(var(--obj-scale, 1) * 40px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -210,7 +207,7 @@
     top: 50%;
     left: 50%;
     display: block;
-    font-size: calc(var(--obj-scale, 1) * 12px);
+    font-size: calc(var(--obj-scale, 1) * 8px);
     @include pixelated;
     will-change: transform, filter, opacity;
     display: flex;

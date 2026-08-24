@@ -58,7 +58,6 @@ const emit = defineEmits<{
 // Consumir el estado extraído en el composable
 const {
   naturalSize,
-  cacheKey,
   isFloating,
   isEnemy,
   imageUrl,
@@ -69,13 +68,13 @@ const {
   fxRadius,
   speciesSizeScale,
   debugShowPokeRadius,
+  pokeballSize,
   isBallVisible,
   wasCaptured,
   internalBallId,
   memorizedBallCoords,
   getSpriteFeetOrigin,
   getBallTargetCoords,
-  rawCoordsCache,
   handleImageError,
   handleBallError,
   handleLoad,
@@ -259,10 +258,8 @@ useBattleCombatantAnims(
   shadowWrapperRef,
   pokeballImgRef,
   idleWrapperRef,
-  cacheKey,
   getSpriteFeetOrigin,
   getBallTargetCoords,
-  rawCoordsCache,
   wasCaptured
 )
 
@@ -554,7 +551,7 @@ const onGroundPopLeave = (el: Element, done: () => void) => {
         v-if="isBallVisible"
         :key="`ball-${side}-${pokemon.uid || pokemon.id}`"
         class="trapped-pokeball"
-        :style="[memorizedBallCoords, { filter: 'var(--atmosphere-filter)' }]"
+        :style="[memorizedBallCoords, { width: `${pokeballSize}px`, height: `${pokeballSize}px`, filter: 'var(--atmosphere-filter)' }]"
       >
         <img
           ref="pokeballImgRef"

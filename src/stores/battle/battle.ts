@@ -238,7 +238,7 @@ export const useBattleStore = defineStore('battle', () => {
     handleFaint
   })
 
-  const restoreBattle = (battleData: BattleState) => restoreBattleState(getContext(), battleData)
+  const restoreBattle = async (battleData: BattleState) => await restoreBattleState(getContext(), battleData)
 
   const persistBattle = () => syncAndPersist(getContext())
 

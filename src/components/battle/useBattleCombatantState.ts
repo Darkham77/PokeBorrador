@@ -1,9 +1,7 @@
 import { ref, computed, watch, onMounted, onUnmounted, toValue } from 'vue';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import gsap from 'gsap';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { requirePokemonSpriteValue } from '@/data/pokemon/spriteMapping';
-import { COMBATANT_FAINT_Y_OFFSET, DEFAULT_AVATAR_SIZE_PX } from '@/logic/constants/animations';
 import {
   MAX_ANIMATED_SPRITE_SIZE_FRONT,
   MAX_ANIMATED_SPRITE_SIZE_BACK,
@@ -126,10 +124,10 @@ export function useBattleCombatantState(
   const naturalSize = ref({ w: 0, h: 0 });
   const seatKey = computed(() => `${props.side}-${props.position.x}-${props.position.y}`);
   const cacheKey = computed(() => {
-    if (props.pokemon) {
-      return props.pokemon.uid || `${props.side}-${props.pokemon.id}`;
+    if (props.pokemon?.uid) {
+      return `${seatKey.value}-${props.pokemon.uid}`;
     }
-    return seatKey.value;
+    return `${seatKey.value}-${props.pokemon?.id || 'empty'}`;
   });
 
   const isFloating = computed(() => checkPokemonFloating(props.pokemon));
@@ -340,42 +338,25 @@ const DEFAULT_GROUND_LINE_FALLBACK_PERCENT = '75%';
   const internalBallId = ref('pokeball');
   const memorizedBallCoords = ref({ top: '90%', left: '50%' });
 
+  const pokeballSize = computed(() => {
+    return isPlayer.value
+      ? WORLD_CONSTANTS.POKEBALL_SIZE_PLAYER
+      : WORLD_CONSTANTS.POKEBALL_SIZE_ENEMY;
+  });
+
+
   const getSpriteFeetOrigin = () => {
-    const scale = (WORLD_CONSTANTS as { OBJECT_SCALE: number }).OBJECT_SCALE || 2;
-    const entitySize = props.baseSize * scale;
     const feetX = feetPoints.value.feetX;
-    const offsetX = (feetX - DEFAULT_FEET_X_RATIO) * entitySize;
-
-    let floatOffset = 0;
-    if (isFloating.value) {
-      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 690;
-      floatOffset = isMobile ? COMBATANT_FAINT_Y_OFFSET / 3 : DEFAULT_AVATAR_SIZE_PX;
-    }
-
-const FEET_ORIGIN_CENTER_X_PERCENT = 50;
-
-    return `calc(${FEET_ORIGIN_CENTER_X_PERCENT}% + ${offsetX}px) calc(${localGroundY.value} - ${floatOffset}px)`;
+    const feetXPct = Math.round(feetX * 100);
+    return `${feetXPct}% ${localGroundY.value}`;
   };
 
 const BALL_TARGET_Y_OFFSET_RATIO = 0.35;
-const BALL_TARGET_X_CENTER_OFFSET = 0.5;
 
   const getBallTargetCoords = () => {
-    const scale = (WORLD_CONSTANTS as { OBJECT_SCALE: number }).OBJECT_SCALE || 2;
-    const containerHeight = props.baseSize * scale;
-
-    let floatOffset = 0;
-    if (isFloating.value) {
-      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 690;
-      floatOffset = isMobile ? COMBATANT_FAINT_Y_OFFSET / 3 : DEFAULT_AVATAR_SIZE_PX;
-    }
-
-    const ballHeight = DEFAULT_AVATAR_SIZE_PX * scale;
-    const groundPct = parseFloat(localGroundY.value) / 100;
-    const groundOffsetFromBottom = containerHeight * (groundPct - 1);
-
-    const targetX = (feetPoints.value.feetX - BALL_TARGET_X_CENTER_OFFSET) * (props.baseSize * scale);
-    const targetY = groundOffsetFromBottom - ballHeight * BALL_TARGET_Y_OFFSET_RATIO + floatOffset;
+    const ballHeight = pokeballSize.value;
+    const targetX = 0;
+    const targetY = -ballHeight * BALL_TARGET_Y_OFFSET_RATIO;
 
     return { x: targetX, y: targetY };
   };
@@ -527,6 +508,7 @@ const GSAP_TELEPORT_SCALEX_TARGET = 0.1;
     fxScale,
     fxRadius,
     debugShowPokeRadius,
+    pokeballSize,
     isBallVisible,
     wasCaptured,
     internalBallId,

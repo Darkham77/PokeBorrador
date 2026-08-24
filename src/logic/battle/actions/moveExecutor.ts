@@ -127,8 +127,13 @@ export async function executeMoveAction(
     if (!attacker.atk || !defender.def || (executableMove.power === undefined && executableMove.cat !== 'status')) {
       store.addLog(`[Error] Datos faltantes: Atk:${attacker.atk} Def:${defender.def} Pwr:${executableMove.power}`, 'log-error', attacker)
     }
-    if (store.activeBattle.value && !store.activeBattle.value.participants.includes(attacker.uid)) {
-      store.activeBattle.value.participants.push(attacker.uid)
+    if (store.activeBattle.value) {
+      if (!store.activeBattle.value.participants) {
+        store.activeBattle.value.participants = []
+      }
+      if (!store.activeBattle.value.participants.includes(attacker.uid)) {
+        store.activeBattle.value.participants.push(attacker.uid)
+      }
     }
 
     // Precision Check

@@ -77,11 +77,10 @@ export function useWeatherVisuals(options: WeatherVisualOptions) {
       wContrast = WEATHER_EFFECT_PRESETS.FOG_CONTRAST; 
       wSaturate = WEATHER_EFFECT_PRESETS.FOG_SATURATE; 
     }
-    else if (cleanWeather === 'mist' || cleanWeather === 'mistyterrain') { 
+    else if (cleanWeather === 'mist') { 
       wBrightness = isNight ? WEATHER_EFFECT_PRESETS.MIST_NIGHT_BRIGHTNESS : WEATHER_EFFECT_PRESETS.MIST_DAY_BRIGHTNESS; 
       wContrast = WEATHER_EFFECT_PRESETS.MIST_CONTRAST; 
       wSaturate = WEATHER_EFFECT_PRESETS.MIST_SATURATE; 
-      if (cleanWeather === 'mistyterrain') wHue = WEATHER_EFFECT_PRESETS.MISTY_TERRAIN_HUE;
     }
     else if (cleanWeather === 'sandstorm' || cleanWeather === 'dust_storm') { 
       wBrightness = cleanWeather === 'dust_storm' ? WEATHER_EFFECT_PRESETS.SANDSTORM_DUST_BRIGHTNESS : WEATHER_EFFECT_PRESETS.SANDSTORM_STANDARD_BRIGHTNESS; 

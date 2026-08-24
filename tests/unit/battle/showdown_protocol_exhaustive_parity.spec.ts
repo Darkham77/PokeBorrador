@@ -116,7 +116,7 @@ describe('Showdown Protocol 1:1 Exhaustive Parity Verification', () => {
           (await handleCoreEvents(ctx)) ||
           handleStageEvents(ctx) ||
           (await handleFieldEvents(ctx)) ||
-          handleMiscEvents(ctx);
+          (await handleMiscEvents(ctx));
       } catch (_err) {
         // Safe catch for missing optional metadata in synthetic lines
         handled = true;

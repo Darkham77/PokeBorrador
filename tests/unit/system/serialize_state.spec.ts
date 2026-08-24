@@ -28,6 +28,9 @@ describe('serializeState - Active Battle serialization', () => {
       isTrainer: true,
       trainerName: 'Brock',
       locationId: 'pewter_city',
+      trainerSprite: 'brock',
+      wasSearching: true,
+      battleLogs: [{ id: '1', msg: '¡Combate iniciado!', type: 'log-info', side: 'enemy', icon: null, iconType: null }],
       over: false,
       enemyTeam: [enemyPk],
       participants: [playerPk.uid, enemyPk.uid]
@@ -47,6 +50,10 @@ describe('serializeState - Active Battle serialization', () => {
     expect(battle?.['isGym']).toBe(true);
     expect(battle?.['gymId']).toBe('pewter');
     expect(battle?.['trainerName']).toBe('Brock');
+    expect(battle?.['trainerSprite']).toBe('brock');
+    expect(battle?.['wasSearching']).toBe(true);
+    expect(battle?.['participants']).toEqual([playerPk.uid, enemyPk.uid]);
+    expect((battle?.['battleLogs'] as unknown[])?.length).toBe(1);
     expect((battle?.['enemyTeam'] as Array<{ hp: number }>)?.[0]?.hp).toBeGreaterThan(0);
   });
 

@@ -72,7 +72,7 @@ export async function handleItemUsage(itemName: ItemId | string, p: Pokemon, e: 
         await options.fsm.transition('ACTIVE_BATTLE', 'CATCH_SHAKE')
       }
       if (options.ctx?.animations?.handleShakeRequest) {
-        await options.ctx.animations.handleShakeRequest({ side: 'enemy' })
+        await options.ctx.animations.handleShakeRequest({ side: 'enemy', isCapture: true })
       } else {
         gameBus.emit('CATCH_SHAKE', { side: 'enemy' })
         // Fallback: duración de un shake via GSAP

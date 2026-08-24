@@ -149,7 +149,7 @@ defineExpose({
   <!-- Standing Player Trainer (_back) - Siempre visible. Escalado al tamaño del juego usando BASE_ENTITY_SIZE_PLAYER como referencia de altura -->
   <VirtualEntity
     :x="WORLD_CONSTANTS.SAFE_ZONE_X - Math.round(baseEntitySizePlayer * PLAYER_TRAINER_ASPECT_WIDTH_PX / PLAYER_TRAINER_ASPECT_HEIGHT_PX) * objectScale"
-    :y="WORLD_CONSTANTS.SAFE_ZONE_Y + WORLD_CONSTANTS.SAFE_ZONE_HEIGHT - baseEntitySizePlayer"
+    :y="WORLD_CONSTANTS.SAFE_ZONE_Y + WORLD_CONSTANTS.SAFE_ZONE_HEIGHT - baseEntitySizePlayer * objectScale"
     :w="Math.round(baseEntitySizePlayer * PLAYER_TRAINER_ASPECT_WIDTH_PX / PLAYER_TRAINER_ASPECT_HEIGHT_PX)"
     :h="baseEntitySizePlayer"
     class="standing-trainer player-trainer"
@@ -161,8 +161,9 @@ defineExpose({
       >
         <img 
           :src="playerBackSpriteUrl"
-          class="trainer-sprite shadow-pixelated"
+          class="trainer-image player-trainer-image shadow-pixelated"
           alt="Player Trainer"
+          @error="(e: Event) => { (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador', { trainerSuffix: 'back', gender: 'h' }) }"
         >
       </div>
     </div>

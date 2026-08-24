@@ -32,9 +32,8 @@ export function playTrainerAnimation(
   rivalExclamationRef: Ref<HTMLElement | null>,
   audioStore: ReturnType<typeof useAudioStore>
 ): void {
-  gsap.killTweensOf(el);
-
   if (newState === 'entering') {
+    gsap.killTweensOf(el);
     if (isRival) {
       if (audioStore && typeof audioStore.play === 'function') {
         audioStore.play('rival');

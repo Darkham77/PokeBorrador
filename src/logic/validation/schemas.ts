@@ -402,12 +402,49 @@ export const enemyPokemonSerializedSchema = object({
   _gymBadge: nullable(string()),
 });
 
+export const battleLogSchema = object({
+  id: string(),
+  msg: string(),
+  type: string(),
+  side: nullable(union([literal('player'), literal('enemy')])),
+  icon: nullable(string()),
+  iconType: nullable(string()),
+});
+
+export const battleStagesSchema = object({
+  atk: number(),
+  def: number(),
+  spa: number(),
+  spd: number(),
+  spe: number(),
+  accuracy: number(),
+  evasion: number(),
+  reflect: number(),
+  lightScreen: number(),
+  safeguard: number(),
+  mist: number(),
+  spikes: number(),
+  stealthrock: optional(number()),
+  toxicspikes: optional(number()),
+  acc: optional(number()),
+  eva: optional(number()),
+});
+
 export const activeBattleSchema = object({
   isGym: boolean(),
   gymId: nullable(string()),
   isTrainer: boolean(),
   trainerName: nullable(string()),
+  trainerSprite: optional(nullable(string())),
+  trainerArchetype: optional(nullable(string())),
+  quote: optional(nullable(string())),
   locationId: nullable(string()),
+  wasSearching: optional(boolean()),
+  participants: optional(array(string())),
+  enemyTeamIndex: optional(number()),
+  battleLogs: optional(array(battleLogSchema)),
+  playerStages: optional(nullable(battleStagesSchema)),
+  enemyStages: optional(nullable(battleStagesSchema)),
   enemyTeam: nullable(array(enemyPokemonSerializedSchema)),
   timestamp: number(),
   isPvP: optional(boolean()),

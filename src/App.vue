@@ -180,7 +180,7 @@ const initGameSession = async () => {
       
       if (gameStore.state.activeBattle && !gameStore.state.activeBattle.over) {
         logger.info('App', 'Detectado combate persistente. Restaurando estado...')
-        battleStore.restoreBattle(gameStore.state.activeBattle)
+        await battleStore.restoreBattle(gameStore.state.activeBattle)
       }
       
       profileStore.syncProfileFromAuth(authStore.user, gameStore.state)

@@ -9,6 +9,9 @@ Frontend Developers / Systems Engineers.
 ## Local Contracts
 
 - Follow standard repository modularity guidelines.
+- **Capture Wobble Cycle & Zero-Timer Timing Parity**:
+  - When executing Pokéball capture attempts in `battleItems.ts`, all shake animation requests dispatched to `handleShakeRequest` MUST explicitly include `{ side: 'enemy', isCapture: true }`. Omitting `isCapture: true` causes the animation engine to treat the event as a combat damage flinch (`0.05s`), bypassing the canonical Pokéball wobble sequence.
+  - Capture wobble cadence MUST be orchestrated strictly via GSAP timelines (`GSAP_CAPTURE_SHAKE_ACTIVE_DUR_SEC = 0.60s` physical wobble + `GSAP_CAPTURE_SHAKE_REST_DUR_SEC = 0.40s` dramatic rest interval = 1.00s total per cycle). Using `setTimeout` or `setInterval` for inter-shake pacing is strictly prohibited under the Zero-Timer policy.
 - **Showdown Side Synchronization**: When synchronizing health and statuses between the local reactive game state and the Showdown simulator (via `syncSideStates` in the worker), always map and send values in the **original team order**. The simulator's `side.pokemon` array remains in its original order throughout the battle; using active-swapped orders (e.g., `playerOrder` or `enemyOrder`) results in index mismatches, corrupting simulator state during switches or item usage and throwing `INVALID_CHOICE` exceptions.
 - **showdownBridge Architecture**: The Showdown log parser is split into focused modules. The main `showdownBridge.ts` is a dispatcher (< 100 lines). Add new handlers in the appropriate sub-module:
   - `showdownBridgeCore.ts` — battle start, turn, request, player setup
@@ -66,6 +69,14 @@ Frontend Developers / Systems Engineers.
   - The effect fires on the **Pokémon currently occupying `targetSlot`** on `side` when `turnsLeft` reaches 0 — regardless of which Pokémon was originally targeted. This matches official game behavior.
   - Do NOT add `futureSightTurns` or `futureSightDmg` to the `Pokemon` type — those fields have been removed.
   - `pendingSlotEffects` is ticked in `battleFlow.ts` during upkeep. `resetActiveBattleState` clears it to `[]` between battles.
+
+- **Active Battle Persistence & Zero-Loss Rehydration**:
+  - All properties of `activeBattle` (`trainerSprite`, `trainerArchetype`, `quote`, `wasSearching`, `participants`, `enemyTeamIndex`, `battleLogs`, `playerStages`, `enemyStages`) MUST be serialized in `ActiveBattleSerialized` / `activeBattleSchema` and fully restored upon rehydration in `orchestratorRestoreHelper.ts`.
+  - In-combat action resolvers (such as `processSwitchSwapAnimations`, `executeSwitch`, and `executeTurnWithAction`) MUST defensively initialize `participants` as an empty array before evaluating `.includes()`.
+  - When `activeBattle.wasSearching` is active, concluding the battle MUST invoke `completeBattleFlow('search')` to resume the wild encounter search loop without closing the arena modal.
+
+- **Dynamic Trainer Identity in Combat Logs**:
+  - All combat announcement logs for opponent trainer actions (Pokemon calls, recalls, item usage, challenges) MUST dynamically resolve the trainer name using `${active.trainerName || 'El entrenador'}` and the `'enemy_trainer'` log source, avoiding static placeholder text.
 
 ## Work Guidance
 

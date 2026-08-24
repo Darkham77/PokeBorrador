@@ -16,7 +16,7 @@ import { requireItemId } from '../../data/inventory/items.ts';
  * switch, drag, -terastallize, -mega, -primal, -zpower, -zbroken,
  * -burst, -candynamax
  */
-export function handleMiscEvents(ctx: SBCtx): boolean {
+export function handleMiscEvents(ctx: SBCtx): boolean | Promise<boolean> {
   const { store, type, parts, line, p, getPoke, getSide } = ctx;
 
   switch (type) {
@@ -395,57 +395,144 @@ export function handleMiscEvents(ctx: SBCtx): boolean {
         const hpAndStatus = hpString.split(' ');
         const rawHp = hpAndStatus[0] || '0';
         const hpParts = rawHp.split('/');
-        target.hp = parseInt(hpParts[0] || '0');
+        target.hp = parseInt(hpParts[0] || '0', 10);
         if (hpParts[1]) {
-          const parsedMax = parseInt(hpParts[1]);
-          if (!isNaN(parsedMax)) target.maxHp = parsedMax;
+          const parsedMax = parseInt(hpParts[1], 10);
+          if (!isNaN(parsedMax) && parsedMax > 0) target.maxHp = parsedMax;
         }
         const statusStr = hpAndStatus[1];
-        if (statusStr && isPokemonStatus(statusStr)) {
-          target.status = statusStr;
-        } else {
+        if (statusStr === 'fnt') {
+          target.hp = 0;
+          target.fainted = true;
           target.status = '';
+        } else if (statusStr && isPokemonStatus(statusStr)) {
+          target.status = statusStr;
         }
 
         const side = getSide(parts[2] || '');
-        if (store.activeBattle.value) {
-          const sub = store.fsm?.currentSubState;
-          const subName = String(sub?.value || sub || '');
-          const isFsmAnimActive = Boolean(store.isIntroAnimating?.value) || ['POKEMON_RECALL', 'POKEMON_CALL', 'ENEMY_REPLACEMENT_SEQ', 'ENTRY_ANIM', 'PARALLEL_JUMP'].includes(subName);
-          const bState = store.activeBattle.value;
-          if (side === 'player') {
-            if (!isFsmAnimActive) {
-              store.activeBattle.value.player = target;
+        const active = store.activeBattle?.value;
+        const isSilent = line.includes('[silent]');
+
+        if (active && side === 'enemy') {
+          return (async () => {
+            const currentEnemy = active.enemy;
+            const isDifferentEnemy = !currentEnemy || currentEnemy.uid !== target.uid;
+
+            if (isDifferentEnemy) {
+              if (currentEnemy && currentEnemy.hp > 0 && !currentEnemy.fainted) {
+                store.addLog(`¡${active.trainerName || 'El entrenador'} retira a ${currentEnemy.name}!`, 'log-enemy', 'enemy_trainer');
+                if (store.exitingEnemy) store.exitingEnemy.value = currentEnemy;
+                if (store.fsm && store.BATTLE_STATES && store.BATTLE_SUBSTATES) {
+                  await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.POKEMON_RECALL);
+                }
+                if (store.animations?.handleWithdrawRequest) {
+                  await store.animations.handleWithdrawRequest({ side: 'enemy', pokemon: currentEnemy });
+                }
+                if (store.fsm && store.BATTLE_STATES && store.BATTLE_SUBSTATES) {
+                  await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.VACATE_SEAT);
+                }
+                if (store.exitingEnemy) store.exitingEnemy.value = null;
+              }
+
+              active.enemy = target;
+              if (active.participants && !active.participants.includes(target.uid)) {
+                active.participants.push(target.uid);
+              }
+
+              if (store.enemyStages?.value) {
+                const s = store.enemyStages.value;
+                store.enemyStages.value = {
+                  ...s,
+                  atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0
+                };
+              }
+
+              if (store.fsm && store.BATTLE_STATES && store.BATTLE_SUBSTATES) {
+                await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.POKEMON_CALL);
+                await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.RENDER_BALL);
+                await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.OCCUPY_SEAT);
+              }
+
+              if (type === 'drag') {
+                store.addLog(`¡${target.name} fue arrastrado al campo!`, 'log-enemy', 'enemy_trainer');
+              } else if (!isSilent) {
+                store.addLog(`¡${active.trainerName || 'El entrenador'} envía a ${target.name}!`, 'log-enemy', 'enemy_trainer');
+              }
+
+              if (store.animations?.handleReleaseRequest) {
+                await store.animations.handleReleaseRequest({ side: 'enemy', pokemon: target });
+              }
+
+              const { applyEntryHazards } = await import('./battleFlow.ts');
+              applyEntryHazards(target, store.enemyStages?.value || {}, store.addLog);
             } else {
-              Reflect.set(bState, 'switchingToPlayer', target);
+              active.enemy = target;
             }
-            const team = store.activeBattle.value.playerTeam || [];
-            const idx = team.findIndex(p => p && p.uid === target.uid);
-            if (idx !== -1) {
-              store.activeBattle.value.playerTeamIndex = idx;
-            }
-          } else if (side === 'enemy') {
-            if (!isFsmAnimActive) {
-              store.activeBattle.value.enemy = target;
+            return true;
+          })();
+        } else if (active && side === 'player') {
+          return (async () => {
+            const currentPlayer = active.player;
+            const isDifferentPlayer = !currentPlayer || currentPlayer.uid !== target.uid;
+
+            if (isDifferentPlayer) {
+              if (currentPlayer && currentPlayer.hp > 0 && !currentPlayer.fainted) {
+                store.addLog(`¡Bien hecho, ${currentPlayer.name}! ¡Regresa!`, 'log-info', 'player');
+                if (store.exitingPlayer) store.exitingPlayer.value = currentPlayer;
+                if (store.fsm && store.BATTLE_STATES && store.BATTLE_SUBSTATES) {
+                  await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.POKEMON_RECALL);
+                }
+                if (store.animations?.handleWithdrawRequest) {
+                  await store.animations.handleWithdrawRequest({ side: 'player', pokemon: currentPlayer });
+                }
+                if (store.fsm && store.BATTLE_STATES && store.BATTLE_SUBSTATES) {
+                  await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.VACATE_SEAT);
+                }
+                if (store.exitingPlayer) store.exitingPlayer.value = null;
+              }
+
+              active.player = target;
+              if (active.participants && !active.participants.includes(target.uid)) {
+                active.participants.push(target.uid);
+              }
+
+              if (store.playerStages?.value) {
+                const s = store.playerStages.value;
+                store.playerStages.value = {
+                  ...s,
+                  atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0
+                };
+              }
+
+              if (store.fsm && store.BATTLE_STATES && store.BATTLE_SUBSTATES) {
+                await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.POKEMON_CALL);
+                await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.RENDER_BALL);
+                await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.OCCUPY_SEAT);
+              }
+
+              if (type === 'drag') {
+                store.addLog(`¡${target.name} fue arrastrado al campo!`, 'log-player', target);
+              } else if (!isSilent) {
+                store.addLog(`¡Adelante, ${target.name}!`, 'log-player', target);
+              }
+
+              if (store.animations?.handleReleaseRequest) {
+                await store.animations.handleReleaseRequest({ side: 'player', pokemon: target });
+              }
+
+              const { applyEntryHazards } = await import('./battleFlow.ts');
+              applyEntryHazards(target, store.playerStages?.value || {}, store.addLog);
             } else {
-              Reflect.set(bState, 'switchingToEnemy', target);
+              active.player = target;
+              if (!isSilent && !Reflect.get(active, '_playerSwitchLogged')) {
+                store.addLog(`¡Adelante, ${target.name}!`, 'log-player', target);
+              }
+              if (Reflect.get(active, '_playerSwitchLogged')) {
+                Reflect.deleteProperty(active, '_playerSwitchLogged');
+              }
             }
-            const team = store.activeBattle.value.enemyTeam || [];
-            const idx = team.findIndex(p => p && p.uid === target.uid);
-            if (idx !== -1) {
-              store.activeBattle.value.enemyTeamIndex = idx;
-            }
-          }
-        }
-      }
-      if (type === 'drag' && !line.includes('[silent]')) {
-        if (target) store.addLog(`¡${target.name} fue arrastrado al campo!`, 'log-info', target);
-      } else if (type === 'switch' && !line.includes('[silent]')) {
-        if (target) {
-          const side = getSide(parts[2] || '');
-          const msg = side === 'player' ? `¡Adelante, ${target.name}! ` : `¡El rival envió a ${target.name}!`;
-          const style = side === 'player' ? 'log-player' : 'log-enemy';
-          store.addLog(msg, style, target);
+            return true;
+          })();
         }
       }
       return true;

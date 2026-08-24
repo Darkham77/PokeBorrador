@@ -230,7 +230,7 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
       await handleCoreEvents(ctx) ||
       handleStageEvents(ctx) ||
       await handleFieldEvents(ctx) ||
-      handleMiscEvents(ctx);
+      await handleMiscEvents(ctx);
 
     if (!handled) {
       logger.debug('ShowdownBridge', `Línea de log de Showdown sin parseador visual específico: ${line}`);

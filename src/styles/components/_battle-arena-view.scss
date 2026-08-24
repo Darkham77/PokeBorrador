@@ -120,7 +120,7 @@
   left: 5%;
   right: 5%;
   bottom: 8%;
-  z-index: calc(var(--z-base) + 50);
+  z-index: calc(var(--z-map-spawns) + 6);
   pointer-events: all;
   
   .dialog-frame {
@@ -176,7 +176,7 @@
 }
 
 .dialog-bubble-entity {
-  z-index: calc(var(--z-base) + 50);
+  z-index: calc(var(--z-map-spawns) + 6);
   display: flex;
   align-items: center;
   justify-content: center;

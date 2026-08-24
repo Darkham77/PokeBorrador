@@ -163,7 +163,7 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT)
     
     ctx.faintedSides.value.delete('enemy')
-    ctx.addLog(`¡Entrenador envía a ${nextEnemy.name}!`, 'log-enemy', 'enemy_trainer')
+    ctx.addLog(`¡${active.trainerName || 'El entrenador'} envía a ${nextEnemy.name}!`, 'log-enemy', 'enemy_trainer')
     
     const { showdownWorker, executeTurnInWorker } = await import('./showdownWorkerClient.ts')
     if (showdownWorker && active.enemyTeam) {

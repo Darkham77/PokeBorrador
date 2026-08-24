@@ -139,7 +139,7 @@ const MAX_TEAM_CAPACITY = 6
 const teamBallsStatus = computed(() => {
   if (!battleStore.state) return []
   const team = props.isPlayer 
-    ? (battleStore.state.playerTeam || []) 
+    ? ((battleStore.state.playerTeam && battleStore.state.playerTeam.length > 0) ? battleStore.state.playerTeam : (gameStore.state.team || []))
     : (battleStore.state.enemyTeam || [])
   
   const statuses: PartySlotStatus[] = []
