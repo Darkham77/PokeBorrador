@@ -55,7 +55,7 @@ Ejemplo:
   }
 
   console.log(`\n📦 Abriendo base de datos: ${targetDbPath}`);
-  const db = new DatabaseSync(targetDbPath);
+  using db = new DatabaseSync(targetDbPath);
 
   let queryStr = 'SELECT user_id, save_data FROM game_saves';
   const params: string[] = []; // no-domain

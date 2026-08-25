@@ -15,7 +15,7 @@ import {
   TRAINER_RETREAT_X_OFFSET_PX,
   TRAINER_RETREAT_Y_OFFSET_PX
 } from '@/logic/constants/animations'
-import { getTrainerIdleConfig } from './helpers/trainerIdleAnims'
+import { getTrainerIdleConfig } from './helpers/trainerIdleAnims.ts'
 
 const props = defineProps<{
   isTrainerVisible: boolean
@@ -160,8 +160,8 @@ defineExpose({
     ref="trainerRef"
     :x="p2Pos.x"
     :y="p2Pos.y"
-    :w="baseEntitySizeEnemy * 0.8"
-    :h="baseEntitySizeEnemy * 0.8"
+    :w="baseEntitySizeEnemy"
+    :h="baseEntitySizeEnemy"
     class="trainer-entity"
   >
     <div class="trainer-sprite-wrapper">
@@ -183,13 +183,13 @@ defineExpose({
     </div>
     <div 
       class="trainer-shadow"
-      :style="getTrainerShadowStyle(getAssetUrl(ASSET_TYPES.TRAINER, trainerSprite || trainerName || 'entrenador'), baseEntitySizeEnemy * 0.8 * (objectScale || 2))"
+      :style="getTrainerShadowStyle(getAssetUrl(ASSET_TYPES.TRAINER, trainerSprite || trainerName || 'entrenador'), baseEntitySizeEnemy * (objectScale || 2))"
     />
     <div
       v-if="showGuides"
       class="debug-trainer-guide"
     >
-      <span>{{ Math.round(baseEntitySizeEnemy * 0.8 * (objectScale || 2)) }}x{{ Math.round(baseEntitySizeEnemy * 0.8 * (objectScale || 2)) }}</span>
+      <span>{{ Math.round(baseEntitySizeEnemy * (objectScale || 2)) }}x{{ Math.round(baseEntitySizeEnemy * (objectScale || 2)) }}</span>
     </div>
   </VirtualEntity>
 
@@ -199,8 +199,8 @@ defineExpose({
     ref="standingTrainerRef"
     :x="p2Pos.x + TRAINER_RETREAT_X_OFFSET_PX"
     :y="p2Pos.y + TRAINER_RETREAT_Y_OFFSET_PX"
-    :w="baseEntitySizeEnemy * 0.8"
-    :h="baseEntitySizeEnemy * 0.8"
+    :w="baseEntitySizeEnemy"
+    :h="baseEntitySizeEnemy"
     class="standing-trainer enemy-trainer"
   >
     <div class="trainer-sprite-wrapper">
@@ -222,13 +222,13 @@ defineExpose({
     </div>
     <div 
       class="trainer-shadow"
-      :style="getTrainerShadowStyle(getAssetUrl(ASSET_TYPES.TRAINER, trainerSprite || trainerName || 'entrenador'), baseEntitySizeEnemy * 0.8 * (objectScale || 2))"
+      :style="getTrainerShadowStyle(getAssetUrl(ASSET_TYPES.TRAINER, trainerSprite || trainerName || 'entrenador'), baseEntitySizeEnemy * (objectScale || 2))"
     />
     <div
       v-if="showGuides"
       class="debug-trainer-guide"
     >
-      <span>{{ Math.round(baseEntitySizeEnemy * 0.8 * (objectScale || 2)) }}x{{ Math.round(baseEntitySizeEnemy * 0.8 * (objectScale || 2)) }}</span>
+      <span>{{ Math.round(baseEntitySizeEnemy * (objectScale || 2)) }}x{{ Math.round(baseEntitySizeEnemy * (objectScale || 2)) }}</span>
     </div>
   </VirtualEntity>
 

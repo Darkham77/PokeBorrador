@@ -517,11 +517,13 @@ The `blink` effect of the `gsapLoop.ts` directive (`v-gsap-loop="'blink'"`) MUST
 The NPC Trainer visual lifecycle across search phase, dialogue presentation, active combat, and battle resolution follows a deterministic 4-step GSAP state machine (see full state machine diagram in [Battle Mechanics Manual - Section 2.1](./battle_mechanics_manual.md#21-npc-trainer--gym-presentation-lifecycle-4-phase-visual-flow)):
 
 1. **Entrance & Dialogue Presentation (`entering` -> `idle`)**:
-   - The trainer entity starts off-screen to the right (`x: '150%'`, `y: 0`, `scale: 1`, `opacity: 1`) and smoothly slides to center stage (`p2Pos`, `x: '0%'`, `y: 0`, `scale: 1`) using `gsap.fromTo` with `ease: 'back.out(1.2)'` (and audio fanfare / alert exclamation for rivals).
-   - During the dialogue presentation / search phase (`SEARCH_PHASE` / `COMBAT_OR_FLEE`), the trainer **MUST REMAIN AT CENTER STAGE** (`x: 0, y: 0, scale: 1`) directly anchored to the dialogue speech bubble. Prematurely snapping or setting background retreat coordinates during dialogue is strictly forbidden.
+   - The trainer entity starts off-screen to the right (`x: '150%'`, `y: 0`, `scale: 1`, `opacity: 1`) and smoothly slides to center stage (`p2Pos`, `x: '0%'`, `y: 0`, `scale: 1`, `transformOrigin: 'bottom center'`) using `gsap.fromTo` with `ease: 'back.out(1.2)'` (and audio fanfare / alert exclamation for rivals).
+   - During the dialogue presentation / search phase (`SEARCH_PHASE` / `COMBAT_OR_FLEE`), the trainer **MUST REMAIN AT CENTER STAGE** at full presentation size (`:w="baseEntitySizeEnemy"`, `x: 0, y: 0, scale: 1`) directly anchored to the dialogue speech bubble. Prematurely snapping or setting background retreat coordinates during dialogue is strictly forbidden.
 
 2. **Player Combat Confirmation & Background Retreat (`retreating` -> `standing`)**:
-   - When the player confirms combat ("LUCHAR"), the speech bubble fades out, and `triggerTrainerRetreat()` moves the trainer from center stage to the background standing zone (`TRAINER_RETREAT_X_OFFSET_PX` = 300, `TRAINER_RETREAT_Y_OFFSET_PX` = -10, `TRAINER_RETREAT_SCALE` = 0.8) using `gsap.to` with `ease: 'power2.inOut'` (duration: 0.8s).
+   - When the player confirms combat ("LUCHAR"), the speech bubble fades out, and `triggerTrainerRetreat()` moves the trainer from center stage to the background standing zone (`TRAINER_RETREAT_X_OFFSET_PX` = 300, `TRAINER_RETREAT_Y_OFFSET_PX` = -10, `TRAINER_RETREAT_SCALE` = 0.8) with `transformOrigin: 'bottom center'` using `gsap.to` with `ease: 'power2.inOut'` (duration: 0.8s).
+   - Standing in-combat trainer entities (`standingTrainerRef` / `.standing-trainer.enemy-trainer`) MUST use `:w="baseEntitySizeEnemy"` with CSS `transform: scale(0.8); transform-origin: bottom center;` to maintain seamless 0px/0% continuity with the GSAP retreat timeline.
+   - Presentation entities (`trainerRef`) and standing combatant entities MUST be strictly mutually exclusive via `:show-standing-trainers` and FSM states to prevent duplicate rendered instances.
    - During the entire active battle (`ACTIVE_BATTLE`), the trainer remains standing at this background position. Page reloads (F5) during active combat restore the trainer directly in the `standing` state.
 
 3. **Battle Conclusion & Off-Camera Exit (`exiting`)**:

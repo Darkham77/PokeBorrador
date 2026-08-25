@@ -81,16 +81,17 @@ export function playTrainerAnimation(
       }
 
       gsap.fromTo(el,
-        { x: RIVAL_SLIDE_INITIAL_X_PERCENT, y: 0, opacity: TRAINER_SOLID_OPACITY, scale: RIVAL_TRAINER_SLIDE_SCALE },
-        { x: '0%', y: 0, opacity: TRAINER_SOLID_OPACITY, scale: 1, duration: TRAINER_ENTER_DURATION_SEC, delay: RIVAL_TRAINER_SLIDE_DELAY_SEC, ease: 'back.out(1.2)' }
+        { x: RIVAL_SLIDE_INITIAL_X_PERCENT, y: 0, opacity: TRAINER_SOLID_OPACITY, scale: RIVAL_TRAINER_SLIDE_SCALE, transformOrigin: 'bottom center' },
+        { x: '0%', y: 0, opacity: TRAINER_SOLID_OPACITY, scale: 1, transformOrigin: 'bottom center', duration: TRAINER_ENTER_DURATION_SEC, delay: RIVAL_TRAINER_SLIDE_DELAY_SEC, ease: 'back.out(1.2)' }
       );
     } else {
       gsap.fromTo(el,
-        { x: '150%', y: 0, opacity: TRAINER_SOLID_OPACITY, scale: 1 },
-        { x: '0%', y: 0, opacity: TRAINER_SOLID_OPACITY, scale: 1, duration: TRAINER_ENTER_DURATION_SEC, ease: 'back.out(1.2)' }
+        { x: '150%', y: 0, opacity: TRAINER_SOLID_OPACITY, scale: 1, transformOrigin: 'bottom center' },
+        { x: '0%', y: 0, opacity: TRAINER_SOLID_OPACITY, scale: 1, transformOrigin: 'bottom center', duration: TRAINER_ENTER_DURATION_SEC, ease: 'back.out(1.2)' }
       );
     }
   } else if (newState === 'retreating') {
+    gsap.set(el, { transformOrigin: 'bottom center' });
     gsap.to(el, {
       x: TRAINER_RETREAT_X_OFFSET_PX,
       y: TRAINER_RETREAT_Y_OFFSET_PX,

@@ -256,7 +256,7 @@ export const TRAINER_ENTER_DURATION_SEC = 0.8;
 /** Trainer retreat target X offset in pixels. */
 export const TRAINER_RETREAT_X_OFFSET_PX = 300;
 export const TRAINER_RETREAT_Y_OFFSET_PX = -10;
-export const TRAINER_RETREAT_SCALE = 1.0;
+export const TRAINER_RETREAT_SCALE = 0.8;
 
 /** Trainer exit animation duration in seconds. */
 export const TRAINER_EXIT_DURATION_SEC = 0.8;
