@@ -49,7 +49,7 @@ function createValidGameState(): GameState {
       isShiny: false,
       vigor: 100,
       maxVigor: 100,
-      moves: [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35, type: 'normal', cat: 'physical' }],
+      moves: [{ id: 'quickattack', name: 'Ataque Rápido', pp: 30, maxPP: 30, type: 'normal', cat: 'physical' }],
       ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
       nature: 'hardy',
       ability: 'static'

@@ -512,9 +512,22 @@ The `blink` effect of the `gsapLoop.ts` directive (`v-gsap-loop="'blink'"`) MUST
 - **Correct Behavior (Non-Text Elements)**: For elements without text (icons, sprites), opacity is clamped to a minimum of `0.75` to prevent full transparency.
 - **Implementation Reference**: `src/directives/gsapLoop.ts` — `applyAnimation` switch-case `'blink'`.
 
-## 42. Layered Animation Conflict Resolution (GSAP vs CSS)
+## 43. NPC Trainer Visual Lifecycle & GSAP Choreography Standards
 
-When using GSAP to animate CSS properties like `box-shadow` on a container element (such as for combat status or type effectiveness highlights), any static CSS `box-shadow` rules (such as weather auras or status effects) on the same element will be completely overwritten by GSAP's inline style changes.
+The NPC Trainer visual lifecycle across search phase, dialogue presentation, active combat, and battle resolution follows a deterministic 4-step GSAP state machine (see full state machine diagram in [Battle Mechanics Manual - Section 2.1](./battle_mechanics_manual.md#21-npc-trainer--gym-presentation-lifecycle-4-phase-visual-flow)):
 
-- **Rule**: To avoid visual animation clashes, keep GSAP-animated styles and static layout modifiers on separate layers. Implement static overlays (e.g., `<div class="weather-aura-overlay">` inside the main wrapper) to apply static styles (like inset shadows) independently of the parent's animated borders.
+1. **Entrance & Dialogue Presentation (`entering` -> `idle`)**:
+   - The trainer entity starts off-screen to the right (`x: '150%'`, `y: 0`, `scale: 1`, `opacity: 1`) and smoothly slides to center stage (`p2Pos`, `x: '0%'`, `y: 0`, `scale: 1`) using `gsap.fromTo` with `ease: 'back.out(1.2)'` (and audio fanfare / alert exclamation for rivals).
+   - During the dialogue presentation / search phase (`SEARCH_PHASE` / `COMBAT_OR_FLEE`), the trainer **MUST REMAIN AT CENTER STAGE** (`x: 0, y: 0, scale: 1`) directly anchored to the dialogue speech bubble. Prematurely snapping or setting background retreat coordinates during dialogue is strictly forbidden.
+
+2. **Player Combat Confirmation & Background Retreat (`retreating` -> `standing`)**:
+   - When the player confirms combat ("LUCHAR"), the speech bubble fades out, and `triggerTrainerRetreat()` moves the trainer from center stage to the background standing zone (`TRAINER_RETREAT_X_OFFSET_PX` = 300, `TRAINER_RETREAT_Y_OFFSET_PX` = -10, `TRAINER_RETREAT_SCALE` = 0.8) using `gsap.to` with `ease: 'power2.inOut'` (duration: 0.8s).
+   - During the entire active battle (`ACTIVE_BATTLE`), the trainer remains standing at this background position. Page reloads (F5) during active combat restore the trainer directly in the `standing` state.
+
+3. **Battle Conclusion & Off-Camera Exit (`exiting`)**:
+   - When the combat concludes (player victory, defeat, or fleeing), `triggerTrainerExit()` smoothly moves the trainer from their standing position towards the right (`x: +=TRAINER_EXIT_X_OFFSET_PX` = 600px) with `ease: 'power2.in'` (duration: 0.8s) until completely off-camera, cleanly hiding the entity upon animation completion.
+
+4. **Team Rocket Special Flee Effect**:
+   - When the defeated or fleeing trainer belongs to Team Rocket (`trainerArchetype === 'rocket' | 'grunt'` or sprite/name includes `rocket`), the exit sequence triggers the `flee` sound (`audioStore.play('flee')`) and rapid escape movement to reflect criminal retreat lore.
+
 

@@ -58,6 +58,7 @@ export function useBattleAnimations(
     triggerTrainerEntry,
     triggerTrainerDialogs,
     triggerTrainerRetreat,
+    triggerTrainerExit,
     triggerPokemonCall,
     resetTrainerStates
   } = trainerAnims
@@ -105,7 +106,7 @@ export function useBattleAnimations(
       if (!state) return
 
       const subState = sub || ''
-      const isCleanupState = (['CONTEXT_SETUP', 'EXIT_BATTLE'] as const).includes(state as never) || subState === 'WAIT_INPUT'
+      const isCleanupState = (['CONTEXT_SETUP', 'EXIT_BATTLE'] as const).includes(state as never)
 
       if (isCleanupState) {
         isGlobalFadeActive.value = (state === 'EXIT_BATTLE' && !['DEFEAT_SCREEN', 'DEFEAT_WAIT'].includes(String(subState)))
@@ -130,10 +131,20 @@ export function useBattleAnimations(
         case 'PARALLEL_ENTRY':
         case 'WILD_ENTRY':
         case 'COMBAT_OR_FLEE':
-        case 'SILHOUETTE_MODE':
-          isWildSilhouette.value = true
-          wildRevealActive.value = true
+        case 'SILHOUETTE_MODE': {
+          const isTrainer = Boolean(battleStore.state?.isTrainer || battleStore.state?.isGym || battleStore.state?.isPvP)
+          isWildSilhouette.value = !isTrainer
+          wildRevealActive.value = !isTrainer
           isWildEntryAnimation.value = false
+          break
+        }
+
+        case 'POKEMON_CALL':
+          isWildSilhouette.value = false
+          wildRevealActive.value = false
+          isWildEntryAnimation.value = false
+          isEmerging.value = false
+          silhouetteOpacity.value = 1
           break
 
         case 'ENTRY_ANIM': {
@@ -206,8 +217,6 @@ export function useBattleAnimations(
           isWildEntryAnimation.value = false
           wildRevealActive.value = false
           isWildSilhouette.value = false
-          trainerAnimState.value = null
-          isTrainerVisible.value = false
           Object.keys(seats.value).forEach(side => { 
             const seat = seats.value[side]
             if (seat) {
@@ -303,9 +312,19 @@ export function useBattleAnimations(
         return
       }
 
-      if (side === 'player' || !isWild) {
-        const pokemon = side === 'player' ? toValue(battleStore.player) : toValue(battleStore.enemy)
-        handleCatchRequest({ side, pokemon: pokemon || undefined })
+      if (side === 'player') {
+        const playerPokemon = toValue(battleStore.player)
+        handleCatchRequest({ side: 'player', pokemon: playerPokemon || undefined })
+
+        if (isWild) {
+          const enemyPokemon = toValue(battleStore.enemy)
+          if (enemyPokemon) {
+            gameBus.emit('TRIGGER_COMBATANT_ESCAPE', { side: 'enemy', pokemon: enemyPokemon, type: 'flee' })
+          }
+        }
+      } else if (!isWild) {
+        const pokemon = toValue(battleStore.enemy)
+        handleCatchRequest({ side: 'enemy', pokemon: pokemon || undefined })
       } else {
         const type = (typeof data === 'object' && data?.type) || 'flee'
         const pokemon = toValue(battleStore.enemy)
@@ -365,6 +384,7 @@ export function useBattleAnimations(
     triggerTrainerEntry,
     triggerTrainerDialogs,
     triggerTrainerRetreat,
+    triggerTrainerExit,
     triggerPokemonCall,
     triggerCatchSparkles,
     initListeners,

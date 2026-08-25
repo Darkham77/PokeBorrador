@@ -81,7 +81,38 @@ export function syncTeamHP(ctx: BattleContext) {
     if (teamPoke) {
       active.player.hp = teamPoke.hp
       active.player.status = teamPoke.status
+      if (Array.isArray(active.player.moves) && Array.isArray(teamPoke.moves)) {
+        for (const am of active.player.moves) {
+          if (!am || !am.id) continue
+          const tm = teamPoke.moves.find(m => m && m.id === am.id)
+          if (tm && typeof am.pp === 'number') {
+            tm.pp = am.pp
+            if (typeof am.maxPP === 'number') {
+              tm.maxPP = am.maxPP
+            }
+          }
+        }
+      }
     }
+  }
+
+  if (Array.isArray(active.playerTeam) && Array.isArray(ctx.gs.state.team)) {
+    active.playerTeam.forEach((battlePoke: Pokemon) => {
+      if (!battlePoke || !battlePoke.uid) return
+      const teamPoke = ctx.gs.state.team.find((p: Pokemon) => p && isMatchingUid(p.uid, battlePoke.uid))
+      if (teamPoke && Array.isArray(battlePoke.moves) && Array.isArray(teamPoke.moves)) {
+        for (const am of battlePoke.moves) {
+          if (!am || !am.id) continue
+          const tm = teamPoke.moves.find(m => m && m.id === am.id)
+          if (tm && typeof am.pp === 'number') {
+            tm.pp = am.pp
+            if (typeof am.maxPP === 'number') {
+              tm.maxPP = am.maxPP
+            }
+          }
+        }
+      }
+    })
   }
 
   if (active.enemy && active.enemyTeam) {
@@ -96,13 +127,22 @@ export function syncTeamHP(ctx: BattleContext) {
 
 export function syncAndPersist(ctx: BattleContext) {
   const active = ctx.activeBattle.value
-  if (!active || active.over || isBattleMinigame(active)) {
+  if (!active) return
+
+  // 1. Sync live team HP, status, and PP back to GameStore team SSoT
+  syncTeamHP(ctx)
+
+  // 2. If battle is over or minigame, clear activeBattle and persist team
+  if (active.over || isBattleMinigame(active)) {
     ctx.gs.state.activeBattle = null
+    ctx.gs.save(false)
     return
   }
-  syncTeamHP(ctx)
+
+  const isSearchPhase = ctx.fsm.currentState.value === ctx.BATTLE_STATES.SEARCH_PHASE || active.turnCount === 0 || !active.turn;
   ctx.gs.state.activeBattle = {
     ...active,
+    inSearchPhase: isSearchPhase,
     playerStages: ctx.playerStages.value,
     enemyStages: ctx.enemyStages.value,
     battleLogs: ctx.battleLogs.value.slice(-RECENT_BATTLE_LOGS_MAX_KEEP)

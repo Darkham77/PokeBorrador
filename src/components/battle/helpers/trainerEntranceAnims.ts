@@ -12,7 +12,10 @@ import {
   RIVAL_EXCLAMATION_FADE_DURATION_SEC,
   TRAINER_ENTER_DURATION_SEC,
   TRAINER_RETREAT_X_OFFSET_PX,
-  TRAINER_RETREAT_Y_OFFSET_PX
+  TRAINER_RETREAT_Y_OFFSET_PX,
+  TRAINER_RETREAT_SCALE,
+  TRAINER_EXIT_DURATION_SEC,
+  TRAINER_EXIT_X_OFFSET_PX
 } from '@/logic/constants/animations';
 import { OPACITY_ZERO } from '@/logic/constants/visuals';
 
@@ -22,6 +25,7 @@ const RIVAL_ALERT_INITIAL_POP_DELAY_SEC = 0.1;
 const RIVAL_TRAINER_SLIDE_SCALE = 0.8;
 const RIVAL_ALERT_OPACITY_PEAK = 0.8;
 const RIVAL_SLIDE_INITIAL_X_PERCENT = '150%';
+const TRAINER_SOLID_OPACITY = 1;
 
 export function playTrainerAnimation(
   newState: string,
@@ -30,7 +34,8 @@ export function playTrainerAnimation(
   showRivalAlert: Ref<boolean>,
   rivalFlickerRef: Ref<HTMLElement | null>,
   rivalExclamationRef: Ref<HTMLElement | null>,
-  audioStore: ReturnType<typeof useAudioStore>
+  audioStore: ReturnType<typeof useAudioStore>,
+  isRocket: boolean = false
 ): void {
   if (newState === 'entering') {
     gsap.killTweensOf(el);
@@ -57,7 +62,7 @@ export function playTrainerAnimation(
       if (rivalExclamationRef.value) {
         tlAlert.fromTo(rivalExclamationRef.value,
           { scale: 0, opacity: 0 },
-          { scale: RIVAL_EXCLAMATION_POP_SCALE, opacity: 1, duration: RIVAL_EXCLAMATION_POP_DURATION_SEC, ease: 'back.out(2)' },
+          { scale: RIVAL_EXCLAMATION_POP_SCALE, opacity: TRAINER_SOLID_OPACITY, duration: RIVAL_EXCLAMATION_POP_DURATION_SEC, ease: 'back.out(2)' },
           RIVAL_ALERT_INITIAL_POP_DELAY_SEC
         );
         tlAlert.to(rivalExclamationRef.value, {
@@ -76,21 +81,37 @@ export function playTrainerAnimation(
       }
 
       gsap.fromTo(el,
-        { x: RIVAL_SLIDE_INITIAL_X_PERCENT, opacity: 0, scale: RIVAL_TRAINER_SLIDE_SCALE },
-        { x: '0%', opacity: 1, scale: 1, duration: TRAINER_ENTER_DURATION_SEC, delay: RIVAL_TRAINER_SLIDE_DELAY_SEC, ease: 'power2.out' }
+        { x: RIVAL_SLIDE_INITIAL_X_PERCENT, y: 0, opacity: TRAINER_SOLID_OPACITY, scale: RIVAL_TRAINER_SLIDE_SCALE },
+        { x: '0%', y: 0, opacity: TRAINER_SOLID_OPACITY, scale: 1, duration: TRAINER_ENTER_DURATION_SEC, delay: RIVAL_TRAINER_SLIDE_DELAY_SEC, ease: 'back.out(1.2)' }
       );
     } else {
       gsap.fromTo(el,
-        { x: '100%', opacity: 0 },
-        { x: '0%', opacity: 1, duration: TRAINER_ENTER_DURATION_SEC, ease: 'power2.out' }
+        { x: '150%', y: 0, opacity: TRAINER_SOLID_OPACITY, scale: 1 },
+        { x: '0%', y: 0, opacity: TRAINER_SOLID_OPACITY, scale: 1, duration: TRAINER_ENTER_DURATION_SEC, ease: 'back.out(1.2)' }
       );
     }
   } else if (newState === 'retreating') {
     gsap.to(el, {
-      x: `+=${TRAINER_RETREAT_X_OFFSET_PX}`,
-      y: `-=${TRAINER_RETREAT_Y_OFFSET_PX}`,
-      opacity: 0,
+      x: TRAINER_RETREAT_X_OFFSET_PX,
+      y: TRAINER_RETREAT_Y_OFFSET_PX,
+      scale: TRAINER_RETREAT_SCALE,
+      opacity: TRAINER_SOLID_OPACITY,
       duration: TRAINER_ENTER_DURATION_SEC,
+      ease: 'power2.inOut'
+    });
+  } else if (newState === 'standing') {
+    gsap.set(el, {
+      x: 0,
+      y: 0,
+      opacity: TRAINER_SOLID_OPACITY
+    });
+  } else if (newState === 'exiting') {
+    if (isRocket && audioStore && typeof audioStore.play === 'function') {
+      audioStore.play('flee');
+    }
+    gsap.to(el, {
+      x: `+=${TRAINER_EXIT_X_OFFSET_PX}`,
+      duration: TRAINER_EXIT_DURATION_SEC,
       ease: 'power2.in'
     });
   }

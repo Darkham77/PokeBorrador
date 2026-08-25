@@ -82,12 +82,17 @@ export const daycareMissionSchema = object({
     id: optional(string()),
     name: optional(string()),
     qty: optional(number()),
+    icon: optional(string()),
     money: optional(number()),
     exp: optional(number()),
     item: optional(string())
   })),
   completed: optional(boolean()),
-  claimed: optional(boolean())
+  claimed: optional(boolean()),
+  trainerType: optional(string()),
+  trainerName: optional(string()),
+  trainerSprite: optional(string()),
+  dialogue: optional(string())
 });
 
 export const notificationItemSchema = object({

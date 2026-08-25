@@ -175,6 +175,8 @@ export const pokemonSchema = object({
   isAncestral: optional(boolean()),
   choiceMove: optional(nullable(string())),
   form: optional(string()),
+  isIllegal: optional(boolean()),
+  illegalReasons: optional(array(string())),
 });
 
 const partialPokemonIVsSchema = partial(pokemonIVsSchema);

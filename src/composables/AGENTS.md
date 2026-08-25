@@ -25,6 +25,7 @@ Frontend Developers.
 - [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
 - [map/](./map/AGENTS.md): Domain module documentation for map.
 - [modals/](./modals/AGENTS.md): Domain module documentation for modals.
+- [navigation/](./navigation/AGENTS.md): Domain module documentation for navigation.
 - [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon.
 - [pvp/](./pvp/AGENTS.md): Domain module documentation for pvp.
 - [system/](./system/AGENTS.md): Domain module documentation for system.

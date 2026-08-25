@@ -23,6 +23,7 @@ export async function restoreBattleState(ctx: BattleContext, battleData: unknown
     ctx.activeBattle.value = null
     ctx.gs.state.activeBattle = null
     await ctx.fsm.transition(BATTLE_STATES.EXIT_BATTLE)
+    await ctx.gs.save?.(false)
     return
   }
 
@@ -46,7 +47,10 @@ export async function restoreBattleState(ctx: BattleContext, battleData: unknown
 
   // 4. If an active battle with combatants was in progress, restore it faithfully
   const enemyPoke = d.enemy || d._initialEnemy || (d.enemyTeam && (d.enemyTeam[enemyTeamIndex] || d.enemyTeam[0])) || null
-  if (playerPoke && enemyPoke) {
+  const isSearchPhase = Boolean((d as { inSearchPhase?: boolean }).inSearchPhase === true || (d as { fsmState?: string }).fsmState === 'SEARCH_PHASE');
+  const isActualCombatInProgress = Boolean(!isSearchPhase && ((d.turnCount && d.turnCount > 0) || d.isTrainer || d.isGym || (!d.wasSearching && enemyPoke)))
+
+  if (playerPoke && enemyPoke && isActualCombatInProgress) {
     d.player = playerPoke
     d.enemy = enemyPoke
     d.playerTeam = ctx.gs.state.team
@@ -97,6 +101,7 @@ export async function restoreBattleState(ctx: BattleContext, battleData: unknown
   ctx.activeBattle.value = null
   ctx.gs.state.activeBattle = null
   await ctx.fsm.transition(BATTLE_STATES.EXIT_BATTLE)
+  await ctx.gs.save?.(false)
 }
 
 async function resumeSearchMode(ctx: BattleContext, d: Partial<BattleState>): Promise<void> {

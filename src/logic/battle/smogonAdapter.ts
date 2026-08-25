@@ -376,6 +376,22 @@ export function calculateDamageForTooltip(
       }
     }
 
+function translateRecoilText(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/recoil damage/gi, 'daño por retroceso')
+    .replace(/recoil/gi, 'retroceso')
+    .replace(/crash damage/gi, 'daño por colisión');
+}
+
+function translateRecoveryText(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/recovered/gi, 'vida recuperada')
+    .replace(/absorbed HP/gi, 'PS absorbidos')
+    .replace(/recovery/gi, 'recuperación');
+}
+
     const out: SmogonTooltipResult = {
       minDmg,
       maxDmg,
@@ -386,8 +402,8 @@ export function calculateDamageForTooltip(
       critMinPercent: pct(critMinDmg),
       critMaxPercent: pct(critMaxDmg),
       koChance: { chance: koChance.chance, n: koChance.n },
-      recovery: { min: recMin, max: recMax, text: recovery.text },
-      recoil:   { min: rclMin, max: rclMax, text: recoil.text },
+      recovery: { min: recMin, max: recMax, text: translateRecoveryText(recovery.text) },
+      recoil:   { min: rclMin, max: rclMax, text: translateRecoilText(recoil.text) },
       // Advanced calculations
       smogonDesc: result.desc(),
       attackerSpeed,

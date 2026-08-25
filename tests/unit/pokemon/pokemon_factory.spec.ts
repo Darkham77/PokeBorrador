@@ -56,7 +56,7 @@ vi.mock('@/stores/war', () => ({
 }));
 
 vi.mock('@/logic/pokemon/pokemonUtils', () => ({
-  getMovesAtLevel: vi.fn(() => [{ id: 'tackle', name: 'Placaje', pp: 35, maxPP: 35 }])
+  getMovesAtLevel: vi.fn(() => [{ id: 'scratch', name: 'Arañazo', pp: 35, maxPP: 35 }])
 }));
 
 describe('Pokemon Factory', () => {

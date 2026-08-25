@@ -27,7 +27,7 @@ function isHealItemId(value: ItemId): value is HealItemId {
 }
 
 export function executeUseItem(
-  itemName: ItemId | string,
+  itemName: ItemId | (string & {}),
   context: PokemonStorageLocation | null = null,
   index: number | null = null
 ): ItemEffectResult {

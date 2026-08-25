@@ -51,7 +51,7 @@ export interface BattleContext {
   clearVolatileStatus: (p: Pokemon) => void;
   startBattle: (enemyPoke: Pokemon, options?: BattleOptions) => Promise<void>;
   _startBattle: (enemyPoke: Pokemon, options?: BattleOptions) => Promise<void>;
-  initBattle: () => Promise<void>;
+  initBattle: (options?: { initialPlayer?: Pokemon | null; initialEnemy?: Pokemon | null; wasSearching?: boolean }) => Promise<void>;
   
   animations?: {
     seats?: import('vue').Ref<Record<BattleSeatId, import('@/composables/battle/useBattleSeats').SeatState>>;
@@ -69,6 +69,7 @@ export interface BattleContext {
     triggerTrainerEntry: () => Promise<void>;
     triggerTrainerDialogs: () => Promise<void>;
     triggerTrainerRetreat: () => Promise<void>;
+    triggerTrainerExit?: () => Promise<void>;
     triggerPokemonCall: () => Promise<void>;
     handleHealRequest?: (detail: string | { side?: string }) => Promise<void>;
     handleBlinkRequest?: (detail: string | { side?: string }) => Promise<void>;

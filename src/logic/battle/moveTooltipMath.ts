@@ -115,6 +115,15 @@ export function calculateMovePower(
   basePower: number,
   moveType: string
 ): { base: number; final: number; list: { label: string; mult: number }[]; class: string } {
+  if (basePower === 0 || move.cat === 'status') {
+    return {
+      base: 0,
+      final: 0,
+      list: [],
+      class: ''
+    };
+  }
+
   let currentPower = basePower;
   const powerList: { label: string; mult: number }[] = [];
 

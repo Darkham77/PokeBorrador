@@ -1,32 +1,37 @@
 <script setup lang="ts">
-import PVHUDButton from '@/components/common/PVHUDButton.vue'
+import PVHUDButton from "@/components/common/PVHUDButton.vue";
+import { useNavigationState } from "@/composables/navigation/useNavigationState";
 
-const emit = defineEmits<{
-  (e: 'close-hud-group'): void
-}>()
+withDefaults(defineProps<{
+  position?: string;
+}>(), {
+  position: "top"
+});
 
-defineProps<{
-  modalStore: { isOpen: (modal: string) => boolean }
-  gtsStore: { unseenSalesCount: number }
-  gameStore: { state: { playerClass?: string | null } }
-  uiStore: { openHudGroup: string | null }
-  handleMouseEnter: (group: string) => void
-  handleMouseLeave: (group: string) => void
-  toggleGroupMenu: (group: string) => void
-  handleTabChange: (tab: string, e?: Event) => void
-  beforeEnter: (el: Element) => void
-  enter: (el: Element, done: () => void) => void
-  leave: (el: Element, done: () => void) => void
-}>()
+const {
+  uiStore,
+  modalStore,
+  gtsStore,
+  gameStore,
+  handleMouseEnter,
+  handleMouseLeave,
+  toggleGroupMenu,
+  handleTabChange,
+  beforeEnter,
+  enter,
+  leave
+} = useNavigationState();
 </script>
 
 <template>
   <div 
     class="hud-group relative-box"
+    :class="[`pos-${position}`]"
     @mouseenter="handleMouseEnter('MARKET')"
     @mouseleave="handleMouseLeave('MARKET')"
   >
     <PVHUDButton
+      id="nav-market-btn"
       custom-class="group-btn"
       :active="uiStore.openHudGroup === 'MARKET' || modalStore.isOpen('GlobalMarket') || modalStore.isOpen('Shop') || modalStore.isOpen('BCShop') || modalStore.isOpen('WarShop') || modalStore.isOpen('ReputationShop')"
       :badge-value="gtsStore.unseenSalesCount"
@@ -40,9 +45,9 @@ defineProps<{
     
     <Transition
       :css="false"
-      @before-enter="beforeEnter"
+      @before-enter="el => beforeEnter(el, position)"
       @enter="enter"
-      @leave="leave"
+      @leave="(el, done) => leave(el, position, done)"
     >
       <div 
         v-if="uiStore.openHudGroup === 'MARKET'"
@@ -52,7 +57,7 @@ defineProps<{
           id="nav-market-global-btn"
           class="hud-nav-btn"
           :class="{ active: modalStore.isOpen('GlobalMarket') }"
-          @click.stop="handleTabChange('online-market'); emit('close-hud-group')"
+          @click.stop="handleTabChange('online-market'); uiStore.openHudGroup = null"
         >
           <span class="icon">🌎</span>
           <span class="nav-item-label">GLOBAL</span>
@@ -67,7 +72,7 @@ defineProps<{
           id="nav-market-local-btn"
           class="hud-nav-btn"
           :class="{ active: modalStore.isOpen('Shop') }"
-          @click.stop="handleTabChange('market'); emit('close-hud-group')"
+          @click.stop="handleTabChange('market'); uiStore.openHudGroup = null"
         >
           <span class="icon">🛒</span>
           <span class="nav-item-label">LOCAL</span>
@@ -76,7 +81,7 @@ defineProps<{
           id="nav-market-bc-btn"
           class="hud-nav-btn"
           :class="{ active: modalStore.isOpen('BCShop') }"
-          @click.stop="handleTabChange('trainer-shop'); emit('close-hud-group')"
+          @click.stop="handleTabChange('trainer-shop'); uiStore.openHudGroup = null"
         >
           <span class="icon">🎖️</span>
           <span class="nav-item-label">BC SHOP</span>
@@ -86,7 +91,7 @@ defineProps<{
           id="nav-market-reputation-btn"
           class="hud-nav-btn rep-shop-nav-btn"
           :class="{ active: modalStore.isOpen('ReputationShop') }"
-          @click.stop="handleTabChange('reputation-shop'); emit('close-hud-group')"
+          @click.stop="handleTabChange('reputation-shop'); uiStore.openHudGroup = null"
         >
           <span class="icon">★</span>
           <span class="nav-item-label">REPUTACIÓN</span>
@@ -95,7 +100,7 @@ defineProps<{
           id="nav-market-war-btn"
           class="hud-nav-btn war-shop-nav-btn"
           :class="{ active: modalStore.isOpen('WarShop') }"
-          @click.stop="handleTabChange('war-shop'); emit('close-hud-group')"
+          @click.stop="handleTabChange('war-shop'); uiStore.openHudGroup = null"
         >
           <span class="icon">🚩</span>
           <span class="nav-item-label">GUERRA</span>

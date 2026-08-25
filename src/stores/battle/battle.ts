@@ -111,25 +111,11 @@ export const useBattleStore = defineStore('battle', () => {
   )
 
   watch(
-    () => activeBattle.value?.player,
-    () => {
-      syncActiveMovesFromRequest('player')
-    }
-  )
-
-  watch(
     () => activeBattle.value?.enemyRequest,
     () => {
       syncActiveMovesFromRequest('enemy')
     },
     { deep: true }
-  )
-
-  watch(
-    () => activeBattle.value?.enemy,
-    () => {
-      syncActiveMovesFromRequest('enemy')
-    }
   )
 
   const battleLogs = ref<BattleLog[]>([])
@@ -248,10 +234,11 @@ export const useBattleStore = defineStore('battle', () => {
     return startBattleSequence(getContext(), enemyPoke, options)
   }
     
-  const initBattle = async () => 
+  const initBattle = async (options?: { initialEnemy?: Pokemon | null; initialPlayer?: Pokemon | null; wasSearching?: boolean }) => 
     initBattleSequence(getContext(), { 
-      initialEnemy: activeBattle.value?.enemy || null,
-      initialPlayer: (gs.state.team as Pokemon[]).find(p => p && p.hp > 0) || null
+      initialEnemy: options?.initialEnemy ?? activeBattle.value?.enemy ?? null,
+      initialPlayer: options?.initialPlayer ?? (gs.state.team as Pokemon[]).find(p => p && p.hp > 0) ?? null,
+      wasSearching: options?.wasSearching
     })
 
   const { addLog, clearLogs, waitForLogs } = createBattleLoggerHelper(

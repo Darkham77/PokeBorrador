@@ -9,6 +9,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { GameState } from '@/types/system/game';
 import { validateSaveData, type SaveDataDto } from '@/logic/validation/schemas';
 import { validatePokemon } from '@/logic/pokemon/pokemonFactory';
+import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
 import { logger } from '@/logic/utils/logger';
 import { normalizeRuntimePokemonGender } from '@/logic/auth/saveSerializer';
 
@@ -129,20 +130,41 @@ export function validateAndSanitize(data: GameState | SaveDataDto | Record<strin
     uids.add(p.uid);
   };
 
+  const validateSinglePokemon = (p: SaveDataDto['team'][number] | null, listName: string) => {
+    if (!p) return;
+    checkPoke(p, listName);
+
+    try {
+      validatePokemon(p as Pokemon);
+    } catch (err) {
+      // Si la validación falla por legalidad, marcamos el flag en lugar de abortar la partida
+      const legality = checkPokemonLegality(p as Pokemon);
+      if (!legality.isLegal) {
+        (p as Pokemon).isIllegal = true;
+        (p as Pokemon).illegalReasons = legality.issues;
+        issues.push(`[SAVE] Pokémon ilegal en ${listName}: ${p.name || p.id} (UID: ${p.uid}) - ${legality.issues.join('; ')}`);
+        return;
+      }
+      throw err;
+    }
+
+    const legality = checkPokemonLegality(p as Pokemon);
+    if (!legality.isLegal) {
+      (p as Pokemon).isIllegal = true;
+      (p as Pokemon).illegalReasons = legality.issues;
+      issues.push(`[SAVE] Pokémon ilegal en ${listName}: ${p.name || p.id} (UID: ${p.uid}) - ${legality.issues.join('; ')}`);
+    } else {
+      (p as Pokemon).isIllegal = false;
+      (p as Pokemon).illegalReasons = [];
+    }
+  };
+
   try {
     if (sanitizedData.team) {
-      sanitizedData.team.forEach((p) => {
-        if (!p) return;
-        checkPoke(p, 'equipo');
-        validatePokemon(p as Pokemon);
-      });
+      sanitizedData.team.forEach((p) => validateSinglePokemon(p, 'equipo'));
     }
     if (sanitizedData.box) {
-      sanitizedData.box.forEach((p) => {
-        if (!p) return;
-        checkPoke(p, 'caja');
-        validatePokemon(p as Pokemon);
-      });
+      sanitizedData.box.forEach((p) => validateSinglePokemon(p, 'caja'));
     }
   } catch (err) {
     logger.error('SAVE', 'Error crítico en estructura de Pokémon al sanitizar/validar:', err);

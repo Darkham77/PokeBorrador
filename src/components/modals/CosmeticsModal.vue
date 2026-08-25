@@ -25,6 +25,12 @@ const authStore = useAuthStore()
 
 const isOpen = computed(() => uiStore.isCosmeticsModalOpen)
 
+const previewUsername = computed(() => {
+  const pName = profileStore.profileData.username
+  if (pName && pName !== '—' && pName.trim().length > 0) return pName
+  return gameStore.state.trainer || (authStore.user?.user_metadata?.username as string) || 'Entrenador'
+})
+
 const closeCosmetics = () => {
   uiStore.isCosmeticsModalOpen = false
 }
@@ -125,7 +131,7 @@ const NICK_STYLE_REQUIRED_CLASS_LEVEL = 25
                 v-gsap-nick="style.class"
                 class="preview-nick"
                 :class="style.class"
-              >{{ profileStore.profileData.username || 'Entrenador' }}</span>
+              >{{ previewUsername }}</span>
             </div>
             <div class="style-meta">
               <span class="style-name">{{ style.name }}</span>
@@ -177,7 +183,7 @@ const NICK_STYLE_REQUIRED_CLASS_LEVEL = 25
 
 .style-card {
   .preview-area {
-    height: 40px;
+    min-height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -185,9 +191,10 @@ const NICK_STYLE_REQUIRED_CLASS_LEVEL = 25
   }
 
   .preview-nick {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 800;
     white-space: nowrap;
+    text-align: center;
   }
 }
 

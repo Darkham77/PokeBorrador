@@ -34,6 +34,7 @@ vi.mock('@/logic/providers/pokemonDataProvider', () => ({
     getMoveData: vi.fn((id) => {
       if (id === 'tackle') return { id: 'tackle', name: 'Placaje', power: 40, type: 'normal', cat: 'physical', pp: 35 };
       if (id === 'scratch') return { id: 'scratch', name: 'Arañazo', power: 40, type: 'normal', cat: 'physical', pp: 35 };
+      if (id === 'wingattack') return { id: 'wingattack', name: 'Ataque Ala', power: 60, type: 'flying', cat: 'physical', pp: 35 };
       return null;
     })
   }
@@ -74,7 +75,7 @@ describe('Pokemon Recalculation Tests', () => {
       maxVigor: 100,
       hp: 5,
       ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
-      moves: [{ id: 'scratch', name: 'Arañazo' }],
+      moves: [{ id: 'wingattack', name: 'Ataque Ala' }],
       atk: NaN
     } as unknown as Pokemon;
 

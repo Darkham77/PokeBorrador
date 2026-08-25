@@ -22,12 +22,18 @@ defineProps<{
         class="stat-val"
         :class="activeDetails.power.class"
       >
-        {{ formatPowerDisplay(activeDetails.power.base, activeDetails.power.final) }}
         <span
-          v-if="getArrowForClass(activeDetails.power.class).show"
-          class="arrow"
-          :class="getArrowForClass(activeDetails.power.class).isUp ? 'up' : 'down'"
-        >{{ getArrowForClass(activeDetails.power.class).isUp ? '▲' : '▼' }}</span>
+          v-if="activeDetails.isStatus || activeDetails.power.base === 0"
+          class="dash-val"
+        >-</span>
+        <template v-else>
+          {{ formatPowerDisplay(activeDetails.power.base, activeDetails.power.final) }}
+          <span
+            v-if="getArrowForClass(activeDetails.power.class).show"
+            class="arrow"
+            :class="getArrowForClass(activeDetails.power.class).isUp ? 'up' : 'down'"
+          >{{ getArrowForClass(activeDetails.power.class).isUp ? '▲' : '▼' }}</span>
+        </template>
       </span>
     </div>
     
@@ -38,12 +44,18 @@ defineProps<{
         class="stat-val"
         :class="activeDetails.accuracy.class"
       >
-        {{ formatAccuracyDisplay(activeDetails.accuracy.base, activeDetails.accuracy.final) }}
         <span
-          v-if="getArrowForClass(activeDetails.accuracy.class).show"
-          class="arrow"
-          :class="getArrowForClass(activeDetails.accuracy.class).isUp ? 'up' : 'down'"
-        >{{ getArrowForClass(activeDetails.accuracy.class).isUp ? '▲' : '▼' }}</span>
+          v-if="activeDetails.accuracy.base === 1000 && activeDetails.accuracy.final === 1000"
+          class="infinity-val"
+        >♾️</span>
+        <template v-else>
+          {{ formatAccuracyDisplay(activeDetails.accuracy.base, activeDetails.accuracy.final) }}
+          <span
+            v-if="getArrowForClass(activeDetails.accuracy.class).show"
+            class="arrow"
+            :class="getArrowForClass(activeDetails.accuracy.class).isUp ? 'up' : 'down'"
+          >{{ getArrowForClass(activeDetails.accuracy.class).isUp ? '▲' : '▼' }}</span>
+        </template>
       </span>
     </div>
 
@@ -63,7 +75,7 @@ defineProps<{
       <span
         v-else
         class="stat-val"
-      >-</span>
+      ><span class="dash-val">-</span></span>
     </div>
 
     <!-- Critical Box -->
@@ -129,19 +141,6 @@ defineProps<{
 }
 
 .arrow {
-  display: inline-flex;
-  align-items: center;
-  font-size: 8px;
-  margin-right: 1px;
-  
-  &.up {
-    color: #10B981;
-    text-shadow: 0 0 2px Rgba(16, 185, 129, 0.4);
-  }
-  
-  &.down {
-    color: #EF4444;
-    text-shadow: 0 0 2px Rgba(239, 68, 68, 0.4);
-  }
+  @include arrow-mixin;
 }
 </style>

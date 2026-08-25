@@ -81,7 +81,7 @@ watch(() => battle.value?.enemy?.uid, (newUid, oldUid) => {
   }
 })
 
-const { playerBackSpriteUrl, showStandingTrainers, trainerDialogText } = useBattleTrainerVisuals(battleStore, battle)
+const { playerBackSpriteUrl, trainerDialogText } = useBattleTrainerVisuals(battle)
 
 // Inicializar Composables
 const {
@@ -271,6 +271,13 @@ watch(trainerAnimState, async (newState) => {
   await nextTick()
   const el = trainerEntitiesRef.value?.getTrainerElement()
   if (!el || !(el instanceof HTMLElement)) return
+  const isRocket = Boolean(
+    battle.value?.trainerArchetype === 'rocket' ||
+    battle.value?.trainerSprite?.includes('rocket') ||
+    battle.value?.trainerSprite?.includes('grunt') ||
+    battle.value?.trainerName?.toLowerCase().includes('rocket') ||
+    battle.value?.trainerName?.toLowerCase().includes('grunt')
+  )
   playTrainerAnimation(
     newState,
     el,
@@ -278,8 +285,16 @@ watch(trainerAnimState, async (newState) => {
     showRivalAlert,
     rivalFlickerRef,
     rivalExclamationRef,
-    audioStore
+    audioStore,
+    isRocket
   )
+}, { immediate: true })
+
+const showStandingTrainers = computed(() => {
+  return battleStore.isBattleActive && 
+         battleStore.currentFsmState !== 'FIRST_INTRO' && 
+         battleStore.currentFsmState !== 'INITIALIZING' &&
+         battleStore.currentFsmState !== 'SEARCH_PHASE'
 })
 
 watch(showStandingTrainers, (show) => {
@@ -361,6 +376,7 @@ watch(() => battleStore.isBattleActive, (active) => {
             ref="trainerEntitiesRef"
             :is-trainer-visible="isTrainerVisible"
             :show-standing-trainers="showStandingTrainers"
+            :trainer-anim-state="trainerAnimState"
             :show-guides="showGuides"
             :p2-pos="p2Pos"
             :base-entity-size-enemy="BASE_ENTITY_SIZE_ENEMY"

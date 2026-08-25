@@ -126,16 +126,21 @@ describe('orchestratorRestoreHelper - restoreBattleState', () => {
     expect(ctx.activeBattle.value?.wasSearching).toBe(true);
   });
 
-  it('should discard completed battles (over: boolean) and transition to EXIT_BATTLE', async () => {
+  it('should restore search phase (bush mode) cleanly without launching active combat', async () => {
     const ctx = createMockBattleContext();
-    const savedOverBattle: Partial<BattleState> = {
+    const { handleBattleFlowCompletion } = await import('@/logic/battle/searchLoop');
+
+    const savedSearchMode: Partial<BattleState> = {
       locationId: 'route1',
-      over: true
+      wasSearching: true,
+      turnCount: 0,
+      inSearchPhase: true
     };
 
-    await restoreBattleState(ctx, savedOverBattle);
+    await restoreBattleState(ctx, savedSearchMode);
 
-    expect(ctx.activeBattle.value).toBeNull();
-    expect(ctx.fsm.currentState.value).toBe('EXIT_BATTLE');
+    expect(handleBattleFlowCompletion).toHaveBeenCalledWith(ctx, 'search');
+    expect(ctx.activeBattle.value?.wasSearching).toBe(true);
+    expect(ctx.fsm.currentState.value).not.toBe('ACTIVE_BATTLE');
   });
 });

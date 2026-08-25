@@ -1,45 +1,122 @@
+// src/styles/components/_move-tooltip-shared.scss
+
+// ==============================================================================
+// COMBAT MOVE TOOLTIP TOKENS (Single Source of Truth for Typography & Sizing)
+// ==============================================================================
+$tooltip-section-title-size: 7.5px;
+$tooltip-stat-label-size: 6px;
+$tooltip-stat-val-size: 8px;
+$tooltip-symbol-size: 14px;
+$tooltip-symbol-dash-size: 12px;
+$tooltip-arrow-size: 8px;
+$tooltip-dmg-label-size: 7.5px;
+$tooltip-hp-range-size: 8px;
+$tooltip-pct-range-size: 6.5px;
+$tooltip-badge-size: 7px;
+$tooltip-breakdown-item-size: 7.5px;
+$tooltip-formula-text-size: 7.5px;
+$tooltip-formula-result-size: 9px;
+$tooltip-extra-icon-size: 8px;
+$tooltip-extra-text-size: 7.5px;
+$tooltip-field-dot-size: 5px;
+$tooltip-field-text-size: 7px;
+$tooltip-smogon-desc-size: 7px;
+
+@mixin calc-section-title-mixin {
+  font-size: $tooltip-section-title-size;
+  color: var(--yellow);
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+}
+
 @mixin combat-stats-grid-mixin {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px;
 
   .stat-box {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: Rgba(255, 255, 255, 0.03);
+    border: 1px solid Rgba(255, 255, 255, 0.06);
     border-radius: 6px;
     padding: 4px 6px;
     display: flex;
     flex-direction: column;
     gap: 2px;
+    min-width: 0;
 
     .stat-lbl {
-      font-size: 6px;
-      color: rgba(255, 255, 255, 0.5);
+      font-size: $tooltip-stat-label-size;
+      color: Rgba(255, 255, 255, 0.5);
       font-weight: bold;
       letter-spacing: 0.3px;
+      text-transform: uppercase;
     }
 
     .stat-val {
-      font-size: 8px;
+      font-size: $tooltip-stat-val-size;
       font-weight: bold;
       color: white;
       white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
 
       &.boosted {
         color: #10B981;
-        text-shadow: 0 0 2px rgba(16, 185, 129, 0.4);
+        text-shadow: 0 0 2px Rgba(16, 185, 129, 0.4);
       }
 
       &.penalized {
         color: #EF4444;
-        text-shadow: 0 0 2px rgba(239, 68, 68, 0.4);
+        text-shadow: 0 0 2px Rgba(239, 68, 68, 0.4);
+      }
+
+      .infinity-val {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+        font-size: 14px !important;
+        font-weight: 900 !important;
+        line-height: 1 !important;
+        display: inline-block !important;
+        vertical-align: middle;
+        -webkit-font-smoothing: antialiased !important;
+        letter-spacing: 0;
+      }
+
+      .dash-val {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+        font-size: 12px !important;
+        font-weight: 900 !important;
+        line-height: 1 !important;
+        display: inline-block !important;
+        vertical-align: middle;
+        -webkit-font-smoothing: antialiased !important;
       }
     }
   }
 }
 
+@mixin arrow-mixin {
+  display: inline-flex;
+  align-items: center;
+  font-size: $tooltip-arrow-size;
+  margin-left: 2px;
+  line-height: 1;
+  
+  &.up {
+    color: #10B981;
+    text-shadow: 0 0 2px Rgba(16, 185, 129, 0.4);
+  }
+  
+  &.down {
+    color: #EF4444;
+    text-shadow: 0 0 2px Rgba(239, 68, 68, 0.4);
+  }
+}
+
 @mixin damage-section-mixin {
-  border-top: 1px dotted rgba(255, 255, 255, 0.15);
+  border-top: 1px dotted Rgba(255, 255, 255, 0.15);
   padding-top: 6px;
   display: flex;
   flex-direction: column;
@@ -53,8 +130,8 @@
   }
 
   .dmg-label {
-    font-size: 7.5px;
-    color: rgba(255, 255, 255, 0.6);
+    font-size: $tooltip-dmg-label-size;
+    color: Rgba(255, 255, 255, 0.6);
     font-weight: bold;
   }
 
@@ -65,14 +142,14 @@
     text-align: right;
 
     .hp-range {
-      font-size: 8px;
+      font-size: $tooltip-hp-range-size;
       font-weight: bold;
       color: white;
     }
 
     .pct-range {
-      font-size: 6.5px;
-      color: rgba(255, 255, 255, 0.5);
+      font-size: $tooltip-pct-range-size;
+      color: Rgba(255, 255, 255, 0.5);
       line-height: 1.2;
       margin-top: 1px;
       white-space: nowrap;
@@ -81,8 +158,84 @@
     &.crit {
       .hp-range {
         color: #FBBF24;
-        text-shadow: 0 0 3px rgba(251, 191, 36, 0.3);
+        text-shadow: 0 0 3px Rgba(251, 191, 36, 0.3);
       }
     }
+  }
+}
+
+@mixin extra-effect-section-mixin {
+  border-radius: 6px;
+  padding: 5px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  &.recovery-section {
+    background: Rgba(16, 185, 129, 0.06);
+    border: 1px solid Rgba(16, 185, 129, 0.18);
+  }
+
+  &.recoil-section {
+    background: Rgba(239, 68, 68, 0.06);
+    border: 1px solid Rgba(239, 68, 68, 0.18);
+  }
+
+  &.field-section {
+    background: Rgba(99, 102, 241, 0.06);
+    border: 1px solid Rgba(99, 102, 241, 0.18);
+  }
+
+  &.speed-section {
+    background: Rgba(245, 158, 11, 0.06);
+    border: 1px solid Rgba(245, 158, 11, 0.18);
+  }
+
+  &.mechanics-section {
+    background: Rgba(16, 185, 129, 0.04);
+    border: 1px dashed Rgba(16, 185, 129, 0.18);
+  }
+
+  &.tactical-section {
+    background: Rgba(239, 68, 68, 0.04);
+    border: 1px solid Rgba(239, 68, 68, 0.18);
+  }
+
+  .extra-effect-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .extra-effect-icon {
+    font-size: $tooltip-extra-icon-size;
+    flex-shrink: 0;
+  }
+
+  .extra-effect-text {
+    font-size: $tooltip-extra-text-size;
+    font-weight: bold;
+    line-height: 1.3;
+
+    &.boosted  { color: #10B981; text-shadow: 0 0 3px Rgba(16, 185, 129, 0.3); }
+    &.penalized { color: #EF4444; text-shadow: 0 0 3px Rgba(239, 68, 68, 0.3); }
+  }
+
+  .field-condition-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .field-condition-dot {
+    font-size: $tooltip-field-dot-size;
+    color: #818CF8;
+    flex-shrink: 0;
+  }
+
+  .field-condition-text {
+    font-size: $tooltip-field-text-size;
+    color: Rgba(199, 210, 254, 0.85);
+    line-height: 1.3;
   }
 }

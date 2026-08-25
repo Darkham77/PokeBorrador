@@ -155,6 +155,11 @@ export const useLivePvPStore = defineStore('livePvP', () => {
   async function applyTurnResult(result: PvPTurnResult) { await applyPvPTurnResult(battleState, result, endBattle) }
 
   function startBattle(invite: BattleInvite, isHost: boolean, isRanked: boolean) {
+    const hasIllegal = (gameStore.state.team || []).some((p: Pokemon) => p && p.isIllegal)
+    if (hasIllegal) {
+      uiStore.notify('No puedes participar en PvP con Pokémon ilegales en tu equipo.', '⚠️')
+      return
+    }
     battleState.active = true; battleState.isHost = isHost; battleState.isRanked = isRanked; battleState.opponentId = isHost ? invite.opponent_id : invite.challenger_id
     battleState.myTeam = JSON.parse(JSON.stringify(gameStore.state.team)) as Pokemon[]; 
     battleState.myHp = battleState.myTeam.map((p: Pokemon) => p.hp); 

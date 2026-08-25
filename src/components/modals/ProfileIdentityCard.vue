@@ -65,19 +65,20 @@ const emit = defineEmits<{
       <!-- Nombre -->
       <div class="detail-row name-row">
         <span class="label">NOMBRE:</span>
-        <div class="value-wrap">
+        <div class="value-wrap name-value-wrap">
           <span
             v-gsap-nick="gs.nick_style || 'normal'"
             :class="gs.nick_style || 'normal'"
             class="value name-val"
           >
             {{ displayUsername }}
-            <span
-              class="gender-symbol"
-              :class="genderClass"
-            >
-              {{ genderSymbol }}
-            </span>
+          </span>
+          <span
+            class="gender-symbol"
+            :class="genderClass"
+            :title="isFemale ? 'Femenino' : 'Masculino'"
+          >
+            {{ genderSymbol }}
           </span>
         </div>
         <button
@@ -193,6 +194,31 @@ const emit = defineEmits<{
       flex: 1;
       display: flex;
       justify-content: center;
+
+      &.name-value-wrap {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+    }
+
+    .gender-symbol {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+      font-size: 13px !important;
+      line-height: 1;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+
+      &.male {
+        color: #38bdf8;
+        text-shadow: 0 0 6px Rgba(56, 189, 248, 0.7);
+      }
+
+      &.female {
+        color: #f472b6;
+        text-shadow: 0 0 6px Rgba(244, 114, 182, 0.7);
+      }
     }
 
     .value {

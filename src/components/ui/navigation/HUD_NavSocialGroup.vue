@@ -1,35 +1,34 @@
 <script setup lang="ts">
-import type { useModalStore } from '@/stores/modals'
-import type { useUIStore } from '@/stores/ui'
-import type { useSocialStore } from '@/stores/social/social'
-import type { useGameStore } from '@/stores/game'
-import type { useEventStore } from '@/stores/events'
-import PVHUDButton from '@/components/common/PVHUDButton.vue'
+import PVHUDButton from "@/components/common/PVHUDButton.vue";
+import { useNavigationState } from "@/composables/navigation/useNavigationState";
 
-defineProps<{
-  modalStore: ReturnType<typeof useModalStore>
-  uiStore: ReturnType<typeof useUIStore>
-  socialStore: ReturnType<typeof useSocialStore>
-  gameStore: ReturnType<typeof useGameStore>
-  eventStore: ReturnType<typeof useEventStore>
-  totalSocialNotifications: number
-  handleMouseEnter: (group: string) => void
-  handleMouseLeave: (group: string) => void
-  toggleGroupMenu: (name: string) => void
-  handleTabChange: (tab: string, event?: Event) => void
-  beforeEnter: (el: Element) => void
-  enter: (el: Element, done: () => void) => void
-  leave: (el: Element, done: () => void) => void
-}>()
+withDefaults(defineProps<{
+  position?: string;
+}>(), {
+  position: "top"
+});
 
-const emit = defineEmits<{
-  (e: 'closeHudGroup'): void
-}>()
+const {
+  uiStore,
+  modalStore,
+  socialStore,
+  gameStore,
+  eventStore,
+  totalSocialNotifications,
+  handleMouseEnter,
+  handleMouseLeave,
+  toggleGroupMenu,
+  handleTabChange,
+  beforeEnter,
+  enter,
+  leave
+} = useNavigationState();
 </script>
 
 <template>
   <div 
     class="hud-group relative-box"
+    :class="[`pos-${position}`]"
     @mouseenter="handleMouseEnter('SOCIAL')"
     @mouseleave="handleMouseLeave('SOCIAL')"
   >
@@ -48,9 +47,9 @@ const emit = defineEmits<{
 
     <Transition
       :css="false"
-      @before-enter="beforeEnter"
+      @before-enter="el => beforeEnter(el, position)"
       @enter="enter"
-      @leave="leave"
+      @leave="(el, done) => leave(el, position, done)"
     >
       <div 
         v-if="uiStore.openHudGroup === 'SOCIAL'"
@@ -60,7 +59,7 @@ const emit = defineEmits<{
           id="nav-social-friends-btn"
           class="hud-nav-btn"
           :class="{ active: modalStore.isOpen('SocialCenter') }"
-          @click.stop="handleTabChange('friends'); emit('closeHudGroup')"
+          @click.stop="handleTabChange('friends'); uiStore.openHudGroup = null"
         >
           <span class="icon">🤝</span>
           <span class="nav-item-label">AMIGOS</span>
@@ -76,7 +75,7 @@ const emit = defineEmits<{
           id="nav-social-arena-btn"
           class="hud-nav-btn"
           :class="{ active: modalStore.isOpen('Arena') }"
-          @click.stop="handleTabChange('arena'); emit('closeHudGroup')"
+          @click.stop="handleTabChange('arena'); uiStore.openHudGroup = null"
         >
           <span class="icon">🏟️</span>
           <span class="nav-item-label">ARENA</span>
@@ -91,7 +90,7 @@ const emit = defineEmits<{
           id="nav-social-ranking-btn"
           class="hud-nav-btn"
           :class="{ active: modalStore.isOpen('Ranking') }"
-          @click.stop="handleTabChange('ranking'); emit('closeHudGroup')"
+          @click.stop="handleTabChange('ranking'); uiStore.openHudGroup = null"
         >
           <span class="icon">🏅</span>
           <span class="nav-item-label">RANKING</span>
@@ -100,7 +99,7 @@ const emit = defineEmits<{
           id="nav-social-dominance-btn"
           class="hud-nav-btn"
           :class="{ active: modalStore.isOpen('FactionWar') }"
-          @click.stop="modalStore.open('FactionWar'); emit('closeHudGroup')"
+          @click.stop="modalStore.open('FactionWar'); uiStore.openHudGroup = null"
         >
           <span class="icon">⚔️</span>
           <span class="nav-item-label">DOMINANCIA</span>
@@ -109,7 +108,7 @@ const emit = defineEmits<{
           id="nav-social-events-btn"
           class="hud-nav-btn"
           :class="{ active: modalStore.isOpen('WorldEvents') }"
-          @click.stop="modalStore.open('WorldEvents'); emit('closeHudGroup')"
+          @click.stop="modalStore.open('WorldEvents'); uiStore.openHudGroup = null"
         >
           <span class="icon">🎁</span>
           <span class="nav-item-label">EVENTOS</span>
@@ -124,3 +123,5 @@ const emit = defineEmits<{
     </Transition>
   </div>
 </template>
+
+<style scoped lang="scss" src="@/styles/components/_hud-navigation.scss"></style>

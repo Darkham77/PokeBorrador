@@ -209,7 +209,16 @@ function getGenderClass(gender: string) {
 
     <!-- Sprite Section -->
     <div class="sprite-section">
+      <div
+        v-if="pokemon.isIllegal"
+        class="pokemon-illegal-danger-badge"
+        :title="pokemon.illegalReasons?.join('\n') || 'Pokémon Ilegal'"
+      >
+        <span class="danger-icon">⚠️</span>
+        <span class="danger-label">ILEGAL</span>
+      </div>
       <PVSpriteFX
+        v-else
         :enabled="isVisible && (!isPerformanceActive || isForeground)"
         :is-shiny="pokemon.isShiny"
         :is-guardian="pokemon.isGuardian"
@@ -332,5 +341,30 @@ function getGenderClass(gender: string) {
 
 .tot-badge {
   margin-left: 8px;
+}
+
+.pokemon-illegal-danger-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background: Rgba(239, 68, 68, 0.2);
+  border: 2px dashed #ef4444;
+  border-radius: 8px;
+
+  .danger-icon {
+    font-size: 1.8rem;
+    line-height: 1;
+  }
+
+  .danger-label {
+    font-size: 0.65rem;
+    font-weight: 900;
+    color: #ff6b6b;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+  }
 }
 </style>

@@ -5,6 +5,8 @@ import type { MapLocation } from '@/types/pokemon/encounters'
 import type { PokemonGender, PokemonIVs } from '@/types/pokemon/pokemon'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 import { requireAbilityId } from '@/data/battle/abilities'
+import { canLearnMove } from '@/logic/pokemon/pokemonFactory'
+import { toID } from '@pkmn/sim'
 
 const DEBUG_CREATOR_SHINY_PROB = 0.05
 const DEBUG_CREATOR_GUARDIAN_PROB = 0.01
@@ -249,6 +251,10 @@ export function useDebugPokemonCreator() {
     }
   })
 
+  function validateLegality(cfg = config.value) {
+    return validatePokemonLegality(cfg)
+  }
+
   return {
     config,
     selectedMinigame,
@@ -273,6 +279,59 @@ export function useDebugPokemonCreator() {
     randomizeNickname,
     randomizeMinigame,
     randomizeOrigin,
-    handleRandomize
+    handleRandomize,
+    validateLegality
+  }
+}
+
+export function validatePokemonLegality(cfg: PokemonConfig): { valid: boolean; issues: string[] } {
+  const issues: string[] = [] // no-domain
+  
+  if (!cfg.id) {
+    issues.push('La especie no está seleccionada.')
+    return { valid: false, issues }
+  }
+
+  const speciesData = pokemonDataProvider.getPokemonData(cfg.id)
+  if (!speciesData) {
+    issues.push(`La especie "${cfg.id}" no existe en la base de datos.`)
+    return { valid: false, issues }
+  }
+
+  if (cfg.level < 1 || cfg.level > MAX_POKEMON_LEVEL) {
+    issues.push(`Nivel ${cfg.level} fuera de rango permitido (1-${MAX_POKEMON_LEVEL}).`)
+  }
+
+  if (cfg.ability) {
+    const validAbilities = pokemonDataProvider.getSpeciesAbilities(cfg.id)
+    if (!validAbilities.includes(cfg.ability as (typeof validAbilities)[number])) {
+      issues.push(`La habilidad "${cfg.ability}" es ilegal para ${speciesData.name || cfg.id}. Habilidades válidas: [${validAbilities.join(', ')}].`)
+    }
+  }
+
+  const activeMoves = (cfg.moves || []).filter((m): m is string => !!m)
+  if (activeMoves.length === 0) {
+    issues.push('El Pokémon debe tener al menos 1 movimiento asignado.')
+  }
+
+  const moveSet = new Set<string>()
+  for (const moveId of activeMoves) {
+    const cleanMoveId = toID(moveId)
+    if (moveSet.has(cleanMoveId)) {
+      issues.push(`Movimiento duplicado: "${moveId}".`)
+    }
+    moveSet.add(cleanMoveId)
+
+    const moveData = pokemonDataProvider.getMoveData(cleanMoveId)
+    if (!moveData) {
+      issues.push(`El movimiento "${moveId}" no existe en la base de datos de movimientos.`)
+    } else if (!canLearnMove(cfg.id, cleanMoveId)) {
+      issues.push(`El movimiento "${moveData.name || moveId}" (${cleanMoveId}) es ilegal para la especie ${speciesData.name || cfg.id}.`)
+    }
+  }
+
+  return {
+    valid: issues.length === 0,
+    issues
   }
 }

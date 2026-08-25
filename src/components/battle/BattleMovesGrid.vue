@@ -253,7 +253,7 @@ onUnmounted(() => {
 .moves-grid-vicio {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-auto-rows: 1fr;
+  grid-template-rows: repeat(2, minmax(58px, 1fr));
   gap: var(--move-panel-gap, 12px);
 }
 </style>

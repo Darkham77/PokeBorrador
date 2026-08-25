@@ -28,10 +28,12 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     ctx.isProcessing.value = true
     await fsm.transition(BATTLE_STATES.EXIT_BATTLE)
     ctx.activeBattle.value = null
+    ctx.gs.state.activeBattle = null
     ctx.isProcessing.value = false
     ctx.clearLogs()
     uiStore.activeTab = isGym ? 'gyms' : 'map'
     emitBattleFlowCompleted('map')
+    await ctx.gs.save?.(false)
     return
   }
 
@@ -221,12 +223,14 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
 
   await fsm.transition(BATTLE_STATES.EXIT_BATTLE)
   ctx.activeBattle.value = null
+  ctx.gs.state.activeBattle = null
   ctx.isProcessing.value = false
   ctx.clearLogs() 
 
   if (option === 'map') {
     uiStore.activeTab = isGym ? 'gyms' : 'map'
     emitBattleFlowCompleted('map')
+    await ctx.gs.save?.(false)
   }
 }
 
@@ -291,8 +295,15 @@ export async function startEncounter(ctx: BattleContext) {
       return
     }
 
+    const initialPlayer = ctx.activeBattle.value?.player || ctx.gs.state.team.find((p: Pokemon) => p && p.hp > 0) || ctx.gs.state.team[0] || null
+    const initialEnemy = enemyPoke || (ctx.activeBattle.value?.enemyTeam && ctx.activeBattle.value.enemyTeam[0]) || null
+
     ctx.isIntroAnimating.value = true
-    await ctx.initBattle()
+    await ctx.initBattle({
+      initialPlayer,
+      initialEnemy,
+      wasSearching: true
+    })
     ctx.isIntroAnimating.value = false
   } finally {
     ctx.isProcessing.value = false

@@ -158,6 +158,7 @@ export interface BattleState {
   winnerResult?: BattleSide | 'tie';
   learnQueue?: unknown[];
   isPvP?: boolean;
+  inSearchPhase?: boolean;
   difficulty?: BattleDifficulty;
   _lastActivePlayer?: Pokemon | null;
   seed?: number[];

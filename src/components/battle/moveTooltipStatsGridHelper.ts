@@ -5,8 +5,8 @@
  */
 
 export function formatPowerDisplay(base: number | string, final: number | string): string {
-  if (base === final || final === '-') {
-    return String(final);
+  if (base === final || final === '-' || final === 0 || base === 0) {
+    return final === '-' || final === 0 || base === 0 ? '-' : String(final);
   }
   return `${base} ➔ ${final}`;
 }

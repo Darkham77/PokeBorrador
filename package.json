@@ -15,6 +15,7 @@
     "build": "npm run validate:tools && npm run validate:types && npm run audit:full && vite build",
     "preview": "vite preview",
     "admin:rename": "node --env-file=.env --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-env scripts/maintenance/admin_rename.ts",
+    "db:repair-account": "node --permission --import tsx --allow-fs-read=* --allow-fs-write=* scripts/maintenance/repair_account_legality.ts",
     "fallow": "node ./node_modules/fallow/bin/fallow",
     "fallow:health": "node ./node_modules/fallow/bin/fallow health --score",
     "validate:types": "vue-tsc --noEmit",

@@ -137,6 +137,7 @@ defineProps<{
 
 <style scoped lang="scss">
 @use "@/styles/core/tools" as *;
+@use "@/styles/components/_move-tooltip-shared.scss" as *;
 
 .status-effect-wrapper {
   display: flex;
@@ -144,49 +145,12 @@ defineProps<{
   gap: 4px;
 }
 
-.combat-stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
+.calc-section-title {
+  @include calc-section-title-mixin;
 }
 
-.stat-box {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.06);
-  border-radius: 6px;
-  padding: 4px 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-
-  .stat-lbl {
-    font-size: 6px;
-    color: Rgba(255, 255, 255, 0.5);
-    font-weight: bold;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
-  }
-
-  .stat-val {
-    font-size: 8px;
-    font-weight: bold;
-    color: white;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-
-    &.boosted {
-      color: #10B981;
-      text-shadow: 0 0 2px Rgba(16, 185, 129, 0.4);
-    }
-
-    &.penalized {
-      color: #EF4444;
-      text-shadow: 0 0 2px Rgba(239, 68, 68, 0.4);
-    }
-  }
+.combat-stats-grid {
+  @include combat-stats-grid-mixin;
 }
 
 .status-desc-box {
@@ -200,7 +164,7 @@ defineProps<{
   gap: 2px;
 
   .stat-lbl {
-    font-size: 6px;
+    font-size: $tooltip-stat-label-size;
     color: Rgba(255, 255, 255, 0.5);
     font-weight: bold;
     letter-spacing: 0.3px;
@@ -208,7 +172,7 @@ defineProps<{
   }
 
   .status-desc-text {
-    font-size: 7.5px;
+    font-size: $tooltip-breakdown-item-size;
     line-height: 1.3;
     color: Rgba(255, 255, 255, 0.8);
     word-break: break-word;
@@ -216,19 +180,6 @@ defineProps<{
 }
 
 .arrow {
-  display: inline-flex;
-  align-items: center;
-  font-size: 8px;
-  margin-left: 2px;
-  
-  &.up {
-    color: #10B981;
-    text-shadow: 0 0 2px Rgba(16, 185, 129, 0.4);
-  }
-  
-  &.down {
-    color: #EF4444;
-    text-shadow: 0 0 2px Rgba(239, 68, 68, 0.4);
-  }
+  @include arrow-mixin;
 }
 </style>

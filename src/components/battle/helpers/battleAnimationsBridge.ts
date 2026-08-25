@@ -19,6 +19,7 @@ export function createBattleAnimationsBridge(
     triggerTrainerEntry: animations.triggerTrainerEntry,
     triggerTrainerDialogs: animations.triggerTrainerDialogs,
     triggerTrainerRetreat: animations.triggerTrainerRetreat,
+    triggerTrainerExit: animations.triggerTrainerExit,
     triggerPokemonCall: animations.triggerPokemonCall,
     handleHealRequest: animations.handleHealRequest,
     handleBlinkRequest: animations.handleBlinkRequest,

@@ -121,7 +121,16 @@ function handleClick() {
       </PVTooltip>
 
       <div class="poke-preview sprite-click-target">
+        <div
+          v-if="item.pokemon.isIllegal"
+          class="sel-illegal-danger-badge"
+          :title="item.pokemon.illegalReasons?.join('\n') || 'Pokémon Ilegal'"
+        >
+          <span class="danger-icon">⚠️</span>
+          <span class="danger-label">ILEGAL</span>
+        </div>
         <PVSpriteFX
+          v-else
           :is-shiny="item.pokemon.isShiny"
           :is-guardian="item.pokemon.isGuardian"
           :sparkle-count="5"
@@ -464,6 +473,31 @@ function handleClick() {
   &:hover {
     background: Rgba(255, 255, 255, 0.08);
     box-shadow: 0 0 10px var(--tier-color);
+  }
+}
+
+.sel-illegal-danger-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: Rgba(239, 68, 68, 0.2);
+  border: 2px dashed #ef4444;
+  border-radius: 6px;
+
+  .danger-icon {
+    font-size: 1.3rem;
+    line-height: 1;
+  }
+
+  .danger-label {
+    font-size: 0.5rem;
+    font-weight: 900;
+    color: #ff6b6b;
+    letter-spacing: 0.5px;
+    margin-top: 1px;
   }
 }
 </style>

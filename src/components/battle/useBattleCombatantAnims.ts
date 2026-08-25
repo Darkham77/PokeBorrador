@@ -119,8 +119,15 @@ export function useBattleCombatantAnims(
     if (el) initIdleAnim()
   })
 
+  let activeBallAnim: string | null = null
+
   const triggerBallAnimation = (val: string | null) => {
-    if (!spriteRef.value || !val) return
+    if (!spriteRef.value || !val) {
+      activeBallAnim = null
+      return
+    }
+    if (activeBallAnim === val) return
+    activeBallAnim = val
     
     if (val === 'catching') {
       const origin = getSpriteFeetOrigin()
@@ -151,6 +158,7 @@ export function useBattleCombatantAnims(
         duration: BALL_TRANSITION_DURATION_SEC,
         ease: "power2.inOut",
         onComplete: () => {
+          activeBallAnim = null
           if (spriteRef.value) {
             gsap.set(spriteRef.value, { x: 0, y: 0, scale: SCALE_ZERO, opacity: OPACITY_INVISIBLE, filter: "none", clearProps: "transformOrigin" })
           }
@@ -188,8 +196,15 @@ export function useBattleCombatantAnims(
         duration: BALL_TRANSITION_DURATION_SEC,
         ease: "power2.inOut",
         onComplete: () => {
+          activeBallAnim = null
           if (spriteRef.value) {
-            gsap.set(spriteRef.value, { clearProps: "transform,filter,transformOrigin,opacity" })
+            gsap.set(spriteRef.value, {
+              x: 0,
+              y: 0,
+              scale: 1,
+              opacity: 1,
+              clearProps: "filter,transformOrigin"
+            })
           }
           if (spriteRotationRef.value) {
             gsap.set(spriteRotationRef.value, { clearProps: "transform,rotation,filter" })
@@ -245,7 +260,7 @@ export function useBattleCombatantAnims(
   }, { immediate: true })
 
   watch(spriteRef, (newEl) => {
-    if (newEl) {
+    if (newEl && props.animState) {
       nextTick(() => triggerBallAnimation(props.animState || null))
     }
   })

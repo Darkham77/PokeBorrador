@@ -13,6 +13,7 @@ interface ViteDebug extends Record<string, unknown> { // open-record
   clearWarTeam: () => void
   forceStarterScreen: () => void
   walkEggs: () => void
+  repairAllIllegal: () => void
 }
 
 const getDebug = () => window.__VITE_DEBUG__ as ViteDebug
@@ -44,6 +45,10 @@ async function forceStarterScreen() {
 
 async function walkEggs() {
   getDebug().walkEggs()
+}
+
+async function repairAllIllegal() {
+  getDebug().repairAllIllegal?.()
 }
 </script>
 
@@ -98,6 +103,14 @@ async function walkEggs() {
       <div class="debug-danger-zone">
         <label class="danger-label">Persistent Database Changes (SE GUARDA)</label>
         <div class="button-row wrap">
+          <PVTooltip title="Detecta y repara la legalidad de todos los Pokémon de la cuenta (equipo, caja y guardería)">
+            <button
+              class="btn-vicio-primary btn-vicio-sm"
+              @click.stop="repairAllIllegal"
+            >
+              ⚠️ REPARAR ILEGALES
+            </button>
+          </PVTooltip>
           <PVTooltip title="Sincroniza la pokedex con lo que tienes en el equipo/caja">
             <button
               class="btn-vicio-secondary btn-vicio-sm"

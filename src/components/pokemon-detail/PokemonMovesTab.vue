@@ -147,4 +147,13 @@ function handleReorder(fromIndex: number, toIndex: number) {
   width: 100%;
   display: block;
 }
+
+.infinity-emoji {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  vertical-align: middle;
+  -webkit-font-smoothing: antialiased !important;
+}
 </style>

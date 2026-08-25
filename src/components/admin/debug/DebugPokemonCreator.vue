@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import PokemonBaseStats from './PokemonBaseStats.vue'
 import PokemonIVEditor from './PokemonIVEditor.vue'
@@ -33,12 +33,23 @@ const {
   randomizeNickname,
   randomizeMinigame,
   randomizeOrigin,
-  handleRandomize
+  handleRandomize,
+  validateLegality
 } = useDebugPokemonCreator()
+
+const showIllegalModal = ref(false)
+const illegalIssues = ref<string[]>([])
 
 async function executeAction(protocol: string) {
   if (!window.__VITE_DEBUG__) return
   
+  const validation = validateLegality()
+  if (!validation.valid) {
+    illegalIssues.value = validation.issues
+    showIllegalModal.value = true
+    return
+  }
+
   config.value.protocol = protocol
   if (protocol === 'encounter') {
     await window.__VITE_DEBUG__.spawnEncounter?.(config.value)
@@ -449,5 +460,100 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
         </PVTooltip>
       </div>
     </div>
+
+    <!-- Modal de Advertencia de Ilegalidad -->
+    <div
+      v-if="showIllegalModal"
+      id="debug-illegal-pokemon-modal"
+      class="creator-illegal-modal-overlay"
+      @click.self="showIllegalModal = false"
+    >
+      <div class="creator-illegal-modal">
+        <div class="modal-header">
+          <h4 class="illegal-title">
+            ⚠️ POKÉMON ILEGAL DETECTADO
+          </h4>
+        </div>
+        <p class="illegal-desc">
+          No se puede generar este Pokémon porque incumple las normas de legalidad del juego:
+        </p>
+        <ul class="illegal-list">
+          <li
+            v-for="(issue, i) in illegalIssues"
+            :key="i"
+            class="illegal-item"
+          >
+            ❌ {{ issue }}
+          </li>
+        </ul>
+        <div class="modal-footer">
+          <button
+            id="debug-illegal-modal-close-btn"
+            class="btn-vicio-primary md"
+            @click="showIllegalModal = false"
+          >
+            ENTENDIDO
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
+
+<style scoped>
+.creator-illegal-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: Rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: calc(var(--z-max) - 1);
+}
+
+.creator-illegal-modal {
+  background: #1e232d;
+  border: 2px solid #ff4444;
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-width: 500px;
+  width: 90%;
+  color: #fff;
+  box-shadow: 0 0 20px Rgba(255, 68, 68, 0.4);
+}
+
+.illegal-title {
+  margin: 0 0 0.75rem 0;
+  color: #ff5555;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.illegal-desc {
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  color: #ccc;
+}
+
+.illegal-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.25rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.illegal-item {
+  background: Rgba(255, 68, 68, 0.1);
+  border-left: 3px solid #ff4444;
+  padding: 0.5rem;
+  font-size: 0.85rem;
+  color: #ffcccc;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+</style>

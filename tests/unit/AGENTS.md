@@ -18,6 +18,7 @@ Frontend Developers / Systems Engineers.
 ## Child DOX Index
 
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle.
+- [debug/](./debug/AGENTS.md): Domain module documentation for debug.
 - [encounters/](./encounters/AGENTS.md): Domain module documentation for encounters.
 - [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
 - [modals/](./modals/AGENTS.md): Domain module documentation for modals.

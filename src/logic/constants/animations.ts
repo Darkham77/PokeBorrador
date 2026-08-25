@@ -106,6 +106,30 @@ export const COMBATANT_IDLE_GROUNDED_BASE_DURATION_SEC = 1.2;
 /** Combatant grounded idle animation variance duration in seconds. */
 export const COMBATANT_IDLE_GROUNDED_VAR_DURATION_SEC = 0.4;
 
+/** Trainer grounded idle breathing animation base scale X. */
+export const TRAINER_IDLE_BASE_SCALE_X = 0.99;
+
+/** Trainer grounded idle breathing animation variance scale X. */
+export const TRAINER_IDLE_VAR_SCALE_X = 0.02;
+
+/** Trainer grounded idle breathing animation base scale Y. */
+export const TRAINER_IDLE_BASE_SCALE_Y = 0.985;
+
+/** Trainer grounded idle breathing animation variance scale Y. */
+export const TRAINER_IDLE_VAR_SCALE_Y = 0.03;
+
+/** Trainer grounded idle breathing animation base rotation angle in degrees. */
+export const TRAINER_IDLE_BASE_ROTATION_DEG = 0.2;
+
+/** Trainer grounded idle breathing animation variance rotation angle in degrees. */
+export const TRAINER_IDLE_VAR_ROTATION_DEG = 0.3;
+
+/** Trainer grounded idle breathing animation base duration in seconds. */
+export const TRAINER_IDLE_BASE_DURATION_SEC = 1.8;
+
+/** Trainer grounded idle breathing animation variance duration in seconds. */
+export const TRAINER_IDLE_VAR_DURATION_SEC = 1.2;
+
 /** Combatant fainting animation Y-offset downward displacement in pixels. */
 export const COMBATANT_FAINT_Y_OFFSET = 60;
 
@@ -230,10 +254,15 @@ export const RIVAL_EXCLAMATION_FADE_DURATION_SEC = 0.3;
 export const TRAINER_ENTER_DURATION_SEC = 0.8;
 
 /** Trainer retreat target X offset in pixels. */
-export const TRAINER_RETREAT_X_OFFSET_PX = 340;
+export const TRAINER_RETREAT_X_OFFSET_PX = 300;
+export const TRAINER_RETREAT_Y_OFFSET_PX = -10;
+export const TRAINER_RETREAT_SCALE = 1.0;
 
-/** Trainer retreat target Y offset in pixels. */
-export const TRAINER_RETREAT_Y_OFFSET_PX = -25;
+/** Trainer exit animation duration in seconds. */
+export const TRAINER_EXIT_DURATION_SEC = 0.8;
+
+/** Trainer exit X offset to move off-screen to the right in pixels. */
+export const TRAINER_EXIT_X_OFFSET_PX = 600;
 
 /** Battle HUD enter/leave transition X offset in pixels. */
 export const HUD_TRANSITION_X_OFFSET_PX = 20;

@@ -56,7 +56,7 @@ describe('Battle Store - Turn Count Logic', () => {
     vi.stubGlobal('Worker', DummyWorker)
     const gs = useGameStore()
     gs.state.trainer = 'Tester'
-    gs.state.team = [{ id: 'pikachu', uid: 'p1', hp: 100, maxHp: 100, status: null, ability: 'static', nature: 'hardy', gender: 'M', vigor: 100, maxVigor: 100, moves: [{ id: 'tackle', name: 'Tackle' }] } as unknown as Pokemon]
+    gs.state.team = [{ id: 'pikachu', uid: 'p1', hp: 100, maxHp: 100, status: null, ability: 'static', nature: 'hardy', gender: 'M', vigor: 100, maxVigor: 100, moves: [{ id: 'quickattack', name: 'Ataque Rápido' }] } as unknown as Pokemon]
   })
 
   afterEach(() => {
@@ -132,7 +132,7 @@ describe('Battle Store - Turn Count Logic', () => {
       ivs: { hp: 15, atk: 15, def: 15, spa: 15, spd: 15, spe: 15 },
       evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
       moves: [
-        { id: 'recover', name: 'Recuperación', type: 'psychic', cat: 'status', pp: 10, effect: 'heal_50' }
+        { id: 'agility', name: 'Agilidad', type: 'psychic', cat: 'status', pp: 30 }
       ] 
     } as unknown as Pokemon
     const gs = useGameStore()

@@ -107,6 +107,13 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     return
   }
 
+  const illegalPoke = ctx.gs.state.team.find((p) => p && p.isIllegal)
+  if (illegalPoke) {
+    const { useUIStore } = await import('@/stores/ui')
+    useUIStore().notify(`No puedes combatir: tu equipo contiene Pokémon ilegales (${illegalPoke.name || illegalPoke.id}). Repáralos antes de continuar.`, '⚠️')
+    return
+  }
+
   // Si hay un combate activo pero NO está en fase de finalización, forzamos huida.
   if (ctx.isBattleActive.value && !ctx.isFinishing.value && !ctx.activeBattle.value?.over && !ctx.isSearching.value) {
     logger.warn('BATTLE', 'Combate en curso detectado. Forzando huida del anterior.')

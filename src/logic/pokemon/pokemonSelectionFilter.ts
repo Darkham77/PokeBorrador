@@ -64,6 +64,10 @@ export function filterAndSortPokemon(
     return true
   })
 
+  if (criteria.isBattleSwitch && (!criteria.sortBy || criteria.sortBy === 'index' || criteria.sortBy === 'recent')) {
+    return filtered.sort((a, b) => a.index - b.index)
+  }
+
   return filtered.sort((a, b) => {
     const pA = a.pokemon
     const pB = b.pokemon

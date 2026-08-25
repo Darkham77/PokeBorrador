@@ -216,6 +216,11 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
   await processBattleRewardsPhase(ctx, win, fled)
   if (!isCurrentBattle(ctx, active)) return
 
+  const isTrainerEncounter = Boolean(active.isTrainer || active.isRival || active.trainerName || active.isGym)
+  if (isTrainerEncounter && ctx.animations?.triggerTrainerExit) {
+    await ctx.animations.triggerTrainerExit()
+  }
+
   if (!win && !fled) {
     await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
     await sleep(200)
@@ -234,8 +239,10 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
   if (fled) {
     if (active) active._initialEnemy = null
     ctx.clearLogs?.()
-    await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.WAIT_LOG_QUEUE_ONLY)
-    await ctx.waitForLogs()
+    if (fsm.currentState.value !== BATTLE_STATES.EXIT_BATTLE) {
+      await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.WAIT_LOG_QUEUE_ONLY)
+      await ctx.waitForLogs()
+    }
     if (!isCurrentBattle(ctx, active)) return
     
     const playerFled = active.playerFled || false

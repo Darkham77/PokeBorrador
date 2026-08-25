@@ -186,6 +186,7 @@ const {
 
 <style scoped lang="scss">
 @use "@/styles/core/tools" as *;
+@use "@/styles/components/_move-tooltip-shared.scss" as *;
 
 .move-tooltip-rich {
   @include pixelated;
@@ -206,7 +207,7 @@ const {
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid Rgba(255, 255, 255, 0.15);
-  font-size: 8px;
+  font-size: $tooltip-stat-val-size;
   
   &.boosted { color: var(--yellow); }
   &.penalized { color: $red; }
@@ -222,52 +223,7 @@ const {
 }
 
 .calc-section-title {
-  font-size: 7.5px;
-  color: var(--yellow);
-  font-weight: bold;
-  letter-spacing: 0.5px;
-  margin-bottom: 2px;
-  text-transform: uppercase;
-}
-
-.combat-stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-}
-
-.stat-box {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.06);
-  border-radius: 6px;
-  padding: 4px 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-
-  .stat-lbl {
-    font-size: 6px;
-    color: Rgba(255, 255, 255, 0.5);
-    font-weight: bold;
-    letter-spacing: 0.3px;
-  }
-
-  .stat-val {
-    font-size: 8px;
-    font-weight: bold;
-    color: white;
-    white-space: nowrap;
-
-    &.boosted {
-      color: #10B981;
-      text-shadow: 0 0 2px Rgba(16, 185, 129, 0.4);
-    }
-
-    &.penalized {
-      color: #EF4444;
-      text-shadow: 0 0 2px Rgba(239, 68, 68, 0.4);
-    }
-  }
+  @include calc-section-title-mixin;
 }
 
 .modifiers-section {
@@ -288,7 +244,7 @@ const {
 }
 
 .breakdown-item {
-  font-size: 7.5px;
+  font-size: $tooltip-breakdown-item-size;
   color: Rgba(255, 255, 255, 0.6);
 
   .boosted { color: #10B981; font-weight: bold; }
@@ -302,7 +258,7 @@ const {
   border: 1px dashed Rgba(255, 255, 255, 0.08);
 
   .formula-text {
-    font-size: 7.5px;
+    font-size: $tooltip-formula-text-size;
     color: #aeaebe;
     
     .boosted {
@@ -319,273 +275,17 @@ const {
     
     .total-result {
       color: var(--yellow);
-      font-size: 9px;
+      font-size: $tooltip-formula-result-size;
       text-shadow: 0 0 3px Rgba(255, 214, 10, 0.3);
     }
   }
 }
 
-.ko-chance-badge {
-  font-size: 7px;
-  text-transform: uppercase;
-  padding: 1px 4px;
-  border-radius: 3px;
-  font-weight: bold;
-  
-  &.ko-ohko {
-    color: #ff453a;
-    background: Rgba(255, 69, 58, 0.15);
-    border: 1px solid Rgba(255, 69, 58, 0.25);
-    text-shadow: 0 0 3px Rgba(255, 69, 58, 0.3);
-  }
-  
-  &.ko-ohko-possible {
-    color: #ff9f0a;
-    background: Rgba(255, 159, 10, 0.15);
-    border: 1px solid Rgba(255, 159, 10, 0.25);
-  }
-
-  &.ko-2hko {
-    color: #ffd60a;
-    background: Rgba(255, 214, 10, 0.15);
-    border: 1px solid Rgba(255, 214, 10, 0.25);
-  }
-
-  &.ko-3hko {
-    color: #30d158;
-    background: Rgba(48, 209, 88, 0.1);
-    border: 1px solid Rgba(48, 209, 88, 0.25);
-  }
-
-  &.ko-neutral {
-    color: #aeaebe;
-  }
-}
-
-.damage-section {
-  border-top: 1px dotted Rgba(255, 255, 255, 0.15);
-  padding-top: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.damage-grid {
-  display: grid;
-  grid-template-columns: 50px 1fr;
-  gap: 4px 8px;
-  align-items: center;
-}
-
-.dmg-label {
-  font-size: 7.5px;
-  color: Rgba(255, 255, 255, 0.6);
-  font-weight: bold;
-}
-
-.dmg-value-group {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  text-align: right;
-
-  .hp-range {
-    font-size: 8px;
-    font-weight: bold;
-    color: white;
-  }
-
-  .pct-range {
-    font-size: 6.5px;
-    color: Rgba(255, 255, 255, 0.5);
-    line-height: 1.2;
-    margin-top: 1px;
-    white-space: nowrap;
-  }
-
-  &.crit {
-    .hp-range {
-      color: #FBBF24;
-      text-shadow: 0 0 3px Rgba(251, 191, 36, 0.3);
-    }
-  }
-}
-
-.status-effect-box {
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.06);
-  border-radius: 6px;
-  padding: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.status-grid-2col {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 4px;
-}
-
-.status-col-box {
-  background: Rgba(255, 255, 255, 0.02);
-  border: 1px solid Rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-  padding: 4px 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0; // Previene desbordamiento flex/grid
-
-  .status-col-lbl {
-    font-size: 6px;
-    color: Rgba(255, 255, 255, 0.5);
-    font-weight: bold;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
-  }
-
-  .status-col-val {
-    font-size: 8px;
-    font-weight: bold;
-    color: white;
-    word-break: normal;
-    overflow-wrap: break-word;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 3px;
-
-    &.boosted {
-      color: #10B981;
-      text-shadow: 0 0 2px Rgba(16, 185, 129, 0.4);
-    }
-
-    &.penalized {
-      color: #EF4444;
-      text-shadow: 0 0 2px Rgba(239, 68, 68, 0.4);
-    }
-  }
-}
-
-.status-desc-box {
-  margin-top: 4px;
-  background: Rgba(0, 0, 0, 0.15);
-  border: 1px dotted Rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
-  padding: 4px 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-
-  .status-col-lbl {
-    font-size: 6px;
-    color: Rgba(255, 255, 255, 0.5);
-    font-weight: bold;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
-  }
-
-  .status-desc-text {
-    font-size: 7.5px;
-    line-height: 1.3;
-    color: Rgba(255, 255, 255, 0.8);
-    word-break: break-word;
-  }
-}
-
-.arrow {
-  display: inline-flex;
-  align-items: center;
-  font-size: 8px;
-  margin-right: 1px;
-  
-  &.up {
-    color: #10B981;
-    text-shadow: 0 0 2px Rgba(16, 185, 129, 0.4);
-  }
-  
-  &.down {
-    color: #EF4444;
-    text-shadow: 0 0 2px Rgba(239, 68, 68, 0.4);
-  }
-}
-
-// ── New sections: recovery / recoil / field conditions ─────────────────────
-
 .extra-effect-section {
-  border-radius: 6px;
-  padding: 5px 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-
-  &.recovery-section {
-    background: Rgba(16, 185, 129, 0.06);
-    border: 1px solid Rgba(16, 185, 129, 0.18);
-  }
-
-  &.recoil-section {
-    background: Rgba(239, 68, 68, 0.06);
-    border: 1px solid Rgba(239, 68, 68, 0.18);
-  }
-
-  &.field-section {
-    background: Rgba(99, 102, 241, 0.06);
-    border: 1px solid Rgba(99, 102, 241, 0.18);
-  }
-
-  &.speed-section {
-    background: Rgba(245, 158, 11, 0.06);
-    border: 1px solid Rgba(245, 158, 11, 0.18);
-  }
-
-  &.mechanics-section {
-    background: Rgba(16, 185, 129, 0.04);
-    border: 1px dashed Rgba(16, 185, 129, 0.18);
-  }
-
-  &.tactical-section {
-    background: Rgba(239, 68, 68, 0.04);
-    border: 1px solid Rgba(239, 68, 68, 0.18);
-  }
+  @include extra-effect-section-mixin;
 }
 
-.extra-effect-row {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.extra-effect-icon {
-  font-size: 8px;
-  flex-shrink: 0;
-}
-
-.extra-effect-text {
-  font-size: 7.5px;
-  font-weight: bold;
-  line-height: 1.3;
-
-  &.boosted  { color: #10B981; text-shadow: 0 0 3px Rgba(16, 185, 129, 0.3); }
-  &.penalized { color: #EF4444; text-shadow: 0 0 3px Rgba(239, 68, 68, 0.3); }
-}
-
-.field-condition-row {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.field-condition-dot {
-  font-size: 5px;
-  color: #818CF8;
-  flex-shrink: 0;
-}
-
-.field-condition-text {
-  font-size: 7px;
-  color: Rgba(199, 210, 254, 0.85);
-  line-height: 1.3;
+.smogon-desc-text {
+  font-size: $tooltip-smogon-desc-size !important;
 }
 </style>

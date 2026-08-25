@@ -157,11 +157,13 @@ export function useBattleHud(
   })
 
   const activeEnemyIsSilhouette = computed(() => {
+    const s = toValue(battleStore.state)
+    if (s?.isTrainer || s?.isGym || s?.isPvP) return false
+
     if (animations.isWildSilhouette.value) return true
     if (toValue(battleStore.isSilhouetteMode)) return true
     const state = toValue(battleStore.fsm?.currentState)
     if (state === 'SEARCH_PHASE') {
-      const s = toValue(battleStore.state)
       if (s && !s.isTrainer && !s.isGym) return true
     }
     const sub = toValue(battleStore.fsm?.currentSubState)

@@ -490,6 +490,46 @@ After `INITIALIZING`, the `wasSearching` flag determines which visual entry path
 > [!CAUTION]
 > **Never pass `wasSearching: false` for Gym or Trainer battles.** Doing so skips `SEARCH_PHASE` entirely, which means the `¡COMBATIR!` / `¡DESAFIAR!` button never appears and the battle starts without user confirmation.
 
+### 2.1 NPC Trainer & Gym Presentation Lifecycle (4-Phase Visual Flow)
+
+All NPC Trainer, Gym Leader, and Rival encounters adhere to a strict 4-phase state machine ensuring smooth transitions, zero teleports, and consistent F5 persistence:
+
+```mermaid
+stateDiagram-v2
+    state SEARCH_PHASE {
+        [*] --> TRAINER_ENTRY : "Slide from x: 150% to Center Stage (0, 0)"
+        TRAINER_ENTRY --> SHOW_DIALOGS : "Display Speech Bubble at Center"
+        SHOW_DIALOGS --> COMBAT_OR_FLEE : "Wait for Player Decision"
+    }
+
+    COMBAT_OR_FLEE --> FIRST_INTRO : "Player clicks '¡COMBATIR!'"
+    COMBAT_OR_FLEE --> EXIT_BATTLE : "Player clicks 'Huir'"
+
+    state FIRST_INTRO {
+        [*] --> RETREAT_AND_FADEOUT : "GSAP to (300, -10) Scale: 0.8"
+        RETREAT_AND_FADEOUT --> POKEMON_CALL : "Pokéball Throw & Release Anim"
+        POKEMON_CALL --> [*] : "Enemy Pokemon Ready"
+    }
+
+    FIRST_INTRO --> ACTIVE_BATTLE : "Combat Starts"
+
+    state ACTIVE_BATTLE {
+        [*] --> WAIT_INPUT : "Stay in background at (300, -10)"
+        WAIT_INPUT --> TURN_ENGINE : "Execute Combat Turns"
+        TURN_ENGINE --> WAIT_INPUT : "Turn finished"
+    }
+
+    ACTIVE_BATTLE --> REWARDS_PHASE : "Battle Concluded (Win / Loss / Flee)"
+
+    state REWARDS_PHASE {
+        [*] --> CHECK_PERSISTENCE : "Process Rewards & Trigger Exit"
+        CHECK_PERSISTENCE --> EMPTY_WAIT : "Slide Trainer off-screen (x: +=600px)"
+        EMPTY_WAIT --> [*] : "Trainer completely off-camera"
+    }
+
+    REWARDS_PHASE --> EXIT_BATTLE : "Complete Battle Flow"
+```
+
 ### 3. Active Battle Loop
 
 The core interaction cycle. It manages user input, turn execution, and terminal sequences like fainting or capture.

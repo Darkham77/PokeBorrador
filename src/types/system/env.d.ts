@@ -167,7 +167,7 @@ declare global {
     playerChoices?: string[]; // domain-ok
     waitForBattleReady?: (timeoutMs?: number, options?: { skipImmediate?: boolean }) => Promise<import('../battle/battleEvents.ts').BattleReadyForInputDetail>;
     getScriptedReplayReadiness?: () => import('../battle/battleEvents.ts').BattleReadyForInputDetail & { isReady: boolean };
-    certifiedReplayIntroDiagnostics?: { isIntroInProgress: boolean; isWildEntryAnimation: boolean; wildRevealActive: boolean; isEmerging: boolean; upcomingIsEmerging: boolean; trainerAnimState: 'entering' | 'retreating' | 'idle' | null; isCaptureSequenceActive: boolean };
+    certifiedReplayIntroDiagnostics?: { isIntroInProgress: boolean; isWildEntryAnimation: boolean; wildRevealActive: boolean; isEmerging: boolean; upcomingIsEmerging: boolean; trainerAnimState: import('@/composables/battle/useBattleTrainerAnimations').TrainerAnimationState | null; isCaptureSequenceActive: boolean };
     useItemInBattle?: (itemId: string, targetUid: string) => void;
     healAll?: () => void;
     forceFlee?: () => void | Promise<void>;

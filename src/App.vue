@@ -178,7 +178,13 @@ const initGameSession = async () => {
       
       await gameStore.loadGame()
       
-      if (gameStore.state.activeBattle && !gameStore.state.activeBattle.over) {
+      const hasIllegalInTeam = (gameStore.state.team || []).some((p) => p && p.isIllegal)
+      if (hasIllegalInTeam && gameStore.state.activeBattle) {
+        logger.warn('App', 'Se detectaron Pokémon ilegales en el equipo durante la carga. Abortando combate persistente y regresando al mapa.')
+        gameStore.state.activeBattle = null
+        uiStore.notify('Combate cancelado: se detectaron Pokémon ilegales en tu equipo. Repáralos en el menú de depuración.', '⚠️')
+        router.replace('/game/map')
+      } else if (gameStore.state.activeBattle && !gameStore.state.activeBattle.over) {
         logger.info('App', 'Detectado combate persistente. Restaurando estado...')
         await battleStore.restoreBattle(gameStore.state.activeBattle)
       }

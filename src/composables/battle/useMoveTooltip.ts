@@ -261,7 +261,8 @@ export function useMoveTooltip(
       isStatus,
       power: {
         ...power,
-        final: isStatus ? '-' : power.final
+        final: isStatus || power.base === 0 ? '-' : power.final,
+        class: isStatus || power.base === 0 ? '' : power.class
       },
       accuracy,
       effectiveness,

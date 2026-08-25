@@ -241,7 +241,16 @@ onUnmounted(() => {
 
     <!-- Sprite Section -->
     <div class="box-sprite-wrapper">
+      <div
+        v-if="props.pokemon.isIllegal"
+        class="box-illegal-danger-badge"
+        :title="props.pokemon.illegalReasons?.join('\n') || 'Pokémon Ilegal'"
+      >
+        <span class="danger-icon">⚠️</span>
+        <span class="danger-label">ILEGAL</span>
+      </div>
       <PVSpriteFX
+        v-else
         :is-shiny="props.pokemon.isShiny"
         :is-guardian="props.pokemon.isGuardian"
         :sparkle-count="5"
@@ -411,6 +420,31 @@ onUnmounted(() => {
     border-radius: inherit;
     pointer-events: none;
     z-index: var(--z-low);
+  }
+
+  .box-illegal-danger-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: Rgba(239, 68, 68, 0.2);
+    border: 2px dashed #ef4444;
+    border-radius: 6px;
+
+    .danger-icon {
+      font-size: 1.4rem;
+      line-height: 1;
+    }
+
+    .danger-label {
+      font-size: 0.55rem;
+      font-weight: 900;
+      color: #ff6b6b;
+      letter-spacing: 0.5px;
+      margin-top: 1px;
+    }
   }
 }
 </style>

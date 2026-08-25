@@ -109,3 +109,28 @@ defineProps<{
     </div>
   </div>
 </template>
+
+<style scoped lang="scss">
+@use "@/styles/core/tools" as *;
+@use "@/styles/components/_move-tooltip-shared.scss" as *;
+
+.move-tooltip-details-extra {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.calc-section-title {
+  @include calc-section-title-mixin;
+}
+
+.extra-effect-section {
+  @include extra-effect-section-mixin;
+}
+
+.speed-values {
+  color: Rgba(255, 255, 255, 0.4);
+  font-size: $tooltip-pct-range-size;
+  margin-left: 2px;
+}
+</style>

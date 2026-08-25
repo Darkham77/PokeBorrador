@@ -85,17 +85,35 @@ interface SavedFilters {
   activeTags?: string[]
 }
 
-let savedFilters: SavedFilters = {}
-try {
-  savedFilters = JSON.parse(safeStorage.getItem('pv_selection_filters') || '{}') as SavedFilters
-} catch (e) {
-  logger.warn('PokemonSelectionModal', 'Error loading filters', e)
+const contextKey = computed(() => {
+  if (props.isBattleSwitch) return 'battle_switch'
+  if (props.isDaycareContext) return 'daycare'
+  if (props.isItemContext) return 'item_use'
+  if (props.battleMode === 'pvp') return 'pvp_selection'
+  if (props.battleMode === 'war') return 'war_selection'
+  return 'general'
+})
+
+const storageKey = computed(() => `pv_selection_filters_${contextKey.value}`)
+
+const loadSavedFilters = (key: string): SavedFilters => {
+  try {
+    const raw = safeStorage.getItem(key) || (!props.isBattleSwitch ? safeStorage.getItem('pv_selection_filters') : null)
+    return JSON.parse(raw || '{}') as SavedFilters
+  } catch (e) {
+    logger.warn('PokemonSelectionModal', 'Error loading context filters', e)
+    return {}
+  }
 }
 
-const searchQuery = ref(savedFilters.searchQuery || '')
-const sortBy = ref(savedFilters.sortBy || 'recent') // 'recent', 'level', 'ivs', 'total'
-const sortOrder = ref(savedFilters.sortOrder || 'desc')
-const activeTags = ref<string[]>(Array.isArray(savedFilters.activeTags) ? savedFilters.activeTags : [])
+const initialFilters = loadSavedFilters(storageKey.value)
+
+// In battle switch mode, strictly reset search and tags to ensure team availability
+const isBattleMode = props.isBattleSwitch
+const searchQuery = ref(isBattleMode ? '' : (initialFilters.searchQuery || ''))
+const sortBy = ref(initialFilters.sortBy || 'recent')
+const sortOrder = ref(initialFilters.sortOrder || 'desc')
+const activeTags = ref<string[]>(isBattleMode ? [] : (Array.isArray(initialFilters.activeTags) ? initialFilters.activeTags : []))
 const selectedUids = ref<string[]>([])
 
 const breedingStore = useBreedingStore()
@@ -108,14 +126,17 @@ const otherDaycarePokemon = computed(() => {
 
 const filterCompatibleOnly = ref(props.isDaycareContext && !!otherDaycarePokemon.value)
 
-// Persist filters
+// Persist filters strictly within the caller's own isolated context
 watch([sortBy, sortOrder, activeTags, searchQuery], () => {
-  safeStorage.setItem('pv_selection_filters', JSON.stringify({
+  if (props.isBattleSwitch) return
+  const payload = JSON.stringify({
     sortBy: sortBy.value,
     sortOrder: sortOrder.value,
     activeTags: activeTags.value,
     searchQuery: searchQuery.value
-  }))
+  })
+  safeStorage.setItem(storageKey.value, payload)
+  safeStorage.setItem('pv_selection_filters', payload)
 }, { deep: true })
 
 const availablePokemon = computed<{ pokemon: Pokemon, _source: PokemonSelectionSource, index: number }[]>(() => {

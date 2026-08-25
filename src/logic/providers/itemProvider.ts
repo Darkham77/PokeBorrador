@@ -13,7 +13,7 @@ import type { Item } from '@/types/inventory/items';
  * Intenta usar un objeto sobre un Pokémon.
  * @returns {any|null} Resultado del uso o null si no tuvo efecto.
  */
-export function useItemOnPokemon(itemName: ItemId | string, pokemon: Pokemon): { message: string; pokemon: Pokemon } | null {
+export function useItemOnPokemon(itemName: ItemId | (string & {}), pokemon: Pokemon): { message: string; pokemon: Pokemon } | null {
   const itemId = requireItemId(itemName);
 
   // Validate item exists in SHOP_ITEMS
@@ -37,7 +37,7 @@ export function useItemOnPokemon(itemName: ItemId | string, pokemon: Pokemon): {
   return result.success ? { message: result.message, pokemon } : null;
 }
 
-export function isGlobalItem(itemName: ItemId | string): boolean {
+export function isGlobalItem(itemName: ItemId | (string & {})): boolean {
   const itemId = requireItemId(itemName);
   const item = getItemById(itemId) as Item | undefined;
   if (!item) return false;

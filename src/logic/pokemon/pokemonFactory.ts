@@ -147,16 +147,35 @@ export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
 }
 
 export function canLearnMove(speciesId: string, moveId: string): boolean {
-  let currId: string | undefined = toID(speciesId);
   const normMoveId = toID(moveId);
-  while (currId) {
+  const visited = new Set<string>(); // runtime-set
+  const queue: string[] = [toID(speciesId)]; // no-domain
+
+  while (queue.length > 0) {
+    const currId = queue.shift()!;
+    if (visited.has(currId)) continue;
+    visited.add(currId);
+
     const data = Dex.data.Learnsets[currId];
     if (data && data.learnset && data.learnset[normMoveId]) {
       return true;
     }
+
     const species = Dex.species.get(currId);
-    currId = species.prevo ? toID(species.prevo) : undefined;
+    if (species.exists) {
+      if (species.baseSpecies && toID(species.baseSpecies) !== currId) {
+        queue.push(toID(species.baseSpecies));
+      }
+      if (species.prevo && toID(species.prevo) !== currId) {
+        queue.push(toID(species.prevo));
+      }
+      if (species.battleOnly) {
+        const battleBase = typeof species.battleOnly === 'string' ? species.battleOnly : species.battleOnly[0];
+        if (battleBase) queue.push(toID(battleBase));
+      }
+    }
   }
+
   return false;
 }
 
@@ -170,11 +189,10 @@ export function validatePokemon(p: Pokemon, bypassWhitelist = false): void {
   if (!p) throw new Error('[pokemonFactory] Intento de validar un Pokémon nulo o indefinido.');
   if (!p.volatileCounters) p.volatileCounters = {};
 
-  const isDebug = (typeof window !== 'undefined' && !!(window as Window & { __VITE_DEBUG__?: unknown }).__VITE_DEBUG__) || import.meta.env.DEV;
-  const bypass = bypassWhitelist || isDebug;
+  const bypass = bypassWhitelist;
 
   // 0. Sincronizar Datos Base (Tipos y Levitación) desde DB para paridad Wiki (Datos volátiles en memoria)
-  const base = pokemonDataProvider.getPokemonData(p.id, bypass);
+  const base = pokemonDataProvider.getPokemonData(p.id, true);
   if (base) {
     // Si es Castform y tiene una forma activa diferente de normal, no sobreescribir su tipo con el base de la base de datos (que es siempre normal)
     const isCastformForm = p.id === 'castform' && p.form && p.form !== 'normal';

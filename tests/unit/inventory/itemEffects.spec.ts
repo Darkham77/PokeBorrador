@@ -14,7 +14,7 @@ function makeMon(overrides: Partial<Pokemon> = {}): Pokemon {
     hp: 50, maxHp: 100, status: null, sleepTurns: 0,
     moves: [
       { id: 'tackle', name: 'Placaje', pp: 10, maxPP: 35 },
-      { id: 'tailwhip', name: 'Látigo', pp: 0,  maxPP: 30 },
+      { id: 'growl', name: 'Gruñido', pp: 0,  maxPP: 40 },
     ],
     atk: 49, def: 49, spa: 65, spd: 65, spe: 45,
     type: 'grass', nature: 'hardy', ability: 'overgrow',

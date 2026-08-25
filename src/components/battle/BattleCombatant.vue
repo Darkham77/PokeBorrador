@@ -100,9 +100,7 @@ const { currentMode, idleCyclesTarget, animateSpritesheet } = useBattleCombatant
   variationMeta
 })
 
-watch([idleKey, () => props.pokemon?.isShiny, () => props.pokemon?.status, isAnimated], () => {
-  idleCyclesTarget.value = Math.floor(Math.random() * 2) + 3
-  currentMode.value = 'idle' // Forzar reinicio al estado de reposo (idle) al cambiar de Pokémon o estado
+const updateAnimatedImageUrls = () => {
   if (!props.pokemon) return
 
   const spriteId = props.pokemon.form && props.pokemon.form !== 'normal' ? `${props.pokemon.id}-${props.pokemon.form}` : props.pokemon.id
@@ -112,19 +110,37 @@ watch([idleKey, () => props.pokemon?.isShiny, () => props.pokemon?.status, isAni
     isAnimated: true,
   })
 
-  const getAnimatedUrl = (baseAssetUrl: string, key: string | null) => {
-    if (!key || !baseAssetUrl) return ''
+  const getAnimatedUrl = (baseUrl: string, key: string | null) => {
+    if (!key || !baseUrl) return ''
     const filename = key.replace(/_back$/, '')
-    return baseAssetUrl.replace(/\/([^/]+)\.webp$/i, `/${filename}.webp`)
+    return baseUrl.replace(/\/([^/]+)\.webp$/i, `/${filename}.webp`)
   }
 
   idleImageUrl.value = getAnimatedUrl(baseAssetUrl, idleKey.value)
   variationImageUrl.value = getAnimatedUrl(baseAssetUrl, variationKey.value)
+}
 
-  nextTick(() => {
-    animateSpritesheet()
-  })
-}, { immediate: true })
+watch(
+  [
+    idleKey,
+    variationKey,
+    () => props.pokemon?.id,
+    () => props.pokemon?.uid,
+    () => props.pokemon?.form,
+    () => props.pokemon?.isShiny,
+    () => props.pokemon?.status,
+    isAnimated
+  ],
+  () => {
+    idleCyclesTarget.value = Math.floor(Math.random() * 2) + 3
+    currentMode.value = 'idle'
+    updateAnimatedImageUrls()
+    nextTick(() => {
+      animateSpritesheet()
+    })
+  },
+  { immediate: true, deep: true }
+)
 
 // Watcher para la transformación visual (con GSAP)
 watch(

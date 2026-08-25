@@ -4,6 +4,7 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import { useBreedingStore } from '@/stores/breeding'
+import { useBattleStore } from '@/stores/battle/battle'
 import { POKEMON_STAT_KEYS } from '@/types/pokemon/pokemon'
 import type { Pokemon, PokedexStatus } from '@/types/pokemon/pokemon'
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB'
@@ -17,6 +18,7 @@ export function registerPokeTools(debug: DebugSystem) {
   const ui = useUIStore()
   const mapStore = useMapStore()
   const breedingStore = useBreedingStore()
+  const battleStore = useBattleStore()
 
   debug.register({
     id: 'poke-set-pokedex-mode',
@@ -369,5 +371,73 @@ export function registerPokeTools(debug: DebugSystem) {
       game.saveGame(false)
     },
     description: 'Reduce a 0 los pasos de todos los huevos en la mochila y los deja listos para abrir.'
+  })
+
+  debug.register({
+    id: 'poke-repair-moves',
+    label: 'REPARAR MOVIMIENTOS EQUIPO',
+    command: 'repairTeamMoves',
+    category: 'pokes',
+    action: async () => {
+      const { getMovesAtLevel } = await import('@/logic/pokemon/pokemonUtils')
+      let count = 0
+      game.state.team.forEach((p: Pokemon) => {
+        if (p?.id) {
+          const freshMoves = getMovesAtLevel(p.id, p.level || 5, true)
+          if (freshMoves.length > 0) {
+            p.moves = freshMoves
+            count++
+          }
+        }
+      })
+      await game.saveGame(false)
+      ui.notify(`Movimientos restaurados para ${count} Pokémon del equipo`, '⚔️')
+    },
+    description: 'Restaura y recalcula los movimientos oficiales por nivel de todos los Pokémon del equipo actual.'
+  })
+
+  debug.register({
+    id: 'poke-repair-all-illegal',
+    label: 'REPARAR POKÉMON ILEGALES (TODO)',
+    command: 'repairAllIllegal',
+    category: 'pokes',
+    action: async () => {
+      const { repairPokemonLegality } = await import('@/logic/pokemon/pokemonLegality')
+      let repairedCount = 0
+      
+      game.state.team.forEach((p: Pokemon) => {
+        if (p?.id) {
+          const report = repairPokemonLegality(p)
+          if (report.repaired) repairedCount++
+        }
+      })
+
+      if (game.state.box) {
+        game.state.box.forEach((p) => {
+          if (p && p.id) {
+            const report = repairPokemonLegality(p as Pokemon)
+            if (report.repaired) repairedCount++
+          }
+        })
+      }
+
+      if (breedingStore.slots) {
+        breedingStore.slots.forEach(slot => {
+          if (slot.pokemon?.id) {
+            const report = repairPokemonLegality(slot.pokemon)
+            if (report.repaired) repairedCount++
+          }
+        })
+      }
+
+      if (battleStore.state?.player?.id) {
+        const report = repairPokemonLegality(battleStore.state.player)
+        if (report.repaired) repairedCount++
+      }
+
+      await game.saveGame(false)
+      ui.notify(`Se repararon ${repairedCount} Pokémon ilegales (Equipo, Caja y Guardería). ¡Cuenta lista para combatir!`, '🛠️')
+    },
+    description: 'Repara exhaustivamente movimientos, habilidades, niveles y stats de todos los Pokémon ilegales de la cuenta.'
   })
 }

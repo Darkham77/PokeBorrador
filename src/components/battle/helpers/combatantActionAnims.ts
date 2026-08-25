@@ -51,6 +51,10 @@ const VOICE_MOVE_IDS = [
   'disarmingvoice', 'boomburst', 'confide'
 ] as const;
 
+const SELFKO_MOVE_IDS = [
+  'selfdestruct', 'explosion', 'mindblown', 'mistyexplosion'
+] as const;
+
 export function buildFaintTimeline(
   spriteEl: HTMLElement,
   pokemon: BattleCombatantProps['pokemon'],
@@ -130,7 +134,8 @@ export function buildAttackTimeline(
     }
   }
 
-  if (move.selfKO || cat === 'selfKO') {
+  const isSelfKo = move.selfKO || cat === 'selfKO' || (SELFKO_MOVE_IDS as readonly string[]).includes(cleanMoveId); // domain-ok
+  if (isSelfKo) {
     const shakeTimeline = gsap.timeline();
     for (let i = 0; i < SELFKO_SHAKE_COUNT; i++) {
       const shakeX = (Math.random() - 0.5) * SELFKO_SHAKE_RANGE_PX;

@@ -16,9 +16,10 @@ import { requireMapRouteId } from '@/data/world/map-assets'
  */
 export async function initBattleSequence(
   ctx: BattleContext,
-  options: BattleOptions & { initialEnemy: Pokemon | null; initialPlayer: Pokemon | null }
+  options?: Partial<BattleOptions & { initialEnemy: Pokemon | null; initialPlayer: Pokemon | null }>
 ) {
-  const { initialEnemy, initialPlayer } = options
+  const initialEnemy = options?.initialEnemy || ctx.activeBattle.value?.enemy || ctx.activeBattle.value?.enemyTeam?.[0] || null
+  const initialPlayer = options?.initialPlayer || ctx.activeBattle.value?.player || ctx.gs.state.team.find((p: Pokemon) => p && p.hp > 0) || ctx.gs.state.team[0] || null
   if (!initialPlayer || !initialEnemy) return;
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
@@ -36,9 +37,7 @@ export async function initBattleSequence(
 
   await resetActiveBattleState(ctx, initialPlayer, isGym)
   if (ctx.activeBattle.value) {
-    if (!isTrainer && !isGym) {
-      ctx.activeBattle.value.enemy = initialEnemy
-    }
+    ctx.activeBattle.value.enemy = initialEnemy
   }
   if (!wasSearching && ctx.animations?.resetAll) {
     ctx.animations.resetAll()

@@ -7,7 +7,7 @@ import { handleStone } from '../itemEffectHandlers.ts';
 import { EV_BERRIES, VITAMINS, FEATHERS, MOCHIS, canUseVitamin, canUseEvBerry, calculateTotalEvs } from '@/logic/pokemon/evMath.ts';
 import { getDynamicItemEffect } from './itemEffectsHelpers.ts';
 
-export const isValidTarget = (itemId: ItemId | string, pokemon: Pokemon): boolean => {
+export const isValidTarget = (itemId: ItemId | (string & {}), pokemon: Pokemon): boolean => {
   if (!pokemon) return false;
   
   const resolvedId = requireItemId(itemId);

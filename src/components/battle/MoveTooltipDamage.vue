@@ -68,12 +68,7 @@ function getKoColorClass(koText: string) {
 @use "@/styles/components/_move-tooltip-shared.scss" as *;
 
 .calc-section-title {
-  font-size: 7.5px;
-  color: var(--yellow);
-  font-weight: bold;
-  letter-spacing: 0.5px;
-  margin-bottom: 2px;
-  text-transform: uppercase;
+  @include calc-section-title-mixin;
 }
 
 .damage-section {
@@ -81,7 +76,7 @@ function getKoColorClass(koText: string) {
 }
 
 .ko-chance-badge {
-  font-size: 7px;
+  font-size: $tooltip-badge-size;
   text-transform: uppercase;
   padding: 1px 4px;
   border-radius: 3px;

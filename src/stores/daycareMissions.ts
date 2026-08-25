@@ -4,15 +4,50 @@ import { useGameStore } from '@/stores/game.ts';
 import { useUIStore } from '@/stores/ui.ts';
 import { generateMission, validateMissionPokemon } from '@/logic/breeding/missionEngine';
 import { incrementRecordKey } from '@/logic/utils/mapUtils';
+import { logger } from '@/logic/utils/logger';
 import type { DaycareMission } from '@/types/breeding/breeding';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+
+function isValidDaycareMission(m: unknown): m is DaycareMission {
+  if (!m || typeof m !== 'object') return false;
+  const mission = m as Record<string, unknown>; // open-record
+  return (
+    typeof mission.date === 'string' &&
+    typeof mission.targetId === 'string' &&
+    typeof mission.trainerSprite === 'string' &&
+    mission.trainerSprite.length > 0 &&
+    typeof mission.trainerName === 'string' &&
+    typeof mission.dialogue === 'string' &&
+    typeof mission.reqText === 'string' &&
+    typeof mission.completed === 'boolean' &&
+    typeof mission.reward === 'object' &&
+    mission.reward !== null
+  );
+}
 
 export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
   const gameStore = useGameStore();
   const uiStore = useUIStore();
 
   const dailyMissions = computed<DaycareMission[]>({
-    get: () => gameStore.state.daycare_missions || [],
+    get: () => {
+      const missions = gameStore.state.daycare_missions || [];
+      const hasCorrupted = missions.some(m => !isValidDaycareMission(m));
+      if (hasCorrupted) {
+        logger.error('daycareMissions', 'Corrupted daycare mission detected (missing trainerSprite or required fields). Regenerating fresh missions.');
+        const today = Temporal.Now.plainDateISO().toString();
+        const level = gameStore.state.trainerLevel || 1;
+        const m1 = generateMission(level, today) as DaycareMission;
+        let m2 = generateMission(level, today) as DaycareMission;
+        while (m2.targetId === m1.targetId) {
+          m2 = generateMission(level, today) as DaycareMission;
+        }
+        gameStore.state.daycare_missions = [m1, m2];
+        gameStore.scheduleSave();
+        return [m1, m2];
+      }
+      return missions;
+    },
     set: (val) => { gameStore.state.daycare_missions = val }
   });
 
@@ -52,8 +87,12 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
     const today = Temporal.Now.plainDateISO().toString();
     const missions = dailyMissions.value;
     const lastDate = missions.length > 0 && missions[0] ? missions[0].date : '';
+    const hasCorrupted = missions.length === 0 || missions.some(m => !isValidDaycareMission(m));
 
-    if (lastDate !== today) {
+    if (lastDate !== today || hasCorrupted) {
+      if (hasCorrupted && missions.length > 0) {
+        logger.error('daycareMissions', 'Corrupted daycare mission detected in daily reset. Regenerating fresh missions.');
+      }
       regenerateMissions(today);
       missionRefreshes.value = 3;
     }
