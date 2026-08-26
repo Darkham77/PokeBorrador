@@ -51,3 +51,8 @@ This document governs Pokémon Showdown integration, active generation SSoT, mov
   - **Trading & Selling**: Prohibited from P2P trade, Market/GTS publishing, and Team Rocket / Black Market sales ($0 value).
   - **Breeding & Daycare**: Prohibited from Daycare deposits, breeding inheritance, and expedition mission fulfillment.
   - **Combat**: Prohibited from joining active battle teams, Arena PvP lineups, Faction War rosters, and triggering any battle sequence.
+
+## 9. Showdown Choice Loop & Mid-Turn Resolution Invariant
+
+- **Choice Loop Mid-Turn Resolution**: When resolving multi-seat choices in `ShowdownBattleEngine`, the engine must capture `startTurn = battle.turn` and `startReqState = battle.requestState`. If any choice submission causes Showdown to transition the turn or switch request state, subsequent seat iterations for that turn must halt immediately to prevent submitting outdated choices to Showdown.
+- **GSAP Event-Driven Decoupling**: Visual animations and state machine transitions remain fully event-driven via GSAP timelines and public typed events (`battle-ready-for-input`, `battle-forced-switch-required`), decoupled from the internal step iterations of the simulation engine.
