@@ -57,7 +57,7 @@
   - [ ] Request user confirmation for final commit
   - [ ] `git add .` & `git commit -m "docs(agents): ..."`
 - [ ] **Phase 10: Final Status & Instructions**
-  - [ ] Display manual `git push` & db update instructions
+  - [ ] Display push status or instructions (manual push for main, or automated for non-main development branches) & db update instructions
   - [ ] Mark Phase 10 `[x]`
 
 ---

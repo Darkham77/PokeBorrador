@@ -405,13 +405,13 @@ This phase begins **only after** the user explicitly approves the lesson proposa
 Notify the user that both commits (Snapshot + Optimization) were successfully created.
 
 > [!IMPORTANT]
-> **MANUAL PUSH MANDATE**: You are FORBIDDEN from executing `git push`. Inform the user the repository is clean and to push manually when ready.
+> **MAIN BRANCH PUSH PROTECTION**: AI agents are FORBIDDEN from executing `git push` towards `main` (`origin/main`). Pushing to `main` must always be performed manually by the user. If the user explicitly requests a push and the current branch is a non-main development branch (such as `desarrollo` or a feature branch), the agent may execute `git push origin <branch>`. Otherwise, provide manual instructions.
 
 Display this block at the end of your response:
 
 ```bash
-# Push changes to remote
-git push origin main
+# Push changes to remote (if on non-main, or for manual execution)
+git push origin <branch>
 
 # Update database on a specific server
 npm run servers:db:update -- --server=<profile>

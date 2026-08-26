@@ -61,7 +61,7 @@ For topic-specific mandates, consult the specialized rule modules under [.agents
 - [TypeScript Conventions & Data Integrity](.agents/skills/project-standards/references/rules/typescript_conventions.md): Domain-Type-First governance, zero-any/ignore, typed JSON wrappers, Node 26+ permissions, cross-platform paths.
 - [Testing & Simulations](.agents/skills/project-standards/references/rules/testing_and_simulations.md): CLI debugging, Playwright `#id` locators, fail-fast turn execution, zero-timer simulation sync, 100% shared battle runners.
 - [Database & Persistence](.agents/skills/project-standards/references/rules/database_and_persistence.md): DBRouter context isolation, Save Shield (no 0-Pokémon saves), prohibition on remote DB updates, UID parity.
-- [Git & Workflow Safety](.agents/skills/project-standards/references/rules/git_and_workflow_safety.md): Destructive Git confirmations, uncommitted file backups, scratch directory mandate, manual push mandate.
+- [Git & Workflow Safety](.agents/skills/project-standards/references/rules/git_and_workflow_safety.md): Destructive Git confirmations, uncommitted file backups, scratch directory mandate, main branch push protection.
 - [Game Engine & State](.agents/skills/project-standards/references/rules/game_engine_and_state.md): Showdown canonical reference (`ACTIVE_GENERATION`), 4-seat compatibility, zero-cloning Pokémon instances, Showdown ID format.
 
 ## 5. DOX Directory Navigation Index

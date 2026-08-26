@@ -18,10 +18,11 @@
 
 - Before running massive or bulk modification scripts (e.g. formatters, batch replacements, refactoring utilities) on files with uncommitted changes, the agent MUST either propose committing current changes first or create temporary backups of targeted files inside the `scratch/` directory.
 
-## 3. Autonomous Git Commit & Push Prohibitions
+## 3. Autonomous Git Commit & Main Branch Push Prohibitions
 
 - **Commit Prohibition**: It is STRICTLY FORBIDDEN to execute any commit or safe-commit flow autonomously without an explicit user instruction to commit or save the repository. The agent MUST NOT assume completion or initiate the Git pipeline on its own.
-- **Manual Push Mandate**: Agents are FORBIDDEN from executing `git push`. Always inform the user when the local repository is clean so they can push manually when ready.
+- **Main Branch Push Protection Mandate**: AI agents are STRICTLY FORBIDDEN from executing `git push` towards the `main` branch (`origin/main` or while checked out on `main`). Pushing to `main` must always be performed manually by the user.
+- **Controlled Push to Non-Main Branches**: When explicitly requested by the user (e.g., "hace push"), the agent MAY execute `git push origin <branch>` ONLY IF the current branch is a non-main branch (such as `desarrollo` or a feature branch) and does not touch or target `main` or any other branch.
 
 ## 4. Scratch Directory Output Mandate
 
