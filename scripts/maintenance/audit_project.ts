@@ -401,16 +401,40 @@ interface FallowUnusedExport {
 interface FallowUnusedFile {
   path: string;
 }
+interface FallowCircularDep {
+  path?: string;
+  cycle?: string[];
+  files?: string[];
+  message?: string;
+  line?: number;
+}
+interface FallowStaleSuppression {
+  path?: string;
+  file?: string;
+  line?: number;
+  kind?: string;
+  message?: string;
+}
+interface FallowDuplicateExport {
+  path?: string;
+  file?: string;
+  line?: number;
+  export_name?: string;
+  name?: string;
+}
 interface FallowDeadCode {
   unused_dependencies?: FallowUnusedDep[];
   unused_dev_dependencies?: FallowUnusedDep[];
   unused_exports?: FallowUnusedExport[];
   unused_files?: FallowUnusedFile[];
+  circular_dependencies?: FallowCircularDep[];
+  stale_suppressions?: FallowStaleSuppression[];
+  duplicate_exports?: FallowDuplicateExport[];
 }
 interface FallowComplexity {
   findings?: FallowFinding[];
 }
-interface FallowAuditData {
+export interface FallowAuditData {
   clone_groups?: FallowCloneGroup[];
   security_findings?: FallowFinding[];
   dead_code?: FallowDeadCode;
@@ -420,6 +444,9 @@ interface FallowAuditData {
   unused_dev_dependencies?: FallowUnusedDep[];
   unused_exports?: FallowUnusedExport[];
   unused_files?: FallowUnusedFile[];
+  circular_dependencies?: FallowCircularDep[];
+  stale_suppressions?: FallowStaleSuppression[];
+  duplicate_exports?: FallowDuplicateExport[];
 }
 
 function runFallow(command: string, extraArgs: string[] = []): Violation[] {
@@ -465,7 +492,7 @@ function runFallow(command: string, extraArgs: string[] = []): Violation[] {
   return violations;
 }
 
-function mapFallowJson(command: string, data: FallowAuditData): Violation[] {
+export function mapFallowJson(command: string, data: FallowAuditData): Violation[] {
   const violations: Violation[] = [];
   if (command === 'dupes') {
     const groups = data.clone_groups || [];
@@ -502,42 +529,93 @@ function mapFallowJson(command: string, data: FallowAuditData): Violation[] {
         fixable: false
       });
     }
-  } else if (command === 'audit') {
-    if (data.dead_code) {
-      const unusedDeps = [...(data.dead_code.unused_dependencies || []), ...(data.dead_code.unused_dev_dependencies || [])];
-      for (const d of unusedDeps) {
-        violations.push({
-          file: path.resolve(process.cwd(), d.path || 'package.json'),
-          line: d.line || 1,
-          message: `Sugerencia de calidad (Fallow): Dependencia no usada: '${d.package_name}'`,
-          context: d.package_name,
-          severity: 'warning',
-          fixable: false
-        });
-      }
-      const unusedExports = data.dead_code.unused_exports || [];
-      for (const x of unusedExports) {
-        violations.push({
-          file: path.resolve(process.cwd(), x.path),
-          line: x.line || 1,
-          message: `Sugerencia de calidad (Fallow): Export no usado: '${x.export_name}'`,
-          context: x.export_name,
-          severity: 'warning',
-          fixable: false
-        });
-      }
-      const unusedFiles = data.dead_code.unused_files || [];
-      for (const f of unusedFiles) {
-        violations.push({
-          file: path.resolve(process.cwd(), f.path),
-          line: 1,
-          message: `Sugerencia de calidad (Fallow): Archivo huérfano/no usado`,
-          context: f.path,
-          severity: 'warning',
-          fixable: false
-        });
-      }
+  } else if (command === 'audit' || command === 'dead-code') {
+    // 1. Dependencias circulares (Error crítico)
+    const circularDeps = [...(data.circular_dependencies || []), ...(data.dead_code?.circular_dependencies || [])];
+    for (const c of circularDeps) {
+      const filePath = c.path || (c.cycle && c.cycle[0]) || 'src';
+      const cyclePathStr = Array.isArray(c.cycle) && c.cycle.length > 0 ? c.cycle.join(' → ') : (c.message || filePath);
+      violations.push({
+        file: path.resolve(process.cwd(), filePath),
+        line: c.line || 1,
+        message: `Dependencia circular crítica (Fallow): ${cyclePathStr}`,
+        context: filePath,
+        severity: 'error',
+        fixable: false
+      });
     }
+
+    // 2. Archivos huérfanos / no usados (Dead Code - Error crítico)
+    const unusedFiles = [...(data.unused_files || []), ...(data.dead_code?.unused_files || [])];
+    for (const f of unusedFiles) {
+      violations.push({
+        file: path.resolve(process.cwd(), f.path),
+        line: 1,
+        message: `Archivo huérfano/no usado (Dead Code Fallow): '${f.path}'`,
+        context: f.path,
+        severity: 'error',
+        fixable: false
+      });
+    }
+
+    // 3. Supresiones obsoletas (Stale Suppressions - Error)
+    const staleSuppressions = [...(data.stale_suppressions || []), ...(data.dead_code?.stale_suppressions || [])];
+    for (const s of staleSuppressions) {
+      violations.push({
+        file: path.resolve(process.cwd(), s.path || s.file || 'src'),
+        line: s.line || 1,
+        message: `Supresión obsoleta de Fallow (Stale Suppression): ${s.message || s.kind || ''}`,
+        context: s.path || s.file || '',
+        severity: 'error',
+        fixable: false
+      });
+    }
+
+    // 4. Exports duplicados / ambiguos (Error)
+    const duplicateExports = [...(data.duplicate_exports || []), ...(data.dead_code?.duplicate_exports || [])];
+    for (const d of duplicateExports) {
+      violations.push({
+        file: path.resolve(process.cwd(), d.path || d.file || 'src'),
+        line: d.line || 1,
+        message: `Export duplicado ambiguo (Fallow): '${d.export_name || d.name || ''}'`,
+        context: d.export_name || d.name || '',
+        severity: 'error',
+        fixable: false
+      });
+    }
+
+    // 5. Dependencias no usadas en package.json (Error)
+    const unusedDeps = [
+      ...(data.unused_dependencies || []),
+      ...(data.unused_dev_dependencies || []),
+      ...(data.dead_code?.unused_dependencies || []),
+      ...(data.dead_code?.unused_dev_dependencies || [])
+    ];
+    for (const d of unusedDeps) {
+      violations.push({
+        file: path.resolve(process.cwd(), d.path || 'package.json'),
+        line: d.line || 1,
+        message: `Dependencia de package.json no usada (Fallow): '${d.package_name}'`,
+        context: d.package_name,
+        severity: 'error',
+        fixable: false
+      });
+    }
+
+    // 6. Exports no usados (Warning)
+    const unusedExports = [...(data.unused_exports || []), ...(data.dead_code?.unused_exports || [])];
+    for (const x of unusedExports) {
+      violations.push({
+        file: path.resolve(process.cwd(), x.path),
+        line: x.line || 1,
+        message: `Sugerencia de calidad (Fallow): Export no usado: '${x.export_name}'`,
+        context: x.export_name,
+        severity: 'warning',
+        fixable: false
+      });
+    }
+
+    // 7. Complejidad en auditoría
     if (data.complexity && data.complexity.findings) {
       for (const f of data.complexity.findings) {
         violations.push({
@@ -549,40 +627,6 @@ function mapFallowJson(command: string, data: FallowAuditData): Violation[] {
           fixable: false
         });
       }
-    }
-  } else if (command === 'dead-code') {
-    const unusedDeps = [...(data.unused_dependencies || []), ...(data.unused_dev_dependencies || [])];
-    for (const d of unusedDeps) {
-      violations.push({
-        file: path.resolve(process.cwd(), d.path || 'package.json'),
-        line: d.line || 1,
-        message: `Sugerencia de calidad (Fallow): Dependencia no usada: '${d.package_name}'`,
-        context: d.package_name,
-        severity: 'warning',
-        fixable: false
-      });
-    }
-    const unusedExports = data.unused_exports || [];
-    for (const x of unusedExports) {
-      violations.push({
-        file: path.resolve(process.cwd(), x.path),
-        line: x.line || 1,
-        message: `Sugerencia de calidad (Fallow): Export no usado: '${x.export_name}'`,
-        context: x.export_name,
-        severity: 'warning',
-        fixable: false
-      });
-    }
-    const unusedFiles = data.unused_files || [];
-    for (const f of unusedFiles) {
-      violations.push({
-        file: path.resolve(process.cwd(), f.path),
-        line: 1,
-        message: `Sugerencia de calidad (Fallow): Archivo huérfano/no usado`,
-        context: f.path,
-        severity: 'warning',
-        fixable: false
-      });
     }
   } else if (command === 'health') {
     const findings = data.findings || [];
@@ -600,7 +644,7 @@ function mapFallowJson(command: string, data: FallowAuditData): Violation[] {
   return violations;
 }
 
-function getViolationCategory(v: Violation): string {
+export function getViolationCategory(v: Violation): string {
   const msg = v.message;
   if (msg.includes('Número mágico') || msg.includes('mágico')) return 'Números mágicos sin constante';
   if (msg.includes('Nombre de constante impropio') || msg.includes('hardcodear el valor')) return 'Nombres de constantes con valor numérico';
@@ -620,6 +664,11 @@ function getViolationCategory(v: Violation): string {
   if (msg.includes('Código duplicado')) return 'Fallow: Código duplicado';
   if (msg.includes('Código triplicado')) return 'Fallow: Código triplicado';
   if (msg.includes('Vulnerabilidad de seguridad')) return 'Fallow: Vulnerabilidad de seguridad';
+  if (msg.includes('Dependencia circular') || msg.includes('circular')) return 'Fallow: Dependencias circulares';
+  if (msg.includes('Archivo huérfano') || msg.includes('huérfano')) return 'Fallow: Archivos huérfanos / Dead Code';
+  if (msg.includes('Supresión obsoleta')) return 'Fallow: Supresiones obsoletas';
+  if (msg.includes('Export duplicado')) return 'Fallow: Exports duplicados';
+  if (msg.includes('Dependencia de package.json no usada')) return 'Fallow: Dependencias no usadas';
   if (msg.includes('Sugerencia de calidad')) return 'Fallow: Calidad / Dead Code';
   if (msg.includes('Sugerencia de complejidad')) return 'Fallow: Complejidad';
   if (msg.includes('AGENTS.md') || msg.includes('DOX') || msg.includes('Enlace')) return 'DOX / AGENTS.md';

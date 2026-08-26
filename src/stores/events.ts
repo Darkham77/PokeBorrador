@@ -8,7 +8,7 @@ import { useUIStore } from '@/stores/ui.ts'
 import { useGameStore } from '@/stores/game.ts'
 import { useMapStore } from '@/stores/map.ts'
 import { useErrorStore } from '@/stores/errorStore.ts'
-import { isEventActiveNow, getGlobalMultipliers, getSpeciesBoosts, type Event as GameEvent } from '@/logic/events/eventEngine'
+import { isEventActiveNow, getGlobalMultipliers, getSpeciesBoosts, isPokemonEligibleForEvent, type Event as GameEvent } from '@/logic/events/eventEngine'
 import { getServerTime } from '@/logic/utils/timeUtils'
 import type { PendingAward, CompetitionEntry, PastEventHistoryItem, PastCompetitionWinner } from '@/types/system/stores'
 import type { Pokemon } from '@/types/pokemon/pokemon'
@@ -120,6 +120,21 @@ export const useEventStore = defineStore('events', () => {
       const box = (gameStore.state.box || []) as (Pokemon | null)[]
       const team = (gameStore.state.team || []) as (Pokemon | null)[]
       const pokemon = [...team, ...box].find(p => p && p.uid === pokemonUid)
+      
+      if (!pokemon) {
+        uiStore.notify('Pokémon no encontrado.', '⚠️')
+        return
+      }
+
+      const eventCfg = allEvents.value.find(e => e.id === eventId) || activeEvents.value.find(e => e.id === eventId)
+      if (eventCfg) {
+        const synchronizedDate = Temporal.Instant.fromEpochMilliseconds(getServerTime())
+        const validation = isPokemonEligibleForEvent(eventCfg, pokemon, synchronizedDate)
+        if (!validation.eligible) {
+          uiStore.notify(validation.reason || 'Este Pokémon no cumple los requisitos del evento.', '⚠️')
+          return
+        }
+      }
       
       const ivs = pokemon?.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
       const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)

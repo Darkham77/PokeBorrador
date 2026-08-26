@@ -23,10 +23,15 @@ class MagikarpContestSimulationWrapper extends BaseE2ESimulation {
   public static async seedEventConfig(page: Page): Promise<void> {
     await page.evaluate(async () => {
       const { queryLocal, persistSQLite } = await import('../../../src/logic/db/sqliteEngine.ts');
+      const now = Temporal.Now.instant();
+      const startAt = now.subtract({ hours: 1 }).toString();
+      const endAt = now.add({ hours: 1 }).toString();
+
       const eventConfig = {
         species: 'magikarp',
         metric: 'total_ivs',
         hasCompetition: true,
+        requireCaughtDuringEvent: true,
         sortBy: 'highest',
         prizes: {
           first: { money: 50000, battle_coins: 100, items: { masterball: 1 } },
@@ -36,13 +41,15 @@ class MagikarpContestSimulationWrapper extends BaseE2ESimulation {
       };
 
       await queryLocal(`
-        INSERT OR REPLACE INTO events_config (id, name, icon, type, active, manual, config, description)
-        VALUES (?, ?, ?, ?, 1, 1, ?, ?)
+        INSERT OR REPLACE INTO events_config (id, name, icon, type, active, manual, start_at, end_at, config, description)
+        VALUES (?, ?, ?, ?, 1, 1, ?, ?, ?, ?)
       `, [
         'hora_magikarp',
         'La Hora del Magikarp',
         '🐟',
         'competition',
+        startAt,
+        endAt,
         JSON.stringify(eventConfig),
         '¡Concurso del Magikarp con mejores IVs!'
       ]);
@@ -90,7 +97,7 @@ class MagikarpContestSimulationWrapper extends BaseE2ESimulation {
     }, count);
   }
 
-  public async setupContestScenario(magikarpIvs: ContestMagikarpIvs): Promise<string> {
+  public async setupContestScenario(magikarpIvs: ContestMagikarpIvs): Promise<{ validMonUid: string; outdatedMonUid: string }> {
     return await this.page.evaluate(async ({ ivs }) => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const { useEventStore } = await import('../../../src/stores/events.ts');
@@ -100,14 +107,20 @@ class MagikarpContestSimulationWrapper extends BaseE2ESimulation {
       const gameStore = useGameStore();
       const eventStore = useEventStore();
 
-      // Configure starter and team with target Magikarp
+      // Configure starter, valid Magikarp (captured now), and outdated Magikarp (captured 30 days ago)
+      const nowMs = Temporal.Now.instant().epochMilliseconds;
       const starter = pokemonDebugService.generate({ id: requirePokemonSpeciesId('pikachu'), level: 20 });
       const magikarp = pokemonDebugService.generate({ id: requirePokemonSpeciesId('magikarp'), level: 15 });
       magikarp.ivs = { ...ivs };
       magikarp.nickname = `Magikarp_${(ivs.hp + ivs.atk + ivs.def + ivs.spa + ivs.spd + ivs.spe)}`;
+      magikarp.obtainedAt = nowMs;
+
+      const outdatedMagikarp = pokemonDebugService.generate({ id: requirePokemonSpeciesId('magikarp'), level: 10 });
+      outdatedMagikarp.nickname = 'Magikarp_Old_Outdated';
+      outdatedMagikarp.obtainedAt = nowMs - 86400000 * 30; // 30 days ago
 
       gameStore.state.starterChosen = true;
-      gameStore.state.team = [starter, magikarp];
+      gameStore.state.team = [starter, magikarp, outdatedMagikarp];
       gameStore.state.box = [];
       gameStore.state.inventory = {};
       gameStore.state.money = 1000;
@@ -115,7 +128,7 @@ class MagikarpContestSimulationWrapper extends BaseE2ESimulation {
 
       await gameStore.saveGame();
       await eventStore.fetchEvents();
-      return magikarp.uid;
+      return { validMonUid: magikarp.uid, outdatedMonUid: outdatedMagikarp.uid };
     }, { ivs: magikarpIvs });
   }
 
@@ -213,23 +226,55 @@ test.describe('4-Player Shared DB Magikarp Contest E2E Simulation', () => {
     await p1.setup();
     await waitForStoreReady(page1);
     await MagikarpContestSimulationWrapper.seedEventConfig(page1);
-    const p1MonUid = await p1.setupContestScenario({ hp: 30, atk: 30, def: 30, spa: 30, spd: 30, spe: 30 }); // 180 IVs (1ro)
-    await p1.enrollMagikarp(p1MonUid);
+    const p1Setup = await p1.setupContestScenario({ hp: 30, atk: 30, def: 30, spa: 30, spd: 30, spe: 30 }); // 180 IVs (1ro)
+
+    // Verificación visual de UI en Page 1:
+    // a. Abrir modal de eventos
+    await page1.evaluate(async () => {
+      const { useModalStore } = await import('../../../src/stores/modals.ts');
+      const { useEventStore } = await import('../../../src/stores/events.ts');
+      const modalStore = useModalStore();
+      const eventStore = useEventStore();
+      await eventStore.fetchEvents();
+      modalStore.open('WorldEvents');
+    });
+
+    // b. Verificar que la tarjeta del evento muestre el badge de restricción de capturas
+    const restrictionTag = page1.locator('.catch-window-tag');
+    await expect(restrictionTag).toBeVisible();
+    await expect(restrictionTag).toContainText('SOLO CAPTURAS DEL EVENTO');
+
+    // c. Pulsar PARTICIPAR para abrir el modal de selección
+    await page1.locator('#event-participate-btn-hora_magikarp').click();
+
+    // d. Verificar que la lista de selección EXCLUYE al Magikarp viejo fuera de franja horaria y solo lista al capturado en el evento
+    await page1.waitForSelector('.ps-vertical-list');
+    const pokeItems = page1.locator('.list-item');
+    await expect(pokeItems).toHaveCount(1);
+    await expect(page1.locator('#pokemon-select-' + p1Setup.validMonUid)).toBeVisible();
+    await expect(page1.locator('#pokemon-select-' + p1Setup.outdatedMonUid)).toHaveCount(0);
+
+    // e. Seleccionar e inscribir al Magikarp válido de 180 IVs
+    await page1.locator('#pokemon-select-' + p1Setup.validMonUid).click();
+    await page1.waitForFunction(async () => {
+      const { useModalStore } = await import('../../../src/stores/modals.ts');
+      return !useModalStore().isOpen('PokemonSelection');
+    });
 
     await p2.setup();
     await waitForStoreReady(page2);
-    const p2MonUid = await p2.setupContestScenario({ hp: 25, atk: 25, def: 25, spa: 25, spd: 25, spe: 25 }); // 150 IVs (2do)
-    await p2.enrollMagikarp(p2MonUid);
+    const p2Setup = await p2.setupContestScenario({ hp: 25, atk: 25, def: 25, spa: 25, spd: 25, spe: 25 }); // 150 IVs (2do)
+    await p2.enrollMagikarp(p2Setup.validMonUid);
 
     await p3.setup();
     await waitForStoreReady(page3);
-    const p3MonUid = await p3.setupContestScenario({ hp: 20, atk: 20, def: 20, spa: 20, spd: 20, spe: 20 }); // 120 IVs (3ro)
-    await p3.enrollMagikarp(p3MonUid);
+    const p3Setup = await p3.setupContestScenario({ hp: 20, atk: 20, def: 20, spa: 20, spd: 20, spe: 20 }); // 120 IVs (3ro)
+    await p3.enrollMagikarp(p3Setup.validMonUid);
 
     await p4.setup();
     await waitForStoreReady(page4);
-    const p4MonUid = await p4.setupContestScenario({ hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 }); // 60 IVs (4to - Excluido)
-    await p4.enrollMagikarp(p4MonUid);
+    const p4Setup = await p4.setupContestScenario({ hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 }); // 60 IVs (4to - Excluido)
+    await p4.enrollMagikarp(p4Setup.validMonUid);
 
     // 3. Finalización del concurso y adjudicación automática de premios
     await p1.triggerAutomatedAwarding();

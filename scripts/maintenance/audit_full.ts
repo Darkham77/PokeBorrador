@@ -260,6 +260,8 @@ interface CodeAuditReport {
 
     // 1. Familia AST y Reglas de Código
     const byCat = codeAuditDetails?.summary?.byCategory ?? {};
+    const fallowCircularCount = byCat['Fallow: Dependencias circulares'] ?? 0;
+    const fallowDeadFilesCount = byCat['Fallow: Archivos huérfanos / Dead Code'] ?? 0;
     const fallowDupesCount = (byCat['Fallow: Código duplicado'] ?? 0) + (byCat['Fallow: Código triplicado'] ?? 0);
     const fallowSecCount = byCat['Fallow: Vulnerabilidad de seguridad'] ?? 0;
     const fallowDeadCount = byCat['Fallow: Calidad / Dead Code'] ?? 0;
@@ -291,6 +293,8 @@ interface CodeAuditReport {
     formatRow('CSS/SCSS Duplicates (css-checker)', cssRes?.success ?? true, cssRes?.errors ?? 0, cssRes?.warnings ?? 0, cssRes?.durationMs);
 
     console.log(styleText('bold', '\n🧠 [FAMILIA 2] FALLOW CODEBASE INTELLIGENCE:'));
+    formatRow('Fallow: Dependencias Circulares', fallowCircularCount === 0, fallowCircularCount, 0);
+    formatRow('Fallow: Archivos Huérfanos / Dead Code', fallowDeadFilesCount === 0, fallowDeadFilesCount, 0);
     formatRow('Fallow: Duplicación de Código (Dupes)', true, 0, fallowDupesCount);
     formatRow('Fallow: Seguridad (Vulnerabilidades CWE)', true, 0, fallowSecCount);
     formatRow('Fallow: Calidad & Dead Code', true, 0, fallowDeadCount);

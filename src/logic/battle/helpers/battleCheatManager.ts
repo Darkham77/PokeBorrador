@@ -1,30 +1,10 @@
 import type { Battle, Side, Pokemon, SideID } from '@pkmn/sim';
 import { REPLAY_SEATS } from './showdownSeats.ts';
 import { applyHealCheatToSide, applyPpRefillCheatToSide, syncRequestConditionsWithSimulator } from '../cheats.ts';
+import type { CertifiedBattleHistoryEntry } from '../../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
+import type { CertifiedReplayHistoryEntry } from './showdownBattleRunner.ts';
 
-export interface LegacyCheatEntry {
-  turn: number;
-  side: SideID;
-  type: 'heal' | 'preHeal' | 'ppRefill';
-  turnCount?: number;
-  battleTurn?: number;
-}
-
-interface HistoryCheatEntry {
-  turn?: number;
-  turnCount?: number;
-  battleTurn?: number;
-  p1Heal?: boolean;
-  p2Heal?: boolean;
-  p3Heal?: boolean;
-  p4Heal?: boolean;
-  p1PpRefill?: boolean;
-  p2PpRefill?: boolean;
-  p3PpRefill?: boolean;
-  p4PpRefill?: boolean;
-}
-
-export type FuzzerCheat = LegacyCheatEntry | HistoryCheatEntry;
+export type CertifiedCheatHistoryStep = CertifiedBattleHistoryEntry | CertifiedReplayHistoryEntry | number | { [key: string]: unknown };
 
 export class BattleCheatManager {
   /** Certified post-turn heals are keyed by the atomic submission ordinal. */
@@ -35,58 +15,39 @@ export class BattleCheatManager {
 
   public readonly hasHistory: boolean;
 
-  constructor(history?: FuzzerCheat[]) {
+  constructor(history?: CertifiedBattleHistoryEntry[]) {
     const list = history ?? [];
     this.hasHistory = list.length > 0;
     for (let idx = 0; idx < list.length; idx++) {
       const h = list[idx]!;
       const stepOrdinal = idx + 1;
 
-      if ('side' in h && typeof h.side === 'string') {
-        const turnNum = typeof h.turn === 'number' ? h.turn : (h.battleTurn ?? h.turnCount ?? stepOrdinal);
-        if (h.type === 'ppRefill') {
-          const e = this.ppMap.get(turnNum) ?? {};
-          e[h.side] = true;
-          this.ppMap.set(turnNum, e);
-        } else if (h.type === 'preHeal') {
-          const e = this.preHealMap.get(turnNum) ?? {};
-          e[h.side] = true;
-          this.preHealMap.set(turnNum, e);
-        } else {
-          const postEntry = this.postHealMap.get(turnNum) ?? {};
-          postEntry[h.side] = true;
-          this.postHealMap.set(turnNum, postEntry);
-        }
-      } else {
-        // Modern HistoryCheatEntry: keyed by stepOrdinal, turn, battleTurn, and turnCount
-        const targetTurns = new Set<number>();
-        if (typeof h.turn === 'number') targetTurns.add(h.turn);
-        if (typeof h.battleTurn === 'number') targetTurns.add(h.battleTurn);
-        if (typeof h.turnCount === 'number') targetTurns.add(h.turnCount);
-        targetTurns.add(stepOrdinal);
+      const targetTurns = new Set<number>();
+      if (typeof h.battleTurn === 'number') targetTurns.add(h.battleTurn);
+      if (typeof h.turnCount === 'number') targetTurns.add(h.turnCount);
+      targetTurns.add(stepOrdinal);
 
-        for (const targetTurn of targetTurns) {
-          for (const sideId of REPLAY_SEATS) {
-            const ppKey = `${sideId}PpRefill` as keyof HistoryCheatEntry;
-            if ((h as HistoryCheatEntry)[ppKey]) {
-              const e = this.ppMap.get(targetTurn) ?? {};
-              e[sideId] = true;
-              this.ppMap.set(targetTurn, e);
-            }
+      for (const targetTurn of targetTurns) {
+        for (const sideId of REPLAY_SEATS) {
+          const ppRefillKey = `${sideId}PpRefill` as keyof CertifiedBattleHistoryEntry;
+          if (h[ppRefillKey]) {
+            const e = this.ppMap.get(targetTurn) ?? {};
+            e[sideId] = true;
+            this.ppMap.set(targetTurn, e);
+          }
 
-            const preHealKey = `${sideId}PreHeal` as keyof HistoryCheatEntry;
-            if ((h as HistoryCheatEntry)[preHealKey]) {
-              const e = this.preHealMap.get(targetTurn) ?? {};
-              e[sideId] = true;
-              this.preHealMap.set(targetTurn, e);
-            }
+          const preKey = `${sideId}PreHeal` as keyof CertifiedBattleHistoryEntry;
+          if (h[preKey]) {
+            const e = this.preHealMap.get(targetTurn) ?? {};
+            e[sideId] = true;
+            this.preHealMap.set(targetTurn, e);
+          }
 
-            const healKey = `${sideId}Heal` as keyof HistoryCheatEntry;
-            if ((h as HistoryCheatEntry)[healKey]) {
-              const e = this.postHealMap.get(targetTurn) ?? {};
-              e[sideId] = true;
-              this.postHealMap.set(targetTurn, e);
-            }
+          const healKey = `${sideId}Heal` as keyof CertifiedBattleHistoryEntry;
+          if (h[healKey]) {
+            const e = this.postHealMap.get(targetTurn) ?? {};
+            e[sideId] = true;
+            this.postHealMap.set(targetTurn, e);
           }
         }
       }
@@ -113,7 +74,7 @@ export class BattleCheatManager {
   }
 
   /** Pre-turn: heal fainted Pokémon and refill PP if recorded in history step before choices are submitted. */
-  public applyPreTurnCheats(battle: Battle, _isFuzzerSimulation = true, historyStep?: number | FuzzerCheat | { [key: string]: unknown }): void {
+  public applyPreTurnCheats(battle: Battle, _isFuzzerSimulation = true, historyStep?: CertifiedCheatHistoryStep): void {
     if (battle.ended) return;
     const isObj = typeof historyStep === 'object' && historyStep !== null;
     const stepObj = isObj ? (historyStep as Record<string, unknown>) : null; // open-record
@@ -150,7 +111,7 @@ export class BattleCheatManager {
   }
 
   /** Post-turn: heal Pokémon whose HP dropped critically after choices resolved using unified processIPBHeals. */
-  public applyPostTurnCheats(battle: Battle, historyStep?: number | FuzzerCheat | { [key: string]: unknown }): void {
+  public applyPostTurnCheats(battle: Battle, historyStep?: CertifiedCheatHistoryStep): void {
     if (battle.ended) return;
     const isObj = typeof historyStep === 'object' && historyStep !== null;
     const stepObj = isObj ? (historyStep as Record<string, unknown>) : null; // open-record

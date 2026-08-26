@@ -55,8 +55,16 @@
       "exports": ["VolatileStatusKey"]
     },
     {
-      "file": "src/types/pokemon/pokemon.ts",
-      "exports": ["VolatileStatusKey", "POKEMON_STATUSES", "POKERUS_STATUSES", "isPokerusStatus", "requirePokerusStatus"]
+      "file": "src/logic/validation/subschemas/battleSchemas.ts",
+      "exports": ["ActiveBattleDto", "EnemyPokemonSerializedDto", "BattleLogDto", "BattleStagesDto"]
+    },
+    {
+      "file": "src/logic/validation/subschemas/pokemonSchemas.ts",
+      "exports": ["PokemonIVsDto", "PokemonEVsDto", "MoveSchemaDto"]
+    },
+    {
+      "file": "src/logic/validation/subschemas/socialSchemas.ts",
+      "exports": ["DaycareMissionDto", "ClaimItemDto"]
     },
     {
       "file": "src/data/player/trainerTypes.ts",

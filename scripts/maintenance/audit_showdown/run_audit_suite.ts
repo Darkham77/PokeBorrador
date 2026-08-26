@@ -34,7 +34,7 @@ export function runFullAuditSuite() {
     execRes: auditSharedExecutorDuplication('scripts/e2e'),
     abilityRes: auditShowdownAbilityData('external/pokemon-showdown-code/data/abilities.ts', 'src/logic/battle/actions'),
     itemRes: auditShowdownItemData('external/pokemon-showdown-code/data/items.ts', 'src/logic/battle'),
-    moveRes: auditShowdownMoveMechanics('external/pokemon-showdown-code/data/moves.ts', 'src/logic/battle/actions/moveExecutor.ts'),
+    moveRes: auditShowdownMoveMechanics('external/pokemon-showdown-code/data/moves.ts', 'src/logic/battle/showdownBridgeCore.ts'),
     statusRes: auditShowdownStatusNull('src/logic/battle'),
     fallbackRes: auditSilentFallbackPatterns('src'),
     boostRes: auditStatStageBoosts('src/logic/battle/showdownBridgeStages.ts'),

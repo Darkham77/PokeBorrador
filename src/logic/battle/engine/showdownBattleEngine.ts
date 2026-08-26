@@ -5,7 +5,9 @@ import { ChoiceRequest, classifyRequest, requiresAction } from '../helpers/reque
 
 import { applyHealCheatToSide, syncRequestConditionsWithSimulator } from '../cheats.ts';
 import { syncSidePokemon } from '../helpers/showdownSyncHelper.ts';
-import { BattleCheatManager, type FuzzerCheat } from '../helpers/battleCheatManager.ts';
+import { BattleCheatManager, type CertifiedCheatHistoryStep } from '../helpers/battleCheatManager.ts';
+import type { CertifiedBattleHistoryEntry } from '../../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
+import { resolveValidMoveChoice, getFirstValidMoveSlot } from '../helpers/showdownMoveChoiceHelper.ts';
 import { ACTIVE_SHOWDOWN_FORMAT } from '../../../data/system/constants.ts';
 
 export type EngineMode = 'fuzzer' | 'replayer';
@@ -33,7 +35,7 @@ export interface ShowdownBattleEngineOptions {
   seed?: [number, number, number, number] | string | number[] | null;
   playerChoices?: string[];
   enemyChoices?: string[];
-  cheats?: FuzzerCheat[];
+  history?: CertifiedBattleHistoryEntry[];
   p1Agent?: BattleAgent;
   p2Agent?: BattleAgent;
 }
@@ -55,7 +57,7 @@ export interface TurnExecutionInput {
   /** When false, IPB healing is disabled (post-testing phase). Defaults to true in fuzzer mode. */
   ipbActive?: boolean;
   /** One-based ordinal or history entry object of the certified atomic history entry being submitted. */
-  certifiedHistoryStep?: number | FuzzerCheat | { [key: string]: unknown };
+  certifiedHistoryStep?: CertifiedCheatHistoryStep;
 }
 
 export interface TurnExecutionOutput {
@@ -100,7 +102,7 @@ export class ShowdownBattleEngine {
     for (const seatId of this.seatChoices.keys()) {
       this.choiceIdx.set(seatId, 0);
     }
-    this.cheatManager = new BattleCheatManager(options.cheats);
+    this.cheatManager = new BattleCheatManager(options.history);
   }
 
   public setSeatChoices(seatId: string, choices: string[]): void {
@@ -135,16 +137,8 @@ export class ShowdownBattleEngine {
     }
 
     if (explicitChoice !== undefined) {
-      const trimmed = explicitChoice.trim().toLowerCase();
-      const moveMatch = /^move\s+(\d+)(.*)$/.exec(trimmed);
-      if (moveMatch) {
-        const activeMoves = (effectiveReq && 'active' in effectiveReq && Array.isArray(effectiveReq.active?.[0]?.moves)) ? effectiveReq.active[0]!.moves : [];
-        if (activeMoves.length === 1 && (activeMoves[0]?.id === 'recharge' || activeMoves[0]?.move === 'Recharge')) {
-          const suffix = moveMatch[2] ?? '';
-          return `move 1${suffix}`;
-        }
-      }
-      return explicitChoice;
+      const activeMoves = (effectiveReq && 'active' in effectiveReq && Array.isArray(effectiveReq.active?.[0]?.moves)) ? effectiveReq.active[0]!.moves : [];
+      return resolveValidMoveChoice(explicitChoice, activeMoves);
     }
 
     let choiceCandidate: string | undefined;
@@ -198,14 +192,10 @@ export class ShowdownBattleEngine {
     }
 
     if (choiceCandidate !== undefined) {
+      const activeMoves = (effectiveReq && 'active' in effectiveReq && Array.isArray(effectiveReq.active?.[0]?.moves)) ? effectiveReq.active[0]!.moves : [];
       const trimmed = choiceCandidate.trim().toLowerCase();
-      const moveMatch = /^move\s+(\d+)(.*)$/.exec(trimmed);
-      if (moveMatch) {
-        const activeMoves = (effectiveReq && 'active' in effectiveReq && Array.isArray(effectiveReq.active?.[0]?.moves)) ? effectiveReq.active[0]!.moves : [];
-        if (activeMoves.length === 1 && (activeMoves[0]?.id === 'recharge' || activeMoves[0]?.move === 'Recharge')) {
-          const suffix = moveMatch[2] ?? '';
-          return `move 1${suffix}`;
-        }
+      if (trimmed.startsWith('move ')) {
+        return resolveValidMoveChoice(choiceCandidate, activeMoves);
       }
       const switchMatch = /^switch\s+(\d+)$/.exec(trimmed);
       if (switchMatch) {
@@ -219,7 +209,7 @@ export class ShowdownBattleEngine {
           : activeList.includes(targetPoke as Pokemon));
         if (isFnt || isAct) {
           if (reqKind === 'move') {
-            return 'move 1';
+            return getFirstValidMoveSlot(activeMoves);
           }
           const validBenchIdx = simPokemons.findIndex(p => p && !activeList.includes(p) && !p.fainted && p.hp > 0);
           if (validBenchIdx !== -1) {
@@ -352,23 +342,20 @@ export class ShowdownBattleEngine {
         : (hasAnyForceSwitch ? isForce : requiresAction(side.activeRequest));
       const seatInput = inputBySeat[seatId] ?? { skip: false };
       let explicitToUse = seatInput.explicit;
-      if (this.cheatManager.hasHistory && explicitToUse) {
-        if (isForce && !explicitToUse.startsWith('switch ')) {
-          explicitToUse = undefined;
-        } else {
-          const trimmed = explicitToUse.trim().toLowerCase();
-          const switchMatch = /^switch\s+(\d+)$/.exec(trimmed);
-          if (switchMatch) {
-            const targetSlot = parseInt(switchMatch[1]!, 10);
-            const targetPoke = side.pokemon[targetSlot - 1];
-            const isFnt = targetPoke && (targetPoke.fainted || targetPoke.hp <= 0);
-            const isAct = targetPoke && side.active.includes(targetPoke);
-            if (isFnt || isAct) {
-              if (reqKind === 'move') {
-                explicitToUse = 'move 1';
-              } else {
-                explicitToUse = undefined;
-              }
+      if (explicitToUse) {
+        const trimmed = explicitToUse.trim().toLowerCase();
+        const switchMatch = /^switch\s+(\d+)$/.exec(trimmed);
+        if (switchMatch) {
+          const targetSlot = parseInt(switchMatch[1]!, 10);
+          const targetPoke = side.pokemon[targetSlot - 1];
+          const isFnt = targetPoke && (targetPoke.fainted || targetPoke.hp <= 0);
+          const isAct = targetPoke && side.active.includes(targetPoke);
+          if (isFnt || isAct) {
+            if (reqKind === 'move') {
+              const activeReqMoves = (side.activeRequest && 'active' in side.activeRequest && Array.isArray(side.activeRequest.active?.[0]?.moves)) ? side.activeRequest.active[0]!.moves : [];
+              explicitToUse = getFirstValidMoveSlot(activeReqMoves);
+            } else {
+              explicitToUse = undefined;
             }
           }
         }

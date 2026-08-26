@@ -4,9 +4,10 @@ import { gsap } from 'gsap'
 import { useEventStore } from '@/stores/events'
 import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
+import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
-import type { Event as GameEvent, EventConfig } from '@/logic/events/eventEngine'
+import { isPokemonEligibleForEvent, type Event as GameEvent, type EventConfig } from '@/logic/events/eventEngine'
 import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
@@ -19,6 +20,7 @@ const props = defineProps<Props>()
 const eventStore = useEventStore()
 const gameStore = useGameStore()
 const modalStore = useModalStore()
+const uiStore = useUIStore()
 
 const now = ref(Temporal.Now.instant().epochMilliseconds)
 let timerTween: gsap.core.Tween | null = null
@@ -175,14 +177,33 @@ const openParticipationModal = () => {
     ? parsedEventConfig.value.species.split(',').map((s: string) => s.trim()).filter(isPokemonSpeciesId)
     : null
 
+  let allowedIds: string[] | null = null // no-domain
+  if (parsedEventConfig.value.requireCaughtDuringEvent) {
+    const team = (gameStore.state.team || []) as (Pokemon | null)[]
+    const box = (gameStore.state.box || []) as (Pokemon | null)[]
+    const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null)
+    const eligible = allPokes.filter(p => isPokemonEligibleForEvent(props.event, p).eligible)
+
+    if (eligible.length === 0) {
+      uiStore.notify('No tienes ningún Pokémon capturado durante este evento para participar.', '⚠️')
+      return
+    }
+    allowedIds = eligible.map(p => p.uid)
+  }
+
+  const subtitle = parsedEventConfig.value.requireCaughtDuringEvent
+    ? `Elige un Pokémon capturado durante el evento para: ${props.event.name}`
+    : `Elige un Pokémon para inscribir en: ${props.event.name}`
+
   modalStore.open('PokemonSelection', {
     title: 'SELECCIONAR POKÉMON',
-    subtitle: `Elige un Pokémon para inscribir en: ${props.event.name}`,
+    subtitle,
     maxSelect: 1,
     minSelect: 1,
     includeTeam: true,
     context: 'event',
     allowedSpecies,
+    allowedIds,
     onConfirm: async (selectedObjects: Pokemon[]) => {
       const pokemon = selectedObjects[0]
       if (pokemon) {
@@ -294,10 +315,16 @@ onUnmounted(() => {
         </div>
         <div class="event-main-meta">
           <h2>{{ event.name }}</h2>
-          <span
-            class="type-tag"
-            :class="event.type"
-          >{{ event.type === 'competition' ? 'COMPETICIÓN' : 'EVENTO' }}</span>
+          <div class="tags-row">
+            <span
+              class="type-tag"
+              :class="event.type"
+            >{{ event.type === 'competition' ? 'COMPETICIÓN' : 'EVENTO' }}</span>
+            <span
+              v-if="parsedEventConfig.requireCaughtDuringEvent"
+              class="catch-window-tag"
+            >🕒 SOLO CAPTURAS DEL EVENTO</span>
+          </div>
         </div>
       </div>
 

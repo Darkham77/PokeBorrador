@@ -1,12 +1,18 @@
 ---
 name: game-simulation
 description: >
-  Orchestrates E2E game simulations to detect and fix bugs in src/. Use when
-  the user asks to "run simulations", "run e2e", "check the game against tests",
-  "detect bugs via simulation", "verify game behavior", or whenever src/ changes
-  need validation against the E2E suite. This skill governs the full cycle:
-  execute -> detect failure -> fix src/ -> re-run until clean -> final regression
-  pass. ALWAYS use this skill instead of running test commands ad-hoc.
+  MANDATORY orchestrator for all E2E game simulations, battle replay tests, fuzzer
+  verifications, and simulation bugfixes across both Spanish and English.
+  YOU MUST trigger this skill whenever the user or task mentions running simulations,
+  verifying E2E, checking game tests, fuzzer certification, or debugging simulation failures
+  (e.g., "correr simulaciones", "simular", "simulaciones", "falló la simulación",
+  "depura la simulación", "verificar simulaciones", "probar el juego contra tests",
+  "sim:e2e", "sim:fuzzer", "run simulations", "run e2e", "check the game against tests",
+  "detect bugs via simulation", "verify game behavior", "battle fsm sync", "replay test",
+  or any *.simulation.ts file). Governs the full immutable 7-step cycle:
+  execute -> detect failure -> isolate case & write static Vitest RED reproduction test ->
+  fix src/ -> verify GREEN in Vitest -> re-run ONLY affected file in Playwright -> final master regression pass.
+  ALWAYS use this skill instead of running test commands ad-hoc.
 ---
 
 # game-simulation
@@ -14,6 +20,31 @@ description: >
 Orchestrates the game simulation and E2E pipeline with a single goal: **make the
 game match what `@pkmn/sim` (Pokemon Showdown) says is correct.** Simulations are
 the source of truth. `src/` must conform to them, never the reverse.
+
+---
+
+## ⛔ HARD GATES & INVIOLABLE DEBUGGING LAWS (ZERO DEVIATION)
+
+> These 4 Hard Gates are immutable boundaries. Every AI agent MUST strictly adhere to them:
+
+1. **⛔ HARD GATE 1: PROHIBITION ON PLAYWRIGHT BEFORE VITEST RED-TO-GREEN CYCLE & NODE SUITE PASS**:
+   - When ANY simulation or batch fails, it is **STRICTLY PROHIBITED** to modify `src/` or run Playwright commands (`npx playwright test ...`) as an exploratory fix attempt before completing Steps 4, 5, and 5.5.
+   - The agent **MUST FIRST** create an isolated, static, and immutable unit test in `tests/node/battle/reproduce_case_xxx.test.ts`, run `npx vitest run <path>`, and observe a deterministic failure in **RED**.
+   - After diagnosing the root cause and seeing the Vitest test turn **GREEN**, the agent **MUST** run the full Node unit regression suite (`npx vitest run tests/node/`) to ensure 0 regressions.
+   - Only after all Node tests pass 100% GREEN is the agent authorized to proceed to browser-level Playwright execution (Step 6).
+
+2. **⛔ HARD GATE 2: STRICT PROHIBITION ON MASTER SUITE (`npm run sim:e2e`) DURING DEBUGGING**:
+   - It is **STRICTLY PROHIBITED** to execute `npm run sim:e2e` or master suites while diagnosing, fixing, or testing a failing batch or test file.
+   - The agent MUST isolate and execute ONLY the single failing simulation file (e.g. `npx playwright test scripts/e2e/battle/battle_fsm_sync.simulation.ts`).
+   - `npm run sim:e2e` is strictly reserved for **Step 7 (Final Regression Pass)**, executed ONLY after the specific affected simulation file has completed with 100% PASS across all its cases.
+
+3. **⛔ HARD GATE 3: `TEST_BATCH` IS BROWSER VERIFICATION (STEP 6), NEVER A UNIT TEST SUBSTITUTE**:
+   - Running `TEST_BATCH=XX npx playwright test ...` is an optional browser-level verification tool belonging exclusively to **Step 6**.
+   - It is **STRICTLY PROHIBITED** to treat `TEST_BATCH` as a replacement for the mandatory static Node unit test in `tests/node/`.
+
+4. **⛔ HARD GATE 4: ZERO COMPATIBILITY FALLBACKS & SILENT CHOICE INTERVENTIONS**:
+   - Replayer logic, workers, and battle runners MUST NOT intercept failed/disabled move choices with speculative fallbacks or automatic defaults.
+   - All state desynchronizations, missing properties, or choice mismatches MUST fail fast and loudly (`throw new Error(...)`) so they can be repaired cleanly at the root cause.
 
 ---
 
@@ -163,11 +194,14 @@ Every AI agent MUST follow this exact sequential order when running simulations,
    - Diagnose the true root cause in `src/` and apply the clean fix without fallbacks.
    - Re-run the reproduction test in Vitest to empirically demonstrate that it turns **GREEN**.
 
-6. **Step 6: Re-run ONLY the Specific Failing Simulation**:
-   - Execute ONLY the specific failing simulator or family (NOT the entire E2E suite).
-   - If another case fails in that family, repeat Steps 3 to 5 for that specific case.
+6. **Step 5.5: Full Node Unit Regression Check (`npx vitest run tests/node/`)**:
+   - Execute the entire Node unit test suite across all 126+ test files to confirm 100% GREEN and 0 regressions before touching browser simulations.
 
-7. **Step 7: Full E2E Master Regression Pass**:
+7. **Step 6: Re-run ONLY the Specific Failing Simulation in Playwright**:
+   - Execute ONLY the specific failing simulator or family (NOT the entire E2E suite).
+   - If another case fails in that family, repeat Steps 3 to 5.5 for that specific case.
+
+8. **Step 7: Full E2E Master Regression Pass**:
    - Only after all issues in the failing family are resolved and passing, re-run the full master E2E suite (`npm run sim:e2e`) to verify 100% clean project-wide certification.
 
 ### 📊 Simulation & Debugging Lifecycle Flowchart
@@ -186,7 +220,8 @@ flowchart TD
     ExtractFixture --> RunRED["Run Unit Test in Vitest -> Confirm RED Failure"]
     RunRED --> FixCode["5. Diagnose Root Cause & Apply Fix in src/"]
     FixCode --> RunGREEN["Re-run Unit Test in Vitest -> Confirm GREEN"]
-    RunGREEN --> ReRunSpecific["6. Re-run ONLY Specific Failing Simulation Family"]
+    RunGREEN --> RunNodeRegression["5.5. Run Full Node Suite: npx vitest run tests/node/ (0 regressions)"]
+    RunNodeRegression --> ReRunSpecific["6. Re-run ONLY Specific Failing Simulation Family in Playwright"]
     ReRunSpecific --> FamilyCheck{"More Failures in this Family?"}
     FamilyCheck -- "Yes" --> IsolateCase
     FamilyCheck -- "No" --> RunMasterE2E["7. Re-run Full Master E2E Suite: npm run sim:e2e"]

@@ -126,9 +126,9 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
         if (candidateUid) {
           nextEnemy = active.enemyTeam.find((p: Pokemon) => !p.fainted && p.hp > 0 && p.uid && isMatchingUid(p.uid, candidateUid)) || null;
         }
-        if (!nextEnemy) {
-          nextEnemy = active.enemyTeam.find((p: Pokemon) => !p.fainted && p.hp > 0) || null;
-        }
+      }
+      if (!nextEnemy) {
+        nextEnemy = active.enemyTeam.find((p: Pokemon) => !p.fainted && p.hp > 0) || null;
       }
     }
     const hasLiveEnemy = active.enemyTeam.some((p: Pokemon) => !p.fainted && p.hp > 0)

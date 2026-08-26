@@ -74,7 +74,7 @@ export const useGameStore = defineStore('game', () => {
 
     if (res.success) {
       // Sync time ONLY after successful load/auth
-      const { syncServerTime } = await import('@/logic/utils/timeUtils')
+      const { syncServerTime } = await import('@/logic/auth/timeSync')
       await syncServerTime()
       
       isDataLoaded.value = true

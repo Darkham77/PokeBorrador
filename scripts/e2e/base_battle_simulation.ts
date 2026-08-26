@@ -114,15 +114,43 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       return this.lastBattleReady!;
     }
 
-    const isActive = await this.page.evaluate((targetUid) => {
+    const lockAndActiveState = await this.page.evaluate(async (targetUid) => {
       const debug = window.__VITE_DEBUG__ as {
-        useBattleStore?: () => { player?: { uid?: string }; activeBattle?: { player?: { uid?: string } } };
+        useBattleStore?: () => {
+          player?: { uid?: string; trapped?: boolean; volatileCounters?: Record<string, number> };
+          activeBattle?: { player?: { uid?: string }; playerRequest?: { active?: Array<{ trapped?: boolean; maybeTrapped?: boolean }>; forceSwitch?: boolean | boolean[] } };
+          currentSubState?: string;
+        };
+        useUIStore?: () => { isBattleSwitchForced?: boolean };
       } | undefined;
+      const { isPlayerTrappedInWorker } = await import('../../src/logic/battle/orchestrator.ts');
       const store = debug?.useBattleStore?.();
+      const uiStore = debug?.useUIStore?.();
       const currentActiveUid = store?.player?.uid ?? null;
-      return Boolean(currentActiveUid) && currentActiveUid === targetUid;
+      const v = store?.player?.volatileCounters;
+      const isLocked = Boolean(v && ((v['twoturnmove'] && v['twoturnmove'] > 0) || (v['lockedmove'] && v['lockedmove'] > 0)));
+      const isTrapped = Boolean(store?.player?.trapped || store?.activeBattle?.playerRequest?.active?.[0]?.trapped || await isPlayerTrappedInWorker());
+      const forceSw = store?.activeBattle?.playerRequest?.forceSwitch;
+      const hasPendingForceSwitch = Array.isArray(forceSw) ? forceSw.some(Boolean) : Boolean(forceSw);
+      const isForced = Boolean(uiStore?.isBattleSwitchForced) || store?.currentSubState === 'SWITCH_MENU' || hasPendingForceSwitch;
+      return {
+        isActive: Boolean(currentActiveUid) && currentActiveUid === targetUid,
+        isCannotSwitch: !isForced && (isLocked || isTrapped)
+      };
     }, pokemonUid);
-    if (isActive) {
+
+    if (lockAndActiveState.isCannotSwitch) {
+      return await this.selectMove(0);
+    }
+
+    if (lockAndActiveState.isActive) {
+      await this.page.evaluate(() => {
+        const debugObj = window.__VITE_DEBUG__;
+        if (debugObj) {
+          const cur = (Reflect.get(debugObj, 'replayHistoryIdx') as number) ?? 0;
+          Reflect.set(debugObj, 'replayHistoryIdx', cur + 1);
+        }
+      });
       return this.lastBattleReady!;
     }
 
@@ -134,12 +162,15 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       const battleStore = useBattleStore();
       const gameStore = useGameStore();
       const uiStore = useUIStore();
-      const team = gameStore.state.team || [];
+      const team = (gameStore.state?.team && gameStore.state.team.length > 0)
+        ? gameStore.state.team
+        : (battleStore.state?.playerTeam || []);
       const index = team.findIndex(p => p && p.uid === targetUid);
-      if (index !== -1) {
-        const isForced = Boolean(uiStore.isBattleSwitchForced) || battleStore.currentSubState === 'SWITCH_MENU';
-        await battleStore.executeSwitch(index, isForced);
+      if (index === -1) {
+        throw new Error(`[E2E-VOLUNTARY-SWITCH] Target Pokémon UID "${targetUid}" not found in team: ${JSON.stringify(team.map(p => ({ uid: p?.uid, name: p?.name })))}`);
       }
+      const isForced = Boolean(uiStore.isBattleSwitchForced) || battleStore.currentSubState === 'SWITCH_MENU';
+      await battleStore.executeSwitch(index, isForced);
     }, pokemonUid);
     this.lastBattleReady = await awaitBattleReadyForInput(this.page);
     return this.lastBattleReady;
@@ -188,6 +219,22 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
   /**
    * Evaluates the game and battle stores in page context to locate the first living bench Pokémon UID.
    */
+  public async isHealthyBenchUid(uid?: string): Promise<boolean> {
+    if (!uid) return false;
+    return await this.page.evaluate((targetUid) => {
+      const debug = window.__VITE_DEBUG__ as {
+        useGameStore?: () => { state?: { team?: Array<{ uid?: string; hp?: number }> }; team?: Array<{ uid?: string; hp?: number }> };
+        useBattleStore?: () => { player?: { uid?: string }; activeBattle?: { player?: { uid?: string } } };
+      } | undefined;
+      const gameStore = debug?.useGameStore?.();
+      const battleStore = debug?.useBattleStore?.();
+      const team = (gameStore?.team || gameStore?.state?.team || []) as Array<{ uid?: string; hp?: number }>;
+      const activeUid = battleStore?.player?.uid ?? null;
+      const p = team.find((poke) => poke && poke.uid === targetUid);
+      return Boolean(p && typeof p.hp === 'number' && p.hp > 0 && p.uid !== activeUid);
+    }, uid);
+  }
+
   public async getHealthyBenchUid(): Promise<string | undefined> {
     return await this.page.evaluate(() => {
       const debug = window.__VITE_DEBUG__ as {
@@ -298,9 +345,13 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
           }
         }
 
-        const targetUid = this.lastBattleReady?.playerSwitchSlots?.find(
-          (slot) => slot.showdownSlot === Number(switchEntry.p1Choice.slice('switch '.length))
-        )?.pokemonUid;
+        const candidateUid = switchEntry.p1Choice.startsWith('switch ')
+          ? this.lastBattleReady?.playerSwitchSlots?.find(
+              (slot) => slot.showdownSlot === Number(switchEntry.p1Choice.slice('switch '.length))
+            )?.pokemonUid
+          : undefined;
+
+        const targetUid = (await this.isHealthyBenchUid(candidateUid)) ? candidateUid : await this.getHealthyBenchUid();
 
         if (!targetUid) throw new Error(`[E2E-CERTIFIED-REPLAY] Could not resolve Pokémon UID for forced switch: ${JSON.stringify(switchEntry)}. Available slots: ${JSON.stringify(this.lastBattleReady?.playerSwitchSlots)}`);
 
@@ -332,7 +383,8 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       if (choice.startsWith('switch ')) {
         const switchSlot = Number(choice.slice('switch '.length));
         const target = this.lastBattleReady?.playerSwitchSlots?.find((slot) => slot.showdownSlot === switchSlot);
-        const targetUid = target?.pokemonUid;
+        const candidateUid = target?.pokemonUid;
+        const targetUid = (await this.isHealthyBenchUid(candidateUid)) ? candidateUid : await this.getHealthyBenchUid();
         if (!targetUid) throw new Error(`[E2E-CERTIFIED-REPLAY] Could not resolve Pokémon UID for Showdown switch slot ${switchSlot}. Available slots: ${JSON.stringify(this.lastBattleReady?.playerSwitchSlots)}`);
         await this.voluntarySwitch(targetUid);
         continue;

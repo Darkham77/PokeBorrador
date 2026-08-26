@@ -3,7 +3,8 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useModalStore } from '@/stores/modals'
 import type { ItemId } from '@/data/inventory/items'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import { resetBattleMinigameFlags, type BattleMinigame } from '@/logic/battle/battleMinigames'
+import { resetBattleMinigameFlags } from '@/logic/battle/battleMinigames'
+import type { BattleMinigame } from '@/types/battle/battle'
 
 interface BattleStoreMinigameRef {
   state?: {

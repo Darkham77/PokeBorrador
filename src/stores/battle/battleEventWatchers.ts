@@ -59,6 +59,8 @@ export function setupBattleEventWatchers(ctx: BattleEventWatchersContext): void 
       isIntroAnimating,
       () => activeBattle.value?.playerRequest,
       () => activeBattle.value?.enemyRequest,
+      () => activeBattle.value?.turnCount,
+      () => activeBattle.value?.player?.hp,
     ],
     ([subState, processing, intro]) => {
       const req = activeBattle.value?.playerRequest;
@@ -98,7 +100,8 @@ export function setupBattleEventWatchers(ctx: BattleEventWatchersContext): void 
           const p1Idx = window.__VITE_DEBUG__?.p1ChoiceIdx ?? 0;
           const p2Idx = window.__VITE_DEBUG__?.p2ChoiceIdx ?? 0;
           const reqRqid = (req as { rqid?: number } | undefined)?.rqid ?? 0;
-          const emitKey = `${subState}_${kind}_${p1Idx}_${p2Idx}_${reqRqid}`;
+          const turnCount = activeBattle.value?.turnCount ?? 0;
+          const emitKey = `${subState}_${kind}_${p1Idx}_${p2Idx}_${reqRqid}_${turnCount}`;
           const nextKey = nextBattleReadyEventKey(lastEmittedStateKey, true, emitKey);
           if (nextKey === null) return;
           lastEmittedStateKey = nextKey;

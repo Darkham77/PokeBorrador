@@ -27,4 +27,4 @@ INSERT INTO events_config (id, name, icon, type, active, manual, schedule, confi
 VALUES ('dia_pesca', 'Día de Pesca', '🎣', 'passive_bonus', TRUE, FALSE, '{"type": "weekly", "days": [2], "startHour": 0, "endHour": 23.99}', '{"fishingMult": 2}', 'Muchas más posibilidades de encuentros de pesca en mapas con agua');
 
 INSERT INTO events_config (id, name, icon, type, active, manual, schedule, config, description)
-VALUES ('hora_magikarp', 'Hora de Pesca del Magikarp', '🎣', 'competition', TRUE, FALSE, '{"type": "weekly", "days": [2, 4], "startHour": 18, "endHour": 20}', '{"species": "magikarp", "metric": "total_ivs", "hasCompetition": true}', '¡Capturá el Magikarp con mejores IVs y ganá un premio especial!');
+VALUES ('hora_magikarp', 'Hora de Pesca del Magikarp', '🎣', 'competition', TRUE, FALSE, '{"type": "weekly", "days": [2, 4], "startHour": 18, "endHour": 20}', '{"species": "magikarp", "metric": "total_ivs", "hasCompetition": true, "requireCaughtDuringEvent": true}', '¡Capturá el Magikarp con mejores IVs y ganá un premio especial!');

@@ -1,8 +1,9 @@
 import { queryLocal, persistSQLite, type SQLiteDatabase } from '../sqliteEngine.ts';
 import { logger } from '@/logic/utils/logger.ts';
 import type { DBResponse } from '@/types/system/database';
-import { COMPETITION_RANKS, type CompetitionRankKey } from '@/types/system/stores';
+import type { CompetitionRankKey } from '@/types/system/stores';
 
+const COMPETITION_RANKS: readonly CompetitionRankKey[] = ['first', 'second', 'third'] as const;
 const MAX_STORED_COMPETITION_RESULTS = 100;
 
 interface EventConfigWithPrizes {

@@ -2,7 +2,7 @@ import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 import { ShowdownBattleEngine } from '../../../src/logic/battle/engine/showdownBattleEngine.ts';
 import { ShowdownBattleRunner } from '../../../src/logic/battle/helpers/showdownBattleRunner.ts';
-import type { FuzzerCheat } from '../../../src/logic/battle/helpers/battleCheatManager.ts';
+import type { CertifiedBattleHistoryEntry } from '../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
 import { createShowdownBattle } from '../../../src/logic/battle/helpers/showdownBattleFactory.ts';
 import { ShowdownLogEnricher } from '../../../src/logic/battle/helpers/showdownLogEnricher.ts';
 import { ACTIVE_SHOWDOWN_FORMAT } from '../../../src/data/system/constants.ts';
@@ -11,8 +11,8 @@ const LOW_HP = 1;
 const CERTIFIED_HEAL_TURN = 2;
 const CERTIFIED_SEED = [1, 2, 3, 4];
 
-function createReplayEngine(cheats?: FuzzerCheat[], enemyMove = 'splash'): ShowdownBattleEngine {
-  const engine = new ShowdownBattleEngine({ mode: 'replayer', cheats });
+function createReplayEngine(history?: CertifiedBattleHistoryEntry[], enemyMove = 'splash'): ShowdownBattleEngine {
+  const engine = new ShowdownBattleEngine({ mode: 'replayer', history });
   const battle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, CERTIFIED_SEED);
   ShowdownLogEnricher.setupRealtimeEnrichment(battle);
   battle.setPlayer('p1', { name: 'P1', team: [{ name: 'Bulbasaur', species: 'Bulbasaur', item: '', ability: 'Overgrow', moves: ['tackle'], nature: 'Hardy', gender: 'M', level: 50, evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } }] });
@@ -34,7 +34,7 @@ describe('ShowdownBattleEngine strict fail-loud integrity', () => {
   });
 
   it('applies a replay heal only when the certified history records its battle turn', () => {
-    const engine = createReplayEngine([{ battleTurn: CERTIFIED_HEAL_TURN, p1Heal: true }]);
+    const engine = createReplayEngine([{ turnCount: 1, p1Choice: 'move 1', p2Choice: 'move 1', battleTurn: CERTIFIED_HEAL_TURN, p1Heal: true }]);
     const active = engine.battle.p1.active[0];
     assert.ok(active, 'P1 active Pokémon must exist');
     active.hp = LOW_HP;

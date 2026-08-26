@@ -107,6 +107,16 @@ export async function syncTeamsFromLastWorkerState(): Promise<void> {
     if (activeBattle?.playerTeam) {
       syncPokemonState(p1State, activeBattle.playerTeam);
     }
+    const activeReqMon = activeBattle?.playerRequest?.side?.pokemon?.find(p => p && p.active);
+    if (activeBattle && activeReqMon && activeReqMon.uid && activeBattle.player?.uid !== activeReqMon.uid) {
+      const matching = (activeBattle.playerTeam || gameStore.state?.team || []).find(p => p && p.uid === activeReqMon.uid);
+      if (matching) {
+        activeBattle.player = matching;
+        if (gameStore.state?.team) {
+          activeBattle.playerTeamIndex = gameStore.state.team.findIndex(p => p && p.uid === activeReqMon.uid);
+        }
+      }
+    }
     syncActiveCombatant(activeBattle?.player, p1State);
   }
 
@@ -114,6 +124,13 @@ export async function syncTeamsFromLastWorkerState(): Promise<void> {
   if (p2State) {
     if (activeBattle?.enemyTeam) {
       syncPokemonState(p2State, activeBattle.enemyTeam);
+    }
+    const activeEnemyReqMon = activeBattle?.enemyRequest?.side?.pokemon?.find(p => p && p.active);
+    if (activeBattle && activeEnemyReqMon && activeEnemyReqMon.uid && activeBattle.enemy?.uid !== activeEnemyReqMon.uid) {
+      const matchingEnemy = (activeBattle.enemyTeam || []).find(p => p && p.uid === activeEnemyReqMon.uid);
+      if (matchingEnemy) {
+        activeBattle.enemy = matchingEnemy;
+      }
     }
     syncActiveCombatant(activeBattle?.enemy, p2State);
   }
@@ -165,17 +182,6 @@ export async function executeTurnInWorker(
   p2Skip?: boolean,
   p1UsedBattleItem?: boolean
 ): Promise<{ logs: string[]; isOver: boolean; winner: string | null; p1ForceSwitch?: boolean; p2ForceSwitch?: boolean; p1Request?: ShowdownPlayerRequest; p2Request?: ShowdownPlayerRequest }> {
-  console.debug(`[DEBUG-ORCHESTRATOR] window.__VITE_DEBUG__ keys:`, typeof window !== 'undefined' && window.__VITE_DEBUG__ ? JSON.stringify(Object.keys(window.__VITE_DEBUG__)) : 'none');
-  if (typeof window !== 'undefined' && window.__VITE_DEBUG__) {
-    const cheatsArray = window.__VITE_DEBUG__.cheats;
-    const cheatsLength = Array.isArray(cheatsArray) ? cheatsArray.length : typeof cheatsArray;
-    console.debug(`[DEBUG-ORCHESTRATOR] cheats type/length: ${cheatsLength}`);
-    if (Array.isArray(cheatsArray)) {
-      cheatsArray.forEach((c, i: number) => {
-        console.debug(`[DEBUG-ORCHESTRATOR] cheat #${i}: turn=${c.turn}, side=${c.side}, type=${c.type}`);
-      });
-    }
-  }
   if (!showdownWorker) {
     throw new Error('showdownWorker is null')
   }

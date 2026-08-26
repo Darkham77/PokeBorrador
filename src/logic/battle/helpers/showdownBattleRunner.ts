@@ -91,6 +91,9 @@ export class ShowdownBattleRunner {
     if (workerEnded) {
       return null;
     }
+    if (historyIndex >= history.length) {
+      throw new Error(`[ShowdownBattleRunner] Certified replay history step is missing. context=${JSON.stringify({ historyIndex, historyLength: history.length })}`);
+    }
 
     return this.requireHistoryEntry(history, historyIndex);
   }
@@ -133,6 +136,9 @@ export class ShowdownBattleRunner {
     const consumedHistory = history.slice(0, nextHistoryIndex).map((_, index) => this.requireHistoryEntry(history, index));
     console.debug(`[REPLAY-CURSOR-ADVANCE] Advancing cursor: ${historyIndex} -> ${nextHistoryIndex}. Next step: p1="${(history[nextHistoryIndex] as CertifiedReplayHistoryEntry | undefined)?.p1Choice}", p2="${(history[nextHistoryIndex] as CertifiedReplayHistoryEntry | undefined)?.p2Choice}"`);
     Reflect.set(debug, 'replayHistoryIdx', nextHistoryIndex);
+    if (nextHistoryIndex >= history.length) {
+      Reflect.set(debug, 'certifiedReplayWorkerEnded', true);
+    }
     Reflect.set(debug, 'p1ChoiceIdx', consumedHistory.filter(({ p1Choice }) => p1Choice !== '').length);
     Reflect.set(debug, 'p2ChoiceIdx', consumedHistory.filter(({ p2Choice }) => p2Choice !== '').length);
   }

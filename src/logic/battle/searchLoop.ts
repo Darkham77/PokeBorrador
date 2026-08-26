@@ -8,7 +8,8 @@ import { nextTick } from 'vue'
 import { requireMapRouteId } from '@/data/world/map-assets'
 import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
 import { emitBattleFlowCompleted } from '@/logic/events/battleUiEvents'
-import { isBattleMinigame, setBattleMinigame, resetBattleMinigameFlags, type BattleMinigame } from './battleMinigames.ts'
+import { isBattleMinigame, setBattleMinigame, resetBattleMinigameFlags } from './battleMinigames.ts'
+import type { BattleMinigame } from '@/types/battle/battle.ts'
 
 /**
  * Handles the completion of a battle flow (either going to map or search loop).

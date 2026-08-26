@@ -295,9 +295,6 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
       const movesSet = new Set(remainingMoves);
       const agent1 = new BattleAgent('p1', movesSet, null, 4, true, false, new Set(remainingAbilities));
       const agent2 = new BattleAgent('p2', new Set(), null);
-      
-      const batchRec = batch as { cheats?: Array<{ turn: number; side: string; type: string }> };
-      batchRec.cheats = [];
 
       // Generar una semilla (seed) determinista o aleatoria pero registrada
       const seedNums = [
@@ -540,10 +537,6 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
             batchHistory.push(histEntry);
           }
 
-          if (hasPostTurnCheats && Array.isArray(batchRec.cheats)) {
-            batchRec.cheats.push(...appliedCheats);
-          }
-
           if (hasAnyForceSwitch) {
             if (preTurnForceSwitches['p1'] && p1AcceptedChoice && p1AcceptedChoice !== 'pass' && !p1AcceptedChoice.startsWith('team')) {
               batchChoices.push(p1AcceptedChoice);
@@ -552,17 +545,16 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
               batchEnemyChoices.push(p2AcceptedChoice);
             }
           } else {
-            if (p1NeedsAction && p1AcceptedChoice && p1AcceptedChoice !== 'pass' && !p1AcceptedChoice.startsWith('team')) {
+            if (p1AcceptedChoice && p1AcceptedChoice !== 'pass' && !p1AcceptedChoice.startsWith('team')) {
               batchChoices.push(p1AcceptedChoice);
             }
-            if (p2NeedsAction && p2AcceptedChoice && p2AcceptedChoice !== 'pass' && !p2AcceptedChoice.startsWith('team')) {
+            if (p2AcceptedChoice && p2AcceptedChoice !== 'pass' && !p2AcceptedChoice.startsWith('team')) {
               batchEnemyChoices.push(p2AcceptedChoice);
             }
           }
 
           const rawTurnLogs = getNewLogs();
           const turnLogs = filterShowdownLogs(rawTurnLogs);
-
           if (rawTurnLogs.length > 0) lastProgressMs = performance.now();
 
           for (const logLine of turnLogs) {
@@ -663,7 +655,6 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
       Reflect.set(batch, 'playerChoices', batchChoices);
       Reflect.set(batch, 'enemyChoices', batchEnemyChoices);
       Reflect.set(batch, 'history', batchHistory);
-      Reflect.set(batch, 'certifiedCheats', batchRec.cheats);
       Reflect.set(batch, 'steps', steps);
       // A draw is a valid Showdown outcome: win(null) sets winner='' and ended=true.
       // Canonical reference: external/pokemon-showdown-code/sim/sim/battle.ts#L1540-L1543
@@ -1002,9 +993,6 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
       const localP2 = fullEnemyTeam[0]!;
       const mockStore = createMockBattleContext(localP1, localP2, fullPlayerTeam, fullEnemyTeam);
 
-      const batchRec = batch as { cheats?: Array<{ turn: number; side: string; type: string }> };
-      batchRec.cheats = [];
-
       const seedNums = [
         Math.floor(Math.random() * 0x10000),
         Math.floor(Math.random() * 0x10000),
@@ -1134,10 +1122,6 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
           batchHistory.push(histEntry);
         }
 
-        if (hasPostTurnCheats && Array.isArray(batchRec.cheats)) {
-          batchRec.cheats.push(...appliedCheats);
-        }
-
         const rawTurnLogs = getNewLogs();
         certifiedRawLogs.push(...rawTurnLogs);
         if (anySeatNeedsAction) {
@@ -1181,7 +1165,6 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
       Reflect.set(batch, 'playerChoices', batchChoices);
       Reflect.set(batch, 'enemyChoices', batchEnemyChoices);
       Reflect.set(batch, 'history', batchHistory);
-      Reflect.set(batch, 'certifiedCheats', batchRec.cheats);
       Reflect.set(batch, 'steps', steps);
       if (!simBattle.ended || simBattle.winner === undefined) {
         throw new Error(`[FUZZER-ITEMS] Item battle did not finish organically. context=${JSON.stringify({

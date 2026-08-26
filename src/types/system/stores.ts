@@ -1,12 +1,12 @@
-import { Ref } from 'vue';
-import { GameState } from '@/types/system/game';
-import { Pokemon, type PokemonSelectionSource } from '@/types/pokemon/pokemon';
-import { BattleState, BattleStages, BattleLog, BattleSource, BattleSide, BattleDifficulty, BattleMinigame } from '@/types/battle/battle';
-import { BattleStateName, BattleSubStateName } from '@/logic/battle/battleStateMachine';
-import { Event, GlobalMultipliers } from '@/logic/events/eventEngine';
-import { AuthUser, SessionMode } from '@/types/auth/auth';
-import { DBRouter } from '@/logic/db/dbRouter';
-import { DayPhase, Season } from '@/logic/utils/timeUtils';
+import type { Ref } from 'vue';
+import type { GameState } from '@/types/system/game';
+import type { Pokemon, PokemonSelectionSource } from '@/types/pokemon/pokemon';
+import type { BattleState, BattleStages, BattleLog, BattleSource, BattleSide, BattleDifficulty, BattleMinigame } from '@/types/battle/battle';
+import type { BattleStateName, BattleSubStateName } from '@/logic/battle/battleStateMachine';
+import type { Event, GlobalMultipliers } from '@/logic/events/eventEngine';
+import type { AuthUser, SessionMode } from '@/types/auth/auth';
+import type { DBRouter } from '@/logic/db/dbRouter';
+import type { DayPhase, Season } from '@/logic/utils/timeUtils';
 import type { Inventory } from '@/types/inventory/items';
 import type { MapRouteId } from '@/data/world/map-assets';
 import type { GymId } from '@/data/world/gyms';
@@ -209,8 +209,7 @@ export interface CompetitionEntry {
   submitted_at?: string; // domain-ok
 }
 
-export const COMPETITION_RANKS = ['first', 'second', 'third'] as const;
-export type CompetitionRankKey = (typeof COMPETITION_RANKS)[number];
+export type CompetitionRankKey = 'first' | 'second' | 'third';
 export type CompetitionRank = CompetitionRankKey | number;
 
 export interface PastCompetitionWinner {

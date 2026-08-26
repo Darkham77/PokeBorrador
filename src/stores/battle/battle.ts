@@ -517,7 +517,6 @@ export const useBattleStore = defineStore('battle', () => {
     // fallow-ignore-next-line unused-store-member
     setFinishing: (cb: () => void) => { fsm.transition(BATTLE_STATES.REWARDS_PHASE); battleEndCallback.value = cb },
     startEncounter: async () => await startEncounter(getContext()),
-    // fallow-ignore-next-line unused-store-member
     getContext
   }
 })

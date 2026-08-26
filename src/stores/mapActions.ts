@@ -5,7 +5,8 @@ import { useEventStore } from '@/stores/events.ts';
 import { useInventoryStore } from '@/stores/inventory/inventory.ts';
 
 import { generateEncounter } from '@/logic/encounters/encounters';
-import { syncServerTime, getServerTime } from '@/logic/utils/timeUtils';
+import { syncServerTime } from '@/logic/auth/timeSync';
+import { getServerTime } from '@/logic/utils/timeUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getItemById } from '@/data/inventory/items.ts';
 import type { ItemId } from '@/data/inventory/items.ts';

@@ -66,7 +66,7 @@ test('Audit Tools Integrity Suite - Zero False Positives', () => {
   assert.ok(Array.isArray(itemRes.unhandledBattleItems));
 
   // 12. Audit Showdown Move Mechanics
-  const moveRes = auditShowdownMoveMechanics('external/pokemon-showdown-code/data/moves.ts', 'src/logic/battle/actions/moveExecutor.ts');
+  const moveRes = auditShowdownMoveMechanics('external/pokemon-showdown-code/data/moves.ts', 'src/logic/battle/showdownBridgeCore.ts');
   assert.ok(Array.isArray(moveRes.missingMoveExecutors));
 
   // 13. Audit Showdown Status Null

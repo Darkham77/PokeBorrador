@@ -1,7 +1,8 @@
 import type { Battle } from '@pkmn/sim';
 import { ShowdownBattleEngine } from '../engine/showdownBattleEngine.ts';
 import { ShowdownBattleRunner } from './showdownBattleRunner.ts';
-import type { FuzzerCheat } from './battleCheatManager.ts';
+import type { CertifiedBattleHistoryEntry } from '../../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
+import type { CertifiedCheatHistoryStep } from './battleCheatManager.ts';
 
 export interface ShowdownExecutorOptions {
   battle: Battle;
@@ -15,11 +16,11 @@ export interface ShowdownExecutorOptions {
   p1Statuses?: Record<string, string>;
   p2Statuses?: Record<string, string>;
   weather?: string;
-  history?: FuzzerCheat[];
+  history?: CertifiedBattleHistoryEntry[];
   runner?: ShowdownBattleRunner | null;
   isFuzzerSimulation?: boolean;
   currentStep?: number;
-  certifiedHistoryStep?: FuzzerCheat | number | { [key: string]: unknown };
+  certifiedHistoryStep?: CertifiedCheatHistoryStep;
 }
 
 export interface ExecuteBattleTurnResult {
@@ -37,7 +38,7 @@ export function executeBattleTurn(options: ShowdownExecutorOptions): ExecuteBatt
     mode: options.isFuzzerSimulation ? 'fuzzer' : 'replayer',
     playerChoices: options.runner?.choicesBySeat.get('p1'),
     enemyChoices: options.runner?.choicesBySeat.get('p2'),
-    cheats: options.history
+    history: options.history
   });
   if (options.runner) {
     // Sync all seat indices from runner into the transient engine
