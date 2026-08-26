@@ -56,6 +56,7 @@ if (typeof window !== 'undefined') {
 
     <template #footer>
       <button
+        id="passive-team-editor-save-btn"
         class="btn-vicio-success btn-vicio-full"
         @click.stop="confirmSave"
       >

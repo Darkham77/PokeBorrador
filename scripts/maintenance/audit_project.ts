@@ -84,7 +84,8 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
       for (const block of templateBlocks) {
         const templateRules: AuditRule[] = [
           config.dbInTemplates, 
-          config.functionCallsInTemplates
+          config.functionCallsInTemplates,
+          config.missingInteractiveId
         ];
         
         if (!(filePath.includes('scripts' + path.sep) || filePath.includes('supabase' + path.sep) || filePath.includes('audit_project.ts'))) {

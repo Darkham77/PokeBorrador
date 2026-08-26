@@ -80,6 +80,7 @@ const getTypeEmoji = (type: string) => {
   <div class="market-filters">
     <div class="filter-header">
       <div
+        id="market-filters-toggle-btn"
         class="toggle-btn"
         @click.stop="isExpanded = !isExpanded"
       >
@@ -92,12 +93,14 @@ const getTypeEmoji = (type: string) => {
         class="mode-switch"
       >
         <button
+          id="market-filters-mode-pokemon-btn"
           :class="{ active: filters.mode === 'pokemon' }"
           @click.stop="setFilter('mode', 'pokemon')"
         >
           ⚡ Pokes
         </button>
         <button
+          id="market-filters-mode-item-btn"
           :class="{ active: filters.mode === 'item' }"
           @click.stop="setFilter('mode', 'item')"
         >
@@ -112,6 +115,7 @@ const getTypeEmoji = (type: string) => {
 
     <div class="search-row">
       <input
+        id="market-filters-search-input"
         v-model="gtsStore.filters.search"
         type="text"
         :placeholder="filters.mode === 'pokemon' ? 'Buscar Pokémon...' : 'Buscar objetos...'"
@@ -130,6 +134,7 @@ const getTypeEmoji = (type: string) => {
           <span class="range-val">₽{{ filters.priceMin.toLocaleString() }} - ₽{{ filters.priceMax === 1000000 ? 'Máx' : filters.priceMax.toLocaleString() }}</span>
         </div>
         <input
+          id="market-filters-price-min-input"
           v-model.number="gtsStore.filters.priceMin"
           type="range"
           min="0"
@@ -138,6 +143,7 @@ const getTypeEmoji = (type: string) => {
           class="range-input"
         >
         <input
+          id="market-filters-price-max-input"
           v-model.number="gtsStore.filters.priceMax"
           type="range"
           min="0"
@@ -156,6 +162,7 @@ const getTypeEmoji = (type: string) => {
           <div class="tags-grid">
             <button
               v-for="t in tiers"
+              :id="`market-filters-tier-${t}`"
               :key="t"
               class="tag-btn"
               :class="{ active: filters.tier === t }"
@@ -177,6 +184,7 @@ const getTypeEmoji = (type: string) => {
               :title="t.toUpperCase()"
             >
               <button
+                :id="`market-filters-type-${t}`"
                 class="type-btn"
                 :class="{ active: filters.type === t }"
                 @click.stop="setFilter('type', t)"
@@ -197,6 +205,7 @@ const getTypeEmoji = (type: string) => {
           <div class="tags-grid">
             <button
               v-for="c in categories"
+              :id="`market-filters-cat-${c.value}`"
               :key="c.value"
               class="tag-btn"
               :class="{ active: filters.itemCat === c.value }"
@@ -209,6 +218,7 @@ const getTypeEmoji = (type: string) => {
       </template>
 
       <button
+        id="market-filters-reset-btn"
         class="reset-btn"
         @click.stop="resetFilters"
       >

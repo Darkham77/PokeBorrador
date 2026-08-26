@@ -271,6 +271,7 @@ function selectAdventure(_slotIndex: number) {
           position="top"
         >
           <button 
+            id="team-management-tab-adventure-btn"
             class="tm-tab" 
             :class="{ active: activeTab === 'adventure' }"
             @click="activeTab = 'adventure'"
@@ -287,6 +288,7 @@ function selectAdventure(_slotIndex: number) {
           position="top"
         >
           <button 
+            id="team-management-tab-pvp-btn"
             class="tm-tab" 
             :class="{ active: activeTab === 'pvp' }"
             @click="activeTab = 'pvp'"
@@ -303,6 +305,7 @@ function selectAdventure(_slotIndex: number) {
           position="top"
         >
           <button 
+            id="team-management-tab-war-btn"
             class="tm-tab" 
             :class="{ active: activeTab === 'war' }"
             @click="activeTab = 'war'"

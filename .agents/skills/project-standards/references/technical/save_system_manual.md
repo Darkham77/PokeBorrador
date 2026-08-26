@@ -1,15 +1,23 @@
 # Save System and Synchronization Manual
 
-This manual ensures the integrity of player data and compatibility between game versions (Supabase + SQLite).
+> **Scope & Authority**: This manual is the **Single Source of Truth (SSoT) for the save system architecture**, detailing save state serialization (`saveSerializer.ts`), deserialization (`saveSanitizer.ts`), Valibot schema validation, safe storage helpers, and guest user isolation.
+>
+> 🛑 **Domain Boundaries & Redirection**:
+> - For general database governance and Save Shield policies ➔ See [Database & Persistence Rules](../rules/database_and_persistence.md).
+> - For DBRouter online/offline routing logic ➔ See [DBRouter Manual](./dbrouter_manual.md).
+> - For in-flight active combat serialization ➔ See [Battle Persistence & Anti-Cheat Manual](../battle/battle_persistence_and_anti_cheat_manual.md).
+
+---
 
 ## 🛡️ Persistence Golden Rules
 
-### 1. Backward Compatibility
+### 1. Static Schema Migrations (Zero Runtime Fallback Mandate)
 
-When adding properties to `INITIAL_STATE` (`src/stores/game.ts`), old saves will have `undefined`.
+When adding or evolving properties in the save state schema (`game_saves` in SQLite and Supabase):
 
-- **Mandatory**: Use fallbacks: `state.newFeature = state.newFeature || defaultValue;`.
-- **Migrations**: If you change the format of a critical data point, implement a migration block in the store's initialization.
+- **Static SQL Migrations (Mandatory)**: All missing properties, schema extensions, and structural evolutions MUST be backfilled strictly via static SQL migration files in `database/migrations/` (`.sqlite.sql` and `.sql`).
+- **Zero Runtime Fallback Prohibition**: Dynamic runtime patching, fallback defaults (such as `state.prop = state.prop || default` or Valibot `fallback()`), or ad-hoc data synthesis (`normalizeData`) in application code are strictly forbidden.
+- **Save Shield Validation Lock**: If save schema validation fails, persistence is locked (`saveBlocked = true`) until state validates cleanly against canonical contracts.
 
 ### 2. Save Protocol (Upsert)
 

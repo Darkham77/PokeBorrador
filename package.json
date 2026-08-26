@@ -74,6 +74,7 @@
     "migrations:generate": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/database/generate_migrations.ts",
     "validate:sql": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/database/validate_sql_migrations.ts",
     "validate:save-migrations": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/validation/validate_save_migrations.ts",
+    "validate:markdown-links": "node --permission --experimental-strip-types --allow-fs-read=. scripts/validation/validate_markdown_links.ts",
     "assets:download": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-net=raw.githubusercontent.com,play.pokemonshowdown.com,img.pokemondb.net,www.serebii.net scripts/assets/download_assets.ts",
     "assets:download:items": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-net=raw.githubusercontent.com,play.pokemonshowdown.com,img.pokemondb.net,www.serebii.net scripts/assets/download_assets.ts --items",
     "assets:convert": "node --permission --experimental-strip-types --allow-worker --allow-addons --allow-fs-read=. --allow-fs-write=. scripts/assets/convert_assets.ts",

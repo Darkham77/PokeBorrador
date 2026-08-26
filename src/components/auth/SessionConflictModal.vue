@@ -43,12 +43,14 @@ async function handleLogout() {
       >
         <template #actions>
           <button
+            id="session-conflict-reclaim-btn"
             class="action-btn reclaim-btn"
             @click.stop="handleReconnect"
           >
             ▶ USAR AQUÍ
           </button>
           <button
+            id="session-conflict-logout-btn"
             class="action-btn danger-btn"
             @click.stop="handleLogout"
           >

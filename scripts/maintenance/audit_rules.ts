@@ -684,7 +684,54 @@ export const noLeakedGlobalState: AuditRule = {
   fixable: false
 };
 
+export const missingInteractiveId: AuditRule = {
+  regex: /<([a-zA-Z0-9_-]+)\b(?:[^>"']|"[^"]*"|'[^']*')*>/gis,
+  message: (match: string) => `Elemento interactivo de UI sin atributo ID detectado: '${match.replace(/\s+/g, ' ').slice(0, 90)}...'. Todo elemento interactivo (button, input, select, textarea o elementos con eventos @click/@change/@submit) en templates Vue DEBE poseer un atributo 'id' o ':id' explícito para garantizar testabilidad y accesibilidad Playwright.`,
+  severity: 'error',
+  check: (content: string, match: RegExpExecArray, filePath?: string) => {
+    if (!filePath || !filePath.endsWith('.vue')) return false;
+    if (filePath.includes('node_modules') || filePath.includes('external')) return false;
+
+    // Check if inside <template> block
+    const templateOpenIndex = content.lastIndexOf('<template', match.index);
+    const templateCloseIndex = content.lastIndexOf('</template>', match.index);
+    if (templateOpenIndex === -1) return false;
+    if (templateCloseIndex !== -1 && templateOpenIndex < templateCloseIndex) return false;
+
+    const tagStr = match[0];
+    const tagName = (match[1] || '').toLowerCase();
+
+    // Is it an inherently interactive tag?
+    const isInteractiveTag = ['button', 'input', 'select', 'textarea'].includes(tagName); // no-domain
+
+    // Does it have interactive event bindings?
+    const hasInteractiveEvent = /@(?:click|change|submit|input|keydown\.enter)\b|v-on:(?:click|change|submit|input)/i.test(tagStr);
+
+    if (!isInteractiveTag && !hasInteractiveEvent) {
+      return false;
+    }
+
+    // Exempt hidden inputs
+    if (tagName === 'input' && /type\s*=\s*["']hidden["']/i.test(tagStr)) {
+      return false;
+    }
+
+    // Check for id or :id or v-bind:id
+    if (/\b(?:id|:id|v-bind:id)\s*=/i.test(tagStr)) {
+      return false;
+    }
+
+    // Check for escape hatch
+    if (/id-ok/i.test(tagStr)) {
+      return false;
+    }
+
+    return true;
+  },
+  fixable: false
+};
+
 export const auditRulesConfig = {
-  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, zIndexConstantDeclaration, manualAnimations, manualTimersFrontend, zeroTimerBattleLogic, noPlaywrightWaitForTimeout, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, magicNumbers, badConstantNames, noAliasConstants, noLiteralSuffixInConstantName, noLiteralBooleanType, noInlineAnonymousObjectType, noFloatingPromises, noLeakedGlobalState
+  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, zIndexConstantDeclaration, manualAnimations, manualTimersFrontend, zeroTimerBattleLogic, noPlaywrightWaitForTimeout, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, magicNumbers, badConstantNames, noAliasConstants, noLiteralSuffixInConstantName, noLiteralBooleanType, noInlineAnonymousObjectType, noFloatingPromises, noLeakedGlobalState, missingInteractiveId
 };
 

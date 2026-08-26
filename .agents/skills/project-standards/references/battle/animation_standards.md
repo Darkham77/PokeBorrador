@@ -69,7 +69,7 @@ When applying interactive animations (hover/active) to elements with a base offs
 - **Standard**: Hover offsets should be subtle (approx. 5-10% of the object's height).
 - **Implementation**: If base is `TranslateY(Base_Offset)`, hover should be `TranslateY(Base_Offset - Interaction_Delta)`.
 
-## 18. Viewport-Aware Scaling (Hover)
+## 7. Viewport-Aware Scaling (Hover)
 
 To provide a premium feel without compromising usability on small screens, scaling animations MUST adapt to the available viewport space.
 
@@ -79,7 +79,7 @@ To provide a premium feel without compromising usability on small screens, scali
 - **Implementation**: Use CSS Media Queries inside the component's scoped styles to override the `Scale()` factor at the standard **420px** breakpoint.
 - **GSAP Hover CSS Conflict Avoidance**: When animating interactive hover effects with GSAP (such as scaling, shadows, or borders), do NOT define static CSS `:hover` states or transitions on the same properties in SASS/CSS. This causes interpolation clashes between GSAP inline styles and CSS stylesheets, resulting in rendering artifacts (e.g., box-shadow blur leaking beyond border-radius). Always completely delegate interaction states of these properties to GSAP event listeners.
 
-## 7. DOM-Independent State Phases (Transitions & v-show)
+## 8. DOM-Independent State Phases (Transitions & v-show)
 
 To prevent abruptly severing CSS transitions during multi-phase states (like wild encounters transitioning from silhouette to color), the underlying DOM structure MUST be preserved.
 
@@ -87,7 +87,7 @@ To prevent abruptly severing CSS transitions during multi-phase states (like wil
 - **Reason**: Re-mounting components (`v-if`) destroys the CSS transition context, causing visual jolts.
 - **Exception: Re-triggering Entrance Anims**: If an element MUST re-play its entrance animation (e.g., toggling spikes via debug), use `v-if` combined with a unique `:key` attribute (e.g., `:key="spikes-${side}"`). This forces a clean re-mount and re-triggers the `Transition` component.
 
-## 8. Physical Ground Hazing (Ground FX)
+## 9. Physical Ground Hazing (Ground FX)
 
 To maintain spatial realism, field hazards and anchored states follow strict layering rules:
 
@@ -95,7 +95,7 @@ To maintain spatial realism, field hazards and anchored states follow strict lay
 - **Idle Independence**: Ground FX must be placed in a container that inherits the Pokémon's dash (dash/attack) but ignores its floating/idle bounce.
 - **Aesthetic Movement**: Persistent ground effects should include subtle, desynchronized animations (like jumping or pulsing) to remain "alive" without floating.
 
-## 9. Asynchronous Coordinators & Layout Thrashing Prevention
+## 10. Asynchronous Coordinators & Layout Thrashing Prevention
 
 When swapping reactive data (like changing a Pokémon `src`), the swap MUST NOT occur simultaneously with a high-intensity CSS animation.
 
@@ -106,7 +106,7 @@ When swapping reactive data (like changing a Pokémon `src`), the swap MUST NOT 
   3. Swap data while the DOM is stable.
   4. Animate in the new element.
 
-## 9. Animation Sync & FSM Interlocking (Visual Block)
+## 11. Animation Sync & FSM Interlocking (Visual Block)
 
 When an animation affects the flow of combat, it MUST block the state machine until completion.
 
@@ -117,20 +117,20 @@ When an animation affects the flow of combat, it MUST block the state machine un
   3. The FSM resumes logic only after the visual is finished.
 - **CLI Bridge**: Every animation promise MUST be exposed to `window.__VITE_DEBUG__.battle.animations` to allow the IA and automated tests to wait for visual completion.
 
-## 10. Animation State Hygiene
+## 12. Animation State Hygiene
 
  Every global blocking state (e.g., `isIntroAnimating`) MUST have a guaranteed reset mechanism.
 
 - **Rule**: The cleanup (`flag = false`) MUST be called in the `onComplete` callback of the GSAP timeline.
 - **FSM State & Visual Synchronization**: Clear minigame active flags (e.g., `isFishing = false`, `isArchaeology = false`) and run visual reset routines (`resetAll()`) *before* executing FSM transitions (like completing the battle flow). This prevents race conditions and ensures visual state hygiene.
 
-## 11. Aesthetic Reveal Delays (Shadow & Metadata)
+## 13. Aesthetic Reveal Delays (Shadow & Metadata)
 
 To hide micro-adjustments in position during rapid transitions, apply intentional delays to the visibility of auxiliary elements.
 
 - **Standard**: Auxiliary elements (Ground shadows, name labels) should remain hidden for the first half of an entrance animation, appearing smoothly only once the object reaches its target coordinates.
 
-## 12. Energy Animation & Synchronization (Withdraw/Send Out)
+## 14. Energy Animation & Synchronization (Withdraw/Send Out)
 
 Visual transitions MUST be synchronized with state changes using the `gameBus`.
 
@@ -145,7 +145,7 @@ Visual transitions MUST be synchronized with state changes using the `gameBus`.
   - **WHY**: Both target the `animation` property; the last one applied will override the other, causing visual artifacts or missing effects. Recalling an owned fainted Pokémon should prioritize the energy recall.
 - **Coordinate Reset Protocol**: Upon switching combatants (`POKEMON_CALL`) or changing species ID, ground coordinates (`groundY`, `stableGroundY`) MUST be reset to null/zero in the same execution frame. Failure to do so causes "ghosting" where Poké Balls or entry effects inherit stale positions.
 
-## 13. Faint Animation & Shadow Sync
+## 15. Faint Animation & Shadow Sync
 
 - **Sequence Duration**: The standard faint sequence lasts **1.3s** (0.8s animation + 0.5s pause).
 - **Visual Pattern**: Use a **5-cycle transparency blink** before final disappearance.
@@ -155,20 +155,20 @@ Visual transitions MUST be synchronized with state changes using the `gameBus`.
 - **Unified Trigger**: All faint triggers (via `status`, `damage`, or `catch`) MUST be funneled through a single `handleFaintAnim` coordinator in the animation compositor. This prevents race conditions where the sprite might "reappear" briefly or skip the faint blink if multiple store updates collide.
 - **State Isolation**: The `isFaintInProgress` flag MUST only suppress the visibility of the specific combatant being fainted. It must NOT affect global rendering logic (like silhouettes) of the `upcomingPokemon` in the queue to prevent visual leaks during rapid transitions.
 
-## 14. Shadow Dash Synchronization
+## 16. Shadow Dash Synchronization
 
 Ground shadows MUST be children of the combatant's animation container (`sprite-animator`).
 
 - **Why**: This ensures the shadow inherits all CSS-based translations (TranslateX/Y) applied to the Pokémon during physical attacks (dash, pulse), keeping the feet and shadow perfectly aligned at all times.
 
-## 15. Thematic Defeat Animations (Owned vs Wild)
+## 17. Thematic Defeat Animations (Owned vs Wild)
 
 Defeat animations must adapt to the Pokémon's ownership:
 
 - **Wild Pokémon**: Use the standard `faint` animation (sliding down and fading out).
 - **Owned Pokémon (Player/Trainer)**: Use the `energy-catching` animation (returning to the Pokéball). Never use the faint slide for owned Pokémon; they must always be recalled.
 
-## 16. Poké Ball Cycle (Trapped State)
+## 18. Poké Ball Cycle (Trapped State)
 
 The Poké Ball interaction follows a 3-state cycle: `catching` (energy beam) ➡️ `trapped` (wobbling ball on ground) ➡️ `releasing` (appearing).
 
@@ -176,7 +176,7 @@ The Poké Ball interaction follows a 3-state cycle: `catching` (energy beam) ➡
   - **Timing Guard**: The shadow must vanish **BEFORE** the energy beam starts (Stage: `catching`) and reappear only **AFTER** the Pokémon has fully materialized and the energy effect is cleared (Transition: `releasing` ➡️ `null`).
 - **Visual Switch**: The Pokémon sprite is replaced by the `.trapped-pokeball` element during the `trapped` state.
 
-## 📐 Virtual World Layering (Z-Index)
+## 19. Virtual World Layering (Z-Index)
 
 To maintain a coherent sense of depth in the 2D-perspective virtual world, all components MUST use relative z-indices based on the `--z-map-spawns` (Default: 10) anchor:
 
@@ -196,14 +196,14 @@ To maintain a coherent sense of depth in the 2D-perspective virtual world, all c
 
 - **Rule**: This hierarchy ensures that shadows project onto the floor but are correctly occluded by grass blades and the Pokémon's feet. Visual effects (FX) are layered sequentially over the sprite to prevent occlusion and maintain mechanical clarity.
 
-## 17. Feedback Lifecycle Decoupling
+## 20. Feedback Lifecycle Decoupling
 
 Visual feedback effects (Catch Sparkles, Level-up particles) MUST be decoupled from the lifecycle of the triggering object.
 
 - **Standard**: Render feedback elements in a separate layer or as siblings (not children) of the primary actor.
 - **WHY**: Ensures the feedback persists and completes its animation even if the actor (e.g., Poké Ball, Pokémon) is cleared or unmounted during a successful capture.
 
-## 19. Encounter Animation Protocol (The Jump)
+## 21. Encounter Animation Protocol (The Jump)
 
 To ensure a fast and dynamic game flow, the `ENCOUNTER_ANIM` phase follows a strict timing and visual protocol:
 
@@ -214,7 +214,7 @@ To ensure a fast and dynamic game flow, the `ENCOUNTER_ANIM` phase follows a str
 - **Visual Behavior**: The Pokémon performs a parabolic "jump" from the grass coordinates. Auxiliary elements like name labels and HP bars remain hidden until the end of this phase to maintain focus on the Pokémon's arrival.
 - **Shiny Sound Synchronization**: When a shiny Pokémon appears, the shiny chime (`PLAY_SOUND` event with `'shiny'`) MUST be dispatched synchronously in the `onComplete` callback of the entry reveal transition timeline, ensuring it triggers precisely as the colored sprite is fully unveiled.
 
-## 21. Attack Category Normalization & Keyframes
+## 22. Attack Category Normalization & Keyframes
 
 To ensure visual consistency, move categories MUST be normalized before being emitted to the animation bus.
 
@@ -238,7 +238,7 @@ Each category MUST have a distinct visual pattern to represent its mechanical na
 
 Never assume the category is already normalized in the move object. Always use a helper like `normalizeCat(move.cat)` when emitting `PLAY_ATTACK_ANIM`.
 
-## 20. Status Effect Visuals (GSAP Persistence)
+## 23. Status Effect Visuals (GSAP Persistence)
 
 Status conditions use a combination of CSS filters for base tints and GSAP for dynamic orbital particles.
 
@@ -281,7 +281,7 @@ Secondary conditions apply subtle visual cues over the primary state:
 - **Toxic (Bad Poison)**: Replaces the standard poison icon in the HUD with (☣️) to indicate scaling damage.
 - **HUD-Only Statuses**: Tactical conditions like Taunt (🤐), Encore (🔁), and Disable (🚫) are represented by dedicated badges with rule-explaining tooltips.
 
-### 2. Orbital Particles (Emoji Layer)
+### 3. Orbital Particles (Emoji Layer)
 
 Affected Pokémon are surrounded by 3 orbital particles with randomized origins and trajectories.
 
@@ -293,7 +293,7 @@ Affected Pokémon are surrounded by 3 orbital particles with randomized origins 
 - **Fade vs Scale**: For persistent status particles (Confusion, Sleep), prefer `opacity` fades over `scale` animations for entry/exit. Constant scaling is visually distracting; a solid presence with alpha-blending is the premium standard.
 - **Animation**: Particles use the `status-particle-orbit` keyframe. Orbital trajectories are randomized to avoid repetitive circular patterns.
 
-### 3. Multi-Status Container (HUD)
+### 4. Multi-Status Container (HUD)
 
 To ensure tactical transparency, the HUD displays all active effects in a dedicated container:
 
@@ -304,13 +304,13 @@ To ensure tactical transparency, the HUD displays all active effects in a dedica
 
 ---
 
-## 22. Idle Animation for Floating Pokémon
+## 24. Idle Animation for Floating Pokémon
 
 To distinguish flying or hovering species from terrestrial ones, an exaggerated levitation idle animation is applied to any Pokémon with the `flying` type or that has the `isFloating` property.
 
 - **Effect**: The `combatant-idle-float` animation MUST use a duration of `3.5s` and a vertical translation of `-22px` with a rotation of `-2deg` to make the levitation clearly discernible.
 
-## 23. Deterministic Migration (No Deletion)
+## 25. Deterministic Migration (No Deletion)
 
 To reach "Zero-Warning" status during audits, NEVER delete a legacy CSS/JS animation without first implementing its functional equivalent in GSAP.
 
@@ -321,14 +321,14 @@ To reach "Zero-Warning" status during audits, NEVER delete a legacy CSS/JS anima
   3. Verify the visual parity.
   4. ONLY THEN remove the legacy code.
 
-## 24. Capitalization Sensitivity (Vite Plugin Traps)
+## 26. Capitalization Sensitivity (Vite Plugin Traps)
 
 The project uses a Vite plugin (`vite-plugin-sass-traps.ts`) that automatically capitalizes certain CSS values (e.g., `rgba` -> `Rgba`, `linear-gradient` -> `Linear-Gradient`).
 
 - **GSAP Constraint**: When animating colors or gradients via JS, you MUST use the capitalized versions (e.g., `backgroundColor: 'Rgba(...)'`) if you are targeting elements that rely on those auto-formatted styles.
 - **Why**: Mismatched capitalization can cause GSAP to fail to "see" the current state of a property, leading to broken transitions or "flash" effects where the property jumps to the new value instead of tweening.
 
-## 25. Organic UI Floating Effects (GSAP)
+## 27. Organic UI Floating Effects (GSAP)
 
 To give life to static branding elements (logos) or high-importance indicators without overloading the CPU with CSS keyframes:
 
@@ -337,24 +337,24 @@ To give life to static branding elements (logos) or high-importance indicators w
 - **Vertical Displacement**: Keep the movement subtle (approx. 10-15px) to avoid motion sickness or layout distraction.
 - **GSAP Preference**: This approach is mandatory for persistent branding animations to ensure they remain synchronized with the overall game state and can be paused/killed efficiently during transitions.
 
-## 26. GSAP Hover Interactions on Selected/Active Cards
+## 28. GSAP Hover Interactions on Selected/Active Cards
 
 To maintain premium tactical feedback, elements in a selected (`.selected`) or active combat state (`.is-active`) MUST still trigger GSAP hover animations rather than being frozen:
 
 - **Hover Entrance**: Scale (`scale: 1.02` to `1.03`) and lift (`y: -3`) the card smoothly. Ensure the border color transitions to its corresponding high-contrast tier color or active glow.
 - **Hover Leave (Restoration)**: On `mouseleave`, check if the card has the `selected` or `is-active` class. Animate the properties back to the specific selected values (e.g., target scale `0.98` and tier glow for combat active cards, or target scale `1` and blue border/glow for standard selected inventory/box cards) before calling `clearProps` in `onComplete`. This guarantees seamless transitions without visual "snaps" or layout jumps.
 
-## 27. GSAP Callback Reference Null Safety
+## 29. GSAP Callback Reference Null Safety
 
 To prevent the `GSAP target null not found` console warnings when a component starts to unmount during hover or exit animations (e.g., `MapCard.vue`), all asynchronous GSAP callbacks (`onComplete`, `onStart`, `onUpdate`) MUST check that the target DOM references are not null before performing mutations or applying styles.
 
 - **Rule**: Wrap callback operations in null checks: `if (elementRef.value) { ... }`.
 
-## 28. Vue Transitions and Manual CSS Animations in Minigames
+## 30. Vue Transitions and Manual CSS Animations in Minigames
 
 To prevent violating the zero-manual-animations rule, standard CSS transition definitions (e.g., `.fade-enter-active`) and Vue `<Transition>` tags should be avoided in game modals and minigames unless coordinated with the GSAP engine. If a simple modal or minigame requires toggle feedback, use direct reactive visibility states instead of uncoordinated CSS transitions to maintain deterministic timing.
 
-## 29. Advanced GSAP & CSS Interoperability Guidelines
+## 31. Advanced GSAP & CSS Interoperability Guidelines
 
 ### GSAP Centering & CSS Transforms Clashing
 
@@ -382,7 +382,7 @@ Animating different properties on the same target simultaneously (such as a cycl
 
 - **Solution**: Decouple the animations by applying the passive/idle animation to a parent wrapper container (e.g., `.wrapper`) and the active/interactive wobble animation to the child element itself (e.g., `.sprite`).
 
-## 30. `isFloating` Truthiness vs. Existence Check
+## 32. `isFloating` Truthiness vs. Existence Check
 
 When determining whether a Pokémon has explicit ground (`floating: false`) or floating (`floating: true`) aesthetics in `pokemonDataProvider`, always check existence before using the value:
 
@@ -396,7 +396,7 @@ if (data.isFloating !== undefined) return data.isFloating
 
 - **Why**: Using `if (data.isFloating)` as a truthiness check silently ignores the `false` case, causing ground-species with a Flying type to be incorrectly classified as floating. This suppresses `CombatGrass` bushes and misaligns the shadow layer.
 
-## 31. SVG Filter Region for Large Blur Auras
+## 33. SVG Filter Region for Large Blur Auras
 
 When using `feGaussianBlur` with `stdDeviation >= 6` inside an SVG `<filter>`, the default region (`0% 0% 100% 100%`) will clip the aura at the sprite edges. Expand it explicitly:
 
@@ -406,7 +406,7 @@ When using `feGaussianBlur` with `stdDeviation >= 6` inside an SVG `<filter>`, t
 
 - **Why**: A spread of `stdDeviation="12"` extends approximately 3× the source bounds. Without the expanded region, the glow is silently cropped — especially visible on large Pokémon sprites near the container edges.
 
-## 32. GSAP Ease Symmetry for Mirror Animations (Enter / Exit)
+## 34. GSAP Ease Symmetry for Mirror Animations (Enter / Exit)
 
 When two GSAP animations are the visual inverse of each other (e.g., `catching` sucking a sprite to scale 0 vs. `releasing` expanding it back to scale 1), they MUST use the **same `ease` curve** to be perceived as equally fast:
 
@@ -421,7 +421,7 @@ gsap.to(sprite, { scale: 1, duration: 0.4, ease: "back.out(1.2)" }) // releasing
 
 - **Why**: `back.out()` spends extra time in the overshoot phase (scale > 1) before settling. Even with equal `duration`, users perceive this as a longer, slower animation compared to a clean `power2.inOut`.
 
-## 33. FSM Transition Timing: Animation Bridge Pattern (Trainer Flow)
+## 35. FSM Transition Timing: Animation Bridge Pattern (Trainer Flow)
 
 When the battle orchestrator needs to advance through FSM states that have associated GSAP animations, it MUST `await` the animation's Promise through the `ctx.animations` bridge instead of using hardcoded timer delays. Timer delays (`sleep(1500)`) are brittle because they decouple timing from the animation that justifies it.
 
@@ -457,7 +457,7 @@ To add a new synchronizable animation phase:
 
 The `ctx.animations?.method` optional-chaining guard is required because the bridge is registered asynchronously by the Vue component — it may be absent when the battle is launched headlessly (e.g., from a Node test or debug script).
 
-## 34. Sequential Animation Orchestration (Animated Reordering)
+## 36. Sequential Animation Orchestration (Animated Reordering)
 
 When changing the active combatant during state transitions (e.g. at battle resolution before returning to the search loop), the change MUST NOT be executed instantaneously.
 
@@ -468,42 +468,42 @@ When changing the active combatant during state transitions (e.g. at battle reso
   4. Run both in parallel using `Promise.all` and wait for their GSAP tweens to complete before clearing `exitingPlayer`.
   5. Only continue FSM state changes (e.g., transition to `SEARCH_PHASE` or `completeBattleFlow`) after the visual sequence completes.
 
-## 35. Stale Animation Tween Registry Hygiene
+## 37. Stale Animation Tween Registry Hygiene
 
 When using local or global registries to track and await GSAP tweens (like `activeTweens` and `pendingTweenResolvers` accessed by `awaitTween`), you MUST clear these collections at the start or completion of a combat (e.g., in `resetCaptureStates`).
 
 - **Why**: Failure to reset registries causes `awaitTween()` calls in subsequent battles to immediately resolve with stale, completed tweens from previous combats, skipping the intended animation sequences entirely.
 
-## 36. Global Event Bus Listener Cleanups (Vue Lifecycle Hook)
+## 38. Global Event Bus Listener Cleanups (Vue Lifecycle Hook)
 
 Event bus listeners registered inside composables or setup functions (e.g., `gameBus.on(...)`) must be tracked and removed when the parent Vue component is unmounted.
 
 - **Why**: Lingering event handlers cause memory leaks and accumulate duplicate callbacks on global event dispatchers, causing old state operations to execute concurrently in subsequent views. Use Vue's `onUnmounted` hook to execute desubscriptions (`cleanupListeners`).
 
-## 37. Cover Z-Index Persistence & State Reset
+## 39. Cover Z-Index Persistence & State Reset
 
 Environmental cover layers (such as front combat grass) that must transition behind a combatant upon its emergence MUST NOT depend solely on the transient duration of the jump animation.
 
 - **Rule**: Map the visibility state of the front cover to stay behind the combatant during active and post-combat FSM states (like `ACTIVE_BATTLE`, `LEVEL_UP_MODAL`, `REWARDS_PHASE`).
 - **Reset**: The cover must be reset to render in front of the combatant whenever transitioning back to the `INITIALIZING` state at the start of a subsequent search encounter.
 
-## 38. Vue TransitionGroup GSAP Orchestration
+## 40. Vue TransitionGroup GSAP Orchestration
 
 To prevent manual CSS animation audit failures, Vue `<TransitionGroup>` tags should be decoupled from CSS styles. Use the `:css="false"` property and handle animations using JavaScript hooks (`@enter` and `@leave`) powered by GSAP. Always trigger the Vue `done()` callback in the GSAP `onComplete` block to guarantee correct lifecycle coordination and prevent memory leaks or stuck nodes.
 
-## 39. GSAP Infinite Timelines and Tween Disposals
+## 41. GSAP Infinite Timelines and Tween Disposals
 
 Calling `gsap.killTweensOf(el)` only terminates individual active tweens bound to an element, but **does not kill or stop a parent infinite timeline** (`gsap.timeline({ repeat: -1 })`) hosting them. The empty parent timeline will continue to execute in GSAP's global ticker and fire its registered callbacks (such as `onRepeat`).
 
 - **Rule**: When re-initializing or disposing elements with repeating animations, ALWAYS explicitly call `.kill()` on the timeline or tween instances themselves (e.g. by centralizing disposals in an engine's `killAll()` method) to prevent phantom callbacks from triggering positioning logic and causing positional jumps or teleports on subsequent rendering cycles.
 
-## 40. High-Frequency UI Animation Re-initialization Prevention
+## 42. High-Frequency UI Animation Re-initialization Prevention
 
 Repeatedly restarting particle or aura animations during high-frequency UI updates degrades rendering performance and risks timing collisions.
 
 - **Rule**: Store the active effect/state identifier in a local reactive reference (e.g., `activeStatusType`) and compare incoming status updates. Do NOT trigger a visual system re-initialization unless the status type has actually changed or a hard reset (`forceReset`) is explicitly requested.
 
-## 41. `v-gsap-loop` Directive: Blink Color Over Opacity for Text Elements
+## 43. `v-gsap-loop` Directive: Blink Color Over Opacity for Text Elements
 
 The `blink` effect of the `gsapLoop.ts` directive (`v-gsap-loop="'blink'"`) MUST NOT animate `opacity` on elements that contain text (buttons, labels, pills).
 
@@ -512,9 +512,9 @@ The `blink` effect of the `gsapLoop.ts` directive (`v-gsap-loop="'blink'"`) MUST
 - **Correct Behavior (Non-Text Elements)**: For elements without text (icons, sprites), opacity is clamped to a minimum of `0.75` to prevent full transparency.
 - **Implementation Reference**: `src/directives/gsapLoop.ts` — `applyAnimation` switch-case `'blink'`.
 
-## 43. NPC Trainer Visual Lifecycle & GSAP Choreography Standards
+## 44. NPC Trainer Visual Lifecycle & GSAP Choreography Standards
 
-The NPC Trainer visual lifecycle across search phase, dialogue presentation, active combat, and battle resolution follows a deterministic 4-step GSAP state machine (see full state machine diagram in [Battle Mechanics Manual - Section 2.1](./battle_mechanics_manual.md#21-npc-trainer--gym-presentation-lifecycle-4-phase-visual-flow)):
+The NPC Trainer visual lifecycle across search phase, dialogue presentation, active combat, and battle resolution follows a deterministic 4-step GSAP state machine (see full state machine diagram in [Battle Mechanics Manual](./battle_mechanics_manual.md)):
 
 1. **Entrance & Dialogue Presentation (`entering` -> `idle`)**:
    - The trainer entity starts off-screen to the right (`x: '150%'`, `y: 0`, `scale: 1`, `opacity: 1`) and smoothly slides to center stage (`p2Pos`, `x: '0%'`, `y: 0`, `scale: 1`, `transformOrigin: 'bottom center'`) using `gsap.fromTo` with `ease: 'back.out(1.2)'` (and audio fanfare / alert exclamation for rivals).

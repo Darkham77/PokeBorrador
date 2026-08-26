@@ -40,6 +40,7 @@ const startMode = (mode: string) => {
         <div class="search-input-wrap">
           <span class="search-icon">🔍</span>
           <input
+            id="inventory-search-input"
             v-model="searchQuery"
             type="text"
             placeholder="Buscar objeto..."
@@ -47,6 +48,7 @@ const startMode = (mode: string) => {
           >
           <button
             v-if="searchQuery"
+            id="inventory-search-clear-btn"
             class="clear-btn"
             @click.stop="searchQuery = ''"
           >
@@ -70,6 +72,7 @@ const startMode = (mode: string) => {
           position="bottom"
         >
           <button
+            id="inventory-mode-sell-btn"
             class="vicio-btn secondary sm"
             @click.stop="startMode('sell')"
           >
@@ -84,6 +87,7 @@ const startMode = (mode: string) => {
           position="bottom"
         >
           <button
+            id="inventory-mode-release-btn"
             class="vicio-btn danger sm"
             @click.stop="startMode('release')"
           >
@@ -101,12 +105,14 @@ const startMode = (mode: string) => {
         
         <div class="multi-actions">
           <button
+            id="inventory-multi-cancel-btn"
             class="vicio-btn neutral sm"
             @click.stop="emit('cancel')"
           >
             CANCELAR
           </button>
           <button
+            id="inventory-multi-execute-btn"
             class="vicio-btn sm"
             :class="multiSelectMode === 'sell' ? 'primary' : 'danger'"
             :disabled="selectedCount === 0"

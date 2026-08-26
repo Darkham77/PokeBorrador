@@ -143,6 +143,7 @@ const getPokemonName = (id: string) => {
           </div>
 
           <button 
+            :id="`stone-picker-use-btn-${opt.stone}-${opt.to}`"
             class="use-btn-vicio"
             :disabled="(gameStore.state.inventory[opt.stone] || 0) <= 0"
             @click.stop="useStone(opt.stone, opt.to)"
@@ -155,6 +156,7 @@ const getPokemonName = (id: string) => {
 
     <template #footer>
       <button
+        id="stone-picker-cancel-btn"
         class="btn-vicio-secondary btn-vicio-full"
         @click.stop="close"
       >

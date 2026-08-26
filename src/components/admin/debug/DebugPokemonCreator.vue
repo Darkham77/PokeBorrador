@@ -90,6 +90,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
               description="Selecciona especie, nivel, IVs, naturaleza y habilidad al azar."
             >
               <button
+                id="debug-creator-random-base-btn"
                 class="btn-magic-fill btn-random-fill lg"
                 @click.stop="randomizeBase"
               >
@@ -114,6 +115,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
               description="Selecciona una especie Pokémon aleatoria."
             >
               <button
+                id="debug-creator-random-species-btn"
                 class="btn-magic-fill btn-random-fill"
                 @click.stop="randomizeSpecies"
               >
@@ -134,6 +136,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
               :description="`Asigna un nivel aleatorio entre 1 y ${MAX_POKEMON_LEVEL}.`"
             >
               <button
+                id="debug-creator-random-level-btn"
                 class="btn-magic-fill btn-random-fill"
                 @click.stop="randomizeLevel"
               >
@@ -168,6 +171,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
               description="Genera valores de genética individuales (0-31) al azar para cada estadística."
             >
               <button
+                id="debug-creator-random-ivs-btn"
                 class="btn-magic-fill btn-random-fill"
                 @click.stop="randomizeIVs"
               >
@@ -195,6 +199,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
               description="Asigna una personalidad/naturaleza aleatoria."
             >
               <button
+                id="debug-creator-random-nature-btn"
                 class="btn-magic-fill btn-random-fill"
                 @click.stop="randomizeNature"
               >
@@ -217,6 +222,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
               description="Asigna una habilidad aleatoria disponible para esta especie."
             >
               <button
+                id="debug-creator-random-ability-btn"
                 class="btn-magic-fill btn-random-fill"
                 @click.stop="randomizeAbility"
               >
@@ -237,6 +243,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
               description="Aleatoriza género, variocolor (shiny) y estado guardián."
             >
               <button
+                id="debug-creator-random-visuals-btn"
                 class="btn-magic-fill btn-random-fill lg"
                 @click.stop="randomizeVisuals"
               >
@@ -264,6 +271,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
         />
 
         <button 
+          id="debug-creator-random-full-btn"
           class="btn-vicio-secondary sm"
           style="margin-top: 12px; margin-bottom: 4px;"
           @click.stop="handleRandomize"
@@ -282,6 +290,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
               description="Genera origen de ruta y amistad al azar, y limpia el apodo."
             >
               <button
+                id="debug-creator-random-extras-btn"
                 class="btn-magic-fill btn-random-fill lg"
                 @click.stop="randomizeExtras"
               >
@@ -302,6 +311,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
               description="Asigna un apodo aleatorio o limpia el campo."
             >
               <button
+                id="debug-creator-random-nickname-btn"
                 class="btn-magic-fill btn-random-fill"
                 @click.stop="randomizeNickname"
               >
@@ -333,6 +343,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
               description="Selecciona de forma aleatoria el minijuego de captura."
             >
               <button
+                id="debug-creator-random-minigame-btn"
                 class="btn-magic-fill btn-random-fill"
                 @click.stop="randomizeMinigame"
               >
@@ -345,6 +356,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
             description="Selecciona el minijuego de captura para testear."
           >
             <select
+              id="debug-creator-minigame-select"
               v-model="selectedMinigame"
               class="debug-select-standard"
             >
@@ -372,6 +384,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
               description="Asigna una ruta de origen aleatoria."
             >
               <button
+                id="debug-creator-random-origin-btn"
                 class="btn-magic-fill btn-random-fill"
                 @click.stop="randomizeOrigin"
               >
@@ -404,6 +417,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
           description="Inicia la secuencia y el minijuego de captura seleccionado."
         >
           <button
+            id="debug-creator-minigame-action-btn"
             class="btn-vicio-success"
             @click.stop="executeAction(selectedMinigame + '_minigame')"
           >
@@ -416,6 +430,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
           description="Genera un huevo en tu mochila que eclosionará al dar el siguiente paso."
         >
           <button
+            id="debug-creator-walk-egg-btn"
             class="btn-vicio-primary secondary"
             @click.stop="executeAction('egg_silent')"
           >
@@ -428,6 +443,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
           description="Genera un huevo que iniciará la secuencia de eclosión."
         >
           <button
+            id="debug-creator-anim-egg-btn"
             class="btn-vicio-primary secondary"
             @click.stop="executeAction('egg_anim')"
           >
@@ -440,6 +456,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
           description="Genera un huevo directamente en el almacén de la guardería (sin tener que caminar)."
         >
           <button
+            id="debug-creator-warehouse-egg-btn"
             class="btn-vicio-primary secondary"
             @click.stop="executeAction('egg_warehouse')"
           >

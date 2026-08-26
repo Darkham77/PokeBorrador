@@ -1,6 +1,6 @@
 ---
 name: populate-tester-inventory
-description: Utility script to fill the inventory with test items. Delegates the usage protocol to the manual `@/project-standards/references/browser_testing_manual.md`.
+description: Utility script to fill the inventory with test items. Delegates the usage protocol to the manual `@/project-standards/references/qa/browser_testing_manual.md`.
 ---
 
 # Skill: Populate Tester Inventory
@@ -16,6 +16,6 @@ description: Utility script to fill the inventory with test items. Delegates the
    node --experimental-strip-types .agents/skills/populate-tester-inventory/scripts/populate_inventory.ts
    ```
 
-2. Follow the detailed injection protocol in the [Browser Testing Manual](../project-standards/references/browser_testing_manual.md).
+2. Follow the detailed injection protocol in the [Browser Testing Manual](../project-standards/references/qa/browser_testing_manual.md).
 
 To find out which items are included and how to expand the script, consult the standards manual.

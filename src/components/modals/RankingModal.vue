@@ -240,6 +240,7 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
           </div>
         </div>
         <button
+          id="ranking-modal-refresh-btn"
           class="retro-btn refresh"
           :disabled="socialStore.leaderboardLoading"
           @click.stop="loadLeaderboard"
@@ -277,6 +278,7 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
       <!-- Sorting Selectors -->
       <div class="sorting-controls">
         <button
+          id="ranking-modal-sort-elo-btn"
           class="sort-tab"
           :class="{ active: activeSort === 'elo_rating' }"
           @click.stop="activeSort = 'elo_rating'"
@@ -286,6 +288,7 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
           ELO
         </button>
         <button
+          id="ranking-modal-sort-level-btn"
           class="sort-tab"
           :class="{ active: activeSort === 'trainer_level' }"
           @click.stop="activeSort = 'trainer_level'"
@@ -295,6 +298,7 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
           Nivel
         </button>
         <button
+          id="ranking-modal-sort-badges-btn"
           class="sort-tab"
           :class="{ active: activeSort === 'badges' }"
           @click.stop="activeSort = 'badges'"
@@ -329,6 +333,7 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
         >
           <div
             v-for="(player, index) in socialStore.leaderboard"
+            :id="`ranking-modal-card-${player.id}`"
             :key="player.id"
             class="rank-card"
             :class="`rank-${index + 1}`"

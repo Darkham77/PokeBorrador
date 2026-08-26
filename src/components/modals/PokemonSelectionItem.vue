@@ -111,6 +111,7 @@ function handleClick() {
         class="info-tooltip-wrapper"
       >
         <button
+          :id="'pokemon-detail-btn-' + item.pokemon.uid"
           v-gsap-hover="{ scale: 1.05, y: 0 }"
           type="button"
           class="btn-info-detail-trigger"

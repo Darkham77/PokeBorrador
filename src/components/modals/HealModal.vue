@@ -414,6 +414,7 @@ onUnmounted(() => {
       <div class="heal-actions">
         <button 
           v-if="cost > 0"
+          id="heal-modal-primary-btn"
           class="btn-heal-primary" 
           :disabled="isHealing || team.length === 0 || (cost > 0 && gameStore.state.money < cost)"
           @click.stop="handleHeal"
@@ -422,6 +423,7 @@ onUnmounted(() => {
         </button>
         <button
           v-if="cost > 0"
+          id="heal-modal-cancel-btn"
           class="btn-cancel-secondary"
           :disabled="isHealing"
           @click.stop="handleClose"

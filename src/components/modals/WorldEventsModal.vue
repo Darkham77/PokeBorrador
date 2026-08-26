@@ -78,6 +78,7 @@ onMounted(() => {
           </div>
         </div>
         <button
+          id="events-modal-refresh-btn"
           class="retro-btn refresh"
           :disabled="isLoading"
           @mouseenter="onBtnHover($event, true)"
@@ -108,6 +109,7 @@ onMounted(() => {
                 <span class="award-prize">{{ award.prize_summary || 'Premio Reclamable' }}</span>
               </div>
               <button
+                :id="'claim-pending-award-btn-' + award.id"
                 class="retro-btn claim"
                 @mouseenter="onBtnHover($event, true)"
                 @mouseleave="onBtnHover($event, false)"

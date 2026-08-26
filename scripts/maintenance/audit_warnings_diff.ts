@@ -304,7 +304,7 @@ async function main() {
   const typeErrors = await runTypeChecking();
 
   // 3. Ejecutar validaciones de dominio y bases de datos
-  console.log(styleText('cyan', '[3/4] Ejecutando validaciones de dominio (Types, SQL, Saves, FSM, Items, Moves, Abilities)...'));
+  console.log(styleText('cyan', '[3/4] Ejecutando validaciones de dominio (Types, SQL, Saves, FSM, Items, Moves, Abilities, Links & DOX)...'));
   const domainTypeErrors = await runScriptValidator('Domain Types', 'scripts/validation/validate_domain_types.ts', ['--errors-only']);
   const sqlErrors = await runScriptValidator('SQL Migrations', 'scripts/database/validate_sql_migrations.ts');
   const saveErrors = await runScriptValidator('Save Migrations', 'scripts/validation/validate_save_migrations.ts');
@@ -314,6 +314,7 @@ async function main() {
   const itemsErrors = await runScriptValidator('Items Database', 'scripts/validation/validate_items.ts');
   const abilitiesErrors = await runScriptValidator('Abilities Database', 'scripts/validation/validate_abilities.ts');
   const movesErrors = await runScriptValidator('Moves Database', 'scripts/validation/validate_moves.ts');
+  const markdownLinksErrors = await runScriptValidator('Markdown Relative Links & DOX', 'scripts/validation/validate_markdown_links.ts', ['--errors-only']);
 
   // 4. Ejecutar auditoría del proyecto local (audit_project.ts: AST, Fallow, CSS, DOX, Constantes)
   console.log(styleText('cyan', '[4/4] Ejecutando Auditoría Integral del Proyecto (AST, Fallow Dupes/Security/DeadCode, CSS, DOX)...'));
@@ -377,6 +378,7 @@ async function main() {
     ...itemsErrors,
     ...abilitiesErrors,
     ...movesErrors,
+    ...markdownLinksErrors,
     ...auditViolations
   ];
 

@@ -13,41 +13,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 - **Strict No-Test Mandate for Documentation**: Running test suites (`npm run test`, `test:node`, Vitest, or E2E Playwright simulations) when only editing `.md` documents, DOX indices, or `.agents/` skill files is STRICTLY FORBIDDEN. Verification for documentation tasks is strictly limited to `npx tsx .agents/skills/dox-navigator/scripts/audit_dox.ts` and `npm run lint:md` (or fast `npm run lint`).
 - **Mandatory DOX Navigation**: You MUST always use the `dox-navigator` skill (or trigger the `/dox-navigator` command) to analyze the project context, search for files, components, and manuals, and update any index or documentation within the project.
 
-- **Objective-Driven Fuzzer Coverage & Rich History Mandate**: Every certified fuzzer scenario
-  MUST configure the scripted seats to prioritize legal actions that exercise
-  the mechanic under test as quickly as possible. For example, an enemy must
-  prefer a legal poison-inflicting move when certifying poison cure; matching
-  legal typed moves must be preferred for type-sensitive item effects. This is
-  cooperative coverage generation, never outcome injection: seeds, accepted
-  choices, history, and legality remain immutable evidence. A report may mark
-  PASS only from observed Showdown evidence or a deterministic same-seed control
-  difference, never because an item was merely equipped. This directive applies
-  to direct deterministic heuristic certified AI only.
-  
-  **Mandatory Comprehensive History Recording on Disk**: The fuzzer recorder and certified
-  battle history entries (`CertifiedBattleHistoryEntry` in `fuzzer_certified_cases.json`) MUST
-  record all contextual data and state identifiers needed to deterministically reproduce and
-  verify 1:1 combat states without guesswork or dynamic runtime prediction. This includes:
-  - Explicit active Pokémon UIDs (`p1ActiveUid`, `p2ActiveUid`).
-  - Explicit move IDs (`p1MoveId`, `p2MoveId`).
-  - Explicit locked move IDs (`p1LockedMoveId`, `p2LockedMoveId`) during recharge/locked states.
-  - Trapped states (`p1Trapped`, `p2Trapped`) indicating when switching is prohibited.
-  - Critical volatile statuses (`p1Volatiles`, `p2Volatiles`: `mustrecharge`, `lockedmove`, `twoturnmove`, `taunt`, `encore`, `substitute`).
-  - Stat boost stages (`p1StatStages`, `p2StatStages`: `atk`, `def`, `spa`, `spd`, `spe`, `accuracy`, `evasion`).
-  - Non-volatile statuses (`p1Status`, `p2Status`: `slp`, `psn`, `tox`, `par`, `brn`, `frz`).
-  - HP snapshots (`p1Hp`, `p2Hp`) for instant 1:1 math parity assertion at turn boundaries.
-  - Field and side conditions (`weather`, `terrain`, `p1SideConditions`, `p2SideConditions`).
-  - Forced switch flags (`p1ForceSwitch`, `p2ForceSwitch`) and healing/revival flags (`p1Heal`, `p2Heal`, `p1PreHeal`, `p2PreHeal`).
-  - **Doubtful / Edge-Case State Logging**: Whenever any scenario, transition, or decision is
-    ambiguous, restricted, or doubtful (e.g. single-slot recharge moves, Outrage/Thrash locked
-    states, disabled moves, trapped Pokémon), the fuzzer MUST record the exact decision and context
-    with rich detail directly into the history on disk.
-  - **Loud Desync Abort**: Simulators and Playwright replays MUST consume these fields to verify
-    active UIDs and enabled move slots. If the runtime game state diverges from the recorded
-    history, execution MUST fail loudly and immediately with an explicit `[E2E-DESYNC]` error,
-    strictly prohibiting silent fallbacks or guesswork. Every Playwright combat simulation replays
-    the resulting immutable certified choices through visible UI controls; real AI is not an
-    alternative decision source for browser combat replays.
+- **Objective-Driven Fuzzer Coverage & Deterministic History**: Fuzzer scenarios MUST prioritize legal actions exercising the mechanic under test. Fuzzer battle histories MUST record rich state metadata on disk (`fuzzer_certified_cases.json`) to enable deterministic 1:1 Playwright combat replays and fail fast on desync. Detailed history schema and simulator rules are governed in [Testing & Simulations](./references/rules/testing_and_simulations.md).
 
 ---
 
@@ -63,33 +29,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 ### 2. Code Modularity & Quality (500/1000-Line Limit)
 - **Modularity Limits**: Files exceeding **500 lines** trigger modularization recommendations. No logic or UI component file may exceed **1000 lines** (hard limit; static databases and metadata in `src/data/` are exempt).
 - **Absolute Prohibition on Magic Numbers & Value-Hardcoding**: Inline numeric literals directly inside business logic, UI components, workers, or tests are strictly forbidden. All numbers MUST be declared as descriptive `readonly` named constants or `as const` config objects. Shared constants used in multiple files MUST be exported from a central constants module. Constant identifiers MUST NOT include their numeric values (e.g. `ARCHAEOLOGY_CAVE_BASE_WEIGHT` is required, `ARCHAEOLOGY_CAVE_BASE_WEIGHT_10` is strictly forbidden). String literals with values/fractions/regex helpers (`"random(-10, 10)"`) MUST use `// no-magic`.
-
-  #### Suppression Comment Protocol (`// magic-ok`, `// no-magic`, `// number-ok`)
-
-  These inline suppression tokens are **escape hatches for genuinely un-nameable values**, NOT a way to pass the auditor without fixing real problems. An agent adding a suppression comment to avoid work is **cheating** — the auditor will still catch it in `--strict` mode and code review will reject it.
-
-  **✅ ALLOWED — the value is genuinely un-nameable:**
-
-  | Case | Example | Why allowed |
-  | :--- | :--- | :--- |
-  | GSAP string helpers with embedded math | `"random(-10, 10)"` | String literal — no numeric token to name |
-  | Template strings embedding percentages | `"1/16 HP por turno"` | Human-readable text, not a domain threshold |
-  | Rendering math that is formula-derived | `(0.7 + seed * 0.8) * factor // magic-ok` | Formula coefficients documented in the formula itself |
-  | Nearest-match search sentinel | `let minDiff = 11 // magic-ok` | Algorithmic sentinel larger than max domain value |
-  | Repeated shake animation literals in a single GSAP chain | `{ x: -4 }, { x: 4 } // magic-ok` | One-off animation keyframes with no domain meaning |
-
-  **❌ FORBIDDEN — the value has a domain name that MUST be extracted:**
-
-  | Case | Example | Correct fix |
-  | :--- | :--- | :--- |
-  | Game probability thresholds | `if (randRoll < 10) diff = 'easy' // magic-ok` | `const DIFF_EASY_THRESHOLD = 10` |
-  | Game economy values (costs, rewards) | `cost: 5000 // magic-ok` | `const MISSION_6H_COST = 5_000` |
-  | Sleep/delay durations in any app code | `await sleep(1000) // magic-ok` | `const TRANSITION_DELAY_MS = 1_000` |
-  | Item buff durations | `BUFF_DURATION_60_MIN_SEC // magic-ok` on the call site | Already named — remove the suppression |
-  | Stat floor/ceiling business values | `ivFloor: 5 // magic-ok` | `const MISSION_6H_IV_FLOOR = 5` |
-  | `Math.max/min` clamping bounds from game design | `Math.min(STAGE_MAX_BOUND, ...)` with no declaration | Declare `const STAGE_MAX_BOUND = 6` |
-
-  > 🔴 **Rule:** If a human reading the constant name can understand the domain intent without looking up the value, it's nameable and MUST be named. The test is not "can I name it?" but "is naming it clearer than not naming it?" — if yes, name it.
+- **Suppression Comment Protocol (`// magic-ok`, `// no-magic`, `// number-ok`)**: These inline suppression tokens are escape hatches for genuinely un-nameable values (formula coefficients, template text, GSAP string math), NOT shortcuts to avoid declaring constants. Detailed allowed/forbidden cases are cataloged in [TypeScript Conventions](./references/rules/typescript_conventions.md).
 - **Mandatory Typed Domain Wrappers for JSON Files**: Directly importing raw `.json` files containing domain entities (items, species, moves, abilities, sets) is strictly forbidden. Every `.json` data file MUST be wrapped by a co-located TypeScript module exporting constants bounded by strict TypeScript domain union types (`ItemId`, `PokemonSpeciesId`, `AbilityId`, `PokemonMoveId`).
 
 ### 3. Architectural Reuse, Polymorphism & 4-Seat Compatibility
@@ -113,8 +53,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 - **Fail-Fast Turn Execution**: In Playwright E2E simulations, a single turn failure, unhandled rejection, or desync MUST immediately abort execution with a descriptive error. Retries, silent skips, and spin-loops are strictly forbidden.
 - **Mandatory Isolated Reproduction Test Mandate (RED-to-GREEN)**: Whenever ANY E2E test, browser simulation, battle scenario, worker task, or feature execution fails anywhere across the entire project, the agent **MUST FIRST** create an isolated, self-contained unit or integration test in `tests/node/` reproducing the exact failure in **RED**. The test MUST **extract and inline the failing case data** (or store it in a static fixture file) so regenerating the fuzzer never breaks the unit test. The extracted turn-by-turn choice streams (`step.p1Choice`, `step.p2Choice`), `seed`, and history MUST be executed sequentially to reproduce in RED, and verify empirical repair in GREEN once `src/` is fixed.
 - **Prohibition on Hasty Patches & Fallbacks**: Inventing hasty fallbacks (e.g. returning `'default'`, fallback moves, or mock objects) or swallowing errors (`.catch(() => true)`) to force tests or simulations to pass is strictly forbidden. Root causes MUST be diagnosed and fixed in `src/`.
-- **Certified Combat Replay**: Every browser combat is a replay, never an independently decided test. It MUST consume a current fuzzer-certified case through the literally same `ShowdownBattleRunner`: identical seed, atomic history, native choices, recorded game actions (such as a bag medicine), and IPB flags. The browser may translate each recorded action only to its matching visible official control. A manual setup, manually authored choice stream, or real-AI browser decision stream is invalid; expand the objective-driven fuzzer first.
-- **Mandatory Comprehensive History Recording on Disk & Zero-Guesswork Mandate**: Fuzzer history entries on disk (`history` in `fuzzer_certified_cases.json`) MUST contain exhaustive decision and state metadata (`p1ActiveUid`, `p2ActiveUid`, `p1MoveId`, `p2MoveId`, `p1LockedMoveId`, `p2LockedMoveId`, `p1ForceSwitch`, `p2ForceSwitch`, `p1Heal`, `p2Heal`). Whenever an action, transition, or mechanic is doubtful, ambiguous, or constrained (such as recharge moves, locked moves, trapped states, or single-slot requests), the fuzzer MUST record the exact decision and context with rich detail directly in the history on disk. The simulator and Playwright replayer MUST verify these fields at runtime, throwing an immediate `[E2E-DESYNC]` error on any mismatch rather than attempting silent fallbacks or guessing.
+- **Certified Combat Replay**: Every browser combat is a replay, never an independently decided test. It MUST consume a current fuzzer-certified case through the literally same `ShowdownBattleRunner`: identical seed, atomic history, native choices, recorded game actions (such as a bag medicine), and IPB flags. The browser may translate each recorded action only to its matching visible official control.
 - **Mandatory ID-Based UI Selection**: Locating UI components in Playwright tests by text matching or regex labels is strictly forbidden. All interactive UI components MUST have unique HTML `id` attributes (`#start-encounter-btn`, `#confirm-battle-btn`, etc.).
 
 ### 7. Database Isolation & Persistence Safety
@@ -131,13 +70,8 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 - **Strict Zero-Hiding Security Mandate**: Suppressing or hiding security vulnerabilities (CWE path traversals, SSRF risks) using ignore files (`.fallowrc.json`), inline comments (`// fallow-ignore`), or exclusions is strictly forbidden. Every security finding MUST be resolved at its source via path sanitization and boundary checks.
 
 ### 9. Asset Pipeline, Crafting Tiers & CLI Safety Mandate
-- **Mandatory Crafting Tier Hierarchy**: All inventory and shop item sprites in `public/assets/sprites/` MUST follow the 4-tier domain hierarchy (`crafting/tier0/`, `crafting/tier1/`, `crafting/tier2/`, `crafting/tier3/`) mapped from `item.craftingTier`. It is STRICTLY FORBIDDEN to create flat asset directories (such as `items/`) or alter `items.json` sprite paths without following this tier structure.
-- **Canonical Asset Pipeline Execution & Zero-Ad-Hoc Mandate**:
-  - Whenever ANY new sprite or image asset is added, modified, or replaced, it MUST be saved into `_raw-assets/public/assets/sprites/` under its canonical tier folder, and `npm run assets:convert` (`scripts/assets/convert_assets.ts`) MUST be executed immediately to build WebP files and dynamic catalogs.
-  - To download missing official items: `npm run assets:download:items` (`scripts/assets/download_assets.ts`).
-  - To convert and build full asset database: `npm run assets:convert` (`scripts/assets/convert_assets.ts`).
-  - To organize and re-tier item assets: `node --permission --experimental-strip-types --allow-addons --allow-fs-read=. --allow-fs-write=. scripts/assets/organize_item_sprites_by_tier.ts`.
-  - Performing one-off ad-hoc conversions, bypassing `_raw-assets/`, or skipping `npm run assets:convert` is STRICTLY FORBIDDEN.
+- **Mandatory Crafting Tier Hierarchy**: All inventory and shop item sprites in `public/assets/sprites/` MUST follow the 4-tier domain hierarchy (`crafting/tier0/`, `crafting/tier1/`, `crafting/tier2/`, `crafting/tier3/`) mapped from `item.craftingTier`. Detailed asset pipeline commands and sprite organization are governed in [Asset Service Manual](./references/technical/asset_service_manual.md).
+- **Canonical Asset Pipeline Execution**: New sprites MUST be saved into `_raw-assets/public/assets/sprites/` under their canonical tier folder, and converted via `npm run assets:convert`. Ad-hoc conversions bypassing `_raw-assets/` are strictly forbidden.
 - **Prohibition of Multi-Line Inline Node CLI Commands (`noInteractiveCliHangs`)**:
   - AI agents MUST NEVER run multi-line inline scripts (`npx tsx -e "..."` or `node -e "..."`) in terminal background tasks on Windows. Doing so causes child processes to hang or await interactive stdin indefinitely.
   - All validations, diagnostic checks, and tests MUST be executed via dedicated Vitest test files (`npx vitest run <path>`) or dedicated script files in `scripts/` or `scratch/`.
@@ -151,78 +85,102 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 
 ---
 
-## 📖 How to Use Reference Manuals & Rule Modules
+## 🧭 Navigation Hub & Document Routing Decision Tree
 
-When performing specific tasks, consult the corresponding reference manuals to obtain deep-dive architectural rules, historical formulas, and step-by-step technical guides:
+Before writing or updating any rule, manual, or architectural lesson, consult this decision tree to prevent documentation duplication:
 
-1. **Working with Data Types, Interfaces, or JSON Catalogs**:
-   - Consult `@/domain-type-first` (`.agents/skills/domain-type-first/SKILL.md`) and [typescript_conventions.md](./references/rules/typescript_conventions.md).
-   - Use these when adding new Pokémon species, items, moves, status effects, or DTO contracts.
-
-2. **Writing E2E Playwright Tests, Fuzzing, or Simulator Debugging**:
-   - Consult `@/project-browser-testing` (`.agents/skills/project-browser-testing/SKILL.md`), [browser_testing_manual.md](./references/qa/browser_testing_manual.md), and [testing_and_simulations.md](./references/rules/testing_and_simulations.md).
-   - Follow the mandatory `#id` locator rules, fail-fast turn loops, and `ShowdownBattleRunner` shared execution patterns.
-
-3. **Developing Battle Mechanics, Showdown Integrations, or Moves**:
-   - Consult [bridge_guide.md](./references/battle/bridge_guide.md), [battle_mechanics_manual.md](./references/battle/battle_mechanics_manual.md), [game_engine_and_state.md](./references/rules/game_engine_and_state.md), and the canonical source of truth under [external/pokemon-showdown-code/](../../../external/pokemon-showdown-code/).
-
-4. **Modifying Persistence, DBRouter, or Save Loaders**:
-   - Consult [save_system_manual.md](./references/technical/save_system_manual.md), [dbrouter_manual.md](./references/technical/dbrouter_manual.md), and [database_and_persistence.md](./references/rules/database_and_persistence.md).
-   - Enforce the Save Shield (0-Pokémon protection) and SQLite/Supabase separation.
-
-5. **Environment Configuration, Dependency Audits, or Node Scripts**:
-   - Consult [validation_manual.md](./references/qa/validation_manual.md), [git_and_workflow_safety.md](./references/rules/git_and_workflow_safety.md), [dependency_management_manual.md](./references/technical/dependency_management_manual.md), [mikrotik_routing_manual.md](./references/technical/mikrotik_routing_manual.md), and root setup scripts (`setup-windows.ps1` / `setup-linux.sh`).
-   - When asked to "actualizar herramientas", "update tools", "preparar entorno", or "instalar dependencias", execute the platform's root setup script (`./setup-linux.sh` on Linux/macOS or `.\setup-windows.ps1` on Windows).
+| If your improvement/rule relates to... | Canonical Document (SSoT) | DO NOT duplicate in... |
+| :--- | :--- | :--- |
+| **Compiler rules, TypeScript unions, type casting, JSON wrappers, security** | [typescript_conventions.md](./references/rules/typescript_conventions.md) | `rules/game_engine_and_state.md` |
+| **E2E Playwright tests, fuzzer history, #id locators, test timeouts** | [testing_and_simulations.md](./references/rules/testing_and_simulations.md) | `qa/browser_testing_manual.md` |
+| **DBRouter isolation, Save Shield, SQL migrations, DB permissions** | [database_and_persistence.md](./references/rules/database_and_persistence.md) | `technical/save_system_manual.md` |
+| **Git operations, scratch files, destructive rollbacks, root setup scripts** | [git_and_workflow_safety.md](./references/rules/git_and_workflow_safety.md) | `SKILL.md` |
+| **Showdown engine delegation, 4 seats, UID team sync, illegal Pokemon lifecycle** | [game_engine_and_state.md](./references/rules/game_engine_and_state.md) | `battle/battle_mechanics_manual.md` |
+| **Battle engine logic, Showdown worker sync, choice loops, recharge states** | [battle_mechanics_manual.md](./references/battle/battle_mechanics_manual.md) | `rules/game_engine_and_state.md` |
+| **Mathematical formulas (Damage, Catch rate, Stat calculation, Escape)** | [game_formulas_manual.md](./references/core/game_formulas_manual.md) | `battle/battle_mechanics_manual.md` |
+| **Combat animations, GSAP timelines, sprite FX, camera shakes** | [animation_standards.md](./references/battle/animation_standards.md) | `technical/sass_styling_manual.md` |
+| **Active battle F5 reload, save serialization, anti-cheat minigames** | [battle_persistence_and_anti_cheat_manual.md](./references/battle/battle_persistence_and_anti_cheat_manual.md) | `rules/database_and_persistence.md` |
+| **Showdown protocol event translation to Spanish logs (`showdownBridge`)** | [bridge_guide.md](./references/battle/bridge_guide.md) | `battle/battle_mechanics_manual.md` |
+| **Database schemas, SQLite WASM, query proxies, Supabase RPCs** | [dbrouter_manual.md](./references/technical/dbrouter_manual.md) | `rules/database_and_persistence.md` |
+| **Save data schema, Valibot parsing, encryption, account storage** | [save_system_manual.md](./references/technical/save_system_manual.md) | `rules/database_and_persistence.md` |
+| **SASS mixins, CSS variables, GBA font rules, visual styling** | [sass_styling_manual.md](./references/technical/sass_styling_manual.md) | `core/ui_ux_standards.md` |
+| **Step-by-step QA testing protocols, DevTools shortcuts, verification matrix** | [browser_testing_manual.md](./references/qa/browser_testing_manual.md) | `rules/testing_and_simulations.md` |
+| **Pre-release audit checklists, gate verifications, release protocols** | [audit_checklist.md](./references/qa/audit_checklist.md) | `qa/validation_manual.md` |
+| **Content design, event authoring, quest crafting, and dialog trees** | [content_creation_manual.md](./references/content/content_creation_manual.md) | `core/game_mechanics_manual.md` |
+| **Low power mode, battery savings, mobile rendering throttling** | [low_power_mode_manual.md](./references/technical/low_power_mode_manual.md) | `technical/gpu_optimization_manual.md` |
+| **Specific gameplay systems (Daycare/Breeding, Gyms, Items, War, Trade, Spawn Grid)** | [systems/*_manual.md](./references/systems/) | `core/game_mechanics_manual.md` |
+| **Generation-specific capturing mechanics (Gen I through Gen IX)** | [systems/capturing/gen-*-capturing.md](./references/systems/capturing/) | `core/game_formulas_manual.md` |
+| **Historical & regional mechanics (Roulette, Honey Trees, Pokéwalker, Gen I RNG/Stats)** | [systems/gen-*](./references/systems/) | `core/game_mechanics_manual.md` |
+| **Database dialect translations (PostgreSQL to SQLite, legacy migrations)** | [migration/*_manual.md](./references/migration/) | `rules/database_and_persistence.md` |
 
 ---
 
-## 🧭 Navigation Hub
+### 📜 Master References Index
 
-### 📜 Specialized Agent Rule Modules
+#### 1. Specialized Agent Rule Modules (`references/rules/`)
+- [All Rules Index](./references/rules/README.md)
+- [TypeScript & Data Integrity](./references/rules/typescript_conventions.md)
+- [Testing & Simulations](./references/rules/testing_and_simulations.md)
+- [Database & Persistence](./references/rules/database_and_persistence.md)
+- [Git & Workflow Safety](./references/rules/git_and_workflow_safety.md)
+- [Game Engine & State](./references/rules/game_engine_and_state.md)
 
-| Domain / Topic | Specialized Reference Rule Module |
-| :--- | :--- |
-| **All Rules Index** | [references/rules/README.md](./references/rules/README.md) |
-| **TypeScript & Data Integrity** | [typescript_conventions.md](./references/rules/typescript_conventions.md) |
-| **Testing & Simulations** | [testing_and_simulations.md](./references/rules/testing_and_simulations.md) |
-| **Database & Persistence** | [database_and_persistence.md](./references/rules/database_and_persistence.md) |
-| **Git & Workflow Safety** | [git_and_workflow_safety.md](./references/rules/git_and_workflow_safety.md) |
-| **Game Engine & State** | [game_engine_and_state.md](./references/rules/game_engine_and_state.md) |
+#### 2. Technical & Architecture Manuals (`references/technical/`, `qa/`, `content/`, `migration/`)
+- [Domain Type First Skill](../domain-type-first/SKILL.md)
+- [Browser Testing Manual](./references/qa/browser_testing_manual.md)
+- [Validation & Quality Manual](./references/qa/validation_manual.md)
+- [Audit & Pre-Release Checklist](./references/qa/audit_checklist.md)
+- [Save System Manual](./references/technical/save_system_manual.md)
+- [DBRouter Manual](./references/technical/dbrouter_manual.md)
+- [Asset Service Manual](./references/technical/asset_service_manual.md)
+- [Animated Sprites Manual](./references/technical/animated_sprites_manual.md)
+- [GPU Optimization Manual](./references/technical/gpu_optimization_manual.md)
+- [Low Power Mode Manual](./references/technical/low_power_mode_manual.md)
+- [SASS Styling Manual](./references/technical/sass_styling_manual.md)
+- [Dependency Management](./references/technical/dependency_management_manual.md)
+- [Supabase Infrastructure](./references/technical/supabase_infrastructure_manual.md)
+- [MikroTik Routing Manual](./references/technical/mikrotik_routing_manual.md)
+- [Markdown Standards](./references/technical/markdown_standards.md)
+- [Content Creation Manual](./references/content/content_creation_manual.md)
+- [Legacy Migration Hub](./references/migration/legacy_migration_manual.md)
+- [DB Dialect Translation](./references/migration/db_translation_manual.md)
+- [PostgreSQL to SQLite](./references/migration/postgreSQL_to_SQLite.md)
 
-### 📘 Technical & Architecture Manuals
-
-| Domain | Reference Manual |
-| :--- | :--- |
-| **Domain Type First** | [.agents/skills/domain-type-first/SKILL.md](../../.agents/skills/domain-type-first/SKILL.md) |
-| **Markdown Standards** | [markdown_standards.md](./references/technical/markdown_standards.md) |
-| **Validation & Quality** | [validation_manual.md](./references/qa/validation_manual.md) |
-| **Browser Testing Manual** | [browser_testing_manual.md](./references/qa/browser_testing_manual.md) |
-| **Save System Manual** | [save_system_manual.md](./references/technical/save_system_manual.md) |
-| **DBRouter Manual** | [dbrouter_manual.md](./references/technical/dbrouter_manual.md) |
-| **Asset Service Manual** | [asset_service_manual.md](./references/technical/asset_service_manual.md) |
-| **Animated Sprites Manual**| [animated_sprites_manual.md](./references/technical/animated_sprites_manual.md) |
-| **GPU Optimization Manual**| [gpu_optimization_manual.md](./references/technical/gpu_optimization_manual.md) |
-| **SASS Styling Manual** | [sass_styling_manual.md](./references/technical/sass_styling_manual.md) |
-| **Dependency Management** | [dependency_management_manual.md](./references/technical/dependency_management_manual.md) |
-| **Supabase Infrastructure**| [supabase_infrastructure_manual.md](./references/technical/supabase_infrastructure_manual.md) |
-| **MikroTik Routing Manual** | [mikrotik_routing_manual.md](./references/technical/mikrotik_routing_manual.md) |
-| **Showdown Bridge Guide**| [bridge_guide.md](./references/battle/bridge_guide.md) |
-| **Showdown Source Code** | [external/pokemon-showdown-code/](../../../external/pokemon-showdown-code/) Source code of Pokémon Showdown (SSoT) |
-| **Legacy Migration Hub** | [legacy_migration_manual.md](./references/migration/legacy_migration_manual.md) |
-| **DB Dialect Translation** | [db_translation_manual.md](./references/migration/db_translation_manual.md) |
-| **PostgreSQL to SQLite** | [postgreSQL_to_SQLite.md](./references/migration/postgreSQL_to_SQLite.md) |
-
-### 📚 Game Mechanics & Systems References
-
-| Domain | Reference Documents |
-| :--- | :--- |
-| **Battle Systems** | - [Battle Mechanics](./references/battle/battle.md)<br>- [Battle Mechanics Manual](./references/battle/battle_mechanics_manual.md)<br>- [Battle Persistence & Anti-Cheat Manual](./references/battle/battle_persistence_and_anti_cheat_manual.md)<br>- [Battling Basics](./references/battle/battling-basics.md)<br>- [Animation Standards](./references/battle/animation_standards.md)<br>- [Combat Camera Manual](./references/battle/combat_camera_manual.md)<br>- [Weather Mechanics](./references/battle/weather_mechanics_standards.md)<br>- [Status Ailments](./references/core/status-ailments.md) |
-| **Core Systems & UI** | - [Game Mechanics Manual](./references/core/game_mechanics_manual.md)<br>- [Game Formulas Manual](./references/core/game_formulas_manual.md)<br>- [Time System Manual](./references/core/time_system_manual.md)<br>- [UI/UX Standards](./references/core/ui_ux_standards.md) |
-| **Stats & Growth** | - [Stat Mechanics](./references/systems/stats.md)<br>- [Stat Stages](./references/core/stat-stages.md)<br>- [EVs & Natures](./references/systems/evs-natures-and-math.md)<br>- [EV Mechanics Manual](./references/systems/ev_mechanics_manual.md)<br>- [Gen I Stat Modification](./references/systems/gen-i-stat-modification.md) |
-| **Evolutions & Breeding** | - [Evolution List](./references/systems/evolution-list.md)<br>- [Evolution Manual](./references/systems/evolution_manual.md)<br>- [Breeding Manual](./references/systems/breeding_manual.md) |
-| **Capturing Mechanics** | - [Gen I Capturing](./references/systems/capturing/gen-i-capturing.md)<br>- [Gen I Safari Zone](./references/systems/capturing/gen-i-safari-zone.md)<br>- [Gen II Capturing](./references/systems/capturing/gen-ii-capturing.md)<br>- [Gen III & IV Capturing](./references/systems/capturing/gen-iii-iv-capturing.md)<br>- [Gen V Capturing](./references/systems/capturing/gen-v-capturing.md)<br>- [Gen VI & VII Capturing](./references/systems/capturing/gen-vi-vii-capturing.md)<br>- [Gen VIII Capturing](./references/systems/capturing/gen-viii-capturing.md)<br>- [Gen IX Capturing](./references/systems/capturing/gen-ix-capturing.md) |
-| **Game Systems & World** | - [Encounter Manual](./references/systems/encounter_manual.md)<br>- [Item System Manual](./references/systems/item_system_manual.md)<br>- [Gym System Manual](./references/systems/gym_system_manual.md)<br>- [War System Manual](./references/systems/war_system_manual.md)<br>- [Trade & Social Manual](./references/systems/trade_social_manual.md)<br>- [Spawn Grid Manual](./references/systems/spawn_grid_manual.md)<br>- [Dungeon Equipment](./references/systems/mystery_dungeon_equipment_standards.md)<br>- [Gen III Roulette](./references/systems/gen-iii-roulette.md)<br>- [Sinnoh Honey Trees](./references/systems/sinnoh_honey-trees.md)<br>- [Pokéwalker](./references/systems/pokewalker.md) |
-| **RNG & Technical** | - [Gen I RNG Mechanics](./references/systems/gen-i-rng.md) |
+#### 3. Battle & Game Mechanics Manuals (`references/battle/`, `core/`, `systems/`)
+- [Battle Mechanics Manual](./references/battle/battle_mechanics_manual.md)
+- [Battle Persistence & Anti-Cheat Manual](./references/battle/battle_persistence_and_anti_cheat_manual.md)
+- [Showdown Bridge Guide](./references/battle/bridge_guide.md)
+- [Showdown Canonical Source Code](../../../external/pokemon-showdown-code/)
+- [Animation Standards](./references/battle/animation_standards.md)
+- [Combat Camera Manual](./references/battle/combat_camera_manual.md)
+- [Weather Mechanics Standards](./references/battle/weather_mechanics_standards.md)
+- [Battle Flow Overview](./references/battle/battle.md)
+- [Battling Basics](./references/battle/battling-basics.md)
+- [Status Ailments](./references/battle/status-ailments.md)
+- [Game Formulas Manual (Math SSoT)](./references/core/game_formulas_manual.md)
+- [Game Mechanics Manual](./references/core/game_mechanics_manual.md)
+- [Time System Manual](./references/core/time_system_manual.md)
+- [UI/UX Standards](./references/core/ui_ux_standards.md)
+- [Stat Stages](./references/systems/stat-stages.md)
+- [Base Stat Mechanics](./references/systems/stats.md)
+- [EVs, Natures & Math](./references/systems/evs-natures-and-math.md)
+- [EV Mechanics Manual](./references/systems/ev_mechanics_manual.md)
+- [Evolution Manual](./references/systems/evolution_manual.md)
+- [Evolution Methods Matrix](./references/systems/evolution-list.md)
+- [Breeding Manual](./references/systems/breeding_manual.md)
+- [Encounter Manual](./references/systems/encounter_manual.md)
+- [Gym System Manual](./references/systems/gym_system_manual.md)
+- [Item System Manual](./references/systems/item_system_manual.md)
+- [Spawn Grid Manual](./references/systems/spawn_grid_manual.md)
+- [Trade & Social Manual](./references/systems/trade_social_manual.md)
+- [Faction War Manual](./references/systems/war_system_manual.md)
+- [Gen I RNG Mechanics](./references/systems/gen-i-rng.md)
+- [Gen I Stat Modifications](./references/systems/gen-i-stat-modification.md)
+- [Gen III Game Corner Roulette](./references/systems/gen-iii-roulette.md)
+- [Sinnoh Honey Trees](./references/systems/sinnoh_honey-trees.md)
+- [Pokéwalker System](./references/systems/pokewalker.md)
+- [Mystery Dungeon Equipment](./references/systems/mystery_dungeon_equipment_standards.md)
+- [Capturing Mechanics (Gen I - IX)](./references/systems/capturing/)
 
 ---
 

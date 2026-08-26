@@ -24,7 +24,6 @@ Apply interpolation to the following CSS functions to prevent "X is not a color"
 - `filter: Drop-shadow(0 4px 8px rgba(0,0,0,0.5));`
 - `background: Radial-Gradient(...) / Linear-Gradient(...);` (Essential for weather overlays)
 
-> [!WARNING]
 > [!NOTE]
 > **SASS 2.0 Collision Protocol**: To prevent Dart Sass 2.0 collisions, standard CSS functions (`scale`, `rotate`, `invert`, `brightness`, etc.) must be capitalized. However, this process is **100% automated** by the Vite plugin (`vite-plugin-sass-traps.ts`) during HMR (Hot Module Replacement) and build. Developers and agents can write standard lowercase CSS properties, and Vite will automatically capitalize them.
 

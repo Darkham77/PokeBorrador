@@ -60,6 +60,7 @@ const handleCancel = () => {
         {{ message }}
       </p>
       <input 
+        id="prompt-modal-input"
         v-model="inputValue"
         :type="type"
         :placeholder="placeholder"
@@ -72,12 +73,14 @@ const handleCancel = () => {
     <template #footer>
       <div class="prompt-footer">
         <button 
+          id="prompt-modal-cancel-btn"
           class="btn-cancel" 
           @click.stop="handleCancel"
         >
           {{ cancelText }}
         </button>
         <button 
+          id="prompt-modal-confirm-btn"
           class="btn-confirm" 
           @click.stop="handleConfirm"
         >

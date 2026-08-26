@@ -104,6 +104,7 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
   <div class="social-tab-content">
     <div class="search-bar">
       <input 
+        id="social-search-input"
         v-model="searchQuery" 
         type="text" 
         placeholder="Nombre del entrenador o usuario..." 
@@ -119,6 +120,7 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
       <div class="filter-group">
         <label class="filter-label">FACCIÓN</label>
         <select
+          id="social-search-faction-select"
           v-model="filterFaction"
           class="filter-select"
         >
@@ -137,6 +139,7 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
       <div class="filter-group">
         <label class="filter-label">CLASE</label>
         <select
+          id="social-search-class-select"
           v-model="filterClass"
           class="filter-select"
         >
@@ -182,6 +185,7 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
           <div class="search-actions">
             <button 
               v-if="player.status === 'none'" 
+              :id="`social-search-send-btn-${player.id}`"
               class="btn-vicio-secondary btn-vicio-sm" 
               @click.stop="socialStore.sendFriendRequest(player.id)"
             >
@@ -190,6 +194,7 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
             
             <button 
               v-else-if="player.status === 'pending' && !player.isRequester"
+              :id="`social-search-accept-btn-${player.id}`"
               class="btn-vicio-success btn-vicio-sm" 
               @click.stop="player.relId && socialStore.respondRequest(player.relId, 'accepted')"
             >

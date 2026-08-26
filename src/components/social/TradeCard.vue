@@ -98,6 +98,7 @@ async function onClaim() {
         />
         <div class="trainer-texts">
           <span
+            :id="`trade-card-username-${trade.id}`"
             v-gsap-nick="cosmetics.nick_style || 'normal'"
             class="username clickable-username"
             :class="cosmetics.nick_style || 'normal'"
@@ -162,6 +163,7 @@ async function onClaim() {
       <!-- Incoming -->
       <template v-if="mode === 'incoming'">
         <button
+          :id="`trade-card-accept-btn-${trade.id}`"
           class="btn-vicio-success btn-vicio-sm accept-btn"
           :disabled="!canFulfill?.can"
           @click.stop="onAccept"
@@ -169,6 +171,7 @@ async function onClaim() {
           ACEPTAR
         </button>
         <button
+          :id="`trade-card-reject-btn-${trade.id}`"
           class="btn-vicio-danger btn-vicio-sm"
           @click.stop="onReject"
         >
@@ -179,6 +182,7 @@ async function onClaim() {
       <!-- Outgoing -->
       <template v-else-if="mode === 'outgoing'">
         <button
+          :id="`trade-card-cancel-btn-${trade.id}`"
           class="btn-vicio-danger btn-vicio-sm cancel-btn"
           @click.stop="onCancel"
         >
@@ -189,6 +193,7 @@ async function onClaim() {
       <!-- Accepted — dismiss card -->
       <template v-else-if="mode === 'accepted'">
         <button
+          :id="`trade-card-claim-btn-${trade.id}`"
           class="btn-vicio-success btn-vicio-sm claim-notif-btn"
           @click.stop="onClaim"
         >

@@ -46,7 +46,7 @@ the source of truth. `src/` must conform to them, never the reverse.
 
 3. **Event-Driven Architecture & Simulation as a Passive Joystick Mandate**:
    - **IMMUTABLE LAW — SIMULATION IS A PASSIVE JOYSTICK**: The game FSM is the SOLE authority for execution flow and input readiness. A simulation test script is strictly a passive joystick: it MUST ONLY react to explicit FSM readiness states (`WAIT_INPUT`, `SWITCH_MENU`, `over`, `REWARDS_PHASE`, `SEARCH_PHASE`) and public typed application events (`battle-ready-for-input`, `battle-forced-switch-required`).
-   - **IMMUTABLE LAW — GENUINE UI INTERACTIONS**: Every interaction after test setup MUST be performed through the same visible official UI control used by a player: buttons, menus, modal open/close controls, movement controls, move/item selectors, switch controls, and exit controls. Calling stores, composables, debug methods, DOM event dispatchers, or browser-side delegates to advance, confirm, close, choose, flee, move, or otherwise mutate gameplay is strictly forbidden.
+   - **IMMUTABLE LAW — GENUINE UI INTERACTIONS & 100% ID-BASED LOCATORS**: Every interaction after test setup MUST be performed through the same visible official UI control used by a player: buttons, menus, modal open/close controls, movement controls, move/item selectors, switch controls, and exit controls. Every UI interaction MUST locate elements strictly and exclusively by explicit ID (`page.locator('#<id>')`, `page.locator('[id="<id>"]')`, or `:id`). Locating elements by text content, string matching, generic CSS class lists, or XPath is STRICTLY FORBIDDEN. Calling stores, composables, debug methods, DOM event dispatchers, or browser-side delegates to advance, confirm, close, choose, flee, move, or otherwise mutate gameplay is strictly forbidden.
    - **OFFICIAL KEYBOARD ACTIVATION**: If pointer hover or a tooltip keeps an ID-selected official control unstable, focus that control and press `Enter`. This is a genuine player interaction and is required instead of force-clicking, coordinate clicking, or dispatching a synthetic event.
    - **IMMUTABLE LAW — NPC COMBAT ONLY**: Trainer, rival, gym, and every other NPC encounter is combat-only. Its official UI MUST NOT offer fleeing, and a simulation MUST select the combat control only. A visible or executable NPC flee path is a game defect to fix in `src/`, never a test escape hatch.
    - **NARROW BATTLE-INITIALIZATION EXCEPTION**: The sole permitted state injection is the initialization of a battle that reproduces a current, fuzzer-certified case. It may establish only the initial combat scenario and MUST NOT perform any subsequent gameplay action or transition. The test must then drive the battle exclusively through official visible UI controls. Manual scenarios without a fuzzer-certified battle have no injection exception.
@@ -209,11 +209,14 @@ The skill provides standardized templates under `.agents/skills/game-simulation/
 ---
 
 ## 🛠️ Holistic Diagnosis & Zero-Fallback Guidelines
-     2. **Review DOX & Architecture**: Inspect `AGENTS.md` and module architecture to understand the intended design and contracts.
-     3. **Reproduce via Unit Test**: Create or update a minimal Node unit test reproducing the exact issue.
-     4. **Fix at Upstream Root Cause**: Apply the fix cleanly at the origin in `src/` without compatibility adapters or silent fallbacks.
-   - **Combat Replay Decision Contract**: Every Playwright simulation that enters combat, including UI/FSM regressions for items, switching, status, capture, weather, or battle exit, MUST initialize a current fuzzer-certified case and reproduce its immutable `history`, `playerChoices`, `enemyChoices`, seed, and recorded IPB flags through the shared `ShowdownBattleRunner`. Playwright is a visible-UI replay client, not a second decision maker. A UI workflow requiring a combat state that the current fuzzer does not cover MUST first be generated and certified by the fuzzer; it must never be replaced by a manually constructed combat or real-AI decision stream. This rule applies only to combat: non-combat simulations such as trade, purchase, save, or navigation use their own domain contracts.
-   - Core runner classes (`ShowdownBattleRunner`) MUST retain their clean single-responsibility contracts: resolving choice stream indices for certified fuzzer batches, while delegating readiness checking internally without cluttering call sites.
+
+1. **Isolate Root Cause Trace**: Capture the exact failing log line or error boundary trace without truncation.
+2. **Review DOX & Architecture**: Inspect `AGENTS.md` and module architecture to understand the intended design and contracts.
+3. **Reproduce via Unit Test**: Create or update a minimal Node unit test reproducing the exact issue.
+4. **Fix at Upstream Root Cause**: Apply the fix cleanly at the origin in `src/` without compatibility adapters or silent fallbacks.
+
+- **Combat Replay Decision Contract**: Every Playwright simulation that enters combat, including UI/FSM regressions for items, switching, status, capture, weather, or battle exit, MUST initialize a current fuzzer-certified case and reproduce its immutable `history`, `playerChoices`, `enemyChoices`, seed, and recorded IPB flags through the shared `ShowdownBattleRunner`. Playwright is a visible-UI replay client, not a second decision maker. A UI workflow requiring a combat state that the current fuzzer does not cover MUST first be generated and certified by the fuzzer; it must never be replaced by a manually constructed combat or real-AI decision stream. This rule applies only to combat: non-combat simulations such as trade, purchase, save, or navigation use their own domain contracts.
+- Core runner classes (`ShowdownBattleRunner`) MUST retain their clean single-responsibility contracts: resolving choice stream indices for certified fuzzer batches, while delegating readiness checking internally without cluttering call sites.
 
 ---
 
@@ -298,7 +301,7 @@ The simulation infrastructure (Playwright, replayers, and deciders) must operate
    - **Per-Action Limit**: After the `battle-ready-for-input` or `battle-forced-switch-required` event is dispatched, the simulation must consume it within **5 seconds maximum** (`MAX_PER_ACTION_TIMEOUT_MS = 5000`) through its visible official control. If 5 seconds pass without consumption, the application must throw a fatal simulation error (`[SIMULATION-FATAL]`).
    - **Suite Total Limit**: Suite total timeouts must be configurable per test suite (e.g. calculated dynamically based on batch volume and complexity) without arbitrary hardcoding. Any adjustment must be recorded in the generated simulation progress artifact and MUST NOT alter any per-action timeout (strictly 5s), readiness condition, test case, or FSM transition.
    - **ABSOLUTE PROHIBITION ON INCREASING INTERACTION TIMEOUTS:** It is strictly forbidden to increase event consumption timeouts beyond 5 seconds. A per-action timeout failure is NEVER caused by a lack of time; it is ALWAYS an empirical indicator of a bug in `src/` (such as early returns, unhandled state desyncs, or silent promise freezes). The underlying code bug in `src/` must be diagnosed and fixed—never mask it by inflating timeouts.
-5. **Strict Mandatory UID-Based Element Locators**: All E2E simulations and Playwright test scripts MUST interact with UI components (such as Pokémon in selection modals, team drawers, and combat cards) EXCLUSIVELY using their unique identifiers (`data-pokemon-uid="${uid}"` or `data-item-id="${id}"`). Locating UI elements by text content (such as species names, nicknames, or strings) is STRICTLY FORBIDDEN to prevent desynchronization, translation errors, and font-rendering failures.
+5. **Strict Mandatory ID & UID-Based Element Locators**: All E2E simulations, Playwright test scripts, and UI automations MUST interact with UI components, buttons, inputs, modals, tabs, and cards EXCLUSIVELY using their unique explicit identifiers (`#<id>`, `data-pokemon-uid="${uid}"`, or `data-item-id="${id}"`). Locating UI elements by text content (such as button labels, species names, nicknames, or strings), CSS class hierarchies, or XPath is STRICTLY FORBIDDEN to prevent desynchronization, translation errors, and font-rendering failures. All Vue components in `src/components/` MUST provide explicit `id` or `:id` attributes on all interactive controls.
 
 ---
 
@@ -435,32 +438,32 @@ Every simulation script must support a `TEST_CASE` (or equivalent) filter to
 enable targeted re-runs. The E2E battle specs and fuzzer replayer support these env vars:
 
 ```bash
-# Para simulación E2E de Playwright (Navegador):
-TEST_CASE=<case-id>                 # Correr solo este caso (o lista separada por comas) en battle_fsm_sync
-TEST_CASE_ID=<case-id>              # Correr solo este caso (o lista separada por comas)
-TEST_START_FROM_CASE_ID=<id>        # Empezar desde este caso en adelante
-TEST_BATCH=<n>                      # Correr solo el lote N (ej: 1, 9, 17, 25)
+# For Playwright E2E Browser Simulation:
+TEST_CASE=<case-id>                 # Run only this case (or comma-separated list) in battle_fsm_sync
+TEST_CASE_ID=<case-id>              # Run only this case (or comma-separated list)
+TEST_START_FROM_CASE_ID=<id>        # Start from this case onward
+TEST_BATCH=<n>                      # Run only batch N (e.g. 1, 9, 17, 25)
 
-# Para depuración Headless (Súper Rápida, 1-2 segundos, sin navegador):
-TEST_CASE_ID=<case-id>              # Correr el replayer headless de un caso (o lista separada por comas)
+# For Headless Debugging (Super Fast, 1-2 seconds, pure Node.js without browser):
+TEST_CASE_ID=<case-id>              # Run the headless replayer for a case (or comma-separated list)
 ```
 
 > [!CAUTION]
 > **PROHIBITION OF -g / --grep IN PLAYWRIGHT:**
-> It is strictly forbidden to use Playwright's `-g` or `--grep` flag to filter individual test cases (e.g., `npx playwright test -g "lote de fuzzer #10"`). Using `-g` can spawn misconfigured parallel test threads without properly initializing the batch's state variables. Always use the project's official environment variables (`TEST_BATCH`, `TEST_CASE_ID`, etc.) for isolated and controlled executions.
+> It is strictly forbidden to use Playwright's `-g` or `--grep` flag to filter individual test cases (e.g., `npx playwright test -g "batch #10"`). Using `-g` can spawn misconfigured parallel test threads without properly initializing the batch's state variables. Always use the project's official environment variables (`TEST_BATCH`, `TEST_CASE_ID`, etc.) for isolated and controlled executions.
 
 > [!IMPORTANT]
-> **REGLA DE ORO DE RENDIMIENTO EN PRUEBAS:**
-> 1. **SIEMPRE PREFERIR EL REPLAY HEADLESS:** Si vas a verificar, depurar o testear la paridad de lógica, HP, FSM o estados de combate, **NUNCA** levantes el navegador con Playwright (`npm run sim:e2e:combat`). Usa siempre el replayer headless oficial:
+> **GOLDEN RULE OF TESTING PERFORMANCE:**
+> 1. **ALWAYS PREFER HEADLESS REPLAY FIRST:** When verifying, debugging, or testing logic, HP parity, FSM transitions, or combat states, **NEVER** launch the browser with Playwright (`npm run sim:e2e:combat`) initially. Always use the official headless replayer:
 >    ```bash
->    $env:TEST_CASE_ID="case-47212c07bc5d"; npm run sim:fuzzer:trace
+>    TEST_CASE_ID="case-47212c07bc5d" npm run sim:fuzzer:trace
 >    ```
->    Este script corre en Node.js puro y termina en 1-2 segundos, mientras que Playwright tarda más de 30-40 segundos por caso al instanciar el navegador y el servidor Vite.
-> 2. **FILTRADO MULTICASO:** Para ejecutar un conjunto específico de casos (ej: 10 casos que fallaron), pásalos separados por coma:
+>    This script runs in pure Node.js and finishes in 1-2 seconds, whereas Playwright takes 30-40+ seconds per case by launching browser and Vite instances.
+> 2. **MULTI-CASE FILTERING:** To execute a specific set of failing cases (e.g. 10 failing cases), pass them separated by commas:
 >    ```bash
->    $env:TEST_CASE_ID="case-47212c07bc5d,case-006487488a68,case-153adc178311"; npm run sim:fuzzer:trace
+>    TEST_CASE_ID="case-47212c07bc5d,case-006487488a68,case-153adc178311" npm run sim:fuzzer:trace
 >    ```
-> 3. **PLAYWRIGHT SOLO PARA REGRESIONES FINALES:** Reserva la simulación de navegador Playwright únicamente para validar regresiones finales (una vez que los casos pasen en headless) o para probar comportamientos visuales/reactivos de la UI (ej: modales, animaciones GSAP, arrastrar elementos).
+> 3. **RESERVE PLAYWRIGHT FOR FINAL REGRESSIONS:** Reserve Playwright browser simulations exclusively for validating final regressions (after cases pass in headless) or for testing visual/reactive UI behaviors (e.g. modals, GSAP animations, dragging elements).
 
 ### E2E Multi-Error Logging Mode (Mass-Debugging)
 
@@ -682,4 +685,4 @@ for read-only diagnostics only. They MUST NOT be used for synchronization pollin
 gameplay interactions. The only allowed mutation is the narrow, fuzzer-certified
 battle-initialization exception above; all subsequent interaction must use the
 official visible UI. See `@/project-browser-testing` and
-`@/project-standards/references/browser_testing_manual.md` for the full protocol.
+`@/project-standards/references/qa/browser_testing_manual.md` for the full protocol.

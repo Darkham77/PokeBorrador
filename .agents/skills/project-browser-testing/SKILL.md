@@ -1,12 +1,12 @@
 ---
 name: project-browser-testing
-description: E2E test orchestrator. Delegates environment and simulation protocols to the `@/project-standards/references/browser_testing_manual.md` manual.
+description: E2E test orchestrator. Delegates environment and simulation protocols to the `@/project-standards/references/qa/browser_testing_manual.md` manual.
 ---
 
 # Skill: Browser Testing (Orchestrator)
 
 > [!IMPORTANT]
-> To perform browser testing, you **MUST** follow the login and simulation protocol detailed in the [Browser Testing Manual](../project-standards/references/browser_testing_manual.md).
+> To perform browser testing, you **MUST** follow the login and simulation protocol detailed in the [Browser Testing Manual](../project-standards/references/qa/browser_testing_manual.md).
 
 ## Execution Flow
 

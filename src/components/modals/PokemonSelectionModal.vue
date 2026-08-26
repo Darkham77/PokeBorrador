@@ -361,6 +361,7 @@ function openDetail(item: PokemonSelectionItemEntry) {
           {{ selectedUids.length }} / {{ props.maxSelect || 1 }} SELECCIONADOS
         </div>
         <button 
+          id="pokemon-selection-confirm-btn"
           class="btn-confirm" 
           :disabled="selectedUids.length < (props.minSelect || 1)"
           @click.stop="confirm"

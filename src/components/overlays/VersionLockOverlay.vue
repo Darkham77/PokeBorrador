@@ -32,12 +32,14 @@ const emit = defineEmits<{
 
     <template #actions>
       <button
+        id="version-lock-retry-btn"
         class="action-btn"
         @click.stop="emit('retry')"
       >
         REINTENTAR
       </button>
       <button
+        id="version-lock-logout-btn"
         class="action-btn secondary-btn"
         @click.stop="emit('logout')"
       >

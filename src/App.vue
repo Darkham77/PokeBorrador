@@ -386,6 +386,7 @@ const onLoadingLeave = (el: Element, done: () => void) => {
             #actions
           >
             <button
+              id="app-loading-overlay-update-btn"
               class="pv-button-retro"
               @click.stop="handleUpdate()"
             >

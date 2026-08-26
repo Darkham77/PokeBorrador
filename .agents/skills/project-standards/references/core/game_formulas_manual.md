@@ -39,7 +39,7 @@ Stat and Accuracy/Evasion stage multipliers have been moved to the canonical ref
 
 All equations and rules regarding escaping wild battles and capturing wild Pokémon are detailed in the corresponding generation-specific references:
 - **Escape Chance**: Calculated dynamically based on generation speed checks (Gen 2 vs Gen 4+).
-- **Capture Formulas**: Documented in [Gen I Capturing](./../systems/gen-i-capturing.md) through [Gen IX Capturing](./../systems/gen-ix-capturing.md), including specialized zones like [Gen I Safari Zone](./../systems/gen-i-safari-zone.md) and custom ball multipliers.
+- **Capture Formulas**: Documented in [Gen I Capturing](../systems/capturing/gen-i-capturing.md) through [Gen IX Capturing](../systems/capturing/gen-ix-capturing.md), including specialized zones like [Gen I Safari Zone](../systems/capturing/gen-i-safari-zone.md) and custom ball multipliers.
 
 ---
 

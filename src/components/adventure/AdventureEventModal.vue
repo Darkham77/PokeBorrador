@@ -51,6 +51,7 @@ const emit = defineEmits<{
 
       <button
         v-if="activeEvent.type === 'combat_won'"
+        id="adv-event-resume-btn"
         class="btn-vicio-primary"
         style="width: 100%; padding: 10px; font-size: 8px;"
         @click="emit('resume')"
@@ -60,6 +61,7 @@ const emit = defineEmits<{
       <template v-else>
         <button
           v-if="!activeEvent.moRequired || activeHMs.has(activeEvent.moRequired)"
+          id="adv-event-resolve-btn"
           class="btn-vicio-primary"
           style="width: 100%; padding: 10px; font-size: 8px;"
           @click="emit('resolve')"
@@ -68,6 +70,7 @@ const emit = defineEmits<{
         </button>
         <button
           v-else
+          id="adv-event-bypass-btn"
           class="btn-vicio-secondary"
           style="width: 100%; padding: 10px; font-size: 8px;"
           @click="emit('resolve')"

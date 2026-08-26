@@ -315,7 +315,8 @@ const handleServerChange = () => {
           <span class="pwa-progress-text">{{ progressText }}</span>
         </div>
         <button 
-          v-else 
+          v-else
+          id="login-pwa-update-btn" 
           class="pv-button-retro update-btn" 
           @click.stop="() => handleUpdate({ forceNoSave: true })"
         >
@@ -326,6 +327,7 @@ const handleServerChange = () => {
       <template v-else>
         <div class="auth-tabs">
           <button
+            id="login-auth-tab-login"
             class="auth-tab"
             :class="{ active: authTab === 'login' }"
             @click.stop="switchAuthTab('login')"
@@ -335,6 +337,7 @@ const handleServerChange = () => {
             Iniciar Sesión
           </button>
           <button
+            id="login-auth-tab-signup"
             class="auth-tab"
             :class="{ active: authTab === 'signup' }"
             @click.stop="switchAuthTab('signup')"
@@ -438,6 +441,7 @@ const handleServerChange = () => {
           class="auth-pwa-install"
         >
           <button
+            id="login-pwa-install-btn"
             class="pwa-install-btn"
             @click.stop="handleInstallApp"
           >

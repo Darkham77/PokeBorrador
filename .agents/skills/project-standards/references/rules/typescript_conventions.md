@@ -1,6 +1,13 @@
 # TypeScript Conventions & Data Integrity Rules
 
-This document governs TypeScript standards, domain type definitions, data wrappers, security mandates, code health audits, and Node.js modernization across the Poké Vicio repository.
+> **Scope & Authority**: This document governs **compiler integrity, domain type enforcement, typed JSON wrappers, Java-style strict typing, zero-hiding security policies, and Fallow health governance (≥85/100)** across Poké Vicio.
+>
+> 🛑 **Domain Boundaries & Redirection**:
+> - For full domain typing methodology and union derivation principles ➔ See [@/domain-type-first](../../../domain-type-first/SKILL.md).
+> - For database schemas, Valibot parsing, and SQLite/Supabase DTOs ➔ See [Database & Persistence](./database_and_persistence.md) and [Save System Manual](../technical/save_system_manual.md).
+> - For game engine states and constants ➔ See [Game Engine & State](./game_engine_and_state.md).
+
+---
 
 ## 1. Zero-Ignore & Zero-Any Policies
 
@@ -59,8 +66,10 @@ This document governs TypeScript standards, domain type definitions, data wrappe
 
 ## 5. Fallow Configuration Maintenance & Health Score Mandate (Minimum 85/100)
 
-- Every repository change must maintain or improve the codebase health score produced by Fallow. The global health score MUST remain >= 85/100.
-- All structural complexity, unused variables, dead code, and duplication flagged by Fallow must be addressed before commits.
+- **Mandatory Score**: The overall codebase health score computed by Fallow (`npx fallow health --score`) MUST be at least **85/100**. Scores below 85 are strictly non-compliant.
+- **Hotspot Optimization**: Whenever the score drops below 85, developers and AI agents MUST inspect Fallow's targets (`npx fallow health --targets --hotspots`), eliminate dead code, lower function/module complexity, and refactor iteratively until the score is strictly 85 or higher.
+- **Pre-Commit Hygiene**: All structural complexity, unused variables, dead code, and duplication flagged by Fallow must be addressed before commits.
+- **Config Maintenance**: When refactoring files, changing directory structures, or renaming modules, update `.fallowrc.json` (especially `ignoreExports` paths) to reflect the new paths, preventing stale references.
 
 ## 6. Strict Zero Error Suppression Mandate
 
@@ -70,17 +79,12 @@ This document governs TypeScript standards, domain type definitions, data wrappe
   - Empty `catch` blocks or silent swallowing of unexpected exceptions.
 - **Fail Loudly & At the Source**: When assets, schemas, simulation steps, or domain invariants violate rules or technical limits, the code MUST throw an explicit, descriptive error immediately (`throw new Error(...)`) so the issue is resolved at the source (asset generation, fuzzer setup, or canonical database).
 
-
-- **Mandatory Score**: The overall codebase health score computed by Fallow (`npx fallow health --score`) MUST be at least **85/100**. Scores below 85 are strictly non-compliant.
-- **Hotspot Optimization**: Whenever the score drops below 85, developers and AI agents MUST inspect Fallow's targets (`npx fallow health --targets --hotspots`), eliminate dead code, lower function/module complexity, and refactor iteratively until the score is strictly 85 or higher.
-- **Config Maintenance**: When refactoring files, changing directory structures, or renaming modules, update `.fallowrc.json` (especially `ignoreExports` paths) to reflect the new paths, preventing stale references.
-
-## 6. External Repositories Exclusion
+## 7. External Repositories Exclusion
 
 - External reference codebases live under `external/` (e.g. `external/pokemon-showdown-code/`, `external/pokemon-showdown-ai/`).
 - This entire directory MUST be completely excluded from project code audits, type-checking scopes, linting, and DOX documentation requirements. The `external/` entry is configured in `IGNORE_DIRS` in audit scripts and in ESLint/Fallow ignore patterns.
 
-## 7. Node.js 26+ Modernization & Script Rules
+## 8. Node.js 26+ Modernization & Script Rules
 
 - **Temporal Usage**: Use `Temporal` instead of `Date` for engine logic.
 - **Node Imports**: Mandatory use of `node:` prefix for built-in imports (e.g. `import path from 'node:path'`).
@@ -88,11 +92,11 @@ This document governs TypeScript standards, domain type definitions, data wrappe
 - **Explicit Resource Management**: Mandatory use of `using` for file handles and database connections in Node scripts.
 - **Native Test & Timer Promises**: Prefer `node:test` for pure logic unit tests (non-browser). Prefer `node:timers/promises` for delays in utility/maintenance scripts (Note: 0 timers remain strictly enforced in client/game logic).
 
-## 8. Cross-Platform Path Standard
+## 9. Cross-Platform Path Standard
 
 - For converting platform-specific filesystem paths (e.g., from `path.relative`) to POSIX format (such as browser URLs, assets keys, database indexes), you MUST use native split/join operations with separator tokens (`relPath.split(path.sep).join(path.posix.sep)`) instead of regex expressions or simple replace statements. This ensures generated files remain identical across Windows, Linux, and macOS.
 
-## 9. Strict Schema Governance & Zero Optional Mandate for Domain Entities
+## 10. Strict Schema Governance & Zero Optional Mandate for Domain Entities
 
 - **No `optional()` on Intrinsically Mandatory Domain Fields**: Fields that are conceptually mandatory or part of core domain entities (e.g., `isShiny: boolean`, `uid: string`, `expNeeded: number`, `ready: boolean`, `status: PokemonStatus`) MUST NEVER be defined with `optional()` or `fallback()` in Valibot schemas or TypeScript domain contracts.
 - **Static Migration Backfill Requirement**: If historical data lacks mandatory fields, the schema MUST NOT be relaxed to accommodate the omission. Instead, a static database migration MUST be authored in SQL to backfill canonical default values for all existing records.

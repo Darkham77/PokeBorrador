@@ -25,14 +25,13 @@ The **ABSOLUTE PRIMARY OBJECTIVE** of this skill is to perform a **SOURCE CODE C
 - There is **NO minimum quota** of bugs per audit run.
 - It is **STRICTLY FORBIDDEN** to implement fallback values, default object returns, silent recovery adapters, or runtime auto-choice fallbacks when a missing property, asset, sprite, disabled move, or mapping error occurs. Intercepting choice rejections in `src/` to substitute default moves or call fallback agents is STRICTLY PROHIBITED. A missing value, coordinate, or invalid choice is a defect that MUST fail fast and loudly (`throw new Error(...)`). Adding a fallback to "make the build pass" or "make the test pass" masks bugs and is considered deliberate sabotage of system integrity.
 - If the diagnostic suite and manual comparison find **0 real divergences**, the correct and honest output is:
-  > "✅ Auditoría completa: 0 divergencias reales encontradas. El codebase está en paridad 1:1 con Showdown."
+  > "✅ Full audit complete: 0 real divergences found. The codebase is in 1:1 parity with Pokémon Showdown."
 - Inventing entries, splitting trivially, or cataloging already-resolved behavior to look productive is **STRICTLY FORBIDDEN** and constitutes deliberate deception of the user.
 
 ### PROHIBITION 2b — NEVER introduce or tolerate naked `string` for finite domain values
 
 - It is **STRICTLY FORBIDDEN** to introduce or leave any field, parameter, or variable typed as `string` (or `string[]`) when its value belongs to a finite, known domain (e.g., Pokémon types, natures, weather mechanics, NPC archetypes, move categories, status effects, obtained methods). Every such domain MUST have a strict TypeScript type declared as a union type or derived via `as const` + `keyof` / `(typeof ARRAY)[number]`, and used at every call site. Passing the wrong domain value MUST produce a TypeScript compile error — if it doesn't, the type is wrong and must be fixed.
 - During any audit, whenever a `string` field is found where a finite domain applies, it MUST be flagged as a type-safety defect and fixed by declaring the proper domain type, never by widening or adding `| string` to suppress errors.
-
 
 ### PROHIBITION 3 — NEVER overwrite `implementation_plan.md` or `task.md` with partial content
 
@@ -43,20 +42,20 @@ The **ABSOLUTE PRIMARY OBJECTIVE** of this skill is to perform a **SOURCE CODE C
 
 ### PROHIBITION 4 — NEVER skip updating `task.md` after each work phase
 
+- After finishing any phase (test creation, cataloging, fixes), the agent **MUST IMMEDIATELY** update `task.md`.
+- `task.md` uses: `[ ]` pending, `[/]` in progress, `[x]` completed.
+
 ### PROHIBITION 5 — NEVER truncate fuzzer battles artificially or maintain permanent cheats
 
 - Fuzzer battles MUST run in two distinct phases: (1) Cheat-assisted testing (IPB) while moves/abilities are untested, followed immediately by (2) Natural unassisted combat completion as soon as all items in the batch are certified `PASS`.
 - It is **STRICTLY FORBIDDEN** to introduce artificial `break` statements, early loop exits, or synthetic truncations when testing finishes.
 - Cheats MUST be turned off once testing completes, and the battle MUST execute turn-by-turn naturally until `battle.ended === true` to produce clean, complete choice streams for Playwright E2E browser replays.
 
-- After finishing any phase (test creation, cataloging, fixes), **MUST IMMEDIATELY** update `task.md`.
-- `task.md` uses: `[ ]` pending, `[/]` in progress, `[x]` completed.
-
-### PROHIBITION 5 — NEVER reconstruct lost content from scratch without reading the transcript first
+### PROHIBITION 6 — NEVER reconstruct lost content from scratch without reading the transcript first
 
 - If content is lost, the MANDATORY recovery path is:
 ```
-<appDataDir>\brain\<conversation-id>\.system_generated\logs\transcript.jsonl
+<appDataDir>/brain/<conversation-id>/.system_generated/logs/transcript.jsonl
 ```
 
 ### MANDATE — Audit Objective-Driven Cooperative Fuzzer Heuristics
@@ -139,7 +138,7 @@ The number of cataloged bugs = number of suspects that fail RED. This may be 0, 
 2. Runs tests for all 20
 3. 3 fail RED → catalogs 3 real bugs
 4. 17 pass GREEN → discards them with a note per suspect
-5. Reports: "Investigué 20 áreas. 3 bugs reales confirmados."
+5. Reports: "Investigated 20 candidate areas. 3 real bugs confirmed."
 ```
 
 **Correct protocol:**
@@ -236,13 +235,13 @@ graph TD
 4. **Stage 2 — Confirm each suspect with a test**: For each of the ≥20 suspects, write a test designed to FAIL if the divergence is real, run it, and observe the result:
    - **RED** → real bug confirmed → catalog it.
    - **GREEN** → feature already works → discard the suspect with a brief note.
-5. Report summary: `"Investigué N áreas. X bugs reales confirmados por test RED."` where X may be 0.
+5. Report summary: `"Investigated N candidate areas. X real bugs confirmed by RED test results."` where X may be 0.
 
 
 ### Phase 2: Catalog Confirmed Bugs (RED only)
 
 - Add each confirmed RED bug to the **Master 1:1 Bug Table** in `implementation_plan.md`.
-- If 0 bugs confirmed: produce a clean "0 divergencias" report. Do NOT write placeholder entries.
+- If 0 bugs confirmed: produce a clean "0 divergences" report. Do NOT write placeholder entries.
 - Update `task.md` immediately.
 
 ### Phase 3: Mandatory Safety Stop — Present RED Bugs & Request Approval

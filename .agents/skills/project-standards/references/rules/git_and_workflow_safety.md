@@ -1,6 +1,13 @@
 # Git Safety, Environment & Workflow Protocols
 
-This document governs Git operations, safety confirmations, uncommitted file protection, environment setup scripts, artifact governance, and output folder standards across Poké Vicio.
+> **Scope & Authority**: This document governs **Git safety confirmations, rollback protocols, uncommitted file protection, scratch directory mandates, prohibition on autonomous commits/pushes, root setup scripts SSoT, and artifact lifecycles** across Poké Vicio.
+>
+> 🛑 **Domain Boundaries & Redirection**:
+> - For full Safe Commit validation pipeline and commit message standards ➔ See [@/safe-commit](../../../safe-commit/SKILL.md).
+> - For dependency management and package hygiene ➔ See [Dependency Management Manual](../technical/dependency_management_manual.md).
+> - For DOX documentation maintenance ➔ See [Markdown Standards](../technical/markdown_standards.md) and [@/dox-navigator](../../../dox-navigator/SKILL.md).
+
+---
 
 ## 1. Rollback & Destructive Action Confirmations
 
@@ -24,8 +31,8 @@ This document governs Git operations, safety confirmations, uncommitted file pro
 ## 5. Root Setup Scripts SSoT & Dynamic Versioning Governance
 
 - **Root Setup Scripts SSoT**: Initial environment configuration, Node version updates, and NVM fixes MUST be executed exclusively via the root setup scripts:
-  - Windows: [`setup-windows.ps1`](../../../setup-windows.ps1) (`PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1`)
-  - Linux / macOS: [`setup-linux.sh`](../../../setup-linux.sh) (`chmod +x ./setup-linux.sh && ./setup-linux.sh`)
+  - Windows: [`setup-windows.ps1`](../../../../../setup-windows.ps1) (`PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1`)
+  - Linux / macOS: [`setup-linux.sh`](../../../../../setup-linux.sh) (`chmod +x ./setup-linux.sh && ./setup-linux.sh`)
 - **Zero-Hardcode Versioning Policy**: It is STRICTLY FORBIDDEN to hardcode Node.js or npm version numbers inside environment setup scripts, maintenance tools, or documentation tutorials. All scripts MUST dynamically parse the required version from the `"engines"` field in `package.json` (`pkgContent.engines.node`).
 - **Environment Audit & Pre-Check**: Pre-install checks (`node --experimental-strip-types scripts/maintenance/check_environment.ts`) automatically validate runtime environment requirements. Whenever outdated Node/npm versions or broken Windows NVM symlinks are detected, instruct the user to run the appropriate root setup script.
 

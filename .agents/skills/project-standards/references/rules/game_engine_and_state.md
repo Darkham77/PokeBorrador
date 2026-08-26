@@ -1,12 +1,21 @@
 # Game Engine, Visuals & State Rules
 
-This document governs Pokémon Showdown integration, active generation SSoT, move execution single source of truth, zero-timer clock standards, real-time UID team synchronization, 4-seat compatibility, visual shell integrity, and entity identifier formatting across Poké Vicio.
+> **Scope & Authority**: This document governs **high-level engine invariants, Showdown integration boundaries, 4-seat generic design, UID team synchronization, visual shell rules, and illegal Pokémon quarantine** across Poké Vicio.
+>
+> 🛑 **Domain Boundaries & Redirection**:
+> - For detailed battle engine mechanics, choice loops, and worker turn resolution ➔ See [Battle Mechanics Manual](../battle/battle_mechanics_manual.md).
+> - For mathematical formulas (damage, catch rates, stats, escape) ➔ See [Game Formulas Manual](../core/game_formulas_manual.md).
+> - For combat animations and GSAP timelines ➔ See [Animation Standards](../battle/animation_standards.md).
+> - For in-flight combat save persistence and F5 anti-cheat ➔ See [Battle Persistence & Anti-Cheat Manual](../battle/battle_persistence_and_anti_cheat_manual.md).
+
+---
 
 ## 1. Showdown Source of Truth & Move Execution SSoT
 
 - **Source Code Reference**: The local directory `external/pokemon-showdown-code/` contains the official Pokémon Showdown source code (`https://github.com/pkmn/ps.git`) and MUST be used as the canonical source of truth for algorithms, battle engine logic, and state transitions.
 - **Single Source of Truth for Move Execution**: The Pokémon Showdown Web Worker engine (`showdown.worker.ts` via `@pkmn/sim`) handles 100% of battle math, damage calculations, accuracy checks, stat boosts, weather effects, terrain, entry hazards, and abilities. Dual-engine calculations and manual hazard/ability handlers in client code (such as legacy `moveExecutor` or custom switch actions) are strictly prohibited.
 - **Active Generation SSoT**: It is STRICTLY FORBIDDEN to hardcode the Pokémon Showdown generation (`genX`, `gen5`, etc.) anywhere in the codebase. All battle initializations and formats MUST dynamically reference `ACTIVE_GENERATION` (e.g. `gen${ACTIVE_GENERATION}customgame` or `getShowdownFormatId()`).
+- **Battle Mechanics & Engine Protocol SSoT**: All battle mechanics, worker synchronization protocols, choice loop resolution, recharge handling, and FSM transition matrices are documented strictly and exclusively in the [Battle Mechanics Manual](../battle/battle_mechanics_manual.md).
 
 ## 2. Zero-Timer & GSAP Clock Mandate
 
@@ -51,8 +60,3 @@ This document governs Pokémon Showdown integration, active generation SSoT, mov
   - **Trading & Selling**: Prohibited from P2P trade, Market/GTS publishing, and Team Rocket / Black Market sales ($0 value).
   - **Breeding & Daycare**: Prohibited from Daycare deposits, breeding inheritance, and expedition mission fulfillment.
   - **Combat**: Prohibited from joining active battle teams, Arena PvP lineups, Faction War rosters, and triggering any battle sequence.
-
-## 9. Showdown Choice Loop & Mid-Turn Resolution Invariant
-
-- **Choice Loop Mid-Turn Resolution**: When resolving multi-seat choices in `ShowdownBattleEngine`, the engine must capture `startTurn = battle.turn` and `startReqState = battle.requestState`. If any choice submission causes Showdown to transition the turn or switch request state, subsequent seat iterations for that turn must halt immediately to prevent submitting outdated choices to Showdown.
-- **GSAP Event-Driven Decoupling**: Visual animations and state machine transitions remain fully event-driven via GSAP timelines and public typed events (`battle-ready-for-input`, `battle-forced-switch-required`), decoupled from the internal step iterations of the simulation engine.

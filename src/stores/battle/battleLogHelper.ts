@@ -25,6 +25,10 @@ export function createBattleLoggerHelper(
     const logItem = formatBattleLog(msg, type, source as BattleSource, ctx)
     if (sideOverride) logItem.side = sideOverride
 
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('battle-log-added', { detail: logItem }))
+    }
+
     logQueue.value.push(logItem)
     if (!isProcessingLogs.value) processNextLog()
   }

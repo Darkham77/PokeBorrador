@@ -170,6 +170,7 @@ const handlePokemonClick = (index: number) => {
             position="top"
           >
             <button
+              id="box-view-rocket-trigger-btn"
               class="rocket-trigger-btn"
               @click.stop="toggleRocketMode"
             >
@@ -183,6 +184,7 @@ const handlePokemonClick = (index: number) => {
             position="top"
           >
             <button
+              id="box-view-release-trigger-btn"
               class="release-trigger-btn"
               @click.stop="toggleReleaseMode"
             >
@@ -223,6 +225,7 @@ const handlePokemonClick = (index: number) => {
 
       <div class="action-buttons">
         <button
+          id="box-view-cancel-mode-btn"
           class="btn-cancel"
           @click.stop="isRocketMode ? toggleRocketMode() : toggleReleaseMode()"
         >
@@ -230,6 +233,7 @@ const handlePokemonClick = (index: number) => {
         </button>
         <button 
           v-if="isRocketMode"
+          id="box-view-confirm-rocket-btn"
           class="btn-confirm-rocket" 
           :disabled="boxStore.boxRocketSelected.length === 0"
           @click.stop="handleConfirmRocketSell"
@@ -238,6 +242,7 @@ const handlePokemonClick = (index: number) => {
         </button>
         <button 
           v-else
+          id="box-view-confirm-release-btn"
           class="btn-confirm-release" 
           :disabled="boxStore.boxReleaseSelected.length === 0"
           @click.stop="handleConfirmRelease"

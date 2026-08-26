@@ -182,6 +182,7 @@ const consumeItem = (id: string) => {
 
     <template #footer>
       <button
+        id="move-relearner-cancel-btn"
         class="btn-vicio-secondary btn-vicio-full"
         @click.stop="handleClose"
       >

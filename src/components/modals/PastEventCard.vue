@@ -98,6 +98,7 @@ const onClaimClick = (awardId?: string) => {
       <div class="award-action-slot">
         <button
           v-if="item.hasUnclaimedAward && item.myAward?.id"
+          :id="'claim-past-award-btn-' + (item.myAward?.id || item.id)"
           class="retro-btn claim-btn"
           @mouseenter="onBtnHover($event, true)"
           @mouseleave="onBtnHover($event, false)"

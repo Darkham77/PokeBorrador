@@ -187,10 +187,12 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
                   await runMigrations()
                   await setToIDB(_sqliteKey, binary)
                   await setToIDB(_sqliteKey + '_backup', binary)
-                  try {
-                    await devFetch('/api/dev-import-db-cleanup', _sqliteKey, { method: 'POST' })
-                  } catch (_e) {
-                    void 0;
+                  if (typeof window === 'undefined' || !window.__GTS_SIMULATION__) {
+                    try {
+                      await devFetch('/api/dev-import-db-cleanup', _sqliteKey, { method: 'POST' })
+                    } catch (_e) {
+                      void 0;
+                    }
                   }
                   return _sqliteDb
                 } catch (schemaErr) {

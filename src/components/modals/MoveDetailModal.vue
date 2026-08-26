@@ -123,6 +123,7 @@ const hexToRgba = (hex: string, alpha: number) => {
 
     <template #footer>
       <button
+        id="move-detail-close-btn"
         class="action-btn pixelated"
         @click.stop="emit('close')"
       >

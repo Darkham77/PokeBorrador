@@ -81,6 +81,11 @@ const FULL_AUDIT_TASKS: AuditTask[] = [
     name: 'Save Migrations Verification',
     command: 'node',
     args: ['--permission', '--experimental-strip-types', '--allow-fs-read=.', '--allow-fs-write=.', 'scripts/validation/validate_save_migrations.ts']
+  },
+  {
+    name: 'Markdown Relative Links & DOX Integrity',
+    command: 'node',
+    args: ['--permission', '--experimental-strip-types', '--allow-fs-read=.', 'scripts/validation/validate_markdown_links.ts', '--errors-only']
   }
 ];
 

@@ -377,6 +377,7 @@ onUnmounted(() => {
         
         <button 
           v-if="event.type === 'competition'" 
+          :id="'event-participate-btn-' + event.id"
           class="retro-btn action"
           :class="{ 'is-enrolled': !!participatingPokemon }"
           @mouseenter="onBtnHover($event, true)"

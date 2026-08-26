@@ -10,7 +10,7 @@ license: MIT
 
 Apply when building multi-step animations, coordinating several tweens in sequence or parallel, or when the user asks about timelines, sequencing, or keyframe-style animation in GSAP.
 
-**Related skills:** For single tweens and eases use [gsap-core](../gsap-core/SKILL.md); for scroll-driven timelines use [gsap-scrolltrigger](../gsap-scrolltrigger/SKILL.md); for React use [gsap-react](../gsap-react/SKILL.md).
+**Related skills:** For single tweens and eases use [gsap-core](../gsap-core/SKILL.md); for scroll-driven timelines use [gsap-scrolltrigger](../gsap-scrolltrigger/SKILL.md); for React use gsap-react.
 
 ## Creating a Timeline
 

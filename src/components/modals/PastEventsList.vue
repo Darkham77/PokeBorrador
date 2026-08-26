@@ -26,7 +26,7 @@ const handleClaim = async (awardId: string) => {
           ÚLTIMOS CONCURSOS Y GANADORES
         </h3>
       </div>
-      <span class="section-subtitle">Últimos 10 eventos con recompensa</span>
+      <span class="section-subtitle">Últimos 20 eventos con recompensa</span>
     </div>
 
     <div class="past-events-scrollable custom-scrollbar">

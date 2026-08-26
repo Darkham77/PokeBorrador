@@ -209,7 +209,9 @@ export interface CompetitionEntry {
   submitted_at?: string; // domain-ok
 }
 
-export type CompetitionRank = 'first' | 'second' | 'third' | number;
+export const COMPETITION_RANKS = ['first', 'second', 'third'] as const;
+export type CompetitionRankKey = (typeof COMPETITION_RANKS)[number];
+export type CompetitionRank = CompetitionRankKey | number;
 
 export interface PastCompetitionWinner {
   rank: CompetitionRank;

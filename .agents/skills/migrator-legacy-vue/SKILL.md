@@ -21,7 +21,7 @@ Every migration task **MUST** follow these phases. Do not skip any phase.
 ### Phase 1: Deep Audit & Comparison
 
 1. Locate the legacy source (if available or described).
-2. **Read the Tracker**: Consult [migration_tracker.md](docs/migration_tracker.md) to understand the current progress and pending items.
+2. **Read the Legacy Migration Manual**: Consult [legacy_migration_manual.md](../project-standards/references/migration/legacy_migration_manual.md) to understand current migration architecture and guidelines.
    - **IMPORTANT**: Use it as a **GUIDE**, not as absolute truth. Always verify the actual codebase state.
 3. Compare with the current state in `src/`.
 4. Identify missing logic, styles, or assets.
@@ -56,7 +56,7 @@ Every migration task **MUST** follow these phases. Do not skip any phase.
 
 ### Phase 6: Documentation Tracking
 
-1. **Update Tracker**: You **MUST** update (or create if missing) the [migration_tracker.md](docs/migration_tracker.md) file.
+1. **Update Tracker**: You **MUST** document migrated modules in [legacy_migration_manual.md](../project-standards/references/migration/legacy_migration_manual.md).
 2. **Details**: Record the original file name, the new Vue module/composable path, and the migration coverage (0-100%).
 
 ## Standards Compliance
@@ -71,7 +71,7 @@ Legacy code **MUST** be modified during migration to comply with all current pro
 - **Type Safety**: Use TypeScript where possible or JSDoc if the project is JS-only.
 - **Mandatory Unit Testing**: No migration is complete without verified unit tests for **ALL** changes. Whether it's a simple UI component or complex battle logic, you **MUST** provide a test suite that covers edge cases and confirms parity with the original legacy behavior. This is not optional and must be done for every single migrated file.
 - **Legacy View Cleanup**: When migrating a feature from a tab-based or inline legacy view to a modern Vue modal, you **MUST** physically remove the old view component from the main layout. Failure to do so can result in "ghost" UI rendering at the bottom of the screen or state conflicts between the old and new systems.
-- **Migration Tracking Mandate**: To prevent logic loss and maintain project oversight, every migrated file **MUST** be registered in the **Migration Tracker Table** (`docs/migration_tracker.md`).
+- **Migration Tracking Mandate**: To prevent logic loss and maintain project oversight, record progress in the [Legacy Migration Manual](../project-standards/references/migration/legacy_migration_manual.md).
   - **Required Columns**: `Original File`, `Vue Module/Composable`, `Status/Coverage`, `Notes`.
   - **Status**: Flag as "100%" only when all logic, styles, and assets are fully verified and **TESTED** (with passing unit tests). If legacy features are missing, they **MUST** be noted.
 - **Prohibition of Hybrid Phases**:
@@ -84,7 +84,7 @@ Legacy code **MUST** be modified during migration to comply with all current pro
 
 - **Backward Compatibility Aliases**: When refactoring stores, maintain legacy method names as aliases (e.g., `saveGame` pointing to `save`) to prevent "is not a function" crashes in unmigrated legacy components or battle logic.
 - **State Property Consistency**: Explicitly verify that component bindings match the updated store property names (e.g., using `trainerLevel` instead of the legacy `level`) to ensure reactive synchronization.
-- **Semantic Renaming**: Una vez que un bando de lógica o una función de sincronización (ej: `syncFromLegacy`) ya no sea requerida por scripts externos y esté totalmente integrada en Vue, se DEBE renombrar a un término funcional y descriptivo (ej: `restoreBattle`, `initSession`). Esto elimina la carga cognitiva de la "deuda técnica" y moderniza el lenguaje interno del motor.
+- **Semantic Renaming**: Once a logic block or synchronization function (e.g. `syncFromLegacy`) is no longer required by external scripts and is fully integrated in Vue, it MUST be renamed to a functional, descriptive term (e.g. `restoreBattle`, `initSession`). This eliminates cognitive technical debt and modernizes the engine vocabulary.
 
 ## Example Invocations
 

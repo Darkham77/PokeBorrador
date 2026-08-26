@@ -16,6 +16,10 @@ import {
   emulateAcceptTrade, 
   emulateRejectTrade 
 } from './rpcEmulations/tradeRpc.ts';
+import {
+  emulateAwardEventAutomated,
+  emulateClaimAward
+} from './rpcEmulations/eventRpc.ts';
 
 /**
  * Emulates Supabase RPC calls on local SQLite database in offline mode.
@@ -66,6 +70,12 @@ export async function emulateOfflineRpc(name: string, params: Record<string, unk
 
     case 'reject_trade_v2':
       return emulateRejectTrade(sqliteDb, params, context);
+
+    case 'fn_award_event_automated':
+      return emulateAwardEventAutomated(sqliteDb, params);
+
+    case 'claim_award':
+      return emulateClaimAward(sqliteDb, params);
 
     default:
       // Default mock success for other RPCs in offline mode

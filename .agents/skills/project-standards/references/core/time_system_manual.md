@@ -88,7 +88,7 @@ For families NOT favored by the current season:
 
 #### 🌡️ Seasonal Amplification (Dynamic Scaling)
 
-The current season shifts the rarity curve of its "favored" families, making extreme niveles significantly more likely.
+The current season shifts the rarity curve of its "favored" families, making extreme levels significantly more likely.
 
 |Season|Favored Families|Amplified Curve (L1 / L2 / L3 / L4)|
 |:--|:--|:--|
@@ -113,7 +113,7 @@ After the generation of all weather tables across all routes, seasons, and cycle
 - **Rule of Existence**: It is STRICTLY FORBIDDEN for any of the 18 weather types to have a 0% global presence.
 - **Verification**: Every weather defined in the hierarchy MUST appear in at least one route's probability table in at least one season/cycle combination.
 - **Redundancy**: Even the most catastrophic weathers (L4) must be discoverable somewhere in the world to ensure all "Exclusive" spawns and mechanical effects are accessible to the player.
-- **Custom Hybrid Weather System Preservation**: When updating or modernizing the climate lists, always preserve custom Poké Vicio hybrid configurations (such as the custom Tier 2 `hail` (Granizo) / Tier 1 `snow` (Nieve) coexistence in Kanto's climate hierarchy) rather than blindly aligning with official 9th Generation standards that phase out specific conditions.
+- **Custom Hybrid Weather System Preservation**: When updating or modernizing the climate lists, always preserve custom Poké Vicio hybrid configurations (such as the custom Tier 2 `hail` (Hail) / Tier 1 `snow` (Snow) coexistence in Kanto's climate hierarchy) rather than blindly aligning with official 9th Generation standards that phase out specific conditions.
 
 ---
 
@@ -146,24 +146,24 @@ It is **STRICTLY FORBIDDEN** to use light-based weather states during the night 
 
 |Family|Weather|Icon|Mechanical Effects (Combat)|Spawn Modifiers (Boost/Block)|
 |:--|:--|:--|:--|:--|
-|**Heat**|Sun|☀️|🔼 Fire/Grass. 🔽 Water/Ice.|🔼 Fire, Grass, Earth. 🔽 Water, Ice.|
+|**Heat**|Sun|☀️|🔼 Fire/Grass. 🔽 Water/Ice.|🔼 Fire, Grass, Ground. 🔽 Water, Ice.|
 ||Intense Sun|🔆|🚫 Water, Ice. 🔼 Grass/Fire (2x).|🔼 Fire, Grass. 🚫 Water, Ice.|
-||Heatwave|🔥|🚫 Ice, Grass. 🔼 Fire/Earth.|🔼 Fire, Ground. 🚫 Ice, Grass.|
-|**Cold**|Cold|🧊|🔼 Ice. 🔽 Bug, Grass.|🔼 Ice. 🔽 Bug, Plant.|
-||Coldwave|🥶|**Speed -50%** (Non-Ice). 🚫 Bug, Grass.|🔼 Ice. 🚫 Bug, Plant.|
-|**Water**|Rain|🌧️|🔼 Water/Elec. 🔽 Fire/Rock/Earth.|🔼 Agua, Bicho, Elec. 🔽 Fuego, Roca, Tierra.|
-||Heavy Rain|☔|🚫 Fire. 🔼 Water (2x).|🔼 Agua. 🚫 Fuego. 🔽 Roca, Tierra.|
-||Storm|⛈️|🚫 Fire, Flying, Bug.|🔼 Agua, Elec, Dragon. 🚫 Fuego, Volador.|
-||Thunderstorm|🌩️|🔼 Elec (1.5x), Dragon (1.5x). Perfect Thunder.|🔼 Elec (2x), Dragon. 🚫 Volador.|
-|**Ice**|Snow|❄️|🔼 Def. Física Hielo (+50%).|🔼 Hielo, Acero. 🔽 Fuego, Bicho, Volador.|
-||Hail|🌨️|**Residual Damage**.|🔼 Hielo. 🔽 Planta, Fuego, Bicho, Volador.|
-||Blizzard|🌬️|🚫 Fire, Grass, Bug, Fly.|🔼 Hielo. 🚫 Fuego, Planta, Bicho, Volador.|
-|**Atmos.**|Fog|🌫️|🔼 Ghost/Dark. 🔽 Flying. Acc 60%.|🔼 Fantasma, Siniestro. 🔽 Volador.|
-||Mist|💨|🔼 Fairy, Water. 🔽 Fire.|🔼 Hada, Agua. 🔽 Fuego.|
-|**Wind**|Wind|🍃|🔼 Flying, Bug. 🔽 Earth.|🔼 Volador, Bicho, Psíquico. 🔽 Tierra.|
-||Strong Winds|🌀|**No Fly Weakness**. 🔼 Fly/Dragon.|🔼 Volador, Dragon. 🚫 Bicho, Tierra.|
-|**Earth**|Sandstorm|🏜️|🔼 Def. Esp Roca (+50%). Damage.|🔼 Roca, Tierra, Acero. 🔽 Fuego, Volador, Bicho.|
-||Dust Storm|🌪️|🚫 Flying. 🔼 Rock/Earth.|🔼 Roca, Tierra. 🚫 Volador. 🔽 Bicho.|
+||Heatwave|🔥|🚫 Ice, Grass. 🔼 Fire/Ground.|🔼 Fire, Ground. 🚫 Ice, Grass.|
+|**Cold**|Cold|🧊|🔼 Ice. 🔽 Bug, Grass.|🔼 Ice. 🔽 Bug, Grass.|
+||Coldwave|🥶|**Speed -50%** (Non-Ice). 🚫 Bug, Grass.|🔼 Ice. 🚫 Bug, Grass.|
+|**Water**|Rain|🌧️|🔼 Water/Elec. 🔽 Fire/Rock/Ground.|🔼 Water, Bug, Electric. 🔽 Fire, Rock, Ground.|
+||Heavy Rain|☔|🚫 Fire. 🔼 Water (2x).|🔼 Water. 🚫 Fire. 🔽 Rock, Ground.|
+||Storm|⛈️|🚫 Fire, Flying, Bug.|🔼 Water, Electric, Dragon. 🚫 Fire, Flying.|
+||Thunderstorm|🌩️|🔼 Electric (1.5x), Dragon (1.5x). Perfect Thunder.|🔼 Electric (2x), Dragon. 🚫 Flying.|
+|**Ice**|Snow|❄️|🔼 Physical Def Ice (+50%).|🔼 Ice, Steel. 🔽 Fire, Bug, Flying.|
+||Hail|🌨️|**Residual Damage**.|🔼 Ice. 🔽 Grass, Fire, Bug, Flying.|
+||Blizzard|🌬️|🚫 Fire, Grass, Bug, Flying.|🔼 Ice. 🚫 Fire, Grass, Bug, Flying.|
+|**Atmos.**|Fog|🌫️|🔼 Ghost/Dark. 🔽 Flying. Acc 60%.|🔼 Ghost, Dark. 🔽 Flying.|
+||Mist|💨|🔼 Fairy, Water. 🔽 Fire.|🔼 Fairy, Water. 🔽 Fire.|
+|**Wind**|Wind|🍃|🔼 Flying, Bug. 🔽 Ground.|🔼 Flying, Bug, Psychic. 🔽 Ground.|
+||Strong Winds|🌀|**No Fly Weakness**. 🔼 Flying/Dragon.|🔼 Flying, Dragon. 🚫 Bug, Ground.|
+|**Earth**|Sandstorm|🏜️|🔼 Special Def Rock (+50%). Damage.|🔼 Rock, Ground, Steel. 🔽 Fire, Flying, Bug.|
+||Dust Storm|🌪️|🚫 Flying. 🔼 Rock/Ground.|🔼 Rock, Ground. 🚫 Flying. 🔽 Bug.|
 
 ---
 

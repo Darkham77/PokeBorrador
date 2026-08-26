@@ -13,6 +13,7 @@ const TRAINER_EXP_FACTOR_PER_LEVEL = 2
 const BATTLE_COINS_PER_LEVEL_FACTOR = 2
 const AMULET_COIN_MONEY_MULTIPLIER = 2
 const POKERUS_SPREAD_PROBABILITY = 0.33
+import { toValue } from 'vue'
 import { gsapSleep } from '@/logic/utils/gsapHelpers'
 import type { BattleDifficulty } from '@/types/battle/battle'
 import { calculateBaseExp, processExpGain, processEvGain, calculateMoneyGain } from './battleRewards.ts'
@@ -225,16 +226,21 @@ const RIVAL_DROP_PROB_MAX_PERCENT = 100;
   }
 
   const warMods = getBattleRewardModifiers(active.locationId, ctx.gs.state.faction, ctx.warStore.mapDominance)
-  let totalExpMult = warMods.expMult + ((ctx.eventStore.globalMultipliers?.exp || 1) - 1)
+  const globalMults = toValue(ctx.eventStore?.globalMultipliers) as { exp?: number } | undefined
+  const eventExpMultiplier = globalMults?.exp || 1
+  let totalExpMult = warMods.expMult + (eventExpMultiplier - 1)
+  let totalExpMultWithoutEvent = warMods.expMult
   
   if ((ctx.gs.state.luckyEggSecs || 0) > 0) {
     totalExpMult *= 1.5
+    totalExpMultWithoutEvent *= 1.5
   }
 
   const classMult = ctx.classStore.getModifier('expMult', { isTrainer: active.isTrainer })
   const participantsSet = new Set(active.participants)
 
   const expGainedMap = new Map<string, number>()
+  const eventExpExtraMap = new Map<string, number>()
   const levelUpMap = new Map<string, { levelsGained: number; moves: Move[] }>()
   let totalMoneyGained = 0
   let totalCoinsGained = 0
@@ -256,6 +262,15 @@ const RIVAL_DROP_PROB_MAX_PERCENT = 100;
       if (!reward) continue
       
       expGainedMap.set(p.uid, (expGainedMap.get(p.uid) || 0) + reward.gained)
+
+      if (eventExpMultiplier > 1) {
+        const share = p.uid === active.player?.uid ? 1 : 0.5
+        const gainedWithoutEvent = Math.floor(baseExp * share * classMult * totalExpMultWithoutEvent)
+        const eventExtra = Math.max(0, reward.gained - gainedWithoutEvent)
+        if (eventExtra > 0) {
+          eventExpExtraMap.set(p.uid, (eventExpExtraMap.get(p.uid) || 0) + eventExtra)
+        }
+      }
       
       if (reward.levelUp) {
         if (!levelUpMap.has(p.uid)) {
@@ -404,7 +419,9 @@ const SECONDS_TO_MS_MULTIPLIER = 1000
   for (const p of ctx.gs.state.team) {
     const gained = expGainedMap.get(p.uid) || 0
     if (gained > 0) {
-      ctx.addLog(`${p.name} ganó ${gained} EXP.`, 'log-player', p)
+      const eventExtra = eventExpExtraMap.get(p.uid) || 0
+      const eventExtraText = eventExtra > 0 ? ` (+${eventExtra} EXP evento)` : ''
+      ctx.addLog(`${p.name} ganó ${gained} EXP${eventExtraText}.`, 'log-player', p)
     }
 
     const lvlData = levelUpMap.get(p.uid)

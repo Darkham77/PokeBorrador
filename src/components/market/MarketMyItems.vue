@@ -77,6 +77,7 @@ const formatTime = formatDisplayDate
             <div class="listing-actions">
               <span class="price-tag">₽{{ formatCurrency(item.price) }}</span>
               <button
+                :id="`market-my-items-cancel-pokemon-btn-${item.id}`"
                 class="btn-vicio-danger btn-vicio-sm"
                 @click.stop="handleCancel(item.id)"
               >
@@ -103,6 +104,7 @@ const formatTime = formatDisplayDate
               </div>
             </div>
             <button
+              :id="`market-my-items-cancel-item-btn-${item.id}`"
               class="btn-vicio-danger btn-vicio-sm"
               @click.stop="handleCancel(item.id)"
             >

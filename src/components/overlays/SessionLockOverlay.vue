@@ -23,6 +23,7 @@ const emit = defineEmits<{
 
     <template #actions>
       <button
+        id="session-lock-reclaim-btn"
         class="action-btn primary reclaim-btn"
         @click.stop="emit('reclaim')"
       >
@@ -30,6 +31,7 @@ const emit = defineEmits<{
       </button>
       
       <button
+        id="session-lock-dismiss-btn"
         class="risk-btn"
         @click.stop="emit('dismiss')"
       >

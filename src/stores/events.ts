@@ -12,8 +12,9 @@ import { isEventActiveNow, getGlobalMultipliers, getSpeciesBoosts, type Event as
 import { getServerTime } from '@/logic/utils/timeUtils'
 import type { PendingAward, CompetitionEntry, PastEventHistoryItem, PastCompetitionWinner } from '@/types/system/stores'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { incrementRecordKey } from '@/logic/utils/mapUtils'
 
-const MAX_PAST_EVENTS_COUNT = 10
+const MAX_PAST_EVENTS_COUNT = 20
 
 export const useEventStore = defineStore('events', () => {
   const gameStore = useGameStore()
@@ -264,14 +265,64 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
+  function applyAwardPrize(rawPrize: unknown) {
+    if (!rawPrize) return
+    let prize: Record<string, unknown> | null = null // open-record
+    if (typeof rawPrize === 'string') {
+      try {
+        prize = JSON.parse(rawPrize) as Record<string, unknown> // open-record
+      } catch {
+        prize = null
+      }
+    } else if (rawPrize && typeof rawPrize === 'object') {
+      prize = rawPrize as Record<string, unknown> // open-record
+    }
+
+    if (!prize) return
+
+    if (prize.type === 'money' || typeof prize.money === 'number') {
+      const amount = Number(prize.amount || prize.money || 0)
+      if (amount > 0) {
+        gameStore.state.money = (gameStore.state.money || 0) + amount
+      }
+    }
+
+    if (prize.type === 'bc' || typeof prize.battleCoins === 'number') {
+      const amount = Number(prize.amount || prize.battleCoins || 0)
+      if (amount > 0) {
+        gameStore.state.battleCoins = (gameStore.state.battleCoins || 0) + amount
+      }
+    }
+
+    if (prize.type === 'item' && prize.item) {
+      const itemId = String(prize.item)
+      const qty = Number(prize.qty || 1)
+      if (!gameStore.state.inventory) gameStore.state.inventory = {}
+      incrementRecordKey(gameStore.state.inventory, itemId, qty)
+    }
+
+    if (prize.items && typeof prize.items === 'object') {
+      if (!gameStore.state.inventory) gameStore.state.inventory = {}
+      for (const [k, v] of Object.entries(prize.items as Record<string, number>)) { // open-record
+        if (v && v > 0) {
+          incrementRecordKey(gameStore.state.inventory, k, v)
+        }
+      }
+    }
+
+    gameStore.save(false).catch(err => logger.warn('Events', 'Failed to auto-save after claiming award', err))
+  }
+
   /**
    * Claim a specific award using the backend RPC or direct database update.
    */
   async function claimAward(awardId: string): Promise<string | null> {
     if (!gameStore.db) return null
+    const targetAward = pendingAwards.value.find(a => a.id === awardId) || pastEvents.value.find(pe => pe.myAward?.id === awardId)?.myAward
+
     try {
       const { data, error } = await gameStore.db.rpc('claim_award', { p_award_id: awardId })
-      const claimResult = data as { ok?: boolean; success?: boolean; prize?: string } | null // domain-ok
+      const claimResult = data as { ok?: boolean; success?: boolean; prize?: unknown } | null // domain-ok
       
       if (!error && (claimResult?.ok || claimResult?.success)) {
         pendingAwards.value = pendingAwards.value.filter(a => a.id !== awardId)
@@ -286,8 +337,9 @@ export const useEventStore = defineStore('events', () => {
           }
           return pe
         })
+        applyAwardPrize(claimResult?.prize || targetAward?.prize)
         uiStore.notify('¡Recompensa reclamada!', '🎁')
-        return claimResult?.prize ?? 'claimed'
+        return typeof claimResult?.prize === 'string' ? claimResult.prize : 'claimed'
       }
 
       // Direct fallback if RPC is unconfigured
@@ -308,6 +360,7 @@ export const useEventStore = defineStore('events', () => {
           }
           return pe
         })
+        applyAwardPrize(targetAward?.prize)
         uiStore.notify('¡Recompensa reclamada!', '🎁')
         return 'claimed'
       }

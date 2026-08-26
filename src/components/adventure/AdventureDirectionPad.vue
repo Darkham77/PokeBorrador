@@ -53,6 +53,7 @@ const emit = defineEmits<{
         :key="conn.target"
       >
         <button
+          :id="`adv-direction-left-btn-${conn.target}`"
           v-gsap-hover
           class="adv-manual-btn"
           :disabled="isTraveling || !hasHealthyTeam"
@@ -79,6 +80,7 @@ const emit = defineEmits<{
           :key="conn.target"
         >
           <button
+            :id="`adv-direction-top-btn-${conn.target}`"
             v-gsap-hover
             class="adv-manual-btn"
             :disabled="isTraveling || !hasHealthyTeam"
@@ -121,6 +123,7 @@ const emit = defineEmits<{
           class="adv-card-actions-overlay"
         >
           <button 
+            id="adv-direction-explore-btn"
             v-gsap-hover
             class="adv-action-btn explore-btn"
             :disabled="!hasHealthyTeam"
@@ -130,6 +133,7 @@ const emit = defineEmits<{
           </button>
           <button 
             v-if="pokemonCenterNodes.includes(originMap)"
+            id="adv-direction-heal-btn"
             v-gsap-hover
             class="adv-action-btn heal-btn"
             @click="emit('heal')"
@@ -146,6 +150,7 @@ const emit = defineEmits<{
           :key="conn.target"
         >
           <button
+            :id="`adv-direction-bottom-btn-${conn.target}`"
             v-gsap-hover
             class="adv-manual-btn"
             :disabled="isTraveling || !hasHealthyTeam"
@@ -176,6 +181,7 @@ const emit = defineEmits<{
         :key="conn.target"
       >
         <button
+          :id="`adv-direction-right-btn-${conn.target}`"
           v-gsap-hover
           class="adv-manual-btn"
           :disabled="isTraveling || !hasHealthyTeam"

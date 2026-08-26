@@ -63,6 +63,7 @@ QA / Automation Engineers.
 
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle.
 - [breeding/](./breeding/AGENTS.md): Domain module documentation for breeding.
+- [events/](./events/AGENTS.md): Domain module documentation for events.
 - [fuzzer/](./fuzzer/AGENTS.md): Domain module documentation for fuzzer.
 - [gts/](./gts/AGENTS.md): Domain module documentation for gts.
 - [gyms/](./gyms/AGENTS.md): Domain module documentation for gyms.

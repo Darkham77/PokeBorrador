@@ -72,6 +72,6 @@ However, despite these fundamental flaws to the practical use of EV training in 
 
 - [**Stat Mechanics**](./stats.md): The nitty-gritty details of everything about Pokémon stats, base values, and formulas.
 - [**EV Mechanics Manual**](./ev_mechanics_manual.md): Technical manual for EV items, battle distribution, Showdown integration, and stat recalculation.
-- [**Stat Stages**](../core/stat-stages.md): Complete guide to combat stat stage multipliers and in-battle buffs/debuffs.
+- [**Stat Stages**](./stat-stages.md): Complete guide to combat stat stage multipliers and in-battle buffs/debuffs.
 - [**Battling Basics**](../battle/battling-basics.md): Fundamental rules of the Pokémon battle engine.
 - [**Battle Mechanics**](../battle/battle.md): Detailed mechanics of turn order, accuracy, damage formula, and secondary effects.

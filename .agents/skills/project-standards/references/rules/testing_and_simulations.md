@@ -1,6 +1,13 @@
-# Testing & Simulation Guidelines
+# Testing & Simulation Rules
 
-This document governs CLI-first debugging, E2E Playwright simulations, fuzzer parity, logging standards, and test safety rules across the Poké Vicio repository.
+> **Scope & Authority**: This document governs **E2E Playwright simulation rules, passive joystick law, 5s timeout limits, mandatory #id locators, fuzzer history recording, shared runner execution, and isolated bug reproduction tests (RED-to-GREEN)** across Poké Vicio.
+>
+> 🛑 **Domain Boundaries & Redirection**:
+> - For step-by-step browser QA procedures and DevTools console commands ➔ See [Browser Testing Manual](../qa/browser_testing_manual.md).
+> - For battle engine execution details and Showdown parity ➔ See [Battle Mechanics Manual](../battle/battle_mechanics_manual.md).
+> - For full verification checklists and release gates ➔ See [Audit Checklist](../qa/audit_checklist.md).
+
+---
 
 ## 1. Mandatory Inheritance, Polymorphism & Zero Duplication
 

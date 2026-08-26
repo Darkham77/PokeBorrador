@@ -119,6 +119,7 @@ const close = () => {
 
     <template #footer>
       <button
+        id="pp-up-cancel-btn"
         class="btn-vicio-secondary btn-vicio-full"
         @click.stop="close"
       >

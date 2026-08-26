@@ -45,10 +45,13 @@ Each Seat has an associated **Team Slot** that contains the party data for that 
 
 ### 4. Showdown Worker Synchronization Protocol
 
-When executing team swaps in battles coordinated by the Showdown worker, the following distinction MUST be strictly maintained:
+When executing turns and team swaps in battles coordinated by the Showdown worker/engine, the following rules MUST be strictly maintained:
 
 *   **Voluntary Switch (Mid-Battle)**: When the player switches active combatants voluntarily via UI menu, the FSM compiles a normal combat turn. Send the choice to the worker (`switch <index + 1>`) together with the NPC enemy action choice (`p2Choice`).
 *   **Forced Switch (Faint Replacement)**: When the active combatant faints and the player is forced to send out a replacement, the worker is expecting ONLY the replacement choice. Send the selection command to the worker (`switch <index + 1>`) without enclosing any `p2Choice`. Failing to omit the opponent's choice on forced switches will cause the Showdown simulator to freeze waiting for non-existent actions.
+*   **Choice Loop Mid-Turn State Transitions (`ShowdownBattleEngine`)**: When resolving multi-seat choices, `ShowdownBattleEngine` captures `startTurn = battle.turn` and `startReqState = battle.requestState`. If an action submitted for the first seat immediately resolves the turn or triggers a forced switch, subsequent seat submissions in that same loop are halted to prevent feeding outdated commands to Showdown's state machine.
+*   **Mandatory Recharge Clamping**: During turns following `Blast Burn`, `Hyper Beam`, or `Giga Impact`, Showdown emits an active request with `moves: [{ id: 'recharge', move: 'Recharge' }]`. Move choices submitted during this state are clamped to `move 1` (`Recharge`) exclusively, preserving normal move selections in standard turns.
+*   **Atomic Stream Consumption (`ShowdownBattleRunner`)**: Choice streams in automated replays are consumed directly from `choicesBySeat` without transient engine instantiations. P1 `teamPreview` requests resolve to `'team 1'` without advancing choice stream indices.
 
 ---
 
@@ -1175,12 +1178,11 @@ To ensure capture difficulty aligns with official game standards and species ide
 ### 1. Species-Specific Catch Rates
 
 - **Database Mandate**: Every Pokémon species in `pokemonDB.ts` MUST have an explicit `catchRate` property (values 3 to 255).
-- **Zero-Fallback Policy**: The battle engine MUST NOT use hardcoded magic numbers (e.g., `|| 45`) for capture rates.
-- **Diagnostic Safety**: If a Pokémon is encountered without a `catchRate`, the system MUST use a safe fallback (`?? 45`) AND trigger a `console.warn` to notify developers of the data gap.
+- **Zero-Fallback Policy**: The battle engine MUST NOT use hardcoded magic numbers or silent fallbacks (such as `|| 45` or `?? 45`) for capture rates. If an encountered species lacks a valid `catchRate`, the system MUST fail loudly and immediately (`throw new Error(...)`) to prevent state corruption.
 
 ### 2. Capture Probability Formula
 
-Refer to the [Gen IX Capturing](./../systems/gen-ix-capturing.md) (and other generation-specific manuals under systems) for technical capture equations.
+Refer to the [Gen IX Capturing](../systems/capturing/gen-ix-capturing.md) (and other generation-specific manuals under `systems/capturing/`) for technical capture equations.
 
 ### 3. Visual & Interface Definitions
 

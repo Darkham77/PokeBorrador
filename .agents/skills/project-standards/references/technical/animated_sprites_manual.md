@@ -82,7 +82,7 @@ To avoid subpixel texture bleeding and rendering seams in Phaser/WebGL when spri
 
 ## 4. Metadata & Database Generation
 
-During `npm run assets:convert` (run by `scripts/convert_assets.ts`), all processed `i` and `v` spritesheets are converted to **lossless WebP** and scanned to compile the metadata registry in [animatedSpriteDatabase.ts](../../../../src/data/animatedSpriteDatabase.ts).
+During `npm run assets:convert` (run by `scripts/convert_assets.ts`), all processed `i` and `v` spritesheets are converted to **lossless WebP** and scanned to compile the metadata registry in [animatedSpriteDatabase.ts](../../../../../src/data/pokemon/animatedSpriteDatabase.ts).
 
 ### Database Schema
 

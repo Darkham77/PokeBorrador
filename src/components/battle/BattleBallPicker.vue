@@ -182,6 +182,7 @@ defineExpose({
           class="ball-tooltip-wrapper"
         >
           <button
+            :id="'battle-ball-option-' + ball.id"
             class="ball-option-item"
             @click.stop="selectBall(ball.id)"
           >
@@ -208,6 +209,7 @@ defineExpose({
     </div>
 
     <button
+      id="battle-catch-ball-btn"
       v-gsap-hover="{ scale: 1.12, rotation: 5, y: 0 }"
       class="btn-catch-ball"
       :class="{ 'is-active': isBallMenuOpen }"

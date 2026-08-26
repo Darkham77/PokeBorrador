@@ -51,15 +51,15 @@ gameBus.emit('animation', {
 });
 ```
 
-### 2. Component Safety
+### 2. Component Safety & Zero-Timer Compliance
 
-Any async operation within a visual component must verify the existence of the component before acting.
+Any async or delayed operation within a visual component MUST be driven by GSAP and verify component mount state before acting:
 
-```js
-setTimeout(() => {
+```ts
+gsap.delayedCall(delayInSeconds, () => {
   if (instance?.isUnmounted) return;
   // Logic...
-}, delay);
+});
 ```
 
 ---

@@ -14,7 +14,7 @@ description: Game development orchestrator. YOU MUST use this skill whenever the
 You are working on a game development project. This skill teaches the PRINCIPLES of game development and directs you to the right sub-skill based on context.
 
 > [!IMPORTANT]
-> Si estás trabajando en **Poké Vicio**, DEBES consultar adicionalmente el [Manual de Mecánicas y UX de Juego](../project-standards/references/game_mechanics_manual.md) para reglas específicas del motor y la interfaz.
+> If you are working on **Poké Vicio**, you MUST additionally consult the [Game Mechanics Manual](../project-standards/references/core/game_mechanics_manual.md) for engine and gameplay rules.
 
 ---
 
@@ -112,7 +112,13 @@ Abstract input into ACTIONS, not raw keys:
 2. Batching (reduce draw calls via Spritesheets or batched rendering)
 3. Pooling (avoid GC spikes)
 4. LOD (detail by distance)
-5. Culling (skip invisible)
+### 5. UI Determinism & 100% ID Locators Mandate
+
+Every interactive UI element in the game (buttons, inputs, dropdowns, switches, tabs, modals, card controls) MUST have an explicit, unique, and deterministic `id` or `:id` attribute.
+
+- **Mandatory ID on All Interactive UI Elements**: Never render interactive controls without an explicit `id` (e.g., `id="battle-switch-btn"`, `:id="'event-participate-btn-' + event.id"`).
+- **100% ID-Based Interaction**: In automated tests, Playwright E2E simulations, and debugging scripts, every interaction with UI controls MUST be located strictly by their unique ID selector (`#<id>` or `[id="..."]` / `data-pokemon-uid`).
+- **Prohibition on Text / Class Selectors**: Interacting with UI elements via text content matching (`hasText`, innerText strings) or generic CSS class hierarchies is STRICTLY FORBIDDEN to eliminate translation flakes, font rendering desyncs, and layout refactoring breaks.
 
 ---
 
@@ -125,7 +131,10 @@ Abstract input into ACTIONS, not raw keys:
 | Cache nothing | Cache references |
 | Optimize without profiling | Profile first |
 | Mix input with logic | Abstract input layer |
+| Interactive UI without explicit ID | Always define deterministic `id` / `:id` |
+| Locate UI controls by text or classes | Locate strictly by `#<id>` or `[id=...]` |
 
 ---
 
 > **Remember:** Great games come from iteration, not perfection. Prototype fast, then polish.
+

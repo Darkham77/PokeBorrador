@@ -224,6 +224,7 @@ watch(() => activePoke.value?.level, (newLv) => {
         >
           <template #label-action>
             <button
+              :id="`individual-editor-species-btn-${index}`"
               class="btn-magic-fill btn-random-fill"
               @click.stop="randomizeActiveSpecies"
             >
@@ -245,6 +246,7 @@ watch(() => activePoke.value?.level, (newLv) => {
               style="margin-bottom: 0;"
             >Nivel (1-{{ MAX_POKEMON_LEVEL }})</span>
             <button
+              :id="`individual-editor-level-btn-${index}`"
               class="btn-magic-fill btn-random-fill"
               @click.stop="randomizeActiveLevel"
             >
@@ -252,6 +254,7 @@ watch(() => activePoke.value?.level, (newLv) => {
             </button>
           </div>
           <input
+            :id="`individual-editor-level-input-${index}`"
             v-model.number="activePoke.level"
             type="number"
             min="1"
@@ -286,6 +289,7 @@ watch(() => activePoke.value?.level, (newLv) => {
         >
           <template #label-action>
             <button
+              :id="`individual-editor-nature-btn-${index}`"
               class="btn-magic-fill btn-random-fill"
               @click.stop="randomizeActiveNature"
             >
@@ -304,6 +308,7 @@ watch(() => activePoke.value?.level, (newLv) => {
         >
           <template #label-action>
             <button
+              :id="`individual-editor-ability-btn-${index}`"
               class="btn-magic-fill btn-random-fill"
               @click.stop="randomizeActiveAbility"
             >
@@ -325,6 +330,7 @@ watch(() => activePoke.value?.level, (newLv) => {
               style="margin-bottom: 0;"
             >Genética (IVs)</span>
             <button
+              :id="`individual-editor-ivs-btn-${index}`"
               class="btn-magic-fill btn-random-fill"
               @click.stop="randomizeActiveIVs"
             >
@@ -360,6 +366,7 @@ watch(() => activePoke.value?.level, (newLv) => {
         >
           <template #label-action>
             <button
+              :id="`individual-editor-item-btn-${index}`"
               class="btn-magic-fill btn-random-fill"
               @click.stop="randomizeActiveHeldItem"
             >
@@ -381,6 +388,7 @@ watch(() => activePoke.value?.level, (newLv) => {
               style="margin-bottom: 0;"
             >Apodo (Nickname)</span>
             <button
+              :id="`individual-editor-nickname-btn-${index}`"
               class="btn-magic-fill btn-random-fill"
               @click.stop="randomizeActiveNickname"
             >
@@ -388,6 +396,7 @@ watch(() => activePoke.value?.level, (newLv) => {
             </button>
           </div>
           <input 
+            :id="`individual-editor-nickname-input-${index}`"
             v-model="activePokeNickname" 
             type="text" 
             placeholder="Sin apodo..."
