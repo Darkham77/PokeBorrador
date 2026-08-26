@@ -10,6 +10,7 @@ Frontend UI Developers / UI Designers.
 
 - Strict compliance with [ui_ux_standards.md](../../.agents/skills/project-standards/references/core/ui_ux_standards.md) and [sass_styling_manual.md](../../.agents/skills/project-standards/references/technical/sass_styling_manual.md).
 - Zero template-level database queries or heavy computations.
+- **Interactive Elements Deterministic ID Mandate**: Every interactive UI control (`<button>`, `<input>`, `<select>`, `<textarea>`, or elements binding `@click`/`@change`) MUST define an explicit static or dynamic `id` attribute (e.g. `id="nav-events-btn"` or `:id="'claim-btn-' + item.id"`). Locating elements by text or CSS class hierarchy in automated tests is strictly forbidden.
 
 ## Work Guidance
 
