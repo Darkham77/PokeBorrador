@@ -150,14 +150,19 @@ export async function awaitGameStoreReady(page: Page): Promise<void> {
 export async function waitForWaitInput(page: Page): Promise<void> {
   try {
     await page.waitForFunction(() => {
+      const isBattleInDom = Boolean(document.querySelector('#battle-view, .battle-arena, #battle-controls-layout'));
+      if (!isBattleInDom) return false;
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       if (!resolver) return false;
       const store = resolver();
-      if (!store) return false;
-      if (!store.state) return false;
-      if (store.state.over || store.currentFsmState === 'REWARDS_PHASE' || store.currentFsmState === 'EXIT_BATTLE') return true;
-      return !store.isProcessing && store.currentFsmState === 'ACTIVE_BATTLE' &&
-        (store.currentSubState === 'WAIT_INPUT' || store.currentSubState === 'SWITCH_MENU');
+      if (!store || !store.state) return false;
+      const fsmState = store.currentFsmState;
+      const fsmSubState = store.currentSubState;
+      if (store.state.over || fsmState === 'REWARDS_PHASE' || fsmState === 'EXIT_BATTLE' || fsmState === 'SEARCH_PHASE') return true;
+      const isLocked = Boolean(document.querySelector('#battle-controls-layout.is-ui-locked, .battle-controls-layout.is-ui-locked'));
+      if (isLocked) return false;
+      return !store.isProcessing && fsmState === 'ACTIVE_BATTLE' &&
+        (fsmSubState === 'WAIT_INPUT' || fsmSubState === 'SWITCH_MENU');
     }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
   } catch (error: unknown) {
     const battleState = await page.evaluate(() => {

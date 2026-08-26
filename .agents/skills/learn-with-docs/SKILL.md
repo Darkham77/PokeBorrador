@@ -12,7 +12,8 @@ This skill customizes the behavior of the `/learn` slash command to ensure that 
 When saving a new behavior, constraint, or success pattern:
 - **Do NOT default to the first or root `AGENTS.md` index** unless it is a universal, project-wide rule.
 - **Navigate and Find the Proper Boundary**: Analyze the target directory tree. Locate the specific child `AGENTS.md` (via [dox-navigator](../dox-navigator/SKILL.md)) matching the scope of the learning, or create a new child index if one is needed.
-- **Game Rules**: Any new Pokémon Showdown or battle engine logic rules, mechanics constraints, or game behavior overrides MUST also be recorded in the [project-standards](../project-standards/SKILL.md) skill and the nearest applicable DOX file.
+- **Game Rules & Standard Cross-Check**: Any new Pokémon Showdown or battle engine logic rules, mechanics constraints, or game behavior overrides MUST also be recorded in the [project-standards](../project-standards/SKILL.md) skill and the nearest applicable DOX file.
+- **Mandatory `@/project-standards` Synchronization**: Whenever adding or modifying rules in any child DOX index, you MUST proactively audit and cross-check related technical manuals and specialized rule files under [project-standards](../project-standards/SKILL.md) (`references/rules/`, `references/battle/`, `references/technical/`, `references/core/`, etc.). Identify and resolve any outdated parameters, conflicting mixin instructions, or legacy values to prevent documentation drift and desynchronization across the repository.
 
 ## 2. Language & Integrity Constraints
 
@@ -22,9 +23,9 @@ When saving a new behavior, constraint, or success pattern:
 
 ## 3. Workflow Steps & Learn Artifacts
 
-1. **Identify Learnings**: Analyze recent interactions to identify what to learn (Rules vs. Skills) and determine the correct target scope.
-2. **Locate Target**: Use the [dox-navigator](../dox-navigator/SKILL.md) skill to identify the correct `AGENTS.md` file(s) corresponding to the learned domain.
-3. **Mandatory Proposal Workflow**: Do NOT modify files immediately. You MUST create/update the `learning_proposal.md` artifact outlining the classification, rationale, and precise text additions/diffs:
+1. **Identify Learnings & Audit Scope**: Analyze recent interactions to identify what to learn (Rules vs. Skills), determine the correct target DOX scope, and scan related [project-standards](../project-standards/SKILL.md) manuals for required corrections or enhancements.
+2. **Locate Target & Cross-Check Standards**: Use the [dox-navigator](../dox-navigator/SKILL.md) skill to identify the correct `AGENTS.md` file(s) AND grep corresponding technical manuals in [project-standards](../project-standards/SKILL.md) for any legacy contradictions.
+3. **Mandatory Proposal Workflow**: Do NOT modify files immediately. You MUST create/update the `learning_proposal.md` artifact outlining the classification, rationale, and precise text additions/diffs for BOTH the child DOX indices and any synchronized [project-standards](../project-standards/SKILL.md) manuals:
    - Save the artifact strictly to the Artifact Directory `<appDataDir>/brain/<conversation-id>/learning_proposal.md`. NEVER save it inside `scratch/` or the project repository workspace.
    - Pass complete `ArtifactMetadata` containing `UserFacing: true`, `RequestFeedback: true`, and a detailed multi-line `Summary` describing the proposed rules/lessons.
 4. **Language Integrity Check**: Ensure the proposed rules or additions inside the `learning_proposal.md` diff blocks are written in English (matching the target files), while all descriptions, justifications, and chat explanations are in Spanish.

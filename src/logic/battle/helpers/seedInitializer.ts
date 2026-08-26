@@ -2,7 +2,7 @@
  * Helper to parse and validate a battle seed input into a typed 4-number tuple.
  * This guarantees exact state RNG parity between the fuzzer generator and replayers.
  */
-function parseShowdownSeed(seed: unknown): [number, number, number, number] | undefined {
+export function parseShowdownSeed(seed: unknown): [number, number, number, number] | undefined {
   if (!seed) return undefined;
   
   if (Array.isArray(seed)) {

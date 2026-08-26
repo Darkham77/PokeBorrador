@@ -55,7 +55,7 @@ export interface TurnExecutionInput {
   /** When false, IPB healing is disabled (post-testing phase). Defaults to true in fuzzer mode. */
   ipbActive?: boolean;
   /** One-based ordinal or history entry object of the certified atomic history entry being submitted. */
-  certifiedHistoryStep?: number | { [key: string]: unknown };
+  certifiedHistoryStep?: number | FuzzerCheat | { [key: string]: unknown };
 }
 
 export interface TurnExecutionOutput {
@@ -134,8 +134,21 @@ export class ShowdownBattleEngine {
       return 'team 1';
     }
 
-    let choiceCandidate = explicitChoice;
-    if (choiceCandidate === undefined && this.mode === 'replayer') {
+    if (explicitChoice !== undefined) {
+      const trimmed = explicitChoice.trim().toLowerCase();
+      const moveMatch = /^move\s+(\d+)(.*)$/.exec(trimmed);
+      if (moveMatch) {
+        const activeMoves = (effectiveReq && 'active' in effectiveReq && Array.isArray(effectiveReq.active?.[0]?.moves)) ? effectiveReq.active[0]!.moves : [];
+        if (activeMoves.length === 1 && (activeMoves[0]?.id === 'recharge' || activeMoves[0]?.move === 'Recharge')) {
+          const suffix = moveMatch[2] ?? '';
+          return `move 1${suffix}`;
+        }
+      }
+      return explicitChoice;
+    }
+
+    let choiceCandidate: string | undefined;
+    if (this.mode === 'replayer') {
       const choicesList = this.seatChoices.get(seatId) ?? [];
       const currentIdx = this.choiceIdx.get(seatId) ?? 0;
       if (currentIdx < choicesList.length) {
@@ -146,9 +159,6 @@ export class ShowdownBattleEngine {
 
     if (isForceSwitch) {
       if (choiceCandidate !== undefined) {
-        if (this.mode === 'replayer') {
-          return choiceCandidate;
-        }
         const trimmed = choiceCandidate.trim().toLowerCase();
         const switchMatch = /^switch\s+(\d+)$/.exec(trimmed);
         if (switchMatch) {
@@ -184,53 +194,40 @@ export class ShowdownBattleEngine {
       if (!hasAnyLiving) {
         return 'pass';
       }
-      if (choiceCandidate && choiceCandidate.startsWith('switch ')) {
-        return choiceCandidate;
-      }
       return 'default';
     }
 
     if (choiceCandidate !== undefined) {
       const trimmed = choiceCandidate.trim().toLowerCase();
-      if (trimmed === 'pass') return 'pass';
-
-      const moveMatch = /^move\s+(\d+)$/.exec(trimmed);
+      const moveMatch = /^move\s+(\d+)(.*)$/.exec(trimmed);
       if (moveMatch) {
-        const moveIdx = parseInt(moveMatch[1]!, 10) - 1;
-        const activeReq = activeRequest?.active?.[0];
-        const moves = activeReq?.moves ?? [];
-        const targetMove = moves[moveIdx];
-        if (targetMove && (targetMove.disabled || (targetMove.pp !== undefined && targetMove.pp <= 0))) {
-          const validMoveIdx = moves.findIndex(m => m && !m.disabled && (m.pp === undefined || m.pp > 0));
-          if (validMoveIdx !== -1) {
-            return `move ${validMoveIdx + 1}`;
+        const activeMoves = (effectiveReq && 'active' in effectiveReq && Array.isArray(effectiveReq.active?.[0]?.moves)) ? effectiveReq.active[0]!.moves : [];
+        if (activeMoves.length === 1 && (activeMoves[0]?.id === 'recharge' || activeMoves[0]?.move === 'Recharge')) {
+          const suffix = moveMatch[2] ?? '';
+          return `move 1${suffix}`;
+        }
+      }
+      const switchMatch = /^switch\s+(\d+)$/.exec(trimmed);
+      if (switchMatch) {
+        const targetSlot = parseInt(switchMatch[1]!, 10);
+        const targetPoke = simPokemons[targetSlot - 1] ?? (requestPokemons[targetSlot - 1] as RequestPokemonItem | undefined);
+        const isFnt = targetPoke && ('fainted' in targetPoke && typeof targetPoke.fainted === 'boolean'
+          ? targetPoke.fainted
+          : ('condition' in targetPoke && typeof targetPoke.condition === 'string' ? targetPoke.condition.includes('fnt') : false));
+        const isAct = targetPoke && ('active' in targetPoke && typeof targetPoke.active === 'boolean'
+          ? targetPoke.active
+          : activeList.includes(targetPoke as Pokemon));
+        if (isFnt || isAct) {
+          if (reqKind === 'move') {
+            return 'move 1';
+          }
+          const validBenchIdx = simPokemons.findIndex(p => p && !activeList.includes(p) && !p.fainted && p.hp > 0);
+          if (validBenchIdx !== -1) {
+            return `switch ${validBenchIdx + 1}`;
           }
           return 'default';
         }
       }
-
-      const switchMatch = /^switch\s+(\d+)$/.exec(trimmed);
-      if (switchMatch) {
-        const targetSlot = parseInt(switchMatch[1]!, 10);
-        const targetPoke = simPokemons[targetSlot - 1];
-        if (targetPoke) {
-          const isFainted = targetPoke.fainted || targetPoke.hp === 0;
-          const isActive = activeList.includes(targetPoke);
-          if (isFainted || isActive) {
-            const validIdx = simPokemons.findIndex((p) => {
-              if (!p || activeList.includes(p)) return false;
-              return !p.fainted && p.hp !== 0;
-            });
-            if (validIdx !== -1) {
-              return `switch ${validIdx + 1}`;
-            }
-            if (classifyRequest(activeRequest) === 'move') {
-              return 'move 1';
-            }
-          }
-        }
-      }
-
       return choiceCandidate;
     }
 
@@ -342,37 +339,70 @@ export class ShowdownBattleEngine {
     const hasAnyForceSwitch = battle.sides.some(s => {
       if (!s) return false;
       const k = classifyRequest(s.activeRequest);
-      return k === 'force-switch' || k === 'revive-target' || s.requestState === 'switch';
+      return k === 'force-switch' || k === 'revive-target';
     });
 
     type BattleSeat = { id: string; side: Side; choice: string; skip: boolean; mustAct: boolean };
     const seats: BattleSeat[] = battle.sides.filter((side): side is Side => Boolean(side)).map(side => {
       const seatId = side.id;
       const reqKind = classifyRequest(side.activeRequest);
-      const isForce = reqKind === 'force-switch' || reqKind === 'revive-target' || side.requestState === 'switch';
-      const mustAct = hasAnyForceSwitch ? isForce : (requiresAction(side.activeRequest) || side.requestState === 'move');
+      const isForce = reqKind === 'force-switch' || reqKind === 'revive-target';
+      const mustAct = reqKind === 'wait'
+        ? false
+        : (hasAnyForceSwitch ? isForce : requiresAction(side.activeRequest));
       const seatInput = inputBySeat[seatId] ?? { skip: false };
-      const choice = mustAct ? this.resolveNextChoice(seatId, side.activeRequest, seatInput.explicit, seatInput.agent) : 'pass';
+      let explicitToUse = seatInput.explicit;
+      if (this.cheatManager.hasHistory && explicitToUse) {
+        if (isForce && !explicitToUse.startsWith('switch ')) {
+          explicitToUse = undefined;
+        } else {
+          const trimmed = explicitToUse.trim().toLowerCase();
+          const switchMatch = /^switch\s+(\d+)$/.exec(trimmed);
+          if (switchMatch) {
+            const targetSlot = parseInt(switchMatch[1]!, 10);
+            const targetPoke = side.pokemon[targetSlot - 1];
+            const isFnt = targetPoke && (targetPoke.fainted || targetPoke.hp <= 0);
+            const isAct = targetPoke && side.active.includes(targetPoke);
+            if (isFnt || isAct) {
+              if (reqKind === 'move') {
+                explicitToUse = 'move 1';
+              } else {
+                explicitToUse = undefined;
+              }
+            }
+          }
+        }
+      }
+      const choice = mustAct ? this.resolveNextChoice(seatId, side.activeRequest, explicitToUse, seatInput.agent) : 'pass';
       return { id: seatId, side, choice, skip: !mustAct || seatInput.skip || choice === 'pass', mustAct };
     });
 
     // Generic accepted-choice tracker, readable as p1/p2 via TurnExecutionOutput
     const acceptedChoices = new Map<string, string>();
 
+    const startTurn = battle.turn;
+    const startReqState = battle.requestState;
+
     for (const seat of seats) {
-      if (seat.side.isChoiceDone()) continue;
+      if (battle.ended) break;
+      if (battle.turn !== startTurn || battle.requestState !== startReqState) break;
+
       if (seat.mustAct && seat.skip) {
         // Use Showdown's official autoChoose() via 'default' — handles live and fainted pokemon
         // correctly without bypassing isChoiceDone() state validation.
         // NEVER manipulate side.choice.actions directly: it breaks commitChoices().
+        if (seat.side.isChoiceDone()) {
+          seat.side.clearChoice();
+        }
         battle.choose(seat.id as SideID, 'default');
         acceptedChoices.set(seat.id, 'default');
         continue;
       }
 
-      if (!seat.mustAct || seat.skip || !seat.choice || seat.choice === 'pass' || seat.side.isChoiceDone()) continue;
+      if (!seat.mustAct || seat.skip || !seat.choice || seat.choice === 'pass') continue;
+      if (!requiresAction(seat.side.activeRequest) || !seat.side.requestState) continue;
 
-      if (seat.side.choice && Array.isArray(seat.side.choice.actions) && seat.side.choice.actions.length > 0) {
+      if (seat.side.isChoiceDone() || (seat.side.choice && Array.isArray(seat.side.choice.actions) && seat.side.choice.actions.length > 0)) {
         seat.side.clearChoice();
       }
 
@@ -389,14 +419,14 @@ export class ShowdownBattleEngine {
         acceptedChoices.set(seat.id, seat.choice);
       } else {
         const reqStr = JSON.stringify(seat.side.activeRequest);
-        throw new Error(`[ShowdownBattleEngine] Elección "${seat.choice}" rechazada para ${seat.id}. Turn: ${battle.turn}. Req: ${reqStr}. Cause: ${chooseError ? chooseError.message : 'Invalid choice'}`);
+        const sideErr = seat.side.choice?.error;
+        throw new Error(`[ShowdownBattleEngine] Elección "${seat.choice}" rechazada para ${seat.id}. Turn: ${battle.turn}. Req: ${reqStr}. Cause: ${chooseError ? chooseError.message : (sideErr || 'Invalid choice')}`);
       }
 
       if (battle.ended) break;
     }
 
-    const validSides = battle.sides.filter((s): s is Side => Boolean(s));
-    if (!battle.ended && validSides.length > 0 && validSides.every(s => s.isChoiceDone())) {
+    if (!battle.ended && battle.allChoicesDone()) {
       battle.commitChoices();
     }
 

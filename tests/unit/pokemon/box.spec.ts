@@ -12,14 +12,15 @@ describe('BoxStore Modernization', () => {
     Object.assign(gs.state, {
       money: 1000,
       box: [
-        { id: 'pidgey', name: 'Pidgey', level: 10, ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 }, maxHp: 30, hp: 10, moves: [{ name: 'Tackle', pp: 0, maxPP: 35 }] },
-        { id: 'rattata', name: 'Rattata', level: 5, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, maxHp: 20, hp: 20 }
+        { id: 'pidgey', name: 'Pidgey', level: 10, ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 }, maxHp: 30, hp: 10, ability: 'keeneye', moves: [{ id: 'tackle', name: 'Tackle', pp: 0, maxPP: 35 }] },
+        { id: 'rattata', name: 'Rattata', level: 5, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, maxHp: 20, hp: 20, ability: 'runaway', moves: [{ id: 'tackle', name: 'Tackle', pp: 35, maxPP: 35 }] }
       ],
       team: [
-        { id: 'bulbasaur', name: 'Bulbasaur', level: 5, maxHp: 20, hp: 5, moves: [{ name: 'Tackle', pp: 0, maxPP: 35 }] },
-        { id: 'pidgey-team', name: 'Pidgey', level: 5, maxHp: 20, hp: 20 }
+        { id: 'bulbasaur', name: 'Bulbasaur', level: 5, maxHp: 20, hp: 5, ability: 'overgrow', moves: [{ id: 'tackle', name: 'Tackle', pp: 0, maxPP: 35 }] },
+        { id: 'pidgey-team', name: 'Pidgey', level: 5, maxHp: 20, hp: 20, ability: 'keeneye', moves: [{ id: 'tackle', name: 'Tackle', pp: 35, maxPP: 35 }] }
       ],
       boxCount: 4,
+      starterChosen: true,
       playerClass: 'rocket'
     })
     gs.save = vi.fn()
@@ -85,10 +86,10 @@ describe('BoxStore Modernization', () => {
 
     // Add busy status flags to box Pokémon
     gs.state.box = [
-      { id: 'pidgey', name: 'Pidgey', level: 10, inDaycare: true } as unknown as Pokemon,
-      { id: 'rattata', name: 'Rattata', level: 5, onMission: true } as unknown as Pokemon,
-      { id: 'ekans', name: 'Ekans', level: 8, onDefense: true } as unknown as Pokemon,
-      { id: 'zubat', name: 'Zubat', level: 7 } as unknown as Pokemon // Available
+      { id: 'pidgey', name: 'Pidgey', level: 10, inDaycare: true, ability: 'keeneye', moves: [{ id: 'tackle', name: 'Tackle', pp: 35, maxPP: 35 }] } as unknown as Pokemon,
+      { id: 'rattata', name: 'Rattata', level: 5, onMission: true, ability: 'runaway', moves: [{ id: 'tackle', name: 'Tackle', pp: 35, maxPP: 35 }] } as unknown as Pokemon,
+      { id: 'ekans', name: 'Ekans', level: 8, onDefense: true, ability: 'intimidate', moves: [{ id: 'wrap', name: 'Wrap', pp: 20, maxPP: 20 }] } as unknown as Pokemon,
+      { id: 'zubat', name: 'Zubat', level: 7, ability: 'innerfocus', moves: [{ id: 'leechlife', name: 'Leech Life', pp: 15, maxPP: 15 }] } as unknown as Pokemon // Available
     ]
 
     // Attempting to select busy Pokémon should be ignored
@@ -113,8 +114,8 @@ describe('BoxStore Modernization', () => {
 
     // Force selection of busy Pokémon directly (e.g. testing store logic robustness)
     gs.state.box = [
-      { id: 'pidgey', name: 'Pidgey', level: 10, inDaycare: true } as unknown as Pokemon,
-      { id: 'zubat', name: 'Zubat', level: 7 } as unknown as Pokemon
+      { id: 'pidgey', name: 'Pidgey', level: 10, inDaycare: true, ability: 'keeneye', moves: [{ id: 'tackle', name: 'Tackle', pp: 35, maxPP: 35 }] } as unknown as Pokemon,
+      { id: 'zubat', name: 'Zubat', level: 7, ability: 'innerfocus', moves: [{ id: 'leechlife', name: 'Leech Life', pp: 15, maxPP: 15 }] } as unknown as Pokemon
     ]
 
     // Force indexes 0 and 1 into selections
@@ -128,8 +129,8 @@ describe('BoxStore Modernization', () => {
 
     // Reset box and try with black market sale
     gs.state.box = [
-      { id: 'pidgey', name: 'Pidgey', level: 10, inDaycare: true, ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 } } as unknown as Pokemon,
-      { id: 'zubat', name: 'Zubat', level: 7, ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 } } as unknown as Pokemon
+      { id: 'pidgey', name: 'Pidgey', level: 10, inDaycare: true, ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 }, ability: 'keeneye', moves: [{ id: 'tackle', name: 'Tackle', pp: 35, maxPP: 35 }] } as unknown as Pokemon,
+      { id: 'zubat', name: 'Zubat', level: 7, ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 }, ability: 'innerfocus', moves: [{ id: 'leechlife', name: 'Leech Life', pp: 15, maxPP: 15 }] } as unknown as Pokemon
     ]
     box.boxRocketSelected = [0, 1]
     const val = box.getRocketSellValue()

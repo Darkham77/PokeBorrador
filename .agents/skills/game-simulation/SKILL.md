@@ -21,24 +21,38 @@ the source of truth. `src/` must conform to them, never the reverse.
 
 > These rules exist because they were violated in production and caused token waste or false reports. Every AI agent MUST strictly follow them without exception:
 
-1. **Strict Timeout Constants Policy (5s Per-Action Max — NEVER a Time Shortage Issue)**:
+1. **Strict Timeout Constants Policy (5s Per-Action Max — Configurable Suite Timeouts Without Hardcoding)**:
    - Per-Action Timeout: `MAX_PER_ACTION_TIMEOUT_MS = 5000` (5s).
-   - Suite Total Timeout: `MAX_SUITE_TOTAL_TIMEOUT_MS = 180000` (3m maximum).
+   - Suite Total Timeout: Configurable per test suite without hardcoding (dynamically scaled or calculated based on batch volume and test complexity, avoiding arbitrary hardcoded limits).
    - **IMMUTABLE LAW — A TIMEOUT IS NEVER A TIME SHORTAGE**: If a test or locator wait times out at 5s (`MAX_PER_ACTION_TIMEOUT_MS`), it is **100% GUARANTEED** to be an underlying structural bug, un-initialized store state, un-rendered component, or un-fulfilled reactive condition — **NEVER** a time shortage. It is **STRICTLY PROHIBITED** for any AI agent to modify, inflate, alter, override, or pass ad-hoc timeout arguments or dynamic timeout multipliers to simulation files, `clickElement`, `waitFor`, `waitForFunction`, or Playwright locators WITHOUT explicit prior user permission or an explicit technical justification requested from the user. EVERYTHING MUST ALWAYS BE EXCLUSIVELY DRIVEN BY TYPED PUBLIC EVENTS. The agent **MUST ALWAYS** find and fix the true root cause in state/reactivity/code, keeping all action timeouts strictly at 5s.
 
-2. **Mandatory 100% Shared Action Array & Runner Code (Zero Divergence)**:
+2. **Mandatory 100% Shared Action Array, Runner Code & Comprehensive History on Disk**:
    - Headless fuzzer replayers (`fuzzer_case_replayer.ts`) and Playwright E2E browser simulations MUST consume the LITERALLY SAME choices (`batchData.playerChoices` and `batchData.enemyChoices`) via the SAME shared class `ShowdownBattleRunner` (`src/logic/battle/helpers/showdownBattleRunner.ts`).
-   - It is STRICTLY FORBIDDEN to implement parallel, fallback, or divergent choice arrays (such as swapping to `history` or fallback arrays) between headless replayers and browser simulations.
+   - It is STRICTLY FORBIDDEN to implement parallel, fallback, or divergent choice arrays between headless replayers and browser simulations.
+   - **Mandatory Comprehensive History Recording on Disk**: The fuzzer recorder MUST write complete, unambiguous state and decision metadata directly into `history` entries in `fuzzer_certified_cases.json` (`CertifiedBattleHistoryEntry`). This includes:
+     - `p1ActiveUid` and `p2ActiveUid` (explicit active Pokémon UIDs per turn).
+     - `p1MoveId` and `p2MoveId` (canonical move IDs executed).
+     - `p1LockedMoveId` and `p2LockedMoveId` (locked or recharge move IDs when restricted by Showdown).
+     - `p1Trapped` and `p2Trapped` (switching prohibition flags when trapped by ability or move).
+     - `p1Volatiles` and `p2Volatiles` (critical active volatiles: `mustrecharge`, `lockedmove`, `twoturnmove`, `taunt`, `encore`, `substitute`).
+     - `p1StatStages` and `p2StatStages` (stat boost stages: `atk`, `def`, `spa`, `spd`, `spe`, `accuracy`, `evasion`).
+     - `p1Status` and `p2Status` (non-volatile statuses: `slp`, `psn`, `tox`, `par`, `brn`, `frz`).
+     - `p1Hp` and `p2Hp` (exact HP snapshots post-turn for instant 1:1 math parity checks).
+     - `weather`, `terrain`, `p1SideConditions`, `p2SideConditions` (field and hazard conditions).
+     - `p1ForceSwitch` and `p2ForceSwitch` (explicit forced switch flags).
+     - `p1Heal`, `p2Heal`, `p1PreHeal`, `p2PreHeal` (explicit Infinite Punching Bag healing and revival flags).
+   - **Doubtful & Edge-Case State Logging**: Whenever any combat transition, state, or choice is doubtful, complex, or constrained (e.g. single-slot recharge moves, Outrage/Thrash locked moves, trapped states, forced switches, multi-turn charging moves), the fuzzer MUST record the exact decision and context with rich, self-documenting detail directly into the history on disk.
+   - **Strict Runtime Parity Verification & Loud Desync Abort**: Replayers and Playwright simulators MUST consume these explicit history fields to verify active UIDs, enabled move slots, and locked states. If runtime game state diverges from the certified history on disk, execution MUST fail loudly and immediately with an explicit `[E2E-DESYNC]` error detailing the mismatch. Guessing choices, picking default moves, or using silent fallbacks is strictly prohibited.
 
 3. **Event-Driven Architecture & Simulation as a Passive Joystick Mandate**:
-   - **IMMUTABLE LAW — SIMULATION IS A PASSIVE JOYSTICK**: The game FSM is the SOLE authority for execution flow and input readiness. A simulation test script is strictly a passive joystick: it MUST ONLY react to explicit FSM readiness states (`WAIT_INPUT`, `SWITCH_MENU`, `over`, `REWARDS_PHASE`, `SEARCH_PHASE`).
+   - **IMMUTABLE LAW — SIMULATION IS A PASSIVE JOYSTICK**: The game FSM is the SOLE authority for execution flow and input readiness. A simulation test script is strictly a passive joystick: it MUST ONLY react to explicit FSM readiness states (`WAIT_INPUT`, `SWITCH_MENU`, `over`, `REWARDS_PHASE`, `SEARCH_PHASE`) and public typed application events (`battle-ready-for-input`, `battle-forced-switch-required`).
    - **IMMUTABLE LAW — GENUINE UI INTERACTIONS**: Every interaction after test setup MUST be performed through the same visible official UI control used by a player: buttons, menus, modal open/close controls, movement controls, move/item selectors, switch controls, and exit controls. Calling stores, composables, debug methods, DOM event dispatchers, or browser-side delegates to advance, confirm, close, choose, flee, move, or otherwise mutate gameplay is strictly forbidden.
    - **OFFICIAL KEYBOARD ACTIVATION**: If pointer hover or a tooltip keeps an ID-selected official control unstable, focus that control and press `Enter`. This is a genuine player interaction and is required instead of force-clicking, coordinate clicking, or dispatching a synthetic event.
    - **IMMUTABLE LAW — NPC COMBAT ONLY**: Trainer, rival, gym, and every other NPC encounter is combat-only. Its official UI MUST NOT offer fleeing, and a simulation MUST select the combat control only. A visible or executable NPC flee path is a game defect to fix in `src/`, never a test escape hatch.
    - **NARROW BATTLE-INITIALIZATION EXCEPTION**: The sole permitted state injection is the initialization of a battle that reproduces a current, fuzzer-certified case. It may establish only the initial combat scenario and MUST NOT perform any subsequent gameplay action or transition. The test must then drive the battle exclusively through official visible UI controls. Manual scenarios without a fuzzer-certified battle have no injection exception.
    - **CERTIFIED IPB HEALING EXCEPTION**: The Infinite Punching Bag healing cheat remains permitted exactly as recorded by the certified fuzzer turn flags (`p1Heal` / `p2Heal`) and only during its prescribed coverage phase. It is a deterministic parity instrument, not a UI substitute; it does not authorize internal calls for clicks, menus, modal closure, movement, choices, switching, fleeing, confirmation, or battle exit.
    - **NO AD-HOC HEURISTICS IN SIMULATION HELPERS**: It is **STRICTLY FORBIDDEN** to invent ad-hoc property checks (such as checking `hp === 0`), add manual poll loops, or alter helper functions like `waitForWaitInput` to force early returns. `waitForWaitInput` MUST purely observe FSM readiness states.
-   - **PUBLIC-EVENT-ONLY SYNCHRONIZATION**: Every simulator wait MUST be armed before the UI action and resolved by a public, typed application event (for example `battle-ready-for-input`, a typed battle-flow completion event, or an explicit component event). `page.waitForFunction`, store/FSM property polling, DOM-state polling, `sleep`, `page.waitForTimeout`, turn counters, and low-level condition loops are forbidden as synchronization mechanisms. A missing event is a source-code defect: add the typed event at the real transition boundary in `src/`, then consume it without mutating gameplay. It is **STRICTLY FORBIDDEN** to use retry-loop helpers (such as `clickResilient`) that attempt repeated clicks on UI elements while a turn or animation is in progress and the button is disabled.
+   - **PUBLIC-EVENT-ONLY SYNCHRONIZATION & ZERO-TIMER SYNC**: Every simulator wait MUST be armed before the UI action and resolved by a public, typed application event (specifically `battle-ready-for-input`, `battle-forced-switch-required`, a typed battle-flow completion event, or an explicit component event) with 100% zero-timer synchronization. `page.waitForFunction`, store/FSM property polling, DOM-state polling, `sleep`, `page.waitForTimeout`, turn counters, and low-level condition loops are strictly forbidden as synchronization mechanisms. A missing event is a source-code defect: add the typed event at the real transition boundary in `src/`, then consume it without mutating gameplay. It is **STRICTLY FORBIDDEN** to use retry-loop helpers (such as `clickResilient`) that attempt repeated clicks on UI elements while a turn or animation is in progress and the button is disabled.
    - **EVENTS FOLLOW REAL TRANSITIONS**: Tests must never dispatch, forge, or directly call an event to advance the game. A source event must be emitted only after the genuine FSM/UI transition and cleanup complete; a simulator is an observer that then clicks the next visible official control.
    - If a simulation times out waiting for input readiness, it indicates a real bug in `src/` or a missing FSM state transition event emission in game code. The agent MUST fix the bug cleanly at the source in `src/`, NEVER patch the simulation helper with ad-hoc heuristics.
    - It is STRICTLY FORBIDDEN to use `.catch(() => true)` or swallow errors during `page.evaluate()` or state checks. All errors MUST fail loudly immediately to expose state desynchronizations at their source.
@@ -46,7 +60,7 @@ the source of truth. `src/` must conform to them, never the reverse.
 4. **Mandatory Generic Root-Cause Verification & Absolute Zero-Fallback Protocol**:
    - BEFORE making or proposing any edits to `src/`, the agent MUST isolate and output the un-truncated trace or exact log line causing the error.
    - **MANDATORY PRE-FIX FALLBACK AUDIT**: Whenever investigating a bug or simulation failure, the agent MUST FIRST verify: *Are there any masking fallbacks (`||`, `??`, default assignments, or property derivations) in the execution path hiding the real root cause?* If any exist, the agent MUST REMOVE THEM FIRST so the system fails loudly with an explicit, traceable stack trace showing the true origin of the bug.
-   - **ABSOLUTE PROHIBITION ON FALLBACKS & AUTO-CHOICE ADAPTERS**: It is STRICTLY FORBIDDEN to introduce compatibility adapters, silent fallbacks, default assignments (`||`, `??`), or property derivations (e.g. deriving `species` from `name`/`id` or assigning dummy/default values) to make tests pass quickly. In particular, it is STRICTLY PROHIBITED to modify `src/` to intercept invalid/disabled move choices or choice rejections and substitute them with fallback choices or automated agent calls.
+   - **ABSOLUTE PROHIBITION ON FALLBACKS & AUTO-CHOICE ADAPTERS**: It is STRICTLY FORBIDDEN to introduce compatibility adapters, silent fallbacks, default assignments (`||`, `??`), dummy derivations (e.g. deriving `species` from `name`/`id` or assigning dummy/default values), or swallowing errors (`.catch(() => true)` or silent catch blocks) to make tests pass quickly. In particular, it is STRICTLY PROHIBITED to modify `src/` to intercept invalid/disabled move choices or choice rejections and substitute them with fallback choices or automated agent calls.
    - **FALLBACKS ARE BUGS**: Any missing property, undefined value, missing choice, or unregistered constant is an empirical indicator of a missing implementation or data initialization bug upstream. It MUST NOT be "healed" or patched with fallbacks. If a fuzzer or test choice is rejected, the test script or choice generator is wrong and MUST be fixed at the source, while `src/` MUST fail fast and loudly (`throw new Error(...)`).
    - All error handling and data lookups MUST fail loudly with explicit descriptive errors (`throw new Error(...)`) when data or state is missing/corrupted, forcing the fix to be applied at the upstream source.
 
@@ -83,36 +97,48 @@ the source of truth. `src/` must conform to them, never the reverse.
    - The test MUST remain permanently in `tests/node/` as an immutable regression guard.
    - Speculative patching, guessing, or editing `src/` without first creating and confirming a failing reproduction test with the extracted fuzzer steps is **STRICTLY PROHIBITED**.
 
-   **Examples of FORBIDDEN Patterns vs REQUIRED Fail-Loud Patterns:**
+10. **Absolute Pokémon Legality Mandate in Fuzzers and Simulations**:
+    - Every Pokémon generated or evaluated in fuzzers, battle runners, replayers, and E2E simulations MUST be 100% legal according to Pokémon Showdown canonical Gen 9 rules and the Poké Vicio Pokédex database.
+    - It is **STRICTLY FORBIDDEN** to generate synthetic or illegal Pokémon (e.g. assigning non-native abilities like *Illuminate* or *Rough Skin* to Mew, assigning non-learnable moves, or assigning invalid genders).
+    - All generated species must strictly use natural Showdown Dex abilities, biological genders matching species ratio rules, and valid learnsets across all fuzzers and simulators.
+    - When testing an ability, move, or mechanic, the generator MUST dynamically select a canonical species from the Showdown Dex that naturally possesses that ability or move.
+    - All generated teams MUST pass `PokemonLegalityValidator.assertTeamLegality` before generation and simulation execution.
 
-   *❌ Forbidden (Silent Fallback Assignment):*
-   ```typescript
-   // BAD: Silently assigning 'default' when choice is missing in a simulation run
-   if (!choiceToExecute) {
-     choiceToExecute = 'default';
-   }
-   ```
-   *✅ Required (Generic Fail-Loud Error):*
-   ```typescript
-   // GOOD: Fail loudly when a required choice is missing from the certified choice stream
-   if (!choiceToExecute) {
-     throw new Error(`[ShowdownExecutor] Required choice for seat "${seatId}" is missing from certified choices array.`);
-   }
-   ```
+11. **Inviolable PP Conservation and Replay Determinism Axiom**:
+    - Because the Node fuzzer certifies battles to completion deterministically, a Pokémon in a fuzzer or E2E browser simulation can **NEVER** run out of PP or select an exhausted move unexpectedly unless desynchronized.
+    - If a Pokémon in the fuzzer or browser simulation reaches a state with 0 PP or selects a move that is `disabled: true`, it is proof positive that a turn-count/cursor desynchronization occurred or that certified cheats/actions were misapplied.
+    - It is **STRICTLY FORBIDDEN** to introduce runtime fallbacks that automatically pick another legal move or patch over the desynchronization. The engine MUST fail loudly and immediately (`throw new Error(...)`) with full context to diagnose and fix the root cause.
 
-   *❌ Forbidden (Silent Property Recovery / Derivation Fallback):*
-   ```typescript
-   // BAD: Deriving missing property from secondary fields or using fallback OR operator
-   const species = target.species || target.name || target.id;
-   ```
-   *✅ Required (Strict Boundary Guard & Upstream Fix):*
-   ```typescript
-   // GOOD: Throw explicit descriptive error when required property is missing, then fix upstream initialization
-   if (!target.species) {
-     throw new Error(`[ShowdownBridge] Target object "${target.name}" (UID: ${target.uid}) has no species defined.`);
-   }
-   const species = target.species;
-   ```
+    **Examples of FORBIDDEN Patterns vs REQUIRED Fail-Loud Patterns:**
+
+    *❌ Forbidden (Silent Fallback Assignment):*
+    ```typescript
+    // BAD: Silently assigning 'default' when choice is missing in a simulation run
+    if (!choiceToExecute) {
+      choiceToExecute = 'default';
+    }
+    ```
+    *✅ Required (Generic Fail-Loud Error):*
+    ```typescript
+    // GOOD: Fail loudly when a required choice is missing from the certified choice stream
+    if (!choiceToExecute) {
+      throw new Error(`[ShowdownExecutor] Required choice for seat "${seatId}" is missing from certified choices array.`);
+    }
+    ```
+
+    *❌ Forbidden (Silent Property Recovery / Derivation Fallback):*
+    ```typescript
+    // BAD: Deriving missing property from secondary fields or using fallback OR operator
+    const species = target.species || target.name || target.id;
+    ```
+    *✅ Required (Strict Boundary Guard & Upstream Fix):*
+    ```typescript
+    // GOOD: Throw explicit descriptive error when required property is missing, then fix upstream initialization
+    if (!target.species) {
+      throw new Error(`[ShowdownBridge] Target object "${target.name}" (UID: ${target.uid}) has no species defined.`);
+    }
+    const species = target.species;
+    ```
 
 ## 🔄 Canonical Simulation & Debugging Lifecycle Order (Immutable Step-by-Step Flow)
 
@@ -264,13 +290,13 @@ Status: FIXING | PENDING_RERUN | PASS
 
 The simulation infrastructure (Playwright, replayers, and deciders) must operate strictly under an **Event-Driven Architecture**. Timers, sleep/timeout polling loops, and turn-counting structures in the test automation files are strictly prohibited.
 
-1. **Reactive Event Waiting**: The simulation runner must only react to typed public events dispatched by the application (including `battle-ready-for-input` and typed lifecycle events such as battle-flow completion). It must arm its listener before the preceding visible UI action, must not poll stores/FSM/DOM states, and must not use arbitrary delays (`sleep`, `setTimeout`, `page.waitForTimeout`, or `page.waitForFunction`) to guess when a player action can be sent.
+1. **Reactive Event Waiting & Zero-Timer Sync**: The simulation runner must only react to typed public events dispatched by the application (including `battle-ready-for-input`, `battle-forced-switch-required`, and typed lifecycle events such as battle-flow completion) with 100% zero-timer synchronization. It must arm its listener before the preceding visible UI action, must not poll stores/FSM/DOM states, and must not use arbitrary delays (`sleep`, `setTimeout`, `page.waitForTimeout`, or `page.waitForFunction`) to guess when a player action can be sent.
 2. **Scripted Choice Separation**: The shared runner owns certified-choice parsing and resolution. The Playwright script may read its resulting action only to select the matching visible official control; it must never dispatch a store action, invoke a debug delegate, or synthesize a choice.
    - **Two-AI Boundary**: The fuzzer's scripted heuristic AI generates the exact legal certified choices and history; Playwright replays that evidence only. The complete real AI may be exercised by a dedicated non-Playwright diagnostic, but it is never a browser-combat decision source. No simulation may borrow, replace, omit, reorder, or mutate certified decisions to make either mode pass.
-3. **Visible UI Execution**: Upon an action-ready event, the simulation must click the official move, item, switch, confirmation, flee, modal, movement, or exit control. `window.__VITE_DEBUG__.executeScriptedAction()` and every equivalent browser-side action delegate are prohibited.
-4. **Mandatory Event Timeout & Strict Limits (5s Per-Action / configurable suite total)**: 
-   - **Per-Action Limit**: After the `battle-ready-for-input` event is dispatched, the simulation must consume it within **5 seconds maximum** through its visible official control. If 5 seconds pass without consumption, the application must throw a fatal simulation error (`[SIMULATION-FATAL]`).
-   - **Suite Total Limit**: The maximum duration for a whole suite may be adjusted when its complete, documented coverage legitimately needs more time. The change must be recorded in the generated simulation progress artifact and MUST NOT alter any per-action timeout, readiness condition, test case, or FSM transition.
+3. **Visible UI Execution**: Upon an action-ready event (`battle-ready-for-input` or `battle-forced-switch-required`), the simulation must click the official move, item, switch, confirmation, flee, modal, movement, or exit control. `window.__VITE_DEBUG__.executeScriptedAction()` and every equivalent browser-side action delegate are prohibited.
+4. **Mandatory Event Timeout & Strict Limits (5s Per-Action / Configurable Suite Total Without Hardcoding)**: 
+   - **Per-Action Limit**: After the `battle-ready-for-input` or `battle-forced-switch-required` event is dispatched, the simulation must consume it within **5 seconds maximum** (`MAX_PER_ACTION_TIMEOUT_MS = 5000`) through its visible official control. If 5 seconds pass without consumption, the application must throw a fatal simulation error (`[SIMULATION-FATAL]`).
+   - **Suite Total Limit**: Suite total timeouts must be configurable per test suite (e.g. calculated dynamically based on batch volume and complexity) without arbitrary hardcoding. Any adjustment must be recorded in the generated simulation progress artifact and MUST NOT alter any per-action timeout (strictly 5s), readiness condition, test case, or FSM transition.
    - **ABSOLUTE PROHIBITION ON INCREASING INTERACTION TIMEOUTS:** It is strictly forbidden to increase event consumption timeouts beyond 5 seconds. A per-action timeout failure is NEVER caused by a lack of time; it is ALWAYS an empirical indicator of a bug in `src/` (such as early returns, unhandled state desyncs, or silent promise freezes). The underlying code bug in `src/` must be diagnosed and fixed—never mask it by inflating timeouts.
 5. **Strict Mandatory UID-Based Element Locators**: All E2E simulations and Playwright test scripts MUST interact with UI components (such as Pokémon in selection modals, team drawers, and combat cards) EXCLUSIVELY using their unique identifiers (`data-pokemon-uid="${uid}"` or `data-item-id="${id}"`). Locating UI elements by text content (such as species names, nicknames, or strings) is STRICTLY FORBIDDEN to prevent desynchronization, translation errors, and font-rendering failures.
 
@@ -337,23 +363,24 @@ scripts/e2e/                          <- Layer 3: Simulations (Playwright, real 
 run_moves_fuzzer.ts / run_abilities_fuzzer.ts / run_items_fuzzer.ts
   |  simulates battles deterministically using @pkmn/sim
   |  applies Infinite Punching Bag pattern (HP < 30% -> restore to 100%)
-  |  embeds p1Heal / p2Heal flags directly in the history terna: { p1Choice, p2Choice, battleTurn, p1Heal?, p2Heal? }
+  |  embeds comprehensive metadata in history:
+  |    { p1Choice, p2Choice, battleTurn, p1ActiveUid?, p2ActiveUid?, p1MoveId?, p2MoveId?, p1LockedMoveId?, p2LockedMoveId?, p1Trapped?, p2Trapped?, p1Volatiles?, p2Volatiles?, p1StatStages?, p2StatStages?, p1Status?, p2Status?, p1Hp?, p2Hp?, weather?, terrain?, p1SideConditions?, p2SideConditions?, p1ForceSwitch?, p2ForceSwitch?, p1Heal?, p2Heal?, p1PreHeal?, p2PreHeal? }
   |
   +---> fuzzer_certified_cases.json
             |-- section "battle" -> consumed by battle_fsm_sync.sim.ts
             +-- section "items"  -> consumed by battle_held_items.sim.ts
-                 (E2E replays identical cheats directly from history terna flags to mirror fuzzer state)
+                 (E2E replays identical choices & cheats directly from history flags to mirror fuzzer state)
 ```
 
 **Key rule:** The fuzzer runs `@pkmn/sim` as the authoritative engine. If the
 game's `src/` behavior diverges from Showdown's output, `src/` is wrong. The
 simulation is right.
 
-### Infinite Punching Bag Pattern
+### Infinite Punching Bag Pattern & Comprehensive History Schema
 
 The fuzzer prevents premature battle endings by restoring HP when it drops below
 30% of max. This keeps Pokemon alive long enough to cover all moves and abilities.
-Restorations are saved directly as boolean flags (`p1Heal: true`, `p2Heal: true`) inside each turn's history terna entry (`history`), linked to `battleTurn`. There are NO separate `cheats` arrays or index lookups. Both the fuzzer and the real browser read the history terna to execute identical restorations.
+Restorations are saved directly as boolean flags (`p1Heal: true`, `p2Heal: true`, `p1PreHeal: true`, `p2PreHeal: true`) inside each turn's history entry (`history`), linked to `battleTurn`. Every history entry additionally embeds active Pokémon UIDs, move identifiers, locked move identifiers, trapped states, volatiles, stat stages, status conditions, HP snapshots, and field/side conditions. There are NO separate `cheats` arrays or index lookups. Both the fuzzer and the real browser read the history entry to execute and verify identical state transitions without guesswork or silent fallbacks.
 
 ### Objective-Driven Cooperative Fuzzer Heuristics
 

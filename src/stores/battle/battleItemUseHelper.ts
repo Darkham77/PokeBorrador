@@ -134,9 +134,9 @@ export async function processUseItemInBattle(
         if (ctx.animations?.awaitTween) {
           await ctx.animations.awaitTween('escape-enemy')
         } else {
-          const { sleep } = await import('@/logic/utils/timeUtils')
+          const { gsapSleep } = await import('@/logic/utils/gsapHelpers')
           const PLAY_ESCAPE_ANIMATION_FALLBACK_MS = 800
-          await sleep(PLAY_ESCAPE_ANIMATION_FALLBACK_MS)
+          await gsapSleep(PLAY_ESCAPE_ANIMATION_FALLBACK_MS)
         }
         await options.endBattle(false, true)
       }

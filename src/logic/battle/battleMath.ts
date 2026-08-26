@@ -138,6 +138,86 @@ export function getEffectiveStatPure(
   ).final;
 }
 
+function calculateHeldItemDamageMultiplier(heldItem: string | undefined, moveType: string, moveCat: string): number {
+  if (!heldItem) return 1;
+  const typeBoosters: Record<string, string> = {
+    charcoal: 'fire',
+    magnet: 'electric',
+    mystic_water: 'water',
+    miracle_seed: 'grass',
+    black_belt: 'fighting',
+    twisted_spoon: 'psychic',
+    spell_tag: 'ghost',
+    silver_powder: 'bug',
+    poison_barb: 'poison'
+  };
+  if (typeBoosters[heldItem] === moveType) return 1.2;
+  if (heldItem === 'choiceband' && moveCat === 'physical') return 1.5;
+  if (heldItem === 'choicespecs' && moveCat === 'special') return 1.5;
+  if (heldItem === 'lifeorb') return 1.3;
+  return 1;
+}
+
+function calculateWeatherDamageMultiplier(
+  weather: PureBattleWeather | null | undefined,
+  mechWeather: string,
+  moveType: string,
+  cleanMoveId: string,
+  dayCycle: DayPhase | undefined,
+  isGym: boolean,
+  isMoveWeather: boolean
+): number {
+  let weatherMult = 1;
+  if ((!isGym || isMoveWeather) && weather && weather.turns !== 0) {
+    if (mechWeather === WEATHER_KEYS.SUN) {
+      if (moveType === 'fire') weatherMult = 1.5;
+      if (moveType === 'water') {
+        weatherMult = (weather.type === 'intense_sun' || weather.type === 'heatwave') ? 0 : 0.5;
+      }
+    } else if (mechWeather === WEATHER_KEYS.RAIN) {
+      if (moveType === 'water') weatherMult = 1.5;
+      if (moveType === 'fire') {
+        weatherMult = (weather.type === 'heavy_rain' || weather.type === 'storm') ? 0 : 0.5;
+      }
+    } else if (weather.type === 'thunderstorm') {
+      if (moveType === 'electric' || moveType === 'dragon') {
+        weatherMult = 1.5;
+      } else if (moveType === 'fire') {
+        weatherMult = 0.5;
+      }
+    }
+  }
+
+  // Ciclos implícitos (cuando el clima está despejado o no hay clima)
+  if (!isGym && (!weather || weather.type === 'clear' || weather.type === 'none')) {
+    if ((dayCycle === 'day' || dayCycle === 'morning') && moveType === 'fire') {
+      weatherMult = 1.2;
+    } else if ((dayCycle === 'night' || dayCycle === 'dusk') && moveType === 'water') {
+      weatherMult = 1.2;
+    }
+  }
+
+  const isSolarMove = cleanMoveId === 'solarbeam' || cleanMoveId === 'solarblade';
+  if (isSolarMove && weather && weather.turns !== 0) {
+    const isSun = mechWeather === WEATHER_KEYS.SUN;
+    const isClear = (mechWeather === WEATHER_KEYS.CLEAR || weather.type === 'clear' || weather.type === 'none') && weather.type !== 'thunderstorm';
+    if ((!isGym || isMoveWeather) && !isSun && !isClear) {
+      weatherMult *= 0.5;
+    }
+  }
+
+  return weatherMult;
+}
+
+function calculateDeltaStreamTypeEff(eff: number, defender: PurePokemon, moveType: string, isStrongWinds: boolean): number {
+  if (isStrongWinds && (defender.type === 'flying' || defender.type2 === 'flying')) {
+    if (eff > 1 && ['electric', 'ice', 'rock'].includes(moveType)) {
+      return eff / 2;
+    }
+  }
+  return eff;
+}
+
 export function calculateDamagePure(
   attacker: PurePokemon,
   defender: PurePokemon,
@@ -219,94 +299,17 @@ export function calculateDamagePure(
     triggeredAbility = 'thickfat';
   }
 
-  let itemMult = 1;
-  if (attacker.heldItem) {
-    const h = attacker.heldItem;
-    const typeBoosters: Record<string, string> = {
-      charcoal: 'fire',
-      magnet: 'electric',
-      mystic_water: 'water',
-      miracle_seed: 'grass',
-      black_belt: 'fighting',
-      twisted_spoon: 'psychic',
-      spell_tag: 'ghost',
-      silver_powder: 'bug',
-      poison_barb: 'poison'
-    };
-    if (typeBoosters[h] === moveType) itemMult = 1.2;
-    if (h === 'choiceband' && moveCat === 'physical') itemMult = 1.5;
-    if (h === 'choicespecs' && moveCat === 'special') itemMult = 1.5;
-    if (h === 'lifeorb') itemMult = 1.3;
-  }
+  const itemMult = calculateHeldItemDamageMultiplier(attacker.heldItem, moveType, moveCat);
 
   let stab = (moveType === attacker.type || moveType === attacker.type2) ? 1.5 : 1;
   if (attacker.ability === 'adaptability' && stab > 1) stab = 2;
 
-  let weatherMult = 1;
   const isMoveWeather = !!(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1);
-  if ((!isGym || isMoveWeather) && weather && weather.turns !== 0) {
-    if (mechWeather === WEATHER_KEYS.SUN) {
-      if (moveType === 'fire')  weatherMult = 1.5;
-      if (moveType === 'water') {
-        // Ola de calor (heatwave) y Sol Abrasador (intense_sun) evaporan el agua (0x)
-        if (weather.type === 'intense_sun' || weather.type === 'heatwave') {
-          weatherMult = 0;
-        } else {
-          weatherMult = 0.5;
-        }
-      }
-    } else if (mechWeather === WEATHER_KEYS.RAIN) {
-      if (moveType === 'water') weatherMult = 1.5;
-      if (moveType === 'fire')  {
-        // Tormenta extrema (storm) y Lluvia Torrencial (heavy_rain) extinguen el fuego (0x)
-        if (weather.type === 'heavy_rain' || weather.type === 'storm') {
-          weatherMult = 0;
-        } else {
-          weatherMult = 0.5;
-        }
-      }
-    } else if (weather.type === 'thunderstorm') {
-      if (moveType === 'electric' || moveType === 'dragon') {
-        weatherMult = 1.5;
-      } else if (moveType === 'fire') {
-        // En tormentas eléctricas secas la visibilidad y carga reduce la efectividad del fuego a la mitad
-        weatherMult = 0.5;
-      }
-    }
-  }
+  const cleanMoveId = toID(move.id);
+  const weatherMult = calculateWeatherDamageMultiplier(weather, mechWeather, moveType, cleanMoveId, dayCycle, isGym, isMoveWeather);
 
-  // Delta Stream (strong_winds) remueve debilidades del tipo volador
-  let finalEff = eff;
-  const isStrongWinds = (!isGym || isMoveWeather) && weather && weather.turns !== 0 && (weather.type === 'strong_winds' || weather.type === 'deltastream');
-  if (isStrongWinds && (defender.type === 'flying' || defender.type2 === 'flying')) {
-    // Si el movimiento es super efectivo contra el defensor y este es Volador, removemos la debilidad
-    if (finalEff > 1) {
-      // Delta Stream convierte las debilidades del tipo Volador en daño neutro (x1)
-      // Para simplificar, si el daño es super efectivo y es del tipo Electric/Ice/Rock (debilidades de volador), lo neutralizamos.
-      if (['electric', 'ice', 'rock'].includes(moveType)) {
-        finalEff /= 2;
-      }
-    }
-  }
-
-  // Ciclos implícitos (cuando el clima está despejado o no hay clima)
-  if (!isGym && (!weather || weather.type === 'clear' || weather.type === 'none')) {
-    if ((dayCycle === 'day' || dayCycle === 'morning') && moveType === 'fire') {
-      weatherMult = 1.2;
-    } else if ((dayCycle === 'night' || dayCycle === 'dusk') && moveType === 'water') {
-      weatherMult = 1.2;
-    }
-  }
-
-  const cleanMoveId = toID(move.id || '');
-  const isSolarMove = cleanMoveId === 'solarbeam' || cleanMoveId === 'solarblade';
-  if (isSolarMove && weather && weather.turns !== 0) {
-    const isSun = mechWeather === WEATHER_KEYS.SUN;
-    const isClear = (mechWeather === WEATHER_KEYS.CLEAR || weather.type === 'clear' || weather.type === 'none') && weather.type !== 'thunderstorm';
-    if ((!isGym || isMoveWeather) && !isSun && !isClear) {
-      weatherMult *= 0.5;
-    }
-  }
+  const isStrongWinds = Boolean((!isGym || isMoveWeather) && weather && weather.turns !== 0 && (weather.type === 'strong_winds' || weather.type === 'deltastream'));
+  const finalEff = calculateDeltaStreamTypeEff(eff, defender, moveType, isStrongWinds);
 
 
   let terrainMult = 1;

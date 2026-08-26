@@ -24,6 +24,8 @@ import type { AbilityId } from '../../../../src/data/battle/abilities.ts';
 import type { NatureId } from '../../../../src/data/battle/natures.ts';
 import type { PokemonMoveId } from '../../../../src/types/pokemon/pokemon.ts';
 import type { CertifiedBattleGameAction } from '../../../../src/types/battle/certifiedBattleActions.ts';
+import { PokemonLegalityValidator } from '../../../../src/logic/battle/helpers/pokemonLegalityValidator.ts';
+import { pokemonDataProvider } from '../../../../src/logic/providers/pokemonDataProvider.ts';
 
 import type { CalculatedStats } from '../../../../src/logic/pokemon/statsMath.ts';
 
@@ -62,6 +64,26 @@ export interface CertifiedBattleHistoryEntry {
   battleTurn: number;
   /** A non-Showdown game action paired with this atomic certified turn. */
   p1GameAction?: CertifiedBattleGameAction;
+  p1ActiveUid?: string;
+  p2ActiveUid?: string;
+  p1MoveId?: string;
+  p2MoveId?: string;
+  p1LockedMoveId?: string;
+  p2LockedMoveId?: string;
+  p1Trapped?: boolean;
+  p2Trapped?: boolean;
+  p1Volatiles?: string[];
+  p2Volatiles?: string[];
+  p1StatStages?: Partial<Record<'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'accuracy' | 'evasion', number>>;
+  p2StatStages?: Partial<Record<'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'accuracy' | 'evasion', number>>;
+  p1Status?: string;
+  p2Status?: string;
+  p1Hp?: number;
+  p2Hp?: number;
+  weather?: string;
+  terrain?: string;
+  p1SideConditions?: string[];
+  p2SideConditions?: string[];
   p1PreHeal?: boolean;
   p2PreHeal?: boolean;
   p3PreHeal?: boolean;
@@ -296,6 +318,29 @@ export function getTriggerSlot(abilityId: string): number | null {
 
 import { ACTIVE_GENERATION } from '../../../../src/data/system/constants.ts';
 
+export function findLegalSpeciesAndGenderForAbility(abilityId: string, dexGen: ReturnType<typeof Dex.forGen>): { species: PokemonSpeciesId; gender: GenderName; ability: AbilityId } {
+  const cleanAbility = toID(abilityId);
+  const match = dexGen.species.all().find(s => {
+    if (!s.exists || s.isNonstandard === 'CAP' || s.isNonstandard === 'Custom' || s.isNonstandard === 'Future' || s.forme?.includes('Totem')) return false;
+    return Object.values(s.abilities).some(a => toID(a) === cleanAbility);
+  });
+  if (match) {
+    const speciesId = toID(match.name) as PokemonSpeciesId;
+    let gender: GenderName = 'M';
+    if (match.gender === 'N' || match.gender === 'M' || match.gender === 'F') {
+      gender = match.gender as GenderName;
+    } else if (match.genderRatio?.F === 1) {
+      gender = 'F';
+    } else if (match.genderRatio?.M === 1) {
+      gender = 'M';
+    } else if (match.genderRatio?.M === 0 && match.genderRatio?.F === 0) {
+      gender = 'N';
+    }
+    return { species: speciesId, gender, ability: cleanAbility as AbilityId };
+  }
+  return { species: 'mew' as PokemonSpeciesId, gender: 'N', ability: 'synchronize' as AbilityId };
+}
+
 export function generateTestBatches(batchSize: number = 6): TestBatch[] {
   const dexGen = Dex.forGen(ACTIVE_GENERATION);
 
@@ -337,14 +382,22 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
         }
       }
 
-      let abilityName = 'illuminate';
+      let abilityName = 'synchronize';
+      let targetSpecies: PokemonSpeciesId = 'mew';
+      let targetGender: GenderName = 'N';
+      let targetAbility: AbilityId = 'synchronize';
+
       if (abilityIdx < abilityPool.length) {
         abilityName = abilityPool[abilityIdx]!;
         batchAbilities.push(toID(abilityName) as AbilityId);
         abilityIdx++;
+        const legal = findLegalSpeciesAndGenderForAbility(abilityName, dexGen);
+        targetSpecies = legal.species;
+        targetGender = legal.gender;
+        targetAbility = legal.ability;
       }
 
-      const abilityId = toID(abilityName);
+      const abilityId = toID(targetAbility);
 
       // Items para activar ciertas habilidades que requieren estado o movimientos específicos
       let item = '';
@@ -363,7 +416,14 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
       }
 
       // noretreat requiere ser Falinks para poder ejecutarse
-      const species = movesToId.includes('noretreat' as ID) ? 'falinks' : 'mew';
+      const species = movesToId.includes('noretreat' as ID) ? ('falinks' as PokemonSpeciesId) : targetSpecies;
+      const gender = movesToId.includes('noretreat' as ID) ? ('N' as GenderName) : targetGender;
+
+      let finalAbility = targetAbility;
+      const legalAbilitiesForSpecies = pokemonDataProvider.getSpeciesAbilities(species).map(a => toID(a));
+      if (!legalAbilitiesForSpecies.includes(toID(finalAbility))) {
+        finalAbility = (legalAbilitiesForSpecies[0] ?? 'synchronize') as AbilityId;
+      }
 
       const pUid = crypto.randomUUID();
       const pNickname = getShowdownNickname(pUid);
@@ -376,9 +436,9 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
         name:    pNickname,
         species,
         level:   100,
-        gender:  'M',
+        gender,
         item: item as ItemId,
-        ability: abilityName as AbilityId,
+        ability: finalAbility,
         nature:  'serious',
         evs: pEvs,
         ivs: pIvs,
@@ -426,6 +486,8 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
     }
 
     if (playerTeam.length > 0) {
+      PokemonLegalityValidator.assertTeamLegality(playerTeam, 'Fuzzer Batch Player Team');
+      PokemonLegalityValidator.assertTeamLegality(enemyTeam, 'Fuzzer Batch Enemy Team');
       batches.push({
         playerTeam,
         enemyTeam,

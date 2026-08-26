@@ -11,6 +11,7 @@ import type { MarketFilters, MarketListing, MarketListingType } from '@/logic/ec
 import { SHOP_ITEMS } from '@/data/inventory/items'
 import type { GameState } from '@/types/system/game'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality'
 import { GTS_MAX_PRICE_FILTER, MAX_TOTAL_IVS_STAT_SUM } from '@/logic/constants/gameplay.ts'
 
 export const useGTSStore = defineStore('gts', () => {
@@ -206,6 +207,15 @@ export const useGTSStore = defineStore('gts', () => {
     if (activeMyListings.value.length >= GTS_MAX_ACTIVE_LISTINGS) {
       ui.notify(`Límite de publicaciones alcanzado (${GTS_MAX_ACTIVE_LISTINGS})`, '⚠️')
       return false
+    }
+
+    if (type === 'pokemon') {
+      const poke = selection as Pokemon
+      const legality = checkPokemonLegality(poke)
+      if (poke.isIllegal || !legality.isLegal) {
+        ui.notify(`No puedes publicar un Pokémon ilegal en el GTS: ${legality.issues[0] || 'datos no válidos'}.`, '⚠️')
+        return false
+      }
     }
 
     publishing.value = true

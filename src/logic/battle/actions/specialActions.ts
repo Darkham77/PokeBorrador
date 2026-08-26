@@ -349,11 +349,13 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
       src.heldItem = stolenItem;
       tgt.heldItem = null;
       const itemDef = getItemById(stolenItem);
-      const displayName = itemDef?.name || stolenItem;
+      const displayName = itemDef.name;
       addLogFn(`¡${src.name} robó ${displayName} de ${tgt.name}!`, 'log-info', src);
 
       // Play steal sound
-      import('@/stores/audio').then(m => m.useAudioStore().play('steal')).catch(() => {});
+      import('@/stores/audio').then(m => m.useAudioStore().play('steal')).catch(err => {
+        console.error('[Audio] Failed to play steal sound:', err);
+      });
 
       const b = battleCtx?.activeBattle.value;
       if (b && battleCtx.gs) {
@@ -363,12 +365,8 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
         if (isPlayerSrc) {
           incrementRecordKey(battleCtx.gs.state.inventory, stolenItem, 1);
           
-          const itemDef = getItemById(stolenItem);
-          const displayName = itemDef?.name || stolenItem;
           battleCtx.uiStore.notify(`¡Robaste un ${displayName}!`, '🎒');
         } else if (isPlayerTgt) {
-          const itemDef = getItemById(stolenItem);
-          const displayName = itemDef?.name || stolenItem;
           battleCtx.uiStore.notify(`¡Te robaron tu ${displayName}!`, '💸');
         }
       }
@@ -383,7 +381,9 @@ export const SPECIAL_ACTIONS: Record<string, MoveAction> = {
         addToField(battleCtx.gs.state, 'money', amount);
         addLogFn(`¡Monedas esparcidas por todas partes! Se obtuvieron ₽${amount}.`, 'log-success', src);
         
-        import('@/stores/audio').then(m => m.useAudioStore().play('steal')).catch(() => {});
+        import('@/stores/audio').then(m => m.useAudioStore().play('steal')).catch(err => {
+          console.error('[Audio] Failed to play steal sound:', err);
+        });
         battleCtx.uiStore.notify(`¡Robaste/Obtuviste ₽${amount}!`, '💰');
       }
     }

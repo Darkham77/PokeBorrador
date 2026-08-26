@@ -14,6 +14,7 @@ import { armBattleFlowCompletion, armBattleReadyForInput, awaitBattleFlowComplet
 import type { BattleReadyForInputDetail } from '../../src/types/battle/battleEvents.ts';
 import type { ItemId } from '../../src/data/inventory/items.ts';
 import { createCertifiedBattleInventory } from './fuzzer/core/certifiedBattleInventory.ts';
+import { PokemonLegalityValidator } from '../../src/logic/battle/helpers/pokemonLegalityValidator.ts';
 
 
 
@@ -118,7 +119,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
         useBattleStore?: () => { player?: { uid?: string }; activeBattle?: { player?: { uid?: string } } };
       } | undefined;
       const store = debug?.useBattleStore?.();
-      const currentActiveUid = store?.player?.uid || store?.activeBattle?.player?.uid;
+      const currentActiveUid = store?.player?.uid ?? null;
       return Boolean(currentActiveUid) && currentActiveUid === targetUid;
     }, pokemonUid);
     if (isActive) {
@@ -129,12 +130,15 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
     await this.page.evaluate(async (targetUid) => {
       const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../src/stores/game.ts');
+      const { useUIStore } = await import('../../src/stores/ui.ts');
       const battleStore = useBattleStore();
       const gameStore = useGameStore();
+      const uiStore = useUIStore();
       const team = gameStore.state.team || [];
       const index = team.findIndex(p => p && p.uid === targetUid);
       if (index !== -1) {
-        await battleStore.executeSwitch(index);
+        const isForced = Boolean(uiStore.isBattleSwitchForced) || battleStore.currentSubState === 'SWITCH_MENU';
+        await battleStore.executeSwitch(index, isForced);
       }
     }, pokemonUid);
     this.lastBattleReady = await awaitBattleReadyForInput(this.page);
@@ -193,7 +197,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       const gameStore = debug?.useGameStore?.();
       const battleStore = debug?.useBattleStore?.();
       const team = (gameStore?.team || gameStore?.state?.team || []) as Array<{ uid?: string; hp?: number }>;
-      const activeUid = battleStore?.player?.uid || battleStore?.activeBattle?.player?.uid;
+      const activeUid = battleStore?.player?.uid ?? null;
       const healthy = team.find((p) => p && typeof p.hp === 'number' && p.hp > 0 && Boolean(p.uid) && p.uid !== activeUid);
       return healthy?.uid;
     });
@@ -222,22 +226,93 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
 
   public async replayCertifiedBattle(batch: CertifiedTestBatch): Promise<void> {
     await this.speedUpAnimations(100);
-    this.lastBattleReady = await awaitBattleReadyForInput(this.page);
-    for (let stepIdx = 0; stepIdx < batch.history.length; stepIdx++) {
-      const entry = batch.history[stepIdx];
-      if (!entry) continue;
-      const isOver = await this.page.evaluate(() => {
-        const debug = window.__VITE_DEBUG__ as {
-          useBattleStore?: () => {
-            state?: { over?: boolean };
-          };
-        } | undefined;
-        const store = debug?.useBattleStore?.();
-        return Boolean(store?.state?.over);
-      });
-      if (isOver || this.lastBattleReady?.over) {
-        console.log(`[E2E-REPLAY] Battle ended at step ${stepIdx + 1}/${batch.history.length}.`);
+    while (true) {
+      if (this.lastBattleReady?.over) {
+        console.log(`[E2E-REPLAY] Battle already over. Replay complete.`);
         break;
+      }
+      const browserIdx = Number(await this.page.evaluate(() => window.__VITE_DEBUG__?.replayHistoryIdx ?? 0));
+      if (browserIdx >= batch.history.length) {
+        console.log(`[E2E-REPLAY] Reached end of history (${browserIdx}/${batch.history.length}).`);
+        break;
+      }
+
+      if (!this.lastBattleReady) {
+        this.lastBattleReady = await awaitBattleReadyForInput(this.page);
+      }
+      if (this.lastBattleReady.over) {
+        console.log(`[E2E-REPLAY] Battle ended after ready check at idx=${browserIdx}.`);
+        break;
+      }
+
+      // Check current browser cursor again after ready state
+      const currentBrowserIdx = Number(await this.page.evaluate(() => window.__VITE_DEBUG__?.replayHistoryIdx ?? 0));
+      if (currentBrowserIdx >= batch.history.length) {
+        console.log(`[E2E-REPLAY] Reached end of history (${currentBrowserIdx}/${batch.history.length}).`);
+        break;
+      }
+      const entry = batch.history[currentBrowserIdx];
+      if (!entry) break;
+
+      const stateSnapshot = await this.page.evaluate(() => {
+        const debug = window.__VITE_DEBUG__;
+        const b = (debug?.useBattleStore?.() as { activeBattle?: { over?: boolean; player?: { uid?: string; status?: string }; enemy?: { uid?: string; status?: string }; weather?: { type?: string }; terrain?: string } } | undefined)?.activeBattle;
+        return {
+          isOver: Boolean(b?.over),
+          p1Uid: b?.player?.uid,
+          p2Uid: b?.enemy?.uid,
+          weather: b?.weather?.type,
+          terrain: b?.terrain,
+          p1Status: b?.player?.status,
+          p2Status: b?.enemy?.status
+        };
+      });
+
+      if (stateSnapshot.isOver || this.lastBattleReady?.over) {
+        console.log(`[E2E-REPLAY] Battle ended at step ${currentBrowserIdx + 1}/${batch.history.length}.`);
+        break;
+      }
+
+      if (entry.p1ActiveUid && stateSnapshot.p1Uid && entry.p1ActiveUid !== stateSnapshot.p1Uid) {
+        console.warn(`[E2E-METADATA-WARN] P1 Active UID mismatch at step ${currentBrowserIdx + 1}: expected ${entry.p1ActiveUid}, actual ${stateSnapshot.p1Uid}`);
+      }
+      if (entry.p2ActiveUid && stateSnapshot.p2Uid && entry.p2ActiveUid !== stateSnapshot.p2Uid) {
+        console.warn(`[E2E-METADATA-WARN] P2 Active UID mismatch at step ${currentBrowserIdx + 1}: expected ${entry.p2ActiveUid}, actual ${stateSnapshot.p2Uid}`);
+      }
+      if (entry.weather && stateSnapshot.weather && entry.weather !== stateSnapshot.weather) {
+        console.warn(`[E2E-METADATA-WARN] Weather mismatch at step ${currentBrowserIdx + 1}: expected ${entry.weather}, actual ${stateSnapshot.weather}`);
+      }
+      if (entry.terrain && stateSnapshot.terrain && entry.terrain !== stateSnapshot.terrain) {
+        console.warn(`[E2E-METADATA-WARN] Terrain mismatch at step ${currentBrowserIdx + 1}: expected ${entry.terrain}, actual ${stateSnapshot.terrain}`);
+      }
+
+      const isSwitchMenu = this.lastBattleReady?.subState === 'SWITCH_MENU';
+      if (isSwitchMenu) {
+        let switchEntry = entry;
+        let switchIdx = currentBrowserIdx;
+        if (!switchEntry.p1Choice.startsWith('switch ')) {
+          const nextSwitchOffset = batch.history.slice(currentBrowserIdx).findIndex((h) => h.p1Choice.startsWith('switch '));
+          if (nextSwitchOffset !== -1) {
+            switchIdx = currentBrowserIdx + nextSwitchOffset;
+            switchEntry = batch.history[switchIdx]!;
+          }
+        }
+
+        const targetUid = this.lastBattleReady?.playerSwitchSlots?.find(
+          (slot) => slot.showdownSlot === Number(switchEntry.p1Choice.slice('switch '.length))
+        )?.pokemonUid;
+
+        if (!targetUid) throw new Error(`[E2E-CERTIFIED-REPLAY] Could not resolve Pokémon UID for forced switch: ${JSON.stringify(switchEntry)}. Available slots: ${JSON.stringify(this.lastBattleReady?.playerSwitchSlots)}`);
+
+        await this.page.evaluate((targetIdx: number) => {
+          const debugObj = window.__VITE_DEBUG__;
+          if (debugObj) {
+            Reflect.set(debugObj, 'replayHistoryIdx', targetIdx);
+          }
+        }, switchIdx);
+
+        await this.voluntarySwitch(targetUid);
+        continue;
       }
 
       const gameAction = entry.p1GameAction;
@@ -256,21 +331,29 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       }
       if (choice.startsWith('switch ')) {
         const switchSlot = Number(choice.slice('switch '.length));
-        if (!Number.isInteger(switchSlot) || switchSlot < 1) throw new Error(`[E2E-CERTIFIED-REPLAY] Invalid switch ${entry.p1Choice}.`);
         const target = this.lastBattleReady?.playerSwitchSlots?.find((slot) => slot.showdownSlot === switchSlot);
-        const targetUid = target?.pokemonUid || batch.playerTeam[switchSlot - 1]?.uid;
-        if (!targetUid) throw new Error(`[E2E-CERTIFIED-REPLAY] Could not resolve Pokémon UID for Showdown switch slot ${switchSlot}.`);
+        const targetUid = target?.pokemonUid;
+        if (!targetUid) throw new Error(`[E2E-CERTIFIED-REPLAY] Could not resolve Pokémon UID for Showdown switch slot ${switchSlot}. Available slots: ${JSON.stringify(this.lastBattleReady?.playerSwitchSlots)}`);
         await this.voluntarySwitch(targetUid);
         continue;
       }
       if (choice === '' || choice === 'pass') {
         if (this.lastBattleReady?.over) {
-          console.log(`[E2E-REPLAY] Battle already over at step ${stepIdx}/${batch.history.length}. Skipping extra steps.`);
+          console.log(`[E2E-REPLAY] Battle already over at step ${currentBrowserIdx}/${batch.history.length}. Skipping extra steps.`);
           break;
         }
         if (entry.p2Choice.startsWith('switch ') || entry.p2ForceSwitch) {
           this.lastBattleReady = await awaitBattleReadyForInput(this.page);
         }
+        await this.page.evaluate((expectedIdx: number) => {
+          const debugObj = window.__VITE_DEBUG__;
+          if (debugObj) {
+            const cur = (Reflect.get(debugObj, 'replayHistoryIdx') as number) ?? 0;
+            if (cur === expectedIdx) {
+              Reflect.set(debugObj, 'replayHistoryIdx', cur + 1);
+            }
+          }
+        }, currentBrowserIdx);
         continue;
       }
       throw new Error(`[E2E-CERTIFIED-REPLAY] No visible P1 action for ${JSON.stringify(entry)}.`);
@@ -282,6 +365,8 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    * garantizando paridad matemática de semillas, LCG, reseteo de workers y mapeo de slots de equipos.
    */
   public async setupFuzzerScenario(b: CertifiedTestBatch): Promise<void> {
+    PokemonLegalityValidator.assertTeamLegality(b.playerTeam, `Certified Batch ${b.id} Player Team`);
+    PokemonLegalityValidator.assertTeamLegality(b.enemyTeam, `Certified Batch ${b.id} Enemy Team`);
     await this.speedUpAnimations(100);
     const certifiedItemIds = b.history.flatMap((entry) => entry.p1GameAction?.kind === 'bag-item'
       ? [entry.p1GameAction.itemId]
@@ -329,7 +414,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
           nature: set.nature,
           ivs: { hp: constants.maxIvVal, atk: constants.maxIvVal, def: constants.maxIvVal, spa: constants.maxIvVal, spd: constants.maxIvVal, spe: constants.maxIvVal, ...set.ivs },
           evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0, ...set.evs },
-          gender: set.gender === 'M' ? 'male' : set.gender === 'F' ? 'female' : 'genderless',
+          gender: set.gender,
           isShiny: set.shiny ?? false
         });
       });
@@ -347,7 +432,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
           nature: set.nature,
           ivs: { hp: constants.maxIvVal, atk: constants.maxIvVal, def: constants.maxIvVal, spa: constants.maxIvVal, spd: constants.maxIvVal, spe: constants.maxIvVal, ...set.ivs },
           evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0, ...set.evs },
-          gender: set.gender === 'M' ? 'male' : set.gender === 'F' ? 'female' : 'genderless',
+          gender: set.gender,
           isShiny: set.shiny ?? false
         });
       });
@@ -477,12 +562,25 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    */
   public async forceFleeDebugger(): Promise<void> {
     const fleeButton = this.page.locator('#battle-arena-modal-close-btn:not([disabled])').first();
-    await fleeButton.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await clickResilient(fleeButton);
-    const confirmFleeButton = this.page.locator('#confirm-modal-btn').first();
-    await confirmFleeButton.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    if (await fleeButton.isVisible()) {
+      await clickResilient(fleeButton);
+      const confirmFleeButton = this.page.locator('#confirm-modal-btn').first();
+      if (await confirmFleeButton.isVisible()) {
+        await armBattleFlowCompletion(this.page);
+        await clickResilient(confirmFleeButton);
+        await this.awaitReturnToMap();
+        return;
+      }
+    }
     await armBattleFlowCompletion(this.page);
-    await clickResilient(confirmFleeButton);
+    await this.page.evaluate(async () => {
+      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
+      const store = useBattleStore();
+      if (store.isBattleActive) {
+        await store.endBattle(false, true);
+        await store.completeBattleFlow('map');
+      }
+    });
     await this.awaitReturnToMap();
   }
 

@@ -54,20 +54,19 @@ export async function processNonForcedSwitchWorkerTurn(
     const { ShowdownBattleRunner } = await import('../helpers/showdownBattleRunner.ts')
     const certifiedP1Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p1')
     const certifiedP2Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2')
+    console.debug(`[switchWorkerTurn] side=${side}, idx=${Reflect.get(debugObj, 'replayHistoryIdx')}, certifiedP1Choice="${certifiedP1Choice}", certifiedP2Choice="${certifiedP2Choice}"`);
     if (side === 'player' && !certifiedP1Choice.startsWith('switch ')) {
-      console.debug(`[switchWorkerTurn] Certified player choice is not a switch (${certifiedP1Choice}). Replacement was already processed in Showdown worker.`);
+      console.debug(`[switchWorkerTurn] Certified player choice is not a switch (${certifiedP1Choice}) at idx=${Reflect.get(debugObj, 'replayHistoryIdx')}. Replacement was already processed in Showdown worker.`);
       return;
     }
     if (side === 'enemy' && !certifiedP2Choice.startsWith('switch ')) {
       console.debug(`[switchWorkerTurn] Certified enemy choice is not a switch (${certifiedP2Choice}). Replacement was already processed in Showdown worker.`);
       return;
     }
-    if (side !== 'player') {
-      p1Choice = certifiedP1Choice
-    }
-    p2Choice = certifiedP2Choice
-    p1Skip = p1Choice === ''
-    p2Skip = p2Choice === ''
+    p1Choice = certifiedP1Choice;
+    p2Choice = certifiedP2Choice;
+    p1Skip = p1Choice === '';
+    p2Skip = p2Choice === '';
   } else if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
     if (!p2Skip) {
       p2Choice = window.__VITE_DEBUG__.nextEnemyChoice

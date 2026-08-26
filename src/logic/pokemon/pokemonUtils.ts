@@ -196,7 +196,7 @@ export function getMoveDescription(id: string, mdProvided?: MoveBaseData | null)
     : md.effect?.text;
   if (effectText) return effectText;
 
-  const cleanId = toID(md.id || (mdProvided ? '' : id));
+  const cleanId = toID(md.id);
   if (cleanId) {
     try {
       const translated = ((MOVE_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string }>)[cleanId] || {}); // open-record

@@ -79,7 +79,7 @@ export function calculateMoneyGain(enemyPoke: Pokemon, options: RewardOptions = 
 export function processEvGain(p: Pokemon, enemyPoke: Pokemon, participantsSet: Set<string> | null): EvGainResult | null {
   if (!participantsSet?.has(p.uid) && p.heldItem !== 'expshare') return null;
 
-  const evYield = pokemonDataProvider.getEvYield(enemyPoke.id || enemyPoke.species);
+  const evYield = pokemonDataProvider.getEvYield(enemyPoke.id);
   if (!evYield || Object.keys(evYield).length === 0) return null;
 
   const hasPokerus = p.pokerus === 'infected';

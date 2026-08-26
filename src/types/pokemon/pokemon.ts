@@ -175,6 +175,10 @@ export interface Pokemon {
   badPoison?: number;
   endure?: boolean;
   isTransformed?: boolean;
+  _originalMoves?: (Move | null)[];
+  _originalSpecies?: PokemonSpeciesId;
+  _originalType?: PokemonType;
+  _originalType2?: PokemonType | null;
   rageActive?: boolean;
   snatching?: boolean;
   tormentActive?: boolean;

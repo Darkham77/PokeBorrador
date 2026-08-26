@@ -189,7 +189,7 @@ export function serializeState(state: GameState | SaveDataDto): SaveDataDto {
 
   if (battle && !battle.over) {
     const hasActiveEnemy = Boolean(battle.enemy || (battle.enemyTeam && battle.enemyTeam.length > 0));
-    const isActualCombat = Boolean((battle.turnCount && battle.turnCount > 0) || battle.isTrainer || battle.isGym || (!battle.wasSearching && hasActiveEnemy));
+    const isActualCombat = Boolean((battle.turnCount && battle.turnCount > 0) || battle.isTrainer || battle.isGym || (hasActiveEnemy && !(battle as { inSearchPhase?: boolean }).inSearchPhase));
     if ((battle.isTrainer || battle.isGym || hasActiveEnemy) && isActualCombat) {
       try {
         const rawEnemyTeam = battle.enemyTeam && battle.enemyTeam.length > 0

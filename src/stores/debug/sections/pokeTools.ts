@@ -255,7 +255,7 @@ export function registerPokeTools(debug: DebugSystem) {
       
       const warehouse = breedingStore.warehouseEggs.map(e => ({
         id: e.id,
-        especie: db[e.species]?.name || e.species,
+        especie: db[e.species]?.name ?? e.species, // text-ok
         nivel: e.level,
         naturaleza: e.nature,
         shiny: e.isShiny ? '✨ SÍ' : 'NO',
@@ -266,7 +266,7 @@ export function registerPokeTools(debug: DebugSystem) {
 
       const backpack = (game.state.eggs || []).map(e => ({
         uid: e.uid,
-        especie: db[e.id]?.name || e.id,
+        especie: db[e.id]?.name ?? e.id, // text-ok
         pasosRestantes: e.steps,
         listo: e.ready ? '🐣 SÍ' : 'NO',
         shiny: e.isShiny ? '✨ SÍ' : 'NO',
@@ -439,5 +439,35 @@ export function registerPokeTools(debug: DebugSystem) {
       ui.notify(`Se repararon ${repairedCount} Pokémon ilegales (Equipo, Caja y Guardería). ¡Cuenta lista para combatir!`, '🛠️')
     },
     description: 'Repara exhaustivamente movimientos, habilidades, niveles y stats de todos los Pokémon ilegales de la cuenta.'
+  })
+
+  debug.register({
+    id: 'poke-repair-one',
+    label: 'REPARAR POKÉMON (UID / ACTIVO)',
+    command: 'repairPokemon',
+    category: 'pokes',
+    action: async (uidOrTarget?: string) => {
+      const { repairPokemonLegality } = await import('@/logic/pokemon/pokemonLegality')
+      const allPokes = [...game.state.team, ...(game.state.box || [])].filter((p): p is Pokemon => p != null)
+      
+      const targetPoke = uidOrTarget 
+        ? allPokes.find(p => p.uid === uidOrTarget || p.name?.toLowerCase() === uidOrTarget.toLowerCase()) // domain-ok
+        : (game.state.team[0] || null)
+
+      if (!targetPoke) {
+        ui.notify(`No se encontró el Pokémon "${uidOrTarget || 'activo'}"`, '❌')
+        return { success: false }
+      }
+
+      const report = repairPokemonLegality(targetPoke)
+      await game.saveGame(false)
+      if (report.repaired) {
+        ui.notify(`¡${targetPoke.name} reparado exitosamente según las reglas de Showdown!`, '🛠️')
+      } else {
+        ui.notify(`${targetPoke.name} ya era 100% legal.`, '✅')
+      }
+      return { success: true, report }
+    },
+    description: 'Repara un Pokémon específico por su UID o nombre (o el primer Pokémon del equipo si no se pasa argumento).'
   })
 }

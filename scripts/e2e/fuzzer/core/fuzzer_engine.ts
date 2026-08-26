@@ -22,7 +22,8 @@ import { fuzzerMemoryStore } from './fuzzerMemoryStore.ts';
 // Aplicar el monkey-patch unificado de Showdown
 import { resolveBaseStats, statsMap, patchShowdownSpreadModify } from '../../../../src/logic/battle/showdownAdapter.ts';
 import { BattleAgent, classifyRequest, type ChoiceRequest } from './fuzzer_agent.ts';
-import { applyHealCheatToSide, applyPpRefillCheatToSide } from '../../../../src/logic/battle/cheats.ts';
+import { syncRequestConditionsWithSimulator } from '../../../../src/logic/battle/cheats.ts';
+import { PokemonLegalityValidator } from '../../../../src/logic/battle/helpers/pokemonLegalityValidator.ts';
 
 // Force inMemory SQLite and Offline DB mode for maximum speed and zero I/O overhead
 Reflect.set(globalThis, '__E2E__', true);
@@ -35,7 +36,9 @@ import type { NatureId } from '../../../../src/data/battle/natures.ts';
 import type { AbilityId } from '../../../../src/data/battle/abilities.ts';
 import type { ItemId } from '../../../../src/data/inventory/items.ts';
 import type { PokemonType } from '../../../../src/data/battle/types.ts';
+import type { MoveCategory } from '../../../../src/data/battle/moves.ts';
 import { createShowdownBattle } from '../../../../src/logic/battle/helpers/showdownBattleFactory.ts';
+import { ShowdownTeamMapper, type CustomPokemonSet } from '../../../../src/logic/battle/helpers/showdownTeamMapper.ts';
 import { ShowdownLogEnricher } from '../../../../src/logic/battle/helpers/showdownLogEnricher.ts';
 import { requiresAction } from '../../../../src/logic/battle/helpers/requestHelper.ts';
 import { ACTIVE_SHOWDOWN_FORMAT, MAX_BATTLE_TURNS } from '../../../../src/data/system/constants.ts';
@@ -124,7 +127,7 @@ export function createLocalPoke(set: PokemonSet): Pokemon {
     } : null
   );
 
-  statsMap.set(set.name || set.species, { ...calculated });
+  statsMap.set(set.name, { ...calculated }); // no-domain
   Reflect.set(set, 'stats', calculated);
 
   const mainType = (speciesData.types[0] || 'normal').toLowerCase() as PokemonType;
@@ -134,7 +137,7 @@ export function createLocalPoke(set: PokemonSet): Pokemon {
     uid: (Reflect.get(set, 'uid') as string | undefined) || `uid-${toID(set.species)}`,
     id: toID(set.species) as PokemonSpeciesId,
     species: toID(set.species) as PokemonSpeciesId,
-    name: set.name || set.species,
+    name: set.name, // no-domain
     level: set.level,
     isShiny: false,
     exp: 0,
@@ -154,12 +157,19 @@ export function createLocalPoke(set: PokemonSet): Pokemon {
     item: set.item ? toID(set.item) as ItemId : undefined,
     status: '',
     volatileCounters: {},
-    moves: set.moves.map(m => ({
-      id: toID(m) as PokemonMoveId,
-      name: m,
-      pp: 20,
-      maxPP: 20
-    }))
+    moves: set.moves.map(m => {
+      const d = Dex.moves.get(m);
+      return {
+        id: toID(m) as PokemonMoveId,
+        name: d?.name || m,
+        power: d?.basePower ?? 0,
+        acc: typeof d?.accuracy === 'number' ? d.accuracy : 100,
+        type: (d?.type || 'normal').toLowerCase() as PokemonType,
+        cat: (d?.category || 'physical').toLowerCase() as MoveCategory,
+        pp: d?.pp ?? 20,
+        maxPP: d?.pp ?? 20
+      };
+    })
   };
   return poke;
 }
@@ -301,6 +311,13 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
       const playerTeamCopy = structuredClone(batch.playerTeam);
       const enemyTeamCopy = structuredClone(batch.enemyTeam);
 
+      statsMap.clear();
+      ShowdownTeamMapper.populateStatsMap(playerTeamCopy as CustomPokemonSet[]);
+      ShowdownTeamMapper.populateStatsMap(enemyTeamCopy as CustomPokemonSet[]);
+
+      PokemonLegalityValidator.assertTeamLegality(playerTeamCopy, `Batch ${roundNum} Player Team`);
+      PokemonLegalityValidator.assertTeamLegality(enemyTeamCopy, `Batch ${roundNum} Enemy Team`);
+
       resetRandomSeed();
       const simBattle = createShowdownBattle(ACTIVE_SHOWDOWN_FORMAT, seed);
       ShowdownLogEnricher.setupRealtimeEnrichment(simBattle);
@@ -381,6 +398,9 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
 
           const preTurnUnhandledCount = unhandledBridgeLines.length;
 
+          syncRequestConditionsWithSimulator(simBattle.p1);
+          syncRequestConditionsWithSimulator(simBattle.p2);
+
           const p1Req = simBattle.p1.activeRequest;
           const p2Req = simBattle.p2.activeRequest;
           const p1NeedsAction = requiresAction(p1Req) || simBattle.p1.requestState === 'switch' || simBattle.p1.requestState === 'move';
@@ -406,26 +426,8 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
           const activeHasExecutableMove = hasExecutableTestMove(p1Req as ChoiceRequest, agent1.movesToTest);
           const ipbActive = agent1.movesToTest.size > 0 && activeHasExecutableMove && p1ReqKind !== 'force-switch' && simBattle.p1.requestState !== 'switch';
 
-          const isPeriodicSwitchTurn = agent1.periodicSwitchEvery > 0 && turn % agent1.periodicSwitchEvery === 0;
           const preTurnHeals: Partial<Record<string, boolean>> = {};
           const preTurnPpRefills: Partial<Record<string, boolean>> = {};
-
-          if (agent1.movesToTest.size > 0 && p1ReqKind !== 'force-switch' && simBattle.p1.requestState !== 'switch') {
-            const team = (p1Req as ChoiceRequest)?.side?.pokemon ?? [];
-            const benchHasFaintedCandidate = team.some(p => !p.active && (p.condition?.includes('fnt') || p.condition === '0'));
-            if (!activeHasExecutableMove || isPeriodicSwitchTurn) {
-              if (benchHasFaintedCandidate) {
-                applyHealCheatToSide(simBattle.p1);
-                preTurnHeals['p1'] = true;
-              }
-            }
-            const activeSlotMoves = (p1Req as ChoiceRequest)?.active?.[0]?.moves ?? [];
-            const hasAvailableMovePp = activeSlotMoves.some(m => !m.disabled && (m.pp === undefined || m.pp > 0));
-            if (!hasAvailableMovePp && activeSlotMoves.length > 0) {
-              applyPpRefillCheatToSide(simBattle.p1);
-              preTurnPpRefills['p1'] = true;
-            }
-          }
 
           const engine = new ShowdownBattleEngine({ mode: 'fuzzer' });
           Reflect.set(engine, 'battle', simBattle);
@@ -439,11 +441,78 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
           const hasPreTurnHeals = Object.keys(preTurnHeals).length > 0;
           const hasPreTurnPpRefills = Object.keys(preTurnPpRefills).length > 0;
           const hasPostTurnCheats = appliedCheats && appliedCheats.length > 0;
+          const hasAnyForceSwitch = Object.values(preTurnForceSwitches).some(Boolean);
 
           if (anySeatNeedsAction || hasPreTurnHeals || hasPreTurnPpRefills || hasPostTurnCheats) {
-            const safeP1Choice = (p1NeedsAction && p1AcceptedChoice !== 'pass') ? p1AcceptedChoice : '';
-            const safeP2Choice = (p2NeedsAction && p2AcceptedChoice !== 'pass') ? p2AcceptedChoice : '';
-            const histEntry: CertifiedBattleHistoryEntry = { turnCount: turn, p1Choice: safeP1Choice, p2Choice: safeP2Choice, battleTurn: simBattle.turn };
+            const safeP1Choice = hasAnyForceSwitch
+              ? (preTurnForceSwitches['p1'] && p1AcceptedChoice !== 'pass' ? p1AcceptedChoice : '')
+              : (p1NeedsAction && p1AcceptedChoice !== 'pass' ? p1AcceptedChoice : '');
+            const safeP2Choice = hasAnyForceSwitch
+              ? (preTurnForceSwitches['p2'] && p2AcceptedChoice !== 'pass' ? p2AcceptedChoice : '')
+              : (p2NeedsAction && p2AcceptedChoice !== 'pass' ? p2AcceptedChoice : '');
+            const p1Active = simBattle.p1.pokemon.find(p => p.isActive);
+            const p2Active = simBattle.p2.pokemon.find(p => p.isActive);
+            const p1ReqActive = (p1Req as ChoiceRequest)?.active?.[0];
+            const p2ReqActive = (p2Req as ChoiceRequest)?.active?.[0];
+
+            const p1LockedMove = (p1ReqActive?.moves?.length === 1 && p1ReqActive.moves[0]?.id)
+              ? p1ReqActive.moves[0].id
+              : undefined;
+            const p2LockedMove = (p2ReqActive?.moves?.length === 1 && p2ReqActive.moves[0]?.id)
+              ? p2ReqActive.moves[0].id
+              : undefined;
+
+            const p1MoveIdx = safeP1Choice.startsWith('move ') ? parseInt(safeP1Choice.slice(5), 10) - 1 : -1;
+            const p2MoveIdx = safeP2Choice.startsWith('move ') ? parseInt(safeP2Choice.slice(5), 10) - 1 : -1;
+            const p1MoveId = p1MoveIdx >= 0 && p1ReqActive?.moves?.[p1MoveIdx]?.id ? p1ReqActive.moves[p1MoveIdx].id : undefined;
+            const p2MoveId = p2MoveIdx >= 0 && p2ReqActive?.moves?.[p2MoveIdx]?.id ? p2ReqActive.moves[p2MoveIdx].id : undefined;
+
+            const p1Trapped = Boolean((p1Req as ChoiceRequest)?.active?.[0]?.trapped || (p1Req as ChoiceRequest)?.active?.[0]?.maybeTrapped);
+            const p2Trapped = Boolean((p2Req as ChoiceRequest)?.active?.[0]?.trapped || (p2Req as ChoiceRequest)?.active?.[0]?.maybeTrapped);
+            const p1Volatiles = p1Active?.volatiles && Object.keys(p1Active.volatiles).length > 0 ? Object.keys(p1Active.volatiles) : undefined;
+            const p2Volatiles = p2Active?.volatiles && Object.keys(p2Active.volatiles).length > 0 ? Object.keys(p2Active.volatiles) : undefined;
+            const p1StatStages = p1Active?.boosts ? { ...p1Active.boosts } : undefined;
+            const p2StatStages = p2Active?.boosts ? { ...p2Active.boosts } : undefined;
+            const p1Status = p1Active?.status || undefined;
+            const p2Status = p2Active?.status || undefined;
+            const p1Hp = p1Active?.hp;
+            const p2Hp = p2Active?.hp;
+            const weather = simBattle.field.weather || undefined;
+            const terrain = simBattle.field.terrain || undefined;
+            const p1SideConditions = simBattle.p1.sideConditions && Object.keys(simBattle.p1.sideConditions).length > 0 ? Object.keys(simBattle.p1.sideConditions) : undefined;
+            const p2SideConditions = simBattle.p2.sideConditions && Object.keys(simBattle.p2.sideConditions).length > 0 ? Object.keys(simBattle.p2.sideConditions) : undefined;
+
+            const p1SwitchedSlot = safeP1Choice.startsWith('switch ') ? parseInt(safeP1Choice.slice(7), 10) - 1 : -1;
+            const p2SwitchedSlot = safeP2Choice.startsWith('switch ') ? parseInt(safeP2Choice.slice(7), 10) - 1 : -1;
+            const p1SwitchedUid = p1SwitchedSlot >= 0 && simBattle.p1.pokemon[p1SwitchedSlot] ? (Reflect.get(simBattle.p1.pokemon[p1SwitchedSlot], 'uid') as string | undefined) : undefined;
+            const p2SwitchedUid = p2SwitchedSlot >= 0 && simBattle.p2.pokemon[p2SwitchedSlot] ? (Reflect.get(simBattle.p2.pokemon[p2SwitchedSlot], 'uid') as string | undefined) : undefined;
+
+            const histEntry: CertifiedBattleHistoryEntry = {
+              turnCount: turn,
+              p1Choice: safeP1Choice,
+              p2Choice: safeP2Choice,
+              battleTurn: simBattle.turn,
+              p1ActiveUid: p1Active ? (Reflect.get(p1Active, 'uid') as string | undefined) : p1SwitchedUid,
+              p2ActiveUid: p2Active ? (Reflect.get(p2Active, 'uid') as string | undefined) : p2SwitchedUid,
+              p1MoveId,
+              p2MoveId,
+              p1LockedMoveId: p1LockedMove,
+              p2LockedMoveId: p2LockedMove,
+              p1Trapped: p1Trapped || undefined,
+              p2Trapped: p2Trapped || undefined,
+              p1Volatiles,
+              p2Volatiles,
+              p1StatStages,
+              p2StatStages,
+              p1Status,
+              p2Status,
+              p1Hp,
+              p2Hp,
+              weather,
+              terrain,
+              p1SideConditions,
+              p2SideConditions,
+            };
 
             for (const side of simBattle.sides) {
               const seatId = side.id as SideID;
@@ -475,11 +544,20 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
             batchRec.cheats.push(...appliedCheats);
           }
 
-          if (p1NeedsAction && p1AcceptedChoice && !p1AcceptedChoice.startsWith('team')) {
-            batchChoices.push(p1AcceptedChoice);
-          }
-          if (p2NeedsAction && p2AcceptedChoice && !p2AcceptedChoice.startsWith('team')) {
-            batchEnemyChoices.push(p2AcceptedChoice);
+          if (hasAnyForceSwitch) {
+            if (preTurnForceSwitches['p1'] && p1AcceptedChoice && p1AcceptedChoice !== 'pass' && !p1AcceptedChoice.startsWith('team')) {
+              batchChoices.push(p1AcceptedChoice);
+            }
+            if (preTurnForceSwitches['p2'] && p2AcceptedChoice && p2AcceptedChoice !== 'pass' && !p2AcceptedChoice.startsWith('team')) {
+              batchEnemyChoices.push(p2AcceptedChoice);
+            }
+          } else {
+            if (p1NeedsAction && p1AcceptedChoice && p1AcceptedChoice !== 'pass' && !p1AcceptedChoice.startsWith('team')) {
+              batchChoices.push(p1AcceptedChoice);
+            }
+            if (p2NeedsAction && p2AcceptedChoice && p2AcceptedChoice !== 'pass' && !p2AcceptedChoice.startsWith('team')) {
+              batchEnemyChoices.push(p2AcceptedChoice);
+            }
           }
 
           const rawTurnLogs = getNewLogs();
@@ -550,8 +628,7 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
         }
       } catch (err: unknown) {
         const errMsg = err instanceof Error ? (err as Error).message : String(err);
-        const bObj = batch as { name?: string; id?: string };
-        const batchIdStr = bObj.name || bObj.id || 'unknown';
+        const batchIdStr = (batch as { id?: string }).id ?? 'unknown'; // no-domain
         console.error(`❌ [FUZZER-BATCH-CRASH] Turn ${turn} Batch ${batchIdStr}: ${errMsg}`, err);
         
         batch.movesToTest.forEach(m => {
@@ -1034,7 +1111,21 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
         if (anySeatNeedsAction || preTurnP1Heal || hasPostTurnCheats) {
           const safeP1Choice = (p1NeedsAction && p1AcceptedChoice !== 'pass') ? p1AcceptedChoice : '';
           const safeP2Choice = (p2NeedsAction && p2AcceptedChoice !== 'pass') ? p2AcceptedChoice : '';
-          const histEntry: CertifiedBattleHistoryEntry = { turnCount: turn, p1Choice: safeP1Choice, p2Choice: safeP2Choice, battleTurn: simBattle.turn };
+          const p1Active = simBattle.p1.pokemon.find(p => p.isActive);
+          const p2Active = simBattle.p2.pokemon.find(p => p.isActive);
+          const p1SwitchedSlot = safeP1Choice.startsWith('switch ') ? parseInt(safeP1Choice.slice(7), 10) - 1 : -1;
+          const p2SwitchedSlot = safeP2Choice.startsWith('switch ') ? parseInt(safeP2Choice.slice(7), 10) - 1 : -1;
+          const p1SwitchedUid = p1SwitchedSlot >= 0 && simBattle.p1.pokemon[p1SwitchedSlot] ? (Reflect.get(simBattle.p1.pokemon[p1SwitchedSlot], 'uid') as string | undefined) : undefined;
+          const p2SwitchedUid = p2SwitchedSlot >= 0 && simBattle.p2.pokemon[p2SwitchedSlot] ? (Reflect.get(simBattle.p2.pokemon[p2SwitchedSlot], 'uid') as string | undefined) : undefined;
+
+          const histEntry: CertifiedBattleHistoryEntry = {
+            turnCount: turn,
+            p1Choice: safeP1Choice,
+            p2Choice: safeP2Choice,
+            battleTurn: simBattle.turn,
+            p1ActiveUid: p1Active ? (Reflect.get(p1Active, 'uid') as string | undefined) : p1SwitchedUid,
+            p2ActiveUid: p2Active ? (Reflect.get(p2Active, 'uid') as string | undefined) : p2SwitchedUid,
+          };
           if (preTurnP1ForceSwitch) histEntry.p1ForceSwitch = true;
           if (preTurnP2ForceSwitch) histEntry.p2ForceSwitch = true;
           if (preTurnP1Heal) histEntry.p1Heal = true;

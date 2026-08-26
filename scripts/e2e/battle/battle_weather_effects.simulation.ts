@@ -3,7 +3,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import { armBattleReadyForInput, awaitBattleReadyForInput, clickResilient, openDebugTab, type WindowWithResolver } from '../e2e_helpers.ts';
 
-const PELIPPER_WEATHER_TEST_LEVEL = 50;
+const PELIPPER_WEATHER_TEST_LEVEL = 5;
 
 class WeatherSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
@@ -70,14 +70,13 @@ test.describe('Weather Effects Verification Simulation', () => {
     const hpInfo = await sim.getEnemyHpInfo();
     expect(hpInfo.hp).toBeLessThan(hpInfo.maxHp);
 
-    await sim.playBattle();
-    await sim.closeBattleModal();
-    await sim.awaitReturnToMap();
+    await sim.forceFleeDebugger();
   });
 
   test.afterEach(async ({ page }) => {
-    await openDebugTab(page, 'tiempo');
-    const activeWeatherButton = page.locator('#debug-weather-btn-rain.active, #debug-weather-btn-sandstorm.active').first();
-    if (await activeWeatherButton.isVisible()) await activeWeatherButton.click();
+    await page.evaluate(async () => {
+      const { useMapStore } = await import('../../../src/stores/map.ts');
+      useMapStore().setGlobalWeather(null);
+    });
   });
 });

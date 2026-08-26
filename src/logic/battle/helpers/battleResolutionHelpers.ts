@@ -141,9 +141,15 @@ export async function handleEnemyForceSwitchExecution(
 
   const { showdownWorker, executeTurnInWorker } = await import('../showdownWorkerClient.ts');
   if (showdownWorker && active.enemyTeam) {
-    const slot = ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid);
-    const p2Choice = `switch ${slot}`;
-    const result = await executeTurnInWorker('', p2Choice);
+    let p2Choice = `switch ${ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)}`;
+    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
+      const { ShowdownBattleRunner } = await import('./showdownBattleRunner.ts');
+      const certifiedChoice = ShowdownBattleRunner.requireHistoryChoice(window.__VITE_DEBUG__, 'p2');
+      if (certifiedChoice.startsWith('switch ')) {
+        p2Choice = certifiedChoice;
+      }
+    }
+    const result = await executeTurnInWorker('', p2Choice, true, false);
     active.playerRequest = result.p1Request;
     active.enemyRequest = result.p2Request;
 

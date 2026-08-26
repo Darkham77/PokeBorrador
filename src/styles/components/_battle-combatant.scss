@@ -1,11 +1,23 @@
 @use "@/styles/core/_mixins" as *;
 
+.combatant-sprite,
+.sprite-animator, 
+.sprite-rotation-layer, 
+.sprite-idle-wrapper,
+.pokemon-atmosphere-wrapper,
+.pokemon-sprite-status-wrapper,
+.pokemon-combat-image {
+  image-rendering: -webkit-optimize-contrast !important;
+  #{"image-rendering"}: crisp-edges !important;
+  image-rendering: pixelated !important;
+  -ms-interpolation-mode: nearest-neighbor !important;
+}
+
 .combatant-sprite {
   z-index: var(--z-map-spawns);
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  @include pixelated;
   overflow: visible;
 
   .sprite-animator, 
@@ -17,6 +29,7 @@
     align-items: center;
     justify-content: center;
     transform-origin: bottom center;
+    will-change: transform;
   }
 
   // Las sparkles shiny son hijos del sprite-idle-wrapper, que tiene scaleX/scaleY asincrónicos
@@ -79,7 +92,7 @@
     height: 100%;
     object-fit: contain;
     object-position: center;
-    @include pixelated;
+    @include sprite-render;
     &.is-silhouette { 
       @include pokemon-silhouette;
     }

@@ -161,7 +161,7 @@ export function useBattleCaptureAnimations(
     slot.ballId = resolveBallId(pokemon)
 
     const target = pokemon || (side === 'player' ? battleStore.player : toValue(enemyRef))
-    const targetUid = pokemon?.uid || target?.uid || null
+    const targetUid = target?.uid ?? null
 
     if (exitSlot.pokemonUid === targetUid) {
       exitSlot.animState = null
@@ -190,7 +190,7 @@ export function useBattleCaptureAnimations(
     slot.ballId = resolveBallId(pokemon)
 
     const target = pokemon || (side === 'player' ? battleStore.player : toValue(enemyRef))
-    const targetUid = pokemon?.uid || target?.uid || null
+    const targetUid = target?.uid ?? null
 
     slot.pokemonUid = targetUid
     slot.isCaptureActive = false
@@ -237,7 +237,7 @@ export function useBattleCaptureAnimations(
     const target = pokemon || (side === 'player' ? battleStore.player : toValue(enemyRef))
     caughtPokemonSnapshot.value = target ? { ...target } : null
 
-    const targetUid = pokemon?.uid || target?.uid || null
+    const targetUid = target?.uid ?? null
     slot.pokemonUid = targetUid
 
     const isFainted = target ? target.hp === 0 : false
@@ -349,7 +349,7 @@ const GSAP_CAPTURE_BLINK_DUR_SEC = 0.48
     const tl = createTimeline()
     tl.add(() => {
       if (pokemon) {
-        gameBus.emit('PLAY_CRY', { name: pokemon.id || pokemon.name, isFaint: true })
+        gameBus.emit('PLAY_CRY', { name: pokemon.id, isFaint: true })
       }
     })
     

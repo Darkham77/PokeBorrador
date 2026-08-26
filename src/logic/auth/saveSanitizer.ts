@@ -134,29 +134,17 @@ export function validateAndSanitize(data: GameState | SaveDataDto | Record<strin
     if (!p) return;
     checkPoke(p, listName);
 
-    try {
-      validatePokemon(p as Pokemon);
-    } catch (err) {
-      // Si la validación falla por legalidad, marcamos el flag en lugar de abortar la partida
-      const legality = checkPokemonLegality(p as Pokemon);
-      if (!legality.isLegal) {
-        (p as Pokemon).isIllegal = true;
-        (p as Pokemon).illegalReasons = legality.issues;
-        issues.push(`[SAVE] Pokémon ilegal en ${listName}: ${p.name || p.id} (UID: ${p.uid}) - ${legality.issues.join('; ')}`);
-        return;
-      }
-      throw err;
-    }
-
     const legality = checkPokemonLegality(p as Pokemon);
     if (!legality.isLegal) {
       (p as Pokemon).isIllegal = true;
       (p as Pokemon).illegalReasons = legality.issues;
-      issues.push(`[SAVE] Pokémon ilegal en ${listName}: ${p.name || p.id} (UID: ${p.uid}) - ${legality.issues.join('; ')}`);
-    } else {
-      (p as Pokemon).isIllegal = false;
-      (p as Pokemon).illegalReasons = [];
+      issues.push(`[SAVE] Pokémon ilegal en ${listName}: ${p.name} (UID: ${p.uid}) - ${legality.issues.join('; ')}`);
+      return;
     }
+
+    (p as Pokemon).isIllegal = false;
+    (p as Pokemon).illegalReasons = [];
+    validatePokemon(p as Pokemon);
   };
 
   try {

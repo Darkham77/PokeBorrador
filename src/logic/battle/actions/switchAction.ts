@@ -1,12 +1,8 @@
-import { sleep } from '@/logic/utils/timeUtils'
 import type { BattleContext } from '@/types/battle/battleContext'
 import { ShowdownTeamResolver } from '../showdownTeamResolver.ts'
-import { handleEntryAbilities, applyEntryHazards } from '../battleFlow.ts'
 import { isRevivingForceSwitchRequest } from '../helpers/requestHelper.ts'
 
 import { checkLockedVolatiles, resetPlayerStages } from './switchActionHelpers.ts'
-
-const SWITCH_PAUSE_DELAY_MS = 400;
 
 export async function executeSwitch(ctx: BattleContext, teamIndex: number, isForced = false) {
   const active = ctx.activeBattle.value
@@ -31,7 +27,7 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
 }
 
 async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced = false) {
-  const { gs, activeBattle, fsm, BATTLE_STATES, BATTLE_SUBSTATES, addLog, playerStages, enemyStages, persistBattle } = ctx
+  const { gs, activeBattle, fsm, BATTLE_STATES, BATTLE_SUBSTATES, addLog, playerStages, persistBattle } = ctx
 
   const oldPoke = activeBattle.value?.player
   const req = activeBattle.value?.playerRequest
@@ -40,7 +36,12 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
   const isForceBool = typeof forceSw === 'boolean' && forceSw
   const isForceArr = Array.isArray(forceSw) && forceSw.some(Boolean)
   const hasForceSwitch = !isRevivingTarget && (isForceBool || isForceArr)
-  const isFaintState = (fsm.currentState?.value as string) === 'PLAYER_FAINT_SEQ' || (fsm.currentSubState?.value as string) === 'PLAYER_FAINT_SEQ' || (oldPoke && oldPoke.hp <= 0)
+  const isFaintState = (fsm.currentState?.value as string) === 'PLAYER_FAINT_SEQ'
+    || (fsm.currentSubState?.value as string) === 'PLAYER_FAINT_SEQ'
+    || (fsm.currentSubState?.value as string) === 'SWITCH_MENU'
+    || ctx.uiStore?.isBattleSwitchForced === true
+    || !oldPoke
+    || (oldPoke && oldPoke.hp <= 0)
   const reallyForced = isForced || hasForceSwitch || isFaintState
 
   if (!reallyForced) {
@@ -57,14 +58,10 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
   await fsm.transition(BATTLE_STATES.REORDER_TEAM)
   await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.FIND_HEALTHY)
   
-  let targetMon = gs.state.team[teamIndex]
-  if (isRevivingTarget && targetMon && targetMon.hp > 0) {
-    targetMon = gs.state.team.find(p => p && p.hp <= 0 && p.uid !== oldPoke?.uid) ?? targetMon
-  } else if (!isRevivingTarget && targetMon && targetMon.hp <= 0) {
-    targetMon = gs.state.team.find(p => p && p.hp > 0 && p.uid !== oldPoke?.uid) ?? targetMon
-  }
+  const targetMon = gs.state.team[teamIndex]
   const newPoke = targetMon
   if (!newPoke || (newPoke.hp <= 0 && !isRevivingTarget)) {
+    console.warn(`[switchAction] Cannot switch to fainted or missing Pokémon: ${newPoke?.name ?? 'unknown'}`);
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     return
   }
@@ -111,13 +108,7 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
   
   Reflect.set(activeBattle.value, '_playerSwitchLogged', true)
   addLog(`¡Adelante, ${newPoke.name}!`, 'log-player', newPoke)
-  await sleep(SWITCH_PAUSE_DELAY_MS)
 
-  applyEntryHazards(newPoke, playerStages.value, addLog)
-  
-  if (activeBattle.value && activeBattle.value.enemy) {
-    handleEntryAbilities(newPoke, activeBattle.value.enemy, playerStages.value, enemyStages.value, addLog, activeBattle.value.weather?.type)
-  }
   persistBattle()
   
   if (!reallyForced) {
@@ -126,6 +117,11 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
   } else {
     await processForcedSwitchWorkerTurn(ctx, newPoke)
   }
+
+  const { useUIStore } = await import('@/stores/ui')
+  useUIStore().isBattleSwitchForced = false
+  const { useModalStore } = await import('@/stores/modals')
+  useModalStore().close('PokemonSelection')
 
   persistBattle()
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
@@ -161,6 +157,13 @@ async function processForcedSwitchWorkerTurn(
       if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
         const { ShowdownBattleRunner } = await import('../helpers/showdownBattleRunner.ts')
         ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__)
+      }
+
+      const { handleForceSwitch } = await import('../resolution.ts')
+      const { isRevivingForceSwitchRequest } = await import('../helpers/requestHelper.ts')
+      const p2Force = !!switchResult.p2Request?.forceSwitch?.some((x: boolean) => !!x) && !isRevivingForceSwitchRequest(switchResult.p2Request)
+      if (p2Force) {
+        await handleForceSwitch(ctx, 'enemy')
       }
     }
 

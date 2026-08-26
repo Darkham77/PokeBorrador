@@ -25,7 +25,7 @@ const getMatchingPokesForMission = (mission: DaycareMission) => {
   
   const targetId = mission.targetId;
   return allPokes.filter(p => {
-    if (p.onMission || p.inDaycare || p.onDefense) return false;
+    if (p.onMission || p.inDaycare || p.onDefense || p.isIllegal) return false;
     if (p.id !== targetId) return false;
     
     const req = mission.requirement || { type: 'level', minLevel: 0 };
@@ -151,7 +151,7 @@ async function startClassMission(missionId: string) {
     
     const isRocket = cls === 'rocket';
     const filtered = allPokes.filter(p => {
-      if (p.onMission || p.inDaycare || p.onDefense) return false;
+      if (p.onMission || p.inDaycare || p.onDefense || p.isIllegal) return false;
       if (isRocket) {
         return p.type === 'poison' || p.type2 === 'poison';
       }

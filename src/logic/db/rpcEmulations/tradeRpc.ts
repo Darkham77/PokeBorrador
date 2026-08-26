@@ -2,6 +2,7 @@ import { queryLocal, persistSQLite } from '../sqliteEngine.ts';
 import type { SQLiteDatabase } from '../sqliteEngine.ts';
 import type { DBResponse } from '@/types/system/database';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality.ts';
 
 interface OfflineSaveData {
   box?: Pokemon[];
@@ -27,15 +28,23 @@ export async function emulateSendTradeOffer(
     p_message
   } = params as {
     p_receiver_id: string;
-    p_offer_pokemon: Record<string, unknown> | null;
+    p_offer_pokemon: Pokemon | null;
     p_offer_items: Record<string, number> | null;
     p_offer_money: number;
-    p_request_pokemon: Record<string, unknown> | null;
+    p_request_pokemon: Pokemon | null;
     p_request_items: Record<string, number> | null;
     p_request_money: number;
     p_message: string;
   };
   const { userId } = context;
+
+  if (p_offer_pokemon) {
+    const poke = p_offer_pokemon;
+    const legality = checkPokemonLegality(poke);
+    if (poke.isIllegal || !legality.isLegal) {
+      return { data: null, error: { message: `No puedes ofrecer un Pokémon ilegal en el intercambio: ${legality.issues[0] || 'datos no válidos'}.` } };
+    }
+  }
 
   const senderSaves = await queryLocal("SELECT save_data FROM game_saves WHERE user_id = ?", [userId]);
   if (senderSaves.length === 0) return { data: null, error: { message: 'Save not found' } };
@@ -136,15 +145,22 @@ export async function emulateAcceptTrade(
     return { data: null, error: { message: 'No autorizado.' } };
   }
 
-  const receiverSaves = await queryLocal("SELECT save_data FROM game_saves WHERE user_id = ?", [userId]);
-  if (receiverSaves.length === 0) return { data: null, error: { message: 'Save not found' } };
-  const receiverSave = (typeof receiverSaves[0]!.save_data === 'string' ? JSON.parse(receiverSaves[0]!.save_data as string) : receiverSaves[0]!.save_data) as OfflineSaveData;
-
   // Parse columns since SQLite stores objects as strings/JSON strings
   const offerPokeObj = trade.offer_pokemon ? (JSON.parse(trade.offer_pokemon) as Pokemon) : null;
   const offerItemsObj = trade.offer_items ? (JSON.parse(trade.offer_items) as Record<string, number>) : null; // open-record
   const requestPokeObj = trade.request_pokemon ? (JSON.parse(trade.request_pokemon) as Pokemon) : null;
   const requestItemsObj = trade.request_items ? (JSON.parse(trade.request_items) as Record<string, number>) : null; // open-record
+
+  if (offerPokeObj && (offerPokeObj.isIllegal || !checkPokemonLegality(offerPokeObj).isLegal)) {
+    return { data: null, error: { message: 'La oferta contiene un Pokémon ilegal y no puede ser aceptada.' } };
+  }
+  if (requestPokeObj && (requestPokeObj.isIllegal || !checkPokemonLegality(requestPokeObj).isLegal)) {
+    return { data: null, error: { message: 'El Pokémon solicitado es ilegal y no puede ser transferido.' } };
+  }
+
+  const receiverSaves = await queryLocal("SELECT save_data FROM game_saves WHERE user_id = ?", [userId]);
+  if (receiverSaves.length === 0) return { data: null, error: { message: 'Save not found' } };
+  const receiverSave = (typeof receiverSaves[0]!.save_data === 'string' ? JSON.parse(receiverSaves[0]!.save_data as string) : receiverSaves[0]!.save_data) as OfflineSaveData;
 
   // 1. Validar y Quitar lo que el receptor ofrece (request del trade)
   // 1a. Pokémon

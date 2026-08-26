@@ -13,7 +13,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 - **Strict No-Test Mandate for Documentation**: Running test suites (`npm run test`, `test:node`, Vitest, or E2E Playwright simulations) when only editing `.md` documents, DOX indices, or `.agents/` skill files is STRICTLY FORBIDDEN. Verification for documentation tasks is strictly limited to `npx tsx .agents/skills/dox-navigator/scripts/audit_dox.ts` and `npm run lint:md` (or fast `npm run lint`).
 - **Mandatory DOX Navigation**: You MUST always use the `dox-navigator` skill (or trigger the `/dox-navigator` command) to analyze the project context, search for files, components, and manuals, and update any index or documentation within the project.
 
-- **Objective-Driven Fuzzer Coverage Mandate**: Every certified fuzzer scenario
+- **Objective-Driven Fuzzer Coverage & Rich History Mandate**: Every certified fuzzer scenario
   MUST configure the scripted seats to prioritize legal actions that exercise
   the mechanic under test as quickly as possible. For example, an enemy must
   prefer a legal poison-inflicting move when certifying poison cure; matching
@@ -22,10 +22,32 @@ This skill defines the immutable core DNA and architectural standards of Poké V
   choices, history, and legality remain immutable evidence. A report may mark
   PASS only from observed Showdown evidence or a deterministic same-seed control
   difference, never because an item was merely equipped. This directive applies
-  to direct deterministic heuristic certified AI only. Every Playwright combat
-  simulation replays the resulting immutable certified choices through visible
-  UI controls; real AI is not an alternative decision source for browser combat
-  replays.
+  to direct deterministic heuristic certified AI only.
+  
+  **Mandatory Comprehensive History Recording on Disk**: The fuzzer recorder and certified
+  battle history entries (`CertifiedBattleHistoryEntry` in `fuzzer_certified_cases.json`) MUST
+  record all contextual data and state identifiers needed to deterministically reproduce and
+  verify 1:1 combat states without guesswork or dynamic runtime prediction. This includes:
+  - Explicit active Pokémon UIDs (`p1ActiveUid`, `p2ActiveUid`).
+  - Explicit move IDs (`p1MoveId`, `p2MoveId`).
+  - Explicit locked move IDs (`p1LockedMoveId`, `p2LockedMoveId`) during recharge/locked states.
+  - Trapped states (`p1Trapped`, `p2Trapped`) indicating when switching is prohibited.
+  - Critical volatile statuses (`p1Volatiles`, `p2Volatiles`: `mustrecharge`, `lockedmove`, `twoturnmove`, `taunt`, `encore`, `substitute`).
+  - Stat boost stages (`p1StatStages`, `p2StatStages`: `atk`, `def`, `spa`, `spd`, `spe`, `accuracy`, `evasion`).
+  - Non-volatile statuses (`p1Status`, `p2Status`: `slp`, `psn`, `tox`, `par`, `brn`, `frz`).
+  - HP snapshots (`p1Hp`, `p2Hp`) for instant 1:1 math parity assertion at turn boundaries.
+  - Field and side conditions (`weather`, `terrain`, `p1SideConditions`, `p2SideConditions`).
+  - Forced switch flags (`p1ForceSwitch`, `p2ForceSwitch`) and healing/revival flags (`p1Heal`, `p2Heal`, `p1PreHeal`, `p2PreHeal`).
+  - **Doubtful / Edge-Case State Logging**: Whenever any scenario, transition, or decision is
+    ambiguous, restricted, or doubtful (e.g. single-slot recharge moves, Outrage/Thrash locked
+    states, disabled moves, trapped Pokémon), the fuzzer MUST record the exact decision and context
+    with rich detail directly into the history on disk.
+  - **Loud Desync Abort**: Simulators and Playwright replays MUST consume these fields to verify
+    active UIDs and enabled move slots. If the runtime game state diverges from the recorded
+    history, execution MUST fail loudly and immediately with an explicit `[E2E-DESYNC]` error,
+    strictly prohibiting silent fallbacks or guesswork. Every Playwright combat simulation replays
+    the resulting immutable certified choices through visible UI controls; real AI is not an
+    alternative decision source for browser combat replays.
 
 ---
 
@@ -92,6 +114,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 - **Mandatory Isolated Reproduction Test Mandate (RED-to-GREEN)**: Whenever ANY E2E test, browser simulation, battle scenario, worker task, or feature execution fails anywhere across the entire project, the agent **MUST FIRST** create an isolated, self-contained unit or integration test in `tests/node/` reproducing the exact failure in **RED**. The test MUST **extract and inline the failing case data** (or store it in a static fixture file) so regenerating the fuzzer never breaks the unit test. The extracted turn-by-turn choice streams (`step.p1Choice`, `step.p2Choice`), `seed`, and history MUST be executed sequentially to reproduce in RED, and verify empirical repair in GREEN once `src/` is fixed.
 - **Prohibition on Hasty Patches & Fallbacks**: Inventing hasty fallbacks (e.g. returning `'default'`, fallback moves, or mock objects) or swallowing errors (`.catch(() => true)`) to force tests or simulations to pass is strictly forbidden. Root causes MUST be diagnosed and fixed in `src/`.
 - **Certified Combat Replay**: Every browser combat is a replay, never an independently decided test. It MUST consume a current fuzzer-certified case through the literally same `ShowdownBattleRunner`: identical seed, atomic history, native choices, recorded game actions (such as a bag medicine), and IPB flags. The browser may translate each recorded action only to its matching visible official control. A manual setup, manually authored choice stream, or real-AI browser decision stream is invalid; expand the objective-driven fuzzer first.
+- **Mandatory Comprehensive History Recording on Disk & Zero-Guesswork Mandate**: Fuzzer history entries on disk (`history` in `fuzzer_certified_cases.json`) MUST contain exhaustive decision and state metadata (`p1ActiveUid`, `p2ActiveUid`, `p1MoveId`, `p2MoveId`, `p1LockedMoveId`, `p2LockedMoveId`, `p1ForceSwitch`, `p2ForceSwitch`, `p1Heal`, `p2Heal`). Whenever an action, transition, or mechanic is doubtful, ambiguous, or constrained (such as recharge moves, locked moves, trapped states, or single-slot requests), the fuzzer MUST record the exact decision and context with rich detail directly in the history on disk. The simulator and Playwright replayer MUST verify these fields at runtime, throwing an immediate `[E2E-DESYNC]` error on any mismatch rather than attempting silent fallbacks or guessing.
 - **Mandatory ID-Based UI Selection**: Locating UI components in Playwright tests by text matching or regex labels is strictly forbidden. All interactive UI components MUST have unique HTML `id` attributes (`#start-encounter-btn`, `#confirm-battle-btn`, etc.).
 
 ### 7. Database Isolation & Persistence Safety

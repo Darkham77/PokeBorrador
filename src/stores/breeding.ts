@@ -16,6 +16,7 @@ import {
 import { eggFactory } from '@/logic/breeding/eggFactory';
 import { EGG_SPAWN_INTERVAL_MS } from '@/logic/breeding/breedingData';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
+import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
 import { usePlayerClassStore } from '@/stores/player/playerClass.ts';
 import { useEventStore } from '@/stores/events.ts';
 import { useDaycareMissionsStore } from '@/stores/daycareMissions.ts';
@@ -164,6 +165,12 @@ export const useBreedingStore = defineStore('breeding', () => {
 
     if (isBaby) {
       uiStore.notify('Los Pokémon bebé no pueden reproducirse en la Guardería.', '⚠️');
+      return false;
+    }
+
+    if (pokemon.isIllegal || !checkPokemonLegality(pokemon).isLegal) {
+      pokemon.isIllegal = true;
+      uiStore.notify('No puedes depositar un Pokémon ilegal en la Guardería.', '⚠️');
       return false;
     }
 

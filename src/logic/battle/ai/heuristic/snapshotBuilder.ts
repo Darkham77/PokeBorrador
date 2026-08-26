@@ -100,9 +100,13 @@ function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): H
   });
   const moveIds = moveInfos.map(m => m.id);
 
+  if (!p.id) {
+    throw new Error(`[snapshotBuilder] Pokemon missing id: ${p.name}`);
+  }
+
   return {
     name: p.nickname || p.name,
-    species: toID(p.id ?? (() => { throw new Error(`[snapshotBuilder] Pokemon missing id: ${p.name}`); })()),
+    species: toID(p.id),
     level: p.level,
     hp: p.hp,
     maxhp: p.maxHp,

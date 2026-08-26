@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getAssetUrl, ASSET_TYPES, POKEMON_SPRITE_IDS } from '@/logic/services/assetService'
 import IndividualPokemonEditor from './IndividualPokemonEditor.vue'
+import DebugIllegalModal from './DebugIllegalModal.vue'
 import { useDebugTrainers, ARCHETYPE_PRESETS } from './useDebugTrainers.ts'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 
 const emit = defineEmits<{
   close: []
 }>()
+
+const showIllegalModal = ref(false)
+const illegalIssues = ref<string[]>([])
 
 const {
   trainerName,
@@ -38,12 +42,15 @@ const {
   addPokemonToTeam,
   removePokemonFromTeam,
   startCombat: startDebugCombat,
+  validateTeamLegality,
   availableSpriteList
 } = useDebugTrainers()
 
 async function startCombat() {
-  if (enemyTeam.value.length === 0) {
-    await startDebugCombat()
+  const validation = validateTeamLegality()
+  if (!validation.valid) {
+    illegalIssues.value = validation.issues
+    showIllegalModal.value = true
     return
   }
   emit('close')
@@ -457,6 +464,15 @@ onMounted(() => {
         </button>
       </div>
     </div>
+
+    <!-- Modal de Advertencia de Ilegalidad -->
+    <DebugIllegalModal
+      v-if="showIllegalModal"
+      title="⚠️ EQUIPO ILEGAL DETECTADO"
+      description="No se puede iniciar el combate porque uno o más Pokémon del equipo incumplen las normas de legalidad del juego:"
+      :issues="illegalIssues"
+      @close="showIllegalModal = false"
+    />
   </div>
 </template>
 

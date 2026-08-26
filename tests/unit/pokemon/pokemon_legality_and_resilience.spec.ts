@@ -415,5 +415,195 @@ describe('Pokemon Legality, Resilience & Visual Safeguards', () => {
     expect(lv1Gastly.moves.map(m => m?.id)).toEqual(['confuseray', 'hypnosis', 'lick'])
     expect(checkPokemonLegality(lv1Gastly).isLegal).toBe(true)
   })
+
+  it('prevents adding illegal Pokemon from Box to Team in useBoxStore', async () => {
+    const { useBoxStore } = await import('@/stores/box')
+    const { useGameStore } = await import('@/stores/game')
+    const boxStore = useBoxStore()
+    const gameStore = useGameStore()
+
+    const illegalBulbasaur: Pokemon = {
+      uid: 'box-illegal-bulba',
+      id: 'bulbasaur',
+      species: 'bulbasaur',
+      name: 'Bulbasaur',
+      level: 2,
+      hp: 20,
+      maxHp: 20,
+      atk: 10,
+      def: 10,
+      spa: 10,
+      spd: 10,
+      spe: 10,
+      type: 'grass',
+      isShiny: false,
+      vigor: 100,
+      maxVigor: 100,
+      nature: 'modest',
+      ability: 'overgrow' as any,
+      moves: [
+        { id: 'tackle' as any, name: 'Placaje', pp: 35, maxPP: 35 },
+        { id: 'growl' as any, name: 'Gruñido', pp: 40, maxPP: 40 },
+        { id: 'leechseed' as any, name: 'Drenadoras', pp: 10, maxPP: 10 },
+        { id: 'vinewhip' as any, name: 'Látigo Cepa', pp: 25, maxPP: 25 }
+      ], // 4 moves at lv 2 is illegal
+      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+      evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
+    } as unknown as Pokemon
+
+    gameStore.state.box = [illegalBulbasaur]
+    gameStore.state.team = []
+
+    const result = boxStore.moveBoxToTeam(0)
+    expect(result.success).toBe(false)
+    expect(result.msg).toContain('Pokémon ilegal')
+    expect(gameStore.state.team).toHaveLength(0)
+  })
+
+  it('blocks startBattleSequence if any player team member is illegal', async () => {
+    const { startBattleSequence } = await import('@/logic/battle/orchestrator')
+    const { useGameStore } = await import('@/stores/game')
+    const { useBattleStore } = await import('@/stores/battle/battle')
+    const gameStore = useGameStore()
+    const battleStore = useBattleStore()
+
+    const illegalPoke: Pokemon = {
+      uid: 'team-illegal-poke',
+      id: 'bulbasaur',
+      species: 'bulbasaur',
+      name: 'Bulbasaur',
+      level: 2,
+      hp: 20,
+      maxHp: 20,
+      atk: 10,
+      def: 10,
+      spa: 10,
+      spd: 10,
+      spe: 10,
+      type: 'grass',
+      isShiny: false,
+      vigor: 100,
+      maxVigor: 100,
+      nature: 'modest',
+      ability: 'overgrow' as any,
+      moves: [
+        { id: 'tackle' as any, name: 'Placaje', pp: 35, maxPP: 35 },
+        { id: 'growl' as any, name: 'Gruñido', pp: 40, maxPP: 40 },
+        { id: 'leechseed' as any, name: 'Drenadoras', pp: 10, maxPP: 10 },
+        { id: 'vinewhip' as any, name: 'Látigo Cepa', pp: 25, maxPP: 25 }
+      ],
+      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+      evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
+    } as unknown as Pokemon
+
+    gameStore.state.team = [illegalPoke]
+    gameStore.state.map = { currentMap: 'route1' } as any
+
+    const enemyPoke: Pokemon = {
+      uid: 'enemy-pidgey',
+      id: 'pidgey',
+      species: 'pidgey',
+      name: 'Pidgey',
+      level: 2,
+      hp: 20,
+      maxHp: 20,
+      atk: 10,
+      def: 10,
+      spa: 10,
+      spd: 10,
+      spe: 10,
+      type: 'normal',
+      isShiny: false,
+      vigor: 100,
+      maxVigor: 100,
+      nature: 'hardy',
+      ability: 'keeneye' as any,
+      moves: [{ id: 'tackle' as any, name: 'Placaje', pp: 35, maxPP: 35 }],
+      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+      evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
+    } as unknown as Pokemon
+
+    await startBattleSequence(battleStore.getContext(), enemyPoke, { locationId: 'route1' })
+
+    // Battle must NOT have started
+    expect(battleStore.isBattleActive).toBe(false)
+  })
+
+  it('allows pure release of illegal Pokemon without returning held items', async () => {
+    const { useBoxStore } = await import('@/stores/box')
+    const { useGameStore } = await import('@/stores/game')
+    const boxStore = useBoxStore()
+    const gameStore = useGameStore()
+
+    const illegalMon: Pokemon = {
+      uid: 'illegal-to-release',
+      id: 'bulbasaur',
+      species: 'bulbasaur',
+      name: 'Bulbasaur',
+      level: 2,
+      isIllegal: true,
+      heldItem: 'leftovers' as any,
+      moves: [{ id: 'tackle' as any, name: 'Tackle', pp: 35, maxPP: 35 }]
+    } as unknown as Pokemon
+
+    gameStore.state.box = [illegalMon]
+    gameStore.state.inventory = {}
+    boxStore.toggleBoxReleaseMode()
+    boxStore.toggleSelection(0)
+    
+    const released = boxStore.doBoxRelease()
+    expect(released).toEqual(['Bulbasaur'])
+    expect(gameStore.state.box).toHaveLength(0)
+    // No item returned for illegal pokemon
+    expect(gameStore.state.inventory.leftovers).toBeUndefined()
+  })
+
+  it('blocks selecting or selling illegal Pokemon via Team Rocket Black Market', async () => {
+    const { useBoxStore } = await import('@/stores/box')
+    const { useGameStore } = await import('@/stores/game')
+    const boxStore = useBoxStore()
+    const gameStore = useGameStore()
+
+    const illegalMon: Pokemon = {
+      uid: 'illegal-to-sell',
+      id: 'bulbasaur',
+      species: 'bulbasaur',
+      name: 'Bulbasaur',
+      level: 2,
+      isIllegal: true,
+      moves: [{ id: 'tackle' as any, name: 'Tackle', pp: 35, maxPP: 35 }]
+    } as unknown as Pokemon
+
+    gameStore.state.playerClass = 'rocket'
+    gameStore.state.box = [illegalMon]
+    boxStore.toggleBoxRocketMode()
+    boxStore.toggleSelection(0)
+
+    expect(boxStore.boxRocketSelected).toHaveLength(0)
+    expect(boxStore.getRocketSellValue()).toBe(0)
+  })
+
+  it('blocks depositing illegal Pokemon into Daycare / Breeding', async () => {
+    const { useBreedingStore } = await import('@/stores/breeding')
+    const { useGameStore } = await import('@/stores/game')
+    const breedingStore = useBreedingStore()
+    const gameStore = useGameStore()
+
+    const illegalMon: Pokemon = {
+      uid: 'illegal-daycare',
+      id: 'pikachu',
+      species: 'pikachu',
+      name: 'Pikachu',
+      level: 5,
+      isIllegal: true,
+      gender: 'm',
+      moves: []
+    } as unknown as Pokemon
+
+    gameStore.state.box = [illegalMon]
+    const success = await breedingStore.deposit(illegalMon, 0)
+    expect(success).toBe(false)
+    expect(breedingStore.slots[0]?.pokemon).toBeFalsy()
+  })
 })
 

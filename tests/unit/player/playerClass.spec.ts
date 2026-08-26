@@ -24,15 +24,6 @@ vi.mock('@/logic/db/supabase', () => ({
   }
 }))
 
-vi.mock('@/logic/db/dbRouter', () => ({
-  DBRouter: {
-    getInstance: vi.fn(() => ({
-      from: vi.fn(() => ({
-        select: vi.fn(() => ({ eq: vi.fn(() => ({ single: vi.fn() })) }))
-      }))
-    }))
-  }
-}))
 
 vi.mock('@/stores/auth', () => ({
   useAuthStore: () => ({

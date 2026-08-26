@@ -80,7 +80,7 @@ function removeMove(slotIndex: number) {
         </PVTooltip>
         <PVTooltip
           title="Ataques al azar"
-          description="Selecciona 4 ataques al azar de todo su learnset."
+          description="Selecciona hasta 4 ataques al azar legales según su nivel y learnset (nivel, MT, huevo, tutor)."
         >
           <button
             class="btn-magic-fill btn-random-fill"

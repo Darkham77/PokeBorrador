@@ -1,5 +1,6 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { canLearnMove, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory'
+import { canLearnMove, getMaxAllowedMoves } from './pokemonLearnset.ts'
+import { recalcPokemonStats } from './pokemonFactory.ts'
 import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils'
 import { toID } from '@pkmn/sim'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
@@ -48,13 +49,18 @@ export function checkPokemonLegality(p: Pokemon | null | undefined): PokemonLega
   if (p.ability) {
     const validAbilities = pokemonDataProvider.getSpeciesAbilities(p.id)
     if (!validAbilities.includes(p.ability as (typeof validAbilities)[number])) {
-      issues.push(`Habilidad "${p.ability}" es ilegal para ${speciesData.name || p.id}. Habilidades válidas: [${validAbilities.join(', ')}].`)
+      issues.push(`Habilidad "${p.ability}" es ilegal para ${speciesData.name}. Habilidades válidas: [${validAbilities.join(', ')}].`)
     }
   }
 
   const activeMoves = (p.moves || []).filter((m): m is Move => !!m && !!m.id)
   if (activeMoves.length === 0) {
     issues.push('El Pokémon debe poseer al menos 1 movimiento.')
+  } else {
+    const maxAllowedMoves = getMaxAllowedMoves(p.id, p.level)
+    if (activeMoves.length > maxAllowedMoves) {
+      issues.push(`El Pokémon al nivel ${p.level} solo puede conocer hasta ${maxAllowedMoves} movimiento(s) según su etapa de aprendizaje (posee ${activeMoves.length}).`)
+    }
   }
 
   const moveSet = new Set<string>() // runtime-set
@@ -69,8 +75,8 @@ export function checkPokemonLegality(p: Pokemon | null | undefined): PokemonLega
       const moveData = pokemonDataProvider.getMoveData(cleanId)
       if (!moveData) {
         issues.push(`Movimiento "${m.id}" no existe en la base de datos.`)
-      } else if (!canLearnMove(p.id, cleanId)) {
-        issues.push(`Movimiento "${moveData.name || cleanId}" (${cleanId}) es ilegal para la especie ${speciesData.name || p.id}.`)
+      } else if (!canLearnMove(p.id, cleanId, p.level)) {
+        issues.push(`Movimiento "${moveData.name}" (${cleanId}) es ilegal para la especie ${speciesData.name} al nivel ${p.level}.`)
       }
     } catch {
       issues.push(`Movimiento "${m.id}" (${cleanId}) no es válido en el motor Showdown.`)
@@ -126,7 +132,7 @@ export function repairPokemonLegality(p: Pokemon): PokemonRepairReport {
 
     try {
       const moveData = pokemonDataProvider.getMoveData(cleanId)
-      if (moveData && canLearnMove(p.id, cleanId)) {
+      if (moveData && canLearnMove(p.id, cleanId, p.level)) {
         legalMoves.push({
           id: moveData.id,
           name: moveData.name,
@@ -139,19 +145,22 @@ export function repairPokemonLegality(p: Pokemon): PokemonRepairReport {
         })
         seenMoveIds.add(cleanId)
       } else {
-        changes.push(`Movimiento ilegal eliminado: "${m.name || m.id}"`)
+        changes.push(`Movimiento ilegal eliminado: "${m.id}"`)
       }
     } catch {
-      changes.push(`Movimiento inválido descartado: "${m.name || m.id}"`)
+      changes.push(`Movimiento inválido descartado: "${m.id}"`)
     }
   }
 
-  // If after removing illegal moves or due to incomplete movepool the Pokemon has fewer than 4 moves,
+  // If after removing illegal moves or due to incomplete movepool the Pokemon has fewer than targetMoveCount moves,
   // fill remaining slots with the latest official level-up moves for its level!
   const defaultMoves = getMovesAtLevel(p.id, p.level, true)
-  const targetMoveCount = Math.min(4, defaultMoves.length)
+  const targetMoveCount = Math.max(1, Math.min(4, defaultMoves.length))
 
-  if (legalMoves.length < targetMoveCount) {
+  if (legalMoves.length > targetMoveCount) {
+    legalMoves.splice(targetMoveCount)
+    changes.push(`Movimientos excedentes para el nivel ${p.level} recortados a ${targetMoveCount}`)
+  } else if (legalMoves.length < targetMoveCount) {
     for (const defMove of defaultMoves) {
       if (legalMoves.length >= targetMoveCount) break
       if (!defMove || !defMove.id) continue

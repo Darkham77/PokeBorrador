@@ -2,6 +2,8 @@ import { queryLocal, persistSQLite } from '../sqliteEngine.ts';
 import type { SQLiteDatabase } from '../sqliteEngine.ts';
 import type { DBResponse } from '@/types/system/database';
 import type { MarketListingType, MarketAssetType } from '@/logic/economy/market';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality.ts';
 
 interface OfflineSaveData {
   box?: Record<string, unknown>[];
@@ -21,8 +23,16 @@ export async function emulatePublishListing(
   params: Record<string, unknown>,
   context: { userId: string; username: string }
 ): Promise<DBResponse> {
-  const { p_listing_type, p_asset_data, p_price } = params as { p_listing_type: MarketListingType, p_asset_data: Record<string, unknown>, p_price: number };
+  const { p_listing_type, p_asset_data, p_price } = params as { p_listing_type: MarketListingType, p_asset_data: Pokemon | { name: string; qty: number }, p_price: number };
   const { userId, username } = context;
+
+  if (p_listing_type === 'pokemon') {
+    const poke = p_asset_data as Pokemon;
+    const legality = checkPokemonLegality(poke);
+    if (poke.isIllegal || !legality.isLegal) {
+      return { data: null, error: { message: `No se puede publicar un Pokémon ilegal en el mercado: ${legality.issues[0] || 'datos no válidos'}.` } };
+    }
+  }
 
 const MAX_MARKET_LISTINGS_PER_USER = 10;
 const BASE_36_RADIX = 36;
@@ -42,7 +52,8 @@ const RANDOM_STRING_SUBSTRING_END = 11;
   const saveObj = (typeof saves[0]!.save_data === 'string' ? JSON.parse(saves[0]!.save_data as string) : saves[0]!.save_data) as OfflineSaveData;
 
   if (p_listing_type === 'pokemon') {
-    const uid = p_asset_data.uid as string;
+    const poke = p_asset_data as Pokemon;
+    const uid = poke.uid;
     const boxLenBefore = saveObj.box?.length || 0;
     saveObj.box = (saveObj.box || []).filter((p) => p.uid !== uid);
     if (saveObj.box.length === boxLenBefore) {
@@ -53,8 +64,9 @@ const RANDOM_STRING_SUBSTRING_END = 11;
       }
     }
   } else {
-    const itemName = p_asset_data.name as string;
-    const qty = (p_asset_data.qty as number) || 1;
+    const itemData = p_asset_data as { name: string; qty?: number };
+    const itemName = itemData.name;
+    const qty = itemData.qty || 1;
     saveObj.inventory = saveObj.inventory || {};
     const currentQty = saveObj.inventory[itemName] || 0;
     if (currentQty < qty) {

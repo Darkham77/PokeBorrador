@@ -60,6 +60,15 @@ export interface PlayerRequestPokemonSlot {
   active?: boolean;
 }
 
+export interface E2EBattleState {
+  over?: boolean;
+  turnCount?: number;
+  player?: { name?: string; hp?: number; maxHp?: number };
+  enemy?: { name?: string; hp?: number; maxHp?: number };
+  playerRequest?: unknown;
+  enemyRequest?: unknown;
+}
+
 
 /**
  * Configura los permisos iniciales mockeados en localstorage y globales
@@ -251,27 +260,88 @@ export async function executeNativeAutoBattle(page: Page): Promise<void> {
   });
 
   // Wait for battle to genuinely start and NOT be over from previous fight
-  await page.waitForFunction(() => {
-    const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
-    return Boolean(store && !store.isProcessing
-      && store.currentFsmState === 'ACTIVE_BATTLE'
-      && (store.currentSubState === 'WAIT_INPUT' || store.currentSubState === 'SWITCH_MENU')
-      && store.state?.over === false);
-  }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  try {
+    await page.waitForFunction(() => {
+      const isBattleInDom = Boolean(document.querySelector('#battle-view, .battle-arena, #battle-controls-layout'));
+      if (!isBattleInDom) return false;
+      const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+      const active = (store?.activeBattle || store?.state) as { over?: boolean } | undefined;
+      if (!store || !active) return false;
+      const fsmState = store.currentFsmState;
+      const fsmSubState = store.currentSubState;
+      return !store.isProcessing
+        && fsmState === 'ACTIVE_BATTLE'
+        && (fsmSubState === 'WAIT_INPUT' || fsmSubState === 'SWITCH_MENU')
+        && active.over === false;
+    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  } catch (err: unknown) {
+    const debugInfo = await page.evaluate(() => {
+      const isBattleInDom = Boolean(document.querySelector('#battle-view, .battle-arena, #battle-controls-layout'));
+      const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+      const active = (store?.activeBattle || store?.state) as { over?: boolean } | undefined;
+      return {
+        isBattleInDom,
+        hasStore: Boolean(store),
+        hasState: Boolean(active),
+        fsmState: store?.currentFsmState,
+        fsmSubState: store?.currentSubState,
+        isProcessing: store?.isProcessing,
+        over: active?.over
+      };
+    });
+    console.error('[E2E-DEBUG] Failed to start native battle. State:', JSON.stringify(debugInfo));
+    throw err;
+  }
 
   while (true) {
     await waitForWaitInput(page);
     const battleOver = await page.evaluate(() => {
+      const isBattleInDom = Boolean(document.querySelector('#battle-view, .battle-arena, #battle-controls-layout'));
+      if (!isBattleInDom) return true;
       const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
-      return store?.state?.over === true ||
-        store?.currentFsmState === 'EXIT_BATTLE' ||
-        store?.currentFsmState === 'REWARDS_PHASE';
+      if (!store) return true;
+      const active = (store.activeBattle || store.state) as { over?: boolean } | undefined;
+      const fsmState = store.currentFsmState;
+      return active?.over === true ||
+        fsmState === 'EXIT_BATTLE' ||
+        fsmState === 'REWARDS_PHASE' ||
+        fsmState === 'SEARCH_PHASE';
     });
     if (battleOver) {
       return;
     }
 
-    await handleBattleInput(page);
+    const stateInfo = await page.evaluate(() => {
+      const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+      const active = (store?.activeBattle || store?.state) as { turnCount?: number; player?: { name?: string; hp?: number }; enemy?: { name?: string; hp?: number } } | undefined;
+      return {
+        turn: active?.turnCount,
+        fsm: store?.currentFsmState,
+        sub: store?.currentSubState,
+        pName: active?.player?.name,
+        pHp: active?.player?.hp,
+        eName: active?.enemy?.name,
+        eHp: active?.enemy?.hp,
+      };
+    });
+    console.debug(`[E2E-AUTO-BATTLE] Turn ${stateInfo.turn} | FSM: ${stateInfo.fsm}/${stateInfo.sub} | Player: ${stateInfo.pName} (${stateInfo.pHp} HP) vs Enemy: ${stateInfo.eName} (${stateInfo.eHp} HP)`);
+
+    const actionTaken = await handleBattleInput(page);
+    if (!actionTaken) {
+      const battleState = await page.evaluate(() => {
+        const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+        const active = (store?.activeBattle || store?.state) as { over?: boolean; playerRequest?: unknown; enemyRequest?: unknown } | undefined;
+        return {
+          fsm: store?.currentFsmState,
+          subState: store?.currentSubState,
+          isProcessing: store?.isProcessing,
+          isOver: active?.over,
+          playerRequest: active?.playerRequest,
+          enemyRequest: active?.enemyRequest,
+        };
+      });
+      throw new Error(`[E2E] Failed to take battle input in state: ${JSON.stringify(battleState)}`);
+    }
   }
 }
 
@@ -290,92 +360,90 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
     return !resolver().isProcessing;
   }, undefined, { timeout: MAX_UI_SETTLE_TIMEOUT_MS });
 
-  const isProcessing = await page.evaluate(() => {
+  // 1. Wait reactively for store processing to finish
+  await page.waitForFunction(() => {
     const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
-    if (!resolver) return false;
+    if (!resolver) return true;
     try {
-      return resolver().isProcessing;
+      return !resolver().isProcessing;
     } catch {
-      return false;
+      return true;
     }
-  });
+  }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-  if (isProcessing) {
-    return false;
-  }
-
-  const isUiLocked = await page.locator('#battle-controls-layout.is-ui-locked, .battle-controls-layout.is-ui-locked').count() > 0;
-  if (isUiLocked) {
-    return false;
-  }
+  // 2. Wait reactively for UI lock to detach
+  await page.locator('#battle-controls-layout.is-ui-locked, .battle-controls-layout.is-ui-locked').first().waitFor({ state: 'detached', timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
   const subState = await page.evaluate(() => {
     const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
     if (!resolver) return 'WAIT_INPUT';
     try {
-      return resolver().currentSubState;
+      const store = resolver();
+      return store?.currentSubState ?? 'WAIT_INPUT';
     } catch {
       return 'WAIT_INPUT';
     }
   });
 
-  const isModalOpen = await page.evaluate(() => {
-    const overlays = Array.from(document.querySelectorAll('.base-modal-root')) as HTMLElement[];
-    return overlays.some(el => {
-      if (el.querySelector('.battle-arena-modal')) return false;
-      const style = window.getComputedStyle(el);
-      return style.display !== 'none' && style.visibility !== 'hidden' && el.offsetWidth > 0 && el.offsetHeight > 0;
-    });
+  const isModalOpen = await page.evaluate(async () => {
+    try {
+      const { useModalStore } = await import('@/stores/modals');
+      return useModalStore().stack.some(m => !m.closing);
+    } catch {
+      return false;
+    }
   });
 
   if (isModalOpen && subState === 'WAIT_INPUT') {
+    console.debug('[E2E-HANDLE-INPUT] Blocking modal is currently open during WAIT_INPUT. Skipping input.');
     return false;
   }
 
   if (subState === 'SWITCH_MENU') {
     const cleanChoice = choice?.trim().toLowerCase() ?? '';
     if (cleanChoice.startsWith('switch ')) {
-      // El fuzzer grabó este switch — ejecutarlo usando los botones de la barra lateral
-      // (SWITCH_MENU post-debilitación muestra .quick-card-override, NO un modal con .list-item)
       const switchSlot = parseInt(cleanChoice.split(' ')[1] || '2', 10);
-      
       const targetUid = await resolveTargetUidForSlot(page, switchSlot, 'SWITCH_MENU');
 
       if (targetUid) {
+        const modalItem = page.locator(`.base-modal-root .list-item[data-pokemon-uid="${targetUid}"], .list-item[data-pokemon-uid="${targetUid}"]`).first();
+        const isModalItemVisible = (await modalItem.count()) > 0 && await modalItem.isVisible();
+        if (isModalItemVisible) {
+          await clickResilient(modalItem, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+          return true;
+        }
+
         const cardBtn = page.locator(`.quick-card-override[data-pokemon-uid="${targetUid}"]`).first();
         await cardBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-        await cardBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+        await clickResilient(cardBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
       } else {
-        // Fallback posicional si no se pudo resolver el UID
-        const switchIdx = switchSlot - SWITCH_SLOT_INDEX_OFFSET; // slot 1 = activo, slot 2 = índice 0 de banca
+        const switchIdx = switchSlot - SWITCH_SLOT_INDEX_OFFSET;
         const allBenchCards = page.locator('[id^="battle-switch-"]:not(.is-active)');
         await allBenchCards.first().waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
         await allBenchCards.nth(switchIdx).click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
       }
       return true;
     }
-    // Choice no es un switch (es el move del turno siguiente): manejar con el primer disponible
-    // sin consumir el choice — el loop externo reintentará con el mismo turnCount.
-    const activeSwitchBtn = page.locator('[id^="battle-switch-"]:not(.is-active):not(.is-fainted):not(.is-disabled)').first();
-    const isVisible = await activeSwitchBtn.isVisible().catch(() => false);
-    if (isVisible) {
-      await activeSwitchBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+
+    // Native auto input in SWITCH_MENU (check modal first, then sidebar)
+    const modalItem = page.locator('.base-modal-root .list-item:not(.is-fainted):not(.is-selected), .list-item[id^="pokemon-select-"]:not(.is-fainted)').first();
+    const isModalItemVisible = (await modalItem.count()) > 0 && await modalItem.isVisible();
+    if (isModalItemVisible) {
+      await clickResilient(modalItem, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
       return !choice;
     }
-    return false;
+
+    const activeSwitchBtn = page.locator('[id^="battle-switch-"]:not(.is-active):not(.is-fainted):not(.is-disabled)').first();
+    await activeSwitchBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await clickResilient(activeSwitchBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    return !choice;
   }
 
   if (!choice) {
-    const firstMoveBtn = page.locator('button[id^="move-btn-"]:not([disabled])').first();
-    const isVisible = await firstMoveBtn.isVisible().catch(() => false);
-    if (isVisible) {
-      const isDisabled = await firstMoveBtn.isDisabled().catch(() => true);
-      if (!isDisabled) {
-        await clickResilient(firstMoveBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-        return true;
-      }
-    }
-    return false;
+    const firstMoveBtn = page.locator('#move-panel button[id^="move-btn-"]:not([disabled]):not(.disabled-move), button[id^="move-btn-"]:not([disabled]):not(.disabled-move)').first();
+    await firstMoveBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await clickResilient(firstMoveBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    return true;
   }
 
   if (choice) {
@@ -390,7 +458,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
 
         const moveIdx = parseInt(moveToken || '1', 10) - 1;
         const struggleOverlay = page.locator('#struggle-overlay');
-        const isStruggleActive = await struggleOverlay.isVisible().catch(() => false);
+        const isStruggleActive = (await struggleOverlay.count()) > 0 && await struggleOverlay.isVisible();
 
         let moveBtn;
         if (isStruggleActive) {
@@ -433,7 +501,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
         }
 
         await moveBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-        const isDisabled = await moveBtn.isDisabled().catch(() => true);
+        const isDisabled = await moveBtn.isDisabled();
         if (isDisabled) {
           return false;
         }
@@ -474,7 +542,7 @@ export async function handleBattleInput(page: Page, choice?: string): Promise<bo
         const translatedName = itemTranslations[itemId] || itemId;
 
         const quickCard = page.locator(`.quick-item-card[data-item-id="${itemId}"]`);
-        const isQuickVisible = await quickCard.isVisible().catch(() => false);
+        const isQuickVisible = (await quickCard.count()) > 0 && await quickCard.isVisible();
 
         if (isQuickVisible) {
           await clickResilient(quickCard, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
@@ -740,15 +808,17 @@ export async function executeAutoBattle(
       const debug = window.__VITE_DEBUG__;
       const historyIndex = Reflect.get(debug ?? {}, 'replayHistoryIdx');
       const store = window.__VITE_DEBUG_STORE_RESOLVER__?.();
+      const active = (store?.activeBattle || store?.state) as { over?: boolean } | undefined;
       return (typeof historyIndex === 'number' && historyIndex > previousHistoryIndex)
-        || !store?.state
-        || store.state.over === true;
+        || !active
+        || active.over === true;
     }, { previousHistoryIndex: action.historyIndex }, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     const isEndingOrOver = await page.evaluate(() => {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       const store = resolver?.();
-      if (!store?.state || store.state.over) return true;
+      const active = (store?.activeBattle || store?.state) as { over?: boolean } | undefined;
+      if (!active || active.over) return true;
       const debug = (window as WindowWithResolver).__VITE_DEBUG__;
       const history = Reflect.get(debug ?? {}, 'history');
       const historyIndex = Reflect.get(debug ?? {}, 'replayHistoryIdx');
@@ -769,11 +839,12 @@ export async function executeAutoBattle(
     const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
     if (!resolver) return true;
     const store = resolver();
+    const active = (store?.activeBattle || store?.state) as { over?: boolean } | undefined;
     const debug = (window as WindowWithResolver).__VITE_DEBUG__;
     const history = Reflect.get(debug ?? {}, 'history');
     const historyIndex = Reflect.get(debug ?? {}, 'replayHistoryIdx');
     const isReplayComplete = Array.isArray(history) && typeof historyIndex === 'number' && historyIndex >= history.length;
-    return !store.state || store.state.over || store.currentFsmState !== 'ACTIVE_BATTLE' || isReplayComplete;
+    return !active || active.over || store.currentFsmState !== 'ACTIVE_BATTLE' || isReplayComplete;
   }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
   if (finalState) {
@@ -781,7 +852,8 @@ export async function executeAutoBattle(
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       if (!resolver) return true;
       const store = resolver();
-      if (!store?.state || store.state.over || store.currentFsmState !== 'ACTIVE_BATTLE') return true;
+      const active = (store?.activeBattle || store?.state) as { over?: boolean } | undefined;
+      if (!active || active.over || store.currentFsmState !== 'ACTIVE_BATTLE') return true;
       const debug = (window as WindowWithResolver).__VITE_DEBUG__;
       const history = Reflect.get(debug ?? {}, 'history');
       const historyIndex = Reflect.get(debug ?? {}, 'replayHistoryIdx');
@@ -917,10 +989,10 @@ export async function openDebugTab(page: Page, category: string): Promise<void> 
   const categoryId = categoryMap[category.toLowerCase()] || category.toLowerCase(); // string-ok
   const navBtn = page.locator(`#debug-tab-${categoryId}, [id^="debug-tab-${categoryId}"]`).first();
 
-  const isTabReady = await navBtn.isVisible().catch(() => false);
+  const isTabReady = (await navBtn.count()) > 0 && await navBtn.isVisible();
   if (!isTabReady) {
     const trigger = page.locator('#debug-trigger-btn').first();
-    const isTriggerVisible = await trigger.isVisible().catch(() => false);
+    const isTriggerVisible = (await trigger.count()) > 0 && await trigger.isVisible();
     if (isTriggerVisible) {
       await clickResilient(trigger);
     } else {

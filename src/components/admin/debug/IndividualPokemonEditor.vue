@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { recalcPokemonStats, getExpNeeded } from '@/logic/pokemon/pokemonFactory'
-import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils'
+import { recalcPokemonStats, getExpNeeded, getLegalSpeciesMoves, getRandomLegalMoves } from '@/logic/pokemon/pokemonFactory'
+import { generateRandomIVs, getMovesAtLevel } from '@/logic/pokemon/pokemonUtils'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 import { SHOP_ITEMS, requireItemId } from '@/data/inventory/items'
 import { toNatureId } from '@/data/battle/natures'
@@ -18,7 +18,7 @@ import PokemonPreview from './PokemonPreview.vue'
 import PokemonBaseStats from './PokemonBaseStats.vue'
 
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { MoveCategory } from '@/data/battle/moves'
+import { requirePokemonMoveId, type MoveCategory } from '@/data/battle/moves'
 import type { PokemonStatKey, PokemonMoveId } from '@/types/pokemon/pokemon'
 
 const props = defineProps<{
@@ -64,9 +64,7 @@ const activePokeNickname = computed({
 })
 
 const activeSpeciesMoves = computed<PokemonMoveId[]>(() => {
-  const data = pokemonDataProvider.getPokemonData(activePoke.value.id)
-  if (!data || !data.learnset) return []
-  return [...new Set(data.learnset.map(m => m.id))]
+  return getLegalSpeciesMoves(activePoke.value.id, activePoke.value.level)
 })
 
 const activeBaseStats = computed(() => {
@@ -165,15 +163,8 @@ function selectEditPokeSpecies(p: { id: string }) {
   }
 
   // Refill moves based on level
-  const data = pokemonDataProvider.getPokemonData(speciesId)
-  if (data?.learnset) {
-    const learnedMoves = data.learnset
-      .filter(m => m.lv <= activePoke.value.level)
-      .sort((a, b) => b.lv - a.lv)
-      .map(m => m.id)
-    const unique = [...new Set(learnedMoves)].slice(0, 4)
-    activePokeMoves.value = unique
-  }
+  const defaultMoves = getMovesAtLevel(speciesId, activePoke.value.level)
+  activePokeMoves.value = defaultMoves.filter((m): m is typeof m & { id: string } => !!m?.id).map(m => requirePokemonMoveId(m.id))
   
   // Recalculate stats
   recalcPokemonStats(activePoke.value)
@@ -181,22 +172,12 @@ function selectEditPokeSpecies(p: { id: string }) {
 }
 
 function autoFillActiveMoves() {
-  const data = pokemonDataProvider.getPokemonData(activePoke.value.id)
-  if (!data?.learnset) return
-  const learnedMoves = data.learnset
-    .filter(m => m.lv <= activePoke.value.level)
-    .sort((a, b) => b.lv - a.lv)
-    .map(m => m.id)
-  const unique = [...new Set(learnedMoves)].slice(0, 4)
-  activePokeMoves.value = unique
+  const defaultMoves = getMovesAtLevel(activePoke.value.id, activePoke.value.level)
+  activePokeMoves.value = defaultMoves.filter((m): m is typeof m & { id: string } => !!m?.id).map(m => requirePokemonMoveId(m.id))
 }
 
 function randomFillActiveMoves() {
-  const data = pokemonDataProvider.getPokemonData(activePoke.value.id)
-  if (!data?.learnset || data.learnset.length === 0) return
-  const allMoves = [...new Set(data.learnset.map(m => m.id))]
-  const shuffled = allMoves.sort(() => 0.5 - Math.random())
-  activePokeMoves.value = shuffled.slice(0, 4)
+  activePokeMoves.value = getRandomLegalMoves(activePoke.value.id, activePoke.value.level, 4)
 }
 
 const MAX_STAT_IV_LIMIT = 31

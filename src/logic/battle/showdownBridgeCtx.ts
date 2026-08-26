@@ -7,8 +7,8 @@ export interface SBCtx {
   type: string;
   parts: string[];
   line: string;
-  p: Pokemon;
-  e: Pokemon;
+  p: Pokemon | null;
+  e: Pokemon | null;
   turnLogs?: string[];
   getSide: (rawId: string) => 'player' | 'enemy' | null;
   getPoke: (rawId: string) => Pokemon | null;

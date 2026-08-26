@@ -77,7 +77,7 @@ onMounted(() => {
   // Load essential game data
   warStore.loadWarData()
   eventStore.fetchEvents()
-  eventStore.checkPendingAwards()
+  eventStore.checkPendingAwards(true)
   livePvP.initInvitePoller()
   breedingStore.checkDailyReset()
   breedingStore.initBackgroundPoller()

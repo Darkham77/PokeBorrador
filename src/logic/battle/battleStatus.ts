@@ -294,6 +294,25 @@ export function clearVolatileStatus(poke: Pokemon) {
   poke.identified = false
   poke.furyCutterCount = 0
 
+  // Restore transformed original stats/moves
+  if (poke._originalMoves) {
+    poke.moves = poke._originalMoves
+    poke._originalMoves = undefined
+  }
+  if (poke._originalSpecies) {
+    poke.species = poke._originalSpecies
+    poke.name = poke._originalSpecies
+    poke._originalSpecies = undefined
+  }
+  if (poke._originalType) {
+    poke.type = poke._originalType
+    poke._originalType = undefined
+  }
+  if (poke._originalType2 !== undefined) {
+    poke.type2 = poke._originalType2
+    poke._originalType2 = undefined
+  }
+
   // Restore Ditto original stats/moves if it was transformed
   if (poke.originalDitto) {
     const orig = poke.originalDitto

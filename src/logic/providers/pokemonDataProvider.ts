@@ -246,7 +246,7 @@ export const pokemonDataProvider = {
 
         const moveId = requirePokemonMoveId(move.id);
         const translated = MOVE_TRANSLATIONS_ES[moveId];
-        const espName = translated.name || move.name;
+        const espName = translated.name ?? move.name; // text-ok
 
         const moveData: MoveBaseData = {
             id: moveId,

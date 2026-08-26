@@ -1,4 +1,3 @@
-import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import { gameBus } from '@/logic/events/gameBus'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { BattleSide } from '@/types/battle/battle'
@@ -6,6 +5,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import { useUIStore } from '@/stores/ui'
 import { clearVolatileStatus } from './battleStatus.ts'
 import { registerRewardCombatant } from './rewardsDistributor.ts'
+import { gsapSleep } from '@/logic/utils/gsapHelpers'
 import {
   handlePoliceResolution,
   animatePlayerAutoSwap,
@@ -14,10 +14,9 @@ import {
 export { awardDebugExp } from './rewardsDistributor.ts'
 export { syncAndPersist } from './battleStateSync.ts'
 
-const FAINT_ANIMATION_FALLBACK_DELAY_MS = 1300;
-const DEFEAT_SCREEN_DELAY_MS = 1500;
-const ENEMY_FLEE_ANIMATION_DELAY_MS = 1000;
 const TERMINATING_BATTLES = new WeakSet<object>()
+const ENEMY_FLEE_ANIMATION_DELAY_MS = 1000
+const DESTINY_BOND_SLEEP_DELAY_MS = 500
 
 function isCurrentBattle(ctx: BattleContext, battle: NonNullable<BattleContext['activeBattle']['value']>): boolean {
   return ctx.activeBattle.value === battle
@@ -43,71 +42,17 @@ export async function processFaint(ctx: BattleContext, side: BattleSide) {
   
   const pokemon = isPlayer ? active.player : active.enemy
   const opponent = isPlayer ? active.enemy : active.player
-  
-const DESTINY_BOND_SLEEP_DELAY_MS = 500;
 
   if (pokemon?.destinyBond && opponent && opponent.hp > 0) {
     ctx.addLog(`¡${pokemon.name} se llevó a ${opponent.name} con él!`, 'log-info', pokemon)
     opponent.hp = 0
-    await sleep(DESTINY_BOND_SLEEP_DELAY_MS)
+    await gsapSleep(DESTINY_BOND_SLEEP_DELAY_MS)
     await processFaint(ctx, isPlayer ? 'enemy' : 'player')
   }
 
   if (isPlayer) {
-    const pokeName = pokemon?.name || active?._lastActivePlayer?.name || 'Tu Pokémon';
-    ctx.addLog(`¡${pokeName} se ha debilitado!`, 'log-player', pokemon || undefined)
-    
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RECALL_FLOW)
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RENDER_BALL)
-    if (ctx.animations?.handleFaintAnim) {
-      await ctx.animations.handleFaintAnim({ side: 'player', isFaint: true })
-    } else {
-      await sleep(FAINT_ANIMATION_FALLBACK_DELAY_MS)
-    }
-    
-    // Sincronizamos antes de vaciar el asiento para no perder la referencia
-    syncTeamHP(ctx)
-    if (active) active._lastActivePlayer = pokemon; // Guardamos referencia por si acaso
-    
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FADEOUT_BALL)
-    if (ctx.animations?.playBallFadeOut) {
-      await ctx.animations.playBallFadeOut('player')
-    }
-    active.player = null 
-    
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CHECK_TEAM)
-    const nextPoke = ctx.gs.state.team.find((p: Pokemon) => p && p.hp > 0)
-    
-    if (!nextPoke) {
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ALL_FAINTED)
-      active.over = true
-      ctx.addLog('¡No te quedan Pokémon sanos!', 'log-error', 'player')
-      await sleep(DEFEAT_SCREEN_DELAY_MS)
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.DEFEAT_SCREEN)
-      await terminateBattle(ctx, false)
-    } else {
-      const isWild = !active.isTrainer && !active.isGym && !active.isPvP
-      const enemyHasHealthy = active.enemyTeam && active.enemyTeam.some((p: Pokemon) => p.hp > 0)
-      const enemyFaintedAndBattleEnds = active.enemy && active.enemy.hp <= 0 && (isWild || !enemyHasHealthy)
-
-      if (enemyFaintedAndBattleEnds) {
-        ctx.faintedSides.value.delete('player')
-        // En Double KO no forzamos cambio ni abrimos menú de cambio, ya que la batalla termina y terminateBattle reordenará el equipo
-      } else {
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.HAS_HEALTHY)
-        ctx.addLog('¡Elige a tu próximo Pokémon!', 'log-info', 'player')
-        ctx.faintedSides.value.delete('player')
-        ctx.uiStore.isBattleSwitchForced = true
-        // SWITCH_MENU is a player-input state. Leaving the turn lock active
-        // here makes every official switch control non-interactive.
-        ctx.isProcessing.value = false
-        ctx.isIntroAnimating.value = false
-        await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SWITCH_MENU)
-      }
-    }
+    const { processPlayerFaintSequence } = await import('./battleFaintSequence.ts')
+    await processPlayerFaintSequence(ctx, pokemon || null, { terminateBattle })
   } else if (pokemon) {
     const { processEnemyFaintSequence } = await import('./battleFaintSequence.ts')
     await processEnemyFaintSequence(ctx, pokemon, { processFaint, terminateBattle })
@@ -180,7 +125,9 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
             : Promise.resolve()
         } else {
           gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'enemy', type: 'flee' })
-          enemyExited = sleep(ENEMY_FLEE_ANIMATION_DELAY_MS)
+          enemyExited = ctx.animations?.awaitTween
+            ? ctx.animations.awaitTween('escape-enemy')
+            : gsapSleep(ENEMY_FLEE_ANIMATION_DELAY_MS)
         }
       }
     }
@@ -223,7 +170,6 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
 
   if (!win && !fled) {
     await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
-    await sleep(200)
     await ctx.gs.save(false)
     if (!isCurrentBattle(ctx, active)) return
     
@@ -256,7 +202,6 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
       await ctx.completeBattleFlow('map')
     } else {
       await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
-      await sleep(200)
       if (!isCurrentBattle(ctx, active)) return
       await ctx.completeBattleFlow('search')
     }
@@ -267,12 +212,6 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
   await ctx.waitForLogs()
   if (!isCurrentBattle(ctx, active)) return
   
-  // Esperar a que el jugador termine de aprender técnicas en el modal
-  while (uiStore.learnQueue.length > 0 || uiStore.currentMoveToLearn) {
-    await sleep(100)
-    if (!isCurrentBattle(ctx, active)) return
-  }
-  
   syncTeamHP(ctx)
 
   if (active) active._initialEnemy = null
@@ -281,13 +220,13 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
     // Para combates isSingle (Gym, PvP), NO se realiza reordenamiento animado.
     // El FSM queda en EMPTY_WAIT con el overlay visible ("VOLVER A GIMNASIOS" / "VOLVER AL MAPA").
     // El cierre lo dispara el usuario al hacer clic en el botón, que llama completeBattleFlow('map').
+    ctx.isProcessing.value = false
     await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_PERSISTENCE)
     await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
     return
   }
 
   await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
-  await sleep(200) // Pausa de limpieza orgánica reducida a 200ms
   if (!isCurrentBattle(ctx, active)) return
 
   // Reordenamiento animado: recall del incorrecto + release del correcto en paralelo
@@ -329,7 +268,8 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
   await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.CHECK_PERSISTENCE)
   if (!isCurrentBattle(ctx, active)) return
   
-  if (active.wasSearching === true) {
+  const wasSearching = active.wasSearching === true || ctx.isSearching.value === true
+  if (wasSearching) {
     await ctx.completeBattleFlow('search')
   } else {
     await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)

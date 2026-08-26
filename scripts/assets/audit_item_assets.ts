@@ -155,7 +155,7 @@ async function main() {
 
     results.push({
       id: item.id,
-      name: item.name || item.id,
+      name: item.name,
       sprite: item.sprite,
       expectedPaths: pathsToCheck,
       found,

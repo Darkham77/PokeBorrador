@@ -1,6 +1,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { DBRouter } from '@/logic/db/dbRouter';
+import { DBRouter } from '@/logic/db/dbRouter.ts';
 import { ProxyQuery } from '@/logic/db/proxyQuery';
 
 // Mock sqliteEngine to avoid WASM initialization issues in unit tests

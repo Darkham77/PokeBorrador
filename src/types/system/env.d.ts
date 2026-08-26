@@ -223,6 +223,7 @@ declare global {
     __VITE_DEBUG_BREEDING_STORE_RESOLVER__?: () => unknown;
     showGameError?: (error: Error | string, context?: Record<string, unknown>) => void; // domain-ok // string-ok // open-record
     __WEATHER_SESSION_SEED__?: number;
+    __GET_DB_TIME_OFFSET__?: () => number;
     gsap?: typeof import('gsap').gsap;
   }
 }

@@ -1,4 +1,3 @@
-// [PureVue-Ignore-Length]
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { NATURES, toNatureId } from '@/data/battle/natures';
 
@@ -6,84 +5,22 @@ import { GAME_RATIOS, MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { DEFAULT_FALLBACK_BASE_STAT, DEFAULT_FRIENDSHIP_VALUE } from '@/logic/constants/gameplay';
 import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils';
 import { getActivePinia } from 'pinia';
-import { useEventStore } from '@/stores/events';
-import { usePlayerClassStore } from '@/stores/player/playerClass';
-import { useWarStore } from '@/stores/war';
+import { getSpeciesBoosts, getGlobalMultipliers, type Event as GameEvent } from '@/logic/events/eventEngine.ts';
 import type { ObtainedMethod, Pokemon, Move, PokemonIVs, PokemonGender } from '@/types/pokemon/pokemon';
-import { isFossilPokemonSpeciesId, isLegendaryPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { isFossilPokemonSpeciesId, isLegendaryPokemonSpeciesId, requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { getExpNeededPure, calcStatsPure } from './statsMath.ts';
 import { generateIvPure } from './generationMath.ts';
 import { createDefaultEvs } from './evMath.ts';
-import { getItemById } from '@/data/inventory/items';
+import { getItemById, type ItemId } from '@/data/inventory/items';
 import { Dex, toID } from '@pkmn/sim';
 import { requireAbilityId, type AbilityId } from '@/data/battle/abilities';
+import { assignGender, ensurePokemonGender, isGenderlessSpeciesId } from './pokemonGender.ts';
+import { canLearnMove } from './pokemonLearnset.ts';
+import { getWildHeldItem } from './pokemonWildHeldItems.ts';
 
-
-import type { ItemId } from '@/data/inventory/items';
-
-/**
- * Probabilidades de items equipados en estado salvaje
- */
-const WILD_HELD_ITEMS: Partial<Record<PokemonSpeciesId, { common?: ItemId; rare?: ItemId }>> = {
-  butterfree: { rare: 'silverpowder' },
-  beedrill: { rare: 'poisonbarb' },
-  pikachu: { common: 'berrybronze', rare: 'lightball' },
-  meowth: { rare: 'amuletcoin' },
-  abra: { rare: 'twistedspoon' },
-  kadabra: { rare: 'twistedspoon' },
-  machoke: { rare: 'focussash' },
-  magneton: { rare: 'magnet' },
-  farfetchd: { rare: 'stick' },
-  shellder: { common: 'bigpearl', rare: 'pearl' },
-  cloyster: { common: 'bigpearl', rare: 'pearl' },
-  haunter: { rare: 'spelltag' },
-  gengar: { rare: 'spelltag' },
-  cubone: { rare: 'thickclub' },
-  marowak: { rare: 'thickclub' },
-  chansey: { rare: 'luckyegg' },
-  staryu: { common: 'starpiece', rare: 'stardust' },
-  starmie: { common: 'starpiece', rare: 'stardust' },
-  ditto: { rare: 'metalpowder' },
-  snorlax: { rare: 'leftovers' },
-  dragonair: { rare: 'dragonscale' },
-  dragonite: { rare: 'dragonscale' }
-};
-
-const GENDERLESS: readonly PokemonSpeciesId[] = ['articuno', 'ditto', 'electrode', 'magnemite', 'magneton', 'mew', 'mewtwo', 'moltres', 'porygon', 'starmie', 'staryu', 'voltorb', 'zapdos'];
-const MALE_ONLY_SPECIES: readonly PokemonSpeciesId[] = ['nidoranm'];
-const FEMALE_ONLY_SPECIES: readonly PokemonSpeciesId[] = ['nidoranf'];
-
-function isGenderlessSpeciesId(id: PokemonSpeciesId): boolean {
-  return GENDERLESS.includes(id);
-}
-
-export function assignGender(id: PokemonSpeciesId): PokemonGender {
-  const normId = toID(id);
-  const spec = Dex.species.get(normId);
-  if (spec && spec.exists) {
-    if (spec.gender === 'N' || isGenderlessSpeciesId(id)) return null;
-    if (spec.gender === 'M' || MALE_ONLY_SPECIES.includes(id)) return 'm';
-    if (spec.gender === 'F' || FEMALE_ONLY_SPECIES.includes(id)) return 'f';
-    if (spec.genderRatio) {
-      return Math.random() < spec.genderRatio.M ? 'm' : 'f';
-    }
-  }
-  if (isGenderlessSpeciesId(id)) return null;
-  if (MALE_ONLY_SPECIES.includes(id)) return 'm';
-  if (FEMALE_ONLY_SPECIES.includes(id)) return 'f';
-  return Math.random() < 0.5 ? 'm' : 'f';
-}
-
-export function ensurePokemonGender(p: Pokemon): boolean {
-  if (!p) return false;
-  const spec = Dex.species.get(toID(p.id));
-  const isGenderless = spec?.gender === 'N' || isGenderlessSpeciesId(p.id);
-  if (p.gender === undefined || (!p.gender && !isGenderless)) {
-    p.gender = assignGender(p.id);
-    return true;
-  }
-  return false;
-}
+export { assignGender, ensurePokemonGender, isGenderlessSpeciesId } from './pokemonGender.ts';
+export { canLearnMove, getLegalSpeciesMoves, getRandomLegalMoves, getMaxAllowedMoves } from './pokemonLearnset.ts';
+export { getWildHeldItem, WILD_HELD_ITEMS } from './pokemonWildHeldItems.ts';
 
 export function getExpNeeded(level: number): number {
   return getExpNeededPure(level);
@@ -95,7 +32,8 @@ export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
   const base = pokemonDataProvider.getPokemonData(p.id, bypassWhitelist);
   if (!base) return;
   
-  const natureData = pokemonDataProvider.getNatureData(p.nature) || { up: null, down: null };
+  const natureDef = p.nature ? pokemonDataProvider.getNatureData(p.nature) : null;
+  const natureData = natureDef ? { up: natureDef.up, down: natureDef.down } : { up: null, down: null };
   const isDittoMetalPowder = p.heldItem === 'metalpowder' && p.id === 'ditto';
   const isDittoQuickPowder = p.heldItem === 'quickpowder' && p.id === 'ditto';
 
@@ -146,41 +84,6 @@ export function recalcPokemonStats(p: Pokemon, bypassWhitelist = false): void {
   validatePokemon(p, bypassWhitelist);
 }
 
-export function canLearnMove(speciesId: string, moveId: string): boolean {
-  const normMoveId = toID(moveId);
-  const visited = new Set<string>(); // runtime-set
-  const queue: string[] = [toID(speciesId)]; // no-domain
-
-  while (queue.length > 0) {
-    const currId = queue.shift()!;
-    if (visited.has(currId)) continue;
-    visited.add(currId);
-
-    const data = Dex.data.Learnsets[currId];
-    if (data && data.learnset && data.learnset[normMoveId]) {
-      return true;
-    }
-
-    const species = Dex.species.get(currId);
-    if (species.exists) {
-      if (species.baseSpecies && toID(species.baseSpecies) !== currId) {
-        queue.push(toID(species.baseSpecies));
-      }
-      if (species.prevo && toID(species.prevo) !== currId) {
-        queue.push(toID(species.prevo));
-      }
-      if (species.battleOnly) {
-        const battleBase = typeof species.battleOnly === 'string' ? species.battleOnly : species.battleOnly[0];
-        if (battleBase) queue.push(toID(battleBase));
-      }
-    }
-  }
-
-  return false;
-}
-
-
-
 /**
  * Validates Pokémon data to ensure all mandatory fields are present and legal.
  * Throws explicit descriptive errors on any data corruption instead of patching.
@@ -189,7 +92,7 @@ export function validatePokemon(p: Pokemon, bypassWhitelist = false): void {
   if (!p) throw new Error('[pokemonFactory] Intento de validar un Pokémon nulo o indefinido.');
   if (!p.volatileCounters) p.volatileCounters = {};
 
-  const bypass = bypassWhitelist;
+  const bypass = bypassWhitelist || Boolean(p.isIllegal) || (typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__?.isDeterministicSimulation || window.__VITE_DEBUG__?.isScriptedReplayMode));
 
   // 0. Sincronizar Datos Base (Tipos y Levitación) desde DB para paridad Wiki (Datos volátiles en memoria)
   const base = pokemonDataProvider.getPokemonData(p.id, true);
@@ -255,8 +158,8 @@ export function validatePokemon(p: Pokemon, bypassWhitelist = false): void {
       throw new Error(`[pokemonFactory] Movimiento "${m.id}" no encontrado o no existe en la base de datos para ${p.id} (UID: ${p.uid}).`);
     } else {
       // Validar legalidad del movimiento para la especie usando el Dex de Showdown
-      if (!bypass && !canLearnMove(p.id, m.id)) {
-        throw new Error(`[pokemonFactory] Movimiento ilegal "${m.id}" (${moveData.name || m.id}) para especie ${p.id} (UID: ${p.uid}).`);
+      if (!bypass && !canLearnMove(p.id, m.id, p.level)) {
+        throw new Error(`[pokemonFactory] Movimiento ilegal "${m.id}" (${moveData.name}) para especie ${p.id} al nivel ${p.level} (UID: ${p.uid}).`);
       }
 
       // Sincronización Mandatoria
@@ -387,20 +290,19 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
 
   // 1. IV Floor from Class (Cazabichos)
   const piniaActive = getActivePinia();
-  const classStore = piniaActive ? usePlayerClassStore() : null;
   let _ivFloor = options.ivFloor || 0;
-  if (classStore && classStore.playerClass === 'cazabichos') {
-    const classData = classStore.classData as { captureStreak?: number };
-    _ivFloor = Math.max(_ivFloor, classData.captureStreak || 0);
+  if (piniaActive?.state?.value?.playerClass) {
+    const classState = piniaActive.state.value.playerClass as { playerClass?: string; classData?: { captureStreak?: number } };
+    if (classState.playerClass === 'cazabichos') {
+      _ivFloor = Math.max(_ivFloor, classState.classData?.captureStreak || 0);
+    }
   }
 
   function _randIv(floor: number = 0, forceReRoll: boolean = false, isGuardian: boolean = false): number {
     return generateIvPure(Math.random, floor, forceReRoll, isGuardian);
   }
   
-  const warStore = piniaActive ? useWarStore() : null;
-  const currentMapId = options.mapId;
-  const isGuardianPotential = (currentMapId && warStore?.checkGuardian && warStore.checkGuardian(currentMapId, []) !== null);
+  const isGuardianPotential = Boolean(options.mapId && (piniaActive?.state?.value?.war as { activeFactions?: unknown } | undefined)?.activeFactions);
 
   const ivs: PokemonIVs = { 
     hp: _randIv(_ivFloor, false, !!isGuardianPotential), 
@@ -419,7 +321,6 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
   const gender = options.gender !== undefined ? options.gender : assignGender(id);
 
   // Shiny Calculation
-  const eventStore = piniaActive ? useEventStore() : null;
   let isShiny = options.isShiny;
   if (isShiny === undefined) {
     const debugObj = typeof window !== 'undefined' ? (window.__VITE_DEBUG__ as { forceShiny100?: boolean; shinyRateOverride?: number | null } | undefined) : undefined;
@@ -434,18 +335,16 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
       let totalBonusMult = 0;
       
       // Event Bonus
-      const speciesBonuses = eventStore?.getSpeciesBonuses(id);
+      const activeEvents = (piniaActive?.state?.value?.events as { activeEvents?: GameEvent[] } | undefined)?.activeEvents || [];
+      const speciesBonuses = getSpeciesBoosts(activeEvents, id);
       if (speciesBonuses && speciesBonuses.shiny) {
         totalBonusMult += (speciesBonuses.shiny - 1);
       }
       
-      // Local Options Bonus
-      if (options.shinyMultiplier) {
-        totalBonusMult += (options.shinyMultiplier - 1);
-      }
-
+      // Global Multipliers
+      const globalMults = getGlobalMultipliers(activeEvents);
       const finalMult = Math.max(1, 1 + totalBonusMult);
-      const finalShinyRate = Math.max(1, Math.floor(baseShinyRate / (finalMult * (eventStore?.globalMultipliers?.shiny || 1))));
+      const finalShinyRate = Math.max(1, Math.floor(baseShinyRate / (finalMult * (globalMults.shiny || 1))));
       
       isShiny = Math.random() < (1 / finalShinyRate);
     }
@@ -469,13 +368,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
 
   let heldItem: ItemId | null = options.heldItem || null;
   if (!heldItem) {
-    const itemData = WILD_HELD_ITEMS[id];
-    if (itemData) {
-      const rand = Math.random();
-      const r = GAME_RATIOS.heldItems;
-      if (itemData.rare && rand < r.rareRate) heldItem = itemData.rare;
-      else if (itemData.common && rand < r.commonRate) heldItem = itemData.common;
-    }
+    heldItem = getWildHeldItem(id);
   }
 
   const p: Pokemon = {

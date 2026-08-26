@@ -11,17 +11,39 @@ interface ShowdownRequestMove {
   disabled?: boolean | string
 }
 
-function computeP1Choice(active: BattleState | null, move: Move | null, isStruggle: boolean): string {
-  let p1Choice = isStruggle ? 'struggle' : `move ${move?.id ?? 'struggle'}`
+export function computeP1Choice(active: BattleState | null, move: Move | null, isStruggle: boolean, moveIndex?: number): string {
+  if (isStruggle) return 'struggle'
   const pReq = active?.playerRequest as ChoiceRequest | undefined
   const reqMoves = pReq?.active?.[0]?.moves
-  if (!isStruggle && move?.id && reqMoves && Array.isArray(reqMoves)) {
-    const idx = reqMoves.findIndex((m: { id?: string }) => m && m.id === move.id)
-    if (idx !== -1) {
-      p1Choice = `move ${idx + 1}`
+  if (reqMoves && Array.isArray(reqMoves)) {
+    if (move?.id) {
+      const idx = reqMoves.findIndex((m: { id?: string }) => m && m.id === move.id)
+      if (idx !== -1) {
+        const targetReqMove = reqMoves[idx]
+        if (targetReqMove?.disabled) {
+          throw new Error(`[computeP1Choice] Move "${move.id}" is disabled. Reason: ${JSON.stringify(targetReqMove.disabled)}. PP: ${targetReqMove.pp}/${targetReqMove.maxpp}`)
+        }
+        return `move ${idx + 1}`
+      }
     }
+    // If moveIndex is provided and corresponds to a valid slot in Showdown request (e.g. Sketch/Transform/Mimic)
+    if (typeof moveIndex === 'number' && moveIndex >= 0 && moveIndex < reqMoves.length && reqMoves[moveIndex]?.id) {
+      const targetReqMove = reqMoves[moveIndex]
+      if (targetReqMove?.disabled) {
+        throw new Error(`[computeP1Choice] Move "${targetReqMove.id}" is disabled. Reason: ${JSON.stringify(targetReqMove.disabled)}. PP: ${targetReqMove.pp}/${targetReqMove.maxpp}`)
+      }
+      return `move ${moveIndex + 1}`
+    }
+    // If Showdown explicitly returned a canonical single-move state (Recharge, Struggle, 2-turn charging move, locked move)
+    if (reqMoves.length === 1 && reqMoves[0]?.id) {
+      return 'move 1'
+    }
+    throw new Error(`[computeP1Choice] Move "${move?.id}" is not available in active Showdown request. Available request moves: ${JSON.stringify(reqMoves)}`)
   }
-  return p1Choice
+  if (!move?.id) {
+    throw new Error(`[computeP1Choice] Cannot compute choice: No move provided and playerRequest is missing.`)
+  }
+  return `move ${move.id}`
 }
 
 export async function computeP2Choice(
@@ -32,7 +54,7 @@ export async function computeP2Choice(
   p2Skip: boolean,
   eMove: Move | null
 ): Promise<string> {
-  let p2Choice = 'struggle'
+  let p2Choice = ''
   const active = store.activeBattle.value
   const enemyTeam = store.activeBattle.value?.enemyTeam
   const isP2Trapped = !!(
@@ -53,7 +75,9 @@ export async function computeP2Choice(
         }
       }
     }
-  } else {
+  }
+
+  if (!p2Choice) {
     const reqMoves = active?.enemyRequest?.active?.[0]?.moves as ShowdownRequestMove[] | undefined
     const preferredMoveIndex = eMove
       ? reqMoves?.findIndex(move => move.id === eMove.id && !move.disabled) ?? -1
@@ -65,6 +89,8 @@ export async function computeP2Choice(
       p2Choice = `move ${legalMoveIndex + 1}`
     } else if (eMove?.id) {
       p2Choice = `move ${eMove.id}`
+    } else {
+      p2Choice = 'struggle'
     }
   }
 
@@ -74,8 +100,11 @@ export async function computeP2Choice(
       return 'pass';
     }
     const debugObj = window.__VITE_DEBUG__;
-    p2Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2');
-    console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Resolved enemy choice from the certified history: "${p2Choice}".`);
+    const historyChoice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2');
+    if (historyChoice) {
+      p2Choice = historyChoice;
+      console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Resolved enemy choice from the certified history: "${p2Choice}".`);
+    }
   } else if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.nextEnemyChoice) {
     if (!p2Skip) {
       p2Choice = window.__VITE_DEBUG__.nextEnemyChoice
@@ -85,7 +114,14 @@ export async function computeP2Choice(
       console.debug(`[E2E-MOCK-CENTRAL-DEBUG] Bypassed nextEnemyChoice interception in executeTurn because P2 is in wait state.`)
     }
   } else if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.enemyChoicesQueue?.length) {
-    p2Choice = window.__VITE_DEBUG__.enemyChoicesQueue.shift() ?? p2Choice
+    const nextInQueue = window.__VITE_DEBUG__.enemyChoicesQueue.shift();
+    if (nextInQueue) {
+      p2Choice = nextInQueue;
+    }
+  }
+
+  if (!p2Choice) {
+    throw new Error(`[computeP2Choice] Failed to resolve P2 choice for enemy Pokémon ${e.name} (${e.uid}).`);
   }
 
   return p2Choice
@@ -99,15 +135,19 @@ export async function resolveTurnChoices(
   isStruggle: boolean,
   isWild: boolean,
   p2Skip: boolean,
-  eMove: Move | null
+  eMove: Move | null,
+  moveIndex?: number
 ) {
   const active = store.activeBattle.value
-  let p1Choice = computeP1Choice(active, move, isStruggle)
+  let p1Choice = computeP1Choice(active, move, isStruggle, moveIndex)
   let p2Choice = await computeP2Choice(store, p, e, isWild, p2Skip, eMove)
 
   if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
     const debugObj = window.__VITE_DEBUG__ as Record<string, unknown> // open-record
-    p2Choice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2')
+    const historyChoice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2')
+    if (historyChoice) {
+      p2Choice = historyChoice
+    }
     console.debug(`[E2E-CERTIFIED-REPLAY] Resolved the enemy Showdown submission from certified history: ${p2Choice}. Player choice: ${p1Choice}`)
   }
 

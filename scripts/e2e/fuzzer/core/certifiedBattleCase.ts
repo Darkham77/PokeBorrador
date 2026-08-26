@@ -61,6 +61,26 @@ function isHistoryEntry(value: unknown): value is CertifiedBattleHistoryEntry {
     && typeof read(value, 'p1Choice') === 'string'
     && typeof read(value, 'p2Choice') === 'string'
     && typeof read(value, 'battleTurn') === 'number'
+    && (read(value, 'p1ActiveUid') === undefined || typeof read(value, 'p1ActiveUid') === 'string')
+    && (read(value, 'p2ActiveUid') === undefined || typeof read(value, 'p2ActiveUid') === 'string')
+    && (read(value, 'p1MoveId') === undefined || typeof read(value, 'p1MoveId') === 'string')
+    && (read(value, 'p2MoveId') === undefined || typeof read(value, 'p2MoveId') === 'string')
+    && (read(value, 'p1LockedMoveId') === undefined || typeof read(value, 'p1LockedMoveId') === 'string')
+    && (read(value, 'p2LockedMoveId') === undefined || typeof read(value, 'p2LockedMoveId') === 'string')
+    && (read(value, 'p1Trapped') === undefined || typeof read(value, 'p1Trapped') === 'boolean')
+    && (read(value, 'p2Trapped') === undefined || typeof read(value, 'p2Trapped') === 'boolean')
+    && (read(value, 'p1Volatiles') === undefined || isStringArray(read(value, 'p1Volatiles')))
+    && (read(value, 'p2Volatiles') === undefined || isStringArray(read(value, 'p2Volatiles')))
+    && (read(value, 'p1StatStages') === undefined || isObject(read(value, 'p1StatStages')))
+    && (read(value, 'p2StatStages') === undefined || isObject(read(value, 'p2StatStages')))
+    && (read(value, 'p1Status') === undefined || typeof read(value, 'p1Status') === 'string')
+    && (read(value, 'p2Status') === undefined || typeof read(value, 'p2Status') === 'string')
+    && (read(value, 'p1Hp') === undefined || typeof read(value, 'p1Hp') === 'number')
+    && (read(value, 'p2Hp') === undefined || typeof read(value, 'p2Hp') === 'number')
+    && (read(value, 'weather') === undefined || typeof read(value, 'weather') === 'string')
+    && (read(value, 'terrain') === undefined || typeof read(value, 'terrain') === 'string')
+    && (read(value, 'p1SideConditions') === undefined || isStringArray(read(value, 'p1SideConditions')))
+    && (read(value, 'p2SideConditions') === undefined || isStringArray(read(value, 'p2SideConditions')))
     && (p1GameAction === undefined || (
       isCertifiedBattleGameAction(p1GameAction)
       && read(value, 'p1Choice') === ''

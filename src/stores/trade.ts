@@ -8,6 +8,7 @@ import { useAudioStore } from '@/stores/audio.ts'
 import { useLoadingStore } from '@/stores/loading.ts'
 import { logger } from '@/logic/utils/logger'
 import { validateTradeOffer } from '@/logic/validation/schemas'
+import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality'
 import type { 
   TradeOffer
 } from '@/types/system/stores'
@@ -137,10 +138,21 @@ export const useTradeStore = defineStore('trade', () => {
       return false
     }
 
-    // Anti-Duplicate check
-    if (tradeOfferPoke.value && lockedUids.value.has(tradeOfferPoke.value.uid)) {
-      uiStore.notify('Este Pokémon ya está en otra oferta pendiente.', '⚠️')
-      return false
+    // Anti-Duplicate and Legality check
+    if (tradeOfferPoke.value) {
+      const isIllegal = tradeOfferPoke.value.isIllegal || (
+        tradeOfferPoke.value.id && tradeOfferPoke.value.species && tradeOfferPoke.value.moves
+          ? !checkPokemonLegality(tradeOfferPoke.value).isLegal
+          : false
+      )
+      if (isIllegal) {
+        uiStore.notify('No puedes comerciar o intercambiar un Pokémon ilegal.', '⚠️')
+        return false
+      }
+      if (lockedUids.value.has(tradeOfferPoke.value.uid)) {
+        uiStore.notify('Este Pokémon ya está en otra oferta pendiente.', '⚠️')
+        return false
+      }
     }
 
     // MANDATORY: Deduct items locally before saving to SQLite so DBs match

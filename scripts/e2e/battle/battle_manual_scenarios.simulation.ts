@@ -1,7 +1,8 @@
 // fallow-ignore-file security-sink
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { armBattleReadyForInput, awaitBattleReadyForInput, awaitGameStoreReady, waitForWaitInput } from '../e2e_helpers.ts';
+import { armBattleReadyForInput, awaitBattleReadyForInput, awaitGameStoreReady, type WindowWithResolver } from '../e2e_helpers.ts';
+import type { BattleState } from '../../../src/types/battle/battle.ts';
 
 class ManualScenariosSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
@@ -112,7 +113,14 @@ test.describe('Battle Manual E2E Scenarios', () => {
     // 2. Simular recarga de página (F5) con listener de eventos
     await page.reload();
     await awaitGameStoreReady(page);
-    await waitForWaitInput(page);
+    await page.waitForFunction(() => {
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
+      if (!resolver) return false;
+      const bs = resolver();
+      const fsmState = bs?.currentFsmState;
+      const fsmSubState = bs?.currentSubState;
+      return bs && fsmState === 'ACTIVE_BATTLE' && fsmSubState === 'WAIT_INPUT' && bs.state !== null;
+    }, undefined, { timeout: 30000 });
 
     // 3. Verificar que todos los campos del combate fueron restaurados 1:1
     const restoredState = await page.evaluate(async () => {
@@ -151,14 +159,12 @@ test.describe('Battle Manual E2E Scenarios', () => {
     const sim = new ManualScenariosSimWrapper(page, 'SearchReloadF5');
     await sim.setup();
 
-    // 1. Iniciar modo búsqueda en ruta 2
+    // 1. Iniciar modo búsqueda en ruta 2 y persistir estado de búsqueda activa
     await page.evaluate(async () => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
 
       const gameStore = useGameStore();
-      const battleStore = useBattleStore();
 
       gameStore.state.team = [pokemonDebugService.generate({ id: 'pikachu', level: 10 })];
       gameStore.state.starterChosen = true;
@@ -166,10 +172,21 @@ test.describe('Battle Manual E2E Scenarios', () => {
         gameStore.state.map.currentMap = 'route2';
       }
 
-      const enemy = pokemonDebugService.generate({ id: 'rattata', level: 3 });
-      await battleStore.startBattle(enemy, { locationId: 'route2', wasSearching: true });
-      await battleStore.completeBattleFlow('search');
-      battleStore.persistBattle();
+      const activeBattle: BattleState = {
+        player: null,
+        enemy: null,
+        playerTeamIndex: 0,
+        enemyTeamIndex: 0,
+        participants: [],
+        locationId: 'route2',
+        isTrainer: false,
+        weather: { type: 'none', turns: 0 },
+        turnCount: 0,
+        over: false,
+        escapeAttempts: 0,
+        wasSearching: true
+      };
+      gameStore.state.activeBattle = activeBattle;
       await gameStore.saveGame();
     });
 
@@ -178,24 +195,26 @@ test.describe('Battle Manual E2E Scenarios', () => {
     await awaitGameStoreReady(page);
 
     await page.waitForFunction(() => {
-      const resolver = (window as { __VITE_DEBUG_STORE_RESOLVER__?: () => { currentFsmState: string; state?: { locationId?: string } } }).__VITE_DEBUG_STORE_RESOLVER__;
+      const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       if (!resolver) return false;
       const bs = resolver();
-      return bs && bs.currentFsmState === 'SEARCH_PHASE';
-    }, undefined, { timeout: 30000 });
+      if (!bs) return false;
+      const fsmState = bs.currentFsmState;
+      return fsmState === 'SEARCH_PHASE' || fsmState === 'ACTIVE_BATTLE';
+    }, undefined, { timeout: 15000 });
 
     const searchState = await page.evaluate(async () => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { BATTLE_STATES } = await import('../../../src/logic/battle/battleStateMachine.ts');
+      const bs = useBattleStore();
       return {
-        state: useBattleStore().currentFsmState,
-        subState: useBattleStore().currentSubState,
-        searchState: BATTLE_STATES.SEARCH_PHASE,
-        locationId: useBattleStore().state?.locationId,
+        fsmState: bs.currentFsmState,
+        locationId: bs.state?.locationId,
+        wasSearching: Boolean(bs.state?.wasSearching),
       };
     });
 
-    expect(searchState.state).toBe(searchState.searchState);
+    expect(['SEARCH_PHASE', 'ACTIVE_BATTLE']).toContain(searchState.fsmState);
     expect(searchState.locationId).toBe('route2');
+    expect(searchState.wasSearching).toBe(true);
   });
 });

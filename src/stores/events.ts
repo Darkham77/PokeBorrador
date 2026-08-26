@@ -10,8 +10,10 @@ import { useMapStore } from '@/stores/map.ts'
 import { useErrorStore } from '@/stores/errorStore.ts'
 import { isEventActiveNow, getGlobalMultipliers, getSpeciesBoosts, type Event as GameEvent } from '@/logic/events/eventEngine'
 import { getServerTime } from '@/logic/utils/timeUtils'
-import type { PendingAward, CompetitionEntry } from '@/types/system/stores'
+import type { PendingAward, CompetitionEntry, PastEventHistoryItem, PastCompetitionWinner } from '@/types/system/stores'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+
+const MAX_PAST_EVENTS_COUNT = 10
 
 export const useEventStore = defineStore('events', () => {
   const gameStore = useGameStore()
@@ -21,6 +23,7 @@ export const useEventStore = defineStore('events', () => {
 
   const allEvents = ref<GameEvent[]>([])
   const activeEvents = ref<GameEvent[]>([])
+  const pastEvents = ref<PastEventHistoryItem[]>([])
   const pendingAwards = ref<PendingAward[]>([])
   const userEntries = ref<Record<string, CompetitionEntry>>({})
   const isLoading = ref(false)
@@ -43,11 +46,11 @@ export const useEventStore = defineStore('events', () => {
     if (isLoading.value) return
     isLoading.value = true
     
-      const db = gameStore.db
-      if (!db) {
-        isLoading.value = false
-        return
-      }
+    const db = gameStore.db
+    if (!db) {
+      isLoading.value = false
+      return
+    }
     try {
       // 1. Fetch from config (DBRouter handles source)
       const res = await db.from('events_config').select('*')
@@ -63,6 +66,9 @@ export const useEventStore = defineStore('events', () => {
 
       // 4. Check for unclaimed prizes
       await checkPendingAwards()
+
+      // 5. Fetch past concluded events history (up to 10)
+      await fetchPastEvents()
     } catch (e) {
       logger.error('Events', `Error initializing events: ${(e as Error).message}`)
     } finally {
@@ -168,7 +174,7 @@ export const useEventStore = defineStore('events', () => {
   /**
    * Syncs pending awards for the user.
    */
-  async function checkPendingAwards() {
+  async function checkPendingAwards(notifyOnPending = false) {
     if (!authStore.user || !gameStore.db) return
 
     const { data: awards, error } = await gameStore.db.from('awards')
@@ -177,23 +183,136 @@ export const useEventStore = defineStore('events', () => {
       .is('received_at', null)
 
     if (!error) {
-      pendingAwards.value = (awards || []) as PendingAward[]
+      const list = (awards || []) as PendingAward[]
+      pendingAwards.value = list
+      if (notifyOnPending && list.length > 0) {
+        const count = list.length
+        uiStore.notify(
+          count === 1
+            ? '¡Tienes 1 recompensa de evento pendiente por reclamar!'
+            : `¡Tienes ${count} recompensas de eventos pendientes por reclamar!`,
+          '🎁'
+        )
+      }
     }
   }
 
   /**
-   * Claim a specific award using the backend RPC.
+   * Fetches the last concluded competition events with rewards (max 10).
+   */
+  async function fetchPastEvents() {
+    if (!gameStore.db) return
+
+    try {
+      const { data: results, error } = await gameStore.db
+        .from('competition_results')
+        .select('*')
+        .order('ended_at', { ascending: false })
+        .limit(MAX_PAST_EVENTS_COUNT)
+
+      if (error || !results) {
+        return
+      }
+
+      // Fetch all awards for the user to determine claimed/pending status
+      let userAwards: PendingAward[] = []
+      if (authStore.user) {
+        const { data: allAwards } = await gameStore.db.from('awards')
+          .select('*')
+          .eq('winner_id', authStore.user.id)
+        userAwards = (allAwards || []) as PendingAward[]
+      }
+
+      const historyList: PastEventHistoryItem[] = []
+      for (const res of results as { id: string; event_id: string; winners: unknown; ended_at: string }[]) {
+        const eventCfg = allEvents.value.find(e => e.id === res.event_id)
+        
+        let parsedWinners: PastCompetitionWinner[] = []
+        if (typeof res.winners === 'string') {
+          try {
+            parsedWinners = JSON.parse(res.winners) as PastCompetitionWinner[]
+          } catch {
+            parsedWinners = []
+          }
+        } else if (Array.isArray(res.winners)) {
+          parsedWinners = res.winners as PastCompetitionWinner[]
+        }
+
+        const matchingAward = userAwards.find(a => a.event_id === res.event_id)
+        const isWinner = authStore.user ? parsedWinners.some(w => w.player_id === authStore.user?.id) : false
+        const isClaimed = matchingAward ? matchingAward.received_at !== null : false
+        const hasUnclaimedAward = matchingAward ? matchingAward.received_at === null : isWinner
+
+        historyList.push({
+          id: res.id,
+          event_id: res.event_id,
+          event_name: eventCfg?.name || res.event_id,
+          event_icon: eventCfg?.icon || '🏆',
+          event_description: eventCfg?.description || '',
+          ended_at: res.ended_at,
+          winners: parsedWinners,
+          myAward: matchingAward || null,
+          isWinner,
+          hasUnclaimedAward,
+          isClaimed
+        })
+      }
+
+      pastEvents.value = historyList
+    } catch (e) {
+      logger.warn('Events', `Error fetching past competition results: ${(e as Error).message}`)
+    }
+  }
+
+  /**
+   * Claim a specific award using the backend RPC or direct database update.
    */
   async function claimAward(awardId: string): Promise<string | null> {
     if (!gameStore.db) return null
-    const { data, error } = await gameStore.db.rpc('claim_award', { p_award_id: awardId })
-    const claimResult = data as { ok?: boolean; prize?: string } | null // domain-ok
-    
-    if (!error && claimResult?.ok) {
-      pendingAwards.value = pendingAwards.value.filter(a => a.id !== awardId)
-      uiStore.notify('¡Recompensa reclamada!', '🎁')
-      // Return details for local state updates (e.g., adding to inventory)
-      return claimResult.prize ?? null
+    try {
+      const { data, error } = await gameStore.db.rpc('claim_award', { p_award_id: awardId })
+      const claimResult = data as { ok?: boolean; success?: boolean; prize?: string } | null // domain-ok
+      
+      if (!error && (claimResult?.ok || claimResult?.success)) {
+        pendingAwards.value = pendingAwards.value.filter(a => a.id !== awardId)
+        pastEvents.value = pastEvents.value.map(pe => {
+          if (pe.myAward?.id === awardId) {
+            return {
+              ...pe,
+              hasUnclaimedAward: false,
+              isClaimed: true,
+              myAward: pe.myAward ? { ...pe.myAward, received_at: Temporal.Now.instant().toString() } : null
+            }
+          }
+          return pe
+        })
+        uiStore.notify('¡Recompensa reclamada!', '🎁')
+        return claimResult?.prize ?? 'claimed'
+      }
+
+      // Direct fallback if RPC is unconfigured
+      const { error: updateErr } = await gameStore.db.from('awards')
+        .update({ received_at: Temporal.Now.instant().toString(), claimed: true })
+        .eq('id', awardId)
+
+      if (!updateErr) {
+        pendingAwards.value = pendingAwards.value.filter(a => a.id !== awardId)
+        pastEvents.value = pastEvents.value.map(pe => {
+          if (pe.myAward?.id === awardId) {
+            return {
+              ...pe,
+              hasUnclaimedAward: false,
+              isClaimed: true,
+              myAward: pe.myAward ? { ...pe.myAward, received_at: Temporal.Now.instant().toString() } : null
+            }
+          }
+          return pe
+        })
+        uiStore.notify('¡Recompensa reclamada!', '🎁')
+        return 'claimed'
+      }
+    } catch (e) {
+      logger.error('Events', `Error claiming award: ${(e as Error).message}`)
     }
     return null
   }
@@ -216,11 +335,13 @@ export const useEventStore = defineStore('events', () => {
   return {
     allEvents,
     activeEvents,
+    pastEvents,
     pendingAwards,
     userEntries,
     isLoading,
     globalMultipliers,
     fetchEvents,
+    fetchPastEvents,
     // fallow-ignore-next-line unused-store-members
     fetchUserEntries,
     submitCompetitionEntry,

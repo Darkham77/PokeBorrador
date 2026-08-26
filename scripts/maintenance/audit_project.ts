@@ -603,7 +603,7 @@ function getViolationCategory(v: Violation): string {
   const msg = v.message;
   if (msg.includes('Número mágico') || msg.includes('mágico')) return 'Números mágicos sin constante';
   if (msg.includes('Nombre de constante impropio') || msg.includes('hardcodear el valor')) return 'Nombres de constantes con valor numérico';
-  if (msg.includes('Domain ID fallback') || msg.includes('noDomainIdFallbacks')) return 'Fallback silencioso de Domain ID';
+  if (msg.includes('Domain ID fallback') || msg.includes('noDomainIdFallbacks') || msg.includes('FALLBACK DE ID A NOMBRE')) return 'Fallback silencioso de Domain ID / Nombre';
   if (msg.includes('Unidad legacy')) return 'Viewport (dvh/dvw)';
   if (msg.includes('will-change')) return 'Falta will-change (GPU)';
   if (msg.includes('Temporal')) return 'Uso de Date (Temporal)';

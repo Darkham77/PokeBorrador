@@ -12,6 +12,8 @@ import type { AbilityId } from '../../../../src/data/battle/abilities.ts';
 import type { PokemonMoveId } from '../../../../src/types/pokemon/pokemon.ts';
 import { toPokemonType, type PokemonType } from '../../../../src/data/battle/types.ts';
 import type { FuzzerPokemonSet, TestBatch } from './fuzzer_team_generator.ts';
+import { pokemonDataProvider } from '../../../../src/logic/providers/pokemonDataProvider.ts';
+import { PokemonLegalityValidator } from '../../../../src/logic/battle/helpers/pokemonLegalityValidator.ts';
 
 export interface ItemTestBatch extends Pick<TestBatch,
   'playerTeam' | 'enemyTeam' | 'seed' | 'playerChoices' | 'enemyChoices' | 'history' | 'steps' | 'ended' | 'winner' | 'finalState'> {
@@ -72,7 +74,7 @@ const ENEMY_SUPER_EFFECTIVE_TRIGGER_MOVES = {
 } as const satisfies Partial<Record<ItemId, PokemonMoveId>>;
 
 const REQUIRED_HOLDER_SPECIES = {
-  aguavberry: 'abra', apicotberry: 'abra', choicescarf: 'lucario', cornerstonemask: 'ogerponcornerstone', custapberry: 'abra', eviolite: 'porygon2', expertbelt: 'mew', figyberry: 'abra', floatstone: 'aggron', ganlonberry: 'abra', griseouscore: 'giratina', griseousorb: 'giratina', heavydutyboots: 'charizard', iapapaberry: 'abra', ironball: 'charizard', lansatberry: 'abra', leppaberry: 'smeargle', magoberry: 'abra', micleberry: 'abra', oranberry: 'abra', petayaberry: 'abra', ringtarget: 'snorlax', shedshell: 'scizor', sitrusberry: 'abra', starfberry: 'abra', wikiberry: 'abra',
+  adrenalineorb: 'pinsir', aguavberry: 'abra', apicotberry: 'abra', boosterenergy: 'fluttermane', choicescarf: 'lucario', cornerstonemask: 'ogerponcornerstone', custapberry: 'abra', eviolite: 'porygon2', expertbelt: 'mew', figyberry: 'abra', floatstone: 'aggron', ganlonberry: 'abra', griseouscore: 'giratina', griseousorb: 'giratina', heavydutyboots: 'charizard', iapapaberry: 'abra', ironball: 'charizard', lansatberry: 'abra', leppaberry: 'smeargle', magoberry: 'abra', micleberry: 'abra', oranberry: 'abra', petayaberry: 'abra', ringtarget: 'snorlax', shedshell: 'scizor', sitrusberry: 'abra', starfberry: 'abra', wikiberry: 'abra',
   hearthflamemask: 'ogerponhearthflame', lightball: 'pikachu', rustedshield: 'zamazenta', rustedsword: 'zacian',
   utilityumbrella: 'charizard', wellspringmask: 'ogerponwellspring',
 } as const satisfies Partial<Record<ItemId, PokemonSpeciesId>>;
@@ -96,12 +98,28 @@ const REQUIRED_ENEMY_ITEMS = {
 const MAX_SPECIAL_ATTACK_ENEMY_ITEM_IDS = ['focussash'] as const satisfies readonly ItemId[];
 const MAX_ATTACK_ENEMY_ITEM_IDS = ['aguavberry', 'apicotberry', 'custapberry', 'figyberry', 'ganlonberry', 'iapapaberry', 'lansatberry', 'magoberry', 'micleberry', 'oranberry', 'petayaberry', 'sitrusberry', 'starfberry', 'wikiberry'] as const satisfies readonly ItemId[];
 
-function getRequiredHolderAbility(itemId: ItemId): AbilityId {
-  return Object.entries(REQUIRED_HOLDER_ABILITIES).find(([candidateId]) => candidateId === itemId)?.[1] ?? 'noability';
+function getSpeciesLegalGender(speciesId: string): GenderName {
+  const s = Dex.species.get(speciesId);
+  if (!s || !s.exists) return 'N';
+  if (s.gender === 'N' || s.gender === 'M' || s.gender === 'F') return s.gender as GenderName;
+  if (s.genderRatio?.F === 1) return 'F';
+  if (s.genderRatio?.M === 1) return 'M';
+  if (s.genderRatio?.M === 0 && s.genderRatio?.F === 0) return 'N';
+  return 'M';
 }
 
-function getRequiredEnemyAbility(itemId: ItemId): AbilityId {
-  return Object.entries(REQUIRED_ENEMY_ABILITIES).find(([candidateId]) => candidateId === itemId)?.[1] ?? 'naturalcure';
+function getRequiredHolderAbility(itemId: ItemId, speciesId: PokemonSpeciesId): AbilityId {
+  const explicit = Object.entries(REQUIRED_HOLDER_ABILITIES).find(([candidateId]) => candidateId === itemId)?.[1];
+  if (explicit) return explicit;
+  const legal = pokemonDataProvider.getSpeciesAbilities(speciesId);
+  return (legal[0] ?? 'synchronize') as AbilityId;
+}
+
+function getRequiredEnemyAbility(itemId: ItemId, enemySpeciesId: PokemonSpeciesId): AbilityId {
+  const explicit = Object.entries(REQUIRED_ENEMY_ABILITIES).find(([candidateId]) => candidateId === itemId)?.[1];
+  if (explicit) return explicit;
+  const legal = pokemonDataProvider.getSpeciesAbilities(enemySpeciesId);
+  return (legal[0] ?? 'naturalcure') as AbilityId;
 }
 
 function getRequiredEnemySpecies(itemId: ItemId, fallback: PokemonSpeciesId): PokemonSpeciesId {
@@ -178,12 +196,23 @@ function requiresSupportBench(itemIds: readonly ItemId[], triggerItemIds: readon
   return itemIds.some(itemId => triggerItemIds.some(triggerItemId => triggerItemId === itemId));
 }
 
-function createItemlessSupportPokemon(gender: GenderName): FuzzerPokemonSet {
+function createItemlessSupportPokemon(species: PokemonSpeciesId = 'mew'): FuzzerPokemonSet {
   const uid = crypto.randomUUID();
+  const gender = getSpeciesLegalGender(species);
+  const legalAbilities = pokemonDataProvider.getSpeciesAbilities(species);
+  const ability = (legalAbilities[0] ?? 'synchronize') as AbilityId;
   return {
-    name: getShowdownNickname(uid), species: 'mew', level: 100, gender, item: '', ability: 'noability', nature: 'serious',
+    name: getShowdownNickname(uid),
+    species,
+    level: 100,
+    gender,
+    item: '',
+    ability,
+    nature: 'serious',
     evs: { hp: 252, atk: 252, def: 252, spa: 252, spd: 252, spe: 252 },
-    ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, moves: [...DEFAULT_PLAYER_MOVES], uid,
+    ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+    moves: [...DEFAULT_PLAYER_MOVES],
+    uid,
   };
 }
 
@@ -367,15 +396,18 @@ export function generateItemBatches(itemPool: ItemId[], batchSize = 6): ItemTest
       const pUid = crypto.randomUUID();
       const pNickname = getShowdownNickname(pUid);
 
+      const pHolderAbility = getRequiredHolderAbility(itemId, triggerPlan.playerSpecies);
+      const pHolderGender = getSpeciesLegalGender(triggerPlan.playerSpecies);
+
       // The scripted agent dispatches every move once, exercising physical,
       // special, status, and type-sensitive item hooks before natural completion.
       playerTeam.push({
         name: pNickname,
         species: triggerPlan.playerSpecies,
         level: 100,
-        gender: 'N',
+        gender: pHolderGender,
         item: itemId,
-        ability: getRequiredHolderAbility(itemId),
+        ability: pHolderAbility,
         nature: 'serious',
         evs: (MAX_ATTACK_ENEMY_ITEM_IDS as readonly string[]).includes(itemId) // no-domain
           ? { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
@@ -388,7 +420,7 @@ export function generateItemBatches(itemPool: ItemId[], batchSize = 6): ItemTest
       itemIdx++;
     }
 
-    // El equipo enemigo simplemente es un Blissey
+    // El equipo enemigo
     for (let e = 0; e < playerTeam.length; e++) {
       const enemyMoves = plannedEnemyMoves[e];
       const enemySpecies = plannedEnemySpecies[e];
@@ -404,13 +436,17 @@ export function generateItemBatches(itemPool: ItemId[], batchSize = 6): ItemTest
       const enemySpecialAttack = requiresMaxEnemySpecialAttack(itemId) ? 252 : 0;
       const enemyAttack = requiresMaxEnemyAttack(itemId) ? 252 : 0;
 
+      const eSpecies = getRequiredEnemySpecies(itemId, enemySpecies);
+      const eAbility = getRequiredEnemyAbility(itemId, eSpecies);
+      const eGender = getSpeciesLegalGender(eSpecies);
+
       enemyTeam.push({
         name: eNickname,
-        species: getRequiredEnemySpecies(itemId, enemySpecies),
+        species: eSpecies,
         level: 100,
-        gender: 'F',
+        gender: eGender,
         item: getRequiredEnemyItem(itemId),
-        ability: getRequiredEnemyAbility(itemId),
+        ability: eAbility,
         nature: 'serious',
         evs: { hp: 252, atk: enemyAttack, def: 252, spa: enemySpecialAttack, spd: 4, spe: 0 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
@@ -420,13 +456,15 @@ export function generateItemBatches(itemPool: ItemId[], batchSize = 6): ItemTest
     }
 
     if (requiresSupportBench(batchItems, PLAYER_BENCH_TRIGGER_ITEM_IDS)) {
-      playerTeam.push(createItemlessSupportPokemon('N'));
+      playerTeam.push(createItemlessSupportPokemon('mew'));
     }
     if (requiresSupportBench(batchItems, ENEMY_BENCH_TRIGGER_ITEM_IDS)) {
-      enemyTeam.push(createItemlessSupportPokemon('F'));
+      enemyTeam.push(createItemlessSupportPokemon('blissey'));
     }
 
     if (playerTeam.length > 0) {
+      PokemonLegalityValidator.assertTeamLegality(playerTeam, `Item Batch ${itemIdx} Player Team`);
+      PokemonLegalityValidator.assertTeamLegality(enemyTeam, `Item Batch ${itemIdx} Enemy Team`);
       batches.push({
         playerTeam,
         enemyTeam,

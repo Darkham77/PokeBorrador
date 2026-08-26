@@ -18,7 +18,7 @@ class GymProgressionSimulation extends BaseBattleSimulation {
       const mewtwo = pokemonDebugService.generate({
         id: 'mewtwo',
         level: 100,
-        moves: ['psychic', 'shadowball', 'solarbeam', 'surf']
+        moves: ['psychic', 'shadowball', 'solarbeam', 'icebeam']
       });
 
       gameStore.updateState({ team: [mewtwo], starterChosen: true });
@@ -28,11 +28,22 @@ class GymProgressionSimulation extends BaseBattleSimulation {
 
   public async challengeBrock(): Promise<void> {
     await this.disableAutoMode();
-    await this.page.evaluate(async () => {
-      const { useGymsStore } = await import('../../../src/stores/gyms.ts');
-      const gymsStore = useGymsStore();
-      await gymsStore.challengeGym('pewter', 'easy');
+    const res = await this.page.evaluate(async () => {
+      try {
+        const { useGymsStore } = await import('../../../src/stores/gyms.ts');
+        const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+        const gymsStore = useGymsStore();
+        const battleStore = useBattleStore();
+        console.log('[E2E-CHALLENGE] Starting challengeGym pewter easy');
+        await gymsStore.challengeGym('pewter', 'easy');
+        console.log('[E2E-CHALLENGE] challengeGym finished. ActiveBattle:', Boolean(battleStore.state), 'FSM:', battleStore.currentFsmState, battleStore.currentSubState);
+        return { success: true, activeBattle: Boolean(battleStore.state), fsm: battleStore.currentFsmState };
+      } catch (err: unknown) {
+        console.error('[E2E-CHALLENGE] Error in challengeGym:', err);
+        return { success: false, error: String(err) };
+      }
     });
+    console.log('[E2E-CHALLENGE] Result from page:', JSON.stringify(res));
   }
 
   public async verifyBadgeEarned(): Promise<{ badgesCount: number; hasBadgeId: boolean }> {

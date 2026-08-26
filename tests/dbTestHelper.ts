@@ -4,7 +4,7 @@
  * Utility to provide isolated DBRouter instances for testing.
  */
 import { vi } from 'vitest';
-import { DBRouter } from '@/logic/db/dbRouter';
+import { DBRouter } from '@/logic/db/dbRouter.ts';
 import { resetSQLite } from '@/logic/db/sqliteEngine';
 import type { SupabaseClient } from '@supabase/supabase-js';
 

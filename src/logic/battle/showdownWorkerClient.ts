@@ -58,6 +58,7 @@ function syncPokemonState(
         match.hp = monState.hp;
       }
       match.status = monState.status as Pokemon['status'];
+      match.fainted = monState.fainted || monState.hp <= 0;
       if (monState.fainted || monState.hp <= 0) {
         match.hp = 0;
       }
@@ -97,23 +98,24 @@ export async function syncTeamsFromLastWorkerState(): Promise<void> {
     battleStore = useBattleStore();
   }
 
+  const activeBattle = battleStore?.state;
   const p1State = lastSyncTeamStates.p1;
   if (p1State) {
     if (gameStore.state?.team) {
       syncPokemonState(p1State, gameStore.state.team);
     }
-    if (battleStore?.state?.playerTeam) {
-      syncPokemonState(p1State, battleStore.state.playerTeam);
+    if (activeBattle?.playerTeam) {
+      syncPokemonState(p1State, activeBattle.playerTeam);
     }
-    syncActiveCombatant(battleStore.state?.player, p1State);
+    syncActiveCombatant(activeBattle?.player, p1State);
   }
 
   const p2State = lastSyncTeamStates.p2;
   if (p2State) {
-    if (battleStore.state?.enemyTeam) {
-      syncPokemonState(p2State, battleStore.state.enemyTeam);
+    if (activeBattle?.enemyTeam) {
+      syncPokemonState(p2State, activeBattle.enemyTeam);
     }
-    syncActiveCombatant(battleStore.state?.enemy, p2State);
+    syncActiveCombatant(activeBattle?.enemy, p2State);
   }
 }
 

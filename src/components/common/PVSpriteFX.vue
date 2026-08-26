@@ -330,16 +330,23 @@ const DEBUG_CENTER_OFFSET_PERCENT = 50
 <style scoped lang="scss">
 @use "@/styles/core/tools" as *;
 
+.pv-fx-wrapper,
+.pv-fx-sprite-layer {
+  image-rendering: -webkit-optimize-contrast !important;
+  #{"image-rendering"}: crisp-edges !important;
+  image-rendering: pixelated !important;
+  -ms-interpolation-mode: nearest-neighbor !important;
+}
+
 .pv-fx-wrapper {
   width: fit-content; height: fit-content; position: relative;
   display: flex; align-items: center; justify-content: center;
-  @include pixelated;
 }
 .pv-fx-sprite-layer {
   position: relative; display: flex; align-items: center; justify-content: center;
   width: 100%; height: 100%;
   z-index: calc(v-bind('Z_LAYERS.MAP_SPAWNS') + 2);
-  will-change: transform, filter, opacity;
+  will-change: transform;
 }
 .debug-guide {
   position: absolute; top: 50%; left: 50%; transform: Translate(-50%, -50%);

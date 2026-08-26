@@ -9,7 +9,6 @@ import { TABLES_SCHEMA } from './schema.ts'
 import { DATABASE_MIGRATIONS } from './migrations_data.ts'
 import { logger } from '../utils/logger.ts'
 import { ensureSchemaIntegrity } from './sqliteSchemaIntegrity.ts'
-import { useLoadingStore } from '@/stores/loading'
 
 export interface SQLiteResult {
   columns: string[];
@@ -45,6 +44,16 @@ export function canUseDevDatabaseBridge(isDevelopment: boolean, _isE2E: boolean)
 
 export function canRefreshCleanDatabaseTemplate(isDevelopment: boolean, isE2E: boolean): boolean {
   return isDevelopment && isE2E
+}
+
+async function getLoadingStore(): Promise<LoadingStore | null> {
+  if (typeof window === 'undefined') return null;
+  try {
+    const { useLoadingStore } = await import('@/stores/loading.ts');
+    return useLoadingStore();
+  } catch (_) {
+    return null;
+  }
 }
 
 
@@ -247,8 +256,8 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
               
               // Show importing overlay to the user
               try {
-                if (typeof window !== 'undefined') {
-                  const loadingStore = useLoadingStore()
+                const loadingStore = await getLoadingStore()
+                if (loadingStore) {
                   loadingStore.start('db_import', 'Importando Base de Datos...', 'Instalando copia de seguridad, por favor espera', true, '💾')
                 }
               } catch (e) {
@@ -361,14 +370,7 @@ async function runMigrations(): Promise<boolean> {
   const appliedRes = _sqliteDb.exec("SELECT id FROM _migrations")
   const applied = appliedRes[0]?.values.map((v: unknown[]) => v[0] as string) || []
 
-  let loadingStore: LoadingStore | null = null
-  try {
-    if (typeof window !== 'undefined') {
-      loadingStore = useLoadingStore()
-    }
-  } catch (_) {
-    // Fail silently in node test context
-  }
+  const loadingStore = await getLoadingStore()
   
   let hasAppliedMigrations = false
   for (const m of DATABASE_MIGRATIONS as { id: string, sql: string, sqlite_sql?: string }[]) {

@@ -12,17 +12,18 @@ describe('Black Market (Team Rocket) Sales Logic', () => {
     const gs = useGameStore()
     Object.assign(gs.state, {
       money: 1000,
+      starterChosen: true,
       box: [
         // Pidgey Lv 10, IVs: 10 each = 60 total
-        { id: 'pidgey', name: 'Pidgey', level: 10, ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 } },
+        { id: 'pidgey', name: 'Pidgey', level: 10, ability: 'keeneye', nature: 'hardy', moves: [{ id: 'tackle', name: 'Tackle' }], ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 } },
         // Rattata Lv 5, IVs: 31 each = 186 total (Perfect)
-        { id: 'rattata', name: 'Rattata', level: 5, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } },
+        { id: 'rattata', name: 'Rattata', level: 5, ability: 'runaway', nature: 'hardy', moves: [{ id: 'tackle', name: 'Tackle' }], ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } },
         // Mewtwo Lv 100, IVs: 31 each = 186 total
-        { id: 'mewtwo', name: 'Mewtwo', level: 100, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } }
+        { id: 'mewtwo', name: 'Mewtwo', level: 100, ability: 'pressure', nature: 'hardy', moves: [{ id: 'psychic', name: 'Psychic' }], ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 } }
       ],
       team: [
         // Bulbasaur Lv 50, IVs: 0 each = 0 total
-        { id: 'bulbasaur', name: 'Bulbasaur', level: 50, ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } }
+        { id: 'bulbasaur', name: 'Bulbasaur', level: 50, ability: 'overgrow', nature: 'hardy', moves: [{ id: 'tackle', name: 'Tackle' }], ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 } }
       ],
       playerClass: 'rocket',
       classData: { blackMarketSales: 0 }

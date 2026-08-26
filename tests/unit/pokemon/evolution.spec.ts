@@ -16,18 +16,6 @@ vi.mock('@/logic/db/supabase', () => ({
   }
 }))
 
-vi.mock('@/logic/db/dbRouter', () => {
-  return {
-    DBRouter: class {
-      constructor() {}
-      from() { return this }
-      select() { return this }
-      eq() { return this }
-      single() { return Promise.resolve({ data: null, error: null }) }
-      rpc() { return Promise.resolve({ data: null, error: null }) }
-    }
-  }
-})
 
 vi.mock('@/logic/db/sqliteEngine', () => ({
   initSQLite: vi.fn().mockResolvedValue(true)

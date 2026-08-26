@@ -69,7 +69,7 @@ export function findSpriteCollisions(items: ShopItem[]): SpriteCollisionGroup[] 
     const rawCheck = checkRawAssetExistence(item.id);
     spriteMap.get(sprite)!.push({
       id: item.id,
-      name: item.name || item.id,
+      name: item.name ?? 'Sin nombre', // text-ok
       cat: item.cat || 'unknown',
       hasRawAsset: rawCheck.exists,
       rawAssetPath: rawCheck.path,
@@ -100,7 +100,7 @@ export function findMissingSprites(items: ShopItem[]): MissingSpriteError[] {
     if (!sprite) {
       missing.push({
         id: item.id,
-        name: item.name || item.id,
+        name: item.name ?? 'Sin nombre', // text-ok
         expectedPath: '',
         reason: 'missing_property',
       });
@@ -111,7 +111,7 @@ export function findMissingSprites(items: ShopItem[]): MissingSpriteError[] {
     if (!existsSync(physicalPath)) {
       missing.push({
         id: item.id,
-        name: item.name || item.id,
+        name: item.name ?? 'Sin nombre', // text-ok
         sprite,
         expectedPath: physicalPath,
         reason: 'file_not_found',

@@ -122,7 +122,7 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
     species: speciesName,
     level: poke.level,
     shiny: poke.isShiny || false,
-    gender: poke.gender === 'm' ? 'M' : poke.gender === 'f' ? 'F' : '',
+    gender: poke.gender === 'm' ? 'M' : poke.gender === 'f' ? 'F' : 'N',
     item: poke.heldItem ? toID(poke.heldItem) : '',
     ability: poke.ability ? toID(poke.ability) : '',
     nature: rawNature,
@@ -149,14 +149,16 @@ export function mapToShowdownSet(poke: GamePokemon): PokemonSet {
     },
     moves: moves,
     uid: poke.uid,
-    stats: {
-      hp: poke.maxHp,
-      atk: poke.atk,
-      def: poke.def,
-      spa: poke.spa,
-      spd: poke.spd,
-      spe: poke.spe
-    }
+    stats: (poke as { stats?: Record<string, number> }).stats
+      ? { ...((poke as { stats?: Record<string, number> }).stats) }
+      : {
+          hp: poke.maxHp,
+          atk: poke.atk,
+          def: poke.def,
+          spa: poke.spa,
+          spd: poke.spd,
+          spe: poke.spe
+        }
   };
 
   return showdownSet;

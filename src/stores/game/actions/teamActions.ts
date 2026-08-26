@@ -7,7 +7,7 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
     const uiStore = useUIStore()
     if (uiStore.pvpAutoFillDisabled) return
     
-    const allPokes = [...state.team, ...(state.box || [])].filter((p): p is Pokemon => p != null)
+    const allPokes = [...state.team, ...(state.box || [])].filter((p): p is Pokemon => p != null && !p.isIllegal)
     if (allPokes.length === 0) {
       state.pvpTeam = []
       return
@@ -34,11 +34,12 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
   function swapPvpSlot(slotIndex: number, newPokemonUid: string) {
     if (slotIndex < 0 || slotIndex >= 3) return
     const allPokes = [...state.team, ...(state.box || [])]
-    const exists = allPokes.some(p => p?.uid === newPokemonUid)
+    const poke = allPokes.find(p => p?.uid === newPokemonUid)
+    if (!poke || poke.isIllegal) return
     const pvpTeam = state.pvpTeam || []
     const alreadyIn = pvpTeam.includes(newPokemonUid)
 
-    if (exists && !alreadyIn) {
+    if (!alreadyIn) {
       if (!state.pvpTeam) state.pvpTeam = []
       state.pvpTeam[slotIndex] = newPokemonUid
       scheduleSave()
@@ -75,7 +76,7 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
   }
 
   function autoFillWarTeam() {
-    const allPokes = [...state.team, ...(state.box || [])].filter((p): p is Pokemon => p != null)
+    const allPokes = [...state.team, ...(state.box || [])].filter((p): p is Pokemon => p != null && !p.isIllegal)
     if (allPokes.length === 0) {
       state.warTeam = []
       return
@@ -104,11 +105,12 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
     if (slotIndex < 0 || slotIndex >= maxSlots) return
     
     const allPokes = [...state.team, ...(state.box || [])]
-    const exists = allPokes.some(p => p?.uid === newPokemonUid)
+    const poke = allPokes.find(p => p?.uid === newPokemonUid)
+    if (!poke || poke.isIllegal) return
     const warTeam = state.warTeam || []
     const alreadyIn = warTeam.includes(newPokemonUid)
 
-    if (exists && !alreadyIn) {
+    if (!alreadyIn) {
       if (!state.warTeam) state.warTeam = []
       state.warTeam[slotIndex] = newPokemonUid
       scheduleSave()

@@ -46,6 +46,7 @@ export function syncTeamHP(ctx: BattleContext) {
           const old = teamPoke.hp
           teamPoke.hp = hp
           teamPoke.status = status
+          teamPoke.fainted = hp <= 0
           console.debug(`[SYNC-TEAM-HP] Player GS Poké ${teamPoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`)
         }
 
@@ -53,27 +54,29 @@ export function syncTeamHP(ctx: BattleContext) {
           const old = battlePoke.hp
           battlePoke.hp = hp
           battlePoke.status = status
+          battlePoke.fainted = hp <= 0
           console.debug(`[SYNC-TEAM-HP] Player Battle Poké ${battlePoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`)
         }
       }
     })
   }
 
-  const enemyTeam = active.enemyTeam
-  if (active.enemyRequest?.side?.pokemon && enemyTeam) {
-    active.enemyRequest.side.pokemon.forEach((reqPoke: Required<ShowdownPlayerRequest>['side']['pokemon'][number]) => {
-      if (reqPoke && reqPoke.uid) {
-        const enemyPoke = enemyTeam.find((p: Pokemon) => p && isMatchingUid(p.uid, reqPoke.uid))
+  const enemyTeam = active.enemyTeam;
+  if (active.enemy && enemyTeam) {
+    const activeEnemyInTeam = enemyTeam.find((p: Pokemon) => p && isMatchingUid(p.uid, active.enemy?.uid));
+    if (activeEnemyInTeam) {
+      activeEnemyInTeam.hp = active.enemy.hp;
+      activeEnemyInTeam.status = active.enemy.status;
+      activeEnemyInTeam.fainted = active.enemy.hp <= 0;
+    }
+  }
 
-        if (enemyPoke) {
-          const { hp, status } = parseCondition(reqPoke.condition || '')
-          const old = enemyPoke.hp
-          enemyPoke.hp = hp
-          enemyPoke.status = status
-          console.debug(`[SYNC-TEAM-HP] Enemy Battle Poké ${enemyPoke.nickname} (uid: ${reqPoke.uid}): HP ${old} -> ${hp}, status: ${status}`)
-        }
+  if (enemyTeam) {
+    enemyTeam.forEach((enemyPoke: Pokemon) => {
+      if (enemyPoke) {
+        console.debug(`[SYNC-TEAM-HP] Enemy Battle Poké ${enemyPoke.nickname || enemyPoke.name} (uid: ${enemyPoke.uid}): HP ${enemyPoke.hp}, status: ${enemyPoke.status}, fainted: ${enemyPoke.fainted}`);
       }
-    })
+    });
   }
 
   if (active.player && ctx.gs.state.team) {
@@ -139,7 +142,7 @@ export function syncAndPersist(ctx: BattleContext) {
     return
   }
 
-  const isSearchPhase = ctx.fsm.currentState.value === ctx.BATTLE_STATES.SEARCH_PHASE || active.turnCount === 0 || !active.turn;
+  const isSearchPhase = ctx.fsm.currentState.value === ctx.BATTLE_STATES.SEARCH_PHASE;
   ctx.gs.state.activeBattle = {
     ...active,
     inSearchPhase: isSearchPhase,

@@ -18,7 +18,6 @@ export function canExecuteScriptedReplayAction(readiness: ScriptedReplayReadines
   const requiresSwitchSelection = readiness.subState === 'SWITCH_MENU'
   return readiness.isActiveBattle
     && isActionSubState
-    && readiness.hasPendingPlayerAction !== false
     && !readiness.isProcessing
     && (requiresSwitchSelection || !readiness.isIntroAnimating)
     && (requiresSwitchSelection || !readiness.hasPendingSwitch)

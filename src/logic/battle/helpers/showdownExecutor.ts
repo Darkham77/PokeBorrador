@@ -19,7 +19,7 @@ export interface ShowdownExecutorOptions {
   runner?: ShowdownBattleRunner | null;
   isFuzzerSimulation?: boolean;
   currentStep?: number;
-  certifiedHistoryStep?: { p1Heal?: boolean; p2Heal?: boolean; turnCount?: number };
+  certifiedHistoryStep?: FuzzerCheat | number | { [key: string]: unknown };
 }
 
 export interface ExecuteBattleTurnResult {
@@ -59,7 +59,7 @@ export function executeBattleTurn(options: ShowdownExecutorOptions): ExecuteBatt
     p2Statuses: options.p2Statuses,
     weather: options.weather,
     ipbActive: options.isFuzzerSimulation ? true : undefined,
-    certifiedHistoryStep: options.certifiedHistoryStep ?? options.currentStep,
+    certifiedHistoryStep: options.certifiedHistoryStep ?? (Array.isArray(options.history) && typeof options.currentStep === 'number' ? options.history[options.currentStep - 1] : options.currentStep),
   });
 
   if (options.runner) {

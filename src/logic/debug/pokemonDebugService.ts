@@ -11,6 +11,8 @@ import { logger } from '../utils/logger.ts';
 import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
 import { requirePokemonMoveId, type MoveCategory } from '@/data/battle/moves';
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { requireAbilityId } from '@/data/battle/abilities';
+import { toNatureId } from '@/data/battle/natures';
 import type { ItemId } from '@/data/inventory/items';
 
 const DEFAULT_DEBUG_MOVE_PP = 35;
@@ -83,7 +85,7 @@ export const pokemonDebugService = {
       uid
     } = params;
 
-    const genderMap: Record<'male' | 'female' | 'genderless', PokemonGender> = { male: 'm', female: 'f', genderless: null };
+    const genderMap: Record<string, PokemonGender> = { male: 'm', female: 'f', genderless: null, m: 'm', f: 'f', M: 'm', F: 'f', N: null };
     const mappedGender = gender ? genderMap[gender] : undefined;
     const isEgg = protocol === 'hatch' || protocol === 'hatch_anim' || protocol === 'egg_anim' || protocol === 'egg_silent';
     const p = makePokemon(id, level, { 
@@ -96,6 +98,16 @@ export const pokemonDebugService = {
       bypassWhitelist: true
     });
     if (!p) { throw new Error(`[pokemonDebugService] Failed to generate debug Pokemon '${id}'`); }
+
+    if (ability) {
+      p.ability = requireAbilityId(ability);
+    }
+    if (nature) {
+      p.nature = toNatureId(nature);
+    }
+    if (mappedGender !== undefined) {
+      p.gender = mappedGender;
+    }
 
     if (uid) {
       p.uid = uid;

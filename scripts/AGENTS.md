@@ -10,6 +10,10 @@ DevOps / Tooling Engineers.
 
 - Strict compliance with Node.js 26+ native execution standards.
 - Windows file locking handling (EBUSY errors).
+- **Showdown UID Mapping Parity**: All fuzzer engines, replayers, and simulation scripts MUST consume and persist canonical Showdown UID mappings (`p1ActiveUid`, `p2ActiveUid`, `showdownUidMapper.ts`). Resolving Pokémon by species names, nicknames, or hardcoded slot indices is strictly prohibited.
+- **Exact Fainted State Synchronization Across Bench and Field Combatants**: Fuzzer engines, replayers, and test drivers MUST faithfully verify exact fainted state synchronization (`0 fnt`, `reviving: true`) across both active field combatants and bench party members, ensuring faint processing runs completely before switch menus are opened.
+- **Event-Driven Joystick Transitions & Zero-Timer Parity**: Automation scripts and E2E scenario drivers MUST synchronize exclusively via public typed application events (`battle-ready-for-input`, `battle-forced-switch-required`) and GSAP timelines with 100% zero-timer synchronization. Using arbitrary delays (`sleep`, `setTimeout`, `page.waitForTimeout`) is strictly forbidden.
+- **Zero Runtime Fallbacks Policy**: Scripts, fuzzers, and replayers MUST NOT introduce fallback choices, dummy derivations, or swallowed errors (`.catch(() => true)`). Any missing data or state divergence must fail loudly and immediately.
 
 ## Work Guidance
 

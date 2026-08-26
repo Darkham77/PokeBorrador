@@ -1,6 +1,5 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { runPlayerAction } from '@/logic/battle/battleTurn'
 import { gameBus } from '@/logic/events/gameBus'
 
 vi.mock('@/logic/events/gameBus', () => ({
@@ -9,22 +8,8 @@ vi.mock('@/logic/events/gameBus', () => ({
   }
 }))
 
-vi.mock('@/logic/battle/battleEngine', () => ({
-  calculateDamage: vi.fn(() => ({ dmg: 10, eff: 1 })),
-  getEffectiveSpeed: vi.fn(() => 100)
-}))
-
 vi.mock('@/logic/battle/battleFlow', () => ({
-  canAttack: vi.fn(() => true),
   updateCastformForm: vi.fn()
-}))
-
-vi.mock('@/logic/pokemon/pokemonFactory', () => ({
-  recalcPokemonStats: vi.fn()
-}))
-
-vi.mock('@/logic/battle/actions/actionRegistry', () => ({
-  dispatchMoveEffect: vi.fn()
 }))
 
 function createMockStore() {
@@ -95,38 +80,19 @@ describe('battleTurn.js', () => {
     vi.useRealTimers()
   })
 
-  it('should trigger gameBus animations during player action', async () => {
-    // Mock e.hp = 0 to trigger faint emission
-    mockStore.activeBattle.value.enemy.hp = 1
-    const p1 = runPlayerAction(mockStore as unknown as Parameters<typeof runPlayerAction>[0], 0)
-    await vi.runAllTimersAsync()
-    await p1
-    
-    if (mockStore.activeBattle.value.enemy.hp <= 0) {
-      const p2 = mockStore.handleFaint('enemy')
-      await vi.runAllTimersAsync()
-      await p2
-    }
-
+  it('should trigger gameBus animations when handleFaint is called', async () => {
+    mockStore.activeBattle.value.enemy.hp = 0
+    await mockStore.handleFaint('enemy')
     expect(gameBus.emit).toHaveBeenCalledWith('PLAY_FAINT', { side: 'enemy' })
   })
 
   it('should handle trainer switching pokemon when one faints', async () => {
     mockStore.activeBattle.value.isTrainer = true
-    mockStore.activeBattle.value.enemy.hp = 1
+    mockStore.activeBattle.value.enemy.hp = 0
     const nextPokemon = { name: 'Rattata', hp: 100 }
     mockStore.activeBattle.value.enemyTeam = [nextPokemon]
 
-    const p1 = runPlayerAction(mockStore as unknown as Parameters<typeof runPlayerAction>[0], 0)
-    await vi.runAllTimersAsync()
-    await p1
-    
-    // Manually trigger handleFaint in the test as it's now decoupled from runPlayerAction
-    if (mockStore.activeBattle.value.enemy.hp <= 0) {
-      const p2 = mockStore.handleFaint('enemy')
-      await vi.runAllTimersAsync()
-      await p2
-    }
+    await mockStore.handleFaint('enemy')
 
     expect(gameBus.emit).toHaveBeenCalledWith('PLAY_WITHDRAW', { side: 'enemy' })
     expect(gameBus.emit).toHaveBeenCalledWith('PLAY_SEND_OUT', expect.objectContaining({ side: 'enemy', pokemon: nextPokemon }))

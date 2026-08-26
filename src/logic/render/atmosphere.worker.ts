@@ -93,6 +93,84 @@ const textureOffsets = {
   layer2: { x: 0, y: 0 }
 };
 
+interface AtmosphereDrift {
+  driftX1: number;
+  driftY1: number;
+  driftX2: number;
+  driftY2: number;
+}
+
+function calculateAtmosphereDrift(w: string, animSeed: number): AtmosphereDrift {
+  const speedVar = ATMOSPHERE_SPEED_VAR_BASE + (animSeed * ATMOSPHERE_SPEED_VAR_SCALE);
+  if (w === 'fog' || w === 'mist') {
+    const fogFastDen = ATMOSPHERE_DRIFT.FOG_MIST_DIVISOR * (ATMOSPHERE_DRIFT.SEED_FAST_BASE + animSeed * ATMOSPHERE_DRIFT.SEED_FAST_MULT);
+    const fogSlowDen = ATMOSPHERE_DRIFT.FOG_MIST_DIVISOR * (ATMOSPHERE_DRIFT.SEED_SLOW_BASE + animSeed * ATMOSPHERE_DRIFT.SEED_SLOW_MULT);
+    return {
+      driftX1: (TEXTURE_TILE_SIZE_BASE * speedVar) / fogFastDen,
+      driftY1: (TEXTURE_TILE_SIZE_BASE * speedVar) / fogFastDen,
+      driftX2: (TEXTURE_TILE_SIZE_LARGE * speedVar) / fogSlowDen,
+      driftY2: (TEXTURE_TILE_SIZE_LARGE * speedVar) / fogSlowDen,
+    };
+  }
+  if (w === 'wind') {
+    return {
+      driftX1: (-TEXTURE_TILE_SIZE_BASE * speedVar) / (ATMOSPHERE_DRIFT.WIND_DIVISOR * (ATMOSPHERE_DRIFT.SEED_FAST_BASE + animSeed * ATMOSPHERE_DRIFT.SEED_FAST_MULT)),
+      driftY1: 0,
+      driftX2: (-TEXTURE_TILE_SIZE_LARGE * speedVar) / (ATMOSPHERE_DRIFT.WIND_DIVISOR * (ATMOSPHERE_DRIFT.SEED_SLOW_BASE + animSeed * ATMOSPHERE_DRIFT.SEED_SLOW_MULT)),
+      driftY2: 0,
+    };
+  }
+  if (w === 'dust_storm') {
+    return {
+      driftX1: (-TEXTURE_TILE_SIZE_BASE * speedVar) / (ATMOSPHERE_DRIFT.DUST_DIVISOR * (ATMOSPHERE_DRIFT.SEED_FAST_BASE + animSeed * ATMOSPHERE_DRIFT.SEED_FAST_MULT)),
+      driftY1: 0,
+      driftX2: (-TEXTURE_TILE_SIZE_LARGE * speedVar) / (ATMOSPHERE_DRIFT.DUST_DIVISOR * (ATMOSPHERE_DRIFT.SEED_SLOW_BASE + animSeed * ATMOSPHERE_DRIFT.SEED_SLOW_MULT)),
+      driftY2: 0,
+    };
+  }
+  if (w === 'sandstorm' || w === 'strong_winds') {
+    const factor = w === 'strong_winds' ? ATMOSPHERE_DRIFT.SAND_FACTOR_STRONG : ATMOSPHERE_DRIFT.SAND_FACTOR_NORMAL;
+    const dur1 = (ATMOSPHERE_DRIFT.SAND_SEED_BASE + animSeed * ATMOSPHERE_DRIFT.SAND_SEED_MULT) * factor;
+    const seed2 = (animSeed * ATMOSPHERE_DRIFT.GOLDEN_RATIO) % 1;
+    const dur2 = dur1 * (ATMOSPHERE_DRIFT.SAND_DUR2_BASE + seed2 * ATMOSPHERE_DRIFT.SAND_DUR2_MULT);
+    return {
+      driftX1: -TEXTURE_TILE_SIZE_LARGE / dur1,
+      driftY1: 0,
+      driftX2: -TEXTURE_TILE_SIZE_HUGE / dur2,
+      driftY2: 0,
+    };
+  }
+  return { driftX1: 0, driftY1: 0, driftX2: 0, driftY2: 0 };
+}
+
+function calculateAtmosphereOpacity(w: string, pulse: number, isLowPower: boolean): { op1: number; op2: number } {
+  if (w === 'fog') {
+    const op = ATMOSPHERE_OPACITY_PRESETS.FOG_MIN + (ATMOSPHERE_OPACITY_PRESETS.FOG_MAX - ATMOSPHERE_OPACITY_PRESETS.FOG_MIN) * pulse;
+    return { op1: op, op2: op };
+  }
+  if (w === 'mist') {
+    const baseOp = isLowPower ? ATMOSPHERE_OPACITY_PRESETS.MIST_LOW_POWER_BASE : ATMOSPHERE_OPACITY_PRESETS.MIST_NORMAL_BASE;
+    const maxOp = isLowPower ? ATMOSPHERE_OPACITY_PRESETS.MIST_LOW_POWER_MAX : ATMOSPHERE_OPACITY_PRESETS.MIST_NORMAL_MAX;
+    const op = baseOp + (maxOp - baseOp) * pulse;
+    return { op1: op, op2: op };
+  }
+  if (w === 'wind') {
+    const op = ATMOSPHERE_OPACITY_PRESETS.WIND_MIN + (ATMOSPHERE_OPACITY_PRESETS.WIND_MAX - ATMOSPHERE_OPACITY_PRESETS.WIND_MIN) * pulse;
+    return { op1: op, op2: op };
+  }
+  if (w === 'strong_winds') {
+    const op = ATMOSPHERE_OPACITY_PRESETS.STRONG_MIN + (ATMOSPHERE_OPACITY_PRESETS.STRONG_MAX - ATMOSPHERE_OPACITY_PRESETS.STRONG_MIN) * pulse;
+    return { op1: op, op2: op };
+  }
+  if (w === 'dust_storm') {
+    return { op1: ATMOSPHERE_OPACITY_PRESETS.DUST, op2: ATMOSPHERE_OPACITY_PRESETS.DUST };
+  }
+  if (w === 'sandstorm') {
+    return { op1: ATMOSPHERE_OPACITY_PRESETS.SAND_OP1, op2: ATMOSPHERE_OPACITY_PRESETS.SAND_OP2 };
+  }
+  return { op1: ATMOSPHERE_OPACITY_PRESETS.WIND_MAX, op2: ATMOSPHERE_OPACITY_PRESETS.WIND_MIN };
+}
+
 function render(time: number) {
   if (isPaused) return;
   const localCanvas = canvas;
@@ -105,90 +183,29 @@ function render(time: number) {
   localCtx.clearRect(0, 0, localCanvas.width, localCanvas.height);
 
   const w = params.weather;
-  const isMist = w === 'mist';
-  const isFog = w === 'fog';
-  const isDust = w === 'dust_storm';
-  const isSand = w === 'sandstorm';
-  const isStrong = w === 'strong_winds';
-  const isWind = w === 'wind';
-
   if (!['fog', 'mist', 'wind', 'strong_winds', 'dust_storm', 'sandstorm'].includes(w)) {
     requestAnimationFrame(render);
     return;
   }
 
-  const speedVar = ATMOSPHERE_SPEED_VAR_BASE + (params.animSeed * ATMOSPHERE_SPEED_VAR_SCALE);
-  let driftX1 = 0;
-  let driftY1 = 0;
-  let driftX2 = 0;
-  let driftY2 = 0;
-
-  if (isFog || isMist) {
-    const fogFastDen = ATMOSPHERE_DRIFT.FOG_MIST_DIVISOR * (ATMOSPHERE_DRIFT.SEED_FAST_BASE + params.animSeed * ATMOSPHERE_DRIFT.SEED_FAST_MULT);
-    const fogSlowDen = ATMOSPHERE_DRIFT.FOG_MIST_DIVISOR * (ATMOSPHERE_DRIFT.SEED_SLOW_BASE + params.animSeed * ATMOSPHERE_DRIFT.SEED_SLOW_MULT);
-    driftX1 = (TEXTURE_TILE_SIZE_BASE * speedVar) / fogFastDen;
-    driftY1 = (TEXTURE_TILE_SIZE_BASE * speedVar) / fogFastDen;
-    driftX2 = (TEXTURE_TILE_SIZE_LARGE * speedVar) / fogSlowDen;
-    driftY2 = (TEXTURE_TILE_SIZE_LARGE * speedVar) / fogSlowDen;
-  } else if (isWind) {
-    driftX1 = (-TEXTURE_TILE_SIZE_BASE * speedVar) / (ATMOSPHERE_DRIFT.WIND_DIVISOR * (ATMOSPHERE_DRIFT.SEED_FAST_BASE + params.animSeed * ATMOSPHERE_DRIFT.SEED_FAST_MULT));
-    driftX2 = (-TEXTURE_TILE_SIZE_LARGE * speedVar) / (ATMOSPHERE_DRIFT.WIND_DIVISOR * (ATMOSPHERE_DRIFT.SEED_SLOW_BASE + params.animSeed * ATMOSPHERE_DRIFT.SEED_SLOW_MULT));
-  } else if (isDust) {
-    driftX1 = (-TEXTURE_TILE_SIZE_BASE * speedVar) / (ATMOSPHERE_DRIFT.DUST_DIVISOR * (ATMOSPHERE_DRIFT.SEED_FAST_BASE + params.animSeed * ATMOSPHERE_DRIFT.SEED_FAST_MULT));
-    driftX2 = (-TEXTURE_TILE_SIZE_LARGE * speedVar) / (ATMOSPHERE_DRIFT.DUST_DIVISOR * (ATMOSPHERE_DRIFT.SEED_SLOW_BASE + params.animSeed * ATMOSPHERE_DRIFT.SEED_SLOW_MULT));
-  } else if (isSand || isStrong) {
-    const factor = isStrong ? ATMOSPHERE_DRIFT.SAND_FACTOR_STRONG : ATMOSPHERE_DRIFT.SAND_FACTOR_NORMAL;
-    const dur1 = (ATMOSPHERE_DRIFT.SAND_SEED_BASE + params.animSeed * ATMOSPHERE_DRIFT.SAND_SEED_MULT) * factor;
-    const seed2 = (params.animSeed * ATMOSPHERE_DRIFT.GOLDEN_RATIO) % 1;
-    const dur2 = dur1 * (ATMOSPHERE_DRIFT.SAND_DUR2_BASE + seed2 * ATMOSPHERE_DRIFT.SAND_DUR2_MULT);
-    driftX1 = -TEXTURE_TILE_SIZE_LARGE / dur1;
-    driftX2 = -TEXTURE_TILE_SIZE_HUGE / dur2;
-  }
-
-  const noise1 = patterns.noise1;
-  const noise2 = patterns.noise2;
+  const { driftX1, driftY1, driftX2, driftY2 } = calculateAtmosphereDrift(w, params.animSeed);
 
   // Opacity & Pulsing logic
-  const hasPulse = isStrong;
-  const cycleDuration = hasPulse ? (ATMOSPHERE_CYCLE_DURATION_STRONG_BASE + params.animSeed) : ATMOSPHERE_CYCLE_DURATION_CALM;
+  const isStrong = w === 'strong_winds';
+  const cycleDuration = isStrong ? (ATMOSPHERE_CYCLE_DURATION_STRONG_BASE + params.animSeed) : ATMOSPHERE_CYCLE_DURATION_CALM;
   const pulse = (Math.sin((time / MILLISECONDS_PER_SECOND) * FULL_CIRCLE_RAD / cycleDuration) + 1) / 2;
 
-  let op1 = ATMOSPHERE_OPACITY_PRESETS.WIND_MAX;
-  let op2 = ATMOSPHERE_OPACITY_PRESETS.WIND_MIN;
-
-  if (isFog) {
-    op1 = ATMOSPHERE_OPACITY_PRESETS.FOG_MIN + (ATMOSPHERE_OPACITY_PRESETS.FOG_MAX - ATMOSPHERE_OPACITY_PRESETS.FOG_MIN) * pulse;
-    op2 = op1;
-  } else if (isMist) {
-    const baseOp = params.isLowPower ? ATMOSPHERE_OPACITY_PRESETS.MIST_LOW_POWER_BASE : ATMOSPHERE_OPACITY_PRESETS.MIST_NORMAL_BASE;
-    const maxOp = params.isLowPower ? ATMOSPHERE_OPACITY_PRESETS.MIST_LOW_POWER_MAX : ATMOSPHERE_OPACITY_PRESETS.MIST_NORMAL_MAX;
-    op1 = baseOp + (maxOp - baseOp) * pulse;
-    op2 = op1;
-  } else if (w === 'wind') {
-    op1 = ATMOSPHERE_OPACITY_PRESETS.WIND_MIN + (ATMOSPHERE_OPACITY_PRESETS.WIND_MAX - ATMOSPHERE_OPACITY_PRESETS.WIND_MIN) * pulse;
-    op2 = op1;
-  } else if (isStrong) {
-    op1 = ATMOSPHERE_OPACITY_PRESETS.STRONG_MIN + (ATMOSPHERE_OPACITY_PRESETS.STRONG_MAX - ATMOSPHERE_OPACITY_PRESETS.STRONG_MIN) * pulse;
-    op2 = op1;
-  } else if (isDust) {
-    op1 = ATMOSPHERE_OPACITY_PRESETS.DUST;
-    op2 = ATMOSPHERE_OPACITY_PRESETS.DUST;
-  } else if (isSand) {
-    op1 = ATMOSPHERE_OPACITY_PRESETS.SAND_OP1;
-    op2 = ATMOSPHERE_OPACITY_PRESETS.SAND_OP2;
-  }
+  const { op1, op2 } = calculateAtmosphereOpacity(w, pulse, params.isLowPower);
 
   // Target sizes based on original CSS
-  let targetSize1 = TEXTURE_TILE_SIZE_BASE;
-  let targetSize2 = TEXTURE_TILE_SIZE_LARGE;
-
-  if (isSand || isStrong) {
-    targetSize1 = TEXTURE_TILE_SIZE_LARGE;
-    targetSize2 = TEXTURE_TILE_SIZE_LARGE;
-  }
+  const isSand = w === 'sandstorm';
+  const targetSize1 = (isSand || isStrong) ? TEXTURE_TILE_SIZE_LARGE : TEXTURE_TILE_SIZE_BASE;
+  const targetSize2 = TEXTURE_TILE_SIZE_LARGE;
 
   const bitmap1 = textures.noise1;
   const bitmap2 = textures.noise2;
+  const noise1 = patterns.noise1;
+  const noise2 = patterns.noise2;
 
   const scale1 = bitmap1 ? (targetSize1 / bitmap1.width) : 1;
   const scale2 = bitmap2 ? (targetSize2 / bitmap2.width) : 1;

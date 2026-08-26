@@ -26,13 +26,13 @@ class HeldItemsSimWrapper extends BaseBattleSimulation {
         id: 'snorlax',
         level: snrLvl,
         heldItem: 'leftovers',
-        moves: ['substitute', 'growl']
+        moves: ['substitute', 'defensecurl']
       });
 
       const caterpie = pokemonDebugService.generate({
         id: 'caterpie',
         level: catLvl,
-        moves: ['splash']
+        moves: ['stringshot']
       });
 
       useGameStore().state.team = [snorlax];
@@ -115,6 +115,8 @@ test.describe('E2E Held Items Verification', () => {
   test('should apply passive healing from Leftovers at the end of a turn', async ({ page }) => {
     const sim = new HeldItemsSimWrapper(page, 'TestPlayerItems');
     await sim.setup();
+    await sim.speedUpAnimations(100);
+    await sim.enableE2EWorkerFlag();
     await sim.setupLeftoversScenario();
     await waitForWaitInput(page);
 
@@ -134,6 +136,8 @@ test.describe('E2E Held Items Verification', () => {
   test('should apply Life Orb recoil damage after attacking', async ({ page }) => {
     const sim = new HeldItemsSimWrapper(page, 'TestPlayerOrb');
     await sim.setup();
+    await sim.speedUpAnimations(100);
+    await sim.enableE2EWorkerFlag();
     await sim.setupLifeOrbScenario();
     await waitForWaitInput(page);
     
@@ -147,6 +151,8 @@ test.describe('E2E Held Items Verification', () => {
   test('should activate Focus Sash on a fatal blow and survive with 1 HP', async ({ page }) => {
     const sim = new HeldItemsSimWrapper(page, 'TestPlayerSash');
     await sim.setup();
+    await sim.speedUpAnimations(100);
+    await sim.enableE2EWorkerFlag();
     await sim.setupFocusSashScenario();
     await waitForWaitInput(page);
 

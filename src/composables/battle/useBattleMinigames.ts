@@ -1,5 +1,6 @@
 import { logger } from '@/logic/utils/logger'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { useModalStore } from '@/stores/modals'
 import type { ItemId } from '@/data/inventory/items'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { resetBattleMinigameFlags, type BattleMinigame } from '@/logic/battle/battleMinigames'
@@ -47,6 +48,7 @@ export function useBattleMinigames(
 
   const handleFishingSuccess = async () => {
     logger.success('BattleArenaView', 'Fishing SUCCESS')
+    useModalStore().close('Fishing')
     if (battleStore.state) {
       resetBattleMinigameFlags(battleStore.state)
     }
@@ -56,6 +58,7 @@ export function useBattleMinigames(
 
   const handleFishingFail = async () => {
     logger.warn('BattleArenaView', 'Fishing FAIL')
+    useModalStore().close('Fishing')
     uiStore.notify('El Pokémon escapó...', '💨')
     battleStore.addLog('El Pokémon escapó...', 'log-info', '💨')
 
@@ -72,6 +75,7 @@ export function useBattleMinigames(
 
   const handleArchaeologySuccess = async (difficulty: string) => {
     logger.success('BattleArenaView', `Archaeology SUCCESS: ${difficulty}`)
+    useModalStore().close('Archaeology')
     const locId = battleStore.state?.locationId || 'route1'
 
     if (battleStore.state) {
@@ -88,6 +92,7 @@ export function useBattleMinigames(
 
   const handleArchaeologyFail = async () => {
     logger.warn('BattleArenaView', 'Archaeology FAIL')
+    useModalStore().close('Archaeology')
     const enemyId = enemy.value?.id
     let fossilId: ItemId = 'oldamber'
     let emoji = '💎'

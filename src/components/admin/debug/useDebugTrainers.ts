@@ -16,6 +16,7 @@ import type { BattleDifficulty, BattleMinigame } from '@/types/battle/battle'
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { BattleOptions } from '@/types/system/stores'
+import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality'
 
 const MIN_TEAM_SIZE = 1
 const MAX_TEAM_SIZE = 6
@@ -96,7 +97,7 @@ export function useDebugTrainers() {
 
   const allMapsList = computed(() => {
     const maps = pokemonDataProvider.getMaps() as MapLocation[] // domain-ok
-    return maps.map(m => ({ id: m.id, name: m.name || m.id }))
+    return maps.map(m => ({ id: m.id, name: m.name }))
   })
 
   // Dynamic list of sprites for the current preset — used by the sprite <select> in the UI
@@ -304,6 +305,25 @@ export function useDebugTrainers() {
     await battleStore.startBattle(firstEnemy, opts as BattleOptions) // domain-ok
   }
 
+  function validateTeamLegality(): { valid: boolean; issues: string[] } {
+    const issues: string[] = [] // no-domain
+    if (enemyTeam.value.length === 0) {
+      issues.push('El equipo del entrenador debe tener al menos 1 Pokémon.')
+      return { valid: false, issues }
+    }
+    for (let idx = 0; idx < enemyTeam.value.length; idx++) {
+      const p = enemyTeam.value[idx]
+      if (!p) continue
+      const report = checkPokemonLegality(p)
+      if (!report.isLegal) {
+        for (const issue of report.issues) {
+          issues.push(`[#${idx + 1} ${p.name}]: ${issue}`)
+        }
+      }
+    }
+    return { valid: issues.length === 0, issues }
+  }
+
   return {
     trainerName,
     trainerSprite,
@@ -333,6 +353,7 @@ export function useDebugTrainers() {
     addPokemonToTeam,
     removePokemonFromTeam,
     startCombat,
+    validateTeamLegality,
     debugStore
   }
 }

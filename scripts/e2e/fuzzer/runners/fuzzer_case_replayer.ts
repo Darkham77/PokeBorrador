@@ -94,9 +94,6 @@ enemyTeam.forEach((e, idx: number) => {
 
 ShowdownLogEnricher.enrichRetroactiveLeads(battle);
 
-battle.choose('p1', 'default');
-battle.choose('p2', 'default');
-
 if (!match) {
   console.error('Error: Replay mode requires a certified fuzzer case with playerChoices and enemyChoices.');
   process.exit(1);
@@ -117,7 +114,7 @@ for (let historyIndex = 0; historyIndex < match.history.length; historyIndex++) 
   const prevLogLen = battle.log.length;
 
   const { executeBattleTurn } = await import('../../../../src/logic/battle/helpers/showdownExecutor.ts');
-  executeBattleTurn({
+  const res = executeBattleTurn({
     battle,
     p1Choice: step.p1Choice,
     p2Choice: step.p2Choice,
@@ -128,11 +125,15 @@ for (let historyIndex = 0; historyIndex < match.history.length; historyIndex++) 
 
   const newLogs = battle.log.slice(prevLogLen);
 
-  console.log(`[Turn ${turn}] Certified step: ${JSON.stringify({ p1Choice: step.p1Choice, p2Choice: step.p2Choice, battleTurn: step.battleTurn })}`);
+  console.log(`[Turn ${turn}] Certified step: ${JSON.stringify({ p1Choice: step.p1Choice, p2Choice: step.p2Choice, battleTurn: step.battleTurn, weather: step.weather, terrain: step.terrain })} | Accepted: ${JSON.stringify(res)}`);
   for (const side of battle.sides) {
     if (!side) continue;
     const activeMon = side.active?.[0] as ExtendedPokemon | undefined;
-    console.log(`[Turn ${turn}] Side ${side.id} Active: ${activeMon?.name ?? 'None'} (UID: ${activeMon?.uid ?? 'N/A'}, HP: ${activeMon?.hp ?? 0}/${activeMon?.maxhp ?? 0}, fainted: ${activeMon?.fainted ?? true})`);
+    const expectedUid = side.id === 'p1' ? step.p1ActiveUid : step.p2ActiveUid;
+    const expectedStatus = side.id === 'p1' ? step.p1Status : step.p2Status;
+    const expectedTrapped = side.id === 'p1' ? step.p1Trapped : step.p2Trapped;
+    const isTrapped = Boolean(Reflect.get(activeMon || {}, 'trapped'));
+    console.log(`[Turn ${turn}] Side ${side.id} Active: ${activeMon?.name ?? 'None'} (UID: ${activeMon?.uid ?? 'N/A'}${expectedUid ? ` [Exp: ${expectedUid}]` : ''}, HP: ${activeMon?.hp ?? 0}/${activeMon?.maxhp ?? 0}, status: ${activeMon?.status || 'none'}${expectedStatus ? ` [Exp: ${expectedStatus}]` : ''}, trapped: ${isTrapped}${expectedTrapped !== undefined ? ` [Exp: ${expectedTrapped}]` : ''}, fainted: ${activeMon?.fainted ?? true})`);
   }
 
   console.log('  Logs:');

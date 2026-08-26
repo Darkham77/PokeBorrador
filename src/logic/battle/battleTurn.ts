@@ -1,19 +1,15 @@
-import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
 import { decideEnemyMove, evaluateAndUseNPCItem } from './ai/battleAI.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
 import { logger } from '../utils/logger.ts'
 import { resolveTurnChoices } from './battleTurnChoiceHelper.ts'
 import { updateCastformForm } from './battleFlow.ts'
 import {
-  runPlayerAction,
   runEnemyAction,
   parseLogsWithSkip,
   resolvePostTurnSwitchesAndFaints
 } from './helpers/turnActionResolver.ts'
 
-export { runPlayerAction, runEnemyAction }
-
-const ESCAPE_FALLBACK_DELAY_MS = 800;
+export { runEnemyAction }
 
 /**
  * Handles the turn logic for a single move execution.
@@ -26,8 +22,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
   }
   
   if (!p || !e) {
-    logger.warn('BattleTurn', 'Aborting turn: Player or Enemy is null', { p, e })
-    return
+    throw new Error(`[BattleTurn] Cannot execute turn: Active combatant missing. Player: ${p ? p.uid : 'null'}, Enemy: ${e ? e.uid : 'null'}`);
   }
 
   // Resetear banderas de uso de objetos al inicio del turno
@@ -70,7 +65,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
   const isStruggle = moveIndex === -1;
   const move = isStruggle ? null : p.moves[moveIndex];
 
-  if (!isStruggle && !isLocked && move?.id !== 'struggle') {
+  if (!isStruggle && !isLocked && move?.id !== 'struggle' && !(typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode)) {
     if (!move || move.pp <= 0) {
       store.addLog(`¡No queda PP para ${move?.name || 'este movimiento'}!`, 'log-info', p)
       return
@@ -110,7 +105,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     if (intercepted) return
 
     const active = store.activeBattle.value
-    const choices = await resolveTurnChoices(store, p, e, move || null, isStruggle, isWild, p2Skip, eMove)
+    const choices = await resolveTurnChoices(store, p, e, move || null, isStruggle, isWild, p2Skip, eMove, moveIndex)
     const p1Choice = choices.p1Choice
     let p2Choice = choices.p2Choice
     const p1Skip = choices.p1Skip
@@ -151,8 +146,6 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM)
       if (store.animations?.awaitTween) {
         await store.animations.awaitTween('escape-enemy')
-      } else {
-        await sleep(ESCAPE_FALLBACK_DELAY_MS)
       }
       await store.endBattle(false, true)
     }

@@ -65,7 +65,7 @@ export function getSelectableSpecies(bypassWhitelist = false) {
     .filter(id => bypassWhitelist || isEnabledPokemonId(id))
     .map(id => ({
       id,
-      name: db[id]?.name || id,
+      name: db[id]?.name ?? id, // text-ok
       icon: pokemonDataProvider.getSpriteUrl(id)
     }))
 }
@@ -151,7 +151,7 @@ export function getPokedexVisibility(
 
 export function getPokemonBasicData(id: string, isSeen: boolean) {
   const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
-  const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido' // text-ok
+  const name = isSeen ? (data?.name ?? id.toUpperCase()) : 'Desconocido' // text-ok
   const types = data ? ([data.type, data.type2].filter((t): t is PokemonType => Boolean(t))) : []
   const hp = data?.hp || 0
   const atk = data?.atk || 0

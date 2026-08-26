@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useGameStore } from '@/stores/game.ts'
 import { calculateRocketSellPrice as calculatePrice } from '@/logic/pokemon/pokemonUtils'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality'
 import { usePlayerClassStore } from '@/stores/player/playerClass.ts'
 import { BLACK_MARKET_CRIMINALITY_PER_SALE, BOX_BASE_BUY_COST, BOX_ADVANCED_BUY_COST } from '@/logic/constants/gameplay'
 
@@ -51,7 +52,11 @@ export const useBoxStore = defineStore('box', () => {
       if (p) {
         if (p.onMission || p.inDaycare || p.onDefense) return
         releasedNames.push(p.name)
-        returnHeldItem(p)
+        // Releasing an illegal Pokémon is purely removing it without returning held items or benefits
+        const isIllegal = p.isIllegal || !checkPokemonLegality(p).isLegal
+        if (!isIllegal) {
+          returnHeldItem(p)
+        }
         gameStore.state.box.splice(i, 1)
       }
     })
@@ -80,7 +85,14 @@ export const useBoxStore = defineStore('box', () => {
 
   function toggleBoxRocketSelect(index: number) {
     const p = gameStore.state.box[index]
-    if (p && (p.onMission || p.inDaycare || p.onDefense)) return
+    if (!p || p.onMission || p.inDaycare || p.onDefense) return
+    if (p.isIllegal) return
+    const legality = checkPokemonLegality(p)
+    if (!legality.isLegal) {
+      p.isIllegal = true
+      p.illegalReasons = legality.issues
+      return
+    }
 
     const idx = boxRocketSelected.value.indexOf(index)
     if (idx > -1) {
@@ -94,7 +106,7 @@ export const useBoxStore = defineStore('box', () => {
     let total = 0
     boxRocketSelected.value.forEach(i => {
       const p = gameStore.state.box[i]
-      if (!p || p.onMission || p.inDaycare || p.onDefense) return
+      if (!p || p.onMission || p.inDaycare || p.onDefense || p.isIllegal || !checkPokemonLegality(p).isLegal) return
       total += calculatePrice(p)
     })
     return total
@@ -108,7 +120,7 @@ export const useBoxStore = defineStore('box', () => {
     indices.forEach(i => {
       const p = gameStore.state.box[i]
       if (p) {
-        if (p.onMission || p.inDaycare || p.onDefense) return
+        if (p.onMission || p.inDaycare || p.onDefense || p.isIllegal || !checkPokemonLegality(p).isLegal) return
         soldCount++
         returnHeldItem(p)
         gameStore.state.box.splice(i, 1)
@@ -172,6 +184,15 @@ export const useBoxStore = defineStore('box', () => {
   function moveBoxToTeam(boxIndex: number) {
     const boxPoke = gameStore.state.box[boxIndex]
     if (!boxPoke) return { success: false, msg: 'Pokémon no encontrado.' }
+    if (boxPoke.isIllegal) return { success: false, msg: 'No puedes añadir un Pokémon ilegal al equipo.' }
+    if (boxPoke.id && boxPoke.species && boxPoke.moves) {
+      const legality = checkPokemonLegality(boxPoke)
+      if (!legality.isLegal) {
+        boxPoke.isIllegal = true
+        boxPoke.illegalReasons = legality.issues
+        return { success: false, msg: `Pokémon ilegal (${boxPoke.name}): ${legality.issues[0] || 'datos no válidos'}.` }
+      }
+    }
     if (gameStore.state.team.length >= 6) return { success: false, msg: 'Equipo lleno.' }
     
     if (boxPoke.onMission) return { success: false, msg: 'En misión idle.' }
@@ -189,6 +210,15 @@ export const useBoxStore = defineStore('box', () => {
     const boxPoke = gameStore.state.box[boxIndex]
     const teamPoke = gameStore.state.team[teamIndex]
     if (!boxPoke || !teamPoke) return { success: false, msg: 'Pokémon no encontrado.' }
+    if (boxPoke.isIllegal) return { success: false, msg: 'No puedes añadir un Pokémon ilegal al equipo.' }
+    if (boxPoke.id && boxPoke.species && boxPoke.moves) {
+      const legality = checkPokemonLegality(boxPoke)
+      if (!legality.isLegal) {
+        boxPoke.isIllegal = true
+        boxPoke.illegalReasons = legality.issues
+        return { success: false, msg: `Pokémon ilegal (${boxPoke.name}): ${legality.issues[0] || 'datos no válidos'}.` }
+      }
+    }
     
     if (boxPoke.onMission || boxPoke.inDaycare || boxPoke.onDefense) return { success: false, msg: 'Pokémon ocupado.' }
     

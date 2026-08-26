@@ -178,4 +178,40 @@ describe('Domain Type Audit Pattern Recognition', () => {
       expect(testRegex(P_LEAKED_GLOBAL_MUTABLE, "const ACTIVE_CACHE = {};")).toBe(false);
     });
   });
+
+  describe('noDomainIdFallbacks (Prohibition on Name & Secondary Property Fallbacks)', () => {
+    const P_NO_DOMAIN_ID_FALLBACKS = /(?:heldItem|item|species|ability|move)\s*(?:=|:)\s*.*(?:\?|\|\||\?\?)\s*['"]['"]|\b(?:id|species|ability|move|item)\s*(?:\|\||\?\?)\s*[^,\n;)]*\bname\b|\bname\s*(?:\|\||\?\?)\s*[^,\n;)]*\b(?:id|species|ability|move|item)\b|toID\s*\([^)]*(?:\|\||\?\?)[^)]*\)/g;
+
+    it('detects fallback from m.id to m.name in expressions', () => {
+      const line = "const cleanId = toID(m.id || m.name)";
+      expect(testRegex(P_NO_DOMAIN_ID_FALLBACKS, line)).toBe(true);
+    });
+
+    it('detects fallback from species to name', () => {
+      const line = "const speciesId = poke.species || poke.name;";
+      expect(testRegex(P_NO_DOMAIN_ID_FALLBACKS, line)).toBe(true);
+    });
+
+    it('detects fallback from name to id', () => {
+      const line = "const moveKey = move.name || move.id;";
+      expect(testRegex(P_NO_DOMAIN_ID_FALLBACKS, line)).toBe(true);
+    });
+
+    it('detects toID calls with logical fallbacks', () => {
+      const line = "const id = toID(target || fallback);";
+      expect(testRegex(P_NO_DOMAIN_ID_FALLBACKS, line)).toBe(true);
+    });
+
+    it('detects empty string fallbacks on domain assignments', () => {
+      const line = "const heldItem = item ?? ''";
+      expect(testRegex(P_NO_DOMAIN_ID_FALLBACKS, line)).toBe(true);
+    });
+
+    it('allows clean canonical ID access without fallbacks', () => {
+      expect(testRegex(P_NO_DOMAIN_ID_FALLBACKS, "const cleanId = toID(m.id);")).toBe(false);
+      expect(testRegex(P_NO_DOMAIN_ID_FALLBACKS, "const species = poke.species;")).toBe(false);
+      expect(testRegex(P_NO_DOMAIN_ID_FALLBACKS, "if (m.id && isLegal(m.id))")).toBe(false);
+      expect(testRegex(P_NO_DOMAIN_ID_FALLBACKS, "const itemId = requireItemId(p.heldItem);")).toBe(false);
+    });
+  });
 });

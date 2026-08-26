@@ -37,7 +37,10 @@ export function usePokedex(gs: Ref<GameState>, currentOrder: Ref<readonly Pokemo
     const list: PokedexItem[] = orderedSpecies.map((id) => {
       const isCaught = caught.includes(id)
       const isSeen = seen.includes(id) || isCaught
-      const data = pokemonDataProvider.getPokemonData(id) || { name: id }
+      const data = pokemonDataProvider.getPokemonData(id)
+      if (!data) {
+        throw new Error(`[usePokedex] Missing Pokemon data for species: ${id}`)
+      }
       
       // Use POKEMON_SPRITE_IDS as the authority for the national number
       const spriteId = POKEMON_SPRITE_IDS[id]

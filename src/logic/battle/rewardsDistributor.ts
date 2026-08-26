@@ -13,7 +13,7 @@ const TRAINER_EXP_FACTOR_PER_LEVEL = 2
 const BATTLE_COINS_PER_LEVEL_FACTOR = 2
 const AMULET_COIN_MONEY_MULTIPLIER = 2
 const POKERUS_SPREAD_PROBABILITY = 0.33
-import { gsapSleep as sleep } from '@/logic/utils/gsapHelpers'
+import { gsapSleep } from '@/logic/utils/gsapHelpers'
 import type { BattleDifficulty } from '@/types/battle/battle'
 import { calculateBaseExp, processExpGain, processEvGain, calculateMoneyGain } from './battleRewards.ts'
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory'
@@ -431,7 +431,7 @@ const SECONDS_TO_MS_MULTIPLIER = 1000
           uiStore.startEvolution(p, targetId, '')
           // Esperar síncronamente mientras el modal de evolución esté abierto
           while (uiStore.isEvolutionOpen) {
-            await sleep(100)
+            await gsapSleep(100)
           }
         }
       }
@@ -523,7 +523,7 @@ export async function awardDebugExp(ctx: BattleContext) {
         uiStore.addToLearnQueue(allPendingMoves.map(m => ({ pokemon: teamPoke, move: m })))
 
         while (uiStore.learnQueue.length > 0 || uiStore.currentMoveToLearn) {
-          await sleep(100)
+          await gsapSleep(100)
         }
       }
 
@@ -538,7 +538,7 @@ export async function awardDebugExp(ctx: BattleContext) {
           uiStore.startEvolution(teamPoke, targetId, '')
           // Esperar síncronamente mientras el modal de evolución esté abierto
           while (uiStore.isEvolutionOpen) {
-            await sleep(100)
+            await gsapSleep(100)
           }
         }
       }

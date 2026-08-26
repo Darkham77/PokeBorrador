@@ -135,8 +135,8 @@ export function useSaveActions(
       authStore.user.last_save_id = lastSaveId || undefined
       
       if (issues && issues.length > 0) {
-        logger.warn('LOAD', 'Saneamiento realizado:', issues)
-        uiStore.notify('Partida saneada y cargada', '🛡️')
+        logger.warn('LOAD', 'Validación de partida - Advertencias encontradas:', issues)
+        uiStore.notify('Partida cargada con advertencias de legalidad', '⚠️')
       } else {
         uiStore.notify(`¡Bienvenido, ${state.trainer || username || 'Entrenador'}!`, '👋')
       }

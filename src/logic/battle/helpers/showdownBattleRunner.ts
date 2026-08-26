@@ -1,6 +1,5 @@
 import type { SideID } from '@pkmn/sim';
 import { ChoiceRequest, requiresAction } from './requestHelper.ts';
-import { ShowdownBattleEngine } from '../engine/showdownBattleEngine.ts';
 import { isCertifiedBattleGameAction, type CertifiedBattleGameAction } from '../../../types/battle/certifiedBattleActions.ts';
 import { REPLAY_SEATS, isReplaySeat } from './showdownSeats.ts';
 
@@ -12,8 +11,32 @@ export interface CertifiedReplayHistoryEntry {
   battleTurn?: number;
   turnCount?: number;
   p1GameAction?: CertifiedBattleGameAction;
+  p1ActiveUid?: string;
+  p2ActiveUid?: string;
+  p1MoveId?: string;
+  p2MoveId?: string;
+  p1LockedMoveId?: string;
+  p2LockedMoveId?: string;
+  p1Trapped?: boolean;
+  p2Trapped?: boolean;
+  p1Volatiles?: string[]; // no-domain
+  p2Volatiles?: string[]; // no-domain
+  p1StatStages?: Record<string, number>; // open-record
+  p2StatStages?: Record<string, number>; // open-record
+  p1Status?: string; // string-ok
+  p2Status?: string; // string-ok
+  p1Hp?: number;
+  p2Hp?: number;
+  weather?: string; // string-ok
+  terrain?: string; // string-ok
+  p1SideConditions?: string[]; // no-domain
+  p2SideConditions?: string[]; // no-domain
   p1Heal?: boolean;
   p2Heal?: boolean;
+  p1PreHeal?: boolean;
+  p2PreHeal?: boolean;
+  p1PpRefill?: boolean;
+  p2PpRefill?: boolean;
   p1ForceSwitch?: boolean;
   p2ForceSwitch?: boolean;
 }
@@ -84,9 +107,13 @@ export class ShowdownBattleRunner {
     if (typeof p1Choice !== 'string' || typeof p2Choice !== 'string' || (battleTurn !== undefined && typeof battleTurn !== 'number') || (p1GameAction !== undefined && (!isCertifiedBattleGameAction(p1GameAction) || p1Choice !== '' || p2Choice === ''))) {
       throw new Error(`[ShowdownBattleRunner] Certified replay history entry is invalid. context=${JSON.stringify({ historyIndex, p1Choice, p2Choice, battleTurn, p1GameAction })}`);
     }
-    return p1GameAction === undefined
-      ? { p1Choice, p2Choice, battleTurn }
-      : { p1Choice, p2Choice, battleTurn, p1GameAction: p1GameAction as CertifiedBattleGameAction };
+    return {
+      ...(step as CertifiedReplayHistoryEntry),
+      p1Choice,
+      p2Choice,
+      battleTurn,
+      ...(p1GameAction !== undefined ? { p1GameAction: p1GameAction as CertifiedBattleGameAction } : {})
+    };
   }
 
   static advanceHistoryAfterAcceptedTurn(debug: object): void {
@@ -104,6 +131,7 @@ export class ShowdownBattleRunner {
     }
     const nextHistoryIndex = historyIndex + 1;
     const consumedHistory = history.slice(0, nextHistoryIndex).map((_, index) => this.requireHistoryEntry(history, index));
+    console.debug(`[REPLAY-CURSOR-ADVANCE] Advancing cursor: ${historyIndex} -> ${nextHistoryIndex}. Next step: p1="${(history[nextHistoryIndex] as CertifiedReplayHistoryEntry | undefined)?.p1Choice}", p2="${(history[nextHistoryIndex] as CertifiedReplayHistoryEntry | undefined)?.p2Choice}"`);
     Reflect.set(debug, 'replayHistoryIdx', nextHistoryIndex);
     Reflect.set(debug, 'p1ChoiceIdx', consumedHistory.filter(({ p1Choice }) => p1Choice !== '').length);
     Reflect.set(debug, 'p2ChoiceIdx', consumedHistory.filter(({ p2Choice }) => p2Choice !== '').length);
@@ -170,6 +198,10 @@ export class ShowdownBattleRunner {
       return 'pass';
     }
 
+    if (activeRequest && 'teamPreview' in activeRequest && activeRequest.teamPreview) {
+      return 'team 1';
+    }
+
     // Verify UI FSM readiness inside runner if context provided
     if (readiness) {
       const { subState, isProcessing, activePokeHp, hasPendingSwitch } = readiness;
@@ -196,30 +228,16 @@ export class ShowdownBattleRunner {
       }
     }
 
-    const engine = new ShowdownBattleEngine({
-      mode: 'replayer',
-      playerChoices: this.choicesBySeat.get('p1'),
-      enemyChoices: this.choicesBySeat.get('p2')
-    });
-    for (const [seatId, choices] of this.choicesBySeat.entries()) {
-      engine.setSeatChoices(seatId, choices);
+    const index = this.indicesBySeat.get(player) ?? 0;
+    const choices = this.choicesBySeat.get(player) ?? [];
+    if (index >= choices.length) {
+      throw new Error(`[ShowdownBattleRunner] Required certified choice is missing. context=${JSON.stringify({ seat: player, choiceIndex: index, choiceCount: choices.length, activeRequest })}`);
     }
-    // Sync all seat indices from the runner's tracked state into the transient engine
-    for (const [seatId, idx] of Array.from(this.choicesBySeat.keys(), id => [id, this.indicesBySeat.get(id) ?? 0] as const)) {
-      engine.choiceIdx.set(seatId, idx);
+    const choice = choices[index]!;
+    if (!choice || choice.trim().length === 0) {
+      throw new Error(`[ShowdownBattleRunner] Required certified choice is empty. context=${JSON.stringify({ seat: player, choiceIndex: index, choiceCount: choices.length, activeRequest })}`);
     }
-
-    if (!isReplaySeat(player)) {
-      throw new Error(`[ShowdownBattleRunner] Seat is not available in the current simulator request. context=${JSON.stringify({ seat: player, activeRequest })}`);
-    }
-    const seatId = player;
-    const choice = engine.resolveNextChoice(seatId, activeRequest);
-
-    // Sync back all updated seat indices from the transient engine to the runner
-    for (const [sid, idx] of engine.choiceIdx.entries()) {
-      this.indicesBySeat.set(sid, idx);
-    }
-
+    this.indicesBySeat.set(player, index + 1);
     return choice;
   }
 }

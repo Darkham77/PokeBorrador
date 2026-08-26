@@ -179,6 +179,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
       ctx.isProcessing.value = false
       await fsm.transition(BATTLE_STATES.INITIALIZING)
       await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.MINIGAME_CHECK)
+      emitBattleFlowCompleted('search')
       return
     }
 

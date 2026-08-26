@@ -20,13 +20,13 @@ export function useMoveSlotData(
   const moveData = computed(() => {
     const move = moveRef()
     if (!move) return null
-    const md = (move.id ? pokemonDataProvider.getMoveData(move.id) || {} : {}) as { type?: string; power?: number; acc?: number; cat?: string };
+    const md = move.id ? pokemonDataProvider.getMoveData(move.id) : null
     return {
       ...move,
-      type: move.type || md.type || 'normal',
-      power: move.power !== undefined ? move.power : md.power,
-      acc: move.acc !== undefined ? move.acc : md.acc,
-      cat: (move.cat || md.cat || 'physical') as MoveCategory
+      type: move.type || md?.type || 'normal',
+      power: move.power !== undefined ? move.power : md?.power,
+      acc: move.acc !== undefined ? move.acc : md?.acc,
+      cat: (move.cat || md?.cat || 'physical') as MoveCategory
     }
   })
 

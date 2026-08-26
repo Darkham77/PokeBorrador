@@ -132,7 +132,7 @@
     },
     {
       "file": "src/data/inventory/items.ts",
-      "exports": ["MARKET_UNLOCKS", "MARKET_CAT_ORDER", "BUFF_FIELD_TO_ITEM_IDS", "ItemCategoryId", "MarketCategoryId", "MarketUnlockLevel"]
+      "exports": ["MARKET_UNLOCKS", "MARKET_CAT_ORDER", "BUFF_FIELD_TO_ITEM_IDS", "ITEM_IDS", "ItemCategoryId", "MarketCategoryId", "MarketUnlockLevel"]
     },
     {
       "file": "src/data/trainer.ts",
@@ -252,7 +252,7 @@
     },
     {
       "file": "src/logic/pokemon/pokemonFactory.ts",
-      "exports": ["assignGender", "ensurePokemonGender"]
+      "exports": ["assignGender", "ensurePokemonGender", "isGenderlessSpeciesId", "WILD_HELD_ITEMS", "getWildHeldItem"]
     },
     {
       "file": "src/logic/services/assetService.ts",
@@ -328,7 +328,7 @@
     },
     {
       "file": "src/logic/battle/showdownWorkerClient.ts",
-      "exports": ["applyCheatsInWorker"]
+      "exports": ["applyCheatsInWorker", "notifyWorkerBattleWin"]
     },
     {
       "file": "src/logic/validation/schemas.ts",
@@ -356,7 +356,7 @@
     },
     {
       "file": "src/types/battle/battle.ts",
-      "exports": ["BattleStages", "BattleWeather", "BattleState", "BattleSource", "BattleLog", "LogFn", "MoveAction", "SparkleData", "BattleCombatantProps", "ShowdownPlayerRequest"]
+      "exports": ["BATTLE_MINIGAMES", "BattleStages", "BattleWeather", "BattleState", "BattleSource", "BattleLog", "LogFn", "MoveAction", "SparkleData", "BattleCombatantProps", "ShowdownPlayerRequest"]
     },
     {
       "file": "src/stores/map.ts",
@@ -520,7 +520,7 @@
     },
     {
       "file": "src/logic/constants/animations.ts",
-      "exports": ["GSAP_SLOW_DURATION_SEC", "HATCH_PARTICLES_COUNT", "TRAINER_SHADOW_Y_PERCENT_OFFSET", "HOVER_EFFECT_VARIANTS", "MODAL_ANIM_INITIAL_SCALE_MIN", "MODAL_ANIM_INITIAL_Y_OFFSET"]
+      "exports": ["GSAP_SLOW_DURATION_SEC", "GSAP_STANDARD_DURATION_SEC", "POKEBALL_BASE_SIZE_PX", "BALL_LEAVE_SCALE", "BALL_LEAVE_DURATION_SEC", "HATCH_PARTICLES_COUNT", "TRAINER_SHADOW_Y_PERCENT_OFFSET", "HOVER_EFFECT_VARIANTS", "MODAL_ANIM_INITIAL_SCALE_MIN", "MODAL_ANIM_INITIAL_Y_OFFSET"]
     },
     {
       "file": "src/logic/constants/audio.ts",
@@ -645,6 +645,26 @@
     {
       "file": "src/logic/battle/battleUiUtils.ts",
       "exports": ["BattleStatusKey", "BattleStatKey"]
+    },
+    {
+      "file": "src/logic/validation/subschemas/battleSchemas.ts",
+      "exports": ["battleWeatherSchema", "battleTimedConditionSchema", "pendingSlotEffectSchema", "stolenResourcesSchema", "battleLogSchema", "battleStagesSchema", "battleMinigameSchema"]
+    },
+    {
+      "file": "src/logic/pokemon/statsMath.ts",
+      "exports": ["COMBAT_STAT_IDS", "requireStatIdExceptHP"]
+    },
+    {
+      "file": "src/logic/battle/battleMinigames.ts",
+      "exports": ["BATTLE_MINIGAMES"]
+    },
+    {
+      "file": "src/logic/battle/statBreakdownHelper.ts",
+      "exports": ["STAGE_MULTIPLIERS_MAP"]
+    },
+    {
+      "file": "src/logic/pokemon/pokemonWildHeldItems.ts",
+      "exports": ["WILD_HELD_ITEMS"]
     }
   ]
 }

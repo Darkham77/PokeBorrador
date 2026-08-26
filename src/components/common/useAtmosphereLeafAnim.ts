@@ -2,7 +2,7 @@ const LEAF_ANIM_FULL_ROTATION_DEG = 360;
 const LEAF_ANIM_SPIN_ROTATION_DEG = 1080;
 
 import { gsap } from 'gsap'
-import type { Ref } from 'vue'
+import { nextTick, type Ref } from 'vue'
 import type { WeatherId } from '@/logic/weather/weatherRegistry'
 
 type LeafWeatherId = 'wind' | 'strong_winds' | 'storm'
@@ -88,13 +88,11 @@ export function useAtmosphereLeafAnim(
       })
     }
 
-const LEAF_NODES_RETRY_TIMEOUT_MS = 50
-
     const leafNodes = containerRef.value?.querySelectorAll('.leaf-element')
     if (!leafNodes || leafNodes.length === 0) {
-      setTimeout(() => {
+      nextTick(() => {
         if (!ctxVal.reverted) runLeafAnimation()
-      }, LEAF_NODES_RETRY_TIMEOUT_MS)
+      })
     } else {
       runLeafAnimation()
     }

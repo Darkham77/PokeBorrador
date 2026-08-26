@@ -124,7 +124,7 @@ function buildSmogonPokemon(
     pkmn = new SmogonPokemon(GEN, speciesName, {
       level: p.level,
       ability: p.ability ? GEN.abilities.get(toID(requireAbilityId(p.ability)))?.name : undefined,
-      item: (p.heldItem || p.item) ? GEN.items.get(toID(requireItemId(p.heldItem || p.item!)))?.name : undefined,
+      item: p.heldItem ? GEN.items.get(toID(requireItemId(p.heldItem)))?.name : undefined,
       status: toSmogonStatus(p.status),
       boosts: {
         atk: stages.atk ?? 0,

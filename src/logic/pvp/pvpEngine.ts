@@ -1,4 +1,4 @@
-import { sleep } from '@/logic/utils/timeUtils'
+import { gsapSleep } from '@/logic/utils/gsapHelpers'
 
 import { calculateDamage } from '@/logic/battle/battleEngine'
 import { getStatMultiplier, getAccuracyMultiplier } from '@/logic/pokemon/statEngine'
@@ -214,7 +214,7 @@ export async function applyPvPTurnResult(battleState: PvPBattleState, result: Pv
       if (targetPoke) {
         battleState.logs.push(`¡${isMyAction ? 'Vas a cambiar a' : 'El rival cambió a'} ${targetPoke.name}!`)
       }
-      await sleep(PVP_SWITCH_ANIM_DELAY_MS)
+      await gsapSleep(PVP_SWITCH_ANIM_DELAY_MS)
       if (isMyAction) battleState.myActiveIdx = action.newIdx ?? 0
       else battleState.enemyActiveIdx = action.newIdx ?? 0
     } else {
@@ -232,7 +232,7 @@ export async function applyPvPTurnResult(battleState: PvPBattleState, result: Pv
       }
       action.effectLog?.forEach((m: string) => battleState.logs.push(m))
     }
-    await sleep(PVP_ACTION_ANIM_DELAY_MS)
+    await gsapSleep(PVP_ACTION_ANIM_DELAY_MS)
   }
   
   // Post-turn checks

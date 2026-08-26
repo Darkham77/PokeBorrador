@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { DBRouter, checkAppVersionCompatibility } from '@/logic/db/dbRouter';
+import { DBRouter, checkAppVersionCompatibility } from '@/logic/db/dbRouter.ts';
 import { ProxyQuery } from '@/logic/db/proxyQuery';
 import { queryLocal } from '@/logic/db/sqliteEngine';
 
@@ -84,8 +84,9 @@ describe('ProxyQuery & DBRouter Advanced Features', () => {
   });
 
   it('should emulate publish_listing_v2 RPC correctly', async () => {
+    const validPoke = { id: 'pikachu', uid: 'pk_123', name: 'Pikachu', level: 5, ability: 'static', nature: 'hardy', moves: [{ id: 'thundershock', name: 'Thunder Shock' }] };
     const mockSave = {
-      box: [{ uid: 'pk_123', name: 'Pikachu' }],
+      box: [validPoke],
       team: []
     };
     vi.mocked(queryLocal)
@@ -94,7 +95,7 @@ describe('ProxyQuery & DBRouter Advanced Features', () => {
 
     const res = await router.rpc('publish_listing_v2', {
       p_listing_type: 'pokemon',
-      p_asset_data: { uid: 'pk_123', name: 'Pikachu' },
+      p_asset_data: validPoke,
       p_price: 500
     });
 
@@ -109,7 +110,8 @@ describe('ProxyQuery & DBRouter Advanced Features', () => {
       seller_id: 'other_user',
       listing_type: 'pokemon',
       price: 200,
-      data: '{"uid":"pk_123","name":"Pikachu"}'
+      status: 'active',
+      data: JSON.stringify({ id: 'pikachu', uid: 'pk_123', name: 'Pikachu', level: 5, ability: 'static', nature: 'hardy', moves: [{ id: 'thundershock', name: 'Thunder Shock' }] })
     }];
     const mockBuyerSave = { money: 1000 };
 

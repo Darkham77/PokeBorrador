@@ -209,15 +209,49 @@ export interface CompetitionEntry {
   submitted_at?: string; // domain-ok
 }
 
+export type CompetitionRank = 'first' | 'second' | 'third' | number;
+
+export interface PastCompetitionWinner {
+  rank: CompetitionRank;
+  player_id: string; // domain-ok
+  player_name: string; // domain-ok
+  score?: number;
+  entry_data?: {
+    species?: PokemonSpeciesId;
+    name?: string; // domain-ok
+    nickname?: string | null; // domain-ok
+    level?: number;
+    total_ivs?: number;
+    is_shiny?: boolean;
+    size?: string; // domain-ok
+  };
+}
+
+export interface PastEventHistoryItem {
+  id: string; // domain-ok
+  event_id: string; // domain-ok
+  event_name: string; // domain-ok
+  event_icon: string; // domain-ok
+  event_description: string; // domain-ok
+  ended_at: string; // domain-ok
+  winners: PastCompetitionWinner[];
+  myAward: PendingAward | null;
+  isWinner: boolean;
+  hasUnclaimedAward: boolean;
+  isClaimed: boolean;
+}
+
 export interface EventStore {
   activeEvents: Event[];
+  pastEvents: PastEventHistoryItem[];
   pendingAwards: PendingAward[];
   userEntries: Record<string, CompetitionEntry>; // open-record
   isLoading: boolean;
   globalMultipliers: Partial<GlobalMultipliers>;
   fetchEvents: () => Promise<void>;
+  fetchPastEvents: () => Promise<void>;
   fetchUserEntries: () => Promise<void>;
-  checkPendingAwards: () => Promise<void>;
+  checkPendingAwards: (notifyOnPending?: boolean) => Promise<void>;
   submitCompetitionEntry: (eventId: string, pokemonUid: string) => Promise<void>;
   claimAward: (awardId: string) => Promise<string | null>;
 }
@@ -231,7 +265,7 @@ export interface CompetitionResult {
     first?: { player_name: string; score: number };
     second?: { player_name: string; score: number };
     third?: { player_name: string; score: number };
-  };
+  } | PastCompetitionWinner[];
   ended_at: string; // domain-ok
 }
 

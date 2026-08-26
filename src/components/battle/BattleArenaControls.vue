@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { computed, watch } from 'vue'
+import { computed, watch, toValue } from 'vue'
 import { gsap } from 'gsap'
 import { useBattleStore } from '@/stores/battle/battle'
 import { useUIStore } from '@/stores/ui'
@@ -28,7 +28,7 @@ const player = computed(() => battle.value?.player)
 const gs = computed(() => gameStore.state)
 
 const isControlsDisabled = computed(() => {
-  const s = battleStore.currentFsmState
+  const s = toValue(battleStore.currentFsmState)
   return !!(battleStore.isProcessing || 
          battleStore.isIntroAnimating || 
          battleStore.isFinishing ||
@@ -38,8 +38,8 @@ const isControlsDisabled = computed(() => {
 })
 
 const isRewardsWait = computed(() => 
-  battleStore.currentFsmState === 'REWARDS_PHASE' && 
-  battleStore.currentSubState === 'EMPTY_WAIT'
+  toValue(battleStore.currentFsmState) === 'REWARDS_PHASE' && 
+  toValue(battleStore.currentSubState) === 'EMPTY_WAIT'
 )
 
 

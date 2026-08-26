@@ -64,7 +64,7 @@ export function buildFaintTimeline(
 
   tl.add(() => {
     if (pokemon) {
-      gameBus.emit('PLAY_CRY', { name: pokemon.id || pokemon.name, isFaint: true });
+      gameBus.emit('PLAY_CRY', { name: pokemon.id, isFaint: true });
     }
   });
 

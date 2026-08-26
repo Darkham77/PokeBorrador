@@ -550,9 +550,9 @@ stateDiagram-v2
     }
 ```
 
-#### Turn Engine (Queue & Arbiter)
+#### Turn Engine (Showdown Single-Engine Delegation & GSAP Playback)
 
-Manages action priorities and safely resolves double KOs without race conditions.
+The battle engine delegates 100% of battle math, damage calculations, accuracy checks, stat boosts, weather effects, terrain, entry hazards, and abilities directly to the Pokémon Showdown Web Worker engine (`showdown.worker.ts` via `@pkmn/sim`). Dual-engine calculations and manual hazard/ability handlers in client code (such as legacy `moveExecutor` or custom switch actions) are strictly prohibited.
 
 ```mermaid
 stateDiagram-v2
@@ -590,6 +590,9 @@ stateDiagram-v2
         EVAL_CONTINUE --> [*] : "Turn logs fully played"
     }
 ```
+
+- **Zero-Timer GSAP Clock Standard (`gsapSleep`)**: All animation playback, turn intervals, pauses, and damage delays are strictly driven by GSAP (`gsapSleep` from `@/logic/utils/gsapHelpers` or `ctx.animations.awaitTween(...)`). Native `sleep(...)` and `setTimeout(...)` are strictly forbidden across `src/`. This guarantees instantaneous time-scaling via `gsap.globalTimeline.timeScale(...)` in Playwright and headless simulations.
+- **UID Parity & Real-Time Team Synchronization (`syncCombatantToTeam`)**: Every combatant HP update, status change, or faint event (`-damage`, `-heal`, `faint`, `-status`, `-curestatus`, `-sethp`) is instantaneously synchronized to the team arrays (`activeBattle.playerTeam`, `activeBattle.enemyTeam`, `gs.state.team`) via `syncCombatantToTeam`.
 
 #### Double KO & Switch Control Integrity
 

@@ -61,8 +61,8 @@ const wiggleTimelines = new Map<string, gsap.core.Timeline>()
 
 /** Kick off an infinite wiggle on the egg icon of a ready egg card. */
 function startWiggle(uid: string): void {
-  // Guard: bail out if uid is undefined or empty — the DOM node won't exist yet.
-  if (!uid || uid === 'undefined') return
+  // Guard: bail out if uid is invalid or empty — the DOM node won't exist yet.
+  if (typeof uid !== 'string' || uid.length === 0 || uid === 'undefined') return
   if (wiggleTimelines.has(uid)) return
 
   const selector = `[data-egg-uid="${uid}"] .egg-icon`

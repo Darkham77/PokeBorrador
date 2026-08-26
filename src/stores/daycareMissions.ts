@@ -44,7 +44,7 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
         }
         gameStore.state.daycare_missions = [m1, m2];
         gameStore.scheduleSave();
-        return [m1, m2];
+        return [m1, m2] as DaycareMission[];
       }
       return missions;
     },
@@ -67,7 +67,7 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
     return missions.filter(mission => {
       const targetId = mission.targetId;
       return allPokes.some(p => {
-        if (p.onMission || p.inDaycare || p.onDefense) return false;
+        if (p.onMission || p.inDaycare || p.onDefense || p.isIllegal) return false;
         if (p.id !== targetId) return false;
         
         const req = mission.requirement || { type: 'level', minLevel: 0 };

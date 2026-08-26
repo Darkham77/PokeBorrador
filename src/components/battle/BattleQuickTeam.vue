@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, toValue } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle/battle'
 import { useUIStore } from '@/stores/ui'
@@ -25,7 +25,7 @@ const hasPendingForcedSwitch = computed(() => {
 const isSelectingReviveTarget = computed(() => isRevivingForceSwitchRequest(battleStore.state?.playerRequest))
 
 const canSwitch = computed(() => {
-  if (battleStore.currentSubState === 'SWITCH_MENU' || hasPendingForcedSwitch.value) return true
+  if (toValue(battleStore.currentSubState) === 'SWITCH_MENU' || hasPendingForcedSwitch.value) return true
   
   const p = battleStore.state?.player
   if (!p) return false
@@ -52,7 +52,7 @@ const handleSwitch = (index: number) => {
     return
   }
 
-  const isForced = uiStore.isBattleSwitchForced || battleStore.currentSubState === 'SWITCH_MENU'
+  const isForced = uiStore.isBattleSwitchForced || toValue(battleStore.currentSubState) === 'SWITCH_MENU'
   console.debug(`[BattleQuickTeam] handleSwitch clicked for index: ${index} (original: ${originalIndex}), pokemon: ${pokemon.name}, hp: ${pokemon.hp}, activeUid: ${activePokemonUid.value}, canSwitch: ${canSwitch.value}, isForced: ${isForced}`);
   
   if ((pokemon.hp <= 0 && !isSelectingReviveTarget.value) || pokemon.uid === activePokemonUid.value) {

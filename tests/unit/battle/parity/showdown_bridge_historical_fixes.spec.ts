@@ -135,8 +135,8 @@ describe('BUG-141 to BUG-160: Showdown 1:1 Parity Batch 8 Suite', () => {
     const defender = purePokemon({ id: 'blastoise', level: 50, type: 'water', hp: 200, maxHp: 200 })
     const move = pureMove({ id: 'flamethrower', type: 'fire', power: 90, cat: 'special' })
     const sunCtx = { weather: { type: 'sun', turns: 5 } }
-    const dmgNormal = calculateDamagePure(attackerNormal, defender, move, sunCtx, undefined, 1.0)
-    const dmgSolar = calculateDamagePure(attackerSolar, defender, move, sunCtx, undefined, 1.0)
+    const dmgNormal = calculateDamagePure(attackerNormal, defender, move, sunCtx, 'day', 1.0, false)
+    const dmgSolar = calculateDamagePure(attackerSolar, defender, move, sunCtx, 'day', 1.0, false)
     
     expect(dmgSolar.damage!).toBeGreaterThan(dmgNormal.damage!)
   })

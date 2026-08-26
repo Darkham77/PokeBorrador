@@ -73,7 +73,15 @@ export function useMoveTooltip(
       const itemName = getItemName(itemKey);
       
       const moveIdLookup = move.id || '';
-      const md: TooltipMoveData = moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) || {} : {};
+      const moveData = moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) : undefined;
+      const md: TooltipMoveData = moveData ? {
+        type: moveData.type,
+        power: moveData.power,
+        acc: moveData.acc,
+        cat: moveData.cat,
+        priority: moveData.priority,
+        effect: moveData.effect
+      } : {};
       const category = move.cat || md.cat || 'physical';
       const isPhysical = category === 'physical';
       const isSpecial = category === 'special';
@@ -119,7 +127,15 @@ export function useMoveTooltip(
     if (!attacker) return null;
 
     const moveIdLookup = move.id || '';
-    const md: TooltipMoveData = moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) || {} : {};
+    const moveData = moveIdLookup ? pokemonDataProvider.getMoveData(moveIdLookup) : undefined;
+    const md: TooltipMoveData = moveData ? {
+      type: moveData.type,
+      power: moveData.power,
+      acc: moveData.acc,
+      cat: moveData.cat,
+      priority: moveData.priority,
+      effect: moveData.effect
+    } : {};
     const basePower = move.power !== undefined ? move.power : md.power || 0;
     const isStatus = move.cat === 'status' || md.cat === 'status';
     const moveType = (move.type || md.type || 'normal').toLowerCase();

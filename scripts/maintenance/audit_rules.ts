@@ -135,14 +135,23 @@ export const hardcodedTimezone: AuditRule = {
 };
 
 export const noDomainIdFallbacks: AuditRule = {
-  regex: /(?:heldItem|item|species|ability|move)\s*(?:=|:)\s*.*(?:\?|\|\||\?\?)\s*['"]['"]/g,
-  message: "FALLBACK SILENCIOSO EN ID DE DOMINIO DETECTADO. Queda estrictamente prohibido usar fallbacks silenciosos (|| '', ?? '', condition ? id : '') para identificadores de dominio (ItemId, PokemonSpeciesId, AbilityId, PokemonMoveId). Debe usarse una función de validación estricta (requireItemId, requirePokemonSpeciesId, etc.) que lance un error explícito (Fail Loud) si el ID falta o es inválido.",
+  regex: /(?:heldItem|item|species|ability|move)\s*(?:=|:)\s*.*(?:\?|\|\||\?\?)\s*['"]['"]|\b(?:id|species|ability|move|item)\s*(?:\|\||\?\?)\s*[^,\n;)]*\bname\b|\bname\s*(?:\|\||\?\?)\s*[^,\n;)]*\b(?:id|species|ability|move|item)\b|toID\s*\([^)]*(?:\|\||\?\?)[^)]*\)/g,
+  message: "FALLBACK SILENCIOSO EN ID DE DOMINIO / NOMBRE DETECTADO. Queda estrictamente prohibido usar fallbacks silenciosos (|| '', ?? '', .id || .name, .species || .name, toID(x || y)) para identificadores de dominio (ItemId, PokemonSpeciesId, AbilityId, PokemonMoveId). Debe usarse una función de validación estricta (requireItemId, requirePokemonSpeciesId, etc.) que lance un error explícito (Fail Loud) si el ID falta o es inválido.",
   severity: 'error', // string-ok
-  check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
+  check: (content: string, match: RegExpExecArray, filePath?: string) => {
     if (!filePath) return false;
     const normPath = filePath.toLowerCase(); // string-ok
-    // Auditar src/ y scripts/
-    return normPath.includes('src/') || normPath.includes('scripts/');
+    if (normPath.includes('audit_rules.ts') || normPath.includes('.test.') || normPath.includes('.spec.')) return false;
+    if (!normPath.includes('src/logic/') && !normPath.includes('src/stores/')) return false;
+
+    // Respect standard escape hatches for pure display localization / text
+    const matchIndex = match.index ?? 0;
+    const lineStart = content.lastIndexOf('\n', matchIndex) + 1;
+    const lineEnd = content.indexOf('\n', matchIndex);
+    const line = content.slice(lineStart, lineEnd === -1 ? undefined : lineEnd);
+    if (/\/\/\s*(?:text-ok|domain-ok|string-ok|no-domain)/.test(line)) return false;
+
+    return true;
   },
   fixable: false
 };
@@ -242,7 +251,39 @@ export const manualTimersFrontend: AuditRule = {
     if (!filePath) return false;
     if (/audit-disable\s+timers/i.test(content)) return false;
     const norm = normalizeFilePath(filePath);
-    return norm.endsWith('.vue') && norm.includes('src/components/');
+    if (!norm.includes('src/')) return false;
+    if (norm.includes('.spec.') || norm.includes('.test.') || norm.includes('node_modules') || norm.includes('external')) return false;
+    if (norm.includes('src/logic/utils/timeutils') || norm.includes('src/logic/battle/showdownworkerclient') || norm.includes('src/logic/battle/battledebug') || norm.includes('src/logic/db/sqliteengine') || norm.includes('src/stores/auth') || norm.includes('src/views/auth/')) return false;
+    return true;
+  },
+  fixable: false
+};
+
+export const zeroTimerBattleLogic: AuditRule = {
+  regex: /\b(sleep)\s*\(/g,
+  message: "Uso de 'sleep()' nativo detectado en lógica/animaciones de combate. MIGRACIÓN OBLIGATORIA A GSAP: Usa 'gsapSleep' (reloj GSAP) o promesas de animación 'awaitTween' para que las animaciones respondan a timeScale y a eventos deterministas.",
+  severity: 'error',
+  check: (content: string, _match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return false;
+    if (/audit-disable\s+timers/i.test(content)) return false;
+    const norm = normalizeFilePath(filePath);
+    if (!norm.includes('src/logic/battle/') && !norm.includes('src/components/battle/')) return false;
+    if (norm.includes('.spec.') || norm.includes('.test.') || norm.includes('gsaphelpers')) return false;
+    return true;
+  },
+  fixable: false
+};
+
+export const noPlaywrightWaitForTimeout: AuditRule = {
+  regex: /\bpage\.waitForTimeout\s*\(/g,
+  message: "Uso de 'page.waitForTimeout()' detectado. Está ESTRICTAMENTE PROHIBIDO usar esperas de tiempo arbitrarias en simulaciones/tests E2E. La sincronización debe ser 100% orientada a eventos mediante señales públicas ('battle-ready-for-input', 'battle-forced-switch-required') o selectores deterministas (#id).",
+  severity: 'error',
+  check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return false;
+    const norm = normalizeFilePath(filePath);
+    if (norm.includes('node_modules') || norm.includes('external')) return false;
+    if (norm.includes('tests/unit/')) return false;
+    return norm.includes('scripts/e2e/') || norm.includes('tests/');
   },
   fixable: false
 };
@@ -392,15 +433,16 @@ export const zIndexConstantDeclaration: AuditRule = {
 };
 
 export const forbiddenFallbacks: AuditRule = {
-  regex: /\b(getItemByName|resolveMoveId)\b|\b(getItemById|getPoke|getMove|getAbility|getNature)\b\([^)]*\)\s*(?:\|\||\?\?)|\b([a-zA-Z0-9_$]+)\.id\s*(?:\|\||\?\?)\s*\3\.name\b/g,
-  message: (match: string) => `Patrón de fallback o búsqueda por nombre prohibido: '${match}'. En archivos de lógica (src/logic, src/stores) se debe buscar exclusivamente por ID y lanzar error si no existe. Queda strictly PROHIBIDO caer a .name cuando falta un ID.`,
+  regex: /\b(getItemByName|resolveMoveId)\b|\b(getItemById|getPoke|getMove|getAbility|getNature|pokemonDataProvider\.\w+)\b\([^)]*\)\s*(?:\|\||\?\?)|\b([a-zA-Z0-9_$]+)\.(?:species|name|id)\s*(?:\|\||\?\?)\s*\3\.(?:species|name|id)\b|\b(?:\w+\??\.)*\w*[uU]id\s*(?:\|\||\?\?)\s*(?:\w+\??\.)*\w*[uU]id\b|\.catch\(\s*(?:\([^)]*\)|[a-zA-Z0-9_$]+)?\s*=>\s*(?:true|false|null|undefined|\{\}|""|''|\[\])\s*\)/g,
+  message: (match: string) => `Patrón de fallback silencioso o búsqueda prohibida detectado: '${match}'. En Poké Vicio (Zero-Fallback Mandate), está ESTRICTAMENTE PROHIBIDO encadenar fallbacks en UIDs/especies/IDs, usar .name como fallback de ID, o silenciar promesas con .catch(() => false/null/{}/void). Se debe fallar ruidosamente con throw new Error().`,
   severity: 'error',
   check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
     if (!filePath) return false;
     const norm = normalizeFilePath(filePath);
-    const isTestOrMock = norm.includes('test') || norm.includes('spec');
+    if (norm.includes('node_modules') || norm.includes('external')) return false;
+    const isTestOrMock = norm.includes('.spec.') || norm.includes('.test.') || norm.includes('tests/fixtures');
     if (isTestOrMock) return false;
-    return norm.includes('src/logic') || norm.includes('src/stores');
+    return norm.includes('src/') || norm.includes('scripts/e2e/');
   },
   fixable: false
 };
@@ -643,6 +685,6 @@ export const noLeakedGlobalState: AuditRule = {
 };
 
 export const auditRulesConfig = {
-  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, zIndexConstantDeclaration, manualAnimations, manualTimersFrontend, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, magicNumbers, badConstantNames, noAliasConstants, noLiteralSuffixInConstantName, noLiteralBooleanType, noInlineAnonymousObjectType, noFloatingPromises, noLeakedGlobalState
+  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, zIndexConstantDeclaration, manualAnimations, manualTimersFrontend, zeroTimerBattleLogic, noPlaywrightWaitForTimeout, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, magicNumbers, badConstantNames, noAliasConstants, noLiteralSuffixInConstantName, noLiteralBooleanType, noInlineAnonymousObjectType, noFloatingPromises, noLeakedGlobalState
 };
 

@@ -32,12 +32,13 @@ export async function initBattleSequence(
   const locationId = requireMapRouteId(battleState.locationId);
   const isTrainer = !!battleState?.isTrainer
   const isGym = !!battleState?.isGym
-  const wasSearching = !!battleState?.wasSearching
+  const wasSearching = options?.wasSearching !== undefined ? !!options.wasSearching : !!battleState?.wasSearching
   const trainerName = battleState?.trainerName
 
   await resetActiveBattleState(ctx, initialPlayer, isGym)
   if (ctx.activeBattle.value) {
     ctx.activeBattle.value.enemy = initialEnemy
+    ctx.activeBattle.value.wasSearching = wasSearching
   }
   if (!wasSearching && ctx.animations?.resetAll) {
     ctx.animations.resetAll()

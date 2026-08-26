@@ -1,4 +1,4 @@
-import { watch, type ComputedRef } from 'vue'
+import { watch, toValue, type ComputedRef } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import { useModalStore } from '@/stores/modals'
 import { DEFAULT_MINIGAME_RARITY } from '@/logic/constants/gameplay'
@@ -33,11 +33,7 @@ export function useBattleArenaCoordinator(params: BattleArenaCoordinatorParams) 
   } = params
 
   watch(
-    () => {
-      const fsm = battleStore.fsm
-      if (!fsm) return [null, null]
-      return [fsm.currentState, fsm.currentSubState]
-    },
+    () => [toValue(battleStore.currentFsmState), toValue(battleStore.currentSubState)],
     async ([newState, newSubState]) => {
       logger.debug('BattleArenaView', `FSM: ${newState} ${newSubState || ''}`)
       if (!newState) return
@@ -55,12 +51,13 @@ export function useBattleArenaCoordinator(params: BattleArenaCoordinatorParams) 
         battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
       }
 
-      if (newSubState === 'MINIGAME_CHECK' && enemy.value) {
+      const targetEnemy = enemy.value || battle.value?.enemy || battle.value?._initialEnemy
+      if (newSubState === 'MINIGAME_CHECK' && targetEnemy) {
         const modalStore = useModalStore()
-        const activeMinigame = getActiveMinigame(battleStore.state)
+        const activeMinigame = getActiveMinigame(battle.value)
         if (activeMinigame === 'fishing') {
           if (!modalStore.isOpen('Fishing')) modalStore.open('Fishing', {
-            pokemon: enemy.value,
+            pokemon: targetEnemy,
             rarity: battle.value?.rarity || DEFAULT_MINIGAME_RARITY,
             onWin: handleFishingSuccess,
             onFail: handleFishingFail,
@@ -68,7 +65,7 @@ export function useBattleArenaCoordinator(params: BattleArenaCoordinatorParams) 
           })
         } else if (activeMinigame === 'archaeology') {
           if (!modalStore.isOpen('Archaeology')) modalStore.open('Archaeology', {
-            pokemon: enemy.value,
+            pokemon: targetEnemy,
             rarity: battle.value?.rarity || DEFAULT_MINIGAME_RARITY,
             onWin: (difficulty: string) => handleArchaeologySuccess(difficulty),
             onFail: handleArchaeologyFail,

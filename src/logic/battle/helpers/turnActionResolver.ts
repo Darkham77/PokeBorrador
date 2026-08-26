@@ -1,17 +1,6 @@
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { CertifiedBattleGameAction } from '@/types/battle/certifiedBattleActions'
 import { decideEnemyMove, shouldEnemySwitch, findBestSwitchIndex, evaluateAndUseNPCItem } from '../ai/battleAI.ts'
-import { executeMoveAction } from '../actions/moveExecutor.ts'
-
-export async function runPlayerAction(store: BattleContext, moveIndex: number) {
-  const p = store.activeBattle.value?.player
-  if (!p) return
-
-  const move = p.moves[moveIndex]
-  if (!move) return
-
-  await executeMoveAction(store, 'player', move)
-}
 
 export async function runEnemyAction(store: BattleContext, bagAction?: CertifiedBattleGameAction) {
   const p = store.activeBattle.value?.player
@@ -29,24 +18,33 @@ export async function runEnemyAction(store: BattleContext, bagAction?: Certified
 
   let p2Skip = false
   let enemyMove = null
+  let p2Choice = ''
+
   if (!isCertifiedReplay) {
     if (!isWild && store.activeBattle.value && shouldEnemySwitch(e, p, store.activeBattle.value.enemyTeam, store)) {
       const bestIdx = findBestSwitchIndex(store.activeBattle.value.enemyTeam || [], p, e.uid, store)
       if (store.activeBattle.value.enemyTeam && bestIdx !== -1) {
-        const { executeEnemySwitch } = await import('../actions/switchActions.ts')
-        await executeEnemySwitch(store, bestIdx)
-        return
+        const targetMon = store.activeBattle.value.enemyTeam[bestIdx]
+        if (targetMon?.uid) {
+          const { ShowdownTeamResolver } = await import('../showdownTeamResolver.ts')
+          const slot = ShowdownTeamResolver.getShowdownSlotForUid(store.activeBattle.value.enemyRequest, targetMon.uid)
+          if (slot) {
+            p2Choice = `switch ${slot}`
+          }
+        }
       }
     }
-    if (!isWild && await evaluateAndUseNPCItem(store, e)) {
-      p2Skip = true
-      if (store.activeBattle.value) {
-        store.activeBattle.value.enemyUsedItem = true
+    if (!p2Choice) {
+      if (!isWild && await evaluateAndUseNPCItem(store, e)) {
+        p2Skip = true
+        if (store.activeBattle.value) {
+          store.activeBattle.value.enemyUsedItem = true
+        }
       }
-    }
-    enemyMove = p2Skip ? null : decideEnemyMove(e, p, store.playerStages.value, isWild, store)
-    if (!p2Skip && e.volatileCounters?.['lockedmove'] && e.volatileCounters['lockedmove'] > 0 && e.lastMove) {
-      enemyMove = e.lastMove
+      enemyMove = p2Skip ? null : decideEnemyMove(e, p, store.playerStages.value, isWild, store)
+      if (!p2Skip && e.volatileCounters?.['lockedmove'] && e.volatileCounters['lockedmove'] > 0 && e.lastMove) {
+        enemyMove = e.lastMove
+      }
     }
   }
 
@@ -70,14 +68,15 @@ export async function runEnemyAction(store: BattleContext, bagAction?: Certified
 
     const p1Choice = '';
 
-    let p2Choice = 'struggle';
-    if (p2Skip && enemyRequest?.active?.[0]?.moves) {
-      const validMove = enemyRequest.active[0].moves.find((m: ShowdownMoveRequest) => !m.disabled);
-      if (validMove) {
-        p2Choice = `move ${validMove.id}`;
+    if (!p2Choice) {
+      if (p2Skip && enemyRequest?.active?.[0]?.moves) {
+        const validMove = enemyRequest.active[0].moves.find((m: ShowdownMoveRequest) => !m.disabled);
+        if (validMove) {
+          p2Choice = `move ${validMove.id}`;
+        }
+      } else if (!p2Skip && enemyMove) {
+        p2Choice = `move ${enemyMove.id}`;
       }
-    } else if (!p2Skip && enemyMove) {
-      p2Choice = `move ${enemyMove.id}`;
     }
     if (isCertifiedReplay) {
       if (!bagAction) {

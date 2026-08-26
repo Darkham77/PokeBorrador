@@ -23,10 +23,10 @@ const MEDICINE_SCENARIOS: readonly MedicineScenario[] = [
 
 function makePlayer(): FuzzerPokemonSet {
   const p: FuzzerPokemonSet = {
-    name: 'MedicinePlayer', species: 'mew', level: 100, gender: 'M', item: '', ability: 'synchronize', nature: 'serious',
+    name: 'MedicinePlayer', species: 'mew', level: 100, gender: 'N', item: '', ability: 'synchronize', nature: 'serious',
     evs: { hp: 252, atk: 252, def: 0, spa: 0, spd: 0, spe: 4 },
     ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
-    moves: ['splash', 'closecombat'], uid: 'medicine-player',
+    moves: ['amnesia', 'closecombat'], uid: 'medicine-player',
   };
   return p;
 }
@@ -88,7 +88,7 @@ function runScenario(scenario: MedicineScenario): TestBatch {
     if (!showdownBench) throw new Error('[FUZZER-MEDICINE] Revive bench Pokémon is missing.');
     Reflect.set(showdownBench, 'uid', playerUid);
   }
-  const medicineTargetUid = faintTarget?.uid ?? playerUid;
+  const medicineTargetUid = faintTarget ? faintTarget.uid : playerUid;
   const gamePlayer: { hp: number; maxHp: number; status: string } = { hp: 1, maxHp: 1, status: '' };
   const history: CertifiedBattleHistoryEntry[] = [];
   const engine = new ShowdownBattleEngine({ mode: 'fuzzer' });
@@ -100,9 +100,10 @@ function runScenario(scenario: MedicineScenario): TestBatch {
   if (!active) throw new Error('[FUZZER-MEDICINE] Player active Pokémon is missing after the trigger turn.');
   if (faintTarget) {
     if (!active.fainted) throw new Error('[FUZZER-MEDICINE] Revive objective did not produce a legal faint.');
+    const faintMon = battle.p1.pokemon[0]!;
     engine.executeTurn({ p1Choice: 'switch 2', p2Choice: '' });
     appendHistory(history, 'switch 2', '', battle.turn, 2);
-    syncGamePokemonFromShowdown(gamePlayer, active);
+    syncGamePokemonFromShowdown(gamePlayer, faintMon);
   } else {
     syncGamePokemonFromShowdown(gamePlayer, active);
   }

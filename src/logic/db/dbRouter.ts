@@ -40,6 +40,9 @@ export class DBRouter {
     this.systemConfigSubscription = null;
     this._timeOffset = 0; // ms
     this.getTimeOffset = this.getTimeOffset.bind(this);
+    if (typeof window !== 'undefined') {
+      window.__GET_DB_TIME_OFFSET__ = this.getTimeOffset;
+    }
     
     const isE2E = (typeof window !== 'undefined' && Boolean(window.__E2E__)) ||
                   (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
@@ -525,7 +528,7 @@ export async function checkAppVersionCompatibility(router: DBRouter): Promise<Ap
   }
 
   // Allow bypass in local development mode to prevent dev lockout, except during tests
-  if (import.meta.env.DEV && !(typeof process !== 'undefined' && process.env.VITEST)) {
+  if (import.meta.env.DEV && import.meta.env.MODE !== 'test' && !(typeof process !== 'undefined' && (process.env.VITEST || process.env.NODE_ENV === 'test'))) {
     logger.warn('DBRouter', `[DEV] Mismatch de versión ignorado en modo desarrollo (Cliente: ${clientVer} vs Servidor: ${serverVer})`);
     return { compatible: true, client: clientVer, server: serverVer };
   }

@@ -1,4 +1,4 @@
-import { sleep } from '@/logic/utils/timeUtils'
+import { gsapSleep } from '@/logic/utils/gsapHelpers'
 import type { BattleLog, BattleSource, BattleState, BattleSide } from '@/types/battle/battle'
 import { formatBattleLog } from '@/logic/battle/battleLogger'
 import type { Pokemon } from '@/types/pokemon/pokemon'
@@ -56,7 +56,7 @@ export function createBattleLoggerHelper(
       }
 
       const delay = logQueue.value.length > 0 ? 100 : 350
-      await sleep(delay)
+      await gsapSleep(delay)
     }
   }
 
@@ -72,7 +72,7 @@ export function createBattleLoggerHelper(
 
   const waitForLogs = async () => {
     while (isProcessingLogs.value || logQueue.value.length > 0) {
-      await sleep(100)
+      await gsapSleep(100)
     }
   }
 

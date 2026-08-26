@@ -98,18 +98,18 @@ export function validatePokemonForRanked(pokemon: Pokemon | null, rules: RankedR
 
   const id = isPokemonSpeciesId(pokemon.id) ? pokemon.id : null;
   if (id && rules.bannedPokemonIds.includes(id)) {
-    return { ok: false, reason: `${pokemon.name || id} está baneado esta temporada.` };
+    return { ok: false, reason: `${pokemon.name} está baneado esta temporada.` };
   }
 
   if (pokemon.level > rules.levelCap) {
-    return { ok: false, reason: `${pokemon.name || id} supera el nivel máximo (${rules.levelCap}).` };
+    return { ok: false, reason: `${pokemon.name} supera el nivel máximo (${rules.levelCap}).` };
   }
 
   if (rules.allowedTypes.length > 0) {
     const types = [pokemon.type, pokemon.type2].filter((t): t is PokemonType => !!t);
     const hasAllowedType = types.some((t: PokemonType) => rules.allowedTypes.includes(t));
     if (!hasAllowedType) {
-      return { ok: false, reason: `${pokemon.name || id} no tiene un tipo permitido.` };
+      return { ok: false, reason: `${pokemon.name} no tiene un tipo permitido.` };
     }
   }
 

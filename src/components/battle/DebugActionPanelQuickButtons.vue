@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useBattleStore } from '@/stores/battle/battle'
-import { notifyWorkerBattleWin } from '@/logic/battle/showdownWorkerClient'
 
 const battleStore = useBattleStore()
 
@@ -9,7 +8,6 @@ const defeatEnemy = async () => {
   if (!e) return
   battleStore.addLog('DEBUG: Ejecutando Daño Máximo...', 'log-info', e)
   e.hp = 0
-  notifyWorkerBattleWin('p1')
   await battleStore.handleFaint('enemy')
 }
 
@@ -18,7 +16,6 @@ const defeatPlayer = async () => {
   if (!p) return
   battleStore.addLog('DEBUG: Ejecutando Suicidio...', 'log-info', p)
   p.hp = 0
-  notifyWorkerBattleWin('p2')
   await battleStore.handleFaint('player')
 }
 

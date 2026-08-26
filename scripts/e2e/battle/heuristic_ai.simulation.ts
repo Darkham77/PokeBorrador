@@ -115,8 +115,9 @@ class HeuristicAISimWrapper extends BaseBattleSimulation {
       const store = resolver?.();
       if (!store) return false;
       const storeObj = store as Record<string, unknown>; // open-record
+      const fsmState = store.currentFsmState;
       const isFainted = (store.enemy?.hp === 0) || (store.player?.hp === 0) || (store.state?.enemy?.hp === 0) || (store.state?.player?.hp === 0);
-      return !!(store.state?.over || storeObj.isBattleOver || store.currentFsmState === 'REWARDS_PHASE' || store.currentFsmState === 'EXIT_BATTLE' || store.currentFsmState === 'SEARCH_PHASE' || isFainted);
+      return !!(store.state?.over || storeObj.isBattleOver || fsmState === 'REWARDS_PHASE' || fsmState === 'EXIT_BATTLE' || fsmState === 'SEARCH_PHASE' || isFainted);
     });
   }
 }
@@ -167,7 +168,10 @@ test.describe('HeuristicAI E2E Verification', () => {
       await sim.enableE2EWorkerFlag();
       await waitForWaitInput(page);
 
-      const subState = await page.evaluate(() => (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.().currentSubState ?? '');
+      const subState = await page.evaluate(() => {
+        const bs = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+        return bs?.currentSubState ?? '';
+      });
       expect(subState).toBe('WAIT_INPUT');
 
       // Jugar turnos y verificar que el combate avanza limpiamente sin errores
@@ -179,7 +183,10 @@ test.describe('HeuristicAI E2E Verification', () => {
       }
 
       // Validar que la FSM esta en un estado principal valido (ACTIVE_BATTLE, REWARDS_PHASE, EXIT_BATTLE, SEARCH_PHASE)
-      const currentFsmState = await page.evaluate(() => (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.().currentFsmState ?? '');
+      const currentFsmState = await page.evaluate(() => {
+        const bs = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+        return bs?.currentFsmState ?? '';
+      });
       expect(['ACTIVE_BATTLE', 'REWARDS_PHASE', 'EXIT_BATTLE', 'SEARCH_PHASE']).toContain(currentFsmState);
     } catch (e) {
       recordFailure('wild-crash-free', e instanceof Error ? e.message : String(e));

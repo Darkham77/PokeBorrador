@@ -1,15 +1,18 @@
-const FAINT_ANIMATION_FALLBACK_DELAY_MS = 1300
-const WITHDRAW_ANIMATION_FALLBACK_DELAY_MS = 800
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { findBestSwitchIndex } from './ai/battleAI.ts'
 import { ShowdownTeamResolver } from './showdownTeamResolver.ts'
 import { registerRewardCombatant } from './rewardsDistributor.ts'
 import { syncTeamHP } from './battleStateSync.ts'
-import { sleep } from '@/logic/utils/timeUtils'
 import { gameBus } from '@/logic/events/gameBus'
+import { isMatchingUid } from './showdownUidMapper.ts'
+import { gsapSleep } from '@/logic/utils/gsapHelpers'
 
 import type { BattleSide } from '@/types/battle/battle'
+
+const FAINT_ANIMATION_FALLBACK_DELAY_MS = 1300
+const WITHDRAW_ANIMATION_FALLBACK_DELAY_MS = 800
+const DEFEAT_SCREEN_DELAY_MS = 1500
 
 interface EnemyFaintResolutionActions {
   processFaint: (ctx: BattleContext, side: BattleSide) => Promise<void>
@@ -38,7 +41,7 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
     if (ctx.animations?.handleFaintAnim) {
       await ctx.animations.handleFaintAnim({ side: 'enemy' })
     } else {
-      await sleep(FAINT_ANIMATION_FALLBACK_DELAY_MS)
+      await gsapSleep(FAINT_ANIMATION_FALLBACK_DELAY_MS)
     }
     if (!isCurrentActiveBattle()) return
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ENEMY_FAINT)
@@ -49,7 +52,7 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
       await ctx.animations.handleWithdrawRequest({ side: 'enemy', pokemon })
     } else {
       gameBus.emit('PLAY_WITHDRAW', { side: 'enemy' })
-      await sleep(WITHDRAW_ANIMATION_FALLBACK_DELAY_MS)
+      await gsapSleep(WITHDRAW_ANIMATION_FALLBACK_DELAY_MS)
     }
     if (!isCurrentActiveBattle()) return
   }
@@ -58,6 +61,19 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CLEANUP_MEMORY)
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
   if (active) {
+    if (pokemon) {
+      pokemon.hp = 0;
+      pokemon.fainted = true;
+    }
+    if (active.enemy) {
+      active.enemy.hp = 0;
+      active.enemy.fainted = true;
+    }
+    const targetInTeam = active.enemyTeam?.find((p) => p && isMatchingUid(p.uid, pokemon.uid));
+    if (targetInTeam) {
+      targetInTeam.hp = 0;
+      targetInTeam.fainted = true;
+    }
     registerRewardCombatant(active)
     syncTeamHP(ctx)
     if (isTr && ctx.animations?.playBallFadeOut) {
@@ -79,41 +95,39 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
   if (active.enemyTeam) {
     if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
       const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts')
-      const { isMatchingUid } = await import('./showdownUidMapper.ts')
       const debugObj = window.__VITE_DEBUG__
-      const pendingEntry = ShowdownBattleRunner.requirePendingHistoryEntry(debugObj)
-      if (!pendingEntry) {
-        // The final submitted turn already ended in Showdown. There is no
-        // replacement request to replay, so the normal terminal path below
-        // must close the visual battle without inventing a choice.
-        certifiedEnemySwitchChoice = null
-      } else {
-        const history = Reflect.get(debugObj, 'history') as Array<{ p1Choice?: string; p2Choice?: string }> | undefined
-        const historyIndex = Reflect.get(debugObj, 'replayHistoryIdx') as number | undefined
-        
-        let targetChoice = pendingEntry.p2Choice || ''
-        if (!targetChoice.startsWith('switch ') && Array.isArray(history) && typeof historyIndex === 'number') {
-          for (let i = historyIndex; i < history.length; i++) {
-            const candidate = history[i]?.p2Choice
-            if (candidate && candidate.startsWith('switch ')) {
-              targetChoice = candidate
-              break
-            }
+      const history = Reflect.get(debugObj, 'history') as Array<{ p1Choice?: string; p2Choice?: string; p2ForceSwitch?: boolean; p2ActiveUid?: string }> | undefined;
+      const historyIndex = Reflect.get(debugObj, 'replayHistoryIdx') as number | undefined;
+      const pendingEntry = ShowdownBattleRunner.requirePendingHistoryEntry(debugObj);
+
+      let targetChoice = pendingEntry?.p2Choice || '';
+      let targetUid = (pendingEntry as { p2ActiveUid?: string } | null)?.p2ActiveUid;
+      if (!targetChoice.startsWith('switch ') && Array.isArray(history) && typeof historyIndex === 'number') {
+        const offset = history.slice(historyIndex).findIndex((h) => h && (h.p2Choice?.startsWith('switch ') || Boolean(h.p2ForceSwitch)));
+        if (offset !== -1) {
+          const nextSwitchStep = history[historyIndex + offset];
+          if (nextSwitchStep) {
+            targetChoice = nextSwitchStep.p2Choice || '';
+            targetUid = nextSwitchStep.p2ActiveUid;
+            Reflect.set(debugObj, 'replayHistoryIdx', historyIndex + offset);
           }
         }
+      }
 
-        certifiedEnemySwitchChoice = targetChoice
-        if (targetChoice.startsWith('switch ')) {
-          const slotIdx = parseInt(targetChoice.replace('switch ', '').trim(), 10) - 1
-          const reqPokemon = (active.enemyRequest as { side?: { pokemon?: Array<{ ident?: string }> } })?.side?.pokemon
-          const rawIdent = reqPokemon?.[slotIdx]?.ident || ''
-          const candidateUid = rawIdent.split(': ')[1] || ''
-          if (candidateUid) {
-            nextEnemy = active.enemyTeam.find((p: Pokemon) => !p.fainted && p.hp > 0 && p.uid && isMatchingUid(p.uid, candidateUid)) || null
-          }
-          if (!nextEnemy) {
-            nextEnemy = active.enemyTeam.find((p: Pokemon) => !p.fainted && p.hp > 0) || null
-          }
+      certifiedEnemySwitchChoice = targetChoice;
+      if (targetUid) {
+        nextEnemy = active.enemyTeam.find((p: Pokemon) => !p.fainted && p.hp > 0 && p.uid && isMatchingUid(p.uid, targetUid)) || null;
+      }
+      if (!nextEnemy && targetChoice.startsWith('switch ')) {
+        const slotIdx = parseInt(targetChoice.replace('switch ', '').trim(), 10) - 1;
+        const reqPokemon = (active.enemyRequest as { side?: { pokemon?: Array<{ ident?: string }> } })?.side?.pokemon;
+        const rawIdent = reqPokemon?.[slotIdx]?.ident || '';
+        const candidateUid = rawIdent.split(': ')[1] || '';
+        if (candidateUid) {
+          nextEnemy = active.enemyTeam.find((p: Pokemon) => !p.fainted && p.hp > 0 && p.uid && isMatchingUid(p.uid, candidateUid)) || null;
+        }
+        if (!nextEnemy) {
+          nextEnemy = active.enemyTeam.find((p: Pokemon) => !p.fainted && p.hp > 0) || null;
         }
       }
     }
@@ -145,7 +159,7 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
     // STABILIZE_STAGE
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.STABILIZE_STAGE)
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EMPTY_WAIT)
-    await sleep(200) // organic sleep
+    await gsapSleep(200)
     if (!isCurrentActiveBattle()) return
     
     const s = ctx.enemyStages.value
@@ -181,8 +195,14 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
           await parseShowdownLogLine(ctx, logLine, filteredLogs)
         }
         if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
-          const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts')
-          ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__)
+          const debugObj = window.__VITE_DEBUG__ as { history?: Array<{ p2ForceSwitch?: boolean; p1Choice?: string; p2Choice?: string }>; replayHistoryIdx?: number }
+          const history = debugObj.history
+          const idx = debugObj.replayHistoryIdx
+          const nextEntry = Array.isArray(history) && typeof idx === 'number' ? history[idx] : null
+          if (nextEntry && (nextEntry.p2ForceSwitch || (nextEntry.p1Choice === '' && nextEntry.p2Choice?.startsWith('switch ')))) {
+            const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts')
+            ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(debugObj)
+          }
         }
       }
       delete active.switchingToEnemy
@@ -216,3 +236,72 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
   ctx.faintedSides.value.add('enemy')
   await actions.terminateBattle(ctx, true)
 }
+
+export interface PlayerFaintResolutionActions {
+  terminateBattle: (ctx: BattleContext, winParam: boolean, fled?: boolean) => Promise<void>
+}
+
+export async function processPlayerFaintSequence(
+  ctx: BattleContext,
+  pokemon: Pokemon | null,
+  actions: PlayerFaintResolutionActions
+): Promise<void> {
+  const active = ctx.activeBattle.value
+  if (!active) return
+
+  const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
+  const fsm = ctx.fsm
+
+  const pokeName = pokemon?.name || active?._lastActivePlayer?.name || 'Tu Pokémon'
+  ctx.addLog(`¡${pokeName} se ha debilitado!`, 'log-player', pokemon || undefined)
+
+  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
+  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RECALL_FLOW)
+  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
+  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RENDER_BALL)
+  if (ctx.animations?.handleFaintAnim) {
+    await ctx.animations.handleFaintAnim({ side: 'player', isFaint: true })
+  } else {
+    await gsapSleep(FAINT_ANIMATION_FALLBACK_DELAY_MS)
+  }
+
+  // Sincronizamos antes de vaciar el asiento para no perder la referencia
+  syncTeamHP(ctx)
+  if (active) active._lastActivePlayer = pokemon // Guardamos referencia por si acaso
+
+  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
+  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.FADEOUT_BALL)
+  if (ctx.animations?.playBallFadeOut) {
+    await ctx.animations.playBallFadeOut('player')
+  }
+  active.player = null
+
+  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CHECK_TEAM)
+  const nextPoke = ctx.gs.state.team.find((p: Pokemon) => p && p.hp > 0)
+
+  if (!nextPoke) {
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ALL_FAINTED)
+    active.over = true
+    ctx.addLog('¡No te quedan Pokémon sanos!', 'log-error', 'player')
+    await gsapSleep(DEFEAT_SCREEN_DELAY_MS)
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.DEFEAT_SCREEN)
+    await actions.terminateBattle(ctx, false)
+  } else {
+    const isWild = !active.isTrainer && !active.isGym && !active.isPvP
+    const enemyHasHealthy = active.enemyTeam && active.enemyTeam.some((p: Pokemon) => p.hp > 0)
+    const enemyFaintedAndBattleEnds = active.enemy && active.enemy.hp <= 0 && (isWild || !enemyHasHealthy)
+
+    if (enemyFaintedAndBattleEnds) {
+      ctx.faintedSides.value.delete('player')
+    } else {
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.HAS_HEALTHY)
+      ctx.addLog('¡Elige a tu próximo Pokémon!', 'log-info', 'player')
+      ctx.faintedSides.value.delete('player')
+      ctx.uiStore.isBattleSwitchForced = true
+      ctx.isProcessing.value = false
+      ctx.isIntroAnimating.value = false
+      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.SWITCH_MENU)
+    }
+  }
+}
+

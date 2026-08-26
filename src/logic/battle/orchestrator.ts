@@ -107,11 +107,30 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     return
   }
 
-  const illegalPoke = ctx.gs.state.team.find((p) => p && p.isIllegal)
-  if (illegalPoke) {
-    const { useUIStore } = await import('@/stores/ui')
-    useUIStore().notify(`No puedes combatir: tu equipo contiene Pokémon ilegales (${illegalPoke.name || illegalPoke.id}). Repáralos antes de continuar.`, '⚠️')
-    return
+  const isDebugOrReplay = typeof window !== 'undefined' && (
+    Boolean(window.__VITE_DEBUG__?.isDeterministicSimulation) ||
+    Boolean(window.__VITE_DEBUG__?.isScriptedReplayMode) ||
+    Boolean(options.isDebug)
+  );
+
+  if (!isDebugOrReplay) {
+    const { checkPokemonLegality } = await import('@/logic/pokemon/pokemonLegality')
+    const illegalPoke = ctx.gs.state.team.find((p) => {
+      if (!p) return false
+      if (p.isIllegal) return true
+      const legality = checkPokemonLegality(p)
+      if (!legality.isLegal) {
+        p.isIllegal = true
+        p.illegalReasons = legality.issues
+        return true
+      }
+      return false
+    })
+    if (illegalPoke) {
+      const { useUIStore } = await import('@/stores/ui')
+      useUIStore().notify(`No puedes combatir: tu equipo contiene Pokémon ilegales (${illegalPoke.name}). Repáralos antes de continuar.`, '⚠️')
+      return
+    }
   }
 
   // Si hay un combate activo pero NO está en fase de finalización, forzamos huida.
@@ -130,8 +149,8 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   const finalEnemyTeam = enemyTeam && enemyTeam.length > 0 ? enemyTeam : [finalEnemyPoke]
   const startingEnemyPoke = finalEnemyTeam.find(p => p && p.hp > 0) || finalEnemyPoke
 
-  validatePokemon(playerPoke)
-  finalEnemyTeam.forEach((p: Pokemon) => p && validatePokemon(p))
+  validatePokemon(playerPoke, isDebugOrReplay)
+  finalEnemyTeam.forEach((p: Pokemon) => p && validatePokemon(p, isDebugOrReplay))
 
   // LIMPIEZA DE ESTADOS VOLÁTILES
   ctx.clearVolatileStatus(playerPoke)

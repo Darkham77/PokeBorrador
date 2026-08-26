@@ -99,7 +99,7 @@ Ejemplo:
         if (!initialCheck.isLegal || (p as Pokemon).isIllegal) {
           const report = repairPokemonLegality(p as Pokemon);
           if (report.repaired) {
-            console.log(`  [Equipo Slot ${idx}] ${p.name || p.id} (UID: ${p.uid}):`);
+            console.log(`  [Equipo Slot ${idx}] ${p.name} (UID: ${p.uid}):`);
             report.changes.forEach(ch => console.log(`    ↳ ✅ ${ch}`));
             accountModified = true;
             accountFixedPokemonCount++;
@@ -116,7 +116,7 @@ Ejemplo:
         if (!initialCheck.isLegal || (p as Pokemon).isIllegal) {
           const report = repairPokemonLegality(p as Pokemon);
           if (report.repaired) {
-            console.log(`  [Caja Slot ${idx}] ${p.name || p.id} (UID: ${p.uid}):`);
+            console.log(`  [Caja Slot ${idx}] ${p.name} (UID: ${p.uid}):`);
             report.changes.forEach(ch => console.log(`    ↳ ✅ ${ch}`));
             accountModified = true;
             accountFixedPokemonCount++;

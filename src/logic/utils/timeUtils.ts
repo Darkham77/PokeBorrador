@@ -1,5 +1,4 @@
 import { gsap } from 'gsap';
-import { supabase } from '../db/supabase.ts';
 import { safeStorage } from './storage.ts';
 import { logger } from './logger.ts';
 
@@ -25,6 +24,7 @@ export async function syncServerTime(): Promise<void> {
   }
 
   try {
+    const { supabase } = await import('../db/supabase.ts');
     const result = await Promise.race([
       supabase.rpc('fn_get_server_time'),
       new Promise((_, reject) => gsap.delayedCall(3, () => reject(new Error('FETCH_TIMEOUT'))))
@@ -41,7 +41,7 @@ export async function syncServerTime(): Promise<void> {
     _serverTimeOffsetNanoseconds = BigInt(serverInstant.epochNanoseconds) - BigInt(localInstant.epochNanoseconds);
     _timeSynced = true;
     
-const NANOSECONDS_PER_MILLISECOND = 1000000;
+    const NANOSECONDS_PER_MILLISECOND = 1000000;
 
     logger.info('TIME', `Server Sync Completed. Offset: ${_serverTimeOffsetNanoseconds / BigInt(NANOSECONDS_PER_MILLISECOND)}ms`);
   } catch (_err) {
@@ -55,8 +55,10 @@ const NANOSECONDS_PER_MILLISECOND = 1000000;
 export function getServerInstant(): Temporal.Instant {
   if (!_timeSynced) return Temporal.Now.instant();
 
-  const getTimeOffset = Reflect.get(supabase, 'getTimeOffset') as (() => number) | undefined;
-  const routerOffsetMs = typeof getTimeOffset === 'function' ? getTimeOffset() : 0;
+  const getOffset = typeof window !== 'undefined'
+    ? window.__GET_DB_TIME_OFFSET__
+    : undefined;
+  const routerOffsetMs = typeof getOffset === 'function' ? getOffset() : 0;
     
   const now = Temporal.Now.instant();
   const offsetDuration = Temporal.Duration.from({ 
@@ -130,12 +132,6 @@ export function getSeason(now: Temporal.Instant | number = getServerInstant()): 
   return seasons[seasonIndex] || (seasons[0] as Season);
 }
 
-import { MILLISECONDS_PER_SECOND } from '@/logic/constants/visuals';
-
-// Asynchronous pause tied to the GSAP clock for deterministic logic
-export function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => gsap.delayedCall(ms / MILLISECONDS_PER_SECOND, resolve));
-}
 
 /**
  * Formats a date string or number for UI display in GMT-3.

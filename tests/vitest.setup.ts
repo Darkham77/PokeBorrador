@@ -204,6 +204,7 @@ vi.mock('gsap', () => {
     timeline: vi.fn().mockReturnValue({
       to: vi.fn().mockReturnThis(),
       fromTo: vi.fn().mockReturnThis(),
+      set: vi.fn().mockReturnThis(),
       add: vi.fn().mockReturnThis(),
       play: vi.fn().mockReturnThis(),
       pause: vi.fn().mockReturnThis(),

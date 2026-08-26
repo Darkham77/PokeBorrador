@@ -71,10 +71,12 @@ async function buildValidMoveset(speciesId: string): Promise<string[]> {
     }
   }
 
-  // Guarantee at least 2 damaging moves; fill the rest with support (or more damaging)
-  const pool = damaging.length >= 2
-    ? [...shuffleArray(damaging).slice(0, 2), ...shuffleArray(support).slice(0, 2)]
-    : [...shuffleArray(damaging), ...shuffleArray(support)].slice(0, 4);
+  // Guarantee at least 3 damaging moves (or all available); fill the rest with support
+  const pool = damaging.length >= 3
+    ? [...shuffleArray(damaging).slice(0, 3), ...shuffleArray(support).slice(0, 1)]
+    : damaging.length >= 2
+      ? [...shuffleArray(damaging).slice(0, 2), ...shuffleArray(support).slice(0, 2)]
+      : [...shuffleArray(damaging), ...shuffleArray(support)].slice(0, 4);
 
   // If still < 4, pad from general fallback
   const result = pool.slice(0, 4);
@@ -114,7 +116,7 @@ async function buildRandomPokemonSet(): Promise<PokemonSet> {
   const speciesData = dexGen.species.get(speciesId);
 
   const moveset = await buildValidMoveset(speciesId);
-  const ability = toID(speciesData.abilities[0] ?? 'pressure');
+  const ability = toID(speciesData.abilities[0]);
 
   const uid = crypto.randomUUID();
   const nickname = getShowdownNickname(uid);
@@ -125,34 +127,42 @@ async function buildRandomPokemonSet(): Promise<PokemonSet> {
   const baseStats = dexGen.species.get(speciesId).baseStats;
   const goPhysical = (baseStats.atk ?? 0) >= (baseStats.spa ?? 0);
   const evs = goPhysical
-    ? { hp: 252, atk: 128, def: 64, spa: 0, spd: 0, spe: 64 }
-    : { hp: 252, atk: 0, def: 0, spa: 128, spd: 64, spe: 64 };
+    ? { hp: 4, atk: 252, def: 0, spa: 0, spd: 0, spe: 252 }
+    : { hp: 4, atk: 0, def: 0, spa: 252, spd: 0, spe: 252 };
+
+  let gender = 'M';
+  if (speciesData.gender === 'N' || speciesData.gender === 'M' || speciesData.gender === 'F') {
+    gender = speciesData.gender;
+  } else if (speciesData.genderRatio?.F === 1) {
+    gender = 'F';
+  } else if (speciesData.genderRatio?.M === 1) {
+    gender = 'M';
+  } else if (speciesData.genderRatio?.M === 0 && speciesData.genderRatio?.F === 0) {
+    gender = 'N';
+  }
 
   const set: PokemonSet = {
     name: nickname,
     species: toID(speciesData.name),
     level: MAX_POKEMON_LEVEL,
-    gender: 'M',
+    gender,
     item: '',
     ability,
-    nature: 'serious',
+    nature: goPhysical ? 'adamant' : 'modest',
     evs,
     ivs,
     moves: moveset,
-    // Note: do NOT include pre-calculated 'stats' — Showdown computes them
-    // from evs/ivs/level/species internally. Including stats.hp=undefined
-    // causes Showdown to start every Pokémon at 0 HP (immediately fainted).
   };
   Reflect.set(set, 'uid', uid);
   return set;
 }
 
 // ---------------------------------------------------------------------------
-// Build a full team of 6 random Pokémon
+// Build a full team of 3 random Pokémon (standard Poké Vicio 3v3 format)
 // ---------------------------------------------------------------------------
 async function buildRandomTeam(): Promise<PokemonSet[]> {
   const sets = await Promise.all(
-    Array.from({ length: 6 }, () => buildRandomPokemonSet())
+    Array.from({ length: 3 }, () => buildRandomPokemonSet())
   );
   return sets;
 }
@@ -165,6 +175,9 @@ export async function generateAiBattles(count: number = 100): Promise<AiBattleBa
 
   for (let i = 0; i < count; i++) {
     const [p1Team, p2Team] = await Promise.all([buildRandomTeam(), buildRandomTeam()]);
+    const { PokemonLegalityValidator } = await import('../../../../src/logic/battle/helpers/pokemonLegalityValidator.ts');
+    PokemonLegalityValidator.assertTeamLegality(p1Team, `AI Battle ${i + 1} P1 Team`);
+    PokemonLegalityValidator.assertTeamLegality(p2Team, `AI Battle ${i + 1} P2 Team`);
     const id = `ai-${crypto.randomBytes(6).toString('hex')}`;
     batches.push({ id, p1Team, p2Team });
   }

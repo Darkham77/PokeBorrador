@@ -33,7 +33,7 @@ export function healStuckMissions(
   const allPokes = [...team, ...box];
   allPokes.forEach((p) => {
     if (p && p.onMission) {
-      if (!referencedUid || p.uid !== referencedUid) {
+      if (referencedUid === null || p.uid !== referencedUid) {
         p.onMission = false;
         fixedAny = true;
       }

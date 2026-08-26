@@ -3,6 +3,32 @@ import type { SBCtx } from './showdownBridgeCtx.ts';
 import type { Move, Pokemon, PokemonStatus } from '../../types/pokemon/pokemon.ts';
 import { requirePokemonMoveId, type MoveCategory } from '@/data/battle/moves';
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
+import { isMatchingUid } from './showdownUidMapper.ts';
+import type { BattleContext } from '../../types/battle/battleContext.ts';
+
+function syncCombatantToTeam(store: BattleContext, target: Pokemon | null) {
+  if (!store || !target?.uid) return;
+  const active = store.activeBattle.value;
+  if (!active) return;
+  const inEnemy = active.enemyTeam?.find((p: Pokemon) => p && isMatchingUid(p.uid, target.uid));
+  if (inEnemy && inEnemy !== target) {
+    inEnemy.hp = target.hp;
+    inEnemy.status = target.status;
+    inEnemy.fainted = target.fainted;
+  }
+  const inPlayerTeam = active.playerTeam?.find((p: Pokemon) => p && isMatchingUid(p.uid, target.uid));
+  if (inPlayerTeam && inPlayerTeam !== target) {
+    inPlayerTeam.hp = target.hp;
+    inPlayerTeam.status = target.status;
+    inPlayerTeam.fainted = target.fainted;
+  }
+  const inGsTeam = store.gs?.state?.team?.find((p: Pokemon) => p && isMatchingUid(p.uid, target.uid));
+  if (inGsTeam && inGsTeam !== target) {
+    inGsTeam.hp = target.hp;
+    inGsTeam.status = target.status;
+    inGsTeam.fainted = target.fainted;
+  }
+}
 
 /**
  * Maneja los eventos básicos de combate:
@@ -178,6 +204,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
         if (store.animations?.handleShakeRequest) {
           await store.animations.handleShakeRequest({ side });
         }
+        syncCombatantToTeam(store, victim);
       }
       return true;
     }
@@ -215,6 +242,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
         } else {
           store.addLog(`¡${target.name} recuperó salud!`, 'log-info', target);
         }
+        syncCombatantToTeam(store, target);
       }
       return true;
     }
@@ -232,6 +260,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
         if (remainedAlive) {
           store.addLog(`¡${target.name} se debilitó!`, 'log-info', target);
         }
+        syncCombatantToTeam(store, target);
       }
       return true;
     }
@@ -252,6 +281,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
         };
         const msg = statusMessages[statusType] || `¡${target.name} sufrió un problema de estado: ${statusType.toUpperCase()}!`; // text-ok
         store.addLog(msg, 'log-info', target);
+        syncCombatantToTeam(store, target);
       }
       return true;
     }
@@ -272,6 +302,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
         };
         const msg = cureMessages[curedStatus] || `¡${target.name} se curó de su estado alterado!`;
         store.addLog(msg, 'log-info', target);
+        syncCombatantToTeam(store, target);
       }
       return true;
     }
@@ -299,6 +330,7 @@ export async function handleCoreEvents(ctx: SBCtx): Promise<boolean> {
         } else if (!isNaN(cur)) {
           target.hp = cur;
         }
+        syncCombatantToTeam(store, target);
       }
       return true;
     }

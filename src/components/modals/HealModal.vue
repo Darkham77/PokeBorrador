@@ -73,7 +73,7 @@ const TYPE_COLORS = {
 
 function getPokemonFX(p: Pokemon | null) {
   if (!p) return { typeColor: '#A8A878', isShiny: false, isLegendary: false, tierColor: '#A8A878' }
-  const data = pokemonDataProvider.getPokemonData(p.id || p.name)
+  const data = pokemonDataProvider.getPokemonData(p.id)
   const tier = getPokemonTier(p)
   const primaryType = data?.type || 'normal'
   

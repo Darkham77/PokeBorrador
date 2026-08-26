@@ -4,6 +4,7 @@ import { onMounted, computed } from 'vue'
 import { gsap } from 'gsap'
 import BaseModal from '@/components/common/BaseModal.vue'
 import EventCard from './EventCard.vue'
+import PastEventsList from './PastEventsList.vue'
 import { useEventStore } from '@/stores/events'
 import { storeToRefs } from 'pinia'
 interface Props {
@@ -19,7 +20,7 @@ const emit = defineEmits<{
 }>()
 
 const eventStore = useEventStore()
-const { activeEvents, pendingAwards, isLoading } = storeToRefs(eventStore)
+const { activeEvents, pastEvents, pendingAwards, isLoading } = storeToRefs(eventStore)
 
 const ui = useUIStore()
 const isSmallScreen = computed(() => ui.isSmallScreen)
@@ -120,20 +121,34 @@ onMounted(() => {
       </div>
 
       <!-- ACTIVE EVENTS GRID -->
-      <div class="events-grid">
-        <div
-          v-if="activeEvents.length === 0"
-          class="no-events"
-        >
-          {{ isLoading ? 'Cargando eventos...' : 'No hay eventos activos en este momento.' }}
+      <div class="events-section-block">
+        <div class="events-section-header">
+          <h3 class="events-section-title">
+            ⚡ EVENTOS ACTIVOS AHORA
+          </h3>
         </div>
 
-        <EventCard
-          v-for="event in activeEvents"
-          :key="event.id"
-          :event="event"
-        />
+        <div class="events-grid">
+          <div
+            v-if="activeEvents.length === 0"
+            class="no-events"
+          >
+            {{ isLoading ? 'Cargando eventos...' : 'No hay eventos activos en este momento.' }}
+          </div>
+
+          <EventCard
+            v-for="event in activeEvents"
+            :key="event.id"
+            :event="event"
+          />
+        </div>
       </div>
+
+      <!-- PAST CONCLUDED EVENTS & REWARDS HISTORY -->
+      <PastEventsList
+        :past-events="pastEvents"
+        :is-loading="isLoading"
+      />
     </div>
   </BaseModal>
 </template>
@@ -263,6 +278,24 @@ onMounted(() => {
       font-size: 10px;
       color: var(--gray);
     }
+  }
+}
+
+/* SECTION HEADERS */
+.events-section-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.events-section-header {
+  margin-bottom: 12px;
+
+  .events-section-title {
+    @include pixelated;
+    font-size: 11px;
+    color: var(--yellow);
+    margin: 0;
+    line-height: 1;
   }
 }
 

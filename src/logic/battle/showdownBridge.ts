@@ -125,9 +125,10 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     return;
   }
 
-  const p = store.activeBattle.value?.player;
-  const e = store.activeBattle.value?.enemy;
-  if (!p || !e) return;
+  if (!store.activeBattle.value) return;
+
+  const p = store.activeBattle.value?.player ?? null;
+  const e = store.activeBattle.value?.enemy ?? null;
 
   const getSide = (rawId: string): BattleSide | null => {
     if (/^p1[a-d]?:/.test(rawId)) return 'player';
@@ -201,9 +202,9 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     const namePart = rawId.includes(':') ? (rawId.split(':')[1]?.trim() ?? '') : '';
     let matchMon: Pokemon | null = null;
     if (namePart) {
-      matchMon = (team.find(mon => mon && (mon.name === namePart || isMatchingUid(mon.uid, namePart))) ?? null) as Pokemon | null;
+      matchMon = (team.find(mon => mon && isMatchingUid(mon.uid, namePart)) ?? null) as Pokemon | null;
       if (matchMon) {
-        console.debug(`[E2E-GETPOKE-SUFFIX-MATCH] Matched rawId "${rawId}" to team UID "${matchMon.uid}" via name/suffix`);
+        console.debug(`[E2E-GETPOKE-SUFFIX-MATCH] Matched rawId "${rawId}" to team UID "${matchMon.uid}" via UID prefix`);
         return matchMon;
       }
     }

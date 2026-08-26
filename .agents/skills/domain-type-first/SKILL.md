@@ -30,6 +30,13 @@ If it represents a finite domain, design and use the domain type first.
 - **Fail-Fast Boundary Validation**: Any lookup or resolution MUST use an explicit validator function (`requireItemId`, `requirePokemonSpeciesId`, etc.) that throws an explicit Error (`throw new Error(...)`) if the ID is missing or invalid.
 - **Audit Engine Enforcement**: The audit rule `noDomainIdFallbacks` in `scripts/maintenance/audit_rules.ts` scans `src/` and `scripts/` during `npm run audit:warnings-diff` and will fail the commit if any domain ID fallback is introduced.
 
+## Absolute Prohibition on ID-to-Name & Secondary Property Fallbacks (`noDomainNameFallbacks`)
+
+- **Canonical ID Mandate**: Every domain entity (Pokemon, Move, Ability, Item) MUST be resolved, validated, and evaluated STRICTLY via its canonical `id` (`PokemonSpeciesId`, `PokemonMoveId`, `AbilityId`, `ItemId`).
+- **Forbidden Pattern**: `toID(m.id || m.name)`, `p.species || p.name`, `p.id || p.name`, `move.id || move.name`, `toID(x || y)`.
+- **Zero-Tolerance Protocol**: If a domain entity is missing its canonical `id` field, it is malformed/illegal data. It MUST NEVER be "healed" or patched by falling back to a display name or secondary field. It must fail loudly with an explicit error.
+- **Audit Engine Enforcement**: The audit rule `noDomainNameFallbacks` automatically scans `src/logic/` and `src/stores/` and blocks any commit containing fallback derivations from ID to name.
+
 ## Absolute Prohibition on Value-Hardcoding in Constant Names (`badConstantNames`)
 
 - **Semantic Naming Mandate**: Constant names MUST describe their domain purpose or semantic role, NEVER hardcode their current numeric or string value into the identifier.

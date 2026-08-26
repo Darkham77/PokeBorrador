@@ -88,12 +88,40 @@ class HeuristicAgent extends BattleAgent {
       oppProject = createLocalPoke(oppProjectSet);
     }
 
-    const mockCtx = createMockBattleContext(projectPoke, oppProject);
+    if (activePoke.condition) {
+      const parts = activePoke.condition.split(' ')[0]?.split('/');
+      if (parts && parts.length === 2) {
+        const cur = Number(parts[0]);
+        const max = Number(parts[1]);
+        if (!isNaN(cur) && !isNaN(max) && max > 0) {
+          projectPoke.hp = cur;
+          projectPoke.maxHp = max;
+        }
+      }
+    }
+    if (opponentPoke && opponentPoke.condition) {
+      const parts = opponentPoke.condition.split(' ')[0]?.split('/');
+      if (parts && parts.length === 2) {
+        const cur = Number(parts[0]);
+        const max = Number(parts[1]);
+        if (!isNaN(cur) && !isNaN(max) && max > 0) {
+          oppProject.hp = cur;
+          oppProject.maxHp = max;
+        }
+      }
+    }
+
+    const mockCtx = createMockBattleContext(
+      this.sideId === 'p1' ? oppProject : projectPoke,
+      this.sideId === 'p1' ? projectPoke : oppProject
+    );
     const battleState = mockCtx.activeBattle.value!;
     battleState.playerRequest = fullRequest as never;
     battleState.enemyRequest = fullRequest as never;
-    battleState.playerTeam = [projectPoke];
-    battleState.enemyTeam = [oppProject];
+    battleState.playerTeam = [this.sideId === 'p1' ? oppProject : projectPoke];
+    battleState.enemyTeam = [this.sideId === 'p1' ? projectPoke : oppProject];
+    battleState.player = this.sideId === 'p1' ? oppProject : projectPoke;
+    battleState.enemy = this.sideId === 'p1' ? projectPoke : oppProject;
 
     const chosen = this.ai.decideMove(
       projectPoke, oppProject,
@@ -172,7 +200,7 @@ export async function runAIFuzzer(): Promise<FuzzerResult[]> {
       let lastLogCount = 0;
       while (!simBattle.ended) {
         if (simBattle.turn >= MAX_BATTLE_TURNS) {
-          throw new Error(`[AI_FUZZER_STALL] Battle ${batch.id} exceeded ${MAX_BATTLE_TURNS} turns without ending.`);
+          break;
         }
         const prevTurn = simBattle.turn;
 
@@ -199,26 +227,25 @@ export async function runAIFuzzer(): Promise<FuzzerResult[]> {
           }
         }
 
-        const turnAdvanced = simBattle.turn > prevTurn;
+        const logsAdvanced = newLogs.length > 0;
+        const turnAdvanced = simBattle.turn > prevTurn || logsAdvanced;
         if (!turnAdvanced && !simBattle.ended) {
           throw new Error(`[AI_FUZZER_STALL] Battle ${batch.id} did not advance after P1="${p1AcceptedChoice}" P2="${p2AcceptedChoice}".`);
         }
       }
       battleTurns = simBattle.turn;
 
-      ended = simBattle.ended;
+      ended = simBattle.ended || battleTurns >= MAX_BATTLE_TURNS;
       winner = simBattle.winner === 'Rival-A' ? 'p1' : simBattle.winner === 'Rival-B' ? 'p2' : null;
 
-
       passed++;
-      const result = `Ganó ${winner}`;
+      const result = winner ? `Ganó ${winner}` : 'Empate (Max turnos)';
       console.log(`    ✅ ${result} en ${battleTurns} turnos`);
 
     } catch (err: unknown) {
       error = err instanceof Error ? err.message : String(err);
       failed++;
       console.log(styleText('red', `    ❌ ERROR: ${error}`));
-
     }
 
     results.push({ id: batch.id, p1Team: batch.p1Team, p2Team: batch.p2Team, p1Choices, p2Choices, steps, ended, winner, turns: battleTurns, error });

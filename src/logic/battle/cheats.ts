@@ -39,11 +39,16 @@ export type CompatibleSide = Side | CheatSide;
 export function applyHealCheatToSide(side: CheatSide | null | undefined): void {
   if (!side || !Array.isArray(side.pokemon)) return;
 
+  const battle = Reflect.get(side, 'battle') as { makeRequest?: (type: string) => void; requestState?: string; sides?: Array<CheatSide | null> } | undefined;
+
   side.pokemon.forEach(p => {
     if (p) {
       p.fainted = false;
       if ('faintQueued' in p) {
         Reflect.set(p, 'faintQueued', false);
+      }
+      if ('switchFlag' in p) {
+        Reflect.set(p, 'switchFlag', false);
       }
       clearPokemonFromFaintQueue(side, p);
 
@@ -61,6 +66,16 @@ export function applyHealCheatToSide(side: CheatSide | null | undefined): void {
   if (side.pokemonLeft !== undefined) {
     side.pokemonLeft = side.pokemon.length;
   }
+
+  if (Array.isArray(side.active) && side.active.length > 0 && !side.active[0] && side.pokemon[0]) {
+    side.active[0] = side.pokemon[0];
+  }
+
+  const allActiveAlive = Boolean(battle && Array.isArray(battle.sides) && battle.sides.every(s => !s || !Array.isArray(s.active) || s.active.every(p => !p || (!p.fainted && p.hp > 0))));
+  if (battle && typeof battle.makeRequest === 'function' && battle.requestState === 'switch' && allActiveAlive) {
+    battle.makeRequest('move');
+  }
+
   syncRequestConditionsWithSimulator(side);
 }
 
@@ -109,33 +124,58 @@ export function syncRequestConditionsWithSimulator(side: CompatibleSide | null |
     return;
   }
   const reqPokemons = activeRequest.side.pokemon;
-  const simPokemons = side.pokemon;
+  const simPokemons = (side.pokemon as Array<(CheatPokemon & { name?: string; ident?: string; moveSlots?: Array<{ id: string; move?: string }>; moves?: string[] }) | null>).filter(Boolean);
 
-  reqPokemons.forEach((reqMon, i) => {
-    if (reqMon) {
-      const reqId = reqMon.uid || reqMon.ident?.replace(/^p[1-4]a?:\s*/, '') || '';
-      const simMon = (simPokemons as Array<(CheatPokemon & { name?: string; ident?: string }) | null>).find(p => {
-        if (!p) return false;
-        if (reqMon.uid && p.uid && isMatchingUid(p.uid, reqMon.uid)) return true;
-        if (reqId) {
-          const pId = p.uid || p.name || p.ident?.replace(/^p[1-4]a?:\s*/, '') || '';
-          if (pId && isMatchingUid(pId, reqId)) return true;
+  const matchedSimMons = new Set<unknown>();
+
+  reqPokemons.forEach((reqMon) => {
+    if (!reqMon) return;
+    const reqId = reqMon.uid || reqMon.ident?.replace(/^p[1-4]a?:\s*/, '') || '';
+    const reqMoves = (Reflect.get(reqMon, 'moves') as string[] | undefined) ?? []; // no-domain
+
+    let simMon = simPokemons.find(p => {
+      if (!p || matchedSimMons.has(p)) return false;
+      if (reqMon.uid && p.uid && isMatchingUid(p.uid, reqMon.uid)) return true;
+      if (reqId) {
+        if (p.uid && isMatchingUid(p.uid, reqId)) return true;
+        if (p.name && isMatchingUid(p.name, reqId)) return true;
+        if (p.ident && isMatchingUid(p.ident.replace(/^p[1-4]a?:\s*/, ''), reqId)) return true;
+      }
+      return false;
+    });
+
+    if (!simMon && reqMoves.length > 0) {
+      simMon = simPokemons.find(p => {
+        if (!p || matchedSimMons.has(p)) return false;
+        const pMoves: string[] = p.moves ?? (p.moveSlots?.map(ms => (ms as { id?: string; move?: string }).id || (ms as { id?: string; move?: string }).move || '').filter(Boolean) ?? []); // no-domain
+        if (pMoves.length > 0 && reqMoves.every(rm => pMoves.some(pm => isMatchingUid(pm, rm)))) {
+          return true;
         }
         return false;
-      }) || (simPokemons as Array<CheatPokemon | null>)[i];
-      if (simMon) {
-        const hp = simMon.hp;
-        const maxhp = simMon.maxhp !== undefined ? simMon.maxhp : (simMon.maxHp !== undefined ? simMon.maxHp : 0);
-        const status = simMon.status || '';
-        
-        let cond = `${hp}/${maxhp}`;
-        if (hp <= 0) {
-          cond = '0 fnt';
-        } else if (status) {
-          cond = `${cond} ${status}`;
-        }
-        reqMon.condition = cond;
+      });
+    }
+
+    if (!simMon) {
+      // Fallback matching by position index if not matched yet
+      simMon = simPokemons.find(p => p && !matchedSimMons.has(p));
+    }
+
+    if (simMon) {
+      matchedSimMons.add(simMon);
+      const hp = simMon.hp;
+      const maxhp = simMon.maxhp !== undefined ? simMon.maxhp : (simMon.maxHp !== undefined ? simMon.maxHp : 0);
+      const status = simMon.status || '';
+      const isFainted = simMon.fainted === true || hp <= 0;
+
+      let cond = `${hp}/${maxhp}`;
+      if (isFainted) {
+        cond = '0 fnt';
+      } else if (status) {
+        cond = `${cond} ${status}`;
       }
+      reqMon.condition = cond;
+      Reflect.set(reqMon, 'fainted', isFainted);
+      Reflect.set(reqMon, 'hp', hp);
     }
   });
 

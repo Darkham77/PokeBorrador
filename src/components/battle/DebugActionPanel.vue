@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { sleep } from '@/logic/utils/timeUtils'
+import { gsapSleep } from '@/logic/utils/gsapHelpers'
 import { useBattleStore } from '@/stores/battle/battle'
 import { useGameStore } from '@/stores/game'
 import { useAudioStore } from '@/stores/audio'
@@ -80,7 +80,7 @@ const debugCapture = async () => {
     await anims.handleCatchRequest({ side: 'enemy', ballId })
   } else {
     gameBus.emit('PLAY_CATCH_ENERGY', { side: 'enemy', ballId })
-    await sleep(DEBUG_CATCH_FALLBACK_SLEEP_MS)
+    await gsapSleep(DEBUG_CATCH_FALLBACK_SLEEP_MS)
   }
 
   // 2. Shakes
@@ -90,7 +90,7 @@ const debugCapture = async () => {
       await anims.handleShakeRequest({ side: 'enemy' })
     } else {
       gameBus.emit('CATCH_SHAKE', { side: 'enemy' })
-      await sleep(DEBUG_CATCH_FALLBACK_SLEEP_MS)
+      await gsapSleep(DEBUG_CATCH_FALLBACK_SLEEP_MS)
     }
   }
 
@@ -105,14 +105,14 @@ const debugCapture = async () => {
   if (anims?.playCatchCelebration) {
     await anims.playCatchCelebration('enemy')
   } else {
-    await sleep(DEBUG_CATCH_CELEBRATION_SLEEP_MS)
+    await gsapSleep(DEBUG_CATCH_CELEBRATION_SLEEP_MS)
   }
 
   // Fase de Desvanecimiento (Phase 4 de la captura)
   if (anims?.playBallFadeOut) {
     await anims.playBallFadeOut('enemy')
   } else {
-    await sleep(DEBUG_CATCH_FADEOUT_SLEEP_MS)
+    await gsapSleep(DEBUG_CATCH_FADEOUT_SLEEP_MS)
   }
   
   await battleStore.endBattle(true, false)

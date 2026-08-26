@@ -166,13 +166,13 @@ All layouts and structural containers **MUST** follow premium modern web design 
 
 All game-specific content **MUST** be strictly Pixel Art to preserve the game's core identity.
 
-- **Rendering (Mandatory)**: For all sprites and pixelated assets (Pokémon, items, badges), you **MUST** use `@include pixelated;`. This mixin ensures sharp edges, consistent typography rendering across browsers, and disables smoothing. It also forces GPU layer alignment via `translateZ(0)` to prevent sub-pixel blurring during motion.
+- **Sprite & Texture Rendering (Mandatory)**: For all visual sprites, Pokémon, items, and badges rendered on GPU layers, you **MUST** use `@include sprite-render;` (from `_gpu.scss`) and explicit `image-rendering: pixelated !important;` (alongside `-webkit-optimize-contrast` and `crisp-edges`). This mixin provisions GPU layer isolation and disables smoothing/subpixel antialiasing.
 - **Icons**: Only use pixel-art icons. **FORBIDDEN**: Modern SVG icons, FontAwesome, or high-res Material icons.
 - **Scaling Standards**:
   - **Grid Oversize**: Use **1.5x** scaling (e.g., `min-width: 60px` for a 40px slot) for item sprites in combat grids. Combined with `overflow: hidden` on parent cards, this creates a high-fidelity "clipping" effect.
 - **Typography (Game Data)**: We maintain a strict hierarchy between "Game Heart" and "Modern Shell" typography.
   - **MANDATORY Pixel Fonts**: `Pokemon FireRed LeafGreen` (or `VT323`/`Silkscreen` ONLY if special characters like `@` or extra symbols are strictly required).
-  - **MANDATORY Mixin**: Any element using a pixel font **MUST** include `@include pixelated;` to disable browser font-smoothing (`font-smooth: never`) and ensure sharp edges.
+  - **MANDATORY Typography Mixin**: Any text element using a pixel font **MUST** include `@include pixelated;` (from `_layout.scss`) to disable browser font-smoothing (`font-smooth: never`) and ensure sharp glyph edges. (Do not confuse with `@mixin sprite-render`, which is exclusively for images/sprites).
 
 | UI Level | Element Type | Style Requirement | Recommended Font |
 | :--- | :--- | :--- | :--- |

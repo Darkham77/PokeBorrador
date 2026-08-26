@@ -5,7 +5,7 @@ import type { MapLocation } from '@/types/pokemon/encounters'
 import type { PokemonGender, PokemonIVs } from '@/types/pokemon/pokemon'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 import { requireAbilityId } from '@/data/battle/abilities'
-import { canLearnMove } from '@/logic/pokemon/pokemonFactory'
+import { canLearnMove, getLegalSpeciesMoves, getRandomLegalMoves, getMaxAllowedMoves } from '@/logic/pokemon/pokemonFactory'
 import { toID } from '@pkmn/sim'
 
 const DEBUG_CREATOR_SHINY_PROB = 0.05
@@ -75,8 +75,8 @@ export function useDebugPokemonCreator() {
 
 
   const allMaps = computed<MapOption[]>(() => {
-    const maps = pokemonDataProvider.getMaps() as { id: string, name?: string }[]
-    return maps.map(m => ({ id: m.id, name: m.name || m.id }))
+    const maps = pokemonDataProvider.getMaps() as MapLocation[]
+    return maps.map(m => ({ id: m.id, name: m.name }))
   })
 
   const filteredMaps = computed(() => {
@@ -90,7 +90,7 @@ export function useDebugPokemonCreator() {
         }
         return true
       })
-      .map(m => ({ id: m.id, name: m.name || m.id }))
+      .map(m => ({ id: m.id, name: m.name }))
   })
 
   watch(selectedMinigame, () => {
@@ -100,9 +100,7 @@ export function useDebugPokemonCreator() {
   })
 
   const speciesMoves = computed<string[]>(() => {
-    const data = pokemonDataProvider.getPokemonData(config.value.id)
-    if (!data || !data.learnset) return []
-    return [...new Set(data.learnset.map(m => m.id))]
+    return getLegalSpeciesMoves(config.value.id, config.value.level)
   })
 
   const baseStats = computed(() => {
@@ -148,16 +146,7 @@ export function useDebugPokemonCreator() {
   }
 
   function randomFillMoves() {
-    const data = pokemonDataProvider.getPokemonData(config.value.id)
-    if (!data?.learnset || data.learnset.length === 0) return
-
-    const allLearnsetMoves = [...new Set(data.learnset.map(m => m.id))]
-    const shuffled = allLearnsetMoves.sort(() => HALF_SPLIT_THRESHOLD - Math.random())
-    const selected = shuffled.slice(0, MAX_MOVE_SLOTS_COUNT)
-    const finalMoves: (string | null)[] = [...selected]
-    while (finalMoves.length < MAX_MOVE_SLOTS_COUNT) finalMoves.push(null)
-    
-    config.value.moves = finalMoves
+    config.value.moves = getRandomLegalMoves(config.value.id, config.value.level, MAX_MOVE_SLOTS_COUNT)
   }
 
   function randomizeSpecies() {
@@ -312,6 +301,11 @@ export function validatePokemonLegality(cfg: PokemonConfig): { valid: boolean; i
   const activeMoves = (cfg.moves || []).filter((m): m is string => !!m)
   if (activeMoves.length === 0) {
     issues.push('El Pokémon debe tener al menos 1 movimiento asignado.')
+  } else {
+    const maxAllowedMoves = getMaxAllowedMoves(cfg.id, cfg.level)
+    if (activeMoves.length > maxAllowedMoves) {
+      issues.push(`El Pokémon al nivel ${cfg.level} solo puede conocer hasta ${maxAllowedMoves} movimiento(s) según su etapa de aprendizaje (posee ${activeMoves.length}).`)
+    }
   }
 
   const moveSet = new Set<string>()
@@ -325,8 +319,8 @@ export function validatePokemonLegality(cfg: PokemonConfig): { valid: boolean; i
     const moveData = pokemonDataProvider.getMoveData(cleanMoveId)
     if (!moveData) {
       issues.push(`El movimiento "${moveId}" no existe en la base de datos de movimientos.`)
-    } else if (!canLearnMove(cfg.id, cleanMoveId)) {
-      issues.push(`El movimiento "${moveData.name || moveId}" (${cleanMoveId}) es ilegal para la especie ${speciesData.name || cfg.id}.`)
+    } else if (!canLearnMove(cfg.id, cleanMoveId, cfg.level)) {
+      issues.push(`El movimiento "${moveData.name || moveId}" (${cleanMoveId}) es ilegal para la especie ${speciesData.name || cfg.id} al nivel ${cfg.level}.`)
     }
   }
 

@@ -1,6 +1,6 @@
 // fallow-ignore-file circular-dependencies
 import { defineStore } from 'pinia'
-import { sleep } from '@/logic/utils/timeUtils'
+import { gsapSleep } from '@/logic/utils/gsapHelpers'
 import { ref, computed, watch, nextTick } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import { safeStorage } from '@/logic/utils/storage.ts'
@@ -383,7 +383,9 @@ export const useBattleStore = defineStore('battle', () => {
     if (Array.isArray(active.playerTeam)) {
       for (const bp of active.playerTeam) {
         if (!bp) continue;
-        const matchingMon = team.find(p => p && (p.uid === bp.uid || p.id === bp.id));
+        const matchingMon = bp.uid
+          ? team.find(p => p && p.uid === bp.uid)
+          : team.find(p => p && p.id === bp.id);
         if (matchingMon && typeof bp.hp === 'number') {
           matchingMon.hp = bp.hp;
         }
@@ -442,7 +444,7 @@ export const useBattleStore = defineStore('battle', () => {
         const MAX_PROCESSING_WAIT_RETRIES = 20
         const PROCESSING_WAIT_SLEEP_MS = 20
         while (isProcessing.value && retries < MAX_PROCESSING_WAIT_RETRIES) {
-          await sleep(PROCESSING_WAIT_SLEEP_MS)
+          await gsapSleep(PROCESSING_WAIT_SLEEP_MS)
           retries++
         }
         logger.info('BattleStore', 'Auto-submitting executeMove(0) for forced recharge.')
@@ -497,7 +499,7 @@ export const useBattleStore = defineStore('battle', () => {
     // fallow-ignore-next-line unused-store-member
     clearLogs, executeMove, executeStruggle,
     // fallow-ignore-next-line unused-store-member
-    persistBattle, useItemInBattle, endBattle, handleFaint, applyEndTurnEffects,
+    persistBattle, useItemInBattle, endBattle, handleFaint, applyEndTurnEffects, syncTeamHP,
     startBattle, _startBattle: startBattle,
     // fallow-ignore-next-line unused-store-member
     initBattle, executeSwitch: _executeSwitch,

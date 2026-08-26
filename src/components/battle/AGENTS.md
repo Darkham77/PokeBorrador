@@ -18,10 +18,25 @@ Frontend Developers / Systems Engineers.
   - Sizing must preserve official lore proportions (e.g. 1:5 ratio with a 0.3m Pokémon like Rattata) and depth perspective between player foreground (300 units) and enemy background (200 units). Fixed CSS dimensions on combatant items in `.scss` files are strictly forbidden.
 - **NPC Trainer Visual Lifecycle & GSAP State Choreography**:
   - **Step 1 (Entrance & Dialogue)**: The trainer slides in from off-screen right (`x: '150%'` to `x: '0%'`, `y: 0`, `scale: 1`, `transformOrigin: 'bottom center'`) and MUST remain stationary at center stage (`p2Pos`, `x: 0, y: 0`) at full size (`:w="baseEntitySizeEnemy"`, `scale: 1.0`) while displaying dialogue speech bubbles during `SEARCH_PHASE` / `SHOW_DIALOGS`. Premature snapping to background retreat coordinates is strictly forbidden.
-  - **Step 2 (Combat Confirmation & Retreat)**: Upon confirming combat ("LUCHAR"), the trainer retreats to their background standing position (`x: 300px, y: -10px, scale: 0.8`, `transformOrigin: 'bottom center'`) via GSAP (`triggerTrainerRetreat` using `TRAINER_RETREAT_X_OFFSET_PX`, `TRAINER_RETREAT_Y_OFFSET_PX`, `TRAINER_RETREAT_SCALE = 0.8`) and stays anchored there for the duration of `ACTIVE_BATTLE`.
+  - **Step 2 (Combat Confirmation & Retreat)**: Upon confirming combat ("LUCHAR"), the trainer retreats to their background standing position (`x: 300px, y: -80px, scale: 0.8`, `transformOrigin: 'bottom center'`) via GSAP (`triggerTrainerRetreat` using `TRAINER_RETREAT_X_OFFSET_PX`, `TRAINER_RETREAT_Y_OFFSET_PX`, `TRAINER_RETREAT_SCALE = 0.8`) and stays anchored there for the duration of `ACTIVE_BATTLE`.
   - **Step 3 (Standing In-Combat Entity & Mutual Exclusion)**: Standing trainer entities (`standingTrainerRef` / `.standing-trainer.enemy-trainer`) MUST use `:w="baseEntitySizeEnemy"` and CSS `transform: scale(0.8); transform-origin: bottom center;` to maintain seamless 0px/0% continuity with the GSAP retreat timeline. Presentation entities (`trainerRef`) and standing combatant entities MUST be strictly mutually exclusive via `:show-standing-trainers` and FSM states to prevent duplicate rendered instances.
   - **Step 4 (Battle Conclusion & Off-Camera Exit)**: Upon battle completion (victory, defeat, or fleeing), `triggerTrainerExit` animates the trainer moving off-screen to the right (`x: +=600px`).
   - **Step 5 (Team Rocket Flee Lore)**: Defeated or fleeing Team Rocket grunts (`trainerArchetype === 'rocket' | 'grunt'`) trigger the `flee` sound and rapid escape upon exit.
+- **Battle Pixel-Art Integrity & Sprite Rendering**:
+  - All animated battle entity containers and sprite layers (trainers, Pokémon combatants, atmosphere wrappers, status effect overlays, and sprite animators) MUST explicitly declare strict pixel-art rendering properties:
+
+    ```scss
+    image-rendering: -webkit-optimize-contrast !important;
+    #{"image-rendering"}: crisp-edges !important;
+    image-rendering: pixelated !important;
+    -ms-interpolation-mode: nearest-neighbor !important;
+    ```
+
+  - Entity images MUST consume `@include sprite-render;` (from `src/styles/core/_gpu.scss`), which provisions dedicated GPU layer containment and pixel-art rendering.
+  - Never use `@include pixelated;` for image/sprite rendering (which is strictly a typography/font mixin from `_layout.scss` for font smoothing and `font-pixel`).
+- **GSAP Clock Standard & Zero-Timer Mandate (`gsapSleep`)**: All battle component animations, delays, transitions, and pauses (such as defeat screens, stage stabilization, and catch sequences) MUST be sequenced exclusively via GSAP (`gsapSleep` from `@/logic/utils/gsapHelpers` or `ctx.animations.awaitTween(...)`). Native `sleep(...)` and `setTimeout(...)` are strictly forbidden. This guarantees instant time-scaling in simulations (`gsap.globalTimeline.timeScale(...)`) while maintaining smooth 1x visual playback.
+- **Showdown Single-Engine Delegation in UI**: UI components are strictly presentation and input dispatchers. Move calculations, damage, accuracy, boosts, and hazard resolutions are 100% owned by the Showdown worker engine. UI layers must never perform local calculations or manual ability/hazard executions.
+- **UID-Based Element Binding & Selection Parity**: All interactive combatant and bench cards MUST bind unique HTML `id` attributes and canonical UID attributes (`data-pokemon-uid="${uid}"`) to ensure deterministic selection across UI replayers and Playwright tests without text-matching ambiguities.
 
 ## Work Guidance
 
@@ -37,7 +52,7 @@ Frontend Developers / Systems Engineers.
 
 ## Verification
 
-- Run standard validation scripts (`npm test`).
+- Run `npm run lint` and `npx tsx .agents/skills/dox-navigator/scripts/audit_dox.ts`.
 
 ## Child DOX Index
 
