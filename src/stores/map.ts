@@ -15,6 +15,8 @@ import { requireWeatherSeasonId } from '@/data/world/weather-tables';
 import type { DominanceInfo } from '@/types/system/stores';
 import { ONE_HOUR_MS } from '@/logic/constants/items.ts';
 
+import { gsap } from 'gsap'
+
 export interface PendingAward {
   id: string;
   type: string;
@@ -31,6 +33,7 @@ export const useMapStore = defineStore('map', () => {
   const globalWeather = ref<WeatherId | null>(null) // Si está forzado anula el determinístico
   const forcedCycle = ref<DayPhase | null>(null)
   const forcedSeason = ref<Season | null>(null)
+  const isTimeTickerFrozen = ref(false)
   const currentEpochHour = ref(Math.floor(Temporal.Now.instant().epochMilliseconds / ONE_HOUR_MS))
 
   // Reactive Epoch Hour computation on demand & time-sync-update events (Zero-Timer Event-Driven Architecture)
@@ -38,11 +41,47 @@ export const useMapStore = defineStore('map', () => {
     currentEpochHour.value = Math.floor(getServerTime() / ONE_HOUR_MS);
   };
 
+  const setFreezeClock = (freeze: boolean) => {
+    isTimeTickerFrozen.value = freeze
+    if (typeof window !== 'undefined') {
+      if (!window.__VITE_DEBUG__) {
+        window.__VITE_DEBUG__ = {}
+      }
+      window.__VITE_DEBUG__.freezeClock = freeze
+    }
+  }
+
   if (typeof window !== 'undefined') {
     window.addEventListener('time-sync-update', () => {
       logger.info('MapStore', 'Time sync detected');
       updateEpochHour();
     });
+
+    let lastCheckedSec = 0
+    const onTimeTick = (time: number) => {
+      // Sample every 10 seconds of GSAP timeline execution
+      if (time - lastCheckedSec < 10) return
+      lastCheckedSec = time
+
+      const isFrozen = isTimeTickerFrozen.value || 
+        Boolean(
+          window.__VITE_DEBUG__?.freezeClock || 
+          window.__VITE_DEBUG__?.isScriptedReplayMode || 
+          window.__VITE_DEBUG__?.isDeterministicSimulation
+        )
+
+      if (isFrozen) return
+
+      const newEpochHour = Math.floor(getServerTime() / ONE_HOUR_MS)
+      if (newEpochHour !== currentEpochHour.value) {
+        logger.info('MapStore', `Real-time hour changed: ${currentEpochHour.value} -> ${newEpochHour}`)
+        currentEpochHour.value = newEpochHour
+      }
+    }
+
+    if (gsap && gsap.ticker && typeof gsap.ticker.add === 'function') {
+      gsap.ticker.add(onTimeTick)
+    }
   }
 
   const currentCycle = computed(() => {
@@ -123,6 +162,8 @@ export const useMapStore = defineStore('map', () => {
     globalWeather,
     forcedCycle,
     forcedSeason,
+    isTimeTickerFrozen,
+    setFreezeClock,
     maps,
     activeEvents,
     pendingAwards,

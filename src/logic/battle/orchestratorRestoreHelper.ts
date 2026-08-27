@@ -1,3 +1,4 @@
+import { toRaw } from 'vue'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { BattleState, BattleStages, BattleLog } from '@/types/battle/battle'
 import type { Pokemon } from '@/types/pokemon/pokemon'
@@ -53,6 +54,13 @@ export async function restoreBattleState(ctx: BattleContext, battleData: unknown
   if (playerPoke && enemyPoke && isActualCombatInProgress) {
     d.player = playerPoke
     d.enemy = enemyPoke
+    if (!d._initialEnemy) {
+      try {
+        d._initialEnemy = structuredClone(toRaw(enemyPoke))
+      } catch {
+        d._initialEnemy = JSON.parse(JSON.stringify(enemyPoke)) as Pokemon
+      }
+    }
     d.playerTeam = ctx.gs.state.team
     const matchedIndex = ctx.gs.state.team.findIndex((p: Pokemon) => p && isMatchingUid(p.uid, playerPoke.uid))
     d.playerTeamIndex = matchedIndex !== -1 ? matchedIndex : (desiredIndex !== -1 ? desiredIndex : 0)

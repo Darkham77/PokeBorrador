@@ -5,7 +5,7 @@
  * Zero UI / Pinia dependencies.
  */
 
-import type { Pokemon, PokemonEgg, PokemonGender, PokemonIVs, PokemonEVs } from '@/types/pokemon/pokemon';
+import type { Pokemon, PokemonEgg, PokemonGender } from '@/types/pokemon/pokemon';
 import type { GameState } from '@/types/system/game';
 import type { BattleLog, BattleStages, BattleWeather, BattleTimedCondition, PendingSlotEffect, BattleConditionKey, BattleSide, BattleDifficulty, BattleMinigame, BattleState } from '@/types/battle/battle';
 import type { Inventory } from '@/types/inventory/items';
@@ -13,70 +13,10 @@ import type { SaveDataDto } from '@/logic/validation/schemas';
 import { requireAbilityId } from '@/data/battle/abilities';
 import { requireWeatherId } from '@/logic/weather/weatherRegistry';
 import { requireMapRouteId } from '@/data/world/map-assets';
-import type { ItemId } from '@/data/inventory/items';
 import { logger } from '@/logic/utils/logger';
 import type { GenderName } from '@pkmn/sim';
 
 const DEFAULT_POKEMON_FRIENDSHIP_FALLBACK = 70;
-
-interface EnemyPokemonSerialized {
-  uid: string;
-  id: string;
-  name: string;
-  emoji?: string;
-  type: string;
-  level: number;
-  hp: number;
-  maxHp: number;
-  atk: number;
-  def: number;
-  spa: number;
-  spd: number;
-  spe: number;
-  moves: unknown[];
-  status: string | null;
-  isShiny: boolean;
-  gender: string | null;
-  ivs: PokemonIVs;
-  nature: string;
-  ability: string;
-  exp: number;
-  expNeeded: number;
-  friendship: number;
-  _revealed: boolean;
-  _gymLeader: string | null;
-  _gymBadge: string | null;
-  heldItem?: ItemId | null;
-  item?: ItemId | null;
-  lastItem?: ItemId | null;
-  types?: string[];
-  type2?: string | null;
-  addedType?: string | null;
-  evs?: PokemonEVs | null;
-  currentPp?: Record<string, number> | null;
-  fainted?: boolean;
-  statusTurns?: number;
-  sleepTurns?: number;
-  badPoison?: number;
-  substitute?: number;
-  confused?: number;
-  attracted?: boolean;
-  cursed?: boolean;
-  seeded?: boolean;
-  tauntTurns?: number;
-  encoreTurns?: number;
-  disabledTurns?: number;
-  choiceMove?: string | null;
-  mustRecharge?: boolean;
-  furyCutterCount?: number;
-  thrashTurns?: number;
-  bound?: number;
-  trapped?: boolean;
-  perishSongCount?: number;
-  focusEnergy?: boolean;
-  isTransformed?: boolean;
-  isGuardian?: boolean;
-}
 
 interface ActiveBattleSerialized {
   isGym: boolean;
@@ -121,7 +61,7 @@ interface ActiveBattleSerialized {
   battleLogs?: BattleLog[];
   playerStages?: BattleStages | null;
   enemyStages?: BattleStages | null;
-  enemyTeam: EnemyPokemonSerialized[] | null;
+  enemyTeam: Pokemon[] | null;
   timestamp: number;
   isPvP?: boolean;
   isRival?: boolean;
@@ -157,10 +97,7 @@ function serializeActiveBattleGenderCodes(activeBattle: unknown): unknown {
   if (!battle.enemyTeam) return activeBattle;
   return {
     ...battle,
-    enemyTeam: battle.enemyTeam.map(enemy => ({
-      ...enemy,
-      gender: toPersistedPokemonGender(enemy.gender === 'm' || enemy.gender === 'f' ? enemy.gender : null),
-    })),
+    enemyTeam: battle.enemyTeam.map(enemy => (enemy ? withPersistedPokemonGender(enemy as Pokemon) : null)),
   };
 }
 
@@ -251,61 +188,11 @@ export function serializeState(state: GameState | SaveDataDto): SaveDataDto {
           enemyStages: battle.enemyStages || null,
           enemyTeam: rawEnemyTeam
             ? (rawEnemyTeam as Pokemon[]).map(p => ({
-                uid: p.uid,
-                id: p.id,
-                name: p.name,
-                emoji: (p as Pokemon & { emoji?: string }).emoji,
-                type: p.type,
-                level: p.level,
-                hp: p.hp,
-                maxHp: p.maxHp,
-                atk: p.atk,
-                def: p.def,
-                spa: p.spa,
-                spd: p.spd,
-                spe: p.spe,
-                moves: p.moves,
-                status: p.status || null,
-                isShiny: p.isShiny || false,
-                gender: p.gender || null,
-                ivs: p.ivs,
-                nature: p.nature,
-                ability: p.ability ? requireAbilityId(p.ability) : '',
-                exp: p.exp || 0,
-                expNeeded: p.expNeeded || 1,
-                friendship: p.friendship || DEFAULT_POKEMON_FRIENDSHIP_FALLBACK,
-                _revealed: (p as Pokemon & { _revealed?: boolean })._revealed || false,
-                _gymLeader: (p as Pokemon & { _gymLeader?: string })._gymLeader || null,
-                _gymBadge: (p as Pokemon & { _gymBadge?: string })._gymBadge || null,
-                heldItem: p.heldItem || p.item || null,
-                item: p.item || p.heldItem || null,
-                lastItem: p.lastItem || null,
-                types: (p as Pokemon & { types?: string[] }).types || (p.type2 ? [p.type, p.type2] : [p.type]),
-                type2: p.type2 || null,
-                addedType: p.addedType || null,
-                evs: p.evs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-                currentPp: (p as Pokemon & { currentPp?: Record<string, number> }).currentPp || {},
-                fainted: Boolean(p.fainted || p.hp <= 0),
-                statusTurns: p.statusTurns ?? 0,
-                sleepTurns: p.sleepTurns ?? 0,
-                badPoison: p.badPoison ?? 0,
-                substitute: p.substitute ?? 0,
-                confused: p.confused ?? 0,
-                attracted: Boolean(p.attracted),
-                cursed: Boolean(p.cursed),
-                seeded: Boolean(p.seeded),
-                tauntTurns: p.tauntTurns ?? 0,
-                encoreTurns: p.encoreTurns ?? 0,
-                disabledTurns: p.disabledTurns ?? 0,
-                choiceMove: p.choiceMove || null,
-                mustRecharge: Boolean(p.mustRecharge),
-                furyCutterCount: p.furyCutterCount ?? 0,
-                thrashTurns: p.thrashTurns ?? 0,
-                bound: p.bound ?? 0,
-                trapped: Boolean(p.trapped),
-                perishSongCount: p.perishSongCount ?? 0,
-                focusEnergy: Boolean(p.focusEnergy),
-                isTransformed: Boolean(p.isTransformed),
+                ...p,
+                ability: p.ability ? requireAbilityId(p.ability) : p.ability,
+                friendship: p.friendship ?? DEFAULT_POKEMON_FRIENDSHIP_FALLBACK,
+                exp: p.exp ?? 0,
+                expNeeded: p.expNeeded ?? 1,
               }))
             : null,
           timestamp: Temporal.Now.instant().epochMilliseconds,

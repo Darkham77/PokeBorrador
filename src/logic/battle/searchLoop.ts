@@ -74,6 +74,8 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     // 1. Limpiar el enemigo anterior y restaurar estados de animación
     ctx.activeBattle.value.enemy = null
     ctx.activeBattle.value._initialEnemy = null
+    if (ctx.exitingEnemy) ctx.exitingEnemy.value = null
+    if (ctx.exitingPlayer) ctx.exitingPlayer.value = null
     
     if (ctx.animations?.resetAll) {
       ctx.animations.resetAll()

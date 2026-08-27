@@ -60,3 +60,9 @@
   - **Trading & Selling**: Prohibited from P2P trade, Market/GTS publishing, and Team Rocket / Black Market sales ($0 value).
   - **Breeding & Daycare**: Prohibited from Daycare deposits, breeding inheritance, and expedition mission fulfillment.
   - **Combat**: Prohibited from joining active battle teams, Arena PvP lineups, Faction War rosters, and triggering any battle sequence.
+
+## 9. Atomic Combatant Replacement & Intro Sequencing
+
+- **Atomic Replacement & Sendout Invariant**: When an active combatant faints in trainer battles, setting the new active combatant reference, emitting the sendout announcement log (`"¡${trainerName} envía a ${nextEnemy.name}!"`), and awaiting `handleReleaseRequest` MUST execute atomically inside `POKEMON_CALL` $\rightarrow$ `RENDER_BALL` $\rightarrow$ `OCCUPY_SEAT` before dispatching choices to Showdown. Never rely on worker client side-effects to trigger UI logs or release animations.
+- **Trainer Intro Sequence**: Trainer encounters strictly log the trainer challenge during `TRAINER_ENCOUNTER` while `enemyCombatants` is empty, animate trainer retreat during `RETREAT_AND_FADEOUT`, and announce the Pokémon sendout during `POKEMON_CALL`.
+

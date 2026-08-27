@@ -18,7 +18,6 @@ import {
   gtsItemDataSchema,
   gtsListingSchema,
   tradeOfferSchema,
-  enemyPokemonSerializedSchema,
   activeBattleSchema,
   daycareMissionSchema,
   notificationItemSchema,
@@ -174,6 +173,7 @@ describe('Domain Schemas & DTO Type Governance Exhaustive Test', () => {
     const enemy = {
       uid: 'enemy-1',
       id: 'rattata',
+      species: 'rattata',
       name: 'Rattata',
       type: 'normal',
       level: 3,
@@ -185,7 +185,7 @@ describe('Domain Schemas & DTO Type Governance Exhaustive Test', () => {
       spd: 10,
       spe: 10,
       moves: [{ id: 'tackle' }],
-      status: null,
+      status: '',
       isShiny: false,
       gender: 'm' as const,
       ivs: { hp: 10, atk: 10, def: 10, spa: 10, spd: 10, spe: 10 },
@@ -198,7 +198,7 @@ describe('Domain Schemas & DTO Type Governance Exhaustive Test', () => {
       _gymLeader: null,
       _gymBadge: null
     };
-    assert.ok(safeParse(enemyPokemonSerializedSchema, enemy).success);
+    assert.ok(safeParse(pokemonSchema, enemy).success);
 
     const battle = {
       isGym: false,

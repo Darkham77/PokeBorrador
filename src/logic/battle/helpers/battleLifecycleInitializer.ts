@@ -64,10 +64,11 @@ export async function initBattleSequence(
   const currentPlayer = ctx.activeBattle.value?.player
   const needsCall = !currentPlayer || (currentPlayer.uid !== initialPlayer.uid)
 
-  if (isTrainer || isGym) {
+  if (isTrainer) {
     if (wasSearching) {
       // Dialogue bubble fades out and trainer retreats in parallel during RETREAT_AND_FADEOUT
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENCOUNTER)
+      ctx.addLog(`¡${trainerName || 'El entrenador'} te desafía!`, 'log-info', 'enemy_trainer')
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.RETREAT_AND_FADEOUT)
       
       if (ctx.animations?.triggerTrainerRetreat) {
@@ -91,6 +92,7 @@ export async function initBattleSequence(
       }
 
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.TRAINER_ENCOUNTER)
+      ctx.addLog(`¡${trainerName || 'El entrenador'} te desafía!`, 'log-info', 'enemy_trainer')
       await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.RETREAT_AND_FADEOUT)
       
       if (ctx.animations?.triggerTrainerRetreat) {
@@ -103,6 +105,8 @@ export async function initBattleSequence(
       ctx.activeBattle.value.enemy = initialEnemy
     }
 
+    ctx.addLog(`¡${trainerName || 'El entrenador'} envía a ${initialEnemy.name}!`, 'log-enemy', 'enemy_trainer')
+
     const enemySendOutPromise = ctx.animations?.handleReleaseRequest
       ? ctx.animations.handleReleaseRequest({ side: 'enemy', pokemon: initialEnemy })
       : Promise.resolve()
@@ -113,6 +117,7 @@ export async function initBattleSequence(
   } else if (wasSearching) {
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENCOUNTER_TYPE_CHECK)
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.WILD_ENCOUNTER)
+    ctx.addLog(`¡Un ${initialEnemy.name} salvaje apareció!`, 'log-info', initialEnemy)
     gameBus.emit('PLAY_CRY', { name: initialEnemy.id })
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.CHECK_BINOCULARS)
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.PARALLEL_JUMP)
@@ -146,6 +151,7 @@ export async function initBattleSequence(
   } else {
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.ENCOUNTER_TYPE_CHECK)
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.WILD_ENTRY)
+    ctx.addLog(`¡Un ${initialEnemy.name} salvaje apareció!`, 'log-info', initialEnemy)
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.PARALLEL_PREP, 0)
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.BUSH_VISIBLE)
     await fsm.transition(BATTLE_STATES.FIRST_INTRO, BATTLE_SUBSTATES.SILHOUETTE_MODE)
@@ -166,16 +172,11 @@ export async function initBattleSequence(
   ctx.activeMove.value = null
   
   const { activeBiome, mapTags } = getMapBiomeAndTags(locationId)
-  const startMsg = isTrainer || isGym 
-    ? `¡${trainerName} te desafía!` 
-    : `¡Un ${initialEnemy.name} salvaje apareció!`
-  
-  ctx.addLog(startMsg, 'log-info', (isTrainer || isGym) ? 'enemy_trainer' : initialEnemy)
   logger.info('Orchestrator', `Combat started in biome: ${activeBiome} (Tags: ${mapTags.join(', ') || 'ninguno'}) for location: ${locationId}`)
   
   handleEntryAbilities(initialPlayer, initialEnemy, ctx.playerStages.value, ctx.enemyStages.value, ctx.addLog, ctx.activeBattle.value?.weather?.type)
   
-  if (isTrainer || isGym) await ctx.gs.scheduleSave()
+  if (isTrainer) await ctx.gs.scheduleSave()
 
   await processRocketStealMechanics(ctx, isTrainer, isGym, trainerName || '', battleState)
 

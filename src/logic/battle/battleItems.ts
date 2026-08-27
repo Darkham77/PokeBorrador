@@ -3,16 +3,19 @@
  * Logic for using items (balls and healing) in battle.
  * Zero-Timer Policy: All waiting is coordinated via GSAP (awaitAnimation / awaitTween).
  */
+import { toRaw } from 'vue'
 import { awaitAnimation } from '@/logic/utils/gsapHelpers'
 import gsap from 'gsap'
 import { calculateCatchRate } from './battleEngine.ts'
 import { useItemOnPokemon } from '../providers/itemProvider.ts'
 import { gameBus } from '@/logic/events/gameBus'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { validatePokemon } from '@/logic/pokemon/pokemonFactory'
 import type { EventStore, AudioStore, BattleStore } from '@/types/system/stores'
 import type { LogFn } from '@/types/battle/battle'
 import type { BattleContext } from '@/types/battle/battleContext'
 import { getItemName, type ItemId } from '@/data/inventory/items'
+import { initializePokemonVigor } from '@/logic/pokemon/pokemonUtils'
 
 interface ItemUsageOptions {
   eventStore: EventStore;
@@ -103,14 +106,42 @@ export async function handleItemUsage(itemName: ItemId, p: Pokemon, e: Pokemon, 
       const initialEnemy = options.ctx?.activeBattle.value?._initialEnemy
       if (initialEnemy) {
         // Deep clone the original pristine enemy Pokémon (e.g. Ditto or Pidgey)
-        capturedPoke = JSON.parse(JSON.stringify(initialEnemy)) as Pokemon
+        try {
+          capturedPoke = structuredClone(toRaw(initialEnemy)) as Pokemon
+        } catch {
+          capturedPoke = JSON.parse(JSON.stringify(initialEnemy)) as Pokemon
+        }
         // Scale HP based on the captured Pokémon's damage ratio to preserve health state
         const currentHpRatio = e.maxHp > 0 ? e.hp / e.maxHp : 1
         capturedPoke.hp = Math.max(1, Math.round(capturedPoke.maxHp * currentHpRatio))
         capturedPoke.status = e.status
       } else {
-        capturedPoke = JSON.parse(JSON.stringify(e)) as Pokemon
+        try {
+          capturedPoke = structuredClone(toRaw(e)) as Pokemon
+        } catch {
+          capturedPoke = JSON.parse(JSON.stringify(e)) as Pokemon
+        }
       }
+
+      // Limpiar estados volátiles de combate antes de mandar a almacenamiento
+      capturedPoke.volatileCounters = {}
+      capturedPoke.lastMove = undefined
+      capturedPoke.choiceMove = undefined
+      capturedPoke.chargingMove = undefined
+      capturedPoke.encoreMove = undefined
+      capturedPoke.disabledMove = undefined
+      capturedPoke.fainted = false
+      capturedPoke.mustRecharge = false
+      capturedPoke.furyCutterCount = 0
+      capturedPoke.thrashTurns = 0
+      capturedPoke.bound = 0
+      capturedPoke.trapped = false
+      capturedPoke.perishSongCount = 0
+      capturedPoke.focusEnergy = false
+      capturedPoke.isTransformed = false
+      capturedPoke.caught = true
+      capturedPoke.obtainedAt = capturedPoke.obtainedAt || Temporal.Now.instant().epochMilliseconds
+      capturedPoke.obtainedMethod = capturedPoke.obtainedMethod || 'wild'
 
       // Guardar el tipo de bola en los tags del pokemon capturado para persistencia visual
       capturedPoke.tags = capturedPoke.tags || []
@@ -134,6 +165,12 @@ export async function handleItemUsage(itemName: ItemId, p: Pokemon, e: Pokemon, 
         capturedPoke.type = 'normal';
         capturedPoke.type2 = undefined;
       }
+
+      // Inicializar Vigor canónico si el Pokémon capturado no lo tiene asignado (ej. restaurado de combate previo)
+      initializePokemonVigor(capturedPoke, capturedPoke.obtainedMethod)
+
+      // Validar estrictamente que el Pokémon cumple al 100% las restricciones de dominio
+      validatePokemon(capturedPoke)
 
       // Captured!
       if (options.fsm) {

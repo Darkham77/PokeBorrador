@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { handleItemUsage } from '@/logic/battle/battleItems'
 import { gameBus } from '@/logic/events/gameBus'
-import type { Pokemon } from '@/types/pokemon/pokemon'
+import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 
 vi.mock('@/logic/events/gameBus', () => ({
   gameBus: {
@@ -40,8 +40,8 @@ describe('battleItems.js', () => {
   })
 
   it('should trigger gameBus animations when throwing a pokeball', async () => {
-    const p = { id: '25' } as unknown as Pokemon
-    const e = { id: '16', hp: 10, maxHp: 20, catchRate: 255 } as unknown as Pokemon
+    const p = makePokemon('pikachu', 5)!
+    const e = makePokemon('pidgey', 5)!
     
     // We expect PLAY_CATCH_ENERGY to be emitted
     await handleItemUsage('pokeball', p, e, mockOptions)

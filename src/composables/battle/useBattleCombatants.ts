@@ -1,4 +1,4 @@
-import { computed, type ComputedRef } from 'vue'
+import { computed, unref, type ComputedRef } from 'vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { useBattleStore } from '@/stores/battle/battle'
 
@@ -20,8 +20,14 @@ export function useBattleCombatants(
 
   const enemyCombatants = computed(() => {
     const list: Pokemon[] = []
-    const isPreCombatTrainer = (battleStore.state?.isTrainer || battleStore.state?.isGym) && 
-      (battleStore.currentFsmState === 'SEARCH_PHASE' || battleStore.currentFsmState === 'INITIALIZING')
+    const isTrainerOrGym = Boolean(battleStore.state?.isTrainer)
+    const fsmState = battleStore.currentFsmState
+    const fsmSubState = battleStore.currentSubState ?? (battleStore.fsm ? unref(battleStore.fsm.currentSubState) : null)
+    const isPreCombatTrainer = isTrainerOrGym && (
+      fsmState === 'SEARCH_PHASE' || 
+      fsmState === 'INITIALIZING' ||
+      (fsmState === 'FIRST_INTRO' && fsmSubState !== 'POKEMON_CALL')
+    )
       
     if (isPreCombatTrainer) {
       return list

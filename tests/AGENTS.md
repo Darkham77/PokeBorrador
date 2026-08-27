@@ -19,6 +19,11 @@ QA / Automation Engineers.
 - **Playwright Browser Store Access**: Never use dynamic imports (`import('@/stores/game')`) inside `page.evaluate` or `page.waitForFunction`. Always use canonical store resolvers on `window`, such as `window.__VITE_DEBUG__.getGameStore()`.
 - **Zero Runtime Fallback Policy**: Test utilities, mocks, and replayers MUST NOT introduce fallback choices, default return objects, or swallow errors (`.catch(() => true)`). Missing test properties or unexpected state divergence must fail loudly and immediately with descriptive errors.
 - **TypeScript Strict Mocking (Zero Any / Zero Unknown Casts)**: When testing components, schemas, or systems, all mock structures must be fully typed and conformant to their canonical schemas (e.g. `BattleState`, `SaveDataDto`). Never use `any`, `as unknown as`, or artificial type casts to bypass type safety. Declare complete test objects or local typed helpers.
+- **Event Stream Parity Testing Mandate (Zero Visual Regressions)**: FSM transition validation and engine replays alone do not prove UI animation execution. All combat lifecycle routines (trainer intros, manual switches, forced switches, and full-team 6v6 faint chains) MUST be covered by unit tests (such as `battle_animation_sequence_parity.spec.ts`) that record an chronological Event Stream asserting:
+  1. Exact order of FSM states.
+  2. Sequential execution of `handleWithdrawRequest` and `handleReleaseRequest` hooks.
+  3. Exact presence of localized chat log announcements.
+  4. Precise matching of active combatant UIDs and visual sprite representations without ghost entities or missing frames.
 - All test suites run under **Vitest** (vite-node) via `vitest.workspace.ts`. Regression checks MUST ALWAYS run the full test suite (`npm run test`), never subset commands like `test:unit` or `test:node` alone.
 
 ## Work Guidance

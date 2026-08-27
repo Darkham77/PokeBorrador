@@ -91,6 +91,14 @@ Frontend Developers / Systems Engineers.
 
 - **Dynamic Trainer Identity in Combat Logs**:
   - All combat announcement logs for opponent trainer actions (Pokemon calls, recalls, item usage, challenges) MUST dynamically resolve the trainer name using `${active.trainerName || 'El entrenador'}` and the `'enemy_trainer'` log source, avoiding static placeholder text.
+- **Atomic Faint Replacement & Sendout Invariant**:
+  - When an active combatant faints in trainer battles, the combatant assignment (`active.enemy = nextEnemy`), the sendout announcement log (`"¡${active.trainerName || 'El entrenador'} envía a ${nextEnemy.name}!"`), and the release animation trigger (`ctx.animations?.handleReleaseRequest`) MUST execute atomically and upfront during `POKEMON_CALL` $\rightarrow$ `RENDER_BALL` $\rightarrow$ `OCCUPY_SEAT`. Relying on asynchronous background worker synchronization (`syncTeamsFromLastWorkerState`) or late identity checks (`if (active.enemy?.uid !== nextEnemy.uid)`) to trigger UI logs or release animations is STRICTLY FORBIDDEN, as premature state mutation silently skips visual announcements and Poké Ball release animations.
+- **Trainer Intro Canonical Event Sequence**:
+  - Trainer battle initialization MUST strictly adhere to the following sequence:
+    1. `FIRST_INTRO` / `TRAINER_ENCOUNTER`: Log `"¡${trainerName} te desafía!"` while the trainer sprite is rendered in the arena and `enemyCombatants` is empty (`[]`).
+    2. `FIRST_INTRO` / `RETREAT_AND_FADEOUT`: Animate trainer retreat to the sidebar (`triggerTrainerRetreat`).
+    3. `FIRST_INTRO` / `POKEMON_CALL`: Log `"¡${trainerName} envía a ${initialEnemy.name}!"`, execute `handleReleaseRequest`, and mount the active Pokémon into `enemyCombatants`.
+  - Late or out-of-order sendout logs at the end of battle initialization are strictly prohibited.
 
 ## Work Guidance
 

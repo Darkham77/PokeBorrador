@@ -8,6 +8,7 @@ import { gameBus } from '@/logic/events/gameBus'
 import { isMatchingUid } from './showdownUidMapper.ts'
 import { gsapSleep } from '@/logic/utils/gsapHelpers'
 
+import { unref } from 'vue'
 import type { BattleSide } from '@/types/battle/battle'
 
 const FAINT_ANIMATION_FALLBACK_DELAY_MS = 1300
@@ -25,9 +26,8 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
 
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
-  const isCurrentActiveBattle = () => ctx.activeBattle.value === active && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE
-  if (!isCurrentActiveBattle()) return
-  const isTr = active.isTrainer || active.isGym || active.isPvP
+  const isCurrentActiveBattle = () => ctx.activeBattle.value === active && unref(fsm.currentState) === BATTLE_STATES.ACTIVE_BATTLE
+  const isTr = Boolean(active.isTrainer)
   const enemyName = isTr ? pokemon.name : `¡${pokemon.name} salvaje`
   ctx.addLog(`${enemyName} fue derrotado!`, 'log-enemy', pokemon)
   
@@ -177,7 +177,14 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.OCCUPY_SEAT)
     
     ctx.faintedSides.value.delete('enemy')
+
+    active.enemy = nextEnemy
     ctx.addLog(`¡${active.trainerName || 'El entrenador'} envía a ${nextEnemy.name}!`, 'log-enemy', 'enemy_trainer')
+    if (ctx.animations?.handleReleaseRequest) {
+      await ctx.animations.handleReleaseRequest({ side: 'enemy', pokemon: nextEnemy })
+    } else {
+      gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
+    }
     
     const { showdownWorker, executeTurnInWorker } = await import('./showdownWorkerClient.ts')
     if (showdownWorker && active.enemyTeam) {
@@ -188,7 +195,7 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
         active.playerRequest = result.p1Request
         active.enemyRequest = result.p2Request
 
-        // Parsear logs para aplicar el daño/debilitación por hazards
+        // Parsear logs para aplicar hazards u otros efectos (switch ya no duplica porque active.enemy ya coincide)
         const { parseShowdownLogLine, filterShowdownLogs } = await import('./showdownBridge.ts')
         const filteredLogs = filterShowdownLogs(result.logs)
         for (const logLine of filteredLogs) {
@@ -212,13 +219,6 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
       await actions.processFaint(ctx, 'enemy')
       return
-    }
-
-    active.enemy = nextEnemy
-    if (ctx.animations?.handleReleaseRequest) {
-      await ctx.animations.handleReleaseRequest({ side: 'enemy', pokemon: nextEnemy })
-    } else {
-      gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
     }
 
     if (!isCurrentActiveBattle()) return

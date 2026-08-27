@@ -20,14 +20,13 @@ function compareVersions(current: { major: number; minor: number; patch: number 
 }
 
 try {
-  const pkgPath = safeResolve('package.json');
-  if (!pkgPath.endsWith('package.json')) {
-    throw new Error('Security Violation: package.json path invalid');
-  }
   const pkgData = JSON.parse(fs.readFileSync('package.json', 'utf8')) as { engines?: { node?: string; npm?: string } };
+  if (!pkgData.engines?.node || !pkgData.engines?.npm) {
+    throw new Error('package.json must explicitly define both "engines.node" and "engines.npm"');
+  }
   
-  const nodeReqStr = pkgData.engines?.node || '>=26.7.0';
-  const npmReqStr = pkgData.engines?.npm || '>=12.0.0';
+  const nodeReqStr = pkgData.engines.node;
+  const npmReqStr = pkgData.engines.npm;
 
   const nodeRequired = parseSemver(nodeReqStr);
   const npmRequired = parseSemver(npmReqStr);
@@ -58,7 +57,7 @@ try {
     console.error(`  - Node.js: \x1b[33m${nodeReqStr}\x1b[0m (Detectado: v${process.versions.node})`);
     console.error(`  - npm:     \x1b[33m${npmReqStr}\x1b[0m (Detectado: v${npmCurrentStr === '0.0.0' ? 'desconocido' : npmCurrentStr})\n`);
     
-    const targetNodeVer = nodeReqStr.replace(/[^0-9.]/g, '') || '26.7.0';
+    const targetNodeVer = nodeReqStr.replace(/[^0-9.]/g, '');
 
     if (hasNvm) {
       console.error('\x1b[32m\x1b[1m💡 NVM DETECTADO EN EL SISTEMA:\x1b[0m');

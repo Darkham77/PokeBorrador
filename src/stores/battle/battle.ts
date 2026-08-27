@@ -273,7 +273,7 @@ export const useBattleStore = defineStore('battle', () => {
       await finalizeTurnExecution()
     } catch (error) {
       logger.error('BattleStore', `Error executing move index ${moveIndex}`, error)
-      addLog('¡Ocurrió un error al ejecutar el movimiento!', 'log-error')
+      addLog('¡Ocurrió un error al ejecutar el movimiento!', 'log-error', 'player')
       useErrorStore().setError(error, { type: 'Battle Engine Error', source: `battleStore.executeMove(index:${moveIndex})` })
     } finally {
       isProcessing.value = false
@@ -326,9 +326,9 @@ export const useBattleStore = defineStore('battle', () => {
 
       await finalizeTurnExecution()
     } catch (error) {
-      logger.error('BattleStore', `Error executing struggle: ${(error as Error).message}`, error)
-      addLog('¡Ocurrió un error al ejecutar Combate!', 'log-error')
-      useErrorStore().setError(error, { type: 'Battle Engine Error', source: `battleStore.executeStruggle()` })
+      logger.error('BattleStore', 'Error executing struggle', error)
+      addLog('¡Ocurrió un error al ejecutar Combate!', 'log-error', 'player')
+      useErrorStore().setError(error, { type: 'Battle Engine Error', source: 'battleStore.executeCombat' })
     } finally {
       isProcessing.value = false
     }
@@ -360,7 +360,7 @@ export const useBattleStore = defineStore('battle', () => {
       })
     } catch (error) {
       logger.error('BattleStore', `Error using item in battle: ${(error as Error).message}`, error)
-      addLog('¡Ocurrió un error al usar el objeto!', 'log-error')
+      addLog('¡Ocurrió un error al usar el objeto!', 'log-error', 'player')
       useErrorStore().setError(error, { type: 'Battle Item Error', source: 'battleStore.useItemInBattle' })
     } finally {
       isProcessing.value = false
@@ -408,7 +408,7 @@ export const useBattleStore = defineStore('battle', () => {
       await switchAction(getContext(), teamIndex, isForced)
     } catch (error) {
       logger.error('BattleStore', `Error switching pokemon: ${(error as Error).message}`, error)
-      addLog('¡Ocurrió un error al cambiar de Pokémon!', 'log-error')
+      addLog('¡Ocurrió un error al cambiar de Pokémon!', 'log-error', 'player')
       useErrorStore().setError(error, { type: 'Battle Switch Error', source: 'battleStore.executeSwitch' })
     } finally {
       isProcessing.value = false

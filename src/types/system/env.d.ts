@@ -164,6 +164,9 @@ declare global {
     p2ChoiceIdx?: number;
     isDeterministicSimulation?: boolean;
     isScriptedReplayMode?: boolean;
+    freezeClock?: boolean;
+    setFreezeClock?: (freeze?: boolean) => void;
+    setFixedTime?: (epochHour: number, cycle?: string, weather?: string) => void;
     playerChoices?: string[]; // domain-ok
     waitForBattleReady?: (timeoutMs?: number, options?: { skipImmediate?: boolean }) => Promise<import('../battle/battleEvents.ts').BattleReadyForInputDetail>;
     getScriptedReplayReadiness?: () => import('../battle/battleEvents.ts').BattleReadyForInputDetail & { isReady: boolean };

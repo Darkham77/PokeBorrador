@@ -142,11 +142,12 @@ watch(
   { immediate: true, deep: true }
 )
 
-// Watcher para la transformación visual (con GSAP)
+// Watcher para la transformación visual in-situ de un mismo Pokémon (con GSAP)
 watch(
-  [() => props.pokemon?.id, () => props.pokemon?.form],
+  [() => props.pokemon?.id, () => props.pokemon?.form, () => props.pokemon?.uid],
   (newVal, oldVal) => {
-    if (oldVal[0] && (newVal[0] !== oldVal[0] || newVal[1] !== oldVal[1])) {
+    const isSamePokemon = Boolean(newVal[2] && oldVal[2] && newVal[2] === oldVal[2])
+    if (isSamePokemon && oldVal[0] && (newVal[0] !== oldVal[0] || newVal[1] !== oldVal[1])) {
       const el = spriteRotationRef.value
       if (!el) return
       

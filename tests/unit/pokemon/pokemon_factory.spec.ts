@@ -55,9 +55,13 @@ vi.mock('@/stores/war', () => ({
   }))
 }));
 
-vi.mock('@/logic/pokemon/pokemonUtils', () => ({
-  getMovesAtLevel: vi.fn(() => [{ id: 'scratch', name: 'Arañazo', pp: 35, maxPP: 35 }])
-}));
+vi.mock('@/logic/pokemon/pokemonUtils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/logic/pokemon/pokemonUtils')>();
+  return {
+    ...actual,
+    getMovesAtLevel: vi.fn(() => [{ id: 'scratch', name: 'Arañazo', pp: 35, maxPP: 35 }])
+  };
+});
 
 describe('Pokemon Factory', () => {
   

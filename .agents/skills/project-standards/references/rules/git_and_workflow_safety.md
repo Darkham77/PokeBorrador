@@ -29,13 +29,23 @@
 - Whenever generating temporary files, debug outputs, text reports, summaries, or validation reports (`.txt`, `.log`, `.json`, etc.), they MUST be stored exclusively in the `scratch/` directory at the project root.
 - Dumping temporary reports or scratch files in the root or source directories is strictly prohibited.
 
-## 5. Root Setup Scripts SSoT & Dynamic Versioning Governance
+## 5. Root Setup Scripts SSoT & Workspace Update Governance
 
-- **Root Setup Scripts SSoT**: Initial environment configuration, Node version updates, and NVM fixes MUST be executed exclusively via the root setup scripts:
+- **Root Setup Scripts SSoT**: Whenever instructed to initialize, configure, or update the workspace/environment (e.g. *"actualiza el entorno de trabajo"*, *"actualizar entorno"*, *"preparar el entorno"*, *"setup environment"*, *"actualizar herramientas"*), initial environment configuration, Node version updates, NVM fixes, and clean dependency installations MUST be executed exclusively via the root setup scripts:
   - Windows: [`setup-windows.ps1`](../../../../../setup-windows.ps1) (`PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1`)
   - Linux / macOS: [`setup-linux.sh`](../../../../../setup-linux.sh) (`chmod +x ./setup-linux.sh && ./setup-linux.sh`)
-- **Zero-Hardcode Versioning Policy**: It is STRICTLY FORBIDDEN to hardcode Node.js or npm version numbers inside environment setup scripts, maintenance tools, or documentation tutorials. All scripts MUST dynamically parse the required version from the `"engines"` field in `package.json` (`pkgContent.engines.node`).
-- **Environment Audit & Pre-Check**: Pre-install checks (`node --experimental-strip-types scripts/maintenance/check_environment.ts`) automatically validate runtime environment requirements. Whenever outdated Node/npm versions or broken Windows NVM symlinks are detected, instruct the user to run the appropriate root setup script.
+- **All-in-One Execution Scope**: The setup script performs all required steps in a single run:
+  1. Auto-elevates permissions via native Windows UAC prompt dialog (`setup-windows.ps1`) or sudo when necessary.
+  2. Detects, installs, and configures NVM symlinks.
+  3. Dynamically queries `https://nodejs.org/dist/index.json` for the latest stable Current Node.js release (falling back to `package.json` if offline).
+  4. Automatically synchronizes `package.json` (`engines.node`) and `.nvmrc` to match the detected release.
+  5. Installs and activates Node.js via NVM (`nvm install` & `nvm use`).
+  6. Updates global npm to latest release (`npm install -g npm@latest`).
+  7. Enforces global npm security settings (`ignore-scripts true`, registry HTTPS, high audit level).
+  8. Cleans residual npm cache and executes `npm ci` for a deterministic workspace.
+- **Zero-Hardcode Versioning Policy**: It is STRICTLY FORBIDDEN to hardcode Node.js or npm version numbers inside environment setup scripts, maintenance tools, or documentation tutorials. Scripts MUST dynamically discover releases from `nodejs.org` and synchronise `package.json` and `.nvmrc` automatically.
+- **Environment Audit & Pre-Check**: Pre-install checks (`node --experimental-strip-types scripts/maintenance/check_environment.ts`) automatically validate runtime environment requirements against `package.json`. Whenever outdated Node/npm versions or broken Windows NVM symlinks are detected, instruct the user to run the appropriate root setup script.
+- **IDE & Terminal Restart Mandate**: Whenever setup scripts update system/user environment variables, NVM symlinks, or PATH paths, the agent MUST instruct the user to restart their IDE or reopen all terminal sessions so that the entire process tree inherits the updated PATH without needing manual PATH injections in subsequent operations.
 
 ## 6. Artifact Governance Lifecycle (MANDATORY)
 
@@ -48,4 +58,5 @@ To ensure rigor and traceability, every complex task MUST follow the artifact li
 
 - **Prohibition on Multi-Line Inline Node CLI Commands (`noInteractiveCliHangs`)**: AI agents MUST NEVER run multi-line inline scripts (`npx tsx -e "..."` or `node -e "..."`) in terminal background tasks on Windows. Doing so causes child processes to hang or await interactive stdin indefinitely.
 - **Dedicated Test/Script Files Mandate**: All validations, diagnostics, and test executions MUST be conducted using dedicated Vitest test files (`npx vitest run <path>`) or dedicated script files in `scripts/` or `scratch/`.
+- **Absolute Prohibition on Manual Command PATH Injections (`noManualPathInjection`)**: AI agents are STRICTLY FORBIDDEN from prefixing CLI commands with ad-hoc path variables (e.g. `$env:Path = ...; npm ...`, `export PATH=... && npm ...`, or inline path wrappers). All commands MUST be run cleanly and natively (`npm run ...`, `npx ...`, `node ...`). If PATH is missing, instruct the user to run the setup script and restart the IDE.
 

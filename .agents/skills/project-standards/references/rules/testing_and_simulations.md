@@ -99,3 +99,8 @@ Whenever an E2E simulation or Playwright test fails:
   - If a Pokémon in the fuzzer or browser simulation reaches a state with 0 PP or selects a move that is `disabled: true`, it is proof positive that a turn-count/cursor desynchronization occurred or that certified cheats/actions were misapplied.
   - It is **STRICTLY FORBIDDEN** to introduce runtime fallbacks that automatically pick another legal move or patch over the desynchronization. The engine MUST fail loudly and immediately (`throw new Error(...)`) with full context to diagnose and fix the root cause.
 
+## 13. Event Stream Parity Testing Mandate
+
+- **Chronological Event Stream Verification**: Automated tests for combat animations and FSM lifecycles MUST record and assert an Event Stream to guarantee that withdraw animations, defeat logs, sendout announcements, release animations, and combatant UID mounting execute in strict chronological sequence across single and multi-Pokémon (6v6) encounters, eliminating silent animation drops.
+
+

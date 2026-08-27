@@ -3,7 +3,7 @@ import { NATURES, toNatureId } from '@/data/battle/natures';
 
 import { GAME_RATIOS, MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { DEFAULT_FALLBACK_BASE_STAT, DEFAULT_FRIENDSHIP_VALUE } from '@/logic/constants/gameplay';
-import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils';
+import { getMovesAtLevel, initializePokemonVigor } from '@/logic/pokemon/pokemonUtils';
 import { getActivePinia } from 'pinia';
 import { getSpeciesBoosts, getGlobalMultipliers, type Event as GameEvent } from '@/logic/events/eventEngine.ts';
 import type { ObtainedMethod, Pokemon, Move, PokemonIVs, PokemonGender } from '@/types/pokemon/pokemon';
@@ -349,21 +349,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
       isShiny = Math.random() < (1 / finalShinyRate);
     }
   }
-  
-  const cleanIdForCheck = id;
-  const isLegendary = isLegendaryPokemonSpeciesId(cleanIdForCheck);
-  const isFossil = isFossilPokemonSpeciesId(cleanIdForCheck);
-  let maxVigor = 0;
-  let vigor = 0;
-  if (!isLegendary && !isFossil) {
-    if (options.obtainedMethod === 'egg' && !options.isNpcEgg) {
-      maxVigor = Math.floor(Math.random() * 3) + 1; // 1 a 3
-      vigor = Math.max(1, Math.floor(maxVigor / 2));
-    } else {
-      maxVigor = Math.floor(Math.random() * 4) + 3; // 1d4+2 (3 a 6)
-      vigor = maxVigor;
-    }
-  }
+
   const getUidStr = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2,9) + Temporal.Now.instant().epochMilliseconds.toString(36);
 
   let heldItem: ItemId | null = options.heldItem || null;
@@ -379,7 +365,8 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
     level, exp: 0, expNeeded: getExpNeeded(level),
     ivs, nature, ability, gender, isShiny,
     moves: getMovesAtLevel(id, level, bypass) as Move[],
-    status: '', sleepTurns: 0, friendship: DEFAULT_FRIENDSHIP_VALUE, vigor, maxVigor,
+    status: '', sleepTurns: 0, friendship: DEFAULT_FRIENDSHIP_VALUE,
+    vigor: 0, maxVigor: 0,
     heldItem,
     nickname: null,
     tags: ['ball:pokeball'],
@@ -389,6 +376,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
     hp: 0, maxHp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0
   };
 
+  initializePokemonVigor(p, options.obtainedMethod, options.isNpcEgg);
   recalcPokemonStats(p, bypass);
   p.hp = p.maxHp;
   validatePokemon(p, bypass);

@@ -1,12 +1,17 @@
 ---
 name: project-standards
-description: Core governance and architectural standards for the Poké Vicio project. Enforces Hybrid Retro-Modern identity, 500/1000-line SRP modularity, Zero-Ignore TypeScript policy, event-driven zero-timers, DBRouter persistence isolation, and E2E simulation rules. Acts as the primary Navigation Hub to access technical manuals and specialized rule modules. Make sure to load and consult this skill whenever starting a new task, making architectural changes, touching core engine/stores/components, refactoring code, writing tests, or reviewing project standards.
+description: Core governance, workspace environment setup, and architectural standards for Poké Vicio. Governs Hybrid Retro-Modern identity, 500/1000-line SRP modularity, Zero-Ignore TypeScript, DBRouter persistence isolation, zero-timers, and E2E simulation rules. Single source of truth for executing all-in-one workspace setup scripts (setup-windows.ps1 / setup-linux.sh) and navigation hub for specialized rule manuals. Load whenever updating or preparing the working environment/dependencies, starting new tasks, modifying core engine/stores/components, refactoring, writing tests, or reviewing project standards.
 ---
 
 # Project Standards (Core Governance & Navigation Hub)
 
 This skill defines the immutable core DNA and architectural standards of Poké Vicio. It provides comprehensive governance for design, code quality, security, testing, persistence, and workflow safety, as well as explicit instructions on how and when to consult specialized reference manuals.
 
+- **All-in-One Environment Setup & Workspace Update Mandate**: Whenever instructed to initialize, configure, or update the workspace/environment (e.g. *"actualiza el entorno de trabajo"*, *"actualizar entorno"*, *"preparar el entorno"*, *"setup environment"*), the single-command source of truth is the root setup script:
+  - **Windows (PowerShell as Admin / Terminal)**: `PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1`
+  - **Linux / macOS (Terminal)**: `chmod +x ./setup-linux.sh && ./setup-linux.sh`
+  This script automatically prompts and elevates Administrator permissions via the native Windows UAC modal dialog (`setup-windows.ps1`) or sudo when required, installs/configures NVM, dynamically queries nodejs.org for the latest stable Current Node.js release, updates `package.json` engines and `.nvmrc` automatically, installs and activates the Node runtime, updates npm globally (`npm install -g npm@latest`), enforces global npm security policies (`ignore-scripts true`, HTTPS registry, high audit level), cleans residual cache, and runs `npm ci` for a deterministic, ready-to-code workspace in a single run.
+  - **IDE & Terminal Restart Recommendation**: Whenever setup scripts modify system/user environment variables, NVM symlinks, or PATH, the agent MUST explicitly advise the user to restart their IDE (or reload terminal windows) so that all child process trees inherit the updated system PATH, eliminating the need for manual PATH injections in subsequent tool executions.
 - **Mandatory Skill Invocation**: ALWAYS load and follow the instructions in the `domain-type-first` skill (`@/domain-type-first` / `/.agents/skills/domain-type-first/SKILL.md`) whenever declaring, defining, typing, modifying, reviewing, or generating any data type, variable, function parameter, component prop, DTO, interface field, finite domain constant, schema, generated database, or domain boundary validation.
 - **Main Branch Push Protection Mandate**: AI agents are STRICTLY FORBIDDEN from executing `git push` towards the `main` branch (`origin/main` or while on `main`). Pushes to `main` must always be performed manually by the user. Automated pushes to non-main development/feature branches (such as `desarrollo`) are permitted ONLY when explicitly instructed by the user and verified to target only that development branch.
 - **Zero Audit Failures & Warnings-Diff Mandate (Pre-Commit Only)**: Under NO circumstances are audit failures allowed in any Git commit. You MUST run `npm run audit:warnings-diff` before committing (or during `/safe-commit`), and it MUST return exactly 0 issues (0 errors across the entire project, and 0 new warnings in modified/added/untracked files compared to `origin/main`). DO NOT run this heavy full-project audit during lightweight tasks (such as documentation/skill edits or rapid code iteration).
@@ -75,6 +80,10 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 - **Prohibition of Multi-Line Inline Node CLI Commands (`noInteractiveCliHangs`)**:
   - AI agents MUST NEVER run multi-line inline scripts (`npx tsx -e "..."` or `node -e "..."`) in terminal background tasks on Windows. Doing so causes child processes to hang or await interactive stdin indefinitely.
   - All validations, diagnostic checks, and tests MUST be executed via dedicated Vitest test files (`npx vitest run <path>`) or dedicated script files in `scripts/` or `scratch/`.
+- **Absolute Prohibition on Manual Command PATH Injections (`noManualPathInjection`)**:
+  - AI agents are STRICTLY FORBIDDEN from prefixing CLI commands with ad-hoc path variables (e.g. `$env:Path = ...; npm ...`, `export PATH=... && npm ...`, or inline path wrappers).
+  - All commands MUST be executed cleanly and natively (`npm run <script>`, `npx <tool>`, `node <file>`).
+  - If a required binary (`node`, `npm`, `npx`) is not resolved in PATH, the agent MUST instruct the user to run the root setup script and restart their IDE/terminal, NEVER pollute commands with manual PATH injections.
 - **Fast Development Lint Pipeline (`npm run lint`)**:
   - `npm run lint` MUST execute all 4 checks: `validate:domain-types`, `validate:types` (`vue-tsc --noEmit`), `eslint --cache`, and `lint:md`.
   - Markdownlint MUST strictly ignore `external/**` and `.git/**` to prevent scanning external source trees.

@@ -8,6 +8,10 @@ Poké Vicio is a hybrid retro-modern web video game built with Vue 3, Pinia, GSA
 
 - **Package Manager**: `npm`
 - **Runtime Environment**: Node.js >=26 with `--permission` model (`--allow-fs-read=*` for maintenance scripts).
+- **All-in-One Workspace Setup & Environment Update**:
+  - **Windows (PowerShell as Admin / Terminal)**: `PowerShell -ExecutionPolicy Bypass -File .\setup-windows.ps1`
+  - **Linux / macOS (Terminal)**: `chmod +x ./setup-linux.sh && ./setup-linux.sh`
+  *(Single-command SSoT to configure NVM, align Node.js runtime to `package.json`, update npm, apply security configs, clean cache, and install dependencies via `npm ci`. Always recommend restarting the IDE/terminal afterwards so the updated PATH is inherited without manual injections).*
 - **Core Quality & Verification Commands**:
   - **Fast In-Development Check**: `npm run lint` (fast ~3-5s check using cached ESLint, `vue-tsc` type-check, domain types, and markdownlint for rapid developer iteration).
   - **Full Automated Test Suite**: `npm run test` (executes 100% of both `unit` (Vue/JSDOM) and `node` test projects natively via `node --no-experimental-webstorage ./node_modules/vitest/vitest.mjs run` across Windows PowerShell/CMD and POSIX; strictly reserved for verifying source code logic changes in `src/` or `database/`; running test suites for documentation, DOX indices, markdown, or skill files is STRICTLY FORBIDDEN).

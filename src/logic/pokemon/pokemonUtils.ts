@@ -2,7 +2,7 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getSpeciesHistory } from '@/logic/pokemon/evolutionEngine';
 export { getPokemonTier } from '@/logic/pokemon/tierEngine';
-import type { Pokemon, Move, PokemonIVs } from '@/types/pokemon/pokemon';
+import type { Pokemon, Move, PokemonIVs, ObtainedMethod } from '@/types/pokemon/pokemon';
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
 import { MOVE_TRANSLATIONS_ES, type MoveCategory } from '@/data/battle/moves';
@@ -27,6 +27,34 @@ function isLegendaryOrFossil(pokemonId: string): boolean {
   if (!pokemonId) return false;
   const cleanId = toID(pokemonId);
   return isLegendaryPokemonSpeciesId(cleanId) || isFossilPokemonSpeciesId(cleanId);
+}
+
+/**
+ * Canonical SSoT for initializing Pokemon vigor and maxVigor.
+ * Non-legendary/non-fossil wild Pokémon roll 1d4+2 (3 to 6).
+ * Player-bred eggs roll 1d3 (1 to 3) with starting vigor at half maxVigor.
+ * Legendary and Fossil Pokémon have 0/0 vigor.
+ */
+export function initializePokemonVigor(
+  p: Pokemon,
+  obtainedMethod: ObtainedMethod = 'wild',
+  isNpcEgg = false
+): void {
+  if (!p) return;
+  if (isLegendaryOrFossil(p.id)) {
+    p.maxVigor = 0;
+    p.vigor = 0;
+    return;
+  }
+  if (typeof p.maxVigor !== 'number' || isNaN(p.maxVigor) || p.maxVigor <= 0) {
+    if (obtainedMethod === 'egg' && !isNpcEgg) {
+      p.maxVigor = Math.floor(Math.random() * 3) + 1;
+      p.vigor = Math.max(1, Math.floor(p.maxVigor / 2));
+    } else {
+      p.maxVigor = Math.floor(Math.random() * 4) + 3;
+      p.vigor = p.maxVigor;
+    }
+  }
 }
 
 export function getVigor(p: Pokemon | null | undefined): number {

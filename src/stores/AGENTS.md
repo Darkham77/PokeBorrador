@@ -17,6 +17,8 @@ State Architects / Frontend Developers.
   2. **Market & Trade (`useMarketPublishPokemon.ts`, `trade.ts`)**: Illegal Pokémon cannot be published on the Market / GTS or offered in P2P trade requests.
   3. **Daycare & Breeding (`breeding.ts`, `daycareMissions.ts`)**: Illegal Pokémon cannot be deposited into Daycare slots, used in breeding algorithms, or counted towards daycare/event mission goals.
   4. **PvP & War Teams (`teamActions.ts`)**: Illegal Pokémon must be excluded from `autoFillPvpTeam`, `autoFillWarTeam`, and manual slot swaps.
+- **Real-Time Environment Ticker & Simulation Freeze Protocol**:
+  The map store (`useMapStore`) must sample server epoch time via a lightweight GSAP ticker every 10s of game time, dynamically updating `currentEpochHour`, `currentCycle` (day/dusk/night), and map weather for live players. To ensure deterministic execution during automated E2E simulations, fuzzer runs, and certified replays, the ticker must support instantaneous freezing via `setFreezeClock(true)` and fixed environment override via `window.__VITE_DEBUG__.setFixedTime(...)`.
 
 ## Work Guidance
 

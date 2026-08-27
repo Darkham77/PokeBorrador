@@ -4,9 +4,9 @@ Este manual detalla los comandos y configuraciones necesarios para trabajar en l
 
 ## 📋 Requisitos Previos
 
-Antes de comenzar, asegúrate de tener instalado **Node.js (v26.7.0 o superior)** y **npm (v12.0.0 o superior)** en tu sistema.
+Antes de comenzar, asegúrate de tener instalado **Node.js (v26.8.1 o superior)** y **npm (v12.0.0 o superior)** en tu sistema.
 
-> [!IMPORTANT] El proyecto utiliza características modernas del motor V8 y requiere explícitamente **Node >= 26.7.0** y **npm >= 12.0.0**. Si la versión instalada es inferior, la ejecución de `npm install` o `npm ci` se interrumpirá inmediatamente lanzando un error con las instrucciones de actualización.
+> [!IMPORTANT] El proyecto utiliza características modernas del motor V8 y requiere explícitamente **Node >= 26.8.1** y **npm >= 12.0.0**. Si la versión instalada es inferior, la ejecución de `npm install` o `npm ci` se interrumpirá inmediatamente lanzando un error con las instrucciones de actualización.
 
 ### 🌐 Preparación y Actualización del Entorno (Node.js y npm)
 

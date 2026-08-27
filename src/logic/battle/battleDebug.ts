@@ -4,12 +4,14 @@ import { useDebugStore } from '@/stores/debug'
 import { gameBus } from '@/logic/events/gameBus'
 import { useAudioStore } from '@/stores/audio'
 import { useBattleStore } from '@/stores/battle/battle'
+import { useMapStore } from '@/stores/map'
 import type { BattleContext } from '@/types/battle/battleContext'
 import { requirePokemonStatus, requireVolatileStatusKey, type Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleStages, BattleSide } from '@/types/battle/battle'
 import type { MoveCategory } from '@/data/battle/moves'
 import { requireBattleConditionKey } from '@/types/battle/battle'
 import { requireWeatherId } from '@/logic/weather/weatherRegistry'
+import { requireDayPhase } from '@/logic/utils/timeUtils.ts'
 import { canExecuteScriptedReplayAction } from './helpers/scriptedReplayReadiness.ts'
 import { isBattleCompletionReady } from './helpers/battleCompletionReadiness.ts'
 import { requiresAction } from './helpers/requestHelper.ts'
@@ -359,9 +361,27 @@ export function setupBattleDebug(ctx: BattleContext) {
         await ctx.handleFaint('enemy')
       }
     },
+    freezeClock: (freeze = true) => {
+      const mapStore = useMapStore()
+      mapStore.setFreezeClock(freeze)
+      logger.info('DEBUG', `Reloj congelado: ${freeze}`)
+    },
+    setFixedTime: (epochHour: number, cycle?: string, weather?: string) => {
+      const mapStore = useMapStore()
+      mapStore.setFreezeClock(true)
+      mapStore.currentEpochHour = epochHour
+      if (cycle) mapStore.forcedCycle = requireDayPhase(cycle)
+      if (weather) mapStore.globalWeather = requireWeatherId(weather)
+      logger.info('DEBUG', `Horario y clima fijados: epochHour=${epochHour}, cycle=${cycle}, weather=${weather}`)
+    },
     animations: () => ctx.animations,
     store: () => {
       return win.__VITE_DEBUG_STORE_RESOLVER__?.()
     }
+  }
+
+  win.__VITE_DEBUG__.setFreezeClock = (freeze = true) => {
+    const mapStore = useMapStore()
+    mapStore.setFreezeClock(freeze)
   }
 }

@@ -19,65 +19,7 @@ import {
   type InferOutput,
 } from 'valibot';
 
-import { moveSchema, pokemonEVsSchema } from './pokemonSchemas.ts';
-
-export const enemyPokemonSerializedSchema = object({
-  uid: string(),
-  id: string(),
-  name: string(),
-  emoji: optional(string()),
-  type: string(),
-  level: number(),
-  hp: number(),
-  maxHp: number(),
-  atk: number(),
-  def: number(),
-  spa: number(),
-  spd: number(),
-  spe: number(),
-  moves: array(moveSchema),
-  status: nullable(string()),
-  isShiny: boolean(),
-  gender: nullable(union([literal('m'), literal('f'), literal('M'), literal('F'), literal('N'), literal('')])),
-  ivs: record(string(), number()),
-  nature: string(),
-  ability: string(),
-  exp: number(),
-  expNeeded: number(),
-  friendship: number(),
-  _revealed: boolean(),
-  _gymLeader: nullable(string()),
-  _gymBadge: nullable(string()),
-  heldItem: optional(nullable(string())),
-  item: optional(nullable(string())),
-  lastItem: optional(nullable(string())),
-  types: optional(array(string())),
-  type2: optional(nullable(string())),
-  addedType: optional(nullable(string())),
-  evs: optional(pokemonEVsSchema),
-  currentPp: optional(record(string(), number())),
-  fainted: optional(boolean()),
-  statusTurns: optional(number()),
-  sleepTurns: optional(number()),
-  badPoison: optional(number()),
-  substitute: optional(number()),
-  confused: optional(number()),
-  attracted: optional(boolean()),
-  cursed: optional(boolean()),
-  seeded: optional(boolean()),
-  tauntTurns: optional(number()),
-  encoreTurns: optional(number()),
-  disabledTurns: optional(number()),
-  choiceMove: optional(nullable(string())),
-  mustRecharge: optional(boolean()),
-  furyCutterCount: optional(number()),
-  thrashTurns: optional(number()),
-  bound: optional(number()),
-  trapped: optional(boolean()),
-  perishSongCount: optional(number()),
-  focusEnergy: optional(boolean()),
-  isTransformed: optional(boolean()),
-});
+import { pokemonSchema } from './pokemonSchemas.ts';
 
 export const battleWeatherSchema = object({
   type: string(),
@@ -178,13 +120,13 @@ export const activeBattleSchema = object({
   battleLogs: optional(array(battleLogSchema)),
   playerStages: optional(nullable(battleStagesSchema)),
   enemyStages: optional(nullable(battleStagesSchema)),
-  enemyTeam: nullable(array(enemyPokemonSerializedSchema)),
+  enemyTeam: nullable(array(pokemonSchema)),
   timestamp: number(),
   isPvP: optional(boolean()),
   isRival: optional(boolean()),
 });
 
 export type ActiveBattleDto = InferOutput<typeof activeBattleSchema>;
-export type EnemyPokemonSerializedDto = InferOutput<typeof enemyPokemonSerializedSchema>;
+export type EnemyPokemonSerializedDto = InferOutput<typeof pokemonSchema>;
 export type BattleLogDto = InferOutput<typeof battleLogSchema>;
 export type BattleStagesDto = InferOutput<typeof battleStagesSchema>;
