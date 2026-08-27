@@ -77,7 +77,10 @@ In specific boss battle encounters, specialized floor-wide environmental overrid
 *   **Magma**: Exclusive to Groudon boss fights. Any non-Fire-type Pokémon that touches the floor becomes Burned. Displaced or cleared only by Kyogre's `Primordial Sea`.
 *   **Flooded**: Exclusive to Kyogre boss fights. All non-Water-type Pokémon suffer a Speed stage penalty (Slow state). Displaced or cleared only by Groudon's `Desolate Land`.
 *   **Gust**: Exclusive to Rayquaza boss fights. Periodically displaces Pokémon and deals minor typeless residual damage.
-*   **Rainbow Light**: Exclusive to Ho-Oh boss fights. Restores exactly 50 HP to Ho-Oh and cures all of its status conditions periodically.
+### 8. Arena Layering & Legibility Standards
+
+*   **Atmosphere vs Dialogue & HUD**: The weather particle container (`AtmosphereLayer`) operates at `z-index: calc(var(--z-base) + 20)`. To guarantee visual legibility under heavy weather effects (such as Dense Fog, Thunderstorms, or Sandstorms), all speech bubbles (`BattleTrainerSpeechBubble`), dialogue banners (`.retro-battle-dialog`), and combatant HUD cards (`BattleArenaHud`) MUST share the elevated `z-index: calc(var(--z-base) + 30)`.
+*   **Viewport Encapsulation**: Atmospheric and virtual combat entities MUST remain encapsulated within the single `.battle-arena-content` viewport to prevent flexbox layout fracturing.
 
 
 
