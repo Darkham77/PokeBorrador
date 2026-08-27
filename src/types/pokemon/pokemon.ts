@@ -244,9 +244,22 @@ export interface Pokemon {
   form?: string; // domain-ok
   isIllegal?: boolean;
   illegalReasons?: string[]; // domain-ok
-  size?: string; // domain-ok
   height?: number;
   weight?: number;
+  trophies?: PokemonCompetitionTrophy[];
+}
+
+export const POKEMON_COMPETITION_RANKS = ['first', 'second', 'third'] as const;
+export type PokemonCompetitionRank = (typeof POKEMON_COMPETITION_RANKS)[number];
+
+export interface PokemonCompetitionTrophy {
+  eventId: string; // domain-ok
+  eventName: string; // domain-ok
+  categoryId: string; // domain-ok
+  categoryName: string; // domain-ok
+  rank: PokemonCompetitionRank;
+  score: number;
+  awardedAt: number;
 }
 
 

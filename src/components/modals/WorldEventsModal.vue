@@ -7,6 +7,8 @@ import EventCard from './EventCard.vue'
 import PastEventsList from './PastEventsList.vue'
 import { useEventStore } from '@/stores/events'
 import { storeToRefs } from 'pinia'
+import RewardPillsGroup from '@/components/shared/RewardPillsGroup.vue'
+
 interface Props {
   show?: boolean
 }
@@ -20,29 +22,51 @@ const emit = defineEmits<{
 }>()
 
 const eventStore = useEventStore()
-const { activeEvents, pastEvents, pendingAwards, isLoading } = storeToRefs(eventStore)
+const { allEvents, activeEvents, pastEvents, pendingAwards, isLoading } = storeToRefs(eventStore)
 
 const ui = useUIStore()
 const isSmallScreen = computed(() => ui.isSmallScreen)
 
+const getEventDisplayName = (eventId: string): string => {
+  const ev = (allEvents.value || []).find(e => e.id === eventId)
+  if (ev?.name) return ev.name
+  if (eventId === 'hora_magikarp') return 'Hora de Pesca del Magikarp'
+  return eventId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) // text-ok
+}
+
+const parsePrize = (rawPrize: unknown): Record<string, unknown> => {
+  if (!rawPrize) return {}
+  if (typeof rawPrize === 'string') {
+    try {
+      return JSON.parse(rawPrize) as Record<string, unknown> // open-record
+    } catch {
+      return {}
+    }
+  }
+  if (typeof rawPrize === 'object') {
+    return rawPrize as Record<string, unknown> // open-record
+  }
+  return {}
+}
+
 const onBtnHover = (event: MouseEvent, isEntering: boolean) => {
   const btn = event.currentTarget as HTMLElement
   if (!btn || btn.hasAttribute('disabled')) return
-  const isClaim = btn.classList.contains('claim')
+  const isClaim = btn.classList.contains('claim') || btn.classList.contains('claim-action-btn')
   if (isEntering) {
     gsap.to(btn, {
-      background: isClaim ? 'var(--green)' : 'rgba(255, 255, 255, 0.12)',
+      background: isClaim ? '#22c55e' : 'rgba(255, 255, 255, 0.12)',
       y: -2,
-      borderColor: isClaim ? 'var(--green-bright)' : 'rgba(255, 255, 255, 0.2)',
+      borderColor: isClaim ? '#86efac' : 'rgba(255, 255, 255, 0.2)',
       duration: 0.2,
       ease: 'power2.out',
       overwrite: 'auto'
     })
   } else {
     gsap.to(btn, {
-      background: isClaim ? 'var(--green)' : 'rgba(255, 255, 255, 0.05)',
+      background: isClaim ? '#16a34a' : 'rgba(255, 255, 255, 0.05)',
       y: 0,
-      borderColor: isClaim ? 'var(--green-bright)' : 'rgba(255, 255, 255, 0.1)',
+      borderColor: isClaim ? '#4ade80' : 'rgba(255, 255, 255, 0.1)',
       duration: 0.2,
       ease: 'power2.out',
       overwrite: 'auto',
@@ -105,12 +129,14 @@ onMounted(() => {
               class="award-item"
             >
               <div class="award-info">
-                <span class="award-name">{{ award.event_id }}</span>
-                <span class="award-prize">{{ award.prize_summary || 'Premio Reclamable' }}</span>
+                <span class="award-name">{{ getEventDisplayName(award.event_id || '') }}</span>
+                <div class="award-pills-wrap">
+                  <RewardPillsGroup :prize="parsePrize(award.prize)" />
+                </div>
               </div>
               <button
                 :id="'claim-pending-award-btn-' + award.id"
-                class="retro-btn claim"
+                class="retro-btn claim-action-btn"
                 @mouseenter="onBtnHover($event, true)"
                 @mouseleave="onBtnHover($event, false)"
                 @click.stop="eventStore.claimAward(award.id)"
@@ -206,12 +232,24 @@ onMounted(() => {
 .retro-btn {
   @include pixelated;
   font-size: 8px;
-  padding: 8px 12px;
+  padding: 6px 12px;
   border-radius: 6px;
-  border: 2px solid Rgba(255, 255, 255, 0.1);
-  background: Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.15);
+  background: Rgba(255, 255, 255, 0.06);
   color: var(--white);
   cursor: pointer;
+  box-shadow: 0 2px 0 Rgba(0, 0, 0, 0.4);
+
+  &:hover:not(:disabled) {
+    background: Rgba(255, 255, 255, 0.12);
+    border-color: Rgba(255, 255, 255, 0.3);
+    transform: Translatey(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: Translatey(1px);
+    box-shadow: 0 0 0 transparent;
+  }
 
   &:disabled {
     opacity: 0.5;
@@ -220,26 +258,43 @@ onMounted(() => {
 
   &.refresh {
     font-size: 8px;
-    padding: 6px 10px;
+    padding: 5px 10px;
+    background: Rgba(255, 255, 255, 0.08);
+    border-color: Rgba(255, 255, 255, 0.2);
+    color: var(--yellow);
+
+    &:hover:not(:disabled) {
+      background: Rgba(250, 204, 21, 0.15);
+      border-color: Rgba(250, 204, 21, 0.4);
+    }
   }
 
-  &.claim {
-    background: var(--green);
-    border-color: var(--green-bright);
+  &.claim-action-btn {
+    background: #16a34a;
+    border-color: #4ade80;
     color: var(--white);
+    font-weight: bold;
+    box-shadow: 0 2px 0 #15803d, 0 0 10px Rgba(74, 222, 128, 0.25);
+    text-shadow: 0 1px 2px Rgba(0, 0, 0, 0.5);
+
+    &:hover:not(:disabled) {
+      background: #22c55e;
+      border-color: #86efac;
+      box-shadow: 0 3px 0 #15803d, 0 0 14px Rgba(74, 222, 128, 0.4);
+    }
   }
 }
 
 /* REWARD BOX */
 .awards-box {
-  background: Rgba(34, 197, 94, 0.05);
-  border: 1px solid Rgba(34, 197, 94, 0.2);
+  background: Rgba(34, 197, 94, 0.06);
+  border: 1px solid Rgba(34, 197, 94, 0.25);
   border-radius: 12px;
   padding: 4px;
   margin-bottom: 20px;
 
   .box-inner {
-    background: Rgba(0, 0, 0, 0.3);
+    background: Rgba(0, 0, 0, 0.35);
     border-radius: 8px;
     padding: 12px;
   }
@@ -255,8 +310,9 @@ onMounted(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
     background: Rgba(255, 255, 255, 0.03);
-    border: 1px solid Rgba(255, 255, 255, 0.05);
+    border: 1px solid Rgba(255, 255, 255, 0.06);
     padding: 10px 14px;
     border-radius: 8px;
     margin-bottom: 8px;
@@ -268,17 +324,22 @@ onMounted(() => {
     .award-info {
       display: flex;
       flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-width: 0;
     }
 
     .award-name {
       font-weight: bold;
-      font-size: 12px;
-      margin-bottom: 2px;
+      font-size: 11px;
+      color: var(--white);
     }
 
-    .award-prize {
-      font-size: 10px;
-      color: var(--gray);
+    .award-pills-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
     }
   }
 }

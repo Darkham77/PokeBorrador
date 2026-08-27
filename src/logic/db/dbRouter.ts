@@ -9,9 +9,12 @@ import { initSQLite, queryLocal, type LoadingStore } from './sqliteEngine.ts';
 import { emulateOfflineRpc } from './sqliteRpcEmulation.ts';
 import { DATABASE_MIGRATIONS } from './migrations_data.ts';
 import { logger } from '../utils/logger.ts';
+import { GAME_TIMEZONE } from '../utils/timeUtils.ts';
 import type { DBConfig, SessionMode, DBRouterOptions, DBCompatibilityResponse, DBResponse } from '@/types/system/database';
 
 export type { DBCompatibilityResponse };
+
+const MIN_TIMESTAMP_MS_STRING_LENGTH = 10;
 
 /**
  * Unified Data Persistence Layer with Strict Session Isolation.
@@ -123,7 +126,19 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
 
   setMockTime(dateStr: string): void {
     try {
-      const targetDate = Temporal.Instant.from(dateStr);
+      const clean = dateStr.trim();
+      const num = Number(clean);
+      let targetDate: Temporal.Instant;
+      if (!isNaN(num) && clean.length >= MIN_TIMESTAMP_MS_STRING_LENGTH && !clean.includes('-') && !clean.includes('T')) {
+        targetDate = Temporal.Instant.fromEpochMilliseconds(num);
+      } else {
+        try {
+          targetDate = Temporal.Instant.from(clean);
+        } catch {
+          const isoClean = clean.replace(' ', 'T');
+          targetDate = Temporal.PlainDateTime.from(isoClean).toZonedDateTime(GAME_TIMEZONE).toInstant();
+        }
+      }
       const offset = targetDate.epochMilliseconds - Temporal.Now.instant().epochMilliseconds;
       this.setTimeOffset(offset);
     } catch (e) {

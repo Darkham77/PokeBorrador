@@ -23,7 +23,7 @@ describe('EventDetailModal.vue', () => {
     }
   }
 
-  it('does NOT display victory criteria if hasCompetition is absent or false', () => {
+  it('does NOT display sub-competitions if hasCompetition is absent or false', () => {
     const wrapper = mount(EventDetailModal, {
       props: {
         show: true,
@@ -35,14 +35,30 @@ describe('EventDetailModal.vue', () => {
     })
 
     const text = wrapper.text()
-    expect(text).not.toContain('CRITERIO DE VICTORIA')
+    expect(text).not.toContain('SUB-COMPETENCIAS Y PREMIOS')
     expect(text).not.toContain('Mayor cantidad de IVs totales')
   })
 
-  it('displays victory criteria if hasCompetition is true', () => {
+  it('displays sub-competitions, criteria and prizes if hasCompetition is true', () => {
     const competitionEvent = {
       ...defaultEvent,
-      config: '{"species": "magikarp", "metric": "total_ivs", "hasCompetition": true}'
+      config: JSON.stringify({
+        species: 'magikarp',
+        hasCompetition: true,
+        subCompetitions: [
+          {
+            id: 'ivs',
+            name: 'Genética Superior (IVs)',
+            metric: 'total_ivs',
+            order: 'max',
+            prizes: {
+              first: { type: 'mixed', money: 25000, battleCoins: 150, items: { goldbottlecap: 1, rarecandy: 5 } },
+              second: { type: 'mixed', money: 15000, battleCoins: 100, items: { bottlecap: 2, rarecandy: 3 } },
+              third: { type: 'mixed', money: 8000, battleCoins: 50, items: { bottlecap: 1, rarecandy: 1 } }
+            }
+          }
+        ]
+      })
     }
 
     const wrapper = mount(EventDetailModal, {
@@ -56,7 +72,10 @@ describe('EventDetailModal.vue', () => {
     })
 
     const text = wrapper.text()
-    expect(text).toContain('CRITERIO DE VICTORIA')
-    expect(text).toContain('Mayor cantidad de IVs totales')
+    expect(text).toContain('SUB-COMPETENCIAS Y PREMIOS')
+    expect(text).toContain('Mayor cantidad de IVs totales (0 a 186)')
+    expect(text).toContain('150 BC')
+    expect(text).toContain('Chapa Dorada')
+    expect(text).toContain('Caramelo Raro')
   })
 })

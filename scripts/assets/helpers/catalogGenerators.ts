@@ -305,6 +305,9 @@ export async function generateFeetAndCriesDatabase(
   const jsonPath = safeJoin(targetDir, 'pokemonFeetDatabase.json');
   await safeWriteFile(jsonPath, JSON.stringify(packed, null, 2));
 
+  const criesJsonPath = safeJoin(targetDir, 'pokemonCriesDatabase.json');
+  await safeWriteFile(criesJsonPath, JSON.stringify(packed.c, null, 2));
+
   const databaseContent = `/**
  * src/data/pokemonFeetDatabase.ts
  * 
@@ -392,15 +395,11 @@ export function requireFeetPoints(value: string): FeetPoints {
   throw new Error(\`[pokemonFeetDatabase] Missing feet points for path: \${resolvedPath}\`);
 }
 
-export const POKEMON_CRIES_DATABASE: Record<string, string> = PACKED_DATA.c ?? {}; // open-record
-
-export function isPokemonCryId(value: string): boolean {
-  return Object.hasOwn(POKEMON_CRIES_DATABASE, value);
-}
-
-export function getPokemonCryFilename(speciesId: string): string { // domain-ok
-  return POKEMON_CRIES_DATABASE[speciesId] ?? \`\${speciesId}.mp3\`;
-}
+export {
+  POKEMON_CRIES_DATABASE,
+  isPokemonCryId,
+  getPokemonCryFilename
+} from './pokemonCriesDatabase.ts';
 `;
 
   await safeWriteFile(databasePath, databaseContent);

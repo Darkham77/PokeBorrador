@@ -6,7 +6,7 @@ import type { PokemonGender, PokemonIVs } from '@/types/pokemon/pokemon'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 import { requireAbilityId } from '@/data/battle/abilities'
 import { canLearnMove, getLegalSpeciesMoves, getRandomLegalMoves, getMaxAllowedMoves } from '@/logic/pokemon/pokemonFactory'
-import { toID } from '@pkmn/sim'
+import { toID } from '@/logic/utils/strings.ts'
 
 const DEBUG_CREATOR_SHINY_PROB = 0.05
 const DEBUG_CREATOR_GUARDIAN_PROB = 0.01

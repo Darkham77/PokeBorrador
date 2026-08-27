@@ -109,6 +109,24 @@ export function registerSystemTools(debug: DebugSystem) {
   })
 
   debug.register({
+    id: 'admin-award-event',
+    label: 'AWARD/FINALIZE EVENT',
+    command: 'awardEvent',
+    category: 'admin',
+    action: async (eventId: string = 'hora_magikarp') => {
+      const { data, error } = await game.db.rpc('fn_award_event_automated', {
+        target_event_id: eventId
+      })
+      if (error) throw error
+      ui.notify(`Evento '${eventId}' premiado y finalizado`, '🎁')
+      const eventStore = useEventStore()
+      await eventStore.fetchEvents()
+      return data
+    },
+    description: 'Calcula el podio y entrega las recompensas del evento especificado.'
+  })
+
+  debug.register({
     id: 'admin-close-season',
     label: 'CLOSE RANKED SEASON',
     command: 'closeRankedSeason',

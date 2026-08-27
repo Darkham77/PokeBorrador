@@ -88,6 +88,18 @@ export const moveSchema = object({
   sound: optional(boolean()),
 });
 
+export const pokemonCompetitionTrophySchema = object({
+  eventId: string(),
+  eventName: string(),
+  categoryId: string(),
+  categoryName: string(),
+  rank: union([literal('first'), literal('second'), literal('third')]),
+  score: number(),
+  awardedAt: number(),
+});
+
+export type PokemonCompetitionTrophyDto = InferOutput<typeof pokemonCompetitionTrophySchema>;
+
 export const pokemonSchema = object({
   uid: string(),
   id: string(),
@@ -187,6 +199,9 @@ export const pokemonSchema = object({
   form: optional(string()),
   isIllegal: optional(boolean()),
   illegalReasons: optional(array(string())),
+  height: optional(number()),
+  weight: optional(number()),
+  trophies: optional(array(pokemonCompetitionTrophySchema)),
 });
 
 const partialPokemonIVsSchema = partial(pokemonIVsSchema);

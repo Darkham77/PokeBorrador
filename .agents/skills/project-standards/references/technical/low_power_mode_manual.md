@@ -40,3 +40,11 @@ When implementing weather, time, or environmental effects:
 ## 5. Settings Integration
 
 The `SettingsModal.vue` must expose control buttons for "BAJO CONSUMO" (Low Power Mode) allowing users to switch between `'auto'`, `'enabled'`, and `'disabled'` values. All options must styled using the unified retro-modern UI system.
+
+## 6. Background Tab Lifecycle & GSAP Ticker Sleeping
+
+To eliminate CPU heat and battery drain when Poké Vicio is running in an inactive browser tab or minimized window:
+
+- **Visibility Change Listener**: The application entry point registers a `document.addEventListener('visibilitychange', ...)` handler.
+- **Ticker Sleep**: When `document.hidden` becomes `true`, the global GSAP ticker is put to sleep via `gsap.ticker.sleep()`.
+- **Ticker Wake**: When the user returns to the tab (`document.hidden` is `false`), the ticker immediately wakes up via `gsap.ticker.wake()`, resuming animations seamlessly without timing drift.

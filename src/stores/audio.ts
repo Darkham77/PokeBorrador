@@ -4,8 +4,8 @@ import { ref } from 'vue';
 import { logger } from '@/logic/utils/logger';
 import { gameBus } from '@/logic/events/gameBus';
 import * as engine from '@/logic/audio/audioEngine';
-import { getPokemonCryFilename } from '@/data/pokemon/pokemonFeetDatabase';
-import { toID } from '@pkmn/sim';
+import { getPokemonCryFilename } from '@/data/pokemon/pokemonCriesDatabase.ts';
+import { toID } from '@/logic/utils/strings.ts';
 import { AUDIO_MASTER_GAIN_VOLUME } from '@/logic/constants/audio';
 
 /**

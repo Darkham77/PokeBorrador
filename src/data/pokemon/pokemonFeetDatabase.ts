@@ -85,12 +85,9 @@ export function requireFeetPoints(value: string): FeetPoints {
   throw new Error(`[pokemonFeetDatabase] Missing feet points for path: ${resolvedPath}`);
 }
 
-export const POKEMON_CRIES_DATABASE: Record<string, string> = PACKED_DATA.c ?? {}; // open-record
+export {
+  POKEMON_CRIES_DATABASE,
+  isPokemonCryId,
+  getPokemonCryFilename
+} from './pokemonCriesDatabase.ts';
 
-export function isPokemonCryId(value: string): boolean {
-  return Object.hasOwn(POKEMON_CRIES_DATABASE, value);
-}
-
-export function getPokemonCryFilename(speciesId: string): string { // domain-ok
-  return POKEMON_CRIES_DATABASE[speciesId] ?? `${speciesId}.mp3`;
-}

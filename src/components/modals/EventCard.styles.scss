@@ -5,8 +5,8 @@
   font-size: 8px;
   padding: 8px 12px;
   border-radius: 6px;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid Rgba(255, 255, 255, 0.1);
+  background: Rgba(255, 255, 255, 0.05);
   color: var(--white);
   cursor: pointer;
 
@@ -22,8 +22,8 @@
     text-shadow: none;
 
     &.is-enrolled {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.2);
+      background: Rgba(255, 255, 255, 0.08);
+      border-color: Rgba(255, 255, 255, 0.2);
       color: var(--white);
     }
   }
@@ -31,53 +31,89 @@
 
 .event-card {
   background: $card-dark;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 
-  .participating-poke-box {
-    margin-bottom: 16px;
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(255, 215, 0, 0.25);
-    border-radius: 8px;
-    padding: 10px 12px;
+  .competition-slots-list {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    margin-bottom: 16px;
+  }
 
-    .participating-header {
+  .category-slot-card {
+    background: Rgba(0, 0, 0, 0.3);
+    border: 1px solid Rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    &.has-participant {
+      border-color: Rgba(250, 204, 21, 0.25);
+      background: Rgba(0, 0, 0, 0.4);
+    }
+
+    .slot-header {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 6px;
+      min-width: 0;
 
-      .dot-live {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: var(--green-bright);
-        box-shadow: 0 0 6px var(--green-bright);
+      .slot-header-left {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+        overflow: hidden;
+
+        .cat-icon {
+          font-size: 12px;
+          flex-shrink: 0;
+        }
+
+        .cat-title {
+          font-size: 8px;
+          color: var(--yellow);
+          font-weight: bold;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
       }
 
-      .header-txt {
-        @include pixelated;
-        font-size: 7px;
-        color: var(--yellow);
-        letter-spacing: 0.5px;
+      .cat-dir-badge {
+        font-size: 6px;
+        padding: 1px 5px;
+        border-radius: 4px;
+        background: Rgba(59, 130, 246, 0.15);
+        color: #93c5fd;
+        border: 1px solid Rgba(59, 130, 246, 0.25);
+        white-space: nowrap;
+        flex-shrink: 0;
       }
     }
 
-    .participating-main-info {
+    .slot-enrolled-body {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 6px;
+      padding: 4px 6px;
+      background: Rgba(255, 255, 255, 0.025);
+      border-radius: 6px;
+      border: 1px solid Rgba(255, 255, 255, 0.05);
+      min-width: 0;
 
       .poke-avatar-box {
-        width: 36px;
-        height: 36px;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        width: 28px;
+        height: 28px;
+        background: Rgba(255, 255, 255, 0.04);
+        border: 1px solid Rgba(255, 255, 255, 0.08);
         border-radius: 6px;
         display: flex;
         align-items: center;
@@ -85,90 +121,150 @@
         flex-shrink: 0;
 
         .poke-img {
-          width: 32px;
-          height: 32px;
+          width: 24px;
+          height: 24px;
           object-fit: contain;
         }
       }
 
-      .poke-details-box {
+      .poke-meta-box {
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 2px;
         flex: 1;
+        min-width: 0;
+        overflow: hidden;
 
         .poke-name-row {
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 4px;
+          min-width: 0;
 
           .poke-name-txt {
-            font-size: 11px;
+            font-size: 8.5px;
             font-weight: bold;
             color: var(--white);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          .poke-shiny-badge {
+            font-size: 8px;
+            flex-shrink: 0;
           }
 
           .poke-lv-badge {
             @include pixelated;
-            font-size: 7px;
-            padding: 1px 4px;
+            font-size: 6px;
+            padding: 1px 3px;
             border-radius: 3px;
-            background: rgba(255, 255, 255, 0.08);
+            background: Rgba(255, 255, 255, 0.08);
             color: var(--gray);
+            white-space: nowrap;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            line-height: 1;
           }
         }
 
         .metric-highlight-row {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-
-          .metric-lbl {
-            @include pixelated;
-            font-size: 7px;
-            color: var(--gray);
-          }
-
           .metric-val-txt {
-            @include pixelated;
-            font-size: 8px;
+            font-size: 7px;
             color: var(--green-bright);
-            text-shadow: 0 0 6px rgba(74, 222, 128, 0.3);
+            text-shadow: 0 0 6px Rgba(74, 222, 128, 0.3);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
           }
         }
       }
     }
 
-    .ivs-detail-grid {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 4px;
-      padding-top: 6px;
-      border-top: 1px dashed rgba(255, 255, 255, 0.08);
+    .slot-empty-body {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      background: Rgba(0, 0, 0, 0.2);
+      border: 1px dashed Rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      cursor: pointer;
 
-      .iv-chip {
+      &:hover {
+        border-color: Rgba(250, 204, 21, 0.4);
+        background: Rgba(250, 204, 21, 0.03);
+      }
+
+      .empty-info {
         display: flex;
-        flex-direction: column;
         align-items: center;
-        background: rgba(255, 255, 255, 0.03);
-        border-radius: 4px;
-        padding: 2px 0;
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        gap: 6px;
 
-        span {
-          font-size: 6px;
-          color: var(--gray);
-          line-height: 1;
+        .empty-plus {
+          font-size: 11px;
+          color: Rgba(255, 255, 255, 0.4);
+          font-weight: bold;
         }
 
-        b {
-          @include pixelated;
-          font-size: 7px;
-          color: #a7f3d0;
-          line-height: 1.2;
-          margin-top: 1px;
+        .empty-txt {
+          font-size: 6.5px;
+          color: Rgba(203, 213, 225, 0.6);
         }
       }
+    }
+
+    .btn-slot-action {
+      font-size: 6.5px;
+      padding: 3px 6px;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      line-height: 1;
+
+      &.inscribe {
+        background: var(--yellow);
+        color: var(--black);
+        font-weight: bold;
+        border-color: #fef08a;
+
+        &:hover {
+          filter: Brightness(1.1);
+          transform: Translatey(-1px);
+        }
+      }
+
+      &.change {
+        background: Rgba(255, 255, 255, 0.08);
+        border-color: Rgba(255, 255, 255, 0.2);
+        color: var(--white);
+
+        &:hover {
+          background: Rgba(255, 255, 255, 0.15);
+          border-color: Rgba(255, 255, 255, 0.35);
+        }
+      }
+    }
+  }
+
+  .rules-btn {
+    background: Rgba(255, 255, 255, 0.08);
+    border-color: Rgba(255, 255, 255, 0.2);
+    color: var(--yellow);
+    font-size: 8px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+
+    &:hover {
+      background: Rgba(250, 204, 21, 0.15);
+      border-color: Rgba(250, 204, 21, 0.4);
+      box-shadow: 0 0 8px Rgba(250, 204, 21, 0.2);
     }
   }
 
@@ -197,13 +293,13 @@
     .event-id-icon {
       width: 40px;
       height: 40px;
-      background: rgba(0, 0, 0, 0.3);
+      background: Rgba(0, 0, 0, 0.3);
       border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      border: 1px solid Rgba(255, 255, 255, 0.05);
     }
 
     .event-main-meta {
@@ -230,10 +326,28 @@
       font-size: 7px;
       padding: 2px 6px;
       border-radius: 4px;
-      background: rgba(59, 130, 246, 0.1);
+      background: Rgba(59, 130, 246, 0.1);
       color: var(--blue-bright);
       font-weight: bold;
       width: fit-content;
+
+      &.shiny {
+        background: Rgba(244, 114, 182, 0.15);
+        color: #f472b6;
+        border: 1px solid Rgba(244, 114, 182, 0.3);
+      }
+
+      &.spawn {
+        background: Rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+        border: 1px solid Rgba(59, 130, 246, 0.3);
+      }
+
+      &.fishing {
+        background: Rgba(14, 165, 233, 0.15);
+        color: #38bdf8;
+        border: 1px solid Rgba(14, 165, 233, 0.3);
+      }
     }
 
     .catch-window-tag {
@@ -241,12 +355,12 @@
       font-size: 7px;
       padding: 2px 6px;
       border-radius: 4px;
-      background: rgba(250, 204, 21, 0.12);
-      border: 1px solid rgba(250, 204, 21, 0.35);
+      background: Rgba(250, 204, 21, 0.12);
+      border: 1px solid Rgba(250, 204, 21, 0.35);
       color: var(--yellow);
       font-weight: bold;
       width: fit-content;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+      text-shadow: 0 1px 2px Rgba(0, 0, 0, 0.5);
     }
   }
 
@@ -282,10 +396,10 @@
       font-size: 8px;
       padding: 6px 12px;
       border-radius: 6px;
-      background: rgba(74, 222, 128, 0.1);
+      background: Rgba(74, 222, 128, 0.1);
       border: 1px solid var(--green-bright);
       color: var(--green-bright);
-      text-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
+      text-shadow: 0 0 8px Rgba(74, 222, 128, 0.3);
     }
   }
 }

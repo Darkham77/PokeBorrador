@@ -324,6 +324,9 @@ export interface RouteSpawnMappedItem {
   spd: number
   spe: number
   totalStats: number
+  isEventBoosted?: boolean
+  eventRateMult?: number
+  eventShinyMult?: number
 }
 
 export function buildRouteSpawnItem(
@@ -338,7 +341,8 @@ export function buildRouteSpawnItem(
   diff: number,
   spawnType: string,
   statusClass: string,
-  multiplier: number
+  multiplier: number,
+  eventMeta?: { isEventBoosted?: boolean; eventRateMult?: number; eventShinyMult?: number }
 ): RouteSpawnMappedItem {
   return {
     id,
@@ -360,6 +364,9 @@ export function buildRouteSpawnItem(
     spa: pData.spa,
     spd: pData.spd,
     spe: pData.spe,
-    totalStats: pData.totalStats
+    totalStats: pData.totalStats,
+    isEventBoosted: eventMeta?.isEventBoosted,
+    eventRateMult: eventMeta?.eventRateMult,
+    eventShinyMult: eventMeta?.eventShinyMult
   }
 }

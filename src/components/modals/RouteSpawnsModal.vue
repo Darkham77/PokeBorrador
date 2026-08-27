@@ -73,6 +73,8 @@ const {
   baseArchaeologyChance,
   activeTerrestrialChance,
   baseTerrestrialChance,
+  eventFishingMultiplier,
+  eventArchaeologyMultiplier,
   getProbClass,
   getCategoryTooltip,
   archaeologyRewards,
@@ -105,8 +107,8 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
           <span class="value">{{ weatherEmoji }} {{ weatherLabel }}</span>
         </div>
         <div class="info-item">
-          <span class="label">Nivel de Zona:</span>
-          <span class="value">Nv. {{ map.lv[0] }} - {{ map.lv[1] }}</span>
+          <span class="label">Rango Nivel:</span>
+          <span class="value">Nv. {{ map.lv[0] }}-{{ map.lv[1] }}</span>
         </div>
       </div>
 
@@ -372,6 +374,7 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
         title="🎣 ENCUENTROS DE PESCA"
         :probability="activeFishingChance"
         :base-probability="baseFishingChance"
+        :event-multiplier="eventFishingMultiplier"
         :items="fishingSpawns"
         mode="pokemon"
         :prob-class="getProbClass(activeFishingChance, baseFishingChance)"
@@ -388,6 +391,7 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
         title="⛏️ RECOMPENSAS DE ARQUEOLOGÍA"
         :probability="activeArchaeologyChance"
         :base-probability="baseArchaeologyChance"
+        :event-multiplier="eventArchaeologyMultiplier"
         :items="archaeologyRewards"
         mode="item"
         :prob-class="getProbClass(activeArchaeologyChance, baseArchaeologyChance)"

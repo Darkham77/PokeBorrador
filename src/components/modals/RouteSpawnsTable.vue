@@ -19,6 +19,7 @@ interface Props {
   probClass: string
   weatherEmoji: string
   weatherLabel: string
+  eventMultiplier?: number
   getStatusTooltip?: (spawnType: string) => { title: string; desc: string }
   getCategoryTooltip?: (type: string) => { title: string; desc: string }
   getSpawnTooltip?: (item: RouteSpawnMappedItem) => Record<string, unknown>
@@ -29,6 +30,7 @@ const props = withDefaults(defineProps<Props>(), {
   probClass: 'info',
   weatherEmoji: '',
   weatherLabel: '',
+  eventMultiplier: 1,
   getStatusTooltip: () => ({ title: '', desc: '' }),
   getCategoryTooltip: () => ({ title: '', desc: '' }),
   getSpawnTooltip: () => ({}),
@@ -55,11 +57,12 @@ defineEmits<{
         :class="probClass"
       >
         <template v-if="mode === 'npc'">(PROBABILIDAD: VARIABLE)</template>
-        <template v-else>(PROBABILIDAD: {{ probability }}%)</template>
+        <template v-else>
+          (PROBABILIDAD: {{ probability }}%<template v-if="eventMultiplier && eventMultiplier > 1"> · ✨ EVENTO x{{ eventMultiplier }}</template>)
+        </template>
       </span>
     </h3>
     <div :class="['spawns-report-scroll', mode === 'fishing' ? 'fishing-table' : mode === 'item' ? 'archaeology-table' : mode === 'npc' ? 'npc-table' : '']">
-      <!-- Headers -->
       <!-- Headers -->
       <div class="report-table-header">
         <div class="col-pokemon">
@@ -75,7 +78,7 @@ defineEmits<{
           Estado
         </div>
         <div class="col-multiplier">
-          {{ mode === 'pokemon' ? 'Clima' : 'Detalles' }}
+          {{ mode === 'pokemon' ? 'Clima / Mod' : 'Detalles' }}
         </div>
         <div class="col-prob">
           {{ mode === 'npc' ? 'Prob. Paso' : 'Prob. Real' }}
@@ -146,14 +149,26 @@ defineEmits<{
                 :description="getStatusTooltip(poke.spawnType).desc"
               >
                 <span :class="['status-tag', poke.statusClass]">
-                  {{ poke.spawnType }}
+                  <template v-if="poke.isEventBoosted">
+                    <template v-if="poke.eventShinyMult && poke.eventShinyMult > 1">✨ x{{ poke.eventShinyMult }} Shiny</template>
+                    <template v-else-if="poke.eventRateMult && poke.eventRateMult > 1">🎯 x{{ poke.eventRateMult }} Spawn</template>
+                    <template v-else>🎉 Evento</template>
+                  </template>
+                  <template v-else>
+                    {{ poke.spawnType }}
+                  </template>
                 </span>
               </PVTooltip>
             </div>
 
-            <!-- Climate Multiplier -->
+            <!-- Climate Multiplier / Event -->
             <div class="col-multiplier row-cell flex-align text-center">
-              <template v-if="poke.spawnType === 'Visitante' || poke.spawnType === 'Exclusivo'">
+              <template v-if="poke.isEventBoosted && poke.eventRateMult && poke.eventRateMult > 1">
+                <span class="status-tag event-boosted">
+                  🎯 x{{ poke.eventRateMult }}
+                </span>
+              </template>
+              <template v-else-if="poke.spawnType === 'Visitante' || poke.spawnType === 'Exclusivo'">
                 <span :class="['status-tag', poke.statusClass]">{{ weatherEmoji }} {{ weatherLabel }}</span>
               </template>
               <template v-else-if="poke.multiplier === 0">

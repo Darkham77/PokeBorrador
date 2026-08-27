@@ -16,6 +16,7 @@ import type { LogFn } from '@/types/battle/battle'
 import type { BattleContext } from '@/types/battle/battleContext'
 import { getItemName, type ItemId } from '@/data/inventory/items'
 import { initializePokemonVigor } from '@/logic/pokemon/pokemonUtils'
+import { getServerInstant } from '@/logic/utils/timeUtils'
 
 interface ItemUsageOptions {
   eventStore: EventStore;
@@ -140,7 +141,7 @@ export async function handleItemUsage(itemName: ItemId, p: Pokemon, e: Pokemon, 
       capturedPoke.focusEnergy = false
       capturedPoke.isTransformed = false
       capturedPoke.caught = true
-      capturedPoke.obtainedAt = capturedPoke.obtainedAt || Temporal.Now.instant().epochMilliseconds
+      capturedPoke.obtainedAt = capturedPoke.obtainedAt || getServerInstant().epochMilliseconds
       capturedPoke.obtainedMethod = capturedPoke.obtainedMethod || 'wild'
 
       // Guardar el tipo de bola en los tags del pokemon capturado para persistencia visual

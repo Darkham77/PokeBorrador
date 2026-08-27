@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
-import type { Event as GameEvent, EventConfig } from '@/logic/events/eventEngine'
+import {
+  getDefaultSubCompetitions,
+  resolveSubCompetitionDirection,
+  type Event as GameEvent,
+  type EventConfig,
+  type SubCompetitionConfig
+} from '@/logic/events/eventEngine'
+import RewardPillsGroup from '@/components/shared/RewardPillsGroup.vue'
 
 interface Props {
   show?: boolean
@@ -36,53 +43,132 @@ interface ExtendedEventConfig extends EventConfig {
 const cfg = computed<ExtendedEventConfig>(() => {
   if (typeof props.event.config === 'string') {
     try { return JSON.parse(props.event.config) as ExtendedEventConfig } catch (_e) { return {} }
+  } else if (props.event.config && typeof props.event.config === 'object') {
+    return props.event.config as ExtendedEventConfig
   }
-  return (props.event.config as ExtendedEventConfig) || {}
+  return {}
 })
 
 const sched = computed<Schedule>(() => {
   if (typeof props.event.schedule === 'string') {
     try { return JSON.parse(props.event.schedule) as Schedule } catch (_e) { return {} }
+  } else if (props.event.schedule && typeof props.event.schedule === 'object') {
+    return props.event.schedule as Schedule
   }
-  return (props.event.schedule as Schedule) || {}
+  return {}
 })
 
-const bonusMap: Record<string, { label: string, color: string }> = {
-  expMult:      { label: '⚡ EXP', color: 'Rgba(167, 139, 250, 1)' },
-  moneyMult:    { label: '💰 Dinero', color: 'Rgba(251, 191, 36, 1)' },
-  bcMult:       { label: '🪙 Battle Coins', color: 'Rgba(96, 165, 250, 1)' },
-  shinyMult:    { label: '✨ Shiny Rate (Salvaje)', color: 'Rgba(244, 114, 182, 1)' },
-  eggShinyMult: { label: '✨ Shiny Rate (Huevos)', color: 'Rgba(244, 114, 182, 1)' },
-  hatchMult:    { label: '🥚 Eclosión Rápida', color: 'Rgba(52, 211, 153, 1)' },
-  rivalMult:    { label: '😈 Aparición de Rival', color: 'Rgba(239, 68, 68, 1)' },
-  trainerMult:  { label: '🎒 Aparición de Entrenadores', color: 'Rgba(59, 130, 246, 1)' },
-  fishingMult:  { label: '🎣 Eventos de Pesca', color: 'Rgba(14, 165, 233, 1)' },
-}
-
-interface ActiveBonus {
+interface BonusItem {
   label: string
   color: string
   value: string
 }
 
-const activeBonuses = computed<ActiveBonus[]>(() => {
-  return Object.entries(bonusMap)
-    .filter(([key]) => {
-      const val = cfg.value[key as keyof ExtendedEventConfig]
-      return typeof val === 'number' && val > 1
-    })
-    .map(([key, meta]) => ({
-      label: meta.label,
-      color: meta.color,
-      value: `x${cfg.value[key as keyof ExtendedEventConfig]}`
-    }))
+const activeBonuses = computed<BonusItem[]>(() => {
+  const bonuses: BonusItem[] = []
+  const c = cfg.value
+
+  // Multiplicadores Globales / Economía
+  if (c.expMult && c.expMult > 1) {
+    bonuses.push({ label: 'Experiencia en Combates', color: 'rgba(74, 222, 128, 1)', value: `x${c.expMult}` })
+  }
+  if (c.moneyMult && c.moneyMult > 1) {
+    bonuses.push({ label: 'Ganancia de Dinero', color: 'rgba(250, 204, 21, 1)', value: `x${c.moneyMult}` })
+  }
+  if (c.bcMult && c.bcMult > 1) {
+    bonuses.push({ label: 'Battle Coins por Victoria', color: 'rgba(96, 165, 250, 1)', value: `x${c.bcMult}` })
+  }
+  if (c.catchRateMult && c.catchRateMult > 1) {
+    bonuses.push({ label: 'Ratio de Captura General', color: 'rgba(244, 114, 182, 1)', value: `x${c.catchRateMult}` })
+  }
+  if (c.shinyMult && c.shinyMult > 1) {
+    bonuses.push({ label: 'Probabilidad General de Shiny', color: 'rgba(244, 114, 182, 1)', value: `x${c.shinyMult}` })
+  }
+  if (c.eggShinyMult && c.eggShinyMult > 1) {
+    bonuses.push({ label: 'Shiny en Crianza / Huevos', color: 'rgba(244, 114, 182, 1)', value: `x${c.eggShinyMult}` })
+  }
+  if (c.hatchMult && c.hatchMult > 1) {
+    bonuses.push({ label: 'Velocidad de Eclosión', color: 'rgba(56, 189, 248, 1)', value: `x${c.hatchMult}` })
+  }
+
+  // Bonificaciones de Especies / Minijuegos directos
+  if (c.speciesShinyMult && c.speciesShinyMult > 1) {
+    const sp = c.species ? c.species.toUpperCase() : 'EVENTO' // domain-ok
+    bonuses.push({ label: `✨ Shiny Boost (${sp})`, color: 'rgba(244, 114, 182, 1)', value: `x${c.speciesShinyMult}` })
+  }
+  if (c.speciesRateMult && c.speciesRateMult > 1) {
+    const sp = c.species ? c.species.toUpperCase() : 'EVENTO' // domain-ok
+    bonuses.push({ label: `🎯 Aparición / Spawn (${sp})`, color: 'rgba(96, 165, 250, 1)', value: `x${c.speciesRateMult}` })
+  }
+  if (c.fishingMult && c.fishingMult > 1) {
+    bonuses.push({ label: '🎣 Encuentros de Pesca', color: 'rgba(56, 189, 248, 1)', value: `x${c.fishingMult}` })
+  }
+  if (c.archaeologyMult && c.archaeologyMult > 1) {
+    bonuses.push({ label: '⛏️ Eficiencia de Arqueología', color: 'rgba(251, 146, 60, 1)', value: `x${c.archaeologyMult}` })
+  }
+  if (c.bugCatchingMult && c.bugCatchingMult > 1) {
+    bonuses.push({ label: '🦗 Caza de Bichos', color: 'rgba(163, 230, 53, 1)', value: `x${c.bugCatchingMult}` })
+  }
+  if (c.casinoLuckyMult && c.casinoLuckyMult > 1) {
+    bonuses.push({ label: '🎰 Suerte en Casino', color: 'rgba(250, 204, 21, 1)', value: `x${c.casinoLuckyMult}` })
+  }
+
+  // Buffs detallados de minijuegos por ID
+  if (c.minigameBuffs && typeof c.minigameBuffs === 'object') {
+    const minigameLabels: Record<string, string> = {
+      fishing: '🎣 Pesca',
+      archaeology: '⛏️ Arqueología',
+      bug_catching: '🦗 Caza de Bichos',
+      safari: '🧭 Zona Safari',
+      casino: '🎰 Casino'
+    }
+
+    for (const [mId, buffs] of Object.entries(c.minigameBuffs)) {
+      const mName = minigameLabels[mId] || `🎮 ${mId.toUpperCase()}`
+      if (buffs.encounterRateMult && buffs.encounterRateMult > 1) {
+        bonuses.push({ label: `${mName} (Aparición / Encuentros)`, color: 'rgba(56, 189, 248, 1)', value: `x${buffs.encounterRateMult}` })
+      }
+      if (buffs.successRateMult && buffs.successRateMult > 1) {
+        bonuses.push({ label: `${mName} (Tasa de Éxito)`, color: 'rgba(74, 222, 128, 1)', value: `x${buffs.successRateMult}` })
+      }
+      if (buffs.rareDropMult && buffs.rareDropMult > 1) {
+        bonuses.push({ label: `${mName} (Loot / Drops Raros)`, color: 'rgba(250, 204, 21, 1)', value: `x${buffs.rareDropMult}` })
+      }
+      if (buffs.shinyMult && buffs.shinyMult > 1) {
+        bonuses.push({ label: `${mName} (Probabilidad Shiny)`, color: 'rgba(244, 114, 182, 1)', value: `x${buffs.shinyMult}` })
+      }
+      if (buffs.expMult && buffs.expMult > 1) {
+        bonuses.push({ label: `${mName} (EXP)`, color: 'rgba(168, 85, 247, 1)', value: `x${buffs.expMult}` })
+      }
+      if (buffs.scoreMult && buffs.scoreMult > 1) {
+        bonuses.push({ label: `${mName} (Puntuación)`, color: 'rgba(234, 179, 8, 1)', value: `x${buffs.scoreMult}` })
+      }
+    }
+  }
+
+  // Reglas y Restricciones
+  if (c.requireCaughtDuringEvent) {
+    bonuses.push({ label: '🕒 Solo capturados durante la ventana del evento', color: 'rgba(250, 204, 21, 1)', value: 'REGLA' })
+  }
+
+  // Reglas personalizadas abiertas
+  if (Array.isArray(c.customRules)) {
+    for (const rule of c.customRules) {
+      bonuses.push({ label: rule.label, color: rule.color || 'rgba(250, 204, 21, 1)', value: rule.value })
+    }
+  }
+
+  return bonuses
 })
 
-interface Prize {
-  type: 'money' | 'bc' | 'item' | 'pokemon'
+interface Prize extends Record<string, unknown> { // open-record
+  type?: 'money' | 'bc' | 'item' | 'pokemon' | 'mixed'
   amount?: number
   qty?: number
+  money?: number
+  battleCoins?: number
   item?: string
+  items?: Record<string, number>
   species?: string
   shiny?: boolean
   level?: number
@@ -94,27 +180,49 @@ const prizes = computed<{ first?: Prize, second?: Prize, third?: Prize } | null>
   return c.prizes
 })
 
-const getPrizeDesc = (p: Prize) => {
-  if (!p) return null
-  if (p.type === 'money') return `₽${(p.amount || 0).toLocaleString()}`
-  if (p.type === 'bc') return `${(p.amount || 0).toLocaleString()} BC`
-  if (p.type === 'item') return `${p.qty || 1}x ${p.item}`
-  if (p.type === 'pokemon') {
-    return `${p.species}${p.shiny ? ' ✨' : ''} Nv.${p.level}`
-  }
-  return null
+const subCompetitions = computed<SubCompetitionConfig[]>(() => {
+  if (cfg.value.hasCompetition !== true) return []
+  return getDefaultSubCompetitions(props.event)
+})
+
+const getSubCompDefaultIcon = (catId: string) => {
+  if (catId === 'ivs') return '🧬'
+  if (catId === 'weight') return '⚖️'
+  if (catId === 'height') return '📏'
+  if (catId === 'level') return '📈'
+  if (catId === 'friendship') return '💖'
+  return '🏆'
 }
 
-const metricText = computed(() => {
-  if (cfg.value.hasCompetition !== true) return null
-  const sortBy = cfg.value.sortBy || 'data.total_ivs'
-  const labels: Record<string, string> = {
-    'data.total_ivs': '🧬 Mayor cantidad de IVs totales',
-    'data.level': '📈 Mayor Nivel',
-    'data.isShiny': '✨ Criterio Shiny',
+const getSubCompTitle = (sub: SubCompetitionConfig) => {
+  const dir = resolveSubCompetitionDirection(props.event.id, sub.id, sub.order)
+  if (sub.metric === 'total_ivs') {
+    return 'Mayor cantidad de IVs totales (0 a 186)'
   }
-  return labels[sortBy] || sortBy
-})
+  if (sub.metric === 'stat_iv' && sub.targetStat) {
+    return `Mayor IV en ${sub.targetStat.toUpperCase()}` // domain-ok
+  }
+  if (sub.metric === 'weight') {
+    return dir === 'max' ? 'Mayor Peso (Ejemplar Titán / XXL)' : 'Menor Peso (Ejemplar Miniatura / XXS)'
+  }
+  if (sub.metric === 'height') {
+    return dir === 'max' ? 'Mayor Altura (Gran Salto / XXL)' : 'Menor Altura (Miniatura / XXS)'
+  }
+  if (sub.metric === 'level') {
+    return dir === 'max' ? 'Mayor Nivel' : 'Menor Nivel'
+  }
+  if (sub.metric === 'friendship') {
+    return dir === 'max' ? 'Mayor Amistad' : 'Menor Amistad'
+  }
+  return sub.description || sub.name || 'Criterio de evaluación'
+}
+
+const getSubCompPrizes = (sub: SubCompetitionConfig): { first?: Prize, second?: Prize, third?: Prize } | null => {
+  if (sub.prizes && (sub.prizes.first || sub.prizes.second || sub.prizes.third)) {
+    return sub.prizes as { first?: Prize, second?: Prize, third?: Prize }
+  }
+  return prizes.value
+}
 
 const scheduleText = computed(() => {
   if (props.event.manual) return '🟢 Evento activo ahora mismo'
@@ -132,7 +240,7 @@ const scheduleText = computed(() => {
 <template>
   <BaseModal
     :show="show"
-    max-width="500px"
+    max-width="540px"
     variant="retro"
     accent-color="var(--yellow)"
     hide-header
@@ -179,9 +287,74 @@ const scheduleText = computed(() => {
         </div>
       </div>
 
-      <!-- Premios -->
+      <!-- Sub-Competencias y Premios -->
       <div 
-        v-if="prizes" 
+        v-if="subCompetitions.length" 
+        class="event-section"
+      >
+        <div class="section-tag">
+          🏆 SUB-COMPETENCIAS Y PREMIOS
+        </div>
+        <div class="sub-competitions-container">
+          <div 
+            v-for="sub in subCompetitions" 
+            :key="sub.id"
+            class="sub-competition-detail-card"
+          >
+            <div class="sub-comp-header">
+              <span class="sub-comp-icon">{{ sub.icon || getSubCompDefaultIcon(sub.id) }}</span>
+              <span class="sub-comp-name pixelated">{{ getSubCompTitle(sub) }}</span>
+            </div>
+
+            <!-- Prizes for this sub-competition -->
+            <div 
+              v-if="getSubCompPrizes(sub)" 
+              class="sub-prizes-list"
+            >
+              <div 
+                v-if="getSubCompPrizes(sub)?.first" 
+                class="sub-prize-row gold"
+              >
+                <div class="rank-badge pixelated">
+                  🥇 1°
+                </div>
+                <RewardPillsGroup
+                  :prize="getSubCompPrizes(sub)!.first"
+                  size="sm"
+                />
+              </div>
+              <div 
+                v-if="getSubCompPrizes(sub)?.second" 
+                class="sub-prize-row silver"
+              >
+                <div class="rank-badge pixelated">
+                  🥈 2°
+                </div>
+                <RewardPillsGroup
+                  :prize="getSubCompPrizes(sub)!.second"
+                  size="sm"
+                />
+              </div>
+              <div 
+                v-if="getSubCompPrizes(sub)?.third" 
+                class="sub-prize-row bronze"
+              >
+                <div class="rank-badge pixelated">
+                  🥉 3°
+                </div>
+                <RewardPillsGroup
+                  :prize="getSubCompPrizes(sub)!.third"
+                  size="sm"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Premios Globales Simples (si no hay sub-competencias) -->
+      <div 
+        v-else-if="prizes" 
         class="event-section"
       >
         <div class="section-tag">
@@ -190,42 +363,39 @@ const scheduleText = computed(() => {
         <div class="prizes-container">
           <div 
             v-if="prizes.first" 
-            class="prize-item gold"
+            class="sub-prize-row gold"
           >
-            <span class="rank">🥇 1°</span>
-            <span class="desc">{{ getPrizeDesc(prizes.first) }}</span>
+            <div class="rank-badge pixelated">
+              🥇 1°
+            </div>
+            <RewardPillsGroup
+              :prize="prizes.first"
+              size="sm"
+            />
           </div>
           <div 
             v-if="prizes.second" 
-            class="prize-item silver"
+            class="sub-prize-row silver"
           >
-            <span class="rank">🥈 2°</span>
-            <span class="desc">{{ getPrizeDesc(prizes.second) }}</span>
+            <div class="rank-badge pixelated">
+              🥈 2°
+            </div>
+            <RewardPillsGroup
+              :prize="prizes.second"
+              size="sm"
+            />
           </div>
           <div 
             v-if="prizes.third" 
-            class="prize-item bronze"
+            class="sub-prize-row bronze"
           >
-            <span class="rank">🥉 3°</span>
-            <span class="desc">{{ getPrizeDesc(prizes.third) }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Criterio -->
-      <div 
-        v-if="metricText" 
-        class="event-section"
-      >
-        <div class="section-tag">
-          CRITERIO DE VICTORIA
-        </div>
-        <div class="info-box">
-          <div class="metric-main">
-            {{ metricText }}
-          </div>
-          <div class="tiebreaker-note">
-            ✨ Desempates: 1º Pokémon Shiny · 2º Captura más antigua
+            <div class="rank-badge pixelated">
+              🥉 3°
+            </div>
+            <RewardPillsGroup
+              :prize="prizes.third"
+              size="sm"
+            />
           </div>
         </div>
       </div>
@@ -257,120 +427,99 @@ const scheduleText = computed(() => {
   </BaseModal>
 </template>
 
-<style lang="scss" scoped>
-@use "@/styles/core/tools" as *;
+<style scoped lang="scss">
+@use "@/styles/core/mixins" as *;
 
 .event-detail-modal {
+  padding: 8px 4px;
   display: flex;
   flex-direction: column;
+  gap: 16px;
+  text-align: center;
+  color: var(--white);
 }
 
 .event-main-icon {
-  font-size: 48px;
-  text-align: center;
-  margin-bottom: 8px;
-  will-change: transform, filter, opacity;
-  filter: Drop-Shadow(0 0 12px Rgba(255, 214, 10, 0.4));
+  font-size: 40px;
+  line-height: 1;
+  margin: 4px 0 0;
+  filter: Drop-Shadow(0 4px 12px Rgba(250, 204, 21, 0.3));
 }
 
 .event-header {
-  text-align: center;
-  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 
   .event-title {
-    @include pixelated;
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: bold;
     color: var(--yellow);
-    margin-bottom: 8px;
-    line-height: 1.4;
+    margin: 0;
+    @include pixelated;
+    text-shadow: 0 0 10px Rgba(250, 204, 21, 0.3);
   }
 
   .event-desc {
-    font-size: 12px;
-    color: Rgba(148, 163, 184, 1);
+    font-size: 11px;
+    color: Rgba(241, 245, 249, 0.85);
     line-height: 1.4;
-    padding: 0 16px;
+    margin: 0;
   }
 }
 
 .event-section {
-  margin-bottom: 16px;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
 
   .section-tag {
+    font-size: 8px;
+    letter-spacing: 0.5px;
+    color: Rgba(148, 163, 184, 0.9);
+    margin-left: 2px;
     @include pixelated;
-    font-size: 9px;
-    color: $muted;
-    margin-bottom: 8px;
-    letter-spacing: 1px;
-    display: inline-block;
   }
 }
 
 .bonus-grid {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .bonus-item {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  background: Rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 10px 16px;
+  align-items: center;
+  padding: 8px 12px;
+  background: Rgba(255, 255, 255, 0.03);
   border: 1px solid Rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  font-size: 11px;
 
   .bonus-left {
     display: flex;
     align-items: center;
     gap: 8px;
-  }
 
-  .bonus-emoji {
-    font-size: 14px;
-  }
-
-  .bonus-label {
-    font-size: 13px;
-    color: Rgba(203, 213, 225, 1);
+    .bonus-label {
+      color: Rgba(241, 245, 249, 0.9);
+    }
   }
 
   .bonus-value {
+    font-weight: bold;
     @include pixelated;
-    font-size: 11px;
+    font-size: 8px;
   }
 }
 
 .prizes-container {
-  background: Rgba(0, 0, 0, 0.2);
-  border-radius: 16px;
-  padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.prize-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  justify-content: center;
-
-  .rank {
-    font-weight: 700;
-    font-size: 13px;
-  }
-
-  .desc {
-    font-size: 13px;
-    font-weight: 600;
-  }
-
-  &.gold { .rank, .desc { color: Rgba(253, 230, 138, 1); } }
-  &.silver { .rank, .desc { color: Rgba(203, 213, 225, 1); } }
-  &.bronze { .rank, .desc { color: Rgba(180, 83, 9, 1); } }
 }
 
 .info-box {
@@ -397,6 +546,112 @@ const scheduleText = computed(() => {
     background: Rgba(34, 197, 94, 0.1);
     border-color: Rgba(34, 197, 94, 0.2);
     color: Rgba(74, 222, 128, 1);
+  }
+}
+
+.sub-competitions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sub-competition-detail-card {
+  background: Rgba(0, 0, 0, 0.35);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+
+  .sub-comp-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .sub-comp-icon {
+      font-size: 16px;
+    }
+
+    .sub-comp-name {
+      font-size: 9px;
+      color: var(--yellow);
+      font-weight: bold;
+    }
+  }
+
+  .sub-comp-criterio {
+    font-size: 8px;
+    color: #93c5fd;
+    padding-left: 24px;
+    opacity: 0.9;
+  }
+
+  .sub-prizes-list {
+    margin-top: 4px;
+    padding-left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-top: 1px dashed Rgba(255, 255, 255, 0.08);
+    padding-top: 10px;
+  }
+}
+
+.sub-prize-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: Rgba(255, 255, 255, 0.02);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 8px 10px;
+  box-sizing: border-box;
+
+  .rank-badge {
+    font-size: 8px;
+    font-weight: bold;
+    min-width: 44px;
+    text-align: center;
+    padding: 3px 6px;
+    border-radius: 6px;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+
+  &.gold {
+    border-left: 3px solid Rgba(250, 204, 21, 0.85);
+    background: Rgba(250, 204, 21, 0.03);
+
+    .rank-badge {
+      color: Rgba(253, 230, 138, 1);
+      background: Rgba(250, 204, 21, 0.12);
+      border-color: Rgba(250, 204, 21, 0.3);
+      box-shadow: 0 0 8px Rgba(250, 204, 21, 0.1);
+    }
+  }
+
+  &.silver {
+    border-left: 3px solid Rgba(203, 213, 225, 0.85);
+    background: Rgba(203, 213, 225, 0.02);
+
+    .rank-badge {
+      color: Rgba(203, 213, 225, 1);
+      background: Rgba(203, 213, 225, 0.1);
+      border-color: Rgba(203, 213, 225, 0.25);
+    }
+  }
+
+  &.bronze {
+    border-left: 3px solid Rgba(251, 146, 60, 0.85);
+    background: Rgba(251, 146, 60, 0.02);
+
+    .rank-badge {
+      color: Rgba(253, 186, 116, 1);
+      background: Rgba(251, 146, 60, 0.1);
+      border-color: Rgba(251, 146, 60, 0.25);
+    }
   }
 }
 

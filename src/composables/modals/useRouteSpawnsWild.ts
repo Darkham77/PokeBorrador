@@ -98,6 +98,10 @@ export function useRouteSpawnsWild(props: RouteSpawnsProps) {
       
       const { spawnType, statusClass } = getSpawnStatus(isVisitor, isExclusive, isBlocked, isInCurrentCycle, isBuffed, isDebuffed)
 
+      const speciesBonuses = eventStore.getSpeciesBonuses(id)
+      const isEventBoosted = (speciesBonuses.rate > 1) || (speciesBonuses.shiny > 1)
+      const finalStatusClass = isEventBoosted ? 'event-boosted' : statusClass
+
       return buildRouteSpawnItem(
         id,
         pData,
@@ -109,8 +113,13 @@ export function useRouteSpawnsWild(props: RouteSpawnsProps) {
         basePercentage,
         diff,
         spawnType,
-        statusClass,
-        multiplier
+        finalStatusClass,
+        multiplier,
+        {
+          isEventBoosted,
+          eventRateMult: speciesBonuses.rate,
+          eventShinyMult: speciesBonuses.shiny
+        }
       )
     }).sort((a, b) => {
       if (a.percentage > 0 && b.percentage === 0) return -1

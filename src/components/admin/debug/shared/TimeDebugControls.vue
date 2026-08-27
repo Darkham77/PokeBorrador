@@ -14,13 +14,17 @@ import { useBattleStore } from '@/stores/battle/battle'
 import { getMechanicalWeather, requireWeatherId, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, type WeatherId } from '@/logic/weather/weatherRegistry'
 import { DEBUG_WEATHER_EFFECTS } from '../debugConstants.ts'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import { getGMT3Date } from '@/logic/utils/timeUtils.ts'
 
 const game = useGameStore()
 const mapStore = useMapStore()
 const modalStore = useModalStore()
 const battleStore = useBattleStore()
 
-const debugDate = ref(Temporal.Now.instant().toString().slice(0, 16))
+const TEMPORAL_DATETIME_SLICE_LENGTH = 16
+const DEBUG_INFINITE_WEATHER_TURNS = 99
+
+const debugDate = ref(getGMT3Date().toPlainDateTime().toString().slice(0, TEMPORAL_DATETIME_SLICE_LENGTH))
 
 interface GameDB {
   getTimeOffset?: () => number
@@ -46,13 +50,10 @@ function updateMockTime() {
   window.dispatchEvent(new CustomEvent('time-sync-update'))
 }
 
-const TEMPORAL_DATETIME_SLICE_LENGTH = 16
-const DEBUG_INFINITE_WEATHER_TURNS = 99
-
 function resetTime() {
   getDebugBridge().resetTime()
   timeOffsetLabel.value = '0ms'
-  debugDate.value = Temporal.Now.instant().toString().slice(0, TEMPORAL_DATETIME_SLICE_LENGTH)
+  debugDate.value = getGMT3Date().toPlainDateTime().toString().slice(0, TEMPORAL_DATETIME_SLICE_LENGTH)
   window.dispatchEvent(new CustomEvent('time-sync-update'))
   mapStore.setGlobalCycle(null)
   mapStore.setGlobalSeason(null)
@@ -61,12 +62,14 @@ function resetTime() {
 function addHours(h: number) {
   getDebugBridge().addHours(h)
   timeOffsetLabel.value = `${getDB()?.getTimeOffset?.() || 0}ms`
+  debugDate.value = getGMT3Date().toPlainDateTime().toString().slice(0, TEMPORAL_DATETIME_SLICE_LENGTH)
   window.dispatchEvent(new CustomEvent('time-sync-update'))
 }
 
 function addWeeks(w: number) {
   getDebugBridge().addWeeks(w)
   timeOffsetLabel.value = `${getDB()?.getTimeOffset?.() || 0}ms`
+  debugDate.value = getGMT3Date().toPlainDateTime().toString().slice(0, TEMPORAL_DATETIME_SLICE_LENGTH)
   window.dispatchEvent(new CustomEvent('time-sync-update'))
 }
 

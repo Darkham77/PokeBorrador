@@ -1,4 +1,4 @@
-import { toID } from '@pkmn/sim';
+import { toID } from '@/logic/utils/strings.ts';
 import type { SBCtx } from './showdownBridgeCtx.ts';
 import type { Move, Pokemon, PokemonStatus } from '../../types/pokemon/pokemon.ts';
 import { requirePokemonMoveId, type MoveCategory } from '@/data/battle/moves';

@@ -15,14 +15,12 @@ declare global {
 
 // Global Components
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import PokemonPreview from '@/components/admin/debug/PokemonPreview.vue'
 
 // Global Directives
 import { gsapNick } from '@/directives/gsapNick'
 import { gsapLoop } from '@/directives/gsapLoop'
 import { gsapHover } from '@/directives/gsapHover'
 import { initGlobalHoverSystem } from '@/logic/hover/globalHover'
-import { preloadShowdownWorker } from '@/logic/battle/showdownWorkerClient.ts'
 
 import { gsap } from 'gsap'
 
@@ -35,7 +33,6 @@ if (typeof window !== 'undefined') {
 }
 
 app.component('PVTooltip', PVTooltip)
-app.component('PokemonPreview', PokemonPreview)
 
 app.directive('gsap-nick', gsapNick)
 app.directive('gsap-loop', gsapLoop)
@@ -59,12 +56,20 @@ app.config.errorHandler = (err, _instance, info) => {
 
 app.mount('#app')
 window.pwa_app_mounted = true
-preloadShowdownWorker()
 
 // Initialize global hover animations
 initGlobalHoverSystem()
 
 if (typeof window !== 'undefined') {
+  // Battery/CPU optimization: Sleep GSAP ticker when tab is hidden
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      gsap.ticker.sleep()
+    } else {
+      gsap.ticker.wake()
+    }
+  })
+
   window.addEventListener('vite:preloadError', (event) => {
     event.preventDefault()
     console.warn('[Vite] Chunk preload error detected (stale deployment assets). Triggering PWA update flow.')

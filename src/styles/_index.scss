@@ -47,10 +47,11 @@
 @use 'layouts/screens';
 @use 'components/battle';
 
-// Global Responsive & Overrides
-@use 'core/responsive';
-
 // Vistas
 @use 'views/box';
 @use 'views/login';
 @use 'views/pokedex';
+@use 'views/main-game-view';
+
+// Global Responsive & Overrides
+@use 'core/responsive';

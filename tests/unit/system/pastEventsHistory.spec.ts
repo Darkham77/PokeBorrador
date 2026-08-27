@@ -108,7 +108,7 @@ describe('PastEventsList.vue - Past Events and Rewards Claiming', () => {
     expect(wrapper.text()).toContain('Hora de Pesca del Magikarp')
     expect(wrapper.text()).toContain('Torneo Eevee')
     expect(wrapper.text()).toContain('AshKetchum')
-    expect(wrapper.text()).toContain('182 pts')
+    expect(wrapper.text()).toContain('182 / 186 IVs')
     expect(wrapper.text()).toContain('Titan')
     expect(wrapper.text()).toContain('Misty')
     expect(wrapper.text()).toContain('Brock')
@@ -174,5 +174,50 @@ describe('PastEventsList.vue - Past Events and Rewards Claiming', () => {
       '🎁'
     )
     expect(eventStore.pendingAwards.length).toBe(1)
+  })
+
+  it('displays the event schedule window (inicio y fin) in PastEventCard header', () => {
+    const eventWithWeeklySchedule: PastEventHistoryItem = {
+      ...mockPastEvents[0]!,
+      event_schedule: { type: 'weekly', days: [2, 4], startHour: 18, endHour: 20 },
+      ended_at: '2026-08-27T20:00:00Z'
+    }
+
+    const wrapper = mount(PastEventsList, {
+      props: { pastEvents: [eventWithWeeklySchedule], isLoading: false }
+    })
+
+    expect(wrapper.text()).toContain('De 18:00 a 20:00 hs')
+  })
+
+  it('notifies individual toasts for each item, money and battle coins won on claim', async () => {
+    const eventStore = useEventStore()
+    const { useUIStore } = await import('@/stores/ui')
+    const { useGameStore } = await import('@/stores/game')
+    const uiStore = useUIStore()
+    const gameStore = useGameStore()
+    const notifySpy = vi.spyOn(uiStore, 'notify')
+
+    gameStore.state = {
+      money: 1000,
+      battleCoins: 10,
+      inventory: {}
+    } as unknown as typeof gameStore.state
+
+    gameStore.db = {
+      rpc: vi.fn().mockResolvedValue({
+        data: {
+          ok: true,
+          prize: { money: 10000, battleCoins: 50, item: 'waterstone', qty: 2 }
+        },
+        error: null
+      })
+    } as unknown as typeof gameStore.db
+
+    await eventStore.claimAward('award-101')
+
+    expect(notifySpy).toHaveBeenCalledWith(expect.stringMatching(/¡Ganaste ₽10[.,]000!/), '💰')
+    expect(notifySpy).toHaveBeenCalledWith('¡Ganaste 50 Battle Coins!', '🪙')
+    expect(notifySpy).toHaveBeenCalledWith('¡Obtuviste Piedra Agua x2!', '🎒')
   })
 })

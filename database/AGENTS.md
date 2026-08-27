@@ -10,6 +10,7 @@ Backend / Database Engineers.
 
 - DBRouter coordination for local persistence.
 - Zero Postgres PL/pgSQL constructs in local migrations.
+- **Competition Entries Multi-Category Indexing**: The `competition_entries` schema MUST include a `category_id TEXT` column with a composite unique constraint `UNIQUE(event_id, category_id, player_id)` to allow players to register Pokémon across distinct sub-competitions within the same event.
 
 ## Work Guidance
 

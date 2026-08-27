@@ -18,6 +18,7 @@ import PokemonEvolutionsTab from '@/components/pokemon-detail/PokemonEvolutionsT
 import PokemonStatsTab from '@/components/pokemon-detail/PokemonStatsTab.vue'
 import PokemonMovesTab from '@/components/pokemon-detail/PokemonMovesTab.vue'
 import PokemonStatusSection from '@/components/pokemon-detail/PokemonStatusSection.vue'
+import PokemonTrophiesTab from '@/components/pokemon-detail/PokemonTrophiesTab.vue'
 import PokemonActionFooter from '@/components/pokemon-detail/PokemonActionFooter.vue'
 import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon'
 import { createSpeciesDimensionTooltip } from '@/logic/pokemon/physicalDimensionsMath'
@@ -94,6 +95,10 @@ const tabs = computed(() => {
 
   if (evolutions.value.length > 0) {
     base.push({ id: 'evolve', label: 'EVOL.', icon: '✨' })
+  }
+
+  if (isInstance.value && targetPokemon.value?.trophies && targetPokemon.value.trophies.length > 0) {
+    base.push({ id: 'trophies', label: 'TROFEOS', icon: '🏆' })
   }
   
   return base
@@ -178,6 +183,27 @@ const handleReorderMoves = (from: number, to: number) => {
   if (isInstance.value && targetPokemon.value) {
     gameStore.reorderMoves(targetPokemon.value, from, to)
   }
+}
+
+const getTrophyMedal = (rank?: string) => {
+  if (rank === 'first') return '🥇'
+  if (rank === 'second') return '🥈'
+  if (rank === 'third') return '🥉'
+  return '🏆'
+}
+
+const getTrophyRankLabel = (rank?: string) => {
+  if (rank === 'first') return '1º LUGAR'
+  if (rank === 'second') return '2º LUGAR'
+  if (rank === 'third') return '3º LUGAR'
+  return 'GANADOR'
+}
+
+const getTrophyRankClass = (rank?: string) => {
+  if (rank === 'first') return 'rank-gold'
+  if (rank === 'second') return 'rank-silver'
+  if (rank === 'third') return 'rank-bronze'
+  return 'rank-default'
 }
 </script>
 
@@ -332,9 +358,7 @@ const handleReorderMoves = (from: number, to: number) => {
                   v-if="isInstance && instancePhysicalData?.heightTier"
                   class="physical-tier-badge pixelated"
                   :class="instancePhysicalData.heightTier.cssClass"
-                >
-                  {{ instancePhysicalData.heightTier.label }}
-                </span>
+                >{{ instancePhysicalData.heightTier.label }}</span>
               </div>
             </PVTooltip>
 
@@ -352,9 +376,7 @@ const handleReorderMoves = (from: number, to: number) => {
                   v-if="isInstance && instancePhysicalData?.weightTier"
                   class="physical-tier-badge pixelated"
                   :class="instancePhysicalData.weightTier.cssClass"
-                >
-                  {{ instancePhysicalData.weightTier.label }}
-                </span>
+                >{{ instancePhysicalData.weightTier.label }}</span>
               </div>
             </PVTooltip>
           </div>
@@ -373,6 +395,59 @@ const handleReorderMoves = (from: number, to: number) => {
           <p class="description">
             {{ species.description || 'No hay datos disponibles en la Pokédex.' }}
           </p>
+
+          <!-- Competition Trophies History Section in Summary (After description, before DB IDs) -->
+          <div
+            v-if="isInstance"
+            class="summary-trophies-section"
+          >
+            <div class="summary-trophies-header pixelated">
+              <span class="trophies-header-icon">🏆</span>
+              <span class="trophies-header-title">HISTORIAL DE COMPETENCIAS</span>
+              <span
+                v-if="targetPokemon?.trophies && targetPokemon.trophies.length > 0"
+                class="trophies-count-tag pixelated"
+              >
+                {{ targetPokemon.trophies.length }}
+              </span>
+            </div>
+
+            <!-- Empty State in Summary -->
+            <div
+              v-if="!targetPokemon?.trophies || targetPokemon.trophies.length === 0"
+              class="summary-trophies-empty pixelated"
+            >
+              Sin trofeos ni podios de competencias registrados.
+            </div>
+
+            <!-- Trophies List in Summary -->
+            <div
+              v-else
+              class="summary-trophies-list"
+            >
+              <div
+                v-for="(trophy, idx) in targetPokemon.trophies"
+                :key="`${trophy.eventId}-${trophy.categoryId}-${trophy.awardedAt}-${idx}`"
+                class="summary-trophy-card"
+                :class="getTrophyRankClass(trophy.rank)"
+              >
+                <span class="trophy-medal-symbol">{{ getTrophyMedal(trophy.rank) }}</span>
+                <div class="trophy-info-compact">
+                  <div class="trophy-top-line">
+                    <span class="trophy-event-name pixelated">{{ trophy.eventName }}</span>
+                    <span class="trophy-rank-label pixelated">{{ getTrophyRankLabel(trophy.rank) }}</span>
+                  </div>
+                  <div class="trophy-bottom-line">
+                    <span class="trophy-category-name pixelated">{{ trophy.categoryName }}</span>
+                    <span
+                      v-if="trophy.score !== undefined"
+                      class="trophy-score-value pixelated"
+                    >{{ trophy.score }} pts</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <!-- DB Info (UID + Capture Date) -->
           <div
@@ -424,6 +499,12 @@ const handleReorderMoves = (from: number, to: number) => {
           :species-name="species.name"
           :species-id="targetSpeciesId"
         />
+
+        <!-- Trophies Tab -->
+        <PokemonTrophiesTab
+          v-if="activeTab === 'trophies'"
+          :trophies="targetPokemon?.trophies"
+        />
       </div>
 
       <PokemonActionFooter
@@ -458,5 +539,145 @@ const handleReorderMoves = (from: number, to: number) => {
   text-shadow: 0 0 5px Rgba(52, 211, 153, 0.3);
   box-shadow: 0 0 10px Rgba(52, 211, 153, 0.1);
   font-weight: bold;
+}
+
+.summary-trophies-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: Rgba(0, 0, 0, 0.3);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 14px;
+  margin-bottom: 14px;
+
+  .summary-trophies-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 8px;
+    color: var(--yellow);
+    letter-spacing: 0.5px;
+    border-bottom: 1px dashed Rgba(255, 255, 255, 0.08);
+    padding-bottom: 6px;
+
+    .trophies-header-icon {
+      font-size: 11px;
+    }
+
+    .trophies-count-tag {
+      margin-left: auto;
+      background: Rgba(250, 204, 21, 0.2);
+      border: 1px solid Rgba(250, 204, 21, 0.4);
+      color: var(--yellow);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 7px;
+    }
+  }
+
+  .summary-trophies-empty {
+    font-size: 8px;
+    color: var(--gray);
+    padding: 6px 0;
+    text-align: center;
+    font-style: italic;
+    opacity: 0.7;
+  }
+
+  .summary-trophies-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .summary-trophy-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: Rgba(255, 255, 255, 0.02);
+    border: 1px solid Rgba(255, 255, 255, 0.06);
+
+    &.rank-gold {
+      border-color: Rgba(250, 204, 21, 0.35);
+      background: linear-gradient(135deg, Rgba(250, 204, 21, 0.08), Rgba(0, 0, 0, 0.3));
+
+      .trophy-rank-label {
+        color: #fde047;
+      }
+    }
+
+    &.rank-silver {
+      border-color: Rgba(226, 232, 240, 0.35);
+      background: linear-gradient(135deg, Rgba(226, 232, 240, 0.08), Rgba(0, 0, 0, 0.3));
+
+      .trophy-rank-label {
+        color: #f1f5f9;
+      }
+    }
+
+    &.rank-bronze {
+      border-color: Rgba(217, 119, 6, 0.35);
+      background: linear-gradient(135deg, Rgba(217, 119, 6, 0.08), Rgba(0, 0, 0, 0.3));
+
+      .trophy-rank-label {
+        color: #fcd34d;
+      }
+    }
+
+    .trophy-medal-symbol {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .trophy-info-compact {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+      min-width: 0;
+
+      .trophy-top-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+
+        .trophy-event-name {
+          font-size: 9px;
+          font-weight: bold;
+          color: var(--white);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .trophy-rank-label {
+          font-size: 7px;
+          flex-shrink: 0;
+        }
+      }
+
+      .trophy-bottom-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+
+        .trophy-category-name {
+          font-size: 7px;
+          color: #93c5fd;
+        }
+
+        .trophy-score-value {
+          font-size: 7px;
+          color: var(--green-bright);
+        }
+      }
+    }
+  }
 }
 </style>

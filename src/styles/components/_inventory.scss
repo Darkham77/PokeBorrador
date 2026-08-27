@@ -61,6 +61,11 @@
     padding-bottom: 20px;
     position: relative;
 
+    & > * {
+      content-visibility: auto;
+      contain-intrinsic-size: 0 90px;
+    }
+
     @media (max-width: 768px) {
       grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
       gap: 8px;

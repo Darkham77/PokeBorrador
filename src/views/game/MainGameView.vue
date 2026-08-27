@@ -12,6 +12,7 @@ import { useBreedingStore } from '@/stores/breeding'
 import { useLoadingStore } from '@/stores/loading'
 import { useMainLayout } from '@/composables/ui/useMainLayout'
 import { logger } from '@/logic/utils/logger'
+import { preloadShowdownWorker } from '@/logic/battle/showdownWorkerClient.ts'
 import { HUD_HEIGHT_UPDATE_DELAY_SEC } from '@/logic/constants/animations.ts'
 
 // Sub-components
@@ -20,14 +21,14 @@ import ActionButtons from '@/components/ui/ActionButtons.vue'
 import TrainerPanel from '@/components/profile/TrainerPanel.vue'
 import HUD_Navigation from '@/components/ui/HUD_Navigation.vue'
 import InventoryPills from '@/components/inventory/InventoryPills.vue'
-import PvPArena from '@/components/battle/PvPArena.vue'
+const PvPArena = defineAsyncComponent(() => import('@/components/battle/PvPArena.vue'))
 import CriminalityBar from '@/components/ui/CriminalityBar.vue'
 import BuffsOverlay from '@/components/overlays/BuffsOverlay.vue'
 import HUD_SidebarLeft from '@/components/ui/HUD_SidebarLeft.vue'
-import LocalDebugPanel from '@/components/admin/LocalDebugPanel.vue'
+const LocalDebugPanel = defineAsyncComponent(() => import('@/components/admin/LocalDebugPanel.vue'))
 
 // Tab components
-import BoxView from '@/components/box/BoxView.vue'
+const BoxView = defineAsyncComponent(() => import('@/components/box/BoxView.vue'))
 
 // Lazy loaded views
 const PokedexView = defineAsyncComponent(() => import('@/views/pokemon/PokedexView.vue'))
@@ -35,8 +36,8 @@ const MapView = defineAsyncComponent(() => import('@/views/game/MapView.vue'))
 const GymsView = defineAsyncComponent(() => import('@/views/game/GymsView.vue'))
 const BagView = defineAsyncComponent(() => import('@/views/inventory/BagView.vue'))
 
-import GlobalChat from '@/components/social/GlobalChat.vue'
-import DirectChatWindow from '@/components/social/DirectChatWindow.vue'
+const GlobalChat = defineAsyncComponent(() => import('@/components/social/GlobalChat.vue'))
+const DirectChatWindow = defineAsyncComponent(() => import('@/components/social/DirectChatWindow.vue'))
 import { useChatStore } from '@/stores/social/chat'
 
 const gameStore = useGameStore()
@@ -80,7 +81,8 @@ onMounted(() => {
   eventStore.checkPendingAwards(true)
   livePvP.initInvitePoller()
   breedingStore.checkDailyReset()
-  breedingStore.initBackgroundPoller()
+  // Preload Showdown simulation worker in background
+  preloadShowdownWorker()
 
   // Signal that DOM is ready
   const loadingStore = useLoadingStore()

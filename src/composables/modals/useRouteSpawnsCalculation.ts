@@ -330,6 +330,14 @@ export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
     return getNpcEncounterChances(props.map.id, gameStore.state, {}, mapIds)
   })
 
+  const eventFishingMultiplier = computed(() => {
+    return eventStore.globalMultipliers?.fishing || 1
+  })
+
+  const eventArchaeologyMultiplier = computed(() => {
+    return eventStore.globalMultipliers?.archaeology || 1
+  })
+
   return {
     weatherEmoji,
     weatherLabel,
@@ -346,6 +354,8 @@ export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
     baseArchaeologyChance,
     activeTerrestrialChance,
     baseTerrestrialChance,
+    eventFishingMultiplier,
+    eventArchaeologyMultiplier,
     getProbClass,
     getCategoryTooltip,
     archaeologyRewards,

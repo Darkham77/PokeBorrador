@@ -28,24 +28,30 @@ export const BOX_TIER_CONFIG: Record<string, TierConfig> = {
 };
 
 /**
- * Calculates the total IVs and returns the corresponding tier information.
- * @param {Object} pokemon - The pokemon object containing IVs.
- * @returns {Object} Tier information includes { tier, total, color, bg, label }.
+ * Calculates the tier directly from total IVs (0 to 186).
  */
-export function getPokemonTier(pokemon: Partial<Pokemon> | null) {
-  if (!pokemon) return { tier: 'F', total: 0, ...BOX_TIER_CONFIG['F'] };
-  
-  const ivs = pokemon.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
-  const total = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + 
-                (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0);
-
+export function getTierFromTotalIvs(total: number): TierConfig & { tier: string; total: number } {
   for (const [tier, cfg] of Object.entries(BOX_TIER_CONFIG)) {
     if (total >= cfg.min && total <= cfg.max) {
       return { tier, total, ...cfg };
     }
   }
+  return { tier: 'F', total, ...(BOX_TIER_CONFIG['F'] || { min: 0, max: 55, color: '#ff3b3b', rgb: '255, 59, 59', bg: 'rgba(255, 59, 59, 0.14)', label: 'F' }) };
+}
 
-  return { tier: 'F', total, ...(BOX_TIER_CONFIG['F'] || { min: 0, max: 55, color: '#FF3B3B', bg: 'Rgba(255,59,59,0.14)', label: 'F' }) };
+/**
+ * Calculates the total IVs and returns the corresponding tier information.
+ * @param {Object} pokemon - The pokemon object containing IVs.
+ * @returns {Object} Tier information includes { tier, total, color, bg, label }.
+ */
+export function getPokemonTier(pokemon: Partial<Pokemon> | null) {
+  if (!pokemon) return getTierFromTotalIvs(0);
+  
+  const ivs = pokemon.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
+  const total = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + 
+                (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0);
+
+  return getTierFromTotalIvs(total);
 }
 
 /**

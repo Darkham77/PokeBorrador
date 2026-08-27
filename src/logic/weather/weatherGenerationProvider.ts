@@ -1,4 +1,4 @@
-import { toID } from '@pkmn/sim';
+import { toID } from '@/logic/utils/strings.ts';
 
 /**
  * Weather Generation Provider

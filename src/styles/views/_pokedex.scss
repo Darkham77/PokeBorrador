@@ -142,6 +142,8 @@
 }
 
 .pdx-pokemon-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 110px;
   @include premium-card-hover($blue, 1.02, -4px);
   width: 100%;
   @include card-premium;

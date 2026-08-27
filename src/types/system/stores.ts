@@ -194,16 +194,27 @@ export interface CompetitionEntryData {
   name?: string; // domain-ok
   nickname?: string | null; // domain-ok
   level?: number;
+  score?: number;
   total_ivs?: number;
   ivs?: Record<string, number>; // open-record
   is_shiny?: boolean;
   obtained_at?: number;
-  size?: string; // domain-ok
+  height?: number;
+  weight?: number;
+  displayValue?: string; // domain-ok
+  display_value?: string; // domain-ok
+  tier_label?: string; // domain-ok
+  player_class?: string; // domain-ok
+  trainer_level?: number;
+  avatar_style?: string; // domain-ok
+  nick_style?: string; // domain-ok
+  gender?: string; // domain-ok
 }
 
 export interface CompetitionEntry {
   id?: string; // domain-ok
   event_id: string; // domain-ok
+  category_id?: string; // domain-ok
   player_id: string; // domain-ok
   player_name?: string; // domain-ok
   player_email?: string; // domain-ok
@@ -212,24 +223,23 @@ export interface CompetitionEntry {
   submitted_at?: string; // domain-ok
 }
 
-export type CompetitionRankKey = 'first' | 'second' | 'third';
+export const COMPETITION_RANK_KEYS = ['first', 'second', 'third'] as const;
+export type CompetitionRankKey = (typeof COMPETITION_RANK_KEYS)[number];
 export type CompetitionRank = CompetitionRankKey | number;
 
 export interface PastCompetitionWinner {
   rank: CompetitionRank;
+  category_id?: string; // domain-ok
+  category_name?: string; // domain-ok
   player_id: string; // domain-ok
   player_name: string; // domain-ok
+  player_class?: string; // domain-ok
+  player_level?: number;
+  avatar_style?: string; // domain-ok
+  nick_style?: string; // domain-ok
+  gender?: string; // domain-ok
   score?: number;
-  entry_data?: {
-    species?: PokemonSpeciesId;
-    name?: string; // domain-ok
-    nickname?: string | null; // domain-ok
-    level?: number;
-    total_ivs?: number;
-    is_shiny?: boolean;
-    obtained_at?: number;
-    size?: string; // domain-ok
-  };
+  entry_data?: CompetitionEntryData;
 }
 
 export interface PastEventHistoryItem {
@@ -238,6 +248,9 @@ export interface PastEventHistoryItem {
   event_name: string; // domain-ok
   event_icon: string; // domain-ok
   event_description: string; // domain-ok
+  event_schedule?: string | Record<string, unknown>; // open-record
+  start_at?: string; // domain-ok
+  end_at?: string; // domain-ok
   ended_at: string; // domain-ok
   winners: PastCompetitionWinner[];
   myAward: PendingAward | null;
@@ -257,7 +270,7 @@ export interface EventStore {
   fetchPastEvents: () => Promise<void>;
   fetchUserEntries: () => Promise<void>;
   checkPendingAwards: (notifyOnPending?: boolean) => Promise<void>;
-  submitCompetitionEntry: (eventId: string, pokemonUid: string) => Promise<void>;
+  submitCompetitionEntry: (eventId: string, categoryIdOrUid: string, maybeUid?: string) => Promise<void>;
   claimAward: (awardId: string) => Promise<string | null>;
 }
 

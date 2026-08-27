@@ -1,24 +1,24 @@
 <script setup lang="ts">
 // fallow-ignore-file security-sink
-import { onMounted, ref, computed, watch } from 'vue'
+import { onMounted, ref, computed, watch, defineAsyncComponent } from 'vue'
 import { gsap } from 'gsap'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { initGlobalErrorHandlers } from '@/logic/utils/errorHandler'
 import { checkDBCompatibility, DBRouter, type DBCompatibilityResponse, checkAppVersionCompatibility, type AppCompatibilityResponse } from '@/logic/db/dbRouter'
 
-import MainGameView from '@/views/game/MainGameView.vue'
+const MainGameView = defineAsyncComponent(() => import('@/views/game/MainGameView.vue'))
 import ErrorOverlay from '@/components/common/ErrorOverlay.vue'
 import ModalHost from '@/components/common/ModalHost.vue'
 import ToastNotification from '@/components/ui/ToastNotification.vue'
 import ConnectionWarning from '@/components/ui/ConnectionWarning.vue'
-import LivePvPArena from '@/components/battle/LivePvPArena.vue'
-import BattleArena from '@/components/battle/BattleArena.vue'
+const LivePvPArena = defineAsyncComponent(() => import('@/components/battle/LivePvPArena.vue'))
+const BattleArena = defineAsyncComponent(() => import('@/components/battle/BattleArena.vue'))
 import PWAManager from '@/components/common/PWAManager.vue'
 import SVGFilters from '@/components/common/SVGFilters.vue'
 import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue'
-import VersionLockOverlay from '@/components/overlays/VersionLockOverlay.vue'
-import SessionLockOverlay from '@/components/overlays/SessionLockOverlay.vue'
+const VersionLockOverlay = defineAsyncComponent(() => import('@/components/overlays/VersionLockOverlay.vue'))
+const SessionLockOverlay = defineAsyncComponent(() => import('@/components/overlays/SessionLockOverlay.vue'))
 import { gameBus } from '@/logic/events/gameBus'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle/battle'

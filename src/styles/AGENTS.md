@@ -11,6 +11,9 @@ UI / Frontend Developers.
 - **SASS Trap Engine Compliance**: All standard CSS/SASS capitalization transformations are automatically processed during Vite builds by the traps plugin. Standard lowercase functions are completely acceptable in the source files.
 - **SASS @use Import Mandate**: Direct `@import` rules are prohibited. All imports must utilize `@use` or `@forward` namespaces.
 - **Zero Global Clashing**: View-specific style files (`src/styles/views/`) must avoid overriding base styles using `!important` unless strictly verified to prevent layout regressions on nested visual structures.
+- **Native CSS Virtualization (`content-visibility`)**: Long scrollable lists and repeating card grids (Pokédex cards, inventory items, spawn report tables) MUST specify `content-visibility: auto; contain-intrinsic-size: 0 <height>;` to allow the browser engine to skip off-screen layout and sprite decoding, guaranteeing 60 FPS scrolling.
+
+## Work Guidance
 
 - Keep design variables (such as palette colors or border-radius configurations) centralized under `tokens/` and `core/` files.
 - Visual properties that vary dynamically with component states must prefer CSS variables injected via `:style` properties rather than deep selectors.

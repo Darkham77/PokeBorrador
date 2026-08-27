@@ -1,6 +1,6 @@
 import type { SBCtx } from './showdownBridgeCtx.ts';
 import { isPokemonStatus, requireVolatileStatusKey, type Move } from '../../types/pokemon/pokemon.ts';
-import { toID } from '@pkmn/sim';
+import { toID } from '@/logic/utils/strings.ts';
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 import { requireAbilityId } from '../../data/battle/abilities.ts';
 import { requirePokemonSpeciesId } from '../../data/pokemon/pokedex.ts';

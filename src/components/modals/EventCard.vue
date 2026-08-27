@@ -7,9 +7,18 @@ import { useModalStore } from '@/stores/modals'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
-import { isPokemonEligibleForEvent, type Event as GameEvent, type EventConfig } from '@/logic/events/eventEngine'
+import { 
+  getDefaultSubCompetitions, 
+  resolveSubCompetitionDirection, 
+  evaluatePokemonForSubCompetition, 
+  getEligiblePokemonForSubCompetition, 
+  type Event as GameEvent, 
+  type EventConfig,
+  type SubCompetitionConfig
+} from '@/logic/events/eventEngine'
 import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { getServerTime, getServerInstant } from '@/logic/utils/timeUtils'
 
 interface Props {
   event: GameEvent
@@ -22,13 +31,13 @@ const gameStore = useGameStore()
 const modalStore = useModalStore()
 const uiStore = useUIStore()
 
-const now = ref(Temporal.Now.instant().epochMilliseconds)
+const now = ref(getServerTime())
 let timerTween: gsap.core.Tween | null = null
 const badgeRef = ref<HTMLElement | null>(null)
 let badgeCtx: gsap.Context | null = null
 
 const updateTime = () => {
-  now.value = Temporal.Now.instant().epochMilliseconds
+  now.value = getServerTime()
   timerTween = gsap.delayedCall(1, updateTime)
 }
 
@@ -62,6 +71,10 @@ const parsedEventConfig = computed<EventConfig>(() => {
   return {}
 })
 
+const subCompetitions = computed<SubCompetitionConfig[]>(() => {
+  return getDefaultSubCompetitions(props.event)
+})
+
 interface CompetitionParticipant {
   uid: string;
   id: PokemonSpeciesId;
@@ -72,17 +85,27 @@ interface CompetitionParticipant {
   ivs?: Pokemon['ivs'];
   size?: string;
   height?: number;
+  weight?: number;
+  displayValue?: string;
+  score?: number;
 }
 
-const userEntry = computed(() => eventStore.userEntries[props.event.id])
+const getEntryForCategory = (catId: string) => {
+  return eventStore.userEntries[`${props.event.id}:${catId}`] || (catId === 'ivs' ? eventStore.userEntries[props.event.id] : undefined)
+}
 
-const participatingPokemon = computed<CompetitionParticipant | null>(() => {
-  if (!userEntry.value) return null
-  const uid = userEntry.value.pokemon_uid
+const getParticipantForCategory = (sub: SubCompetitionConfig): CompetitionParticipant | null => {
+  const entry = getEntryForCategory(sub.id)
+  if (!entry) return null
+  const uid = entry.pokemon_uid
   const team = (gameStore.state.team || []) as (Pokemon | null)[]
   const box = (gameStore.state.box || []) as (Pokemon | null)[]
   const found = [...team, ...box].find(p => p && p.uid === uid)
+
+  const dir = resolveSubCompetitionDirection(props.event.id, sub.id, sub.order)
+
   if (found) {
+    const evalRes = evaluatePokemonForSubCompetition(found, sub, dir)
     return {
       uid: found.uid,
       id: found.id,
@@ -91,12 +114,14 @@ const participatingPokemon = computed<CompetitionParticipant | null>(() => {
       level: found.level,
       isShiny: found.isShiny,
       ivs: found.ivs,
-      size: found.size,
-      height: found.height
+      height: found.height,
+      weight: found.weight,
+      displayValue: evalRes.displayValue,
+      score: evalRes.score
     }
   }
 
-  const data = userEntry.value.data
+  const data = entry.data
   if (data && data.species && isPokemonSpeciesId(data.species)) {
     return {
       uid,
@@ -106,94 +131,115 @@ const participatingPokemon = computed<CompetitionParticipant | null>(() => {
       level: data.level || 1,
       isShiny: !!data.is_shiny,
       ivs: data.ivs as Pokemon['ivs'],
-      size: data.size
+      height: data.height,
+      weight: data.weight,
+      displayValue: data.displayValue,
+      score: data.score
     }
   }
   return null
-})
+}
 
-const eventMetricType = computed<'ivs' | 'level' | 'size' | 'shiny' | 'score'>(() => {
-  const c = parsedEventConfig.value
-  const metric = (c.metric || '').toLowerCase()
-  if (metric.includes('iv') || metric === 'total_ivs' || metric === 'ivs' || !metric) {
-    return 'ivs'
-  }
-  if (metric.includes('level') || metric === 'level') {
-    return 'level'
-  }
-  if (metric.includes('size') || metric.includes('height') || metric.includes('weight')) {
-    return 'size'
-  }
-  if (metric.includes('shiny')) {
-    return 'shiny'
-  }
-  return 'score'
-})
-
-const metricDisplay = computed(() => {
-  if (!participatingPokemon.value) return null
-  const p = participatingPokemon.value
+const getMetricDisplay = (sub: SubCompetitionConfig, p: CompetitionParticipant) => {
   const ivs = p.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
   const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
 
-  if (eventMetricType.value === 'ivs') {
+  if (sub.metric === 'total_ivs') {
     return {
       title: 'IVs TOTALES',
-      value: `${totalIvs} / 186`,
-      ivs
+      value: p.displayValue || `${totalIvs} / 186 IVs`
     }
   }
-  if (eventMetricType.value === 'level') {
+  if (sub.metric === 'stat_iv' && sub.targetStat) {
+    const statLabels: Record<string, string> = {
+      hp: 'HP',
+      atk: 'ATK',
+      def: 'DEF',
+      spa: 'SPA',
+      spd: 'SPD',
+      spe: 'SPE'
+    }
+    const statKey = statLabels[sub.targetStat] || sub.targetStat
+    return {
+      title: `IV EN ${statKey}`,
+      value: p.displayValue || `${ivs[sub.targetStat] || 0} / 31 IV`
+    }
+  }
+  if (sub.metric === 'weight') {
+    return {
+      title: 'PESO',
+      value: p.displayValue || `${(p.weight || 0).toFixed(2)} kg`
+    }
+  }
+  if (sub.metric === 'height') {
+    return {
+      title: 'ALTURA',
+      value: p.displayValue || `${(p.height || 0).toFixed(2)} m`
+    }
+  }
+  if (sub.metric === 'level') {
     return {
       title: 'NIVEL',
-      value: `Nv. ${p.level ?? 1}`,
-      ivs: null
-    }
-  }
-  if (eventMetricType.value === 'size') {
-    const sizeVal = p.size || p.height || 'Normal'
-    return {
-      title: 'TAMAÑO',
-      value: String(sizeVal),
-      ivs: null
-    }
-  }
-  if (eventMetricType.value === 'shiny') {
-    return {
-      title: 'VARIOCOLOR',
-      value: p.isShiny ? '✨ Shiny' : 'Estándar',
-      ivs: null
+      value: `Nv. ${p.level ?? 1}`
     }
   }
   return {
     title: 'PUNTOS',
-    value: `${totalIvs}`,
-    ivs: null
+    value: p.displayValue || `${p.score ?? totalIvs} pts`
   }
-})
+}
 
-const openParticipationModal = () => {
+const getSubCompIcon = (metric: string) => {
+  if (metric === 'total_ivs' || metric === 'stat_iv') return '🧬'
+  if (metric === 'weight') return '⚖️'
+  if (metric === 'height') return '📏'
+  if (metric === 'level') return '⭐'
+  if (metric === 'friendship') return '💖'
+  return '🏆'
+}
+
+const getSubCompTitle = (sub: SubCompetitionConfig) => {
+  const dir = resolveSubCompetitionDirection(props.event.id, sub.id, sub.order)
+  if (sub.metric === 'total_ivs') {
+    return 'Mayor IVs Totales'
+  }
+  if (sub.metric === 'stat_iv' && sub.targetStat) {
+    return `Mayor IV en ${sub.targetStat.toUpperCase()}` // domain-ok
+  }
+  if (sub.metric === 'weight') {
+    return dir === 'max' ? 'Mayor Peso (Titán)' : 'Menor Peso (Miniatura)'
+  }
+  if (sub.metric === 'height') {
+    return dir === 'max' ? 'Mayor Altura (Gran Salto)' : 'Menor Altura (Miniatura)'
+  }
+  if (sub.metric === 'level') {
+    return dir === 'max' ? 'Mayor Nivel' : 'Menor Nivel'
+  }
+  if (sub.metric === 'friendship') {
+    return dir === 'max' ? 'Mayor Amistad' : 'Menor Amistad'
+  }
+  return sub.name || 'Categoría'
+}
+
+const openParticipationModal = (sub: SubCompetitionConfig) => {
   const allowedSpecies = parsedEventConfig.value.species
     ? parsedEventConfig.value.species.split(',').map((s: string) => s.trim()).filter(isPokemonSpeciesId)
     : null
 
-  let allowedIds: string[] | null = null // no-domain
-  if (parsedEventConfig.value.requireCaughtDuringEvent) {
-    const team = (gameStore.state.team || []) as (Pokemon | null)[]
-    const box = (gameStore.state.box || []) as (Pokemon | null)[]
-    const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null)
-    const eligible = allPokes.filter(p => isPokemonEligibleForEvent(props.event, p).eligible)
+  const team = (gameStore.state.team || []) as (Pokemon | null)[]
+  const box = (gameStore.state.box || []) as (Pokemon | null)[]
+  const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null)
+  
+  // Pre-filter candidate Pokémon strictly using isPokemonEligibleForSubCompetition
+  const eligible = getEligiblePokemonForSubCompetition(props.event, sub, allPokes, getServerInstant())
 
-    if (eligible.length === 0) {
-      uiStore.notify('No tienes ningún Pokémon capturado durante este evento para participar.', '⚠️')
-      return
-    }
-    allowedIds = eligible.map(p => p.uid)
+  if (eligible.length === 0) {
+    uiStore.notify(`No tienes ningún Pokémon capturado durante el evento para: ${getSubCompTitle(sub)}`, '⚠️')
+    return
   }
 
-  const subtitle = parsedEventConfig.value.requireCaughtDuringEvent
-    ? `Elige un Pokémon capturado durante el evento para: ${props.event.name}`
-    : `Elige un Pokémon para inscribir en: ${props.event.name}`
+  const allowedIds = eligible.map(p => p.uid)
+  const subtitle = `Elige un Pokémon para la categoría: ${getSubCompTitle(sub)}`
 
   modalStore.open('PokemonSelection', {
     title: 'SELECCIONAR POKÉMON',
@@ -207,9 +253,15 @@ const openParticipationModal = () => {
     onConfirm: async (selectedObjects: Pokemon[]) => {
       const pokemon = selectedObjects[0]
       if (pokemon) {
-        await eventStore.submitCompetitionEntry(props.event.id, pokemon.uid)
+        await eventStore.submitCompetitionEntry(props.event.id, sub.id, pokemon.uid)
       }
     }
+  })
+}
+
+const openEventDetail = () => {
+  modalStore.open('EventDetail', {
+    event: props.event
   })
 }
 
@@ -232,32 +284,6 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
       ease: 'power2.out',
       overwrite: 'auto',
       clearProps: 'borderColor,transform'
-    })
-  }
-}
-
-const onBtnHover = (event: MouseEvent, isEntering: boolean) => {
-  const btn = event.currentTarget as HTMLElement
-  if (!btn || btn.hasAttribute('disabled')) return
-  const isAction = btn.classList.contains('action')
-  if (isEntering) {
-    gsap.to(btn, {
-      background: isAction ? 'var(--yellow)' : 'rgba(255, 255, 255, 0.12)',
-      y: -2,
-      borderColor: isAction ? 'var(--white)' : 'rgba(255, 255, 255, 0.2)',
-      duration: 0.2,
-      ease: 'power2.out',
-      overwrite: 'auto'
-    })
-  } else {
-    gsap.to(btn, {
-      background: isAction ? 'var(--yellow)' : 'rgba(255, 255, 255, 0.05)',
-      y: 0,
-      borderColor: isAction ? 'var(--white)' : 'rgba(255, 255, 255, 0.1)',
-      duration: 0.2,
-      ease: 'power2.out',
-      overwrite: 'auto',
-      clearProps: 'transform,background,borderColor'
     })
   }
 }
@@ -321,6 +347,18 @@ onUnmounted(() => {
               :class="event.type"
             >{{ event.type === 'competition' ? 'COMPETICIÓN' : 'EVENTO' }}</span>
             <span
+              v-if="parsedEventConfig.speciesShinyMult && parsedEventConfig.speciesShinyMult > 1"
+              class="type-tag shiny"
+            >✨ x{{ parsedEventConfig.speciesShinyMult }} SHINY</span>
+            <span
+              v-if="parsedEventConfig.speciesRateMult && parsedEventConfig.speciesRateMult > 1"
+              class="type-tag spawn"
+            >🎯 x{{ parsedEventConfig.speciesRateMult }} SPAWN</span>
+            <span
+              v-if="parsedEventConfig.fishingMult && parsedEventConfig.fishingMult > 1"
+              class="type-tag fishing"
+            >🎣 x{{ parsedEventConfig.fishingMult }} PESCA</span>
+            <span
               v-if="parsedEventConfig.requireCaughtDuringEvent"
               class="catch-window-tag"
             >🕒 SOLO CAPTURAS DEL EVENTO</span>
@@ -332,70 +370,87 @@ onUnmounted(() => {
         {{ event.description }}
       </p>
 
-      <!-- Participating Pokemon Section in Competition Event -->
+      <!-- Competition Category Slots List -->
       <div 
-        v-if="event.type === 'competition' && participatingPokemon && metricDisplay"
-        class="participating-poke-box"
+        v-if="event.type === 'competition' && subCompetitions.length"
+        class="competition-slots-list"
       >
-        <div class="participating-header">
-          <span class="dot-live" />
-          <span class="header-txt">POKÉMON INSCRIPTO</span>
-        </div>
-
-        <div class="participating-main-info">
-          <div class="poke-avatar-box">
-            <PVSpriteFX
-              :is-shiny="participatingPokemon.isShiny"
-              :sparkle-count="3"
-            >
-              <img
-                :src="getAssetUrl(ASSET_TYPES.POKEMON, participatingPokemon.id, { isShiny: participatingPokemon.isShiny })"
-                alt=""
-                class="pixelated poke-img"
-                @error="(e: Event) => ((e.target as HTMLImageElement).style.display='none')"
-              >
-            </PVSpriteFX>
-          </div>
-
-          <div class="poke-details-box">
-            <div class="poke-name-row">
-              <span class="poke-name-txt">{{ participatingPokemon.nickname || participatingPokemon.name }}</span>
-              <span
-                v-if="participatingPokemon.isShiny"
-                class="poke-shiny-badge"
-              >✨</span>
-              <span class="poke-lv-badge">Nv. {{ participatingPokemon.level ?? 1 }}</span>
-            </div>
-
-            <div class="metric-highlight-row">
-              <span class="metric-lbl">{{ metricDisplay.title }}:</span>
-              <span class="metric-val-txt">{{ metricDisplay.value }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- IVs detail breakdown if IV competition -->
-        <div 
-          v-if="eventMetricType === 'ivs' && metricDisplay.ivs"
-          class="ivs-detail-grid"
+        <div
+          v-for="sub in subCompetitions"
+          :key="sub.id"
+          class="category-slot-card"
+          :class="{ 'has-participant': !!getParticipantForCategory(sub) }"
         >
-          <div class="iv-chip">
-            <span>HP</span><b>{{ metricDisplay.ivs.hp ?? 0 }}</b>
+          <!-- Slot Header -->
+          <div class="slot-header">
+            <div class="slot-header-left">
+              <span class="cat-icon">{{ sub.icon || getSubCompIcon(sub.metric) }}</span>
+              <span class="cat-title pixelated">{{ getSubCompTitle(sub) }}</span>
+            </div>
+            <span class="cat-dir-badge pixelated">
+              {{ resolveSubCompetitionDirection(event.id, sub.id, sub.order) === 'min' ? '▼ Menor' : '▲ Mayor' }}
+            </span>
           </div>
-          <div class="iv-chip">
-            <span>ATK</span><b>{{ metricDisplay.ivs.atk ?? 0 }}</b>
+
+          <!-- Slot Body: Enrolled Pokemon -->
+          <div
+            v-if="getParticipantForCategory(sub)"
+            class="slot-enrolled-body"
+          >
+            <div class="poke-avatar-box">
+              <PVSpriteFX
+                :is-shiny="getParticipantForCategory(sub)!.isShiny"
+                :sparkle-count="2"
+              >
+                <img
+                  :src="getAssetUrl(ASSET_TYPES.POKEMON, getParticipantForCategory(sub)!.id, { isShiny: getParticipantForCategory(sub)!.isShiny })"
+                  alt=""
+                  class="pixelated poke-img"
+                  @error="(e: Event) => ((e.target as HTMLImageElement).style.display='none')"
+                >
+              </PVSpriteFX>
+            </div>
+
+            <div class="poke-meta-box">
+              <div class="poke-name-row">
+                <span class="poke-name-txt">{{ getParticipantForCategory(sub)!.nickname || getParticipantForCategory(sub)!.name }}</span>
+                <span
+                  v-if="getParticipantForCategory(sub)!.isShiny"
+                  class="poke-shiny-badge"
+                >✨</span>
+                <span class="poke-lv-badge">Nv. {{ getParticipantForCategory(sub)!.level ?? 1 }}</span>
+              </div>
+              <div class="metric-highlight-row">
+                <span class="metric-val-txt pixelated">{{ getMetricDisplay(sub, getParticipantForCategory(sub)!).value }}</span>
+              </div>
+            </div>
+
+            <button
+              :id="'event-change-btn-' + event.id + '-' + sub.id"
+              class="btn-slot-action change pixelated"
+              @click.stop="openParticipationModal(sub)"
+            >
+              CAMBIAR
+            </button>
           </div>
-          <div class="iv-chip">
-            <span>DEF</span><b>{{ metricDisplay.ivs.def ?? 0 }}</b>
-          </div>
-          <div class="iv-chip">
-            <span>SPA</span><b>{{ metricDisplay.ivs.spa ?? 0 }}</b>
-          </div>
-          <div class="iv-chip">
-            <span>SPD</span><b>{{ metricDisplay.ivs.spd ?? 0 }}</b>
-          </div>
-          <div class="iv-chip">
-            <span>SPE</span><b>{{ metricDisplay.ivs.spe ?? 0 }}</b>
+
+          <!-- Slot Body: Empty State -->
+          <div
+            v-else
+            class="slot-empty-body"
+            @click.stop="openParticipationModal(sub)"
+          >
+            <div class="empty-info">
+              <span class="empty-plus">+</span>
+              <span class="empty-txt pixelated">Sin Pokémon inscripto</span>
+            </div>
+            <button
+              :id="'event-participate-btn-' + event.id + '-' + sub.id"
+              class="btn-slot-action inscribe pixelated"
+              @click.stop="openParticipationModal(sub)"
+            >
+              INSCRIBIR
+            </button>
           </div>
         </div>
       </div>
@@ -406,16 +461,12 @@ onUnmounted(() => {
           <span class="value">{{ formatTime(event.end_at || '') }}</span>
         </div>
         
-        <button 
-          v-if="event.type === 'competition'" 
-          :id="'event-participate-btn-' + event.id"
-          class="retro-btn action"
-          :class="{ 'is-enrolled': !!participatingPokemon }"
-          @mouseenter="onBtnHover($event, true)"
-          @mouseleave="onBtnHover($event, false)"
-          @click.stop="openParticipationModal"
+        <button
+          v-if="event.type === 'competition'"
+          class="retro-btn rules-btn pixelated"
+          @click.stop="openEventDetail"
         >
-          {{ participatingPokemon ? 'CAMBIAR' : 'PARTICIPAR' }}
+          📋 REGLAS Y PREMIOS
         </button>
         <div 
           v-else 

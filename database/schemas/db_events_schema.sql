@@ -25,7 +25,7 @@ INSERT INTO public.events_config (id, name, icon, type, active, manual, schedule
 VALUES 
 ('doble_exp', 'Fin de Semana de Doble EXP', '⚡', 'passive_bonus', true, false, '{"type": "weekly", "days": [6, 0], "startHour": 0, "endHour": 23.99}', '{"expMult": 2}', '¡EXP x2 en todos los combates durante el fin de semana!'),
 ('dia_pesca', 'Día de Pesca', '🎣', 'passive_bonus', true, false, '{"type": "weekly", "days": [2], "startHour": 0, "endHour": 23.99}', '{"fishingMult": 2}', 'Muchas más posibilidades de encuentros de pesca en mapas con agua'),
-('hora_magikarp', 'Hora de Pesca del Magikarp', '🎣', 'competition', true, false, '{"type": "weekly", "days": [2, 4], "startHour": 18, "endHour": 20}', '{"species": "magikarp", "metric": "total_ivs", "hasCompetition": true, "requireCaughtDuringEvent": true}', '¡Capturá el Magikarp con mejores IVs y ganá un premio especial!')
+('hora_magikarp', 'Hora de Pesca del Magikarp', '🎣', 'competition', true, false, '{"type": "weekly", "days": [2, 4], "startHour": 18, "endHour": 20}', '{"species": "magikarp", "hasCompetition": true, "requireCaughtDuringEvent": true, "speciesShinyMult": 3, "speciesRateMult": 2, "fishingMult": 2, "minigameBuffs": {"fishing": {"encounterRateMult": 2, "rareDropMult": 1.5, "shinyMult": 3}}, "subCompetitions": [{"id": "ivs", "name": "Genética Superior (IVs)", "metric": "total_ivs", "order": "max", "prizes": {"first": {"type": "mixed", "money": 25000, "battleCoins": 150, "items": {"goldbottlecap": 1, "rarecandy": 5}}, "second": {"type": "mixed", "money": 15000, "battleCoins": 100, "items": {"bottlecap": 2, "rarecandy": 3}}, "third": {"type": "mixed", "money": 8000, "battleCoins": 50, "items": {"bottlecap": 1, "rarecandy": 1}}}}, {"id": "weight", "name": "Masa y Peso (Titán / Miniatura)", "metric": "weight", "order": "auto", "prizes": {"first": {"type": "mixed", "money": 25000, "battleCoins": 150, "items": {"bigpearl": 3, "lureball": 10}}, "second": {"type": "mixed", "money": 15000, "battleCoins": 100, "items": {"bigpearl": 2, "netball": 10}}, "third": {"type": "mixed", "money": 8000, "battleCoins": 50, "items": {"pearl": 3, "diveball": 5}}}}, {"id": "height", "name": "Envergadura y Altura (Gran Salto)", "metric": "height", "order": "auto", "prizes": {"first": {"type": "mixed", "money": 25000, "battleCoins": 150, "items": {"waterstone": 2, "dragonscale": 1, "mysticwater": 1}}, "second": {"type": "mixed", "money": 15000, "battleCoins": 100, "items": {"waterstone": 1, "damprock": 1}}, "third": {"type": "mixed", "money": 8000, "battleCoins": 50, "items": {"waterstone": 1}}}}]}', '¡Capturá el Magikarp con mejores cualidades y ganá premios temáticos en cada sub-competencia!')
 ON CONFLICT (id) DO UPDATE SET 
   name = EXCLUDED.name,
   icon = EXCLUDED.icon,
@@ -38,13 +38,14 @@ ON CONFLICT (id) DO UPDATE SET
 CREATE TABLE IF NOT EXISTS public.competition_entries (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     event_id TEXT REFERENCES public.events_config(id),
+    category_id TEXT NOT NULL DEFAULT 'ivs',
     player_id UUID REFERENCES auth.users(id),
     player_name TEXT NOT NULL,
     player_email TEXT NOT NULL,
     pokemon_uid TEXT,
     data JSONB NOT NULL,
     submitted_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(event_id, player_id)
+    UNIQUE(event_id, category_id, player_id)
 );
 
 -- Enable RLS for Competition Entries
@@ -85,7 +86,7 @@ CREATE POLICY "Admin view all awards" ON public.awards FOR SELECT USING (auth.jw
 CREATE TABLE IF NOT EXISTS public.competition_results (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     event_id TEXT REFERENCES public.events_config(id),
-    winners JSONB NOT NULL, -- Array of {rank, player_name, score, player_id}
+    winners JSONB NOT NULL, -- Array of {rank, player_name, score, player_id, category_id}
     ended_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -107,14 +108,21 @@ SECURITY DEFINER
 AS $$
 DECLARE
     event_rec RECORD;
-    winners_json JSONB;
-    prizes_config JSONB;
+    all_winners_json JSONB := '[]'::jsonb;
+    sub_comps JSONB;
+    sub_rec JSONB;
+    sub_id TEXT;
+    sub_prizes JSONB;
+    sub_winners JSONB;
+    i INT;
+    w JSONB;
+    p JSONB;
 BEGIN
     -- 1. Get event config and check locks
     SELECT * INTO event_rec FROM public.events_config WHERE id = target_event_id;
     IF NOT FOUND THEN RETURN jsonb_build_object('ok', false, 'error', 'No se encontró el evento.'); END IF;
 
-    -- Avoid awarding if it has no competition or no prizes
+    -- Avoid awarding if it has no competition
     IF (event_rec.config->>'hasCompetition')::boolean IS FALSE THEN
         RETURN jsonb_build_object('ok', false, 'error', 'Evento sin competencia.');
     END IF;
@@ -124,62 +132,112 @@ BEGIN
         RETURN jsonb_build_object('ok', false, 'error', 'Ya premiado recientemente.');
     END IF;
 
-    -- 2. Sort entries (Top 3) by metric (total_ivs), then shiny advantage, then oldest capture date
-    WITH ranked_entries AS (
-        SELECT 
-            player_id, player_name, player_email, data,
-            ROW_NUMBER() OVER (
-                ORDER BY 
-                    (COALESCE(data->>'total_ivs', '0'))::int DESC,
-                    (CASE WHEN (COALESCE(data->>'is_shiny', 'false'))::boolean = true THEN 1 ELSE 0 END) DESC,
-                    (COALESCE((data->>'obtained_at')::bigint, 9223372036854775807)) ASC,
-                    submitted_at ASC
-            ) as rank_num
-        FROM public.competition_entries
-        WHERE event_id = target_event_id
-        LIMIT 3
-    )
-    SELECT jsonb_agg(jsonb_build_object(
-        'rank', CASE rank_num WHEN 1 THEN 'first' WHEN 2 THEN 'second' WHEN 3 THEN 'third' END,
-        'player_id', player_id,
-        'player_name', player_name,
-        'score', (COALESCE(data->>'total_ivs', '0'))::int,
-        'entry_data', data
-    )) INTO winners_json
-    FROM ranked_entries;
+    sub_comps := event_rec.config->'subCompetitions';
 
-    IF winners_json IS NULL OR jsonb_array_length(winners_json) = 0 THEN
-        -- Actualizar marca de tiempo aunque no haya ganadores para que deje de intentarlo
+    IF sub_comps IS NOT NULL AND jsonb_array_length(sub_comps) > 0 THEN
+        -- Multi-category sub-competitions
+        FOR i IN 0..jsonb_array_length(sub_comps)-1 LOOP
+            sub_rec := sub_comps->i;
+            sub_id := sub_rec->>'id';
+            sub_prizes := sub_rec->'prizes';
+
+            WITH ranked_entries AS (
+                SELECT 
+                    player_id, player_name, player_email, data,
+                    ROW_NUMBER() OVER (
+                        ORDER BY 
+                            (CASE WHEN (sub_rec->>'order') = 'min' THEN (COALESCE(data->>'score', data->>'total_ivs', '0'))::numeric ASC
+                                  ELSE (COALESCE(data->>'score', data->>'total_ivs', '0'))::numeric DESC END),
+                            (CASE WHEN (COALESCE(data->>'is_shiny', 'false'))::boolean = true THEN 1 ELSE 0 END) DESC,
+                            (COALESCE((data->>'obtained_at')::bigint, 9223372036854775807)) ASC,
+                            submitted_at ASC
+                    ) as rank_num
+                FROM public.competition_entries
+                WHERE event_id = target_event_id AND category_id = sub_id
+                LIMIT 3
+            )
+            SELECT jsonb_agg(jsonb_build_object(
+                'rank', CASE rank_num WHEN 1 THEN 'first' WHEN 2 THEN 'second' WHEN 3 THEN 'third' END,
+                'category_id', sub_id,
+                'category_name', sub_rec->>'name',
+                'player_id', player_id,
+                'player_name', player_name,
+                'score', (COALESCE(data->>'score', data->>'total_ivs', '0'))::numeric,
+                'entry_data', data
+            )) INTO sub_winners
+            FROM ranked_entries;
+
+            IF sub_winners IS NOT NULL AND jsonb_array_length(sub_winners) > 0 THEN
+                all_winners_json := all_winners_json || sub_winners;
+
+                -- Distribute prizes for this sub-competition
+                IF sub_prizes IS NOT NULL THEN
+                    FOR j IN 0..jsonb_array_length(sub_winners)-1 LOOP
+                        w := sub_winners->j;
+                        p := sub_prizes->(w->>'rank');
+                        IF p IS NOT NULL THEN
+                            INSERT INTO public.awards (event_id, winner_id, winner_name, winner_email, prize, awarded_at)
+                            VALUES (target_event_id, (w->>'player_id')::uuid, w->>'player_name', 
+                                   (SELECT player_email FROM competition_entries WHERE player_id = (w->>'player_id')::uuid AND event_id = target_event_id AND category_id = sub_id LIMIT 1),
+                                   p, NOW());
+                        END IF;
+                    END LOOP;
+                END IF;
+            END IF;
+        END LOOP;
+    ELSE
+        -- Fallback for legacy single-competition events
+        WITH ranked_entries AS (
+            SELECT 
+                player_id, player_name, player_email, data,
+                ROW_NUMBER() OVER (
+                    ORDER BY 
+                        (COALESCE(data->>'total_ivs', '0'))::int DESC,
+                        (CASE WHEN (COALESCE(data->>'is_shiny', 'false'))::boolean = true THEN 1 ELSE 0 END) DESC,
+                        (COALESCE((data->>'obtained_at')::bigint, 9223372036854775807)) ASC,
+                        submitted_at ASC
+                ) as rank_num
+            FROM public.competition_entries
+            WHERE event_id = target_event_id
+            LIMIT 3
+        )
+        SELECT jsonb_agg(jsonb_build_object(
+            'rank', CASE rank_num WHEN 1 THEN 'first' WHEN 2 THEN 'second' WHEN 3 THEN 'third' END,
+            'category_id', 'ivs',
+            'player_id', player_id,
+            'player_name', player_name,
+            'score', (COALESCE(data->>'total_ivs', '0'))::int,
+            'entry_data', data
+        )) INTO all_winners_json
+        FROM ranked_entries;
+
+        IF all_winners_json IS NOT NULL AND jsonb_array_length(all_winners_json) > 0 THEN
+            FOR i IN 0..jsonb_array_length(all_winners_json)-1 LOOP
+                w := all_winners_json->i;
+                p := (event_rec.config->'prizes')->(w->>'rank');
+                IF p IS NOT NULL THEN
+                    INSERT INTO public.awards (event_id, winner_id, winner_name, winner_email, prize, awarded_at)
+                    VALUES (target_event_id, (w->>'player_id')::uuid, w->>'player_name', 
+                           (SELECT player_email FROM competition_entries WHERE player_id = (w->>'player_id')::uuid AND event_id = target_event_id LIMIT 1),
+                           p, NOW());
+                END IF;
+            END LOOP;
+        END IF;
+    END IF;
+
+    IF all_winners_json IS NULL OR jsonb_array_length(all_winners_json) = 0 THEN
         UPDATE public.events_config SET last_awarded_at = NOW() WHERE id = target_event_id;
         RETURN jsonb_build_object('ok', false, 'error', 'Sin participantes.');
     END IF;
 
-    -- 3. Distribute Prizes
-    prizes_config := event_rec.config->'prizes';
-    
-    -- Insert into awards (Winners take it on login)
-    FOR i IN 0..jsonb_array_length(winners_json)-1 LOOP
-        DECLARE
-            w JSONB := winners_json->i;
-            p JSONB := prizes_config->(w->>'rank');
-        BEGIN
-            IF p IS NOT NULL THEN
-                INSERT INTO public.awards (event_id, winner_id, winner_name, winner_email, prize, awarded_at)
-                VALUES (target_event_id, (w->>'player_id')::uuid, w->>'player_name', 
-                       (SELECT player_email FROM competition_entries WHERE player_id = (w->>'player_id')::uuid AND event_id = target_event_id LIMIT 1),
-                       p, NOW());
-            END IF;
-        END;
-    END LOOP;
-
-    -- 4. Store Podium Result
+    -- Store Podium Result
     INSERT INTO public.competition_results (event_id, winners, ended_at)
-    VALUES (target_event_id, winners_json, NOW());
+    VALUES (target_event_id, all_winners_json, NOW());
 
-    -- 5. Mark as Awarded and CLEAN UP entries
+    -- Mark as Awarded and CLEAN UP entries
     UPDATE public.events_config SET last_awarded_at = NOW() WHERE id = target_event_id;
     DELETE FROM public.competition_entries WHERE event_id = target_event_id;
 
-    RETURN jsonb_build_object('ok', true, 'winners', winners_json);
+    RETURN jsonb_build_object('ok', true, 'winners', all_winners_json);
 END;
 $$;

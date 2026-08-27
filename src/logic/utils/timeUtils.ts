@@ -24,12 +24,12 @@ export function setServerTimeSynced(synced: boolean): void {
 }
 
 export function getServerInstant(): Temporal.Instant {
-  if (!_timeSynced) return Temporal.Now.instant();
-
   const getOffset = typeof window !== 'undefined'
     ? window.__GET_DB_TIME_OFFSET__
     : undefined;
   const routerOffsetMs = typeof getOffset === 'function' ? getOffset() : 0;
+
+  if (!_timeSynced && routerOffsetMs === 0) return Temporal.Now.instant();
     
   const now = Temporal.Now.instant();
   const offsetDuration = Temporal.Duration.from({ 

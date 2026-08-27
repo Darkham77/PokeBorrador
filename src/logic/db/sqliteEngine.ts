@@ -3,6 +3,8 @@
  * src/logic/db/sqliteEngine.ts
  * Unified SQL.js (SQLite WASM) Engine with IndexedDB Persistence.
  */
+import initSqlJs from 'sql.js'
+import sqlWasmUrl from 'sql.js/dist/sql-wasm.wasm?url'
 import { getFromIDB, setToIDB } from './idbHelper.ts'
 import { saveToOPFS, loadFromOPFS } from './opfsHelper.ts'
 import { TABLES_SCHEMA } from './schema.ts'
@@ -29,7 +31,7 @@ export interface LoadingStore {
 
 declare global {
   interface Window {
-    initSqlJs?: (o?: unknown) => Promise<{ Database: new (data?: Uint8Array) => SQLiteDatabase }>;
+    initSqlJs?: (o?: { locateFile?: (file: string) => string }) => Promise<{ Database: new (data?: Uint8Array) => SQLiteDatabase }>;
   }
 }
 
@@ -167,7 +169,10 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
 
   if (_initPromise) return _initPromise;
   _initPromise = (async () => {
-    const SQL = await window.initSqlJs({ locateFile: (file: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/${file}` })
+    const hasWindowInit = typeof window !== 'undefined' && typeof window.initSqlJs === 'function'
+    const isNode = typeof process !== 'undefined' && Boolean(process.versions?.node)
+    const initFn = hasWindowInit ? window.initSqlJs! : initSqlJs
+    const SQL = await initFn(isNode || hasWindowInit ? undefined : { locateFile: () => sqlWasmUrl })
 
     if (_isInMemory) {
       if (canUseDevDatabaseBridge(import.meta.env.DEV, isE2E)) {

@@ -58,6 +58,8 @@
 }
 
 .report-row {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 45px;
   display: flex;
   align-items: center;
   padding: 8px 16px;
@@ -238,6 +240,14 @@
     background: Rgba(0, 0, 0, 0.5);
     color: #86868b;
     border-color: Rgba(255, 255, 255, 0.1);
+  }
+
+  &.event-boosted {
+    background: Rgba(244, 114, 182, 0.2);
+    color: #f472b6;
+    border-color: Rgba(244, 114, 182, 0.4);
+    box-shadow: 0 0 8px Rgba(244, 114, 182, 0.25);
+    font-weight: bold;
   }
 }
 

@@ -68,6 +68,14 @@ export function useRouteSpawnsFishing(props: RouteSpawnsProps) {
     const fishingType = (gameStore.state.fishingRodSecs || 0) > 0 ? (gameStore.state.fishingRodType || 'standard') : 'standard'
     applyFishingRodBudget(rates, pool, fishingType)
 
+    // Apply Event Species Boosts (e.g. Magikarp Spawn Boost during Magikarp event)
+    pool.forEach((id, idx) => {
+      const spBonus = eventStore.getSpeciesBonuses(id)
+      if (spBonus && spBonus.rate > 1) {
+        rates[idx] = (rates[idx] || DEFAULT_FISHING_RATE_WEIGHT) * spBonus.rate
+      }
+    })
+
     const totalRate = rates.reduce((sum, r) => sum + r, 0)
     const seenPokedex = gameStore.state.seenPokedex || []
     const caughtPokedex = gameStore.state.pokedex || []
@@ -101,6 +109,10 @@ export function useRouteSpawnsFishing(props: RouteSpawnsProps) {
       const { spawnType: initialSpawnType, statusClass } = getSpawnStatus(isVisitor, isExclusive, isBlocked, true, isBuffed, isDebuffed)
       const spawnType = initialSpawnType === 'Común' ? 'Pesca' : initialSpawnType
 
+      const speciesBonuses = eventStore.getSpeciesBonuses(id)
+      const isEventBoosted = (speciesBonuses.rate > 1) || (speciesBonuses.shiny > 1)
+      const finalStatusClass = isEventBoosted ? 'event-boosted' : statusClass
+
       return buildRouteSpawnItem(
         id,
         pData,
@@ -112,8 +124,13 @@ export function useRouteSpawnsFishing(props: RouteSpawnsProps) {
         basePercentage,
         diff,
         spawnType,
-        statusClass,
-        multiplier
+        finalStatusClass,
+        multiplier,
+        {
+          isEventBoosted,
+          eventRateMult: speciesBonuses.rate,
+          eventShinyMult: speciesBonuses.shiny
+        }
       )
     }).sort((a, b) => {
       if (a.percentage > 0 && b.percentage === 0) return -1

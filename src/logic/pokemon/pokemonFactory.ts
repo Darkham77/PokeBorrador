@@ -17,6 +17,7 @@ import { requireAbilityId, type AbilityId } from '@/data/battle/abilities';
 import { assignGender, ensurePokemonGender, isGenderlessSpeciesId } from './pokemonGender.ts';
 import { canLearnMove } from './pokemonLearnset.ts';
 import { getWildHeldItem } from './pokemonWildHeldItems.ts';
+import { getServerInstant } from '@/logic/utils/timeUtils';
 
 export { assignGender, ensurePokemonGender, isGenderlessSpeciesId } from './pokemonGender.ts';
 export { canLearnMove, getLegalSpeciesMoves, getRandomLegalMoves, getMaxAllowedMoves } from './pokemonLearnset.ts';
@@ -370,7 +371,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
     heldItem,
     nickname: null,
     tags: ['ball:pokeball'],
-    obtainedAt: Temporal.Now.instant().epochMilliseconds,
+    obtainedAt: getServerInstant().epochMilliseconds,
     obtainedMethod: options.obtainedMethod ?? 'wild',
     evs: createDefaultEvs(),
     hp: 0, maxHp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0

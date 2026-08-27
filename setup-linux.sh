@@ -51,7 +51,7 @@ else
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 fi
 
-# 2. Instalar y activar Node.js
+# 2. Instalar y activar Node.js en NVM
 echo -e "\n🟢 Verificando / Instalando Node.js v$TARGET_NODE_VER en NVM..."
 nvm install "$TARGET_NODE_VER" || echo "⚠️ Advertencia al instalar Node v$TARGET_NODE_VER via NVM."
 
@@ -59,17 +59,47 @@ echo -e "\n⚡ Activando y fijando Node.js v$TARGET_NODE_VER..."
 nvm use "$TARGET_NODE_VER" || echo "⚠️ Advertencia al activar Node v$TARGET_NODE_VER."
 nvm alias default "$TARGET_NODE_VER" 2>/dev/null || true
 
-# 3. Actualizar npm
+# 3. Detectar ruta de binarios y asegurar enlaces simbólicos en ~/.local/bin (Paridad con Symlink/Junction de Windows)
+NODE_BIN_DIR="$NVM_DIR/versions/node/v$TARGET_NODE_VER/bin"
+if [ ! -d "$NODE_BIN_DIR" ]; then
+    NODE_BIN_DIR="$(dirname "$(nvm which "$TARGET_NODE_VER" 2>/dev/null || which node)")"
+fi
+
+# Forzar precedencia de la versión objetivo en la sesión actual
+export PATH="$NODE_BIN_DIR:$PATH"
+
+LOCAL_BIN="$HOME/.local/bin"
+mkdir -p "$LOCAL_BIN"
+
+echo -e "\n🔗 Sincronizando enlaces simbólicos en $LOCAL_BIN..."
+for bin_name in node npm npx corepack; do
+    if [ -e "$NODE_BIN_DIR/$bin_name" ]; then
+        ln -sf "$NODE_BIN_DIR/$bin_name" "$LOCAL_BIN/$bin_name"
+    fi
+done
+
+# 4. Actualizar npm a la última versión global
 echo -e "\n📦 Actualizando npm a la última versión global (npm@latest)..."
 npm install -g npm@latest || echo "⚠️ Advertencia: No se pudo actualizar npm globalmente. Continuando con versión actual..."
 
-# 4. Configuración de Seguridad de NPM
+# Re-sincronizar symlinks en ~/.local/bin por si npm/npx fueron actualizados
+for bin_name in npm npx; do
+    if [ -e "$NODE_BIN_DIR/$bin_name" ]; then
+        ln -sf "$NODE_BIN_DIR/$bin_name" "$LOCAL_BIN/$bin_name"
+    fi
+done
+
+# 5. Configuración de Seguridad de NPM
 echo -e "\n🛡️ Aplicando configuraciones de seguridad globales en npm..."
 npm config set ignore-scripts true
 npm config set registry https://registry.npmjs.org/
 npm config set audit-level high
 
-# 5. Instalar dependencias limpias del proyecto
+# 6. Limpieza de caché residual
+echo -e "\n🧹 Limpiando caché residual de npm..."
+npm cache clean --force 2>/dev/null || true
+
+# 7. Instalar dependencias limpias del proyecto
 echo -e "\n📦 Instalando dependencias del proyecto con npm ci..."
 cd "$SCRIPT_DIR"
 npm ci
@@ -80,4 +110,5 @@ echo "======================================================"
 echo "Versiones activas:"
 node -v
 npm -v
-echo -e "\nTodo listo. Puedes iniciar el entorno de desarrollo ejecutando 'npm run dev'.\n"
+echo -e "\n[NOTE] Si tienes terminales del IDE previamente abiertas, recárgalas o ciérralas y ábrelas de nuevo para que hereden el nuevo PATH del sistema."
+echo -e "Todo listo. Puedes iniciar el entorno de desarrollo ejecutando 'npm run dev'.\n"

@@ -48,13 +48,14 @@ describe('Magikarp Contest Automated Awarding & Claiming (SQLite RPC)', () => {
       CREATE TABLE IF NOT EXISTS competition_entries (
         id TEXT PRIMARY KEY,
         event_id TEXT,
+        category_id TEXT DEFAULT 'ivs',
         player_id TEXT,
         player_name TEXT NOT NULL,
         player_email TEXT NOT NULL,
         pokemon_uid TEXT,
         data TEXT NOT NULL,
         submitted_at TEXT,
-        UNIQUE(event_id, player_id)
+        UNIQUE(event_id, category_id, player_id)
       );
     `);
 

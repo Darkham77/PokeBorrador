@@ -3,8 +3,7 @@ import type { MoveCategory } from '@/data/battle/moves';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { ACTIVE_AI_TEAM_GENERATION_GEN } from '@/data/system/constants';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { TeamGenerators } from '@pkmn/randoms';
-import { toID } from '@pkmn/sim';
+import { toID } from '@/logic/utils/strings.ts';
 import { isItemId } from '@/data/inventory/items';
 
 /**
@@ -68,7 +67,8 @@ export async function buildTrainerTeam(
   const { getEvolvedForm } = await import('@/logic/evolution/evolutionLogic');
   const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
 
-  // Inicializa el generador competitivo
+  // Inicializa el generador competitivo bajo demanda
+  const { TeamGenerators } = await import('@pkmn/randoms');
   const generator = TeamGenerators.getTeamGenerator(`gen${ACTIVE_AI_TEAM_GENERATION_GEN}randombattle`);
   type RandSet = (species: string) => { moves: string[]; ability: string; item: string };
   type GetTeam = () => Array<{ species: string; moves: string[]; ability: string; item: string }>;

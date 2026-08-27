@@ -41,10 +41,12 @@ describe('EventCard.vue - Participating Pokemon Slot', () => {
       global: { stubs: globalStubs }
     })
 
-    expect(wrapper.find('.participating-poke-box').exists()).toBe(false)
-    const btn = wrapper.find('.retro-btn.action')
+    expect(wrapper.find('.slot-enrolled-body').exists()).toBe(false)
+    const emptySlot = wrapper.find('.slot-empty-body')
+    expect(emptySlot.exists()).toBe(true)
+    const btn = emptySlot.find('.btn-slot-action.inscribe')
     expect(btn.exists()).toBe(true)
-    expect(btn.text()).toBe('PARTICIPAR')
+    expect(btn.text()).toContain('INSCRIBIR')
   })
 
   it('renders participating pokemon and IVs metric breakdown when entry exists in store', () => {
@@ -62,8 +64,9 @@ describe('EventCard.vue - Participating Pokemon Slot', () => {
     } as unknown as Pokemon
 
     gameStore.state.team = [magikarp]
-    eventStore.userEntries[competitionEvent.id] = {
+    eventStore.userEntries[`${competitionEvent.id}:ivs`] = {
       event_id: competitionEvent.id,
+      category_id: 'ivs',
       player_id: 'player-123',
       pokemon_uid: 'pk-magikarp-1'
     }
@@ -73,24 +76,30 @@ describe('EventCard.vue - Participating Pokemon Slot', () => {
       global: { stubs: globalStubs }
     })
 
-    expect(wrapper.find('.participating-poke-box').exists()).toBe(true)
-    expect(wrapper.text()).toContain('POKÉMON INSCRIPTO')
+    expect(wrapper.find('.slot-enrolled-body').exists()).toBe(true)
     expect(wrapper.text()).toContain('Big Karp')
     expect(wrapper.text()).toContain('Nv. 25')
-    expect(wrapper.text()).toContain('IVs TOTALES')
     expect(wrapper.text()).toContain('142 / 186')
-    expect(wrapper.find('.ivs-detail-grid').exists()).toBe(true)
-    expect(wrapper.find('.retro-btn.action').text()).toBe('CAMBIAR')
+    const changeBtn = wrapper.find('.btn-slot-action.change')
+    expect(changeBtn.exists()).toBe(true)
+    expect(changeBtn.text()).toContain('CAMBIAR')
   })
 
-  it('renders size metric when event metric is size', () => {
+  it('renders size metric when event metric is size / weight', () => {
     const sizeEvent: GameEvent = {
       ...competitionEvent,
       id: 'concurso_tamanio',
       config: JSON.stringify({
         species: 'magikarp',
-        metric: 'size',
-        hasCompetition: true
+        hasCompetition: true,
+        subCompetitions: [
+          {
+            id: 'weight',
+            name: 'Masa y Peso',
+            metric: 'weight',
+            order: 'max'
+          }
+        ]
       })
     }
 
@@ -104,12 +113,13 @@ describe('EventCard.vue - Participating Pokemon Slot', () => {
       nickname: null,
       level: 15,
       isShiny: true,
-      size: '1.25m'
+      weight: 15.5
     } as unknown as Pokemon
 
     gameStore.state.team = [magikarp]
-    eventStore.userEntries[sizeEvent.id] = {
+    eventStore.userEntries[`${sizeEvent.id}:weight`] = {
       event_id: sizeEvent.id,
+      category_id: 'weight',
       player_id: 'player-123',
       pokemon_uid: 'pk-magikarp-2'
     }
@@ -119,9 +129,7 @@ describe('EventCard.vue - Participating Pokemon Slot', () => {
       global: { stubs: globalStubs }
     })
 
-    expect(wrapper.find('.participating-poke-box').exists()).toBe(true)
-    expect(wrapper.text()).toContain('TAMAÑO')
-    expect(wrapper.text()).toContain('1.25m')
-    expect(wrapper.find('.ivs-detail-grid').exists()).toBe(false)
+    expect(wrapper.find('.slot-enrolled-body').exists()).toBe(true)
+    expect(wrapper.text()).toContain('15.5 kg')
   })
 })

@@ -6,7 +6,9 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 
 
 import { generateMigrations } from './scripts/database/generate_migrations.ts'
+import { generatePokemonDatabase } from './scripts/data/generate_pokemon_db.ts'
 import { sassTrapsFixer } from './scripts/maintenance/vite-plugin-sass-traps.ts'
+import { staticPrecompressPlugin } from './scripts/maintenance/vite-plugin-precompress.ts'
 
 import { VitePWA } from 'vite-plugin-pwa'
 
@@ -18,8 +20,26 @@ import type { ESBuildOptions } from 'vite'
 type ESBuildOptionsWithCharset = ESBuildOptions & { charset?: 'utf8' }
 const esbuildConfig: ESBuildOptionsWithCharset = {
   charset: 'utf8',
+  legalComments: 'none',
+  treeShaking: true,
   drop: process.env.NODE_ENV === 'production' ? ['debugger'] : [],
   pure: process.env.NODE_ENV === 'production' ? ['console.log', 'console.info', 'console.debug'] : [],
+}
+
+function pokemonDbGeneratorPlugin() {
+  return {
+    name: 'pokemon-db-generator',
+    async buildStart() {
+      await generatePokemonDatabase()
+    },
+    handleHotUpdate({ file }: { file: string }) {
+      if (file.includes('src/data/pokemon/speciesMetadata') || file.includes('src/data/battle/moves') || file.includes('src/data/system/constants')) {
+        generatePokemonDatabase().catch(err => {
+          console.error('[PokemonDB Generator] Hot update generation failed:', err)
+        })
+      }
+    }
+  }
 }
 
 function migrationsPlugin() {
@@ -347,7 +367,16 @@ export default defineConfig({
   base,
   plugins: [
     fixPkmnSimPlugin(),
-    vue(),
+    pokemonDbGeneratorPlugin(),
+    vue({
+      template: {
+        compilerOptions: {
+          hoistStatic: true,
+          cacheHandlers: true,
+          comments: false
+        }
+      }
+    }),
     migrationsPlugin(),
     devDbImportPlugin(),
     sassTrapsFixer(),
@@ -384,16 +413,31 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         skipWaiting: false,
         clientsClaim: true,
-        // CRITICAL: Only precache app shell (JS, CSS, HTML, fonts, wasm).
-        // NEVER precache game sprites/images or audio here — there are ~20k
-        // image files in public/assets/. Precaching them all would block SW
-        // installation indefinitely and cause an infinite update loop.
-        globPatterns: ['**/*.{js,css,html,ico,woff2,wasm}'],
+        // CRITICAL: Precache ONLY the essential App Shell (< 500 KB).
+        // Heavy data chunks, optional views, and dynamic engines are cached on-demand via runtime caching.
+        globPatterns: [
+          '**/*.{html,ico,woff2}',
+          '**/index-*.{js,css}',
+          '**/vendor-vue-*.js',
+          '**/vendor-gsap-*.js'
+        ],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
-        // Game images and audio are cached on-demand via runtime caching.
-        // First access downloads and caches; subsequent accesses serve from
-        // cache instantly. This avoids blocking SW installation.
         runtimeCaching: [
+          {
+            // Dynamic code chunks & wasm modules (game data, modals, subviews, sqlite)
+            urlPattern: /\/assets\/.*\.(js|css|wasm)(\?.*)?$/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'app-dynamic-chunks-v1',
+              expiration: {
+                maxEntries: 150,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
           {
             // All game image assets (sprites, icons, backgrounds)
             urlPattern: /\/assets\/.*\.(png|webp|svg|gif|jpg|jpeg)(\?.*)?$/i,
@@ -431,6 +475,7 @@ export default defineConfig({
         type: 'module'
       }
     }),
+    staticPrecompressPlugin(),
     {
       name: 'worker-reload-plugin',
       handleHotUpdate({ file, server }) {
@@ -496,8 +541,19 @@ export default defineConfig({
     },
   },
   build: {
-    chunkSizeWarningLimit: 9000, // accommodate game-data (pokemonDB + Showdown stats/dex)
+    target: 'esnext',
+    cssMinify: 'lightningcss',
+    cssCodeSplit: true,
+    modulePreload: {
+      polyfill: false
+    },
+    chunkSizeWarningLimit: 3000,
     rollupOptions: {
+      treeshake: {
+        moduleSideEffects: 'no-external',
+        annotations: true,
+        manualPureFunctions: ['console.log', 'console.info', 'console.debug']
+      },
       onwarn(warning, warn) {
         if (warning.code === 'EVAL' && warning.id?.includes('node_modules')) {
           return;
@@ -518,8 +574,35 @@ export default defineConfig({
           if (id.includes('node_modules/gsap')) {
             return 'vendor-gsap';
           }
-          if (id.includes('src/data/')) {
-            return 'game-data';
+          if (id.includes('node_modules/@pkmn/randoms')) {
+            return 'vendor-randoms';
+          }
+          if (id.includes('node_modules/sql.js')) {
+            return 'vendor-sqljs';
+          }
+          if (id.includes('node_modules/valibot')) {
+            return 'vendor-valibot';
+          }
+          if (id.includes('src/data/pokemon/pokemonFeetDatabase') || id.includes('src/data/pokemon/feetCoordinatesData')) {
+            return 'game-data-feet';
+          }
+          if (id.includes('src/data/pokemon/animatedSpriteDatabase') || id.includes('src/data/pokemon/animatedSpriteData')) {
+            return 'game-data-sprites';
+          }
+          if (id.includes('src/data/pokemon/')) {
+            return 'game-data-pokemon';
+          }
+          if (id.includes('src/data/battle/')) {
+            return 'game-data-battle';
+          }
+          if (id.includes('src/data/inventory/')) {
+            return 'game-data-items';
+          }
+          if (id.includes('src/data/world/') || id.includes('src/data/weather/')) {
+            return 'game-data-world';
+          }
+          if (id.includes('src/data/player/') || id.includes('src/data/system/') || id.includes('src/data/ai/')) {
+            return 'game-data-system';
           }
           return;
         }

@@ -65,17 +65,19 @@
 
       & .physical-tier-badge {
         font-size: 10px;
-        line-height: 1.1;
+        line-height: 1;
         padding: 2px 5px;
         border-radius: 4px;
         font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0;
         border: 1px solid transparent;
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        text-align: center;
         vertical-align: middle;
+        white-space: nowrap;
         @include pixelated;
 
         &.tier-xxs {

@@ -32,7 +32,7 @@ export const TABLES_SCHEMA = [
   `guardian_captures (capture_date TEXT, map_id TEXT, user_id TEXT, winner_faction TEXT, pts_awarded INTEGER DEFAULT ${DEFAULT_GUARDIAN_POINTS}, captured_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')), PRIMARY KEY (capture_date, map_id, user_id))`,
   `eggs (id INTEGER PRIMARY KEY AUTOINCREMENT, player_id TEXT, egg_id TEXT, steps_remaining INTEGER DEFAULT ${DEFAULT_EGG_HATCH_STEPS}, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))`,
   "awards (id TEXT PRIMARY KEY, event_id TEXT, winner_id TEXT, winner_email TEXT, winner_name TEXT, prize TEXT, awarded_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')), claimed BOOLEAN DEFAULT 0, claimed_at TEXT, received_at TEXT)",
-  "competition_entries (id TEXT PRIMARY KEY, event_id TEXT, player_id TEXT, player_name TEXT, player_email TEXT, pokemon_uid TEXT, data TEXT, submitted_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
+  "competition_entries (id TEXT PRIMARY KEY, event_id TEXT, category_id TEXT DEFAULT 'ivs', player_id TEXT, player_name TEXT, player_email TEXT, pokemon_uid TEXT, data TEXT, submitted_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
   "competition_results (id TEXT PRIMARY KEY, event_id TEXT, winners TEXT, ended_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
   "war_factions (user_id TEXT PRIMARY KEY, email TEXT, faction TEXT, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
   "war_defenders (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, map_id TEXT, pokemon_uid TEXT, pokemon_data TEXT, wins_count INTEGER DEFAULT 0, week_id TEXT, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",

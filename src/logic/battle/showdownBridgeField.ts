@@ -1,6 +1,6 @@
 import { ACTIVE_GENERATION, SHOWDOWN_DISABLE_DURATION_TURNS } from '../../data/system/constants.ts';
 import { getLocalizedWeatherName, mapOfficialToVisualWeather } from '../weather/weatherGenerationProvider.ts';
-import { toID } from '@pkmn/sim';
+import { toID } from '@/logic/utils/strings.ts';
 import type { SBCtx } from './showdownBridgeCtx.ts';
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 import { toPokemonType } from '@/data/battle/types';
