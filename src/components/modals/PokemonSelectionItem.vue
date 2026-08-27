@@ -207,7 +207,13 @@ function handleClick() {
             v-if="item.pokemon.ivs"
             class="m-badge-iv"
           >IVs {{ ivTotal }}</span>
-          <span class="m-badge-tot">TOT {{ total }}</span>
+          <PVTooltip
+            title="PODER TOTAL"
+            description="Suma de estadísticas base, IVs genéticos y bonificación de EVs (4 EVs = 1 IV)."
+            position="top"
+          >
+            <span class="m-badge-tot">TOT {{ total }}</span>
+          </PVTooltip>
         </div>
       </div>
 

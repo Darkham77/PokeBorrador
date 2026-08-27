@@ -160,8 +160,9 @@ const onClaimClick = (awardId?: string) => {
               <span
                 v-if="w.entry_data?.name"
                 class="entry-poke"
+                :class="{ shiny: w.entry_data.is_shiny }"
               >
-                {{ w.entry_data.nickname || w.entry_data.name }}
+                {{ w.entry_data.is_shiny ? '✨ ' : '' }}{{ w.entry_data.nickname || w.entry_data.name }}
               </span>
               <span
                 v-if="w.score !== undefined"

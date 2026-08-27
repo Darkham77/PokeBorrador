@@ -1,10 +1,11 @@
 import { ref, computed, watch, type Ref } from 'vue'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getPokedexOrderIndex, requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { calculateTotalIVs, calculateTotalBaseStats } from '@/logic/pokemon/statsMath'
+import { calculateTotalIVs } from '@/logic/pokemon/statsMath'
+import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
 import { hasPokemonTag } from '@/logic/constants/tags'
+import { getPokemonPhysicalWeight, getPokemonPhysicalHeight } from '@/logic/pokemon/physicalDimensionsMath'
 
 interface FilterState {
   tier: string
@@ -120,13 +121,9 @@ const MAX_POKEMON_LEVEL_CONST = 100
         })) return false
       }
 
-      // TOTAL Filter (Species Base Stats + IVs)
-      const species = pokemonDataProvider.getPokemonData(p.id)
-      if (species) {
-        const bst = calculateTotalBaseStats(species)
-        const totalPower = bst + totalIv
-        if (totalPower < f.bstMin || totalPower > f.bstMax) return false
-      }
+      // TOTAL Filter (Species Base Stats + IVs + EVs)
+      const totalPower = calculateTotalPower(p)
+      if (totalPower < f.bstMin || totalPower > f.bstMax) return false
 
       if (f.search) {
         const query = f.search.toLowerCase() // text-ok
@@ -148,17 +145,7 @@ const MAX_POKEMON_LEVEL_CONST = 100
         if (sortMode.value === 'level') result = pB.level - pA.level;
         else if (sortMode.value === 'tier') result = getPokemonTier(pB).total - getPokemonTier(pA).total;
         else if (sortMode.value === 'bst') {
-          const specA = pokemonDataProvider.getPokemonData(pA.id);
-          const specB = pokemonDataProvider.getPokemonData(pB.id);
-          const bstA = calculateTotalBaseStats(specA);
-          const bstB = calculateTotalBaseStats(specB);
-          
-          const ivsA = pA.ivs;
-          const totalIvsA = Object.values(ivsA).reduce((s: number, v) => s + (Number(v) || 0), 0);
-          const ivsB = pB.ivs;
-          const totalIvsB = Object.values(ivsB).reduce((s: number, v) => s + (Number(v) || 0), 0);
-          
-          result = (bstB + totalIvsB) - (bstA + totalIvsA);
+          result = calculateTotalPower(pB) - calculateTotalPower(pA);
         }
         else if (sortMode.value === 'type') result = pA.type.localeCompare(pB.type);
         else if (sortMode.value === 'recent') {
@@ -172,6 +159,12 @@ const MAX_POKEMON_LEVEL_CONST = 100
           const idxA = indexA === -1 ? 9999 : indexA;
           const idxB = indexB === -1 ? 9999 : indexB;
           result = idxB - idxA;
+        }
+        else if (sortMode.value === 'weight') {
+          result = getPokemonPhysicalWeight(pB) - getPokemonPhysicalWeight(pA);
+        }
+        else if (sortMode.value === 'height') {
+          result = getPokemonPhysicalHeight(pB) - getPokemonPhysicalHeight(pA);
         }
         
         return sortDirection.value === 'asc' ? -result : result

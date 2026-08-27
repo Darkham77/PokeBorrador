@@ -7,6 +7,7 @@ import type { GymId } from '@/data/world/gyms';
 import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import type { MapRouteId } from '@/data/world/map-assets';
 import type { MoveCategory } from '@/data/battle/moves';
+import type { DayPhase } from '@/logic/utils/timeUtils';
 
 
 export type CoreBattleStatKey = 'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'accuracy' | 'evasion' | 'reflect' | 'lightScreen' | 'safeguard' | 'mist' | 'spikes';
@@ -119,6 +120,8 @@ export interface BattleState {
   trainerArchetype?: NpcArchetype;
   isGym?: boolean;
   gymId?: GymId;
+  fixedCycle?: DayPhase;
+  fixedWeather?: WeatherId;
   weather: BattleWeather;
   turnCount: number;
   over: boolean;

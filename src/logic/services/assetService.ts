@@ -1,9 +1,12 @@
 import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping';
 export { POKEMON_SPRITE_IDS };
 import { resolveAsset } from '../utils/assetResolver.ts';
-import { isMapWithCycleId } from '@/data/world/map-assets';
-import { getItemById } from '@/data/inventory/items';
-import { isPlayerClassId } from '@/data/player/playerClasses';
+import { isMapWithCycleId, type MapRouteId } from '@/data/world/map-assets';
+import { getItemById, type ItemId } from '@/data/inventory/items';
+import { isPlayerClassId, type PlayerClassId } from '@/data/player/playerClasses';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
+import type { GymId } from '@/data/world/gyms';
 import { Dex } from '@pkmn/sim';
 
 /**
@@ -55,7 +58,13 @@ export interface AssetOptions {
  * Global Asset Service / Router
  * Centralizes asset path construction and LOD application.
  */
-export const getAssetUrl = (type: AssetType, rawId: string | number, options: AssetOptions = {}): string => {
+export function getAssetUrl(type: typeof ASSET_TYPES.ITEM, rawId: ItemId, options?: AssetOptions): string;
+export function getAssetUrl(type: typeof ASSET_TYPES.POKEMON, rawId: PokemonSpeciesId | number, options?: AssetOptions): string;
+export function getAssetUrl(type: typeof ASSET_TYPES.MAP, rawId: MapRouteId, options?: AssetOptions): string;
+export function getAssetUrl(type: typeof ASSET_TYPES.TRAINER, rawId: NpcSpriteId | PlayerClassId, options?: AssetOptions): string;
+export function getAssetUrl(type: typeof ASSET_TYPES.BADGE, rawId: GymId, options?: AssetOptions): string;
+export function getAssetUrl(type: AssetType, rawId: string | number, options?: AssetOptions): string;
+export function getAssetUrl(type: AssetType, rawId: string | number, options: AssetOptions = {}): string {
   if (!rawId) {
     throw new Error(`[assetService] Cannot resolve asset URL for type '${type}': rawId is required and cannot be empty.`);
   }
@@ -272,7 +281,7 @@ export function useAssets() {
  */
 export function getSpriteUrl(id: string, isShiny = false) {
   if (id && (id.toLowerCase() === 'egg' || id.toLowerCase().startsWith('egg_') || id.toLowerCase().startsWith('egg-'))) { // text-ok
-    return getAssetUrl(ASSET_TYPES.ITEM, 'egg');
+    return getAssetUrl(ASSET_TYPES.POKEMON, 'egg');
   }
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny });
 }

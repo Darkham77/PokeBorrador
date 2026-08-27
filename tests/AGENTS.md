@@ -24,6 +24,7 @@ QA / Automation Engineers.
   2. Sequential execution of `handleWithdrawRequest` and `handleReleaseRequest` hooks.
   3. Exact presence of localized chat log announcements.
   4. Precise matching of active combatant UIDs and visual sprite representations without ghost entities or missing frames.
+- **Map & Gym Atmosphere Lifecycle Testing Mandate**: Automated tests (`gym_weather_isolation.spec.ts`, `gym_atmosphere_lifecycle_integration.spec.ts`) MUST assert that single-sprite arenas (gyms) remain isolated from natural time/weather shifts by default, accept configurable overrides (`fixedCycle`/`fixedWeather`), while multi-sprite locations dynamically reflect their supported day phases.
 - All test suites run under **Vitest** (vite-node) via `vitest.workspace.ts`. Regression checks MUST ALWAYS run the full test suite (`npm run test`), never subset commands like `test:unit` or `test:node` alone.
 
 ## Work Guidance

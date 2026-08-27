@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {
   createDefaultEvs,
   calculateTotalEvs,
+  calculateEvBonusIvs,
+  EVS_PER_STAT_POINT,
   applyEvGains,
   applyVitamin,
   applyFeather,
@@ -48,6 +50,15 @@ describe('evMath - Pure Effort Value Mathematics & Bounds', () => {
   it('calculates total EVs correctly', () => {
     const evs = { hp: 100, atk: 100, def: 100, spa: 100, spd: 100, spe: 10 };
     assert.strictEqual(calculateTotalEvs(evs), 510);
+  });
+
+  it('calculates IV-equivalent bonus from EVs (4 EVs = 1 IV)', () => {
+    assert.strictEqual(EVS_PER_STAT_POINT, 4);
+    assert.strictEqual(calculateEvBonusIvs(null), 0);
+    assert.strictEqual(calculateEvBonusIvs(createDefaultEvs()), 0);
+    // 252 / 4 = 63, 252 / 4 = 63, 4 / 4 = 1 -> 127 total
+    const competitive = { hp: 4, atk: 252, def: 0, spa: 0, spd: 0, spe: 252 };
+    assert.strictEqual(calculateEvBonusIvs(competitive), 127);
   });
 
   it('applies basic EV gains from defeat yield', () => {

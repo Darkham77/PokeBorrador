@@ -3,7 +3,8 @@ import { computed } from 'vue'
 import PokemonStatBar from '@/components/pokemon-detail/PokemonStatBar.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import { calculateTotalEvs, MAX_TOTAL_EVS } from '@/logic/pokemon/evMath'
+import { calculateTotalEvs, calculateEvBonusIvs, MAX_TOTAL_EVS } from '@/logic/pokemon/evMath'
+import { calculateTotalIVs } from '@/logic/pokemon/statsMath'
 
 interface StatDisplay {
   id: string
@@ -47,6 +48,38 @@ const isEvMaxed = computed(() => {
 
 const pokerusStatus = computed(() => {
   return props.pokemon?.pokerus
+})
+
+const bst = computed(() => {
+  return (
+    props.species.hp +
+    props.species.atk +
+    props.species.def +
+    props.species.spa +
+    props.species.spd +
+    props.species.spe
+  )
+})
+
+const totalIvs = computed(() => {
+  if (!props.isInstance || !props.pokemon?.ivs) return 0
+  return calculateTotalIVs(props.pokemon.ivs)
+})
+
+const totalEvIvs = computed(() => {
+  if (!props.isInstance || !props.pokemon?.evs) return 0
+  return calculateEvBonusIvs(props.pokemon.evs)
+})
+
+const totalPower = computed(() => {
+  return bst.value + totalIvs.value + totalEvIvs.value
+})
+
+const totalPowerTooltipDescription = computed(() => {
+  if (props.isInstance && props.pokemon) {
+    return `Suma de estadísticas base (${bst.value}) + IVs individuales (${totalIvs.value}) + bonificación de EVs (${totalEvIvs.value} pts equivalentes a IVs con ratio 4 EVs = 1 IV). Total: ${totalPower.value}.`
+  }
+  return 'Suma de estadísticas base e IVs individuales más bonificación por EVs entrenados (4 EVs = 1 IV). Representa el potencial y poder de combate total del Pokémon.'
 })
 </script>
 
@@ -127,16 +160,13 @@ const pokerusStatus = computed(() => {
     <div class="vicio-stat-total mt-32">
       <PVTooltip
         title="PODER TOTAL"
-        description="La suma de estadísticas base e IVs individuales. Representa el nivel de combate final del Pokémon."
+        :description="totalPowerTooltipDescription"
         position="top"
       >
         <span class="vp-pane-label pixelated">PODER TOTAL:</span>
       </PVTooltip>
       <span class="vp-stat-value pixelated">
-        {{ 
-          (props.species.hp + props.species.atk + props.species.def + props.species.spa + props.species.spd + props.species.spe) +
-            (isInstance && pokemon?.ivs ? Object.values(pokemon.ivs).reduce((s: number, v) => s + (Number(v) || 0), 0) : 0)
-        }}
+        {{ totalPower }}
       </span>
     </div>
   </div>
@@ -162,13 +192,13 @@ const pokerusStatus = computed(() => {
   align-items: center;
   gap: 8px;
   font-size: 8px;
-  background: rgba(0, 0, 0, 0.4);
+  background: Rgba(0, 0, 0, 0.4);
   padding: 4px 8px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
 
   .ev-total-text {
-    color: rgba(255, 255, 255, 0.8);
+    color: Rgba(255, 255, 255, 0.8);
     letter-spacing: 0.5px;
 
     &.is-maxed {
@@ -189,15 +219,15 @@ const pokerusStatus = computed(() => {
     font-weight: bold;
 
     &.infected {
-      background: rgba(236, 72, 153, 0.2);
+      background: Rgba(236, 72, 153, 0.2);
       color: #f472b6;
-      border: 1px solid rgba(236, 72, 153, 0.4);
+      border: 1px solid Rgba(236, 72, 153, 0.4);
     }
 
     &.cured {
-      background: rgba(148, 163, 184, 0.2);
+      background: Rgba(148, 163, 184, 0.2);
       color: #94a3b8;
-      border: 1px solid rgba(148, 163, 184, 0.4);
+      border: 1px solid Rgba(148, 163, 184, 0.4);
     }
   }
 }

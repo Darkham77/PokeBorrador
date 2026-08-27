@@ -54,6 +54,74 @@
         line-height: 1.6;
         @include pixelated;
       }
+
+      & .physical-val-wrapper {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      & .physical-tier-badge {
+        font-size: 10px;
+        line-height: 1.1;
+        padding: 2px 5px;
+        border-radius: 4px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: 1px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        vertical-align: middle;
+        @include pixelated;
+
+        &.tier-xxs {
+          background: linear-gradient(135deg, Rgba(0, 242, 254, 0.25) 0%, Rgba(79, 172, 254, 0.4) 100%);
+          border-color: #00f2fe;
+          color: #00f2fe;
+          box-shadow: 0 0 8px Rgba(0, 242, 254, 0.4);
+        }
+
+        &.tier-xs {
+          background: Rgba(243, 156, 18, 0.2);
+          border-color: #f39c12;
+          color: #f39c12;
+        }
+
+        &.tier-s {
+          background: Rgba(46, 204, 113, 0.2);
+          border-color: #2ecc71;
+          color: #2ecc71;
+        }
+
+        &.tier-m {
+          background: Rgba(255, 255, 255, 0.08);
+          border-color: Rgba(255, 255, 255, 0.2);
+          color: Rgba(255, 255, 255, 0.8);
+        }
+
+        &.tier-l {
+          background: Rgba(52, 152, 219, 0.2);
+          border-color: #3498db;
+          color: #3498db;
+        }
+
+        &.tier-xl {
+          background: Rgba(155, 89, 182, 0.2);
+          border-color: #9b59b6;
+          color: #9b59b6;
+        }
+
+        &.tier-xxl {
+          background: linear-gradient(135deg, Rgba(255, 215, 0, 0.3) 0%, Rgba(255, 140, 0, 0.4) 100%);
+          border-color: #ffd700;
+          color: #ffd700;
+          box-shadow: 0 0 10px Rgba(255, 215, 0, 0.5);
+        }
+      }
     }
   }
   

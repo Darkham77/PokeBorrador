@@ -98,6 +98,19 @@ Standard calculations for HP and combat stats (including EVs, IVs, and Nature ef
 
 ---
 
+## 🧬 Total Power (TOT / TOTAL) Formula
+
+Total Power measures the cumulative combat strength and development of a Pokémon instance across its species base stats, individual genetic IVs, and trained Effort Values (EVs):
+
+$$\text{Total Power} = \text{BST} + \sum_{i \in \text{stats}} \text{IV}_i + \sum_{i \in \text{stats}} \left\lfloor \frac{\text{EV}_i}{4} \right\rfloor$$
+
+- **Base Stats Total (BST)**: $\text{HP} + \text{Atk} + \text{Def} + \text{SpA} + \text{SpD} + \text{Spe}$.
+- **Individual Values (IVs)**: Sum of all 6 genetic IVs ($0$ to $186$).
+- **Effort Values Bonus (EVs)**: $\lfloor \text{EV}_i / 4 \rfloor$ per stat ($4\text{ EVs} = 1\text{ stat/IV point}$, adding up to $+127$ points for 510 total EVs).
+- **Single Source of Truth**: Centralized in `calculateTotalPower(pokemon)` in `src/logic/pokemon/pokemonUtils.ts`.
+
+---
+
 ## 🧬 Generación de Valores Individuales (IVs)
 
 ### 1. Fórmula Estándar
@@ -123,6 +136,32 @@ IV_Efectivo = Math.max(Bono_Contextual, IV_Generado)
 ```
 
 - **Bono_Contextual**: `15` (Dominancia), `Racha` (Cazabichos), o `N` (Misiones).
+
+## 📏 Physical Dimensions (Height & Weight)
+
+Pokémon instance height and weight follow a deterministic Gaussian distribution (Irwin-Hall $n=4$) centered on the species canonical base dimensions with $\pm 15\%$ maximum variation.
+
+### 1. Hash and Mulberry32 Seed
+- Seed for Height: `Mulberry32(fnv1a_32(pokemon.uid + 'h'))`
+- Seed for Weight: `Mulberry32(fnv1a_32(pokemon.uid + 'w'))`
+
+### 2. Irwin-Hall ($n=4$) Gaussian Generator
+```text
+gaussian = (prng() + prng() + prng() + prng()) / 4.0   // Uniform sum -> Bell curve in [0, 1], mean ~0.5
+factor   = 1 + (gaussian - 0.5) * 2 * 0.15             // Range [0.85, 1.15]
+Dimension = Base_Dimension * factor
+```
+
+### 3. Classification Tiers (7 Tiers)
+| Tier | ID | Label | Delta Range | UI Color / Glow |
+| :--- | :--- | :--- | :--- | :--- |
+| **Miniatura** | `XXS` | `XXS` | $< -12.5\%$ | Cyan Ice Diamond Glow |
+| **Pequeño** | `XS` | `XS` | $[-12.5\%, -9.0\%)$ | Blue Ice |
+| **Bajo** | `S` | `S` | $[-9.0\%, -6.0\%)$ | Slate Blue |
+| **Normal** | `M` | `M` | $[-6.0\%, +6.0\%]$ | Neutral Gray |
+| **Alto** | `L` | `L` | $(+6.0\%, +9.0\%]$ | Amber Gold |
+| **Grande** | `XL` | `XL` | $(+9.0\%, +12.5\%]$ | Orange Flame |
+| **Titán** | `XXL` | `XXL` | $> +12.5\%$ | Legendary Gold Aura |
 
 ---
 

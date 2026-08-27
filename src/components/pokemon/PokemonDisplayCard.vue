@@ -2,6 +2,7 @@
 import { ref, inject, computed, type ComputedRef } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 import { useUIStore } from '@/stores/ui'
 import { useElementVisibility } from '@/composables/ui/useElementVisibility'
 
@@ -267,7 +268,13 @@ function getGenderClass(gender: string) {
       
       <div class="level-line">
         <span class="m-badge-level">Nv. {{ pokemon.level }}</span>
-        <span class="m-badge-tot">TOT {{ totalPower }}</span>
+        <PVTooltip
+          title="PODER TOTAL"
+          description="Suma de estadísticas base, IVs genéticos y bonificación de EVs (4 EVs = 1 IV)."
+          position="top"
+        >
+          <span class="m-badge-tot">TOT {{ totalPower }}</span>
+        </PVTooltip>
       </div>
 
       <!-- Status Labels (Floating) -->

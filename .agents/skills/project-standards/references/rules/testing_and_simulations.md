@@ -103,4 +103,13 @@ Whenever an E2E simulation or Playwright test fails:
 
 - **Chronological Event Stream Verification**: Automated tests for combat animations and FSM lifecycles MUST record and assert an Event Stream to guarantee that withdraw animations, defeat logs, sendout announcements, release animations, and combatant UID mounting execute in strict chronological sequence across single and multi-Pokémon (6v6) encounters, eliminating silent animation drops.
 
+## 14. Map Atmosphere & Gym Climate Lifecycle Testing Mandate
+
+- **Environmental, Configurable & Sprite-Aware Atmosphere Testing**: Automated test suites for battle visual atmosphere (`gym_weather_isolation.spec.ts`, `gym_atmosphere_lifecycle_integration.spec.ts`) MUST verify:
+  1. **Default Single-Sprite / Gym Isolation**: Standard gyms maintain constant day lighting (`effectiveCycle = 'day'`) and block outdoor weather transitions.
+  2. **Configurable Gym/Map Overrides**: Gyms and battles with explicit `fixedCycle: 'night'` or custom `fixedWeather` render their configured atmosphere accurately regardless of real-time ticks.
+  3. **Multi-Sprite Responsiveness**: Locations with multi-cycle sprites (open routes and multi-sprite interiors like `mansion`) react dynamically to time changes.
+  4. **In-Combat Weather Lifecycle**: Moves and abilities properly cast weather in any arena and cleanly revert upon expiration.
+
+
 

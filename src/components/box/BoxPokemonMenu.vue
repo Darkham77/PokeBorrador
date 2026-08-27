@@ -197,7 +197,13 @@ const handleSellRocket = () => {
             </span>
             <span class="m-badge-level">Nv. {{ pokemon?.level }}</span>
             <span class="m-badge-iv">IV {{ (Object.values(pokemon?.ivs || {}) as number[]).reduce((s,v)=>s+(v||0),0) }}</span>
-            <span class="m-badge-tot">TOT {{ totalPower }}</span>
+            <PVTooltip
+              title="PODER TOTAL"
+              description="Suma de estadísticas base, IVs genéticos y bonificación de EVs (4 EVs = 1 IV)."
+              position="bottom"
+            >
+              <span class="m-badge-tot">TOT {{ totalPower }}</span>
+            </PVTooltip>
           </div>
         </div>
 

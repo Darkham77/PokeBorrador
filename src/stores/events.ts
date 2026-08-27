@@ -135,8 +135,13 @@ export const useEventStore = defineStore('events', () => {
           return
         }
       }
-      
-      const ivs = pokemon?.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
+
+      if (typeof pokemon.obtainedAt !== 'number' || isNaN(pokemon.obtainedAt) || pokemon.obtainedAt <= 0) {
+        uiStore.notify('El Pokémon seleccionado no tiene una fecha de captura registrada.', '⚠️')
+        return
+      }
+
+      const ivs = pokemon.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
       const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
 
       const entryData: CompetitionEntry = {
@@ -146,14 +151,15 @@ export const useEventStore = defineStore('events', () => {
         player_email: authStore.user.email || '',
         pokemon_uid: pokemonUid,
         data: {
-          species: pokemon?.id,
-          name: pokemon?.name,
-          nickname: pokemon?.nickname,
-          level: pokemon?.level || 1,
+          species: pokemon.id,
+          name: pokemon.name,
+          nickname: pokemon.nickname,
+          level: pokemon.level,
           total_ivs: totalIvs,
           ivs,
-          is_shiny: pokemon?.isShiny || false,
-          size: pokemon?.size
+          is_shiny: pokemon.isShiny,
+          obtained_at: pokemon.obtainedAt,
+          size: pokemon.size
         },
         submitted_at: Temporal.Now.instant().toString()
       }

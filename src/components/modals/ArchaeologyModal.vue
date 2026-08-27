@@ -15,10 +15,10 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 const fossilSprite = computed(() => {
   const idStr = String(props.pokemon?.id || '').toLowerCase()
-  if (idStr === 'kabuto' || idStr === 'kabutops') return getAssetUrl(ASSET_TYPES.ITEM, 'dome_fossil')
-  if (idStr === 'omanyte' || idStr === 'omastar') return getAssetUrl(ASSET_TYPES.ITEM, 'helix_fossil')
-  if (idStr === 'aerodactyl') return getAssetUrl(ASSET_TYPES.ITEM, 'old_amber')
-  return getAssetUrl(ASSET_TYPES.ITEM, 'helix_fossil') // Fallback
+  if (idStr === 'kabuto' || idStr === 'kabutops') return getAssetUrl(ASSET_TYPES.ITEM, 'domefossil')
+  if (idStr === 'omanyte' || idStr === 'omastar') return getAssetUrl(ASSET_TYPES.ITEM, 'helixfossil')
+  if (idStr === 'aerodactyl') return getAssetUrl(ASSET_TYPES.ITEM, 'oldamber')
+  return getAssetUrl(ASSET_TYPES.ITEM, 'helixfossil') // Fallback
 })
 
 interface Props {

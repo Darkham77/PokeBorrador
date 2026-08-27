@@ -1,6 +1,7 @@
 import type { Pokemon, PokemonSelectionSource } from '@/types/pokemon/pokemon'
 import { hasPokemonTag } from '@/logic/constants/tags'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
+import { getPokemonPhysicalWeight, getPokemonPhysicalHeight } from '@/logic/pokemon/physicalDimensionsMath'
 
 export interface PokemonFilterCriteria {
   searchQuery: string
@@ -16,13 +17,7 @@ export interface PokemonFilterCriteria {
 }
 
 export function getPokemonTotalPower(p: Pokemon): number {
-  if (!p) return 0
-  const base = pokemonDataProvider.getPokemonData(p.id)
-  const TOT = base ? (base.hp + base.atk + base.def + base.spa + base.spd + base.spe) : 0
-  
-  const ivs = p.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
-  const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
-  return TOT + totalIvs
+  return calculateTotalPower(p)
 }
 
 export function filterAndSortPokemon(
@@ -89,6 +84,12 @@ export function filterAndSortPokemon(
     } else if (criteria.sortBy === 'hatched') {
       valA = pA.obtainedMethod === 'egg' ? 1 : 0
       valB = pB.obtainedMethod === 'egg' ? 1 : 0
+    } else if (criteria.sortBy === 'weight') {
+      valA = getPokemonPhysicalWeight(pA)
+      valB = getPokemonPhysicalWeight(pB)
+    } else if (criteria.sortBy === 'height') {
+      valA = getPokemonPhysicalHeight(pA)
+      valB = getPokemonPhysicalHeight(pB)
     } else {
       const BOX_SORT_INDEX_OFFSET = 1000;
       valA = pA.obtainedAt || ((a._source === 'box' ? BOX_SORT_INDEX_OFFSET : 0) + a.index)

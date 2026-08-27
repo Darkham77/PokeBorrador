@@ -12,6 +12,7 @@ import { MAXIMUM_FRIENDSHIP_VALUE } from '@/logic/constants/gameplay';
 export const MAX_TOTAL_EVS = 510;
 export const MAX_STAT_EVS = 252;
 export const MIN_STAT_EVS = 0;
+export const EVS_PER_STAT_POINT = 4;
 
 export const VITAMIN_EV_GAIN = 10;
 export const MOCHI_EV_GAIN = 10;
@@ -92,6 +93,22 @@ export function calculateTotalEvs(evs?: Partial<PokemonEVs> | null): number {
     (evs.spa || MIN_STAT_EVS) +
     (evs.spd || MIN_STAT_EVS) +
     (evs.spe || MIN_STAT_EVS)
+  );
+}
+
+/**
+ * Calculates the IV-equivalent stat points granted by Effort Values (EVs).
+ * In official Pokémon formulas, every 4 EVs in a stat grant 1 stat point (identical to 1 IV point at level 100).
+ */
+export function calculateEvBonusIvs(evs?: Partial<PokemonEVs> | null): number {
+  if (!evs) return 0;
+  return (
+    Math.floor((evs.hp || 0) / EVS_PER_STAT_POINT) +
+    Math.floor((evs.atk || 0) / EVS_PER_STAT_POINT) +
+    Math.floor((evs.def || 0) / EVS_PER_STAT_POINT) +
+    Math.floor((evs.spa || 0) / EVS_PER_STAT_POINT) +
+    Math.floor((evs.spd || 0) / EVS_PER_STAT_POINT) +
+    Math.floor((evs.spe || 0) / EVS_PER_STAT_POINT)
   );
 }
 

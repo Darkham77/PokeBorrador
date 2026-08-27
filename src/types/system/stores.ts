@@ -65,6 +65,8 @@ export interface BattleOptions {
   persistenceMode?: 'local' | 'remote';
   cannotEscape?: boolean;
   trainerQuote?: string; // domain-ok
+  fixedCycle?: DayPhase;
+  fixedWeather?: WeatherId;
 }
 
 export interface GameStore {
@@ -195,6 +197,7 @@ export interface CompetitionEntryData {
   total_ivs?: number;
   ivs?: Record<string, number>; // open-record
   is_shiny?: boolean;
+  obtained_at?: number;
   size?: string; // domain-ok
 }
 
@@ -224,6 +227,7 @@ export interface PastCompetitionWinner {
     level?: number;
     total_ivs?: number;
     is_shiny?: boolean;
+    obtained_at?: number;
     size?: string; // domain-ok
   };
 }

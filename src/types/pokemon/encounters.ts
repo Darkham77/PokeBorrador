@@ -39,6 +39,8 @@ export interface MapLocation {
   isUrban?: boolean;
   isArctic?: boolean;
   isVolcanic?: boolean;
+  supportedCycles?: DayPhase[];
+  weatherEnabled?: boolean;
   wild?: {
     morning?: PokemonSpeciesId[];
     day?: PokemonSpeciesId[];

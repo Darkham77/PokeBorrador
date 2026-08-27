@@ -19,6 +19,8 @@ import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter'
 import { requireNpcSpriteId, type NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { requireItemId, type ItemId } from '@/data/inventory/items'
+import type { DayPhase } from '@/logic/utils/timeUtils'
+import type { WeatherId } from '@/logic/weather/weatherRegistry'
 import {
   showdownWorker,
   setShowdownWorker,
@@ -62,6 +64,8 @@ export interface BattleOptions {
   cannotEscape?: boolean;
   persistenceMode?: string;
   trainerQuote?: string;
+  fixedCycle?: DayPhase;
+  fixedWeather?: WeatherId;
 }
 
 /**
@@ -176,6 +180,8 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     _initialEnemy: structuredClone(toRaw(startingEnemyPoke)),
     _rewardCombatants: [],
     isGym, gymId: resolvedGymId, isTrainer, enemyTeam: finalEnemyTeam, difficulty: resolvedDifficulty, rewardTM: resolvedRewardTM,
+    fixedCycle: options.fixedCycle,
+    fixedWeather: options.fixedWeather,
     enemyInventory,
     enemyMoney,
     enemyMaxLevel: maxEnemyLv,

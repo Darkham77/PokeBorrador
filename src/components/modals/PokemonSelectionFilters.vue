@@ -104,7 +104,7 @@ function clearFilters() {
       </PVTooltip>
       <PVTooltip
         title="PODER TOTAL"
-        description="Suma de estadísticas base e IVs individuales."
+        description="Suma de estadísticas base, IVs genéticos y bonificación por EVs entrenados (4 EVs = 1 IV)."
         position="bottom"
         class="ps-sort-wrapper"
       >
@@ -126,6 +126,32 @@ function clearFilters() {
           @click.stop="setSort('hatched')"
         >
           CRÍA {{ sortBy === 'hatched' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
+        </button>
+      </PVTooltip>
+      <PVTooltip
+        title="PESO"
+        description="Ordenar por peso corporal en kilogramos."
+        position="bottom"
+        class="ps-sort-wrapper"
+      >
+        <button
+          :class="{ active: sortBy === 'weight' }"
+          @click.stop="setSort('weight')"
+        >
+          PESO {{ sortBy === 'weight' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
+        </button>
+      </PVTooltip>
+      <PVTooltip
+        title="ALTURA"
+        description="Ordenar por altura corporal en metros."
+        position="bottom"
+        class="ps-sort-wrapper"
+      >
+        <button
+          :class="{ active: sortBy === 'height' }"
+          @click.stop="setSort('height')"
+        >
+          ALT {{ sortBy === 'height' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
         </button>
       </PVTooltip>
     </div>

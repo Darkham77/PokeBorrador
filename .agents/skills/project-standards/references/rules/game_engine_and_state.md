@@ -66,3 +66,13 @@
 - **Atomic Replacement & Sendout Invariant**: When an active combatant faints in trainer battles, setting the new active combatant reference, emitting the sendout announcement log (`"¡${trainerName} envía a ${nextEnemy.name}!"`), and awaiting `handleReleaseRequest` MUST execute atomically inside `POKEMON_CALL` $\rightarrow$ `RENDER_BALL` $\rightarrow$ `OCCUPY_SEAT` before dispatching choices to Showdown. Never rely on worker client side-effects to trigger UI logs or release animations.
 - **Trainer Intro Sequence**: Trainer encounters strictly log the trainer challenge during `TRAINER_ENCOUNTER` while `enemyCombatants` is empty, animate trainer retreat during `RETREAT_AND_FADEOUT`, and announce the Pokémon sendout during `POKEMON_CALL`.
 
+## 10. Map & Gym Atmosphere Configuration, Cycle Resolution & Climate Isolation
+
+- **Atmosphere & Lighting Resolution Hierarchy**: Combat lighting (`effectiveCycle`) and climate (`computedWeather`) are evaluated under a strict precedence order:
+  1. **Explicit Battle & Gym Config**: If `fixedCycle` (e.g. permanent night for a Ghost Gym) or `fixedWeather` is configured in `BattleOptions` or `Gym` (`GYMS`), it takes absolute priority.
+  2. **Explicit Map Location Config**: If `MapLocation` specifies `supportedCycles` or `weatherEnabled: false`, it applies directly.
+  3. **Default Single-Sprite & Gym Isolation**: If no explicit cycle is configured, single-sprite arenas (`gym`, `pvp`, `power_plant`) enforce constant daylight/neutral lighting (`effectiveCycle = 'day'`) and block natural outdoor weather (`computedWeather = 'clear'`).
+  4. **Dynamic Multi-Sprite Resolution**: Locations with multi-cycle sprites (`_amanecer`, `_dia`, `_atardecer`, `_noche`) reactively adapt to the current time of day according to their available cycle sprites.
+- **In-Combat Weather Exclusivity**: Weather inside gyms and weather-sealed arenas is enabled whenever an in-battle move (*Rain Dance*, *Sunny Day*, *Hail*, *Sandstorm*) or ability (*Drizzle*, *Drought*, *Snow Warning*, *Sand Stream*) actively casts it (`battle.weather.type !== 'none' && battle.weather.type !== 'clear'`). Upon expiration, the arena cleanly reverts to its configured base atmosphere.
+
+

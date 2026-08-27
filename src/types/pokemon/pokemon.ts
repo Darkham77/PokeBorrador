@@ -246,6 +246,7 @@ export interface Pokemon {
   illegalReasons?: string[]; // domain-ok
   size?: string; // domain-ok
   height?: number;
+  weight?: number;
 }
 
 

@@ -140,8 +140,20 @@ graph TD
     F --> G[Updated Pokemon Instance Stats]
 ```
 
-- [`src/logic/pokemon/evMath.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/pokemon/evMath.ts): Pure math engine for EV limits, yield modifications, and items application.
+- [`src/logic/pokemon/evMath.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/pokemon/evMath.ts): Pure math engine for EV limits, yield modifications, items application, and EV-to-IV bonus conversion.
+- [`src/logic/pokemon/pokemonUtils.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/pokemon/pokemonUtils.ts): Canonical Single Source of Truth for Total Power (`calculateTotalPower`).
 - [`src/logic/pokemon/statsMath.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/pokemon/statsMath.ts): Canonical stat formula calculation.
 - [`src/logic/pokemon/pokemonFactory.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/pokemon/pokemonFactory.ts): Instance creation and stat recalculation triggers.
 - [`src/logic/items/itemEffectHandlers.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/items/itemEffectHandlers.ts): Inventory item dispatchers for EV consumables.
 - [`src/logic/battle/battleRewards.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/battle/battleRewards.ts): Battle reward processing and EV yield distribution.
+
+---
+
+## 7. 📊 Total Power (TOT) EV Contribution
+
+Effort Values directly contribute to the **Total Power (`TOT`)** metric displayed on Pokémon cards, menus, and sorting filters:
+
+- **Stat Ratio**: Every 4 EVs in a single stat grant 1 effective stat point ($\lfloor \text{EV} / 4 \rfloor$), mathematically identical to 1 genetic IV point at Lv 100.
+- **Maximum EV Bonus**: A fully trained Pokémon ($510$ EVs, e.g. $252 / 252 / 4$) gains $\lfloor 252/4 \rfloor + \lfloor 252/4 \rfloor + \lfloor 4/4 \rfloor = 63 + 63 + 1 = +127$ points of Total Power.
+- **SSoT Implementation**: Calculated via `calculateEvBonusIvs(pokemon.evs)` from `src/logic/pokemon/evMath.ts` inside `calculateTotalPower(pokemon)` in `src/logic/pokemon/pokemonUtils.ts`.
+

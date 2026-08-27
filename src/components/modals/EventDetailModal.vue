@@ -221,7 +221,12 @@ const scheduleText = computed(() => {
           CRITERIO DE VICTORIA
         </div>
         <div class="info-box">
-          {{ metricText }}
+          <div class="metric-main">
+            {{ metricText }}
+          </div>
+          <div class="tiebreaker-note">
+            ✨ Desempates: 1º Pokémon Shiny · 2º Captura más antigua
+          </div>
         </div>
       </div>
 
@@ -376,6 +381,17 @@ const scheduleText = computed(() => {
   color: Rgba(203, 213, 225, 1);
   border: 1px solid Rgba(255, 255, 255, 0.05);
   text-align: center;
+
+  .metric-main {
+    font-weight: 600;
+  }
+
+  .tiebreaker-note {
+    font-size: 11px;
+    color: var(--yellow);
+    margin-top: 4px;
+    opacity: 0.9;
+  }
 
   &.active {
     background: Rgba(34, 197, 94, 0.1);

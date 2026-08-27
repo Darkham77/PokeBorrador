@@ -40,7 +40,7 @@ describe('Integration: Gym vs Normal Route Atmosphere Lifecycle', () => {
     const atmosphere = useBattleAtmosphere(battleRef)
 
     // Initial Gym Atmosphere assertions
-    expect(atmosphere.isInteriorCombat.value).toBe(true)
+    expect(atmosphere.isGymOrPvP.value).toBe(true)
     expect(atmosphere.effectiveCycle.value).toBe('day')
     expect(atmosphere.computedWeather.value).toBe('clear')
     expect(atmosphere.isAtmosphereLayerVisible.value).toBe(false)
@@ -53,7 +53,7 @@ describe('Integration: Gym vs Normal Route Atmosphere Lifecycle', () => {
     mapStore.setGlobalWeather('thunderstorm')
 
     // Verify Gym STILL has 100% clean indoor daylight and zero weather intrusion
-    expect(atmosphere.isInteriorCombat.value).toBe(true)
+    expect(atmosphere.isGymOrPvP.value).toBe(true)
     expect(atmosphere.effectiveCycle.value).toBe('day')
     expect(atmosphere.computedWeather.value).toBe('clear')
     expect(atmosphere.isAtmosphereLayerVisible.value).toBe(false)
@@ -87,7 +87,7 @@ describe('Integration: Gym vs Normal Route Atmosphere Lifecycle', () => {
     })
 
     // Assert that Route 1 battle reflects the outdoor night cycle and severe weather
-    expect(atmosphere.isInteriorCombat.value).toBe(false)
+    expect(atmosphere.isGymOrPvP.value).toBe(false)
     expect(atmosphere.effectiveCycle.value).toBe('night')
     expect(atmosphere.computedWeather.value).toBe('thunderstorm')
     expect(atmosphere.effectiveBattleVisual.value).toBe('thunderstorm')

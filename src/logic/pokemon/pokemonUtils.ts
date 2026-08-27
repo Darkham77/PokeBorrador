@@ -6,6 +6,8 @@ import type { Pokemon, Move, PokemonIVs, ObtainedMethod } from '@/types/pokemon/
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
 import { MOVE_TRANSLATIONS_ES, type MoveCategory } from '@/data/battle/moves';
+import { calculateTotalBaseStats, calculateTotalIVs } from '@/logic/pokemon/statsMath';
+import { calculateEvBonusIvs } from '@/logic/pokemon/evMath';
 import {
   MAX_LEARNED_MOVES_SLOTS,
   ROCKET_SELL_LEVEL_MULTIPLIER,
@@ -70,15 +72,15 @@ export function getMaxVigor(p: Pokemon | null | undefined): number {
 }
 
 /**
- * Calculates the total power of a pokemon (BST + total IVs).
+ * Calculates the total power of a pokemon (BST + total IVs + EV-equivalent IV bonus).
  */
 export function calculateTotalPower(p: Pokemon): number {
   if (!p) return 0;
   const species = pokemonDataProvider.getPokemonData(p.id);
-  const bst = species ? ((species.hp || 0) + (species.atk || 0) + (species.def || 0) + (species.spa || 0) + (species.spd || 0) + (species.spe || 0)) : 0;
-  const ivs = p.ivs;
-  const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0);
-  return bst + totalIvs;
+  const bst = species ? calculateTotalBaseStats(species) : 0;
+  const totalIvs = calculateTotalIVs(p.ivs);
+  const totalEvIvs = calculateEvBonusIvs(p.evs);
+  return bst + totalIvs + totalEvIvs;
 }
 
 /**

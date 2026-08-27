@@ -236,7 +236,7 @@ const leave = (el: Element, done: () => void) => {
             </PVTooltip>
             <PVTooltip
               title="PODER TOTAL"
-              description="Suma de estadísticas base e IVs individuales."
+              description="Suma de estadísticas base, IVs genéticos y bonificación por EVs entrenados (4 EVs = 1 IV)."
               position="bottom"
             >
               <button
@@ -256,6 +256,30 @@ const leave = (el: Element, done: () => void) => {
                 @click.stop="setSortMode('pokedex')"
               >
                 PDEX {{ sortMode === 'pokedex' ? (sortDirection === 'desc' ? '▼' : '▲') : '' }}
+              </button>
+            </PVTooltip>
+            <PVTooltip
+              title="PESO"
+              description="Ordenar por peso en kilogramos."
+              position="bottom"
+            >
+              <button
+                :class="['mini-sort-btn', { active: sortMode === 'weight' }]"
+                @click.stop="setSortMode('weight')"
+              >
+                PES {{ sortMode === 'weight' ? (sortDirection === 'desc' ? '▼' : '▲') : '' }}
+              </button>
+            </PVTooltip>
+            <PVTooltip
+              title="ALTURA"
+              description="Ordenar por altura en metros."
+              position="bottom"
+            >
+              <button
+                :class="['mini-sort-btn', { active: sortMode === 'height' }]"
+                @click.stop="setSortMode('height')"
+              >
+                ALT {{ sortMode === 'height' ? (sortDirection === 'desc' ? '▼' : '▲') : '' }}
               </button>
             </PVTooltip>
           </div>

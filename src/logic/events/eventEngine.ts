@@ -188,20 +188,67 @@ export function getSpeciesBoosts(activeEvents: Event[], speciesId: string): { ra
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
 /**
- * Validates if the new entry is better for a competition.
+ * Validates if the new entry is better for a competition based on score, shiny advantage, and capture date.
+ * Ranking precedence:
+ * 1. Higher metric score (e.g. data.total_ivs)
+ * 2. Shiny status (Shiny always beats non-shiny on tie)
+ * 3. Older capture date (lower obtained_at timestamp beats newer capture on tie)
  * @param {string} sortBy (e.g., 'data.total_ivs', 'data.level')
  */
 export function isNewEntryBetter(existingData: unknown, newData: unknown, sortBy: string = 'data.total_ivs'): boolean {
-  if (!existingData) return true
+  if (!existingData) return true;
   
+  const toRecord = (obj: unknown): Record<string, unknown> | null => {
+    return (obj && typeof obj === 'object') ? (obj as Record<string, unknown>) : null; // open-record
+  };
+
   const getVal = (obj: unknown, path: string): number => {
-    return path.split('.').reduce((acc, part) => (acc as Record<string, unknown>)?.[part], obj) as number || 0 // open-record
-  }
+    const rec = toRecord(obj);
+    if (!rec) return 0;
+    const directVal = path.split('.').reduce((acc: unknown, part: string) => toRecord(acc)?.[part], rec) as number | undefined;
+    if (typeof directVal === 'number' && !isNaN(directVal)) return directVal;
 
-  const oldScore = getVal(existingData, sortBy)
-  const newScore = getVal(newData, sortBy)
+    const strippedPath = path.startsWith('data.') ? path.slice(5) : path;
+    const strippedVal = strippedPath.split('.').reduce((acc: unknown, part: string) => toRecord(acc)?.[part], rec) as number | undefined;
+    if (typeof strippedVal === 'number' && !isNaN(strippedVal)) return strippedVal;
 
-  return newScore > oldScore
+    return 0;
+  };
+
+  const getIsShiny = (obj: unknown): boolean => {
+    const rec = toRecord(obj);
+    if (!rec) return false;
+    const dataRec = toRecord(rec.data);
+    return Boolean(rec.is_shiny ?? dataRec?.is_shiny ?? rec.isShiny);
+  };
+
+  const getObtainedAt = (obj: unknown): number => {
+    const rec = toRecord(obj);
+    if (!rec) return Infinity;
+    const dataRec = toRecord(rec.data);
+    const val = (rec.obtained_at ?? dataRec?.obtained_at ?? rec.obtainedAt) as number | null | undefined;
+    return typeof val === 'number' && !isNaN(val) && val > 0 ? val : Infinity;
+  };
+
+  const oldScore = getVal(existingData, sortBy);
+  const newScore = getVal(newData, sortBy);
+
+  // 1. Primary: Higher score
+  if (newScore > oldScore) return true;
+  if (newScore < oldScore) return false;
+
+  // 2. Tiebreaker 1: Shiny advantage (Shiny always beats non-Shiny)
+  const oldShiny = getIsShiny(existingData);
+  const newShiny = getIsShiny(newData);
+  if (newShiny && !oldShiny) return true;
+  if (!newShiny && oldShiny) return false;
+
+  // 3. Tiebreaker 2: Older capture date (lower timestamp beats higher timestamp)
+  const oldObtainedAt = getObtainedAt(existingData);
+  const newObtainedAt = getObtainedAt(newData);
+  if (newObtainedAt < oldObtainedAt) return true;
+
+  return false;
 }
 
 /**

@@ -360,6 +360,10 @@ onUnmounted(() => {
           <div class="poke-details-box">
             <div class="poke-name-row">
               <span class="poke-name-txt">{{ participatingPokemon.nickname || participatingPokemon.name }}</span>
+              <span
+                v-if="participatingPokemon.isShiny"
+                class="poke-shiny-badge"
+              >✨</span>
               <span class="poke-lv-badge">Nv. {{ participatingPokemon.level ?? 1 }}</span>
             </div>
 

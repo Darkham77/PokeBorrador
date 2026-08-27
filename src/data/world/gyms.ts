@@ -3,6 +3,8 @@ import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import type { MapRouteId } from '@/data/world/map-assets';
 import type { ItemId } from '@/data/inventory/items';
+import type { DayPhase } from '@/logic/utils/timeUtils';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
 
 export const GYM_DIFFICULTY_IDS = ['easy', 'normal', 'hard'] as const;
 export type GymDifficultyId = (typeof GYM_DIFFICULTY_IDS)[number];
@@ -30,6 +32,9 @@ export interface Gym {
   levels: number[];
   badgesRequired: number;
   difficulties: Record<GymDifficultyId, GymDifficulty>;
+  fixedCycle?: DayPhase;
+  fixedWeather?: WeatherId;
+  weatherEnabled?: boolean;
 }
 
 export const GYMS = [

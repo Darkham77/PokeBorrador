@@ -124,11 +124,17 @@ BEGIN
         RETURN jsonb_build_object('ok', false, 'error', 'Ya premiado recientemente.');
     END IF;
 
-    -- 2. Sort entries (Top 3) by metric (assuming total_ivs for now)
+    -- 2. Sort entries (Top 3) by metric (total_ivs), then shiny advantage, then oldest capture date
     WITH ranked_entries AS (
         SELECT 
             player_id, player_name, player_email, data,
-            ROW_NUMBER() OVER (ORDER BY (COALESCE(data->>'total_ivs', '0'))::int DESC) as rank_num
+            ROW_NUMBER() OVER (
+                ORDER BY 
+                    (COALESCE(data->>'total_ivs', '0'))::int DESC,
+                    (CASE WHEN (COALESCE(data->>'is_shiny', 'false'))::boolean = true THEN 1 ELSE 0 END) DESC,
+                    (COALESCE((data->>'obtained_at')::bigint, 9223372036854775807)) ASC,
+                    submitted_at ASC
+            ) as rank_num
         FROM public.competition_entries
         WHERE event_id = target_event_id
         LIMIT 3

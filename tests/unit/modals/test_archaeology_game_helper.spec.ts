@@ -60,4 +60,14 @@ describe('archaeologyGameHelper', () => {
       expect(getDistanceToNearestFossil(sampleGrid, 2, 2)).toBe(4);
     });
   });
+
+  describe('fossil sprite asset resolution', () => {
+    it('resolves valid asset URLs for all canonical fossil species and items', async () => {
+      const { getAssetUrl, ASSET_TYPES } = await import('@/logic/services/assetService');
+      
+      expect(getAssetUrl(ASSET_TYPES.ITEM, 'domefossil')).toContain('/assets/sprites/crafting/tier0/domefossil.webp');
+      expect(getAssetUrl(ASSET_TYPES.ITEM, 'helixfossil')).toContain('/assets/sprites/crafting/tier0/helixfossil.webp');
+      expect(getAssetUrl(ASSET_TYPES.ITEM, 'oldamber')).toContain('/assets/sprites/crafting/tier0/oldamber.webp');
+    });
+  });
 });

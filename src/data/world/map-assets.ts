@@ -168,3 +168,30 @@ export function requireBattleMapAssetId(value: string): BattleMapAssetId {
   if (isBattleMapAssetId(value)) return value;
   throw new Error(`Invalid battle map asset id: ${value}`);
 }
+
+import type { DayPhase } from '@/logic/utils/timeUtils';
+
+export function getAvailableCyclesForMap(locationId: string): readonly DayPhase[] {
+  if (locationId === 'gym' || locationId === 'pvp') {
+    return ['day'];
+  }
+  if (!isMapRouteId(locationId)) {
+    return ['day'];
+  }
+  const baseName = MAP_ROUTE_MAPPING[locationId];
+  const cycles: DayPhase[] = [];
+  if (AVAILABLE_BATTLE_MAPS.some(id => id === `${baseName}_dia`)) {
+    cycles.push('day');
+  }
+  if (AVAILABLE_BATTLE_MAPS.some(id => id === `${baseName}_noche`)) {
+    cycles.push('night');
+  }
+  if (AVAILABLE_BATTLE_MAPS.some(id => id === `${baseName}_amanecer`)) {
+    cycles.push('morning');
+  }
+  if (AVAILABLE_BATTLE_MAPS.some(id => id === `${baseName}_atardecer`)) {
+    cycles.push('dusk');
+  }
+  return cycles.length > 0 ? cycles : ['day'];
+}
+

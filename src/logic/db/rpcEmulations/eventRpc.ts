@@ -86,20 +86,41 @@ export async function emulateAwardEventAutomated(
       return { data: { ok: false, error: 'Sin participantes.' }, error: null };
     }
 
-    // 2. Parse and rank entries by metric (e.g. data.total_ivs DESC)
+    // 2. Parse and rank entries by metric (e.g. data.total_ivs DESC) with shiny and capture date tiebreakers
     const parsedEntries = rawEntries.map((e) => {
-      const dataObj = typeof e.data === 'string' ? (JSON.parse(e.data) as Record<string, unknown>) : e.data; // open-record
-      const score = Number((dataObj as Record<string, unknown>)?.total_ivs ?? 0); // open-record
+      const dataObj: Record<string, unknown> = typeof e.data === 'string'
+        ? (JSON.parse(e.data) as Record<string, unknown>) // open-record
+        : ((e.data || {}) as Record<string, unknown>); // open-record
+      const score = Number(dataObj.total_ivs ?? 0);
+      const isShiny = Boolean(dataObj.is_shiny ?? dataObj.isShiny);
+      const rawObtainedAt = (dataObj.obtained_at ?? dataObj.obtainedAt) as number | undefined;
+      const obtainedAt = typeof rawObtainedAt === 'number' && !isNaN(rawObtainedAt) && rawObtainedAt > 0 ? rawObtainedAt : Infinity;
       return {
         player_id: e.player_id,
         player_name: e.player_name,
         player_email: e.player_email,
         score,
-        data: (dataObj || {}) as Record<string, unknown> // open-record
+        is_shiny: isShiny,
+        obtained_at: obtainedAt,
+        data: dataObj
       };
     });
 
-    parsedEntries.sort((a, b) => b.score - a.score);
+    parsedEntries.sort((a, b) => {
+      // 1. Primary: Higher score wins
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+      // 2. Tiebreaker 1: Shiny Pokémon takes priority over non-shiny
+      if (a.is_shiny !== b.is_shiny) {
+        return a.is_shiny ? -1 : 1;
+      }
+      // 3. Tiebreaker 2: Older capture date takes priority (smaller timestamp first)
+      if (a.obtained_at !== b.obtained_at) {
+        return a.obtained_at - b.obtained_at;
+      }
+      return 0;
+    });
 
     // Take top 3
     const top3 = parsedEntries.slice(0, 3);

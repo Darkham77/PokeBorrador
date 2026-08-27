@@ -63,6 +63,7 @@
 .sort-group-mini {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 4px;
   background: Rgba(255, 255, 255, 0.03);
   padding: 4px 8px;
@@ -72,13 +73,13 @@
   .mini-sort-btn {
     @include pixelated;
     font-size: 7px;
-    padding: 6px 10px;
+    padding: 6px 8px;
     border-radius: 6px;
     border: 1px solid transparent;
     background: transparent;
     color: var(--gray);
     cursor: pointer;
-    /*  */
+    white-space: nowrap;
 
     &:hover { color: var(--white); background: Rgba(255, 255, 255, 0.05); }
     &.active {

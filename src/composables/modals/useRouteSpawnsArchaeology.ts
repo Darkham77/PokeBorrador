@@ -104,16 +104,16 @@ export function useRouteSpawnsArchaeology(props: RouteSpawnsProps) {
 
       let name = 'Ámbar Viejo'
       let icon = '💎'
-      let sprite = getAssetUrl(ASSET_TYPES.ITEM, 'old_amber')
+      let sprite = getAssetUrl(ASSET_TYPES.ITEM, 'oldamber')
 
       if (id === 'kabuto') {
         name = 'Fósil Domo'
         icon = '🛡'
-        sprite = getAssetUrl(ASSET_TYPES.ITEM, 'dome_fossil')
+        sprite = getAssetUrl(ASSET_TYPES.ITEM, 'domefossil')
       } else if (id === 'omanyte') {
         name = 'Fósil Hélix'
         icon = '🐚'
-        sprite = getAssetUrl(ASSET_TYPES.ITEM, 'helix_fossil')
+        sprite = getAssetUrl(ASSET_TYPES.ITEM, 'helixfossil')
       }
 
       const baseW = relativeRate * baseCategoryWeights.fossil
@@ -155,7 +155,7 @@ export function useRouteSpawnsArchaeology(props: RouteSpawnsProps) {
       name: 'Minerales Comunes',
       type: 'Mineral',
       icon: '🪨',
-      sprite: getAssetUrl(ASSET_TYPES.ITEM, 'iron_ore'),
+      sprite: getAssetUrl(ASSET_TYPES.ITEM, 'ironore'),
       percentage: (activeCategoryWeights.common / activeTotal) * 100,
       basePercentage: (baseCategoryWeights.common / baseTotal) * 100,
       statusClass: 'common',
@@ -171,7 +171,7 @@ export function useRouteSpawnsArchaeology(props: RouteSpawnsProps) {
       name: 'Gemas y Metales Raros',
       type: 'Valioso',
       icon: '🟡',
-      sprite: getAssetUrl(ASSET_TYPES.ITEM, 'diamond_ore'),
+      sprite: getAssetUrl(ASSET_TYPES.ITEM, 'diamondore'),
       percentage: (activeCategoryWeights.rare / activeTotal) * 100,
       basePercentage: (baseCategoryWeights.rare / baseTotal) * 100,
       statusClass: 'exclusive',

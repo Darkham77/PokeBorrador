@@ -14,6 +14,7 @@ import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 import { toPokemonType } from '@/data/battle/types'
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { MoveCategory } from '@/data/battle/moves'
+import { calculateInstancePhysicalData } from '@/logic/pokemon/physicalDimensionsMath'
 
 const MAX_BASE_STAT_VALUE = 255;
 
@@ -200,20 +201,7 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
   const instancePhysicalData = computed(() => {
     const p = targetPokemon.value as (Pokemon & { height?: number, weight?: number }) | undefined
     if (!isInstance.value || !p || !species.value) return null
-    const uid = p.uid || 'def'
-    const getRand = (seed: string, range: number | [number, number] | null) => {
-      if (!range) return '0.0'
-      const min = Array.isArray(range) ? range[0] : range * 0.85
-      const max = Array.isArray(range) ? range[1] : range * 1.15
-      let hash = 0
-      for (let i = 0; i < seed.length; i++) hash = seed.charCodeAt(i) + ((hash << 5) - hash)
-      const normalized = (Math.abs(hash) % 100) / 100
-      return (min + normalized * (max - min)).toFixed(1)
-    }
-    return {
-      height: p.height || getRand(uid + 'h', species.value.height),
-      weight: p.weight || getRand(uid + 'w', species.value.weight)
-    }
+    return calculateInstancePhysicalData(p, species.value)
   })
 
   const captureDateFormatted = computed(() => {

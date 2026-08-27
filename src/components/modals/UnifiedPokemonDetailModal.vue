@@ -20,6 +20,7 @@ import PokemonMovesTab from '@/components/pokemon-detail/PokemonMovesTab.vue'
 import PokemonStatusSection from '@/components/pokemon-detail/PokemonStatusSection.vue'
 import PokemonActionFooter from '@/components/pokemon-detail/PokemonActionFooter.vue'
 import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon'
+import { createSpeciesDimensionTooltip } from '@/logic/pokemon/physicalDimensionsMath'
 
 
 const DEFAULT_SPECIES_RANGE_VARIATION_FACTOR = 0.15;
@@ -318,25 +319,43 @@ const handleReorderMoves = (from: number, to: number) => {
             </PVTooltip>
 
             <PVTooltip
-              title="ALTURA"
-              description="La altura promedio de esta especie de Pokémon."
+              :title="isInstance && instancePhysicalData ? 'ALTURA: ' + instancePhysicalData.height + 'm (' + instancePhysicalData.heightTier.label + ')' : 'ALTURA (ESPECIE)'"
+              :description="isInstance && instancePhysicalData ? instancePhysicalData.heightTooltip : createSpeciesDimensionTooltip('ALTURA', 'm', species.height)"
               position="top"
               tag="div"
               class="info-item"
             >
               <span class="upd-info-label pixelated">ALTURA</span>
-              <span class="ps-info-value pixelated">{{ isInstance && instancePhysicalData ? instancePhysicalData.height + 'm' : formatRange(species.height || undefined, 'm') }}</span>
+              <div class="physical-val-wrapper">
+                <span class="ps-info-value pixelated">{{ isInstance && instancePhysicalData ? instancePhysicalData.height + 'm' : formatRange(species.height || undefined, 'm') }}</span>
+                <span
+                  v-if="isInstance && instancePhysicalData?.heightTier"
+                  class="physical-tier-badge pixelated"
+                  :class="instancePhysicalData.heightTier.cssClass"
+                >
+                  {{ instancePhysicalData.heightTier.label }}
+                </span>
+              </div>
             </PVTooltip>
 
             <PVTooltip
-              title="PESO"
-              description="El peso promedio de esta especie de Pokémon."
+              :title="isInstance && instancePhysicalData ? 'PESO: ' + instancePhysicalData.weight + 'kg (' + instancePhysicalData.weightTier.label + ')' : 'PESO (ESPECIE)'"
+              :description="isInstance && instancePhysicalData ? instancePhysicalData.weightTooltip : createSpeciesDimensionTooltip('PESO', 'kg', species.weight)"
               position="top"
               tag="div"
               class="info-item"
             >
               <span class="upd-info-label pixelated">PESO</span>
-              <span class="ps-info-value pixelated">{{ isInstance && instancePhysicalData ? instancePhysicalData.weight + 'kg' : formatRange(species.weight || undefined, 'kg') }}</span>
+              <div class="physical-val-wrapper">
+                <span class="ps-info-value pixelated">{{ isInstance && instancePhysicalData ? instancePhysicalData.weight + 'kg' : formatRange(species.weight || undefined, 'kg') }}</span>
+                <span
+                  v-if="isInstance && instancePhysicalData?.weightTier"
+                  class="physical-tier-badge pixelated"
+                  :class="instancePhysicalData.weightTier.cssClass"
+                >
+                  {{ instancePhysicalData.weightTier.label }}
+                </span>
+              </div>
             </PVTooltip>
           </div>
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, inject, ref, watch, onUnmounted, type Ref } from 'vue'
 import { gsap } from 'gsap'
-import { getPokemonTier } from '@/logic/pokemon/pokemonUtils'
+import { getPokemonTier, calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -70,18 +70,16 @@ const statColor = computed(() => {
   return 'var(--red)'
 })
 
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { calculateTotalIVs, calculateTotalBaseStats } from '@/logic/pokemon/statsMath'
+import { calculateTotalIVs } from '@/logic/pokemon/statsMath'
 
 const totalIvs = computed(() => {
   if (props.hideStats || !props.pokemon) return 0
   return calculateTotalIVs(props.pokemon.ivs)
 })
 
-const bst = computed(() => {
+const totalPower = computed(() => {
   if (props.hideStats || !props.pokemon) return 0
-  const baseData = pokemonDataProvider.getPokemonData(props.pokemon.id)
-  return calculateTotalBaseStats(baseData)
+  return calculateTotalPower(props.pokemon)
 })
 
 const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === 'S' || tierInfo.value.tier === 'S+'))
@@ -298,12 +296,16 @@ onUnmounted(() => {
         >
           IV {{ totalIvs }}
         </div>
-        <div
+        <PVTooltip
           v-if="!props.hideStats"
-          class="m-badge-tot"
+          title="PODER TOTAL"
+          description="Suma de estadísticas base, IVs genéticos y bonificación de EVs (4 EVs = 1 IV)."
+          position="top"
         >
-          TOT {{ bst + totalIvs }}
-        </div>
+          <div class="m-badge-tot">
+            TOT {{ totalPower }}
+          </div>
+        </PVTooltip>
       </div>
       
       <!-- HP Mini Bar -->

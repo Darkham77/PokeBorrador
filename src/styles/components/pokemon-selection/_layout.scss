@@ -21,13 +21,15 @@ body .selection-container {
 
 
 .ps-sort-btns {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 3px;
   width: 100%;
 
   .ps-sort-wrapper {
-    width: 100%;
+    flex: 1 1 calc(14.28% - 3px);
+    min-width: 44px;
+    max-width: 100%;
   }
 
   button {
@@ -40,6 +42,7 @@ body .selection-container {
     @include pixelated;
     font-size: 7px;
     cursor: pointer;
+    white-space: nowrap;
 
     &.active {
       background: Rgba(255, 215, 0, 0.1);
