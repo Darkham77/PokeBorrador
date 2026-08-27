@@ -250,7 +250,7 @@ export function useNavigationState() {
     }
 
     if (tab === "war-shop") {
-      uiStore.isWarShopOpen = true;
+      modalStore.open("WarShop");
       return;
     }
 

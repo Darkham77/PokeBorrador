@@ -17,6 +17,16 @@ import type { MapRouteId } from '@/data/world/map-assets'
 import type { PokemonType } from '@/data/battle/types'
 import type { DayPhase } from '@/logic/utils/timeUtils'
 
+interface Props {
+  id?: string
+  show?: boolean
+}
+
+withDefaults(defineProps<Props>(), {
+  id: 'debug-weather-tables-modal',
+  show: true
+})
+
 const emit = defineEmits<{
   (e: 'close'): void
 }>()
@@ -194,7 +204,8 @@ function toggleRoute(routeId: MapRouteId) {
 
 <template>
   <BaseModal
-    :show="true"
+    :id="id"
+    :show="show"
     title="TABLAS DE PROBABILIDAD DE CLIMA"
     max-width="900px"
     type="center"

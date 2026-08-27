@@ -132,4 +132,68 @@ describe('EventCard.vue - Participating Pokemon Slot', () => {
     expect(wrapper.find('.slot-enrolled-body').exists()).toBe(true)
     expect(wrapper.text()).toContain('15.5 kg')
   })
+
+  it('rejects submitting the same pokemon into a second sub-competition of the same event', async () => {
+    const multiEvent: GameEvent = {
+      ...competitionEvent,
+      id: 'concurso_multi',
+      config: JSON.stringify({
+        species: 'magikarp',
+        hasCompetition: true,
+        subCompetitions: [
+          { id: 'ivs', name: 'IVs', metric: 'total_ivs', order: 'max' },
+          { id: 'weight', name: 'Peso', metric: 'weight', order: 'max' }
+        ]
+      })
+    }
+
+    const eventStore = useEventStore()
+    const gameStore = useGameStore()
+    const authStore = (await import('@/stores/auth')).useAuthStore()
+    const uiStore = (await import('@/stores/ui')).useUIStore()
+
+    authStore.user = { id: 'player-123', email: 'test@example.com' } as import('@/types/auth/auth').AuthUser
+    gameStore.db = {
+      from: () => ({
+        upsert: () => ({
+          select: () => ({
+            single: () => Promise.resolve({ data: { id: 'entry-1' }, error: null })
+          })
+        })
+      })
+    } as unknown as typeof gameStore.db
+
+    const magikarp = {
+      uid: 'pk-magikarp-shared',
+      id: 'magikarp',
+      name: 'Magikarp',
+      nickname: null,
+      level: 20,
+      isShiny: false,
+      obtainedAt: Temporal.Now.instant().epochMilliseconds,
+      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+      weight: 12.0
+    } as unknown as Pokemon
+
+    gameStore.state.team = [magikarp]
+    // Already registered in 'ivs'
+    eventStore.userEntries[`${multiEvent.id}:ivs`] = {
+      event_id: multiEvent.id,
+      category_id: 'ivs',
+      player_id: 'player-123',
+      pokemon_uid: 'pk-magikarp-shared'
+    }
+
+    let notifyMsg = ''
+    uiStore.notify = (msg: string) => {
+      notifyMsg = msg
+    }
+
+    // Try to register the same pokemon in 'weight' category
+    await eventStore.submitCompetitionEntry(multiEvent.id, 'weight', 'pk-magikarp-shared')
+
+    expect(notifyMsg).toContain('Este Pokémon ya está participando en otra categoría de este evento')
+    expect(eventStore.userEntries[`${multiEvent.id}:weight`]).toBeUndefined()
+  })
 })
+

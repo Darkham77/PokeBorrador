@@ -3,6 +3,7 @@ import { ref, computed, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { useUIStore } from '@/stores/ui'
 import { useWarStore } from '@/stores/war'
+import { useModalStore } from '@/stores/modals'
 import { SHOP_ITEMS } from '@/data/inventory/items'
 import { useGameStore } from '@/stores/game'
 import BaseModal from '@/components/common/BaseModal.vue'
@@ -16,16 +17,24 @@ const uiStore = useUIStore()
 const warStore = useWarStore()
 const gameStore = useGameStore()
 
-const WAR_SHOP_CARD_INITIAL_OPACITY = 0;
-const WAR_SHOP_CARD_INITIAL_Y_OFFSET = 15;
-const WAR_SHOP_CARD_INITIAL_SCALE = 0.95;
-
+const WAR_SHOP_CARD_INITIAL_OPACITY = 0
+const WAR_SHOP_CARD_INITIAL_Y_OFFSET = 15
+const WAR_SHOP_CARD_INITIAL_SCALE = 0.95
 const WAR_SHOP_GRID_ANIM_STAGGER_SEC = 0.02
 
-const isOpen = computed({
-  get: () => uiStore.isWarShopOpen,
-  set: (val: boolean) => { uiStore.isWarShopOpen = val }
+interface Props {
+  id?: string
+  show?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  id: 'war-shop-modal',
+  show: true
 })
+
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
 
 const isSmallScreen = computed(() => uiStore.isSmallScreen)
 
@@ -113,7 +122,7 @@ watch([activeTab, search], () => {
   animateGrid()
 })
 
-watch(() => isOpen.value, (val) => {
+watch(() => props.show, (val) => {
   if (val) {
     activeTab.value = 'todos'
     search.value = ''
@@ -122,16 +131,16 @@ watch(() => isOpen.value, (val) => {
 })
 
 const closeWarShop = () => {
-  isOpen.value = false
+  emit('close')
 }
 
 // Shim for legacy code
 if (typeof window !== 'undefined') {
   Reflect.set(window, 'showWarShop', () => {
-    isOpen.value = true
+    useModalStore().open('WarShop')
   })
   Reflect.set(window, 'closeWarShop', () => {
-    isOpen.value = false
+    useModalStore().close('WarShop')
   })
   Reflect.set(window, 'renderWarShop', () => {
     // No-op, Vue handles reactivity
@@ -141,7 +150,8 @@ if (typeof window !== 'undefined') {
 
 <template>
   <BaseModal
-    :show="isOpen"
+    :id="id"
+    :show="show"
     :type="isSmallScreen ? 'fullscreen' : 'center'"
     :max-width="isSmallScreen ? '100dvw' : '900px'"
     variant="retro"

@@ -295,6 +295,10 @@ const scheduleText = computed(() => {
         <div class="section-tag">
           🏆 SUB-COMPETENCIAS Y PREMIOS
         </div>
+        <div class="sub-comp-rule-note">
+          <span class="note-icon">⚠️</span>
+          <span>Cada Pokémon solo puede participar en una única categoría por evento.</span>
+        </div>
         <div class="sub-competitions-container">
           <div 
             v-for="sub in subCompetitions" 
@@ -546,6 +550,24 @@ const scheduleText = computed(() => {
     background: Rgba(34, 197, 94, 0.1);
     border-color: Rgba(34, 197, 94, 0.2);
     color: Rgba(74, 222, 128, 1);
+  }
+}
+
+.sub-comp-rule-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: Rgba(234, 179, 8, 0.08);
+  border: 1px dashed Rgba(234, 179, 8, 0.3);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 10px;
+  color: Rgba(253, 224, 71, 0.95);
+  line-height: 1.3;
+  margin-bottom: 4px;
+
+  .note-icon {
+    font-size: 12px;
   }
 }
 

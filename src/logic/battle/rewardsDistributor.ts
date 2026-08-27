@@ -22,6 +22,7 @@ import { getBattleRewardModifiers } from '@/logic/war/bonusEngine'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon, Move, PokemonStatKey } from '@/types/pokemon/pokemon'
 import { useUIStore } from '@/stores/ui'
+import { useModalStore } from '@/stores/modals'
 import { getItemById, requireItemId, type ItemId } from '@/data/inventory/items'
 import { incrementRecordKey } from '@/logic/utils/mapUtils'
 import { BUFF_DURATION_30_MIN_SEC } from '@/logic/constants/items'
@@ -446,8 +447,9 @@ const SECONDS_TO_MS_MULTIPLIER = 1000
         if (targetId) {
           const uiStore = useUIStore()
           uiStore.startEvolution(p, targetId, '')
+          const modalStore = useModalStore()
           // Esperar síncronamente mientras el modal de evolución esté abierto
-          while (uiStore.isEvolutionOpen) {
+          while (modalStore.isOpen('Evolution')) {
             await gsapSleep(100)
           }
         }
@@ -553,8 +555,9 @@ export async function awardDebugExp(ctx: BattleContext) {
         if (targetId) {
           const uiStore = useUIStore()
           uiStore.startEvolution(teamPoke, targetId, '')
+          const modalStore = useModalStore()
           // Esperar síncronamente mientras el modal de evolución esté abierto
-          while (uiStore.isEvolutionOpen) {
+          while (modalStore.isOpen('Evolution')) {
             await gsapSleep(100)
           }
         }

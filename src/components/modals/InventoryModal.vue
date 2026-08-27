@@ -26,12 +26,14 @@ import InventoryQuantityModal from './inventory/InventoryQuantityModal.vue'
 import InventoryActionMenu from './inventory/InventoryActionMenu.vue'
 
 interface Props { 
+  id?: string
   show?: boolean
   battleMode?: boolean
   initialCategory?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  id: 'inventory',
   show: false,
   battleMode: false,
   initialCategory: null
@@ -158,6 +160,11 @@ watch(() => props.battleMode
   ? [battleActiveCategory.value, battleSearchQuery.value, battleActiveMainTab.value]
   : [inventoryStore.activeCategory, inventoryStore.searchQuery, activeMainTab.value], 
   async ([newCat]) => {
+    if (!props.show) {
+      lastCategory.value = newCat as string
+      displayedItems.value = [...filteredItems.value]
+      return
+    }
     const gridEl = document.querySelector('.inventory-grid-wrapper')
     if (gridEl) {
       isCategorySwitching.value = true
@@ -419,6 +426,7 @@ const { onBeforeEnter, onEnter, onLeave } = useGridTransitions(isCategorySwitchi
 
 <template>
   <BaseModal
+    :id="id || 'inventory'"
     :show="show"
     :type="isSmallScreen ? 'fullscreen' : 'center'"
     :max-width="isSmallScreen ? '100dvw' : modalWidth"

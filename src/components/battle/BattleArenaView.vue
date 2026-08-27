@@ -416,35 +416,36 @@ watch(() => battleStore.isBattleActive, (active) => {
             :hidden="isPlayerTechnicalHidden && p.uid === player?.uid"
             :has-seat="true"
           />
-          <!-- Globo de diálogo en la zona del jugador (P1 ANCHOR) -->
-          <BattleTrainerSpeechBubble
-            :position="p1Pos"
-            :base-size="BASE_ENTITY_SIZE_PLAYER"
-            :visible="!!((battle?.isTrainer || battle?.isGym) && (
-              (battleStore.currentFsmState === 'FIRST_INTRO' && (
-                battleStore.currentSubState === 'SHOW_DIALOGS'
-              )) ||
-              (battleStore.currentFsmState === 'SEARCH_PHASE' && (
-                battleStore.currentSubState === 'COMBAT_OR_FLEE'
-              ))
-            ))"
-            :trainer-name="battle?.trainerName || 'Entrenador'"
-            :dialog-text="trainerDialogText"
-          />
         </div>
+
+        <!-- Atmósfera (Clima: por encima de los Pokémon pero por debajo del cartel / diálogo) -->
+        <AtmosphereLayer
+          :weather="computedWeather"
+          :cycle="effectiveCycle"
+          :season="currentWeatherSeason"
+          :is-performance-mode="uiStore.isPerformanceMode"
+          :z-index="'calc(var(--z-base) + 20)'"
+          :anim-seed="atmosphereSeed"
+          :is-visible="isAtmosphereLayerVisible"
+        />
+
+        <!-- Globo de diálogo en la zona del jugador (P1 ANCHOR) - Por encima del clima, mismo que el HUD -->
+        <BattleTrainerSpeechBubble
+          :position="p1Pos"
+          :base-size="BASE_ENTITY_SIZE_PLAYER"
+          :visible="!!((battle?.isTrainer || battle?.isGym) && (
+            (battleStore.currentFsmState === 'FIRST_INTRO' && (
+              battleStore.currentSubState === 'SHOW_DIALOGS'
+            )) ||
+            (battleStore.currentFsmState === 'SEARCH_PHASE' && (
+              battleStore.currentSubState === 'COMBAT_OR_FLEE'
+            ))
+          ))"
+          :trainer-name="battle?.trainerName || 'Entrenador'"
+          :dialog-text="trainerDialogText"
+        />
       </VirtualSpace>
     </div>
-
-    <!-- Atmósfera -->
-    <AtmosphereLayer
-      :weather="computedWeather"
-      :cycle="effectiveCycle"
-      :season="currentWeatherSeason"
-      :is-performance-mode="uiStore.isPerformanceMode"
-      :z-index="'calc(var(--z-base) + 20)'"
-      :anim-seed="atmosphereSeed"
-      :is-visible="isAtmosphereLayerVisible"
-    />
 
     <!-- HUD Genérico (4-Seat Compatible) -->
     <BattleArenaHud

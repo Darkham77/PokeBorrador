@@ -281,6 +281,14 @@ const initWeatherAnim = () => {
   initSandstormAnim(w, animSeed.value, props.isLowPower, speedVar)
 }
 
+const hasActiveWeather = computed(() => {
+  return !!props.weather && props.weather !== 'clear' && props.weather !== 'none' && props.weather !== 'null'
+})
+
+const shouldRenderAtmosphere = computed<boolean>(() => {
+  return props.isVisible && !props.isPerformanceMode && !props.isLocked && hasActiveWeather.value
+})
+
 const cleanUpAtmosphere = () => {
   if (atmosphereContext) {
     atmosphereContext.revert()
@@ -294,7 +302,7 @@ const cleanUpAtmosphere = () => {
 const initAtmosphere = () => {
   cleanUpAtmosphere()
   
-  if (!props.isVisible || props.isPerformanceMode || props.isLocked || props.weather === 'clear') {
+  if (!shouldRenderAtmosphere.value) {
     return
   }
 
@@ -305,18 +313,12 @@ const initAtmosphere = () => {
 }
 
 watch(
-  [
-    () => props.isVisible,
-    () => props.weather,
-    () => props.isLowPower,
-    () => props.isPerformanceMode,
-    () => props.animSeed
-  ],
-  async ([visible, , , perfMode]) => {
-    if (visible && !perfMode) {
+  [shouldRenderAtmosphere, () => props.weather, () => props.animSeed, () => props.isLowPower],
+  async ([shouldRender]) => {
+    if (shouldRender) {
       await nextTick()
       await nextTick()
-      if (props.isVisible && !props.isPerformanceMode) {
+      if (shouldRenderAtmosphere.value) {
         initAtmosphere()
       }
     } else {
@@ -327,10 +329,10 @@ watch(
 )
 
 onMounted(async () => {
-  if (props.isVisible && !props.isPerformanceMode) {
+  if (shouldRenderAtmosphere.value) {
     await nextTick()
     await nextTick()
-    if (props.isVisible && !props.isPerformanceMode) {
+    if (shouldRenderAtmosphere.value) {
       initAtmosphere()
     }
   }
@@ -394,8 +396,7 @@ const weatherOverlayStyles = computed(() => {
     :style="{ zIndex: zIndex }"
   >
     <div
-      v-if="!isPerformanceMode && weather !== 'clear' && !isLocked"
-      v-show="isVisible"
+      v-show="shouldRenderAtmosphere"
       class="weather-overlay"
       :class="[weather, props.cycle, { 'is-performance': isPerformanceMode }]"
       :style="weatherOverlayStyles"

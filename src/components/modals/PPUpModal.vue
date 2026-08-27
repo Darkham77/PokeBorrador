@@ -66,13 +66,26 @@ const handleApplyPPUp = (moveIndex: number) => {
   // Consume item only after a move is successfully chosen
   inventoryStore.removeItem(itemId, 1)
 
-  uiStore.isPPUpOpen = false
-  uiStore.activePokemonForPPUp = null
-  uiStore.activeItemForPPUp = null
+  close()
   gameStore.save()
 }
 
+interface Props {
+  id?: string
+  show?: boolean
+}
+
+withDefaults(defineProps<Props>(), {
+  id: 'pp-up-modal',
+  show: true
+})
+
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
+
 const close = () => {
+  emit('close')
   uiStore.isPPUpOpen = false
   uiStore.activeItemForPPUp = null
   uiStore.activePokemonForPPUp = null
@@ -81,7 +94,8 @@ const close = () => {
 
 <template>
   <BaseModal
-    :show="true"
+    :id="id"
+    :show="show"
     :title="isPPMax ? 'MÁXIMO PP' : 'SUBIDA DE PP'"
     title-color="rgba(96, 165, 250, 1)"
     header-background="rgba(26, 26, 46, 1)"

@@ -12,6 +12,7 @@ import {
   resolveSubCompetitionDirection, 
   evaluatePokemonForSubCompetition, 
   getEligiblePokemonForSubCompetition, 
+  isPokemonEnrolledInOtherSubCompetition,
   type Event as GameEvent, 
   type EventConfig,
   type SubCompetitionConfig
@@ -230,11 +231,12 @@ const openParticipationModal = (sub: SubCompetitionConfig) => {
   const box = (gameStore.state.box || []) as (Pokemon | null)[]
   const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null)
   
-  // Pre-filter candidate Pokémon strictly using isPokemonEligibleForSubCompetition
+  // Pre-filter candidate Pokémon strictly using isPokemonEligibleForSubCompetition and exclude already enrolled in other categories
   const eligible = getEligiblePokemonForSubCompetition(props.event, sub, allPokes, getServerInstant())
+    .filter(p => !isPokemonEnrolledInOtherSubCompetition(eventStore.userEntries, props.event.id, sub.id, p.uid))
 
   if (eligible.length === 0) {
-    uiStore.notify(`No tienes ningún Pokémon capturado durante el evento para: ${getSubCompTitle(sub)}`, '⚠️')
+    uiStore.notify(`No tienes ningún Pokémon disponible para: ${getSubCompTitle(sub)} (los ya inscritos en otra categoría no pueden repetir)`, '⚠️')
     return
   }
 

@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useUIStore } from '@/stores/ui'
+import { useModalStore } from '@/stores/modals'
 import PVHUDButton from '@/components/common/PVHUDButton.vue'
 const uiStore = useUIStore()
+const modalStore = useModalStore()
 </script>
 
 <template>
@@ -11,7 +13,7 @@ const uiStore = useUIStore()
   >
     <PVHUDButton
       id="hud-profile-btn"
-      :active="uiStore.isProfileOpen"
+      :active="modalStore.isOpen('Profile')"
       @click.stop="uiStore.toggleProfile()"
     >
       <template #icon>
@@ -22,7 +24,7 @@ const uiStore = useUIStore()
 
     <PVHUDButton
       id="hud-settings-btn"
-      :active="uiStore.isSettingsOpen"
+      :active="modalStore.isOpen('Settings')"
       @click.stop="uiStore.toggleSettings()"
     >
       <template #icon>
@@ -33,7 +35,7 @@ const uiStore = useUIStore()
 
     <PVHUDButton
       id="hud-library-btn"
-      :active="uiStore.isLibraryOpen"
+      :active="modalStore.isOpen('Library')"
       @click.stop="uiStore.toggleLibrary()"
     >
       <template #icon>

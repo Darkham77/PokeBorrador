@@ -35,8 +35,7 @@ const handleApplyAbility = (ability: AbilityId) => {
   // Consume only after confirming
   inventoryStore.removeItem('abilitypill', 1)
   uiStore.notify(`¡Habilidad cambiada: ${old} → ${ability}!`, '💊')
-  uiStore.isAbilityPillOpen = false
-  uiStore.activePokemonForAbility = null
+  close()
   gameStore.save()
 }
 
@@ -76,7 +75,22 @@ const onBtnLeave = (event: MouseEvent, isActive: boolean) => {
   })
 }
 
+interface Props {
+  id?: string
+  show?: boolean
+}
+
+withDefaults(defineProps<Props>(), {
+  id: 'ability-pill-modal',
+  show: true
+})
+
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
+
 const close = () => {
+  emit('close')
   uiStore.isAbilityPillOpen = false
   uiStore.activePokemonForAbility = null
 }
@@ -84,7 +98,8 @@ const close = () => {
 
 <template>
   <BaseModal
-    :show="true"
+    :id="id"
+    :show="show"
     title="PÍLDORA DE HABILIDAD"
     title-color="rgba(244, 114, 174, 1)"
     header-background="rgba(26, 28, 46, 1)"

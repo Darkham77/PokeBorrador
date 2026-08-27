@@ -2,6 +2,8 @@
 import BaseModal from '@/components/common/BaseModal.vue'
 
 interface Props {
+  id?: string
+  show?: boolean
   number: number
   type?: string
   variant?: string
@@ -17,6 +19,8 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
+  id: 'debug-stack-test-modal',
+  show: true,
   type: 'center',
   variant: 'modern',
   hideHeader: false,
@@ -37,7 +41,8 @@ const emit = defineEmits<{
 
 <template>
   <BaseModal
-    :show="true"
+    :id="id"
+    :show="show"
     :title="`MODAL TEST #${number}`"
     :type="type"
     :variant="variant"

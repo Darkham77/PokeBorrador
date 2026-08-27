@@ -17,13 +17,25 @@ interface NickStyle {
   requiredFaction?: string
 }
 
+interface Props {
+  id?: string
+  show?: boolean
+}
+
+withDefaults(defineProps<Props>(), {
+  id: 'cosmetics-modal',
+  show: true
+})
+
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
+
 const uiStore = useUIStore()
 const cosmeticsStore = useCosmeticsStore()
 const profileStore = useProfileStore()
 const gameStore = useGameStore()
 const authStore = useAuthStore()
-
-const isOpen = computed(() => uiStore.isCosmeticsModalOpen)
 
 const previewUsername = computed(() => {
   const pName = profileStore.profileData.username
@@ -32,7 +44,7 @@ const previewUsername = computed(() => {
 })
 
 const closeCosmetics = () => {
-  uiStore.isCosmeticsModalOpen = false
+  emit('close')
 }
 
 // Check if the current context is local development
@@ -96,7 +108,8 @@ const NICK_STYLE_REQUIRED_CLASS_LEVEL = 25
 
 <template>
   <BaseModal
-    :show="isOpen"
+    :id="id"
+    :show="show"
     title="VESTIDOR COSMÉTICO"
     max-width="650px"
     :z-index="12000"

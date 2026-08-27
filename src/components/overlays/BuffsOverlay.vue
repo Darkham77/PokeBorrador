@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useBuffsStore } from '@/stores/battle/buffs'
+import { useBuffsStore, type ActiveBuffItem } from '@/stores/battle/buffs'
+import { useModalStore } from '@/stores/modals'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const buffsStore = useBuffsStore()
+const modalStore = useModalStore()
 
 onMounted(() => {
   buffsStore.initTick()
@@ -24,6 +26,12 @@ const formatTime = (secs: number) => {
 const handleImgError = (e: Event) => {
   (e.target as HTMLImageElement).style.display = 'none'
 }
+
+const handleBadgeClick = (buff: ActiveBuffItem) => {
+  if (buff.isEvent && buff.event) {
+    modalStore.open('EventDetail', { event: buff.event })
+  }
+}
 </script>
 
 <template>
@@ -36,15 +44,26 @@ const handleImgError = (e: Event) => {
       <PVTooltip 
         v-for="buff in buffsStore.activeBuffs" 
         :key="buff.id" 
-        :title="`${buff.name} — ${buff.desc}`"
+        :title="buff.isEvent ? `📅 EVENTO: ${buff.name} — ${buff.desc} (Haz clic para ver detalles)` : `${buff.name} — ${buff.desc}`"
       >
-        <div class="buff-badge">
-          <img
-            :src="buff.icon"
-            :alt="buff.name"
-            class="buff-icon"
-            @error="handleImgError"
-          >
+        <div 
+          :id="`buff-badge-${buff.id}`"
+          :class="['buff-badge', { 'is-event-badge': buff.isEvent }]"
+          @click.stop="handleBadgeClick(buff)"
+        >
+          <div class="buff-icon-slot">
+            <span 
+              v-if="buff.isEmoji" 
+              class="buff-emoji"
+            >{{ buff.icon }}</span>
+            <img
+              v-else
+              :src="buff.icon"
+              :alt="buff.name"
+              class="buff-icon"
+              @error="handleImgError"
+            >
+          </div>
           <div class="buff-info">
             <span class="buff-time">{{ formatTime(buff.secs) }}</span>
           </div>
@@ -72,12 +91,14 @@ const handleImgError = (e: Event) => {
 }
 
 .buff-badge {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  height: 36px;
+  box-sizing: border-box;
   background: Rgba(0, 0, 0, 0.9);
   border: 1.5px solid var(--yellow, #ffd93d);
   border-radius: 12px;
-  padding: 6px 10px;
+  padding: 0 10px;
   pointer-events: auto; /* Tooltip needs pointer */
   @include gpu-layer;
   box-shadow: 0 4px 6px Rgba(0,0,0,0.3);
@@ -91,20 +112,56 @@ const handleImgError = (e: Event) => {
     box-shadow: 0 0 0 1px var(--yellow, #ffd93d);
     transform: Translatex(4px);
   }
+
+  &.is-event-badge {
+    cursor: pointer;
+
+    &:hover {
+      border-color: #ffe066;
+      box-shadow: 0 0 8px Rgba(255, 217, 61, 0.5);
+      transform: Translatex(4px);
+    }
+  }
+}
+
+.buff-icon-slot {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.buff-emoji {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", sans-serif;
+  font-size: 22px;
+  line-height: 1;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  filter: Drop-Shadow(0 2px 3px Rgba(0, 0, 0, 0.6));
+  user-select: none;
+  transform: Translatey(-2px);
 }
 
 .buff-icon {
   width: 24px;
   height: 24px;
   @include sprite-render;
-  margin-right: 8px;
+  object-fit: contain;
   will-change: transform, filter, opacity;
   filter: Drop-Shadow(0 2px 2px Rgba(0,0,0,0.5));
 }
 
 .buff-info {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: center;
 }
 
@@ -121,7 +178,8 @@ const handleImgError = (e: Event) => {
   color: var(--yellow, #ffd93d);
   font-size: 12px;
   font-weight: 700;
-  margin-top: 2px;
+  @include pixelated;
+  line-height: 1;
 }
 
 /* Transitions */
@@ -135,3 +193,5 @@ const handleImgError = (e: Event) => {
   transform: Translatex(-30px);
 }
 </style>
+
+

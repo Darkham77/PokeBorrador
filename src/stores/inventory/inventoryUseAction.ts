@@ -1,6 +1,7 @@
 import { useGameStore } from '@/stores/game.ts';
 import { useUIStore } from '@/stores/ui.ts';
 import { useBattleStore } from '@/stores/battle/battle.ts';
+import { useModalStore } from '@/stores/modals.ts';
 import { itemEffects as ITEM_EFFECTS, getDynamicItemEffect } from '@/logic/items/itemEffects';
 import { isGlobalItem } from '@/logic/providers/itemProvider.ts';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
@@ -94,7 +95,7 @@ export function executeUseItem(
 
     if (result.resultType === 'relearner') {
       uiStore.activePokemonForRelearner = pokemon;
-      uiStore.isMoveRelearnerOpen = true;
+      useModalStore().open('MoveRelearner');
       shouldConsumeImmediately = false; // Handled by MoveRelearnerModal
     } else if (result.resultType === 'evolution') {
       if (!result.targetId) throw new Error(`[executeUseItem] Evolution item ${itemId} did not provide a target species id.`);
@@ -129,16 +130,16 @@ export function executeUseItem(
       }
     } else if (result.resultType === 'nature_patch') {
       uiStore.activePokemonForNature = context !== null && index !== null ? { context: context as PokemonStorageLocation, index } : null;
-      uiStore.isNaturePatchOpen = true;
+      useModalStore().open('NaturePatch');
       shouldConsumeImmediately = false; // Handled by NaturePatchModal on confirm
     } else if (result.resultType === 'pp_up' || result.resultType === 'ppmax') {
       uiStore.activePokemonForPPUp = context !== null && index !== null ? { context: context as PokemonStorageLocation, index } : null;
       uiStore.activeItemForPPUp = itemId;
-      uiStore.isPPUpOpen = true;
+      useModalStore().open('PPUp');
       shouldConsumeImmediately = false; // Handled by PPUpModal on confirm
     } else if (result.resultType === 'ability_pill') {
       uiStore.activePokemonForAbility = context !== null && index !== null ? { context: context as PokemonStorageLocation, index } : null;
-      uiStore.isAbilityPillOpen = true;
+      useModalStore().open('AbilityPill');
       shouldConsumeImmediately = false; // Handled by AbilityPillModal on confirm
     }
 

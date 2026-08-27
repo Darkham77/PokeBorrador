@@ -735,3 +735,26 @@ export function getEligiblePokemonForSubCompetition(
     .filter((p): p is Pokemon => p !== null && p !== undefined)
     .filter(p => isPokemonEligibleForSubCompetition(event, subComp, p, date).eligible);
 }
+
+/**
+ * Checks whether a given Pokémon UID is already registered in another sub-competition of the same event.
+ */
+export function isPokemonEnrolledInOtherSubCompetition(
+  userEntries: Record<string, { event_id?: string; category_id?: string; pokemon_uid?: string } | undefined>,
+  eventId: string,
+  categoryId: string,
+  pokemonUid: string
+): boolean {
+  if (!userEntries || !pokemonUid) return false;
+  for (const entry of Object.values(userEntries)) {
+    if (!entry) continue;
+    if (entry.event_id === eventId && entry.pokemon_uid === pokemonUid) {
+      const entryCategory = entry.category_id || 'ivs';
+      if (entryCategory !== categoryId) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+

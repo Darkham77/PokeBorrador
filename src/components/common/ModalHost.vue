@@ -33,6 +33,7 @@ const blockingModalIndex = computed(() => {
     -->
     <ModalHierarchyProvider
       v-for="(modal, index) in modalStore.stack"
+      :id="modal.id"
       :key="modal.id"
       :is-top="modal.id === topActiveModalId"
       :is-simplified="Number(index) < blockingModalIndex"

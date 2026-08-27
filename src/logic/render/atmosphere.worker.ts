@@ -262,6 +262,8 @@ self.onmessage = async (event: MessageEvent) => {
   switch (type) {
     case 'INIT': {
       canvas = payload.canvas || null;
+      isPaused = false;
+      lastTime = performance.now();
       if (canvas) {
         ctx = canvas.getContext('2d');
         if (payload.noise1 && ctx) {

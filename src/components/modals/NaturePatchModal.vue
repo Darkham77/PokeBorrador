@@ -32,8 +32,7 @@ const handleApplyNature = (nature: NatureId) => {
     }
     // Consume only after confirming
     inventoryStore.removeItem('naturepatch', 1)
-    uiStore.isNaturePatchOpen = false
-    uiStore.activePokemonForNature = null
+    close()
     gameStore.save()
   })
 }
@@ -67,7 +66,22 @@ const onBtnLeave = (event: MouseEvent, isActive: boolean) => {
   })
 }
 
+interface Props {
+  id?: string
+  show?: boolean
+}
+
+withDefaults(defineProps<Props>(), {
+  id: 'nature-patch-modal',
+  show: true
+})
+
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
+
 const close = () => {
+  emit('close')
   uiStore.isNaturePatchOpen = false
   uiStore.activePokemonForNature = null
 }
@@ -75,7 +89,8 @@ const close = () => {
 
 <template>
   <BaseModal
-    :show="true"
+    :id="id"
+    :show="show"
     title="PARCHE DE NATURALEZA"
     title-color="rgba(74, 222, 128, 1)"
     header-background="rgba(26, 26, 46, 1)"

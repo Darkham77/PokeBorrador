@@ -1,20 +1,38 @@
 import { defineStore } from 'pinia'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game.ts'
+import { useEventStore } from '@/stores/events.ts'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { ToolQualityTier } from '@/types/system/game'
 import { isItemId, type ItemId } from '@/data/inventory/items'
+import { getEventCurrentWindow, type Event as GameEvent } from '@/logic/events/eventEngine'
+import { getServerTime, getServerInstant } from '@/logic/utils/timeUtils'
+
+export interface ActiveBuffItem {
+  id: string
+  secs: number
+  name: string
+  desc: string
+  icon: string
+  isEmoji?: boolean
+  tier?: ToolQualityTier
+  isEvent?: boolean
+  event?: GameEvent
+}
 
 export const useBuffsStore = defineStore('buffs', () => {
   const gameStore = useGameStore()
+  const eventStore = useEventStore()
   
+  const currentTick = ref(0)
   let tickInterval: gsap.core.Tween | null = null
 
   function initTick() {
     if (tickInterval) tickInterval.kill()
     
     const tick = () => {
+      currentTick.value++
       // Pause timers if player is in an active battle
       if (gameStore.state.battle && !gameStore.state.battle.over) {
         tickInterval = gsap.delayedCall(1, tick)
@@ -116,12 +134,45 @@ export const useBuffsStore = defineStore('buffs', () => {
     gameStore.save(false)
   }
 
-  const activeBuffs = computed(() => {
+  const activeBuffs = computed<ActiveBuffItem[]>(() => {
+    void currentTick.value
     const s = gameStore.state
-    const list = []
+    const list: ActiveBuffItem[] = []
     const BUFF_DURATION_MIN = 20
     const LUCKY_EGG_EXP_BOOST_PCT = 50
     const BUFF_DURATION_30_MIN_MIN = 30
+    const INFINITE_EVENT_SECS_FALLBACK = 86400
+
+    // 1. Active global events with countdown clocks
+    const nowMs = getServerTime()
+    const nowInstant = getServerInstant()
+    for (const ev of eventStore.activeEvents) {
+      const window = getEventCurrentWindow(ev, nowInstant)
+      let secsLeft = 0
+      if (window) {
+        secsLeft = Math.max(0, Math.floor((window.end.epochMilliseconds - nowMs) / 1000))
+      } else if (ev.end_at) {
+        try {
+          const endInstant = Temporal.Instant.from(ev.end_at)
+          secsLeft = Math.max(0, Math.floor((endInstant.epochMilliseconds - nowMs) / 1000))
+        } catch {
+          secsLeft = 0
+        }
+      } else if (ev.manual) {
+        secsLeft = INFINITE_EVENT_SECS_FALLBACK
+      }
+
+      list.push({
+        id: `event_${ev.id}`,
+        secs: secsLeft,
+        name: ev.name,
+        desc: ev.description || '¡Evento especial activo!',
+        icon: ev.icon || '🎁',
+        isEmoji: true,
+        isEvent: true,
+        event: ev
+      })
+    }
 
     if (s.repelSecs > 0) list.push({ id: 'repel', secs: s.repelSecs, name: 'Repelente', desc: 'Aleja Pokémon salvajes de nivel inferior al tuyo.', icon: getAssetUrl(ASSET_TYPES.ITEM, 'repel') })
     if (s.fishingRodSecs > 0) {
@@ -223,3 +274,4 @@ export const useBuffsStore = defineStore('buffs', () => {
 
   return { initTick, addBuff, activeBuffs }
 })
+

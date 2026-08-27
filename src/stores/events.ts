@@ -16,6 +16,7 @@ import {
   getDefaultSubCompetitions,
   evaluatePokemonForSubCompetition,
   isPokemonEligibleForSubCompetition,
+  isPokemonEnrolledInOtherSubCompetition,
   type Event as GameEvent 
 } from '@/logic/events/eventEngine'
 import { getServerTime } from '@/logic/utils/timeUtils'
@@ -163,6 +164,11 @@ export const useEventStore = defineStore('events', () => {
       
       if (!pokemon) {
         uiStore.notify('Pokémon no encontrado.', '⚠️')
+        return
+      }
+
+      if (isPokemonEnrolledInOtherSubCompetition(userEntries.value, eventId, categoryId, pokemonUid)) {
+        uiStore.notify('Este Pokémon ya está participando en otra categoría de este evento.', '⚠️')
         return
       }
 

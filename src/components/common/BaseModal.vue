@@ -151,6 +151,7 @@ const MODAL_ANIM_INITIAL_Y_OFFSET = 20
 const uiStore = useUIStore()
 const modalStore = useModalStore()
 const isSimplified = inject<Ref<boolean>>('isModalPerformanceMode', ref(false))
+const injectedModalId = inject<string | null>('modalId', null)
 
 defineOptions({
   inheritAttrs: false
@@ -288,11 +289,13 @@ const onContentEnter = (el: Element, done: () => void) => {
     fromVars.y = MODAL_ANIM_INITIAL_Y_OFFSET
   }
 
+  const resolvedId = props.id || injectedModalId || ''
+
   gsap.fromTo(el, fromVars, {
     ...toVars,
     onComplete: () => {
       done()
-      modalStore.finishOpening(props.id)
+      modalStore.finishOpening(resolvedId)
     }
   })
 }
@@ -316,11 +319,13 @@ const onContentLeave = (el: Element, done: () => void) => {
     toVars.y = MODAL_ANIM_INITIAL_Y_OFFSET
   }
 
+  const resolvedId = props.id || injectedModalId || ''
+
   gsap.to(el, {
     ...toVars,
     onComplete: () => {
       done()
-      modalStore.finalizeClose(props.id)
+      modalStore.finalizeClose(resolvedId)
       if (!props.show) localShow.value = false
     }
   })
