@@ -172,6 +172,7 @@ Before writing or updating any rule, manual, or architectural lesson, consult th
 - [UI/UX Standards](./references/core/ui_ux_standards.md)
 - [Stat Stages](./references/systems/stat-stages.md)
 - [Base Stat Mechanics](./references/systems/stats.md)
+- [Friendship & Happiness Mechanics](./references/systems/friendship_mechanics_manual.md)
 - [EVs, Natures & Math](./references/systems/evs-natures-and-math.md)
 - [EV Mechanics Manual](./references/systems/ev_mechanics_manual.md)
 - [Evolution Manual](./references/systems/evolution_manual.md)
