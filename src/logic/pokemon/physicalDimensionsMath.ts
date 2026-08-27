@@ -10,8 +10,25 @@
  * @module physicalDimensionsMath
  */
 
-import { pokemonDataProvider } from '../providers/pokemonDataProvider';
-import type { Pokemon } from '../../types/pokemon/pokemon';
+import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
+import type { Pokemon } from '../../types/pokemon/pokemon.ts';
+
+/** FNV-1a 32-bit offset basis. */
+const FNV1A_OFFSET_BASIS = 2166136261;
+/** FNV-1a 32-bit prime. */
+const FNV1A_PRIME_MULTIPLIER = 16777619;
+/** Mulberry32 state adder constant (golden ratio fraction). */
+const MULBERRY_INCREMENT_STEP = 0x6d2b79f5;
+/** Mulberry32 initial bitshift for mix step. */
+const MULBERRY_BITSHIFT_INITIAL = 15;
+/** Mulberry32 secondary bitshift for mix step. */
+const MULBERRY_BITSHIFT_SECONDARY = 7;
+/** Mulberry32 final bitshift for output normalization. */
+const MULBERRY_BITSHIFT_OUTPUT = 14;
+/** Mulberry32 linear congruential multiplier constant. */
+const MULBERRY_MIX_MULTIPLIER = 61;
+/** Mulberry32 normalization factor (2^32 divisor). */
+const MULBERRY_NORMALIZATION_DIVISOR = 4294967296;
 
 /** Default variation factor (+/- 15% from base). */
 export const DEFAULT_SPECIES_RANGE_VARIATION_FACTOR = 0.15;
@@ -96,10 +113,10 @@ export const TIER_CONFIGS: Record<PhysicalDimensionTierId, PhysicalDimensionTier
  * Deterministic and uniform.
  */
 export function hashStringTo32Bit(seed: string): number {
-  let h = 2166136261 >>> 0; // FNV-1a 32-bit offset basis
+  let h = FNV1A_OFFSET_BASIS >>> 0;
   for (let i = 0; i < seed.length; i++) {
     h ^= seed.charCodeAt(i);
-    h = Math.imul(h, 16777619) >>> 0; // FNV-1a prime
+    h = Math.imul(h, FNV1A_PRIME_MULTIPLIER) >>> 0;
   }
   return h;
 }
@@ -111,10 +128,10 @@ export function hashStringTo32Bit(seed: string): number {
 export function createMulberry32(seed: number): () => number {
   let s = seed >>> 0;
   return function next(): number {
-    s = (s + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    s = (s + MULBERRY_INCREMENT_STEP) >>> 0;
+    let t = Math.imul(s ^ (s >>> MULBERRY_BITSHIFT_INITIAL), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> MULBERRY_BITSHIFT_SECONDARY), MULBERRY_MIX_MULTIPLIER | t)) ^ t;
+    return ((t ^ (t >>> MULBERRY_BITSHIFT_OUTPUT)) >>> 0) / MULBERRY_NORMALIZATION_DIVISOR;
   };
 }
 
