@@ -3,19 +3,16 @@ import { getWeatherMultiplier } from '@/logic/weather/weatherUtils'
 import { useGameStore } from '@/stores/game'
 import { useEventStore } from '@/stores/events'
 import { useUIStore } from '@/stores/ui'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getSpeciesEntries } from '@/logic/encounters/encounters'
 import { type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { EventConfig } from '@/logic/events/eventEngine'
 import {
-  getPokedexVisibility,
-  getPokemonBasicData,
   getSpawnStatus,
   getSharedShinyEventLines,
   getSpawnCommonTooltipLines,
   redistributeWeatherSpawns,
   applyFishingRodBudget,
-  buildRouteSpawnItem,
+  createPopulatedRouteSpawnItem,
   type RouteSpawnMappedItem
 } from '@/logic/utils/routeSpawnHelpers'
 
@@ -95,9 +92,6 @@ export function useRouteSpawnsFishing(props: RouteSpawnsProps) {
 
       const diff = percentage - basePercentage
 
-      const { isSeen, isCaught } = getPokedexVisibility(id, uiStore.debugPokedexMode, seenPokedex, caughtPokedex)
-      const pData = getPokemonBasicData(id, isSeen)
-
       const isVisitor = !!weatherCfg?.fishingVisitors && getSpeciesEntries(weatherCfg.fishingVisitors).some(entry => entry.id === id)
       const isExclusive = !!weatherCfg?.fishingExclusive && getSpeciesEntries(weatherCfg.fishingExclusive).some(entry => entry.id === id)
 
@@ -110,28 +104,21 @@ export function useRouteSpawnsFishing(props: RouteSpawnsProps) {
       const spawnType = initialSpawnType === 'Común' ? 'Pesca' : initialSpawnType
 
       const speciesBonuses = eventStore.getSpeciesBonuses(id)
-      const isEventBoosted = (speciesBonuses.rate > 1) || (speciesBonuses.shiny > 1)
-      const finalStatusClass = isEventBoosted ? 'event-boosted' : statusClass
 
-      return buildRouteSpawnItem(
+      return createPopulatedRouteSpawnItem({
         id,
-        pData,
-        isSeen,
-        isCaught,
-        getAssetUrl(ASSET_TYPES.POKEMON, id),
         percentage,
         baseRate,
         basePercentage,
         diff,
         spawnType,
-        finalStatusClass,
+        statusClass,
         multiplier,
-        {
-          isEventBoosted,
-          eventRateMult: speciesBonuses.rate,
-          eventShinyMult: speciesBonuses.shiny
-        }
-      )
+        debugPokedexMode: uiStore.debugPokedexMode,
+        seenPokedex,
+        caughtPokedex,
+        speciesBonuses
+      })
     }).sort((a, b) => {
       if (a.percentage > 0 && b.percentage === 0) return -1
       if (a.percentage === 0 && b.percentage > 0) return 1

@@ -4,17 +4,14 @@ import { getWeatherMultiplier } from '@/logic/weather/weatherUtils'
 import { useGameStore } from '@/stores/game'
 import { useEventStore } from '@/stores/events'
 import { useUIStore } from '@/stores/ui'
-import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { DAY_PHASES } from '@/logic/utils/timeUtils'
 import type { EventConfig } from '@/logic/events/eventEngine'
 import {
-  getPokedexVisibility,
-  getPokemonBasicData,
   getSpawnStatus,
   getSharedShinyEventLines,
   getSpawnCommonTooltipLines,
-  buildRouteSpawnItem,
+  createPopulatedRouteSpawnItem,
   type RouteSpawnMappedItem
 } from '@/logic/utils/routeSpawnHelpers'
 import type { RouteSpawnsProps } from '@/composables/modals/useRouteSpawnsCalculation'
@@ -83,9 +80,6 @@ export function useRouteSpawnsWild(props: RouteSpawnsProps) {
 
       const diff = percentage - basePercentage
 
-      const { isSeen, isCaught } = getPokedexVisibility(id, uiStore.debugPokedexMode, seenPokedex, caughtPokedex)
-      const pData = getPokemonBasicData(id, isSeen)
-      
       const isVisitor = !!weatherCfg?.visitors && getSpeciesEntries(weatherCfg.visitors).some(entry => entry.id === id)
       const isExclusive = !!weatherCfg?.exclusive && getSpeciesEntries(weatherCfg.exclusive).some(entry => entry.id === id)
       
@@ -99,28 +93,21 @@ export function useRouteSpawnsWild(props: RouteSpawnsProps) {
       const { spawnType, statusClass } = getSpawnStatus(isVisitor, isExclusive, isBlocked, isInCurrentCycle, isBuffed, isDebuffed)
 
       const speciesBonuses = eventStore.getSpeciesBonuses(id)
-      const isEventBoosted = (speciesBonuses.rate > 1) || (speciesBonuses.shiny > 1)
-      const finalStatusClass = isEventBoosted ? 'event-boosted' : statusClass
 
-      return buildRouteSpawnItem(
+      return createPopulatedRouteSpawnItem({
         id,
-        pData,
-        isSeen,
-        isCaught,
-        getAssetUrl(ASSET_TYPES.POKEMON, id),
         percentage,
         baseRate,
         basePercentage,
         diff,
         spawnType,
-        finalStatusClass,
+        statusClass,
         multiplier,
-        {
-          isEventBoosted,
-          eventRateMult: speciesBonuses.rate,
-          eventShinyMult: speciesBonuses.shiny
-        }
-      )
+        debugPokedexMode: uiStore.debugPokedexMode,
+        seenPokedex,
+        caughtPokedex,
+        speciesBonuses
+      })
     }).sort((a, b) => {
       if (a.percentage > 0 && b.percentage === 0) return -1
       if (a.percentage === 0 && b.percentage > 0) return 1

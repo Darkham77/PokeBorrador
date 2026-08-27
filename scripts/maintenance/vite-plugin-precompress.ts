@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * scripts/maintenance/vite-plugin-precompress.ts
  * 

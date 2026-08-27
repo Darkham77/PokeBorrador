@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PokemonCompetitionTrophy } from '@/types/pokemon/pokemon'
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 
 interface Props {
   trophies?: PokemonCompetitionTrophy[]
@@ -20,7 +21,7 @@ const formatDate = (timestamp: number) => {
   if (!timestamp) return ''
   try {
     const instant = Temporal.Instant.fromEpochMilliseconds(timestamp)
-    const zdt = instant.toZonedDateTimeISO('America/Argentina/Buenos_Aires')
+    const zdt = instant.toZonedDateTimeISO(GAME_TIMEZONE)
     const dd = String(zdt.day).padStart(2, '0')
     const mm = String(zdt.month).padStart(2, '0')
     const yyyy = zdt.year

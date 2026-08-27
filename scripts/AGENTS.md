@@ -50,6 +50,7 @@ DevOps / Tooling Engineers.
 ## Child DOX Index
 
 - [assets/](./assets/AGENTS.md): Domain module documentation for assets.
+- [data/](./data/AGENTS.md): Data generation and database synchronization utility scripts.
 - [database/](./database/AGENTS.md): Domain module documentation for database.
 - [e2e/](./e2e/AGENTS.md): Domain module documentation for e2e.
 - [maintenance/](./maintenance/AGENTS.md): Domain module documentation for maintenance.

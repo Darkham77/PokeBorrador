@@ -7,6 +7,7 @@ Static Pokémon data, species database, EV yield databases, sprites mappings, ev
 - **Compact Tuple Database Serialization**: Massive relational datasets (such as `pokemonDB.json`) must store repetitive sub-records (e.g. learnsets) as compact arrays `[level, moveId, pp]` instead of verbose repetitive JSON objects.
 - **Memoized Lazy Proxy Inflation**: Domain wrappers like `pokemonDB.ts` must expose datasets via memoized `Proxy` objects, inflating entities on demand to eliminate multi-megabyte upfront memory allocation while preserving 100% strict TypeScript domain contracts (`PokemonBaseData`, `LearnsetMove[]`).
 - **Build-Time Dex Precomputation**: Heavy engine queries (`@pkmn/sim` Dex) must be precomputed strictly at build time via `scripts/data/generate_pokemon_db.ts`. Never run Showdown Dex lookups on the client main thread.
+- **Node.js 26+ Native Execution Compatibility**: Static data files and database wrappers intended to be consumed by Node.js CLI validation scripts (e.g. `pokemonDB.ts`) MUST use relative path imports (`../battle/moves.ts`) rather than `@/` runtime aliases, ensuring error-free native execution under `--permission --experimental-strip-types`.
 
 ## Key Files
 

@@ -5,10 +5,10 @@
  * Data is precomputed at build/dev time by scripts/data/generate_pokemon_db.ts
  * avoiding @pkmn/sim Dex overhead in the browser runtime bundle.
  */
-import type { PokemonBaseData, LearnsetMove } from '@/types/system/database.ts';
-import type { PokemonType } from '@/data/battle/types.ts';
+import type { PokemonBaseData, LearnsetMove } from '../../types/system/database.ts';
+import type { PokemonType } from '../battle/types.ts';
 import { SPECIES_METADATA } from './speciesMetadata.ts';
-import { MOVE_TRANSLATIONS_ES, requirePokemonMoveId } from '@/data/battle/moves.ts';
+import { MOVE_TRANSLATIONS_ES, requirePokemonMoveId } from '../battle/moves.ts';
 import pokemonDbJson from './pokemonDB.json' with { type: 'json' };
 
 export type PokemonDbSpeciesId = keyof typeof SPECIES_METADATA;

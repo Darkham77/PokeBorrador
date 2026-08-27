@@ -4,6 +4,7 @@ import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } fr
 import { getWeatherMultiplier } from '@/logic/weather/weatherUtils'
 import { Dex } from '@pkmn/sim'
 import { ACTIVE_GENERATION, isEnabledPokemonId } from '@/data/system/constants'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { PokemonType } from '@/data/battle/types'
 import type { ItemId } from '@/data/inventory/items'
 import type { PokedexStatus } from '@/types/pokemon/pokemon'
@@ -130,8 +131,8 @@ export function calculateActiveTravelModifiers(items: ReadonlySet<TravelBuffItem
 export function getPokedexVisibility(
   id: string,
   debugPokedexMode: PokedexStatus | null,
-  seenPokedex: string[],
-  caughtPokedex: string[]
+  seenPokedex: readonly string[],
+  caughtPokedex: readonly string[]
 ): VisibilityResult {
   let isSeen = seenPokedex.includes(id) || caughtPokedex.includes(id)
   let isCaught = caughtPokedex.includes(id)
@@ -369,4 +370,55 @@ export function buildRouteSpawnItem(
     eventRateMult: eventMeta?.eventRateMult,
     eventShinyMult: eventMeta?.eventShinyMult
   }
+}
+
+export function resolveEventBoostedStatus(statusClass: string, speciesBonuses: { rate: number; shiny: number }) {
+  const isEventBoosted = speciesBonuses.rate > 1 || speciesBonuses.shiny > 1
+  return {
+    isEventBoosted,
+    finalStatusClass: isEventBoosted ? 'event-boosted' : statusClass,
+    eventRateMult: speciesBonuses.rate,
+    eventShinyMult: speciesBonuses.shiny
+  }
+}
+
+export interface BuildRouteSpawnParams {
+  id: string
+  percentage: number
+  baseRate: number
+  basePercentage: number
+  diff: number
+  spawnType: string
+  statusClass: string
+  multiplier: number
+  debugPokedexMode: PokedexStatus | null
+  seenPokedex: readonly string[]
+  caughtPokedex: readonly string[]
+  speciesBonuses: { rate: number; shiny: number }
+}
+
+export function createPopulatedRouteSpawnItem(params: BuildRouteSpawnParams): RouteSpawnMappedItem {
+  const { isSeen, isCaught } = getPokedexVisibility(params.id, params.debugPokedexMode, params.seenPokedex, params.caughtPokedex)
+  const pData = getPokemonBasicData(params.id, isSeen)
+  const { isEventBoosted, finalStatusClass, eventRateMult, eventShinyMult } = resolveEventBoostedStatus(params.statusClass, params.speciesBonuses)
+
+  return buildRouteSpawnItem(
+    params.id,
+    pData,
+    isSeen,
+    isCaught,
+    getAssetUrl(ASSET_TYPES.POKEMON, params.id),
+    params.percentage,
+    params.baseRate,
+    params.basePercentage,
+    params.diff,
+    params.spawnType,
+    finalStatusClass,
+    params.multiplier,
+    {
+      isEventBoosted,
+      eventRateMult,
+      eventShinyMult
+    }
+  )
 }

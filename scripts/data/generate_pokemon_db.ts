@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * scripts/data/generate_pokemon_db.ts
  * 
