@@ -9,7 +9,7 @@ const isWin = process.platform === 'win32';
 function findBinary(): boolean {
   try {
     if (isWin) {
-      execFileSync('where', ['css-checker.exe'], { stdio: 'ignore' });
+      execFileSync('where.exe', ['css-checker.exe'], { stdio: 'ignore', shell: true });
     } else {
       execFileSync('which', ['css-checker'], { stdio: 'ignore' });
     }
@@ -55,11 +55,11 @@ if (!findBinary()) {
     const pkgDir = 'node_modules/css-checker-kit';
     if (!fs.existsSync(pkgDir)) {
       console.log('📦 Instalando css-checker-kit...');
-      execFileSync(npmCmd, ['install', '--save-dev', 'css-checker-kit', '--ignore-scripts=false'], { stdio: 'inherit', cwd: rootDir });
+      execFileSync(npmCmd, ['install', '--save-dev', 'css-checker-kit', '--ignore-scripts=false'], { stdio: 'inherit', cwd: rootDir, shell: isWin });
     }
     
     console.log('⚡ Compilando binario nativo via postinstall...');
-    execFileSync(npmCmd, ['run', 'postinstall', '--ignore-scripts=false'], { stdio: 'inherit', cwd: pkgDir });
+    execFileSync(npmCmd, ['run', 'postinstall', '--ignore-scripts=false'], { stdio: 'inherit', cwd: pkgDir, shell: isWin });
 
     if (!findBinary()) {
       console.error('\x1b[31m❌ Error: No se pudo auto-compilar css-checker-kit.\x1b[0m');

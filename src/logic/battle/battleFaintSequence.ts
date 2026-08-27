@@ -8,7 +8,6 @@ import { gameBus } from '@/logic/events/gameBus'
 import { isMatchingUid } from './showdownUidMapper.ts'
 import { gsapSleep } from '@/logic/utils/gsapHelpers'
 
-import { unref } from 'vue'
 import type { BattleSide } from '@/types/battle/battle'
 
 const FAINT_ANIMATION_FALLBACK_DELAY_MS = 1300
@@ -20,13 +19,23 @@ interface EnemyFaintResolutionActions {
   terminateBattle: (ctx: BattleContext, winParam: boolean, fled?: boolean) => Promise<void>
 }
 
+function getFsmStateString(state: unknown): string {
+  if (typeof state === 'string') return state
+  if (state && typeof state === 'object') {
+    if ('value' in state && typeof (state as { value: unknown }).value === 'string') {
+      return (state as { value: string }).value
+    }
+  }
+  return ''
+}
+
 export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pokemon, actions: EnemyFaintResolutionActions) {
   const active = ctx.activeBattle.value
   if (!active) return
 
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
-  const isCurrentActiveBattle = () => ctx.activeBattle.value === active && unref(fsm.currentState) === BATTLE_STATES.ACTIVE_BATTLE
+  const isCurrentActiveBattle = () => ctx.activeBattle.value === active && getFsmStateString(fsm.currentState) === BATTLE_STATES.ACTIVE_BATTLE
   const isTr = Boolean(active.isTrainer)
   const enemyName = isTr ? pokemon.name : `¡${pokemon.name} salvaje`
   ctx.addLog(`${enemyName} fue derrotado!`, 'log-enemy', pokemon)

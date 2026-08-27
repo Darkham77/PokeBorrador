@@ -11,7 +11,7 @@ import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts'
 import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry'
 import { requireWeatherSeasonId } from '@/data/world/weather-tables'
 import { requireMapRouteId } from '@/data/world/map-assets'
-import { requireDayPhase } from '@/logic/utils/timeUtils'
+import { requireDayPhase, type DayPhase } from '@/logic/utils/timeUtils'
 import { useCombatCamera } from '@/composables/battle/useCombatCamera'
 import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import { MAX_PRNG_SEED_RANGE } from '@/logic/constants/visuals'
@@ -139,6 +139,11 @@ const {
   shouldShowEncounterLayers
 } = useBattleHud(animations, battleStore, enemy)
 
+const isInteriorCombat = computed(() => {
+  const b = battle.value
+  return !!(b?.isGym || b?.isIndoors || b?.isCave || b?.isCrystalCave || b?.locationId === 'gym' || b?.locationId === 'pvp')
+})
+
 const effectiveBattleVisual = computed<string>(() => {
   // 1. Terrenos y efectos de campo activos en combate (máxima prioridad visual para iluminación de arena)
   if (battle.value?.fieldConditions) {
@@ -152,15 +157,15 @@ const effectiveBattleVisual = computed<string>(() => {
   const sideField = Object.keys(sideConds).find(k => ['mist', 'stealthrock', 'toxicspikes'].includes(k))
   if (sideField) return sideField
 
-  // 3. Si hay un clima temporal activo en el combate
+  // 3. Si hay un clima temporal activo en el combate (invocado por movimiento o habilidad)
   if (battle.value?.weather && battle.value.weather.type !== 'clear' && battle.value.weather.type !== 'none') {
     return battle.value.weather.visual || battle.value.weather.type
   }
 
-  // 4. Bloquear clima natural en gimnasios
-  if (battle.value?.isGym) return 'clear'
+  // 4. Bloquear clima natural en gimnasios, PvP o recintos interiores
+  if (isInteriorCombat.value) return 'clear'
 
-  // 5. De lo contrario, cae en el clima global o del mapa
+  // 5. De lo contrario, cae en el clima global o del mapa exterior
   if (mapStore.globalWeather) return mapStore.globalWeather
   return getRouteWeather(
     requireMapRouteId(battle.value?.locationId || 'route1'),
@@ -171,13 +176,13 @@ const effectiveBattleVisual = computed<string>(() => {
 })
 
 const computedWeather = computed<WeatherId>(() => {
-  // Si hay un clima temporal activo en el combate, esa es la fuente de verdad para partículas (incluso en gimnasios)
+  // Si hay un clima temporal activo en el combate (invocado por movimiento o habilidad)
   if (battle.value?.weather && battle.value.weather.type !== 'clear' && battle.value.weather.type !== 'none') {
     return requireWeatherId(battle.value.weather.visual || battle.value.weather.type)
   }
-  // Bloquear clima natural en gimnasios
-  if (battle.value?.isGym) return 'clear'
-  // De lo contrario, cae en el clima global o del mapa
+  // Bloquear clima natural en gimnasios, PvP o recintos interiores
+  if (isInteriorCombat.value) return 'clear'
+  // De lo contrario, cae en el clima global o del mapa exterior
   if (mapStore.globalWeather) return requireWeatherId(mapStore.globalWeather)
   return requireWeatherId(getRouteWeather(
     requireMapRouteId(battle.value?.locationId || 'route1'),
@@ -187,18 +192,28 @@ const computedWeather = computed<WeatherId>(() => {
   ))
 })
 
+const effectiveCycle = computed<DayPhase>(() => {
+  if (isInteriorCombat.value) {
+    return 'day'
+  }
+  return requireDayPhase(mapStore.currentCycle)
+})
+
 const { atmosphereFilter, weatherOnlyFilter } = useWeatherVisuals({
   weather: effectiveBattleVisual,
-  cycle: computed(() => battle.value?.isGym ? 'neutral' : mapStore.currentCycle)
+  cycle: effectiveCycle
 })
 
 // Unified Style Orchestration to prevent reactivity breaks in templates
 const arenaContentStyles = computed(() => {
   const isCave = !!(battle.value?.isCave || battle.value?.isCrystalCave)
+  const isInterior = isInteriorCombat.value
+  const hasActiveBattleWeather = Boolean(battle.value?.weather && battle.value.weather.type !== 'clear' && battle.value.weather.type !== 'none')
+
   return {
     ...cameraStyles.value,
-    '--atmosphere-filter': isCave ? 'none' : atmosphereFilter.value,
-    '--weather-filter': isCave ? 'none' : weatherOnlyFilter.value
+    '--atmosphere-filter': (isCave || (isInterior && !hasActiveBattleWeather)) ? 'none' : atmosphereFilter.value,
+    '--weather-filter': (isCave || (isInterior && !hasActiveBattleWeather)) ? 'none' : weatherOnlyFilter.value
   }
 })
 
@@ -490,12 +505,12 @@ watch(() => battleStore.isBattleActive, (active) => {
     <!-- Atmósfera -->
     <AtmosphereLayer
       :weather="computedWeather"
-      :cycle="mapStore.currentCycle"
+      :cycle="effectiveCycle"
       :season="currentWeatherSeason"
       :is-performance-mode="uiStore.isPerformanceMode"
       :z-index="'calc(var(--z-base) + 20)'"
       :anim-seed="atmosphereSeed"
-      :is-visible="true"
+      :is-visible="!isInteriorCombat || computedWeather !== 'clear'"
     />
 
     <!-- HUD Genérico (4-Seat Compatible) -->
