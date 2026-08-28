@@ -120,6 +120,7 @@ Before writing or updating any rule, manual, or architectural lesson, consult th
 | **Save data schema, Valibot parsing, encryption, account storage** | [save_system_manual.md](./references/technical/save_system_manual.md) | `rules/database_and_persistence.md` |
 | **SASS mixins, CSS variables, GBA font rules, visual styling** | [sass_styling_manual.md](./references/technical/sass_styling_manual.md) | `core/ui_ux_standards.md` |
 | **Step-by-step QA testing protocols, DevTools shortcuts, verification matrix** | [browser_testing_manual.md](./references/qa/browser_testing_manual.md) | `rules/testing_and_simulations.md` |
+| **Manual QA verification of battle animations, forced switches, flee & teleport, catch** | [manual_testing_battle_animations.md](./references/qa/manual_testing_battle_animations.md) | `qa/browser_testing_manual.md` |
 | **Pre-release audit checklists, gate verifications, release protocols** | [audit_checklist.md](./references/qa/audit_checklist.md) | `qa/validation_manual.md` |
 | **Content design, event authoring, quest crafting, and dialog trees** | [content_creation_manual.md](./references/content/content_creation_manual.md) | `core/game_mechanics_manual.md` |
 | **Low power mode, battery savings, mobile rendering throttling** | [low_power_mode_manual.md](./references/technical/low_power_mode_manual.md) | `technical/gpu_optimization_manual.md` |
@@ -143,6 +144,7 @@ Before writing or updating any rule, manual, or architectural lesson, consult th
 #### 2. Technical & Architecture Manuals (`references/technical/`, `qa/`, `content/`, `migration/`)
 - [Domain Type First Skill](../domain-type-first/SKILL.md)
 - [Browser Testing Manual](./references/qa/browser_testing_manual.md)
+- [Battle Animations QA Manual](./references/qa/manual_testing_battle_animations.md)
 - [Validation & Quality Manual](./references/qa/validation_manual.md)
 - [Audit & Pre-Release Checklist](./references/qa/audit_checklist.md)
 - [Save System Manual](./references/technical/save_system_manual.md)

@@ -532,4 +532,11 @@ The NPC Trainer visual lifecycle across search phase, dialogue presentation, act
 4. **Team Rocket Special Flee Effect**:
    - When the defeated or fleeing trainer belongs to Team Rocket (`trainerArchetype === 'rocket' | 'grunt'` or sprite/name includes `rocket`), the exit sequence triggers the `flee` sound (`audioStore.play('flee')`) and rapid escape movement to reflect criminal retreat lore.
 
+---
+
+## 45. QA Manual Verification Protocols
+
+For step-by-step reproduction instructions and testing matrices for all combat animations, forced switch variants, flee & teleport physics, attack reactions, and catch sequences, consult:
+- **[Manual Testing Guide (Battle Animations)](../qa/manual_testing_battle_animations.md)**
+
 

@@ -1465,3 +1465,10 @@ store.enemyStages.value = {
 };
 ```
 
+---
+
+## 🔬 QA Manual Verification & Step-by-Step Testing
+
+For a complete step-by-step reproduction guide and verification matrix covering all forced switch variants, flee & teleport mechanics, attack VFX, switch workflows, faint sequences, and catch flows, consult:
+- **[Manual Testing Guide (Battle Animations)](../qa/manual_testing_battle_animations.md)**
+
