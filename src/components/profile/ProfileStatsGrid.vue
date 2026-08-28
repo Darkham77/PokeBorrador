@@ -109,6 +109,12 @@ const { handleStatEnter, handleStatLeave } = useStatHover({
   flex-direction: column;
   gap: 10px;
   @include gpu-layer;
+  cursor: default;
+  filter: Brightness(1);
+
+  > * {
+    pointer-events: none;
+  }
 
   &.highlight {
     &.money {

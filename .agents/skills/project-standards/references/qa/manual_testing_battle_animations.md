@@ -596,3 +596,20 @@ stateDiagram-v2
 | **QA-FA-03** | Faint System | Double KO Resolution | Both Pokémon faint at once | Explosion or Destiny Bond KO | Primary faints first $\rightarrow$ Secondary faints $\rightarrow$ Bench checked | `PLAYER_FAINT_SEQ` / `ENEMY_REPLACEMENT` | Winner declared without hang |
 | **QA-CA-01** | Catch System | Full Catch Celebration | Wild encounter | Throw Master Ball or Debug Success | Suction $\rightarrow$ 3 Wobbles $\rightarrow$ Golden pulse + 12 rotating stars | `CATCH_PROCESS` $\rightarrow$ `CATCH_SUCCESS` | Saved with correct `ball:` tag |
 | **QA-CA-02** | Catch System | Catch Breakout / Escape | Wild encounter | Throw regular Poké Ball on full HP | Suction $\rightarrow$ 1-2 Wobbles $\rightarrow$ Ball bursts $\rightarrow$ Pokémon re-emerges | `CATCH_PROCESS` $\rightarrow$ `PLAY_RELEASE_ENERGY` | Turn continues smoothly |
+
+---
+
+## 9. Automated Test Verification Matrix
+
+All manual testing scenarios documented in this manual are automated and covered by the following test suites:
+
+| Section & Animation | Tier 1 Unit Test | Tier 2 Integrity Test | Tier 3 Playwright Simulation |
+| :--- | :--- | :--- | :--- |
+| **1. Forced Switch (Remolino)** | `test_whirlwind_trajectory.spec.ts` | `test_forced_switch_animation_parity.spec.ts` | `battle_forced_switch_ui.simulation.ts` |
+| **2. Escape (Huida / Teleport)** | `test_knockback_teleport_trajectory.spec.ts` | `test_failed_flee_counterattack.spec.ts` | `battle_flee_and_teleport.simulation.ts` |
+| **3. Attack Categories** | `test_attack_action_anims.spec.ts` | `test_attack_action_anims.spec.ts` | `battle_manual_scenarios.simulation.ts` |
+| **4. Manual Switch** | `battle_animation_sequence_parity.spec.ts` | `battle_animation_sequence_parity.spec.ts` | `battle_manual_scenarios.simulation.ts` |
+| **5. Fainting (Wild vs Trainer)** | `test_faint_animation_trajectory.spec.ts` | `battle_animation_sequence_parity.spec.ts` | `battle_catch_breakout_and_whiteout.simulation.ts` |
+| **6. Poké Ball Capture & Breakout** | `test_capture_animation_kinematics.spec.ts` | `test_capture_breakout_integration.spec.ts` | `battle_catch_breakout_and_whiteout.simulation.ts` |
+| **7. Wild Encounter Jump & Shiny** | `test_freeze_static_mode.spec.ts` | `battle_animation_sequence_parity.spec.ts` | `battle_wild_encounter_jump.simulation.ts` |
+| **8. Atmospheric Weather FX** | `useAtmosphereSandstormAnim.spec.ts` | `gym_atmosphere_lifecycle_integration.spec.ts` | `battle_weather_effects.simulation.ts` |

@@ -90,4 +90,3 @@ export {
   isPokemonCryId,
   getPokemonCryFilename
 } from './pokemonCriesDatabase.ts';
-

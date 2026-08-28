@@ -8,7 +8,8 @@ import { useAuthStore } from '@/stores/auth'
 import { useChatStore } from '@/stores/social/chat'
 import { useSocialStore, type Friend } from '@/stores/social/social'
 import { getXPNeededForClassLevel } from '@/logic/player/classMath'
-import { resolveCosmeticField, resolveStatField, computeShiniesCount } from './trainerProfileResolver.ts'
+import type { GameStatKey } from '@/types/system/game'
+import { resolveCosmeticField, resolveStatField, computeShiniesCount, computeEventTrophyCounts } from './trainerProfileResolver.ts'
 
 interface ProfileRow {
   id: string
@@ -69,6 +70,11 @@ interface SaveStateData {
     tradeVolume?: number
     captureAttempts?: number
     captureSuccesses?: number
+    eventParticipations?: number
+    eventMedalsFirst?: number
+    eventMedalsSecond?: number
+    eventMedalsThird?: number
+    eventMedalsTotal?: number
   }
   pvpStats?: {
     wins?: number
@@ -121,6 +127,10 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
   const profile = ref<ProfileRow | null>(null)
   const saveState = ref<SaveStateData | null>(null)
   const error = ref<string | null>(null)
+  const eventParticipationsDb = ref(0)
+  const eventMedalsFirstDb = ref(0)
+  const eventMedalsSecondDb = ref(0)
+  const eventMedalsThirdDb = ref(0)
 
   const userId = computed(getUserId)
 
@@ -140,6 +150,10 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
     error.value = null
     profile.value = null
     saveState.value = null
+    eventParticipationsDb.value = 0
+    eventMedalsFirstDb.value = 0
+    eventMedalsSecondDb.value = 0
+    eventMedalsThirdDb.value = 0
 
     try {
       const db = gameStore.db
@@ -182,6 +196,47 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
           }
         }
         saveState.value = rawSave as SaveStateData
+      }
+
+      // 3. Fetch awards & event participations for this user from DB
+      try {
+        const { data: awardsRows } = await db
+          .from('awards')
+          .select('prize, event_id')
+          .eq('winner_id', id)
+
+        if (awardsRows && Array.isArray(awardsRows)) {
+          let firstCount = 0
+          let secondCount = 0
+          let thirdCount = 0
+          for (const a of awardsRows as { prize?: unknown }[]) {
+            let p = a.prize
+            if (typeof p === 'string') {
+              try { p = JSON.parse(p) } catch { p = null }
+            }
+            if (p && typeof p === 'object' && 'rank' in p) {
+              const r = (p as { rank?: string }).rank
+              if (r === 'first') firstCount++
+              else if (r === 'second') secondCount++
+              else if (r === 'third') thirdCount++
+            }
+          }
+          eventMedalsFirstDb.value = firstCount
+          eventMedalsSecondDb.value = secondCount
+          eventMedalsThirdDb.value = thirdCount
+        }
+
+        const { data: compEntryRows } = await db
+          .from('competition_entries')
+          .select('event_id')
+          .eq('player_id', id)
+
+        if (compEntryRows && Array.isArray(compEntryRows)) {
+          const distinctEvents = new Set((compEntryRows as { event_id?: string }[]).map(e => e.event_id).filter(Boolean))
+          eventParticipationsDb.value = distinctEvents.size
+        }
+      } catch (_e) {
+        // Non-fatal if offline/no tables
       }
     } catch (e: unknown) {
       const err = e as Error
@@ -419,6 +474,33 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
   const money = computed(() => (isOwnProfile.value ? gameStore.state.money ?? 0 : saveState.value?.money ?? 0))
   const battleCoinsCount = computed(() => (isOwnProfile.value ? gameStore.state.battleCoins ?? 0 : saveState.value?.battleCoins ?? 0))
 
+  const eventMedalCounts = computed(() => {
+    const team = isOwnProfile.value ? gameStore.state.team : saveState.value?.team
+    const box = isOwnProfile.value ? gameStore.state.box : saveState.value?.box
+    const savedStats = (isOwnProfile.value ? gameStore.state.stats : saveState.value?.stats) as Partial<Record<GameStatKey, number>> | undefined
+    return computeEventTrophyCounts(
+      team,
+      box,
+      eventMedalsFirstDb.value,
+      eventMedalsSecondDb.value,
+      eventMedalsThirdDb.value,
+      savedStats?.eventMedalsFirst || 0,
+      savedStats?.eventMedalsSecond || 0,
+      savedStats?.eventMedalsThird || 0
+    )
+  })
+
+  const eventMedalsFirst = computed(() => eventMedalCounts.value.first)
+  const eventMedalsSecond = computed(() => eventMedalCounts.value.second)
+  const eventMedalsThird = computed(() => eventMedalCounts.value.third)
+  const eventMedalsTotal = computed(() => eventMedalCounts.value.total)
+
+  const eventParticipations = computed(() => {
+    const savedStats = (isOwnProfile.value ? gameStore.state.stats : saveState.value?.stats) as Partial<Record<GameStatKey, number>> | undefined
+    const fromSaved = savedStats?.eventParticipations ?? 0
+    return Math.max(eventParticipationsDb.value, fromSaved, eventMedalsTotal.value)
+  })
+
   return {
     loading,
     profile,
@@ -468,6 +550,12 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
     captureEfficiency,
     money,
     battleCoinsCount,
+    eventParticipations,
+    eventMedalsTotal,
+    eventMedalsFirst,
+    eventMedalsSecond,
+    eventMedalsThird,
     fetchData
   }
 }
+

@@ -1,17 +1,21 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
+import { useModalStore } from '@/stores/modals'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { normalizeZonedDateTime } from '@/logic/utils/timeUtils'
+import { normalizeZonedDateTime, getGMT3Date } from '@/logic/utils/timeUtils'
 import {
-  getDefaultSubCompetitions,
+  resolveEventSubCompetitions,
   resolveSubCompetitionDirection,
+  resolveWeeklyRotation,
   type Event as GameEvent,
   type EventConfig,
-  type SubCompetitionConfig
+  type SubCompetitionConfig,
+  type ResolvedSubCompetition,
+  type WeeklyRotationEntry
 } from '@/logic/events/eventEngine'
 import RewardPillsGroup from '@/components/shared/RewardPillsGroup.vue'
 
@@ -54,6 +58,22 @@ const cfg = computed<ExtendedEventConfig>(() => {
   return {}
 })
 
+const activeRotation = computed<WeeklyRotationEntry | null>(() => {
+  return resolveWeeklyRotation(cfg.value, getGMT3Date())
+})
+
+const effectiveBanner = computed<string | null>(() => {
+  return activeRotation.value?.banner || cfg.value.banner || null
+})
+
+const effectiveTitle = computed<string>(() => {
+  return activeRotation.value?.title || props.event.name
+})
+
+const effectiveSpeciesString = computed<string | null>(() => {
+  return activeRotation.value?.species || cfg.value.species || null
+})
+
 const sched = computed<Schedule>(() => {
   if (typeof props.event.schedule === 'string') {
     try { return JSON.parse(props.event.schedule) as Schedule } catch (_e) { return {} }
@@ -75,85 +95,92 @@ const activeBonuses = computed<BonusItem[]>(() => {
 
   // Multiplicadores Globales / Economía
   if (c.expMult && c.expMult > 1) {
-    bonuses.push({ label: 'Experiencia en Combates', color: 'rgba(74, 222, 128, 1)', value: `x${c.expMult}` })
+    bonuses.push({ label: '⭐ EXP ganada en cada combate', color: 'rgba(74, 222, 128, 1)', value: `x${c.expMult}` })
   }
   if (c.moneyMult && c.moneyMult > 1) {
-    bonuses.push({ label: 'Ganancia de Dinero', color: 'rgba(250, 204, 21, 1)', value: `x${c.moneyMult}` })
+    bonuses.push({ label: '💰 Dinero ganado por victoria', color: 'rgba(250, 204, 21, 1)', value: `x${c.moneyMult}` })
   }
   if (c.bcMult && c.bcMult > 1) {
-    bonuses.push({ label: 'Battle Coins por Victoria', color: 'rgba(96, 165, 250, 1)', value: `x${c.bcMult}` })
+    bonuses.push({ label: '🪙 Battle Coins por victoria en combate', color: 'rgba(96, 165, 250, 1)', value: `x${c.bcMult}` })
   }
   if (c.catchRateMult && c.catchRateMult > 1) {
-    bonuses.push({ label: 'Ratio de Captura General', color: 'rgba(244, 114, 182, 1)', value: `x${c.catchRateMult}` })
+    bonuses.push({ label: '🔴 Mayor probabilidad de captura con cualquier Pokéball', color: 'rgba(244, 114, 182, 1)', value: `x${c.catchRateMult}` })
   }
   if (c.shinyMult && c.shinyMult > 1) {
-    bonuses.push({ label: 'Probabilidad General de Shiny', color: 'rgba(244, 114, 182, 1)', value: `x${c.shinyMult}` })
+    bonuses.push({ label: '✨ Más chances de encontrar Pokémon Variocolor (Shiny)', color: 'rgba(244, 114, 182, 1)', value: `x${c.shinyMult}` })
   }
   if (c.eggShinyMult && c.eggShinyMult > 1) {
-    bonuses.push({ label: 'Shiny en Crianza / Huevos', color: 'rgba(244, 114, 182, 1)', value: `x${c.eggShinyMult}` })
+    bonuses.push({ label: '🥚 Más chances de que los Huevos eclosionen en Shiny', color: 'rgba(244, 114, 182, 1)', value: `x${c.eggShinyMult}` })
   }
   if (c.hatchMult && c.hatchMult > 1) {
-    bonuses.push({ label: 'Velocidad de Eclosión', color: 'rgba(56, 189, 248, 1)', value: `x${c.hatchMult}` })
+    bonuses.push({ label: '🏃 Los Huevos eclosionan más rápido (menos pasos)', color: 'rgba(56, 189, 248, 1)', value: `x${c.hatchMult}` })
   }
 
-  // Bonificaciones de Especies / Minijuegos directos
+  // Bonificaciones de Especies (resueltas desde rotación temática o configuración)
+  const resolvedSpecies = involvedSpecies.value
+  const spNames = resolvedSpecies.length > 0
+    ? resolvedSpecies.map(s => s.toUpperCase()).join(', ') // domain-ok
+    : (effectiveSpeciesString.value && effectiveSpeciesString.value !== '*' ? effectiveSpeciesString.value.toUpperCase() : null) // domain-ok
+
   if (c.speciesShinyMult && c.speciesShinyMult > 1) {
-    const sp = c.species ? c.species.toUpperCase() : 'EVENTO' // domain-ok
-    bonuses.push({ label: `✨ Shiny Boost (${sp})`, color: 'rgba(244, 114, 182, 1)', value: `x${c.speciesShinyMult}` })
+    const label = spNames ? `✨ Más chances de encontrar ${spNames} Variocolor (Shiny)` : '✨ Más chances de encontrar Pokémon del Evento Variocolor (Shiny)'
+    bonuses.push({ label, color: 'rgba(244, 114, 182, 1)', value: `x${c.speciesShinyMult}` })
   }
   if (c.speciesRateMult && c.speciesRateMult > 1) {
-    const sp = c.species ? c.species.toUpperCase() : 'EVENTO' // domain-ok
-    bonuses.push({ label: `🎯 Aparición / Spawn (${sp})`, color: 'rgba(96, 165, 250, 1)', value: `x${c.speciesRateMult}` })
+    const label = spNames ? `🎯 ${spNames} aparece con mayor frecuencia en el mundo` : '🎯 Pokémon del Evento aparecen con mayor frecuencia en el mundo'
+    bonuses.push({ label, color: 'rgba(96, 165, 250, 1)', value: `x${c.speciesRateMult}` })
   }
-  if (c.fishingMult && c.fishingMult > 1) {
-    bonuses.push({ label: '🎣 Encuentros de Pesca', color: 'rgba(56, 189, 248, 1)', value: `x${c.fishingMult}` })
+
+
+
+  // Minijuegos - Atajos directos (solo si no están ya en minigameBuffs para evitar duplicados)
+  const mb = c.minigameBuffs || {}
+  if (c.fishingMult && c.fishingMult > 1 && !mb.fishing) {
+    bonuses.push({ label: '🎣 Pesca: Mayor frecuencia de encuentros y capturas', color: 'rgba(56, 189, 248, 1)', value: `x${c.fishingMult}` })
   }
-  if (c.archaeologyMult && c.archaeologyMult > 1) {
-    bonuses.push({ label: '⛏️ Eficiencia de Arqueología', color: 'rgba(251, 146, 60, 1)', value: `x${c.archaeologyMult}` })
+  if (c.archaeologyMult && c.archaeologyMult > 1 && !mb.archaeology) {
+    bonuses.push({ label: '⛏️ Arqueología: Mayor probabilidad de fósiles, gemas y tesoros', color: 'rgba(251, 146, 60, 1)', value: `x${c.archaeologyMult}` })
   }
-  if (c.bugCatchingMult && c.bugCatchingMult > 1) {
-    bonuses.push({ label: '🦗 Caza de Bichos', color: 'rgba(163, 230, 53, 1)', value: `x${c.bugCatchingMult}` })
-  }
-  if (c.casinoLuckyMult && c.casinoLuckyMult > 1) {
-    bonuses.push({ label: '🎰 Suerte en Casino', color: 'rgba(250, 204, 21, 1)', value: `x${c.casinoLuckyMult}` })
+  if (c.bugCatchingMult && c.bugCatchingMult > 1 && !mb.bug_catching) {
+    bonuses.push({ label: '🦗 Caza de Bichos: Mayor aparición de Pokémon insecto', color: 'rgba(163, 230, 53, 1)', value: `x${c.bugCatchingMult}` })
   }
 
   // Buffs detallados de minijuegos por ID
   if (c.minigameBuffs && typeof c.minigameBuffs === 'object') {
-    const minigameLabels: Record<string, string> = {
+    const minigameNames: Record<string, string> = {
       fishing: '🎣 Pesca',
       archaeology: '⛏️ Arqueología',
       bug_catching: '🦗 Caza de Bichos',
-      safari: '🧭 Zona Safari',
-      casino: '🎰 Casino'
+      safari: '🧭 Zona Safari'
     }
 
     for (const [mId, buffs] of Object.entries(c.minigameBuffs)) {
-      const mName = minigameLabels[mId] || `🎮 ${mId.toUpperCase()}`
+      if (mId === 'casino') continue // Sin casino en el juego
+      const mName = minigameNames[mId] || `🎮 ${mId.toUpperCase()}`
       if (buffs.encounterRateMult && buffs.encounterRateMult > 1) {
-        bonuses.push({ label: `${mName} (Aparición / Encuentros)`, color: 'rgba(56, 189, 248, 1)', value: `x${buffs.encounterRateMult}` })
+        bonuses.push({ label: `${mName}: Más Pokémon aparecen por sesión`, color: 'rgba(56, 189, 248, 1)', value: `x${buffs.encounterRateMult}` })
       }
       if (buffs.successRateMult && buffs.successRateMult > 1) {
-        bonuses.push({ label: `${mName} (Tasa de Éxito)`, color: 'rgba(74, 222, 128, 1)', value: `x${buffs.successRateMult}` })
+        bonuses.push({ label: `${mName}: Mayor probabilidad de éxito por intento`, color: 'rgba(74, 222, 128, 1)', value: `x${buffs.successRateMult}` })
       }
       if (buffs.rareDropMult && buffs.rareDropMult > 1) {
-        bonuses.push({ label: `${mName} (Loot / Drops Raros)`, color: 'rgba(250, 204, 21, 1)', value: `x${buffs.rareDropMult}` })
+        bonuses.push({ label: `${mName}: Más objetos raros, gemas y tesoros`, color: 'rgba(250, 204, 21, 1)', value: `x${buffs.rareDropMult}` })
       }
       if (buffs.shinyMult && buffs.shinyMult > 1) {
-        bonuses.push({ label: `${mName} (Probabilidad Shiny)`, color: 'rgba(244, 114, 182, 1)', value: `x${buffs.shinyMult}` })
+        bonuses.push({ label: `${mName}: Mayor probabilidad de hallar Pokémon Shiny`, color: 'rgba(244, 114, 182, 1)', value: `x${buffs.shinyMult}` })
       }
       if (buffs.expMult && buffs.expMult > 1) {
-        bonuses.push({ label: `${mName} (EXP)`, color: 'rgba(168, 85, 247, 1)', value: `x${buffs.expMult}` })
+        bonuses.push({ label: `${mName}: Más EXP ganada por actividad`, color: 'rgba(168, 85, 247, 1)', value: `x${buffs.expMult}` })
       }
       if (buffs.scoreMult && buffs.scoreMult > 1) {
-        bonuses.push({ label: `${mName} (Puntuación)`, color: 'rgba(234, 179, 8, 1)', value: `x${buffs.scoreMult}` })
+        bonuses.push({ label: `${mName}: Puntaje más alto en la clasificación`, color: 'rgba(234, 179, 8, 1)', value: `x${buffs.scoreMult}` })
       }
     }
   }
 
   // Reglas y Restricciones
   if (c.requireCaughtDuringEvent) {
-    bonuses.push({ label: '🕒 Solo capturados durante la ventana del evento', color: 'rgba(250, 204, 21, 1)', value: 'REGLA' })
+    bonuses.push({ label: '🕒 Solo se aceptan Pokémon capturados durante este evento', color: 'rgba(250, 204, 21, 1)', value: 'REGLA' })
   }
 
   // Reglas personalizadas abiertas
@@ -165,6 +192,8 @@ const activeBonuses = computed<BonusItem[]>(() => {
 
   return bonuses
 })
+
+
 
 interface Prize extends Record<string, unknown> { // open-record
   type?: 'money' | 'bc' | 'item' | 'pokemon' | 'mixed'
@@ -185,39 +214,40 @@ const prizes = computed<{ first?: Prize, second?: Prize, third?: Prize } | null>
   return c.prizes
 })
 
-const subCompetitions = computed<SubCompetitionConfig[]>(() => {
+const subCompetitions = computed<ResolvedSubCompetition[]>(() => {
   if (cfg.value.hasCompetition !== true) return []
-  return getDefaultSubCompetitions(props.event)
+  return resolveEventSubCompetitions(props.event, getGMT3Date())
 })
 
 const getSubCompDefaultIcon = (catId: string) => {
-  if (catId === 'ivs') return '🧬'
-  if (catId === 'weight') return '⚖️'
-  if (catId === 'height') return '📏'
-  if (catId === 'level') return '📈'
-  if (catId === 'friendship') return '💖'
+  if (catId.startsWith('ivs')) return '🧬'
+  if (catId.startsWith('weight')) return '⚖️'
+  if (catId.startsWith('height')) return '📏'
+  if (catId.startsWith('level')) return '📈'
+  if (catId.startsWith('friendship')) return '💖'
   return '🏆'
 }
 
-const getSubCompTitle = (sub: SubCompetitionConfig) => {
+const getSubCompTitle = (sub: ResolvedSubCompetition | SubCompetitionConfig) => {
   const dir = resolveSubCompetitionDirection(props.event.id, sub.id, sub.order)
+  const speciesSuffix = ('targetSpecies' in sub && sub.targetSpecies) ? ` (${sub.targetSpecies})` : '' // domain-ok
   if (sub.metric === 'total_ivs') {
-    return 'Mayor cantidad de IVs totales (0 a 186)'
+    return 'Mayor cantidad de IVs totales (0 a 186) · Todas las especies'
   }
   if (sub.metric === 'stat_iv' && sub.targetStat) {
-    return `Mayor IV en ${sub.targetStat.toUpperCase()}` // domain-ok
+    return `Mayor IV en ${sub.targetStat.toUpperCase()}${speciesSuffix}` // domain-ok
   }
   if (sub.metric === 'weight') {
-    return dir === 'max' ? 'Mayor Peso (Ejemplar Titán / XXL)' : 'Menor Peso (Ejemplar Miniatura / XXS)'
+    return dir === 'max' ? `Mayor Peso (Titán / XXL)${speciesSuffix}` : `Menor Peso (Miniatura / XXS)${speciesSuffix}`
   }
   if (sub.metric === 'height') {
-    return dir === 'max' ? 'Mayor Altura (Gran Salto / XXL)' : 'Menor Altura (Miniatura / XXS)'
+    return dir === 'max' ? `Mayor Altura (Gran Salto / XXL)${speciesSuffix}` : `Menor Altura (Miniatura / XXS)${speciesSuffix}`
   }
   if (sub.metric === 'level') {
-    return dir === 'max' ? 'Mayor Nivel' : 'Menor Nivel'
+    return dir === 'max' ? `Mayor Nivel${speciesSuffix}` : `Menor Nivel${speciesSuffix}`
   }
   if (sub.metric === 'friendship') {
-    return dir === 'max' ? 'Mayor Amistad' : 'Menor Amistad'
+    return dir === 'max' ? `Mayor Amistad${speciesSuffix}` : `Menor Amistad${speciesSuffix}`
   }
   return sub.description || sub.name || 'Criterio de evaluación'
 }
@@ -285,9 +315,9 @@ const involvedSpecies = computed<PokemonSpeciesId[]>(() => {
     }
   }
 
-  // 1. cfg.species (comma-separated or single)
-  if (cfg.value.species) {
-    const list = cfg.value.species.split(',')
+  // 1. effectiveSpeciesString (from rotation or config)
+  if (effectiveSpeciesString.value) {
+    const list = effectiveSpeciesString.value.split(',')
     list.forEach(add)
   }
 
@@ -349,22 +379,56 @@ const currentSpecies = computed<PokemonSpeciesId | null>(() => {
   if (involvedSpecies.value.length === 0) return null
   return involvedSpecies.value[currentSpeciesIndex.value] || involvedSpecies.value[0] || null
 })
+
+const bannerUrl = computed<string | null>(() => {
+  const bannerKey = effectiveBanner.value
+  if (!bannerKey) return null
+  return getAssetUrl(ASSET_TYPES.BANNER, bannerKey)
+})
+
+const modalStore = useModalStore()
+
+const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
+  modalStore.open('PokedexDetail', {
+    speciesId,
+    context: 'pokedex'
+  })
+}
 </script>
 
 <template>
   <BaseModal
     :show="show"
-    max-width="540px"
+    max-width="680px"
     variant="retro"
     accent-color="var(--yellow)"
+    close-button-variant="solid"
     hide-header
     @close="emit('close')"
   >
     <div class="event-detail-modal">
-      <!-- Zona de Visualización de Pokémon / Icono Principal -->
-      <div 
-        v-if="involvedSpecies.length > 0" 
-        class="event-pokemon-showcase"
+      <!-- Banner Header Image (100% visible, sin recortes ni gradientes que lo tapen) -->
+      <div
+        v-if="bannerUrl"
+        class="event-banner-header"
+      >
+        <img
+          :src="bannerUrl"
+          :alt="effectiveTitle"
+          class="event-banner-img"
+          @error="(e: Event) => ((e.target as HTMLImageElement).style.display='none')"
+        >
+      </div>
+
+      <!-- Pokémon showcase (only when no banner image) -->
+      <div
+        v-else-if="involvedSpecies.length > 0"
+        class="event-pokemon-showcase clickable"
+        :title="currentSpecies ? `Ver datos de la Pokédex para ${currentSpecies}` : undefined"
+        role="button"
+        tabindex="0"
+        @click="currentSpecies && openSpeciesDetail(currentSpecies)"
+        @keydown.enter="currentSpecies && openSpeciesDetail(currentSpecies)"
       >
         <PVSpriteFX
           :is-shiny="Boolean(cfg.speciesShinyMult || cfg.shinyMult)"
@@ -378,20 +442,20 @@ const currentSpecies = computed<PokemonSpeciesId | null>(() => {
             class="pixelated event-pokemon-sprite"
           >
         </PVSpriteFX>
-        <div 
-          v-if="involvedSpecies.length > 1" 
+        <div
+          v-if="involvedSpecies.length > 1"
           class="showcase-dots"
         >
-          <span 
-            v-for="(sp, idx) in involvedSpecies" 
+          <span
+            v-for="(sp, idx) in involvedSpecies"
             :key="sp"
             class="dot"
             :class="{ active: idx === currentSpeciesIndex }"
           />
         </div>
       </div>
-      <div 
-        v-else-if="event.icon" 
+      <div
+        v-else-if="!bannerUrl && event.icon"
         class="event-main-icon"
       >
         {{ event.icon }}
@@ -400,28 +464,71 @@ const currentSpecies = computed<PokemonSpeciesId | null>(() => {
       <!-- Título y Descripción -->
       <div class="event-header">
         <h3 class="event-title">
-          ¡{{ event.name }}!
+          ¡{{ effectiveTitle }}!
         </h3>
+        <div
+          v-if="activeRotation?.title && activeRotation.title !== event.name"
+          class="event-rotation-badge"
+        >
+          🏆 Temática Semanal: {{ activeRotation.title }}
+        </div>
         <p class="event-desc">
           {{ event.description || '¡Aprovechá este evento especial mientras esté activo!' }}
         </p>
       </div>
 
+      <!-- Participantes / Especies Permitidas con Sprites -->
+      <div
+        v-if="involvedSpecies.length > 0"
+        class="event-section participants-section"
+      >
+        <div class="section-tag">
+          POKÉMON PARTICIPANTES ({{ involvedSpecies.length }})
+        </div>
+        <div class="participants-list-pills">
+          <div
+            v-for="sp in involvedSpecies"
+            :key="sp"
+            class="participant-pill clickable"
+            :title="`Ver información de Pokédex de ${sp}`"
+            role="button"
+            tabindex="0"
+            @click.stop="openSpeciesDetail(sp)"
+            @keydown.enter.stop="openSpeciesDetail(sp)"
+          >
+            <PVSpriteFX
+              :is-shiny="Boolean(cfg.speciesShinyMult || cfg.shinyMult)"
+              :sparkle-count="2"
+            >
+              <img
+                :src="getAssetUrl(ASSET_TYPES.POKEMON, sp, { isShiny: Boolean(cfg.speciesShinyMult || cfg.shinyMult) })"
+                :alt="sp"
+                class="pixelated participant-sprite"
+              >
+            </PVSpriteFX>
+            <span class="participant-name">{{ sp }}</span>
+          </div>
+        </div>
+      </div>
+
+
+
       <!-- Horario -->
-      <div 
-        v-if="scheduleText" 
+      <div
+        v-if="scheduleText"
         class="event-section"
       >
         <div class="section-tag">
           ⏰ HORARIO
         </div>
-        <div 
-          class="info-box schedule-box" 
+        <div
+          class="info-box schedule-box"
           :class="{ active: event.manual }"
         >
           {{ scheduleText }}
         </div>
       </div>
+
 
       <!-- Bonificaciones -->
       <div 
@@ -580,13 +687,33 @@ const currentSpecies = computed<PokemonSpeciesId | null>(() => {
 @use "@/styles/core/mixins" as *;
 
 .event-detail-modal {
-  padding: 8px 4px;
+  padding: 4px 4px 12px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   text-align: center;
   color: var(--white);
 }
+
+// ── Banner Header ──────────────────────────────────────────────────────────────
+.event-banner-header {
+  margin: -4px -4px 0;
+  border-radius: 18px 18px 0 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+.event-banner-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+
 
 .event-pokemon-showcase {
   display: flex;
@@ -602,6 +729,15 @@ const currentSpecies = computed<PokemonSpeciesId | null>(() => {
     image-rendering: pixelated;
     object-fit: contain;
     filter: Drop-Shadow(0 4px 12px Rgba(250, 204, 21, 0.4));
+  }
+
+  &.clickable {
+    cursor: pointer;
+
+    &:hover {
+      transform: Scale(1.05);
+      filter: Drop-Shadow(0 0 16px Rgba(250, 204, 21, 0.6));
+    }
   }
 
   .showcase-dots {
@@ -622,6 +758,11 @@ const currentSpecies = computed<PokemonSpeciesId | null>(() => {
       }
     }
   }
+}
+
+.showcase-dots--center {
+  justify-content: center;
+  margin-top: -8px;
 }
 
 .event-main-icon {
@@ -645,6 +786,19 @@ const currentSpecies = computed<PokemonSpeciesId | null>(() => {
     text-shadow: 0 0 10px Rgba(250, 204, 21, 0.3);
   }
 
+  .event-rotation-badge {
+    align-self: center;
+    padding: 3px 10px;
+    background: Rgba(250, 204, 21, 0.12);
+    border: 1px solid Rgba(250, 204, 21, 0.4);
+    border-radius: 9999px;
+    color: var(--yellow);
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 6px Rgba(0, 0, 0, 0.3);
+  }
+
   .event-desc {
     font-size: 11px;
     color: Rgba(241, 245, 249, 0.85);
@@ -652,6 +806,55 @@ const currentSpecies = computed<PokemonSpeciesId | null>(() => {
     margin: 0;
   }
 }
+
+.participants-section {
+  .participants-list-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    background: Rgba(255, 255, 255, 0.03);
+    border: 1px solid Rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 12px;
+  }
+
+  .participant-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: Rgba(15, 23, 42, 0.75);
+    border: 1px solid Rgba(96, 165, 250, 0.25);
+    border-radius: 10px;
+    padding: 6px 12px;
+    cursor: pointer;
+
+    &:hover {
+      transform: Translatey(-2px);
+      border-color: Rgba(250, 204, 21, 0.7);
+      background: Rgba(15, 23, 42, 0.95);
+      box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.4), 0 0 8px Rgba(250, 204, 21, 0.25);
+    }
+
+    .participant-sprite {
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+    }
+
+    .participant-name {
+      font-size: 11px;
+      font-weight: bold;
+      color: #f1f5f9;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      @include pixelated;
+    }
+  }
+}
+
+
+
 
 .event-section {
   display: flex;

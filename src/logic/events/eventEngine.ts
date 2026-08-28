@@ -5,6 +5,9 @@
  * Absolute isolation: This module does not store state or connect to DB.
  */
 
+import type { Pokemon, PokemonStatKey, PokemonGender } from '@/types/pokemon/pokemon';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+
 export const SUB_COMPETITION_METRICS = ['total_ivs', 'weight', 'height', 'level', 'stat_iv', 'friendship'] as const;
 export type SubCompetitionMetric = (typeof SUB_COMPETITION_METRICS)[number];
 
@@ -30,6 +33,8 @@ export interface SubCompetitionConfig {
   icon?: string;
   metric: SubCompetitionMetric;
   targetStat?: PokemonStatKey;
+  targetSpecies?: PokemonSpeciesId;
+  speciesScope?: 'global' | 'per_species';
   order?: SubCompetitionOrder;
   filters?: SubCompetitionFilters;
   prizes?: {
@@ -37,6 +42,11 @@ export interface SubCompetitionConfig {
     second?: Record<string, unknown>; // open-record
     third?: Record<string, unknown>; // open-record
   };
+}
+
+export interface ResolvedSubCompetition extends SubCompetitionConfig {
+  targetSpecies?: PokemonSpeciesId;
+  speciesScope: 'global' | 'per_species';
 }
 
 export interface SubCompetitionEvaluationResult {
@@ -56,6 +66,14 @@ export interface MinigameEventBuffs {
   [key: string]: unknown;
 }
 
+export type RotationTheme = 'weekly_4';
+
+export interface WeeklyRotationEntry {
+  species: string;
+  banner: string;
+  title: string;
+}
+
 export interface EventConfig {
   expMult?: number;
   moneyMult?: number;
@@ -70,6 +88,7 @@ export interface EventConfig {
   archaeologyMult?: number;
   bugCatchingMult?: number;
   casinoLuckyMult?: number;
+  /** Comma-separated species IDs. Use "*" for open (any species) competitions. */
   species?: string;
   speciesRateMult?: number;
   speciesShinyMult?: number;
@@ -77,6 +96,7 @@ export interface EventConfig {
   banner?: string; // domain-ok
   metric?: string; // domain-ok
   hasCompetition?: boolean;
+  competitionScope?: 'global' | 'per_species';
   sortBy?: string; // domain-ok
   requireCaughtDuringEvent?: boolean;
   catchStartDate?: string;
@@ -89,6 +109,9 @@ export interface EventConfig {
     second?: Record<string, unknown>; // open-record
     third?: Record<string, unknown>; // open-record
   };
+  /** 4-week monthly rotation: week number (1-4) -> rotation data */
+  rotationTheme?: RotationTheme;
+  weeklyRotations?: Record<string, WeeklyRotationEntry>;
 }
 
 export interface EventTimeWindow {
@@ -100,7 +123,7 @@ export interface Event {
   id: string;
   name: string;
   description: string;
-  type?: 'competition' | 'boost';
+  type?: 'competition' | 'boost' | 'passive_bonus';
   icon?: string;
   active: boolean;
   manual?: boolean;
@@ -139,6 +162,74 @@ import { logger } from '../utils/logger.ts'
 import { getArgDateString, normalizeZonedDateTime } from '../utils/timeUtils.ts'
 export { getArgDateString }
 
+const WEEK_1_MAX_DAY = 7;
+const WEEK_2_MAX_DAY = 14;
+const WEEK_3_MAX_DAY = 21;
+
+/**
+ * Returns the ISO week-of-month (1-4) for a given ZonedDateTime.
+ * Week 1 = days 1-7, Week 2 = days 8-14, Week 3 = days 15-21, Week 4 = days 22+.
+ */
+export function getWeekOfMonth(zdt: Temporal.ZonedDateTime): 1 | 2 | 3 | 4 {
+  const day = zdt.day;
+  if (day <= WEEK_1_MAX_DAY) return 1;
+  if (day <= WEEK_2_MAX_DAY) return 2;
+  if (day <= WEEK_3_MAX_DAY) return 3;
+  return 4;
+}
+
+/**
+ * Returns true if the given ZonedDateTime falls on the last Saturday or Sunday of its month.
+ */
+export function isLastWeekendOfMonth(zdt: Temporal.ZonedDateTime): boolean {
+  const jsDay = zdt.dayOfWeek % 7; // 0=Sun, 6=Sat
+  if (jsDay !== 0 && jsDay !== 6) return false;
+  // Check if advancing 7 days would go to a different month
+  const nextWeek = zdt.add({ days: 7 });
+  return nextWeek.month !== zdt.month;
+}
+
+/**
+ * Returns true if the given ZonedDateTime falls on the last Sunday of its month.
+ */
+export function isLastSundayOfMonth(zdt: Temporal.ZonedDateTime): boolean {
+  const jsDay = zdt.dayOfWeek % 7; // 0=Sun
+  if (jsDay !== 0) return false;
+  const nextWeek = zdt.add({ days: 7 });
+  return nextWeek.month !== zdt.month;
+}
+
+/**
+ * Returns true if the given ZonedDateTime falls on Saturday or Sunday of Week 2 (days 8-14) of its month.
+ */
+export function isSecondWeekendOfMonth(zdt: Temporal.ZonedDateTime): boolean {
+  const jsDay = zdt.dayOfWeek % 7; // 0=Sun, 6=Sat
+  if (jsDay !== 0 && jsDay !== 6) return false;
+  return getWeekOfMonth(zdt) === 2;
+}
+
+/**
+ * Returns true if the given ZonedDateTime matches the configured monthly trigger.
+ */
+export function isMonthlyTriggerMatch(trigger: string | undefined, zdt: Temporal.ZonedDateTime): boolean {
+  if (trigger === 'last_sunday') return isLastSundayOfMonth(zdt);
+  if (trigger === 'second_weekend') return isSecondWeekendOfMonth(zdt);
+  if (trigger === 'last_weekend') return isLastWeekendOfMonth(zdt);
+  return false;
+}
+
+/**
+ * Resolves the active config (species, banner, title) for a rotation event based on current week of month.
+ */
+export function resolveWeeklyRotation(
+  cfg: EventConfig,
+  zdt: Temporal.ZonedDateTime
+): WeeklyRotationEntry | null {
+  if (cfg.rotationTheme !== 'weekly_4' || !cfg.weeklyRotations) return null;
+  const week = getWeekOfMonth(zdt);
+  return (cfg.weeklyRotations[String(week)] as WeeklyRotationEntry | undefined) ?? null;
+}
+
 /**
  * Checks if an event is active based on current time (America/Argentina/Buenos_Aires).
  */
@@ -163,9 +254,21 @@ export function isEventActiveNow(event: Event, date: Temporal.ZonedDateTime | Te
     }
   }
 
-  // 2. Weekly schedule check (Argentina Time UTC-3)
   const sched = safeParse(event.schedule)
-  if (!sched || sched.type !== 'weekly' || !sched.days) return false
+  if (!sched) return false
+
+  // 2. Monthly schedule check
+  if (sched.type === 'monthly') {
+    const trigger = sched.trigger as string | undefined
+    if (!isMonthlyTriggerMatch(trigger, zdt)) return false
+    const startHour = (sched.startHour as number) ?? 0
+    const endHour = (sched.endHour as number) ?? 23.99
+    const hour = zdt.hour + zdt.minute / 60
+    return hour >= startHour && hour < endHour
+  }
+
+  // 3. Weekly schedule check (Argentina Time UTC-3)
+  if (!sched.days || sched.type !== 'weekly') return false
 
   // Mapping Temporal (1=Mon, 7=Sun) to JS (0=Sun, 1=Mon)
   const day = zdt.dayOfWeek % 7
@@ -194,6 +297,7 @@ export function isEventActiveNow(event: Event, date: Temporal.ZonedDateTime | Te
 
   return false
 }
+
 
 /**
  * Calculates global multipliers from a list of active events.
@@ -242,7 +346,6 @@ import { hashString, mulberry32 } from '../utils/math.ts';
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 import { getPokemonPhysicalWeight, getPokemonPhysicalHeight, getPhysicalDimensionTier } from '../pokemon/physicalDimensionsMath.ts';
 import { getPokemonTier } from '../pokemon/tierEngine.ts';
-import type { Pokemon, PokemonStatKey, PokemonGender } from '@/types/pokemon/pokemon';
 
 /**
  * Returns the configured or default sub-competitions for an event.
@@ -394,6 +497,7 @@ export function getSpeciesBoosts(activeEvents: Event[], speciesId: string): { ra
   for (const ev of activeEvents) {
     const cfg = safeParse(ev.config) as EventConfig;
     if (!cfg.species) continue
+    if (cfg.species === '*') continue
 
     const speciesList = cfg.species.split(',').map(s => s.trim()).filter(isPokemonSpeciesId)
     if (speciesList.includes(sId)) {
@@ -545,10 +649,64 @@ export function getEventCurrentWindow(
     }
   }
 
-  // 2. Weekly schedule check (Argentina Time UTC-3)
+  // 2. Monthly schedule check
   const zdt = normalizeZonedDateTime(date);
   const sched = safeParse(event.schedule);
-  if (!sched || sched.type !== 'weekly' || !sched.days) return null;
+  if (!sched) return null;
+
+  const buildZdt = (baseZdt: Temporal.ZonedDateTime, hr: number, isEnd = false): Temporal.ZonedDateTime => {
+    if (hr >= 24 || (isEnd && hr >= 23.99)) {
+      return baseZdt.with({ hour: 23, minute: 59, second: 59, millisecond: 999, microsecond: 0, nanosecond: 0 });
+    }
+    const h = Math.floor(hr);
+    const m = Math.round((hr % 1) * 60);
+    return baseZdt.with({ hour: h, minute: m, second: 0, millisecond: 0, microsecond: 0, nanosecond: 0 });
+  };
+
+  if (sched.type === 'monthly') {
+    const trigger = sched.trigger as string | undefined;
+    if (!isMonthlyTriggerMatch(trigger, zdt)) return null;
+
+    const startHour = (sched.startHour as number) ?? 0;
+    const endHour = (sched.endHour as number) ?? 24;
+    const hour = zdt.hour + zdt.minute / 60;
+
+    // Single-day monthly triggers (e.g. last_sunday)
+    if (trigger === 'last_sunday') {
+      if (hour >= startHour && hour < endHour) {
+        const startZdt = buildZdt(zdt, startHour, false);
+        const endZdt = buildZdt(zdt, endHour, true);
+        return { start: startZdt.toInstant(), end: endZdt.toInstant() };
+      }
+      return null;
+    }
+
+    // 2-day weekend monthly triggers (second_weekend, last_weekend)
+    if (trigger === 'second_weekend' || trigger === 'last_weekend') {
+      const jsDay = zdt.dayOfWeek % 7; // 0=Sun, 6=Sat
+      if (jsDay === 6) {
+        if (hour >= startHour) {
+          const startZdt = buildZdt(zdt, startHour, false);
+          const sundayZdt = zdt.add({ days: 1 });
+          const endZdt = buildZdt(sundayZdt, endHour, true);
+          return { start: startZdt.toInstant(), end: endZdt.toInstant() };
+        }
+      } else if (jsDay === 0) {
+        if (hour < endHour) {
+          const saturdayZdt = zdt.subtract({ days: 1 });
+          const startZdt = buildZdt(saturdayZdt, startHour, false);
+          const endZdt = buildZdt(zdt, endHour, true);
+          return { start: startZdt.toInstant(), end: endZdt.toInstant() };
+        }
+      }
+      return null;
+    }
+
+    return null;
+  }
+
+  // 3. Weekly schedule check (Argentina Time UTC-3)
+  if (!sched.days || sched.type !== 'weekly') return null;
 
   // Mapping Temporal (1=Mon, 7=Sun) to JS (0=Sun, 1=Mon)
   const day = zdt.dayOfWeek % 7;
@@ -560,15 +718,6 @@ export function getEventCurrentWindow(
 
   const startHour = (sched.startHour as number) ?? 0;
   const endHour = (sched.endHour as number) ?? 24;
-
-  const buildZdt = (baseZdt: Temporal.ZonedDateTime, hr: number, isEnd = false): Temporal.ZonedDateTime => {
-    if (hr >= 24 || (isEnd && hr >= 23.99)) {
-      return baseZdt.with({ hour: 23, minute: 59, second: 59, millisecond: 999, microsecond: 0, nanosecond: 0 });
-    }
-    const h = Math.floor(hr);
-    const m = Math.round((hr % 1) * 60);
-    return baseZdt.with({ hour: h, minute: m, second: 0, millisecond: 0, microsecond: 0, nanosecond: 0 });
-  };
 
   if (startHour < endHour) {
     if (isScheduledToday && hour >= startHour && hour < endHour) {
@@ -609,12 +758,21 @@ export function isPokemonEligibleForEvent(
 
   const cfg = safeParse(event.config) as EventConfig;
 
-  // 1. Check species if constrained
-  if (cfg.species) {
-    const allowedSpecies = cfg.species.split(',').map(s => s.trim().toLowerCase());
-    const pokeSpecies = String(pokemon.species).toLowerCase();
+  // 1. Check species if constrained ('*' means open to any species)
+  const effectiveSpecies = (() => {
+    if (cfg.rotationTheme === 'weekly_4' && cfg.weeklyRotations) {
+      const zdt = normalizeZonedDateTime(date);
+      const rotation = resolveWeeklyRotation(cfg, zdt);
+      return rotation?.species ?? cfg.species;
+    }
+    return cfg.species;
+  })();
+
+  if (effectiveSpecies && effectiveSpecies !== '*') {
+    const allowedSpecies = effectiveSpecies.split(',').map(s => s.trim().toLowerCase());
+    const pokeSpecies = pokemon.id;
     if (!allowedSpecies.includes(pokeSpecies)) {
-      return { eligible: false, reason: `Especie no permitida. Requiere: ${cfg.species}` };
+      return { eligible: false, reason: `Especie no permitida. Requiere: ${effectiveSpecies}` };
     }
   }
 
@@ -671,13 +829,21 @@ export function isPokemonEligibleForSubCompetition(
     return { eligible: false, reason: 'Pokémon inexistente' };
   }
 
-  // 1. Global event eligibility (species whitelist, catch period)
+  // 1. Target species check for species-scoped categories
+  if (subComp.targetSpecies) {
+    const requiredSpecies = subComp.targetSpecies;
+    if (pokemon.id !== requiredSpecies) {
+      return { eligible: false, reason: `Esta categoría está reservada exclusivamente para ${requiredSpecies}` };
+    }
+  }
+
+  // 2. Global event eligibility (species whitelist, catch period)
   const globalCheck = isPokemonEligibleForEvent(event, pokemon, date);
   if (!globalCheck.eligible) {
     return globalCheck;
   }
 
-  // 2. Sub-competition specific filters (default to unrestricted 'any')
+  // 3. Sub-competition specific filters (default to unrestricted 'any')
   const filters = subComp.filters;
   if (!filters) {
     return { eligible: true };
@@ -720,6 +886,82 @@ export function isPokemonEligibleForSubCompetition(
   }
 
   return { eligible: true };
+}
+
+export const DEFAULT_SUB_COMPETITIONS: readonly SubCompetitionConfig[] = [
+  { id: 'ivs', name: 'Genética Superior (IVs)', metric: 'total_ivs', order: 'max' },
+  { id: 'weight', name: 'Masa y Peso (Titán / Miniatura)', metric: 'weight', order: 'auto' },
+  { id: 'height', name: 'Envergadura y Altura (Gran Salto)', metric: 'height', order: 'auto' }
+] as const;
+
+/**
+ * Resolves the concrete list of sub-competitions for an event at a given point in time.
+ * - Global categories (IVs) are shared across all participating species.
+ * - Physical dimension categories (Weight, Height) are scoped intra-species for each participating species in multi-species events.
+ * - Saturday Open Championship (species: '*') keeps all categories global.
+ */
+export function resolveEventSubCompetitions(
+  event: Event,
+  date: Temporal.ZonedDateTime | Temporal.Instant = Temporal.Now.instant()
+): ResolvedSubCompetition[] {
+  const cfg = safeParse(event.config) as EventConfig | null;
+  const rawSubComps = (cfg?.subCompetitions && cfg.subCompetitions.length > 0)
+    ? cfg.subCompetitions
+    : (DEFAULT_SUB_COMPETITIONS as SubCompetitionConfig[]);
+
+  const zdt = normalizeZonedDateTime(date);
+  const activeRotation = cfg ? resolveWeeklyRotation(cfg, zdt) : null;
+  const effectiveSpeciesString = activeRotation?.species || cfg?.species || null;
+
+  const isGlobalScope = cfg?.competitionScope === 'global' || effectiveSpeciesString === '*' || !effectiveSpeciesString;
+
+  if (isGlobalScope) {
+    return rawSubComps.map(sub => ({
+      ...sub,
+      speciesScope: 'global' as const,
+      targetSpecies: undefined
+    }));
+  }
+
+  const speciesList = effectiveSpeciesString
+    .split(',')
+    .map(s => s.trim().toLowerCase())
+    .filter(isPokemonSpeciesId);
+
+  if (speciesList.length <= 1) {
+    const singleSpecies = speciesList[0];
+    return rawSubComps.map(sub => ({
+      ...sub,
+      speciesScope: (sub.metric === 'total_ivs' || sub.metric === 'stat_iv') ? ('global' as const) : ('per_species' as const),
+      targetSpecies: (sub.metric === 'total_ivs' || sub.metric === 'stat_iv') ? undefined : singleSpecies
+    }));
+  }
+
+  // Multi-species event: 1 Global IVs slot + per-species physical dimension slots
+  const resolved: ResolvedSubCompetition[] = [];
+
+  for (const sub of rawSubComps) {
+    if (sub.metric === 'total_ivs' || sub.metric === 'stat_iv' || sub.speciesScope === 'global') {
+      resolved.push({
+        ...sub,
+        speciesScope: 'global' as const,
+        targetSpecies: undefined
+      });
+    } else {
+      for (const sp of speciesList) {
+        const capitalizedSp = sp.charAt(0).toUpperCase() + sp.slice(1);
+        resolved.push({
+          ...sub,
+          id: `${sub.id}_${sp}`,
+          name: `${sub.name} (${capitalizedSp})`,
+          targetSpecies: sp,
+          speciesScope: 'per_species' as const
+        });
+      }
+    }
+  }
+
+  return resolved;
 }
 
 /**
@@ -851,8 +1093,56 @@ export function getUpcomingEventOccurrences(
           }
         }
       }
+    } else if (sched && sched.type === 'monthly') {
+      // 2. Monthly Recurring Schedule (last_sunday, second_weekend, last_weekend)
+      const trigger = sched.trigger as string | undefined
+      const startHour = (sched.startHour as number) ?? 0
+      const endHour = (sched.endHour as number) ?? 24
+
+      for (let offset = 0; offset <= daysAhead; offset++) {
+        const targetDay = zdtNow.add({ days: offset })
+        const jsDay = targetDay.dayOfWeek % 7 // 0=Sun, 6=Sat
+
+        if (isMonthlyTriggerMatch(trigger, targetDay)) {
+          const startZdt = targetDay.with({ hour: startHour, minute: 0, second: 0, millisecond: 0, microsecond: 0, nanosecond: 0 })
+          const endZdt = startHour < endHour
+            ? targetDay.with({ hour: endHour, minute: 0, second: 0, millisecond: 0, microsecond: 0, nanosecond: 0 })
+            : targetDay.add({ days: 1 }).with({ hour: endHour, minute: 0, second: 0, millisecond: 0, microsecond: 0, nanosecond: 0 })
+
+          const startInst = startZdt.toInstant()
+          const endInst = endZdt.toInstant()
+
+          if (Temporal.Instant.compare(endInst, nowInstant) > 0 && Temporal.Instant.compare(startInst, maxInstant) <= 0) {
+            const isActive = Temporal.Instant.compare(nowInstant, startInst) >= 0 && Temporal.Instant.compare(nowInstant, endInst) < 0
+            
+            const shortDay = dayNamesShort[jsDay] ?? 'Día'
+            const fullDay = dayNamesFull[jsDay] ?? 'Día'
+            const dateLabel = offset === 0 ? 'Hoy' : offset === 1 ? 'Mañana' : `${shortDay} ${targetDay.day}/${targetDay.month}`
+            
+            const formatH = (hr: number) => {
+              const h = Math.floor(hr)
+              const m = Math.round((hr % 1) * 60)
+              return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+            }
+            const isAllDay = startHour === 0 && (endHour >= 23.9 || endHour === 24)
+            const timeLabel = isAllDay ? 'Todo el día' : `${formatH(startHour)} – ${formatH(endHour)} hs`
+            const startsInLabel = calculateStartsInLabel(isActive, startInst, nowInstant)
+
+            occurrences.push({
+              event,
+              startInstant: startInst,
+              endInstant: endInst,
+              dateLabel,
+              dayName: fullDay,
+              timeLabel,
+              isActiveNow: isActive,
+              startsInLabel
+            })
+          }
+        }
+      }
     } else if (event.start_at && event.end_at) {
-      // 2. Absolute Start / End dates
+      // 3. Absolute Start / End dates
       try {
         const startInst = Temporal.Instant.from(event.start_at)
         const endInst = Temporal.Instant.from(event.end_at)

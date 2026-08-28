@@ -140,5 +140,16 @@ Whenever ANY bug, test failure, or simulation desync occurs, the agent MUST foll
   3. **Multi-Sprite Responsiveness**: Locations with multi-cycle sprites (open routes and multi-sprite interiors like `mansion`) react dynamically to time changes.
   4. **In-Combat Weather Lifecycle**: Moves and abilities properly cast weather in any arena and cleanly revert upon expiration.
 
+## 15. GSAP Animation & Visual Kinematics Testing Standards
+
+- **Synchronous GSAP Mocking in Unit Tests**: Unit tests in `tests/unit/battle/` verifying GSAP action helpers (`combatantActionAnims.ts`, `useBattleCaptureAnimations.ts`) must supply synchronous timeline execution stubs where `awaitAnimation` progresses the timeline to 1 (`anim.progress(1)`) and `tl.add` executes passed action callbacks immediately. This prevents 60s JSDOM ticker stalls while maintaining deterministic assertion on timeline parameters (`duration`, `scale`, `filter`, `x`, `y`, `ease`).
+- **3-Tier Combat Animation Testing Matrix**:
+  - **Tier 1 (Unit)**: Direct verification of GSAP parameters, timeline children, and state flags in isolation.
+  - **Tier 2 (Integrity)**: Verification of FSM transitions (`CATCH_PROCESS`, `CATCH_SHAKE`, `CATCH_BREAK`, `FADEOUT_BALL`, `ESCAPE_PROCESS`) and eventBus audio/visual signals.
+  - **Tier 3 (Playwright E2E Simulations)**: Verification in browser context ensuring 0 visual lockups, smooth return to map, and proper HUD settlement under official UI controls.
+- **Playwright Battle Simulation Code Hygiene**:
+  - Always declare descriptive named constants for battle simulation parameters (`MEWTWO_BOSS_LEVEL`, `HIGH_LEVEL_PIDGEOT`, `SPEED_PENALTY_STAGE`) to eliminate inline magic numbers.
+  - Use `BaseBattleSimulation.getBattleStoreState()` to inspect combatant snapshot states rather than raw inline evaluations.
+
 
 

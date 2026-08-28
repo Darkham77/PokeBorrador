@@ -264,3 +264,15 @@ To ensure atmospheric variety and geographical consistency, all maps must be tag
 ## 13. Targeted Biome Tinting System
 
 When applying CSS atmospheric filters (like hue-rotate, sepia, or brightness overlays) to biomes (e.g., cave brown, desert yellow), restrict the tint class only to specific asset families (e.g., `rock` or `tree`) instead of applying them globally to all scenery. This prevents visual saturation or excessive darkening, and keeps other colorful elements (like crystals or snow grass) clean and vibrant.
+
+---
+
+## 14. Event Engine & Modular Monthly Recurrence Standards
+
+To prevent event overcrowding and conflicting player objectives during weekends, scheduled game events must adhere to modular recurrence boundaries:
+
+1. **Saturday Competition Isolation**: Saturdays are reserved exclusively for the *Saturday Global Open Championship* (`gran_concurso_sabado`) alongside *Double EXP* (`doble_exp`). No other heavy competition or spawn event may overlap on Saturdays.
+2. **Sunday-Exclusive Community Day**: Monthly Community Days (`comunidad_mensual`) must use `trigger: 'last_sunday'` (strictly the last Sunday of each month, 00:00 to 23:59 ARG), pairing naturally with Sunday's *Safari Luck & Fortune* bonus.
+3. **Mid-Month Faction War**: Territorial war events (`guerra_facciones_mensual`) must use `trigger: 'second_weekend'` (Saturday 00:00 to Sunday 23:59 of Week 2), ensuring balanced activity distribution across the month.
+4. **Deterministic Time Predicates**: All monthly schedules MUST be resolved via dedicated pure predicates (`isLastSundayOfMonth`, `isSecondWeekendOfMonth`, `isLastWeekendOfMonth`) and `isMonthlyTriggerMatch` inside `src/logic/events/eventEngine.ts` with zero runtime fallbacks.
+

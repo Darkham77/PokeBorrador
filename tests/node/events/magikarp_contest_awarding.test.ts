@@ -206,9 +206,9 @@ describe('Magikarp Contest Automated Awarding & Claiming (SQLite RPC)', () => {
     // 7. Test claiming an award
     const claimRes = await emulateClaimAward(mockSqliteDb, { p_award_id: awardP1.id });
     assert.strictEqual(claimRes.error, null);
-    const claimData = claimRes.data as { ok?: boolean; prize?: { type: string; amount: number } }; // domain-ok
+    const claimData = claimRes.data as { ok?: boolean; prize?: { type: string; amount: number; rank?: string } }; // domain-ok
     assert.ok(claimData?.ok);
-    assert.deepStrictEqual(claimData?.prize, { type: 'money', amount: 50000 });
+    assert.deepStrictEqual(claimData?.prize, { type: 'money', amount: 50000, rank: 'first' });
 
     // Verify award is now claimed in DB
     const claimedRows = await queryLocal('SELECT claimed, received_at FROM awards WHERE id = ?', [awardP1.id]);

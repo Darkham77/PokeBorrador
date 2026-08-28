@@ -1,5 +1,4 @@
-// @vitest-environment jsdom
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import EventDetailModal from '@/components/modals/EventDetailModal.vue'
 import type { Event as GameEvent } from '@/logic/events/eventEngine'
@@ -78,4 +77,114 @@ describe('EventDetailModal.vue', () => {
     expect(text).toContain('Chapa Dorada')
     expect(text).toContain('Caramelo Raro')
   })
+
+  it('renders weekly rotation banner, rotation title, and participant sprites for rotating tournaments', () => {
+    const rotatingEvent = {
+      id: 'torneo_pesca',
+      name: 'Torneo de Pesca Acuática',
+      icon: '🎣',
+      type: 'competition',
+      active: true,
+      manual: false,
+      description: '¡Competencia semanal de pesca!',
+      schedule: '{"type": "weekly", "days": [2], "startHour": 18, "endHour": 22}',
+      config: JSON.stringify({
+        hasCompetition: true,
+        requireCaughtDuringEvent: true,
+        rotationTheme: 'weekly_4',
+        speciesShinyMult: 3.0,
+        speciesRateMult: 2.0,
+        weeklyRotations: {
+          '1': { species: 'magikarp,gyarados', banner: 'hora_magikarp_full', title: 'Torneo Magikarp & Gyarados' },
+          '4': { species: 'dratini,dragonair,lapras', banner: 'pesca_mistica_full', title: 'Torneo de Pesca Mística' }
+        },
+        subCompetitions: [
+          {
+            id: 'ivs',
+            name: 'Genética Superior (IVs)',
+            metric: 'total_ivs',
+            order: 'max',
+            prizes: {
+              first: { type: 'mixed', money: 25000, battleCoins: 150, items: { goldbottlecap: 1, rarecandy: 5 } }
+            }
+          }
+        ]
+      })
+    }
+
+    const wrapper = mount(EventDetailModal, {
+      props: {
+        show: true,
+        event: rotatingEvent as unknown as GameEvent
+      },
+      global: {
+        stubs: globalStubs
+      }
+    })
+
+    const text = wrapper.text()
+    expect(text).toContain('POKÉMON PARTICIPANTES')
+
+    // Verifies banner is present
+    const bannerImg = wrapper.find('.event-banner-img')
+    expect(bannerImg.exists()).toBe(true)
+
+    // Verifies participant pills are rendered with sprites
+    const participantPills = wrapper.findAll('.participant-pill')
+    expect(participantPills.length).toBeGreaterThanOrEqual(2)
+
+    const spriteImages = wrapper.findAll('.participant-sprite')
+    expect(spriteImages.length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('opens PokedexDetail modal when clicking on a participant sprite pill', async () => {
+    const { createPinia, setActivePinia } = await import('pinia')
+    const { useModalStore } = await import('@/stores/modals')
+    setActivePinia(createPinia())
+    const modalStore = useModalStore()
+    const openSpy = vi.spyOn(modalStore, 'open')
+
+    const rotatingEvent = {
+      id: 'torneo_pesca',
+      name: 'Torneo de Pesca Acuática',
+      icon: '🎣',
+      type: 'competition',
+      active: true,
+      manual: false,
+      description: '¡Competencia semanal de pesca!',
+      schedule: '{"type": "weekly", "days": [2], "startHour": 18, "endHour": 22}',
+      config: JSON.stringify({
+        hasCompetition: true,
+        species: 'dratini,dragonair,lapras'
+      })
+    }
+
+    const wrapper = mount(EventDetailModal, {
+      props: {
+        show: true,
+        event: rotatingEvent as unknown as GameEvent
+      },
+      global: {
+        stubs: globalStubs
+      }
+    })
+
+    const pills = wrapper.findAll('.participant-pill')
+    expect(pills.length).toBe(3)
+
+    // Click on the first pill (dratini)
+    await pills[0]?.trigger('click')
+    expect(openSpy).toHaveBeenCalledWith('PokedexDetail', {
+      speciesId: 'dratini',
+      context: 'pokedex'
+    })
+
+    // Click on the third pill (lapras)
+    await pills[2]?.trigger('click')
+    expect(openSpy).toHaveBeenCalledWith('PokedexDetail', {
+      speciesId: 'lapras',
+      context: 'pokedex'
+    })
+  })
 })
+

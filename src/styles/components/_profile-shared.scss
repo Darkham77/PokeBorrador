@@ -49,6 +49,12 @@
   flex-direction: column;
   gap: 10px;
   @include gpu-layer;
+  cursor: default;
+  filter: Brightness(1);
+
+  > * {
+    pointer-events: none;
+  }
 
   &.pvp {
     background: linear-gradient(135deg, Rgba(236, 72, 153, 0.05) 0%, Rgba(15, 23, 42, 0.4) 100%);

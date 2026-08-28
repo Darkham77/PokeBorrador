@@ -228,13 +228,13 @@ export async function executeTurnInWorker(
 
     const { useGameStore } = await import('@/stores/game');
     const gameStore = useGameStore();
-    if (gameStore?.state?.team && !isSimulation) {
+    if (gameStore?.state?.team) {
       const p1Data = extractTeamHpAndStatus(gameStore.state.team);
       p1Hps = p1Data.hps;
       p1Statuses = p1Data.statuses;
       console.debug(`[ORCHESTRATOR-EXECUTE-DEBUG] Sending p1Hps:`, JSON.stringify(p1Hps), `p1Statuses:`, JSON.stringify(p1Statuses));
     }
-    if (battleStore.state?.enemyTeam && !isSimulation) {
+    if (battleStore.state?.enemyTeam) {
       const p2Data = extractTeamHpAndStatus(battleStore.state.enemyTeam);
       p2Hps = p2Data.hps;
       p2Statuses = p2Data.statuses;

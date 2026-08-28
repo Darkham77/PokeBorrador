@@ -11,6 +11,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
 import ProfileStatsGrid from '@/components/profile/ProfileStatsGrid.vue'
 import ProfileAchievementsGrid from '@/components/profile/ProfileAchievementsGrid.vue'
+import ProfileEventStatsCard from '@/components/profile/ProfileEventStatsCard.vue'
 import ProfileXpCard from '@/components/profile/ProfileXpCard.vue'
 import ProfilePokedexCard from '@/components/profile/ProfilePokedexCard.vue'
 import ProfileFactionWarCard from './ProfileFactionWarCard.vue'
@@ -75,6 +76,11 @@ const {
   captureEfficiency,
   money,
   battleCoinsCount,
+  eventParticipations,
+  eventMedalsTotal,
+  eventMedalsFirst,
+  eventMedalsSecond,
+  eventMedalsThird,
   saveState,
   fetchData
 } = useTrainerProfile(() => props.userId)
@@ -316,6 +322,17 @@ const getAssetUrlLocal = getAssetUrl
           :badges="badgesCount"
           :money="money"
           :battle-coins="battleCoinsCount"
+        />
+
+        <!-- Torneos y Competiciones de Eventos -->
+        <ProfileEventStatsCard
+          :participations="eventParticipations"
+          :medals-total="eventMedalsTotal"
+          :first-place="eventMedalsFirst"
+          :second-place="eventMedalsSecond"
+          :third-place="eventMedalsThird"
+          :handle-stat-enter="handleStatEnter"
+          :handle-stat-leave="handleStatLeave"
         />
 
         <!-- Faction War Contribution -->

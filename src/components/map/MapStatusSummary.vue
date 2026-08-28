@@ -2,11 +2,13 @@
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import type { Event as GameEvent } from '@/logic/events/eventEngine'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useEventStore } from '@/stores/events'
 import { calculatePokemonCenterCooldown } from '@/logic/economy/economyFormulas'
+
 
 const SECONDS_TO_MS_CONVERSION_FACTOR = 1000
 
@@ -67,6 +69,7 @@ onUnmounted(() => {
   if (cooldownTween) {
     cooldownTween.kill()
   }
+  stopCarousel()
 })
 
 const cooldownFormatted = computed(() => {
@@ -86,55 +89,102 @@ const bannerStyle = computed(() => ({
   backgroundImage: `url('${bannerUrl.value}')`
 }))
 
-// Event mapping and automatic resolution with fallback
-const activeEvent = computed(() => eventStore.activeEvents[0])
+// ── Cyclic Event Banner Carousel ──────────────────────────────────────────────
+const CAROUSEL_INTERVAL_S = 6
+
+const activeEvents = computed(() => eventStore.activeEvents)
+const carouselIndex = ref(0)
 const eventImageSrc = ref('')
 const eventAspect = ref(1.7916)
+let carouselTween: gsap.core.Tween | null = null
 
-watch(() => activeEvent.value?.id, (eventId) => {
-  const baseName = eventId ? (eventId === 'doble_exp' ? 'doble_exp' : eventId === 'dia_pesca' ? 'dia_pesca' : eventId === 'hora_magikarp' ? 'hora_magikarp' : eventId) : 'war';
-  
-  const reelUrl = getAssetUrl(ASSET_TYPES.BANNER, `${baseName}_reel`);
-  const fullUrl = getAssetUrl(ASSET_TYPES.BANNER, `${baseName}_full`);
+/** Current event shown in the carousel */
+const currentCarouselEvent = computed(() => {
+  const evs = activeEvents.value
+  if (!evs.length) return null
+  return evs[carouselIndex.value % evs.length] ?? null
+})
 
-  const img = new Image();
+function loadEventImage(event: GameEvent | null): void {
+
+  if (!event) {
+    const fallbackUrl = getAssetUrl(ASSET_TYPES.BANNER, 'war_full')
+    eventImageSrc.value = fallbackUrl
+    return
+  }
+  const cfg = event.config ? (typeof event.config === 'string' ? JSON.parse(event.config) : event.config) as { banner?: string } : {}
+  const bannerKey = cfg.banner ?? event.id
+  const fullUrl = getAssetUrl(ASSET_TYPES.BANNER, `${bannerKey}`)
+  const fallbackKey = event.id.replace(/torneo_|dia_|fiebre_|gran_|guerra_/, '')
+
+  const img = new Image()
   img.onload = () => {
-    eventImageSrc.value = reelUrl;
-    eventAspect.value = img.naturalWidth / img.naturalHeight;
-  };
+    eventImageSrc.value = fullUrl
+    eventAspect.value = img.naturalWidth / img.naturalHeight
+  }
   img.onerror = () => {
-    const imgFull = new Image();
-    imgFull.onload = () => {
-      eventImageSrc.value = fullUrl;
-      eventAspect.value = imgFull.naturalWidth / imgFull.naturalHeight;
-    };
-    imgFull.onerror = () => {
-      const warUrl = getAssetUrl(ASSET_TYPES.BANNER, 'war_full');
-      const imgWar = new Image();
-      imgWar.onload = () => {
-        eventImageSrc.value = warUrl;
-        eventAspect.value = imgWar.naturalWidth / imgWar.naturalHeight;
-      };
-      imgWar.src = warUrl;
-    };
-    imgFull.src = fullUrl;
-  };
-  img.src = reelUrl;
+    const fallbackUrl = getAssetUrl(ASSET_TYPES.BANNER, `${fallbackKey}_full`)
+    const imgFallback = new Image()
+    imgFallback.onload = () => {
+      eventImageSrc.value = fallbackUrl
+      eventAspect.value = imgFallback.naturalWidth / imgFallback.naturalHeight
+    }
+    imgFallback.onerror = () => {
+      eventImageSrc.value = getAssetUrl(ASSET_TYPES.BANNER, 'war_full')
+    }
+    imgFallback.src = fallbackUrl
+  }
+  img.src = fullUrl
+}
+
+
+function advanceCarousel(): void {
+  const evs = activeEvents.value
+  if (evs.length > 1) {
+    carouselIndex.value = (carouselIndex.value + 1) % evs.length
+  }
+  loadEventImage(currentCarouselEvent.value)
+  if (evs.length > 1) {
+    carouselTween = gsap.delayedCall(CAROUSEL_INTERVAL_S, advanceCarousel)
+  }
+}
+
+function stopCarousel(): void {
+  if (carouselTween) {
+    carouselTween.kill()
+    carouselTween = null
+  }
+}
+
+// Restart carousel whenever the events list changes
+watch(activeEvents, (evs) => {
+  stopCarousel()
+  carouselIndex.value = 0
+  loadEventImage(evs[0] ?? null)
+  if (evs.length > 1) {
+    carouselTween = gsap.delayedCall(CAROUSEL_INTERVAL_S, advanceCarousel)
+  }
 }, { immediate: true })
 
 const eventTooltipTitle = computed(() => {
-  if (activeEvent.value) {
-    return `📅 EVENTO: ${activeEvent.value.name}`
-  }
-  return 'Guerra de Facciones (Por defecto)'
+  const ev = currentCarouselEvent.value
+  if (!ev) return 'Sin eventos activos'
+  const total = activeEvents.value.length
+  const idx = carouselIndex.value % Math.max(total, 1) + 1
+  const suffix = total > 1 ? ` (${idx}/${total})` : ''
+  return `📅 EVENTO: ${ev.name}${suffix}`
 })
 
 const eventTooltipDesc = computed(() => {
-  if (activeEvent.value) {
-    return activeEvent.value.description
-  }
+  const ev = currentCarouselEvent.value
+  if (ev) return ev.description
   return 'No hay eventos especiales activos en este momento.'
 })
+
+function handleEventBannerClick(): void {
+  if (currentCarouselEvent.value) emit('openEvent')
+}
+
 </script>
 
 <template>
@@ -199,7 +249,7 @@ const eventTooltipDesc = computed(() => {
       :style="{ '--event-aspect': eventAspect }"
     >
       <div class="pc-banner-grid">
-        <!-- 1. Evento -->
+        <!-- 1. Evento (carousel cíclico de todos los eventos activos) -->
         <PVTooltip
           :title="eventTooltipTitle"
           :description="eventTooltipDesc"
@@ -209,17 +259,30 @@ const eventTooltipDesc = computed(() => {
         >
           <div
             class="event-banner"
-            :class="{ active: !!activeEvent }"
+            :class="{ active: !!currentCarouselEvent }"
             :style="{ 
               'backgroundImage': `url('${eventImageSrc}')` 
             }"
-            @click.stop="activeEvent && emit('openEvent')"
+            @click.stop="handleEventBannerClick"
           />
+          <!-- Carousel dots shown when there are multiple active events -->
+          <div
+            v-if="activeEvents.length > 1"
+            class="carousel-dots"
+          >
+            <span
+              v-for="(_, i) in activeEvents"
+              :key="i"
+              class="carousel-dot"
+              :class="{ active: i === carouselIndex % activeEvents.length }"
+            />
+          </div>
         </PVTooltip>
       </div>
     </div>
   </div>
 </template>
+
 
 <!-- HMR Touch comment to force reload styles v11 -->
 <style scoped lang="scss" src="@/styles/components/_map-status-summary.scss"></style>

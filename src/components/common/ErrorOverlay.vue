@@ -291,10 +291,10 @@ const transitionHooks = useGsapTransition({
   color: Rgba(187, 187, 187, 1);
   overflow-x: auto;
   margin-bottom: 25px;
-  max-height: 200px;
   white-space: pre-wrap;
   word-break: break-all;
 }
+
 
 .error-game-context {
   background: Rgba(255, 255, 255, 0.05);

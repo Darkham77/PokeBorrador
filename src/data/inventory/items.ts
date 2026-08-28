@@ -85,22 +85,19 @@ export type ShopItemData = (typeof SHOP_ITEMS)[number];
 export const getItemById = (id: string): ShopItemData => {
   if (!id) throw new Error("ID de objeto no proporcionado");
 
-  const item = SHOP_ITEMS.find(i => i.id === id);
+  const target = id.trim().toLowerCase();
+  const item = SHOP_ITEMS.find(i => i.id === target || i.id === id || i.name.toLowerCase() === target);
 
   if (!item) {
-    throw new Error(`Objeto no encontrado por ID: ${id}`);
+    throw new Error(`[items] Objeto no encontrado por ID o nombre: "${id}"`);
   }
   return item;
 };
 
 export const getItemName = (id: string): string => {
-  try {
-    const item = getItemById(id);
-    return item.name;
-  } catch {
-    return id;
-  }
+  return getItemById(id).name;
 };
+
 
 export const BUFF_FIELDS = [
   'repelSecs',

@@ -274,12 +274,28 @@
 
 .modal-close-btn-floating {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 14px;
+  right: 14px;
+  z-index: var(--z-low);
+
+  & .close-icon-wrapper {
+    background: Rgba(15, 23, 42, 0.92) !important;
+    border: 1px solid Rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 4px 14px Rgba(0, 0, 0, 0.7);
+    
+    &::before {
+      color: $white;
+    }
+  }
+
+  &:hover .close-icon-wrapper {
+    background: Rgba(30, 41, 59, 0.98) !important;
+    border-color: Rgba(255, 255, 255, 0.4) !important;
+  }
 
   &.is-yellow-solid .close-icon-wrapper {
     background: var(--yellow) !important;
-    border: 1px solid var(--yellow);
+    border: 1px solid var(--yellow) !important;
     box-shadow: 0 4px 12px Rgba(255, 217, 61, 0.4);
     
     &::before {
@@ -287,6 +303,7 @@
     }
   }
 }
+
 
 .modal-footer-premium {
   padding: 16px 32px 24px;

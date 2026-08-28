@@ -60,15 +60,12 @@ export function syncSidePokemon(
 
         if (clientHp <= 0) {
           p.hp = 0;
+          p.fainted = true;
+          p.status = 'fnt' as ID;
+          Reflect.set(p, 'faintQueued', false);
+          clearPokemonFromFaintQueue(side, p);
         } else {
           p.hp = Math.min(clientHp, p.maxhp);
-        }
-
-        if (p.hp <= 0) {
-          if (!p.fainted) {
-            p.faint();
-          }
-        } else {
           p.fainted = false;
           Reflect.set(p, 'faintQueued', false);
           clearPokemonFromFaintQueue(side, p);

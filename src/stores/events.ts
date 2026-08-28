@@ -13,7 +13,7 @@ import {
   getGlobalMultipliers, 
   getSpeciesBoosts, 
   getMinigameBuffs,
-  getDefaultSubCompetitions,
+  resolveEventSubCompetitions,
   evaluatePokemonForSubCompetition,
   isPokemonEligibleForSubCompetition,
   isPokemonEnrolledInOtherSubCompetition,
@@ -193,10 +193,10 @@ export const useEventStore = defineStore('events', () => {
       }
 
       const eventCfg = allEvents.value.find(e => e.id === eventId) || activeEvents.value.find(e => e.id === eventId)
+      const synchronizedDate = Temporal.Instant.fromEpochMilliseconds(getServerTime())
       if (eventCfg) {
-        const subComps = getDefaultSubCompetitions(eventCfg)
+        const subComps = resolveEventSubCompetitions(eventCfg, synchronizedDate)
         const subComp = subComps.find(s => s.id === categoryId) || subComps[0]!
-        const synchronizedDate = Temporal.Instant.fromEpochMilliseconds(getServerTime())
         const eligibility = isPokemonEligibleForSubCompetition(eventCfg, subComp, pokemon, synchronizedDate)
         if (!eligibility.eligible) {
           uiStore.notify(eligibility.reason || 'Este Pokémon no cumple con los requisitos del evento.', '⚠️')
@@ -212,7 +212,7 @@ export const useEventStore = defineStore('events', () => {
       const ivs = pokemon.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
       const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
 
-      const subComps = eventCfg ? getDefaultSubCompetitions(eventCfg) : []
+      const subComps = eventCfg ? resolveEventSubCompetitions(eventCfg, synchronizedDate) : []
       const subComp = subComps.find(s => s.id === categoryId) || {
         id: categoryId,
         name: 'Competición',
@@ -274,6 +274,14 @@ export const useEventStore = defineStore('events', () => {
           ...(categoryId === 'ivs' ? { [eventId]: { ...entryData, id: assignedId } } : {})
         }
         pokemon.onEvent = true
+        if (!gameStore.state.stats) {
+          gameStore.state.stats = {}
+        }
+        const activeUserEventIds = new Set(Object.keys(userEntries.value).map(k => k.split(':')[0]).filter(Boolean))
+        gameStore.state.stats.eventParticipations = Math.max(
+          Number(gameStore.state.stats.eventParticipations || 0),
+          activeUserEventIds.size
+        )
         gameStore.scheduleSave()
         uiStore.notify('¡Pokémon registrado exitosamente!', '✅')
       }
@@ -423,6 +431,17 @@ export const useEventStore = defineStore('events', () => {
       )
       if (!alreadyExists) {
         targetPoke.trophies.push(trophy)
+        if (!gameStore.state.stats) {
+          gameStore.state.stats = {}
+        }
+        if (trophy.rank === 'first') {
+          gameStore.state.stats.eventMedalsFirst = (Number(gameStore.state.stats.eventMedalsFirst) || 0) + 1
+        } else if (trophy.rank === 'second') {
+          gameStore.state.stats.eventMedalsSecond = (Number(gameStore.state.stats.eventMedalsSecond) || 0) + 1
+        } else if (trophy.rank === 'third') {
+          gameStore.state.stats.eventMedalsThird = (Number(gameStore.state.stats.eventMedalsThird) || 0) + 1
+        }
+        gameStore.state.stats.eventMedalsTotal = (Number(gameStore.state.stats.eventMedalsTotal) || 0) + 1
         logger.info('Events', `Trophy granted to Pokémon ${targetPoke.name} (${targetPoke.uid}): ${trophy.eventName} - ${trophy.categoryName} (${trophy.rank})`)
         gameStore.save(false).catch(err => logger.warn('Events', 'Failed to auto-save after granting trophy', err))
       }

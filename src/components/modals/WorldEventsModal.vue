@@ -9,8 +9,8 @@ import { useEventStore } from '@/stores/events'
 import { useModalStore } from '@/stores/modals'
 import { storeToRefs } from 'pinia'
 import RewardPillsGroup from '@/components/shared/RewardPillsGroup.vue'
-import { getUpcomingEventOccurrences, type Event as GameEvent } from '@/logic/events/eventEngine'
-import { getServerInstant } from '@/logic/utils/timeUtils'
+import { getUpcomingEventOccurrences, type Event as GameEvent, type UpcomingEventOccurrence } from '@/logic/events/eventEngine'
+import { getServerInstant, GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 
 interface Props {
   show?: boolean
@@ -33,6 +33,40 @@ const isSmallScreen = computed(() => ui.isSmallScreen)
 
 const upcomingOccurrences = computed(() => {
   return getUpcomingEventOccurrences(allEvents.value || [], getServerInstant(), 7)
+})
+
+interface UpcomingDayGroup {
+  dateKey: string;
+  dateLabel: string;
+  dayName: string;
+  isToday: boolean;
+  occurrences: UpcomingEventOccurrence[];
+}
+
+const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
+  const groups: UpcomingDayGroup[] = []
+  const map = new Map<string, UpcomingDayGroup>()
+
+  for (const occ of upcomingOccurrences.value) {
+    const zdt = occ.startInstant.toZonedDateTimeISO(GAME_TIMEZONE)
+    const dateKey = `${zdt.year}-${String(zdt.month).padStart(2, '0')}-${String(zdt.day).padStart(2, '0')}`
+    
+    let group = map.get(dateKey)
+    if (!group) {
+      group = {
+        dateKey,
+        dateLabel: occ.dateLabel,
+        dayName: occ.dayName,
+        isToday: occ.dateLabel === 'Hoy',
+        occurrences: []
+      }
+      map.set(dateKey, group)
+      groups.push(group)
+    }
+    group.occurrences.push(occ)
+  }
+
+  return groups
 })
 
 const openEventDetail = (event: GameEvent) => {
@@ -199,48 +233,67 @@ onMounted(() => {
 
         <div class="upcoming-events-grid">
           <div 
-            v-if="upcomingOccurrences.length === 0" 
+            v-if="upcomingDayGroups.length === 0" 
             class="no-events"
           >
             No hay eventos programados para los próximos 7 días.
           </div>
 
           <div
-            v-for="(occ, idx) in upcomingOccurrences"
-            :key="`${occ.event.id}-${occ.startInstant.epochMilliseconds}-${idx}`"
-            class="upcoming-event-card"
-            :class="{ 'is-active': occ.isActiveNow }"
-            @click.stop="openEventDetail(occ.event)"
+            v-for="group in upcomingDayGroups"
+            :key="group.dateKey"
+            class="upcoming-day-group"
           >
-            <div class="upcoming-left-column">
-              <div class="upcoming-badge-time">
-                <span class="day-tag pixelated">{{ occ.dateLabel }}</span>
-                <span class="time-tag pixelated">{{ occ.timeLabel }}</span>
-              </div>
-
-              <div class="upcoming-main-info">
-                <div class="upcoming-icon">
-                  {{ occ.event.icon || '🎁' }}
-                </div>
-                <div class="upcoming-texts">
-                  <span class="upcoming-title pixelated">{{ occ.event.name }}</span>
-                  <span class="upcoming-desc">{{ occ.event.description }}</span>
-                </div>
-              </div>
+            <!-- Day Group Header Divider with Line -->
+            <div class="day-group-header">
+              <span
+                class="day-group-badge pixelated"
+                :class="{ 'is-today': group.isToday }"
+              >
+                {{ group.dateLabel }} · {{ group.dayName }}
+              </span>
+              <div class="day-group-line" />
             </div>
 
-            <div class="upcoming-right-column">
-              <span
-                v-if="occ.isActiveNow"
-                class="status-live pixelated"
-              >🟢 ACTIVO AHORA</span>
-              <span
-                v-else
-                class="status-starts pixelated"
-              >{{ occ.startsInLabel }}</span>
-              <button class="retro-btn details-btn pixelated">
-                REGLAS Y PREMIOS
-              </button>
+            <!-- Events List within the same day (Tighter gap) -->
+            <div class="day-events-list">
+              <div
+                v-for="occ in group.occurrences"
+                :key="`${occ.event.id}-${occ.startInstant.epochMilliseconds}`"
+                class="upcoming-event-card"
+                :class="{ 'is-active': occ.isActiveNow }"
+                @click.stop="openEventDetail(occ.event)"
+              >
+                <div class="upcoming-left-column">
+                  <div class="upcoming-badge-time">
+                    <span class="time-tag pixelated">{{ occ.timeLabel }}</span>
+                  </div>
+
+                  <div class="upcoming-main-info">
+                    <div class="upcoming-icon">
+                      {{ occ.event.icon || '🎁' }}
+                    </div>
+                    <div class="upcoming-texts">
+                      <span class="upcoming-title pixelated">{{ occ.event.name }}</span>
+                      <span class="upcoming-desc">{{ occ.event.description }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="upcoming-right-column">
+                  <span
+                    v-if="occ.isActiveNow"
+                    class="status-live pixelated"
+                  >🟢 ACTIVO AHORA</span>
+                  <span
+                    v-else
+                    class="status-starts pixelated"
+                  >{{ occ.startsInLabel }}</span>
+                  <button class="retro-btn details-btn pixelated">
+                    REGLAS Y PREMIOS
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -477,7 +530,52 @@ onMounted(() => {
 .upcoming-events-grid {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
+}
+
+.upcoming-day-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .day-group-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 2px;
+    padding: 0 4px;
+
+    .day-group-badge {
+      font-size: 8px;
+      font-weight: bold;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: Rgba(255, 255, 255, 0.08);
+      color: Rgba(255, 255, 255, 0.85);
+      border: 1px solid Rgba(255, 255, 255, 0.15);
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+
+      &.is-today {
+        background: Rgba(74, 222, 128, 0.15);
+        color: var(--green-bright);
+        border-color: Rgba(74, 222, 128, 0.4);
+      }
+    }
+
+    .day-group-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, Rgba(255, 255, 255, 0.2) 0%, Rgba(255, 255, 255, 0.03) 100%);
+    }
+  }
+
+  .day-events-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px; /* Tighter gap between events of the same day */
+  }
 }
 
 .upcoming-event-card {
@@ -488,7 +586,7 @@ onMounted(() => {
   background: Rgba(30, 41, 59, 0.6);
   border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 10px;
-  padding: 12px 16px;
+  padding: 10px 14px;
   cursor: pointer;
 
   &:hover {

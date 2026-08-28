@@ -171,27 +171,33 @@ export function requireBattleMapAssetId(value: string): BattleMapAssetId {
 
 import type { DayPhase } from '@/logic/utils/timeUtils';
 
-export function getAvailableCyclesForMap(locationId: string): readonly DayPhase[] {
-  if (locationId === 'gym' || locationId === 'pvp') {
-    return ['day'];
-  }
-  if (!isMapRouteId(locationId)) {
-    return ['day'];
-  }
-  const baseName = MAP_ROUTE_MAPPING[locationId];
+const CYCLE_SUFFIXES = ['dia', 'noche', 'amanecer', 'atardecer'] as const;
+type CycleSuffix = (typeof CYCLE_SUFFIXES)[number];
+
+const SUFFIX_TO_PHASE = {
+  dia: 'day',
+  noche: 'night',
+  amanecer: 'morning',
+  atardecer: 'dusk'
+} as const satisfies Record<CycleSuffix, DayPhase>;
+
+
+/**
+ * Returns the list of DayPhase cycles supported by the given map ID,
+ * derived from which battle background assets exist for it.
+ * Falls back to ['day'] when the map has no registered assets.
+ */
+export function getAvailableCyclesForMap(mapId: string): readonly DayPhase[] {
+  const mapped = isMapRouteId(mapId) ? MAP_ROUTE_MAPPING[mapId] : mapId;
+  const normalizedId = mapped.replace(/\s+/g, ''); // string-ok
   const cycles: DayPhase[] = [];
-  if (AVAILABLE_BATTLE_MAPS.some(id => id === `${baseName}_dia`)) {
-    cycles.push('day');
+  for (const suffix of CYCLE_SUFFIXES) {
+    if (isBattleMapAssetId(`${normalizedId}_${suffix}`)) {
+      cycles.push(SUFFIX_TO_PHASE[suffix]);
+    }
   }
-  if (AVAILABLE_BATTLE_MAPS.some(id => id === `${baseName}_noche`)) {
-    cycles.push('night');
-  }
-  if (AVAILABLE_BATTLE_MAPS.some(id => id === `${baseName}_amanecer`)) {
-    cycles.push('morning');
-  }
-  if (AVAILABLE_BATTLE_MAPS.some(id => id === `${baseName}_atardecer`)) {
-    cycles.push('dusk');
-  }
-  return cycles.length > 0 ? cycles : ['day'];
+  return cycles.length > 0 ? cycles : (['day'] as const);
 }
+
+
 

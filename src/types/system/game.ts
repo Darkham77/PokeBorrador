@@ -66,6 +66,11 @@ export function requireISODateKey(value: string): ISODateKey {
 export type GameStatKey =
   | 'captureAttempts'
   | 'captureSuccesses'
+  | 'eventMedalsFirst'
+  | 'eventMedalsSecond'
+  | 'eventMedalsThird'
+  | 'eventMedalsTotal'
+  | 'eventParticipations'
   | 'longestStreak'
   | 'maxDamage'
   | 'shinyCount'
@@ -73,6 +78,7 @@ export type GameStatKey =
   | 'tradeVolume'
   | 'trainersDefeated'
   | 'wins';
+
 
 const FACTION_IDS = ['union', 'poder'] as const;
 export type FactionId = (typeof FACTION_IDS)[number];

@@ -157,7 +157,8 @@ export async function emulateAwardEventAutomated(
       for (let i = 0; i < top3.length; i++) {
         const entry = top3[i]!;
         const rank = COMPETITION_RANKS[i]!;
-        const prize = prizes[rank] || { type: 'money', amount: 10000 };
+        const rawPrize = prizes[rank] || { type: 'money', amount: 10000 };
+        const prize = typeof rawPrize === 'object' && rawPrize !== null ? { ...rawPrize, rank } : { rank, type: 'money', amount: 10000 };
         const awardId = `award_${targetEventId}_${sub.id}_${entry.player_id}_${Temporal.Now.instant().epochMilliseconds}_${i}`;
 
         await queryLocal(`

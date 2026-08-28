@@ -18,6 +18,7 @@ import ProfileNotifications from '@/components/profile/ProfileNotifications.vue'
 import ProfileTradeNotifs from '@/components/profile/ProfileTradeNotifs.vue'
 import ProfileXpCard from '@/components/profile/ProfileXpCard.vue'
 import ProfileAchievementsGrid from '@/components/profile/ProfileAchievementsGrid.vue'
+import ProfileEventStatsCard from '@/components/profile/ProfileEventStatsCard.vue'
 import ProfileFactionWarCard from './ProfileFactionWarCard.vue'
 import ProfilePokedexCard from '@/components/profile/ProfilePokedexCard.vue'
 import ProfileStatsSection from './ProfileStatsSection.vue'
@@ -66,7 +67,12 @@ const {
   totalWarPoints,
   warCoins,
   pokedexCaught,
-  pokedexSeen
+  pokedexSeen,
+  eventParticipations,
+  eventMedalsTotal,
+  eventMedalsFirst,
+  eventMedalsSecond,
+  eventMedalsThird
 } = useTrainerProfile(() => authStore.user?.id)
 
 const formatNum = (num: unknown) => formatCurrency(Number(num || 0))
@@ -221,6 +227,17 @@ const handleFactionChoice = () => {
           :badges="gs.badges || profileData.badges"
           :money="gs.money || profileData.money"
           :battle-coins="gs.battleCoins || profileData.battleCoins"
+        />
+
+        <!-- Torneos y Competiciones de Eventos -->
+        <ProfileEventStatsCard
+          :participations="eventParticipations"
+          :medals-total="eventMedalsTotal"
+          :first-place="eventMedalsFirst"
+          :second-place="eventMedalsSecond"
+          :third-place="eventMedalsThird"
+          :handle-stat-enter="handleStatEnter"
+          :handle-stat-leave="handleStatLeave"
         />
 
         <!-- Faction War Contribution -->
