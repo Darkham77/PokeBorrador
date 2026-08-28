@@ -182,7 +182,8 @@ onUnmounted(() => {
         'performance-mode': isPerformanceActive,
         'is-premium-tier': isPremiumTier,
         'is-on-mission': props.pokemon?.onMission,
-        'is-busy': props.pokemon?.onMission || props.pokemon?.inDaycare || props.pokemon?.onDefense
+        'is-on-event': props.pokemon?.onEvent,
+        'is-busy': props.pokemon?.onMission || props.pokemon?.onEvent || props.pokemon?.inDaycare || props.pokemon?.onDefense
       }
     ]"
     :style="{ 
@@ -208,6 +209,15 @@ onUnmounted(() => {
         >
           <div class="status-indicator mission">
             🧭
+          </div>
+        </PVTooltip>
+        <PVTooltip
+          v-if="props.pokemon.onEvent"
+          title="Evento"
+          description="Este Pokémon está participando en un evento o concurso activo."
+        >
+          <div class="status-indicator event">
+            🏆
           </div>
         </PVTooltip>
         <PVTooltip
@@ -367,7 +377,7 @@ onUnmounted(() => {
     @include pokemon-card-premium-tier;
   }
 
-  &.is-on-mission, &.is-busy {
+  &.is-on-mission, &.is-on-event, &.is-busy {
     .box-card-sprite {
       will-change: transform, filter, opacity;
       filter: Grayscale(1);

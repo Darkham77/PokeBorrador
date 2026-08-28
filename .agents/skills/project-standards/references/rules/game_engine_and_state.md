@@ -75,4 +75,17 @@
   4. **Dynamic Multi-Sprite Resolution**: Locations with multi-cycle sprites (`_amanecer`, `_dia`, `_atardecer`, `_noche`) reactively adapt to the current time of day according to their available cycle sprites.
 - **In-Combat Weather Exclusivity**: Weather inside gyms and weather-sealed arenas is enabled whenever an in-battle move (*Rain Dance*, *Sunny Day*, *Hail*, *Sandstorm*) or ability (*Drizzle*, *Drought*, *Snow Warning*, *Sand Stream*) actively casts it (`battle.weather.type !== 'none' && battle.weather.type !== 'clear'`). Upon expiration, the arena cleanly reverts to its configured base atmosphere.
 
+## 11. Unified Out-of-Battle Rule Coordinator & Field Passives Mandate
+
+- **Zero-Hardcoding Out-of-Battle Rule Coordination**: All outside-battle rule modifications, Pokémon field passives, item buffs/debuffs (incenses, repels, tools, charms), player class perks, Daycare modifiers, and event multipliers MUST be aggregated and evaluated through the centralized `FieldRulesCoordinator` (`src/logic/rules/fieldRulesCoordinator.ts`). Writing disparate, ad-hoc `if (leader.ability === ...)` or item checks scattered across low-level subsystem files is STRICTLY FORBIDDEN.
+- **Canonical Out-of-Battle Abilities**: All 33 canonical field abilities are implemented in `pokemonFieldAbilities.ts` and scale dynamically with `ACTIVE_GENERATION`. Egg step reduction passives (*Flame Body*, *Magma Armor*, *Steam Engine*) provide a non-stacking $2\times$ reduction, while post-battle gathering (*Pickup*, *Honey Gather*) rolls independently per conscious party member according to official level brackets.
+
+## 12. Busy Pokémon Protection & Complete Lifecycle Protocol
+
+Pokémon participating in active missions (`onMission: true`), competition events (`onEvent: true`), daycare (`inDaycare: true`), or passive defense (`onDefense: true`) are classified as busy (`isPokemonBusy`):
+1. **Visual Indicators**: Automatically badged with `mission` (`🧭 EN MISIÓN`) or `event` (`🏆 EN EVENTO`) via `getPokemonVisualBadges()`.
+2. **Action Locking**: Release, Black Market selling, P2P trade offers, and GTS publishing are strictly blocked across UI, Pinia stores, and database RPCs.
+3. **Lifecycle Rehabilitation**: Once the mission is claimed or the event concludes, all busy flags are reset to `false`, badges disappear, and all actions are re-enabled.
+
+
 

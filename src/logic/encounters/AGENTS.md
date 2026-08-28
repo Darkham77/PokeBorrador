@@ -9,8 +9,7 @@ Game Designers / Encounter Logic Developers.
 ## Local Contracts
 
 - Keep encounter calculations decoupled from views.
-- **fishingEncounterHelper.ts**: Isolates fishing rod budgets, weather visitors, and exclusive water pools from the primary encounter generator (`generateEncounter`).
-- **Encounter Field Abilities**: Encounter generation (`generateEncounter`, `getFinalGroundRates`, `calculateEncounterTypeWeights`) must consume `@/logic/pokemon/pokemonFieldAbilities` to apply generation-scaled leader passives (type attraction, level filtering, fishing rate boosts, and spawn rate multipliers).
+- **Mandatory Field Modifiers Coordinator Consumption**: Wild, fishing, and archaeology encounter generators (`encounters.ts`, `fishingEncounterHelper.ts`, `encounterHelpers.ts`) MUST delegate all leader abilities, item buffs, incense filtering, level filtering, and shiny boosts to `resolveFieldEncounterModifiers` from `@/logic/rules/fieldRulesCoordinator`. Scattering ad-hoc `if (leader.ability === '...')` checks across encounter generators is strictly prohibited.
 - Ensure spawn pool probabilities sum to 100% or follow standard spawn rates mapping.
 
 ## Child DOX Index

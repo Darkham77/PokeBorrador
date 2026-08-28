@@ -62,6 +62,7 @@ QA / Automation Engineers.
 
 ## Child DOX Index
 
+- [abilities/](./abilities/AGENTS.md): Domain module documentation for out-of-battle abilities simulations.
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle.
 - [breeding/](./breeding/AGENTS.md): Domain module documentation for breeding.
 - [events/](./events/AGENTS.md): Domain module documentation for events.

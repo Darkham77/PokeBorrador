@@ -125,9 +125,11 @@ export const useEventStore = defineStore('events', () => {
         .select('*')
         .eq('player_id', authStore.user.id)
       
-      const entries = res.data as CompetitionEntry[] | null // domain-ok
+      const entries = res.data as CompetitionEntry[] | null
       if (!res.error && entries) {
         const entryMap: Record<string, CompetitionEntry> = {}
+        const activeEntryPokeUids = new Set<string>()
+
         for (const e of entries) {
           if (e.event_id) {
             const catId = e.category_id || 'ivs'
@@ -135,9 +137,27 @@ export const useEventStore = defineStore('events', () => {
             if (catId === 'ivs' && !entryMap[e.event_id]) {
               entryMap[e.event_id] = e
             }
+            if (isEventActive(e.event_id) && e.pokemon_uid) {
+              activeEntryPokeUids.add(e.pokemon_uid)
+            }
           }
         }
         userEntries.value = entryMap
+
+        // Sync onEvent flag across player's Pokemon
+        const allPokes = [...(gameStore.state.team || []), ...(gameStore.state.box || [])]
+        let changed = false
+        allPokes.forEach(p => {
+          if (!p) return
+          const shouldBeOnEvent = activeEntryPokeUids.has(p.uid)
+          if (p.onEvent !== shouldBeOnEvent) {
+            p.onEvent = shouldBeOnEvent
+            changed = true
+          }
+        })
+        if (changed) {
+          gameStore.scheduleSave()
+        }
       }
     } catch (e) {
       logger.warn('Events', `Error fetching competition entries: ${(e as Error).message}`)
@@ -253,6 +273,8 @@ export const useEventStore = defineStore('events', () => {
           [`${eventId}:${categoryId}`]: { ...entryData, id: assignedId },
           ...(categoryId === 'ivs' ? { [eventId]: { ...entryData, id: assignedId } } : {})
         }
+        pokemon.onEvent = true
+        gameStore.scheduleSave()
         uiStore.notify('¡Pokémon registrado exitosamente!', '✅')
       }
     } catch (e) {

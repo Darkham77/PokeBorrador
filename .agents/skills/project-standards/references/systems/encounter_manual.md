@@ -124,3 +124,18 @@ Under all circumstances, weather conditions, time cycles, and routes, a single l
   \[\text{cap} = \frac{\sum \text{Other Rates}}{99}\]
 - If a legendary's rate exceeds this cap, reduce it to the cap value. This guarantees the final legendary probability remains exactly \(\le 1\%\), while the remaining \(\ge 99\%\) is dynamically shared by non-legendary species.
 - Apply this capping to both ground pools (`getFinalGroundRates`) and fishing pools (`generateFishingEncounter`).
+
+---
+
+## 10. Coordinated Field Modifiers Pipeline (FieldRulesCoordinator)
+
+All modifications to wild encounters, fishing weights, held item chances, and spawn pools are unified under `resolveFieldEncounterModifiers` in `src/logic/rules/fieldRulesCoordinator.ts`:
+
+- **Nature Synchronization**: Sincronía forces 100% nature match in Gen 8+ (50% in Gen 3-7).
+- **Gender Attraction**: Gran Encanto / Cute Charm forces 66.7% opposite gender on binary-gender wild species.
+- **Held Item Boosts**: Ojo Compuesto / Compound Eyes and Afortunado / Super Luck increase wild common/rare held item rates (to 60% and 20%).
+- **Elemental Attraction**: Imán (Steel), Elec. Estática & Pararrayos (Electric), Absorbe Fuego (Fire), Colector (Water), Cosecha (Grass) filter or heavily weight species of matching type.
+- **Encounter Rate Multipliers**: Trampa Arena, Iluminación, Indefenso (2.0x); Hedor, Humo Blanco, Pies Rápidos, Velo Arena, Manto Níveo (0.5x).
+- **Fishing Multipliers**: Ventosas & Viscosidad increase fishing encounter weight (1.5x - 2.0x).
+- **Level Range Filtering**: Intimidación & Vista Lince avoid encounters $\le 5$ levels below leader; Presión, Espíritu Vital & Entusiasmo force max route level (50% chance).
+

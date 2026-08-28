@@ -51,6 +51,41 @@ function handleHatchTimers(active: NonNullable<BattleContext['activeBattle']['va
   }
 }
 
+import { resolveFieldBattleRewards } from '@/logic/rules/fieldRulesCoordinator'
+import { getItemById } from '@/data/inventory/items'
+
+async function handleFieldPassiveRewards(ctx: BattleContext, active: NonNullable<BattleContext['activeBattle']['value']>, uiStore: ReturnType<typeof useUIStore>) {
+  const isWild = !active.isTrainer && !active.isGym && !active.isPvP
+  const results = resolveFieldBattleRewards({
+    team: ctx.gs.state.team,
+    isWild,
+    isTrainer: !!active.isTrainer,
+    faction: ctx.gs.state.faction
+  })
+
+  // 1. Pickup items
+  results.pickupItems.forEach(({ pokemonName, item }) => {
+    incrementRecordKey(ctx.gs.state.inventory, item, 1)
+    const itemDef = getItemById(item)
+    ctx.addLog(`🌟 ¡Pasiva Recogida de ${pokemonName}! Encontró: ${itemDef.name}`, 'log-success', 'player')
+    uiStore.notify(`¡${pokemonName} recogió 1x ${itemDef.name}!`, '🎒')
+  })
+
+  // 2. Honey Gathered
+  results.honeyGathered.forEach(({ pokemonName, item }) => {
+    incrementRecordKey(ctx.gs.state.inventory, item, 1)
+    const itemDef = getItemById(item)
+    ctx.addLog(`🍯 ¡Pasiva Recogemiel de ${pokemonName}! Recolectó: ${itemDef.name}`, 'log-success', 'player')
+    uiStore.notify(`¡${pokemonName} recolectó ${itemDef.name}!`, '🍯')
+  })
+
+  // 3. Natural Cure
+  results.curedMembers.forEach(name => {
+    ctx.addLog(`🌿 ¡Cura Natural de ${name}! Se ha curado de su estado alterado.`, 'log-info', 'player')
+    uiStore.notify(`¡${name} se curó con Cura Natural!`, '🌿')
+  })
+}
+
 export async function processBattleRewardsPhase(ctx: BattleContext, win: boolean, fled: boolean) {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
@@ -68,6 +103,7 @@ export async function processBattleRewardsPhase(ctx: BattleContext, win: boolean
     await calculateBattleRewards(ctx)
     if (ctx.activeBattle.value !== active || hasExitedBattle(ctx)) return
     await handleStolenResources(ctx, active, uiStore)
+    await handleFieldPassiveRewards(ctx, active, uiStore)
     handleHatchTimers(active)
   }
 

@@ -8,6 +8,7 @@ import { BUFF_FIELDS, getItemById, getMaxBuffDuration, requireItemId } from '@/d
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { logger } from '@/logic/utils/logger'
 import { healStuckMissions } from '@/logic/player/missionRecovery'
+import { isPokemonBusy } from '@/logic/constants/tags'
 
 
 export function usePokemonActions(
@@ -73,6 +74,8 @@ export function usePokemonActions(
   function removePokemon(uid: string) {
     const teamIdx = state.team.findIndex(p => p.uid === uid)
     if (teamIdx !== -1) {
+      const p = state.team[teamIdx]
+      if (p && isPokemonBusy(p)) return false
       state.team.splice(teamIdx, 1)
       autoFillPvpTeam()
       scheduleSave()
@@ -81,7 +84,7 @@ export function usePokemonActions(
     const boxIdx = state.box.findIndex(p => p != null && p.uid === uid)
     if (boxIdx !== -1) {
       const p = state.box[boxIdx]
-      if (!p || p.onMission) return false
+      if (!p || isPokemonBusy(p)) return false
       state.box.splice(boxIdx, 1)
       autoFillPvpTeam()
       autoFillWarTeam()
@@ -163,13 +166,13 @@ export function usePokemonActions(
         getItemById(requireItemId(key));
       }
     }
-    // Migración automática: Mover Pokémon del equipo ocupados (guardería, misión, defensa) a la caja PC
+    // Migración automática: Mover Pokémon del equipo ocupados (guardería, misión, evento, defensa) a la caja PC
     const teamToKeep: Pokemon[] = []
     const teamToMove: Pokemon[] = []
     
     state.team.forEach(p => {
       if (!p) return
-      if (p.inDaycare || p.onMission || p.onDefense) {
+      if (p.inDaycare || p.onMission || p.onEvent || p.onDefense) {
         teamToMove.push(p)
       } else {
         teamToKeep.push(p)

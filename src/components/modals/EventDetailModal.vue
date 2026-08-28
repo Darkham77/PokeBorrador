@@ -1,6 +1,11 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
+import { gsap } from 'gsap'
 import BaseModal from '@/components/common/BaseModal.vue'
+import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { normalizeZonedDateTime } from '@/logic/utils/timeUtils'
 import {
   getDefaultSubCompetitions,
   resolveSubCompetitionDirection,
@@ -228,12 +233,121 @@ const scheduleText = computed(() => {
   if (props.event.manual) return '🟢 Evento activo ahora mismo'
   if (sched.value.type === 'weekly' && sched.value.days) {
     const dayNames = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'] as const
-    const days = sched.value.days.map((d: number) => dayNames[d]).join(', ')
+    const days = sched.value.days.length === 7 ? 'Todos los días' : sched.value.days.map((d: number) => dayNames[d]).join(', ')
+    const formatH = (hr: number) => {
+      const h = Math.floor(hr)
+      const m = Math.round((hr % 1) * 60)
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+    }
+    const isAllDay = sched.value.startHour === 0 && (sched.value.endHour === 24 || (sched.value.endHour !== undefined && sched.value.endHour >= 23.9))
     const hours = (sched.value.startHour !== undefined && sched.value.endHour !== undefined)
-      ? ` · ${sched.value.startHour}:00 – ${sched.value.endHour}:00 hs (ARG)` : ''
+      ? (isAllDay ? ' · Todo el día (ARG)' : ` · ${formatH(sched.value.startHour)} – ${formatH(sched.value.endHour)} hs (ARG)`) : ''
     return `${days}${hours}`
   }
+  if (props.event.start_at && props.event.end_at) {
+    try {
+      const startInst = Temporal.Instant.from(props.event.start_at)
+      const endInst = Temporal.Instant.from(props.event.end_at)
+      const startZdt = normalizeZonedDateTime(startInst)
+      const endZdt = normalizeZonedDateTime(endInst)
+      const isSameDay = startZdt.year === endZdt.year && startZdt.month === endZdt.month && startZdt.day === endZdt.day
+      const isStartOfDay = startZdt.hour === 0 && startZdt.minute === 0
+      const isEndOfDay = (endZdt.hour === 23 && endZdt.minute >= 59) || (endZdt.hour === 0 && endZdt.minute === 0)
+      const isAllDay = isStartOfDay && isEndOfDay
+
+      const formatTime = (zdt: Temporal.ZonedDateTime) =>
+        `${String(zdt.hour).padStart(2, '0')}:${String(zdt.minute).padStart(2, '0')}`
+
+      if (isSameDay) {
+        const timePart = isAllDay ? ' · Todo el día (ARG)' : ` · ${formatTime(startZdt)} – ${formatTime(endZdt)} hs (ARG)`
+        return `${startZdt.day}/${startZdt.month}/${startZdt.year}${timePart}`
+      } else {
+        const timePart = isAllDay ? ' · Todo el día (ARG)' : ` · ${formatTime(startZdt)} al ${formatTime(endZdt)} hs (ARG)`
+        return `Del ${startZdt.day}/${startZdt.month} al ${endZdt.day}/${endZdt.month}/${endZdt.year}${timePart}`
+      }
+    } catch {
+      return null
+    }
+  }
   return null
+})
+
+const involvedSpecies = computed<PokemonSpeciesId[]>(() => {
+  const result: PokemonSpeciesId[] = []
+  const seen = new Set<string>()
+
+  const add = (raw: string | undefined | null) => {
+    if (!raw) return
+    const id = raw.trim().toLowerCase()
+    if (isPokemonSpeciesId(id) && !seen.has(id)) {
+      seen.add(id)
+      result.push(id)
+    }
+  }
+
+  // 1. cfg.species (comma-separated or single)
+  if (cfg.value.species) {
+    const list = cfg.value.species.split(',')
+    list.forEach(add)
+  }
+
+  // 2. prizes with species
+  if (prizes.value) {
+    if (prizes.value.first?.species) add(prizes.value.first.species)
+    if (prizes.value.second?.species) add(prizes.value.second.species)
+    if (prizes.value.third?.species) add(prizes.value.third.species)
+  }
+
+  // 3. Sub-competition prizes with species
+  if (subCompetitions.value.length > 0) {
+    for (const sub of subCompetitions.value) {
+      const p = getSubCompPrizes(sub)
+      if (p?.first && typeof p.first === 'object' && 'species' in p.first && typeof p.first.species === 'string') {
+        add(p.first.species)
+      }
+      if (p?.second && typeof p.second === 'object' && 'species' in p.second && typeof p.second.species === 'string') {
+        add(p.second.species)
+      }
+      if (p?.third && typeof p.third === 'object' && 'species' in p.third && typeof p.third.species === 'string') {
+        add(p.third.species)
+      }
+    }
+  }
+
+  return result
+})
+
+const currentSpeciesIndex = ref(0)
+let cycleTween: gsap.core.Tween | null = null
+
+const startSpeciesCycle = () => {
+  if (cycleTween) {
+    cycleTween.kill()
+    cycleTween = null
+  }
+  if (involvedSpecies.value.length > 1) {
+    cycleTween = gsap.delayedCall(2.5, () => {
+      currentSpeciesIndex.value = (currentSpeciesIndex.value + 1) % involvedSpecies.value.length
+      startSpeciesCycle()
+    })
+  }
+}
+
+watch(involvedSpecies, () => {
+  currentSpeciesIndex.value = 0
+  startSpeciesCycle()
+}, { immediate: true })
+
+onUnmounted(() => {
+  if (cycleTween) {
+    cycleTween.kill()
+    cycleTween = null
+  }
+})
+
+const currentSpecies = computed<PokemonSpeciesId | null>(() => {
+  if (involvedSpecies.value.length === 0) return null
+  return involvedSpecies.value[currentSpeciesIndex.value] || involvedSpecies.value[0] || null
 })
 </script>
 
@@ -247,9 +361,40 @@ const scheduleText = computed(() => {
     @close="emit('close')"
   >
     <div class="event-detail-modal">
-      <!-- Icono Principal -->
-      <div class="event-main-icon">
-        {{ event.icon || '🎁' }}
+      <!-- Zona de Visualización de Pokémon / Icono Principal -->
+      <div 
+        v-if="involvedSpecies.length > 0" 
+        class="event-pokemon-showcase"
+      >
+        <PVSpriteFX
+          :is-shiny="Boolean(cfg.speciesShinyMult || cfg.shinyMult)"
+          :sparkle-count="3"
+        >
+          <img
+            v-if="currentSpecies"
+            :key="currentSpecies"
+            :src="getAssetUrl(ASSET_TYPES.POKEMON, currentSpecies, { isShiny: Boolean(cfg.speciesShinyMult || cfg.shinyMult) })"
+            :alt="currentSpecies"
+            class="pixelated event-pokemon-sprite"
+          >
+        </PVSpriteFX>
+        <div 
+          v-if="involvedSpecies.length > 1" 
+          class="showcase-dots"
+        >
+          <span 
+            v-for="(sp, idx) in involvedSpecies" 
+            :key="sp"
+            class="dot"
+            :class="{ active: idx === currentSpeciesIndex }"
+          />
+        </div>
+      </div>
+      <div 
+        v-else-if="event.icon" 
+        class="event-main-icon"
+      >
+        {{ event.icon }}
       </div>
 
       <!-- Título y Descripción -->
@@ -260,6 +405,22 @@ const scheduleText = computed(() => {
         <p class="event-desc">
           {{ event.description || '¡Aprovechá este evento especial mientras esté activo!' }}
         </p>
+      </div>
+
+      <!-- Horario -->
+      <div 
+        v-if="scheduleText" 
+        class="event-section"
+      >
+        <div class="section-tag">
+          ⏰ HORARIO
+        </div>
+        <div 
+          class="info-box schedule-box" 
+          :class="{ active: event.manual }"
+        >
+          {{ scheduleText }}
+        </div>
       </div>
 
       <!-- Bonificaciones -->
@@ -404,22 +565,6 @@ const scheduleText = computed(() => {
         </div>
       </div>
 
-      <!-- Horario -->
-      <div 
-        v-if="scheduleText" 
-        class="event-section"
-      >
-        <div class="section-tag">
-          ⏰ HORARIO
-        </div>
-        <div 
-          class="info-box schedule-box" 
-          :class="{ active: event.manual }"
-        >
-          {{ scheduleText }}
-        </div>
-      </div>
-
       <!-- Botón Entendido -->
       <button 
         class="legacy-confirm-btn"
@@ -441,6 +586,43 @@ const scheduleText = computed(() => {
   gap: 16px;
   text-align: center;
   color: var(--white);
+}
+
+.event-pokemon-showcase {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 4px 0 0;
+  gap: 6px;
+
+  .event-pokemon-sprite {
+    width: 68px;
+    height: 68px;
+    image-rendering: pixelated;
+    object-fit: contain;
+    filter: Drop-Shadow(0 4px 12px Rgba(250, 204, 21, 0.4));
+  }
+
+  .showcase-dots {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    align-items: center;
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: Rgba(255, 255, 255, 0.3);
+      transition: all 0.3s ease;
+
+      &.active {
+        background: var(--yellow, #facc15);
+        transform: Scale(1.3);
+      }
+    }
+  }
 }
 
 .event-main-icon {

@@ -17,6 +17,10 @@ State Architects / Frontend Developers.
   2. **Market & Trade (`useMarketPublishPokemon.ts`, `trade.ts`)**: Illegal Pokémon cannot be published on the Market / GTS or offered in P2P trade requests.
   3. **Daycare & Breeding (`breeding.ts`, `daycareMissions.ts`)**: Illegal Pokémon cannot be deposited into Daycare slots, used in breeding algorithms, or counted towards daycare/event mission goals.
   4. **PvP & War Teams (`teamActions.ts`)**: Illegal Pokémon must be excluded from `autoFillPvpTeam`, `autoFillWarTeam`, and manual slot swaps.
+- **Busy Pokémon Protection & Complete Lifecycle Mandate**: Any Pokémon engaged in active deployments (`onMission: true`), competition events (`onEvent: true`), daycare deposit (`inDaycare: true`), or passive defense (`onDefense: true`) is classified as busy (`isPokemonBusy`). Stores and actions MUST strictly enforce:
+  1. **PC Box & Transfers (`box.ts`)**: Busy Pokémon cannot be selected for release (`doBoxRelease` skips them) or Team Rocket Black Market sale (`doBoxRocketSell` yields $0 and counts 0). Moving or swapping them into the active team is rejected.
+  2. **P2P Trade & GTS Market (`trade.ts`, `gts.ts`)**: Offering or publishing busy Pokémon is rejected locally and on backend RPC emulations (`tradeRpc.ts`, `marketRpc.ts`).
+  3. **Automatic Lifecycle Rehabilitation**: When mission rewards are collected (`playerClass.ts`) or events conclude and sync (`events.ts`), busy flags MUST be cleared (`onMission = false`, `onEvent = false`), removing badges and immediately restoring full trading, selling, releasing, and team movement abilities.
 - **Real-Time Environment Ticker & Simulation Freeze Protocol**:
   The map store (`useMapStore`) must sample server epoch time via a lightweight GSAP ticker every 10s of game time, dynamically updating `currentEpochHour`, `currentCycle` (day/dusk/night), and map weather for live players. To ensure deterministic execution during automated E2E simulations, fuzzer runs, and certified replays, the ticker must support instantaneous freezing via `setFreezeClock(true)` and fixed environment override via `window.__VITE_DEBUG__.setFixedTime(...)`.
 

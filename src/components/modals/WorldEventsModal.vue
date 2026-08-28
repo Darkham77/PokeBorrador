@@ -6,8 +6,11 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import EventCard from './EventCard.vue'
 import PastEventsList from './PastEventsList.vue'
 import { useEventStore } from '@/stores/events'
+import { useModalStore } from '@/stores/modals'
 import { storeToRefs } from 'pinia'
 import RewardPillsGroup from '@/components/shared/RewardPillsGroup.vue'
+import { getUpcomingEventOccurrences, type Event as GameEvent } from '@/logic/events/eventEngine'
+import { getServerInstant } from '@/logic/utils/timeUtils'
 
 interface Props {
   show?: boolean
@@ -22,10 +25,21 @@ const emit = defineEmits<{
 }>()
 
 const eventStore = useEventStore()
+const modalStore = useModalStore()
 const { allEvents, activeEvents, pastEvents, pendingAwards, isLoading } = storeToRefs(eventStore)
 
 const ui = useUIStore()
 const isSmallScreen = computed(() => ui.isSmallScreen)
+
+const upcomingOccurrences = computed(() => {
+  return getUpcomingEventOccurrences(allEvents.value || [], getServerInstant(), 7)
+})
+
+const openEventDetail = (event: GameEvent) => {
+  modalStore.open('EventDetail', {
+    event
+  })
+}
 
 const getEventDisplayName = (eventId: string): string => {
   const ev = (allEvents.value || []).find(e => e.id === eventId)
@@ -169,6 +183,66 @@ onMounted(() => {
             :key="event.id"
             :event="event"
           />
+        </div>
+      </div>
+
+      <!-- UPCOMING 7-DAY SCHEDULE -->
+      <div class="events-section-block upcoming-section">
+        <div class="events-section-header">
+          <div class="section-title-wrap">
+            <h3 class="events-section-title">
+              📅 PRÓXIMOS EVENTOS (7 DÍAS)
+            </h3>
+            <span class="events-section-subtitle">Calendario semanal (Hora Argentina ARG)</span>
+          </div>
+        </div>
+
+        <div class="upcoming-events-grid">
+          <div 
+            v-if="upcomingOccurrences.length === 0" 
+            class="no-events"
+          >
+            No hay eventos programados para los próximos 7 días.
+          </div>
+
+          <div
+            v-for="(occ, idx) in upcomingOccurrences"
+            :key="`${occ.event.id}-${occ.startInstant.epochMilliseconds}-${idx}`"
+            class="upcoming-event-card"
+            :class="{ 'is-active': occ.isActiveNow }"
+            @click.stop="openEventDetail(occ.event)"
+          >
+            <div class="upcoming-left-column">
+              <div class="upcoming-badge-time">
+                <span class="day-tag pixelated">{{ occ.dateLabel }}</span>
+                <span class="time-tag pixelated">{{ occ.timeLabel }}</span>
+              </div>
+
+              <div class="upcoming-main-info">
+                <div class="upcoming-icon">
+                  {{ occ.event.icon || '🎁' }}
+                </div>
+                <div class="upcoming-texts">
+                  <span class="upcoming-title pixelated">{{ occ.event.name }}</span>
+                  <span class="upcoming-desc">{{ occ.event.description }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="upcoming-right-column">
+              <span
+                v-if="occ.isActiveNow"
+                class="status-live pixelated"
+              >🟢 ACTIVO AHORA</span>
+              <span
+                v-else
+                class="status-starts pixelated"
+              >{{ occ.startsInLabel }}</span>
+              <button class="retro-btn details-btn pixelated">
+                REGLAS Y PREMIOS
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -379,5 +453,152 @@ onMounted(() => {
   color: var(--gray);
   font-style: italic;
   font-size: 12px;
+}
+
+/* UPCOMING 7-DAY SCHEDULE STYLES */
+.upcoming-section {
+  margin-top: 24px;
+  margin-bottom: 24px;
+}
+
+.section-title-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  .events-section-subtitle {
+    font-size: 9px;
+    color: var(--gray);
+  }
+}
+
+.upcoming-events-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.upcoming-event-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  background: Rgba(30, 41, 59, 0.6);
+  border: 1px solid Rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: Rgba(30, 41, 59, 0.9);
+    border-color: Rgba(250, 204, 21, 0.4);
+    transform: Translatey(-2px);
+    box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.3);
+  }
+
+  &.is-active {
+    border-color: Rgba(74, 222, 128, 0.4);
+    background: Rgba(22, 101, 52, 0.15);
+  }
+
+  .upcoming-left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .upcoming-badge-time {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .day-tag {
+      font-size: 8px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: Rgba(250, 204, 21, 0.15);
+      color: var(--yellow);
+      border: 1px solid Rgba(250, 204, 21, 0.3);
+    }
+
+    .time-tag {
+      font-size: 8px;
+      color: Rgba(241, 245, 249, 0.8);
+      background: Rgba(0, 0, 0, 0.3);
+      padding: 3px 6px;
+      border-radius: 4px;
+      border: 1px solid Rgba(255, 255, 255, 0.05);
+    }
+  }
+
+  .upcoming-main-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .upcoming-icon {
+      font-size: 24px;
+      line-height: 1;
+      filter: Drop-Shadow(0 2px 6px Rgba(0, 0, 0, 0.4));
+    }
+
+    .upcoming-texts {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+
+      .upcoming-title {
+        font-size: 11px;
+        color: var(--white);
+        line-height: 1.2;
+      }
+
+      .upcoming-desc {
+        font-size: 9px;
+        color: var(--gray);
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  .upcoming-right-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+
+    .status-live {
+      font-size: 8px;
+      color: var(--green-bright);
+      background: Rgba(74, 222, 128, 0.15);
+      border: 1px solid Rgba(74, 222, 128, 0.3);
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .status-starts {
+      font-size: 8px;
+      color: var(--yellow);
+      background: Rgba(250, 204, 21, 0.1);
+      border: 1px solid Rgba(250, 204, 21, 0.2);
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .details-btn {
+      font-size: 7px;
+      padding: 4px 8px;
+    }
+  }
 }
 </style>

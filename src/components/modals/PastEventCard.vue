@@ -226,7 +226,8 @@ const formatEventScheduleWindow = (item: PastEventHistoryItem): string => {
       const m = Math.round((hr % 1) * 60)
       return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
     }
-    const timeRange = `De ${formatH(startH)} a ${formatH(endH)} hs`
+    const isAllDay = startH === 0 && (endH >= 23.9 || endH === 24)
+    const timeRange = isAllDay ? 'Todo el día' : `De ${formatH(startH)} a ${formatH(endH)} hs`
     return datePrefix ? `${datePrefix} · ${timeRange}` : timeRange
   }
 

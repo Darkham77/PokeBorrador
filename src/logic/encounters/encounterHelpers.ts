@@ -371,6 +371,12 @@ export function generateArchaeologyEncounter(
  */
 const RAINY_WEATHERS: readonly WeatherId[] = ['rain', 'heavy_rain', 'storm', 'thunderstorm'];
 
+import {
+  getEffectiveLeaderAbility,
+  getEncounterRateMultiplier,
+  getFishingWeightMultiplier
+} from '@/logic/pokemon/pokemonFieldAbilities';
+
 export function calculateEncounterTypeWeights(
   loc: MapLocation,
   weather: WeatherId,
@@ -385,11 +391,15 @@ export function calculateEncounterTypeWeights(
   }) | null;
   const debug = win?.__VITE_DEBUG__;
 
+  const leaderAbility = getEffectiveLeaderAbility(state.team);
+  const encounterRateMult = getEncounterRateMultiplier(leaderAbility, weather);
+  const abilityFishingMult = getFishingWeightMultiplier(leaderAbility);
+
   const isRainy = RAINY_WEATHERS.includes(weather);
   const climateFishingMultiplier = isRainy ? RAINY_WEATHER_FISHING_MULTIPLIER : DEFAULT_WEATHER_MULTIPLIER_NORMAL;
-  const fishingBonus = (options.eventFishingBonus || 1) * climateFishingMultiplier;
+  const fishingBonus = (options.eventFishingBonus || 1) * climateFishingMultiplier * abilityFishingMult;
 
-  const groundWeight = GROUND_ENCOUNTER_BASE_WEIGHT;
+  const groundWeight = GROUND_ENCOUNTER_BASE_WEIGHT * encounterRateMult;
 
   let fishingWeight = 0;
   if (loc.fishing) {

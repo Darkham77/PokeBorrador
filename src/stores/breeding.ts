@@ -20,6 +20,7 @@ import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
 import { usePlayerClassStore } from '@/stores/player/playerClass.ts';
 import { useEventStore } from '@/stores/events.ts';
 import { useDaycareMissionsStore } from '@/stores/daycareMissions.ts';
+import { getHatchSpeedMultiplier } from '@/logic/pokemon/pokemonFieldAbilities';
 import {
   isBabyPokemonSpeciesId,
   isFossilPokemonSpeciesId,
@@ -398,8 +399,11 @@ export const useBreedingStore = defineStore('breeding', () => {
 
   function reduceHatchTimers(activity: 'battle' | 'capture' | 'gym' | 'minigame') {
     const REDUCTIONS = { battle: 2, capture: 3, gym: 10, minigame: 1 };
-    const reduction = REDUCTIONS[activity] || 0;
-    if (reduction === 0) return;
+    const baseReduction = REDUCTIONS[activity] || 0;
+    if (baseReduction === 0) return;
+
+    const hatchMult = getHatchSpeedMultiplier(gameStore.state.team);
+    const reduction = baseReduction * hatchMult;
 
     const eggs = gameStore.state.eggs || [];
     if (eggs.length === 0) return;

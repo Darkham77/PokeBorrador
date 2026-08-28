@@ -3,6 +3,7 @@ import type { SQLiteDatabase } from '../sqliteEngine.ts';
 import type { DBResponse } from '@/types/system/database';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality.ts';
+import { isPokemonBusy } from '@/logic/constants/tags.ts';
 
 interface OfflineSaveData {
   box?: Pokemon[];
@@ -40,6 +41,9 @@ export async function emulateSendTradeOffer(
 
   if (p_offer_pokemon) {
     const poke = p_offer_pokemon;
+    if (isPokemonBusy(poke)) {
+      return { data: null, error: { message: 'No puedes ofrecer un Pokémon que está en misión, evento o guardería.' } };
+    }
     const legality = checkPokemonLegality(poke);
     if (poke.isIllegal || !legality.isLegal) {
       return { data: null, error: { message: `No puedes ofrecer un Pokémon ilegal en el intercambio: ${legality.issues[0] || 'datos no válidos'}.` } };
@@ -153,6 +157,9 @@ export async function emulateAcceptTrade(
 
   if (offerPokeObj && (offerPokeObj.isIllegal || !checkPokemonLegality(offerPokeObj).isLegal)) {
     return { data: null, error: { message: 'La oferta contiene un Pokémon ilegal y no puede ser aceptada.' } };
+  }
+  if (requestPokeObj && isPokemonBusy(requestPokeObj)) {
+    return { data: null, error: { message: 'El Pokémon solicitado está ocupado en una misión o evento.' } };
   }
   if (requestPokeObj && (requestPokeObj.isIllegal || !checkPokemonLegality(requestPokeObj).isLegal)) {
     return { data: null, error: { message: 'El Pokémon solicitado es ilegal y no puede ser transferido.' } };

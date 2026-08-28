@@ -91,6 +91,22 @@ export const POKEMON_BADGES: Record<string, TagDefinition> = {
     icon: '🎒', 
     color: '#32D74B', 
     desc: 'Este Pokémon lleva un objeto que puede tener efectos en combate.' 
+  },
+  mission: { 
+    id: 'mission', 
+    label: 'EN MISIÓN', 
+    shortLabel: 'MIS',
+    icon: '🧭', 
+    color: '#38BDF8', 
+    desc: 'Este Pokémon está participando en una misión activa.' 
+  },
+  event: { 
+    id: 'event', 
+    label: 'EN EVENTO', 
+    shortLabel: 'EVE',
+    icon: '🏆', 
+    color: '#F59E0B', 
+    desc: 'Este Pokémon está inscrito en un concurso o evento competitivo activo.' 
   }
 }
 
@@ -108,6 +124,18 @@ export function getPokemonVisualBadges(pokemon: Partial<Pokemon> | null): TagDef
   const shinyBadge = POKEMON_BADGES['shiny'];
   if (pokemon.isShiny && shinyBadge) {
     badges.push({ ...shinyBadge, isAutomatic: true })
+  }
+
+  // 1b. Automatic: Mission
+  const missionBadge = POKEMON_BADGES['mission'];
+  if (pokemon.onMission && missionBadge) {
+    badges.push({ ...missionBadge, isAutomatic: true })
+  }
+
+  // 1c. Automatic: Event
+  const eventBadge = POKEMON_BADGES['event'];
+  if (pokemon.onEvent && eventBadge) {
+    badges.push({ ...eventBadge, isAutomatic: true })
   }
 
   // 2. Automatic: IV 31 (Perfect)
@@ -199,4 +227,11 @@ export const hasPokemonTag = (pokemon: Partial<Pokemon> | null, tagId: string): 
     default:
       return tags.includes(tagId)
   }
+}
+
+/**
+ * Standardized helper to check if a pokemon is currently busy (mission, event, daycare, defense).
+ */
+export function isPokemonBusy(pokemon: Partial<Pokemon> | null | undefined): boolean {
+  return Boolean(pokemon && (pokemon.onMission || pokemon.onEvent || pokemon.inDaycare || pokemon.onDefense))
 }

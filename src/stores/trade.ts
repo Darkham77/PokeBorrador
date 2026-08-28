@@ -18,6 +18,7 @@ import type { RealtimeChannel } from '@supabase/supabase-js'
 
 import type { ItemId } from '@/data/inventory/itemIds.ts'
 import { isItemId } from '@/data/inventory/items.ts'
+import { isPokemonBusy } from '@/logic/constants/tags'
 
 export const useTradeStore = defineStore('trade', () => {
   const authStore = useAuthStore()
@@ -140,6 +141,10 @@ export const useTradeStore = defineStore('trade', () => {
 
     // Anti-Duplicate and Legality check
     if (tradeOfferPoke.value) {
+      if (isPokemonBusy(tradeOfferPoke.value)) {
+        uiStore.notify('No puedes comerciar o intercambiar un Pokémon en misión, evento o guardería.', '⚠️')
+        return false
+      }
       const isIllegal = tradeOfferPoke.value.isIllegal || (
         tradeOfferPoke.value.id && tradeOfferPoke.value.species && tradeOfferPoke.value.moves
           ? !checkPokemonLegality(tradeOfferPoke.value).isLegal

@@ -221,6 +221,7 @@ export interface Pokemon {
   ot_id?: string; // domain-ok
   tags?: string[]; // domain-ok
   onMission?: boolean;
+  onEvent?: boolean;
   onDefense?: boolean;
   inDaycare?: boolean;
   daycareSlot?: number;

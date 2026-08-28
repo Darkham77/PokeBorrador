@@ -179,6 +179,7 @@ export const pokemonSchema = object({
   ot_id: optional(string()),
   tags: optional(array(string())),
   onMission: optional(boolean()),
+  onEvent: optional(boolean()),
   onDefense: optional(boolean()),
   inDaycare: optional(boolean()),
   daycareSlot: optional(number()),

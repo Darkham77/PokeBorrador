@@ -17,6 +17,7 @@ import { calculateTotalPower, getPokemonTier, calculateRocketSellPrice as calcul
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import { toPokemonType, type PokemonType } from '@/data/battle/types'
+import { isPokemonBusy } from '@/logic/constants/tags'
 
 interface Props {
   show?: boolean
@@ -279,12 +280,12 @@ const handleSellRocket = () => {
 
       <!-- Warning label for busy Pokémon -->
       <div 
-        v-if="pokemon?.onMission || pokemon?.inDaycare || pokemon?.onDefense" 
+        v-if="isPokemonBusy(pokemon)" 
         class="busy-warning-banner"
       >
         <span class="warning-icon">⚠️</span>
         <span class="warning-text">
-          Este Pokémon está ocupado ({{ pokemon.inDaycare ? '🥚 Guardería' : pokemon.onMission ? '🧭 Misión' : '🛡️ Defensa' }}). 
+          Este Pokémon está ocupado ({{ pokemon?.inDaycare ? '🥚 Guardería' : pokemon?.onMission ? '🧭 Misión' : pokemon?.onEvent ? '🏆 Evento' : '🛡️ Defensa' }}). 
           Las acciones de equipo, venta y liberación están bloqueadas.
         </span>
       </div>
@@ -294,7 +295,7 @@ const handleSellRocket = () => {
         <button 
           v-if="team.length < 6" 
           class="menu-action-btn success-btn" 
-          :disabled="pokemon?.onMission || pokemon?.inDaycare || pokemon?.onDefense"
+          :disabled="isPokemonBusy(pokemon)"
           @click.stop="handleMoveToTeam"
         >
           <span class="icon">➕</span> AGREGAR AL EQUIPO
@@ -312,10 +313,10 @@ const handleSellRocket = () => {
               class="team-swap-card"
               :class="{ 
                 'is-premium-tier': getPokemonTier(t).tier === 'S' || getPokemonTier(t).tier === 'S+',
-                'is-disabled': pokemon?.onMission || pokemon?.inDaycare || pokemon?.onDefense 
+                'is-disabled': isPokemonBusy(pokemon) || isPokemonBusy(t)
               }"
               :style="{ '--tier-color': getPokemonTier(t).color }"
-              @click.stop="!(pokemon?.onMission || pokemon?.inDaycare || pokemon?.onDefense) && handleSwap(i as number)"
+              @click.stop="!isPokemonBusy(pokemon) && !isPokemonBusy(t) && handleSwap(i as number)"
             >
               <!-- Tier Badge (Top Left) -->
               <div 
@@ -386,7 +387,7 @@ const handleSellRocket = () => {
         </button>
         <button
           class="menu-action-btn secondary-btn full-width"
-          :disabled="pokemon?.onMission || pokemon?.inDaycare || pokemon?.onDefense"
+          :disabled="isPokemonBusy(pokemon)"
           @click.stop="handleRelease"
         >
           <span class="icon">⚡</span> LIBERAR
@@ -394,7 +395,7 @@ const handleSellRocket = () => {
         <button
           v-if="isRocketMode"
           class="menu-action-btn danger-btn full-width"
-          :disabled="pokemon?.onMission || pokemon?.inDaycare || pokemon?.onDefense"
+          :disabled="isPokemonBusy(pokemon)"
           @click.stop="handleSellRocket"
         >
           <span class="icon">💀</span> VENDER MERCADO NEGRO

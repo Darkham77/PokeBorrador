@@ -758,3 +758,164 @@ export function isPokemonEnrolledInOtherSubCompetition(
   return false;
 }
 
+export interface UpcomingEventOccurrence {
+  event: Event;
+  startInstant: Temporal.Instant;
+  endInstant: Temporal.Instant;
+  dateLabel: string;
+  dayName: string;
+  timeLabel: string;
+  isActiveNow: boolean;
+  startsInLabel: string;
+}
+
+/**
+ * Calculates all upcoming and active event occurrences within the next X days (defaults to 7).
+ */
+export function getUpcomingEventOccurrences(
+  events: Event[],
+  nowInstant: Temporal.Instant = Temporal.Now.instant(),
+  daysAhead = 7
+): UpcomingEventOccurrence[] {
+  const zdtNow = normalizeZonedDateTime(nowInstant)
+  const occurrences: UpcomingEventOccurrence[] = []
+  const maxInstant = nowInstant.add({ hours: daysAhead * 24 })
+  const dayNamesFull = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'] as const
+  const dayNamesShort = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'] as const
+
+  for (const event of events) {
+    if (!event.active) continue
+
+    // 1. Weekly Recurring Schedule
+    const sched = safeParse(event.schedule)
+    if (sched && sched.type === 'weekly' && Array.isArray(sched.days)) {
+      const days = sched.days as number[]
+      const startHour = (sched.startHour as number) ?? 0
+      const endHour = (sched.endHour as number) ?? 24
+
+      for (let offset = 0; offset <= daysAhead; offset++) {
+        const targetDay = zdtNow.add({ days: offset })
+        const jsDay = targetDay.dayOfWeek % 7 // 0=Sun, 1=Mon...6=Sat
+
+        if (days.includes(jsDay)) {
+          const startZdt = targetDay.with({ hour: startHour, minute: 0, second: 0, millisecond: 0, microsecond: 0, nanosecond: 0 })
+          const endZdt = startHour < endHour
+            ? targetDay.with({ hour: endHour, minute: 0, second: 0, millisecond: 0, microsecond: 0, nanosecond: 0 })
+            : targetDay.add({ days: 1 }).with({ hour: endHour, minute: 0, second: 0, millisecond: 0, microsecond: 0, nanosecond: 0 })
+
+          const startInst = startZdt.toInstant()
+          const endInst = endZdt.toInstant()
+
+          if (Temporal.Instant.compare(endInst, nowInstant) > 0 && Temporal.Instant.compare(startInst, maxInstant) <= 0) {
+            const isActive = Temporal.Instant.compare(nowInstant, startInst) >= 0 && Temporal.Instant.compare(nowInstant, endInst) < 0
+            
+            const shortDay = dayNamesShort[jsDay] ?? 'Día'
+            const fullDay = dayNamesFull[jsDay] ?? 'Día'
+            const dateLabel = offset === 0 ? 'Hoy' : offset === 1 ? 'Mañana' : `${shortDay} ${targetDay.day}/${targetDay.month}`
+            
+            const formatH = (hr: number) => {
+              const h = Math.floor(hr)
+              const m = Math.round((hr % 1) * 60)
+              return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+            }
+            const isAllDay = startHour === 0 && (endHour >= 23.9 || endHour === 24)
+            const timeLabel = isAllDay ? 'Todo el día' : `${formatH(startHour)} – ${formatH(endHour)} hs`
+
+            let startsInLabel = 'Activo ahora'
+            if (!isActive) {
+              const diffMinutes = Math.max(0, Math.floor(startInst.since(nowInstant).total({ unit: 'minute' })))
+              if (diffMinutes < 60) {
+                startsInLabel = `En ${diffMinutes}m`
+              } else if (diffMinutes < 24 * 60) {
+                const h = Math.floor(diffMinutes / 60)
+                startsInLabel = `En ${h}h`
+              } else {
+                const d = Math.floor(diffMinutes / (24 * 60))
+                startsInLabel = `En ${d} día${d > 1 ? 's' : ''}`
+              }
+            }
+
+            occurrences.push({
+              event,
+              startInstant: startInst,
+              endInstant: endInst,
+              dateLabel,
+              dayName: fullDay,
+              timeLabel,
+              isActiveNow: isActive,
+              startsInLabel
+            })
+          }
+        }
+      }
+    } else if (event.start_at && event.end_at) {
+      // 2. Absolute Start / End dates
+      try {
+        const startInst = Temporal.Instant.from(event.start_at)
+        const endInst = Temporal.Instant.from(event.end_at)
+
+        if (Temporal.Instant.compare(endInst, nowInstant) > 0 && Temporal.Instant.compare(startInst, maxInstant) <= 0) {
+          const isActive = Temporal.Instant.compare(nowInstant, startInst) >= 0 && Temporal.Instant.compare(nowInstant, endInst) < 0
+          const startZdt = normalizeZonedDateTime(startInst)
+          const endZdt = normalizeZonedDateTime(endInst)
+          const jsDayStart = startZdt.dayOfWeek % 7
+          const jsDayEnd = endZdt.dayOfWeek % 7
+          
+          const isSameDay = startZdt.year === endZdt.year && startZdt.month === endZdt.month && startZdt.day === endZdt.day
+          const isStartOfDay = startZdt.hour === 0 && startZdt.minute === 0
+          const isEndOfDay = (endZdt.hour === 23 && endZdt.minute >= 59) || (endZdt.hour === 0 && endZdt.minute === 0)
+          const isAllDay = isStartOfDay && isEndOfDay
+
+          const shortDayStart = dayNamesShort[jsDayStart] ?? 'Día'
+          const shortDayEnd = dayNamesShort[jsDayEnd] ?? 'Día'
+          const fullDayStart = dayNamesFull[jsDayStart] ?? 'Día'
+
+          const formatTime = (zdt: Temporal.ZonedDateTime) =>
+            `${String(zdt.hour).padStart(2, '0')}:${String(zdt.minute).padStart(2, '0')}`
+
+          let dateLabel = ''
+          let timeLabel = ''
+
+          if (isSameDay) {
+            const diffDays = Math.floor(startInst.since(nowInstant).total({ unit: 'day' }))
+            dateLabel = diffDays === 0 ? 'Hoy' : diffDays === 1 ? 'Mañana' : `${shortDayStart} ${startZdt.day}/${startZdt.month}`
+            timeLabel = isAllDay ? 'Todo el día' : `${formatTime(startZdt)} – ${formatTime(endZdt)} hs`
+          } else {
+            dateLabel = `${shortDayStart} ${startZdt.day}/${startZdt.month} al ${shortDayEnd} ${endZdt.day}/${endZdt.month}`
+            timeLabel = isAllDay ? 'Todo el día' : `${formatTime(startZdt)} al ${formatTime(endZdt)} hs`
+          }
+
+          let startsInLabel = 'Activo ahora'
+          if (!isActive) {
+            const diffMinutes = Math.max(0, Math.floor(startInst.since(nowInstant).total({ unit: 'minute' })))
+            if (diffMinutes < 60) {
+              startsInLabel = `En ${diffMinutes}m`
+            } else if (diffMinutes < 24 * 60) {
+              const h = Math.floor(diffMinutes / 60)
+              startsInLabel = `En ${h}h`
+            } else {
+              const d = Math.floor(diffMinutes / (24 * 60))
+              startsInLabel = `En ${d} día${d > 1 ? 's' : ''}`
+            }
+          }
+
+          occurrences.push({
+            event,
+            startInstant: startInst,
+            endInstant: endInst,
+            dateLabel,
+            dayName: fullDayStart,
+            timeLabel,
+            isActiveNow: isActive,
+            startsInLabel
+          })
+        }
+      } catch (e) {
+        logger.warn('EventEngine', `Invalid date format in event: ${event.id}`, e)
+      }
+    }
+  }
+
+  return occurrences.sort((a, b) => Temporal.Instant.compare(a.startInstant, b.startInstant))
+}
+

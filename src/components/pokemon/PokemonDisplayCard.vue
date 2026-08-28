@@ -9,8 +9,8 @@ import { useElementVisibility } from '@/composables/ui/useElementVisibility'
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { getPokemonVisualBadges } from '@/logic/constants/tags'
-import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
+import { getFieldPassiveBadges } from '@/logic/pokemon/pokemonFieldAbilities'
 
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
@@ -101,12 +101,14 @@ const spriteUrl = computed(() => {
 })
 
 const totalPower = computed(() => calculateTotalPower(props.pokemon))
+const fieldPassive = computed(() => getFieldPassiveBadges(props.pokemon))
 
 const isPremiumTier = computed(() => tierInfo.value.tier === 'S' || tierInfo.value.tier === 'S+')
 
 const cardClasses = computed(() => {
   const classes = ['pokemon-display-card'] // no-domain
   if (props.pokemon.onMission) classes.push('on-mission')
+  if (props.pokemon.onEvent) classes.push('on-event')
   if (hasBadges.value) classes.push('with-badges')
   if (hasManyBadges.value) classes.push('many-badges')
   
@@ -178,12 +180,30 @@ function getGenderClass(gender: string) {
         </div>
         <div class="card-status-indicators">
           <PVTooltip
+            v-if="fieldPassive"
+            :title="`Pasiva: ${fieldPassive.label}`"
+            :description="fieldPassive.desc"
+          >
+            <div class="status-indicator field-passive">
+              {{ fieldPassive.icon }}
+            </div>
+          </PVTooltip>
+          <PVTooltip
             v-if="pokemon.onMission"
             title="Misión"
             description="Este Pokémon está en una misión activa."
           >
             <div class="status-indicator mission">
               🧭
+            </div>
+          </PVTooltip>
+          <PVTooltip
+            v-if="pokemon.onEvent"
+            title="Evento"
+            description="Este Pokémon está participando en un evento o concurso activo."
+          >
+            <div class="status-indicator event">
+              🏆
             </div>
           </PVTooltip>
           <PVTooltip

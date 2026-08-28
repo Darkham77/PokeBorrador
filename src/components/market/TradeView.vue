@@ -10,6 +10,7 @@ import TradeFooter from '../social/TradeFooter.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { gsap } from 'gsap'
 import { SHOP_ITEMS } from '@/data/inventory/items'
+import { isPokemonBusy } from '@/logic/constants/tags'
 
 interface Props {
   show?: boolean
@@ -51,8 +52,8 @@ const message = ref('')
 
 const openSelector = (side: string) => {
   if (side === 'offer') {
-    const team = (gs.value.team || []).filter((p): p is Pokemon => p !== null)
-    const box = (gs.value.box as (Pokemon | null)[] || []).filter((p): p is Pokemon => p !== null)
+    const team = (gs.value.team || []).filter((p): p is Pokemon => p !== null && !isPokemonBusy(p))
+    const box = (gs.value.box as (Pokemon | null)[] || []).filter((p): p is Pokemon => p !== null && !isPokemonBusy(p))
     const allMyPokemon = [...team, ...box]
     
     uiStore.open('PokemonSelection', {
@@ -67,8 +68,8 @@ const openSelector = (side: string) => {
       }
     })
   } else {
-    const team = (friendSave.value.team || []).filter((p): p is Pokemon => p !== null)
-    const box = (friendSave.value.box || []).filter((p): p is Pokemon => p !== null)
+    const team = (friendSave.value.team || []).filter((p): p is Pokemon => p !== null && !isPokemonBusy(p))
+    const box = (friendSave.value.box || []).filter((p): p is Pokemon => p !== null && !isPokemonBusy(p))
     const allFriendPokemon = [...team, ...box]
     
     uiStore.open('PokemonSelection', {

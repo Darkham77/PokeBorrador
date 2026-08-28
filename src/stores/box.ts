@@ -6,6 +6,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality'
 import { usePlayerClassStore } from '@/stores/player/playerClass.ts'
 import { BLACK_MARKET_CRIMINALITY_PER_SALE, BOX_BASE_BUY_COST, BOX_ADVANCED_BUY_COST } from '@/logic/constants/gameplay'
+import { isPokemonBusy } from '@/logic/constants/tags'
 
 export const useBoxStore = defineStore('box', () => {
   const gameStore = useGameStore()
@@ -33,7 +34,7 @@ export const useBoxStore = defineStore('box', () => {
 
   function toggleBoxReleaseSelect(index: number) {
     const p = gameStore.state.box[index]
-    if (p && (p.onMission || p.inDaycare || p.onDefense)) return
+    if (p && isPokemonBusy(p)) return
 
     const idx = boxReleaseSelected.value.indexOf(index)
     if (idx > -1) {
@@ -50,7 +51,7 @@ export const useBoxStore = defineStore('box', () => {
     indices.forEach(i => {
       const p = gameStore.state.box[i]
       if (p) {
-        if (p.onMission || p.inDaycare || p.onDefense) return
+        if (isPokemonBusy(p)) return
         releasedNames.push(p.name)
         // Releasing an illegal Pokémon is purely removing it without returning held items or benefits
         const isIllegal = p.isIllegal || !checkPokemonLegality(p).isLegal
@@ -85,7 +86,7 @@ export const useBoxStore = defineStore('box', () => {
 
   function toggleBoxRocketSelect(index: number) {
     const p = gameStore.state.box[index]
-    if (!p || p.onMission || p.inDaycare || p.onDefense) return
+    if (!p || isPokemonBusy(p)) return
     if (p.isIllegal) return
     const legality = checkPokemonLegality(p)
     if (!legality.isLegal) {
@@ -106,7 +107,7 @@ export const useBoxStore = defineStore('box', () => {
     let total = 0
     boxRocketSelected.value.forEach(i => {
       const p = gameStore.state.box[i]
-      if (!p || p.onMission || p.inDaycare || p.onDefense || p.isIllegal || !checkPokemonLegality(p).isLegal) return
+      if (!p || isPokemonBusy(p) || p.isIllegal || !checkPokemonLegality(p).isLegal) return
       total += calculatePrice(p)
     })
     return total
@@ -120,7 +121,7 @@ export const useBoxStore = defineStore('box', () => {
     indices.forEach(i => {
       const p = gameStore.state.box[i]
       if (p) {
-        if (p.onMission || p.inDaycare || p.onDefense || p.isIllegal || !checkPokemonLegality(p).isLegal) return
+        if (isPokemonBusy(p) || p.isIllegal || !checkPokemonLegality(p).isLegal) return
         soldCount++
         returnHeldItem(p)
         gameStore.state.box.splice(i, 1)
@@ -196,6 +197,7 @@ export const useBoxStore = defineStore('box', () => {
     if (gameStore.state.team.length >= 6) return { success: false, msg: 'Equipo lleno.' }
     
     if (boxPoke.onMission) return { success: false, msg: 'En misión idle.' }
+    if (boxPoke.onEvent) return { success: false, msg: 'En evento o concurso activo.' }
     if (boxPoke.inDaycare) return { success: false, msg: 'En la Guardería.' }
     if (boxPoke.onDefense) return { success: false, msg: 'En Defensa Pasiva.' }
     
@@ -220,7 +222,7 @@ export const useBoxStore = defineStore('box', () => {
       }
     }
     
-    if (boxPoke.onMission || boxPoke.inDaycare || boxPoke.onDefense) return { success: false, msg: 'Pokémon ocupado.' }
+    if (isPokemonBusy(boxPoke) || isPokemonBusy(teamPoke)) return { success: false, msg: 'Pokémon ocupado.' }
     
     gameStore.state.box.splice(boxIndex, 1)
     const swapped = gameStore.state.team.splice(teamIndex, 1, boxPoke)[0]!

@@ -4,6 +4,7 @@ import type { DBResponse } from '@/types/system/database';
 import type { MarketListingType, MarketAssetType } from '@/logic/economy/market';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality.ts';
+import { isPokemonBusy } from '@/logic/constants/tags.ts';
 
 interface OfflineSaveData {
   box?: Record<string, unknown>[];
@@ -28,6 +29,9 @@ export async function emulatePublishListing(
 
   if (p_listing_type === 'pokemon') {
     const poke = p_asset_data as Pokemon;
+    if (isPokemonBusy(poke)) {
+      return { data: null, error: { message: 'No puedes publicar un Pokémon que está en misión, evento o guardería.' } };
+    }
     const legality = checkPokemonLegality(poke);
     if (poke.isIllegal || !legality.isLegal) {
       return { data: null, error: { message: `No se puede publicar un Pokémon ilegal en el mercado: ${legality.issues[0] || 'datos no válidos'}.` } };

@@ -265,6 +265,7 @@ export interface PokemonCreationOptions {
   abilitySlot?: number;
   gender?: PokemonGender;
   heldItem?: ItemId | null;
+  heldItemRates?: { commonRate: number; rareRate: number; forceHeldChance?: number };
   ivFloor?: number;
   mapId?: string;
   shinyMultiplier?: number;
@@ -355,7 +356,7 @@ export function makePokemon(idVal: string | number, level: number, options: Poke
 
   let heldItem: ItemId | null = options.heldItem || null;
   if (!heldItem) {
-    heldItem = getWildHeldItem(id);
+    heldItem = getWildHeldItem(id, options.heldItemRates);
   }
 
   const p: Pokemon = {

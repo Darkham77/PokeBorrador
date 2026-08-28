@@ -5,6 +5,7 @@ import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 import { clampLegendaryRates, selectFromPool, applyAtmosphericStatus, getSpeciesEntries } from './encounterHelpers.ts'
 import type { WeatherId } from '@/logic/weather/weatherRegistry'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { resolveFieldEncounterModifiers } from '@/logic/rules/fieldRulesCoordinator'
 
 export function generateFishingEncounter(
   loc: MapLocation,
@@ -63,8 +64,27 @@ const DEFAULT_FISHING_VISITOR_WEIGHT_OFFSET = -10;
   const rateVal = rates[rateIdx]
   const rarity = ((rateVal !== undefined ? rateVal : 0) / (totalRate || 1)) * 100
 
-  const shinyMult = (options.shinyMultiplier || 1) * (fishingType === 'super' ? 1.5 : 1.0)
-  const pokemon = makePokemon(selectedId, level, { shinyMultiplier: shinyMult }) as Pokemon
+  const modifiers = resolveFieldEncounterModifiers({
+    team: state.team,
+    mapId: loc.id,
+    loc,
+    weather,
+    playerClass: state.playerClass,
+    classData: state.classData,
+    faction: state.faction,
+    dominanceData: options.dominanceData,
+    options
+  })
+
+  const shinyMult = (options.shinyMultiplier || 1) * (fishingType === 'super' ? 1.5 : 1.0) * (modifiers.shinyMultiplier || 1)
+  const pokemon = makePokemon(selectedId, level, {
+    nature: modifiers.natureOverride ?? undefined,
+    gender: modifiers.genderOverride ?? undefined,
+    heldItemRates: modifiers.heldItemRates,
+    shinyMultiplier: shinyMult,
+    ivFloor: modifiers.ivFloor,
+    mapId: loc.id
+  }) as Pokemon
   if (pokemon) {
     applyAtmosphericStatus(pokemon, loc, weather, selectedId)
   }

@@ -12,6 +12,7 @@ import { SHOP_ITEMS } from '@/data/inventory/items'
 import type { GameState } from '@/types/system/game'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality'
+import { isPokemonBusy } from '@/logic/constants/tags.ts'
 import { GTS_MAX_PRICE_FILTER, MAX_TOTAL_IVS_STAT_SUM } from '@/logic/constants/gameplay.ts'
 
 export const useGTSStore = defineStore('gts', () => {
@@ -211,6 +212,10 @@ export const useGTSStore = defineStore('gts', () => {
 
     if (type === 'pokemon') {
       const poke = selection as Pokemon
+      if (isPokemonBusy(poke)) {
+        ui.notify('No puedes publicar un Pokémon que está en misión, evento o guardería.', '⚠️')
+        return false
+      }
       const legality = checkPokemonLegality(poke)
       if (poke.isIllegal || !legality.isLegal) {
         ui.notify(`No puedes publicar un Pokémon ilegal en el GTS: ${legality.issues[0] || 'datos no válidos'}.`, '⚠️')

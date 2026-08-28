@@ -33,6 +33,8 @@ export { getEncounterPool, selectFromPool, clampLegendaryRates, getFinalGroundRa
 /**
  * General walking wild encounter tables, weather visitor quota, incense, and region boosts.
  */
+import { resolveFieldEncounterModifiers } from '@/logic/rules/fieldRulesCoordinator';
+
 function generateGroundEncounter(
   loc: MapLocation,
   cycle: ReturnType<typeof requireDayPhase>,
@@ -44,26 +46,42 @@ function generateGroundEncounter(
 ): Encounter | null {
   let { pool, rates } = getFinalGroundRates(loc, cycle, weather, activeEvents);
 
-  if (state.incenseSecs && state.incenseSecs > 0 && state.incenseType) {
-    const INCENSE_TO_TYPE: Partial<Record<ItemId, PokemonType>> = {
-      incensefire: 'fire',
-      incensewater: 'water',
-      incensegrass: 'grass',
-      incensenormal: 'normal',
-      incenseghost: 'ghost',
-      incensepsychic: 'psychic',
-    };
-    const targetType = INCENSE_TO_TYPE[state.incenseType];
-    if (targetType) {
-      const typeIndices = pool.map((id, idx) => {
-        const pData = pokemonDataProvider.getPokemonData(id);
-        return (pData && (pData.type === targetType || pData.type2 === targetType)) ? idx : -1;
-      }).filter(idx => idx !== -1);
+  const modifiers = resolveFieldEncounterModifiers({
+    team: state.team,
+    mapId: locId,
+    loc,
+    weather,
+    dayPhase: cycle,
+    repelSecs: state.repelSecs,
+    incenseSecs: state.incenseSecs,
+    incenseType: state.incenseType,
+    playerClass: state.playerClass,
+    classData: state.classData,
+    faction: state.faction,
+    dominanceData: options.dominanceData,
+    activeEvents,
+    options
+  });
 
-      if (typeIndices.length > 0) {
-        pool = typeIndices.map(idx => pool[idx]).filter((id): id is PokemonSpeciesId => id !== undefined);
-        rates = typeIndices.map(idx => rates[idx]).filter((r): r is number => r !== undefined);
-      }
+  const INCENSE_TO_TYPE: Partial<Record<ItemId, PokemonType>> = {
+    incensefire: 'fire',
+    incensewater: 'water',
+    incensegrass: 'grass',
+    incensenormal: 'normal',
+    incenseghost: 'ghost',
+    incensepsychic: 'psychic',
+  };
+
+  const targetType = modifiers.attractionType || (state.incenseSecs && state.incenseSecs > 0 && state.incenseType ? INCENSE_TO_TYPE[state.incenseType] : null);
+  if (targetType) {
+    const typeIndices = pool.map((id, idx) => {
+      const pData = pokemonDataProvider.getPokemonData(id);
+      return (pData && (pData.type === targetType || pData.type2 === targetType)) ? idx : -1;
+    }).filter(idx => idx !== -1);
+
+    if (typeIndices.length > 0) {
+      pool = typeIndices.map(idx => pool[idx]).filter((id): id is PokemonSpeciesId => id !== undefined);
+      rates = typeIndices.map(idx => rates[idx]).filter((r): r is number => r !== undefined);
     }
   }
 
@@ -71,9 +89,19 @@ function generateGroundEncounter(
   const selectedId = selectFromPool(pool, rates);
   const minLv = loc.lv[0] || 2;
   const maxLv = loc.lv[1] || 5;
-  const level = Math.floor(Math.random() * (maxLv - minLv + 1)) + minLv;
+  let level = modifiers.forceMaxLevel ? maxLv : Math.floor(Math.random() * (maxLv - minLv + 1)) + minLv;
+  if (modifiers.shouldAvoidLowLevel(level)) {
+    level = Math.max(level, maxLv);
+  }
   
-  const pokemon = makePokemon(selectedId, level, { shinyMultiplier: options.shinyMultiplier }) as Pokemon;
+  const pokemon = makePokemon(selectedId, level, {
+    nature: modifiers.natureOverride ?? undefined,
+    gender: modifiers.genderOverride ?? undefined,
+    heldItemRates: modifiers.heldItemRates,
+    shinyMultiplier: modifiers.shinyMultiplier,
+    ivFloor: modifiers.ivFloor,
+    mapId: locId
+  }) as Pokemon;
   if (!pokemon) return null;
 
   applyAtmosphericStatus(pokemon, loc, weather, selectedId);

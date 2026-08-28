@@ -30,12 +30,21 @@ export const WILD_HELD_ITEMS: Partial<Record<PokemonSpeciesId, { common?: ItemId
   dragonite: { rare: 'dragonscale' }
 };
 
-export function getWildHeldItem(id: PokemonSpeciesId): ItemId | null { // domain-ok
+export function getWildHeldItem( // domain-ok
+  id: PokemonSpeciesId,
+  rates?: { commonRate: number; rareRate: number; forceHeldChance?: number }
+): ItemId | null {
   const itemData = WILD_HELD_ITEMS[id];
   if (!itemData) return null;
 
+  if (rates?.forceHeldChance && Math.random() < rates.forceHeldChance) {
+    if (itemData.rare && Math.random() < 0.5) return itemData.rare;
+    if (itemData.common) return itemData.common;
+    if (itemData.rare) return itemData.rare;
+  }
+
   const rand = Math.random();
-  const r = GAME_RATIOS.heldItems;
+  const r = rates || GAME_RATIOS.heldItems;
   if (itemData.rare && rand < r.rareRate) return itemData.rare;
   if (itemData.common && rand < r.commonRate) return itemData.common;
   return null;

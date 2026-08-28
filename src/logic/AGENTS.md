@@ -38,6 +38,8 @@ Logic Developers / Game Designers.
 - **Competition Results Auto-Pruning & History Cap**: When recording competition event conclusions via `fn_award_event_automated`, the engine must automatically purge older results in `competition_results` beyond the 100 most recent records (`MAX_STORED_COMPETITION_RESULTS = 100`). The UI/Store limits active retrieval to the 20 most recent events (`MAX_PAST_EVENTS_COUNT = 20`).
 - **Competition Ranking & Multi-Level Tiebreaker Mandate**: Competition event ranking across database RPCs (`fn_award_event_automated`), SQLite emulation (`emulateAwardEventAutomated`), and engine validation (`isNewEntryBetter`) MUST follow the strict priority hierarchy: ① Primary metric score (e.g. `total_ivs`) in descending order (`DESC`); ② Shiny priority (variocolor Pokémon `is_shiny: true` strictly beats non-shiny in ties); ③ Oldest capture date (`obtained_at` timestamp in ascending order `ASC`); ④ Submission timestamp (`submitted_at ASC`). All registered Pokémon MUST have a valid numeric `obtainedAt` capture timestamp, with zero null fallbacks permitted.
 - **Atmosphere Worker State Lifecycle & Resumption**: When re-initializing worker loops in `atmosphere.worker.ts` via `INIT`, the worker MUST explicitly reset `isPaused = false` and synchronize `lastTime = performance.now()`. This ensures animation request loops cleanly resume without state freezing when returning from battles or un-pausing performance modes.
+- **Busy Pokémon Protection & Complete Lifecycle Mandate**: Pokémon currently engaged in active missions (`onMission: true`), events/contests (`onEvent: true`), daycare (`inDaycare: true`), or passive defense (`onDefense: true`) are classified as busy (`isPokemonBusy`). They MUST be automatically badged with visual indicators (`🧭` / `🏆`), filtered out from market listings, and blocked from release, Black Market sale, P2P trade offers, and team swaps across UI, Pinia stores, and database RPC emulations. When the mission is collected or the event concludes, all busy flags are reset and actions are immediately re-enabled.
+- **7-Day Upcoming Event Occurrences Projection Engine**: Future event schedules (`getUpcomingEventOccurrences` in `eventEngine.ts`) MUST project all active, weekly recurring, and date-bounded events across the next 7 days in the official Argentina timezone (ARG / GMT-3). Occurrences must be sorted chronologically by start instant, calculating relative countdown labels (`En 2h`, `En 1 día`) and live indicators (`🟢 ACTIVO AHORA`) without modifying underlying database records. Full-day and multi-day spans MUST be cleanly represented as `Todo el día` rather than redundant 24h ranges.
 
 ## Domain Concepts & Glossary
 
@@ -117,6 +119,7 @@ Logic Developers / Game Designers.
 - [providers/](./providers/AGENTS.md): Domain module documentation for providers.
 - [pvp/](./pvp/AGENTS.md): Domain module documentation for pvp.
 - [render/](./render/AGENTS.md): Domain module documentation for render.
+- [rules/](./rules/AGENTS.md): Domain module documentation for rules and field modifiers coordination.
 - [services/](./services/AGENTS.md): Domain module documentation for services.
 - [utils/](./utils/AGENTS.md): Domain module documentation for utils.
 - [validation/](./validation/AGENTS.md): Domain module documentation for validation.
