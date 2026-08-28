@@ -18,7 +18,8 @@ export type BattleMinigame = (typeof BATTLE_MINIGAMES)[number];
 export type BattleDifficulty = 'easy' | 'normal' | 'hard';
 export type BattleActionType = 'move' | 'switch';
 export type PartySlotStatus = 'active' | 'fainted' | 'empty';
-export type BattleEscapeType = 'flee' | 'teleport';
+export const BATTLE_ESCAPE_TYPES = ['flee', 'teleport', 'whirlwind', 'knockback', 'withdraw'] as const;
+export type BattleEscapeType = (typeof BATTLE_ESCAPE_TYPES)[number];
 export type BattleParticipantUid = Pokemon['uid'];
 export const BATTLE_CONDITION_KEYS = [
   'auroraveil',

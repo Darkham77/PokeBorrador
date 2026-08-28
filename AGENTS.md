@@ -34,6 +34,10 @@ Not lazy about: input validation at trust boundaries, error handling that preven
 
 - **Zero Error Suppression Mandate**: Never hide, mask, truncate, or swallow errors using ad-hoc crops, silent mock fallbacks, or empty catch blocks. When data, geometry, or assets violate constraints, the system MUST fail loudly with descriptive errors so they can be fixed at the source.
 - **Zero Runtime Database Fallback Mandate**: All schema updates, missing property backfills, and structural evolutions MUST be executed strictly and exclusively via static SQL migrations. Runtime data patching, dynamic property synthesis (such as legacy `normalizeData`), or schema fallbacks (`fallback()`) in application code are strictly forbidden. If legacy runtime fallback code is discovered anywhere in the codebase, the agent MUST immediately alert the user for prompt refactoring.
+- **Mandatory 3-Tier Bug Fixing Protocol Mandate**: Whenever investigating, fixing, or refactoring ANY bug across the codebase, agents MUST follow the 3-tier protocol:
+  1. **Tier 1 (Isolated Unit Test - RED-to-GREEN)**: Create an isolated, self-contained unit test in `tests/node/` or `tests/unit/` reproducing the exact failure deterministically in RED before editing `src/`. Verify GREEN once fixed.
+  2. **Tier 2 (Integrity & Integration Test)**: Verify cross-boundary data integrity, schema validation, FSM state machine transitions, DBRouter persistence roundtrips, and `@pkmn/sim` parity in `tests/integration/` or `tests/node/`.
+  3. **Tier 3 (Playwright E2E Simulation)**: For UI, battle, or feature flows, verify or create Playwright E2E simulation cases adhering strictly to `/game-simulation` protocols (passive joystick, 100% ID-based locators, 5s per-action timeout limit, zero artificial timers, and certified combat replay).
 
 ## 1. Efficient Thinking & Communication
 
@@ -56,14 +60,14 @@ Upon starting work, every agent MUST load these core skills:
 - `@/dox-navigator` (`.agents/skills/dox-navigator/SKILL.md`) for directory navigation and DOX hierarchy.
 - `@/domain-type-first` (`.agents/skills/domain-type-first/SKILL.md`) for domain-type-first governance, data contracts, and union derivation.
 
-*Domain-specific skills (`@/project-browser-testing`, `@/systematic-debugging`, `@/safe-commit`, `@/fallow`) MUST be loaded on-demand when performing their respective tasks.*
+*Domain-specific skills (`@/game-simulation`, `@/project-browser-testing`, `@/systematic-debugging`, `@/safe-commit`, `@/fallow`) MUST be loaded on-demand when performing their respective tasks.*
 
 ## 4. Specialized Project Rules Index
 
 For topic-specific mandates, consult the specialized rule modules under [.agents/skills/project-standards/references/rules/](.agents/skills/project-standards/references/rules/README.md):
 
 - [TypeScript Conventions & Data Integrity](.agents/skills/project-standards/references/rules/typescript_conventions.md): Domain-Type-First governance, zero-any/ignore, typed JSON wrappers, Node 26+ permissions, cross-platform paths.
-- [Testing & Simulations](.agents/skills/project-standards/references/rules/testing_and_simulations.md): CLI debugging, Playwright `#id` locators, fail-fast turn execution, zero-timer simulation sync, 100% shared battle runners.
+- [Testing & Simulations](.agents/skills/project-standards/references/rules/testing_and_simulations.md): 3-Tier bug fixing protocol (Unit RED-to-GREEN, Integrity/Integration, Playwright simulations via /game-simulation), CLI debugging, Playwright `#id` locators, fail-fast turn execution, zero-timer simulation sync, 100% shared battle runners.
 - [Database & Persistence](.agents/skills/project-standards/references/rules/database_and_persistence.md): DBRouter context isolation, Save Shield (no 0-Pokémon saves), prohibition on remote DB updates, UID parity.
 - [Git & Workflow Safety](.agents/skills/project-standards/references/rules/git_and_workflow_safety.md): Destructive Git confirmations, uncommitted file backups, scratch directory mandate, main branch push protection.
 - [Game Engine & State](.agents/skills/project-standards/references/rules/game_engine_and_state.md): Showdown canonical reference (`ACTIVE_GENERATION`), 4-seat compatibility, zero-cloning Pokémon instances, Showdown ID format.

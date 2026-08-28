@@ -28,9 +28,7 @@ export async function executeFlee(ctx: BattleContext) {
       if (isPreCombat) {
         ctx.addLog('¡Escapaste sin problemas!', 'log-info', 'player')
         
-        ctx.fsm.transition(ctx.fsm.currentState.value, ctx.BATTLE_SUBSTATES.ESCAPE_PROCESS)
-        gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'player' })
-        
+        await ctx.fsm.transition(ctx.fsm.currentState.value, ctx.BATTLE_SUBSTATES.ESCAPE_PROCESS)
         ctx.activeBattle.value.playerFled = true
         await ctx.endBattle(false, true)
         ctx.isProcessing.value = false
@@ -65,16 +63,32 @@ export async function executeFlee(ctx: BattleContext) {
       if (canEscape) {
         ctx.addLog('¡Escapaste sin problemas!', 'log-info', 'player')
         
-        ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.ESCAPE_PROCESS)
-        ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM)
-        gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'player' })
+        await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.ESCAPE_PROCESS)
+        await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.POKEMON_RECALL)
         
-        if (ctx.animations?.awaitTween) {
-          await ctx.animations.awaitTween(`player-${p.uid}`)
-        } else {
-          const { gsapSleep } = await import('@/logic/utils/gsapHelpers')
-          await gsapSleep(ESCAPE_ANIMATION_FALLBACK_DELAY_MS)
+        // 1. Animación del jugador regresando a su Pokéball
+        const playerRecallPromise = ctx.animations?.handleWithdrawRequest
+          ? ctx.animations.handleWithdrawRequest({ side: 'player', pokemon: p })
+          : Promise.resolve()
+
+        // 2. Animación paralela del enemigo salvaje huyendo
+        const isWild = !ctx.activeBattle.value.isTrainer && !ctx.activeBattle.value.isGym
+        let enemyEscapePromise: Promise<void> | Promise<unknown> = Promise.resolve()
+
+        if (isWild && e) {
+          gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'enemy', type: 'flee', pokemon: e })
+          if (ctx.animations?.awaitTween) {
+            enemyEscapePromise = ctx.animations.awaitTween('escape-enemy')
+          } else {
+            const { gsapSleep } = await import('@/logic/utils/gsapHelpers')
+            enemyEscapePromise = gsapSleep(ESCAPE_ANIMATION_FALLBACK_DELAY_MS)
+          }
         }
+
+        // Esperar ambas animaciones en paralelo
+        await Promise.all([playerRecallPromise, enemyEscapePromise])
+
+        await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.VACATE_SEAT)
         
         ctx.activeBattle.value.playerFled = true
         await ctx.endBattle(false, true)

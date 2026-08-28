@@ -115,6 +115,8 @@ interface WorkerEventPayload {
   p2Hps?: Record<string, number>;
   p1Statuses?: Record<string, string>;
   p2Statuses?: Record<string, string>;
+  p1MovesPP?: Record<string, Record<string, number>>;
+  p2MovesPP?: Record<string, Record<string, number>>;
   weather?: string;
   debugStatus?: { side: SideID; uid: string; status: string };
   side?: SideID;
@@ -212,6 +214,48 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
         if (payload.p2Hps && typeof payload.p2Hps === 'object') {
           syncSidePokemon(currentBattle.p2, payload.p2Hps, payload.p2Statuses);
         }
+
+        // Sincronizar PP iniciales de los movimientos de cada Pokémon
+        const syncSideMovesPP = (side: Side, movesPPMap?: Record<string, Record<string, number>>) => {
+          if (!movesPPMap || typeof movesPPMap !== 'object' || !Array.isArray(side.pokemon)) return;
+          side.pokemon.forEach(pokemon => {
+            if (!pokemon) return;
+            const uid = (Reflect.get(pokemon, 'uid') as string | undefined) || (pokemon as ExtendedPokemon).uid;
+            const monPPs = uid ? movesPPMap[uid] : undefined;
+            if (monPPs && Array.isArray(pokemon.moveSlots)) {
+              pokemon.moveSlots.forEach(slot => {
+                const customPP = monPPs[slot.id];
+                if (typeof customPP === 'number' && !isNaN(customPP)) {
+                  slot.pp = Math.max(0, Math.min(slot.maxpp, customPP));
+                  if (slot.pp === 0) {
+                    slot.disabled = true;
+                  }
+                }
+              });
+            }
+          });
+
+          // Actualizar los PP en el activeRequest inicial de Showdown si ya fue generado
+          const activeReq = side.activeRequest as { active?: Array<{ moves?: Array<{ id?: string; pp?: number; maxpp?: number; disabled?: boolean | string }> }> } | undefined;
+          if (activeReq && Array.isArray(activeReq.active) && activeReq.active[0] && Array.isArray(activeReq.active[0].moves)) {
+            const activeMon = side.pokemon.find(p => p && p.position === 0) || side.pokemon[0];
+            if (activeMon && Array.isArray(activeMon.moveSlots)) {
+              activeReq.active[0].moves.forEach((reqMove, idx) => {
+                const correspondingSlot = activeMon.moveSlots.find(ms => ms && ms.id === reqMove.id) || activeMon.moveSlots[idx];
+                if (correspondingSlot && reqMove) {
+                  reqMove.pp = correspondingSlot.pp;
+                  reqMove.maxpp = correspondingSlot.maxpp;
+                  if (correspondingSlot.pp === 0) {
+                    reqMove.disabled = true;
+                  }
+                }
+              });
+            }
+          }
+        };
+
+        syncSideMovesPP(currentBattle.p1, payload.p1MovesPP);
+        syncSideMovesPP(currentBattle.p2, payload.p2MovesPP);
 
         if (payload.weather && payload.weather !== 'none') {
           currentBattle.field.setWeather(payload.weather, 'debug' as const);

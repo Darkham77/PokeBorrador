@@ -1,5 +1,6 @@
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine'
 import { handleItemUsage } from '@/logic/battle/battleItems'
+import { gameBus } from '@/logic/events/gameBus'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleSource, BattleSide } from '@/types/battle/battle'
@@ -130,14 +131,31 @@ export async function processUseItemInBattle(
 
     if (activeBattle.over) {
       if (activeBattle.fled) {
-        await ctx.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM)
-        if (ctx.animations?.awaitTween) {
-          await ctx.animations.awaitTween('escape-enemy')
-        } else {
-          const { gsapSleep } = await import('@/logic/utils/gsapHelpers')
-          const PLAY_ESCAPE_ANIMATION_FALLBACK_MS = 800
-          await gsapSleep(PLAY_ESCAPE_ANIMATION_FALLBACK_MS)
+        await ctx.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ESCAPE_PROCESS)
+        await ctx.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)
+
+        const p = activeBattle.player
+        const e = activeBattle.enemy
+        const playerRecallPromise = ctx.animations?.handleWithdrawRequest && p
+          ? ctx.animations.handleWithdrawRequest({ side: 'player', pokemon: p })
+          : Promise.resolve()
+
+        const isWild = !activeBattle.isTrainer && !activeBattle.isGym
+        let enemyEscapePromise: Promise<void> | Promise<unknown> = Promise.resolve()
+
+        if (isWild && e) {
+          gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'enemy', type: 'flee', pokemon: e })
+          if (ctx.animations?.awaitTween) {
+            enemyEscapePromise = ctx.animations.awaitTween('escape-enemy')
+          } else {
+            const { gsapSleep } = await import('@/logic/utils/gsapHelpers')
+            const PLAY_ESCAPE_ANIMATION_FALLBACK_MS = 800
+            enemyEscapePromise = gsapSleep(PLAY_ESCAPE_ANIMATION_FALLBACK_MS)
+          }
         }
+
+        await Promise.all([playerRecallPromise, enemyEscapePromise])
+        await ctx.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.VACATE_SEAT)
         await options.endBattle(false, true)
       }
       return

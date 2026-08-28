@@ -120,10 +120,20 @@ export const useAudioStore = defineStore('audio', () => {
     }
   };
 
+  const AUDIO_DEBOUNCE_WINDOW_MS = 60;
+  const lastPlayTimeMap = new Map<string, number>();
+
   /**
    * Plays a sound using the centralized engine.
    */
   const play = async (type: string) => {
+    const now = typeof performance !== 'undefined' ? performance.now() : Temporal.Now.instant().epochMilliseconds;
+    const lastTime = lastPlayTimeMap.get(type) ?? 0;
+    if (now - lastTime < AUDIO_DEBOUNCE_WINDOW_MS) {
+      return;
+    }
+    lastPlayTimeMap.set(type, now);
+
     if (!isInitialized.value) init();
     await resume();
 

@@ -301,35 +301,17 @@ export function useBattleAnimations(
     addBusListener('ENCOUNTER_ANIM', (() => triggerSearchEncounter()) as EventListener)
 
     addBusListener('PLAY_ESCAPE_ANIM', ((e: Event) => {
-      const data = (e as CustomEvent).detail as string | { side?: string; type?: string } | undefined
+      const data = (e as CustomEvent).detail as string | { side?: string; type?: string; pokemon?: Pokemon } | undefined
       const side = typeof data === 'string' ? data : (data?.side || 'player')
-      const stateVal = toValue(battleStore.state)
-      const isWild = stateVal ? (!stateVal.isTrainer && !stateVal.isGym) : true
-      
-      if (typeof data === 'object' && data?.type === 'forced-switch') {
-        const pokemon = side === 'player' ? toValue(battleStore.player) : toValue(battleStore.enemy)
-        handleWithdrawRequest({ side, pokemon: pokemon || undefined })
+      const type = (typeof data === 'object' && data?.type) || 'flee'
+      const pokemon = (typeof data === 'object' && data?.pokemon) || (side === 'player' ? toValue(battleStore.player) : toValue(battleStore.enemy))
+
+      if ((side === 'player' && type === 'flee') || type === 'withdraw') {
+        handleWithdrawRequest({ side: 'player', pokemon: pokemon || undefined })
         return
       }
 
-      if (side === 'player') {
-        const playerPokemon = toValue(battleStore.player)
-        handleCatchRequest({ side: 'player', pokemon: playerPokemon || undefined })
-
-        if (isWild) {
-          const enemyPokemon = toValue(battleStore.enemy)
-          if (enemyPokemon) {
-            gameBus.emit('TRIGGER_COMBATANT_ESCAPE', { side: 'enemy', pokemon: enemyPokemon, type: 'flee' })
-          }
-        }
-      } else if (!isWild) {
-        const pokemon = toValue(battleStore.enemy)
-        handleCatchRequest({ side: 'enemy', pokemon: pokemon || undefined })
-      } else {
-        const type = (typeof data === 'object' && data?.type) || 'flee'
-        const pokemon = toValue(battleStore.enemy)
-        gameBus.emit('TRIGGER_COMBATANT_ESCAPE', { side: 'enemy', pokemon: pokemon || undefined, type })
-      }
+      gameBus.emit('TRIGGER_COMBATANT_ESCAPE', { side, pokemon: pokemon || undefined, type })
     }) as EventListener)
 
     addBusListener('START_BATTLE', ((_e: Event) => {

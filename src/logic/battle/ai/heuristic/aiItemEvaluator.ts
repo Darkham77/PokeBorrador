@@ -27,9 +27,10 @@ export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promis
         const { gameBus } = await import('../../../events/gameBus')
         gameBus.emit('PLAY_HEAL', { side: 'enemy' })
       }
+    } else {
+      const audioStore = await import('../../../../stores/audio').then(m => m.useAudioStore())
+      audioStore.play('heal')
     }
-    const audioStore = await import('../../../../stores/audio').then(m => m.useAudioStore())
-    audioStore.play('heal')
   }
 
   // 1. Revive check

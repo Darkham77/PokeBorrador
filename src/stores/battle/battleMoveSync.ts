@@ -1,6 +1,8 @@
 import type { Move } from '@/types/pokemon/pokemon'
 import type { BattleState, BattleSide } from '@/types/battle/battle'
 import type { MoveCategory } from '@/data/battle/moves'
+import { getActivePinia } from 'pinia'
+import { useGameStore } from '@/stores/game'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 
 export function syncActiveMovesFromRequest(active: BattleState | null, side: BattleSide) {
@@ -92,5 +94,18 @@ export function syncActiveMovesFromRequest(active: BattleState | null, side: Bat
   }
 
   poke.moves = currentMoves
+  if (side === 'player' && getActivePinia()) {
+    try {
+      const team = useGameStore().state?.team
+      if (team) {
+        const teamMon = team.find(p => p && p.uid === poke.uid)
+        if (teamMon && teamMon !== poke) {
+          teamMon.moves = currentMoves
+        }
+      }
+    } catch {
+      // Ignored if gameStore is not yet initialized
+    }
+  }
   console.debug(`[useBattleStore] Sync'd ${side} moves from request:`, JSON.stringify(poke.moves.map(m => m ? `${m.id} (pp: ${m.pp}/${m.maxPP}, dis: ${m.disabled})` : '')))
 }

@@ -48,8 +48,15 @@ export async function restoreBattleState(ctx: BattleContext, battleData: unknown
 
   // 4. If an active battle with combatants was in progress, restore it faithfully
   const enemyPoke = d.enemy || d._initialEnemy || (d.enemyTeam && (d.enemyTeam[enemyTeamIndex] || d.enemyTeam[0])) || null
-  const isSearchPhase = Boolean((d as { inSearchPhase?: boolean }).inSearchPhase === true || (d as { fsmState?: string }).fsmState === 'SEARCH_PHASE');
-  const isActualCombatInProgress = Boolean(!isSearchPhase && ((d.turnCount && d.turnCount > 0) || d.isTrainer || d.isGym || (!d.wasSearching && enemyPoke)))
+  const isSearchPhase = Boolean(
+    (d as { inSearchPhase?: boolean }).inSearchPhase === true ||
+    (d as { fsmState?: string }).fsmState === 'SEARCH_PHASE' ||
+    (d.wasSearching && !d.isTrainer && !d.isGym && (!d.turnCount || d.turnCount === 0) && !d.battleHistory?.length)
+  );
+  const isActualCombatInProgress = Boolean(
+    !isSearchPhase &&
+    ((d.turnCount && d.turnCount > 0) || d.isTrainer || d.isGym || (!d.wasSearching && enemyPoke))
+  );
 
   if (playerPoke && enemyPoke && isActualCombatInProgress) {
     d.player = playerPoke

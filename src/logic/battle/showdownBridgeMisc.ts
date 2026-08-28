@@ -5,6 +5,8 @@ import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 import { requireAbilityId } from '../../data/battle/abilities.ts';
 import { requirePokemonSpeciesId } from '../../data/pokemon/pokedex.ts';
 import { requireItemId } from '../../data/inventory/items.ts';
+import { gameBus } from '@/logic/events/gameBus.ts';
+import { getForcedExitConfig, isForcedSwitchMove } from './helpers/forcedSwitchRegistry.ts';
 
 
 /**
@@ -17,7 +19,7 @@ import { requireItemId } from '../../data/inventory/items.ts';
  * -burst, -candynamax
  */
 export function handleMiscEvents(ctx: SBCtx): boolean | Promise<boolean> {
-  const { store, type, parts, line, p, getPoke, getSide } = ctx;
+  const { store, type, parts, line, p, e, getPoke, getSide } = ctx;
 
   switch (type) {
     case 'gen':
@@ -74,7 +76,21 @@ export function handleMiscEvents(ctx: SBCtx): boolean | Promise<boolean> {
       const target = getPoke(parts[2] || '');
       if (target) {
         const style = target === p ? 'log-player' : 'log-enemy';
-        store.addLog(`¡El movimiento de ${target.name} falló!`, style, target);
+        const lastMoveId = target.lastMove?.id || store.activeMove?.value?.id || '';
+        const isPlayerAttacking = target === p;
+        const opponentTeam = isPlayerAttacking
+          ? (store.activeBattle.value?.enemyTeam || (store.activeBattle.value?.enemy ? [store.activeBattle.value.enemy] : []))
+          : (store.activeBattle.value?.playerTeam || (store.activeBattle.value?.player ? [store.activeBattle.value.player] : []));
+        const currentOpponentUid = isPlayerAttacking
+          ? store.activeBattle.value?.enemy?.uid
+          : store.activeBattle.value?.player?.uid;
+        const aliveOpponentsOnBench = opponentTeam.filter(mon => mon && mon.hp > 0 && mon.uid !== currentOpponentUid);
+
+        if (isForcedSwitchMove(lastMoveId) && aliveOpponentsOnBench.length === 0) {
+          store.addLog(`¡El movimiento de ${target.name} falló porque no hay ningún Pokémon en la banca para cambiar!`, style, target);
+        } else {
+          store.addLog(`¡El movimiento de ${target.name} falló!`, style, target);
+        }
       }
       return true;
     }
@@ -426,13 +442,26 @@ export function handleMiscEvents(ctx: SBCtx): boolean | Promise<boolean> {
 
             if (isDifferentEnemy) {
               if (currentEnemy && currentEnemy.hp > 0 && !currentEnemy.fainted) {
-                store.addLog(`¡${active.trainerName || 'El entrenador'} retira a ${currentEnemy.name}!`, 'log-enemy', 'enemy_trainer');
                 if (store.exitingEnemy) store.exitingEnemy.value = currentEnemy;
-                if (store.fsm && store.BATTLE_STATES && store.BATTLE_SUBSTATES) {
-                  await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.POKEMON_RECALL);
-                }
-                if (store.animations?.handleWithdrawRequest) {
-                  await store.animations.handleWithdrawRequest({ side: 'enemy', pokemon: currentEnemy });
+                if (type === 'drag') {
+                  const triggeringMoveId = store.activeMove?.value?.id || p?.lastMove?.id || e?.lastMove?.id || 'whirlwind';
+                  const forcedConfig = getForcedExitConfig(triggeringMoveId);
+                  store.addLog(forcedConfig.getExpulsionLog(currentEnemy.name), 'log-enemy', 'enemy_trainer');
+                  if (store.fsm && store.BATTLE_STATES && store.BATTLE_SUBSTATES) {
+                    await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM);
+                  }
+                  gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'enemy', type: forcedConfig.escapeType, pokemon: currentEnemy });
+                  if (store.animations?.awaitTween) {
+                    await store.animations.awaitTween('escape-enemy');
+                  }
+                } else {
+                  store.addLog(`¡${active.trainerName || 'El entrenador'} retira a ${currentEnemy.name}!`, 'log-enemy', 'enemy_trainer');
+                  if (store.fsm && store.BATTLE_STATES && store.BATTLE_SUBSTATES) {
+                    await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.POKEMON_RECALL);
+                  }
+                  if (store.animations?.handleWithdrawRequest) {
+                    await store.animations.handleWithdrawRequest({ side: 'enemy', pokemon: currentEnemy });
+                  }
                 }
                 if (store.fsm && store.BATTLE_STATES && store.BATTLE_SUBSTATES) {
                   await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.VACATE_SEAT);
@@ -483,13 +512,26 @@ export function handleMiscEvents(ctx: SBCtx): boolean | Promise<boolean> {
 
             if (isDifferentPlayer) {
               if (currentPlayer && currentPlayer.hp > 0 && !currentPlayer.fainted) {
-                store.addLog(`¡Bien hecho, ${currentPlayer.name}! ¡Regresa!`, 'log-info', 'player');
                 if (store.exitingPlayer) store.exitingPlayer.value = currentPlayer;
-                if (store.fsm && store.BATTLE_STATES && store.BATTLE_SUBSTATES) {
-                  await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.POKEMON_RECALL);
-                }
-                if (store.animations?.handleWithdrawRequest) {
-                  await store.animations.handleWithdrawRequest({ side: 'player', pokemon: currentPlayer });
+                if (type === 'drag') {
+                  const triggeringMoveId = store.activeMove?.value?.id || e?.lastMove?.id || p?.lastMove?.id || 'whirlwind';
+                  const forcedConfig = getForcedExitConfig(triggeringMoveId);
+                  store.addLog(forcedConfig.getExpulsionLog(currentPlayer.name), 'log-player', 'player');
+                  if (store.fsm && store.BATTLE_STATES && store.BATTLE_SUBSTATES) {
+                    await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM);
+                  }
+                  gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'player', type: forcedConfig.escapeType, pokemon: currentPlayer });
+                  if (store.animations?.awaitTween) {
+                    await store.animations.awaitTween('escape-player');
+                  }
+                } else {
+                  store.addLog(`¡Bien hecho, ${currentPlayer.name}! ¡Regresa!`, 'log-info', 'player');
+                  if (store.fsm && store.BATTLE_STATES && store.BATTLE_SUBSTATES) {
+                    await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.POKEMON_RECALL);
+                  }
+                  if (store.animations?.handleWithdrawRequest) {
+                    await store.animations.handleWithdrawRequest({ side: 'player', pokemon: currentPlayer });
+                  }
                 }
                 if (store.fsm && store.BATTLE_STATES && store.BATTLE_SUBSTATES) {
                   await store.fsm.transition(store.BATTLE_STATES.ACTIVE_BATTLE, store.BATTLE_SUBSTATES.VACATE_SEAT);

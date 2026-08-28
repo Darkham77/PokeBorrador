@@ -652,8 +652,16 @@ stateDiagram-v2
         }
         
         PLAY_ENEMY_COUNTERATTACK --> EVAL_HP : "Execute visual damages & updates"
-        CALC_ESCAPE_CHANCE --> PLAY_ESCAPE_ANIM : "Flee Success"
-        PLAY_ESCAPE_ANIM --> [*] : "Exit Engine"
+        CALC_ESCAPE_CHANCE --> PARALLEL_ESCAPE_EXECUTION : "Flee Success"
+        
+        state PARALLEL_ESCAPE_EXECUTION {
+            [*] --> POKEMON_RECALL : "Player: handleWithdrawRequest (Pokéball Recall)"
+            --
+            [*] --> PLAY_ESCAPE_ANIM : "Wild Enemy: TRIGGER_COMBATANT_ESCAPE ('flee' | 'teleport')"
+        }
+        
+        PARALLEL_ESCAPE_EXECUTION --> VACATE_SEAT : "Free Seats"
+        VACATE_SEAT --> [*] : "Exit Engine"
     }
 ```
 
@@ -910,6 +918,86 @@ stateDiagram-v2
         }
     }
 ```
+
+#### Forced Switch & Phazing Sequence (FORCED_SWITCH_SEQ)
+
+Handles involuntary target expulsion (*phazing*) from moves like Whirlwind, Roar, Dragon Tail, Circle Throw, and item triggers (Red Card), as well as pivot and self-teleport moves. The departing Pokémon executes its move-specific exit animation (`whirlwind`, `flee`, `teleport`, `knockback`, or `withdraw`), the seat is vacated, and the incoming dragged or chosen Pokémon enters the battlefield via `POKEMON_CALL` and `handleReleaseRequest`.
+
+```mermaid
+stateDiagram-v2
+    state FORCED_SWITCH_SEQ {
+        [*] --> DETECT_TRIGGER : "Showdown Log: |drag| or forced |switch|"
+
+        state DETECT_TRIGGER <<choice>>
+        DETECT_TRIGGER --> PHAZING_EJECTION : "type == 'drag' (Whirlwind, Roar, Dragon Tail)"
+        DETECT_TRIGGER --> VOLUNTARY_WITHDRAW : "type == 'switch' (U-turn, Baton Pass, Regular Switch)"
+
+        state PHAZING_EJECTION {
+            [*] --> RESOLVE_MOVE_ANIM : "getForcedExitConfig(moveId)"
+            RESOLVE_MOVE_ANIM --> PLAY_EXPULSION_ANIM : "Trigger 'whirlwind' | 'flee' | 'teleport' | 'knockback'"
+            PLAY_EXPULSION_ANIM --> AWAIT_EXPULSION_TWEEN : "awaitTween('escape-${side}')"
+            AWAIT_EXPULSION_TWEEN --> VACATE_SEAT : "exitingPokemon = null, Free Seat"
+            VACATE_SEAT --> [*]
+        }
+
+        state VOLUNTARY_WITHDRAW {
+            [*] --> POKEMON_RECALL : "animState = 'catching' (Pokéball Recall)"
+            POKEMON_RECALL --> AWAIT_RECALL_TWEEN : "awaitTween('${side}-${uid}')"
+            AWAIT_RECALL_TWEEN --> VACATE_SEAT_VOLUNTARY : "Free Seat"
+            VACATE_SEAT_VOLUNTARY --> [*]
+        }
+
+        PHAZING_EJECTION --> INCOMING_POKEMON_CALL : "Slot Vacated"
+        VOLUNTARY_WITHDRAW --> INCOMING_POKEMON_CALL : "Slot Vacated"
+
+        state INCOMING_POKEMON_CALL {
+            [*] --> CHECK_SEAT_OWNER
+            state CHECK_SEAT_OWNER <<choice>>
+            CHECK_SEAT_OWNER --> TRAINER_OR_DRAG_CALL : "isTrainer OR isForcedDrag"
+            CHECK_SEAT_OWNER --> PLAYER_MANUAL_MENU : "isPlayer Voluntary / Revive"
+
+            state TRAINER_OR_DRAG_CALL {
+                [*] --> LOG_ENTRANCE : "Log: '¡[Trainer] envía a [Pokémon]!' or '¡[Pokémon] fue arrastrado!'"
+                LOG_ENTRANCE --> POKEMON_CALL : "FSM -> POKEMON_CALL"
+                POKEMON_CALL --> RENDER_BALL : "FSM -> RENDER_BALL"
+                RENDER_BALL --> OCCUPY_SEAT : "FSM -> OCCUPY_SEAT (Assign active combatant)"
+                OCCUPY_SEAT --> HANDLE_RELEASE_ANIM : "handleReleaseRequest({ side, pokemon })"
+                HANDLE_RELEASE_ANIM --> AWAIT_RELEASE_TWEEN : "awaitTween('${side}-${targetUid}')"
+                AWAIT_RELEASE_TWEEN --> APPLY_HAZARDS : "applyEntryHazards(target)"
+                APPLY_HAZARDS --> [*]
+            }
+
+            state PLAYER_MANUAL_MENU {
+                [*] --> OPEN_SWITCH_MENU : "isBattleSwitchForced = true, FSM -> SWITCH_MENU"
+                OPEN_SWITCH_MENU --> [*]
+            }
+
+            TRAINER_OR_DRAG_CALL --> [*]
+        }
+
+        INCOMING_POKEMON_CALL --> [*] : "Combatant Active & Ready"
+    }
+```
+
+##### Move & Item Forced Exit Mapping Matrix
+
+| Trigger ID | Canonical ID | Exit Target | Animation Type (`BattleEscapeType`) | GSAP Visual Effect | Localized Expulsion Log |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Whirlwind** | `whirlwind` | Target | `whirlwind` | Fast rotation + lateral/upward spiral off-screen | *¡[Pokémon] fue expulsado por el remolino!* |
+| **Roar** | `roar` | Target | `flee` | Dust/smoke burst + fast horizontal retreat | *¡[Pokémon] huyó asustado por el rugido!* |
+| **Dragon Tail** | `dragontail` | Target | `knockback` | Heavy impact shake + elastic backward launch | *¡[Pokémon] fue arrojado fuera por la cola dragón!* |
+| **Circle Throw** | `circlethrow` | Target | `knockback` | Martial throw impulse + fast slide out | *¡[Pokémon] fue lanzado fuera del combate!* |
+| **Teleport** | `teleport` | User | `teleport` | Vertical stretch (`scaleY: 2.0`) + brightness glow flash | *¡[Pokémon] se teletransportó lejos!* |
+| **U-turn** | `uturn` | User | `withdraw` | Fast recall into Pokéball | *¡[Pokémon] dio media vuelta y regresó!* |
+| **Volt Switch** | `voltswitch` | User | `withdraw` | Spark flash + fast recall into Pokéball | *¡[Pokémon] cambió de posición con un chispazo!* |
+| **Flip Turn** | `flipturn` | User | `withdraw` | Water splash + fast recall into Pokéball | *¡[Pokémon] viró ágilmente y regresó!* |
+| **Parting Shot** | `partingshot` | User | `withdraw` | Stat debuff + dramatic Pokéball return | *¡[Pokémon] se retira tras su última palabra!* |
+| **Chilly Reception**| `chillyreception`| User | `withdraw` | Snow particles + Pokéball return | *¡[Pokémon] dejó el campo tras su chiste helado!* |
+| **Shed Tail** | `shedtail` | User | `withdraw` | Sheds substitute + Pokéball return | *¡[Pokémon] mudó su cola y regresó!* |
+| **Baton Pass** | `batonpass` | User | `withdraw` | Stat transfer + Pokéball return | *¡[Pokémon] pasa el relevo!* |
+| **Red Card** | `redcard` | Attacker | `knockback` | Involuntary eject from item activation | *¡La Tarjeta Roja expulsó a [Pokémon]!* |
+| **Eject Button** | `ejectbutton` | Holder | `withdraw` | Instant Pokéball return on damage | *¡El Botón Escape activó la retirada de [Pokémon]!* |
+| **Eject Pack** | `ejectpack` | Holder | `withdraw` | Instant Pokéball return on stat drop | *¡La Mochila Escape activó la retirada de [Pokémon]!* |
 
 #### Pokémon Recall (Receiving)
 

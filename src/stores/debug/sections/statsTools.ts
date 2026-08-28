@@ -272,6 +272,7 @@ export function registerStatsTools(debug: DebugSystem) {
         // Also clear active mission cooldowns if any
         game.state.classData.activeMission = null
       }
+      game.state.lastPokemonCenterHeal = 0
       game.state.last_renamed_at = undefined
       const profile = useProfileStore()
       profile.profileData.last_renamed_at = undefined
@@ -290,9 +291,9 @@ export function registerStatsTools(debug: DebugSystem) {
         }
       }
 
-      ui.notify('Debug: Cooldowns eliminados con éxito (clases, misiones y cambio de identidad).', '⚡')
+      ui.notify('Debug: Cooldowns eliminados con éxito (clases, Centro Pokémon, misiones y cambio de identidad).', '⚡')
       game.saveGame(false)
     },
-    description: 'Elimina todos los cooldowns activos de cualquier clase (escaneo de IVs, extorsión, rutas preferidas, misiones) y reinicia el cooldown de cambio de nombre y género.'
+    description: 'Elimina todos los cooldowns activos de cualquier clase (escaneo de IVs, extorsión, rutas preferidas, misiones), Centro Pokémon y reinicia el cooldown de cambio de nombre y género.'
   })
 }

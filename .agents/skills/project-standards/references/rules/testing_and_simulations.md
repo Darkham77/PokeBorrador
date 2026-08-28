@@ -14,10 +14,24 @@
 - It is STRICTLY FORBIDDEN to duplicate logic, structures, components, or control flows anywhere in the codebase (tests, frontend, or backend).
 - If implementing functionality similar to an existing one, refactor first to extract a common abstract base class, parameterized composable, or generic extensible component. Stop before writing any new code and ask: *Can I use inheritance and polymorphism to reuse existing logic here?*
 
-## 2. Bug Reproduction Unit Test Mandate
+## 2. Mandatory 3-Tier Bug Fixing Protocol (Unit, Integrity & Playwright Simulation)
 
-- Whenever a bug is presented with a reproducing example, you MUST FIRST create a unit test (or other appropriate test setup) that successfully reproduces the bug (verifying it fails) before implementing the fix. This guarantees regression protection.
-- Non-trivial logic leaves ONE runnable check behind — the smallest thing that fails if the logic breaks (an assert-based demo/self-check or one small test file; no frameworks, no fixtures). Trivial one-liners need no test.
+Whenever ANY bug, regression, or state desynchronization occurs across the project, you MUST resolve it through the mandatory 3-Tier Bug Fixing Protocol:
+
+1. **Tier 1: Isolated Unit Test (RED-to-GREEN Reproduction)**:
+   - You **MUST FIRST** create an isolated, self-contained unit test in `tests/node/` (pure Node logic) or `tests/unit/` (Vue/JSDOM components) that reproduces the failure deterministically in **RED** before writing or proposing any fix in `src/`.
+   - The reproduction test MUST **extract and inline all failing data, seeds, and choice streams** (or use a dedicated static JSON fixture under `tests/fixtures/battle/`). Searching or referencing dynamic live fuzzer outputs is strictly forbidden because regenerated fuzzer runs invalidate temporary IDs.
+   - Run `npx vitest run <path_to_test>` to confirm the deterministic RED failure.
+2. **Tier 2: Integrity & Integration Test**:
+   - You MUST create or update an integration test under `tests/integration/` or `tests/node/` that validates contract boundaries, schema integrity, FSM state machine lifecycle transitions, store roundtrips (`serializeState` -> `validateAndSanitize` -> `updateState`), and `@pkmn/sim` Showdown engine parity.
+   - This ensures the fix integrates cleanly across module boundaries without generating silent regressions.
+3. **Tier 3: Playwright E2E Simulation (Following `@/game-simulation`)**:
+   - For all bugs touching UI interactions, combat choreography, FSM orchestration, or user-facing features, verify and add Playwright E2E simulation cases governed strictly by the protocols in `@/game-simulation` (`.agents/skills/game-simulation/SKILL.md`):
+     - **Passive Joystick Law**: Simulators must only react to explicit FSM readiness states (`WAIT_INPUT`, `SWITCH_MENU`, `over`) and typed public application events (`battle-ready-for-input`, `battle-forced-switch-required`). Tests must NEVER mutate gameplay via debug methods, DOM dispatchers, or store actions.
+     - **100% ID-Based Locators**: All element selections must use unique HTML IDs (`#<id>`) or data attributes (`data-pokemon-uid="${uid}"`, `data-item-id="${id}"`), never text matching or regex labels.
+     - **Strict 5s Per-Action Timeout**: `MAX_PER_ACTION_TIMEOUT_MS = 5000`. A timeout indicates a source code bug in `src/`, NEVER a time shortage. Timeout inflation is strictly forbidden.
+     - **Zero-Timer Synchronization**: Synchronization must be 100% event-driven. Polling loops (`waitForFunction`), `sleep`, `waitForTimeout`, and retry wrappers (`clickResilient`) are strictly forbidden.
+     - **Certified Combat Replay**: Combats replay certified cases through the shared `ShowdownBattleRunner` with identical seeds, history, and native choices.
 
 ## 3. Logging Standards (`console.debug`)
 
@@ -57,13 +71,28 @@
 - Whenever a Playwright E2E simulation or replayer throws a desync, unexpected turn overflow, or step mismatch, the agent MUST FIRST verify if `scripts/e2e/results/fuzzer_certified_cases.json` is 100% up to date with the latest fuzzer logic by executing `npm run sim:fuzzer` BEFORE forming any diagnostic hypothesis or making edits to `src/` or simulation wrappers.
 - Attempting to debug or patch runtime synchronization logic against stale or un-regenerated certified case artifacts on disk is STRICTLY FORBIDDEN.
 
-## 9. Mandatory Holistic Diagnosis Protocol
+## 9. Canonical 7-Step Bug Lifecycle & Verification Protocol (from `@/game-simulation`)
 
-Whenever an E2E simulation or Playwright test fails:
-1. **Stop & Analyze**: Analyze the complete error stack trace, FSM state transition logs, and active combatant states without jumping to code edits.
-2. **Audit Architectural Boundaries**: Read relevant DOX contracts (`AGENTS.md`) and verify the architectural design of the involved components before making changes.
-3. **Reproduce via Minimal Unit Test**: Create or update a minimal, isolated unit test under `tests/node/` or `tests/unit/` reproducing the exact failure before modifying `src/`.
-4. **Fix at Upstream Source**: Apply the fix cleanly at the true root cause in `src/` without introducing compatibility adapters, fallback assignments, or artificial overrides.
+Whenever ANY bug, test failure, or simulation desync occurs, the agent MUST follow the exact 7-step lifecycle defined in `@/game-simulation` (`.agents/skills/game-simulation/SKILL.md`):
+
+1. **Step 1: Fuzzer Execution & Regeneration** (`npm run sim:fuzzer`):
+   - Run fuzzer whenever certified cases do not exist or when battle engine logic (`src/logic/battle/`) is refactored. Validate certified cases with `npx tsx scripts/e2e/fuzzer/tools/validate_certified_cases.ts`.
+2. **Step 2: E2E Simulation Execution** (`npm run sim:e2e` or targeted family):
+   - Execute the test suite to validate real UI, FSM, and game feature behaviors.
+3. **Step 3: Isolate Failing Family and Specific Case ID**:
+   - Immediately STOP running the entire suite upon the first failure. Focus exclusively on the specific failing family/case.
+4. **Step 4: Create Isolated RED Reproduction Test (Tier 1 & Tier 2)**:
+   - Extract the exact static case parameters (`seed`, teams, turn-by-turn choice streams from `history`) into a static fixture file (`tests/fixtures/battle/case_xxx.json`) or directly inside a dedicated Vitest test file (`tests/node/battle/reproduce_case_xxx.test.ts`).
+   - Run `npx vitest run <path_to_test>` and verify that the test reproduces the failure in **RED**.
+5. **Step 5: Fix Root Cause in `src/` & Verify GREEN**:
+   - Diagnose the true root cause in `src/` and apply the clean fix without fallbacks (`||`, `??`, dummy derivations).
+   - Re-run the reproduction test in Vitest to empirically verify it turns **GREEN**.
+6. **Step 5.5: Full Node Unit Regression Check (`npx vitest run tests/node/` / `npm run test`)**:
+   - Execute the entire Node test suite to confirm 100% GREEN and 0 regressions before touching browser simulations.
+7. **Step 6: Re-run ONLY the Specific Failing Simulation in Playwright (Tier 3)**:
+   - Re-run ONLY the affected simulation file (e.g. `npx playwright test scripts/e2e/battle/battle_fsm_sync.simulation.ts`) following `/game-simulation` protocols.
+8. **Step 7: Full Master Regression Pass**:
+   - Run `npm run sim:e2e` only after all family cases pass 100% clean.
 
 ## 10. Mandatory Comprehensive Fuzzer History & Zero-Guesswork Replay
 

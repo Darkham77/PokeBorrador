@@ -58,7 +58,7 @@ function clearClassCooldowns() {
     <div class="debug-card">
       <label>Cooldowns de Clases</label>
       <div class="button-row">
-        <PVTooltip title="Elimina todos los cooldowns de clases (Rutas preferidas, Extorsión, Escáner IVs, etc.)">
+        <PVTooltip title="Elimina todos los cooldowns de clases (Rutas preferidas, Extorsión, Escáner IVs, etc.), Centro Pokémon y perfil">
           <button
             class="small-btn"
             style="background-color: #ef4444; color: white;"

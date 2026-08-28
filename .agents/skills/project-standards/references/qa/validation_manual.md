@@ -207,23 +207,23 @@ Whenever requested to "actualizar herramientas", "update tools", "preparar entor
 
 ---
 
-## 🛠️ E2E Debugging & Bug Fixing Protocol
+## 🛠️ Mandatory 3-Tier Bug Fixing Protocol (from `@/game-simulation`)
 
-When diagnosing or fixing failures in the E2E simulation suites, follow this structured, zero-waste workflow:
+When diagnosing, reproducing, or fixing failures across tests or E2E simulation suites, follow this structured, zero-waste 3-Tier workflow:
 
-1. **Run the E2E Suite**: Execute the tests using the appropriate script:
+1. **Tier 1: Isolated Unit Test (RED-to-GREEN)**:
+   - Identify the failing scenario or case ID (e.g. `case-8b5b9aabf776`).
+   - Extract the failing parameters, seed, teams, and turn choices into an immutable static fixture under `tests/fixtures/battle/` or inlined in a test file under `tests/node/battle/`.
+   - Run `npx vitest run <path_to_test>` and verify the deterministic failure in **RED** before touching `src/`.
+2. **Tier 2: Integrity & Integration Test**:
+   - Verify that data boundaries, schemas, FSM state machine transitions, and Showdown `@pkmn/sim` parity are tested in `tests/integration/` or `tests/node/`.
+   - Diagnose root cause in `src/` without using masking fallbacks (`||`, `??`, dummy derivations). Apply clean fix and verify that unit & integration tests turn **GREEN**.
+   - Run the full Node unit suite (`npx vitest run tests/node/` / `npm run test`) with 0 regressions.
+3. **Tier 3: Playwright E2E Browser Simulation (following `@/game-simulation`)**:
+   - Re-run ONLY the specific affected simulation file (e.g. `npx playwright test scripts/e2e/battle/battle_fsm_sync.simulation.ts`).
+   - Follow all `/game-simulation` rules: passive joystick, 100% ID-based locators (`#<id>`), 5s per-action timeout limit, zero artificial timers, and certified combat replay.
+4. **Master Regression Pass**:
+   - Once all family cases pass, run the full master E2E simulation suite:
    ```powershell
-   npm run sim:e2e:battle
+   npm run sim:e2e
    ```
-2. **Identify and Isolate the Failure**: If a test fails, the runner will abort immediately and output the exact case hash in the console (e.g., `case-8b5b9aabf776`).
-3. **Debug the Specific Case**: Set the `TEST_CASE_ID` environment variable to run **ONLY** that failing case for near-instant loop times:
-   ```powershell
-   $env:TEST_CASE_ID="case-8b5b9aabf776"; npm run sim:e2e:combat
-   ```
-   Apply fixes to the source code and re-run this command until the case passes in green.
-4. **Resume Remaining Cases**: Resume the remaining simulation queue starting *from* the resolved case onwards using `TEST_START_FROM_CASE_ID`:
-   ```powershell
-   $env:TEST_START_FROM_CASE_ID="case-8b5b9aabf776"; npm run sim:e2e:combat
-   ```
-   Repeat this loop for any subsequent failures.
-5. **Final Regression Pass**: Once the queue finishes completely, clear the environment variables and run a full, clean verification of the E2E suite to guarantee no regressions were introduced.

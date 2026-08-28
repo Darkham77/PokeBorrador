@@ -1,4 +1,5 @@
-import { ref, computed, watch, onMounted, onUnmounted, toValue } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import gsap from 'gsap';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { requirePokemonSpriteValue } from '@/data/pokemon/spriteMapping';
@@ -397,11 +398,20 @@ const BALL_TARGET_Y_OFFSET_RATIO = 0.35;
   // Escape Smoke Particles
   const smokeParticles = ref<SmokeParticle[]>([]);
 
-  const runEscapeAnimation = (type: BattleEscapeType) => {
-    if (!spriteRef.value) return;
-
 const GSAP_TELEPORT_SCALEY_TARGET = 2.0;
 const GSAP_TELEPORT_SCALEX_TARGET = 0.1;
+const GSAP_TELEPORT_DURATION_SEC = 0.4;
+const GSAP_WHIRLWIND_ROTATION_DEG = 720;
+const GSAP_WHIRLWIND_Y_OFFSET_PX = -180;
+const GSAP_WHIRLWIND_X_OFFSET_PX = 200;
+const GSAP_WHIRLWIND_SCALE_TARGET = 0.1;
+const GSAP_WHIRLWIND_DURATION_SEC = 0.55;
+const GSAP_KNOCKBACK_SCALE_TARGET = 0.5;
+const GSAP_KNOCKBACK_DURATION_SEC = 0.35;
+const GSAP_FLEE_SCALE_TARGET = 0.7;
+
+  const runEscapeAnimation = (type: BattleEscapeType) => {
+    if (!spriteRef.value) return;
 
     if (type === 'teleport') {
       gameBus.emit('PLAY_SOUND', 'flee');
@@ -412,11 +422,49 @@ const GSAP_TELEPORT_SCALEX_TARGET = 0.1;
         scaleX: GSAP_TELEPORT_SCALEX_TARGET,
         opacity: 0,
         filter: 'brightness(3) contrast(1.5)',
-        duration: 0.4,
+        duration: GSAP_TELEPORT_DURATION_SEC,
         ease: 'power3.in',
         onComplete: () => {
           if (spriteRef.value) {
             gsap.set(spriteRef.value, { clearProps: 'scale,transform,filter' });
+          }
+        },
+      });
+      const animKey = `escape-${props.side}`;
+      gameBus.emit('REGISTER_TWEEN', { key: animKey, tween });
+    } else if (type === 'whirlwind') {
+      gameBus.emit('PLAY_SOUND', 'flee');
+
+      const slideX = props.side === 'player' ? -GSAP_WHIRLWIND_X_OFFSET_PX : GSAP_WHIRLWIND_X_OFFSET_PX;
+      const tween = gsap.to(spriteRef.value, {
+        x: slideX,
+        y: GSAP_WHIRLWIND_Y_OFFSET_PX,
+        rotation: GSAP_WHIRLWIND_ROTATION_DEG,
+        opacity: 0,
+        scale: GSAP_WHIRLWIND_SCALE_TARGET,
+        duration: GSAP_WHIRLWIND_DURATION_SEC,
+        ease: 'power2.in',
+        onComplete: () => {
+          if (spriteRef.value) {
+            gsap.set(spriteRef.value, { clearProps: 'scale,transform,x,y,rotation' });
+          }
+        },
+      });
+      const animKey = `escape-${props.side}`;
+      gameBus.emit('REGISTER_TWEEN', { key: animKey, tween });
+    } else if (type === 'knockback') {
+      gameBus.emit('PLAY_SOUND', 'damage');
+
+      const slideX = props.side === 'player' ? -FLEE_SLIDE_DISTANCE_PX : FLEE_SLIDE_DISTANCE_PX;
+      const tween = gsap.to(spriteRef.value, {
+        x: slideX,
+        scale: GSAP_KNOCKBACK_SCALE_TARGET,
+        opacity: 0,
+        duration: GSAP_KNOCKBACK_DURATION_SEC,
+        ease: 'back.in(1.7)',
+        onComplete: () => {
+          if (spriteRef.value) {
+            gsap.set(spriteRef.value, { clearProps: 'scale,transform,x' });
           }
         },
       });
@@ -460,10 +508,11 @@ const GSAP_TELEPORT_SCALEX_TARGET = 0.1;
       };
       requestAnimationFrame(updateTicker);
 
+      const slideX = props.side === 'player' ? -FLEE_SLIDE_DISTANCE_PX : FLEE_SLIDE_DISTANCE_PX;
       const tween = gsap.to(spriteRef.value, {
-        x: FLEE_SLIDE_DISTANCE_PX,
+        x: slideX,
         opacity: 0,
-        scale: 0.7,
+        scale: GSAP_FLEE_SCALE_TARGET,
         duration: FLEE_SLIDE_DURATION_SEC,
         ease: 'power2.in',
         onComplete: () => {
@@ -480,10 +529,7 @@ const GSAP_TELEPORT_SCALEX_TARGET = 0.1;
   const handleEscapeEvent = (e: Event) => {
     const data = (e as CustomEvent).detail as { side: string; pokemon?: Pokemon | null; type: BattleEscapeType } | undefined;
     if (data && data.side === props.side && (!data.pokemon || data.pokemon.uid === props.pokemon?.uid)) {
-      const stateVal = toValue(battleStore.state);
-      const isTrainerCombat = !!stateVal?.isTrainer || !!stateVal?.isGym;
-      if (isTrainerCombat) return;
-      runEscapeAnimation(data.type);
+      runEscapeAnimation(data.type || 'flee');
     }
   };
 
@@ -530,6 +576,7 @@ const GSAP_TELEPORT_SCALEX_TARGET = 0.1;
     feetPoints,
     idleKey,
     variationKey,
-    variationMeta
+    variationMeta,
+    runEscapeAnimation
   };
 }

@@ -14,6 +14,7 @@ Frontend Developers / Systems Engineers.
 - **statsMath.ts**: Gen 3+ canonical stat formulas, exp curve calculations, and nature multipliers.
 - **physicalDimensionsMath.ts**: Pure stateless math functions for deterministic Gaussian physical dimension generation (height and weight) via Irwin-Hall ($n=4$) distribution over 32-bit FNV-1a seeded Mulberry32 PRNG. Classifies instances into 7 physical tiers (`XXS` to `XXL`) with explicit `cssClass` mappings, structured multi-line tooltips with bounds and delta indicators, and sorting helpers.
 - **pokemonFactory.ts**: Canonical creation, validation, and stat recalculation of Pokémon instances.
+- **pokemonFieldAbilities.ts**: Pure stateless domain engine for resolving out-of-battle (field) Pokémon abilities (Nature/Gender sync, wild held items, elemental attraction, level filtering, egg hatching speed reduction, pickup loot, and post-battle recovery). Behavior dynamically scales according to the configured `ACTIVE_GENERATION`.
 - **Zero Constant Aliasing**: Constant aliasing (`const A = B;`) is strictly forbidden across domain modules. All modules must directly import and use the single canonical source of truth from `@/logic/constants/` per the Domain-Type-First governance mandate.
 
 ## Work Guidance

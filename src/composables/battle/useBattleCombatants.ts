@@ -9,11 +9,13 @@ export function useBattleCombatants(
 ) {
   const playerCombatants = computed(() => {
     const list: Pokemon[] = []
-    if (battleStore.exitingPlayer) {
-      list.push(battleStore.exitingPlayer)
+    const exiting = unref(battleStore.exitingPlayer)
+    if (exiting && exiting.uid) {
+      list.push(exiting)
     }
-    if (player.value && player.value.uid !== battleStore.exitingPlayer?.uid) {
-      list.push(player.value)
+    const current = unref(player)
+    if (current && current.uid && current.uid !== exiting?.uid) {
+      list.push(current)
     }
     return list
   })
@@ -21,8 +23,8 @@ export function useBattleCombatants(
   const enemyCombatants = computed(() => {
     const list: Pokemon[] = []
     const isTrainerOrGym = Boolean(battleStore.state?.isTrainer)
-    const fsmState = battleStore.currentFsmState
-    const fsmSubState = battleStore.currentSubState ?? (battleStore.fsm ? unref(battleStore.fsm.currentSubState) : null)
+    const fsmState = unref(battleStore.currentFsmState)
+    const fsmSubState = unref(battleStore.currentSubState) ?? (battleStore.fsm ? unref(battleStore.fsm.currentSubState) : null)
     const isPreCombatTrainer = isTrainerOrGym && (
       fsmState === 'SEARCH_PHASE' || 
       fsmState === 'INITIALIZING' ||
@@ -33,11 +35,13 @@ export function useBattleCombatants(
       return list
     }
 
-    if (battleStore.exitingEnemy) {
-      list.push(battleStore.exitingEnemy)
+    const exiting = unref(battleStore.exitingEnemy)
+    if (exiting && exiting.uid) {
+      list.push(exiting)
     }
-    if (enemy.value) {
-      list.push(enemy.value)
+    const current = unref(enemy)
+    if (current && current.uid && current.uid !== exiting?.uid) {
+      list.push(current)
     }
     return list
   })

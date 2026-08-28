@@ -136,6 +136,31 @@ describe('Debug System (Commands & Tools)', () => {
       expect(game.state.playerClass).toBe('criador')
     })
 
+    it('handles clearClassCooldowns including pokemon center cooldown', () => {
+      const game = useGameStore()
+      game.state.lastPokemonCenterHeal = 1700000000000
+      game.state.classData = {
+        lastEggScanDate: '2026-01-01',
+        extortedRouteId: 'route1',
+        extortedRouteTimestamp: 1700000000000,
+        officialRouteId: 'route2',
+        officialRouteTimestamp: 1700000000000,
+        activeMission: { type: 'test' }
+      } as unknown as typeof game.state.classData
+      game.state.last_renamed_at = '2026-01-01'
+
+      callDebug('clearClassCooldowns')
+
+      expect(game.state.lastPokemonCenterHeal).toBe(0)
+      expect(game.state.classData?.lastEggScanDate).toBeNull()
+      expect(game.state.classData?.extortedRouteId).toBeNull()
+      expect(game.state.classData?.extortedRouteTimestamp).toBeNull()
+      expect(game.state.classData?.officialRouteId).toBeNull()
+      expect(game.state.classData?.officialRouteTimestamp).toBeNull()
+      expect(game.state.classData?.activeMission).toBeNull()
+      expect(game.state.last_renamed_at).toBeUndefined()
+    })
+
     it('handles time offset (addHours)', () => {
       const game = useGameStore()
       const initialOffset = game.db.getTimeOffset()

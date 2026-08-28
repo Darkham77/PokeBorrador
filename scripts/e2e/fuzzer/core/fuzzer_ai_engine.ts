@@ -54,10 +54,14 @@ class HeuristicAgent extends BattleAgent {
     const activePoke = activePokemonList[slotIdx] ?? team[slotIdx];
     if (!activePoke) return super.decideSingleSlot(slotReq, slotIdx, fullRequest, targetLocation);
 
+    const legalMoveIds = (slotReq.moves ?? [])
+      .filter((m: { disabled?: boolean | string; pp?: number }) => !m.disabled && (m.pp === undefined || m.pp > 0))
+      .map((m: { id: string }) => m.id);
+
     const projectSet: PokemonSet = {
       species: activePoke.details.split(',')[0] ?? activePoke.ident,
       level: MAX_POKEMON_LEVEL,
-      moves: activePoke.moves ?? [],
+      moves: legalMoveIds.length > 0 ? legalMoveIds : (activePoke.moves ?? []),
       ability: activePoke.ability ? requireAbilityId(activePoke.ability) : '', // domain-ok
       item: '',
       name: activePoke.ident.split(': ')[1] ?? activePoke.ident,

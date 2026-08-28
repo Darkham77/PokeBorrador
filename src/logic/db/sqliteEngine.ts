@@ -4,7 +4,10 @@
  * Unified SQL.js (SQLite WASM) Engine with IndexedDB Persistence.
  */
 import initSqlJs from 'sql.js'
-import sqlWasmUrl from 'sql.js/dist/sql-wasm.wasm?url'
+
+const sqlWasmUrl = typeof window !== 'undefined'
+  ? new URL('sql.js/dist/sql-wasm.wasm', import.meta.url).href
+  : undefined
 import { getFromIDB, setToIDB } from './idbHelper.ts'
 import { saveToOPFS, loadFromOPFS } from './opfsHelper.ts'
 import { TABLES_SCHEMA } from './schema.ts'
@@ -33,6 +36,10 @@ declare global {
   interface Window {
     initSqlJs?: (o?: { locateFile?: (file: string) => string }) => Promise<{ Database: new (data?: Uint8Array) => SQLiteDatabase }>;
   }
+}
+
+if (typeof window !== 'undefined') {
+  window.initSqlJs = initSqlJs as never;
 }
 
 let _sqliteDb: SQLiteDatabase | null = null
@@ -172,7 +179,14 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
     const hasWindowInit = typeof window !== 'undefined' && typeof window.initSqlJs === 'function'
     const isNode = typeof process !== 'undefined' && Boolean(process.versions?.node)
     const initFn = hasWindowInit ? window.initSqlJs! : initSqlJs
-    const SQL = await initFn(isNode || hasWindowInit ? undefined : { locateFile: () => sqlWasmUrl })
+    const SQL = await initFn({
+      locateFile: (file: string) => {
+        if (isNode) {
+          return `./node_modules/sql.js/dist/${file}`;
+        }
+        return sqlWasmUrl || `./node_modules/sql.js/dist/${file}`;
+      }
+    });
 
     if (_isInMemory) {
       if (canUseDevDatabaseBridge(import.meta.env.DEV, isE2E)) {

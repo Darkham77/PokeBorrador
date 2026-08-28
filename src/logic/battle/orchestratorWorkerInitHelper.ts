@@ -152,6 +152,8 @@ export async function initWorkerForBattle(
         p2Hps: p2Data.hps,
         p1Statuses: p1Data.statuses,
         p2Statuses: p2Data.statuses,
+        p1MovesPP: p1Data.movesPP,
+        p2MovesPP: p2Data.movesPP,
         weather: initialWeatherOfficial,
         seed: seedArr,
         isDeterministicSimulation: !!(typeof window !== 'undefined' && window.__VITE_DEBUG__ && window.__VITE_DEBUG__.isDeterministicSimulation),

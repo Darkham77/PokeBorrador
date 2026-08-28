@@ -149,12 +149,6 @@ export function buildAttackTimeline(
     }
     tl.add(shakeTimeline);
 
-    tl.add(() => {
-      if (props.pokemon) {
-        gameBus.emit('PLAY_CRY', { name: props.pokemon.id || props.pokemon.name, isFaint: true });
-      }
-    });
-
     tl.to(spriteEl, {
       scale: SELFKO_EXPLODE_SCALE,
       filter: `Brightness(${SELFKO_EXPLODE_BRIGHTNESS}) Drop-Shadow(0 0 ${SELFKO_EXPLODE_SHADOW_PX}px ${SELFKO_EXPLODE_PRIMARY_COLOR})`,
