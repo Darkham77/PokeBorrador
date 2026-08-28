@@ -392,3 +392,10 @@ export const CHAT_DEDUP_TIME_WINDOW_MS = 2000;
 /** Limit of recent messages checked when pruning old private chat DB entries. */
 export const CHAT_PRUNE_MESSAGES_LIMIT = 1000;
 
+// --- Time Units Constants ---
+export const SECONDS_PER_MINUTE = 60;
+export const MINUTES_PER_HOUR = 60;
+export const HOURS_PER_DAY = 24;
+export const MINUTES_PER_DAY = HOURS_PER_DAY * MINUTES_PER_HOUR;
+export const MILLISECONDS_PER_HOUR = 1000 * SECONDS_PER_MINUTE * MINUTES_PER_HOUR;
+

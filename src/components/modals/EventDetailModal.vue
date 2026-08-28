@@ -615,7 +615,6 @@ const currentSpecies = computed<PokemonSpeciesId | null>(() => {
       height: 6px;
       border-radius: 50%;
       background: Rgba(255, 255, 255, 0.3);
-      transition: all 0.3s ease;
 
       &.active {
         background: var(--yellow, #facc15);

@@ -769,6 +769,22 @@ export interface UpcomingEventOccurrence {
   startsInLabel: string;
 }
 
+import { MINUTES_PER_HOUR, HOURS_PER_DAY, MINUTES_PER_DAY } from '@/logic/constants/gameplay'
+
+function calculateStartsInLabel(isActive: boolean, startInst: Temporal.Instant, nowInstant: Temporal.Instant): string {
+  if (isActive) return 'Activo ahora'
+  const diffMinutes = Math.max(0, Math.floor(startInst.since(nowInstant).total({ unit: 'minute' })))
+  if (diffMinutes < MINUTES_PER_HOUR) {
+    return `En ${diffMinutes}m`
+  }
+  if (diffMinutes < MINUTES_PER_DAY) {
+    const h = Math.floor(diffMinutes / MINUTES_PER_HOUR)
+    return `En ${h}h`
+  }
+  const d = Math.floor(diffMinutes / MINUTES_PER_DAY)
+  return `En ${d} día${d > 1 ? 's' : ''}`
+}
+
 /**
  * Calculates all upcoming and active event occurrences within the next X days (defaults to 7).
  */
@@ -779,7 +795,7 @@ export function getUpcomingEventOccurrences(
 ): UpcomingEventOccurrence[] {
   const zdtNow = normalizeZonedDateTime(nowInstant)
   const occurrences: UpcomingEventOccurrence[] = []
-  const maxInstant = nowInstant.add({ hours: daysAhead * 24 })
+  const maxInstant = nowInstant.add({ hours: daysAhead * HOURS_PER_DAY })
   const dayNamesFull = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'] as const
   const dayNamesShort = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'] as const
 
@@ -820,20 +836,7 @@ export function getUpcomingEventOccurrences(
             }
             const isAllDay = startHour === 0 && (endHour >= 23.9 || endHour === 24)
             const timeLabel = isAllDay ? 'Todo el día' : `${formatH(startHour)} – ${formatH(endHour)} hs`
-
-            let startsInLabel = 'Activo ahora'
-            if (!isActive) {
-              const diffMinutes = Math.max(0, Math.floor(startInst.since(nowInstant).total({ unit: 'minute' })))
-              if (diffMinutes < 60) {
-                startsInLabel = `En ${diffMinutes}m`
-              } else if (diffMinutes < 24 * 60) {
-                const h = Math.floor(diffMinutes / 60)
-                startsInLabel = `En ${h}h`
-              } else {
-                const d = Math.floor(diffMinutes / (24 * 60))
-                startsInLabel = `En ${d} día${d > 1 ? 's' : ''}`
-              }
-            }
+            const startsInLabel = calculateStartsInLabel(isActive, startInst, nowInstant)
 
             occurrences.push({
               event,
@@ -885,19 +888,7 @@ export function getUpcomingEventOccurrences(
             timeLabel = isAllDay ? 'Todo el día' : `${formatTime(startZdt)} al ${formatTime(endZdt)} hs`
           }
 
-          let startsInLabel = 'Activo ahora'
-          if (!isActive) {
-            const diffMinutes = Math.max(0, Math.floor(startInst.since(nowInstant).total({ unit: 'minute' })))
-            if (diffMinutes < 60) {
-              startsInLabel = `En ${diffMinutes}m`
-            } else if (diffMinutes < 24 * 60) {
-              const h = Math.floor(diffMinutes / 60)
-              startsInLabel = `En ${h}h`
-            } else {
-              const d = Math.floor(diffMinutes / (24 * 60))
-              startsInLabel = `En ${d} día${d > 1 ? 's' : ''}`
-            }
-          }
+          const startsInLabel = calculateStartsInLabel(isActive, startInst, nowInstant)
 
           occurrences.push({
             event,

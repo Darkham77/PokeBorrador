@@ -490,7 +490,6 @@ onMounted(() => {
   border-radius: 10px;
   padding: 12px 16px;
   cursor: pointer;
-  transition: all 0.2s ease;
 
   &:hover {
     background: Rgba(30, 41, 59, 0.9);

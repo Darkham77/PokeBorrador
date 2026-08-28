@@ -138,9 +138,7 @@ export const BREEDING_CONSTANTS = {
 
 export type BreedingConstantKey = keyof typeof BREEDING_CONSTANTS;
 
-const SECONDS_PER_MINUTE = 60
-const MINUTES_PER_HOUR = 60
-const MILLISECONDS_PER_HOUR = 1000 * SECONDS_PER_MINUTE * MINUTES_PER_HOUR
+import { MILLISECONDS_PER_HOUR } from '@/logic/constants/gameplay';
 
 export const EGG_SPAWN_INTERVAL_MS: Record<number, number> = {
   1: MILLISECONDS_PER_HOUR * 8, // Poco interés: 8h
