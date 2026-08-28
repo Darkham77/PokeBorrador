@@ -5,9 +5,19 @@
  */
 import initSqlJs from 'sql.js'
 
-const sqlWasmUrl = typeof window !== 'undefined'
-  ? new URL('sql.js/dist/sql-wasm.wasm', import.meta.url).href
-  : undefined
+function getSqlWasmUrl(): string | undefined {
+  if (typeof window === 'undefined') return undefined
+  try {
+    if (typeof import.meta !== 'undefined' && import.meta.url) {
+      return new URL('sql.js/dist/sql-wasm.wasm', import.meta.url).href
+    }
+  } catch {
+    // Fallback if import.meta.url is not a valid base URL in test environment
+  }
+  return undefined
+}
+
+const sqlWasmUrl = getSqlWasmUrl()
 import { getFromIDB, setToIDB } from './idbHelper.ts'
 import { saveToOPFS, loadFromOPFS } from './opfsHelper.ts'
 import { TABLES_SCHEMA } from './schema.ts'

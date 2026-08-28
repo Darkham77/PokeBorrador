@@ -105,7 +105,7 @@ describe('Domain Type Audit Pattern Recognition', () => {
     });
 
     it('allows canonical boolean type annotation', () => {
-      expect(testRegex(P_BOOLEAN_LITERAL_TYPE_ANNOTATION, "var hola: boolean")).toBe(false);
+      expect(testRegex(P_BOOLEAN_LITERAL_TYPE_ANNOTATION, "var hola: boolean;")).toBe(false);
     });
   });
 
