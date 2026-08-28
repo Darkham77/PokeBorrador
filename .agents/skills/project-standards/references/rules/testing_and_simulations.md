@@ -58,7 +58,8 @@ Whenever ANY bug, regression, or state desynchronization occurs across the proje
 
 ## 6. Mandatory Shared Code & Parity
 
-- **100% Shared Execution Code**: Headless fuzzer replayers (`fuzzer_case_replayer.ts`) and Playwright E2E browser simulations MUST import and execute the LITERALLY SAME shared battle execution module (`showdownExecutor.ts`, `showdownBattleRunner.ts` in `src/logic/battle/helpers/showdownBattleRunner.ts`). Code duplication, parallel implementations, or divergent choice handling logic between headless replayers and browser simulations are strictly forbidden.
+- **100% Shared Battle Runners**: All battle-related Playwright simulations MUST use the shared `ShowdownBattleRunner` (via `src/logic/battle/runner/showdownBattleRunner.ts`). Creating ad-hoc battle runners or custom turn dispatchers in individual simulation scripts is STRICTLY FORBIDDEN.
+- **Simulation Data Parity Mandate**: It is strictly forbidden to bypass, truncate, or alter state/health synchronization pipelines between live gameplay and simulation environments using conditional guards like `!isSimulation` or `!isDeterministicSimulation` in client/worker communication layers (e.g. `showdownWorkerClient.ts`). All E2E simulations, fuzzers, and live players must execute 100% identical data extraction and synchronization pipelines to prevent latent production bugs from being masked during CI testing.
 - **Zero-Untested Goal Principle**: Coverage goals cannot be declared completed if even one move, ability, or item is reported as `UNTESTED` in fuzzer outputs.
 
 ## 7. Infinite Punching Bag (IPB) Lifecycle Law
