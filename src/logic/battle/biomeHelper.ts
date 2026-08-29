@@ -1,8 +1,6 @@
 import { MAPS_BY_ROUTE_ID } from '@/data/world/maps';
 import { isMapRouteId } from '@/data/world/map-assets';
-import { MAP_BIOME_KEYS } from '@/logic/constants/encounters';
-
-export type MapBiomeKey = (typeof MAP_BIOME_KEYS)[number];
+import { MAP_BIOME_KEYS, type MapBiomeKey } from '@/logic/constants/encounters';
 
 /**
  * Resolves the active biome and tags for a given location ID.

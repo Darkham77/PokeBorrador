@@ -304,8 +304,12 @@ async function main() {
       const parsed = JSON.parse(data) as StandardAuditResult;
       for (const finding of parsed.findings || []) {
         if (finding.severity === 'info') continue;
+        const targetFile = finding.file ? path.relative(process.cwd(), finding.file) : '';
+        // Advertencias sin archivo objetivo no son regresiones en archivos fuente modificados
+        if (!targetFile && finding.severity === 'warning') continue;
+
         subAuditorViolations.push({
-          file: finding.file ? path.relative(process.cwd(), finding.file) : task.scriptPath,
+          file: targetFile || task.scriptPath,
           line: finding.line || 1,
           message: finding.message,
           context: finding.context || task.name,

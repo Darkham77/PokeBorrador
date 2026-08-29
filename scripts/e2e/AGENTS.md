@@ -9,6 +9,7 @@ QA / Automation Engineers.
 ## Local Contracts
 
 - Playwright simulations run in local browser instances.
+- **Pre-Warmed Persistent Vite Server**: Master sequential simulation runners (`scripts/e2e/run_sequential_simulations.ts`) MUST initialize a single persistent Vite dev server instance with HTTP 200 health-check polling before launching suites, keeping it alive across all test files to eliminate cold-start reboots and non-deterministic booting timeouts.
 - Speed up animations using `gsap.globalTimeline.timeScale(100)` under simulation mode.
 - Mock native Web APIs (like `Notification` permission) and local flags (like `pwa_permissions_accepted` in `localStorage`) in order to bypass popups and overlays that block UI synchronization.
 - **Certified Fuzzer Replay Termination Contract**: An E2E replay consumes the atomic `history` cursor until every certified submission has been accepted by the worker and the worker has ended. The legacy flat choice arrays are validated projections only and MUST NOT control termination. The simulation then validates 1:1 state parity (`lastFinalState` vs `batch.finalState`). Matching state parity guarantees clean simulation completion (PASS).

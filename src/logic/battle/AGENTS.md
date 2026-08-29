@@ -9,6 +9,7 @@ Frontend Developers / Systems Engineers.
 ## Local Contracts
 
 - Follow standard repository modularity guidelines.
+- **Final-Turn Double Faint Victory Guard**: When a simultaneous KO occurs on the final turn of combat (e.g. Explosion, recoil, or Destiny Bond), `processPlayerFaintSequence` MUST verify whether all opponent Pokémon are fainted (`active.over || !enemyHasHealthy`). If the opponent has no healthy Pokémon left, combat MUST terminate immediately with victory (`terminateBattle(ctx, true)`) and automatically swap to the next healthy bench Pokémon via `animatePlayerAutoSwap` rather than forcing the player into `SWITCH_MENU`.
 - **Capture Wobble Cycle & Zero-Timer Timing Parity**:
   - When executing Pokéball capture attempts in `battleItems.ts`, all shake animation requests dispatched to `handleShakeRequest` MUST explicitly include `{ side: 'enemy', isCapture: true }`. Omitting `isCapture: true` causes the animation engine to treat the event as a combat damage flinch (`0.05s`), bypassing the canonical Pokéball wobble sequence.
   - Capture wobble cadence MUST be orchestrated strictly via GSAP timelines (`GSAP_CAPTURE_SHAKE_ACTIVE_DUR_SEC = 0.60s` physical wobble + `GSAP_CAPTURE_SHAKE_REST_DUR_SEC = 0.40s` dramatic rest interval = 1.00s total per cycle). Using `setTimeout` or `setInterval` for inter-shake pacing is strictly prohibited under the Zero-Timer policy.

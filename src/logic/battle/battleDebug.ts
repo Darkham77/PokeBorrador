@@ -247,7 +247,7 @@ export function setupBattleDebug(ctx: BattleContext) {
 
       // 2. Reactividad Vue (watch) y evento battle-ready-for-input
       let unwatch: (() => void) | null = null
-      let timer: ReturnType<typeof setTimeout> | null = null
+      let timer: NodeJS.Timeout | null = null
 
       const cleanup = () => {
         if (unwatch) unwatch()
