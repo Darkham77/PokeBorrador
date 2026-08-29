@@ -99,7 +99,7 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
   
   await handlePoliceResolution(ctx, active, win, fled, uiStore)
   
-  const persistenceMode = active.persistenceMode as string || 'PERSISTENT'
+  const persistenceMode = active.persistenceMode as string || 'PERSISTENT' // spanish-ok
   const isSingle = persistenceMode === 'SINGLE' || active.isGym || active.isPvP
 
   syncAndPersist(ctx)

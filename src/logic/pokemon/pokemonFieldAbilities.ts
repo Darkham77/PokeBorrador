@@ -18,39 +18,39 @@ import type { WeatherId } from '@/logic/weather/weatherRegistry';
 import { Dex } from '@pkmn/sim';
 
 // --- CONSTANTS ---
-export const SYNCHRONIZE_CHANCE_GEN8_PLUS = 1.0;
-export const SYNCHRONIZE_CHANCE_LEGACY = 0.5;
-export const CUTE_CHARM_OPPOSITE_GENDER_CHANCE = 2 / 3;
+const SYNCHRONIZE_CHANCE_GEN8_PLUS = 1.0;
+const SYNCHRONIZE_CHANCE_LEGACY = 0.5;
+const CUTE_CHARM_OPPOSITE_GENDER_CHANCE = 2 / 3;
 
 export const HELD_ITEM_NORMAL_RATES = { commonRate: 0.50, rareRate: 0.05 } as const;
 export const HELD_ITEM_BOOSTED_RATES = { commonRate: 0.60, rareRate: 0.20 } as const;
-export const FRISK_FORCE_HELD_ITEM_CHANCE = 0.50;
+const FRISK_FORCE_HELD_ITEM_CHANCE = 0.50;
 
-export const EGG_HATCH_SPEED_NORMAL = 1;
-export const EGG_HATCH_SPEED_BOOSTED = 2;
+const EGG_HATCH_SPEED_NORMAL = 1;
+const EGG_HATCH_SPEED_BOOSTED = 2;
 
-export const PICKUP_TRIGGER_CHANCE = 0.10;
-export const HONEY_GATHER_BASE_CHANCE = 0.05;
-export const HONEY_GATHER_MAX_CHANCE = 0.50;
-export const HONEY_GATHER_LEVEL_SCALE_STEP = 10;
-export const HONEY_GATHER_LEVEL_SCALE_RATE = 0.05;
+const PICKUP_TRIGGER_CHANCE = 0.10;
+const HONEY_GATHER_BASE_CHANCE = 0.05;
+const HONEY_GATHER_MAX_CHANCE = 0.50;
+const HONEY_GATHER_LEVEL_SCALE_STEP = 10;
+const HONEY_GATHER_LEVEL_SCALE_RATE = 0.05;
 
-export const ELEMENTAL_ATTRACTION_CHANCE = 0.50;
-export const INTIMIDATE_AVOID_LEVEL_DELTA = 5;
-export const LEVEL_FILTER_CHANCE = 0.50;
+const ELEMENTAL_ATTRACTION_CHANCE = 0.50;
+const INTIMIDATE_AVOID_LEVEL_DELTA = 5;
+const LEVEL_FILTER_CHANCE = 0.50;
 
-export const SPAWN_RATE_MULTIPLIER_NORMAL = 1.0;
-export const SPAWN_RATE_MULTIPLIER_HIGH = 2.0;
-export const SPAWN_RATE_MULTIPLIER_LOW = 0.5;
-export const WEATHER_SPAWN_REDUCTION_MULTIPLIER = 0.5;
+const SPAWN_RATE_MULTIPLIER_NORMAL = 1.0;
+const SPAWN_RATE_MULTIPLIER_HIGH = 2.0;
+const SPAWN_RATE_MULTIPLIER_LOW = 0.5;
+const WEATHER_SPAWN_REDUCTION_MULTIPLIER = 0.5;
 
-export const FISHING_BITE_MULTIPLIER_NORMAL = 1.0;
-export const FISHING_BITE_MULTIPLIER_BOOSTED = 2.0;
+const FISHING_BITE_MULTIPLIER_NORMAL = 1.0;
+const FISHING_BITE_MULTIPLIER_BOOSTED = 2.0;
 
 const SNOW_WEATHERS: readonly WeatherId[] = ['snow', 'blizzard', 'cold', 'hail', 'coldwave'];
 
 // --- PICKUP LEVEL-BRACKET LOOT TABLES ---
-export const PICKUP_LOOT_TABLES: {
+const PICKUP_LOOT_TABLES: {
   readonly minLevel: number;
   readonly maxLevel: number;
   readonly pool: readonly ItemId[];
@@ -82,40 +82,40 @@ export const PICKUP_LOOT_TABLES: {
   }
 ];
 
-export const FIELD_ABILITY_BADGES: Partial<Record<AbilityId, { label: string; desc: string; icon: string }>> = {
-  synchronize: { label: 'Sincronía', desc: 'Sincroniza Naturaleza de salvajes', icon: '🔮' },
-  cutecharm: { label: 'Gran Encanto', desc: 'Atrae género opuesto', icon: '💖' },
-  compoundeyes: { label: 'Ojo Compuesto', desc: '+Probabilidad de objetos salvajes', icon: '👁️' },
-  superluck: { label: 'Afortunado', desc: '+Probabilidad de objetos salvajes', icon: '🍀' },
-  frisk: { label: 'Cacheo', desc: 'Detecta y potencia objetos equipados', icon: '🔍' },
-  flamebody: { label: 'Cuerpo Llama', desc: 'x2 Velocidad de eclosión de Huevos', icon: '🔥' },
-  magmaarmor: { label: 'Escudo Magma', desc: 'x2 Velocidad de eclosión de Huevos', icon: '🌋' },
-  steamengine: { label: 'Combustible', desc: 'x2 Velocidad de eclosión de Huevos', icon: '🚂' },
-  pickup: { label: 'Recogida', desc: '10% de recoger objetos tras combatir', icon: '🎒' },
-  honeygather: { label: 'Recogemiel', desc: 'Recolecta Miel dulce tras combatir', icon: '🍯' },
-  naturalcure: { label: 'Cura Natural', desc: 'Cura estados alterados post-batalla', icon: '🌿' },
-  magnetpull: { label: 'Imán', desc: '50% de atraer tipo Acero', icon: '🧲' },
-  static: { label: 'Elec. Estática', desc: '50% de atraer tipo Eléctrico', icon: '⚡' },
-  lightningrod: { label: 'Pararrayos', desc: '50% de atraer tipo Eléctrico', icon: '⚡' },
-  flashfire: { label: 'Absorbe Fuego', desc: '50% de atraer tipo Fuego', icon: '🔥' },
-  stormdrain: { label: 'Colector', desc: '50% de atraer tipo Agua', icon: '💧' },
-  harvest: { label: 'Cosecha', desc: '50% de atraer tipo Planta', icon: '🌾' },
-  suctioncups: { label: 'Ventosas', desc: 'x2 Tasa de mordida al pescar', icon: '🐙' },
-  stickyhold: { label: 'Viscosidad', desc: 'x2 Tasa de mordida al pescar', icon: '🧪' },
-  intimidate: { label: 'Intimidación', desc: 'Evita salvajes de bajo nivel', icon: '🦁' },
-  keeneye: { label: 'Vista Lince', desc: 'Evita salvajes de bajo nivel', icon: '🦅' },
-  pressure: { label: 'Presión', desc: '50% de forzar nivel máximo de ruta', icon: '👑' },
-  vitalspirit: { label: 'Espíritu Vital', desc: '50% de forzar nivel máximo de ruta', icon: '✨' },
-  hustle: { label: 'Entusiasmo', desc: '50% de forzar nivel máximo de ruta', icon: '💪' },
-  arenatrap: { label: 'Trampa Arena', desc: 'x2 Frecuencia de encuentros salvajes', icon: '⏳' },
-  illuminate: { label: 'Iluminación', desc: 'x2 Frecuencia de encuentros salvajes', icon: '💡' },
-  noguard: { label: 'Indefenso', desc: 'x2 Frecuencia de encuentros salvajes', icon: '⚔️' },
-  stench: { label: 'Hedor', desc: 'x0.5 Frecuencia de encuentros salvajes', icon: '🦨' },
-  whitesmoke: { label: 'Humo Blanco', desc: 'x0.5 Frecuencia de encuentros salvajes', icon: '💨' },
-  quickfeet: { label: 'Pies Rápidos', desc: 'x0.5 Frecuencia de encuentros salvajes', icon: '👟' },
-  infiltrator: { label: 'Allanamiento', desc: 'x0.5 Frecuencia de encuentros salvajes', icon: '🦇' },
-  sandveil: { label: 'Velo Arena', desc: '-50% Encuentros en Tormenta de Arena', icon: '🌪️' },
-  snowcloak: { label: 'Manto Níveo', desc: '-50% Encuentros en Nieve/Granizo', icon: '❄️' }
+const FIELD_ABILITY_BADGES: Partial<Record<AbilityId, { label: string; desc: string; icon: string }>> = {
+  synchronize: { label: 'Sincronía', desc: 'Sincroniza Naturaleza de salvajes', icon: '🔮' }, // spanish-ok
+  cutecharm: { label: 'Gran Encanto', desc: 'Atrae género opuesto', icon: '💖' }, // spanish-ok
+  compoundeyes: { label: 'Ojo Compuesto', desc: '+Probabilidad de objetos salvajes', icon: '👁️' }, // spanish-ok
+  superluck: { label: 'Afortunado', desc: '+Probabilidad de objetos salvajes', icon: '🍀' }, // spanish-ok
+  frisk: { label: 'Cacheo', desc: 'Detecta y potencia objetos equipados', icon: '🔍' }, // spanish-ok
+  flamebody: { label: 'Cuerpo Llama', desc: 'x2 Velocidad de eclosión de Huevos', icon: '🔥' }, // spanish-ok
+  magmaarmor: { label: 'Escudo Magma', desc: 'x2 Velocidad de eclosión de Huevos', icon: '🌋' }, // spanish-ok
+  steamengine: { label: 'Combustible', desc: 'x2 Velocidad de eclosión de Huevos', icon: '🚂' }, // spanish-ok
+  pickup: { label: 'Recogida', desc: '10% de recoger objetos tras combatir', icon: '🎒' }, // spanish-ok
+  honeygather: { label: 'Recogemiel', desc: 'Recolecta Miel dulce tras combatir', icon: '🍯' }, // spanish-ok
+  naturalcure: { label: 'Cura Natural', desc: 'Cura estados alterados post-batalla', icon: '🌿' }, // spanish-ok
+  magnetpull: { label: 'Imán', desc: '50% de atraer tipo Acero', icon: '🧲' }, // spanish-ok
+  static: { label: 'Elec. Estática', desc: '50% de atraer tipo Eléctrico', icon: '⚡' }, // spanish-ok
+  lightningrod: { label: 'Pararrayos', desc: '50% de atraer tipo Eléctrico', icon: '⚡' }, // spanish-ok
+  flashfire: { label: 'Absorbe Fuego', desc: '50% de atraer tipo Fuego', icon: '🔥' }, // spanish-ok
+  stormdrain: { label: 'Colector', desc: '50% de atraer tipo Agua', icon: '💧' }, // spanish-ok
+  harvest: { label: 'Cosecha', desc: '50% de atraer tipo Planta', icon: '🌾' }, // spanish-ok
+  suctioncups: { label: 'Ventosas', desc: 'x2 Tasa de mordida al pescar', icon: '🐙' }, // spanish-ok
+  stickyhold: { label: 'Viscosidad', desc: 'x2 Tasa de mordida al pescar', icon: '🧪' }, // spanish-ok
+  intimidate: { label: 'Intimidación', desc: 'Evita salvajes de bajo nivel', icon: '🦁' }, // spanish-ok
+  keeneye: { label: 'Vista Lince', desc: 'Evita salvajes de bajo nivel', icon: '🦅' }, // spanish-ok
+  pressure: { label: 'Presión', desc: '50% de forzar nivel máximo de ruta', icon: '👑' }, // spanish-ok
+  vitalspirit: { label: 'Espíritu Vital', desc: '50% de forzar nivel máximo de ruta', icon: '✨' }, // spanish-ok
+  hustle: { label: 'Entusiasmo', desc: '50% de forzar nivel máximo de ruta', icon: '💪' }, // spanish-ok
+  arenatrap: { label: 'Trampa Arena', desc: 'x2 Frecuencia de encuentros salvajes', icon: '⏳' }, // spanish-ok
+  illuminate: { label: 'Iluminación', desc: 'x2 Frecuencia de encuentros salvajes', icon: '💡' }, // spanish-ok
+  noguard: { label: 'Indefenso', desc: 'x2 Frecuencia de encuentros salvajes', icon: '⚔️' }, // spanish-ok
+  stench: { label: 'Hedor', desc: 'x0.5 Frecuencia de encuentros salvajes', icon: '🦨' }, // spanish-ok
+  whitesmoke: { label: 'Humo Blanco', desc: 'x0.5 Frecuencia de encuentros salvajes', icon: '💨' }, // spanish-ok
+  quickfeet: { label: 'Pies Rápidos', desc: 'x0.5 Frecuencia de encuentros salvajes', icon: '👟' }, // spanish-ok
+  infiltrator: { label: 'Allanamiento', desc: 'x0.5 Frecuencia de encuentros salvajes', icon: '🦇' }, // spanish-ok
+  sandveil: { label: 'Velo Arena', desc: '-50% Encuentros en Tormenta de Arena', icon: '🌪️' }, // spanish-ok
+  snowcloak: { label: 'Manto Níveo', desc: '-50% Encuentros en Nieve/Granizo', icon: '❄️' } // spanish-ok
 };
 
 // --- CORE RESOLUTION FUNCTIONS ---
@@ -143,7 +143,7 @@ export function getEffectiveLeaderAbility(
 /**
  * Checks if any member in the party has an active field ability (requires hp > 0).
  */
-export function hasPartyFieldAbility(
+function hasPartyFieldAbility(
   team: readonly (Pokemon | null)[] | null | undefined,
   abilityId: AbilityId
 ): boolean {
@@ -315,9 +315,10 @@ export function getFishingWeightMultiplier(leaderAbility: AbilityId | null | und
  */
 export function getHatchSpeedMultiplier(team: readonly (Pokemon | null)[] | null | undefined): number {
   if (!team) return EGG_HATCH_SPEED_NORMAL;
-  const hasHatchBooster = team.some(
-    p => p != null && p.hp > 0 && (p.ability === 'flamebody' || p.ability === 'magmaarmor' || p.ability === 'steamengine')
-  );
+  const hasHatchBooster =
+    hasPartyFieldAbility(team, 'flamebody') ||
+    hasPartyFieldAbility(team, 'magmaarmor') ||
+    hasPartyFieldAbility(team, 'steamengine');
   return hasHatchBooster ? EGG_HATCH_SPEED_BOOSTED : EGG_HATCH_SPEED_NORMAL;
 }
 

@@ -162,11 +162,33 @@ export const GYMS = [
 export type GymId = (typeof GYMS)[number]['id'];
 export const GYM_IDS = GYMS.map(gym => gym.id);
 
+const gymMap: Record<GymId, Gym> = {
+  pewter: GYMS[0],
+  cerulean: GYMS[1],
+  vermilion: GYMS[2],
+  celadon: GYMS[3],
+  fuchsia: GYMS[4],
+  saffron: GYMS[5],
+  cinnabar: GYMS[6],
+  viridian: GYMS[7],
+};
+
+export const GYMS_BY_ID: Record<GymId, Gym> = Object.freeze(gymMap);
+
+const GYM_IDS_SET: ReadonlySet<string> = new Set(GYM_IDS);
+
 export function isGymId(value: string): value is GymId {
-  return (GYM_IDS as readonly string[]).includes(value); // domain-ok
+  return GYM_IDS_SET.has(value);
 }
 
 export function requireGymId(value: string): GymId {
   if (isGymId(value)) return value;
   throw new Error(`Invalid gym id: ${value}`);
+}
+
+export function getGymById(gymId: string): Gym {
+  const cleanId = requireGymId(gymId);
+  const gym = GYMS_BY_ID[cleanId];
+  if (!gym) throw new Error(`[gyms] Gimnasio no encontrado: "${gymId}"`);
+  return gym;
 }

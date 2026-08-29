@@ -82,7 +82,7 @@ export function getSelectableAbilities() {
     .map(a => ({ id: a.id, name: a.name }))
 }
 
-export interface VisibilityResult {
+interface VisibilityResult {
   isSeen: boolean
   isCaught: boolean
 }
@@ -128,14 +128,16 @@ export function calculateActiveTravelModifiers(items: ReadonlySet<TravelBuffItem
 }
 
 
-export function getPokedexVisibility(
+function getPokedexVisibility(
   id: string,
   debugPokedexMode: PokedexStatus | null,
-  seenPokedex: readonly string[],
-  caughtPokedex: readonly string[]
+  seenPokedex: ReadonlySet<string> | readonly string[],
+  caughtPokedex: ReadonlySet<string> | readonly string[]
 ): VisibilityResult {
-  let isSeen = seenPokedex.includes(id) || caughtPokedex.includes(id)
-  let isCaught = caughtPokedex.includes(id)
+  const hasSeen = 'has' in seenPokedex ? seenPokedex.has(id) : seenPokedex.includes(id)
+  const hasCaught = 'has' in caughtPokedex ? caughtPokedex.has(id) : caughtPokedex.includes(id)
+  let isSeen = hasSeen || hasCaught
+  let isCaught = hasCaught
 
   if (debugPokedexMode === 'none') {
     isSeen = false
@@ -150,7 +152,7 @@ export function getPokedexVisibility(
   return { isSeen, isCaught }
 }
 
-export function getPokemonBasicData(id: string, isSeen: boolean) {
+function getPokemonBasicData(id: string, isSeen: boolean) {
   const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
   const name = isSeen ? (data?.name ?? id.toUpperCase()) : 'Desconocido' // text-ok
   const types = data ? ([data.type, data.type2].filter((t): t is PokemonType => Boolean(t))) : []
@@ -242,7 +244,7 @@ export function getSpawnCommonTooltipLines(poke: SpawnTooltipData, weather: stri
 
     const diffNet = poke.percentage - poke.basePercentage
     if (Math.abs(diffNet) > SPAWN_PERCENTAGE_DIFF_THRESHOLD_PCT) {
-      const direction = diffNet > 0 ? 'Aumento' : 'Reducción'
+      const direction = diffNet > 0 ? 'Aumento' : 'Reducción' // spanish-ok
       const detail = diffNet > 0
         ? 'redistribución proporcional al bloquearse, penalizarse o cambiar de hora otros Pokémon'
         : 'redistribución proporcional al inyectarse nuevos Pokémon o potenciarse otros encuentros'
@@ -330,7 +332,7 @@ export interface RouteSpawnMappedItem {
   eventShinyMult?: number
 }
 
-export function buildRouteSpawnItem(
+function buildRouteSpawnItem(
   id: string,
   pData: { name: string; types: string[]; hp: number; atk: number; def: number; spa: number; spd: number; spe: number; totalStats: number },
   isSeen: boolean,
@@ -372,7 +374,7 @@ export function buildRouteSpawnItem(
   }
 }
 
-export function resolveEventBoostedStatus(statusClass: string, speciesBonuses: { rate: number; shiny: number }) {
+function resolveEventBoostedStatus(statusClass: string, speciesBonuses: { rate: number; shiny: number }) {
   const isEventBoosted = speciesBonuses.rate > 1 || speciesBonuses.shiny > 1
   return {
     isEventBoosted,

@@ -149,24 +149,30 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: PokemonSelectionS
     sourceList = props.customList.map((p, i) => ({ pokemon: p, _source: 'box' as const, index: i }))
   } else if (props.battleMode === 'pvp') {
     const pvpUids = (gameStore.state.pvpTeam || []) as string[] // no-domain
-    const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null)
-    sourceList = allPokes
-      .filter(p => pvpUids.includes(p.uid))
-      .map(p => ({ 
-        pokemon: p, 
-        _source: team.some(tp => tp && tp.uid === p.uid) ? 'team' as const : 'box' as const,
-        index: pvpUids.indexOf(p.uid) 
-      }))
+    sourceList = pvpUids
+      .map((uid, index) => {
+        const p = gameStore.getPokemonByUid(uid)
+        if (!p) return null
+        return {
+          pokemon: p,
+          _source: team.some(tp => tp && tp.uid === p.uid) ? 'team' as const : 'box' as const,
+          index
+        }
+      })
+      .filter((item): item is { pokemon: Pokemon, _source: PokemonStorageLocation, index: number } => item !== null)
   } else if (props.battleMode === 'war') {
     const warUids = (gameStore.state.warTeam || []) as string[] // no-domain
-    const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null)
-    sourceList = allPokes
-      .filter(p => warUids.includes(p.uid))
-      .map(p => ({ 
-        pokemon: p, 
-        _source: team.some(tp => tp && tp.uid === p.uid) ? 'team' as const : 'box' as const,
-        index: warUids.indexOf(p.uid)
-      }))
+    sourceList = warUids
+      .map((uid, index) => {
+        const p = gameStore.getPokemonByUid(uid)
+        if (!p) return null
+        return {
+          pokemon: p,
+          _source: team.some(tp => tp && tp.uid === p.uid) ? 'team' as const : 'box' as const,
+          index
+        }
+      })
+      .filter((item): item is { pokemon: Pokemon, _source: PokemonStorageLocation, index: number } => item !== null)
   } else if (props.battleMode === 'wild' || props.isBattleSwitch) {
     sourceList = team
       .filter((p): p is Pokemon => p !== null)

@@ -20,7 +20,7 @@ const inventoryStore = useInventoryStore()
 const shopStore = useShopStore()
 
 const filteredShopItems = computed(() => {
-  return SHOP_ITEMS.filter((item): item is typeof item & { id: ItemId } => isItemId(item.id) && !!item.name)
+  return SHOP_ITEMS.filter((item): item is typeof item & { id: ItemId } => isItemId(item.id) && !!item.name) // o1-ok
 })
 
 const adjustItem = (itemId: ItemId, amount: number) => {

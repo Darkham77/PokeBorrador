@@ -32,6 +32,10 @@ Frontend Developers / Systems Engineers.
 ## Work Guidance
 
 - Ensure clean decoupling and zero-warning type safety.
+- Architectural separation of concerns across event sub-modules:
+  - `eventEngine.ts`: Lean orchestrator, global multiplier resolution (`getGlobalMultipliers`, `getSpeciesBoosts`, `getMinigameBuffs`), and public API facade.
+  - `eventSchedules.ts`: Pure scheduling predicates (`isEventActiveNow`, `getEventCurrentWindow`, `getUpcomingEventOccurrences`), weekly rotations, and monthly triggers (`last_sunday`, `second_weekend`, `last_weekend`).
+  - `eventCompetitions.ts`: Sub-competition scoring (`evaluatePokemonForSubCompetition`), tiebreaking hierarchy (`isNewEntryBetter`), candidate pre-filtering, and eligibility resolution.
 - Extract sub-competition scoring and tiebreaking helpers into pure modules with zero DOM or framework dependencies.
 
 ## Verification

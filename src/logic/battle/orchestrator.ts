@@ -3,7 +3,7 @@ const INITIAL_RATE_CUMULATIVE_SUM = 0;
 import { PERCENTAGE_SCALE_FACTOR } from '@/logic/constants/encounters'
 import { toRaw } from 'vue'
 import { getMapBiomeAndTags } from './biomeHelper.ts'
-import { FIRE_RED_MAPS } from '@/data/world/maps'
+import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
 import { logger } from '../utils/logger.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
@@ -172,6 +172,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
 
   const nestedTrainerSprite = typeof battleOptions.trainerSprite === 'string' ? battleOptions.trainerSprite : undefined;
   const resolvedTrainerSprite = trainerSprite || nestedTrainerSprite;
+  const locationMap = MAPS_BY_ROUTE_ID[resolvedLocationId];
 
   ctx.activeBattle.value = {
     ...battleOptions,
@@ -191,9 +192,9 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     playerTeam: ctx.gs.state.team,
     trainerName, locationId: resolvedLocationId,
     quote: trainerQuote || (battleOptions.quote as string) || undefined,
-    isCave: FIRE_RED_MAPS.find(m => m.id === resolvedLocationId)?.isCave || false,
-    isIndoors: FIRE_RED_MAPS.find(m => m.id === resolvedLocationId)?.isIndoors || false,
-    isCrystalCave: FIRE_RED_MAPS.find(m => m.id === resolvedLocationId)?.isCrystalCave || false,
+    isCave: locationMap?.isCave || false,
+    isIndoors: locationMap?.isIndoors || false,
+    isCrystalCave: locationMap?.isCrystalCave || false,
     turn: 'player', turnCount: 1, over: false,
     minigame, rarity,
     wasSearching,
@@ -248,7 +249,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   // Weight Calculation
   await fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.WEIGHT_CALCULATION)
   if (minigame === 'fishing') {
-    const loc = FIRE_RED_MAPS.find(l => l.id === resolvedLocationId)
+    const loc = locationMap;
     if (loc && loc.fishing) {
       const pool = loc.fishing.pool
       const rates = loc.fishing.rates

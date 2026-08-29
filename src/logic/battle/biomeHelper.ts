@@ -1,4 +1,5 @@
-import { FIRE_RED_MAPS } from '@/data/world/maps';
+import { MAPS_BY_ROUTE_ID } from '@/data/world/maps';
+import { isMapRouteId } from '@/data/world/map-assets';
 import { MAP_BIOME_KEYS } from '@/logic/constants/encounters';
 
 export type MapBiomeKey = (typeof MAP_BIOME_KEYS)[number];
@@ -7,7 +8,7 @@ export type MapBiomeKey = (typeof MAP_BIOME_KEYS)[number];
  * Resolves the active biome and tags for a given location ID.
  */
 export function getMapBiomeAndTags(locationId: string): { activeBiome: MapBiomeKey; mapTags: MapBiomeKey[] } {
-  const map = FIRE_RED_MAPS.find(m => m.id === locationId);
+  const map = isMapRouteId(locationId) ? MAPS_BY_ROUTE_ID[locationId] : undefined;
   let activeBiome: MapBiomeKey = 'isPlains';
   const mapTags: MapBiomeKey[] = [];
   if (map) {

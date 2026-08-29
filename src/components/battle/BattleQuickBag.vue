@@ -5,7 +5,7 @@ import { useBattleStore } from '@/stores/battle/battle'
 import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
 
-import { requireItemId, SHOP_ITEMS, type ItemId } from '@/data/inventory/items'
+import { requireItemId, getItemById, type ItemId } from '@/data/inventory/items'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { isValidTarget } from '@/logic/items/itemEffects'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -35,7 +35,7 @@ const battleItems = computed<BattleItem[]>(() => {
   Object.entries(inventory.value).forEach(([name, qty]) => {
     const count = qty as number
     if (count <= 0) return
-    const itemData = SHOP_ITEMS.find(i => i.id === name || i.name === name)
+    const itemData = getItemById(name)
     if (!itemData) return
     
     const isTrainer = battleStore.state?.isTrainer
@@ -80,7 +80,7 @@ const handleUseItem = (item: BattleItem) => {
   if (battleStore.isProcessing || battleStore.isIntroAnimating) return
   if (!canUseItems.value) return
 
-  const dbItem = SHOP_ITEMS.find(i => i.id === item.id)
+  const dbItem = getItemById(item.id)
   if (!dbItem) return
 
   // 1. Pokéballs: Uso directo

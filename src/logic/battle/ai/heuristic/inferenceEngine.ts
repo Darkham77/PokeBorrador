@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-class-member
 // ============================================================
 // Inference Engine — hidden information tracking per battle
 // Adapted from external/pokemon-showdown-ai/src/inference/engine.ts

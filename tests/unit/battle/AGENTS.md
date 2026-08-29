@@ -29,4 +29,5 @@ Unit tests for combat damage calculations, active battle statuses, and state mac
 
 ## Child DOX Index
 
+- [ai](./ai/AGENTS.md): Heuristic decision AI, threat assessment, and move set lookups unit tests.
 - [parity](./parity/AGENTS.md): Showdown engine behavior and bridge parity unit tests.

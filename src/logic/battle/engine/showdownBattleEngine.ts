@@ -79,8 +79,10 @@ export class ShowdownBattleEngine {
   /** Per-seat certified choice index, keyed by side.id (generic for up to 4 seats). */
   public readonly choiceIdx: Map<string, number> = new Map();
   /** Backward-compat accessor. Prefer choiceIdx.get('p1'). */
+  // fallow-ignore-next-line unused-class-member
   get p1ChoiceIdx(): number { return this.choiceIdx.get('p1') ?? 0; }
   /** Backward-compat accessor. Prefer choiceIdx.get('p2'). */
+  // fallow-ignore-next-line unused-class-member
   get p2ChoiceIdx(): number { return this.choiceIdx.get('p2') ?? 0; }
 
   private readonly seatChoices: Map<string, string[]>;
@@ -105,6 +107,7 @@ export class ShowdownBattleEngine {
     this.cheatManager = new BattleCheatManager(options.history);
   }
 
+  // fallow-ignore-next-line unused-class-member
   public setSeatChoices(seatId: string, choices: string[]): void {
     this.seatChoices.set(seatId, choices || []);
     if (!this.choiceIdx.has(seatId)) {

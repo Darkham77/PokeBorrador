@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-store-member
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { evolvePokemonData } from '@/logic/evolution/evolutionLogic';

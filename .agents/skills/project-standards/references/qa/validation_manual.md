@@ -46,47 +46,23 @@ The project uses a unified audit coordinator located in `scripts/maintenance/aud
 - **Proportional Verification Protocol**:
   - **Documentation & Skills (`.md`)**: Run ONLY `npm run lint:md` (takes ~1s). Running full project audits or `audit:warnings-diff` for documentation or skill edits is strictly forbidden.
   - **In-Development Code**: Run `npm run lint` (takes ~3-5s) for rapid developer feedback.
-  - **Pre-Commit Gatekeeper**: Run `npm run audit:warnings-diff` ONLY prior to a `git commit` or during `/safe-commit` validation.
+  - **Pre-Commit Gatekeeper**: `npm run audit:warnings-diff`. Single source of truth for pre-commit validation. Automatically scans ESLint, `vue-tsc`, and all 17 sub-auditors dynamically discovered in `scripts/auditors/`. Requires 0 project errors and 0 new warnings in modified files compared to `origin/main`. Suppresses pre-existing legacy warnings from the terminal to keep logs clean, while writing complete structured diff reports to `scratch/audits/latest_warnings_diff.json` and `scratch/warnings_diff_report.json`.
 - **Universal Caching Policy**: All quality scripts leverage persistent caches (Node.js `enableCompileCache()`, ESLint `.eslintcache`, TypeScript `incremental`).
 - **Zero-Redundancy Guarantee**: Aggregator scripts must never duplicate sub-analyzers already embedded in `audit_project.ts` or sibling validation suites.
-- **Global Unified Audit**: `npm run audit`. Runs all static project rules, FSM, items, abilities, moves, and SQL/Save migrations, outputting 100% parseable structured JSON by default.
-- **Fast Code Audit**: `npm run audit:fast`. Runs static AST, Fallow, CSS, and modularity rules in seconds with JSON output.
-- **Human-Readable Mode**: `npm run audit:human` (or `npm run audit:fast:human`). Displays formatted visual hierarchy with emojis, grouped file trees, and sanitized context lines.
+- **Universal Audit Command**: `npm run audit`. Dynamically executes all 17 sub-auditors across the 6 domain families (`architecture`, `domain_data`, `persistence`, `fsm`, `assets`, `documentation`). It always renders the clean human summary table to the console and automatically persists the 100% complete structured JSON report to `scratch/audits/latest_audit.json` (and `scratch/audits/<family>/<id>.json` for individual suites).
 - **Auto-Fix**: `npm run audit:fix`. Repairs common standard violations (Viewports, SASS filters, ESM extensions).
-- **Markdown Export**: `npm run audit:md`. Generates formatted Markdown report at `scratch/audit_report.md`.
+- **Family-Specific Audits**:
+  - `npm run audit:family:domain`: Domain types, Pokemon DB, moves, abilities, items, Spanish IDs.
+  - `npm run audit:family:fsm`: Mermaid diagrams, flow parity, state machines.
+  - `npm run audit:family:persistence`: SQLite in-memory and save schema migrations.
+  - `npm run audit:family:assets`: Sprite coverage and item sprite collisions.
+  - `npm run audit:family:architecture`: AST rules, Fallow intelligence, Z-Index, CSS duplicates.
+  - `npm run audit:family:docs`: Markdown relative links and DOX hierarchy.
 
-### 🎛️ Audit CLI Flags (pass after `--`)
+### 🎛️ Consuming Audit Reports
 
-The audit engine accepts extra flags via `npm run audit -- [flags]`:
-
-| Flag | Short | Description |
-|------|-------|-------------|
-| `--human` | `-H` | Render formatted visual output for developers in console instead of default machine-readable JSON. |
-| `--fast` | `-f` | Run only the static code AST and quality analysis (skips external DB/FSM suites). |
-| `--rule="<name>"` | `-r` | Filter results to a single rule by name (partial match, case-insensitive), e.g. `--rule="mágico"`. |
-| `--summary` | `-s` | Print summary tables by category and top offending files. |
-| `--errors-only` | | Suppress warnings; print and evaluate only hard errors. |
-| `--output=<file>`| `-o` | Export report to `.json`, `.md` (Markdown tables) or `.txt`. |
-| `--top=N` | `-t N` | Control how many files appear in top offenders list (defaults to 15). |
-
-**Common recipes:**
-
-```bash
-# Fast AI code triage (pure JSON with errors only)
-npm run audit:fast -- --errors-only
-
-# Human interactive full inspection
-npm run audit:human
-
-# Export clean Markdown report for GitHub/Artifacts
-npm run audit:md
-
-# Errors-only sweep before committing (fast, no noise)
-npm run audit -- --errors-only --summary
-
-# Full top-50 offenders for broad refactoring planning
-npm run audit -- --summary --top=50
-```
+1. **Terminal Console Output**: Gives an immediate, compact high-level dashboard with status badges (`[ ✅ PASS ]`, `[ ⚠️ WARN ]`, `[ ❌ FAIL ]`), runtimes in milliseconds, domain metrics, and violation totals.
+2. **Deep Machine-Readable Inspection**: AI agents and automated tools should read `scratch/audits/latest_audit.json` directly to retrieve full details on specific files, lines, and violation messages without cluttering the terminal.
 
 ---
 

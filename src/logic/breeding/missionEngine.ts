@@ -189,20 +189,20 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
   // Rewards
   const rewardQty = trainerLevel >= TRAINER_LEVEL_MASTER_THRESHOLD ? 4 : (trainerLevel >= 20 ? 3 : 2);
   const possibleRewards: MissionReward[] = [
-    { id: 'berrybronze', name: 'Baya de Bronce', qty: rewardQty + 1, icon: '🥉' },
-    { id: 'berrysilver', name: 'Baya de Plata', qty: rewardQty, icon: '🥈' },
-    { id: 'berrygold', name: 'Baya de Oro', qty: Math.max(1, rewardQty - 2), icon: '🥇' },
-    { id: 'everstone', name: 'Piedra Eterna', qty: 1, icon: '🪨' }
+    { id: 'berrybronze', name: 'Baya de Bronce', qty: rewardQty + 1, icon: '🥉' }, // spanish-ok
+    { id: 'berrysilver', name: 'Baya de Plata', qty: rewardQty, icon: '🥈' }, // spanish-ok
+    { id: 'berrygold', name: 'Baya de Oro', qty: Math.max(1, rewardQty - 2), icon: '🥇' }, // spanish-ok
+    { id: 'everstone', name: 'Piedra Eterna', qty: 1, icon: '🪨' } // spanish-ok
   ];
 
   if (trainerLevel >= TRAINER_LEVEL_IV31_UNLOCK_THRESHOLD) {
     const powerItems: MissionReward[] = [
-      { id: 'powerweight', name: 'Pesa Recia', qty: 1, icon: '🏋️' },
-      { id: 'powerbracer', name: 'Brazal Recio', qty: 1, icon: '🥊' },
-      { id: 'powerbelt', name: 'Cinto Recio', qty: 1, icon: '🛡️' },
-      { id: 'powerlens', name: 'Lente Recia', qty: 1, icon: '🔍' },
-      { id: 'powerband', name: 'Banda Recia', qty: 1, icon: '🎗️' },
-      { id: 'poweranklet', name: 'Franja Recia', qty: 1, icon: '👢' }
+      { id: 'powerweight', name: 'Pesa Recia', qty: 1, icon: '🏋️' }, // spanish-ok
+      { id: 'powerbracer', name: 'Brazal Recio', qty: 1, icon: '🥊' }, // spanish-ok
+      { id: 'powerbelt', name: 'Cinto Recio', qty: 1, icon: '🛡️' }, // spanish-ok
+      { id: 'powerlens', name: 'Lente Recia', qty: 1, icon: '🔍' }, // spanish-ok
+      { id: 'powerband', name: 'Banda Recia', qty: 1, icon: '🎗️' }, // spanish-ok
+      { id: 'poweranklet', name: 'Franja Recia', qty: 1, icon: '👢' } // spanish-ok
     ];
     possibleRewards.push(...powerItems);
   }

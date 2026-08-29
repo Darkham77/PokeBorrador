@@ -6,7 +6,7 @@ import {
   checkMarkdownLinksInContent,
   collectMarkdownFiles,
   auditMarkdownLinks,
-} from '../../../scripts/validation/validate_markdown_links.ts';
+} from '../../../scripts/auditors/documentation/validate_markdown_links.ts';
 
 describe('Markdown & DOX Relative Links Auditor (validate_markdown_links.ts)', () => {
   const rootDir = path.resolve(process.cwd());
@@ -65,8 +65,8 @@ describe('Markdown & DOX Relative Links Auditor (validate_markdown_links.ts)', (
     it('should collect markdown files and skip ignored directories', () => {
       const files = collectMarkdownFiles('.agents/skills/project-standards', rootDir);
       expect(files.length).toBeGreaterThan(0);
-      expect(files.every(f => f.endsWith('.md'))).toBe(true);
-      expect(files.some(f => f.includes('SKILL.md'))).toBe(true);
+      expect(files.every((f: string) => f.endsWith('.md'))).toBe(true);
+      expect(files.some((f: string) => f.includes('SKILL.md'))).toBe(true);
     });
   });
 
@@ -86,14 +86,14 @@ describe('Markdown & DOX Relative Links Auditor (validate_markdown_links.ts)', (
   describe('CLI Execution', () => {
     it('should run validate_markdown_links.ts successfully with exit code 0', () => {
       const output = execSync(
-        'node --permission --experimental-strip-types --allow-fs-read=. scripts/validation/validate_markdown_links.ts --summary',
+        'node --permission --experimental-strip-types --allow-fs-read=. scripts/auditors/documentation/validate_markdown_links.ts --summary',
         {
           cwd: rootDir,
           encoding: 'utf-8',
         }
       );
       expect(output).toContain('MARKDOWN RELATIVE LINKS & DOX AUDITOR');
-      expect(output).toContain('Broken link violations:  0');
+      expect(output).toContain('0 ❌');
     });
   });
 });

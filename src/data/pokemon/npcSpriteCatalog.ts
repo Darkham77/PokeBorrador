@@ -1337,9 +1337,10 @@ export const ARCHETYPE_SPRITES = {
 export type NpcSpriteId = (typeof ARCHETYPE_SPRITES)[keyof typeof ARCHETYPE_SPRITES][number];
 
 export const VALID_NPC_SPRITES = Object.values(ARCHETYPE_SPRITES).flat();
+export const VALID_NPC_SPRITES_SET: ReadonlySet<string> = new Set(VALID_NPC_SPRITES);
 
 export function isNpcSpriteId(value: string): value is NpcSpriteId {
-  return (VALID_NPC_SPRITES as readonly string[]).includes(value); // domain-ok
+  return VALID_NPC_SPRITES_SET.has(value);
 }
 
 export function requireNpcSpriteId(value: string): NpcSpriteId {

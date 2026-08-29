@@ -1,8 +1,15 @@
+// fallow-ignore-file unused-store-member
 import { defineStore } from 'pinia'
 import { computed, watch } from 'vue'
 import { useGameStore } from '@/stores/game.ts'
 import { useUIStore } from '@/stores/ui.ts'
-import { PLAYER_CLASSES, CLASS_MISSIONS, requirePlayerClassId, type PlayerClassId } from '@/data/player/playerClasses'
+import { 
+  PLAYER_CLASSES, 
+  CLASS_MISSIONS_BY_ID, 
+  requirePlayerClassId, 
+  isMissionId,
+  type PlayerClassId 
+} from '@/data/player/playerClasses'
 import { supabase } from '@/logic/db/supabase'
 import { useInventoryStore } from '@/stores/inventory/inventory'
 import { getClassModifier } from '@/logic/player/classEngine'
@@ -15,7 +22,7 @@ import { FACTION_CHANGE_COST } from '@/logic/war/warEngine.ts'
 import { MAX_SINGLE_STAT_IV, MAX_POKEMON_VIGOR } from '@/logic/constants/gameplay.ts'
 
 
-import { AVATAR_STYLES } from '@/data/player/cosmeticsData'
+import { AVATAR_STYLES_BY_ID, isAvatarStyleId } from '@/data/player/cosmeticsData'
 
 interface ActiveMission {
   id: string
@@ -136,8 +143,8 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
 
     // Lógica de transición de cosméticos de clase
     const currentAvatar = gameStore.state.avatar_style || ''
-    if (currentAvatar) {
-      const avatarDef = AVATAR_STYLES.find(a => a.id === currentAvatar)
+    if (currentAvatar && isAvatarStyleId(currentAvatar)) {
+      const avatarDef = AVATAR_STYLES_BY_ID[currentAvatar]
       if (avatarDef && avatarDef.requiredClass) {
         const isSquare = currentAvatar.includes('-sq-')
         const classToStyleMap: Record<PlayerClassId, string> = {
@@ -240,11 +247,9 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   /**
    * Inicia una misión idle con validación de tiempo del servidor.
    */
-  /**
-   * Inicia una misión idle con validación de tiempo del servidor.
-   */
   async function startMission(missionId: string, extraData: Record<string, unknown> = {}) {
-    const m = CLASS_MISSIONS.find(x => x.id === missionId)
+    if (!isMissionId(missionId)) return
+    const m = CLASS_MISSIONS_BY_ID[missionId]
     if (!m) return
 
     // Marcar pokemon como ocupado
@@ -253,8 +258,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     
     let p: Pokemon | null = null
     if (targetUid) {
-      const all = [...gameStore.state.team, ...gameStore.state.box]
-      p = all.find((bp: Pokemon | null) => bp && bp.uid === targetUid) || null
+      p = gameStore.getPokemonByUid(targetUid)
     } else if (targetIdx !== undefined) {
       p = gameStore.state.box[targetIdx] || null
       if (p) {
@@ -319,9 +323,8 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     const targetUid = mission.targetPokemonUid as string | undefined
     const targetIdx = mission.targetPokemonIdx as number | undefined
 
-    const all = [...gameStore.state.team, ...gameStore.state.box]
     if (targetUid) {
-      p = all.find((x: Pokemon | null) => x && x.uid === targetUid) || null
+      p = gameStore.getPokemonByUid(targetUid)
     } else if (targetIdx !== undefined) {
       p = gameStore.state.box[targetIdx] || null
     }

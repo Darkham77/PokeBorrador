@@ -57,6 +57,6 @@ export function findMatchingValue<T>(
 ): T | undefined {
   if (!targetUid || !map) return undefined;
   if (map[targetUid] !== undefined) return map[targetUid];
-  const matchedKey = Object.keys(map).find(k => isMatchingUid(k, targetUid));
+  const matchedKey = Object.keys(map).find(k => isMatchingUid(k, targetUid)); // o1-ok
   return matchedKey !== undefined ? map[matchedKey] : undefined;
 }

@@ -1,4 +1,5 @@
 import type { MapLocation } from '@/types/pokemon/encounters';
+import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
 
 export const FIRE_RED_MAPS: MapLocation[] = [
   {
@@ -4245,3 +4246,14 @@ export const FIRE_RED_MAPS: MapLocation[] = [
     }
   }
 ];
+
+export const MAPS_BY_ROUTE_ID: Record<MapRouteId, MapLocation> = Object.freeze(
+  Object.fromEntries(FIRE_RED_MAPS.map(m => [m.id, m])) as Record<MapRouteId, MapLocation>
+);
+
+export function getMapLocationById(routeId: string): MapLocation {
+  const cleanId = requireMapRouteId(routeId);
+  const loc = MAPS_BY_ROUTE_ID[cleanId];
+  if (!loc) throw new Error(`[maps] Mapa no encontrado: "${routeId}"`);
+  return loc;
+}

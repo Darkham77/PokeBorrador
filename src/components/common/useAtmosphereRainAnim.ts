@@ -2,7 +2,7 @@ import { gsap } from 'gsap'
 import type { Ref } from 'vue'
 import type { WeatherId } from '@/logic/weather/weatherRegistry'
 
-const RAIN_ATMOSPHERE_WEATHER_IDS: readonly WeatherId[] = ['rain', 'storm', 'heavy_rain', 'thunderstorm']
+const RAIN_ATMOSPHERE_WEATHER_IDS_SET: ReadonlySet<WeatherId> = new Set<WeatherId>(['rain', 'storm', 'heavy_rain', 'thunderstorm']) // runtime-set
 
 const HEAVY_RAIN_BASE_SPEED = 0.35
 const HEAVY_RAIN_VAR_SPEED = 0.2
@@ -50,7 +50,7 @@ export function useAtmosphereRainAnim(
     atmosphereContext: gsap.Context | null,
     props: { isVisible: boolean; isPerformanceMode: boolean; weather: WeatherId }
   ) => {
-    if (!RAIN_ATMOSPHERE_WEATHER_IDS.includes(w) || !weatherTimeline) return
+    if (!RAIN_ATMOSPHERE_WEATHER_IDS_SET.has(w) || !weatherTimeline) return
 
     const isStorm = w === 'storm' || w === 'thunderstorm'
     const isHeavy = w === 'heavy_rain'

@@ -84,9 +84,3 @@ export function requireFeetPoints(value: string): FeetPoints {
   if (points) return points;
   throw new Error(`[pokemonFeetDatabase] Missing feet points for path: ${resolvedPath}`);
 }
-
-export {
-  POKEMON_CRIES_DATABASE,
-  isPokemonCryId,
-  getPokemonCryFilename
-} from './pokemonCriesDatabase.ts';

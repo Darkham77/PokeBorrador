@@ -98,6 +98,7 @@ export const pokemonCompetitionTrophySchema = object({
   awardedAt: number(),
 });
 
+// fallow-ignore-next-line unused-type
 export type PokemonCompetitionTrophyDto = InferOutput<typeof pokemonCompetitionTrophySchema>;
 
 export const pokemonSchema = object({

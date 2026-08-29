@@ -7,7 +7,7 @@
 import type { Ref } from 'vue'
 import { gsap } from 'gsap'
 import type { AdventureNodeId } from '../../../test aventura/kantoGraph.ts'
-import { FIRE_RED_MAPS } from '@/data/world/maps'
+import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
 import {
   CARD_W,
   CARD_H,
@@ -125,7 +125,7 @@ export function useAdventureTravelLoop(params: UseAdventureTravelLoopParams) {
     const nextSegIdx = currentSegmentIndex.value + 1
     if (nextSegIdx < path.length) {
       const nextNodeId = path[nextSegIdx]!
-      const nodeName = FIRE_RED_MAPS.find(m => m.id === nextNodeId)?.name || nextNodeId
+      const nodeName = (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[nextNodeId]?.name || nextNodeId // open-record
       travelLog.value.push(`Entrando a: ${nodeName}`)
 
       if (isPokemonCenterNodeId(nextNodeId)) {
@@ -271,7 +271,7 @@ export function useAdventureTravelLoop(params: UseAdventureTravelLoopParams) {
 
     originMap.value = nodeId
     syncCurrentMapFromAdventureNode(nodeId)
-    const nodeName = FIRE_RED_MAPS.find(m => m.id === nodeId)?.name || nodeId
+    const nodeName = (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[nodeId]?.name || nodeId // open-record
     travelLog.value.push(`📍 Ubicación actual: ${nodeName}. El selector de origen ha sido actualizado.`)
     calculateRoute()
   }
@@ -304,7 +304,8 @@ export function useAdventureTravelLoop(params: UseAdventureTravelLoopParams) {
     originMap.value = currentNodeId
     syncCurrentMapFromAdventureNode(currentNodeId)
     travelLog.value.push('❌ Viaje cancelado por el usuario.')
-    travelLog.value.push(`📍 Ubicación actual: ${FIRE_RED_MAPS.find(m => m.id === currentNodeId)?.name || currentNodeId}.`)
+    const currName = (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[currentNodeId]?.name || currentNodeId // open-record
+    travelLog.value.push(`📍 Ubicación actual: ${currName}.`)
     calculateRoute()
   }
 

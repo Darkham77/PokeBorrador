@@ -10,11 +10,9 @@ import type { Pokemon, Move, PokemonStorageLocation } from '@/types/pokemon/poke
 import type { ItemEffectResult } from '@/types/inventory/items';
 import { useAudioStore } from '@/stores/audio.ts';
 import type { GameState } from '@/types/system/game';
-import { requireItemId, SHOP_ITEMS } from '@/data/inventory/items';
+import { requireItemId, ITEMS_BY_ID, type ItemId } from '@/data/inventory/items';
 import { useErrorStore } from '@/stores/errorStore.ts';
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
-
-import type { ItemId } from '@/data/inventory/items';
 
 const HEAL_ITEM_IDS = [
   'potion', 'superpotion', 'hyperpotion', 'maxpotion',
@@ -23,12 +21,14 @@ const HEAL_ITEM_IDS = [
 ] as const satisfies readonly ItemId[];
 type HealItemId = (typeof HEAL_ITEM_IDS)[number];
 
+const HEAL_ITEM_IDS_SET: ReadonlySet<string> = new Set<string>(HEAL_ITEM_IDS); // runtime-set
+
 function isHealItemId(value: ItemId): value is HealItemId {
-  return (HEAL_ITEM_IDS as readonly ItemId[]).includes(value); // domain-ok
+  return HEAL_ITEM_IDS_SET.has(value);
 }
 
 export function executeUseItem(
-  itemName: ItemId | (string & {}),
+  itemName: string,
   context: PokemonStorageLocation | null = null,
   index: number | null = null
 ): ItemEffectResult {
@@ -41,7 +41,7 @@ export function executeUseItem(
     
     // Verify item exists in SHOP_ITEMS catalog or is a TM
     const isTM = itemId.startsWith('tm') || itemId.startsWith('mt');
-    const dbItem = SHOP_ITEMS.find(i => i.id === itemId);
+    const dbItem = ITEMS_BY_ID[itemId];
     const itemExists = isTM || !!dbItem;
     if (!itemExists) {
       throw new Error(`[InventoryStore] Intento de usar un objeto inexistente: ${itemName}`);

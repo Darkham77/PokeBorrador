@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-class-member
 // ============================================================
 // Sets Database — offline static database for AI inference
 // Loads random-sets.json locally from the project's src/data/ directory.

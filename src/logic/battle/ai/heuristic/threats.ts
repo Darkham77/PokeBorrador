@@ -69,8 +69,8 @@ export function evaluateThreats(
     const damageThreat = Math.min(1.0, (avgDmg / PERCENTAGE_MULTIPLIER_FACTOR) * DAMAGE_THREAT_AVG_WEIGHT + (totalKOs / Math.max(myAlive.length, 1)) * DAMAGE_THREAT_KO_WEIGHT);
 
     // Setup potential
-    const hasSetup = moveList.some(m => SETUP_MOVES.includes(m));
-    const hasPriority = moveList.some(m => PRIORITY_MOVES.includes(m));
+    const hasSetup = moveList.some(m => SETUP_MOVES.has(m));
+    const hasPriority = moveList.some(m => PRIORITY_MOVES.has(m));
     const alreadyBoosted = opp.boosts.atk > 0 || opp.boosts.spa > 0 || opp.boosts.spe > 0;
     const setupPotential = Math.min(1.0,
       (hasSetup ? SETUP_HAS_MOVE_WEIGHT : 0) + (alreadyBoosted ? SETUP_BOOSTED_WEIGHT : 0) + (hasPriority ? SETUP_PRIORITY_WEIGHT : 0),

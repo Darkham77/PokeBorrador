@@ -16,12 +16,11 @@ import { useCombatantStatus } from '@/composables/battle/useCombatantStatus'
 
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
-import { NATURE_DATA, isNatureId } from '@/data/battle/natures'
+import { NATURE_DATA, getNatureDataByNameOrId } from '@/data/battle/natures'
 
 const getNatureData = (nat: string | undefined) => {
   if (!nat) return NATURE_DATA['serious']
-  const key = nat.toLowerCase()
-  return (isNatureId(key) ? NATURE_DATA[key] : undefined) || Object.values(NATURE_DATA).find(n => n.name.toLowerCase() === key)
+  return getNatureDataByNameOrId(nat) || NATURE_DATA['serious']
 }
 
 interface Props {

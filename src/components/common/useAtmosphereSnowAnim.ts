@@ -2,7 +2,7 @@ import { gsap } from 'gsap'
 import type { Ref } from 'vue'
 import type { WeatherId } from '@/logic/weather/weatherRegistry'
 
-const SNOW_ATMOSPHERE_WEATHER_IDS: readonly WeatherId[] = ['snow', 'blizzard', 'hail']
+const SNOW_ATMOSPHERE_WEATHER_IDS_SET: ReadonlySet<WeatherId> = new Set<WeatherId>(['snow', 'blizzard', 'hail']) // runtime-set
 const HAIL_VERTICAL_DRIFT_PX = 512
 
 export function useAtmosphereSnowAnim(
@@ -19,7 +19,7 @@ export function useAtmosphereSnowAnim(
     speedVar: number,
     weatherTimeline: gsap.core.Timeline | null
   ) => {
-    if (!SNOW_ATMOSPHERE_WEATHER_IDS.includes(w) || !weatherTimeline) return
+    if (!SNOW_ATMOSPHERE_WEATHER_IDS_SET.has(w) || !weatherTimeline) return
 
     const isBlizzard = w === 'blizzard'
     const isHail = w === 'hail'

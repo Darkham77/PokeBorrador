@@ -26,7 +26,7 @@ DevOps / Tooling Engineers.
 - **Workflow Roles for Verification**: Use `npm run lint` (~3-5s fast feedback) for rapid iterative verification during active development. Use `npm run audit:warnings-diff` as the single source of truth pre-commit gatekeeper to enforce 0 project errors and 0 new warnings vs `origin/main`.
 - **Mandatory Tooling & Script Caching**: All maintenance, validation, and migration scripts in `scripts/` MUST invoke `enableCompileCache()` from `node:module` at startup. All ESLint commands in `package.json` and internal script subprocesses MUST pass the `--cache` flag. TypeScript compilation configs MUST keep `incremental: true` enabled.
 - **Prohibition of Redundant / Duplicate Analysis Passes**: When orchestrating audits (e.g. `audit_warnings_diff.ts`), do NOT execute sub-analyzers (such as Fallow Dupes/Security or CSS checkers) separately if they are already executed internally by `audit_project.ts`. Every analyzer must run exactly once per audit pipeline.
-- **Audit Dual-Mode & JSON-First Architecture**: Audit scripts MUST output 100% parseable structured JSON to `stdout` by default, routing all interactive progress logging to `stderr`. The `--human` (or `-H`) flag is reserved for interactive developer-friendly console outputs. Multi-format export (`--output`) MUST support `.json`, `.md` (Markdown tables), and `.txt`.
+- **Universal Audit Behavior (Console Summary + JSON in Scratch)**: All quality and verification tools reside under `scripts/auditors/<family>/`. They MUST implement the `StandardAuditResult` contract and execute under the universal standard: terminal output is always the clean human summary table, and full machine-readable structured JSON is automatically saved to `scratch/audits/latest_audit.json` (and `scratch/audits/<family>/<id>.json`).
 - **Audit Exemptions**: Utility, maintenance, and migration scripts in `scripts/` are exempt from legacy code audits (like legacyDates) to allow historical or support tasks without warnings.
 - **Web Worker URL Integrity**: When moving files containing worker URL patterns (`new URL('./relative', import.meta.url)`), update paths to prevent `UNRESOLVED_ENTRY` build errors. Always check for `import.meta.url`.
 - **Node.js Permission Model Compliance**: Scripts must explicitly request narrow permissions (e.g. `--allow-net`, `--allow-fs`). Running coverage (`--experimental-test-coverage`) under permissions requires explicit write permissions (`--allow-fs-write=*` or to specific directories) as report files are generated on disk.
@@ -55,5 +55,5 @@ DevOps / Tooling Engineers.
 - [database/](./database/AGENTS.md): Domain module documentation for database.
 - [e2e/](./e2e/AGENTS.md): Domain module documentation for e2e.
 - [maintenance/](./maintenance/AGENTS.md): Domain module documentation for maintenance.
+- [auditors/](./auditors/AGENTS.md): Domain module documentation for auditors and validators.
 - [tools/](./tools/AGENTS.md): Domain module documentation for tools.
-- [validation/](./validation/AGENTS.md): Domain module documentation for validation.

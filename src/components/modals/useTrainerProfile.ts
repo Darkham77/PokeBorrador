@@ -9,113 +9,16 @@ import { useChatStore } from '@/stores/social/chat'
 import { useSocialStore, type Friend } from '@/stores/social/social'
 import { getXPNeededForClassLevel } from '@/logic/player/classMath'
 import type { GameStatKey } from '@/types/system/game'
-import { resolveCosmeticField, resolveStatField, computeShiniesCount, computeEventTrophyCounts } from './trainerProfileResolver.ts'
-
-interface ProfileRow {
-  id: string
-  username?: string | null
-  email?: string | null
-  faction?: string | null
-  player_class?: string | null
-  trainer_level?: number | null
-  avatar_style?: string | null
-  nick_style?: string | null
-  pvp_wins?: number | null
-  pvp_losses?: number | null
-  elo_rating?: number | null
-  created_at?: string | null
-  gender?: string | null
-  playtime?: number | null
-  last_played_at?: string | null
-  ranked_max_elo?: number | null
-  class_level?: number | null
-  class_xp?: number | null
-  box_count?: number | null
-  pvp_draws?: number | null
-  longest_streak?: number | null
-  shiny_count?: number | null
-  max_damage?: number | null
-  total_battles?: number | null
-  trade_volume?: number | null
-  capture_attempts?: number | null
-  capture_successes?: number | null
-}
-
-interface SaveStateData {
-  trainer?: string
-  playtime?: number
-  classLevel?: number
-  classXP?: number
-  rankedMaxElo?: number
-  box?: unknown[]
-  team?: unknown[]
-  faction?: string | null
-  playerClass?: string | null
-  trainerLevel?: number
-  trainerExp?: number
-  trainerExpNeeded?: number
-  avatar_style?: string
-  nick_style?: string
-  badges?: number
-  gender?: string
-  defeatedGyms?: string[]
-  pokedex?: unknown[]
-  seenPokedex?: string[]
-  stats?: {
-    trainersDefeated?: number
-    wins?: number
-    losses?: number
-    maxDamage?: number
-    totalBattles?: number
-    tradeVolume?: number
-    captureAttempts?: number
-    captureSuccesses?: number
-    eventParticipations?: number
-    eventMedalsFirst?: number
-    eventMedalsSecond?: number
-    eventMedalsThird?: number
-    eventMedalsTotal?: number
-  }
-  pvpStats?: {
-    wins?: number
-    losses?: number
-    draws?: number
-  }
-  eloRating?: number
-  warCoins?: number
-  money?: number
-  battleCoins?: number
-  classData?: {
-    criminality?: number
-    reputation?: number
-    longestStreak?: number
-  }
-  warMyPtsLocal?: Record<string, number>
-}
-
-const FACTION_LABELS: Record<string, string> = {
-  union: 'Equipo Unión',
-  poder: 'Equipo Poder'
-}
-
-const FACTION_COLORS: Record<string, string> = {
-  union: 'rgba(59, 130, 246, 1)',
-  poder: 'rgba(239, 68, 68, 1)'
-}
-
-function resolveFactionLabel(f: string | null | undefined): string {
-  if (!f) return 'Sin Bando'
-  const clean = f.trim().toLowerCase()
-  if (!clean || clean === 'null' || clean === 'undefined') return 'Sin Bando'
-  return FACTION_LABELS[clean] || clean.toUpperCase()
-}
-
-function resolveFactionColor(f: string | null | undefined): string {
-  if (!f) return 'rgba(148, 163, 184, 0.5)'
-  const clean = f.trim().toLowerCase()
-  if (!clean || clean === 'null' || clean === 'undefined') return 'rgba(148, 163, 184, 0.5)'
-  return FACTION_COLORS[clean] || 'rgba(148, 163, 184, 1)'
-}
+import {
+  resolveCosmeticField,
+  resolveStatField,
+  computeShiniesCount,
+  computeEventTrophyCounts,
+  resolveFactionLabel,
+  resolveFactionColor,
+  type ProfileRow,
+  type SaveStateData
+} from './trainerProfileResolver.ts'
 
 export function useTrainerProfile(getUserId: () => string | null | undefined) {
   const gameStore = useGameStore()

@@ -62,13 +62,13 @@ export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promis
   if (e.status) {
     type StatusItem = [ItemId, string, string]
     const statusItems: StatusItem[] = [
-      ['fullrestore', 'Restaurar Todo', 'curó sus problemas de estado'],
-      ['fullheal', 'Cura Total', 'curó sus problemas de estado'],
-      ['antidote', 'Antídoto', 'fue curado del envenenamiento'],
-      ['burnheal', 'Cura Quemadura', 'fue curado de la quemadura'],
-      ['paralyzeheal', 'Antiparaliz', 'fue curado de la parálisis'],
-      ['awakening', 'Despertar', 'se despertó'],
-      ['iceheal', 'Anticongelante', 'se descongeló']
+      ['fullrestore', 'Restaurar Todo', 'curó sus problemas de estado'], // spanish-ok
+      ['fullheal', 'Cura Total', 'curó sus problemas de estado'], // spanish-ok
+      ['antidote', 'Antídoto', 'fue curado del envenenamiento'], // spanish-ok
+      ['burnheal', 'Cura Quemadura', 'fue curado de la quemadura'], // spanish-ok
+      ['paralyzeheal', 'Antiparaliz', 'fue curado de la parálisis'], // spanish-ok
+      ['awakening', 'Despertar', 'se despertó'], // spanish-ok
+      ['iceheal', 'Anticongelante', 'se descongeló'] // spanish-ok
     ]
     const statusMatch: Partial<Record<ItemId, string[]>> = {
       fullrestore: ['par', 'brn', 'psn', 'slp', 'frz', 'tox'],
@@ -97,11 +97,11 @@ export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promis
   if (e.hp < e.maxHp * AI_HEAL_TRIGGER_HP_RATIO) {
     type HealItem = [ItemId, string, number | 'full']
     const healItems: HealItem[] = [
-      ['fullrestore', 'Restaurar Todo', 'full'],
-      ['maxpotion', 'Poción Máxima', 'full'],
-      ['hyperpotion', 'Hiper Poción', HYPER_POTION_HEAL_AMOUNT],
-      ['superpotion', 'Súper Poción', SUPER_POTION_HEAL_AMOUNT],
-      ['potion', 'Poción', POTION_HEAL_AMOUNT]
+      ['fullrestore', 'Restaurar Todo', 'full'], // spanish-ok
+      ['maxpotion', 'Poción Máxima', 'full'], // spanish-ok
+      ['hyperpotion', 'Hiper Poción', HYPER_POTION_HEAL_AMOUNT], // spanish-ok
+      ['superpotion', 'Súper Poción', SUPER_POTION_HEAL_AMOUNT], // spanish-ok
+      ['potion', 'Poción', POTION_HEAL_AMOUNT] // spanish-ok
     ]
     for (const [itemId, itemName, amount] of healItems) {
       if (!enemyInventory[itemId] || enemyInventory[itemId]! <= 0) continue

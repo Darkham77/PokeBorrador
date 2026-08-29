@@ -23,6 +23,7 @@ State Architects / Frontend Developers.
   3. **Automatic Lifecycle Rehabilitation**: When mission rewards are collected (`playerClass.ts`) or events conclude and sync (`events.ts`), busy flags MUST be cleared (`onMission = false`, `onEvent = false`), removing badges and immediately restoring full trading, selling, releasing, and team movement abilities.
 - **Real-Time Environment Ticker & Simulation Freeze Protocol**:
   The map store (`useMapStore`) must sample server epoch time via a lightweight GSAP ticker every 10s of game time, dynamically updating `currentEpochHour`, `currentCycle` (day/dusk/night), and map weather for live players. To ensure deterministic execution during automated E2E simulations, fuzzer runs, and certified replays, the ticker must support instantaneous freezing via `setFreezeClock(true)` and fixed environment override via `window.__VITE_DEBUG__.setFixedTime(...)`.
+- **Reactive O(1) State Indexing**: Persistent state arrays (`team`, `box`, `inventory`, `pokedex`) retain their serializable database contracts, while fast entity lookups MUST be exposed via reactive computed getters (`pokemonByUid: computed<ReadonlyMap<string, ...>>`, `caughtSpeciesSet`, `seenSpeciesSet`) guaranteeing $O(1)$ queries without modifying underlying SQL/Supabase schemas.
 
 ## Work Guidance
 
@@ -38,6 +39,9 @@ State Architects / Frontend Developers.
   1. Never introduce silent runtime fallbacks inside UI components.
   2. The store MUST validate entity completeness (e.g. via an `isValid<Entity>` guard).
   3. When corrupted data is detected, the store MUST log an error loudly via `logger.error(...)` and immediately self-heal by regenerating clean, valid domain objects and scheduling a save.
+- **Store Action Decomposition & Sub-Directory DOX Registration**:
+  - When Pinia stores exceed the 500 LOC threshold, their business actions should be decomposed into dedicated domain action modules under a subdirectory (e.g. `src/stores/events/eventEnrollmentActions.ts` and `src/stores/events/eventAwardsActions.ts`).
+  - Any newly created actions subdirectory under `src/stores/` MUST contain its own mandatory `AGENTS.md` file and be linked under the `## Child DOX Index` of `src/stores/AGENTS.md`.
 
 ## Verification
 
@@ -48,6 +52,7 @@ State Architects / Frontend Developers.
 
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle.
 - [debug/](./debug/AGENTS.md): Domain module documentation for debug.
+- [events/](./events/AGENTS.md): Domain module documentation for events store actions.
 - [game/](./game/AGENTS.md): Domain module documentation for game.
 - [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
 - [player/](./player/AGENTS.md): Domain module documentation for player.

@@ -111,7 +111,7 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
         game.updateState({ money, team, box, starterChosen: true });
         let saveRes = await game.save(false);
         while (!saveRes?.success) {
-          await new Promise(r => setTimeout(r, 100));
+          await new Promise(r => window.setTimeout(r, 100));
           saveRes = await game.save(false);
         }
         console.log('[DEBUG GTS] setupUserInventory save result:', saveRes);

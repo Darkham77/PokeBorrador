@@ -35,11 +35,7 @@ const getRequestSummary = (t: TradeOffer) => {
 const canFulfillTrade = (t: TradeOffer): { can: boolean; reason?: string } => {
   // 1. Check Pokémon
   if (t.request_pokemon) {
-    const team = gameStore.state.team || []
-    const box = gameStore.state.box || []
-    const hasPoke = [...team, ...box].some(
-      p => p && p.uid === t.request_pokemon!.uid
-    )
+    const hasPoke = !!gameStore.getPokemonByUid(t.request_pokemon.uid)
     if (!hasPoke) {
       return { can: false, reason: `No tienes el Pokémon solicitado: ${t.request_pokemon.name}` }
     }

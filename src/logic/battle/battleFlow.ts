@@ -200,7 +200,7 @@ export async function applyEndTurnEffects(ctx: BattleContext) {
       if (stages[effect] > 0) {
         stages[effect]--
         if (stages[effect] === 0) {
-          const effectLabel = effect === 'reflect' ? 'Reflejo' : effect === 'lightScreen' ? 'Pantalla Luz' : effect
+          const effectLabel = effect === 'reflect' ? 'Reflejo' : effect === 'lightScreen' ? 'Pantalla Luz' : effect // spanish-ok
           ctx.addLog(`¡El efecto de ${effectLabel} del ${side.name} se desvaneció!`, side.log)
         }
       }

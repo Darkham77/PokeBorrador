@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-class-member
 // ============================================================
 // Pokemon Tracker — probabilistic set distribution per Pokémon
 // Adapted from external/pokemon-showdown-ai/src/inference/tracker.ts

@@ -15,6 +15,7 @@ export abstract class ShowdownBattleAgent {
   /**
    * Main decision method. Returns a comma-separated choice string suitable for Showdown.
    */
+  // fallow-ignore-next-line unused-class-member
   decide(request: ChoiceRequest | null | undefined): string {
     const kind = classifyRequest(request);
     if (kind === 'none' || kind === 'wait') return 'pass';

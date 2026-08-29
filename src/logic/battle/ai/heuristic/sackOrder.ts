@@ -21,14 +21,16 @@ const SACK_WEIGHT_MATCHUP_MOVE_THRESHOLD = 30;
 const SACK_WEIGHT_MATCHUP_BONUS_PER_POKEMON = 0.05;
 const SACK_WEIGHT_MATCHUP_MAX = 0.15;
 
-export const HAZARD_REMOVAL_MOVES: readonly string[] = [ // no-domain
+const HAZARD_REMOVAL_MOVES_LIST = [
   'rapidspin', 'defog', 'tidyup', 'courtchange', 'mortalspin',
-];
+] as const;
+export const HAZARD_REMOVAL_MOVES: ReadonlySet<string> = new Set<string>(HAZARD_REMOVAL_MOVES_LIST); // runtime-set
 
-const SPEED_CONTROL_MOVES: readonly string[] = [ // no-domain
+const SPEED_CONTROL_MOVES_LIST = [
   'thunderwave', 'glaciate', 'icywind', 'stickyweb', 'tailwind',
   'trickroom', 'electroweb',
-];
+] as const;
+const SPEED_CONTROL_MOVES: ReadonlySet<string> = new Set<string>(SPEED_CONTROL_MOVES_LIST); // runtime-set
 
 export function calculateSackOrder(
   snapshot: HeuristicBattleSnapshot,
@@ -69,10 +71,10 @@ export function calculateSackOrder(
     const oppFirstSpeed = oppFirstPoke !== undefined && oppAlive.length > 0
       ? calc.getEffectiveSpeed(oppFirstPoke, snapshot.field, oppSide) : 0;
     const mySpeed = calc.getEffectiveSpeed(pokemon, snapshot.field, snapshot.myPlayer);
-    const speedControl = (mySpeed > oppFirstSpeed ? SACK_WEIGHT_SPEED_OUTSPEED_BONUS : 0) + (moveIds.some((m: string) => SPEED_CONTROL_MOVES.includes(m)) ? SACK_WEIGHT_SPEED_MOVE_BONUS : 0);
+    const speedControl = (mySpeed > oppFirstSpeed ? SACK_WEIGHT_SPEED_OUTSPEED_BONUS : 0) + (moveIds.some((m: string) => SPEED_CONTROL_MOVES.has(m)) ? SACK_WEIGHT_SPEED_MOVE_BONUS : 0);
 
     // Hazard removal value
-    const hasHazardRemoval = moveIds.some((m: string) => HAZARD_REMOVAL_MOVES.includes(m));
+    const hasHazardRemoval = moveIds.some((m: string) => HAZARD_REMOVAL_MOVES.has(m));
     const hazardValue = hasHazardRemoval && snapshot.mySide.sideConditions.size > 0 ? SACK_WEIGHT_HAZARD_ACTIVE_BONUS : hasHazardRemoval ? SACK_WEIGHT_HAZARD_REMOVAL_BONUS : 0;
 
     // Matchup usefulness

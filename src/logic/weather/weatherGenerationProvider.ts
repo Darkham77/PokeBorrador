@@ -79,7 +79,7 @@ export function getLocalizedWeatherName(weatherId: string | null | undefined, ge
     sunnyday: 'Sol',
     raindance: 'Lluvia',
     sandstorm: 'T. Arena',
-    hail: gen >= 9 ? 'Nieve' : 'Granizo',
+    hail: gen >= 9 ? 'Nieve' : 'Granizo', // spanish-ok
     snow: 'Nieve',
     desolateland: 'Sol Abrasador',
     primordialsea: 'Lluvia Torrencial',
@@ -144,7 +144,7 @@ export function mapOfficialToVisualWeather(officialWeather: string | null | unde
   if (lower === 'sunnyday' || lower === 'sun') return 'sun';
   if (lower === 'sandstorm') return 'sandstorm';
   if (lower === 'hail') return gen >= 9 ? 'snow' : 'hail';
-  if (lower === 'snowscape' || lower === 'snow') return 'snow';
+  if (lower === 'snowscape' || lower === 'snow') return 'snow'; // spanish-ok
   if (lower === 'desolateland' || lower === 'intensesun') return 'intense_sun';
   if (lower === 'primordialsea' || lower === 'heavyrain') return 'heavy_rain';
   if (lower === 'deltastream' || lower === 'strongwinds') return 'strong_winds';

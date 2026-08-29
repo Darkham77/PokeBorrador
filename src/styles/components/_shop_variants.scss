@@ -1,0 +1,170 @@
+// src/styles/components/_shop_variants.scss
+@use "@/styles/core/mixins" as *;
+@use "@/styles/core/tools" as *;
+
+/* ── BATTLE CLUB SHOP (BC SHOP) PREMIUM STYLES ────────────────────────────── */
+
+.bc-shop-modal-header {
+  @include shop-header;
+
+  .bc-shop-title-group {
+    @include shop-header-title(#c084fc);
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 24px;
+
+    .stat-node {
+      @include shop-header-stat(#c084fc);
+      
+      &.coins .value { 
+        @extend .colored; 
+        .currency-icon-purple {
+          color: #c084fc;
+          filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.5));
+          font-size: 14px;
+          margin-right: 4px;
+        }
+      }
+      &.level .value { @extend .colored; color: var(--yellow); }
+    }
+  }
+}
+
+.bc-shop-modal-container {
+  @include shop-shell;
+
+  .bc-shop-sidebar {
+    @include shop-sidebar(rgba(168, 85, 247, 0.1));
+    background: rgba(13, 10, 25, 0.4);
+
+    .cat-btn {
+      @include shop-sidebar-button(#c084fc);
+    }
+  }
+}
+
+.bc-shop-grid-wrapper {
+  flex: 1;
+  padding: 20px;
+  overflow-y: scroll !important;
+  @include premium-gradient;
+  background-color: rgba(13, 10, 25, 0.2); // Subtle purple tint over standard gradient
+
+  @media (max-width: 950px) {
+    padding: 12px;
+  }
+
+  .bc-shop-premium-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    padding-bottom: 20px;
+    position: relative;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+  }
+}
+
+/* ── WAR SHOP PREMIUM STYLES ────────────────────────────────────────────────── */
+
+.war-shop-modal-header {
+  @include shop-header;
+
+  .war-shop-title-group {
+    @include shop-header-title(#ef4444);
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 24px;
+
+    .stat-node {
+      @include shop-header-stat(#ef4444);
+      
+      &.coins .value { 
+        @extend .colored; 
+        .currency-icon-red {
+          color: #ef4444;
+          filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.5));
+          font-size: 14px;
+          margin-right: 4px;
+        }
+      }
+      &.level .value { @extend .colored; color: var(--yellow); }
+    }
+  }
+}
+
+/* ── REPUTATION SHOP PREMIUM STYLES ─────────────────────────────────────────── */
+
+.rep-shop-modal-header {
+  @include shop-header;
+
+  .rep-shop-title-group {
+    @include shop-header-title(#3b82f6);
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 24px;
+
+    .stat-node {
+      @include shop-header-stat(#3b82f6);
+      
+      &.reputation .value { 
+        @extend .colored; 
+        color: #3b82f6;
+        text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        .rep-star-icon {
+          color: #fbbf24;
+          filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.5));
+          margin-right: 4px;
+        }
+      }
+      &.level .value { @extend .colored; color: var(--yellow); }
+    }
+  }
+}
+
+.rep-shop-modal-container {
+  @include shop-shell;
+
+  .rep-shop-sidebar {
+    @include shop-sidebar(rgba(59, 130, 246, 0.1));
+    background: rgba(10, 15, 25, 0.4);
+
+    .cat-btn {
+      @include shop-sidebar-button(#3b82f6);
+    }
+  }
+}
+
+.rep-shop-grid-wrapper {
+  flex: 1;
+  padding: 20px;
+  overflow-y: scroll !important;
+  @include premium-gradient;
+  background-color: rgba(10, 15, 25, 0.2);
+
+  @media (max-width: 950px) {
+    padding: 12px;
+  }
+
+  .rep-shop-premium-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    padding-bottom: 20px;
+    position: relative;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+  }
+}

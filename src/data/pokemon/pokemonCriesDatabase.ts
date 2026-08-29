@@ -6,8 +6,10 @@
  */
 import criesJson from './pokemonCriesDatabase.json' with { type: 'json' };
 
+// fallow-ignore-next-line unused-export
 export const POKEMON_CRIES_DATABASE: Record<string, string> = criesJson; // open-record
 
+// fallow-ignore-next-line unused-export
 export function isPokemonCryId(value: string): boolean {
   return Object.hasOwn(POKEMON_CRIES_DATABASE, value);
 }

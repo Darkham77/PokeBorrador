@@ -20,6 +20,7 @@ Frontend Developers / Systems Engineers.
 
 - [admin/](./admin/AGENTS.md): Domain module documentation for admin.
 - [assets/](./assets/AGENTS.md): Domain module documentation for assets.
+- [auditors/](./auditors/AGENTS.md): Domain module documentation for auditors.
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle.
 - [evolution/](./evolution/AGENTS.md): Domain module documentation for evolution.
 - [events/](./events/AGENTS.md): Domain module documentation for events.

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { detectRepeatedStringUnions } from '@/../scripts/validation/validate_domain_types';
+import { detectRepeatedStringUnions } from '@/../scripts/auditors/domain_data/validate_domain_types';
 
 describe('Generic Repeated String Literal Union Auditor', () => {
   it('flags ad-hoc string literal unions repeated across 2 or more locations', () => {

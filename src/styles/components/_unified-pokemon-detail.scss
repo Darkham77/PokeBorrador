@@ -341,3 +341,161 @@
     }
   }
 }
+
+.egg-born-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: Rgba(16, 185, 129, 0.12);
+  border: 1px solid Rgba(16, 185, 129, 0.3);
+  color: #34d399;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  margin: 0 auto 12px auto;
+  width: fit-content;
+  text-shadow: 0 0 5px Rgba(52, 211, 153, 0.3);
+  box-shadow: 0 0 10px Rgba(52, 211, 153, 0.1);
+  font-weight: bold;
+}
+
+.summary-trophies-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: Rgba(0, 0, 0, 0.3);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 14px;
+  margin-bottom: 14px;
+
+  .summary-trophies-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 8px;
+    color: var(--yellow);
+    letter-spacing: 0.5px;
+    border-bottom: 1px dashed Rgba(255, 255, 255, 0.08);
+    padding-bottom: 6px;
+
+    .trophies-header-icon {
+      font-size: 11px;
+    }
+
+    .trophies-count-tag {
+      margin-left: auto;
+      background: Rgba(250, 204, 21, 0.2);
+      border: 1px solid Rgba(250, 204, 21, 0.4);
+      color: var(--yellow);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 7px;
+    }
+  }
+
+  .summary-trophies-empty {
+    font-size: 8px;
+    color: var(--gray);
+    padding: 6px 0;
+    text-align: center;
+    font-style: italic;
+    opacity: 0.7;
+  }
+
+  .summary-trophies-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .summary-trophy-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: Rgba(255, 255, 255, 0.02);
+    border: 1px solid Rgba(255, 255, 255, 0.06);
+
+    &.rank-gold {
+      border-color: Rgba(250, 204, 21, 0.35);
+      background: linear-gradient(135deg, Rgba(250, 204, 21, 0.08), Rgba(0, 0, 0, 0.3));
+
+      .trophy-rank-label {
+        color: #fde047;
+      }
+    }
+
+    &.rank-silver {
+      border-color: Rgba(226, 232, 240, 0.35);
+      background: linear-gradient(135deg, Rgba(226, 232, 240, 0.08), Rgba(0, 0, 0, 0.3));
+
+      .trophy-rank-label {
+        color: #f1f5f9;
+      }
+    }
+
+    &.rank-bronze {
+      border-color: Rgba(217, 119, 6, 0.35);
+      background: linear-gradient(135deg, Rgba(217, 119, 6, 0.08), Rgba(0, 0, 0, 0.3));
+
+      .trophy-rank-label {
+        color: #fcd34d;
+      }
+    }
+
+    .trophy-medal-symbol {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .trophy-info-compact {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+      min-width: 0;
+
+      .trophy-top-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+
+        .trophy-event-name {
+          font-size: 9px;
+          font-weight: bold;
+          color: var(--white);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .trophy-rank-label {
+          font-size: 7px;
+          flex-shrink: 0;
+        }
+      }
+
+      .trophy-bottom-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+
+        .trophy-category-name {
+          font-size: 7px;
+          color: #93c5fd;
+        }
+
+        .trophy-score-value {
+          font-size: 7px;
+          color: var(--green-bright);
+        }
+      }
+    }
+  }
+}

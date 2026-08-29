@@ -19,6 +19,7 @@ Frontend Developers / Systems Engineers.
 
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle.
 - [components/](./components/AGENTS.md): Domain module documentation for components.
+- [data/](./data/AGENTS.md): Domain module documentation for data catalogs and O(1) dictionaries.
 - [debug/](./debug/AGENTS.md): Domain module documentation for debug.
 - [encounters/](./encounters/AGENTS.md): Domain module documentation for encounters.
 - [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
@@ -26,5 +27,6 @@ Frontend Developers / Systems Engineers.
 - [modals/](./modals/AGENTS.md): Domain module documentation for modals.
 - [player/](./player/AGENTS.md): Domain module documentation for player.
 - [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon.
+- [stores/](./stores/AGENTS.md): Domain module documentation for Pinia stores.
 - [system/](./system/AGENTS.md): Domain module documentation for system.
 - [world/](./world/AGENTS.md): Domain module documentation for world.

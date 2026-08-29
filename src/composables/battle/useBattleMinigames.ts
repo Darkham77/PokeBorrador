@@ -113,9 +113,9 @@ export function useBattleMinigames(
     battleStore.activeMove = null
     battleStore.enemyStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }
 
-    const { getItemName, SHOP_ITEMS } = await import('@/data/inventory/items')
+    const { getItemName, getItemById } = await import('@/data/inventory/items')
     const fossilName = getItemName(fossilId)
-    const itemData = SHOP_ITEMS.find(i => i.id === fossilId)
+    const itemData = getItemById(fossilId)
     const itemSprite = (itemData && itemData.sprite) ? getAssetUrl(ASSET_TYPES.ITEM, itemData.sprite) : emoji
 
     uiStore.notify(`El ${fossilName} se desmoronó...`, itemSprite)

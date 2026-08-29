@@ -7,7 +7,7 @@ import { getSpritesForArchetype, type NpcArchetype, type NpcSpriteId } from '@/l
 import { ARCHETYPE_SPRITES } from '@/data/pokemon/npcSpriteCatalog'
 import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { pokemonDebugService } from '@/logic/debug/pokemonDebugService'
-import { GYMS } from '@/data/world/gyms'
+import { GYMS, GYMS_BY_ID, isGymId } from '@/data/world/gyms'
 import { TRAINER_TYPES, isTrainerTypeKey, requireNpcArchetype } from '@/data/player/trainerTypes'
 import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
 import { generateNpcName, type NpcNameOptions } from '@/logic/utils/npcNameGenerator'
@@ -276,7 +276,7 @@ export function useDebugTrainers() {
     if (!firstEnemy) return
 
     const isGym = combatLocationType.value === 'gym'
-    const gym = isGym ? GYMS.find(g => g.id === selectedGymId.value) : null
+    const gym = isGym && isGymId(selectedGymId.value) ? GYMS_BY_ID[selectedGymId.value] : null
 
     const locationId = isGym ? 'gym' : selectedMapId.value
     const trainerNameVal = isGym && gym ? `Líder ${gym.leader}` : trainerName.value

@@ -37,109 +37,151 @@ function applyBoosts(
   }
 }
 
+const STATUS_ACTION_MAP: Record<string, (src: Pokemon, tgt: Pokemon, srcStages: BattleStages, tgtStages: BattleStages, addLogFn: LogFn) => void> = {
+  brn: (s, t, ss, ts, l) => STATUS_ACTIONS.burn?.(s, t, ss, ts, l),
+  par: (s, t, ss, ts, l) => STATUS_ACTIONS.paralyze?.(s, t, ss, ts, l),
+  psn: (s, t, ss, ts, l) => STATUS_ACTIONS.poison?.(s, t, ss, ts, l),
+  tox: (s, t, ss, ts, l) => STATUS_ACTIONS.bad_poison?.(s, t, ss, ts, l),
+  slp: (s, t, ss, ts, l) => STATUS_ACTIONS.sleep?.(s, t, ss, ts, l),
+  frz: (s, t, ss, ts, l) => STATUS_ACTIONS.freeze?.(s, t, ss, ts, l),
+};
+
 function applyStatus(status: ShowdownHitEffect['status'], src: Pokemon, tgt: Pokemon, srcStages: BattleStages, tgtStages: BattleStages, addLogFn: LogFn) {
-  switch (status) {
-    case 'brn':
-      STATUS_ACTIONS.burn?.(src, tgt, srcStages, tgtStages, addLogFn);
-      return;
-    case 'par':
-      STATUS_ACTIONS.paralyze?.(src, tgt, srcStages, tgtStages, addLogFn);
-      return;
-    case 'psn':
-      STATUS_ACTIONS.poison?.(src, tgt, srcStages, tgtStages, addLogFn);
-      return;
-    case 'tox':
-      STATUS_ACTIONS.bad_poison?.(src, tgt, srcStages, tgtStages, addLogFn);
-      return;
-    case 'slp':
-      STATUS_ACTIONS.sleep?.(src, tgt, srcStages, tgtStages, addLogFn);
-      return;
-    case 'frz':
-      STATUS_ACTIONS.freeze?.(src, tgt, srcStages, tgtStages, addLogFn);
-      return;
+  if (status && STATUS_ACTION_MAP[status]) {
+    STATUS_ACTION_MAP[status](src, tgt, srcStages, tgtStages, addLogFn);
   }
 }
+
+const VOLATILE_ACTION_MAP: Record<string, (src: Pokemon, tgt: Pokemon, srcStages: BattleStages, tgtStages: BattleStages, addLogFn: LogFn) => void> = {
+  confusion: (s, t, ss, ts, l) => STATUS_ACTIONS.confuse?.(s, t, ss, ts, l),
+  flinch: (s, t, ss, ts, l) => STATUS_ACTIONS.flinch?.(s, t, ss, ts, l),
+  leechseed: (s, t, ss, ts, l) => HEALING_ACTIONS.leech_seed?.(s, t, ss, ts, l),
+  ingrain: (s, t, ss, ts, l) => SPECIAL_ACTIONS.ingrain?.(s, t, ss, ts, l),
+  focusenergy: (s, t, ss, ts, l) => SPECIAL_ACTIONS.focus_energy?.(s, t, ss, ts, l),
+  mustrecharge: (s, t, ss, ts, l) => SPECIAL_ACTIONS.recharge?.(s, t, ss, ts, l),
+  lockedmove: (src, _t, _ss, _ts, addLogFn) => {
+    if (!src.volatileCounters) src.volatileCounters = {};
+    if (!src.volatileCounters.lockedmove) {
+      src.volatileCounters.lockedmove = 2 + Math.floor(Math.random() * 2);
+      addLogFn(`¡${src.name} está entrando en un frenesí!`, 'log-info', src);
+    }
+  },
+  partialtrappinglock: (_s, tgt, _ss, _ts, addLogFn) => {
+    if (!tgt.volatileCounters) tgt.volatileCounters = {};
+    if (!tgt.volatileCounters.partiallytrapped) {
+      tgt.volatileCounters.partiallytrapped = 4 + Math.floor(Math.random() * 2);
+      addLogFn(`¡${tgt.name} fue atrapado!`, 'log-info', tgt);
+    }
+  },
+};
 
 function applyVolatileStatus(volatileStatus: string | undefined, src: Pokemon, tgt: Pokemon, srcStages: BattleStages, tgtStages: BattleStages, addLogFn: LogFn) {
-  switch (volatileStatus) {
-    case 'confusion':
-      STATUS_ACTIONS.confuse?.(src, tgt, srcStages, tgtStages, addLogFn);
-      return;
-    case 'flinch':
-      STATUS_ACTIONS.flinch?.(src, tgt, srcStages, tgtStages, addLogFn);
-      return;
-    case 'leechseed':
-      HEALING_ACTIONS.leech_seed?.(src, tgt, srcStages, tgtStages, addLogFn);
-      return;
-    case 'ingrain':
-      SPECIAL_ACTIONS.ingrain?.(src, tgt, srcStages, tgtStages, addLogFn);
-      return;
-    case 'focusenergy':
-      SPECIAL_ACTIONS.focus_energy?.(src, tgt, srcStages, tgtStages, addLogFn);
-      return;
-    case 'mustrecharge':
-      SPECIAL_ACTIONS.recharge?.(src, tgt, srcStages, tgtStages, addLogFn);
-      return;
-    case 'lockedmove':
-      if (!src.volatileCounters) src.volatileCounters = {};
-      if (!src.volatileCounters.lockedmove) {
-        src.volatileCounters.lockedmove = 2 + Math.floor(Math.random() * 2);
-        addLogFn(`¡${src.name} está entrando en un frenesí!`, 'log-info', src);
-      }
-      return;
-    case 'partialtrappinglock':
-      if (!tgt.volatileCounters) tgt.volatileCounters = {};
-      if (!tgt.volatileCounters.partiallytrapped) {
-        tgt.volatileCounters.partiallytrapped = 4 + Math.floor(Math.random() * 2);
-        addLogFn(`¡${tgt.name} fue atrapado!`, 'log-info', tgt);
-      }
-      return;
+  if (volatileStatus && VOLATILE_ACTION_MAP[volatileStatus]) {
+    VOLATILE_ACTION_MAP[volatileStatus](src, tgt, srcStages, tgtStages, addLogFn);
   }
 }
+
+const SIDE_CONDITION_MAP: Record<string, (src: Pokemon, tgt: Pokemon, srcStages: BattleStages, tgtStages: BattleStages, addLogFn: LogFn, battleCtx: BattleContext) => void> = {
+  reflect: (s, t, ss, ts, l, c) => FIELD_ACTIONS.reflect?.(s, t, ss, ts, l, c),
+  lightscreen: (s, t, ss, ts, l, c) => FIELD_ACTIONS.light_screen?.(s, t, ss, ts, l, c),
+  safeguard: (s, t, ss, ts, l, c) => FIELD_ACTIONS.safeguard?.(s, t, ss, ts, l, c),
+  spikes: (s, t, ss, ts, l, c) => FIELD_ACTIONS.spikes?.(s, t, ss, ts, l, c),
+  toxicspikes: (s, t, ss, ts, l, c) => FIELD_ACTIONS.toxic_spikes?.(s, t, ss, ts, l, c),
+  stealthrock: (s, t, ss, ts, l, c) => FIELD_ACTIONS.stealth_rock?.(s, t, ss, ts, l, c),
+  mist: (s, t, ss, ts, l, c) => FIELD_ACTIONS.mist?.(s, t, ss, ts, l, c),
+};
 
 function applySideCondition(sideCondition: string | undefined, src: Pokemon, tgt: Pokemon, srcStages: BattleStages, tgtStages: BattleStages, addLogFn: LogFn, battleCtx: BattleContext) {
-  switch (sideCondition) {
-    case 'reflect':
-      FIELD_ACTIONS.reflect?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'lightscreen':
-      FIELD_ACTIONS.light_screen?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'safeguard':
-      FIELD_ACTIONS.safeguard?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'spikes':
-      FIELD_ACTIONS.spikes?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'toxicspikes':
-      FIELD_ACTIONS.toxic_spikes?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'stealthrock':
-      FIELD_ACTIONS.stealth_rock?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'mist':
-      FIELD_ACTIONS.mist?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
+  if (sideCondition && SIDE_CONDITION_MAP[sideCondition]) {
+    SIDE_CONDITION_MAP[sideCondition](src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
   }
 }
 
+const WEATHER_ACTION_MAP: Record<string, (src: Pokemon, tgt: Pokemon, srcStages: BattleStages, tgtStages: BattleStages, addLogFn: LogFn, battleCtx: BattleContext) => void> = {
+  raindance: (s, t, ss, ts, l, c) => FIELD_ACTIONS.rain?.(s, t, ss, ts, l, c),
+  sunnyday: (s, t, ss, ts, l, c) => FIELD_ACTIONS.sun?.(s, t, ss, ts, l, c),
+  sandstorm: (s, t, ss, ts, l, c) => FIELD_ACTIONS.sandstorm?.(s, t, ss, ts, l, c),
+  hail: (s, t, ss, ts, l, c) => FIELD_ACTIONS.hail?.(s, t, ss, ts, l, c),
+  snowscape: (s, t, ss, ts, l, c) => FIELD_ACTIONS.hail?.(s, t, ss, ts, l, c),
+};
+
 function applyWeather(weather: string | undefined, src: Pokemon, tgt: Pokemon, srcStages: BattleStages, tgtStages: BattleStages, addLogFn: LogFn, battleCtx: BattleContext) {
-  switch (weather) {
-    case 'raindance':
-      FIELD_ACTIONS.rain?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'sunnyday':
-      FIELD_ACTIONS.sun?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'sandstorm':
-      FIELD_ACTIONS.sandstorm?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'hail':
-    case 'snowscape':
-      FIELD_ACTIONS.hail?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
+  if (weather && WEATHER_ACTION_MAP[weather]) {
+    WEATHER_ACTION_MAP[weather](src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
   }
 }
+
+type MoveActionHandler = (
+  src: Pokemon,
+  tgt: Pokemon,
+  srcStages: BattleStages,
+  tgtStages: BattleStages,
+  addLogFn: LogFn,
+  battleCtx: BattleContext
+) => void | Promise<void>;
+
+const MOVE_ACTION_HANDLERS: Record<string, MoveActionHandler> = {
+  recover: (s, t, ss, ts, l, c) => HEALING_ACTIONS.heal_50?.(s, t, ss, ts, l, c),
+  slackoff: (s, t, ss, ts, l, c) => HEALING_ACTIONS.heal_50?.(s, t, ss, ts, l, c),
+  softboiled: (s, t, ss, ts, l, c) => HEALING_ACTIONS.heal_50?.(s, t, ss, ts, l, c),
+  milkdrink: (s, t, ss, ts, l, c) => HEALING_ACTIONS.heal_50?.(s, t, ss, ts, l, c),
+  synthesis: (s, t, ss, ts, l, c) => HEALING_ACTIONS.heal_weather?.(s, t, ss, ts, l, c),
+  morningsun: (s, t, ss, ts, l, c) => HEALING_ACTIONS.heal_weather?.(s, t, ss, ts, l, c),
+  moonlight: (s, t, ss, ts, l, c) => HEALING_ACTIONS.heal_weather?.(s, t, ss, ts, l, c),
+  rest: (s, t, ss, ts, l, c) => HEALING_ACTIONS.rest?.(s, t, ss, ts, l, c),
+  healbell: (s, t, ss, ts, l, c) => STATUS_ACTIONS.heal_status_party?.(s, t, ss, ts, l, c),
+  aromatherapy: (s, t, ss, ts, l, c) => STATUS_ACTIONS.heal_status_party?.(s, t, ss, ts, l, c),
+  roar: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.roar?.(s, t, ss, ts, l, c),
+  whirlwind: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.roar?.(s, t, ss, ts, l, c),
+  curse: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.curse?.(s, t, ss, ts, l, c),
+  destinybond: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.destiny_bond?.(s, t, ss, ts, l, c),
+  perishsong: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.perish_song?.(s, t, ss, ts, l, c),
+  transform: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.transform?.(s, t, ss, ts, l, c),
+  triattack: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.tri_attack?.(s, t, ss, ts, l, c),
+  lockon: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.lock_on?.(s, t, ss, ts, l, c),
+  mindreader: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.lock_on?.(s, t, ss, ts, l, c),
+  falseswipe: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.false_swipe?.(s, t, ss, ts, l, c),
+  block: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.trap?.(s, t, ss, ts, l, c),
+  meanlook: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.trap?.(s, t, ss, ts, l, c),
+  spiderweb: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.trap?.(s, t, ss, ts, l, c),
+  endure: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.endure?.(s, t, ss, ts, l, c),
+  protect: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.protect?.(s, t, ss, ts, l, c),
+  detect: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.protect?.(s, t, ss, ts, l, c),
+  bellydrum: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.belly_drum?.(s, t, ss, ts, l, c),
+  teleport: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.teleport?.(s, t, ss, ts, l, c),
+  rapidspin: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.rapid_spin?.(s, t, ss, ts, l, c),
+  foresight: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.identify?.(s, t, ss, ts, l, c),
+  odorsleuth: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.identify?.(s, t, ss, ts, l, c),
+  swagger: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.swagger?.(s, t, ss, ts, l, c),
+  disable: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.disable?.(s, t, ss, ts, l, c),
+  dreameater: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.dream_eater?.(s, t, ss, ts, l, c),
+  encore: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.encore?.(s, t, ss, ts, l, c),
+  furycutter: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.fury_cutter?.(s, t, ss, ts, l, c),
+  bind: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.bind?.(s, t, ss, ts, l, c),
+  wrap: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.bind?.(s, t, ss, ts, l, c),
+  clamp: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.bind?.(s, t, ss, ts, l, c),
+  firespin: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.bind?.(s, t, ss, ts, l, c),
+  infestation: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.bind?.(s, t, ss, ts, l, c),
+  magmastorm: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.bind?.(s, t, ss, ts, l, c),
+  sandtomb: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.bind?.(s, t, ss, ts, l, c),
+  snaptrap: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.bind?.(s, t, ss, ts, l, c),
+  thundercage: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.bind?.(s, t, ss, ts, l, c),
+  whirlpool: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.bind?.(s, t, ss, ts, l, c),
+  rage: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.rage?.(s, t, ss, ts, l, c),
+  futuresight: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.future_sight_simple?.(s, t, ss, ts, l, c),
+  trick: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.trick?.(s, t, ss, ts, l, c),
+  switcheroo: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.trick?.(s, t, ss, ts, l, c),
+  thief: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.steal_item?.(s, t, ss, ts, l, c),
+  covet: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.steal_item?.(s, t, ss, ts, l, c),
+  payday: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.pay_day?.(s, t, ss, ts, l, c),
+  skillswap: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.skill_swap?.(s, t, ss, ts, l, c),
+  snatch: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.snatch?.(s, t, ss, ts, l, c),
+  stockpile: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.stockpile?.(s, t, ss, ts, l, c),
+  spitup: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.spit_up?.(s, t, ss, ts, l, c),
+  grudge: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.grudge?.(s, t, ss, ts, l, c),
+  charge: (s, t, ss, ts, l, c) => SPECIAL_ACTIONS.charge?.(s, t, ss, ts, l, c),
+  brickbreak: (s, t, ss, ts, l, c) => FIELD_ACTIONS.break_screens?.(s, t, ss, ts, l, c),
+};
 
 async function applyMoveId(
   move: Move,
@@ -150,141 +192,9 @@ async function applyMoveId(
   addLogFn: LogFn,
   battleCtx: BattleContext
 ) {
-  switch (move.id) {
-    case 'recover':
-    case 'slackoff':
-    case 'softboiled':
-    case 'milkdrink':
-      HEALING_ACTIONS.heal_50?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'synthesis':
-    case 'morningsun':
-    case 'moonlight':
-      HEALING_ACTIONS.heal_weather?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'rest':
-      HEALING_ACTIONS.rest?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'healbell':
-    case 'aromatherapy':
-      STATUS_ACTIONS.heal_status_party?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'roar':
-    case 'whirlwind':
-      await SPECIAL_ACTIONS.roar?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'curse':
-      SPECIAL_ACTIONS.curse?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'destinybond':
-      SPECIAL_ACTIONS.destiny_bond?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'perishsong':
-      SPECIAL_ACTIONS.perish_song?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'transform':
-      SPECIAL_ACTIONS.transform?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'triattack':
-      SPECIAL_ACTIONS.tri_attack?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'lockon':
-    case 'mindreader':
-      SPECIAL_ACTIONS.lock_on?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'falseswipe':
-      SPECIAL_ACTIONS.false_swipe?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'block':
-    case 'meanlook':
-    case 'spiderweb':
-      SPECIAL_ACTIONS.trap?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'endure':
-      SPECIAL_ACTIONS.endure?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'protect':
-    case 'detect':
-      SPECIAL_ACTIONS.protect?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'bellydrum':
-      SPECIAL_ACTIONS.belly_drum?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'teleport':
-      await SPECIAL_ACTIONS.teleport?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'rapidspin':
-      SPECIAL_ACTIONS.rapid_spin?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'foresight':
-    case 'odorsleuth':
-      SPECIAL_ACTIONS.identify?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'swagger':
-      SPECIAL_ACTIONS.swagger?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'disable':
-      SPECIAL_ACTIONS.disable?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'dreameater':
-      SPECIAL_ACTIONS.dream_eater?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'encore':
-      SPECIAL_ACTIONS.encore?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'furycutter':
-      SPECIAL_ACTIONS.fury_cutter?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'bind':
-    case 'wrap':
-    case 'clamp':
-    case 'firespin':
-    case 'infestation':
-    case 'magmastorm':
-    case 'sandtomb':
-    case 'snaptrap':
-    case 'thundercage':
-    case 'whirlpool':
-      SPECIAL_ACTIONS.bind?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'rage':
-      SPECIAL_ACTIONS.rage?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'futuresight':
-      SPECIAL_ACTIONS.future_sight_simple?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'trick':
-    case 'switcheroo':
-      SPECIAL_ACTIONS.trick?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'thief':
-    case 'covet':
-      SPECIAL_ACTIONS.steal_item?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'payday':
-      SPECIAL_ACTIONS.pay_day?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'skillswap':
-      SPECIAL_ACTIONS.skill_swap?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'snatch':
-      SPECIAL_ACTIONS.snatch?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'stockpile':
-      SPECIAL_ACTIONS.stockpile?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'spitup':
-      SPECIAL_ACTIONS.spit_up?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'grudge':
-      SPECIAL_ACTIONS.grudge?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'charge':
-      SPECIAL_ACTIONS.charge?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
-    case 'brickbreak':
-      FIELD_ACTIONS.break_screens?.(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
-      return;
+  const handler = move.id ? MOVE_ACTION_HANDLERS[move.id] : undefined;
+  if (handler) {
+    await handler(src, tgt, srcStages, tgtStages, addLogFn, battleCtx);
   }
 }
 

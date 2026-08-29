@@ -106,7 +106,7 @@ export function registerBattleTools(debug: DebugSystem) {
         const battle = useBattleStore()
         battle.attackerSide = side as BattleSide
         battle.activeMove = {
-          name: options.cat === 'selfKO' ? 'Autodestrucción' : (options.cat === 'recoil' ? 'Retroceso' : 'Ataque Debug'),
+          name: options.cat === 'selfKO' ? 'Autodestrucción' : (options.cat === 'recoil' ? 'Retroceso' : 'Ataque Debug'), // spanish-ok
           cat: options.cat === 'selfKO' ? 'special' : ((options.cat as MoveCategory | undefined) || 'physical'),
           selfKO: options.cat === 'selfKO',
           recoil: options.cat === 'recoil' ? true : undefined,

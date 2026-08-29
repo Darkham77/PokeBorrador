@@ -48,3 +48,15 @@ export function getNatureInfo(nature: NatureId) {
   return NATURE_DATA[nature];
 }
 
+const NATURES_BY_SPANISH_NAME: Readonly<Record<string, (typeof NATURE_DATA)[NatureId]>> = Object.freeze( // open-record
+  Object.fromEntries(
+    Object.values(NATURE_DATA).map(n => [n.name.toLowerCase(), n]) // text-ok
+  )
+);
+
+export function getNatureDataByNameOrId(key: string): (typeof NATURE_DATA)[NatureId] | undefined {
+  const lower = key.toLowerCase(); // text-ok
+  if (isNatureId(lower)) return NATURE_DATA[lower];
+  return NATURES_BY_SPANISH_NAME[lower];
+}
+

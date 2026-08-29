@@ -40,8 +40,12 @@ export const useLeaderboardStore = defineStore('leaderboard', () => {
           .select('user_id, updated_at')
           .in('user_id', ids) as { data: GameSaveRow[] | null; error: unknown }
 
+        const savesByUserId: Record<string, GameSaveRow> = Object.fromEntries(
+          (saves || []).map(s => [s.user_id, s])
+        )
+
         leaderboard.value = (data as ProfileRow[]).map((p: ProfileRow) => {
-          const saveRow = (saves as GameSaveRow[])?.find(s => s.user_id === p.id)
+          const saveRow = savesByUserId[p.id]
           const lastSeen = parseInstantSafe(saveRow?.updated_at)
           const isOnline = lastSeen && (Temporal.Now.instant().epochMilliseconds - lastSeen.epochMilliseconds) < ONLINE_PRESENCE_WINDOW_MS
 

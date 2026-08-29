@@ -9,7 +9,7 @@ import { NATURE_DATA, isNatureId, getNatureInfo } from '@/data/battle/natures'
 import { useGameStore } from '@/stores/game'
 import { useInventoryStore } from '@/stores/inventory/inventory'
 import { useUIStore } from '@/stores/ui'
-import { SHOP_ITEMS } from '@/data/inventory/items'
+import { getItemById } from '@/data/inventory/items'
 
 const GSAP_ANIM_DURATION_SEC = 0.3
 const GSAP_FAST_DURATION_SEC = 0.2
@@ -255,7 +255,7 @@ const getNatureDescription = (natureName: string) => {
 const heldItemSprite = computed(() => {
   const held = props.pokemon?.heldItem
   if (!held) return ''
-  const item = SHOP_ITEMS.find(i => i.id === held || i.name === held)
+  const item = getItemById(held)
   if (!item?.sprite) return ''
   return getAssetUrl(ASSET_TYPES.ITEM, item.sprite)
 })

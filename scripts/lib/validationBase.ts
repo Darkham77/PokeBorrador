@@ -2,74 +2,66 @@
 /**
  * scripts/lib/validationBase.ts
  * 
- * Base validation helper to centralize script arg parsing, file access checks,
- * console output formatting, and report file generation.
+ * BACKWARD COMPATIBLE VALIDATION HELPER (Node.js 26+)
+ * Bridges legacy validation scripts to the unified auditorBase and unifiedTheme engine.
  */
 
-import fs from 'node:fs/promises';
-import { styleText, parseArgs } from 'node:util';
+import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { printConsoleHeader, printConsoleSummary, writeReportFile } from './reportUtils.ts';
+import { setupAuditor } from './auditorBase.ts';
+import { type AuditFamily } from './auditContract.ts';
 
 enableCompileCache();
 
 export interface ValidationConfig {
   title: string;
-  requiredFiles: string[];
+  requiredFiles?: string[];
+  family?: AuditFamily;
+  id?: string;
 }
 
 export interface ValidationContext {
   values: {
     output?: string;
-    summary?: boolean;
     'errors-only'?: boolean;
   };
   checkFiles: () => Promise<void>;
-  finish: (scannedMetrics: Record<string, number>, errors: string[], warnings: string[]) => Promise<void>;
+  addError: (message: string, file?: string, line?: number, context?: string, ruleId?: string) => void;
+  addWarning: (message: string, file?: string, line?: number, context?: string, ruleId?: string) => void;
+  setMetric: (key: string, value: number | string) => void;
+  finish: (scannedMetrics: Record<string, number | string>, errors?: string[], warnings?: string[]) => Promise<void>;
 }
 
-
 export function setupValidation(config: ValidationConfig): ValidationContext {
-  const { values } = parseArgs({
-    options: {
-      output: { type: 'string', short: 'o' },
-      summary: { type: 'boolean', short: 's' },
-      'errors-only': { type: 'boolean' }
+  const callerFile = process.argv[1] ? path.basename(process.argv[1], '.ts').replace(/\.js$/, '') : '';
+  const derivedId = config.id || callerFile || config.title.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  
+  let family: AuditFamily = config.family || 'domain_data';
+  if (!config.family) {
+    const stack = new Error().stack || '';
+    for (const f of ['architecture', 'domain_data', 'persistence', 'fsm', 'assets', 'documentation'] as const) {
+      if (stack.includes(`/auditors/${f}/`)) {
+        family = f;
+        break;
+      }
     }
+  }
+
+  const auditor = setupAuditor({
+    id: derivedId,
+    name: config.title,
+    family,
+    requiredFiles: config.requiredFiles
   });
 
-  printConsoleHeader(config.title);
-
   return {
-    values,
-    checkFiles: async () => {
-      try {
-        for (const file of config.requiredFiles) {
-          await fs.access(file);
-        }
-      } catch (_err) {
-        console.error(styleText('red', `❌ Archivos requeridos no encontrados o no accesibles:\n${config.requiredFiles.map(f => `   - ${f}`).join('\n')}`));
-        process.exit(1);
-      }
-    },
-    finish: async (scannedMetrics: Record<string, number>, errors: string[], warnings: string[]) => {
-      const finalWarnings = values['errors-only'] ? [] : warnings;
-      const summaryData = {
-        title: config.title,
-        scannedMetrics,
-        errors,
-        warnings: finalWarnings
-      };
-
-      printConsoleSummary(summaryData, !values.summary);
-
-      if (values.output) {
-        await writeReportFile(values.output as string, summaryData);
-      }
-
-      if (errors.length > 0) {
-        process.exit(1);
-      }
+    values: auditor.values,
+    checkFiles: auditor.checkFiles,
+    addError: auditor.addError,
+    addWarning: auditor.addWarning,
+    setMetric: auditor.setMetric,
+    finish: async (scannedMetrics: Record<string, number | string>, errors?: string[], warnings?: string[]) => {
+      await auditor.finish(scannedMetrics, errors, warnings);
     }
   };
 }

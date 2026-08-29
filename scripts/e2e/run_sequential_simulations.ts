@@ -53,7 +53,21 @@ function countSpecs(suite: PlaywrightSuiteNode): number {
   return count;
 }
 
+function buildTarget(fullPath: string, caseCount = 1): SimulationTarget {
+  const relativePath = path.relative(process.cwd(), fullPath).split(path.sep).join(path.posix.sep);
+  return {
+    name: path.basename(fullPath),
+    command: `npx playwright test ${relativePath}`,
+    relativePath,
+    fullPath,
+    caseCount
+  };
+}
+
 function discoverPlaywrightTargets(): SimulationTarget[] {
+  const allFiles = findSimulationFiles(path.resolve(process.cwd(), 'scripts/e2e'));
+  const countMap = new Map<string, number>();
+
   try {
     const output = execSync('npx playwright test --list --reporter=json', {
       encoding: 'utf8',
@@ -62,7 +76,6 @@ function discoverPlaywrightTargets(): SimulationTarget[] {
     });
     const parsed = JSON.parse(output) as { suites?: PlaywrightSuiteNode[] };
 
-    const countMap = new Map<string, number>();
     for (const topSuite of parsed.suites || []) {
       if (topSuite.file) {
         const normFile = topSuite.file.split('\\').join('/');
@@ -70,38 +83,17 @@ function discoverPlaywrightTargets(): SimulationTarget[] {
         countMap.set(resolvedPath, (countMap.get(resolvedPath) || 0) + countSpecs(topSuite));
       }
     }
-
-    const allFiles = findSimulationFiles(path.resolve(process.cwd(), 'scripts/e2e'));
-    return allFiles.map((fullPath) => {
-      const resolvedFullPath = path.resolve(fullPath);
-      const relativePath = path.relative(process.cwd(), fullPath).split(path.sep).join(path.posix.sep);
-      const caseCount = countMap.get(resolvedFullPath) || 1;
-      return {
-        name: path.basename(fullPath),
-        command: `npx playwright test ${relativePath}`,
-        relativePath,
-        fullPath,
-        caseCount
-      };
-    }).sort((a, b) => {
-      if (a.caseCount !== b.caseCount) {
-        return a.caseCount - b.caseCount;
-      }
-      return a.relativePath.localeCompare(b.relativePath);
-    });
   } catch {
-    const allFiles = findSimulationFiles(path.resolve(process.cwd(), 'scripts/e2e'));
-    return allFiles.map((fullPath) => {
-      const relativePath = path.relative(process.cwd(), fullPath).split(path.sep).join(path.posix.sep);
-      return {
-        name: path.basename(fullPath),
-        command: `npx playwright test ${relativePath}`,
-        relativePath,
-        fullPath,
-        caseCount: 1
-      };
-    }).sort((a, b) => a.relativePath.localeCompare(b.relativePath));
+    // Fallback to default count 1
   }
+
+  return allFiles.map((fullPath) => {
+    const resolvedFullPath = path.resolve(fullPath);
+    return buildTarget(fullPath, countMap.get(resolvedFullPath) || 1);
+  }).sort((a, b) => {
+    if (a.caseCount !== b.caseCount) return a.caseCount - b.caseCount;
+    return a.relativePath.localeCompare(b.relativePath);
+  });
 }
 
 function parseCoverageReportFile(resultsDir: string, file: string): number {
@@ -186,11 +178,66 @@ if (process.argv.includes('--list')) {
   process.exit(0);
 }
 
-import { spawn } from 'node:child_process';
+import { spawn, type ChildProcess } from 'node:child_process';
 import { SimulationRunnerLogger } from './logging/simulation_runner_logger.ts';
 
 const logger = new SimulationRunnerLogger();
 logger.startIntercepting();
+
+const VITE_PORT = 5174;
+const VITE_URL = `http://localhost:${VITE_PORT}`;
+const HEALTH_CHECK_TIMEOUT_MS = 30000;
+const HEALTH_CHECK_INTERVAL_MS = 250;
+
+async function startPersistentViteServer(): Promise<ChildProcess | null> {
+  // 1. Check if already responding
+  try {
+    const res = await fetch(VITE_URL);
+    if (res.ok) {
+      logger.progress(`🔥 Servidor web existente detectado en ${VITE_URL} (Listo).`);
+      return null;
+    }
+  } catch {
+    // Not running yet, spawn it
+  }
+
+  logger.progress(`🚀 Inicializando servidor web persistente en ${VITE_URL}...`);
+  const viteProcess = spawn('npx', ['vite', '--port', String(VITE_PORT), '--strictPort'], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    env: {
+      ...process.env,
+      NO_UPDATE_NOTIFIER: '1'
+    }
+  });
+
+  const startTime = Date.now();
+  while (Date.now() - startTime < HEALTH_CHECK_TIMEOUT_MS) {
+    try {
+      const res = await fetch(VITE_URL);
+      if (res.ok) {
+        logger.progress(`🔥 Servidor Vite persistente pre-calentado y listo en ${VITE_URL} (${((Date.now() - startTime) / 1000).toFixed(1)}s).\n`);
+        return viteProcess;
+      }
+    } catch {
+      // Wait before next probe
+    }
+    await new Promise((resolve) => setTimeout(resolve, HEALTH_CHECK_INTERVAL_MS));
+  }
+
+  viteProcess.kill('SIGKILL');
+  throw new Error(`[SIMULATION-RUNNER] Timeout esperando que el servidor Vite en ${VITE_URL} responda.`);
+}
+
+function stopPersistentViteServer(viteProcess: ChildProcess | null): void {
+  if (viteProcess && !viteProcess.killed) {
+    try {
+      logger.progress(`\n🛑 Deteniendo servidor Vite persistente...`);
+      viteProcess.kill('SIGTERM');
+    } catch {
+      viteProcess.kill('SIGKILL');
+    }
+  }
+}
 
 function runCommandStreamed(command: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -242,6 +289,7 @@ function runCommandStreamed(command: string): Promise<void> {
 }
 
 async function runAllSequentialSuites(): Promise<void> {
+  let persistentVite: ChildProcess | null = null;
   try {
     logger.progress('\n==================================================');
     logger.progress('🚀 DISPOSITIVO DE SIMULACIONES E2E SECUENCIAL (DINÁMICO)');
@@ -251,6 +299,16 @@ async function runAllSequentialSuites(): Promise<void> {
       logger.progress(`  ${index + 1}. [${target.name}] (${target.caseCount} caso/s) -> ${target.command}`);
     });
     logger.progress('==================================================\n');
+
+    persistentVite = await startPersistentViteServer();
+
+    // Clean exit hooks
+    const cleanup = () => {
+      stopPersistentViteServer(persistentVite);
+    };
+    process.on('SIGINT', cleanup);
+    process.on('SIGTERM', cleanup);
+    process.on('exit', cleanup);
 
     let passedCount = 0;
 
@@ -280,6 +338,7 @@ async function runAllSequentialSuites(): Promise<void> {
     logger.error(`💥 Error fatal durante el dispositivo de simulaciones: ${(error as Error).message}`);
     process.exit(1);
   } finally {
+    stopPersistentViteServer(persistentVite);
     logger.stopIntercepting();
   }
 }

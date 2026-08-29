@@ -1,8 +1,28 @@
 /**
  * Styles for nickname and avatar customization.
  */
+import type { PlayerClassId } from '@/data/player/playerClasses';
+import type { FactionId } from '@/types/system/game';
 
-export const NICK_STYLES = [
+export interface NickStyle {
+  readonly id: string; // domain-ok
+  readonly name: string; // domain-ok
+  readonly class: string; // domain-ok
+  readonly requiredRole?: string; // domain-ok
+  readonly requiredClass?: PlayerClassId;
+  readonly requiredFaction?: FactionId;
+}
+
+export interface AvatarStyle {
+  readonly id: string; // domain-ok
+  readonly name: string; // domain-ok
+  readonly class: string; // domain-ok
+  readonly requiredRole?: string; // domain-ok
+  readonly requiredClass?: PlayerClassId;
+  readonly requiredFaction?: FactionId;
+}
+
+export const NICK_STYLES: readonly NickStyle[] = [
     { id: '', name: 'Normal', class: '' },
     { id: 'nt-gold', name: 'Oro Radiante', class: 'nt-gold' },
     { id: 'nt-silver', name: 'Plata Pulida', class: 'nt-silver' },
@@ -43,7 +63,7 @@ export const NICK_STYLES = [
     { id: 'nt-admin', name: 'Administrador (Admin)', class: 'nt-admin', requiredRole: 'admin' }
 ];
 
-export const AVATAR_STYLES = [
+export const AVATAR_STYLES: readonly AvatarStyle[] = [
     { id: '', name: 'Sin Borde', class: '' },
     
     // Circulares Antiguos / Especiales
@@ -128,3 +148,22 @@ export const AVATAR_STYLES = [
     { id: 'av-admin', name: 'Aura Suprema (Admin)', class: 'av-admin', requiredRole: 'admin' },
     { id: 'av-sq-admin', name: 'Aura Suprema (Admin - Cuadrado)', class: 'av-sq-admin', requiredRole: 'admin' }
 ];
+
+export type NickStyleId = (typeof NICK_STYLES)[number]['id'];
+export type AvatarStyleId = (typeof AVATAR_STYLES)[number]['id'];
+
+export const NICK_STYLES_BY_ID: Readonly<Record<NickStyleId, NickStyle>> = Object.freeze(
+  Object.fromEntries(NICK_STYLES.map(style => [style.id, style])) as Record<NickStyleId, NickStyle>
+);
+
+export const AVATAR_STYLES_BY_ID: Readonly<Record<AvatarStyleId, AvatarStyle>> = Object.freeze(
+  Object.fromEntries(AVATAR_STYLES.map(style => [style.id, style])) as Record<AvatarStyleId, AvatarStyle>
+);
+
+export function isNickStyleId(value: string): value is NickStyleId {
+  return value in NICK_STYLES_BY_ID;
+}
+
+export function isAvatarStyleId(value: string): value is AvatarStyleId {
+  return value in AVATAR_STYLES_BY_ID;
+}

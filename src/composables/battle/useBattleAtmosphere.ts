@@ -6,8 +6,8 @@ import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistr
 import { requireWeatherSeasonId, isWeatherTableRouteId } from '@/data/world/weather-tables'
 import { isMapRouteId, requireMapRouteId, getAvailableCyclesForMap } from '@/data/world/map-assets'
 import { requireDayPhase, type DayPhase } from '@/logic/utils/timeUtils'
-import { FIRE_RED_MAPS } from '@/data/world/maps'
-import { GYMS, type Gym } from '@/data/world/gyms'
+import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
+import { GYMS_BY_ID, isGymId, type Gym } from '@/data/world/gyms'
 import type { BattleState } from '@/types/battle/battle'
 
 export function useBattleAtmosphere(battle: Ref<BattleState | null | undefined>) {
@@ -20,14 +20,14 @@ export function useBattleAtmosphere(battle: Ref<BattleState | null | undefined>)
 
   const gymConfig = computed<Gym | null>(() => {
     const gymId = battle.value?.gymId
-    if (!gymId) return null
-    return (GYMS.find((g) => g.id === gymId) as Gym | undefined) || null
+    if (!gymId || !isGymId(gymId)) return null
+    return GYMS_BY_ID[gymId] || null
   })
 
   const mapLocationConfig = computed(() => {
     const locId = battle.value?.locationId
-    if (!locId) return null
-    return FIRE_RED_MAPS.find((m) => m.id === locId) || null
+    if (!locId || !isMapRouteId(locId)) return null
+    return MAPS_BY_ROUTE_ID[locId] || null
   })
 
   const supportedCycles = computed<readonly DayPhase[]>(() => {
@@ -62,16 +62,13 @@ export function useBattleAtmosphere(battle: Ref<BattleState | null | undefined>)
   const effectiveBattleVisual = computed<string>(() => {
     // 1. Terrenos y efectos de campo activos en combate (máxima prioridad visual para iluminación de arena)
     if (battle.value?.fieldConditions) {
-      const fieldKeys = Object.keys(battle.value.fieldConditions)
-      const terrain = fieldKeys.find((k) =>
-        ['electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain', 'trickroom', 'gravity'].includes(k)
-      )
+      const terrain = (['electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain', 'trickroom', 'gravity'] as const).find(k => battle.value?.fieldConditions?.[k]) // o1-ok
       if (terrain) return terrain
     }
 
     // 2. Efectos de bando activos como neblina (mist), stealthrock, toxicspikes
     const sideConds = { ...battle.value?.enemySideConditions, ...battle.value?.playerSideConditions }
-    const sideField = Object.keys(sideConds).find((k) => ['mist', 'stealthrock', 'toxicspikes'].includes(k))
+    const sideField = (['mist', 'stealthrock', 'toxicspikes'] as const).find(k => sideConds[k]) // o1-ok
     if (sideField) return sideField
 
     // 3. Si hay un clima temporal activo en el combate (invocado por movimiento o habilidad)

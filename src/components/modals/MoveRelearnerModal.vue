@@ -68,7 +68,7 @@ const forgottenMoves = computed(() => {
     
     // Find previous stage
     const currentIdRef = currentId as string
-    const prevEntry = Object.entries(EVOLUTION_TABLE).find(([, data]) => (data as { to: string }).to === currentIdRef)
+    const prevEntry = Object.entries(EVOLUTION_TABLE).find(([, data]) => (data as { to: string }).to === currentIdRef) // o1-ok
     currentId = prevEntry ? prevEntry[0] : null
   }
   

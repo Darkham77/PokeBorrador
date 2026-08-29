@@ -13,6 +13,14 @@ defineProps<{
   getBreakdown: (key: string) => { base: number; final: number }
   pokemon?: Pokemon | null
 }>()
+
+function shouldShowTooltipContent(status: UnifiedStatusItem, showStatsTable: boolean): boolean {
+  return Boolean(status.isAdminOnly || (showStatsTable && status.emoji !== '🎒'))
+}
+
+function shouldShowStatsTable(status: UnifiedStatusItem, showStatsTable: boolean): boolean {
+  return Boolean(showStatsTable && status.emoji !== '🎒')
+}
 </script>
 
 <template>
@@ -42,7 +50,7 @@ defineProps<{
       </div>
 
       <template
-        v-if="status.isAdminOnly || (showStatsTable && status.emoji !== '🎒')"
+        v-if="shouldShowTooltipContent(status, showStatsTable)"
         #content
       >
         <div class="status-pro-tooltip">
@@ -53,7 +61,7 @@ defineProps<{
             ⚠️ esto es visible solo para administradores
           </div>
           
-          <template v-if="showStatsTable && status.emoji !== '🎒'">
+          <template v-if="shouldShowStatsTable(status, showStatsTable)">
             <div class="tooltip-divider" />
             <BattleInfoStats
               :admin-stat-config="adminStatConfig"

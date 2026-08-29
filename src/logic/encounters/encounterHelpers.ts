@@ -8,21 +8,14 @@ import { useGameStore } from '@/stores/game';
 import { isDisputePhase } from '@/logic/war/warEngine';
 import { getGuardianData } from '@/logic/war/guardianEngine';
 import { GUARDIAN_ENCOUNTER_CHANCE_PERCENT } from '@/logic/constants/gameplay';
-import { getWeatherFamily } from '@/data/system/weatherFamilies.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { MapLocation, Encounter, EncounterOptions, EncounterState } from '@/types/pokemon/encounters';
-import type { Event as GameEvent, EventConfig } from '@/logic/events/eventEngine';
-import { isLegendaryPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { redistributeWeatherSpawns } from '@/logic/utils/routeSpawnHelpers';
-import { getWeatherMultiplier } from '@/logic/weather/weatherUtils';
-import { DAY_PHASES, type DayPhase } from '@/logic/utils/timeUtils';
+import type { DayPhase } from '@/logic/utils/timeUtils';
+import type { Event as GameEvent } from '@/logic/events/eventEngine';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
 import { requireGymId, type GymId } from '@/data/world/gyms';
 import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
-import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
 import {
-  DEFAULT_FISHING_RATE_WEIGHT,
-  DEFAULT_EXCLUSIVE_SPAWN_WEIGHT,
-  DEFAULT_VISITOR_SPAWN_WEIGHT,
   DEBUG_TRAINER_CHANCE_PERCENT,
   DEBUG_GUARDIAN_CHANCE_PERCENT,
   PERCENTAGE_MULTIPLIER_FACTOR,
@@ -40,116 +33,30 @@ import {
   EQUIPPED_TOOL_ENCOUNTER_BONUS_WEIGHT,
   CAVE_ARCHAEOLOGY_WEIGHT,
   MOUNTAIN_ARCHAEOLOGY_WEIGHT,
-  LEGENDARY_RATE_CAP_DENOMINATOR,
   VISITOR_WEIGHT_REPLACEMENT_VALUE,
-  DEFAULT_SPAWN_RATE_WEIGHT,
   DEFAULT_WEATHER_MULTIPLIER_NORMAL,
   DEBUG_MOCK_MAGIKARP_STATS,
   DEBUG_MOCK_KABUTO_STATS,
   DEBUG_MOCK_PIDGEY_STATS
 } from '@/logic/constants/encounters';
 
-type WeightedSpeciesSource = PokemonSpeciesId[] | Partial<Record<PokemonSpeciesId, number>>;
+import {
+  getSpeciesEntries,
+  getEncounterPool,
+  clampLegendaryRates,
+  getFinalGroundRates,
+  applyAtmosphericStatus,
+  getMapSpawnPoolData
+} from './routeSpawnMath.ts';
 
-export function getSpeciesEntries(source: WeightedSpeciesSource): Array<{ id: PokemonSpeciesId; weight?: number }> {
-  if (Array.isArray(source)) return source.map(id => ({ id }));
-  return Object.entries(source).map(([rawId, weight]) => ({
-    id: requirePokemonSpeciesId(rawId),
-    weight,
-  }));
-}
-
-function requireWeatherFamilyId(weather: WeatherId): WeatherId {
-  const family = getWeatherFamily(weather);
-  if (!family) throw new Error(`[encounterHelpers] Weather '${weather}' has no registered family`);
-  return requireWeatherId(family);
-}
-
-/**
- * Gets the valid pool of Pokémon for a location and time cycle.
- * Incorporates active events.
- */
-export function getEncounterPool(loc: MapLocation, cycle: DayPhase, weather: WeatherId = 'clear', activeEvents: GameEvent[]) {
-  if (!loc || !loc.wild) return { pool: Array<PokemonSpeciesId>(), rates: Array<number>() };
-  
-  const pool = [...(loc.wild[cycle] || loc.wild.day || [])];
-  const rates = [...((loc.rates && (loc.rates[cycle] || loc.rates.day)) ? (loc.rates[cycle] || loc.rates.day) : []) as number[]];
-  
-  // Ensure rates match pool length before transformations
-  while (rates.length < pool.length) rates.push(DEFAULT_FISHING_RATE_WEIGHT);
- 
-  // 1. Inyección por Clima (Visitantes y Exclusivos)
-  let wConfig = loc.weather?.[weather];
-  
-  // Fallback to weather family if exact weather configuration does not exist
-  if (!wConfig && weather !== 'clear') {
-    const family = requireWeatherFamilyId(weather);
-    if (loc.weather?.[family]) {
-      wConfig = loc.weather[family];
-    }
-  }
-
-  if (weather !== 'clear' && wConfig) {
-    // Especies Exclusivas (Pesos dinámicos o base 5)
-    if (wConfig.exclusive) {
-      const exclusives = getSpeciesEntries(wConfig.exclusive);
-      exclusives.forEach(({ id, weight }) => {
-        // Castform no debe aparecer en forma soleado si es de noche
-        if (id === 'castform' && cycle === 'night' && getWeatherFamily(weather) === 'sun') {
-          return;
-        }
-        if (!pool.includes(id)) {
-          pool.push(id);
-          rates.push(weight ?? DEFAULT_EXCLUSIVE_SPAWN_WEIGHT); 
-        }
-      });
-    }
-
-    // Visitantes (Marcados con peso negativo para normalización proporcional)
-    if (wConfig.visitors) {
-      const visitors = getSpeciesEntries(wConfig.visitors);
-      visitors.forEach(({ id, weight }) => {
-        // Castform no debe aparecer en forma soleado si es de noche
-        if (id === 'castform' && cycle === 'night' && getWeatherFamily(weather) === 'sun') {
-          return;
-        }
-        if (!pool.includes(id)) {
-          pool.push(id);
-          rates.push(weight !== undefined ? -weight : -DEFAULT_VISITOR_SPAWN_WEIGHT); 
-        }
-      });
-    }
-  }
-
-
-  // 2. Apply Event Injections
-  activeEvents.forEach(ev => {
-    const cfg = (typeof ev.config === 'string' ? JSON.parse(ev.config) : ev.config) as EventConfig | undefined;
-    if (ev.active && cfg?.ignoreTimeRestrictions && cfg.species) {
-      const eventSpecies = cfg.species.split(',').map((s: string) => requirePokemonSpeciesId(s.trim().toLowerCase()));
-      eventSpecies.forEach((spId: PokemonSpeciesId) => {
-        if (!pool.includes(spId)) {
-          // Check if species exists in other cycles for this map
-          const wild = loc.wild || {};
-          for (const c of DAY_PHASES) {
-            const cyclePool = wild[c];
-            if (!cyclePool) continue;
-            const idx = cyclePool.indexOf(spId);
-            if (idx !== -1) {
-              pool.push(spId);
-              const originalRates = loc.rates?.[c] || [];
-              rates.push(originalRates[idx] || DEFAULT_VISITOR_SPAWN_WEIGHT);
-              break;
-            }
-          }
-        }
-      });
-    }
-  });
-  
-  clampLegendaryRates(pool, rates);
-  return { pool, rates };
-}
+export {
+  getSpeciesEntries,
+  getEncounterPool,
+  clampLegendaryRates,
+  getFinalGroundRates,
+  applyAtmosphericStatus,
+  getMapSpawnPoolData
+};
 
 /**
  * Selects a random Pokémon ID from a pool using weights.
@@ -434,139 +341,4 @@ export function calculateEncounterTypeWeights(
   };
 }
 
-/**
- * Caps the weight/rate of legendary species so that their final probability does not exceed 1%.
- * Balances the other rates proportionally.
- */
-export function clampLegendaryRates(pool: PokemonSpeciesId[], rates: number[]): void {
-  const legendaryIndices: number[] = [];
-  let sumOtherRates = 0;
 
-  for (let i = 0; i < pool.length; i++) {
-    const spId = pool[i];
-    if (spId && isLegendaryPokemonSpeciesId(spId)) {
-      legendaryIndices.push(i);
-    } else {
-      sumOtherRates += rates[i] || 0;
-    }
-  }
-
-  if (legendaryIndices.length === 0) return;
-
-  // If there are only legendaries in the pool (e.g. Cerulean Cave inner circle with ticket),
-  // they can have higher rates, but if other species exist, we cap each to 1% final prob.
-  if (sumOtherRates === 0) return;
-
-  // To guarantee final probability <= 1% for each legendary:
-  // rate(L) / (sumOtherRates + sum_legendary_rates) <= 0.01
-  // We can solve for a capped rate for each legendary.
-  // Set cap = sumOtherRates / LEGENDARY_RATE_CAP_DENOMINATOR.
-  const cap = sumOtherRates / LEGENDARY_RATE_CAP_DENOMINATOR;
-
-  legendaryIndices.forEach(idx => {
-    if ((rates[idx] || 0) > cap) {
-      rates[idx] = cap;
-    }
-  });
-}
-
-/**
- * Returns the final, fully adjusted pool and rates for ground encounters,
- * applying weather multipliers, visitor quotas, and legendary probability caps.
- * This function serves as the single source of truth for both combat and UI.
- */
-export function getFinalGroundRates(
-  loc: MapLocation,
-  cycle: DayPhase,
-  weather: WeatherId,
-  activeEvents: GameEvent[]
-): { pool: PokemonSpeciesId[]; rates: number[] } {
-  const { pool, rates } = getEncounterPool(loc, cycle, weather, activeEvents);
-
-  if (weather !== 'clear') {
-    let wConfig = loc.weather?.[weather];
-    if (!wConfig) {
-      const family = requireWeatherFamilyId(weather);
-      if (loc.weather?.[family]) {
-        wConfig = loc.weather[family];
-      }
-    }
-    const exclusives = wConfig?.exclusive ? getSpeciesEntries(wConfig.exclusive).map(entry => entry.id) : [];
-    redistributeWeatherSpawns(rates, pool, weather, exclusives);
-  }
-
-  clampLegendaryRates(pool, rates);
-
-  return { pool, rates };
-}
-
-export function applyAtmosphericStatus(pokemon: Pokemon, loc: MapLocation, weather: WeatherId, selectedId: PokemonSpeciesId): void {
-  let weatherCfg = loc.weather?.[weather];
-  if (!weatherCfg && weather !== 'clear') {
-    const family = requireWeatherFamilyId(weather);
-    if (loc.weather?.[family]) {
-      weatherCfg = loc.weather[family];
-    }
-  }
-  const visitors = weatherCfg?.visitors ? getSpeciesEntries(weatherCfg.visitors).map(entry => entry.id) : [];
-  const exclusives = weatherCfg?.exclusive ? getSpeciesEntries(weatherCfg.exclusive).map(entry => entry.id) : [];
-  const isVisitor = !!(weatherCfg?.visitors && (
-    visitors.includes(selectedId)
-  ));
-  const isExclusive = !!(weatherCfg?.exclusive && (
-    exclusives.includes(selectedId)
-  ));
-  const multiplier = getWeatherMultiplier(selectedId, weather);
-  const isBuffed = !isVisitor && !isExclusive && multiplier > DEFAULT_WEATHER_MULTIPLIER_NORMAL;
-  const isDebuffed = !isVisitor && !isExclusive && multiplier < DEFAULT_WEATHER_MULTIPLIER_NORMAL && multiplier > 0;
-  
-  if (isVisitor || isExclusive || isBuffed || isDebuffed) {
-    pokemon.isAtmospheric = true;
-    pokemon.weatherOrigin = weather;
-    if (isDebuffed) pokemon.isWeatherStruggling = true;
-  }
-}
-
-export interface SpawnPoolResult {
-  generic: PokemonSpeciesId[]
-  specific: PokemonSpeciesId[]
-  rates: Partial<Record<PokemonSpeciesId, number>>
-}
-
-export function getMapSpawnPoolData(
-  loc: MapLocation,
-  cycle: DayPhase,
-  activeWeather: WeatherId,
-  activeEvents: GameEvent[] = []
-): SpawnPoolResult {
-  if (!loc.wild) {
-    return { generic: [], specific: [], rates: {} }
-  }
-
-  const { pool, rates } = getEncounterPool(loc, cycle, activeWeather, activeEvents)
-
-  const baseWild = loc.wild[cycle] || loc.wild.day || []
-  const generic: PokemonSpeciesId[] = []
-  const specific: PokemonSpeciesId[] = []
-  const ratesMap: Partial<Record<PokemonSpeciesId, number>> = {}
-
-  pool.forEach((id: PokemonSpeciesId, index: number) => {
-    ratesMap[id] = rates[index] || DEFAULT_SPAWN_RATE_WEIGHT
-    if (baseWild.includes(id)) {
-      generic.push(id)
-    } else {
-      specific.push(id)
-    }
-  })
-
-  if (loc.fishing) {
-    loc.fishing.pool.forEach((id: PokemonSpeciesId, index: number) => {
-      if (!generic.includes(id) && !specific.includes(id)) {
-        generic.push(id)
-        ratesMap[id] = loc.fishing!.rates[index] || DEFAULT_SPAWN_RATE_WEIGHT
-      }
-    })
-  }
-
-  return { generic, specific, rates: ratesMap }
-}

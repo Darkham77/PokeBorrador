@@ -1,5 +1,5 @@
 import { computed, type Ref } from 'vue'
-import { SHOP_ITEMS } from '@/data/inventory/items'
+import { getItemById } from '@/data/inventory/items'
 import type { useGameStore } from '@/stores/game'
 import type { useGTSStore } from '@/stores/gts'
 import type { MarketListing } from '@/logic/economy/market'
@@ -26,7 +26,7 @@ export function useMarketPublishInventory(
     return Object.entries(game.state.inventory as Record<string, number>) // open-record
       .filter(([_name, qty]) => qty > 0)
       .map(([name, qty]) => {
-        const dbItem = SHOP_ITEMS.find(i => i.id === name || i.name === name)
+        const dbItem = getItemById(name)
         return {
           id: dbItem?.id ?? name.toLowerCase().replace(/\s+/g, '_'),
           name: dbItem?.name ?? name,

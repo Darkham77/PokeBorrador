@@ -6,7 +6,11 @@ import { incrementRecordKey } from '@/logic/utils/mapUtils'
 import { useAuthStore } from '@/stores/auth.ts'
 import { useGameStore } from '@/stores/game.ts'
 import { useUIStore } from '@/stores/ui.ts'
-import { RANKED_REWARD_MILESTONES } from '@/data/system/rankedData'
+import { 
+  RANKED_REWARD_MILESTONES, 
+  RANKED_REWARD_MILESTONES_BY_ID, 
+  isRankedRewardMilestoneId
+} from '@/data/system/rankedData'
 export { RANKED_REWARD_MILESTONES }
 import { getEloTier } from '@/logic/pvp/rankedEngine'
 import type { Pokemon } from '@/types/pokemon/pokemon'
@@ -166,8 +170,9 @@ export const usePvPStore = defineStore('pvp', () => {
 
   async function claimReward(milestoneId: string) {
     if (rewardsClaimed.value.includes(milestoneId)) return
+    if (!isRankedRewardMilestoneId(milestoneId)) return
     
-    const milestone = RANKED_REWARD_MILESTONES.find(m => m.id === milestoneId)
+    const milestone = RANKED_REWARD_MILESTONES_BY_ID[milestoneId]
     if (!milestone) return
 
     if (maxElo.value < milestone.elo) {

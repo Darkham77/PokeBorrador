@@ -9,7 +9,8 @@
 
 import { BUSH_FAMILIES, type BushFamily } from './bushCatalog.ts';
 export type BushLayerDepth = 'front' | 'back';
-import { FIRE_RED_MAPS } from '../../data/world/maps.ts';
+import { MAPS_BY_ROUTE_ID } from '../../data/world/maps.ts';
+import { isMapRouteId } from '@/data/world/map-assets';
 import { mulberry32 } from '../utils/math.ts';
 import {
   BUSH_SEED_MULTIPLIER,
@@ -123,7 +124,7 @@ export function isBushFamily(val: string): val is BushFamily {
 }
 
 export function getBiomeConfigForMap(locationId: string): BiomeBushWeights {
-  const map = FIRE_RED_MAPS.find(m => m.id === locationId);
+  const map = isMapRouteId(locationId) ? MAPS_BY_ROUTE_ID[locationId] : undefined;
   let activeBiomeKey = 'isPlains';
 
   if (map) {

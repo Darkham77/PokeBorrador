@@ -9,7 +9,7 @@ import { useUIStore } from '@/stores/ui';
 import { useEvolutionStore } from '@/stores/evolution';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { STONE_EVOLUTIONS, isStoneEvolutionKey } from '@/data/pokemon/evolutionData';
-import { SHOP_ITEMS, type ItemId, isItemId } from '@/data/inventory/items';
+import { getItemById, type ItemId, isItemId } from '@/data/inventory/items';
 import { type PokemonSpeciesId, isPokemonSpeciesId } from '@/data/pokemon/pokedex';
 import BaseModal from '@/components/common/BaseModal.vue';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
@@ -90,7 +90,11 @@ watch(options, () => {
 });
 
 const getStoneInfo = (name: string) => {
-  return SHOP_ITEMS.find(i => i.id === name || i.name === name) || { icon: '💎', sprite: '', id: name, name };
+  const item = getItemById(name);
+  if (!item) {
+    throw new Error(`[StonePickerModal] Item de evolución no encontrado: "${name}"`);
+  }
+  return item;
 };
 
 const getPokemonName = (id: string) => {

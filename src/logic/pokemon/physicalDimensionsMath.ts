@@ -34,9 +34,10 @@ const MULBERRY_NORMALIZATION_DIVISOR = 4294967296;
 export const DEFAULT_SPECIES_RANGE_VARIATION_FACTOR = 0.15;
 
 /** Number of uniform random rolls summed for the Irwin-Hall distribution (n = 4). */
-export const IRWIN_HALL_SAMPLE_COUNT = 4;
+const IRWIN_HALL_SAMPLE_COUNT = 4;
 
 /** Tier ID finite domain tuple. */
+// fallow-ignore-next-line unused-export
 export const PHYSICAL_DIMENSION_TIERS = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL'] as const;
 export type PhysicalDimensionTierId = (typeof PHYSICAL_DIMENSION_TIERS)[number];
 
@@ -49,7 +50,7 @@ export interface PhysicalDimensionTier {
   maxDeviation: number;
 }
 
-export const TIER_CONFIGS: Record<PhysicalDimensionTierId, PhysicalDimensionTier> = {
+const TIER_CONFIGS: Record<PhysicalDimensionTierId, PhysicalDimensionTier> = {
   XXS: {
     id: 'XXS',
     label: 'XXS',
@@ -224,7 +225,7 @@ export interface InstancePhysicalData {
 /**
  * Builds tooltip description for a physical dimension with multi-line structured bulletpoints and limits.
  */
-export function createDimensionTooltip(
+function createDimensionTooltip(
   dimensionName: string,
   unit: string,
   value: number,

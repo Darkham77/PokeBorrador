@@ -1,4 +1,4 @@
-import { TM_COMPAT, GAME_TMS, type TMData } from '../../../data/pokemon/pokedex.ts';
+import { TM_COMPAT, GAME_TMS_BY_ID, isTmId, type TMData } from '../../../data/pokemon/pokedex.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { ItemEffectResult } from '@/types/inventory/items';
 
@@ -14,7 +14,7 @@ export const getDynamicItemEffect = (itemName: string, p: Pokemon): ItemEffectRe
     if (!compatList.includes(tmId)) {
       return { success: false, message: 'Incompatible.' };
     }
-    const tmData: TMData | undefined = GAME_TMS.find(t => t.id === tmId);
+    const tmData: TMData | undefined = isTmId(tmId) ? GAME_TMS_BY_ID[tmId] : undefined;
     if (!tmData) return { success: false, message: 'MT inválida.' };
     
     // Check if pokemon already knows the move

@@ -29,8 +29,8 @@ export function evaluateWinConditions(
   const conditions: WinCondition[] = [];
 
   for (const pokemon of myAlive) {
-    const hasSetup = pokemon.moves.some(m => SETUP_MOVES.includes(toID(m)));
-    const hasPriority = pokemon.moves.some(m => PRIORITY_MOVES.includes(toID(m)));
+    const hasSetup = pokemon.moves.some(m => SETUP_MOVES.has(toID(typeof m === 'string' ? m : m.id)));
+    const hasPriority = pokemon.moves.some(m => PRIORITY_MOVES.has(toID(typeof m === 'string' ? m : m.id)));
     let speedAdvantageCount = 0, canKOCount = 0, coverageScore = 0, defensiveScore = 0;
     const threats: WinCondition['threatsRemaining'] = [];
     const mySpeed = calc.getEffectiveSpeed(pokemon, snapshot.field, snapshot.myPlayer);

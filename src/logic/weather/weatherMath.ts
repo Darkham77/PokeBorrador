@@ -102,7 +102,7 @@ export function getRouteWeatherPure(
 
 // ── Global Session Weather Seed & AnimSeed ─────────────────────────────────────
 
-import { FIRE_RED_MAPS } from '../../data/world/maps.ts';
+import { MAPS_BY_ROUTE_ID } from '../../data/world/maps.ts';
 
 function initSessionWeatherSeed(): number {
   if (typeof window !== 'undefined') {
@@ -130,7 +130,7 @@ export function getSessionWeatherSeed(): number {
 const WEATHER_SEED_MODULO_SCALE = 1000;
 
 export function getWeatherAnimSeed(mapId: string): number {
-  const mapData = FIRE_RED_MAPS.find(m => m.id === mapId);
+  const mapData = (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[mapId]; // open-record
   const keyString = mapData?.name || mapId;
   const charSum = keyString.split('').reduce((acc, char, i) => {
     return acc + (char.charCodeAt(0) * (i + 1));

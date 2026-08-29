@@ -408,9 +408,25 @@ export type FossilPokemonSpeciesId = (typeof FOSSIL_POKEMON)[number];
 
 export type TmId = (typeof GAME_TMS)[number]['id'];
 export type TmCompatibleSpeciesId = keyof typeof TM_COMPAT;
+export type TMData = (typeof GAME_TMS)[number];
 
-function isTmId(value: string): value is TmId {
-  return GAME_TMS.some(tm => tm.id === value);
+export const GAME_TMS_BY_ID: Record<TmId, TMData> = Object.freeze(
+  Object.fromEntries(GAME_TMS.map(tm => [tm.id, tm])) as Record<TmId, TMData>
+);
+
+const LEGENDARY_SET: ReadonlySet<string> = new Set(LEGENDARY_POKEMON);
+const BABY_SET: ReadonlySet<string> = new Set(BABY_POKEMON);
+const FOSSIL_SET: ReadonlySet<string> = new Set(FOSSIL_POKEMON);
+
+const POKEDEX_ORDER_INDEX_MAP: Record<PokedexOrderSpeciesId, number> = Object.freeze(
+  Object.fromEntries([
+    ...PDEX_ORDER.map((id, idx) => [id, idx]),
+    ...GEN2_PDEX_ORDER.map((id, idx) => [id, PDEX_ORDER.length + idx])
+  ]) as Record<PokedexOrderSpeciesId, number>
+);
+
+export function isTmId(value: string): value is TmId {
+  return value in GAME_TMS_BY_ID;
 }
 
 function requireTmId(value: string): TmId {
@@ -437,33 +453,24 @@ export function getCompatibleTmIds(speciesId: PokemonSpeciesId): readonly TmId[]
 }
 
 function isPokedexOrderSpeciesId(value: string): value is PokedexOrderSpeciesId {
-  return PDEX_ORDER.some(id => id === value) || GEN2_PDEX_ORDER.some(id => id === value);
+  return value in POKEDEX_ORDER_INDEX_MAP;
 }
 
 export function getPokedexOrderIndex(value: string): number {
-  if (!isPokedexOrderSpeciesId(value)) return -1;
-
-  for (let index = 0; index < PDEX_ORDER.length; index += 1) {
-    if (PDEX_ORDER[index] === value) return index;
+  if (isPokedexOrderSpeciesId(value)) {
+    return POKEDEX_ORDER_INDEX_MAP[value];
   }
-
-  for (let index = 0; index < GEN2_PDEX_ORDER.length; index += 1) {
-    if (GEN2_PDEX_ORDER[index] === value) return PDEX_ORDER.length + index;
-  }
-
   return -1;
 }
 
 export function isLegendaryPokemonSpeciesId(value: string): value is LegendaryPokemonSpeciesId {
-  return LEGENDARY_POKEMON.some(id => id === value);
+  return LEGENDARY_SET.has(value);
 }
 
 export function isBabyPokemonSpeciesId(value: string): value is BabyPokemonSpeciesId {
-  return BABY_POKEMON.some(id => id === value);
+  return BABY_SET.has(value);
 }
 
 export function isFossilPokemonSpeciesId(value: string): value is FossilPokemonSpeciesId {
-  return FOSSIL_POKEMON.some(id => id === value);
+  return FOSSIL_SET.has(value);
 }
-
-export type TMData = (typeof GAME_TMS)[number];

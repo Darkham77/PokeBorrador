@@ -24,6 +24,17 @@ Apply this workflow whenever the task involves any of the following:
 
 If it represents a finite domain, design and use the domain type first.
 
+## Absolute Priority on O(1) Data Structures & Lookup Performance (`preferO1DataStructures`)
+
+- **Efficiency & Lookup Speed is Priority #1**: When designing, typing, or consuming finite domain collections, constant-time $O(1)$ access structures (`Record<DomainId, T>`, `ReadonlySet<DomainId>`, `Map<DomainId, T>`) MUST ALWAYS be preferred over linear search arrays (`T[]`).
+- **Prohibition on Linear Searches in Hot Paths**: It is STRICTLY FORBIDDEN to perform unindexed linear scans (`.find()`, `.filter()`, `.some()`, `.includes()`) over static entity catalogs or large collections during combat ticks, AI heuristic evaluation, map spawn rendering, or inventory item checks.
+- **Typed O(1) Dictionaries**:
+  - Static catalogs (items, maps, gyms, moves) MUST be pre-indexed at module load time as frozen records: `export const ITEMS_BY_ID: Record<ItemId, Item> = Object.freeze(...)`.
+  - Finite identifier membership sets MUST use typed sets with `// runtime-set`: `export const SETUP_MOVES: ReadonlySet<string> = new Set<string>(SETUP_MOVES_LIST); // runtime-set`.
+- **Zero-Allocation Boundary Lookups**:
+  - Getters MUST accept `id: string`, validate via boundary guards (`requireItemId(id)`), and retrieve in $O(1)$ without requiring caller-side type assertions (`as unknown as`).
+  - Simulation checks and item usability predicates MUST avoid deep serialization cloning (`JSON.parse(JSON.stringify(...))`), utilizing shallow structured cloning (`clonePokemonForSimulation`) to eliminate Garbage Collection lag.
+
 ## Absolute Prohibition on Silent Domain ID Fallbacks (`noDomainIdFallbacks`)
 
 - **Zero-Fallback Mandate**: It is STRICTLY FORBIDDEN to use silent fallbacks (`|| ''`, `?? ''`, `condition ? id : ''`) when resolving or assigning domain identifiers (`ItemId`, `PokemonSpeciesId`, `AbilityId`, `PokemonMoveId`).

@@ -213,7 +213,7 @@ export function useTrainerAvatarAnim(params: UseTrainerAvatarAnimParams): void {
       let spinDuration = AVATAR_CLASS_SPIN_DURATIONS_SEC.cazabichos!;
       let rotationDir = FULL_ROTATION_DEG;
 
-      const matchedSpinKey = Object.keys(SPIN_CONFIGS).find(k => cleanStyle.includes(k));
+      const matchedSpinKey = Object.keys(SPIN_CONFIGS).find(k => cleanStyle.includes(k)); // o1-ok
       if (matchedSpinKey) {
         const config = SPIN_CONFIGS[matchedSpinKey]!;
         spinDuration = config.duration;
@@ -238,7 +238,7 @@ export function useTrainerAvatarAnim(params: UseTrainerAvatarAnimParams): void {
     }
 
     let shadowAnim: ShadowConfig | null = null;
-    const matchedShadowKey = Object.keys(SHADOW_CONFIGS).find(k => cleanStyle.includes(k));
+    const matchedShadowKey = Object.keys(SHADOW_CONFIGS).find(k => cleanStyle.includes(k)); // o1-ok
 
     if (matchedShadowKey) {
       shadowAnim = SHADOW_CONFIGS[matchedShadowKey]!;

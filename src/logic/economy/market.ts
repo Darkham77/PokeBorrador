@@ -48,6 +48,7 @@ export interface MarketFilters {
 import { MAX_SINGLE_STAT_IV } from '@/logic/constants/gameplay';
 
 const MAX_MARKET_SOLD_SEEN_HISTORY = 250;
+const MARKET_SOLD_SEEN_CACHE = new WeakMap<GameState, Set<string>>();
 
 export function ensureMarketSoldSeenState(state: GameState): string[] {
   if (!Array.isArray(state.marketSoldSeenIds)) state.marketSoldSeenIds = [];
@@ -58,15 +59,27 @@ export function ensureMarketSoldSeenState(state: GameState): string[] {
   return state.marketSoldSeenIds;
 }
 
+function getMarketSoldSeenSet(state: GameState): Set<string> {
+  let cached = MARKET_SOLD_SEEN_CACHE.get(state);
+  if (!cached) {
+    const ids = ensureMarketSoldSeenState(state);
+    cached = new Set<string>(ids); // runtime-set
+    MARKET_SOLD_SEEN_CACHE.set(state, cached);
+  }
+  return cached;
+}
+
 export function isMarketSoldSeen(listingId: string, state: GameState): boolean {
   if (!listingId) return true;
-  return ensureMarketSoldSeenState(state).includes(listingId);
+  return getMarketSoldSeenSet(state).has(listingId);
 }
 
 export function markMarketSoldSeen(listingId: string, state: GameState): void {
   if (!listingId) return;
+  const set = getMarketSoldSeenSet(state);
+  if (set.has(listingId)) return;
+  set.add(listingId);
   const seen = ensureMarketSoldSeenState(state);
-  if (seen.includes(listingId)) return;
   seen.push(listingId);
   state.marketSoldSeenIds = seen.slice(-MAX_MARKET_SOLD_SEEN_HISTORY);
 }

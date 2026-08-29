@@ -4,7 +4,7 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useBoxStore } from '@/stores/box'
 import { useInventoryStore } from '@/stores/inventory/inventory'
-import { SHOP_ITEMS } from '@/data/inventory/items'
+import { getItemById } from '@/data/inventory/items'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getNatureInfo } from '@/data/battle/natures'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
@@ -99,7 +99,7 @@ const handleUnequipItem = () => {
   const inventoryStore = useInventoryStore()
   const unequipped = inventoryStore.unequipItem('box', props.boxIndex)
   if (unequipped) {
-    const itemData = SHOP_ITEMS.find(i => i.id === unequipped || i.name === unequipped)
+    const itemData = getItemById(unequipped)
     const displayName = itemData ? itemData.name : unequipped.toUpperCase().replace(/_/g, ' ')
     uiStore.notify(`¡Se ha quitado el objeto: ${displayName}!`, '🎒')
   }

@@ -123,6 +123,115 @@ export const useSocialStore = defineStore('social', () => {
 
   let presenceInterval: gsap.core.Tween | null = null
 
+function parseFriendsList(
+  friendIds: string[],
+  profilesData: ProfileRow[],
+  savesData: GameSaveRow[]
+): Friend[] {
+  const profilesById: Record<string, ProfileRow> = Object.fromEntries(
+    profilesData.map((p) => [p.id, p])
+  );
+  const savesByUserId: Record<string, GameSaveRow> = Object.fromEntries(
+    savesData.map((s) => [s.user_id, s])
+  );
+
+  return friendIds.map((fId: string) => {
+    const p = profilesById[fId];
+    const saveRow = savesByUserId[fId];
+    const empty: Partial<GameState> = {};
+    const save = saveRow?.save_data
+      ? (typeof saveRow.save_data === 'string'
+          ? JSON.parse(saveRow.save_data)
+          : saveRow.save_data) as Partial<GameState>
+      : empty;
+    const lastSeen = parseInstantSafe(saveRow?.updated_at);
+    const isOnline = !!(
+      lastSeen &&
+      Temporal.Now.instant().epochMilliseconds - lastSeen.epochMilliseconds <
+        ONLINE_PRESENCE_WINDOW_MS
+    );
+
+    const fallbackName = fId.startsWith('local_') ? fId.replace('local_', '') : 'Entrenador';
+    const capitalizedFallback = fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1);
+    const username = (save.trainer as string) || p?.username || capitalizedFallback;
+
+    return {
+      id: fId,
+      username,
+      level: (save.trainerLevel as number) || p?.trainer_level || 1,
+      badges:
+        typeof save.badges === 'object'
+          ? Object.keys(save.badges).length
+          : (save.badges as number) || 0,
+      playerClass: (save.playerClass as string) || p?.player_class || '',
+      faction: (save.faction as string) || p?.faction || '',
+      nick_style: (save.nick_style as string) || p?.nick_style || '',
+      avatar_style: (save.avatar_style as string) || p?.avatar_style || '',
+      gender: (save.gender as string) || p?.gender || 'h',
+      isOnline,
+      lastSeen,
+    };
+  });
+}
+
+function parsePendingRequests(
+  pending: PendingRequest[],
+  profilesData: ProfileRow[],
+  savesData: GameSaveRow[]
+): PendingRequest[] {
+  const savesByUserId: Record<string, GameSaveRow> = Object.fromEntries(
+    savesData.map((s) => [s.user_id, s])
+  );
+
+  const initialMap: Record<
+    string,
+    {
+      username: string;
+      nick_style: string;
+      trainer_level: number;
+      player_class: string;
+      avatar_style: string;
+      gender: string;
+    }
+  > = {};
+
+  const profilesMap = profilesData.reduce((acc, p) => {
+    const reqId = p.id;
+    const saveRow = savesByUserId[reqId];
+    const save = (saveRow?.save_data || {}) as Record<string, unknown>; // open-record
+    const capitalizedFallback = reqId.slice(0, 8).toUpperCase();
+    const username = (save.trainer as string) || p?.username || capitalizedFallback;
+
+    acc[reqId] = {
+      username,
+      nick_style: (save.nick_style as string) || p?.nick_style || '',
+      trainer_level: (save.trainerLevel as number) || p?.trainer_level || 1,
+      player_class: (save.playerClass as string) || p?.player_class || 'entrenador',
+      avatar_style: (save.avatar_style as string) || p?.avatar_style || '',
+      gender: (save.gender as string) || p?.gender || 'h',
+    };
+    return acc;
+  }, initialMap);
+
+  pending.forEach((r: PendingRequest) => {
+    const profInfo = profilesMap[r.requester_id];
+    if (profInfo) {
+      r.profiles = {
+        username: profInfo.username,
+        nick_style: profInfo.nick_style,
+        trainer_level: profInfo.trainer_level,
+        player_class: profInfo.player_class,
+        playerClass: profInfo.player_class,
+        level: profInfo.trainer_level,
+        avatar_style: profInfo.avatar_style,
+        gender: profInfo.gender,
+      };
+    }
+  });
+
+  return pending;
+}
+
   /**
    * Carga datos sociales (amigos y solicitudes) usando DBRouter.
    */
@@ -159,32 +268,7 @@ export const useSocialStore = defineStore('social', () => {
           { data: GameSaveRow[] | null; error: unknown }
         ]
 
-        friends.value = friendIds.map((fId: string) => {
-          const p = (profRes.data as ProfileRow[] || []).find((prof: ProfileRow) => prof.id === fId)
-          const saveRow = (saveRes.data as GameSaveRow[])?.find((s: GameSaveRow) => s.user_id === fId)
-          const empty: Partial<GameState> = {}
-          const save = saveRow?.save_data ? (typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data) as Partial<GameState> : empty
-          const lastSeen = parseInstantSafe(saveRow?.updated_at)
-          const isOnline = !!(lastSeen && (Temporal.Now.instant().epochMilliseconds - lastSeen.epochMilliseconds) < ONLINE_PRESENCE_WINDOW_MS)
-
-          const fallbackName = fId.startsWith('local_') ? fId.replace('local_', '') : 'Entrenador'
-          const capitalizedFallback = fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1)
-          const username = (save.trainer as string) || p?.username || capitalizedFallback
-
-          return {
-            id: fId,
-            username,
-            level: (save.trainerLevel as number) || p?.trainer_level || 1,
-            badges: typeof save.badges === 'object' ? Object.keys(save.badges).length : ((save.badges as number) || 0),
-            playerClass: (save.playerClass as string) || p?.player_class || '',
-            faction: (save.faction as string) || p?.faction || '',
-            nick_style: (save.nick_style as string) || p?.nick_style || '',
-            avatar_style: (save.avatar_style as string) || p?.avatar_style || '',
-            gender: (save.gender as string) || p?.gender || 'h',
-            isOnline,
-            lastSeen
-          }
-        })
+        friends.value = parseFriendsList(friendIds, profRes.data || [], saveRes.data || [])
       } else {
         friends.value = []
       }
@@ -206,45 +290,10 @@ export const useSocialStore = defineStore('social', () => {
           { data: GameSaveRow[] | null; error: unknown }
         ]
 
-        const profilesData = profRes.data || []
-        const savesData = saveRes.data || []
-
-        const initialMap: Record<string, { username: string; nick_style: string; trainer_level: number; player_class: string; avatar_style: string; gender: string }> = {}
-        const profilesMap = (profilesData || []).reduce((acc, p) => {
-          const reqId = p.id
-          const save = ((savesData || []).find((s) => s.user_id === reqId)?.save_data || {}) as Record<string, unknown> // open-record
-          const capitalizedFallback = reqId.slice(0, 8).toUpperCase()
-          const username = (save.trainer as string) || p?.username || capitalizedFallback
-
-          acc[reqId] = {
-            username,
-            nick_style: (save.nick_style as string) || p?.nick_style || '',
-            trainer_level: (save.trainerLevel as number) || p?.trainer_level || 1,
-            player_class: (save.playerClass as string) || p?.player_class || 'entrenador',
-            avatar_style: (save.avatar_style as string) || p?.avatar_style || '',
-            gender: (save.gender as string) || p?.gender || 'h'
-          }
-          return acc
-        }, initialMap)
-
-        pending.forEach((r: PendingRequest) => {
-          const profInfo = profilesMap[r.requester_id]
-          if (profInfo) {
-            r.profiles = {
-              username: profInfo.username,
-              nick_style: profInfo.nick_style,
-              trainer_level: profInfo.trainer_level,
-              player_class: profInfo.player_class,
-              playerClass: profInfo.player_class,
-              level: profInfo.trainer_level,
-              avatar_style: profInfo.avatar_style,
-              gender: profInfo.gender
-            }
-          }
-        })
+        pendingRequests.value = parsePendingRequests(pending, profRes.data || [], saveRes.data || [])
+      } else {
+        pendingRequests.value = []
       }
-
-      pendingRequests.value = (pending || []) as PendingRequest[]
       
       await refreshNotificationCount()
     } catch (err) {

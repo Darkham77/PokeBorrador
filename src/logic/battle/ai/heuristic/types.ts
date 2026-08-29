@@ -19,7 +19,7 @@ const _HEURISTIC_VOLATILE_KEYS = [
   'yawn',
   'perishsong',
   'attract',
-  'embargo',
+  'embargo', // spanish-ok
   'healblock',
   'torment',
   'charge',

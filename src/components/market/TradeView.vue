@@ -9,7 +9,7 @@ import TradeSidePanel from '../social/TradeSidePanel.vue'
 import TradeFooter from '../social/TradeFooter.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { gsap } from 'gsap'
-import { SHOP_ITEMS } from '@/data/inventory/items'
+import { getItemById } from '@/data/inventory/items'
 import { isPokemonBusy } from '@/logic/constants/tags'
 
 interface Props {
@@ -173,7 +173,7 @@ const offerSummary = computed(() => {
   const lines: string[] = [] // text-ok
   if (tradeStore.tradeOfferPoke) lines.push(tradeStore.tradeOfferPoke.name)
   Object.entries(tradeStore.tradeOfferItems).forEach(([name, qty]) => {
-    const dbItem = SHOP_ITEMS.find(i => i.id === name || i.name === name)
+    const dbItem = getItemById(name)
     lines.push(`${dbItem?.name || name} x${qty}`)
   })
   if (offerMoney.value > 0) lines.push(`₽${offerMoney.value.toLocaleString()}`)
@@ -185,7 +185,7 @@ const requestSummary = computed(() => {
   const lines: string[] = [] // text-ok
   if (tradeStore.tradeRequestPoke) lines.push(tradeStore.tradeRequestPoke.name)
   Object.entries(tradeStore.tradeRequestItems).forEach(([name, qty]) => {
-    const dbItem = SHOP_ITEMS.find(i => i.id === name || i.name === name)
+    const dbItem = getItemById(name)
     lines.push(`${dbItem?.name || name} x${qty}`)
   })
   if (requestMoney.value > 0) lines.push(`₽${requestMoney.value.toLocaleString()}`)

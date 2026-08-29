@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-store-member
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { logger } from '@/logic/utils/logger'
@@ -206,7 +207,6 @@ export const useDebugStore = defineStore('debug', () => {
     isAdminOrOffline,
     securityCheck,
     register,
-    // fallow-ignore-next-line unused-store-member
     unregister,
     updateGlobalProxy,
     trainerChance50,
@@ -222,7 +222,6 @@ export const useDebugStore = defineStore('debug', () => {
     fishingChancePct,
     archaeologyChancePct,
     resetSpawnDefaults,
-    // fallow-ignore-next-line unused-store-member
     debugMultipliers
   }
 })

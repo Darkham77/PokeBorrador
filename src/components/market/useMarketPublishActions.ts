@@ -1,5 +1,5 @@
 import { ref, watch, computed, type Ref } from 'vue'
-import { SHOP_ITEMS } from '@/data/inventory/items'
+import { getItemById } from '@/data/inventory/items'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { InventoryItem } from './useMarketPublishInventory.ts'
 import type { useGTSStore } from '@/stores/gts'
@@ -18,7 +18,7 @@ export function useMarketPublishActions(
   function updateSuggestedPrice() {
     if (activeMode.value === 'item' && selection.value && 'qty' in selection.value) {
       const nameStr = selection.value.id
-      const shopItem = SHOP_ITEMS.find(i => i.id === nameStr || i.name === nameStr)
+      const shopItem = getItemById(nameStr)
       if (shopItem && shopItem.price > 0) {
         price.value = Math.floor(shopItem.price * MARKET_SUGGESTED_PRICE_RATIO) * itemQty.value
       } else {

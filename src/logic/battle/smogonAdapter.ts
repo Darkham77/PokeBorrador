@@ -389,7 +389,7 @@ function translateRecoveryText(text: string): string {
   return text
     .replace(/recovered/gi, 'vida recuperada')
     .replace(/absorbed HP/gi, 'PS absorbidos')
-    .replace(/recovery/gi, 'recuperación');
+    .replace(/recovery/gi, 'recuperación'); // spanish-ok
 }
 
     const out: SmogonTooltipResult = {

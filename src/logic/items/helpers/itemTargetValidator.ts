@@ -50,7 +50,7 @@ export const isValidTarget = (itemId: ItemId | (string & {}), pokemon: Pokemon):
   }
 
   // 5. PP (Restauración de PP)
-  if (['ether', 'elixir', 'elixirmax'].includes(resolvedId)) {
+  if (['ether', 'elixir', 'elixirmax'].includes(resolvedId)) { // spanish-ok
     return canRestorePP(pokemon);
   }
 

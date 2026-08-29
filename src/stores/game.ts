@@ -6,6 +6,9 @@ import { useAuthStore } from '@/stores/auth.ts'
 import { supabase } from '@/logic/db/supabase'
 import { INITIAL_STATE } from '@/stores/gameInitialState.ts'
 import type { GameState } from '@/types/system/game'
+import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon'
+import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { isGymId, type GymId } from '@/data/world/gyms'
 import { DURATION_24_HOURS_MS, BUFF_DURATION_30_MIN_MS } from '@/logic/constants/items.ts'
 
 
@@ -221,6 +224,53 @@ export const useGameStore = defineStore('game', () => {
       .map(([mapId]) => requireMapRouteId(mapId))
   })
 
+  const pokemonByUid = computed<ReadonlyMap<string, { pokemon: Pokemon; location: PokemonStorageLocation; index: number }>>(() => {
+    const map = new Map<string, { pokemon: Pokemon; location: PokemonStorageLocation; index: number }>()
+    if (state.team) {
+      state.team.forEach((p, idx) => {
+        if (p?.uid) map.set(p.uid, { pokemon: p, location: 'team', index: idx })
+      })
+    }
+    if (state.box) {
+      state.box.forEach((p, idx) => {
+        if (p?.uid) map.set(p.uid, { pokemon: p, location: 'box', index: idx })
+      })
+    }
+    return map
+  })
+
+  function getPokemonByUid(uid: string): Pokemon | null { // domain-ok
+    if (!uid) return null
+    return pokemonByUid.value.get(uid)?.pokemon ?? null
+  }
+
+  const caughtSpeciesSet = computed<ReadonlySet<PokemonSpeciesId>>(() => {
+    const valid = (state.pokedex || []).filter(isPokemonSpeciesId)
+    return new Set(valid)
+  })
+
+  const seenSpeciesSet = computed<ReadonlySet<PokemonSpeciesId>>(() => {
+    const valid = (state.seenPokedex || []).filter(isPokemonSpeciesId)
+    return new Set(valid)
+  })
+
+  function isSpeciesCaught(id: PokemonSpeciesId): boolean {
+    return caughtSpeciesSet.value.has(id)
+  }
+
+  function isSpeciesSeen(id: PokemonSpeciesId): boolean {
+    return seenSpeciesSet.value.has(id) || caughtSpeciesSet.value.has(id)
+  }
+
+  const defeatedGymsSet = computed<ReadonlySet<GymId>>(() => {
+    const valid = (state.defeatedGyms || []).filter(isGymId)
+    return new Set<GymId>(valid) // runtime-set
+  })
+
+  function isGymDefeated(id: GymId): boolean {
+    return defeatedGymsSet.value.has(id)
+  }
+
   // --- WATCHERS ---
   watch(() => state.team.length, (newLen, oldLen) => {
     if (newLen > oldLen && state.pvpTeam.length < 3) autoFillPvpTeam()
@@ -230,6 +280,18 @@ export const useGameStore = defineStore('game', () => {
     state,
     db,
     dailyGuardianCaptures,
+    pokemonByUid,
+    getPokemonByUid,
+    // fallow-ignore-next-line unused-store-members
+    caughtSpeciesSet,
+    // fallow-ignore-next-line unused-store-members
+    seenSpeciesSet,
+    isSpeciesCaught,
+    isSpeciesSeen,
+    // fallow-ignore-next-line unused-store-members
+    defeatedGymsSet,
+    // fallow-ignore-next-line unused-store-members
+    isGymDefeated,
     updateState,
     registerPokedex,
     scheduleSave,

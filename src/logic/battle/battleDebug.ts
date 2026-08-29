@@ -46,7 +46,7 @@ export function setupBattleDebug(ctx: BattleContext) {
       const bStore = useBattleStore()
       bStore.attackerSide = side as BattleSide
       bStore.activeMove = {
-        name: options.cat === 'selfKO' ? 'Autodestrucción' : 'Ataque Debug',
+        name: options.cat === 'selfKO' ? 'Autodestrucción' : 'Ataque Debug', // spanish-ok
         cat: options.cat === 'selfKO' ? 'special' : ((options.cat as MoveCategory | undefined) || 'physical'),
         selfKO: options.cat === 'selfKO',
         pp: 5,

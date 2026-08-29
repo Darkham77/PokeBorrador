@@ -9,10 +9,16 @@ export const ABILITY_TRANSLATIONS_ES = dbJson;
 export type AbilityId = keyof typeof ABILITY_TRANSLATIONS_ES;
 
 function isAbilityId(value: string): value is AbilityId {
-  return Object.keys(ABILITY_TRANSLATIONS_ES).some(id => id === value);
+  return value in ABILITY_TRANSLATIONS_ES;
 }
 
 export function requireAbilityId(value: string): AbilityId {
   if (isAbilityId(value)) return value;
   throw new Error(`[abilities] Invalid ability id: ${value}`);
 }
+
+export const ABILITIES_BY_SPANISH_NAME: Readonly<Record<string, AbilityId>> = Object.freeze( // open-record
+  Object.fromEntries(
+    Object.entries(ABILITY_TRANSLATIONS_ES).map(([id, trans]) => [trans.name.toLowerCase(), requireAbilityId(id)])
+  )
+);

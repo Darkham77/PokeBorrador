@@ -120,121 +120,130 @@ export function normalizeRuntimePokemonGender(pokemon: { gender?: string | null 
   if (Object.is(pokemon.gender, 'N')) pokemon.gender = null;
 }
 
-export function serializeState(state: GameState | SaveDataDto): SaveDataDto {
-  let activeBattle: ActiveBattleSerialized | null = null;
+function serializeActiveBattle(state: GameState | SaveDataDto): ActiveBattleSerialized | null {
   const battle = state.activeBattle as (BattleState & Partial<ActiveBattleSerialized> & { enemy?: Pokemon }) | null;
+  if (!battle || battle.over) return null;
 
-  if (battle && !battle.over) {
-    const hasActiveEnemy = Boolean(battle.enemy || (battle.enemyTeam && battle.enemyTeam.length > 0));
-    const isActualCombat = Boolean((battle.turnCount && battle.turnCount > 0) || battle.isTrainer || battle.isGym || (hasActiveEnemy && !(battle as { inSearchPhase?: boolean }).inSearchPhase));
-    if ((battle.isTrainer || battle.isGym || hasActiveEnemy) && isActualCombat) {
-      try {
-        const rawEnemyTeam = battle.enemyTeam && battle.enemyTeam.length > 0
-          ? battle.enemyTeam
-          : (battle.enemy ? [battle.enemy] : null);
-        const serialized: ActiveBattleSerialized = {
-          isGym: battle.isGym || false,
-          gymId: battle.gymId || null,
-          isTrainer: battle.isTrainer || false,
-          isRival: Boolean((battle as { isRival?: boolean }).isRival || (battle as { trainerArchetype?: string }).trainerArchetype === 'rival'),
-          trainerName: battle.trainerName || null,
-          trainerSprite: battle.trainerSprite || null,
-          trainerArchetype: battle.trainerArchetype || null,
-          quote: battle.quote || null,
-          locationId: battle.locationId || null,
-          wasSearching: Boolean(battle.wasSearching),
-          participants: Array.isArray(battle.participants) ? battle.participants : [],
-          enemyTeamIndex: typeof battle.enemyTeamIndex === 'number' ? battle.enemyTeamIndex : 0,
-          playerTeamIndex: typeof battle.playerTeamIndex === 'number' ? battle.playerTeamIndex : 0,
-          turnCount: typeof battle.turnCount === 'number' ? battle.turnCount : 1,
-          turn: battle.turn || null,
-          escapeAttempts: typeof battle.escapeAttempts === 'number' ? battle.escapeAttempts : 0,
-          cannotEscape: Boolean(battle.cannotEscape),
-          weather: battle.weather ? { type: requireWeatherId(battle.weather.type), visual: battle.weather.visual || undefined, turns: battle.weather.turns } : null,
-          initialMapWeather: battle.initialMapWeather || null,
-          terrain: battle.terrain || null,
-          fieldConditions: battle.fieldConditions || null,
-          playerSideConditions: battle.playerSideConditions || null,
-          enemySideConditions: battle.enemySideConditions || null,
-          pendingSlotEffects: Array.isArray(battle.pendingSlotEffects)
-            ? battle.pendingSlotEffects.map((effect: PendingSlotEffect) => ({
-                move: effect.move,
-                side: effect.side,
-                targetSlot: effect.targetSlot,
-                turnsLeft: effect.turnsLeft,
-                damage: effect.damage,
-                ...(effect.sourceName ? { sourceName: effect.sourceName } : {}),
-              }))
-            : [],
-          minigame: null, // minigames are strictly non-persisted for anti-cheat governance
-          isCave: Boolean(battle.isCave),
-          isIndoors: Boolean(battle.isIndoors),
-          isCrystalCave: Boolean(battle.isCrystalCave),
-          difficulty: battle.difficulty || null,
-          rarity: typeof battle.rarity === 'number' ? battle.rarity : undefined,
-          enemyMoney: typeof battle.enemyMoney === 'number' ? battle.enemyMoney : null,
-          enemyMaxLevel: typeof battle.enemyMaxLevel === 'number' ? battle.enemyMaxLevel : null,
-          rewardTM: battle.rewardTM || null,
-          enemyInventory: battle.enemyInventory || null,
-          stolenResources: battle.stolenResources ? { money: battle.stolenResources.money, items: { ...battle.stolenResources.items } } : null,
-          fled: Boolean(battle.fled),
-          over: Boolean(battle.over),
-          isCapture: Boolean(battle.isCapture),
-          lastDamage: typeof battle.lastDamage === 'number' ? battle.lastDamage : undefined,
-          enemyUsedItem: Boolean(battle.enemyUsedItem),
-          playerUsedItem: Boolean(battle.playerUsedItem),
-          battleLogs: Array.isArray(battle.battleLogs) ? battle.battleLogs : [],
-          playerStages: battle.playerStages || null,
-          enemyStages: battle.enemyStages || null,
-          enemyTeam: rawEnemyTeam
-            ? (rawEnemyTeam as Pokemon[]).map(p => ({
-                ...p,
-                ability: p.ability ? requireAbilityId(p.ability) : p.ability,
-                friendship: p.friendship ?? DEFAULT_POKEMON_FRIENDSHIP_FALLBACK,
-                exp: p.exp ?? 0,
-                expNeeded: p.expNeeded ?? 1,
-              }))
-            : null,
-          timestamp: Temporal.Now.instant().epochMilliseconds,
-        };
-        activeBattle = serialized;
-      } catch(e) {
-        logger.warn('SAVE', `Error serializando batalla activa: ${(e as Error).message}`);
-        activeBattle = null;
-      }
-    } else if (battle.isPvP) {
-      const b = state.activeBattle;
-      activeBattle = {
-        isGym: Boolean(b?.isGym),
-        gymId: b?.gymId || null,
-        isTrainer: Boolean(b?.isTrainer),
-        trainerName: b?.trainerName || null,
-        locationId: b?.locationId || null,
-        enemyTeam: null,
-        timestamp: Temporal.Now.instant().epochMilliseconds,
-        isPvP: true
-      };
-    } else if (battle.wasSearching || (!battle.isTrainer && !battle.isGym)) {
-      activeBattle = {
-        isGym: false,
-        gymId: null,
-        isTrainer: false,
-        isRival: false,
-        trainerName: null,
-        trainerSprite: null,
-        trainerArchetype: null,
-        quote: null,
-        locationId: battle.locationId ? requireMapRouteId(battle.locationId) : (state.map?.currentMap ? requireMapRouteId(state.map.currentMap) : null),
-        wasSearching: true,
+  const hasActiveEnemy = Boolean(battle.enemy || (battle.enemyTeam && battle.enemyTeam.length > 0));
+  const isActualCombat = Boolean((battle.turnCount && battle.turnCount > 0) || battle.isTrainer || battle.isGym || (hasActiveEnemy && !(battle as { inSearchPhase?: boolean }).inSearchPhase));
+
+  if ((battle.isTrainer || battle.isGym || hasActiveEnemy) && isActualCombat) {
+    try {
+      const rawEnemyTeam = battle.enemyTeam && battle.enemyTeam.length > 0
+        ? battle.enemyTeam
+        : (battle.enemy ? [battle.enemy] : null);
+
+      return {
+        isGym: battle.isGym || false,
+        gymId: battle.gymId || null,
+        isTrainer: battle.isTrainer || false,
+        isRival: Boolean((battle as { isRival?: boolean }).isRival || (battle as { trainerArchetype?: string }).trainerArchetype === 'rival'),
+        trainerName: battle.trainerName || null,
+        trainerSprite: battle.trainerSprite || null,
+        trainerArchetype: battle.trainerArchetype || null,
+        quote: battle.quote || null,
+        locationId: battle.locationId || null,
+        wasSearching: Boolean(battle.wasSearching),
+        participants: Array.isArray(battle.participants) ? battle.participants : [],
+        enemyTeamIndex: typeof battle.enemyTeamIndex === 'number' ? battle.enemyTeamIndex : 0,
+        playerTeamIndex: typeof battle.playerTeamIndex === 'number' ? battle.playerTeamIndex : 0,
+        turnCount: typeof battle.turnCount === 'number' ? battle.turnCount : 1,
+        turn: battle.turn || null,
+        escapeAttempts: typeof battle.escapeAttempts === 'number' ? battle.escapeAttempts : 0,
+        cannotEscape: Boolean(battle.cannotEscape),
+        weather: battle.weather ? { type: requireWeatherId(battle.weather.type), visual: battle.weather.visual || undefined, turns: battle.weather.turns } : null,
+        initialMapWeather: battle.initialMapWeather || null,
+        terrain: battle.terrain || null,
+        fieldConditions: battle.fieldConditions || null,
+        playerSideConditions: battle.playerSideConditions || null,
+        enemySideConditions: battle.enemySideConditions || null,
+        pendingSlotEffects: Array.isArray(battle.pendingSlotEffects)
+          ? battle.pendingSlotEffects.map((effect: PendingSlotEffect) => ({
+              move: effect.move,
+              side: effect.side,
+              targetSlot: effect.targetSlot,
+              turnsLeft: effect.turnsLeft,
+              damage: effect.damage,
+              ...(effect.sourceName ? { sourceName: effect.sourceName } : {}),
+            }))
+          : [],
         minigame: null, // minigames are strictly non-persisted for anti-cheat governance
         isCave: Boolean(battle.isCave),
         isIndoors: Boolean(battle.isIndoors),
         isCrystalCave: Boolean(battle.isCrystalCave),
-        enemyTeam: null,
+        difficulty: battle.difficulty || null,
+        rarity: typeof battle.rarity === 'number' ? battle.rarity : undefined,
+        enemyMoney: typeof battle.enemyMoney === 'number' ? battle.enemyMoney : null,
+        enemyMaxLevel: typeof battle.enemyMaxLevel === 'number' ? battle.enemyMaxLevel : null,
+        rewardTM: battle.rewardTM || null,
+        enemyInventory: battle.enemyInventory || null,
+        stolenResources: battle.stolenResources ? { money: battle.stolenResources.money, items: { ...battle.stolenResources.items } } : null,
+        fled: Boolean(battle.fled),
+        over: Boolean(battle.over),
+        isCapture: Boolean(battle.isCapture),
+        lastDamage: typeof battle.lastDamage === 'number' ? battle.lastDamage : undefined,
+        enemyUsedItem: Boolean(battle.enemyUsedItem),
+        playerUsedItem: Boolean(battle.playerUsedItem),
+        battleLogs: Array.isArray(battle.battleLogs) ? battle.battleLogs : [],
+        playerStages: battle.playerStages || null,
+        enemyStages: battle.enemyStages || null,
+        enemyTeam: rawEnemyTeam
+          ? (rawEnemyTeam as Pokemon[]).map(p => ({
+              ...p,
+              ability: p.ability ? requireAbilityId(p.ability) : p.ability,
+              friendship: p.friendship ?? DEFAULT_POKEMON_FRIENDSHIP_FALLBACK,
+              exp: p.exp ?? 0,
+              expNeeded: p.expNeeded ?? 1,
+            }))
+          : null,
         timestamp: Temporal.Now.instant().epochMilliseconds,
       };
+    } catch (e) {
+      logger.warn('SAVE', `Error serializando batalla activa: ${(e as Error).message}`);
+      return null;
     }
   }
+
+  if (battle.isPvP) {
+    const b = state.activeBattle;
+    return {
+      isGym: Boolean(b?.isGym),
+      gymId: b?.gymId || null,
+      isTrainer: Boolean(b?.isTrainer),
+      trainerName: b?.trainerName || null,
+      locationId: b?.locationId || null,
+      enemyTeam: null,
+      timestamp: Temporal.Now.instant().epochMilliseconds,
+      isPvP: true
+    };
+  }
+
+  if (battle.wasSearching || (!battle.isTrainer && !battle.isGym)) {
+    return {
+      isGym: false,
+      gymId: null,
+      isTrainer: false,
+      isRival: false,
+      trainerName: null,
+      trainerSprite: null,
+      trainerArchetype: null,
+      quote: null,
+      locationId: battle.locationId ? requireMapRouteId(battle.locationId) : (state.map?.currentMap ? requireMapRouteId(state.map.currentMap) : null),
+      wasSearching: true,
+      minigame: null, // minigames are strictly non-persisted for anti-cheat governance
+      isCave: Boolean(battle.isCave),
+      isIndoors: Boolean(battle.isIndoors),
+      isCrystalCave: Boolean(battle.isCrystalCave),
+      enemyTeam: null,
+      timestamp: Temporal.Now.instant().epochMilliseconds,
+    };
+  }
+
+  return null;
+}
+
+export function serializeState(state: GameState | SaveDataDto): SaveDataDto {
+  const activeBattle = serializeActiveBattle(state);
 
   return {
     trainer: state.trainer,

@@ -14,12 +14,16 @@ Frontend Developers / Systems Engineers.
   - Capture wobble cadence MUST be orchestrated strictly via GSAP timelines (`GSAP_CAPTURE_SHAKE_ACTIVE_DUR_SEC = 0.60s` physical wobble + `GSAP_CAPTURE_SHAKE_REST_DUR_SEC = 0.40s` dramatic rest interval = 1.00s total per cycle). Using `setTimeout` or `setInterval` for inter-shake pacing is strictly prohibited under the Zero-Timer policy.
 - **Showdown Side Synchronization**: When synchronizing health and statuses between the local reactive game state and the Showdown simulator (via `syncSideStates` in the worker), always map and send values in the **original team order**. The simulator's `side.pokemon` array remains in its original order throughout the battle; using active-swapped orders (e.g., `playerOrder` or `enemyOrder`) results in index mismatches, corrupting simulator state during switches or item usage and throwing `INVALID_CHOICE` exceptions.
 - **Pre-turn Side State Synchronization (`syncSidePokemon`)**: When syncing client HP/statuses before turn execution in `showdownSyncHelper.ts`, never invoke `pokemon.faint()` directly on simulator Pokemon instances. Direct invocation of `faint()` pushes into `faintQueue` and clears `pokemon.switchFlag = false`, which corrupts subsequent switch choices and triggers invalid `Can't switch: You sent more switches than Pokémon that need to switch` errors during faint replacement sequences. Fainted state must be assigned statically (`p.hp = 0; p.fainted = true; p.status = 'fnt' as ID; clearPokemonFromFaintQueue(side, p)`).
-- **showdownBridge Architecture**: The Showdown log parser is split into focused modules. The main `showdownBridge.ts` is a dispatcher (< 100 lines). Add new handlers in the appropriate sub-module:
-  - `showdownBridgeCore.ts` — battle start, turn, request, player setup
-  - `showdownBridgeStages.ts` — stat stage changes (-boost, +boost)
-  - `showdownBridgeField.ts` — weather, terrain, side conditions (reflect, light screen, aurora veil, tailwind, spikes, stealth rock); split into modular sub-helpers (`handleWeatherEvent`, `handleStartVolatileEvent`, `handleEndVolatileEvent`, `handleSideConditionEvent`, `handleFieldConditionEvent`) to keep cognitive complexity low (< 15).
-  - `showdownBridgeMisc.ts` — misc events (miss, crit, can't, faint, etc.)
-  - `showdownBridgeCtx.ts` — shared context utilities (getPoke, getSide, etc.)
+- **showdownBridge Architecture & Sub-Modules**: The Showdown log parser is strictly decomposed into specialized sub-modules to preserve low cognitive complexity and comply with the 500-line SRP limit. The root `showdownBridge.ts` is a dispatcher (< 100 lines). Handlers must be placed in their dedicated module:
+  - `showdownBridgeCore.ts` — battle start, turn, request, and player setup.
+  - `showdownBridgeStages.ts` — stat stage changes (-boost, +boost).
+  - `showdownBridgeField.ts` — weather, terrain, and side/field conditions.
+  - `showdownBridgeSwitchDrag.ts` — switches, forced drags, and FSM transition synchronization.
+  - `showdownBridgeGimmicks.ts` — FormeChange, Mega Evolution, Terastallization, Primal Reversion, and Z-Moves.
+  - `showdownBridgeItemAbility.ts` — ability/item activation and consumption, flinch, and cant conditions.
+  - `showdownBridgeMisc.ts` — lean dispatcher for remaining minor events (miss, crit, faint, etc.).
+  - `showdownBridgeCtx.ts` — shared context utilities (getPoke, getSide, etc.).
+- **Complexity Reduction via Pure Typed Dispatch Dictionaries**: Action dispatchers (such as `actionRegistry.ts`) and massive conditional branches MUST NOT implement monolithic `switch` ladders with cyclomatic complexity > 20. They must be refactored into static, typed dictionary dispatch maps (`MOVE_ACTION_HANDLERS`, `STATUS_ACTION_MAP`, `VOLATILE_ACTION_MAP`, `SIDE_CONDITION_MAP`, `WEATHER_ACTION_MAP`), reducing function complexity to 1 while ensuring compile-time exhaustive type coverage.
 - **smogonAdapter.ts**: Shared `@smogon/calc` wrapper for the move damage tooltip. Injects actual game stats into `rawStats` (bypassing the EV/IV formula) to ensure accuracy with the adventure-mode custom stat system. Exposes `calculateDamageForTooltip()` with a 512-entry LRU cache. Field conditions (terrain, screens) flow from the bridge into `BattleState` and are consumed here to produce accurate damage ranges, KO probabilities, recovery, and recoil.
 - **Tooltip Data Flow**: `showdownBridgeField.ts` → `BattleState.terrain`/`playerSideConditions`/`enemySideConditions` → `smogonAdapter.ts` → `useMoveTooltip.ts` (damageRange, koChance, recovery, recoil, fieldConditions) → `MoveTooltip.vue`.
 - **Status Move Power & Class Integrity**: In `moveTooltipMath.ts` (`calculateMovePower`) and `useMoveTooltip.ts`, moves with 0 base power or status category (`cat === 'status'`) MUST unconditionally return `base: 0, final: 0, list: [], class: ''` and render `'-'`, strictly prohibiting minimum power clamping (`Math.max(1, 0)`) to prevent false `boosted`/`penalized` indicator arrows (`▲`/`▼`) on non-damaging moves.
@@ -120,3 +124,6 @@ Frontend Developers / Systems Engineers.
 - [ai/](./ai/AGENTS.md): Domain module documentation for ai.
 - [engine/](./engine/AGENTS.md): Domain module documentation for engine.
 - [helpers/](./helpers/AGENTS.md): Domain module documentation for helpers.
+- [rewards/](./rewards/AGENTS.md): Domain module documentation for rewards.
+- [status/](./status/AGENTS.md): Domain module documentation for status.
+- [tooltip/](./tooltip/AGENTS.md): Domain module documentation for tooltip.

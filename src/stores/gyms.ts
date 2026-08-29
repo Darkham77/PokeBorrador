@@ -4,7 +4,7 @@ import { useBattleStore } from '@/stores/battle/battle.ts'
 import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
-import { GYMS, requireGymId, isGymId, type GymDifficultyId, type GymId } from '@/data/world/gyms.ts'
+import { GYMS, GYMS_BY_ID, requireGymId, isGymId, type GymDifficultyId, type GymId, type Gym } from '@/data/world/gyms.ts'
 
 function isPokemon(value: Pokemon | null): value is Pokemon {
   return value !== null
@@ -15,16 +15,25 @@ export const useGymsStore = defineStore('gyms', {
     gyms: GYMS,
     defeatedGyms: Array<GymId>()
   }),
+  getters: {
+    defeatedGymsSet(state): ReadonlySet<GymId> {
+      return new Set<GymId>(state.defeatedGyms) // runtime-set
+    },
+    // fallow-ignore-next-line unused-store-members
+    gymsById(): Record<GymId, Gym> {
+      return GYMS_BY_ID
+    }
+  },
   actions: {
     async loadGymProgress() {
       const gameStore = useGameStore()
       this.defeatedGyms = gameStore.state.defeatedGyms || []
     },
-    isGymDefeated(gymId: string) {
+    isGymDefeated(gymId: string): boolean {
       if (!isGymId(gymId)) return false
-      return this.defeatedGyms.includes(gymId)
+      return this.defeatedGymsSet.has(gymId)
     },
-    isDifficultyDefeated(gymId: string, difficulty: GymDifficultyId) {
+    isDifficultyDefeated(gymId: string, difficulty: GymDifficultyId): boolean {
       const gameStore = useGameStore()
       const validGymId = requireGymId(gymId)
       const prog = gameStore.state.gymProgress[validGymId]
@@ -35,7 +44,7 @@ export const useGymsStore = defineStore('gyms', {
       const battleStore = useBattleStore()
       const validGymId = requireGymId(gymId)
       
-      const gym = this.gyms.find(g => g.id === validGymId)
+      const gym = GYMS_BY_ID[validGymId]
       if (!gym) return
 
       const diffData = gym.difficulties[difficulty] || gym.difficulties.easy
@@ -46,7 +55,7 @@ export const useGymsStore = defineStore('gyms', {
       await battleStore.startBattle(mainEnemy, {
         isGym: true,
         isTrainer: true,
-        gymId: gym.id,
+        gymId: validGymId,
         locationId: 'gym',
         trainerName: `Líder ${gym.leader}`,
         trainerSprite: gym.sprite,

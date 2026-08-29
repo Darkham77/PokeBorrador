@@ -1,4 +1,5 @@
 // [PureVue-Ignore-Length]
+// fallow-ignore-file unused-store-member
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useGameStore } from '@/stores/game.ts';
@@ -213,9 +214,7 @@ export const useBreedingStore = defineStore('breeding', () => {
     if (!slot || !slot.pokemon) return false;
 
     const pokemonUid = slot.pokemon.uid;
-    const team = gameStore.state.team || [];
-    const box = gameStore.state.box || [];
-    const found = [...team, ...box].find(p => p && p.uid === pokemonUid);
+    const found = gameStore.getPokemonByUid(pokemonUid);
     if (found) {
       found.inDaycare = false;
       found.daycareSlot = undefined;

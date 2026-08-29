@@ -4,7 +4,7 @@
  * Wrapper to export evolution tables loaded from JSON.
  */
 import dbJson from './evolutionData.json' with { type: 'json' };
-import { requirePokemonSpeciesId, type PokemonSpeciesId } from './pokedex.ts';
+import { isPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId } from './pokedex.ts';
 import { EVOLUTION_TABLE } from './evolutionDataWrapper.ts';
 
 export { EVOLUTION_TABLE };
@@ -61,4 +61,35 @@ export function getStoneEvolution(id: string): { stone: string; to: PokemonSpeci
     }
   }
   return null;
+}
+
+const PRE_EVOLUTION_MAP: Partial<Record<PokemonSpeciesId, PokemonSpeciesId>> = Object.freeze(
+  (() => {
+    const map: Partial<Record<PokemonSpeciesId, PokemonSpeciesId>> = {};
+    for (const [from, evo] of Object.entries(EVOLUTION_TABLE)) {
+      if (evo && typeof evo === 'object' && 'to' in evo && typeof (evo as { to: string }).to === 'string') {
+        if (isPokemonSpeciesId(from) && isPokemonSpeciesId((evo as { to: string }).to)) {
+          map[requirePokemonSpeciesId((evo as { to: string }).to)] = requirePokemonSpeciesId(from);
+        }
+      }
+    }
+    for (const [fromKey, evo] of Object.entries(STONE_EVOLUTIONS)) {
+      if (evo && typeof evo === 'object' && 'to' in evo && typeof (evo as { to: string }).to === 'string') {
+        const baseSpecies = fromKey.includes('_') ? (fromKey.split('_')[0] ?? fromKey) : fromKey;
+        if (isPokemonSpeciesId(baseSpecies) && isPokemonSpeciesId((evo as { to: string }).to)) {
+          map[requirePokemonSpeciesId((evo as { to: string }).to)] = requirePokemonSpeciesId(baseSpecies);
+        }
+      }
+    }
+    for (const [from, to] of Object.entries(TRADE_EVOLUTIONS)) {
+      if (typeof to === 'string' && isPokemonSpeciesId(from) && isPokemonSpeciesId(to)) {
+        map[requirePokemonSpeciesId(to)] = requirePokemonSpeciesId(from);
+      }
+    }
+    return map;
+  })()
+);
+
+export function getPreEvolution(speciesId: PokemonSpeciesId): PokemonSpeciesId | null { // domain-ok
+  return PRE_EVOLUTION_MAP[speciesId] ?? null;
 }

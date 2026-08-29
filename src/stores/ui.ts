@@ -1,4 +1,5 @@
 
+// fallow-ignore-file unused-store-members
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useModalStore } from '@/stores/modals.ts'
@@ -342,20 +343,15 @@ export const useUIStore = defineStore('ui', () => {
       safeStorage.setItem('app-zoom', val.toString())
       document.documentElement.style.setProperty('--app-zoom', val.toString())
     },
-    // fallow-ignore-next-line unused-store-member
     toggleTrade,
-    // fallow-ignore-next-line unused-store-member
     toggleSocial,
-    // fallow-ignore-next-line unused-store-member
     openClaims,
     notify,
     notifications,
-    // fallow-ignore-next-line unused-store-member
     isLoading,
     setLoading,
     toggleProfile,
     toggleSettings,
-    // fallow-ignore-next-line unused-store-member
     toggleHistory,
     toggleLibrary,
     toggleHudGroup,
@@ -365,10 +361,8 @@ export const useUIStore = defineStore('ui', () => {
     close,
     closeModal: () => useModalStore().closeTop(),
     openPokemonDetail,
-    // fallow-ignore-next-line unused-store-member
     closePokemonDetail,
     openMoveDetail,
-    // fallow-ignore-next-line unused-store-member
     closeMoveDetail,
     
     toggleTeamManagement: () => {
@@ -377,7 +371,6 @@ export const useUIStore = defineStore('ui', () => {
       else modalStore.open('TeamManagement')
     },
     
-    // fallow-ignore-next-line unused-store-member
     setDebugPokedex: (mode: PokedexStatus | null) => { debugPokedexMode.value = mode },
     
     pvpAutoFillDisabled,
@@ -389,12 +382,10 @@ export const useUIStore = defineStore('ui', () => {
     
     // Evolution
     isEvolutionOpen,
-    // fallow-ignore-next-line unused-store-member
     evolutionData,
     startEvolution,
     
     // Move Learning
-    // fallow-ignore-next-line unused-store-member
     isMoveLearningOpen,
     currentMoveToLearn,
     learnQueue,
@@ -412,19 +403,14 @@ export const useUIStore = defineStore('ui', () => {
     toggleInventory,
     inventoryTarget,
     isCosmeticsModalOpen,
-    // fallow-ignore-next-line unused-store-member
     isPvPBattleOpen: ref(false),
-    // fallow-ignore-next-line unused-store-member
     isRankedMenuOpen: ref(false),
-    // fallow-ignore-next-line unused-store-member
     currentPvPInvite: ref(null),
     isBattleSwitchForced,
-    // fallow-ignore-next-line unused-store-member
     isWarPanelOpen,
     hasDismissedSessionLock,
 
     // Stacking
-    // fallow-ignore-next-line unused-store-member
     activeModalStack,
     registerModal,
     unregisterModal,

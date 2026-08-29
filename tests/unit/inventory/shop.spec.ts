@@ -6,6 +6,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { useGameStore } from '@/stores/game'
 import { useShopStore } from '@/stores/inventory/shop'
 import { useUIStore } from '@/stores/ui'
+import { requireItemId } from '@/data/inventory/items'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 describe('Shop & Healing Logic', () => {
@@ -157,18 +158,19 @@ describe('Shop & Healing Logic', () => {
       const items = shopStore.getBlackMarketItems()
       const item = items[0]!
       
+      const itemId = requireItemId(item.id)
       // Ensure we start with 0 of this item in the inventory
-      gameStore.state.inventory[item.id] = 0
+      gameStore.state.inventory[itemId] = 0
       
       // Formula: (bcPrice * 50) * (1 - 0.20)
       const expectedPrice = Math.floor(((item.bcPrice || 0) * 50) * (1 - 0.20))
       const expectedMoney = 1000000 - expectedPrice
       
-      shopStore.buyBlackMarketItem(item.id)
+      shopStore.buyBlackMarketItem(itemId)
       
       expect(gameStore.state.money).toBe(expectedMoney)
-      expect(gameStore.state.inventory[item.id]).toBe(1)
-      expect(gameStore.state.classData.blackMarketDaily.purchased).toContain(item.id)
+      expect(gameStore.state.inventory[itemId]).toBe(1)
+      expect(gameStore.state.classData.blackMarketDaily.purchased).toContain(itemId)
     })
   })
 })

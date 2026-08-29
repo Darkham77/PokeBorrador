@@ -58,6 +58,7 @@ export class BattleCheatManager {
     return this.applied.size;
   }
 
+  // fallow-ignore-next-line unused-class-member
   public clearAppliedCheats(): void {
     this.applied.clear();
   }

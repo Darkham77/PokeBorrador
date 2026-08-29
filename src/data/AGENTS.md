@@ -12,6 +12,7 @@ Game Designers / Data Maintainers.
 - **Immersion Integrity**: All data attributes representing logical entity identifiers (moves, items, abilities) must be registered in English.
 - **Trainer Archetype Single Source of Truth**: All trainer type definitions must live strictly in `src/data/trainerTypes.ts`. No duplicate mappings are allowed.
 - **Map Spawns Whitelist Compliance**: All Pokémon species declared in `FIRE_RED_MAPS` (across `wild` ground pools, `fishing`, `surfing`, `rockSmash`, and `weather` visitor/exclusive tables) MUST belong strictly to `ENABLED_POKEMON_IDS` (`src/data/system/constants.ts`). Hardcoding unapproved or future generation species is strictly prohibited and validated via unit test suites.
+- **Mandatory O(1) Static Catalog Indexing**: All static databases and entity catalogs (`items`, `maps`, `gyms`, `pokedex`, `npcSpriteCatalog`) MUST export frozen $O(1)$ dictionaries (`ITEMS_BY_ID: Record<ItemId, Item>`, `MAPS_BY_ROUTE_ID`, `GYMS_BY_ID`, `VALID_NPC_SPRITES_SET`) and typed boundary getters (`getItemById(id: string)`, `getMapLocationById(routeId: string)`) validating via `requireDomainId` to ensure zero runtime scan overhead and zero caller type casting.
 
 ## Work Guidance
 

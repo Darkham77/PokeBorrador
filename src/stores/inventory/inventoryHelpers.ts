@@ -12,6 +12,16 @@ export function findInventoryKey(gameStore: ReturnType<typeof useGameStore>, id:
   return null;
 }
 
+export function clonePokemonForSimulation(pokemon: Pokemon): Pokemon {
+  return {
+    ...pokemon,
+    ivs: { ...pokemon.ivs },
+    evs: pokemon.evs ? { ...pokemon.evs } : undefined,
+    moves: pokemon.moves ? pokemon.moves.map(m => m ? ({ ...m }) : null) : [],
+    volatileCounters: pokemon.volatileCounters ? { ...pokemon.volatileCounters } : undefined,
+  };
+}
+
 export function isItemUsableOn(itemId: ItemId, pokemon: Pokemon) {
   if (!pokemon) return false;
   
@@ -33,7 +43,7 @@ export function isItemUsableOn(itemId: ItemId, pokemon: Pokemon) {
 
   if (item && isEquippableHeldItem(item)) return true;
 
-  const p = JSON.parse(JSON.stringify(pokemon)) as Pokemon;
+  const p = clonePokemonForSimulation(pokemon);
 
   const effectFn = ITEM_EFFECTS[itemId];
   if (effectFn) {
@@ -127,7 +137,7 @@ export function getAdjustedProductCategory(item: Pick<ItemData, 'cat' | 'id' | '
     return 'stones';
   }
 
-  if (id.includes('root') || id.includes('revive') || nameLower.includes('pocion') || nameLower.includes('revivir')) {
+  if (id.includes('root') || id.includes('revive') || nameLower.includes('pocion') || nameLower.includes('revivir')) { // spanish-ok
     return 'potions';
   }
 

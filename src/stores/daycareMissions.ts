@@ -62,7 +62,7 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
     
     const team = gameStore.state.team || [];
     const box = gameStore.state.box || [];
-    const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null);
+    const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null); // o1-ok
     
     return missions.filter(mission => {
       const targetId = mission.targetId;
@@ -128,9 +128,7 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
     if (!mission || mission.completed) return;
 
     const team = gameStore.state.team || [];
-    const box = gameStore.state.box || [];
-    const all = [...team, ...box];
-    const pokemon = all.find((p): p is Pokemon => p != null && p.uid === pokemonUid);
+    const pokemon = gameStore.getPokemonByUid(pokemonUid);
 
     if (!pokemon) return;
     if (!validateMissionPokemon(pokemon, mission)) {
@@ -138,7 +136,7 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
       return;
     }
 
-    if (team.length <= 1 && team.some((p) => p.uid === pokemonUid)) {
+    if (team.length <= 1 && team[0]?.uid === pokemonUid) {
       uiStore.notify('No puedes entregar tu único Pokémon.', '⚠️');
       return;
     }

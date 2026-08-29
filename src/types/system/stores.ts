@@ -223,6 +223,7 @@ export interface CompetitionEntry {
   submitted_at?: string; // domain-ok
 }
 
+// fallow-ignore-next-line unused-export
 export const COMPETITION_RANK_KEYS = ['first', 'second', 'third'] as const;
 export type CompetitionRankKey = (typeof COMPETITION_RANK_KEYS)[number];
 export type CompetitionRank = CompetitionRankKey | number;
@@ -274,7 +275,20 @@ export interface EventStore {
   claimAward: (awardId: string) => Promise<string | null>;
 }
 
-// DominanceInfo merged at the top
+export interface CompetitionParticipant {
+  uid: string; // domain-ok
+  id: PokemonSpeciesId;
+  name: string; // domain-ok
+  nickname?: string | null; // domain-ok
+  level: number;
+  isShiny: boolean;
+  ivs?: Pokemon['ivs'];
+  size?: string; // domain-ok
+  height?: number;
+  weight?: number;
+  displayValue?: string; // domain-ok
+  score?: number;
+}
 
 export interface CompetitionResult {
   id: string; // domain-ok

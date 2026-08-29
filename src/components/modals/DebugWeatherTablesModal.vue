@@ -9,7 +9,7 @@
 import { ref, computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { isWeatherTableRouteId, ROUTE_WEATHER_TABLES, WEATHER_CYCLE_IDS, WEATHER_SEASON_IDS, type WeatherSeasonId, type WeatherTableRouteId } from '@/data/world/weather-tables'
-import { FIRE_RED_MAPS } from '@/data/world/maps'
+import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
 import { getMechanicalWeather, requireWeatherId, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY, type WeatherId } from '@/logic/weather/weatherRegistry'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -61,7 +61,7 @@ interface Region {
 }
 
 const REGIONS: Region[] = [
-  { id: 'kanto', name: 'Kanto', maps: FIRE_RED_MAPS.map(m => m.id).filter(isWeatherTableRouteId) },
+  { id: 'kanto', name: 'Kanto', maps: (Object.keys(MAPS_BY_ROUTE_ID) as string[]).filter(isWeatherTableRouteId) }, // open-record
   { id: 'johto', name: 'Johto', maps: [] },
   { id: 'hoenn', name: 'Hoenn', maps: [] },
   { id: 'sinnoh', name: 'Sinnoh', maps: [] }
@@ -103,7 +103,7 @@ const PRECOMPUTED_WEATHER_DATA = (() => {
     const mapsData = region.maps
       .map(routeId => {
         const rawRouteData = ROUTE_WEATHER_TABLES[routeId]
-        const map = FIRE_RED_MAPS.find(m => m.id === routeId)
+        const map = (MAPS_BY_ROUTE_ID as Record<string, { name: string; weather?: Record<string, unknown>; isCave?: boolean }>)[routeId] // open-record
         if (!map) throw new Error(`[DebugWeatherTablesModal] Missing map data for weather route: ${routeId}`)
         
         const seasons = WEATHER_SEASON_IDS.map(seasonId => {
@@ -119,7 +119,7 @@ const PRECOMPUTED_WEATHER_DATA = (() => {
               let exclusive: { name: string; sprite: string }[] = []
               
               if (map && map.weather) {
-                const weatherData = Object.entries(map.weather).find(([id]) => id === weather)?.[1]
+                const weatherData = (map.weather as Record<string, unknown>)[weather] as { visitors?: Record<string, unknown>; exclusive?: Record<string, unknown> } | undefined // open-record
                 if (weatherData) {
                   const rawVis = weatherData.visitors || {}
                   const rawExc = weatherData.exclusive || {}

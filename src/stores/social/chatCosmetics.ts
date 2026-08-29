@@ -86,12 +86,16 @@ export const useChatCosmeticsStore = defineStore('chatCosmetics', () => {
       ]
 
       if (!profRes.error) {
-        const profilesList = profRes.data || []
-        const savesList = saveRes.data || []
+        const profilesMap = Object.fromEntries(
+          (profRes.data || []).map(prof => [prof.id, prof])
+        )
+        const savesMap = Object.fromEntries(
+          (saveRes.data || []).map(s => [s.user_id, s])
+        )
 
         missingIds.forEach(id => {
-          const p = profilesList.find(prof => prof.id === id)
-          const saveRow = savesList.find(s => s.user_id === id)
+          const p = profilesMap[id]
+          const saveRow = savesMap[id]
           const save = saveRow?.save_data ? (typeof saveRow.save_data === 'string' ? JSON.parse(saveRow.save_data) : saveRow.save_data) as Record<string, unknown> : {} // open-record
 
           const fallbackName = id.startsWith('local_') ? id.replace('local_', '') : 'Entrenador'

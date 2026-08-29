@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import type { Ref } from 'vue'
 import { makePokemon } from '@/logic/pokemon/pokemonFactory'
-import { FIRE_RED_MAPS } from '@/data/world/maps'
+import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import { useGameStore } from '@/stores/game'
@@ -111,7 +111,7 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
       : config.currentMapId.value
 
     const mapId = (targetMapId || nextSegmentMapId || 'route1') as string
-    const mapData = FIRE_RED_MAPS.find(m => m.id === mapId) as MapLocation | undefined
+    const mapData = (MAPS_BY_ROUTE_ID as Record<string, MapLocation>)[mapId] as MapLocation | undefined // open-record
 
     if (!mapData) return
 
@@ -402,7 +402,8 @@ const ADVENTURE_EVENT_PROBABILITY_THRESHOLD = 0.70;
       const originNode = config.originMap.value
       if (isMapRouteId(originNode)) config.mapStore.currentMap = originNode
       config.shopStore.healAllPokemon(0)
-      config.travelLog.value.push(`🏥 Regresaste de inmediato a ${FIRE_RED_MAPS.find(m => m.id === originNode)?.name || originNode}. Tu equipo ha sido curado.`)
+      const originName = (MAPS_BY_ROUTE_ID as Record<string, MapLocation>)[originNode]?.name || originNode // open-record
+      config.travelLog.value.push(`🏥 Regresaste de inmediato a ${originName}. Tu equipo ha sido curado.`)
       activeEvent.value = null
       return
     }

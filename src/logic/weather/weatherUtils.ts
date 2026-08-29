@@ -258,7 +258,7 @@ export function getNpcEncounterChances(
       chance: baseTrainerChance,
       type: 'police',
       active: true,
-      details: hasTrainerOverride ? 'Forzado por Debug' : (repelActive ? 'Repelente' : `Crim: ${criminality}`)
+      details: hasTrainerOverride ? 'Forzado por Debug' : (repelActive ? 'Repelente' : `Crim: ${criminality}`) // spanish-ok
     });
   } else {
     result.push({
@@ -266,7 +266,7 @@ export function getNpcEncounterChances(
       chance: baseTrainerChance,
       type: 'trainer',
       active: true,
-      details: hasTrainerOverride ? 'Forzado por Debug' : (repelActive ? 'Repelente' : undefined)
+      details: hasTrainerOverride ? 'Forzado por Debug' : (repelActive ? 'Repelente' : undefined) // spanish-ok
     });
   }
 

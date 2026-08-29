@@ -2,7 +2,7 @@ import { computed, type ComputedRef } from 'vue'
 import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { useGameStore } from '@/stores/game'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { GYMS } from '@/data/world/gyms'
+import { GYMS_BY_ID, isGymId } from '@/data/world/gyms'
 import type { BattleState } from '@/types/battle/battle'
 
 export function useBattleTrainerVisuals(
@@ -19,8 +19,8 @@ export function useBattleTrainerVisuals(
 
   const trainerDialogText = computed(() => {
     if (!battle.value) return ''
-    if (battle.value.isGym && battle.value.gymId) {
-      const gym = GYMS.find(g => g.id === battle.value?.gymId)
+    if (battle.value.isGym && battle.value.gymId && isGymId(battle.value.gymId)) {
+      const gym = GYMS_BY_ID[battle.value.gymId]
       if (gym) return gym.quote
     }
     if (battle.value.quote) return battle.value.quote

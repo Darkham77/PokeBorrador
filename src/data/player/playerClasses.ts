@@ -196,4 +196,13 @@ export const CLASS_MISSIONS = [
   { id: 'mission_24h', durationHs: 24, reqLv: 25, name: 'Misión Experta (24h)',   color: '#a855f7' }
 ] as const;
 
-export type MissionId = (typeof CLASS_MISSIONS)[number]['id'];
+export type ClassMission = (typeof CLASS_MISSIONS)[number];
+export type MissionId = ClassMission['id'];
+
+export const CLASS_MISSIONS_BY_ID: Readonly<Record<MissionId, ClassMission>> = Object.freeze(
+  Object.fromEntries(CLASS_MISSIONS.map(m => [m.id, m])) as Record<MissionId, ClassMission>
+);
+
+export function isMissionId(value: string): value is MissionId {
+  return value in CLASS_MISSIONS_BY_ID;
+}

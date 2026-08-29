@@ -21,9 +21,11 @@ const INVALID_MOVE_INDEX = -1;
 
 import { SETUP_MOVES } from '@/logic/constants/encounters.ts';
 
-const HAZARD_MOVES: readonly string[] = ['stealthrock', 'spikes', 'toxicspikes', 'stickyweb']; // no-domain
+const HAZARD_MOVES_LIST = ['stealthrock', 'spikes', 'toxicspikes', 'stickyweb'] as const;
+const HAZARD_MOVES: ReadonlySet<string> = new Set<string>(HAZARD_MOVES_LIST); // runtime-set
 
-const PIVOT_MOVES: readonly string[] = ['uturn', 'voltswitch', 'flipturn', 'partingshot', 'teleport']; // no-domain
+const PIVOT_MOVES_LIST = ['uturn', 'voltswitch', 'flipturn', 'partingshot', 'teleport'] as const;
+const PIVOT_MOVES: ReadonlySet<string> = new Set<string>(PIVOT_MOVES_LIST); // runtime-set
 
 /** Offset to convert zero-indexed array slot to 1-indexed Showdown action choice. */
 export const SHOWDOWN_CHOICE_INDEX_OFFSET = 1;
@@ -181,7 +183,7 @@ export function heuristicDecision(
   // 6a. Hazard removal — only when hazards threaten win conditions
   // ═══════════════════════════════════════
   if (snapshot.mySide.sideConditions.size > 0) {
-    const removalMove = availableMoves.find(m => HAZARD_REMOVAL_MOVES.includes(toID(m.id)));
+    const removalMove = availableMoves.find(m => HAZARD_REMOVAL_MOVES.has(toID(m.id)));
     if (removalMove && myActive.hpPercent > HEURISTIC_THRESHOLDS.HAZARD_REMOVAL_MIN_HP && !guaranteedKO) {
       if (hazardsThreatenTeam(snapshot, strategic)) {
         const moveIdx = findMoveIndex(availableMoves, removalMove.id);
@@ -200,7 +202,7 @@ export function heuristicDecision(
   // 6b. Set up hazards when safe
   // ═══════════════════════════════════════
   if (!snapshot.opponentSide.sideConditions.has('stealthrock') && myActive.hpPercent > HEURISTIC_THRESHOLDS.HAZARD_SET_MIN_HP) {
-    const hazardMove = availableMoves.find(m => HAZARD_MOVES.includes(toID(m.id)));
+    const hazardMove = availableMoves.find(m => HAZARD_MOVES.has(toID(m.id)));
     if (hazardMove) {
       const worstOppDmg = matchup.oppAttacking[HEURISTIC_EVAL_DEFAULT_MOVE_INDEX]?.maxPercent ?? HEURISTIC_EVAL_DEFAULT_WIN_SCORE;
       if (worstOppDmg < HEURISTIC_THRESHOLDS.HAZARD_SET_MAX_OPP_DAMAGE) {
@@ -219,7 +221,7 @@ export function heuristicDecision(
   // ═══════════════════════════════════════
   // 7. Setup opportunity
   // ═══════════════════════════════════════
-  const setupMove = availableMoves.find(m => SETUP_MOVES.includes(toID(m.id)));
+  const setupMove = availableMoves.find(m => SETUP_MOVES.has(toID(m.id)));
   if (setupMove && myActive.hpPercent > HEURISTIC_THRESHOLDS.SETUP_MOVE_MIN_HP) {
     const worstOppDmg = matchup.oppAttacking[HEURISTIC_EVAL_DEFAULT_MOVE_INDEX]?.maxPercent ?? HEURISTIC_EVAL_DEFAULT_WIN_SCORE;
     const isWinCond = strategic.winConditions.length > HEURISTIC_EVAL_DEFAULT_MOVE_INDEX &&
@@ -245,7 +247,7 @@ export function heuristicDecision(
   // 8a. Pivot — U-turn / Volt Switch when matchup is unfavorable
   // ═══════════════════════════════════════
   if (!isTrapped && switchOptions.length > HEURISTIC_EVAL_DEFAULT_MOVE_INDEX) {
-    const pivotMove = availableMoves.find(m => PIVOT_MOVES.includes(toID(m.id)));
+    const pivotMove = availableMoves.find(m => PIVOT_MOVES.has(toID(m.id)));
     if (pivotMove) {
       const bestOppDmg = matchup.oppAttacking[HEURISTIC_EVAL_DEFAULT_MOVE_INDEX]?.maxPercent ?? HEURISTIC_EVAL_DEFAULT_WIN_SCORE;
       const bestMyDmg = matchup.myAttacking[HEURISTIC_EVAL_DEFAULT_MOVE_INDEX]?.maxPercent ?? HEURISTIC_EVAL_DEFAULT_WIN_SCORE;

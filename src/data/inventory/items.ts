@@ -25,27 +25,28 @@ const ITEM_TIERS = ['common', 'rare', 'epic', 'legend'] as const satisfies reado
 const ITEM_KINDS = ['held', 'usable', 'stone', 'booster'] as const satisfies readonly ItemKind[];
 const EVOLUTION_STONE_KINDS = ['fire', 'water', 'thunder', 'leaf', 'moon', 'sun', 'oval'] as const satisfies readonly EvolutionStoneKind[];
 
+const ITEM_DATA_CATEGORIES_SET: ReadonlySet<string> = new Set<string>(ITEM_DATA_CATEGORIES); // runtime-set
+const ITEM_TIERS_SET: ReadonlySet<string> = new Set<string>(ITEM_TIERS); // runtime-set
+const ITEM_KINDS_SET: ReadonlySet<string> = new Set<string>(ITEM_KINDS); // runtime-set
+const EVOLUTION_STONE_KINDS_SET: ReadonlySet<string> = new Set<string>(EVOLUTION_STONE_KINDS); // runtime-set
+
 function requireItemCategory(value: string): ItemCategory {
-  const category = ITEM_DATA_CATEGORIES.find(candidate => candidate === value);
-  if (category) return category;
+  if (ITEM_DATA_CATEGORIES_SET.has(value)) return value as ItemCategory;
   throw new Error(`[items] Invalid item category: ${value}`);
 }
 
 function requireItemTier(value: string): ItemTier {
-  const tier = ITEM_TIERS.find(candidate => candidate === value);
-  if (tier) return tier;
+  if (ITEM_TIERS_SET.has(value)) return value as ItemTier;
   throw new Error(`[items] Invalid item tier: ${value}`);
 }
 
 function requireItemKind(value: string): ItemKind {
-  const kind = ITEM_KINDS.find(candidate => candidate === value);
-  if (kind) return kind;
+  if (ITEM_KINDS_SET.has(value)) return value as ItemKind;
   throw new Error(`[items] Invalid item kind: ${value}`);
 }
 
 function requireEvolutionStoneKind(value: string): EvolutionStoneKind {
-  const kind = EVOLUTION_STONE_KINDS.find(candidate => candidate === value);
-  if (kind) return kind;
+  if (EVOLUTION_STONE_KINDS_SET.has(value)) return value as EvolutionStoneKind;
   throw new Error(`[items] Invalid evolution stone kind: ${value}`);
 }
 
@@ -58,14 +59,27 @@ export type MarketCategoryId = keyof typeof MARKET_CAT_ORDER;
 import { ITEM_IDS, type ItemId } from './itemIds.ts';
 export { ITEM_IDS, type ItemId };
 
+const ITEM_IDS_SET: ReadonlySet<string> = new Set(ITEM_IDS); // runtime-set
+
 export function isItemId(value: unknown): value is ItemId {
-  return typeof value === 'string' && (ITEM_IDS as readonly string[]).includes(value); // domain-ok
+  return typeof value === 'string' && ITEM_IDS_SET.has(value);
 }
+
+const ITEMS_BY_NAME: Readonly<Record<string, ItemId>> = Object.freeze( // open-record
+  Object.fromEntries(
+    dbJson.SHOP_ITEMS.flatMap(item => {
+      const entries: [string, ItemId][] = [];
+      if (isItemId(item.id)) entries.push([item.id, item.id]);
+      if (item.name && isItemId(item.id)) entries.push([item.name, item.id]);
+      return entries;
+    })
+  )
+);
 
 export function requireItemId(value: string): ItemId {
   if (isItemId(value)) return value;
-  const match = dbJson.SHOP_ITEMS.find(item => item.name === value || item.id === value);
-  if (match && isItemId(match.id)) return match.id;
+  const match = ITEMS_BY_NAME[value];
+  if (match) return match;
   throw new Error(`[items] Invalid item id or name: ${value}`);
 }
 
@@ -82,11 +96,19 @@ export const SHOP_ITEMS = dbJson.SHOP_ITEMS.map((item): Item => {
 });
 export type ShopItemData = (typeof SHOP_ITEMS)[number];
 
+export const ITEMS_BY_ID: Record<ItemId, Item> = Object.freeze(
+  Object.fromEntries(SHOP_ITEMS.map(item => [item.id, item])) as Record<ItemId, Item>
+);
+
+export const BC_SHOP_ITEMS: readonly ShopItemData[] = Object.freeze(
+  SHOP_ITEMS.filter(i => i.showInBCShop === true && (i.bcPrice || 0) > 0)
+);
+
 export const getItemById = (id: string): ShopItemData => {
   if (!id) throw new Error("ID de objeto no proporcionado");
 
-  const target = id.trim().toLowerCase();
-  const item = SHOP_ITEMS.find(i => i.id === target || i.id === id || i.name.toLowerCase() === target);
+  const cleanId = requireItemId(id);
+  const item = ITEMS_BY_ID[cleanId];
 
   if (!item) {
     throw new Error(`[items] Objeto no encontrado por ID o nombre: "${id}"`);
@@ -139,7 +161,7 @@ export function getMaxBuffDuration(field: BuffField): number {
   const itemIds = BUFF_FIELD_TO_ITEM_IDS[field];
   let maxAllowedSecs = 3600;
 
-  const matchingItems = SHOP_ITEMS.filter(item => item.id && itemIds.includes(item.id));
+  const matchingItems = itemIds.map(id => ITEMS_BY_ID[id]).filter((item): item is Item => !!item);
   if (matchingItems.length > 0) {
     const maxItemDuration = Math.max(...matchingItems.map(item => {
       if (!item.desc) return 1800;

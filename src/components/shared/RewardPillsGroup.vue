@@ -9,10 +9,10 @@
 import { computed } from 'vue'
 import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { SHOP_ITEMS, getItemName } from '@/data/inventory/items'
+import { getItemById, getItemName } from '@/data/inventory/items'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
-export interface RawPrizeData {
+interface RawPrizeData {
   type?: 'money' | 'bc' | 'item' | 'pokemon' | 'mixed'
   amount?: number
   qty?: number
@@ -50,12 +50,12 @@ interface NormalizedReward {
 }
 
 function getItemDesc(itemIdOrName: string): string {
-  const item = SHOP_ITEMS.find(i => i.id === itemIdOrName || i.name === itemIdOrName)
+  const item = getItemById(itemIdOrName)
   return item?.desc || 'Objeto especial de recompensa.'
 }
 
 function getItemSpriteUrl(itemIdOrName: string): string {
-  const item = SHOP_ITEMS.find(i => i.id === itemIdOrName || i.name === itemIdOrName)
+  const item = getItemById(itemIdOrName)
   const slug = item?.sprite || item?.id || itemIdOrName
   return getAssetUrl(ASSET_TYPES.ITEM, slug)
 }

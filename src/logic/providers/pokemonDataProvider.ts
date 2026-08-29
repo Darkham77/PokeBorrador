@@ -1,7 +1,7 @@
 // [PureVue-Ignore-Length]
 import { shallowRef } from 'vue';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
-import { ABILITY_TRANSLATIONS_ES } from '@/data/battle/abilities';
+import { ABILITY_TRANSLATIONS_ES, ABILITIES_BY_SPANISH_NAME } from '@/data/battle/abilities';
 import { GYMS } from '@/data/world/gyms';
 import { FIRE_RED_MAPS } from '@/data/world/maps';
 import { NATURE_DATA } from '@/data/battle/natures';
@@ -163,11 +163,9 @@ export const pokemonDataProvider = {
         if (!ability || !ability.exists) {
             // Intenta buscar por nombre en español en las traducciones estáticas
             const nameLower = name.trim().toLowerCase(); // text-ok
-            const foundEntry = Object.entries(ABILITY_TRANSLATIONS_ES).find(
-                ([_, trans]) => trans.name.toLowerCase() === nameLower // text-ok
-            );
-            if (foundEntry) {
-                cleanId = toID(foundEntry[0]);
+            const spanishId = ABILITIES_BY_SPANISH_NAME[nameLower];
+            if (spanishId) {
+                cleanId = toID(spanishId);
                 ability = Dex.abilities.get(cleanId);
             }
         }
@@ -231,7 +229,7 @@ export const pokemonDataProvider = {
             const translated = MOVE_TRANSLATIONS_ES[moveId];
             return {
                 id: moveId,
-                name: translated.name || 'Recargando',
+                name: translated.name || 'Recargando', // spanish-ok
                 power: 0,
                 acc: PERFECT_ACCURACY_FLAG,
                 type: 'normal',

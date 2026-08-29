@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-store-member
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { logger } from '@/logic/utils/logger'

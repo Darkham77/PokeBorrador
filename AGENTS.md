@@ -38,6 +38,7 @@ Not lazy about: input validation at trust boundaries, error handling that preven
   1. **Tier 1 (Isolated Unit Test - RED-to-GREEN)**: Create an isolated, self-contained unit test in `tests/node/` or `tests/unit/` reproducing the exact failure deterministically in RED before editing `src/`. Verify GREEN once fixed.
   2. **Tier 2 (Integrity & Integration Test)**: Verify cross-boundary data integrity, schema validation, FSM state machine transitions, DBRouter persistence roundtrips, and `@pkmn/sim` parity in `tests/integration/` or `tests/node/`.
   3. **Tier 3 (Playwright E2E Simulation)**: For UI, battle, or feature flows, verify or create Playwright E2E simulation cases adhering strictly to `/game-simulation` protocols (passive joystick, 100% ID-based locators, 5s per-action timeout limit, zero artificial timers, and certified combat replay).
+- **Mandatory O(1) Data Structure Optimization Mandate**: Agents MUST proactively seek, detect, and optimize data structures across static datasets, reactive Pinia stores, heuristic AI sets, and sprite catalogs to guarantee constant $O(1)$ time complexity. Linear searches (`.find()`, `.filter()`, `.includes()`) in execution hot paths are strictly prohibited when an $O(1)$ typed dictionary (`Record<DomainId, T>`, `ReadonlySet<DomainId>`, `Map<DomainId, T>`) can be derived.
 
 ## 1. Efficient Thinking & Communication
 

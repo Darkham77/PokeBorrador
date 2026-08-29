@@ -28,7 +28,7 @@ export const STATUS_NAME_MAP = {
   slp: 'SUEÑO',
   par: 'PARÁLISIS',
   frz: 'CONGELACIÓN',
-  tox: 'TÓXICO'
+  tox: 'TÓXICO' // spanish-ok
 } as const satisfies Record<BattleStatusKey, string>
 
 

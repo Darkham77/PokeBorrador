@@ -67,7 +67,7 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = { /
 
   // --- PP & Stats ---
   'ether': pokeEffect((p) => restorePP(p, ETHER_PP_RESTORE)),
-  'elixir': pokeEffect((p) => restorePP(p, ETHER_PP_RESTORE)),
+  'elixir': pokeEffect((p) => restorePP(p, ETHER_PP_RESTORE)), // spanish-ok
   'elixirmax': pokeEffect((p) => restorePP(p, MAX_PP_RESTORE_CAP)),
   
   // --- Buffs / Special ---

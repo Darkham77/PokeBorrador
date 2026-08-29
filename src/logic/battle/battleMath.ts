@@ -70,12 +70,14 @@ function getCombinedEff(moveType: string, defender: PurePokemon, attacker: PureP
 
 import type { PokemonType } from '../../data/battle/types.ts';
 
-const SPECIAL_POKEMON_TYPES: readonly PokemonType[] = ['fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon', 'dark'];
+const SPECIAL_POKEMON_TYPES_SET: ReadonlySet<PokemonType> = new Set<PokemonType>([ // runtime-set
+  'fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon', 'dark'
+]);
 
 export function getMoveCategory(move: PureMove): 'status' | 'physical' | 'special' {
   if (move.cat === 'status') return 'status';
   if (ACTIVE_GENERATION <= 3) {
-    if (move.type && SPECIAL_POKEMON_TYPES.includes(move.type)) return 'special';
+    if (move.type && SPECIAL_POKEMON_TYPES_SET.has(move.type)) return 'special';
     return 'physical';
   }
   return move.cat ?? 'physical';

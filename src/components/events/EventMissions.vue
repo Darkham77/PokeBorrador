@@ -7,7 +7,7 @@ import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import { usePlayerClassStore } from '@/stores/player/playerClass';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { CLASS_MISSIONS } from '@/data/player/playerClasses';
+import { CLASS_MISSIONS, CLASS_MISSIONS_BY_ID, isMissionId } from '@/data/player/playerClasses';
 import MissionCard from './MissionCard.vue';
 import type { DaycareMission } from '@/types/breeding/breeding';
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -21,7 +21,7 @@ const classStore = usePlayerClassStore();
 const getMatchingPokesForMission = (mission: DaycareMission) => {
   const team = gameStore.state.team || [];
   const box = gameStore.state.box || [];
-  const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null);
+  const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null); // o1-ok
   
   const targetId = mission.targetId;
   return allPokes.filter(p => {
@@ -138,7 +138,8 @@ function getMissionDesc(mId: string, clsId: string | undefined) {
 }
 
 async function startClassMission(missionId: string) {
-  const m = CLASS_MISSIONS.find(x => x.id === missionId);
+  if (!isMissionId(missionId)) return;
+  const m = CLASS_MISSIONS_BY_ID[missionId];
   if (!m) return;
   const cls = classStore.playerClass;
   
@@ -147,7 +148,7 @@ async function startClassMission(missionId: string) {
   } else {
     const box = gameStore.state.box || [];
     const team = gameStore.state.team || [];
-    const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null);
+    const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null); // o1-ok
     
     const isRocket = cls === 'rocket';
     const filtered = allPokes.filter(p => {
@@ -256,7 +257,7 @@ async function startClassMission(missionId: string) {
         <div class="banner-info">
           <span class="banner-title">{{ isMissionDone ? 'OPERACIÓN COMPLETADA' : 'OPERACIÓN EN CURSO' }}</span>
           <p class="m-name">
-            {{ CLASS_MISSIONS.find(m => m.id === (activeMission?.id))?.name }}
+            {{ (activeMission?.id && isMissionId(activeMission.id)) ? CLASS_MISSIONS_BY_ID[activeMission.id]?.name : '' }}
           </p>
           <div class="mission-progress-bar">
             <div

@@ -23,7 +23,18 @@ export const RANKED_REWARD_MILESTONES = [
   { id: 'diamante_3000', tier: 'Diamante', elo: 3000, rewards: { 'naturepatch': 3, 'vigorcandy': 2 }, icon: '🍃' },
   { id: 'diamante_3300', tier: 'Diamante', elo: 3300, rewards: { 'abilitypill': 1 }, icon: '💊' },
   { id: 'maestro_3400', tier: 'Maestro', elo: 3400, rewards: { 'abilitypill': 2, 'naturepatch': 3, 'vigorcandy': 3 }, icon: '🌟' }
-];
+] as const;
+
+export type RankedRewardMilestone = (typeof RANKED_REWARD_MILESTONES)[number];
+export type RankedRewardMilestoneId = RankedRewardMilestone['id'];
+
+export const RANKED_REWARD_MILESTONES_BY_ID: Readonly<Record<RankedRewardMilestoneId, RankedRewardMilestone>> = Object.freeze(
+  Object.fromEntries(RANKED_REWARD_MILESTONES.map(m => [m.id, m])) as Record<RankedRewardMilestoneId, RankedRewardMilestone>
+);
+
+export function isRankedRewardMilestoneId(value: string): value is RankedRewardMilestoneId {
+  return value in RANKED_REWARD_MILESTONES_BY_ID;
+}
 
 export const RANKED_TYPE_META: Partial<Record<PokemonType, { label: string; icon: string }>> = {
   normal:   { label: 'Normal', icon: '⚪' },

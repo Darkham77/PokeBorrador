@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-class-member
 // ============================================================
 // Damage Calculator — wraps @smogon/calc
 // Adapted from external/pokemon-showdown-ai/src/calculator/damage.ts

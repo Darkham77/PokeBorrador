@@ -248,7 +248,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
   'hail': {
     id: 'hail',
     mech: WEATHER_MECHANICAL.HAIL,
-    label: 'GRANIZO',
+    label: 'GRANIZO', // spanish-ok
     icon: '🌨️',
     visual: 'hail',
     description: `Debilita no Hielo (${WEATHER_CHIP_HP_FRACTION_LABEL} HP por turno)\nEfecto: Ventisca 100% precisión`,
@@ -257,7 +257,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
   'blizzard': {
     id: 'blizzard',
     mech: WEATHER_MECHANICAL.HAIL,
-    label: 'VENTISCA',
+    label: 'VENTISCA', // spanish-ok
     icon: '🌬️',
     visual: 'blizzard',
     description: `Debilita no Hielo (${WEATHER_CHIP_HP_FRACTION_LABEL} HP por turno)\nEfecto: Ventisca 100% precisión`,
@@ -277,7 +277,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
   'fog': {
     id: 'fog',
     mech: WEATHER_MECHANICAL.FOG,
-    label: 'NIEBLA',
+    label: 'NIEBLA', // spanish-ok
     icon: '🌫️',
     visual: 'fog',
     description: `Reduce la precisión en Gen 4+ (x${FOG_ACCURACY_MULT_LABEL}).`,

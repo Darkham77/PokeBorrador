@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-store-member
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth.ts'
@@ -60,11 +61,15 @@ export const usePlayerSearchStore = defineStore('playerSearch', () => {
         saveRes = { data: allSavesRes.data }
         relRes = { data: allRelsRes.data }
 
+        const savesByUserId: Record<string, GameSaveRow> = Object.fromEntries(
+          (allSavesRes.data || []).map(s => [s.user_id, s])
+        )
+
         const queryLower = query.toLowerCase() // text-ok
         profiles = (profRes.data || []).filter((p: ProfileRow) => {
           if (p.id === authStore.user!.id) return false
           
-          const save = (allSavesRes.data?.find((s: GameSaveRow) => s.user_id === p.id)?.save_data as Partial<GameState>) || {}
+          const save = (savesByUserId[p.id]?.save_data as Partial<GameState>) || {}
           const trainerName = (save.trainer as string) || p.username || ''
           const originalUsername = p.username || ''
           
@@ -125,12 +130,19 @@ export const usePlayerSearchStore = defineStore('playerSearch', () => {
       if (lastSearchQuery.value !== query) return
 
       if (profiles && profiles.length > 0) {
+        const savesMap: Record<string, GameSaveRow> = Object.fromEntries(
+          (saveRes.data || []).map(s => [s.user_id, s])
+        )
+        const relsMap: Record<string, FriendshipRow> = Object.fromEntries(
+          (relRes.data || []).map(f => {
+            const otherId = f.requester_id === authStore.user!.id ? f.addressee_id : f.requester_id
+            return [otherId, f]
+          })
+        )
+
         searchResults.value = (profiles as ProfileRow[]).map((p: ProfileRow) => {
-          const save = (saveRes.data?.find((s: GameSaveRow) => s.user_id === p.id)?.save_data as Partial<GameState>) || {}
-          const rel = relRes.data?.find((f: FriendshipRow) => 
-            (f.requester_id === authStore.user!.id && f.addressee_id === p.id) ||
-            (f.requester_id === p.id && f.addressee_id === authStore.user!.id)
-          )
+          const save = (savesMap[p.id]?.save_data as Partial<GameState>) || {}
+          const rel = relsMap[p.id]
           
           return {
             id: p.id,

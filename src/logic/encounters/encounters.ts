@@ -23,6 +23,7 @@ import {
 
 import { generateFishingEncounter } from './fishingEncounterHelper.ts'
 import { requireMapRouteId } from '@/data/world/map-assets'
+import { getMapLocationById } from '@/data/world/maps'
 import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { ItemId } from '@/data/inventory/items'
@@ -119,13 +120,13 @@ function generateGroundEncounter(
 export async function generateEncounter(locId: string, state: EncounterState, options: EncounterOptions = {}): Promise<Encounter | null> {
   const routeId = requireMapRouteId(locId);
   const maps = pokemonDataProvider.getMaps();
-  const loc = maps.find(l => l.id === routeId);
+  const loc = maps.find(l => l.id === routeId) || getMapLocationById(routeId);
   if (!loc) return null;
 
   const cycle = requireDayPhase(options.cycle || getDayCycle());
   const eventStore = useEventStore() as { activeEvents: GameEvent[] };
   const activeEvents = options.activeEvents || (eventStore.activeEvents || []) || [];
-  const allMapIds = maps.map(m => m.id);
+  const allMapIds = maps.map(m => requireMapRouteId(m.id));
 
   // 1. Check special overrides (debug, rival, defender, guardian)
   const specialEncounter = checkSpecialEncounters(routeId, state, options, allMapIds);

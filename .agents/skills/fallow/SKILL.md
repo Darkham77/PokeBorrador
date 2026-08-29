@@ -14,19 +14,19 @@ Use this skill to run and interpret Fallow commands and unified project audit to
 ## 🚨 Structured Triage & Grouping Mandate (Zero Manual Grepping)
 
 > [!CRITICAL]
-> **Zero Manual Grep & Zero Redundant Re-Execution Mandate**:
+> **Zero Manual Grep & Structured JSON Inspection Mandate**:
 > 1. Never parse raw audit outputs using manual terminal grepping (`npm run audit | grep ...`).
-> 2. **Never re-run `audit:errors` or other audit commands if `npm run audit:warnings-diff` or `npm run audit` was just executed.** The terminal output from `audit:warnings-diff` prints all project errors directly at the bottom of the output and exports `scratch/warnings_diff_report.json`. Read and act on the existing output immediately without wasting compute on duplicate audit runs.
-> Always use the specialized audit commands below to group, rank, and inspect issues deterministically.
+> 2. `npm run audit` displays a clean summary table in the terminal and **always writes 100% complete structured JSON** to `scratch/audits/latest_audit.json` (and `scratch/audits/architecture/audit_project.json`).
+> 3. To inspect deep violation details, read `scratch/audits/latest_audit.json` directly from disk instead of re-running commands.
 
 ### 📋 Rapid Triage Cheatsheet
 
 | Goal | Optimal Command | Format / Purpose |
 | :--- | :--- | :--- |
-| **Group all errors by category & top files** | `npm run audit:errors` | Structured JSON with violation breakdown and top files |
-| **High-level audit summary table** | `npm run audit:summary` | Compact human summary (rule counts + top offender files) |
-| **Filter audit to a specific rule** | `npm run audit -- --rule="<name>" --summary` | Targeted rule triage (e.g. `--rule="mágico"`) |
-| **Audit changed files only (vs main)** | `node ./node_modules/fallow/bin/fallow audit --changed-since main` | Scoped PR/branch audit of modified files |
+| **Run general project audit** | `npm run audit` | Clean summary table in console + full JSON in `scratch/audits/latest_audit.json` |
+| **Inspect detailed audit findings** | Read `scratch/audits/latest_audit.json` | Complete machine-readable findings with exact file and line |
+| **Pre-commit diff validation** | `npm run audit:warnings-diff` | Pre-commit gatekeeper vs `origin/main` + JSON in `scratch/audits/latest_warnings_diff.json` |
+| **Audit changed files only (vs main)** | `npm run audit:changed` | Scoped audit of modified files vs main |
 | **Code duplication & triplets** | `npm run audit:fallow:triplets`<br>`node ./node_modules/fallow/bin/fallow dupes` | Identifies duplicate and triplicate blocks |
 | **Complexity hotspots & refactor targets** | `node ./node_modules/fallow/bin/fallow health --score --hotspots --targets` | Ranked refactoring recommendations |
 | **Quick Fallow summary** | `npm run audit:fallow:summary` | Concise terminal summary without log bloat |

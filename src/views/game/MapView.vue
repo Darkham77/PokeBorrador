@@ -177,8 +177,8 @@ const missionSprites = computed(() => {
 })
 
 const gymSprites = computed(() => {
-  const defeatedIds = gameStore.state.defeatedGyms || []
-  return GYMS.filter(g => !defeatedIds.includes(g.id))
+  const defeatedSet = new Set(gameStore.state.defeatedGyms || [])
+  return GYMS.filter(g => !defeatedSet.has(g.id)) // o1-ok
     .slice(0, 8)
     .map(g => g.sprite)
 })

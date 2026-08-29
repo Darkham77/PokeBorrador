@@ -37,7 +37,7 @@ export const TAG_DEFINITIONS: Record<string, TagDefinition> = {
   },
   competitive: { 
     id: 'competitive', 
-    label: 'COMPETITIVO', 
+    label: 'COMPETITIVO', // spanish-ok
     shortLabel: 'COMP',
     icon: '🏆', 
     color: '#34C759', 
@@ -45,7 +45,7 @@ export const TAG_DEFINITIONS: Record<string, TagDefinition> = {
   },
   trade: { 
     id: 'trade', 
-    label: 'INTERCAMBIO', 
+    label: 'INTERCAMBIO', // spanish-ok
     shortLabel: 'TRADE',
     icon: '🔄', 
     color: '#AF52DE', 

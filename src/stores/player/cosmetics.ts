@@ -1,8 +1,16 @@
+// fallow-ignore-file unused-store-member
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { useGameStore } from '@/stores/game.ts'
 import { useAuthStore } from '@/stores/auth.ts'
-import { NICK_STYLES, AVATAR_STYLES } from '@/data/player/cosmeticsData'
+import { 
+  NICK_STYLES, 
+  AVATAR_STYLES, 
+  NICK_STYLES_BY_ID, 
+  AVATAR_STYLES_BY_ID, 
+  isNickStyleId,
+  isAvatarStyleId
+} from '@/data/player/cosmeticsData'
 import { COSMETIC_UNLOCK_CLASS_LEVEL } from '@/logic/player/classMath'
 
 export const useCosmeticsStore = defineStore('cosmetics', () => {
@@ -53,8 +61,8 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
 
     // 1. Sanitizar Nick Style
     const currentNick = gameStore.state.nick_style || ''
-    if (currentNick) {
-      const nickDef = NICK_STYLES.find(n => n.id === currentNick)
+    if (currentNick && isNickStyleId(currentNick)) {
+      const nickDef = NICK_STYLES_BY_ID[currentNick]
       if (nickDef) {
         let shouldReset = false
         if (nickDef.requiredRole === 'admin' && !isAdmin.value) {
@@ -75,8 +83,8 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
 
     // 2. Sanitizar Avatar Style
     const currentAvatar = gameStore.state.avatar_style || ''
-    if (currentAvatar) {
-      const avatarDef = AVATAR_STYLES.find(a => a.id === currentAvatar)
+    if (currentAvatar && isAvatarStyleId(currentAvatar)) {
+      const avatarDef = AVATAR_STYLES_BY_ID[currentAvatar]
       if (avatarDef) {
         let shouldReset = false
         if (avatarDef.requiredRole === 'admin' && !isAdmin.value) {
@@ -101,8 +109,8 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
     if (!authStore.user || !gameStore.db) return
     
     // Validación de seguridad antes de equipar
-    if (styleId) {
-      const styleDef = NICK_STYLES.find(n => n.id === styleId)
+    if (styleId && isNickStyleId(styleId)) {
+      const styleDef = NICK_STYLES_BY_ID[styleId]
       if (styleDef) {
         const userClass = gameStore.state.playerClass || ''
         const currentLevel = Math.max(gameStore.state.classLevel || 1, gameStore.state.trainerLevel || 1)
@@ -138,8 +146,8 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
     if (!authStore.user || !gameStore.db) return
     
     // Validación de seguridad antes de equipar
-    if (styleId) {
-      const styleDef = AVATAR_STYLES.find(a => a.id === styleId)
+    if (styleId && isAvatarStyleId(styleId)) {
+      const styleDef = AVATAR_STYLES_BY_ID[styleId]
       if (styleDef) {
         const userClass = gameStore.state.playerClass || ''
         const currentLevel = Math.max(gameStore.state.classLevel || 1, gameStore.state.trainerLevel || 1)

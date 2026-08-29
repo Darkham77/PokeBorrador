@@ -1,7 +1,6 @@
 import { ref, computed, watch, type Ref } from 'vue'
-import { findShortestPath, requireAdventureNodeId } from '../../../test aventura/kantoGraph.ts'
-import type { AdventureNodeId } from '../../../test aventura/kantoGraph.ts'
-import { FIRE_RED_MAPS } from '@/data/world/maps'
+import { findShortestPath, requireAdventureNodeId, type AdventureNodeId } from '../../../test aventura/kantoGraph.ts'
+import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
 import { SHOP_ITEMS, requireItemId } from '@/data/inventory/items'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 import type { ShopItemData } from '@/data/inventory/items'
@@ -137,7 +136,8 @@ export function useAdventureRouting(options: {
       const originNode = originMap.value
       if (isMapRouteId(originNode)) options.mapStore.currentMap = originNode
       options.shopStore.healAllPokemon(0)
-      options.travelLog.value.push(`🏥 ¡Llegada segura a ${FIRE_RED_MAPS.find(m => m.id === originNode)?.name || originNode}! Tu equipo ha sido completamente curado.`)
+      const originName = (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[originNode]?.name || originNode // open-record
+      options.travelLog.value.push(`🏥 ¡Llegada segura a ${originName}! Tu equipo ha sido completamente curado.`)
     } else if (move.id === 'sweetscent') {
       activeSweetScent.value = true
       options.travelLog.value.push(`🌸 ¡${pkmn.name} usó ${moveName}! Un aroma dulce inunda el sendero: la tasa de combates ha aumentado.`)
@@ -175,7 +175,7 @@ export function useAdventureRouting(options: {
     const path = findShortestPath(originMap.value, destinationMap.value, activeHMs.value)
     if (path) {
       calculatedPath.value = path
-      options.travelLog.value = [`Ruta calculada: ${path.map(id => FIRE_RED_MAPS.find(m => m.id === id)?.name || id).join(' → ')}`]
+      options.travelLog.value = [`Ruta calculada: ${path.map(id => (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[id]?.name || id).join(' → ')}`] // open-record
     } else {
       calculatedPath.value = []
       options.travelLog.value = ['⚠️ No hay ruta transitable con las MOs actuales.']

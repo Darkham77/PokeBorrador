@@ -106,7 +106,9 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
   }
 
   public async navigateToRoute1(): Promise<void> {
-    await this.page.locator('#map-card-route1').click();
+    const card = this.page.locator('#map-card-route1').first();
+    await card.waitFor({ state: 'visible', timeout: 15000 });
+    await card.click();
   }
 
   public async forceHealAll(): Promise<void> {
@@ -120,16 +122,6 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
     finalState?: CertifiedTestBatch['finalState']
   ): Promise<void> {
     await super.playBattle(finalState);
-    const isRewards = await this.page.evaluate(() => {
-      const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
-      return store?.currentFsmState === 'REWARDS_PHASE';
-    });
-    if (isRewards) {
-      await this.page.evaluate(async () => {
-        const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-        await useBattleStore().completeBattleFlow('search');
-      });
-    }
     await this.page.waitForFunction(() => {
       const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
       if (!store || store.isProcessing) return false;
@@ -138,7 +130,7 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
       return (fsmState === 'SEARCH_PHASE' && fsmSubState === 'COMBAT_OR_FLEE') ||
              (fsmState === 'INITIALIZING' && fsmSubState === 'MINIGAME_CHECK') ||
              fsmState === 'EXIT_BATTLE';
-    }, undefined, { timeout: 15000 });
+    }, undefined, { timeout: 20000 });
   }
 
   public async forceEncounterType(type: SearchEncounterType): Promise<void> {

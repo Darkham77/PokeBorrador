@@ -13,7 +13,7 @@ import { ref, onMounted, nextTick } from 'vue'
 import { usePvPStore } from '@/stores/pvp'
 import { RANKED_REWARD_MILESTONES } from '@/data/system/rankedData'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { SHOP_ITEMS } from '@/data/inventory/items'
+import { getItemById } from '@/data/inventory/items'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 import { gsap } from 'gsap'
@@ -27,12 +27,12 @@ onMounted(() => {
 })
 
 const getItemDesc = (itemName: string) => {
-  const item = SHOP_ITEMS.find(i => i.id === itemName || i.name === itemName)
+  const item = getItemById(itemName)
   return item?.desc || 'Recompensa de la Arena de Batalla.'
 }
 
 const getItemSpriteUrl = (itemName: string) => {
-  const item = SHOP_ITEMS.find(i => i.id === itemName || i.name === itemName)
+  const item = getItemById(itemName)
   const slug = item?.sprite || item?.id || itemName
   return getAssetUrl(ASSET_TYPES.ITEM, slug)
 }

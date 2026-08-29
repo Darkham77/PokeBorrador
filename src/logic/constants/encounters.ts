@@ -19,6 +19,7 @@ export const MAP_BIOME_KEYS = [
   'isDesert', 'isSwamp', 'isMountain',
   'isCoastal', 'isForest', 'isPlains'
 ] as const;
+export type MapBiomeKey = (typeof MAP_BIOME_KEYS)[number];
 
 /** Weather map normalization dictionary for Showdown weather IDs. */
 export const WEATHER_MAP: Record<string, string> = {
@@ -44,21 +45,22 @@ export const DEFAULT_FISHING_RATE_WEIGHT = 10;
 /** Default spawn weight for exclusive weather wild species. */
 export const DEFAULT_EXCLUSIVE_SPAWN_WEIGHT = 5;
 
-/** Default spawn weight for visitor wild species. */
 export const DEFAULT_VISITOR_SPAWN_WEIGHT = 10;
 
 /** Setup boost move IDs for Heuristic AI evaluation. */
-export const SETUP_MOVES: readonly string[] = [ // no-domain
+const SETUP_MOVES_LIST = [
   'swordsdance', 'nastyplot', 'dragondance', 'calmmind', 'quiverdance',
   'shellsmash', 'bulkup', 'bellydrum', 'coil', 'shiftgear', 'workup',
-];
+] as const;
+export const SETUP_MOVES: ReadonlySet<string> = new Set<string>(SETUP_MOVES_LIST); // runtime-set
 
 /** Priority move IDs for Heuristic AI threat calculation. */
-export const PRIORITY_MOVES: readonly string[] = [ // no-domain
+const PRIORITY_MOVES_LIST = [
   'extremespeed', 'suckerpunch', 'machpunch', 'bulletpunch', 'iceshard',
   'shadowsneak', 'aquajet', 'accelerock', 'watershuriken', 'firstimpression',
   'grassyglide', 'thunderclap', 'jetpunch',
-];
+] as const;
+export const PRIORITY_MOVES: ReadonlySet<string> = new Set<string>(PRIORITY_MOVES_LIST); // runtime-set
 
 /** Heuristic AI threat calculation weight for speed. */
 export const THREAT_WEIGHT_SPEED = 0.35;
