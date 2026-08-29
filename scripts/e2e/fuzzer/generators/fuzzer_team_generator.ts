@@ -68,6 +68,8 @@ export interface CertifiedBattleHistoryEntry {
   p2ActiveUid?: string;
   p1MoveId?: string;
   p2MoveId?: string;
+  p1MovePp?: number;
+  p2MovePp?: number;
   p1LockedMoveId?: string;
   p2LockedMoveId?: string;
   p1Trapped?: boolean;

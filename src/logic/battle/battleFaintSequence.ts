@@ -286,7 +286,10 @@ export async function processPlayerFaintSequence(
   active.player = null
 
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CHECK_TEAM)
-  const nextPoke = ctx.gs.state.team.find((p: Pokemon) => p && p.hp > 0)
+  const team = (ctx.gs.state?.team && ctx.gs.state.team.length > 0)
+    ? ctx.gs.state.team
+    : (active.playerTeam || [])
+  const nextPoke = team.find((p: Pokemon) => p && p.hp > 0 && !p.fainted)
 
   if (!nextPoke) {
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ALL_FAINTED)

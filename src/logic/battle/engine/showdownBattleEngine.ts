@@ -137,8 +137,30 @@ export class ShowdownBattleEngine {
     }
 
     if (explicitChoice !== undefined) {
-      const activeMoves = (effectiveReq && 'active' in effectiveReq && Array.isArray(effectiveReq.active?.[0]?.moves)) ? effectiveReq.active[0]!.moves : [];
-      return resolveValidMoveChoice(explicitChoice, activeMoves);
+      if (isForceSwitch) {
+        const trimmed = explicitChoice.trim().toLowerCase();
+        const switchMatch = /^switch\s+(\d+)$/.exec(trimmed);
+        if (switchMatch) {
+          const targetSlot = parseInt(switchMatch[1]!, 10);
+          const targetPoke = simPokemons[targetSlot - 1] ?? (requestPokemons[targetSlot - 1] as RequestPokemonItem | undefined);
+          if (targetPoke) {
+            const isFnt = 'fainted' in targetPoke && typeof targetPoke.fainted === 'boolean'
+              ? targetPoke.fainted
+              : ('condition' in targetPoke && typeof targetPoke.condition === 'string' ? targetPoke.condition.includes('fnt') : false);
+            const isAct = 'active' in targetPoke && typeof targetPoke.active === 'boolean'
+              ? targetPoke.active
+              : activeList.includes(targetPoke as Pokemon);
+            if (!isFnt && !isAct) {
+              return explicitChoice;
+            }
+          } else {
+            return explicitChoice;
+          }
+        }
+      } else {
+        const activeMoves = (effectiveReq && 'active' in effectiveReq && Array.isArray(effectiveReq.active?.[0]?.moves)) ? effectiveReq.active[0]!.moves : [];
+        return resolveValidMoveChoice(explicitChoice, activeMoves);
+      }
     }
 
     let choiceCandidate: string | undefined;
@@ -303,11 +325,15 @@ export class ShowdownBattleEngine {
     if (input.weather && input.weather !== 'none') {
       battle.field.setWeather(input.weather, 'debug' as const);
     }
-    if (input.p1Hps && typeof input.p1Hps === 'object') {
-      syncSidePokemon(battle.p1, input.p1Hps, input.p1Statuses);
-    }
-    if (input.p2Hps && typeof input.p2Hps === 'object') {
-      syncSidePokemon(battle.p2, input.p2Hps, input.p2Statuses);
+    const isReplayMode = this.mode === 'replayer';
+    const isItemTurn = Boolean(input.p1UsedBattleItem || (typeof input.certifiedHistoryStep === 'object' && input.certifiedHistoryStep !== null && Reflect.get(input.certifiedHistoryStep, 'p1UsedBattleItem')));
+    if (!isReplayMode || isItemTurn) {
+      if (input.p1Hps && typeof input.p1Hps === 'object') {
+        syncSidePokemon(battle.p1, input.p1Hps, input.p1Statuses);
+      }
+      if (input.p2Hps && typeof input.p2Hps === 'object') {
+        syncSidePokemon(battle.p2, input.p2Hps, input.p2Statuses);
+      }
     }
     if (this.mode === 'replayer') {
       this.cheatManager.applyPreTurnCheats(battle, true, input.certifiedHistoryStep);
@@ -358,6 +384,8 @@ export class ShowdownBattleEngine {
               explicitToUse = undefined;
             }
           }
+        } else if (isForce && trimmed.startsWith('move ')) {
+          explicitToUse = undefined;
         }
       }
       const choice = mustAct ? this.resolveNextChoice(seatId, side.activeRequest, explicitToUse, seatInput.agent) : 'pass';

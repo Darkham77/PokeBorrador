@@ -39,7 +39,7 @@ export abstract class BaseE2ESimulation {
    */
   public async syncDevDb(request: unknown, dbBuffer: Buffer): Promise<void> {
     const playwrightRequest = request as { post: (url: string, opts: unknown) => Promise<unknown> };
-    await playwrightRequest.post('http://127.0.0.1:5174/api/dev-export-db', {
+    await playwrightRequest.post('/api/dev-export-db', {
       headers: { 'Content-Type': 'application/octet-stream', 'x-db-key': this.sqliteKey },
       data: dbBuffer
     });

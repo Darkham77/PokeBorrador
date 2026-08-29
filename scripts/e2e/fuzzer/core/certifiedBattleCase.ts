@@ -65,6 +65,8 @@ function isHistoryEntry(value: unknown): value is CertifiedBattleHistoryEntry {
     && (read(value, 'p2ActiveUid') === undefined || typeof read(value, 'p2ActiveUid') === 'string')
     && (read(value, 'p1MoveId') === undefined || typeof read(value, 'p1MoveId') === 'string')
     && (read(value, 'p2MoveId') === undefined || typeof read(value, 'p2MoveId') === 'string')
+    && (read(value, 'p1MovePp') === undefined || typeof read(value, 'p1MovePp') === 'number')
+    && (read(value, 'p2MovePp') === undefined || typeof read(value, 'p2MovePp') === 'number')
     && (read(value, 'p1LockedMoveId') === undefined || typeof read(value, 'p1LockedMoveId') === 'string')
     && (read(value, 'p2LockedMoveId') === undefined || typeof read(value, 'p2LockedMoveId') === 'string')
     && (read(value, 'p1Trapped') === undefined || typeof read(value, 'p1Trapped') === 'boolean')

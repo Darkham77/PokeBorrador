@@ -94,7 +94,6 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
         const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
         
         const game = useGameStore();
-        game.state.money = money;
 
         const team: typeof game.state.team = [];
         const box: typeof game.state.box = [];
@@ -109,10 +108,13 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
             box.push(pkmn);
           }
         }
-        game.state.team = team;
-        game.state.box = box;
-        game.state.starterChosen = true;
-        await game.saveGame();
+        game.updateState({ money, team, box, starterChosen: true });
+        let saveRes = await game.save(false);
+        while (!saveRes?.success) {
+          await new Promise(r => setTimeout(r, 100));
+          saveRes = await game.save(false);
+        }
+        console.log('[DEBUG GTS] setupUserInventory save result:', saveRes);
       },
       { money, pokemonCount, setupLevel: SIMULATION_SETUP_POKEMON_LEVEL }
     );
@@ -166,6 +168,9 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
 
     const sellerContext = await browser.newContext();
     const pageSeller = await sellerContext.newPage();
+    pageSeller.on('console', msg => {
+      console.log('[PAGE SELLER CONSOLE]:', msg.text());
+    });
     await pageSeller.addInitScript(() => {
       window.__GTS_SIMULATION__ = true;
     });

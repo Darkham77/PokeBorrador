@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import { type CertifiedTestBatch } from '../e2e_helpers.ts';
-import { MAX_SUITE_TOTAL_TIMEOUT_MS } from '../simulation_config.ts';
+import { getSuiteTimeoutForBatch } from '../simulation_config.ts';
 import { requireCertifiedBattleCaseDocument } from '../fuzzer/core/certifiedBattleCase.ts';
 
 class FSMSyncSimWrapper extends BaseBattleSimulation {
@@ -110,7 +110,7 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
   if (scheduledBatches.length > 0) {
     scheduledBatches.forEach(({ b: batch, idx: index }) => {
       test(`debería ejecutar el lote de fuzzer #${index + 1} (${batch.playerTeam.length} Pokémon) de forma determinista`, async ({ page }, testInfo) => {
-        test.setTimeout(MAX_SUITE_TOTAL_TIMEOUT_MS);
+        test.setTimeout(getSuiteTimeoutForBatch(batch.history?.length));
         startTimesMap[index] = Number(Temporal.Now.instant().epochMilliseconds);
 
         const logBuffer: string[] = []; // no-domain

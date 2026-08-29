@@ -21,7 +21,10 @@ export function isMatchingUid(uidA: string | undefined | null, uidB: string | un
   if (!uidA || !uidB) return false;
   const a = uidA.toLowerCase(); // text-ok
   const b = uidB.toLowerCase(); // text-ok
-  return a === b || a.startsWith(b) || b.startsWith(a);
+  if (a === b) return true;
+  if (a.startsWith(b) && (a[b.length] === '-' || a[b.length] === '_')) return true;
+  if (b.startsWith(a) && (b[a.length] === '-' || b[a.length] === '_')) return true;
+  return false;
 }
 
 /**

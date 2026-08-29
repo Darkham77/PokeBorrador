@@ -241,7 +241,7 @@ export async function resolvePostTurnSwitchesAndFaints(
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.ENEMY_REPLACEMENT_SEQ)
       await store.handleFaint('enemy')
     }
-    if (fsm.currentState.value === BATTLE_STATES.EXIT_BATTLE || store.activeBattle.value?.over) return true
+    if (fsm.currentState.value === BATTLE_STATES.EXIT_BATTLE || store.activeBattle.value?.over || playerFainted) return true
   }
 
   if (result.isOver && store.activeBattle.value) {

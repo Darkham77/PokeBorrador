@@ -2,6 +2,8 @@ import { test, expect, type Page } from '@playwright/test';
 import { BaseE2ESimulation } from '../base_simulation.ts';
 import { waitForStoreReady } from '../e2e_helpers.ts';
 
+const MAX_ATTRACTION_SAMPLE_ATTEMPTS = 15;
+
 class FieldAbilitiesAttractionSimulation extends BaseE2ESimulation {
   constructor(page: Page, username: string) {
     super(page, username);
@@ -49,22 +51,26 @@ class FieldAbilitiesAttractionSimulation extends BaseE2ESimulation {
 
   public async verifyElementalAttraction(targetType: string): Promise<boolean> {
     return await this.page.evaluate(
-      async ({ expType }) => {
+      async ({ expType, maxAttempts }) => {
         const { useGameStore } = await import('../../../src/stores/game.ts');
         const { generateEncounter } = await import('../../../src/logic/encounters/encounters.ts');
         const gameStore = useGameStore();
 
-        const encounter = await generateEncounter('power_plant', {
-          faction: gameStore.state.faction,
-          team: gameStore.state.team
-        }, { forceEncounter: true });
+        for (let i = 0; i < maxAttempts; i++) {
+          const encounter = await generateEncounter('power_plant', {
+            faction: gameStore.state.faction,
+            team: gameStore.state.team
+          }, { forceEncounter: true });
 
-        if (encounter && encounter.type === 'wild' && encounter.pokemon) {
-          return encounter.pokemon.type === expType || encounter.pokemon.type2 === expType;
+          if (encounter && encounter.type === 'wild' && encounter.pokemon) {
+            if (encounter.pokemon.type === expType || encounter.pokemon.type2 === expType) {
+              return true;
+            }
+          }
         }
         return false;
       },
-      { expType: targetType }
+      { expType: targetType, maxAttempts: MAX_ATTRACTION_SAMPLE_ATTEMPTS }
     );
   }
 }

@@ -59,10 +59,10 @@ const RANDOM_STRING_SUBSTRING_END = 11;
     const poke = p_asset_data as Pokemon;
     const uid = poke.uid;
     const boxLenBefore = saveObj.box?.length || 0;
-    saveObj.box = (saveObj.box || []).filter((p) => p.uid !== uid);
+    saveObj.box = (saveObj.box || []).filter((p) => p && p.uid !== uid);
     if (saveObj.box.length === boxLenBefore) {
       const teamLenBefore = saveObj.team?.length || 0;
-      saveObj.team = (saveObj.team || []).filter((p) => p.uid !== uid);
+      saveObj.team = (saveObj.team || []).filter((p) => p && p.uid !== uid);
       if (saveObj.team.length === teamLenBefore) {
         return { data: null, error: { message: 'Pokémon no encontrado en tu inventario.' } };
       }

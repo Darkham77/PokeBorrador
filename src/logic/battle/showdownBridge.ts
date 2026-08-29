@@ -202,9 +202,9 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     const namePart = rawId.includes(':') ? (rawId.split(':')[1]?.trim() ?? '') : '';
     let matchMon: Pokemon | null = null;
     if (namePart) {
-      matchMon = (team.find(mon => mon && isMatchingUid(mon.uid, namePart)) ?? null) as Pokemon | null;
+      matchMon = (team.find(mon => mon && (isMatchingUid(mon.uid, namePart) || mon.name?.toLowerCase() === namePart.toLowerCase() || mon.id === namePart)) ?? null) as Pokemon | null; // text-ok
       if (matchMon) {
-        console.debug(`[E2E-GETPOKE-SUFFIX-MATCH] Matched rawId "${rawId}" to team UID "${matchMon.uid}" via UID prefix`);
+        console.debug(`[E2E-GETPOKE-SUFFIX-MATCH] Matched rawId "${rawId}" to team UID "${matchMon.uid}" via name/UID`);
         return matchMon;
       }
     }

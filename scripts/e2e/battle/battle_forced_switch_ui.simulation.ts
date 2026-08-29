@@ -24,7 +24,7 @@ class ForcedSwitchSimWrapper extends BaseBattleSimulation {
       const gameStore = useGameStore();
       const battleStore = useBattleStore();
 
-      const p1 = pokemonDebugService.generate({ id: 'pikachu', level: testLevel });
+      const p1 = pokemonDebugService.generate({ id: 'pikachu', level: testLevel, moves: ['growl', 'tailwhip'] });
       const p2 = pokemonDebugService.generate({ id: 'charizard', level: testLevel });
       gameStore.state.team = [p1, p2];
       gameStore.state.starterChosen = true;
@@ -32,13 +32,14 @@ class ForcedSwitchSimWrapper extends BaseBattleSimulation {
       const e1 = pokemonDebugService.generate({
         id: 'pidgeot',
         level: testLevel,
-        moves: ['whirlwind', 'gust']
+        moves: ['whirlwind']
       });
       const e2 = pokemonDebugService.generate({ id: 'machop', level: testLevel });
 
       await battleStore.startBattle(e1, {
         isTrainer: true,
-        trainerName: 'Ornitólogo Paco',
+        trainerName: 'Bird Keeper Paco',
+        trainerSprite: 'birdkeeper',
         enemyTeam: [e1, e2],
         locationId: 'route1'
       });

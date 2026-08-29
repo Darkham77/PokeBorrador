@@ -60,6 +60,15 @@ export function applyHealCheatToSide(side: CheatSide | null | undefined): void {
       } else {
         p.status = '';
       }
+
+      if (Array.isArray(p.moveSlots)) {
+        p.moveSlots.forEach(slot => {
+          if (slot) {
+            slot.pp = slot.maxpp;
+            if ('disabled' in slot) Reflect.set(slot, 'disabled', false);
+          }
+        });
+      }
     }
   });
 

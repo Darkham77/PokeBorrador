@@ -463,6 +463,8 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
             const p2MoveIdx = safeP2Choice.startsWith('move ') ? parseInt(safeP2Choice.slice(5), 10) - 1 : -1;
             const p1MoveId = p1MoveIdx >= 0 && p1ReqActive?.moves?.[p1MoveIdx]?.id ? p1ReqActive.moves[p1MoveIdx].id : undefined;
             const p2MoveId = p2MoveIdx >= 0 && p2ReqActive?.moves?.[p2MoveIdx]?.id ? p2ReqActive.moves[p2MoveIdx].id : undefined;
+            const p1MovePp = p1MoveIdx >= 0 && typeof p1ReqActive?.moves?.[p1MoveIdx]?.pp === 'number' ? p1ReqActive.moves[p1MoveIdx].pp : undefined;
+            const p2MovePp = p2MoveIdx >= 0 && typeof p2ReqActive?.moves?.[p2MoveIdx]?.pp === 'number' ? p2ReqActive.moves[p2MoveIdx].pp : undefined;
 
             const p1Trapped = Boolean((p1Req as ChoiceRequest)?.active?.[0]?.trapped || (p1Req as ChoiceRequest)?.active?.[0]?.maybeTrapped);
             const p2Trapped = Boolean((p2Req as ChoiceRequest)?.active?.[0]?.trapped || (p2Req as ChoiceRequest)?.active?.[0]?.maybeTrapped);
@@ -493,6 +495,8 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
               p2ActiveUid: p2Active ? (Reflect.get(p2Active, 'uid') as string | undefined) : p2SwitchedUid,
               p1MoveId,
               p2MoveId,
+              p1MovePp,
+              p2MovePp,
               p1LockedMoveId: p1LockedMove,
               p2LockedMoveId: p2LockedMove,
               p1Trapped: p1Trapped || undefined,

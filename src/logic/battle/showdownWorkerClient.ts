@@ -228,8 +228,9 @@ export async function executeTurnInWorker(
 
     const { useGameStore } = await import('@/stores/game');
     const gameStore = useGameStore();
-    if (gameStore?.state?.team) {
-      const p1Data = extractTeamHpAndStatus(gameStore.state.team);
+    const sourcePlayerTeam = battleStore?.state?.playerTeam || gameStore?.state?.team;
+    if (sourcePlayerTeam) {
+      const p1Data = extractTeamHpAndStatus(sourcePlayerTeam);
       p1Hps = p1Data.hps;
       p1Statuses = p1Data.statuses;
       console.debug(`[ORCHESTRATOR-EXECUTE-DEBUG] Sending p1Hps:`, JSON.stringify(p1Hps), `p1Statuses:`, JSON.stringify(p1Statuses));

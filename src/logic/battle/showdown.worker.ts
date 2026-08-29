@@ -168,6 +168,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
         const seedStr = formatToShowdownSeed(seedVal);
         console.debug(`[E2E-SEED-WORKER-DEBUG] Initializing Battle with seedVal: ${JSON.stringify(seedVal)} and seedStr: "${seedStr}"`);
 
+        resetDeterministicMathRandom();
         const battleInstance = createShowdownBattle(payload.format || ACTIVE_SHOWDOWN_FORMAT, seedStr);
         currentBattle = battleInstance;
 
@@ -175,7 +176,6 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
         ShowdownLogEnricher.setupRealtimeEnrichment(battleInstance);
 
         // Configure players (this automatically triggers the battle in pkmn/sim)
-        resetDeterministicMathRandom();
         reportInitStage('before-p1-set-player');
         battleInstance.setPlayer('p1', { name: p1.name || 'Player 1', team: p1.team });
         reportInitStage('after-p1-set-player');

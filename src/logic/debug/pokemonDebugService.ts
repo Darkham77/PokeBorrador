@@ -135,12 +135,14 @@ export const pokemonDebugService = {
       p.moves = moves
         .filter((m): m is string => typeof m === 'string' && !!m)
         .map((mName: string) => {
-          const mData = pokemonDataProvider.getMoveData(mName)
+          const mData = pokemonDataProvider.getMoveData(mName);
+          const basePp = mData?.pp || DEFAULT_DEBUG_MOVE_PP;
+          const maxPp = Math.floor(basePp * 1.6);
           return { 
             id: mData?.id || mName,
             name: mData?.name || mName, 
-            pp: mData?.pp || DEFAULT_DEBUG_MOVE_PP, 
-            maxPP: mData?.pp || DEFAULT_DEBUG_MOVE_PP,
+            pp: maxPp, 
+            maxPP: maxPp,
             type: mData?.type || 'normal',
             power: mData?.power || 0,
             acc: mData?.acc || DEFAULT_DEBUG_MOVE_ACC,

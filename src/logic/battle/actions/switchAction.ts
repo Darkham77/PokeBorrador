@@ -119,12 +119,16 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
   }
 
   const { useUIStore } = await import('@/stores/ui')
-  useUIStore().isBattleSwitchForced = false
   const { useModalStore } = await import('@/stores/modals')
   useModalStore().close('PokemonSelection')
 
-  persistBattle()
-  await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
+  if (newPoke.hp > 0 && !activeBattle.value?.over) {
+    useUIStore().isBattleSwitchForced = false
+    persistBattle()
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
+  } else {
+    persistBattle()
+  }
 }
 
 async function processForcedSwitchWorkerTurn(

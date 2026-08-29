@@ -47,8 +47,9 @@ class MultiSpeciesEventSimulation extends BaseE2ESimulation {
       const startAt = now.subtract({ hours: 1 }).toString();
       const endAt = now.add({ hours: 2 }).toString();
 
-      eventStore.allEvents = [
-        {
+      const db = gameStore.db;
+      if (db) {
+        await db.from('events_config').upsert({
           id: 'torneo_pesca',
           name: 'Torneo de Pesca Acuática',
           icon: '🎣',
@@ -67,8 +68,10 @@ class MultiSpeciesEventSimulation extends BaseE2ESimulation {
             ]
           }),
           description: '¡Compite con las especies acuáticas destacadas de la semana!'
-        }
-      ];
+        });
+      }
+
+      await eventStore.fetchEvents();
     });
   }
 }
@@ -85,15 +88,15 @@ test.describe('Multi-Species Event Competition E2E Simulation', () => {
       useModalStore().open('WorldEvents');
     });
 
-    const modal = page.locator('.world-events-modal');
-    await expect(modal).toBeVisible({ timeout: 5000 });
+    const modal = page.locator('.events-modal-content-inner, .events-modal-header');
+    await expect(modal.first()).toBeVisible({ timeout: 5000 });
 
     // 1. Verify Global IVs slot is rendered
-    const globalSlot = page.locator('.category-slot-card').filter({ hasText: 'Mayor IVs Totales' });
+    const globalSlot = page.locator('.category-slot-card').filter({ hasText: 'Mayor IVs Totales' }).first();
     await expect(globalSlot).toBeVisible({ timeout: 5000 });
 
-    // 2. Verify Species Tabs Bar is rendered with 3 species
-    const tabsBar = page.locator('.species-tabs-bar');
+    // 2. Verify Species Tabs Strip is rendered with 3 species
+    const tabsBar = page.locator('.species-tabs-strip').first();
     await expect(tabsBar).toBeVisible({ timeout: 5000 });
 
     const tabButtons = tabsBar.locator('.species-tab-btn');
@@ -107,22 +110,22 @@ test.describe('Multi-Species Event Competition E2E Simulation', () => {
     await expect(tabButtons.nth(1)).toHaveClass(/active/);
 
     // 5. Inscribe Horsea into Horsea Weight slot
-    const horseaWeightSlot = page.locator('.category-slot-card').filter({ hasText: 'Mayor Peso' });
+    const horseaWeightSlot = page.locator('.category-slot-card').filter({ hasText: 'Peso' }).first();
     await expect(horseaWeightSlot).toBeVisible({ timeout: 5000 });
 
-    const inscribeBtn = horseaWeightSlot.locator('.btn-slot-action.inscribe');
+    const inscribeBtn = horseaWeightSlot.locator('.btn-slot-action.inscribe, button:has-text("INSCRIBIR")').first();
     await inscribeBtn.click();
 
     // Pokemon selection modal opens
-    const selectionModal = page.locator('.pokemon-selection-modal, .base-modal');
+    const selectionModal = page.locator('.selection-container, #pokemon-selection-confirm-btn');
     await expect(selectionModal.first()).toBeVisible({ timeout: 5000 });
 
-    // Select Horsea from grid and confirm
-    const horseaGridItem = page.locator('.pokemon-grid-item, .poke-select-card').filter({ hasText: 'Horsea' }).first();
-    if (await horseaGridItem.isVisible()) {
-      await horseaGridItem.click();
-    }
-    const confirmBtn = page.locator('.btn-confirm, .confirm-btn, button:has-text("CONFIRMAR")').first();
+    // Select Horsea from list and confirm
+    const horseaItem = page.locator('.list-item, [id^="pokemon-select-"]').filter({ hasText: 'HORSEA' }).first();
+    await expect(horseaItem).toBeVisible({ timeout: 5000 });
+    await horseaItem.click();
+
+    const confirmBtn = page.locator('#pokemon-selection-confirm-btn');
     if (await confirmBtn.isVisible()) {
       await confirmBtn.click();
     }

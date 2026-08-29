@@ -42,6 +42,7 @@ const emit = defineEmits<{
         description="Cambia entre la variante normal y la brillante."
       >
         <button
+          id="debug-btn-toggle-shiny"
           class="flag-btn shiny"
           :class="{ active: isShiny }"
           @click.stop="emit('toggleShiny')"

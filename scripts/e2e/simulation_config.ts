@@ -12,6 +12,18 @@ export const MAX_PER_ACTION_TIMEOUT_MS = 5000;
 /** Maximum allowed total execution time for a full battle simulation suite/batch (3 Minutes statically). */
 export const MAX_SUITE_TOTAL_TIMEOUT_MS = 180000;
 
+/**
+ * Calculates the suite timeout configured by parameter for a simulation:
+ * - If there are turns to replay from a fuzzer (turnCount > 0), estimates the timeout based on the turn count.
+ * - If there are NO pre-generated fuzzer turns to replay, uses MAX_SUITE_TOTAL_TIMEOUT_MS.
+ */
+export function getSuiteTimeoutForBatch(turnCount?: number): number {
+  if (!turnCount || turnCount <= 0) {
+    return MAX_SUITE_TOTAL_TIMEOUT_MS;
+  }
+  return Math.max(MAX_SUITE_TOTAL_TIMEOUT_MS, turnCount * MAX_PER_ACTION_TIMEOUT_MS);
+}
+
 /** Default timeout for UI locator click settling. */
 export const MAX_UI_SETTLE_TIMEOUT_MS = 2000;
 

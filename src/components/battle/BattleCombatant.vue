@@ -193,6 +193,7 @@ const handleBallLeave = (el: Element, done: () => void) => {
 <template>
   <VirtualEntity
     v-if="pokemon"
+    :id="`combatant-${side}`"
     :class="['combatant-sprite', `${side}-side-sprite`]"
     :x="position.x"
     :y="position.y"

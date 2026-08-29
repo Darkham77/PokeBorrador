@@ -99,6 +99,10 @@ watch(() => gs.value.starterChosen, (val) => {
     nextTick(() => {
       const el = document.getElementById('game-screen')
       if (el) {
+        if (typeof window !== 'undefined' && window.__E2E__) {
+          gsap.set(el, { opacity: 1, y: 0 })
+          return
+        }
         const MAIN_GAME_TRANSITION_Y_PX = 10
         gsap.fromTo(el,
           { opacity: 0, y: MAIN_GAME_TRANSITION_Y_PX },

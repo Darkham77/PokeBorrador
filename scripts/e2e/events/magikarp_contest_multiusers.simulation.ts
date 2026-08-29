@@ -240,12 +240,12 @@ test.describe('4-Player Shared DB Magikarp Contest E2E Simulation', () => {
     });
 
     // b. Verificar que la tarjeta del evento muestre el badge de restricción de capturas
-    const restrictionTag = page1.locator('.catch-window-tag');
+    const restrictionTag = page1.locator('.catch-window-tag').first();
     await expect(restrictionTag).toBeVisible();
     await expect(restrictionTag).toContainText('SOLO CAPTURAS DEL EVENTO');
 
     // c. Pulsar PARTICIPAR para abrir el modal de selección
-    await page1.locator('#event-participate-btn-hora_magikarp').click();
+    await page1.locator('[id^="event-participate-btn-hora_magikarp"]').first().click();
 
     // d. Verificar que la lista de selección EXCLUYE al Magikarp viejo fuera de franja horaria y solo lista al capturado en el evento
     await page1.waitForSelector('.ps-vertical-list');

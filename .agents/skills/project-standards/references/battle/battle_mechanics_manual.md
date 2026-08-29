@@ -52,6 +52,7 @@ When executing turns and team swaps in battles coordinated by the Showdown worke
 *   **Choice Loop Mid-Turn State Transitions (`ShowdownBattleEngine`)**: When resolving multi-seat choices, `ShowdownBattleEngine` captures `startTurn = battle.turn` and `startReqState = battle.requestState`. If an action submitted for the first seat immediately resolves the turn or triggers a forced switch, subsequent seat submissions in that same loop are halted to prevent feeding outdated commands to Showdown's state machine.
 *   **Mandatory Recharge Clamping**: During turns following `Blast Burn`, `Hyper Beam`, or `Giga Impact`, Showdown emits an active request with `moves: [{ id: 'recharge', move: 'Recharge' }]`. Move choices submitted during this state are clamped to `move 1` (`Recharge`) exclusively, preserving normal move selections in standard turns.
 *   **Atomic Stream Consumption (`ShowdownBattleRunner`)**: Choice streams in automated replays are consumed directly from `choicesBySeat` without transient engine instantiations. P1 `teamPreview` requests resolve to `'team 1'` without advancing choice stream indices.
+*   **Post-Switch FSM Transition Guard (`switchAction.ts`)**: When resolving any switch sequence (voluntary, forced, or replacement), if the entering Pokémon faints on entry (e.g. from *Stealth Rock*, *Spikes*, or entry poison damage: `newPoke.hp <= 0`) or if the battle ends (`activeBattle.over`), the FSM MUST NOT transition back to `WAIT_INPUT` or reset `isBattleSwitchForced = false`. The FSM MUST remain in `SWITCH_MENU` (or the defeat / termination state) with `isBattleSwitchForced = true` so the UI presents the replacement menu and does not lock up with an empty/fainted combatant.
 
 ---
 
@@ -964,7 +965,10 @@ stateDiagram-v2
                 OCCUPY_SEAT --> HANDLE_RELEASE_ANIM : "handleReleaseRequest({ side, pokemon })"
                 HANDLE_RELEASE_ANIM --> AWAIT_RELEASE_TWEEN : "awaitTween('${side}-${targetUid}')"
                 AWAIT_RELEASE_TWEEN --> APPLY_HAZARDS : "applyEntryHazards(target)"
-                APPLY_HAZARDS --> [*]
+                APPLY_HAZARDS --> EVAL_HP : "Check target.hp > 0"
+                EVAL_HP --> [*] : "target.hp > 0 (FSM -> WAIT_INPUT, isBattleSwitchForced = false)"
+                EVAL_HP --> PLAYER_FAINT_SEQ : "target.hp <= 0 (FSM -> PLAYER_FAINT_SEQ / ENEMY_REPLACEMENT_SEQ)"
+                PLAYER_FAINT_SEQ --> [*] : "Retain SWITCH_MENU & isBattleSwitchForced = true"
             }
 
             state PLAYER_MANUAL_MENU {

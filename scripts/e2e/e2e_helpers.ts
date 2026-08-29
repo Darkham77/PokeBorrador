@@ -207,10 +207,19 @@ export async function loginTestUser(page: Page, testUser: string): Promise<void>
   await awaitGameStoreReady(page);
 
   // A new local profile must choose a starter; an existing profile goes straight to the map.
-  const starterCard = page.locator('[id^="starter-card-"]').first();
+  const needsStarter = await page.evaluate(() => {
+    const debug = window.__VITE_DEBUG__;
+    return debug?.useGameStore?.()?.state?.starterChosen === false;
+  });
 
-  if (await starterCard.isVisible()) {
+  if (needsStarter) {
+    const starterCard = page.locator('[id^="starter-card-"]').first();
+    await starterCard.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await starterCard.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await page.waitForFunction(() => {
+      const debug = window.__VITE_DEBUG__;
+      return debug?.useGameStore?.()?.state?.starterChosen === true;
+    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
   }
 }
 
@@ -239,10 +248,12 @@ export async function resolveTargetUidForSlot(page: Page, slotNum: number, _labe
   }, { slotNum });
 }
 
-/**
- * Hace clic en el botón de combatir para iniciar la batalla
- */
 export async function confirmAndStartBattle(page: Page): Promise<void> {
+  const confirmBtn = page.locator('#confirm-modal-btn').first();
+  if (await confirmBtn.isVisible()) {
+    await clickResilient(confirmBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  }
+
   const startBtn = page.locator('#start-encounter-btn').first();
   await startBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
   await clickResilient(startBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
@@ -992,12 +1003,8 @@ export async function openDebugTab(page: Page, category: string): Promise<void> 
   const isTabReady = (await navBtn.count()) > 0 && await navBtn.isVisible();
   if (!isTabReady) {
     const trigger = page.locator('#debug-trigger-btn').first();
-    const isTriggerVisible = (await trigger.count()) > 0 && await trigger.isVisible();
-    if (isTriggerVisible) {
-      await clickResilient(trigger);
-    } else {
-      await page.keyboard.press('Control+Shift+D');
-    }
+    await trigger.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await clickResilient(trigger);
     await page.locator('#debug-nav').waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await navBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
   }

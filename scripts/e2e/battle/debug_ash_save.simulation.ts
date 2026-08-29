@@ -3,7 +3,7 @@ import { test, type Page, type APIRequestContext } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { confirmAndStartBattle, waitForWaitInput, loginE2ETestUser } from '../e2e_helpers.ts';
+import { confirmAndStartBattle, waitForWaitInput } from '../e2e_helpers.ts';
 
 class AshSaveSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
@@ -15,13 +15,21 @@ class AshSaveSimWrapper extends BaseBattleSimulation {
     if (!fs.existsSync(dbPath)) {
       throw new Error(`Base de datos no encontrada en ${dbPath}`);
     }
-    const dbBuffer = fs.readFileSync(dbPath);
-    await request.post('/api/dev-export-db', {
-      headers: { 'Content-Type': 'application/octet-stream' },
-      data: dbBuffer
+    await this.page.addInitScript(() => {
+      (window as Window & { __GTS_SIMULATION__?: boolean }).__GTS_SIMULATION__ = true;
     });
+    const dbBuffer = fs.readFileSync(dbPath);
+    await this.syncDevDb(request, dbBuffer);
+    await this.setup();
 
-    await loginE2ETestUser(this.page, this.username);
+    await this.page.evaluate(() => {
+      const gs = window.__VITE_DEBUG__?.useGameStore?.();
+      if (gs?.state && 'classData' in gs.state && typeof gs.state.classData === 'object' && gs.state.classData !== null) {
+        const cd = gs.state.classData as { officialRouteId?: string; officialRouteTimestamp?: string };
+        cd.officialRouteId = 'route1';
+        cd.officialRouteTimestamp = String(Temporal.Now.instant().epochMilliseconds);
+      }
+    });
   }
 
   public async rotateTeam(): Promise<void> {

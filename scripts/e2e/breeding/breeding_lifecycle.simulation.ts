@@ -88,6 +88,7 @@ class BreedingLifecycleSimulation extends BaseE2ESimulation {
     const generation = await this.page.evaluate(async () => {
       const { useBreedingStore } = await import('../../../src/stores/breeding.ts');
       const breedingStore = useBreedingStore();
+      await breedingStore.loadDaycare();
       if (breedingStore?.checkAndGenerateEgg) {
         await breedingStore.checkAndGenerateEgg();
       }

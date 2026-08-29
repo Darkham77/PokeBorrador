@@ -7,7 +7,6 @@ import {
   openDebugTab
 } from '../e2e_helpers.ts';
 
-const SHINY_GYARADOS_TEST_LEVEL = 30;
 const WILD_PIDGEY_TEST_LEVEL = 3;
 
 class WildEncounterJumpSimWrapper extends BaseBattleSimulation {
@@ -20,8 +19,7 @@ class WildEncounterJumpSimWrapper extends BaseBattleSimulation {
     await openDebugTab(this.page, 'pokes');
     await this.page.locator('#debug-input-especie').fill('gyarados');
     await this.page.locator('#option-gyarados').click();
-    await this.page.locator('#debug-input-level').fill(SHINY_GYARADOS_TEST_LEVEL.toString());
-    await this.page.locator('#debug-checkbox-shiny').check();
+    await this.page.locator('#debug-btn-toggle-shiny, .flag-btn.shiny').click();
     await armBattleReadyForInput(this.page);
     await this.page.locator('#debug-btn-encounter').click();
     await awaitBattleReadyForInput(this.page);

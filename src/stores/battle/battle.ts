@@ -25,6 +25,7 @@ import { setupBattleDebug } from '@/logic/battle/battleDebug.ts'
 import { executeSwitch as switchAction } from '@/logic/battle/actions/switchAction.ts'
 import type { BattleSide } from '@/types/battle/battle'
 import { setupBattleEventWatchers } from './battleEventWatchers.ts'
+import { findMatchingPokemon } from '@/logic/battle/showdownUidMapper.ts'
 import { createBattleLoggerHelper } from './battleLogHelper.ts'
 import { requireWeatherId } from '@/logic/weather/weatherRegistry.ts'
 import type { ItemId } from '@/data/inventory/items'
@@ -375,16 +376,16 @@ export const useBattleStore = defineStore('battle', () => {
     const active = activeBattle.value;
     if (!active || !team) return;
 
-    if (active.player && team[active.playerTeamIndex]) {
-      const p = team[active.playerTeamIndex];
-      if (p) p.hp = active.player.hp;
+    if (active.player?.uid) {
+      const activeMatch = findMatchingPokemon(active.player.uid, team);
+      if (activeMatch) activeMatch.hp = active.player.hp;
     }
 
     if (Array.isArray(active.playerTeam)) {
       for (const bp of active.playerTeam) {
         if (!bp) continue;
         const matchingMon = bp.uid
-          ? team.find(p => p && p.uid === bp.uid)
+          ? findMatchingPokemon(bp.uid, team)
           : team.find(p => p && p.id === bp.id);
         if (matchingMon && typeof bp.hp === 'number') {
           matchingMon.hp = bp.hp;

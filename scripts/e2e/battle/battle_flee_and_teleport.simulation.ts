@@ -13,7 +13,6 @@ import {
 
 const CATERPIE_LOW_LEVEL = 2;
 const HIGH_LEVEL_PIDGEOT = 50;
-const ABRA_WILD_LEVEL = 5;
 const SPEED_PENALTY_STAGE = -6;
 
 class FleeTeleportSimWrapper extends BaseBattleSimulation {
@@ -98,23 +97,45 @@ test.describe('Battle Flee and Teleport Simulations', () => {
     await sim.forceFleeDebugger();
   });
 
-  test('should handle Abra wild Teleport move as a clean escape without defeat slide', async ({ page }) => {
+  test('should handle Abra Teleport move with bench as a pivot switch without defeat slide', async ({ page }) => {
     const sim = new FleeTeleportSimWrapper(page, 'TestTeleportAbra');
     await sim.setup();
-    await sim.setupWildEncounter('abra', ABRA_WILD_LEVEL);
+    await page.evaluate(async () => {
+      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const gameStore = useGameStore();
+      const battleStore = useBattleStore();
 
-    // Turn 1: Player uses a non-damaging or weak move, Abra uses Teleport
-    await armBattleFlowCompletion(page);
+      const p1 = pokemonDebugService.generate({ id: 'bulbasaur', level: 20, moves: ['growl'] });
+      gameStore.state.team = [p1];
+      gameStore.state.starterChosen = true;
+
+      const e1 = pokemonDebugService.generate({ id: 'abra', level: 20, moves: ['teleport'] });
+      const e2 = pokemonDebugService.generate({ id: 'kadabra', level: 20, moves: ['confusion'] });
+
+      await battleStore.startBattle(e1, {
+        isTrainer: true,
+        trainerName: 'Psychic Sabrina',
+        trainerSprite: 'sabrina',
+        enemyTeam: [e1, e2],
+        locationId: 'route1'
+      });
+    });
+
+    await armBattleReadyForInput(page);
     const moveBtn = page.locator('#move-btn-0').first();
     await clickResilient(moveBtn);
-    await awaitBattleFlowCompletion(page);
+    await awaitBattleReadyForInput(page);
 
-    // Battle ended as escape
-    const isBattleActive = await page.evaluate(() => {
-      const debug = (window as WindowWithResolver).__VITE_DEBUG__;
-      const store = debug?.useBattleStore?.();
-      return Boolean(store?.isBattleActive);
+    // Abra pivoted to Kadabra
+    const activeEnemyName = await page.evaluate(async () => {
+      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+      const store = useBattleStore();
+      return store.state?.enemy?.name ?? '';
     });
-    expect(isBattleActive).toBe(false);
+    expect(activeEnemyName).toBe('Kadabra');
+
+    await sim.forceFleeDebugger();
   });
 });

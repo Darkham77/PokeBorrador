@@ -337,7 +337,7 @@ export async function handleForceSwitch(ctx: BattleContext, side: BattleSide) {
       await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM)
       gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'player', type: 'forced-switch' })
       if (ctx.animations?.awaitTween) {
-        await ctx.animations.awaitTween(`player-${p.uid}`)
+        await ctx.animations.awaitTween('escape-player')
       }
     }
     // The forced replacement menu is actionable as soon as the withdrawal

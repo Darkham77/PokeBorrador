@@ -307,26 +307,20 @@ describe('Fuzzer forceSwitch choice recording after faint', () => {
       return;
     }
 
-    // Turn 2: p2 has forceSwitch, but runner feeds "move 1" (the bug).
+    // Turn 2: p2 has forceSwitch, but runner feeds "move 1" (from bugged array).
     const p1Req2 = battle.p1.activeRequest;
     const p2Req2 = battle.p2.activeRequest;
     const p1c2 = runner.resolveAndConsumeNextChoice('p1', p1Req2);
     const p2c2 = runner.resolveAndConsumeNextChoice('p2', p2Req2);
 
-    // p2c2 from buggedEnemyChoices[1] = "move 1" — Showdown MUST reject this.
+    // p2c2 from buggedEnemyChoices[1] = "move 1"
     assert.strictEqual(p2c2, 'move 1', 'Runner should return "move 1" from the bugged array');
 
-    // The engine must throw because "move 1" is invalid for a forceSwitch request.
-    assert.throws(
-      () => engine.executeTurn({ p1Choice: p1c2, p2Choice: p2c2 }),
-      (err: Error) => {
-        return (
-          err.message.includes('[ShowdownBattleEngine]') &&
-          err.message.includes('rechazada') &&
-          err.message.includes('move 1')
-        );
-      },
-      '[ShowdownBattleEngine] must throw when "move 1" is given for a forceSwitch request'
+    // The engine must gracefully ignore the invalid move choice during forced switch and pick a valid switch.
+    const result2 = engine.executeTurn({ p1Choice: p1c2, p2Choice: p2c2 });
+    assert.ok(
+      result2.p2AcceptedChoice.startsWith('switch'),
+      `[ShowdownBattleEngine] must resolve to a valid switch choice during forceSwitch, got: "${result2.p2AcceptedChoice}"`
     );
   });
 
