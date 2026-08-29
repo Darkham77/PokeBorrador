@@ -29,6 +29,7 @@ QA / Automation Engineers.
   3. Exact presence of localized chat log announcements.
   4. Precise matching of active combatant UIDs and visual sprite representations without ghost entities or missing frames.
 - **Map & Gym Atmosphere Lifecycle Testing Mandate**: Automated tests (`gym_weather_isolation.spec.ts`, `gym_atmosphere_lifecycle_integration.spec.ts`) MUST assert that single-sprite arenas (gyms) remain isolated from natural time/weather shifts by default, accept configurable overrides (`fixedCycle`/`fixedWeather`), while multi-sprite locations dynamically reflect their supported day phases.
+- **Resource Lifecycle in Test Factory Functions**: Helper factory functions that construct and return disposable resources to callers (such as `createMigratedDatabase(): DatabaseSync`) MUST NOT use `using db = ...` inside the factory body. Using `using` inside the factory disposes the instance upon returning from the function scope, resulting in `database is not open` errors for callers. The caller scope alone is responsible for managing the disposal lifecycle via `using db = createMigratedDatabase()`.
 - All test suites run under **Vitest** (vite-node) via `vitest.workspace.ts`. Regression checks MUST ALWAYS run the full test suite (`npm run test`), never subset commands like `test:unit` or `test:node` alone.
 
 ## Work Guidance
