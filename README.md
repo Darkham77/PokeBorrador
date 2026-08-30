@@ -138,54 +138,184 @@ Antes de realizar una entrega o desplegar cambios, es **MANDATORIO** que el cód
 4. **Testing**: Todos los unit tests deben pasar exitosamente.
 5. **Build**: La aplicación debe compilar correctamente para producción.
 
-### 🛡️ Auditoría e Integridad (Node.js 26+)
+### 🛡️ Calidad, Auditoría e Integridad (Node.js 26+)
 
-El proyecto utiliza un sistema de auditoría unificado y validadores semánticos con salida dual (JSON estructurado para IA y formato visual para desarrolladores).
+El proyecto cuenta con un ecosistema unificado de control de calidad, auditoría estática/dinámica, validadores semánticos de dominio y herramientas de aseguramiento continuo.
 
 #### 🔄 Flujo de Verificación Recomendado
 
-- **Durante el Desarrollo Activo**: Ejecuta `npm run lint` (~3-5 segundos) para comprobaciones rápidas de sintaxis, tipos TypeScript (`vue-tsc`), tipos de dominio y ESLint con `.eslintcache`.
+- **Durante el Desarrollo Activo**: Ejecuta `npm run lint` (~3-5 segundos) para comprobaciones rápidas de sintaxis, tipos TypeScript (`vue-tsc`), tipos de dominio, estructuras $O(1)$, estilos y ESLint con `.eslintcache`.
 - **Antes de Realizar un Commit**: Ejecuta `npm run audit:warnings-diff` (*Single Source of Truth*) para verificar de forma exhaustiva 0 errores en todo el proyecto y 0 advertencias nuevas contra `origin/main`.
 
 | Comando | Descripción |
 | :-- | :-- |
-| `npm run audit` | **Auditoría Global Unificada**: Ejecuta las 12 suites (Tests Node, AST de código, FSM, Ítems, Habilidades, Moves, SQL, Saves) emitiendo JSON estructurado en `stdout` por defecto para IAs y herramientas CI. |
-| `npm run audit:human` | **Modo Consola Humano**: Ejecuta la auditoría global mostrando un árbol jerárquico visual por archivo con sangría y emojis en consola. |
-| `npm run audit:fast` | **Auditoría Rápida de Código**: Escanea reglas estáticas de AST, Fallow, CSS y modularidad en segundos (JSON). |
-| `npm run audit:fast:human` | **Auditoría Rápida en Consola**: Ejecuta la auditoría de código en modo visual para desarrollo ágil. |
-| `npm run audit:warnings-diff` | **Pre-Commit Gatekeeper**: Verifica 0 errores en todo el proyecto (incluyendo migraciones SQL, FSM, tipos de dominio) y 0 advertencias nuevas contra `origin/main`. |
-| `npm run audit:fix` | **Auto-corrección**: Aplica correcciones automáticas de estándares (Timers, Imports ESM, SASS). |
-| `npm run audit:summary` | **Resumen de Métricas**: Muestra el desglose de violaciones por categorías y top archivos afectados. |
-| `npm run audit:report` | **Reporte en Texto**: Genera un archivo detallado `scratch/audit_report.txt` con todas las violaciones. |
-| `npm run audit:md` | **Reporte Markdown**: Genera un documento Markdown enriquecido con tablas en `scratch/audit_report.md`. |
-| `npm run test:node` | **Native Test Runner**: Ejecuta pruebas de lógica pura usando el runner nativo de Node.js 26+. |
-| `npm run test:all` | **Batería Completa de Tests**: Ejecuta secuencialmente la suite nativa de Node.js (`test:node`) y los tests de componentes en Vitest (`test`). |
-| `npm run validate:domain-types` | **Domain Types Audit**: Audita el cumplimiento estricto de tipos de dominio y uniones canónicas. |
-| `npm run validate:sql` | **SQL Integrity**: Valida compatibilidad de migraciones con SQLite nativo (`node:sqlite`). |
-| `npm run validate:save-migrations` | **Save Migrations**: Valida las migraciones de partidas guardadas contra el Dex de Showdown. |
-| `npm run validate:items` | **Item Database**: Verifica IDs, tipos e iconos en la base de datos de objetos. |
-| `npm run validate:moves` | **Move Integrity**: Valida integridad de movimientos y learnsets contra el Dex de Showdown. |
-| `npm run validate:abilities` | **Ability Sync**: Valida habilidades contra la base de datos oficial. |
-| `npm run validate:fsm` | **FSM Mastery Audit**: Verifica diagramas, implementación dinámica y paridad de flujo. |
-| `npm run migrations:generate` | **Generador de Migraciones**: Escanea las migraciones SQL locales de `database/migrations/` y las compila en el manifiesto TypeScript de producción. |
-| `npm run sync:test` | **Sincronización a Repo de Testing**: Copia el árbol de fuentes completo (`src/`, `api/`, `public/`, `scripts/`, `database/migrations/`, archivos de config) desde `PokeBorrador` al repositorio hermano `pokevicio-test`. |
+| `npm run lint` | **Fast Developer Lint**: Ejecuta validación de tipos de dominio, $O(1)$, estilos, `vue-tsc`, ESLint con caché y Markdownlint. |
+| `npm run lint:fix` | **Auto-Fix de Linter**: Aplica correcciones automáticas de formato y sintaxis con ESLint y Markdownlint. |
+| `npm run lint:summary` | **Resumen de Linter**: Muestra un resumen estructurado con el recuento de advertencias y errores en consola. |
+| `npm run audit` | **Auditoría Global Unificada**: Ejecuta el 100% de los sub-auditores dinámicamente, mostrando una tabla Box-Drawing en consola y guardando el reporte estructurado JSON en `scratch/audits/latest_audit.json`. |
+| `npm run audit:warnings-diff` | **Pre-Commit Gatekeeper**: Compara cambios contra `origin/main` exigiendo 0 errores en el repositorio y 0 advertencias nuevas en archivos modificados. |
+| `npm run audit:changed` | **Auditoría de Archivos Modificados**: Ejecuta las suites de auditoría exclusivamente sobre los archivos modificados desde `main`. |
+| `npm run audit:fix` | **Auto-corrección de Arquitectura**: Corrige automáticamente timers, sintaxis SASS, capas de render y directivas de importación. |
+| `npm run audit:family:domain` | **Auditoría de Dominio**: Valida tipos de dominio, uniones canónicas y estructuras de datos $O(1)$. |
+| `npm run audit:family:fsm` | **Auditoría de FSM**: Valida diagramas, implementación dinámica y paridad de flujo de combate. |
+| `npm run audit:family:persistence` | **Auditoría de Persistencia**: Valida esquemas SQL, migraciones y serialización de partidas. |
+| `npm run audit:family:assets` | **Auditoría de Assets**: Valida colisiones de sprites, nombres canónicos y atlas de texturas. |
+| `npm run audit:family:architecture` | **Auditoría Arquitectónica**: Valida modularidad de 500 líneas, tokens SCSS y componentes Vue. |
+| `npm run audit:family:docs` | **Auditoría Documental**: Valida enlaces internos, rutas relativas y cumplimiento del framework DOX. |
+| `npm run fallow:health` | **Salud de Código (Fallow)**: Mide el puntaje de salud del repositorio, duplicaciones, hotspots de complejidad y vulnerabilidades CWE. |
+| `npm run audit:fallow:triplets` | **Detección de Duplicados**: Escanea bloques de código duplicados o triplicados en todo el proyecto. |
+| `npm run audit:css` | **Auditoría de Estilos**: Analiza bundles de SCSS y bloques `<style>` de componentes para detectar reglas redundantes. |
+| `npm run audit:sprites` | **Auditoría de Sprites**: Detecta colisiones de identificadores y nombres de sprites en el catálogo de ítems. |
 
-### ☁️ Gestión de Infraestructura Supabase y Servidores (Node.js 26+)
+---
 
-El proyecto cuenta con un conjunto de herramientas automatizadas para gestionar el ciclo de vida de las bases de datos y la configuración de múltiples servidores (Cloud, NAS) a partir del archivo `.env` maestro unificado.
+### 🔍 Validadores Semánticos de Dominio
+
+Herramientas independientes de validación estricta ejecutadas bajo el modelo de permisos de Node.js 26+:
 
 | Comando | Descripción |
 | :-- | :-- |
-| `npm run servers:configure` | **Sincronización de GUI**: Parsea el `.env` maestro, extrae perfiles (`SERVER_<profile>_*`) y genera `src/data/official_servers.ts`. |
-| `npm run servers:db:update` | **Gestor y Migrador**: Conecta a la instancia elegida (`--server=<perfil>` o `--all`), inicializa esquemas y aplica parches incrementales. |
-| `npm run servers:db:backup` | **Generador de Respaldos**: Conecta al servidor elegido (`--server=<perfil>`), descubre tablas dinámicamente y descarga un respaldo JSON. |
-| `npm run servers:db:restore` | **Restaurador Transaccional**: Limpia en orden inverso y restaura transaccionalmente un archivo JSON hacia el servidor elegido (`--server=<perfil>`). |
-| `npm run servers:db:local-import` | **Importador SQLite Local**: Importa el respaldo JSON más reciente de Supabase hacia la base de datos local SQLite para pruebas offline. |
-| `npm run servers:db:admin` | **Mantenimiento de Usuarios**: Permite desbanear, cambiar contraseñas, emails, usernames y promover a admin desde la CLI. |
-| `npm run supabase:manage` | **Gestión de Docker/CLI**: Orquestador central de Supabase en local/Docker. Permite clonar, generar configuraciones unificadas y compilar/publicar la imagen local `pokevicio-db`. |
-| `npm run admin:rename` | **Renombrado Administrativo**: Cambia el nombre de entrenador de un usuario en Supabase directamente desde consola por ID o por el nombre actual. |
+| `npm run validate:domain-types` | **Domain Types Audit**: Audita el cumplimiento estricto de tipos de dominio y uniones canónicas derivadas (sin `any` ni strings libres). |
+| `npm run validate:o1` | **$O(1)$ Optimization Audit**: Garantiza que los accesos en rutas críticas de combate, IA e inventario usen diccionarios y conjuntos $O(1)$. |
+| `npm run validate:types` | **Type-Checking**: Ejecuta `vue-tsc --noEmit` para verificar la integridad de tipos en todos los componentes y archivos TypeScript. |
+| `npm run validate:component-styles` | **Component Styles Audit**: Verifica el uso de mixins SASS estandarizados, tokens de color y reglas visuales retro-modernas. |
+| `npm run validate:sql` | **SQL Integrity**: Valida la sintaxis y ejecución de migraciones SQL contra el motor SQLite nativo (`node:sqlite`). |
+| `npm run validate:save-migrations` | **Save Migrations**: Valida las transformaciones de partidas guardadas contra el Dex de Showdown. |
+| `npm run validate:markdown-links` | **Markdown Links**: Valida que todos los enlaces relativos y referencias cruzadas en documentación y DOX sean válidos. |
+| `npm run validate:items` | **Item Database**: Valida identificadores, categorías, tiers de crafteo e íconos en la base de datos de objetos. |
+| `npm run validate:moves` | **Move Integrity**: Valida movimientos, efectos, tipos y learnsets contra el Dex oficial de Pokémon Showdown. |
+| `npm run validate:abilities` | **Ability Sync**: Valida habilidades pasivas y de campo contra el motor canónico. |
+| `npm run validate:pokemon` | **Pokémon Database**: Valida stats base, ratios de captura, tipos y tablas de evolución. |
+| `npm run validate:sprites` | **Sprite Registry**: Verifica la existencia física de sprites animados, miniaturas e íconos de interfaz. |
+| `npm run validate:fsm` | **FSM Mastery Audit**: Verifica exhaustivamente diagramas Mermaid, paridad de flujo y controladores FSM. |
 
-#### Ejemplos de Uso de Infraestructura
+---
+
+### 🧪 Tests Automatizados, Fuzzers y Simulaciones E2E
+
+El proyecto cuenta con un sistema de pruebas de 3 niveles: Tests unitarios aislados, Fuzzers multi-hilo de Showdown y Simulaciones E2E en navegador con Playwright.
+
+#### 1. Tests Unitarios y de Lógica
+
+```bash
+# Ejecutar toda la batería de tests unitarios y de nodo
+npm run test
+
+# Tests unitarios de componentes Vue (JSDOM)
+npm run test:unit
+
+# Tests de lógica pura con runner nativo de Node.js 26+
+npm run test:node
+
+# Reporte de cobertura de código
+npm run test:coverage
+```
+
+#### 2. Master Fuzzer de Combate (Showdown Parity)
+
+Los fuzzers ejecutan miles de turnos de combate automatizados con generación procedimental de equipos, detectando desincronizaciones y certificando casos de prueba:
+
+```bash
+# Batería completa: Master Fuzzer + E2E Playwright
+npm run sim:combat:all
+
+# Master Fuzzer (ejecuta todos los escenarios concurrentemente)
+npm run sim:fuzzer
+
+# Fuzzers especializados por subsistema:
+npm run sim:fuzzer:moves       # Fuzzer de movimientos y efectos secundarios
+npm run sim:fuzzer:abilities   # Fuzzer de habilidades en batalla
+npm run sim:fuzzer:items       # Fuzzer de objetos equipables en combate
+npm run sim:fuzzer:scenarios   # Fuzzer de escenarios tácticos complejos
+npm run sim:fuzzer:breeding    # Fuzzer de guardería, genética y herencia de IVs
+npm run sim:fuzzer:missions    # Fuzzer de misiones pasivas y recompensas
+npm run sim:fuzzer:gyms        # Fuzzer de líderes de gimnasio y medallas
+npm run sim:fuzzer:gts         # Fuzzer de mercado global, intercambios y escrow
+npm run sim:fuzzer:ai          # Fuzzer de heurística y toma de decisiones de la IA
+npm run sim:fuzzer:trace       # Replayer determinista de casos de error certificados
+```
+
+#### 3. Simulaciones E2E Secuenciales (Playwright)
+
+Simulaciones completas en navegador con interfaz gráfica oficial, joystick pasivo y sincronización por eventos:
+
+```bash
+# Ejecutar todas las simulaciones E2E secuencialmente una por una
+npm run sim:e2e
+
+# Mostrar tabla con el catálogo de simulaciones E2E registradas
+npm run sim:e2e:table
+
+# Listar rutas de archivos de simulación E2E
+npm run sim:e2e:list
+
+# Simulaciones por módulo específico:
+npm run sim:e2e:combat         # Flujo de combate FSM y escenarios tácticos
+npm run sim:e2e:ai             # Combate contra IA heurística
+npm run sim:e2e:search         # Ciclo de exploración de mapas y encuentros salvajes
+npm run sim:e2e:gts            # Intercambios y mercado global (GTS)
+npm run sim:e2e:save           # Guardado seguro, persistencia y recarga activa
+npm run sim:e2e:breeding       # Ciclo de crianza e incubación de huevos
+npm run sim:e2e:missions       # Asignación y recolección de misiones
+npm run sim:e2e:gyms           # Desafío y combate en gimnasios
+```
+
+---
+
+### 🗄️ Base de Datos, Infraestructura Supabase y Mantenimiento
+
+El proyecto soporta persistencia dual con aislamiento total entre el modo local (SQLite nativo) y los servidores remotos (Supabase / PostgreSQL en Docker o Cloud):
+
+| Comando | Descripción |
+| :-- | :-- |
+| `npm run db:repair-account` | **Reparación de Cuentas Ilegales**: Corrige Pokémon ilegales (niveles, movimientos o habilidades no permitidas) en una o todas las cuentas, tanto en SQLite local como en servidores Supabase. |
+| `npm run admin:rename` | **Renombrado Administrativo**: Cambia el nombre de entrenador de un usuario en Supabase directamente desde consola. |
+| `npm run servers:configure` | **Sincronización de Servidores**: Parsea el `.env` maestro y genera la lista tipada de servidores en `src/data/official_servers.ts`. |
+| `npm run servers:db:update` | **Gestor y Migrador**: Aplica esquemas iniciales y migraciones SQL incrementales en el servidor Supabase elegido o en todos (`--all`). |
+| `npm run servers:db:backup` | **Generador de Respaldos**: Conecta al servidor Supabase y exporta todas las tablas a un archivo JSON estructurado. |
+| `npm run servers:db:restore` | **Restaurador Transaccional**: Restaura transaccionalmente un respaldo JSON hacia el servidor Supabase elegido. |
+| `npm run servers:db:local-import` | **Importador SQLite**: Importa el respaldo JSON más reciente de Supabase a la base de datos local SQLite para pruebas offline. |
+| `npm run servers:db:admin` | **Administración de Usuarios**: Permite desbanear, cambiar contraseñas, actualizar emails o promover a admin desde consola. |
+| `npm run supabase:manage` | **Gestor Docker/CLI**: Orquestador local de contenedores Supabase y compilación de imágenes Docker. |
+| `npm run migrations:generate` | **Compilador de Migraciones**: Escanea `database/migrations/` y compila el manifiesto TypeScript de producción. |
+| `npm run sync:test` | **Sincronización a Repo Hermano**: Sincroniza el árbol de fuentes con el repositorio hermano `pokevicio-test`. |
+
+---
+
+### 🔧 Herramienta de Reparación de Cuentas Ilegales (`db:repair-account`)
+
+Esta herramienta escanea las partidas guardadas en `game_saves`, audita todos los Pokémon del equipo y de las cajas contra el motor de reglas de Showdown, repara cualquier inconsistencia (niveles > 100, movimientos no permitidos para la especie/learnset, habilidades no canónicas) y persiste las correcciones de forma transaccional.
+
+#### 1. Uso en Base de Datos Local (SQLite)
+
+```bash
+# Reparar una cuenta específica por su ID de usuario:
+npm run db:repair-account local_ash
+npm run db:repair-account -- --user=local_ash
+
+# Reparar TODAS las cuentas registradas en SQLite local, una por una:
+npm run db:repair-account all
+npm run db:repair-account --all
+
+# Especificar una ruta de base de datos SQLite personalizada:
+npm run db:repair-account -- --db=tests/fixtures/poke_local_ash.db all
+```
+
+#### 2. Uso en Servidores Supabase / PostgreSQL Remotos
+
+```bash
+# Reparar una cuenta específica en un servidor Supabase (por UUID, username o email):
+npm run db:repair-account -- --server=server_franco --user=Ash
+npm run db:repair-account -- --server=nas_franco --user=usuario@ejemplo.com
+
+# Reparar TODAS las cuentas registradas en el servidor Supabase:
+npm run db:repair-account -- --server=server_franco all
+npm run db:repair-account -- --server=nas_franco --all
+```
+
+---
+
+#### Ejemplos de Uso de Infraestructura de Servidores
 
 ```bash
 # 1. Sincronizar servidores en la interfaz del juego
@@ -232,11 +362,11 @@ Resumen de comandos MikroTik (Winbox / SSH) para resolver caídas de ruteo asim�
 
 ```bash
 npm run dev               # Inicia el entorno de desarrollo (Vite)
-npm run validate:types         # Verificación estricta de tipos TypeScript
-npm run test               # Unit tests de UI y componentes (Vitest)
-npm run build              # Compilación para producción
-npm run assets:download    # Descarga sprites y recursos externos (Gen 1-9, Items, Trainers)
-npm run sync:test          # Sincroniza el código fuente al repo hermano pokevicio-test para QA
+npm run validate:types    # Verificación estricta de tipos TypeScript
+npm run test              # Unit tests de UI y componentes (Vitest)
+npm run build             # Compilación para producción
+npm run assets:download   # Descarga sprites y recursos externos (Gen 1-9, Items, Trainers)
+npm run sync:test         # Sincroniza el código fuente al repo hermano pokevicio-test para QA
 ```
 
 ### Reglas de Oro
@@ -280,38 +410,6 @@ npm run assets:convert
 
 > [!TIP] El script detecta automáticamente si un asset es Pixel Art (basado en carpetas como `sprites/` o `icons/`) para aplicar compresión **Lossless**. Para el resto, aplica una calidad adaptativa basada en la resolución.
 
-### 🔎 Auditoría de Estándares
-
-Motor unificado para verificar Viewports dinámicos, filtros SASS, rendimiento GPU, bases de datos y reglas de código:
-
-```bash
-# Auditoría global unificada (salida JSON en stdout para IAs/CI por defecto)
-npm run audit
-
-# Auditoría interactiva en consola para desarrolladores (modo visual con árbol y emojis)
-npm run audit:human
-
-# Auditoría rápida de AST de código (reglas estáticas en pocos segundos)
-npm run audit:fast
-
-# Control de errores y advertencias pre-commit
-npm run audit:warnings-diff
-
-# Escaneo y corrección automática (Viewport, SASS filters, imports ESM)
-npm run audit:fix
-
-# Exportar reporte enriquecido en Markdown
-npm run audit:md
-```
-
-### 🔒 Ejecución Segura
-
-Los scripts de utilidad requieren permisos explícitos. Si creas nuevos scripts, asegúrate de invocar Node con el modelo de permisos:
-
-```bash
-node --permission --allow-fs-read=. --allow-fs-write=. scripts/tu_script.ts
-```
-
 ---
 
 ## 📂 Estructura del Proyecto
@@ -320,7 +418,7 @@ node --permission --allow-fs-read=. --allow-fs-write=. scripts/tu_script.ts
 - `/public`: Activos estáticos (Assets, Mapas).
 - `/api`: Funciones serverless para el backend.
 - `/database`: Esquemas SQL y migraciones.
-- `/tests`: Suite de pruebas (Vitest).
+- `/tests`: Suite de pruebas (Vitest y Playwright).
 - `/docs`: Documentación técnica y reglas del juego.
 
 ---

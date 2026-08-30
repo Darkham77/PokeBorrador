@@ -194,14 +194,12 @@ This is the primary pre-commit gatekeeper. It reports all project-wide errors an
 
 > [!TIP]
 > The audit engine is **JSON-first by default**, specifically tailored for AI agents and automated pipelines:
-> - `npm run audit` — runs the full unified audit across all 12 validation suites and emits 100% parseable structured JSON on `stdout`. Agents can immediately parse the output via `JSON.parse(stdout)`.
-> - `npm run audit:fast` — runs only the static code AST analysis in seconds, emitting structured JSON.
-> - `npm run audit:human` (or `--human` / `-H`) — renders a human-friendly hierarchical file tree with sanitized context for terminal debugging.
-> - `--rule="<partial-name>"` — filter to a single rule (e.g. `--rule="mágico"` for magic-number errors only).
-> - `--errors-only` — suppress warnings; evaluate only hard errors.
-> - `--output=scratch/report.md` (or `npm run audit:md`) — exports Markdown summary report.
+> - `npm run audit` — runs the full unified audit across all suites, displaying consolidated Box-Drawing tables in console and writing structured JSON to `scratch/audits/latest_audit.json`.
+> - `npm run audit:warnings-diff` — pre-commit gatekeeper ensuring 0 errors across the project and 0 new warnings against `origin/main`.
+> - `npm run audit:changed` — audits only files modified since `main`.
+> - `--family="<family>"` — filter to a specific domain family (e.g. `npm run audit:family:domain`).
 >
-> **Fast AI triage recipe:** `npm run audit:fast -- --errors-only`
+> **Fast developer check:** `npm run lint`
 
 ### Step 3.2 — `npm run audit:fix`
 
