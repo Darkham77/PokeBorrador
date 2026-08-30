@@ -22,8 +22,7 @@ export function setShowdownWorker(worker: Worker | null) {
   }
 }
 
-// domain-ok
-export function getShowdownWorker(): Worker | null {
+export function getShowdownWorker(): Worker | null { // result-ok
   if (!showdownWorker && typeof window !== 'undefined' && window.__showdownWorker__) {
     showdownWorker = window.__showdownWorker__;
   }

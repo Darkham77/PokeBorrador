@@ -60,15 +60,16 @@ function auditAndRepairSaveData(
   let accountFixedPokemonCount = 0;
   const accountDetails: string[] = []; // no-domain
 
-  // 1. Auditar y reparar Equipo
-  if (Array.isArray(saveData.team)) {
-    saveData.team.forEach((p, idx) => {
+  const auditAndRepairList = (list: unknown[], locationLabel: string) => {
+    if (!Array.isArray(list)) return;
+    list.forEach((p, idx) => {
       if (!p) return;
-      const initialCheck = checkPokemonLegality(p as Pokemon);
-      if (!initialCheck.isLegal || (p as Pokemon).isIllegal) {
-        const report = repairPokemonLegality(p as Pokemon);
+      const poke = p as Pokemon;
+      const initialCheck = checkPokemonLegality(poke);
+      if (!initialCheck.isLegal || poke.isIllegal) {
+        const report = repairPokemonLegality(poke);
         if (report.repaired) {
-          const logHeader = `[Equipo Slot ${idx}] ${p.name} (UID: ${p.uid}):`;
+          const logHeader = `[${locationLabel} Slot ${idx}] ${poke.name} (UID: ${poke.uid}):`;
           accountDetails.push(logHeader);
           if (!isSilent) console.log(`  ${logHeader}`);
           report.changes.forEach(ch => {
@@ -80,51 +81,18 @@ function auditAndRepairSaveData(
         }
       }
     });
-  }
+  };
+
+  // 1. Auditar y reparar Equipo
+  auditAndRepairList(saveData.team, 'Equipo');
 
   // 2. Auditar y reparar Caja
-  if (Array.isArray(saveData.box)) {
-    saveData.box.forEach((p, idx) => {
-      if (!p) return;
-      const initialCheck = checkPokemonLegality(p as Pokemon);
-      if (!initialCheck.isLegal || (p as Pokemon).isIllegal) {
-        const report = repairPokemonLegality(p as Pokemon);
-        if (report.repaired) {
-          const logHeader = `[Caja Slot ${idx}] ${p.name} (UID: ${p.uid}):`;
-          accountDetails.push(logHeader);
-          if (!isSilent) console.log(`  ${logHeader}`);
-          report.changes.forEach(ch => {
-            accountDetails.push(`  ↳ ${ch}`);
-            if (!isSilent) console.log(`    ↳ ✅ ${ch}`);
-          });
-          accountModified = true;
-          accountFixedPokemonCount++;
-        }
-      }
-    });
-  }
+  auditAndRepairList(saveData.box, 'Caja');
 
   // 3. Auditar y reparar Guardería (Warehouse)
   const warehouse = (saveData as Record<string, unknown>).daycareWarehouse; // open-record
   if (Array.isArray(warehouse)) {
-    warehouse.forEach((p: unknown, idx: number) => {
-      if (!p) return;
-      const initialCheck = checkPokemonLegality(p as Pokemon);
-      if (!initialCheck.isLegal || (p as Pokemon).isIllegal) {
-        const report = repairPokemonLegality(p as Pokemon);
-        if (report.repaired) {
-          const logHeader = `[Guardería Depósito Slot ${idx}] ${(p as Pokemon).name} (UID: ${(p as Pokemon).uid}):`;
-          accountDetails.push(logHeader);
-          if (!isSilent) console.log(`  ${logHeader}`);
-          report.changes.forEach(ch => {
-            accountDetails.push(`  ↳ ${ch}`);
-            if (!isSilent) console.log(`    ↳ ✅ ${ch}`);
-          });
-          accountModified = true;
-          accountFixedPokemonCount++;
-        }
-      }
-    });
+    auditAndRepairList(warehouse, 'Guardería Depósito');
   }
 
   return {

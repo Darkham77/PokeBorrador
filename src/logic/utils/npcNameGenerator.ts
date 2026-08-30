@@ -53,7 +53,7 @@ const ARCHETYPE_TITLES: Record<string, { M: string; F: string }> = {
   domador: { M: 'Domador', F: 'Domadora' },
   medium: { M: 'Médium', F: 'Médium' },
   motorista: { M: 'Motorista', F: 'Motorista' },
-  montanero: { M: 'Montañero', F: 'Montañera' },
+  montanero: { M: 'Montañero', F: 'Montañera' }, // spanish-ok
   rocket: { M: 'Recluta Rocket', F: 'Recluta Rocket' },
   criador: { M: 'Criador Pokémon', F: 'Criadora Pokémon' },
   aristocrata: { M: 'Aristócrata', F: 'Aristócrata' },

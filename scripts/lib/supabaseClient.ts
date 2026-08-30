@@ -151,7 +151,7 @@ export async function getValidatedServerConfigs(): Promise<{ serverConfigs: Reco
   return { serverConfigs, baseProfiles, allAvailable };
 }
 
-export function findServerConfig(serverConfigs: Record<string, ServerConfig>, profileOrId: string): ServerConfig | null {
+export function findServerConfig(serverConfigs: Record<string, ServerConfig>, profileOrId: string): ServerConfig | null { // result-ok
   const direct = serverConfigs[profileOrId];
   if (direct) return direct;
   const matchKey = Object.keys(serverConfigs).find(k => serverConfigs[k]?.ID === profileOrId);

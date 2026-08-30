@@ -9,6 +9,51 @@ import type { PastEventHistoryItem } from '@/types/system/stores'
 describe('PastEventsList.vue - Past Events and Rewards Claiming', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
+    const eventStore = useEventStore()
+    eventStore.allEvents = [
+      {
+        id: 'hora_magikarp',
+        name: 'Hora de Pesca del Magikarp',
+        icon: '🎣',
+        type: 'competition',
+        active: false,
+        manual: false,
+        schedule: { type: 'weekly', days: [2, 4], startHour: 18, endHour: 22 },
+        config: {
+          species: 'magikarp',
+          hasCompetition: true,
+          subCompetitions: [
+            {
+              id: 'ivs',
+              name: 'Genética Superior (IVs)',
+              metric: 'total_ivs',
+              order: 'max',
+              prizes: {
+                first: { type: 'item', item: 'masterball', qty: 1 }
+              }
+            }
+          ]
+        },
+        description: '¡Capturá el Magikarp con mejores IVs!'
+      },
+      {
+        id: 'torneo_eevee',
+        name: 'Torneo Eevee',
+        icon: '🦊',
+        type: 'competition',
+        active: false,
+        manual: false,
+        schedule: { type: 'weekly', days: [6], startHour: 10, endHour: 22 },
+        config: {
+          species: 'eevee',
+          hasCompetition: true,
+          prizes: {
+            first: { type: 'money', money: 50000 }
+          }
+        },
+        description: 'Torneo de criadores'
+      }
+    ] as unknown as typeof eventStore.allEvents
   })
 
   const mockPastEvents: PastEventHistoryItem[] = [
@@ -46,7 +91,7 @@ describe('PastEventsList.vue - Past Events and Rewards Claiming', () => {
         id: 'award-101',
         event_id: 'hora_magikarp',
         winner_id: 'player-1',
-        prize: '{"item": "Master Ball"}',
+        prize: JSON.stringify({ type: 'item', item: 'masterball', qty: 1 }),
         received_at: null,
         prize_summary: 'Master Ball x1'
       },
@@ -227,6 +272,40 @@ describe('PastEventsList.vue - Past Events and Rewards Claiming', () => {
     const uiStore = useUIStore()
     const gameStore = useGameStore()
     const notifySpy = vi.spyOn(uiStore, 'notify')
+
+    eventStore.pendingAwards = [
+      {
+        id: 'award-101',
+        event_id: 'hora_magikarp',
+        winner_id: 'player-1',
+        prize: JSON.stringify({ type: 'mixed', money: 10000, battleCoins: 50, item: 'waterstone', qty: 2 }),
+        received_at: null
+      }
+    ]
+    eventStore.allEvents = [
+      {
+        id: 'hora_magikarp',
+        name: 'Hora de Pesca del Magikarp',
+        icon: '🎣',
+        type: 'competition',
+        active: false,
+        manual: false,
+        schedule: { type: 'weekly', days: [2, 4], startHour: 18, endHour: 22 },
+        config: {
+          subCompetitions: [
+            {
+              id: 'ivs',
+              name: 'Genética Superior (IVs)',
+              metric: 'total_ivs',
+              order: 'max',
+              prizes: {
+                first: { type: 'mixed', money: 10000, battleCoins: 50, item: 'waterstone', qty: 2 }
+              }
+            }
+          ]
+        }
+      }
+    ] as unknown as typeof eventStore.allEvents
 
     gameStore.state = {
       money: 1000,

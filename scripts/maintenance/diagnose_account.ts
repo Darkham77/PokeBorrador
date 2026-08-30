@@ -489,35 +489,16 @@ export function testInMemoryMigrations(saveData: GameState, userId: string): {
   // Ejecutar todas las migraciones oficiales
   for (const migration of DATABASE_MIGRATIONS) {
     const sqlSource = migration.sqlite_sql !== undefined ? migration.sqlite_sql : migration.sql;
-    const isSqliteSpec = migration.sqlite_sql !== undefined;
-    if (isSqliteSpec) {
+    const isSqlite = migration.sqlite_sql !== undefined;
+    const statements = splitSQLStatements(sqlSource);
+    for (const stmt of statements) {
+      if (!stmt.trim()) continue;
+      const sql = isSqlite ? stmt : translatePostgresToSqlite(stmt);
+      if (!sql) continue;
       try {
-        db.exec(sqlSource);
+        db.exec(sql);
       } catch {
-        const statements = splitSQLStatements(sqlSource);
-        for (const stmt of statements) {
-          if (stmt.trim()) {
-            try {
-              db.exec(stmt);
-            } catch {
-              // Ignorar errores benignos de esquema
-            }
-          }
-        }
-      }
-    } else {
-      const statements = splitSQLStatements(sqlSource);
-      for (const stmt of statements) {
-        if (stmt.trim()) {
-          const sql = translatePostgresToSqlite(stmt);
-          if (sql) {
-            try {
-              db.exec(sql);
-            } catch {
-              // Ignorar errores benignos de esquema
-            }
-          }
-        }
+        // Ignorar errores benignos de esquema
       }
     }
   }

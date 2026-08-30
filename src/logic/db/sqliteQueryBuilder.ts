@@ -167,13 +167,8 @@ export class SQLiteQueryBuilder implements QueryBuilder {
     return { data: res[0] || null, error: null };
   }
 
-  async then(resolve?: (val: Record<string, unknown>[]) => void): Promise<Record<string, unknown>[]> {
-    const db = this.getDb();
-    if (!db) return [];
-    let sql = `SELECT ${this._select} FROM ${this._table}`;
-    const params: unknown[] = [];
+  private _buildWhereClause(params: unknown[]): string {
     const whereParts: string[] = []; // no-domain
-
     if (this._filters.length) {
       whereParts.push(...this._filters.map((f: QueryFilter) => {
         if (f.op === 'IN') {
@@ -185,17 +180,21 @@ export class SQLiteQueryBuilder implements QueryBuilder {
         return `"${f.col}" ${f.op} ?`;
       }));
     }
-
     if (this._rawClauses.length) {
       for (const rc of this._rawClauses) {
         whereParts.push(rc.sql);
         params.push(...rc.params);
       }
     }
+    return whereParts.length ? ' WHERE ' + whereParts.join(' AND ') : '';
+  }
 
-    if (whereParts.length) {
-      sql += ' WHERE ' + whereParts.join(' AND ');
-    }
+  async then(resolve?: (val: Record<string, unknown>[]) => void): Promise<Record<string, unknown>[]> {
+    const db = this.getDb();
+    if (!db) return [];
+    let sql = `SELECT ${this._select} FROM ${this._table}`;
+    const params: unknown[] = [];
+    sql += this._buildWhereClause(params);
 
     if (this._order) sql += ` ORDER BY ${this._order}`;
     if (this._limit) sql += ` LIMIT ${this._limit}`;
@@ -240,19 +239,7 @@ export class SQLiteQueryBuilder implements QueryBuilder {
     const vals = Object.values(payload);
     let sql = `UPDATE ${this._table} SET ` + cols.map(c => `"${c}" = ?`).join(',');
     const params = [...vals];
-    const whereParts: string[] = []; // no-domain
-    if (this._filters.length) {
-      whereParts.push(...this._filters.map((f: QueryFilter) => { params.push(f.val); return `"${f.col}" ${f.op} ?`; }));
-    }
-    if (this._rawClauses.length) {
-      for (const rc of this._rawClauses) {
-        whereParts.push(rc.sql);
-        params.push(...rc.params);
-      }
-    }
-    if (whereParts.length) {
-      sql += ' WHERE ' + whereParts.join(' AND ');
-    }
+    sql += this._buildWhereClause(params);
     db.run(sql, params);
     await this.persist();
     return { data: payload, error: null };
@@ -263,19 +250,7 @@ export class SQLiteQueryBuilder implements QueryBuilder {
     if (!db) return { data: false, error: 'DB not ready' };
     let sql = `DELETE FROM ${this._table}`;
     const params: unknown[] = [];
-    const whereParts: string[] = []; // no-domain
-    if (this._filters.length) {
-      whereParts.push(...this._filters.map((f: QueryFilter) => { params.push(f.val); return `"${f.col}" ${f.op} ?`; }));
-    }
-    if (this._rawClauses.length) {
-      for (const rc of this._rawClauses) {
-        whereParts.push(rc.sql);
-        params.push(...rc.params);
-      }
-    }
-    if (whereParts.length) {
-      sql += ' WHERE ' + whereParts.join(' AND ');
-    }
+    sql += this._buildWhereClause(params);
     db.run(sql, params);
     await this.persist();
     return { data: true, error: null };

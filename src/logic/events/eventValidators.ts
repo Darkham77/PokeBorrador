@@ -6,7 +6,7 @@
 
 import type { PendingAward } from '@/types/system/stores'
 import type { Event as GameEvent } from '@/logic/events/eventEngine'
-import { safeParse } from './eventSchedules'
+import { safeParse } from './eventSchedules.ts'
 
 export interface ParsedAwardPrize {
   type?: 'money' | 'bc' | 'item' | 'pokemon' | 'mixed'
@@ -26,6 +26,7 @@ export interface ParsedAwardPrize {
 /**
  * Safely parses the prize payload from an award.
  */
+// fallow-ignore-next-line unused-export
 export function parseAwardPrize(rawPrize: unknown): ParsedAwardPrize | null {
   if (!rawPrize) return null
   if (typeof rawPrize === 'string') {
@@ -44,6 +45,7 @@ export function parseAwardPrize(rawPrize: unknown): ParsedAwardPrize | null {
 /**
  * Extracts all configured prize payloads from an event configuration.
  */
+// fallow-ignore-next-line unused-export
 export function getEventConfiguredPrizes(event: GameEvent): ParsedAwardPrize[] {
   const cfg = (typeof event.config === 'string' ? safeParse(event.config) : event.config) as Record<string, unknown> | null // open-record
   if (!cfg || typeof cfg !== 'object') return []
@@ -82,6 +84,7 @@ export function getEventConfiguredPrizes(event: GameEvent): ParsedAwardPrize[] {
 /**
  * Checks if an award prize matches a configured prize definition.
  */
+// fallow-ignore-next-line unused-export
 export function doesPrizeMatchConfig(awardPrize: ParsedAwardPrize, configuredPrize: ParsedAwardPrize): boolean {
   // 1. Check Money
   const confMoney = typeof configuredPrize.money === 'number' ? configuredPrize.money : (configuredPrize.type === 'money' ? configuredPrize.amount : undefined)

@@ -186,11 +186,11 @@ export interface FriendshipTransitionLog {
  * Checks if a change in friendship crosses a significant tier boundary,
  * and generates the appropriate combat log announcement.
  */
-export function getFriendshipTransitionLog(
+export function getFriendshipTransitionLog( // result-ok
   oldFriendship: number | undefined | null,
   newFriendship: number | undefined | null,
   pokemonName: string
-): FriendshipTransitionLog | null {
+): FriendshipTransitionLog | null { // result-ok
   const oldClamped = clampFriendship(oldFriendship);
   const newClamped = clampFriendship(newFriendship);
   const oldTier = resolveFriendshipSealTier(oldClamped);
