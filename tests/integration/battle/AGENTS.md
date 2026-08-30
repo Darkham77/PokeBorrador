@@ -13,7 +13,7 @@ Core Engine Team / QA Engineers.
 
 ## Verification
 
-- Run `npm run test` or target specific specs (e.g. `npx vitest run tests/integration/battle/showdown_integration.spec.ts`).
+- Run `npm run test` to verify battle integration suites.
 
 ## Child DOX Index
 

@@ -85,7 +85,7 @@ export async function restoreSupabaseDb() {
 
       if (matchingFiles.length === 0 || matchingFiles[0] === undefined) {
         console.error(styleText('red', `❌ Error: No se encontraron archivos de respaldo automáticos para "${canonicalName}" en ${serverBackupDir}.`));
-        console.error(styleText('yellow', `👉 Ejecuta primero un respaldo con: npm run servers:db:backup -- --server=${canonicalName} o especifica --file=<ruta>`));
+        console.error(styleText('yellow', `👉 Ejecuta primero un respaldo con: npm run servers:db:backup ${canonicalName} o especifica --file=<ruta>`));
         process.exit(1);
       }
 

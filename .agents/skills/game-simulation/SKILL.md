@@ -28,18 +28,18 @@ the source of truth. `src/` must conform to them, never the reverse.
 > These 4 Hard Gates are immutable boundaries. Every AI agent MUST strictly adhere to them:
 
 1. **⛔ HARD GATE 1: PROHIBITION ON PLAYWRIGHT BEFORE VITEST RED-TO-GREEN CYCLE & NODE SUITE PASS**:
-   - When ANY simulation or batch fails, it is **STRICTLY PROHIBITED** to modify `src/` or run Playwright commands (`npx playwright test ...`) as an exploratory fix attempt before completing Steps 4, 5, and 5.5.
-   - The agent **MUST FIRST** create an isolated, static, and immutable unit test in `tests/node/battle/reproduce_case_xxx.test.ts`, run `npx vitest run <path>`, and observe a deterministic failure in **RED**.
-   - After diagnosing the root cause and seeing the Vitest test turn **GREEN**, the agent **MUST** run the full Node unit regression suite (`npx vitest run tests/node/`) to ensure 0 regressions.
+   - When ANY simulation or batch fails, it is **STRICTLY PROHIBITED** to modify `src/` or run Playwright commands as an exploratory fix attempt before completing Steps 4, 5, and 5.5.
+   - The agent **MUST FIRST** create an isolated, static, and immutable unit test in `tests/node/battle/reproduce_case_xxx.test.ts`, run `npm run test`, and observe a deterministic failure in **RED**.
+   - After diagnosing the root cause and seeing the Vitest test turn **GREEN**, the agent **MUST** run the full Node unit regression suite (`npm run test:node`) to ensure 0 regressions.
    - Only after all Node tests pass 100% GREEN is the agent authorized to proceed to browser-level Playwright execution (Step 6).
 
 2. **⛔ HARD GATE 2: STRICT PROHIBITION ON MASTER SUITE (`npm run sim:e2e`) DURING DEBUGGING**:
    - It is **STRICTLY PROHIBITED** to execute `npm run sim:e2e` or master suites while diagnosing, fixing, or testing a failing batch or test file.
-   - The agent MUST isolate and execute ONLY the single failing simulation file (e.g. `npx playwright test scripts/e2e/battle/battle_fsm_sync.simulation.ts`).
+   - The agent MUST isolate and execute ONLY the single failing simulation family (e.g. `npm run sim:e2e:combat`, `npm run sim:e2e:gyms`).
    - `npm run sim:e2e` is strictly reserved for **Step 7 (Final Regression Pass)**, executed ONLY after the specific affected simulation file has completed with 100% PASS across all its cases.
 
 3. **⛔ HARD GATE 3: `TEST_BATCH` IS BROWSER VERIFICATION (STEP 6), NEVER A UNIT TEST SUBSTITUTE**:
-   - Running `TEST_BATCH=XX npx playwright test ...` is an optional browser-level verification tool belonging exclusively to **Step 6**.
+   - Running `$env:TEST_BATCH="21"; npm run sim:e2e:combat` is an optional browser-level verification tool belonging exclusively to **Step 6**.
    - It is **STRICTLY PROHIBITED** to treat `TEST_BATCH` as a replacement for the mandatory static Node unit test in `tests/node/`.
 
 4. **⛔ HARD GATE 4: ZERO COMPATIBILITY FALLBACKS & SILENT CHOICE INTERVENTIONS**:
@@ -180,7 +180,7 @@ Every AI agent MUST follow this exact sequential order when running simulations,
 
 1. **Step 1: Fuzzer Execution & Regeneration** (`npm run sim:fuzzer`):
    - Execute the fuzzer whenever certified cases do not exist, or whenever battle engine logic (`src/logic/battle/`) has been created, modified, or refactored.
-   - Validate that all terminal cases are certified clean with `npx tsx scripts/e2e/fuzzer/tools/validate_certified_cases.ts`.
+   - Validate that all terminal cases are certified clean with `npm run sim:fuzzer:validate`.
 
 2. **Step 2: E2E Simulation Execution** (`npm run sim:e2e` or targeted family):
    - Execute the simulation suite to validate real UI, FSM, and game feature behavior.
@@ -191,13 +191,13 @@ Every AI agent MUST follow this exact sequential order when running simulations,
 
 4. **Step 4: Create Isolated RED Reproduction Test**:
    - Extract the exact static case parameters (`seed`, `playerTeam`, `enemyTeam`, and turn-by-turn choice streams from `history`) into a static fixture file (`tests/fixtures/battle/case_xxx.json`) or directly inside a dedicated Vitest test file (`tests/node/battle/reproduce_case_xxx.test.ts`).
-   - Run `npx vitest run <path_to_test>` and verify that the test fails deterministically in **RED**.
+   - Run `npm run test` and verify that the test fails deterministically in **RED**.
 
 5. **Step 5: Fix Root Cause in `src/` & Verify GREEN**:
    - Diagnose the true root cause in `src/` and apply the clean fix without fallbacks.
    - Re-run the reproduction test in Vitest to empirically demonstrate that it turns **GREEN**.
 
-6. **Step 5.5: Full Node Unit Regression Check (`npx vitest run tests/node/`)**:
+6. **Step 5.5: Full Node Unit Regression Check (`npm run test:node`)**:
    - Execute the entire Node unit test suite across all 126+ test files to confirm 100% GREEN and 0 regressions before touching browser simulations.
 
 7. **Step 6: Re-run ONLY the Specific Failing Simulation in Playwright**:
@@ -213,18 +213,18 @@ Every AI agent MUST follow this exact sequential order when running simulations,
 flowchart TD
     Start(["Start Game Simulation Pipeline"]) --> FuzzerCheck{"Certified cases exist & logic unchanged?"}
     FuzzerCheck -- "No / Code Changed" --> RunFuzzer["1. Run Fuzzer: npm run sim:fuzzer"]
-    RunFuzzer --> ValidateFuzzer["Validate Certified Cases (Node.js)"]
-    ValidateFuzzer --> RunE2E["2. Run E2E Simulation Suite"]
+    RunFuzzer --> ValidateFuzzer["Validate Certified Cases: npm run sim:fuzzer:validate"]
+    ValidateFuzzer --> RunE2E["2. Run E2E Simulation Suite: npm run sim:e2e"]
     FuzzerCheck -- "Yes" --> RunE2E
     RunE2E --> E2ECheck{"Any Simulation Failed?"}
     E2ECheck -- "No (All Green)" --> Done(["Pipeline 100% Certified!"])
     E2ECheck -- "Yes (Failure Detected)" --> IsolateCase["3. Stop Suite & Isolate Specific Failing Family & Case ID"]
     IsolateCase --> ExtractFixture["4. Extract Static Fixture & Write Unit Test in tests/node/"]
-    ExtractFixture --> RunRED["Run Unit Test in Vitest -> Confirm RED Failure"]
+    ExtractFixture --> RunRED["Run Unit Test -> Confirm RED Failure: npm run test"]
     RunRED --> FixCode["5. Diagnose Root Cause & Apply Fix in src/"]
-    FixCode --> RunGREEN["Re-run Unit Test in Vitest -> Confirm GREEN"]
-    RunGREEN --> RunNodeRegression["5.5. Run Full Node Suite: npx vitest run tests/node/ (0 regressions)"]
-    RunNodeRegression --> ReRunSpecific["6. Re-run ONLY Specific Failing Simulation Family in Playwright"]
+    FixCode --> RunGREEN["Re-run Unit Test -> Confirm GREEN"]
+    RunGREEN --> RunNodeRegression["5.5. Run Full Node Suite: npm run test:node (0 regressions)"]
+    RunNodeRegression --> ReRunSpecific["6. Re-run ONLY Specific Failing Simulation Family"]
     ReRunSpecific --> FamilyCheck{"More Failures in this Family?"}
     FamilyCheck -- "Yes" --> IsolateCase
     FamilyCheck -- "No" --> RunMasterE2E["7. Re-run Full Master E2E Suite: npm run sim:e2e"]
@@ -266,7 +266,6 @@ The skill provides standardized templates under `.agents/skills/game-simulation/
 To ensure zero hardcoding and 100% accurate simulation counts, the agent **MUST ALWAYS** run:
 ```bash
 npm run sim:e2e:table
-# or: npx tsx scripts/e2e/run_sequential_simulations.ts --table
 ```
 This command dynamically scans all `*.simulation.ts` files under `scripts/e2e/`, counts the exact cases in each file, sorts them deterministically by complexity, and outputs the markdown table directly to be embedded in `simulation_progress.md`.
 
@@ -458,8 +457,7 @@ relevant seat must prioritize a legal move of that type.
 | `test` | All unit + integration via Vitest |
 | `sim:fuzzer` | Coverage fuzzer + item fuzzer (generates fuzzer_certified_cases.json) |
 | `sim:e2e` | Dynamic sequential file-by-file execution of all `*.simulation.ts` under `scripts/e2e/` (halts on 1st error) |
-| `sim:e2e:battle` | Only `scripts/e2e/battle/` |
-| `sim:e2e:combat` | ensure_fuzzer_cases + `battle_fsm_sync.sim.ts` |
+| `sim:e2e:combat` | ensure_fuzzer_cases + battle simulations |
 | `sim:e2e:combat:report` | Same, output redirected to `scripts/e2e/results/e2e_simulation_failures.json` |
 | `sim:e2e:ai` | Only `scripts/e2e/battle/heuristic_ai.simulation.ts` |
 | `sim:e2e:gyms` | Only `scripts/e2e/gyms/` |
@@ -549,7 +547,7 @@ This command installs the required browsers along with all system dependencies (
 | Full game validation | `npm run sim:e2e` |
 | Combat only | `npm run sim:e2e:combat` |
 | Specific domain | `npm run sim:e2e:gyms`, `npm run sim:e2e:breeding`, etc. |
-| Single failing simulation | env var filter or `npm run sim:e2e -- -g "<name>"` |
+| Single failing simulation | `$env:TEST_CASE_ID="case-xxx"; npm run sim:e2e:combat` |
 
 **Fuzzer rule:** The fuzzer (`sim:fuzzer`) ALWAYS performs a clean wipe of all previously generated fuzzer artifacts (`fuzzer_*.json`, `fuzzer_*.txt`, `fuzzer_certified_cases.json`) in `scripts/e2e/results/` before starting, ensuring execution starts 100% clean from scratch by default. `ensure_fuzzer_cases.ts` handles this clean wipe and triggers `npm run sim:fuzzer`.
 
@@ -564,9 +562,6 @@ Always redirect output to `scripts/e2e/results/` so results are preserved for an
 ```bash
 npm run sim:e2e:combat:report     # -> scripts/e2e/results/e2e_simulation_failures.json
 npm run sim:combat:all:report     # -> scripts/e2e/results/playwright_report.txt
-
-# Or manually for a specific spec:
-npm run sim:e2e -- scripts/e2e/battle/battle_fsm_sync.sim.ts 2>&1 | tee scripts/e2e/results/sim_run_$(date +%s).txt
 ```
 
 ### Step 3 — On failure: the fix loop

@@ -1,6 +1,6 @@
 ---
 name: fallow
-description: MANDATORY engine for codebase intelligence, code auditing, dead code detection, duplication analysis, complexity hotspots, and pre-commit audit triage. YOU MUST trigger this skill whenever the user or task mentions auditing code, reviewing errors, grouping problems, checking code quality, finding duplicates, measuring cyclomatic/cognitive complexity, dead code, unused exports, CWE security findings, or pre-commit/CI checks in BOTH Spanish and English (e.g., "auditar", "auditoría", "errores de auditoría", "agrupa por problemas", "agrupar por problemas", "listar errores", "revisa los errores", "calidad de código", "código duplicado", "triplicados", "complejidad", "dead code", "fallow", "npm run audit", "audit:errors", "audit:summary", "audit:warnings-diff", "audit:human", "cwe", "antipatrones", "code audit", "audit errors", "codebase intelligence"). Enforces deterministic structured JSON grouping via Fallow and project audit tools, strictly prohibiting manual log parsing or raw grepping.
+description: MANDATORY engine for codebase intelligence, code auditing, dead code detection, duplication analysis, complexity hotspots, and pre-commit audit triage. YOU MUST trigger this skill whenever the user or task mentions auditing code, reviewing errors, grouping problems, checking code quality, finding duplicates, measuring cyclomatic/cognitive complexity, dead code, unused exports, CWE security findings, or pre-commit/CI checks in BOTH Spanish and English (e.g., "auditar", "auditoría", "errores de auditoría", "agrupa por problemas", "agrupar por problemas", "listar errores", "revisa los errores", "calidad de código", "código duplicado", "triplicados", "complejidad", "dead code", "fallow", "npm run audit", "audit:warnings-diff", "audit:fix", "cwe", "antipatrones", "code audit", "audit errors", "codebase intelligence"). Enforces deterministic structured JSON grouping via Fallow and project audit tools, strictly prohibiting manual log parsing or raw grepping.
 ---
 
 # Fallow: Codebase Intelligence & Code Auditing
@@ -27,11 +27,11 @@ Use this skill to run and interpret Fallow commands and unified project audit to
 | **Inspect detailed audit findings** | Read `scratch/audits/latest_audit.json` | Complete machine-readable findings with exact file and line |
 | **Pre-commit diff validation** | `npm run audit:warnings-diff` | Pre-commit gatekeeper vs `origin/main` + JSON in `scratch/audits/latest_warnings_diff.json` |
 | **Audit changed files only (vs main)** | `npm run audit:changed` | Scoped audit of modified files vs main |
-| **Code duplication & triplets** | `npm run audit:fallow:triplets`<br>`node ./node_modules/fallow/bin/fallow dupes` | Identifies duplicate and triplicate blocks |
-| **Complexity hotspots & refactor targets** | `node ./node_modules/fallow/bin/fallow health --score --hotspots --targets` | Ranked refactoring recommendations |
+| **Code duplication & triplets** | `npm run audit:fallow:triplets` | Identifies duplicate and triplicate blocks |
+| **Complexity hotspots & refactor targets** | `npm run fallow:health` | Ranked refactoring recommendations |
 | **Quick Fallow summary** | `npm run audit:fallow:summary` | Concise terminal summary without log bloat |
 | **Export full Fallow report** | `npm run audit:fallow:report` | Saves human-readable report to `scratch/fallow_report.txt` |
-| **Auto-fix safe unused code/exports** | `npm run audit:fix` / `node ./node_modules/fallow/bin/fallow fix` | Applies native and Fallow automatic cleanups |
+| **Auto-fix safe unused code/exports** | `npm run audit:fix` / `npm run audit:fallow:fix` | Applies native and Fallow automatic cleanups |
 
 ---
 
@@ -159,11 +159,11 @@ node ./node_modules/fallow/bin/fallow explain unused-export
 
 When auditing codebase logic, triaging errors, or completing tasks:
 
-1. **Structured Diagnostic Scan**: Run `npm run audit:errors` or `npm run audit:summary` to get an instant breakdown of violations grouped by category and top offending files.
-2. **Duplication & Hotspots Scan**: Run `npm run audit:fallow:triplets` and `node ./node_modules/fallow/bin/fallow health --score --hotspots --targets` to see structural debt.
+1. **Structured Diagnostic Scan**: Run `npm run audit` (or `npm run audit --errors-only`) to get an instant summary breakdown of violations in the terminal and write complete structured JSON to `scratch/audits/latest_audit.json`.
+2. **Duplication & Hotspots Scan**: Run `npm run audit:fallow:triplets` and `npm run fallow:health` to see structural debt.
 3. **Apply Surgical Fixes**: Fix issues file-by-file starting with the highest-ranked hotspots.
-4. **Verify Health Compliance**: Run `node ./node_modules/fallow/bin/fallow health --score` to ensure health score is **>= 85**.
-5. **Regression Check**: Run `node ./node_modules/fallow/bin/fallow audit --changed-since main` to confirm 0 new issues are introduced.
+4. **Verify Health Compliance**: Run `npm run fallow:health` to ensure health score is **>= 85**.
+5. **Regression Check**: Run `npm run audit:changed` to confirm 0 new issues are introduced.
 
 ---
 
@@ -171,21 +171,20 @@ When auditing codebase logic, triaging errors, or completing tasks:
 
 Fallow is integrated directly into the workspace's NPM auditing scripts:
 
-- **`npm run audit:full`**: Executes all unit tests, project audits, validation scripts, and runs **`node ./node_modules/fallow/bin/fallow`** to check dead-code, duplication, and health.
-- **`npm run audit:fix`**: Applies the project's native fixes and automatically runs **`node ./node_modules/fallow/bin/fallow fix`** to clean up unused code and exports.
-- **`npm run audit:summary`**: Executes the project's native audit summary and automatically follows up with **`node ./node_modules/fallow/bin/fallow --summary`**.
+- **`npm run audit:full` / `npm run audit`**: Executes all project audits, validation scripts, and checks dead-code, duplication, and health.
+- **`npm run audit:fix`**: Applies the project's native fixes and automatically runs `npm run audit:fallow:fix` to clean up unused code and exports.
 - **`npm run audit:fallow:summary`**: Runs a quick summary of Fallow diagnostics to avoid cluttering the terminal.
 - **`npm run audit:fallow:report`**: Exports the complete human-readable Fallow audit report to the safe directory `scratch/fallow_report.txt` for deeper study.
 
 > [!TIP]
-> The **native project auditor** (`npm run audit`) also supports powerful CLI flags for targeted triage. Pass them after `--`:
-> - `--rule="<partial-name>"` — filter to one rule (e.g. `--rule="mágico"` for magic-number errors).
-> - `--summary` — compact rule-count + top-files table. **Always use before a full listing to avoid terminal floods.**
+> The **native project auditor** (`npm run audit`) displays a clean summary table in the terminal by default and writes full structured details to `scratch/audits/latest_audit.json`. It also supports flags and positional options for targeted triage:
+> - `npm run audit <family>` — filter to a specific domain family (`npm run audit domain_data`, `npm run audit fsm`, `npm run audit persistence`, etc.).
+> - `--rule="<partial-name>"` — filter to one rule (e.g. `npm run audit --rule="mágico"` for magic-number errors).
 > - `--top=N` / `-t N` — control the top-offenders table size (default 15).
 > - `--json` / `-j` — machine-readable JSON output, pipeable into scripts or `jq`.
 > - `--errors-only` — suppress warnings, show only hard errors.
 >
-> **Quick recipe:** `npm run audit -- --rule="mágico" --summary --top=30`
+> **Quick recipe:** `npm run audit --rule="mágico" --top=30`
 
 ---
 

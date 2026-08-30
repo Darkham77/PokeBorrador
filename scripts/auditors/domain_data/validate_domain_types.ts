@@ -19,8 +19,8 @@
  *
  * Usage:
  *   npm run validate:domain-types
- *   npm run validate:domain-types -- --summary
- *   npm run validate:domain-types -- --output=scratch/domain_types_report.txt
+ *   npm run validate:domain-types:summary
+ *   npm run validate:domain-types:report
  */
 
 import fs from 'node:fs/promises';

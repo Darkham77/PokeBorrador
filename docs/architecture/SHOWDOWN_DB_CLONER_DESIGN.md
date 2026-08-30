@@ -36,7 +36,7 @@ src/game/battle/showdown/sandbox_db/
 
 ### Flujo del Script (`build_db.ts`)
 
-1. **Llamada de Consola:** El desarrollador corre `npm run showdown:clone`.
+1. **Llamada de Consola:** El desarrollador corre `npm run assets:download`.
 2. **Carga e Iteración de Datos:** `extract_logic.ts` lee directamente de la librería `@pkmn/sim` los datos específicos formateados para Gen 3.
 3. **Escritura del JSON:** Se limpia la información irrelevante y se escribe un archivo comprimido `showdown_db.json`.
 4. **Cola de Descarga de Assets:** `fetch_sprites.ts` procesa en lotes concurrentes (ej. lote de 10) la descarga de imágenes a través de PokéAPI y servidores de sprites de Showdown.

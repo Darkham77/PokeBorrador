@@ -14,7 +14,7 @@
   - [ ] `git status` (Record modified/untracked files)
   - [ ] `git diff` & Session Artifacts Review (Review full diff + inspect session artifacts in `<appDataDir>/brain/<conversation-id>/`)
   - [ ] AGENTS.md chain review
-  - [ ] `npx fallow health --score` (Record BASELINE_HEALTH)
+  - [ ] `npm run fallow:health` (Record BASELINE_HEALTH)
   - [ ] Compose commit message (The Elegant Protocol synthesis)
   - [ ] `git add .`
   - [ ] `git commit -m "<message>"`
@@ -26,14 +26,14 @@
   - [ ] 3.2 `npm run audit:fix`
   - [ ] 3.3 Autonomous Repair Discovery
     - [ ] Read `scratch/warnings_diff_report.txt`
-    - [ ] `npx fallow audit --changed-since origin/main > scratch/fallow_report.txt`
+    - [ ] `npm run audit:changed > scratch/fallow_report.txt`
     - [ ] Present Technical Debt Report
   - [ ] 3.4 Manual Repair Phase
   - [ ] 3.5a `npm run validate:types`
   - [ ] 3.5b `npm run test`
   - [ ] 3.5c `npm run build` (THE GATE - Exit Code 0)
   - [ ] 3.5d `npm run audit:warnings-diff` (Re-validation)
-  - [ ] 3.5e `npx fallow health --score` (Must be ≥ BASELINE_HEALTH and ≥ 85)
+  - [ ] 3.5e `npm run fallow:health` (Must be ≥ BASELINE_HEALTH and ≥ 85)
 - [ ] **Phase 4: Database Triple Parity Sync**
   - [ ] Schema change check / Migration sync (or skipped if no DB changes)
 - [ ] **Phase 5: Failure Recovery**

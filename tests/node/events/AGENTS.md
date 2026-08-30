@@ -18,4 +18,4 @@ QA / Systems Engineers.
 
 ## Verification
 
-- Run `npx vitest run tests/node/events/` to execute event unit tests.
+- Run `npm run test:node` to execute event unit tests.

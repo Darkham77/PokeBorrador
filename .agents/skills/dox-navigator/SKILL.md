@@ -15,7 +15,7 @@ Consult this skill whenever you need to:
 
 - Access general project info, domain models, or manual files.
 - Search for components or locate specific directories.
-- **Audit DOX integrity & detect missing/unindexed AGENTS.md files**: Always run `npx tsx .agents/skills/dox-navigator/scripts/audit_dox.ts` to discover missing indices or broken DOX hierarchy links.
+- **Audit DOX integrity & detect missing/unindexed AGENTS.md files**: Always run `npm run audit:dox` to discover missing indices or broken DOX hierarchy links.
 - **Perform refactorings or major structural changes** to the codebase (which require refreshing and updating DOX indices/AGENTS.md files).
 - Run the `/learn` command to persist new rules or behaviors.
 - Perform the **Lessons Extraction** (Step 8) or **DOX Maintenance** (Step 7.1) during `/safe-commit`.
@@ -135,7 +135,7 @@ Whenever persisting new knowledge, rules, lessons, or constraints:
   1. Re-check changed paths against the DOX chain.
   2. Update the nearest owning docs and any affected parents/children.
   3. Refresh every affected `Child DOX Index`.
-  4. Run `npx tsx .agents/skills/dox-navigator/scripts/audit_dox.ts` to verify there are 0 errors in the `DOX (AGENTS.md) Integrity` category.
+  4. Run `npm run audit:dox` to verify there are 0 errors in the `DOX (AGENTS.md) Integrity` category.
   5. **Strict No-Test Mandate for Documentation**: Never run `npm run test`, Vitest, or test runners when performing DOX updates, docs maintenance, or markdown edits. Verification is strictly restricted to DOX audit and markdown linting.
 
 ---
@@ -145,19 +145,15 @@ Whenever persisting new knowledge, rules, lessons, or constraints:
 To detect missing `AGENTS.md` files, unindexed child DOX indices, absolute path violations, or broken relative links across `src/` and the root `AGENTS.md`:
 
 ### Dedicated DOX Audit Script
-Use the skill's bundled standalone DOX audit script (scans root `AGENTS.md` and recursively checks `src/` without hardcoded folder ignores):
+Use the project's dedicated npm script:
 ```bash
-npx tsx .agents/skills/dox-navigator/scripts/audit_dox.ts
-```
-Or for JSON format output:
-```bash
-npx tsx .agents/skills/dox-navigator/scripts/audit_dox.ts --json
+npm run audit:dox
 ```
 
 ### Full Project Audit (Errors Only Filter)
 Alternatively, execute the project-wide audit filtered for errors:
 ```bash
-npm run audit -- --errors-only
+npm run audit --errors-only
 ```
 
 ### What the Audit Detects:

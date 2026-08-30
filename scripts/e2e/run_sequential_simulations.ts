@@ -149,8 +149,8 @@ function getFuzzerSummary(): { elementCount: number; batchCount: number } {
 
 const targets: SimulationTarget[] = discoverPlaywrightTargets();
 
-// Support dynamic documentation flags: --table, --list, --json
-if (process.argv.includes('--table') || process.argv.includes('--list-markdown')) {
+// Support dynamic documentation flags: --table, --list, --json (and clean positional equivalents)
+if (process.argv.includes('--table') || process.argv.includes('table') || process.argv.includes('--list-markdown')) {
   const fuzzerSummary = getFuzzerSummary();
   const totalPlaywrightTests = targets.reduce((sum, t) => sum + t.caseCount, 0);
 
@@ -164,12 +164,12 @@ if (process.argv.includes('--table') || process.argv.includes('--list-markdown')
   process.exit(0);
 }
 
-if (process.argv.includes('--json')) {
+if (process.argv.includes('--json') || process.argv.includes('json')) {
   console.log(JSON.stringify({ fuzzer: getFuzzerSummary(), targets }, null, 2));
   process.exit(0);
 }
 
-if (process.argv.includes('--list')) {
+if (process.argv.includes('--list') || process.argv.includes('list')) {
   const fuzzerSummary = getFuzzerSummary();
   console.log(`📋 Total de suites E2E detectadas: ${targets.length} suites (${targets.reduce((sum, t) => sum + t.caseCount, 0)} tests Playwright + ${fuzzerSummary.elementCount} elementos en Fuzzer)`);
   targets.forEach((target, index) => {

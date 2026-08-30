@@ -36,7 +36,7 @@ enableCompileCache();
 async function runMasterAudit() {
   const startTime = performance.now();
 
-  const { values } = parseArgs({
+  const { values, positionals } = parseArgs({
     options: {
       family: { type: 'string' },
       task: { type: 'string' },
@@ -46,8 +46,16 @@ async function runMasterAudit() {
       top: { type: 'string', short: 't' },
       rule: { type: 'string', short: 'r' }
     },
+    allowPositionals: true,
     strict: false
   });
+
+  const positionalFamily = positionals.find(p => (AUDIT_FAMILIES as readonly string[]).includes(p)); // domain-ok
+  const targetFamily = values.family || positionalFamily;
+
+  if (!values.rule && positionals.some(p => p.toLowerCase() === 'dox')) {
+    values.rule = 'DOX';
+  }
 
   // 1. Prepare clean scratch/audits directory structure
   const scratchAuditsDir = path.resolve(process.cwd(), 'scratch/audits');
@@ -58,7 +66,7 @@ async function runMasterAudit() {
 
   // 2. Auto-discover all auditor tasks dynamically from scripts/auditors/
   const tasksToRun = await discoverAuditors({
-    family: values.family as string | undefined,
+    family: targetFamily as string | undefined,
     task: values.task as string | undefined
   });
 

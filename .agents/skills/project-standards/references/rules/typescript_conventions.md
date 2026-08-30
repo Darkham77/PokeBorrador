@@ -68,8 +68,8 @@
 
 ## 5. Fallow Configuration Maintenance & Health Score Mandate (Minimum 85/100)
 
-- **Mandatory Score**: The overall codebase health score computed by Fallow (`npx fallow health --score`) MUST be at least **85/100**. Scores below 85 are strictly non-compliant.
-- **Hotspot Optimization**: Whenever the score drops below 85, developers and AI agents MUST inspect Fallow's targets (`npx fallow health --targets --hotspots`), eliminate dead code, lower function/module complexity, and refactor iteratively until the score is strictly 85 or higher.
+- **Mandatory Score**: The overall codebase health score computed by Fallow (`npm run fallow:health`) MUST be at least **85/100**. Scores below 85 are strictly non-compliant.
+- **Hotspot Optimization**: Whenever the score drops below 85, developers and AI agents MUST inspect Fallow's targets (`npm run fallow:health`), eliminate dead code, lower function/module complexity, and refactor iteratively until the score is strictly 85 or higher.
 - **Pre-Commit Hygiene**: All structural complexity, unused variables, dead code, and duplication flagged by Fallow must be addressed before commits.
 - **Config Maintenance**: When refactoring files, changing directory structures, or renaming modules, update `.fallowrc.json` (especially `ignoreExports` paths) to reflect the new paths, preventing stale references.
 

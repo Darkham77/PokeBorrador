@@ -162,6 +162,7 @@ El proyecto cuenta con un ecosistema unificado de control de calidad, auditoría
 | `npm run audit:family:assets` | **Auditoría de Assets**: Valida colisiones de sprites, nombres canónicos y atlas de texturas. |
 | `npm run audit:family:architecture` | **Auditoría Arquitectónica**: Valida modularidad de 500 líneas, tokens SCSS y componentes Vue. |
 | `npm run audit:family:docs` | **Auditoría Documental**: Valida enlaces internos, rutas relativas y cumplimiento del framework DOX. |
+| `npm run audit:dox` | **Auditoría de DOX**: Valida la jerarquía de archivos `AGENTS.md`, secciones obligatorias, enlaces relativos y ausencia de rutas absolutas. |
 | `npm run fallow:health` | **Salud de Código (Fallow)**: Mide el puntaje de salud del repositorio, duplicaciones, hotspots de complejidad y vulnerabilidades CWE. |
 | `npm run audit:fallow:triplets` | **Detección de Duplicados**: Escanea bloques de código duplicados o triplicados en todo el proyecto. |
 | `npm run audit:css` | **Auditoría de Estilos**: Analiza bundles de SCSS y bloques `<style>` de componentes para detectar reglas redundantes. |
@@ -291,14 +292,12 @@ Esta herramienta escanea las partidas guardadas en `game_saves`, audita todos lo
 ```bash
 # Reparar una cuenta específica por su ID de usuario:
 npm run db:repair-account local_ash
-npm run db:repair-account -- --user=local_ash
 
 # Reparar TODAS las cuentas registradas en SQLite local, una por una:
 npm run db:repair-account all
-npm run db:repair-account --all
 
 # Especificar una ruta de base de datos SQLite personalizada:
-npm run db:repair-account -- --db=tests/fixtures/poke_local_ash.db all
+npm run db:repair-account tests/fixtures/poke_local_ash.db all
 ```
 
 #### 2. Uso en Servidores Supabase / PostgreSQL Remotos
@@ -390,12 +389,11 @@ Usa el script unificado para obtener assets externos:
 # Descarga completa (Pokemon Gen 1-9, Items, Trainers)
 npm run assets:download
 
-# Descarga selectiva o limitada (Usar -- para pasar flags)
-npm run assets:download -- --limit=151  # Solo primera generación
-npm run assets:download -- --pokemon    # Solo Pokémon (Front/Back/Shiny)
-npm run assets:download -- --items      # Solo ítems
-npm run assets:download -- --trainers   # Solo entrenadores
-npm run assets:download -- --showdown   # Solo Pokémon de Showdown (Front/Back/Shiny, Cries)
+# Descarga selectiva limpia (soporte posicional nativo)
+npm run assets:download items        # Solo ítems (o npm run assets:download:items)
+npm run assets:download pokemon      # Solo Pokémon (Front/Back/Shiny)
+npm run assets:download trainers     # Solo entrenadores
+npm run assets:download 151         # Solo primera generación (límite posicional)
 ```
 
 > [!NOTE] Los recursos se descargan en la carpeta `external_assets/`. Estos archivos están fuera del pipeline automático de `_raw-assets` por defecto para evitar duplicación masiva, pero podés moverlos manualmente si necesitás procesarlos.

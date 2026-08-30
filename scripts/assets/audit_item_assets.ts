@@ -99,7 +99,8 @@ async function main() {
     options: {
       output: { type: 'string', short: 'o' },
       summary: { type: 'boolean', short: 's' }
-    }
+    },
+    strict: false
   });
 
   console.log(styleText('bold', '\n--- 🔎 ITEM IMAGE ASSETS AUDIT ---'));
@@ -204,7 +205,7 @@ async function main() {
       });
       if (allMissing.length > limit) {
         console.log(styleText('cyan', `\n[INFO] Se muestran solo las primeras ${limit} de un total de ${allMissing.length} imágenes faltantes para evitar saturar la terminal.`));
-        console.log(styleText('cyan', `👉 Para guardar el reporte completo a un archivo: npm run audit -- --output=scratch/item_assets_report.txt (o añade flags directamente al script)`));
+        console.log(styleText('cyan', `👉 Para guardar el reporte completo a un archivo: npm run audit --output=scratch/item_assets_report.txt`));
       }
     }
   } else {

@@ -266,7 +266,7 @@ if (isMainThread) {
   };
 
   const main = async () => {
-    const { values } = parseArgs({
+    const { values, positionals } = parseArgs({
       options: {
         all: { type: 'boolean', default: false },
         id: { type: 'string' },
@@ -276,11 +276,13 @@ if (isMainThread) {
         // NOTE: always true — leaving bare files (e.g. 14.png) without i/v suffix
         // corrupts the convert_assets pipeline which would generate 14.webp instead of 14i.webp
         'remove-original': { type: 'boolean', default: true }
-      }
+      },
+      allowPositionals: true,
+      strict: false
     });
 
     try {
-      const targetDir = values.dir ? safeResolve(process.cwd(), values.dir) : FRONT_DIR;
+      const targetDir = typeof values.dir === 'string' ? safeResolve(process.cwd(), values.dir) : FRONT_DIR;
       const files = await fs.readdir(targetDir);
       const targetFiles = files.filter(file => {
         if (!file.endsWith('.png')) return false;
@@ -293,23 +295,27 @@ if (isMainThread) {
       });
 
       let filteredFiles = targetFiles;
-      if (values.file) {
+      const fileFilter = typeof values.file === 'string' ? values.file : (positionals[0]?.endsWith('.png') ? positionals[0] : undefined);
+      const idFilter = typeof values.id === 'string' ? values.id : (positionals[0] && !positionals[0].includes('-') && !positionals[0].endsWith('.png') && positionals[0] !== 'all' ? positionals[0] : undefined);
+      const rangeFilter = typeof values.range === 'string' ? values.range : (positionals[0]?.includes('-') ? positionals[0] : undefined);
+
+      if (fileFilter) {
         filteredFiles = targetFiles.filter(file => {
-          return file === values.file || path.parse(file).name === path.parse(values.file!).name;
+          return file === fileFilter || path.parse(file).name === path.parse(fileFilter).name;
         });
-        console.log(`🎯 Filtrado por Archivo "${values.file}": ${filteredFiles.length} archivo(s) encontrado(s).`);
-      } else if (values.id) {
+        console.log(`🎯 Filtrado por Archivo "${fileFilter}": ${filteredFiles.length} archivo(s) encontrado(s).`);
+      } else if (idFilter) {
         filteredFiles = targetFiles.filter(file => {
           const name = path.parse(file).name;
           const match = name.match(/^(\d+)(.*)$/);
           if (!match) return false;
           const pid = match[1]!;
           const suffix = match[2]!;
-          return pid === values.id || `${pid}${suffix}` === values.id;
+          return pid === idFilter || `${pid}${suffix}` === idFilter;
         });
-        console.log(`🎯 Filtrado por ID "${values.id}": ${filteredFiles.length} archivo(s) encontrado(s).`);
-      } else if (values.range) {
-        const [startStr, endStr] = values.range.split('-');
+        console.log(`🎯 Filtrado por ID "${idFilter}": ${filteredFiles.length} archivo(s) encontrado(s).`);
+      } else if (rangeFilter) {
+        const [startStr, endStr] = rangeFilter.split('-');
         const start = parseInt(startStr || '0', 10);
         const end = parseInt(endStr || '9999', 10);
         filteredFiles = targetFiles.filter(file => {

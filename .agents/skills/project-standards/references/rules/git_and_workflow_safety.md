@@ -57,6 +57,12 @@ To ensure rigor and traceability, every complex task MUST follow the artifact li
 ## 7. CLI Execution Safety & No Interactive Background Tasks
 
 - **Prohibition on Multi-Line Inline Node CLI Commands (`noInteractiveCliHangs`)**: AI agents MUST NEVER run multi-line inline scripts (`npx tsx -e "..."` or `node -e "..."`) in terminal background tasks on Windows. Doing so causes child processes to hang or await interactive stdin indefinitely.
-- **Dedicated Test/Script Files Mandate**: All validations, diagnostics, and test executions MUST be conducted using dedicated Vitest test files (`npx vitest run <path>`) or dedicated script files in `scripts/` or `scratch/`.
+- **Dedicated Test/Script Files Mandate**: All validations, diagnostics, and test executions MUST be conducted using dedicated Vitest test files (`npm run test`) or dedicated script files in `scripts/` or `scratch/`.
 - **Absolute Prohibition on Manual Command PATH Injections (`noManualPathInjection`)**: AI agents are STRICTLY FORBIDDEN from prefixing CLI commands with ad-hoc path variables (e.g. `$env:Path = ...; npm ...`, `export PATH=... && npm ...`, or inline path wrappers). All commands MUST be run cleanly and natively (`npm run ...`, `npx ...`, `node ...`). If PATH is missing, instruct the user to run the setup script and restart the IDE.
+
+## 8. NPM Script Invocation Exclusivity & Package.json SSoT
+
+- **NPM-First Tooling Mandate**: All developer and maintenance workflows, validators, asset generators, and simulation runners MUST be executed via official NPM scripts (`npm run <script>`).
+- **Prohibition on Raw Script Invocations in Documentation**: Agents MUST NEVER write documentation, skills, or DOX files that instruct running raw file paths (`node scripts/...`, `npx tsx ...`). If a tool is required for standard operations, register the command in `package.json` with appropriate Node.js permissions.
+- **npm 12+ Script Encapsulation**: Sub-scripts declared inside `package.json` MUST invoke native `node --permission ...` directly rather than chaining through `npm run ... -- --flag` to eliminate CLI argument collisions.
 

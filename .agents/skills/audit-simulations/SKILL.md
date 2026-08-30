@@ -194,7 +194,7 @@ A **bad** (useless) parity test:
 ## 🚨 MANDATORY DIAGNOSTIC SUITE (Always run first)
 
 ```bash
-npx tsx scripts/maintenance/audit_showdown/run_audit_suite.ts
+npm run sim:audit
 ```
 
 - **If the suite reports violations** (non-empty arrays): each violation is a candidate. Write a test, confirm RED, then catalog.
@@ -229,7 +229,7 @@ graph TD
 
 ### Phase 1: Diagnostic Suite + Deep Manual Investigation
 
-1. Run `npx tsx scripts/maintenance/audit_showdown/run_audit_suite.ts`.
+1. Run `npm run sim:audit`.
 2. Read `task.md` and `implementation_plan.md` in full — track all prior real bugs.
 3. **Stage 1 — Build a list of ≥20 suspects**: Study `external/pokemon-showdown-code/` vs `src/` across multiple modules. For each candidate area, write one sentence describing the suspected divergence. Do NOT write tests yet. Collect ≥20 suspects before moving to Stage 2.
 4. **Stage 2 — Confirm each suspect with a test**: For each of the ≥20 suspects, write a test designed to FAIL if the divergence is real, run it, and observe the result:
@@ -272,7 +272,7 @@ graph TD
 
 ## Mandatory Audit Checklist
 
-- [ ] Was the diagnostic suite `npx tsx scripts/maintenance/audit_showdown/run_audit_suite.ts` run in Phase 1?
+- [ ] Was the diagnostic suite `npm run sim:audit` run in Phase 1?
 - [ ] Were `implementation_plan.md` and `task.md` read in full with `view_file` before any modification?
 - [ ] **Stage 1**: Were at least **20 distinct candidate areas** investigated through manual line-by-line comparison between `external/` and `src/`?
 - [ ] For EACH suspect: was the suspicion articulated as one concrete sentence before writing the test?

@@ -82,7 +82,7 @@ Whenever ANY bug, regression, or state desynchronization occurs across the proje
 Whenever ANY bug, test failure, or simulation desync occurs, the agent MUST follow the exact 7-step lifecycle defined in `@/game-simulation` (`.agents/skills/game-simulation/SKILL.md`):
 
 1. **Step 1: Fuzzer Execution & Regeneration** (`npm run sim:fuzzer`):
-   - Run fuzzer whenever certified cases do not exist or when battle engine logic (`src/logic/battle/`) is refactored. Validate certified cases with `npx tsx scripts/e2e/fuzzer/tools/validate_certified_cases.ts`.
+   - Run fuzzer whenever certified cases do not exist or when battle engine logic (`src/logic/battle/`) is refactored. Validate certified cases with `npm run sim:fuzzer:validate`.
 2. **Step 2: E2E Simulation Execution** (`npm run sim:e2e` or targeted family):
    - Execute the test suite to validate real UI, FSM, and game feature behaviors.
 3. **Step 3: Isolate Failing Family and Specific Case ID**:
@@ -93,10 +93,10 @@ Whenever ANY bug, test failure, or simulation desync occurs, the agent MUST foll
 5. **Step 5: Fix Root Cause in `src/` & Verify GREEN**:
    - Diagnose the true root cause in `src/` and apply the clean fix without fallbacks (`||`, `??`, dummy derivations).
    - Re-run the reproduction test in Vitest to empirically verify it turns **GREEN**.
-6. **Step 5.5: Full Node Unit Regression Check (`npx vitest run tests/node/` / `npm run test`)**:
+6. **Step 5.5: Full Node Unit Regression Check (`npm run test:node` / `npm run test`)**:
    - Execute the entire Node test suite to confirm 100% GREEN and 0 regressions before touching browser simulations.
 7. **Step 6: Re-run ONLY the Specific Failing Simulation in Playwright (Tier 3)**:
-   - Re-run ONLY the affected simulation file (e.g. `npx playwright test scripts/e2e/battle/battle_fsm_sync.simulation.ts`) following `/game-simulation` protocols.
+   - Re-run ONLY the affected simulation suite (e.g. `npm run sim:e2e:combat` or targeted family) following `/game-simulation` protocols.
 8. **Step 7: Full Master Regression Pass**:
    - Run `npm run sim:e2e` only after all family cases pass 100% clean.
 

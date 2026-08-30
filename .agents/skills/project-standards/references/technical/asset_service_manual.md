@@ -134,7 +134,7 @@ All inventory and shop item sprites in `public/assets/sprites/` MUST strictly fo
 To download missing items or re-tier them:
 1. `npm run assets:download:items` (`scripts/assets/download_assets.ts`)
 2. `npm run assets:convert` (`scripts/assets/convert_assets.ts`)
-3. `node --permission --experimental-strip-types --allow-addons --allow-fs-read=. --allow-fs-write=. scripts/assets/organize_item_sprites_by_tier.ts`
+3. `npm run assets:organize-tiers`
 
 Creating flat asset directories (such as `items/`) or altering `items.json` sprite paths away from `crafting/tier[0-3]/` is STRICTLY FORBIDDEN.
 

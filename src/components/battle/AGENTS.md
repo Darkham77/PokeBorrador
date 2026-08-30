@@ -53,7 +53,7 @@ Frontend Developers / Systems Engineers.
 
 ## Verification
 
-- Run `npm run lint` and `npx tsx .agents/skills/dox-navigator/scripts/audit_dox.ts`.
+- Run `npm run lint`.
 
 ## Child DOX Index
 

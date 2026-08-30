@@ -18,6 +18,7 @@ Poké Vicio is a hybrid retro-modern web video game built with Vue 3, Pinia, GSA
   - **Pre-Commit Single Source of Truth**: `npm run audit:warnings-diff` (automatically runs ESLint, `vue-tsc`, Fallow Dupes/Security, domain/FSM/database validation, and project rules against `origin/main` in one single pass; requires 0 errors and 0 new warnings).
   - **Global Unified Audit Engine**: `npm run audit` (displays consolidated Box-Drawing tables in console and writes structured JSON to `scratch/audits/latest_audit.json`).
   - **Database Validation**: `npm run validate:sql`
+  - **NPM Script Single Source of Truth**: All developer tools, validators, fuzzer suites, and maintenance routines MUST be executed via official NPM scripts declared in `package.json`. Raw direct executions (`node scripts/...`, `npx tsx ...`) in skills or documentation are strictly forbidden.
 
 ## 0. Senior Developer Mindset & Laziness Ladder
 

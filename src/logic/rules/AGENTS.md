@@ -26,7 +26,7 @@ Game Designers / Systems Engineers.
 
 ## Verification
 
-- Run `npx vitest run tests/node/pokemon/field_rules_coordinator.test.ts`.
+- Run `npm run test:node` to verify field rules coordinator test suites.
 
 ## Child DOX Index
 

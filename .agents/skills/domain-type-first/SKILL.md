@@ -265,13 +265,10 @@ The canonical domain type auditor is `scripts/validation/validate_domain_types.t
 npm run validate:domain-types
 
 # Compact summary mode (shows only violation count breakdowns)
-npm run validate:domain-types -- --summary
+npm run validate:domain-types:summary
 
 # Save structured audit report to a file
-npm run validate:domain-types -- --output=scratch/domain_types_report.txt
-
-# Direct Node execution with native permissions
-node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/validation/validate_domain_types.ts
+npm run validate:domain-types:report
 ```
 
 ### Full Verification Pipeline

@@ -113,7 +113,7 @@ The scratch directory is `<appDataDir>/brain/<conversation-id>/scratch/`. All te
 This commit is recovery insurance. If Phase 3 repairs accidentally corrupt a file, `git diff HEAD~1` shows exactly what changed. Without this commit, an auto-fix could silently overwrite your creative logic.
 
 > [!IMPORTANT]
-> **SNAPSHOT HEALTH EXEMPTION**: Phase 1 is a recovery snapshot, not the final safety gate. If `npx fallow health --score` reports a score below the project minimum of 85 during Step 1.4, record that value as `BASELINE_HEALTH` and continue with the snapshot commit. Do not block, refactor, or repair in Phase 1 because the snapshot exists specifically to protect the pre-repair state. The 85 minimum is enforced later in Phase 3.5e, after audits, fixes, tests, and build verification run.
+> **SNAPSHOT HEALTH EXEMPTION**: Phase 1 is a recovery snapshot, not the final safety gate. If `npm run fallow:health` reports a score below the project minimum of 85 during Step 1.4, record that value as `BASELINE_HEALTH` and continue with the snapshot commit. Do not block, refactor, or repair in Phase 1 because the snapshot exists specifically to protect the pre-repair state. The 85 minimum is enforced later in Phase 3.5e, after audits, fixes, tests, and build verification run.
 
 **Step 1.1** — `git status`
 - Identify all modified, untracked, and deleted files.
@@ -128,7 +128,7 @@ This commit is recovery insurance. If Phase 3 repairs accidentally corrupt a fil
 - For each modified file, walk from the repo root and `view_file` every `AGENTS.md` along the path.
 - If any local contract is contradicted, resolve it before committing.
 
-**Step 1.4** — `npx fallow health --score`
+**Step 1.4** — `npm run fallow:health`
 - Read and record the score as `BASELINE_HEALTH = <score>` in `task.md`.
 - This number is required for the Phase 3.5e comparison. Do not proceed without recording it.
 - If the score is below 85, write `snapshot baseline below final gate` in `task.md` and continue. This is the only allowed Fallow health exemption, and it applies only before the Phase 1 snapshot commit.
@@ -223,7 +223,7 @@ Use `view_file` on `scratch/warnings_diff_report.txt` (or `.json`). Extract ever
 **Step 3.3b** — Run and read the Fallow report
 
 ```bash
-npx fallow audit --changed-since origin/main > scratch/fallow_report.txt
+npm run audit:changed > scratch/fallow_report.txt
 ```
 
 Then `view_file` on `scratch/fallow_report.txt`. Extract all dead code, unused exports, duplication, and complexity findings.
@@ -296,14 +296,12 @@ Repairs can introduce new warnings. This re-run confirms the loop's output is cl
 **If any errors or new warnings** → the repair cycle introduced regressions. Record them in `task.md`, return to Step 3.4.
 **If 0 errors, 0 new warnings** → update `task.md` with `post-repair audit: ✅`. Proceed to Step 3.5e.
 
-### Step 3.5e — `npm run fallow:health` (or `node ./node_modules/fallow/bin/fallow health --score`)
+### Step 3.5e — `npm run fallow:health`
 
 1. Run the command and wait for completion.
 2. Read the score.
 
-The score MUST be **≥ `BASELINE_HEALTH`** (recorded in Step 1.4) AND **≥ 85**.
-
-**If below 85 or regressed** → run `npm run fallow -- health --targets --hotspots`, record a refactoring sub-plan in `task.md`, perform the refactors, restart from Step 3.5a.
+**If below 85 or regressed** → run `npm run fallow:health`, record a refactoring sub-plan in `task.md`, perform the refactors, restart from Step 3.5a.
 **If valid** → update `task.md` with `health: ✅ score=<N>`.
 
 **✅ Loop exited.** Mark Phase 3 `[x]` in `task.md` with all sub-scores recorded. Show snippet. Only then proceed to Phase 4.
@@ -362,7 +360,7 @@ Call `write_to_file` to create or update `<appDataDir>/brain/<conversation-id>/w
 2. For each modified file (list from Step 1.1), `view_file` the nearest `AGENTS.md` in its folder tree.
 3. If changes modified any purpose, rules, contracts, or configurations, update that `AGENTS.md`.
 4. If any new directory with an `AGENTS.md` was created, add it to its parent's Child DOX Index.
-5. Run `npm run audit:fast -- --rule="DOX"` — must report **0 errors** in the `DOX (AGENTS.md) Integrity` category. If errors exist: fix and re-run.
+5. Run `npm run audit:dox` (or `npm run audit:warnings-diff`) — must report **0 errors** in `DOX / AGENTS.md` rules. If errors exist: fix and re-run.
 
 **✓ Completion gate**: Mark Phase 7.1 `[x]` in `task.md`. Only then proceed to Phase 8.
 

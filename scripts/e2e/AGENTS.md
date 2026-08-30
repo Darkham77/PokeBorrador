@@ -54,7 +54,7 @@ QA / Automation Engineers.
 ## Verification
 
 - Run `npm run sim:e2e` to execute all modular Playwright simulations.
-- Run `npm run sim:e2e:battle` to run battle-related simulations.
+- Run `npm run sim:e2e:combat` to run battle-related simulations.
 - Run `npm run sim:e2e:gts` to run GTS transactions simulations.
 - Run `npm run sim:e2e:save` to run save-related simulations.
 - Run `npm run sim:e2e:breeding` to run breeding-related simulations.

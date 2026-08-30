@@ -17,7 +17,7 @@ QA / Automation Engineers.
 
 ## Verification
 
-- Run suite via Playwright: `npx playwright test scripts/e2e/pokemon/`
+- Run suite via Playwright: `npm run sim:e2e:pokemon`
 
 ## Child DOX Index
 

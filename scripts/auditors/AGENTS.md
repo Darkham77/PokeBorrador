@@ -39,4 +39,4 @@ Tooling / Quality Engineers.
 ## Verification
 
 - Run `npm run audit` to verify all auditors execute with unified table styling and generate reports in `scratch/audits/`.
-- Run `npx vitest run tests/unit/maintenance/test_audit_system.spec.ts` for unit test verification.
+- Run `npm run test:unit` for unit test verification.

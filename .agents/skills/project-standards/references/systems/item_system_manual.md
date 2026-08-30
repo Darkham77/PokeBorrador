@@ -111,7 +111,7 @@ To provide clear visual feedback without redundancy, item usage logs must be spl
 4. **Validation**: Run the script:
 
     ```bash
-    node .agents/skills/item-validator/scripts/validate_items.ts
+    npm run validate:items
     ```
 
 ---
@@ -155,7 +155,7 @@ All inventory and shop item sprites in `public/assets/sprites/` MUST strictly fo
 ### Canonical Pipeline Commands
 1. **Download Missing Sprites**: `npm run assets:download:items` (`scripts/assets/download_assets.ts`).
 2. **Convert and Build Asset DB**: `npm run assets:convert` (`scripts/assets/convert_assets.ts`).
-3. **Re-tier and Organize Items**: `node --permission --experimental-strip-types --allow-addons --allow-fs-read=. --allow-fs-write=. scripts/assets/organize_item_sprites_by_tier.ts`.
+3. **Re-tier and Organize Items**: `npm run assets:organize-tiers`.
 
 ### Strict Prohibitions
 - **Zero Flat Directories**: It is STRICTLY FORBIDDEN to create flat asset directories (such as `items/`) or alter `items.json` sprite paths away from `crafting/tier[0-3]/`.

@@ -19,4 +19,4 @@ QA / Automation Engineers.
 
 ## Verification
 
-- Run `npx playwright test scripts/e2e/events/` to execute event scenario simulations.
+- Run `npm run sim:e2e:events` to execute event scenario simulations.

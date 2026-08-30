@@ -710,7 +710,7 @@ function sanitizeContext(ctx: string): string {
 
 async function main() {
   const startTime = performance.now();
-  const { values } = parseArgs({
+  const { values, positionals } = parseArgs({
     options: {
       fix: { type: 'boolean', short: 'f' },
       path: { type: 'string', short: 'p', default: '.' },
@@ -724,8 +724,18 @@ async function main() {
       'errors-only': { type: 'boolean' },
       'css-only': { type: 'boolean' },
       rule: { type: 'string', short: 'r' }
-    }
+    },
+    allowPositionals: true,
+    strict: false
   });
+
+  if (values.path === '.' && positionals[0] && positionals[0].toLowerCase() !== 'dox') {
+    values.path = positionals[0];
+  }
+
+  if (!values.rule && positionals.some(p => p.toLowerCase() === 'dox')) {
+    values.rule = 'DOX';
+  }
 
   const isHumanMode = !!(values.human || values.pretty || values.summary);
 
@@ -999,7 +1009,7 @@ async function main() {
 
         if (entries.length > MAX_FILES_TO_SHOW_IN_TERMINAL) {
           console.log(styleText('cyan', `\n[INFO] Se muestran ${MAX_FILES_TO_SHOW_IN_TERMINAL} de ${entries.length} archivos con avisos para evitar saturar la terminal.`));
-          console.log(styleText('cyan', `👉 Usa "npm run audit -- --summary" para vista de métricas o "--output=<archivo>" para volcado completo.`));
+          console.log(styleText('cyan', `👉 Usa "npm run audit --errors-only" para filtrar solo errores o consulta scratch/audits/latest_audit.json para el volcado completo.`));
         }
       }
 

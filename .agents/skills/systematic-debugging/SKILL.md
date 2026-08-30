@@ -20,9 +20,9 @@ Whenever investigating, diagnosing, or resolving ANY bug or unexpected state acr
 
 | Tier | Purpose | Location | Verification Tool |
 | :--- | :--- | :--- | :--- |
-| **Tier 1: Unit Test** | Isolated, static reproduction test (RED-to-GREEN) | `tests/node/` or `tests/unit/` | `npx vitest run <test>` |
-| **Tier 2: Integrity Test** | Contract, schema, FSM lifecycle & `@pkmn/sim` parity | `tests/integration/` or `tests/node/` | `npx vitest run tests/node/` |
-| **Tier 3: Playwright Sim** | Real browser E2E interaction following `/game-simulation` | `scripts/e2e/` | `npx playwright test <sim>` |
+| **Tier 1: Unit Test** | Isolated, static reproduction test (RED-to-GREEN) | `tests/node/` or `tests/unit/` | `npm run test` / `npm run test:unit` |
+| **Tier 2: Integrity Test** | Contract, schema, FSM lifecycle & `@pkmn/sim` parity | `tests/integration/` or `tests/node/` | `npm run test:node` |
+| **Tier 3: Playwright Sim** | Real browser E2E interaction following `/game-simulation` | `scripts/e2e/` | `npm run sim:e2e` (or domain simulation) |
 
 ---
 
@@ -40,7 +40,7 @@ Before making ANY edit to `src/`, reliably reproduce the issue with an isolated 
 1. [Exact step to reproduce]
 2. [Failing assertion / error trace]
 3. [Isolated Unit Test path: tests/node/.../reproduce_xxx.test.ts]
-4. [RED failure verified via: npx vitest run <path>]
+4. [RED failure verified via: npm run test]
 ```
 
 ### Phase 2: Isolate
@@ -77,7 +77,7 @@ Find the root cause, not just symptoms. Check cross-boundary contracts and schem
 
 Apply clean fix at the upstream origin in `src/` and verify all tiers sequentially:
 1. **Tier 1 Pass**: Re-run isolated unit test -> confirm it turns **GREEN**.
-2. **Tier 2 Pass**: Run Node integration/integrity suite (`npx vitest run tests/node/` or `npm run test`) -> 0 regressions.
+2. **Tier 2 Pass**: Run Node integration/integrity suite (`npm run test:node` or `npm run test`) -> 0 regressions.
 3. **Tier 3 Pass**: Re-run the affected Playwright E2E simulation following `@/game-simulation` protocols:
    - Passive joystick law (reacts ONLY to typed public events `battle-ready-for-input`, `battle-forced-switch-required`).
    - 100% ID-based locators (`#<id>`) and UID data attributes.

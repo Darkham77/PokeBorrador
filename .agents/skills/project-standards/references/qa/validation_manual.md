@@ -34,7 +34,7 @@ Core logic modules and critical system components MUST have dedicated unit tests
 
 1. **Factory Integrity**: Every data factory (e.g., `pokemonFactory.ts`) must be covered by unit tests verifying generation, level-up, and sanitization.
 2. **Regression Prevention**: When modifying `src/logic/`, perform a **Test Gap Analysis**; if a module is "worthy" (core behavior), create a new `.spec.ts` file.
-3. **Execution**: Run `npm run test`, `npm run test:node`, or `npm run test:e2e` before every commit to ensure 100% pass rate.
+3. **Execution**: Run `npm run test`, `npm run test:node`, or `npm run sim:e2e` before every commit to ensure 100% pass rate.
 4. **Deterministic Environment**: All logic tests dependent on environmental variables (time cycles, seasons, weather) MUST mock `getDayCycle` or `getServerInstant` from `@/logic/timeUtils` to ensure consistent and reproducible results across all timezones and execution hours.
 
 ---
@@ -112,27 +112,26 @@ Whenever requested to "actualizar herramientas", "update tools", "preparar entor
 - `npm run validate:sql`: SQL schema and migration validator against local engine.
 - `npm run validate:items`: Integrity audit for item and object databases.
 - `npm run validate:items:summary`: Runs item database validation in summary mode.
-- `npm run validate:items:report`: Runs item database validation and saves detailed output to `items_report.txt`.
+- `npm run validate:items:report`: Runs item database validation and saves detailed output to `scratch/items_report.txt`.
 - `npm run validate:abilities`: Semi-integrity validation for abilities database against Showdown Dex.
 - `npm run validate:abilities:summary`: Runs ability database validation in summary mode.
-- `npm run validate:abilities:report`: Runs ability database validation and saves detailed output to `abilities_report.txt`.
+- `npm run validate:abilities:report`: Runs ability database validation and saves detailed output to `scratch/abilities_report.txt`.
 - `npm run validate:moves`: Semi-integrity validation for moves database against Showdown Dex.
 - `npm run validate:moves:summary`: Runs move database validation in summary mode.
-- `npm run validate:moves:report`: Runs move database validation and saves detailed output to `moves_report.txt`.
-- `npm run validate:sandbox`: Validation for moves tooltip render in the battle sandbox.
-- `npm run validate:sandbox:summary`: Runs sandbox validation in summary mode.
-- `npm run validate:sandbox:report`: Runs sandbox validation and saves detailed output to `sandbox_report.txt`.
-- `npm run audit`: Unified standards scan (Viewports, GPU, SASS filters). Accepts extra flags after `--` (see 🎛️ Audit CLI Flags section above).
+- `npm run validate:moves:report`: Runs move database validation and saves detailed output to `scratch/moves_report.txt`.
+- `npm run validate:pokemon`: Integrity validator for Pokemon species database.
+- `npm run validate:sprites`: Sprite integrity validator across 9 generations.
+- `npm run validate:domain-types`: Domain-Type-First contract compliance auditor.
+- `npm run validate:o1`: $O(1)$ data structures and algorithmic performance auditor.
+- `npm run audit`: Unified standards scan. Displays summary Box-Drawing table in terminal and writes full JSON to `scratch/audits/latest_audit.json`. Accepts filters (e.g. `npm run audit --errors-only`, `npm run audit dox`, `npm run audit domain_data`).
 - `npm run audit:fix`: Automatic standards repair (Node prefixes, Viewports).
-- `npm run audit:summary`: Runs project audit in summary mode (equivalent to `npm run audit -- --summary`).
-- `npm run audit:report`: Runs project audit and saves detailed output to `audit_report.txt`.
-- `npm run audit:full`: **THE GOLD STANDARD**. Total audit (Code + FSM + Items + SQL + Abilities + Moves). MANDATORY before any commit.
+- `npm run audit:dox`: Dedicated DOX (AGENTS.md) integrity auditor.
 - `npm run lint`: Style and syntax verification (includes type-check).
 - `npm run lint:report`: Runs ESLint with cache enabled and saves a codeframe report in `scratch/lint_report.txt`.
 - `npm run test:node`: Runs the pure logic test suite using the native Node.js 26+ test runner.
-- `npm run test:all`: Sequentially runs the native Node.js tests (`test:node`) and the component tests in Vitest (`test`).
+- `npm run test:all`: Sequentially runs the full test suite (`test`).
 - `npm run sim:e2e`: Runs E2E browser and UI synchronization tests using Playwright.
-- `npm run sim:e2e:battle`: Runs only the battle-related E2E tests (FSM sync, held items, weather).
+- `npm run sim:e2e:combat`: Runs only the battle-related E2E tests (FSM sync, held items, weather).
 - `npm run sim:e2e:gts`: Runs only the GTS transactions E2E tests.
 - `npm run sim:e2e:save`: Runs only the Save Shield E2E tests.
 - `npm run sim:e2e:breeding`: Runs only the breeding and hatching E2E tests.

@@ -260,20 +260,27 @@ async function downloadPokemon(limit: number) {
 }
 
 async function main() {
-  const { values } = parseArgs({
+  const { values, positionals } = parseArgs({
     options: {
       pokemon: { type: 'boolean' },
       items: { type: 'boolean' },
       trainers: { type: 'boolean' },
       all: { type: 'boolean' },
       limit: { type: 'string' }
-    }
+    },
+    allowPositionals: true,
+    strict: false
   });
 
-  const doAll = values.all || (!values.pokemon && !values.items && !values.trainers);
-  const doItems = doAll || values.items;
-  const doPokemon = doAll || values.pokemon;
-  const pokemonLimit = values.limit ? parseInt(values.limit, 10) : TOTAL_POKEMON_SPECIES;
+  const isPositionalItems = positionals.includes('items');
+  const isPositionalPokemon = positionals.includes('pokemon');
+  const isPositionalTrainers = positionals.includes('trainers');
+  const isPositionalAll = positionals.includes('all');
+
+  const doAll = values.all || isPositionalAll || (!values.pokemon && !values.items && !values.trainers && !isPositionalItems && !isPositionalPokemon && !isPositionalTrainers);
+  const doItems = doAll || values.items || isPositionalItems;
+  const doPokemon = doAll || values.pokemon || isPositionalPokemon;
+  const pokemonLimit = typeof values.limit === 'string' ? parseInt(values.limit, 10) : TOTAL_POKEMON_SPECIES;
 
   console.log(styleText('bold', '\n--- 📥 UNIVERSAL ASSET DOWNLOADER & MULTI-SOURCE SCRAPER ---'));
 
