@@ -17,8 +17,7 @@ Poké Vicio is a hybrid retro-modern web video game built with Vue 3, Pinia, GSA
   - **Full Automated Test Suite**: `npm run test` (executes 100% of both `unit` (Vue/JSDOM) and `node` test projects natively via `node --no-experimental-webstorage ./node_modules/vitest/vitest.mjs run` across Windows PowerShell/CMD and POSIX; strictly reserved for verifying source code logic changes in `src/` or `database/`; running test suites for documentation, DOX indices, markdown, or skill files is STRICTLY FORBIDDEN).
   - **Pre-Commit Single Source of Truth**: `npm run audit:warnings-diff` (automatically runs ESLint, `vue-tsc`, Fallow Dupes/Security, domain/FSM/database validation, and project rules against `origin/main` in one single pass; requires 0 errors and 0 new warnings).
   - **Global Unified Audit Engine**: `npm run audit` (displays consolidated Box-Drawing tables in console and writes structured JSON to `scratch/audits/latest_audit.json`).
-  - **Database Validation**: `npm run validate:sql`
-  - **NPM Script Single Source of Truth**: All developer tools, validators, fuzzer suites, and maintenance routines MUST be executed via official NPM scripts declared in `package.json`. Raw direct executions (`node scripts/...`, `npx tsx ...`) in skills or documentation are strictly forbidden.
+  - **NPM Script Single Source of Truth**: All developer tools, validators, fuzzer suites, and maintenance routines MUST be executed via official NPM scripts declared in `package.json`. Raw direct executions (`node scripts/...`, `npx tsx ...`) in skills or documentation are strictly forbidden. Arguments passed to npm scripts MUST use standard named flags (`npm run <script> -- --flag=value`).
 
 ## 0. Senior Developer Mindset & Laziness Ladder
 

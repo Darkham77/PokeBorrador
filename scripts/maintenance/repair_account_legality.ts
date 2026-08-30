@@ -399,25 +399,25 @@ async function main() {
     console.log(`
 Uso:
   # Base de datos local (SQLite):
-  npm run db:repair-account [userId]
-  npm run db:repair-account all
+  npm run db:repair-account -- --user=<userId>
+  npm run db:repair-account -- --all
 
   # Servidor remoto / Supabase (PostgreSQL):
-  npm run db:repair-account <perfil> [userId]
-  npm run db:repair-account <perfil> all
+  npm run db:repair-account -- --server=<perfil> --user=<userId>
+  npm run db:repair-account -- --server=<perfil> --all
 
 Opciones:
   -u, --user <userId>      ID, nombre de usuario o email de la cuenta a reparar.
-  -a, --all, all           Corrige los Pokémon ilegales de TODAS las cuentas registradas, una por una.
+  -a, --all                Corrige los Pokémon ilegales de TODAS las cuentas registradas, una por una.
   -s, --server <perfil>    Perfil de servidor Supabase (ej: server_franco, nas_franco, cloud).
   -d, --db <path>          Ruta a la base de datos SQLite (.db). Por defecto busca poke_local.db.
   -h, --help               Muestra esta ayuda.
 
 Ejemplos:
-  npm run db:repair-account local_ash
-  npm run db:repair-account all
-  npm run db:repair-account server_franco Ash
-  npm run db:repair-account server_franco all
+  npm run db:repair-account -- --user=Ash
+  npm run db:repair-account -- --all
+  npm run db:repair-account -- --server=nas_franco --user=kenviota@gmail.com
+  npm run db:repair-account -- --server=nas_franco --all
 `);
     process.exit(0);
   }
@@ -427,8 +427,7 @@ Ejemplos:
 
   if (!targetServer) {
     try {
-      const { serverConfigs, baseProfiles } = await getValidatedServerConfigs();
-      const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[]))); // no-domain
+      const { baseProfiles, allAvailable } = await getValidatedServerConfigs();
       const serverIdx = remainingPositionals.findIndex(p => allAvailable.includes(p) || baseProfiles.includes(p));
       if (serverIdx !== -1) {
         targetServer = remainingPositionals[serverIdx];

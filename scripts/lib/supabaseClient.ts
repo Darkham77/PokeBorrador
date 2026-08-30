@@ -140,14 +140,15 @@ export function buildDatabaseUrl(conf: ServerConfig, canonicalName: string): str
   return dbUrl;
 }
 
-export async function getValidatedServerConfigs(): Promise<{ serverConfigs: Record<string, ServerConfig>; baseProfiles: string[] }> {
+export async function getValidatedServerConfigs(): Promise<{ serverConfigs: Record<string, ServerConfig>; baseProfiles: string[]; allAvailable: string[] }> {
   const serverConfigs = await readAndParseEnv();
   const baseProfiles = Object.keys(serverConfigs);
   if (baseProfiles.length === 0) {
     console.error(styleText('red', '❌ Error: No se encontraron configuraciones de servidor (SERVER_<profile>_*) en el .env.'));
     process.exit(1);
   }
-  return { serverConfigs, baseProfiles };
+  const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[]))); // no-domain
+  return { serverConfigs, baseProfiles, allAvailable };
 }
 
 export function findServerConfig(serverConfigs: Record<string, ServerConfig>, profileOrId: string): ServerConfig | null {

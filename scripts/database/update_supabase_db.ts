@@ -32,9 +32,7 @@ const UPDATE_TARGET_NODE_VERSION_LABEL = '26';
 export async function updateSupabaseDb(): Promise<void> {
   console.log(styleText('bold', `\n--- 🛡️ SUPABASE DATABASE MANAGER & MIGRATOR (Node.js ${UPDATE_TARGET_NODE_VERSION_LABEL}+) ---`));
 
-  const { serverConfigs, baseProfiles } = await getValidatedServerConfigs();
-
-  const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[]))); // no-domain
+  const { serverConfigs, baseProfiles, allAvailable } = await getValidatedServerConfigs();
 
   const args = process.argv.slice(2);
   const { parseServerArguments } = await import('./backup_supabase_db.ts');
@@ -43,11 +41,10 @@ export async function updateSupabaseDb(): Promise<void> {
   const isAll = args.includes('--all') || args.includes('all');
 
   if (!serverArg && !isAll) {
-    console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas actualizar indicando el nombre del perfil o "all".'));
+    console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas actualizar indicando --server=<perfil> o --all.'));
     console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
-    console.log(styleText('gray', 'Ejemplo: npm run servers:db:update cloud'));
-    console.log(styleText('gray', 'Ejemplo: npm run servers:db:update nas_franco'));
-    console.log(styleText('gray', 'Ejemplo: npm run servers:db:update all'));
+    console.log(styleText('gray', 'Ejemplo: npm run servers:db:update -- --server=nas_franco'));
+    console.log(styleText('gray', 'Ejemplo: npm run servers:db:update -- --all'));
     process.exit(1);
   }
 

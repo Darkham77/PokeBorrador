@@ -8,6 +8,7 @@
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { parseArgs } from 'node:util';
 
 interface SimulationTarget {
   name: string;
@@ -149,8 +150,36 @@ function getFuzzerSummary(): { elementCount: number; batchCount: number } {
 
 const targets: SimulationTarget[] = discoverPlaywrightTargets();
 
-// Support dynamic documentation flags: --table, --list, --json (and clean positional equivalents)
-if (process.argv.includes('--table') || process.argv.includes('table') || process.argv.includes('--list-markdown')) {
+const { values, positionals } = parseArgs({
+  options: {
+    table: { type: 'boolean', short: 't' },
+    list: { type: 'boolean', short: 'l' },
+    json: { type: 'boolean', short: 'j' },
+    'list-markdown': { type: 'boolean' },
+    filter: { type: 'string', short: 'f' },
+    help: { type: 'boolean', short: 'h' }
+  },
+  allowPositionals: true,
+  strict: false
+});
+
+if (values.help) {
+  console.log(`
+Uso:
+  npm run sim:e2e -- [--table | --list | --json | --filter=<nombre>]
+
+Opciones:
+  -t, --table          Muestra la tabla Markdown de progreso E2E.
+  -l, --list           Lista todas las suites E2E detectadas y sus comandos.
+  -j, --json           Emite la estructura de suites en formato JSON.
+  -f, --filter <str>   Ejecuta únicamente las suites que contengan el filtro.
+  -h, --help           Muestra esta ayuda.
+`);
+  process.exit(0);
+}
+
+// Support dynamic documentation flags: --table, --list, --json
+if (values.table || values['list-markdown'] || positionals.includes('table')) {
   const fuzzerSummary = getFuzzerSummary();
   const totalPlaywrightTests = targets.reduce((sum, t) => sum + t.caseCount, 0);
 
@@ -164,12 +193,12 @@ if (process.argv.includes('--table') || process.argv.includes('table') || proces
   process.exit(0);
 }
 
-if (process.argv.includes('--json') || process.argv.includes('json')) {
+if (values.json || positionals.includes('json')) {
   console.log(JSON.stringify({ fuzzer: getFuzzerSummary(), targets }, null, 2));
   process.exit(0);
 }
 
-if (process.argv.includes('--list') || process.argv.includes('list')) {
+if (values.list || positionals.includes('list')) {
   const fuzzerSummary = getFuzzerSummary();
   console.log(`📋 Total de suites E2E detectadas: ${targets.length} suites (${targets.reduce((sum, t) => sum + t.caseCount, 0)} tests Playwright + ${fuzzerSummary.elementCount} elementos en Fuzzer)`);
   targets.forEach((target, index) => {

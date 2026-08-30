@@ -1,63 +1,75 @@
 // fallow-ignore-file security-sink
-// scripts/import_backup_to_sqlite.ts
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
 import path from 'node:path';
+import { parseArgs, styleText } from 'node:util';
 import { TABLES_SCHEMA } from '../../src/logic/db/schema.ts';
 import { SHOP_ITEMS } from '../../src/data/inventory/items.ts';
 
-console.log('\n--- 📥 IMPORTADOR DE RESPALDOS A SQLITE LOCAL ---');
+console.log(styleText('bold', '\n--- 📥 IMPORTADOR DE RESPALDOS A SQLITE LOCAL ---'));
 
-// 1. Obtener argumentos de línea de comandos y normalizar según el .env
-const args = process.argv.slice(2);
-let serverNameInput = 'official_prod'; // singleton-ok
+const { values, positionals } = parseArgs({
+  options: {
+    server: { type: 'string', short: 's' },
+    file: { type: 'string', short: 'f' },
+    help: { type: 'boolean', short: 'h' }
+  },
+  allowPositionals: true,
+  strict: false
+});
 
-for (const arg of args) {
-  if (arg.startsWith('--server=')) {
-    serverNameInput = arg.split('=')[1] || 'official_prod';
-  } else if (!arg.startsWith('-')) {
-    serverNameInput = arg;
+if (values.help) {
+  console.log(styleText('cyan', `\n📖 USO: npm run servers:db:local-import -- [--server=<perfil> | --file=<ruta_json>]`));
+  console.log(styleText('gray', '\nFlags disponibles:'));
+  console.log(styleText('gray', '  --server=<perfil> : Nombre del perfil para importar su respaldo más reciente.'));
+  console.log(styleText('gray', '  --file=<ruta>     : Ruta directa al archivo JSON de respaldo a importar.'));
+  process.exit(0);
+}
+
+let backupPath = typeof values.file === 'string' ? values.file : undefined; // singleton-ok
+
+if (!backupPath) {
+  const serverNameInput = typeof values.server === 'string' ? values.server : (positionals[0] || 'official_prod');
+  let serverName = serverNameInput;
+  const envPath = path.resolve(process.cwd(), '.env');
+  if (fs.existsSync(envPath)) {
+    const { readAndParseEnv } = await import('../lib/supabaseClient.ts');
+    const serverConfigs = await readAndParseEnv();
+
+    let conf = serverConfigs[serverNameInput];
+    if (!conf) {
+      const found = Object.keys(serverConfigs).find(p => serverConfigs[p]?.ID === serverNameInput);
+      if (found) conf = serverConfigs[found];
+    }
+
+    if (conf) {
+      serverName = conf.ID || serverNameInput;
+    }
   }
-}
 
-// Normalizar usando el .env si existe
-let serverName = serverNameInput; // singleton-ok
-const envPath = path.resolve(process.cwd(), '.env');
-if (fs.existsSync(envPath)) {
-  const { readAndParseEnv } = await import('../lib/supabaseClient.ts');
-  const serverConfigs = await readAndParseEnv();
-
-  // Buscar coincidencia por nombre de perfil o por ID
-  let conf = serverConfigs[serverNameInput];
-  if (!conf) {
-    const found = Object.keys(serverConfigs).find(p => serverConfigs[p]?.ID === serverNameInput);
-    if (found) conf = serverConfigs[found];
+  const backupDir = path.resolve('database/backups', serverName);
+  if (!fs.existsSync(backupDir)) {
+    console.error(styleText('red', `❌ Error: El directorio de backups para "${serverName}" no existe en ${backupDir}`));
+    process.exit(1);
   }
 
-  if (conf) {
-    serverName = conf.ID || serverNameInput;
+  const files = fs.readdirSync(backupDir).filter(f => f.endsWith('.json'));
+  if (files.length === 0) {
+    console.error(styleText('red', `❌ Error: No se encontraron archivos de backup (.json) en ${backupDir}`));
+    process.exit(1);
   }
+
+  files.sort();
+  const latestBackupFile = files[files.length - 1]!;
+  backupPath = path.join(backupDir, latestBackupFile);
+  console.log(styleText('cyan', `📂 Respaldo detectado para [${serverName}]: ${latestBackupFile}`));
+} else {
+  if (!fs.existsSync(backupPath)) {
+    console.error(styleText('red', `❌ Error: El archivo de backup especificado no existe en ${backupPath}`));
+    process.exit(1);
+  }
+  console.log(styleText('cyan', `📂 Importando archivo específico: ${backupPath}`));
 }
-
-const backupDir = path.resolve('database/backups', serverName);
-if (!fs.existsSync(backupDir)) {
-  console.error(`❌ Error: El directorio de backups para "${serverName}" no existe en ${backupDir}`);
-  process.exit(1);
-}
-
-// 2. Buscar el archivo de backup más reciente
-const files = fs.readdirSync(backupDir).filter(f => f.endsWith('.json'));
-if (files.length === 0) {
-  console.error(`❌ Error: No se encontraron archivos de backup (.json) en ${backupDir}`);
-  process.exit(1);
-}
-
-// Ordenar archivos (por convención de nombre con timestamp, el último elemento es el más reciente)
-files.sort();
-const latestBackupFile = files[files.length - 1]!;
-const backupPath = path.join(backupDir, latestBackupFile);
-
-console.log(`📂 Respaldo detectado: ${latestBackupFile}`);
 
 let backupContent: string;
 try {

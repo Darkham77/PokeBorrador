@@ -15,7 +15,7 @@
  * - Arquitectura Zero-Warning y Zero-Any.
  */
 
-import { styleText } from 'node:util';
+import { styleText, parseArgs } from 'node:util';
 import { enableCompileCache } from 'node:module';
 
 const ADMIN_TARGET_NODE_VERSION_LABEL = '26';
@@ -28,44 +28,63 @@ enableCompileCache();
 export async function adminSupabaseUsers(): Promise<void> {
   console.log(styleText('bold', `\n--- 🛡️ SUPABASE USER ADMIN MANAGER (Node.js ${ADMIN_TARGET_NODE_VERSION_LABEL}+) ---`));
 
-  const { serverConfigs, baseProfiles } = await getValidatedServerConfigs();
+  const { serverConfigs, baseProfiles, allAvailable } = await getValidatedServerConfigs();
 
-  const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[]))); // no-domain
+  const { values, positionals } = parseArgs({
+    options: {
+      server: { type: 'string', short: 's' },
+      action: { type: 'string', short: 'a' },
+      email: { type: 'string', short: 'e' },
+      password: { type: 'string', short: 'p' },
+      'new-email': { type: 'string' },
+      username: { type: 'string', short: 'u' },
+      help: { type: 'boolean', short: 'h' }
+    },
+    allowPositionals: true,
+    strict: false
+  });
 
-  const args = process.argv.slice(2);
-  const { parseServerArguments } = await import('../database/backup_supabase_db.ts');
-  const targetProfiles = parseServerArguments(args, baseProfiles, allAvailable);
-  const serverArg = targetProfiles[0];
-  const getArg = (flag: string): string | undefined => {
-    const idx = args.findIndex(a => a === flag);
-    if (idx !== -1 && args[idx + 1] !== undefined) {
-      return args[idx + 1];
-    }
-    return args.find(a => a.startsWith(`${flag}=`))?.split('=')[1];
-  };
+  const knownActions = ['unban', 'set-password', 'set-email', 'set-username', 'promote'] as const;
 
-  let actionArg = getArg('--action');
-  if (!actionArg) {
-    const knownActions = ['unban', 'set-password', 'set-email', 'set-username', 'promote'] as const;
-    actionArg = args.find(a => (knownActions as readonly string[]).includes(a)); // domain-ok
+  if (values.help) {
+    console.log(styleText('cyan', `\n📖 USO: npm run servers:db:admin -- --server=<perfil> --action=<accion> --email=<email> [opciones]`));
+    console.log(styleText('gray', '\nFlags disponibles:'));
+    console.log(styleText('gray', '  --server=<perfil>       : Perfil del servidor objetivo (obligatorio).'));
+    console.log(styleText('gray', '  --action=<accion>       : Acción a ejecutar: unban | set-password | set-email | set-username | promote.'));
+    console.log(styleText('gray', '  --email=<email>         : Correo electrónico del usuario objetivo.'));
+    console.log(styleText('gray', '  --password=<pass>       : Nueva contraseña (requerido para set-password).'));
+    console.log(styleText('gray', '  --new-email=<email>     : Nuevo correo electrónico (requerido para set-email).'));
+    console.log(styleText('gray', '  --username=<nombre>     : Nombre de entrenador (para set-username o búsqueda).'));
+    console.log(styleText('cyan', `\nPerfiles disponibles: ${allAvailable.join(', ')}`));
+    process.exit(0);
   }
-  const emailArg = getArg('--email');
-  const passwordArg = getArg('--password');
-  const newEmailArg = getArg('--new-email');
-  const usernameArg = getArg('--username');
+
+  // Resolver serverArg (flag explícito o primer argumento posicional que coincida con un servidor)
+  const serverArg = typeof values.server === 'string' ? values.server : positionals.find(p => allAvailable.includes(p) || baseProfiles.includes(p));
+
+  // Resolver actionArg (flag explícito o coincidencia en positionals)
+  const actionArg = typeof values.action === 'string' ? values.action : positionals.find(p => (knownActions as readonly string[]).includes(p)); // domain-ok
+
+  // Resolver identificadores
+  const nonTargetPositionals = positionals.filter(p => p !== serverArg && p !== actionArg);
+  const emailArg = typeof values.email === 'string' ? values.email : nonTargetPositionals.find(p => p.includes('@'));
+  const passwordArg = typeof values.password === 'string' ? values.password : (actionArg === 'set-password' ? nonTargetPositionals.find(p => !p.includes('@')) : undefined);
+  const newEmailArg = typeof values['new-email'] === 'string' ? values['new-email'] : (actionArg === 'set-email' ? nonTargetPositionals.find(p => p.includes('@') && p !== emailArg) : undefined);
+  const usernameArg = typeof values.username === 'string' ? values.username : (actionArg === 'set-username' ? nonTargetPositionals[0] : (!emailArg ? nonTargetPositionals[0] : undefined));
 
   if (!serverArg || !actionArg || (!emailArg && !usernameArg)) {
     console.log(styleText('yellow', '⚠️  Faltan argumentos obligatorios. Uso requerido:'));
-    console.log(styleText('cyan', `npm run servers:db:admin <perfil> <accion> [--email=<email> | --username=<username>]`));
+    console.log(styleText('cyan', `npm run servers:db:admin -- --server=<perfil> --action=<accion> --email=<email> [--password=<pass> | --new-email=<email> | --username=<nombre>]`));
     console.log(styleText('gray', '\nAcciones disponibles:'));
     console.log(styleText('gray', '  unban             : Desbanea una cuenta de usuario.'));
     console.log(styleText('gray', '  set-password      : Cambia la contraseña (requiere --password=<nueva_pass>).'));
     console.log(styleText('gray', '  set-email         : Cambia el correo (requiere --new-email=<nuevo_email>).'));
     console.log(styleText('gray', '  set-username      : Cambia el nombre de entrenador (requiere --username=<nombre>).'));
     console.log(styleText('gray', '  promote           : Promueve la cuenta a rol de Administrador.'));
-    console.log(styleText('gray', '\nEjemplos:'));
-    console.log(styleText('gray', '  npm run servers:db:admin nas_franco unban --email=usuario@ejemplo.com'));
-    console.log(styleText('gray', '  npm run servers:db:admin nas_franco promote --email=usuario@ejemplo.com'));
+    console.log(styleText('gray', '\nEjemplos con Flags Explícitos (Recomendado):'));
+    console.log(styleText('gray', '  npm run servers:db:admin -- --server=nas_franco --action=set-password --email=usuario@ejemplo.com --password=NUEVA_PASS'));
+    console.log(styleText('gray', '  npm run servers:db:admin -- --server=nas_franco --action=unban --email=usuario@ejemplo.com'));
+    console.log(styleText('gray', '  npm run servers:db:admin -- --server=nas_franco --action=promote --email=usuario@ejemplo.com'));
     console.log(styleText('cyan', `\nPerfiles disponibles: ${allAvailable.join(', ')}`));
     process.exit(1);
   }

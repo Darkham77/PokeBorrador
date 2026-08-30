@@ -29,15 +29,28 @@ const BACKUP_TARGET_NODE_VERSION_LABEL = '26';
 const BACKUPS_DIR = path.resolve(process.cwd(), 'database/backups');
 
 export function parseServerArguments(args: string[], baseProfiles: string[], allAvailable: string[]): string[] {
+  const isHelp = args.includes('--help') || args.includes('-h');
+  if (isHelp) {
+    console.log(styleText('cyan', `\n📖 USO: npm run <comando> -- [--server=<perfil> | --all]`));
+    console.log(styleText('gray', '\nFlags disponibles:'));
+    console.log(styleText('gray', '  --server=<perfil> : Nombre del perfil de servidor objetivo.'));
+    console.log(styleText('gray', '  --all             : Aplica la operación a todos los servidores del .env.'));
+    console.log(styleText('cyan', `\nPerfiles disponibles: ${allAvailable.join(', ')}`));
+    process.exit(0);
+  }
+
   const isAll = args.includes('all') || args.includes('--all');
-  const serverArg = args.find(a => !a.startsWith('-') && a !== 'all' && (allAvailable.includes(a) || baseProfiles.includes(a)));
+  const serverFlagMatch = args.find(a => a.startsWith('--server=') || a.startsWith('-s='))?.split('=')[1] ||
+                          (args.indexOf('--server') !== -1 ? args[args.indexOf('--server') + 1] : undefined) ||
+                          (args.indexOf('-s') !== -1 ? args[args.indexOf('-s') + 1] : undefined);
+  const serverArg = serverFlagMatch || args.find(a => !a.startsWith('-') && a !== 'all' && (allAvailable.includes(a) || baseProfiles.includes(a)));
 
   if (!serverArg && !isAll) {
-    console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas respaldar indicando el nombre del perfil o "all".'));
+    console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas seleccionar indicando --server=<perfil> o --all.'));
     console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
     console.log(styleText('gray', 'Ejemplos:'));
-    console.log(styleText('gray', '  npm run servers:db:backup nas_franco'));
-    console.log(styleText('gray', '  npm run servers:db:backup all'));
+    console.log(styleText('gray', '  npm run servers:db:backup -- --server=nas_franco'));
+    console.log(styleText('gray', '  npm run servers:db:backup -- --all'));
     process.exit(1);
   }
 

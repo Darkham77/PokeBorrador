@@ -31,9 +31,7 @@ const RESTORE_TARGET_NODE_VERSION_LABEL = '26';
 export async function restoreSupabaseDb() {
   console.log(styleText('bold', `\n--- 🔄 SUPABASE DATABASE RESTORE MANAGER (Node.js ${RESTORE_TARGET_NODE_VERSION_LABEL}+) ---`));
 
-  const { serverConfigs, baseProfiles } = await getValidatedServerConfigs();
-
-  const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[]))); // no-domain
+  const { serverConfigs, baseProfiles, allAvailable } = await getValidatedServerConfigs();
 
   const args = process.argv.slice(2);
   const { parseServerArguments } = await import('./backup_supabase_db.ts');
@@ -49,10 +47,10 @@ export async function restoreSupabaseDb() {
   }
 
   if (!serverArg) {
-    console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas restaurar indicando el nombre del perfil.'));
+    console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas restaurar indicando --server=<perfil>.'));
     console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
-    console.log(styleText('gray', 'Ejemplo: npm run servers:db:restore nas_franco'));
-    console.log(styleText('gray', 'Ejemplo con archivo específico: npm run servers:db:restore nas_franco --file=database/backups/nas-franco/nas_franco_backup_...json'));
+    console.log(styleText('gray', 'Ejemplo: npm run servers:db:restore -- --server=nas_franco'));
+    console.log(styleText('gray', 'Ejemplo con archivo específico: npm run servers:db:restore -- --server=nas_franco --file=database/backups/nas_franco/backup_...json'));
     process.exit(1);
   }
 

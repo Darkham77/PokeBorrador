@@ -12,7 +12,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { styleText } from 'node:util';
+import { styleText, parseArgs } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import { spawnSync } from 'node:child_process';
 import crypto from 'node:crypto';
@@ -669,48 +669,26 @@ function syncOfficialServers() {
   run(["npm", "run", "servers:configure"], undefined, false);
 }
 
-// ── Punto de Entrada CLI de Node.js ──────────────────────────────────────────
 async function main() {
-  const args = process.argv.slice(2);
-  const cmd = args[0] || 'listar';
-  const tagArg = args.find(a => a.startsWith('--tag='));
-  const tag = tagArg ? tagArg.split('=')[1] || 'latest' : 'latest';
+  const { values, positionals } = parseArgs({
+    options: {
+      command: { type: 'string', short: 'c' },
+      tag: { type: 'string', default: 'latest' },
+      help: { type: 'boolean', short: 'h' }
+    },
+    allowPositionals: true,
+    strict: false
+  });
 
-  switch (cmd) {
-    case 'list':
-      await listar();
-      break;
-    case 'clone':
-      await clonar();
-      break;
-    case 'generate':
-      await generar();
-      syncOfficialServers();
-      break;
-    case 'add':
-      await agregar();
-      syncOfficialServers();
-      break;
-    case 'build':
-      await construir(tag);
-      break;
-    case 'publish':
-      await publicar(tag);
-      break;
-    case 'release':
-      await liberar(tag);
-      break;
-    case 'all':
-      await todo(tag);
-      syncOfficialServers();
-      break;
-    case '-h':
-    case '--help':
-    case '--ayuda':
-      console.log(`🐘 Poké Vicio - Gestor de Despliegues Supabase Multi-Servidor (Node.js 26+)
+  const cmd = values.command || positionals[0] || (values.help ? 'help' : 'list');
+  const tag = values.tag || 'latest';
+
+  if (values.help || cmd === 'help' || cmd === '--help' || cmd === '-h') {
+    console.log(`🐘 Poké Vicio - Gestor de Despliegues Supabase Multi-Servidor (Node.js 26+)
 
 Uso:
-  npm run supabase:manage [comando] [--tag=latest]
+  npm run supabase:manage -- --command=[comando] [--tag=latest]
+  npm run supabase:manage -- [comando] [--tag=latest]
 
 Comandos:
   list         Muestra los servidores configurados en el .env maestro (por defecto).
@@ -721,6 +699,44 @@ Comandos:
   publish      Sube la imagen Docker a Docker Hub.
   release      Atajo para construir y publicar en un paso.
   all          Clona, genera, construye y publica la imagen en un solo paso.`);
+    process.exit(0);
+  }
+
+  switch (cmd) {
+    case 'list':
+    case 'listar':
+      await listar();
+      break;
+    case 'clone':
+    case 'clonar':
+      await clonar();
+      break;
+    case 'generate':
+    case 'generar':
+      await generar();
+      syncOfficialServers();
+      break;
+    case 'add':
+    case 'agregar':
+      await agregar();
+      syncOfficialServers();
+      break;
+    case 'build':
+    case 'construir':
+      await construir(tag);
+      break;
+    case 'publish':
+    case 'publicar':
+      await publicar(tag);
+      break;
+    case 'release':
+    case 'liberar':
+      await liberar(tag);
+      break;
+    case 'all':
+    case 'todo':
+      await todo(tag);
+      syncOfficialServers();
       break;
     default:
       console.error(`Comando desconocido: ${cmd}. Usa --help para ver la lista de comandos.`);

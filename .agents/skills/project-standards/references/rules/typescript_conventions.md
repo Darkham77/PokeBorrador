@@ -90,6 +90,7 @@
 
 - **Temporal Usage**: Use `Temporal` instead of `Date` for engine logic.
 - **Node Imports**: Mandatory use of `node:` prefix for built-in imports (e.g. `import path from 'node:path'`).
+- **CLI Flag Parsing**: All utility, database, and maintenance scripts accepting arguments MUST use `import { parseArgs } from 'node:util'` with explicit option dictionaries. Positional arguments without flag names are strictly prohibited.
 - **Permission Model**: Utility scripts must use the Node.js 26 Permission Model (`--permission`). All maintenance scripts in `package.json` like `audit:fix` MUST use `--allow-fs-read=*` to allow reading `node_modules` and external dependencies across the filesystem.
 - **Explicit Resource Management**: Mandatory use of `using` for file handles and database connections in Node scripts.
 - **Native Test & Timer Promises**: Prefer `node:test` for pure logic unit tests (non-browser). Prefer `node:timers/promises` for delays in utility/maintenance scripts (Note: 0 timers remain strictly enforced in client/game logic).

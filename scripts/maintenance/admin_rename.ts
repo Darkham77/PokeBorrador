@@ -2,30 +2,44 @@
 import { createClient, type PostgrestError } from '@supabase/supabase-js';
 import { parseArgs } from 'node:util';
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error("❌ Falta configuración de Supabase. Revisa VITE_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY.");
-  process.exit(1);
-}
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
 async function main() {
-  const { positionals } = parseArgs({
+  const { values, positionals } = parseArgs({
     allowPositionals: true,
+    options: {
+      user: { type: 'string', short: 'u' },
+      target: { type: 'string', short: 't' },
+      name: { type: 'string', short: 'n' },
+      username: { type: 'string' },
+      help: { type: 'boolean', short: 'h' }
+    }
   });
 
-  if (positionals.length < 2) {
-    console.log("Uso: npm run admin:rename <user_id_o_nombre_actual> <nuevo_nombre>");
-    console.log("Ejemplo: npm run admin:rename franco_id Ash");
+  if (values.help) {
+    console.log("📖 USO: npm run admin:rename -- --user=<user_id_o_nombre_actual> --name=<nuevo_nombre>");
+    console.log("Flags:");
+    console.log("  --user=<id|username> : ID de usuario o nombre actual en Supabase.");
+    console.log("  --name=<nuevo_nombre>: Nuevo nombre a asignar al entrenador.");
+    process.exit(0);
+  }
+
+  const supabaseUrl = process.env.VITE_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error("❌ Falta configuración de Supabase. Revisa VITE_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY.");
     process.exit(1);
   }
 
-  const [targetUserArg, newNameArg] = positionals;
-  const targetUser = String(targetUserArg);
-  const newName = String(newNameArg);
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+  const targetUser = values.user || values.target || positionals[0];
+  const newName = values.name || values.username || positionals[1];
+
+  if (!targetUser || !newName) {
+    console.log("Uso: npm run admin:rename -- --user=<user_id_o_nombre_actual> --name=<nuevo_nombre>");
+    console.log("Ejemplo: npm run admin:rename -- --user=franco_id --name=Ash");
+    process.exit(1);
+  }
 
   console.log(`Buscando usuario: ${targetUser}...`);
   
