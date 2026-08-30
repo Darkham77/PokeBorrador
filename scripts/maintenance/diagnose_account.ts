@@ -209,7 +209,7 @@ function loadFromSqlite(dbPath: string, userInput: string): LoadedAccountData | 
   }
 
   console.log(styleText('cyan', `📂 Abriendo base de datos SQLite: ${targetDb}...`));
-  const db = new DatabaseSync(targetDb);
+  using db = new DatabaseSync(targetDb);
 
   const profileRow = db.prepare('SELECT id, username, email FROM profiles WHERE id = ? OR username = ? OR email = ?').get(userInput, userInput, userInput) as { id: string; username: string; email?: string } | undefined;
   const targetUserId = profileRow?.id || userInput;
@@ -240,7 +240,7 @@ function loadAllFromSqlite(dbPath: string): LoadedAccountData[] {
   }
 
   console.log(styleText('cyan', `📂 Abriendo base de datos SQLite: ${targetDb}...`));
-  const db = new DatabaseSync(targetDb);
+  using db = new DatabaseSync(targetDb);
 
   const profiles = db.prepare('SELECT id, username, email FROM profiles').all() as Array<{ id: string; username?: string; email?: string }>;
   const profileMap = new Map<string, { username?: string; email?: string }>();
@@ -477,7 +477,7 @@ export function testInMemoryMigrations(saveData: GameState, userId: string): {
   fixedCount: number;
   remainingFindings: DiagnosticFinding[];
 } {
-  const db = new DatabaseSync(':memory:');
+  using db = new DatabaseSync(':memory:');
   initTestDatabaseSchema(db);
 
   db.prepare(`
