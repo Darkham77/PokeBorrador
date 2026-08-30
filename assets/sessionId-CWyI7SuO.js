@@ -1,1 +1,0 @@
-var e=crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).substring(2);export{e as t};

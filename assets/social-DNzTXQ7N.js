@@ -1,0 +1,1 @@
+import{t as e}from"./social-sirvglna.js";export{e as useSocialStore};

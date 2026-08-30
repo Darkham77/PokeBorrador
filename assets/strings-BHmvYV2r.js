@@ -1,0 +1,1 @@
+function e(e){return e&&typeof e==`object`&&`id`in e&&(e=e.id),typeof e!=`string`&&typeof e!=`number`?``:(``+e).toLowerCase().replace(/[^a-z0-9]+/g,``)}export{e as t};

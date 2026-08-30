@@ -1,1 +1,0 @@
-function e(e){let t=.15+(Math.max(1,e)-1)*.01;return parseFloat(Math.min(.3,t).toFixed(2))}function t(e){return e>=30?99999999:[100,250,500,900,1400,2100,3e3,4200,6e3,8500,11500,15e3,19e3,23500,28500,34e3,4e4,46500,53500,61e3,69e3,77500,86500,96e3,106e3,116500,127500,139e3,151500][e-1]||e*1e3}function n(e){return 8*Math.max(1,e)**2}export{e as n,t as r,n as t};

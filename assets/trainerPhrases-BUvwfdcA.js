@@ -1,1 +1,0 @@
-import{t as e}from"./game-data-BAty4pEw.js";export{e as getRandomQuoteForTrainer};

@@ -10,11 +10,21 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#161a2e">
     <title>Poké Vicio</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Silkscreen&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     
     <style>
+      @font-face {
+        font-family: 'Pokemon FireRed LeafGreen';
+        src: url('/PokeBorrador/fonts/pokemon-firered-leafgreen-font.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+        size-adjust: 128%;
+      }
       /* Eliminate FOUC (Flash of Unstyled Content) */
       html, body {
         background-color: #07080e !important;
@@ -42,7 +52,7 @@
         width: 100%;
         height: 100%;
         background: #07080e;
-        font-family: 'Nunito', sans-serif;
+        font-family: 'Pokemon FireRed LeafGreen', 'VT323', monospace;
         padding: 20px;
         box-sizing: border-box;
       }
@@ -96,7 +106,7 @@
       }
       
       .press-start {
-        font-family: 'Pokemon FireRed LeafGreen', monospace;
+        font-family: 'Pokemon FireRed LeafGreen', 'VT323', monospace;
         letter-spacing: 1px;
         image-rendering: pixelated;
       }
@@ -114,7 +124,8 @@
       
       .msg {
         color: rgba(255, 255, 255, 0.7);
-        font-size: 14px;
+        font-family: 'Pokemon FireRed LeafGreen', 'VT323', monospace;
+        font-size: 10px;
         line-height: 1.6;
         margin: 0 0 24px 0;
       }
@@ -225,79 +236,72 @@
       }, 6000);
     </script>
 
-    <!-- LEGACY DEPENDENCIES -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/sql-wasm.js"></script>
     <!-- VUE ENTRY POINT -->
-    <script type="module" crossorigin src="/PokeBorrador/assets/index-BX0AtLX0.js"></script>
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/game-data-BAty4pEw.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/vendor-vue-BiB8xDZy.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/runtime-dom.esm-bundler-1Jwr_2D6.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/vendor-gsap-DXGa87QB.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/vendor-db-Bh1KKUSu.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/supabase-DLBXWrLJ.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/timeUtils-B98e-C0c.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/loading-CPHr_WwM.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/sessionId-CWyI7SuO.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/auth-BwKM160l.js">
+    <script type="module" crossorigin src="/PokeBorrador/assets/index-BAgd4XJs.js"></script>
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/vendor-vue-hgBU9vv3.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/vendor-gsap-CyiRjDaJ.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/game-data-system-BnME6d47.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/vendor-supabase-B8nVcF60.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/rolldown-runtime-Dd_uD5pT.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/vendor-sqljs-B17J1N3i.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/sqliteEngine-BvQEGZwH.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/gameplay-pAegkb_O.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/game-data-items-DQ4vQ9VX.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/game-data-battle-B3XXwhHa.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/game-data-pokemon-CsLB52gp.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/vendor-randoms-D_53BILt.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/game-data-world-dUK9ng3D.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/assetService-BYJ9Wkff.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pokemon-Bt9ZfLs7.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pokemonDataProvider-Cmqw_X-_.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/evolutionEngine-BIMC5Cam.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/evMath-Be_h9Doq.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pokemonUtils-D5BtwaYm.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/timeUtils-fXvXGZqU.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pokemonFactory-pG9uZMu6.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/strings-BHmvYV2r.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pokemonLegality-CYNA9lzf.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/storage-BmBP1Ro7.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/supabase-DPzPatoP.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/loading-j-Mnc4pa.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/modals-CBEBM_qL.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/timeSync-CdQYtJZD.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/compression-17AwNOrc.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/opfsStorage-BTG-nOQ0.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/assetService-BESsGDwe.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pokemonDataProvider-BoM2tDZ2.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/breedingEngine-BSYdTFe0.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/modals-BIvXz_BU.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/vendor-valibot-DOnIOw8r.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/gsapHelpers-Tw_7Fl16.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/gameBus-MkMjJyAU.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/audio-BRQMgQFN.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/errorStore-Czgde-Lb.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/classMath-DKIs_ocV.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/battleStateMachine-DyL6O1_6.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/battleFlow-C7fqMamz.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/gsapHelpers-DdtZAGsB.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/weatherGenerationProvider-CfzTDbPg.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/orchestrator-owU2djMG.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/eggFactory-D746HqIk.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/npcSpriteRouter-dCwDKR8A.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/game-D3ZpWA2E.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/visuals-BA07oTd3.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/BaseModal-CpDOcUxb.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/rankedEngine-B2ef0IIk.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/useGsapTransition-CQ9vd1Gy.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/errorStore-DVzB8VB3.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/friendshipLogic-Bf7eNmmr.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/evolutionLogic-BDAb8gTV.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/audio-DXz2-VqX.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/classMath-B3gQQq8q.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/battleStateMachine-AqINjz-g.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/battleStatus-zBvHr0IN.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/npcSpriteRouter-Bv7B8RQF.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/battleRewards-ToQnu6Yu.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/showdownTeamResolver-CPbROGtd.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/trainerFactory-B8bZnRNU.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/requestHelper-K3rdqoa0.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/showdownBattleRunner-Dy28Nm0D.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/breedingEngine-CEHY-r-V.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/eggFactory-Biw88Az9.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/sessionHub-2XaABXTg.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/auth-EPW9F6W8.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/useGsapTransition-BbeoP0b2.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/_plugin-vue_export-helper-BDNMzG2s.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/PVTooltip-3Dl_lM0P.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/PokemonTypeTag-B05l7phJ.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pokedexConstants-CyFcuRBf.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/BattleMoveSlot-DgallH8S.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/BattleMovesGrid-BfwzmxFI.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/social-JXc1lG1Z.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/trade-IWQqDEII.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/TrainerAvatar-CbPfEfjZ.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/gts-DOygDx3s.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/gyms-CZU-K-7Q.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/EggSprite-CD3cVbpE.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/formatters-eAz2gJTz.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/PokemonTypePills--PVfPaZu.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/profile-BOv5Au86.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/PVSpriteFX-DSEmKyWI.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/DebugAudioAnimTab-DqX6swW4.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pokemonDebugService-CwJlSx9l.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/box-DcGDu6is.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/UnifiedBadgePill-ItJd44Tt.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/PVLoadingOverlay-T951idXi.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/useRouteSpawnsArchaeology-Co7h7aO-.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/AtmosphereLayer-Cl0HCpvr.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/usePWA-CNiGGyNK.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/gsapHover-u4C93v5X.js">
-    <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/BaseModal-D_iclj30.css">
-    <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/PVTooltip-C3xxn2CN.css">
-    <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/BattleMoveSlot-BWJlltFA.css">
-    <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/BattleMovesGrid-BUkyDM7L.css">
-    <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/TrainerAvatar-BJVVNRjC.css">
-    <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/PokemonTypePills-nj45PJur.css">
-    <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/PVSpriteFX-BwUEhqkc.css">
-    <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/DebugAudioAnimTab-DP-bl14y.css">
-    <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/UnifiedBadgePill-D6ef4pJT.css">
-    <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/PVLoadingOverlay-gCXb0eQt.css">
-    <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/AtmosphereLayer-CGVswJqq.css">
-    <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/index-BCpz8Svc.css">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/visuals-DuVvV6Ef.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/PVLoadingOverlay-Scoy-8iT.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/usePWA-DrtYmDx_.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/useBodyClass-Bf0nV9M6.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/BaseModal-DTbsUnRw.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/useWindowListener-DwtxDLx2.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/social-sirvglna.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/PVTooltip-BpQ_yZmf.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/gsapHover-BYECR5ar.js">
+    <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/PVLoadingOverlay-7-cT3QtP.css">
+    <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/BaseModal-Bg--nUJl.css">
+    <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/PVTooltip-B_oFTqS-.css">
+    <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/index-eXkO92vV.css">
   <link rel="manifest" href="/PokeBorrador/manifest.webmanifest"></head>
   <body>
     <div id="app">

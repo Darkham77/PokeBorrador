@@ -1,0 +1,1 @@
+import{U as e,et as t,ut as n}from"./vendor-vue-hgBU9vv3.js";function r(r,i){let a=e=>{e?document.body.classList.add(r):document.body.classList.remove(r)};t(()=>n(i),e=>{a(e)},{immediate:!0}),e(()=>{document.body.classList.remove(r)})}export{r as t};

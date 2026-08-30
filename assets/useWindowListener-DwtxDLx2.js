@@ -1,0 +1,1 @@
+import{H as e,U as t}from"./vendor-vue-hgBU9vv3.js";function n(n,r,i={}){e(()=>{window.addEventListener(n,r,i)}),t(()=>{window.removeEventListener(n,r,i)})}function r(n,r,i={}){e(()=>{document.addEventListener(n,r,i)}),t(()=>{document.removeEventListener(n,r,i)})}export{n,r as t};
