@@ -9,6 +9,7 @@ import type { GameState } from '../../../src/types/system/game.ts';
 
 import { canLearnMove } from '../../../src/logic/pokemon/pokemonFactory.ts';
 import { validateSaveData } from '../../../src/logic/validation/schemas.ts';
+import { isNatureId } from '../../../src/data/battle/natures.ts';
 
 describe('Backup Full validation and Dex compatibility test', () => {
   it('should successfully run all SQLite migrations on the server_franco backup fixture and validate all saves against the Showdown Dex', async () => {
@@ -190,12 +191,7 @@ describe('Backup Full validation and Dex compatibility test', () => {
 
         // Validate nature
         if (poke.nature) {
-          const validNatures = [
-            'active', 'lonely', 'brave', 'adamant', 'naughty', 'bold', 'docile', 'relaxed', 'impish', 'lax', 
-            'timid', 'hasty', 'serious', 'jolly', 'naive', 'modest', 'mild', 'quiet', 'bashful', 'rash', 
-            'calm', 'gentle', 'sassy', 'careful', 'quirky'
-          ];
-          if (!validNatures.includes(poke.nature)) {
+          if (!isNatureId(poke.nature)) {
             errors.push(`${tag} - Invalid nature: '${poke.nature}'`);
           }
         }
@@ -228,6 +224,42 @@ describe('Backup Full validation and Dex compatibility test', () => {
         const isTM = itemKey.startsWith('tm') || itemKey.startsWith('hm');
         if (!customItemIds.has(itemKey) && !isTM) {
           errors.push(`[User: ${userId}] Inventory - Invalid item ID: '${itemKey}'`);
+        }
+      }
+
+      // 4.2. Validate incubating eggs
+      const eggs = saveData.eggs || [];
+      for (const egg of eggs) {
+        if (!egg) continue;
+        const eggTag = `[User: ${userId}] Incubating Egg: ${egg.uid || 'no-uid'} (Species: ${egg.id})`;
+
+        // Validate species ID
+        if (!egg.id || egg.id.startsWith('egg_') || !Dex.species.get(egg.id).exists) {
+          errors.push(`${eggTag} - Invalid or corrupted egg species ID: '${egg.id}'`);
+        }
+
+        // Validate nature
+        if (egg.nature) {
+          if (!isNatureId(egg.nature)) {
+            errors.push(`${eggTag} - Invalid egg nature: '${egg.nature}'`);
+          }
+        }
+      }
+
+      // 4.3. Validate daycare warehouse eggs
+      const daycareWarehouse = (saveData as unknown as { daycareWarehouse?: { species?: string; nature?: string }[] }).daycareWarehouse || [];
+      for (const dwEgg of daycareWarehouse) {
+        if (!dwEgg) continue;
+        const dwTag = `[User: ${userId}] Daycare Warehouse Egg (Species: ${dwEgg.species})`;
+
+        if (!dwEgg.species || dwEgg.species.startsWith('egg_') || !Dex.species.get(dwEgg.species).exists) {
+          errors.push(`${dwTag} - Invalid daycare warehouse species ID: '${dwEgg.species}'`);
+        }
+
+        if (dwEgg.nature) {
+          if (!isNatureId(dwEgg.nature)) {
+            errors.push(`${dwTag} - Invalid daycare warehouse egg nature: '${dwEgg.nature}'`);
+          }
         }
       }
     }

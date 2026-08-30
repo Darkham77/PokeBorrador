@@ -60,3 +60,4 @@ export function getNatureDataByNameOrId(key: string): (typeof NATURE_DATA)[Natur
   return NATURES_BY_SPANISH_NAME[lower];
 }
 
+
