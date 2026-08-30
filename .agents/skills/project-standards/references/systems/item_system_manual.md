@@ -161,3 +161,14 @@ All inventory and shop item sprites in `public/assets/sprites/` MUST strictly fo
 - **Zero Flat Directories**: It is STRICTLY FORBIDDEN to create flat asset directories (such as `items/`) or alter `items.json` sprite paths away from `crafting/tier[0-3]/`.
 - **Zero Resolver Bypass**: `assetService.ts` resolves `ASSET_TYPES.ITEM` using the explicit `item.sprite` path (`crafting/tierX/<id>`) with fallback to `crafting/tier3/<id>`. Do not introduce ad-hoc folder overrides in the resolver.
 
+---
+
+## 🎒 Inventory & Resource Management (SSoT)
+
+To ensure data integrity and prevent visual desynchronization between the HUD and the Bag:
+
+1. **Single Source of Truth (SSoT)**: Resource counters (especially Poké Balls and common items) MUST derive their totals dynamically from the full `inventory` state.
+2. **Forbidden Isolated State**: Relying on isolated state flags (e.g., `state.balls`) that are not automatically updated by inventory operations is strictly prohibited.
+3. **Aggregated HUD Displays**: For resources with multiple varieties (Poké Balls, Evolutionary Stones), the HUD pill displays the **aggregate sum** of all items in that category, while the associated `PVTooltip` provides the granular itemized breakdown.
+
+

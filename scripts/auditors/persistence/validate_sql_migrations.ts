@@ -3,9 +3,12 @@
  * scripts/auditors/persistence/validate_sql_migrations.ts
  * 
  * SQL MIGRATION VALIDATOR (Node.js 26+)
- * In-memory SQLite validation of database migrations translated from PostgreSQL syntax.
+ * In-memory SQLite validation of database migrations translated from PostgreSQL syntax,
+ * strict monotonicity / non-repetition audit of migration timestamps, and exact parity
+ * between filename timestamps and internal system_config db_version updates.
  */
 
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { enableCompileCache } from 'node:module';
@@ -17,6 +20,8 @@ import { initTestDatabaseSchema } from './_testDbHelper.ts';
 enableCompileCache();
 
 const MIGRATIONS_DIR = path.resolve(process.cwd(), 'database/migrations');
+const TIMESTAMP_REGEX = /^(\d{14})_/;
+const DB_VERSION_SQL_REGEX = /(?:VALUES\s*\(\s*['"]db_version['"]\s*,\s*['"]?(\d{14})|SET\s+value\s*=\s*['"]?(\d{14})|jsonb_build_object\s*\(\s*['"]db_version['"]\s*,\s*['"]?(\d{14}))/i;
 
 async function validateMigrations() {
   const validator = setupValidation({
@@ -26,11 +31,77 @@ async function validateMigrations() {
 
   await validator.checkFiles();
 
-  using db = new DatabaseSync(':memory:');
-  initTestDatabaseSchema(db);
-
   const errors: string[] = []; // no-domain
   const warnings: string[] = []; // no-domain
+
+  // 1. Validar integridad de nombres, fechas incrementales, no repetición y sincronización de db_version
+  const dirEntries = await fs.readdir(MIGRATIONS_DIR);
+  const baseSqlFiles = dirEntries
+    .filter(f => f.endsWith('.sql') && !f.endsWith('.sqlite.sql') && !f.includes('baseline_schema'))
+    .sort((a, b) => a.localeCompare(b));
+
+  const sqliteFiles = dirEntries.filter(f => f.endsWith('.sqlite.sql'));
+  for (const sqliteFile of sqliteFiles) {
+    const baseSqlFile = sqliteFile.replace(/\.sqlite\.sql$/, '.sql');
+    if (!dirEntries.includes(baseSqlFile)) {
+      errors.push(`[Migración] Archivo SQLite huérfano sin archivo PostgreSQL base: ${sqliteFile}`);
+    }
+  }
+
+  const seenTimestamps = new Set<string>(); // runtime-set
+  let lastTimestamp = '';
+  let validatedDbVersionStatements = 0;
+
+  for (const file of baseSqlFiles) {
+    const match = file.match(TIMESTAMP_REGEX);
+    if (!match || !match[1]) {
+      errors.push(`[Migración] Formato de timestamp inválido en archivo '${file}'. Debe iniciar con un timestamp de 14 dígitos (YYYYMMDDHHmmss_...).`);
+      continue;
+    }
+
+    const timestamp = match[1];
+
+    if (seenTimestamps.has(timestamp)) {
+      errors.push(`[Migración] Timestamp duplicado detectado: '${timestamp}' en '${file}'. Las migraciones deben tener timestamps únicos.`);
+    } else {
+      seenTimestamps.add(timestamp);
+    }
+
+    if (lastTimestamp && timestamp <= lastTimestamp) {
+      errors.push(`[Migración] Secuencia temporal no incremental detectada: '${file}' (timestamp ${timestamp}) es menor o igual al timestamp previo (${lastTimestamp}). Las migraciones deben ser estrictamente incrementales.`);
+    }
+
+    lastTimestamp = timestamp;
+
+    // Verificar que cualquier actualización de db_version en el archivo .sql coincida exactamente con el timestamp del nombre
+    const pgContent = await fs.readFile(path.join(MIGRATIONS_DIR, file), 'utf-8');
+    const pgVersionMatch = pgContent.match(DB_VERSION_SQL_REGEX);
+    if (pgVersionMatch) {
+      const sqlVersion = pgVersionMatch[1] || pgVersionMatch[2] || pgVersionMatch[3];
+      if (sqlVersion && sqlVersion !== timestamp) {
+        errors.push(`[Migración] Desincronización de db_version en PostgreSQL '${file}': El SQL declara versión '${sqlVersion}' pero el timestamp del nombre de archivo es '${timestamp}'.`);
+      } else {
+        validatedDbVersionStatements++;
+      }
+    }
+
+    // Verificar también el archivo companion .sqlite.sql si existe
+    const companionSqliteName = file.replace(/\.sql$/, '.sqlite.sql');
+    if (dirEntries.includes(companionSqliteName)) {
+      const sqliteContent = await fs.readFile(path.join(MIGRATIONS_DIR, companionSqliteName), 'utf-8');
+      const sqliteVersionMatch = sqliteContent.match(DB_VERSION_SQL_REGEX);
+      if (sqliteVersionMatch) {
+        const sqliteVersion = sqliteVersionMatch[1] || sqliteVersionMatch[2] || sqliteVersionMatch[3];
+        if (sqliteVersion && sqliteVersion !== timestamp) {
+          errors.push(`[Migración] Desincronización de db_version en SQLite '${companionSqliteName}': El SQL declara versión '${sqliteVersion}' pero el timestamp del nombre de archivo es '${timestamp}'.`);
+        }
+      }
+    }
+  }
+
+  // 2. Ejecutar y validar SQL en memoria SQLite
+  using db = new DatabaseSync(':memory:');
+  initTestDatabaseSchema(db);
 
   for (const migration of DATABASE_MIGRATIONS) {
     const sqlSource = migration.sqlite_sql !== undefined ? migration.sqlite_sql : migration.sql;
@@ -57,7 +128,9 @@ async function validateMigrations() {
 
   await validator.finish(
     {
-      'Migraciones SQL validadas': DATABASE_MIGRATIONS.length
+      'Migraciones SQL verificadas': baseSqlFiles.length,
+      'Timestamps incrementales validados': seenTimestamps.size,
+      'Declaraciones db_version sincronizadas': validatedDbVersionStatements
     },
     errors,
     warnings

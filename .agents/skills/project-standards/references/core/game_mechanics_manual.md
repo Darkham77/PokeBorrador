@@ -1,48 +1,52 @@
-# Game Mechanics and UX Manual (Poké Vicio)
+# Game Mechanics & Engine Architecture Manual (Poké Vicio)
 
-This manual details the design conventions and specific interaction rules that define the user experience in Poké Vicio.
-
-## 🕹️ Interaction and Selection
-
-### 1. Selection Parity in Slots
-
-Every slot that displays a member of a team (Adventure, PVP, War) MUST allow direct **"REPLACE"** (Swap) interaction.
-
-- **Rule**: Do not force the user to remove a Pokémon to add another. Provide a change button (🔄) that opens the selector.
-- **Pattern**: The selector must receive a callback that handles the atomic exchange of UIDs.
-
-### 2. Sorting and DND (Drag-and-Drop)
-
-- **Visual Feedback**: During reordering, display large pixelated numbers (1-6) over the slots to indicate the final position.
-- **Tooltip Interference**: Deactivate (`disabled`) `PVTooltip` during dragging to prevent them from blocking the drop zone.
-- **Silent Persistence**: Trigger an automatic save (`save(false)`) after each successful reordering operation.
+> **Scope & Authority**: This manual serves as the architectural overview and coordination standard for core gameplay mechanics, UI interaction standards, the `GameBus` event pipeline, and visual-logical synchronization in Poké Vicio.
+> **Sources of Truth & Subsystem Manuals**:
+> - Battle State & Flow: [`../battle/battle_mechanics_manual.md`](../battle/battle_mechanics_manual.md)
+> - Math & Formulas: [`./game_formulas_manual.md`](./game_formulas_manual.md)
+> - UI/UX Standards: [`./ui_ux_standards.md`](./ui_ux_standards.md)
+> - Daycare & Breeding: [`../systems/breeding_manual.md`](../systems/breeding_manual.md)
+> - Encounters & Spawns: [`../systems/encounter_manual.md`](../systems/encounter_manual.md)
+> - Weather Standards: [`../battle/weather_mechanics_standards.md`](../battle/weather_mechanics_standards.md)
+> - Items & Economy: [`../systems/item_system_manual.md`](../systems/item_system_manual.md)
+> - Capturing Mechanics: [`../systems/capturing_manual.md`](../systems/capturing_manual.md)
 
 ---
 
-## 🎨 Interface Standards (Hybrid Retro-Modern)
+## 1. 🔄 Interaction & Selection Standards
 
-### 1. Badge and Tag Hierarchy
+### 1.1 Slot Selection and Replacement Parity
+- **Selector Callbacks**: When replacing or swapping active team members, the slot selector component MUST receive a callback that performs the atomic exchange of entity UIDs.
+- **Visual Feedback**: The slot exchange action triggers a visual swap animation while preserving the active state in the store.
 
-- **Semantic Independence**: Do not nest Gender and Level badges. Use dedicated flex containers so they maintain their independent borders and mixins.
-- **Type Pills**: Long names (e.g., "FIGHTING") must use `width: auto` and `min-width` to avoid clipping in the pill.
-
-### 2. Visibility and Filters
-
-- **Night Silhouettes**: In dark environments, unknown Pokémon must use the `pokemon-silhouette` mixin with a 50% white border for contrast.
-- **Time Emojis**: Use emojis (🌅, 🌞, 🌇, 🌙) in spawn tooltips to save space and maintain the retro aesthetic.
-- **Spoiler Shield**: Hide specific times for Pokémon not caught/seen.
+### 1.2 Team Drag-and-Drop (DND) Reordering
+- **Position Indices**: During party reordering via Drag-and-Drop, display large pixelated numbers (1-6) over the target slots to indicate the final position.
+- **Tooltip Suppression**: Deactivate (`disabled`) all `PVTooltip` instances during dragging to prevent tooltips from obstructing drop targets.
+- **Silent Persistence**: Trigger an automatic silent save (`save(false)`) after each successful party reordering operation.
 
 ---
 
-## ⚙️ Engine Logic (Vue + GameBus)
+## 2. 🎨 UI & Component Hierarchy (Hybrid Retro-Modern)
 
-All visual-logic communication must use the `GameBus` native event system. This architecture ensures total decoupling from any specific game engine (e.g., Phaser is deprecated).
+### 2.1 Badge and Tag Hierarchy
+- **Semantic Independence**: Gender and Level badges MUST NOT be nested inside unified wrappers. Use dedicated flex containers so each badge maintains its independent borders, mixins, and styling.
+- **Type Pills**: Long type names (e.g., "FIGHTING", "ELECTRIC") must specify `width: auto` and `min-width` to prevent typography clipping inside the pill container.
 
-### 1. Battle Animations
+### 2.2 Fog of War & Discovery States
+- **Night Silhouettes**: In dark or night environments, undiscovered/unseen Pokémon sprites must apply the `pokemon-silhouette` mixin with a 50% white contrast outline for optimal readability.
+- **Time Cycle Emojis**: Use standardized emojis (🌅, 🌞, 🌇, 🌙) in spawn tooltips to conserve layout space while reinforcing the retro aesthetic.
+- **Spoiler Shield**: Suppress specific active time details in tooltips for Pokémon that have not yet been registered as seen or caught in the Pokédex (`!isSeen && !isCaught`).
 
-Battle animations (faint, withdraw, send_out, status_hit) MUST be triggered via the `GameBus` using standardized event types.
+---
 
-```js
+## 3. ⚙️ Engine Logic & Decoupled Event Architecture (Vue + GameBus)
+
+All visual-logic decoupled communication between independent subsystems uses the native `gameBus` event pipeline.
+
+### 3.1 Battle Animation Triggers
+Battle animations (faint, withdraw, send_out, status_hit) MUST be triggered via the `gameBus` using standardized event types:
+
+```ts
 // Standard Animation Trigger
 gameBus.emit('animation', { 
   type: 'faint', 
@@ -51,9 +55,8 @@ gameBus.emit('animation', {
 });
 ```
 
-### 2. Component Safety & Zero-Timer Compliance
-
-Any async or delayed operation within a visual component MUST be driven by GSAP and verify component mount state before acting:
+### 3.2 Component Safety & Zero-Timer Compliance
+Any asynchronous or delayed operation within a visual component MUST be driven by GSAP (`gsapSleep` or `gsap.delayedCall`) and verify component mount state before acting:
 
 ```ts
 gsap.delayedCall(delayInSeconds, () => {
@@ -64,90 +67,35 @@ gsap.delayedCall(delayInSeconds, () => {
 
 ---
 
-## 🦄 Specialized Systems
+## 4. 🌩️ Climate Mechanics & Block Rules
 
-To maintain a modular documentation structure, detailed rules for specialized systems have been moved to their own manuals:
+Weather in Poké Vicio is not just aesthetic; it dynamically defines the viability of certain Pokémon types in battle:
 
-- **[Breeding System (Daycare)](../systems/breeding_manual.md)**: Compatibility, IV inheritance, and costs.
-- **[Evolution Logic](../systems/evolution_manual.md)**: Level evolution, wild auto-evo, and stones.
-- **[Encounter Systems](../systems/encounter_manual.md)**: Encounter types, Guardians, Repels, and Visibility hierarchy.
-- **[Time Cycle and Seasons](./time_system_manual.md)**: Phase cycles, seasons, and weather persistence.
-
----
-
-## 🌩️ Climate Mechanics and Block Rules
-
-The weather in Poké Vicio is not just aesthetic; it defines the viability of certain Pokémon types in battle.
-
-### 1. The "Block" Mechanic
-
-Extreme weather conditions (Heatwave, Blizzard, Strong Winds, etc.) can **BLOCK** certain types.
-
-- **Effect**: A blocked type cannot deal significant damage and suffers a drastic reduction in its secondary effect probabilities.
-- **Visual**: In the Battle HUD, the blocked type icon will appear with a "🚫" symbol.
-
-### 2. Family Hierarchies
-
-Climates evolve from **Normal** to **Extreme**, increasing their modifiers:
-
-- **Rain (🌧️) -> Heavy Rain (☔)**: From boosting Water to completely extinguishing Fire.
-- **Sun (☀️) -> Intense Sun (🔆) -> Heatwave (🔥)**: From boosting Fire to blocking Grass/Ice.
-- **Cold (🧊) -> Ola Frío (🥶)**: From boosting Ice to blocking Flying/Bug.
-
-## 🌫️ Atmospheric Standards (Visual Fidelity)
-
-All weather systems must adhere to the **Hybrid Retro-Modern** identity, prioritizing pixelated aesthetics without sacrificing fluidity.
-
-### 1. The Universal Parallax Rule (UPR)
-
-To prevent visual repetition and "grid" artifacts, all layered weather effects (Rain, Snow, Sandstorm, etc.) MUST implement randomized offsets:
-
-- **Seed Injection**: The `AtmosphereLayer.vue` component MUST inject `--seed-x` and `--seed-y` variables based on a unique map/session seed. For seed hashing, the use of bitwise operators (`<<`) in JavaScript is STRICTLY FORBIDDEN, as they can produce negative integers that break GSAP durations. Always use `Math.abs()`.
-- **Layer Desynchronization**: Primary (`.layer-1`) and secondary (`.layer-2`) layers MUST use `transform: translate3d()` using these variables.
-- **Asymmetric Tiles**: Front and back layers MUST use prime-number tile sizes (e.g., 512px, 713px, 911px) to mask texture joins through asymmetric visual interference.
-
-### 2. The Organic Variability Rule (OVR)
-
-No animation may have a static duration. Every weather effect MUST be unique in its rhythm:
-
-- **Speed Randomization**: The `duration` of GSAP tweens MUST be divided by a `speedVar` factor derived from the map's unique seed.
-- **OVR Range (±20%)**: Speed variability MUST be strictly limited to the **0.8x to 1.2x** range. More extreme variations break the project's visual harmony.
-- **Directional Synchronization**: Inverting movement directions in JavaScript based on the seed is FORBIDDEN if the CSS already applies a `scaleX(direction)` to the parent container. JS must always use fixed directions (negative for leftward movement) to avoid the "Double Flip" bug.
-- **Triple Layering**: For gaseous effects (Fog, Mist), the use of three asymmetric layers is mandatory to break repetitive patterns.
-
-### 3. GPU Efficiency & Fidelity
-
-- **Zero-Blur Policy**: Never use `backdrop-filter: blur()` or `filter: blur()` on weather layers that cover the main stage, as it breaks Pixel Art fidelity.
-- **Desaturated Noise**: All SVG-based noise (`feTurbulence`) MUST be desaturated using `feColorMatrix` to avoid "rainbow" artifacts.
-- **No Shadow Overload**: Avoid `drop-shadow` on high-density layers (Snow/Rain). Use CSS `contrast` or `brightness` adjustments instead.
+- **The "Block" Mechanic**: Extreme weather conditions (Heatwave, Blizzard, Strong Winds) can **BLOCK** certain types (indicated by a 🚫 symbol in the HUD). Blocked types cannot deal significant damage and suffer reduced secondary effect chances.
+- **Family Hierarchies**: Climates evolve from Normal to Extreme (e.g. Rain ➔ Heavy Rain, Sun ➔ Intense Sun ➔ Heatwave, Cold ➔ Coldwave).
+- **Universal Parallax Rule (UPR)**: Atmospheric layers use randomized offsets (`--seed-x`, `--seed-y`) and prime-number tile sizes to eliminate repetitive grid patterns.
+- **Organic Variability Rule (OVR)**: Weather animation speeds vary within a strict ±20% factor (`0.8x` to `1.2x`) derived from the map seed.
 
 ---
 
----
+## 5. ⚡ Visibility, Performance & The Void Protocol
 
-## ⚡ Visibility and Performance (Lean Rendering)
+During high-load transitions and combat conclusion:
 
-During high-load scenes (e.g., Battles), the hiding protocol is applied:
-
-- **v-if**: Non-essential elements (MapCards, NPCs, background weather animations) MUST be physically hidden.
-- **Pause**: All JS intervals (weather, buffs) must be paused while the combat state is active.
-- **The Void Protocol**: During the rewards and level-up phases, the entire stage MUST enter a "Void" state (Completely empty). The enemy sprite is hidden immediately after the faint or capture sequence finishes to focus on the rewards flow. This avoids "ghosting" and maintains a clean interface for the user's progress summary. When entering the `VOID_STATE`, all visual traces, snapshots, and animation states of the Pokémon MUST be completely removed to prevent any graphical artifacts in the subsequent steps.
+- **Lean Rendering**: Non-essential elements (MapCards, background weather animations) MUST be physically hidden or paused via `v-show` / `v-if` during active combat.
+- **The Void Protocol**: During the rewards and level-up phases (`REWARDS_PHASE`, `LEVEL_UP_MODAL`), the entire battlefield stage enters a clean "Void" state (`VOID_STATE`). The enemy sprite is hidden immediately after faint/capture, and all visual traces/snapshots are completely cleared to eliminate graphical artifacts.
 
 ---
 
-## 🎒 Inventory & Resource Management (SSoT)
+## 6. 🎒 Inventory & Resource Management (SSoT)
 
-To ensure data integrity and prevent visual desynchronization between the HUD and the Bag:
-
-1. **Single Source of Truth (SSoT)**: Resource counters (especially Poké Balls and common items) MUST derive their totals dynamically from the full `inventory` state.
-2. **FORBIDDEN**: Relying on isolated state flags (e.g., `state.balls`) that are not automatically updated by inventory operations.
-3. **Aggregated Displays**: For resources with multiple types (Balls, Stones, etc.), the HUD pill displays the **sum** of all items in that category, while the associated tooltip provides the granular breakdown.
+- **Single Source of Truth (SSoT)**: Resource counters (especially Poké Balls and common items) MUST derive their totals dynamically from the full `inventory` state.
+- **Forbidden Isolated State**: Relying on isolated state flags (e.g., `state.balls`) that are not automatically updated by inventory operations is strictly prohibited.
+- **Aggregated HUD Displays**: For resources with multiple varieties (Poké Balls, Evolutionary Stones), the HUD pill displays the aggregate sum of all items in that category, while the associated `PVTooltip` provides the granular itemized breakdown.
 
 ---
 
-## 🕹️ Minigame & Modal Coordination
+## 7. 🕹️ Minigame & Modal Coordination
 
-To prevent logic desynchronization and ensure consistent state behavior across gameplay elements:
-
-1. **Parity of Duplicated Component Contexts**: When gameplay mechanics are split across multiple components or views (e.g., battle-specific `ArchaeologyMinigame.vue` and general-purpose `ArchaeologyModal.vue`), any logic-affecting rules, modifiers, or reward changes MUST be implemented consistently across all versions.
-2. **Modal Callback & Lifecycle Synchronization**: When introducing or refactoring cleanup actions (such as `onCloseCallback` or custom close hooks) inside standard modals, wrap the execution in a local handler (e.g., `handleCloseModal`) that triggers both the local event emits (like `@close`) and the external callbacks, maintaining clean parent-child orchestration.
+- **Parity of Duplicated Component Contexts**: When gameplay mechanics are split across multiple component scopes (e.g. `ArchaeologyMinigame.vue` and `ArchaeologyModal.vue`), all logic rules, multipliers, formulas, and reward tables MUST be kept 100% identical across all instances.
+- **Modal Callback & Lifecycle Synchronization**: Encapsulate modal closing logic in a local handler (e.g. `handleCloseModal`) that dispatches both local Vue event emits (`@close`) and external callbacks (`onCloseCallback`).

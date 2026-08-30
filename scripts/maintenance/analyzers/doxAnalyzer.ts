@@ -8,7 +8,14 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { styleText } from 'node:util';
-import type { Violation } from '../audit_rules.ts';
+import type { Violation, RuleDescriptor } from '../audit_rules.ts';
+
+export const DOX_ANALYZER_DESCRIPTOR: RuleDescriptor = {
+  id: 'dox',
+  name: 'DOX / AGENTS.md Integrity',
+  category: 'DOX / AGENTS.md',
+  aliases: ['dox', 'agents', 'agents.md', 'documentation', 'dox-integrity', 'doxindexintegrity']
+};
 
 export async function checkDoxIntegrity(
   rootDir: string,

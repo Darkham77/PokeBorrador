@@ -539,4 +539,26 @@ The NPC Trainer visual lifecycle across search phase, dialogue presentation, act
 For step-by-step reproduction instructions and testing matrices for all combat animations, forced switch variants, flee & teleport physics, attack reactions, and catch sequences, consult:
 - **[Manual Testing Guide (Battle Animations)](../qa/manual_testing_battle_animations.md)**
 
+---
+
+## 46. The Void Protocol (Clean Stage During Rewards & Transitions)
+
+During the rewards and level-up phases (`REWARDS_PHASE`, `LEVEL_UP_MODAL`), the entire battlefield stage MUST enter a clean "Void" state (`VOID_STATE`, completely empty).
+
+- **Enemy Suppression**: The enemy sprite and its shadow are hidden immediately after the faint or capture sequence finishes to direct focus purely to the rewards flow.
+- **Artifact Prevention**: When entering `VOID_STATE`, all visual traces, snapshots, and animation states of the defeated Pokémon MUST be completely removed to prevent any graphical artifacts or "ghosting" in subsequent steps.
+- **Non-Essential Element Hiding**: Non-essential elements (MapCards, background weather animations) MUST be physically hidden or paused via `v-show` / `v-if` during active combat and rewards.
+
+---
+
+## 47. Visual Anchors and Shadow Coordinate Persistence (`feetCache`)
+
+To ensure flicker-free sprite rendering and eliminate ground teleportation during switches and encounters:
+
+1. **Persistent Coordinate Storage (`feetCache`)**: Once a Pokémon's sprite has been scanned for its base ground anchor (`feetY`), the coordinates MUST be stored persistently in `feetCache`.
+2. **Synchronous Frame 0 Restoration**: When a Pokémon returns to the field (e.g. following a voluntary switch or recall), inject its cached coordinates immediately on Frame 0 before the sprite is made visible.
+3. **Shadow Identity Anchor**: The ground shadow is tied strictly to the Pokémon's unique `uid`. When replacing or capturing a combatant, explicitly track and clear `lastShadowId` to prevent orphan shadows.
+4. **Preloading Gate**: All candidate sprites MUST be pre-scanned during initialization (`preloadCombatCoords`) so coordinates are guaranteed to be available prior to entrance animations.
+
+
 

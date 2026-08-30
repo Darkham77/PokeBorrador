@@ -6,7 +6,7 @@
 > - For DBRouter query proxy architecture and Supabase RPC emulations ➔ See [DBRouter Manual](../technical/dbrouter_manual.md).
 > - For save data schemas, encryption, and Valibot validation ➔ See [Save System Manual](../technical/save_system_manual.md).
 > - For in-flight active combat reload (F5) and minigame exclusion ➔ See [Battle Persistence & Anti-Cheat Manual](../battle/battle_persistence_and_anti_cheat_manual.md).
-> - For SQL dialect conversions (Postgres to SQLite) ➔ See [PostgreSQL to SQLite](../migration/postgreSQL_to_SQLite.md).
+> - For SQL dialect conversions (Postgres to SQLite) ➔ See [Database Dialect Translation](../technical/db_translation_manual.md).
 
 ---
 

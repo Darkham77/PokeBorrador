@@ -8,7 +8,7 @@
  */
 
 import fs from 'node:fs/promises';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
@@ -18,11 +18,16 @@ import { Z_LAYERS } from '../../../src/logic/constants/visuals.ts';
 import {
   type AuditRule,
   type Violation,
+  type RuleDescriptor,
+  matchesRule,
+  Z_INDEX_CONSISTENCY_DESCRIPTOR,
+  FALLOW_SUITE_DESCRIPTORS,
+  SASS_MIGRATOR_DESCRIPTOR,
   auditRulesConfig as config
 } from '../../maintenance/audit_rules.ts';
-import { runCssChecker } from '../../maintenance/analyzers/cssAnalyzer.ts';
-import { checkDoxIntegrity } from '../../maintenance/analyzers/doxAnalyzer.ts';
-import { detectDuplicateConstants } from '../../maintenance/analyzers/constantAnalyzer.ts';
+import { runCssChecker, CSS_ANALYZER_DESCRIPTOR } from '../../maintenance/analyzers/cssAnalyzer.ts';
+import { checkDoxIntegrity, DOX_ANALYZER_DESCRIPTOR } from '../../maintenance/analyzers/doxAnalyzer.ts';
+import { detectDuplicateConstants, CONSTANT_ANALYZER_DESCRIPTOR } from '../../maintenance/analyzers/constantAnalyzer.ts';
 
 enableCompileCache();
 
@@ -42,7 +47,12 @@ async function getFilesToAudit(dir: string): Promise<string[]> {
   return files;
 }
 
-async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
+async function auditFile(
+  filePath: string, 
+  fix: boolean, 
+  activeConfigRules?: ReadonlySet<AuditRule>, 
+  checkSloc = true
+): Promise<Violation[]> {
   const violations: Violation[] = [];
   let content = await fs.readFile(filePath, 'utf-8');
   let modified = false;
@@ -54,80 +64,96 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
   const isLogic = filePath.endsWith('.ts') || filePath.endsWith('.js');
   const isStyle = filePath.endsWith('.scss') || filePath.endsWith('.css');
 
-  const STYLE_RULES: AuditRule[] = [
+  const ALL_STYLE_RULES: AuditRule[] = [
     config.viewport,
     config.gpuGaps,
     config.zIndexAudit,
     config.manualAnimations,
     config.sassTraps
   ];
+  const STYLE_RULES: AuditRule[] = activeConfigRules
+    ? ALL_STYLE_RULES.filter(r => activeConfigRules.has(r))
+    : ALL_STYLE_RULES;
 
   if (isLogic || isVue) {
-    const allRules: AuditRule[] = Object.values(config) as AuditRule[];
+    const allConfigRules: AuditRule[] = Object.values(config) as AuditRule[];
+    const candidateRules = activeConfigRules
+      ? allConfigRules.filter(r => activeConfigRules.has(r))
+      : allConfigRules;
+
     if (isVue) {
       const scriptBlocks = extractAllBlocks(content, 'script');
       // Procesa los bloques de script en reversa para no alterar los índices de caracteres al modificar el contenido
       for (let i = scriptBlocks.length - 1; i >= 0; i--) {
         const block = scriptBlocks[i]!;
-        let rules: AuditRule[] = allRules.filter(r => !STYLE_RULES.includes(r) && r !== config.dbInTemplates && r !== config.functionCallsInTemplates && r !== config.fileLength);
+        let rules: AuditRule[] = candidateRules.filter(r => !ALL_STYLE_RULES.includes(r) && r !== config.dbInTemplates && r !== config.functionCallsInTemplates && r !== config.fileLength);
         
         if (isScriptOrSupabase) {
           rules = rules.filter(r => r !== config.legacyDates);
         }
 
-        let newBlock = runRules(filePath, block.content, rules, violations, fix, block.startLine);
-        
-        if (fix && newBlock !== block.content) {
-          for (const rule of rules) {
-            const importer = rule.addImport;
-            if (importer && newBlock.includes(importer.split(' ')[1]!) && !newBlock.includes(importer)) {
-              newBlock = importer + '\n' + newBlock;
+        if (rules.length > 0) {
+          let newBlock = runRules(filePath, block.content, rules, violations, fix, block.startLine);
+          
+          if (fix && newBlock !== block.content) {
+            for (const rule of rules) {
+              const importer = rule.addImport;
+              if (importer && newBlock.includes(importer.split(' ')[1]!) && !newBlock.includes(importer)) {
+                newBlock = importer + '\n' + newBlock;
+              }
             }
+            content = content.substring(0, block.startIdx) + newBlock + content.substring(block.endIdx);
+            modified = true;
           }
-          content = content.substring(0, block.startIdx) + newBlock + content.substring(block.endIdx);
-          modified = true;
         }
       }
 
       // También audita el bloque de template para reglas de lógica e integridad
       const templateBlocks = extractAllBlocks(content, 'template');
       for (const block of templateBlocks) {
-        const templateRules: AuditRule[] = [
+        const candidateTemplateRules: AuditRule[] = [
           config.dbInTemplates, 
           config.functionCallsInTemplates,
           config.missingInteractiveId
         ];
+        const templateRules: AuditRule[] = activeConfigRules
+          ? candidateTemplateRules.filter(r => activeConfigRules.has(r))
+          : candidateTemplateRules;
         
-        if (!isScriptOrSupabase) {
+        if (!isScriptOrSupabase && (!activeConfigRules || activeConfigRules.has(config.legacyDates))) {
           templateRules.push(config.legacyDates);
         }
 
-        runRules(filePath, block.content, templateRules, violations, false, block.startLine);
+        if (templateRules.length > 0) {
+          runRules(filePath, block.content, templateRules, violations, false, block.startLine);
+        }
       }
     } else {
       // isLogic
-      let rules: AuditRule[] = allRules.filter(r => !STYLE_RULES.includes(r) && r !== config.dbInTemplates && r !== config.functionCallsInTemplates && r !== config.fileLength);
+      let rules: AuditRule[] = candidateRules.filter(r => !ALL_STYLE_RULES.includes(r) && r !== config.dbInTemplates && r !== config.functionCallsInTemplates && r !== config.fileLength);
       
       if (isScriptOrSupabase) {
         rules = rules.filter(r => r !== config.legacyDates);
       }
 
-      let newBlock = runRules(filePath, content, rules, violations, fix, 0);
-      
-      if (fix && newBlock !== content) {
-        for (const rule of rules) {
-          const importer = rule.addImport;
-          if (importer && newBlock.includes(importer.split(' ')[1]!) && !newBlock.includes(importer)) {
-            newBlock = importer + '\n' + newBlock;
+      if (rules.length > 0) {
+        let newBlock = runRules(filePath, content, rules, violations, fix, 0);
+        
+        if (fix && newBlock !== content) {
+          for (const rule of rules) {
+            const importer = rule.addImport;
+            if (importer && newBlock.includes(importer.split(' ')[1]!) && !newBlock.includes(importer)) {
+              newBlock = importer + '\n' + newBlock;
+            }
           }
+          content = newBlock;
+          modified = true;
         }
-        content = newBlock;
-        modified = true;
       }
     }
   }
 
-  if (isStyle || isVue) {
+  if ((isStyle || isVue) && STYLE_RULES.length > 0) {
     if (isVue) {
       const styleBlocks = extractAllBlocks(content, 'style');
       for (let i = styleBlocks.length - 1; i >= 0; i--) {
@@ -158,7 +184,7 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
                                /^(vite|vitest|playwright|eslint)\.config\./i.test(path.basename(filePath)) ||
                                path.basename(filePath).startsWith('vitest.');
 
-  if (!isDatabaseOrMetadata) {
+  if (checkSloc && !isDatabaseOrMetadata) {
     // Calcular SLOC real excluyendo comentarios y líneas vacías
     let slocCount = 0;
     let inBlockComment = false;
@@ -728,19 +754,76 @@ async function main() {
       'changed-since': { type: 'string' },
       'errors-only': { type: 'boolean' },
       'css-only': { type: 'boolean' },
-      rule: { type: 'string', short: 'r' }
+      rule: { type: 'string', short: 'r', multiple: true },
+      rules: { type: 'string', multiple: true }
     },
     allowPositionals: true,
     strict: false
   });
 
-  if (values.path === '.' && positionals[0] && positionals[0].toLowerCase() !== 'dox') {
-    values.path = positionals[0];
+  // Extract raw rule strings from options and positionals
+  const rawRuleArgs: string[] = []; // no-domain
+  if (values.rule) {
+    if (Array.isArray(values.rule)) {
+      for (const item of values.rule) rawRuleArgs.push(String(item));
+    } else {
+      rawRuleArgs.push(String(values.rule));
+    }
+  }
+  if (values.rules) {
+    if (Array.isArray(values.rules)) {
+      for (const item of values.rules) rawRuleArgs.push(String(item));
+    } else {
+      rawRuleArgs.push(String(values.rules));
+    }
   }
 
-  if (!values.rule && positionals.some(p => p.toLowerCase() === 'dox')) {
-    values.rule = 'DOX';
+  // Handle positionals
+  for (const pos of positionals) {
+    if (pos.includes(',')) {
+      rawRuleArgs.push(pos);
+    } else {
+      const resolvedPath = path.resolve(process.cwd(), pos);
+      try {
+        if (existsSync(resolvedPath) && statSync(resolvedPath).isDirectory()) {
+          values.path = pos;
+        } else {
+          rawRuleArgs.push(pos);
+        }
+      } catch {
+        rawRuleArgs.push(pos);
+      }
+    }
   }
+
+  // Normalize selected rules into a clean Set
+  const selectedRules = new Set<string>();
+  for (const raw of rawRuleArgs) {
+    for (const part of raw.split(',')) {
+      const clean = part.trim().toLowerCase();
+      if (clean) selectedRules.add(clean);
+    }
+  }
+
+  // Determine active config rules for AST/regex file checking dynamically
+  const activeConfigRules = new Set<AuditRule>();
+  for (const rule of Object.values(config) as AuditRule[]) {
+    if (matchesRule(rule, selectedRules)) {
+      activeConfigRules.add(rule);
+    }
+  }
+
+  // Query descriptors dynamically from their source modules
+  const isZIndexActive = matchesRule(Z_INDEX_CONSISTENCY_DESCRIPTOR, selectedRules);
+  const isDoxActive = matchesRule(DOX_ANALYZER_DESCRIPTOR, selectedRules);
+  const isFallowDupesActive = matchesRule(FALLOW_SUITE_DESCRIPTORS.dupes, selectedRules);
+  const isFallowSecurityActive = matchesRule(FALLOW_SUITE_DESCRIPTORS.security, selectedRules);
+  const isFallowDeadCodeActive = matchesRule(FALLOW_SUITE_DESCRIPTORS['dead-code'], selectedRules);
+  const isFallowHealthActive = matchesRule(FALLOW_SUITE_DESCRIPTORS.health, selectedRules);
+  const isCssCheckerActive = values['css-only'] || matchesRule(CSS_ANALYZER_DESCRIPTOR, selectedRules);
+  const isConstantDetectorActive = matchesRule(CONSTANT_ANALYZER_DESCRIPTOR, selectedRules);
+  const isSassMigratorActive = matchesRule(SASS_MIGRATOR_DESCRIPTOR, selectedRules);
+  const isSlocActive = matchesRule(config.fileLength, selectedRules);
 
   const isHumanMode = !!(values.human || values.pretty || values.summary);
 
@@ -753,7 +836,11 @@ async function main() {
   }
 
   logProgress(styleText('bold', '\n--- 🔎 POKE VICIO - REGLAS DE CÓDIGO & ESTRUCTURA DOX (audit_project.ts) ---'));
-  logProgress(styleText('cyan', '💡 Modo por defecto: JSON puro para herramientas e IA. Usa "--human" o "-H" para vista de consola.'));
+  if (selectedRules.size > 0) {
+    logProgress(styleText('cyan', `🎯 Ejecución selectiva de reglas: [ ${Array.from(selectedRules).join(', ')} ]`));
+  } else {
+    logProgress(styleText('cyan', '💡 Modo por defecto: JSON puro para herramientas e IA. Usa "--human" o "-H" para vista de consola.'));
+  }
   
   let all: Violation[] = [];
   let files: string[] = []; // no-domain
@@ -762,54 +849,63 @@ async function main() {
     logProgress(styleText('cyan', '\nEjecutando análisis exclusivo de css-checker (SCSS duplicados)...'));
     all = await runCssChecker(values.path as string || '.', IGNORE_DIRS);
   } else {
-    // Consistency Check
-    logProgress(styleText('cyan', '🎨 Verificando paridad de z-index (visuals.ts <-> _variables.scss)...'));
-    const syncErrors = await checkZIndexConsistency(!!values.fix);
-    const syncViolations: Violation[] = [];
-    if (syncErrors.length > 0) {
-      logProgress(styleText('magenta', `\n[SYNC] Desincronización detectada entre visuals.ts y _variables.scss:`));
-      syncErrors.forEach(e => logProgress(styleText('yellow', `  -> ${e}`)));
-      if (!values.fix) {
-        logProgress(styleText('cyan', '  (Usa --fix para sincronizar automáticamente)'));
-        for (const err of syncErrors) {
-          syncViolations.push({
-            file: path.resolve(process.cwd(), 'src/styles/core/_variables.scss'),
-            line: 1,
-            message: `Desincronización de z-index: ${err}`,
-            context: 'z-index',
-            severity: 'error',
-            fixable: true
-          });
+    // 1. Consistency Check (z-index)
+    if (isZIndexActive) {
+      logProgress(styleText('cyan', '🎨 Verificando paridad de z-index (visuals.ts <-> _variables.scss)...'));
+      const syncErrors = await checkZIndexConsistency(!!values.fix);
+      const syncViolations: Violation[] = [];
+      if (syncErrors.length > 0) {
+        logProgress(styleText('magenta', `\n[SYNC] Desincronización detectada entre visuals.ts y _variables.scss:`));
+        syncErrors.forEach(e => logProgress(styleText('yellow', `  -> ${e}`)));
+        if (!values.fix) {
+          logProgress(styleText('cyan', '  (Usa --fix para sincronizar automáticamente)'));
+          for (const err of syncErrors) {
+            syncViolations.push({
+              file: path.resolve(process.cwd(), 'src/styles/core/_variables.scss'),
+              line: 1,
+              message: `Desincronización de z-index: ${err}`,
+              context: 'z-index',
+              severity: 'error',
+              fixable: true
+            });
+          }
         }
       }
+      all = [...all, ...syncViolations];
     }
 
-    // DOX / AGENTS.md Integrity Check
-    const doxErrors = await checkDoxIntegrity(process.cwd(), IGNORE_DIRS);
+    // 2. DOX / AGENTS.md Integrity Check
+    if (isDoxActive) {
+      const doxErrors = await checkDoxIntegrity(process.cwd(), IGNORE_DIRS);
+      all = [...all, ...doxErrors];
+    }
 
+    // 3. Scan files only if there are active AST/regex rules or SLOC checks
+    const shouldScanFiles = activeConfigRules.size > 0 || isSlocActive;
     const changedSince = values['changed-since'] as string | undefined;
-    
-    if (changedSince) {
-      files = getChangedFiles(changedSince);
-      logProgress(styleText('cyan', `Auditando solo archivos cambiados desde: '${changedSince}' (${files.length} archivos)`));
-    } else {
-      files = await getFilesToAudit(path.resolve(process.cwd(), values.path as string));
-    }
 
-    all = [...syncViolations, ...doxErrors];
-    logProgress(styleText('cyan', `🔍 Auditando ${files.length} archivos...`));
-    let processed = 0;
-    const total = files.length;
-    for (const f of files) {
-      processed++;
-      if (processed % 100 === 0 || processed === total) {
-        logProgress(styleText('cyan', `⏳ Progreso auditoría: ${processed}/${total} archivos (${Math.round((processed / total) * 100)}%)`));
+    if (shouldScanFiles) {
+      if (changedSince) {
+        files = getChangedFiles(changedSince);
+        logProgress(styleText('cyan', `Auditando solo archivos cambiados desde: '${changedSince}' (${files.length} archivos)`));
+      } else {
+        files = await getFilesToAudit(path.resolve(process.cwd(), values.path as string));
       }
-      all = all.concat(await auditFile(f, !!values.fix));
+
+      logProgress(styleText('cyan', `🔍 Auditando ${files.length} archivos...`));
+      let processed = 0;
+      const total = files.length;
+      for (const f of files) {
+        processed++;
+        if (processed % 100 === 0 || processed === total) {
+          logProgress(styleText('cyan', `⏳ Progreso auditoría: ${processed}/${total} archivos (${Math.round((processed / total) * 100)}%)`));
+        }
+        all = all.concat(await auditFile(f, !!values.fix, activeConfigRules, isSlocActive));
+      }
     }
 
-    // SASS Module Migration (solo en --fix)
-    if (values.fix) {
+    // 4. SASS Module Migration (solo en --fix)
+    if (values.fix && isSassMigratorActive && files.length > 0) {
       logProgress(styleText('cyan', '\n✨ Ejecutando sass-migrator (built-in-only)...'));
       const legacyScssFiles = files.filter(f => {
         if (!f.endsWith('.scss') && !f.endsWith('.css')) return false;
@@ -840,31 +936,49 @@ async function main() {
       }
     }
 
-    // Integración de Fallow
-    logProgress(styleText('cyan', '\nEjecutando análisis de Fallow...'));
-    if (changedSince) {
-      logProgress(styleText('cyan', '  -> Fallow audit & security (archivos modificados)...'));
-      all = all.concat(runFallow('audit', ['--changed-since', changedSince]));
-      all = all.concat(runFallow('security', ['--changed-since', changedSince]));
-    } else {
-      logProgress(styleText('cyan', '  [1/4] Fallow: Análisis de duplicación de código...'));
-      all = all.concat(runFallow('dupes'));
-      all = all.concat(runFallow('dupes', ['--min-occurrences', '3', '--min-lines', '10', '--min-tokens', '60'])); // no-magic
-      logProgress(styleText('cyan', '  [2/4] Fallow: Análisis de seguridad...'));
-      all = all.concat(runFallow('security'));
-      logProgress(styleText('cyan', '  [3/4] Fallow: Análisis de código muerto...'));
-      all = all.concat(runFallow('dead-code'));
-      logProgress(styleText('cyan', '  [4/4] Fallow: Cálculo de métricas de salud...'));
-      all = all.concat(runFallow('health'));
+    // 5. Integración de Fallow
+    const anyFallowActive = isFallowDupesActive || isFallowSecurityActive || isFallowDeadCodeActive || isFallowHealthActive;
+    if (anyFallowActive) {
+      logProgress(styleText('cyan', '\nEjecutando análisis de Fallow...'));
+      if (changedSince) {
+        if (isFallowDeadCodeActive || isFallowSecurityActive) {
+          logProgress(styleText('cyan', '  -> Fallow audit & security (archivos modificados)...'));
+          if (isFallowDeadCodeActive) all = all.concat(runFallow('audit', ['--changed-since', changedSince]));
+          if (isFallowSecurityActive) all = all.concat(runFallow('security', ['--changed-since', changedSince]));
+        }
+      } else {
+        if (isFallowDupesActive) {
+          logProgress(styleText('cyan', '  [1/4] Fallow: Análisis de duplicación de código...'));
+          all = all.concat(runFallow('dupes'));
+          all = all.concat(runFallow('dupes', ['--min-occurrences', '3', '--min-lines', '10', '--min-tokens', '60'])); // no-magic
+        }
+        if (isFallowSecurityActive) {
+          logProgress(styleText('cyan', '  [2/4] Fallow: Análisis de seguridad...'));
+          all = all.concat(runFallow('security'));
+        }
+        if (isFallowDeadCodeActive) {
+          logProgress(styleText('cyan', '  [3/4] Fallow: Análisis de código muerto...'));
+          all = all.concat(runFallow('dead-code'));
+        }
+        if (isFallowHealthActive) {
+          logProgress(styleText('cyan', '  [4/4] Fallow: Cálculo de métricas de salud...'));
+          all = all.concat(runFallow('health'));
+        }
+      }
     }
 
-    // Integración de css-checker
-    logProgress(styleText('cyan', '\nEjecutando análisis de css-checker (SCSS duplicados)...'));
-    all = all.concat(await runCssChecker(values.path as string || '.', IGNORE_DIRS));
+    // 6. Integración de css-checker
+    if (isCssCheckerActive) {
+      logProgress(styleText('cyan', '\nEjecutando análisis de css-checker (SCSS duplicados)...'));
+      all = all.concat(await runCssChecker(values.path as string || '.', IGNORE_DIRS));
+    }
 
-    // Integración de detector de constantes duplicadas
-    logProgress(styleText('cyan', '\nEjecutando análisis de constantes duplicadas entre módulos...'));
-    all = all.concat(await detectDuplicateConstants(files));
+    // 7. Integración de detector de constantes duplicadas
+    if (isConstantDetectorActive) {
+      logProgress(styleText('cyan', '\nEjecutando análisis de constantes duplicadas entre módulos...'));
+      const filesForConstants = files.length > 0 ? files : await getFilesToAudit(path.resolve(process.cwd(), values.path as string || '.'));
+      all = all.concat(await detectDuplicateConstants(filesForConstants));
+    }
   }
 
   // Filtrar por ruta si la opción '--path' está activa para asegurar que herramientas globales respeten el scope
@@ -878,13 +992,18 @@ async function main() {
     all = all.filter(v => v.severity === 'error');
   }
 
-  // Filtrar por regla específica si se especifica '--rule'
-  if (values.rule) {
-    const filterTerm = (values.rule as string).toLowerCase();
-    all = all.filter(v => 
-      v.message.toLowerCase().includes(filterTerm) || 
-      v.context.toLowerCase().includes(filterTerm)
-    );
+  // Filtrar por regla específica si se seleccionaron reglas para garantizar 100% de precisión
+  if (selectedRules.size > 0) {
+    all = all.filter(v => {
+      const category = getViolationCategory(v);
+      const desc: RuleDescriptor = {
+        id: v.ruleId || category,
+        name: v.message,
+        category: category,
+        aliases: [v.context, path.basename(v.file)]
+      };
+      return matchesRule(desc, selectedRules);
+    });
   }
 
   // Priorizar mostrar siempre primero los errores, y luego los warnings
@@ -1068,6 +1187,6 @@ async function main() {
 }
 
 main().catch(err => {
-  console.error(styleText('red', `\n💥 Error fatal en el audit: ${(err as Error).message}`));
+  console.error(styleText('red', `\n💥 Error fatal en el audit: ${(err as Error).stack || (err as Error).message}`));
   process.exit(1);
 });

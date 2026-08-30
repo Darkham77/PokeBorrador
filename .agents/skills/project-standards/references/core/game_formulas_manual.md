@@ -1,317 +1,283 @@
 # Game Formulas and Mathematical Ratios Manual (Poké Vicio)
 
-This manual documents the mathematical formulas and balance constants that govern the game engine. Any changes to these values must be reflected here to maintain design consistency.
-
-## ⚙️ Global Generation Configuration
-
-To support multi-generation mechanics and maintain the historical integrity of earlier games while supporting retro-modern environments, the engine uses a centralized formulas module (`battleFormulas.ts`) driven by two global constants:
-
-- **`CURRENT_GENERATION`**: `9` (Default base for the database of species and moves).
-- **`ACTIVE_RULE_SET`**: `9` (Determines the active battle calculations, critical hit calculations, and STAB modifiers).
-
-The formulas module returns the specific formula based on the `ACTIVE_RULE_SET` as documented below.
-
-### 🚨 Bridge Integrity (Parameter Drift Prevention)
-
-The bridge between the UI and the math core (`battleFormulas.ts`) MUST pass all context parameters (stages, weather, cycle) explicitly to the pure core.
-
-- **Warning**: Never assume that `calculateDamagePure` will infer state. If a new parameter (like `atkStages`) is added to the core, it MUST be updated in the bridge immediately to prevent silent failures in combat logic.
-- **Verification**: Any change to the bridge MUST be validated with the `battle.spec.ts` suite to ensure no parameters are being dropped.
+> **Scope & Authority**: This manual documents the pure mathematical formulas, probability ratios, statistical calculations, and game balance constants that govern the Poké Vicio engine.
+> **Sources of Truth**:
+> - Combat Execution: [`../battle/battle_mechanics_manual.md`](../battle/battle_mechanics_manual.md)
+> - Status Conditions: [`../battle/status_ailments_manual.md`](../battle/status_ailments_manual.md)
+> - Capture Mechanics: [`../systems/capturing_manual.md`](../systems/capturing_manual.md)
+> - EV & Training Engine: [`../systems/ev_mechanics_manual.md`](../systems/ev_mechanics_manual.md)
 
 ---
 
-## ⚔️ Combat Formulas
+## 1. ⚙️ Global Engine Configuration
 
-Standard combat calculations, category-by-type rules (Gen 2 vs Gen 4+), critical hit multipliers, and formula parameters are detailed in the standard battle manuals:
-- **Battle Math & Core Rules**: See [Battle Mechanics](./../battle/battle.md) and [Battling Basics](./../battle/battling-basics.md).
-- **Status Ailments**: See [Status Ailments](./../battle/status-ailments.md).
+The battle engine formulas module (`battleFormulas.ts`) is driven by centralized generation constants:
 
----
+- **`CURRENT_GENERATION`**: `9` (Default species, learnset, and move data base).
+- **`ACTIVE_RULE_SET`**: `9` (Active combat formulas, critical hit calculations, and STAB modifiers).
 
-### 4. Stage Multipliers (-6 to +6)
-
-Stat and Accuracy/Evasion stage multipliers have been moved to the canonical reference:
-- **Stat Stage Details**: See [Stat Stages](./../systems/stat-stages.md) for the exact multipliers, mechanics, and generation changes.
+### Bridge Integrity (Parameter Drift Prevention)
+The bridge between the UI and the math core (`battleFormulas.ts`) **MUST** pass all context parameters (stages, weather, terrain, day cycle) explicitly to the pure math functions. Never assume implicit parameter derivation.
 
 ---
 
-## 🏃 Escape & Capture Math
+## 2. 🧬 Pokémon Core Stat Calculations
 
-All equations and rules regarding escaping wild battles and capturing wild Pokémon are detailed in the corresponding generation-specific references:
-- **Escape Chance**: Calculated dynamically based on generation speed checks (Gen 2 vs Gen 4+).
-- **Capture Formulas**: Documented in [Gen I Capturing](../systems/capturing/gen-i-capturing.md) through [Gen IX Capturing](../systems/capturing/gen-ix-capturing.md), including specialized zones like [Gen I Safari Zone](../systems/capturing/gen-i-safari-zone.md) and custom ball multipliers.
+### 1. Maximum Hit Points (HP)
 
----
+$$\text{HP} = \left\lfloor \frac{\left(2 \cdot \text{Base}_{\text{HP}} + \text{IV}_{\text{HP}} + \left\lfloor \frac{\text{EV}_{\text{HP}}}{4} \right\rfloor\right) \cdot \text{Level}}{100} \right\rfloor + \text{Level} + 10$$
 
-## 🌪️ Weather Effects Table
+- **Shedinja Exception**: Shedinja's maximum HP is hardcoded to $1$.
 
-| Weather | Damage Boost | Damage Reduction | Defensive Boost | Residual Damage | Special Effects |
-| :-- | :-- | :-- | :-- | :-- | :-- |
-| **Sun** | Fire (1.5x) | Water (0.5x) | - | - | Solar Beam (No charge), Synthesis (66%), Thunder/Hurricane (50% Acc) |
-| **Rain** | Water (1.5x) | Fire (0.5x) | - | - | Thunder/Hurricane (100% Acc), Synthesis (25%) |
-| **Sandstorm** | - | - | Rock (1.5x SpD) | 1/16 HP (Non-Rock/Ground/Steel) | Solar Beam (50% Pow), Synthesis (25%) |
-| **Snow** | - | - | Ice (1.5x Def) | **NONE** | Blizzard (100% Acc), Synthesis (25%), Solar Beam (50% Pow) |
-| **Hail** | - | - | - | 1/16 HP (Non-Ice) | Blizzard (100% Acc), Synthesis (25%), Solar Beam (50% Pow) |
-| **Fog** | - | - | - | - | **Accuracy: 60% (All moves)**, Solar Beam (50% Pow), Synthesis (25%) |
-| **Wind** | - | - | - | - | Activates wind-based abilities (Wind Power, Wind Rider). |
-| **S. Winds** | - | - | - | - | **Delta Stream**: Removes weaknesses of Flying-type Pokémon. |
-| **Mist/Bruma** | - | - | - | - | **Accuracy: 80% (All moves)**. Visual variant of Fog. |
-| **T. Eléctrica** | Electric/Dragon (1.5x) | - | - | - | **Thunder/Hurricane: 100% Acc**. Dry Storm (No fire penalty). |
+### 2. Combat Stats ($\text{Atk}, \text{Def}, \text{SpA}, \text{SpD}, \text{Spe}$)
 
-### Extreme Weather Variants (Environment Only)
+$$\text{Stat} = \left\lfloor \left( \left\lfloor \frac{\left(2 \cdot \text{Base} + \text{IV} + \left\lfloor \frac{\text{EV}}{4} \right\rfloor\right) \cdot \text{Level}}{100} \right\rfloor + 5 \right) \cdot \text{Nature} \right\rfloor$$
 
-These variants apply the same core mechanics but with extreme multipliers for the opposing type:
+- **Nature Multiplier**:
+  - Beneficial ($+10\%$): $1.1$
+  - Hindering ($-10\%$): $0.9$
+  - Neutral: $1.0$
 
-- **Heatwave** (Sun variant): Water damage is reduced to **0x** (evaporated).
-- **Storm** (Rain variant): Fire damage is reduced to **0x** (extinguished).
+#### Complete 25-Nature Statistical & Flavor Matrix
+| Nature | Boosted Stat ($+10\%$) | Lowered Stat ($-10\%$) | Preferred Flavor | Disliked Flavor |
+| :--- | :--- | :--- | :--- | :--- |
+| **Hardy** | — (Neutral) | — (Neutral) | — | — |
+| **Lonely** | Attack | Defense | Spicy | Sour |
+| **Brave** | Attack | Speed | Spicy | Sweet |
+| **Adamant** | Attack | Sp. Attack | Spicy | Dry |
+| **Naughty** | Attack | Sp. Defense | Spicy | Bitter |
+| **Bold** | Defense | Attack | Sour | Spicy |
+| **Docile** | — (Neutral) | — (Neutral) | — | — |
+| **Relaxed** | Defense | Speed | Sour | Sweet |
+| **Impish** | Defense | Sp. Attack | Sour | Dry |
+| **Lax** | Defense | Sp. Defense | Sour | Bitter |
+| **Timid** | Speed | Attack | Sweet | Spicy |
+| **Hasty** | Speed | Defense | Sweet | Sour |
+| **Jolly** | Speed | Sp. Attack | Sweet | Dry |
+| **Naive** | Speed | Sp. Defense | Sweet | Bitter |
+| **Serious** | — (Neutral) | — (Neutral) | — | — |
+| **Modest** | Sp. Attack | Attack | Dry | Spicy |
+| **Mild** | Sp. Attack | Defense | Dry | Sour |
+| **Quiet** | Sp. Attack | Speed | Dry | Sweet |
+| **Bashful** | — (Neutral) | — (Neutral) | — | — |
+| **Rash** | Sp. Attack | Sp. Defense | Dry | Bitter |
+| **Calm** | Sp. Defense | Attack | Bitter | Spicy |
+| **Gentle** | Sp. Defense | Defense | Bitter | Sour |
+| **Sassy** | Sp. Defense | Speed | Bitter | Sweet |
+| **Careful** | Sp. Defense | Sp. Attack | Bitter | Dry |
+| **Quirky** | — (Neutral) | — (Neutral) | — | — |
 
----
-
-## 🆙 Experience and Level Curve
-
-### 1. Required Experience
-
-The system uses a dynamic level-based scaling:
-
-```text
-Next_Level_XP = Math.floor(Current_XP * 1.2)
-```
-
-### 2. EXP Gain
-
-```text
-Exp = floor(BaseExp * Distribution * ClassMult * GlobalMult)
-```
-
-- **BaseExp**: `Enemy_Level * 4`.
-- **Distribution**: 1.0 (Active), 0.5 (EXP Share).
-
-### 3. Level Limit & Experience Cap
-
-- **`MAX_POKEMON_LEVEL`**: Single Source of Truth centralized in `src/data/system/constants.ts` (currently `100`).
-- **Cap Behavior**: When a Pokémon reaches `MAX_POKEMON_LEVEL`, its current experience (`exp`) is set to `0`, and its experience needed (`expNeeded`) becomes `Infinity`. No additional experience can be gained.
-
-## 🧬 Statistics (Stats)
-
-Standard calculations for HP and combat stats (including EVs, IVs, and Nature effects) have been moved to the canonical reference:
-- **Stat Formulas**: See [Stat Mechanics](../systems/stats.md) for full details, examples, and generation history.
-
----
-
-## 🧬 Total Power (TOT / TOTAL) Formula
-
-Total Power measures the cumulative combat strength and development of a Pokémon instance across its species base stats, individual genetic IVs, and trained Effort Values (EVs):
+### 3. Total Power (TOT / TOTAL)
 
 $$\text{Total Power} = \text{BST} + \sum_{i \in \text{stats}} \text{IV}_i + \sum_{i \in \text{stats}} \left\lfloor \frac{\text{EV}_i}{4} \right\rfloor$$
 
-- **Base Stats Total (BST)**: $\text{HP} + \text{Atk} + \text{Def} + \text{SpA} + \text{SpD} + \text{Spe}$.
-- **Individual Values (IVs)**: Sum of all 6 genetic IVs ($0$ to $186$).
-- **Effort Values Bonus (EVs)**: $\lfloor \text{EV}_i / 4 \rfloor$ per stat ($4\text{ EVs} = 1\text{ stat/IV point}$, adding up to $+127$ points for 510 total EVs).
-- **Single Source of Truth**: Centralized in `calculateTotalPower(pokemon)` in `src/logic/pokemon/pokemonUtils.ts`.
+- **BST**: Sum of all 6 base stats ($\text{HP} + \text{Atk} + \text{Def} + \text{SpA} + \text{SpD} + \text{Spe}$).
+- **Genetic IVs**: Sum of all 6 genetic IVs ($0$ to $186$).
+- **Trained EVs**: Sum of $\lfloor \text{EV}_i / 4 \rfloor$ (adds up to $+127$ points for 510 total EVs).
 
 ---
 
-## 🧬 Generación de Valores Individuales (IVs)
+## 3. ⚔️ Stat Stages & Combat Modifiers
 
-### 1. Fórmula Estándar
+In battle, stats can be boosted or lowered across stages from $-6$ to $+6$.
 
+### 1. Regular Stat Stages ($\text{Atk}, \text{Def}, \text{SpA}, \text{SpD}, \text{Spe}$)
+
+$$\text{Multiplier}(S) = \frac{\max(2, 2 + S)}{\max(2, 2 - S)}$$
+
+| Stage ($S$) | Multiplier Fraction | Decimal | Percentage Change |
+| :---: | :---: | :---: | :---: |
+| **$-6$** | $\frac{2}{8}$ | $0.25\times$ | $-75\%$ |
+| **$-5$** | $\frac{2}{7}$ | $\approx 0.285\times$ | $-71.4\%$ |
+| **$-4$** | $\frac{2}{6}$ | $\approx 0.333\times$ | $-66.7\%$ |
+| **$-3$** | $\frac{2}{5}$ | $0.40\times$ | $-60\%$ |
+| **$-2$** | $\frac{2}{4}$ | $0.50\times$ | $-50\%$ |
+| **$-1$** | $\frac{2}{3}$ | $\approx 0.666\times$ | $-33.3\%$ |
+| **$0$** | $\frac{2}{2}$ | $1.00\times$ | Baseline |
+| **$+1$** | $\frac{3}{2}$ | $1.50\times$ | $+50\%$ |
+| **$+2$** | $\frac{4}{2}$ | $2.00\times$ | $+100\%$ |
+| **$+3$** | $\frac{5}{2}$ | $2.50\times$ | $+150\%$ |
+| **$+4$** | $\frac{6}{2}$ | $3.00\times$ | $+200\%$ |
+| **$+5$** | $\frac{7}{2}$ | $3.50\times$ | $+250\%$ |
+| **$+6$** | $\frac{8}{2}$ | $4.00\times$ | $+300\%$ |
+
+### 2. Accuracy and Evasion Stages
+
+$$\text{AccMultiplier}(S) = \frac{\max(3, 3 + S)}{\max(3, 3 - S)}$$
+
+| Stage ($S$) | Fraction | Decimal |
+| :---: | :---: | :---: |
+| **$-6$** | $\frac{3}{9}$ | $0.333\times$ |
+| **$-5$** | $\frac{3}{8}$ | $0.375\times$ |
+| **$-4$** | $\frac{3}{7}$ | $\approx 0.428\times$ |
+| **$-3$** | $\frac{3}{6}$ | $0.50\times$ |
+| **$-2$** | $\frac{3}{5}$ | $0.60\times$ |
+| **$-1$** | $\frac{3}{4}$ | $0.75\times$ |
+| **$0$** | $\frac{3}{3}$ | $1.00\times$ |
+| **$+1$** | $\frac{4}{3}$ | $\approx 1.333\times$ |
+| **$+2$** | $\frac{5}{3}$ | $\approx 1.666\times$ |
+| **$+3$** | $\frac{6}{3}$ | $2.00\times$ |
+| **$+4$** | $\frac{7}{3}$ | $\approx 2.333\times$ |
+| **$+5$** | $\frac{8}{3}$ | $\approx 2.666\times$ |
+| **$+6$** | $\frac{9}{3}$ | $3.00\times$ |
+
+### 3. Critical Hit Probability (Gen VII+)
+
+| Critical Stage ($C$) | Probability Fraction | Percentage |
+| :---: | :---: | :---: |
+| **$0$** | $\frac{1}{24}$ | $\approx 4.17\%$ |
+| **$+1$** | $\frac{1}{8}$ | $12.5\%$ |
+| **$+2$** | $\frac{1}{2}$ | $50\%$ |
+| **$+3$ or higher** | $\frac{1}{1}$ | $100\%$ (Guaranteed) |
+
+- **Damage Multiplier**: $1.5\times$ standard ($2.0\times$ if the attacker has *Sniper*).
+- **Stage Bypass**: Critical hits ignore negative Attack/SpA stages on the attacker and positive Defense/SpD stages on the defender.
+
+---
+
+## 4. 🧬 Individual Values (IVs) Generation
+
+### 1. Standard Wild Roll
 ```text
 IV = floor(Random(0, 31))
 ```
 
-### 2. Algoritmo de Re-roll (Guardianes/Alfas)
-
-Para entidades de alto nivel, el motor utiliza una tirada competitiva:
-
+### 2. Competitive Re-roll (Guardians / Alphas)
 ```text
 IV_Final = max(ivFloor, max(Random(0, 31), Random(0, 31)))
 ```
+*Where `ivFloor` is `12` for Guardians/Alphas.*
 
-_Donde `ivFloor` es 12 para Guardianes._
-
-### 3. Aplicación de Suelos de Clase/Guerra
-
+### 3. Faction War / Contextual Floors
 ```text
-IV_Efectivo = Math.max(Bono_Contextual, IV_Generado)
+IV_Effective = max(ContextualBonus, IV_Generated)
+```
+- **ContextualBonus**: `15` for Map Dominance, `Streak` for Bug Catchers, or `N` for specialized quest rewards.
+
+---
+
+## 5. 🌪️ Weather Combat Multipliers
+
+| Weather | Damage Boost | Damage Reduction | Defensive Boost | Residual Damage | Special Effects |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Sun** | Fire ($1.5\times$) | Water ($0.5\times$) | — | — | Solar Beam (Instant), Synthesis (66%), Thunder/Hurricane (50% Acc) |
+| **Rain** | Water ($1.5\times$) | Fire ($0.5\times$) | — | — | Thunder/Hurricane (100% Acc), Synthesis (25%) |
+| **Sandstorm** | — | — | Rock ($1.5\times$ SpD) | $\frac{1}{16}$ HP (Non-Rock/Ground/Steel) | Solar Beam (50% Pow), Synthesis (25%) |
+| **Snow** | — | — | Ice ($1.5\times$ Def) | **NONE** | Blizzard (100% Acc), Synthesis (25%), Solar Beam (50% Pow) |
+| **Hail** | — | — | — | $\frac{1}{16}$ HP (Non-Ice) | Blizzard (100% Acc), Synthesis (25%), Solar Beam (50% Pow) |
+| **Fog** | — | — | — | — | **Accuracy: 60% (All moves)**, Solar Beam (50% Pow) |
+| **Strong Winds** | — | — | — | — | **Delta Stream**: Removes flying weaknesses. |
+
+---
+
+## 6. 🆙 Experience & Level Progression
+
+### 1. Next Level Experience
+```text
+Next_Level_XP = floor(Current_XP * 1.2)
 ```
 
-- **Bono_Contextual**: `15` (Dominancia), `Racha` (Cazabichos), o `N` (Misiones).
-
-## 📏 Physical Dimensions (Height & Weight)
-
-Pokémon instance height and weight follow a deterministic Gaussian distribution (Irwin-Hall $n=4$) centered on the species canonical base dimensions with $\pm 15\%$ maximum variation.
-
-### 1. Hash and Mulberry32 Seed
-- Seed for Height: `Mulberry32(fnv1a_32(pokemon.uid + 'h'))`
-- Seed for Weight: `Mulberry32(fnv1a_32(pokemon.uid + 'w'))`
-
-### 2. Irwin-Hall ($n=4$) Gaussian Generator
+### 2. EXP Yield per Defeated Foe
 ```text
-gaussian = (prng() + prng() + prng() + prng()) / 4.0   // Uniform sum -> Bell curve in [0, 1], mean ~0.5
-factor   = 1 + (gaussian - 0.5) * 2 * 0.15             // Range [0.85, 1.15]
+Exp_Yield = floor(Enemy_Level * 4 * Distribution * ClassMultiplier * GlobalMultiplier)
+```
+- **Distribution**: `1.0` (Active combatant), `0.5` (EXP Share).
+- **Max Level Cap**: `100` (`MAX_POKEMON_LEVEL` in `src/data/system/constants.ts`).
+
+---
+
+## 7. 📏 Physical Dimensions (Height & Weight)
+
+Pokémon dimensions follow a deterministic Gaussian distribution (Irwin-Hall $n=4$) centered on canonical species values with $\pm 15\%$ maximum variation:
+
+```text
+gaussian  = (prng() + prng() + prng() + prng()) / 4.0   // Mean ~0.5
+factor    = 1 + (gaussian - 0.5) * 2 * 0.15             // Range [0.85, 1.15]
 Dimension = Base_Dimension * factor
 ```
 
-### 3. Classification Tiers (7 Tiers)
-| Tier | ID | Label | Delta Range | UI Color / Glow |
-| :--- | :--- | :--- | :--- | :--- |
-| **Miniatura** | `XXS` | `XXS` | $< -12.5\%$ | Cyan Ice Diamond Glow |
-| **Pequeño** | `XS` | `XS` | $[-12.5\%, -9.0\%)$ | Blue Ice |
-| **Bajo** | `S` | `S` | $[-9.0\%, -6.0\%)$ | Slate Blue |
-| **Normal** | `M` | `M` | $[-6.0\%, +6.0\%]$ | Neutral Gray |
-| **Alto** | `L` | `L` | $(+6.0\%, +9.0\%]$ | Amber Gold |
-| **Grande** | `XL` | `XL` | $(+9.0\%, +12.5\%]$ | Orange Flame |
-| **Titán** | `XXL` | `XXL` | $> +12.5\%$ | Legendary Gold Aura |
+### Dimension Tiers
+| Tier | ID | Delta Range | UI Glow / Aura |
+| :--- | :--- | :--- | :--- |
+| **Miniature** | `XXS` | $< -12.5\%$ | Cyan Ice Diamond Glow |
+| **Small** | `XS` | $[-12.5\%, -9.0\%)$ | Blue Ice |
+| **Short** | `S` | $[-9.0\%, -6.0\%)$ | Slate Blue |
+| **Standard** | `M` | $[-6.0\%, +6.0\%]$ | Neutral Gray |
+| **Tall** | `L` | $(+6.0\%, +9.0\%]$ | Amber Gold |
+| **Large** | `XL` | $(+9.0\%, +12.5\%]$ | Orange Flame |
+| **Titan** | `XXL` | $> +12.5\%$ | Legendary Gold Aura |
 
 ---
 
-## 🪙 Black Market Prices (Rocket)
+## 8. 🪙 Economy & Black Market Math
 
-Valuation formula for selling Pokémon on the illegal market:
-
+### Rocket Black Market Valuation
 ```text
 Price = floor((Level * 50 + (TotalIVs / 186) * 500) * 0.8)
 ```
-
-_Where_: `TotalIVs` is the sum of the 6 stats (max 186).
-
----
-
-## 📈 Global Probability Ratios (`GAME_RATIOS`)
-
-These constants define the base probability for world and combat events. They can be modified by event multipliers or map dominance.
-
-- **Shiny Rate**: 1 in 3000 encounters (Base).
-- **Rival (Blue)**: 0.1% probability on any map.
-- **Legendaries (Active Ticket)**:
-  - **Articuno**: 1% in Seafoam Islands.
-  - **Mewtwo**: 0.1% in Cerulean Cave.
-- **Fishing**: 10% base on water maps.
-- **Wild Items**:
-  - **Common**: 50% probability.
-  - **Rare**: 5% probability.
-- **Gym TMs**:
-  - **Normal**: 3%.
-  - **Hard**: 5%.
+*Where `TotalIVs` is the sum of all 6 genetic IVs (max 186).*
 
 ---
 
-## ❄️ Deterministic System (Weather & PRNG)
+## 9. 📈 Global Game Probability Ratios (`GAME_RATIOS`)
 
-### 1. Mulberry32 PRNG
-
-A seed based on `hashString(mapId) + epochHour` is used to ensure the weather is the same for all players at the same hour and route.
-
-### 2. Avalanche Protocol
-
-To break the initial seed correlation, the engine **MUST** discard the first 3 values generated by the PRNG:
-
-```js
-const prng = mulberry32(seed);
-prng(); // Discard 1
-prng(); // Discard 2
-prng(); // Discard 3
-const finalValue = prng(); // Use this
-```
+- **Shiny Baseline**: $1$ in $3000$ wild encounters.
+- **Rival (Blue) Encounter**: $0.1\%$ on any overworld map.
+- **Legendaries (with active ticket)**:
+  - Articuno: $1.0\%$ (Seafoam Islands).
+  - Mewtwo: $0.1\%$ (Cerulean Cave).
+- **Fishing Trigger**: $10\%$ base on water tiles.
+- **Wild Held Items**: Common $50\%$, Rare $5\%$.
+- **Gym TM Drop Rates**: Normal difficulty $3\%$, Hard difficulty $5\%$.
 
 ---
 
-## 📊 Stat Visualization & Transparency
+## 10. 🎮 Minigame Mathematical Models
 
-To assist in debugging and provide player clarity, all stat-related UI elements MUST follow these transparency rules:
-
-- **Stat Breakdowns**: Admin/Debug tooltips (e.g., `getStatBreakdown`) MUST display the full calculation path: `Base x Clima x Stage x Habilidad x Estado = Final`.
-- **Percentage-based Stages**: Stage indicators (↑/↓) MUST display the exact percentage modifier (e.g., `+50%`, `-33%`, `+100%`) instead of just the stage level (+1, -1). This helps users visualize the real impact of the modifier.
-- **Centralized Logic**: Always use `getEffectiveStat` as the Single Source of Truth for combat calculations to ensure the HUD breakdown matches the actual damage dealt.
-
----
-
-## 🎮 Minigame Formulas
-
-Minigames (like Fishing) scale their difficulty parameters dynamically based on the encounter's spawn rate or rarity. These formulas are encapsulated in `src/logic/minigames/minigameMath.ts`.
-
-To ensure that rare Pokémon (low spawn percentage / rarity) are more challenging, the engine calculates difficulty using the inverted rarity factor:
-
+### 1. Fishing Rhythm Mechanics
+Difficulty factor scales inversely with species spawn rarity:
 ```text
 Difficulty_Factor = 101 - Rarity
 ```
 
-### 1. Fishing Note Count
+- **Total Rhythm Notes**: $\min(22, 5 + \lfloor \text{Difficulty\_Factor} / 7 \rfloor)$ (Range: 5 to 22 notes).
+- **Ring Collapse Duration**: $\text{round}(\max(380, 1100 - (\text{Difficulty\_Factor} \cdot 7.5)) \cdot 1.1)$ (Range: 418ms to 1202ms).
+- **Precision Hit Window**: $\max(100, 190 - (\text{Difficulty\_Factor} / 1.3))$ (Range: 113ms to 189ms).
 
-Calculates the number of rhythm notes players must hit during a fishing minigame:
+### 2. Archaeology & Fossil Excavation
+- **Encounter Rate**: Caves $10\%$, Mountains $5\%$, Others $0\%$.
+- **Excavation Reward Weights**:
+  - Fossils: $45\%$
+  - Evolutionary Stones: $25\%$
+  - Ores & Gems: $30\%$ (Common $20\%$, Rare $10\%$).
 
-```text
-Total_Notes = Math.min(22, 5 + Math.floor(Difficulty_Factor / 7))
-```
+### 3. Game Corner Roulette Payouts (Gen III Specification)
+The roulette features 12 slots (4 species: Wynaut, Azurill, Skitty, Makuhita $\times$ 3 colors: Yellow, Green, Purple). Balls remain in occupied slots for up to 6 spins before a table reset.
 
-- **Rarity**: The Pokemon's spawn percentage (1 to 100).
-- **Bounds**: Always returns an integer between `5` (easiest, rarity 100%) and `22` (hardest, rarity 1%).
+$$\text{Payout Multiplier} = \frac{12}{\text{Empty Winning Slots}}$$
 
-### 2. Fishing Ring Speed
+| Bet Type | Base Winning Slots | Empty Table Multiplier | 1 Empty Slot Left | 2 Empty Slots Left | 3 Empty Slots Left |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Specific Slot** | $1$ | $12\times$ | $12\times$ | — | — |
+| **Species Column** | $3$ | $4\times$ | $12\times$ | $6\times$ | $4\times$ |
+| **Color Row** | $4$ | $3\times$ | $12\times$ | $6\times$ | $4\times$ |
 
-Calculates the base duration (in milliseconds) for the ring to collapse from its outer bound to the perfect target:
-
-```text
-Speed_Base = Math.round(Math.max(380, 1100 - (Difficulty_Factor * 7.5)) * 1.1)
-```
-
-- **Bounds**: Always returns a duration between `418ms` (for rarity 1%, making it collapse extremely fast) and `1202ms` (for rarity 100%).
-
-### 3. Fishing Hit Window
-
-Calculates the precision timing tolerance window (in milliseconds) around the perfect target frame:
-
-```text
-Hit_Window = Math.max(100, 190 - (Difficulty_Factor / 1.3))
-```
-
-- **Bounds**: Always returns a tolerance window between `113ms` (for rarity 1%, narrowest timing) and `189ms` (for rarity 100%, widest timing).
+- **Ball Collision**: If a ball lands on an occupied slot, it bounces to an adjacent slot at random.
+- **Rescue Mechanics**: If stuck between two occupied slots, a rescue Pokémon (Taillow/Shroomish) dislodges the ball into an empty slot.
 
 ---
 
-## ⛏️ Archaeology and Fossil Cloning
+## 11. 🦖 Daycare Genetic DNA Cloning Math
 
-### 1. Archaeology Encounter Rate
+### 1. Cloning Cost Formula
+$$\text{Cost} = 3000 + 1000 \cdot N$$
+*Where $N$ is the number of additional sacrificed fossils ($0 \le N \le 6$). Maximum cost is $\$9,000$.*
 
-Determines the probability of triggering an archaeological excavation when walking on a route based on its geographical tags:
+### 2. Genetic IV Re-rolls
+- **Guaranteed Rolls**: $1 + \lfloor N / 2 \rfloor$ independent rolls per stat, selecting the maximum.
+- **Odd Sacrifice Bonus**: If $N$ is odd ($1, 3, 5$), grants an additional $50\%$ probability for an extra roll.
 
-- **Caves** (`isCave`): **10%** (0.10)
-- **Mountains** (`isMountain && !isCave`): **5%** (0.05)
-- **Others**: **0%** (0.0)
+### 3. Shiny Probability Inheritance
+$$\text{Shiny\_Probability} = \frac{1 + 0.25 \cdot N}{4096}$$
+*Reaches up to a $2.5\times$ multiplier ($N=6$) compared to the baseline $1/4096$ Shiny rate.*
 
-### 2. Archaeology Reward Distribution
-
-Upon winning the excavation minigame, the unburied item follows this distribution:
-
-- **Fossils (45%)**: Proportional weight based on the map's pool.
-- **Evolutionary Stones (25%)**: Equiprobable selection between Fire, Water, Thunder, Leaf, Moon, or Sun Stone.
-- **Ores and Gems (30%)**:
-  - **Common (20%)**: Selection between Pearl, Stardust, Coal, Copper, or Iron Ore.
-  - **Rare/Premium (10%)**: Nugget, Big Pearl, Star Piece, or raw Silver, Gold, Tungsten, Uranium, Ruby, Sapphire, Emerald, Topaz, or Diamond Ore.
-
-### 3. Daycare Cloning Cost
-
-Calculates the total cost in coins to perform a genetic cloning process in the Daycare using sacrifice fossils:
-
-```text
-Cost = 3000 + 1000 * N
-```
-
-_Where `N` is the amount of extra fossils sacrificed (clamped between 0 and 6)._
-
-### 4. Cloning IV Rerolls
-
-Calculates the number of independent IV rolls (selecting the highest value):
-
-- **Base rolls**: `1 + floor(N / 2)`
-- **Odd roll chance**: If `N` is odd (1, 3, 5), grants a **50% chance** of receiving an additional roll (`Math.random() < 0.5`).
-
-### 5. Cloning Shiny Multiplier
-
-Calculates the final Shiny rate inherited by the ancestral fossil egg:
-
-```text
-Shiny_Probability = (1 + 0.25 * N) / 4096
-```
-
-- **Cap**: The multiplier reaches up to **2.5x** (compared to the `1/4096` base rate) when sacrificing `6` additional fossils.

@@ -31,6 +31,7 @@ Use this skill to run and interpret Fallow commands and unified project audit to
 | **Complexity hotspots & refactor targets** | `npm run fallow:health` | Ranked refactoring recommendations |
 | **Quick Fallow summary** | `npm run audit:fallow:summary` | Concise terminal summary without log bloat |
 | **Export full Fallow report** | `npm run audit:fallow:report` | Saves human-readable report to `scratch/fallow_report.txt` |
+| **Selective audit by rule/analyzer** | `npm run audit rule=<name>` | Runs only matching rules (e.g. `rule=dupes`, `rule=security`, `rule=DOX,z-index`) |
 | **Auto-fix safe unused code/exports** | `npm run audit:fix` / `npm run audit:fallow:fix` | Applies native and Fallow automatic cleanups |
 
 ---

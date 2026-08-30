@@ -17,7 +17,6 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 - **Universal Quality & Audit Ecosystem**: All repository audits are organized under `scripts/auditors/` across 6 domain families (`architecture`, `domain_data`, `persistence`, `fsm`, `assets`, `documentation`). The single master audit runner `npm run audit` executes 100% of sub-auditors dynamically with zero omissions, displaying formatted step-by-step progress lines and a consolidated Box-Drawing summary table in the terminal while writing the complete structured JSON report with all findings to `scratch/audits/latest_audit.json` (and `scratch/audits/<family>/<id>.json` for individual suites). AI agents needing line-level details must read `scratch/audits/latest_audit.json` directly from disk.
 - **Strict No-Test Mandate for Documentation**: Running test suites (`npm run test`, `test:node`, Vitest, or E2E Playwright simulations) when only editing `.md` documents, DOX indices, or `.agents/` skill files is STRICTLY FORBIDDEN. Verification for documentation tasks is strictly limited to `npm run audit:dox` and `npm run lint:md` (or fast `npm run lint`).
 - **Mandatory DOX Navigation**: You MUST always use the `dox-navigator` skill (or trigger the `/dox-navigator` command) to analyze the project context, search for files, components, and manuals, and update any index or documentation within the project.
-
 - **Objective-Driven Fuzzer Coverage & Deterministic History**: Fuzzer scenarios MUST prioritize legal actions exercising the mechanic under test. Fuzzer battle histories MUST record rich state metadata on disk (`fuzzer_certified_cases.json`) to enable deterministic 1:1 Playwright combat replays and fail fast on desync. Detailed history schema and simulator rules are governed in [Testing & Simulations](./references/rules/testing_and_simulations.md).
 
 ---
@@ -107,10 +106,10 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 To prevent clutter, confusion, and document degradation, documentation in `references/` is strictly divided into 5 distinct tiers:
 
 1. **`references/rules/` (Developer & Engine Governance ONLY)**: Invariable architectural laws, coding constraints, and low-level engine integration rules (Showdown worker interface, 4-seat generalization, zero-timers, Zero-Any TypeScript, Git safety, Save Shield). 🛑 **NEVER put gameplay feature rules, drop tables, or daycare/egg mechanics here.**
-2. **`references/systems/` (Gameplay Systems & Features SSoT)**: The dedicated Single Source of Truth for specific in-game features (`breeding_manual.md` for Daycare/Eggs/Vigor, `gym_system_manual.md` for Gyms, `item_system_manual.md` for Items/Crafting, `war_system_manual.md` for Faction War, `spawn_grid_manual.md` for Spawns).
-3. **`references/battle/` (Combat Arena & Battle Execution)**: Battle state transitions, Showdown event translation, GSAP combat animations, combat camera, and weather standards.
-4. **`references/core/` (Mathematical Formulas & UI/UX Standards)**: Central mathematical formulas (Damage, Catch rates, Stats, Escape) and global UI/UX design tokens.
-5. **`references/technical/` (Infrastructure & Frontend Tech)**: GPU optimization, SASS styling, asset pipelines, DBRouter proxy architecture, and Supabase infrastructure.
+2. **`references/systems/` (Gameplay Systems & Features SSoT)**: The dedicated Single Source of Truth for specific in-game features (`breeding_manual.md` for Daycare/Eggs/Vigor, `gym_system_manual.md` for Gyms, `item_system_manual.md` for Items/Crafting, `capturing_manual.md` for Capture Math, `evolution_manual.md` for Evolutions, `ev_mechanics_manual.md` for EVs, `war_system_manual.md` for Faction War, `spawn_grid_manual.md` for Spawns).
+3. **`references/battle/` (Combat Arena & Battle Execution)**: Battle state transitions, Showdown event translation, GSAP combat animations, combat camera, status ailments, and weather standards.
+4. **`references/core/` (Mathematical Formulas & UI/UX Standards)**: Central mathematical formulas (Damage, Catch rates, Stats, Escape, Minigames) and global UI/UX design tokens.
+5. **`references/technical/` (Infrastructure & Frontend Tech)**: GPU optimization, SASS styling, asset pipelines, DBRouter proxy architecture, SQL dialect translation, legacy migration, and Supabase infrastructure.
 
 ### 🌳 Document Routing Decision Tree
 
@@ -125,22 +124,25 @@ Before writing or updating any rule, manual, or architectural lesson, consult th
 | **Showdown engine delegation, 4 seats, UID team sync, illegal Pokemon lifecycle** | [game_engine_and_state.md](./references/rules/game_engine_and_state.md) | `battle/battle_mechanics_manual.md` |
 | **Daycare, Breeding, Hatching, Egg capacity limits, Baby rewards, Vigor** | [breeding_manual.md](./references/systems/breeding_manual.md) | `rules/game_engine_and_state.md` |
 | **Battle engine logic, Showdown worker sync, choice loops, recharge states** | [battle_mechanics_manual.md](./references/battle/battle_mechanics_manual.md) | `rules/game_engine_and_state.md` |
-| **Mathematical formulas (Damage, Catch rate, Stat calculation, Escape)** | [game_formulas_manual.md](./references/core/game_formulas_manual.md) | `battle/battle_mechanics_manual.md` |
-| **Combat animations, GSAP timelines, sprite FX, camera shakes** | [animation_standards.md](./references/battle/animation_standards.md) | `technical/sass_styling_manual.md` |
+| **Major & volatile status conditions, triggers, recovery, immunities** | [status_ailments_manual.md](./references/battle/status_ailments_manual.md) | `battle/battle_mechanics_manual.md` |
+| **Mathematical formulas (Damage, Stats, EXP, Minigames, Stage multipliers)** | [game_formulas_manual.md](./references/core/game_formulas_manual.md) | `battle/battle_mechanics_manual.md` |
+| **Combat animations, GSAP timelines, sprite FX, Void Protocol, feetCache** | [animation_standards.md](./references/battle/animation_standards.md) | `technical/sass_styling_manual.md` |
 | **Active battle F5 reload, save serialization, anti-cheat minigames** | [battle_persistence_and_anti_cheat_manual.md](./references/battle/battle_persistence_and_anti_cheat_manual.md) | `rules/database_and_persistence.md` |
 | **Showdown protocol event translation to Spanish logs (`showdownBridge`)** | [bridge_guide.md](./references/battle/bridge_guide.md) | `battle/battle_mechanics_manual.md` |
 | **Database schemas, SQLite WASM, query proxies, Supabase RPCs** | [dbrouter_manual.md](./references/technical/dbrouter_manual.md) | `rules/database_and_persistence.md` |
+| **PostgreSQL to SQLite migration translation, 10-step table recreation** | [db_translation_manual.md](./references/technical/db_translation_manual.md) | `rules/database_and_persistence.md` |
+| **Legacy code modernization protocol to Vue 3 Composition API & GSAP** | [legacy_migration_manual.md](./references/technical/legacy_migration_manual.md) | `core/ui_ux_standards.md` |
 | **Save data schema, Valibot parsing, encryption, account storage** | [save_system_manual.md](./references/technical/save_system_manual.md) | `rules/database_and_persistence.md` |
 | **SASS mixins, CSS variables, GBA font rules, visual styling** | [sass_styling_manual.md](./references/technical/sass_styling_manual.md) | `core/ui_ux_standards.md` |
 | **Step-by-step QA testing protocols, DevTools shortcuts, verification matrix** | [browser_testing_manual.md](./references/qa/browser_testing_manual.md) | `rules/testing_and_simulations.md` |
 | **Manual QA verification of battle animations, forced switches, flee & teleport, catch** | [manual_testing_battle_animations.md](./references/qa/manual_testing_battle_animations.md) | `qa/browser_testing_manual.md` |
 | **Pre-release audit checklists, gate verifications, release protocols** | [audit_checklist.md](./references/qa/audit_checklist.md) | `qa/validation_manual.md` |
-| **Content design, event authoring, quest crafting, and dialog trees** | [content_creation_manual.md](./references/content/content_creation_manual.md) | `core/game_mechanics_manual.md` |
+| **Content design, event authoring, quest crafting, and dialog trees** | [content_creation_manual.md](./references/content/content_creation_manual.md) | `core/ui_ux_standards.md` |
 | **Low power mode, battery savings, mobile rendering throttling** | [low_power_mode_manual.md](./references/technical/low_power_mode_manual.md) | `technical/gpu_optimization_manual.md` |
-| **Specific gameplay systems (Daycare/Breeding, Gyms, Items, War, Trade, Spawn Grid)** | [systems/*_manual.md](./references/systems/) | `core/game_mechanics_manual.md` |
-| **Generation-specific capturing mechanics (Gen I through Gen IX)** | [systems/capturing/gen-*-capturing.md](./references/systems/capturing/) | `core/game_formulas_manual.md` |
-| **Historical & regional mechanics (Roulette, Honey Trees, Pokéwalker, Gen I RNG/Stats)** | [systems/gen-*](./references/systems/) | `core/game_mechanics_manual.md` |
-| **Database dialect translations (PostgreSQL to SQLite, legacy migrations)** | [migration/*_manual.md](./references/migration/) | `rules/database_and_persistence.md` |
+| **Specific gameplay systems (Daycare, Gyms, Items, War, Trade, Spawn Grid, EV, Capture)** | [systems/*_manual.md](./references/systems/) | `core/ui_ux_standards.md` |
+| **Generation-specific capturing mechanics (Gen I through Gen IX)** | [capturing_manual.md](./references/systems/capturing_manual.md) | `core/game_formulas_manual.md` |
+| **High-level game mechanics architecture, GameBus, DND sorting, Void Protocol** | [game_mechanics_manual.md](./references/core/game_mechanics_manual.md) | `rules/game_engine_and_state.md` |
+| **Network loopback, Hairpin NAT, MikroTik multi-WAN load balancing** | [network_infrastructure_manual.md](./references/technical/network_infrastructure_manual.md) | `technical/supabase_infrastructure_manual.md` |
 
 ---
 
@@ -154,7 +156,7 @@ Before writing or updating any rule, manual, or architectural lesson, consult th
 - [Git & Workflow Safety](./references/rules/git_and_workflow_safety.md)
 - [Game Engine & State](./references/rules/game_engine_and_state.md)
 
-#### 2. Technical & Architecture Manuals (`references/technical/`, `qa/`, `content/`, `migration/`)
+#### 2. Technical, Infrastructure & QA Manuals (`references/technical/`, `qa/`, `content/`)
 - [Domain Type First Skill](../domain-type-first/SKILL.md)
 - [Browser Testing Manual](./references/qa/browser_testing_manual.md)
 - [Battle Animations QA Manual](./references/qa/manual_testing_battle_animations.md)
@@ -162,6 +164,8 @@ Before writing or updating any rule, manual, or architectural lesson, consult th
 - [Audit & Pre-Release Checklist](./references/qa/audit_checklist.md)
 - [Save System Manual](./references/technical/save_system_manual.md)
 - [DBRouter Manual](./references/technical/dbrouter_manual.md)
+- [Database Dialect Translation](./references/technical/db_translation_manual.md)
+- [Legacy Migration Manual](./references/technical/legacy_migration_manual.md)
 - [Asset Service Manual](./references/technical/asset_service_manual.md)
 - [Animated Sprites Manual](./references/technical/animated_sprites_manual.md)
 - [GPU Optimization Manual](./references/technical/gpu_optimization_manual.md)
@@ -169,14 +173,11 @@ Before writing or updating any rule, manual, or architectural lesson, consult th
 - [SASS Styling Manual](./references/technical/sass_styling_manual.md)
 - [Dependency Management](./references/technical/dependency_management_manual.md)
 - [Supabase Infrastructure](./references/technical/supabase_infrastructure_manual.md)
-- [MikroTik Routing Manual](./references/technical/mikrotik_routing_manual.md)
+- [Network Infrastructure & Routing](./references/technical/network_infrastructure_manual.md)
 - [Markdown Standards](./references/technical/markdown_standards.md)
 - [Content Creation Manual](./references/content/content_creation_manual.md)
-- [Legacy Migration Hub](./references/migration/legacy_migration_manual.md)
-- [DB Dialect Translation](./references/migration/db_translation_manual.md)
-- [PostgreSQL to SQLite](./references/migration/postgreSQL_to_SQLite.md)
 
-#### 3. Battle & Game Mechanics Manuals (`references/battle/`, `core/`, `systems/`)
+#### 3. Battle, Core & Gameplay Systems Manuals (`references/battle/`, `core/`, `systems/`)
 - [Battle Mechanics Manual](./references/battle/battle_mechanics_manual.md)
 - [Battle Persistence & Anti-Cheat Manual](./references/battle/battle_persistence_and_anti_cheat_manual.md)
 - [Showdown Bridge Guide](./references/battle/bridge_guide.md)
@@ -184,34 +185,23 @@ Before writing or updating any rule, manual, or architectural lesson, consult th
 - [Animation Standards](./references/battle/animation_standards.md)
 - [Combat Camera Manual](./references/battle/combat_camera_manual.md)
 - [Weather Mechanics Standards](./references/battle/weather_mechanics_standards.md)
-- [Battle Flow Overview](./references/battle/battle.md)
-- [Battling Basics](./references/battle/battling-basics.md)
-- [Status Ailments](./references/battle/status-ailments.md)
+- [Status Ailments Manual](./references/battle/status_ailments_manual.md)
 - [Game Formulas Manual (Math SSoT)](./references/core/game_formulas_manual.md)
-- [Game Mechanics Manual](./references/core/game_mechanics_manual.md)
+- [Game Mechanics & Architecture Manual](./references/core/game_mechanics_manual.md)
 - [Time System Manual](./references/core/time_system_manual.md)
 - [UI/UX Standards](./references/core/ui_ux_standards.md)
-- [Stat Stages](./references/systems/stat-stages.md)
-- [Base Stat Mechanics](./references/systems/stats.md)
 - [Friendship & Happiness Mechanics](./references/systems/friendship_mechanics_manual.md)
-- [EVs, Natures & Math](./references/systems/evs-natures-and-math.md)
 - [EV Mechanics Manual](./references/systems/ev_mechanics_manual.md)
 - [Evolution Manual](./references/systems/evolution_manual.md)
-- [Evolution Methods Matrix](./references/systems/evolution-list.md)
 - [Breeding Manual](./references/systems/breeding_manual.md)
 - [Encounter Manual](./references/systems/encounter_manual.md)
+- [Capturing Mechanics Manual](./references/systems/capturing_manual.md)
 - [Gym System Manual](./references/systems/gym_system_manual.md)
 - [Item System Manual](./references/systems/item_system_manual.md)
 - [Spawn Grid Manual](./references/systems/spawn_grid_manual.md)
 - [Trade & Social Manual](./references/systems/trade_social_manual.md)
 - [Faction War Manual](./references/systems/war_system_manual.md)
-- [Gen I RNG Mechanics](./references/systems/gen-i-rng.md)
-- [Gen I Stat Modifications](./references/systems/gen-i-stat-modification.md)
-- [Gen III Game Corner Roulette](./references/systems/gen-iii-roulette.md)
-- [Sinnoh Honey Trees](./references/systems/sinnoh_honey-trees.md)
-- [Pokéwalker System](./references/systems/pokewalker.md)
 - [Mystery Dungeon Equipment](./references/systems/mystery_dungeon_equipment_standards.md)
-- [Capturing Mechanics (Gen I - IX)](./references/systems/capturing/)
 
 ---
 

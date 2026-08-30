@@ -47,7 +47,8 @@ async function runMasterAudit() {
       'changed-since': { type: 'string' },
       'errors-only': { type: 'boolean' },
       top: { type: 'string', short: 't' },
-      rule: { type: 'string', short: 'r' }
+      rule: { type: 'string', short: 'r', multiple: true },
+      rules: { type: 'string', multiple: true }
     },
     allowPositionals: true,
     strict: false
@@ -56,9 +57,27 @@ async function runMasterAudit() {
   const positionalFamily = positionals.find(p => (AUDIT_FAMILIES as readonly string[]).includes(p)); // domain-ok
   const targetFamily = values.family || positionalFamily;
 
-  if (!values.rule && positionals.some(p => p.toLowerCase() === 'dox')) {
-    values.rule = 'DOX';
+  const rawRuleArgs: string[] = []; // no-domain
+  if (values.rule) {
+    if (Array.isArray(values.rule)) {
+      for (const item of values.rule) rawRuleArgs.push(String(item));
+    } else {
+      rawRuleArgs.push(String(values.rule));
+    }
   }
+  if (values.rules) {
+    if (Array.isArray(values.rules)) {
+      for (const item of values.rules) rawRuleArgs.push(String(item));
+    } else {
+      rawRuleArgs.push(String(values.rules));
+    }
+  }
+  for (const pos of positionals) {
+    if (pos.toLowerCase() === 'dox' || pos.includes(',')) { // string-ok
+      rawRuleArgs.push(pos);
+    }
+  }
+  const formattedRules = rawRuleArgs.join(',');
 
   // 1. Prepare clean scratch/audits directory structure
   const scratchAuditsDir = path.resolve(process.cwd(), 'scratch/audits');
@@ -107,7 +126,7 @@ async function runMasterAudit() {
 
     const taskArgs = [...task.args];
     if (values['errors-only'] && !taskArgs.includes('--errors-only')) taskArgs.push('--errors-only');
-    if (values.rule && !taskArgs.includes('--rule')) taskArgs.push('--rule', values.rule as string);
+    if (formattedRules && !taskArgs.includes('--rule')) taskArgs.push('--rule', formattedRules);
     if (values.top && !taskArgs.includes('--top')) taskArgs.push('--top', values.top as string);
     if (values['changed-since'] && !taskArgs.includes('--changed-since')) taskArgs.push('--changed-since', values['changed-since'] as string);
 

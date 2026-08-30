@@ -174,7 +174,7 @@ All animation triggers MUST be accessible via the `window.__VITE_DEBUG__.battle.
 ## 🩺 Status Conditions (Primary & Secondary)
 
 All non-volatile (primary) and volatile (secondary/stackable) status conditions, along with their generation-specific modifiers, chances, and behaviors, are detailed in the standard reference:
-- **Status Ailments & Effects**: See [Status Ailments](./status-ailments.md) for a comprehensive list (Sleep, Paralysis, Burn, Freeze, Poison, Confusion, etc.) and formulas.
+- **Status Ailments & Effects**: See [Status Ailments Manual](./status_ailments_manual.md) for a comprehensive list (Sleep, Paralysis, Burn, Freeze, Poison, Confusion, etc.) and formulas.
 
 ---
 
@@ -1486,8 +1486,39 @@ store.enemyStages.value = {
 
 ---
 
+## ⚙️ Engine Logic (Vue + GameBus)
+
+All visual-logic decoupled communication uses the `gameBus` event pipeline.
+
+### 1. Battle Animation Triggers
+
+Battle animations (faint, withdraw, send_out, status_hit) MUST be triggered via the `gameBus` using standardized event types:
+
+```ts
+// Standard Animation Trigger
+gameBus.emit('animation', { 
+  type: 'faint', 
+  target: 'player', 
+  index: 0 
+});
+```
+
+### 2. Component Safety & Zero-Timer Compliance
+
+Any asynchronous or delayed operation within a visual component MUST be driven by GSAP (`gsapSleep` or `gsap.delayedCall`) and verify component mount state before acting:
+
+```ts
+gsap.delayedCall(delayInSeconds, () => {
+  if (instance?.isUnmounted) return;
+  // Logic...
+});
+```
+
+---
+
 ## 🔬 QA Manual Verification & Step-by-Step Testing
 
 For a complete step-by-step reproduction guide and verification matrix covering all forced switch variants, flee & teleport mechanics, attack VFX, switch workflows, faint sequences, and catch flows, consult:
 - **[Manual Testing Guide (Battle Animations)](../qa/manual_testing_battle_animations.md)**
+
 

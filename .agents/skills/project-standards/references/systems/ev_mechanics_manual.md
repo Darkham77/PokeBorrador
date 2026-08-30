@@ -4,8 +4,7 @@
 > **Sources of Truth**:
 > - [`src/logic/pokemon/evMath.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/pokemon/evMath.ts) (Pure mathematical formulas & limits)
 > - [`src/data/pokemon/evYields.ts`](file:///home/franco/Trabajos/PokeBorrador/src/data/pokemon/evYields.ts) (Canonical species yield catalog)
-> - [Stat Mechanics](./stats.md) (Formulas, IVs, Level & Nature scaling)
-> - [EVs & Natures: Mathematical Approach](./evs-natures-and-math.md) (Theory of addition vs multiplication)
+> - [Game Formulas Manual (Math SSoT)](../core/game_formulas_manual.md) (Formulas, IVs, Level & Nature scaling, stat modifications)
 > - Pokémon Showdown source at `external/pokemon-showdown-code/`.
 
 ---
@@ -156,4 +155,19 @@ Effort Values directly contribute to the **Total Power (`TOT`)** metric displaye
 - **Stat Ratio**: Every 4 EVs in a single stat grant 1 effective stat point ($\lfloor \text{EV} / 4 \rfloor$), mathematically identical to 1 genetic IV point at Lv 100.
 - **Maximum EV Bonus**: A fully trained Pokémon ($510$ EVs, e.g. $252 / 252 / 4$) gains $\lfloor 252/4 \rfloor + \lfloor 252/4 \rfloor + \lfloor 4/4 \rfloor = 63 + 63 + 1 = +127$ points of Total Power.
 - **SSoT Implementation**: Calculated via `calculateEvBonusIvs(pokemon.evs)` from `src/logic/pokemon/evMath.ts` inside `calculateTotalPower(pokemon)` in `src/logic/pokemon/pokemonUtils.ts`.
+
+---
+
+## 8. 🧮 Mathematical Interplay: Additive EVs vs Multiplicative Natures
+
+Understanding the mathematical synergy between EVs and Natures is essential for optimizing competitive spreads:
+
+1. **Additive EV Contribution**:
+   - Every 4 EVs add $+1$ flat stat point at Level 100 ($\lfloor \text{EV}/4 \rfloor$), regardless of the Pokémon's base stat.
+   - Investing 252 EVs in a low base stat (e.g. Base 40) increases that stat proportionally more ($+50\%+$ relative boost) than investing in a high base stat (e.g. Base 150, where $+63$ is only a $+18\%$ relative boost).
+
+2. **Multiplicative Nature Contribution**:
+   - Natures apply a $\times 1.1$ ($+10\%$) or $\times 0.9$ ($-10\%$) multiplier to the **entire parenthesized stat sum** $(\text{Base} \cdot 2 + \text{IV} + \lfloor \text{EV}/4 \rfloor + 5)$.
+   - Because Natures apply multiplicatively *after* adding EVs, a positive nature ($+10\%$) extracts greater absolute value when paired with maximum EV investment (252 EVs yield $+6.3$ extra stat points from the nature alone).
+
 

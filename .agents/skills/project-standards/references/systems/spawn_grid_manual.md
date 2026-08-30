@@ -1,116 +1,86 @@
-# DESIGN: Dynamic Spawn Grid
+# Map Card & Spawn Grid UI Standards
 
-## 1. Overview
+> **Scope & Authority**: This manual defines the CSS Grid architecture, `ResizeObserver` responsive columns, visual layering, and Fog of War UI rendering for `MapCard.vue` and route spawn grids.
+> **Sources of Truth**:
+> - Spawn Math & Encounter Rates: [`encounter_manual.md`](./encounter_manual.md)
+> - UI/UX Architecture: [`../core/ui_ux_standards.md`](../core/ui_ux_standards.md)
+> - Time Cycles & Weather: [`../core/time_system_manual.md`](../core/time_system_manual.md)
 
-The Spawn Grid is a responsive system designed to display Pokémon on route cards. It prevents layout overflow across different resolutions by dynamically scaling grid density and sprite sizes.
+---
 
-## 2. Technical Specification
+## 1. 📐 Responsive Grid Architecture (Vue)
 
-### 2.1 Grid Logic (Vue)
+The spawn grid dynamically computes column count and cell dimensions to prevent layout overflow across viewports:
 
-The grid dimensions are calculated based on the number of Pokémon ($N$) and a preferred column count (3-5) derived from the container's width (via `ResizeObserver`).
-
-- **Responsive Columns**:
+- **Column Thresholds**:
   - **Large Viewports**: 5 columns
   - **Medium Viewports**: 4 columns
-  - **Mobile/Default**: 3 columns
-- **Column Decision**: The number of columns is dynamically calculated via `ResizeObserver` to maintain a consistent cell aspect ratio.
-- **Minimum Rows**: Always force at least 2 rows to maintain sprite scale consistency.
-- **Filling Order**: Bottom-right to top-left.
+  - **Mobile / Compact**: 3 columns
+- **ResizeObserver**: Grid dimensions are recalculated via `ResizeObserver` to maintain a consistent cell aspect ratio.
+- **Minimum Rows**: Forces at least 2 rows when spawns exist to maintain visual density.
+- **Filling Order**: Fills from bottom-right to top-left.
 
 ```javascript
 export function calculateSpawnGrid(spawnsCount, preferredCols = 3) {
   let cols = Math.max(3, preferredCols);
   
-  // Expand cols if N is very high
+  // Expand cols if N is high
   const idealCols = Math.ceil(Math.sqrt(spawnsCount));
   if (idealCols > cols) cols = idealCols;
 
   let rows = Math.ceil(spawnsCount / cols);
-  if (rows < 2 && spawnsCount > 0) rows = 2; // Forced minimum
+  if (rows < 2 && spawnsCount > 0) rows = 2;
 
   return { rows, cols, totalSlots: rows * cols };
 }
 ```
 
-### 2.2 CSS Grid Architecture
-
+### 1.2 CSS Grid Architecture & Visual Standards
 - **Container**: Uses `display: grid` with `grid-template-columns: repeat(var(--grid-size), 1fr)`.
 - **Scaling**: Sprites use a `--sprite-scale` variable (default `1.0`).
 - **Overflow**: `.spawn-slot` must have `overflow: visible` to allow sprites to bleed into neighboring cells when scale > 1.
-
-### 2.3 Visual Standards
-
 - **Empty Slots**: Transparent by default.
 - **Debug Mode**: Shows `Hot Pink (#ff00ff)` outlines around all cells.
 
-## 3. Decision Log
+---
 
-- **Approach**: CSS Grid (Approach 1 from Brainstorming).
-- **Rationale**: Highest structural rigidity and ease of debug visualization.
-- **Scale Strategy**: `transform: scale()` or `calc()` width to allow organic overlap without breaking the grid flow.
+## 2. 🎨 CSS Grid & Layering Hierarchy
 
-## 🔍 Discovery & Fog of War
+### 2.1 Stacking Context Isolation
+The `.map-card` component **MUST** use `isolation: isolate;`. This ensures negative `z-index` layers (such as weather overlays and background filters) stay strictly contained inside the card.
 
-Refer to the [game_mechanics_manual.md](../core/game_mechanics_manual.md) for the authoritative definitions of the Discovery System (`isSeen`, `isCaught`) and visual differences between Map and Pokédex.
-
-## 5. Map Card Rendering Layers
-
-To maintain visual clarity while applying atmospheric effects and hover states, MapCards use a strict layering system within an isolated stacking context.
-
-### 5.1 Stacking Context Isolation
-
-The `.map-card` component MUST use `isolation: isolate;`. This ensures that negative `z-index` values on pseudo-elements or overlays stay contained within the card and do not bleed behind the main application background.
-
-### 5.2 Standard Layer Hierarchy
-
-Layers are ordered from back to front using the following `z-index` standard:
+### 2.2 Standard Layer Hierarchy
 
 | Layer | Selector | Z-Index | Purpose |
 | :--- | :--- | :--- | :--- |
-| **0: Background** | `&::before` | `-3` | The route image with atmosphere filters. |
-| **1: Weather** | `.weather-overlay` | `-2 !important` | Particles/Emojis for rain, snow, etc. |
+| **0: Background** | `&::before` | `-3` | Route background image with atmospheric filters. |
+| **1: Weather Overlay** | `.weather-overlay` | `-2 !important` | Weather particles / ambient overlay. |
 | **2: Atmosphere** | `&::after` | `-1` | Dark vignette and hover contrast layers. |
-| **3: Content** | `& > *` | `var(--z-base)` (0) | Interactive sprites, headers, and pills. |
+| **3: Content** | `& > *` | `var(--z-base)` (0) | Interactive Pokémon sprites, headers, and pills. |
 
-### 5.3 Atmosphere & Hover Dynamics
-
-- **Default State**: Background (`::before`) uses `Brightness(0.8)` to ensure pills and sprites stand out.
+### 2.3 Atmosphere & Hover Dynamics
+- **Default State**: Background (`::before`) uses `brightness(0.8)` so foreground sprites and pills stand out.
 - **Hover State**:
-  - Background scales up and brightens (`Brightness(1.0)`).
-  - Atmosphere (`::after`) opacity increases with a dark gradient to maintain text legibility against the brighter background.
-  - Interactive content MUST NOT have its opacity reduced; it remains at `1.0` to ensure interactivity.
+  - Background scales up slightly and brightens (`brightness(1.0)`).
+  - Atmosphere (`::after`) dark gradient opacity increases to maintain text contrast.
+  - Interactive content opacity remains at `1.0` (never dimmed).
 
-## 6. Tooltip & Discovery Policy
+---
 
-To maintain the "Fog of War" and a clean UI, tooltips on route cards follow these standards:
+## 3. 🔍 Discovery & Fog of War Policy
 
-- **Time Emojis**: Use emojis (🌅, 🌞, 🌇, 🌙) in spawn tooltips to save space and maintain the retro aesthetic.
+- **Time Emojis**: Use standardized emojis (🌅, 🌞, 🌇, 🌙) in spawn tooltips to save horizontal space while preserving retro aesthetics.
 - **Discovery State**:
-  - **Known (Seen/Caught)**: Display exact cycles using emojis: `Usual times: 🌅 🌞`.
-  - **Unknown**: Use the generic label `Not common in this route` for any Pokémon with time restrictions to avoid spoilers.
-- **24h Consistency**: Pokémon also available via **Fishing** are treated as 24h spawns; they do not display time restrictions.
+  - **Known (`isSeen` or `isCaught`)**: Display exact active schedules using emojis: `Usual times: 🌅 🌞`.
+  - **Unknown (`!isSeen && !isCaught`)**: Display generic label `Not common in this route` to prevent spoilers.
+- **Fishing Species**: Pokémon available via fishing are treated as 24h spawns and do not display time restrictions.
 
-## 7. Synchronization & Robustness
+---
 
-### 7.1 Grid-to-Card State Sync
+## 4. 🔄 Synchronization & Robustness
 
-The environment state (weather, cycle) must be calculated once at the parent level (`MapGrid`) and propagated to children via the `forced-weather` prop. This prevents visual artifacts where the UI icon (calculated in Card) contradicts the actual spawn pool (calculated in Grid).
+### 4.1 Grid-to-Card State Sync
+The route environment state (weather, time cycle) must be evaluated at the parent grid level (`MapGrid`) and passed down to children via props (`forced-weather`). This prevents UI badge mismatches with the active encounter pool.
 
-### 7.2 Deterministic Weather (Null Handling)
-
-When calculating weather, a `null` or `undefined` global state MUST trigger the deterministic `getRouteWeather` function. Skipping this check (e.g. `if (weather !== 'clear')`) when the value is `null` causes the system to omit climate-injected visitors, breaking the atmospheric experience.
-
-### 7.3 Fallback for Undefined Spawn Lists
-
-When computing the route spawn grid (`spawnGrid` in `MapCard.vue`), if the map configuration does not specify any cycle-based wild spawn lists (`props.map.wild` is undefined), the system must default to active wild status (`isWildActive = true`) for all candidate species. This preserves rendering logic for custom maps or mock test instances where cyclic schedules are omitted.
-
-## 8. Weather & Terrain Resolution Rules
-
-### 8.1 Dual-Type Modifier Evaluation
-
-When evaluating weather spawn modifiers (boosts, debuffs, or blocks in `getWeatherMultiplier`), calculations must evaluate both the primary type (`type`) and the secondary type (`type2`). Dual-type species (such as Pidgey, which is Normal/Flying) must be subject to blocks affecting either of their types (e.g. storm blocking Flying types) to prevent invalid encounters from appearing on the map or report list.
-
-### 8.2 Comprehensive Terrain Tags Display
-
-When presenting map terrain tags (under "Entorno" or similar details panel), avoid nesting ternaries in Vue templates which limit display to the first matching tag. Implement a computed list (e.g. `terrainTags`) to list all active environment flags (such as both Crystal Cave and Cave, or Volcano and Plains) simultaneously.
+### 4.2 Fallback for Custom/Mock Maps
+If a map definition does not specify cycle-based wild spawn lists (`props.map.wild` is undefined), default to active wild status (`isWildActive = true`) for all candidate species to prevent empty rendering in test or debug environments.

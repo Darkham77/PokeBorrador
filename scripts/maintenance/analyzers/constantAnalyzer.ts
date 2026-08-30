@@ -7,7 +7,14 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { Violation } from '../audit_rules.ts';
+import type { Violation, RuleDescriptor } from '../audit_rules.ts';
+
+export const CONSTANT_ANALYZER_DESCRIPTOR: RuleDescriptor = {
+  id: 'duplicate-constants',
+  name: 'Duplicate Constants Across Modules',
+  category: 'Constantes duplicadas entre módulos',
+  aliases: ['duplicate-constants', 'constants', 'constantes', 'constantes-duplicadas']
+};
 
 const IGNORED_CONSTANT_NAMES = new Set([ // runtime-set
   'ID', 'NAME', 'TYPE', 'KEY', 'INDEX', 'COUNT', 'DEFAULT', 'SIZE', 'MAX', 'MIN',

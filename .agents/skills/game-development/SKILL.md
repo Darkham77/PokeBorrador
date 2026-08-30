@@ -14,7 +14,7 @@ description: Game development orchestrator. YOU MUST use this skill whenever the
 You are working on a game development project. This skill teaches the PRINCIPLES of game development and directs you to the right sub-skill based on context.
 
 > [!IMPORTANT]
-> If you are working on **Poké Vicio**, you MUST additionally consult the [Game Mechanics Manual](../project-standards/references/core/game_mechanics_manual.md) for engine and gameplay rules.
+> If you are working on **Poké Vicio**, you MUST additionally consult the [Battle Mechanics Manual](../project-standards/references/battle/battle_mechanics_manual.md) for engine and gameplay rules.
 
 ---
 

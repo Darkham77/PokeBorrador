@@ -374,7 +374,7 @@ Standardized via the `@mixin btn-vicio-primary` and `.btn-vicio-primary` class:
 - **Constraint**: Primary action buttons (yellow) MUST follow this pattern to maintain visual parity.
 - **Uniform Button Standardization**: Important action buttons (such as faction selection or faction war actions) must always leverage standard `btn-vicio` mixins (e.g. via SASS `@include btn-vicio(...)` or classes like `.btn-vicio-primary`) instead of introducing custom, one-off styling declarations or custom classes like `.retro-btn`.
 - **Active State Unification**: Selected/Active buttons (`.active`) MUST preserve their 3D shadow depth. Use a 2px white solid border and a selection glow (`box-shadow`), but keep the dark bottom shadow to avoid a "flat" or "broken" look.
-- **Atmospheric Clarity**: To ensure focus on playable areas, certain atmospheric effects are hidden based on game state. see [game_mechanics_manual.md](../core/game_mechanics_manual.md) for visibility rules.
+- **Atmospheric Clarity**: To ensure focus on playable areas, certain atmospheric effects are hidden based on game state. See [Weather Mechanics Standards](../battle/weather_mechanics_standards.md) for visibility rules.
 - **Cursor Consistency Mandate**: All interactive elements (badges, items, pills) that provide information via tooltips MUST use `cursor: pointer`. Avoid `cursor: help` (the question mark) to maintain a premium, responsive feel across the entire UI.
 - **Action Grouping (Box/Inventory)**: High-level management actions (e.g., Mercado Negro, Liberar) MUST be grouped in the primary navigation/header bar (slots like `#extra` in `BoxTabs`) to maximize the area dedicated to content grids.
 - **Global Event Listeners**: Window/Global event listeners (e.g., `online`, `click` retry) used outside component lifecycles (like in Pinia stores) MUST be marked with `// [PureVue-Ignore]` to satisfy audit standards while maintaining necessary logic.
@@ -715,3 +715,27 @@ When displaying multiple status badges or condition tags side by side (e.g., sta
 
 - **Dynamic Width & Alignment**: Status badges (`.m-status-tag`) containing text/number overlays (e.g., stage value modifiers `▲1`, `▼2`) must use `min-width` (e.g., `16px` on desktop, `12px` on mobile) and `width: auto` instead of fixed widths. This prevents stage numbers from overflowing and overlapping adjacent badges.
 - **Compact Spacing**: Use zero padding (`padding: 0`) and small flex gap settings (e.g., `gap: 3px` on desktop, `gap: 2px` on mobile) on the parent container (`.status-container`) to keep status rows compact, tight, and aligned, expanding dynamically only when numeric modifiers are active.
+
+### 32. Interaction & Selection Parity (Swap & DND Reordering)
+
+- **Visual Feedback**: During team reordering via Drag-and-Drop (DND), display large pixelated numbers (1-6) over the target slots to clearly indicate final position indices.
+- **Tooltip Interference Shield**: Deactivate (`disabled`) `PVTooltip` instances during dragging interactions to prevent tooltips from blocking drop target hitboxes.
+- **Silent Persistence**: Trigger an automatic silent save (`save(false)`) after each successful party reordering operation.
+- **Slot Replacement Callback**: For manual replacements, the slot selector component must receive a callback that handles the atomic exchange of entity UIDs.
+
+### 33. Badge and Tag Hierarchy
+
+- **Semantic Independence**: Do not nest Gender and Level badges within unified layout wrappers. Use dedicated flex containers so each badge maintains its independent borders, mixins, and styling.
+- **Type Pills**: Long type identifiers (e.g., "FIGHTING", "ELECTRIC") must specify `width: auto` and `min-width` to prevent typography clipping inside the pill container.
+
+### 34. Fog of War & Night Silhouettes
+
+- **Night Silhouettes**: In dark or night environments, undiscovered/unseen Pokémon sprites must apply the `pokemon-silhouette` mixin with a 50% white contrast outline for optimal readability.
+- **Time Cycle Emojis**: Use standardized emojis (🌅, 🌞, 🌇, 🌙) in spawn tooltips to conserve layout space while reinforcing the retro theme.
+- **Spoiler Shield**: Suppress specific active time details in tooltips for Pokémon that have not yet been registered as seen or caught in the Pokédex (`!isSeen && !isCaught`).
+
+### 35. Minigame & Modal Coordination
+
+- **Parity of Duplicated Component Contexts**: When gameplay mechanics are split across multiple component scopes (e.g., battle-specific `ArchaeologyMinigame.vue` and general-purpose `ArchaeologyModal.vue`), all logic rules, multipliers, formulas, and reward tables MUST be kept 100% identical across all instances.
+- **Modal Callback & Lifecycle Synchronization**: When implementing cleanup actions (such as `onCloseCallback` or custom close hooks) inside modals, encapsulate execution within a local handler (e.g., `handleCloseModal`) that dispatches both the local Vue event emit (`@close`) and external callbacks, ensuring predictable parent-child lifecycle coordination.
+

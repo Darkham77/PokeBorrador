@@ -12,7 +12,14 @@ import { Z_LAYERS } from '../../src/logic/constants/visuals.ts';
 export const AUDIT_SEVERITIES = ['error', 'warning'] as const;
 export type AuditSeverity = (typeof AUDIT_SEVERITIES)[number];
 
-export interface AuditRule {
+export interface RuleDescriptor {
+  readonly id: string;
+  readonly name: string;
+  readonly category?: string;
+  readonly aliases?: readonly string[];
+}
+
+export interface AuditRule extends Partial<RuleDescriptor> {
   regex: RegExp;
   message: string | ((match: string) => string);
   fix?: (match: string) => string;
@@ -25,6 +32,63 @@ export interface AuditRule {
   exemptConfigFiles?: RegExp;
 }
 
+export function matchesRule(descriptor: RuleDescriptor | AuditRule, selectedRules: ReadonlySet<string>): boolean {
+  if (selectedRules.size === 0) return true;
+  const tokens = [
+    ...(descriptor.id ? [descriptor.id.toLowerCase()] : []), // string-ok
+    ...(descriptor.name ? [descriptor.name.toLowerCase()] : []), // string-ok
+    ...(descriptor.category ? [descriptor.category.toLowerCase()] : []), // string-ok
+    ...(descriptor.aliases ? descriptor.aliases.map(a => a.toLowerCase()) : []) // string-ok
+  ];
+  for (const selected of selectedRules) {
+    if (tokens.some(t => t === selected || t.includes(selected) || selected.includes(t))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export const Z_INDEX_CONSISTENCY_DESCRIPTOR: RuleDescriptor = {
+  id: 'z-index-parity',
+  name: 'Z-Index Parity (visuals.ts <-> _variables.scss)',
+  category: 'Z-Index fuera de estándar',
+  aliases: ['z-index', 'zindex', 'visuals', 'parity', 'z-index-parity']
+};
+
+export const FALLOW_SUITE_DESCRIPTORS: Record<'dupes' | 'security' | 'dead-code' | 'health', RuleDescriptor> = {
+  dupes: {
+    id: 'fallow:dupes',
+    name: 'Fallow Code Duplication & Clones',
+    category: 'Fallow: Código duplicado',
+    aliases: ['dupes', 'duplicados', 'triplicados', 'clones', 'fallow:dupes', 'fallow-dupes', 'fallow']
+  },
+  security: {
+    id: 'fallow:security',
+    name: 'Fallow Security CWE Vulnerabilities',
+    category: 'Fallow: Vulnerabilidad de seguridad',
+    aliases: ['security', 'seguridad', 'cwe', 'vulnerabilidad', 'vulnerabilidades', 'fallow:security', 'fallow-security', 'fallow']
+  },
+  'dead-code': {
+    id: 'fallow:dead-code',
+    name: 'Fallow Dead Code, Circular Dependencies & Unused',
+    category: 'Fallow: Archivos huérfanos / Dead Code',
+    aliases: ['dead-code', 'deadcode', 'codigo-muerto', 'circular', 'huérfano', 'unused', 'fallow:dead-code', 'fallow-dead-code', 'fallow']
+  },
+  health: {
+    id: 'fallow:health',
+    name: 'Fallow Code Health & Complexity',
+    category: 'Fallow: Complejidad',
+    aliases: ['health', 'salud', 'complexity', 'complejidad', 'fallow:health', 'fallow-health', 'fallow']
+  }
+};
+
+export const SASS_MIGRATOR_DESCRIPTOR: RuleDescriptor = {
+  id: 'sass-migrator',
+  name: 'SASS Module Migrator',
+  category: 'SASS Migrator',
+  aliases: ['sass', 'sass-migrator', 'import', '@import', 'scss']
+};
+
 export interface Violation {
   file: string;
   line: number;
@@ -32,6 +96,7 @@ export interface Violation {
   context: string;
   severity: AuditSeverity;
   fixable: boolean;
+  ruleId?: string;
 }
 
 // Invert Z_LAYERS for lookup
@@ -54,6 +119,10 @@ export function normalizeFilePath(filePath: string): string {
 }
 
 export const viewport: AuditRule = { // string-ok
+  id: 'viewport',
+  name: 'Viewport Units',
+  category: 'Viewport (dvh/dvw)',
+  aliases: ['viewport', 'dvh', 'dvw', 'vh', 'vw'],
   regex: /\b\d+(?:\.\d+)?(vw|vh)\b/gi,
   message: (match: string) => `Unidad legacy detectada: '${match}'. Usa 'd${match.slice(-2)}' para soporte mobile dinámico.`,
   fix: (match: string) => `d${match.toLowerCase().slice(-2)}` // string-ok
@@ -62,6 +131,10 @@ export const viewport: AuditRule = { // string-ok
 const CONTEXT_WINDOW_SPAN_CHARS = 500;
 
 export const gpuGaps: AuditRule = {
+  id: 'gpuGaps',
+  name: 'GPU Gaps Promotion',
+  category: 'Falta will-change (GPU)',
+  aliases: ['gpu', 'gpu-gaps', 'will-change', 'filter'],
   regex: /(backdrop-filter|filter):/gi,
   message: "Filtro detectado sin 'will-change'. Considera añadir promoción de capa.",
   severity: 'error',
@@ -109,6 +182,10 @@ export const gpuGaps: AuditRule = {
 };
 
 export const legacyDates: AuditRule = {
+  id: 'legacyDates',
+  name: 'Temporal Migration',
+  category: 'Uso de Date (Temporal)',
+  aliases: ['temporal', 'date', 'dates', 'legacy-dates'],
   regex: /new Date\(|Date\.now\(\)/g,
   message: "Uso de 'Date' detectado. Usa 'Temporal'.",
   severity: 'error', // string-ok
@@ -352,6 +429,10 @@ export const functionCallsInTemplates: AuditRule = {
 };
 
 export const fileLength: AuditRule = {
+  id: 'fileLength',
+  name: 'File Length 500/1000',
+  category: 'Largo de archivo (>300/500 líneas)',
+  aliases: ['sloc', 'length', 'filelength', '500', '1000', 'modularity', 'file-length'],
   regex: /(?!.*)/,
   message: () => `Archivo demasiado largo.`,
   maxLines: 500,
@@ -360,10 +441,16 @@ export const fileLength: AuditRule = {
 };
 
 export const zIndexAudit: AuditRule = {
+  id: 'zIndexAudit',
+  name: 'Z-Index Audit',
+  category: 'Z-Index fuera de estándar',
+  aliases: ['z-index', 'zindex', 'z_index'],
   // Matches both CSS `z-index: N` and JS inline-style `zIndex: N`
   regex: /(?:z-index|zIndex)\s*:\s*(-?\d+)\b/gi,
   message: (match: string) => {
-    const val = parseInt(match.match(/-?\d+/)![0]!);
+    const numMatch = match.match(/-?\d+/);
+    if (!numMatch || !numMatch[0]) return `Z-Index hardcodeado detectado: '${match}'. Usa 'var(--z-layer)'.`;
+    const val = parseInt(numMatch[0]);
      // string-ok
     const entry = Z_VALUE_MAP[val];
     if (entry) {
@@ -456,6 +543,10 @@ export const forbiddenFallbacks: AuditRule = {
 };
 
 export const doxIndexIntegrity: AuditRule = {
+  id: 'doxIndexIntegrity',
+  name: 'DOX Tag & Section Integrity',
+  category: 'DOX / AGENTS.md',
+  aliases: ['dox', 'agents', 'agents.md', 'documentation', 'dox-integrity', 'doxindexintegrity'],
   regex: /^# Purpose/gm,
   message: 'Inconsistencia en jerarquía de documentación DOX Index (AGENTS.md)',
   severity: 'error',
@@ -763,4 +854,20 @@ export const sassTraps: AuditRule = {
 export const auditRulesConfig = {
   viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, zIndexConstantDeclaration, manualAnimations, manualTimersFrontend, zeroTimerBattleLogic, noPlaywrightWaitForTimeout, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, magicNumbers, badConstantNames, noAliasConstants, noLiteralSuffixInConstantName, noLiteralBooleanType, noInlineAnonymousObjectType, noFloatingPromises, noLeakedGlobalState, missingInteractiveId, sassTraps
 };
+
+// Ensure every rule in auditRulesConfig has its descriptor fields populated dynamically
+for (const [key, rule] of Object.entries(auditRulesConfig)) {
+  const r = rule as AuditRule;
+  if (!r.id) {
+    (r as { id: string }).id = key;
+  }
+  if (!r.name) {
+    (r as { name: string }).name = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); // string-ok
+  }
+  if (!r.aliases) {
+    const keyParts = key.split(/(?=[A-Z])/).map(s => s.toLowerCase()); // string-ok
+    (r as { aliases: readonly string[] }).aliases = [key.toLowerCase(), ...keyParts]; // string-ok
+  }
+}
+
 

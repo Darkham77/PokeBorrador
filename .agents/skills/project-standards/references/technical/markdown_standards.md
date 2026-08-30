@@ -86,3 +86,18 @@ Manuals and project documentation must reflect logical concepts and structures r
 - **Referential Integrity**: Documentation and manuals MUST avoid hardcoded game constants (e.g., pixel sizes, coordinate values).
 - **Source of Truth**: Always point to the centralized logic file (e.g., `spatialCoordinator.ts`) or `visuals.ts` as the owner of the numbers.
 - **Relativity**: Explain technical specs using symbolic names (e.g., `ENTITY_SIZE_P1/P2`) and logical relationships (e.g., `SAFE_ZONE_BOTTOM - ENTITY_SIZE_P1`) rather than absolute values.
+
+---
+
+## 5. Zero Mechanical Truncation & Forensic Commit Audit Mandate
+
+When modernizing, reorganizing, or cleaning documentation (such as converting raw web scrapes or legacy reference articles into canonical project manuals):
+
+1. **Zero Mechanical Truncation**:
+   - It is **STRICTLY FORBIDDEN** to discard, omit, or aggressively summarize mechanical formulas, specific branching tables (e.g., all 25 natures and flavor preferences, complete evolution branch conditions, gym leader rosters, minigame payout formulas, or status synergy matrices).
+   - The cleanup process must **exclusively strip web-scraping junk** (BBCode formatting, forum comments, guestbook links, and HTML ads), while retaining **100% of the game rules, mathematical formulas, branching paths, and data matrices** within the canonical SSoT manual.
+
+2. **Forensic Commit Comparison Protocol**:
+   - Whenever refactoring or consolidating reference documents, agents **MUST** execute a forensic line-by-line comparison against previous commits (`git show HEAD:<path>`) across all affected topics.
+   - A documentation refactor cannot be declared complete until verifying that zero game mechanics, thresholds, or domain parameters were inadvertently lost or truncated.
+

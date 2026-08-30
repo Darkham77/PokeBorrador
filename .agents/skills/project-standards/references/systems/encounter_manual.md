@@ -139,3 +139,14 @@ All modifications to wild encounters, fishing weights, held item chances, and sp
 - **Fishing Multipliers**: Ventosas & Viscosidad increase fishing encounter weight (1.5x - 2.0x).
 - **Level Range Filtering**: Intimidación & Vista Lince avoid encounters $\le 5$ levels below leader; Presión, Espíritu Vital & Entusiasmo force max route level (50% chance).
 
+---
+
+## 11. Weather & Terrain Resolution Rules
+
+### 11.1 Dual-Type Modifier Evaluation
+When evaluating weather spawn modifiers (boosts, debuffs, or blocks in `getWeatherMultiplier`), calculations MUST evaluate both the primary type (`type`) and the secondary type (`type2`). Dual-type species (such as Pidgey, which is Normal/Flying) must be subject to blocks affecting either of their types (e.g. storm blocking Flying types) to prevent invalid encounters from appearing on the map or report list.
+
+### 11.2 Comprehensive Terrain Tags Display
+When presenting map terrain tags (under "Entorno" or similar details panel), avoid nesting ternaries in Vue templates which limit display to the first matching tag. Implement a computed list (e.g. `terrainTags`) to list all active environment flags (such as both Crystal Cave and Cave, or Volcano and Plains) simultaneously.
+
+

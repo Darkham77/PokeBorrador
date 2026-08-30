@@ -310,7 +310,7 @@ Avoid spreading definitions for the same component across multiple files. This i
 - **FORBIDDEN**: Redefining a root class in multiple stylesheets (e.g., having `.map-card` in `_render.scss`, `_items.scss`, and `_grid.scss`).
 - **Responsive SASS**: When possible, consolidate media queries into the main component file instead of creating separate `-responsive.scss` files for the same classes. This avoids redundancy audit triggers.
 - **Audit Requirement**: Before committing UI changes, you MUST run the redundancy audit:
-  `python3 .agents/skills/project-standards/scripts/audit/detect_css_redundancy.py`
+  `npm run audit` or `npm run validate:component-styles`
 - **Component Namespacing**: To avoid global collisions and audit-detected redundancies, all classes for new or refactored components **MUST** use a unique namespace prefix related to the component:
   - ✅ `.box-pokemon-card`, `.upd-species-subtitle`, `.pdc-action-grid`
   - ❌ `.pokemon-card`, `.species-subtitle`, `.action-grid` (Generic names forbidden)

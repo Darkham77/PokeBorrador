@@ -9,7 +9,14 @@ import fs from 'node:fs/promises';
 import { readFileSync, chmodSync } from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
-import type { Violation } from '../audit_rules.ts';
+import type { Violation, RuleDescriptor } from '../audit_rules.ts';
+
+export const CSS_ANALYZER_DESCRIPTOR: RuleDescriptor = {
+  id: 'css-checker',
+  name: 'CSS / SCSS Duplication Checker',
+  category: 'css-checker: SCSS/CSS duplicado',
+  aliases: ['css-checker', 'css', 'scss', 'duplicate-css', 'scss-duplicados']
+};
 
 const EXEC_MAX_BUFFER_BYTES = 10 * 1024 * 1024;
 const EXEC_TIMEOUT_MS = 15000;

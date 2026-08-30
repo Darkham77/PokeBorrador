@@ -152,17 +152,17 @@ El proyecto cuenta con un ecosistema unificado de control de calidad, auditoría
 | `npm run lint` | **Fast Developer Lint**: Ejecuta validación de tipos de dominio, $O(1)$, estilos, `vue-tsc`, ESLint con caché y Markdownlint. |
 | `npm run lint:fix` | **Auto-Fix de Linter**: Aplica correcciones automáticas de formato y sintaxis con ESLint y Markdownlint. |
 | `npm run lint:summary` | **Resumen de Linter**: Muestra un resumen estructurado con el recuento de advertencias y errores en consola. |
-| `npm run audit` | **Auditoría Global Unificada**: Ejecuta el 100% de los sub-auditores dinámicamente, mostrando una tabla Box-Drawing en consola y guardando el reporte estructurado JSON en `scratch/audits/latest_audit.json`. |
+| `npm run audit` | **Auditoría Global Unificada**: Ejecuta el 100% de los sub-auditores dinámicamente, mostrando una tabla Box-Drawing en consola y guardando el reporte estructurado JSON en `scratch/audits/latest_audit.json`. Soporta `rule=<regla>` para ejecución selectiva ultrarrápida (ej. `npm run audit rule=DOX,z-index`, `npm run audit rule=dupes`). |
 | `npm run audit:warnings-diff` | **Pre-Commit Gatekeeper**: Compara cambios contra `origin/main` exigiendo 0 errores en el repositorio y 0 advertencias nuevas en archivos modificados. |
 | `npm run audit:changed` | **Auditoría de Archivos Modificados**: Ejecuta las suites de auditoría exclusivamente sobre los archivos modificados desde `main`. |
 | `npm run audit:fix` | **Auto-corrección de Arquitectura**: Corrige automáticamente timers, sintaxis SASS, capas de render y directivas de importación. |
+| `npm run audit:dox` | **Auditoría Ultrarrápida de DOX**: Ejecuta de forma selectiva (~600ms) la validación de jerarquía de archivos `AGENTS.md`, secciones obligatorias y enlaces relativos sin ejecutar suites innecesarias. |
 | `npm run audit:family:domain` | **Auditoría de Dominio**: Valida tipos de dominio, uniones canónicas y estructuras de datos $O(1)$. |
 | `npm run audit:family:fsm` | **Auditoría de FSM**: Valida diagramas, implementación dinámica y paridad de flujo de combate. |
 | `npm run audit:family:persistence` | **Auditoría de Persistencia**: Valida esquemas SQL, migraciones y serialización de partidas. |
 | `npm run audit:family:assets` | **Auditoría de Assets**: Valida colisiones de sprites, nombres canónicos y atlas de texturas. |
 | `npm run audit:family:architecture` | **Auditoría Arquitectónica**: Valida modularidad de 500 líneas, tokens SCSS y componentes Vue. |
 | `npm run audit:family:docs` | **Auditoría Documental**: Valida enlaces internos, rutas relativas y cumplimiento del framework DOX. |
-| `npm run audit:dox` | **Auditoría de DOX**: Valida la jerarquía de archivos `AGENTS.md`, secciones obligatorias, enlaces relativos y ausencia de rutas absolutas. |
 | `npm run fallow:health` | **Salud de Código (Fallow)**: Mide el puntaje de salud del repositorio, duplicaciones, hotspots de complejidad y vulnerabilidades CWE. |
 | `npm run audit:fallow:triplets` | **Detección de Duplicados**: Escanea bloques de código duplicados o triplicados en todo el proyecto. |
 | `npm run audit:css` | **Auditoría de Estilos**: Analiza bundles de SCSS y bloques `<style>` de componentes para detectar reglas redundantes. |
