@@ -185,4 +185,3 @@ const getSubCompPrizes = (sub: SubCompetitionConfig): { first?: Prize, second?: 
 </template>
 
 <style scoped lang="scss" src="@/styles/components/EventDetailModal.styles.scss"></style>
-

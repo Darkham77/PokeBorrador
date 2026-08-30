@@ -345,7 +345,7 @@ onUnmounted(() => {
     
     <div class="card-body">
       <div class="body-header">
-        <div class="event-id-icon">
+        <div class="event-id-icon icon">
           {{ event.icon }}
         </div>
         <div class="event-main-meta">
@@ -410,7 +410,7 @@ onUnmounted(() => {
           class="global-category-block"
         >
           <div class="global-category-header">
-            <span class="global-category-label pixelated"><span class="title-icon">🧬</span> GENÉTICA SUPREMA (COMPETENCIA GLOBAL)</span>
+            <span class="global-category-label pixelated"><span class="title-icon icon">🧬</span> GENÉTICA SUPREMA (COMPETENCIA GLOBAL)</span>
           </div>
           <EventCategorySlotCard
             v-for="sub in globalSubComps"
@@ -432,7 +432,7 @@ onUnmounted(() => {
           <!-- Panel Header & Attached Tabs -->
           <div class="species-tabs-panel-header">
             <div class="species-panel-intro">
-              <span class="species-panel-title pixelated"><span class="title-icon">⚖️</span> PESO Y ALTURA POR ESPECIE</span>
+              <span class="species-panel-title pixelated"><span class="title-icon icon">⚖️</span> PESO Y ALTURA POR ESPECIE</span>
               <span
                 v-if="participatingSpeciesList.length > 1"
                 class="species-panel-hint pixelated"
@@ -498,7 +498,7 @@ onUnmounted(() => {
           class="retro-btn rules-btn pixelated"
           @click.stop="openEventDetail"
         >
-          <span class="btn-emoji">📋</span> REGLAS Y PREMIOS
+          <span class="btn-emoji icon">📋</span> REGLAS Y PREMIOS
         </button>
         <div 
           v-else 

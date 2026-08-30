@@ -57,7 +57,7 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
     <div class="events-section-header">
       <div class="section-title-wrap">
         <h3 class="events-section-title">
-          <span class="section-title-icon">📅</span>
+          <span class="section-title-icon icon">📅</span>
           <span>PRÓXIMOS EVENTOS (7 DÍAS)</span>
         </h3>
         <span class="events-section-subtitle">Calendario semanal (Hora Argentina ARG)</span>
@@ -103,7 +103,7 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
               </div>
 
               <div class="upcoming-main-info">
-                <div class="upcoming-icon">
+                <div class="upcoming-icon icon">
                   {{ occ.event.icon || '🎁' }}
                 </div>
                 <div class="upcoming-texts">
