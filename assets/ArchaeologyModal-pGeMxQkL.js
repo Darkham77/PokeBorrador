@@ -1,1 +1,0 @@
-import{t as e}from"./ArchaeologyModal-DfFS5CHP.js";export{e as default};
