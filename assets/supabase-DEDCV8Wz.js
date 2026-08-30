@@ -1,1 +1,0 @@
-import{t as e}from"./supabase-BVm29tDf.js";export{e as default,e as supabase};
