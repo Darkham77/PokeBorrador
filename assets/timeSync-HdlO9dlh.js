@@ -1,0 +1,1 @@
+import{t as e}from"./timeSync-DS_09is7.js";export{e as syncServerTime};
