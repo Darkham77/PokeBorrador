@@ -1,7 +1,7 @@
 -- =====================================================
 -- POKÉ VICIO — MIGRACIÓN DE SAVES: EXP_NEEDED Y HUEVOS IDS (PostgreSQL)
 -- Fecha: 2026-08-30
--- Descripción: Corrige valores 'null' o no numéricos en expNeeded (Pokémon nivel 100)
+-- Descripción: Desempaqueta saves en formato string, corrige valores 'null' en expNeeded (Pokémon nivel 100)
 --              y convierte IDs numéricos de huevos en strings para cumplir con saveDataSchema.
 -- =====================================================
 
@@ -24,7 +24,20 @@ DECLARE
 BEGIN
   FOR r IN SELECT user_id, save_data FROM public.game_saves LOOP
     v_save_data := r.save_data;
-    IF v_save_data IS NULL OR jsonb_typeof(v_save_data) != 'object' THEN
+    IF v_save_data IS NULL THEN
+      CONTINUE;
+    END IF;
+
+    -- Desempaquetar saves almacenados como JSON string dentro de JSONB
+    IF jsonb_typeof(v_save_data) = 'string' THEN
+      BEGIN
+        v_save_data := (v_save_data #>> '{}')::jsonb;
+      EXCEPTION WHEN OTHERS THEN
+        CONTINUE;
+      END;
+    END IF;
+
+    IF jsonb_typeof(v_save_data) != 'object' THEN
       CONTINUE;
     END IF;
 
@@ -117,7 +130,7 @@ BEGIN
   END LOOP;
 END $$;
 
-INSERT INTO public.system_config (key, value) VALUES ('db_version', '20260830180000'::jsonb) 
+INSERT INTO public.system_config (key, value) VALUES ('db_version', '20260830190000'::jsonb) 
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 
 UPDATE public.game_saves SET last_save_id = gen_random_uuid();

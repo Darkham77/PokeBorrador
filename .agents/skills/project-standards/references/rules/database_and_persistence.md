@@ -53,3 +53,10 @@
 
 - **In-Flight Combat Resumption Mandate**: Refreshing the browser (F5) during an active combat (wild, trainer, gym) MUST faithfully restore the battle at the exact turn, HP, stat stages, logs, and enemy UID. Reloading to re-roll enemies or escape combat without fleeing is strictly forbidden by the engine.
 - **Strict Non-Persistence of Minigames**: Minigames (`minigame !== null`, e.g. Fishing, Archaeology) MUST NEVER be saved into `activeBattle` in persistent storage. If a player reloads during a minigame, the minigame is dropped immediately and the engine resumes the search loop on `/map` without awarding rewards or leaving stale modal state.
+
+## 9. Monotonic Migration Timestamping & Immutable Ledger Mandate
+
+- **Strict Monotonic Timestamping**: Every new database migration MUST use a unique timestamp prefix (`YYYYMMDDHHmmss`) strictly greater than all previous migration IDs in `database/migrations/` and remote `_migrations`.
+- **Immutable Migration Runner Protection**: Migration runners treat `_migrations` as an immutable append-only ledger. Reusing or re-running an existing timestamp identifier is strictly prohibited because the runner will automatically skip it. Any schema or data fix iteration MUST increment to a fresh monotonic timestamp.
+- **Build-First & Synchronized Generation**: Any database migration update MUST be accompanied by `npm run migrations:generate` and `npm run build` to ensure absolute synchronization between `src/logic/db/migrations_data.ts`, `public/version.json`, and database `system_config` values (`db_version` and `app_version`).
+

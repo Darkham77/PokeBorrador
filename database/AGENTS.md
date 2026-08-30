@@ -23,6 +23,12 @@ Backend / Database Engineers.
 - **Database Migrations Integrity**: Migration SQL scripts updating serialized JSON state must use valid Dex values (e.g., standard lowercase natures like `'hasty'`). Setting or re-introducing pseudo-states like `'active'` in nature columns is strictly prohibited. All seeded Pokémon species must strictly belong to `ENABLED_POKEMON_IDS`, and all seeded items must exist in `SHOP_ITEMS`.
 - **Fetch Type Casting**: When passing raw binary exports (`Uint8Array`) as the request body in fetch calls (such as in local SQLite sync services), cast the payload using `binary as unknown as BodyInit` to satisfy compiler signature checks.
 - **SQLite WASM RPC Emulation Protocol**: Because SQLite WASM lacks PL/pgSQL procedural execution engines, stored procedures executed in PostgreSQL (e.g. `claim_asset_v2`) MUST be emulated deterministically in TypeScript under `src/logic/db/rpcEmulations/`. All database schema and RPC evolutions MUST generate companion `.sql` (PostgreSQL) and `.sqlite.sql` (SQLite) migration files with synchronized timestamps and bumped `db_version`.
+- **Monotonic Migration Timestamping & Immutable Ledger Mandate**:
+  - All database migrations MUST use a strict monotonic timestamp format (`YYYYMMDDHHmmss_<description>.sql` and companion `.sqlite.sql`).
+  - When creating or modifying migrations, agents MUST inspect existing migrations in `database/migrations/` and remote `_migrations` to ensure the timestamp is strictly greater than all previously registered versions.
+  - Reusing an existing or previously executed timestamp is STRICTLY PROHIBITED, as migration runners (`update_supabase_db.ts`) treat `_migrations` as an immutable append-only ledger and will skip execution without running the SQL patch.
+  - The migration timestamp prefix MUST be 100% synchronized with the internal `INSERT INTO system_config (key, value) VALUES ('db_version', '<timestamp>'::jsonb)` statement.
+  - Always run `npm run migrations:generate` and `npm run build` to synchronize in-memory migration definitions and client versioning before applying database updates.
 
 ## Verification
 
