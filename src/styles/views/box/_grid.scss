@@ -99,19 +99,46 @@
       padding-left: 12px; 
     }
 
+    .box-pokemon-name-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 3px;
+      line-height: 1.1;
+      width: 100%;
+    }
+
     .box-pokemon-name {
       @include pixelated;
       font-size: 8px;
       color: var(--white);
-      margin-bottom: 4px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       display: block;
+      max-width: 100%;
 
       &.is-species {
         text-transform: uppercase;
       }
+      &.is-nickname {
+        font-weight: bold;
+      }
+    }
+
+    .box-pokemon-species-sub {
+      @include pixelated;
+      font-size: 6px;
+      color: var(--text-muted, Rgba(255, 255, 255, 0.6));
+      text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+      max-width: 100%;
+      letter-spacing: 0.3px;
+      margin-top: 1px;
     }
 
     .stats-column {

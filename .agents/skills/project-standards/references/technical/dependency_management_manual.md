@@ -17,7 +17,16 @@ To guarantee the operation of critical systems (PWA, Service Workers, Animations
 
 ### Upgrade Policy
 
-Before upgrading any Core Stack library, verify that `vite-plugin-pwa` supports the new Vite major (`npm info vite-plugin-pwa peerDependencies`). A migration is only successful if `npm run build` produces a functional `sw.js` and `npm run audit:full` passes with 0 errors.
+Before upgrading any Core Stack library, verify that `vite-plugin-pwa` supports the new Vite major (`npm info vite-plugin-pwa peerDependencies`). A migration is only successful if `npm run build` produces a functional `sw.js` and `npm run audit` passes with 0 errors.
+
+### 🛡️ Bundler & Native Addon Resilience (Smart App Control & WASI Fallback)
+
+When using modern bundlers with native binary bindings (such as Rolldown / Vite 8 on Windows), unsigned or newly released `.node` binaries may be intercepted by Windows 11 **Smart App Control (SAC)** or **Windows Defender Application Control (WDAC)** (`ERR_DLOPEN_FAILED` / `An Application Control policy has blocked this file`).
+
+To ensure total cross-platform resilience across all developer machines:
+1. **WASI Fallback Dependency**: Maintain `@rolldown/binding-wasm32-wasi` declared in `devDependencies`. If the OS blocks the native MSVC binding, Rolldown automatically and transparently falls back to WASI execution without halting development.
+2. **Automated Setup Unblocking**: `setup-windows.ps1` automatically unblocks downloaded native files (`.node`, `.dll`, `.exe`) in `node_modules` via `Unblock-File` and adds the workspace folder to Windows Defender exclusions.
+3. **Build Tool Validation**: `setup-windows.ps1` and `setup-linux.sh` automatically trigger `npm run validate:tools` post-install to compile and verify all native tooling.
 
 ---
 

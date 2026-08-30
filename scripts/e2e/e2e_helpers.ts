@@ -249,14 +249,23 @@ export async function resolveTargetUidForSlot(page: Page, slotNum: number, _labe
 }
 
 export async function confirmAndStartBattle(page: Page): Promise<void> {
-  const confirmBtn = page.locator('#confirm-modal-btn').first();
-  if (await confirmBtn.isVisible()) {
-    await clickResilient(confirmBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  try {
+    const confirmBtn = page.locator('#confirm-modal-btn').first();
+    if ((await confirmBtn.count()) > 0 && (await confirmBtn.isVisible())) {
+      await clickResilient(confirmBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    }
+  } catch (_e) {
+    // Transition dismounted confirm button cleanly
   }
 
-  const startBtn = page.locator('#start-encounter-btn').first();
-  await startBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-  await clickResilient(startBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  try {
+    const startBtn = page.locator('#start-encounter-btn').first();
+    if ((await startBtn.count()) > 0 && (await startBtn.isVisible())) {
+      await clickResilient(startBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    }
+  } catch (_e) {
+    // Transition dismounted start button cleanly
+  }
 }
 
 

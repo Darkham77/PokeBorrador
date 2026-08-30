@@ -46,37 +46,37 @@ const activeTravelModifiers = computed(() => {
           </h4>
           <div style="display: flex; flex-direction: column; gap: 6px; font-size: 8px; line-height: 1.4;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
-              <span>🚲 Velocidad:</span>
+              <span><span class="emoji-inline">🚲</span> Velocidad:</span>
               <span :style="{ color: hasBicycle ? '#4caf50' : '#888' }">
                 {{ hasBicycle ? 'Rápido' : 'Normal' }}
               </span>
             </div>
             <div style="display: flex; align-items: center; justify-content: space-between;">
-              <span>🚫 Encuentros:</span>
+              <span><span class="emoji-inline">🚫</span> Encuentros:</span>
               <span :style="{ color: activeTravelModifiers.encounterRateMod < 0 ? '#ff9800' : '#fff' }">
                 {{ activeTravelModifiers.encounterRateMod === -100 ? 'Ninguno' : (activeTravelModifiers.encounterRateMod < 0 ? activeTravelModifiers.encounterRateMod + '%' : 'Estándar') }}
               </span>
             </div>
             <div style="display: flex; align-items: center; justify-content: space-between;">
-              <span>🧠 Exp. Combate:</span>
+              <span><span class="emoji-inline">🧠</span> Exp. Combate:</span>
               <span :style="{ color: activeTravelModifiers.expMultiplier > 1 ? '#4caf50' : '#fff' }">
                 x{{ activeTravelModifiers.expMultiplier.toFixed(1) }}
               </span>
             </div>
             <div style="display: flex; align-items: center; justify-content: space-between;">
-              <span>💰 Recompensas:</span>
+              <span><span class="emoji-inline">💰</span> Recompensas:</span>
               <span :style="{ color: activeTravelModifiers.moneyMultiplier > 1 ? '#4caf50' : '#fff' }">
                 x{{ activeTravelModifiers.moneyMultiplier.toFixed(1) }}
               </span>
             </div>
             <div style="display: flex; align-items: center; justify-content: space-between;">
-              <span>✨ Chance Shiny:</span>
+              <span><span class="emoji-inline">✨</span> Chance Shiny:</span>
               <span :style="{ color: activeTravelModifiers.shinyChanceMod > 1 ? '#e91e63' : '#fff' }">
                 x{{ activeTravelModifiers.shinyChanceMod.toFixed(1) }}
               </span>
             </div>
             <div style="display: flex; align-items: center; justify-content: space-between;">
-              <span>🔥 Tipo Foco:</span>
+              <span><span class="emoji-inline">🔥</span> Tipo Foco:</span>
               <span :style="{ color: activeTravelModifiers.typeFocus ? '#00bcd4' : '#fff' }">
                 {{ activeTravelModifiers.typeFocus ? activeTravelModifiers.typeFocus.toUpperCase() : 'Ninguno' }}
               </span>
@@ -134,7 +134,7 @@ const activeTravelModifiers = computed(() => {
           style="padding: 6px 12px; font-size: 8px; min-width: auto; height: auto;"
           @click="emit('confirm')"
         >
-          Confirmar y Partir 🚲
+          Confirmar y Partir <span class="btn-emoji">🚲</span>
         </button>
       </div>
     </div>

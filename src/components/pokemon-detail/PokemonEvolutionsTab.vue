@@ -41,7 +41,7 @@ const getSprite = (id: string) => getAssetUrl(ASSET_TYPES.POKEMON, id)
         </div>
         <div class="evo-arrow">
           <span class="method">{{ evo.requirement }}</span>
-          <span class="arrow">➞</span>
+          <span class="arrow"><span class="icon">➞</span></span>
         </div>
         <div class="evo-to">
           <div class="sprite-wrap">

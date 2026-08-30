@@ -264,6 +264,21 @@ const scheduleText = computed(() => {
       return null
     }
   }
+  const eventWithEndedAt = props.event as (GameEvent & { ended_at?: string })
+  if (eventWithEndedAt.ended_at) {
+    try {
+      const instant = Temporal.Instant.from(eventWithEndedAt.ended_at)
+      const zdt = normalizeZonedDateTime(instant)
+      const day = String(zdt.day).padStart(2, '0')
+      const month = String(zdt.month).padStart(2, '0')
+      const year = String(zdt.year)
+      const hour = String(zdt.hour).padStart(2, '0')
+      const minute = String(zdt.minute).padStart(2, '0')
+      return `🏁 Edición finalizada el ${day}/${month}/${year} a las ${hour}:${minute} hs (ARG)`
+    } catch {
+      return null
+    }
+  }
   return null
 })
 
@@ -435,7 +450,7 @@ const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
           v-if="activeRotation?.title && activeRotation.title !== event.name"
           class="event-rotation-badge"
         >
-          🏆 Temática Semanal: {{ activeRotation.title }}
+          <span class="title-icon">🏆</span> Temática Semanal: {{ activeRotation.title }}
         </div>
         <p class="event-desc">
           {{ event.description || '¡Aprovechá este evento especial mientras esté activo!' }}
@@ -484,7 +499,7 @@ const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
         class="event-section"
       >
         <div class="section-tag">
-          ⏰ HORARIO
+          <span class="title-icon">⏰</span> HORARIO
         </div>
         <div
           class="info-box schedule-box"
@@ -526,6 +541,22 @@ const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
         :sub-competitions="subCompetitions"
         :prizes="prizes"
       />
+
+      <!-- Información Adicional si no hay bonos ni sub-competencias dinámicas -->
+      <div
+        v-if="!activeBonuses.length && !subCompetitions.length && !prizes"
+        class="event-section"
+      >
+        <div class="section-tag">
+          <span class="title-icon">ℹ️</span> DETALLES DEL EVENTO
+        </div>
+        <div class="info-box empty-details-box">
+          <span class="metric-main"><span class="icon">{{ event.type === 'competition' ? '🏆' : '✨' }}</span> {{ event.type === 'competition' ? 'Concurso y Competición' : 'Evento Especial de Mundo' }}</span>
+          <p class="tiebreaker-note">
+            {{ event.description || 'Consulta los resultados y podio directamente en la lista de eventos.' }}
+          </p>
+        </div>
+      </div>
 
       <!-- Botón Entendido -->
       <button 

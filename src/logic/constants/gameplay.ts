@@ -4,11 +4,31 @@
  * Centralized constant definitions for levels, ELO, stats, minigames, and damage variance.
  */
 
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+
 /** Minimum legal level for Pokémon in the engine. */
 export const MINIMUM_POKEMON_LEVEL = 1;
 
 /** Maximum legal level for Pokémon in the engine. */
 export const MAXIMUM_POKEMON_LEVEL = 100;
+
+/** Probability chance of a normal NPC trainer rewarding a baby egg upon victory (2%). */
+export const NPC_NORMAL_BABY_EGG_DROP_CHANCE = 0.02;
+
+/** Probability chance of a Rival rewarding a baby egg upon victory (5%). */
+export const RIVAL_BABY_EGG_DROP_CHANCE = 0.05;
+
+/** Pool of valid baby Pokémon species rewarded from NPC egg drops. */
+export const NPC_BABY_POKEMON_POOL: readonly PokemonSpeciesId[] = [
+  'pichu',
+  'cleffa',
+  'igglybuff',
+  'togepi',
+  'tyrogue',
+  'smoochum',
+  'elekid',
+  'magby'
+] as const;
 
 /** Standard 2 decimal places rounding precision. */
 export const DECIMAL_PLACES_PRECISION_TWO = 2;
@@ -289,6 +309,12 @@ export const EGG_WAREHOUSE_MAX_CAPACITY = 30;
 
 /** Max eggs a trainer can carry simultaneously in inventory (6). */
 export const MAX_CARRIED_EGGS = 6;
+
+/** Max NPC eggs a trainer can carry simultaneously (1 extra reserved slot). */
+export const MAX_NPC_CARRIED_EGGS = 1;
+
+/** Max total eggs (regular daycare + NPC) a trainer can carry simultaneously in incubator (7). */
+export const MAX_TOTAL_CARRIED_EGGS = MAX_CARRIED_EGGS + MAX_NPC_CARRIED_EGGS;
 
 /** Base success chance per fossil consumed during fossil cloning (5%). */
 export const FOSSIL_CLONE_BASE_SUCCESS_CHANCE = 0.05;

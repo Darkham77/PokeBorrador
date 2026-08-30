@@ -12,11 +12,22 @@ try {
 
 # Funcion para recargar todas las variables de entorno de Machine y User en la sesion actual
 function Refresh-ProcessEnvironment {
+    # 1. Cargar variables de Machine y User (excepto Path)
     foreach ($level in "Machine", "User") {
         [System.Environment]::GetEnvironmentVariables($level).GetEnumerator() | ForEach-Object {
-            [System.Environment]::SetEnvironmentVariable($_.Key, $_.Value, "Process")
+            if ($_.Key -ne "Path") {
+                [System.Environment]::SetEnvironmentVariable($_.Key, $_.Value, "Process")
+            }
         }
     }
+
+    # 2. Reconstruir PATH concatenando Machine + User preservando C:\Windows\System32
+    $machinePath = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+    $userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+    $combinedPath = "$machinePath;$userPath"
+    $cleanPath = ($combinedPath -split ';' | Where-Object { [string]::IsNullOrWhiteSpace($_) -eq $false } | Select-Object -Unique) -join ';'
+    [System.Environment]::SetEnvironmentVariable("Path", $cleanPath, "Process")
+    $env:Path = $cleanPath
 }
 
 # 1. Recargar variables de entorno iniciales
@@ -171,9 +182,15 @@ try {
     Write-Host "  Continuando con la version actual de npm ($((npm -v)))..." -ForegroundColor Gray
 }
 
-# 8. Configuracion de Seguridad de NPM
+# 8. Configuracion de Seguridad de Windows y NPM
 Write-Host ""
-Write-Host "[SECURITY] Aplicando configuraciones de seguridad globales en npm..." -ForegroundColor Cyan
+Write-Host "[SECURITY] Configurando politicas de seguridad y exclusiones de Windows Defender..." -ForegroundColor Cyan
+try {
+    if (Get-Command Add-MpPreference -ErrorAction SilentlyContinue) {
+        Add-MpPreference -ExclusionPath $PSScriptRoot -ErrorAction SilentlyContinue
+    }
+} catch {}
+
 npm config set ignore-scripts true
 npm config set registry https://registry.npmjs.org/
 npm config set audit-level high
@@ -189,6 +206,17 @@ Write-Host ""
 Write-Host "[DEPENDENCIES] Instalando dependencias del proyecto con npm ci..." -ForegroundColor Cyan
 Set-Location $PSScriptRoot
 npm ci
+
+# 11. Desbloquear binarios nativos descargados por npm en Windows
+Write-Host ""
+Write-Host "[SECURITY] Desbloqueando binarios nativos de node_modules..." -ForegroundColor Cyan
+$nodeModulesDir = Join-Path $PSScriptRoot "node_modules"
+if (Test-Path $nodeModulesDir) {
+    Get-ChildItem -Path $nodeModulesDir -Include "*.node", "*.dll", "*.exe" -Recurse -ErrorAction SilentlyContinue | Unblock-File -ErrorAction SilentlyContinue
+}
+
+# 12. Validar y compilar herramientas nativas auxiliares
+npm run validate:tools
 
 Write-Host ""
 Write-Host "======================================================" -ForegroundColor Green

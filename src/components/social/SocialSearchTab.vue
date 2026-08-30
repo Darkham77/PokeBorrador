@@ -189,7 +189,7 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
               class="btn-vicio-secondary btn-vicio-sm" 
               @click.stop="socialStore.sendFriendRequest(player.id)"
             >
-              ➕ ENVIAR
+              <span class="btn-emoji">➕</span> ENVIAR
             </button>
             
             <button 
@@ -198,21 +198,21 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
               class="btn-vicio-success btn-vicio-sm" 
               @click.stop="player.relId && socialStore.respondRequest(player.relId, 'accepted')"
             >
-              ✓ ACEPTAR
+              <span class="btn-emoji">✓</span> ACEPTAR
             </button>
 
             <span
               v-else-if="player.status === 'pending' && player.isRequester"
               class="status-badge pending"
             >
-              ⏳ ENVIADA
+              <span class="emoji-inline">⏳</span> ENVIADA
             </span>
 
             <span
               v-else-if="player.status === 'accepted'"
               class="status-badge friend"
             >
-              ✅ AMIGO
+              <span class="emoji-inline">✅</span> AMIGO
             </span>
           </div>
         </template>

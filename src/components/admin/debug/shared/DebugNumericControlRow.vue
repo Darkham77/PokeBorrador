@@ -143,7 +143,7 @@ const isDefaultActive = () => {
             :class="{ active: isDefaultActive() }"
             @click.stop="restoreDefault"
           >
-            🔄 DEF
+            <span class="btn-emoji">🔄</span> DEF
           </button>
         </PVTooltip>
       </div>

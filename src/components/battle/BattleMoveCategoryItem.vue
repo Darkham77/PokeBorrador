@@ -11,8 +11,8 @@ defineProps<{
   <div class="detail-item">
     <span class="d-label pixelated">CAT:</span>
     <span class="d-val pixelated">
-      <span class="cat-full">{{ moveData?.cat === 'physical' ? '⚔️ Físico' : moveData?.cat === 'special' ? '✨ Especial' : '🔮 Estado' }}</span>
-      <span class="cat-short">{{ moveData?.cat === 'physical' ? '⚔️ FIS' : moveData?.cat === 'special' ? '✨ ESP' : '🔮 EST' }}</span>
+      <span class="cat-full"><span class="cat-icon">{{ moveData?.cat === 'physical' ? '⚔️' : moveData?.cat === 'special' ? '✨' : '🔮' }}</span> {{ moveData?.cat === 'physical' ? 'Físico' : moveData?.cat === 'special' ? 'Especial' : 'Estado' }}</span>
+      <span class="cat-short"><span class="cat-icon">{{ moveData?.cat === 'physical' ? '⚔️' : moveData?.cat === 'special' ? '✨' : '🔮' }}</span> {{ moveData?.cat === 'physical' ? 'FIS' : moveData?.cat === 'special' ? 'ESP' : 'EST' }}</span>
     </span>
   </div>
   <div class="mv-pp-wrap">

@@ -101,7 +101,18 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 
 ---
 
-## 🧭 Navigation Hub & Document Routing Decision Tree
+## 🧭 Navigation Hub, Documentation Taxonomy & Anti-Junk-Drawer Policy
+
+### 📚 5-Tier Documentation Taxonomy
+To prevent clutter, confusion, and document degradation, documentation in `references/` is strictly divided into 5 distinct tiers:
+
+1. **`references/rules/` (Developer & Engine Governance ONLY)**: Invariable architectural laws, coding constraints, and low-level engine integration rules (Showdown worker interface, 4-seat generalization, zero-timers, Zero-Any TypeScript, Git safety, Save Shield). 🛑 **NEVER put gameplay feature rules, drop tables, or daycare/egg mechanics here.**
+2. **`references/systems/` (Gameplay Systems & Features SSoT)**: The dedicated Single Source of Truth for specific in-game features (`breeding_manual.md` for Daycare/Eggs/Vigor, `gym_system_manual.md` for Gyms, `item_system_manual.md` for Items/Crafting, `war_system_manual.md` for Faction War, `spawn_grid_manual.md` for Spawns).
+3. **`references/battle/` (Combat Arena & Battle Execution)**: Battle state transitions, Showdown event translation, GSAP combat animations, combat camera, and weather standards.
+4. **`references/core/` (Mathematical Formulas & UI/UX Standards)**: Central mathematical formulas (Damage, Catch rates, Stats, Escape) and global UI/UX design tokens.
+5. **`references/technical/` (Infrastructure & Frontend Tech)**: GPU optimization, SASS styling, asset pipelines, DBRouter proxy architecture, and Supabase infrastructure.
+
+### 🌳 Document Routing Decision Tree
 
 Before writing or updating any rule, manual, or architectural lesson, consult this decision tree to prevent documentation duplication:
 
@@ -112,6 +123,7 @@ Before writing or updating any rule, manual, or architectural lesson, consult th
 | **DBRouter isolation, Save Shield, SQL migrations, DB permissions** | [database_and_persistence.md](./references/rules/database_and_persistence.md) | `technical/save_system_manual.md` |
 | **Git operations, scratch files, destructive rollbacks, root setup scripts** | [git_and_workflow_safety.md](./references/rules/git_and_workflow_safety.md) | `SKILL.md` |
 | **Showdown engine delegation, 4 seats, UID team sync, illegal Pokemon lifecycle** | [game_engine_and_state.md](./references/rules/game_engine_and_state.md) | `battle/battle_mechanics_manual.md` |
+| **Daycare, Breeding, Hatching, Egg capacity limits, Baby rewards, Vigor** | [breeding_manual.md](./references/systems/breeding_manual.md) | `rules/game_engine_and_state.md` |
 | **Battle engine logic, Showdown worker sync, choice loops, recharge states** | [battle_mechanics_manual.md](./references/battle/battle_mechanics_manual.md) | `rules/game_engine_and_state.md` |
 | **Mathematical formulas (Damage, Catch rate, Stat calculation, Escape)** | [game_formulas_manual.md](./references/core/game_formulas_manual.md) | `battle/battle_mechanics_manual.md` |
 | **Combat animations, GSAP timelines, sprite FX, camera shakes** | [animation_standards.md](./references/battle/animation_standards.md) | `technical/sass_styling_manual.md` |

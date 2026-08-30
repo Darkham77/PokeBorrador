@@ -189,7 +189,7 @@ const isEffectActive = (type: string, category: string) => {
               class="mini-tool-btn reset"
               @click.stop="setStatStage(activeSide, s.id, 0)"
             >
-              ✕
+              <span class="btn-emoji">✕</span>
             </button>
           </div>
         </div>

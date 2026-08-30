@@ -72,7 +72,7 @@ function onBtnDown(e: Event) {
       @focus="onBtnEnter"
       @blur="onBtnLeave"
     >
-      ⚡ Agregar 10 de cada uno
+      <span class="btn-emoji">⚡</span> Agregar 10 de cada uno
     </button>
     <input
       v-model="searchQuery"

@@ -147,7 +147,7 @@ const handleImgError = (e: Event) => {
           v-if="isAvatarUrl"
           class="avatar-placeholder"
           style="display: none;"
-        >👤</span>
+        ><span class="icon">👤</span></span>
       </div>
       <div class="dialogue-box">
         <span class="trainer-name">{{ title }}</span>

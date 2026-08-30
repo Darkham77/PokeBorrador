@@ -316,7 +316,7 @@ watch(extraSacrifices, () => {
             v-if="showFailureTooltip"
             class="failure-tooltip font-pixel"
           >
-            ⚠️ ¡EXTRACCIÓN FALLIDA! Recursos consumidos.
+            <span class="emoji-inline">⚠️</span> ¡EXTRACCIÓN FALLIDA! Recursos consumidos.
           </div>
           <button
             class="btn-clone"

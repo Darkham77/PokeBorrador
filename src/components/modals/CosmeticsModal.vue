@@ -153,7 +153,7 @@ const NICK_STYLE_REQUIRED_CLASS_LEVEL = 25
                 class="lock-tag locked"
                 :class="[style.requiredClass, style.requiredFaction]"
               >
-                🔒 {{ style.requiredRole ? 'ADMIN' : (style.requiredClass ? `${style.requiredClass.toUpperCase()} (NIVEL 25)` : (style.requiredFaction ? `TEAM ${style.requiredFaction.toUpperCase()}` : '')) }}
+                <span class="emoji-inline">🔒</span> {{ style.requiredRole ? 'ADMIN' : (style.requiredClass ? `${style.requiredClass.toUpperCase()} (NIVEL 25)` : (style.requiredFaction ? `TEAM ${style.requiredFaction.toUpperCase()}` : '')) }}
               </span>
               <span
                 v-else-if="style.requiredRole || style.requiredClass || style.requiredFaction"
@@ -161,7 +161,7 @@ const NICK_STYLE_REQUIRED_CLASS_LEVEL = 25
                 class="lock-tag unlocked"
                 :class="[style.requiredClass, style.requiredFaction]"
               >
-                🔓 {{ style.requiredRole ? 'ADMIN' : (style.requiredClass ? `${style.requiredClass.toUpperCase()} (NIVEL 25)` : (style.requiredFaction ? `TEAM ${style.requiredFaction.toUpperCase()}` : '')) }}
+                <span class="emoji-inline">🔓</span> {{ style.requiredRole ? 'ADMIN' : (style.requiredClass ? `${style.requiredClass.toUpperCase()} (NIVEL 25)` : (style.requiredFaction ? `TEAM ${style.requiredFaction.toUpperCase()}` : '')) }}
               </span>
               <span
                 v-if="cosmeticsStore.equippedNickStyle === style.id"

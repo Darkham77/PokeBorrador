@@ -42,7 +42,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
             class="close-mini"
             @click.stop="isEffectsOpen = false"
           >
-            ✕
+            <span class="btn-emoji">✕</span>
           </button>
         </div>
         <div class="effects-scroll-area">
@@ -64,7 +64,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
             class="close-mini"
             @click.stop="isTimeOpen = false"
           >
-            ✕
+            <span class="btn-emoji">✕</span>
           </button>
         </div>
         <div class="time-scroll-area">
@@ -87,7 +87,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
             class="close-mini"
             @click.stop="isSpawnOpen = false"
           >
-            ✕
+            <span class="btn-emoji">✕</span>
           </button>
         </div>
         <div class="spawn-scroll-area">

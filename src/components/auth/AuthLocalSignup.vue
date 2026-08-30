@@ -46,14 +46,14 @@ const {
         :class="{ active: genderValue === 'h' }"
         @click.prevent.stop="emit('update:genderValue', 'h')"
       >
-        ♂️ MASCULINO
+        <span class="btn-emoji">♂️</span> MASCULINO
       </button>
       <button
         class="gender-select-btn female"
         :class="{ active: genderValue === 'm' }"
         @click.prevent.stop="emit('update:genderValue', 'm')"
       >
-        ♀️ FEMENINO
+        <span class="btn-emoji">♀️</span> FEMENINO
       </button>
     </div>
 

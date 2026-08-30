@@ -216,7 +216,7 @@ onMounted(() => {
         <span
           v-else
           class="fallback-icon"
-        >🚫</span>
+        ><span class="icon">🚫</span></span>
 
         <!-- QUANTITY PILL -->
         <div class="quantity-pill">

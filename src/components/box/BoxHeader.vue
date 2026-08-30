@@ -30,7 +30,7 @@ onMounted(() => {
       <!-- Izquierda: Títulos apilados -->
       <div class="header-left">
         <h1 class="header-main-title">
-          ⚡ CENTRO POKÉMON
+          <span class="title-icon">💊</span> CENTRO POKÉMON
         </h1>
         <h2 class="header-sub-title">
           SISTEMA DE ALMACENAMIENTO — RED LAN

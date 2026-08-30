@@ -86,7 +86,7 @@ const tmRewardText = computed(() => {
         </span>
         <div class="reward-extras">
           <template v-if="!isDifficultyDefeated">
-            <span class="reward-pill exp">✨ {{ estimatedRewards.exp }} XP (Bono 1ª vez)</span>
+            <span class="reward-pill exp"><span class="emoji-inline">✨</span> {{ estimatedRewards.exp }} XP (Bono 1ª vez)</span>
             <span class="reward-pill money">₽ {{ estimatedRewards.money }} (Bono 1ª vez)</span>
           </template>
           <template v-else>
@@ -94,7 +94,7 @@ const tmRewardText = computed(() => {
               class="reward-pill exp claimed"
               title="Bono ya reclamado. Solo recompensa estándar de combate."
             >
-              <s>✨ {{ estimatedRewards.exp }} XP</s> (Reclamado)
+              <s><span class="emoji-inline">✨</span> {{ estimatedRewards.exp }} XP</s> (Reclamado)
             </span>
             <span
               class="reward-pill money claimed"

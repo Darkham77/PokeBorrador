@@ -9,7 +9,7 @@ import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
-import { formatTime } from '@/logic/utils/timeUtils';
+import { formatChatTimestamp } from '@/logic/utils/timeUtils';
 
 
 const chatStore = useChatStore();
@@ -165,7 +165,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
                     :class="chatStore.profileCosmetics[msg.user_id || '']?.nick_style || 'normal'"
                     @click.stop="openTrainerProfile(msg.user_id)"
                   >{{ chatStore.profileCosmetics[msg.user_id || '']?.username || msg.username }}</span>
-                  <span class="time">{{ formatTime(msg.created_at) }}</span>
+                  <span class="time">{{ formatChatTimestamp(msg.created_at) }}</span>
                 </div>
                 <p class="text">
                   {{ msg.message }}
@@ -191,7 +191,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
               :disabled="!canWrite || !newMessage.trim()"
               @click.stop="handleSendMessage"
             >
-              ➤
+              <span class="btn-emoji">➤</span>
             </button>
           </div>
           <p

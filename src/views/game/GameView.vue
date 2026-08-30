@@ -82,7 +82,7 @@ const onNavItemMouseLeave = (event: MouseEvent) => {
           @mouseenter="onNavItemMouseEnter"
           @mouseleave="onNavItemMouseLeave"
         >
-          <span>🗺️</span>
+          <span class="icon">🗺️</span>
           <span>Mapa</span>
         </router-link>
         <button
@@ -93,7 +93,7 @@ const onNavItemMouseLeave = (event: MouseEvent) => {
           @mouseenter="onNavItemMouseEnter"
           @mouseleave="onNavItemMouseLeave"
         >
-          <span>⚡</span>
+          <span class="icon">⚡</span>
           <span>Equipo</span>
         </button>
         <router-link
@@ -103,7 +103,7 @@ const onNavItemMouseLeave = (event: MouseEvent) => {
           @mouseenter="onNavItemMouseEnter"
           @mouseleave="onNavItemMouseLeave"
         >
-          <span>📖</span>
+          <span class="icon">📖</span>
           <span>Pokedex</span>
         </router-link>
       </nav>

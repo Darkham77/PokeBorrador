@@ -104,6 +104,9 @@ echo -e "\n📦 Instalando dependencias del proyecto con npm ci..."
 cd "$SCRIPT_DIR"
 npm ci
 
+# 8. Validar y compilar herramientas nativas auxiliares
+npm run validate:tools
+
 echo "======================================================"
 echo " 🎉 ¡ENTORNO Y DEPENDENCIAS PREPARADOS CON ÉXITO!"
 echo "======================================================"

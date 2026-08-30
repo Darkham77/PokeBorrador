@@ -74,6 +74,11 @@ export function splitSQLStatements(sql: string): string[] {
         continue;
       }
     } else if (inString) {
+      if (char === "'" && nextChar === "'") {
+        current += "''";
+        i++;
+        continue;
+      }
       if (char === "'" && sql[i-1] !== '\\') {
         inString = false;
         current += "'";

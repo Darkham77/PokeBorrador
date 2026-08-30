@@ -58,7 +58,7 @@ function shouldShowStatsTable(status: UnifiedStatusItem, showStatsTable: boolean
             v-if="status.isAdminOnly"
             class="admin-only-disclaimer"
           >
-            ⚠️ esto es visible solo para administradores
+            <span class="emoji-inline">⚠️</span> esto es visible solo para administradores
           </div>
           
           <template v-if="shouldShowStatsTable(status, showStatsTable)">

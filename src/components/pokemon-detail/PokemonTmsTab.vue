@@ -94,7 +94,7 @@ const tms = computed(() => {
           />
         </div>
         <div class="tm-check">
-          {{ tm.isCompatible ? '✓' : '✕' }}
+          <span class="icon">{{ tm.isCompatible ? '✓' : '✕' }}</span>
         </div>
       </div>
     </div>

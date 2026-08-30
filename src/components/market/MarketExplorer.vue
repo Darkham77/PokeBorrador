@@ -100,7 +100,7 @@ function getTierColor(tier?: string) {
           :style="item.listing_type === 'item' ? { '--tier-color': getTierColor(getItemById(item.data.name || '')?.tier) } : {}"
         >
           <div class="seller-tag">
-            <span class="s-name">👤 {{ item.seller_name }}</span>
+            <span class="s-name"><span class="icon">👤</span> {{ item.seller_name }}</span>
             <span class="s-time">{{ formatTime(item.created_at) }}</span>
           </div>
 

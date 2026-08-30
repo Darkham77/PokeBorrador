@@ -117,7 +117,7 @@ Para mantener la salud del repositorio, se aplican las siguientes reglas inamovi
 2. **Zero-Warning Policy**: Prohibido el uso de `@ts-ignore` o `any`. Todo debe estar tipado y pasar `npm run lint` sin advertencias.
 3. **Temporal First**: Prohibido el uso de `Date` para lógica de juego. Usar siempre `Temporal` para timestamps y duraciones.
 4. **GPU First**: Priorizar transformaciones CSS3 y `will-change` contextual para asegurar 60 FPS constantes.
-5. **Auditoría Obligatoria**: Antes de cada commit, es mandatorio ejecutar `npm run audit:full`.
+5. **Auditoría Obligatoria**: Antes de cada commit, es mandatorio ejecutar `npm run audit`.
 
 ---
 

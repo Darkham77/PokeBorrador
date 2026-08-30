@@ -213,15 +213,10 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     }
 
     await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE)
-    ctx.isProcessing.value = false
+    if (ctx.isIntroAnimating) ctx.isIntroAnimating.value = false
+    if (ctx.isProcessing) ctx.isProcessing.value = false
     if (ctx.persistBattle) ctx.persistBattle()
     emitBattleFlowCompleted('search')
-
-    if (autoBattle) {
-      await nextTick()
-      await startEncounter(ctx)
-    }
-    
     return
   }
 
@@ -271,17 +266,20 @@ export async function startEncounter(ctx: BattleContext) {
   const { BATTLE_STATES, BATTLE_SUBSTATES } = ctx
   const fsm = ctx.fsm
 
+  if (ctx.isProcessing.value) {
+    return
+  }
+
   const isSearchConfirmation = fsm.currentState.value === BATTLE_STATES.SEARCH_PHASE &&
     fsm.currentSubState.value === BATTLE_SUBSTATES.COMBAT_OR_FLEE
   const isMinigameCompletion = fsm.currentState.value === BATTLE_STATES.INITIALIZING &&
     fsm.currentSubState.value === BATTLE_SUBSTATES.MINIGAME_CHECK
 
   if (!isSearchConfirmation && !isMinigameCompletion) {
+    if (fsm.currentState.value === BATTLE_STATES.FIRST_INTRO || fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
+      return
+    }
     throw new Error(`[Battle] startEncounter requires SEARCH_PHASE/COMBAT_OR_FLEE or INITIALIZING/MINIGAME_CHECK; received ${fsm.currentState.value}/${fsm.currentSubState.value ?? 'none'}.`)
-  }
-
-  if (ctx.isProcessing.value) {
-    return
   }
 
   ctx.isProcessing.value = true

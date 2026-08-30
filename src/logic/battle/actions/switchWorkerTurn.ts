@@ -10,9 +10,11 @@ export async function processNonForcedSwitchWorkerTurn(
   side: BattleSide = 'player'
 ) {
   const { activeBattle, fsm, BATTLE_STATES, BATTLE_SUBSTATES, persistBattle, animations } = ctx
-  console.debug('[switchAction] executeSwitch non-forced branch: importing dependencies...')
-  const { showdownWorker, executeTurnInWorker, syncTeamsFromLastWorkerState } = await import('../showdownWorkerClient.ts')
-  if (!showdownWorker) return
+  const { getShowdownWorker, executeTurnInWorker, syncTeamsFromLastWorkerState } = await import('../showdownWorkerClient.ts')
+  const worker = getShowdownWorker()
+  if (!worker) {
+    throw new Error('[switchAction] Showdown Web Worker is not available to process switch turn.')
+  }
 
   const { parseShowdownLogLine, filterShowdownLogs } = await import('../showdownBridge.ts')
   const { decideEnemyMove } = await import('../ai/battleAI.ts')

@@ -43,7 +43,7 @@ const hasActions = computed(() => {
       class="action-btn evolutionary"
       @click.stop="emit('evolve')"
     >
-      💎 EVOLUCIONAR CON PIEDRA
+      <span class="btn-emoji">💎</span> EVOLUCIONAR CON PIEDRA
     </button>
     
     <!-- Market Purchase Action -->
@@ -59,7 +59,8 @@ const hasActions = computed(() => {
         :disabled="!canBuy"
         @click.stop="emit('buy')"
       >
-        {{ !canBuy ? 'SALDO INSUFICIENTE' : '⚡ COMPRAR POKÉMON' }}
+        <span v-if="!canBuy">SALDO INSUFICIENTE</span>
+        <span v-else><span class="btn-emoji">⚡</span> COMPRAR POKÉMON</span>
       </button>
     </div>
   </footer>

@@ -3,7 +3,10 @@ import { computed, watch } from 'vue'
 import { gsap } from 'gsap'
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 import type { PastEventHistoryItem, PastCompetitionWinner } from '@/types/system/stores'
+import type { Event as GameEvent } from '@/logic/events/eventEngine'
 import { useChatCosmeticsStore } from '@/stores/social/chatCosmetics'
+import { useEventStore } from '@/stores/events'
+import { useModalStore } from '@/stores/modals'
 import PastEventWinnerItem from './PastEventWinnerItem.vue'
 
 interface Props {
@@ -17,9 +20,55 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 const chatCosmetics = useChatCosmeticsStore()
+const eventStore = useEventStore()
+const modalStore = useModalStore()
 
 const HOVER_ANIMATION_DURATION_SEC = 0.2
 const HOVER_TRANSLATE_Y_PX = -2
+
+const matchingEvent = computed<GameEvent | null>(() => {
+  if (props.item.event_id.startsWith('custom_')) return null
+  if (props.item.raw_event && !props.item.raw_event.id.startsWith('custom_')) return props.item.raw_event
+  const found = eventStore.allEvents.find((e) => e.id === props.item.event_id)
+  if (found && !found.id.startsWith('custom_') && found.name && !found.name.startsWith('custom_')) {
+    return found
+  }
+  return null
+})
+
+const displayName = computed<string>(() => {
+  if (props.item.event_id.startsWith('custom_')) {
+    return 'Evento desconocido'
+  }
+  if (props.item.event_name && !props.item.event_name.startsWith('custom_') && props.item.event_name !== props.item.event_id && props.item.event_name !== 'Evento desconocido') {
+    return props.item.event_name
+  }
+  if (matchingEvent.value?.name && !matchingEvent.value.name.startsWith('custom_')) {
+    return matchingEvent.value.name
+  }
+  return 'Evento desconocido'
+})
+
+const canOpenDetail = computed<boolean>(() => {
+  return displayName.value !== 'Evento desconocido' && matchingEvent.value !== null
+})
+
+const openEventDetail = () => {
+  if (!canOpenDetail.value || !matchingEvent.value) return
+  const fullEvent: GameEvent & { ended_at?: string } = {
+    ...matchingEvent.value,
+    name: matchingEvent.value.name || props.item.event_name,
+    description: matchingEvent.value.description || props.item.event_description,
+    icon: matchingEvent.value.icon || props.item.event_icon,
+    schedule: matchingEvent.value.schedule || props.item.event_schedule,
+    start_at: matchingEvent.value.start_at || props.item.start_at,
+    end_at: matchingEvent.value.end_at || props.item.end_at,
+    ended_at: props.item.ended_at
+  }
+  modalStore.open('EventDetail', {
+    event: fullEvent
+  })
+}
 
 watch(
   () => props.item.winners,
@@ -57,6 +106,31 @@ const onBtnHover = (event: MouseEvent, isEntering: boolean) => {
   }
 }
 
+const onInfoBtnHover = (event: MouseEvent, isEntering: boolean) => {
+  const btn = event.currentTarget as HTMLElement
+  if (!btn || btn.hasAttribute('disabled')) return
+  if (isEntering) {
+    gsap.to(btn, {
+      background: 'rgba(255, 255, 255, 0.2)',
+      borderColor: 'rgba(255, 215, 0, 0.5)',
+      scale: 1.1,
+      duration: HOVER_ANIMATION_DURATION_SEC,
+      ease: 'power2.out',
+      overwrite: 'auto'
+    })
+  } else {
+    gsap.to(btn, {
+      background: 'rgba(255, 255, 255, 0.08)',
+      borderColor: 'rgba(255, 255, 255, 0.15)',
+      scale: 1,
+      duration: HOVER_ANIMATION_DURATION_SEC,
+      ease: 'power2.out',
+      overwrite: 'auto',
+      clearProps: 'transform,background,borderColor'
+    })
+  }
+}
+
 const formatDate = (isoString?: string): string => {
   if (!isoString) return ''
   try {
@@ -64,9 +138,10 @@ const formatDate = (isoString?: string): string => {
     const zdt = instant.toZonedDateTimeISO(GAME_TIMEZONE)
     const day = String(zdt.day).padStart(2, '0')
     const month = String(zdt.month).padStart(2, '0')
+    const year = String(zdt.year)
     const hour = String(zdt.hour).padStart(2, '0')
     const minute = String(zdt.minute).padStart(2, '0')
-    return `${day}/${month} · ${hour}:${minute} hs`
+    return `${day}/${month}/${year} · ${hour}:${minute} hs`
   } catch {
     return isoString
   }
@@ -92,22 +167,51 @@ const parseSchedule = (raw?: string | object): WeeklyScheduleData | null => {
 }
 
 const formatEventScheduleWindow = (item: PastEventHistoryItem): string => {
-  let datePrefix = ''
-  if (item.ended_at) {
+  const scheduleSource = item.event_schedule || matchingEvent.value?.schedule
+  const startAtSource = item.start_at || matchingEvent.value?.start_at
+  const endAtSource = item.end_at || matchingEvent.value?.end_at
+  const endedAtSource = item.ended_at || endAtSource
+
+  // 1. Check absolute start_at & end_at
+  if (startAtSource && endAtSource) {
     try {
-      const instant = Temporal.Instant.from(item.ended_at)
-      const zdt = instant.toZonedDateTimeISO(GAME_TIMEZONE)
-      const day = String(zdt.day).padStart(2, '0')
-      const month = String(zdt.month).padStart(2, '0')
-      datePrefix = `${day}/${month}`
+      const sInstant = Temporal.Instant.from(startAtSource).toZonedDateTimeISO(GAME_TIMEZONE)
+      const eInstant = Temporal.Instant.from(endAtSource).toZonedDateTimeISO(GAME_TIMEZONE)
+      const sDay = String(sInstant.day).padStart(2, '0')
+      const sMonth = String(sInstant.month).padStart(2, '0')
+      const sYear = String(sInstant.year)
+      const sH = `${String(sInstant.hour).padStart(2, '0')}:${String(sInstant.minute).padStart(2, '0')}`
+
+      const eDay = String(eInstant.day).padStart(2, '0')
+      const eMonth = String(eInstant.month).padStart(2, '0')
+      const eYear = String(eInstant.year)
+      const eH = `${String(eInstant.hour).padStart(2, '0')}:${String(eInstant.minute).padStart(2, '0')}`
+
+      if (sDay === eDay && sMonth === eMonth && sYear === eYear) {
+        return `${sDay}/${sMonth}/${sYear} · De ${sH} a ${eH} hs`
+      }
+      return `Del ${sDay}/${sMonth}/${sYear} ${sH} hs al ${eDay}/${eMonth}/${eYear} ${eH} hs`
     } catch {
-      datePrefix = ''
+      // ignore
     }
   }
 
-  // 1. Check schedule object (e.g. startHour, endHour)
-  const sched = parseSchedule(item.event_schedule)
+  // 2. Check schedule object (e.g. startHour, endHour)
+  const sched = parseSchedule(scheduleSource)
   if (sched && (typeof sched.startHour === 'number' || typeof sched.endHour === 'number')) {
+    let datePrefix = ''
+    if (endedAtSource) {
+      try {
+        const instant = Temporal.Instant.from(endedAtSource).toZonedDateTimeISO(GAME_TIMEZONE)
+        const day = String(instant.day).padStart(2, '0')
+        const month = String(instant.month).padStart(2, '0')
+        const year = String(instant.year)
+        datePrefix = `${day}/${month}/${year}`
+      } catch {
+        datePrefix = ''
+      }
+    }
+
     const startH = typeof sched.startHour === 'number' ? sched.startHour : 0
     const endH = typeof sched.endHour === 'number' ? sched.endHour : 24
     const formatH = (hr: number) => {
@@ -116,26 +220,12 @@ const formatEventScheduleWindow = (item: PastEventHistoryItem): string => {
       return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
     }
     const isAllDay = startH === 0 && (endH >= 23.9 || endH === 24)
-    const timeRange = isAllDay ? 'Todo el día' : `De ${formatH(startH)} a ${formatH(endH)} hs`
+    const timeRange = isAllDay ? 'De 00:00 a 23:59 hs' : `De ${formatH(startH)} a ${formatH(endH)} hs`
     return datePrefix ? `${datePrefix} · ${timeRange}` : timeRange
   }
 
-  // 2. Check absolute start_at & end_at
-  if (item.start_at && item.end_at) {
-    try {
-      const sInstant = Temporal.Instant.from(item.start_at).toZonedDateTimeISO(GAME_TIMEZONE)
-      const eInstant = Temporal.Instant.from(item.end_at).toZonedDateTimeISO(GAME_TIMEZONE)
-      const sH = `${String(sInstant.hour).padStart(2, '0')}:${String(sInstant.minute).padStart(2, '0')}`
-      const eH = `${String(eInstant.hour).padStart(2, '0')}:${String(eInstant.minute).padStart(2, '0')}`
-      const timeRange = `De ${sH} a ${eH} hs`
-      return datePrefix ? `${datePrefix} · ${timeRange}` : timeRange
-    } catch {
-      // ignore
-    }
-  }
-
   // 3. Fallback to single timestamp
-  return formatDate(item.ended_at)
+  return formatDate(endedAtSource)
 }
 
 const onClaimClick = (awardId?: string) => {
@@ -184,9 +274,23 @@ const getCategoryIcon = (catId: string) => {
       <div class="event-meta">
         <span class="event-icon">{{ item.event_icon }}</span>
         <div class="event-title-group">
-          <h4 class="event-name">
-            {{ item.event_name }}
-          </h4>
+          <div class="event-title-row">
+            <h4 class="event-name">
+              {{ displayName }}
+            </h4>
+            <button
+              :id="'past-event-info-btn-' + (item.id || item.event_id)"
+              class="event-info-btn"
+              :class="{ 'disabled-btn': !canOpenDetail }"
+              :disabled="!canOpenDetail"
+              :title="canOpenDetail ? 'Ver descripción completa del evento' : 'Detalles no disponibles (evento archivado)'"
+              @mouseenter="onInfoBtnHover($event, true)"
+              @mouseleave="onInfoBtnHover($event, false)"
+              @click.stop="openEventDetail"
+            >
+              <span class="info-icon">ℹ️</span>
+            </button>
+          </div>
           <span class="event-date">{{ formatEventScheduleWindow(item) }}</span>
         </div>
       </div>
@@ -201,21 +305,21 @@ const getCategoryIcon = (catId: string) => {
           @mouseleave="onBtnHover($event, false)"
           @click.stop="onClaimClick(item.myAward.id)"
         >
-          RECLAMAR PREMIO 🎁
+          RECLAMAR PREMIO <span class="btn-emoji">🎁</span>
         </button>
 
         <div
           v-else-if="item.isClaimed"
           class="claimed-badge"
         >
-          ✓ RECLAMADA
+          <span class="emoji-inline">✓</span> RECLAMADA
         </div>
 
         <div
           v-else-if="item.isWinner"
           class="winner-badge"
         >
-          🏆 GANADOR
+          <span class="emoji-inline">🏆</span> GANADOR
         </div>
       </div>
     </div>
@@ -247,7 +351,7 @@ const getCategoryIcon = (catId: string) => {
             <span class="cat-name">{{ catGroup.categoryName }}</span>
           </div>
 
-          <div class="winners-grid">
+          <div class="winners-list">
             <PastEventWinnerItem
               v-for="(w, idx) in catGroup.winners"
               :key="w.player_id || idx"
@@ -299,17 +403,61 @@ const getCategoryIcon = (catId: string) => {
     flex-direction: column;
   }
 
+  .event-title-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
   .event-name {
     @include pixelated;
     font-size: 10px;
     color: var(--white);
-    margin: 0 0 2px 0;
+    margin: 0;
     line-height: 1.2;
+  }
+
+  .event-info-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+    padding: 0;
+    margin: 0;
+    border-radius: 4px;
+    background: Rgba(255, 255, 255, 0.08);
+    border: 1px solid Rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    box-shadow: 0 1px 3px Rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+
+    .info-icon {
+      @include emoji-icon(11px);
+    }
+
+    &:hover:not(:disabled) {
+      background: Rgba(255, 255, 255, 0.18);
+      border-color: Rgba(250, 204, 21, 0.6);
+      box-shadow: 0 0 8px Rgba(250, 204, 21, 0.3);
+    }
+
+    &:disabled,
+    &.disabled-btn {
+      opacity: 0.35;
+      cursor: not-allowed;
+      filter: Grayscale(100%);
+      box-shadow: none;
+      pointer-events: auto;
+    }
   }
 
   .event-date {
     font-size: 9px;
     color: var(--gray);
+    margin-top: 2px;
   }
 }
 
@@ -416,9 +564,10 @@ const getCategoryIcon = (catId: string) => {
   }
 }
 
-.winners-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 8px;
+.winners-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
 }
 </style>

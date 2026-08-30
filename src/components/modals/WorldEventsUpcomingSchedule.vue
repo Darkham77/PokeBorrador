@@ -57,7 +57,8 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
     <div class="events-section-header">
       <div class="section-title-wrap">
         <h3 class="events-section-title">
-          📅 PRÓXIMOS EVENTOS (7 DÍAS)
+          <span class="section-title-icon">📅</span>
+          <span>PRÓXIMOS EVENTOS (7 DÍAS)</span>
         </h3>
         <span class="events-section-subtitle">Calendario semanal (Hora Argentina ARG)</span>
       </div>
@@ -116,7 +117,7 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
               <span
                 v-if="occ.isActiveNow"
                 class="status-live pixelated"
-              >🟢 ACTIVO AHORA</span>
+              ><span class="emoji-inline">🟢</span> ACTIVO AHORA</span>
               <span
                 v-else
                 class="status-starts pixelated"
@@ -144,11 +145,19 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
   margin-bottom: 12px;
 
   .events-section-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     @include pixelated;
     font-size: 11px;
     color: var(--yellow);
     margin: 0;
     line-height: 1;
+
+    .section-title-icon {
+      font-size: 12px;
+      line-height: 1;
+    }
   }
 }
 

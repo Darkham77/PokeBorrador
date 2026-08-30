@@ -54,7 +54,7 @@ onMounted(async () => {
       :class="dispute ? 'dispute' : 'dominance'"
     >
       <div class="phase-title">
-        {{ dispute ? '⚔️ FASE DE DISPUTA' : '🏆 FASE DE DOMINANCIA' }}
+        <span class="title-icon">{{ dispute ? '⚔️' : '🏆' }}</span> {{ dispute ? 'FASE DE DISPUTA' : 'FASE DE DOMINANCIA' }}
       </div>
       <div class="phase-desc">
         {{ dispute ? 'Suma puntos capturando y venciendo en mapas' : 'Gana bonos en mapas dominados' }}
@@ -344,7 +344,6 @@ onMounted(async () => {
       align-items: center;
       justify-content: center;
       line-height: 1;
-      transform: Translatey(-3.5px);
     }
   }
 }
@@ -383,7 +382,6 @@ onMounted(async () => {
         align-items: center;
         justify-content: center;
         line-height: 1;
-        transform: Translatey(-3.5px);
       }
     }
   }

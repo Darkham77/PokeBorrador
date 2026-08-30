@@ -197,7 +197,7 @@ const handleSellRocket = () => {
               v-if="pokemon?.gender"
               :class="['m-badge-gender', pokemon?.gender === 'm' ? 'male' : 'female']"
             >
-              {{ pokemon?.gender === 'm' ? '♂' : '♀' }}
+              <span class="icon">{{ pokemon?.gender === 'm' ? '♂' : '♀' }}</span>
             </span>
             <span class="m-badge-level">Nv. {{ pokemon?.level }}</span>
             <span class="m-badge-iv">IV {{ (Object.values(pokemon?.ivs || {}) as number[]).reduce((s,v)=>s+(v||0),0) }}</span>

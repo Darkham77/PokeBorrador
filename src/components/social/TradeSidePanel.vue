@@ -93,7 +93,7 @@ const mappedItems = computed(() => {
           :actions="[]"
         />
         <div class="change-hint-overlay">
-          <span>🔄 CAMBIAR POKÉMON</span>
+          <span><span class="icon">🔄</span> CAMBIAR POKÉMON</span>
         </div>
       </div>
       <button

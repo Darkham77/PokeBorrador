@@ -51,6 +51,20 @@ export const MAX_BATTLE_TURNS = 300;
  */
 export const SHOWDOWN_DISABLE_DURATION_TURNS = 4;
 
+/**
+ * Tiempo de espera en segundos en la fase de recompensas durante modo auto-combate
+ * tras finalizar la cola de logs, para permitir la lectura de los resultados antes del siguiente combate.
+ * Utiliza el timeline de GSAP (gsapSleep) para escalar con timeScale(100) en simulaciones.
+ */
+export const AUTO_BATTLE_REWARDS_DELAY_SEC = 1.5;
+
+/**
+ * Tiempo de espera en segundos para leer el diálogo de un NPC/Entrenador durante modo auto-combate
+ * antes de iniciar automáticamente el encuentro.
+ * Utiliza el timeline de GSAP (gsap.delayedCall / gsapSleep) para escalar con timeScale(100) en simulaciones.
+ */
+export const AUTO_BATTLE_NPC_DIALOG_DELAY_SEC = 3.0;
+
 
 export interface GameRatiosConfig {
   maxPokemonLevel: number;

@@ -311,7 +311,7 @@ const handleTrashMouseLeave = (e: MouseEvent) => {
             v-if="egg.inherited_ivs?._scanned"
             class="scanned-badge"
           >
-            🔍 ESCANEADO
+            <span class="emoji-inline">🔍</span> ESCANEADO
           </div>
         </div>
         

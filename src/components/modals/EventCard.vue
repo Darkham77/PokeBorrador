@@ -359,19 +359,19 @@ onUnmounted(() => {
             <span
               v-if="parsedEventConfig.speciesShinyMult && parsedEventConfig.speciesShinyMult > 1"
               class="type-tag shiny"
-            >✨ x{{ parsedEventConfig.speciesShinyMult }} SHINY</span>
+            ><span class="emoji-inline">✨</span> x{{ parsedEventConfig.speciesShinyMult }} SHINY</span>
             <span
               v-if="parsedEventConfig.speciesRateMult && parsedEventConfig.speciesRateMult > 1"
               class="type-tag spawn"
-            >🎯 x{{ parsedEventConfig.speciesRateMult }} SPAWN</span>
+            ><span class="emoji-inline">🎯</span> x{{ parsedEventConfig.speciesRateMult }} SPAWN</span>
             <span
               v-if="parsedEventConfig.fishingMult && parsedEventConfig.fishingMult > 1"
               class="type-tag fishing"
-            >🎣 x{{ parsedEventConfig.fishingMult }} PESCA</span>
+            ><span class="emoji-inline">🎣</span> x{{ parsedEventConfig.fishingMult }} PESCA</span>
             <span
               v-if="parsedEventConfig.requireCaughtDuringEvent"
               class="catch-window-tag"
-            >🕒 SOLO CAPTURAS DEL EVENTO</span>
+            ><span class="emoji-inline">🕒</span> SOLO CAPTURAS DEL EVENTO</span>
           </div>
 
           <!-- Especies Participantes en la Tarjeta -->
@@ -410,7 +410,7 @@ onUnmounted(() => {
           class="global-category-block"
         >
           <div class="global-category-header">
-            <span class="global-category-label pixelated">🧬 GENÉTICA SUPREMA (COMPETENCIA GLOBAL)</span>
+            <span class="global-category-label pixelated"><span class="title-icon">🧬</span> GENÉTICA SUPREMA (COMPETENCIA GLOBAL)</span>
           </div>
           <EventCategorySlotCard
             v-for="sub in globalSubComps"
@@ -432,7 +432,7 @@ onUnmounted(() => {
           <!-- Panel Header & Attached Tabs -->
           <div class="species-tabs-panel-header">
             <div class="species-panel-intro">
-              <span class="species-panel-title pixelated">⚖️ PESO Y ALTURA POR ESPECIE</span>
+              <span class="species-panel-title pixelated"><span class="title-icon">⚖️</span> PESO Y ALTURA POR ESPECIE</span>
               <span
                 v-if="participatingSpeciesList.length > 1"
                 class="species-panel-hint pixelated"
@@ -464,7 +464,7 @@ onUnmounted(() => {
                   v-if="hasSpeciesEnrollment(sp)"
                   class="species-tab-check"
                   title="Inscripción activa"
-                >✓</span>
+                ><span class="emoji-inline">✓</span></span>
               </button>
             </div>
           </div>
@@ -498,14 +498,14 @@ onUnmounted(() => {
           class="retro-btn rules-btn pixelated"
           @click.stop="openEventDetail"
         >
-          📋 REGLAS Y PREMIOS
+          <span class="btn-emoji">📋</span> REGLAS Y PREMIOS
         </button>
         <div 
           v-else 
           ref="badgeRef"
           class="active-badge"
         >
-          ✨ ACTIVO
+          <span class="emoji-inline">✨</span> ACTIVO
         </div>
       </footer>
     </div>

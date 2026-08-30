@@ -1,4 +1,3 @@
-import { nextTick } from 'vue'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleMinigame } from '@/types/battle/battle'
@@ -47,19 +46,9 @@ export async function processSearchPhaseSequence(
     ctx.audio.play('siren')
   }
 
-  if (!autoBattle) {
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE)
-  } else {
-    await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE)
-    if (ctx.activeBattle.value) {
-      ctx.activeBattle.value.enemy = finalEnemyPoke
-      ctx.activeBattle.value.minigame = minigame
-    }
-    const { startEncounter } = await import('./searchLoop.ts')
-    await nextTick()
-    await startEncounter(ctx)
-    return true
-  }
+  await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.COMBAT_OR_FLEE)
+  ctx.isIntroAnimating.value = false
+  ctx.isProcessing.value = false
 
   if (ctx.activeBattle.value) {
     ctx.activeBattle.value.enemy = finalEnemyPoke

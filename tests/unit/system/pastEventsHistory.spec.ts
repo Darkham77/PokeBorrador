@@ -187,7 +187,37 @@ describe('PastEventsList.vue - Past Events and Rewards Claiming', () => {
       props: { pastEvents: [eventWithWeeklySchedule], isLoading: false }
     })
 
-    expect(wrapper.text()).toContain('De 18:00 a 20:00 hs')
+    expect(wrapper.text()).toContain('27/08/2026 · De 18:00 a 20:00 hs')
+  })
+
+  it('displays start and end date/time when start_at and end_at are provided', () => {
+    const eventWithAbsoluteDates: PastEventHistoryItem = {
+      ...mockPastEvents[0]!,
+      start_at: '2026-08-20T13:00:00Z', // 10:00 hs in GMT-3
+      end_at: '2026-08-20T21:00:00Z',   // 18:00 hs in GMT-3
+      ended_at: '2026-08-20T21:00:00Z'
+    }
+
+    const wrapper = mount(PastEventsList, {
+      props: { pastEvents: [eventWithAbsoluteDates], isLoading: false }
+    })
+
+    expect(wrapper.text()).toContain('20/08/2026 · De 10:00 a 18:00 hs')
+  })
+
+  it('displays multi-day start and end dates when start_at and end_at span across different days', () => {
+    const multiDayEvent: PastEventHistoryItem = {
+      ...mockPastEvents[0]!,
+      start_at: '2026-08-20T13:00:00Z', // 20/08/2026 10:00 hs in GMT-3
+      end_at: '2026-08-25T21:00:00Z',   // 25/08/2026 18:00 hs in GMT-3
+      ended_at: '2026-08-25T21:00:00Z'
+    }
+
+    const wrapper = mount(PastEventsList, {
+      props: { pastEvents: [multiDayEvent], isLoading: false }
+    })
+
+    expect(wrapper.text()).toContain('Del 20/08/2026 10:00 hs al 25/08/2026 18:00 hs')
   })
 
   it('notifies individual toasts for each item, money and battle coins won on claim', async () => {
@@ -219,5 +249,102 @@ describe('PastEventsList.vue - Past Events and Rewards Claiming', () => {
     expect(notifySpy).toHaveBeenCalledWith(expect.stringMatching(/¡Ganaste ₽10[.,]000!/), '💰')
     expect(notifySpy).toHaveBeenCalledWith('¡Ganaste 50 Battle Coins!', '🪙')
     expect(notifySpy).toHaveBeenCalledWith('¡Obtuviste Piedra Agua x2!', '🎒')
+  })
+
+  it('renders "Evento desconocido" when event_id or event_name starts with custom_ or is missing', () => {
+    const customEvent: PastEventHistoryItem = {
+      id: 'res-custom-1',
+      event_id: 'custom_1774821389985',
+      event_name: 'custom_1774821389985',
+      event_icon: '🏆',
+      event_description: '',
+      ended_at: '2026-03-29T22:06:00Z',
+      winners: [],
+      myAward: null,
+      isWinner: false,
+      hasUnclaimedAward: false,
+      isClaimed: false
+    }
+
+    const wrapper = mount(PastEventsList, {
+      props: { pastEvents: [customEvent], isLoading: false }
+    })
+
+    expect(wrapper.text()).toContain('Evento desconocido')
+    expect(wrapper.text()).not.toContain('custom_1774821389985')
+  })
+
+  it('displays the full date with day, month, year and time in PastEventCard header', () => {
+    const customEvent: PastEventHistoryItem = {
+      id: 'res-custom-2',
+      event_id: 'custom_1774821389985',
+      event_name: 'custom_1774821389985',
+      event_icon: '🏆',
+      event_description: '',
+      ended_at: '2026-03-29T22:06:00Z', // In GMT-3, this is 29/03/2026 · 19:06 hs
+      winners: [],
+      myAward: null,
+      isWinner: false,
+      hasUnclaimedAward: false,
+      isClaimed: false
+    }
+
+    const wrapper = mount(PastEventsList, {
+      props: { pastEvents: [customEvent], isLoading: false }
+    })
+
+    expect(wrapper.text()).toContain('29/03/2026 · 19:06 hs')
+  })
+
+  it('disables the info button for archived/unknown events not in the database', () => {
+    const customEvent: PastEventHistoryItem = {
+      id: 'res-custom-3',
+      event_id: 'custom_1774821389985',
+      event_name: 'custom_1774821389985',
+      event_icon: '🏆',
+      event_description: '',
+      ended_at: '2026-03-29T22:06:00Z',
+      winners: [],
+      myAward: null,
+      isWinner: false,
+      hasUnclaimedAward: false,
+      isClaimed: false
+    }
+
+    const wrapper = mount(PastEventsList, {
+      props: { pastEvents: [customEvent], isLoading: false }
+    })
+
+    const infoBtn = wrapper.find('.event-info-btn')
+    expect(infoBtn.exists()).toBe(true)
+    expect(infoBtn.attributes('disabled')).toBeDefined()
+  })
+
+  it('enables the info button and opens EventDetail modal when event exists in database', async () => {
+    const { useModalStore } = await import('@/stores/modals')
+    const modalStore = useModalStore()
+    const openSpy = vi.spyOn(modalStore, 'open')
+
+    const eventStore = useEventStore()
+    const knownGameEvent = {
+      id: 'hora_magikarp',
+      name: 'Hora de Pesca del Magikarp',
+      description: 'Pesca Magikarp gigantes',
+      active: false
+    }
+    eventStore.allEvents = [knownGameEvent as unknown as import('@/logic/events/eventEngine').Event]
+
+    const wrapper = mount(PastEventsList, {
+      props: { pastEvents: [mockPastEvents[0]!], isLoading: false }
+    })
+
+    const infoBtn = wrapper.find('.event-info-btn')
+    expect(infoBtn.exists()).toBe(true)
+    expect(infoBtn.attributes('disabled')).toBeUndefined()
+
+    await infoBtn.trigger('click')
+    expect(openSpy).toHaveBeenCalledWith('EventDetail', {
+      event: expect.objectContaining({ id: 'hora_magikarp' })
+    })
   })
 })

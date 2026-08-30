@@ -13,14 +13,28 @@ type BattleStoreType = ReturnType<typeof useBattleStore>;
 export let showdownWorker: Worker | null = null;
 export function setShowdownWorker(worker: Worker | null) {
   showdownWorker = worker;
+  if (typeof window !== 'undefined') {
+    if (worker) {
+      window.__showdownWorker__ = worker;
+    } else {
+      delete window.__showdownWorker__;
+    }
+  }
+}
+
+// domain-ok
+export function getShowdownWorker(): Worker | null {
+  if (!showdownWorker && typeof window !== 'undefined' && window.__showdownWorker__) {
+    showdownWorker = window.__showdownWorker__;
+  }
+  return showdownWorker;
 }
 
 export function preloadShowdownWorker(): void {
-  if (typeof window === 'undefined' || typeof Worker === 'undefined' || showdownWorker) return
+  if (typeof window === 'undefined' || typeof Worker === 'undefined' || getShowdownWorker()) return
 
   const worker = new Worker(new URL('./showdown.worker.ts', import.meta.url), { type: 'module' })
   setShowdownWorker(worker)
-  window.__showdownWorker__ = worker
 }
 
 interface SynchronizedPokemonState {

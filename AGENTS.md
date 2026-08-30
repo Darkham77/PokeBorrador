@@ -73,6 +73,8 @@ For topic-specific mandates, consult the specialized rule modules under [.agents
 - [Git & Workflow Safety](.agents/skills/project-standards/references/rules/git_and_workflow_safety.md): Destructive Git confirmations, uncommitted file backups, scratch directory mandate, main branch push protection.
 - [Game Engine & State](.agents/skills/project-standards/references/rules/game_engine_and_state.md): Showdown canonical reference (`ACTIVE_GENERATION`), 4-seat compatibility, zero-cloning Pokémon instances, Showdown ID format.
 
+*(Note: Specific gameplay systems such as Daycare/Breeding, Gyms, Items, War, and Spawns are governed strictly in their dedicated manuals under [references/systems/](.agents/skills/project-standards/references/systems/)).*
+
 ## 5. DOX Directory Navigation Index
 
 - [database/AGENTS.md](./database/AGENTS.md): Local/offline database schemas, seeds, and SQL migration logic.

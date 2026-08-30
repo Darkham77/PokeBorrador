@@ -6,7 +6,7 @@ import { useUIStore } from '@/stores/ui';
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
 import { gsap } from 'gsap';
-import { formatTime } from '@/logic/utils/timeUtils';
+import { formatChatTimestamp } from '@/logic/utils/timeUtils';
 
 
 interface Props {
@@ -142,7 +142,7 @@ onMounted(() => {
                   :class="chatStore.profileCosmetics[msg.senderId || '']?.nick_style || 'normal'"
                   @click.stop="openTrainerProfile(msg.senderId)"
                 >{{ chatStore.profileCosmetics[msg.senderId || '']?.username || msg.senderName }}</span>
-                <span class="time">{{ formatTime(msg.timestamp) }}</span>
+                <span class="time">{{ formatChatTimestamp(msg.timestamp) }}</span>
               </div>
               <p class="text">
                 {{ msg.text }}
@@ -167,7 +167,7 @@ onMounted(() => {
             :disabled="!newMessage.trim()"
             @click.stop="handleSendMessage"
           >
-            ➤
+            <span class="btn-emoji">➤</span>
           </button>
         </div>
         <p class="hint">

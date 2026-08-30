@@ -214,7 +214,7 @@ async function startClassMission(missionId: string) {
         :disabled="breedingStore.missionRefreshes <= 0"
         @click.stop="breedingStore.refreshMissions"
       >
-        🔄 Refrescar
+        <span class="btn-emoji">🔄</span> Refrescar
       </button>
     </header>
 
@@ -233,7 +233,7 @@ async function startClassMission(missionId: string) {
         btn-text="ENTREGAR"
         :btn-disabled="!canDeliverMission(mission)"
         :is-completed="mission.completed"
-        completed-badge-text="✓ COMPLETADA"
+        completed-badge-text="COMPLETADA"
         @action="openDelivery(index)"
       />
     </div>

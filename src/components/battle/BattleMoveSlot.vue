@@ -84,6 +84,7 @@ const hexColorRgb = computed(() => {
 const isDisabled = computed(() => {
   if (props.isProcessing) return true
   if (!props.move) return true
+  if (props.move.disabled === true) return true
 
   interface ShowdownMoveRequest {
     id: string;
@@ -99,18 +100,24 @@ const isDisabled = computed(() => {
   // 1. Prioridad Absoluta: Consultar el request de Showdown para bloquear botones en la UI
   const playerRequest = battleStore.state?.playerRequest as ShowdownPlayerRequest | undefined;
   if (playerRequest && playerRequest.active?.[0]?.moves) {
-    const reqMove = playerRequest.active[0].moves.find((rm: ShowdownMoveRequest) => rm.id === props.move?.id);
-    if (reqMove) {
-      return !!reqMove.disabled;
+    const reqMoves = playerRequest.active[0].moves;
+    if (reqMoves.length > 0) {
+      const reqMove = reqMoves.find((rm: ShowdownMoveRequest) => rm.id === props.move?.id);
+      if (reqMove) {
+        return !!reqMove.disabled;
+      }
+      // Si Showdown restringió los movimientos permitidos (lockedmove, recharge, encore),
+      // cualquier movimiento no listado por Showdown debe bloquearse en gris en la UI.
+      return true;
     }
   }
 
-  // 2. Fallback (si no hay request activo o no se encuentra el movimiento):
+  // 2. Validaciones locales de estado:
   const p = props.playerInfo
 
-  // 2.1 Validación de movimiento de dos turnos (twoturnmove)
-  const isTwoTurnActive = !!(p?.volatileCounters?.['twoturnmove'] && p.volatileCounters['twoturnmove'] > 0);
-  if (isTwoTurnActive && p?.lastMove) {
+  // 2.1 Si el Pokémon está en estado bloqueado (lockedmove, twoturnmove, thrash), bloquear cualquier otro movimiento
+  const isLocked = isPokemonLocked(p);
+  if (isLocked && p?.lastMove) {
     if (props.move.id !== p.lastMove.id) {
       return true;
     }
@@ -127,9 +134,7 @@ const isDisabled = computed(() => {
     }
   }
 
-  const isLocked = isPokemonLocked(p)
-
-  if (!isLocked && props.move.id !== 'struggle' && props.move.pp <= 0) return true
+  if (props.move.id !== 'struggle' && props.move.pp <= 0) return true
 
   return false
 })

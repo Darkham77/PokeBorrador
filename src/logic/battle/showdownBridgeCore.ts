@@ -63,7 +63,8 @@ async function handleMoveToken(ctx: SBCtx): Promise<boolean> {
     }
 
     const isLockedMove = moveData?.self?.volatileStatus === 'lockedmove';
-    if (isLockedMove && attacker.volatileCounters) {
+    if (isLockedMove && attacker) {
+      if (!attacker.volatileCounters) attacker.volatileCounters = {};
       attacker.volatileCounters['lockedmove'] = 1;
     }
 
@@ -77,7 +78,7 @@ async function handleMoveToken(ctx: SBCtx): Promise<boolean> {
       }
     }
 
-    if (!isFromEffect && !isMissed) {
+    if (!isMissed) {
       if (store.attackerSide) store.attackerSide.value = side;
       if (store.activeMove) {
         store.activeMove.value = {

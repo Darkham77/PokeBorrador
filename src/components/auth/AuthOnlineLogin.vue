@@ -51,7 +51,7 @@ const handleServerSelect = (e: Event) => {
       v-if="!isOnline" 
       class="internet-alert"
     >
-      ⚠️ SIN CONEXIÓN A INTERNET
+      <span class="emoji-inline">⚠️</span> SIN CONEXIÓN A INTERNET
     </div>
 
     <div class="server-list-container">

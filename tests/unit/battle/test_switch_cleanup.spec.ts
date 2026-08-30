@@ -22,6 +22,7 @@ vi.mock('@/logic/battle/orchestrator', () => ({
 // switchAction uses dynamic import from showdownWorkerClient (not orchestrator)
 vi.mock('@/logic/battle/showdownWorkerClient', () => ({
   showdownWorker: mockWorker,
+  getShowdownWorker: vi.fn(() => mockWorker),
   executeTurnInWorker: vi.fn(async () => ({ logs: [], isOver: false, winner: null })),
   isPlayerTrappedInWorker: vi.fn(async () => false),
   syncTeamsFromLastWorkerState: vi.fn(async () => {}),

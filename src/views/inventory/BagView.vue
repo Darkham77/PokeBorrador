@@ -249,7 +249,7 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
           @mouseleave="onSellModeMouseLeave"
           @click.stop="inventoryStore.toggleBagSellMode"
         >
-          💰 Vender Objetos
+          <span class="btn-emoji">💰</span> Vender Objetos
         </button>
       </div>
     </div>

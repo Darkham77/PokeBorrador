@@ -233,7 +233,7 @@ const getAssetUrlLocal = getAssetUrl
               title="Cambiar Nombre"
               @click.prevent.stop="openRename"
             >
-              ✏️ CAMBIAR
+              <span class="emoji-inline">✏️</span> CAMBIAR
             </a>
           </div>
           <div

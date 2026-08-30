@@ -270,6 +270,14 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
   
   const wasSearching = active.wasSearching === true || ctx.isSearching.value === true
   if (wasSearching) {
+    const { useUIStore } = await import('@/stores/ui.ts')
+    const uiStore = useUIStore()
+    if (uiStore.autoBattle) {
+      const { gsapSleep } = await import('@/logic/utils/gsapHelpers.ts')
+      const { AUTO_BATTLE_REWARDS_DELAY_SEC } = await import('@/data/system/constants.ts')
+      await gsapSleep(AUTO_BATTLE_REWARDS_DELAY_SEC)
+      if (!isCurrentBattle(ctx, active)) return
+    }
     await ctx.completeBattleFlow('search')
   } else {
     await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)

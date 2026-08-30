@@ -39,8 +39,9 @@ const openEventDetail = (event: GameEvent) => {
 
 const getEventDisplayName = (eventId: string): string => {
   const ev = (allEvents.value || []).find(e => e.id === eventId)
-  if (ev?.name) return ev.name
+  if (ev?.name && !ev.name.startsWith('custom_')) return ev.name
   if (eventId === 'hora_magikarp') return 'Hora de Pesca del Magikarp'
+  if (eventId.startsWith('custom_') || !ev) return 'Evento desconocido'
   return eventId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) // text-ok
 }
 

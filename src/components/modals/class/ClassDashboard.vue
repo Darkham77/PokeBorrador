@@ -290,7 +290,7 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
             @mouseleave="onAbilityMouseLeave"
           >
             <div class="ability-checkbox">
-              {{ (currentClass?.bonusLevels?.[Number(idx)] || 1) <= classLevel ? '✅' : '🔒' }}
+              <span class="icon">{{ (currentClass?.bonusLevels?.[Number(idx)] || 1) <= classLevel ? '✅' : '🔒' }}</span>
             </div>
             <div class="ability-content">
               <p :class="{ 'text-locked': (currentClass?.bonusLevels?.[Number(idx)] || 1) > classLevel }">
@@ -315,7 +315,7 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
               :delay="100"
               style="cursor: help;"
             >
-              <span class="ability-help">❓</span>
+              <span class="ability-help"><span class="icon">❓</span></span>
             </PVTooltip>
           </div>
         </div>
@@ -336,7 +336,7 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
             @mouseleave="onAbilityMouseLeave"
           >
             <div class="ability-checkbox">
-              ❌
+              <span class="icon">❌</span>
             </div>
             <div class="ability-content">
               <p>{{ penalty }}</p>
@@ -347,7 +347,7 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
               :delay="100"
               style="cursor: help;"
             >
-              <span class="ability-help">❓</span>
+              <span class="ability-help"><span class="icon">❓</span></span>
             </PVTooltip>
           </div>
         </div>

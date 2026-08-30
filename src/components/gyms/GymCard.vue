@@ -149,7 +149,7 @@ const handleBtnLeave = (e: MouseEvent) => {
             >{{ gym.name }}</span>
           </div>
           <div class="location">
-            📍 {{ gym.city }}
+            <span class="emoji-inline">📍</span> {{ gym.city }}
           </div>
           <div class="leader-title">
             Líder: <span>{{ gym.leader }}</span>
@@ -190,7 +190,7 @@ const handleBtnLeave = (e: MouseEvent) => {
           v-if="isLocked"
           class="locked-tag"
         >
-          🔒 BLOQUEADO ({{ gym.badgesRequired }} Medallas)
+          <span class="emoji-inline">🔒</span> BLOQUEADO ({{ gym.badgesRequired }} Medallas)
         </div>
         <div
           v-else
@@ -215,7 +215,7 @@ const handleBtnLeave = (e: MouseEvent) => {
               <span
                 v-if="gymsStore.isDifficultyDefeated(gym.id, d)"
                 class="won-dot"
-              >✓</span>
+              ><span class="emoji-inline">✓</span></span>
             </button>
           </div>
 
@@ -223,7 +223,7 @@ const handleBtnLeave = (e: MouseEvent) => {
             v-if="isDefeated"
             class="won-tag"
           >
-            ✅ VICTORIA OBTENIDA en {{ selectedDifficulty === 'easy' ? 'FÁCIL' : selectedDifficulty === 'normal' ? 'NORMAL' : 'DIFÍCIL' }}
+            <span class="emoji-inline">✅</span> VICTORIA OBTENIDA en {{ selectedDifficulty === 'easy' ? 'FÁCIL' : selectedDifficulty === 'normal' ? 'NORMAL' : 'DIFÍCIL' }}
           </div>
 
           <button
@@ -234,7 +234,7 @@ const handleBtnLeave = (e: MouseEvent) => {
             }"
             @click.stop="handleChallenge"
           >
-            ⚔️ {{ isDefeated ? 'REAFIRMAR' : 'DESAFIAR LÍDER' }}
+            <span class="btn-emoji">⚔️</span> {{ isDefeated ? 'REAFIRMAR' : 'DESAFIAR LÍDER' }}
           </button>
         </div>
       </div>

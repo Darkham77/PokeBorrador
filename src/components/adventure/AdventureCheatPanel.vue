@@ -102,14 +102,14 @@ const healActiveTeam = () => {
           style="flex: 1; font-size: 6px; padding: 4px; font-family: var(--font-pixel);"
           @click="injectTestTeam"
         >
-          🐣 Inyectar Equipo
+          <span class="btn-emoji">🐣</span> Inyectar Equipo
         </button>
         <button 
           class="adv-hm-btn" 
           style="flex: 1; font-size: 6px; padding: 4px; font-family: var(--font-pixel);"
           @click="healActiveTeam"
         >
-          🏥 Curar Todo
+          <span class="btn-emoji">🏥</span> Curar Todo
         </button>
       </div>
 

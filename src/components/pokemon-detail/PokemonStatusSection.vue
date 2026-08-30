@@ -122,7 +122,7 @@ const abilityStyle = computed(() => ({
       v-if="p.obtainedMethod === 'egg'"
       class="egg-born-badge pixelated"
     >
-      🥚 Nacido de Huevo (Cría)
+      <span class="emoji-inline">🥚</span> Nacido de Huevo (Cría)
     </div>
 
     <!-- HP & EXP -->

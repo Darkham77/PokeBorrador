@@ -128,3 +128,13 @@
     #{$width} 0 0 $color,
     -#{$width} 0 0 $color;
 }
+
+@mixin emoji-icon($font-size: 11px) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+  font-size: $font-size;
+  line-height: 1;
+  user-select: none;
+}

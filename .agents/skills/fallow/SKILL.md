@@ -171,7 +171,7 @@ When auditing codebase logic, triaging errors, or completing tasks:
 
 Fallow is integrated directly into the workspace's NPM auditing scripts:
 
-- **`npm run audit:full` / `npm run audit`**: Executes all project audits, validation scripts, and checks dead-code, duplication, and health.
+- **`npm run audit`**: Executes all project audits, validation scripts, and checks dead-code, duplication, and health.
 - **`npm run audit:fix`**: Applies the project's native fixes and automatically runs `npm run audit:fallow:fix` to clean up unused code and exports.
 - **`npm run audit:fallow:summary`**: Runs a quick summary of Fallow diagnostics to avoid cluttering the terminal.
 - **`npm run audit:fallow:report`**: Exports the complete human-readable Fallow audit report to the safe directory `scratch/fallow_report.txt` for deeper study.

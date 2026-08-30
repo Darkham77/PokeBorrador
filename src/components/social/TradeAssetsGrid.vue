@@ -96,7 +96,7 @@ const requestItems = computed(() =>
           v-if="!hasRequest"
           class="no-assets gift"
         >
-          ¡Es un Regalo! 🎁
+          ¡Es un Regalo! <span class="icon">🎁</span>
         </div>
       </div>
     </div>

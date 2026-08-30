@@ -58,8 +58,20 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     moveIndex = 0;
   }
 
-  const isLocked = !!(p.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0) || 
+  const isRecharge = Boolean(
+    (p.volatileCounters?.['mustrecharge'] && p.volatileCounters['mustrecharge'] > 0) ||
+    (store.activeBattle.value?.playerRequest?.active?.[0]?.moves?.length === 1 &&
+      (store.activeBattle.value?.playerRequest?.active?.[0]?.moves[0]?.id === 'recharge' ||
+       store.activeBattle.value?.playerRequest?.active?.[0]?.moves[0]?.move === 'Recharge'))
+  );
+  if (isRecharge) {
+    moveIndex = 0;
+  }
+
+  const isLocked = isRecharge ||
+                   !!(p.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0) || 
                    !!(p.volatileCounters?.['twoturnmove'] && p.volatileCounters['twoturnmove'] > 0) || 
+                   !!(p.volatileCounters?.['mustrecharge'] && p.volatileCounters['mustrecharge'] > 0) ||
                    !!(p.thrashTurns && p.thrashTurns > 0) ||
                    p.moves.length === 1;
   const isStruggle = moveIndex === -1;

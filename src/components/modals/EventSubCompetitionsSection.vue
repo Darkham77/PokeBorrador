@@ -72,7 +72,7 @@ const getSubCompPrizes = (sub: SubCompetitionConfig): { first?: Prize, second?: 
     class="event-section"
   >
     <div class="section-tag">
-      🏆 SUB-COMPETENCIAS Y PREMIOS
+      <span class="title-icon">🏆</span> SUB-COMPETENCIAS Y PREMIOS
     </div>
     <div class="sub-comp-rule-note">
       <span class="note-icon">⚠️</span>
@@ -99,7 +99,7 @@ const getSubCompPrizes = (sub: SubCompetitionConfig): { first?: Prize, second?: 
             class="sub-prize-row gold"
           >
             <div class="rank-badge pixelated">
-              🥇 1°
+              <span class="medal">🥇</span> 1°
             </div>
             <RewardPillsGroup
               :prize="getSubCompPrizes(sub)!.first"
@@ -111,7 +111,7 @@ const getSubCompPrizes = (sub: SubCompetitionConfig): { first?: Prize, second?: 
             class="sub-prize-row silver"
           >
             <div class="rank-badge pixelated">
-              🥈 2°
+              <span class="medal">🥈</span> 2°
             </div>
             <RewardPillsGroup
               :prize="getSubCompPrizes(sub)!.second"
@@ -123,7 +123,7 @@ const getSubCompPrizes = (sub: SubCompetitionConfig): { first?: Prize, second?: 
             class="sub-prize-row bronze"
           >
             <div class="rank-badge pixelated">
-              🥉 3°
+              <span class="medal">🥉</span> 3°
             </div>
             <RewardPillsGroup
               :prize="getSubCompPrizes(sub)!.third"
@@ -141,7 +141,7 @@ const getSubCompPrizes = (sub: SubCompetitionConfig): { first?: Prize, second?: 
     class="event-section"
   >
     <div class="section-tag">
-      🏆 PREMIOS DEL PODIO
+      <span class="title-icon">🏆</span> PREMIOS DEL PODIO
     </div>
     <div class="prizes-container">
       <div 
@@ -149,7 +149,7 @@ const getSubCompPrizes = (sub: SubCompetitionConfig): { first?: Prize, second?: 
         class="sub-prize-row gold"
       >
         <div class="rank-badge pixelated">
-          🥇 1°
+          <span class="medal">🥇</span> 1°
         </div>
         <RewardPillsGroup
           :prize="prizes.first"
@@ -161,7 +161,7 @@ const getSubCompPrizes = (sub: SubCompetitionConfig): { first?: Prize, second?: 
         class="sub-prize-row silver"
       >
         <div class="rank-badge pixelated">
-          🥈 2°
+          <span class="medal">🥈</span> 2°
         </div>
         <RewardPillsGroup
           :prize="prizes.second"
@@ -173,7 +173,7 @@ const getSubCompPrizes = (sub: SubCompetitionConfig): { first?: Prize, second?: 
         class="sub-prize-row bronze"
       >
         <div class="rank-badge pixelated">
-          🥉 3°
+          <span class="medal">🥉</span> 3°
         </div>
         <RewardPillsGroup
           :prize="prizes.third"

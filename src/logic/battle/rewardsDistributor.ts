@@ -10,6 +10,7 @@ import type { BattleState } from '@/types/battle/battle.ts';
 import { processGymBattleRewards } from './rewards/gymRewardsHandler.ts';
 import { processCombatantExpAndEvs } from './rewards/combatantExpEvProcessor.ts';
 import { handleRivalSpecialDrops, processCurrencyAndTrainerExp } from './rewards/classRewardsHandler.ts';
+import { handleNpcBabyEggReward } from './rewards/npcEggRewardsHandler.ts';
 
 export function registerRewardCombatant(active: BattleState | null) {
   if (!active) return;
@@ -64,7 +65,10 @@ export async function calculateBattleRewards(ctx: BattleContext) {
   // 3. Rival drops
   handleRivalSpecialDrops(ctx, active);
 
-  // 4. Gym specific rewards & badges
+  // 4. NPC Baby Egg drops
+  handleNpcBabyEggReward(ctx, active);
+
+  // 5. Gym specific rewards & badges
   await processGymBattleRewards(ctx, active);
 
   // 5. Multipliers & Modifiers

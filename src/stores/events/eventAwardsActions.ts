@@ -167,6 +167,8 @@ export async function fetchPastEvents(ctx: EventAwardsContext) {
     const historyList: PastEventHistoryItem[] = []
     for (const res of results as { id: string; event_id: string; winners: unknown; ended_at: string }[]) {
       const eventCfg = allEvents.value.find(e => e.id === res.event_id)
+      const isCustomOrUnknown = !eventCfg || res.event_id.startsWith('custom_') || (eventCfg.name && eventCfg.name.startsWith('custom_'))
+      const eventName = !isCustomOrUnknown && eventCfg?.name ? eventCfg.name : 'Evento desconocido'
       
       let parsedWinners: PastCompetitionWinner[] = []
       if (typeof res.winners === 'string') {
@@ -193,7 +195,7 @@ export async function fetchPastEvents(ctx: EventAwardsContext) {
             if (pokeUid) {
               grantTrophyToPokemon(ctx, {
                 eventId: res.event_id,
-                eventName: eventCfg?.name || res.event_id,
+                eventName,
                 categoryId: catId,
                 categoryName: winner.category_name || (catId === 'weight' ? 'Masa y Peso' : catId === 'height' ? 'Envergadura y Altura' : 'Genética Superior (IVs)'),
                 rank: (winner.rank as CompetitionRankKey) || 'first',
@@ -208,9 +210,9 @@ export async function fetchPastEvents(ctx: EventAwardsContext) {
       historyList.push({
         id: res.id,
         event_id: res.event_id,
-        event_name: eventCfg?.name || res.event_id,
-        event_icon: eventCfg?.icon || '🏆',
-        event_description: eventCfg?.description || '',
+        event_name: eventName,
+        event_icon: (!isCustomOrUnknown && eventCfg?.icon) ? eventCfg.icon : '🏆',
+        event_description: (!isCustomOrUnknown && eventCfg?.description) ? eventCfg.description : '',
         event_schedule: eventCfg?.schedule,
         start_at: eventCfg?.start_at,
         end_at: eventCfg?.end_at,
@@ -219,7 +221,8 @@ export async function fetchPastEvents(ctx: EventAwardsContext) {
         myAward: matchingAward || null,
         isWinner,
         hasUnclaimedAward,
-        isClaimed
+        isClaimed,
+        raw_event: eventCfg || null
       })
     }
 

@@ -5,6 +5,7 @@ import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils'
 import { toID } from '@/logic/utils/strings.ts'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 import { requireAbilityId } from '@/data/battle/abilities'
+import { isLegendaryPokemonSpeciesId, isFossilPokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 
 export interface PokemonLegalityReport {
@@ -104,7 +105,13 @@ export function repairPokemonLegality(p: Pokemon): PokemonRepairReport {
   const speciesData = pokemonDataProvider.getPokemonData(p.id, true)
   if (!speciesData) return { repaired: false, changes }
 
-  // 1. Repair Level
+  // 1. Repair Species Name (sync if not a custom nickname)
+  if (!p.nickname && p.name !== speciesData.name) {
+    p.name = speciesData.name
+    changes.push(`Nombre de especie sincronizado a "${speciesData.name}"`)
+  }
+
+  // 2. Repair Level
   if (p.level < 1) {
     p.level = 1
     changes.push('Nivel corregido a 1')
@@ -113,7 +120,26 @@ export function repairPokemonLegality(p: Pokemon): PokemonRepairReport {
     changes.push(`Nivel corregido a ${MAX_POKEMON_LEVEL}`)
   }
 
-  // 2. Repair Ability
+  // 3. Repair Vigor & MaxVigor
+  const isLeg = isLegendaryPokemonSpeciesId(p.id) || isFossilPokemonSpeciesId(p.id)
+  if (isLeg) {
+    if (p.vigor !== 0 || p.maxVigor !== 0) {
+      p.vigor = 0
+      p.maxVigor = 0
+      changes.push('Vigor de Legendario/Fósil ajustado a 0/0')
+    }
+  } else {
+    if (p.maxVigor === undefined || p.maxVigor === null || isNaN(p.maxVigor) || p.maxVigor <= 0) {
+      p.maxVigor = 100
+      changes.push('Vigor máximo inicializado a 100')
+    }
+    if (p.vigor === undefined || p.vigor === null || isNaN(p.vigor)) {
+      p.vigor = p.maxVigor
+      changes.push(`Vigor actual inicializado a ${p.maxVigor}`)
+    }
+  }
+
+  // 4. Repair Ability
   const validAbilities = pokemonDataProvider.getSpeciesAbilities(p.id)
   if (p.ability && !validAbilities.includes(p.ability as (typeof validAbilities)[number])) {
     const fallbackAbility = validAbilities[0] ? requireAbilityId(validAbilities[0]) : requireAbilityId('overgrow')
@@ -121,7 +147,7 @@ export function repairPokemonLegality(p: Pokemon): PokemonRepairReport {
     changes.push(`Habilidad reasignada a legal: "${fallbackAbility}"`)
   }
 
-  // 3. Repair Moves
+  // 5. Repair Moves
   const legalMoves: Move[] = []
   const seenMoveIds = new Set<string>() // runtime-set
 
@@ -183,7 +209,13 @@ export function repairPokemonLegality(p: Pokemon): PokemonRepairReport {
 
   p.moves = legalMoves
 
-  // 4. Recalculate stats and clean flags
+  // 6. Ensure HP exists before stats recalculation
+  if (p.hp === undefined || p.hp === null || isNaN(p.hp) || p.hp <= 0) {
+    p.hp = p.maxHp || 100
+    changes.push('HP inicializado')
+  }
+
+  // 7. Recalculate stats and clean flags
   recalcPokemonStats(p, true)
   p.isIllegal = false
   p.illegalReasons = []

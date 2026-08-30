@@ -60,7 +60,7 @@ if (typeof window !== 'undefined') {
         class="btn-vicio-success btn-vicio-full"
         @click.stop="confirmSave"
       >
-        💾 GUARDAR CONFIGURACIÓN
+        <span class="btn-emoji">💾</span> GUARDAR CONFIGURACIÓN
       </button>
     </template>
   </BaseModal>

@@ -174,7 +174,7 @@ const handlePokemonClick = (index: number) => {
               class="rocket-trigger-btn"
               @click.stop="toggleRocketMode"
             >
-              💀 MERCADO NEGRO
+              <span class="btn-emoji">💀</span> MERCADO NEGRO
             </button>
           </PVTooltip>
 
@@ -188,7 +188,7 @@ const handlePokemonClick = (index: number) => {
               class="release-trigger-btn"
               @click.stop="toggleReleaseMode"
             >
-              ⚡ LIBERAR POKÉMON
+              <span class="btn-emoji">⚡</span> LIBERAR POKÉMON
             </button>
           </PVTooltip>
         </div>

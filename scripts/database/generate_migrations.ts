@@ -57,22 +57,41 @@ export async function generateMigrations() {
 
     // Check for SQLite companion file
     const sqliteFilename = filename.replace(/\.sql$/, '.sqlite.sql');
+    const stripInlineComment = (line: string): string => {
+      let inSingle = false;
+      let inDouble = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === "'" && !inDouble) {
+          if (line[i + 1] === "'") {
+            i++; // skip escaped quote ''
+          } else {
+            inSingle = !inSingle;
+          }
+        } else if (ch === '"' && !inSingle) {
+          inDouble = !inDouble;
+        } else if (!inSingle && !inDouble && ch === '-' && line[i + 1] === '-') {
+          return line.substring(0, i).trimEnd();
+        }
+      }
+      return line;
+    };
+
+    const cleanSqlLines = (rawText: string) => rawText
+      .split('\n')
+      .map(line => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('--')) return '';
+        return stripInlineComment(line);
+      })
+      .filter(line => line.trim().length > 0)
+      .join('\n')
+      .trim();
+
     let sqliteSql: string | undefined = undefined;
     try {
       const sqliteContent = await fs.readFile(path.join(MIGRATIONS_DIR, sqliteFilename), 'utf-8');
-      sqliteSql = sqliteContent.split('\n')
-        .map(line => {
-          const commentIndex = line.indexOf('--');
-          if (commentIndex !== -1) {
-            if (line.includes('check:')) return '';
-            return line.substring(0, commentIndex);
-          }
-          return line;
-        })
-        .filter(line => line.trim().length > 0)
-        .join(' ')
-        .replace(/\s+/g, ' ')
-        .trim();
+      sqliteSql = cleanSqlLines(sqliteContent);
     } catch {
       // SQLite companion does not exist, which is normal
     }
@@ -89,26 +108,12 @@ export async function generateMigrations() {
       }
     }
 
-    // Prepare SQL: remove comments and normalize newlines to keep it compact
-    const sqlLines = content.split('\n')
-      .map(line => {
-        // Strip inline comments starting with --
-        const commentIndex = line.indexOf('--');
-        if (commentIndex !== -1) {
-          // Keep part before comment, but only if it's not the 'check:' metadata line
-          if (line.includes('check:')) return '';
-          return line.substring(0, commentIndex);
-        }
-        return line;
-      })
-      .filter(line => line.trim().length > 0)
-      .join(' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+    // Prepare SQL: remove comment lines and preserve clean SQL content
+    const sqlClean = cleanSqlLines(content);
 
     return {
       id,
-      sql: sqlLines,
+      sql: sqlClean,
       sqlite_sql: sqliteSql,
       check
     };

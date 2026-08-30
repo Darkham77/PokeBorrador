@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 
 vi.mock('@/logic/battle/showdownWorkerClient.ts', () => ({
   showdownWorker: {},
+  getShowdownWorker: vi.fn().mockReturnValue({}),
   executeTurnInWorker: vi.fn().mockResolvedValue({
     logs: ['|faint|p1a: Rattata'],
     isOver: false,

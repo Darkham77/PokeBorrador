@@ -255,7 +255,7 @@ defineExpose({
       :style="faceStyles"
     >
       <template v-if="!cls">
-        🧢
+        <span class="icon">🧢</span>
       </template>
     </div>
     <slot name="overlay" />

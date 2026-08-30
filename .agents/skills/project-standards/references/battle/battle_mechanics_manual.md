@@ -54,6 +54,22 @@ When executing turns and team swaps in battles coordinated by the Showdown worke
 *   **Atomic Stream Consumption (`ShowdownBattleRunner`)**: Choice streams in automated replays are consumed directly from `choicesBySeat` without transient engine instantiations. P1 `teamPreview` requests resolve to `'team 1'` without advancing choice stream indices.
 *   **Post-Switch FSM Transition Guard (`switchAction.ts`)**: When resolving any switch sequence (voluntary, forced, or replacement), if the entering Pokémon faints on entry (e.g. from *Stealth Rock*, *Spikes*, or entry poison damage: `newPoke.hp <= 0`) or if the battle ends (`activeBattle.over`), the FSM MUST NOT transition back to `WAIT_INPUT` or reset `isBattleSwitchForced = false`. The FSM MUST remain in `SWITCH_MENU` (or the defeat / termination state) with `isBattleSwitchForced = true` so the UI presents the replacement menu and does not lock up with an empty/fainted combatant.
 
+### 5. Multi-Turn Forced & Locked Moves Lifecycle
+
+Pokémon Showdown emits specialized request structures and log tokens for multi-turn move families:
+
+1. **`lockedmove` (Outrage, Thrash, Petal Dance)**:
+   - Turn 1: Player selects the move freely. Showdown sets `lockedmove` volatile and locks the target.
+   - Turns 2-3: Showdown emits `|move|...|[from]lockedmove` and restricts `playerRequest.active[0].moves` to `[{ id: '<moveId>', disabled: false }]`. The UI disables all other slots in gray (`BattleMoveSlot.vue`), and the bridge plays the attack animation (`showdownBridgeCore.ts`). Upon termination, confusion is inflicted.
+2. **`twoturnmove` (Solar Beam, Dig, Fly, Dive, Skull Bash)**:
+   - Turn 1: Charging phase (`|-prepare|...`).
+   - Turn 2: Attack execution phase (`|move|...`).
+3. **`recharge` / `mustrecharge` (Hyper Beam, Giga Impact, Frenzy Plant)**:
+   - Turn 1: Attack execution (`|move|...`) followed by `|-mustrecharge|...`.
+   - Turn 2: Showdown sends `moves: [{ id: 'recharge', move: 'Recharge' }]`. The turn auto-executes `move 1` (`|cant|...|recharge`).
+4. **`uproar`, `rollout`, `bide`**:
+   - Successive turns maintain fixed action execution and UI slot disabling until expiration.
+
 ---
 
 ## 🌪️ Weather Influence
@@ -503,10 +519,10 @@ stateDiagram-v2
     state SEARCH_PHASE {
         [*] --> TRAINER_ENTRY : "Slide from x: 150% to Center Stage (0, 0)"
         TRAINER_ENTRY --> SHOW_DIALOGS : "Display Speech Bubble at Center"
-        SHOW_DIALOGS --> COMBAT_OR_FLEE : "Wait for Player Decision"
+        SHOW_DIALOGS --> COMBAT_OR_FLEE : "Wait for Player Decision (or 3s GSAP timer in autoBattle)"
     }
 
-    COMBAT_OR_FLEE --> FIRST_INTRO : "Player clicks '¡COMBATIR!'"
+    COMBAT_OR_FLEE --> FIRST_INTRO : "Player clicks '¡COMBATIR!' (or auto-started after 3s GSAP timer)"
     COMBAT_OR_FLEE --> EXIT_BATTLE : "Player clicks 'Huir'"
 
     state FIRST_INTRO {
@@ -742,11 +758,11 @@ stateDiagram-v2
         EMPTY_WAIT --> CHECK_PERSISTENCE : Check persistence
         state CHECK_PERSISTENCE <<choice>>
         CHECK_PERSISTENCE --> [*] : isSingle == true → STOP at EMPTY_WAIT (user clicks button)
-        CHECK_PERSISTENCE --> [*] : isSingle == false, wasSearching == true → completeBattleFlow('search')
+        CHECK_PERSISTENCE --> [*] : isSingle == false, wasSearching == true → completeBattleFlow('search') (waits AUTO_BATTLE_REWARDS_DELAY_SEC via GSAP timer if autoBattle == true)
     }
 
     note right of CHECK_OUTCOME: Skips XP and Level-up if enemy fled
-    note right of CHECK_PERSISTENCE: isSingle is true when persistenceMode=='SINGLE' OR isGym==true OR isPvP==true. isSingle battles SKIP the animated team reorder sequence and park the FSM at EMPTY_WAIT. The overlay shows the 'VOLVER A GIMNASIOS' / 'VOLVER AL MAPA' button. completeBattleFlow('map') is called ONLY when the player clicks the button — never automatically. Route Trainer Battles in search mode (PERSISTENT, wasSearching==true) call completeBattleFlow('search') after the animated reorder.
+    note right of CHECK_PERSISTENCE: isSingle is true when persistenceMode=='SINGLE' OR isGym==true OR isPvP==true. isSingle battles SKIP the animated team reorder sequence and park the FSM at EMPTY_WAIT. The overlay shows the 'VOLVER A GIMNASIOS' / 'VOLVER AL MAPA' button. completeBattleFlow('map') is called ONLY when the player clicks the button — never automatically. Route Trainer Battles in search mode (PERSISTENT, wasSearching==true) call completeBattleFlow('search') after the animated reorder and an explicit 1.5s GSAP timer (AUTO_BATTLE_REWARDS_DELAY_SEC) when autoBattle is active so players can read final combat logs.
 
 ```
 
@@ -801,10 +817,9 @@ stateDiagram-v2
             REORDER_TEAM --> [*]
         }
 
-        PREPARATION --> COMBAT_OR_FLEE : "autoBattle == false || isTrainer == true"
-        PREPARATION --> ENCOUNTER_ANIM : "autoBattle == true && isTrainer == false"
+        PREPARATION --> COMBAT_OR_FLEE : "Always enter stable search state"
 
-        COMBAT_OR_FLEE --> ENCOUNTER_ANIM : "Click BATTLE / CHALLENGE"
+        COMBAT_OR_FLEE --> ENCOUNTER_ANIM : "Click BATTLE / CHALLENGE or autoBattle watcher trigger"
         COMBAT_OR_FLEE --> EXIT_BATTLE : "Click RETURN TO MAP"
 
         state ENCOUNTER_ANIM {
@@ -1379,7 +1394,7 @@ These patterns prevent asynchronous battle logic from interfering with subsequen
 - **`applyEndTurnEffects` Guard**: The function in `battleFlow.ts` MUST return early if `fsm.currentState.value !== BATTLE_STATES.ACTIVE_BATTLE`. Weather damage (e.g., Ola Frío, Granizo) or status tick effects from the previous battle can wake up asynchronously after the FSM has already transitioned to `SEARCH_PHASE`, applying damage to the next enemy and revealing its identity before the encounter animation.
 - **`processFaint` Guard**: The function in `resolution.ts` MUST check that the FSM is in `ACTIVE_BATTLE` before executing faint sequences. Allow `EXIT_BATTLE` as a permissible state only for unit test contexts. Without this guard, a deferred faint from a previous battle can affect the next opponent.
 - **`executeMove` / `useItemInBattle` Guard**: Both must verify `fsm.currentState.value === ACTIVE_BATTLE` before triggering turn sub-states like `WAIT_INPUT`. Stale async chains from the previous turn can otherwise set substates on the new encounter's FSM.
-- **`autoBattle` Watcher Scope**: The watcher in `BattleArenaControls.vue` MUST trigger **only** when substate is `COMBAT_OR_FLEE` or `SILHOUETTE_MODE`. Triggering on `PARALLEL_PREP` causes the auto-battle to skip the entire search layout (bushes, silhouettes), starting the new battle instantly without any visual search phase.
+- **`autoBattle` Watcher Scope & SSoT**: The watcher in `BattleArenaControls.vue` is the exclusive Single Source of Truth (SSoT) for triggering automatic encounters when `uiStore.autoBattle` is active. It MUST trigger **only** when the FSM reaches the stable waiting substate `COMBAT_OR_FLEE` (or `SILHOUETTE_MODE`). Imperative code in `searchLoop.ts` and `orchestratorSearchPhaseHelper.ts` MUST NOT directly invoke `startEncounter(ctx)` to prevent double invocation race conditions and asynchronous turn stack pollution.
 - **`COMBAT_OR_FLEE` Immediate Transition**: `handleBattleFlowCompletion('search')` in `searchLoop.ts` MUST explicitly transition to `COMBAT_OR_FLEE` immediately after `PARALLEL_PREP` completes. This ensures the stable waiting state is set before the first reactive frame in which the `autoBattle` watcher fires.
 - **Money Sound Exclusion**: The money gain sound effect MUST NOT be played inside `calculateBattleRewards`. It was intentionally removed to decouple the audio cue from the rewards calculation cycle.
 

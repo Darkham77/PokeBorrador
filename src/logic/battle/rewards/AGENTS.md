@@ -9,6 +9,7 @@ This directory contains modular reward processors and handlers executed at the c
 - [gymRewardsHandler.ts](./gymRewardsHandler.ts): Handles first-time gym badges, TM rewards, rematch item drop probabilities, and difficulty-based bulk EXP/money awards.
 - [combatantExpEvProcessor.ts](./combatantExpEvProcessor.ts): Processes EXP and EV gains per combatant, Pokérus transmission, level-up notifications, move learning queues, and level-up evolution checks.
 - [classRewardsHandler.ts](./classRewardsHandler.ts): Processes Rival item drops, Team Rocket route extortion bonuses, Trainer official route reputation increments, and Battle Coins / Trainer EXP scaling.
+- [npcEggRewardsHandler.ts](./npcEggRewardsHandler.ts): Processes baby Pokémon egg rewards (`isNpc: true`) given by normal NPC trainers (2%) and Rivals (5%), excluding Gyms and PvP battles.
 
 ## Local Governance & Rules
 

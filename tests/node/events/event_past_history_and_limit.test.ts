@@ -92,5 +92,57 @@ describe('Event Past History & 20 Limit (Tier 1)', () => {
     assert.strictEqual(pastEventsRef.value.length, 20, `Expected 20 past events, got ${pastEventsRef.value.length}`);
     assert.strictEqual(pastEventsRef.value[0]?.winners[0]?.player_name, 'Campeon_Torneo_25');
     assert.strictEqual(pastEventsRef.value[19]?.winners[0]?.player_name, 'Campeon_Torneo_06');
+    assert.strictEqual(pastEventsRef.value[0]?.event_name, 'La Hora del Magikarp');
+    assert.strictEqual(pastEventsRef.value[0]?.raw_event?.id, 'hora_magikarp');
+  });
+
+  it('maps unknown or custom_XXX event_id to "Evento desconocido" and raw_event null', async () => {
+    const mockDb = {
+      from: (table: string) => {
+        if (table === 'competition_results') {
+          return {
+            select: () => ({
+              order: () => ({
+                limit: () => Promise.resolve({
+                  data: [
+                    {
+                      id: 'res_custom',
+                      event_id: 'custom_1774821389985',
+                      winners: '[]',
+                      ended_at: '2026-03-29T22:06:00Z'
+                    }
+                  ],
+                  error: null
+                })
+              })
+            })
+          };
+        }
+        return {
+          select: () => ({
+            eq: () => Promise.resolve({ data: [], error: null })
+          })
+        };
+      }
+    };
+
+    const pastEventsRef = ref<PastEventHistoryItem[]>([]);
+    const allEventsRef = ref<GameEvent[]>([]);
+
+    const ctx: EventAwardsContext = {
+      gameStore: { db: mockDb } as unknown as EventAwardsContext['gameStore'],
+      authStore: { user: null } as unknown as EventAwardsContext['authStore'],
+      uiStore: { notify: () => {} } as unknown as EventAwardsContext['uiStore'],
+      allEvents: allEventsRef,
+      pastEvents: pastEventsRef,
+      pendingAwards: ref<PendingAward[]>([]),
+      userEntries: ref<Record<string, CompetitionEntry>>({})
+    };
+
+    await fetchPastEvents(ctx);
+
+    assert.strictEqual(pastEventsRef.value.length, 1);
+    assert.strictEqual(pastEventsRef.value[0]?.event_name, 'Evento desconocido');
+    assert.strictEqual(pastEventsRef.value[0]?.raw_event, null);
   });
 });

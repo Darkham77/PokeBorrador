@@ -2,11 +2,16 @@
 
 > **Scope & Authority**: This document governs **high-level engine invariants, Showdown integration boundaries, 4-seat generic design, UID team synchronization, visual shell rules, and illegal Pokémon quarantine** across Poké Vicio.
 >
-> 🛑 **Domain Boundaries & Redirection**:
-> - For detailed battle engine mechanics, choice loops, and worker turn resolution ➔ See [Battle Mechanics Manual](../battle/battle_mechanics_manual.md).
-> - For mathematical formulas (damage, catch rates, stats, escape) ➔ See [Game Formulas Manual](../core/game_formulas_manual.md).
-> - For combat animations and GSAP timelines ➔ See [Animation Standards](../battle/animation_standards.md).
-> - For in-flight combat save persistence and F5 anti-cheat ➔ See [Battle Persistence & Anti-Cheat Manual](../battle/battle_persistence_and_anti_cheat_manual.md).
+> 🛑 **Anti-Catch-All & Subsystem Redirection**:
+> - **DO NOT ADD GAMEPLAY SUBSYSTEM RULES HERE.** Specific gameplay features, drop tables, daycare/breeding mechanics, items, and gyms belong in their respective dedicated manuals:
+>   - For Daycare, Breeding, Hatching, Egg limits, and Baby rewards ➔ [Breeding Manual](../systems/breeding_manual.md).
+>   - For Gyms, Badges, and Leaders ➔ [Gym System Manual](../systems/gym_system_manual.md).
+>   - For Items, Crafting, and Medicine ➔ [Item System Manual](../systems/item_system_manual.md).
+>   - For Faction War mechanics ➔ [Faction War Manual](../systems/war_system_manual.md).
+>   - For Battle engine mechanics, choice loops, and worker turn resolution ➔ [Battle Mechanics Manual](../battle/battle_mechanics_manual.md).
+>   - For Mathematical formulas (damage, catch rates, stats, escape) ➔ [Game Formulas Manual](../core/game_formulas_manual.md).
+>   - For Combat animations and GSAP timelines ➔ [Animation Standards](../battle/animation_standards.md).
+>   - For In-flight combat save persistence and F5 anti-cheat ➔ [Battle Persistence & Anti-Cheat Manual](../battle/battle_persistence_and_anti_cheat_manual.md).
 
 ---
 
@@ -81,12 +86,11 @@
 - **Zero-Hardcoding Out-of-Battle Rule Coordination**: All outside-battle rule modifications, Pokémon field passives, item buffs/debuffs (incenses, repels, tools, charms), player class perks, Daycare modifiers, and event multipliers MUST be aggregated and evaluated through the centralized `FieldRulesCoordinator` (`src/logic/rules/fieldRulesCoordinator.ts`). Writing disparate, ad-hoc `if (leader.ability === ...)` or item checks scattered across low-level subsystem files is STRICTLY FORBIDDEN.
 - **Canonical Out-of-Battle Abilities**: All 33 canonical field abilities are implemented in `pokemonFieldAbilities.ts` and scale dynamically with `ACTIVE_GENERATION`. Egg step reduction passives (*Flame Body*, *Magma Armor*, *Steam Engine*) provide a non-stacking $2\times$ reduction, while post-battle gathering (*Pickup*, *Honey Gather*) rolls independently per conscious party member according to official level brackets.
 
+
 ## 12. Busy Pokémon Protection & Complete Lifecycle Protocol
 
 Pokémon participating in active missions (`onMission: true`), competition events (`onEvent: true`), daycare (`inDaycare: true`), or passive defense (`onDefense: true`) are classified as busy (`isPokemonBusy`):
 1. **Visual Indicators**: Automatically badged with `mission` (`🧭 EN MISIÓN`) or `event` (`🏆 EN EVENTO`) via `getPokemonVisualBadges()`.
 2. **Action Locking**: Release, Black Market selling, P2P trade offers, and GTS publishing are strictly blocked across UI, Pinia stores, and database RPCs.
 3. **Lifecycle Rehabilitation**: Once the mission is claimed or the event concludes, all busy flags are reset to `false`, badges disappear, and all actions are re-enabled.
-
-
 

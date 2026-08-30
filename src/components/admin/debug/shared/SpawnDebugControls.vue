@@ -207,7 +207,7 @@ const activeOverridesSummary = computed(() => {
         class="full-btn reset-all-btn"
         @click.stop="debugStore.resetSpawnDefaults()"
       >
-        🔄 RESTAURAR TODOS LOS VALORES POR DEFECTO
+        <span class="btn-emoji">🔄</span> RESTAURAR TODOS LOS VALORES POR DEFECTO
       </button>
 
       <div class="debug-info-box">

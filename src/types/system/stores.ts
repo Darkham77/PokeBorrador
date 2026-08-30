@@ -258,6 +258,7 @@ export interface PastEventHistoryItem {
   isWinner: boolean;
   hasUnclaimedAward: boolean;
   isClaimed: boolean;
+  raw_event?: Event | null;
 }
 
 export interface EventStore {

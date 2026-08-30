@@ -10,6 +10,7 @@ Frontend Developers / Social Systems Engineers.
 
 - Keep chat logs capped to avoid DOM pollution and memory bloat.
 - Coordinate cosmetic loading dynamically through Pinia store lifecycle hooks.
+- Format all chat timestamps using `formatChatTimestamp` (today: `HH:mm`, prior to today: `DD/MM/YYYY HH:mm`).
 
 ## Work Guidance
 

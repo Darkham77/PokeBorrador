@@ -31,7 +31,8 @@
     "postgres",
     "@pkmn/sim",
     "eslint-formatter-codeframe",
-    "css-checker-kit"
+    "css-checker-kit",
+    "@rolldown/binding-wasm32-wasi"
   ],
   "rules": {
     "unused-dependencies": "warn",

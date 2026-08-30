@@ -95,12 +95,15 @@ const handleSwitch = () => {
       <!-- Battle Log -->
       <div class="pvp-log-container">
         <div class="pvp-status-bar">
-          <span :class="battle?.phase">{{ 
-            battle?.phase === 'choosing' ? '⚔️ TU TURNO' : 
-            battle?.phase === 'waiting' ? '⏳ ESPERANDO RIVAL' :
-            battle?.phase === 'resolving' ? '⚡ CALCULANDO' :
-            battle?.phase === 'animating' ? '🎬 REPRODUCIENDO' : 'Sincronizando...'
-          }}</span>
+          <span :class="battle?.phase">
+            <span class="emoji-inline">{{ battle?.phase === 'choosing' ? '⚔️' : battle?.phase === 'waiting' ? '⏳' : battle?.phase === 'resolving' ? '⚡' : battle?.phase === 'animating' ? '🎬' : '' }}</span>
+            {{ 
+              battle?.phase === 'choosing' ? ' TU TURNO' : 
+              battle?.phase === 'waiting' ? ' ESPERANDO RIVAL' :
+              battle?.phase === 'resolving' ? ' CALCULANDO' :
+              battle?.phase === 'animating' ? ' REPRODUCIENDO' : 'Sincronizando...'
+            }}
+          </span>
         </div>
         <div class="logs-area scrollbar">
           <div

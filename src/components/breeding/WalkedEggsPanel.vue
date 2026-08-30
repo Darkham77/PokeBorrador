@@ -178,7 +178,7 @@ function hatchEgg(egg: PokemonEgg): void {
           <span
             v-if="egg.isShiny"
             class="shiny-star"
-          >✨</span>
+          ><span class="icon">✨</span></span>
         </div>
 
         <!-- Progress info -->

@@ -167,7 +167,7 @@ onMounted(() => {
                 v-model="isBikeActive"
                 type="checkbox"
               >
-              <span class="adv-toggle-label">🚲 Bicicleta</span>
+              <span class="adv-toggle-label"><span class="icon">🚲</span> Bicicleta</span>
             </label>
             <div class="adv-hm-list">
               <button
@@ -201,7 +201,7 @@ onMounted(() => {
                 :key="passive.label"
                 style="background: rgba(76,175,80,0.15); border: 1px solid #4caf50; padding: 4px; border-radius: 4px; display: flex; flex-direction: column; gap: 2px;"
               >
-                <span style="color: #4caf50; font-weight: bold;">🌟 {{ passive.label }}</span>
+                <span style="color: #4caf50; font-weight: bold;"><span class="icon">🌟</span> {{ passive.label }}</span>
                 <span style="font-size: 6px; color: #ccc;">{{ passive.desc }}</span>
               </div>
               <div
@@ -225,7 +225,7 @@ onMounted(() => {
                 :disabled="move.pp <= 0"
                 @click="useActiveRouteMove(move.pokemonUid, move.moveName)"
               >
-                <span>{{ move.moveName.toLowerCase().includes('tele') ? '🔮' : '🌸' }} {{ move.moveName }} ({{ move.pokemonName }})</span> <!-- text-ok -->
+                <span><span class="icon">{{ move.moveName.toLowerCase().includes('tele') ? '🔮' : '🌸' }}</span> {{ move.moveName }} ({{ move.pokemonName }})</span>
                 <span :style="{ color: move.pp > 0 ? '#ffcb05' : '#ef5350' }">PP {{ move.pp }}/{{ move.maxPP }}</span>
               </button>
             </div>
@@ -256,7 +256,7 @@ onMounted(() => {
               style="margin-top: 10px; width: 100%; padding: 8px; font-family: var(--font-pixel); font-size: 8px;"
               @click="cancelTravel"
             >
-              Cancelar Viaje 🛑
+              Cancelar Viaje <span class="btn-emoji">🛑</span>
             </button>
           </div>
         </div>
@@ -279,14 +279,14 @@ onMounted(() => {
               class="adv-zoom-btn"
               @click.stop="() => handleZoomIn()"
             >
-              ➕
+              <span class="btn-emoji">➕</span>
             </button>
             <button
               v-gsap-hover
               class="adv-zoom-btn"
               @click.stop="() => handleZoomOut()"
             >
-              ➖
+              <span class="btn-emoji">➖</span>
             </button>
             <button
               v-gsap-hover
@@ -294,7 +294,7 @@ onMounted(() => {
               title="Centrar en mapa seleccionado"
               @click.stop="centerOnActiveNode"
             >
-              🎯
+              <span class="btn-emoji">🎯</span>
             </button>
           </div>
 

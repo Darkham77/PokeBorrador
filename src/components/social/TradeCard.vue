@@ -116,13 +116,13 @@ async function onClaim() {
           <span
             v-else-if="mode === 'accepted'"
             class="meta text-success"
-          >¡ACEPTÓ TU OFERTA! 🎉</span>
+          >¡ACEPTÓ TU OFERTA! <span class="emoji-inline">🎉</span></span>
         </div>
       </div>
       <span
         v-if="mode === 'outgoing'"
         class="waiting-badge"
-      >⏳ ENVIADA</span>
+      ><span class="emoji-inline">⏳</span> ENVIADA</span>
     </div>
 
     <!-- ACCEPTED NOTICE -->
@@ -155,7 +155,7 @@ async function onClaim() {
       v-if="mode === 'incoming' && canFulfill && !canFulfill.can"
       class="trade-warning-banner"
     >
-      ⚠️ {{ canFulfill.reason }}
+      <span class="emoji-inline">⚠️</span> {{ canFulfill.reason }}
     </div>
 
     <!-- ACTIONS -->

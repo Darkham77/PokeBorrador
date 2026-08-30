@@ -75,7 +75,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
         class="btn-vicio-secondary sm" 
         @click.stop="handleRandomize"
       >
-        🎲 ALEATORIO
+        <span class="btn-emoji">🎲</span> ALEATORIO
       </button>
     </div>
     
@@ -94,7 +94,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
                 class="btn-magic-fill btn-random-fill lg"
                 @click.stop="randomizeBase"
               >
-                🎲
+                <span class="btn-emoji">🎲</span>
               </button>
             </PVTooltip>
           </div>
@@ -119,7 +119,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
                 class="btn-magic-fill btn-random-fill"
                 @click.stop="randomizeSpecies"
               >
-                🎲
+                <span class="btn-emoji">🎲</span>
               </button>
             </PVTooltip>
           </template>

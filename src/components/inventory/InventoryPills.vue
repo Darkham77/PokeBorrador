@@ -193,7 +193,7 @@ onUnmounted(() => {
   justify-content: center;
   padding: 4px 2px;
   overflow: hidden;
-  gap: 2px;
+  gap: 4px;
 
   &.clickable-pill {
     cursor: pointer;
@@ -266,16 +266,30 @@ onUnmounted(() => {
 
 .currency-icon-money {
   font-size: 18px;
-  margin-bottom: 0px;
+  line-height: 1;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .currency-icon-bc {
   font-size: 16px;
+  line-height: 1;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .war-icon {
-  font-size: 18px;
-  margin-bottom: 2px;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  font-size: 14px;
+  line-height: 1;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ball-icon-wrap {

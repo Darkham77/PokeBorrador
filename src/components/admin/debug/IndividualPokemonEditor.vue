@@ -228,7 +228,7 @@ watch(() => activePoke.value?.level, (newLv) => {
               class="btn-magic-fill btn-random-fill"
               @click.stop="randomizeActiveSpecies"
             >
-              🎲
+              <span class="btn-emoji">🎲</span>
             </button>
           </template>
         </DebugSearchSelect>

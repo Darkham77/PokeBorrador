@@ -134,7 +134,7 @@ const getPokemonName = (id: string) => {
             <span
               v-else
               class="fallback-icon"
-            >🚫</span>
+            ><span class="icon">🚫</span></span>
           </div>
 
           <div class="stone-details">

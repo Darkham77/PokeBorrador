@@ -122,7 +122,7 @@ const getMetricDisplay = (sub: SubCompetitionConfig, p: CompetitionParticipant) 
           <span
             v-if="participant.isShiny"
             class="poke-shiny-badge"
-          >✨</span>
+          ><span class="emoji-inline">✨</span></span>
           <span class="poke-lv-badge">Nv. {{ participant.level ?? 1 }}</span>
         </div>
         <div class="metric-highlight-row">

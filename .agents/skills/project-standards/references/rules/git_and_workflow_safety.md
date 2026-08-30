@@ -36,13 +36,14 @@
   - Linux / macOS: [`setup-linux.sh`](../../../../../setup-linux.sh) (`chmod +x ./setup-linux.sh && ./setup-linux.sh`)
 - **All-in-One Execution Scope**: The setup script performs all required steps in a single run:
   1. Auto-elevates permissions via native Windows UAC prompt dialog (`setup-windows.ps1`) or sudo when necessary.
-  2. Detects, installs, and configures NVM symlinks.
+  2. Detects, installs, and configures NVM symlinks and junctions.
   3. Dynamically queries `https://nodejs.org/dist/index.json` for the latest stable Current Node.js release (falling back to `package.json` if offline).
   4. Automatically synchronizes `package.json` (`engines.node`) and `.nvmrc` to match the detected release.
   5. Installs and activates Node.js via NVM (`nvm install` & `nvm use`).
   6. Updates global npm to latest release (`npm install -g npm@latest`).
-  7. Enforces global npm security settings (`ignore-scripts true`, registry HTTPS, high audit level).
-  8. Cleans residual npm cache and executes `npm ci` for a deterministic workspace.
+  7. Enforces global npm security settings (`ignore-scripts true`, registry HTTPS, high audit level) and applies Windows Defender folder exclusions (`Add-MpPreference`).
+  8. Cleans residual npm cache, executes `npm ci` for a deterministic workspace, unblocks native binaries in `node_modules` (`Unblock-File`), and compiles native workspace tools via `npm run validate:tools`.
+  9. Preserves full system `PATH` integrity by additively concatenating `Machine` and `User` paths, ensuring `C:\Windows\System32` and core OS utilities remain permanently accessible.
 - **Zero-Hardcode Versioning Policy**: It is STRICTLY FORBIDDEN to hardcode Node.js or npm version numbers inside environment setup scripts, maintenance tools, or documentation tutorials. Scripts MUST dynamically discover releases from `nodejs.org` and synchronise `package.json` and `.nvmrc` automatically.
 - **Environment Audit & Pre-Check**: Pre-install checks (`node --experimental-strip-types scripts/maintenance/check_environment.ts`) automatically validate runtime environment requirements against `package.json`. Whenever outdated Node/npm versions or broken Windows NVM symlinks are detected, instruct the user to run the appropriate root setup script.
 - **IDE & Terminal Restart Mandate**: Whenever setup scripts update system/user environment variables, NVM symlinks, or PATH paths, the agent MUST instruct the user to restart their IDE or reopen all terminal sessions so that the entire process tree inherits the updated PATH without needing manual PATH injections in subsequent operations.

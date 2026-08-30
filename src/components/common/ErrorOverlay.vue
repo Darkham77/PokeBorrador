@@ -150,7 +150,7 @@ const transitionHooks = useGsapTransition({
               class="btn-vicio-neutral btn-vicio-sm"
               @click.stop="closeError"
             >
-              ✕ CERRAR
+              <span class="btn-emoji">✕</span> CERRAR
             </button>
           </div>
         </div>

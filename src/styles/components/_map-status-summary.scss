@@ -300,6 +300,9 @@
   margin-bottom: 4px;
   text-shadow: 0 4px 12px Rgba(0,0,0,1);
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 
   @media (max-width: 480px) {
     font-size: 16px;
@@ -332,13 +335,13 @@
   position: absolute;
   top: 15px;
   right: 15px;
-  background: Rgba(255, 51, 51, 1);
+  background: Rgba(16, 185, 129, 1);
   color: var(--white);
   padding: 6px 12px;
   border-radius: 10px;
   @include pixelated;
   font-size: 8px;
-  box-shadow: 0 4px 10px Rgba(255,51,51,0.3);
+  box-shadow: 0 4px 10px Rgba(16, 185, 129, 0.3);
   z-index: calc(var(--z-base) + 4);
   display: inline-flex;
   align-items: center;
@@ -347,15 +350,6 @@
   &.cooldown {
     background: Rgba(75, 85, 99, 1);
     box-shadow: 0 4px 10px Rgba(75,85,99,0.3);
-  }
-
-  .cooldown-emoji {
-    font-size: 11px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    transform: Translatey(-1.5px);
   }
 }
 

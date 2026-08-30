@@ -59,7 +59,7 @@ const isFactionValid = (faction: string | undefined | null) => {
         </div>
         <div class="rule-item">
           <span class="rule-label">Recompensa:</span>
-          <span class="rule-val shiny">✨ Mewtwo Armored</span>
+          <span class="rule-val shiny"><span class="emoji-inline">✨</span> Mewtwo Armored</span>
         </div>
       </div>
     </div>

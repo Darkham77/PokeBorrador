@@ -31,7 +31,7 @@ const emit = defineEmits<{
           :key="i"
           class="illegal-item"
         >
-          ❌ {{ issue }}
+          <span class="emoji-inline">❌</span> {{ issue }}
         </li>
       </ul>
       <div class="modal-footer">

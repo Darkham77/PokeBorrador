@@ -68,14 +68,19 @@ The cloning system allows recreating ancestral Pokémon (Omanyte, Kabuto, Aeroda
 
 ---
 
-## 9. Hatched Pokémon Properties & Vigor
+## 9. NPC & Rival Baby Egg Rewards & Incubator Capacity
 
-### 1. Hatch Tagging
-- **Mandatory Hatched Tag**: All Pokémon born from eggs MUST automatically receive the `hatched` tag in their data records upon hatching. This tag represents born/bred ancestry, is read-only, and is displayed as `CRÍA` (🥚) in the user interface.
+### 1. Drop Probabilities & Exclusions
+- **Normal NPC Trainers**: Defeating any normal NPC trainer on routes has a **2%** chance (`NPC_NORMAL_BABY_EGG_DROP_CHANCE = 0.02`) of dropping a mysterious baby Pokémon egg (`isNpc: true`).
+- **Rivals**: Defeating a Rival has a **5%** chance (`RIVAL_BABY_EGG_DROP_CHANCE = 0.05`) of dropping a baby Pokémon egg.
+- **Strict Exclusions**: Gym battles (`isGym`), PvP battles (`isPvP`), and wild Pokémon encounters (`!isTrainer`) NEVER award eggs (0% chance).
+- **Baby Pool**: The rewarded egg is randomly chosen from the enabled baby Pokémon pool (`pichu`, `cleffa`, `igglybuff`, `togepi`, `tyrogue`, `smoochum`, `elekid`, `magby`).
 
-### 2. Vigor on Hatching
-- **Regular Bred Eggs**: Pokémon hatched from player-bred eggs consume half of their maximum vigor immediately, starting with a vigor value of `Math.max(1, Math.floor(maxVigor / 2))`.
-- **NPC Gift Eggs**: Pokémon hatched from NPC event eggs (i.e. eggs marked as `isNpcEgg` or similar event statuses) start with full vigor (`maxVigor`) to reflect their special or premium origin.
-- **Ancestral/Cloned Pokémon**: Recreated fossil or ancestral Pokémon hatch/revive with both `maxVigor` and `vigor` set to `0`, reflecting their unique status.
+### 2. Incubator Capacity & Full Slot Rules
+- **Slot Capacity**: The trainer's backpack incubator holds up to 6 regular Daycare eggs (`MAX_CARRIED_EGGS = 6`) plus 1 extra reserved slot for NPC eggs (`MAX_NPC_CARRIED_EGGS = 1`), for a total maximum capacity of 7 eggs (`MAX_TOTAL_CARRIED_EGGS = 7`).
+- **Full Slot Blocking**: If the trainer is already carrying 7 total eggs or already has an active NPC egg in the incubator (`npcEggs.length >= 1`), no egg reward can be obtained upon winning.
+- **Reporting**: Awarded eggs are announced in the combat log (`log-catch`) and via UI notification toasts.
+- **Full Wild Vigor**: Upon hatching via `executeHatch`, the baby Pokémon is born with full wild vigor (`3 to 6`) instead of reduced daycare vigor.
+
 
 

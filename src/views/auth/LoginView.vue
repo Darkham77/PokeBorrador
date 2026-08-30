@@ -360,7 +360,7 @@ const handleServerChange = () => {
           class="auth-ban-card show"
         >
           <div class="ban-title">
-            🚫 ACCESO DENEGADO
+            <span class="emoji-inline">🚫</span> ACCESO DENEGADO
           </div>
           <div class="ban-reason">
             {{ error.split(':')[1] }}
@@ -430,7 +430,7 @@ const handleServerChange = () => {
             v-if="loading"
             class="auth-loading-text"
           >
-            Cargando partida... ⌛
+            Cargando partida... <span class="emoji-inline">⌛</span>
           </div>
         </div>
       </template>

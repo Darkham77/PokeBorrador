@@ -9,6 +9,7 @@ This directory contains static code analysis, AST governance, TypeScript configu
 - [audit_project.ts](./audit_project.ts): Master static code, line limit, duplicate constants, CSS check, and Fallow AST analyzer.
 - [validate_build_tools.ts](./validate_build_tools.ts): Validates bundling, transpilation, and build tools integrity.
 - [validate_component_styles.ts](./validate_component_styles.ts): Audits Vue component style linkage, broken style links, and orphaned SCSS files.
+- [validate_emoji_typography.ts](./validate_emoji_typography.ts): Audits Vue templates for unwrapped emojis and enforces proper icon/emoji class styling and vertical centering.
 
 ## Local Governance & Rules
 

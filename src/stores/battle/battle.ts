@@ -271,7 +271,9 @@ export const useBattleStore = defineStore('battle', () => {
       
       await executeTurn(getContext(), moveIndex)
       
-      await finalizeTurnExecution()
+      if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
+        await finalizeTurnExecution()
+      }
     } catch (error) {
       logger.error('BattleStore', `Error executing move index ${moveIndex}`, error)
       addLog('¡Ocurrió un error al ejecutar el movimiento!', 'log-error', 'player')
@@ -325,7 +327,9 @@ export const useBattleStore = defineStore('battle', () => {
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.TURN_ENGINE)
       await executeTurn(getContext(), -1)
 
-      await finalizeTurnExecution()
+      if (activeBattle.value && !activeBattle.value.over && fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
+        await finalizeTurnExecution()
+      }
     } catch (error) {
       logger.error('BattleStore', 'Error executing struggle', error)
       addLog('¡Ocurrió un error al ejecutar Combate!', 'log-error', 'player')

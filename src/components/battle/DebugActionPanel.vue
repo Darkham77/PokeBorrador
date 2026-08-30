@@ -273,7 +273,7 @@ const toggleStatus = (side: string, type: string) => {
         class="close-mini"
         @click.stop="emit('close')"
       >
-        ✕
+        <span class="btn-emoji">✕</span>
       </button>
     </div>
 
@@ -385,10 +385,10 @@ const toggleStatus = (side: string, type: string) => {
               Género
             </option>
             <option value="m">
-              ♂ M
+              Macho
             </option>
             <option value="f">
-              ♀ F
+              Hembra
             </option>
           </select>
         </div>
@@ -468,10 +468,10 @@ const toggleStatus = (side: string, type: string) => {
               Género
             </option>
             <option value="m">
-              ♂ M
+              Macho
             </option>
             <option value="f">
-              ♀ F
+              Hembra
             </option>
           </select>
         </div>

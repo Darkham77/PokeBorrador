@@ -200,7 +200,7 @@ function getGenderClass(gender: string) {
             description="Este Pokémon está en una misión activa."
           >
             <div class="status-indicator mission">
-              🧭
+              <span class="icon">🧭</span>
             </div>
           </PVTooltip>
           <PVTooltip
@@ -209,7 +209,7 @@ function getGenderClass(gender: string) {
             description="Este Pokémon está participando en un evento o concurso activo."
           >
             <div class="status-indicator event">
-              🏆
+              <span class="icon">🏆</span>
             </div>
           </PVTooltip>
           <PVTooltip
@@ -218,7 +218,7 @@ function getGenderClass(gender: string) {
             description="Este Pokémon está en la guardería."
           >
             <div class="status-indicator daycare">
-              🥚
+              <span class="icon">🥚</span>
             </div>
           </PVTooltip>
           <PVTooltip
@@ -227,7 +227,7 @@ function getGenderClass(gender: string) {
             description="Este Pokémon está asignado a la defensa."
           >
             <div class="status-indicator defense">
-              🛡️
+              <span class="icon">🛡️</span>
             </div>
           </PVTooltip>
         </div>

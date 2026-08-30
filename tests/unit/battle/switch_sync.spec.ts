@@ -26,6 +26,7 @@ vi.mock('@/logic/battle/orchestrator', () => ({
 // switchAction uses dynamic import from showdownWorkerClient (not orchestrator)
 vi.mock('@/logic/battle/showdownWorkerClient', () => ({
   showdownWorker: mockWorker,
+  getShowdownWorker: vi.fn(() => mockWorker),
   executeTurnInWorker: vi.fn(async (p1Choice: string, p2Choice?: string) => {
     const payload: { p1Choice: string; p2Choice?: string } = { p1Choice };
     if (p2Choice !== undefined) payload.p2Choice = p2Choice;

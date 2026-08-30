@@ -247,7 +247,7 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
           @mouseenter="handleButtonEnter"
           @mouseleave="handleButtonLeave"
         >
-          {{ socialStore.leaderboardLoading ? '...' : '🔄' }}
+          <span class="btn-emoji">{{ socialStore.leaderboardLoading ? '...' : '🔄' }}</span>
         </button>
       </div>
     </template>

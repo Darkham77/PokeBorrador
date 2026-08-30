@@ -120,16 +120,30 @@ img, canvas, .pixelated-img, .sprite, [class*="sprite-"], .banner-bg, [class*="-
 // emoji-only fonts so the em-square is normal and the parent flex centers it correctly.
 // This rule targets ALL icon containers across the app without touching components.
 // ─────────────────────────────────────────────────────────────────────────────
-.icon,
-.cat-icon,
-.toast-icon,
-.btn-emoji,
-.weather-emoji,
-.desc-line-icon,
-.admin-icon-btn,
-.faction-emoji,
-[class*="close-btn"]:not(img):not(.pixelated),
-[class$="-icon"]:not(img):not(.pixelated):not([class*="sprite"]) {
+.icon:not(i):not([class*="fa"]),
+.emoji:not(i):not([class*="fa"]),
+.medal:not(i):not([class*="fa"]),
+.cat-icon:not(i):not([class*="fa"]),
+.toast-icon:not(i):not([class*="fa"]),
+.btn-emoji:not(i):not([class*="fa"]),
+.weather-emoji:not(i):not([class*="fa"]),
+.desc-line-icon:not(i):not([class*="fa"]),
+.admin-icon-btn:not(i):not([class*="fa"]),
+.faction-emoji:not(i):not([class*="fa"]),
+.title-icon:not(i):not([class*="fa"]),
+.section-icon:not(i):not([class*="fa"]),
+.section-title-icon:not(i):not([class*="fa"]),
+.season-icon:not(i):not([class*="fa"]),
+.event-stat-icon:not(i):not([class*="fa"]),
+.trophies-header-icon:not(i):not([class*="fa"]),
+.empty-icon:not(i):not([class*="fa"]),
+.info-icon:not(i):not([class*="fa"]),
+.category-icon:not(i):not([class*="fa"]),
+.rank-icon:not(i):not([class*="fa"]),
+.status-icon:not(i):not([class*="fa"]),
+.header-icon:not(i):not([class*="fa"]),
+.field-condition-dot:not(i):not([class*="fa"]),
+.source-symbol:not(i):not([class*="fa"]) {
   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
   display: inline-flex !important;
   align-items: center !important;

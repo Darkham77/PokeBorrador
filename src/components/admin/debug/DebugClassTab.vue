@@ -64,7 +64,7 @@ function clearClassCooldowns() {
             style="background-color: #ef4444; color: white;"
             @click.stop="clearClassCooldowns"
           >
-            ⚡ ELIMINAR COOLDOWNS
+            <span class="btn-emoji">⚡</span> ELIMINAR COOLDOWNS
           </button>
         </PVTooltip>
       </div>

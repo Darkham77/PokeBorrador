@@ -73,7 +73,7 @@ const handleBadgeLeave = (e: MouseEvent) => {
     <div class="pv-gyms-header">
       <div class="header-left">
         <h1 class="view-title">
-          🏆 LÍDERES DE GIMNASIO
+          <span class="title-icon">🏆</span> LÍDERES DE GIMNASIO
         </h1>
         <p class="view-desc">
           Derrota a los 8 líderes de Kanto para acceder a la Liga Pokémon. Cada líder otorga una medalla única y una MT especial.

@@ -191,7 +191,10 @@ const getRankLabel = (rank?: string | number): string => {
         class="entry-poke"
         :class="{ shiny: winner.entry_data.is_shiny }"
       >
-        {{ winner.entry_data.is_shiny ? '✨ ' : '' }}{{ winner.entry_data.nickname || winner.entry_data.name }}
+        <span
+          v-if="winner.entry_data.is_shiny"
+          class="emoji-inline"
+        >✨</span> {{ winner.entry_data.nickname || winner.entry_data.name }}
       </span>
       <span
         v-if="winner.score !== undefined || winner.entry_data?.display_value"
@@ -243,13 +246,14 @@ const getRankLabel = (rank?: string | number): string => {
   flex-shrink: 0;
 
   .medal {
-    font-size: 14px;
+    font-size: 13px;
     line-height: 1;
   }
 
   .pos-text {
     @include pixelated;
     font-size: 8px;
+    line-height: 1;
     color: var(--gray-light);
   }
 }

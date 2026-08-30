@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "id": "case-130e64e90743",
+    "error": "page.evaluate: Test ended.",
+    "timestamp": "2026-08-30T19:09:04.898Z"
+  },
+  {
+    "id": "case-5a42356cba06",
+    "error": "page.evaluate: Test ended.",
+    "timestamp": "2026-08-30T19:09:06.306Z"
+  },
+  {
+    "id": "case-9f31fb155e61",
+    "error": "page.evaluate: Test ended.",
+    "timestamp": "2026-08-30T19:09:06.176Z"
+  }
+]

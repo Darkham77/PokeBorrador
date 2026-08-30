@@ -20,11 +20,11 @@
 - To prevent data corruption or accidental reset overlays, it is STRICTLY FORBIDDEN to save the game state (to IndexedDB, LocalStorage, OPFS, or Supabase) if the state contains 0 Pokémon (i.e. `team` and `box` are empty) OR if `starterChosen` is `false`.
 - A valid active session must always have at least 1 Pokémon. Abort saving immediately if this condition is met.
 
-## 3. Absolute Prohibition on Remote Database Updates & Build-First Mandate
+## 3. Absolute Prohibition on Remote Database Updates & Safe Commit Mandate
 
 - It is STRICTLY FORBIDDEN for any AI agent to execute, run, or trigger database update/migration scripts (e.g., `npm run servers:db:update server=<profile>`) against any remote, Docker-based, or shared database profile (including `server_franco`, `cloud`, or `official_prod`).
 - Agents must NEVER touch or update remote/shared databases; database migrations are strictly reserved for manual execution by the USER.
-- **Mandatory Build-First Workflow**: Agents must NEVER instruct or recommend the user to update a database (`npm run servers:db:update`) without FIRST having compiled the project (`npm run build`). Updating the database writes the new `app_version` and `db_version` to `system_config`, which will lock out and reject any client that has not been freshly built.
+- **Safe Version Synchronization Workflow**: Agents must NEVER instruct or recommend the user to update a database (`npm run servers:db:update`) with an uncommitted local build (`npm run build`), as this creates a local `public/version.json` that mismatches the version deployed on GitHub Pages/hosting. Version synchronization between code, database, and client deployments MUST always be managed through the official `/safe-commit` workflow.
 
 ## 4. Simulator Parity & Nickname Constraints
 
@@ -54,11 +54,14 @@
 - **In-Flight Combat Resumption Mandate**: Refreshing the browser (F5) during an active combat (wild, trainer, gym) MUST faithfully restore the battle at the exact turn, HP, stat stages, logs, and enemy UID. Reloading to re-roll enemies or escape combat without fleeing is strictly forbidden by the engine.
 - **Strict Non-Persistence of Minigames**: Minigames (`minigame !== null`, e.g. Fishing, Archaeology) MUST NEVER be saved into `activeBattle` in persistent storage. If a player reloads during a minigame, the minigame is dropped immediately and the engine resumes the search loop on `/map` without awarding rewards or leaving stale modal state.
 
-## 9. Monotonic Migration Timestamping & Immutable Ledger Mandate
+## 9. Monotonic Migration Timestamping, Immutable Ledger & Forward-Only Mandate
 
 - **Strict Monotonic Timestamping**: Every new database migration MUST use a unique timestamp prefix (`YYYYMMDDHHmmss`) strictly greater than all previous migration IDs in `database/migrations/` and remote `_migrations`.
-- **Immutable Migration Runner Protection**: Migration runners treat `_migrations` as an immutable append-only ledger. Reusing or re-running an existing timestamp identifier is strictly prohibited because the runner will automatically skip it. Any schema or data fix iteration MUST increment to a fresh monotonic timestamp.
-- **Build-First & Synchronized Generation**: Any database migration update MUST be accompanied by `npm run migrations:generate` and `npm run build` to ensure absolute synchronization between `src/logic/db/migrations_data.ts`, `public/version.json`, and database `system_config` values (`db_version` and `app_version`).
+- **Default Immutability of Existing Migrations**: In normal operating flows, existing migration files in `database/migrations/` (`.sql` and `.sqlite.sql`) are immutable. All standard fixes, enhancements, or schema updates MUST be delivered as NEW forward-only migration files with incremented monotonic timestamps.
+- **Rollback & Historical Data-Loss Exception**: Modifying a committed historical migration script is STRICTLY PROHIBITED except when resolving catastrophic data loss where the target database is actively rolled back to a prior checkpoint to replay the corrected migration series from scratch.
+- **Immutable Migration Runner Protection**: Migration runners treat `_migrations` as an immutable append-only ledger. Reusing or re-running an existing timestamp identifier without a database rollback is strictly prohibited because the runner will automatically skip it.
+- **Egg Data Contract Parity**: In `game_saves.save_data.eggs` (`PokemonEgg`), `id` is the canonical `PokemonSpeciesId` (e.g. `'charmander'`, `'togepi'`), and `uid` is the unique instance identifier. Migrations or scripts must never overwrite `egg.id` with arbitrary opaque identifiers (e.g. `'egg_...'`).
+- **Synchronized Migration Generation**: Any database migration update MUST be accompanied by `npm run migrations:generate` and committed via `/safe-commit` to ensure absolute synchronization between `src/logic/db/migrations_data.ts`, `public/version.json`, and database `system_config` values (`db_version` and `app_version`).
 
 ## 10. PostgreSQL JSONB Unwrapping & Double-Encoding Protection Mandate
 
@@ -78,5 +81,11 @@
 
 - **Client-Server Version Lock Interlock**: When `npm run servers:db:update` updates `app_version` and `db_version` on a remote server, the production hosting environment (GitHub Pages, Docker, Vercel) MUST receive the matching compiled client build (via commit & push) so that web clients do not get blocked by `VersionLockOverlay` or `OUTDATED_CLIENT` warnings.
 - **Service Worker / PWA Invalidation**: If the browser displays an `OUTDATED_CLIENT` banner or cache mismatch, performing a Hard Refresh (`Ctrl + F5`) or clicking the in-game PWA "Actualizar" action will reload the Service Worker cache to match the new bundle.
+
+## 12. Legacy Backup Upgrade & Migration Array Protection
+
+- **Mandatory Backup Upgrade Pre-Restore Protocol**: Never restore legacy database backup files directly into newer database schemas. Always execute `npm run servers:db:upgrade-backup file=<path>` to apply all subsequent migrations in memory, normalize Pokémon legality and vigor, and generate an upgraded backup JSON prior to executing `npm run servers:db:restore`.
+- **Prohibition on Positional Array Mutators in SQL**: Database migrations updating serialized JSON fields (`save_data`) MUST NOT use hardcoded array indices (`$.team[0].id`). All entity updates must be atomic per user save or match on canonical `uid` to prevent cross-account species corruption.
+
 
 

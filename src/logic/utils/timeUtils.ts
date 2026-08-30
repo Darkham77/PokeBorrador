@@ -169,6 +169,74 @@ export function formatTime(ts: string | number | Date | null | undefined): strin
 }
 
 /**
+ * Formats a chat message timestamp for display:
+ * - If the message is from today (in GAME_TIMEZONE), formats as 'HH:mm' (e.g. '14:46').
+ * - If the message is from a previous day in the same year, formats as 'DD/MM HH:mm' (e.g. '29/08 21:52').
+ * - If the message is from a previous year, formats as 'DD/MM/YYYY HH:mm' (e.g. '25/12/2025 18:30').
+ */
+export function formatChatTimestamp(
+  ts: string | number | Date | null | undefined,
+  nowReference?: Temporal.ZonedDateTime | Temporal.Instant | number
+): string {
+  if (!ts) return '';
+  try {
+    let instant: Temporal.Instant;
+    if (ts instanceof Date) {
+      instant = Temporal.Instant.fromEpochMilliseconds(ts.getTime());
+    } else if (typeof ts === 'number') {
+      instant = Temporal.Instant.fromEpochMilliseconds(ts);
+    } else {
+      const trimmed = ts.trim();
+      if (!trimmed) return '';
+      const num = Number(trimmed);
+      if (!isNaN(num) && trimmed.length > 8) {
+        instant = Temporal.Instant.fromEpochMilliseconds(num);
+      } else {
+        let isoStr = trimmed;
+        if (isoStr.includes(' ') && !isoStr.includes('T')) {
+          isoStr = isoStr.replace(' ', 'T');
+        }
+        const hasTimezoneOffset = isoStr.endsWith('Z') || isoStr.includes('+') || isoStr.includes('-', ISO_DATE_LENGTH);
+        if (!hasTimezoneOffset) {
+          isoStr += 'Z';
+        }
+        instant = Temporal.Instant.from(isoStr);
+      }
+    }
+
+    const msgZdt = instant.toZonedDateTimeISO(GAME_TIMEZONE);
+
+    let nowZdt: Temporal.ZonedDateTime;
+    if (nowReference instanceof Temporal.ZonedDateTime) {
+      nowZdt = nowReference;
+    } else if (nowReference instanceof Temporal.Instant) {
+      nowZdt = nowReference.toZonedDateTimeISO(GAME_TIMEZONE);
+    } else if (typeof nowReference === 'number') {
+      nowZdt = Temporal.Instant.fromEpochMilliseconds(nowReference).toZonedDateTimeISO(GAME_TIMEZONE);
+    } else {
+      nowZdt = getGMT3Date();
+    }
+
+    const hour = String(msgZdt.hour).padStart(2, '0');
+    const min = String(msgZdt.minute).padStart(2, '0');
+
+    if (msgZdt.toPlainDate().equals(nowZdt.toPlainDate())) {
+      return `${hour}:${min}`;
+    }
+
+    const day = String(msgZdt.day).padStart(2, '0');
+    const month = String(msgZdt.month).padStart(2, '0');
+    const year = msgZdt.year;
+
+    return `${day}/${month}/${year} ${hour}:${min}`;
+  } catch (e) {
+    logger.warn('TIME', `Failed to format chat timestamp: ${ts}`, (e as Error).message);
+    return '';
+  }
+}
+
+
+/**
  * Safely parses any date/time string or number into a Temporal.ZonedDateTime in the configured GAME_TIMEZONE.
  * Falls back to a default PlainDateTime or offset string if parsing fails.
  * Handles ISO strings, date-only formats (YYYY-MM-DD), date-time without offset, and milliseconds timestamps.

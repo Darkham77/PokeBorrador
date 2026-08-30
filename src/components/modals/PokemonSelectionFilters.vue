@@ -182,7 +182,7 @@ function clearFilters() {
             :disabled="!(activeTags.length > 0 || searchQuery || sortBy !== 'recent' || filterCompatibleOnly)"
             @click.stop="clearFilters"
           >
-            🧹
+            <span class="btn-emoji">🧹</span>
           </button>
         </PVTooltip>
 

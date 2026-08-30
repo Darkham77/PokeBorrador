@@ -244,7 +244,7 @@ const getTrophyRankClass = (rank?: string) => {
               style="font-size: 10px; padding: 0; opacity: 0.5; cursor: pointer; flex-shrink: 0;"
               @click.stop="handleEditNickname"
             >
-              ✏️
+              <span class="btn-emoji">✏️</span>
             </button>
             <div class="name-container">
               <span

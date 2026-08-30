@@ -86,7 +86,7 @@ const validationMap = computed(() => {
       class="trade-notif-card-legacy accepted"
     >
       <div class="notif-header">
-        ✅ ¡OFERTA ACEPTADA!
+        <span class="icon">✅</span> ¡OFERTA ACEPTADA!
       </div>
       <button
         class="notif-action-btn"
@@ -102,7 +102,7 @@ const validationMap = computed(() => {
       class="trade-notif-card-legacy pending"
     >
       <div class="notif-header">
-        🔄 NUEVA OFERTA
+        <span class="icon">🔄</span> NUEVA OFERTA
       </div>
       
       <div class="offer-details">
@@ -128,7 +128,7 @@ const validationMap = computed(() => {
         v-if="!validationMap[t.id]?.can"
         class="notif-warning"
       >
-        ⚠️ {{ validationMap[t.id]?.reason }}
+        <span class="emoji-inline">⚠️</span> {{ validationMap[t.id]?.reason }}
       </div>
 
       <div class="notif-actions">

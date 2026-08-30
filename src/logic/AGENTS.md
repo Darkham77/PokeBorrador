@@ -77,7 +77,7 @@ Logic Developers / Game Designers.
 ## Verification
 
 - Run `npm run test:node` using the native Node.js test runner for pure mathematical logic.
-- Run `npm run audit:full` to verify type integrity and avoid any `any` usage.
+- Run `npm run audit` to verify type integrity and avoid any `any` usage.
 
 ## Reference Manuals
 

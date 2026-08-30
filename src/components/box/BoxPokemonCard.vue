@@ -225,7 +225,7 @@ onUnmounted(() => {
           description="Este Pokémon está en una misión activa."
         >
           <div class="status-indicator mission">
-            🧭
+            <span class="icon">🧭</span>
           </div>
         </PVTooltip>
         <PVTooltip
@@ -234,7 +234,7 @@ onUnmounted(() => {
           description="Este Pokémon está participando en un evento o concurso activo."
         >
           <div class="status-indicator event">
-            🏆
+            <span class="icon">🏆</span>
           </div>
         </PVTooltip>
         <PVTooltip
@@ -243,7 +243,7 @@ onUnmounted(() => {
           description="Este Pokémon está en la guardería."
         >
           <div class="status-indicator daycare">
-            🥚
+            <span class="icon">🥚</span>
           </div>
         </PVTooltip>
         <PVTooltip
@@ -252,7 +252,7 @@ onUnmounted(() => {
           description="Este Pokémon está asignado a la defensa."
         >
           <div class="status-indicator defense">
-            🛡️
+            <span class="icon">🛡️</span>
           </div>
         </PVTooltip>
       </div>
@@ -297,8 +297,12 @@ onUnmounted(() => {
       <div class="box-pokemon-name-row">
         <span
           class="box-pokemon-name"
-          :class="{ 'is-species': !props.pokemon.nickname }"
+          :class="{ 'is-species': !props.pokemon.nickname, 'is-nickname': props.pokemon.nickname }"
         >{{ props.pokemon.nickname || props.pokemon.name }}</span>
+        <span
+          v-if="props.pokemon.nickname"
+          class="box-pokemon-species-sub"
+        >{{ props.pokemon.name }}</span>
       </div>
       <PokemonTypePills 
         :pokemon="props.pokemon" 
@@ -314,7 +318,7 @@ onUnmounted(() => {
             v-if="props.pokemon.gender"
             :class="['m-badge-gender', 'mini', props.pokemon.gender === 'm' ? 'male' : 'female']"
           >
-            {{ props.pokemon.gender === 'm' ? '♂' : '♀' }}
+            <span class="icon">{{ props.pokemon.gender === 'm' ? '♂' : '♀' }}</span>
           </div>
         </div>
         <div

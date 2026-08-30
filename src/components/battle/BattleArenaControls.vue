@@ -1,7 +1,8 @@
 <script setup lang="ts">
 
-import { computed, watch, toValue } from 'vue'
+import { computed, watch, toValue, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
+import { AUTO_BATTLE_NPC_DIALOG_DELAY_SEC } from '@/data/system/constants.ts'
 import { useBattleStore } from '@/stores/battle/battle'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
@@ -124,14 +125,24 @@ watch(() => battleStore.currentSubState, (subState) => {
   }
 }, { immediate: true })
 
+let autoBattleDelayedCall: gsap.core.Tween | null = null
+
 // Auto-combatir: Inicia el encuentro automáticamente si está activado
+// En encuentros de Entrenador/NPC, espera AUTO_BATTLE_NPC_DIALOG_DELAY_SEC (3s) con timer GSAP para permitir leer el diálogo.
 watch(() => [
   battleStore.isSearching,
   battleStore.currentSubState,
   battleStore.isIntroAnimating,
   battleStore.isProcessing,
-  uiStore.autoBattle
-] as const, ([isSearching, subState, isIntroAnimating, isProcessing, autoBattle]) => {
+  uiStore.autoBattle,
+  battle.value?.isTrainer,
+  battle.value?.isGym
+] as const, ([isSearching, subState, isIntroAnimating, isProcessing, autoBattle, isTrainer, isGym]) => {
+  if (autoBattleDelayedCall) {
+    autoBattleDelayedCall.kill()
+    autoBattleDelayedCall = null
+  }
+
   if (
     autoBattle &&
     isSearching &&
@@ -139,28 +150,81 @@ watch(() => [
     !isProcessing &&
     ['COMBAT_OR_FLEE', 'SILHOUETTE_MODE'].includes(String(subState))
   ) {
-    battleStore.startEncounter()
+    const isNpcEncounter = Boolean(isTrainer || isGym)
+    const delay = isNpcEncounter ? AUTO_BATTLE_NPC_DIALOG_DELAY_SEC : 0
+
+    if (delay > 0) {
+      autoBattleDelayedCall = gsap.delayedCall(delay, () => {
+        autoBattleDelayedCall = null
+        if (
+          uiStore.autoBattle &&
+          battleStore.isSearching &&
+          !battleStore.isIntroAnimating &&
+          !battleStore.isProcessing &&
+          ['COMBAT_OR_FLEE', 'SILHOUETTE_MODE'].includes(String(toValue(battleStore.currentSubState)))
+        ) {
+          battleStore.startEncounter()
+        }
+      })
+    } else {
+      battleStore.startEncounter()
+    }
   }
 }, { immediate: true })
 
-// Auto-ejecución de turno forzado (Thrash/Enfado y similares).
-// Cuando el Pokémon tiene thrashTurns > 0 y el combate espera input,
-// el turno se ejecuta solo porque el jugador no necesita elegir.
+onUnmounted(() => {
+  if (autoBattleDelayedCall) {
+    autoBattleDelayedCall.kill()
+    autoBattleDelayedCall = null
+  }
+})
+
+// Auto-ejecución de turnos forzados y bloqueados (lockedmove, twoturnmove, recharge, thrash, etc.).
+// Cuando el Pokémon está en un estado fijado y el combate espera input,
+// el turno se ejecuta automáticamente con el movimiento correspondiente.
 watch(() => [
   battleStore.currentSubState,
   battleStore.isProcessing,
-  player.value?.thrashTurns
-] as const, ([subState, isProcessing, thrashTurns]) => {
+  player.value?.volatileCounters?.['lockedmove'],
+  player.value?.volatileCounters?.['twoturnmove'],
+  player.value?.volatileCounters?.['mustrecharge'],
+  player.value?.thrashTurns,
+  player.value?.lastMove?.id,
+  battleStore.state?.playerRequest?.active?.[0]?.moves
+] as const, ([subState, isProcessing, lockedMoveVolatile, twoTurnVolatile, mustRechargeVolatile, thrashTurns, lastMoveId, reqMoves]) => {
   if (
     String(subState) === 'WAIT_INPUT' &&
-    !isProcessing &&
-    (thrashTurns ?? 0) > 0
+    !isProcessing
   ) {
     const p = player.value
     if (!p) return
-    const forcedIdx = p.moves.findIndex(m => m?.id === 'thrash')
-    if (forcedIdx !== -1) {
-      battleStore.executeMove(forcedIdx)
+
+    const hasLockedMove = (lockedMoveVolatile ?? 0) > 0
+    const hasTwoTurn = (twoTurnVolatile ?? 0) > 0
+    const hasRecharge = (mustRechargeVolatile ?? 0) > 0 || (reqMoves && reqMoves.length === 1 && (reqMoves[0]?.id === 'recharge' || reqMoves[0]?.move === 'Recharge'))
+    const hasThrash = (thrashTurns ?? 0) > 0
+
+    if (hasRecharge) {
+      battleStore.executeMove(0)
+      return
+    }
+
+    if (hasLockedMove || hasTwoTurn || hasThrash) {
+      const targetId = lastMoveId || (reqMoves && reqMoves.length === 1 ? reqMoves[0]?.id : undefined)
+      if (targetId) {
+        const forcedIdx = p.moves.findIndex(m => m?.id === targetId)
+        if (forcedIdx !== -1) {
+          battleStore.executeMove(forcedIdx)
+          return
+        }
+      }
+      if (hasThrash) {
+        const thrashIdx = p.moves.findIndex(m => m?.id === 'thrash')
+        if (thrashIdx !== -1) {
+          battleStore.executeMove(thrashIdx)
+          return
+        }
+      }
     }
   }
 })

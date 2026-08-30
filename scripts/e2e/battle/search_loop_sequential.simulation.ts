@@ -8,10 +8,10 @@ import { test, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import {
   confirmAndStartBattle,
+  executeNativeAutoBattle,
   playFishingMinigameNaturally,
   playArchaeologyMinigameNaturally,
-  type WindowWithResolver,
-  type CertifiedTestBatch
+  type WindowWithResolver
 } from '../e2e_helpers.ts';
 import {
   DEBUG_ITEM_MAX_QUANTITY,
@@ -29,6 +29,8 @@ type SearchMinigameType = Extract<SearchEncounterType, 'fishing' | 'archaeology'
 class SearchLoopSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
     super(page, username);
+    page.on('console', msg => console.log(`[BROWSER-${username}] ${msg.type()}: ${msg.text()}`));
+    page.on('pageerror', err => console.error(`[PAGEERROR-${username}]:`, err));
   }
 
   public async setupRayquaza(): Promise<void> {
@@ -118,10 +120,8 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
     });
   }
 
-  public override async playBattle(
-    finalState?: CertifiedTestBatch['finalState']
-  ): Promise<void> {
-    await super.playBattle(finalState);
+  public override async playBattle(): Promise<void> {
+    await executeNativeAutoBattle(this.page);
     await this.page.waitForFunction(() => {
       const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
       if (!store || store.isProcessing) return false;
@@ -129,6 +129,9 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
       const fsmSubState = store.currentSubState;
       return (fsmState === 'SEARCH_PHASE' && fsmSubState === 'COMBAT_OR_FLEE') ||
              (fsmState === 'INITIALIZING' && fsmSubState === 'MINIGAME_CHECK') ||
+             (fsmState === 'ACTIVE_BATTLE' && fsmSubState === 'WAIT_INPUT') ||
+             (fsmState === 'FIRST_INTRO') ||
+             (fsmState === 'REWARDS_PHASE') ||
              fsmState === 'EXIT_BATTLE';
     }, undefined, { timeout: 20000 });
   }
@@ -187,12 +190,19 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
 }
 
 test.describe('Sequential Search Loop Battles Simulation', () => {
-  test('should execute 10 sequential battles in the search loop without initialization or UID errors', async ({ page }) => {
+  // SUITE 1: Modo Manual (autoBattle = false)
+  test('should execute 10 sequential battles in the search loop with autoBattle = false (manual confirmation & full animations)', async ({ page }) => {
     test.setTimeout(SEARCH_LOOP_SUITE_TIMEOUT_MS);
 
-    const sim = new SearchLoopSimWrapper(page, 'SearchLoopRunner');
+    const sim = new SearchLoopSimWrapper(page, 'SearchLoopManualRunner');
     await sim.setup();
     await sim.setupRayquaza();
+
+    // Asegurar autoBattle = false
+    await page.evaluate(async () => {
+      const { useUIStore } = await import('../../../src/stores/ui.ts');
+      useUIStore().setAutoBattle(false);
+    });
 
     const encountersToTest = [
       { num: 1, type: 'wild', label: 'Wild Encounter' },
@@ -213,7 +223,7 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
     for (let i = 0; i < encountersToTest.length; i++) {
       const enc = encountersToTest[i]!;
       const nextEnc = encountersToTest[i + 1];
-      console.debug(`[E2E-TEST] --- Iniciando Combate ${enc.num}: ${enc.label} ---`);
+      console.debug(`[E2E-MANUAL-TEST] --- Iniciando Combate ${enc.num}: ${enc.label} ---`);
       
       await sim.forceHealAll();
 
@@ -232,9 +242,55 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
         if (nextEnc) await sim.forceEncounterType(nextEnc.type);
         await sim.playBattle();
       }
-      console.debug(`[E2E-TEST] Combate ${enc.num} finalizado con éxito.`);
+      console.debug(`[E2E-MANUAL-TEST] Combate ${enc.num} finalizado con éxito.`);
     }
 
-    console.debug(`[E2E-TEST] ¡Bucle de ${E2E_SEQUENTIAL_BATTLES_COUNT_LIMIT} combates secuenciales completado con éxito absoluto!`);
+    console.debug(`[E2E-MANUAL-TEST] ¡Bucle de ${E2E_SEQUENTIAL_BATTLES_COUNT_LIMIT} combates manuales completado con éxito absoluto!`);
+  });
+
+  // SUITE 2: Modo Automático (autoBattle = true)
+  test('should execute consecutive battles automatically with autoBattle = true (auto start, active move panel, animations progression)', async ({ page }) => {
+    test.setTimeout(SEARCH_LOOP_SUITE_TIMEOUT_MS);
+
+    const sim = new SearchLoopSimWrapper(page, 'SearchLoopAutoRunner');
+    await sim.setup();
+    await sim.setupRayquaza();
+
+    // Activar auto-combatir en UIStore
+    await page.evaluate(async () => {
+      const { useUIStore } = await import('../../../src/stores/ui.ts');
+      useUIStore().setAutoBattle(true);
+    });
+
+    await sim.forceEncounterType('wild');
+    await sim.navigateToRoute1();
+
+    const AUTO_BATTLES_COUNT = 3;
+    for (let i = 1; i <= AUTO_BATTLES_COUNT; i++) {
+      console.debug(`[E2E-AUTOBATTLE-TEST] --- Combate automático ${i} de ${AUTO_BATTLES_COUNT} ---`);
+      await sim.forceHealAll();
+
+      // Esperar a que el combate entre en WAIT_INPUT automáticamente
+      await page.waitForFunction(() => {
+        const store = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+        if (!store) return false;
+        return store.currentFsmState === 'ACTIVE_BATTLE' && store.currentSubState === 'WAIT_INPUT' && !store.isProcessing;
+      }, undefined, { timeout: 20000 });
+
+      // Validar que el panel de movimientos NO esté bloqueado en gris (.is-ui-locked)
+      const moveLayout = page.locator('.battle-controls-layout').first();
+      await moveLayout.waitFor({ state: 'visible', timeout: 5000 });
+      const isLocked = await moveLayout.evaluate(el => el.classList.contains('is-ui-locked'));
+      if (isLocked) {
+        throw new Error(`[E2E-AUTOBATTLE-TEST] Move controls are locked in grayscale (.is-ui-locked) on battle ${i}`);
+      }
+
+      await sim.forceEncounterType('wild');
+      await sim.playBattle();
+      console.debug(`[E2E-AUTOBATTLE-TEST] Combate automático ${i} completado con éxito.`);
+    }
+
+    console.debug('[E2E-AUTOBATTLE-TEST] ¡Todos los combates automáticos se ejecutaron con animaciones y sin bloqueo de UI!');
   });
 });
+
