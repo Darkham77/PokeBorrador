@@ -145,6 +145,7 @@ export async function updateSupabaseDb(): Promise<void> {
           sqlContent = sqlContent.replace(/created_at NOT LIKE/g, "CAST(created_at AS TEXT) NOT LIKE");
           sqlContent = sqlContent.replace(/SET created_at = REPLACE\(created_at, ' ', 'T'\) \|\| 'Z'/g, "SET created_at = CAST(REPLACE(CAST(created_at AS TEXT), ' ', 'T') || 'Z' AS TIMESTAMPTZ)");
           sqlContent = sqlContent.replace(/DROP TABLE IF EXISTS events_config;/g, "DROP TABLE IF EXISTS events_config CASCADE;");
+          sqlContent = sqlContent.replace(/WHERE user_id = '(local_[^']+)'/g, "WHERE user_id::text = '$1'");
 
           try {
             await sql.begin(async (tx) => {

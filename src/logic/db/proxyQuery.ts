@@ -96,35 +96,52 @@ export class ProxyQuery {
         type Callable = (...args: unknown[]) => unknown;
         const q = client.from(this.table);
 
-        if (this.action === 'upsert') return await (Reflect.get(q, 'upsert') as Callable)(this.actionData, this.actionOpts) as Promise<DBResponse>; // domain-ok
-        if (this.action === 'insert') return await (Reflect.get(q, 'insert') as Callable)(this.actionData) as Promise<DBResponse>; // domain-ok
+        if (this.action === 'upsert') {
+          const fn = Reflect.get(q, 'upsert') as Callable;
+          return (await Reflect.apply(fn, q, [this.actionData, this.actionOpts])) as DBResponse;
+        }
+        if (this.action === 'insert') {
+          const fn = Reflect.get(q, 'insert') as Callable;
+          return (await Reflect.apply(fn, q, [this.actionData])) as DBResponse;
+        }
 
         if (this.action === 'update') {
-          let updQ: unknown = (Reflect.get(q, 'update') as Callable)(this.actionData);
-          this.chain.forEach(s => {
-            const fn = Reflect.get(updQ as object, s.type) as Callable | undefined;
-            if (fn) updQ = fn(...s.args);
-          });
-          return await (updQ as Promise<DBResponse>); // domain-ok
+          const updateFn = Reflect.get(q, 'update') as Callable;
+          let updQ: unknown = Reflect.apply(updateFn, q, [this.actionData]);
+          for (const s of this.chain) {
+            if (updQ && typeof updQ === 'object') {
+              const fn = Reflect.get(updQ, s.type) as Callable | undefined;
+              if (fn) updQ = Reflect.apply(fn, updQ, s.args);
+            }
+          }
+          return await (updQ as Promise<DBResponse>);
         }
 
         if (this.action === 'delete') {
-          let delQ: unknown = (Reflect.get(q, 'delete') as Callable)();
-          this.chain.forEach(s => {
-            const fn = Reflect.get(delQ as object, s.type) as Callable | undefined;
-            if (fn) delQ = fn(...s.args);
-          });
-          return await (delQ as Promise<DBResponse>); // domain-ok
+          const deleteFn = Reflect.get(q, 'delete') as Callable;
+          let delQ: unknown = Reflect.apply(deleteFn, q, []);
+          for (const s of this.chain) {
+            if (delQ && typeof delQ === 'object') {
+              const fn = Reflect.get(delQ, s.type) as Callable | undefined;
+              if (fn) delQ = Reflect.apply(fn, delQ, s.args);
+            }
+          }
+          return await (delQ as Promise<DBResponse>);
         }
 
         // Default: select
         let selQ: unknown = q;
-        this.chain.forEach(s => {
-          const fn = Reflect.get(selQ as object, s.type) as Callable | undefined;
-          if (fn) selQ = fn(...s.args);
-        });
-        const finalFn = final ? (Reflect.get(selQ as object, final) as (() => Promise<DBResponse>) | undefined) : undefined;
-        return finalFn ? await finalFn() : await (selQ as Promise<DBResponse>); // domain-ok
+        for (const s of this.chain) {
+          if (selQ && typeof selQ === 'object') {
+            const fn = Reflect.get(selQ, s.type) as Callable | undefined;
+            if (fn) selQ = Reflect.apply(fn, selQ, s.args);
+          }
+        }
+        if (final && selQ && typeof selQ === 'object') {
+          const finalFn = Reflect.get(selQ, final) as Callable | undefined;
+          if (finalFn) return await (Reflect.apply(finalFn, selQ, []) as Promise<DBResponse>);
+        }
+        return await (selQ as Promise<DBResponse>);
       } catch (err: unknown) {
         logger.error('DBRouter', `Online query failed for table ${this.table}: ${(err as Error).message}`);
         

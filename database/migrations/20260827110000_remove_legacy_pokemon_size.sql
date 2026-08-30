@@ -56,7 +56,7 @@ BEGIN
 
   -- 3. Eliminar 'size' de competition_entries.data
   UPDATE public.competition_entries
-  SET data = (data::jsonb - 'size')::text
+  SET data = (data::jsonb - 'size')
   WHERE data IS NOT NULL AND (data::jsonb ? 'size');
 
   INSERT INTO public.system_config (key, value) VALUES ('db_version', '20260827110000'::jsonb)

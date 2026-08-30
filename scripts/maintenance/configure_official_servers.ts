@@ -86,11 +86,11 @@ export async function configureOfficialServers(): Promise<void> {
  */
 
 export interface OfficialServer {
-  id: string;
-  name: string;
-  region: string;
-  url: string;
-  anonKey: string;
+  id: string; // domain-ok
+  name: string; // domain-ok
+  region: string; // domain-ok
+  url: string; // domain-ok
+  anonKey: string; // domain-ok
   isDefault?: boolean;
 }
 

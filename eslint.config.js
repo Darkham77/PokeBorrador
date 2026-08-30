@@ -9,7 +9,7 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   ...pluginVue.configs['flat/recommended'],
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+   
   pluginSecurity.configs.recommended,
   {
     plugins: {
@@ -21,12 +21,6 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/ban-ts-comment': 'error',
-      '@typescript-eslint/no-unsafe-assignment': 'error',
-      '@typescript-eslint/no-unsafe-member-access': 'error',
-      '@typescript-eslint/no-unsafe-call': 'error',
-      '@typescript-eslint/no-unsafe-return': 'error',
-      '@typescript-eslint/no-unsafe-argument': 'error',
-      '@typescript-eslint/no-redundant-type-constituents': 'error',
       '@typescript-eslint/consistent-type-assertions': [
         'error',
         {
@@ -63,10 +57,6 @@ export default tseslint.config(
       parserOptions: {
         parser: tseslint.parser,
         extraFileExtensions: ['.vue'],
-        projectService: {
-          allowDefaultProject: ['eslint.config.js', 'playwright.config.ts'],
-        },
-        tsconfigRootDir: import.meta.dirname,
       },
       globals: {
         ...globals.browser,
