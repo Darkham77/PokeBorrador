@@ -1,1 +1,0 @@
-import"./evolutionEngine-BIMC5Cam.js";import{a as e}from"./breedingEngine-CEHY-r-V.js";export{e as getEggSpecies};

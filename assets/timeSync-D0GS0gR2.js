@@ -1,0 +1,1 @@
+import{t as e}from"./timeSync-Dx3FTvPd.js";export{e as syncServerTime};

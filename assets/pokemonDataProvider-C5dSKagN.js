@@ -1,1 +1,0 @@
-import{t as e}from"./pokemonDataProvider-Cmqw_X-_.js";export{e as pokemonDataProvider};

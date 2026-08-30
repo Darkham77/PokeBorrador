@@ -1,1 +1,0 @@
-import{p as e}from"./gameplay-pAegkb_O.js";var t=.15,n=.01,r=.3,i=1e4,a=99999999,o=8,s=1e3,c=2;function l(e){let i=t+(Math.max(1,e)-1)*n;return Number(Math.min(r,i).toFixed(2))}function u(t){return t>=30?a:e[t-1]||t*s}function d(e){return o*Math.max(1,e)**+c}export{u as i,d as n,l as r,i as t};
