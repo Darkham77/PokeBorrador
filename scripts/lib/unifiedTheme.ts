@@ -122,7 +122,8 @@ export function renderConsolidatedFooter(
   suitesPassed: number,
   totalErrors: number,
   totalWarnings: number,
-  totalDurationMs: number
+  totalDurationMs: number,
+  errorFindings?: AuditFinding[]
 ): string {
   const line = '═'.repeat(TERMINAL_WIDTH - 4);
   const lines: string[] = [];
@@ -135,6 +136,23 @@ export function renderConsolidatedFooter(
   lines.push(`  ${statusText}`);
   lines.push(styleText('dim', `  Duración Total: ${totalDurationMs}ms | Suites: ${suitesPassed}/${suitesTotal} Aprobadas`));
   lines.push(`  Errores: ${totalErrors === 0 ? styleText('green', '0') : styleText('red', String(totalErrors))}  |  Advertencias: ${totalWarnings === 0 ? styleText('green', '0') : styleText('yellow', String(totalWarnings))}`);
+
+  if (errorFindings && errorFindings.length > 0) {
+    const sampleErrors = errorFindings.slice(0, 5);
+    lines.push(styleText('bold', `\n  ❌ Muestra de errores detectados (primeros ${sampleErrors.length}):`));
+    for (let i = 0; i < sampleErrors.length; i++) {
+      const err = sampleErrors[i]!;
+      const fileInfo = err.file ? (err.line ? `${err.file}:${err.line}` : err.file) : 'desconocido';
+      const relFile = path.relative(process.cwd(), fileInfo).replace(/^[\\/]+/, '') || fileInfo;
+      const ruleTag = err.ruleId ? `[${err.ruleId}] ` : '';
+      const contextStr = err.context ? ` ("${err.context}")` : '';
+      lines.push(`    ${i + 1}. ${styleText('red', relFile)}: ${ruleTag}${err.message}${contextStr}`);
+    }
+    if (errorFindings.length > 5) {
+      lines.push(styleText('dim', `    ... y ${errorFindings.length - 5} error(es) más (ver reporte JSON completo).`));
+    }
+  }
+
   lines.push(styleText('bold', `╚═${line}═╝\n`));
   return lines.join('\n');
 }

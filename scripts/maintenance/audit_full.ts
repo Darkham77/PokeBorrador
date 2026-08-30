@@ -220,12 +220,14 @@ async function runMasterAudit() {
   }
 
   // 3. Consolidated Footer
+  const allErrorFindings = results.flatMap(r => r.findings || []).filter(f => f.severity === 'error');
   console.log(renderConsolidatedFooter(
     results.length,
     suitesPassed,
     totalErrors,
     totalWarnings,
-    totalDuration
+    totalDuration,
+    allErrorFindings
   ));
 
   // 4. Always save complete machine-readable report to scratch/audits/
