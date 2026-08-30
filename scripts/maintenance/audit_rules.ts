@@ -731,7 +731,25 @@ export const missingInteractiveId: AuditRule = {
   fixable: false
 };
 
+export const sassTraps: AuditRule = {
+  regex: /(?<![.$])\b(scale|grayscale|invert|opacity|brightness|blur|rotate|translate|saturate|drop-shadow|translatex|translatey|translatez|skewx|skewy|matrix|rgba|rgb)\s*\(/g,
+  message: (match: string) => `Función SASS/CSS propensa a colisión detectada en minúscula: '${match}'. ERROR: Para prevenir errores y advertencias de deprecación en Dart Sass, capitaliza la función manualmente (ej: Grayscale, Rgba, Scale).`,
+  severity: 'error',
+  fixable: false,
+  check: (content: string, match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return true;
+    const norm = normalizeFilePath(filePath);
+    if (!norm.endsWith('.scss') && !norm.endsWith('.css') && !norm.endsWith('.vue')) return false;
+    const matchIndex = match.index ?? 0;
+    if (matchIndex > 0) {
+      const prevChar = content[matchIndex - 1];
+      if (prevChar === '.' || prevChar === '$') return false;
+    }
+    return true;
+  }
+};
+
 export const auditRulesConfig = {
-  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, zIndexConstantDeclaration, manualAnimations, manualTimersFrontend, zeroTimerBattleLogic, noPlaywrightWaitForTimeout, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, magicNumbers, badConstantNames, noAliasConstants, noLiteralSuffixInConstantName, noLiteralBooleanType, noInlineAnonymousObjectType, noFloatingPromises, noLeakedGlobalState, missingInteractiveId
+  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, zIndexConstantDeclaration, manualAnimations, manualTimersFrontend, zeroTimerBattleLogic, noPlaywrightWaitForTimeout, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, magicNumbers, badConstantNames, noAliasConstants, noLiteralSuffixInConstantName, noLiteralBooleanType, noInlineAnonymousObjectType, noFloatingPromises, noLeakedGlobalState, missingInteractiveId, sassTraps
 };
 

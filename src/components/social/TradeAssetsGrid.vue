@@ -122,14 +122,14 @@ const requestItems = computed(() =>
   .column-title {
     font-size: 11px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.4);
+    color: Rgba(255, 255, 255, 0.4);
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
 
   .assets-box {
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    background: Rgba(0, 0, 0, 0.2);
+    border: 1px solid Rgba(255, 255, 255, 0.03);
     border-radius: 10px;
     padding: 8px;
     display: flex;
@@ -144,8 +144,8 @@ const requestItems = computed(() =>
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   padding: 6px 8px;
 
@@ -159,35 +159,35 @@ const requestItems = computed(() =>
 
   .badge-level, .badge-qty {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.5);
+    color: Rgba(255, 255, 255, 0.5);
     margin-left: auto;
   }
 
   &.pokemon {
-    background: rgba(168, 85, 247, 0.06);
-    border-color: rgba(168, 85, 247, 0.12);
+    background: Rgba(168, 85, 247, 0.06);
+    border-color: Rgba(168, 85, 247, 0.12);
   }
   &.money {
-    background: rgba(234, 179, 8, 0.06);
-    border-color: rgba(234, 179, 8, 0.12);
+    background: Rgba(234, 179, 8, 0.06);
+    border-color: Rgba(234, 179, 8, 0.12);
     .icon { color: #facc15; }
     .badge-val { color: #facc15; font-weight: bold; }
   }
   &.item {
-    background: rgba(59, 130, 246, 0.06);
-    border-color: rgba(59, 130, 246, 0.12);
+    background: Rgba(59, 130, 246, 0.06);
+    border-color: Rgba(59, 130, 246, 0.12);
   }
 
   &.requested {
-    &.pokemon { background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.1); }
-    &.money   { background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.1); .icon, .badge-val { color: #fca5a5; } }
-    &.item    { background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.1); }
+    &.pokemon { background: Rgba(239, 68, 68, 0.05); border-color: Rgba(239, 68, 68, 0.1); }
+    &.money   { background: Rgba(239, 68, 68, 0.05); border-color: Rgba(239, 68, 68, 0.1); .icon, .badge-val { color: #fca5a5; } }
+    &.item    { background: Rgba(239, 68, 68, 0.05); border-color: Rgba(239, 68, 68, 0.1); }
   }
 }
 
 .no-assets {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.3);
+  color: Rgba(255, 255, 255, 0.3);
   text-align: center;
 
   &.gift { color: #4ade80; font-weight: bold; }

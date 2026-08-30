@@ -31,8 +31,8 @@
 }
 
 .modal-tab-btn {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
   color: var(--gray);
   font-size: 11px;
   padding: 6px 14px;
@@ -42,14 +42,14 @@
 
   &:hover {
     color: var(--white);
-    background: rgba(255, 255, 255, 0.06);
+    background: Rgba(255, 255, 255, 0.06);
   }
 
   &.active {
     color: var(--white);
     background: var(--red);
     border-color: var(--red-light);
-    box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+    box-shadow: 0 0 8px Rgba(239, 68, 68, 0.4);
     text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
   }
 }

@@ -86,6 +86,14 @@
       display: flex;
       align-items: center;
       gap: 6px;
+
+      .status-indicator {
+        font-size: 11px;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
     }
   }
 
@@ -256,6 +264,25 @@
     left: 6px;
     z-index: var(--z-low);
     transform: Scale(0.85);
+  }
+
+  .slot-status-indicators {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    z-index: var(--z-low);
+
+    .status-indicator {
+      font-size: 10px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
   }
 
   .ts-name {

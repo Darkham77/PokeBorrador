@@ -26,6 +26,7 @@ Frontend Developers / Systems Engineers.
 - [evolution/](./evolution/AGENTS.md): Domain module documentation for evolution.
 - [events/](./events/AGENTS.md): Domain module documentation for events.
 - [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
+- [items/](./items/AGENTS.md): Domain module documentation for items.
 - [player/](./player/AGENTS.md): Domain module documentation for player.
 - [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon.
 - [system/](./system/AGENTS.md): Domain module documentation for system.

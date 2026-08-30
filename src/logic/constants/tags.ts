@@ -38,7 +38,7 @@ export const TAG_DEFINITIONS: Record<string, TagDefinition> = {
   competitive: { 
     id: 'competitive', 
     label: 'COMPETITIVO', // spanish-ok
-    shortLabel: 'COMP',
+    shortLabel: 'CMP',
     icon: '🏆', 
     color: '#34C759', 
     desc: 'Pokémon entrenado y listo para torneos y duelos de alto nivel.' 
@@ -46,7 +46,7 @@ export const TAG_DEFINITIONS: Record<string, TagDefinition> = {
   trade: { 
     id: 'trade', 
     label: 'INTERCAMBIO', // spanish-ok
-    shortLabel: 'TRADE',
+    shortLabel: 'TRD',
     icon: '🔄', 
     color: '#AF52DE', 
     desc: 'Disponible para intercambio con otros entrenadores.' 
@@ -62,7 +62,7 @@ export const TAG_DEFINITIONS: Record<string, TagDefinition> = {
   hatched: {
     id: 'hatched',
     label: 'CRÍA',
-    shortLabel: 'CRÍA',
+    shortLabel: 'CRI',
     icon: '🥚',
     color: '#FF9500',
     desc: 'Pokémon nacido de un huevo.'

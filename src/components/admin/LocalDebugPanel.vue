@@ -248,6 +248,8 @@ onBeforeUnmount(() => window.removeEventListener(GAME_UI_EVENTS.BATTLE_ENTERING,
 </style>
 
 <style lang="scss">
+@use "@/styles/components/debug" as *;
+
 /* Global overrides for debug panel scrollbar (fix scoped violation) */
 .debug-content {
   &::-webkit-scrollbar {

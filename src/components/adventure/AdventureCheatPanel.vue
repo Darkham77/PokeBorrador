@@ -250,3 +250,6 @@ const healActiveTeam = () => {
     </div>
   </div>
 </template>
+
+<style scoped lang="scss" src="@/views/adventure/AdventureTestView.styles.scss"></style>
+

@@ -12,6 +12,8 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
+import FriendshipSealBadge from '@/components/pokemon/FriendshipSealBadge.vue'
+import { getFieldPassiveBadges } from '@/logic/pokemon/pokemonFieldAbilities'
 import { useModalStore } from '@/stores/modals'
 import { calculateTotalPower, getPokemonTier, calculateRocketSellPrice as calculatePrice } from '@/logic/pokemon/pokemonUtils'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
@@ -51,6 +53,7 @@ const pokemonTypes = computed<PokemonType[]>(() => {
 const team = computed(() => (gameStore.state.team || []))
 const totalPower = computed(() => pokemon.value ? calculateTotalPower(pokemon.value) : 0)
 const tierInfo = computed(() => pokemon.value ? getPokemonTier(pokemon.value) : null)
+const fieldPassive = computed(() => pokemon.value ? getFieldPassiveBadges(pokemon.value) : null)
 const isRocketMode = computed(() => gameStore.state.playerClass === 'rocket')
 
 const abilityData = computed(() => {
@@ -205,6 +208,20 @@ const handleSellRocket = () => {
             >
               <span class="m-badge-tot">TOT {{ totalPower }}</span>
             </PVTooltip>
+            <FriendshipSealBadge
+              :friendship="pokemon?.friendship"
+              size="sm"
+            />
+            <PVTooltip
+              v-if="fieldPassive"
+              :title="`Pasiva: ${fieldPassive.label}`"
+              :description="fieldPassive.desc"
+              position="bottom"
+            >
+              <span class="status-indicator field-passive">
+                {{ fieldPassive.icon }}
+              </span>
+            </PVTooltip>
           </div>
         </div>
 
@@ -324,6 +341,24 @@ const handleSellRocket = () => {
                 :style="{ '--tier-color': getPokemonTier(t).color, '--tier-bg': getPokemonTier(t).bg }"
               >
                 {{ getPokemonTier(t).tier }}
+              </div>
+
+              <!-- Status Indicators (Top Right) -->
+              <div class="slot-status-indicators">
+                <FriendshipSealBadge
+                  :friendship="t.friendship"
+                  size="sm"
+                />
+                <PVTooltip
+                  v-if="getFieldPassiveBadges(t)"
+                  :title="`HABILIDAD: ${getFieldPassiveBadges(t)!.label.toUpperCase()}`"
+                  :description="getFieldPassiveBadges(t)!.desc"
+                  position="top"
+                >
+                  <span class="status-indicator field-passive">
+                    {{ getFieldPassiveBadges(t)!.icon }}
+                  </span>
+                </PVTooltip>
               </div>
               
               <span class="ts-name">{{ t.nickname || t.name }}</span>

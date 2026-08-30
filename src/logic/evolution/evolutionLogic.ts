@@ -5,6 +5,7 @@ import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import type { PokemonData, LearnsetMove } from '@/types/system/database';
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { requireAbilityId } from '@/data/battle/abilities';
+import { isReadyForFriendshipEvolution } from '@/logic/pokemon/friendshipLogic';
 
 /**
  * Realiza la evolución de los datos de un Pokémon.
@@ -54,11 +55,32 @@ export function evolvePokemonData(pokemon: Pokemon, toId: string) {
 }
 
 const TYROGUE_EVO_MIN_LEVEL = 20;
-const WILD_STONE_EVO_MIN_LEVEL = 30;
-const WILD_TRADE_EVO_MIN_LEVEL = 32;
+const WILD_STONE_EVO_MIN_LEVEL = 36;
+const WILD_TRADE_EVO_MIN_LEVEL = 36;
+
+export const FRIENDSHIP_EVOLUTION_MAP: Readonly<Record<string, string>> = Object.freeze({
+  golbat: 'crobat',
+  chansey: 'blissey',
+  pichu: 'pikachu',
+  cleffa: 'clefairy',
+  igglybuff: 'jigglypuff',
+  togepi: 'togetic',
+  buneary: 'lopunny',
+  riolu: 'lucario',
+  budew: 'roselia',
+  chingling: 'chimecho',
+  woobat: 'swoobat',
+  swadloon: 'leavanny',
+  typenull: 'silvally',
+  snom: 'frosmoth',
+  meowthalola: 'persianalola',
+  munchlax: 'snorlax',
+  azurill: 'marill',
+  eevee: 'sylveon',
+});
 
 /**
- * Comprueba si un Pokémon puede evolucionar por nivel.
+ * Comprueba si un Pokémon puede evolucionar por nivel o amistad.
  */
 export function checkLevelUpEvolution(pokemon: Pokemon): PokemonSpeciesId | null {
   // Tyrogue special case
@@ -68,11 +90,22 @@ export function checkLevelUpEvolution(pokemon: Pokemon): PokemonSpeciesId | null
     return requirePokemonSpeciesId(toId);
   }
 
+  // Friendship evolution check
+  const friendshipTarget = FRIENDSHIP_EVOLUTION_MAP[pokemon.id];
+  if (friendshipTarget) {
+    if (isReadyForFriendshipEvolution(pokemon)) {
+      if (pokemonDataProvider.getPokemonData(friendshipTarget, true)) {
+        return requirePokemonSpeciesId(friendshipTarget);
+      }
+    }
+    return null;
+  }
+
   const evo = getLevelEvolution(pokemon.id);
   if (!evo || pokemon.level < evo.level) return null;
   if (evo.to === pokemon.id) return null;
   
-  if (!pokemonDataProvider.getPokemonData(evo.to)) return null;
+  if (!pokemonDataProvider.getPokemonData(evo.to, true)) return null;
   return evo.to;
 }
 

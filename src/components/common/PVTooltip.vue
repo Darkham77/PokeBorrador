@@ -207,9 +207,11 @@ const descriptionLines = computed(() => {
         isBoost: false,
         isDebuff: false,
         isNeutral: false,
-        isDivider: true
+        isDivider: true,
+        isQuote: false
       }
     }
+    const isQuote = trimmed.startsWith('«') || trimmed.startsWith('"') || trimmed.startsWith('“')
     const match = trimmed.match(/^([▲▼⚡🚫•])\s*(.*)$/u)
     if (match) {
       return {
@@ -219,7 +221,8 @@ const descriptionLines = computed(() => {
         isBoost: match[1] === '▲',
         isDebuff: match[1] === '▼',
         isNeutral: match[1] === '•' || match[1] === '⚡' || match[1] === '🚫',
-        isDivider: false
+        isDivider: false,
+        isQuote: false
       }
     }
     return {
@@ -229,7 +232,8 @@ const descriptionLines = computed(() => {
       isBoost: false,
       isDebuff: false,
       isNeutral: false,
-      isDivider: false
+      isDivider: false,
+      isQuote
     }
   })
 })
@@ -388,7 +392,8 @@ onUnmounted(() => {
                       'has-bullet': line.hasBullet,
                       'is-boost': line.isBoost,
                       'is-debuff': line.isDebuff,
-                      'is-neutral': line.isNeutral
+                      'is-neutral': line.isNeutral,
+                      'is-quote': line.isQuote
                     }
                   ]"
                 >
@@ -401,7 +406,10 @@ onUnmounted(() => {
                       v-if="line.hasBullet"
                       class="bullet-icon"
                     >{{ line.bullet }}</span>
-                    <span class="line-text">{{ line.text }}</span>
+                    <span 
+                      class="line-text"
+                      :class="{ 'is-quote': line.isQuote }"
+                    >{{ line.text }}</span>
                   </template>
                 </div>
               </span>

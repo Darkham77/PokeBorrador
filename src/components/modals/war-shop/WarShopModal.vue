@@ -254,6 +254,9 @@ if (typeof window !== 'undefined') {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
+@use "@/styles/components/shop" as *;
+
 .war-shop-hint-banner {
   display: flex;
   align-items: center;

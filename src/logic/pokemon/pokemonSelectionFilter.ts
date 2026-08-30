@@ -2,6 +2,8 @@ import type { Pokemon, PokemonSelectionSource } from '@/types/pokemon/pokemon'
 import { hasPokemonTag } from '@/logic/constants/tags'
 import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
 import { getPokemonPhysicalWeight, getPokemonPhysicalHeight } from '@/logic/pokemon/physicalDimensionsMath'
+import { isReadyForFriendshipEvolution } from '@/logic/pokemon/friendshipLogic'
+import { FRIENDSHIP_BOUNDS } from '@/types/pokemon/friendship'
 
 export interface PokemonFilterCriteria {
   searchQuery: string
@@ -52,6 +54,8 @@ export function filterAndSortPokemon(
         if (tag === 'shiny') return p.isShiny
         if (tag === 'team') return item._source === 'team'
         if (tag === 'box') return item._source === 'box'
+        if (tag === 'friendship-evo') return isReadyForFriendshipEvolution(p)
+        if (tag === 'friendship-max') return (p.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE) >= FRIENDSHIP_BOUNDS.AFFINITY_PERK_THRESHOLD
         return hasPokemonTag(p, tag)
       })) return false
     }
@@ -90,6 +94,9 @@ export function filterAndSortPokemon(
     } else if (criteria.sortBy === 'height') {
       valA = getPokemonPhysicalHeight(pA)
       valB = getPokemonPhysicalHeight(pB)
+    } else if (criteria.sortBy === 'friendship') {
+      valA = pA.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE
+      valB = pB.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE
     } else {
       const BOX_SORT_INDEX_OFFSET = 1000;
       valA = pA.obtainedAt || ((a._source === 'box' ? BOX_SORT_INDEX_OFFSET : 0) + a.index)

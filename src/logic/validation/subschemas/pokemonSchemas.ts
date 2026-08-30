@@ -101,6 +101,15 @@ export const pokemonCompetitionTrophySchema = object({
 // fallow-ignore-next-line unused-type
 export type PokemonCompetitionTrophyDto = InferOutput<typeof pokemonCompetitionTrophySchema>;
 
+export const friendshipSealTierSchema = union([
+  literal('distrust'),
+  literal('sprout'),
+  literal('comrade'),
+  literal('radiant_prism'),
+  literal('best_friends'),
+]);
+export type FriendshipSealTierDto = InferOutput<typeof friendshipSealTierSchema>;
+
 export const pokemonSchema = object({
   uid: string(),
   id: string(),

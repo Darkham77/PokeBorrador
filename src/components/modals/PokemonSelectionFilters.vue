@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// style-inherited: styles imported in parent PokemonSelectionModal.vue
 
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { POKEMON_TAGS, POKEMON_BADGES } from '@/logic/constants/tags'
@@ -154,6 +155,19 @@ function clearFilters() {
           ALT {{ sortBy === 'height' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
         </button>
       </PVTooltip>
+      <PVTooltip
+        title="AMISTAD"
+        description="Ordenar por nivel de amistad y vínculo."
+        position="bottom"
+        class="ps-sort-wrapper"
+      >
+        <button
+          :class="{ active: sortBy === 'friendship' }"
+          @click.stop="setSort('friendship')"
+        >
+          AMI {{ sortBy === 'friendship' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
+        </button>
+      </PVTooltip>
     </div>
 
     <div class="ps-tags-section">
@@ -186,6 +200,34 @@ function clearFilters() {
             >
               <span class="icon">{{ t.icon }}</span>
               <span class="ps-tag-label">{{ t.shortLabel || t.label }}</span>
+            </button>
+          </PVTooltip>
+
+          <PVTooltip
+            title="LISTOS P/ EVOLUCIONAR"
+            description="Mostrar Pokémon listos para evolucionar por amistad."
+            position="bottom"
+          >
+            <button
+              :class="['ps-tag-friendship-evo', { active: activeTags.includes('friendship-evo') }]"
+              @click.stop="toggleTagFilter('friendship-evo')"
+            >
+              <span class="icon">💎</span>
+              <span class="ps-tag-label">EVO</span>
+            </button>
+          </PVTooltip>
+
+          <PVTooltip
+            title="VÍNCULO MÁXIMO"
+            description="Mostrar Pokémon con amistad y vínculo al máximo (220+)."
+            position="bottom"
+          >
+            <button
+              :class="['ps-tag-friendship-max', { active: activeTags.includes('friendship-max') }]"
+              @click.stop="toggleTagFilter('friendship-max')"
+            >
+              <span class="icon">🎀</span>
+              <span class="ps-tag-label">MAX</span>
             </button>
           </PVTooltip>
           
@@ -223,3 +265,4 @@ function clearFilters() {
     </div>
   </div>
 </template>
+

@@ -5,6 +5,7 @@ import { getNatureInfo } from '@/data/battle/natures'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils'
+import { getFriendshipTooltipDetails } from '@/logic/pokemon/friendshipLogic'
 
 interface Props {
   pokemon: Pokemon
@@ -16,6 +17,19 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const p = computed(() => props.pokemon)
+
+const friendshipDetails = computed(() => getFriendshipTooltipDetails(p.value))
+const friendshipSeal = computed(() => friendshipDetails.value.seal)
+const friendshipPct = computed(() => (friendshipDetails.value.currentValue / 255) * 100)
+
+const friendshipTooltipDesc = computed(() => {
+  const d = friendshipDetails.value
+  const quote = `«${d.evaluatorQuote}»`
+  const evo = `🚀 ${d.evolutionMessage}`
+  const battle = `⚔️ Retribución: ${d.returnPower} BP | Frustración: ${d.frustrationPower} BP`
+  const perks = `⭐ ${d.combatPerksSummary}`
+  return `${quote}\n\n${evo}\n${battle}\n${perks}`
+})
 
 const HP_HIGH_THRESHOLD_PCT = 50
 const HP_MID_THRESHOLD_PCT = 25
@@ -148,6 +162,33 @@ const abilityStyle = computed(() => ({
           />
         </div>
       </div>
+
+      <!-- AMISTAD / VÍNCULO BAR -->
+      <PVTooltip
+        tag="div"
+        class="friendship-tooltip-block mt-12"
+        :title="`${friendshipSeal.iconEmoji} ${friendshipSeal.label} (${friendshipDetails.currentValue}/255)`"
+        :description="friendshipTooltipDesc"
+        position="top"
+        :touch-instant="true"
+      >
+        <div class="bar-group friendship-group">
+          <div class="bar-header">
+            <span>AMISTAD ({{ friendshipSeal.label }})</span>
+            <span class="friendship-val">
+              <span class="seal-emoji">{{ friendshipSeal.iconEmoji }}</span>
+              <span>{{ friendshipDetails.currentValue }} / 255</span>
+            </span>
+          </div>
+          <div class="progress-outer friendship">
+            <div 
+              class="progress-inner" 
+              :class="friendshipSeal.barGradientClass"
+              :style="{ width: friendshipPct + '%' }"
+            />
+          </div>
+        </div>
+      </PVTooltip>
     </div>
   </div>
 </template>
@@ -163,17 +204,44 @@ const abilityStyle = computed(() => ({
   box-shadow: none; // Remove frame
 }
 
-.bar-group { margin-bottom: 12px; }
+.friendship-tooltip-block {
+  display: block !important;
+  width: 100%;
+  cursor: help;
+}
+
+.bar-group { 
+  margin-bottom: 12px; 
+  
+  &.friendship-group {
+    margin-bottom: 0;
+  }
+}
 
 .bar-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   @include pixelated;
   font-size: 10px;
-  margin-bottom: 14px;
+  margin-bottom: 6px;
   color: var(--white);
   opacity: 0.9;
-  @include pixelated;
+}
+
+.friendship-val {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1;
+
+  .seal-emoji {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    line-height: 1;
+  }
 }
 
 .progress-outer {
@@ -199,6 +267,31 @@ const abilityStyle = computed(() => ({
   background: Linear-Gradient(90deg, Rgba(139, 92, 246, 1), Rgba(168, 85, 247, 1)); 
   color: Rgba(139, 92, 246, 1);
   @include will-animate(width);
+}
+
+.friendship-distrust {
+  background: linear-gradient(90deg, #475569, #64748b);
+  color: #64748b;
+}
+
+.friendship-sprout {
+  background: linear-gradient(90deg, #16a34a, #4ade80);
+  color: #22c55e;
+}
+
+.friendship-comrade {
+  background: linear-gradient(90deg, #2563eb, #60a5fa);
+  color: #3b82f6;
+}
+
+.friendship-radiant {
+  background: linear-gradient(90deg, #c026d3, #f472b6);
+  color: #e879f9;
+}
+
+.friendship-best-friends {
+  background: linear-gradient(90deg, #d97706, #fbbf24, #fef08a);
+  color: #fbbf24;
 }
 
 .info-grid {

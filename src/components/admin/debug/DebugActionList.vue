@@ -82,8 +82,8 @@ defineEmits<{
 
 .debug-btn-long {
   width: 100%;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   color: white;
   padding: 14px 16px;
   border-radius: 12px;
@@ -94,8 +94,8 @@ defineEmits<{
   margin-bottom: 8px;
   
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    transform: translateX(4px);
+    background: Rgba(255, 255, 255, 0.08);
+    transform: Translatex(4px);
   }
 
   .btn-content {
@@ -112,7 +112,7 @@ defineEmits<{
       gap: 2px;
       
       .label { @include pixelated; font-size: 8px; }
-      .desc { font-size: 9px; color: rgba(255, 255, 255, 0.4); }
+      .desc { font-size: 9px; color: Rgba(255, 255, 255, 0.4); }
     }
   }
 }

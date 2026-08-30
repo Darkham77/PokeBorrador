@@ -175,17 +175,19 @@ export const pokemonDataProvider = {
         }
 
         // Buscar traducción en las traducciones estáticas
-        const translated = (ABILITY_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string }>)[cleanId]; // open-record
+        const translated = (ABILITY_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string; icon?: string }>)[cleanId]; // open-record
         if (!translated || !translated.name || !translated.desc) {
             throw new Error(`[pokemonDataProvider] Traducción al español faltante para la habilidad: ${cleanId}`);
         }
         const espName = translated.name;
         const espDesc = translated.desc;
+        const espIcon = translated.icon || '✨';
 
         return {
             id: ability.id,
             name: espName,
-            desc: espDesc
+            desc: espDesc,
+            icon: espIcon
         };
     },
 

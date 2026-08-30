@@ -41,15 +41,15 @@
     height: 68px;
     image-rendering: pixelated;
     object-fit: contain;
-    filter: drop-shadow(0 4px 12px rgba(250, 204, 21, 0.4));
+    filter: Drop-Shadow(0 4px 12px Rgba(250, 204, 21, 0.4));
   }
 
   &.clickable {
     cursor: pointer;
 
     &:hover {
-      transform: scale(1.05);
-      filter: drop-shadow(0 0 16px rgba(250, 204, 21, 0.6));
+      transform: Scale(1.05);
+      filter: Drop-Shadow(0 0 16px Rgba(250, 204, 21, 0.6));
     }
   }
 
@@ -63,11 +63,11 @@
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.3);
+      background: Rgba(255, 255, 255, 0.3);
 
       &.active {
         background: var(--yellow, #facc15);
-        transform: scale(1.3);
+        transform: Scale(1.3);
       }
     }
   }
@@ -82,7 +82,7 @@
   font-size: 40px;
   line-height: 1;
   margin: 4px 0 0;
-  filter: drop-shadow(0 4px 12px rgba(250, 204, 21, 0.3));
+  filter: Drop-Shadow(0 4px 12px Rgba(250, 204, 21, 0.3));
 }
 
 .event-header {
@@ -96,25 +96,25 @@
     color: var(--yellow);
     margin: 0;
     @include pixelated;
-    text-shadow: 0 0 10px rgba(250, 204, 21, 0.3);
+    text-shadow: 0 0 10px Rgba(250, 204, 21, 0.3);
   }
 
   .event-rotation-badge {
     align-self: center;
     padding: 3px 10px;
-    background: rgba(250, 204, 21, 0.12);
-    border: 1px solid rgba(250, 204, 21, 0.4);
+    background: Rgba(250, 204, 21, 0.12);
+    border: 1px solid Rgba(250, 204, 21, 0.4);
     border-radius: 9999px;
     color: var(--yellow);
     font-size: 10px;
     font-weight: bold;
     letter-spacing: 0.3px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 6px Rgba(0, 0, 0, 0.3);
   }
 
   .event-desc {
     font-size: 11px;
-    color: rgba(241, 245, 249, 0.85);
+    color: Rgba(241, 245, 249, 0.85);
     line-height: 1.4;
     margin: 0;
   }
@@ -126,8 +126,8 @@
     flex-wrap: wrap;
     gap: 12px;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: Rgba(255, 255, 255, 0.03);
+    border: 1px solid Rgba(255, 255, 255, 0.06);
     border-radius: 12px;
     padding: 12px;
   }
@@ -136,17 +136,17 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    background: rgba(15, 23, 42, 0.75);
-    border: 1px solid rgba(96, 165, 250, 0.25);
+    background: Rgba(15, 23, 42, 0.75);
+    border: 1px solid Rgba(96, 165, 250, 0.25);
     border-radius: 10px;
     padding: 6px 12px;
     cursor: pointer;
 
     &:hover {
-      transform: translateY(-2px);
-      border-color: rgba(250, 204, 21, 0.7);
-      background: rgba(15, 23, 42, 0.95);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 8px rgba(250, 204, 21, 0.25);
+      transform: Translatey(-2px);
+      border-color: Rgba(250, 204, 21, 0.7);
+      background: Rgba(15, 23, 42, 0.95);
+      box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.4), 0 0 8px Rgba(250, 204, 21, 0.25);
     }
 
     .participant-sprite {
@@ -175,7 +175,7 @@
   .section-tag {
     font-size: 8px;
     letter-spacing: 0.5px;
-    color: rgba(148, 163, 184, 0.9);
+    color: Rgba(148, 163, 184, 0.9);
     margin-left: 2px;
     @include pixelated;
   }
@@ -192,8 +192,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.03);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   font-size: 11px;
 
@@ -203,7 +203,7 @@
     gap: 8px;
 
     .bonus-label {
-      color: rgba(241, 245, 249, 0.9);
+      color: Rgba(241, 245, 249, 0.9);
     }
   }
 
@@ -221,12 +221,12 @@
 }
 
 .info-box {
-  background: rgba(255, 255, 255, 0.04);
+  background: Rgba(255, 255, 255, 0.04);
   border-radius: 12px;
   padding: 10px 16px;
   font-size: 13px;
-  color: rgba(203, 213, 225, 1);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: Rgba(203, 213, 225, 1);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   text-align: center;
 
   .metric-main {
@@ -241,9 +241,9 @@
   }
 
   &.active {
-    background: rgba(34, 197, 94, 0.1);
-    border-color: rgba(34, 197, 94, 0.2);
-    color: rgba(74, 222, 128, 1);
+    background: Rgba(34, 197, 94, 0.1);
+    border-color: Rgba(34, 197, 94, 0.2);
+    color: Rgba(74, 222, 128, 1);
   }
 }
 
@@ -251,12 +251,12 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(234, 179, 8, 0.08);
-  border: 1px dashed rgba(234, 179, 8, 0.3);
+  background: Rgba(234, 179, 8, 0.08);
+  border: 1px dashed Rgba(234, 179, 8, 0.3);
   border-radius: 8px;
   padding: 6px 10px;
   font-size: 10px;
-  color: rgba(253, 224, 71, 0.95);
+  color: Rgba(253, 224, 71, 0.95);
   line-height: 1.3;
   margin-bottom: 4px;
 
@@ -272,8 +272,8 @@
 }
 
 .sub-competition-detail-card {
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: Rgba(0, 0, 0, 0.35);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 12px 14px;
   display: flex;
@@ -310,7 +310,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    border-top: 1px dashed rgba(255, 255, 255, 0.08);
+    border-top: 1px dashed Rgba(255, 255, 255, 0.08);
     padding-top: 10px;
   }
 }
@@ -319,13 +319,17 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: Rgba(255, 255, 255, 0.02);
+  border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   padding: 8px 10px;
   box-sizing: border-box;
 
   .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
     font-size: 8px;
     font-weight: bold;
     min-width: 44px;
@@ -334,39 +338,40 @@
     border-radius: 6px;
     white-space: nowrap;
     border: 1px solid transparent;
+    flex-shrink: 0;
   }
 
   &.gold {
-    border-left: 3px solid rgba(250, 204, 21, 0.85);
-    background: rgba(250, 204, 21, 0.03);
+    border-left: 3px solid Rgba(250, 204, 21, 0.85);
+    background: Rgba(250, 204, 21, 0.03);
 
     .rank-badge {
-      color: rgba(253, 230, 138, 1);
-      background: rgba(250, 204, 21, 0.12);
-      border-color: rgba(250, 204, 21, 0.3);
-      box-shadow: 0 0 8px rgba(250, 204, 21, 0.1);
+      color: Rgba(253, 230, 138, 1);
+      background: Rgba(250, 204, 21, 0.12);
+      border-color: Rgba(250, 204, 21, 0.3);
+      box-shadow: 0 0 8px Rgba(250, 204, 21, 0.1);
     }
   }
 
   &.silver {
-    border-left: 3px solid rgba(203, 213, 225, 0.85);
-    background: rgba(203, 213, 225, 0.02);
+    border-left: 3px solid Rgba(203, 213, 225, 0.85);
+    background: Rgba(203, 213, 225, 0.02);
 
     .rank-badge {
-      color: rgba(203, 213, 225, 1);
-      background: rgba(203, 213, 225, 0.1);
-      border-color: rgba(203, 213, 225, 0.25);
+      color: Rgba(203, 213, 225, 1);
+      background: Rgba(203, 213, 225, 0.1);
+      border-color: Rgba(203, 213, 225, 0.25);
     }
   }
 
   &.bronze {
-    border-left: 3px solid rgba(251, 146, 60, 0.85);
-    background: rgba(251, 146, 60, 0.02);
+    border-left: 3px solid Rgba(251, 146, 60, 0.85);
+    background: Rgba(251, 146, 60, 0.02);
 
     .rank-badge {
-      color: rgba(253, 186, 116, 1);
-      background: rgba(251, 146, 60, 0.1);
-      border-color: rgba(251, 146, 60, 0.25);
+      color: Rgba(253, 186, 116, 1);
+      background: Rgba(251, 146, 60, 0.1);
+      border-color: Rgba(251, 146, 60, 0.25);
     }
   }
 }

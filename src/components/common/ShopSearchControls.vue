@@ -75,3 +75,6 @@ const localSortOrder = computed({
     </SortControls>
   </div>
 </template>
+
+<style scoped lang="scss" src="@/styles/components/_shop.scss"></style>
+

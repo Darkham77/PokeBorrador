@@ -5,7 +5,7 @@ import { useEventStore } from '@/stores/events'
 import { useUIStore } from '@/stores/ui'
 import { getSpeciesEntries } from '@/logic/encounters/encounters'
 import { type PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import type { EventConfig } from '@/logic/events/eventEngine'
+import { safeParse, type EventConfig } from '@/logic/events/eventEngine'
 import {
   getSpawnStatus,
   getSharedShinyEventLines,
@@ -152,8 +152,8 @@ export function useRouteSpawnsFishing(props: RouteSpawnsProps) {
     const eventFishingBonus = eventStore.globalMultipliers?.fishing || 1
     if (eventFishingBonus !== 1) {
       const activeFishingEvents = eventStore.activeEvents.filter(e => {
-        const cfg = (typeof e.config === 'string' ? JSON.parse(e.config) : e.config) as EventConfig | undefined
-        return cfg && cfg.fishingMult
+        const cfg = safeParse(e.config) as EventConfig
+        return Boolean(cfg?.fishingMult)
       })
       const eventNames = activeFishingEvents.map(e => e.name).join(', ')
       lines.push(`• Evento Semanal (${eventNames}): x${eventFishingBonus.toFixed(1)} de probabilidad general`)

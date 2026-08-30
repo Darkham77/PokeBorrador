@@ -3,7 +3,8 @@ import {
   manualTimersFrontend,
   zeroTimerBattleLogic,
   noPlaywrightWaitForTimeout,
-  forbiddenFallbacks
+  forbiddenFallbacks,
+  sassTraps
 } from '@/../scripts/maintenance/audit_rules.ts'
 
 describe('audit_rules.ts - Zero-Timer & Anti-Pattern Rules', () => {
@@ -143,6 +144,54 @@ describe('audit_rules.ts - Zero-Timer & Anti-Pattern Rules', () => {
       const code = `const targetUid = target.pokemonUid; if (!targetUid) throw new Error('Missing UID');`
       const match = matchRule(forbiddenFallbacks, code)
       expect(match).toBeNull()
+    })
+  })
+
+  describe('sassTraps', () => {
+    it('flags lowercase grayscale() in scss files as an error and is not fixable automatically', () => {
+      const code = `filter: grayscale(0.85);`
+      const match = matchRule(sassTraps, code)
+      expect(match).not.toBeNull()
+      expect(sassTraps.severity).toBe('error')
+      expect(sassTraps.fixable).toBe(false)
+      expect(sassTraps.fix).toBeUndefined()
+      if (match && sassTraps.check) {
+        const isViolation = sassTraps.check(code, match, 'src/styles/components/_shop_cards.scss')
+        expect(isViolation).toBe(true)
+      }
+    })
+
+    it('flags lowercase drop-shadow() and rgba() in scss files', () => {
+      const code = `filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));`
+      const match = matchRule(sassTraps, code)
+      expect(match).not.toBeNull()
+    })
+
+    it('does not flag SASS module calls like color.scale or math.random', () => {
+      const code = `background: color.scale($color, $lightness: 20%);`
+      const match = matchRule(sassTraps, code)
+      if (match && sassTraps.check) {
+        const isViolation = sassTraps.check(code, match, 'src/styles/main.scss')
+        expect(isViolation).toBe(false)
+      } else {
+        expect(match).toBeNull()
+      }
+    })
+
+    it('does not flag already capitalized functions like Grayscale and Rgba', () => {
+      const code = `filter: Grayscale(0.85); background: Rgba(255, 255, 255, 0.5);`
+      const match = matchRule(sassTraps, code)
+      expect(match).toBeNull()
+    })
+
+    it('does not flag non-style ts/js files', () => {
+      const code = `const color = 'rgba(255, 0, 0, 0.9)';`
+      const match = matchRule(sassTraps, code)
+      expect(match).not.toBeNull()
+      if (match && sassTraps.check) {
+        const isViolation = sassTraps.check(code, match, 'src/logic/utils/spriteOutliner.ts')
+        expect(isViolation).toBe(false)
+      }
     })
   })
 })

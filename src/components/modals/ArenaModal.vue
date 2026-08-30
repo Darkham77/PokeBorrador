@@ -318,3 +318,6 @@ function handleToggleBtnLeave(e: MouseEvent) {
     </div>
   </BaseModal>
 </template>
+
+<style scoped lang="scss" src="@/styles/components/_arena.scss"></style>
+

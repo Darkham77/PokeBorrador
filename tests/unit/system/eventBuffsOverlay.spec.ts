@@ -6,11 +6,15 @@ import BuffsOverlay from '@/components/overlays/BuffsOverlay.vue'
 import { useBuffsStore } from '@/stores/battle/buffs'
 import { useEventStore } from '@/stores/events'
 import { useModalStore } from '@/stores/modals'
+import { useUIStore } from '@/stores/ui'
 import type { Event as GameEvent } from '@/logic/events/eventEngine'
 
 describe('BuffsOverlay.vue & useBuffsStore - Global Event Countdown Badges', () => {
+  let pinia: ReturnType<typeof createPinia>
+
   beforeEach(() => {
-    setActivePinia(createPinia())
+    pinia = createPinia()
+    setActivePinia(pinia)
   })
 
   const mockMiningEvent: GameEvent = {
@@ -110,5 +114,38 @@ describe('BuffsOverlay.vue & useBuffsStore - Global Event Countdown Badges', () 
     expect(wrapper.find('#buff-badge-event_evento_pesca').exists()).toBe(true)
     expect(wrapper.text()).toContain('⛏️')
     expect(wrapper.text()).toContain('🎣')
+  })
+
+  it('is visible only when activeTab is "map" and hidden in other tabs (e.g. "box", "pokedex", "bag", "gyms")', async () => {
+    const uiStore = useUIStore(pinia)
+    const eventStore = useEventStore(pinia)
+    eventStore.activeEvents = [mockMiningEvent]
+
+    uiStore.activeTab = 'map'
+    const wrapper = mount(BuffsOverlay, {
+      global: { plugins: [pinia], stubs: globalStubs }
+    })
+
+    expect(wrapper.find('.buffs-overlay').exists()).toBe(true)
+
+    uiStore.activeTab = 'box'
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('.buffs-overlay').exists()).toBe(false)
+
+    uiStore.activeTab = 'pokedex'
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('.buffs-overlay').exists()).toBe(false)
+
+    uiStore.activeTab = 'bag'
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('.buffs-overlay').exists()).toBe(false)
+
+    uiStore.activeTab = 'gyms'
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('.buffs-overlay').exists()).toBe(false)
+
+    uiStore.activeTab = 'map'
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('.buffs-overlay').exists()).toBe(true)
   })
 })

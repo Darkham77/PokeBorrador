@@ -230,24 +230,43 @@ export async function emulateClaimAsset(
   if (userSaves.length === 0) return { data: null, error: { message: 'Save not found' } };
   const userSave = (typeof userSaves[0]!.save_data === 'string' ? JSON.parse(userSaves[0]!.save_data as string) : userSaves[0]!.save_data) as OfflineSaveData;
 
-  let assetPayload: ClaimAssetPayload;
+  let assetPayload: ClaimAssetPayload | null = null;
   if (typeof claim.asset_data === 'string') {
-    assetPayload = JSON.parse(claim.asset_data) as ClaimAssetPayload;
+    try {
+      assetPayload = JSON.parse(claim.asset_data) as ClaimAssetPayload;
+    } catch {
+      assetPayload = null;
+    }
   } else {
-    assetPayload = claim.asset_data as ClaimAssetPayload;
+    assetPayload = claim.asset_data;
   }
 
-  if (assetPayload.type === 'pokemon') {
+  if (assetPayload && assetPayload.type === 'pokemon') {
+    let rawPoke: Record<string, unknown> | null = null; // open-record
+    if (typeof assetPayload.data === 'string') {
+      try {
+        rawPoke = JSON.parse(assetPayload.data) as Record<string, unknown>; // open-record
+      } catch {
+        rawPoke = null;
+      }
+    } else if (typeof assetPayload.data === 'object' && assetPayload.data !== null) {
+      rawPoke = assetPayload.data as Record<string, unknown>; // open-record
+    }
+    // Reset friendship to canonical base value (70) upon transferring to a new trainer
+    const poke: Record<string, unknown> = { // open-record
+      ...(rawPoke || {}),
+      friendship: 70,
+    };
     userSave.team = userSave.team || [];
     if (userSave.team.length < 6) {
-      userSave.team.push(assetPayload.data as Record<string, unknown>); // open-record
+      userSave.team.push(poke);
     } else {
       userSave.box = userSave.box || [];
-      userSave.box.push(assetPayload.data as Record<string, unknown>); // open-record
+      userSave.box.push(poke);
     }
-  } else if (assetPayload.type === 'money') {
+  } else if (assetPayload && assetPayload.type === 'money') {
     userSave.money = (userSave.money || 0) + Number(assetPayload.data);
-  } else if (assetPayload.type === 'item') {
+  } else if (assetPayload && assetPayload.type === 'item') {
     userSave.inventory = userSave.inventory || {};
     const itemData = assetPayload.data as { name: string; qty?: number };
     const itemName = itemData.name;

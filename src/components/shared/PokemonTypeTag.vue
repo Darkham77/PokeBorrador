@@ -23,3 +23,8 @@ withDefaults(defineProps<Props>(), {
     {{ translateType(type).toUpperCase() }}
   </component>
 </template>
+
+<style scoped lang="scss">
+@use "@/styles/components/badges" as *;
+</style>
+

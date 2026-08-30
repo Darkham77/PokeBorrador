@@ -19,3 +19,6 @@ defineProps<{
     </div>
   </div>
 </template>
+
+<style scoped lang="scss" src="./MapCard.styles.scss"></style>
+

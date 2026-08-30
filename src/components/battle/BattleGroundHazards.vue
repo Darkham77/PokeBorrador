@@ -56,3 +56,6 @@ const onGroundPopLeave = (el: Element, done: () => void) => {
     </Transition>
   </div>
 </template>
+
+<style scoped lang="scss" src="@/styles/components/_battle-combatant.scss"></style>
+

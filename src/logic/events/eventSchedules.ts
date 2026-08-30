@@ -30,9 +30,20 @@ export interface UpcomingEventOccurrence {
 
 export const safeParse = (val: string | object | null | undefined): Record<string, unknown> => {
   if (typeof val === 'string') {
-    try { return JSON.parse(val) as Record<string, unknown>; } catch (_e) { return {}; } // open-record
+    try {
+      const parsed: unknown = JSON.parse(val);
+      if (typeof parsed === 'object' && parsed !== null) {
+        return parsed as Record<string, unknown>; // open-record
+      }
+      return {};
+    } catch (_e) {
+      return {};
+    }
   }
-  return (val as Record<string, unknown>) || {}; // open-record
+  if (typeof val === 'object' && val !== null) {
+    return val as Record<string, unknown>; // open-record
+  }
+  return {};
 };
 
 const WEEK_1_MAX_DAY = 7;

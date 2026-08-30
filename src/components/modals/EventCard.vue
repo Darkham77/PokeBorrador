@@ -112,11 +112,9 @@ const currentWeeklyRotation = computed<WeeklyRotationEntry | null>(() => {
 })
 
 const cardSpeciesList = computed<PokemonSpeciesId[]>(() => {
-  if (currentWeeklyRotation.value?.species && isPokemonSpeciesId(currentWeeklyRotation.value.species)) {
-    return [currentWeeklyRotation.value.species]
-  }
-  if (parsedEventConfig.value.species && parsedEventConfig.value.species !== '*') {
-    const list = parsedEventConfig.value.species.split(',').map(s => s.trim()).filter(isPokemonSpeciesId)
+  const raw = currentWeeklyRotation.value?.species ?? parsedEventConfig.value.species
+  if (raw && raw !== '*') {
+    const list = raw.split(',').map(s => s.trim().toLowerCase()).filter(isPokemonSpeciesId)
     if (list.length > 0) return list
   }
   return []

@@ -231,7 +231,7 @@
       width: 24px;
       height: 24px;
       object-fit: contain;
-      filter: sepia(1) Saturate(12) hue-rotate(-15deg) Brightness(1.1);
+      filter: sepia(1) Saturate(12) Hue-Rotate(-15deg) Brightness(1.1);
       @include pixelated;
     }
   }

@@ -52,6 +52,14 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
   const isStyle = filePath.endsWith('.scss') || filePath.endsWith('.css');
 
 
+  const STYLE_RULES: AuditRule[] = [
+    config.viewport,
+    config.gpuGaps,
+    config.zIndexAudit,
+    config.manualAnimations,
+    config.sassTraps
+  ];
+
   if (isLogic || isVue) {
     const allRules: AuditRule[] = Object.values(config) as AuditRule[];
     if (isVue) {
@@ -59,7 +67,7 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
       // Procesa los bloques de script en reversa para no alterar los índices de caracteres al modificar el contenido
       for (let i = scriptBlocks.length - 1; i >= 0; i--) {
         const block = scriptBlocks[i]!;
-        let rules: AuditRule[] = allRules.filter(r => r !== config.dbInTemplates && r !== config.functionCallsInTemplates && r !== config.fileLength);
+        let rules: AuditRule[] = allRules.filter(r => !STYLE_RULES.includes(r) && r !== config.dbInTemplates && r !== config.functionCallsInTemplates && r !== config.fileLength);
         
         if (filePath.includes('scripts' + path.sep) || filePath.includes('supabase' + path.sep) || filePath.includes('audit_project.ts')) {
           rules = rules.filter(r => r !== config.legacyDates);
@@ -96,7 +104,7 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
       }
     } else {
       // isLogic
-      let rules: AuditRule[] = allRules.filter(r => r !== config.dbInTemplates && r !== config.functionCallsInTemplates && r !== config.fileLength);
+      let rules: AuditRule[] = allRules.filter(r => !STYLE_RULES.includes(r) && r !== config.dbInTemplates && r !== config.functionCallsInTemplates && r !== config.fileLength);
       
       if (filePath.includes('scripts' + path.sep) || filePath.includes('supabase' + path.sep) || filePath.includes('audit_project.ts')) {
         rules = rules.filter(r => r !== config.legacyDates);
@@ -122,7 +130,7 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
       const styleBlocks = extractAllBlocks(content, 'style');
       for (let i = styleBlocks.length - 1; i >= 0; i--) {
         const block = styleBlocks[i]!;
-        const newBlock = runRules(filePath, block.content, [config.viewport, config.gpuGaps, config.zIndexAudit, config.manualAnimations], violations, fix, block.startLine);
+        const newBlock = runRules(filePath, block.content, STYLE_RULES, violations, fix, block.startLine);
         if (fix && newBlock !== block.content) {
           content = content.substring(0, block.startIdx) + newBlock + content.substring(block.endIdx);
           modified = true;
@@ -130,7 +138,7 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
       }
     } else {
       // isStyle
-      const newBlock = runRules(filePath, content, [config.viewport, config.gpuGaps, config.zIndexAudit, config.manualAnimations], violations, violations.length > 0 ? false : fix, 0);
+      const newBlock = runRules(filePath, content, STYLE_RULES, violations, violations.length > 0 ? false : fix, 0);
       if (fix && newBlock !== content) {
         content = newBlock;
         modified = true;
@@ -279,7 +287,19 @@ function runRules(filePath: string, content: string, rules: AuditRule[], violati
     const fixer = rule.fix;
     if (fix && fixer) {
       const gRegex = new RegExp(rule.regex.source, rule.regex.flags.includes('g') ? rule.regex.flags : rule.regex.flags + 'g');
-      result = result.replace(gRegex, (match) => fixer(match));
+      result = result.replace(gRegex, (match, ...args) => {
+        const matchIdx = typeof args[args.length - 2] === 'number' ? (args[args.length - 2] as number) : 0;
+        if (isInsideComment(result, matchIdx)) return match;
+        if (rule.check) {
+          const checkRegex = new RegExp(rule.regex.source, rule.regex.flags.replace('g', ''));
+          const currentMatch = checkRegex.exec(result.substring(matchIdx));
+          if (currentMatch) {
+            currentMatch.index = matchIdx;
+            if (!rule.check(result, currentMatch, filePath)) return match;
+          }
+        }
+        return fixer(match);
+      });
     }
   }
   return result;

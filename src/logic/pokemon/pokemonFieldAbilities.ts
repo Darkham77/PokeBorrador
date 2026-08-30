@@ -7,7 +7,7 @@
  */
 
 import { ACTIVE_GENERATION } from '@/data/system/constants';
-import type { AbilityId } from '@/data/battle/abilities';
+import { ABILITY_TRANSLATIONS_ES, type AbilityId } from '@/data/battle/abilities';
 import type { Pokemon, PokemonGender } from '@/types/pokemon/pokemon';
 import type { NatureId } from '@/data/battle/natures';
 import { isGenderlessSpeciesId } from '@/logic/pokemon/pokemonGender';
@@ -81,42 +81,6 @@ const PICKUP_LOOT_TABLES: {
     pool: ['fullrestore', 'revivemax', 'nugget', 'rarecandy', 'leftovers', 'destinyknot']
   }
 ];
-
-const FIELD_ABILITY_BADGES: Partial<Record<AbilityId, { label: string; desc: string; icon: string }>> = {
-  synchronize: { label: 'Sincronía', desc: 'Sincroniza Naturaleza de salvajes', icon: '🔮' }, // spanish-ok
-  cutecharm: { label: 'Gran Encanto', desc: 'Atrae género opuesto', icon: '💖' }, // spanish-ok
-  compoundeyes: { label: 'Ojo Compuesto', desc: '+Probabilidad de objetos salvajes', icon: '👁️' }, // spanish-ok
-  superluck: { label: 'Afortunado', desc: '+Probabilidad de objetos salvajes', icon: '🍀' }, // spanish-ok
-  frisk: { label: 'Cacheo', desc: 'Detecta y potencia objetos equipados', icon: '🔍' }, // spanish-ok
-  flamebody: { label: 'Cuerpo Llama', desc: 'x2 Velocidad de eclosión de Huevos', icon: '🔥' }, // spanish-ok
-  magmaarmor: { label: 'Escudo Magma', desc: 'x2 Velocidad de eclosión de Huevos', icon: '🌋' }, // spanish-ok
-  steamengine: { label: 'Combustible', desc: 'x2 Velocidad de eclosión de Huevos', icon: '🚂' }, // spanish-ok
-  pickup: { label: 'Recogida', desc: '10% de recoger objetos tras combatir', icon: '🎒' }, // spanish-ok
-  honeygather: { label: 'Recogemiel', desc: 'Recolecta Miel dulce tras combatir', icon: '🍯' }, // spanish-ok
-  naturalcure: { label: 'Cura Natural', desc: 'Cura estados alterados post-batalla', icon: '🌿' }, // spanish-ok
-  magnetpull: { label: 'Imán', desc: '50% de atraer tipo Acero', icon: '🧲' }, // spanish-ok
-  static: { label: 'Elec. Estática', desc: '50% de atraer tipo Eléctrico', icon: '⚡' }, // spanish-ok
-  lightningrod: { label: 'Pararrayos', desc: '50% de atraer tipo Eléctrico', icon: '⚡' }, // spanish-ok
-  flashfire: { label: 'Absorbe Fuego', desc: '50% de atraer tipo Fuego', icon: '🔥' }, // spanish-ok
-  stormdrain: { label: 'Colector', desc: '50% de atraer tipo Agua', icon: '💧' }, // spanish-ok
-  harvest: { label: 'Cosecha', desc: '50% de atraer tipo Planta', icon: '🌾' }, // spanish-ok
-  suctioncups: { label: 'Ventosas', desc: 'x2 Tasa de mordida al pescar', icon: '🐙' }, // spanish-ok
-  stickyhold: { label: 'Viscosidad', desc: 'x2 Tasa de mordida al pescar', icon: '🧪' }, // spanish-ok
-  intimidate: { label: 'Intimidación', desc: 'Evita salvajes de bajo nivel', icon: '🦁' }, // spanish-ok
-  keeneye: { label: 'Vista Lince', desc: 'Evita salvajes de bajo nivel', icon: '🦅' }, // spanish-ok
-  pressure: { label: 'Presión', desc: '50% de forzar nivel máximo de ruta', icon: '👑' }, // spanish-ok
-  vitalspirit: { label: 'Espíritu Vital', desc: '50% de forzar nivel máximo de ruta', icon: '✨' }, // spanish-ok
-  hustle: { label: 'Entusiasmo', desc: '50% de forzar nivel máximo de ruta', icon: '💪' }, // spanish-ok
-  arenatrap: { label: 'Trampa Arena', desc: 'x2 Frecuencia de encuentros salvajes', icon: '⏳' }, // spanish-ok
-  illuminate: { label: 'Iluminación', desc: 'x2 Frecuencia de encuentros salvajes', icon: '💡' }, // spanish-ok
-  noguard: { label: 'Indefenso', desc: 'x2 Frecuencia de encuentros salvajes', icon: '⚔️' }, // spanish-ok
-  stench: { label: 'Hedor', desc: 'x0.5 Frecuencia de encuentros salvajes', icon: '🦨' }, // spanish-ok
-  whitesmoke: { label: 'Humo Blanco', desc: 'x0.5 Frecuencia de encuentros salvajes', icon: '💨' }, // spanish-ok
-  quickfeet: { label: 'Pies Rápidos', desc: 'x0.5 Frecuencia de encuentros salvajes', icon: '👟' }, // spanish-ok
-  infiltrator: { label: 'Allanamiento', desc: 'x0.5 Frecuencia de encuentros salvajes', icon: '🦇' }, // spanish-ok
-  sandveil: { label: 'Velo Arena', desc: '-50% Encuentros en Tormenta de Arena', icon: '🌪️' }, // spanish-ok
-  snowcloak: { label: 'Manto Níveo', desc: '-50% Encuentros en Nieve/Granizo', icon: '❄️' } // spanish-ok
-};
 
 // --- CORE RESOLUTION FUNCTIONS ---
 
@@ -373,13 +337,31 @@ export function curePartyNaturalCure(team: (Pokemon | null)[] | null | undefined
 }
 
 /**
+ * Extracts the field passive description directly from the SSoT (abilities.json).
+ */
+export function getFieldAbilityDescription(abilityId: AbilityId): string {
+  const trans = ABILITY_TRANSLATIONS_ES[abilityId];
+  if (!trans || !trans.desc) return '';
+  const lines = trans.desc.split('\n');
+  const fieldLine = lines.find(line => line.includes('Campo:'));
+  if (fieldLine) {
+    return fieldLine.replace(/^[•\s]*Campo:\s*/u, '').trim();
+  }
+  return trans.desc;
+}
+
+/**
  * Returns active badge descriptor for UI if the Pokemon provides a field ability.
+ * Derives label, complete SSoT description (combat + field), and icon directly from abilities.json.
  */
 export function getFieldPassiveBadges(
   pokemon: Pokemon | null | undefined
 ): { id: AbilityId; label: string; desc: string; icon: string } | null {
   if (!pokemon || !pokemon.ability) return null;
-  const badge = FIELD_ABILITY_BADGES[pokemon.ability];
-  if (!badge) return null;
-  return { id: pokemon.ability, ...badge };
+  const translation = ABILITY_TRANSLATIONS_ES[pokemon.ability];
+  if (!translation || !translation.desc || !translation.desc.includes('Campo:')) return null;
+  const label = translation.name || pokemon.ability;
+  const desc = translation.desc;
+  const icon = translation.icon || '✨';
+  return { id: pokemon.ability, label, desc, icon };
 }

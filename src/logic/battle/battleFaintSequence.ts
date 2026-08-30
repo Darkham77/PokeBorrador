@@ -245,6 +245,11 @@ export async function processPlayerFaintSequence(
   const pokeName = pokemon?.name || active?._lastActivePlayer?.name || 'Tu Pokémon'
   ctx.addLog(`¡${pokeName} se ha debilitado!`, 'log-player', pokemon || undefined)
 
+  if (pokemon) {
+    const { applyFriendshipDelta } = await import('@/logic/pokemon/friendshipLogic');
+    applyFriendshipDelta(pokemon, -1, ctx.addLog);
+  }
+
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAYER_FAINT_SEQ)
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.RECALL_FLOW)
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_RECALL)

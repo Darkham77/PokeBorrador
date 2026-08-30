@@ -12,6 +12,7 @@ UI / Frontend Developers.
 - **SASS @use Import Mandate**: Direct `@import` rules are prohibited. All imports must utilize `@use` or `@forward` namespaces.
 - **Zero Global Clashing**: View-specific style files (`src/styles/views/`) must avoid overriding base styles using `!important` unless strictly verified to prevent layout regressions on nested visual structures.
 - **Native CSS Virtualization (`content-visibility`)**: Long scrollable lists and repeating card grids (Pokédex cards, inventory items, spawn report tables) MUST specify `content-visibility: auto; contain-intrinsic-size: 0 <height>;` to allow the browser engine to skip off-screen layout and sprite decoding, guaranteeing 60 FPS scrolling.
+- **Prohibition of Unscoped Component Classes in Global Layouts**: Global layout stylesheets (`src/styles/layouts/` such as `_screens.scss`, `_hud.scss`) MUST NOT define component-specific classes (`.pc-left`, `.pc-right`, `.pc-banner-*`). All component-level styling rules must reside exclusively in dedicated modular component stylesheets (`src/styles/components/`) to prevent global cascade collisions that silently break component layout sizing.
 
 ## Work Guidance
 

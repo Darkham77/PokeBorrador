@@ -130,3 +130,6 @@ const handleImageError = () => {
     </div>
   </div>
 </template>
+
+<style scoped lang="scss" src="@/styles/components/_shop_cards.scss"></style>
+

@@ -14,11 +14,11 @@
   .item-price-wrapper {
     .currency-symbol {
       color: #c084fc !important;
-      filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.6)) !important;
+      filter: Drop-Shadow(0 0 5px Rgba(168, 85, 247, 0.6)) !important;
     }
     .price-val {
       color: #c084fc !important;
-      text-shadow: 0 0 10px rgba(168, 85, 247, 0.4) !important;
+      text-shadow: 0 0 10px Rgba(168, 85, 247, 0.4) !important;
     }
   }
 
@@ -37,8 +37,8 @@
 
 .war-shop-item-card {
   @include shop-item-card(#ef4444);
-  background: rgba(20, 10, 10, 0.8) !important; // keep thematic dark background
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: Rgba(20, 10, 10, 0.8) !important; // keep thematic dark background
+  border: 1px solid Rgba(239, 68, 68, 0.2);
   border-radius: 12px;
   padding: 12px;
   &:hover:not(.locked) { @include shop-card-hover(#ef4444); }
@@ -47,7 +47,7 @@
     color: #ef4444 !important;
     .currency-symbol {
       color: #ef4444 !important;
-      filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.5));
+      filter: Drop-Shadow(0 0 5px Rgba(239, 68, 68, 0.5));
     }
     .price-val {
       color: #ef4444 !important;
@@ -64,11 +64,11 @@
     font-family: var(--font-pixel);
     font-size: 9px;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    box-shadow: 0 4px 12px Rgba(239, 68, 68, 0.2);
     will-change: transform, box-shadow;
 
     &:hover:not(:disabled) {
-      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+      box-shadow: 0 6px 20px Rgba(239, 68, 68, 0.4);
     }
 
     &:disabled {
@@ -109,7 +109,7 @@
 
     .rep-star-icon {
       color: #fbbf24;
-      filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.5));
+      filter: Drop-Shadow(0 0 5px Rgba(251, 191, 36, 0.5));
     }
   }
 
@@ -123,20 +123,20 @@
   -webkit-mask-image: -webkit-radial-gradient(white, black);
 
   &.tier-common {
-    border-color: rgba(148, 163, 184, 0.25);
-    background: rgba(148, 163, 184, 0.03) !important;
+    border-color: Rgba(148, 163, 184, 0.25);
+    background: Rgba(148, 163, 184, 0.03) !important;
   }
   &.tier-rare {
-    border-color: rgba(59, 130, 246, 0.35);
-    background: rgba(59, 130, 246, 0.05) !important;
+    border-color: Rgba(59, 130, 246, 0.35);
+    background: Rgba(59, 130, 246, 0.05) !important;
   }
   &.tier-epic {
-    border-color: rgba(168, 85, 247, 0.35);
-    background: rgba(168, 85, 247, 0.05) !important;
+    border-color: Rgba(168, 85, 247, 0.35);
+    background: Rgba(168, 85, 247, 0.05) !important;
   }
   &.tier-legend {
-    border-color: rgba(245, 158, 11, 0.45);
-    background: rgba(245, 158, 11, 0.06) !important;
+    border-color: Rgba(245, 158, 11, 0.45);
+    background: Rgba(245, 158, 11, 0.06) !important;
   }
 
   .tier-tag {
@@ -150,16 +150,16 @@
     border-radius: 8px;
     z-index: calc(var(--z-map-floor) + 1);
     
-    &.tier-common { background: rgba(148, 163, 184, 0.08); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.15); }
-    &.tier-rare { background: rgba(59, 130, 246, 0.08); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.15); }
-    &.tier-epic { background: rgba(168, 85, 247, 0.08); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.15); }
+    &.tier-common { background: Rgba(148, 163, 184, 0.08); color: #94a3b8; border: 1px solid Rgba(148, 163, 184, 0.15); }
+    &.tier-rare { background: Rgba(59, 130, 246, 0.08); color: #60a5fa; border: 1px solid Rgba(59, 130, 246, 0.15); }
+    &.tier-epic { background: Rgba(168, 85, 247, 0.08); color: #c084fc; border: 1px solid Rgba(168, 85, 247, 0.15); }
     &.tier-legend { background: var(--yellow); color: #000000; font-weight: bold; border: 1px solid var(--yellow-light); }
   }
 
   &.locked {
     opacity: 0.6;
     will-change: transform, filter, opacity;
-    filter: grayscale(0.85);
+    filter: Grayscale(0.85);
   }
 
   .item-card-top {
@@ -171,8 +171,8 @@
   .item-visual-box {
     width: 64px;
     height: 64px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: Rgba(255, 255, 255, 0.03);
+    border: 1px solid Rgba(255, 255, 255, 0.06);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -190,14 +190,14 @@
     .item-lock-badge {
       position: absolute;
       inset: -1px;
-      background: rgba(15, 17, 28, 0.85);
-      backdrop-filter: blur(2px);
+      background: Rgba(15, 17, 28, 0.85);
+      backdrop-filter: Blur(2px);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       border-radius: 12px;
-      border: 1px solid rgba(239, 68, 68, 0.3);
+      border: 1px solid Rgba(239, 68, 68, 0.3);
 
       .lock-icon {
         font-size: 14px;
@@ -246,7 +246,7 @@
 
     .original-price {
       font-size: 10px;
-      color: rgba(255, 255, 255, 0.3);
+      color: Rgba(255, 255, 255, 0.3);
       text-decoration: line-through;
       margin-left: 2px;
     }
@@ -254,7 +254,7 @@
 
   .item-desc {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.5);
+    color: Rgba(255, 255, 255, 0.5);
     line-height: 1.4;
     min-height: 2.8em;
     max-height: 5.6em;
@@ -286,7 +286,7 @@
       .total-label {
         @include pixelated;
         font-size: 6px;
-        color: rgba(255, 255, 255, 0.4);
+        color: Rgba(255, 255, 255, 0.4);
         text-transform: uppercase;
         margin-bottom: 2px;
       }
@@ -302,8 +302,8 @@
     
     .qty-ctrl-group {
       display: flex;
-      background: rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: Rgba(0, 0, 0, 0.25);
+      border: 1px solid Rgba(255, 255, 255, 0.08);
       border-radius: 10px;
       overflow: hidden;
       align-items: center;
@@ -314,7 +314,7 @@
         height: 100%;
         border: none;
         background: transparent;
-        color: rgba(255, 255, 255, 0.6);
+        color: Rgba(255, 255, 255, 0.6);
         cursor: pointer;
         font-size: 14px;
         font-weight: bold;
@@ -325,7 +325,7 @@
         outline: none;
 
         &:hover:not(:disabled) { 
-          background: rgba(255, 255, 255, 0.05); 
+          background: Rgba(255, 255, 255, 0.05); 
           color: white;
         }
 
@@ -361,9 +361,9 @@
       @include btn-shop-buy($yellow);
 
       &.locked-btn {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border-color: rgba(255, 255, 255, 0.05) !important;
-        color: rgba(255, 255, 255, 0.2) !important;
+        background: Rgba(255, 255, 255, 0.05) !important;
+        border-color: Rgba(255, 255, 255, 0.05) !important;
+        color: Rgba(255, 255, 255, 0.2) !important;
         cursor: not-allowed;
         box-shadow: none !important;
       }

@@ -1,1286 +1,1607 @@
 {
   "adaptability": {
     "name": "Adaptable",
-    "desc": "▲ Potencia el bonus STAB de x1.5 a x2.0."
+    "desc": "▲ Potencia el bonus STAB de x1.5 a x2.0.",
+    "icon": "⭐"
   },
   "airlock": {
     "name": "Bucle Aire",
-    "desc": "While this Pokemon is active, the effects of weather conditions are disabled."
+    "desc": "🚫 Anula todos los efectos del clima en combate mientras el Pokémon esté activo.",
+    "icon": "✨"
   },
   "arenatrap": {
     "name": "Trampa Arena",
-    "desc": "🚫 Impide que el rival escape o sea cambiado (salvo Voladores)."
+    "desc": "• Combate: 🚫 Impide que el rival escape o sea cambiado (salvo tipo Volador o Levitación).\n• Campo: x2 Frecuencia de encuentros con Pokémon salvajes.",
+    "icon": "⏳"
   },
   "battlearmor": {
     "name": "Armadura Batalla",
-    "desc": "🚫 Protege al Pokémon de los golpes críticos."
+    "desc": "🚫 Protege al Pokémon de los golpes críticos.",
+    "icon": "🛡️"
   },
   "bigpecks": {
     "name": "Sacapecho",
-    "desc": "🚫 Impide que los oponentes bajen la Defensa del Pokémon."
+    "desc": "🚫 Impide que los oponentes bajen la Defensa del Pokémon.",
+    "icon": "🛡️"
   },
   "blaze": {
     "name": "Mar llamas",
-    "desc": "▲ Potencia Fuego (+50%) a 1/3 HP o menos."
+    "desc": "▲ Potencia Fuego (+50%) a 1/3 HP o menos.",
+    "icon": "🔥"
   },
   "chlorophyll": {
     "name": "Clorofila",
-    "desc": "▲ Velocidad se duplica (x2.0) bajo Sol."
+    "desc": "▲ Velocidad se duplica (x2.0) bajo Sol.",
+    "icon": "🌱"
   },
   "clearbody": {
     "name": "Cuerpo Puro",
-    "desc": "🚫 Evita que el oponente baje las estadísticas del Pokémon."
+    "desc": "🚫 Evita que el oponente baje las estadísticas del Pokémon.",
+    "icon": "💎"
   },
   "cloudnine": {
     "name": "Bucle Aire",
-    "desc": "🚫 Elimina los efectos del clima en combate."
+    "desc": "🚫 Elimina los efectos del clima en combate.",
+    "icon": "✨"
   },
   "colorchange": {
     "name": "Cambio Color",
-    "desc": "This Pokemon's type changes to match the type of the last move that hit it, unless that type is already one of its types. This effect applies after each hit from a multi-hit move. This effect does not happen if this Pokemon did not lose HP from the attack."
+    "desc": "• Cambia el tipo del Pokémon al tipo del último movimiento recibido.",
+    "icon": "🎨"
   },
   "compoundeyes": {
     "name": "Ojo Compuesto",
-    "desc": "▲ Aumenta la precisión de los movimientos (+30%)."
+    "desc": "• Combate: ▲ Aumenta la precisión de los movimientos (+30%).\n• Campo: ▲ Duplica la probabilidad de que los Pokémon salvajes lleven objetos equipados.",
+    "icon": "👁️"
   },
   "cutecharm": {
     "name": "Gran Encanto",
-    "desc": "• Habilidad oficial de Clefairy en Gen 3."
+    "desc": "• Combate: 30% de enamorar al rival del sexo opuesto al recibir contacto físico.\n• Campo: 66.7% de atraer Pokémon salvajes del sexo opuesto.",
+    "icon": "💖"
   },
   "damp": {
     "name": "Humedad",
-    "desc": "🚫 Impide el uso de movimientos de explosión o autodestrucción."
+    "desc": "🚫 Impide el uso de movimientos de explosión o autodestrucción.",
+    "icon": "🛡️"
   },
   "drizzle": {
     "name": "Llovizna",
-    "desc": "On switch-in, this Pokemon summons Rain Dance."
+    "desc": "🌧️ Invoca Lluvia automáticamente al entrar en combate.",
+    "icon": "🌧️"
   },
   "drought": {
     "name": "Sequía",
-    "desc": "On switch-in, this Pokemon summons Sunny Day."
+    "desc": "☀️ Invoca Sol intenso automáticamente al entrar en combate.",
+    "icon": "☀️"
   },
   "earlybird": {
     "name": "Madrugar",
-    "desc": "• Se despierta de dormir el doble de rápido."
+    "desc": "• Se despierta de dormir el doble de rápido.",
+    "icon": "🌅"
   },
   "effectspore": {
     "name": "Efecto Espora",
-    "desc": "• El contacto físico puede dormir, paralizar o envenenar (30%)."
+    "desc": "• El contacto físico puede dormir, paralizar o envenenar (30%).",
+    "icon": "🍄"
   },
   "flamebody": {
     "name": "Cuerpo Llama",
-    "desc": "• El contacto físico puede quemar al rival (30%)."
+    "desc": "• Combate: 30% de quemar al atacante tras recibir contacto físico.\n• Campo: x2 Velocidad de eclosión de Huevos en el equipo.",
+    "icon": "🔥"
   },
   "flashfire": {
     "name": "Absorbe Fuego",
-    "desc": "🚫 Inmune a ataques de tipo Fuego y potencia los propios tras recibir uno."
+    "desc": "• Combate: 🚫 Inmune a ataques de tipo Fuego y potencia los propios (+50%) tras recibir uno.\n• Campo: 50% de probabilidad de atraer Pokémon salvajes de tipo Fuego.",
+    "icon": "🔥"
   },
   "forecast": {
     "name": "Predicción",
-    "desc": "• Modifica la forma y tipo de Castform según el clima activo en combate."
+    "desc": "• Modifica la forma y tipo de Castform según el clima activo en combate.",
+    "icon": "🌤️"
   },
   "guts": {
     "name": "Agallas",
-    "desc": "▲ Aumenta el Ataque (+50%) con problema de estado."
+    "desc": "▲ Aumenta el Ataque (+50%) con problema de estado.",
+    "icon": "💥"
   },
   "hugepower": {
     "name": "Potencia",
-    "desc": "This Pokemon's Attack is doubled."
+    "desc": "▲ Duplica el Ataque físico del Pokémon (x2.0).",
+    "icon": "💪"
   },
   "hustle": {
     "name": "Entusiasmo",
-    "desc": "▲ Sube el Ataque (+50%) / ▼ Baja la precisión de golpes físicos (-20%)."
+    "desc": "• Combate: ▲ Sube el Ataque (+50%) / ▼ Reduce la precisión física (-20%).\n• Campo: 50% de forzar el nivel máximo posible en encuentros salvajes de ruta.",
+    "icon": "💪"
   },
   "hypercutter": {
     "name": "Corte Fuerte",
-    "desc": "🚫 Impide que el oponente baje el Ataque del Pokémon."
+    "desc": "🚫 Impide que el oponente baje el Ataque del Pokémon.",
+    "icon": "🛡️"
   },
   "illuminate": {
     "name": "Iluminación",
-    "desc": "• Aumenta la probabilidad de encontrarse con Pokémon salvajes."
+    "desc": "• Campo: x2 Frecuencia de encuentros con Pokémon salvajes.",
+    "icon": "💡"
   },
   "immunity": {
     "name": "Inmunidad",
-    "desc": "🚫 Protege al Pokémon del envenenamiento."
+    "desc": "🚫 Protege al Pokémon del envenenamiento.",
+    "icon": "🛡️"
   },
   "infiltrator": {
-    "name": "Infiltrador",
-    "desc": "• Los movimientos atraviesan barreras y pantallas del rival."
+    "name": "Allanamiento",
+    "desc": "• Combate: Atraviesa pantallas defensivas (Reflejo, Pantalla de Luz, Velo Aurora, Sustituto).\n• Campo: x0.5 Frecuencia de encuentros con Pokémon salvajes (reduce al 50%).",
+    "icon": "🦇"
   },
   "innerfocus": {
     "name": "Foco Interno",
-    "desc": "🚫 Evita que el Pokémon pueda retroceder."
+    "desc": "🚫 Evita que el Pokémon pueda retroceder.",
+    "icon": "🛡️"
   },
   "insomnia": {
     "name": "Insomnio",
-    "desc": "🚫 Impide que el Pokémon se quede dormido."
+    "desc": "🚫 Impide que el Pokémon se quede dormido.",
+    "icon": "👁️"
   },
   "intimidate": {
     "name": "Intimidación",
-    "desc": "▼ Baja el Ataque del rival al entrar en combate."
+    "desc": "• Combate: ▼ Baja el Ataque de los rivales al entrar en combate (-1 etapa).\n• Campo: 50% de evitar encuentros salvajes de nivel inferior al líder (delta ≥ 5).",
+    "icon": "🦁"
   },
   "keeneye": {
     "name": "Vista Lince",
-    "desc": "🚫 Evita que baje la Precisión."
+    "desc": "• Combate: 🚫 Evita que el rival baje la Precisión e ignora los aumentos de Evasión del rival.\n• Campo: 50% de evitar encuentros salvajes de nivel inferior al líder (delta ≥ 5).",
+    "icon": "🦅"
   },
   "levitate": {
     "name": "Levitación",
-    "desc": "🚫 Inmune a ataques de tipo Tierra."
+    "desc": "🚫 Inmune a ataques de tipo Tierra.",
+    "icon": "🌍"
   },
   "lightningrod": {
     "name": "Pararrayos",
-    "desc": "🚫 Inmune a ataques tipo Eléctrico.\n▲ Sube el At. Especial al recibir uno."
+    "desc": "• Combate: ⚡ Atrae ataques de tipo Eléctrico, anula su daño y sube el At. Especial (+1 etapa).\n• Campo: 50% de probabilidad de atraer Pokémon salvajes de tipo Eléctrico.",
+    "icon": "⚡"
   },
   "limber": {
     "name": "Flexibilidad",
-    "desc": "🚫 Protege al Pokémon de la parálisis."
+    "desc": "🚫 Protege al Pokémon de la parálisis.",
+    "icon": "🛡️"
   },
   "liquidooze": {
     "name": "Viscosidad",
-    "desc": "This Pokemon damages those draining HP from it for as much as they would heal. This effect does not consider Dream Eater."
+    "desc": "• Los rivales que intenten drenar HP al Pokémon reciben daño en lugar de curarse.",
+    "icon": "💚"
   },
   "magmaarmor": {
-    "name": "Magma Armor",
-    "desc": "This Pokemon cannot be frozen. Gaining this Ability while frozen cures it."
+    "name": "Escudo Magma",
+    "desc": "• Combate: 🚫 Inmunidad total al estado de Congelación.\n• Campo: x2 Velocidad de eclosión de Huevos en el equipo.",
+    "icon": "🌋"
   },
   "magnetpull": {
     "name": "Imán",
-    "desc": "🚫 Impide que los Pokémon de tipo Acero rivales escapen o sean cambiados."
+    "desc": "• Combate: 🚫 Impide que los Pokémon de tipo Acero puedan escapar o ser cambiados.\n• Campo: 50% de probabilidad de atraer Pokémon salvajes de tipo Acero.",
+    "icon": "🧲"
   },
   "marvelscale": {
     "name": "Escama Especial",
-    "desc": "If this Pokemon has a non-volatile status condition, its Defense is multiplied by 1.5."
+    "desc": "▲ Aumenta la Defensa (+50%) si sufre un problema de estado.",
+    "icon": "🛡️"
   },
   "minus": {
     "name": "Menos",
-    "desc": "If an active Pokemon has the Plus Ability, this Pokemon's Special Attack is multiplied by 1.5."
+    "desc": "▲ Aumenta el At. Especial (+50%) si un aliado en combate tiene Más o Menos.",
+    "icon": "✨"
   },
   "naturalcure": {
     "name": "Cura Natural",
-    "desc": "• Cura los problemas de estado al ser retirado."
+    "desc": "• Combate: Cura los problemas de estado al ser retirado del combate.\n• Campo: Cura automáticamente los problemas de estado de todo el equipo tras el combate.",
+    "icon": "🌿"
   },
   "oblivious": {
     "name": "Despiste",
-    "desc": "🚫 Impide ser atraído, confundido o intimidado."
+    "desc": "🚫 Impide ser atraído, confundido o intimidado.",
+    "icon": "🛡️"
   },
   "overgrow": {
     "name": "Espesura",
-    "desc": "▲ Potencia Planta (+50%) a 1/3 HP o menos."
+    "desc": "▲ Potencia Planta (+50%) a 1/3 HP o menos.",
+    "icon": "🌿"
   },
   "owntempo": {
     "name": "Despiste",
-    "desc": "🚫 Impide ser atraído, intimidado o confundido."
+    "desc": "🚫 Impide ser atraído, intimidado o confundido.",
+    "icon": "🛡️"
   },
   "pickup": {
     "name": "Recogida",
-    "desc": "• El Pokémon puede encontrar objetos tras ganar batallas."
+    "desc": "• Combate: Recoge objetos de un solo uso consumidos por otros en combate.\n• Campo: 10% de probabilidad de recoger objetos valiosos tras ganar un combate.",
+    "icon": "🎒"
   },
   "plus": {
     "name": "Más",
-    "desc": "If an active Pokemon has the Minus Ability, this Pokemon's Special Attack is multiplied by 1.5."
+    "desc": "▲ Aumenta el At. Especial (+50%) si un aliado en combate tiene Más o Menos.",
+    "icon": "✨"
   },
   "poisonpoint": {
     "name": "Punto tóxico",
-    "desc": "• El contacto físico puede envenenar al rival (30%)."
+    "desc": "• El contacto físico puede envenenar al rival (30%).",
+    "icon": "🦂"
   },
   "pressure": {
     "name": "Presión",
-    "desc": "• Fuerza al rival a consumir el doble de PP por ataque."
+    "desc": "• Combate: Fuerza al rival a consumir el doble de PP por movimiento (2 PP).\n• Campo: 50% de forzar el nivel máximo posible en encuentros salvajes de ruta.",
+    "icon": "👑"
   },
   "purepower": {
     "name": "Energía Pura",
-    "desc": "This Pokemon's Attack is doubled."
+    "desc": "▲ Duplica el Ataque físico del Pokémon (x2.0).",
+    "icon": "💪"
   },
   "raindish": {
     "name": "Cura Lluvia",
-    "desc": "▲ Velocidad se duplica (x2.0) bajo Lluvia o de Noche."
+    "desc": "• Restaura 1/16 de HP máximo al final de cada turno bajo Lluvia.",
+    "icon": "🌧️"
   },
   "rivalry": {
     "name": "Rivalidad",
-    "desc": "▲ Sube el Ataque (+25%) contra rivales del mismo género / ▼ Baja el Ataque (-25%) si son de diferente género."
+    "desc": "▲ Sube el Ataque (+25%) contra rivales del mismo género / ▼ Baja el Ataque (-25%) si son de diferente género.",
+    "icon": "⚔️"
   },
   "rockhead": {
     "name": "Cabeza Roca",
-    "desc": "🚫 Protege del daño de retroceso al usar movimientos."
+    "desc": "🚫 Protege del daño de retroceso al usar movimientos.",
+    "icon": "🪨"
   },
   "roughskin": {
     "name": "Piel Tosca",
-    "desc": "Pokemon making contact with this Pokemon lose 1/16 of their maximum HP, rounded down. This effect does not happen if this Pokemon did not lose HP from the attack."
+    "desc": "• Los atacantes que usen movimientos de contacto pierden 1/16 de su HP máximo.",
+    "icon": "🦈"
   },
   "runaway": {
     "name": "Fuga",
-    "desc": "• Permite huir siempre de combates contra Pokémon salvajes."
+    "desc": "• Permite huir siempre de combates contra Pokémon salvajes.",
+    "icon": "🏃"
   },
   "sandrush": {
     "name": "Ímpetu Arena",
-    "desc": "▲ Duplica la Velocidad del Pokémon durante tormentas de arena."
+    "desc": "▲ Duplica la Velocidad del Pokémon durante tormentas de arena.",
+    "icon": "🌪️"
   },
   "sandstream": {
     "name": "Chorro Arena",
-    "desc": "On switch-in, this Pokemon summons Sandstorm."
+    "desc": "🌪️ Invoca Tormenta de Arena automáticamente al entrar en combate.",
+    "icon": "🌪️"
   },
   "sandveil": {
-    "name": "Velo arena",
-    "desc": "▲ Aumenta la Evasión durante tormentas de arena."
+    "name": "Velo Arena",
+    "desc": "• Combate: ▲ Aumenta la Evasión (+20%) durante Tormenta de Arena.\n• Campo: -50% Frecuencia de encuentros salvajes durante Tormenta de Arena.",
+    "icon": "🌪️"
   },
   "serenegrace": {
     "name": "Dicha",
-    "desc": "▲ Duplica la probabilidad de que se den los efectos secundarios de los movimientos."
+    "desc": "▲ Duplica la probabilidad de que se den los efectos secundarios de los movimientos.",
+    "icon": "🎲"
   },
   "shadowtag": {
     "name": "Sombra Trampa",
-    "desc": "Prevents opposing Pokemon from choosing to switch out."
+    "desc": "🚫 Impide que los Pokémon rivales puedan huir o ser cambiados.",
+    "icon": "👻"
   },
   "shedskin": {
     "name": "Mudar",
-    "desc": "• Ocasionalmente cura los problemas de estado al mudar la piel."
+    "desc": "• Ocasionalmente cura los problemas de estado al mudar la piel.",
+    "icon": "🔮"
   },
   "shellarmor": {
     "name": "Caparazón",
-    "desc": "🚫 Protege al Pokémon de los golpes críticos."
+    "desc": "🚫 Protege al Pokémon de los golpes críticos.",
+    "icon": "🐚"
   },
   "shielddust": {
     "name": "Polvo escudo",
-    "desc": "🚫 Evita los efectos secundarios de los ataques recibidos."
+    "desc": "🚫 Evita los efectos secundarios de los ataques recibidos.",
+    "icon": "🛡️"
   },
   "sniper": {
     "name": "Francotirador",
-    "desc": "▲ Potencia el multiplicador de golpes críticos a x3.0."
+    "desc": "▲ Potencia el multiplicador de golpes críticos a x3.0.",
+    "icon": "🎯"
   },
   "solarpower": {
     "name": "Poder Solar",
-    "desc": "▲ At. Especial sube (+50%) bajo Sol.\n▼ Pierde HP cada turno bajo Sol."
+    "desc": "▲ At. Especial sube (+50%) bajo Sol.\n▼ Pierde HP cada turno bajo Sol.",
+    "icon": "☀️"
   },
   "soundproof": {
     "name": "Insonorizar",
-    "desc": "🚫 Protege de los movimientos basados en sonido."
+    "desc": "🚫 Protege de los movimientos basados en sonido.",
+    "icon": "🔇"
   },
   "speedboost": {
     "name": "Impulso",
-    "desc": "This Pokemon's Speed is raised by 1 stage at the end of each full turn it has been on the field."
+    "desc": "▲ Sube la Velocidad (+1 etapa) al final de cada turno en combate.",
+    "icon": "👟"
   },
   "static": {
-    "name": "Electricidad estática",
-    "desc": "• Puede paralizar al rival al contacto físico (30%)."
+    "name": "Electricidad Estática",
+    "desc": "• Combate: 30% de paralizar al atacante tras recibir un movimiento de contacto físico.\n• Campo: 50% de probabilidad de atraer Pokémon salvajes de tipo Eléctrico.",
+    "icon": "⚡"
   },
   "stench": {
     "name": "Hedor",
-    "desc": "• Los ataques pueden hacer retroceder al rival (10%)."
+    "desc": "• Combate: 10% de probabilidad de hacer retroceder al rival al atacar.\n• Campo: x0.5 Frecuencia de encuentros con Pokémon salvajes (reduce al 50%).",
+    "icon": "🦨"
   },
   "stickyhold": {
-    "name": "Viscoso",
-    "desc": "This Pokemon cannot lose its held item due to another Pokemon's attack, even if the attack knocks out this Pokemon. A Sticky Barb will be transferred to other Pokemon regardless of this Ability."
+    "name": "Viscosidad",
+    "desc": "• Combate: 🚫 Protege al Pokémon contra el robo o pérdida de su objeto equipado.\n• Campo: x2 Tasa de mordida al pescar con Caña.",
+    "icon": "🧪"
   },
   "sturdy": {
     "name": "Robustez",
-    "desc": "🚫 Evita ser debilitado de un golpe si el HP está al 100%."
+    "desc": "🚫 Evita ser debilitado de un golpe si el HP está al 100%.",
+    "icon": "🧱"
   },
   "suctioncups": {
     "name": "Ventosas",
-    "desc": "This Pokemon cannot be forced to switch out by another Pokemon's attack or item."
+    "desc": "• Combate: 🚫 Impide que movimientos o efectos fuercen el cambio del Pokémon.\n• Campo: x2 Tasa de mordida al pescar con Caña.",
+    "icon": "🐙"
   },
   "swarm": {
     "name": "Enjambre",
-    "desc": "▲ Potencia Bicho (+50%) a 1/3 HP o menos."
+    "desc": "▲ Potencia Bicho (+50%) a 1/3 HP o menos.",
+    "icon": "🐛"
   },
   "swiftswim": {
     "name": "Nado rápido",
-    "desc": "▲ Velocidad se duplica (x2.0) bajo Lluvia."
+    "desc": "▲ Velocidad se duplica (x2.0) bajo Lluvia.",
+    "icon": "🏊"
   },
   "synchronize": {
     "name": "Sincronía",
-    "desc": "• Transmite el problema de estado (parálisis, envenenamiento o quemadura) al atacante."
+    "desc": "• Combate: Transmite problemas de estado (quemadura, parálisis o veneno) al atacante.\n• Campo: 100% de sincronizar la Naturaleza del líder con los Pokémon salvajes.",
+    "icon": "🔮"
   },
   "tangledfeet": {
     "name": "Tumbos",
-    "desc": "▲ Aumenta la evasión (+50%) del Pokémon si está confundido."
+    "desc": "▲ Aumenta la evasión (+50%) del Pokémon si está confundido.",
+    "icon": "🎯"
   },
   "thickfat": {
     "name": "Sebo",
-    "desc": "▲ Reduce a la mitad (x0.5) el daño de Fuego e Hielo."
+    "desc": "▲ Reduce a la mitad (x0.5) el daño de Fuego e Hielo.",
+    "icon": "🔥"
   },
   "tintedlens": {
     "name": "Cromolente",
-    "desc": "▲ Duplica la potencia de los movimientos que sean 'poco eficaces' contra el objetivo."
+    "desc": "▲ Duplica la potencia de los movimientos que sean 'poco eficaces' contra el objetivo.",
+    "icon": "⚔️"
   },
   "torrent": {
     "name": "Torrente",
-    "desc": "▲ Potencia Agua (+50%) a 1/3 HP o menos."
+    "desc": "▲ Potencia Agua (+50%) a 1/3 HP o menos.",
+    "icon": "💧"
   },
   "trace": {
     "name": "Rastro",
-    "desc": "• Copia la habilidad del oponente al entrar en combate."
+    "desc": "• Copia la habilidad del oponente al entrar en combate.",
+    "icon": "🔍"
   },
   "truant": {
     "name": "Ausente",
-    "desc": "This Pokemon skips every other turn instead of using a move. If this Pokemon replaces a Pokemon that fainted during end-of-turn effects, its first turn will be skipped."
+    "desc": "• El Pokémon solo puede actuar un turno de cada dos (holgazanea en los pares).",
+    "icon": "🛋️"
   },
   "unnerve": {
     "name": "Tensión",
-    "desc": "🚫 Impide que los Pokémon rivales coman bayas equipadas."
+    "desc": "🚫 Impide que los Pokémon rivales coman bayas equipadas.",
+    "icon": "😨"
   },
   "uproar": {
     "name": "Alboroto",
-    "desc": "• Hace ruido en la batalla.\n🚫 Impide que los Pokémon se duerman."
+    "desc": "• Hace ruido en la batalla.\n🚫 Impide que los Pokémon se duerman.",
+    "icon": "🛡️"
   },
   "vitalspirit": {
     "name": "Espíritu Vital",
-    "desc": "🚫 Impide que el Pokémon se quede dormido."
+    "desc": "• Combate: 🚫 Inmunidad total al estado de Sueño.\n• Campo: 50% de forzar el nivel máximo posible en encuentros salvajes de ruta.",
+    "icon": "✨"
   },
   "voltabsorb": {
     "name": "Absorbe Electricidad",
-    "desc": "🚫 Inmune a ataques tipo Eléctrico.\n▲ Cura 25% de HP al recibir uno."
+    "desc": "🚫 Inmune a ataques tipo Eléctrico.\n▲ Cura 25% de HP al recibir uno.",
+    "icon": "⚡"
   },
   "waterabsorb": {
     "name": "Absorbe Agua",
-    "desc": "🚫 Inmune a ataques de Agua.\n▲ Cura 25% de HP al recibir uno."
+    "desc": "🚫 Inmune a ataques de Agua.\n▲ Cura 25% de HP al recibir uno.",
+    "icon": "💧"
   },
   "waterveil": {
     "name": "Velo Agua",
-    "desc": "This Pokemon cannot be burned. Gaining this Ability while burned cures it."
+    "desc": "🚫 Inmunidad total al estado de Quemadura.",
+    "icon": "🔥"
   },
   "whitesmoke": {
     "name": "Humo Blanco",
-    "desc": "Prevents other Pokemon from lowering this Pokemon's stat stages."
+    "desc": "• Combate: 🚫 Evita que los rivales reduzcan las estadísticas del Pokémon.\n• Campo: x0.5 Frecuencia de encuentros con Pokémon salvajes (reduce al 50%).",
+    "icon": "💨"
   },
   "wonderguard": {
     "name": "Superguarda",
-    "desc": "This Pokemon is only damaged by supereffective moves and indirect damage."
+    "desc": "🚫 Solo recibe daño directo de movimientos supereficaces.",
+    "icon": "✨"
   },
   "sheerforce": {
     "name": "Potencia Bruta",
-    "desc": "▲ Potencia movimientos con efectos secundarios pero los elimina."
+    "desc": "▲ Potencia movimientos con efectos secundarios pero los elimina.",
+    "icon": "💥"
   },
   "magicguard": {
     "name": "Muro Mágico",
-    "desc": "🚫 Solo recibe daño de ataques directos del rival."
+    "desc": "🚫 Solo recibe daño de ataques directos del rival.",
+    "icon": "🛡️"
   },
   "friendguard": {
     "name": "Compadrazgo",
-    "desc": "🛡️ Reduce el daño recibido por los aliados en combate doble."
+    "desc": "🛡️ Reduce el daño recibido por los aliados en combate doble.",
+    "icon": "⚔️"
   },
   "unaware": {
     "name": "Ignorante",
-    "desc": "• Ignora los cambios de estadísticas del rival al atacar o defender."
+    "desc": "• Ignora los cambios de estadísticas del rival al atacar o defender.",
+    "icon": "😐"
   },
   "competitive": {
     "name": "Tenacidad",
-    "desc": "▲ Aumenta mucho el Ataque Especial si le bajan alguna estadística."
+    "desc": "▲ Aumenta mucho el Ataque Especial si le bajan alguna estadística.",
+    "icon": "😤"
   },
   "frisk": {
     "name": "Cacheo",
-    "desc": "• Revela el objeto equipado por el oponente al entrar al combate."
+    "desc": "• Combate: Identifica el objeto equipado por el rival al entrar en combate.\n• Campo: 50% de forzar la aparición de objetos equipados en Pokémon salvajes.",
+    "icon": "🔍"
   },
   "dryskin": {
     "name": "Piel Seca",
-    "desc": "▲ Recupera PS con la lluvia o ataques de Agua; ▼ Daño bajo Sol y Fuego."
+    "desc": "▲ Recupera PS con la lluvia o ataques de Agua; ▼ Daño bajo Sol y Fuego.",
+    "icon": "🐸"
   },
   "wonderskin": {
     "name": "Piel Milagro",
-    "desc": "▲ Aumenta la probabilidad de esquivar movimientos de estado."
+    "desc": "▲ Aumenta la probabilidad de esquivar movimientos de estado.",
+    "icon": "✨"
   },
   "sandforce": {
     "name": "Fuerza Arena",
-    "desc": "▲ Potencia movimientos de Tierra, Roca y Acero bajo Tormenta de Arena."
+    "desc": "▲ Potencia movimientos de Tierra, Roca y Acero bajo Tormenta de Arena.",
+    "icon": "🌪️"
   },
   "technician": {
     "name": "Experto",
-    "desc": "▲ Potencia movimientos con poder base igual o menor a 60."
+    "desc": "▲ Potencia movimientos con poder base igual o menor a 60.",
+    "icon": "⚔️"
   },
   "angerpoint": {
     "name": "Irascible",
-    "desc": "▲ Maximiza el Ataque si recibe un golpe crítico."
+    "desc": "▲ Maximiza el Ataque si recibe un golpe crítico.",
+    "icon": "⚔️"
   },
   "defiant": {
     "name": "Competitivo",
-    "desc": "▲ Aumenta mucho el Ataque si le bajan alguna estadística."
+    "desc": "▲ Aumenta mucho el Ataque si le bajan alguna estadística.",
+    "icon": "😠"
   },
   "justified": {
     "name": "Justiciero",
-    "desc": "▲ Aumenta el Ataque si recibe un movimiento de tipo Siniestro."
+    "desc": "▲ Aumenta el Ataque si recibe un movimiento de tipo Siniestro.",
+    "icon": "⚖️"
   },
   "noguard": {
     "name": "Indefenso",
-    "desc": "🎯 Asegura que todos los ataques lanzados o recibidos acierten."
+    "desc": "• Combate: Todos los movimientos propios y del oponente aciertan sin fallar.\n• Campo: x2 Frecuencia de encuentros con Pokémon salvajes.",
+    "icon": "⚔️"
   },
   "steadfast": {
     "name": "Impasible",
-    "desc": "▲ Aumenta la Velocidad cada vez que retrocede."
+    "desc": "▲ Aumenta la Velocidad cada vez que retrocede.",
+    "icon": "👟"
   },
   "gluttony": {
     "name": "Gula",
-    "desc": "• Consume las bayas equipadas antes de lo habitual (a 50% HP o menos)."
+    "desc": "• Consume las bayas equipadas antes de lo habitual (a 50% HP o menos).",
+    "icon": "🍔"
   },
   "regenerator": {
     "name": "Regeneración",
-    "desc": "▲ Restaura un tercio de sus PS máximos al ser cambiado."
+    "desc": "▲ Restaura un tercio de sus PS máximos al ser cambiado.",
+    "icon": "💚"
   },
   "analytic": {
     "name": "Analítico",
-    "desc": "▲ Potencia los ataques si el Pokémon se mueve en último lugar."
+    "desc": "▲ Potencia los ataques si el Pokémon se mueve en último lugar.",
+    "icon": "⚔️"
   },
   "hydration": {
     "name": "Hidratación",
-    "desc": "• Cura los problemas de estado si está lloviendo al final del turno."
+    "desc": "• Cura los problemas de estado si está lloviendo al final del turno.",
+    "icon": "💧"
   },
   "icebody": {
     "name": "Gélido",
-    "desc": "▲ Recupera PS gradualmente bajo el clima de Granizo o Nieve."
+    "desc": "▲ Recupera PS gradualmente bajo el clima de Granizo o Nieve.",
+    "icon": "🧊"
   },
   "poisontouch": {
     "name": "Toque Tóxico",
-    "desc": "• Puede envenenar al rival al hacer contacto físico."
+    "desc": "• Puede envenenar al rival al hacer contacto físico.",
+    "icon": "🧪"
   },
   "skilllink": {
     "name": "Encadenado",
-    "desc": "🎯 Asegura el máximo número de golpes en movimientos de impacto múltiple."
+    "desc": "🎯 Asegura el máximo número de golpes en movimientos de impacto múltiple.",
+    "icon": "⚔️"
   },
   "overcoat": {
     "name": "Funda",
-    "desc": "🚫 Inmune al daño por clima y a movimientos de esporas o polvos."
+    "desc": "🚫 Inmune al daño por clima y a movimientos de esporas o polvos.",
+    "icon": "🛡️"
   },
   "cursedbody": {
     "name": "Cuerpo Maldito",
-    "desc": "• Puede anular el movimiento del rival tras recibir daño de este."
+    "desc": "• Puede anular el movimiento del rival tras recibir daño de este.",
+    "icon": "👻"
   },
   "weakarmor": {
     "name": "Armadura Frágil",
-    "desc": "▼ Baja la Defensa y ▲ sube mucho la Velocidad al recibir daño físico."
+    "desc": "▼ Baja la Defensa y ▲ sube mucho la Velocidad al recibir daño físico.",
+    "icon": "🛡️"
   },
   "forewarn": {
     "name": "Alerta",
-    "desc": "• Revela el movimiento más potente que posee el rival al entrar al combate."
+    "desc": "• Revela el movimiento más potente que posee el rival al entrar al combate.",
+    "icon": "✨"
   },
   "aftermath": {
     "name": "Resquicio",
-    "desc": "💥 Daña al oponente si es debilitado por un ataque de contacto físico."
+    "desc": "💥 Daña al oponente si es debilitado por un ataque de contacto físico.",
+    "icon": "💣"
   },
   "harvest": {
     "name": "Cosecha",
-    "desc": "• Puede restaurar una baya consumida al final de cada turno."
+    "desc": "• Combate: 50% (100% bajo Sol) de restaurar una baya consumida al final del turno.\n• Campo: 50% de probabilidad de atraer Pokémon salvajes de tipo Planta.",
+    "icon": "🌾"
   },
   "reckless": {
     "name": "Audaz",
-    "desc": "▲ Potencia los movimientos que causan daño de retroceso al usuario."
+    "desc": "▲ Potencia los movimientos que causan daño de retroceso al usuario.",
+    "icon": "⚔️"
   },
   "unburden": {
     "name": "Liviano",
-    "desc": "▲ Duplica la Velocidad al perder o consumir el objeto equipado."
+    "desc": "▲ Duplica la Velocidad al perder o consumir el objeto equipado.",
+    "icon": "🪶"
   },
   "ironfist": {
     "name": "Puño Férreo",
-    "desc": "▲ Potencia los movimientos basados en puñetazos (+20%)."
+    "desc": "▲ Potencia los movimientos basados en puñetazos (+20%).",
+    "icon": "🥊"
   },
   "neutralizinggas": {
     "name": "Gas Reactivo",
-    "desc": "🚫 Anula las habilidades de todos los demás Pokémon en combate."
+    "desc": "🚫 Anula las habilidades de todos los demás Pokémon en combate.",
+    "icon": "☁️"
   },
   "healer": {
     "name": "Alma Cura",
-    "desc": "• Puede curar los problemas de estado de los aliados adyacentes."
+    "desc": "• Puede curar los problemas de estado de los aliados adyacentes.",
+    "icon": "💖"
   },
   "leafguard": {
     "name": "Defensa Hoja",
-    "desc": "🚫 Previene problemas de estado bajo clima de Sol."
+    "desc": "🚫 Previene problemas de estado bajo clima de Sol.",
+    "icon": "☀️"
   },
   "scrappy": {
     "name": "Intrépido",
-    "desc": "👻 Permite golpear a fantasmas con ataques de tipo Normal y Lucha."
+    "desc": "👻 Permite golpear a fantasmas con ataques de tipo Normal y Lucha.",
+    "icon": "👻"
   },
   "filter": {
     "name": "Filtro",
-    "desc": "🛡️ Reduce el daño recibido por ataques supereficaces en un 25%."
+    "desc": "🛡️ Reduce el daño recibido por ataques supereficaces en un 25%.",
+    "icon": "⚔️"
   },
   "moldbreaker": {
     "name": "Rompemoldes",
-    "desc": "⚡ Ejecuta movimientos ignorando las habilidades defensivas del oponente."
+    "desc": "⚡ Ejecuta movimientos ignorando las habilidades defensivas del oponente.",
+    "icon": "✨"
   },
   "moxie": {
     "name": "Autoestima",
-    "desc": "▲ Aumenta el Ataque del usuario al debilitar a un oponente."
+    "desc": "▲ Aumenta el Ataque del usuario al debilitar a un oponente.",
+    "icon": "🔥"
   },
   "rattled": {
     "name": "Cobardía",
-    "desc": "▲ Sube la Velocidad al recibir golpes Siniestros, Fantasmas, Bichos o Intimidación."
+    "desc": "▲ Sube la Velocidad al recibir golpes Siniestros, Fantasmas, Bichos o Intimidación.",
+    "icon": "😱"
   },
   "imposter": {
     "name": "Impostor",
-    "desc": "👥 Se transforma automáticamente en el oponente al entrar al combate."
+    "desc": "👥 Se transforma automáticamente en el oponente al entrar al combate.",
+    "icon": "👥"
   },
   "quickfeet": {
     "name": "Pies Rápidos",
-    "desc": "▲ Aumenta la Velocidad en un 50% si sufre un problema de estado."
+    "desc": "• Combate: ▲ Aumenta la Velocidad (+50%) al sufrir un problema de estado.\n• Campo: x0.5 Frecuencia de encuentros con Pokémon salvajes (reduce al 50%).",
+    "icon": "👟"
   },
   "download": {
     "name": "Descarga",
-    "desc": "▲ Sube Ataque o At. Esp. según la menor defensa del oponente."
+    "desc": "▲ Sube Ataque o At. Esp. según la menor defensa del oponente.",
+    "icon": "⚔️"
   },
   "snowcloak": {
     "name": "Manto Níveo",
-    "desc": "▲ Aumenta la evasión bajo clima de Granizo o Nieve."
+    "desc": "• Combate: ▲ Aumenta la Evasión (+20%) durante Granizo o Nieve.\n• Campo: -50% Frecuencia de encuentros salvajes durante Granizo o Nieve.",
+    "icon": "❄️"
   },
   "multiscale": {
     "name": "Compensación",
-    "desc": "🛡️ Reduce a la mitad el daño recibido cuando sus PS están al máximo."
+    "desc": "🛡️ Reduce a la mitad el daño recibido cuando sus PS están al máximo.",
+    "icon": "🐉"
   },
   "superluck": {
     "name": "Afortunado",
-    "desc": "▲ Aumenta la probabilidad de asestar golpes críticos."
+    "desc": "• Combate: ▲ Aumenta el índice de golpe crítico (+1 etapa).\n• Campo: ▲ Duplica la probabilidad de que los Pokémon salvajes lleven objetos equipados.",
+    "icon": "🍀"
   },
   "anticipation": {
     "name": "Anticipación",
-    "desc": "• Detecta si el rival tiene algún ataque letal o supereficaz al entrar."
+    "desc": "• Detecta si el rival tiene algún ataque letal o supereficaz al entrar.",
+    "icon": "⚔️"
   },
   "noability": {
     "name": "No Ability",
-    "desc": "Does nothing."
+    "desc": "Does nothing.",
+    "icon": "✨"
   },
   "aerilate": {
     "name": "Piel Celeste",
-    "desc": "Convierte los movimientos de tipo Normal en tipo Volador y aumenta ligeramente su potencia."
+    "desc": "Convierte los movimientos de tipo Normal en tipo Volador y aumenta ligeramente su potencia.",
+    "icon": "💨"
   },
   "angershell": {
     "name": "Coraza Ira",
-    "desc": "At 1/2 or less of this Pokemon's max HP: +1 Atk, Sp. Atk, Spe, and -1 Def, Sp. Def."
+    "desc": "▲ Al bajar del 50% de HP: +1 Ataque, At. Esp y Velocidad / ▼ -1 Defensa y Def. Esp.",
+    "icon": "🦀"
   },
   "armortail": {
     "name": "Cola Armadura",
-    "desc": "This Pokemon and its allies are protected from opposing priority moves."
+    "desc": "🚫 Protege al Pokémon y a sus aliados de movimientos con prioridad rivales.",
+    "icon": "🛡️"
   },
   "aromaveil": {
     "name": "Velo Aroma",
-    "desc": "Se protege a sí mismo y a sus aliados de ataques que impiden elegir movimientos."
+    "desc": "Se protege a sí mismo y a sus aliados de ataques que impiden elegir movimientos.",
+    "icon": "🛡️"
   },
   "asoneglastrier": {
     "name": "As One (Glastrier)",
-    "desc": "Combination of the Unnerve and Chilling Neigh Abilities."
+    "desc": "Combination of the Unnerve and Chilling Neigh Abilities.",
+    "icon": "✨"
   },
   "asonespectrier": {
     "name": "As One (Spectrier)",
-    "desc": "Combination of the Unnerve and Grim Neigh Abilities."
+    "desc": "Combination of the Unnerve and Grim Neigh Abilities.",
+    "icon": "✨"
   },
   "aurabreak": {
     "name": "Rompeaura",
-    "desc": "Invierte los efectos de las auras, por lo que baja la potencia de ciertos movimientos en vez de subirla."
+    "desc": "Invierte los efectos de las auras, por lo que baja la potencia de ciertos movimientos en vez de subirla.",
+    "icon": "⚔️"
   },
   "baddreams": {
     "name": "Mal Sueño",
-    "desc": "Inflige daño a cualquier rival que esté dormido."
+    "desc": "Inflige daño a cualquier rival que esté dormido.",
+    "icon": "😈"
   },
   "ballfetch": {
     "name": "Recogebolas",
-    "desc": "Si no lleva equipado ningún objeto, recupera la Poké Ball del primer intento de captura fallido."
+    "desc": "Si no lleva equipado ningún objeto, recupera la Poké Ball del primer intento de captura fallido.",
+    "icon": "✨"
   },
   "battery": {
     "name": "Batería",
-    "desc": "Potencia los ataques especiales de los aliados."
+    "desc": "Potencia los ataques especiales de los aliados.",
+    "icon": "⚔️"
   },
   "battlebond": {
     "name": "Fuerte Afecto",
-    "desc": "Al derrotar a un rival, los vínculos con su Entrenador se refuerzan y se convierte en Greninja Ash. Su Shuriken de Agua también se ve potenciado."
+    "desc": "Al derrotar a un rival, los vínculos con su Entrenador se refuerzan y se convierte en Greninja Ash. Su Shuriken de Agua también se ve potenciado.",
+    "icon": "🐸"
   },
   "beadsofruin": {
     "name": "Abalorio Debacle",
-    "desc": "Active Pokemon without this Ability have their Special Defense multiplied by 0.75."
+    "desc": "Active Pokemon without this Ability have their Special Defense multiplied by 0.75.",
+    "icon": "✨"
   },
   "beastboost": {
     "name": "Ultraimpulso",
-    "desc": "Si derrota a un rival en ese turno, aumenta su característica más fuerte."
+    "desc": "Si derrota a un rival en ese turno, aumenta su característica más fuerte.",
+    "icon": "💥"
   },
   "berserk": {
     "name": "Cólera",
-    "desc": "Aumenta su Ataque Especial si sus PS se ven reducidos a la mitad debido a algún ataque."
+    "desc": "Aumenta su Ataque Especial si sus PS se ven reducidos a la mitad debido a algún ataque.",
+    "icon": "💢"
   },
   "bulletproof": {
     "name": "Antibalas",
-    "desc": "No le afectan las bombas ni algunos proyectiles."
+    "desc": "No le afectan las bombas ni algunos proyectiles.",
+    "icon": "🛡️"
   },
   "cheekpouch": {
     "name": "Carrillo",
-    "desc": "Recupera PS al comer cualquier baya."
+    "desc": "Recupera PS al comer cualquier baya.",
+    "icon": "🐿️"
   },
   "chillingneigh": {
     "name": "Relincho Blanco",
-    "desc": "Al derrotar a un objetivo, emite un relincho gélido y aumenta su Ataque."
+    "desc": "Al derrotar a un objetivo, emite un relincho gélido y aumenta su Ataque.",
+    "icon": "🦄"
   },
   "comatose": {
     "name": "Letargo Perenne",
-    "desc": "No despierta jamás de su profundo letargo e incluso ataca dormido."
+    "desc": "No despierta jamás de su profundo letargo e incluso ataca dormido.",
+    "icon": "💤"
   },
   "commander": {
     "name": "Comandar",
-    "desc": "If ally is Dondozo: this Pokemon cannot act or be hit, +2 to all Dondozo's stats."
+    "desc": "If ally is Dondozo: this Pokemon cannot act or be hit, +2 to all Dondozo's stats.",
+    "icon": "🍣"
   },
   "contrary": {
     "name": "Respondón",
-    "desc": "Invierte los cambios en las características: bajan cuando les toca subir y suben cuando les toca bajar."
+    "desc": "Invierte los cambios en las características: bajan cuando les toca subir y suben cuando les toca bajar.",
+    "icon": "🔄"
   },
   "corrosion": {
     "name": "Corrosión",
-    "desc": "Puede envenenar incluso a rivales de tipo Acero o Veneno."
+    "desc": "Puede envenenar incluso a rivales de tipo Acero o Veneno.",
+    "icon": "🧪"
   },
   "costar": {
-    "name": "Unísono",
-    "desc": "On switch-in, this Pokemon copies all of its ally's stat stage changes."
+    "name": "Coprotagonista",
+    "desc": "• Al entrar en combate, copia todos los cambios de estadísticas del aliado.",
+    "icon": "🌟"
   },
   "cottondown": {
     "name": "Pelusa",
-    "desc": "Al ser alcanzado por un ataque, suelta una pelusa de algodón que reduce la Velocidad de todos los demás Pokémon."
+    "desc": "Al ser alcanzado por un ataque, suelta una pelusa de algodón que reduce la Velocidad de todos los demás Pokémon.",
+    "icon": "☁️"
   },
   "cudchew": {
     "name": "Rumia",
-    "desc": "If this Pokemon eats a Berry, it will eat that Berry again at the end of the next turn."
+    "desc": "If this Pokemon eats a Berry, it will eat that Berry again at the end of the next turn.",
+    "icon": "🐮"
   },
   "curiousmedicine": {
     "name": "Medicina Extraña",
-    "desc": "Al entrar en combate, rezuma una substancia medicinal por la caracola que revierte los cambios en las características de los aliados."
+    "desc": "Al entrar en combate, rezuma una substancia medicinal por la caracola que revierte los cambios en las características de los aliados.",
+    "icon": "✨"
   },
   "dancer": {
     "name": "Pareja de Baile",
-    "desc": "Puede copiar inmediatamente cualquier movimiento de baile que haya usado otro Pokémon presente en el combate."
+    "desc": "Puede copiar inmediatamente cualquier movimiento de baile que haya usado otro Pokémon presente en el combate.",
+    "icon": "🔮"
   },
   "darkaura": {
     "name": "Aura Oscura",
-    "desc": "Aumenta la potencia de todos los movimientos de tipo Siniestro."
+    "desc": "Aumenta la potencia de todos los movimientos de tipo Siniestro.",
+    "icon": "🌑"
   },
   "dauntlessshield": {
     "name": "Escudo Recio",
-    "desc": "Aumenta su Defensa al entrar en combate."
+    "desc": "Aumenta su Defensa al entrar en combate.",
+    "icon": "🛡️"
   },
   "dazzling": {
     "name": "Cuerpo Vívido",
-    "desc": "Desconcierta al rival y le impide utilizar movimientos con prioridad en su contra."
+    "desc": "Desconcierta al rival y le impide utilizar movimientos con prioridad en su contra.",
+    "icon": "✨"
   },
   "defeatist": {
     "name": "Flaqueza",
-    "desc": "Se debilita tanto cuando sus PS se ven reducidos a la mitad que su Ataque y su Ataque Especial bajan."
+    "desc": "Se debilita tanto cuando sus PS se ven reducidos a la mitad que su Ataque y su Ataque Especial bajan.",
+    "icon": "🏳️"
   },
   "deltastream": {
     "name": "Ráfaga Delta",
-    "desc": "Altera el clima para anular las vulnerabilidades del tipo Volador."
+    "desc": "Altera el clima para anular las vulnerabilidades del tipo Volador.",
+    "icon": "🌀"
   },
   "desolateland": {
     "name": "Tierra del Ocaso",
-    "desc": "Altera el clima para anular los ataques de tipo Agua."
+    "desc": "Altera el clima para anular los ataques de tipo Agua.",
+    "icon": "🌋"
   },
   "disguise": {
     "name": "Disfraz",
-    "desc": "Puede eludir un ataque valiéndose de la tela que le cubre el cuerpo una vez por combate."
+    "desc": "Puede eludir un ataque valiéndose de la tela que le cubre el cuerpo una vez por combate.",
+    "icon": "🎭"
   },
   "dragonize": {
-    "name": "Piel Dragontina",
-    "desc": "This Pokemon's Normal-type moves become Dragon type and have 1.2x power."
+    "name": "Dragonizar",
+    "desc": "▲ Convierte movimientos de tipo Normal en tipo Dragón y potencia su daño (+20%).",
+    "icon": "🐉"
   },
   "dragonsmaw": {
     "name": "Mandíbula Dragón",
-    "desc": "Potencia los movimientos de tipo Dragón."
+    "desc": "Potencia los movimientos de tipo Dragón.",
+    "icon": "🐉"
   },
   "eartheater": {
-    "name": "Geofagia",
-    "desc": "This Pokemon heals 1/4 of its max HP when hit by Ground moves; Ground immunity."
+    "name": "Come Tierra",
+    "desc": "🚫 Inmune a ataques de tipo Tierra y recupera 1/4 de su HP máximo al recibir uno.",
+    "icon": "🌍"
   },
   "eelevate": {
-    "name": "Eelevate",
-    "desc": "This Pokemon is immune to Ground; +1 to highest stat if it KOes another Pokemon."
+    "name": "Elevación",
+    "desc": "🚫 Inmune a ataques de tipo Tierra; sube +1 su estadística más alta al debilitar a un rival.",
+    "icon": "🌍"
   },
   "electricsurge": {
     "name": "Electrogénesis",
-    "desc": "Crea un campo eléctrico al entrar en combate."
+    "desc": "Crea un campo eléctrico al entrar en combate.",
+    "icon": "⚡"
   },
   "electromorphosis": {
     "name": "Dinamo",
-    "desc": "This Pokemon gains the Charge effect when it takes a hit from an attack."
+    "desc": "⚡ Se carga de electricidad al recibir daño, duplicando la potencia de su próximo ataque Eléctrico.",
+    "icon": "⚡"
   },
   "embodyaspectcornerstone": {
-    "name": "Embody Aspect (Cornerstone)",
-    "desc": "On switch-in, this Pokemon's Defense is raised by 1 stage."
+    "name": "Evocación Cimiento",
+    "desc": "▲ Al entrar en combate, sube la Defensa (+1 etapa).",
+    "icon": "🛡️"
   },
   "embodyaspecthearthflame": {
-    "name": "Embody Aspect (Hearthflame)",
-    "desc": "On switch-in, this Pokemon's Attack is raised by 1 stage."
+    "name": "Evocación Horno",
+    "desc": "▲ Al entrar en combate, sube el Ataque (+1 etapa).",
+    "icon": "⚔️"
   },
   "embodyaspectteal": {
-    "name": "Embody Aspect (Teal)",
-    "desc": "On switch-in, this Pokemon's Speed is raised by 1 stage."
+    "name": "Evocación Turquesa",
+    "desc": "▲ Al entrar en combate, sube la Velocidad (+1 etapa).",
+    "icon": "👟"
   },
   "embodyaspectwellspring": {
-    "name": "Embody Aspect (Wellspring)",
-    "desc": "On switch-in, this Pokemon's Special Defense is raised by 1 stage."
+    "name": "Evocación Fuente",
+    "desc": "▲ Al entrar en combate, sube la Defensa Especial (+1 etapa).",
+    "icon": "🛡️"
   },
   "emergencyexit": {
     "name": "Retirada",
-    "desc": "Abandona el terreno de combate cuando sus PS se ven reducidos a la mitad para evitar males mayores."
+    "desc": "Abandona el terreno de combate cuando sus PS se ven reducidos a la mitad para evitar males mayores.",
+    "icon": "🛡️"
   },
   "fairyaura": {
     "name": "Aura Feérica",
-    "desc": "Aumenta la potencia de todos los movimientos de tipo Hada."
+    "desc": "Aumenta la potencia de todos los movimientos de tipo Hada.",
+    "icon": "🌸"
   },
   "firemane": {
-    "name": "Fire Mane",
-    "desc": "This Pokemon's offensive stat is multiplied by 1.5 while using a Fire-type attack."
+    "name": "Melena Ígnea",
+    "desc": "▲ Potencia los movimientos de tipo Fuego (+50%).",
+    "icon": "🔥"
   },
   "flareboost": {
     "name": "Ímpetu Ardiente",
-    "desc": "Aumenta la potencia de sus ataques especiales cuando sufre quemaduras."
+    "desc": "Aumenta la potencia de sus ataques especiales cuando sufre quemaduras.",
+    "icon": "🔥"
   },
   "flowergift": {
     "name": "Don Floral",
-    "desc": "Si hace sol, aumenta su Ataque y su Defensa Especial, así como los de sus aliados."
+    "desc": "Si hace sol, aumenta su Ataque y su Defensa Especial, así como los de sus aliados.",
+    "icon": "☀️"
   },
   "flowerveil": {
     "name": "Velo Flor",
-    "desc": "Evita que los Pokémon de tipo Planta aliados sufran problemas de estado o que les bajen sus características."
+    "desc": "Evita que los Pokémon de tipo Planta aliados sufran problemas de estado o que les bajen sus características.",
+    "icon": "🌿"
   },
   "fluffy": {
     "name": "Peluche",
-    "desc": "Reduce a la mitad el daño provocado por los movimientos de contacto, pero duplica el infligido por los de tipo Fuego."
+    "desc": "Reduce a la mitad el daño provocado por los movimientos de contacto, pero duplica el infligido por los de tipo Fuego.",
+    "icon": "🔥"
   },
   "fullmetalbody": {
     "name": "Guardia Metálica",
-    "desc": "Evita que bajen sus características a causa de movimientos o habilidades de otros Pokémon."
+    "desc": "Evita que bajen sus características a causa de movimientos o habilidades de otros Pokémon.",
+    "icon": "🤖"
   },
   "furcoat": {
     "name": "Pelaje Recio",
-    "desc": "Reduce a la mitad el daño que recibe de ataques físicos del rival."
+    "desc": "Reduce a la mitad el daño que recibe de ataques físicos del rival.",
+    "icon": "⚔️"
   },
   "galewings": {
     "name": "Alas Vendaval",
-    "desc": "Da prioridad a los movimientos de tipo Volador si sus PS están al máximo."
+    "desc": "Da prioridad a los movimientos de tipo Volador si sus PS están al máximo.",
+    "icon": "🪶"
   },
   "galvanize": {
     "name": "Piel Eléctrica",
-    "desc": "Convierte los movimientos de tipo Normal en tipo Eléctrico y aumenta ligeramente su potencia."
+    "desc": "Convierte los movimientos de tipo Normal en tipo Eléctrico y aumenta ligeramente su potencia.",
+    "icon": "⚡"
   },
   "goodasgold": {
     "name": "Cuerpo Áureo",
-    "desc": "This Pokemon is immune to Status moves."
+    "desc": "🚫 Inmunidad total a los movimientos de estado dirigidos por otros Pokémon.",
+    "icon": "🪙"
   },
   "gooey": {
     "name": "Baba",
-    "desc": "Baja la Velocidad del rival cuando este le ataca con un movimiento de contacto."
+    "desc": "Baja la Velocidad del rival cuando este le ataca con un movimiento de contacto.",
+    "icon": "🐌"
   },
   "gorillatactics": {
     "name": "Monotema",
-    "desc": "Potencia su Ataque, pero solo puede usar el primer movimiento escogido."
+    "desc": "Potencia su Ataque, pero solo puede usar el primer movimiento escogido.",
+    "icon": "☀️"
   },
   "grasspelt": {
     "name": "Manto Frondoso",
-    "desc": "Aumenta su Defensa si hay un campo de hierba en el terreno de combate."
+    "desc": "Aumenta su Defensa si hay un campo de hierba en el terreno de combate.",
+    "icon": "🛡️"
   },
   "grassysurge": {
     "name": "Herbogénesis",
-    "desc": "Crea un campo de hierba al entrar en combate."
+    "desc": "Crea un campo de hierba al entrar en combate.",
+    "icon": "🌿"
   },
   "grimneigh": {
     "name": "Relincho Negro",
-    "desc": "Al derrotar a un objetivo, emite un relincho aterrador y aumenta su Ataque Especial."
+    "desc": "Al derrotar a un objetivo, emite un relincho aterrador y aumenta su Ataque Especial.",
+    "icon": "🐴"
   },
   "guarddog": {
     "name": "Perro Guardián",
-    "desc": "Immune to Intimidate. Intimidated: +1 Attack. Cannot be forced to switch out."
+    "desc": "Immune to Intimidate. Intimidated: +1 Attack. Cannot be forced to switch out.",
+    "icon": "✨"
   },
   "gulpmissile": {
     "name": "Tragamisil",
-    "desc": "Tras usar Surf o Buceo, emerge con una presa en la boca. Al recibir daño, ataca escupiéndola al rival."
+    "desc": "Tras usar Surf o Buceo, emerge con una presa en la boca. Al recibir daño, ataca escupiéndola al rival.",
+    "icon": "🐦"
   },
   "hadronengine": {
     "name": "Motor Hadrónico",
-    "desc": "On switch-in, summons Electric Terrain. During Electric Terrain, Sp. Atk is 1.3333x."
+    "desc": "⚡ Invoca Campo Eléctrico al entrar y aumenta el At. Especial (+33%) bajo Campo Eléctrico.",
+    "icon": "⚡"
   },
   "heatproof": {
     "name": "Ignífugo",
-    "desc": "Su cuerpo, resistente al calor, reduce a la mitad el daño recibido por movimientos de tipo Fuego."
+    "desc": "Su cuerpo, resistente al calor, reduce a la mitad el daño recibido por movimientos de tipo Fuego.",
+    "icon": "🔥"
   },
   "heavymetal": {
     "name": "Metal Pesado",
-    "desc": "Duplica su peso."
+    "desc": "Duplica su peso.",
+    "icon": "🛡️"
   },
   "honeygather": {
     "name": "Recogemiel",
-    "desc": "Puede que encuentre Miel una vez concluido el combate."
+    "desc": "• Campo: 5% a 50% de probabilidad de recolectar Miel dulce tras ganar un combate (escala por nivel).",
+    "icon": "🍯"
   },
   "hospitality": {
     "name": "Hospitalidad",
-    "desc": "On switch-in, this Pokemon restores 1/4 of its ally's maximum HP, rounded down."
+    "desc": "• Al entrar en combate, restaura 1/4 del HP máximo del Pokémon aliado.",
+    "icon": "🍵"
   },
   "hungerswitch": {
     "name": "Mutapetito",
-    "desc": "Alterna entre su Forma Saciada y Forma Voraz al final de cada turno."
+    "desc": "Alterna entre su Forma Saciada y Forma Voraz al final de cada turno.",
+    "icon": "🐹"
   },
   "iceface": {
     "name": "Cara de Hielo",
-    "desc": "Absorbe el daño de un ataque físico con el hielo de la cabeza, tras lo cual cambia de forma. El hielo se regenerará la próxima vez que granice."
+    "desc": "Absorbe el daño de un ataque físico con el hielo de la cabeza, tras lo cual cambia de forma. El hielo se regenerará la próxima vez que granice.",
+    "icon": "🐧"
   },
   "icescales": {
     "name": "Escama de Hielo",
-    "desc": "Las gélidas escamas que protegen su cuerpo reducen a la mitad el daño que le infligen los ataques especiales."
+    "desc": "Las gélidas escamas que protegen su cuerpo reducen a la mitad el daño que le infligen los ataques especiales.",
+    "icon": "🛡️"
   },
   "illusion": {
     "name": "Ilusión",
-    "desc": "Adopta el aspecto del último Pokémon del equipo al entrar en combate para desconcertar al rival."
+    "desc": "Adopta el aspecto del último Pokémon del equipo al entrar en combate para desconcertar al rival.",
+    "icon": "🎭"
   },
   "innardsout": {
     "name": "Revés",
-    "desc": "Al caer debilitado, inflige al rival un daño equivalente a los PS que le quedaran."
+    "desc": "Al caer debilitado, inflige al rival un daño equivalente a los PS que le quedaran.",
+    "icon": "💥"
   },
   "intrepidsword": {
     "name": "Espada Indómita",
-    "desc": "Aumenta su Ataque al entrar en combate."
+    "desc": "Aumenta su Ataque al entrar en combate.",
+    "icon": "🗡️"
   },
   "ironbarbs": {
     "name": "Punta Acero",
-    "desc": "Inflige daño al rival si este le golpea con un movimiento de contacto."
+    "desc": "Inflige daño al rival si este le golpea con un movimiento de contacto.",
+    "icon": "🌵"
   },
   "klutz": {
     "name": "Zoquete",
-    "desc": "No puede usar objetos equipados."
+    "desc": "No puede usar objetos equipados.",
+    "icon": "✨"
   },
   "libero": {
     "name": "Líbero",
-    "desc": "Cambia su tipo al del movimiento que va a usar."
+    "desc": "Cambia su tipo al del movimiento que va a usar.",
+    "icon": "🧬"
   },
   "lightmetal": {
     "name": "Metal Liviano",
-    "desc": "Reduce a la mitad su peso."
+    "desc": "Reduce a la mitad su peso.",
+    "icon": "🛡️"
   },
   "lingeringaroma": {
     "name": "Olor Persistente",
-    "desc": "Making contact with this Pokemon has the attacker's Ability become Lingering Aroma."
+    "desc": "Making contact with this Pokemon has the attacker's Ability become Lingering Aroma.",
+    "icon": "🐖"
   },
   "liquidvoice": {
     "name": "Voz Fluida",
-    "desc": "Hace que todos sus movimientos que usan sonido pasen a ser de tipo Agua."
+    "desc": "Hace que todos sus movimientos que usan sonido pasen a ser de tipo Agua.",
+    "icon": "🎤"
   },
   "longreach": {
     "name": "Remoto",
-    "desc": "Puede usar cualquier movimiento sin entrar en contacto con el rival."
+    "desc": "Puede usar cualquier movimiento sin entrar en contacto con el rival.",
+    "icon": "✨"
   },
   "magicbounce": {
     "name": "Espejo Mágico",
-    "desc": "Puede devolver los movimientos de estado lanzados por el rival, sin verse afectado por ellos."
+    "desc": "Puede devolver los movimientos de estado lanzados por el rival, sin verse afectado por ellos.",
+    "icon": "🪄"
   },
   "magician": {
     "name": "Prestidigitador",
-    "desc": "Roba el objeto del Pokémon al que alcance con un movimiento."
+    "desc": "Roba el objeto del Pokémon al que alcance con un movimiento.",
+    "icon": "🎩"
   },
   "megalauncher": {
     "name": "Megadisparador",
-    "desc": "Aumenta la potencia de algunos movimientos de pulsos y auras."
+    "desc": "Aumenta la potencia de algunos movimientos de pulsos y auras.",
+    "icon": "⚔️"
   },
   "megasol": {
-    "name": "Megasolar",
-    "desc": "This Pokemon's moves are used as if the effects of Sunny Day were active."
+    "name": "Megasol",
+    "desc": "☀️ Ejecuta movimientos como si los efectos de Día Soleado estuvieran activos permanentemente.",
+    "icon": "☀️"
   },
   "merciless": {
     "name": "Ensañamiento",
-    "desc": "Hace que sus movimientos asesten siempre un golpe crítico si el rival está envenenado."
+    "desc": "Hace que sus movimientos asesten siempre un golpe crítico si el rival está envenenado.",
+    "icon": "🎯"
   },
   "mimicry": {
     "name": "Mimetismo",
-    "desc": "Cambia su tipo según el campo que haya en el terreno de combate."
+    "desc": "Cambia su tipo según el campo que haya en el terreno de combate.",
+    "icon": "🦎"
   },
   "mindseye": {
     "name": "Ojo Mental",
-    "desc": "Fighting, Normal moves hit Ghost. Accuracy can't be lowered, ignores evasiveness."
+    "desc": "Fighting, Normal moves hit Ghost. Accuracy can't be lowered, ignores evasiveness.",
+    "icon": "💚"
   },
   "mirrorarmor": {
     "name": "Coraza Reflejo",
-    "desc": "Refleja los efectos que reducen las características."
+    "desc": "Refleja los efectos que reducen las características.",
+    "icon": "✨"
   },
   "mistysurge": {
     "name": "Nebulogénesis",
-    "desc": "Crea un campo de niebla al entrar en combate."
+    "desc": "Crea un campo de niebla al entrar en combate.",
+    "icon": "🌸"
   },
   "moody": {
     "name": "Veleta",
-    "desc": "Una característica le sube mucho en cada turno, pero le baja otra."
+    "desc": "Una característica le sube mucho en cada turno, pero le baja otra.",
+    "icon": "🎰"
   },
   "motordrive": {
     "name": "Electromotor",
-    "desc": "Si le alcanza un movimiento de tipo Eléctrico, le sube la Velocidad en vez de sufrir daño."
+    "desc": "Si le alcanza un movimiento de tipo Eléctrico, le sube la Velocidad en vez de sufrir daño.",
+    "icon": "🔋"
   },
   "multitype": {
     "name": "Multitipo",
-    "desc": "Cambia su tipo al de la tabla o al del Cristal Z que lleve."
+    "desc": "Cambia su tipo al de la tabla o al del Cristal Z que lleve.",
+    "icon": "☸️"
   },
   "mummy": {
     "name": "Momia",
-    "desc": "Contagia la habilidad Momia al rival que entre en contacto con él."
+    "desc": "Contagia la habilidad Momia al rival que entre en contacto con él.",
+    "icon": "🧟"
   },
   "myceliummight": {
     "name": "Poder Fúngico",
-    "desc": "This Pokemon's Status moves go last in their priority bracket and ignore Abilities."
+    "desc": "• Los movimientos de estado actúan en última prioridad pero ignoran habilidades rivales.",
+    "icon": "✨"
   },
   "neuroforce": {
     "name": "Fuerza Cerebral",
-    "desc": "Potencia los ataques supereficaces."
+    "desc": "Potencia los ataques supereficaces.",
+    "icon": "⚔️"
   },
   "normalize": {
     "name": "Normalidad",
-    "desc": "Hace que todos sus movimientos se vuelvan de tipo Normal y aumenten ligeramente su potencia."
+    "desc": "Hace que todos sus movimientos se vuelvan de tipo Normal y aumenten ligeramente su potencia.",
+    "icon": "⚔️"
   },
   "opportunist": {
     "name": "Oportunista",
-    "desc": "When an opposing Pokemon has a stat stage raised, this Pokemon copies the effect."
+    "desc": "When an opposing Pokemon has a stat stage raised, this Pokemon copies the effect.",
+    "icon": "✨"
   },
   "orichalcumpulse": {
     "name": "Latido Oricalco",
-    "desc": "On switch-in, summons Sunny Day. During Sunny Day, Attack is 1.3333x."
+    "desc": "☀️ Invoca Sol intenso al entrar y aumenta el Ataque físico (+33%) bajo Sol.",
+    "icon": "☀️"
   },
   "parentalbond": {
     "name": "Amor Filial",
-    "desc": "Une fuerzas con su cría y ataca dos veces."
+    "desc": "Une fuerzas con su cría y ataca dos veces.",
+    "icon": "✨"
   },
   "pastelveil": {
     "name": "Velo Pastel",
-    "desc": "Se protege a sí mismo y a sus aliados del envenenamiento."
+    "desc": "Se protege a sí mismo y a sus aliados del envenenamiento.",
+    "icon": "🛡️"
   },
   "perishbody": {
     "name": "Cuerpo Mortal",
-    "desc": "Si le alcanza un movimiento de contacto, se debilitará al cabo de 3 turnos, así como su agresor, a menos que abandonen el terreno de combate."
+    "desc": "Si le alcanza un movimiento de contacto, se debilitará al cabo de 3 turnos, así como su agresor, a menos que abandonen el terreno de combate.",
+    "icon": "☠️"
   },
   "pickpocket": {
     "name": "Hurto",
-    "desc": "Si el rival usa un movimiento de contacto al atacar, le roba el objeto."
+    "desc": "Si el rival usa un movimiento de contacto al atacar, le roba el objeto.",
+    "icon": "🦹"
   },
   "piercingdrill": {
-    "name": "Turbotaladro",
-    "desc": "This Pokemon's contact moves ignore a target's protection and deal 1/4 the usual damage."
+    "name": "Taladro Perforador",
+    "desc": "• Los movimientos de contacto ignoran Protección rival e infligen 25% de daño.",
+    "icon": "⚔️"
   },
   "pixilate": {
     "name": "Piel Feérica",
-    "desc": "Convierte los movimientos de tipo Normal en tipo Hada y aumenta ligeramente su potencia."
+    "desc": "Convierte los movimientos de tipo Normal en tipo Hada y aumenta ligeramente su potencia.",
+    "icon": "🌸"
   },
   "poisonheal": {
     "name": "Antídoto",
-    "desc": "Si resulta envenenado, recupera PS en vez de perderlos."
+    "desc": "Si resulta envenenado, recupera PS en vez de perderlos.",
+    "icon": "✨"
   },
   "poisonpuppeteer": {
     "name": "Títere Tóxico",
-    "desc": "Pecharunt: If this Pokemon poisons a target, the target also becomes confused."
+    "desc": "Pecharunt: If this Pokemon poisons a target, the target also becomes confused.",
+    "icon": "✨"
   },
   "powerconstruct": {
     "name": "Agrupamiento",
-    "desc": "Cuando sus PS se ven reducidos a la mitad, las células se reagrupan y adopta su Forma Completa."
+    "desc": "Cuando sus PS se ven reducidos a la mitad, las células se reagrupan y adopta su Forma Completa.",
+    "icon": "🧬"
   },
   "powerofalchemy": {
     "name": "Reacción Química",
-    "desc": "Reacciona copiando la habilidad de un aliado debilitado."
+    "desc": "Reacciona copiando la habilidad de un aliado debilitado.",
+    "icon": "⚗️"
   },
   "powerspot": {
     "name": "Fuente Energía",
-    "desc": "Potencia los movimientos de los Pokémon adyacentes."
+    "desc": "Potencia los movimientos de los Pokémon adyacentes.",
+    "icon": "⚔️"
   },
   "prankster": {
     "name": "Bromista",
-    "desc": "Sus movimientos de estado tienen prioridad alta."
+    "desc": "Sus movimientos de estado tienen prioridad alta.",
+    "icon": "✨"
   },
   "primordialsea": {
     "name": "Mar del Albor",
-    "desc": "Altera el clima para anular los ataques de tipo Fuego."
+    "desc": "Altera el clima para anular los ataques de tipo Fuego.",
+    "icon": "🌊"
   },
   "prismarmor": {
     "name": "Armadura Prisma",
-    "desc": "Mitiga el daño que le infligen los movimientos supereficaces."
+    "desc": "Mitiga el daño que le infligen los movimientos supereficaces.",
+    "icon": "💎"
   },
   "propellertail": {
     "name": "Hélice Caudal",
-    "desc": "Impide que el rival pueda atraer ataques hacia sí mismo por efecto de su habilidad o sus movimientos."
+    "desc": "Impide que el rival pueda atraer ataques hacia sí mismo por efecto de su habilidad o sus movimientos.",
+    "icon": "🛡️"
   },
   "protean": {
     "name": "Mutatipo",
-    "desc": "Cambia su tipo al del movimiento que va a usar."
+    "desc": "Cambia su tipo al del movimiento que va a usar.",
+    "icon": "🧬"
   },
   "protosynthesis": {
     "name": "Paleosíntesis",
-    "desc": "Sunny Day active or Booster Energy used: highest stat is 1.3x, or 1.5x if Speed."
+    "desc": "Sunny Day active or Booster Energy used: highest stat is 1.3x, or 1.5x if Speed.",
+    "icon": "✨"
   },
   "psychicsurge": {
     "name": "Psicogénesis",
-    "desc": "Crea un campo psíquico al entrar en combate."
+    "desc": "Crea un campo psíquico al entrar en combate.",
+    "icon": "🔮"
   },
   "punkrock": {
     "name": "Punk Rock",
-    "desc": "Potencia los movimientos que usan sonido y reduce a la mitad el daño que le infligen dichos movimientos."
+    "desc": "Potencia los movimientos que usan sonido y reduce a la mitad el daño que le infligen dichos movimientos.",
+    "icon": "🎸"
   },
   "purifyingsalt": {
     "name": "Sal Purificadora",
-    "desc": "Ghost damage to this Pokemon dealt with a halved offensive stat; can't be statused."
+    "desc": "Ghost damage to this Pokemon dealt with a halved offensive stat; can't be statused.",
+    "icon": "🧂"
   },
   "quarkdrive": {
     "name": "Carga Cuark",
-    "desc": "Electric Terrain active or Booster Energy used: highest stat is 1.3x, or 1.5x if Speed."
+    "desc": "Electric Terrain active or Booster Energy used: highest stat is 1.3x, or 1.5x if Speed.",
+    "icon": "✨"
   },
   "queenlymajesty": {
     "name": "Regia Presencia",
-    "desc": "Intimida al objetivo y le impide usar movimientos con prioridad."
+    "desc": "Intimida al objetivo y le impide usar movimientos con prioridad.",
+    "icon": "👑"
   },
   "quickdraw": {
     "name": "Mano Rápida",
-    "desc": "A veces, puede atacar el primero."
+    "desc": "A veces, puede atacar el primero.",
+    "icon": "✨"
   },
   "receiver": {
     "name": "Receptor",
-    "desc": "Adquiere la habilidad de un aliado debilitado."
+    "desc": "Adquiere la habilidad de un aliado debilitado.",
+    "icon": "🤝"
   },
   "refrigerate": {
     "name": "Piel Helada",
-    "desc": "Convierte los movimientos de tipo Normal en tipo Hielo y aumenta ligeramente su potencia."
+    "desc": "Convierte los movimientos de tipo Normal en tipo Hielo y aumenta ligeramente su potencia.",
+    "icon": "⚔️"
   },
   "ripen": {
     "name": "Maduración",
-    "desc": "Hace madurar las bayas, por lo que duplica sus efectos."
+    "desc": "Hace madurar las bayas, por lo que duplica sus efectos.",
+    "icon": "🌿"
   },
   "rkssystem": {
     "name": "Sistema Alfa",
-    "desc": "Cambia su tipo según el disco que lleve instalado."
+    "desc": "Cambia su tipo según el disco que lleve instalado.",
+    "icon": "💿"
   },
   "rockypayload": {
-    "name": "Transportarrocas",
-    "desc": "This Pokemon's offensive stat is multiplied by 1.5 while using a Rock-type attack."
+    "name": "Carga Rocosa",
+    "desc": "▲ Potencia los movimientos de tipo Roca (+50%).",
+    "icon": "🪨"
   },
   "sandspit": {
     "name": "Expulsarena",
-    "desc": "Provoca una tormenta de arena al recibir un ataque."
+    "desc": "Provoca una tormenta de arena al recibir un ataque.",
+    "icon": "🌪️"
   },
   "sapsipper": {
     "name": "Herbívoro",
-    "desc": "Neutraliza los movimientos de tipo Planta y sube su Ataque."
+    "desc": "Neutraliza los movimientos de tipo Planta y sube su Ataque.",
+    "icon": "🐮"
   },
   "schooling": {
     "name": "Banco",
-    "desc": "Forma bancos con sus congéneres cuando tiene muchos PS, lo cual le otorga más fuerza. Cuando le quedan pocos PS, el banco se dispersa."
+    "desc": "Forma bancos con sus congéneres cuando tiene muchos PS, lo cual le otorga más fuerza. Cuando le quedan pocos PS, el banco se dispersa.",
+    "icon": "🐟"
   },
   "screencleaner": {
     "name": "Antibarrera",
-    "desc": "Anula los efectos de Pantalla de Luz, Reflejo y Velo Aurora tanto de rivales como de aliados al entrar en combate."
+    "desc": "Anula los efectos de Pantalla de Luz, Reflejo y Velo Aurora tanto de rivales como de aliados al entrar en combate.",
+    "icon": "✨"
   },
   "seedsower": {
     "name": "Disemillar",
-    "desc": "When this Pokemon is hit by an attack, the effect of Grassy Terrain begins."
+    "desc": "When this Pokemon is hit by an attack, the effect of Grassy Terrain begins.",
+    "icon": "✨"
   },
   "shadowshield": {
     "name": "Guardia Espectro",
-    "desc": "Reduce el daño que sufre si sus PS están al máximo."
+    "desc": "Reduce el daño que sufre si sus PS están al máximo.",
+    "icon": "🌙"
   },
   "sharpness": {
     "name": "Cortante",
-    "desc": "This Pokemon's slicing moves have their power multiplied by 1.5."
+    "desc": "▲ Potencia los movimientos de corte y tajos (+50%).",
+    "icon": "🗡️"
   },
   "shieldsdown": {
     "name": "Escudo Limitado",
-    "desc": "Rompe su coraza cuando sus PS se ven reducidos a la mitad y adopta una forma ofensiva."
+    "desc": "Rompe su coraza cuando sus PS se ven reducidos a la mitad y adopta una forma ofensiva.",
+    "icon": "🌠"
   },
   "simple": {
     "name": "Simple",
-    "desc": "Duplica los cambios en las características."
+    "desc": "Duplica los cambios en las características.",
+    "icon": "⚪"
   },
   "slowstart": {
     "name": "Inicio Lento",
-    "desc": "Baja a la mitad su Ataque y su Velocidad durante cinco turnos."
+    "desc": "Baja a la mitad su Ataque y su Velocidad durante cinco turnos.",
+    "icon": "⏳"
   },
   "slushrush": {
     "name": "Quitanieves",
-    "desc": "Aumenta su Velocidad si está granizando."
+    "desc": "Aumenta su Velocidad si está granizando.",
+    "icon": "🏂"
   },
   "snowwarning": {
     "name": "Nevada",
-    "desc": "Invoca una tormenta de granizo al entrar en combate."
+    "desc": "Invoca una tormenta de granizo al entrar en combate.",
+    "icon": "❄️"
   },
   "solidrock": {
     "name": "Roca Sólida",
-    "desc": "Mitiga el daño que le infligen los movimientos supereficaces."
+    "desc": "Mitiga el daño que le infligen los movimientos supereficaces.",
+    "icon": "⚔️"
   },
   "soulheart": {
     "name": "Coránima",
-    "desc": "Aumenta su Ataque Especial cada vez que un Pokémon cae debilitado."
+    "desc": "Aumenta su Ataque Especial cada vez que un Pokémon cae debilitado.",
+    "icon": "💙"
   },
   "spicyspray": {
     "name": "Salpicante",
-    "desc": "If this Pokemon is hit by an attack, the attacker becomes burned."
+    "desc": "If this Pokemon is hit by an attack, the attacker becomes burned.",
+    "icon": "✨"
   },
   "stakeout": {
     "name": "Vigilante",
-    "desc": "Si el objetivo de su ataque es sustituido por otro, duplica el daño que infligirá."
+    "desc": "Si el objetivo de su ataque es sustituido por otro, duplica el daño que infligirá.",
+    "icon": "⚔️"
   },
   "stall": {
     "name": "Rezagado",
-    "desc": "Ejecuta su movimiento tras todos los demás."
+    "desc": "Ejecuta su movimiento tras todos los demás.",
+    "icon": "🐢"
   },
   "stalwart": {
     "name": "Acérrimo",
-    "desc": "Impide que el rival pueda atraer ataques hacia sí mismo por efecto de su habilidad o sus movimientos."
+    "desc": "Impide que el rival pueda atraer ataques hacia sí mismo por efecto de su habilidad o sus movimientos.",
+    "icon": "🛡️"
   },
   "stamina": {
     "name": "Firmeza",
-    "desc": "Aumenta su Defensa al recibir un ataque."
+    "desc": "Aumenta su Defensa al recibir un ataque.",
+    "icon": "🐴"
   },
   "stancechange": {
     "name": "Cambio Táctico",
-    "desc": "Adopta la Forma Filo al lanzar un ataque, o bien la Forma Escudo si usa el movimiento Escudo Real."
+    "desc": "Adopta la Forma Filo al lanzar un ataque, o bien la Forma Escudo si usa el movimiento Escudo Real.",
+    "icon": "⚔️"
   },
   "steamengine": {
     "name": "Combustible",
-    "desc": "Si le alcanza un movimiento de tipo Fuego o Agua, le sube muchísimo la Velocidad."
+    "desc": "• Combate: ▲ Sube al máximo la Velocidad (+6 etapas) al recibir ataques de Fuego o Agua.\n• Campo: x2 Velocidad de eclosión de Huevos en el equipo.",
+    "icon": "🚂"
   },
   "steelworker": {
     "name": "Acero Templado",
-    "desc": "Potencia los movimientos de tipo Acero."
+    "desc": "Potencia los movimientos de tipo Acero.",
+    "icon": "🛡️"
   },
   "steelyspirit": {
     "name": "Alma Acerada",
-    "desc": "Potencia los movimientos de tipo Acero de los aliados."
+    "desc": "Potencia los movimientos de tipo Acero de los aliados.",
+    "icon": "🛡️"
   },
   "stormdrain": {
     "name": "Colector",
-    "desc": "Atrae y neutraliza los movimientos de tipo Agua, que además le suben el Ataque Especial."
+    "desc": "• Combate: 💧 Atrae ataques de tipo Agua, anula su daño y sube el At. Especial (+1 etapa).\n• Campo: 50% de probabilidad de atraer Pokémon salvajes de tipo Agua.",
+    "icon": "💧"
   },
   "strongjaw": {
     "name": "Mandíbula Fuerte",
-    "desc": "Su robusta mandíbula le confiere una mordedura potente."
+    "desc": "Su robusta mandíbula le confiere una mordedura potente.",
+    "icon": "🦷"
   },
   "supersweetsyrup": {
     "name": "Néctar Dulce",
-    "desc": "On switch-in, this Pokemon lowers the evasiveness of opponents 1 stage. Once per battle."
+    "desc": "▼ Al entrar en combate, reduce la Evasión de los rivales (-1 etapa).",
+    "icon": "🎯"
   },
   "supremeoverlord": {
     "name": "General Supremo",
-    "desc": "This Pokemon's moves have 10% more power for each fainted ally, up to 5 allies."
+    "desc": "▲ Aumenta la potencia de los movimientos (+10%) por cada aliado debilitado en el equipo.",
+    "icon": "👑"
   },
   "surgesurfer": {
     "name": "Cola Surf",
-    "desc": "Duplica su Velocidad si hay un campo eléctrico en el terreno de combate."
+    "desc": "Duplica su Velocidad si hay un campo eléctrico en el terreno de combate.",
+    "icon": "⚡"
   },
   "sweetveil": {
     "name": "Velo Dulce",
-    "desc": "No cae dormido y evita también que sus aliados se duerman."
+    "desc": "No cae dormido y evita también que sus aliados se duerman.",
+    "icon": "🍬"
   },
   "swordofruin": {
     "name": "Espada Debacle",
-    "desc": "Active Pokemon without this Ability have their Defense multiplied by 0.75."
+    "desc": "Active Pokemon without this Ability have their Defense multiplied by 0.75.",
+    "icon": "✨"
   },
   "symbiosis": {
     "name": "Simbiosis",
-    "desc": "Pasa su objeto a un aliado que ya haya utilizado el suyo."
+    "desc": "Pasa su objeto a un aliado que ya haya utilizado el suyo.",
+    "icon": "🤲"
   },
   "tabletsofruin": {
     "name": "Tablilla Debacle",
-    "desc": "Active Pokemon without this Ability have their Attack multiplied by 0.75."
+    "desc": "Active Pokemon without this Ability have their Attack multiplied by 0.75.",
+    "icon": "✨"
   },
   "tanglinghair": {
     "name": "Rizos Rebeldes",
-    "desc": "Baja la Velocidad del rival cuando este le ataca con un movimiento de contacto."
+    "desc": "Baja la Velocidad del rival cuando este le ataca con un movimiento de contacto.",
+    "icon": "💇"
   },
   "telepathy": {
     "name": "Telepatía",
-    "desc": "Elude los ataques de los aliados durante el combate."
+    "desc": "Elude los ataques de los aliados durante el combate.",
+    "icon": "🔮"
   },
   "teraformzero": {
     "name": "Teraformación 0",
-    "desc": "Terapagos: Terastallizing ends the effects of weather and terrain. Once per battle."
+    "desc": "Terapagos: Terastallizing ends the effects of weather and terrain. Once per battle.",
+    "icon": "✨"
   },
   "terashell": {
     "name": "Teracaparazón",
-    "desc": "Terapagos: If full HP, attacks taken have 0.5x effectiveness unless naturally immune."
+    "desc": "Terapagos: If full HP, attacks taken have 0.5x effectiveness unless naturally immune.",
+    "icon": "🐢"
   },
   "terashift": {
     "name": "Teracambio",
-    "desc": "If this Pokemon is a Terapagos, it transforms into its Terastal Form on entry."
+    "desc": "If this Pokemon is a Terapagos, it transforms into its Terastal Form on entry.",
+    "icon": "🐢"
   },
   "teravolt": {
     "name": "Terravoltaje",
-    "desc": "Las habilidades del objetivo no afectan a los movimientos que emplea."
+    "desc": "Las habilidades del objetivo no afectan a los movimientos que emplea.",
+    "icon": "✨"
   },
   "thermalexchange": {
     "name": "Termoconversión",
-    "desc": "This Pokemon's Attack is raised by 1 when damaged by Fire moves; can't be burned."
+    "desc": "▲ Inmune a Quemaduras; sube el Ataque (+1 etapa) al recibir ataques de tipo Fuego.",
+    "icon": "🌡️"
   },
   "toughclaws": {
     "name": "Garra Dura",
-    "desc": "Aumenta la potencia de los movimientos de contacto."
+    "desc": "Aumenta la potencia de los movimientos de contacto.",
+    "icon": "🐾"
   },
   "toxicboost": {
     "name": "Ímpetu Tóxico",
-    "desc": "Aumenta la potencia de sus ataques físicos cuando está envenenado."
+    "desc": "Aumenta la potencia de sus ataques físicos cuando está envenenado.",
+    "icon": "☣️"
   },
   "toxicchain": {
     "name": "Cadena Tóxica",
-    "desc": "This Pokemon's attacks have a 30% chance of badly poisoning."
+    "desc": "• Los ataques tienen un 30% de probabilidad de intoxicar gravemente al objetivo.",
+    "icon": "⛓️"
   },
   "toxicdebris": {
     "name": "Capa Tóxica",
-    "desc": "If this Pokemon is hit by a physical attack, Toxic Spikes are set on the opposing side."
+    "desc": "If this Pokemon is hit by a physical attack, Toxic Spikes are set on the opposing side.",
+    "icon": "✨"
   },
   "transistor": {
     "name": "Transistor",
-    "desc": "Potencia los movimientos de tipo Eléctrico."
+    "desc": "Potencia los movimientos de tipo Eléctrico.",
+    "icon": "⚡"
   },
   "triage": {
     "name": "Primer Auxilio",
-    "desc": "Da prioridad a los movimientos que restauran PS."
+    "desc": "Da prioridad a los movimientos que restauran PS.",
+    "icon": "💚"
   },
   "turboblaze": {
     "name": "Turbollama",
-    "desc": "Las habilidades del objetivo no afectan a los movimientos que emplea."
+    "desc": "Las habilidades del objetivo no afectan a los movimientos que emplea.",
+    "icon": "✨"
   },
   "unseenfist": {
     "name": "Puño Invisible",
-    "desc": "Si usa un movimiento de contacto, puede infligir daño al objetivo aunque este se proteja."
+    "desc": "Si usa un movimiento de contacto, puede infligir daño al objetivo aunque este se proteja.",
+    "icon": "⚔️"
   },
   "vesselofruin": {
     "name": "Caldero Debacle",
-    "desc": "Active Pokemon without this Ability have their Special Attack multiplied by 0.75."
+    "desc": "Active Pokemon without this Ability have their Special Attack multiplied by 0.75.",
+    "icon": "✨"
   },
   "victorystar": {
     "name": "Tinovictoria",
-    "desc": "Sube su Precisión y la de sus aliados."
+    "desc": "Sube su Precisión y la de sus aliados.",
+    "icon": "🎯"
   },
   "wanderingspirit": {
     "name": "Alma Errante",
-    "desc": "Si le alcanza un movimiento de contacto, intercambia su habilidad con la del agresor."
+    "desc": "Si le alcanza un movimiento de contacto, intercambia su habilidad con la del agresor.",
+    "icon": "👻"
   },
   "waterbubble": {
     "name": "Pompa",
-    "desc": "Reduce el daño que le provocan los movimientos de tipo Fuego y es inmune a las quemaduras."
+    "desc": "Reduce el daño que le provocan los movimientos de tipo Fuego y es inmune a las quemaduras.",
+    "icon": "🔥"
   },
   "watercompaction": {
     "name": "Hidrorrefuerzo",
-    "desc": "Aumenta mucho su Defensa si le alcanza un movimiento de tipo Agua."
+    "desc": "Aumenta mucho su Defensa si le alcanza un movimiento de tipo Agua.",
+    "icon": "💧"
   },
   "wellbakedbody": {
     "name": "Cuerpo Horneado",
-    "desc": "This Pokemon's Defense is raised 2 stages if hit by a Fire move; Fire immunity."
+    "desc": "🚫 Inmune a ataques de tipo Fuego y sube la Defensa (+2 etapas) al recibir uno.",
+    "icon": "🍞"
   },
   "wimpout": {
     "name": "Huida",
-    "desc": "Se asusta y abandona el terreno de combate cuando sus PS se ven reducidos a la mitad."
+    "desc": "Se asusta y abandona el terreno de combate cuando sus PS se ven reducidos a la mitad.",
+    "icon": "✨"
   },
   "windpower": {
     "name": "Energía Eólica",
-    "desc": "This Pokemon gains the Charge effect when hit by a wind move or Tailwind begins."
+    "desc": "⚡ Se carga de electricidad al recibir movimientos de viento o activarse Viento Afín.",
+    "icon": "💨"
   },
   "windrider": {
     "name": "Surcavientos",
-    "desc": "Attack raised by 1 if hit by a wind move or Tailwind begins. Wind move immunity."
+    "desc": "Attack raised by 1 if hit by a wind move or Tailwind begins. Wind move immunity.",
+    "icon": "🪁"
   },
   "zenmode": {
     "name": "Modo Daruma",
-    "desc": "Cambia de forma si sus PS se ven reducidos a la mitad."
+    "desc": "Cambia de forma si sus PS se ven reducidos a la mitad.",
+    "icon": "🧘"
   },
   "zerotohero": {
     "name": "Cambio Heroico",
-    "desc": "If this Pokemon is a Palafin in Zero Form, switching out has it change to Hero Form."
+    "desc": "If this Pokemon is a Palafin in Zero Form, switching out has it change to Hero Form.",
+    "icon": "🦸"
   },
   "mountaineer": {
-    "name": "Mountaineer",
-    "desc": "On switch-in, this Pokemon avoids all Rock-type attacks and Stealth Rock."
+    "name": "Montañero",
+    "desc": "🚫 Inmune a ataques de tipo Roca y a las Trampa Rocas al entrar en combate.",
+    "icon": "🪨"
   },
   "rebound": {
-    "name": "Rebound",
-    "desc": "On switch-in, blocks certain status moves and bounces them back to the user."
+    "name": "Rebote Reflejo",
+    "desc": "🚫 Bloquea y devuelve movimientos de estado rivales al entrar en combate.",
+    "icon": "✨"
   },
   "persistent": {
     "name": "Persistent",
-    "desc": "When used, Gravity/Heal Block/Safeguard/Tailwind/Room effects last 2 more turns."
+    "desc": "When used, Gravity/Heal Block/Safeguard/Tailwind/Room effects last 2 more turns.",
+    "icon": "✨"
   }
 }

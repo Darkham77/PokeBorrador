@@ -43,7 +43,7 @@
   max-width: none !important;
   margin: 0 !important;
   overflow: hidden; 
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+  background: linear-gradient(180deg, Rgba(255, 255, 255, 0.03) 0%, transparent 100%);
 
   .battle-screen-grid:not(.is-fullscreen) & {
     display: grid;
@@ -77,8 +77,8 @@
     @include shell-premium(#141824, 0);
     border-radius: 0 !important;
     border: none;
-    border-right: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: inset -10px 0 20px rgba(0, 0, 0, 0.3);
+    border-right: 1px solid Rgba(255, 255, 255, 0.15);
+    box-shadow: inset -10px 0 20px Rgba(0, 0, 0, 0.3);
   }
   
   .battle-screen-grid.is-fullscreen & {
@@ -87,8 +87,8 @@
     min-height: 72px;
     :deep(.battle-log) {
       border-right: none;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 1px solid Rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
     }
   }
 
@@ -134,8 +134,8 @@
   zoom: var(--app-zoom, 1);
   will-change: zoom;
   z-index: var(--z-hud); 
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: inset 0 10px 20px rgba(0, 0, 0, 0.4);
+  border-top: 1px solid Rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 10px 20px Rgba(0, 0, 0, 0.4);
   margin-top: -1px; // Solapamiento para evitar fugas de luz
   min-height: 192px;
   max-height: 192px;

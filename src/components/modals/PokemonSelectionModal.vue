@@ -308,7 +308,7 @@ function openDetail(item: PokemonSelectionItemEntry) {
   <BaseModal
     :show="props.show"
     :title="props.title"
-    max-width="480px"
+    max-width="520px"
     variant="retro"
     padding="raw"
     :prevent-close="preventClose"

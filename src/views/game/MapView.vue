@@ -197,6 +197,13 @@ const mappedAwards = computed(() => mapStore.pendingAwards.map((a: PendingAward)
   event_id: a.id,
   event_name: (a.data.event_name as string) || 'Evento Especial'
 })))
+
+const handleOpenEvent = (event?: GameEvent) => {
+  const targetEvent = event ?? eventStore.activeEvents[0]
+  if (targetEvent) {
+    modalStore.open('EventDetail', { event: targetEvent })
+  }
+}
 </script>
 
 <template>
@@ -222,7 +229,7 @@ const mappedAwards = computed(() => mapStore.pendingAwards.map((a: PendingAward)
       :rival-event-icon="activeEventData.icon"
       @open-tab="openTab"
       @open-center="openCenter"
-      @open-event="modalStore.open('EventDetail', { event: eventStore.activeEvents[0] })"
+      @open-event="handleOpenEvent"
     />
 
     <!-- Walking eggs progress panel -->

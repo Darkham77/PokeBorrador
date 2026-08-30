@@ -1,11 +1,11 @@
-import { requirePokemonSpeciesId, type PokemonSpeciesId, isLegendaryPokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { isPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId, isLegendaryPokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { getWeatherFamily } from '@/data/system/weatherFamilies.ts';
 import { redistributeWeatherSpawns } from '@/logic/utils/routeSpawnHelpers';
 import { getWeatherMultiplier } from '@/logic/weather/weatherUtils';
-import { DAY_PHASES, type DayPhase } from '@/logic/utils/timeUtils';
+import { DAY_PHASES, getGMT3Date, type DayPhase } from '@/logic/utils/timeUtils';
 import type { MapLocation } from '@/types/pokemon/encounters';
 import type { Pokemon } from '@/types/pokemon/pokemon';
-import type { Event as GameEvent, EventConfig } from '@/logic/events/eventEngine';
+import { resolveWeeklyRotation, safeParse, type Event as GameEvent, type EventConfig } from '@/logic/events/eventEngine';
 import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
 import {
   DEFAULT_EXCLUSIVE_SPAWN_WEIGHT,
@@ -88,9 +88,15 @@ export function getEncounterPool(
   // 2. Inyección por Eventos Dinámicos
   if (activeEvents && activeEvents.length > 0) {
     activeEvents.forEach(ev => {
-      const cfg = (typeof ev.config === 'string' ? JSON.parse(ev.config) : ev.config) as EventConfig | undefined;
-      if (ev.active && cfg?.ignoreTimeRestrictions && cfg.species) {
-        const eventSpecies = cfg.species.split(',').map((s: string) => requirePokemonSpeciesId(s.trim().toLowerCase()));
+      const cfg = safeParse(ev.config) as EventConfig;
+      if (!ev.active || !cfg?.ignoreTimeRestrictions) return;
+      const rotation = cfg.rotationTheme === 'weekly_4' && cfg.weeklyRotations ? resolveWeeklyRotation(cfg, getGMT3Date()) : null;
+      const rawSpecies = rotation?.species ?? cfg.species;
+      if (rawSpecies && rawSpecies !== '*') {
+        const eventSpecies = rawSpecies
+          .split(',')
+          .map((s: string) => s.trim().toLowerCase())
+          .filter(isPokemonSpeciesId);
         eventSpecies.forEach((spId: PokemonSpeciesId) => {
           if (!pool.includes(spId)) {
             const wild = loc.wild || {};

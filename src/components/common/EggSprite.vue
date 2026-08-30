@@ -81,3 +81,10 @@ const tintStyle = computed(() => {
     />
   </div>
 </template>
+
+<style scoped lang="scss">
+.egg-sprite-container {
+  display: inline-flex;
+}
+</style>
+

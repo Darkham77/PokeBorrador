@@ -120,7 +120,8 @@ interface TooltipProps {
       const abilityTooltip = wrapper.find('.ability-card').getComponent(PVTooltip)
       
       expect((natureTooltip.props() as unknown as TooltipProps).description).toBe('Sin efecto en estadísticas.')
-      expect((abilityTooltip.props() as unknown as TooltipProps).description).toBe('• Fuerza al rival a consumir el doble de PP por ataque.')
+      expect((abilityTooltip.props() as unknown as TooltipProps).description).toContain('Fuerza al rival a consumir el doble de PP')
+      expect((abilityTooltip.props() as unknown as TooltipProps).description).toContain('Campo:')
     })
   })
 })

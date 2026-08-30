@@ -22,7 +22,7 @@
         @extend .colored; 
         .currency-icon-purple {
           color: #c084fc;
-          filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.5));
+          filter: Drop-Shadow(0 0 5px Rgba(168, 85, 247, 0.5));
           font-size: 14px;
           margin-right: 4px;
         }
@@ -36,8 +36,8 @@
   @include shop-shell;
 
   .bc-shop-sidebar {
-    @include shop-sidebar(rgba(168, 85, 247, 0.1));
-    background: rgba(13, 10, 25, 0.4);
+    @include shop-sidebar(Rgba(168, 85, 247, 0.1));
+    background: Rgba(13, 10, 25, 0.4);
 
     .cat-btn {
       @include shop-sidebar-button(#c084fc);
@@ -50,7 +50,7 @@
   padding: 20px;
   overflow-y: scroll !important;
   @include premium-gradient;
-  background-color: rgba(13, 10, 25, 0.2); // Subtle purple tint over standard gradient
+  background-color: Rgba(13, 10, 25, 0.2); // Subtle purple tint over standard gradient
 
   @media (max-width: 950px) {
     padding: 12px;
@@ -90,7 +90,7 @@
         @extend .colored; 
         .currency-icon-red {
           color: #ef4444;
-          filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.5));
+          filter: Drop-Shadow(0 0 5px Rgba(239, 68, 68, 0.5));
           font-size: 14px;
           margin-right: 4px;
         }
@@ -119,10 +119,10 @@
       &.reputation .value { 
         @extend .colored; 
         color: #3b82f6;
-        text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        text-shadow: 0 0 10px Rgba(59, 130, 246, 0.5);
         .rep-star-icon {
           color: #fbbf24;
-          filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.5));
+          filter: Drop-Shadow(0 0 5px Rgba(251, 191, 36, 0.5));
           margin-right: 4px;
         }
       }
@@ -135,8 +135,8 @@
   @include shop-shell;
 
   .rep-shop-sidebar {
-    @include shop-sidebar(rgba(59, 130, 246, 0.1));
-    background: rgba(10, 15, 25, 0.4);
+    @include shop-sidebar(Rgba(59, 130, 246, 0.1));
+    background: Rgba(10, 15, 25, 0.4);
 
     .cat-btn {
       @include shop-sidebar-button(#3b82f6);
@@ -149,7 +149,7 @@
   padding: 20px;
   overflow-y: scroll !important;
   @include premium-gradient;
-  background-color: rgba(10, 15, 25, 0.2);
+  background-color: Rgba(10, 15, 25, 0.2);
 
   @media (max-width: 950px) {
     padding: 12px;

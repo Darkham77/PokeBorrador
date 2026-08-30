@@ -67,6 +67,17 @@ async function main() {
     // Verificar si tiene traducción en el archivo local exportado
     if (!hasAbilityTranslation(abId)) {
       errors.push(`${tag} No tiene traducción al español registrada en abilities.ts.`);
+    } else {
+      const trans = ABILITY_TRANSLATIONS_ES[abId];
+      if (!trans.name || trans.name.trim() === '') {
+        errors.push(`${tag} Tiene un nombre en español vacío en abilities.json.`);
+      }
+      if (!trans.desc || trans.desc.trim() === '') {
+        errors.push(`${tag} Tiene una descripción vacía en abilities.json.`);
+      }
+      if (!trans.icon || trans.icon.trim() === '') {
+        errors.push(`${tag} Tiene un icono vacío en abilities.json.`);
+      }
     }
   }
 

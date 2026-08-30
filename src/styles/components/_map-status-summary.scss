@@ -11,53 +11,197 @@
   gap: 16px;
   margin-bottom: 10px;
   align-items: stretch;
+  width: 100%;
+
+  .pc-left {
+    flex: 1 1 360px;
+    min-width: 320px;
+    min-height: 250px;
+    max-height: 250px;
+    display: flex;
+    flex-direction: column;
+    order: 2;
+  }
+
+  .pc-right {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: stretch;
+    gap: 16px;
+    height: 250px;
+    max-height: 250px;
+    order: 1;
+    max-width: calc(var(--visible-slots, 1) * 250px * var(--event-aspect, 1.7916) + (var(--visible-slots, 1) - 1) * 16px);
+  }
+
+  &.is-stacked {
+    flex-direction: column;
+    align-items: center;
+
+    .pc-left {
+      width: 100%;
+      min-height: 180px;
+      max-height: 250px;
+      order: 2;
+    }
+
+    .pc-right {
+      width: 100%;
+      height: auto;
+      max-height: 250px;
+      align-self: center;
+      justify-content: center;
+      margin: 0 auto;
+      order: 1;
+    }
+
+    .event-banners-grid {
+      width: 100%;
+      justify-content: center;
+      flex-wrap: nowrap;
+    }
+
+    .event-carousel-viewport {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto;
+    }
+
+    .event-tooltip-container {
+      flex: 1 1 0;
+      max-width: calc(250px * var(--event-aspect, 1.7916));
+      width: 100%;
+      height: auto;
+    }
+
+    .carousel-slide-wrapper {
+      height: auto;
+    }
+  }
 
   @media (max-width: 1024px) {
     flex-direction: column;
     align-items: center;
+
+    .pc-left {
+      width: 100%;
+      min-height: 180px;
+      max-height: 250px;
+      order: 2;
+    }
+
+    .pc-right {
+      width: 100%;
+      height: auto;
+      max-height: 250px;
+      align-self: center;
+      justify-content: center;
+      margin: 0 auto;
+      order: 1;
+    }
+
+    .event-banners-grid {
+      width: 100%;
+      justify-content: center;
+      flex-wrap: nowrap;
+    }
+
+    .event-carousel-viewport {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto;
+    }
+
+    .event-tooltip-container {
+      flex: 1 1 0;
+      max-width: calc(250px * var(--event-aspect, 1.7916));
+      width: 100%;
+      height: auto;
+    }
+
+    .carousel-slide-wrapper {
+      height: auto;
+    }
   }
 }
 
-.pc-left {
-  flex: 1;
-  min-width: 0;
-  min-height: 250px;
-  max-height: 250px;
+.event-banners-grid {
   display: flex;
-  flex-direction: column;
-  order: 2;
-
-  @media (max-width: 1024px) {
-    width: 100%;
-  }
+  gap: 16px;
+  height: 100%;
+  align-items: stretch;
 }
 
-.pc-right {
+.event-carousel-viewport {
+  display: flex;
+  height: 100%;
+  width: 100%;
   flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  height: 250px;
-  max-height: 250px;
-  width: min(100%, calc(250px * var(--event-aspect, 1.7916))) !important;
-  aspect-ratio: var(--event-aspect, 1.7916);
-  order: 1;
-
-  @media (max-width: 1024px) {
-    height: auto !important;
-    align-self: center;
-    margin: 0 auto;
-  }
 }
-
-
 
 .event-tooltip-container {
-  width: 100% !important;
-  height: 100% !important;
   display: flex !important;
-  flex: 1 !important;
-  min-height: 0 !important;
-  align-items: stretch !important;
+  flex: 0 0 auto;
+  width: calc(250px * var(--event-aspect, 1.7916));
+  height: 250px;
+  aspect-ratio: var(--event-aspect, 1.7916);
+  position: relative;
+}
+
+.event-banner-slider {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  transform: Translatez(0);
+  backface-visibility: hidden;
+}
+
+.carousel-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  gap: 16px;
+  will-change: transform;
+  transform: Translatez(0);
+  backface-visibility: hidden;
+}
+
+.carousel-slide-wrapper {
+  flex: 0 0 calc((100% - (var(--visible-slots, 1) - 1) * 16px) / var(--visible-slots, 1));
+  width: calc((100% - (var(--visible-slots, 1) - 1) * 16px) / var(--visible-slots, 1));
+  height: 250px;
+  aspect-ratio: var(--event-aspect, 1.7916);
+  display: flex !important;
+  position: relative;
+}
+
+.carousel-slide {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  border: 4px solid Rgba(255, 214, 10, 0.9);
+  box-shadow: 
+    0 10px 30px Rgba(0, 0, 0, 0.6),
+    0 0 20px Rgba(255, 214, 10, 0.25);
+  cursor: pointer;
+  transform: Translatez(0);
+  backface-visibility: hidden;
+}
+
+.single-event-banner {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  border: 4px solid Rgba(255, 214, 10, 0.9);
+  box-shadow: 
+    0 10px 30px Rgba(0, 0, 0, 0.6),
+    0 0 20px Rgba(255, 214, 10, 0.25);
+  cursor: pointer;
+  transform: Translatez(0);
+  backface-visibility: hidden;
 }
 
 .event-banner {
@@ -66,24 +210,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  border-radius: 20px;
-  border: 4px solid Rgba(255, 214, 10, 0.6);
-  box-shadow: 0 10px 40px Rgba(0,0,0,0.6);
-  cursor: pointer;
   @include pixelated;
-
-  &.active {
-    border-color: Rgba(255, 214, 10, 0.9) !important;
-    box-shadow: 
-      0 10px 30px Rgba(0, 0, 0, 0.6),
-      0 0 20px Rgba(255, 214, 10, 0.25);
-  }
-}
-
-.event-tooltip-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
 }
 
 .carousel-dots {
@@ -92,20 +219,24 @@
   left: 50%;
   transform: Translatex(-50%);
   display: flex;
-  gap: 5px;
+  gap: 6px;
   z-index: var(--z-modal-step);
+  pointer-events: auto;
 
   .carousel-dot {
-    width: 6px;
-    height: 6px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: Rgba(255, 255, 255, 0.4);
-    border: 1px solid Rgba(255, 255, 255, 0.2);
+    border: 1px solid Rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    padding: 0;
+    outline: none;
 
     &.active {
       background: Rgba(255, 214, 10, 0.95);
-      transform: Scale(1.3);
-      border-color: Rgba(255, 214, 10, 0.5);
+      transform: Scale(1.35);
+      border-color: Rgba(255, 214, 10, 0.6);
     }
   }
 }
@@ -163,11 +294,12 @@
 
 .banner-title {
   @include pixelated;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700; // Keep titles bold
   color: white;
   margin-bottom: 4px;
   text-shadow: 0 4px 12px Rgba(0,0,0,1);
+  white-space: nowrap;
 
   @media (max-width: 480px) {
     font-size: 16px;

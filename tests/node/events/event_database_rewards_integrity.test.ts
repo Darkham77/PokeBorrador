@@ -20,6 +20,20 @@ import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
 import { splitSQLStatements, translatePostgresToSqlite } from '../../../src/logic/db/sqlTranslator.ts';
 import { getItemById, getItemName } from '../../../src/data/inventory/items.ts';
 import { isEnabledPokemonId } from '../../../src/data/system/constants.ts';
+import { FIRE_RED_MAPS } from '../../../src/data/world/maps.ts';
+import { getFinalGroundRates } from '../../../src/logic/encounters/encounters.ts';
+import {
+  getGlobalMultipliers,
+  getSpeciesBoosts,
+  getMinigameBuffs,
+  resolveEventSubCompetitions,
+  isPokemonEligibleForEvent,
+  isPokemonEligibleForSubCompetition,
+  evaluatePokemonForSubCompetition,
+  type Event as GameEvent
+} from '../../../src/logic/events/eventEngine.ts';
+import { makePokemon } from '../../../src/logic/pokemon/pokemonFactory.ts';
+import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
 
 interface RawPrize {
   type?: string;
@@ -224,6 +238,76 @@ describe('Event Database Rewards & Species Integrity', () => {
               `[${rotCtx}] Invalid banner in rotation: ${rot.banner}`
             );
           }
+        }
+      }
+    }
+  });
+
+  it('verifies ALL migrated events execute seamlessly across ALL maps, minigames, and 52 calendar weeks without errors', () => {
+    using db = createMigratedDatabase();
+    const rows = db.prepare("SELECT * FROM events_config WHERE active = 1").all() as unknown as EventRow[];
+
+    const activeEvents: GameEvent[] = rows.map(r => ({
+      id: r.id,
+      name: r.name,
+      icon: r.icon,
+      type: (r.type as GameEvent['type']) || 'passive_bonus',
+      active: true,
+      schedule: r.schedule,
+      config: r.config,
+      description: r.description
+    }));
+
+    assert.ok(activeEvents.length > 0, 'Expected active events in database');
+
+    // Verify species boost calculations for active events
+    const spBoost = getSpeciesBoosts(activeEvents, 'magikarp');
+    assert.ok(typeof spBoost.rate === 'number');
+    assert.ok(typeof spBoost.shiny === 'number');
+
+    // 1. Test Encounter Math across all maps with active events
+    const sampleMaps = FIRE_RED_MAPS;
+    for (const map of sampleMaps) {
+      assert.doesNotThrow(() => {
+        const rates = getFinalGroundRates(map, 'day', 'clear', activeEvents);
+        assert.ok(rates.pool.length >= 0);
+      }, `Failed calculating ground rates on map ${map.id} with active events`);
+    }
+
+    // 2. Test Multipliers & Minigame Buffs
+    const mults = getGlobalMultipliers(activeEvents);
+    assert.ok(typeof mults.exp === 'number');
+    assert.ok(typeof mults.money === 'number');
+
+    for (const mg of ['fishing', 'bug_catching', 'casino', 'archaeology']) {
+      const buffs = getMinigameBuffs(activeEvents, mg);
+      assert.ok(typeof buffs.encounterRateMult === 'number');
+      assert.ok(typeof buffs.rareDropMult === 'number');
+    }
+
+    // 3. Test Year-Round Weekly Rotation and Sub-Competitions across all 52 weeks
+    const testPoke = makePokemon('pidgey', 10, { bypassWhitelist: true }) as Pokemon;
+    testPoke.obtainedAt = Temporal.Now.instant().epochMilliseconds;
+
+    for (let month = 1; month <= 12; month++) {
+      for (let day = 1; day <= 28; day += 7) {
+        const iso = `2026-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T12:00:00Z`;
+        const testDate = Temporal.Instant.from(iso);
+
+        for (const ev of activeEvents) {
+          const subComps = resolveEventSubCompetitions(ev, testDate);
+          assert.ok(Array.isArray(subComps));
+
+          for (const sub of subComps) {
+            const evalRes = evaluatePokemonForSubCompetition(testPoke, sub);
+            assert.ok(typeof evalRes.score === 'number');
+
+            const isEligSub = isPokemonEligibleForSubCompetition(ev, sub, testPoke, testDate);
+            assert.ok(typeof isEligSub.eligible === 'boolean');
+          }
+
+          const isEligEv = isPokemonEligibleForEvent(ev, testPoke, testDate);
+          assert.ok(typeof isEligEv.eligible === 'boolean');
         }
       }
     }

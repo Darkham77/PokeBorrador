@@ -8,7 +8,8 @@
  */
 
 import { isPokemonSpeciesId, requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { safeParse } from './eventSchedules.ts';
+import { getGMT3Date } from '@/logic/utils/timeUtils.ts';
+import { safeParse, resolveWeeklyRotation } from './eventSchedules.ts';
 
 // Re-export scheduling and date helpers
 export * from './eventSchedules.ts';
@@ -153,14 +154,16 @@ export function getGlobalMultipliers(activeEvents: Event[]): GlobalMultipliers {
 export function getSpeciesBoosts(activeEvents: Event[], speciesId: string): { rate: number; shiny: number } {
   let rateMult = 1;
   let shinyMult = 1;
+  if (!isPokemonSpeciesId(speciesId)) return { rate: rateMult, shiny: shinyMult };
   const sId = requirePokemonSpeciesId(speciesId);
 
   for (const ev of activeEvents) {
     const cfg = safeParse(ev.config) as EventConfig;
-    if (!cfg.species) continue;
-    if (cfg.species === '*') continue;
+    const rotation = cfg.rotationTheme === 'weekly_4' && cfg.weeklyRotations ? resolveWeeklyRotation(cfg, getGMT3Date()) : null;
+    const rawSpecies = rotation?.species ?? cfg.species;
+    if (!rawSpecies || rawSpecies === '*') continue;
 
-    const speciesList = cfg.species.split(',').map(s => s.trim()).filter(isPokemonSpeciesId);
+    const speciesList = rawSpecies.split(',').map(s => s.trim().toLowerCase()).filter(isPokemonSpeciesId);
     if (speciesList.includes(sId)) {
       rateMult *= (cfg.speciesRateMult || 1);
       shinyMult *= (cfg.speciesShinyMult || 1);

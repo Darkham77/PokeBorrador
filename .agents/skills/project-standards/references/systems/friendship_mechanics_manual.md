@@ -318,3 +318,163 @@ When implementing or extending friendship mechanics in `src/logic/` or `src/stor
    - Level-up events must evaluate friendship evolution synchronously against the active generation config (`ACTIVE_GENERATION`).
 4. **Showdown Serialization Parity**:
    - When converting Pokémon objects to Pokémon Showdown worker sets (`@pkmn/sim`), the `happiness` field must always match the internal `friendship` value (defaults to 255 in competitive sets unless running Return/Frustration simulations).
+
+---
+
+## 9. Friendship Seals & Ribbons UI Specification (Poké Vicio Standard)
+
+To preserve visual cleanliness and prevent card clutter across dense game screens (which already contain HP bars, level badges, IV ratings, and combat tiers), Poké Vicio rejects generic progress bars in favor of the **Friendship Seals & Ribbons System** (*Pines y Cintas de Vínculo*).
+
+```
+[0 — 49]       [50 — 99]        [100 — 159]        [160 — 219]            [220 — 255]
+   ⛓️              🌱                🤝                 💎                     🎀
+Sin Vínculo     Sello Brote       Sello Amigo     Vínculo Radiante       Cinta Mejores Amigos
+(Desconfianza) (Recién Atrapado) (En Sintonía)  (¡Listo p/ Evolucionar!) (¡Perks de Combate!)
+```
+
+### 9.1. Tier Hierarchy & Canonical Thresholds
+
+| Seal Tier ID | Friendship Range | Visual Pin Asset | Enamel & Material Style | Canonical State & Mechanical Unlock |
+| :--- | :---: | :--- | :--- | :--- |
+| `distrust` | `0 – 49` | ⛓️ **Sello Rencor (*Broken Chain*)** | Dark slate / oxidized iron link. | **Hostile / Distrustful**: Fainting or herbal medicine drop. Maximum *Frustration* power. |
+| `sprout` | `50 – 99` | 🌱 **Sello Brote (*Sprout Pin*)** | Emerald / Leaf-green enamel pin with bronze rim. | **Nascent Bond**: Standard wild capture baseline ($50$). |
+| `comrade` | `100 – 159` | 🤝 **Sello Camarada (*Bond Badge*)** | Sapphire-blue metallic crest. | **Attuned Companion**: Comfortably adapted to the trainer. |
+| `radiant_prism` | `160 – 219` | 💎 **Prisma Radiante (*Evo Prism*)** | Amethyst-pink glowing crystal with periodic GSAP sheen. | **¡Evolution Ready!**: Exceeds modern evolution threshold ($\ge 160$). Flashes upon level-up. |
+| `best_friends` | `220 – 255` | 🎀 **Cinta Mejores Amigos (*Best Friends Ribbon*)** | Gold & scarlet silk rosette with dynamic spark aura. | **Master Bond**: Unlocks all single-player miracle combat perks (1 HP endure, status cleanse, critical boosts). |
+
+---
+
+### 9.2. Card Positioning & View Layouts
+
+#### A. Team Card Layout (`TeamPokemonCard.vue`)
+In the active team modal (6-card grid), the Friendship Seal is anchored in the **top-right sector**, adjacent to the combat tier badge (`[B]`, `[C]`, `[F]`):
+
+```
+┌─────────────────────────────────────────┐
+│  [✨]                            [ B ]  │  <-- Combat Tier Badge (Top-Right)
+│  [🎒]                             [🎀]  │  <-- Friendship Seal / Ribbon (18x18px)
+│                                         │
+│                [ SPRITE ]               │
+│                                         │
+│                   PEPE                  │
+│                PIDGEOT ♀                │
+│             Nv. 31   TOT 602            │
+│          ──────────────────────         │
+│               75 / 92 HP                │
+│    [USAR OBJETO]    [QUITAR OBJETO]     │
+│        [DATOS]          [CAJA]          │
+└─────────────────────────────────────────┘
+```
+
+- **GSAP Micro-Interactions**:
+  - `radiant_prism` (💎): Executes a periodic subtle diagonal sheen highlight every 4 seconds.
+  - `best_friends` (🎀): Emits faint golden micro-particles upon modal entry.
+  - **Hover Event**: The pin scales up $1.15\times$ with an elastic bounce (`gsap.to(pin, { scale: 1.15, duration: 0.2, ease: "back.out(2)" })`) and spawns a retro tooltip:
+    > **🎀 Cinta de Mejores Amigos (255/255)**  
+    > *«¡No podría quererte más! Su profundo vínculo activa ventajas milagrosas en combate.»*
+
+#### B. Storage Box Card Layout (`BoxPokemonCard.vue`)
+In the compact storage box grid, the pin occupies the **top-left corner**, achieving perfect symmetry with the combat tier badge in the top-right corner:
+
+```
+┌─────────────────────────┐
+│  [🎀]             [ B ] │  <-- Friendship Seal (Top-Left), Combat Tier (Top-Right)
+│                         │
+│        [ SPRITE ]       │
+│                         │
+│          PIDGEY         │
+│     (NORMAL) (VOLADOR)  │
+│        Nv. 4  ♂         │
+│         IV 115          │
+│        TOT 366          │
+│     ───────────────     │
+└─────────────────────────┘
+```
+
+- **Box Quick-Filters**: The storage search bar header includes toggle pills to quickly filter and sort stored Pokémon:
+  - 💎 **«Listos para Evolucionar»**: Filters for `friendship >= 160`.
+  - 🎀 **«Vínculo Máximo»**: Filters for `friendship >= 220`.
+
+---
+
+### 9.3. TypeScript Domain Contracts
+
+```ts
+export const FRIENDSHIP_SEAL_TIERS = [
+  'distrust',
+  'sprout',
+  'comrade',
+  'radiant_prism',
+  'best_friends',
+] as const;
+
+export type FriendshipSealTier = (typeof FRIENDSHIP_SEAL_TIERS)[number];
+
+export interface FriendshipSealMetadata {
+  readonly id: FriendshipSealTier;
+  readonly minFriendship: number;
+  readonly maxFriendship: number;
+  readonly label: string;
+  readonly iconName: string;
+  readonly isEvolutionReady: boolean;
+  readonly isCombatPerksActive: boolean;
+}
+
+export const FRIENDSHIP_SEAL_MAP: Record<FriendshipSealTier, FriendshipSealMetadata> = {
+  distrust: {
+    id: 'distrust',
+    minFriendship: 0,
+    maxFriendship: 49,
+    label: 'Desconfianza',
+    iconName: 'seal_distrust.png',
+    isEvolutionReady: false,
+    isCombatPerksActive: false,
+  },
+  sprout: {
+    id: 'sprout',
+    minFriendship: 50,
+    maxFriendship: 99,
+    label: 'Sello Brote',
+    iconName: 'seal_sprout.png',
+    isEvolutionReady: false,
+    isCombatPerksActive: false,
+  },
+  comrade: {
+    id: 'comrade',
+    minFriendship: 100,
+    maxFriendship: 159,
+    label: 'Sello Camarada',
+    iconName: 'seal_comrade.png',
+    isEvolutionReady: false,
+    isCombatPerksActive: false,
+  },
+  radiant_prism: {
+    id: 'radiant_prism',
+    minFriendship: 160,
+    maxFriendship: 219,
+    label: 'Prisma Radiante',
+    iconName: 'seal_radiant_prism.png',
+    isEvolutionReady: true,
+    isCombatPerksActive: false,
+  },
+  best_friends: {
+    id: 'best_friends',
+    minFriendship: 220,
+    maxFriendship: 255,
+    label: 'Cinta de Mejores Amigos',
+    iconName: 'ribbon_best_friends.png',
+    isEvolutionReady: true,
+    isCombatPerksActive: true,
+  },
+} as const;
+
+export function resolveFriendshipSeal(friendship: number): FriendshipSealMetadata {
+  const clamped = Math.max(0, Math.min(255, friendship));
+  if (clamped >= 220) return FRIENDSHIP_SEAL_MAP.best_friends;
+  if (clamped >= 160) return FRIENDSHIP_SEAL_MAP.radiant_prism;
+  if (clamped >= 100) return FRIENDSHIP_SEAL_MAP.comrade;
+  if (clamped >= 50) return FRIENDSHIP_SEAL_MAP.sprout;
+  return FRIENDSHIP_SEAL_MAP.distrust;
+}
+```
+

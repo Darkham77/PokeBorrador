@@ -381,7 +381,7 @@ onUnmounted(() => {
   height: 32px;
   object-fit: contain;
   // Tintado amarillo: Sepia + Saturación alta + Rotación de hue para llegar al amarillo/dorado
-  filter: sepia(1) Saturate(12) hue-rotate(-15deg) Brightness(1.1);
+  filter: sepia(1) Saturate(12) Hue-Rotate(-15deg) Brightness(1.1);
   @include pixelated;
 }
 

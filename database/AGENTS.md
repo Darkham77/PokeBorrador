@@ -22,6 +22,7 @@ Backend / Database Engineers.
 - **SQL Parity Validation**: Always run and validate dual-file migrations (`.sql` + `.sqlite.sql`) using native SQLite engines before database commits (e.g., via `npm run validate:sql`).
 - **Database Migrations Integrity**: Migration SQL scripts updating serialized JSON state must use valid Dex values (e.g., standard lowercase natures like `'hasty'`). Setting or re-introducing pseudo-states like `'active'` in nature columns is strictly prohibited. All seeded Pokémon species must strictly belong to `ENABLED_POKEMON_IDS`, and all seeded items must exist in `SHOP_ITEMS`.
 - **Fetch Type Casting**: When passing raw binary exports (`Uint8Array`) as the request body in fetch calls (such as in local SQLite sync services), cast the payload using `binary as unknown as BodyInit` to satisfy compiler signature checks.
+- **SQLite WASM RPC Emulation Protocol**: Because SQLite WASM lacks PL/pgSQL procedural execution engines, stored procedures executed in PostgreSQL (e.g. `claim_asset_v2`) MUST be emulated deterministically in TypeScript under `src/logic/db/rpcEmulations/`. All database schema and RPC evolutions MUST generate companion `.sql` (PostgreSQL) and `.sqlite.sql` (SQLite) migration files with synchronized timestamps and bumped `db_version`.
 
 ## Verification
 

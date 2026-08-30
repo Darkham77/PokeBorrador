@@ -35,3 +35,6 @@ defineProps<{
     </div>
   </div>
 </template>
+
+<style scoped src="./InventoryModal.styles.scss" lang="scss"></style>
+

@@ -80,6 +80,11 @@ export async function processCombatantExpAndEvs(
             lvlData.moves.push(...pendingMoves);
           }
         }
+
+        const { calculateFriendshipLevelUpDelta, applyFriendshipDelta } = await import('@/logic/pokemon/friendshipLogic');
+        const hasSootheBell = p.heldItem === 'soothebell';
+        const friendshipGain = calculateFriendshipLevelUpDelta(p.friendship ?? 50, hasSootheBell) * reward.levelsGained;
+        applyFriendshipDelta(p, friendshipGain, ctx.addLog);
       }
     }
 

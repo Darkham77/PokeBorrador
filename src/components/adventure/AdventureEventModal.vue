@@ -81,3 +81,6 @@ const emit = defineEmits<{
     </div>
   </BaseModal>
 </template>
+
+<style scoped lang="scss" src="@/views/adventure/AdventureTestView.styles.scss"></style>
+

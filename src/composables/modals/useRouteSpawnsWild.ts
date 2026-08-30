@@ -4,9 +4,9 @@ import { getWeatherMultiplier } from '@/logic/weather/weatherUtils'
 import { useGameStore } from '@/stores/game'
 import { useEventStore } from '@/stores/events'
 import { useUIStore } from '@/stores/ui'
-import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { DAY_PHASES } from '@/logic/utils/timeUtils'
-import type { EventConfig } from '@/logic/events/eventEngine'
+import { requirePokemonSpeciesId, isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { DAY_PHASES, getGMT3Date } from '@/logic/utils/timeUtils'
+import { resolveWeeklyRotation, safeParse, type EventConfig } from '@/logic/events/eventEngine'
 import {
   getSpawnStatus,
   getSharedShinyEventLines,
@@ -44,11 +44,16 @@ export function useRouteSpawnsWild(props: RouteSpawnsProps) {
       }
     }
     activeEvents.forEach(ev => {
-      const cfg = (typeof ev.config === 'string' ? JSON.parse(ev.config) : ev.config) as EventConfig | undefined
-      if (ev.active && cfg?.species) {
-        cfg.species.split(',').forEach((s: string) => {
-          const clean = s.trim()
-          if (clean) addMapSpawn(requirePokemonSpeciesId(clean))
+      const cfg = safeParse(ev.config) as EventConfig
+      if (!ev.active || !cfg) return
+      const rotation = cfg.rotationTheme === 'weekly_4' && cfg.weeklyRotations ? resolveWeeklyRotation(cfg, getGMT3Date()) : null
+      const rawSpecies = rotation?.species ?? cfg.species
+      if (rawSpecies && rawSpecies !== '*') {
+        rawSpecies.split(',').forEach((s: string) => {
+          const clean = s.trim().toLowerCase()
+          if (clean && clean !== '*' && isPokemonSpeciesId(clean)) {
+            addMapSpawn(clean)
+          }
         })
       }
     })
@@ -131,14 +136,17 @@ export function useRouteSpawnsWild(props: RouteSpawnsProps) {
     lines.push(`Probabilidad Base: ${poke.basePercentage.toFixed(1)}%`)
     lines.push(...getSpawnCommonTooltipLines(poke, props.weather))
     const speciesEvent = eventStore.activeEvents.find(e => {
-      const cfg = (typeof e.config === 'string' ? JSON.parse(e.config) : e.config) as EventConfig | undefined
-      if (cfg?.species) {
-        return cfg.species.split(',').map((s: string) => requirePokemonSpeciesId(s.trim())).includes(pokeId)
+      const cfg = safeParse(e.config) as EventConfig
+      const rotation = cfg.rotationTheme === 'weekly_4' && cfg.weeklyRotations ? resolveWeeklyRotation(cfg, getGMT3Date()) : null
+      const rawSpecies = rotation?.species ?? cfg.species
+      if (rawSpecies && rawSpecies !== '*') {
+        const speciesList = rawSpecies.split(',').map((s: string) => s.trim().toLowerCase()).filter(isPokemonSpeciesId)
+        return speciesList.includes(pokeId)
       }
       return false
     })
     if (speciesEvent) {
-      const cfg = (typeof speciesEvent.config === 'string' ? JSON.parse(speciesEvent.config) : speciesEvent.config) as EventConfig | undefined
+      const cfg = safeParse(speciesEvent.config) as EventConfig
       if (cfg?.speciesRateMult && cfg.speciesRateMult !== 1) {
         lines.push(`• Evento Activo (${speciesEvent.name}): Multiplicador x${cfg.speciesRateMult}`)
       }

@@ -98,6 +98,12 @@
         margin-bottom: 0;
       }
 
+      &.is-quote,
+      .line-text.is-quote {
+        font-style: italic;
+        color: Rgba(255, 255, 255, 0.88);
+      }
+
       &.is-boost {
         color: #10B981; // Green
         text-shadow: 0 0 2px Rgba(16, 185, 129, 0.3);

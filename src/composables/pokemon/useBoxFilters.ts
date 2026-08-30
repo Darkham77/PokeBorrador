@@ -6,12 +6,19 @@ import { calculateTotalIVs } from '@/logic/pokemon/statsMath'
 import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
 import { hasPokemonTag } from '@/logic/constants/tags'
 import { getPokemonPhysicalWeight, getPokemonPhysicalHeight } from '@/logic/pokemon/physicalDimensionsMath'
+import {
+  isReadyForFriendshipEvolution,
+  resolveFriendshipSealTier,
+} from '@/logic/pokemon/friendshipLogic'
+import { FRIENDSHIP_BOUNDS, type FriendshipSealTier } from '@/types/pokemon/friendship'
 
 interface FilterState {
   tier: string
   type: string
   levelMin: number
   levelMax: number
+  friendshipMin: number
+  friendshipMax: number
   ivTotalMin: number
   ivTotalMax: number
   ivAny31: boolean
@@ -25,9 +32,18 @@ interface FilterState {
   ivSPA: number
   ivSPD: number
   ivSPE: number
+  evHP: number
+  evATK: number
+  evDEF: number
+  evSPA: number
+  evSPD: number
+  evSPE: number
   search: string
   isOpen: boolean
   tags: string[]
+  friendshipSealTier: FriendshipSealTier | 'all'
+  friendshipEvoReady: boolean
+  friendshipMaxOnly: boolean
 }
 
 export function useBoxFilters(box: Ref<(Pokemon | null)[]>) {
@@ -51,12 +67,15 @@ const MAX_TOTAL_IVS = 186
 const MAX_BST_FILTER = 1000
 const MAX_SINGLE_IV = 31
 const MAX_POKEMON_LEVEL_CONST = 100
+const MAX_POKEMON_FRIENDSHIP_CONST = 255
 
   const filters = ref<FilterState>({
     tier: 'all',
     type: 'all',
     levelMin: 1,
     levelMax: MAX_POKEMON_LEVEL_CONST,
+    friendshipMin: 0,
+    friendshipMax: MAX_POKEMON_FRIENDSHIP_CONST,
     ivTotalMin: 0,
     ivTotalMax: MAX_TOTAL_IVS,
     ivAny31: false,
@@ -70,18 +89,29 @@ const MAX_POKEMON_LEVEL_CONST = 100
     ivSPA: 0,
     ivSPD: 0,
     ivSPE: 0,
+    evHP: 0,
+    evATK: 0,
+    evDEF: 0,
+    evSPA: 0,
+    evSPD: 0,
+    evSPE: 0,
     search: '',
     isOpen: false,
-    tags: []
+    tags: [],
+    friendshipSealTier: 'all',
+    friendshipEvoReady: false,
+    friendshipMaxOnly: false,
   })
 
   const hasActiveFilters = computed(() => {
     const f = filters.value
     return f.tier !== 'all' || f.type !== 'all' || f.levelMin > 1 || f.levelMax < MAX_POKEMON_LEVEL_CONST ||
+           f.friendshipMin > 0 || f.friendshipMax < MAX_POKEMON_FRIENDSHIP_CONST ||
            f.ivTotalMin > 0 || f.ivTotalMax < MAX_TOTAL_IVS || f.ivAny31 || f.search !== '' ||
            f.bstMin > 0 || f.bstMax < MAX_BST_FILTER || f.ivHP > 0 || f.ivATK > 0 || f.ivDEF > 0 ||
            f.ivSPA > 0 || f.ivSPD > 0 || f.ivSPE > 0 || f.ivMin > 0 || f.ivMax < MAX_SINGLE_IV ||
-           (f.tags && f.tags.length > 0)
+           f.evHP > 0 || f.evATK > 0 || f.evDEF > 0 || f.evSPA > 0 || f.evSPD > 0 || f.evSPE > 0 ||
+           (f.tags && f.tags.length > 0) || f.friendshipSealTier !== 'all' || f.friendshipEvoReady || f.friendshipMaxOnly
   })
 
   const processedBoxList = computed(() => {
@@ -113,12 +143,35 @@ const MAX_POKEMON_LEVEL_CONST = 100
       if ((p.ivs?.spd || 0) < f.ivSPD) return false
       if ((p.ivs?.spe || 0) < f.ivSPE) return false
 
+      // Individual EV Filters (Specific stats)
+      if ((p.evs?.hp || 0) < f.evHP) return false
+      if ((p.evs?.atk || 0) < f.evATK) return false
+      if ((p.evs?.def || 0) < f.evDEF) return false
+      if ((p.evs?.spa || 0) < f.evSPA) return false
+      if ((p.evs?.spd || 0) < f.evSPD) return false
+      if ((p.evs?.spe || 0) < f.evSPE) return false
+
       // Tags filter
       if (f.tags && f.tags.length > 0) {
         if (!f.tags.every(t => {
-          if (t === 'team') return false // 'team' tag filter is handled outside in box lists if needed, or we check if it is part of active team. Let's keep existing tag behavior for normal tags or check hasPokemonTag.
+          if (t === 'team') return false
           return hasPokemonTag(p, t)
         })) return false
+      }
+
+      // Friendship Filters
+      const pFriendship = p.friendship ?? 70
+      if (pFriendship < f.friendshipMin || pFriendship > f.friendshipMax) {
+        return false
+      }
+      if (f.friendshipSealTier !== 'all' && resolveFriendshipSealTier(p.friendship) !== f.friendshipSealTier) {
+        return false
+      }
+      if (f.friendshipEvoReady && !isReadyForFriendshipEvolution(p)) {
+        return false
+      }
+      if (f.friendshipMaxOnly && (p.friendship ?? 70) < FRIENDSHIP_BOUNDS.AFFINITY_PERK_THRESHOLD) {
+        return false
       }
 
       // TOTAL Filter (Species Base Stats + IVs + EVs)
@@ -144,6 +197,9 @@ const MAX_POKEMON_LEVEL_CONST = 100
         let result = 0
         if (sortMode.value === 'level') result = pB.level - pA.level;
         else if (sortMode.value === 'tier') result = getPokemonTier(pB).total - getPokemonTier(pA).total;
+        else if (sortMode.value === 'friendship') {
+          result = (pB.friendship ?? 70) - (pA.friendship ?? 70);
+        }
         else if (sortMode.value === 'bst') {
           result = calculateTotalPower(pB) - calculateTotalPower(pA);
         }
@@ -197,9 +253,20 @@ const MAX_POKEMON_LEVEL_CONST = 100
       ivSPA: 0,
       ivSPD: 0,
       ivSPE: 0,
+      evHP: 0,
+      evATK: 0,
+      evDEF: 0,
+      evSPA: 0,
+      evSPD: 0,
+      evSPE: 0,
       search: '',
       isOpen: filters.value.isOpen,
-      tags: []
+      tags: [],
+      friendshipMin: 0,
+      friendshipMax: MAX_POKEMON_FRIENDSHIP_CONST,
+      friendshipSealTier: 'all',
+      friendshipEvoReady: false,
+      friendshipMaxOnly: false,
     }
     sortMode.value = 'none'
     sortDirection.value = 'desc'

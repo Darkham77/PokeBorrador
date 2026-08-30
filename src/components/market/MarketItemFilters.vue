@@ -43,3 +43,6 @@ const emit = defineEmits<{
     />
   </div>
 </template>
+
+<style scoped lang="scss" src="@/styles/components/_gts.scss"></style>
+

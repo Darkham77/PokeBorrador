@@ -112,7 +112,7 @@
 
   &.is-confused img {
     will-change: transform, filter, opacity;
-    filter: hue-rotate(180deg) Saturate(0.5);
+    filter: Hue-Rotate(180deg) Saturate(0.5);
   }
 
   &.is-focus-energy img {

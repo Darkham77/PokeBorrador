@@ -201,3 +201,6 @@ const emit = defineEmits<{
     </div>
   </div>
 </template>
+
+<style scoped lang="scss" src="@/views/adventure/AdventureTestView.styles.manual.scss"></style>
+

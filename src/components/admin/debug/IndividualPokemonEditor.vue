@@ -406,3 +406,6 @@ watch(() => activePoke.value?.level, (newLv) => {
     </div>
   </div>
 </template>
+
+<style scoped lang="scss" src="@/styles/components/_debug.scss"></style>
+

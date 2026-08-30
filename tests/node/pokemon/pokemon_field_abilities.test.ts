@@ -290,13 +290,62 @@ describe('pokemonFieldAbilities - Unit Test Suite (All 33 Field Abilities)', () 
   });
 
   // UI Badges
-  describe('UI Badges', () => {
+  describe('UI Badges & SSoT Integrity', () => {
     test('Devuelve el badge descriptor correspondiente si la pasiva existe', () => {
       const abra = createMockPokemon({ ability: 'synchronize' });
       const badge = getFieldPassiveBadges(abra);
       assert.ok(badge);
       assert.strictEqual(badge.label, 'Sincronía');
       assert.strictEqual(badge.icon, '🔮');
+    });
+
+    test('Staryu con illuminate resuelve badge con label y desc completa de la SSoT', () => {
+      const staryu = createMockPokemon({ id: requirePokemonSpeciesId('staryu'), ability: 'illuminate' });
+      const badge = getFieldPassiveBadges(staryu);
+      assert.ok(badge);
+      assert.strictEqual(badge.label, 'Iluminación');
+      assert.strictEqual(badge.desc, '• Campo: x2 Frecuencia de encuentros con Pokémon salvajes.');
+      assert.strictEqual(badge.icon, '💡');
+    });
+
+    test('Magmar con flamebody resuelve badge con label y desc completa (combate + campo) de la SSoT', () => {
+      const magmar = createMockPokemon({ id: requirePokemonSpeciesId('magmar'), ability: 'flamebody' });
+      const badge = getFieldPassiveBadges(magmar);
+      assert.ok(badge);
+      assert.strictEqual(badge.label, 'Cuerpo Llama');
+      assert.strictEqual(badge.desc, '• Combate: 30% de quemar al atacante tras recibir contacto físico.\n• Campo: x2 Velocidad de eclosión de Huevos en el equipo.');
+      assert.strictEqual(badge.icon, '🔥');
+    });
+
+    test('Pidgeot con keeneye resuelve badge con label y desc completa (combate + campo) de la SSoT', () => {
+      const pidgeot = createMockPokemon({ id: requirePokemonSpeciesId('pidgeot'), ability: 'keeneye' });
+      const badge = getFieldPassiveBadges(pidgeot);
+      assert.ok(badge);
+      assert.strictEqual(badge.label, 'Vista Lince');
+      assert.strictEqual(badge.desc, '• Combate: 🚫 Evita que el rival baje la Precisión e ignora los aumentos de Evasión del rival.\n• Campo: 50% de evitar encuentros salvajes de nivel inferior al líder (delta ≥ 5).');
+      assert.strictEqual(badge.icon, '🦅');
+    });
+
+    test('Todas las 33 pasivas de campo resuelven un badge válido y consistente', () => {
+      const allFieldAbilities = [
+        'synchronize', 'cutecharm', 'compoundeyes', 'superluck', 'frisk',
+        'flamebody', 'magmaarmor', 'steamengine', 'pickup', 'honeygather',
+        'naturalcure', 'magnetpull', 'static', 'lightningrod', 'flashfire',
+        'stormdrain', 'harvest', 'suctioncups', 'stickyhold', 'intimidate',
+        'keeneye', 'pressure', 'vitalspirit', 'hustle', 'arenatrap',
+        'illuminate', 'noguard', 'stench', 'whitesmoke', 'quickfeet',
+        'infiltrator', 'sandveil', 'snowcloak'
+      ] as const;
+
+      for (const abilityId of allFieldAbilities) {
+        const pkmn = createMockPokemon({ ability: abilityId });
+        const badge = getFieldPassiveBadges(pkmn);
+        assert.ok(badge, `Ability ${abilityId} must return a valid badge`);
+        assert.strictEqual(badge.id, abilityId);
+        assert.ok(badge.label && badge.label.length > 0, `Badge for ${abilityId} must have non-empty label`);
+        assert.ok(badge.desc && badge.desc.length > 0, `Badge for ${abilityId} must have non-empty desc`);
+        assert.ok(badge.icon && badge.icon.length > 0, `Badge for ${abilityId} must have non-empty icon`);
+      }
     });
   });
 });

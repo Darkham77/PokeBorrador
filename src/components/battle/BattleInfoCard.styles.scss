@@ -11,9 +11,9 @@
   padding: 15px;
   min-width: 200px;
   box-shadow: 
-    0 10px 30px rgba(0,0,0,0.5), 
-    inset 0 0 10px rgba(255,255,255,0.05),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+    0 10px 30px Rgba(0,0,0,0.5), 
+    inset 0 0 10px Rgba(255,255,255,0.05),
+    inset 0 0 0 1px Rgba(255, 255, 255, 0.15);
   color: $white;
   overflow: hidden;
 
@@ -22,7 +22,7 @@
     position: absolute;
     inset: 0;
     z-index: calc(var(--z-base) - 1);
-    background: rgba(15, 23, 42, 0.85); /* Más opaco para compensar la falta de blur y mantener legibilidad */
+    background: Rgba(15, 23, 42, 0.85); /* Más opaco para compensar la falta de blur y mantener legibilidad */
     border-radius: 17px;
     pointer-events: none;
     transform: translate3d(0, 0, 0);
@@ -85,8 +85,8 @@
 }
 
 .m-badge-nature {
-  background: rgba(234, 179, 8, 0.15);
-  border: 1px solid rgba(234, 179, 8, 0.4);
+  background: Rgba(234, 179, 8, 0.15);
+  border: 1px solid Rgba(234, 179, 8, 0.4);
   color: #fef08a;
   padding: 2px 6px;
   border-radius: 4px;
@@ -117,8 +117,8 @@
   font-weight: 400;
 }
 
-.gender-male { color: rgba(59, 139, 255, 1); }
-.gender-female { color: rgba(255, 110, 255, 1); }
+.gender-male { color: Rgba(59, 139, 255, 1); }
+.gender-female { color: Rgba(255, 110, 255, 1); }
 
 .admin-info-trigger {
   margin-left: auto;
@@ -131,18 +131,18 @@
   justify-content: center;
   width: 18px;
   height: 18px;
-  background: rgba(255, 214, 10, 0.2);
-  border: 1px solid rgba(255, 214, 10, 0.4);
+  background: Rgba(255, 214, 10, 0.2);
+  border: 1px solid Rgba(255, 214, 10, 0.4);
   border-radius: 50%;
   font-size: 10px;
   color: #ffd60a;
   text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
-  box-shadow: 0 0 10px rgba(255, 214, 10, 0.2);
+  box-shadow: 0 0 10px Rgba(255, 214, 10, 0.2);
   
   &:hover {
-    background: rgba(255, 214, 10, 0.4);
-    transform: scale(1.2);
-    box-shadow: 0 0 15px rgba(255, 214, 10, 0.4);
+    background: Rgba(255, 214, 10, 0.4);
+    transform: Scale(1.2);
+    box-shadow: 0 0 15px Rgba(255, 214, 10, 0.4);
   }
 }
 
@@ -182,7 +182,7 @@
     font-size: 8px;
     opacity: 0.7;
     padding-left: 18px;
-    color: rgba(255, 255, 255, 0.5);
+    color: Rgba(255, 255, 255, 0.5);
     
     .b-ops { 
       margin-left: auto; 
@@ -199,23 +199,23 @@
     font-size: 9px;
     padding: 1px 4px;
     border-radius: 4px;
-    background: rgba(255, 255, 255, 0.1);
+    background: Rgba(255, 255, 255, 0.1);
   }
 
   &.is-up {
     color: $green;
-    .d-mod { background: rgba(16, 185, 129, 0.2); }
+    .d-mod { background: Rgba(16, 185, 129, 0.2); }
   }
   &.is-down {
     color: $red;
-    .d-mod { background: rgba(239, 68, 68, 0.2); }
+    .d-mod { background: Rgba(239, 68, 68, 0.2); }
   }
 }
 
 .admin-notice {
   margin-top: 8px;
   padding-top: 6px;
-  border-top: 1px dashed rgba(255, 255, 0, 0.2);
+  border-top: 1px dashed Rgba(255, 255, 0, 0.2);
   color: $yellow;
   font-size: 8px;
   @include pixelated;
@@ -241,8 +241,8 @@
   text-shadow: 1px 1px 0 #000;
   margin-top: 6px;
   padding: 4px 8px;
-  background: rgba(0, 255, 204, 0.05);
-  border: 1px solid rgba(0, 255, 204, 0.25);
+  background: Rgba(0, 255, 204, 0.05);
+  border: 1px solid Rgba(0, 255, 204, 0.25);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -265,7 +265,7 @@
   }
 
   .hud-label {
-    color: rgba(255, 255, 255, 0.6);
+    color: Rgba(255, 255, 255, 0.6);
     font-size: 7px;
     letter-spacing: 0.5px;
   }
@@ -307,7 +307,7 @@
 
   .tooltip-divider {
     height: 1px;
-    background: rgba(255, 255, 255, 0.1);
+    background: Rgba(255, 255, 255, 0.1);
     margin: 2px 0;
   }
 
@@ -322,10 +322,10 @@
       display: grid;
       grid-template-columns: 35px 30px 40px 1fr;
       text-align: right;
-      color: rgba(255, 255, 255, 0.4);
+      color: Rgba(255, 255, 255, 0.4);
       font-weight: bold;
       padding-bottom: 2px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
 
       .grid-header:first-child {
         text-align: left;
@@ -341,11 +341,11 @@
 
       .stat-name-col {
         text-align: left;
-        color: rgba(255, 255, 255, 0.6);
+        color: Rgba(255, 255, 255, 0.6);
       }
 
       .stat-val-col {
-        color: rgba(255, 255, 255, 0.8);
+        color: Rgba(255, 255, 255, 0.8);
       }
 
       .stat-mult-col {
@@ -376,8 +376,8 @@
     @include pixelated;
     font-size: 7px;
     color: #ffd60a;
-    background: rgba(255, 214, 10, 0.15);
-    border: 1px dashed rgba(255, 214, 10, 0.4);
+    background: Rgba(255, 214, 10, 0.15);
+    border: 1px dashed Rgba(255, 214, 10, 0.4);
     padding: 4px;
     border-radius: 4px;
     text-align: center;

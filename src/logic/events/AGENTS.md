@@ -28,6 +28,12 @@ Frontend Developers / Systems Engineers.
   - *Monthly Community Day (`comunidad_mensual`)*: Runs strictly on the **last Sunday of each month** (`type: 'monthly', trigger: 'last_sunday'`, 00:00 to 23:59), featuring a designated Pokémon with 3x spawn and 4x shiny rate, completely avoiding Saturdays to eliminate schedule collisions with the Saturday Global Open Championship.
   - *Faction War Championship (`guerra_facciones_mensual`)*: Runs during the **2nd weekend of each month** (`type: 'monthly', trigger: 'second_weekend'`, Saturday 00:00 to Sunday 23:59), awarding 2x faction points and 2x Battle Coins during mid-month territorial battles.
 - **Dynamic Event Window & Countdown Resolution**: All event time windows (`getEventCurrentWindow`) and upcoming occurrences (`getUpcomingEventOccurrences`) MUST support weekly recurring schedules and all modular monthly recurring schedules (`type: 'monthly'`, supporting triggers `last_sunday`, `second_weekend`, and `last_weekend`). Active event cards (`EventCard.vue`) and HUD buff overlays (`buffs.ts`) MUST dynamically compute remaining seconds and time labels against `getEventCurrentWindow`, ensuring real-time countdown updates across server time modifications without falling back to `0` or `'Indefinido'`.
+- **Resilient Event Config Parsing & Wildcard '*' Open Tournament Contract**:
+  - Event `config` and `schedule` properties MUST always be parsed via `safeParse` to prevent `SyntaxError` on malformed, primitive, or corrupted payloads.
+  - Open competition events (`species: '*'`) signify global participation across all species and must NEVER be passed to `requirePokemonSpeciesId` or treated as literal Pokémon species identifiers.
+  - Multi-species lists (comma-separated), rotation theme entries (`rotationTheme: 'weekly_4'`), and single species must always be resolved via `resolveWeeklyRotation` and filtered with `isPokemonSpeciesId(token)` before modifying spawn pools, computing rates, or rendering UI badges.
+- **Automated Event Schema & Execution Integrity Testing**:
+  - All database event seeds and dynamic configurations MUST be backed by Tier 1 unit tests (`events_future_proof_integrity.spec.ts`) and Tier 2 database migration integrity tests (`event_database_rewards_integrity.test.ts`), verifying encounter generation across all maps, minigames, and 52 calendar week transitions without runtime exceptions.
 
 ## Work Guidance
 

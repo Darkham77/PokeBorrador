@@ -6,6 +6,7 @@ import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import { ASSET_TYPES, getAssetUrl } from '@/logic/services/assetService'
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
+import FriendshipSealBadge from '@/components/pokemon/FriendshipSealBadge.vue'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { useBattleVisuals } from '@/composables/battle/useBattleVisuals'
 import { useUIStore } from '@/stores/ui'
@@ -189,6 +190,10 @@ function handleClick() {
               {{ item._source === 'team' ? '⚔️' : (item._source === 'box' ? '📦' : '🛒') }}
             </span>
           </PVTooltip>
+          <FriendshipSealBadge
+            :friendship="item.pokemon.friendship"
+            size="sm"
+          />
           <span class="m-badge-tier">{{ tierData.tier }}</span>
         </div>
       </div>

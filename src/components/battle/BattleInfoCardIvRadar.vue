@@ -41,3 +41,6 @@ defineProps<{
     </div>
   </div>
 </template>
+
+<style scoped src="./BattleInfoCard.styles.scss" lang="scss"></style>
+

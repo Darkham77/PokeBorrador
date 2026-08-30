@@ -489,3 +489,6 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
     />
   </div>
 </template>
+
+<style scoped lang="scss" src="@/styles/components/_debug-creator.scss"></style>
+

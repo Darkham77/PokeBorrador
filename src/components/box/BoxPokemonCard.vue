@@ -6,7 +6,9 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
+import FriendshipSealBadge from '@/components/pokemon/FriendshipSealBadge.vue'
 import { getPokemonVisualBadges } from '@/logic/constants/tags'
+import { getFieldPassiveBadges } from '@/logic/pokemon/pokemonFieldAbilities'
 import { useUIStore } from '@/stores/ui'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 
@@ -81,6 +83,8 @@ const totalPower = computed(() => {
   if (props.hideStats || !props.pokemon) return 0
   return calculateTotalPower(props.pokemon)
 })
+
+const fieldPassive = computed(() => props.pokemon ? getFieldPassiveBadges(props.pokemon) : null)
 
 const isPremiumTier = computed(() => props.pokemon && (tierInfo.value.tier === 'S' || tierInfo.value.tier === 'S+'))
 
@@ -202,6 +206,19 @@ onUnmounted(() => {
 
       <!-- Indicadores de Estado -->
       <div class="card-status-indicators">
+        <FriendshipSealBadge
+          :friendship="props.pokemon?.friendship"
+          size="sm"
+        />
+        <PVTooltip
+          v-if="fieldPassive"
+          :title="`HABILIDAD: ${fieldPassive.label.toUpperCase()}`"
+          :description="fieldPassive.desc"
+        >
+          <div class="status-indicator field-passive">
+            {{ fieldPassive.icon }}
+          </div>
+        </PVTooltip>
         <PVTooltip
           v-if="props.pokemon.onMission"
           title="Misión"

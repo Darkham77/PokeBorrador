@@ -226,3 +226,6 @@ function handlePillLeave(e: MouseEvent) {
     </div>
   </section>
 </template>
+
+<style scoped lang="scss" src="@/styles/components/_arena.scss"></style>
+

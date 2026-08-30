@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useBuffsStore, type ActiveBuffItem } from '@/stores/battle/buffs'
 import { useModalStore } from '@/stores/modals'
+import { useUIStore } from '@/stores/ui'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const buffsStore = useBuffsStore()
 const modalStore = useModalStore()
+const uiStore = useUIStore()
+
+const isVisible = computed(() => uiStore.activeTab === 'map')
 
 onMounted(() => {
   buffsStore.initTick()
@@ -35,7 +39,10 @@ const handleBadgeClick = (buff: ActiveBuffItem) => {
 </script>
 
 <template>
-  <div class="buffs-overlay">
+  <div
+    v-if="isVisible"
+    class="buffs-overlay"
+  >
     <transition-group
       name="list"
       tag="div"
@@ -87,6 +94,7 @@ const handleBadgeClick = (buff: ActiveBuffItem) => {
 .buffs-list {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 8px;
 }
 

@@ -7,6 +7,8 @@ import { useUIStore } from '@/stores/ui'
 import { useElementVisibility } from '@/composables/ui/useElementVisibility'
 
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
+import FriendshipSealBadge from '@/components/pokemon/FriendshipSealBadge.vue'
+import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { getPokemonVisualBadges } from '@/logic/constants/tags'
 import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
@@ -179,9 +181,13 @@ function getGenderClass(gender: string) {
           {{ tierInfo.tier }}
         </div>
         <div class="card-status-indicators">
+          <FriendshipSealBadge
+            :friendship="pokemon.friendship"
+            size="md"
+          />
           <PVTooltip
             v-if="fieldPassive"
-            :title="`Pasiva: ${fieldPassive.label}`"
+            :title="`HABILIDAD: ${fieldPassive.label.toUpperCase()}`"
             :description="fieldPassive.desc"
           >
             <div class="status-indicator field-passive">

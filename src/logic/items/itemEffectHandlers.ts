@@ -80,8 +80,10 @@ import { applyVitamin, applyFeather, applyEvBerry, applyMochi, resetAllEvs } fro
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import type { PokemonStatKey } from '@/types/pokemon/pokemon';
 
-const MAX_FRIENDSHIP_VALUE = 255;
+import { FRIENDSHIP_BOUNDS } from '@/types/pokemon/friendship.ts';
+
 const BERRY_FRIENDSHIP_INCREASE = 10;
+const VITAMIN_FRIENDSHIP_INCREASE = 5;
 
 export function handleVitamin(p: Pokemon, stat: PokemonStatKey, statNameEs: string): ItemEffectResult {
   if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
@@ -93,6 +95,14 @@ export function handleVitamin(p: Pokemon, stat: PokemonStatKey, statNameEs: stri
 
   p.evs = res.updatedEvs;
   recalcPokemonStats(p);
+
+  // Increase friendship with optional Soothe Bell multiplier
+  const curF = p.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE;
+  if (curF < FRIENDSHIP_BOUNDS.MAX) {
+    const boost = p.heldItem === 'soothebell' ? Math.floor(VITAMIN_FRIENDSHIP_INCREASE * 1.5) : VITAMIN_FRIENDSHIP_INCREASE;
+    p.friendship = Math.min(FRIENDSHIP_BOUNDS.MAX, curF + boost);
+  }
+
   return { success: true, message: `aumentó los EVs de ${statNameEs} (+${res.gained})` };
 }
 
@@ -106,6 +116,13 @@ export function handleMochi(p: Pokemon, stat: PokemonStatKey, statNameEs: string
 
   p.evs = res.updatedEvs;
   recalcPokemonStats(p);
+
+  const curF = p.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE;
+  if (curF < FRIENDSHIP_BOUNDS.MAX) {
+    const boost = p.heldItem === 'soothebell' ? Math.floor(VITAMIN_FRIENDSHIP_INCREASE * 1.5) : VITAMIN_FRIENDSHIP_INCREASE;
+    p.friendship = Math.min(FRIENDSHIP_BOUNDS.MAX, curF + boost);
+  }
+
   return { success: true, message: `aumentó los EVs de ${statNameEs} (+${res.gained})` };
 }
 
@@ -132,6 +149,12 @@ export function handleFeather(p: Pokemon, stat: PokemonStatKey, statNameEs: stri
 
   p.evs = res.updatedEvs;
   recalcPokemonStats(p);
+
+  const curF = p.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE;
+  if (curF < FRIENDSHIP_BOUNDS.MAX) {
+    p.friendship = Math.min(FRIENDSHIP_BOUNDS.MAX, curF + 1);
+  }
+
   return { success: true, message: `aumentó los EVs de ${statNameEs} (+${res.gained})` };
 }
 
@@ -141,9 +164,10 @@ export function handleEvBerry(p: Pokemon, stat: PokemonStatKey, statNameEs: stri
   const evRes = applyEvBerry(p.evs, stat);
   let friendshipGained = false;
 
-  const currentFriendship = p.friendship ?? 70;
-  if (currentFriendship < MAX_FRIENDSHIP_VALUE) {
-    p.friendship = Math.min(MAX_FRIENDSHIP_VALUE, currentFriendship + BERRY_FRIENDSHIP_INCREASE);
+  const currentFriendship = p.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE;
+  if (currentFriendship < FRIENDSHIP_BOUNDS.MAX) {
+    const boost = p.heldItem === 'soothebell' ? Math.floor(BERRY_FRIENDSHIP_INCREASE * 1.5) : BERRY_FRIENDSHIP_INCREASE;
+    p.friendship = Math.min(FRIENDSHIP_BOUNDS.MAX, currentFriendship + boost);
     friendshipGained = true;
   }
 
@@ -164,4 +188,5 @@ export function handleEvBerry(p: Pokemon, stat: PokemonStatKey, statNameEs: stri
     return { success: true, message: 'se volvió más amigable' };
   }
 }
+
 

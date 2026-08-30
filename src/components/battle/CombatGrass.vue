@@ -261,10 +261,10 @@ onUnmounted(() => {
   height: calc(var(--bush-size, 60px) * 1px);
   @include pixelated;
 
-  &.tint-desert .pixel-bush { filter: sepia(0.5) Saturate(0.7) hue-rotate(10deg) Brightness(0.95); }
-  &.tint-swamp .pixel-bush  { filter: Brightness(0.75) Saturate(1.2) hue-rotate(20deg); }
+  &.tint-desert .pixel-bush { filter: sepia(0.5) Saturate(0.7) Hue-Rotate(10deg) Brightness(0.95); }
+  &.tint-swamp .pixel-bush  { filter: Brightness(0.75) Saturate(1.2) Hue-Rotate(20deg); }
   &.tint-arctic .pixel-bush { filter: Saturate(0) Brightness(1.8) contrast(1.15); }
-  &.tint-cave .pixel-bush   { filter: sepia(0.3) Saturate(0.95) hue-rotate(-15deg) Brightness(0.9); }
+  &.tint-cave .pixel-bush   { filter: sepia(0.3) Saturate(0.95) Hue-Rotate(-15deg) Brightness(0.9); }
 }
 
 .pixel-bush { 

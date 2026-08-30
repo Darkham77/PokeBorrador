@@ -203,6 +203,7 @@ const close = () => {
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
+@use "@/styles/components/shop" as *;
 
 .modal-main-tabs {
   display: flex;
