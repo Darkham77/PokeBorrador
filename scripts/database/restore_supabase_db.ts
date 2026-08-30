@@ -49,19 +49,16 @@ export async function restoreSupabaseDb() {
   }
 
   if (!serverArg) {
-    console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas restaurar usando la bandera --server=<perfil>.'));
+    console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas restaurar indicando el nombre del perfil.'));
     console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
-    console.log(styleText('gray', 'Ejemplo: npm run servers:db:restore -- --server=nas_franco'));
-    console.log(styleText('gray', 'Ejemplo con archivo específico: npm run servers:db:restore -- --server=nas_franco --file=database/backups/nas_franco_backup_...json'));
+    console.log(styleText('gray', 'Ejemplo: npm run servers:db:restore nas_franco'));
+    console.log(styleText('gray', 'Ejemplo con archivo específico: npm run servers:db:restore nas_franco --file=database/backups/nas-franco/nas_franco_backup_...json'));
     process.exit(1);
   }
 
   const profile = serverArg;
-  let conf = serverConfigs[profile];
-  if (!conf) {
-    const found = Object.keys(serverConfigs).find(p => serverConfigs[p]?.ID === profile);
-    if (found) conf = serverConfigs[found];
-  }
+  const { findServerConfig } = await import('../lib/supabaseClient.ts');
+  const conf = findServerConfig(serverConfigs, profile);
   if (!conf) {
     console.error(styleText('red', `❌ Error: El perfil o ID "${profile}" no existe en el archivo .env.`));
     process.exit(1);

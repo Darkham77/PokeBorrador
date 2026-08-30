@@ -15,6 +15,8 @@ let serverNameInput = 'official_prod'; // singleton-ok
 for (const arg of args) {
   if (arg.startsWith('--server=')) {
     serverNameInput = arg.split('=')[1] || 'official_prod';
+  } else if (!arg.startsWith('-')) {
+    serverNameInput = arg;
   }
 }
 

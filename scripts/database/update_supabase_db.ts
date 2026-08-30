@@ -40,14 +40,14 @@ export async function updateSupabaseDb(): Promise<void> {
   const { parseServerArguments } = await import('./backup_supabase_db.ts');
   const targetProfiles = parseServerArguments(args, baseProfiles, allAvailable);
   const serverArg = targetProfiles[0];
-  const isAll = args.includes('--all');
+  const isAll = args.includes('--all') || args.includes('all');
 
   if (!serverArg && !isAll) {
-    console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas actualizar usando la bandera --server=<perfil> o --all.'));
+    console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas actualizar indicando el nombre del perfil o "all".'));
     console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
-    console.log(styleText('gray', 'Ejemplo: npm run servers:db:update -- --server=cloud'));
-    console.log(styleText('gray', 'Ejemplo: npm run servers:db:update -- --server=nas_franco'));
-    console.log(styleText('gray', 'Ejemplo: npm run servers:db:update -- --all'));
+    console.log(styleText('gray', 'Ejemplo: npm run servers:db:update cloud'));
+    console.log(styleText('gray', 'Ejemplo: npm run servers:db:update nas_franco'));
+    console.log(styleText('gray', 'Ejemplo: npm run servers:db:update all'));
     process.exit(1);
   }
 

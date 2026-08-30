@@ -44,7 +44,11 @@ export async function adminSupabaseUsers(): Promise<void> {
     return args.find(a => a.startsWith(`${flag}=`))?.split('=')[1];
   };
 
-  const actionArg = getArg('--action');
+  let actionArg = getArg('--action');
+  if (!actionArg) {
+    const knownActions = ['unban', 'set-password', 'set-email', 'set-username', 'promote'] as const;
+    actionArg = args.find(a => (knownActions as readonly string[]).includes(a)); // domain-ok
+  }
   const emailArg = getArg('--email');
   const passwordArg = getArg('--password');
   const newEmailArg = getArg('--new-email');
@@ -52,23 +56,23 @@ export async function adminSupabaseUsers(): Promise<void> {
 
   if (!serverArg || !actionArg || (!emailArg && !usernameArg)) {
     console.log(styleText('yellow', '⚠️  Faltan argumentos obligatorios. Uso requerido:'));
-    console.log(styleText('cyan', `npm run servers:db:admin -- --server=<perfil> --action=<accion> [--email=<email> | --username=<username>]`));
+    console.log(styleText('cyan', `npm run servers:db:admin <perfil> <accion> [--email=<email> | --username=<username>]`));
     console.log(styleText('gray', '\nAcciones disponibles:'));
-    console.log(styleText('gray', '  --action=unban             : Desbanea una cuenta de usuario.'));
-    console.log(styleText('gray', '  --action=set-password      : Cambia la contraseña (requiere --password=<nueva_pass>).'));
-    console.log(styleText('gray', '  --action=set-email         : Cambia el correo (requiere --new-email=<nuevo_email>).'));
-    console.log(styleText('gray', '  --action=set-username      : Cambia el nombre de entrenador (requiere --username=<nombre>).'));
-    console.log(styleText('gray', '  --action=promote           : Otorga rol de administrador (ADMIN) al usuario.'));
+    console.log(styleText('gray', '  unban             : Desbanea una cuenta de usuario.'));
+    console.log(styleText('gray', '  set-password      : Cambia la contraseña (requiere --password=<nueva_pass>).'));
+    console.log(styleText('gray', '  set-email         : Cambia el correo (requiere --new-email=<nuevo_email>).'));
+    console.log(styleText('gray', '  set-username      : Cambia el nombre de entrenador (requiere --username=<nombre>).'));
+    console.log(styleText('gray', '  promote           : Promueve la cuenta a rol de Administrador.'));
+    console.log(styleText('gray', '\nEjemplos:'));
+    console.log(styleText('gray', '  npm run servers:db:admin nas_franco unban --email=usuario@ejemplo.com'));
+    console.log(styleText('gray', '  npm run servers:db:admin nas_franco promote --email=usuario@ejemplo.com'));
     console.log(styleText('cyan', `\nPerfiles disponibles: ${allAvailable.join(', ')}`));
     process.exit(1);
   }
 
   const profile = serverArg;
-  let conf = serverConfigs[profile];
-  if (!conf) {
-    const found = Object.keys(serverConfigs).find(p => serverConfigs[p]?.ID === profile);
-    if (found) conf = serverConfigs[found];
-  }
+  const { findServerConfig } = await import('../lib/supabaseClient.ts');
+  const conf = findServerConfig(serverConfigs, profile);
   if (!conf) {
     console.error(styleText('red', `❌ Error: El perfil o ID "${profile}" no existe en el archivo .env.`));
     process.exit(1);

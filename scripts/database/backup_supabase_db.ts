@@ -29,22 +29,19 @@ const BACKUP_TARGET_NODE_VERSION_LABEL = '26';
 const BACKUPS_DIR = path.resolve(process.cwd(), 'database/backups');
 
 export function parseServerArguments(args: string[], baseProfiles: string[], allAvailable: string[]): string[] {
-  let serverArg: string | undefined
-  const serverFlagIdx = args.findIndex(a => a === '--server')
-  if (serverFlagIdx !== -1 && args[serverFlagIdx + 1] !== undefined) {
-    serverArg = args[serverFlagIdx + 1]
-  } else {
-    serverArg = args.find(a => a.startsWith('--server='))?.split('=')[1]
-  }
-  const isAll = args.includes('--all')
+  const isAll = args.includes('all') || args.includes('--all');
+  const serverArg = args.find(a => !a.startsWith('-') && a !== 'all' && (allAvailable.includes(a) || baseProfiles.includes(a)));
 
   if (!serverArg && !isAll) {
-    console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas respaldar usando la bandera --server=<perfil> o --all.'))
-    console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`))
-    process.exit(1)
+    console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas respaldar indicando el nombre del perfil o "all".'));
+    console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
+    console.log(styleText('gray', 'Ejemplos:'));
+    console.log(styleText('gray', '  npm run servers:db:backup nas_franco'));
+    console.log(styleText('gray', '  npm run servers:db:backup all'));
+    process.exit(1);
   }
 
-  return serverArg ? [serverArg] : baseProfiles
+  return serverArg ? [serverArg] : baseProfiles;
 }
 
 export async function backupSupabaseDb() {

@@ -149,3 +149,10 @@ export async function getValidatedServerConfigs(): Promise<{ serverConfigs: Reco
   }
   return { serverConfigs, baseProfiles };
 }
+
+export function findServerConfig(serverConfigs: Record<string, ServerConfig>, profileOrId: string): ServerConfig | null {
+  const direct = serverConfigs[profileOrId];
+  if (direct) return direct;
+  const matchKey = Object.keys(serverConfigs).find(k => serverConfigs[k]?.ID === profileOrId);
+  return matchKey ? (serverConfigs[matchKey] || null) : null;
+}

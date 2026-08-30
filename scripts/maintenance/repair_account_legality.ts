@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 import postgres from 'postgres';
 import { repairPokemonLegality, checkPokemonLegality } from '../../src/logic/pokemon/pokemonLegality.ts';
-import { buildDatabaseUrl, getValidatedServerConfigs, type ServerConfig } from '../lib/supabaseClient.ts';
+import { buildDatabaseUrl, getValidatedServerConfigs } from '../lib/supabaseClient.ts';
 import type { Pokemon } from '../../src/types/pokemon/pokemon.ts';
 import type { SaveDataDto } from '../../src/logic/validation/schemas.ts';
 
@@ -230,15 +230,12 @@ export async function repairAccountsInSupabase(options: RepairAccountOptions): P
   const isSilent = Boolean(options.silent);
 
   if (!profile) {
-    throw new Error('Debes especificar un perfil de servidor con --server=<perfil>.');
+    throw new Error('Debes especificar un perfil de servidor (ej: server_franco, nas_franco).');
   }
 
   const { serverConfigs } = await getValidatedServerConfigs();
-  let conf: ServerConfig | undefined = serverConfigs[profile];
-  if (!conf) {
-    const found = Object.keys(serverConfigs).find(p => serverConfigs[p]?.ID === profile);
-    if (found) conf = serverConfigs[found];
-  }
+  const { findServerConfig } = await import('../lib/supabaseClient.ts');
+  const conf = findServerConfig(serverConfigs, profile);
 
   if (!conf) {
     throw new Error(`El perfil o ID "${profile}" no existe en el archivo .env.`);
@@ -403,35 +400,47 @@ async function main() {
 Uso:
   # Base de datos local (SQLite):
   npm run db:repair-account [userId]
-  npm run db:repair-account --user <userId>
-  npm run db:repair-account --all
   npm run db:repair-account all
 
   # Servidor remoto / Supabase (PostgreSQL):
-  npm run db:repair-account -- --server=<perfil> [userId]
-  npm run db:repair-account -- --server=<perfil> --user <userId>
-  npm run db:repair-account -- --server=<perfil> --all
-  npm run db:repair-account -- --server=<perfil> all
+  npm run db:repair-account <perfil> [userId]
+  npm run db:repair-account <perfil> all
 
 Opciones:
-  -u, --user <userId>      ID, nombre de usuario o email de la cuenta a reparar (o pásalo como argumento posicional).
+  -u, --user <userId>      ID, nombre de usuario o email de la cuenta a reparar.
   -a, --all, all           Corrige los Pokémon ilegales de TODAS las cuentas registradas, una por una.
-  -s, --server <perfil>    Perfil de servidor Supabase configurado en el .env (ej: server_franco, nas_franco, cloud).
+  -s, --server <perfil>    Perfil de servidor Supabase (ej: server_franco, nas_franco, cloud).
   -d, --db <path>          Ruta a la base de datos SQLite (.db). Por defecto busca poke_local.db.
   -h, --help               Muestra esta ayuda.
 
 Ejemplos:
   npm run db:repair-account local_ash
   npm run db:repair-account all
-  npm run db:repair-account --all
-  npm run db:repair-account -- --server=server_franco --user=Ash
-  npm run db:repair-account -- --server=server_franco all
+  npm run db:repair-account server_franco Ash
+  npm run db:repair-account server_franco all
 `);
     process.exit(0);
   }
 
-  const isAll = Boolean(values.all) || Boolean(values['all-accounts']) || positionals.some(p => p === 'all' || p === '--all');
-  const rawUserId = values.user || (positionals.find(p => p !== 'all' && p !== '--all') ? String(positionals.find(p => p !== 'all' && p !== '--all')) : null);
+  let targetServer = values.server;
+  const remainingPositionals = [...positionals];
+
+  if (!targetServer) {
+    try {
+      const { serverConfigs, baseProfiles } = await getValidatedServerConfigs();
+      const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[]))); // no-domain
+      const serverIdx = remainingPositionals.findIndex(p => allAvailable.includes(p) || baseProfiles.includes(p));
+      if (serverIdx !== -1) {
+        targetServer = remainingPositionals[serverIdx];
+        remainingPositionals.splice(serverIdx, 1);
+      }
+    } catch {
+      // Ignored if .env cannot be read in offline mode
+    }
+  }
+
+  const isAll = Boolean(values.all) || Boolean(values['all-accounts']) || remainingPositionals.some(p => p === 'all' || p === '--all');
+  const rawUserId = values.user || (remainingPositionals.find(p => p !== 'all' && p !== '--all') ? String(remainingPositionals.find(p => p !== 'all' && p !== '--all')) : null);
   const targetUserId = isAll ? null : rawUserId;
 
   if (!isAll && !targetUserId) {
@@ -444,7 +453,7 @@ Ejemplos:
     await repairAccountsInDatabase({
       userId: targetUserId,
       all: isAll,
-      server: values.server,
+      server: targetServer,
       dbPath: values.db
     });
   } catch (err) {

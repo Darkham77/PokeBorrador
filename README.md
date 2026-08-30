@@ -305,12 +305,12 @@ npm run db:repair-account -- --db=tests/fixtures/poke_local_ash.db all
 
 ```bash
 # Reparar una cuenta específica en un servidor Supabase (por UUID, username o email):
-npm run db:repair-account -- --server=server_franco --user=Ash
-npm run db:repair-account -- --server=nas_franco --user=usuario@ejemplo.com
+npm run db:repair-account server_franco Ash
+npm run db:repair-account nas_franco usuario@ejemplo.com
 
 # Reparar TODAS las cuentas registradas en el servidor Supabase:
-npm run db:repair-account -- --server=server_franco all
-npm run db:repair-account -- --server=nas_franco --all
+npm run db:repair-account server_franco all
+npm run db:repair-account nas_franco all
 ```
 
 ---
@@ -321,20 +321,20 @@ npm run db:repair-account -- --server=nas_franco --all
 # 1. Sincronizar servidores en la interfaz del juego
 npm run servers:configure
 
-# 2. Inicializar o actualizar base de datos en un servidor específico
-npm run servers:db:update -- --server=nas_franco
+# 2. Inicializar o actualizar base de datos en un servidor específico (sintaxis posicional limpia)
+npm run servers:db:update nas_franco
 
 # 3. Actualizar base de datos en TODOS los servidores configurados en el .env
-npm run servers:db:update -- --all
+npm run servers:db:update all
 
 # 4. Descargar un respaldo completo en formato JSON de un servidor
-npm run servers:db:backup -- --server=nas_franco
+npm run servers:db:backup nas_franco
 
 # 5. Restaurar el respaldo más reciente de forma automática a un servidor
-npm run servers:db:restore -- --server=nas_franco
+npm run servers:db:restore nas_franco
 
 # 6. Restaurar un respaldo específico pasándole la ruta exacta del archivo
-npm run servers:db:restore -- --server=nas_franco --file=database/backups/nas-franco/nas_franco_backup_2026-05-17T05-29-09.json
+npm run servers:db:restore nas_franco --file=database/backups/nas-franco/nas_franco_backup_2026-05-17T05-29-09.json
 ```
 
 #### 🌐 Resolución de Problemas de Red (MikroTik & Hairpin NAT)
@@ -495,7 +495,7 @@ El proyecto incluye un sistema de protección automática (**"Ban Trap"**) para 
   - **Comando para desbanear**:
 
     ```bash
-    npm run servers:db:admin -- --server=nas_franco --action=unban --email=usuario@ejemplo.com
+    npm run servers:db:admin nas_franco unban --email=usuario@ejemplo.com
     ```
 
 - **Modo Local**: En modo `offline` (localhost), el sistema de baneo está deshabilitado para permitir el testing sin riesgos.
@@ -509,7 +509,7 @@ El proyecto cuenta con un gestor unificado de administración de usuarios en con
 Para resetear la contraseña de forma segura (generando automáticamente el hash bcrypt con pygcrypto en el servidor):
 
 ```bash
-npm run servers:db:admin -- --server=nas_franco --action=set-password --email=usuario@ejemplo.com --password=NUEVA_CONTRASEÑA
+npm run servers:db:admin nas_franco set-password --email=usuario@ejemplo.com --password=NUEVA_CONTRASEÑA
 ```
 
 #### Cambiar Email de un Usuario
@@ -517,13 +517,13 @@ npm run servers:db:admin -- --server=nas_franco --action=set-password --email=us
 El gestor actualiza automáticamente tanto la tabla de autenticación (`auth.users`) como el perfil público (`public.profiles`) en una única transacción DML para mantener la consistencia absoluta:
 
 ```bash
-npm run servers:db:admin -- --server=nas_franco --action=set-email --email=viejo@email.com --new-email=nuevo@email.com
+npm run servers:db:admin nas_franco set-email --email=viejo@email.com --new-email=nuevo@email.com
 ```
 
 #### Cambiar Nombre de Entrenador (Username)
 
 ```bash
-npm run servers:db:admin -- --server=nas_franco --action=set-username --email=usuario@ejemplo.com --username=NuevoNombre
+npm run servers:db:admin nas_franco set-username --email=usuario@ejemplo.com --username=NuevoNombre
 ```
 
 #### Promoción a Administrador (ADMIN Role)
@@ -531,7 +531,7 @@ npm run servers:db:admin -- --server=nas_franco --action=set-username --email=us
 Para otorgar permisos de administrador a un usuario (acceso a paneles de debug en producción, bypass de ban-traps, etc.):
 
 ```bash
-npm run servers:db:admin -- --server=nas_franco --action=promote --email=usuario@ejemplo.com
+npm run servers:db:admin nas_franco promote --email=usuario@ejemplo.com
 ```
 
 > [!IMPORTANT] Los nombres de usuario deben ser únicos. Si el nombre ya está ocupado por otro jugador, la herramienta capturará la restricción `UNIQUE` y mostrará un mensaje de advertencia claro en consola.
