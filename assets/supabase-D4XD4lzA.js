@@ -1,0 +1,1 @@
+import{t as e}from"./supabase-B22kpki_.js";export{e as default,e as supabase};
