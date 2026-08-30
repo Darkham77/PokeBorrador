@@ -44,9 +44,13 @@ export const Z_SORTED_ENTRIES = Object.entries(Z_LAYERS).sort((a, b) => a[1] - b
 /** Sentinel: initial minDiff larger than any possible difference between Z layer values. */
 const Z_LAYERS_DIFF_SENTINEL = Z_SORTED_ENTRIES.length + 1;
 
-/** Normalize file paths to POSIX format (lowercase with forward slashes) for cross-platform compatibility */
+/** 
+ * Native cross-platform path resolver using node:path.
+ * Produces a normalized relative POSIX path from the project root for deterministic rule evaluation.
+ */
 export function normalizeFilePath(filePath: string): string {
-  return filePath.replace(/\\/g, '/').toLowerCase();
+  const rel = path.isAbsolute(filePath) ? path.relative(process.cwd(), filePath) : filePath;
+  return rel.split(path.sep).join(path.posix.sep).toLowerCase();
 }
 
 export const viewport: AuditRule = { // string-ok
@@ -110,7 +114,7 @@ export const legacyDates: AuditRule = {
   severity: 'error', // string-ok
   check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
     if (!filePath) return false;
-    const lowerPath = filePath.toLowerCase(); // string-ok
+    const lowerPath = normalizeFilePath(filePath);
     if (lowerPath.endsWith('.sim.ts') || lowerPath.includes('scripts/e2e/')) {
       return true;
     }
@@ -127,7 +131,7 @@ export const hardcodedTimezone: AuditRule = {
   check: (_content: string, _match: RegExpExecArray, filePath?: string) => { // string-ok
     if (!filePath) return false;
     if (filePath.endsWith('timeUtils.ts')) return false;
-    const lowerPath = filePath.toLowerCase(); // string-ok
+    const lowerPath = normalizeFilePath(filePath);
     const isTestOrMock = lowerPath.includes('test') || lowerPath.includes('mock');
     return !isTestOrMock;
   },
@@ -140,7 +144,7 @@ export const noDomainIdFallbacks: AuditRule = {
   severity: 'error', // string-ok
   check: (content: string, match: RegExpExecArray, filePath?: string) => {
     if (!filePath) return false;
-    const normPath = filePath.toLowerCase(); // string-ok
+    const normPath = normalizeFilePath(filePath);
     if (normPath.includes('audit_rules.ts') || normPath.includes('.test.') || normPath.includes('.spec.')) return false;
     if (!normPath.includes('src/logic/') && !normPath.includes('src/stores/')) return false;
 
@@ -190,7 +194,9 @@ export const noAliasConstants: AuditRule = {
   message: (match: string) => `Alias de constante detectado: '${match.trim()}'. Está PROHIBIDO inicializar una constante con otra constante o propiedad de constante existente para crear un alias duplicado/intermedio. Usa la constante canónica de origen de forma directa.`,
   severity: 'error',
   check: (content: string, match: RegExpExecArray, filePath?: string) => {
-    if (!filePath || filePath.includes('node_modules') || filePath.includes('external')) return false;
+    if (!filePath) return false;
+    const norm = normalizeFilePath(filePath);
+    if (norm.includes('node_modules') || norm.includes('external')) return false;
     const constA = match[1];
     const constB = match[2];
     if (!constA || !constB || constA === constB) return false;
@@ -208,7 +214,9 @@ export const noLiteralSuffixInConstantName: AuditRule = {
   message: (match: string) => `Constante con sufijo numérico crudo detectada: '${match}'. Está PROHIBIDO incluir literales numéricos al final de los nombres de constantes (ej: _100, _600, _10000). Usa nombres semánticos descriptivos.`,
   severity: 'error',
   check: (_content: string, match: RegExpExecArray, filePath?: string) => {
-    if (!filePath || filePath.includes('node_modules') || filePath.includes('external') || filePath.includes('.spec.') || filePath.includes('.test.')) return false;
+    if (!filePath) return false;
+    const norm = normalizeFilePath(filePath);
+    if (norm.includes('node_modules') || norm.includes('external') || norm.includes('.spec.') || norm.includes('.test.')) return false;
     const constName = match[1] || '';
     if (/^\d/.test(constName)) return false;
     // Ignorar excepciones conocidas legítimas como Gen1, Gen2, RGB, HTTP, 2D, 3D, W3C, ISO, etc.
@@ -627,7 +635,9 @@ export const badConstantNames: AuditRule = {
   message: (match: string) => `Nombre de constante antipatrón detectado en declaración: '${match.trim()}'. Está PROHIBIDO incluir el valor numérico en el nombre de la constante (ej: usa ARCHAEOLOGY_CAVE_BASE_WEIGHT en lugar de ARCHAEOLOGY_CAVE_BASE_WEIGHT_10). Describe el propósito semántico o la intención de dominio.`,
   severity: 'error',
   check: (_content: string, match: RegExpExecArray, filePath?: string) => {
-    if (!filePath || filePath.includes('node_modules') || filePath.includes('external') || filePath.includes('.spec.') || filePath.includes('.test.')) return false;
+    if (!filePath) return false;
+    const norm = normalizeFilePath(filePath);
+    if (norm.includes('node_modules') || norm.includes('external') || norm.includes('.spec.') || norm.includes('.test.')) return false;
     const constName = match[1] || '';
     if (/(?:GEN_\d|ISO_\d|UTF_8|BASE_64|RGB_|RGBA_|WASM_|HTML_5|CSS_3|HTTP_\d|D3_|GEN1_|GEN2_|GEN3_|GEN4_|GEN5_|GEN6_|GEN7_|GEN8_|GEN9_)/i.test(constName)) return false;
     return true;
@@ -690,7 +700,8 @@ export const missingInteractiveId: AuditRule = {
   severity: 'error',
   check: (content: string, match: RegExpExecArray, filePath?: string) => {
     if (!filePath || !filePath.endsWith('.vue')) return false;
-    if (filePath.includes('node_modules') || filePath.includes('external')) return false;
+    const norm = normalizeFilePath(filePath);
+    if (norm.includes('node_modules') || norm.includes('external')) return false;
 
     // Check if inside <template> block
     const templateOpenIndex = content.lastIndexOf('<template', match.index);

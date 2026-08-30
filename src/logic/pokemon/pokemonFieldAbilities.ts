@@ -360,7 +360,7 @@ export function getFieldPassiveBadges(
   if (!pokemon || !pokemon.ability) return null;
   const translation = ABILITY_TRANSLATIONS_ES[pokemon.ability];
   if (!translation || !translation.desc || !translation.desc.includes('Campo:')) return null;
-  const label = translation.name || pokemon.ability;
+  const label = translation.name;
   const desc = translation.desc;
   const icon = translation.icon || '✨';
   return { id: pokemon.ability, label, desc, icon };

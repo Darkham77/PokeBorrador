@@ -81,4 +81,18 @@ describe('Audit System Integrity & Dual-Mode Formatting', () => {
     expect(data.summary).toHaveProperty('errors');
     expect(data.summary.errors).toBe(0);
   });
+
+  it('should render a sample list of up to 5 error findings in the consolidated footer', async () => {
+    const { renderConsolidatedFooter } = await import('../../../scripts/lib/unifiedTheme.ts');
+    const mockErrors = [
+      { severity: 'error' as const, file: 'src/logic/pokemon/pokemonFieldAbilities.ts', line: 363, message: 'FALLBACK SILENCIOSO DETECTADO', ruleId: 'noDomainIdFallbacks', context: 'name || pokemon.ability' },
+      { severity: 'error' as const, file: 'src/components/MyComp.vue', line: 10, message: 'Elemento interactivo sin ID', ruleId: 'missingInteractiveId', context: '<button>' }
+    ];
+
+    const footer = renderConsolidatedFooter(18, 17, 2, 10, 5000, mockErrors);
+    expect(footer).toContain('AUDITORÍA GLOBAL CON ERRORES CRÍTICOS');
+    expect(footer).toContain('Muestra de errores detectados (primeros 2):');
+    expect(footer).toContain('src/logic/pokemon/pokemonFieldAbilities.ts:363');
+    expect(footer).toContain('FALLBACK SILENCIOSO DETECTADO');
+  });
 });

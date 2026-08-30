@@ -4,7 +4,9 @@ import {
   zeroTimerBattleLogic,
   noPlaywrightWaitForTimeout,
   forbiddenFallbacks,
-  sassTraps
+  sassTraps,
+  normalizeFilePath,
+  noDomainIdFallbacks
 } from '@/../scripts/maintenance/audit_rules.ts'
 
 describe('audit_rules.ts - Zero-Timer & Anti-Pattern Rules', () => {
@@ -192,6 +194,54 @@ describe('audit_rules.ts - Zero-Timer & Anti-Pattern Rules', () => {
         const isViolation = sassTraps.check(code, match, 'src/logic/utils/spriteOutliner.ts')
         expect(isViolation).toBe(false)
       }
+    })
+  })
+
+  describe('normalizeFilePath (Cross-Platform Path Resolution)', () => {
+    it('normalizes Windows paths with backslashes to POSIX lowercase relative paths', () => {
+      const winPath = 'src\\logic\\pokemon\\pokemonFieldAbilities.ts'
+      expect(normalizeFilePath(winPath)).toBe('src/logic/pokemon/pokemonfieldabilities.ts')
+    })
+
+    it('normalizes POSIX paths with forward slashes to POSIX lowercase relative paths', () => {
+      const posixPath = 'src/logic/pokemon/pokemonFieldAbilities.ts'
+      expect(normalizeFilePath(posixPath)).toBe('src/logic/pokemon/pokemonfieldabilities.ts')
+    })
+  })
+
+  describe('noDomainIdFallbacks (Cross-Platform Detection)', () => {
+    const fallbackCode = `const label = translation.name || pokemon.ability;`
+    const cleanCode = `const label = translation.name;`
+
+    it('detects domain fallback on Windows backslash paths', () => {
+      const match = matchRule(noDomainIdFallbacks, fallbackCode)
+      expect(match).not.toBeNull()
+      if (match && noDomainIdFallbacks.check) {
+        const isViolation = noDomainIdFallbacks.check(
+          fallbackCode,
+          match,
+          'src\\logic\\pokemon\\pokemonFieldAbilities.ts'
+        )
+        expect(isViolation).toBe(true)
+      }
+    })
+
+    it('detects domain fallback on POSIX forward slash paths', () => {
+      const match = matchRule(noDomainIdFallbacks, fallbackCode)
+      expect(match).not.toBeNull()
+      if (match && noDomainIdFallbacks.check) {
+        const isViolation = noDomainIdFallbacks.check(
+          fallbackCode,
+          match,
+          'src/logic/pokemon/pokemonFieldAbilities.ts'
+        )
+        expect(isViolation).toBe(true)
+      }
+    })
+
+    it('does not flag clean domain code without fallbacks', () => {
+      const match = matchRule(noDomainIdFallbacks, cleanCode)
+      expect(match).toBeNull()
     })
   })
 })

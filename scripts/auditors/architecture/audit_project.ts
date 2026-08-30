@@ -47,10 +47,12 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
   let content = await fs.readFile(filePath, 'utf-8');
   let modified = false;
 
+  const relPosixPath = path.relative(process.cwd(), filePath).split(path.sep).join(path.posix.sep);
+  const isScriptOrSupabase = relPosixPath.startsWith('scripts/') || relPosixPath.startsWith('supabase/') || relPosixPath.includes('audit_project.ts');
+
   const isVue = filePath.endsWith('.vue');
   const isLogic = filePath.endsWith('.ts') || filePath.endsWith('.js');
   const isStyle = filePath.endsWith('.scss') || filePath.endsWith('.css');
-
 
   const STYLE_RULES: AuditRule[] = [
     config.viewport,
@@ -69,7 +71,7 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
         const block = scriptBlocks[i]!;
         let rules: AuditRule[] = allRules.filter(r => !STYLE_RULES.includes(r) && r !== config.dbInTemplates && r !== config.functionCallsInTemplates && r !== config.fileLength);
         
-        if (filePath.includes('scripts' + path.sep) || filePath.includes('supabase' + path.sep) || filePath.includes('audit_project.ts')) {
+        if (isScriptOrSupabase) {
           rules = rules.filter(r => r !== config.legacyDates);
         }
 
@@ -96,7 +98,7 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
           config.missingInteractiveId
         ];
         
-        if (!(filePath.includes('scripts' + path.sep) || filePath.includes('supabase' + path.sep) || filePath.includes('audit_project.ts'))) {
+        if (!isScriptOrSupabase) {
           templateRules.push(config.legacyDates);
         }
 
@@ -106,7 +108,7 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
       // isLogic
       let rules: AuditRule[] = allRules.filter(r => !STYLE_RULES.includes(r) && r !== config.dbInTemplates && r !== config.functionCallsInTemplates && r !== config.fileLength);
       
-      if (filePath.includes('scripts' + path.sep) || filePath.includes('supabase' + path.sep) || filePath.includes('audit_project.ts')) {
+      if (isScriptOrSupabase) {
         rules = rules.filter(r => r !== config.legacyDates);
       }
 
@@ -148,9 +150,9 @@ async function auditFile(filePath: string, fix: boolean): Promise<Violation[]> {
 
   // MODULARITY AUDIT: 300/500/1000 Rule
   const isDatabaseOrMetadata = filePath.endsWith('.md') ||
-                               filePath.includes('src' + path.sep + 'data' + path.sep) || 
-                               filePath.includes('scripts' + path.sep) ||
-                               filePath.includes('supabase' + path.sep) ||
+                               relPosixPath.startsWith('src/data/') || 
+                               relPosixPath.startsWith('scripts/') ||
+                               relPosixPath.startsWith('supabase/') ||
                                filePath.endsWith('DB.ts') || 
                                filePath.endsWith('Metadata.ts') ||
                                /^(vite|vitest|playwright|eslint)\.config\./i.test(path.basename(filePath)) ||
