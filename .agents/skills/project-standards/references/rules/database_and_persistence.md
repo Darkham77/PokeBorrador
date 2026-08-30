@@ -60,3 +60,23 @@
 - **Immutable Migration Runner Protection**: Migration runners treat `_migrations` as an immutable append-only ledger. Reusing or re-running an existing timestamp identifier is strictly prohibited because the runner will automatically skip it. Any schema or data fix iteration MUST increment to a fresh monotonic timestamp.
 - **Build-First & Synchronized Generation**: Any database migration update MUST be accompanied by `npm run migrations:generate` and `npm run build` to ensure absolute synchronization between `src/logic/db/migrations_data.ts`, `public/version.json`, and database `system_config` values (`db_version` and `app_version`).
 
+## 10. PostgreSQL JSONB Unwrapping & Double-Encoding Protection Mandate
+
+- **Safe JSONB String Unwrapping**: When inspecting or updating `game_saves.save_data` in PostgreSQL PL/pgSQL migrations, scripts MUST NEVER assume `save_data` is always stored as a native object. Because legacy clients or stringified payloads may store JSON as a serialized string scalar within the `JSONB` column (`jsonb_typeof(save_data) = 'string'`), all migration loops MUST include safe unwrap logic:
+  ```sql
+  IF jsonb_typeof(v_save_data) = 'string' THEN
+    BEGIN
+      v_save_data := (v_save_data #>> '{}')::jsonb;
+    EXCEPTION WHEN OTHERS THEN
+      CONTINUE;
+    END;
+  END IF;
+  ```
+- **Normalization on Save**: When saving back with `UPDATE public.game_saves SET save_data = v_save_data, last_save_id = gen_random_uuid()`, the column is permanently normalized to a true JSONB object.
+
+## 11. Production Web Bundle & DB Update Deployment Synchronization
+
+- **Client-Server Version Lock Interlock**: When `npm run servers:db:update` updates `app_version` and `db_version` on a remote server, the production hosting environment (GitHub Pages, Docker, Vercel) MUST receive the matching compiled client build (via commit & push) so that web clients do not get blocked by `VersionLockOverlay` or `OUTDATED_CLIENT` warnings.
+- **Service Worker / PWA Invalidation**: If the browser displays an `OUTDATED_CLIENT` banner or cache mismatch, performing a Hard Refresh (`Ctrl + F5`) or clicking the in-game PWA "Actualizar" action will reload the Service Worker cache to match the new bundle.
+
+

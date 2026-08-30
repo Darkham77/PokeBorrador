@@ -29,6 +29,8 @@ Backend / Database Engineers.
   - Reusing an existing or previously executed timestamp is STRICTLY PROHIBITED, as migration runners (`update_supabase_db.ts`) treat `_migrations` as an immutable append-only ledger and will skip execution without running the SQL patch.
   - The migration timestamp prefix MUST be 100% synchronized with the internal `INSERT INTO system_config (key, value) VALUES ('db_version', '<timestamp>'::jsonb)` statement.
   - Always run `npm run migrations:generate` and `npm run build` to synchronize in-memory migration definitions and client versioning before applying database updates.
+- **PostgreSQL Safe JSONB Unwrapping**: When manipulating `game_saves.save_data` in PostgreSQL migrations, scripts MUST check and unwrap serialized string values (`IF jsonb_typeof(v_save_data) = 'string' THEN v_save_data := (v_save_data #>> '{}')::jsonb; END IF;`) to prevent silent skips on legacy accounts.
+- **Client-Server Version Lock Interlock**: When remote databases are updated via `npm run servers:db:update`, the web client MUST be built and deployed so that production web bundles match the registered `app_version` and `db_version`. Hard refresh (`Ctrl + F5`) or PWA reload is required to bypass browser cache.
 
 ## Verification
 
