@@ -65,7 +65,8 @@ SET save_data = json_set(
       SELECT json_group_array(
         json_set(
           egg_item.value,
-          '$.id', coalesce(CAST(json_extract(egg_item.value, '$.id') AS TEXT), 'egg_' || hex(randomblob(4)))
+          '$.id',
+          'egg_' || lower(hex(randomblob(4)))
         )
       )
       FROM json_each(json_extract(game_saves.save_data, '$.eggs')) egg_item
@@ -74,3 +75,25 @@ SET save_data = json_set(
   )
 )
 WHERE save_data IS NOT NULL AND json_extract(save_data, '$.eggs') IS NOT NULL;
+
+-- 4. Normalizar Inventario (cantidades negativas a 0)
+UPDATE game_saves
+SET save_data = json_set(
+  save_data,
+  '$.inventory',
+  json(
+    (
+      SELECT json_group_object(
+        inv.key,
+        CASE 
+          WHEN CAST(inv.value AS INTEGER) < 0 THEN 0
+          ELSE CAST(inv.value AS INTEGER)
+        END
+      )
+      FROM json_each(json_extract(game_saves.save_data, '$.inventory')) inv
+      WHERE inv.value IS NOT NULL
+    )
+  )
+)
+WHERE save_data IS NOT NULL AND json_extract(save_data, '$.inventory') IS NOT NULL;
+

@@ -17,6 +17,10 @@ DECLARE
   v_new_team JSONB;
   v_new_box JSONB;
   v_new_eggs JSONB;
+  v_inv JSONB;
+  v_new_inv JSONB;
+  v_key TEXT;
+  v_val JSONB;
 BEGIN
   FOR r IN SELECT user_id, save_data FROM public.game_saves LOOP
     v_save_data := r.save_data;
@@ -69,7 +73,7 @@ BEGIN
           IF v_egg -> 'id' IS NULL OR jsonb_typeof(v_egg -> 'id') = 'null' THEN
             v_egg := jsonb_set(v_egg, '{id}', to_jsonb('egg_' || md5(random()::text)));
           ELSIF jsonb_typeof(v_egg -> 'id') = 'number' THEN
-            v_egg := jsonb_set(v_egg, '{id}', to_jsonb(v_egg ->> 'id'));
+            v_egg := jsonb_set(v_egg, '{id}', to_jsonb('egg_' || md5(random()::text)));
           END IF;
           v_new_eggs := v_new_eggs || v_egg;
         END IF;
@@ -77,9 +81,24 @@ BEGIN
       v_save_data := jsonb_set(v_save_data, '{eggs}', v_new_eggs);
     END IF;
 
+    -- 4. Normalizar Inventario (cantidades negativas a 0)
+    v_inv := v_save_data -> 'inventory';
+    IF v_inv IS NOT NULL AND jsonb_typeof(v_inv) = 'object' THEN
+      v_new_inv := '{}'::jsonb;
+      FOR v_key, v_val IN SELECT * FROM jsonb_each(v_inv) LOOP
+        IF jsonb_typeof(v_val) = 'number' AND (v_val::text)::numeric < 0 THEN
+          v_new_inv := jsonb_set(v_new_inv, ARRAY[v_key], '0'::jsonb);
+        ELSE
+          v_new_inv := jsonb_set(v_new_inv, ARRAY[v_key], v_val);
+        END IF;
+      END LOOP;
+      v_save_data := jsonb_set(v_save_data, '{inventory}', v_new_inv);
+    END IF;
+
     UPDATE public.game_saves SET save_data = v_save_data WHERE user_id = r.user_id;
   END LOOP;
 END $$;
 
-INSERT INTO public.system_config (key, value) VALUES ('db_version', '20260830120000'::jsonb) 
+INSERT INTO public.system_config (key, value) VALUES ('db_version', '20260830140000'::jsonb) 
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+

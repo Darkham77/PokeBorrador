@@ -55,7 +55,8 @@ export function parseServerArguments(args: string[], baseProfiles: string[], all
   }
 
   const isAll = Boolean(values.all || values.server === 'all' || positionals.includes('all') || args.includes('all'));
-  const serverArg = (typeof values.server === 'string' && values.server !== 'all' ? values.server : undefined) ||
+  const rawServer = typeof values.server === 'string' ? values.server.replace(/^=/, '') : undefined;
+  const serverArg = (rawServer && rawServer !== 'all' ? rawServer : undefined) ||
                     positionals.find(p => p !== 'all' && (allAvailable.includes(p) || baseProfiles.includes(p)));
 
   if (!serverArg && !isAll) {

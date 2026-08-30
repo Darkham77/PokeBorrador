@@ -20,10 +20,11 @@
 - To prevent data corruption or accidental reset overlays, it is STRICTLY FORBIDDEN to save the game state (to IndexedDB, LocalStorage, OPFS, or Supabase) if the state contains 0 Pokémon (i.e. `team` and `box` are empty) OR if `starterChosen` is `false`.
 - A valid active session must always have at least 1 Pokémon. Abort saving immediately if this condition is met.
 
-## 3. Absolute Prohibition on Remote Database Updates
+## 3. Absolute Prohibition on Remote Database Updates & Build-First Mandate
 
 - It is STRICTLY FORBIDDEN for any AI agent to execute, run, or trigger database update/migration scripts (e.g., `npm run servers:db:update server=<profile>`) against any remote, Docker-based, or shared database profile (including `server_franco`, `cloud`, or `official_prod`).
 - Agents must NEVER touch or update remote/shared databases; database migrations are strictly reserved for manual execution by the USER.
+- **Mandatory Build-First Workflow**: Agents must NEVER instruct or recommend the user to update a database (`npm run servers:db:update`) without FIRST having compiled the project (`npm run build`). Updating the database writes the new `app_version` and `db_version` to `system_config`, which will lock out and reject any client that has not been freshly built.
 
 ## 4. Simulator Parity & Nickname Constraints
 

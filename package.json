@@ -75,6 +75,8 @@
     "servers:db:restore": "node --permission --experimental-strip-types --allow-fs-read=. --allow-net scripts/database/restore_supabase_db.ts",
     "servers:db:local-import": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/database/import_backup_to_sqlite.ts",
     "servers:db:admin": "node --permission --experimental-strip-types --allow-fs-read=. --allow-net scripts/maintenance/admin_supabase_users.ts",
+    "db:diagnose-account": "node --permission --import tsx --allow-worker --allow-fs-read=* --allow-fs-write=* --allow-net scripts/maintenance/diagnose_account.ts",
+    "db:diagnose-accounts": "node --permission --import tsx --allow-worker --allow-fs-read=* --allow-fs-write=* --allow-net scripts/maintenance/diagnose_account.ts all",
     "supabase:manage": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-child-process supabase/setup_supabase.ts",
     "migrations:generate": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/database/generate_migrations.ts",
     "assets:download": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-net=raw.githubusercontent.com,play.pokemonshowdown.com,img.pokemondb.net,www.serebii.net scripts/assets/download_assets.ts",

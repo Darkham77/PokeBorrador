@@ -12,6 +12,7 @@ General system maintenance scripts, import fixes, server configurations, and dev
   - `admin_supabase_users.ts` (`npm run servers:db:admin server=<profile> action=<action> email=<email> [password=<pass> | new-email=<email> | username=<name>]`)
   - `admin_rename.ts` (`npm run admin:rename user=<id_or_name> name=<new_name>`)
   - `repair_account_legality.ts` (`npm run db:repair-account [server=<profile>] [user=<id_or_email>] [all] [fix]`)
+  - `diagnose_account.ts` (`npm run db:diagnose-account [server=<profile>] [file=<backup_json>] [db=<sqlite_path>] user=<id_or_email_or_name> [save-json=<path>]` / `npm run db:diagnose-accounts [server=<profile>] [file=<backup_json>] [db=<sqlite_path>]`)
 
 ## Child DOX Index
 
