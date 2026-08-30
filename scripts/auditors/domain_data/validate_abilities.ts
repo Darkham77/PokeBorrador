@@ -41,6 +41,7 @@ async function main() {
   const errors: string[] = []; // no-domain
   const warnings: string[] = []; // no-domain
 
+  validator.logStep(1, 2, 'Extrayendo habilidades de especies habilitadas en POKEMON_DB...');
   // Extraer habilidades del POKEMON_DB de especies habilitadas
   const gameAbilities = new Set<string>();
   for (const pokeId of Object.keys(POKEMON_DB)) {
@@ -53,7 +54,7 @@ async function main() {
     }
   }
 
-  console.log(`📦 Habilidades únicas detectadas en especies del POKEMON_DB: ${gameAbilities.size}\n`);
+  validator.logStep(2, 2, `Validando ${gameAbilities.size} habilidades contra Dex y traducciones en español...`);
 
   for (const abId of Array.from(gameAbilities)) {
     const tag = `[${abId}]`;

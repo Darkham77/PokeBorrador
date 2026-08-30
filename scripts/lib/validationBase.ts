@@ -25,6 +25,8 @@ export interface ValidationContext {
     output?: string;
     'errors-only'?: boolean;
   };
+  logProgress: (msg: string) => void;
+  logStep: (stepNumber: number, totalSteps: number, description: string) => void;
   checkFiles: () => Promise<void>;
   addError: (message: string, file?: string, line?: number, context?: string, ruleId?: string) => void;
   addWarning: (message: string, file?: string, line?: number, context?: string, ruleId?: string) => void;
@@ -56,6 +58,8 @@ export function setupValidation(config: ValidationConfig): ValidationContext {
 
   return {
     values: auditor.values,
+    logProgress: auditor.logProgress,
+    logStep: auditor.logStep,
     checkFiles: auditor.checkFiles,
     addError: auditor.addError,
     addWarning: auditor.addWarning,

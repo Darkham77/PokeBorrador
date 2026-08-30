@@ -274,6 +274,7 @@ export interface EventStore {
   checkPendingAwards: (notifyOnPending?: boolean) => Promise<void>;
   submitCompetitionEntry: (eventId: string, categoryIdOrUid: string, maybeUid?: string) => Promise<void>;
   claimAward: (awardId: string) => Promise<string | null>;
+  discardAward: (awardId: string) => Promise<boolean>;
 }
 
 export interface CompetitionParticipant {

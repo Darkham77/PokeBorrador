@@ -8,7 +8,7 @@
  */
 
 import fs from 'node:fs/promises';
-import { readFileSync, existsSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
@@ -256,17 +256,15 @@ async function auditFile(
 }
 
 function isInsideComment(content: string, index: number): boolean {
-  const before = content.substring(0, index);
-  
-  // Check for Block Comment /* ... */
-  const lastStartBlock = before.lastIndexOf('/*');
-  const lastEndBlock = before.lastIndexOf('*/');
-  if (lastStartBlock > lastEndBlock) return true;
-
   // Check for Line Comment // ...
-  const lastNewLine = before.lastIndexOf('\n');
-  const lastLineComment = before.lastIndexOf('//');
+  const lastNewLine = content.lastIndexOf('\n', index);
+  const lastLineComment = content.lastIndexOf('//', index);
   if (lastLineComment > lastNewLine) return true;
+
+  // Check for Block Comment /* ... */
+  const lastStartBlock = content.lastIndexOf('/*', index);
+  const lastEndBlock = content.lastIndexOf('*/', index);
+  if (lastStartBlock > lastEndBlock) return true;
 
   return false;
 }
@@ -298,12 +296,14 @@ function runRules(filePath: string, content: string, rules: AuditRule[], violati
     while ((match = regex.exec(content)) !== null) {
       if (match.index === regex.lastIndex) regex.lastIndex++; // Ensure no zero-width infinite loops
 
-      // 0. Skip comments to avoid false positives
-      if (isInsideComment(content, match.index)) continue;
+      // 1. Specialized checks first (fast filter with zero allocations)
+      if (rule.check && !rule.check(content, match, filePath)) {
+        continue;
+      }
 
-      // 1. Specialized checks
-      if (rule.check) {
-        if (!rule.check(content, match, filePath)) continue;
+      // 2. Skip comments to avoid false positives
+      if (isInsideComment(content, match.index)) {
+        continue;
       }
       
       const lineNo = getLineNo(match.index);
@@ -504,7 +504,7 @@ function runFallow(command: string, extraArgs: string[] = []): Violation[] {
     const args = ['--format', 'json', ...extraArgs]; // no-domain
     const fallowBin = path.resolve(process.cwd(), 'node_modules/fallow/bin/fallow');
     const cmd = `node "${fallowBin}" ${command} ${args.join(' ')}`;
-    const stdout = execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'], maxBuffer: 10 * 1024 * 1024, timeout: 30000, killSignal: 'SIGKILL' });
+    const stdout = execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'], maxBuffer: 50 * 1024 * 1024, timeout: 45000, killSignal: 'SIGKILL' });
     const jsonStart = stdout.indexOf('{');
     if (jsonStart !== -1) {
       const data = JSON.parse(stdout.substring(jsonStart)) as FallowAuditData;
@@ -730,7 +730,6 @@ const MAX_CONTEXT_SNIPPET_LENGTH = 50; // no-magic
 const DEFAULT_TOP_LIMIT = 15; // no-magic
 const MAX_FILES_TO_SHOW_IN_TERMINAL = 25; // no-magic
 const MAX_VIOLATIONS_PER_FILE_IN_TERMINAL = 10; // no-magic
-
 function sanitizeContext(ctx: string): string {
   if (!ctx) return '';
   return ctx.replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim().slice(0, MAX_CONTEXT_SNIPPET_LENGTH);
@@ -738,10 +737,15 @@ function sanitizeContext(ctx: string): string {
 
 async function main() {
   const startTime = performance.now();
-  const args = process.argv.slice(2);
-  const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : (['fix', 'summary', 'json', 'human', 'pretty', 'errors-only', 'css-only'].includes(a) ? `--${a}` : a));
-  const { values, positionals } = parseArgs({
-    args: normalized,
+  const rawCliArgs = process.argv.slice(2);
+  const normalizedCliArgs = rawCliArgs.map(cliParam => {
+    if (cliParam.includes('=') && !cliParam.startsWith('-')) return `--${cliParam}`;
+    if (['fix', 'summary', 'json', 'human', 'pretty', 'errors-only', 'css-only'].includes(cliParam)) return `--${cliParam}`;
+    return cliParam;
+  });
+
+  const parsedConfig = parseArgs({
+    args: normalizedCliArgs,
     options: {
       fix: { type: 'boolean', short: 'f' },
       path: { type: 'string', short: 'p', default: '.' },
@@ -761,44 +765,17 @@ async function main() {
     strict: false
   });
 
-  // Extract raw rule strings from options and positionals
-  const rawRuleArgs: string[] = []; // no-domain
-  if (values.rule) {
-    if (Array.isArray(values.rule)) {
-      for (const item of values.rule) rawRuleArgs.push(String(item));
-    } else {
-      rawRuleArgs.push(String(values.rule));
-    }
-  }
-  if (values.rules) {
-    if (Array.isArray(values.rules)) {
-      for (const item of values.rules) rawRuleArgs.push(String(item));
-    } else {
-      rawRuleArgs.push(String(values.rules));
-    }
-  }
+  const values = parsedConfig.values;
+  const positionals = parsedConfig.positionals;
 
-  // Handle positionals
-  for (const pos of positionals) {
-    if (pos.includes(',')) {
-      rawRuleArgs.push(pos);
-    } else {
-      const resolvedPath = path.resolve(process.cwd(), pos);
-      try {
-        if (existsSync(resolvedPath) && statSync(resolvedPath).isDirectory()) {
-          values.path = pos;
-        } else {
-          rawRuleArgs.push(pos);
-        }
-      } catch {
-        rawRuleArgs.push(pos);
-      }
-    }
-  }
+  const collectedRules = [
+    ...(Array.isArray(values.rule) ? values.rule : [values.rule]),
+    ...(Array.isArray(values.rules) ? values.rules : [values.rules]),
+    ...positionals.filter(p => p.toLowerCase() === 'dox' || p.includes(','))
+  ].filter(Boolean).map(String);
 
-  // Normalize selected rules into a clean Set
   const selectedRules = new Set<string>();
-  for (const raw of rawRuleArgs) {
+  for (const raw of collectedRules) {
     for (const part of raw.split(',')) {
       const clean = part.trim().toLowerCase();
       if (clean) selectedRules.add(clean);
@@ -835,23 +812,21 @@ async function main() {
     }
   }
 
-  logProgress(styleText('bold', '\n--- 🔎 POKE VICIO - REGLAS DE CÓDIGO & ESTRUCTURA DOX (audit_project.ts) ---'));
+  logProgress(styleText('bold', '--- 🔎 REGLAS DE CÓDIGO Y ESTRUCTURA DOX (audit_project.ts) ---'));
   if (selectedRules.size > 0) {
     logProgress(styleText('cyan', `🎯 Ejecución selectiva de reglas: [ ${Array.from(selectedRules).join(', ')} ]`));
-  } else {
-    logProgress(styleText('cyan', '💡 Modo por defecto: JSON puro para herramientas e IA. Usa "--human" o "-H" para vista de consola.'));
   }
   
   let all: Violation[] = [];
   let files: string[] = []; // no-domain
 
   if (values['css-only']) {
-    logProgress(styleText('cyan', '\nEjecutando análisis exclusivo de css-checker (SCSS duplicados)...'));
+    logProgress(styleText('cyan', '[1/1] 🎨 Ejecutando análisis exclusivo de css-checker (SCSS duplicados)...'));
     all = await runCssChecker(values.path as string || '.', IGNORE_DIRS);
   } else {
     // 1. Consistency Check (z-index)
     if (isZIndexActive) {
-      logProgress(styleText('cyan', '🎨 Verificando paridad de z-index (visuals.ts <-> _variables.scss)...'));
+      logProgress(styleText('cyan', '[1/6] 🎨 Verificando paridad de z-index (visuals.ts <-> _variables.scss)...'));
       const syncErrors = await checkZIndexConsistency(!!values.fix);
       const syncViolations: Violation[] = [];
       if (syncErrors.length > 0) {
@@ -876,6 +851,7 @@ async function main() {
 
     // 2. DOX / AGENTS.md Integrity Check
     if (isDoxActive) {
+      logProgress(styleText('cyan', '[2/6] 📘 Escaneando jerarquía e integridad de índices AGENTS.md / DOX...'));
       const doxErrors = await checkDoxIntegrity(process.cwd(), IGNORE_DIRS);
       all = [...all, ...doxErrors];
     }
@@ -887,18 +863,18 @@ async function main() {
     if (shouldScanFiles) {
       if (changedSince) {
         files = getChangedFiles(changedSince);
-        logProgress(styleText('cyan', `Auditando solo archivos cambiados desde: '${changedSince}' (${files.length} archivos)`));
+        logProgress(styleText('cyan', `[3/6] 🔍 Auditando archivos modificados desde: '${changedSince}' (${files.length} archivos)...`));
       } else {
         files = await getFilesToAudit(path.resolve(process.cwd(), values.path as string));
+        logProgress(styleText('cyan', `[3/6] 🔍 Auditando AST y reglas de código en ${files.length} archivos...`));
       }
 
-      logProgress(styleText('cyan', `🔍 Auditando ${files.length} archivos...`));
       let processed = 0;
       const total = files.length;
       for (const f of files) {
         processed++;
-        if (processed % 100 === 0 || processed === total) {
-          logProgress(styleText('cyan', `⏳ Progreso auditoría: ${processed}/${total} archivos (${Math.round((processed / total) * 100)}%)`));
+        if (processed % 200 === 0 || processed === total) {
+          logProgress(styleText('cyan', `   ⏳ Progreso AST: ${processed}/${total} archivos (${Math.round((processed / total) * 100)}%)`));
         }
         all = all.concat(await auditFile(f, !!values.fix, activeConfigRules, isSlocActive));
       }
@@ -906,7 +882,7 @@ async function main() {
 
     // 4. SASS Module Migration (solo en --fix)
     if (values.fix && isSassMigratorActive && files.length > 0) {
-      logProgress(styleText('cyan', '\n✨ Ejecutando sass-migrator (built-in-only)...'));
+      logProgress(styleText('cyan', '✨ Ejecutando sass-migrator (built-in-only)...'));
       const legacyScssFiles = files.filter(f => {
         if (!f.endsWith('.scss') && !f.endsWith('.css')) return false;
         try { return readFileSync(f, 'utf-8').includes('@import'); } catch { return false; }
@@ -939,29 +915,29 @@ async function main() {
     // 5. Integración de Fallow
     const anyFallowActive = isFallowDupesActive || isFallowSecurityActive || isFallowDeadCodeActive || isFallowHealthActive;
     if (anyFallowActive) {
-      logProgress(styleText('cyan', '\nEjecutando análisis de Fallow...'));
+      logProgress(styleText('cyan', '[4/6] 🛡️ Ejecutando suite de inteligencia Fallow (dupes, security, dead-code, health)...'));
       if (changedSince) {
         if (isFallowDeadCodeActive || isFallowSecurityActive) {
-          logProgress(styleText('cyan', '  -> Fallow audit & security (archivos modificados)...'));
+          logProgress(styleText('cyan', '   -> Fallow audit & security (archivos modificados)...'));
           if (isFallowDeadCodeActive) all = all.concat(runFallow('audit', ['--changed-since', changedSince]));
           if (isFallowSecurityActive) all = all.concat(runFallow('security', ['--changed-since', changedSince]));
         }
       } else {
         if (isFallowDupesActive) {
-          logProgress(styleText('cyan', '  [1/4] Fallow: Análisis de duplicación de código...'));
+          logProgress(styleText('cyan', '   ├─ [1/4] Fallow: Análisis de duplicación de código...'));
           all = all.concat(runFallow('dupes'));
           all = all.concat(runFallow('dupes', ['--min-occurrences', '3', '--min-lines', '10', '--min-tokens', '60'])); // no-magic
         }
         if (isFallowSecurityActive) {
-          logProgress(styleText('cyan', '  [2/4] Fallow: Análisis de seguridad...'));
+          logProgress(styleText('cyan', '   ├─ [2/4] Fallow: Análisis de seguridad (CWE)...'));
           all = all.concat(runFallow('security'));
         }
         if (isFallowDeadCodeActive) {
-          logProgress(styleText('cyan', '  [3/4] Fallow: Análisis de código muerto...'));
+          logProgress(styleText('cyan', '   ├─ [3/4] Fallow: Análisis de código muerto...'));
           all = all.concat(runFallow('dead-code'));
         }
         if (isFallowHealthActive) {
-          logProgress(styleText('cyan', '  [4/4] Fallow: Cálculo de métricas de salud...'));
+          logProgress(styleText('cyan', '   └─ [4/4] Fallow: Cálculo de métricas de salud...'));
           all = all.concat(runFallow('health'));
         }
       }
@@ -969,13 +945,13 @@ async function main() {
 
     // 6. Integración de css-checker
     if (isCssCheckerActive) {
-      logProgress(styleText('cyan', '\nEjecutando análisis de css-checker (SCSS duplicados)...'));
+      logProgress(styleText('cyan', '[5/6] 🎨 Ejecutando análisis de css-checker (SCSS duplicados)...'));
       all = all.concat(await runCssChecker(values.path as string || '.', IGNORE_DIRS));
     }
 
     // 7. Integración de detector de constantes duplicadas
     if (isConstantDetectorActive) {
-      logProgress(styleText('cyan', '\nEjecutando análisis de constantes duplicadas entre módulos...'));
+      logProgress(styleText('cyan', '[6/6] 🧩 Ejecutando análisis de constantes duplicadas entre módulos...'));
       const filesForConstants = files.length > 0 ? files : await getFilesToAudit(path.resolve(process.cwd(), values.path as string || '.'));
       all = all.concat(await detectDuplicateConstants(filesForConstants));
     }

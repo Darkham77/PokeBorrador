@@ -19,58 +19,14 @@ import path from 'node:path';
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import postgres from 'postgres';
-import { readAndParseEnv, buildDatabaseUrl } from '../lib/supabaseClient.ts';
+import { readAndParseEnv, buildDatabaseUrl, parseServerArguments } from '../lib/supabaseClient.ts';
 
-// Optimizar ejecución en ejecuciones sucesivas
+export { parseServerArguments };
+
 enableCompileCache();
 
 const BACKUP_TARGET_NODE_VERSION_LABEL = '26';
-
 const BACKUPS_DIR = path.resolve(process.cwd(), 'database/backups');
-
-import { parseArgs } from 'node:util';
-
-export function parseServerArguments(args: string[], baseProfiles: string[], allAvailable: string[]): string[] {
-  const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : a);
-  const { values, positionals } = parseArgs({
-    args: normalized,
-    options: {
-      server: { type: 'string', short: 's' },
-      all: { type: 'boolean', short: 'a' },
-      help: { type: 'boolean', short: 'h' }
-    },
-    allowPositionals: true,
-    strict: false
-  });
-
-  const isHelp = values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
-  if (isHelp) {
-    console.log(styleText('cyan', `\n📖 USO: npm run <comando> [server=<perfil> | <perfil> | all]`));
-    console.log(styleText('gray', '\nOpciones disponibles:'));
-    console.log(styleText('gray', '  server=<perfil>   : Nombre del perfil de servidor objetivo.'));
-    console.log(styleText('gray', '  <perfil>          : Nombre directo del servidor (ej. server_franco, nas_franco).'));
-    console.log(styleText('gray', '  all               : Aplica la operación a todos los servidores del .env.'));
-    console.log(styleText('cyan', `\nPerfiles disponibles: ${allAvailable.join(', ')}`));
-    process.exit(0);
-  }
-
-  const isAll = Boolean(values.all || values.server === 'all' || positionals.includes('all') || args.includes('all'));
-  const rawServer = typeof values.server === 'string' ? values.server.replace(/^=/, '') : undefined;
-  const serverArg = (rawServer && rawServer !== 'all' ? rawServer : undefined) ||
-                    positionals.find(p => p !== 'all' && (allAvailable.includes(p) || baseProfiles.includes(p)));
-
-  if (!serverArg && !isAll) {
-    console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas seleccionar indicando server=<perfil>, el nombre del servidor o "all".'));
-    console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
-    console.log(styleText('gray', 'Ejemplos:'));
-    console.log(styleText('gray', '  npm run servers:db:update server=server_franco'));
-    console.log(styleText('gray', '  npm run servers:db:update server_franco'));
-    console.log(styleText('gray', '  npm run servers:db:update all'));
-    process.exit(1);
-  }
-
-  return serverArg ? [serverArg] : baseProfiles;
-}
 
 export async function backupSupabaseDb() {
   console.log(styleText('bold', `\n--- 📦 SUPABASE DATABASE BACKUP MANAGER (Node.js ${BACKUP_TARGET_NODE_VERSION_LABEL}+) ---`))

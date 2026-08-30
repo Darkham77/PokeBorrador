@@ -20,6 +20,8 @@ import { TRAINER_TYPES } from '@/data/player/trainerTypes'
 import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases'
 import { getSpritesForArchetype } from '@/logic/utils/npcSpriteRouter'
 
+export type AdventureTriggerType = 'combat' | 'obstacle_cut' | 'obstacle_strength' | 'obstacle_rock_smash' | 'fishing';
+
 const ADVENTURE_TRAINER_ENCOUNTER_PROBABILITY = 0.3
 
 interface AdventureEventsConfig {
@@ -119,7 +121,7 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
     const isWaterMap = mapId.includes('seafoam') || ['route19', 'route20', 'route21'].includes(mapId)
     const hasFishing = !!mapData.fishing
 
-    const eventTypes: Array<'combat' | 'obstacle_cut' | 'obstacle_strength' | 'obstacle_rock_smash' | 'fishing'> = ['combat']
+    const eventTypes: AdventureTriggerType[] = ['combat']
 
     if (isWaterMap) {
       eventTypes.push('fishing')
@@ -135,7 +137,7 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
 
 const ADVENTURE_EVENT_PROBABILITY_THRESHOLD = 0.70;
 
-    let chosenType: 'combat' | 'obstacle_cut' | 'obstacle_strength' | 'obstacle_rock_smash' | 'fishing' = 'combat'
+    let chosenType: AdventureTriggerType = 'combat'
     if (Math.random() > ADVENTURE_EVENT_PROBABILITY_THRESHOLD && eventTypes.length > 1) {
       const nonCombatTypes = eventTypes.filter(t => t !== 'combat')
       chosenType = nonCombatTypes[Math.floor(Math.random() * nonCombatTypes.length)]!

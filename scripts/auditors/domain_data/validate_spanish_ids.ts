@@ -70,6 +70,8 @@ async function main() {
     ...scanDir('src/stores')
   ];
 
+  validator.logStep(1, 1, `Escaneando ${spanishNames.size} nombres/identificadores en español en ${filesToScan.length} archivos...`);
+
   const QUOTED_REGEX = /['"`]([^'"`]+)['"`]/g;
   let matchesCount = 0;
   const warnings: string[] = [];

@@ -40,6 +40,8 @@ async function validateMigrations() {
     .filter(f => f.endsWith('.sql') && !f.endsWith('.sqlite.sql') && !f.includes('baseline_schema'))
     .sort((a, b) => a.localeCompare(b));
 
+  console.log(`🔍 [1/2] Validando monotonicidad de timestamps y sincronización db_version (${baseSqlFiles.length} migraciones)...`);
+
   const sqliteFiles = dirEntries.filter(f => f.endsWith('.sqlite.sql'));
   for (const sqliteFile of sqliteFiles) {
     const baseSqlFile = sqliteFile.replace(/\.sqlite\.sql$/, '.sql');
@@ -62,20 +64,17 @@ async function validateMigrations() {
     const timestamp = match[1];
 
     if (seenTimestamps.has(timestamp)) {
-      errors.push(`[Migración] Timestamp duplicado detectado: '${timestamp}' en '${file}'. Las migraciones deben tener timestamps únicos.`);
-    } else {
-      seenTimestamps.add(timestamp);
+      errors.push(`[Migración] Timestamp duplicado detectado: '${timestamp}' en archivo '${file}'. Todos los timestamps deben ser estrictamente únicos.`);
     }
+    seenTimestamps.add(timestamp);
 
     if (lastTimestamp && timestamp <= lastTimestamp) {
-      errors.push(`[Migración] Secuencia temporal no incremental detectada: '${file}' (timestamp ${timestamp}) es menor o igual al timestamp previo (${lastTimestamp}). Las migraciones deben ser estrictamente incrementales.`);
+      errors.push(`[Migración] Monotonicidad rota: El timestamp '${timestamp}' (${file}) no es estrictamente mayor que el anterior '${lastTimestamp}'.`);
     }
-
     lastTimestamp = timestamp;
 
-    // Verificar que cualquier actualización de db_version en el archivo .sql coincida exactamente con el timestamp del nombre
-    const pgContent = await fs.readFile(path.join(MIGRATIONS_DIR, file), 'utf-8');
-    const pgVersionMatch = pgContent.match(DB_VERSION_SQL_REGEX);
+    const content = await fs.readFile(path.join(MIGRATIONS_DIR, file), 'utf-8');
+    const pgVersionMatch = content.match(DB_VERSION_SQL_REGEX);
     if (pgVersionMatch) {
       const sqlVersion = pgVersionMatch[1] || pgVersionMatch[2] || pgVersionMatch[3];
       if (sqlVersion && sqlVersion !== timestamp) {
@@ -100,6 +99,7 @@ async function validateMigrations() {
   }
 
   // 2. Ejecutar y validar SQL en memoria SQLite
+  console.log(`💾 [2/2] Ejecutando migración SQL incremental sobre SQLite en memoria (${DATABASE_MIGRATIONS.length} migraciones)...`);
   using db = new DatabaseSync(':memory:');
   initTestDatabaseSchema(db);
 

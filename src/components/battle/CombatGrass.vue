@@ -80,7 +80,7 @@ const BUSH_POS = {
 } as const;
 
 // Configuraciones base de las posiciones para mantener consistencia visual absoluta
-const bushes: Record<'front' | 'back', BushConfig[]> = {
+const bushes: Record<BushLayerDepth, BushConfig[]> = {
   front: [
     { id: 1, cls: 'bush-front-1', scale: BUSH_FRONT_PRIMARY_SCALE, tx: BUSH_POS.FRONT_1_TX, ty: BUSH_POS.FRONT_1_TY, ad: '1.2s', ay: '0s' },
     { id: 2, cls: 'bush-front-2', scale: BUSH_FRONT_SECONDARY_SCALE, tx: BUSH_POS.FRONT_2_TX, ty: BUSH_POS.FRONT_2_TY, ad: '1.5s', ay: '-0.4s' },

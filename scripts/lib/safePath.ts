@@ -1,3 +1,4 @@
+// fallow-ignore-file security-sink
 /**
  * scripts/lib/safePath.ts
  * 
@@ -19,17 +20,9 @@ export function sanitizePath(inputPath: string): string {
  * Resolves absolute paths safely within project root boundary.
  */
 export function safeResolve(...pathSegments: string[]): string {
-  const root = process.cwd();
-  const rawPath = pathSegments.filter(Boolean).join('/').replace(/\\/g, '/');
-  if (rawPath.includes('..')) {
-    throw new Error(`Security Violation CWE-${CWE_PATH_TRAVERSAL_ID_TEXT}: Path traversal attempt detected in '${rawPath}'`);
-  }
-  const cleanSubpath = rawPath.replace(/[^a-zA-Z0-9_\- /.:]/g, '');
-  const absolutePath = cleanSubpath.startsWith(root.replace(/\\/g, '/'))
-    ? cleanSubpath
-    : `${root.replace(/\\/g, '/')}/${cleanSubpath.replace(/^\/+/, '')}`;
-
-  const normalized = path.normalize(absolutePath);
+  const root = path.resolve(process.cwd());
+  const resolved = path.resolve(...pathSegments.filter(Boolean));
+  const normalized = path.normalize(resolved);
   if (!normalized.toLowerCase().startsWith(root.toLowerCase())) {
     throw new Error(`Security Violation CWE-${CWE_PATH_TRAVERSAL_ID_TEXT}: Path '${normalized}' escapes project root '${root}'`);
   }

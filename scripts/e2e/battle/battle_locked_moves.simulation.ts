@@ -21,7 +21,10 @@ class LockedMovesSimWrapper extends BaseBattleSimulation {
       const { requirePokemonMoveId } = await import('../../../src/data/battle/moves.ts');
       const { toID } = await import('../../../src/logic/utils/strings.ts');
 
-      const attacker = pokemonDebugService.generate({ id: pokemonId, level: 50 });
+      const { MAXIMUM_POKEMON_LEVEL } = await import('../../../src/logic/constants/gameplay.ts');
+      const ATTACKER_TEST_LEVEL = 50;
+
+      const attacker = pokemonDebugService.generate({ id: pokemonId, level: ATTACKER_TEST_LEVEL });
       attacker.moves = moveIds.map(id => {
         const cleanId = requirePokemonMoveId(toID(id));
         const md = pokemonDataProvider.getMoveData(cleanId);
@@ -43,9 +46,10 @@ class LockedMovesSimWrapper extends BaseBattleSimulation {
       gameStore.state.starterChosen = true;
 
       // Tank bulky enemy (Blissey with 700 HP) so the battle lasts across multi-turn moves
-      const defender = pokemonDebugService.generate({ id: 'blissey', level: 100 });
-      defender.hp = 700;
-      defender.maxHp = 700;
+      const BULKY_TANK_HP = 700;
+      const defender = pokemonDebugService.generate({ id: 'blissey', level: MAXIMUM_POKEMON_LEVEL });
+      defender.hp = BULKY_TANK_HP;
+      defender.maxHp = BULKY_TANK_HP;
       defender.moves = [
         {
           id: 'softboiled',

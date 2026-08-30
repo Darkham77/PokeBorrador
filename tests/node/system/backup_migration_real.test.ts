@@ -2,214 +2,163 @@ import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { Dex } from '@pkmn/sim';
+import { validateSaveData } from '../../../src/logic/validation/schemas.ts';
+import { isNatureId } from '../../../src/data/battle/natures.ts';
+import { isEventActiveNow, type Event as GameEvent } from '../../../src/logic/events/eventEngine.ts';
+import { getUpcomingEventOccurrences } from '../../../src/logic/events/eventSchedules.ts';
 import type { GameState } from '../../../src/types/system/game.ts';
+import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
+import { upgradeBackup } from '../../../scripts/database/upgrade_backup.ts';
 
-/** Forma mínima de un Pokémon tal como aparece en los archivos de backup JSON. */
-interface RawPokemon {
-  id?: string;
-  name?: string;
-  vigor?: number;
-  heldItem?: string;
-  ability?: string;
-  moves?: Array<{ id?: string } | null>;
-}
+describe('Real Backup Upgrade Pipeline & Dynamic Table Sanitization Test', () => {
+  it('should run upgradeBackup() on the real backup fixture and output a fully sanitized and compliant _upgraded.json backup file', async () => {
+    const fixtureRelPath = 'tests/node/fixtures/server_franco_backup_fixture.json';
+    const fixturePath = path.resolve(fixtureRelPath);
+    assert.ok(fs.existsSync(fixturePath), `Fixture backup file must exist at ${fixtureRelPath}`);
 
-import { LEGENDARIES, legacyItemMap, legacyAbilityMap, legacyMoveMap } from '../../helpers/legacyDataMocks.ts';
+    // Set process.argv to invoke upgradeBackup on the fixture
+    const originalArgv = process.argv;
+    process.argv = ['node', 'scripts/database/upgrade_backup.ts', `file=${fixturePath}`];
 
-interface MigrationCounters {
-  legendaries: number
-  items: number
-  abilities: number
-  moves: number
-}
-
-function checkLegendaryVigor(p: RawPokemon, legendaries: Set<string>): boolean {
-  return !!(p.id && legendaries.has(p.id.toLowerCase()) && (p.vigor ?? 0) > 0);
-}
-
-function checkMovesLegacy(
-  moves: Array<{ id?: string } | null> | undefined,
-  getLegacyMoveTranslation: (move: string | undefined) => string | undefined
-): number {
-  if (!moves || !Array.isArray(moves)) return 0;
-  let count = 0;
-  moves.forEach((m) => {
-    if (m && getLegacyMoveTranslation(m.id)) {
-      count++;
+    let generatedUpgradedPath = '';
+    try {
+      generatedUpgradedPath = await upgradeBackup();
+    } finally {
+      process.argv = originalArgv;
     }
-  });
-  return count;
-}
 
-function runPreCheck(
-  p: RawPokemon | null | undefined, 
-  counters: MigrationCounters, 
-  legendaries: Set<string>,
-  getLegacyItemTranslation: (item: string | undefined) => string | undefined,
-  getLegacyAbilityTranslation: (ability: string | undefined) => string | undefined,
-  getLegacyMoveTranslation: (move: string | undefined) => string | undefined
-): void {
-  if (!p) return;
-  if (checkLegendaryVigor(p, legendaries)) {
-    counters.legendaries++;
-  }
-  if (p.heldItem && getLegacyItemTranslation(p.heldItem)) {
-    counters.items++;
-  }
-  if (getLegacyAbilityTranslation(p.ability)) {
-    counters.abilities++;
-  }
-  counters.moves += checkMovesLegacy(p.moves, getLegacyMoveTranslation);
-}
+    assert.ok(generatedUpgradedPath, 'upgradeBackup must return the path of the generated upgraded file');
+    assert.ok(fs.existsSync(generatedUpgradedPath), `Generated upgraded backup file must exist at ${generatedUpgradedPath}`);
 
-function runPostCheck(
-  p: RawPokemon | null | undefined, 
-  legendaries: Set<string>,
-  getLegacyItemTranslation: (item: string | undefined) => string | undefined,
-  getLegacyAbilityTranslation: (ability: string | undefined) => string | undefined,
-  getLegacyMoveTranslation: (move: string | undefined) => string | undefined
-): void {
-  if (!p) return;
-  if (p.id && legendaries.has(p.id.toLowerCase())) {
-    assert.strictEqual(p.vigor, 0, `Legendary ${p.name} (${p.id}) must have 0 vigor after migration`);
-  }
-  if (p.heldItem) {
-    const mappedItem = getLegacyItemTranslation(p.heldItem);
-    if (mappedItem) {
-      assert.strictEqual(p.heldItem, mappedItem, `Held item ${p.heldItem} was not migrated to ${mappedItem}`);
+    // Read and parse the generated upgraded backup file
+    const upgradedContent = fs.readFileSync(generatedUpgradedPath, 'utf8');
+    interface UpgradedBackupObject {
+      metadata: {
+        profile?: string;
+        timestamp?: string;
+        totalTables?: number;
+        totalRows?: number;
+        db_version?: string;
+      };
+      data: Record<string, Record<string, unknown>[]>;
+      auth?: unknown;
     }
-  }
-  const mappedAbility = getLegacyAbilityTranslation(p.ability);
-  if (mappedAbility) {
-    assert.strictEqual(p.ability, mappedAbility, `Ability ${p.ability} was not migrated to ${mappedAbility}`);
-  }
-  if (p.moves && Array.isArray(p.moves)) {
-    p.moves.forEach((m) => {
-      if (m) {
-        const mappedMove = getLegacyMoveTranslation(m.id);
-        if (mappedMove) {
-          assert.strictEqual(m.id, mappedMove, `Move ${m.id} was not migrated to ${mappedMove}`);
-        }
-      }
-    });
-  }
-}
 
-describe('Real Backup DB Migration Verification', () => {
-  const legendaries = LEGENDARIES;
+    const upgradedObj = JSON.parse(upgradedContent) as UpgradedBackupObject;
+    assert.ok(upgradedObj.data, 'Upgraded backup must contain data');
+    assert.ok(upgradedObj.metadata, 'Upgraded backup must contain metadata');
+    assert.ok(upgradedObj.metadata.db_version?.includes('20260830233000'), `db_version must be 20260830233000, got ${upgradedObj.metadata.db_version}`);
 
-  function normalizeAbilityName(abilityName: string): string {
-    return abilityName.toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]/g, '');
-  }
+    const allDiscoveredTables = Object.keys(upgradedObj.data);
+    assert.ok(allDiscoveredTables.length > 20, `Upgraded backup must contain over 20 tables, found: ${allDiscoveredTables.length}`);
 
-  function getLegacyAbilityTranslation(abilityName: string | undefined): string | undefined {
-    if (!abilityName) return undefined;
-    const abKey = normalizeAbilityName(abilityName);
-    return legacyAbilityMap[abKey];
-  }
-
-  function getLegacyItemTranslation(heldItem: string | undefined): string | undefined {
-    if (!heldItem) return undefined;
-    const itemKey = heldItem.toLowerCase().trim();
-    return legacyItemMap[itemKey];
-  }
-
-  function getLegacyMoveTranslation(moveId: string | undefined): string | undefined {
-    if (!moveId) return undefined;
-    const moveKey = moveId.toLowerCase().replace(/[\s_-]+/g, '_').trim();
-    return legacyMoveMap[moveKey];
-  }
-
-  function migratePoke(p: RawPokemon | null | undefined): void {
-    if (!p) return;
-    
-    // 1. Legendaries to 0 vigor
-    if (p.id && legendaries.has(p.id.toLowerCase())) {
-      p.vigor = 0;
-    }
-    
-    // 2. Mapped held items
-    const mappedItem = getLegacyItemTranslation(p.heldItem);
-    if (mappedItem) {
-      p.heldItem = mappedItem;
-    }
-    
-    // 3. Mapped abilities
-    const mappedAbility = getLegacyAbilityTranslation(p.ability);
-    if (mappedAbility) {
-      p.ability = mappedAbility;
-    }
-    
-    // 4. Mapped moves
-    if (p.moves && Array.isArray(p.moves)) {
-      p.moves.forEach((m: { id?: string } | null) => {
-        if (m) {
-          const mappedMove = getLegacyMoveTranslation(m.id);
-          if (mappedMove) {
-            m.id = mappedMove;
+    // Dynamic Anti-Corruption Scan across ALL discovered tables and ALL columns
+    for (const tableName of allDiscoveredTables) {
+      const rows = upgradedObj.data[tableName] || [];
+      for (let rIdx = 0; rIdx < rows.length; rIdx++) {
+        const row = rows[rIdx];
+        if (!row) continue;
+        for (const [colName, val] of Object.entries(row)) {
+          if (typeof val === 'string') {
+            assert.ok(!val.includes('[object Object]'), `Table '${tableName}', Row ${rIdx}, Col '${colName}' must not contain '[object Object]'`);
+            assert.ok(!val.includes('[object Array]'), `Table '${tableName}', Row ${rIdx}, Col '${colName}' must not contain '[object Array]'`);
           }
         }
-      });
+      }
     }
-  }
 
-  const backups = [
-    'tests/node/fixtures/server_franco_backup_fixture.json'
-  ];
+    // Specialized checks for events_config
+    const eventRows = (upgradedObj.data['events_config'] || []) as Array<{
+      id: string;
+      name: string;
+      icon: string;
+      type: GameEvent['type'];
+      active: boolean;
+      manual: boolean;
+      schedule: Record<string, unknown>;
+      config: Record<string, unknown>;
+      description: string;
+    }>;
 
-  backups.forEach(backupRelPath => {
-    const filename = path.basename(backupRelPath);
-    
-    it(`should successfully parse and migrate all game saves in ${filename} without breaking data`, () => {
-      const backupPath = path.resolve(backupRelPath);
-      assert.ok(fs.existsSync(backupPath), `Backup file ${filename} must exist`);
+    assert.ok(eventRows.length >= 12, `events_config must contain at least 12 events, found: ${eventRows.length}`);
+    const eventIds = new Set(eventRows.map(e => e.id));
 
-      const backupContent = fs.readFileSync(backupPath, 'utf8');
-      const backupData = JSON.parse(backupContent);
-      assert.ok(backupData.data, 'Backup must contain a data object');
+    const expectedEvents = [
+      'fiebre_oro', 'dia_pesca', 'torneo_pesca', 'dia_crianza',
+      'dia_naturaleza', 'torneo_caza', 'fiebre_minera', 'doble_exp',
+      'gran_concurso_sabado', 'dia_safari_suerte', 'comunidad_mensual', 'guerra_facciones_mensual'
+    ];
 
-      const gameSaves = backupData.data.game_saves || [];
-      assert.ok(gameSaves.length > 0, 'Backup must contain game_saves');
+    for (const evId of expectedEvents) {
+      assert.ok(eventIds.has(evId), `Canonical event '${evId}' must exist in upgraded backup`);
+      const ev = eventRows.find(e => e.id === evId);
+      assert.ok(ev, `Event ${evId} must be defined`);
+      assert.strictEqual(typeof ev.active, 'boolean', `Event ${evId} active must be boolean`);
+      assert.strictEqual(typeof ev.schedule, 'object', `Event ${evId} schedule must be object`);
+      assert.strictEqual(typeof ev.config, 'object', `Event ${evId} config must be object`);
+      assert.ok(ev.schedule !== null && !Array.isArray(ev.schedule), `Event ${evId} schedule must be a valid non-null object`);
+      assert.ok(ev.config !== null && !Array.isArray(ev.config), `Event ${evId} config must be a valid non-null object`);
+    }
 
-      const counters: MigrationCounters = {
-        legendaries: 0,
-        items: 0,
-        abilities: 0,
-        moves: 0
-      };
+    // Engine simulation with upgraded events
+    const sundayInstant = Temporal.Instant.from('2026-08-30T16:00:00Z');
+    const sundayActive = eventRows.filter(e => isEventActiveNow(e as GameEvent, sundayInstant)).map(e => e.id);
+    assert.ok(sundayActive.includes('doble_exp'), "Sunday must have 'doble_exp' active in upgraded backup");
+    assert.ok(sundayActive.includes('dia_safari_suerte'), "Sunday must have 'dia_safari_suerte' active in upgraded backup");
+    assert.ok(sundayActive.includes('comunidad_mensual'), "Last Sunday must have 'comunidad_mensual' active in upgraded backup");
 
-      gameSaves.forEach((saveWrapper: { save_data: string | GameState }) => {
-        let saveData: GameState;
-        if (typeof saveWrapper.save_data === 'string') {
-          saveData = JSON.parse(saveWrapper.save_data);
-        } else {
-          saveData = saveWrapper.save_data;
+    const upcoming = getUpcomingEventOccurrences(eventRows as GameEvent[], sundayInstant);
+    assert.ok(upcoming.length >= 7, `Upcoming events must return at least 7 entries, got: ${upcoming.length}`);
+
+    // Specialized checks for game_saves
+    const saveRows = (upgradedObj.data['game_saves'] || []) as Array<{ user_id: string; save_data: GameState }>;
+    assert.ok(saveRows.length > 0, 'game_saves must contain player saves');
+
+    for (const row of saveRows) {
+      const saveData = row.save_data;
+      assert.ok(saveData, `Save data for user ${row.user_id} must exist`);
+
+      const valResult = validateSaveData(saveData);
+      assert.ok(valResult.success, `Save for user ${row.user_id} must pass Valibot schema validation`);
+
+      const allPokes = [...(saveData.team || []), ...(saveData.box || [])].filter(Boolean) as Pokemon[];
+      for (const p of allPokes) {
+        assert.ok(Dex.species.get(p.id).exists, `Pokemon species '${p.id}' must exist in Showdown Dex`);
+        if (p.ability) {
+          assert.ok(Dex.abilities.get(p.ability).exists, `Pokemon ability '${p.ability}' must exist in Showdown Dex`);
         }
+        if (p.nature) {
+          assert.ok(isNatureId(p.nature), `Pokemon nature '${p.nature}' must be a valid English nature`);
+        }
+        if ((p.level ?? 1) >= 100) {
+          assert.strictEqual(p.expNeeded, 0, `Level 100 Pokémon must have expNeeded = 0`);
+        }
+      }
 
-        const team = (saveData.team || []) as unknown as RawPokemon[]
-        const box = (saveData.box || []) as unknown as RawPokemon[]
+      if (Array.isArray(saveData.eggs)) {
+        for (const egg of saveData.eggs) {
+          if (!egg) continue;
+          assert.ok(!egg.id.startsWith('egg_'), `Egg species ID '${egg.id}' must not start with 'egg_'`);
+          assert.ok(typeof egg.nature === 'string' && isNatureId(egg.nature), `Egg nature '${egg.nature}' must be a valid English nature`);
+          assert.ok(egg.steps >= 0, `Egg steps '${egg.steps}' must be >= 0`);
+        }
+      }
 
-        // Track properties before migration to ensure they change
-        team.forEach(p => runPreCheck(p, counters, legendaries, getLegacyItemTranslation, getLegacyAbilityTranslation, getLegacyMoveTranslation));
-        box.forEach(p => runPreCheck(p, counters, legendaries, getLegacyItemTranslation, getLegacyAbilityTranslation, getLegacyMoveTranslation));
+      if (saveData.inventory) {
+        for (const [itemKey, qty] of Object.entries(saveData.inventory)) {
+          assert.ok(Number(qty) >= 0, `Inventory item '${itemKey}' must have non-negative quantity: ${qty}`);
+        }
+      }
+    }
 
-        // Run migration
-        team.forEach(migratePoke);
-        box.forEach(migratePoke);
-
-        // Assertions post-migration
-        team.forEach(p => runPostCheck(p, legendaries, getLegacyItemTranslation, getLegacyAbilityTranslation, getLegacyMoveTranslation));
-        box.forEach(p => runPostCheck(p, legendaries, getLegacyItemTranslation, getLegacyAbilityTranslation, getLegacyMoveTranslation));
-      });
-
-      console.debug(`\n[Test: ${filename}] Migrated successfully:`);
-      console.debug(` - Legendaries fixed to 0 vigor: ${counters.legendaries}`);
-      console.debug(` - Legacy held items mapped: ${counters.items}`);
-      console.debug(` - Legacy abilities translated: ${counters.abilities}`);
-      console.debug(` - Legacy moves converted: ${counters.moves}\n`);
-    });
-  });
+    // Clean up temporary upgraded test artifact if needed
+    try {
+      if (generatedUpgradedPath.includes('fixtures')) {
+        fs.unlinkSync(generatedUpgradedPath);
+      }
+    } catch {
+      // ignore
+    }
+  }, 120000);
 });

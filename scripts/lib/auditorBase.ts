@@ -38,6 +38,8 @@ export interface AuditorContext {
     output?: string;
     'errors-only'?: boolean;
   };
+  logProgress: (msg: string) => void;
+  logStep: (stepNumber: number, totalSteps: number, description: string) => void;
   addFinding: (finding: AuditFinding) => void;
   addError: (message: string, file?: string, line?: number, context?: string, ruleId?: string) => void;
   addWarning: (message: string, file?: string, line?: number, context?: string, ruleId?: string) => void;
@@ -66,6 +68,12 @@ export function setupAuditor(config: AuditorConfig): AuditorContext {
 
   return {
     values: values as AuditorContext['values'],
+    logProgress: (msg: string) => {
+      console.log(msg);
+    },
+    logStep: (stepNumber: number, totalSteps: number, description: string) => {
+      console.log(`🔍 [${stepNumber}/${totalSteps}] ${description}`);
+    },
     addFinding: (f: AuditFinding) => findings.push(f),
     addError: (message: string, file?: string, line?: number, context?: string, ruleId?: string) => {
       findings.push({ severity: 'error', message, file, line, context, ruleId });

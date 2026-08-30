@@ -45,6 +45,7 @@ async function main() {
   const errors: string[] = []; // no-domain
   const warnings: string[] = []; // no-domain
 
+  validator.logStep(1, 2, 'Extrayendo movimientos únicos de learnsets en POKEMON_DB...');
   // Extraer todos los movimientos de los learnsets de especies habilitadas
   const learnsetMoves = new Set<string>();
   for (const [pokeId, poke] of Object.entries(POKEMON_DB)) {
@@ -58,7 +59,7 @@ async function main() {
     }
   }
 
-  console.log(`📊 Movimientos en learnsets a validar: ${learnsetMoves.size}`);
+  validator.logStep(2, 2, `Validando ${learnsetMoves.size} movimientos contra Dex Gen ${ACTIVE_GENERATION} y traducciones...`);
 
   const g3 = Dex.forGen(ACTIVE_GENERATION);
 

@@ -42,7 +42,6 @@ export function useSaveActions(
     let data: GameState | null = null;
     let issues: string[] = []; // no-domain
     let lastSaveId: string | null = null;
-    let isNewerThanCloud: boolean | undefined;
     let attempts = 0;
     const maxAttempts = 2;
     let lastError: unknown = null;
@@ -53,7 +52,6 @@ export function useSaveActions(
         data = result.data;
         issues = result.issues;
         lastSaveId = result.lastSaveId;
-        isNewerThanCloud = result.isNewerThanCloud;
         
         if (typeof sessionStorage !== 'undefined') {
           sessionStorage.setItem('load_retry_count', '0');
@@ -143,11 +141,6 @@ export function useSaveActions(
 
       if (authStore.user && (authStore.user.db_version || 0) < 3) {
         authStore.user.db_version = 3
-      }
-
-      if (isNewerThanCloud) {
-        uiStore.notify('Sincronizando progreso local más reciente...', '🔄')
-        gsap.delayedCall(3.0, () => save(false))
       }
     } else if (!data && authStore.user) {
       state.trainer = authStore.user.user_metadata?.username || 'Entrenador';

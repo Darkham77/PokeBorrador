@@ -9,7 +9,7 @@ const isWin = process.platform === 'win32';
 function findBinary(): boolean {
   try {
     if (isWin) {
-      execFileSync('where.exe', ['css-checker.exe'], { stdio: 'ignore', shell: true });
+      execFileSync('where.exe', ['css-checker.exe'], { stdio: 'ignore' });
     } else {
       execFileSync('which', ['css-checker'], { stdio: 'ignore' });
     }
@@ -48,6 +48,8 @@ function findBinary(): boolean {
   return false;
 }
 
+console.log('🔍 [1/1] Verificando binarios nativos y herramientas de build (css-checker-kit)...');
+
 if (!findBinary()) {
   console.log('\x1b[33m\x1b[1m⚠️ css-checker-kit no está preparado. Auto-instalando y compilando binario nativo...\x1b[0m');
   try {
@@ -55,11 +57,11 @@ if (!findBinary()) {
     const pkgDir = 'node_modules/css-checker-kit';
     if (!fs.existsSync(pkgDir)) {
       console.log('📦 Instalando css-checker-kit...');
-      execFileSync(npmCmd, ['install', '--save-dev', 'css-checker-kit', '--ignore-scripts=false'], { stdio: 'inherit', cwd: rootDir, shell: isWin });
+      execFileSync(npmCmd, ['install', '--save-dev', 'css-checker-kit', '--ignore-scripts=false'], { stdio: 'inherit', cwd: rootDir });
     }
     
     console.log('⚡ Compilando binario nativo via postinstall...');
-    execFileSync(npmCmd, ['run', 'postinstall', '--ignore-scripts=false'], { stdio: 'inherit', cwd: pkgDir, shell: isWin });
+    execFileSync(npmCmd, ['run', 'postinstall', '--ignore-scripts=false'], { stdio: 'inherit', cwd: pkgDir });
 
     if (!findBinary()) {
       console.error('\x1b[31m❌ Error: No se pudo auto-compilar css-checker-kit.\x1b[0m');
@@ -70,4 +72,6 @@ if (!findBinary()) {
     console.error('\x1b[31m❌ Error durante la instalación automática de css-checker-kit:\x1b[0m', e);
     process.exit(1);
   }
+} else {
+  console.log('✅ Herramientas de build y binarios nativos listos.');
 }

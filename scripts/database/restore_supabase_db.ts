@@ -16,10 +16,10 @@
  */
 
 import fsPromises from 'node:fs/promises';
-import { styleText } from 'node:util';
+import { parseArgs, styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import postgres from 'postgres';
-import { buildDatabaseUrl, getValidatedServerConfigs } from '../lib/supabaseClient.ts';
+import { buildDatabaseUrl, getValidatedServerConfigs, parseServerArguments } from '../lib/supabaseClient.ts';
 import { safeResolve, safeJoin } from '../lib/safePath.ts';
 
 // Optimizar ejecución en ejecuciones sucesivas
@@ -34,8 +34,6 @@ export async function restoreSupabaseDb() {
   const { serverConfigs, baseProfiles, allAvailable } = await getValidatedServerConfigs();
 
   const args = process.argv.slice(2);
-  const { parseServerArguments } = await import('./backup_supabase_db.ts');
-  const { parseArgs } = await import('node:util');
   const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : a);
   const { values, positionals } = parseArgs({
     args: normalized,

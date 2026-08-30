@@ -46,7 +46,7 @@ async function main() {
     convertedCount++;
   }
 
-  console.log(styleText('green', `✅ ${convertedCount} sprites convertidos a WebP en ${PUBLIC_ITEMS_DIR}\n`));
+  console.log(styleText('green', `✅ ${convertedCount} sprites convertidos a WebP en public/assets/sprites/items/\n`));
 
   // 3. Update items.json
   console.log(styleText('yellow', `📦 Actualizando rutas de sprites en items.json...`));

@@ -34,6 +34,7 @@ import { createClient } from '@supabase/supabase-js';
 
 import { validateSaveData } from '../../src/logic/validation/schemas.ts';
 import { checkPokemonLegality } from '../../src/logic/pokemon/pokemonLegality.ts';
+import { repairAccountsInSqlite } from './repair_account_legality.ts';
 import { SHOP_ITEMS } from '../../src/data/inventory/items.ts';
 import { DATABASE_MIGRATIONS } from '../../src/logic/db/migrations_data.ts';
 import { splitSQLStatements, translatePostgresToSqlite } from '../../src/logic/db/sqlTranslator.ts';
@@ -485,27 +486,44 @@ export function testInMemoryMigrations(saveData: GameState, userId: string): {
     VALUES (?, ?, ?, ?)
   `).run(userId, JSON.stringify(saveData), 'diag-test', new Date().toISOString());
 
-  // Ejecutar las migraciones más recientes (o la migración de corrección de saves 20260830120000)
-  const migrationsToRun = DATABASE_MIGRATIONS.filter(m => m.id.startsWith('20260830') || m.id.includes('fix_legacy_exp_needed'));
-  const targetMigrations = migrationsToRun.length > 0 ? migrationsToRun : [DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1]!];
-
-  for (const migration of targetMigrations) {
+  // Ejecutar todas las migraciones oficiales
+  for (const migration of DATABASE_MIGRATIONS) {
     const sqlSource = migration.sqlite_sql !== undefined ? migration.sqlite_sql : migration.sql;
     const isSqliteSpec = migration.sqlite_sql !== undefined;
-    const statements = splitSQLStatements(sqlSource);
-    for (const stmt of statements) {
-      if (stmt.trim()) {
-        const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt);
-        if (sql) {
-          try {
-            db.exec(sql);
-          } catch {
-            // Ignorar errores benignos de esquema
+    if (isSqliteSpec) {
+      try {
+        db.exec(sqlSource);
+      } catch {
+        const statements = splitSQLStatements(sqlSource);
+        for (const stmt of statements) {
+          if (stmt.trim()) {
+            try {
+              db.exec(stmt);
+            } catch {
+              // Ignorar errores benignos de esquema
+            }
+          }
+        }
+      }
+    } else {
+      const statements = splitSQLStatements(sqlSource);
+      for (const stmt of statements) {
+        if (stmt.trim()) {
+          const sql = translatePostgresToSqlite(stmt);
+          if (sql) {
+            try {
+              db.exec(sql);
+            } catch {
+              // Ignorar errores benignos de esquema
+            }
           }
         }
       }
     }
   }
+
+  // Legalizar cuentas
+  repairAccountsInSqlite({ dbInstance: db, all: true, silent: true });
 
   const row = db.prepare('SELECT save_data FROM game_saves WHERE user_id = ?').get(userId) as { save_data: string } | undefined;
   if (!row) {

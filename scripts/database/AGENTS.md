@@ -12,6 +12,7 @@ Automation scripts for database backup, restoration, updates, migrations generat
   - `import_backup_to_sqlite.ts` (`npm run servers:db:local-import [server=<profile> | file=<path>]`)
 - **Safe Commit & Version Sync Mandate**: Database updates (`npm run servers:db:update`) sync `app_version` from `public/version.json` and `db_version` into `system_config`. Remote database updates must NEVER be triggered with an uncommitted local `npm run build`, as this causes version mismatches between GitHub Pages deployed clients and the remote database. Always synchronize versions via the official `/safe-commit` workflow.
 - **Quote-Aware SQL Comment Stripping**: SQL migration generators and parsers (`generate_migrations.ts`) MUST parse comments using quote-aware token boundaries (`stripInlineComment`). Naive substring searches for `--` that truncate inside single or double-quoted strings (such as CSS `var(--yellow)` or inline JSON text) are strictly prohibited.
+- **Unified Argument Parser SSoT (`scripts/lib/supabaseClient.ts`)**: All database scripts (`backup_supabase_db.ts`, `restore_supabase_db.ts`, `update_supabase_db.ts`, `admin_supabase_users.ts`) MUST consume `parseServerArguments(args, baseProfiles, allAvailable)` from `scripts/lib/supabaseClient.ts`. Cross-script dynamic imports for CLI options are strictly prohibited.
 - All scripts MUST support `--help` flag with clear ANSI formatted usage instructions.
 
 ## Child DOX Index

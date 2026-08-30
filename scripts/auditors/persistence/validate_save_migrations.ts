@@ -40,16 +40,13 @@ async function main() {
 
   await validator.checkFiles();
 
-  console.log('Loading items catalog...');
-  const itemsDict = JSON.parse(fs.readFileSync(path.resolve('src/data/inventory/items.json'), 'utf8')) as ItemsCatalog;
-  const validItemIds = new Set(itemsDict.SHOP_ITEMS.map((item) => item.id));
-
-  console.log('Loading backup saves fixture...');
   const backupContent = fs.readFileSync(backupPath, 'utf8');
   const backupData = JSON.parse(backupContent) as { data: { game_saves?: GameSaveRow[] } };
   const gameSaves: GameSaveRow[] = backupData.data.game_saves ?? [];
 
-  console.log(`Found ${gameSaves.length} saves in backup.`);
+  console.log(`🔍 [1/3] Cargando catálogo de ítems y ${gameSaves.length} saves de backup...`);
+  const itemsDict = JSON.parse(fs.readFileSync(path.resolve('src/data/inventory/items.json'), 'utf8')) as ItemsCatalog;
+  const validItemIds = new Set(itemsDict.SHOP_ITEMS.map((item) => item.id));
 
   // Collect all unique item IDs present in the backup BEFORE migrations
   const originalItems = new Set<string>();
@@ -74,10 +71,7 @@ async function main() {
     }
   }
 
-  console.log(`Found ${originalItems.size} unique item IDs in the raw backup.`);
-
   // Initialize SQLite in-memory DB and populate it
-  console.log('Initializing in-memory database...');
   using db = new DatabaseSync(':memory:');
   initTestDatabaseSchema(db);
 
@@ -92,9 +86,9 @@ async function main() {
   }
 
   // Load migrations
-  console.log('Running migrations...');
   const { DATABASE_MIGRATIONS } = await import('../../../src/logic/db/migrations_data.ts');
   const { translatePostgresToSqlite } = await import('../../../src/logic/db/sqlTranslator.ts');
+  console.log(`💾 [2/3] Ejecutando ${DATABASE_MIGRATIONS.length} migraciones sobre ${gameSaves.length} saves en memoria...`);
 
   for (const migration of DATABASE_MIGRATIONS) {
     const sqlSource = migration.sqlite_sql !== undefined ? migration.sqlite_sql : migration.sql;
@@ -121,7 +115,7 @@ async function main() {
   }
 
   // Audit database saves after migration
-  console.log('Auditing saves after migration...');
+  console.log(`🔍 [3/3] Auditando integridad de partidas y compatibilidad de ítems post-migración...`);
   const selectStmt = db.prepare('SELECT save_data FROM game_saves');
   const rows = selectStmt.all() as { save_data: string }[];
 

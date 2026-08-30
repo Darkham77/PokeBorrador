@@ -18,6 +18,14 @@ import {
 
 const DEFAULT_AUDITORS_DIR = path.resolve(process.cwd(), 'scripts/auditors');
 const DEFAULT_TIMEOUT_MS = 60000;
+const HEAVY_TIMEOUT_MS = 180000; // 3 minutes for full repo AST / DB migration validation
+
+function getTimeoutForTask(filename: string): number {
+  if (filename.includes('audit_project') || filename.includes('validate_save_migrations')) {
+    return HEAVY_TIMEOUT_MS;
+  }
+  return DEFAULT_TIMEOUT_MS;
+}
 
 export interface DiscoveryOptions {
   baseDir?: string;
@@ -107,7 +115,7 @@ export async function discoverAuditors(options: DiscoveryOptions = {}): Promise<
           command: 'node',
           args: [...taskPermissions, relScriptPath, '--json'],
           fast: isFast,
-          timeoutMs: DEFAULT_TIMEOUT_MS,
+          timeoutMs: getTimeoutForTask(filename),
           order: FAMILY_METADATA[family]?.order ?? 99
         });
       }

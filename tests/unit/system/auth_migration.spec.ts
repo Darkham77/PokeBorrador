@@ -78,7 +78,7 @@ describe('Auth Load Service (Migration v2)', () => {
     cleanupTestDB();
   });
 
-  it('should prefer local save if significantly newer than cloud', async () => {
+  it('should prefer database cloud save over local cache to protect rollbacks and migrations', async () => {
     const cloudSave = {
       save_data: createMockSaveData({ trainer: 'CloudHero', money: 100 }),
       updated_at: Temporal.Instant.fromEpochMilliseconds(Temporal.Now.instant().epochMilliseconds - 86400000).toString(),
@@ -103,8 +103,9 @@ describe('Auth Load Service (Migration v2)', () => {
     } as unknown as ReturnType<(...args: unknown[]) => unknown>);
 
     const result = await loadBestSave(mockUser, db);
-    expect(result.data!.trainer).toBe('LocalHero');
-    expect(result.isNewerThanCloud).toBe(true);
+    expect(result.data!.trainer).toBe('CloudHero');
+    expect(result.data!.money).toBe(100);
+    expect(result.isNewerThanCloud).toBe(false);
   });
 
   it('should reject unmigrated pokemon with missing mandatory keys (fail-fast without fallbacks)', async () => {

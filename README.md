@@ -91,13 +91,50 @@ Para inicializar las tablas necesarias la primera vez:
 
 1. Ejecutá el script [database/schemas/supabase_migration.sql](./database/schemas/supabase_migration.sql) en el SQL Editor de Supabase.
 
-### Actualizaciones y Migraciones
+### 💾 Importación de Base de Datos Local al Navegador (Modo Offline / QA)
 
-Cuando se añadan nuevas funcionalidades o cambios en los esquemas:
+Esta funcionalidad permite convertir y cargar cualquier respaldo de base de datos de producción o pruebas directamente en el navegador web del desarrollador/tester, ejecutando Poké Vicio **100% offline** a través de SQLite WebAssembly (`node:sqlite` + OPFS - *Origin Private File System*).
 
-1. **Identificar cambios**: Revisa la carpeta `database/schemas/` por nuevos archivos `.sql`.
-2. **Ejecución**: Copia el contenido de los nuevos archivos y ejecútalos en el **SQL Editor** de Supabase.
-3. **Lógica de Servidor**: Si se modifican archivos como `db_trade_rpc.sql` o `db_security_triggers.sql`, asegúrate de ejecutarlos para actualizar las funciones RPC y triggers.
+#### ¿Para qué sirve?
+
+1. **Desarrollo sin Conexión**: Trabajar y probar el juego completo sin depender de servidores Supabase remotos, contenedores Docker ni conexión a Internet.
+2. **Depuración con Datos Reales**: Reproducir bugs de combate, inventario, guardería o social utilizando datos exactos de partidas reales de usuarios.
+3. **Validación de Migraciones y Saneamiento**: Probar que las migraciones SQL y las rutinas de legalización de Pokémon de Showdown Gen 9 funcionen de forma 100% determinista antes de tocar servidores remotos.
+4. **Acceso Multi-Cuenta Inmediato**: Acceder a cualquier cuenta registrada en el respaldo ingresando su nombre de usuario sin requerir contraseñas ni correos externos.
+
+#### Flujo Paso a Paso para Importar un Respaldo al Navegador
+
+```bash
+# PASO 1: Descargar un respaldo JSON desde un servidor Supabase (Opcional si ya tienes el archivo)
+npm run servers:db:backup server=server_franco
+
+# PASO 2: Actualizar el respaldo y legalizar Pokémon/cuentas de forma estricta
+npm run servers:db:upgrade-backup file=database/backups/server_franco/server_franco_backup_2026-06-27T05-06-25-158315918Z.json
+
+# PASO 3: Convertir el JSON actualizado a la base de datos SQLite del navegador
+npm run servers:db:local-import file=database/backups/server_franco/server_franco_backup_2026-06-27T05-06-25-158315918Z_upgraded.json
+
+# PASO 4: Iniciar el servidor de desarrollo Vite
+npm run dev
+```
+
+#### ¿Qué sucede internamente durante el proceso?
+
+1. **`upgrade_backup.ts` (Actualización & Saneamiento)**:
+   - Carga el respaldo en una base de datos SQLite en memoria.
+   - Aplica 100% de las migraciones SQL oficiales registradas en `database/migrations/`.
+   - Ejecuta automáticamente el reparador de legalidad (`repairAccountsInSqlite`), corrigiendo ataques ilegales o heredados según el formato oficial de Pokémon Showdown Gen 9, recalculando estadísticas y saneando inventarios.
+   - Genera el archivo `*_upgraded.json`.
+
+2. **`import_backup_to_sqlite.ts` (Mapeo Local & SQLite)**:
+   - Mapea los UUIDs remotos de Supabase a identificadores locales limpios (`local_<username>`).
+   - Sincroniza y remapea los mensajes de chat privado (`chat_messages`), chats globales, solicitudes de amistad (`friendships`), huevos (`eggs`), guardería y tablas de guerra.
+   - Genera el archivo SQLite binario compilado en `database/temp/imported.db`.
+
+3. **Vite Dev Server & OPFS Sync (Navegador)**:
+   - Al iniciar `npm run dev`, Vite expone `database/temp/imported.db` a través del middleware de desarrollo `/__dev_db`.
+   - Al abrir `http://localhost:5173/`, el motor del cliente (`sqliteEngine.ts` / `loadingStore.ts`) detecta la base importada, la descarga y la persiste automáticamente en el almacenamiento privado del navegador (**OPFS** / `pokevicio_sqlite_v2`).
+   - El juego inicia sesión en modo offline instantáneamente con todas las cuentas, Pokémon y estados listos para jugar.
 
 ## 🚀 Despliegue (Hosting)
 

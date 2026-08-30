@@ -14,7 +14,6 @@ import type { GameState } from '@/types/system/game';
 import type { AuthUser } from '@/types/auth/auth';
 
 const REQUIRED_DB_VERSION = 3;
-const LOCAL_SAVE_NEWER_THRESHOLD_MS = 3000;
 
 export interface LoadResult {
   data: GameState | null;
@@ -142,57 +141,27 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
     }
   }
 
-  // Set as initial fallback if cloud failed or was skipped
-  if (localData && !finalSaveData) {
-    finalSaveData = localData;
-  }
-  
-  // Force starterChosen to true if they already have a team (legacy fix)
-  if (localData && localData.team && localData.team.length > 0) {
-    localData.starterChosen = true;
-  }
- 
-  if (localData) logger.debug('LOAD', 'Local save state:', { starterChosen: localData.starterChosen, teamSize: localData.team?.length });
-  
-  let isNewerThanCloud = false;
-  if (localData) {
+  // 3. Database is the absolute Single Source of Truth (SSoT) for both Online and Offline contexts.
+  // When a database record exists in game_saves, it MUST ALWAYS take precedence over local client caches.
+  // This prevents stale local saves from overriding server restorations, database rollbacks, or migrations.
+  if (cloudSaveRow) {
+    finalSaveData = cloudSaveRow.save_data;
+    if (finalSaveData.team && finalSaveData.team.length > 0) {
+      finalSaveData.starterChosen = true;
+    }
+    // Update local OPFS cache to stay synchronized with authoritative database state
     try {
-      if (cloudSaveRow) {
-        const cloudData = cloudSaveRow.save_data;
-        
-        // Legacy fix for cloud saves
-        if (cloudData.team && cloudData.team.length > 0) {
-          cloudData.starterChosen = true;
-        }
-        
-        let cloudTime = 0;
-        if (cloudSaveRow.updated_at) {
-          try {
-            let dateStr = cloudSaveRow.updated_at;
-            if (dateStr && !dateStr.includes('T') && dateStr.includes(' ')) {
-              dateStr = dateStr.replace(' ', 'T') + 'Z';
-            }
-            cloudTime = Temporal.Instant.from(dateStr).epochMilliseconds;
-          } catch (_) {
-            try {
-              const ms = Number(cloudSaveRow.updated_at);
-              cloudTime = !isNaN(ms) ? ms : Temporal.Instant.from(cloudSaveRow.updated_at).epochMilliseconds;
-            } catch (err) {
-              throw new Error(`[loadService] Error de parseo de timestamp en cloudSaveRow: ${(err as Error).message}`);
-            }
-          }
-        }
-        const localTime = (Reflect.get(localData, '_last_updated') as number | undefined) || 0;
-
-        // Legacy Rule: If local is at least 3s newer, prioritize it.
-        if (localTime > cloudTime + LOCAL_SAVE_NEWER_THRESHOLD_MS) {
-          logger.info('LOAD', 'Local save is newer. Prioritizing Local.');
-          finalSaveData = localData;
-          isNewerThanCloud = true;
-        }
-      }
-    } catch (e) {
-      throw new Error(`[loadService] Error parsing local save context: ${(e as Error).message}`);
+      const { compress } = await import('@/logic/utils/compression');
+      const compressed = await compress(JSON.stringify(finalSaveData));
+      await writeOpfsFile(opfsKey, compressed);
+    } catch (_) {
+      // Non-blocking cache sync
+    }
+  } else if (localData) {
+    // Only fall back to local cached save if no database record exists (e.g. initial offline sandbox)
+    finalSaveData = localData;
+    if (finalSaveData.team && finalSaveData.team.length > 0) {
+      finalSaveData.starterChosen = true;
     }
   }
 
@@ -209,6 +178,6 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
     data: sanitized as GameState, // domain-ok
     issues,
     lastSaveId: cloudSaveRow?.last_save_id || null,
-    isNewerThanCloud
+    isNewerThanCloud: false
   };
 }

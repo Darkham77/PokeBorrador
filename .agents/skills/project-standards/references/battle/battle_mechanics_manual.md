@@ -1289,7 +1289,7 @@ To ensure capture difficulty aligns with official game standards and species ide
 
 ### 2. Capture Probability Formula
 
-Refer to the [Gen IX Capturing](../systems/capturing/gen-ix-capturing.md) (and other generation-specific manuals under `systems/capturing/`) for technical capture equations.
+Refer to the [Capturing Manual](../systems/capturing_manual.md) for technical capture equations.
 
 ### 3. Visual & Interface Definitions
 

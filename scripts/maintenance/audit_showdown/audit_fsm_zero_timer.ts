@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { safeScanDirectoryFiles } from './audit_helpers.js';
+import { safeScanDirectoryFiles } from './audit_helpers.ts';
 
 /**
  * Script de Auditoría Zero-Timer & Determinismo en FSM / Simulaciones

@@ -37,7 +37,7 @@
     "sim:fuzzer:gts": "node --permission --import tsx --allow-worker --allow-fs-read=* --allow-fs-write=* scripts/e2e/fuzzer/runners/run_gts_fuzzer.ts",
     "sim:fuzzer:ai": "node --permission --import tsx --allow-worker --allow-fs-read=* --allow-fs-write=* scripts/e2e/fuzzer/runners/run_ai_fuzzer.ts",
     "sim:fuzzer:trace": "node --permission --import tsx --allow-worker --allow-fs-read=* --allow-fs-write=* scripts/e2e/fuzzer/runners/fuzzer_case_replayer.ts",
-    "sim:fuzzer:validate": "node --permission --experimental-strip-types --allow-fs-read=. scripts/e2e/fuzzer/tools/validate_certified_cases.ts",
+    "sim:fuzzer:validate": "node --permission --import tsx --allow-worker --allow-fs-read=* --allow-fs-write=* scripts/e2e/fuzzer/tools/validate_certified_cases.ts",
     "sim:audit": "node --permission --experimental-strip-types --allow-fs-read=. scripts/maintenance/audit_showdown/run_audit_suite.ts",
     "sim:e2e": "npx tsx scripts/e2e/run_sequential_simulations.ts",
     "sim:e2e:table": "npx tsx scripts/e2e/run_sequential_simulations.ts table",

@@ -5,6 +5,9 @@ import type { Event as GameEvent } from '@/logic/events/eventEngine'
 import type { PokemonCompetitionTrophy } from '@/types/pokemon/pokemon'
 import { incrementRecordKey } from '@/logic/utils/mapUtils'
 import { getItemName } from '@/data/inventory/items'
+import { makePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { isAwardClaimable } from '@/logic/events/eventValidators'
 import type { useGameStore } from '@/stores/game.ts'
 import type { useAuthStore } from '@/stores/auth.ts'
 import type { useUIStore } from '@/stores/ui.ts'
@@ -107,6 +110,38 @@ function applyAwardPrize(ctx: EventAwardsContext, rawPrize: unknown) {
         incrementRecordKey(gameStore.state.inventory, k, v)
         const itemName = getItemName(k) || k
         uiStore.notify(`¡Obtuviste ${itemName}${v > 1 ? ` x${v}` : ''}!`, '🎒')
+        totalNotified++
+      }
+    }
+  }
+
+  if (prize.type === 'pokemon' || prize.species) {
+    const speciesId = String(prize.species || '')
+    if (speciesId && pokemonDataProvider.getPokemonData(speciesId)) {
+      const level = Number(prize.level || 5)
+      const isShiny = Boolean(prize.shiny)
+      const nature = typeof prize.nature === 'string' ? prize.nature : undefined
+      const rawIvs = (prize.ivs && typeof prize.ivs === 'object') ? (prize.ivs as Record<string, number>) : null // open-record
+      const ivFloor = rawIvs ? Math.min(...Object.values(rawIvs).filter((v: number) => typeof v === 'number')) : 0
+
+      const createdPoke = makePokemon(speciesId, level, {
+        isShiny,
+        nature,
+        ivFloor: Number.isFinite(ivFloor) ? ivFloor : 0
+      })
+
+      if (createdPoke) {
+        if (rawIvs) {
+          if (typeof rawIvs.hp === 'number') createdPoke.ivs.hp = rawIvs.hp
+          if (typeof rawIvs.atk === 'number') createdPoke.ivs.atk = rawIvs.atk
+          if (typeof rawIvs.def === 'number') createdPoke.ivs.def = rawIvs.def
+          if (typeof rawIvs.spa === 'number') createdPoke.ivs.spa = rawIvs.spa
+          if (typeof rawIvs.spd === 'number') createdPoke.ivs.spd = rawIvs.spd
+          if (typeof rawIvs.spe === 'number') createdPoke.ivs.spe = rawIvs.spe
+          recalcPokemonStats(createdPoke)
+        }
+        gameStore.addPokemon(createdPoke, { notify: false })
+        uiStore.notify(`¡Obtuviste a ${createdPoke.name}${isShiny ? ' ✨' : ''}!`, '🎁')
         totalNotified++
       }
     }
@@ -233,9 +268,14 @@ export async function fetchPastEvents(ctx: EventAwardsContext) {
 }
 
 export async function claimAward(ctx: EventAwardsContext, awardId: string): Promise<string | null> {
-  const { gameStore, pendingAwards, pastEvents } = ctx
+  const { gameStore, pendingAwards, pastEvents, allEvents, uiStore } = ctx
   if (!gameStore.db) return null
   const targetAward = pendingAwards.value.find(a => a.id === awardId) || pastEvents.value.find(pe => pe.myAward?.id === awardId)?.myAward
+
+  if (!targetAward || !isAwardClaimable(targetAward, allEvents.value)) {
+    uiStore.notify('Esta recompensa pertenece a un evento archivado o no es válida. Puedes descartarla.', '⚠️')
+    return null
+  }
 
   try {
     const { data, error } = await gameStore.db.rpc('claim_award', { p_award_id: awardId })
@@ -282,4 +322,36 @@ export async function claimAward(ctx: EventAwardsContext, awardId: string): Prom
     logger.error('Events', `Error claiming award: ${(e as Error).message}`)
   }
   return null
+}
+
+export async function discardAward(ctx: EventAwardsContext, awardId: string): Promise<boolean> {
+  const { gameStore, pendingAwards, pastEvents, uiStore } = ctx
+  if (!gameStore.db) return false
+
+  try {
+    const { error } = await gameStore.db.from('awards')
+      .delete()
+      .eq('id', awardId)
+
+    if (!error) {
+      pendingAwards.value = pendingAwards.value.filter(a => a.id !== awardId)
+      pastEvents.value = pastEvents.value.map(pe => {
+        if (pe.myAward?.id === awardId) {
+          return {
+            ...pe,
+            hasUnclaimedAward: false,
+            myAward: null
+          }
+        }
+        return pe
+      })
+      uiStore.notify('Recompensa descartada correctamente.', '🗑️')
+      return true
+    } else {
+      logger.error('Events', `Failed to discard award: ${error}`)
+    }
+  } catch (e) {
+    logger.error('Events', `Error discarding award: ${(e as Error).message}`)
+  }
+  return false
 }

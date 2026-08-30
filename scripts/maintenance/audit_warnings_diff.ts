@@ -20,6 +20,7 @@ import { type AuditSeverity } from './audit_rules.ts';
 import { type StandardAuditResult } from '../lib/auditContract.ts';
 import { renderBanner } from '../lib/unifiedTheme.ts';
 import { discoverAuditors } from './auditScanner.ts';
+import { executeAuditorStreaming } from '../lib/streamingRunner.ts';
 
 enableCompileCache();
 
@@ -285,17 +286,20 @@ async function main() {
   console.log(styleText('dim', '[ 3/3 ] 🔍 Ejecutando todas las suites de auditoría descubiertas...'));
   const discoveredTasks = await discoverAuditors();
   const subAuditorViolations: Violation[] = [];
+  const totalTasks = discoveredTasks.length;
 
-  for (const task of discoveredTasks) {
-    spawnSync(task.command, task.args, {
-      stdio: ['ignore', 'pipe', 'pipe'],
-      shell: task.shell ?? false,
-      encoding: 'utf-8',
-      timeout: task.timeoutMs ?? 60000,
-      env: {
-        ...process.env,
-        AUDIT_SUBPROCESS: 'true'
-      }
+  for (let i = 0; i < totalTasks; i++) {
+    const task = discoveredTasks[i]!;
+    const stepNum = i + 1;
+    const stepStr = String(stepNum).padStart(2, '0');
+    const totalStr = String(totalTasks).padStart(2, '0');
+    const pct = Math.round((stepNum / totalTasks) * 100);
+    const pctStr = `${pct}%`.padStart(4, ' ');
+
+    console.log(`     ${styleText('dim', `[ ${stepStr}/${totalStr} │ ${pctStr} ]`)} ⚙️  ${styleText('cyan', task.name)} ${styleText('dim', `(${task.id})`)}...`);
+
+    const proc = await executeAuditorStreaming(task, task.args, (subLine) => {
+      console.log(`        ${styleText('dim', '│')}  ${styleText('dim', subLine)}`);
     });
 
     const jsonPath = path.resolve(process.cwd(), 'scratch/audits', task.family, `${task.id}.json`);
@@ -318,7 +322,16 @@ async function main() {
         });
       }
     } catch {
-      // Fallback si no generó archivo
+      if (proc.timedOut) {
+        subAuditorViolations.push({
+          file: task.scriptPath,
+          line: 1,
+          message: `Timeout excedido (${task.timeoutMs ?? 60000}ms) en ejecución de la suite.`,
+          context: task.name,
+          severity: 'error',
+          ruleId: task.id
+        });
+      }
     }
   }
 

@@ -7,7 +7,7 @@
 
 import fsPromises from 'node:fs/promises';
 import path from 'node:path';
-import { styleText } from 'node:util';
+import { styleText, parseArgs } from 'node:util';
 
 const ENV_FILE = path.resolve(process.cwd(), '.env');
 const DEFAULT_POSTGRES_PORT_TEXT = '5432';
@@ -156,4 +156,46 @@ export function findServerConfig(serverConfigs: Record<string, ServerConfig>, pr
   if (direct) return direct;
   const matchKey = Object.keys(serverConfigs).find(k => serverConfigs[k]?.ID === profileOrId);
   return matchKey ? (serverConfigs[matchKey] || null) : null;
+}
+
+export function parseServerArguments(args: string[], baseProfiles: string[], allAvailable: string[]): string[] {
+  const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : a);
+  const { values, positionals } = parseArgs({
+    args: normalized,
+    options: {
+      server: { type: 'string', short: 's' },
+      all: { type: 'boolean', short: 'a' },
+      help: { type: 'boolean', short: 'h' }
+    },
+    allowPositionals: true,
+    strict: false
+  });
+
+  const isHelp = values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
+  if (isHelp) {
+    console.log(styleText('cyan', `\n📖 USO: npm run <comando> [server=<perfil> | <perfil> | all]`));
+    console.log(styleText('gray', '\nOpciones disponibles:'));
+    console.log(styleText('gray', '  server=<perfil>   : Nombre del perfil de servidor objetivo.'));
+    console.log(styleText('gray', '  <perfil>          : Nombre directo del servidor (ej. server_franco, nas_franco).'));
+    console.log(styleText('gray', '  all               : Aplica la operación a todos los servidores del .env.'));
+    console.log(styleText('cyan', `\nPerfiles disponibles: ${allAvailable.join(', ')}`));
+    process.exit(0);
+  }
+
+  const isAll = Boolean(values.all || values.server === 'all' || positionals.includes('all') || args.includes('all'));
+  const rawServer = typeof values.server === 'string' ? values.server.replace(/^=/, '') : undefined;
+  const serverArg = (rawServer && rawServer !== 'all' ? rawServer : undefined) ||
+                    positionals.find(p => p !== 'all' && (allAvailable.includes(p) || baseProfiles.includes(p)));
+
+  if (!serverArg && !isAll) {
+    console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas seleccionar indicando server=<perfil>, el nombre del servidor o "all".'));
+    console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
+    console.log(styleText('gray', 'Ejemplos:'));
+    console.log(styleText('gray', '  npm run servers:db:update server=server_franco'));
+    console.log(styleText('gray', '  npm run servers:db:update server_franco'));
+    console.log(styleText('gray', '  npm run servers:db:update all'));
+    process.exit(1);
+  }
+
+  return serverArg ? [serverArg] : baseProfiles;
 }

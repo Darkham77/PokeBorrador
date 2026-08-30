@@ -214,6 +214,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
                 try {
                   await ensureSchemaIntegrity(_sqliteDb)
                   await runMigrations()
+                  await saveToOPFS(_sqliteKey, binary)
                   await setToIDB(_sqliteKey, binary)
                   await setToIDB(_sqliteKey + '_backup', binary)
                   if (typeof window === 'undefined' || !window.__GTS_SIMULATION__) {
@@ -273,9 +274,8 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
       return _sqliteDb
     }
     
-    // Check if we are in development mode and if there is a pending import (skip if already imported in this browser context)
-    const alreadyImported = typeof localStorage !== 'undefined' && localStorage.getItem('pokevicio_db_imported') === 'true';
-    if (import.meta.env.DEV && !alreadyImported) {
+    // Check if we are in development mode and if there is a pending import
+    if (import.meta.env.DEV) {
       try {
         const checkRes = await devFetch('/api/dev-import-db-check', _sqliteKey, { cache: 'no-store' })
         if (checkRes.ok) {
@@ -298,10 +298,15 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
               const arrayBuffer = await response.arrayBuffer()
               const binary = new Uint8Array(arrayBuffer)
               
-              // Save directly to IDB (both primary and backup)
+              // Save directly to OPFS, IDB and Shadow Backup
+              await saveToOPFS(_sqliteKey, binary)
               await setToIDB(_sqliteKey, binary)
               await setToIDB(_sqliteKey + '_backup', binary)
-              logger.success('SQLite', 'Dev DB successfully imported and persisted to IndexedDB!')
+              logger.success('SQLite', 'Dev DB successfully imported and persisted to OPFS and IndexedDB!')
+              
+              // Invalidate all stale individual save caches to prevent them from overriding newly imported/migrated saves
+              const { purgeAllCachedSaves } = await import('../utils/opfsStorage.ts');
+              await purgeAllCachedSaves();
               
               // Trigger file cleanup on the dev server
               try {
@@ -313,13 +318,12 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
               // Set import reload flag to preserve session during reload
               try {
                 sessionStorage.setItem('pokevicio_import_reload', 'true')
-                localStorage.setItem('pokevicio_db_imported', 'true')
                 sessionStorage.setItem('pokevicio_import_original_path', window.location.pathname)
               } catch (e) {
                 throw new Error(`[sqliteEngine] Failed to access sessionStorage during import reload: ${String(e)}`)
               }
 
-const IMPORT_RELOAD_DELAY_MS = 1500;
+              const IMPORT_RELOAD_DELAY_MS = 1500;
 
               // Small delay so user sees the message
               await new Promise(resolve => setTimeout(resolve, IMPORT_RELOAD_DELAY_MS))
@@ -413,26 +417,41 @@ async function runMigrations(): Promise<boolean> {
       try {
         const sqlSource = m.sqlite_sql !== undefined ? m.sqlite_sql : m.sql
         const isSqliteSpec = m.sqlite_sql !== undefined
-        const statements = splitSQLStatements(sqlSource)
-        statements.forEach(stmt => {
-          const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt)
-          if (sql) {
-            try {
-              if (_sqliteDb) _sqliteDb.run(sql)
-            } catch (stmtErr: unknown) {
-              const msg = (stmtErr as Error).message.toLowerCase() // text-ok
-              const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists')
-              const isMissing = msg.includes('no such column')
-              
-              if (isDuplicate || isMissing) {
-                logger.warn('SQLite', `Statement skipped (idempotent/safe): ${stmt}`)
-              } else {
-                logger.error('SQLite', `Statement failed: ${stmt} - ${msg}`)
-                throw stmtErr
+        if (isSqliteSpec) {
+          try {
+            _sqliteDb.exec(sqlSource)
+          } catch (_execErr: unknown) {
+            const statements = splitSQLStatements(sqlSource)
+            statements.forEach(stmt => {
+              const sql = translatePostgresToSqlite(stmt)
+              if (sql) {
+                try {
+                  if (_sqliteDb) _sqliteDb.run(sql)
+                } catch (stmtErr: unknown) {
+                  const msg = (stmtErr as Error).message.toLowerCase() // text-ok
+                  const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists')
+                  const isMissing = msg.includes('no such column')
+                  if (!isDuplicate && !isMissing) throw stmtErr
+                }
+              }
+            })
+          }
+        } else {
+          const statements = splitSQLStatements(sqlSource)
+          statements.forEach(stmt => {
+            const sql = translatePostgresToSqlite(stmt)
+            if (sql) {
+              try {
+                if (_sqliteDb) _sqliteDb.run(sql)
+              } catch (stmtErr: unknown) {
+                const msg = (stmtErr as Error).message.toLowerCase() // text-ok
+                const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists')
+                const isMissing = msg.includes('no such column')
+                if (!isDuplicate && !isMissing) throw stmtErr
               }
             }
-          }
-        })
+          })
+        }
         _sqliteDb.run("INSERT OR IGNORE INTO _migrations (id) VALUES (?)", [m.id])
         hasAppliedMigrations = true
         logger.success('SQLite', `Migration applied successfully: ${m.id}`)

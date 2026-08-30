@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { parseArgs } from 'node:util'
-import { parseServerArguments } from '@/../scripts/database/backup_supabase_db.ts'
+import { parseServerArguments } from '@/../scripts/lib/supabaseClient.ts'
 
 describe('CLI Argument Parsing & Standardization', () => {
   const baseProfiles = ['nas_franco', 'cloud']

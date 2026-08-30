@@ -93,11 +93,14 @@ async function main() {
   const errors: string[] = []; // no-domain
   const warnings: string[] = []; // no-domain
 
+  validator.logStep(1, 2, `Comparando ${mermaidStates.size} estados Mermaid del manual contra constantes JS...`);
   // [CHECK 1] Nodos Mermaid -> Constantes JS
   const missing = Array.from(mermaidStates).filter(s => !jsKeys.has(s));
   missing.forEach(s => {
     errors.push(`Faltante en JS: ${s}`);
   });
+
+  validator.logStep(2, 2, `Auditando ${mermaidTransitions.length} transiciones Mermaid contra validTransitions en JS...`);
 
   // [CHECK 3] Constantes JS -> Nodos Mermaid (Búsqueda de Código Basura)
   const IGNORED_JS_STATES = new Set([ // runtime-set

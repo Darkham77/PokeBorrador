@@ -92,24 +92,27 @@ function devDbImportPlugin() {
       };
 
       const getDbPath = (key: string): string => {
-        const filename = key === 'default' ? 'imported.db' : `imported_${key}.db`;
-        return path.resolve(import.meta.dirname, 'database/temp', filename);
+        const specificPath = path.resolve(import.meta.dirname, 'database/temp', `imported_${key}.db`);
+        if (key !== 'default' && key !== 'pokevicio_sqlite_v2' && fs.existsSync(specificPath)) {
+          return specificPath;
+        }
+        return path.resolve(import.meta.dirname, 'database/temp', 'imported.db');
       };
 
       server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
         if (req.url?.startsWith('/api/dev-import-db-check')) {
           const dbKey = getDbKey(req);
-          if (importedDbRamBuffers.has(dbKey)) {
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ exists: true }));
-            return;
-          }
           const dbPath = getDbPath(dbKey);
           try {
             await fsPromises.access(dbPath);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ exists: true }));
           } catch {
+            if (importedDbRamBuffers.has(dbKey)) {
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ exists: true }));
+              return;
+            }
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ exists: false }));
           }
@@ -117,63 +120,49 @@ function devDbImportPlugin() {
         }
 
         if (req.url?.startsWith('/api/dev-import-db-cleanup')) {
-          const hasSpecificKey = Boolean(req.headers['x-db-key']);
           const dbKey = getDbKey(req);
-
-          if (!hasSpecificKey || dbKey === 'default') {
-            importedDbRamBuffers.clear();
-            const tempDir = path.resolve(import.meta.dirname, 'database/temp');
-            try {
-              const files = await fsPromises.readdir(tempDir);
-              for (const file of files) {
-                if (file.startsWith('imported_') && file.endsWith('.db')) {
-                  await fsPromises.unlink(path.join(tempDir, file)).catch(() => {});
-                }
-              }
-            } catch { /* directory might not exist */ }
-            res.writeHead(200, { 'Content-Type': 'text/plain' });
-            res.end('All temporary DBs cleaned up');
-            return;
-          }
-
           importedDbRamBuffers.delete(dbKey);
+          importedDbRamBuffers.delete('default');
+          importedDbRamBuffers.delete('pokevicio_sqlite_v2');
           const dbPath = getDbPath(dbKey);
           try {
             await fsPromises.unlink(dbPath);
             console.log(` 📦 [DevDB] Temporary ${path.basename(dbPath)} cleaned up from RAM & disk.`);
-            res.writeHead(200, { 'Content-Type': 'text/plain' });
-            res.end('Cleaned up');
-          } catch {
-            res.writeHead(200, { 'Content-Type': 'text/plain' });
-            res.end('Already cleaned up');
-          }
+          } catch { /* ignore */ }
+          const defaultPath = path.resolve(import.meta.dirname, 'database/temp', 'imported.db');
+          try {
+            await fsPromises.unlink(defaultPath);
+          } catch { /* ignore */ }
+          res.writeHead(200, { 'Content-Type': 'text/plain' });
+          res.end('Cleaned up');
           return;
         }
 
         if (req.url?.startsWith('/api/dev-import-db')) {
           const dbKey = getDbKey(req);
-          const ramBuf = importedDbRamBuffers.get(dbKey);
-          if (ramBuf) {
-            res.writeHead(200, {
-              'Content-Type': 'application/octet-stream',
-              'Cache-Control': 'no-store'
-            });
-            res.end(ramBuf);
-            console.debug(`📦 [DevDB] Temporary ${dbKey} sent to client from RAM memory.`);
-            return;
-          }
           const dbPath = getDbPath(dbKey);
           try {
             await fsPromises.access(dbPath);
             const binary = await fsPromises.readFile(dbPath);
-            importedDbRamBuffers.set(dbKey, binary);
+            importedDbRamBuffers.delete(dbKey);
             res.writeHead(200, {
               'Content-Type': 'application/octet-stream',
               'Cache-Control': 'no-store'
             });
             res.end(binary);
             console.debug(`📦 [DevDB] Temporary ${path.basename(dbPath)} sent to client from disk.`);
+            return;
           } catch {
+            const ramBuf = importedDbRamBuffers.get(dbKey);
+            if (ramBuf) {
+              res.writeHead(200, {
+                'Content-Type': 'application/octet-stream',
+                'Cache-Control': 'no-store'
+              });
+              res.end(ramBuf);
+              console.debug(`📦 [DevDB] Temporary ${dbKey} sent to client from RAM memory.`);
+              return;
+            }
             res.writeHead(404, { 'Content-Type': 'text/plain' });
             res.end('No imported database found');
           }

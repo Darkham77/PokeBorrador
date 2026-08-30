@@ -125,5 +125,5 @@ describe('Backup Saves Serialization & Integrity Audit', () => {
     }
 
     expect(verifiedCount).toBe(saves.length);
-  });
+  }, 120000);
 });

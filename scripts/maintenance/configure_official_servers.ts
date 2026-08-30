@@ -106,7 +106,7 @@ export const DEFAULT_SERVER = (OFFICIAL_SERVERS.find(s => s.isDefault) || OFFICI
   await fsPromises.mkdir(outputDir, { recursive: true });
 
   await fsPromises.writeFile(OUTPUT_FILE, outputContent, 'utf-8');
-  console.log(styleText('green', `✨ src/data/official_servers.ts configurado exitosamente con ${profiles.length} servidores.\n`));
+  console.log(styleText('green', `✨ src/data/system/official_servers.ts configurado exitosamente con ${profiles.length} servidores.\n`));
 }
 
 // Permitir ejecución directa

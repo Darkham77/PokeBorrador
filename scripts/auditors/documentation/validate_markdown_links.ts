@@ -46,7 +46,7 @@ export interface MarkdownLinkAuditOptions {
   readonly outputFile?: string;
 }
 
-const DEFAULT_ROOT = path.resolve(import.meta.dirname, '../...ts');
+const DEFAULT_ROOT = path.resolve(import.meta.dirname, '../../..');
 
 export const DEFAULT_SCAN_DIRECTORIES = [
   '.agents/skills',

@@ -53,6 +53,7 @@ async function main() {
   const battleContent = await fs.readFile(BATTLE_FILE, 'utf8');
 
 
+  validator.logStep(1, 2, 'Cargando y parseando SHOP_ITEMS y catálogo de ítems...');
   // ─── 1. Load SHOP_ITEMS directly from the JSON source ────────────────────────
   // items.ts re-exports from items.json — parsing the .ts as text yields 0 entries.
   const JSON_FILE = path.resolve(process.cwd(), 'src/data/inventory/items.json');
@@ -67,6 +68,7 @@ async function main() {
     .filter(item => typeof item === 'object' && item !== null && typeof item['id'] === 'string')
     .map((item, idx) => ({ ...item, id: item['id'] as string, _line: idx + 1 }));
 
+  validator.logStep(2, 2, `Validando ${shopItems.length} SHOP_ITEMS, categorías, sprites y paridad con HEALING_ITEMS...`);
   // ─── 2. Extract HEALING_ITEMS keys ───────────────────────────────────────────
   const healingItems = new Set<string>();
   const healingRegex = /^\s+'([^']+)':\s*\(?[\s\S]*?\)?\s*=>/gm;

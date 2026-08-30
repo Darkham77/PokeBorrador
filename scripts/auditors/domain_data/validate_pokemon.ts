@@ -17,10 +17,12 @@ import { setupValidation } from '../../lib/validationBase.ts';
 import { POKEMON_DB } from '../../../src/data/pokemon/pokemonDB.ts';
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS } from '../../../src/data/system/constants.ts';
+import type { PokemonBaseData } from '../../../src/types/system/database.ts';
 
 enableCompileCache();
 
 const DB_FILE = path.resolve(process.cwd(), 'src/data/pokemon/pokemonDB.ts');
+const STAT_KEYS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
 
 function isEnabledPokemonId(id: string): id is (typeof ENABLED_POKEMON_IDS)[number] {
   return (ENABLED_POKEMON_IDS as readonly string[]).includes(id); // no-domain
@@ -37,11 +39,10 @@ async function main() {
   const errors: string[] = []; // no-domain
   const warnings: string[] = []; // no-domain
 
-  const statsKeys: Array<'hp' | 'atk' | 'def' | 'spa' | 'spd' | 'spe'> = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
-
+  validator.logStep(1, 2, 'Validando estadísticas y tipos base contra Showdown Dex...');
   let count = 0;
   // Validar cada Pokémon contra el Dex oficial de Showdown
-  for (const [coreId, corePoke] of Object.entries(POKEMON_DB)) {
+  for (const [coreId, corePoke] of Object.entries(POKEMON_DB) as Array<[string, PokemonBaseData]>) {
     if (!isEnabledPokemonId(coreId)) continue;
     count++;
     const tag = `[${corePoke.name} (${coreId})]`;
@@ -53,7 +54,7 @@ async function main() {
     }
 
     // A. Validar estadísticas base
-    for (const stat of statsKeys) {
+    for (const stat of STAT_KEYS) {
       const coreVal = corePoke[stat];
       const sdVal = species.baseStats[stat];
       if (coreVal !== sdVal) {

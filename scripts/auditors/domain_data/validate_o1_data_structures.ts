@@ -212,6 +212,7 @@ async function main() {
   await validator.checkFiles();
 
   const filesToScan = scanDir('src');
+  validator.logStep(1, 1, `Escaneando patrones de búsqueda lineal O(N) en ${filesToScan.length} archivos...`);
   let errorCount = 0;
   let warningCount = 0;
 

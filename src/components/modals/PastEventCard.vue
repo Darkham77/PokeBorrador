@@ -7,6 +7,7 @@ import type { Event as GameEvent } from '@/logic/events/eventEngine'
 import { useChatCosmeticsStore } from '@/stores/social/chatCosmetics'
 import { useEventStore } from '@/stores/events'
 import { useModalStore } from '@/stores/modals'
+import { isAwardClaimable } from '@/logic/events/eventValidators'
 import PastEventWinnerItem from './PastEventWinnerItem.vue'
 
 interface Props {
@@ -104,6 +105,47 @@ const onBtnHover = (event: MouseEvent, isEntering: boolean) => {
       clearProps: 'transform,background,borderColor'
     })
   }
+}
+
+const onDiscardHover = (event: MouseEvent, isEntering: boolean) => {
+  const btn = event.currentTarget as HTMLElement
+  if (!btn || btn.hasAttribute('disabled')) return
+  if (isEntering) {
+    gsap.to(btn, {
+      background: '#ef4444',
+      y: HOVER_TRANSLATE_Y_PX,
+      borderColor: '#fca5a5',
+      duration: HOVER_ANIMATION_DURATION_SEC,
+      ease: 'power2.out',
+      overwrite: 'auto'
+    })
+  } else {
+    gsap.to(btn, {
+      background: 'rgba(239, 68, 68, 0.15)',
+      y: 0,
+      borderColor: 'rgba(239, 68, 68, 0.4)',
+      duration: HOVER_ANIMATION_DURATION_SEC,
+      ease: 'power2.out',
+      overwrite: 'auto',
+      clearProps: 'transform,background,borderColor'
+    })
+  }
+}
+
+const onDiscardClick = (awardId?: string) => {
+  if (!awardId) return
+  if (modalStore.isOpen('Confirm')) return
+  modalStore.open('Confirm', {
+    title: '¿DESCARTAR RECOMPENSA?',
+    message: `¿Estás seguro de que deseas descartar la recompensa de "${displayName.value}"? Esta acción no se puede deshacer y se eliminará permanentemente.`,
+    confirmText: 'DESCARTAR',
+    cancelText: 'CANCELAR',
+    type: 'danger',
+    variant: 'retro',
+    onConfirm: async () => {
+      await eventStore.discardAward(awardId)
+    }
+  })
 }
 
 const onInfoBtnHover = (event: MouseEvent, isEntering: boolean) => {
@@ -297,16 +339,28 @@ const getCategoryIcon = (catId: string) => {
 
       <!-- Claim Status / Button -->
       <div class="award-action-slot">
-        <button
-          v-if="item.hasUnclaimedAward && item.myAward?.id"
-          :id="'claim-past-award-btn-' + (item.myAward?.id || item.id)"
-          class="retro-btn claim-btn"
-          @mouseenter="onBtnHover($event, true)"
-          @mouseleave="onBtnHover($event, false)"
-          @click.stop="onClaimClick(item.myAward.id)"
-        >
-          RECLAMAR PREMIO <span class="btn-emoji">🎁</span>
-        </button>
+        <template v-if="item.hasUnclaimedAward && item.myAward?.id">
+          <button
+            v-if="isAwardClaimable(item.myAward, eventStore.allEvents)"
+            :id="'claim-past-award-btn-' + (item.myAward?.id || item.id)"
+            class="retro-btn claim-btn"
+            @mouseenter="onBtnHover($event, true)"
+            @mouseleave="onBtnHover($event, false)"
+            @click.stop="onClaimClick(item.myAward.id)"
+          >
+            RECLAMAR PREMIO <span class="btn-emoji">🎁</span>
+          </button>
+          <button
+            :id="'discard-past-award-btn-' + (item.myAward?.id || item.id)"
+            class="retro-btn discard-btn"
+            :class="{ 'only-action': !isAwardClaimable(item.myAward, eventStore.allEvents) }"
+            @mouseenter="onDiscardHover($event, true)"
+            @mouseleave="onDiscardHover($event, false)"
+            @click.stop="onDiscardClick(item.myAward.id)"
+          >
+            DESCARTAR <span class="btn-emoji">🗑️</span>
+          </button>
+        </template>
 
         <div
           v-else-if="item.isClaimed"
@@ -464,6 +518,7 @@ const getCategoryIcon = (catId: string) => {
 .award-action-slot {
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
 .retro-btn {
@@ -487,6 +542,41 @@ const getCategoryIcon = (catId: string) => {
       border-color: #86efac;
       box-shadow: 0 3px 0 #15803d, 0 0 14px Rgba(74, 222, 128, 0.4);
       transform: Translatey(-1px);
+    }
+
+    &:active:not(:disabled) {
+      transform: Translatey(1px);
+      box-shadow: 0 0 0 transparent;
+    }
+  }
+
+  &.discard-btn {
+    background: Rgba(239, 68, 68, 0.15);
+    border-color: Rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+    font-weight: bold;
+    box-shadow: 0 2px 0 Rgba(0, 0, 0, 0.4);
+    text-shadow: 0 1px 2px Rgba(0, 0, 0, 0.5);
+
+    &:hover:not(:disabled) {
+      background: #ef4444;
+      border-color: #fca5a5;
+      color: var(--white);
+      box-shadow: 0 3px 0 #b91c1c, 0 0 12px Rgba(239, 68, 68, 0.4);
+      transform: Translatey(-1px);
+    }
+
+    &.only-action {
+      background: #dc2626;
+      border-color: #f87171;
+      color: var(--white);
+      box-shadow: 0 2px 0 #991b1b, 0 0 10px Rgba(220, 38, 38, 0.3);
+
+      &:hover:not(:disabled) {
+        background: #ef4444;
+        border-color: #fca5a5;
+        box-shadow: 0 3px 0 #991b1b, 0 0 14px Rgba(239, 68, 68, 0.5);
+      }
     }
 
     &:active:not(:disabled) {

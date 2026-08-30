@@ -1,5 +1,5 @@
 import { readFileSync, existsSync } from 'node:fs';
-import { getFilesRecursively } from './audit_helpers.js';
+import { getFilesRecursively } from './audit_helpers.ts';
 
 /**
  * Script de Auditoría de Código Compartido (100% Shared Execution)

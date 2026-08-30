@@ -17,6 +17,7 @@ export interface RepairAccountOptions {
   all?: boolean;
   server?: string | null;
   dbPath?: string;
+  dbInstance?: DatabaseSync;
   silent?: boolean;
 }
 
@@ -103,6 +104,29 @@ function auditAndRepairSaveData(
     });
   }
 
+  // 3. Auditar y reparar Guardería (Warehouse)
+  const warehouse = (saveData as Record<string, unknown>).daycareWarehouse; // open-record
+  if (Array.isArray(warehouse)) {
+    warehouse.forEach((p: unknown, idx: number) => {
+      if (!p) return;
+      const initialCheck = checkPokemonLegality(p as Pokemon);
+      if (!initialCheck.isLegal || (p as Pokemon).isIllegal) {
+        const report = repairPokemonLegality(p as Pokemon);
+        if (report.repaired) {
+          const logHeader = `[Guardería Depósito Slot ${idx}] ${(p as Pokemon).name} (UID: ${(p as Pokemon).uid}):`;
+          accountDetails.push(logHeader);
+          if (!isSilent) console.log(`  ${logHeader}`);
+          report.changes.forEach(ch => {
+            accountDetails.push(`  ↳ ${ch}`);
+            if (!isSilent) console.log(`    ↳ ✅ ${ch}`);
+          });
+          accountModified = true;
+          accountFixedPokemonCount++;
+        }
+      }
+    });
+  }
+
   return {
     modified: accountModified,
     fixedPokemonCount: accountFixedPokemonCount,
@@ -111,28 +135,35 @@ function auditAndRepairSaveData(
 }
 
 /**
- * Repara cuentas almacenadas en una base de datos local SQLite.
+ * Repara cuentas almacenadas en una base de datos SQLite (.db).
  */
 export function repairAccountsInSqlite(options: RepairAccountOptions): RepairSummary {
   const isAll = Boolean(options.all);
   const targetUserId = isAll ? null : (options.userId || null);
-  const targetDbPath = options.dbPath ? path.resolve(process.cwd(), options.dbPath) : findDefaultDb();
+  const targetDbPath = options.dbPath || findDefaultDb();
   const isSilent = Boolean(options.silent);
 
-  if (!targetDbPath || !fs.existsSync(targetDbPath)) {
-    throw new Error(`No se encontró ninguna base de datos SQLite en "${targetDbPath || 'rutas por defecto'}".`);
+  let db: DatabaseSync;
+  let shouldClose = false;
+
+  if (options.dbInstance) {
+    db = options.dbInstance;
+  } else {
+    if (!targetDbPath || !fs.existsSync(targetDbPath)) {
+      throw new Error(`No se encontró ninguna base de datos SQLite en "${targetDbPath || 'rutas por defecto'}".`);
+    }
+    db = new DatabaseSync(targetDbPath);
+    shouldClose = true;
   }
 
   if (!isSilent) {
-    console.log(`\n📦 Abriendo base de datos SQLite: ${targetDbPath}`);
+    console.log(`\n📦 Evaluando base de datos SQLite ${options.dbPath ? options.dbPath : ''}...`);
     if (isAll) {
       console.log(`🌐 Modo masivo (--all): Auditando y corrigiendo todas las cuentas registradas...`);
     } else {
       console.log(`🎯 Modo individual: Reparando cuenta "${targetUserId}"...`);
     }
   }
-
-  using db = new DatabaseSync(targetDbPath);
 
   let queryStr = 'SELECT user_id, save_data FROM game_saves';
   const params: string[] = []; // no-domain
@@ -215,6 +246,10 @@ export function repairAccountsInSqlite(options: RepairAccountOptions): RepairSum
     console.log(`   - Cuentas reparadas: ${summary.accountsRepaired}`);
     console.log(`   - Pokémon reparados: ${summary.pokemonRepaired}`);
     console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
+  }
+
+  if (shouldClose) {
+    db.close();
   }
 
   return summary;

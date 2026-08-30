@@ -13,9 +13,82 @@ export interface QueryFilter {
   op: string;
 }
 
+export interface RawClause {
+  sql: string;
+  params: unknown[];
+}
+
+function parseSingleFilter(expr: string, params: unknown[]): string {
+  const firstDot = expr.indexOf('.');
+  if (firstDot === -1) return '';
+  const col = expr.slice(0, firstDot);
+  const rest = expr.slice(firstDot + 1);
+  const secondDot = rest.indexOf('.');
+  if (secondDot === -1) return '';
+  const opName = rest.slice(0, secondDot);
+  const valStr = rest.slice(secondDot + 1);
+
+  let op = '=';
+  if (opName === 'eq') op = '=';
+  else if (opName === 'neq') op = '!=';
+  else if (opName === 'gt') op = '>';
+  else if (opName === 'gte') op = '>=';
+  else if (opName === 'lt') op = '<';
+  else if (opName === 'lte') op = '<=';
+  else if (opName === 'like' || opName === 'ilike') op = 'LIKE';
+  else if (opName === 'is') op = 'IS';
+
+  if (valStr === 'null') {
+    params.push(null);
+  } else if (valStr === 'true') {
+    params.push(1);
+  } else if (valStr === 'false') {
+    params.push(0);
+  } else {
+    params.push(valStr);
+  }
+  return `"${col}" ${op} ?`;
+}
+
+function parseOrClause(orString: string, params: unknown[]): string {
+  const parts: string[] = []; // no-domain
+  let depth = 0;
+  let current = '';
+  for (let i = 0; i < orString.length; i++) {
+    const char = orString[i];
+    if (char === '(') depth++;
+    else if (char === ')') depth--;
+
+    if (char === ',' && depth === 0) {
+      if (current.trim()) parts.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  if (current.trim()) parts.push(current.trim());
+
+  const parsedParts = parts.map(part => {
+    if (part.startsWith('and(') && part.endsWith(')')) {
+      const inner = part.slice(4, -1);
+      const innerParts = inner.split(',');
+      const innerSql = innerParts.map(p => parseSingleFilter(p.trim(), params)).filter(Boolean).join(' AND ');
+      return `(${innerSql})`;
+    } else if (part.startsWith('or(') && part.endsWith(')')) {
+      const inner = part.slice(3, -1);
+      return `(${parseOrClause(inner, params)})`;
+    } else {
+      return parseSingleFilter(part, params);
+    }
+  }).filter(Boolean);
+
+  return parsedParts.length > 0 ? `(${parsedParts.join(' OR ')})` : '';
+}
+
 export interface QueryBuilder {
   _table: string;
   _filters: QueryFilter[];
+  _rawClauses: RawClause[];
   _limit: number | null;
   _order: string | null;
   _select: string;
@@ -23,6 +96,7 @@ export interface QueryBuilder {
   eq: (col: string, val: unknown) => QueryBuilder;
   neq: (col: string, val: unknown) => QueryBuilder;
   in: (col: string, vals: unknown[]) => QueryBuilder;
+  or: (clause: string) => QueryBuilder;
   order: (col: string, options?: { ascending?: boolean }) => QueryBuilder;
   limit: (n: number) => QueryBuilder;
   single: () => Promise<{ data: Record<string, unknown> | null, error: string | null }>;
@@ -36,6 +110,7 @@ export interface QueryBuilder {
 export class SQLiteQueryBuilder implements QueryBuilder {
   _table: string;
   _filters: QueryFilter[] = [];
+  _rawClauses: RawClause[] = [];
   _limit: number | null = null;
   _order: string | null = null;
   _select: string = '*';
@@ -68,6 +143,15 @@ export class SQLiteQueryBuilder implements QueryBuilder {
     return this;
   }
 
+  or(clause: string): QueryBuilder {
+    const params: unknown[] = [];
+    const sql = parseOrClause(clause, params);
+    if (sql) {
+      this._rawClauses.push({ sql, params });
+    }
+    return this;
+  }
+
   order(col: string, { ascending = true } = {}): QueryBuilder {
     this._order = `${col} ${ascending ? 'ASC' : 'DESC'}`;
     return this;
@@ -88,17 +172,31 @@ export class SQLiteQueryBuilder implements QueryBuilder {
     if (!db) return [];
     let sql = `SELECT ${this._select} FROM ${this._table}`;
     const params: unknown[] = [];
+    const whereParts: string[] = []; // no-domain
+
     if (this._filters.length) {
-      sql += ' WHERE ' + this._filters.map((f: QueryFilter) => {
+      whereParts.push(...this._filters.map((f: QueryFilter) => {
         if (f.op === 'IN') {
           const placeholders = (f.val as unknown[]).map(() => '?').join(','); // open-record
           (f.val as unknown[]).forEach((v) => params.push(v)); // open-record
-          return `${f.col} IN (${placeholders})`;
+          return `"${f.col}" IN (${placeholders})`;
         }
         params.push(f.val);
-        return `${f.col} ${f.op} ?`;
-      }).join(' AND ');
+        return `"${f.col}" ${f.op} ?`;
+      }));
     }
+
+    if (this._rawClauses.length) {
+      for (const rc of this._rawClauses) {
+        whereParts.push(rc.sql);
+        params.push(...rc.params);
+      }
+    }
+
+    if (whereParts.length) {
+      sql += ' WHERE ' + whereParts.join(' AND ');
+    }
+
     if (this._order) sql += ` ORDER BY ${this._order}`;
     if (this._limit) sql += ` LIMIT ${this._limit}`;
     
@@ -128,7 +226,7 @@ export class SQLiteQueryBuilder implements QueryBuilder {
       const r = item as Record<string, unknown>; // open-record
       const cols = Object.keys(r);
       const vals = Object.values(r);
-      const sql = `INSERT INTO ${this._table} (${cols.join(',')}) VALUES (${cols.map(() => '?').join(',')})`;
+      const sql = `INSERT INTO ${this._table} (${cols.map(c => `"${c}"`).join(',')}) VALUES (${cols.map(() => '?').join(',')})`;
       db.run(sql, vals);
     }
     await this.persist();
@@ -140,10 +238,20 @@ export class SQLiteQueryBuilder implements QueryBuilder {
     if (!db) return { data: payload, error: 'DB not ready' };
     const cols = Object.keys(payload);
     const vals = Object.values(payload);
-    let sql = `UPDATE ${this._table} SET ` + cols.map(c => `${c} = ?`).join(',');
+    let sql = `UPDATE ${this._table} SET ` + cols.map(c => `"${c}" = ?`).join(',');
     const params = [...vals];
+    const whereParts: string[] = []; // no-domain
     if (this._filters.length) {
-      sql += ' WHERE ' + this._filters.map((f: QueryFilter) => { params.push(f.val); return `${f.col} ${f.op} ?`; }).join(' AND ');
+      whereParts.push(...this._filters.map((f: QueryFilter) => { params.push(f.val); return `"${f.col}" ${f.op} ?`; }));
+    }
+    if (this._rawClauses.length) {
+      for (const rc of this._rawClauses) {
+        whereParts.push(rc.sql);
+        params.push(...rc.params);
+      }
+    }
+    if (whereParts.length) {
+      sql += ' WHERE ' + whereParts.join(' AND ');
     }
     db.run(sql, params);
     await this.persist();
@@ -155,8 +263,18 @@ export class SQLiteQueryBuilder implements QueryBuilder {
     if (!db) return { data: false, error: 'DB not ready' };
     let sql = `DELETE FROM ${this._table}`;
     const params: unknown[] = [];
+    const whereParts: string[] = []; // no-domain
     if (this._filters.length) {
-      sql += ' WHERE ' + this._filters.map((f: QueryFilter) => { params.push(f.val); return `${f.col} ${f.op} ?`; }).join(' AND ');
+      whereParts.push(...this._filters.map((f: QueryFilter) => { params.push(f.val); return `"${f.col}" ${f.op} ?`; }));
+    }
+    if (this._rawClauses.length) {
+      for (const rc of this._rawClauses) {
+        whereParts.push(rc.sql);
+        params.push(...rc.params);
+      }
+    }
+    if (whereParts.length) {
+      sql += ' WHERE ' + whereParts.join(' AND ');
     }
     db.run(sql, params);
     await this.persist();
@@ -167,3 +285,4 @@ export class SQLiteQueryBuilder implements QueryBuilder {
     return { data: true, error: null };
   }
 }
+

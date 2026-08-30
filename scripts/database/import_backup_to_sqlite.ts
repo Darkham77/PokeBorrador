@@ -132,7 +132,16 @@ console.log(`✅ Diccionario listo. ${idMap.size} usuarios registrados.`);
 // Función de reemplazo recursivo de IDs
 function replaceUserIds(value: unknown, mapping: Map<string, string>): unknown {
   if (typeof value === 'string') {
-    return mapping.get(value) || value;
+    if (mapping.has(value)) {
+      return mapping.get(value)!;
+    }
+    if (value.startsWith('private:')) {
+      const rawId = value.replace('private:', '');
+      if (mapping.has(rawId)) {
+        return `private:${mapping.get(rawId)}`;
+      }
+    }
+    return value;
   }
   if (Array.isArray(value)) {
     return value.map(item => replaceUserIds(item, mapping));
@@ -140,7 +149,8 @@ function replaceUserIds(value: unknown, mapping: Map<string, string>): unknown {
   if (value !== null && typeof value === 'object') {
     const newObj: Record<string, unknown> = {};
     for (const key of Object.keys(value)) {
-      newObj[key] = replaceUserIds((value as Record<string, unknown>)[key], mapping); // open-record
+      const mappedKey = mapping.has(key) ? mapping.get(key)! : key;
+      newObj[mappedKey] = replaceUserIds((value as Record<string, unknown>)[key], mapping); // open-record
     }
     return newObj;
   }
@@ -161,8 +171,11 @@ function transformRow(
   const rowCopy = { ...row };
 
   // Pre-mapeos específicos de nombres de columna
-  if (tableName === 'game_saves' && 'id' in rowCopy) {
-    rowCopy['last_save_id'] = rowCopy['id'];
+  if (tableName === 'game_saves') {
+    if ('id' in rowCopy) {
+      rowCopy['last_save_id'] = rowCopy['id'];
+    }
+    rowCopy['updated_at'] = new Date().toISOString();
   }
   if (tableName === 'battle_invites' && 'challenger_id' in rowCopy) {
     rowCopy['sender_id'] = rowCopy['challenger_id'];
@@ -280,7 +293,8 @@ function transformRow(
           parsed.inventory = newInv;
         }
 
-        const transformed = replaceUserIds(parsed, mapping);
+        const transformed = replaceUserIds(parsed, mapping) as Record<string, unknown>; // open-record
+        transformed._last_updated = Date.now();
         val = JSON.stringify(transformed);
       } catch {
         val = replaceUserIds(val, mapping);

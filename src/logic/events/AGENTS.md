@@ -32,6 +32,12 @@ Frontend Developers / Systems Engineers.
   - Event `config` and `schedule` properties MUST always be parsed via `safeParse` to prevent `SyntaxError` on malformed, primitive, or corrupted payloads.
   - Open competition events (`species: '*'`) signify global participation across all species and must NEVER be passed to `requirePokemonSpeciesId` or treated as literal Pokémon species identifiers.
   - Multi-species lists (comma-separated), rotation theme entries (`rotationTheme: 'weekly_4'`), and single species must always be resolved via `resolveWeeklyRotation` and filtered with `isPokemonSpeciesId(token)` before modifying spawn pools, computing rates, or rendering UI badges.
+- **Legacy Award Detection & Strict Prize Package Matching Contract**:
+  - A pending award is strictly validated against the official configurations in `events_config`.
+  - An award is classified as **Legacy / Archived** (`isAwardClaimable` = `false`) if:
+    1. Its `event_id` is missing from `events_config` / `allEvents`, or is a custom/unknown event.
+    2. Its prize payload does not strictly match any of the active/configured prize packages (`subCompetitions[].prizes` or `config.prizes`) declared for that event (such as legacy awards granting ₽1, ₽23, or direct arbitrary shiny Pokémon from deprecated scripts).
+  - Legacy/Archived awards cannot be claimed (claim button disabled/hidden) and can strictly only be discarded via `discardAward` with user confirmation in `ConfirmModal`.
 - **Automated Event Schema & Execution Integrity Testing**:
   - All database event seeds and dynamic configurations MUST be backed by Tier 1 unit tests (`events_future_proof_integrity.spec.ts`) and Tier 2 database migration integrity tests (`event_database_rewards_integrity.test.ts`), verifying encounter generation across all maps, minigames, and 52 calendar week transitions without runtime exceptions.
 

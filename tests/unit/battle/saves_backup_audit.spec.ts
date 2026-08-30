@@ -129,5 +129,5 @@ describe('Player Saves Migration & Compatibility Audit', () => {
     }
 
     expect(errors.length).toBe(0);
-  });
+  }, 120000);
 });

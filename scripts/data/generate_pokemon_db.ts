@@ -130,12 +130,13 @@ export async function generatePokemonDatabase(): Promise<void> {
     };
   }
 
+  const relPath = path.relative(process.cwd(), OUTPUT_FILE).replace(/\\/g, '/');
   const jsonContent = JSON.stringify(db, null, 2);
 
   try {
     const existing = await fs.readFile(OUTPUT_FILE, 'utf8');
     if (existing === jsonContent) {
-      console.log(`[PokemonDB Generator] ${OUTPUT_FILE} is already current.`);
+      console.log(`📦 [PokemonDB Generator] ${relPath} está actualizado.`);
       return;
     }
   } catch {
@@ -145,13 +146,13 @@ export async function generatePokemonDatabase(): Promise<void> {
   await fs.writeFile(OUTPUT_FILE, jsonContent, 'utf8');
   const speciesCount = Object.keys(db).length;
   const sizeKb = (Buffer.byteLength(jsonContent, 'utf8') / 1024).toFixed(1);
-  console.log(`⚡ [PokemonDB Generator] Generated ${OUTPUT_FILE} (${speciesCount} species, ${sizeKb} kB).`);
+  console.log(`⚡ [PokemonDB Generator] Generado ${relPath} (${speciesCount} especies, ${sizeKb} kB).`);
 }
 
 // Allow direct execution from CLI
 if (process.argv[1]?.endsWith('generate_pokemon_db.ts')) {
   generatePokemonDatabase().catch(err => {
-    console.error('[PokemonDB Generator] Failed:', err);
+    console.error('❌ [PokemonDB Generator] Error fatal:', err);
     process.exit(1);
   });
 }

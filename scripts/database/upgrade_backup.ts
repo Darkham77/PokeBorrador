@@ -21,10 +21,7 @@ import { enableCompileCache } from 'node:module';
 import { DatabaseSync } from 'node:sqlite';
 import { DATABASE_MIGRATIONS } from '../../src/logic/db/migrations_data.ts';
 import { splitSQLStatements, translatePostgresToSqlite } from '../../src/logic/db/sqlTranslator.ts';
-import { checkPokemonLegality, repairPokemonLegality } from '../../src/logic/pokemon/pokemonLegality.ts';
 import { safeResolve, safeJoin } from '../lib/safePath.ts';
-import type { Pokemon } from '../../src/types/pokemon/pokemon.ts';
-import type { SaveDataDto } from '../../src/logic/validation/schemas.ts';
 
 enableCompileCache();
 
@@ -144,19 +141,32 @@ export async function upgradeBackup(): Promise<string> {
 
     const sqlSource = migration.sqlite_sql !== undefined ? migration.sqlite_sql : migration.sql;
     const isSqliteSpec = migration.sqlite_sql !== undefined;
-    const statements = splitSQLStatements(sqlSource);
-    for (const stmt of statements) {
-      if (stmt.trim()) {
-        const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt);
-        if (sql) {
-          try {
-            db.exec(sql);
-          } catch (stmtErr: unknown) {
-            const msg = (stmtErr as Error).message.toLowerCase(); // text-ok
-            const isDuplicate = msg.includes('duplicate column') || msg.includes('already exists');
-            const isMissing = msg.includes('no such column');
-            if (!isDuplicate && !isMissing) {
-              // Non-critical statement error
+    if (isSqliteSpec) {
+      try {
+        db.exec(sqlSource);
+      } catch {
+        const statements = splitSQLStatements(sqlSource);
+        for (const stmt of statements) {
+          if (stmt.trim()) {
+            try { db.exec(stmt); } catch { /* ignore */ }
+          }
+        }
+      }
+    } else {
+      const statements = splitSQLStatements(sqlSource);
+      for (const stmt of statements) {
+        if (stmt.trim()) {
+          const sql = translatePostgresToSqlite(stmt);
+          if (sql) {
+            try {
+              db.exec(sql);
+            } catch (stmtErr: unknown) {
+              const msg = (stmtErr as Error).message.toLowerCase(); // text-ok
+              const isDuplicate = msg.includes('duplicate column') || msg.includes('already exists');
+              const isMissing = msg.includes('no such column');
+              if (!isDuplicate && !isMissing) {
+                // Non-critical statement error
+              }
             }
           }
         }
@@ -168,43 +178,12 @@ export async function upgradeBackup(): Promise<string> {
 
   console.log(styleText('green', `✅ Migraciones oficiales aplicadas con éxito: ${appliedCount}`));
 
-  // 4. Auditar y sanear Pokémon en todas las cuentas de game_saves
-  console.log(styleText('cyan', '🧬 Saneando y auditando legalidad de Pokémon en todas las cuentas...'));
-  const selectSaves = db.prepare('SELECT user_id, save_data FROM game_saves');
-  const saveRows = selectSaves.all() as { user_id: string; save_data: string }[];
-  const updateSaveStmt = db.prepare('UPDATE game_saves SET save_data = ? WHERE user_id = ?');
+  // 4. Auditar y legalizar automáticamente todos los Pokémon de las cuentas
+  const { repairAccountsInSqlite } = await import('../maintenance/repair_account_legality.ts');
+  console.log(styleText('cyan', '⚖️ Auditando y legalizando Pokémon en las cuentas...'));
+  repairAccountsInSqlite({ dbInstance: db, all: true, silent: true });
 
-  let totalPokes = 0;
-  let fixedPokes = 0;
-
-  for (const row of saveRows) {
-    let saveData: SaveDataDto | null = null;
-    try {
-      saveData = JSON.parse(row.save_data) as SaveDataDto;
-    } catch {
-      continue;
-    }
-    if (!saveData) continue;
-
-    const allPokes = [...(saveData.team || []), ...(saveData.box || [])].filter(Boolean) as Pokemon[];
-    for (const p of allPokes) {
-      totalPokes++;
-      const check = checkPokemonLegality(p);
-      if (!check.isLegal || p.isIllegal) {
-        const rep = repairPokemonLegality(p);
-        if (rep.repaired) fixedPokes++;
-      } else {
-        // Asegurar consistencia de nombres y vigor
-        repairPokemonLegality(p);
-      }
-    }
-
-    updateSaveStmt.run(JSON.stringify(saveData), row.user_id);
-  }
-
-  console.log(styleText('green', `✨ Pokémon auditados: ${totalPokes} | Pokémon saneados/reparados: ${fixedPokes}`));
-
-  // 5. Extraer todas las tablas actualizadas desde SQLite
+  // 5. Extraer todas las tablas actualizadas desde SQLite (migradas 100% vía SQL canónico)
   const upgradedBackupData: Record<string, unknown[]> = {};
   const tablesStmt = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
   const tableList = tablesStmt.all() as { name: string }[];
@@ -214,12 +193,16 @@ export async function upgradeBackup(): Promise<string> {
     const cleanRows = rows.map(r => {
       const clean: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(r)) {
-        if (typeof v === 'string' && (v.startsWith('{') || v.startsWith('['))) {
+        if (t.name === 'events_config' && (k === 'active' || k === 'manual')) {
+          clean[k] = v === 1 || v === '1' || v === 'true' || v === true;
+        } else if (typeof v === 'string' && (v.startsWith('{') || v.startsWith('['))) {
           try {
             clean[k] = JSON.parse(v);
           } catch {
             clean[k] = v;
           }
+        } else if (typeof v === 'string' && v.includes('[object Object]')) {
+          clean[k] = {};
         } else {
           clean[k] = v;
         }
@@ -229,7 +212,7 @@ export async function upgradeBackup(): Promise<string> {
     upgradedBackupData[t.name] = cleanRows;
   }
 
-  const latestMigrationId = DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1]?.id || 'latest';
+  const latestMigrationId = DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1]?.id || '20260830230000';
   const upgradedBackup = {
     metadata: {
       profile: backupObj.metadata?.profile || serverArg || 'server_franco',

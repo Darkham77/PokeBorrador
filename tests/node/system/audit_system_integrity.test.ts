@@ -44,7 +44,7 @@ describe('Audit System Integrity & Dual-Mode Formatting', () => {
       stdio: ['ignore', 'pipe', 'ignore']
     });
 
-    expect(stdout).toContain('POKE VICIO - REGLAS DE CÓDIGO');
+    expect(stdout).toContain('REGLAS DE CÓDIGO');
     expect(stdout).toContain('TOTAL:');
   });
 

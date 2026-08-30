@@ -87,5 +87,18 @@
 - **Mandatory Backup Upgrade Pre-Restore Protocol**: Never restore legacy database backup files directly into newer database schemas. Always execute `npm run servers:db:upgrade-backup file=<path>` to apply all subsequent migrations in memory, normalize Pokémon legality and vigor, and generate an upgraded backup JSON prior to executing `npm run servers:db:restore`.
 - **Prohibition on Positional Array Mutators in SQL**: Database migrations updating serialized JSON fields (`save_data`) MUST NOT use hardcoded array indices (`$.team[0].id`). All entity updates must be atomic per user save or match on canonical `uid` to prevent cross-account species corruption.
 
+## 13. Offline Browser SQLite Import Protocol (Local DB Sync)
+
+- **Purpose & Scope**: Enables executing Poké Vicio 100% offline in browser environments using genuine database state snapshots (accounts, Pokémon, items, friends, chat logs) for rapid QA, battle replay debugging, and offline development without requiring live Supabase credentials or network connections.
+- **Mandatory Upgrade & Legality Pipeline**: JSON backups from remote servers MUST pass through `npm run servers:db:upgrade-backup` before local conversion. The upgrade process executes all pending static SQL migrations and runs the automated Pokémon and account legality repair routine (`repairAccountsInSqlite`) across 100% of stored entities (`team`, `box`, `eggs`, `daycareWarehouse`, `daycare.slotA/slotB`).
+- **Identifier Sanitization & Local Remapping**: The local import tool (`npm run servers:db:local-import file=<path_upgraded.json>`) MUST convert remote Supabase UUIDs to clean local identifiers (`local_<username>`), ensuring all foreign keys across `chat_messages` (both `senderId` and `type: 'private:local_<username>'`), `friendships`, `daycare_slots`, `eggs`, and `war_*` tables maintain 100% relational integrity.
+- **Local Dev Server Freshness & OPFS Persistence**: The compiled database is written to `database/temp/imported.db`. The Vite dev server middleware MUST serve fresh disk files over stale RAM buffers. Upon loading, the client's SQLite engine (`sqliteEngine.ts`) persists it directly into OPFS (`pokevicio_sqlite_v2`) and purges all previous individual save caches via `purgeAllCachedSaves()`.
+- **PostgREST Query Emulation Compatibility**: The SQLite query adapter (`SQLiteQueryBuilder`) MUST support PostgREST query syntax used by stores in local mode (e.g. `.or()` clauses for private chats and friendships, `.eq()`, `.order()`) to guarantee 1:1 runtime parity with online Supabase queries.
+
+## 14. Database SSoT & Optimistic Concurrency Control (OCC) Protection
+
+- **Database Precedence (SSoT)**: In both online (Supabase) and offline (SQLite) modes, the `game_saves` database row is the absolute Single Source of Truth. Local browser caches (OPFS / LocalStorage) are strictly offline fallbacks and must NEVER overwrite or take precedence over database records during load/login flows.
+- **Rollback & Restore Protection via `last_save_id`**: Every game save row is protected by an optimistic concurrency lock (`last_save_id` UUID). If an admin restores a database backup or rolls back server state, any subsequent save attempt from an un-synchronized active client will fail with `OUT_OF_SYNC`, triggering `handleSaveRollback()` to force-reload the authoritative server state into memory, update local OPFS cache, and reload the browser window.
+
 
 

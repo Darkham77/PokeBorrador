@@ -9,7 +9,6 @@
  *   3. Persists the complete structured JSON report to scratch/audits/latest_audit.json.
  */
 
-import { spawnSync } from 'node:child_process';
 import { parseArgs, styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import fs from 'node:fs/promises';
@@ -30,6 +29,7 @@ import {
   renderMarkdownReport
 } from '../lib/unifiedTheme.ts';
 import { discoverAuditors } from './auditScanner.ts';
+import { executeAuditorStreaming, isNodeInternalWarning } from '../lib/streamingRunner.ts';
 
 enableCompileCache();
 
@@ -130,18 +130,10 @@ async function runMasterAudit() {
     if (values.top && !taskArgs.includes('--top')) taskArgs.push('--top', values.top as string);
     if (values['changed-since'] && !taskArgs.includes('--changed-since')) taskArgs.push('--changed-since', values['changed-since'] as string);
 
-    const taskStart = performance.now();
-    const proc = spawnSync(task.command, taskArgs, {
-      stdio: ['ignore', 'pipe', 'pipe'],
-      shell: task.shell ?? false,
-      encoding: 'utf-8',
-      timeout: task.timeoutMs ?? 60000,
-      env: {
-        ...process.env,
-        AUDIT_SUBPROCESS: 'true'
-      }
+    const proc = await executeAuditorStreaming(task, taskArgs, (subLine) => {
+      console.log(`     ${styleText('dim', '│')}  ${styleText('dim', subLine)}`);
     });
-    const taskDuration = Math.round(performance.now() - taskStart);
+    const taskDuration = proc.durationMs;
 
     let parsedResult: StandardAuditResult | null = null;
     const taskJsonPath = path.join(scratchAuditsDir, task.family, `${task.id}.json`);
@@ -168,13 +160,27 @@ async function runMasterAudit() {
     }
 
     if (!parsedResult) {
-      const isSuccess = proc.status === 0;
+      const isSuccess = !proc.timedOut && proc.status === 0;
       const findings: AuditFinding[] = [];
-      const stderr = (proc.stderr || '').trim();
-      const stdout = (proc.stdout || '').trim();
+
+      let errorMsg = '';
+      if (proc.timedOut) {
+        errorMsg = `Timeout excedido (${task.timeoutMs ?? 60000}ms) en la ejecución de la suite.`;
+      } else {
+        const cleanStderr = proc.stderr
+          .split('\n')
+          .filter(l => !isNodeInternalWarning(l.trim()) && l.trim().length > 0)
+          .join('\n')
+          .trim();
+        const cleanStdout = proc.stdout
+          .split('\n')
+          .filter(l => !isNodeInternalWarning(l.trim()) && l.trim().length > 0)
+          .join('\n')
+          .trim();
+        errorMsg = cleanStderr || cleanStdout || `Código de salida ${proc.status}`;
+      }
 
       if (!isSuccess) {
-        const errorMsg = stderr || stdout.split('\n')[0] || `Código de salida ${proc.status}`;
         findings.push({
           severity: 'error',
           message: errorMsg,

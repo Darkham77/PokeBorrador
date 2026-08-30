@@ -18,7 +18,7 @@ import fsPromises from 'node:fs/promises';
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import postgres from 'postgres';
-import { buildDatabaseUrl, getValidatedServerConfigs } from '../lib/supabaseClient.ts';
+import { buildDatabaseUrl, getValidatedServerConfigs, parseServerArguments } from '../lib/supabaseClient.ts';
 import { safeResolve, safeJoin } from '../lib/safePath.ts';
 
 // Optimizar ejecución en ejecuciones sucesivas
@@ -35,7 +35,6 @@ export async function updateSupabaseDb(): Promise<void> {
   const { serverConfigs, baseProfiles, allAvailable } = await getValidatedServerConfigs();
 
   const args = process.argv.slice(2);
-  const { parseServerArguments } = await import('./backup_supabase_db.ts');
   const targetProfiles = parseServerArguments(args, baseProfiles, allAvailable);
   const serverArg = targetProfiles[0];
   const isAll = args.includes('--all') || args.includes('all');

@@ -19,6 +19,7 @@ import {
   fetchPastEvents as fetchPastEventsAction,
   checkPendingAwards as checkPendingAwardsAction,
   claimAward as claimAwardAction,
+  discardAward as discardAwardAction,
   type EventAwardsContext
 } from './events/eventAwardsActions.ts'
 import {
@@ -153,6 +154,10 @@ export const useEventStore = defineStore('events', () => {
     return claimAwardAction(awardsContext.value, awardId)
   }
 
+  async function discardAward(awardId: string): Promise<boolean> {
+    return discardAwardAction(awardsContext.value, awardId)
+  }
+
   function getSpeciesBonuses(speciesId: string) {
     return getSpeciesBoosts(activeEvents.value, speciesId)
   }
@@ -184,6 +189,7 @@ export const useEventStore = defineStore('events', () => {
     submitCompetitionEntry,
     checkPendingAwards,
     claimAward,
+    discardAward,
     getSpeciesBonuses,
     getMinigameBonuses,
     isEventActive
