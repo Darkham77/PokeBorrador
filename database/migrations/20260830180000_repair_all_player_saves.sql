@@ -117,9 +117,7 @@ BEGIN
   END LOOP;
 END $$;
 
-INSERT INTO public.system_config (key, value) VALUES ('db_version', '20260830140000'::jsonb) 
+INSERT INTO public.system_config (key, value) VALUES ('db_version', '20260830180000'::jsonb) 
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
 
 UPDATE public.game_saves SET last_save_id = gen_random_uuid();
-
-
