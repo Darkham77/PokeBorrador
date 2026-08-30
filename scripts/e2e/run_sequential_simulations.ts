@@ -150,7 +150,11 @@ function getFuzzerSummary(): { elementCount: number; batchCount: number } {
 
 const targets: SimulationTarget[] = discoverPlaywrightTargets();
 
+const args = process.argv.slice(2);
+const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : (['table', 'list', 'json', 'list-markdown', 'help'].includes(a) ? `--${a}` : a));
+
 const { values, positionals } = parseArgs({
+  args: normalized,
   options: {
     table: { type: 'boolean', short: 't' },
     list: { type: 'boolean', short: 'l' },
@@ -163,17 +167,18 @@ const { values, positionals } = parseArgs({
   strict: false
 });
 
-if (values.help) {
+const isHelp = values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
+if (isHelp) {
   console.log(`
 Uso:
-  npm run sim:e2e -- [--table | --list | --json | --filter=<nombre>]
+  npm run sim:e2e [table | list | json | filter=<nombre>]
 
 Opciones:
-  -t, --table          Muestra la tabla Markdown de progreso E2E.
-  -l, --list           Lista todas las suites E2E detectadas y sus comandos.
-  -j, --json           Emite la estructura de suites en formato JSON.
-  -f, --filter <str>   Ejecuta únicamente las suites que contengan el filtro.
-  -h, --help           Muestra esta ayuda.
+  table                Muestra la tabla Markdown de progreso E2E.
+  list                 Lista todas las suites E2E detectadas y sus comandos.
+  json                 Emite la estructura de suites en formato JSON.
+  filter=<str>         Ejecuta únicamente las suites que contengan el filtro.
+  help                 Muestra esta ayuda.
 `);
   process.exit(0);
 }

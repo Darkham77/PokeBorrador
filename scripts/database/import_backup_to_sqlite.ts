@@ -8,7 +8,11 @@ import { SHOP_ITEMS } from '../../src/data/inventory/items.ts';
 
 console.log(styleText('bold', '\n--- 📥 IMPORTADOR DE RESPALDOS A SQLITE LOCAL ---'));
 
+const args = process.argv.slice(2);
+const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : a);
+
 const { values, positionals } = parseArgs({
+  args: normalized,
   options: {
     server: { type: 'string', short: 's' },
     file: { type: 'string', short: 'f' },
@@ -18,11 +22,12 @@ const { values, positionals } = parseArgs({
   strict: false
 });
 
-if (values.help) {
-  console.log(styleText('cyan', `\n📖 USO: npm run servers:db:local-import -- [--server=<perfil> | --file=<ruta_json>]`));
-  console.log(styleText('gray', '\nFlags disponibles:'));
-  console.log(styleText('gray', '  --server=<perfil> : Nombre del perfil para importar su respaldo más reciente.'));
-  console.log(styleText('gray', '  --file=<ruta>     : Ruta directa al archivo JSON de respaldo a importar.'));
+const isHelp = values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
+if (isHelp) {
+  console.log(styleText('cyan', `\n📖 USO: npm run servers:db:local-import [server=<perfil> | file=<ruta_json>]`));
+  console.log(styleText('gray', '\nOpciones disponibles:'));
+  console.log(styleText('gray', '  server=<perfil> : Nombre del perfil para importar su respaldo más reciente.'));
+  console.log(styleText('gray', '  file=<ruta>     : Ruta directa al archivo JSON de respaldo a importar.'));
   process.exit(0);
 }
 

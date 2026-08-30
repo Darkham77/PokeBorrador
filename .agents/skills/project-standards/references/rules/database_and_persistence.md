@@ -22,7 +22,7 @@
 
 ## 3. Absolute Prohibition on Remote Database Updates
 
-- It is STRICTLY FORBIDDEN for any AI agent to execute, run, or trigger database update/migration scripts (e.g., `npm run servers:db:update -- --server=<profile>`) against any remote, Docker-based, or shared database profile (including `server_franco`, `cloud`, or `official_prod`).
+- It is STRICTLY FORBIDDEN for any AI agent to execute, run, or trigger database update/migration scripts (e.g., `npm run servers:db:update server=<profile>`) against any remote, Docker-based, or shared database profile (including `server_franco`, `cloud`, or `official_prod`).
 - Agents must NEVER touch or update remote/shared databases; database migrations are strictly reserved for manual execution by the USER.
 
 ## 4. Simulator Parity & Nickname Constraints

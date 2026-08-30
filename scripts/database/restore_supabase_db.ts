@@ -35,22 +35,27 @@ export async function restoreSupabaseDb() {
 
   const args = process.argv.slice(2);
   const { parseServerArguments } = await import('./backup_supabase_db.ts');
+  const { parseArgs } = await import('node:util');
+  const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : a);
+  const { values, positionals } = parseArgs({
+    args: normalized,
+    options: {
+      server: { type: 'string', short: 's' },
+      file: { type: 'string', short: 'f' }
+    },
+    allowPositionals: true,
+    strict: false
+  });
+
   const targetProfiles = parseServerArguments(args, baseProfiles, allAvailable);
   const serverArg = targetProfiles[0];
-
-  let fileArg: string | undefined;
-  const fileFlagIdx = args.findIndex(a => a === '--file');
-  if (fileFlagIdx !== -1 && args[fileFlagIdx + 1] !== undefined) {
-    fileArg = args[fileFlagIdx + 1];
-  } else {
-    fileArg = args.find(a => a.startsWith('--file='))?.split('=')[1];
-  }
+  const fileArg = typeof values.file === 'string' ? values.file : positionals.find(p => p.endsWith('.json'));
 
   if (!serverArg) {
-    console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas restaurar indicando --server=<perfil>.'));
+    console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas restaurar indicando server=<perfil>.'));
     console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
-    console.log(styleText('gray', 'Ejemplo: npm run servers:db:restore -- --server=nas_franco'));
-    console.log(styleText('gray', 'Ejemplo con archivo específico: npm run servers:db:restore -- --server=nas_franco --file=database/backups/nas_franco/backup_...json'));
+    console.log(styleText('gray', 'Ejemplo: npm run servers:db:restore server=nas_franco'));
+    console.log(styleText('gray', 'Ejemplo con archivo: npm run servers:db:restore server=nas_franco file=database/backups/nas_franco/backup_...json'));
     process.exit(1);
   }
 
@@ -83,7 +88,7 @@ export async function restoreSupabaseDb() {
 
       if (matchingFiles.length === 0 || matchingFiles[0] === undefined) {
         console.error(styleText('red', `❌ Error: No se encontraron archivos de respaldo automáticos para "${canonicalName}" en ${serverBackupDir}.`));
-        console.error(styleText('yellow', `👉 Ejecuta primero un respaldo con: npm run servers:db:backup ${canonicalName} o especifica --file=<ruta>`));
+        console.error(styleText('yellow', `👉 Ejecuta primero un respaldo con: npm run servers:db:backup server=${canonicalName} o especifica file=<ruta>`));
         process.exit(1);
       }
 

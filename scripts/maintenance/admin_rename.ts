@@ -3,7 +3,10 @@ import { createClient, type PostgrestError } from '@supabase/supabase-js';
 import { parseArgs } from 'node:util';
 
 async function main() {
+  const args = process.argv.slice(2);
+  const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : a);
   const { values, positionals } = parseArgs({
+    args: normalized,
     allowPositionals: true,
     options: {
       user: { type: 'string', short: 'u' },
@@ -14,11 +17,12 @@ async function main() {
     }
   });
 
-  if (values.help) {
-    console.log("📖 USO: npm run admin:rename -- --user=<user_id_o_nombre_actual> --name=<nuevo_nombre>");
-    console.log("Flags:");
-    console.log("  --user=<id|username> : ID de usuario o nombre actual en Supabase.");
-    console.log("  --name=<nuevo_nombre>: Nuevo nombre a asignar al entrenador.");
+  const isHelp = values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
+  if (isHelp) {
+    console.log("📖 USO: npm run admin:rename [user=<user_id_o_nombre_actual>] [name=<nuevo_nombre>]");
+    console.log("Opciones:");
+    console.log("  user=<id|username> : ID de usuario o nombre actual en Supabase.");
+    console.log("  name=<nuevo_nombre>: Nuevo nombre a asignar al entrenador.");
     process.exit(0);
   }
 
@@ -36,8 +40,8 @@ async function main() {
   const newName = values.name || values.username || positionals[1];
 
   if (!targetUser || !newName) {
-    console.log("Uso: npm run admin:rename -- --user=<user_id_o_nombre_actual> --name=<nuevo_nombre>");
-    console.log("Ejemplo: npm run admin:rename -- --user=franco_id --name=Ash");
+    console.log("Uso: npm run admin:rename user=<user_id_o_nombre_actual> name=<nuevo_nombre>");
+    console.log("Ejemplo: npm run admin:rename user=franco_id name=Ash");
     process.exit(1);
   }
 

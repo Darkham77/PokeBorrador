@@ -7,9 +7,9 @@ describe('Admin & Maintenance Scripts CLI Parameters & Help', () => {
       encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'pipe']
     });
-    expect(output).toContain('--server=<perfil>');
-    expect(output).toContain('--action=<accion>');
-    expect(output).toContain('--email=<email>');
+    expect(output).toContain('server=<perfil>');
+    expect(output).toContain('action=<accion>');
+    expect(output).toContain('email=<email>');
     expect(output).toContain('set-password');
   });
 
@@ -18,8 +18,8 @@ describe('Admin & Maintenance Scripts CLI Parameters & Help', () => {
       encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'pipe']
     });
-    expect(output).toContain('--server=<perfil>');
-    expect(output).toContain('--all');
+    expect(output).toContain('server=<perfil>');
+    expect(output).toContain('all');
   });
 
   it('admin_rename.ts outputs clear usage on --help', () => {
@@ -27,8 +27,8 @@ describe('Admin & Maintenance Scripts CLI Parameters & Help', () => {
       encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'pipe']
     });
-    expect(output).toContain('--user=<id|username>');
-    expect(output).toContain('--name=<nuevo_nombre>');
+    expect(output).toContain('user=<id|username>');
+    expect(output).toContain('name=<nuevo_nombre>');
   });
 
   it('repair_account_legality.ts outputs clear usage on --help', () => {
@@ -36,9 +36,9 @@ describe('Admin & Maintenance Scripts CLI Parameters & Help', () => {
       encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'pipe']
     });
-    expect(output).toContain('--user=<userId>');
-    expect(output).toContain('--server=<perfil>');
-    expect(output).toContain('--all');
+    expect(output).toContain('user=<userId>');
+    expect(output).toContain('server=<perfil>');
+    expect(output).toContain('all');
   });
 
   it('setup_supabase.ts outputs clear usage on --help', () => {
@@ -46,7 +46,7 @@ describe('Admin & Maintenance Scripts CLI Parameters & Help', () => {
       encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'pipe']
     });
-    expect(output).toContain('npm run supabase:manage -- --command=[comando]');
+    expect(output).toContain('npm run supabase:manage [command=[comando]]');
     expect(output).toContain('list');
     expect(output).toContain('generate');
   });
@@ -56,9 +56,9 @@ describe('Admin & Maintenance Scripts CLI Parameters & Help', () => {
       encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'pipe']
     });
-    expect(output).toContain('--table');
-    expect(output).toContain('--list');
-    expect(output).toContain('--json');
-    expect(output).toContain('--filter');
+    expect(output).toContain('table');
+    expect(output).toContain('list');
+    expect(output).toContain('json');
+    expect(output).toContain('filter=<nombre>');
   });
 });

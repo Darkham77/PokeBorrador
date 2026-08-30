@@ -35,8 +35,11 @@ enableCompileCache();
 
 async function runMasterAudit() {
   const startTime = performance.now();
+  const args = process.argv.slice(2);
+  const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : (['errors-only', 'fix'].includes(a) ? `--${a}` : a));
 
   const { values, positionals } = parseArgs({
+    args: normalized,
     options: {
       family: { type: 'string' },
       task: { type: 'string' },

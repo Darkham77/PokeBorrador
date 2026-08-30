@@ -712,7 +712,10 @@ function sanitizeContext(ctx: string): string {
 
 async function main() {
   const startTime = performance.now();
+  const args = process.argv.slice(2);
+  const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : (['fix', 'summary', 'json', 'human', 'pretty', 'errors-only', 'css-only'].includes(a) ? `--${a}` : a));
   const { values, positionals } = parseArgs({
+    args: normalized,
     options: {
       fix: { type: 'boolean', short: 'f' },
       path: { type: 'string', short: 'p', default: '.' },
@@ -1011,7 +1014,7 @@ async function main() {
 
         if (entries.length > MAX_FILES_TO_SHOW_IN_TERMINAL) {
           console.log(styleText('cyan', `\n[INFO] Se muestran ${MAX_FILES_TO_SHOW_IN_TERMINAL} de ${entries.length} archivos con avisos para evitar saturar la terminal.`));
-          console.log(styleText('cyan', `👉 Usa "npm run audit --errors-only" para filtrar solo errores o consulta scratch/audits/latest_audit.json para el volcado completo.`));
+          console.log(styleText('cyan', `👉 Usa "npm run audit errors-only" para filtrar solo errores o consulta scratch/audits/latest_audit.json para el volcado completo.`));
         }
       }
 

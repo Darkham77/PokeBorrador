@@ -266,7 +266,10 @@ if (isMainThread) {
   };
 
   const main = async () => {
+    const args = process.argv.slice(2);
+    const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : (['all', 'remove-original'].includes(a) ? `--${a}` : a));
     const { values, positionals } = parseArgs({
+      args: normalized,
       options: {
         all: { type: 'boolean', default: false },
         id: { type: 'string' },

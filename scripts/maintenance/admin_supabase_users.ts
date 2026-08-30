@@ -45,46 +45,64 @@ export async function adminSupabaseUsers(): Promise<void> {
   });
 
   const knownActions = ['unban', 'set-password', 'set-email', 'set-username', 'promote'] as const;
+  const rawArgs = process.argv.slice(2);
+  const isHelp = values.help || rawArgs.includes('help') || rawArgs.includes('--help') || rawArgs.includes('-h');
 
-  if (values.help) {
-    console.log(styleText('cyan', `\n📖 USO: npm run servers:db:admin -- --server=<perfil> --action=<accion> --email=<email> [opciones]`));
-    console.log(styleText('gray', '\nFlags disponibles:'));
-    console.log(styleText('gray', '  --server=<perfil>       : Perfil del servidor objetivo (obligatorio).'));
-    console.log(styleText('gray', '  --action=<accion>       : Acción a ejecutar: unban | set-password | set-email | set-username | promote.'));
-    console.log(styleText('gray', '  --email=<email>         : Correo electrónico del usuario objetivo.'));
-    console.log(styleText('gray', '  --password=<pass>       : Nueva contraseña (requerido para set-password).'));
-    console.log(styleText('gray', '  --new-email=<email>     : Nuevo correo electrónico (requerido para set-email).'));
-    console.log(styleText('gray', '  --username=<nombre>     : Nombre de entrenador (para set-username o búsqueda).'));
+  if (isHelp) {
+    console.log(styleText('cyan', `\n📖 USO: npm run servers:db:admin [server=<perfil>] [action=<accion>] [email=<email>] [password=<pass>]`));
+    console.log(styleText('gray', '\nOpciones disponibles:'));
+    console.log(styleText('gray', '  server=<perfil>         : Perfil del servidor objetivo (obligatorio).'));
+    console.log(styleText('gray', '  action=<accion>         : Acción a ejecutar: unban | set-password | set-email | set-username | promote.'));
+    console.log(styleText('gray', '  email=<email>           : Correo electrónico del usuario objetivo.'));
+    console.log(styleText('gray', '  password=<pass>         : Nueva contraseña (requerido para set-password).'));
+    console.log(styleText('gray', '  new-email=<email>       : Nuevo correo electrónico (requerido para set-email).'));
+    console.log(styleText('gray', '  username=<nombre>       : Nombre de entrenador (para set-username o búsqueda).'));
     console.log(styleText('cyan', `\nPerfiles disponibles: ${allAvailable.join(', ')}`));
     process.exit(0);
   }
 
-  // Resolver serverArg (flag explícito o primer argumento posicional que coincida con un servidor)
-  const serverArg = typeof values.server === 'string' ? values.server : positionals.find(p => allAvailable.includes(p) || baseProfiles.includes(p));
+  // Helper para extraer key=value, --key=value o flags
+  const getParam = (key: string, shortKey?: string): string | undefined => {
+    if (typeof values[key] === 'string') return values[key] as string;
+    if (shortKey && typeof values[shortKey] === 'string') return values[shortKey] as string;
+    for (const arg of rawArgs) {
+      const eq = arg.indexOf('=');
+      if (eq !== -1) {
+        const k = arg.substring(0, eq).replace(/^--?/, '');
+        if (k === key || (shortKey && k === shortKey)) {
+          return arg.substring(eq + 1);
+        }
+      }
+    }
+    return undefined;
+  };
 
-  // Resolver actionArg (flag explícito o coincidencia en positionals)
-  const actionArg = typeof values.action === 'string' ? values.action : positionals.find(p => (knownActions as readonly string[]).includes(p)); // domain-ok
+  // Resolver serverArg (flag explícito, key=value o primer argumento posicional que coincida con un servidor)
+  const serverArg = getParam('server', 's') || positionals.find(p => allAvailable.includes(p) || baseProfiles.includes(p));
+
+  // Resolver actionArg (flag explícito, key=value o coincidencia en positionals)
+  const actionArg = getParam('action', 'a') || positionals.find(p => (knownActions as readonly string[]).includes(p)); // domain-ok
 
   // Resolver identificadores
-  const nonTargetPositionals = positionals.filter(p => p !== serverArg && p !== actionArg);
-  const emailArg = typeof values.email === 'string' ? values.email : nonTargetPositionals.find(p => p.includes('@'));
-  const passwordArg = typeof values.password === 'string' ? values.password : (actionArg === 'set-password' ? nonTargetPositionals.find(p => !p.includes('@')) : undefined);
-  const newEmailArg = typeof values['new-email'] === 'string' ? values['new-email'] : (actionArg === 'set-email' ? nonTargetPositionals.find(p => p.includes('@') && p !== emailArg) : undefined);
-  const usernameArg = typeof values.username === 'string' ? values.username : (actionArg === 'set-username' ? nonTargetPositionals[0] : (!emailArg ? nonTargetPositionals[0] : undefined));
+  const nonTargetPositionals = positionals.filter(p => p !== serverArg && p !== actionArg && !p.includes('='));
+  const emailArg = getParam('email', 'e') || nonTargetPositionals.find(p => p.includes('@'));
+  const passwordArg = getParam('password', 'p') || (actionArg === 'set-password' ? nonTargetPositionals.find(p => !p.includes('@')) : undefined);
+  const newEmailArg = getParam('new-email') || (actionArg === 'set-email' ? nonTargetPositionals.find(p => p.includes('@') && p !== emailArg) : undefined);
+  const usernameArg = getParam('username', 'u') || (actionArg === 'set-username' ? nonTargetPositionals[0] : (!emailArg ? nonTargetPositionals[0] : undefined));
 
   if (!serverArg || !actionArg || (!emailArg && !usernameArg)) {
     console.log(styleText('yellow', '⚠️  Faltan argumentos obligatorios. Uso requerido:'));
-    console.log(styleText('cyan', `npm run servers:db:admin -- --server=<perfil> --action=<accion> --email=<email> [--password=<pass> | --new-email=<email> | --username=<nombre>]`));
+    console.log(styleText('cyan', `npm run servers:db:admin server=<perfil> action=<accion> email=<email> [password=<pass> | new-email=<email> | username=<nombre>]`));
     console.log(styleText('gray', '\nAcciones disponibles:'));
     console.log(styleText('gray', '  unban             : Desbanea una cuenta de usuario.'));
-    console.log(styleText('gray', '  set-password      : Cambia la contraseña (requiere --password=<nueva_pass>).'));
-    console.log(styleText('gray', '  set-email         : Cambia el correo (requiere --new-email=<nuevo_email>).'));
-    console.log(styleText('gray', '  set-username      : Cambia el nombre de entrenador (requiere --username=<nombre>).'));
+    console.log(styleText('gray', '  set-password      : Cambia la contraseña (requiere password=<nueva_pass>).'));
+    console.log(styleText('gray', '  set-email         : Cambia el correo (requiere new-email=<nuevo_email>).'));
+    console.log(styleText('gray', '  set-username      : Cambia el nombre de entrenador (requiere username=<nombre>).'));
     console.log(styleText('gray', '  promote           : Promueve la cuenta a rol de Administrador.'));
-    console.log(styleText('gray', '\nEjemplos con Flags Explícitos (Recomendado):'));
-    console.log(styleText('gray', '  npm run servers:db:admin -- --server=nas_franco --action=set-password --email=usuario@ejemplo.com --password=NUEVA_PASS'));
-    console.log(styleText('gray', '  npm run servers:db:admin -- --server=nas_franco --action=unban --email=usuario@ejemplo.com'));
-    console.log(styleText('gray', '  npm run servers:db:admin -- --server=nas_franco --action=promote --email=usuario@ejemplo.com'));
+    console.log(styleText('gray', '\nEjemplos sin guiones:'));
+    console.log(styleText('gray', '  npm run servers:db:admin server=server_franco action=set-password email=usuario@ejemplo.com password=NUEVA_PASS'));
+    console.log(styleText('gray', '  npm run servers:db:admin server=server_franco action=unban email=usuario@ejemplo.com'));
+    console.log(styleText('gray', '  npm run servers:db:admin server=server_franco action=promote email=usuario@ejemplo.com'));
     console.log(styleText('cyan', `\nPerfiles disponibles: ${allAvailable.join(', ')}`));
     process.exit(1);
   }

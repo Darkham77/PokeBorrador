@@ -670,7 +670,10 @@ function syncOfficialServers() {
 }
 
 async function main() {
+  const args = process.argv.slice(2);
+  const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : a);
   const { values, positionals } = parseArgs({
+    args: normalized,
     options: {
       command: { type: 'string', short: 'c' },
       tag: { type: 'string', default: 'latest' },
@@ -687,8 +690,8 @@ async function main() {
     console.log(`🐘 Poké Vicio - Gestor de Despliegues Supabase Multi-Servidor (Node.js 26+)
 
 Uso:
-  npm run supabase:manage -- --command=[comando] [--tag=latest]
-  npm run supabase:manage -- [comando] [--tag=latest]
+  npm run supabase:manage [command=[comando]] [tag=latest]
+  npm run supabase:manage [comando]
 
 Comandos:
   list         Muestra los servidores configurados en el .env maestro (por defecto).

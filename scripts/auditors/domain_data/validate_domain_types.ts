@@ -32,8 +32,12 @@ enableCompileCache();
 
 const startTime = performance.now();
 
+const rawArgs = process.argv.slice(2);
+const normalized = rawArgs.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : (['json', 'summary'].includes(a) ? `--${a}` : a));
+
 // ─── CLI Args ────────────────────────────────────────────────────────────────
 const { values: args } = parseArgs({
+  args: normalized,
   options: {
     json: { type: 'boolean', short: 'j' },
     summary: { type: 'boolean', short: 's', default: false },

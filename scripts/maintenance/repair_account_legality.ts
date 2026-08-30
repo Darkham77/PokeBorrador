@@ -383,7 +383,10 @@ export async function repairAccountsInDatabase(options: RepairAccountOptions): P
 }
 
 async function main() {
+  const args = process.argv.slice(2);
+  const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : (['all', 'fix', 'help'].includes(a) ? `--${a}` : a));
   const { values, positionals } = parseArgs({
+    args: normalized,
     options: {
       user: { type: 'string', short: 'u' },
       all: { type: 'boolean', short: 'a' },
@@ -395,29 +398,30 @@ async function main() {
     allowPositionals: true
   });
 
-  if (values.help) {
+  const isHelp = values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
+  if (isHelp) {
     console.log(`
 Uso:
   # Base de datos local (SQLite):
-  npm run db:repair-account -- --user=<userId>
-  npm run db:repair-account -- --all
+  npm run db:repair-account user=<userId>
+  npm run db:repair-account all
 
   # Servidor remoto / Supabase (PostgreSQL):
-  npm run db:repair-account -- --server=<perfil> --user=<userId>
-  npm run db:repair-account -- --server=<perfil> --all
+  npm run db:repair-account server=<perfil> user=<userId>
+  npm run db:repair-account server=<perfil> all
 
 Opciones:
-  -u, --user <userId>      ID, nombre de usuario o email de la cuenta a reparar.
-  -a, --all                Corrige los Pokémon ilegales de TODAS las cuentas registradas, una por una.
-  -s, --server <perfil>    Perfil de servidor Supabase (ej: server_franco, nas_franco, cloud).
-  -d, --db <path>          Ruta a la base de datos SQLite (.db). Por defecto busca poke_local.db.
-  -h, --help               Muestra esta ayuda.
+  user=<userId>            ID, nombre de usuario o email de la cuenta a reparar.
+  all                      Corrige los Pokémon ilegales de TODAS las cuentas registradas, una por una.
+  server=<perfil>          Perfil de servidor Supabase (ej: server_franco, nas_franco, cloud).
+  db=<path>                Ruta a la base de datos SQLite (.db). Por defecto busca poke_local.db.
+  help                     Muestra esta ayuda.
 
 Ejemplos:
-  npm run db:repair-account -- --user=Ash
-  npm run db:repair-account -- --all
-  npm run db:repair-account -- --server=nas_franco --user=kenviota@gmail.com
-  npm run db:repair-account -- --server=nas_franco --all
+  npm run db:repair-account user=Ash
+  npm run db:repair-account all
+  npm run db:repair-account server=nas_franco user=kenviota@gmail.com
+  npm run db:repair-account server=nas_franco all
 `);
     process.exit(0);
   }
