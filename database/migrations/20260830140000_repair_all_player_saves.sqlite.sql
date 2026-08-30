@@ -97,3 +97,10 @@ SET save_data = json_set(
 )
 WHERE save_data IS NOT NULL AND json_extract(save_data, '$.inventory') IS NOT NULL;
 
+-- 5. Actualizar versión del sistema y rotar last_save_id
+INSERT INTO system_config (key, value) VALUES ('db_version', json('20260830140000'))
+ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP;
+
+UPDATE game_saves SET last_save_id = lower(hex(randomblob(16)));
+
+

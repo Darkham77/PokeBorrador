@@ -95,10 +95,31 @@ BEGIN
       v_save_data := jsonb_set(v_save_data, '{inventory}', v_new_inv);
     END IF;
 
-    UPDATE public.game_saves SET save_data = v_save_data WHERE user_id = r.user_id;
+    -- 5. Normalizar Daycare parents
+    IF v_save_data ? 'daycare' AND jsonb_typeof(v_save_data -> 'daycare') = 'object' THEN
+      IF (v_save_data -> 'daycare' -> 'parent1') IS NOT NULL AND jsonb_typeof(v_save_data -> 'daycare' -> 'parent1') = 'object' THEN
+        IF (coalesce(v_save_data -> 'daycare' -> 'parent1' ->> 'level', '1'))::int >= 100 THEN
+          v_save_data := jsonb_set(v_save_data, '{daycare,parent1,expNeeded}', '0'::jsonb);
+        ELSIF (v_save_data -> 'daycare' -> 'parent1' -> 'expNeeded') IS NULL OR jsonb_typeof(v_save_data -> 'daycare' -> 'parent1' -> 'expNeeded') = 'null' THEN
+          v_save_data := jsonb_set(v_save_data, '{daycare,parent1,expNeeded}', '100'::jsonb);
+        END IF;
+      END IF;
+      IF (v_save_data -> 'daycare' -> 'parent2') IS NOT NULL AND jsonb_typeof(v_save_data -> 'daycare' -> 'parent2') = 'object' THEN
+        IF (coalesce(v_save_data -> 'daycare' -> 'parent2' ->> 'level', '1'))::int >= 100 THEN
+          v_save_data := jsonb_set(v_save_data, '{daycare,parent2,expNeeded}', '0'::jsonb);
+        ELSIF (v_save_data -> 'daycare' -> 'parent2' -> 'expNeeded') IS NULL OR jsonb_typeof(v_save_data -> 'daycare' -> 'parent2' -> 'expNeeded') = 'null' THEN
+          v_save_data := jsonb_set(v_save_data, '{daycare,parent2,expNeeded}', '100'::jsonb);
+        END IF;
+      END IF;
+    END IF;
+
+    UPDATE public.game_saves SET save_data = v_save_data, last_save_id = gen_random_uuid() WHERE user_id = r.user_id;
   END LOOP;
 END $$;
 
 INSERT INTO public.system_config (key, value) VALUES ('db_version', '20260830140000'::jsonb) 
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
+
+UPDATE public.game_saves SET last_save_id = gen_random_uuid();
+
 
