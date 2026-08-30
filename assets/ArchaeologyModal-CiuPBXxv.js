@@ -1,0 +1,1 @@
+import{t as e}from"./ArchaeologyModal-DnZBeorC.js";export{e as default};

@@ -1,0 +1,1 @@
+import{t as e}from"./FishingModal-Bey7pcim.js";export{e as default};
