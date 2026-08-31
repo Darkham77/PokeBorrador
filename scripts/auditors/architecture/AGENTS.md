@@ -17,3 +17,4 @@ This directory contains static code analysis, AST governance, TypeScript configu
 
 - All auditors in this family must adhere to the `StandardAuditResult` contract and support dual-mode execution (JSON for orchestration, Box-Drawing for CLI).
 - Zero error suppression: violations must be reported with explicit file and line context.
+- **Cross-Platform Path Governance**: All auditor scripts traversing repository files must use standardized path helpers (`toPosix`, `safeRelativePath`) to guarantee deterministic execution across Windows (PowerShell/CMD) and POSIX (Linux/macOS) environments under Node.js permission model.
