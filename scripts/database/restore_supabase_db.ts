@@ -52,8 +52,8 @@ export async function restoreSupabaseDb() {
   if (!serverArg) {
     console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas restaurar indicando server=<perfil>.'));
     console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
-    console.log(styleText('gray', 'Ejemplo: npm run servers:db:restore server=nas_franco'));
-    console.log(styleText('gray', 'Ejemplo con archivo: npm run servers:db:restore server=nas_franco file=database/backups/nas_franco/backup_...json'));
+    console.log(styleText('gray', 'Ejemplo: npm run database:restore server=nas_franco'));
+    console.log(styleText('gray', 'Ejemplo con archivo: npm run database:restore server=nas_franco file=database/backups/nas_franco/backup_...json'));
     process.exit(1);
   }
 
@@ -86,7 +86,7 @@ export async function restoreSupabaseDb() {
 
       if (matchingFiles.length === 0 || matchingFiles[0] === undefined) {
         console.error(styleText('red', `❌ Error: No se encontraron archivos de respaldo automáticos para "${canonicalName}" en ${serverBackupDir}.`));
-        console.error(styleText('yellow', `👉 Ejecuta primero un respaldo con: npm run servers:db:backup server=${canonicalName} o especifica file=<ruta>`));
+        console.error(styleText('yellow', `👉 Ejecuta primero un respaldo con: npm run database:backup server=${canonicalName} o especifica file=<ruta>`));
         process.exit(1);
       }
 

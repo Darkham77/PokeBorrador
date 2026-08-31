@@ -21,6 +21,7 @@ Systems Engineers / Backend Developers.
 - **Multi-Slot Choice Format**: `decide()` MUST always return a single comma-separated string per turn (e.g. `"move 1"` for singles, `"switch 3, pass"` for doubles). Both `p1Choices[]` and `enemyChoices[]` arrays store one entry per turn using this format.
 - **Canonical Stat IDs in NatureData**: `NatureData.up` and `NatureData.down` MUST use Showdown canonical stat IDs (`'atk'`, `'def'`, `'spa'`, `'spd'`, `'spe'`). Use `getStatLabel(statId)` from `statsMath.ts` for UI display. Passing localized Spanish strings to stat calculation functions is strictly forbidden.
 - **choose() Return Check Mandate**: Every call to `simBattle.choose(side, choice)` MUST check the boolean return value. A `false` return indicates a rejected choice. The caller MUST handle this case (e.g. fallback to `'move 1'`) rather than ignoring it, which causes infinite stall loops.
+- **Archetype-Based Battle Resolution**: Battle resolution routines (such as police arrest/bail/robbery in `battleResolutionHelpers.ts`) MUST validate NPC identities exclusively via canonical archetypes (`active.trainerArchetype === 'policeman'`), never via fragile localized trainer name strings.
 
 ## Work Guidance
 

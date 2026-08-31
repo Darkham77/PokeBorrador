@@ -110,6 +110,7 @@ export const saveDataSchema = object({
   incenseSecs: optional(number()),
   incenseType: optional(nullable(string())),
   daycare_berry_egg_time: optional(number()),
+  daycareWarehouse: optional(array(unknown())),
   boxCount: number(),
   chats: optional(record(string(), unknown())),
   playerClass: optional(nullable(union([literal('cazabichos'), literal('criador'), literal('rocket'), literal('entrenador')]))),

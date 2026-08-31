@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle/battle'
+import { calculatePoliceBonusLevel } from '@/logic/player/classMath'
 
 const classStore = usePlayerClassStore()
 const uiStore = useUIStore()
@@ -21,8 +22,7 @@ const isVisible = computed(() => isRocket.value && activeTab.value === 'map' && 
 const isMax = computed(() => criminality.value >= 100)
 const percentLabelText = computed(() => {
   if (criminality.value > 100) {
-    const excess = criminality.value - 100
-    const bonusLv = Math.floor(excess / 50)
+    const bonusLv = calculatePoliceBonusLevel(criminality.value)
     if (bonusLv > 0) {
       return `${criminality.value}% (+${bonusLv} LV)`
     }
@@ -35,6 +35,7 @@ const percentLabelText = computed(() => {
   <Transition name="slide-right">
     <div
       v-if="isVisible"
+      id="criminality-bar"
       class="criminality-container"
     >
       <div class="label press-start">
@@ -42,6 +43,7 @@ const percentLabelText = computed(() => {
       </div>
       <div class="bar-bg">
         <div 
+          id="criminality-bar-fill"
           v-gsap-loop="{ effect: 'blink-red', duration: 0.5, active: isMax }"
           class="bar-fill" 
           :style="{ height: Math.min(100, criminality) + '%' }"
@@ -52,7 +54,10 @@ const percentLabelText = computed(() => {
           />
         </div>
       </div>
-      <div class="percent-label">
+      <div 
+        id="criminality-percent-label"
+        class="percent-label"
+      >
         {{ percentLabelText }}
       </div>
     </div>

@@ -191,9 +191,9 @@ export function parseServerArguments(args: string[], baseProfiles: string[], all
     console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas seleccionar indicando server=<perfil>, el nombre del servidor o "all".'));
     console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
     console.log(styleText('gray', 'Ejemplos:'));
-    console.log(styleText('gray', '  npm run servers:db:update server=server_franco'));
-    console.log(styleText('gray', '  npm run servers:db:update server_franco'));
-    console.log(styleText('gray', '  npm run servers:db:update all'));
+    console.log(styleText('gray', '  npm run database:update server=server_franco'));
+    console.log(styleText('gray', '  npm run database:update server_franco'));
+    console.log(styleText('gray', '  npm run database:update all'));
     process.exit(1);
   }
 

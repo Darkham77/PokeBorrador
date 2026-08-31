@@ -96,14 +96,23 @@ export async function queryLocal(sql: string, params: unknown[] = []): Promise<R
   })
 }
 
-async function devFetch(endpoint: '/api/dev-export-db' | '/api/dev-import-db-check' | '/api/dev-import-db' | '/api/dev-import-db-cleanup' | '/api/dev-clean-db' | '/api/dev-export-clean-db', dbKey?: string, init?: RequestInit): Promise<Response> {
+async function devFetch(
+  endpoint:
+    | '/api/dev-export-db'
+    | '/api/dev-manual-import-check'
+    | '/api/dev-manual-import-db'
+    | '/api/dev-manual-import-cleanup'
+    | '/api/dev-sim-db-check'
+    | '/api/dev-sim-db'
+    | '/api/dev-sim-db-cleanup'
+    | '/api/dev-clean-db'
+    | '/api/dev-export-clean-db',
+  dbKey?: string,
+  init?: RequestInit
+): Promise<Response> {
   const cleanKey = dbKey ? dbKey.replace(/[^a-zA-Z0-9_-]/g, '') : '';
-  if (endpoint === '/api/dev-export-db') return fetch('/api/dev-export-db', { ...init, headers: { ...(init?.headers || {}), 'x-db-key': cleanKey } });
-  if (endpoint === '/api/dev-import-db-check') return fetch('/api/dev-import-db-check', { ...init, headers: { ...(init?.headers || {}), 'x-db-key': cleanKey } });
-  if (endpoint === '/api/dev-import-db') return fetch('/api/dev-import-db', { ...init, headers: { ...(init?.headers || {}), 'x-db-key': cleanKey } });
-  if (endpoint === '/api/dev-import-db-cleanup') return fetch('/api/dev-import-db-cleanup', { ...init, headers: { ...(init?.headers || {}), 'x-db-key': cleanKey } });
-  if (endpoint === '/api/dev-clean-db') return fetch('/api/dev-clean-db', init);
-  return fetch('/api/dev-export-clean-db', init);
+  const headers = { ...(init?.headers || {}), ...(cleanKey ? { 'x-db-key': cleanKey } : {}) };
+  return fetch(endpoint, { ...init, headers });
 }
 
 export async function persistSQLite(): Promise<void> {
@@ -201,38 +210,35 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
     if (_isInMemory) {
       if (canUseDevDatabaseBridge(import.meta.env.DEV, isE2E)) {
         try {
-          const importCheck = await devFetch('/api/dev-import-db-check', _sqliteKey, { cache: 'no-store' })
+          const importCheck = await devFetch('/api/dev-sim-db-check', _sqliteKey, { cache: 'no-store' })
           if (importCheck.ok) {
             const { exists } = await importCheck.json() as { exists: boolean }
             if (exists) {
-              const response = await devFetch('/api/dev-import-db', _sqliteKey, { cache: 'no-store' })
+              const response = await devFetch('/api/dev-sim-db', _sqliteKey, { cache: 'no-store' })
               if (response.ok) {
-                logger.info('SQLite', 'Pending imported DB found in dev mode. Initializing in-memory DB from imported.db...')
+                logger.info('SQLite', `Pending simulation DB found in dev mode for ${_sqliteKey}. Initializing in-memory DB...`)
                 const arrayBuffer = await response.arrayBuffer()
                 const binary = new Uint8Array(arrayBuffer)
                 _sqliteDb = new SQL.Database(binary) as SQLiteDatabase // domain-ok
                 try {
                   await ensureSchemaIntegrity(_sqliteDb)
                   await runMigrations()
-                  await saveToOPFS(_sqliteKey, binary)
-                  await setToIDB(_sqliteKey, binary)
-                  await setToIDB(_sqliteKey + '_backup', binary)
                   if (typeof window === 'undefined' || !window.__GTS_SIMULATION__) {
                     try {
-                      await devFetch('/api/dev-import-db-cleanup', _sqliteKey, { method: 'POST' })
+                      await devFetch('/api/dev-sim-db-cleanup', _sqliteKey, { method: 'POST' })
                     } catch (_e) {
                       void 0;
                     }
                   }
                   return _sqliteDb
                 } catch (schemaErr) {
-                  logger.warn('SQLite', `Imported DB integrity check failed (${(schemaErr as Error).message}). Falling back to clean DB template...`)
+                  logger.warn('SQLite', `Simulation DB integrity check failed (${(schemaErr as Error).message}). Falling back to clean DB template...`)
                 }
               }
             }
           }
         } catch (err) {
-          logger.warn('SQLite', `Failed to load imported db: ${(err as Error).message}. Falling back to IDB or clean DB template...`)
+          logger.warn('SQLite', `Failed to load simulation db: ${(err as Error).message}. Falling back to IDB or clean DB template...`)
         }
       }
 
@@ -274,45 +280,45 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
       return _sqliteDb
     }
     
-    // Check if we are in development mode and if there is a pending import
+    // Check if there is an explicit manual database import requested by the developer
     if (import.meta.env.DEV) {
       try {
-        const checkRes = await devFetch('/api/dev-import-db-check', _sqliteKey, { cache: 'no-store' })
+        const checkRes = await devFetch('/api/dev-manual-import-check', undefined, { cache: 'no-store' })
         if (checkRes.ok) {
           const { exists } = await checkRes.json() as { exists: boolean }
           if (exists) {
-            const response = await devFetch('/api/dev-import-db', _sqliteKey, { cache: 'no-store' })
+            const response = await devFetch('/api/dev-manual-import-db', undefined, { cache: 'no-store' })
             if (response.ok) {
-              logger.info('SQLite', 'Pending import found! Downloading dev_imported.db...')
+              logger.info('SQLite', 'Explicit manual backup import found! Installing manual_user_backup_import.db...')
               
               // Show importing overlay to the user
               try {
                 const loadingStore = await getLoadingStore()
                 if (loadingStore) {
-                  loadingStore.start('db_import', 'Importando Base de Datos...', 'Instalando copia de seguridad, por favor espera', true, '💾')
+                  loadingStore.start('db_import', 'Importando Base de Datos...', 'Instalando copia de seguridad manual, por favor espera', true, '💾')
                 }
               } catch (e) {
-                throw new Error(`[sqliteEngine] Failed to initialize loadingStore in dev import: ${String(e)}`)
+                throw new Error(`[sqliteEngine] Failed to initialize loadingStore in manual dev import: ${String(e)}`)
               }
 
               const arrayBuffer = await response.arrayBuffer()
               const binary = new Uint8Array(arrayBuffer)
               
-              // Save directly to OPFS, IDB and Shadow Backup
+              // Save directly to OPFS, IDB and Shadow Backup for the user's sqliteKey
               await saveToOPFS(_sqliteKey, binary)
               await setToIDB(_sqliteKey, binary)
               await setToIDB(_sqliteKey + '_backup', binary)
-              logger.success('SQLite', 'Dev DB successfully imported and persisted to OPFS and IndexedDB!')
+              logger.success('SQLite', 'Manual backup successfully imported and persisted to OPFS and IndexedDB!')
               
-              // Invalidate all stale individual save caches to prevent them from overriding newly imported/migrated saves
+              // Invalidate all stale individual save caches
               const { purgeAllCachedSaves } = await import('../utils/opfsStorage.ts');
               await purgeAllCachedSaves();
               
-              // Trigger file cleanup on the dev server
+              // Trigger cleanup of manual_user_backup_import.db on the dev server
               try {
-                await devFetch('/api/dev-import-db-cleanup', _sqliteKey, { method: 'POST' })
+                await devFetch('/api/dev-manual-import-cleanup', undefined, { method: 'POST' })
               } catch (e) {
-                throw new Error(`[sqliteEngine] Failed to cleanup dev import DB file: ${String(e)}`)
+                throw new Error(`[sqliteEngine] Failed to cleanup manual import DB file: ${String(e)}`)
               }
 
               // Set import reload flag to preserve session during reload
@@ -335,7 +341,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
           }
         }
       } catch (err) {
-        logger.debug('SQLite', `No pending dev import DB found: ${(err as Error).message}`)
+        logger.debug('SQLite', `No manual backup import found: ${(err as Error).message}`)
       }
     }
 

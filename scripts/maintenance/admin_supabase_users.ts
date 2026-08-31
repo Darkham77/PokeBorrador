@@ -49,7 +49,7 @@ export async function adminSupabaseUsers(): Promise<void> {
   const isHelp = values.help || rawArgs.includes('help') || rawArgs.includes('--help') || rawArgs.includes('-h');
 
   if (isHelp) {
-    console.log(styleText('cyan', `\n📖 USO: npm run servers:db:admin [server=<perfil>] [action=<accion>] [email=<email>] [password=<pass>]`));
+    console.log(styleText('cyan', `\n📖 USO: npm run database:admin [server=<perfil>] [action=<accion>] [email=<email>] [password=<pass>]`));
     console.log(styleText('gray', '\nOpciones disponibles:'));
     console.log(styleText('gray', '  server=<perfil>         : Perfil del servidor objetivo (obligatorio).'));
     console.log(styleText('gray', '  action=<accion>         : Acción a ejecutar: unban | set-password | set-email | set-username | promote.'));
@@ -92,7 +92,7 @@ export async function adminSupabaseUsers(): Promise<void> {
 
   if (!serverArg || !actionArg || (!emailArg && !usernameArg)) {
     console.log(styleText('yellow', '⚠️  Faltan argumentos obligatorios. Uso requerido:'));
-    console.log(styleText('cyan', `npm run servers:db:admin server=<perfil> action=<accion> email=<email> [password=<pass> | new-email=<email> | username=<nombre>]`));
+    console.log(styleText('cyan', `npm run database:admin server=<perfil> action=<accion> email=<email> [password=<pass> | new-email=<email> | username=<nombre>]`));
     console.log(styleText('gray', '\nAcciones disponibles:'));
     console.log(styleText('gray', '  unban             : Desbanea una cuenta de usuario.'));
     console.log(styleText('gray', '  set-password      : Cambia la contraseña (requiere password=<nueva_pass>).'));
@@ -100,9 +100,9 @@ export async function adminSupabaseUsers(): Promise<void> {
     console.log(styleText('gray', '  set-username      : Cambia el nombre de entrenador (requiere username=<nombre>).'));
     console.log(styleText('gray', '  promote           : Promueve la cuenta a rol de Administrador.'));
     console.log(styleText('gray', '\nEjemplos sin guiones:'));
-    console.log(styleText('gray', '  npm run servers:db:admin server=server_franco action=set-password email=usuario@ejemplo.com password=NUEVA_PASS'));
-    console.log(styleText('gray', '  npm run servers:db:admin server=server_franco action=unban email=usuario@ejemplo.com'));
-    console.log(styleText('gray', '  npm run servers:db:admin server=server_franco action=promote email=usuario@ejemplo.com'));
+    console.log(styleText('gray', '  npm run database:admin server=server_franco action=set-password email=usuario@ejemplo.com password=NUEVA_PASS'));
+    console.log(styleText('gray', '  npm run database:admin server=server_franco action=unban email=usuario@ejemplo.com'));
+    console.log(styleText('gray', '  npm run database:admin server=server_franco action=promote email=usuario@ejemplo.com'));
     console.log(styleText('cyan', `\nPerfiles disponibles: ${allAvailable.join(', ')}`));
     process.exit(1);
   }

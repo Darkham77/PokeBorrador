@@ -89,8 +89,17 @@ If a map is under the total control of the player's faction, the **Dominance Bon
 
 For players belonging to the Team Rocket class, reaching maximum criminality (100% or higher) triggers combat encounters with the police:
 
-- **Archetype and Sprite Selection**: The system utilizes the dedicated `policeman` archetype. Instead of fallback sprites (e.g., `tamer`), it dynamically selects a random sprite from the policeman catalog pool (`policeman`, `policeman-gen4`, `policeman-gen7`, `policeman-gen8`) to provide visual variety.
-- **Encounter Stats**: Level scaling is derived from the map's base level plus an incremental level bonus scaled by criminality exceeding 100%.
+- **Archetype and Sprite Selection**: The system strictly identifies police encounters via the canonical `policeman` archetype (`trainerArchetype === 'policeman'`), never by fragile hardcoded string comparisons on `trainerName`. The spawner selects a random sprite from the policeman catalog pool (`policeman`, `policeman-gen4`, `policeman-gen7`, `policeman-gen8`) and generates a dynamic name with title (e.g., `"Oficial de Policía Roberto"`).
+- **Difficulty and Extra Level Scaling**: Excess criminality beyond 100% scales enemy level by $+1$ level per $10\%$ excess:
+  $$\text{bonusLv} = \lfloor \frac{\max(0, \text{criminality} - 100)}{10} \rfloor$$
+- **Level Clamping Safeguard**: To prevent engine exceptions in `pokemonFactory`, illegal Showdown battle states, and corrupted stolen Pokémon data, the effective police level is strictly clamped to `MAX_POKEMON_LEVEL` (100):
+  $$\text{effectivePoliceLv} = \max(1, \min(\text{MAX\_POKEMON\_LEVEL}, \text{baseMapLv} + 5 + \text{bonusLv}))$$
+- **Dynamic Team Size Scaling**:
+  $$\text{policeTeamSize}(\text{crim}) = \begin{cases} \text{random}(3, 4) & \text{if } \text{crim} < 140\% \\ \text{random}(4, 5) & \text{if } 140\% \le \text{crim} < 200\% \\ 6 & \text{if } \text{crim} \ge 200\% \text{ (Full SWAT Team)} \end{cases}$$
+- **Post-Battle Resolution & Bail**:
+  - Upon defeat, Rocket players are arrested and charged bail: $\text{Bail} = \lfloor \text{classLevel}^2 \times 80 \times (\text{criminality} / 100) \rfloor$.
+  - Upon victory, players have a $5\%$ chance to steal a legal level-clamped Pokémon from the police squad.
+  - In all outcomes (win, loss, or flee), criminality is reset to $0\%$ and HUD indicators return to baseline.
 
 ---
 

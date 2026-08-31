@@ -15,6 +15,7 @@ QA / Automation Engineers.
 
 - Ensure `fsm_sync.sim.ts` covers the batch movement/ability combinations.
 - Write specific simulations for held items (`held_items.sim.ts`) and weather conditions (`weather.sim.ts`).
+- `rocket_police_criminality.simulation.ts` covers Team Rocket criminality progression, visual HUD scaling (`#criminality-bar`), scaled SWAT police encounters, and post-battle resolution resets.
 
 ## Verification
 

@@ -30,5 +30,6 @@ Unit tests for combat damage calculations, active battle statuses, and state mac
 ## Child DOX Index
 
 - [ai](./ai/AGENTS.md): Heuristic decision AI, threat assessment, and move set lookups unit tests.
+- [helpers](./helpers/AGENTS.md): Battle auxiliary helper functions and state resolution routines.
 - [parity](./parity/AGENTS.md): Showdown engine behavior and bridge parity unit tests.
 - [rewards](./rewards/AGENTS.md): Battle reward distributors, item drops, and NPC egg drop unit tests.

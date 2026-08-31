@@ -3,7 +3,6 @@ import { GAME_RATIOS } from '@/data/system/constants';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import { getDayCycle, requireDayPhase } from '@/logic/utils/timeUtils';
 import { applyEncounterBonuses } from '@/logic/war/bonusEngine';
-import { CRIMINALITY_DENOMINATOR_FACTOR } from '@/logic/constants/gameplay';
 import { useEventStore } from '@/stores/events';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { MapLocation, Encounter, EncounterOptions, EncounterState } from '@/types/pokemon/encounters';
@@ -142,8 +141,9 @@ export async function generateEncounter(locId: string, state: EncounterState, op
   const criminality = state.classData?.criminality || 0;
   const isRocketMaxCrim = state.playerClass === 'rocket' && criminality >= 100;
 
+  const { calculatePoliceEncounterChance } = await import('@/logic/player/classMath');
   const tChance = isRocketMaxCrim
-    ? (criminality / CRIMINALITY_DENOMINATOR_FACTOR) * trainerBonus
+    ? calculatePoliceEncounterChance(criminality, trainerBonus)
     : Math.min(state.trainerChance || GAME_RATIOS.encounters.trainerBase, GAME_RATIOS.encounters.trainerMax) * trainerBonus;
 
   if (!options.forceEncounter && Math.random() * 100 < tChance) {

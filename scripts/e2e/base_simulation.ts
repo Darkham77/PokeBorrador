@@ -31,7 +31,7 @@ export abstract class BaseE2ESimulation {
    */
   public getDbPath(): string {
     const cleanKey = this.sqliteKey.replace(/[^a-z0-9_]/g, '');
-    return `database/temp/imported_${cleanKey}.db`;
+    return `database/temp/simulations/sim_${cleanKey}.db`;
   }
 
   /**

@@ -6,7 +6,7 @@ import crypto from 'node:crypto';
 
 console.log('\n--- ⚡ SEEDING TEST USERS (ASH & ENTRENADOR) ---');
 
-const dbPath = path.resolve('database/temp/imported.db');
+const dbPath = path.resolve('database/temp/manual_user_backup_import.db');
 if (!fs.existsSync(dbPath)) {
   console.error(`❌ Error: Local database file not found at ${dbPath}. Please run the import or run the dev server first.`);
   process.exit(1);

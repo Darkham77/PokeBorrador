@@ -70,7 +70,7 @@ When applying SQL migrations that update user save progress or profiles in Supab
 If you modify the database schema, you MUST maintain parity across all layers:
 
 1. **Local Migration**: Create the SQL file in `database/migrations/`.
-2. **Logic Manifest**: Run `npm run migrations:generate` to update `src/logic/db/migrations_data.ts`.
+2. **Logic Manifest**: Run `npm run database:generate-migrations` to update `src/logic/db/migrations_data.ts`.
 3. **Absolute Schema**: Update the corresponding SQL file in `database/schemas/` to reflect the final state.
 4. **SQLite Schema**: Update `TABLES_SCHEMA` in `src/logic/db/schema.ts` for fresh offline initializations.
 

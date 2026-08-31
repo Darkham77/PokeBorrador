@@ -75,12 +75,12 @@ function createIllegalMovePokemon(uid = 'illegal-move-1'): Pokemon {
 }
 
 function createIllegalAbilityPokemon(uid = 'illegal-ability-1'): Pokemon {
-  // Rayquaza cannot have Wonder Guard
+  // Mewtwo cannot have Wonder Guard
   return {
     uid,
-    id: 'rayquaza',
-    name: 'Rayquaza',
-    species: 'Rayquaza',
+    id: 'mewtwo',
+    name: 'Mewtwo',
+    species: 'Mewtwo',
     level: 70,
     maxHp: 200,
     hp: 200,
@@ -89,7 +89,7 @@ function createIllegalAbilityPokemon(uid = 'illegal-ability-1'): Pokemon {
     spa: 150,
     spd: 100,
     spe: 100,
-    moves: [{ id: 'dragonclaw', name: 'Dragon Claw', type: 'dragon', cat: 'physical', power: 80, acc: 100, pp: 15, maxPP: 15 }],
+    moves: [{ id: 'psychic', name: 'Psíquico', type: 'psychic', cat: 'special', power: 90, acc: 100, pp: 10, maxPP: 10 }],
     ability: 'wonderguard',
     isIllegal: false
   } as unknown as Pokemon

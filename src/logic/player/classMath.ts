@@ -5,7 +5,26 @@
  * sin efectos colaterales de base de datos o almacenamiento de estado.
  */
 
-import { MINIMUM_POKEMON_LEVEL, DECIMAL_PLACES_PRECISION_TWO, CLASS_XP_THRESHOLD_RANKS } from '../constants/gameplay.ts';
+import { MINIMUM_POKEMON_LEVEL, DECIMAL_PLACES_PRECISION_TWO, CLASS_XP_THRESHOLD_RANKS, CRIMINALITY_DENOMINATOR_FACTOR } from '../constants/gameplay.ts';
+import { MAX_POKEMON_LEVEL } from '../../data/system/constants.ts';
+
+/** Bonus level calculation step for excess criminality (1 level per 10%). */
+export const CRIMINALITY_BONUS_LEVEL_STEP_PERCENT = 10;
+
+/** Excess threshold to spawn a full 6-Pokemon SWAT team (200%). */
+export const CRIMINALITY_SWAT_TEAM_THRESHOLD_PERCENT = 200;
+
+/** Excess threshold to spawn a heavy 4-5 Pokemon police team (140%). */
+export const CRIMINALITY_HEAVY_TEAM_THRESHOLD_PERCENT = 140;
+
+/** Base level offset added to map route base level for police officers (+5). */
+export const POLICE_BASE_LEVEL_OFFSET = 5;
+
+/** Base bail calculation factor for police defeats (80). */
+export const POLICE_BAIL_BASE_MULTIPLIER = 80;
+
+/** Base steal chance when defeating a police officer (5%). */
+export const POLICE_STEAL_CHANCE_PERCENT = 0.05;
 
 /** Team Rocket quick steal base chance (15%). */
 const ROCKET_QUICK_STEAL_BASE_CHANCE = 0.15;
@@ -125,3 +144,65 @@ export function calculateMaxNpcRobberyLimit(avgLevel: number): number {
   const level = Math.max(MINIMUM_POKEMON_LEVEL, avgLevel);
   return NPC_ROBBERY_LIMIT_QUADRATIC_COEFF * Math.pow(level, QUADRATIC_EXPONENT);
 }
+
+/**
+ * Team Rocket / Policía:
+ * Calcula los niveles extra de dificultad para el Oficial de Policía basado en el exceso de criminalidad sobre 100%.
+ * Fórmula: floor(max(0, criminalidad - 100) / 10). (+1 nivel cada 10% de exceso).
+ */
+export function calculatePoliceBonusLevel(criminality: number): number {
+  const excess = Math.max(0, (criminality || 0) - MAX_CRIMINALITY_LEVEL);
+  return Math.floor(excess / CRIMINALITY_BONUS_LEVEL_STEP_PERCENT);
+}
+
+/**
+ * Team Rocket / Policía:
+ * Calcula el nivel efectivo de los Pokémon del Oficial de Policía con clampeo estricto entre 1 y MAX_POKEMON_LEVEL (100).
+ * Previene excepciones de generación de Pokémon o desbordamientos ilegales en Showdown/persistencia.
+ */
+export function calculatePoliceEffectiveLevel(baseMapLv: number, criminality: number): number {
+  const base = Math.max(MINIMUM_POKEMON_LEVEL, baseMapLv || MINIMUM_POKEMON_LEVEL);
+  const bonus = calculatePoliceBonusLevel(criminality);
+  const total = base + POLICE_BASE_LEVEL_OFFSET + bonus;
+  return Math.max(MINIMUM_POKEMON_LEVEL, Math.min(MAX_POKEMON_LEVEL, total));
+}
+
+/**
+ * Team Rocket / Policía:
+ * Calcula dinámicamente el tamaño del equipo del Oficial de Policía según la criminalidad:
+ * - < 140%: 3 a 4 Pokémon (Patrulla local)
+ * - 140% a 199%: 4 a 5 Pokémon (Fuerza de choque)
+ * - >= 200%: 6 Pokémon completos (Equipo completo táctico SWAT)
+ */
+export function calculatePoliceTeamSize(criminality: number, randomFn: () => number = Math.random): number {
+  const crim = criminality || 0;
+  if (crim >= CRIMINALITY_SWAT_TEAM_THRESHOLD_PERCENT) {
+    return 6;
+  }
+  if (crim >= CRIMINALITY_HEAVY_TEAM_THRESHOLD_PERCENT) {
+    return Math.floor(randomFn() * 2) + 4;
+  }
+  return Math.floor(randomFn() * 2) + 3;
+}
+
+/**
+ * Team Rocket / Policía:
+ * Calcula el monto de la fianza que debe pagar un miembro de Team Rocket al ser derrotado por la policía.
+ * Fórmula: floor(classLevel^2 * 80 * (criminalidad / 100)).
+ */
+export function calculatePoliceBail(classLevel: number, criminality: number): number {
+  const level = Math.max(MINIMUM_POKEMON_LEVEL, classLevel || MINIMUM_POKEMON_LEVEL);
+  const crim = Math.max(0, criminality || 0);
+  return Math.floor(Math.pow(level, QUADRATIC_EXPONENT) * POLICE_BAIL_BASE_MULTIPLIER * (crim / MAX_CRIMINALITY_LEVEL));
+}
+
+/**
+ * Team Rocket / Policía:
+ * Calcula la probabilidad de encuentro con un Oficial de Policía cuando el jugador es Team Rocket y la criminalidad >= 100%.
+ * Fórmula: (criminalidad / 10) * trainerBonus.
+ */
+export function calculatePoliceEncounterChance(criminality: number, trainerBonus = 1): number {
+  const crim = Math.max(0, criminality || 0);
+  return (crim / CRIMINALITY_DENOMINATOR_FACTOR) * trainerBonus;
+}
+

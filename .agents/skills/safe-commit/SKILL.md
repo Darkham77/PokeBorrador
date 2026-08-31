@@ -410,10 +410,10 @@ Display this block at the end of your response:
 git push origin <branch>
 
 # Update database on a specific server
-npm run servers:db:update server=<profile>
+npm run database:update server=<profile>
 
 # Update database on all configured servers
-npm run servers:db:update all
+npm run database:update all
 ```
 
 Mark Phase 10 `[x]` in `task.md`. Workflow complete.

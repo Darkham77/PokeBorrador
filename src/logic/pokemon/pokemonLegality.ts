@@ -3,7 +3,7 @@ import { canLearnMove, getMaxAllowedMoves } from './pokemonLearnset.ts'
 import { recalcPokemonStats } from './pokemonFactory.ts'
 import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils'
 import { toID } from '@/logic/utils/strings.ts'
-import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
+import { MAX_POKEMON_LEVEL, isEnabledPokemonId } from '@/data/system/constants'
 import { requireAbilityId } from '@/data/battle/abilities'
 import { isLegendaryPokemonSpeciesId, isFossilPokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
@@ -18,14 +18,21 @@ export interface PokemonRepairReport {
   changes: string[] // no-domain
 }
 
+export interface CheckPokemonLegalityOptions {
+  allowUnreleased?: boolean
+}
+
 /**
  * Checks whether a Pokemon strictly adheres to legal constraints:
- * - Species exists in Dex
+ * - Species exists in Dex and is enabled by global whitelist
  * - Level between 1 and 100
  * - Ability belongs to species' legal abilities
  * - Moves are non-duplicate, exist in move DB, and are in species' learnset
  */
-export function checkPokemonLegality(p: Pokemon | null | undefined): PokemonLegalityReport {
+export function checkPokemonLegality(
+  p: Pokemon | null | undefined,
+  options?: CheckPokemonLegalityOptions
+): PokemonLegalityReport {
   const issues: string[] = [] // no-domain
 
   if (!p) {
@@ -34,6 +41,11 @@ export function checkPokemonLegality(p: Pokemon | null | undefined): PokemonLega
 
   if (!p.id) {
     issues.push('Especie no especificada.')
+    return { isLegal: false, issues }
+  }
+
+  if (!options?.allowUnreleased && !isEnabledPokemonId(p.id)) {
+    issues.push(`La especie "${p.id}" no está habilitada por la whitelist global.`)
     return { isLegal: false, issues }
   }
 

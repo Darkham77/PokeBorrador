@@ -10,8 +10,8 @@
  * 4. Exports a clean, 100% compatible upgraded backup JSON (<name>_upgraded.json) ready for immediate restoration.
  * 
  * Usage:
- *   npm run servers:db:upgrade-backup file=database/backups/server_franco/server_franco_backup_2026-06-27T05-06-25-158315918Z.json
- *   npm run servers:db:upgrade-backup server=server_franco
+ *   npm run database:upgrade-backup file=database/backups/server_franco/server_franco_backup_2026-06-27T05-06-25-158315918Z.json
+ *   npm run database:upgrade-backup server=server_franco
  */
 
 import fsPromises from 'node:fs/promises';
@@ -66,7 +66,7 @@ export async function upgradeBackup(): Promise<string> {
 
   if (!targetBackupPath) {
     console.error(styleText('red', '❌ Error: Debes especificar un archivo de respaldo con file=<ruta> o server=<perfil>.'));
-    console.log(styleText('gray', 'Ejemplo: npm run servers:db:upgrade-backup file=database/backups/server_franco/backup.json'));
+    console.log(styleText('gray', 'Ejemplo: npm run database:upgrade-backup file=database/backups/server_franco/backup.json'));
     process.exit(1);
   }
 

@@ -10,6 +10,7 @@ Core Engine Team / QA Engineers.
 
 - Must utilize Vitest and run under simulated battle flows.
 - Keep tests aligned with Gen 9 mechanics.
+- `police_encounter_and_difficulty_integration.spec.ts`: Validates end-to-end police encounter generation, dynamic team sizing (3 to 6 Pokémon), strict level clamping to `MAX_POKEMON_LEVEL` (100) in high-level routes, bail calculation, and GameStore criminality resets.
 
 ## Verification
 

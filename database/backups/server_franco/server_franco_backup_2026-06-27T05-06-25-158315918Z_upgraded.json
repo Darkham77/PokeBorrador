@@ -1,11 +1,11 @@
 {
   "metadata": {
     "profile": "server_franco",
-    "timestamp": "2026-08-30T22:20:36.005Z",
+    "timestamp": "2026-08-31T04:04:47.706Z",
     "totalTables": 26,
-    "totalRows": 1109,
+    "totalRows": 1111,
     "upgradedFrom": "server_franco_backup_2026-06-27T05-06-25-158315918Z.json",
-    "db_version": "20260830233000_universal_sanitize_all_entities_and_moves"
+    "db_version": "20260831010000_purge_disabled_species_and_eggs"
   },
   "data": {
     "_migrations": [
@@ -183,135 +183,143 @@
       },
       {
         "id": "20260619202000_migrate_saves_to_showdown_ids",
-        "applied_at": "2026-08-30T22:19:51.165Z"
+        "applied_at": "2026-08-31T04:04:20.339Z"
       },
       {
         "id": "20260622000000_migrate_saves_to_pure_showdown_ids",
-        "applied_at": "2026-08-30T22:19:51.213Z"
+        "applied_at": "2026-08-31T04:04:20.370Z"
       },
       {
         "id": "20260622000100_migrate_save_move_ids",
-        "applied_at": "2026-08-30T22:19:51.248Z"
+        "applied_at": "2026-08-31T04:04:20.392Z"
       },
       {
         "id": "20260622000200_fix_accented_spanish_move_ids",
-        "applied_at": "2026-08-30T22:19:51.292Z"
+        "applied_at": "2026-08-31T04:04:20.420Z"
       },
       {
         "id": "20260622000300_migrate_save_eggs_and_missions",
-        "applied_at": "2026-08-30T22:19:51.306Z"
+        "applied_at": "2026-08-31T04:04:20.429Z"
       },
       {
         "id": "20260627023400_fix_corrupted_n_move_ids",
-        "applied_at": "2026-08-30T22:19:59.417Z"
+        "applied_at": "2026-08-31T04:04:25.401Z"
       },
       {
         "id": "20260629230200_migrate_item_ids_in_saves_v3",
-        "applied_at": "2026-08-30T22:19:59.424Z"
+        "applied_at": "2026-08-31T04:04:25.407Z"
       },
       {
         "id": "20260630125200_migrate_saves_to_pure_pkms_item_ids",
-        "applied_at": "2026-08-30T22:19:59.464Z"
+        "applied_at": "2026-08-31T04:04:25.435Z"
       },
       {
         "id": "20260701140000_migrate_custom_item_ids",
-        "applied_at": "2026-08-30T22:19:59.503Z"
+        "applied_at": "2026-08-31T04:04:25.462Z"
       },
       {
         "id": "20260701160000_fix_missing_item_ids",
-        "applied_at": "2026-08-30T22:19:59.542Z"
+        "applied_at": "2026-08-31T04:04:25.489Z"
       },
       {
         "id": "20260711183500_fix_active_nature_in_saves",
-        "applied_at": "2026-08-30T22:19:59.571Z"
+        "applied_at": "2026-08-31T04:04:25.510Z"
       },
       {
         "id": "20260712180500_fix_item_ids_final",
-        "applied_at": "2026-08-30T22:19:59.608Z"
+        "applied_at": "2026-08-31T04:04:25.537Z"
       },
       {
         "id": "20260713170000_heal_illegal_moves_and_abilities_v3",
-        "applied_at": "2026-08-30T22:19:59.611Z"
+        "applied_at": "2026-08-31T04:04:25.539Z"
       },
       {
         "id": "20260713180000_heal_pidgey_local_moves",
-        "applied_at": "2026-08-30T22:19:59.639Z"
+        "applied_at": "2026-08-31T04:04:25.559Z"
       },
       {
         "id": "20260714200000_fix_fossils_and_missing_item_ids",
-        "applied_at": "2026-08-30T22:19:59.683Z"
+        "applied_at": "2026-08-31T04:04:25.589Z"
       },
       {
         "id": "20260803221000_add_pokemon_uid_to_competition_entries",
-        "applied_at": "2026-08-30T22:19:59.684Z"
+        "applied_at": "2026-08-31T04:04:25.590Z"
       },
       {
         "id": "20260818080000_normalize_strict_schemas",
-        "applied_at": "2026-08-30T22:19:59.771Z"
+        "applied_at": "2026-08-31T04:04:25.651Z"
       },
       {
         "id": "20260825110500_heal_tangela_local_moves",
-        "applied_at": "2026-08-30T22:19:59.801Z"
+        "applied_at": "2026-08-31T04:04:25.672Z"
       },
       {
         "id": "20260826140000_update_magikarp_event_config",
-        "applied_at": "2026-08-30T22:19:59.801Z"
+        "applied_at": "2026-08-31T04:04:25.672Z"
       },
       {
         "id": "20260826200000_normalize_active_battle_enemy_team",
-        "applied_at": "2026-08-30T22:19:59.804Z"
+        "applied_at": "2026-08-31T04:04:25.674Z"
       },
       {
         "id": "20260827110000_remove_legacy_pokemon_size",
-        "applied_at": "2026-08-30T22:19:59.831Z"
+        "applied_at": "2026-08-31T04:04:25.693Z"
       },
       {
         "id": "20260827120000_update_events_bonuses_and_minigames",
-        "applied_at": "2026-08-30T22:19:59.831Z"
+        "applied_at": "2026-08-31T04:04:25.693Z"
       },
       {
         "id": "20260828100000_seed_complete_weekly_events",
-        "applied_at": "2026-08-30T22:19:59.831Z"
+        "applied_at": "2026-08-31T04:04:25.694Z"
       },
       {
         "id": "20260828110000_fix_event_reward_item_ids",
-        "applied_at": "2026-08-30T22:19:59.831Z"
+        "applied_at": "2026-08-31T04:04:25.694Z"
       },
       {
         "id": "20260828114000_fix_event_enabled_species",
-        "applied_at": "2026-08-30T22:19:59.831Z"
+        "applied_at": "2026-08-31T04:04:25.694Z"
       },
       {
         "id": "20260828130000_reorganize_monthly_events_schedule",
-        "applied_at": "2026-08-30T22:19:59.831Z"
+        "applied_at": "2026-08-31T04:04:25.694Z"
       },
       {
         "id": "20260830000000_reset_friendship_on_claim_asset",
-        "applied_at": "2026-08-30T22:19:59.831Z"
+        "applied_at": "2026-08-31T04:04:25.694Z"
       },
       {
         "id": "20260830190000_repair_all_player_saves",
-        "applied_at": "2026-08-30T22:19:59.888Z"
+        "applied_at": "2026-08-31T04:04:25.734Z"
       },
       {
         "id": "20260830200000_fix_egg_species_ids",
-        "applied_at": "2026-08-30T22:19:59.896Z"
+        "applied_at": "2026-08-31T04:04:25.738Z"
       },
       {
         "id": "20260830210000_fix_legacy_natures_in_eggs_and_saves",
-        "applied_at": "2026-08-30T22:19:59.904Z"
+        "applied_at": "2026-08-31T04:04:25.744Z"
       },
       {
         "id": "20260830220000_comprehensive_egg_sanitization",
-        "applied_at": "2026-08-30T22:19:59.914Z"
+        "applied_at": "2026-08-31T04:04:25.751Z"
       },
       {
         "id": "20260830230000_ensure_canonical_events_and_data",
-        "applied_at": "2026-08-30T22:19:59.914Z"
+        "applied_at": "2026-08-31T04:04:25.751Z"
       },
       {
         "id": "20260830233000_universal_sanitize_all_entities_and_moves",
-        "applied_at": "2026-08-30T22:20:35.194Z"
+        "applied_at": "2026-08-31T04:04:47.052Z"
+      },
+      {
+        "id": "20260830234500_fix_events_config_rls_and_canonical_seed",
+        "applied_at": "2026-08-31T04:04:47.052Z"
+      },
+      {
+        "id": "20260831010000_purge_disabled_species_and_eggs",
+        "applied_at": "2026-08-31T04:04:47.082Z"
       }
     ],
     "awards": [
@@ -3725,8 +3733,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "368c7840563a3ca63449a153a344a2a0"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "8386330c5b560b0ec0660176898fe085"
       },
       {
         "user_id": "dee2dd08-59d9-4122-9cdf-7ec9022f0245",
@@ -3885,8 +3893,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "7ca86fa2fbb95ab32f8d619d44757838"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "f9aed83b6e5da8250be865a20e69efc8"
       },
       {
         "user_id": "57bd0b82-ab09-47eb-b459-616188aaf8fa",
@@ -4439,7 +4447,7 @@
                 "_cost": 2000,
                 "_haBoost": true
               },
-              "uid": "egg_5B7366B0DE333460",
+              "uid": "egg_58B29C1BD7DD9E05",
               "nature": "serious",
               "isNpc": false
             },
@@ -4451,7 +4459,7 @@
               "origin": "encounter",
               "pokemonId": "pichu",
               "totalSteps": 220,
-              "uid": "egg_91957D26B2906516",
+              "uid": "egg_BE33C2609B913BA5",
               "nature": "serious",
               "isShiny": false,
               "isNpc": false
@@ -5165,8 +5173,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "1f7bd7df246ee875dfc09a0b745ef060"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "e869c74cc7f15526cc4a3a35d803ab8b"
       },
       {
         "user_id": "b4da2989-5bf8-4448-82df-4ce19be7c9cd",
@@ -6341,8 +6349,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "07997ebc020c868364f5a7c47d5547f2"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "79210d4d13bd30a16cacd90eb7e51296"
       },
       {
         "user_id": "5105e21d-c952-479a-8cf1-814383b599a1",
@@ -7014,8 +7022,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "6572b1252b61e5e6998698780b4b1df0"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "2cd1508eeea362c212e6c69db37bd2a7"
       },
       {
         "user_id": "d8a92877-70f3-40a5-ac49-1b1f7e09b37e",
@@ -7231,8 +7239,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "c1bf5553547157e8bc7c00c9a20858f7"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "b9a13c3874a70aee4f9135247241f8d9"
       },
       {
         "user_id": "4a62b560-a1a3-4fb1-bac0-c4b16530b543",
@@ -8007,8 +8015,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "7711d6ff987869c23eb6801470f0bc8a"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "487e1d2e42348397586f284f4ef8051c"
       },
       {
         "user_id": "8226e266-c181-4ae1-ba99-22b540595819",
@@ -8228,8 +8236,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "5d79251fafd011cfdb21c25c50d1c302"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "0d99c2965ed4ae309279a680584fe237"
       },
       {
         "user_id": "e72ca0d8-34f5-4812-9efd-e19e1dc892be",
@@ -8384,8 +8392,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "30b092cf03b8875fd798b03d85c6ca21"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "9a1e28155cae630f9b8565206d201481"
       },
       {
         "user_id": "88cc46df-668d-42e5-9428-84e86b864f0e",
@@ -12212,8 +12220,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "bee877f62ff2f17be86ed554e5c659f8"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "0396b81ab1ec931868e2096d794c10bb"
       },
       {
         "user_id": "3c00d89c-01ba-4e21-a7d3-1fb1457c90c5",
@@ -12362,8 +12370,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "2cde8d7c8deda335a8853d725d97d309"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "bd90b27b8dc7cf9e2c4cff3dd3424093"
       },
       {
         "user_id": "d5034349-822e-458e-9c49-075b54be430e",
@@ -12778,8 +12786,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "639108f9ef9f9d56d3651ac6acba7c5c"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "596423288744341c343d91e7caa11054"
       },
       {
         "user_id": "58f8968f-90d9-4a28-b219-1ef097d3e4b2",
@@ -13087,8 +13095,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "caf6cee85d488d2117293fd1398fa1b2"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "9993df7857a84adff2f0b16993955265"
       },
       {
         "user_id": "143ffccc-d17d-4b7e-b021-2e05c5b76b2a",
@@ -13746,8 +13754,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "bfb459e3246a3c2d84e37010633b331d"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "031ea5145dd6fe52f2d3f9ed579ee5d9"
       },
       {
         "user_id": "3f415779-2f3c-4e9a-9236-1a646e5ad5b3",
@@ -13977,8 +13985,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "a39a86113b15812d01b9e227f2778afd"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "43ee631a66a8b7bdaa6902565330658e"
       },
       {
         "user_id": "d02c61c1-f14d-4c73-ba6f-1ddfe84701d2",
@@ -17101,7 +17109,7 @@
               "origin": "encounter",
               "pokemonId": "elekid",
               "totalSteps": 193,
-              "uid": "egg_EDC02D0D8614D3DD",
+              "uid": "egg_C2028ED3C39CD17F",
               "nature": "serious",
               "isShiny": false,
               "isNpc": false
@@ -18367,8 +18375,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "fcb71d5bd3865dc0aa6a2949284fcd33"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "6ec8c6827087944aafca164115dc146a"
       },
       {
         "user_id": "259ef49f-54b2-40c6-a797-5951dc966cb4",
@@ -29064,131 +29072,6 @@
               }
             },
             {
-              "hp": 24,
-              "id": "sunflora",
-              "atk": 13,
-              "def": 11,
-              "exp": 0,
-              "ivs": {
-                "hp": 31,
-                "atk": 29,
-                "def": 24,
-                "spa": 24,
-                "spd": 0,
-                "spe": 23
-              },
-              "spa": 16,
-              "spd": 13,
-              "spe": 9,
-              "uid": "1fa1ef78-59b1-4d38-898d-0f3e9f356650",
-              "name": "Sunflora",
-              "tags": [
-                "ball:pokeball"
-              ],
-              "type": "grass",
-              "level": 5,
-              "maxHp": 24,
-              "moves": [
-                {
-                  "id": "tackle",
-                  "name": "tackle",
-                  "type": "normal",
-                  "cat": "physical",
-                  "power": 40,
-                  "acc": 100,
-                  "pp": 35,
-                  "maxPP": 35,
-                  "priority": 0
-                },
-                {
-                  "id": "pound",
-                  "name": "pound",
-                  "type": "normal",
-                  "cat": "physical",
-                  "power": 40,
-                  "acc": 100,
-                  "pp": 35,
-                  "maxPP": 35,
-                  "priority": 0
-                },
-                {
-                  "id": "ingrain",
-                  "name": "ingrain",
-                  "type": "grass",
-                  "cat": "status",
-                  "power": 0,
-                  "acc": 1000,
-                  "pp": 20,
-                  "maxPP": 20,
-                  "priority": 0
-                },
-                {
-                  "id": "megadrain",
-                  "name": "megadrain",
-                  "type": "grass",
-                  "cat": "special",
-                  "power": 40,
-                  "acc": 100,
-                  "pp": 15,
-                  "maxPP": 15,
-                  "drain": true,
-                  "priority": 0
-                }
-              ],
-              "vigor": 3,
-              "cursed": false,
-              "detect": false,
-              "gender": "M",
-              "lockOn": false,
-              "nature": "serious",
-              "seeded": false,
-              "status": "",
-              "ability": "chlorophyll",
-              "ingrain": false,
-              "isShiny": false,
-              "protect": false,
-              "confused": 0,
-              "flinched": false,
-              "heldItem": null,
-              "maxVigor": 6,
-              "nickname": null,
-              "attracted": false,
-              "badPoison": 0,
-              "catchRate": 100,
-              "expNeeded": 91,
-              "inDaycare": false,
-              "encoreMove": null,
-              "friendship": 70,
-              "obtainedAt": 1781465370676,
-              "sleepTurns": 0,
-              "substitute": 0,
-              "tauntTurns": 0,
-              "destinyBond": false,
-              "encoreTurns": 0,
-              "focusEnergy": false,
-              "thrashTurns": 0,
-              "chargingMove": null,
-              "disabledMove": null,
-              "disabledTurns": 0,
-              "isAtmospheric": true,
-              "weatherOrigin": "sun",
-              "futureSightDmg": 0,
-              "perishSongCount": 0,
-              "futureSightTurns": 0,
-              "species": "sunflora",
-              "volatileCounters": {},
-              "isIllegal": false,
-              "illegalReasons": [],
-              "evs": {
-                "hp": 0,
-                "atk": 0,
-                "def": 0,
-                "spa": 0,
-                "spd": 0,
-                "spe": 0
-              }
-            },
-            {
               "hp": 231,
               "id": "rhydon",
               "atk": 199,
@@ -35772,48 +35655,6 @@
               "isNpc": false
             },
             {
-              "id": "sunflora",
-              "ivs": {
-                "hp": 10,
-                "atk": 29,
-                "def": 24,
-                "spa": 14,
-                "spd": 14,
-                "spe": 12
-              },
-              "uid": "sunflora-1781910998612",
-              "ready": false,
-              "steps": 282,
-              "nature": "serious",
-              "isShiny": false,
-              "totalSteps": 282,
-              "abilitySlot": 0,
-              "movesAtBirth": [],
-              "pokemonId": null,
-              "isNpc": false
-            },
-            {
-              "id": "sunflora",
-              "ivs": {
-                "hp": 21,
-                "atk": 3,
-                "def": 24,
-                "spa": 21,
-                "spd": 0,
-                "spe": 28
-              },
-              "uid": "sunflora-1781934663499",
-              "ready": false,
-              "steps": 253,
-              "nature": "serious",
-              "isShiny": false,
-              "totalSteps": 253,
-              "abilitySlot": 1,
-              "movesAtBirth": [],
-              "pokemonId": null,
-              "isNpc": false
-            },
-            {
               "id": "cleffa",
               "ivs": {
                 "hp": 12,
@@ -35830,27 +35671,6 @@
               "isShiny": false,
               "totalSteps": 252,
               "abilitySlot": 0,
-              "movesAtBirth": [],
-              "pokemonId": null,
-              "isNpc": false
-            },
-            {
-              "id": "sunflora",
-              "ivs": {
-                "hp": 18,
-                "atk": 29,
-                "def": 20,
-                "spa": 5,
-                "spd": 0,
-                "spe": 28
-              },
-              "uid": "sunflora-1782009005830",
-              "ready": false,
-              "steps": 283,
-              "nature": "serious",
-              "isShiny": false,
-              "totalSteps": 283,
-              "abilitySlot": 1,
               "movesAtBirth": [],
               "pokemonId": null,
               "isNpc": false
@@ -37663,8 +37483,8 @@
           "daycare_berry_egg_time": 0,
           "daycare_mission_refreshes": 3
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "e3e886d06760eb7676ab0a5f9d19634c"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "130c26393e67878f154584e024f2c8c7"
       },
       {
         "user_id": "8048a95a-0585-4b24-83f7-db18e55e7db5",
@@ -41215,7 +41035,7 @@
               "origin": "encounter",
               "pokemonId": "pichu",
               "totalSteps": 256,
-              "uid": "egg_BA1114C2417AB66C",
+              "uid": "egg_4D62D23CC20CCACF",
               "ready": false,
               "nature": "serious",
               "isShiny": false,
@@ -41877,8 +41697,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "c98f76be381da3b04b3d1acb9846e34a"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "08440ec41637899cc943ca0edf39b11c"
       },
       {
         "user_id": "6ffae092-ab26-4f07-b5e2-10247347ed69",
@@ -43877,7 +43697,7 @@
                 "spe": 19,
                 "_cost": 2000
               },
-              "uid": "egg_3594848F063B317F",
+              "uid": "egg_8DB849D4DB005687",
               "nature": "serious",
               "isNpc": false
             }
@@ -44885,8 +44705,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "127398fb2751c712ca5363b019e16e64"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "24d3d43ba432afaa65f9b561dac3dac3"
       },
       {
         "user_id": "e47c45fc-78c3-4694-9cb6-af330cb2cb6d",
@@ -45838,8 +45658,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "af68d11fae216d7593d1e977d56b8e85"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "d33eed85e7bdb1f48e80a320522acea7"
       },
       {
         "user_id": "52b6b4e1-b908-4cc2-b7a8-7ce4fe0a2e06",
@@ -47015,7 +46835,7 @@
               "origin": "encounter",
               "pokemonId": "magby",
               "totalSteps": 264,
-              "uid": "egg_ED81F04751CBB445",
+              "uid": "egg_C912E875F27EF75E",
               "nature": "serious",
               "isShiny": false,
               "isNpc": false
@@ -48140,8 +47960,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "df8b500e480535e0667bbe09652f7712"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "16b0288963a420d1dd6c831449c5f688"
       },
       {
         "user_id": "ed26b669-37f6-4434-a0f6-0fc200fa468a",
@@ -48254,7 +48074,7 @@
               "origin": "encounter",
               "pokemonId": "magby",
               "totalSteps": 205,
-              "uid": "egg_193EA3A3F1911A34",
+              "uid": "egg_3893564C7A8A27D3",
               "nature": "serious",
               "isShiny": false,
               "isNpc": false
@@ -48958,8 +48778,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "547b91f4e65bbf4e850e96239a171cdc"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "d98733bd33891e2439bd5d2516b5840a"
       },
       {
         "user_id": "b6fa2c62-23c9-4781-9c2a-9822b48bf30e",
@@ -50031,7 +49851,7 @@
               "origin": "encounter",
               "pokemonId": "igglybuff",
               "totalSteps": 231,
-              "uid": "egg_6E5F929E1AF2841D",
+              "uid": "egg_4C17C3E96ADD00D2",
               "nature": "serious",
               "isShiny": false,
               "isNpc": false
@@ -50054,7 +49874,7 @@
                 "spe": 8,
                 "_cost": 2000
               },
-              "uid": "egg_F498DB37D3EBE958",
+              "uid": "egg_125966F4B9935810",
               "nature": "serious",
               "isNpc": false
             }
@@ -50853,8 +50673,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "759a37994d7b0318e5e1d1b11180c2dd"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "7623a1173c9b0e0680ff943f05abb331"
       },
       {
         "user_id": "44934c84-7e56-4740-a97d-ae749f5447de",
@@ -51142,8 +50962,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "2b6945e9650e7d0f8541e212a9e67cf0"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "1116fb4138183cd37ceed799ffc48d0e"
       },
       {
         "user_id": "5222d170-c695-422f-a74a-87ea65f18a5f",
@@ -70897,8 +70717,8 @@
           "daycare_berry_egg_time": 1775993836425,
           "daycare_mission_refreshes": 3
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "a4429f44630871cc999908031eb4ec58"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "29dbd25679ef37c79ef2c272b2d4badf"
       },
       {
         "user_id": "816e03dc-c4ca-40ae-a077-66c43251b404",
@@ -82206,7 +82026,7 @@
                 "spe": 28,
                 "_cost": 2000
               },
-              "uid": "egg_63B7A587DC675DE6",
+              "uid": "egg_496C73C1D9F8D2F2",
               "nature": "serious",
               "isNpc": false
             }
@@ -83458,8 +83278,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "ac761acb9f8d7d57eb6c3c97db55c412"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "ba2be550e903365abb0f66588169048b"
       },
       {
         "user_id": "6f4dd8cc-1ad9-4bde-9339-4d1e8bbd713d",
@@ -94136,8 +93956,8 @@
           "daycare_berry_egg_time": 1776211033337,
           "daycare_mission_refreshes": 3
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "00009fd6cb725c75d424b212c3f720e4"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "068a7ea2859426972eafb93047039366"
       },
       {
         "user_id": "b8c3006c-7aa5-49ae-ae09-c75d22ce8153",
@@ -94629,8 +94449,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "9ff1b2622f0cdb01847d29a467fd7f41"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "cb4fe11d826266e11ea35b1292ed0620"
       },
       {
         "user_id": "8fd48bca-ce13-4228-b6f0-ee89dc146a3a",
@@ -94705,7 +94525,7 @@
               "gender": "m",
               "isIllegal": false,
               "illegalReasons": [],
-              "uid": "migrated_32DFC13E804A0BDC",
+              "uid": "migrated_B4691F1C15A154FF",
               "isShiny": false,
               "status": "",
               "evs": {
@@ -94779,8 +94599,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "b0c14d7b9d331305443558e2d7e0c73c"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "c08ec8e1150bcf61862663990f08d018"
       },
       {
         "user_id": "fe7c650d-e480-4825-a975-b558e05d3147",
@@ -94996,8 +94816,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "84bc0983abcc2e98952b74cc8c4d522e"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "a884679bf664803cda9eb7c1fdfa54c8"
       },
       {
         "user_id": "58772cc4-cead-485b-b8ac-5c7acfc1e4cb",
@@ -95074,7 +94894,7 @@
               "gender": "m",
               "isIllegal": false,
               "illegalReasons": [],
-              "uid": "migrated_93D616854A688364",
+              "uid": "migrated_2545D6CFC393C6E8",
               "isShiny": false,
               "status": "",
               "evs": {
@@ -95146,8 +94966,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "82914a48173927f777970207ff2b7ab3"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "eb9d70feba3b97152dca67ac3e473d7f"
       },
       {
         "user_id": "6bebbf64-e799-4229-bf19-089e2c9c7248",
@@ -97280,8 +97100,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "75cc30f4ab651f3c3b9979408a84baf9"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "23225bd6c843522c2cd33e2eb720e3da"
       },
       {
         "user_id": "1e078f36-034f-48d1-880a-9e64d4927d99",
@@ -97373,7 +97193,7 @@
               "gender": "m",
               "isIllegal": false,
               "illegalReasons": [],
-              "uid": "migrated_11BFE24EE1A47E10",
+              "uid": "migrated_9E40D0026A711206",
               "isShiny": false,
               "evs": {
                 "hp": 0,
@@ -97455,7 +97275,7 @@
               "gender": "m",
               "isIllegal": false,
               "illegalReasons": [],
-              "uid": "migrated_ECE87A5FC23E7E21",
+              "uid": "migrated_8DF597DBB277C4C3",
               "isShiny": false,
               "evs": {
                 "hp": 0,
@@ -97552,7 +97372,7 @@
               "gender": "m",
               "isIllegal": false,
               "illegalReasons": [],
-              "uid": "migrated_CE18905F5FDB03CF",
+              "uid": "migrated_5580D9949E39D584",
               "evs": {
                 "hp": 0,
                 "atk": 0,
@@ -97651,7 +97471,7 @@
               "gender": "f",
               "isIllegal": false,
               "illegalReasons": [],
-              "uid": "migrated_E1226FEBFA706388",
+              "uid": "migrated_52E62CEE1944ECD1",
               "evs": {
                 "hp": 0,
                 "atk": 0,
@@ -97731,8 +97551,8 @@
           "lastPokemonCenterHeal": 0,
           "playtime": 0
         },
-        "updated_at": "2026-08-30T22:19:59Z",
-        "last_save_id": "46560f3fc15b4d0cd46cbaa24af80543"
+        "updated_at": "2026-08-31T04:04:25Z",
+        "last_save_id": "ad2c888b7a25837c77df22285b77f6b9"
       }
     ],
     "global_chat_messages": [
@@ -103814,8 +103634,8 @@
       },
       {
         "key": "db_version",
-        "value": "\"20260830233000\"",
-        "updated_at": "2026-08-30T22:19:59Z"
+        "value": "\"20260831010000\"",
+        "updated_at": "2026-08-31T04:04:47Z"
       }
     ],
     "trade_offers": [

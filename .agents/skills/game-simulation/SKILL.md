@@ -551,7 +551,7 @@ This command installs the required browsers along with all system dependencies (
 
 **Fuzzer rule:** The fuzzer (`sim:fuzzer`) ALWAYS performs a clean wipe of all previously generated fuzzer artifacts (`fuzzer_*.json`, `fuzzer_*.txt`, `fuzzer_certified_cases.json`) in `scripts/e2e/results/` before starting, ensuring execution starts 100% clean from scratch by default. `ensure_fuzzer_cases.ts` handles this clean wipe and triggers `npm run sim:fuzzer`.
 
-**Mandatory Temporary Files Cleanup Mandate:** Before launching a full simulation run from scratch, the agent MUST explicitly execute a clean wipe of all temporary database and test artifact files (`rm -rf database/temp/imported.db scratch/test-results/ scratch/playwright_*.log`). This guarantees zero state corruption from stale databases or interrupted server reloads.
+**Mandatory Temporary Files Cleanup Mandate:** Before launching a full simulation run from scratch, the agent MUST explicitly execute a clean wipe of all temporary database and test artifact files (`rm -rf database/temp/simulations/ scratch/test-results/ scratch/playwright_*.log`). This guarantees zero state corruption from stale databases or interrupted server reloads.
 
 **Important Fuzzer Regeneration Rule:** Whenever the fuzzer runs and regenerates certified cases, all `TEST_CASE`, `TEST_CASE_ID`, and `TEST_START_FROM_CASE_ID` filters/environment variables are automatically invalidated and deleted inside `ensure_fuzzer_cases.ts`. This forces a complete E2E simulation run over all newly generated cases to identify any new regressions or bugs.
 

@@ -10,10 +10,10 @@ General system maintenance scripts, import fixes, server configurations, and dev
 - **Context-Aware Auto-Fixes**: All auto-fix functions inside `audit_rules.ts` must inspect property context (e.g. JS object `zIndex: 'var(...)'` vs CSS `z-index: var(...)`) to prevent injecting invalid syntax into Vue/TS component files.
 - **Config Exemptions**: Root configuration files (`vite.config.ts`, `vitest.config.ts`, `playwright.config.ts`, `eslint.config.js`) are exempt from standard SLOC thresholds via `AuditRule.exemptConfigFiles`.
 - **Administrative CLI Contracts**: Maintenance scripts MUST implement `node:util parseArgs` with explicit typed options and provide `--help`:
-  - `admin_supabase_users.ts` (`npm run servers:db:admin server=<profile> action=<action> email=<email> [password=<pass> | new-email=<email> | username=<name>]`)
+  - `admin_supabase_users.ts` (`npm run database:admin server=<profile> action=<action> email=<email> [password=<pass> | new-email=<email> | username=<name>]`)
   - `admin_rename.ts` (`npm run admin:rename user=<id_or_name> name=<new_name>`)
-  - `repair_account_legality.ts` (`npm run db:repair-account [server=<profile>] [user=<id_or_email>] [all] [fix]`)
-  - `diagnose_account.ts` (`npm run db:diagnose-account [server=<profile>] [file=<backup_json>] [db=<sqlite_path>] user=<id_or_email_or_name> [save-json=<path>]` / `npm run db:diagnose-accounts [server=<profile>] [file=<backup_json>] [db=<sqlite_path>]`)
+  - `repair_account_legality.ts` (`npm run database:repair-account [server=<profile>] [user=<id_or_email>] [all] [fix]`)
+  - `diagnose_account.ts` (`npm run database:diagnose-account [server=<profile>] [file=<backup_json>] [db=<sqlite_path>] user=<id_or_email_or_name> [save-json=<path>]` / `npm run database:diagnose-accounts [server=<profile>] [file=<backup_json>] [db=<sqlite_path>]`)
 
 ## Child DOX Index
 

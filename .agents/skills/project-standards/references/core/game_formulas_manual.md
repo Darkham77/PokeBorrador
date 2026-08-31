@@ -281,3 +281,27 @@ $$\text{Cost} = 3000 + 1000 \cdot N$$
 $$\text{Shiny\_Probability} = \frac{1 + 0.25 \cdot N}{4096}$$
 *Reaches up to a $2.5\times$ multiplier ($N=6$) compared to the baseline $1/4096$ Shiny rate.*
 
+---
+
+## 12. 🚔 Team Rocket Criminality & Police Scaling Math
+
+All police scaling and criminality resolution formulas are pure functions implemented in [`src/logic/player/classMath.ts`](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/logic/player/classMath.ts).
+
+### 1. Police Extra Level Bonus (`calculatePoliceBonusLevel`)
+$$\text{bonusLv} = \lfloor \frac{\max(0, \text{criminality} - 100)}{10} \rfloor$$
+- Every $+10\%$ criminality above $100\%$ awards $+1$ enemy level bonus.
+
+### 2. Effective Police Level with Clamping Safeguard (`calculatePoliceEffectiveLevel`)
+$$\text{effectivePoliceLv} = \max(1, \min(\text{MAX\_POKEMON\_LEVEL}, \text{baseMapLv} + 5 + \text{bonusLv}))$$
+- Enforces strict bounds $1 \le \text{level} \le 100$, preventing illegal Pokémon generation errors or corrupt box saves.
+
+### 3. Dynamic Police Team Size (`calculatePoliceTeamSize`)
+$$\text{policeTeamSize}(\text{crim}) = \begin{cases} \text{random}(3, 4) & \text{if } \text{crim} < 140\% \text{ (Local Patrol)} \\ \text{random}(4, 5) & \text{if } 140\% \le \text{crim} < 200\% \text{ (Heavy Squad)} \\ 6 & \text{if } \text{crim} \ge 200\% \text{ (Full SWAT Team)} \end{cases}$$
+
+### 4. Arrest Bail upon Defeat (`calculatePoliceBail`)
+$$\text{Bail} = \lfloor \text{classLevel}^2 \times 80 \times \left(\frac{\text{criminality}}{100}\right) \rfloor$$
+
+### 5. Police Encounter Probability (`calculatePoliceEncounterChance`)
+$$\text{tChance} = \left(\frac{\text{criminality}}{10}\right) \times \text{trainerBonus}$$
+
+

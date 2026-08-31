@@ -10,6 +10,7 @@ import { getUpcomingEventOccurrences } from '../../../src/logic/events/eventSche
 import type { GameState } from '../../../src/types/system/game.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
 import { upgradeBackup } from '../../../scripts/database/upgrade_backup.ts';
+import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
 
 describe('Real Backup Upgrade Pipeline & Dynamic Table Sanitization Test', () => {
   it('should run upgradeBackup() on the real backup fixture and output a fully sanitized and compliant _upgraded.json backup file', async () => {
@@ -48,7 +49,9 @@ describe('Real Backup Upgrade Pipeline & Dynamic Table Sanitization Test', () =>
     const upgradedObj = JSON.parse(upgradedContent) as UpgradedBackupObject;
     assert.ok(upgradedObj.data, 'Upgraded backup must contain data');
     assert.ok(upgradedObj.metadata, 'Upgraded backup must contain metadata');
-    assert.ok(upgradedObj.metadata.db_version?.includes('20260830234500'), `db_version must be 20260830234500, got ${upgradedObj.metadata.db_version}`);
+    const latestMigration = DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1]!;
+    const latestVersion = latestMigration.id;
+    assert.ok(upgradedObj.metadata.db_version?.includes(latestVersion), `db_version must contain ${latestVersion}, got ${upgradedObj.metadata.db_version}`);
 
     const allDiscoveredTables = Object.keys(upgradedObj.data);
     assert.ok(allDiscoveredTables.length > 20, `Upgraded backup must contain over 20 tables, found: ${allDiscoveredTables.length}`);

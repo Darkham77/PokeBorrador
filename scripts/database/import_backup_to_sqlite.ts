@@ -24,7 +24,7 @@ const { values, positionals } = parseArgs({
 
 const isHelp = values.help || args.includes('help') || args.includes('--help') || args.includes('-h');
 if (isHelp) {
-  console.log(styleText('cyan', `\n📖 USO: npm run servers:db:local-import [server=<perfil> | file=<ruta_json>]`));
+  console.log(styleText('cyan', `\n📖 USO: npm run database:local-import [server=<perfil> | file=<ruta_json>]`));
   console.log(styleText('gray', '\nOpciones disponibles:'));
   console.log(styleText('gray', '  server=<perfil> : Nombre del perfil para importar su respaldo más reciente.'));
   console.log(styleText('gray', '  file=<ruta>     : Ruta directa al archivo JSON de respaldo a importar.'));
@@ -331,7 +331,7 @@ if (!fs.existsSync(tempDir)) {
   fs.mkdirSync(tempDir, { recursive: true });
 }
 
-const dbPath = path.join(tempDir, 'imported.db');
+const dbPath = path.join(tempDir, 'manual_user_backup_import.db');
 if (fs.existsSync(dbPath)) {
   fs.unlinkSync(dbPath);
 }
@@ -436,5 +436,5 @@ db.close();
 
 console.log('\n==================================================');
 console.log('🎉 PROCESO DE IMPORTACIÓN A SQLITE COMPLETADO CON ÉXITO');
-console.log(`📂 Archivo listo para el navegador en: database/temp/imported.db`);
+console.log(`📂 Archivo listo para el navegador en: database/temp/manual_user_backup_import.db`);
 console.log('==================================================\n');

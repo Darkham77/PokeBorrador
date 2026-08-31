@@ -33,6 +33,7 @@ import type { ItemId } from '@/data/inventory/items';
 import type { DaycareSlot, DaycareEgg, DaycareMission } from '@/types/breeding/breeding';
 import type { BreedingCompatibility, Pokemon } from '@/types/pokemon/pokemon';
 import { BASE_SHINY_DENOMINATOR, EGG_SCANNER_MIN_CLASS_LEVEL, EGG_POLLER_INTERVAL_SEC, MAX_CARRIED_EGGS } from '@/logic/constants/gameplay';
+import { isEnabledPokemonId } from '@/data/system/constants';
 
 export const useBreedingStore = defineStore('breeding', () => {
   const gameStore = useGameStore();
@@ -251,6 +252,9 @@ export const useBreedingStore = defineStore('breeding', () => {
       throw new Error('[breeding] Cannot generate an egg without a valid egg species.');
     }
     const eggSpecies = compat.eggSpecies;
+    if (!isEnabledPokemonId(eggSpecies)) {
+      return;
+    }
     const itemA = pA.heldItem || '';
     const itemB = pB.heldItem || '';
     const playerClass = classStore.playerClass as string;

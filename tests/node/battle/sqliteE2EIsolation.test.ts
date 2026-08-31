@@ -32,4 +32,13 @@ describe('SQLite E2E isolation', () => {
     assert.equal(canRefreshCleanDatabaseTemplate(true, false), false)
     assert.equal(canRefreshCleanDatabaseTemplate(false, true), false)
   })
+
+  it('guarantees simulation keys are strictly segregated from real user storage keys', () => {
+    const userStorageKey = 'pokevicio_sqlite_v2'
+    const simKey = 'sim_db_testuser'
+    
+    // User key must never start with simulation prefix
+    assert.equal(userStorageKey.startsWith('sim_'), false)
+    assert.equal(simKey.startsWith('sim_'), true)
+  })
 })

@@ -14,15 +14,15 @@
  * 
  * Uso:
  *   # Diagnosticar TODAS las cuentas de un servidor:
- *   npm run db:diagnose-account server=server_franco all
+ *   npm run database:diagnose-account server=server_franco all
  * 
  *   # Diagnosticar TODAS las cuentas de un respaldo JSON:
- *   npm run db:diagnose-account file=database/backups/server_franco/backup.json all
+ *   npm run database:diagnose-account file=database/backups/server_franco/backup.json all
  * 
  *   # Diagnosticar una cuenta específica:
- *   npm run db:diagnose-account server=server_franco user=kenviota@gmail.com
- *   npm run db:diagnose-account file=database/backups/server_franco/backup.json user=Angianemar
- *   npm run db:diagnose-account user=local_ash
+ *   npm run database:diagnose-account server=server_franco user=kenviota@gmail.com
+ *   npm run database:diagnose-account file=database/backups/server_franco/backup.json user=Angianemar
+ *   npm run database:diagnose-account user=local_ash
  */
 
 import fs from 'node:fs';
@@ -40,6 +40,7 @@ import { DATABASE_MIGRATIONS } from '../../src/logic/db/migrations_data.ts';
 import { splitSQLStatements, translatePostgresToSqlite } from '../../src/logic/db/sqlTranslator.ts';
 import { initTestDatabaseSchema } from '../auditors/persistence/_testDbHelper.ts';
 import { readAndParseEnv, findServerConfig } from '../lib/supabaseClient.ts';
+import { isEnabledPokemonId } from '../../src/data/system/constants.ts';
 import { toID } from '../../src/logic/utils/strings.ts';
 import type { GameState } from '../../src/types/system/game.ts';
 import type { Pokemon } from '../../src/types/pokemon/pokemon.ts';
@@ -433,6 +434,15 @@ export function runBatteryOfDiagnostics(saveData: GameState): DiagnosticFinding[
       });
     }
 
+    if (!isEnabledPokemonId(poke.id)) {
+      findings.push({
+        severity: 'error',
+        category: 'pokemon',
+        message: `[${location}] Especie "${poke.id}" (${poke.name || poke.id}) no habilitada por la whitelist global.`,
+        path: `${location}.id`
+      });
+    }
+
     try {
       const legality = checkPokemonLegality(poke);
       if (!legality.isLegal) {
@@ -459,12 +469,43 @@ export function runBatteryOfDiagnostics(saveData: GameState): DiagnosticFinding[
   if (Array.isArray(saveData.eggs)) {
     for (let eIdx = 0; eIdx < saveData.eggs.length; eIdx++) {
       const egg = saveData.eggs[eIdx];
-      if (egg && typeof egg.id !== 'string') {
+      if (!egg) continue;
+      if (typeof egg.id !== 'string') {
         findings.push({
           severity: 'error',
           category: 'daycare',
           message: `ID de huevo no es string en eggs[${eIdx}].`,
           path: `eggs[${eIdx}].id`
+        });
+      } else {
+        const eggSpecies = egg.id || egg.pokemonId;
+        if (eggSpecies && !isEnabledPokemonId(eggSpecies)) {
+          findings.push({
+            severity: 'error',
+            category: 'daycare',
+            message: `Huevo en eggs[${eIdx}] con especie no habilitada por la whitelist global: "${eggSpecies}".`,
+            path: `eggs[${eIdx}].id`
+          });
+        }
+      }
+    }
+  }
+
+  // 5. Guardería Depósito (daycareWarehouse)
+  const warehouse = saveData.daycareWarehouse;
+  if (Array.isArray(warehouse)) {
+    for (let wIdx = 0; wIdx < warehouse.length; wIdx++) {
+      const entry = warehouse[wIdx] as Record<string, unknown>; // open-record
+      if (!entry || typeof entry !== 'object') continue;
+      const rawSpecies = String(entry.species || entry.id || '');
+      const cleanSpecies = rawSpecies.startsWith('egg_') ? rawSpecies.replace(/^egg_\d+_[a-z0-9]+_?/, '') : rawSpecies;
+      const targetSpecies = entry.species ? String(entry.species) : cleanSpecies;
+      if (targetSpecies && !isEnabledPokemonId(targetSpecies)) {
+        findings.push({
+          severity: 'error',
+          category: 'daycare',
+          message: `Elemento en daycareWarehouse[${wIdx}] con especie no habilitada: "${targetSpecies}".`,
+          path: `daycareWarehouse[${wIdx}]`
         });
       }
     }
@@ -552,16 +593,16 @@ async function main() {
 
 Uso:
   # Diagnosticar TODAS las cuentas de un servidor:
-  npm run db:diagnose-account server=<perfil> all
-  npm run db:diagnose-account server=server_franco all
+  npm run database:diagnose-account server=<perfil> all
+  npm run database:diagnose-account server=server_franco all
 
   # Diagnosticar TODAS las cuentas de un respaldo JSON:
-  npm run db:diagnose-account file=<ruta_json> all
+  npm run database:diagnose-account file=<ruta_json> all
 
   # Diagnosticar una cuenta específica:
-  npm run db:diagnose-account server=server_franco user=kenviota@gmail.com
-  npm run db:diagnose-account file=<ruta_json> user=Angianemar
-  npm run db:diagnose-account user=local_ash
+  npm run database:diagnose-account server=server_franco user=kenviota@gmail.com
+  npm run database:diagnose-account file=<ruta_json> user=Angianemar
+  npm run database:diagnose-account user=local_ash
 
 Opciones:
   all                      Audita todas las cuentas disponibles en el origen seleccionado.
@@ -583,7 +624,7 @@ Opciones:
 
   if (!isAll && !userInput) {
     console.error(styleText('yellow', '⚠️ Debes especificar el usuario a diagnosticar con user=<id|email|username> o pasar "all" para diagnosticar todas las cuentas.'));
-    console.log(styleText('gray', 'Ejemplo: npm run db:diagnose-account server=server_franco all'));
+    console.log(styleText('gray', 'Ejemplo: npm run database:diagnose-account server=server_franco all'));
     process.exit(1);
   }
 
@@ -699,7 +740,7 @@ Opciones:
     console.log(styleText('green', `\n🎉 ¡EXCELENTE! El 100% de los errores críticos de todas las cuentas se solucionan automáticamente aplicando las migraciones SQL registradas.`));
     if (serverInput) {
       console.log(styleText('cyan', `\n💡 Para aplicar la migración y corregir todas las cuentas en ${serverInput}:`));
-      console.log(styleText('bold', `   npm run servers:db:update server=${serverInput}`));
+      console.log(styleText('bold', `   npm run database:update server=${serverInput}`));
     }
   } else if (unfixableAccounts.length > 0) {
     console.log(styleText('red', `\n❌ Hay ${unfixableAccounts.length} cuenta(s) con errores no cubiertos por las migraciones actuales. Se debe revisar caso por caso.`));

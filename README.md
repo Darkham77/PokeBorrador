@@ -106,13 +106,13 @@ Esta funcionalidad permite convertir y cargar cualquier respaldo de base de dato
 
 ```bash
 # PASO 1: Descargar un respaldo JSON desde un servidor Supabase (Opcional si ya tienes el archivo)
-npm run servers:db:backup server=server_franco
+npm run database:backup server=server_franco
 
 # PASO 2: Actualizar el respaldo y legalizar Pokémon/cuentas de forma estricta
-npm run servers:db:upgrade-backup file=database/backups/server_franco/server_franco_backup_2026-06-27T05-06-25-158315918Z.json
+npm run database:upgrade-backup file=database/backups/server_franco/server_franco_backup_2026-06-27T05-06-25-158315918Z.json
 
 # PASO 3: Convertir el JSON actualizado a la base de datos SQLite del navegador
-npm run servers:db:local-import file=database/backups/server_franco/server_franco_backup_2026-06-27T05-06-25-158315918Z_upgraded.json
+npm run database:local-import file=database/backups/server_franco/server_franco_backup_2026-06-27T05-06-25-158315918Z_upgraded.json
 
 # PASO 4: Iniciar el servidor de desarrollo Vite
 npm run dev
@@ -129,11 +129,11 @@ npm run dev
 2. **`import_backup_to_sqlite.ts` (Mapeo Local & SQLite)**:
    - Mapea los UUIDs remotos de Supabase a identificadores locales limpios (`local_<username>`).
    - Sincroniza y remapea los mensajes de chat privado (`chat_messages`), chats globales, solicitudes de amistad (`friendships`), huevos (`eggs`), guardería y tablas de guerra.
-   - Genera el archivo SQLite binario compilado en `database/temp/imported.db`.
+   - Genera el archivo SQLite binario compilado en `database/temp/manual_user_backup_import.db`.
 
 3. **Vite Dev Server & OPFS Sync (Navegador)**:
-   - Al iniciar `npm run dev`, Vite expone `database/temp/imported.db` a través del middleware de desarrollo `/__dev_db`.
-   - Al abrir `http://localhost:5173/`, el motor del cliente (`sqliteEngine.ts` / `loadingStore.ts`) detecta la base importada, la descarga y la persiste automáticamente en el almacenamiento privado del navegador (**OPFS** / `pokevicio_sqlite_v2`).
+   - Al iniciar `npm run dev`, Vite expone `database/temp/manual_user_backup_import.db` a través del endpoint `/api/dev-manual-import-*`.
+   - Al abrir `http://localhost:5173/`, el motor del cliente (`sqliteEngine.ts` / `loadingStore.ts`) detecta la base importada manual, la descarga y la persiste en el almacenamiento privado del navegador (**OPFS** / `pokevicio_sqlite_v2`).
    - El juego inicia sesión en modo offline instantáneamente con todas las cuentas, Pokémon y estados listos para jugar.
 
 ## 🚀 Despliegue (Hosting)
@@ -306,21 +306,21 @@ El proyecto soporta persistencia dual con aislamiento total entre el modo local 
 
 | Comando | Descripción |
 | :-- | :-- |
-| `npm run db:repair-account` | **Reparación de Cuentas Ilegales**: Corrige Pokémon ilegales (niveles, movimientos o habilidades no permitidas) en una o todas las cuentas, tanto en SQLite local como en servidores Supabase. |
+| `npm run database:repair-account` | **Reparación de Cuentas Ilegales**: Corrige Pokémon ilegales (niveles, movimientos o habilidades no permitidas) en una o todas las cuentas, tanto en SQLite local como en servidores Supabase. |
 | `npm run admin:rename` | **Renombrado Administrativo**: Cambia el nombre de entrenador de un usuario en Supabase directamente desde consola. |
 | `npm run servers:configure` | **Sincronización de Servidores**: Parsea el `.env` maestro y genera la lista tipada de servidores en `src/data/official_servers.ts`. |
-| `npm run servers:db:update` | **Gestor y Migrador**: Aplica esquemas iniciales y migraciones SQL incrementales en el servidor Supabase elegido o en todos (`--all`). |
-| `npm run servers:db:backup` | **Generador de Respaldos**: Conecta al servidor Supabase y exporta todas las tablas a un archivo JSON estructurado. |
-| `npm run servers:db:restore` | **Restaurador Transaccional**: Restaura transaccionalmente un respaldo JSON hacia el servidor Supabase elegido. |
-| `npm run servers:db:local-import` | **Importador SQLite**: Importa el respaldo JSON más reciente de Supabase a la base de datos local SQLite para pruebas offline. |
-| `npm run servers:db:admin` | **Administración de Usuarios**: Permite desbanear, cambiar contraseñas, actualizar emails o promover a admin desde consola. |
+| `npm run database:update` | **Gestor y Migrador**: Aplica esquemas iniciales y migraciones SQL incrementales en el servidor Supabase elegido o en todos (`--all`). |
+| `npm run database:backup` | **Generador de Respaldos**: Conecta al servidor Supabase y exporta todas las tablas a un archivo JSON estructurado. |
+| `npm run database:restore` | **Restaurador Transaccional**: Restaura transaccionalmente un respaldo JSON hacia el servidor Supabase elegido. |
+| `npm run database:local-import` | **Importador SQLite**: Importa el respaldo JSON más reciente de Supabase a la base de datos local SQLite para pruebas offline. |
+| `npm run database:admin` | **Administración de Usuarios**: Permite desbanear, cambiar contraseñas, actualizar emails o promover a admin desde consola. |
 | `npm run supabase:manage` | **Gestor Docker/CLI**: Orquestador local de contenedores Supabase y compilación de imágenes Docker. |
-| `npm run migrations:generate` | **Compilador de Migraciones**: Escanea `database/migrations/` y compila el manifiesto TypeScript de producción. |
+| `npm run database:generate-migrations` | **Compilador de Migraciones**: Escanea `database/migrations/` y compila el manifiesto TypeScript de producción. |
 | `npm run sync:test` | **Sincronización a Repo Hermano**: Sincroniza el árbol de fuentes con el repositorio hermano `pokevicio-test`. |
 
 ---
 
-### 🔧 Herramienta de Reparación de Cuentas Ilegales (`db:repair-account`)
+### 🔧 Herramienta de Reparación de Cuentas Ilegales (`database:repair-account`)
 
 Esta herramienta escanea las partidas guardadas en `game_saves`, audita todos los Pokémon del equipo y de las cajas contra el motor de reglas de Showdown, repara cualquier inconsistencia (niveles > 100, movimientos no permitidos para la especie/learnset, habilidades no canónicas) y persiste las correcciones de forma transaccional.
 
@@ -328,25 +328,25 @@ Esta herramienta escanea las partidas guardadas en `game_saves`, audita todos lo
 
 ```bash
 # Reparar una cuenta específica por su ID de usuario:
-npm run db:repair-account user=local_ash
+npm run database:repair-account user=local_ash
 
 # Reparar TODAS las cuentas registradas en SQLite local, una por una:
-npm run db:repair-account all
+npm run database:repair-account all
 
 # Especificar una ruta de base de datos SQLite personalizada:
-npm run db:repair-account db=tests/fixtures/poke_local_ash.db all
+npm run database:repair-account db=tests/fixtures/poke_local_ash.db all
 ```
 
 #### 2. Uso en Servidores Supabase / PostgreSQL Remotos
 
 ```bash
 # Reparar una cuenta específica en un servidor Supabase (por UUID, username o email):
-npm run db:repair-account server=server_franco user=Ash
-npm run db:repair-account server=nas_franco user=usuario@ejemplo.com
+npm run database:repair-account server=server_franco user=Ash
+npm run database:repair-account server=nas_franco user=usuario@ejemplo.com
 
 # Reparar TODAS las cuentas registradas en el servidor Supabase:
-npm run db:repair-account server=server_franco all
-npm run db:repair-account server=nas_franco all
+npm run database:repair-account server=server_franco all
+npm run database:repair-account server=nas_franco all
 ```
 
 ---
@@ -358,19 +358,19 @@ npm run db:repair-account server=nas_franco all
 npm run servers:configure
 
 # 2. Inicializar o actualizar base de datos en un servidor específico con formato directo
-npm run servers:db:update server=nas_franco
+npm run database:update server=nas_franco
 
 # 3. Actualizar base de datos en TODOS los servidores configurados en el .env
-npm run servers:db:update all
+npm run database:update all
 
 # 4. Descargar un respaldo completo en formato JSON de un servidor
-npm run servers:db:backup server=nas_franco
+npm run database:backup server=nas_franco
 
 # 5. Restaurar el respaldo más reciente de forma automática a un servidor
-npm run servers:db:restore server=nas_franco
+npm run database:restore server=nas_franco
 
 # 6. Restaurar un respaldo específico pasándole la ruta exacta del archivo
-npm run servers:db:restore server=nas_franco file=database/backups/nas_franco/nas_franco_backup_2026-05-17T05-29-09.json
+npm run database:restore server=nas_franco file=database/backups/nas_franco/nas_franco_backup_2026-05-17T05-29-09.json
 ```
 
 #### 🌐 Resolución de Problemas de Red (MikroTik & Hairpin NAT)
@@ -526,25 +526,25 @@ El proyecto incluye un sistema de protección automática (**"Ban Trap"**) para 
   2. Registra el motivo del baneo.
   3. Fuerza el cierre inmediato de la sesión.
 - **Efecto Visual**: El usuario afectado verá una pantalla de **ACCESO DENEGADO** con estética retro-moderna al intentar iniciar sesión, indicando el motivo de la sanción.
-- **Restauración de Cuentas**: El baneo es permanente hasta que un administrador lo revierta utilizando la herramienta de administración de consola (`servers:db:admin`).
+- **Restauración de Cuentas**: El baneo es permanente hasta que un administrador lo revierta utilizando la herramienta de administración de consola (`database:admin`).
   - **Comando para desbanear**:
 
     ```bash
-    npm run servers:db:admin server=nas_franco action=unban email=usuario@ejemplo.com
+    npm run database:admin server=nas_franco action=unban email=usuario@ejemplo.com
     ```
 
 - **Modo Local**: En modo `offline` (localhost), el sistema de baneo está deshabilitado para permitir el testing sin riesgos.
 
 ### 8. 🛡️ Mantenimiento de Usuarios (Admin CLI)
 
-El proyecto cuenta con un gestor unificado de administración de usuarios en consola (`servers:db:admin`) que se conecta de forma nativa a cualquier instancia Supabase (Cloud o NAS) utilizando las credenciales del `.env` maestro, permitiendo realizar operaciones de mantenimiento avanzadas sin necesidad de ingresar al SQL Editor ni escribir consultas manuales.
+El proyecto cuenta con un gestor unificado de administración de usuarios en consola (`database:admin`) que se conecta de forma nativa a cualquier instancia Supabase (Cloud o NAS) utilizando las credenciales del `.env` maestro, permitiendo realizar operaciones de mantenimiento avanzadas sin necesidad de ingresar al SQL Editor ni escribir consultas manuales.
 
 #### Cambiar Contraseña de un Usuario
 
 Para resetear la contraseña de forma segura (generando automáticamente el hash bcrypt en el servidor):
 
 ```bash
-npm run servers:db:admin server=nas_franco action=set-password email=usuario@ejemplo.com password=NUEVA_CONTRASEÑA
+npm run database:admin server=nas_franco action=set-password email=usuario@ejemplo.com password=NUEVA_CONTRASEÑA
 ```
 
 #### Cambiar Email de un Usuario
@@ -552,13 +552,13 @@ npm run servers:db:admin server=nas_franco action=set-password email=usuario@eje
 El gestor actualiza automáticamente tanto la tabla de autenticación (`auth.users`) como el perfil público (`public.profiles`) en una única transacción DML para mantener la consistencia absoluta:
 
 ```bash
-npm run servers:db:admin server=nas_franco action=set-email email=viejo@email.com new-email=nuevo@email.com
+npm run database:admin server=nas_franco action=set-email email=viejo@email.com new-email=nuevo@email.com
 ```
 
 #### Cambiar Nombre de Entrenador (Username)
 
 ```bash
-npm run servers:db:admin server=nas_franco action=set-username email=usuario@ejemplo.com username=NuevoNombre
+npm run database:admin server=nas_franco action=set-username email=usuario@ejemplo.com username=NuevoNombre
 ```
 
 #### Promoción a Administrador (ADMIN Role)
@@ -566,7 +566,7 @@ npm run servers:db:admin server=nas_franco action=set-username email=usuario@eje
 Para otorgar permisos de administrador a un usuario (acceso a paneles de debug en producción, bypass de ban-traps, etc.):
 
 ```bash
-npm run servers:db:admin server=nas_franco action=promote email=usuario@ejemplo.com
+npm run database:admin server=nas_franco action=promote email=usuario@ejemplo.com
 ```
 
 > [!IMPORTANT] Los nombres de usuario deben ser únicos. Si el nombre ya está ocupado por otro jugador, la herramienta capturará la restricción `UNIQUE` y mostrará un mensaje de advertencia claro en consola.

@@ -98,7 +98,7 @@ describe('Dynamic Multi-Table Real Backup Validation & Dex Compatibility Test', 
     for (const physicalFile of physicalSqlFiles) {
       const migrationId = physicalFile.replace(/\.sql$/, '');
       const registered = DATABASE_MIGRATIONS.some(m => m.id === migrationId);
-      assert.ok(registered, `La migración física '${physicalFile}' no está registrada en src/logic/db/migrations_data.ts. Ejecuta 'npm run migrations:generate'.`);
+      assert.ok(registered, `La migración física '${physicalFile}' no está registrada en src/logic/db/migrations_data.ts. Ejecuta 'npm run database:generate-migrations'.`);
     }
 
     // 4. Identify previously applied migrations and run all pending migrations in order
@@ -299,6 +299,8 @@ describe('Dynamic Multi-Table Real Backup Validation & Dex Compatibility Test', 
     const configRows = db.prepare('SELECT key, value FROM system_config').all() as { key: string; value: string }[];
     const dbVerRow = configRows.find(c => c.key === 'db_version');
     assert.ok(dbVerRow, "system_config must contain 'db_version'");
-    assert.ok(dbVerRow.value.includes('20260830234500'), `db_version must be 20260830234500, got: ${dbVerRow.value}`);
+    const latestMigration = DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1]!;
+    const latestVersion = latestMigration.id.split('_')[0]!;
+    assert.ok(dbVerRow.value.includes(latestVersion), `db_version must contain ${latestVersion}, got: ${dbVerRow.value}`);
   }, 120000);
 });

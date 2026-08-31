@@ -153,7 +153,7 @@ Whenever requested to "actualizar herramientas", "update tools", "preparar entor
 - `npm run test:combat:choice`: Runs the unit test suite verifying Choice item locking and UI disabling behavior.
 - `npm run test:combat:choice:report`: Runs the choice test and saves the verbose report in `scratch/choice_report.txt`.
 - `npm run sim:combat:all:report`: Runs the entire combat suite and outputs reports to `scripts/e2e/results/playwright_report.txt`.
-- `npm run migrations:generate`: Scans local SQL migration files under `database/migrations/` and packages them into the production TypeScript migrations manifest.
+- `npm run database:generate-migrations`: Scans local SQL migration files under `database/migrations/` and packages them into the production TypeScript migrations manifest.
 - `npm run sync:test`: **Test Repo Sync**. Copies the full source tree to sibling `pokevicio-test` repository.
 
 ### ⚔️ Battle Engine (FSM Mastery)
@@ -170,11 +170,11 @@ Whenever requested to "actualizar herramientas", "update tools", "preparar entor
 - `npm run supabase:manage [command=<command>] [tag=<tag>]`: Main Supabase CLI orchestrator in Node.js 26+ (`supabase/setup_supabase.ts`). Manages the Docker container lifecycle.
   - Subcommands / options: `command=all`, `command=clone`, `command=generate`, `command=build`, `command=publish`, `command=add`.
 - `npm run servers:configure`: Parses unified master `.env` file, extracts profiles, and automatically generates `src/data/official_servers.ts`.
-- `npm run servers:db:update [server=<profile> | all]`: Supabase database manager and migrator in Node.js 26+.
-- `npm run servers:db:backup [server=<profile> | all]`: Connects to chosen Supabase server and downloads complete structured backup to `database/backups/`.
-- `npm run servers:db:restore server=<profile> [file=<path>]`: Transactionally restores a JSON backup file to the chosen server.
-- `npm run servers:db:local-import [server=<profile> | file=<path>]`: Imports the most recent JSON backup from a chosen Supabase server into the local SQLite database.
-- `npm run servers:db:admin server=<profile> action=<action> email=<email> [options]`: Supabase user admin CLI in Node.js 26+ (unban, update passwords, promote, etc.).
+- `npm run database:update [server=<profile> | all]`: Supabase database manager and migrator in Node.js 26+.
+- `npm run database:backup [server=<profile> | all]`: Connects to chosen Supabase server and downloads complete structured backup to `database/backups/`.
+- `npm run database:restore server=<profile> [file=<path>]`: Transactionally restores a JSON backup file to the chosen server.
+- `npm run database:local-import [server=<profile> | file=<path>]`: Imports the most recent JSON backup from a chosen Supabase server into the local SQLite database.
+- `npm run database:admin server=<profile> action=<action> email=<email> [options]`: Supabase user admin CLI in Node.js 26+ (unban, update passwords, promote, etc.).
 - `npm run admin:rename user=<id_or_name> name=<new_name>`: Administrative CLI to rename a trainer directly in the database.
 
 ### 🖼️ Assets

@@ -22,9 +22,9 @@
 
 ## 3. Absolute Prohibition on Remote Database Updates & Safe Commit Mandate
 
-- It is STRICTLY FORBIDDEN for any AI agent to execute, run, or trigger database update/migration scripts (e.g., `npm run servers:db:update server=<profile>`) against any remote, Docker-based, or shared database profile (including `server_franco`, `cloud`, or `official_prod`).
+- It is STRICTLY FORBIDDEN for any AI agent to execute, run, or trigger database update/migration scripts (e.g., `npm run database:update server=<profile>`) against any remote, Docker-based, or shared database profile (including `server_franco`, `cloud`, or `official_prod`).
 - Agents must NEVER touch or update remote/shared databases; database migrations are strictly reserved for manual execution by the USER.
-- **Safe Version Synchronization Workflow**: Agents must NEVER instruct or recommend the user to update a database (`npm run servers:db:update`) with an uncommitted local build (`npm run build`), as this creates a local `public/version.json` that mismatches the version deployed on GitHub Pages/hosting. Version synchronization between code, database, and client deployments MUST always be managed through the official `/safe-commit` workflow.
+- **Safe Version Synchronization Workflow**: Agents must NEVER instruct or recommend the user to update a database (`npm run database:update`) with an uncommitted local build (`npm run build`), as this creates a local `public/version.json` that mismatches the version deployed on GitHub Pages/hosting. Version synchronization between code, database, and client deployments MUST always be managed through the official `/safe-commit` workflow.
 
 ## 4. Simulator Parity & Nickname Constraints
 
@@ -61,7 +61,7 @@
 - **Rollback & Historical Data-Loss Exception**: Modifying a committed historical migration script is STRICTLY PROHIBITED except when resolving catastrophic data loss where the target database is actively rolled back to a prior checkpoint to replay the corrected migration series from scratch.
 - **Immutable Migration Runner Protection**: Migration runners treat `_migrations` as an immutable append-only ledger. Reusing or re-running an existing timestamp identifier without a database rollback is strictly prohibited because the runner will automatically skip it.
 - **Egg Data Contract Parity**: In `game_saves.save_data.eggs` (`PokemonEgg`), `id` is the canonical `PokemonSpeciesId` (e.g. `'charmander'`, `'togepi'`), and `uid` is the unique instance identifier. Migrations or scripts must never overwrite `egg.id` with arbitrary opaque identifiers (e.g. `'egg_...'`).
-- **Synchronized Migration Generation**: Any database migration update MUST be accompanied by `npm run migrations:generate` and committed via `/safe-commit` to ensure absolute synchronization between `src/logic/db/migrations_data.ts`, `public/version.json`, and database `system_config` values (`db_version` and `app_version`).
+- **Synchronized Migration Generation**: Any database migration update MUST be accompanied by `npm run database:generate-migrations` and committed via `/safe-commit` to ensure absolute synchronization between `src/logic/db/migrations_data.ts`, `public/version.json`, and database `system_config` values (`db_version` and `app_version`).
 
 ## 10. PostgreSQL JSONB Unwrapping & Double-Encoding Protection Mandate
 
@@ -79,20 +79,20 @@
 
 ## 11. Production Web Bundle & DB Update Deployment Synchronization
 
-- **Client-Server Version Lock Interlock**: When `npm run servers:db:update` updates `app_version` and `db_version` on a remote server, the production hosting environment (GitHub Pages, Docker, Vercel) MUST receive the matching compiled client build (via commit & push) so that web clients do not get blocked by `VersionLockOverlay` or `OUTDATED_CLIENT` warnings.
+- **Client-Server Version Lock Interlock**: When `npm run database:update` updates `app_version` and `db_version` on a remote server, the production hosting environment (GitHub Pages, Docker, Vercel) MUST receive the matching compiled client build (via commit & push) so that web clients do not get blocked by `VersionLockOverlay` or `OUTDATED_CLIENT` warnings.
 - **Service Worker / PWA Invalidation**: If the browser displays an `OUTDATED_CLIENT` banner or cache mismatch, performing a Hard Refresh (`Ctrl + F5`) or clicking the in-game PWA "Actualizar" action will reload the Service Worker cache to match the new bundle.
 
 ## 12. Legacy Backup Upgrade & Migration Array Protection
 
-- **Mandatory Backup Upgrade Pre-Restore Protocol**: Never restore legacy database backup files directly into newer database schemas. Always execute `npm run servers:db:upgrade-backup file=<path>` to apply all subsequent migrations in memory, normalize Pokémon legality and vigor, and generate an upgraded backup JSON prior to executing `npm run servers:db:restore`.
+- **Mandatory Backup Upgrade Pre-Restore Protocol**: Never restore legacy database backup files directly into newer database schemas. Always execute `npm run database:upgrade-backup file=<path>` to apply all subsequent migrations in memory, normalize Pokémon legality and vigor, and generate an upgraded backup JSON prior to executing `npm run database:restore`.
 - **Prohibition on Positional Array Mutators in SQL**: Database migrations updating serialized JSON fields (`save_data`) MUST NOT use hardcoded array indices (`$.team[0].id`). All entity updates must be atomic per user save or match on canonical `uid` to prevent cross-account species corruption.
 
 ## 13. Offline Browser SQLite Import Protocol (Local DB Sync)
 
 - **Purpose & Scope**: Enables executing Poké Vicio 100% offline in browser environments using genuine database state snapshots (accounts, Pokémon, items, friends, chat logs) for rapid QA, battle replay debugging, and offline development without requiring live Supabase credentials or network connections.
-- **Mandatory Upgrade & Legality Pipeline**: JSON backups from remote servers MUST pass through `npm run servers:db:upgrade-backup` before local conversion. The upgrade process executes all pending static SQL migrations and runs the automated Pokémon and account legality repair routine (`repairAccountsInSqlite`) across 100% of stored entities (`team`, `box`, `eggs`, `daycareWarehouse`, `daycare.slotA/slotB`).
-- **Identifier Sanitization & Local Remapping**: The local import tool (`npm run servers:db:local-import file=<path_upgraded.json>`) MUST convert remote Supabase UUIDs to clean local identifiers (`local_<username>`), ensuring all foreign keys across `chat_messages` (both `senderId` and `type: 'private:local_<username>'`), `friendships`, `daycare_slots`, `eggs`, and `war_*` tables maintain 100% relational integrity.
-- **Local Dev Server Freshness & OPFS Persistence**: The compiled database is written to `database/temp/imported.db`. The Vite dev server middleware MUST serve fresh disk files over stale RAM buffers. Upon loading, the client's SQLite engine (`sqliteEngine.ts`) persists it directly into OPFS (`pokevicio_sqlite_v2`) and purges all previous individual save caches via `purgeAllCachedSaves()`.
+- **Mandatory Upgrade & Legality Pipeline**: JSON backups from remote servers MUST pass through `npm run database:upgrade-backup` before local conversion. The upgrade process executes all pending static SQL migrations and runs the automated Pokémon and account legality repair routine (`repairAccountsInSqlite`) across 100% of stored entities (`team`, `box`, `eggs`, `daycareWarehouse`, `daycare.slotA/slotB`).
+- **Identifier Sanitization & Local Remapping**: The local import tool (`npm run database:local-import file=<path_upgraded.json>`) MUST convert remote Supabase UUIDs to clean local identifiers (`local_<username>`), ensuring all foreign keys across `chat_messages` (both `senderId` and `type: 'private:local_<username>'`), `friendships`, `daycare_slots`, `eggs`, and `war_*` tables maintain 100% relational integrity.
+- **Local Dev Server Freshness & OPFS Persistence**: The compiled database is written to `database/temp/manual_user_backup_import.db`. The Vite dev server middleware MUST serve fresh disk files over stale RAM buffers via `/api/dev-manual-import-*`. Upon loading, the client's SQLite engine (`sqliteEngine.ts`) persists it directly into OPFS (`pokevicio_sqlite_v2`) and purges all previous individual save caches via `purgeAllCachedSaves()`.
 - **PostgREST Query Emulation Compatibility**: The SQLite query adapter (`SQLiteQueryBuilder`) MUST support PostgREST query syntax used by stores in local mode (e.g. `.or()` clauses for private chats and friendships, `.eq()`, `.order()`) to guarantee 1:1 runtime parity with online Supabase queries.
 
 ## 14. Database SSoT & Optimistic Concurrency Control (OCC) Protection
@@ -107,5 +107,14 @@
   2. Explicit role grants: `GRANT SELECT ON public.<table_name> TO anon, authenticated, service_role;`
 - **Silent PostgREST Empty-Set Prevention**: In PostgreSQL, enabling RLS without a matching SELECT policy blocks queries from anon/authenticated clients silently without throwing errors (returning `[]`). Because local browser SQLite does not evaluate RLS, migrations MUST be audited to guarantee identical query visibility in both online Supabase and offline SQLite modes.
 
+## 16. Unified Database Command Standard & Dynamic Whitelist Derivation
 
+- **NPM Database Script Prefix Standard (`database:*`)**: All CLI utilities and scripts managing database migrations, updates, backups, restores, or account repair in `package.json` MUST use the unified `database:` prefix (e.g. `database:update`, `database:backup`, `database:restore`, `database:upgrade-backup`, `database:local-import`, `database:admin`, `database:repair-account`, `database:diagnose-account`, `database:generate-migrations`).
+- **Zero-Hardcoded Data in SQL Migrations**: SQL migrations that enforce domain constraints or sanitize invalid entities must be derived dynamically from TypeScript Domain-Type-First single sources of truth (`src/data/system/constants.ts`). Hardcoding raw string lists in SQL files is strictly forbidden.
+- **Disabled Species & Eggs Purge Standard**: Database sanitization and account diagnostics must strictly detect and remove non-enabled species and eggs from player saves (`team`, `box`, `eggs`, `daycareWarehouse`) with zero runtime fallbacks, preserving local/offline testing through explicit opt-in flags (`allowUnreleased: true`).
 
+## 17. Strict Simulation Database Isolation & Dedicated Manual Import Protocol
+
+- **Absolute Segregation Mandate**: Test runners, fuzzer suites, Playwright E2E scenarios, and GTS simulations MUST NEVER write, export, read, or overwrite the real user storage database (`pokevicio_sqlite_v2`).
+- **Dedicated Simulation Directory & Key Prefix**: All ephemeral test database snapshots MUST use keys starting with the `sim_` prefix and be saved strictly under `database/temp/simulations/sim_<key>.db`. The Vite dev server bridge MUST reject non-simulation keys and MUST NEVER fall back to user database files or default shared paths.
+- **Dedicated Manual Backup Import File**: The local import pipeline (`npm run database:local-import`) MUST exclusively generate `database/temp/manual_user_backup_import.db`. The client SQLite engine (`sqliteEngine.ts`) in standard browser sessions MUST ONLY check `/api/dev-manual-import-*` and ignore all simulation bridge endpoints.

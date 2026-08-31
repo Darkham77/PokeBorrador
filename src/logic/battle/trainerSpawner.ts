@@ -200,7 +200,7 @@ export async function buildRivalEncounter(playerTeam: Pokemon[]): Promise<RivalE
 
 export interface TrainerEncounter {
   name: string;
-  sprite: string;
+  sprite: NpcSpriteId;
   quote: string;
   archetype: NpcArchetype;
   enemyTeam: Pokemon[];
@@ -240,10 +240,9 @@ export async function buildTrainerEncounter(
     tQuote = getRandomQuoteForTrainer('policeman');
 
     const criminality = gsState.classData?.criminality || 100;
-    const excess = Math.max(0, criminality - 100);
-    const bonusLv = Math.floor(excess / 50);
-    const trainerLv = baseLv + 5 + bonusLv;
-    const teamSize = Math.floor(Math.random() * 2) + 3;
+    const { calculatePoliceEffectiveLevel, calculatePoliceTeamSize } = await import('@/logic/player/classMath');
+    const trainerLv = calculatePoliceEffectiveLevel(baseLv, criminality);
+    const teamSize = calculatePoliceTeamSize(criminality);
 
     const team = await buildTrainerTeam(t.pool, trainerLv, teamSize);
     enemyTeam.push(...team);

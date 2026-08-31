@@ -173,6 +173,7 @@ export interface GameState {
   incenseType: ItemId | null;
   incenseSecs: number;
   daycare_berry_egg_time: number;
+  daycareWarehouse?: unknown[];
   boxCount: number;
   chats: Record<string, unknown>; // open-record
   playerClass: PlayerClassId | null;

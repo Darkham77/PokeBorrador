@@ -11,3 +11,12 @@ Frontend Developers / QA Engineers.
 - Test component mounting, props, events, and UI rendering under jsdom environment.
 - Use strict TypeScript types for props and mock stores.
 - Clean up any DOM side effects or global mocks after each test.
+- `criminalityBar.spec.ts`: Unit tests for `CriminalityBar.vue` validating visibility by class/tab, style height calculation, reactive alert pulse at 100%, and excess label text formatting with extra level bonuses.
+
+## Verification
+
+- Run `npx vitest run tests/unit/components/` to execute component unit tests.
+
+## Child DOX Index
+
+- _This domain module does not contain nested sub-directories with independent AGENTS.md files._

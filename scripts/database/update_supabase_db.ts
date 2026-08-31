@@ -42,8 +42,8 @@ export async function updateSupabaseDb(): Promise<void> {
   if (!serverArg && !isAll) {
     console.log(styleText('yellow', '⚠️  Especifica qué servidor deseas actualizar indicando server=<perfil> o all.'));
     console.log(styleText('cyan', `Perfiles disponibles: ${allAvailable.join(', ')}`));
-    console.log(styleText('gray', 'Ejemplo: npm run servers:db:update server=nas_franco'));
-    console.log(styleText('gray', 'Ejemplo: npm run servers:db:update all'));
+    console.log(styleText('gray', 'Ejemplo: npm run database:update server=nas_franco'));
+    console.log(styleText('gray', 'Ejemplo: npm run database:update all'));
     process.exit(1);
   }
 

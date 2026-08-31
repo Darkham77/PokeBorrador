@@ -5,7 +5,8 @@ import type { useUIStore } from '@/stores/ui';
 import { findBestSwitchIndex } from '../ai/battleAI.ts';
 import { ShowdownTeamResolver } from '../showdownTeamResolver.ts';
 
-const POLICE_STEAL_CHANCE_PERCENT = 0.05;
+import { calculatePoliceBail, POLICE_STEAL_CHANCE_PERCENT } from '@/logic/player/classMath.ts';
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants.ts';
 
 export async function handlePoliceResolution(
   ctx: BattleContext,
@@ -14,21 +15,22 @@ export async function handlePoliceResolution(
   fled: boolean,
   uiStore: ReturnType<typeof useUIStore>
 ): Promise<void> {
-  if (active.trainerName !== 'Oficial de Policía') return;
+  if (active.trainerArchetype !== 'policeman') return;
   if (ctx.gs.state.playerClass !== 'rocket' || !ctx.gs.state.classData) return;
 
   const criminality = ctx.gs.state.classData.criminality || 0;
+  const officerName = active.trainerName || 'Oficial de Policía';
 
   if (!win && !fled) {
     const classLevel = ctx.gs.state.classLevel || 1;
-    const bailAmount = Math.floor(Math.pow(classLevel, 2) * 80 * (criminality / 100));
+    const bailAmount = calculatePoliceBail(classLevel, criminality);
 
     if (bailAmount > 0) {
       const prevMoney = ctx.gs.state.money || 0;
       ctx.gs.state.money = Math.max(0, prevMoney - bailAmount);
       const moneyPaid = prevMoney - ctx.gs.state.money;
 
-      ctx.addLog(`¡Bajo arresto! Pagaste ₽${moneyPaid} de fianza.`, 'log-error', 'player');
+      ctx.addLog(`¡Bajo arresto por ${officerName}! Pagaste ₽${moneyPaid} de fianza.`, 'log-error', 'player');
       uiStore.notify(`Fianza pagada: ₽${moneyPaid}`, '🚨');
     }
   } else if (win && !fled) {
@@ -38,12 +40,13 @@ export async function handlePoliceResolution(
         const stolen = pool[Math.floor(Math.random() * pool.length)];
         if (stolen) {
           const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
-          const clone = makePokemon(stolen.id, stolen.level || 5);
+          const safeLevel = Math.max(1, Math.min(MAX_POKEMON_LEVEL, stolen.level || 5));
+          const clone = makePokemon(stolen.id, safeLevel);
           if (clone) {
             clone.caught = true;
             ctx.gs.state.box.push(clone);
 
-            ctx.addLog(`¡Robaste el ${clone.name} del Oficial de Policía!`, 'log-success', 'player');
+            ctx.addLog(`¡Robaste el ${clone.name} de ${officerName}!`, 'log-success', 'player');
             uiStore.notify(`¡Robaste un ${clone.name}!`, '🏴‍☠️');
 
             const audioStore = await import('@/stores/audio').then(m => m.useAudioStore());

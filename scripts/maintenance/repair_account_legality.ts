@@ -8,6 +8,8 @@ import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 import postgres from 'postgres';
 import { repairPokemonLegality, checkPokemonLegality } from '../../src/logic/pokemon/pokemonLegality.ts';
+import { isEnabledPokemonId } from '../../src/data/system/constants.ts';
+import { makePokemon } from '../../src/logic/pokemon/pokemonFactory.ts';
 import { buildDatabaseUrl, getValidatedServerConfigs } from '../lib/supabaseClient.ts';
 import type { Pokemon } from '../../src/types/pokemon/pokemon.ts';
 import type { SaveDataDto } from '../../src/logic/validation/schemas.ts';
@@ -49,16 +51,121 @@ export function findDefaultDb(): string | null {
 }
 
 /**
- * Aplica el algoritmo de auditoría y reparación sobre un objeto SaveDataDto.
- * Retorna true si se modificó algún Pokémon ilegal, junto con la lista de cambios.
+ * Aplica el algoritmo de auditoría, purga de especies no habilitadas y reparación de legalidad sobre un SaveDataDto.
+ * Retorna true si se modificó algún Pokémon o huevo, junto con la lista de cambios.
  */
-function auditAndRepairSaveData(
+export function auditAndRepairSaveData(
   saveData: SaveDataDto,
   isSilent: boolean
 ): { modified: boolean; fixedPokemonCount: number; details: string[] } {
   let accountModified = false;
   let accountFixedPokemonCount = 0;
   const accountDetails: string[] = []; // no-domain
+
+  // 1. Purgar Huevos no habilitados en incubadora (saveData.eggs)
+  if (Array.isArray(saveData.eggs)) {
+    const initialEggCount = saveData.eggs.length;
+    saveData.eggs = saveData.eggs.filter(egg => {
+      if (!egg) return false;
+      const eggSpecies = egg.id || egg.pokemonId;
+      if (!eggSpecies || !isEnabledPokemonId(eggSpecies)) {
+        const logMsg = `Huevo no habilitado eliminado de Incubadora: "${eggSpecies || 'desconocido'}" (UID: ${egg.uid || 'N/A'})`;
+        accountDetails.push(`  ↳ 🗑️ ${logMsg}`);
+        if (!isSilent) console.log(`    ↳ 🗑️ ${logMsg}`);
+        return false;
+      }
+      return true;
+    });
+    if (saveData.eggs.length !== initialEggCount) {
+      accountModified = true;
+    }
+  }
+
+  // 2. Purgar Huevos y Pokémon no habilitados en Guardería Depósito (daycareWarehouse)
+  const warehouse = saveData.daycareWarehouse;
+  if (Array.isArray(warehouse)) {
+    const initialWhCount = warehouse.length;
+    const remainingWh = warehouse.filter(item => {
+      if (!item || typeof item !== 'object') return false;
+      const entry = item as Record<string, unknown>; // open-record
+      const rawSpecies = String(entry.species || entry.id || '');
+      const cleanSpecies = rawSpecies.startsWith('egg_') ? rawSpecies.replace(/^egg_\d+_[a-z0-9]+_?/, '') : rawSpecies;
+      const targetSpecies = entry.species ? String(entry.species) : cleanSpecies;
+
+      if (!targetSpecies || !isEnabledPokemonId(targetSpecies)) {
+        const label = entry.isEgg || entry.steps !== undefined || rawSpecies.startsWith('egg_') ? 'Huevo' : 'Pokémon';
+        const logMsg = `${label} no habilitado eliminado de Guardería (Warehouse): "${targetSpecies || 'desconocido'}" (ID: ${entry.id || 'N/A'})`;
+        accountDetails.push(`  ↳ 🗑️ ${logMsg}`);
+        if (!isSilent) console.log(`    ↳ 🗑️ ${logMsg}`);
+        return false;
+      }
+      return true;
+    });
+    saveData.daycareWarehouse = remainingWh;
+    if (remainingWh.length !== initialWhCount) {
+      accountModified = true;
+    }
+  }
+
+  // 3. Purgar Pokémon no habilitados en Caja (saveData.box)
+  if (Array.isArray(saveData.box)) {
+    const initialBoxCount = saveData.box.length;
+    saveData.box = saveData.box.filter((p) => {
+      if (!p) return false;
+      if (!p.id || !isEnabledPokemonId(p.id)) {
+        const logMsg = `Pokémon no habilitado eliminado de Caja: "${p.name || p.id}" (UID: ${p.uid || 'N/A'})`;
+        accountDetails.push(`  ↳ 🗑️ ${logMsg}`);
+        if (!isSilent) console.log(`    ↳ 🗑️ ${logMsg}`);
+        return false;
+      }
+      return true;
+    });
+    if (saveData.box.length !== initialBoxCount) {
+      accountModified = true;
+    }
+  }
+
+  // 4. Purgar Pokémon no habilitados en Equipo (saveData.team)
+  if (Array.isArray(saveData.team)) {
+    const initialTeamCount = saveData.team.length;
+    saveData.team = saveData.team.filter((p) => {
+      if (!p) return false;
+      if (!p.id || !isEnabledPokemonId(p.id)) {
+        const logMsg = `Pokémon no habilitado eliminado de Equipo: "${p.name || p.id}" (UID: ${p.uid || 'N/A'})`;
+        accountDetails.push(`  ↳ 🗑️ ${logMsg}`);
+        if (!isSilent) console.log(`    ↳ 🗑️ ${logMsg}`);
+        return false;
+      }
+      return true;
+    });
+    if (saveData.team.length !== initialTeamCount) {
+      accountModified = true;
+    }
+  }
+
+  // 5. Garantía Save Shield: El equipo no puede quedar con 0 Pokémon
+  if (Array.isArray(saveData.team) && saveData.team.length === 0) {
+    if (Array.isArray(saveData.box) && saveData.box.length > 0) {
+      const promoted = saveData.box.shift();
+      if (promoted) {
+        saveData.team.push(promoted);
+        const logMsg = `Save Shield: Pokémon ${promoted.name || promoted.id} promovido de Caja al Equipo para evitar equipo vacío.`;
+        accountDetails.push(`  ↳ 🛡️ ${logMsg}`);
+        if (!isSilent) console.log(`    ↳ 🛡️ ${logMsg}`);
+        accountModified = true;
+      }
+    }
+    if (saveData.team.length === 0) {
+      const rescueStarter = makePokemon('bulbasaur', 5, { bypassWhitelist: true });
+      if (rescueStarter) {
+        (saveData.team as Pokemon[]).push(rescueStarter);
+        const logMsg = `Save Shield: Bulbasaur Nv. 5 legal inyectado de rescate porque la cuenta no poseía ningún Pokémon legal.`;
+        accountDetails.push(`  ↳ 🛡️ ${logMsg}`);
+        if (!isSilent) console.log(`    ↳ 🛡️ ${logMsg}`);
+        accountModified = true;
+      }
+    }
+  }
 
   const auditAndRepairList = (list: unknown[], locationLabel: string) => {
     if (!Array.isArray(list)) return;
@@ -83,14 +190,9 @@ function auditAndRepairSaveData(
     });
   };
 
-  // 1. Auditar y reparar Equipo
+  // 6. Auditar y reparar atributos de Pokémon legales restantes
   auditAndRepairList(saveData.team, 'Equipo');
-
-  // 2. Auditar y reparar Caja
   auditAndRepairList(saveData.box, 'Caja');
-
-  // 3. Auditar y reparar Guardería (Warehouse)
-  const warehouse = (saveData as Record<string, unknown>).daycareWarehouse; // open-record
   if (Array.isArray(warehouse)) {
     auditAndRepairList(warehouse, 'Guardería Depósito');
   }
@@ -406,12 +508,12 @@ async function main() {
     console.log(`
 Uso:
   # Base de datos local (SQLite):
-  npm run db:repair-account user=<userId>
-  npm run db:repair-account all
+  npm run database:repair-account user=<userId>
+  npm run database:repair-account all
 
   # Servidor remoto / Supabase (PostgreSQL):
-  npm run db:repair-account server=<perfil> user=<userId>
-  npm run db:repair-account server=<perfil> all
+  npm run database:repair-account server=<perfil> user=<userId>
+  npm run database:repair-account server=<perfil> all
 
 Opciones:
   user=<userId>            ID, nombre de usuario o email de la cuenta a reparar.
@@ -421,10 +523,10 @@ Opciones:
   help                     Muestra esta ayuda.
 
 Ejemplos:
-  npm run db:repair-account user=Ash
-  npm run db:repair-account all
-  npm run db:repair-account server=nas_franco user=kenviota@gmail.com
-  npm run db:repair-account server=nas_franco all
+  npm run database:repair-account user=Ash
+  npm run database:repair-account all
+  npm run database:repair-account server=nas_franco user=kenviota@gmail.com
+  npm run database:repair-account server=nas_franco all
 `);
     process.exit(0);
   }
@@ -450,7 +552,7 @@ Ejemplos:
   const targetUserId = isAll ? null : rawUserId;
 
   if (!isAll && !targetUserId) {
-    console.error(`❌ Debes especificar un usuario (ej: npm run db:repair-account <userId> o --user <userId>) o utilizar --all (o el argumento 'all') para corregir todas las cuentas registradas.`);
+    console.error(`❌ Debes especificar un usuario (ej: npm run database:repair-account <userId> o --user <userId>) o utilizar --all (o el argumento 'all') para corregir todas las cuentas registradas.`);
     console.log(`Usa --help para más información.\n`);
     process.exit(1);
   }

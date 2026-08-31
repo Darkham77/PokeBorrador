@@ -145,7 +145,8 @@ describe('Player Class Logic (V3)', () => {
       },
       activeBattle: {
         value: {
-          trainerName: 'Oficial de Policía',
+          trainerName: 'Oficial de Policía Roberto',
+          trainerArchetype: 'policeman',
           persistenceMode: 'PERSISTENT',
           over: false,
           classData: gameStore.state.classData
@@ -204,29 +205,51 @@ describe('Player Class Logic (V3)', () => {
     expect(gameStore.state.money).toBe(0) // Se queda en 0
   })
 
-  it('debe calcular la probabilidad de encuentro policial (tChance) de forma dinámica basada en la criminalidad', () => {
-    // Definimos una función helper pura idéntica a la lógica del motor para testear matemáticamente
-    const getEncounterChance = (playerClass: string, criminality: number, trainerChance: number, trainerBonus = 1) => {
-      const isRocketMaxCrim = playerClass === 'rocket' && criminality >= 100;
-      return isRocketMaxCrim
-        ? (criminality / 10) * trainerBonus
-        : Math.min(trainerChance || 5, 20) * trainerBonus;
-    }
+  it('debe calcular las fórmulas matemáticas de policía y dificultad con clampeo estricto en classMath', async () => {
+    const { 
+      calculatePoliceBonusLevel, 
+      calculatePoliceEffectiveLevel, 
+      calculatePoliceTeamSize, 
+      calculatePoliceBail, 
+      calculatePoliceEncounterChance 
+    } = await import('@/logic/player/classMath')
 
-    // Caso 1: No es Rocket -> Debe usar trainerChance normal (ej. 5%)
-    expect(getEncounterChance('entrenador', 250, 5)).toBe(5)
+    // 1. Bonus Level (+1 cada 10% de exceso)
+    expect(calculatePoliceBonusLevel(0)).toBe(0)
+    expect(calculatePoliceBonusLevel(100)).toBe(0)
+    expect(calculatePoliceBonusLevel(120)).toBe(2)
+    expect(calculatePoliceBonusLevel(150)).toBe(5)
+    expect(calculatePoliceBonusLevel(200)).toBe(10)
+    expect(calculatePoliceBonusLevel(300)).toBe(20)
 
-    // Caso 2: Es Rocket pero < 100% de criminalidad -> Usa trainerChance normal (ej. 5%)
-    expect(getEncounterChance('rocket', 80, 5)).toBe(5)
+    // 2. Nivel Efectivo con Clampeo (base + 5 + bonus, max 100)
+    // Ruta baja (base 5): 5 + 5 + 0 = 10
+    expect(calculatePoliceEffectiveLevel(5, 100)).toBe(10)
+    // Ruta baja con 150% (exceso 50 -> +5): 5 + 5 + 5 = 15
+    expect(calculatePoliceEffectiveLevel(5, 150)).toBe(15)
+    // Ruta media (base 40) con 200% (exceso 100 -> +10): 40 + 5 + 10 = 55
+    expect(calculatePoliceEffectiveLevel(40, 200)).toBe(55)
+    // Ruta alta (base 90) con 300% (exceso 200 -> +20): 90 + 5 + 20 = 115 -> CLAMP A 100
+    expect(calculatePoliceEffectiveLevel(90, 300)).toBe(100)
+    // Criminalidad extrema (1000%) en ruta 80: 80 + 5 + 90 = 175 -> CLAMP A 100
+    expect(calculatePoliceEffectiveLevel(80, 1000)).toBe(100)
 
-    // Caso 3: Es Rocket, criminalidad al 100% -> 10%
-    expect(getEncounterChance('rocket', 100, 5)).toBe(10)
+    // 3. Tamaño del Equipo Policial
+    expect(calculatePoliceTeamSize(100, () => 0)).toBe(3)
+    expect(calculatePoliceTeamSize(100, () => 0.9)).toBe(4)
+    expect(calculatePoliceTeamSize(150, () => 0)).toBe(4)
+    expect(calculatePoliceTeamSize(150, () => 0.9)).toBe(5)
+    expect(calculatePoliceTeamSize(200)).toBe(6) // SWAT full squad
+    expect(calculatePoliceTeamSize(300)).toBe(6)
 
-    // Caso 4: Es Rocket, criminalidad al 200% -> 20%
-    expect(getEncounterChance('rocket', 200, 5)).toBe(20)
+    // 4. Fianza
+    expect(calculatePoliceBail(5, 100)).toBe(2000)
+    expect(calculatePoliceBail(10, 150)).toBe(12000) // 100 * 80 * 1.5 = 12000
 
-    // Caso 5: Es Rocket, criminalidad al 250% -> 25%
-    expect(getEncounterChance('rocket', 250, 5)).toBe(25)
+    // 5. Probabilidad de encuentro
+    expect(calculatePoliceEncounterChance(100, 1)).toBe(10)
+    expect(calculatePoliceEncounterChance(200, 1)).toBe(20)
+    expect(calculatePoliceEncounterChance(250, 1)).toBe(25)
   })
 
   it('debe ser completamente persistente el cambio de clase tras el guardado y recarga del estado', async () => {
