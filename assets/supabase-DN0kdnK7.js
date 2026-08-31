@@ -1,0 +1,1 @@
+import{t as e}from"./supabase-DRgusIt5.js";export{e as default,e as supabase};

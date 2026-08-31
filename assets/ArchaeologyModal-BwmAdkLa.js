@@ -1,0 +1,1 @@
+import{t as e}from"./ArchaeologyModal-Cst2ZINb.js";export{e as default};
