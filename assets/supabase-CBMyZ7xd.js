@@ -1,0 +1,1 @@
+import{t as e}from"./supabase-BK2JfMB6.js";export{e as default,e as supabase};
