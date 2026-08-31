@@ -1,1 +1,0 @@
-import{i as e}from"./game-data-battle-B3XXwhHa.js";function t(t,n,r=null){if(!t||!n)return 1;let i=t,a=n;if(r?.ability===`scrappy`&&a===`ghost`&&(i===`normal`||i===`fighting`))return 1;let o=e[i];return o?o[a]??1:1}function n(e,n,r=null){let i=t(e,n.type,r);return n.type2&&(i*=t(e,n.type2,r)),i}export{t as n,n as t};

@@ -1,1 +1,0 @@
-import{g as e}from"./game-data-world-dUK9ng3D.js";export{e as requireMapRouteId};

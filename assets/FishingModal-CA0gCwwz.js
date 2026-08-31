@@ -1,0 +1,1 @@
+import{t as e}from"./FishingModal-Bu_QoEbT.js";export{e as default};

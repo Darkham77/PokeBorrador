@@ -1,1 +1,0 @@
-import"./evolutionEngine-CbOudmEs.js";import{a as e}from"./breedingEngine-LZPkLHDs.js";export{e as getEggSpecies};
