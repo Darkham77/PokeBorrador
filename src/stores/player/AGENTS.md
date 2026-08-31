@@ -17,7 +17,7 @@ UI/UX Team / Profile Systems Engineers.
 
 ## Verification
 
-- Run `npm run audit:warnings-diff`.
+- Run `npm run audit`.
 
 ## Child DOX Index
 

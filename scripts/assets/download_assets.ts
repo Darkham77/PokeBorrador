@@ -131,12 +131,26 @@ export function toItemSlugCandidates(id: string): string[] {
   return Array.from(candidates);
 }
 
+const ALLOWED_ASSET_HOSTS = new Set([ // runtime-set
+  'www.serebii.net',
+  'raw.githubusercontent.com',
+  'play.pokemonshowdown.com',
+  'img.pokemondb.net'
+]);
+
+function isAllowedAssetUrl(parsed: URL): boolean {
+  return parsed.protocol === 'https:' && ALLOWED_ASSET_HOSTS.has(parsed.hostname);
+}
+
 async function fetchBufferWithFallback(candidateNames: string[], cleanId: string): Promise<{ buffer: Buffer; sourceUrl: string; matchedName: string } | null> {
   for (const name of candidateNames) {
     for (const sourceFn of ITEM_SOURCES) {
       const url = sourceFn(name, cleanId);
+      const parsedUrl = new URL(url);
+      if (!isAllowedAssetUrl(parsedUrl)) continue;
+
       try {
-        const res = await fetch(url, {
+        const res = await fetch(parsedUrl.href, {
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
             'Accept': 'image/png,image/webp,image/*,*/*;q=0.8',
@@ -246,8 +260,11 @@ async function downloadPokemon(limit: number) {
     if (existsSync(target)) continue;
 
     const url = `${POKEAPI_SPRITE_BASE}${i}.png`;
+    const parsedUrl = new URL(url);
+    if (!isAllowedAssetUrl(parsedUrl)) continue;
+
     try {
-      const res = await fetch(url);
+      const res = await fetch(parsedUrl.href);
       if (res.ok) {
         const buf = Buffer.from(await res.arrayBuffer());
         await fs.writeFile(target, buf);

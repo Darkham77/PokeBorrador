@@ -44,9 +44,9 @@ Core logic modules and critical system components MUST have dedicated unit tests
 The project uses a unified audit coordinator located in `scripts/maintenance/audit_full.ts`:
 
 - **Proportional Verification Protocol**:
-  - **Documentation & Skills (`.md`)**: Run ONLY `npm run lint:md` (takes ~1s). Running full project audits or `audit:warnings-diff` for documentation or skill edits is strictly forbidden.
-  - **In-Development Code**: Run `npm run lint` (takes ~3-5s) for rapid developer feedback.
-  - **Pre-Commit Gatekeeper**: `npm run audit:warnings-diff`. Single source of truth for pre-commit validation. Automatically scans ESLint, `vue-tsc`, and all 17 sub-auditors dynamically discovered in `scripts/auditors/`. Requires 0 project errors and 0 new warnings in modified files compared to `origin/main`. Suppresses pre-existing legacy warnings from the terminal to keep logs clean, while writing complete structured diff reports to `scratch/audits/latest_warnings_diff.json` and `scratch/warnings_diff_report.json`.
+  - **Documentation & Skills (`.md`)**: Run ONLY `npm run lint:md` (takes ~1s). Running full project audits for documentation or skill edits is strictly forbidden.
+  - **In-Development Code**: Run `npm run lint` (takes ~3-5s) or `npm run audit` for full quality gate.
+  - **Safe-Commit Gatekeeper**: `npm run audit:warnings-diff` is strictly reserved for the safe-commit pipeline to compare changes against `origin/main`.
 - **Universal Caching Policy**: All quality scripts leverage persistent caches (Node.js `enableCompileCache()`, ESLint `.eslintcache`, TypeScript `incremental`).
 - **Zero-Redundancy Guarantee**: Aggregator scripts must never duplicate sub-analyzers already embedded in `audit_project.ts` or sibling validation suites.
 - **Universal Audit Command**: `npm run audit`. Dynamically executes all 17 sub-auditors across the 6 domain families (`architecture`, `domain_data`, `persistence`, `fsm`, `assets`, `documentation`). Supports `rule=<regla>` or `rule=<regla1>,<regla2>` for ultra-fast selective execution (e.g. `npm run audit rule=DOX`, `npm run audit rule=DOX,z-index`, `npm run audit rule=dupes`). It always renders the clean human summary table to the console and automatically persists the 100% complete structured JSON report to `scratch/audits/latest_audit.json` (and `scratch/audits/<family>/<id>.json` for individual suites).

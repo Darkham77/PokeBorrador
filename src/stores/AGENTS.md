@@ -20,7 +20,7 @@ State Architects / Frontend Developers.
 - **Busy Pokémon Protection & Complete Lifecycle Mandate**: Any Pokémon engaged in active deployments (`onMission: true`), competition events (`onEvent: true`), daycare deposit (`inDaycare: true`), or passive defense (`onDefense: true`) is classified as busy (`isPokemonBusy`). Stores and actions MUST strictly enforce:
   1. **PC Box & Transfers (`box.ts`)**: Busy Pokémon cannot be selected for release (`doBoxRelease` skips them) or Team Rocket Black Market sale (`doBoxRocketSell` yields $0 and counts 0). Moving or swapping them into the active team is rejected.
   2. **P2P Trade & GTS Market (`trade.ts`, `gts.ts`)**: Offering or publishing busy Pokémon is rejected locally and on backend RPC emulations (`tradeRpc.ts`, `marketRpc.ts`).
-  3. **Automatic Lifecycle Rehabilitation**: When mission rewards are collected (`playerClass.ts`) or events conclude and sync (`events.ts`), busy flags MUST be cleared (`onMission = false`, `onEvent = false`), removing badges and immediately restoring full trading, selling, releasing, and team movement abilities.
+  3. **Automatic Lifecycle Rehabilitation**: When mission rewards are collected (`playerClass.ts`), events conclude and sync (`events.ts`), or event awards are claimed (`claimAward`) or discarded (`discardAward`), busy flags MUST be cleared (`onMission = false`, `onEvent = false`) via pure deterministic recovery logic (`healStuckEventPokemon`), removing badges and immediately restoring full trading, selling, releasing, and team movement abilities.
 - **Real-Time Environment Ticker & Simulation Freeze Protocol**:
   The map store (`useMapStore`) must sample server epoch time via a lightweight GSAP ticker every 10s of game time, dynamically updating `currentEpochHour`, `currentCycle` (day/dusk/night), and map weather for live players. To ensure deterministic execution during automated E2E simulations, fuzzer runs, and certified replays, the ticker must support instantaneous freezing via `setFreezeClock(true)` and fixed environment override via `window.__VITE_DEBUG__.setFixedTime(...)`.
 - **Reactive O(1) State Indexing**: Persistent state arrays (`team`, `box`, `inventory`, `pokedex`) retain their serializable database contracts, while fast entity lookups MUST be exposed via reactive computed getters (`pokemonByUid: computed<ReadonlyMap<string, ...>>`, `caughtSpeciesSet`, `seenSpeciesSet`) guaranteeing $O(1)$ queries without modifying underlying SQL/Supabase schemas.
@@ -46,7 +46,7 @@ State Architects / Frontend Developers.
 
 ## Verification
 
-- Run `npm run audit:warnings-diff` to verify store types, state consistency, and project rules.
+- Run `npm run audit` to verify store types, state consistency, and project rules.
 - Verify memory footprint and FPS stability during intense store updates.
 
 ## Child DOX Index

@@ -4,7 +4,7 @@ import { getSpeciesHistory } from '@/logic/pokemon/evolutionEngine';
 export { getPokemonTier } from '@/logic/pokemon/tierEngine';
 import type { Pokemon, Move, PokemonIVs, ObtainedMethod } from '@/types/pokemon/pokemon';
 import { Dex, toID } from '@pkmn/sim';
-import { ACTIVE_GENERATION } from '@/data/system/constants';
+import { ACTIVE_GENERATION, isEnabledPokemonId } from '@/data/system/constants';
 import { MOVE_TRANSLATIONS_ES, type MoveCategory } from '@/data/battle/moves';
 import { calculateTotalBaseStats, calculateTotalIVs } from '@/logic/pokemon/statsMath';
 import { calculateEvBonusIvs } from '@/logic/pokemon/evMath';
@@ -130,6 +130,7 @@ export function getMovesAtLevel(id: string, level: number, bypassWhitelist = fal
   const seenNames = new Set<string>();
 
   history.forEach(spId => {
+    if (!bypassWhitelist && !isEnabledPokemonId(spId)) return;
     const db = pokemonDataProvider.getPokemonData(spId, bypassWhitelist);
     if (db && db.learnset) {
       (db.learnset as LearnsetMove[]).forEach(m => {

@@ -25,7 +25,7 @@ Use this skill to run and interpret Fallow commands and unified project audit to
 | :--- | :--- | :--- |
 | **Run general project audit** | `npm run audit` | Clean summary table in console + full JSON in `scratch/audits/latest_audit.json` |
 | **Inspect detailed audit findings** | Read `scratch/audits/latest_audit.json` | Complete machine-readable findings with exact file and line |
-| **Pre-commit diff validation** | `npm run audit:warnings-diff` | Pre-commit gatekeeper vs `origin/main` + JSON in `scratch/audits/latest_warnings_diff.json` |
+| **Safe-commit diff validation** | `npm run audit:warnings-diff` | Safe-commit gatekeeper vs `origin/main` (strictly reserved for safe-commit) |
 | **Audit changed files only (vs main)** | `npm run audit:changed` | Scoped audit of modified files vs main |
 | **Code duplication & triplets** | `npm run audit:fallow:triplets` | Identifies duplicate and triplicate blocks |
 | **Complexity hotspots & refactor targets** | `npm run fallow:health` | Ranked refactoring recommendations |
@@ -88,6 +88,13 @@ Key flags:
 - `--stale-suppressions`: Only find stale suppression comments.
 - `--production`: Exclude test/dev/storybook files from the analysis.
 - `--include-entry-exports`: Force analysis of exports from entry points.
+
+> [!CRITICAL]
+> **Case-by-Case Investigation & Proactive Deletion Protocol**:
+> When `fallow dead-code` reports orphan files or unreferenced exports:
+> 1. **Investigate First**: Determine if the finding is an unmounted active component, a multithreaded worker, or genuinely obsolete code.
+> 2. **Proactive Deletion for Genuine Dead Code**: If the file/export is obsolete legacy code (superseded by newer components/logic), **DELETE IT IMMEDIATELY**. Do NOT add broad wildcard paths to `.fallowrc.json` `"entry"` or `"ignorePatterns"` to silence the report.
+> 3. **Clean DOX & Parent Dirs**: If removing dead files leaves empty folders, remove the empty directory and update any referencing DOX indices (`AGENTS.md`).
 
 ### 4. Code Duplication
 

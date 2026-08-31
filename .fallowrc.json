@@ -17,10 +17,12 @@
   "entry": [
     "src/index.{ts,tsx,js,jsx}",
     "src/main.{ts,tsx,js,jsx}",
+    "scripts/**/*.{ts,js,mjs}",
+    "tests/**/*.{ts,js}",
+    "database/**/*.{ts,js}",
     "vitest.config.ts",
     "vitest.node.config.ts",
-    "vitest.workspace.ts",
-    "scripts/**/*.ts"
+    "vitest.workspace.ts"
   ],
   "duplicates": {
     "minOccurrences": 2,

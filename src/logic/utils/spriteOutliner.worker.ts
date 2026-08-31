@@ -33,14 +33,34 @@ async function saveToCache(cacheKey: string, blob: Blob): Promise<void> {
   }
 }
 
+const ALLOWED_SPRITE_HOSTS = new Set([ // runtime-set
+  'raw.githubusercontent.com',
+  'play.pokemonshowdown.com',
+  'localhost',
+  '127.0.0.1'
+]);
+
 // Fetch image and create ImageBitmap
-async function loadImageBitmap(url: string): Promise<ImageBitmap> {
-  if (typeof url !== 'string' || (!url.startsWith('/') && !url.startsWith('data:') && !url.startsWith('https://'))) {
-    throw new Error(`Invalid sprite URL scheme: ${url}`);
+async function loadImageBitmap(rawUrl: string): Promise<ImageBitmap> {
+  if (typeof rawUrl !== 'string' || !rawUrl.trim()) {
+    throw new Error('Invalid sprite URL: URL string is empty');
   }
-  const res = await fetch(url);
+
+  if (rawUrl.startsWith('data:image/')) {
+    const res = await fetch(rawUrl);
+    if (!res.ok) throw new Error(`Failed to load data URL (status: ${res.status})`);
+    const blob = await res.blob();
+    return createImageBitmap(blob);
+  }
+
+  const parsed = new URL(rawUrl, self.location.origin);
+  if (parsed.origin !== self.location.origin && !ALLOWED_SPRITE_HOSTS.has(parsed.hostname)) {
+    throw new Error(`Forbidden sprite URL host: ${parsed.hostname}`);
+  }
+
+  const res = await fetch(parsed.href);
   if (!res.ok) {
-    throw new Error(`Failed to fetch image from URL: ${url} (status: ${res.status})`);
+    throw new Error(`Failed to fetch image from URL: ${parsed.pathname} (status: ${res.status})`);
   }
   const blob = await res.blob();
   return createImageBitmap(blob);

@@ -116,8 +116,8 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
     error.value = null;
     try {
       await authStore.localLogin(validName.output, gender.value);
-      const safeBase = import.meta.env.BASE_URL.startsWith('/') ? import.meta.env.BASE_URL : '/';
-      window.location.replace(safeBase);
+      const targetUrl = new URL(import.meta.env.BASE_URL, window.location.origin);
+      window.location.replace(targetUrl.href);
     } catch (_err) {
       error.value = 'Error al crear partida local';
     } finally {

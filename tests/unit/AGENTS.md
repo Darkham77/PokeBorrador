@@ -22,6 +22,7 @@ Frontend Developers / Systems Engineers.
 - [data/](./data/AGENTS.md): Domain module documentation for data catalogs and O(1) dictionaries.
 - [debug/](./debug/AGENTS.md): Domain module documentation for debug.
 - [encounters/](./encounters/AGENTS.md): Domain module documentation for encounters.
+- [events/](./events/AGENTS.md): Domain module documentation for events.
 - [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
 - [maintenance/](./maintenance/AGENTS.md): Domain module documentation for maintenance.
 - [modals/](./modals/AGENTS.md): Domain module documentation for modals.

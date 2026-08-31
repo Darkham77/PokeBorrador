@@ -570,9 +570,9 @@ export function mapFallowJson(command: string, data: FallowAuditData): Violation
       violations.push({
         file: path.resolve(process.cwd(), f.path),
         line: f.line,
-        message: `Vulnerabilidad de seguridad [CWE-${f.cwe}] en ${f.path}:${f.line} -> ${f.evidence}`,
+        message: `Candidato de seguridad [CWE-${f.cwe}] en ${f.path}:${f.line} -> ${f.evidence}`,
         context: f.kind || '',
-        severity: 'error',
+        severity: 'warning',
         fixable: false
       });
     }

@@ -8,6 +8,10 @@ import { BUFF_FIELDS, getItemById, getMaxBuffDuration, requireItemId } from '@/d
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { logger } from '@/logic/utils/logger'
 import { healStuckMissions } from '@/logic/player/missionRecovery'
+import { healStuckEventPokemon } from '@/logic/player/eventRecovery'
+import { getActivePinia } from 'pinia'
+import type { Event as GameEvent } from '@/logic/events/eventEngine'
+import type { CompetitionEntry } from '@/types/system/stores'
 import { isPokemonBusy } from '@/logic/constants/tags'
 
 
@@ -155,6 +159,15 @@ export function usePokemonActions(
         logger.info('SaveMigration', 'Self-healed stuck Pokémon on mission.')
         scheduleSave()
       }
+    }
+
+    // Self-healing stuck Pokémon on events
+    const piniaActive = getActivePinia()
+    const eventsState = piniaActive?.state?.value?.events as { allEvents?: GameEvent[]; userEntries?: Record<string, CompetitionEntry> } | undefined
+    const fixedEvents = healStuckEventPokemon(state.team, state.box, eventsState?.allEvents, eventsState?.userEntries)
+    if (fixedEvents) {
+      logger.info('SaveMigration', 'Self-healed stuck Pokémon on event(s).')
+      scheduleSave()
     }
 
     state.team.forEach(p => p && validatePokemon(p))

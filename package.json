@@ -144,6 +144,7 @@
     "validate:o1:report": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/domain_data/validate_o1_data_structures.ts output=scratch/o1_report.txt",
     "validate:emojis": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/architecture/validate_emoji_typography.ts",
     "validate:audit-headers": "node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/architecture/validate_audit_headers.ts",
+    "validate:native-paths": "node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/architecture/validate_native_paths.ts",
     "sync:test": "node --experimental-strip-types scripts/maintenance/sync_to_test.ts"
   },
   "dependencies": {

@@ -1,14 +1,24 @@
 <script setup lang="ts">
 import type { PokemonCompetitionTrophy } from '@/types/pokemon/pokemon'
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
+import { useEventStore } from '@/stores/events'
+import { resolveTrophyDisplayName } from '@/logic/events/eventEngine'
 
 interface Props {
   trophies?: PokemonCompetitionTrophy[]
+  speciesId?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  trophies: () => []
+  trophies: () => [],
+  speciesId: ''
 })
+
+const eventStore = useEventStore()
+
+const resolveTrophyEventName = (trophy: PokemonCompetitionTrophy) => {
+  return resolveTrophyDisplayName(trophy, eventStore.allEvents, props.speciesId)
+}
 
 const getRankBadge = (rank: string) => {
   if (rank === 'first') return { medal: '🥇', label: '1º LUGAR (ORO)', css: 'rank-gold' }
@@ -71,7 +81,7 @@ const formatDate = (timestamp: number) => {
           </div>
 
           <h3 class="trophy-event-title">
-            {{ trophy.eventName }}
+            {{ resolveTrophyEventName(trophy) }}
           </h3>
           
           <div class="trophy-category-row">

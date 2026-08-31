@@ -132,18 +132,26 @@ export function resolveWeeklyRotation( // domain-ok
 
 /**
  * Single source of truth for resolving an event's display name directly from its database row (event.config / event.name).
+ * Supports resolving by specific occurrence, ZonedDateTime, or specific Pokemon species ID / name.
  */
 export function getEventDisplayName(
   event: Event,
-  zdtOrOccurrence?: Temporal.ZonedDateTime | UpcomingEventOccurrence | null
+  zdtOrOccurrenceOrSpecies?: Temporal.ZonedDateTime | UpcomingEventOccurrence | string | null
 ): string {
   const cfg = safeParse(event.config) as EventConfig;
+
+  // 1. If species string is passed, resolve directly by rotation species
+  if (typeof zdtOrOccurrenceOrSpecies === 'string' && zdtOrOccurrenceOrSpecies.trim().length > 0) {
+    const rotationBySpecies = resolveWeeklyRotation(cfg, zdtOrOccurrenceOrSpecies);
+    if (rotationBySpecies?.title) return rotationBySpecies.title;
+  }
+
   let zdt: Temporal.ZonedDateTime;
 
-  if (zdtOrOccurrence && typeof zdtOrOccurrence === 'object' && 'startInstant' in zdtOrOccurrence) {
-    zdt = normalizeZonedDateTime(zdtOrOccurrence.startInstant);
-  } else if (zdtOrOccurrence && typeof zdtOrOccurrence === 'object' && 'day' in zdtOrOccurrence) {
-    zdt = zdtOrOccurrence;
+  if (zdtOrOccurrenceOrSpecies && typeof zdtOrOccurrenceOrSpecies === 'object' && 'startInstant' in zdtOrOccurrenceOrSpecies) {
+    zdt = normalizeZonedDateTime(zdtOrOccurrenceOrSpecies.startInstant);
+  } else if (zdtOrOccurrenceOrSpecies && typeof zdtOrOccurrenceOrSpecies === 'object' && 'day' in zdtOrOccurrenceOrSpecies) {
+    zdt = zdtOrOccurrenceOrSpecies;
   } else {
     const upcoming = getUpcomingEventOccurrences([event], normalizeZonedDateTime().toInstant(), 7);
     if (upcoming.length > 0 && upcoming[0]) {
@@ -154,7 +162,41 @@ export function getEventDisplayName(
   }
 
   const rotation = resolveWeeklyRotation(cfg, zdt);
-  return rotation?.title || event.name || event.id;
+  return rotation?.title || event.name;
+}
+
+/**
+ * Resolves the thematic competition name for a trophy awarded to a Pokemon.
+ * Tries matching by species first, then by awarded date, with fallback to event name or trophy.eventName.
+ */
+export function resolveTrophyDisplayName(
+  trophy: import('@/types/pokemon/pokemon.ts').PokemonCompetitionTrophy,
+  allEvents: readonly Event[],
+  speciesOrName?: string
+): string {
+  const event = allEvents.find(e => e.id === trophy.eventId);
+  if (!event) return trophy.eventName;
+
+  if (speciesOrName) {
+    const bySpecies = getEventDisplayName(event, speciesOrName);
+    if (bySpecies && bySpecies !== event.name) {
+      return bySpecies;
+    }
+  }
+
+  if (trophy.awardedAt) {
+    try {
+      const zdt = Temporal.Instant.fromEpochMilliseconds(trophy.awardedAt).toZonedDateTimeISO(normalizeZonedDateTime().timeZoneId);
+      const byDate = getEventDisplayName(event, zdt);
+      if (byDate && byDate !== event.name) {
+        return byDate;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return getEventDisplayName(event, null) || trophy.eventName;
 }
 
 /**

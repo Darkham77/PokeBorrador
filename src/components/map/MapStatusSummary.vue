@@ -6,12 +6,9 @@ import type { Event as GameEvent, EventConfig, WeeklyRotationEntry } from '@/log
 import { resolveWeeklyRotation } from '@/logic/events/eventEngine'
 import { getGMT3Date } from '@/logic/utils/timeUtils'
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import { useGameStore } from '@/stores/game'
-import { useUIStore } from '@/stores/ui'
+import MapPokemonCenterBanner from '@/components/map/MapPokemonCenterBanner.vue'
 import { useEventStore } from '@/stores/events'
-import { calculatePokemonCenterCooldown } from '@/logic/economy/economyFormulas'
 
-const SECONDS_TO_MS_CONVERSION_FACTOR = 1000
 const CAROUSEL_INTERVAL_S = 6
 const CAROUSEL_SLIDE_DURATION_S = 0.55
 const CAROUSEL_EASE = 'power2.out'
@@ -23,71 +20,24 @@ const BANNER_GAP_PX = 16
 const STACKED_BREAKPOINT_PX = 1024
 
 interface Props {
-  rivalEventActive?: boolean
-  rivalEventText?: string
+  rivalEventTitle?: string
+  rivalEventSubtitle?: string
   rivalEventIcon?: string
   isReady?: boolean
 }
 
 withDefaults(defineProps<Props>(), {
-  rivalEventActive: true,
-  rivalEventText: 'Doble chance de encuentro con El Rival durante todo el día',
+  rivalEventTitle: 'TORNEO CLASIFICATORIO',
+  rivalEventSubtitle: '¡Inscripciones abiertas! Participá por premios exclusivos.',
   rivalEventIcon: '⚡',
   isReady: false
 })
 
 const emit = defineEmits<{
-  (e: 'openCenter'): void
   (e: 'openEvent', event: GameEvent): void
 }>()
 
-const gameStore = useGameStore()
-const uiStore = useUIStore()
 const eventStore = useEventStore()
-
-// ── Cooldown Logic ────────────────────────────────────────────────────────────
-const cooldownSecondsLeft = ref(0)
-let cooldownTween: gsap.core.Tween | null = null
-
-const handleCooldownClick = () => {
-  uiStore.notify(`El Centro Pokémon está cerrado por mantenimiento. Reabre en ${cooldownFormatted.value}.`, '🏥')
-}
-
-const updateCooldown = () => {
-  const lastHeal = gameStore.state.lastPokemonCenterHeal || 0
-  const cooldownSecs = calculatePokemonCenterCooldown(gameStore.state.trainerLevel || 1)
-  if (cooldownSecs > 0 && lastHeal > 0) {
-    const elapsedMs = Temporal.Now.instant().epochMilliseconds - lastHeal
-    const remainingMs = (cooldownSecs * SECONDS_TO_MS_CONVERSION_FACTOR) - elapsedMs
-    if (remainingMs > 0) {
-      cooldownSecondsLeft.value = Math.ceil(remainingMs / SECONDS_TO_MS_CONVERSION_FACTOR)
-      return
-    }
-  }
-  cooldownSecondsLeft.value = 0
-}
-
-const tickCooldown = () => {
-  updateCooldown()
-  cooldownTween = gsap.delayedCall(1, tickCooldown)
-}
-
-const cooldownFormatted = computed(() => {
-  const totalSecs = cooldownSecondsLeft.value
-  if (totalSecs <= 0) return ''
-  const mins = Math.floor(totalSecs / 60)
-  const secs = totalSecs % 60
-  return `${mins}:${secs.toString().padStart(2, '0')}`
-})
-
-const bannerUrl = computed(() => {
-  const assetName = cooldownSecondsLeft.value > 0 ? 'pokecenter_closed_banner' : 'pokecenter_banner'
-  return getAssetUrl(ASSET_TYPES.BANNER, assetName)
-})
-
-const bannerStyle = computed(() => ({
-  backgroundImage: `url('${bannerUrl.value}')`
-}))
 
 // ── Responsive Layout & Event Slots ───────────────────────────────────────────
 const containerRef = ref<HTMLElement | null>(null)
@@ -232,8 +182,6 @@ function handleEventClick(event: GameEvent): void {
 }
 
 onMounted(() => {
-  tickCooldown()
-
   if (containerRef.value) {
     containerWidth.value = containerRef.value.clientWidth || 1200
     resizeObserver = new ResizeObserver((entries) => {
@@ -250,9 +198,6 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  if (cooldownTween) {
-    cooldownTween.kill()
-  }
   stopCarousel()
   if (resizeObserver) {
     resizeObserver.disconnect()
@@ -280,56 +225,7 @@ defineExpose({
   >
     <!-- Carta Centro Pokémon -->
     <div class="pc-left">
-      <!-- On Cooldown state (Disabled) -->
-      <div
-        v-if="cooldownSecondsLeft > 0"
-        class="pokecenter-banner on-cooldown"
-        @click.stop="handleCooldownClick"
-      >
-        <div 
-          class="banner-bg" 
-          :style="bannerStyle"
-        />
-        <div class="banner-overlay">
-          <div class="banner-title">
-            <span class="title-icon">💊</span> CENTRO POKÉMON
-          </div>
-          <div class="banner-desc">
-            Saná a tu equipo y restaurá todos sus PP al instante.
-          </div>
-        </div>
-        <PVTooltip 
-          title="Centro Pokémon en mantenimiento" 
-          description="Debes esperar a que termine el tiempo de enfriamiento para volver a curar gratis."
-          position="bottom"
-          class="banner-tag-tooltip"
-        >
-          <span class="banner-tag cooldown">
-            <span class="icon">⏱️</span> {{ cooldownFormatted }}
-          </span>
-        </PVTooltip>
-      </div>
-
-      <!-- Active state (Enabled) -->
-      <div
-        v-else
-        class="pokecenter-banner"
-        @click.stop="emit('openCenter')"
-      >
-        <div 
-          class="banner-bg" 
-          :style="bannerStyle"
-        />
-        <div class="banner-overlay">
-          <div class="banner-title">
-            <span class="title-icon">💊</span> CENTRO POKÉMON
-          </div>
-          <div class="banner-desc">
-            Saná a tu equipo y restaurá todos sus PP al instante.
-          </div>
-        </div>
-        <span class="banner-tag"><span class="icon">💊</span> CURACIÓN</span>
-      </div>
+      <MapPokemonCenterBanner />
     </div>
 
     <!-- Zona de Eventos (Der en Desktop, Arriba en Stacked) -->

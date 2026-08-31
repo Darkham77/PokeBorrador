@@ -48,8 +48,8 @@ function findDockerBinary(): string | null {
 
   if (isWin) {
     const localAppData = process.env.LOCALAPPDATA || '';
-    const programFiles = process.env.ProgramFiles || 'C:\\Program Files';
-    const programFilesX86 = process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)';
+    const programFiles = process.env.ProgramFiles || 'C:\\Program Files'; // cross-platform-ok
+    const programFilesX86 = process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)'; // cross-platform-ok
 
     if (localAppData) {
       fallbackCandidates.push(path.join(localAppData, 'Programs', 'DockerDesktop', 'resources', 'bin', 'docker.exe'));
@@ -63,9 +63,11 @@ function findDockerBinary(): string | null {
       '/usr/local/bin/docker',
       '/snap/bin/docker',
       '/opt/homebrew/bin/docker',
-      '/usr/local/homebrew/bin/docker',
-      path.join(process.env.HOME || '', '.docker', 'bin', 'docker')
+      '/usr/local/homebrew/bin/docker'
     );
+    if (process.env.HOME && !process.env.HOME.includes('..')) {
+      fallbackCandidates.push(path.join(path.resolve(process.env.HOME), '.docker', 'bin', 'docker'));
+    }
   }
 
   for (const candidate of fallbackCandidates) {
@@ -103,7 +105,7 @@ async function tryStartDockerDaemon(dockerBin: string): Promise<boolean> {
   try {
     if (isWin) {
       const localAppData = process.env.LOCALAPPDATA || '';
-      const programFiles = process.env.ProgramFiles || 'C:\\Program Files';
+      const programFiles = process.env.ProgramFiles || 'C:\\Program Files'; // cross-platform-ok
       const desktopExes = [
         path.join(localAppData, 'Programs', 'DockerDesktop', 'Docker Desktop.exe'),
         path.join(programFiles, 'Docker', 'Docker', 'Docker Desktop.exe')

@@ -152,7 +152,7 @@ export function applyMarketFilters(
 
       // Item Category
       if (filters.itemCat !== 'all') {
-        const key = itemData.name || (itemData.id ? String(itemData.id) : null);
+        const key = itemData.id ? String(itemData.id) : (itemData.name || null); // domain-ok
         try {
           const shopItem = key ? getItemById(key) : null;
           if (shopItem?.cat !== filters.itemCat) return false;

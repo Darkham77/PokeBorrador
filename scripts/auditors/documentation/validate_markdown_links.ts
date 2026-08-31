@@ -198,7 +198,7 @@ export function auditMarkdownLinks(options: MarkdownLinkAuditOptions = {}): Mark
 import { setupValidation } from '../../lib/validationBase.ts';
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(import.meta.filename)) {
+if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
   const validator = setupValidation({
     title: 'MARKDOWN RELATIVE LINKS & DOX AUDITOR',
     family: 'documentation'

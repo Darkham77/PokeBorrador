@@ -48,5 +48,5 @@ This checklist is used to verify the visual and functional integrity of the Pok√
 
 - [ ] **SASS Traps**: No lowercase `scale()`, `blur()`, etc., that cause build errors.
 - [ ] **Linting & Types**: `npm run lint` (`validate:domain-types`, `validate:types`, `eslint`, `lint:md`) passes with 0 errors.
-- [ ] **Full Audit & Warning Diff**: `npm run audit:warnings-diff` passes with 0 errors and 0 new warnings against `origin/main`.
+- [ ] **Full Audit**: `npm run audit` passes with 0 errors. (The comparator `npm run audit:warnings-diff` is strictly reserved for the safe-commit pipeline).
 - [ ] **Markdown Relative Links**: `npm run validate:markdown-links` passes with 0 broken links.

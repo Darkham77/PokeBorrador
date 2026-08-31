@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 
 const rootDir = process.cwd();
@@ -34,15 +35,15 @@ function findBinary(): boolean {
 
   if (isWin && process.env.APPDATA) {
     const cleanAppData = process.env.APPDATA.replace(/[^a-zA-Z0-9_:\\\-\s.]/g, '');
-    if (fs.existsSync(`${cleanAppData}\\npm\\css-checker.exe`)) return true;
-    if (fs.existsSync(`${cleanAppData}\\npm\\css-checker.cmd`)) return true;
+    if (fs.existsSync(path.join(cleanAppData, 'npm', 'css-checker.exe'))) return true;
+    if (fs.existsSync(path.join(cleanAppData, 'npm', 'css-checker.cmd'))) return true;
   }
 
   // Check Node environment directory (e.g. nvm4w / nodejs / bin)
-  const nodeDir = process.execPath ? process.execPath.substring(0, process.execPath.lastIndexOf('\\')) : '';
+  const nodeDir = process.execPath ? path.dirname(process.execPath) : '';
   if (nodeDir && isWin) {
-    if (fs.existsSync(`${nodeDir}\\bin\\css-checker.exe`)) return true;
-    if (fs.existsSync(`${nodeDir}\\css-checker.exe`)) return true;
+    if (fs.existsSync(path.join(nodeDir, 'bin', 'css-checker.exe'))) return true;
+    if (fs.existsSync(path.join(nodeDir, 'css-checker.exe'))) return true;
   }
 
   return false;

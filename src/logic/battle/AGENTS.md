@@ -120,7 +120,7 @@ Frontend Developers / Systems Engineers.
 ## Verification
 
 - Run `npm run test` — includes `struggle.spec.ts`, `pp_softlock.test.ts`, `faint_interrupts_log_playback.spec.ts`.
-- Run `npm run audit:warnings-diff` for zero-error gate.
+- Run `npm run audit` for zero-error gate.
 
 ## Child DOX Index
 

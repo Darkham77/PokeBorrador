@@ -127,7 +127,7 @@ This document outlines the comprehensive manual testing protocol to verify all u
 
 ## 🐣 4. Daycare & Egg Incubation Flow
 
-### 4.1 Walked Eggs & Hatching (`WalkedEggsPanel.vue` / `breeding.ts`)
+### 4.1 Walked Eggs & Hatching (`HomeBreedingWidget.vue` / `breeding.ts`)
 
 - **Step 1**: Open **Huevos / Crianza** modal.
 - **Step 2**: Inspect egg card showing step progress (`currentSteps / maxSteps`).
@@ -197,8 +197,8 @@ useModalStore().open('DebugPokemonCreator');
 // Open Past Events History modal
 useModalStore().open('PastEventsList');
 
-// Open Daycare / Walked Eggs modal
-useModalStore().open('WalkedEggsPanel');
+// Open Daycare / Breeding modal
+useModalStore().open('Daycare');
 
 // Open Archaeology minigame
 useModalStore().open('Archaeology', { pokemon: { id: 'aerodactyl', name: 'Aerodactyl' }, rarity: 50 });

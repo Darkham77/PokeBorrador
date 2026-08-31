@@ -1,14 +1,26 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useBreedingStore } from '@/stores/breeding'
 import { useModalStore } from '@/stores/modals'
 import EggSprite from '@/components/common/EggSprite.vue'
 import type { PokemonEgg } from '@/types/pokemon/pokemon'
 
+interface Props {
+  columns?: 2 | 3
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  columns: 2
+})
+
 const gameStore = useGameStore()
 const breedingStore = useBreedingStore()
 const modalStore = useModalStore()
+
+onMounted(() => {
+  breedingStore.loadDaycare()
+})
 
 const eggs = computed<PokemonEgg[]>(() => gameStore.state.eggs ?? [])
 const warehouseCount = computed(() => breedingStore.warehouseEggs?.length || 0)
@@ -44,7 +56,10 @@ const handleEggClick = (egg: PokemonEgg) => {
 </script>
 
 <template>
-  <div class="home-breeding-widget">
+  <div
+    class="home-breeding-widget"
+    :class="{ 'cols-3': props.columns === 3 }"
+  >
     <!-- Header -->
     <div class="widget-header-row">
       <div class="header-left">
@@ -56,6 +71,7 @@ const handleEggClick = (egg: PokemonEgg) => {
       <div class="header-actions">
         <button
           id="home-daycare-btn"
+          v-gsap-hover
           class="card-action-btn"
           @click="openDaycare"
         >
@@ -69,10 +85,12 @@ const handleEggClick = (egg: PokemonEgg) => {
     <div
       v-if="eggs.length > 0"
       class="eggs-grid"
+      :class="{ 'grid-cols-3': props.columns === 3 }"
     >
       <div
         v-for="(egg, index) in eggs"
         :key="egg.uid || index"
+        v-gsap-hover="{ scale: 1.02, y: -2 }"
         class="egg-hud-card"
         :class="{ 'is-ready': isReady(egg) }"
         @click="handleEggClick(egg)"
@@ -122,6 +140,7 @@ const handleEggClick = (egg: PokemonEgg) => {
     <!-- Empty State -->
     <div
       v-else
+      v-gsap-hover="{ scale: 1.01, y: -1 }"
       class="empty-breeding-card"
       @click="openDaycare"
     >
@@ -132,7 +151,10 @@ const handleEggClick = (egg: PokemonEgg) => {
           {{ warehouseCount > 0 ? `Tienes ${warehouseCount} huevos en el almacén.` : 'Coloca una pareja en la guardería para incubar.' }}
         </span>
       </div>
-      <button class="empty-btn">
+      <button
+        v-gsap-hover
+        class="empty-btn"
+      >
         IR A GUARDERÍA
       </button>
     </div>
@@ -151,6 +173,12 @@ const handleEggClick = (egg: PokemonEgg) => {
   flex-direction: column;
   gap: 10px;
   box-shadow: 0 4px 16px Rgba(0, 0, 0, 0.4);
+  width: 100%;
+  box-sizing: border-box;
+
+  &.cols-3 {
+    max-width: 640px;
+  }
 }
 
 .widget-header-row {
@@ -203,45 +231,22 @@ const handleEggClick = (egg: PokemonEgg) => {
 }
 
 .card-action-btn {
-  @include pixelated;
-  font-size: 8px;
-  height: 28px;
-  padding: 0 10px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.15);
-  color: var(--white, #ffffff);
-  cursor: pointer;
-  box-sizing: border-box;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  letter-spacing: 0.5px;
-
-  .btn-icon {
-    font-size: 12px;
-    line-height: 1;
-  }
-
-  &:hover:not(:disabled) {
-    background: Rgba(255, 255, 255, 0.12);
-    border-color: var(--yellow, #facc15);
-    color: var(--yellow, #facc15);
-    box-shadow: 0 0 10px Rgba(250, 204, 21, 0.2);
-  }
-
-  &:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
+  @include widget-action-btn;
 }
 
 .eggs-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+  width: 100%;
+
+  &.grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  @media (max-width: 520px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .egg-hud-card {
@@ -254,7 +259,6 @@ const handleEggClick = (egg: PokemonEgg) => {
   border: 1px solid Rgba(255, 255, 255, 0.08);
   box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.45);
   cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
     transform: Translatey(-2px);
@@ -343,7 +347,6 @@ const handleEggClick = (egg: PokemonEgg) => {
   height: 100%;
   background: linear-gradient(90deg, #38bdf8, #818cf8);
   border-radius: 2px;
-  transition: width 0.3s ease;
 
   &.fill-ready {
     background: linear-gradient(90deg, #22c55e, #4ade80);

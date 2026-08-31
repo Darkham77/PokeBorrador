@@ -130,9 +130,18 @@ export function calculateTotalIVs(ivs?: Partial<Record<StatId, number>> | null):
   return (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0);
 }
 
+export const MAX_IV_VALUE = 31 as const;
+
 export function hasMaxIV(ivs?: Partial<Record<StatId, number>> | null): boolean {
   if (!ivs) return false;
-  return ivs.hp === 31 || ivs.atk === 31 || ivs.def === 31 || ivs.spa === 31 || ivs.spd === 31 || ivs.spe === 31;
+  return (
+    ivs.hp === MAX_IV_VALUE ||
+    ivs.atk === MAX_IV_VALUE ||
+    ivs.def === MAX_IV_VALUE ||
+    ivs.spa === MAX_IV_VALUE ||
+    ivs.spd === MAX_IV_VALUE ||
+    ivs.spe === MAX_IV_VALUE
+  );
 }
 
 export function calculateTotalBaseStats(stats?: Partial<BaseStats> | null): number {

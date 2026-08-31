@@ -114,11 +114,41 @@ export const EGG_GROUP_TRANSLATIONS: Record<string, string> = {
 };
 
 export const BABY_MAP: Record<string, string> = {
+  // Baby mappings from any stage in line to baby form
   pikachu: 'pichu',
+  raichu: 'pichu',
+  raichualola: 'pichu',
   clefairy: 'cleffa',
+  clefable: 'cleffa',
   jigglypuff: 'igglybuff',
+  wigglytuff: 'igglybuff',
   electabuzz: 'elekid',
+  electivire: 'elekid',
   magmar: 'magby',
+  magmortar: 'magby',
+  jynx: 'smoochum',
+  hitmonlee: 'tyrogue',
+  hitmonchan: 'tyrogue',
+  hitmontop: 'tyrogue',
+  chansey: 'happiny',
+  blissey: 'happiny',
+  mrmime: 'mimejr',
+  mrmimegalar: 'mimejr',
+  mrrime: 'mimejr',
+  snorlax: 'munchlax',
+  marill: 'azurill',
+  azumarill: 'azurill',
+  wobbuffet: 'wynaut',
+  sudowoodo: 'bonsly',
+  roselia: 'budew',
+  roserade: 'budew',
+  chimecho: 'chingling',
+  mantine: 'mantyke',
+  lucario: 'riolu',
+  togetic: 'togepi',
+  togekiss: 'togepi',
+  toxtricity: 'toxel',
+  toxtricitylowkey: 'toxel',
 };
 
 

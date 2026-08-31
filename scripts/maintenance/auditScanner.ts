@@ -20,7 +20,7 @@ const DEFAULT_TIMEOUT_MS = 60000;
 const HEAVY_TIMEOUT_MS = 180000; // 3 minutes for full repo AST / DB migration validation
 
 function getTimeoutForTask(filename: string): number {
-  if (filename.includes('audit_project') || filename.includes('validate_save_migrations')) {
+  if (filename.includes('audit_project')) {
     return HEAVY_TIMEOUT_MS;
   }
   return DEFAULT_TIMEOUT_MS;

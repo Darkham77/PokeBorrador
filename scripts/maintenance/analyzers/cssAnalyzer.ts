@@ -46,12 +46,15 @@ export function getCssCheckerCmd(): string | null {
     path.join(process.cwd(), 'node_modules', 'css-checker-kit', binName),
   ];
 
-  if (isWin && process.env.APPDATA) {
-    candidates.push(path.join(process.env.APPDATA, 'npm', 'bin', binName));
-    candidates.push(path.join(process.env.APPDATA, 'npm', binName));
-  } else if (process.env.HOME) {
-    candidates.push(path.join(process.env.HOME, '.npm-global', 'bin', binName));
-    candidates.push(path.join(process.env.HOME, '.local', 'bin', binName));
+  const rawAppData = process.env.APPDATA;
+  if (isWin && typeof rawAppData === 'string' && /^[a-zA-Z0-9_:\\/\s.-]+$/.test(rawAppData) && !rawAppData.includes('..')) {
+    candidates.push(path.join(rawAppData, 'npm', 'bin', binName));
+    candidates.push(path.join(rawAppData, 'npm', binName));
+  }
+  const rawHome = process.env.HOME;
+  if (typeof rawHome === 'string' && /^[a-zA-Z0-9_:\\/\s.-]+$/.test(rawHome) && !rawHome.includes('..')) {
+    candidates.push(path.join(rawHome, '.npm-global', 'bin', binName));
+    candidates.push(path.join(rawHome, '.local', 'bin', binName));
     candidates.push(path.join('/usr', 'local', 'bin', binName));
   }
 

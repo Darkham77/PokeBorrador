@@ -99,3 +99,13 @@ export function safeDevUrl(endpoint: string, params: Record<string, string> = {}
   }
   return url.pathname + url.search;
 }
+
+export {
+  CANONICAL_IGNORE_DIRS,
+  SCANNABLE_EXTENSIONS,
+  assertSafePathComponent,
+  isPathIgnored,
+  loadFallowIgnorePatterns,
+  collectRepositoryFiles
+} from './auditorBase.ts';
+

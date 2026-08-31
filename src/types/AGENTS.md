@@ -27,7 +27,7 @@ State & Type Architects.
 
 ## Verification
 
-- `npm run audit:warnings-diff` to verify type system compilation and domain compliance.
+- Run `npm run audit` to verify type contracts, domain integrity, and project rules.
 
 ## Child DOX Index
 
@@ -35,7 +35,6 @@ State & Type Architects.
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle.
 - [breeding/](./breeding/AGENTS.md): Domain module documentation for breeding.
 - [gym/](./gym/AGENTS.md): Domain module documentation for gym.
-- [home/](./home/AGENTS.md): Domain module documentation for home.
 - [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
 - [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon.
 - [system/](./system/AGENTS.md): Domain module documentation for system.

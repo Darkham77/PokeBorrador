@@ -5,7 +5,7 @@ This manual defines the behavior of Gym Leaders, their difficulty scaling, and t
 ## 🏅 Badge System & Progression
 
 - **Linear Progress**: Gyms are unlocked sequentially based on the number of badges acquired (`badgesRequired`).
-- **Level Obedience Control**: Badges determine the maximum level cap for traded Pokémon obedience (Gen 1-4 standard).
+- **Level Obedience Control**: Badges determine the maximum level cap for Pokémon obedience and wild capture penalties ($BP$). SSoT formulas and behavioral states are governed in [`obedience_mechanics_manual.md`](obedience_mechanics_manual.md).
 - **Gym Isolation**: Standard gyms maintain constant day lighting (`effectiveCycle = 'day'`) and block natural outdoor weather unless an explicit override (`fixedCycle` or `fixedWeather`) is configured.
 
 ### 1. Canonical Kanto Gym Leaders Registry

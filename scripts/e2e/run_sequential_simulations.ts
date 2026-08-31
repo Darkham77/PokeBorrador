@@ -219,13 +219,14 @@ logger.startIntercepting();
 
 const VITE_PORT = 5174;
 const VITE_URL = `http://localhost:${VITE_PORT}`;
+const VITE_ENDPOINT = new URL(VITE_URL);
 const HEALTH_CHECK_TIMEOUT_MS = 30000;
 const HEALTH_CHECK_INTERVAL_MS = 250;
 
 async function startPersistentViteServer(): Promise<ChildProcess | null> {
   // 1. Check if already responding
   try {
-    const res = await fetch(VITE_URL);
+    const res = await fetch(VITE_ENDPOINT.href);
     if (res.ok) {
       logger.progress(`🔥 Servidor web existente detectado en ${VITE_URL} (Listo).`);
       return null;
@@ -246,7 +247,7 @@ async function startPersistentViteServer(): Promise<ChildProcess | null> {
   const startTime = Date.now();
   while (Date.now() - startTime < HEALTH_CHECK_TIMEOUT_MS) {
     try {
-      const res = await fetch(VITE_URL);
+      const res = await fetch(VITE_ENDPOINT.href);
       if (res.ok) {
         logger.progress(`🔥 Servidor Vite persistente pre-calentado y listo en ${VITE_URL} (${((Date.now() - startTime) / 1000).toFixed(1)}s).\n`);
         return viteProcess;

@@ -21,7 +21,11 @@ const STAT_COLUMNS_POKEMONDB: readonly StatKey[] = ['hp', 'atk', 'def', 'spa', '
 
 async function fetchHtml(url: string): Promise<string | null> {
   try {
-    const response = await fetch(url, {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:' || !['pokemondb.net', 'bulbapedia.bulbagarden.net'].includes(parsed.hostname)) {
+      throw new Error(`Untrusted host for EV yields scraping: ${parsed.hostname}`);
+    }
+    const response = await fetch(parsed.href, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',

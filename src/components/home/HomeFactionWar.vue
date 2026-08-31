@@ -59,6 +59,7 @@ onMounted(() => {
       <div class="header-actions">
         <button
           id="home-war-shop-btn"
+          v-gsap-hover
           class="card-action-btn"
           @click.stop="openWarShop"
         >
@@ -67,6 +68,7 @@ onMounted(() => {
         </button>
         <button
           id="home-war-open-btn"
+          v-gsap-hover
           class="card-action-btn primary"
           @click.stop="openWarModal"
         >
@@ -231,34 +233,7 @@ onMounted(() => {
 }
 
 .card-action-btn {
-  @include pixelated;
-  font-size: 8px;
-  height: 28px;
-  padding: 0 10px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: Rgba(255, 255, 255, 0.05);
-  border: 1px solid Rgba(255, 255, 255, 0.15);
-  color: var(--white, #ffffff);
-  cursor: pointer;
-  box-sizing: border-box;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  letter-spacing: 0.5px;
-
-  .btn-icon {
-    font-size: 12px;
-    line-height: 1;
-  }
-
-  &:hover:not(:disabled) {
-    background: Rgba(255, 255, 255, 0.12);
-    border-color: var(--yellow, #facc15);
-    color: var(--yellow, #facc15);
-    box-shadow: 0 0 10px Rgba(250, 204, 21, 0.2);
-  }
+  @include widget-action-btn;
 
   &.primary {
     background: Rgba(250, 204, 21, 0.12);
@@ -373,13 +348,11 @@ onMounted(() => {
   .union-fill {
     height: 100%;
     background: linear-gradient(90deg, #3b82f6, #60a5fa);
-    transition: width 0.3s ease;
   }
 
   .poder-fill {
     height: 100%;
     background: linear-gradient(90deg, #ef4444, #f87171);
-    transition: width 0.3s ease;
   }
 }
 

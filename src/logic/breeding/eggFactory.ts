@@ -2,9 +2,9 @@ const EGG_HATCH_STEPS_BASE = 250
 const EGG_HATCH_STEPS_VARIANCE = 51
 import type { DaycareEgg } from '@/types/breeding/breeding';
 import type { PokemonEgg, PokemonIVs } from '@/types/pokemon/pokemon';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { toNatureId } from '@/data/battle/natures';
 import { requirePokemonMoveId } from '@/data/battle/moves';
+import { getEggSpecies } from './breedingEngine.ts';
 
 interface DaycareEggParams {
   id?: string;
@@ -46,7 +46,7 @@ export const eggFactory = {
   createDaycareEgg(params: DaycareEggParams): DaycareEgg {
     const now = Temporal.Now.instant().epochMilliseconds;
     const eggId = params.id || `egg_${now}_${Math.random().toString(36).substring(2, 7)}`;
-    const speciesId = requirePokemonSpeciesId(params.species);
+    const speciesId = getEggSpecies(params.species);
     
     return {
       id: eggId,
@@ -76,7 +76,7 @@ export const eggFactory = {
    * Creates a PokemonEgg object ready to be incubated in the player's inventory.
    */
   createPokemonEgg(params: PokemonEggParams): PokemonEgg {
-    const speciesId = requirePokemonSpeciesId(params.species);
+    const speciesId = getEggSpecies(params.species);
     const timestamp = Temporal.Now.instant().epochMilliseconds;
     const eggUid = params.uid || `${speciesId}-${timestamp}`;
     const steps = params.steps ?? (Math.floor(Math.random() * EGG_HATCH_STEPS_VARIANCE) + EGG_HATCH_STEPS_BASE);

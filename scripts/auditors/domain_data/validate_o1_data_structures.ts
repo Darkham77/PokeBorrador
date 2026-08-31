@@ -200,7 +200,6 @@ const scanDir = (dir: string, fileList: string[] = []): string[] => {
 };
 
 // ─── Main Runner ──────────────────────────────────────────────────────────────
-
 async function main() {
   const validator = setupValidation({
     title: 'O(1) DATA STRUCTURE & PERFORMANCE AUDITOR',
@@ -253,7 +252,7 @@ async function main() {
   );
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(import.meta.filename || '')) {
+if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
   main().catch(err => {
     console.error(`💥 Fatal error: ${(err as Error).message}`);
     process.exit(1);

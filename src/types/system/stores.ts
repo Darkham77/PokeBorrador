@@ -225,7 +225,6 @@ export interface CompetitionEntry {
   submitted_at?: string; // domain-ok
 }
 
-// fallow-ignore-next-line unused-export
 export const COMPETITION_RANK_KEYS = ['first', 'second', 'third'] as const;
 export type CompetitionRankKey = (typeof COMPETITION_RANK_KEYS)[number];
 export type CompetitionRank = CompetitionRankKey | number;

@@ -20,7 +20,7 @@ Apply this workflow whenever the task involves any of the following:
 - **Finite Domain IDs & Values**: Finite identifiers such as Pokemon species, moves, abilities, items, maps, trainers, factions, statuses, weather, ranks, categories, modes, slots, phases, classes, tables, or routes across `src/` and `scripts/`.
 - **Collections & Dictionaries**: Constants declared as arrays, sets, maps, records, or object dictionaries in `src/` and `scripts/`.
 - **Generated Data & Boundary Validation**: Generated data under `src/data/**`, generated wrappers from JSON, npm scripts under `scripts/**`, or runtime boundary validators (`isDomainId`, `requireDomainId`).
-- **Audit Findings**: Review/audit findings from `npm run validate:domain-types` or `npm run audit:warnings-diff`.
+- **Audit Findings**: Review/audit findings from `npm run validate:domain-types` or `npm run audit`.
 
 If it represents a finite domain, design and use the domain type first.
 
@@ -37,9 +37,10 @@ If it represents a finite domain, design and use the domain type first.
 
 ## Absolute Prohibition on Silent Domain ID Fallbacks (`noDomainIdFallbacks`)
 
-- **Zero-Fallback Mandate**: It is STRICTLY FORBIDDEN to use silent fallbacks (`|| ''`, `?? ''`, `condition ? id : ''`) when resolving or assigning domain identifiers (`ItemId`, `PokemonSpeciesId`, `AbilityId`, `PokemonMoveId`).
-- **Fail-Fast Boundary Validation**: Any lookup or resolution MUST use an explicit validator function (`requireItemId`, `requirePokemonSpeciesId`, etc.) that throws an explicit Error (`throw new Error(...)`) if the ID is missing or invalid.
-- **Audit Engine Enforcement**: The audit rule `noDomainIdFallbacks` in `scripts/maintenance/audit_rules.ts` scans `src/` and `scripts/` during `npm run audit:warnings-diff` and will fail the commit if any domain ID fallback is introduced.
+- **Domain-Type-First Principle**: Identifiers for domain entities (`ItemId`, `PokemonSpeciesId`, `AbilityId`, `PokemonMoveId`, `TrainerClassId`, etc.) MUST NEVER have silent runtime fallback defaults (e.g. `item = rawItem || ''`, `species = poke.species ?? ''`, `id: raw.id || raw.name`, `toID(x || y)`).
+- **Fail Loud & Fast Mandate**: If an ID is missing, malformed, or does not exist in the domain set, the system MUST throw an explicit, descriptive error immediately (e.g. via `requireItemId(x)`, `requirePokemonSpeciesId(x)`).
+- **UI Localization Boundary**: For presentation in UI labels/buttons, Spanish translations must be resolved via standard domain mapping helpers (e.g. `getItemName(id)`, `getAbilityName(id)`). The underlying data structures, payloads, and state properties must remain strictly typed domain IDs.
+- **Audit Engine Enforcement**: The audit rule `noDomainIdFallbacks` in `scripts/maintenance/audit_rules.ts` scans `src/` and `scripts/` during `npm run audit` and will fail if any domain ID fallback is introduced.
 
 ## Absolute Prohibition on ID-to-Name & Secondary Property Fallbacks (`noDomainNameFallbacks`)
 

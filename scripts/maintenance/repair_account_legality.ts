@@ -196,6 +196,28 @@ export function auditAndRepairSaveData(
     auditAndRepairList(warehouse, 'Guardería Depósito');
   }
 
+  // 7. Liberar Pokémon atrapados con onEvent = true de eventos concluidos o legacy
+  const clearStuckEventFlag = (list: unknown[], locationLabel: string) => {
+    if (!Array.isArray(list)) return;
+    list.forEach((p, idx) => {
+      if (!p || typeof p !== 'object') return;
+      const poke = p as Pokemon;
+      if (poke.onEvent) {
+        poke.onEvent = false;
+        const logMsg = `[${locationLabel} Slot ${idx}] ${poke.name || poke.id} (UID: ${poke.uid}) liberado de evento concluido/legacy (onEvent = false).`;
+        accountDetails.push(`  ↳ 🏆 ${logMsg}`);
+        if (!isSilent) console.log(`    ↳ 🏆 ${logMsg}`);
+        accountModified = true;
+      }
+    });
+  };
+
+  clearStuckEventFlag(saveData.team, 'Equipo');
+  clearStuckEventFlag(saveData.box, 'Caja');
+  if (Array.isArray(warehouse)) {
+    clearStuckEventFlag(warehouse, 'Guardería Depósito');
+  }
+
   return {
     modified: accountModified,
     fixedPokemonCount: accountFixedPokemonCount,

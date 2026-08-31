@@ -40,7 +40,11 @@ async function downloadFile(url: string, destPath: string): Promise<boolean> {
   }
 
   try {
-    const res = await fetch(url);
+    const parsedUrl = new URL(url);
+    if (parsedUrl.protocol !== 'https:' || parsedUrl.hostname !== 'play.pokemonshowdown.com') {
+      throw new Error(`Untrusted host for sprite asset: ${parsedUrl.hostname}`);
+    }
+    const res = await fetch(parsedUrl.href);
     if (!res.ok) {
       return false;
     }

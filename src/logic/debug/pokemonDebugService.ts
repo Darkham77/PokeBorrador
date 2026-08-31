@@ -183,14 +183,18 @@ export const pokemonDebugService = {
       case 'hatch':
       case 'egg_silent': {
         // Protocol: Add UNHATCHED egg to inventory
+        const { getEggSpecies } = await import('@/logic/breeding/breedingEngine');
+        const eggSpecies = getEggSpecies(p.id);
+        const { pokemonDataProvider } = await import('@/logic/providers/pokemonDataProvider');
+        const babyName = pokemonDataProvider.resolveSpeciesName(eggSpecies);
+
         const state = game.state as Record<string, unknown>; // open-record
-        const key = `${p.id}TicketSecs`;
+        const key = `${eggSpecies}TicketSecs`;
         if (state[key] !== undefined) {
           state[key] = (Number(state[key]) || 0) + EGG_TICKET_BONUS_HOURS * SECS_PER_HOUR;
         }
 
         if (!game.state.eggs) game.state.eggs = [];
-        const eggSpecies = requirePokemonSpeciesId(p.id);
         const eggToPush: PokemonEgg = {
           uid: `${eggSpecies}-${Temporal.Now.instant().epochMilliseconds}`,
           id: eggSpecies,
@@ -204,7 +208,7 @@ export const pokemonDebugService = {
           ready: false
         };
         game.state.eggs.push(eggToPush);
-        ui.notify(`[DEBUG] Huevo de ${p.name} añadido a la mochila`, '🥚');
+        ui.notify(`[DEBUG] Huevo de ${babyName} añadido a la mochila`, '🥚');
         await game.save(false);
         break;
       }
@@ -213,10 +217,15 @@ export const pokemonDebugService = {
         // Protocol: Add DaycareEgg directly to Daycare Warehouse (almacén)
         const { useBreedingStore } = await import('@/stores/breeding');
         const breedingStore = useBreedingStore();
+        const { getEggSpecies } = await import('@/logic/breeding/breedingEngine');
+        const eggSpecies = getEggSpecies(p.id);
+        const { pokemonDataProvider } = await import('@/logic/providers/pokemonDataProvider');
+        const babyName = pokemonDataProvider.resolveSpeciesName(eggSpecies);
         
         const { eggFactory } = await import('@/logic/breeding/eggFactory');
         const egg = eggFactory.createDaycareEgg({
-          species: requirePokemonSpeciesId(p.id),
+          species: eggSpecies,
+          motherId: requirePokemonSpeciesId(p.id),
           ivs: p.ivs,
           nature: p.nature,
           movesAtBirth: requireMoveIdsForDebugEgg(p),
@@ -230,21 +239,44 @@ export const pokemonDebugService = {
           breedingStore.saveWarehouseEggs();
         }
         
-        ui.notify(`[DEBUG] Huevo de ${p.name} añadido al almacén de la guardería`, '🥚');
+        ui.notify(`[DEBUG] Huevo de ${babyName} añadido al almacén de la guardería`, '🥚');
         break;
       }
 
       case 'hatch_anim':
-      case 'egg_anim':
+      case 'egg_anim': {
         // Protocol: Visual hatching sequence (VUE MIGRATED)
-        p.obtainedMethod = 'egg';
+        const { getEggSpecies } = await import('@/logic/breeding/breedingEngine');
+        const eggSpecies = getEggSpecies(p.id);
+        const { makePokemon, recalcPokemonStats } = await import('@/logic/pokemon/pokemonFactory');
+        const isDebugMode = typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'));
+        
+        let babyPokemon = p;
+        if (p.id !== eggSpecies || p.level !== 1) {
+          babyPokemon = makePokemon(eggSpecies, 1, {
+            isShiny: p.isShiny,
+            isGuardian: p.isGuardian,
+            nature: p.nature,
+            abilitySlot: (p as Pokemon & { abilityIndex?: number }).abilityIndex || 0,
+            gender: p.gender,
+            obtainedMethod: 'egg',
+            bypassWhitelist: isDebugMode
+          }) || p;
+          if (p.ivs) {
+            babyPokemon.ivs = { ...babyPokemon.ivs, ...p.ivs };
+          }
+          recalcPokemonStats(babyPokemon, isDebugMode);
+          babyPokemon.hp = babyPokemon.maxHp;
+        }
+        babyPokemon.obtainedMethod = 'egg';
         
         // Add to game state silently first
-        game.addPokemon(p, { notify: false });
+        game.addPokemon(babyPokemon, { notify: false });
         
         // Trigger Vue Modal Sequence
-        ui.open('HatchAnimation', { pokemon: p });
+        ui.open('HatchAnimation', { pokemon: babyPokemon });
         break;
+      }
 
       case 'fishing_minigame': {
         const { showFishingIntro, startFishingMinigame } = await import('@/logic/encounters/encounterUI')

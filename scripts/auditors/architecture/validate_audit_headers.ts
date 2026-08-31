@@ -48,28 +48,14 @@ export interface AuditHeadersResult {
   readonly countsByRule: Record<string, number>;
 }
 
-export const CANONICAL_IGNORE_DIRS: ReadonlySet<string> = new Set([ // runtime-set
-  'node_modules',
-  '.git',
-  '.agents',
-  '.fallow',
-  '.vscode',
-  '.github',
-  'dist',
-  'dev-dist',
-  'backup_legacy_code',
-  'external',
-  'scratch',
-  'tmp',
-  'test-results',
-  'public',
-  'docs',
-  'test aventura',
-  'showdown',
-  '_raw-assets'
-]);
+import {
+  CANONICAL_IGNORE_DIRS,
+  isPathIgnored,
+  loadFallowIgnorePatterns,
+  collectRepositoryFiles
+} from '../../lib/auditorBase.ts';
 
-const SCANNABLE_EXTENSIONS = new Set(['.ts', '.js', '.vue', '.cjs', '.mjs']); // runtime-set
+export { CANONICAL_IGNORE_DIRS, isPathIgnored, loadFallowIgnorePatterns };
 
 const FALLOW_IGNORE_FILE_REGEX = /^\s*\/\/\s*fallow-ignore-file\b/i;
 const TS_SUPPRESSION_REGEX = /^\s*\/\/\s*@ts-(nocheck|ignore|expect-error)\b/i;
@@ -84,47 +70,6 @@ function assertSafePathComponent(component: string): void {
   if (component.includes('..')) {
     throw new Error(`Path traversal attempt detected in path component: ${component}`);
   }
-}
-
-/**
- * Determines whether a relative POSIX path belongs to an ignored directory or matches directory ignore patterns.
- */
-export function isPathIgnored(relPath: string, extraIgnorePatterns: readonly string[] = []): boolean {
-  const normalized = relPath.split(path.sep).join(path.posix.sep).toLowerCase();
-  const segments = normalized.split('/');
-
-  for (const seg of segments) {
-    if (CANONICAL_IGNORE_DIRS.has(seg)) {
-      return true;
-    }
-  }
-
-  for (const pattern of extraIgnorePatterns) {
-    const cleanPattern = pattern.replace(/\/\*\*$/, '').replace(/\/\*$/, '').toLowerCase();
-    if (cleanPattern && (normalized === cleanPattern || normalized.startsWith(cleanPattern + '/'))) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-/**
- * Loads directory ignore patterns from .fallowrc.json if present.
- */
-export function loadFallowIgnorePatterns(projectRoot = process.cwd()): string[] {
-  assertSafePathComponent(projectRoot);
-  const fallowRcPath = path.resolve(projectRoot, '.fallowrc.json');
-  try {
-    if (fs.existsSync(fallowRcPath)) {
-      const raw = fs.readFileSync(fallowRcPath, 'utf-8');
-      const data = JSON.parse(raw) as { ignorePatterns?: string[] };
-      return Array.isArray(data.ignorePatterns) ? data.ignorePatterns : [];
-    }
-  } catch {
-    // Ignore fallback
-  }
-  return [];
 }
 
 /**
@@ -209,35 +154,6 @@ export function scanFileForIllegalHeaders(filePath: string, content: string): He
 }
 
 /**
- * Collects all source and script files for scanning, respecting directory ignores.
- */
-function collectFiles(dir: string, projectRoot: string, extraIgnorePatterns: readonly string[]): string[] {
-  const results: string[] = []; // no-domain
-  if (!fs.existsSync(dir)) return results;
-
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  for (const entry of entries) {
-    assertSafePathComponent(entry.name);
-    const fullPath = path.resolve(dir, entry.name);
-    const relPath = path.relative(projectRoot, fullPath).split(path.sep).join(path.posix.sep);
-
-    if (entry.isDirectory()) {
-      if (!isPathIgnored(relPath, extraIgnorePatterns)) {
-        results.push(...collectFiles(fullPath, projectRoot, extraIgnorePatterns));
-      }
-    } else if (entry.isFile()) {
-      if (!isPathIgnored(relPath, extraIgnorePatterns)) {
-        const ext = path.extname(entry.name).toLowerCase();
-        if (SCANNABLE_EXTENSIONS.has(ext)) {
-          results.push(fullPath);
-        }
-      }
-    }
-  }
-  return results;
-}
-
-/**
  * Full repository audit runner for illegal headers and suppressions.
  */
 export function auditAuditHeaders(targetDir = process.cwd()): AuditHeadersResult {
@@ -250,7 +166,7 @@ export function auditAuditHeaders(targetDir = process.cwd()): AuditHeadersResult
 
   const allFiles: string[] = []; // no-domain
   for (const root of rootsToScan) {
-    allFiles.push(...collectFiles(root, targetDir, extraIgnorePatterns));
+    allFiles.push(...collectRepositoryFiles(root, targetDir, extraIgnorePatterns));
   }
 
   const violations: HeaderViolation[] = [];

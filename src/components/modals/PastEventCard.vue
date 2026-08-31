@@ -529,61 +529,7 @@ const getCategoryIcon = (catId: string) => {
   gap: 6px;
   line-height: 1;
 
-  &.claim-btn {
-    background: #16a34a;
-    border-color: #4ade80;
-    color: var(--white);
-    font-weight: bold;
-    box-shadow: 0 2px 0 #15803d, 0 0 10px Rgba(74, 222, 128, 0.25);
-    text-shadow: 0 1px 2px Rgba(0, 0, 0, 0.5);
-
-    &:hover:not(:disabled) {
-      background: #22c55e;
-      border-color: #86efac;
-      box-shadow: 0 3px 0 #15803d, 0 0 14px Rgba(74, 222, 128, 0.4);
-      transform: Translatey(-1px);
-    }
-
-    &:active:not(:disabled) {
-      transform: Translatey(1px);
-      box-shadow: 0 0 0 transparent;
-    }
-  }
-
-  &.discard-btn {
-    background: Rgba(239, 68, 68, 0.15);
-    border-color: Rgba(239, 68, 68, 0.4);
-    color: #fca5a5;
-    font-weight: bold;
-    box-shadow: 0 2px 0 Rgba(0, 0, 0, 0.4);
-    text-shadow: 0 1px 2px Rgba(0, 0, 0, 0.5);
-
-    &:hover:not(:disabled) {
-      background: #ef4444;
-      border-color: #fca5a5;
-      color: var(--white);
-      box-shadow: 0 3px 0 #b91c1c, 0 0 12px Rgba(239, 68, 68, 0.4);
-      transform: Translatey(-1px);
-    }
-
-    &.only-action {
-      background: #dc2626;
-      border-color: #f87171;
-      color: var(--white);
-      box-shadow: 0 2px 0 #991b1b, 0 0 10px Rgba(220, 38, 38, 0.3);
-
-      &:hover:not(:disabled) {
-        background: #ef4444;
-        border-color: #fca5a5;
-        box-shadow: 0 3px 0 #991b1b, 0 0 14px Rgba(239, 68, 68, 0.5);
-      }
-    }
-
-    &:active:not(:disabled) {
-      transform: Translatey(1px);
-      box-shadow: 0 0 0 transparent;
-    }
-  }
+  @include event-award-action-buttons;
 }
 
 .claimed-badge {

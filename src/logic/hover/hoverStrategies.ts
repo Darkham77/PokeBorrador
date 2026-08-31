@@ -1,5 +1,5 @@
 import { resolveCssColor, parseToRgba, hasVisualBorders } from './hoverHelpers.ts';
-import { HOVER_STRATEGIES } from '@/logic/constants/animations';
+import { HOVER_STRATEGIES, GSAP_FAST_DURATION_SEC } from '@/logic/constants/animations';
 
 export interface HoverValues {
   scale?: number;
@@ -14,7 +14,7 @@ export interface HoverValues {
 
 export function getHoverEnterStrategy(el: HTMLElement): HoverValues {
   if (el.classList.contains('accordion-toggle') || el.classList.contains('no-scale-hover')) {
-    return { scale: 1, y: 0, duration: 0.15, ease: 'power1.out' };
+    return { scale: 1, y: 0, duration: GSAP_FAST_DURATION_SEC, ease: 'power1.out' };
   }
 
   const isSubmenuBtn = el.closest('.hud-submenu') && el.classList.contains('hud-nav-btn');

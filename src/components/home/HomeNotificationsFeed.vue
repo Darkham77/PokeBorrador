@@ -82,6 +82,7 @@ onUnmounted(() => {
       <div
         v-for="n in history"
         :key="n.id"
+        v-gsap-hover="{ scale: 1.01, y: -1, duration: 0.15 }"
         class="notif-row"
       >
         <span class="notif-icon">{{ getIcon(n) }}</span>
@@ -158,6 +159,7 @@ onUnmounted(() => {
   gap: 6px;
   max-height: 580px;
   overflow-y: auto;
+  overflow-x: hidden;
   padding-right: 4px;
 
   &::-webkit-scrollbar {
@@ -187,7 +189,8 @@ onUnmounted(() => {
   background: Rgba(255, 255, 255, 0.03);
   border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 8px;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  box-sizing: border-box;
+  width: 100%;
 
   &:hover {
     background: Rgba(255, 255, 255, 0.06);

@@ -4,6 +4,7 @@ import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB'
 import type { PokemonEgg } from '@/types/pokemon/pokemon'
+import { getEggSpecies } from '@/logic/breeding/breedingEngine'
 import EggSprite from '@/components/common/EggSprite.vue'
 
 const gameStore = useGameStore()
@@ -15,7 +16,7 @@ const npcEggs = computed(() => eggs.value.filter(e => e.isNpc))
 
 const getEggName = (egg: PokemonEgg) => {
   if (egg.scanned || egg.predictedInfo) {
-    const speciesId = egg.pokemonId || egg.id
+    const speciesId = getEggSpecies(egg.pokemonId || egg.id)
     return POKEMON_DB[speciesId]?.name || 'Huevo Pokémon'
   }
   return 'Huevo Pokémon'

@@ -396,4 +396,88 @@
   }
 }
 
+@mixin widget-action-btn {
+  @include pixelated;
+  font-size: 8px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.15);
+  color: var(--white, #ffffff);
+  cursor: pointer;
+  box-sizing: border-box;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+
+  .btn-icon {
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  &:hover:not(:disabled) {
+    background: Rgba(255, 255, 255, 0.12);
+    border-color: var(--yellow, #facc15);
+    color: var(--yellow, #facc15);
+    box-shadow: 0 0 10px Rgba(250, 204, 21, 0.2);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+@mixin event-award-action-buttons {
+  &.claim-action-btn,
+  &.claim-btn {
+    background: #16a34a;
+    border-color: #4ade80;
+    color: var(--white);
+    font-weight: bold;
+    box-shadow: 0 2px 0 #15803d, 0 0 10px Rgba(74, 222, 128, 0.25);
+    text-shadow: 0 1px 2px Rgba(0, 0, 0, 0.5);
+
+    &:hover:not(:disabled) {
+      background: #22c55e;
+      border-color: #86efac;
+      box-shadow: 0 3px 0 #15803d, 0 0 14px Rgba(74, 222, 128, 0.4);
+      transform: Translatey(-1px);
+    }
+
+    &:active:not(:disabled) {
+      transform: Translatey(1px);
+      box-shadow: 0 0 0 transparent;
+    }
+  }
+
+  &.discard-action-btn,
+  &.discard-btn {
+    background: Rgba(239, 68, 68, 0.15);
+    border-color: Rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+    font-weight: bold;
+    box-shadow: 0 2px 0 Rgba(0, 0, 0, 0.4);
+    text-shadow: 0 1px 2px Rgba(0, 0, 0, 0.5);
+
+    &:hover:not(:disabled) {
+      background: #ef4444;
+      border-color: #fca5a5;
+      color: var(--white);
+      box-shadow: 0 3px 0 #b91c1c, 0 0 12px Rgba(239, 68, 68, 0.4);
+      transform: Translatey(-1px);
+    }
+
+    &.only-action {
+      background: #dc2626;
+      border-color: #f87171;
+      color: var(--white);
+      box-shadow: 0 2px 0 #991b1b, 0 0 10px Rgba(220, 38, 38, 0.3);
+    }
+  }
+}
+
 

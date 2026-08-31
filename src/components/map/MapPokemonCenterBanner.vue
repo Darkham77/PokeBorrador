@@ -1,53 +1,19 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed } from 'vue'
 import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { calculatePokemonCenterCooldown, pokemonNeedsHealing } from '@/logic/economy/economyFormulas'
+import { pokemonNeedsHealing } from '@/logic/economy/economyFormulas'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
+import { usePokemonCenterCooldown } from '@/composables/map/usePokemonCenterCooldown'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-
-const SECONDS_TO_MS = 1000
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 const modalStore = useModalStore()
-
-const cooldownSecondsLeft = ref(0)
-let cooldownTween: gsap.core.Tween | null = null
-
-const handleCooldownClick = () => {
-  uiStore.notify(`El Centro Pokémon está cerrado por mantenimiento. Reabre en ${cooldownFormatted.value}.`, '🏥')
-}
-
-const updateCooldown = () => {
-  const lastHeal = gameStore.state.lastPokemonCenterHeal || 0
-  const cooldownSecs = calculatePokemonCenterCooldown(gameStore.state.trainerLevel || 1)
-  if (cooldownSecs > 0 && lastHeal > 0) {
-    const elapsedMs = Temporal.Now.instant().epochMilliseconds - lastHeal
-    const remainingMs = (cooldownSecs * SECONDS_TO_MS) - elapsedMs
-    if (remainingMs > 0) {
-      cooldownSecondsLeft.value = Math.ceil(remainingMs / SECONDS_TO_MS)
-      return
-    }
-  }
-  cooldownSecondsLeft.value = 0
-}
-
-const tickCooldown = () => {
-  updateCooldown()
-  cooldownTween = gsap.delayedCall(1, tickCooldown)
-}
-
-const cooldownFormatted = computed(() => {
-  const totalSecs = cooldownSecondsLeft.value
-  if (totalSecs <= 0) return ''
-  const mins = Math.floor(totalSecs / 60)
-  const secs = totalSecs % 60
-  return `${mins}:${secs.toString().padStart(2, '0')}`
-})
+const { cooldownSecondsLeft, cooldownFormatted, handleCooldownClick } = usePokemonCenterCooldown()
 
 const bannerUrl = computed(() => {
   const assetName = cooldownSecondsLeft.value > 0 ? 'pokecenter_closed_banner' : 'pokecenter_banner'
@@ -57,6 +23,20 @@ const bannerUrl = computed(() => {
 const bannerStyle = computed(() => ({
   backgroundImage: `url('${bannerUrl.value}')`
 }))
+
+const onBannerHover = (event: MouseEvent, enter: boolean) => {
+  const el = event.currentTarget as HTMLElement
+  if (!el || cooldownSecondsLeft.value > 0) return
+  const bg = el.querySelector('.banner-bg') as HTMLElement | null
+
+  if (enter) {
+    gsap.to(el, { y: -3, duration: 0.25, ease: 'power2.out', overwrite: 'auto' })
+    if (bg) gsap.to(bg, { scale: 1.03, duration: 0.35, ease: 'power2.out', overwrite: 'auto' })
+  } else {
+    gsap.to(el, { y: 0, duration: 0.25, ease: 'power2.out', overwrite: 'auto', clearProps: 'transform' })
+    if (bg) gsap.to(bg, { scale: 1, duration: 0.3, ease: 'power2.out', overwrite: 'auto', clearProps: 'transform,scale' })
+  }
+}
 
 const openCenter = () => {
   const needsHeal = (gameStore.state.team as (Pokemon | null)[]).some(p => p && pokemonNeedsHealing(p))
@@ -73,25 +53,16 @@ const openCenter = () => {
   
   modalStore.open('PokemonCenter')
 }
-
-onMounted(() => {
-  tickCooldown()
-})
-
-onUnmounted(() => {
-  if (cooldownTween) {
-    cooldownTween.kill()
-  }
-})
 </script>
 
 <template>
   <div class="map-pokecenter-wrapper">
-    <!-- On Cooldown state (Disabled) -->
     <div
-      v-if="cooldownSecondsLeft > 0"
-      class="pokecenter-banner on-cooldown"
-      @click.stop="handleCooldownClick"
+      class="pokecenter-banner"
+      :class="{ 'on-cooldown': cooldownSecondsLeft > 0 }"
+      @click.stop="cooldownSecondsLeft > 0 ? handleCooldownClick() : openCenter()"
+      @mouseenter="onBannerHover($event, true)"
+      @mouseleave="onBannerHover($event, false)"
     >
       <div 
         class="banner-bg" 
@@ -106,6 +77,7 @@ onUnmounted(() => {
         </div>
       </div>
       <PVTooltip 
+        v-if="cooldownSecondsLeft > 0"
         title="Centro Pokémon en mantenimiento" 
         description="Debes esperar a que termine el tiempo de enfriamiento para volver a curar gratis."
         position="bottom"
@@ -115,27 +87,10 @@ onUnmounted(() => {
           <span class="icon">⏱️</span> {{ cooldownFormatted }}
         </span>
       </PVTooltip>
-    </div>
-
-    <!-- Active state (Enabled) -->
-    <div
-      v-else
-      class="pokecenter-banner"
-      @click.stop="openCenter"
-    >
-      <div 
-        class="banner-bg" 
-        :style="bannerStyle"
-      />
-      <div class="banner-overlay">
-        <div class="banner-title">
-          <span class="title-icon">💊</span> CENTRO POKÉMON
-        </div>
-        <div class="banner-desc">
-          Saná a tu equipo y restaurá todos sus PP al instante.
-        </div>
-      </div>
-      <span class="banner-tag"><span class="icon">💊</span> CURACIÓN</span>
+      <span
+        v-else
+        class="banner-tag"
+      ><span class="icon">💊</span> CURACIÓN</span>
     </div>
   </div>
 </template>
@@ -144,21 +99,21 @@ onUnmounted(() => {
 @use "@/styles/core/tools" as *;
 
 .map-pokecenter-wrapper {
-  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0 0 16px;
+  margin: 0;
   box-sizing: border-box;
+  width: fit-content;
 }
 
 .pokecenter-banner {
   position: relative;
-  height: 312px;
-  width: auto;
-  aspect-ratio: 307 / 171;
+  width: 440px;
   max-width: 100%;
-  border-radius: 20px;
+  height: auto;
+  aspect-ratio: 307 / 171;
+  border-radius: 16px;
   cursor: pointer;
   
   box-shadow: 0 10px 40px Rgba(0, 0, 0, 0.6), inset 0 0 15px Rgba(0, 0, 0, 0.5);
@@ -173,7 +128,7 @@ onUnmounted(() => {
     background-position: center center;
     background-repeat: no-repeat;
     z-index: calc(var(--z-base) + 1);
-    border-radius: 16px;
+    border-radius: 14px;
     @include pixelated;
   }
 
@@ -184,7 +139,7 @@ onUnmounted(() => {
     background: linear-gradient(to top, var(--black, #000000) 0%, Rgba(0, 0, 0, 0.6) 30%, transparent 55%);
     z-index: calc(var(--z-base) + 2);
     pointer-events: none;
-    border-radius: 16px;
+    border-radius: 14px;
   }
 
   &.on-cooldown {
@@ -193,9 +148,7 @@ onUnmounted(() => {
   }
 
   @media (max-width: 768px) {
-    height: auto;
-    width: 100%;
-    max-width: 448px;
+    max-width: 100%;
   }
 }
 

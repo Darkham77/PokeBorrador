@@ -118,6 +118,17 @@ describe('Real Backup Upgrade Pipeline & Dynamic Table Sanitization Test', () =>
     const saveRows = (upgradedObj.data['game_saves'] || []) as Array<{ user_id: string; save_data: GameState }>;
     assert.ok(saveRows.length > 0, 'game_saves must contain player saves');
 
+    // Load official items catalog for item validity checks
+    const itemsDict = JSON.parse(fs.readFileSync(path.resolve('src/data/inventory/items.json'), 'utf8')) as { SHOP_ITEMS: Array<{ id: string }> };
+    const validItemIds = new Set(itemsDict.SHOP_ITEMS.map((item) => item.id));
+    const checkItemValidity = (key: string): boolean => {
+      const isTM = key.startsWith('tm') || key.startsWith('hm');
+      if (isTM) return true;
+      if (validItemIds.has(key)) return true;
+      if (Dex.items.get(key).exists) return true;
+      return false;
+    };
+
     for (const row of saveRows) {
       const saveData = row.save_data;
       assert.ok(saveData, `Save data for user ${row.user_id} must exist`);
@@ -133,6 +144,9 @@ describe('Real Backup Upgrade Pipeline & Dynamic Table Sanitization Test', () =>
         }
         if (p.nature) {
           assert.ok(isNatureId(p.nature), `Pokemon nature '${p.nature}' must be a valid English nature`);
+        }
+        if (p.heldItem) {
+          assert.ok(checkItemValidity(p.heldItem), `Pokemon held item '${p.heldItem}' must exist in items catalog or Showdown Dex`);
         }
         if ((p.level ?? 1) >= 100) {
           assert.strictEqual(p.expNeeded, 0, `Level 100 Pokémon must have expNeeded = 0`);
@@ -151,6 +165,7 @@ describe('Real Backup Upgrade Pipeline & Dynamic Table Sanitization Test', () =>
       if (saveData.inventory) {
         for (const [itemKey, qty] of Object.entries(saveData.inventory)) {
           assert.ok(Number(qty) >= 0, `Inventory item '${itemKey}' must have non-negative quantity: ${qty}`);
+          assert.ok(checkItemValidity(itemKey), `Inventory item '${itemKey}' must exist in items catalog or Showdown Dex`);
         }
       }
     }

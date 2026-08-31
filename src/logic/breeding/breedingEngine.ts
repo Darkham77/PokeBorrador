@@ -1,9 +1,9 @@
-import { Dex } from '@pkmn/sim'
+import { Dex, toID } from '@pkmn/sim'
 import { EGG_GROUPS, BABY_MAP, BREEDING_CONSTANTS } from './breedingData.ts'
 import { getFirstEvolution } from '@/logic/pokemon/evolutionEngine'
 import type { Pokemon, PokemonIVs, BreedingCompatibility } from '@/types/pokemon/pokemon'
 import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves'
-import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { isPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { BASE_SHINY_DENOMINATOR } from '@/logic/constants/gameplay.ts'
 import { canLearnMove } from '@/logic/pokemon/pokemonLearnset.ts'
 
@@ -41,9 +41,29 @@ export { getFirstEvolution };
  * Considera si la forma base tiene una forma "Bebé".
  */
 export function getEggSpecies(motherId: string): PokemonSpeciesId {
-  const firstEvo = getFirstEvolution(motherId)
-  const babySpecies = BABY_MAP[firstEvo] || firstEvo
-  return requirePokemonSpeciesId(babySpecies)
+  const cleanId = toID(motherId);
+  if (BABY_MAP[cleanId]) {
+    return requirePokemonSpeciesId(BABY_MAP[cleanId]);
+  }
+  const species = Dex.species.get(cleanId);
+  if (species?.exists) {
+    let curr = species;
+    while (curr.prevo) {
+      const prevoSpecies = Dex.species.get(curr.prevo);
+      if (!prevoSpecies?.exists) break;
+      curr = prevoSpecies;
+    }
+    const resolvedId = toID(curr.id);
+    if (BABY_MAP[resolvedId]) {
+      return requirePokemonSpeciesId(BABY_MAP[resolvedId]);
+    }
+    if (isPokemonSpeciesId(resolvedId)) {
+      return requirePokemonSpeciesId(resolvedId);
+    }
+  }
+  const firstEvo = getFirstEvolution(cleanId);
+  const babySpecies = BABY_MAP[firstEvo] || firstEvo;
+  return requirePokemonSpeciesId(babySpecies);
 }
 
 /**

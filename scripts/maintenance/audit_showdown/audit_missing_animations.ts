@@ -1,4 +1,5 @@
 import { readFileSync, existsSync } from 'node:fs';
+import path from 'node:path';
 import { getFilesRecursively } from './audit_helpers.ts';
 
 export interface AnimationAuditResult {
@@ -14,7 +15,7 @@ export function auditMissingAnimations(srcDir: string): AnimationAuditResult {
   const missingAnimations: string[] = []; // no-domain
   if (!existsSync(srcDir)) return { missingAnimations };
 
-  const battleComponentsDir = `${srcDir}/components/battle`;
+  const battleComponentsDir = path.join(srcDir, 'components', 'battle');
   if (!existsSync(battleComponentsDir)) return { missingAnimations };
 
   const files = getFilesRecursively(battleComponentsDir).filter(f => f.endsWith('.ts') || f.endsWith('.vue'));

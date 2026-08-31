@@ -15,8 +15,8 @@ Poké Vicio is a hybrid retro-modern web video game built with Vue 3, Pinia, GSA
 - **Core Quality & Verification Commands**:
   - **Fast In-Development Check**: `npm run lint` (fast ~3-5s check using cached ESLint, `vue-tsc` type-check, domain types, and markdownlint for rapid developer iteration).
   - **Full Automated Test Suite**: `npm run test` (executes 100% of both `unit` (Vue/JSDOM) and `node` test projects natively via `node --no-experimental-webstorage ./node_modules/vitest/vitest.mjs run` across Windows PowerShell/CMD and POSIX; strictly reserved for verifying source code logic changes in `src/` or `database/`; running test suites for documentation, DOX indices, markdown, or skill files is STRICTLY FORBIDDEN).
-  - **Pre-Commit Single Source of Truth**: `npm run audit:warnings-diff` (automatically runs ESLint, `vue-tsc`, Fallow Dupes/Security, domain/FSM/database validation, and project rules against `origin/main` in one single pass; requires 0 errors and 0 new warnings).
-  - **Global Unified Audit Engine**: `npm run audit` (displays consolidated Box-Drawing tables in console and writes structured JSON to `scratch/audits/latest_audit.json`).
+  - **Global Unified Audit Engine (Single Source of Truth)**: `npm run audit` (the primary project quality gatekeeper; displays consolidated Box-Drawing tables in console, writes structured JSON to `scratch/audits/latest_audit.json`, and MUST report 0 errors).
+  - **Safe-Commit Diff Comparator**: `npm run audit:warnings-diff` (STRICTLY RESERVED for the safe-commit workflow to diff new warnings vs `origin/main`; using this command for general checks or documenting it in other DOX files is forbidden).
   - **NPM Script Single Source of Truth**: All developer tools, validators, fuzzer suites, and maintenance routines MUST be executed via official NPM scripts declared in `package.json`. Raw direct executions (`node scripts/...`, `npx tsx ...`) in skills or documentation are strictly forbidden. Arguments passed to npm scripts MUST use direct `key=value` parameters or clean flags without `--` (e.g., `npm run <script> param=value`, `npm run database:update server=server_franco`, `npm run audit fix`).
 
 ## 0. Senior Developer Mindset & Laziness Ladder
@@ -41,6 +41,12 @@ Not lazy about: input validation at trust boundaries, error handling that preven
 - **Mandatory O(1) Data Structure Optimization Mandate**: Agents MUST proactively seek, detect, and optimize data structures across static datasets, reactive Pinia stores, heuristic AI sets, and sprite catalogs to guarantee constant $O(1)$ time complexity. Linear searches (`.find()`, `.filter()`, `.includes()`) in execution hot paths are strictly prohibited when an $O(1)$ typed dictionary (`Record<DomainId, T>`, `ReadonlySet<DomainId>`, `Map<DomainId, T>`) can be derived.
 - **Absolute Prohibition on O(1) Escape Hatch Bypasses Mandate**: It is STRICTLY FORBIDDEN to use domain escape hatches (such as `// domain-ok`, `// string-ok`, or `// ts-ignore`) to silence or bypass O(1) data structure performance audits (`validate_o1_data_structures.ts`). All linear searches on static arrays, catalogs, or constants in execution paths MUST be refactored cleanly to typed `ReadonlySet<T>`, `Record<DomainId, T>`, or `Map<K, V>`.
 - **Absolute Prohibition on File-Level Audit Ignores Mandate**: It is STRICTLY FORBIDDEN to bypass or silence auditor, lint, security, or TypeScript checks using file-wide ignore directives (such as `// fallow-ignore-file`, `/* eslint-disable */`, or `@ts-nocheck`). Only localized, line-by-line Fallow annotations (`// fallow-ignore-next-line`, `// singleton-ok`, `// domain-ok`, `// no-magic`) are permitted in strictly justified edge cases. All issues MUST be resolved cleanly at the code level.
+- **Absolute Prohibition on Build Bypasses Mandate**: It is STRICTLY FORBIDDEN to replace `npm run build` with `npx vite build`, `vite build`, or any isolated partial commands to evade failures in pre-build audits or type checks. All build verifications MUST execute `npm run build` as declared in `package.json` and return exit code 0. If any step inside `npm run build` fails, execution MUST stop and all underlying errors must be resolved cleanly.
+- **Mandatory GSAP Migration over Deletion Mandate (Never Delete, Always Migrate)**: Whenever any auditor (`validate_component_styles.ts`, `audit_project.ts`, Fallow, or style linters) flags manual CSS transitions (`transition: ...`) or `@keyframes` violating the GSAP mandate, agents **MUST NEVER** simply delete or strip the animation rules to silence the warning, leaving UI elements static and lifeless. Agents **MUST ACTIVELY MIGRATE** the animation to GSAP (`v-gsap-hover`, `useGsapTransition`, `gsap.to()`, `gsap.from()`, `gsap.timeline()`, Vue `<Transition :css="false" @enter="..." @leave="...">`, or GSAP composables) preserving 1:1 visual motion, easing, duration, and user delight. Auditor warnings highlight non-compliant *technology choices* (e.g. CSS keyframes), NEVER an instruction to remove the visual feature itself. The mandatory goal of audit remediation is architectural evolution with 100% visual parity.
+- **Mandatory Proactive Dead Code & Legacy File Deletion Mandate**: When Fallow, linters, or codebase intelligence tools report unused exports, orphan components, or unreachable files, agents **MUST NEVER** sweep them under the rug using blanket entry globs (such as `"src/components/**/*.vue"` or `"src/views/**/*.vue"` in `.fallowrc.json`). Agents MUST perform a case-by-case root cause investigation:
+  1. If the file is legitimate active multithreaded logic (Web Workers, OffscreenCanvas renderers) or dynamically routed entry points, ensure it is properly referenced or documented.
+  2. If the file is an active component that was simply omitted from the view tree, connect and mount it in its proper parent view.
+  3. If the investigation confirms the code or file is **GENUINELY DEAD CODE** (e.g., deprecated legacy prototypes, abandoned test components, or files superseded by newer replacements), agents **MUST PROACTIVELY DELETE THE OBSOLETE FILES**, clean up any empty parent directories, and update relevant DOX (`AGENTS.md`) indices.
 
 ## 1. Efficient Thinking & Communication
 
@@ -51,7 +57,7 @@ Not lazy about: input validation at trust boundaries, error handling that preven
 ## 2. Core Identity: Hybrid Retro-Modern
 
 - **Visual Shell**: Modern UI shell (gradients, relief borders) + Pixel Art heart (pixelated fonts and game sprites).
-- **GSAP Exclusive Mandate**: All UI and battle animations MUST be implemented using GSAP. Manual CSS keyframes or timers for animation flow are strictly forbidden.
+- **GSAP Exclusive Mandate**: All UI and battle animations MUST be implemented using GSAP. Manual CSS keyframes or timers for animation flow are strictly forbidden. When removing non-compliant CSS transitions/keyframes, they MUST be migrated to GSAP equivalents (`v-gsap-hover`, `useGsapTransition`, GSAP timelines), never deleted without replacement.
 - **500/1000-Line Limit**: Files exceeding 500 lines should trigger warnings to modularize. Hard limit at 1000 lines (excluding static databases).
 
 ## 3. Mandatory Skill Invocation (Progressive Disclosure)
@@ -75,7 +81,7 @@ For topic-specific mandates, consult the specialized rule modules under [.agents
 - [Git & Workflow Safety](.agents/skills/project-standards/references/rules/git_and_workflow_safety.md): Destructive Git confirmations, uncommitted file backups, scratch directory mandate, main branch push protection.
 - [Game Engine & State](.agents/skills/project-standards/references/rules/game_engine_and_state.md): Showdown canonical reference (`ACTIVE_GENERATION`), 4-seat compatibility, zero-cloning Pokémon instances, Showdown ID format.
 
-*(Note: Specific gameplay systems such as Daycare/Breeding, Gyms, Items, War, and Spawns are governed strictly in their dedicated manuals under [references/systems/](.agents/skills/project-standards/references/systems/)).*
+*(Note: Specific gameplay systems such as Daycare/Breeding, Gyms, Obedience, Items, War, and Spawns are governed strictly in their dedicated manuals under [references/systems/](.agents/skills/project-standards/references/systems/)).*
 
 ## 5. DOX Directory Navigation Index
 

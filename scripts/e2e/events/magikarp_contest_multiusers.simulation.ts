@@ -353,6 +353,15 @@ test.describe('4-Player Shared DB Magikarp Contest E2E Simulation', () => {
     expect(claimResultP1.finalMoney).toBe(claimResultP1.initialMoney + 50000);
     expect(claimResultP1.items.masterball).toBe(1);
 
+    // Verify P1 Magikarp onEvent is cleared to false after claiming award
+    const p1PokeOnEvent = await page1.evaluate(async (uid: string) => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const gameStore = useGameStore();
+      const p = gameStore.getPokemonByUid(uid);
+      return p?.onEvent;
+    }, p1Setup.validMonUid);
+    expect(p1PokeOnEvent).toBe(false);
+
     // Reclamar para P2
     const claimResultP2 = await page2.evaluate(async () => {
       const { useEventStore } = await import('../../../src/stores/events.ts');
@@ -375,6 +384,15 @@ test.describe('4-Player Shared DB Magikarp Contest E2E Simulation', () => {
     expect(claimResultP2.success).toBe(true);
     expect(claimResultP2.finalMoney).toBe(claimResultP2.initialMoney + 25000);
 
+    // Verify P2 Magikarp onEvent is cleared to false after claiming award
+    const p2PokeOnEvent = await page2.evaluate(async (uid: string) => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const gameStore = useGameStore();
+      const p = gameStore.getPokemonByUid(uid);
+      return p?.onEvent;
+    }, p2Setup.validMonUid);
+    expect(p2PokeOnEvent).toBe(false);
+
     // Cleanup
     await context1.close();
     await context2.close();
@@ -382,6 +400,55 @@ test.describe('4-Player Shared DB Magikarp Contest E2E Simulation', () => {
     await context4.close();
 
     p1.finish('4-Player Shared DB Magikarp Contest Simulation');
+  });
+
+  test('libera automáticamente a los Pokémon con onEvent cuando se descarta la recompensa o el evento concluye sin recompensa', async ({ page }: { page: Page }) => {
+    const simSqliteKey = `sim_magikarp_discard_recovery_${Date.now()}`;
+    await page.addInitScript(() => {
+      (window as Window & { __GTS_SIMULATION__?: boolean }).__GTS_SIMULATION__ = true;
+    });
+
+    const p = new MagikarpContestSimulationWrapper(page, 'DiscardRecoveryUser', simSqliteKey);
+    await p.setup();
+    await waitForStoreReady(page);
+    await MagikarpContestSimulationWrapper.seedEventConfig(page);
+
+    // 1. Crear Magikarp e inscribirlo
+    const { validMonUid } = await p.setupContestScenario({ hp: 20, atk: 20, def: 20, spa: 20, spd: 20, spe: 20 });
+    await p.enrollMagikarp(validMonUid);
+
+    // Verificar que inicialmente tiene onEvent = true
+    const initialOnEvent = await page.evaluate(async (uid: string) => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      return useGameStore().getPokemonByUid(uid)?.onEvent;
+    }, validMonUid);
+    expect(initialOnEvent).toBe(true);
+
+    // 2. Ejecutar premiación automática
+    await p.triggerAutomatedAwarding();
+
+    // 3. Sincronizar eventos y verificar que hay premio pendiente
+    const syncRes = await p.syncEventsAndAwards();
+    expect(syncRes.pendingCount).toBe(1);
+
+    // 4. Descartar el premio
+    const discardRes = await page.evaluate(async () => {
+      const { useEventStore } = await import('../../../src/stores/events.ts');
+      const eventStore = useEventStore();
+      const award = eventStore.pendingAwards[0];
+      if (!award) return false;
+      return await eventStore.discardAward(award.id);
+    });
+    expect(discardRes).toBe(true);
+
+    // 5. Verificar que el Pokémon fue liberado (onEvent = false)
+    const finalOnEvent = await page.evaluate(async (uid: string) => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      return useGameStore().getPokemonByUid(uid)?.onEvent;
+    }, validMonUid);
+    expect(finalOnEvent).toBe(false);
+
+    p.finish('Discard and Recovery Simulation');
   });
 
   test('simula 25 torneos de Magikarp y verifica que la GUI y el Store limiten a los 20 más recientes', async ({ page }: { page: Page }) => {

@@ -178,9 +178,9 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ## 🐣 4. Daycare, Breeding & Egg Hatching Lifecycle
 
-### 4.1 Daycare Egg Incubation & Step Walking (`WalkedEggsPanel.vue` / `breeding.ts`)
+### 4.1 Daycare Egg Incubation & Step Walking (`HomeBreedingWidget.vue` / `breeding.ts`)
 
-- **Target Component**: [`WalkedEggsPanel.vue`](file:///home/franco/Trabajos/PokeBorrador/src/components/breeding/WalkedEggsPanel.vue), [`breeding.ts`](file:///home/franco/Trabajos/PokeBorrador/src/stores/breeding.ts), [`daycareMissions.ts`](file:///home/franco/Trabajos/PokeBorrador/src/stores/daycareMissions.ts)
+- **Target Component**: [`HomeBreedingWidget.vue`](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/components/home/HomeBreedingWidget.vue), [`breeding.ts`](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/stores/breeding.ts), [`daycareMissions.ts`](file:///c:/Users/franc/Trabajo/Juegos/Pokemon-Online/src/stores/daycareMissions.ts)
 - **Steps**:
   1. Deposit two compatible Pokémon in the Daycare (or use debug tools to generate an egg).
   2. Open the **Huevos / Crianza** (Breeding) panel.
@@ -310,8 +310,8 @@ useModalStore().open('DebugPokemonCreator');
 // Open Past Events History modal
 useModalStore().open('PastEventsList');
 
-// Open Daycare / Walked Eggs modal
-useModalStore().open('WalkedEggsPanel');
+// Open Daycare / Breeding modal
+useModalStore().open('Daycare');
 
 // Open Archaeology minigame
 useModalStore().open('Archaeology', { pokemon: { id: 'aerodactyl', name: 'Aerodactyl' }, rarity: 50 });

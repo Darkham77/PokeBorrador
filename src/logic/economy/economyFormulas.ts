@@ -6,6 +6,8 @@
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { getPokemonTier } from '../pokemon/tierEngine.ts';
 
+const SECONDS_TO_MS = 1000;
+
 /**
  * Multipliers based on Pokemon Tier (IV sum).
  * High-tier weapons of war cost more to maintain.
@@ -67,5 +69,13 @@ export function calculatePokemonCenterCooldown(trainerLevel: number): number {
   if (trainerLevel <= 1) return 0;
   // Potencia: (nivel - 1)^1.5 * 5.5 segundos
   return Math.floor(Math.pow(trainerLevel - 1, 1.5) * 5.5);
+}
+
+export function calculatePokemonCenterRemainingSeconds(lastHealTimestamp: number, trainerLevel: number): number {
+  const cooldownSecs = calculatePokemonCenterCooldown(trainerLevel);
+  if (cooldownSecs <= 0 || lastHealTimestamp <= 0) return 0;
+  const elapsedMs = Temporal.Now.instant().epochMilliseconds - lastHealTimestamp;
+  const remainingMs = (cooldownSecs * SECONDS_TO_MS) - elapsedMs;
+  return remainingMs > 0 ? Math.ceil(remainingMs / SECONDS_TO_MS) : 0;
 }
 

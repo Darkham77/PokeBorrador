@@ -11,15 +11,12 @@ export type { PokemonMoveId };
 
 export const POKEMON_STAT_KEYS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
 export type PokemonStatKey = (typeof POKEMON_STAT_KEYS)[number];
-// fallow-ignore-next-line unused-export
 export const POKEMON_STATUSES = ['par', 'brn', 'psn', 'slp', 'frz', 'tox'] as const; // lib-duplicate-ok
 export type PokemonStatus = (typeof POKEMON_STATUSES)[number] | '';
-// fallow-ignore-next-line unused-export
 export const POKERUS_STATUSES = ['uninfected', 'infected', 'cured'] as const;
 export type PokerusStatus = (typeof POKERUS_STATUSES)[number];
 export type PokemonGender = 'm' | 'f' | null;
 export type PokedexStatus = 'none' | 'seen' | 'caught';
-// fallow-ignore-next-line unused-export
 export const POKEMON_STORAGE_LOCATIONS = ['team', 'box'] as const;
 export type PokemonStorageLocation = (typeof POKEMON_STORAGE_LOCATIONS)[number];
 export type PokemonSelectionSource = 'team' | 'box' | 'market';
@@ -47,13 +44,11 @@ export function requirePokemonStatus(status: string): PokemonStatus {
   throw new Error(`Invalid Pokemon status: ${status}`);
 }
 
-// fallow-ignore-next-line unused-export
 export function isPokerusStatus(status: unknown): status is PokerusStatus {
   if (typeof status !== 'string') return false;
   return POKERUS_STATUSES.includes(status as PokerusStatus);
 }
 
-// fallow-ignore-next-line unused-export
 export function requirePokerusStatus(status: string): PokerusStatus {
   if (isPokerusStatus(status)) return status;
   throw new Error(`Invalid Pokerus status: ${status}`);
@@ -256,7 +251,6 @@ export interface Pokemon {
   trophies?: PokemonCompetitionTrophy[];
 }
 
-// fallow-ignore-next-line unused-export
 export const POKEMON_COMPETITION_RANKS = ['first', 'second', 'third'] as const;
 export type PokemonCompetitionRank = (typeof POKEMON_COMPETITION_RANKS)[number];
 

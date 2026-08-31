@@ -9,6 +9,7 @@ Frontend Developers / Systems Engineers.
 ## Local Contracts
 
 - Follow standard repository modularity guidelines.
+- **Hatch Animation Baby Species Parity Mandate**: When preparing the visual preview in `HatchAnimationModal.vue` (`prepareResult`), the component MUST resolve the species ID through `getEggSpecies(rawSpeciesId)` ensuring 1:1 visual parity with the baby stage, sprite, and stats created in the final save. Displaying evolved parent forms during the hatching sequence is strictly forbidden.
 
 ## Work Guidance
 

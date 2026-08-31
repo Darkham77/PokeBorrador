@@ -92,7 +92,7 @@
 Pokémon participating in active missions (`onMission: true`), competition events (`onEvent: true`), daycare (`inDaycare: true`), or passive defense (`onDefense: true`) are classified as busy (`isPokemonBusy`):
 1. **Visual Indicators**: Automatically badged with `mission` (`🧭 EN MISIÓN`) or `event` (`🏆 EN EVENTO`) via `getPokemonVisualBadges()`.
 2. **Action Locking**: Release, Black Market selling, P2P trade offers, and GTS publishing are strictly blocked across UI, Pinia stores, and database RPCs.
-3. **Lifecycle Rehabilitation**: Once the mission is claimed or the event concludes, all busy flags are reset to `false`, badges disappear, and all actions are re-enabled.
+3. **Lifecycle Rehabilitation & Orphan Event Liberation**: Once a mission is claimed, an event concludes, or event awards are claimed (`claimAward`) or discarded (`discardAward`), all busy flags MUST be reset to `false` via `healStuckEventPokemon`. If a Pokémon remains marked with `onEvent` from an archived, legacy, or concluded event, `fetchEvents` and `validateAll` automatically self-heal and liberate the Pokémon across Team, Box, and Daycare Warehouse.
 
 ## 13. Species Evolution Whitelist Boundary
 

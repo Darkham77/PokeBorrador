@@ -13,6 +13,7 @@ import {
   type Event as GameEvent 
 } from '@/logic/events/eventEngine'
 import { getServerTime } from '@/logic/utils/timeUtils'
+import { healStuckEventPokemon } from '@/logic/player/eventRecovery'
 import type { PendingAward, CompetitionEntry, PastEventHistoryItem } from '@/types/system/stores'
 import {
   fetchPastEvents as fetchPastEventsAction,
@@ -119,6 +120,13 @@ export const useEventStore = defineStore('events', () => {
       await fetchUserEntries()
       await checkPendingAwards(false)
       await fetchPastEvents()
+
+      // 5. Automatically liberate any Pokémon stuck in concluded/legacy events
+      const healed = healStuckEventPokemon(gameStore.state.team, gameStore.state.box, activeEvents.value, userEntries.value)
+      if (healed) {
+        logger.info('Events', 'Rehabilitated Pokémon stuck in concluded event(s).')
+        gameStore.scheduleSave()
+      }
     } catch (e) {
       logger.error('Events', `Error fetching events: ${(e as Error).message}`)
     } finally {

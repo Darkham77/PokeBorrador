@@ -20,8 +20,10 @@ import PokemonMovesTab from '@/components/pokemon-detail/PokemonMovesTab.vue'
 import PokemonStatusSection from '@/components/pokemon-detail/PokemonStatusSection.vue'
 import PokemonTrophiesTab from '@/components/pokemon-detail/PokemonTrophiesTab.vue'
 import PokemonActionFooter from '@/components/pokemon-detail/PokemonActionFooter.vue'
-import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon'
+import type { Pokemon, PokemonStorageLocation, PokemonCompetitionTrophy } from '@/types/pokemon/pokemon'
 import { createSpeciesDimensionTooltip } from '@/logic/pokemon/physicalDimensionsMath'
+import { useEventStore } from '@/stores/events'
+import { resolveTrophyDisplayName } from '@/logic/events/eventEngine'
 
 
 const DEFAULT_SPECIES_RANGE_VARIATION_FACTOR = 0.15;
@@ -52,6 +54,7 @@ const emit = defineEmits<{
 
 const uiStore = useUIStore()
 const gameStore = useGameStore()
+const eventStore = useEventStore()
 
 // --- COMPOSABLE LOGIC ---
 const {
@@ -204,6 +207,14 @@ const getTrophyRankClass = (rank?: string) => {
   if (rank === 'second') return 'rank-silver'
   if (rank === 'third') return 'rank-bronze'
   return 'rank-default'
+}
+
+const resolveTrophyEventName = (trophy: PokemonCompetitionTrophy) => {
+  return resolveTrophyDisplayName(
+    trophy,
+    eventStore.allEvents,
+    targetSpeciesId.value
+  )
 }
 </script>
 
@@ -434,7 +445,7 @@ const getTrophyRankClass = (rank?: string) => {
                 <span class="trophy-medal-symbol">{{ getTrophyMedal(trophy.rank) }}</span>
                 <div class="trophy-info-compact">
                   <div class="trophy-top-line">
-                    <span class="trophy-event-name pixelated">{{ trophy.eventName }}</span>
+                    <span class="trophy-event-name pixelated">{{ resolveTrophyEventName(trophy) }}</span>
                     <span class="trophy-rank-label pixelated">{{ getTrophyRankLabel(trophy.rank) }}</span>
                   </div>
                   <div class="trophy-bottom-line">
@@ -504,6 +515,7 @@ const getTrophyRankClass = (rank?: string) => {
         <PokemonTrophiesTab
           v-if="activeTab === 'trophies'"
           :trophies="targetPokemon?.trophies"
+          :species-id="targetSpeciesId"
         />
       </div>
 

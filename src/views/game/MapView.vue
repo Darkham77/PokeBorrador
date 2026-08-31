@@ -6,6 +6,7 @@ import { useMapStore } from '@/stores/map'
 import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
 import MapPokemonCenterBanner from '@/components/map/MapPokemonCenterBanner.vue'
+import HomeBreedingWidget from '@/components/home/HomeBreedingWidget.vue'
 import MapGrid from '@/components/map/MapGrid.vue'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
@@ -125,8 +126,11 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
 
 <template>
   <div class="map-view-container legacy-ui">
-    <!-- Centro Pokémon Banner -->
-    <MapPokemonCenterBanner />
+    <!-- Barra Superior: Centro Pokémon a la izquierda, Huevos a la derecha -->
+    <div class="map-top-bar">
+      <MapPokemonCenterBanner />
+      <HomeBreedingWidget :columns="3" />
+    </div>
 
     <!-- Localizaciones (Grilla de Mapas) -->
     <div class="legacy-divider">
@@ -156,6 +160,15 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
   padding: 0 0 40px;
   width: 100%;
   box-sizing: border-box;
+}
+
+.map-top-bar {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 16px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 
 .legacy-divider {

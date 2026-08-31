@@ -147,5 +147,59 @@ describe('Breeding Engine', () => {
       expect(getEggSpecies('charizard')).toBe('charmander')
       expect(getEggSpecies('blastoise')).toBe('squirtle')
     })
+
+    it('should ALWAYS resolve to the baby Pokemon for any species in a line with baby form', () => {
+      // Budew line
+      expect(getEggSpecies('roselia')).toBe('budew')
+      expect(getEggSpecies('roserade')).toBe('budew')
+      expect(getEggSpecies('budew')).toBe('budew')
+
+      // Azurill line
+      expect(getEggSpecies('marill')).toBe('azurill')
+      expect(getEggSpecies('azumarill')).toBe('azurill')
+      expect(getEggSpecies('azurill')).toBe('azurill')
+
+      // Happiny line
+      expect(getEggSpecies('chansey')).toBe('happiny')
+      expect(getEggSpecies('blissey')).toBe('happiny')
+
+      // Munchlax line
+      expect(getEggSpecies('snorlax')).toBe('munchlax')
+
+      // Pichu line
+      expect(getEggSpecies('pikachu')).toBe('pichu')
+      expect(getEggSpecies('raichu')).toBe('pichu')
+
+      // Cleffa line
+      expect(getEggSpecies('clefairy')).toBe('cleffa')
+      expect(getEggSpecies('clefable')).toBe('cleffa')
+
+      // Igglybuff line
+      expect(getEggSpecies('jigglypuff')).toBe('igglybuff')
+      expect(getEggSpecies('wigglytuff')).toBe('igglybuff')
+
+      // Elekid & Magby line
+      expect(getEggSpecies('electabuzz')).toBe('elekid')
+      expect(getEggSpecies('electivire')).toBe('elekid')
+      expect(getEggSpecies('magmar')).toBe('magby')
+      expect(getEggSpecies('magmortar')).toBe('magby')
+
+      // Tyrogue line
+      expect(getEggSpecies('hitmonlee')).toBe('tyrogue')
+      expect(getEggSpecies('hitmonchan')).toBe('tyrogue')
+      expect(getEggSpecies('hitmontop')).toBe('tyrogue')
+
+      // Other babies
+      expect(getEggSpecies('jynx')).toBe('smoochum')
+      expect(getEggSpecies('sudowoodo')).toBe('bonsly')
+      expect(getEggSpecies('chimecho')).toBe('chingling')
+      expect(getEggSpecies('mantine')).toBe('mantyke')
+      expect(getEggSpecies('lucario')).toBe('riolu')
+      expect(getEggSpecies('wobbuffet')).toBe('wynaut')
+      expect(getEggSpecies('mrmime')).toBe('mimejr')
+      expect(getEggSpecies('togetic')).toBe('togepi')
+      expect(getEggSpecies('togekiss')).toBe('togepi')
+      expect(getEggSpecies('toxtricity')).toBe('toxel')
+    })
   })
 })

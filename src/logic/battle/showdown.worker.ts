@@ -448,7 +448,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
       }
 
       default:
-        console.warn(`[Showdown Worker] Evento desconocido: ${String(type).slice(0, 32)}`);
+        console.warn('[Showdown Worker] Evento desconocido recibido en worker.');
         break;
     }
   } catch (error) {

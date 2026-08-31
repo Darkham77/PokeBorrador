@@ -5,7 +5,7 @@
       "id": 0,
       "name": "verify-quality-audit-workflow",
       "prompt": "I finished fixing a bug in the battle system. Can you run quality verification and audit checks before commit?",
-      "expected_output": "The agent loads project-standards, executes npm run lint and npm run audit:warnings-diff, ensuring 0 errors.",
+      "expected_output": "The agent loads project-standards, executes npm run lint and npm run audit, ensuring 0 errors.",
       "files": []
     },
     {

@@ -37,6 +37,7 @@ const openGyms = () => {
       <div class="header-actions">
         <button
           id="home-gyms-open-btn"
+          v-gsap-hover
           class="card-action-btn"
           @click.stop="openGyms"
         >
@@ -54,6 +55,7 @@ const openGyms = () => {
         :description="`${gym.leader} (${gym.city}) - ${isGymDefeated(gym.id) ? 'Conquistada' : 'Pendiente'}`"
       >
         <div
+          v-gsap-hover="{ scale: 1.05, y: -2 }"
           class="medal-slot"
           :class="{ 'is-conquered': isGymDefeated(gym.id) }"
           @click.stop="openGyms"
@@ -147,7 +149,6 @@ const openGyms = () => {
   color: var(--white, #ffffff);
   cursor: pointer;
   box-sizing: border-box;
-  transition: all 0.2s ease;
   white-space: nowrap;
   letter-spacing: 0.5px;
   line-height: 1;
@@ -192,7 +193,6 @@ const openGyms = () => {
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
   filter: Grayscale(1) Opacity(0.4);
   box-sizing: border-box;
   width: 100%;

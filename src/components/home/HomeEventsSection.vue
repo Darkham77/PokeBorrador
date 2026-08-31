@@ -176,6 +176,7 @@ onUnmounted(() => {
         >
           <PVTooltip title="Anterior">
             <button
+              v-gsap-hover
               class="carousel-nav-btn"
               :disabled="carouselIndex === 0"
               aria-label="Anterior"
@@ -187,6 +188,7 @@ onUnmounted(() => {
           <span class="carousel-page-indicator">{{ currentPage + 1 }} / {{ totalPages }}</span>
           <PVTooltip title="Siguiente">
             <button
+              v-gsap-hover
               class="carousel-nav-btn"
               :disabled="carouselIndex + visibleSlots >= activeEvents.length"
               aria-label="Siguiente"
@@ -199,6 +201,7 @@ onUnmounted(() => {
 
         <button
           id="home-events-refresh-btn"
+          v-gsap-hover
           class="card-action-btn"
           :disabled="isLoading"
           @click.stop="eventStore.fetchEvents()"
@@ -255,6 +258,7 @@ onUnmounted(() => {
         <button
           v-for="page in totalPages"
           :key="page"
+          v-gsap-hover="{ scale: 1.3, y: 0 }"
           class="carousel-dot"
           :class="{ active: currentPage === page - 1 }"
           @click.stop="goToSlide(page - 1)"
@@ -267,6 +271,7 @@ onUnmounted(() => {
       <!-- UPCOMING 7-DAY SCHEDULE -->
       <div class="accordion-panel">
         <button
+          v-gsap-hover="{ scale: 1.01, y: -1 }"
           class="accordion-toggle"
           @click="showSchedule = !showSchedule"
         >
@@ -287,6 +292,7 @@ onUnmounted(() => {
       <!-- PAST CONCLUDED EVENTS -->
       <div class="accordion-panel">
         <button
+          v-gsap-hover="{ scale: 1.01, y: -1 }"
           class="accordion-toggle"
           @click="showHistory = !showHistory"
         >
@@ -383,7 +389,6 @@ onUnmounted(() => {
     cursor: pointer;
     padding: 0;
     line-height: 1;
-    transition: all 0.2s ease;
 
     &:hover:not(:disabled) {
       background: Rgba(250, 204, 21, 0.2);
@@ -423,7 +428,6 @@ onUnmounted(() => {
   justify-content: center;
   gap: 6px;
   line-height: 1;
-  transition: all 0.2s ease;
   white-space: nowrap;
   letter-spacing: 0.5px;
   box-sizing: border-box;
@@ -557,7 +561,6 @@ onUnmounted(() => {
     background: Rgba(255, 255, 255, 0.2);
     border: none;
     cursor: pointer;
-    transition: all 0.2s ease;
     padding: 0;
 
     &.active {
@@ -610,7 +613,6 @@ onUnmounted(() => {
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
 
   &:hover {
     background: Rgba(255, 255, 255, 0.04);

@@ -4,18 +4,18 @@ Commit messages MUST NOT be terse. They MUST provide a clear, technical chronicl
 
 ## Source of Truth per Phase
 
-- **Phase 0/1 (The Snapshot)**: The source of truth is a synthesis of:
+- **Phase 1 (The Snapshot)**: The source of truth is a synthesis of:
   1. The actual **`git diff` of all modified files** (staged and unstaged workspace changes).
   2. All **session artifacts** stored in `<appDataDir>/brain/<conversation-id>/` (`implementation_plan.md`, `task.md`, `walkthrough.md`, custom skill artifacts, scratch notes, and plan logs).
   You MUST cross-reference the code diff with the functional intent and feature/fix context from these artifacts to produce a precise, high-rigor technical chronicle. Do not rely on unverified memory alone.
-- **Phase 9 (The Optimization Log)**: Use the current **task** and `walkthrough.md` as the primary sources. A commit message that ignores the granular steps recorded in these artifacts is considered a failure.
+- **Phase 4 (The Optimization / Docs Log)**: Use the current `task.md` and `walkthrough.md` as the primary sources. A commit message that ignores the granular steps recorded in these artifacts is considered a failure.
 
 ## Dual-Commit Strategy
 
 | Commit | Phase | Purpose | Tone |
 |:---|:---|:---|:---|
-| **The Snapshot** | Phase 0 | Capture creative/logical work | Elegant Protocol (Header + Body with bullets) |
-| **The Optimization Log** | Phase 9 | Document technical cleanup | Concise — only audit repairs, linting fixes, SASS repairs |
+| **The Snapshot** | Phase 1 | Capture creative/logical work & unit tests | Elegant Protocol (Header + Body with bullets) |
+| **The Optimization Log** | Phase 4 | Document technical cleanup & approved docs | Concise — only audit repairs, linting fixes, DOX updates |
 
 ## Structure (The Elegant Protocol)
 

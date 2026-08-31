@@ -1,4 +1,5 @@
 import { computed } from 'vue'
+import { TYPE_TRANSLATIONS, type PokemonType } from '@/data/battle/types'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY } from '@/logic/weather/weatherRegistry'
 import { ACTIVE_GENERATION } from '@/data/system/constants'
 import { getWeatherCombatDescription } from '@/logic/weather/weatherGenerationProvider'
@@ -68,35 +69,21 @@ export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
     }
   })
 
-  const SPANISH_TYPE_MAP: Record<string, string> = {
-    'fuego': 'fire',
-    'agua': 'water',
-    'planta': 'grass',
-    'eléctrico': 'electric',
-    'hielo': 'ice',
-    'tierra': 'ground',
-    'roca': 'rock',
-    'volador': 'flying',
-    'bicho': 'bug',
-    'fantasma': 'ghost',
-    'siniestro': 'dark',
-    'dragón': 'dragon',
-    'acero': 'steel',
-    'hada': 'fairy',
-    'psíquico': 'psychic',
-    'veneno': 'poison',
-    'normal': 'normal',
-    'lucha': 'fighting'
-  }
+  const SPANISH_TYPE_ENTRIES = Object.entries(TYPE_TRANSLATIONS) as [PokemonType, string][]
+  const SPANISH_TYPE_MAP: Record<string, PokemonType> = Object.fromEntries([
+    ...SPANISH_TYPE_ENTRIES.map(([eng, esp]) => [esp.toLowerCase(), eng]), // text-ok
+    ['electrico', 'electric'],
+    ['dragon', 'dragon'],
+    ['psiquico', 'psychic']
+  ])
 
-  const SPANISH_TYPES_REGEX = /\b(fuego|agua|planta|eléctrico|electrico|hielo|roca|tierra|volador|bicho|acero|fantasma|dragón|dragon|siniestro|hada|psíquico|psiquico|veneno|normal|lucha)\b/gi
+  const SPANISH_TYPES_REGEX = new RegExp(`\\b(${Object.keys(SPANISH_TYPE_MAP).join('|')})\\b`, 'gi')
 
   const parsedDescriptionLines = computed(() => {
     const desc = weatherDetails.value?.description || ''
     if (!desc) return []
 
     const sentences = desc.split(/\n|\.\s+/).map(s => s.trim()).filter(Boolean)
-    // eslint-disable-next-line security/detect-non-literal-regexp
     const regex = new RegExp(SPANISH_TYPES_REGEX.source, 'gi')
     return sentences.map(sentence => {
       // Sanitizar indicadores de viñeta manual si existen (por ej. ▲, ▼, •)

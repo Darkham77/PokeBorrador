@@ -4,10 +4,12 @@ import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle/battle'
 import { calculatePoliceBonusLevel } from '@/logic/player/classMath'
+import { useGsapTransition } from '@/composables/ui/useGsapTransition'
 
 const classStore = usePlayerClassStore()
 const uiStore = useUIStore()
 const battleStore = useBattleStore()
+const { beforeEnter, enter, leave } = useGsapTransition({ type: 'slide-right', xOffset: 30 })
 
 const isPerformanceMode = computed(() => {
   return uiStore.isAnyBlockingModalOpen || battleStore.isBattleActive || uiStore.isDebugPerformanceMode
@@ -32,7 +34,12 @@ const percentLabelText = computed(() => {
 </script>
 
 <template>
-  <Transition name="slide-right">
+  <Transition
+    :css="false"
+    @before-enter="beforeEnter"
+    @enter="enter"
+    @leave="leave"
+  >
     <div
       v-if="isVisible"
       id="criminality-bar"

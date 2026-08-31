@@ -18,8 +18,8 @@ Frontend UI Developers / UI Designers.
 - **Modal Overlays & Close Buttons Standardization**: Debug and admin panels MUST use standard modal close button classes (`.modal-close-btn`), standard modal step z-index variables (`var(--z-modal-step)` / `var(--z-modal)`), and tokenized SCSS colors to ensure consistent layering and responsive click targets across all viewports.
 - Use `@include pixelated` for retro assets (sprites, badges) to keep them sharp.
 - Set container `image-rendering: pixelated` when rendering canvas or pixelated backgrounds.
-- Prevent font layout clipping on pixelated fonts (`Pokemon FireRed LeafGreen`) by setting `line-height` to at least `1.5` or `1.6` and adding top padding.
-- Implement micro-animations and state hover transitions exclusively using GSAP timelines/tweens in `@mouseenter` and `@mouseleave` handlers. CSS `transition` and `@keyframes` are forbidden for dynamic state transitions.
+- Implement micro-animations and state hover transitions exclusively using GSAP timelines/tweens, `v-gsap-hover`, `useGsapTransition`, or `@mouseenter`/`@mouseleave` handlers. CSS `transition` and `@keyframes` are forbidden for dynamic state transitions. When auditors flag non-compliant CSS transitions/keyframes, NEVER delete them without replacement; ALWAYS migrate them to GSAP equivalents preserving 1:1 visual fluidity and feel.
+- **GSAP Image & Banner Hover Zoom**: For cards or widgets containing artwork banners (`.banner-box img`, `.pokecenter-banner .banner-bg`), the inner image zoom must be animated exclusively through GSAP (`gsap.to(img, { scale: 1.04, duration: 0.35, ease: 'power2.out' })` and `clearProps: 'transform,scale'`) within `@mouseenter`/`@mouseleave` handlers or GSAP directives. Leaving static CSS `:hover` scale rules without transitions is strictly prohibited as it triggers abrupt visual snapping.
 - Teleported tooltips must scale the inner wrapper, not the parent, to avoid breaking absolute calculations.
 - **Overlapping Sprite Stacking (Cards Deck)**: In reward grids or sprite lists, use negative margins (e.g. `margin-left: -16px` on sibling `.item-sprite` elements) to create an overlapping deck. Animate on hover via GSAP to scale (`scale(1.2)`), lift (`translateY(-4px)`), and raise the z-index (`z-index: 10`).
 - **Retro Font Layout Clipping Prevention**: For text using `Pokemon FireRed LeafGreen` in containers with `overflow: hidden`, set `line-height` to `1.5` or `1.6` and add top padding. For `<input>` elements specifically, use `font-size: 12px` + `line-height: 1.5` + symmetric `padding: 10px 14px` to prevent glyph top-clipping.
@@ -52,7 +52,7 @@ Frontend UI Developers / UI Designers.
 
 ## Verification
 
-- Run `npm run audit:warnings-diff` to verify component type safety, syntax, and project rules.
+- Run `npm run audit` to verify component type safety, syntax, and project rules.
 - Visual inspection in browser across different resolutions (using mobile viewport targets if necessary).
 
 ## Child DOX Index

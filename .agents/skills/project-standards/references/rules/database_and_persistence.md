@@ -118,3 +118,9 @@
 - **Absolute Segregation Mandate**: Test runners, fuzzer suites, Playwright E2E scenarios, and GTS simulations MUST NEVER write, export, read, or overwrite the real user storage database (`pokevicio_sqlite_v2`).
 - **Dedicated Simulation Directory & Key Prefix**: All ephemeral test database snapshots MUST use keys starting with the `sim_` prefix and be saved strictly under `database/temp/simulations/sim_<key>.db`. The Vite dev server bridge MUST reject non-simulation keys and MUST NEVER fall back to user database files or default shared paths.
 - **Dedicated Manual Backup Import File**: The local import pipeline (`npm run database:local-import`) MUST exclusively generate `database/temp/manual_user_backup_import.db`. The client SQLite engine (`sqliteEngine.ts`) in standard browser sessions MUST ONLY check `/api/dev-manual-import-*` and ignore all simulation bridge endpoints.
+
+## 18. Separation of Concerns: SQL Migration Audits vs. Historical Save Validation
+
+- **Fast Static SQL Auditing (`npm run audit`)**: The persistence auditor (`scripts/auditors/persistence/validate_sql_migrations.ts`) is strictly focused on lightweight static validation: SQLite dialect translation syntax, monotonic timestamp progression, and `db_version` synchronization in sub-second times.
+- **Heavy Fixture & Save Data Integrity Testing (`npm run test`)**: End-to-end replay of all historical migrations over real player save fixtures (`server_franco_backup_fixture.json`), along with deep validation of Pokémon species, abilities, natures, held items, inventory catalogs, and Valibot schema conformance, MUST reside exclusively in automated Vitest integration tests (`tests/node/system/backup_migration_real.test.ts`) running in parallel worker pools.
+

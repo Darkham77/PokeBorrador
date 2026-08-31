@@ -312,21 +312,40 @@ const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
 const onCardHover = (event: MouseEvent, isEntering: boolean) => {
   const card = event.currentTarget as HTMLElement
   if (!card) return
+  const bannerImg = card.querySelector('.banner-box img') as HTMLElement | null
+
   if (isEntering) {
     gsap.to(card, {
-      y: -3,
-      duration: 0.2,
+      y: -4,
+      duration: 0.25,
       ease: 'power2.out',
       overwrite: 'auto'
     })
+    if (bannerImg) {
+      gsap.to(bannerImg, {
+        scale: 1.04,
+        duration: 0.35,
+        ease: 'power2.out',
+        overwrite: 'auto'
+      })
+    }
   } else {
     gsap.to(card, {
       y: 0,
-      duration: 0.2,
+      duration: 0.25,
       ease: 'power2.out',
       overwrite: 'auto',
       clearProps: 'transform'
     })
+    if (bannerImg) {
+      gsap.to(bannerImg, {
+        scale: 1,
+        duration: 0.3,
+        ease: 'power2.out',
+        overwrite: 'auto',
+        clearProps: 'transform,scale'
+      })
+    }
   }
 }
 

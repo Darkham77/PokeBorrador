@@ -9,6 +9,7 @@ import { getItemName } from '@/data/inventory/items'
 import { makePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { isAwardClaimable } from '@/logic/events/eventValidators'
+import { healStuckEventPokemon } from '@/logic/player/eventRecovery'
 import type { useGameStore } from '@/stores/game.ts'
 import type { useAuthStore } from '@/stores/auth.ts'
 import type { useUIStore } from '@/stores/ui.ts'
@@ -37,10 +38,12 @@ function grantTrophyToPokemon(
     if (!targetPoke.trophies) {
       targetPoke.trophies = []
     }
-    const alreadyExists = targetPoke.trophies.some(
+    const existingIndex = targetPoke.trophies.findIndex(
       (t: PokemonCompetitionTrophy) => t.eventId === trophy.eventId && t.categoryId === trophy.categoryId && t.awardedAt === trophy.awardedAt
     )
-    if (!alreadyExists) {
+    if (existingIndex >= 0) {
+      targetPoke.trophies[existingIndex] = trophy
+    } else {
       targetPoke.trophies.push(trophy)
       if (!gameStore.state.stats) {
         gameStore.state.stats = {}
@@ -216,15 +219,16 @@ export async function fetchPastEvents(ctx: EventAwardsContext) {
         parsedWinners = res.winners as PastCompetitionWinner[]
       }
 
-      if (eventCfg) {
-        let eventDate: Temporal.ZonedDateTime = getGMT3Date()
-        if (res.ended_at) {
-          try {
-            eventDate = Temporal.Instant.from(res.ended_at).toZonedDateTimeISO(GAME_TIMEZONE)
-          } catch {
-            eventDate = getGMT3Date()
-          }
+      let eventDate: Temporal.ZonedDateTime = getGMT3Date()
+      if (res.ended_at) {
+        try {
+          eventDate = Temporal.Instant.from(res.ended_at).toZonedDateTimeISO(GAME_TIMEZONE)
+        } catch {
+          eventDate = getGMT3Date()
         }
+      }
+
+      if (eventCfg) {
         eventName = getEventDisplayName(eventCfg, eventDate)
       }
 
@@ -245,9 +249,13 @@ export async function fetchPastEvents(ctx: EventAwardsContext) {
             const matchingEntry = userEntries.value[`${res.event_id}:${catId}`] || userEntries.value[res.event_id]
             const pokeUid = matchingEntry?.pokemon_uid
             if (pokeUid) {
+              const targetPoke = gameStore.getPokemonByUid(pokeUid)
+              const resolvedEventName = eventCfg
+                ? getEventDisplayName(eventCfg, targetPoke ? targetPoke.name : eventDate)
+                : eventName
               grantTrophyToPokemon(ctx, {
                 eventId: res.event_id,
-                eventName,
+                eventName: resolvedEventName,
                 categoryId: catId,
                 categoryName: winner.category_name || (catId.startsWith('weight') ? 'Masa y Peso' : catId.startsWith('height') ? 'Envergadura y Altura' : 'Genética Superior (IVs)'),
                 rank: (winner.rank as CompetitionRankKey) || 'first',
@@ -279,13 +287,14 @@ export async function fetchPastEvents(ctx: EventAwardsContext) {
     }
 
     pastEvents.value = historyList
+    healStuckEventPokemon(gameStore.state.team, gameStore.state.box, allEvents.value, userEntries.value)
   } catch (e) {
     logger.warn('Events', `Error fetching past competition results: ${(e as Error).message}`)
   }
 }
 
 export async function claimAward(ctx: EventAwardsContext, awardId: string): Promise<string | null> {
-  const { gameStore, pendingAwards, pastEvents, allEvents, uiStore } = ctx
+  const { gameStore, pendingAwards, pastEvents, allEvents, userEntries, uiStore } = ctx
   if (!gameStore.db) return null
   const targetAward = pendingAwards.value.find(a => a.id === awardId) || pastEvents.value.find(pe => pe.myAward?.id === awardId)?.myAward
 
@@ -312,6 +321,7 @@ export async function claimAward(ctx: EventAwardsContext, awardId: string): Prom
         return pe
       })
       applyAwardPrize(ctx, claimResult?.prize || targetAward?.prize)
+      healStuckEventPokemon(gameStore.state?.team, gameStore.state?.box, allEvents.value, userEntries.value)
       return typeof claimResult?.prize === 'string' ? claimResult.prize : 'claimed'
     }
 
@@ -333,6 +343,7 @@ export async function claimAward(ctx: EventAwardsContext, awardId: string): Prom
         return pe
       })
       applyAwardPrize(ctx, targetAward?.prize)
+      healStuckEventPokemon(gameStore.state?.team, gameStore.state?.box, allEvents.value, userEntries.value)
       return 'claimed'
     }
   } catch (e) {
@@ -342,7 +353,7 @@ export async function claimAward(ctx: EventAwardsContext, awardId: string): Prom
 }
 
 export async function discardAward(ctx: EventAwardsContext, awardId: string): Promise<boolean> {
-  const { gameStore, pendingAwards, pastEvents, uiStore } = ctx
+  const { gameStore, pendingAwards, pastEvents, allEvents, userEntries, uiStore } = ctx
   if (!gameStore.db) return false
 
   try {
@@ -362,6 +373,10 @@ export async function discardAward(ctx: EventAwardsContext, awardId: string): Pr
         }
         return pe
       })
+      healStuckEventPokemon(gameStore.state?.team, gameStore.state?.box, allEvents.value, userEntries.value)
+      if (typeof gameStore.scheduleSave === 'function') {
+        gameStore.scheduleSave()
+      }
       uiStore.notify('Recompensa descartada correctamente.', '🗑️')
       return true
     } else {

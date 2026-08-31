@@ -173,7 +173,7 @@ export function auditEmojiTypography(): EmojiAuditResult {
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(import.meta.filename)) {
+if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
   const validator = setupValidation({
     title: 'EMOJI TYPOGRAPHY & VERTICAL CENTERING AUDITOR',
     family: 'architecture',

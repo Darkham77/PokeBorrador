@@ -120,7 +120,7 @@ Whenever ANY bug, test failure, or simulation desync occurs, the agent MUST foll
 ## 11. Anti-Hasty-Patch & Pre-Commit Audit
 
 - **Absolute Prohibition on Rushed Simulation Patches & Fallbacks**: It is STRICTLY FORBIDDEN to apply hasty patches, ad-hoc fallback values, synthetic choice overrides (e.g. forcing `'move 1'`, swallowing missing data), or silent catch blocks (`.catch(() => true)`). Any deviation of state, move availability, or choice rejection MUST result in a clear, immediate test/runtime failure (`throw new Error(...)`) to expose parity bugs at the source.
-- **Pre-Commit Audit**: Running `npm run audit:warnings-diff` is mandatory before any commit operation to guarantee 0 errors and 0 new warnings compared to `origin/main`.
+- **Pre-Commit Audit**: Running `npm run audit` is mandatory to guarantee 0 errors across the codebase before committing. (The diff comparator `npm run audit:warnings-diff` is strictly reserved for the safe-commit pipeline).
 
 ## 12. Absolute Pokémon Legality & Inviolable PP Conservation Mandate
 

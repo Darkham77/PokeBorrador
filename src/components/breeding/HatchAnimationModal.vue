@@ -117,16 +117,43 @@ const prepareResult = async () => {
   
   if (props.egg) {
     const { makePokemon, recalcPokemonStats } = await import('@/logic/pokemon/pokemonFactory')
-    const p = makePokemon(String(props.egg.pokemonId || props.egg.id || ''), 1, {
-      isShiny: !!props.egg.isShiny,
-      isGuardian: !!props.egg.isGuardian,
-      nature: props.egg.nature
+    const { getEggSpecies } = await import('@/logic/breeding/breedingEngine')
+    const rawSpeciesId = String(props.egg.pokemonId || props.egg.id || '')
+    const speciesId = getEggSpecies(rawSpeciesId)
+    const isDebugMode = typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'))
+    const p = makePokemon(speciesId, 1, {
+      isShiny: Boolean(props.egg.isShiny),
+      isGuardian: Boolean(props.egg.isGuardian),
+      nature: props.egg.nature,
+      abilitySlot: props.egg.abilitySlot,
+      gender: props.egg.gender,
+      obtainedMethod: 'egg',
+      isNpcEgg: props.egg.isNpc,
+      bypassWhitelist: isDebugMode
     })
     if (p) {
+      if (props.egg.isAncestral) {
+        p.isAncestral = true
+        p.maxVigor = 0
+        p.vigor = 0
+      }
       if (props.egg.ivs) {
         p.ivs = { ...p.ivs, ...props.egg.ivs }
       }
-      recalcPokemonStats(p)
+      if (props.egg.movesAtBirth && props.egg.movesAtBirth.length > 0) {
+        const { pokemonDataProvider } = await import('@/logic/providers/pokemonDataProvider')
+        p.moves = props.egg.movesAtBirth.map(mId => {
+          const mData = pokemonDataProvider.getMoveData(mId)
+          return {
+            id: mId,
+            name: mData.name,
+            pp: mData.pp,
+            maxPP: mData.pp
+          }
+        })
+      }
+      recalcPokemonStats(p, isDebugMode)
+      p.hp = p.maxHp
       resultPokemon.value = p
     }
   }

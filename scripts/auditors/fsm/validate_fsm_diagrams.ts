@@ -60,14 +60,14 @@ function parseJsFsm(fsmCode: string) {
   }
 
   const jsTransitions: { from: string; to: string }[] = []; 
-  const vtBlock = fsmCode.match(/const validTransitions\s*:\s*Record<string,\s*string\[\]>\s*=\s*\{([\s\S]*?)\}/);
+  const vtBlock = fsmCode.match(/const validTransitions\s*:\s*Record<string,\s*(?:string\[\]|ReadonlySet<string>|Set<string>)>?\s*=\s*\{([\s\S]*?)\};/);
   if (vtBlock?.[1]) {
-    const rowRx = /\[BATTLE_STATES\.([A-Z0-9_]+)\]\s*:\s*\[([^\]]+)\]/g;
+    const rowRx = /\[(?:BATTLE_STATES|BATTLE_SUBSTATES)\.([A-Z0-9_]+)\]\s*:\s*(?:new Set\()?\[([^\]]+)\]\)?/g;
     let row: RegExpExecArray | null;
     while ((row = rowRx.exec(vtBlock[1])) !== null) {
       if (row?.[1] && row[2]) {
         const from = row[1];
-        const toAll = Array.from(row[2].matchAll(/BATTLE_STATES\.([A-Z0-9_]+)/g)).map(x => x[1]!);
+        const toAll = Array.from(row[2].matchAll(/(?:BATTLE_STATES|BATTLE_SUBSTATES)\.([A-Z0-9_]+)/g)).map(x => x[1]!);
         toAll.forEach(to => jsTransitions.push({ from, to }));
       }
     }

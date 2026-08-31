@@ -6,6 +6,7 @@
 > - Status Conditions: [`../battle/status_ailments_manual.md`](../battle/status_ailments_manual.md)
 > - Capture Mechanics: [`../systems/capturing_manual.md`](../systems/capturing_manual.md)
 > - EV & Training Engine: [`../systems/ev_mechanics_manual.md`](../systems/ev_mechanics_manual.md)
+> - Obedience & Level Caps: [`../systems/obedience_mechanics_manual.md`](../systems/obedience_mechanics_manual.md)
 
 ---
 
@@ -303,5 +304,35 @@ $$\text{Bail} = \lfloor \text{classLevel}^2 \times 80 \times \left(\frac{\text{c
 
 ### 5. Police Encounter Probability (`calculatePoliceEncounterChance`)
 $$\text{tChance} = \left(\frac{\text{criminality}}{10}\right) \times \text{trainerBonus}$$
+
+---
+
+## 13. 👑 Pokémon Obedience & Level Cap Formulas
+
+> 📖 **Complete SSoT Manual**: Consult [`../systems/obedience_mechanics_manual.md`](../systems/obedience_mechanics_manual.md) for full generational tables, anti-cheat flags, behavioral states, and dialogue tables.
+
+Obedience checks occur when a Pokémon's evaluation level $L$ (Met Level $L_{\text{met}}$ in Gen IX/Modern, current level for outsider Pokémon) exceeds the trainer's current obedience cap $C$ ($L > C$).
+
+### 1. Primary Obedience Probability ($P(\text{obey})$)
+
+$$\text{Gen I – IV Classic Formula}: P(\text{obey}) = \frac{C}{L + C}$$
+
+$$\text{Gen V – IX Modern Quadratic Formula}: P(\text{obey}) \approx \left(\frac{C}{L + C}\right)^2$$
+
+- **Deterministic RNG Check (Gen V+)**:
+  1. Roll $R_1 \in [0, 255]$. Pass if $\lfloor (L + C) \times R_1 / 256 \rfloor < C$.
+  2. Roll $R_2 \in [0, 255]$. Pass if $\lfloor (L + C) \times R_2 / 256 \rfloor < C$.
+  3. If both pass $\implies$ Pokémon obeys.
+
+### 2. Disobedience Failure Outcome Distribution
+
+Let $\Delta = L - C$ (level differential) and $R_3 \in [0, 255]$:
+
+$$\text{Outcome}(R_3) = \begin{cases} \text{Sleep Induction} & \text{if } R_3 < \Delta \text{ (unless immune via Vital Spirit, Insomnia, Terrain)} \\ \text{Confusion Self-Damage} & \text{if } \Delta \le R_3 < 2\Delta \\ \text{Passive Inaction (Loafing)} & \text{if } R_3 \ge 2\Delta \end{cases}$$
+
+### 3. Confusion Self-Damage Formula
+
+$$\text{Damage}_{\text{Confusion}} = \left\lfloor \left( \left\lfloor \frac{\left\lfloor \frac{2 \cdot \text{Level}}{5} \right\rfloor + 2}{50} \cdot 40 \cdot \frac{\text{Atk}_{\text{stat}}}{\text{Def}_{\text{stat}}} \right\rfloor + 2 \right) \cdot \text{Random}(0.85, 1.00) \right\rfloor$$
+
 
 

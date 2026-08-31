@@ -40,7 +40,7 @@ async function main() {
 
   for (const item of db.SHOP_ITEMS) {
     const tier = item.craftingTier ?? 3;
-    const tierFolder = `crafting/tier${tier}`;
+    const tierFolder = path.posix.join('crafting', `tier${tier}`);
     const targetRawPath = path.join(RAW_BASE, tierFolder, `${item.id}.png`);
     const targetWebpPath = path.join(PUBLIC_BASE, tierFolder, `${item.id}.webp`);
 

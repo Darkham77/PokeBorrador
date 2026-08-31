@@ -182,7 +182,8 @@ El proyecto cuenta con un ecosistema unificado de control de calidad, auditoría
 #### 🔄 Flujo de Verificación Recomendado
 
 - **Durante el Desarrollo Activo**: Ejecuta `npm run lint` (~3-5 segundos) para comprobaciones rápidas de sintaxis, tipos TypeScript (`vue-tsc`), tipos de dominio, estructuras $O(1)$, estilos y ESLint con `.eslintcache`.
-- **Antes de Realizar un Commit**: Ejecuta `npm run audit:warnings-diff` (*Single Source of Truth*) para verificar de forma exhaustiva 0 errores en todo el proyecto y 0 advertencias nuevas contra `origin/main`.
+- **Auditoría Global (Single Source of Truth)**: Ejecuta `npm run audit` para verificar de forma exhaustiva 0 errores en todo el proyecto.
+- **Workflow de Safe-Commit**: El pipeline de safe-commit utiliza internamente `npm run audit:warnings-diff` para comparar advertencias nuevas contra `origin/main`.
 
 | Comando | Descripción |
 | :-- | :-- |
@@ -190,7 +191,7 @@ El proyecto cuenta con un ecosistema unificado de control de calidad, auditoría
 | `npm run lint:fix` | **Auto-Fix de Linter**: Aplica correcciones automáticas de formato y sintaxis con ESLint y Markdownlint. |
 | `npm run lint:summary` | **Resumen de Linter**: Muestra un resumen estructurado con el recuento de advertencias y errores en consola. |
 | `npm run audit` | **Auditoría Global Unificada**: Ejecuta el 100% de los sub-auditores dinámicamente, mostrando una tabla Box-Drawing en consola y guardando el reporte estructurado JSON en `scratch/audits/latest_audit.json`. Soporta `rule=<regla>` para ejecución selectiva ultrarrápida (ej. `npm run audit rule=DOX,z-index`, `npm run audit rule=dupes`). |
-| `npm run audit:warnings-diff` | **Pre-Commit Gatekeeper**: Compara cambios contra `origin/main` exigiendo 0 errores en el repositorio y 0 advertencias nuevas en archivos modificados. |
+| `npm run audit:warnings-diff` | **Safe-Commit Diff Gatekeeper**: Compara cambios contra `origin/main` en el flujo de safe-commit exigiendo 0 errores en el repositorio y 0 advertencias nuevas en archivos modificados. |
 | `npm run audit:changed` | **Auditoría de Archivos Modificados**: Ejecuta las suites de auditoría exclusivamente sobre los archivos modificados desde `main`. |
 | `npm run audit:fix` | **Auto-corrección de Arquitectura**: Corrige automáticamente timers, sintaxis SASS, capas de render y directivas de importación. |
 | `npm run audit:dox` | **Auditoría Ultrarrápida de DOX**: Ejecuta de forma selectiva (~600ms) la validación de jerarquía de archivos `AGENTS.md`, secciones obligatorias y enlaces relativos sin ejecutar suites innecesarias. |
