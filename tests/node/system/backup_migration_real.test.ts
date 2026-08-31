@@ -48,7 +48,7 @@ describe('Real Backup Upgrade Pipeline & Dynamic Table Sanitization Test', () =>
     const upgradedObj = JSON.parse(upgradedContent) as UpgradedBackupObject;
     assert.ok(upgradedObj.data, 'Upgraded backup must contain data');
     assert.ok(upgradedObj.metadata, 'Upgraded backup must contain metadata');
-    assert.ok(upgradedObj.metadata.db_version?.includes('20260830233000'), `db_version must be 20260830233000, got ${upgradedObj.metadata.db_version}`);
+    assert.ok(upgradedObj.metadata.db_version?.includes('20260830234500'), `db_version must be 20260830234500, got ${upgradedObj.metadata.db_version}`);
 
     const allDiscoveredTables = Object.keys(upgradedObj.data);
     assert.ok(allDiscoveredTables.length > 20, `Upgraded backup must contain over 20 tables, found: ${allDiscoveredTables.length}`);

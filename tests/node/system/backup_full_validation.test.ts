@@ -299,6 +299,6 @@ describe('Dynamic Multi-Table Real Backup Validation & Dex Compatibility Test', 
     const configRows = db.prepare('SELECT key, value FROM system_config').all() as { key: string; value: string }[];
     const dbVerRow = configRows.find(c => c.key === 'db_version');
     assert.ok(dbVerRow, "system_config must contain 'db_version'");
-    assert.ok(dbVerRow.value.includes('20260830233000'), `db_version must be 20260830233000, got: ${dbVerRow.value}`);
+    assert.ok(dbVerRow.value.includes('20260830234500'), `db_version must be 20260830234500, got: ${dbVerRow.value}`);
   }, 120000);
 });
