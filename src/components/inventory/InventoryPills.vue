@@ -16,28 +16,14 @@ const moneyRef = ref<HTMLElement | null>(null)
 const bcRef = ref<HTMLElement | null>(null)
 const warRef = ref<HTMLElement | null>(null)
 
-// Global offscreen canvas for measuring text dimensions without triggering layout reflows
-let measureCanvas: HTMLCanvasElement | null = null;
-
-const getTextWidth = (text: string, fontSpec: string): number => {
-  if (!measureCanvas && typeof document !== 'undefined') {
-    measureCanvas = document.createElement('canvas');
-  }
-  if (!measureCanvas) return 0;
-  const ctx = measureCanvas.getContext('2d');
-  if (!ctx) return 0;
-  ctx.font = fontSpec;
-  return ctx.measureText(text).width;
-};
-
 const PILL_PADDING_SAFETY_PX = 8
 const MIN_FONT_SIZE_PX = 4
 const MAX_FIT_ATTEMPTS = 20
 const DEFAULT_PILL_FONT_SIZE_PX = 14
 
 /**
- * Ajusta el tamaño de fuente de un elemento para que quepa en su contenedor
- * utilizando mediciones en CPU sin forzar recalculaciones geométricas del DOM.
+ * Ajusta dinámicamente el tamaño de fuente para que quepa exactamente
+ * en el ancho del contenedor sin desbordarse.
  */
 const fitText = async (el: HTMLElement | null, baseSize: number) => {
   if (!el) return
@@ -46,27 +32,18 @@ const fitText = async (el: HTMLElement | null, baseSize: number) => {
   const parent = el.parentElement
   if (!parent) return
   
-  // Margen de seguridad para el icono y padding (pills tienen ~65px total)
   const maxW = parent.clientWidth - PILL_PADDING_SAFETY_PX 
+  if (maxW <= 0) return
   
-  const text = el.textContent || el.innerText || '';
-  const fontFamily = '"Pokemon FireRed LeafGreen", monospace';
-  let size = baseSize;
-  
-  // Realizamos las mediciones en CPU (Canvas virtual)
-  let attempts = 0
-  while (size > MIN_FONT_SIZE_PX && attempts < MAX_FIT_ATTEMPTS) {
-    const fontSpec = `bold ${size}px ${fontFamily}`;
-    const width = getTextWidth(text, fontSpec);
-    if (width <= maxW) {
-      break;
-    }
-    size -= 1;
-    attempts++;
-  }
-  
-  // Realizamos un único cambio en el DOM al finalizar
+  let size = baseSize
   el.style.fontSize = `${size}px`
+  
+  let attempts = 0
+  while (size > MIN_FONT_SIZE_PX && attempts < MAX_FIT_ATTEMPTS && el.scrollWidth > maxW) {
+    size -= 1
+    el.style.fontSize = `${size}px`
+    attempts++
+  }
 }
 
 const fitAllPills = () => {

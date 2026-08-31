@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ref } from 'vue'
 import { isAwardClaimable } from '@/logic/events/eventValidators'
-import { discardAward } from '@/stores/events/eventAwardsActions'
+import { discardAward, checkPendingAwards } from '@/stores/events/eventAwardsActions'
 import type { EventAwardsContext } from '@/stores/events/eventAwardsActions'
 import type { PendingAward, PastEventHistoryItem } from '@/types/system/stores'
 import type { Event as GameEvent } from '@/logic/events/eventEngine'
@@ -268,6 +268,139 @@ describe('Event Awards Validation and Discard System', () => {
       expect(ctx.uiStore.notify).toHaveBeenCalledWith(
         'Recompensa descartada correctamente.',
         '🗑️'
+      )
+    })
+  })
+
+  describe('Multi-SubCompetition Awards & Claims', () => {
+    it('correctly loads and processes 2 awards from distinct sub-competitions of the same event', async () => {
+      const userAwards: PendingAward[] = [
+        {
+          id: 'award-magikarp-ivs',
+          winner_id: 'user-franco',
+          event_id: 'torneo_pesca',
+          prize: JSON.stringify({ type: 'mixed', money: 25000, battleCoins: 150, rank: 'first' }),
+          received_at: null
+        },
+        {
+          id: 'award-magikarp-weight',
+          winner_id: 'user-franco',
+          event_id: 'torneo_pesca',
+          prize: JSON.stringify({ type: 'mixed', money: 25000, battleCoins: 150, rank: 'first' }),
+          received_at: null
+        }
+      ]
+
+      const mockDb = {
+        from: vi.fn((table: string) => {
+          if (table === 'awards') {
+            return {
+              select: vi.fn().mockReturnThis(),
+              eq: vi.fn().mockReturnThis(),
+              is: vi.fn().mockResolvedValue({ data: userAwards, error: null })
+            }
+          }
+          if (table === 'competition_results') {
+            return {
+              select: vi.fn().mockReturnThis(),
+              order: vi.fn().mockReturnThis(),
+              limit: vi.fn().mockResolvedValue({
+                data: [
+                  {
+                    id: 'res-pesca-1',
+                    event_id: 'torneo_pesca',
+                    ended_at: '2026-08-31T22:00:00Z',
+                    winners: [
+                      {
+                        rank: 'first',
+                        category_id: 'ivs',
+                        category_name: 'Genética Superior (IVs)',
+                        player_id: 'user-franco',
+                        player_name: 'Franco',
+                        score: 186
+                      },
+                      {
+                        rank: 'first',
+                        category_id: 'weight_magikarp',
+                        category_name: 'Masa y Peso (Magikarp)',
+                        player_id: 'user-franco',
+                        player_name: 'Franco',
+                        score: 12.5
+                      }
+                    ]
+                  }
+                ],
+                error: null
+              })
+            }
+          }
+          return {}
+        })
+      }
+
+      const pendingAwards = ref<PendingAward[]>([])
+      const pastEvents = ref<PastEventHistoryItem[]>([])
+      const userEntries = ref({
+        'torneo_pesca:ivs': {
+          id: 'e1',
+          event_id: 'torneo_pesca',
+          category_id: 'ivs',
+          player_id: 'user-franco',
+          player_name: 'Franco',
+          pokemon_uid: 'poke-1',
+          data: {},
+          submitted_at: '2026-08-31T18:00:00Z'
+        },
+        'torneo_pesca:weight_magikarp': {
+          id: 'e2',
+          event_id: 'torneo_pesca',
+          category_id: 'weight_magikarp',
+          player_id: 'user-franco',
+          player_name: 'Franco',
+          pokemon_uid: 'poke-2',
+          data: {},
+          submitted_at: '2026-08-31T18:05:00Z'
+        }
+      })
+
+      const ctx: EventAwardsContext = {
+        gameStore: {
+          db: mockDb,
+          getPokemonByUid: vi.fn(),
+          state: { stats: {} },
+          save: vi.fn().mockResolvedValue(true)
+        } as unknown as EventAwardsContext['gameStore'],
+        authStore: {
+          user: { id: 'user-franco' }
+        } as unknown as EventAwardsContext['authStore'],
+        uiStore: {
+          notify: vi.fn()
+        } as unknown as EventAwardsContext['uiStore'],
+        allEvents: ref([
+          {
+            id: 'torneo_pesca',
+            name: 'Torneo de Pesca Acuática',
+            icon: '🎣',
+            type: 'competition',
+            active: true,
+            manual: false,
+            config: {
+              species: 'magikarp',
+              hasCompetition: true
+            }
+          } as GameEvent
+        ]),
+        pastEvents,
+        pendingAwards,
+        userEntries
+      }
+
+      // 1. Check pending awards -> Both awards should be loaded
+      await checkPendingAwards(ctx, true)
+      expect(ctx.pendingAwards.value.length).toBe(2)
+      expect(ctx.uiStore.notify).toHaveBeenCalledWith(
+        '¡Tienes 2 recompensas de eventos pendientes por reclamar!',
+        '🎁'
       )
     })
   })

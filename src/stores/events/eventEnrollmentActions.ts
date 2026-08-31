@@ -179,3 +179,65 @@ export async function submitCompetitionEntry(
     })
   }
 }
+
+export async function removeCompetitionEntry(
+  ctx: EventEnrollmentContext,
+  eventId: string,
+  categoryId = 'ivs'
+): Promise<boolean> {
+  const { gameStore, authStore, uiStore, userEntries } = ctx
+  if (!authStore.user || !gameStore.db) {
+    uiStore.notify('Debes iniciar sesión para gestionar tus inscripciones.', '⚠️')
+    return false
+  }
+
+  const existingKey = `${eventId}:${categoryId}`
+  const existingEntry = userEntries.value[existingKey] || (categoryId === 'ivs' ? userEntries.value[eventId] : null)
+  
+  if (!existingEntry) {
+    uiStore.notify('No hay ninguna inscripción activa en esta categoría.', '⚠️')
+    return false
+  }
+
+  try {
+    const { error } = await gameStore.db.from('competition_entries')
+      .delete()
+      .eq('event_id', eventId)
+      .eq('category_id', categoryId)
+      .eq('player_id', authStore.user.id)
+
+    if (error) {
+      const errMsg = typeof error === 'object' && error && 'message' in error
+        ? String(error.message)
+        : String(error || 'Error al desinscribir el Pokémon')
+      uiStore.notify(errMsg, '❌')
+      return false
+    }
+
+    const updatedEntries = { ...userEntries.value }
+    delete updatedEntries[existingKey]
+    if (categoryId === 'ivs') {
+      delete updatedEntries[eventId]
+    }
+    userEntries.value = updatedEntries
+
+    // Free Pokémon if not in other subcompetitions
+    if (existingEntry.pokemon_uid) {
+      const isEnrolledElsewhere = Object.values(userEntries.value).some(
+        e => e.pokemon_uid === existingEntry.pokemon_uid
+      )
+      const poke = gameStore.getPokemonByUid(existingEntry.pokemon_uid)
+      if (poke && !isEnrolledElsewhere) {
+        poke.onEvent = false
+      }
+    }
+
+    gameStore.scheduleSave()
+    uiStore.notify('Inscripción cancelada. Pokémon liberado.', '✅')
+    return true
+  } catch (e) {
+    logger.error('Events', `Error removing entry: ${(e as Error).message}`)
+    uiStore.notify('Error al desinscribir el Pokémon.', '❌')
+    return false
+  }
+}

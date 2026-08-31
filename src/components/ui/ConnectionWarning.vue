@@ -1,43 +1,62 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth'
-import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue'
 
 const authStore = useAuthStore()
 </script>
 
 <template>
   <Teleport to="body">
-    <transition name="fade">
-      <PVLoadingOverlay
+    <transition name="slide-down">
+      <div
         v-if="authStore.connectionLost"
-        theme="error"
-        title="CONEXIÓN PERDIDA"
-        message="Se ha perdido la conexión con el servidor. El juego se reanudará automáticamente en cuanto se restablezca el enlace."
-        status-text="RECONECTANDO..."
-        icon="📶"
-        :critical="true"
+        id="connection-lost-warning-pill"
+        class="connection-lost-banner pixelated"
       >
-        <template #footer>
-          Modo: <code>{{ authStore.sessionMode.toUpperCase() }}</code> | 
-          Internet: <code :class="{ offline: !authStore.isOnline }">{{ authStore.isOnline ? 'CONECTADO' : 'DESCONECTADO' }}</code>
-        </template>
-      </PVLoadingOverlay>
+        <span class="banner-icon">📶</span>
+        <span class="banner-text">CONEXIÓN PERDIDA · Reconectando automáticamente...</span>
+      </div>
     </transition>
   </Teleport>
 </template>
 
 <style scoped lang="scss">
-.fade-enter-active, .fade-leave-active {
-  
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
+@use "@/styles/core/_mixins" as *;
+
+.connection-lost-banner {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  background: rgba(239, 68, 68, 0.92);
+  border: 2px solid #fca5a5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  pointer-events: none;
 }
 
-code {
-  color: var(--yellow);
-  &.offline {
-    color: Rgba(239, 68, 68, 1);
-  }
+.banner-icon {
+  font-size: 14px;
+  animation: pulse-icon 1.5s infinite;
+}
+
+@keyframes pulse-icon {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.slide-down-enter-active, .slide-down-leave-active {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+.slide-down-enter-from, .slide-down-leave-to {
+  transform: translate(-50%, -20px);
+  opacity: 0;
 }
 </style>

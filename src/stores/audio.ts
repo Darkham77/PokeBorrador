@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink unused-store-member
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { logger } from '@/logic/utils/logger';

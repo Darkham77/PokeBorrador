@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * @file update_supabase_db.ts
  * @description Script automático para acceder a los servidores Supabase y gestionar la base de datos.

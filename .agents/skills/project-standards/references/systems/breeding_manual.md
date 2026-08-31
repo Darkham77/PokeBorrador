@@ -120,3 +120,13 @@ window.__VITE_DEBUG__.createPokemon({ id: 'houndour', protocol: 'hatch' });
 // Full interactive animation modal protocol
 window.__VITE_DEBUG__.createPokemon({ id: 'houndour', protocol: 'hatch_anim' });
 ```
+
+---
+
+## 11. 🧬 Move Inheritance & Newborn Legality Standards
+
+- **Level 1 Move Legality Verification**: When calculating inherited moves (`inheritMoves`) between parents:
+  1. **Egg Moves (`E`)**: Inherited if either parent knows a move found in the baby species' Showdown egg movepool.
+  2. **Shared Moves / TMs**: Moves known by both parents are inherited ONLY if the newborn baby can legally learn them at Level 1 (`canLearnMove(babyId, moveId, 1)`).
+  3. **High-Level Move Exclusion**: High-level level-up moves (e.g., Level 40+ moves) that are neither TMs, Tutors, nor Egg Moves for the baby species are strictly excluded from birth movepools to prevent illegality errors upon hatching.
+- **Debug Mode Hatching**: Egg hatching (`executeHatch`) automatically bypasses global species whitelists when debug mode is active (`window.__VITE_DEBUG__`).

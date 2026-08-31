@@ -2,7 +2,7 @@ import { queryLocal, persistSQLite, type SQLiteDatabase } from '../sqliteEngine.
 import { logger } from '@/logic/utils/logger.ts';
 import type { DBResponse } from '@/types/system/database';
 import type { CompetitionEntryData, CompetitionRankKey } from '@/types/system/stores';
-import { getDefaultSubCompetitions, resolveSubCompetitionDirection, type SubCompetitionConfig } from '@/logic/events/eventEngine.ts';
+import { resolveSubCompetitionDirection, resolveEventSubCompetitions, type SubCompetitionConfig, type ResolvedSubCompetition, type Event as GameEvent } from '@/logic/events/eventEngine.ts';
 
 const COMPETITION_RANKS: readonly CompetitionRankKey[] = ['first', 'second', 'third'] as const;
 const MAX_STORED_COMPETITION_RESULTS = 100;
@@ -70,6 +70,9 @@ export async function emulateAwardEventAutomated(
     const eventRows = await queryLocal('SELECT * FROM events_config WHERE id = ?', [targetEventId]);
     const eventRow = eventRows[0] as {
       id: string;
+      name?: string;
+      description?: string;
+      active?: boolean | number;
       config: string | Record<string, unknown>; // open-record
       last_awarded_at: string | null;
     } | undefined;
@@ -82,18 +85,41 @@ export async function emulateAwardEventAutomated(
       ? (JSON.parse(eventRow.config) as EventConfigWithPrizes)
       : (eventRow.config as EventConfigWithPrizes) || {};
 
-    if (cfg.hasCompetition !== true) {
-      return { data: { ok: false, error: 'Evento sin competencia.' }, error: null };
-    }
+    const gameEvent: GameEvent = {
+      id: targetEventId,
+      name: String(eventRow.name || ''),
+      description: String(eventRow.description || ''),
+      active: Boolean(eventRow.active),
+      config: cfg
+    };
+    const subComps = resolveEventSubCompetitions(gameEvent, Temporal.Now.instant());
 
-    const subComps = cfg.subCompetitions && cfg.subCompetitions.length > 0
-      ? cfg.subCompetitions
-      : getDefaultSubCompetitions({ id: targetEventId, name: '', description: '', active: true, config: cfg });
+    // Query all distinct categories present in competition_entries for this event
+    const distinctCatRows = await queryLocal(`
+      SELECT DISTINCT COALESCE(category_id, 'ivs') as cat_id
+      FROM competition_entries
+      WHERE event_id = ?
+    `, [targetEventId]);
+
+    const presentCatIds = new Set(distinctCatRows.map(r => String(r.cat_id || 'ivs')));
+    
+    // Combine resolved sub-competitions with any distinct registered categories
+    const allEvaluationSubComps: (ResolvedSubCompetition | SubCompetitionConfig)[] = [...subComps];
+    for (const catId of presentCatIds) {
+      if (!allEvaluationSubComps.some(s => s.id === catId)) {
+        const matchingBase = subComps.find(s => catId.startsWith(s.id)) || subComps[0]!;
+        allEvaluationSubComps.push({
+          ...matchingBase,
+          id: catId,
+          name: matchingBase.name
+        });
+      }
+    }
 
     const allWinners: RankedWinner[] = [];
     const nowIso = Temporal.Now.instant().toString();
 
-    for (const sub of subComps) {
+    for (const sub of allEvaluationSubComps) {
       // 1. Fetch entries for target event & sub-category
       const rawRows = await queryLocal(`
         SELECT player_id, player_name, player_email, data, pokemon_uid

@@ -1,4 +1,3 @@
-// fallow-ignore-file circular-dependencies
 import { defineStore } from 'pinia'
 import { gsapSleep } from '@/logic/utils/gsapHelpers'
 import { ref, computed, watch, nextTick } from 'vue'

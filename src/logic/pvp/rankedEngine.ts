@@ -19,8 +19,8 @@ export interface RankedRules {
   bannedPokemonIds: string[];
 }
 
-import { RANKED_TIER_ORDER } from '@/data/system/rankedData.ts'
-export { RANKED_TIER_ORDER }
+import { RANKED_TIER_ORDER, RANKED_TIER_INDEX_MAP } from '@/data/system/rankedData.ts'
+export { RANKED_TIER_ORDER, RANKED_TIER_INDEX_MAP }
 export type RankedTierName = (typeof RANKED_TIER_ORDER)[number];
 export type RankedTierId = 'bronce' | 'plata' | 'oro' | 'platino' | 'diamante' | 'maestro';
 type RankedTierCode = 'BRONCE' | 'PLATA' | 'ORO' | 'PLATINO' | 'DIAMANTE' | 'MAESTRO';
@@ -59,7 +59,7 @@ export function getEloTier(elo: number | string): EloTier {
  */
 function getEloTierIndex(elo: number | string): number {
   const tier = getEloTier(elo);
-  return RANKED_TIER_ORDER.indexOf(tier.name);
+  return RANKED_TIER_INDEX_MAP[tier.name as RankedTierName] ?? -1;
 }
 
 /**

@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * @file vite-plugin-sass-traps.ts
  * @description Plugin de Vite para normalización automática de SASS y CSS Variables.

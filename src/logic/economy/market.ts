@@ -1,5 +1,7 @@
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { GameState } from '@/types/system/game';
+import { hasMaxIV } from '@/logic/pokemon/statsMath.ts';
+import { getItemById } from '@/data/inventory/items.ts';
 
 export const GTS_ITEMS_PER_PAGE = 50 as const;
 export const GTS_MAX_ACTIVE_LISTINGS = 10 as const;
@@ -44,8 +46,6 @@ export interface MarketFilters {
   ivAny31: boolean;
   itemCat: string;
 }
-
-import { MAX_SINGLE_STAT_IV } from '@/logic/constants/gameplay';
 
 const MAX_MARKET_SOLD_SEEN_HISTORY = 250;
 const MARKET_SOLD_SEEN_CACHE = new WeakMap<GameState, Set<string>>();
@@ -101,9 +101,9 @@ export function applyMarketFilters(
   list: MarketListing[], 
   filters: MarketFilters, 
   context: 'explore' | 'my-listings', 
-  options: { getPokemonTier?: (offer: Pokemon) => { tier: string }, SHOP_ITEMS?: { name: string; cat: string }[] } = {}
+  options: { getPokemonTier?: (offer: Pokemon) => { tier: string } } = {}
 ): MarketListing[] {
-  const { getPokemonTier, SHOP_ITEMS } = options;
+  const { getPokemonTier } = options;
   
   return list.filter(item => {
     const price = item.price || 0;
@@ -140,7 +140,7 @@ export function applyMarketFilters(
       const ivs = poke.ivs;
       const total = (Number(ivs?.hp)||0)+(Number(ivs?.atk)||0)+(Number(ivs?.def)||0)+(Number(ivs?.spa)||0)+(Number(ivs?.spd)||0)+(Number(ivs?.spe)||0);
       if (total < filters.ivTotalMin || total > filters.ivTotalMax) return false;
-      if (filters.ivAny31 && !Object.values(ivs ?? {}).some(v => v === MAX_SINGLE_STAT_IV)) return false;
+      if (filters.ivAny31 && !hasMaxIV(ivs)) return false;
     } else {
       const itemData = item.data;
 
@@ -152,8 +152,13 @@ export function applyMarketFilters(
 
       // Item Category
       if (filters.itemCat !== 'all') {
-        const shopItem = SHOP_ITEMS?.find(x => x.name === itemData.name);
-        if (shopItem?.cat !== filters.itemCat) return false;
+        const key = itemData.name || (itemData.id ? String(itemData.id) : null);
+        try {
+          const shopItem = key ? getItemById(key) : null;
+          if (shopItem?.cat !== filters.itemCat) return false;
+        } catch {
+          return false;
+        }
       }
     }
 

@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * VISUAL & SCENE CONSTANTS (SINGLE SOURCE OF TRUTH)
  * Centralized constant definitions for rendering, textures, canvas dimensions, and shadow math.

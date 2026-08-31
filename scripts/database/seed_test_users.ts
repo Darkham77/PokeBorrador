@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
 import path from 'node:path';

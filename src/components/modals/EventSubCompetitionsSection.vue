@@ -35,24 +35,24 @@ const getSubCompDefaultIcon = (catId: string) => {
 
 const getSubCompTitle = (sub: ResolvedSubCompetition | SubCompetitionConfig) => {
   const dir = resolveSubCompetitionDirection(props.eventId, sub.id, sub.order)
-  const speciesSuffix = ('targetSpecies' in sub && sub.targetSpecies) ? ` (${sub.targetSpecies})` : '' // domain-ok
+  const speciesSuffix = ('targetSpecies' in sub && sub.targetSpecies) ? ` (${sub.targetSpecies.toUpperCase()})` : '' // domain-ok
   if (sub.metric === 'total_ivs') {
-    return 'Mayor cantidad de IVs totales (0 a 186) · Todas las especies'
+    return 'Mayor cantidad de IVs totales (0 a 186)'
   }
   if (sub.metric === 'stat_iv' && sub.targetStat) {
     return `Mayor IV en ${sub.targetStat.toUpperCase()}${speciesSuffix}` // domain-ok
   }
   if (sub.metric === 'weight') {
-    return dir === 'max' ? `Mayor Peso (Titán / XXL)${speciesSuffix}` : `Menor Peso (Miniatura / XXS)${speciesSuffix}`
+    return (dir === 'max' ? 'Mayor Peso' : 'Menor Peso') + speciesSuffix
   }
   if (sub.metric === 'height') {
-    return dir === 'max' ? `Mayor Altura (Gran Salto / XXL)${speciesSuffix}` : `Menor Altura (Miniatura / XXS)${speciesSuffix}`
+    return (dir === 'max' ? 'Mayor Altura' : 'Menor Altura') + speciesSuffix
   }
   if (sub.metric === 'level') {
-    return dir === 'max' ? `Mayor Nivel${speciesSuffix}` : `Menor Nivel${speciesSuffix}`
+    return (dir === 'max' ? 'Mayor Nivel' : 'Menor Nivel') + speciesSuffix
   }
   if (sub.metric === 'friendship') {
-    return dir === 'max' ? `Mayor Amistad${speciesSuffix}` : `Menor Amistad${speciesSuffix}`
+    return (dir === 'max' ? 'Mayor Amistad' : 'Menor Amistad') + speciesSuffix
   }
   return sub.description || sub.name || 'Criterio de evaluación'
 }

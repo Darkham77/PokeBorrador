@@ -83,8 +83,10 @@ export function getForcedExitConfig(triggerId?: string | null): ForcedExitConfig
   return FORCED_SWITCH_REGISTRY[cleanId] || DEFAULT_FORCED_EXIT_CONFIG;
 }
 
+const FORCED_SWITCH_MOVES_SET: ReadonlySet<string> = new Set(['whirlwind', 'roar', 'dragontail', 'circlethrow']); // runtime-set
+
 export function isForcedSwitchMove(moveId?: string | null): boolean {
   if (!moveId) return false;
   const cleanId = toID(moveId);
-  return ['whirlwind', 'roar', 'dragontail', 'circlethrow'].includes(cleanId);
+  return FORCED_SWITCH_MOVES_SET.has(cleanId);
 }

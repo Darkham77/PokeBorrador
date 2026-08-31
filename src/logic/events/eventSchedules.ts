@@ -102,15 +102,59 @@ function isMonthlyTriggerMatch(trigger: string | undefined, zdt: Temporal.ZonedD
 }
 
 /**
- * Resolves the active config (species, banner, title) for a rotation event based on current week of month.
+ * Resolves the active config (species, banner, title) for a rotation event based on current week of month or target species.
  */
 export function resolveWeeklyRotation( // domain-ok
   cfg: EventConfig,
-  zdt: Temporal.ZonedDateTime
+  zdtOrSpecies?: Temporal.ZonedDateTime | string | null
 ): WeeklyRotationEntry | null {
   if (cfg.rotationTheme !== 'weekly_4' || !cfg.weeklyRotations) return null;
+
+  // 1. If a species name is provided, match by species
+  if (typeof zdtOrSpecies === 'string' && zdtOrSpecies.trim().length > 0) {
+    const targetSp = zdtOrSpecies.trim().toLowerCase();
+    for (const rotation of Object.values(cfg.weeklyRotations)) {
+      if (!rotation || !rotation.species) continue;
+      const rotSpecies = rotation.species.split(',').map(s => s.trim().toLowerCase());
+      if (rotSpecies.includes(targetSp)) {
+        return rotation;
+      }
+    }
+  }
+
+  // 2. Otherwise match by week of month from ZonedDateTime
+  const zdt = (zdtOrSpecies && typeof zdtOrSpecies === 'object' && 'day' in zdtOrSpecies)
+    ? zdtOrSpecies
+    : normalizeZonedDateTime();
   const week = getWeekOfMonth(zdt);
   return (cfg.weeklyRotations[String(week)] as WeeklyRotationEntry | undefined) ?? null;
+}
+
+/**
+ * Single source of truth for resolving an event's display name directly from its database row (event.config / event.name).
+ */
+export function getEventDisplayName(
+  event: Event,
+  zdtOrOccurrence?: Temporal.ZonedDateTime | UpcomingEventOccurrence | null
+): string {
+  const cfg = safeParse(event.config) as EventConfig;
+  let zdt: Temporal.ZonedDateTime;
+
+  if (zdtOrOccurrence && typeof zdtOrOccurrence === 'object' && 'startInstant' in zdtOrOccurrence) {
+    zdt = normalizeZonedDateTime(zdtOrOccurrence.startInstant);
+  } else if (zdtOrOccurrence && typeof zdtOrOccurrence === 'object' && 'day' in zdtOrOccurrence) {
+    zdt = zdtOrOccurrence;
+  } else {
+    const upcoming = getUpcomingEventOccurrences([event], normalizeZonedDateTime().toInstant(), 7);
+    if (upcoming.length > 0 && upcoming[0]) {
+      zdt = normalizeZonedDateTime(upcoming[0].startInstant);
+    } else {
+      zdt = normalizeZonedDateTime();
+    }
+  }
+
+  const rotation = resolveWeeklyRotation(cfg, zdt);
+  return rotation?.title || event.name || event.id;
 }
 
 /**

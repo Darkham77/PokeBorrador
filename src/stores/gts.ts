@@ -8,7 +8,6 @@ import { useAudioStore } from '@/stores/audio.ts'
 import { logger } from '@/logic/utils/logger'
 import { applyMarketFilters, markMarketSoldSeen, isMarketSoldSeen, GTS_MAX_ACTIVE_LISTINGS, GTS_MARKET_FEE, GTS_EXPLORE_LISTINGS_LIMIT, GTS_SALES_HISTORY_LIMIT } from '@/logic/economy/market'
 import type { MarketFilters, MarketListing, MarketListingType } from '@/logic/economy/market'
-import { SHOP_ITEMS } from '@/data/inventory/items'
 import type { GameState } from '@/types/system/game'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality'
@@ -53,9 +52,7 @@ export const useGTSStore = defineStore('gts', () => {
 
   // Getters
   const filteredListings = computed(() => {
-    return applyMarketFilters(listings.value, filters.value, 'explore', {
-      SHOP_ITEMS
-    })
+    return applyMarketFilters(listings.value, filters.value, 'explore')
   })
 
   const activeMyListings = computed(() => {

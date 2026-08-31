@@ -16,6 +16,10 @@ const props = withDefaults(defineProps<Props>(), {
   history: () => []
 })
 
+const filteredHistory = computed(() => {
+  return props.history.filter(n => !n.message?.toLowerCase().includes('bienvenido'))
+})
+
 const isHistoryOpen = computed({
   get: () => uiStore.isHistoryOpen,
   set: (val: boolean) => { uiStore.isHistoryOpen = val }
@@ -49,7 +53,7 @@ function getTimestamp(n: NotificationItem): number {
         class="history-btn-legacy"
         @click.stop="isHistoryOpen = !isHistoryOpen"
       >
-        Ver ultimas 10 ({{ props.history.length }})
+        Ver ultimas 10 ({{ filteredHistory.length }})
       </button>
     </div>
     
@@ -58,7 +62,7 @@ function getTimestamp(n: NotificationItem): number {
       class="history-container-legacy custom-scrollbar"
     >
       <div
-        v-for="n in props.history.slice().reverse()"
+        v-for="n in filteredHistory.slice().reverse()"
         :key="n.id"
         class="notification-entry-legacy"
       >

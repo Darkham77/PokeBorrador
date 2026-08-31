@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * ENCOUNTER & FISHING CONSTANTS (SINGLE SOURCE OF TRUTH)
  * Centralized constant definitions for wild encounter rates, repel modifiers, and fishing budgets.

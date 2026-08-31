@@ -2,6 +2,14 @@ import type { PokemonType } from '../battle/types.ts';
 
 export const RANKED_TIER_ORDER = ['Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Maestro'] as const;
 export type RankedTierId = (typeof RANKED_TIER_ORDER)[number];
+export const RANKED_TIER_INDEX_MAP: Readonly<Record<RankedTierId, number>> = Object.freeze({
+  Bronce: 0,
+  Plata: 1,
+  Oro: 2,
+  Platino: 3,
+  Diamante: 4,
+  Maestro: 5
+});
 
 export const RANKED_TYPES: PokemonType[] = [
   'normal', 'fire', 'water', 'electric', 'grass', 'ice',

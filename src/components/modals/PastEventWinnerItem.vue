@@ -69,13 +69,13 @@ const getWinnerName = (w: PastCompetitionWinner): string => {
 const formatWinnerMetric = (w: PastCompetitionWinner, catId: string): string => {
   const data = w.entry_data
 
-  if (catId === 'ivs') {
+  if (catId.startsWith('ivs')) {
     const score = Number(w.score ?? data?.total_ivs ?? 0)
     const tierLabel = data?.tier_label || getTierFromTotalIvs(score).tier
     return `${score} / 186 IVs (${tierLabel})`
   }
 
-  if (catId === 'weight') {
+  if (catId.startsWith('weight')) {
     const score = Number(w.score ?? data?.weight ?? 0)
     const speciesId = data?.species ? String(data.species) : undefined
     const spec = speciesId ? pokemonDataProvider.getPokemonData(speciesId, true) : null
@@ -92,7 +92,7 @@ const formatWinnerMetric = (w: PastCompetitionWinner, catId: string): string => 
     return `${score.toFixed(1)} kg${targetStr}${tierStr}`
   }
 
-  if (catId === 'height') {
+  if (catId.startsWith('height')) {
     const score = Number(w.score ?? data?.height ?? 0)
     const speciesId = data?.species ? String(data.species) : undefined
     const spec = speciesId ? pokemonDataProvider.getPokemonData(speciesId, true) : null
@@ -109,9 +109,14 @@ const formatWinnerMetric = (w: PastCompetitionWinner, catId: string): string => 
     return `${score.toFixed(1)} m${targetStr}${tierStr}`
   }
 
-  if (catId === 'level') {
+  if (catId.startsWith('level')) {
     const score = Number(w.score ?? data?.level ?? 1)
     return `Nv. ${score} / 100`
+  }
+
+  if (catId.startsWith('friendship')) {
+    const score = Number(w.score ?? data?.friendship ?? 0)
+    return `${score} / 255 Amistad`
   }
 
   if (data?.display_value) {
@@ -263,6 +268,9 @@ const getRankLabel = (rank?: string | number): string => {
   .medal {
     font-size: 14px;
     line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .pos-text {

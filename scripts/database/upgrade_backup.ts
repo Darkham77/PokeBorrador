@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * @file upgrade_backup.ts
  * @description Upgrades legacy database backup JSON files to the latest game schema and Showdown legality.

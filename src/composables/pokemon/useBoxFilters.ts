@@ -2,7 +2,7 @@ import { ref, computed, watch, type Ref } from 'vue'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getPokedexOrderIndex, requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { calculateTotalIVs } from '@/logic/pokemon/statsMath'
+import { calculateTotalIVs, hasMaxIV } from '@/logic/pokemon/statsMath'
 import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
 import { hasPokemonTag } from '@/logic/constants/tags'
 import { getPokemonPhysicalWeight, getPokemonPhysicalHeight } from '@/logic/pokemon/physicalDimensionsMath'
@@ -129,11 +129,18 @@ const MAX_POKEMON_FRIENDSHIP_CONST = 255
       if (f.type !== 'all' && p.type !== f.type) return false
       if (p.level < f.levelMin || p.level > f.levelMax) return false
       if (totalIv < f.ivTotalMin || totalIv > f.ivTotalMax) return false
-      if (f.ivAny31 && !Object.values(p.ivs || {}).some(v => v === MAX_SINGLE_IV)) return false
+      if (f.ivAny31 && !hasMaxIV(p.ivs)) return false
       
       // Individual IV Range (All stats must be within range)
-      const allIvValues = [p.ivs?.hp||0, p.ivs?.atk||0, p.ivs?.def||0, p.ivs?.spa||0, p.ivs?.spd||0, p.ivs?.spe||0]
-      if (allIvValues.some(v => v < f.ivMin || v > f.ivMax)) return false
+      const hp = p.ivs?.hp || 0
+      const atk = p.ivs?.atk || 0
+      const def = p.ivs?.def || 0
+      const spa = p.ivs?.spa || 0
+      const spd = p.ivs?.spd || 0
+      const spe = p.ivs?.spe || 0
+      if (hp < f.ivMin || hp > f.ivMax || atk < f.ivMin || atk > f.ivMax || def < f.ivMin || def > f.ivMax || spa < f.ivMin || spa > f.ivMax || spd < f.ivMin || spd > f.ivMax || spe < f.ivMin || spe > f.ivMax) {
+        return false
+      }
 
       // Individual IV Filters (Specific stats)
       if ((p.ivs?.hp || 0) < f.ivHP) return false

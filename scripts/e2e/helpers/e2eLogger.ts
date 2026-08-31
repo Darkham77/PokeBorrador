@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 import { type Page, type Locator } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';

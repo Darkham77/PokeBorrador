@@ -94,3 +94,8 @@ Pokémon participating in active missions (`onMission: true`), competition event
 2. **Action Locking**: Release, Black Market selling, P2P trade offers, and GTS publishing are strictly blocked across UI, Pinia stores, and database RPCs.
 3. **Lifecycle Rehabilitation**: Once the mission is claimed or the event concludes, all busy flags are reset to `false`, badges disappear, and all actions are re-enabled.
 
+## 13. Species Evolution Whitelist Boundary
+
+- **Evolution Legality Clamping**: The auto-evolution engine (`getEvolvedForm` in `src/logic/evolution/evolutionLogic.ts`), wild encounter scalers, and trainer team generators MUST strictly clamp evolutions within the active `ENABLED_POKEMON_IDS` whitelist (`isEnabledPokemonId`).
+- **Prohibition on Unreleased Evolutions**: Generating or evolving Pokémon into unreleased generations (e.g. Magnemite evolving into Gen 4 Magnezone when only Gen 1-2 are active) in standard gameplay or difficulty scaling is strictly prohibited. Eliminating `bypassWhitelist` is mandatory across all gameplay combat and encounter paths.
+

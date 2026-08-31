@@ -51,9 +51,10 @@ const WEATHER_IDS = [
   'strong_winds',
 ] as const;
 export type WeatherId = (typeof WEATHER_IDS)[number];
+export const WEATHER_IDS_SET: ReadonlySet<string> = new Set(WEATHER_IDS);
 
 export function isWeatherId(value: string): value is WeatherId {
-  return (WEATHER_IDS as readonly string[]).includes(value); // domain-ok
+  return WEATHER_IDS_SET.has(value);
 }
 
 export function requireWeatherId(value: string): WeatherId {
@@ -70,9 +71,10 @@ const SHOWDOWN_WEATHER_IDS = [
   'deltastream',
 ] as const;
 type ShowdownWeatherId = (typeof SHOWDOWN_WEATHER_IDS)[number];
+const SHOWDOWN_WEATHER_IDS_SET: ReadonlySet<string> = new Set(SHOWDOWN_WEATHER_IDS);
 
 function isShowdownWeatherId(value: string): value is ShowdownWeatherId {
-  return (SHOWDOWN_WEATHER_IDS as readonly string[]).includes(value); // domain-ok
+  return SHOWDOWN_WEATHER_IDS_SET.has(value);
 }
 
 const SHOWDOWN_WEATHER_TO_WEATHER_ID = {

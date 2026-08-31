@@ -13,9 +13,10 @@ import type { DebugSystem } from '@/stores/debug'
 
 const DEBUG_FIELD_WEATHER_IDS = ['sun', 'rain', 'hail', 'sandstorm', 'snow', 'fog', 'clear', 'storm', 'blizzard', 'heatwave'] as const satisfies readonly WeatherId[]
 type DebugFieldWeatherId = (typeof DEBUG_FIELD_WEATHER_IDS)[number]
+const DEBUG_FIELD_WEATHER_IDS_SET: ReadonlySet<string> = new Set(DEBUG_FIELD_WEATHER_IDS)
 
 function isDebugFieldWeatherId(value: WeatherId): value is DebugFieldWeatherId {
-  return (DEBUG_FIELD_WEATHER_IDS as readonly WeatherId[]).includes(value)
+  return DEBUG_FIELD_WEATHER_IDS_SET.has(value)
 }
 
 export function registerBattleTools(debug: DebugSystem) {

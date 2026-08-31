@@ -352,7 +352,7 @@ export const useAuthStore = defineStore('auth', () => {
             logger.warn('SESSION', 'Conexión con el servidor perdida (Realtime). Verificando conectividad HTTP...')
             const isHttpOk = await checkDbConnectivity()
             if (!isHttpOk) {
-              logger.error('SESSION', 'Confirmada pérdida de conexión HTTP. Activando advertencia.')
+              logger.warn('SESSION', 'Pérdida temporal de conexión HTTP. Reconectando en segundo plano...')
               connectionLost.value = true
             } else {
               logger.info('SESSION', 'Conexión HTTP activa. Desconectando Realtime para evitar spam y continuando en modo degradado.')

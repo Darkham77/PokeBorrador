@@ -17,19 +17,22 @@ import { getItemName, isItemId } from '@/data/inventory/items'
 import { logger } from '@/logic/utils/logger'
 
 const SUN_AFFECTED_MOVE_NAMES = ['synthesis', 'síntesis', 'morning sun', 'sol beam', 'rayo solar', 'solar beam', 'solar blade', 'cuchilla solar'] as const
+const SUN_AFFECTED_MOVE_NAMES_SET: ReadonlySet<string> = new Set(SUN_AFFECTED_MOVE_NAMES)
 const RAIN_AFFECTED_MOVE_NAMES = ['thunder', 'trueno', 'hurricane', 'vendaval', 'weather ball'] as const
+const RAIN_AFFECTED_MOVE_NAMES_SET: ReadonlySet<string> = new Set(RAIN_AFFECTED_MOVE_NAMES)
 const SNOW_AFFECTED_MOVE_NAMES = ['blizzard', 'ventisca', 'aurora veil', 'velo aurora', 'cold-snap'] as const
+const SNOW_AFFECTED_MOVE_NAMES_SET: ReadonlySet<string> = new Set(SNOW_AFFECTED_MOVE_NAMES)
 
 function isSunAffectedMoveName(value: string): boolean {
-  return (SUN_AFFECTED_MOVE_NAMES as readonly string[]).includes(value) // domain-ok
+  return SUN_AFFECTED_MOVE_NAMES_SET.has(value)
 }
 
 function isRainAffectedMoveName(value: string): boolean {
-  return (RAIN_AFFECTED_MOVE_NAMES as readonly string[]).includes(value) // domain-ok
+  return RAIN_AFFECTED_MOVE_NAMES_SET.has(value)
 }
 
 function isSnowAffectedMoveName(value: string): boolean {
-  return (SNOW_AFFECTED_MOVE_NAMES as readonly string[]).includes(value) // domain-ok
+  return SNOW_AFFECTED_MOVE_NAMES_SET.has(value)
 }
 
 function formatAbilityDescription(desc: string): string {

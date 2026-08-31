@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * src/logic/db/sqlTranslator.ts
  * Unified SQL translation logic for Poké Vicio.

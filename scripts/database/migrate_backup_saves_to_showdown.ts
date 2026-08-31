@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * scripts/database/migrate_backup_saves_to_showdown.ts
  * 

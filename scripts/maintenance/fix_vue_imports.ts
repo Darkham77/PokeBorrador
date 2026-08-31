@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { join, extname } from 'node:path';
 

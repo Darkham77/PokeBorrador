@@ -29,4 +29,5 @@ Frontend Developers / Systems Engineers.
 - [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon.
 - [stores/](./stores/AGENTS.md): Domain module documentation for Pinia stores.
 - [system/](./system/AGENTS.md): Domain module documentation for system.
+- [views/](./views/AGENTS.md): Domain module documentation for views.
 - [world/](./world/AGENTS.md): Domain module documentation for world.

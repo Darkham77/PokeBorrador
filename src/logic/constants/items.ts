@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * ITEM MECHANICS CONSTANTS (SINGLE SOURCE OF TRUTH)
  * Centralized constant definitions for item healing amounts, multipliers, and status effects.

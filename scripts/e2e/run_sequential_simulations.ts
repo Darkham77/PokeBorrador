@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * scripts/e2e/run_sequential_simulations.ts
  * Sequential E2E Simulation Orchestrator.

@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * scripts/lib/unifiedTheme.ts
  * 

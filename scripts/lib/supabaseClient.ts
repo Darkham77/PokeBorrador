@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * @file supabaseClient.ts
  * @description Helper compartido para leer el archivo .env maestro, parsear perfiles de servidor

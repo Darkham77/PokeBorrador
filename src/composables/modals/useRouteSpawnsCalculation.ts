@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 import { computed } from 'vue'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY } from '@/logic/weather/weatherRegistry'
 import { ACTIVE_GENERATION } from '@/data/system/constants'
@@ -90,14 +89,15 @@ export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
     'lucha': 'fighting'
   }
 
+  const SPANISH_TYPES_REGEX = /\b(fuego|agua|planta|eléctrico|electrico|hielo|roca|tierra|volador|bicho|acero|fantasma|dragón|dragon|siniestro|hada|psíquico|psiquico|veneno|normal|lucha)\b/gi
+
   const parsedDescriptionLines = computed(() => {
     const desc = weatherDetails.value?.description || ''
     if (!desc) return []
 
     const sentences = desc.split(/\n|\.\s+/).map(s => s.trim()).filter(Boolean)
-    const typeWords = Object.keys(SPANISH_TYPE_MAP)
     // eslint-disable-next-line security/detect-non-literal-regexp
-    const regex = new RegExp(`\\b(${typeWords.join('|')})\\b`, 'gi')
+    const regex = new RegExp(SPANISH_TYPES_REGEX.source, 'gi')
     return sentences.map(sentence => {
       // Sanitizar indicadores de viñeta manual si existen (por ej. ▲, ▼, •)
       const cleanSentence = sentence.endsWith('.') ? sentence : sentence

@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 // scripts/battle-tester/fuzzer-item-generator.ts
 import { Dex, type GenderName } from '@pkmn/sim';
 import { SHOP_ITEMS } from '../../../../src/data/inventory/items.ts';

@@ -1,4 +1,3 @@
-// fallow-ignore-file circular-dependencies
 import { defineStore } from 'pinia'
 import { reactive, ref, computed, watch, type Ref } from 'vue'
 import { logger } from '@/logic/utils/logger'

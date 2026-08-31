@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 const CACHE_NAME = 'sprite-outlines-v1';
 
 // Helpers for caching blobs
@@ -36,6 +35,9 @@ async function saveToCache(cacheKey: string, blob: Blob): Promise<void> {
 
 // Fetch image and create ImageBitmap
 async function loadImageBitmap(url: string): Promise<ImageBitmap> {
+  if (typeof url !== 'string' || (!url.startsWith('/') && !url.startsWith('data:') && !url.startsWith('https://'))) {
+    throw new Error(`Invalid sprite URL scheme: ${url}`);
+  }
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`Failed to fetch image from URL: ${url} (status: ${res.status})`);

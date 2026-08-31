@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * scripts/tools/fetch_ev_yields.ts
  *

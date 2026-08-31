@@ -47,6 +47,8 @@ Frontend UI Developers / UI Designers.
   2. **Inline Flowing Text (`.emoji-inline`)**: Strictly reserved for inline running text within paragraphs `<p>` or plain labels to compensate for pixel font baseline drop (`top: -1.5px`).
   3. **Zero Ad-Hoc Style Injections**: Manual `transform: translateY(...)`, ad-hoc font sizes, or margin hacks in local component stylesheets to force emoji alignment are strictly forbidden; components must rely 100% on the global class semantics and parent flex alignment.
 - **Box & Drawer Range Sliders Usability Standard**: Filter drawers for Pokémon storage and markets MUST prioritize continuous numeric range sliders (Friendship 0..255, Individual EVs 0..252 with `step="4"`, Level 1..100, IVs 0..31) over redundant discrete tier pills, ensuring precision for competitive builds without cluttering the UI.
+- **Empirical DOM `scrollWidth` for Dynamic Text Fitting**: Dynamic text fitting algorithms (such as `fitText` in `InventoryPills.vue` or header counters) MUST measure the physical DOM element (`el.scrollWidth > maxW`) rather than relying on offscreen Canvas 2D contexts (`measureText`) with synthetic font weights. Custom `@font-face` pixel fonts with `size-adjust: 128%` lack bold font files; Canvas requests for `bold` silently fall back to system monospace fonts with narrower widths, causing false positives and text truncation in the real DOM.
+- **GSAP Animation Transform Freedom**: When choreographing component micro-interactions with GSAP (`useMapCardAnimations`, `HUD_Navigation`), never restrict target elements with `transform: none !important` in scoped or shared stylesheets. When animating sub-elements (e.g. rotating an icon inside a pill), apply the GSAP tween to the inner icon selector, and when bobbing a full button container, apply it to the outer container without interfering with flex child alignments.
 
 ## Verification
 
@@ -66,6 +68,7 @@ Frontend UI Developers / UI Designers.
 - [evolution/](./evolution/AGENTS.md): Domain module documentation for evolution.
 - [game/](./game/AGENTS.md): Domain module documentation for game.
 - [gyms/](./gyms/AGENTS.md): Domain module documentation for gyms.
+- [home/](./home/AGENTS.md): Domain module documentation for home.
 - [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
 - [map/](./map/AGENTS.md): Domain module documentation for map.
 - [market/](./market/AGENTS.md): Domain module documentation for market.

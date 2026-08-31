@@ -157,5 +157,11 @@ Whenever ANY bug, test failure, or simulation desync occurs, the agent MUST foll
   - Always declare descriptive named constants for battle simulation parameters (`MEWTWO_BOSS_LEVEL`, `HIGH_LEVEL_PIDGEOT`, `SPEED_PENALTY_STAGE`) to eliminate inline magic numbers.
   - Use `BaseBattleSimulation.getBattleStoreState()` to inspect combatant snapshot states rather than raw inline evaluations.
 
+## 16. Multi-User Simulation Database Key Prefix & Category Synchronization
+
+- **Database Key Prefix (`sim_`)**: Multi-user sequential simulation suites running against the in-memory Vite dev DB bridge (`/api/dev-export-db`) MUST declare `window.__GTS_SIMULATION__ = true` and utilize SQLite keys beginning with `sim_` (`sim_<name>_<timestamp>`).
+- **Normalized DB Path Resolution**: `BaseE2ESimulation.getDbPath()` MUST normalize keys to avoid duplicate prefixes (`sim_sim_...`).
+- **Category ID Alignment**: Sub-competition category identifiers submitted in simulation helpers (`submitCompetitionEntry`) MUST strictly match the IDs declared in `events_config` and rendered by `EventCard.vue` (`'ivs'`, `'weight'`, `'height'`).
+
 
 

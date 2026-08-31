@@ -1,4 +1,3 @@
-// fallow-ignore-file unused-store-member
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { useGameStore } from '@/stores/game.ts'
@@ -25,9 +24,10 @@ import { ITEM_SELL_REFUND_FACTOR } from '@/logic/constants/items.ts'
 
 const VALUABLE_ITEM_IDS = ['nugget', 'pearl', 'bigpearl', 'stardust', 'starpiece'] as const satisfies readonly ItemId[]
 type ValuableItemId = (typeof VALUABLE_ITEM_IDS)[number]
+const VALUABLE_ITEM_IDS_SET: ReadonlySet<string> = new Set(VALUABLE_ITEM_IDS)
 
 function isValuableItemId(value: ItemId): value is ValuableItemId {
-  return (VALUABLE_ITEM_IDS as readonly ItemId[]).includes(value)
+  return VALUABLE_ITEM_IDS_SET.has(value)
 }
 
 export function isItemUsableOutsideCombat(item: Pick<Item, 'id' | 'cat' | 'kind'> | null | undefined): boolean {

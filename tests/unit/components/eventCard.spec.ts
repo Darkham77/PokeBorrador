@@ -15,7 +15,7 @@ describe('EventCard.vue', () => {
     }
   }
 
-  it('renders species tabs and switches active species slots for multi-species events', async () => {
+  it('renders competition category preview buttons for multi-species events', async () => {
     const multiSpeciesEvent: Event = {
       id: 'torneo_pesca',
       name: 'Torneo de Pesca',
@@ -41,26 +41,17 @@ describe('EventCard.vue', () => {
       global: { stubs: globalStubs }
     })
 
-    // 1. Global IVs slot should be present
-    expect(wrapper.text()).toContain('Mayor IVs Totales')
+    // 1. Category preview block should be present
+    expect(wrapper.find('.compact-competition-preview').exists()).toBe(true)
+    expect(wrapper.text()).toContain('CATEGORÍAS EN JUEGO')
+    expect(wrapper.text()).toContain('IVs')
 
-    // 2. Species tabs strip should be present with 3 tabs
-    const tabsStrip = wrapper.find('.species-tabs-strip')
-    expect(tabsStrip.exists()).toBe(true)
-    const tabButtons = wrapper.findAll('.species-tab-btn')
-    expect(tabButtons.length).toBe(3)
-
-    // 3. First species tab is active by default (shellder)
-    expect(tabButtons[0]?.classes()).toContain('active')
-    expect(wrapper.text().toLowerCase()).toContain('sin shellder inscripto')
-
-    // 4. Click second tab (horsea)
-    await tabButtons[1]?.trigger('click')
-    expect(tabButtons[1]?.classes()).toContain('active')
-    expect(wrapper.text().toLowerCase()).toContain('sin horsea inscripto')
+    // 2. Category buttons should be present
+    const catButtons = wrapper.findAll('.comp-slot-chip')
+    expect(catButtons.length).toBeGreaterThanOrEqual(1)
   })
 
-  it('does NOT render species tabs for single-species events', () => {
+  it('renders competition category preview for single-species events', () => {
     const singleSpeciesEvent: Event = {
       id: 'hora_magikarp',
       name: 'Hora de Magikarp',
@@ -86,12 +77,19 @@ describe('EventCard.vue', () => {
       global: { stubs: globalStubs }
     })
 
-    const tabsStrip = wrapper.find('.species-tabs-strip')
-    expect(tabsStrip.exists()).toBe(false)
-    expect(wrapper.text()).toContain('Mayor IVs Totales')
+    expect(wrapper.find('.compact-competition-preview').exists()).toBe(true)
+    expect(wrapper.text()).toContain('CATEGORÍAS EN JUEGO')
+    expect(wrapper.text()).toContain('Mayor IVs')
+    expect(wrapper.text()).toMatch(/Mayor Peso|Menor Peso/)
+    expect(wrapper.text()).toMatch(/Mayor Altura|Menor Altura/)
+
+    // Verify PVTooltips contain Mayor / Menor in their title
+    const tooltips = wrapper.findAllComponents({ name: 'PVTooltip' })
+    const tooltipTitles = tooltips.map(t => t.props('title') as string).filter(Boolean)
+    expect(tooltipTitles.some(t => t.includes('Mayor'))).toBe(true)
   })
 
-  it('does NOT render species tabs for Saturday Open Championship (global scope)', () => {
+  it('renders competition category preview for Saturday Open Championship (global scope)', () => {
     const saturdayEvent: Event = {
       id: 'gran_concurso_sabado',
       name: 'Gran Concurso del Sábado',
@@ -118,9 +116,8 @@ describe('EventCard.vue', () => {
       global: { stubs: globalStubs }
     })
 
-    const tabsBar = wrapper.find('.species-tabs-bar')
-    expect(tabsBar.exists()).toBe(false)
-    expect(wrapper.text()).toContain('Mayor IVs Totales')
+    expect(wrapper.find('.compact-competition-preview').exists()).toBe(true)
+    expect(wrapper.text()).toContain('IVs')
   })
 
   it('opens PokedexDetail modal when clicking on a participant mini sprite', async () => {
@@ -159,7 +156,6 @@ describe('EventCard.vue', () => {
   })
 
   it('renders dynamic remaining time countdown for active recurring events instead of Indefinido', () => {
-    // Event scheduled for today covering current hour
     const todayJsDay = Temporal.Now.zonedDateTimeISO('America/Argentina/Buenos_Aires').dayOfWeek % 7
     const activeRecurringEvent: Event = {
       id: 'active_today_bonus',
@@ -178,10 +174,7 @@ describe('EventCard.vue', () => {
       global: { stubs: globalStubs }
     })
 
-    const timerBox = wrapper.find('.timer-box')
-    expect(timerBox.exists()).toBe(true)
-    const timeText = timerBox.find('.value').text()
-    expect(timeText).not.toBe('Indefinido')
-    expect(timeText).toMatch(/\d+[mh]/)
+    expect(wrapper.text()).toContain('FINALIZA EN:')
+    expect(wrapper.text()).not.toContain('Indefinido')
   })
 })

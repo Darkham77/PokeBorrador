@@ -443,6 +443,16 @@ export function requirePokemonSpeciesId(value: string): PokemonSpeciesId {
   throw new Error(`Invalid Pokemon species id: ${value}`);
 }
 
+export const TM_COMPAT_SETS: Partial<Record<PokemonSpeciesId, ReadonlySet<string>>> = Object.freeze(
+  Object.fromEntries(
+    Object.entries(TM_COMPAT).map(([sp, tms]) => [sp, new Set(tms)]) // runtime-set
+  ) as Partial<Record<PokemonSpeciesId, ReadonlySet<string>>>
+);
+
+export function isTmCompatible(speciesId: PokemonSpeciesId, tmId: string): boolean {
+  return TM_COMPAT_SETS[speciesId]?.has(tmId) ?? false;
+}
+
 function isTmCompatibleSpeciesId(value: PokemonSpeciesId): value is TmCompatibleSpeciesId {
   return value in TM_COMPAT;
 }

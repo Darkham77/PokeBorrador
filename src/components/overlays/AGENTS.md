@@ -9,7 +9,7 @@ Frontend Developers / Systems Engineers.
 ## Local Contracts
 
 - Follow standard repository modularity guidelines.
-- **Map-Exclusive Visibility for Contextual Overlays**: Global floating overlays tied to world exploration or active timers (such as `BuffsOverlay.vue`) MUST strictly condition their visibility to the map tab (`activeTab === 'map'`). When the user switches to other full views (PC Box, Pokédex, Bag, Gyms), these overlays must be hidden to prevent obstructing headers, tabs, search inputs, or management controls.
+- **Contextual Overlays Visibility**: Global floating overlays tied to world exploration or active timers (such as `BuffsOverlay.vue`) MUST strictly condition their visibility to the home and map tabs (`activeTab === 'map' || activeTab === 'home'`). When the user switches to other full views (PC Box, Pokédex, Bag, Gyms), these overlays must be hidden to prevent obstructing headers, tabs, search inputs, or management controls.
 - **Explicit Cross-Axis Alignment for Tooltip Lists**: Any vertical overlay list rendering badges, chips, or timers wrapped in tooltip containers (`PVTooltip`) MUST explicitly specify `align-items: flex-start;`. Because `.pv-tooltip-wrapper` applies `justify-content: center !important;`, omitting `align-items` defaults to `stretch`, causing shorter badges to be horizontally centered inside the expanded wrapper rather than aligned flush to the left boundary.
 
 ## Work Guidance

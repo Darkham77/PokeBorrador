@@ -9,6 +9,7 @@ Core Frontend / Gameplay Engineers.
 ## Local Contracts
 
 - **Session Entry & Pending Awards Alert**: Upon mounting the primary game view (`MainGameView.vue`), the view must trigger `eventStore.checkPendingAwards(true)` to alert players with a toast notification if unclaimed competition awards exist in their profile.
+- **Home Dashboard Continuous Flow**: `HomeView.vue` must coordinate widgets into continuous main and sidebar streams, avoiding inter-row height locks and enforcing the prioritized mobile ordering sequence (Events -> Breeding -> Gyms -> Factions -> Missions -> Notifications).
 
 ## Child DOX Index
 

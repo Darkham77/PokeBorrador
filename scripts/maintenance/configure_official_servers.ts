@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * @file configure_official_servers.ts
  * @description Script automático para parsear el archivo .env maestro y configurar src/data/official_servers.ts.

@@ -3,7 +3,8 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB'
-import { EVOLUTION_TABLE } from '@/data/pokemon/evolutionData'
+import { getPreEvolution } from '@/data/pokemon/evolutionData'
+import { isPokemonSpeciesId, requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { toPokemonType } from '@/data/battle/types'
 import BaseModal from '@/components/common/BaseModal.vue'
@@ -39,37 +40,33 @@ const uiStore = useUIStore()
 
 const pokemon = computed(() => props.pokemon || uiStore.activePokemonForRelearner)
 
-const forgottenMoves = computed(() => {
+const forgottenMoves = computed<LearnsetEntry[]>(() => {
+  if (!pokemon.value) return []
   const p = pokemon.value
-  if (!p) return []
-  
-  const learnedMoves = p.moves.filter(m => !!m).map((m) => (m as Move).name)
+  const learnedMovesSet = new Set(p.moves.filter((m): m is NonNullable<typeof m> => !!m).map(m => m.name))
   const possibleMoves: LearnsetEntry[] = []
+  const addedMoveNames = new Set<string>()
   const processedIds = new Set<string>()
-  
   let currentId: string | null = p.id
   
-  // Trace back evolution chain to gather all potential moves
-  while (currentId && !processedIds.has(currentId)) {
+  // Trace back evolution chain to gather all potential moves in O(1) per step
+  while (currentId && isPokemonSpeciesId(currentId) && !processedIds.has(currentId)) {
     processedIds.add(currentId)
     const dbEntry = (POKEMON_DB as Record<string, { learnset?: LearnsetEntry[] }>)[currentId] // open-record
     
     if (dbEntry && dbEntry.learnset) {
-      dbEntry.learnset.forEach(m => {
-        // Only moves at or below current level
-        if (m.lv <= p.level && !learnedMoves.includes(m.name)) {
-          // Avoid duplicates if multiple stages learn the same move
-          if (!possibleMoves.find(pm => pm.name === m.name)) {
-            possibleMoves.push({ ...m, fromId: currentId as string })
-          }
+      for (const m of dbEntry.learnset) {
+        // Only moves at or below current level and not currently known
+        if (m.lv <= p.level && !learnedMovesSet.has(m.name) && !addedMoveNames.has(m.name)) {
+          addedMoveNames.add(m.name)
+          possibleMoves.push({ ...m, fromId: currentId })
         }
-      })
+      }
     }
     
-    // Find previous stage
-    const currentIdRef = currentId as string
-    const prevEntry = Object.entries(EVOLUTION_TABLE).find(([, data]) => (data as { to: string }).to === currentIdRef) // o1-ok
-    currentId = prevEntry ? prevEntry[0] : null
+    // Find previous stage in O(1)
+    const prevSpecies = getPreEvolution(requirePokemonSpeciesId(currentId))
+    currentId = prevSpecies
   }
   
   return possibleMoves.sort((a, b) => (a.lv || 0) - (b.lv || 0))

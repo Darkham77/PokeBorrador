@@ -114,6 +114,7 @@ _raw-assets/
 
 - **Individual Files**: All assets (Banners, Backgrounds, Sprites, Icons) must be stored as individual WebP files.
 - **Batched Sprites**: For animations, use CSS sprites or sequential WebP loading. The project no longer uses JSON atlases.
+- **Event Banners Timeless Design Mandate**: All event banners and promotional artwork stored under `_raw-assets/public/assets/ui/events/` and resolved through `ASSET_TYPES.UI` MUST NEVER contain hardcoded calendar dates, years (e.g., 2024, 2026), hours, or physical location strings burned into the image pixels. Event scheduling and active timeframes must be rendered dynamically by Vue components overlaying the clean artwork.
 
 #### Execution & Pipeline Commands
 

@@ -10,6 +10,7 @@ Automation scripts for assets downloads, multi-core WebP sprite conversion, craf
   - `crafting/tier2/`: Advanced components and complex parts (`item.craftingTier === 2`).
   - `crafting/tier3/`: Finished products, consumables, TMs, Mochis, Pokéballs, and held battle items (`item.craftingTier === 3`).
 - **Prohibition on Flat Directories**: Creating flat asset directories (like `items/`) or altering `items.json` paths away from `crafting/tierX/<id>` is strictly forbidden.
+- **Zero Hardcoded Dates on Event Banners Mandate**: When generating, editing, or importing event banner illustrations into `_raw-assets/public/assets/ui/events/`, images MUST NEVER contain burned-in calendar dates, specific years (e.g. 2024), timeslots, fixed venue names, or aspect ratio watermarks (`16:9`). Event banners must remain timeless and reusable; event dates and scheduling are managed exclusively by the database and UI engine.
 
 ## Key Files & Canonical Commands
 

@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * Battle Capture Reload Persistence Simulation.
  * Verifies that capturing a wild Pokemon after a mid-combat page reload (F5)

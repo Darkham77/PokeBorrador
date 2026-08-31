@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * @file admin_supabase_users.ts
  * @description Script automático de administración de usuarios Supabase (Nube o NAS),

@@ -19,4 +19,5 @@ Frontend Developers / QA Engineers.
 
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- [home/](./home/AGENTS.md): Domain module documentation for home.
+- [modals/](./modals/AGENTS.md): Domain module documentation for modals.

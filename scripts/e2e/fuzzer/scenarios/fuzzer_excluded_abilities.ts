@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 // scripts/battle-tester/fuzzer-excluded-abilities.ts
 // Habilidades excluidas del reporte de cobertura Singles (gen9customgame).
 // Para testear estas habilidades se requiere un simulador de Dobles, Tera,

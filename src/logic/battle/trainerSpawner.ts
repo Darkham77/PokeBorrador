@@ -5,6 +5,7 @@ import type { MapRouteId } from '@/data/world/map-assets';
 import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
 import { requireNpcSpriteId, type NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { EnabledPokemonId } from '@/data/system/constants';
 
 import { buildTrainerTeam } from './trainerFactory.ts';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
@@ -104,10 +105,9 @@ export interface RivalEncounter {
 export async function buildRivalEncounter(playerTeam: Pokemon[]): Promise<RivalEncounter> {
   const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
   const { getSpritesForArchetype } = await import('@/logic/utils/npcSpriteRouter');
-  const { pokemonDataProvider } = await import('@/logic/providers/pokemonDataProvider');
   const { TeamGenerators } = await import('@pkmn/randoms');
   const { toID } = await import('@pkmn/sim');
-  const { ACTIVE_AI_TEAM_GENERATION_GEN } = await import('@/data/system/constants');
+  const { isEnabledPokemonId, ENABLED_POKEMON_IDS, ACTIVE_AI_TEAM_GENERATION_GEN } = await import('@/data/system/constants');
 
   const availableSprites = getSpritesForArchetype('rival');
   const sprite = availableSprites[Math.floor(Math.random() * availableSprites.length)] || 'blue';
@@ -133,11 +133,13 @@ export async function buildRivalEncounter(playerTeam: Pokemon[]): Promise<RivalE
   // 1. Pick ace from the rival archetype pool (SSoT: TRAINER_TYPES)
   const rivalPool = TRAINER_TYPES['rival'].pool;
   const aceBase = rivalPool[Math.floor(Math.random() * rivalPool.length)] ?? 'charizard';
+  if (!isEnabledPokemonId(aceBase)) {
+    throw new Error(`[buildRivalEncounter] Non-enabled species in rival pool: ${aceBase}`);
+  }
 
   // 2. Init randombattle generator based on active generation setting
   const generator = TeamGenerators.getTeamGenerator(`gen${ACTIVE_AI_TEAM_GENERATION_GEN}randombattle`);
   type RandSet = (species: string) => { moves: string[]; ability: string; item: string };
-  type GetTeam = () => Array<{ species: string; moves: string[]; ability: string; item: string }>;
   const getRandomSet = (s: string) => (Reflect.get(generator, 'randomSet') as RandSet).call(generator, s);
 
   const { applyCompetitiveSet } = await import('./trainerFactory');
@@ -145,53 +147,42 @@ export async function buildRivalEncounter(playerTeam: Pokemon[]): Promise<RivalE
   // 3. Build ace: 1 random Pokémon from rival pool + its competitive randomSet
   const aceSet = getRandomSet(aceBase);
 
-  const acePokemon = makePokemon(aceBase, rivalLevel, { bypassWhitelist: true }) as Pokemon;
+  const acePokemon = makePokemon(aceBase, rivalLevel) as Pokemon;
   if (!acePokemon) {
     throw new Error(`[buildRivalEncounter] No se pudo crear el Pokémon as: ${aceBase}`);
   }
   await applyCompetitiveSet(acePokemon, aceSet);
   (acePokemon as Pokemon & { _revealed?: boolean })._revealed = true;
 
-  // 4. Fill remaining slots from getTeam() — only species that exist in our DB
+  // 4. Fill remaining slots strictly from enabled species pool + competitive randomSet
   const enemyTeam: Pokemon[] = [acePokemon];
   const usedSpecies: PokemonSpeciesId[] = [requirePokemonSpeciesId(toID(aceBase))];
-  const rawTeam = (Reflect.get(generator, 'getTeam') as GetTeam).call(generator);
 
-  for (const set of rawTeam) {
-    if (enemyTeam.length >= teamSize) break;
-    const speciesId = requirePokemonSpeciesId(toID(set.species));
+  const candidatePool: (PokemonSpeciesId | EnabledPokemonId)[] = [
+    ...rivalPool.filter(id => !usedSpecies.includes(requirePokemonSpeciesId(toID(id)))),
+    ...ENABLED_POKEMON_IDS.filter(id => !usedSpecies.includes(requirePokemonSpeciesId(toID(id))))
+  ];
+
+  while (enemyTeam.length < teamSize && candidatePool.length > 0) {
+    const idx = Math.floor(Math.random() * candidatePool.length);
+    const candidateId = candidatePool.splice(idx, 1)[0]!;
+    const speciesId = requirePokemonSpeciesId(toID(candidateId));
     if (usedSpecies.includes(speciesId)) continue;
-    if (!pokemonDataProvider.getPokemonData(speciesId, true)) continue; // especie no en nuestra DB
+    if (!isEnabledPokemonId(speciesId)) {
+      throw new Error(`[buildRivalEncounter] Attempted to create non-enabled species: ${speciesId}`);
+    }
 
-    const p = makePokemon(speciesId, rivalLevel, { bypassWhitelist: true }) as Pokemon;
+    const p = makePokemon(speciesId, rivalLevel) as Pokemon;
     if (!p) continue;
 
     try {
+      const set = getRandomSet(speciesId);
       await applyCompetitiveSet(p, set);
       (p as Pokemon & { _revealed?: boolean })._revealed = true;
       usedSpecies.push(speciesId);
       enemyTeam.push(p);
     } catch {
-      continue; // moves del set no disponibles en nuestra DB → saltear
-    }
-  }
-
-  // 5. Fill any remaining gaps with pool Pokémon + competitive randomSet (fallback for filtered slots)
-  const poolFallback = rivalPool.filter(id => !usedSpecies.includes(requirePokemonSpeciesId(toID(id))));
-  for (const poolId of poolFallback) {
-    if (enemyTeam.length >= teamSize) break;
-    const speciesId = requirePokemonSpeciesId(toID(poolId));
-    const p = makePokemon(speciesId, rivalLevel, { bypassWhitelist: true }) as Pokemon;
-    if (!p) continue;
-
-    try {
-      const fallbackSet = getRandomSet(speciesId);
-      await applyCompetitiveSet(p, fallbackSet);
-      (p as Pokemon & { _revealed?: boolean })._revealed = true;
-      usedSpecies.push(speciesId);
-      enemyTeam.push(p);
-    } catch {
-      continue;
+      continue; // moves del set no disponibles en DB → probar siguiente candidato
     }
   }
 

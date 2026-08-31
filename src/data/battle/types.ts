@@ -49,8 +49,10 @@ export const TYPE_TRANSLATIONS: Record<PokemonType, string> = {
   fairy: 'Hada'
 } as const;
 
+export const POKEMON_TYPES_SET: ReadonlySet<string> = new Set(POKEMON_TYPES); // runtime-set
+
 export function isPokemonType(raw: string): raw is PokemonType {
-  return (POKEMON_TYPES as readonly string[]).includes(raw.toLowerCase()); // domain-ok
+  return POKEMON_TYPES_SET.has(raw.toLowerCase()); // text-ok
 }
 
 /** Boundary adapter for data coming from Showdown or external sources. Throws if invalid. */

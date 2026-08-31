@@ -126,8 +126,13 @@ function getEventBannerUrl(event: GameEvent | null): string {
 
 function getEventTooltipTitle(event: GameEvent | null, idx?: number, total?: number): string {
   if (!event) return 'Sin eventos activos'
+  const cfg = (typeof event.config === 'string'
+    ? (() => { try { return JSON.parse(event.config) as ExtendedConfig } catch { return {} } })()
+    : (event.config || {})) as ExtendedConfig
+  const rotation = resolveWeeklyRotation(cfg, getGMT3Date())
+  const effectiveName = rotation?.title || event.name
   const suffix = total && total > 1 && idx !== undefined ? ` (${idx + 1}/${total})` : ''
-  return `📅 EVENTO: ${event.name}${suffix}`
+  return `📅 EVENTO: ${effectiveName}${suffix}`
 }
 
 function getEventTooltipDesc(event: GameEvent | null): string {

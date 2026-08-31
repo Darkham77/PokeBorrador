@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * Sequential Search Loop 10 Battles Simulation.
  * Guarantees zero regressions across 10 uninterrupted sequential encounters in the search loop

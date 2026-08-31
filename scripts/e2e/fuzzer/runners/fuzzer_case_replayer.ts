@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 import type { PokemonSet } from '@pkmn/sim';
 import fs from 'node:fs';
 import path from 'node:path';

@@ -6,6 +6,7 @@ import type { PokemonData, LearnsetMove } from '@/types/system/database';
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { requireAbilityId } from '@/data/battle/abilities';
 import { isReadyForFriendshipEvolution } from '@/logic/pokemon/friendshipLogic';
+import { isEnabledPokemonId } from '@/data/system/constants';
 
 /**
  * Realiza la evolución de los datos de un Pokémon.
@@ -157,7 +158,7 @@ export function getEvolvedForm(id: string, level: number): PokemonSpeciesId {
 
     // Level Evolution
     const levelEvo = getLevelEvolution(evolved);
-    if (levelEvo && level >= levelEvo.level) {
+    if (levelEvo && level >= levelEvo.level && isEnabledPokemonId(levelEvo.to)) {
       evolved = levelEvo.to;
       changed = true;
     } 
@@ -170,7 +171,7 @@ export function getEvolvedForm(id: string, level: number): PokemonSpeciesId {
         changed = true;
       } else {
         const stoneEvo = getStoneEvolution(evolved);
-        if (stoneEvo) {
+        if (stoneEvo && isEnabledPokemonId(stoneEvo.to)) {
           evolved = stoneEvo.to;
           changed = true;
         }
@@ -180,7 +181,7 @@ export function getEvolvedForm(id: string, level: number): PokemonSpeciesId {
     // Trade Evolution (50% chance if level >= 32)
     if (!changed && level >= WILD_TRADE_EVO_MIN_LEVEL && Math.random() < 0.5) {
       const tradeEvo = getTradeEvolution(evolved);
-      if (tradeEvo) {
+      if (tradeEvo && isEnabledPokemonId(tradeEvo)) {
         evolved = tradeEvo;
         changed = true;
       }

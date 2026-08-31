@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * AUDIO CONSTANTS (SINGLE SOURCE OF TRUTH)
  * Centralized constant definitions for audio volume levels, frequencies, and Web Audio API parameters.

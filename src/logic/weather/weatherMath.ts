@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * src/logic/weather/weatherMath.ts
  *
@@ -105,13 +104,22 @@ export function getRouteWeatherPure(
 import { MAPS_BY_ROUTE_ID } from '../../data/world/maps.ts';
 
 function initSessionWeatherSeed(): number {
+  const getCryptoRandom = (): number => {
+    if (typeof globalThis.crypto?.getRandomValues === 'function') {
+      const array = new Uint32Array(1);
+      globalThis.crypto.getRandomValues(array);
+      return array[0]! % WEATHER_SESSION_SEED_RANGE;
+    }
+    return 42;
+  };
+
   if (typeof window !== 'undefined') {
     if (window.__WEATHER_SESSION_SEED__ === undefined) {
-      window.__WEATHER_SESSION_SEED__ = Math.random() * WEATHER_SESSION_SEED_RANGE;
+      window.__WEATHER_SESSION_SEED__ = getCryptoRandom();
     }
     return window.__WEATHER_SESSION_SEED__;
   }
-  return Math.random() * WEATHER_SESSION_SEED_RANGE;
+  return getCryptoRandom();
 }
 
 const sessionWeatherSeed = initSessionWeatherSeed();

@@ -24,6 +24,7 @@ State Architects / Frontend Developers.
 - **Real-Time Environment Ticker & Simulation Freeze Protocol**:
   The map store (`useMapStore`) must sample server epoch time via a lightweight GSAP ticker every 10s of game time, dynamically updating `currentEpochHour`, `currentCycle` (day/dusk/night), and map weather for live players. To ensure deterministic execution during automated E2E simulations, fuzzer runs, and certified replays, the ticker must support instantaneous freezing via `setFreezeClock(true)` and fixed environment override via `window.__VITE_DEBUG__.setFixedTime(...)`.
 - **Reactive O(1) State Indexing**: Persistent state arrays (`team`, `box`, `inventory`, `pokedex`) retain their serializable database contracts, while fast entity lookups MUST be exposed via reactive computed getters (`pokemonByUid: computed<ReadonlyMap<string, ...>>`, `caughtSpeciesSet`, `seenSpeciesSet`) guaranteeing $O(1)$ queries without modifying underlying SQL/Supabase schemas.
+- **Debug Mode Daycare & Unreleased Species Compatibility**: In debug mode or local sandbox instances (`window.__VITE_DEBUG__`), Daycare deposit (`breeding.ts`), egg generation (`checkAndGenerateEgg`), and egg hatching actions (`executeHatch` in `breedingActions.ts`) MUST accept and process unreleased Pokémon species, propagating `bypassWhitelist: true` across `makePokemon` and `recalcPokemonStats`.
 
 ## Work Guidance
 

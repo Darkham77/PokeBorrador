@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * scripts/auditors/domain_data/validate_o1_data_structures.ts
  * 
@@ -85,11 +84,11 @@ export const O1_CATALOG_PATTERNS: Array<{
 ];
 
 export const P_POKEMON_SPREAD_LOOKUP = /\[\s*\.\.\.[a-zA-Z0-9_.]*(?:team|box)[^,\]]*,\s*\.\.\.[a-zA-Z0-9_.]*(?:team|box)[^\]]*\]\.(?:find|filter|some)\s*\(/g;
-export const P_STATIC_ARRAY_INCLUDES = /\b([A-Z][A-Z0-9_]+_(?:IDS|LIST|TYPES|CATEGORIES|NAMES|KINDS))\.(?:includes|indexOf)\s*\(/g;
+export const P_STATIC_ARRAY_INCLUDES = /(?:\(\s*)?\b([A-Z][A-Z0-9_]+_(?:IDS|LIST|TYPES|CATEGORIES|NAMES|KINDS|ORDER))\b(?:\s+as\s+[^)]+)?(?:\s*\))?\.(?:includes|indexOf)\s*\(/g;
 export const P_OBJECT_SCAN_LOOKUP = /\bObject\.(?:keys|values|entries)\s*\([^)]+\)\.(?:find|findLast)\s*\(/g;
 
-// Escape hatch comments
-export const ESCAPE_HATCHES = ['// o1-ok', '// linear-search-ok', '// domain-ok'] as const;
+// Escape hatch comments (strictly o1-specific, domain-ok is forbidden here)
+export const ESCAPE_HATCHES = ['// o1-ok', '// linear-search-ok'] as const;
 
 export function shouldIgnoreLine(line: string): boolean {
   return ESCAPE_HATCHES.some(hatch => line.includes(hatch));

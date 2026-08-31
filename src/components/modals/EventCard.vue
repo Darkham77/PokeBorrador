@@ -1,21 +1,22 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 import { useEventStore } from '@/stores/events'
 import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import EventCategorySlotCard from './EventCategorySlotCard.vue'
 import type { CompetitionParticipant } from '@/types/system/stores'
 import { 
   resolveEventSubCompetitions,
   resolveSubCompetitionDirection,
   getSubCompTitle,
+  getSubCompDescription,
   evaluatePokemonForSubCompetition, 
   getEligiblePokemonForSubCompetition, 
   isPokemonEnrolledInOtherSubCompetition,
   resolveWeeklyRotation,
+  getEventDisplayName,
   getEventCurrentWindow,
   type Event as GameEvent, 
   type EventConfig,
@@ -25,10 +26,13 @@ import {
 } from '@/logic/events/eventEngine'
 import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import { getServerTime, getServerInstant, getGMT3Date } from '@/logic/utils/timeUtils'
+import { getServerTime, getServerInstant, getGMT3Date, normalizeZonedDateTime } from '@/logic/utils/timeUtils'
+import type { UpcomingEventOccurrence } from '@/logic/events/eventEngine'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 interface Props {
   event: GameEvent
+  occurrence?: UpcomingEventOccurrence
 }
 
 const props = defineProps<Props>()
@@ -37,6 +41,14 @@ const eventStore = useEventStore()
 const gameStore = useGameStore()
 const modalStore = useModalStore()
 const uiStore = useUIStore()
+
+const isUpcoming = computed(() => Boolean(props.occurrence))
+const occurrenceZdt = computed(() => {
+  if (props.occurrence) {
+    return normalizeZonedDateTime(props.occurrence.startInstant)
+  }
+  return getGMT3Date()
+})
 
 const now = ref(getServerTime())
 let timerTween: gsap.core.Tween | null = null
@@ -66,6 +78,9 @@ const formatTime = (isoTime: string) => {
 }
 
 const formattedRemainingTime = computed(() => {
+  if (props.occurrence) {
+    return props.occurrence.startsInLabel
+  }
   const currentInstant = Temporal.Instant.fromEpochMilliseconds(now.value)
   const window = getEventCurrentWindow(props.event, currentInstant)
   if (window) {
@@ -89,6 +104,10 @@ const formattedRemainingTime = computed(() => {
   return 'Indefinido'
 })
 
+const cardTimerLabel = computed(() => {
+  return props.occurrence ? 'INICIA EN:' : 'FINALIZA EN:'
+})
+
 const parsedEventConfig = computed<EventConfig>(() => {
   if (typeof props.event.config === 'string') {
     try {
@@ -102,13 +121,12 @@ const parsedEventConfig = computed<EventConfig>(() => {
   return {}
 })
 
-const cardDisplayName = computed(() => {
-  if (props.event.id === 'hora_magikarp') return 'Hora de Pesca del Magikarp'
-  return props.event.name || props.event.id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) // text-ok
+const currentWeeklyRotation = computed<WeeklyRotationEntry | null>(() => {
+  return resolveWeeklyRotation(parsedEventConfig.value, occurrenceZdt.value)
 })
 
-const currentWeeklyRotation = computed<WeeklyRotationEntry | null>(() => {
-  return resolveWeeklyRotation(parsedEventConfig.value, getGMT3Date())
+const cardDisplayName = computed(() => {
+  return getEventDisplayName(props.event, props.occurrence)
 })
 
 const cardSpeciesList = computed<PokemonSpeciesId[]>(() => {
@@ -124,56 +142,45 @@ const cardBannerKey = computed(() => {
   if (currentWeeklyRotation.value?.banner) {
     return currentWeeklyRotation.value.banner
   }
-  return parsedEventConfig.value.banner || ''
+  if (parsedEventConfig.value.banner) {
+    return parsedEventConfig.value.banner
+  }
+  // Fallbacks based on canonical event IDs
+  const eventId = props.event.id
+  if (eventId === 'dia_pesca') return 'dia_pesca_full'
+  if (eventId === 'torneo_pesca') return 'pesca_exotica_full'
+  if (eventId === 'dia_crianza') return 'huevos_full'
+  if (eventId === 'dia_naturaleza') return 'safari_park_full'
+  if (eventId === 'torneo_caza') return 'caza_bichos_full'
+  if (eventId === 'fiebre_minera') return 'arqueologia_fosiles_full'
+  if (eventId === 'doble_exp') return 'doble_exp_full'
+  if (eventId === 'gran_concurso_sabado') return 'gran_concurso_sabado_full'
+  if (eventId === 'dia_safari_suerte') return 'safari_suerte_full'
+  if (eventId === 'comunidad_mensual') return 'growlithe_full'
+  if (eventId === 'guerra_facciones_mensual') return 'war_full'
+  if (eventId === 'fiebre_oro') return 'rival_full'
+  return ''
 })
 
 const resolvedSubComps = computed<ResolvedSubCompetition[]>(() => {
-  return resolveEventSubCompetitions(props.event, getServerInstant())
+  const targetInstant = props.occurrence?.startInstant ?? getServerInstant()
+  return resolveEventSubCompetitions(props.event, targetInstant)
 })
-
-const globalSubComps = computed(() => {
-  return resolvedSubComps.value.filter(s => !s.targetSpecies)
-})
-
-const speciesScopedSubComps = computed(() => {
-  return resolvedSubComps.value.filter(s => Boolean(s.targetSpecies))
-})
-
-const participatingSpeciesList = computed<PokemonSpeciesId[]>(() => {
-  const set = new Set<PokemonSpeciesId>()
-  for (const sub of speciesScopedSubComps.value) {
-    if (sub.targetSpecies) {
-      set.add(sub.targetSpecies)
-    }
-  }
-  return Array.from(set)
-})
-
-const selectedSpeciesTab = ref<PokemonSpeciesId | null>(null)
-
-watch(participatingSpeciesList, (newList) => {
-  if (newList.length > 0) {
-    if (!selectedSpeciesTab.value || !newList.includes(selectedSpeciesTab.value)) {
-      selectedSpeciesTab.value = newList[0]!
-    }
-  } else {
-    selectedSpeciesTab.value = null
-  }
-}, { immediate: true })
-
-const activeSpeciesSubComps = computed(() => {
-  if (!selectedSpeciesTab.value) return speciesScopedSubComps.value
-  return speciesScopedSubComps.value.filter(s => s.targetSpecies === selectedSpeciesTab.value)
-})
-
-const hasSpeciesEnrollment = (sp: PokemonSpeciesId): boolean => {
-  const subs = speciesScopedSubComps.value.filter(s => s.targetSpecies === sp)
-  return subs.some(s => Boolean(getParticipantForCategory(s)))
-}
 
 const getEntryForCategory = (catId: string) => {
   return eventStore.userEntries[`${props.event.id}:${catId}`] || (catId === 'ivs' ? eventStore.userEntries[props.event.id] : undefined)
 }
+
+const enrolledCategoriesCount = computed(() => {
+  if (props.event.type !== 'competition') return 0
+  let count = 0
+  for (const sub of resolvedSubComps.value) {
+    if (getParticipantForCategory(sub)) {
+      count++
+    }
+  }
+  return count
+})
 
 const getParticipantForCategory = (sub: SubCompetitionConfig): CompetitionParticipant | null => {
   const entry = getEntryForCategory(sub.id)
@@ -219,6 +226,17 @@ const getParticipantForCategory = (sub: SubCompetitionConfig): CompetitionPartic
   return null
 }
 
+const formatMetricLabel = (sub: ResolvedSubCompetition | SubCompetitionConfig): string => {
+  const dir = resolveSubCompetitionDirection(props.event.id, sub.id, sub.order)
+  if (sub.metric === 'total_ivs') return 'Mayor IVs'
+  if (sub.metric === 'stat_iv' && sub.targetStat) return `Mayor ${sub.targetStat.toUpperCase()}`
+  if (sub.metric === 'weight') return dir === 'max' ? 'Mayor Peso' : 'Menor Peso'
+  if (sub.metric === 'height') return dir === 'max' ? 'Mayor Altura' : 'Menor Altura'
+  if (sub.metric === 'level') return dir === 'max' ? 'Mayor Nivel' : 'Menor Nivel'
+  if (sub.metric === 'friendship') return dir === 'max' ? 'Mayor Amistad' : 'Menor Amistad'
+  return sub.name
+}
+
 const openParticipationModal = (sub: ResolvedSubCompetition | SubCompetitionConfig) => {
   const targetSp = ('targetSpecies' in sub && sub.targetSpecies) ? sub.targetSpecies : null
   const allowedSpecies = targetSp
@@ -259,6 +277,25 @@ const openParticipationModal = (sub: ResolvedSubCompetition | SubCompetitionConf
   })
 }
 
+const handleSlotChipClick = (sub: ResolvedSubCompetition | SubCompetitionConfig) => {
+  const participant = getParticipantForCategory(sub)
+  if (participant) {
+    modalStore.open('EventSlotAction', {
+      event: props.event,
+      sub,
+      participant,
+      onChange: () => {
+        openParticipationModal(sub)
+      },
+      onWithdraw: () => {
+        eventStore.removeCompetitionEntry(props.event.id, sub.id)
+      }
+    })
+  } else {
+    openParticipationModal(sub)
+  }
+}
+
 const openEventDetail = () => {
   modalStore.open('EventDetail', {
     event: props.event
@@ -277,20 +314,18 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
   if (!card) return
   if (isEntering) {
     gsap.to(card, {
-      borderColor: 'rgba(255, 215, 0, 0.5)',
-      y: -2,
+      y: -3,
       duration: 0.2,
       ease: 'power2.out',
       overwrite: 'auto'
     })
   } else {
     gsap.to(card, {
-      borderColor: 'rgba(255, 255, 255, 0.1)',
       y: 0,
       duration: 0.2,
       ease: 'power2.out',
       overwrite: 'auto',
-      clearProps: 'borderColor,transform'
+      clearProps: 'transform'
     })
   }
 }
@@ -326,7 +361,7 @@ onUnmounted(() => {
 <template>
   <div
     class="event-card"
-    :class="{ 'has-banner': Boolean(cardBannerKey) }"
+    :class="{ 'has-banner': Boolean(cardBannerKey), 'is-upcoming-card': isUpcoming, 'is-active-card': !isUpcoming }"
     @click.stop="openEventDetail"
     @mouseenter="onCardHover($event, true)"
     @mouseleave="onCardHover($event, false)"
@@ -335,6 +370,7 @@ onUnmounted(() => {
     <div
       v-if="cardBannerKey"
       class="banner-box"
+      :class="{ 'is-upcoming-banner': isUpcoming }"
     >
       <img
         :src="getAssetUrl(ASSET_TYPES.BANNER, cardBannerKey)"
@@ -356,22 +392,31 @@ onUnmounted(() => {
               class="type-tag"
               :class="event.type"
             >{{ event.type === 'competition' ? 'COMPETICIÓN' : 'EVENTO' }}</span>
+
             <span
-              v-if="parsedEventConfig.speciesShinyMult && parsedEventConfig.speciesShinyMult > 1"
-              class="type-tag shiny"
-            ><span class="emoji-inline">✨</span> x{{ parsedEventConfig.speciesShinyMult }} SHINY</span>
-            <span
-              v-if="parsedEventConfig.speciesRateMult && parsedEventConfig.speciesRateMult > 1"
-              class="type-tag spawn"
-            ><span class="emoji-inline">🎯</span> x{{ parsedEventConfig.speciesRateMult }} SPAWN</span>
-            <span
-              v-if="parsedEventConfig.fishingMult && parsedEventConfig.fishingMult > 1"
-              class="type-tag fishing"
-            ><span class="emoji-inline">🎣</span> x{{ parsedEventConfig.fishingMult }} PESCA</span>
-            <span
-              v-if="parsedEventConfig.requireCaughtDuringEvent"
+              v-if="isUpcoming && occurrence?.dateLabel"
               class="catch-window-tag"
-            ><span class="emoji-inline">🕒</span> SOLO CAPTURAS DEL EVENTO</span>
+            >
+              <span class="emoji-inline">🗓️</span> {{ occurrence.dateLabel }} · {{ occurrence.timeLabel }}
+            </span>
+            <template v-else>
+              <span
+                v-if="parsedEventConfig.speciesShinyMult && parsedEventConfig.speciesShinyMult > 1"
+                class="type-tag shiny"
+              ><span class="emoji-inline">✨</span> x{{ parsedEventConfig.speciesShinyMult }} SHINY</span>
+              <span
+                v-if="parsedEventConfig.speciesRateMult && parsedEventConfig.speciesRateMult > 1"
+                class="type-tag spawn"
+              ><span class="emoji-inline">🎯</span> x{{ parsedEventConfig.speciesRateMult }} SPAWN</span>
+              <span
+                v-if="parsedEventConfig.fishingMult && parsedEventConfig.fishingMult > 1"
+                class="type-tag fishing"
+              ><span class="emoji-inline">🎣</span> x{{ parsedEventConfig.fishingMult }} PESCA</span>
+              <span
+                v-if="parsedEventConfig.requireCaughtDuringEvent"
+                class="catch-window-tag"
+              ><span class="emoji-inline">🕒</span> SOLO CAPTURAS DEL EVENTO</span>
+            </template>
           </div>
 
           <!-- Especies Participantes en la Tarjeta -->
@@ -381,15 +426,19 @@ onUnmounted(() => {
           >
             <span class="card-species-label">Participantes:</span>
             <div class="card-species-sprites">
-              <img
+              <PVTooltip
                 v-for="sp in cardSpeciesList"
                 :key="sp"
-                :src="getAssetUrl(ASSET_TYPES.POKEMON, sp)"
-                :title="`Ver información de Pokédex de ${sp}`"
-                :alt="sp"
-                class="card-mini-sprite pixelated clickable"
-                @click.stop="openSpeciesDetail(sp)"
+                :title="`Ver información de Pokédex de ${sp.toUpperCase()}`"
+                position="top"
               >
+                <img
+                  :src="getAssetUrl(ASSET_TYPES.POKEMON, sp)"
+                  :alt="sp"
+                  class="card-mini-sprite pixelated clickable"
+                  @click.stop="openSpeciesDetail(sp)"
+                >
+              </PVTooltip>
             </div>
           </div>
         </div>
@@ -399,102 +448,78 @@ onUnmounted(() => {
         {{ event.description }}
       </p>
 
-      <!-- Competition Category Slots List -->
+      <!-- Compact Competition Category Preview (Active Competitions Only) -->
       <div 
-        v-if="event.type === 'competition' && resolvedSubComps.length"
-        class="competition-slots-list"
+        v-if="!isUpcoming && event.type === 'competition' && resolvedSubComps.length"
+        class="compact-competition-preview"
       >
-        <!-- 1. Global Categories (e.g. IVs) -->
-        <div
-          v-if="globalSubComps.length"
-          class="global-category-block"
-        >
-          <div class="global-category-header">
-            <span class="global-category-label pixelated"><span class="title-icon">🧬</span> GENÉTICA SUPREMA (COMPETENCIA GLOBAL)</span>
-          </div>
-          <EventCategorySlotCard
-            v-for="sub in globalSubComps"
-            :key="sub.id"
-            :event="event"
-            :sub="sub"
-            :participant="getParticipantForCategory(sub)"
-            empty-text="Sin Pokémon inscripto"
-            :is-inner="false"
-            @open-participation-modal="openParticipationModal"
-          />
+        <div class="comp-preview-header">
+          <span class="comp-preview-title pixelated"><span class="title-icon">🏆</span> CATEGORÍAS EN JUEGO</span>
+          <span
+            v-if="enrolledCategoriesCount > 0"
+            class="comp-preview-badge pixelated enrolled"
+          >
+            ✓ {{ enrolledCategoriesCount }} Inscripto{{ enrolledCategoriesCount === 1 ? '' : 's' }}
+          </span>
         </div>
 
-        <!-- 2. Species-Scoped Dimensions (Unified Tabs & Enclosed Panel) -->
-        <div
-          v-if="speciesScopedSubComps.length"
-          class="species-tabs-panel"
-        >
-          <!-- Panel Header & Attached Tabs -->
-          <div class="species-tabs-panel-header">
-            <div class="species-panel-intro">
-              <span class="species-panel-title pixelated"><span class="title-icon">⚖️</span> PESO Y ALTURA POR ESPECIE</span>
-              <span
-                v-if="participatingSpeciesList.length > 1"
-                class="species-panel-hint pixelated"
-              >
-                Elige especie:
-              </span>
-            </div>
-
-            <!-- Attached Tab Strip -->
-            <div
-              v-if="participatingSpeciesList.length > 1"
-              class="species-tabs-strip"
+        <div class="comp-categories-grid">
+          <PVTooltip
+            v-for="sub in resolvedSubComps"
+            :key="sub.id"
+            :title="getSubCompTitle(event.id, sub)"
+            :description="getSubCompDescription(event.id, sub)"
+            position="top"
+          >
+            <button
+              type="button"
+              class="comp-slot-chip pixelated"
+              :class="{ enrolled: Boolean(getParticipantForCategory(sub)) }"
+              @click.stop="handleSlotChipClick(sub)"
             >
-              <button
-                v-for="sp in participatingSpeciesList"
-                :key="sp"
-                type="button"
-                class="species-tab-btn"
-                :class="{ active: selectedSpeciesTab === sp }"
-                @click.stop="selectedSpeciesTab = sp"
-              >
+              <div class="chip-content">
+                <!-- Pokémon Species Mini Sprite (or 🧬 icon for global IVs) -->
                 <img
-                  :src="getAssetUrl(ASSET_TYPES.POKEMON, sp)"
-                  :alt="sp"
-                  class="species-tab-icon pixelated"
+                  v-if="sub.targetSpecies"
+                  :src="getAssetUrl(ASSET_TYPES.POKEMON, sub.targetSpecies)"
+                  class="chip-poke-sprite"
+                  :alt="sub.targetSpecies"
                 >
-                <span class="species-tab-name pixelated">{{ sp }}</span>
                 <span
-                  v-if="hasSpeciesEnrollment(sp)"
-                  class="species-tab-check"
-                  title="Inscripción activa"
-                ><span class="emoji-inline">✓</span></span>
-              </button>
-            </div>
-          </div>
+                  v-else
+                  class="chip-global-icon"
+                ><span class="emoji-inline">🧬</span></span>
+                
+                <!-- Clean Metric Name (IVs / Peso / Altura) -->
+                <span class="chip-metric">{{ formatMetricLabel(sub) }}</span>
+              </div>
 
-          <!-- Panel Body: Directly connected slots for active tab -->
-          <div class="species-tab-panel-body">
-            <div class="species-slots-wrapper">
-              <EventCategorySlotCard
-                v-for="sub in activeSpeciesSubComps"
-                :key="sub.id"
-                :event="event"
-                :sub="sub"
-                :participant="getParticipantForCategory(sub)"
-                :empty-text="`Sin ${sub.targetSpecies || 'Pokémon'} inscripto`"
-                :is-inner="true"
-                @open-participation-modal="openParticipationModal"
-              />
-            </div>
-          </div>
+              <!-- Simple Status Badge (+ or ✓) -->
+              <span class="chip-status-pill">
+                {{ getParticipantForCategory(sub) ? '✓' : '+' }}
+              </span>
+            </button>
+          </PVTooltip>
         </div>
       </div>
 
       <footer class="card-footer">
         <div class="timer-box">
-          <span class="label">FINALIZA EN:</span>
-          <span class="value">{{ formattedRemainingTime }}</span>
+          <span class="label">{{ cardTimerLabel }}</span>
+          <span
+            class="value"
+            :class="{ 'upcoming-value': isUpcoming }"
+          >{{ formattedRemainingTime }}</span>
         </div>
         
+        <div
+          v-if="isUpcoming"
+          class="upcoming-badge"
+        >
+          <span class="emoji-inline">⏳</span> PRÓXIMO
+        </div>
         <button
-          v-if="event.type === 'competition'"
+          v-else-if="event.type === 'competition'"
           class="retro-btn rules-btn pixelated"
           @click.stop="openEventDetail"
         >

@@ -1,7 +1,7 @@
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { MoveCategory } from '@/data/battle/moves';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { ACTIVE_AI_TEAM_GENERATION_GEN } from '@/data/system/constants';
+import { ACTIVE_AI_TEAM_GENERATION_GEN, isEnabledPokemonId } from '@/data/system/constants';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { toID } from '@/logic/utils/strings.ts';
 import { isItemId } from '@/data/inventory/items';
@@ -52,8 +52,8 @@ export async function applyCompetitiveSet(
 
   const rawItemId = toID(set.item);
   p.heldItem = isItemId(rawItemId) ? rawItemId : null;
-  recalcPokemonStats(p, true);
-  validatePokemon(p, true);
+  recalcPokemonStats(p);
+  validatePokemon(p);
 }
 
 /**
@@ -87,8 +87,11 @@ export async function buildTrainerTeam(
     const sourcePool = availablePool.length > 0 ? availablePool : pool;
     const pIdBase = sourcePool[Math.floor(Math.random() * sourcePool.length)]!;
     const pId = getEvolvedForm(pIdBase, trainerLv);
+    if (!isEnabledPokemonId(pId)) {
+      throw new Error(`[trainerFactory] Cannot create trainer pokemon for non-enabled species: ${pId}`);
+    }
     
-    const p = makePokemon(pId, trainerLv, { bypassWhitelist: true }) as Pokemon;
+    const p = makePokemon(pId, trainerLv) as Pokemon;
     if (p) {
       try {
         const set = getRandomSet(pId);

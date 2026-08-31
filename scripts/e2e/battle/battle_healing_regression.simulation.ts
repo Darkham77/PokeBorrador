@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 import { test, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import type { ItemId } from '../../../src/data/inventory/items.ts';

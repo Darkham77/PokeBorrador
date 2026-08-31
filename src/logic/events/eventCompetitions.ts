@@ -71,9 +71,9 @@ export interface SubCompetitionEvaluationResult {
 }
 
 const DEFAULT_SUB_COMPETITIONS: readonly SubCompetitionConfig[] = [
-  { id: 'ivs', name: 'Genética Superior (IVs)', metric: 'total_ivs', order: 'max' },
-  { id: 'weight', name: 'Masa y Peso (Titán / Miniatura)', metric: 'weight', order: 'auto' },
-  { id: 'height', name: 'Envergadura y Altura (Gran Salto)', metric: 'height', order: 'auto' }
+  { id: 'ivs', name: 'Mayor IVs', metric: 'total_ivs', order: 'max' },
+  { id: 'weight', name: 'Mayor/Menor Peso', metric: 'weight', order: 'auto' },
+  { id: 'height', name: 'Mayor/Menor Altura', metric: 'height', order: 'auto' }
 ] as const;
 
 /**
@@ -87,22 +87,22 @@ export function getDefaultSubCompetitions(event: Event): SubCompetitionConfig[] 
   return [
     {
       id: 'ivs',
-      name: 'Genética Superior (IVs)',
-      description: 'Premia al Pokémon con mayor potencial genético (suma total de IVs).',
+      name: 'Mayor IVs',
+      description: 'Premia al Pokémon con mayor suma total de IVs (0 a 186).',
       metric: 'total_ivs',
       order: 'max'
     },
     {
       id: 'weight',
-      name: 'Masa y Peso (Titán / Miniatura)',
-      description: 'Premia al ejemplar con mayor o menor peso según el ciclo del evento.',
+      name: 'Mayor/Menor Peso',
+      description: 'Premia al Pokémon según el peso (kg).',
       metric: 'weight',
       order: 'auto'
     },
     {
       id: 'height',
-      name: 'Envergadura y Altura (Gran Salto)',
-      description: 'Premia al ejemplar con mayor o menor altura según el ciclo del evento.',
+      name: 'Mayor/Menor Altura',
+      description: 'Premia al Pokémon según la altura (m).',
       metric: 'height',
       order: 'auto'
     }
@@ -366,24 +366,57 @@ export function getSubCompIcon(metric: string): string {
 
 export function getSubCompTitle(eventId: string, sub: SubCompetitionConfig): string {
   const dir = resolveSubCompetitionDirection(eventId, sub.id, sub.order);
+  const speciesSuffix = sub.targetSpecies ? ` (${sub.targetSpecies.toUpperCase()})` : '';
   if (sub.metric === 'total_ivs') {
-    return 'Mayor IVs Totales';
+    return `Mayor IVs${speciesSuffix}`;
   }
   if (sub.metric === 'stat_iv' && sub.targetStat) {
-    return `Mayor IV en ${sub.targetStat.toUpperCase()}`; // domain-ok
+    return `Mayor IV en ${sub.targetStat.toUpperCase()}${speciesSuffix}`; // domain-ok
   }
   if (sub.metric === 'weight') {
-    return dir === 'max' ? 'Mayor Peso (Titán)' : 'Menor Peso (Miniatura)';
+    return (dir === 'max' ? 'Mayor Peso' : 'Menor Peso') + speciesSuffix;
   }
   if (sub.metric === 'height') {
-    return dir === 'max' ? 'Mayor Altura (Gran Salto)' : 'Menor Altura (Miniatura)';
+    return (dir === 'max' ? 'Mayor Altura' : 'Menor Altura') + speciesSuffix;
   }
   if (sub.metric === 'level') {
-    return dir === 'max' ? 'Mayor Nivel' : 'Menor Nivel';
+    return (dir === 'max' ? 'Mayor Nivel' : 'Menor Nivel') + speciesSuffix;
   }
   if (sub.metric === 'friendship') {
-    return dir === 'max' ? 'Mayor Amistad' : 'Menor Amistad';
+    return (dir === 'max' ? 'Mayor Amistad' : 'Menor Amistad') + speciesSuffix;
   }
-  return sub.name || 'Categoría';
+  return (sub.name || 'Categoría') + speciesSuffix;
+}
+
+export function getSubCompDescription(eventId: string, sub: SubCompetitionConfig): string {
+  const dir = resolveSubCompetitionDirection(eventId, sub.id, sub.order);
+  const speciesText = sub.targetSpecies ? ` para ${sub.targetSpecies.toUpperCase()}` : '';
+  if (sub.metric === 'total_ivs') {
+    return `Premia al Pokémon con mayor suma total de IVs (0 a 186)${speciesText}.`;
+  }
+  if (sub.metric === 'stat_iv' && sub.targetStat) {
+    return `Premia al Pokémon con mayor IV en ${sub.targetStat.toUpperCase()} (0 a 31)${speciesText}.`;
+  }
+  if (sub.metric === 'weight') {
+    return dir === 'max'
+      ? `Premia al Pokémon con Mayor Peso (kg)${speciesText}.`
+      : `Premia al Pokémon con Menor Peso (kg)${speciesText}.`;
+  }
+  if (sub.metric === 'height') {
+    return dir === 'max'
+      ? `Premia al Pokémon con Mayor Altura (m)${speciesText}.`
+      : `Premia al Pokémon con Menor Altura (m)${speciesText}.`;
+  }
+  if (sub.metric === 'level') {
+    return dir === 'max'
+      ? `Premia al Pokémon con Mayor Nivel${speciesText}.`
+      : `Premia al Pokémon con Menor Nivel${speciesText}.`;
+  }
+  if (sub.metric === 'friendship') {
+    return dir === 'max'
+      ? `Premia al Pokémon con Mayor Amistad (0 a 255)${speciesText}.`
+      : `Premia al Pokémon con Menor Amistad${speciesText}.`;
+  }
+  return sub.description || `Compite por el mejor puntaje en ${sub.name}.`;
 }
 

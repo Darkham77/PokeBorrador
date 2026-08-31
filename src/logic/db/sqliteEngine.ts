@@ -1,4 +1,3 @@
-// fallow-ignore-file circular-dependencies
 /**
  * src/logic/db/sqliteEngine.ts
  * Unified SQL.js (SQLite WASM) Engine with IndexedDB Persistence.

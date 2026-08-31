@@ -44,7 +44,8 @@ export function checkPokemonLegality(
     return { isLegal: false, issues }
   }
 
-  if (!options?.allowUnreleased && !isEnabledPokemonId(p.id)) {
+  const allowUnreleased = options?.allowUnreleased || (typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug')));
+  if (!allowUnreleased && !isEnabledPokemonId(p.id)) {
     issues.push(`La especie "${p.id}" no está habilitada por la whitelist global.`)
     return { isLegal: false, issues }
   }

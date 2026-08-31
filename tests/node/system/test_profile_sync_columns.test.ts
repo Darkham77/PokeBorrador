@@ -204,4 +204,32 @@ describe('Profile Sync SQLite Column Parity', () => {
       }
     }
   });
+
+  if (process.env.TEST_POSTGRES_URL) {
+    it('verifies that syncUserProfileData columns match PostgreSQL profiles table schema', async () => {
+      const postgres = (await import('postgres')).default;
+      const sql = postgres(process.env.TEST_POSTGRES_URL!, { max: 1, onnotice: () => {} });
+
+      try {
+        const cols = await sql`
+          SELECT column_name 
+          FROM information_schema.columns 
+          WHERE table_schema = 'public' AND table_name = 'profiles'
+        `;
+        const pgColumnNames = new Set(cols.map(c => c.column_name as string));
+
+        // Assert essential columns exist in snake_case on PostgreSQL
+        assert.ok(pgColumnNames.has('capture_successes'), 'PG profiles table must contain capture_successes column');
+        assert.ok(pgColumnNames.has('capture_attempts'), 'PG profiles table must contain capture_attempts column');
+        assert.ok(pgColumnNames.has('max_damage'), 'PG profiles table must contain max_damage column');
+        assert.ok(pgColumnNames.has('total_battles'), 'PG profiles table must contain total_battles column');
+        assert.ok(pgColumnNames.has('ranked_max_elo'), 'PG profiles table must contain ranked_max_elo column');
+        assert.ok(pgColumnNames.has('badges'), 'PG profiles table must contain badges column');
+        assert.ok(pgColumnNames.has('gender'), 'PG profiles table must contain gender column');
+        assert.ok(pgColumnNames.has('playtime'), 'PG profiles table must contain playtime column');
+      } finally {
+        await sql.end();
+      }
+    });
+  }
 });

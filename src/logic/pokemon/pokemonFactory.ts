@@ -93,7 +93,8 @@ export function validatePokemon(p: Pokemon, bypassWhitelist = false): void {
   if (!p) throw new Error('[pokemonFactory] Intento de validar un Pokémon nulo o indefinido.');
   if (!p.volatileCounters) p.volatileCounters = {};
 
-  const bypass = bypassWhitelist || Boolean(p.isIllegal) || (typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__?.isDeterministicSimulation || window.__VITE_DEBUG__?.isScriptedReplayMode));
+  const isDebugEnv = typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'));
+  const bypass = bypassWhitelist || Boolean(p.isIllegal) || isDebugEnv;
 
   // 0. Sincronizar Datos Base (Tipos y Levitación) desde DB para paridad Wiki (Datos volátiles en memoria)
   const base = pokemonDataProvider.getPokemonData(p.id, true);

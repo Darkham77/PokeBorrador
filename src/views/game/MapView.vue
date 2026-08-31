@@ -1,22 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue' // HMR Trigger
+import { onMounted, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game'
-import { useMapStore, type PendingAward } from '@/stores/map'
-import MapEventCarousel from '@/components/map/MapEventCarousel.vue'
-import MapStatusSummary from '@/components/map/MapStatusSummary.vue'
-import WalkedEggsPanel from '@/components/breeding/WalkedEggsPanel.vue'
-import MapGrid from '@/components/map/MapGrid.vue'
+import { useMapStore } from '@/stores/map'
 import { useUIStore } from '@/stores/ui'
-import { useEventStore } from '@/stores/events'
-import { GYMS } from '@/data/world/gyms'
 import { useModalStore } from '@/stores/modals'
-import type { DaycareMission } from '@/types/breeding/breeding'
-import type { Event as GameEvent } from '@/logic/events/eventEngine'
+import MapPokemonCenterBanner from '@/components/map/MapPokemonCenterBanner.vue'
+import MapGrid from '@/components/map/MapGrid.vue'
 import type { MapLocation } from '@/types/pokemon/encounters'
-import { pokemonNeedsHealing, calculatePokemonCenterCooldown } from '@/logic/economy/economyFormulas'
-import type { Pokemon } from '@/types/pokemon/pokemon'
-import { useBreedingStore } from '@/stores/breeding'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { isMapExtortable, getExtortionConfirmMessage, getOfficialRouteConfirmMessage } from '@/logic/map/mapCardHelper'
 import { requireMapRouteId } from '@/data/world/map-assets'
@@ -25,9 +16,7 @@ import { EGG_POLLER_INTERVAL_SEC } from '@/logic/constants/gameplay'
 const gameStore = useGameStore()
 const mapStore = useMapStore()
 const uiStore = useUIStore()
-const eventStore = useEventStore()
 const modalStore = useModalStore()
-const breedingStore = useBreedingStore()
 
 let expirationTicker: gsap.core.Tween | null = null
 
@@ -132,108 +121,12 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
 
   mapStore.navigate(id)
 }
-
-const openTab = (tab: string) => {
-  if (tab === 'daycare') {
-    modalStore.open('Daycare')
-  } else if (tab === 'daycare-missions') {
-    modalStore.open('EventMissions')
-  } else {
-    uiStore.activeTab = tab
-  }
-}
-
-const openCenter = () => {
-  const needsHeal = (gameStore.state.team as (Pokemon | null)[]).some(p => p && pokemonNeedsHealing(p))
-  
-  if (!needsHeal) {
-    uiStore.notify('Tu equipo ya está en perfectas condiciones.', '💖')
-    return
-  }
-
-  // Validación de Cooldown
-  const cooldownSecs = calculatePokemonCenterCooldown(gameStore.state.trainerLevel || 1)
-  if (cooldownSecs > 0 && gameStore.state.lastPokemonCenterHeal) {
-    const timeElapsed = Temporal.Now.instant().epochMilliseconds - gameStore.state.lastPokemonCenterHeal
-    const cooldownMs = cooldownSecs * 1000
-    if (timeElapsed < cooldownMs) {
-      const remainingMs = cooldownMs - timeElapsed
-      const totalRemainingSecs = Math.ceil(remainingMs / 1000)
-      const mins = Math.floor(totalRemainingSecs / 60)
-      const secs = totalRemainingSecs % 60
-      const formattedTime = `${mins}:${secs.toString().padStart(2, '0')}`
-      uiStore.notify(`El Centro Pokémon está en mantenimiento. Disponible en ${formattedTime}.`, '🏥')
-      return
-    }
-  }
-  
-  modalStore.open('PokemonCenter')
-}
-
-// Mapeo de misiones para los sprites
-const missionSprites = computed(() => {
-  const missions = (gameStore.state.daycare_missions || []).filter(m => !m.completed)
-  return Array.from(new Set(missions.map((m: DaycareMission) => m?.trainerSprite).filter(Boolean))).slice(0, 4)
-})
-
-const gymSprites = computed(() => {
-  const defeatedSet = new Set(gameStore.state.defeatedGyms || [])
-  return GYMS.filter(g => !defeatedSet.has(g.id)) // o1-ok
-    .slice(0, 8)
-    .map(g => g.sprite)
-})
-
-const activeEventData = computed(() => {
-  const active = (eventStore.activeEvents as GameEvent[])?.[0]
-  if (!active) return { active: false, text: 'No hay eventos activos en este momento', icon: '⚡' }
-  return {
-    active: true,
-    text: `${active.name}: ${active.description}`,
-    icon: active.icon || '⚡'
-  }
-})
-
-const mappedAwards = computed(() => mapStore.pendingAwards.map((a: PendingAward) => ({
-  event_id: a.id,
-  event_name: (a.data.event_name as string) || 'Evento Especial'
-})))
-
-const handleOpenEvent = (event?: GameEvent) => {
-  const targetEvent = event ?? eventStore.activeEvents[0]
-  if (targetEvent) {
-    modalStore.open('EventDetail', { event: targetEvent })
-  }
-}
 </script>
 
 <template>
   <div class="map-view-container legacy-ui">
-    <!-- Header de Eventos -->
-    <MapEventCarousel
-      v-if="mapStore.activeEvents.length > 0 || mappedAwards.length > 0"
-      :events="mapStore.activeEvents"
-      :awards="mappedAwards"
-      @open-event="navigateToMap"
-      @open-award="navigateToMap"
-    />
-
-    <!-- Estatus Superior (PC, Guardería, etc) -->
-    <MapStatusSummary
-      :missions-remaining="breedingStore.fulfillableMissionsCount"
-      :mission-sprites="missionSprites"
-      :gym-rematches="8 - (gameStore.state.defeatedGyms?.length || 0)" 
-      :gym-sprites="gymSprites"
-      :egg-count="breedingStore.warehouseEggs?.length || 0"
-      :rival-event-active="activeEventData.active"
-      :rival-event-text="activeEventData.text"
-      :rival-event-icon="activeEventData.icon"
-      @open-tab="openTab"
-      @open-center="openCenter"
-      @open-event="handleOpenEvent"
-    />
-
-    <!-- Walking eggs progress panel -->
-    <WalkedEggsPanel />
+    <!-- Centro Pokémon Banner -->
+    <MapPokemonCenterBanner />
 
     <!-- Localizaciones (Grilla de Mapas) -->
     <div class="legacy-divider">
@@ -258,6 +151,7 @@ const handleOpenEvent = (event?: GameEvent) => {
 
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
+
 .map-view-container {
   padding: 0 0 40px;
   width: 100%;
@@ -268,7 +162,7 @@ const handleOpenEvent = (event?: GameEvent) => {
   display: flex;
   align-items: center;
   gap: 20px;
-  margin: 20px 0 20px;
+  margin: 16px 0;
 }
 
 .legacy-divider::before,
@@ -282,8 +176,7 @@ const handleOpenEvent = (event?: GameEvent) => {
 .divider-text {
   @include pixelated;
   font-size: 10px;
-  color: var(--gray);
+  color: var(--gray, #94a3b8);
   letter-spacing: 2px;
 }
-
 </style>

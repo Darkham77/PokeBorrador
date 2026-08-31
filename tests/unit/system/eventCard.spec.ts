@@ -25,7 +25,10 @@ describe('EventCard.vue - Participating Pokemon Slot', () => {
     config: JSON.stringify({
       species: 'magikarp',
       metric: 'total_ivs',
-      hasCompetition: true
+      hasCompetition: true,
+      subCompetitions: [
+        { id: 'ivs', name: 'Genética Superior (IVs)', metric: 'total_ivs', order: 'max' }
+      ]
     })
   }
 
@@ -35,21 +38,20 @@ describe('EventCard.vue - Participating Pokemon Slot', () => {
     }
   }
 
-  it('renders standard participate button when no pokemon is registered', () => {
+  it('renders standard category chip with + when no pokemon is registered', () => {
     const wrapper = mount(EventCard, {
       props: { event: competitionEvent },
       global: { stubs: globalStubs }
     })
 
-    expect(wrapper.find('.slot-enrolled-body').exists()).toBe(false)
-    const emptySlot = wrapper.find('.slot-empty-body')
-    expect(emptySlot.exists()).toBe(true)
-    const btn = emptySlot.find('.btn-slot-action.inscribe')
-    expect(btn.exists()).toBe(true)
-    expect(btn.text()).toContain('INSCRIBIR')
+    const chips = wrapper.findAll('.comp-slot-chip')
+    expect(chips.length).toBeGreaterThanOrEqual(1)
+    const chip = chips[0]!
+    expect(chip.classes()).not.toContain('enrolled')
+    expect(chip.find('.chip-status-pill').text()).toBe('+')
   })
 
-  it('renders participating pokemon and IVs metric breakdown when entry exists in store', () => {
+  it('renders enrolled category chip with checkmark when entry exists in store', () => {
     const eventStore = useEventStore()
     const gameStore = useGameStore()
 
@@ -65,10 +67,20 @@ describe('EventCard.vue - Participating Pokemon Slot', () => {
 
     gameStore.state.team = [magikarp]
     eventStore.userEntries[`${competitionEvent.id}:ivs`] = {
+      id: 'entry-1',
       event_id: competitionEvent.id,
       category_id: 'ivs',
       player_id: 'player-123',
-      pokemon_uid: 'pk-magikarp-1'
+      player_name: 'Trainer',
+      player_email: 'test@example.com',
+      pokemon_uid: 'pk-magikarp-1',
+      submitted_at: '2026-08-31T00:00:00Z',
+      data: {
+        species: 'magikarp',
+        name: 'Magikarp',
+        level: 25,
+        total_ivs: 142
+      }
     }
 
     const wrapper = mount(EventCard, {
@@ -76,16 +88,14 @@ describe('EventCard.vue - Participating Pokemon Slot', () => {
       global: { stubs: globalStubs }
     })
 
-    expect(wrapper.find('.slot-enrolled-body').exists()).toBe(true)
-    expect(wrapper.text()).toContain('Big Karp')
-    expect(wrapper.text()).toContain('Nv. 25')
-    expect(wrapper.text()).toContain('142 / 186')
-    const changeBtn = wrapper.find('.btn-slot-action.change')
-    expect(changeBtn.exists()).toBe(true)
-    expect(changeBtn.text()).toContain('CAMBIAR')
+    const chips = wrapper.findAll('.comp-slot-chip')
+    expect(chips.length).toBeGreaterThanOrEqual(1)
+    const chip = chips[0]!
+    expect(chip.classes()).toContain('enrolled')
+    expect(chip.find('.chip-status-pill').text()).toBe('✓')
   })
 
-  it('renders size metric when event metric is size / weight', () => {
+  it('renders size metric chip when event metric is size / weight', () => {
     const sizeEvent: GameEvent = {
       ...competitionEvent,
       id: 'concurso_tamanio',
@@ -117,11 +127,21 @@ describe('EventCard.vue - Participating Pokemon Slot', () => {
     } as unknown as Pokemon
 
     gameStore.state.team = [magikarp]
-    eventStore.userEntries[`${sizeEvent.id}:weight`] = {
+    eventStore.userEntries[`${sizeEvent.id}:weight_magikarp`] = {
+      id: 'entry-2',
       event_id: sizeEvent.id,
-      category_id: 'weight',
+      category_id: 'weight_magikarp',
       player_id: 'player-123',
-      pokemon_uid: 'pk-magikarp-2'
+      player_name: 'Trainer',
+      player_email: 'test@example.com',
+      pokemon_uid: 'pk-magikarp-2',
+      submitted_at: '2026-08-31T00:00:00Z',
+      data: {
+        species: 'magikarp',
+        name: 'Magikarp',
+        level: 15,
+        weight: 15.5
+      }
     }
 
     const wrapper = mount(EventCard, {
@@ -129,8 +149,9 @@ describe('EventCard.vue - Participating Pokemon Slot', () => {
       global: { stubs: globalStubs }
     })
 
-    expect(wrapper.find('.slot-enrolled-body').exists()).toBe(true)
-    expect(wrapper.text()).toContain('15.5 kg')
+    const chips = wrapper.findAll('.comp-slot-chip')
+    expect(chips.length).toBeGreaterThanOrEqual(1)
+    expect(wrapper.text()).toContain('Peso')
   })
 
   it('rejects submitting the same pokemon into a second sub-competition of the same event', async () => {
@@ -178,10 +199,19 @@ describe('EventCard.vue - Participating Pokemon Slot', () => {
     gameStore.state.team = [magikarp]
     // Already registered in 'ivs'
     eventStore.userEntries[`${multiEvent.id}:ivs`] = {
+      id: 'entry-shared',
       event_id: multiEvent.id,
       category_id: 'ivs',
       player_id: 'player-123',
-      pokemon_uid: 'pk-magikarp-shared'
+      player_name: 'Trainer',
+      player_email: 'test@example.com',
+      pokemon_uid: 'pk-magikarp-shared',
+      submitted_at: '2026-08-31T00:00:00Z',
+      data: {
+        species: 'magikarp',
+        name: 'Magikarp',
+        level: 20
+      }
     }
 
     let notifyMsg = ''
@@ -196,4 +226,3 @@ describe('EventCard.vue - Participating Pokemon Slot', () => {
     expect(eventStore.userEntries[`${multiEvent.id}:weight`]).toBeUndefined()
   })
 })
-

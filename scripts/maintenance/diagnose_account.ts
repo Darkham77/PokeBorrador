@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * scripts/maintenance/diagnose_account.ts
  * 
@@ -45,14 +44,18 @@ import { toID } from '../../src/logic/utils/strings.ts';
 import type { GameState } from '../../src/types/system/game.ts';
 import type { Pokemon } from '../../src/types/pokemon/pokemon.ts';
 
+import type { FindingSeverity } from '../lib/auditContract.ts';
+
 enableCompileCache();
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_VERBOSE_ACCOUNTS_LIMIT = 10;
 
+export type DiagnosticFindingCategory = 'valibot' | 'legality' | 'inventory' | 'daycare' | 'pokemon';
+
 export interface DiagnosticFinding {
-  severity: 'error' | 'warning';
-  category: 'valibot' | 'legality' | 'inventory' | 'daycare' | 'pokemon';
+  severity: FindingSeverity;
+  category: DiagnosticFindingCategory;
   message: string;
   path?: string;
   details?: unknown;

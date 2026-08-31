@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 import { type Page, expect } from '@playwright/test';
 import { toID } from '@pkmn/sim';
 import {

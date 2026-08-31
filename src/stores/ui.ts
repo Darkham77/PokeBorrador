@@ -1,5 +1,4 @@
 
-// fallow-ignore-file unused-store-members
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useModalStore } from '@/stores/modals.ts'
@@ -32,7 +31,7 @@ export interface LearnItem {
 
 export const useUIStore = defineStore('ui', () => {
   const libraryTab = ref('gimnasios')
-  const activeTab = ref('map')
+  const activeTab = ref('home')
   const notificationStore = useNotificationStore()
   
   // Notifications

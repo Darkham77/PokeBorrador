@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 // scripts/battle-tester/fuzzer-engine.ts
 Reflect.set(globalThis, '__E2E__', true);
 process.env.VITE_E2E = 'true';

@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * scripts/tools/normalize_random_sets.ts
  *

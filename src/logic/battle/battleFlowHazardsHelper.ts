@@ -8,7 +8,7 @@ export function calculateStealthRockDamage(pokemon: Pokemon, typeEffectivenessMu
 }
 
 export function calculateSpikesDamage(pokemon: Pokemon, spikeLayers: number): number {
-  const isGrounded = !['flying'].includes(pokemon.type) && !['flying'].includes(pokemon.type2 || '') && pokemon.ability !== 'levitate'
+  const isGrounded = pokemon.type !== 'flying' && pokemon.type2 !== 'flying' && pokemon.ability !== 'levitate'
   if (!isGrounded) return 0
   const layers = Math.min(3, Math.max(1, spikeLayers))
   const fractions = [0, 1 / 8, 1 / 6, 1 / 4]

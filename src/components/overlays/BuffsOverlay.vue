@@ -9,7 +9,7 @@ const buffsStore = useBuffsStore()
 const modalStore = useModalStore()
 const uiStore = useUIStore()
 
-const isVisible = computed(() => uiStore.activeTab === 'map')
+const isVisible = computed(() => uiStore.activeTab === 'map' || uiStore.activeTab === 'home')
 
 onMounted(() => {
   buffsStore.initTick()
@@ -51,7 +51,8 @@ const handleBadgeClick = (buff: ActiveBuffItem) => {
       <PVTooltip 
         v-for="buff in buffsStore.activeBuffs" 
         :key="buff.id" 
-        :title="buff.isEvent ? `📅 EVENTO: ${buff.name} — ${buff.desc} (Haz clic para ver detalles)` : `${buff.name} — ${buff.desc}`"
+        :title="buff.isEvent ? `📅 ${buff.name}` : buff.name"
+        :description="buff.isEvent ? `${buff.desc} (Haz clic para ver detalles)` : buff.desc"
       >
         <div 
           :id="`buff-badge-${buff.id}`"

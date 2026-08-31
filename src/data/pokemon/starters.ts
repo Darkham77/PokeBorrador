@@ -1,4 +1,4 @@
-import { STARTER_POKEMON_IDS, type StarterPokemonId } from '../system/constants.ts'
+import { STARTER_POKEMON_IDS, STARTER_POKEMON_IDS_SET, type StarterPokemonId } from '../system/constants.ts'
 
 
 export interface StarterPokemonConfig {
@@ -6,7 +6,7 @@ export interface StarterPokemonConfig {
 }
 
 function isStarterPokemonId(raw: string): raw is StarterPokemonId {
-  return (STARTER_POKEMON_IDS as readonly string[]).includes(raw); // domain-ok
+  return STARTER_POKEMON_IDS_SET.has(raw);
 }
 
 function requireStarterPokemonId(raw: string): StarterPokemonId {

@@ -29,6 +29,7 @@ export const STAGE_MULTIPLIERS_ACC: Record<string, number> = {
 };
 
 const WEATHER_KEYS = { SUN: 'sun', RAIN: 'rain', SANDSTORM: 'sandstorm', SNOW: 'snow', HAIL: 'hail', FOG: 'fog', WIND: 'wind', CLEAR: 'clear' } as const;
+const DELTA_STREAM_WEAKNESS_SET: ReadonlySet<string> = new Set(['electric', 'ice', 'rock']); // runtime-set
 
 
 const dexGen = Dex.forGen(ACTIVE_GENERATION);
@@ -213,7 +214,7 @@ function calculateWeatherDamageMultiplier(
 
 function calculateDeltaStreamTypeEff(eff: number, defender: PurePokemon, moveType: string, isStrongWinds: boolean): number {
   if (isStrongWinds && (defender.type === 'flying' || defender.type2 === 'flying')) {
-    if (eff > 1 && ['electric', 'ice', 'rock'].includes(moveType)) {
+    if (eff > 1 && DELTA_STREAM_WEAKNESS_SET.has(moveType)) {
       return eff / 2;
     }
   }

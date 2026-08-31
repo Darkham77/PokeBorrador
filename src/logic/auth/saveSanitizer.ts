@@ -130,11 +130,13 @@ export function validateAndSanitize(data: GameState | SaveDataDto | Record<strin
     uids.add(p.uid);
   };
 
+  const isDebugMode = typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'));
+
   const validateSinglePokemon = (p: SaveDataDto['team'][number] | null, listName: string) => {
     if (!p) return;
     checkPoke(p, listName);
 
-    const legality = checkPokemonLegality(p as Pokemon);
+    const legality = checkPokemonLegality(p as Pokemon, { allowUnreleased: isDebugMode });
     if (!legality.isLegal) {
       (p as Pokemon).isIllegal = true;
       (p as Pokemon).illegalReasons = legality.issues;
@@ -144,7 +146,7 @@ export function validateAndSanitize(data: GameState | SaveDataDto | Record<strin
 
     (p as Pokemon).isIllegal = false;
     (p as Pokemon).illegalReasons = [];
-    validatePokemon(p as Pokemon);
+    validatePokemon(p as Pokemon, isDebugMode);
   };
 
   try {

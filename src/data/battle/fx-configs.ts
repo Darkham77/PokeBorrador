@@ -3,7 +3,6 @@
  * Centraliza las reglas visuales para todos los efectos de partículas.
  * MIGRACIÓN 1:1 DESDE PVSPRITEFX.VUE
  */
-import type { VolatileStatusKey } from '@/types/pokemon/pokemon'
 
 export interface ParticleArea {
   x: [number, number]
@@ -48,13 +47,16 @@ type EffectConfigPreset = {
   wobble?: boolean
 }
 
-export const resolveEffectSettings = (typeKey: string, ar: number, options: { isField?: boolean, isSimplified?: boolean, isBattle?: boolean, spriteScale?: number, pokeScale?: number } = {}): EffectSettings => {
-  const isField = options.isField || ['reflect', 'lightscreen', 'safeguard', 'mist', 'spikes'].includes(typeKey)
-  const FEET_EFFECTS = ['seed', 'trapped', 'bound', 'ingrain', 'seeded', 'ingrained'] as const satisfies readonly VolatileStatusKey[] | readonly string[]; // no-domain
-  const HEAD_EFFECTS = ['sleep', 'confusion', 'attract', 'confused', 'slp', 'perishsong'] as const satisfies readonly VolatileStatusKey[] | readonly string[]; // no-domain
+const FIELD_EFFECT_KEYS_SET: ReadonlySet<string> = new Set(['reflect', 'lightscreen', 'safeguard', 'mist', 'spikes']) // runtime-set
+const FEET_EFFECTS_SET: ReadonlySet<string> = new Set(['seed', 'trapped', 'bound', 'ingrain', 'seeded', 'ingrained']) // runtime-set
+const HEAD_EFFECTS_SET: ReadonlySet<string> = new Set(['sleep', 'confusion', 'attract', 'confused', 'slp', 'perishsong']) // runtime-set
+const PRIMARY_STATUS_SET: ReadonlySet<string> = new Set(['brn', 'frz', 'slp', 'par', 'psn', 'tox']) // runtime-set
+const TACTICAL_STATUS_SET: ReadonlySet<string> = new Set(['protected', 'enduring', 'focus', 'lockon']) // runtime-set
 
-  const isFeetEffect = (FEET_EFFECTS as readonly string[]).includes(typeKey)
-  const isHeadEffect = (HEAD_EFFECTS as readonly string[]).includes(typeKey)
+export const resolveEffectSettings = (typeKey: string, ar: number, options: { isField?: boolean, isSimplified?: boolean, isBattle?: boolean, spriteScale?: number, pokeScale?: number } = {}): EffectSettings => {
+  const isField = options.isField || FIELD_EFFECT_KEYS_SET.has(typeKey)
+  const isFeetEffect = FEET_EFFECTS_SET.has(typeKey)
+  const isHeadEffect = HEAD_EFFECTS_SET.has(typeKey)
 
   // 1. Helper para rango dinámico basado en radio y tamaño del Pokémon
   const getDynamicRange = (base: [number, number]) => {
@@ -144,8 +146,8 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
   if (isHeadEffect) offset = { x: 0, y: -ar * 0.75 }
   else if (isFeetEffect) offset = { x: 0, y: ar * 0.35 }
 
-  const isPrimary = (['brn', 'frz', 'slp', 'par', 'psn', 'tox'] as const).includes(typeKey as never)
-  const isTactical = (['protected', 'enduring', 'focus', 'lockon'] as const).includes(typeKey as never)
+  const isPrimary = PRIMARY_STATUS_SET.has(typeKey)
+  const isTactical = TACTICAL_STATUS_SET.has(typeKey)
   
   const targetOpacity = base.targetOpacity ?? (isField ? 0.6 : (isTactical ? 1.0 : 1.0))
   const duration = base.duration || (isField ? 2.0 : (isTactical ? 1.2 : 0.8))

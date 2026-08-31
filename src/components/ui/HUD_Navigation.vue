@@ -51,6 +51,20 @@ onUnmounted(() => {
     class="hud-nav"
     :class="[`pos-${position}`]"
   >
+    <!-- 0. INICIO -->
+    <PVHUDButton
+      id="nav-home-btn"
+      custom-class="home-btn"
+      :active="activeTab === 'home'"
+      data-tab="home"
+      @click.stop="handleTabChange('home')"
+    >
+      <template #icon>
+        🏠
+      </template>
+      INICIO
+    </PVHUDButton>
+
     <!-- 1. MAPA -->
     <PVHUDButton
       id="nav-map-btn"

@@ -10,6 +10,7 @@ This directory contains static code analysis, AST governance, TypeScript configu
 - [validate_build_tools.ts](./validate_build_tools.ts): Validates bundling, transpilation, and build tools integrity.
 - [validate_component_styles.ts](./validate_component_styles.ts): Audits Vue component style linkage, broken style links, and orphaned SCSS files.
 - [validate_emoji_typography.ts](./validate_emoji_typography.ts): Audits Vue templates for unwrapped emojis and enforces proper icon/emoji class styling and vertical centering.
+- [validate_audit_headers.ts](./validate_audit_headers.ts): Audits codebase for illegal file-level suppression directives (`fallow-ignore-file`, `/* eslint-disable */`, `@ts-nocheck`, `@ts-ignore`, and header escape hatches).
 
 ## Local Governance & Rules
 

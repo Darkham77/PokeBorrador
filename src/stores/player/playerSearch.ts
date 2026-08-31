@@ -1,4 +1,3 @@
-// fallow-ignore-file unused-store-member
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth.ts'

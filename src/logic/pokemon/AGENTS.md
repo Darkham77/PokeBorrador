@@ -16,6 +16,7 @@ Frontend Developers / Systems Engineers.
 - **pokemonFactory.ts**: Canonical creation, validation, and stat recalculation of Pokémon instances.
 - **Canonical Out-of-Battle Field Abilities Engine**: All 33 canonical Pokémon out-of-battle field abilities MUST be centralized and resolved through `pokemonFieldAbilities.ts`. Mechanics must strictly adapt according to `ACTIVE_GENERATION` (e.g. 100% Synchronize rate with alive leader in Gen 8+ vs 50% with fainted leader allowed in Gen 3-7; modern elemental attraction vs legacy mechanics). Hatching speed passives (*Flame Body*, *Magma Armor*, *Steam Engine*) do not stack (fixed 2x max), while *Pickup* and *Honey Gather* roll independently per team member carrying the ability according to their canonical level bracket. UI badge descriptors (`getFieldPassiveBadges`) MUST derive the name (`label`), complete structured description (`desc`), and emoji (`icon`) directly from `abilities.json` without ad-hoc text truncation, synthesis, or separate hardcoded emoji dictionaries.
 - **Zero Constant Aliasing**: Constant aliasing (`const A = B;`) is strictly forbidden across domain modules. All modules must directly import and use the single canonical source of truth from `@/logic/constants/` per the Domain-Type-First governance mandate.
+- **Debug Mode Whitelist Bypass**: In debug mode (`window.__VITE_DEBUG__`), `validatePokemon` and `checkPokemonLegality` MUST allow unreleased Pokémon species without throwing illegal species errors, while still enforcing valid structure and base stats.
 
 ## Work Guidance
 

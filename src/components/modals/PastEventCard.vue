@@ -3,11 +3,12 @@ import { computed, watch } from 'vue'
 import { gsap } from 'gsap'
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 import type { PastEventHistoryItem, PastCompetitionWinner } from '@/types/system/stores'
-import type { Event as GameEvent } from '@/logic/events/eventEngine'
+import { getEventDisplayName, type Event as GameEvent } from '@/logic/events/eventEngine'
 import { useChatCosmeticsStore } from '@/stores/social/chatCosmetics'
 import { useEventStore } from '@/stores/events'
 import { useModalStore } from '@/stores/modals'
 import { isAwardClaimable } from '@/logic/events/eventValidators'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 import PastEventWinnerItem from './PastEventWinnerItem.vue'
 
 interface Props {
@@ -20,34 +21,26 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
-const chatCosmetics = useChatCosmeticsStore()
+
 const eventStore = useEventStore()
+const chatCosmetics = useChatCosmeticsStore()
 const modalStore = useModalStore()
 
 const HOVER_ANIMATION_DURATION_SEC = 0.2
 const HOVER_TRANSLATE_Y_PX = -2
 
 const matchingEvent = computed<GameEvent | null>(() => {
-  if (props.item.event_id.startsWith('custom_')) return null
-  if (props.item.raw_event && !props.item.raw_event.id.startsWith('custom_')) return props.item.raw_event
-  const found = eventStore.allEvents.find((e) => e.id === props.item.event_id)
-  if (found && !found.id.startsWith('custom_') && found.name && !found.name.startsWith('custom_')) {
-    return found
-  }
-  return null
+  return eventStore.allEvents.find(e => e.id === props.item.event_id) || null
 })
 
 const displayName = computed<string>(() => {
-  if (props.item.event_id.startsWith('custom_')) {
+  if (props.item.event_id.startsWith('custom_') || props.item.event_name?.startsWith('custom_')) {
     return 'Evento desconocido'
   }
-  if (props.item.event_name && !props.item.event_name.startsWith('custom_') && props.item.event_name !== props.item.event_id && props.item.event_name !== 'Evento desconocido') {
-    return props.item.event_name
+  if (matchingEvent.value) {
+    return getEventDisplayName(matchingEvent.value)
   }
-  if (matchingEvent.value?.name && !matchingEvent.value.name.startsWith('custom_')) {
-    return matchingEvent.value.name
-  }
-  return 'Evento desconocido'
+  return props.item.event_name || 'Evento desconocido'
 })
 
 const canOpenDetail = computed<boolean>(() => {
@@ -87,49 +80,24 @@ const onBtnHover = (event: MouseEvent, isEntering: boolean) => {
   if (!btn || btn.hasAttribute('disabled')) return
   if (isEntering) {
     gsap.to(btn, {
-      background: '#22c55e',
       y: HOVER_TRANSLATE_Y_PX,
-      borderColor: '#86efac',
       duration: HOVER_ANIMATION_DURATION_SEC,
       ease: 'power2.out',
       overwrite: 'auto'
     })
   } else {
     gsap.to(btn, {
-      background: '#16a34a',
       y: 0,
-      borderColor: '#4ade80',
       duration: HOVER_ANIMATION_DURATION_SEC,
       ease: 'power2.out',
       overwrite: 'auto',
-      clearProps: 'transform,background,borderColor'
+      clearProps: 'transform'
     })
   }
 }
 
 const onDiscardHover = (event: MouseEvent, isEntering: boolean) => {
-  const btn = event.currentTarget as HTMLElement
-  if (!btn || btn.hasAttribute('disabled')) return
-  if (isEntering) {
-    gsap.to(btn, {
-      background: '#ef4444',
-      y: HOVER_TRANSLATE_Y_PX,
-      borderColor: '#fca5a5',
-      duration: HOVER_ANIMATION_DURATION_SEC,
-      ease: 'power2.out',
-      overwrite: 'auto'
-    })
-  } else {
-    gsap.to(btn, {
-      background: 'rgba(239, 68, 68, 0.15)',
-      y: 0,
-      borderColor: 'rgba(239, 68, 68, 0.4)',
-      duration: HOVER_ANIMATION_DURATION_SEC,
-      ease: 'power2.out',
-      overwrite: 'auto',
-      clearProps: 'transform,background,borderColor'
-    })
-  }
+  onBtnHover(event, isEntering)
 }
 
 const onDiscardClick = (awardId?: string) => {
@@ -285,7 +253,17 @@ const groupedWinners = computed<CategoryGroup[]>(() => {
   const groups: Record<string, CategoryGroup> = {}
   for (const w of props.item.winners) {
     const catId = w.category_id || 'ivs'
-    const catName = w.category_name || (catId === 'weight' ? 'Masa y Peso' : catId === 'height' ? 'Envergadura y Altura' : 'Genética Superior (IVs)')
+    let catName = w.category_name
+    if (!catName || catName.includes('Genética') || catName.includes('Titán') || catName.includes('Miniatura') || catName.includes('Envergadura') || catName.includes('Gran Salto') || catName.includes('Masa')) {
+      const speciesSuffix = catId.includes('_') ? ` (${catId.split('_').slice(1).join('_').toUpperCase()})` : ''
+      catName = (
+        catId.startsWith('weight') ? 'Mayor/Menor Peso' :
+        catId.startsWith('height') ? 'Mayor/Menor Altura' :
+        catId.startsWith('level') ? 'Mayor Nivel' :
+        catId.startsWith('friendship') ? 'Mayor Amistad' :
+        'Mayor IVs'
+      ) + speciesSuffix
+    }
     if (!groups[catId]) {
       groups[catId] = {
         categoryId: catId,
@@ -299,9 +277,11 @@ const groupedWinners = computed<CategoryGroup[]>(() => {
 })
 
 const getCategoryIcon = (catId: string) => {
-  if (catId === 'ivs') return '🧬'
-  if (catId === 'weight') return '⚖️'
-  if (catId === 'height') return '📏'
+  if (catId.startsWith('ivs')) return '🧬'
+  if (catId.startsWith('weight')) return '⚖️'
+  if (catId.startsWith('height')) return '📏'
+  if (catId.startsWith('level')) return '📈'
+  if (catId.startsWith('friendship')) return '💖'
   return '🏆'
 }
 </script>
@@ -320,18 +300,22 @@ const getCategoryIcon = (catId: string) => {
             <h4 class="event-name">
               {{ displayName }}
             </h4>
-            <button
-              :id="'past-event-info-btn-' + (item.id || item.event_id)"
-              class="event-info-btn"
-              :class="{ 'disabled-btn': !canOpenDetail }"
-              :disabled="!canOpenDetail"
-              :title="canOpenDetail ? 'Ver descripción completa del evento' : 'Detalles no disponibles (evento archivado)'"
-              @mouseenter="onInfoBtnHover($event, true)"
-              @mouseleave="onInfoBtnHover($event, false)"
-              @click.stop="openEventDetail"
+            <PVTooltip
+              :title="canOpenDetail ? 'Ver detalles y reglas del evento' : 'Detalles no disponibles (evento archivado)'"
+              position="top"
             >
-              <span class="info-icon">ℹ️</span>
-            </button>
+              <button
+                :id="'past-event-info-btn-' + (item.id || item.event_id)"
+                class="event-info-btn"
+                :class="{ 'disabled-btn': !canOpenDetail }"
+                :disabled="!canOpenDetail"
+                @mouseenter="onInfoBtnHover($event, true)"
+                @mouseleave="onInfoBtnHover($event, false)"
+                @click.stop="openEventDetail"
+              >
+                <span class="info-icon">ℹ️</span>
+              </button>
+            </PVTooltip>
           </div>
           <span class="event-date">{{ formatEventScheduleWindow(item) }}</span>
         </div>
@@ -348,7 +332,8 @@ const getCategoryIcon = (catId: string) => {
             @mouseleave="onBtnHover($event, false)"
             @click.stop="onClaimClick(item.myAward.id)"
           >
-            RECLAMAR PREMIO <span class="btn-emoji">🎁</span>
+            <span class="btn-emoji">🎁</span>
+            RECLAMAR PREMIO
           </button>
           <button
             :id="'discard-past-award-btn-' + (item.myAward?.id || item.id)"
@@ -358,7 +343,8 @@ const getCategoryIcon = (catId: string) => {
             @mouseleave="onDiscardHover($event, false)"
             @click.stop="onDiscardClick(item.myAward.id)"
           >
-            DESCARTAR <span class="btn-emoji">🗑️</span>
+            <span class="btn-emoji">🗑️</span>
+            DESCARTAR
           </button>
         </template>
 
@@ -537,6 +523,11 @@ const getCategoryIcon = (catId: string) => {
   border-radius: 6px;
   cursor: pointer;
   border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  line-height: 1;
 
   &.claim-btn {
     background: #16a34a;

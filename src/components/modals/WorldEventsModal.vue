@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useUIStore } from '@/stores/ui'
 import { onMounted, computed } from 'vue'
-import { gsap } from 'gsap'
 import BaseModal from '@/components/common/BaseModal.vue'
 import EventCard from './EventCard.vue'
 import PastEventsList from './PastEventsList.vue'
@@ -9,10 +8,9 @@ import WorldEventsUpcomingSchedule from './WorldEventsUpcomingSchedule.vue'
 import { useEventStore } from '@/stores/events'
 import { useModalStore } from '@/stores/modals'
 import { storeToRefs } from 'pinia'
-import RewardPillsGroup from '@/components/shared/RewardPillsGroup.vue'
-import type { Event as GameEvent } from '@/logic/events/eventEngine'
-import { isAwardClaimable } from '@/logic/events/eventValidators'
-import type { PendingAward } from '@/types/system/stores'
+import EventPendingAwardsBanner from '@/components/events/EventPendingAwardsBanner.vue'
+import { getUpcomingEventOccurrences, type Event as GameEvent, type UpcomingEventOccurrence } from '@/logic/events/eventEngine'
+import { getServerInstant } from '@/logic/utils/timeUtils'
 
 interface Props {
   show?: boolean
@@ -28,108 +26,32 @@ const emit = defineEmits<{
 
 const eventStore = useEventStore()
 const modalStore = useModalStore()
-const { allEvents, activeEvents, pastEvents, pendingAwards, isLoading } = storeToRefs(eventStore)
+const { allEvents, activeEvents, pastEvents, isLoading } = storeToRefs(eventStore)
 
 const ui = useUIStore()
 const isSmallScreen = computed(() => ui.isSmallScreen)
+
+const upcomingOccurrences = computed<UpcomingEventOccurrence[]>(() => {
+  if (!allEvents.value || allEvents.value.length === 0) return []
+  return getUpcomingEventOccurrences(allEvents.value, getServerInstant(), 14)
+})
+
+const upcomingEventsToFillModal = computed<UpcomingEventOccurrence[]>(() => {
+  const activeCount = activeEvents.value.length
+  // When activeCount is odd (e.g. 1 or 3 in a 2-column grid), fill 1 slot to complete the row
+  const neededSlots = activeCount % 2 !== 0 ? 1 : 0
+  if (neededSlots === 0) return []
+
+  const activeIds = new Set(activeEvents.value.map(e => e.id))
+  return upcomingOccurrences.value
+    .filter(occ => !activeIds.has(occ.event.id))
+    .slice(0, neededSlots)
+})
 
 const openEventDetail = (event: GameEvent) => {
   modalStore.open('EventDetail', {
     event
   })
-}
-
-const getEventDisplayName = (eventId: string): string => {
-  const ev = (allEvents.value || []).find(e => e.id === eventId)
-  if (ev?.name && !ev.name.startsWith('custom_')) return ev.name
-  if (eventId === 'hora_magikarp') return 'Hora de Pesca del Magikarp'
-  if (eventId.startsWith('custom_') || !ev) return 'Evento desconocido'
-  return eventId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) // text-ok
-}
-
-const parsePrize = (rawPrize: unknown): Record<string, unknown> => {
-  if (!rawPrize) return {}
-  if (typeof rawPrize === 'string') {
-    try {
-      return JSON.parse(rawPrize) as Record<string, unknown> // open-record
-    } catch {
-      return {}
-    }
-  }
-  if (typeof rawPrize === 'object') {
-    return rawPrize as Record<string, unknown> // open-record
-  }
-  return {}
-}
-
-const checkIfClaimable = (award: PendingAward): boolean => {
-  return isAwardClaimable(award, allEvents.value || [])
-}
-
-const confirmDiscard = (awardId: string, eventName: string) => {
-  if (modalStore.isOpen('Confirm')) return
-  modalStore.open('Confirm', {
-    title: '¿DESCARTAR RECOMPENSA?',
-    message: `¿Estás seguro de que deseas descartar la recompensa de "${eventName}"? Esta acción no se puede deshacer y se eliminará permanentemente.`,
-    confirmText: 'DESCARTAR',
-    cancelText: 'CANCELAR',
-    type: 'danger',
-    variant: 'retro',
-    onConfirm: async () => {
-      await eventStore.discardAward(awardId)
-    }
-  })
-}
-
-const onBtnHover = (event: MouseEvent, isEntering: boolean) => {
-  const btn = event.currentTarget as HTMLElement
-  if (!btn || btn.hasAttribute('disabled')) return
-  const isClaim = btn.classList.contains('claim') || btn.classList.contains('claim-action-btn')
-  if (isEntering) {
-    gsap.to(btn, {
-      background: isClaim ? '#22c55e' : 'rgba(255, 255, 255, 0.12)',
-      y: -2,
-      borderColor: isClaim ? '#86efac' : 'rgba(255, 255, 255, 0.2)',
-      duration: 0.2,
-      ease: 'power2.out',
-      overwrite: 'auto'
-    })
-  } else {
-    gsap.to(btn, {
-      background: isClaim ? '#16a34a' : 'rgba(255, 255, 255, 0.05)',
-      y: 0,
-      borderColor: isClaim ? '#4ade80' : 'rgba(255, 255, 255, 0.1)',
-      duration: 0.2,
-      ease: 'power2.out',
-      overwrite: 'auto',
-      clearProps: 'transform,background,borderColor'
-    })
-  }
-}
-
-const onDiscardHover = (event: MouseEvent, isEntering: boolean) => {
-  const btn = event.currentTarget as HTMLElement
-  if (!btn || btn.hasAttribute('disabled')) return
-  if (isEntering) {
-    gsap.to(btn, {
-      background: '#ef4444',
-      y: -2,
-      borderColor: '#fca5a5',
-      duration: 0.2,
-      ease: 'power2.out',
-      overwrite: 'auto'
-    })
-  } else {
-    gsap.to(btn, {
-      background: 'rgba(239, 68, 68, 0.15)',
-      y: 0,
-      borderColor: 'rgba(239, 68, 68, 0.4)',
-      duration: 0.2,
-      ease: 'power2.out',
-      overwrite: 'auto',
-      clearProps: 'transform,background,borderColor'
-    })
-  }
 }
 
 onMounted(() => {
@@ -162,8 +84,6 @@ onMounted(() => {
           id="events-modal-refresh-btn"
           class="retro-btn refresh"
           :disabled="isLoading"
-          @mouseenter="onBtnHover($event, true)"
-          @mouseleave="onBtnHover($event, false)"
           @click.stop="eventStore.fetchEvents()"
         >
           REFRESCAR
@@ -172,61 +92,8 @@ onMounted(() => {
     </template>
 
     <div class="events-modal-content-inner custom-scrollbar">
-      <!-- PENDING AWARDS BOX (Retro Reward Style) -->
-      <div
-        v-if="pendingAwards.length > 0"
-        class="awards-box"
-      >
-        <div class="box-inner">
-          <h3>🎁 RECOMPENSAS PENDIENTES</h3>
-          <div class="awards-list">
-            <div
-              v-for="award in pendingAwards"
-              :key="award.id"
-              class="award-item"
-              :class="{ 'is-legacy': !checkIfClaimable(award) }"
-            >
-              <div class="award-info">
-                <div class="award-name-row">
-                  <span class="award-name">{{ getEventDisplayName(award.event_id || '') }}</span>
-                  <span
-                    v-if="!checkIfClaimable(award)"
-                    class="legacy-badge"
-                    title="Este premio pertenece a un evento archivado o no está registrado en la base de datos"
-                  >
-                    ⚠️ ARCHIVADO / NO DISPONIBLE
-                  </span>
-                </div>
-                <div class="award-pills-wrap">
-                  <RewardPillsGroup :prize="parsePrize(award.prize)" />
-                </div>
-              </div>
-              <div class="award-actions-wrap">
-                <button
-                  v-if="checkIfClaimable(award)"
-                  :id="'claim-pending-award-btn-' + award.id"
-                  class="retro-btn claim-action-btn"
-                  @mouseenter="onBtnHover($event, true)"
-                  @mouseleave="onBtnHover($event, false)"
-                  @click.stop="eventStore.claimAward(award.id)"
-                >
-                  RECLAMAR
-                </button>
-                <button
-                  :id="'discard-pending-award-btn-' + award.id"
-                  class="retro-btn discard-action-btn"
-                  :class="{ 'only-action': !checkIfClaimable(award) }"
-                  @mouseenter="onDiscardHover($event, true)"
-                  @mouseleave="onDiscardHover($event, false)"
-                  @click.stop="confirmDiscard(award.id, getEventDisplayName(award.event_id || ''))"
-                >
-                  DESCARTAR
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- PENDING AWARDS BOX (Canonical Reusable Component) -->
+      <EventPendingAwardsBanner />
 
       <!-- ACTIVE EVENTS GRID -->
       <div class="events-section-block">
@@ -238,16 +105,25 @@ onMounted(() => {
 
         <div class="events-grid">
           <div
-            v-if="activeEvents.length === 0"
+            v-if="activeEvents.length === 0 && upcomingEventsToFillModal.length === 0"
             class="no-events"
           >
             {{ isLoading ? 'Cargando eventos...' : 'No hay eventos activos en este momento.' }}
           </div>
 
+          <!-- Active Events -->
           <EventCard
             v-for="event in activeEvents"
             :key="event.id"
             :event="event"
+          />
+
+          <!-- Future Events (Fill gap when 1 or 3 active events) -->
+          <EventCard
+            v-for="occ in upcomingEventsToFillModal"
+            :key="occ.event.id + '_' + occ.startInstant.epochMilliseconds"
+            :event="occ.event"
+            :occurrence="occ"
           />
         </div>
       </div>

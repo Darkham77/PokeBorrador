@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * classMath.ts
  * Módulo con funciones y fórmulas puras para las mecánicas de las clases de jugador

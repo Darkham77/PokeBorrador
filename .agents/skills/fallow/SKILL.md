@@ -221,13 +221,4 @@ These two fields in `.fallowrc.json` serve different purposes and MUST NOT be co
 - `ignorePatterns` only → excluded entirely from all analysis
 - Both `ignorePatterns` AND implicitly in `entry` via a parent glob → **THIS IS THE TRAP**: file-level analysis is suppressed, but its imports are still counted as consumers
 
-**NEVER put all `scripts/**` in `ignorePatterns`** — it blinds dead export detection for any `src/` export consumed only by scripts, causing Fallow to falsely flag them as unused and potentially leading to their incorrect removal.
-
-**Correct pattern for scripts:**
-```json
-{
-  "ignorePatterns": ["scripts/e2e/fuzzer/**", "scripts/e2e/battle/**", "scripts/maintenance/**"],
-  "entry": ["scripts/e2e/**/*.ts", "scripts/maintenance/**/*.ts"]
-}
-```
-This way: `scripts/e2e/e2e_helpers.ts` is a graph root (its imports from `src/` count), but `scripts/e2e/fuzzer/core/fuzzer_engine.ts` is excluded from file-level CWE/duplication analysis.
+**NEVER put all `scripts/**` or bulk tooling directories in `ignorePatterns`** — doing so blindfolds the engine from detecting dead code, code duplications, and complexity in developer tools. Internal CLI scripts that legitimately read local files or download assets MUST resolve path/URL boundaries in code or use localized line-level annotations (`// fallow-ignore-next-line cwe-22`), NEVER blanket folder ignores.

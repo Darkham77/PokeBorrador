@@ -187,6 +187,7 @@ export interface PendingAward {
   received_at: string | null; // domain-ok
   event_id?: string; // domain-ok
   prize_summary?: string; // domain-ok
+  awarded_at?: string; // domain-ok
 }
 
 export interface CompetitionEntryData {
@@ -201,6 +202,7 @@ export interface CompetitionEntryData {
   obtained_at?: number;
   height?: number;
   weight?: number;
+  friendship?: number;
   displayValue?: string; // domain-ok
   display_value?: string; // domain-ok
   tier_label?: string; // domain-ok

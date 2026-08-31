@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * scripts/tools/tag_canon_items.ts
  *

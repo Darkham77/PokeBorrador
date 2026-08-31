@@ -19,11 +19,11 @@
     "fallow": "node ./node_modules/fallow/bin/fallow",
     "fallow:health": "node ./node_modules/fallow/bin/fallow health --score",
     "validate:types": "vue-tsc --noEmit",
-    "test": "node --no-experimental-webstorage ./node_modules/vitest/vitest.mjs run",
-    "test:unit": "node --no-experimental-webstorage ./node_modules/vitest/vitest.mjs run --project unit",
-    "test:node": "node --no-experimental-webstorage ./node_modules/vitest/vitest.mjs run --project node",
+    "test": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process --allow-addons --allow-net scripts/testing/run_tests.ts",
+    "test:unit": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process --allow-addons --allow-net scripts/testing/run_tests.ts --project unit",
+    "test:node": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process --allow-addons --allow-net scripts/testing/run_tests.ts --project node",
     "test:node:watch": "node --no-experimental-webstorage ./node_modules/vitest/vitest.mjs --project node",
-    "test:coverage": "node --no-experimental-webstorage ./node_modules/vitest/vitest.mjs run --coverage",
+    "test:coverage": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process --allow-addons --allow-net scripts/testing/run_tests.ts --coverage",
     "test:all": "npm run test",
     "sim:combat:all": "npm run sim:fuzzer && playwright test scripts/e2e/",
     "sim:fuzzer": "node --no-experimental-webstorage --permission --import tsx --allow-worker --allow-fs-read=* --allow-fs-write=* scripts/e2e/fuzzer/runners/run_all_fuzzers.ts",
@@ -143,6 +143,7 @@
     "validate:o1:errors": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/domain_data/validate_o1_data_structures.ts errors-only",
     "validate:o1:report": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/domain_data/validate_o1_data_structures.ts output=scratch/o1_report.txt",
     "validate:emojis": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/architecture/validate_emoji_typography.ts",
+    "validate:audit-headers": "node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/architecture/validate_audit_headers.ts",
     "sync:test": "node --experimental-strip-types scripts/maintenance/sync_to_test.ts"
   },
   "dependencies": {

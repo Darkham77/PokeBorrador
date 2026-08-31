@@ -16,6 +16,7 @@ export function useBreedingActions(
     
     const rawSpeciesId = egg.pokemonId || egg.id
     const speciesId = getEggSpecies(rawSpeciesId)
+    const isDebugMode = typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'))
     const p = makePokemon(speciesId, 1, {
       isShiny: egg.isShiny,
       isGuardian: egg.isGuardian,
@@ -23,7 +24,8 @@ export function useBreedingActions(
       abilitySlot: egg.abilitySlot,
       gender: egg.gender,
       obtainedMethod: 'egg',
-      isNpcEgg: egg.isNpc
+      isNpcEgg: egg.isNpc,
+      bypassWhitelist: isDebugMode
     })
 
     if (!p) throw new Error(`Failed to create pokemon from egg ${speciesId}`)
@@ -50,7 +52,7 @@ export function useBreedingActions(
       })
     }
     
-    recalcPokemonStats(p)
+    recalcPokemonStats(p, isDebugMode)
     p.hp = p.maxHp
 
     state.eggs = state.eggs.filter(e => e.uid !== egg.uid)

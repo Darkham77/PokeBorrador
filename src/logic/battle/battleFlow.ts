@@ -68,6 +68,8 @@ export function handleEntryAbilities(playerPoke: Pokemon, enemyPoke: Pokemon, pl
   }
 }
 
+const SAND_IMMUNE_TYPES_SET: ReadonlySet<string> = new Set(['rock', 'ground', 'steel']) // runtime-set
+
 async function applyEndTurnWeather(p: Pokemon, e: Pokemon, weather: BattleWeather | null, ctx: BattleContext) {
   if (p?.ability === 'cloudnine' || e?.ability === 'cloudnine') {
     return;
@@ -78,7 +80,7 @@ async function applyEndTurnWeather(p: Pokemon, e: Pokemon, weather: BattleWeathe
   const promises: Promise<void>[] = []
 
   if (mechWeather === WEATHER_MECHANICAL.SANDSTORM) {
-    const isSandImmune = (poke: Pokemon) => ['rock', 'ground', 'steel'].includes(poke.type) || ['rock', 'ground', 'steel'].includes(poke.type2 || '')
+    const isSandImmune = (poke: Pokemon) => SAND_IMMUNE_TYPES_SET.has(poke.type) || (poke.type2 ? SAND_IMMUNE_TYPES_SET.has(poke.type2) : false)
     if (!isSandImmune(p)) {
       const dmg = Math.max(1, Math.floor(p.maxHp / 16))
       p.hp = Math.max(0, p.hp - dmg)

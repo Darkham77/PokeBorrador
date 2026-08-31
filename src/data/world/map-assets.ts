@@ -1,3 +1,5 @@
+import type { DayPhase } from '@/logic/utils/timeUtils';
+
 export const MAP_ROUTE_MAPPING = {
   route1: 'ruta1',
   route2: 'ruta2',
@@ -160,8 +162,10 @@ export const AVAILABLE_BATTLE_MAPS = [
 ] as const;
 export type BattleMapAssetId = (typeof AVAILABLE_BATTLE_MAPS)[number];
 
+export const AVAILABLE_BATTLE_MAPS_SET: ReadonlySet<string> = new Set<string>(AVAILABLE_BATTLE_MAPS);
+
 export function isBattleMapAssetId(value: string): value is BattleMapAssetId {
-  return AVAILABLE_BATTLE_MAPS.some(id => id === value);
+  return AVAILABLE_BATTLE_MAPS_SET.has(value);
 }
 
 export function requireBattleMapAssetId(value: string): BattleMapAssetId {
@@ -169,35 +173,13 @@ export function requireBattleMapAssetId(value: string): BattleMapAssetId {
   throw new Error(`Invalid battle map asset id: ${value}`);
 }
 
-import type { DayPhase } from '@/logic/utils/timeUtils';
-
-const CYCLE_SUFFIXES = ['dia', 'noche', 'amanecer', 'atardecer'] as const;
-type CycleSuffix = (typeof CYCLE_SUFFIXES)[number];
-
-const SUFFIX_TO_PHASE = {
-  dia: 'day',
-  noche: 'night',
-  amanecer: 'morning',
-  atardecer: 'dusk'
-} as const satisfies Record<CycleSuffix, DayPhase>;
-
-
-/**
- * Returns the list of DayPhase cycles supported by the given map ID,
- * derived from which battle background assets exist for it.
- * Falls back to ['day'] when the map has no registered assets.
- */
-export function getAvailableCyclesForMap(mapId: string): readonly DayPhase[] {
-  const mapped = isMapRouteId(mapId) ? MAP_ROUTE_MAPPING[mapId] : mapId;
-  const normalizedId = mapped.replace(/\s+/g, ''); // string-ok
+export function getAvailableCyclesForMap(mapId: string): DayPhase[] {
+  const assetKey = isMapRouteId(mapId) ? MAP_ROUTE_MAPPING[mapId] : mapId;
   const cycles: DayPhase[] = [];
-  for (const suffix of CYCLE_SUFFIXES) {
-    if (isBattleMapAssetId(`${normalizedId}_${suffix}`)) {
-      cycles.push(SUFFIX_TO_PHASE[suffix]);
-    }
-  }
-  return cycles.length > 0 ? cycles : (['day'] as const);
+  if (AVAILABLE_BATTLE_MAPS_SET.has(`${assetKey}_amanecer`)) cycles.push('morning');
+  if (AVAILABLE_BATTLE_MAPS_SET.has(`${assetKey}_dia`)) cycles.push('day');
+  if (AVAILABLE_BATTLE_MAPS_SET.has(`${assetKey}_atardecer`)) cycles.push('dusk');
+  if (AVAILABLE_BATTLE_MAPS_SET.has(`${assetKey}_noche`)) cycles.push('night');
+  if (cycles.length === 0 && AVAILABLE_BATTLE_MAPS_SET.has(assetKey)) cycles.push('day');
+  return cycles;
 }
-
-
-

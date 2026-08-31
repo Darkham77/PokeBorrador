@@ -9,6 +9,7 @@ Frontend Developers / Systems Engineers.
 ## Local Contracts
 
 - Follow standard repository modularity guidelines.
+- **Dynamic Font Size Calculation (`fitText`)**: Numeric counters in `InventoryPills.vue` (Poké-Pesos, Battle Coins, War Coins) must dynamically downscale font size (`el.style.fontSize`) using empirical DOM `el.scrollWidth > maxW` checks against `parent.clientWidth - PILL_PADDING_SAFETY_PX`. This guarantees that large numbers (e.g. `111.201`, `999.999`) never overflow or truncate their final digits across responsive HUD breakpoints.
 
 ## Work Guidance
 

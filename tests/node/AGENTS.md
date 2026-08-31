@@ -24,6 +24,7 @@ Frontend Developers / Systems Engineers.
 - [auditors/](./auditors/AGENTS.md): Domain module documentation for auditors.
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle.
 - [box/](./box/AGENTS.md): Domain module documentation for box.
+- [breeding/](./breeding/AGENTS.md): Domain module documentation for breeding.
 - [evolution/](./evolution/AGENTS.md): Domain module documentation for evolution.
 - [events/](./events/AGENTS.md): Domain module documentation for events.
 - [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.

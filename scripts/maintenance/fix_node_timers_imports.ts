@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * scripts/fix_node_timers_imports.ts
  *

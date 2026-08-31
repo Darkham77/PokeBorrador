@@ -31,6 +31,7 @@ const LocalDebugPanel = defineAsyncComponent(() => import('@/components/admin/Lo
 const BoxView = defineAsyncComponent(() => import('@/components/box/BoxView.vue'))
 
 // Lazy loaded views
+const HomeView = defineAsyncComponent(() => import('@/views/game/HomeView.vue'))
 const PokedexView = defineAsyncComponent(() => import('@/views/pokemon/PokedexView.vue'))
 const MapView = defineAsyncComponent(() => import('@/views/game/MapView.vue'))
 const GymsView = defineAsyncComponent(() => import('@/views/game/GymsView.vue'))
@@ -158,9 +159,18 @@ watch(() => gs.value.starterChosen, (val) => {
         }"
       >
         <!-- CORE VIEWS (KEPT ALIVE) -->
-        <KeepAlive :include="['MapView', 'PokedexView', 'BagView', 'BoxView']">
+        <KeepAlive :include="['HomeView', 'MapView', 'PokedexView', 'BagView', 'BoxView']">
           <div
-            v-if="activeTab === 'map'"
+            v-if="activeTab === 'home'"
+            key="home"
+            class="tab-content"
+          >
+            <HomeView />
+            <div class="hud-spacer-bottom" />
+          </div>
+
+          <div
+            v-else-if="activeTab === 'map'"
             key="map"
             class="tab-content"
           >

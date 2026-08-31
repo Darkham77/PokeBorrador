@@ -1,4 +1,3 @@
-// fallow-ignore-file circular-dependencies unused-store-member
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth.ts'

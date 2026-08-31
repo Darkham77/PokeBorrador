@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 import { BaseRunnerLogger, type LoggerOptions } from './base_runner_logger.ts';
 
 export class SimulationRunnerLogger extends BaseRunnerLogger {

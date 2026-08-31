@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * scripts/lib/validationBase.ts
  * 

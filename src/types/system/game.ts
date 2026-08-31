@@ -82,9 +82,10 @@ export type GameStatKey =
 
 const FACTION_IDS = ['union', 'poder'] as const;
 export type FactionId = (typeof FACTION_IDS)[number];
+const FACTION_IDS_SET: ReadonlySet<string> = new Set(FACTION_IDS);
 
 export function isFactionId(value: unknown): value is FactionId {
-  return typeof value === 'string' && (FACTION_IDS as readonly string[]).includes(value); // domain-ok
+  return typeof value === 'string' && FACTION_IDS_SET.has(value);
 }
 
 export function requireFactionId(value: string): FactionId {
@@ -96,9 +97,10 @@ export type { PlayerClassId } from '@/data/player/playerClasses';
 
 const GENDER_IDS = ['h', 'm'] as const;
 export type GenderId = (typeof GENDER_IDS)[number];
+const GENDER_IDS_SET: ReadonlySet<string> = new Set(GENDER_IDS);
 
 export function isGenderId(value: unknown): value is GenderId {
-  return typeof value === 'string' && (GENDER_IDS as readonly string[]).includes(value); // domain-ok
+  return typeof value === 'string' && GENDER_IDS_SET.has(value);
 }
 
 export function requireGenderId(value: unknown, fallback: GenderId = 'h'): GenderId {

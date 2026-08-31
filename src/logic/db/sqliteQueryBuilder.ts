@@ -1,4 +1,3 @@
-// fallow-ignore-file unused-class-member
 /**
  * src/logic/db/sqliteQueryBuilder.ts
  * 

@@ -576,7 +576,7 @@ const leave = (el: Element, done: () => void) => {
             class="btn-vicio-danger btn-vicio-sm"
             @click.stop="emit('reset')"
           >
-            ↺ REINICIAR TODO
+            <span class="emoji-inline">↺</span> REINICIAR TODO
           </button>
         </div>
       </div>

@@ -38,9 +38,11 @@ export interface IVs {
 
 export const COMBAT_STAT_IDS = ['atk', 'def', 'spa', 'spd', 'spe'] as const; // domain-ok
 export type StatIDExceptHP = (typeof COMBAT_STAT_IDS)[number];
+export const COMBAT_STAT_IDS_SET: ReadonlySet<string> = new Set(COMBAT_STAT_IDS); // runtime-set
 
-const STAT_IDS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
+export const STAT_IDS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
 export type StatId = (typeof STAT_IDS)[number];
+export const STAT_IDS_SET: ReadonlySet<string> = new Set(STAT_IDS); // runtime-set
 
 export interface NatureData {
   up: StatId | null;
@@ -109,11 +111,11 @@ export function calcStatsPure(
 }
 
 export function isStatId(stat: string): stat is StatId {
-  return (STAT_IDS as readonly string[]).includes(stat); // domain-ok
+  return STAT_IDS_SET.has(stat);
 }
 
 export function isStatIdExceptHP(stat: string): stat is StatIDExceptHP {
-  return (COMBAT_STAT_IDS as readonly string[]).includes(stat); // domain-ok
+  return COMBAT_STAT_IDS_SET.has(stat);
 }
 
 export function requireStatIdExceptHP(stat: string): StatIDExceptHP {
@@ -126,6 +128,11 @@ export function requireStatIdExceptHP(stat: string): StatIDExceptHP {
 export function calculateTotalIVs(ivs?: Partial<Record<StatId, number>> | null): number {
   if (!ivs) return 0;
   return (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0);
+}
+
+export function hasMaxIV(ivs?: Partial<Record<StatId, number>> | null): boolean {
+  if (!ivs) return false;
+  return ivs.hp === 31 || ivs.atk === 31 || ivs.def === 31 || ivs.spa === 31 || ivs.spd === 31 || ivs.spe === 31;
 }
 
 export function calculateTotalBaseStats(stats?: Partial<BaseStats> | null): number {

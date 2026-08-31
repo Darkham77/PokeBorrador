@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * scripts/assets/convert_and_sync_item_sprites.ts
  *

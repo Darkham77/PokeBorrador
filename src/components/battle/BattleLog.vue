@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// fallow-ignore-file security-sink
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { useBattleStore } from '@/stores/battle/battle'
@@ -80,7 +79,6 @@ onMounted(() => {
 </script>
 
 <template>
-  <!-- eslint-disable vue/no-v-html -->
   <div
     ref="logContainer"
     class="battle-log custom-scrollbar-vicio"
@@ -113,6 +111,7 @@ onMounted(() => {
             @error="handleImgError"
           >
         </div>
+        <!-- eslint-disable-next-line vue/no-v-html -->
         <span
           class="log-text"
           v-html="log.msg"

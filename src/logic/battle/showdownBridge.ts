@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 import type { BattleContext } from '../../types/battle/battleContext.ts';
 import type { BattleSide } from '../../types/battle/battle.ts';
 import type { Pokemon } from '../../types/pokemon/pokemon.ts';

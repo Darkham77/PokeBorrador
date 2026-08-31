@@ -1,4 +1,3 @@
-// fallow-ignore-file unused-store-member
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { logger } from '@/logic/utils/logger'
@@ -25,6 +24,7 @@ import {
 import {
   fetchUserEntries as fetchUserEntriesAction,
   submitCompetitionEntry as submitCompetitionEntryAction,
+  removeCompetitionEntry as removeCompetitionEntryAction,
   type EventEnrollmentContext
 } from './events/eventEnrollmentActions.ts'
 
@@ -142,6 +142,10 @@ export const useEventStore = defineStore('events', () => {
     return submitCompetitionEntryAction(enrollmentContext.value, eventId, categoryIdOrUid, maybeUid)
   }
 
+  async function removeCompetitionEntry(eventId: string, categoryId?: string): Promise<boolean> {
+    return removeCompetitionEntryAction(enrollmentContext.value, eventId, categoryId)
+  }
+
   async function checkPendingAwards(notifyOnPending = false) {
     return checkPendingAwardsAction(awardsContext.value, notifyOnPending)
   }
@@ -187,6 +191,7 @@ export const useEventStore = defineStore('events', () => {
     fetchPastEvents,
     fetchUserEntries,
     submitCompetitionEntry,
+    removeCompetitionEntry,
     checkPendingAwards,
     claimAward,
     discardAward,

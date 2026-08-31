@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 import { test, expect, type Page } from '@playwright/test';
 import { BaseE2ESimulation } from '../base_simulation.ts';
 
@@ -82,7 +81,7 @@ test.describe('Multi-Species Event Competition E2E Simulation', () => {
     await sim.setup();
     await sim.setupMultiSpeciesScenario();
 
-    // Open World Events modal
+    // Open WorldEvents modal
     await page.evaluate(async () => {
       const { useModalStore } = await import('../../../src/stores/modals.ts');
       useModalStore().open('WorldEvents');
@@ -91,30 +90,16 @@ test.describe('Multi-Species Event Competition E2E Simulation', () => {
     const modal = page.locator('.events-modal-content-inner, .events-modal-header');
     await expect(modal.first()).toBeVisible({ timeout: 5000 });
 
-    // 1. Verify Global IVs slot is rendered
-    const globalSlot = page.locator('.category-slot-card').filter({ hasText: 'Mayor IVs Totales' }).first();
-    await expect(globalSlot).toBeVisible({ timeout: 5000 });
+    // 1. Verify category chips in the active competition card
+    const chips = page.locator('.comp-slot-chip');
+    await expect(chips.first()).toBeVisible({ timeout: 5000 });
+    const chipCount = await chips.count();
+    expect(chipCount).toBeGreaterThanOrEqual(3);
 
-    // 2. Verify Species Tabs Strip is rendered with 3 species
-    const tabsBar = page.locator('.species-tabs-strip').first();
-    await expect(tabsBar).toBeVisible({ timeout: 5000 });
-
-    const tabButtons = tabsBar.locator('.species-tab-btn');
-    await expect(tabButtons).toHaveCount(3);
-
-    // 3. Default active tab is Shellder
-    await expect(tabButtons.nth(0)).toHaveClass(/active/);
-
-    // 4. Click Horsea tab
-    await tabButtons.nth(1).click();
-    await expect(tabButtons.nth(1)).toHaveClass(/active/);
-
-    // 5. Inscribe Horsea into Horsea Weight slot
-    const horseaWeightSlot = page.locator('.category-slot-card').filter({ hasText: 'Peso' }).first();
-    await expect(horseaWeightSlot).toBeVisible({ timeout: 5000 });
-
-    const inscribeBtn = horseaWeightSlot.locator('.btn-slot-action.inscribe, button:has-text("INSCRIBIR")').first();
-    await inscribeBtn.click();
+    // 2. Inscribe in the IVs category
+    const ivChip = chips.filter({ hasText: 'Mayor IVs' }).first();
+    await expect(ivChip).toBeVisible({ timeout: 5000 });
+    await ivChip.click();
 
     // Pokemon selection modal opens
     const selectionModal = page.locator('.selection-container, #pokemon-selection-confirm-btn');
@@ -130,8 +115,7 @@ test.describe('Multi-Species Event Competition E2E Simulation', () => {
       await confirmBtn.click();
     }
 
-    // Verify Horsea is enrolled
-    await expect(horseaWeightSlot.locator('.slot-enrolled-body')).toBeVisible({ timeout: 5000 });
-    await expect(horseaWeightSlot).toContainText('Speedy Sea');
+    // Verify chip shows enrolled status (check mark)
+    await expect(ivChip).toContainText('✓', { timeout: 5000 });
   });
 });

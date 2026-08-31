@@ -142,7 +142,7 @@ const getPokemonName = (id: string) => {
               {{ getStoneInfo(opt.stone).name }}
             </div>
             <div class="evo-target">
-              → {{ getPokemonName(opt.to) }} &nbsp;·&nbsp; x{{ gameStore.state.inventory[opt.stone] || 0 }}
+              <span class="emoji-inline">→</span> {{ getPokemonName(opt.to) }} &nbsp;·&nbsp; x{{ gameStore.state.inventory[opt.stone] || 0 }}
             </div>
           </div>
 

@@ -50,10 +50,12 @@ const VOICE_MOVE_IDS = [
   'screech', 'supersonic', 'grasswhistle', 'chatter', 'snarl', 'round',
   'disarmingvoice', 'boomburst', 'confide'
 ] as const;
+const VOICE_MOVE_IDS_SET: ReadonlySet<string> = new Set(VOICE_MOVE_IDS);
 
 const SELFKO_MOVE_IDS = [
   'selfdestruct', 'explosion', 'mindblown', 'mistyexplosion'
 ] as const;
+const SELFKO_MOVE_IDS_SET: ReadonlySet<string> = new Set(SELFKO_MOVE_IDS);
 
 export function buildFaintTimeline(
   spriteEl: HTMLElement,
@@ -102,7 +104,7 @@ export function buildAttackTimeline(
   const tl = gsap.timeline();
 
   const cleanMoveId = move.id || '';
-  if ((VOICE_MOVE_IDS as readonly string[]).includes(cleanMoveId) && props.pokemon) { // domain-ok
+  if (VOICE_MOVE_IDS_SET.has(cleanMoveId) && props.pokemon) {
     tl.add(() => {
       gameBus.emit('PLAY_CRY', { name: props.pokemon!.id || props.pokemon!.name });
     });
@@ -134,7 +136,7 @@ export function buildAttackTimeline(
     }
   }
 
-  const isSelfKo = move.selfKO || cat === 'selfKO' || (SELFKO_MOVE_IDS as readonly string[]).includes(cleanMoveId); // domain-ok
+  const isSelfKo = move.selfKO || cat === 'selfKO' || SELFKO_MOVE_IDS_SET.has(cleanMoveId);
   if (isSelfKo) {
     const shakeTimeline = gsap.timeline();
     for (let i = 0; i < SELFKO_SHAKE_COUNT; i++) {

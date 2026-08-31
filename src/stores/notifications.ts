@@ -25,19 +25,23 @@ export const useNotificationStore = defineStore('notifications', () => {
           gameStore.state.notificationHistory = []
         }
         const cleanMsg = msg.replace(/<[^>]*>/g, '').trim()
-        gameStore.state.notificationHistory.push({
-          id,
-          type: 'general',
-          title: icon || '🔔',
-          message: cleanMsg,
-          timestamp: Temporal.Now.instant().epochMilliseconds,
-          read: false,
-          meta: { icon }
-        })
-        if (gameStore.state.notificationHistory.length > MAX_NOTIFICATION_HISTORY_ITEMS) {
-          gameStore.state.notificationHistory.shift()
+        const isWelcomeMsg = cleanMsg.toLowerCase().includes('bienvenido')
+        
+        if (!isWelcomeMsg) {
+          gameStore.state.notificationHistory.push({
+            id,
+            type: 'general',
+            title: icon || '🔔',
+            message: cleanMsg,
+            timestamp: Temporal.Now.instant().epochMilliseconds,
+            read: false,
+            meta: { icon }
+          })
+          if (gameStore.state.notificationHistory.length > MAX_NOTIFICATION_HISTORY_ITEMS) {
+            gameStore.state.notificationHistory.shift()
+          }
+          gameStore.scheduleSave()
         }
-        gameStore.scheduleSave()
       }
     }).catch((err: unknown) => {
       throw new Error(`[notify] Failed to persist notification to history: ${String(err)}`)

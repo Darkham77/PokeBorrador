@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * Battle Anti-Cheat Page Refresh (F5) Simulation.
  * Tests multiple scenarios after completing 2 sequential battles where the player attempts

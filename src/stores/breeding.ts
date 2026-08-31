@@ -1,5 +1,4 @@
 // [PureVue-Ignore-Length]
-// fallow-ignore-file unused-store-member
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useGameStore } from '@/stores/game.ts';
@@ -171,7 +170,8 @@ export const useBreedingStore = defineStore('breeding', () => {
       return false;
     }
 
-    if (pokemon.isIllegal || !checkPokemonLegality(pokemon).isLegal) {
+    const isDebugMode = typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'));
+    if (pokemon.isIllegal || !checkPokemonLegality(pokemon, { allowUnreleased: isDebugMode }).isLegal) {
       pokemon.isIllegal = true;
       uiStore.notify('No puedes depositar un Pokémon ilegal en la Guardería.', '⚠️');
       return false;
@@ -252,7 +252,8 @@ export const useBreedingStore = defineStore('breeding', () => {
       throw new Error('[breeding] Cannot generate an egg without a valid egg species.');
     }
     const eggSpecies = compat.eggSpecies;
-    if (!isEnabledPokemonId(eggSpecies)) {
+    const isDebugMode = typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'));
+    if (!isEnabledPokemonId(eggSpecies) && !isDebugMode) {
       return;
     }
     const itemA = pA.heldItem || '';

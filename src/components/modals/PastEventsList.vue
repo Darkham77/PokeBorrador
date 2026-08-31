@@ -91,6 +91,10 @@ const handleClaim = async (awardId: string) => {
 
   .section-icon {
     font-size: 16px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
   }
 
@@ -99,7 +103,8 @@ const handleClaim = async (awardId: string) => {
     font-size: 11px;
     color: var(--yellow);
     margin: 0;
-    line-height: 1.35;
+    line-height: 1;
+    letter-spacing: 0.5px;
   }
 
   .section-subtitle {

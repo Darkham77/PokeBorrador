@@ -1,4 +1,3 @@
-// fallow-ignore-file unused-store-member
 import { defineStore } from 'pinia'
 import { computed, watch } from 'vue'
 import { useGameStore } from '@/stores/game.ts'

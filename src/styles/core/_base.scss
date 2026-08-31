@@ -126,6 +126,8 @@ img, canvas, .pixelated-img, .sprite, [class*="sprite-"], .banner-bg, [class*="-
 .cat-icon:not(i):not([class*="fa"]),
 .toast-icon:not(i):not([class*="fa"]),
 .btn-emoji:not(i):not([class*="fa"]),
+.btn-icon:not(i):not([class*="fa"]),
+.sort-arrow:not(i):not([class*="fa"]),
 .weather-emoji:not(i):not([class*="fa"]),
 .desc-line-icon:not(i):not([class*="fa"]),
 .admin-icon-btn:not(i):not([class*="fa"]),
@@ -150,7 +152,12 @@ img, canvas, .pixelated-img, .sprite, [class*="sprite-"], .banner-bg, [class*="-
 .status-icon:not(i):not([class*="fa"]),
 .header-icon:not(i):not([class*="fa"]),
 .field-condition-dot:not(i):not([class*="fa"]),
-.source-symbol:not(i):not([class*="fa"]) {
+.source-symbol:not(i):not([class*="fa"]),
+.pill-icon:not(i):not([class*="fa"]),
+.pill-content:not(i):not([class*="fa"]),
+.slide-icon:not(i):not([class*="fa"]),
+.tag-icon:not(i):not([class*="fa"]),
+.pc-banner-icon:not(i):not([class*="fa"]) {
   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
   display: inline-flex !important;
   align-items: center !important;

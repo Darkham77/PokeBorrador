@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 import fs from 'node:fs';
 import path from 'node:path';
 import { ENABLED_POKEMON_IDS } from '../../src/data/system/constants.ts';

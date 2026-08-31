@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * scripts/auditors/assets/audit_item_sprite_collisions.ts
  *

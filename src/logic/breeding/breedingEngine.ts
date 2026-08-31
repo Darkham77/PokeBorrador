@@ -5,6 +5,7 @@ import type { Pokemon, PokemonIVs, BreedingCompatibility } from '@/types/pokemon
 import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves'
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { BASE_SHINY_DENOMINATOR } from '@/logic/constants/gameplay.ts'
+import { canLearnMove } from '@/logic/pokemon/pokemonLearnset.ts'
 
 const BREEDING_IV_MAX_RANGE = 32
 const HIDDEN_ABILITY_HERITAGE_PCT = 60
@@ -159,11 +160,13 @@ export function inheritMoves(pA: Pokemon, pB: Pokemon, eggSpeciesId: PokemonSpec
     }
   })
 
-  // 2. TMs: Si ambos padres conocen una MT que la cría puede aprender (simplificación legacy)
+  // 2. TMs / Movimientos legales compartidos que la cría puede aprender a nivel 1
   const sharedMoves = (pA.moves || []).filter(ma => ma?.id && (pB.moves || []).some(mb => mb?.id === ma.id))
   sharedMoves.forEach(m => {
     if (m?.id && !inheritedMoves.includes(m.id) && inheritedMoves.length < 4) {
-      inheritedMoves.push(m.id)
+      if (canLearnMove(babyId, m.id, 1)) {
+        inheritedMoves.push(m.id)
+      }
     }
   })
 

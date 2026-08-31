@@ -30,6 +30,7 @@
 17. **Zero-Fallback Dialogue Policy**: Dialog/phrase resolution functions (e.g., `getRandomQuoteForTrainer`) MUST NOT fall back to generic placeholder strings when an archetype or trainer type is queried. If required keys are missing from the registry, the system must throw an explicit error (`throw new Error`) immediately.
 18. **Dialogue Exception Test Coverage**: Test suites must verify that phrase/quote resolution functions execute cleanly without throwing errors for all registered database keys, and assert that they throw when queried with an invalid key.
 19. **Item Sprite Crafting Tier Hierarchy**: All inventory and shop item sprites in `public/assets/sprites/` MUST strictly follow the 4-tier domain hierarchy (`crafting/tier0/`, `crafting/tier1/`, `crafting/tier2/`, `crafting/tier3/`) derived from `item.craftingTier`.
+20. **Zero Hardcoded Dates on Event Artwork**: When authoring or generating event graphics and promotional banners, images MUST NOT include burned-in dates, years, start/end hours, or watermarks. All date information is dynamic and rendered via UI overlays.
 
 ---
 

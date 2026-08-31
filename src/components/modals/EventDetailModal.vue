@@ -16,6 +16,7 @@ import {
   type WeeklyRotationEntry
 } from '@/logic/events/eventEngine'
 import EventSubCompetitionsSection from './EventSubCompetitionsSection.vue'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 
 interface Props {
   show?: boolean
@@ -446,12 +447,6 @@ const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
         <h3 class="event-title">
           ¡{{ effectiveTitle }}!
         </h3>
-        <div
-          v-if="activeRotation?.title && activeRotation.title !== event.name"
-          class="event-rotation-badge"
-        >
-          <span class="title-icon">🏆</span> Temática Semanal: {{ activeRotation.title }}
-        </div>
         <p class="event-desc">
           {{ event.description || '¡Aprovechá este evento especial mientras esté activo!' }}
         </p>
@@ -466,28 +461,32 @@ const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
           POKÉMON PARTICIPANTES ({{ involvedSpecies.length }})
         </div>
         <div class="participants-list-pills">
-          <div
+          <PVTooltip
             v-for="sp in involvedSpecies"
             :key="sp"
-            class="participant-pill clickable"
-            :title="`Ver información de Pokédex de ${sp}`"
-            role="button"
-            tabindex="0"
-            @click.stop="openSpeciesDetail(sp)"
-            @keydown.enter.stop="openSpeciesDetail(sp)"
+            :title="`Ver información de Pokédex de ${sp.toUpperCase()}`"
+            position="top"
           >
-            <PVSpriteFX
-              :is-shiny="Boolean(cfg.speciesShinyMult || cfg.shinyMult)"
-              :sparkle-count="2"
+            <div
+              class="participant-pill clickable"
+              role="button"
+              tabindex="0"
+              @click.stop="openSpeciesDetail(sp)"
+              @keydown.enter.stop="openSpeciesDetail(sp)"
             >
-              <img
-                :src="getAssetUrl(ASSET_TYPES.POKEMON, sp, { isShiny: Boolean(cfg.speciesShinyMult || cfg.shinyMult) })"
-                :alt="sp"
-                class="pixelated participant-sprite"
+              <PVSpriteFX
+                :is-shiny="Boolean(cfg.speciesShinyMult || cfg.shinyMult)"
+                :sparkle-count="2"
               >
-            </PVSpriteFX>
-            <span class="participant-name">{{ sp }}</span>
-          </div>
+                <img
+                  :src="getAssetUrl(ASSET_TYPES.POKEMON, sp, { isShiny: Boolean(cfg.speciesShinyMult || cfg.shinyMult) })"
+                  :alt="sp"
+                  class="pixelated participant-sprite"
+                >
+              </PVSpriteFX>
+              <span class="participant-name">{{ sp }}</span>
+            </div>
+          </PVTooltip>
         </div>
       </div>
 

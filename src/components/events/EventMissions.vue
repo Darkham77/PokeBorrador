@@ -210,11 +210,12 @@ async function startClassMission(missionId: string) {
         <span class="refresh-count">Refrescos: {{ breedingStore.missionRefreshes }}/3</span>
       </div>
       <button 
-        class="btn-refresh" 
+        id="missions-refresh-btn"
+        class="card-action-btn" 
         :disabled="breedingStore.missionRefreshes <= 0"
         @click.stop="breedingStore.refreshMissions"
       >
-        <span class="btn-emoji">🔄</span> Refrescar
+        <span class="btn-icon">↻</span> REFRESCAR
       </button>
     </header>
 
@@ -315,19 +316,40 @@ async function startClassMission(missionId: string) {
   .refresh-count { font-size: 12px; color: Rgba(148, 163, 184, 1); }
 }
 
-.btn-refresh {
-  background: Rgba(255, 51, 102, 0.08);
-  border: 1px solid Rgba(255, 51, 102, 0.25);
-  color: #ff4d88;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 700;
+.card-action-btn {
+  @include pixelated;
+  font-size: 8px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.15);
+  color: var(--white, #ffffff);
   cursor: pointer;
-  
-  
-  &:hover:not(:disabled) { background: Rgba(255, 51, 102, 0.15); transform: Scale(1.05); }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+
+  .btn-icon {
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  &:hover:not(:disabled) {
+    background: Rgba(255, 255, 255, 0.12);
+    border-color: var(--yellow, #facc15);
+    color: var(--yellow, #facc15);
+    box-shadow: 0 0 10px Rgba(250, 204, 21, 0.2);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
 }
 
 .missions-grid {

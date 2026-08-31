@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * scripts/auditors/domain_data/validate_pokemon.ts
  * 

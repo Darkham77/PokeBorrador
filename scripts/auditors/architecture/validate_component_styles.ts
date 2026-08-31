@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * scripts/auditors/architecture/validate_component_styles.ts
  *

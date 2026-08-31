@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 import { test, expect, type Page, type Browser } from '@playwright/test';
 import { BaseE2ESimulation } from '../base_simulation.ts';
 import { waitForStoreReady } from '../e2e_helpers.ts';
@@ -132,15 +131,15 @@ class MagikarpContestSimulationWrapper extends BaseE2ESimulation {
     }, { ivs: magikarpIvs });
   }
 
-  public async enrollMagikarp(magikarpUid: string): Promise<void> {
-    await this.page.evaluate(async (uid: string) => {
+  public async enrollMagikarp(magikarpUid: string, categoryId = 'ivs'): Promise<void> {
+    await this.page.evaluate(async ({ uid, cat }: { uid: string; cat: string }) => {
       const { initSQLite, persistSQLite } = await import('../../../src/logic/db/sqliteEngine.ts');
       await initSQLite({ forceReload: true });
       const { useEventStore } = await import('../../../src/stores/events.ts');
       const eventStore = useEventStore();
-      await eventStore.submitCompetitionEntry('hora_magikarp', uid);
+      await eventStore.submitCompetitionEntry('hora_magikarp', cat, uid);
       await persistSQLite();
-    }, magikarpUid);
+    }, { uid: magikarpUid, cat: categoryId });
   }
 
   public async triggerAutomatedAwarding(): Promise<void> {
@@ -198,7 +197,8 @@ class MagikarpContestSimulationWrapper extends BaseE2ESimulation {
 
 test.describe('4-Player Shared DB Magikarp Contest E2E Simulation', () => {
   test('simula 4 jugadores en BD compartida, premia top 3 por IVs, excluye al 4to y valida reclamo de premios', async ({ browser }: { browser: Browser }) => {
-    const sharedSqliteKey = `magikarp_contest_sim_${Date.now()}`;
+    test.setTimeout(180000);
+    const sharedSqliteKey = `sim_magikarp_contest_${Date.now()}`;
 
     // 1. Crear 4 contextos independientes conectados a la misma BD
     const context1 = await browser.newContext();
@@ -239,13 +239,12 @@ test.describe('4-Player Shared DB Magikarp Contest E2E Simulation', () => {
       modalStore.open('WorldEvents');
     });
 
-    // b. Verificar que la tarjeta del evento muestre el badge de restricción de capturas
-    const restrictionTag = page1.locator('.catch-window-tag').first();
-    await expect(restrictionTag).toBeVisible();
-    await expect(restrictionTag).toContainText('SOLO CAPTURAS DEL EVENTO');
+    // b. Verificar que la tarjeta del evento muestre el chip de la categoría
+    const compChip = page1.locator('.comp-slot-chip').first();
+    await expect(compChip).toBeVisible();
 
-    // c. Pulsar PARTICIPAR para abrir el modal de selección
-    await page1.locator('[id^="event-participate-btn-hora_magikarp"]').first().click();
+    // c. Pulsar chip de categoría para abrir el modal de selección
+    await compChip.click();
 
     // d. Verificar que la lista de selección EXCLUYE al Magikarp viejo fuera de franja horaria y solo lista al capturado en el evento
     await page1.waitForSelector('.ps-vertical-list');
@@ -256,9 +255,17 @@ test.describe('4-Player Shared DB Magikarp Contest E2E Simulation', () => {
 
     // e. Seleccionar e inscribir al Magikarp válido de 180 IVs
     await page1.locator('#pokemon-select-' + p1Setup.validMonUid).click();
+    const confirmBtn = page1.locator('#pokemon-selection-confirm-btn');
+    if (await confirmBtn.isVisible()) {
+      await confirmBtn.click();
+    }
     await page1.waitForFunction(async () => {
       const { useModalStore } = await import('../../../src/stores/modals.ts');
       return !useModalStore().isOpen('PokemonSelection');
+    });
+    await page1.evaluate(async () => {
+      const { persistSQLite } = await import('../../../src/logic/db/sqliteEngine.ts');
+      await persistSQLite();
     });
 
     await p2.setup();
@@ -378,7 +385,7 @@ test.describe('4-Player Shared DB Magikarp Contest E2E Simulation', () => {
   });
 
   test('simula 25 torneos de Magikarp y verifica que la GUI y el Store limiten a los 20 más recientes', async ({ page }: { page: Page }) => {
-    const simSqliteKey = `magikarp_25_tournaments_sim_${Date.now()}`;
+    const simSqliteKey = `sim_magikarp_25_tournaments_${Date.now()}`;
     await page.addInitScript(() => {
       (window as Window & { __GTS_SIMULATION__?: boolean }).__GTS_SIMULATION__ = true;
     });

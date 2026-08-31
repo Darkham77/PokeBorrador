@@ -3,7 +3,6 @@
  *
  * SRP Composable for handling login, registration, and local session workflows in LoginView.
  */
-// fallow-ignore-file security-sink
 
 import { type Ref } from 'vue';
 import type { Router } from 'vue-router';
@@ -117,7 +116,8 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
     error.value = null;
     try {
       await authStore.localLogin(validName.output, gender.value);
-      window.location.replace(import.meta.env.BASE_URL);
+      const safeBase = import.meta.env.BASE_URL.startsWith('/') ? import.meta.env.BASE_URL : '/';
+      window.location.replace(safeBase);
     } catch (_err) {
       error.value = 'Error al crear partida local';
     } finally {

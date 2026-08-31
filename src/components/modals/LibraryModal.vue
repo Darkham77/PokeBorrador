@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// fallow-ignore-file security-sink
 import { ref, computed, watch } from 'vue'
 import { gsap } from 'gsap'
 import { libraryContent, libraryCategories } from '@/data/system/libraryData'
@@ -73,14 +72,13 @@ const selectTab = (tabId: string) => {
 
       <main class="library-content custom-scrollbar-vicio">
         <transition name="fade">
-          <!-- eslint-disable vue/no-v-html -->
+          <!-- eslint-disable-next-line vue/no-v-html -->
           <div
             v-if="contentFade"
             id="library-article-content"
             class="library-article"
             v-html="currentContent"
           />
-          <!-- eslint-enable vue/no-v-html -->
         </transition>
       </main>
     </div>

@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 // scripts/e2e/fuzzer/runners/run_missions_fuzzer.ts
 import fs from 'node:fs/promises';
 import path from 'node:path';

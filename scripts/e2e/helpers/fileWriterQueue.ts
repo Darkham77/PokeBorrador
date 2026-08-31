@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 // scripts/e2e/helpers/fileWriterQueue.ts
 import fs from 'node:fs/promises';
 import path from 'node:path';

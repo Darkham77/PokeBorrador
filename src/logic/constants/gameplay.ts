@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * GAMEPLAY & COMBAT CONSTANTS (SINGLE SOURCE OF TRUTH)
  * Centralized constant definitions for levels, ELO, stats, minigames, and damage variance.
@@ -350,8 +349,8 @@ export const MAX_FRIEND_REQUESTS_PER_MINUTE = 10;
 /** Maximum search results returned by player search (10). */
 export const PLAYER_SEARCH_MAX_RESULTS = 10;
 
-/** Maximum notifications retained in trainer profile history (10). */
-export const MAX_NOTIFICATION_HISTORY_ITEMS = 10;
+/** Maximum notifications retained in trainer profile and Home feed history (50). */
+export const MAX_NOTIFICATION_HISTORY_ITEMS = 50;
 
 /** Maximum players fetched in leaderboard (100). */
 export const LEADERBOARD_LIMIT = 100;

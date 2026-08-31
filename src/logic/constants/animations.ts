@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * ANIMATION CONSTANTS (SINGLE SOURCE OF TRUTH)
  * Centralized constant definitions for GSAP durations, easing, offsets, and UI movement.

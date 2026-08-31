@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * scripts/auditors/architecture/validate_emoji_typography.ts
  *
@@ -42,8 +41,8 @@ export interface EmojiAuditResult {
   readonly passed: boolean;
 }
 
-// Regex matching common emojis
-const EMOJI_REGEX = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2300}-\u{23FF}\u{2B50}\u{2B55}\u{3030}\u{303D}\u{3297}\u{3299}]/u;
+// Regex matching common emojis and special symbolic glyphs
+const EMOJI_REGEX = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2300}-\u{23FF}\u{2190}-\u{21FF}\u{2B50}\u{2B55}\u{3030}\u{303D}\u{3297}\u{3299}]/u;
 const EMOJI_GLOBAL_REGEX = new RegExp(EMOJI_REGEX.source, 'gu');
 
 const APPROVED_CLASS_PATTERNS = [
@@ -51,6 +50,8 @@ const APPROVED_CLASS_PATTERNS = [
   /\bemoji\b/i,
   /\bmedal\b/i,
   /\bbtn-emoji\b/i,
+  /\bbtn-icon\b/i,
+  /\bsort-arrow\b/i,
   /\bcat-icon\b/i,
   /\btoast-icon\b/i,
   /\bweather-emoji\b/i,

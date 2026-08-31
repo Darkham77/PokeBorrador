@@ -1,7 +1,8 @@
 import type { Ref } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import type { PendingAward, PastEventHistoryItem, PastCompetitionWinner, CompetitionRankKey, CompetitionEntry } from '@/types/system/stores'
-import type { Event as GameEvent } from '@/logic/events/eventEngine'
+import { getEventDisplayName, type Event as GameEvent } from '@/logic/events/eventEngine'
+import { GAME_TIMEZONE, getGMT3Date } from '@/logic/utils/timeUtils'
 import type { PokemonCompetitionTrophy } from '@/types/pokemon/pokemon'
 import { incrementRecordKey } from '@/logic/utils/mapUtils'
 import { getItemName } from '@/data/inventory/items'
@@ -203,8 +204,7 @@ export async function fetchPastEvents(ctx: EventAwardsContext) {
     for (const res of results as { id: string; event_id: string; winners: unknown; ended_at: string }[]) {
       const eventCfg = allEvents.value.find(e => e.id === res.event_id)
       const isCustomOrUnknown = !eventCfg || res.event_id.startsWith('custom_') || (eventCfg.name && eventCfg.name.startsWith('custom_'))
-      const eventName = !isCustomOrUnknown && eventCfg?.name ? eventCfg.name : 'Evento desconocido'
-      
+      let eventName = !isCustomOrUnknown && eventCfg?.name ? eventCfg.name : 'Evento desconocido'
       let parsedWinners: PastCompetitionWinner[] = []
       if (typeof res.winners === 'string') {
         try {
@@ -216,10 +216,27 @@ export async function fetchPastEvents(ctx: EventAwardsContext) {
         parsedWinners = res.winners as PastCompetitionWinner[]
       }
 
-      const matchingAward = userAwards.find(a => a.event_id === res.event_id)
+      if (eventCfg) {
+        let eventDate: Temporal.ZonedDateTime = getGMT3Date()
+        if (res.ended_at) {
+          try {
+            eventDate = Temporal.Instant.from(res.ended_at).toZonedDateTimeISO(GAME_TIMEZONE)
+          } catch {
+            eventDate = getGMT3Date()
+          }
+        }
+        eventName = getEventDisplayName(eventCfg, eventDate)
+      }
+
+      const matchingAwards = userAwards.filter(a => a.event_id === res.event_id)
+      const unClaimedAward = matchingAwards.find(a => a.received_at === null)
+      const matchingAward = unClaimedAward || matchingAwards[0] || null
+
       const isWinner = authStore.user ? parsedWinners.some(w => w.player_id === authStore.user?.id) : false
-      const isClaimed = matchingAward ? matchingAward.received_at !== null : false
-      const hasUnclaimedAward = matchingAward ? matchingAward.received_at === null : isWinner
+      const hasUnclaimedAward = matchingAwards.length > 0
+        ? matchingAwards.some(a => a.received_at === null)
+        : isWinner
+      const isClaimed = matchingAwards.length > 0 && matchingAwards.every(a => a.received_at !== null)
 
       if (authStore.user) {
         for (const winner of parsedWinners) {
@@ -232,7 +249,7 @@ export async function fetchPastEvents(ctx: EventAwardsContext) {
                 eventId: res.event_id,
                 eventName,
                 categoryId: catId,
-                categoryName: winner.category_name || (catId === 'weight' ? 'Masa y Peso' : catId === 'height' ? 'Envergadura y Altura' : 'Genética Superior (IVs)'),
+                categoryName: winner.category_name || (catId.startsWith('weight') ? 'Masa y Peso' : catId.startsWith('height') ? 'Envergadura y Altura' : 'Genética Superior (IVs)'),
                 rank: (winner.rank as CompetitionRankKey) || 'first',
                 score: winner.score || 0,
                 awardedAt: Temporal.Instant.from(res.ended_at).epochMilliseconds
@@ -253,7 +270,7 @@ export async function fetchPastEvents(ctx: EventAwardsContext) {
         end_at: eventCfg?.end_at,
         ended_at: res.ended_at,
         winners: parsedWinners,
-        myAward: matchingAward || null,
+        myAward: matchingAward,
         isWinner,
         hasUnclaimedAward,
         isClaimed,

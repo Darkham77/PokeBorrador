@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// fallow-ignore-file security-sink
 import { onMounted, ref, computed, watch, defineAsyncComponent } from 'vue'
 import { gsap } from 'gsap'
 import { useAuthStore } from '@/stores/auth'

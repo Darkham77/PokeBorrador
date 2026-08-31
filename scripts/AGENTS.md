@@ -37,7 +37,7 @@ DevOps / Tooling Engineers.
 - **Audit Exemptions**: Utility, maintenance, and migration scripts in `scripts/` are exempt from legacy code audits (like legacyDates) to allow historical or support tasks without warnings.
 - **Web Worker URL Integrity**: When moving files containing worker URL patterns (`new URL('./relative', import.meta.url)`), update paths to prevent `UNRESOLVED_ENTRY` build errors. Always check for `import.meta.url`.
 - **Node.js Permission Model Compliance**: Scripts must explicitly request narrow permissions (e.g. `--allow-net`, `--allow-fs`). Running coverage (`--experimental-test-coverage`) under permissions requires explicit write permissions (`--allow-fs-write=*` or to specific directories) as report files are generated on disk.
-- **Fallow Auditing**: Local dynamic HTTP fetch requests that trigger CWE-918 (security-sink) must be marked with `// fallow-ignore-file security-sink` at the top of the file. Parser scripts for Fallow must map the JSON structure (`file` and `start_line` properties instead of `path` and `line`). Static databases (like `pokemonDB.ts`) are exempt from duplication detectors and must be listed under `ignorePatterns` in `.fallowrc.json`.
+- **Fallow Auditing**: File-wide bypass directives (`// fallow-ignore-file`) are strictly forbidden across all scripts and codebase files. Parser scripts for Fallow must map the JSON structure (`file` and `start_line` properties instead of `path` and `line`). Static databases (like `pokemonDB.ts`) and tool directories are managed via global configurations.
 - **Cross-Platform Path Standard**: For converting platform-specific filesystem paths (e.g., from `path.relative`) to POSIX format (such as browser URLs, assets keys, database indexes), you MUST use native split/join operations with separator tokens (`relPath.split(path.sep).join(path.posix.sep)`) instead of expressions or replace statements.
 - **No Vitest Coupling in Logic Scripts**: Headless logic simulation fuzzers inside `scripts/e2e/fuzzer/` must NOT import `describe`, `it`, `expect`, or any other test runner primitives. They must run natively under Node.js 26+ using the modern Permission Model (`--permission`) to request FS access, completely decoupled from testing frameworks (Vitest/Playwright).
 - **Simulation and Fuzzer Naming Standards**: All script files inside `scripts/` MUST use snake_case (`_`) as their filename delimiter. Browser-based scenario simulations running under Playwright MUST use the `.sim.ts` extension instead of `.spec.ts` or `.test.ts`.
@@ -64,5 +64,6 @@ DevOps / Tooling Engineers.
 - [database/](./database/AGENTS.md): Domain module documentation for database.
 - [e2e/](./e2e/AGENTS.md): Domain module documentation for e2e.
 - [maintenance/](./maintenance/AGENTS.md): Domain module documentation for maintenance.
+- [testing/](./testing/AGENTS.md): Test execution orchestration, ephemeral Docker PostgreSQL lifecycle, and dual test runner.
 - [auditors/](./auditors/AGENTS.md): Domain module documentation for auditors and validators.
 - [tools/](./tools/AGENTS.md): Domain module documentation for tools.

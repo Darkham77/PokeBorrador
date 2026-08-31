@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * scripts/validation/validate_domain_types.ts
  *

@@ -1,4 +1,3 @@
-// fallow-ignore-file circular-dependencies
 import { defineAsyncComponent } from 'vue'
 
 
@@ -59,7 +58,8 @@ export const MODAL_REGISTRY = {
   BoxMove: defineAsyncComponent(() => import('@/components/box/BoxMoveModal.vue')),
   DebugStackTest: defineAsyncComponent(() => import('@/components/modals/DebugStackTestModal.vue')),
   DebugWeatherTables: defineAsyncComponent(() => import('@/components/modals/DebugWeatherTablesModal.vue')),
-  RouteSpawns: defineAsyncComponent(() => import('@/components/modals/RouteSpawnsModal.vue'))
+  RouteSpawns: defineAsyncComponent(() => import('@/components/modals/RouteSpawnsModal.vue')),
+  EventSlotAction: defineAsyncComponent(() => import('@/components/modals/EventSlotActionModal.vue'))
 }
 
 export type ModalRegistryKey = keyof typeof MODAL_REGISTRY;

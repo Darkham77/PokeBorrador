@@ -116,16 +116,20 @@ describe('BuffsOverlay.vue & useBuffsStore - Global Event Countdown Badges', () 
     expect(wrapper.text()).toContain('🎣')
   })
 
-  it('is visible only when activeTab is "map" and hidden in other tabs (e.g. "box", "pokedex", "bag", "gyms")', async () => {
+  it('is visible when activeTab is "map" or "home" and hidden in other tabs (e.g. "box", "pokedex", "bag", "gyms")', async () => {
     const uiStore = useUIStore(pinia)
     const eventStore = useEventStore(pinia)
     eventStore.activeEvents = [mockMiningEvent]
 
-    uiStore.activeTab = 'map'
+    uiStore.activeTab = 'home'
     const wrapper = mount(BuffsOverlay, {
       global: { plugins: [pinia], stubs: globalStubs }
     })
 
+    expect(wrapper.find('.buffs-overlay').exists()).toBe(true)
+
+    uiStore.activeTab = 'map'
+    await wrapper.vm.$nextTick()
     expect(wrapper.find('.buffs-overlay').exists()).toBe(true)
 
     uiStore.activeTab = 'box'
@@ -144,7 +148,7 @@ describe('BuffsOverlay.vue & useBuffsStore - Global Event Countdown Badges', () 
     await wrapper.vm.$nextTick()
     expect(wrapper.find('.buffs-overlay').exists()).toBe(false)
 
-    uiStore.activeTab = 'map'
+    uiStore.activeTab = 'home'
     await wrapper.vm.$nextTick()
     expect(wrapper.find('.buffs-overlay').exists()).toBe(true)
   })

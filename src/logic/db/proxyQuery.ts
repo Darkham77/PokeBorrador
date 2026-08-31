@@ -1,5 +1,4 @@
 
-// fallow-ignore-file unused-class-member
 
 import { initSQLite, queryLocal, persistSQLite } from './sqliteEngine.ts';
 import type { DBRouter } from './dbRouter.ts';

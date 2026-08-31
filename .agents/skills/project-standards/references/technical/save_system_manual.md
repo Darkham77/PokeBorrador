@@ -18,6 +18,7 @@ When adding or evolving properties in the save state schema (`game_saves` in SQL
 - **Static SQL Migrations (Mandatory)**: All missing properties, schema extensions, and structural evolutions MUST be backfilled strictly via static SQL migration files in `database/migrations/` (`.sqlite.sql` and `.sql`).
 - **Zero Runtime Fallback Prohibition**: Dynamic runtime patching, fallback defaults (such as `state.prop = state.prop || default` or Valibot `fallback()`), or ad-hoc data synthesis (`normalizeData`) in application code are strictly forbidden.
 - **Save Shield Validation Lock**: If save schema validation fails, persistence is locked (`saveBlocked = true`) until state validates cleanly against canonical contracts.
+- **Debug Mode Save Permissiveness**: When debug mode is active (`window.__VITE_DEBUG__` or URL parameter `debug`), `validateAndSanitize` in `saveSanitizer.ts` evaluates `checkPokemonLegality` with `{ allowUnreleased: true }` and `validatePokemon(p, true)`. Unreleased species in debug sessions persist cleanly to local SQLite saves without being marked as illegal.
 
 ### 2. Save Protocol (Upsert)
 

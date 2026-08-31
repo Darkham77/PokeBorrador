@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// fallow-ignore-file security-sink
 declare const __APP_VERSION__: string
 
 import { ref, computed, onMounted, watch, nextTick } from 'vue'

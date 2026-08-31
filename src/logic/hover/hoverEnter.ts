@@ -101,6 +101,11 @@ export function triggerEnter(el: HTMLElement) {
           boxShadow = '0 6px 20px rgba(220, 38, 38, 0.5)'
         }
       }
+    } else if (el.classList.contains('accordion-toggle') || el.classList.contains('no-scale-hover')) {
+      scale = 1
+      y = 0
+      duration = BUTTON_HOVER_DURATION_SEC
+      ease = 'power1.out'
     } else {
       scale = DEFAULT_HOVER_ENTER_SCALE
       y = -1

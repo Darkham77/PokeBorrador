@@ -51,12 +51,15 @@ export const TRAVEL_INCENSE_TYPES: Record<TravelIncenseItemId, PokemonType> = {
   incensepsychic: 'psychic',
 };
 
+export const TRAVEL_BUFF_ITEM_IDS_SET: ReadonlySet<string> = new Set(TRAVEL_BUFF_ITEM_IDS)
+export const TRAVEL_INCENSE_ITEM_IDS_SET: ReadonlySet<string> = new Set(TRAVEL_INCENSE_ITEM_IDS)
+
 export function isTravelBuffItemId(value: ItemId): value is TravelBuffItemId {
-  return (TRAVEL_BUFF_ITEM_IDS as readonly ItemId[]).includes(value)
+  return TRAVEL_BUFF_ITEM_IDS_SET.has(value)
 }
 
 export function isTravelIncenseItemId(value: TravelBuffItemId): value is TravelIncenseItemId {
-  return (TRAVEL_INCENSE_ITEM_IDS as readonly ItemId[]).includes(value) // domain-ok
+  return TRAVEL_INCENSE_ITEM_IDS_SET.has(value)
 }
 
 

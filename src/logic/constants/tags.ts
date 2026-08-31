@@ -1,6 +1,7 @@
 
 import { getItemById, isItemId, type ItemId } from '@/data/inventory/items'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { hasMaxIV } from '@/logic/pokemon/statsMath.ts'
 
 /**
  * TAG_DEFINITIONS - The Single Source of Truth for all Pokemon classification tags.
@@ -139,9 +140,8 @@ export function getPokemonVisualBadges(pokemon: Partial<Pokemon> | null): TagDef
   }
 
   // 2. Automatic: IV 31 (Perfect)
-  const ivs = pokemon.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
   const iv31Badge = TAG_DEFINITIONS['iv31'];
-  if (Object.values(ivs).some(v => v === 31) && iv31Badge) {
+  if (hasMaxIV(pokemon.ivs) && iv31Badge) {
     badges.push({ ...iv31Badge, isAutomatic: true })
   }
 
@@ -219,7 +219,7 @@ export const hasPokemonTag = (pokemon: Partial<Pokemon> | null, tagId: string): 
     case 'competitive':
       return tags.includes('comp') || tags.includes('competitive')
     case 'iv31':
-      return tags.includes('iv31') || Object.values(pokemon.ivs || {}).some(v => v === 31)
+      return tags.includes('iv31') || hasMaxIV(pokemon.ivs)
     case 'hatched':
       return tags.includes('hatched') || pokemon.obtainedMethod === 'egg'
     case 'fav':

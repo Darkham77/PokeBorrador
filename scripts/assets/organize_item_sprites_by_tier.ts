@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 /**
  * scripts/assets/organize_item_sprites_by_tier.ts
  *

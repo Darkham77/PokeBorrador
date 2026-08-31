@@ -6,8 +6,8 @@ import { useEventStore } from '@/stores/events.ts'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { ToolQualityTier } from '@/types/system/game'
 import { isItemId, type ItemId } from '@/data/inventory/items'
-import { getEventCurrentWindow, type Event as GameEvent } from '@/logic/events/eventEngine'
-import { getServerTime, getServerInstant } from '@/logic/utils/timeUtils'
+import { getEventCurrentWindow, safeParse, resolveWeeklyRotation, type Event as GameEvent, type EventConfig } from '@/logic/events/eventEngine'
+import { getServerTime, getServerInstant, getGMT3Date } from '@/logic/utils/timeUtils'
 
 export interface ActiveBuffItem {
   id: string
@@ -146,6 +146,8 @@ export const useBuffsStore = defineStore('buffs', () => {
     // 1. Active global events with countdown clocks
     const nowMs = getServerTime()
     const nowInstant = getServerInstant()
+    const zdt = getGMT3Date()
+
     for (const ev of eventStore.activeEvents) {
       const window = getEventCurrentWindow(ev, nowInstant)
       let secsLeft = 0
@@ -162,11 +164,68 @@ export const useBuffsStore = defineStore('buffs', () => {
         secsLeft = INFINITE_EVENT_SECS_FALLBACK
       }
 
+      const cfg = safeParse(ev.config) as EventConfig
+      const rotation = cfg.rotationTheme === 'weekly_4' && cfg.weeklyRotations ? resolveWeeklyRotation(cfg, zdt) : null
+      const eventTitle = rotation?.title || ev.name
+
+      const bonusParts: string[] = [] // domain-ok
+      const rawSpecies = rotation?.species || cfg.species
+      if (rawSpecies && rawSpecies !== '*') {
+        const speciesNames = rawSpecies
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean)
+          .map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase())
+          .join(', ')
+        if (speciesNames) {
+          bonusParts.push(`Especies: ${speciesNames}`)
+        }
+      }
+      if (cfg.speciesShinyMult && cfg.speciesShinyMult > 1) {
+        bonusParts.push(`✨ x${cfg.speciesShinyMult} Shiny`)
+      } else if (cfg.shinyMult && cfg.shinyMult > 1) {
+        bonusParts.push(`✨ x${cfg.shinyMult} Shiny`)
+      }
+      if (cfg.speciesRateMult && cfg.speciesRateMult > 1) {
+        bonusParts.push(`🎯 x${cfg.speciesRateMult} Aparición`)
+      }
+      if (cfg.fishingMult && cfg.fishingMult > 1) {
+        bonusParts.push(`🎣 x${cfg.fishingMult} Pesca`)
+      }
+      if (cfg.expMult && cfg.expMult > 1) {
+        bonusParts.push(`⚡ x${cfg.expMult} EXP`)
+      }
+      if (cfg.moneyMult && cfg.moneyMult > 1) {
+        bonusParts.push(`💰 x${cfg.moneyMult} Dinero`)
+      }
+      if (cfg.bcMult && cfg.bcMult > 1) {
+        bonusParts.push(`🪙 x${cfg.bcMult} Battle Coins`)
+      }
+      if (cfg.archaeologyMult && cfg.archaeologyMult > 1) {
+        bonusParts.push(`⛏️ x${cfg.archaeologyMult} Arqueología`)
+      }
+      if (cfg.bugCatchingMult && cfg.bugCatchingMult > 1) {
+        bonusParts.push(`🦗 x${cfg.bugCatchingMult} Caza Bichos`)
+      }
+      if (cfg.casinoLuckyMult && cfg.casinoLuckyMult > 1) {
+        bonusParts.push(`🎰 x${cfg.casinoLuckyMult} Suerte Casino`)
+      }
+      if (cfg.hatchMult && cfg.hatchMult > 1) {
+        bonusParts.push(`🥚 x${cfg.hatchMult} Velocidad Eclosión`)
+      }
+      if (ev.type === 'competition') {
+        bonusParts.push('🏆 Competición Activa')
+      }
+
+      const eventDesc = bonusParts.length > 0
+        ? bonusParts.join(' · ')
+        : (ev.description || '¡Evento especial activo!')
+
       list.push({
         id: `event_${ev.id}`,
         secs: secsLeft,
-        name: ev.name,
-        desc: ev.description || '¡Evento especial activo!',
+        name: eventTitle,
+        desc: eventDesc,
         icon: ev.icon || '🎁',
         isEmoji: true,
         isEvent: true,

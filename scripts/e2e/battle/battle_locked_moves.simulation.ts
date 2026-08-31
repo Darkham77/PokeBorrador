@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import { waitForWaitInput } from '../e2e_helpers.ts';

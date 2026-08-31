@@ -29,9 +29,10 @@ export const ENABLED_POKEMON_IDS = [
 ] as const;
 
 export type EnabledPokemonId = (typeof ENABLED_POKEMON_IDS)[number];
+export const ENABLED_POKEMON_IDS_SET: ReadonlySet<string> = new Set(ENABLED_POKEMON_IDS);
 
 export function isEnabledPokemonId(id: string): id is EnabledPokemonId {
-  return (ENABLED_POKEMON_IDS as readonly string[]).includes(id); // domain-ok
+  return ENABLED_POKEMON_IDS_SET.has(id);
 }
 
 export const STARTER_POKEMON_IDS = [
@@ -41,6 +42,7 @@ export const STARTER_POKEMON_IDS = [
 ] as const;
 
 export type StarterPokemonId = (typeof STARTER_POKEMON_IDS)[number];
+export const STARTER_POKEMON_IDS_SET: ReadonlySet<string> = new Set(STARTER_POKEMON_IDS);
 
 
 export const MAX_POKEMON_LEVEL = 100;

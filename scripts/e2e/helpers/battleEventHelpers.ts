@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 import { type Page } from '@playwright/test';
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 import { BATTLE_UI_EVENTS, type BattleForcedSwitchDetail, type BattleReadyForInputDetail } from '../../../src/types/battle/battleEvents.ts';

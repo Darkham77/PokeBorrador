@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 import { Battle, Pokemon, Side, type PokemonSet, type SideID } from '@pkmn/sim';
 import { statsMap, patchShowdownSpreadModify } from './showdownAdapter.ts';
 import { parseToNumericSeed, formatToShowdownSeed } from './battleSeedManager.ts';
@@ -449,7 +448,8 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
       }
 
       default:
-        console.warn(`[Showdown Worker] Evento desconocido: ${type}`);
+        console.warn(`[Showdown Worker] Evento desconocido: ${String(type).slice(0, 32)}`);
+        break;
     }
   } catch (error) {
     const errorMsg = (error as Error).message;

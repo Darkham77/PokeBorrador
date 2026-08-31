@@ -33,11 +33,11 @@ export const BUSH_FAMILIES = {
     "cactus-1",
     "cactus-2"
   ],
-  "crystalblack": [
-    "crystalblack-1"
-  ],
   "crystalblue": [
     "crystalblue-1"
+  ],
+  "crystalblack": [
+    "crystalblack-1"
   ],
   "crystaldarkred": [
     "crystaldarkred-1"
@@ -51,14 +51,14 @@ export const BUSH_FAMILIES = {
   "crystalred": [
     "crystalred-1"
   ],
-  "crystalyellow": [
-    "crystalyellow-1"
-  ],
   "crystalviolet": [
     "crystalviolet-1"
   ],
   "crystalwhite": [
     "crystalwhite-1"
+  ],
+  "crystalyellow": [
+    "crystalyellow-1"
   ],
   "crystalyellowgreen": [
     "crystalyellowgreen-1"
