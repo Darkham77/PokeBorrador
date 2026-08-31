@@ -17,9 +17,9 @@ que ya existen.
 - Ciclo semanal: Lunes–Viernes = Disputa de PT (Puntos de Territorio). Sábado–Domingo = Dominancia
 - Cada evento resuelto en un mapa en disputa suma PT al bando del jugador
 - El bando con más PT al cierre del viernes domina el mapa el fin de semana
-- El mapa dominado otorga bonos temáticos (Shiny +30%, EXP+30%, Mejores IVs 30% chance, etc.) solo al bando ganador
+- El mapa dominado otorga bonos temáticos (Shiny +30%, EXP+30%, Mejores IVs 30% chance) solo al bando ganador
 - Una vez por día aparece el **Guardián del Territorio** al clickear un mapa: un Pokémon especial
-  que solo puede capturar el primer jugador en lograrlo (validado contra Supabase)
+  que solo puede capturar o derrotar cada jugador una vez.
 - Los jugadores acumulan **Monedas de Guerra** canjeables en una tienda exclusiva
 
 ---
@@ -31,7 +31,7 @@ Supabase (tablas nuevas)
   ├── war_factions         → bando de cada jugador
   ├── war_points           → PT acumulados por bando por mapa por semana
   ├── war_dominance        → qué bando dominó cada mapa en la semana actual
-  └── guardian_captures    → registro del Guardián capturado hoy por mapa
+ 
 
 JS nuevo
   └── src/legacy/js/21_dominance.js   → toda la lógica del sistema
@@ -176,7 +176,7 @@ function isDisputePhase() {
 }
 ```
 
-### 3.2 Elegir bando (se llama la primera vez que el jugador juega)
+### 3.2 Elegir bando (se llama cuando el jugador llegue a nivel 5)
 
 ```js
 async function chooseFaction(faction) {
