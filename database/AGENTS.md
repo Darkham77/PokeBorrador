@@ -37,6 +37,9 @@ Backend / Database Engineers.
 - **Legacy Backup Upgrade Pre-Restoration Protocol**: Direct restoration of legacy JSON database backups into newer Supabase schemas with altered columns or constraints will fail. All legacy database backups MUST be upgraded to the latest schema version and Showdown legality via `npm run servers:db:upgrade-backup file=<path>` prior to running `npm run servers:db:restore`.
 - **Offline Browser SQLite Import (Local DB Sync)**: Converting and importing upgraded backups into the local browser SQLite database (`database/temp/imported.db` via `npm run servers:db:local-import`) requires all remote Supabase UUIDs to be remapped to `local_<username>` across user rows, chats, friendships, and eggs, allowing 100% offline QA and battle testing with real accounts.
 - **Mandatory Backup Upgrade Legality Repair**: The backup upgrade pipeline (`upgrade_backup.ts`) MUST execute the comprehensive account legality repair routine (`repairAccountsInSqlite`) on the in-memory SQLite database across 100% of persisted player saves (`team`, `box`, `eggs`, `daycareWarehouse`, `daycare.slotA/slotB`) after applying all SQL migrations and before exporting the final upgraded JSON backup.
+- **PostgreSQL RLS Public Read & GRANT Policy Contract**:
+  - Whenever enabling Row Level Security (`ENABLE ROW LEVEL SECURITY`) on static, public, or global configuration tables (`events_config`, `system_config`, `ranked_rules_config`, `competition_results`, `market_listings`, `war_dominance`), migrations MUST explicitly declare both a public SELECT policy (`CREATE POLICY "Public read ..." ON public.<table_name> FOR SELECT USING (true);`) AND explicit role permissions (`GRANT SELECT ON public.<table_name> TO anon, authenticated, service_role;`).
+  - Without this policy, Supabase PostgREST silently returns an empty set (`[]`) to client queries while local SQLite (which lacks RLS) appears to succeed, causing hidden online desynchronizations.
 
 ## Verification
 

@@ -465,3 +465,13 @@ When customizing common/shared UI components (like buttons or cards) nested insi
 - **Rule**: Always reset the nested component's hover styles using highly specific SASS rules (e.g., `background: none !important; transform: none !important; border-radius: 0 !important;`) to disable inheritance.
 - **Visual Goal**: Prevents unwanted rounded corners or overlapping shadows from leaking near inner dividers or custom controls when hovering over parent elements.
 
+### 13. Emoji Typography Isolation & Single Semantic Class Governance
+
+To prevent browser font-fallback line-box inflation (where emojis inherit the size-adjusted pixel font and drop unnaturally below the text baseline):
+
+- **Global Isolation in `_base.scss`**: Every dedicated emoji/icon container class (e.g., `.title-icon`, `.note-icon`, `.upcoming-icon`, `.event-id-icon`, `.cat-icon`, `.medal`, `.btn-emoji`) MUST be included in the global emoji isolation selector in `src/styles/core/_base.scss`.
+- **Single Semantic Class Mandate**: Components MUST use a single semantic class. Stacking redundant classes (such as `class="title-icon icon"` or `class="upcoming-icon icon"`) is strictly forbidden since each specialized class already inherits the global typography isolation and pure flexbox centering.
+- **Natural Flex Centering (Zero Ad-Hoc Translates)**: All emoji containers MUST rely purely on natural flexbox centering (`display: inline-flex; align-items: center; justify-content: center; line-height: 1;`). Applying ad-hoc `transform: translateY(...)`, negative margins, or manual pixel offsets to "compensate" for an emoji's intrinsic glyph shape is strictly prohibited.
+- **Inline Prose Isolation**: For emojis embedded directly within pixelated text paragraphs or pills, use `<span class="emoji-inline">` which counteracts the pixel font baseline shift without affecting surrounding line flow.
+
+

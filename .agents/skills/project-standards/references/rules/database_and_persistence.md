@@ -100,5 +100,12 @@
 - **Database Precedence (SSoT)**: In both online (Supabase) and offline (SQLite) modes, the `game_saves` database row is the absolute Single Source of Truth. Local browser caches (OPFS / LocalStorage) are strictly offline fallbacks and must NEVER overwrite or take precedence over database records during load/login flows.
 - **Rollback & Restore Protection via `last_save_id`**: Every game save row is protected by an optimistic concurrency lock (`last_save_id` UUID). If an admin restores a database backup or rolls back server state, any subsequent save attempt from an un-synchronized active client will fail with `OUT_OF_SYNC`, triggering `handleSaveRollback()` to force-reload the authoritative server state into memory, update local OPFS cache, and reload the browser window.
 
+## 15. PostgreSQL RLS Public Read & GRANT Policy Contract for Global Tables
+
+- **Public Configuration Tables RLS Mandate**: All database tables delivering global configurations, server metadata, or public market state (`events_config`, `system_config`, `ranked_rules_config`, `competition_results`, `market_listings`, `war_dominance`) that have RLS enabled MUST explicitly include:
+  1. A permissive public SELECT policy: `CREATE POLICY "Public read ..." ON public.<table_name> FOR SELECT USING (true);`
+  2. Explicit role grants: `GRANT SELECT ON public.<table_name> TO anon, authenticated, service_role;`
+- **Silent PostgREST Empty-Set Prevention**: In PostgreSQL, enabling RLS without a matching SELECT policy blocks queries from anon/authenticated clients silently without throwing errors (returning `[]`). Because local browser SQLite does not evaluate RLS, migrations MUST be audited to guarantee identical query visibility in both online Supabase and offline SQLite modes.
+
 
 
