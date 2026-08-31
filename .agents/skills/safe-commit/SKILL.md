@@ -438,6 +438,6 @@ See [commit-standards.md](./references/commit-standards.md) for the full Elegant
 - **No Phase-Jumping**: Phases 9–10 cannot execute if any of Phases 0–8 have unresolved `task.md` items.
 - **Missing Tests Prohibition**: Committing with identified missing tests from Phase 2 that aren't implemented is FORBIDDEN.
 - **Fallow Health Gate**: Creating the Phase 1 snapshot commit with health < 85 is allowed only as recovery insurance after recording `BASELINE_HEALTH`. Exiting Phase 3 or creating the final commit with health < 85 remains a critical violation.
-- **Fallow Bypass Prohibition**: Modifying `.fallowrc.json` to bypass Fallow errors instead of fixing them at the source is STRICTLY FORBIDDEN.
+- **Fallow Bypass Prohibition**: Modifying `.fallowrc.json` or adding file-level ignore directives (`// fallow-ignore-file`, `/* eslint-disable */`, `@ts-nocheck`) to bypass auditor or compiler errors instead of fixing them at the source is STRICTLY FORBIDDEN.
 - **Selective Git Add Prohibition**: Staging individual files via `git add <file>` during Phase 1 is STRICTLY FORBIDDEN. You MUST always execute `git add .` to snapshot the entire workspace before proceeding to Phase 2.
 - **Safe Array Swaps**: Always verify indexed array elements are not `undefined` before value swaps in strict TypeScript (`noUncheckedIndexedAccess`).

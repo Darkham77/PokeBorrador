@@ -112,7 +112,28 @@ async function devFetch(
 ): Promise<Response> {
   const cleanKey = dbKey ? dbKey.replace(/[^a-zA-Z0-9_-]/g, '') : '';
   const headers = { ...(init?.headers || {}), ...(cleanKey ? { 'x-db-key': cleanKey } : {}) };
-  return fetch(endpoint, { ...init, headers });
+  const fullInit = { ...init, headers };
+
+  switch (endpoint) {
+    case '/api/dev-export-db':
+      return fetch('/api/dev-export-db', fullInit);
+    case '/api/dev-manual-import-check':
+      return fetch('/api/dev-manual-import-check', fullInit);
+    case '/api/dev-manual-import-db':
+      return fetch('/api/dev-manual-import-db', fullInit);
+    case '/api/dev-manual-import-cleanup':
+      return fetch('/api/dev-manual-import-cleanup', fullInit);
+    case '/api/dev-sim-db-check':
+      return fetch('/api/dev-sim-db-check', fullInit);
+    case '/api/dev-sim-db':
+      return fetch('/api/dev-sim-db', fullInit);
+    case '/api/dev-sim-db-cleanup':
+      return fetch('/api/dev-sim-db-cleanup', fullInit);
+    case '/api/dev-clean-db':
+      return fetch('/api/dev-clean-db', fullInit);
+    case '/api/dev-export-clean-db':
+      return fetch('/api/dev-export-clean-db', fullInit);
+  }
 }
 
 export async function persistSQLite(): Promise<void> {

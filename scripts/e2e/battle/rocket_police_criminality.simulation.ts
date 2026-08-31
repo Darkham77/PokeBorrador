@@ -1,4 +1,3 @@
-// fallow-ignore-file security-sink
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import {
@@ -6,6 +5,22 @@ import {
   awaitBattleFlowCompletion,
   clickResilient
 } from '../e2e_helpers.ts';
+
+const INITIAL_CLASS_LEVEL = 5;
+const SWAT_CLASS_LEVEL = 10;
+const INITIAL_PLAYER_MONEY = 50000;
+const CRIMINALITY_LEVEL_ZERO = 0;
+const CRIMINALITY_LEVEL_FIFTY = 50;
+const CRIMINALITY_LEVEL_ALERT = 100;
+const CRIMINALITY_LEVEL_HIGH = 150;
+const CRIMINALITY_LEVEL_SWAT = 200;
+const EXPECTED_SWAT_POLICE_LEVEL = 17; // base 2 + 5 offset + 10 bonus = 17
+const EXPECTED_SWAT_TEAM_SIZE = 6;
+const EXPECTED_REMAINING_MONEY_AFTER_BAIL = 34000;
+
+const HEIGHT_STYLE_0_REGEX = /height:\s*0%/;
+const HEIGHT_STYLE_50_REGEX = /height:\s*50%/;
+const HEIGHT_STYLE_100_REGEX = /height:\s*100%/;
 
 class RocketPoliceSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
@@ -59,9 +74,9 @@ test.describe('Rocket Police Criminality and Difficulty E2E Simulation (Tier 3)'
     // 1. Initial State: Team Rocket with 0% Criminality
     await sim.setPlayerState({
       playerClass: 'rocket',
-      classLevel: 5,
-      criminality: 0,
-      money: 50000
+      classLevel: INITIAL_CLASS_LEVEL,
+      criminality: CRIMINALITY_LEVEL_ZERO,
+      money: INITIAL_PLAYER_MONEY
     });
 
     const crimBar = page.locator('#criminality-bar');
@@ -71,47 +86,47 @@ test.describe('Rocket Police Criminality and Difficulty E2E Simulation (Tier 3)'
     const crimFill = page.locator('#criminality-bar-fill');
 
     await expect(crimLabel).toHaveText('0%');
-    await expect(crimFill).toHaveAttribute('style', /height:\s*0%/);
+    await expect(crimFill).toHaveAttribute('style', HEIGHT_STYLE_0_REGEX);
 
     // 2. Set Criminality to 50%
     await sim.setPlayerState({
       playerClass: 'rocket',
-      classLevel: 5,
-      criminality: 50,
-      money: 50000
+      classLevel: INITIAL_CLASS_LEVEL,
+      criminality: CRIMINALITY_LEVEL_FIFTY,
+      money: INITIAL_PLAYER_MONEY
     });
     await expect(crimLabel).toHaveText('50%');
-    await expect(crimFill).toHaveAttribute('style', /height:\s*50%/);
+    await expect(crimFill).toHaveAttribute('style', HEIGHT_STYLE_50_REGEX);
 
     // 3. Set Criminality to 100% (Alert threshold)
     await sim.setPlayerState({
       playerClass: 'rocket',
-      classLevel: 5,
-      criminality: 100,
-      money: 50000
+      classLevel: INITIAL_CLASS_LEVEL,
+      criminality: CRIMINALITY_LEVEL_ALERT,
+      money: INITIAL_PLAYER_MONEY
     });
     await expect(crimLabel).toHaveText('100%');
-    await expect(crimFill).toHaveAttribute('style', /height:\s*100%/);
+    await expect(crimFill).toHaveAttribute('style', HEIGHT_STYLE_100_REGEX);
 
     // 4. Set Criminality to 150% (Excess: +5 LV)
     await sim.setPlayerState({
       playerClass: 'rocket',
-      classLevel: 5,
-      criminality: 150,
-      money: 50000
+      classLevel: INITIAL_CLASS_LEVEL,
+      criminality: CRIMINALITY_LEVEL_HIGH,
+      money: INITIAL_PLAYER_MONEY
     });
     await expect(crimLabel).toHaveText('150% (+5 LV)');
-    await expect(crimFill).toHaveAttribute('style', /height:\s*100%/);
+    await expect(crimFill).toHaveAttribute('style', HEIGHT_STYLE_100_REGEX);
 
     // 5. Set Criminality to 200% (Excess: +10 LV, SWAT squad 6 Pokemon)
     await sim.setPlayerState({
       playerClass: 'rocket',
-      classLevel: 10,
-      criminality: 200,
-      money: 50000
+      classLevel: SWAT_CLASS_LEVEL,
+      criminality: CRIMINALITY_LEVEL_SWAT,
+      money: INITIAL_PLAYER_MONEY
     });
     await expect(crimLabel).toHaveText('200% (+10 LV)');
-    await expect(crimFill).toHaveAttribute('style', /height:\s*100%/);
+    await expect(crimFill).toHaveAttribute('style', HEIGHT_STYLE_100_REGEX);
 
     // 6. Spawn and trigger police battle with 200% criminality on route1
     await page.evaluate(async () => {
@@ -158,8 +173,8 @@ test.describe('Rocket Police Criminality and Difficulty E2E Simulation (Tier 3)'
     expect(battleData.isBattleActive).toBe(true);
     expect(battleData.archetype).toBe('policeman');
     expect(battleData.trainerName).toContain('Oficial de Policía');
-    expect(battleData.teamLength).toBe(6); // SWAT team for 200% crim
-    expect(battleData.firstEnemyLevel).toBe(17); // base 2 + 5 offset + 10 bonus = 17
+    expect(battleData.teamLength).toBe(EXPECTED_SWAT_TEAM_SIZE);
+    expect(battleData.firstEnemyLevel).toBe(EXPECTED_SWAT_POLICE_LEVEL);
 
     // 8. Conclude battle with defeat (paying bail)
     await page.evaluate(async () => {
@@ -178,13 +193,13 @@ test.describe('Rocket Police Criminality and Difficulty E2E Simulation (Tier 3)'
 
     // 10. Verify that on map tab, criminality has been reset to 0% and bail deducted
     await expect(crimLabel).toHaveText('0%');
-    await expect(crimFill).toHaveAttribute('style', /height:\s*0%/);
+    await expect(crimFill).toHaveAttribute('style', HEIGHT_STYLE_0_REGEX);
 
     const finalMoney = await page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       return useGameStore().state.money;
     });
     // Bail for level 10 at 200% criminality: 10^2 * 80 * 2.0 = 16,000. 50,000 - 16,000 = 34,000.
-    expect(finalMoney).toBe(34000);
+    expect(finalMoney).toBe(EXPECTED_REMAINING_MONEY_AFTER_BAIL);
   });
 });

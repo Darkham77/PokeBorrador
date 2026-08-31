@@ -196,6 +196,18 @@ Fallow is integrated directly into the workspace's NPM auditing scripts:
 
 ---
 
+## Suppression Comment Governance & File-Level Ignore Prohibition
+
+- **Absolute Prohibition on `fallow-ignore-file`**: Placing `// fallow-ignore-file <rule>` at the top of a file to bypass security, magic numbers, complexity, or cyclic dependencies for the whole file is STRICTLY FORBIDDEN.
+- **Granular Line-Level Exceptions Only**: Only targeted line-level annotations are permitted in well-justified edge cases:
+  - `// fallow-ignore-next-line <rule>` (e.g. `// fallow-ignore-next-line cwe-918` for audited internal endpoints)
+  - `// domain-ok` (open string constants that represent dynamic user text)
+  - `// singleton-ok` (module-level singletons for cache or engine handles)
+  - `// no-magic` (string templates with embedded fractions or CSS shake keyframes)
+- **Fix Root Cause First**: Magic numbers must be declared as named domain constants, URLs must be literal strings or allowlisted switches, and complex functions must be modularized rather than suppressed.
+
+---
+
 ## ignorePatterns vs entry — Critical Distinction (LESSON LEARNED)
 
 These two fields in `.fallowrc.json` serve different purposes and MUST NOT be confused:
