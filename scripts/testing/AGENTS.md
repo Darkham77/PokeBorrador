@@ -12,6 +12,8 @@ DevOps / QA Engineers.
 - **Daemon Auto-Start**: If Docker CLI is found but the daemon is inactive, the orchestrator automatically attempts to launch the Docker service (`Docker Desktop.exe` / `systemctl` / `open -a Docker`) with graceful polling and fallback.
 - **Ephemeral PostgreSQL Container Lifecycle**: Starts `postgres:15-alpine` on port 54329 with in-memory RAM disk (`--tmpfs /var/lib/postgresql/data:rw`), applies baseline schema and migration patches, and performs guaranteed teardown on process exit (`SIGINT`, `SIGTERM`, `exit`).
 - **Dual-Engine Execution**: When Docker PostgreSQL is active, database-enabled tests run against both SQLite (in-memory) and PostgreSQL (ephemeral container). When Docker is missing, tests gracefully fallback to SQLite in RAM and display a clear summary warning.
+- **Subprocess PATH Prepending**: When launching Docker CLI, the orchestrator MUST prepend the resolved binary directory (`path.dirname(dockerBin)`) to `process.env.PATH` to ensure sibling helper binaries (`docker-credential-desktop`) are immediately discoverable.
+- **Node.js 26 Permission Addon Mandate**: Test orchestrators launching Vitest under Node 26 sandboxed permissions MUST declare `--allow-addons` to permit Rolldown platform-specific native addons (`.node`) alongside `--allow-child-process` and `--allow-net`.
 
 ## Key Files
 

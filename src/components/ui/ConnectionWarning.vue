@@ -26,11 +26,11 @@ const authStore = useAuthStore()
   position: fixed;
   top: 12px;
   left: 50%;
-  transform: translateX(-50%);
-  z-index: 9999;
-  background: rgba(239, 68, 68, 0.92);
+  transform: Translatex(-50%);
+  z-index: calc(var(--z-overlay) - 1);
+  background: Rgba(239, 68, 68, 0.92);
   border: 2px solid #fca5a5;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.4);
   color: #ffffff;
   padding: 6px 14px;
   border-radius: 20px;
@@ -56,7 +56,7 @@ const authStore = useAuthStore()
   transition: transform 0.25s ease, opacity 0.25s ease;
 }
 .slide-down-enter-from, .slide-down-leave-to {
-  transform: translate(-50%, -20px);
+  transform: Translate(-50%, -20px);
   opacity: 0;
 }
 </style>
