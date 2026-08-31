@@ -36,7 +36,7 @@ graph TD
 
     subgraph LOOP ["🔁 Fase 2 — Active Repair Loop (Exits ONLY on npm run build exit code 0)"]
         direction TB
-        C1[2.1 npm run audit:warnings-diff] -->|Errors / Warnings| REPAIR[🛠️ Reparación:\n1. npm run audit:fix\n2. Edición manual de código]
+        C1[2.1 npm run audit:for-commit] -->|Errors / Warnings| REPAIR[🛠️ Reparación:\n1. npm run audit:fix\n2. Edición manual de código]
         C1 -->|0 errors, 0 warnings| C2[2.2 npm run test]
         
         C2 -->|Tests Fail| REPAIR
@@ -112,7 +112,7 @@ This phase captures a safety snapshot. If subsequent audit auto-fixes or repairs
 > **THE UNBREAKABLE BUILD GATE — INFINITE REPAIR LOOP**:
 > You are inside an active loop. The **ONLY** condition that allows exiting Phase 2 is when `npm run build` returns **Exit Code 0** AND all verification steps pass cleanly.
 >
-> If `audit:warnings-diff` fails, `npm run test` fails, `npm run build` fails (exit ≠ 0), or `fallow:health` is < 85:
+> If `audit:for-commit` fails, `npm run test` fails, `npm run build` fails (exit ≠ 0), or `fallow:health` is < 85:
 > **YOU MUST NOT ADVANCE TO PHASE 3.**
 > You must fix the code, apply repairs, and restart the verification cycle until `npm run build` succeeds with Exit Code 0.
 
@@ -120,12 +120,12 @@ This phase captures a safety snapshot. If subsequent audit auto-fixes or repairs
 
 In every iteration of the loop, execute these checks sequentially:
 
-1. **Check 2.1 — Primary Audit**: Run `npm run audit:warnings-diff`
+1. **Check 2.1 — Primary Audit**: Run `npm run audit:for-commit`
    - *If errors or new warnings exist*:
      - Run `npm run audit:fix` (auto-repairs simple imports, viewport tags, etc.).
      - Apply manual fixes to the source code for remaining issues.
      - Record fixes under "Repairs applied" in `task.md`.
-     - Re-run `npm run audit:warnings-diff` until it reports **0 errors and 0 new warnings**.
+     - Re-run `npm run audit:for-commit` until it reports **0 errors and 0 new warnings**.
    - *If clean (0 errors, 0 new warnings)*: Proceed immediately to Check 2.2.
 
 2. **Check 2.2 — Test Suite**: Run `npm run test`

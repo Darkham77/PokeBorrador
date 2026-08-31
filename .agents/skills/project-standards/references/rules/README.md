@@ -24,6 +24,6 @@ Before declaring any task completed, verify code against this mandatory checklis
 - [ ] **GPU Acceleration**: Have I applied layer promotion (`will-change: transform`) and object pooling on animated/heavy elements?
 - [ ] **Pixel Parity**: Is all game content pixelated, sharp, and properly rendered with appropriate font fallbacks ('ñ' handled)?
 - [ ] **CLI-First State Verification**: Have I verified game states via `window.__VITE_DEBUG__` console commands?
-- [ ] **Proportional Verification**: For documentation/skill edits, does `npm run lint:md` pass cleanly? For code development, does `npm run audit` pass with 0 errors? (The command `npm run audit:warnings-diff` is strictly reserved for the safe-commit pipeline).
+- [ ] **Proportional Verification**: For documentation/skill edits, does `npm run lint:md` pass cleanly? For code development, does `npm run audit` pass with 0 errors? (The command `npm run audit:for-commit` is strictly reserved for the safe-commit pipeline).
 - [ ] **Fallow Score Compliance**: Does `npm run fallow:health` report a score of 85 or higher?
 - [ ] **Language Parity**: Are all repository files (.ts, .vue, .md, skills) written exclusively in English?

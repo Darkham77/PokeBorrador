@@ -46,7 +46,7 @@ The project uses a unified audit coordinator located in `scripts/maintenance/aud
 - **Proportional Verification Protocol**:
   - **Documentation & Skills (`.md`)**: Run ONLY `npm run lint:md` (takes ~1s). Running full project audits for documentation or skill edits is strictly forbidden.
   - **In-Development Code**: Run `npm run lint` (takes ~3-5s) or `npm run audit` for full quality gate.
-  - **Safe-Commit Gatekeeper**: `npm run audit:warnings-diff` is strictly reserved for the safe-commit pipeline to compare changes against `origin/main`.
+  - **Safe-Commit Gatekeeper**: `npm run audit:for-commit` is strictly reserved for the safe-commit pipeline to compare changes against `origin/main`.
 - **Universal Caching Policy**: All quality scripts leverage persistent caches (Node.js `enableCompileCache()`, ESLint `.eslintcache`, TypeScript `incremental`).
 - **Zero-Redundancy Guarantee**: Aggregator scripts must never duplicate sub-analyzers already embedded in `audit_project.ts` or sibling validation suites.
 - **Universal Audit Command**: `npm run audit`. Dynamically executes all 17 sub-auditors across the 6 domain families (`architecture`, `domain_data`, `persistence`, `fsm`, `assets`, `documentation`). Supports `rule=<regla>` or `rule=<regla1>,<regla2>` for ultra-fast selective execution (e.g. `npm run audit rule=DOX`, `npm run audit rule=DOX,z-index`, `npm run audit rule=dupes`). It always renders the clean human summary table to the console and automatically persists the 100% complete structured JSON report to `scratch/audits/latest_audit.json` (and `scratch/audits/<family>/<id>.json` for individual suites).

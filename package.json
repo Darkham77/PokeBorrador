@@ -86,7 +86,7 @@
     "assets:organize-tiers": "node --permission --experimental-strip-types --allow-addons --allow-fs-read=. --allow-fs-write=. scripts/assets/organize_item_sprites_by_tier.ts",
     "audit": "node --max-old-space-size=8192 --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process --allow-addons scripts/maintenance/audit_full.ts",
     "audit:changed": "node --max-old-space-size=8192 --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process --allow-addons scripts/maintenance/audit_full.ts changed-since=main",
-    "audit:warnings-diff": "node --max-old-space-size=8192 --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/maintenance/audit_warnings_diff.ts",
+    "audit:for-commit": "node --max-old-space-size=8192 --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/maintenance/audit_for_commit.ts",
     "audit:fix": "node --max-old-space-size=8192 --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/auditors/architecture/audit_project.ts fix",
     "audit:dox": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process scripts/auditors/architecture/audit_project.ts rule=DOX",
     "audit:family:domain": "node --max-old-space-size=8192 --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process --allow-addons scripts/maintenance/audit_full.ts family=domain_data",

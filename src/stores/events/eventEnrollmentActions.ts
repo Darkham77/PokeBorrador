@@ -106,9 +106,11 @@ export async function submitCompetitionEntry(
     }
     const evalRes = evaluatePokemonForSubCompetition(pokemon, subComp)
 
-    const entryId = `${eventId}:${categoryId}:${authStore.user.id}`
+    const existingEntry = userEntries.value[`${eventId}:${categoryId}`] || (categoryId === 'ivs' ? userEntries.value[eventId] : null)
+    const existingId = existingEntry?.id
+
     const entryData: CompetitionEntry = {
-      id: entryId,
+      ...(existingId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(existingId) ? { id: existingId } : {}),
       event_id: eventId,
       category_id: categoryId,
       player_id: authStore.user.id,
@@ -153,7 +155,7 @@ export async function submitCompetitionEntry(
         source: 'submitCompetitionEntry'
       })
     } else {
-      const assignedId = entry?.id || entryId
+      const assignedId = entry?.id || existingId || `${eventId}:${categoryId}:${authStore.user.id}`
       userEntries.value = {
         ...userEntries.value,
         [`${eventId}:${categoryId}`]: { ...entryData, id: assignedId },

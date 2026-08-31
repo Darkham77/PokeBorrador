@@ -1,17 +1,17 @@
 /**
- * tests/node/system/audit_warnings_diff.test.ts
+ * tests/node/system/audit_for_commit.test.ts
  * 
  * VITEST (vite-node) — node environment
  * 
- * Verifica el filtrado de advertencias (warnings) de audit_warnings_diff.ts.
+ * Verifica el filtrado de advertencias (warnings) de audit_for_commit.ts.
  */
 
 import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
-import { filterNewWarnings } from '../../../scripts/maintenance/audit_warnings_diff.ts';
-import type { Violation } from '../../../scripts/maintenance/audit_warnings_diff.ts';
+import { filterNewWarnings } from '../../../scripts/maintenance/audit_for_commit.ts';
+import type { Violation } from '../../../scripts/maintenance/audit_for_commit.ts';
 
-describe('Warnings Diff Logic (audit_warnings_diff.ts)', () => {
+describe('Warnings Diff Logic (audit_for_commit.ts)', () => {
   const filePath = 'src/components/TestComponent.vue';
 
   it('debe marcar todas las advertencias como nuevas si el archivo no existe en origin/main (originContent es null)', () => {

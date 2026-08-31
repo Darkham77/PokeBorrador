@@ -18,7 +18,7 @@
   - [ ] `git add .` & `git commit -m "<message>"` (Snapshot Commit)
 - [ ] **Phase 2: Active Verification & Repair Loop 🔁 (Exits ONLY on `npm run build` Exit Code 0)**
   - [ ] **Loop Cycle Checks (Must ALL pass consecutively on final code)**:
-    - [ ] `npm run audit:warnings-diff` (0 errors, 0 new warnings)
+    - [ ] `npm run audit:for-commit` (0 errors, 0 new warnings)
     - [ ] `npm run test` (100% test suites passing)
     - [ ] `npm run build` 🔒 **THE BUILD GATE** (STRICT Exit Code 0 — zero bypasses)
     - [ ] `npm run fallow:health` (Score ≥ 85 and ≥ BASELINE_HEALTH)
@@ -51,7 +51,7 @@
 
 ### Verification & Repair Loop Status
 - **Loop Iteration Count**: `0`
-- **audit:warnings-diff**: `PENDING`
+- **audit:for-commit**: `PENDING`
 - **test**: `PENDING`
 - **npm run build (THE GATE)**: `PENDING (MUST BE EXIT 0)`
 - **final fallow health**: `PENDING`

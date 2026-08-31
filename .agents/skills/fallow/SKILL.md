@@ -1,6 +1,6 @@
 ---
 name: fallow
-description: MANDATORY engine for codebase intelligence, code auditing, dead code detection, duplication analysis, complexity hotspots, and pre-commit audit triage. YOU MUST trigger this skill whenever the user or task mentions auditing code, reviewing errors, grouping problems, checking code quality, finding duplicates, measuring cyclomatic/cognitive complexity, dead code, unused exports, CWE security findings, or pre-commit/CI checks in BOTH Spanish and English (e.g., "auditar", "auditoría", "errores de auditoría", "agrupa por problemas", "agrupar por problemas", "listar errores", "revisa los errores", "calidad de código", "código duplicado", "triplicados", "complejidad", "dead code", "fallow", "npm run audit", "audit:warnings-diff", "audit:fix", "cwe", "antipatrones", "code audit", "audit errors", "codebase intelligence"). Enforces deterministic structured JSON grouping via Fallow and project audit tools, strictly prohibiting manual log parsing or raw grepping.
+description: MANDATORY engine for codebase intelligence, code auditing, dead code detection, duplication analysis, complexity hotspots, and pre-commit audit triage. YOU MUST trigger this skill whenever the user or task mentions auditing code, reviewing errors, grouping problems, checking code quality, finding duplicates, measuring cyclomatic/cognitive complexity, dead code, unused exports, CWE security findings, or pre-commit/CI checks in BOTH Spanish and English (e.g., "auditar", "auditoría", "errores de auditoría", "agrupa por problemas", "agrupar por problemas", "listar errores", "revisa los errores", "calidad de código", "código duplicado", "triplicados", "complejidad", "dead code", "fallow", "npm run audit", "audit:for-commit", "audit:fix", "cwe", "antipatrones", "code audit", "audit errors", "codebase intelligence"). Enforces deterministic structured JSON grouping via Fallow and project audit tools, strictly prohibiting manual log parsing or raw grepping.
 ---
 
 # Fallow: Codebase Intelligence & Code Auditing
@@ -25,7 +25,7 @@ Use this skill to run and interpret Fallow commands and unified project audit to
 | :--- | :--- | :--- |
 | **Run general project audit** | `npm run audit` | Clean summary table in console + full JSON in `scratch/audits/latest_audit.json` |
 | **Inspect detailed audit findings** | Read `scratch/audits/latest_audit.json` | Complete machine-readable findings with exact file and line |
-| **Safe-commit diff validation** | `npm run audit:warnings-diff` | Safe-commit gatekeeper vs `origin/main` (strictly reserved for safe-commit) |
+| **Safe-commit diff validation** | `npm run audit:for-commit` | Safe-commit gatekeeper vs `origin/main` (strictly reserved for safe-commit) |
 | **Audit changed files only (vs main)** | `npm run audit:changed` | Scoped audit of modified files vs main |
 | **Code duplication & triplets** | `npm run audit:fallow:triplets` | Identifies duplicate and triplicate blocks |
 | **Complexity hotspots & refactor targets** | `npm run fallow:health` | Ranked refactoring recommendations |

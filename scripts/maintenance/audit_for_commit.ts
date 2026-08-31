@@ -1,7 +1,7 @@
 /**
- * scripts/maintenance/audit_warnings_diff.ts
+ * scripts/maintenance/audit_for_commit.ts
  * 
- * COMPARADOR DE ADVERTENCIAS Y ERRORES (Node.js 26+)
+ * COMPARADOR DE ADVERTENCIAS Y ERRORES PARA SAFE-COMMIT (Node.js 26+)
  * 
  * Obtiene los archivos modificados localmente comparando con 'origin/main'.
  * Analiza todo el proyecto buscando ERRORES (incluyendo eslint, vue-tsc type checking y 100% de sub-auditores).
@@ -447,10 +447,10 @@ async function main() {
 }
 
 // Solo ejecutar main si se corre directamente
-if (process.argv[1] && (process.argv[1].endsWith('audit_warnings_diff.ts') || process.argv[1].endsWith('audit_warnings_diff.js'))) {
+if (process.argv[1] && (process.argv[1].endsWith('audit_for_commit.ts') || process.argv[1].endsWith('audit_for_commit.js') || process.argv[1].endsWith('audit_warnings_diff.ts'))) {
   main().catch((err: unknown) => {
     const msg = err instanceof Error ? (err as Error).message : String(err);
-    console.error(styleText('red', `💥 Error fatal en audit_warnings_diff: ${msg}`));
+    console.error(styleText('red', `💥 Error fatal en audit_for_commit: ${msg}`));
     process.exit(1);
   });
 }
