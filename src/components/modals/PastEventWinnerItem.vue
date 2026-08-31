@@ -144,64 +144,76 @@ const getRankLabel = (rank?: string | number): string => {
     class="winner-item"
     :class="`rank-${winner.rank || rankIndex + 1}`"
   >
+    <!-- Column 1: Rank Badge / Medal (Standalone) -->
     <div class="rank-badge">
       <span class="medal">{{ getRankMedal(winner.rank || rankIndex + 1) }}</span>
       <span class="pos-text">{{ getRankLabel(winner.rank || rankIndex + 1) }}</span>
     </div>
 
-    <!-- Clickable Avatar -->
-    <div
-      class="winner-avatar-wrap"
-      :title="`Ver perfil de ${getWinnerName(winner)}`"
-      @click.stop="openTrainerProfile(winner.player_id)"
-    >
-      <TrainerAvatar
-        :profile="getWinnerProfile(winner)"
-        :size="26"
-      />
-    </div>
+    <!-- Column 2: Content (1 line on wide screens, 2 lines on small screens) -->
+    <div class="winner-content-wrap">
+      <!-- Trainer Profile -->
+      <div class="winner-trainer-group">
+        <div
+          class="winner-avatar-wrap"
+          :title="`Ver perfil de ${getWinnerName(winner)}`"
+          @click.stop="openTrainerProfile(winner.player_id)"
+        >
+          <TrainerAvatar
+            :profile="getWinnerProfile(winner)"
+            :size="26"
+          />
+        </div>
 
-    <!-- Clickable Player Name -->
-    <div
-      class="winner-player-wrap"
-      :title="`Ver perfil de ${getWinnerName(winner)}`"
-      @click.stop="openTrainerProfile(winner.player_id)"
-    >
+        <div
+          class="winner-player-wrap"
+          :title="`Ver perfil de ${getWinnerName(winner)}`"
+          @click.stop="openTrainerProfile(winner.player_id)"
+        >
+          <span
+            v-gsap-nick="getWinnerNickStyle(winner)"
+            class="player-name"
+            :class="getWinnerNickStyle(winner)"
+          >
+            {{ getWinnerName(winner) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Divider (visible when inline on same row) -->
       <span
-        v-gsap-nick="getWinnerNickStyle(winner)"
-        class="player-name"
-        :class="getWinnerNickStyle(winner)"
-      >
-        {{ getWinnerName(winner) }}
-      </span>
-    </div>
+        v-if="winner.entry_data?.name || winner.score !== undefined"
+        class="entry-divider-dot"
+      >•</span>
 
-    <span
-      v-if="winner.entry_data?.name || winner.score !== undefined"
-      class="row-divider"
-    >•</span>
-
-    <!-- Pokemon & Metric Inline -->
-    <div
-      v-if="winner.entry_data?.name || winner.score !== undefined"
-      class="winner-entry-inline"
-    >
-      <span
-        v-if="winner.entry_data?.name"
-        class="entry-poke"
-        :class="{ shiny: winner.entry_data.is_shiny }"
+      <!-- Pokemon & Metric Details -->
+      <div
+        v-if="winner.entry_data?.name || winner.score !== undefined"
+        class="winner-details-group"
       >
         <span
-          v-if="winner.entry_data.is_shiny"
-          class="emoji-inline"
-        >✨</span> {{ winner.entry_data.nickname || winner.entry_data.name }}
-      </span>
-      <span
-        v-if="winner.score !== undefined || winner.entry_data?.display_value"
-        class="score-val"
-      >
-        {{ formatWinnerMetric(winner, categoryId) }}
-      </span>
+          v-if="winner.entry_data?.name"
+          class="entry-poke"
+          :class="{ shiny: winner.entry_data.is_shiny }"
+        >
+          <span
+            v-if="winner.entry_data.is_shiny"
+            class="emoji-inline"
+          >✨</span> {{ winner.entry_data.nickname || winner.entry_data.name }}
+        </span>
+
+        <span
+          v-if="winner.entry_data?.name && (winner.score !== undefined || winner.entry_data?.display_value)"
+          class="entry-metric-sep"
+        >·</span>
+
+        <span
+          v-if="winner.score !== undefined || winner.entry_data?.display_value"
+          class="score-val"
+        >
+          {{ formatWinnerMetric(winner, categoryId) }}
+        </span>
+      </div>
     </div>
   </div>
 </template>
@@ -212,7 +224,7 @@ const getRankLabel = (rank?: string | number): string => {
 .winner-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   background: Rgba(255, 255, 255, 0.02);
   border: 1px solid Rgba(255, 255, 255, 0.05);
   padding: 6px 12px;
@@ -239,30 +251,51 @@ const getRankLabel = (rank?: string | number): string => {
   }
 }
 
+// Left Column (Rank badge)
 .rank-badge {
   display: flex;
   align-items: center;
   gap: 3px;
+  min-width: 32px;
+  justify-content: center;
   flex-shrink: 0;
 
   .medal {
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1;
   }
 
   .pos-text {
     @include pixelated;
     font-size: 8px;
-    line-height: 1;
     color: var(--gray-light);
+    line-height: 1;
   }
+}
+
+// Right Column (Flows inline by default, wraps to 2 lines on small screens)
+.winner-content-wrap {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+// Trainer Profile Group (Avatar + Name)
+.winner-trainer-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .winner-avatar-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 3px;
+  padding: 2px;
   flex-shrink: 0;
   cursor: pointer;
 }
@@ -271,10 +304,9 @@ const getRankLabel = (rank?: string | number): string => {
   display: flex;
   align-items: center;
   cursor: pointer;
-  flex-shrink: 0;
 
   .player-name {
-    font-size: 10px;
+    font-size: 10.5px;
     font-weight: bold;
     color: var(--white);
     white-space: nowrap;
@@ -286,28 +318,72 @@ const getRankLabel = (rank?: string | number): string => {
   }
 }
 
-.row-divider {
-  color: Rgba(255, 255, 255, 0.2);
+.entry-divider-dot {
+  color: Rgba(255, 255, 255, 0.25);
   font-size: 10px;
   flex-shrink: 0;
 }
 
-.winner-entry-inline {
+// Pokemon & Metric Details Group
+.winner-details-group {
   display: flex;
   align-items: center;
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: 4px 6px;
   font-size: 8.5px;
-  white-space: nowrap;
+  line-height: 1.35;
   min-width: 0;
 
   .entry-poke {
     color: var(--yellow);
     font-weight: bold;
+    white-space: nowrap;
+  }
+
+  .entry-metric-sep {
+    color: Rgba(255, 255, 255, 0.25);
+    font-size: 9px;
   }
 
   .score-val {
     color: var(--green-bright);
     text-shadow: 0 0 6px Rgba(74, 222, 128, 0.25);
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 480px) {
+  .winner-item {
+    padding: 6px 8px;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .rank-badge {
+    padding-top: 4px;
+    min-width: 28px;
+
+    .medal {
+      font-size: 13px;
+    }
+
+    .pos-text {
+      font-size: 7.5px;
+    }
+  }
+
+  .winner-content-wrap {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+
+  .entry-divider-dot {
+    display: none;
+  }
+
+  .winner-details-group {
+    font-size: 8px;
   }
 }
 </style>

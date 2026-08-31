@@ -6,12 +6,21 @@ import {
 } from '../../../src/logic/db/sqliteEngine.ts'
 
 describe('SQLite E2E isolation', () => {
-  it('never permits the Vite database bridge for an E2E in-memory context', () => {
+  it('never permits the Vite database bridge for standard contexts without GTS simulation flag', () => {
     assert.equal(canUseDevDatabaseBridge(true, true), false)
+    assert.equal(canUseDevDatabaseBridge(true, false), false)
   })
 
-  it('keeps the development bridge available outside E2E', () => {
-    assert.equal(canUseDevDatabaseBridge(true, false), true)
+  it('only permits the development bridge during GTS simulation flag', () => {
+    const originalWindow = globalThis.window
+    try {
+      globalThis.window = { __GTS_SIMULATION__: true } as unknown as Window & typeof globalThis
+      assert.equal(canUseDevDatabaseBridge(true, true), true)
+      assert.equal(canUseDevDatabaseBridge(true, false), true)
+      assert.equal(canUseDevDatabaseBridge(false, true), false)
+    } finally {
+      globalThis.window = originalWindow
+    }
   })
 
   it('does not use the development bridge in production', () => {

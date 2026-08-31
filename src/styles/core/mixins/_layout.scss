@@ -43,6 +43,7 @@
   backface-visibility: hidden !important;
   // Core pixel font mapping
   font-family: var(--font-pixel) !important;
+  line-height: 1.35; // Safe default line-height for multiline pixel text inheritance
 }
 
 @mixin pixelated-proportional {
@@ -58,6 +59,7 @@
   
   // Core proportional pixel font mapping (No bitmap-like pixel scaling)
   font-family: var(--font-pixel-proportional) !important;
+  line-height: 1.35; // Safe default line-height for multiline pixel text inheritance
 }
 
 @mixin tooltip-premium {

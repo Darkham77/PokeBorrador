@@ -75,7 +75,9 @@ const handleClaim = async (awardId: string) => {
 .section-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 12px;
   margin-bottom: 14px;
   padding-bottom: 10px;
   border-bottom: 1px solid Rgba(255, 255, 255, 0.06);
@@ -84,10 +86,12 @@ const handleClaim = async (awardId: string) => {
     display: flex;
     align-items: center;
     gap: 8px;
+    min-width: 0;
   }
 
   .section-icon {
     font-size: 16px;
+    flex-shrink: 0;
   }
 
   .section-title {
@@ -95,12 +99,13 @@ const handleClaim = async (awardId: string) => {
     font-size: 11px;
     color: var(--yellow);
     margin: 0;
-    line-height: 1;
+    line-height: 1.35;
   }
 
   .section-subtitle {
     font-size: 9px;
     color: var(--gray);
+    white-space: nowrap;
   }
 }
 
@@ -122,5 +127,21 @@ const handleClaim = async (awardId: string) => {
   font-size: 11px;
   color: var(--gray);
   font-style: italic;
+}
+
+@media (max-width: 480px) {
+  .past-events-section {
+    padding: 10px 8px;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+
+    .section-subtitle {
+      padding-left: 24px;
+    }
+  }
 }
 </style>

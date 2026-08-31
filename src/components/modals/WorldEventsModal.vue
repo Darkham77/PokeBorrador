@@ -282,15 +282,18 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 
   .title-icon {
     font-size: 24px;
     filter: Drop-Shadow(0 0 8px Rgba(255, 215, 0, 0.4));
+    flex-shrink: 0;
   }
 
   .title-text-wrap {
     display: flex;
     flex-direction: column;
+    min-width: 0;
   }
 
   .main-title {
@@ -298,13 +301,14 @@ onMounted(() => {
     font-size: 14px;
     color: var(--yellow);
     text-shadow: 0 2px 0 var(--black);
-    line-height: 1.2;
+    line-height: 1.35;
   }
 
   .sub-title {
     font-size: 10px;
     color: var(--gray);
     margin-top: 2px;
+    line-height: 1.3;
   }
 }
 
@@ -503,7 +507,7 @@ onMounted(() => {
     font-size: 11px;
     color: var(--yellow);
     margin: 0;
-    line-height: 1;
+    line-height: 1.35;
   }
 }
 
@@ -524,5 +528,27 @@ onMounted(() => {
   color: var(--gray);
   font-style: italic;
   font-size: 12px;
+}
+
+@media (max-width: 480px) {
+  .events-modal-content-inner {
+    padding: 12px 8px;
+  }
+
+  .events-title-group {
+    gap: 8px;
+
+    .main-title {
+      font-size: 12px;
+    }
+
+    .sub-title {
+      font-size: 9px;
+    }
+  }
+
+  .events-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

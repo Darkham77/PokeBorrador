@@ -439,7 +439,8 @@ const getCategoryIcon = (catId: string) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 8px 12px;
   margin-bottom: 10px;
 }
 
@@ -447,20 +448,26 @@ const getCategoryIcon = (catId: string) => {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
+  flex: 1 1 auto;
 
   .event-icon {
     font-size: 20px;
+    flex-shrink: 0;
   }
 
   .event-title-group {
     display: flex;
     flex-direction: column;
+    min-width: 0;
   }
 
   .event-title-row {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 6px;
+    min-width: 0;
   }
 
   .event-name {
@@ -468,7 +475,8 @@ const getCategoryIcon = (catId: string) => {
     font-size: 10px;
     color: var(--white);
     margin: 0;
-    line-height: 1.2;
+    line-height: 1.35;
+    word-break: break-word;
   }
 
   .event-info-btn {
@@ -512,6 +520,7 @@ const getCategoryIcon = (catId: string) => {
     font-size: 9px;
     color: var(--gray);
     margin-top: 2px;
+    line-height: 1.35;
   }
 }
 
@@ -618,6 +627,7 @@ const getCategoryIcon = (catId: string) => {
   color: var(--gray);
   margin-bottom: 6px;
   letter-spacing: 0.5px;
+  line-height: 1.35;
 }
 
 .no-winners {
@@ -647,6 +657,7 @@ const getCategoryIcon = (catId: string) => {
     letter-spacing: 0.5px;
     border-bottom: 1px dashed Rgba(255, 255, 255, 0.08);
     padding-bottom: 3px;
+    line-height: 1.35;
 
     .cat-icon {
       font-size: 10px;
@@ -659,5 +670,15 @@ const getCategoryIcon = (catId: string) => {
   flex-direction: column;
   gap: 6px;
   width: 100%;
+}
+
+@media (max-width: 480px) {
+  .past-event-card {
+    padding: 10px 8px;
+  }
+
+  .podium-box {
+    padding: 8px 6px;
+  }
 }
 </style>

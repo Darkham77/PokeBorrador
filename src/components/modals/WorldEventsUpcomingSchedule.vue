@@ -152,11 +152,10 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
     font-size: 11px;
     color: var(--yellow);
     margin: 0;
-    line-height: 1;
+    line-height: 1.35;
 
     .section-title-icon {
       font-size: 12px;
-      line-height: 1;
     }
   }
 }
@@ -268,7 +267,8 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 12px 16px;
   background: Rgba(30, 41, 59, 0.6);
   border: 1px solid Rgba(255, 255, 255, 0.1);
   border-radius: 10px;
@@ -291,7 +291,7 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    flex: 1;
+    flex: 1 1 200px;
     min-width: 0;
   }
 
@@ -319,6 +319,7 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
       font-size: 24px;
       line-height: 1;
       filter: Drop-Shadow(0 2px 6px Rgba(0, 0, 0, 0.4));
+      flex-shrink: 0;
     }
 
     .upcoming-texts {
@@ -330,13 +331,13 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
       .upcoming-title {
         font-size: 11px;
         color: var(--white);
-        line-height: 1.2;
+        line-height: 1.35;
       }
 
       .upcoming-desc {
         font-size: 9px;
         color: var(--gray);
-        line-height: 1.3;
+        line-height: 1.35;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -358,6 +359,7 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
       border: 1px solid Rgba(74, 222, 128, 0.3);
       padding: 3px 8px;
       border-radius: 4px;
+      line-height: 1.35;
     }
 
     .status-starts {
@@ -367,11 +369,32 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
       border: 1px solid Rgba(250, 204, 21, 0.2);
       padding: 3px 8px;
       border-radius: 4px;
+      line-height: 1.35;
     }
 
     .details-btn {
       font-size: 7px;
       padding: 4px 8px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .upcoming-event-card {
+    padding: 8px 10px;
+    gap: 8px 10px;
+
+    .upcoming-main-info {
+      gap: 8px;
+    }
+
+    .upcoming-right-column {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding-top: 4px;
+      border-top: 1px dashed Rgba(255, 255, 255, 0.06);
     }
   }
 }

@@ -1,15 +1,32 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
 import PVHUDButton from '@/components/common/PVHUDButton.vue'
+
 const uiStore = useUIStore()
 const modalStore = useModalStore()
+
+const preloadHudModals = () => {
+  void import('@/components/modals/ProfileModal.vue')
+  void import('@/components/modals/SettingsModal.vue')
+  void import('@/components/modals/LibraryModal.vue')
+}
+
+onMounted(() => {
+  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+    window.requestIdleCallback(preloadHudModals)
+  } else {
+    preloadHudModals()
+  }
+})
 </script>
 
 <template>
   <div
     class="action-buttons"
     v-bind="$attrs"
+    @mouseenter="preloadHudModals"
   >
     <PVHUDButton
       id="hud-profile-btn"

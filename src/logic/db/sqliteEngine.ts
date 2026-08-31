@@ -58,7 +58,7 @@ let _sqliteKey = 'pokevicio_sqlite_v2'
 let _isInMemory = false
 
 export function canUseDevDatabaseBridge(isDevelopment: boolean, _isE2E: boolean): boolean {
-  return isDevelopment && (!_isE2E || (typeof window !== 'undefined' && window.__GTS_SIMULATION__ === true))
+  return isDevelopment && (typeof window !== 'undefined' && window.__GTS_SIMULATION__ === true)
 }
 
 export function canRefreshCleanDatabaseTemplate(isDevelopment: boolean, isE2E: boolean): boolean {

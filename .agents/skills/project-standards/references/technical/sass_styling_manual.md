@@ -188,6 +188,13 @@ All game-specific content **MUST** be strictly Pixel Art to preserve the game's 
   - **Inner Element**: Must be `display: inline-block`. This element handles the `Rotate` and `Scale`.
   - **Why**: Standard `inline` text elements ignore many 2D/3D transforms in modern rendering engines.
 
+### 8. Pixel Font Line-Height & Multiline Collision Protection
+
+The primary game font (`Pokemon FireRed LeafGreen`) has tall ascenders and descenders. Setting `line-height: 1` or `line-height: 1.1` on elements that can wrap causes vertical glyph collision and visual overlap.
+
+- **MANDATORY Base Line-Height**: All pixelated text elements MUST inherit `line-height: 1.35` (guaranteed by `@mixin pixelated` and `@mixin pixelated-proportional` in `_layout.scss`).
+- **FORBIDDEN**: Applying `line-height: 1` to titles, badges, or descriptions that may wrap onto multiple lines in mobile or compact viewports.
+
 ---
 
 ## 🚫 Non-Compliance Warning Protocol

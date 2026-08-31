@@ -26,7 +26,13 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
   const chatStore = useChatStore()
   const socialStore = useSocialStore()
 
-  const loading = ref(true)
+  const userId = computed(getUserId)
+
+  const isOwnProfile = computed(() => {
+    return authStore.user?.id === userId.value
+  })
+
+  const loading = ref(!isOwnProfile.value)
   const profile = ref<ProfileRow | null>(null)
   const saveState = ref<SaveStateData | null>(null)
   const error = ref<string | null>(null)
@@ -35,17 +41,61 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
   const eventMedalsSecondDb = ref(0)
   const eventMedalsThirdDb = ref(0)
 
-  const userId = computed(getUserId)
-
-  const isOwnProfile = computed(() => {
-    return authStore.user?.id === userId.value
-  })
-
   const fetchData = async () => {
     const id = userId.value
     if (!id) {
       error.value = 'ID de usuario no proporcionado'
       loading.value = false
+      return
+    }
+
+    if (isOwnProfile.value) {
+      // For the authenticated user, all state is already present in gameStore.state
+      loading.value = false
+      error.value = null
+
+      const db = gameStore.db
+      if (!db) return
+
+      try {
+        const [profRes, awardsRes, compEntryRes] = await Promise.all([
+          db.from('profiles').select('*').eq('id', id).maybeSingle(),
+          db.from('awards').select('prize, event_id').eq('winner_id', id),
+          db.from('competition_entries').select('event_id').eq('player_id', id)
+        ])
+
+        if (profRes.data) {
+          profile.value = profRes.data as ProfileRow
+        }
+
+        if (awardsRes.data && Array.isArray(awardsRes.data)) {
+          let firstCount = 0
+          let secondCount = 0
+          let thirdCount = 0
+          for (const a of awardsRes.data as { prize?: unknown }[]) {
+            let p = a.prize
+            if (typeof p === 'string') {
+              try { p = JSON.parse(p) } catch { p = null }
+            }
+            if (p && typeof p === 'object' && 'rank' in p) {
+              const r = (p as { rank?: string }).rank
+              if (r === 'first') firstCount++
+              else if (r === 'second') secondCount++
+              else if (r === 'third') thirdCount++
+            }
+          }
+          eventMedalsFirstDb.value = firstCount
+          eventMedalsSecondDb.value = secondCount
+          eventMedalsThirdDb.value = thirdCount
+        }
+
+        if (compEntryRes.data && Array.isArray(compEntryRes.data)) {
+          const distinctEvents = new Set((compEntryRes.data as { event_id?: string }[]).map(e => e.event_id).filter(Boolean))
+          eventParticipationsDb.value = distinctEvents.size
+        }
+      } catch (_e) {
+        // Non-fatal background fetch
+      }
       return
     }
 
