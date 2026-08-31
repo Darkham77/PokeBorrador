@@ -1,1 +1,0 @@
-import{t as e}from"./ArchaeologyModal-Zc-tLXf5.js";export{e as default};

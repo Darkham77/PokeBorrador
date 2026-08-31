@@ -1,0 +1,1 @@
+import{t as e}from"./FishingModal-DUVSW5vu.js";export{e as default};
