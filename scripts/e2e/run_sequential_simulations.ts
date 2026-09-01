@@ -236,8 +236,9 @@ async function startPersistentViteServer(): Promise<ChildProcess | null> {
   }
 
   logger.progress(`🚀 Inicializando servidor web persistente en ${VITE_URL}...`);
-  const viteProcess = spawn('npx', ['vite', '--port', String(VITE_PORT), '--strictPort'], {
-    stdio: ['ignore', 'pipe', 'pipe'],
+  const viteBin = path.resolve(process.cwd(), 'node_modules/vite/bin/vite.js');
+  const viteProcess = spawn(process.execPath, [viteBin, '--port', String(VITE_PORT), '--strictPort'], {
+    stdio: 'ignore',
     env: {
       ...process.env,
       NO_UPDATE_NOTIFIER: '1'
@@ -275,10 +276,23 @@ function stopPersistentViteServer(viteProcess: ChildProcess | null): void {
 
 function runCommandStreamed(command: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const parts = command.split(' ');
-    const cmd = parts[0]!;
-    const args = parts.slice(1);
-    const child = spawn(cmd, args, {
+    let executable = process.execPath;
+    let cmdArgs: string[] = [];
+
+    if (command.startsWith('npx playwright ')) {
+      const playwrightCli = path.resolve(process.cwd(), 'node_modules/@playwright/test/cli.js');
+      const subArgs = command.replace('npx playwright ', '').split(' ');
+      cmdArgs = [playwrightCli, ...subArgs];
+    } else {
+      const parts = command.split(' ');
+      executable = parts[0]!;
+      cmdArgs = parts.slice(1);
+      if (executable === 'npx' && process.platform === 'win32') {
+        executable = 'npx.cmd';
+      }
+    }
+
+    const child = spawn(executable, cmdArgs, {
       stdio: ['inherit', 'pipe', 'pipe'],
       env: {
         ...process.env,

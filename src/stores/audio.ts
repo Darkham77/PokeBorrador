@@ -44,6 +44,7 @@ export const useAudioStore = defineStore('audio', () => {
     const safeName = encodeURIComponent(name.toLowerCase().replace(/[^a-z0-9_-]/g, ''));
     const safeBase = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
     const cryUrl = new URL(`${safeBase}cries/${safeName}.mp3`, window.location.origin);
+    // fallow-ignore-next-line security-sink
     const response = await fetch(cryUrl.href);
     if (!response.ok) {
       throw new Error(`Cry file not found: ${cryUrl.pathname}`);

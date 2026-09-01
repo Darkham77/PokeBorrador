@@ -78,7 +78,11 @@ class IllegalPokemonSecuritySimulation extends BaseE2ESimulation {
 
 test.describe('Illegal Pokémon Security System E2E Simulation', () => {
   test.beforeEach(async ({ request }) => {
-    await request.post('http://127.0.0.1:5174/api/dev-import-db-cleanup');
+    for (const key of ['sim_db_secuserbox', 'sim_db_secusergts', 'sim_db_secusertrade', 'sim_db_secuserdirect']) {
+      await request.post('/api/dev-sim-db-cleanup', {
+        headers: { 'x-db-key': key }
+      });
+    }
   });
 
   test('should block moving illegal Pokémon from box to active team', async ({ page }) => {

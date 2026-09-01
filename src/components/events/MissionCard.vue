@@ -147,7 +147,7 @@ const handleImgError = (e: Event) => {
           v-if="isAvatarUrl"
           class="avatar-placeholder"
           style="display: none;"
-        ><span class="icon">👤</span></span>
+        ><span class="emoji">👤</span></span>
       </div>
       <div class="dialogue-box">
         <span class="trainer-name">{{ title }}</span>
@@ -165,7 +165,7 @@ const handleImgError = (e: Event) => {
         style="width: 100%;"
       >
         <div class="reward-tag">
-          <span class="reward-icon">{{ rewardIcon }}</span>
+          <span class="emoji reward-icon">{{ rewardIcon }}</span>
           <div class="reward-info">
             <span class="label">{{ rewardLabel }}</span>
             <span class="val">{{ rewardVal }}</span>

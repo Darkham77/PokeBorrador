@@ -84,8 +84,8 @@ const getTypeEmoji = (type: string) => {
         class="toggle-btn"
         @click.stop="isExpanded = !isExpanded"
       >
-        <span class="label"><span class="title-icon">🔍</span> FILTROS GTS</span>
-        <span class="arrow">{{ isExpanded ? '▲' : '▼' }}</span>
+        <span class="label"><span class="emoji">🔍</span> FILTROS GTS</span>
+        <span class="emoji arrow">{{ isExpanded ? '▲' : '▼' }}</span>
       </div>
 
       <div
@@ -97,14 +97,14 @@ const getTypeEmoji = (type: string) => {
           :class="{ active: filters.mode === 'pokemon' }"
           @click.stop="setFilter('mode', 'pokemon')"
         >
-          <span class="btn-emoji">⚡</span> Pokes
+          <span class="emoji">⚡</span> Pokes
         </button>
         <button
           id="market-filters-mode-item-btn"
           :class="{ active: filters.mode === 'item' }"
           @click.stop="setFilter('mode', 'item')"
         >
-          <span class="btn-emoji">🎒</span> Objetos
+          <span class="emoji">🎒</span> Objetos
         </button>
       </div>
       <span
@@ -130,7 +130,7 @@ const getTypeEmoji = (type: string) => {
       <!-- Price Range -->
       <div class="filter-group">
         <div class="group-header">
-          <span>Precio <span class="icon">💰</span></span>
+          <span>Precio <span class="emoji">💰</span></span>
           <span class="range-val">₽{{ filters.priceMin.toLocaleString() }} - ₽{{ filters.priceMax === 1000000 ? 'Máx' : filters.priceMax.toLocaleString() }}</span>
         </div>
         <input
@@ -189,7 +189,7 @@ const getTypeEmoji = (type: string) => {
                 :class="{ active: filters.type === t }"
                 @click.stop="setFilter('type', t)"
               >
-                {{ getTypeEmoji(t) }}
+                <span class="emoji">{{ getTypeEmoji(t) }}</span>
               </button>
             </PVTooltip>
           </div>

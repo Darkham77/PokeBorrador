@@ -191,7 +191,7 @@ function getGenderClass(gender: string) {
             :description="fieldPassive.desc"
           >
             <div class="status-indicator field-passive">
-              {{ fieldPassive.icon }}
+              <span class="emoji">{{ fieldPassive.icon }}</span>
             </div>
           </PVTooltip>
           <PVTooltip
@@ -200,7 +200,7 @@ function getGenderClass(gender: string) {
             description="Este Pokémon está en una misión activa."
           >
             <div class="status-indicator mission">
-              <span class="icon">🧭</span>
+              <span class="emoji">🧭</span>
             </div>
           </PVTooltip>
           <PVTooltip
@@ -209,7 +209,7 @@ function getGenderClass(gender: string) {
             description="Este Pokémon está participando en un evento o concurso activo."
           >
             <div class="status-indicator event">
-              <span class="icon">🏆</span>
+              <span class="emoji">🏆</span>
             </div>
           </PVTooltip>
           <PVTooltip
@@ -218,7 +218,7 @@ function getGenderClass(gender: string) {
             description="Este Pokémon está en la guardería."
           >
             <div class="status-indicator daycare">
-              <span class="icon">🥚</span>
+              <span class="emoji">🥚</span>
             </div>
           </PVTooltip>
           <PVTooltip
@@ -227,7 +227,7 @@ function getGenderClass(gender: string) {
             description="Este Pokémon está asignado a la defensa."
           >
             <div class="status-indicator defense">
-              <span class="icon">🛡️</span>
+              <span class="emoji">🛡️</span>
             </div>
           </PVTooltip>
         </div>
@@ -241,7 +241,7 @@ function getGenderClass(gender: string) {
         class="pokemon-illegal-danger-badge"
         :title="pokemon.illegalReasons?.join('\n') || 'Pokémon Ilegal'"
       >
-        <span class="danger-icon">⚠️</span>
+        <span class="emoji danger-icon">⚠️</span>
         <span class="danger-label">ILEGAL</span>
       </div>
       <PVSpriteFX
@@ -279,7 +279,7 @@ function getGenderClass(gender: string) {
         </div>
         <div
           v-if="pokemon.gender"
-          :class="['pdc-gender-badge', getGenderClass(pokemon.gender)]"
+          :class="['pdc-gender-badge', 'emoji', getGenderClass(pokemon.gender)]"
         >
           {{ renderGenderSymbol(pokemon.gender) }}
         </div>

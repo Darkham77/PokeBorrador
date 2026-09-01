@@ -77,7 +77,7 @@ const sidebarBorderColor = computed(() => {
       @click.stop="setCategory(cat.id)"
     >
       <div class="cat-icon-frame">
-        <span class="cat-icon">{{ cat.icon }}</span>
+        <span class="emoji cat-icon">{{ cat.icon }}</span>
       </div>
       <span class="cat-label">{{ cat.label }}</span>
       

@@ -65,7 +65,7 @@ const getAssetUrlLocal = getAssetUrl
           Tu bando determina con quién disputas el control de Kanto.
         </p>
         <p class="cost-text">
-          Cambiar cuesta <span class="coin">🪙 25.000</span> y resetea tus puntos actuales.
+          Cambiar cuesta <span class="coin"><span class="emoji">🪙</span> 25.000</span> y resetea tus puntos actuales.
         </p>
       </div>
 

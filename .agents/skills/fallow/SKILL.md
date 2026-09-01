@@ -19,19 +19,18 @@ Use this skill to run and interpret Fallow commands and unified project audit to
 > 2. `npm run audit` displays a clean summary table in the terminal and **always writes 100% complete structured JSON** to `scratch/audits/latest_audit.json` (and `scratch/audits/architecture/audit_project.json`).
 > 3. To inspect deep violation details, read `scratch/audits/latest_audit.json` directly from disk instead of re-running commands.
 
-### 📋 Rapid Triage Cheatsheet
-
 | Goal | Optimal Command | Format / Purpose |
 | :--- | :--- | :--- |
 | **Run general project audit** | `npm run audit` | Clean summary table in console + full JSON in `scratch/audits/latest_audit.json` |
+| **Inspect consolidated audit warnings** | `npm run audit:warnings` / `npm run audit:summary` | Official Box-Drawing table of warnings by category + sample findings |
 | **Inspect detailed audit findings** | Read `scratch/audits/latest_audit.json` | Complete machine-readable findings with exact file and line |
+| **Fallow intelligence dashboard** | `npm run audit:fallow` | Consolidated overview of all quality and health metrics |
+| **Cognitive & Cyclomatic complexity** | `npm run audit:complexity` / `npm run audit:complexity:top` | Hotspots ranked by impact and layer breakdown |
+| **Code duplication & triplets** | `npm run audit:fallow:dupes` / `npm run audit:fallow:triplets` | Identifies duplicate and triplicate blocks |
+| **Security findings (CWE)** | `npm run audit:fallow:security` | Evaluates CWE vulnerabilities and evidence |
+| **Dead code & dependencies** | `npm run audit:fallow:dead-code` | Checks orphan files, unused exports and packages |
 | **Safe-commit diff validation** | `npm run audit:for-commit` | Safe-commit gatekeeper vs `origin/main` (strictly reserved for safe-commit) |
 | **Audit changed files only (vs main)** | `npm run audit:changed` | Scoped audit of modified files vs main |
-| **Code duplication & triplets** | `npm run audit:fallow:triplets` | Identifies duplicate and triplicate blocks |
-| **Complexity hotspots & refactor targets** | `npm run fallow:health` | Ranked refactoring recommendations |
-| **Quick Fallow summary** | `npm run audit:fallow:summary` | Concise terminal summary without log bloat |
-| **Export full Fallow report** | `npm run audit:fallow:report` | Saves human-readable report to `scratch/fallow_report.txt` |
-| **Selective audit by rule/analyzer** | `npm run audit rule=<name>` | Runs only matching rules (e.g. `rule=dupes`, `rule=security`, `rule=DOX,z-index`) |
 | **Auto-fix safe unused code/exports** | `npm run audit:fix` / `npm run audit:fallow:fix` | Applies native and Fallow automatic cleanups |
 
 ---

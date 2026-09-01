@@ -211,7 +211,7 @@ const requestSummary = computed(() => {
           <span class="label">TE OFREZCO:</span>
           <span class="value">{{ offerSummary }}</span>
         </div>
-        <div class="summary-icon">
+        <div class="summary-icon emoji">
           🔄
         </div>
         <div class="summary-box request">

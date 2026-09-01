@@ -4,6 +4,7 @@ import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
 import { getPokemonPhysicalWeight, getPokemonPhysicalHeight } from '@/logic/pokemon/physicalDimensionsMath'
 import { isReadyForFriendshipEvolution } from '@/logic/pokemon/friendshipLogic'
 import { FRIENDSHIP_BOUNDS } from '@/types/pokemon/friendship'
+import { getPokedexOrderIndex, requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
 
 export interface PokemonFilterCriteria {
   searchQuery: string
@@ -75,19 +76,30 @@ export function filterAndSortPokemon(
     if (criteria.sortBy === 'level') {
       valA = pA.level || 0
       valB = pB.level || 0
-    } else if (criteria.sortBy === 'ivs') {
+    } else if (criteria.sortBy === 'ivs' || criteria.sortBy === 'tier') {
       const sum = (ivs: Pokemon['ivs']) => {
         const obj = ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
         return (obj.hp || 0) + (obj.atk || 0) + (obj.def || 0) + (obj.spa || 0) + (obj.spd || 0) + (obj.spe || 0)
       }
       valA = sum(pA.ivs)
       valB = sum(pB.ivs)
-    } else if (criteria.sortBy === 'TOT') {
+    } else if (criteria.sortBy === 'TOT' || criteria.sortBy === 'tot' || criteria.sortBy === 'bst') {
       valA = getPokemonTotalPower(pA)
       valB = getPokemonTotalPower(pB)
-    } else if (criteria.sortBy === 'hatched') {
+    } else if (criteria.sortBy === 'hatched' || criteria.sortBy === 'egg') {
       valA = pA.obtainedMethod === 'egg' ? 1 : 0
       valB = pB.obtainedMethod === 'egg' ? 1 : 0
+    } else if (criteria.sortBy === 'pokedex' || criteria.sortBy === 'pdex') {
+      const indexA = getPokedexOrderIndex(requirePokemonSpeciesId(pA.id))
+      const indexB = getPokedexOrderIndex(requirePokemonSpeciesId(pB.id))
+      valA = indexA === -1 ? 9999 : indexA
+      valB = indexB === -1 ? 9999 : indexB
+      if (valA === valB) {
+        return criteria.sortOrder === 'desc' 
+          ? b.pokemon.uid.localeCompare(a.pokemon.uid) 
+          : a.pokemon.uid.localeCompare(b.pokemon.uid)
+      }
+      return criteria.sortOrder === 'desc' ? valB - valA : valA - valB
     } else if (criteria.sortBy === 'weight') {
       valA = getPokemonPhysicalWeight(pA)
       valB = getPokemonPhysicalWeight(pB)

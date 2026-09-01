@@ -47,7 +47,7 @@ const emit = defineEmits<{
           :class="{ active: isShiny }"
           @click.stop="emit('toggleShiny')"
         >
-          <span class="btn-emoji">✨</span>
+          <span class="emoji">✨</span>
         </button>
       </PVTooltip>
       <PVTooltip
@@ -59,7 +59,7 @@ const emit = defineEmits<{
           :class="{ active: isGuardian }"
           @click.stop="emit('toggleGuardian')"
         >
-          <span class="btn-emoji">🛡️</span>
+          <span class="emoji">🛡️</span>
         </button>
       </PVTooltip>
       <PVTooltip
@@ -71,7 +71,7 @@ const emit = defineEmits<{
           :class="[gender === 'm' ? 'male' : 'female']"
           @click.stop="emit('toggleGender')"
         >
-          <span class="btn-emoji">{{ gender === 'm' ? '♂️' : '♀️' }}</span>
+          <span class="emoji">{{ gender === 'm' ? '♂️' : '♀️' }}</span>
         </button>
       </PVTooltip>
     </div>

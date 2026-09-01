@@ -69,7 +69,7 @@ const confirmDiscard = (awardId: string, eventName: string) => {
   >
     <div class="box-inner">
       <h3 class="pixelated">
-        <span class="title-icon">🎁</span> RECOMPENSAS PENDIENTES ({{ pendingAwards.length }})
+        <span class="emoji">🎁</span> RECOMPENSAS PENDIENTES ({{ pendingAwards.length }})
       </h3>
       
       <div class="awards-list">
@@ -86,7 +86,7 @@ const confirmDiscard = (awardId: string, eventName: string) => {
                 v-if="!checkIfClaimable(award)"
                 class="legacy-badge"
               >
-                <span class="emoji-inline">⚠️</span> ARCHIVADO / NO DISPONIBLE
+                <span class="emoji">⚠️</span> ARCHIVADO / NO DISPONIBLE
               </span>
             </div>
             
@@ -104,7 +104,7 @@ const confirmDiscard = (awardId: string, eventName: string) => {
               @mouseleave="onBtnHover($event, false)"
               @click.stop="eventStore.claimAward(award.id)"
             >
-              <span class="btn-emoji">🎁</span>
+              <span class="emoji">🎁</span>
               RECLAMAR PREMIO
             </button>
             <button
@@ -115,7 +115,7 @@ const confirmDiscard = (awardId: string, eventName: string) => {
               @mouseleave="onDiscardHover($event, false)"
               @click.stop="confirmDiscard(award.id, getEventDisplayName(award.event_id || ''))"
             >
-              <span class="btn-emoji">🗑️</span>
+              <span class="emoji">🗑️</span>
               DESCARTAR
             </button>
           </div>

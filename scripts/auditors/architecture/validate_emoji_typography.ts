@@ -41,45 +41,13 @@ export interface EmojiAuditResult {
   readonly passed: boolean;
 }
 
-// Regex matching common emojis and special symbolic glyphs
-const EMOJI_REGEX = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2300}-\u{23FF}\u{2190}-\u{21FF}\u{2B50}\u{2B55}\u{3030}\u{303D}\u{3297}\u{3299}]/u;
-const EMOJI_GLOBAL_REGEX = new RegExp(EMOJI_REGEX.source, 'gu');
+// Regex matching common emojis, special symbolic glyphs, modern Unicode 13-16 pictographs (including 1FA00-1FAFF like 🪙, 🪵), and geometric arrows
+const EMOJI_REGEX = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2300}-\u{23FF}\u{2190}-\u{21FF}\u{203C}\u{2049}\u{2122}\u{2139}\u{25A0}-\u{25FF}\u{2B00}-\u{2BFF}\u{2934}-\u{2935}\u{3030}\u{303D}\u{3297}\u{3299}]/u;
 
-const APPROVED_CLASS_PATTERNS = [
-  /\bicon\b/i,
-  /\bemoji\b/i,
-  /\bmedal\b/i,
-  /\bbtn-emoji\b/i,
-  /\bbtn-icon\b/i,
-  /\bsort-arrow\b/i,
-  /\bcat-icon\b/i,
-  /\btoast-icon\b/i,
-  /\bweather-emoji\b/i,
-  /\bdesc-line-icon\b/i,
-  /\badmin-icon-btn\b/i,
-  /\bfaction-emoji\b/i,
-  /\btitle-icon\b/i,
-  /\bsection-icon\b/i,
-  /\bsection-title-icon\b/i,
-  /\bseason-icon\b/i,
-  /\bevent-stat-icon\b/i,
-  /\btrophies-header-icon\b/i,
-  /\bempty-icon\b/i,
-  /\binfo-icon\b/i,
-  /\bcategory-icon\b/i,
-  /\brank-icon\b/i,
-  /\bstatus-icon\b/i,
-  /\bheader-icon\b/i,
-  /\bfield-condition-dot\b/i,
-  /\bsource-symbol\b/i,
-  /-symbol\b/i,
-  /-icon\b/i,
-  /\bicon-/i,
-  /-emoji\b/i,
-  /\bemoji-/i,
-  /-medal\b/i,
-  /\binfo-btn\b/i
-];
+function matchEmojis(text: string): string[] | null {
+  const regex = new RegExp(EMOJI_REGEX.source, 'gu');
+  return text.match(regex);
+}
 
 function getAllVueFiles(dir: string): string[] {
   let results: string[] = []; // no-domain
@@ -97,6 +65,60 @@ function getAllVueFiles(dir: string): string[] {
   return results;
 }
 
+interface ElementNode {
+  readonly tag: string;
+  readonly hasEmojiClass: boolean;
+}
+
+function findNextTagEnd(template: string, startIndex: number): number {
+  let inDouble = false;
+  let inSingle = false;
+  let inBacktick = false;
+
+  for (let i = startIndex; i < template.length; i++) {
+    const ch = template[i];
+    if (ch === '"' && !inSingle && !inBacktick) {
+      inDouble = !inDouble;
+    } else if (ch === "'" && !inDouble && !inBacktick) {
+      inSingle = !inSingle;
+    } else if (ch === '`' && !inDouble && !inSingle) {
+      inBacktick = !inBacktick;
+    } else if (ch === '>' && !inDouble && !inSingle && !inBacktick) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+function extractRootTemplate(sfcContent: string): { templateContent: string; startOffset: number } | null {
+  const match = sfcContent.match(/<template\b[^>]*>/i);
+  if (!match || match.index === undefined) return null;
+  const startOffset = match.index + match[0].length;
+  
+  let depth = 1;
+  const tagRegex = /<\/?template\b[^>]*>/gi;
+  tagRegex.lastIndex = startOffset;
+  let tagMatch: RegExpExecArray | null;
+  let endOffset = sfcContent.length;
+
+  while ((tagMatch = tagRegex.exec(sfcContent)) !== null) {
+    if (tagMatch[0].startsWith('</')) {
+      depth--;
+      if (depth === 0) {
+        endOffset = tagMatch.index;
+        break;
+      }
+    } else if (!tagMatch[0].endsWith('/>')) {
+      depth++;
+    }
+  }
+
+  return {
+    templateContent: sfcContent.slice(startOffset, endOffset),
+    startOffset
+  };
+}
+
 export function auditEmojiTypography(): EmojiAuditResult {
   const rootDir = process.cwd();
   const srcDir = path.join(rootDir, 'src');
@@ -107,58 +129,161 @@ export function auditEmojiTypography(): EmojiAuditResult {
 
   for (const file of vueFiles) {
     const content = fs.readFileSync(file, 'utf-8');
-    const templateMatch = content.match(/<template>([\s\S]*?)<\/template>/i);
-    if (!templateMatch || templateMatch.index === undefined) continue;
+    const rootTemplate = extractRootTemplate(content);
+    if (!rootTemplate) continue;
 
-    const templateContent = templateMatch[1] ?? '';
-    const templateStartOffset = templateMatch.index;
+    const templateContent = rootTemplate.templateContent;
+    const templateStartOffset = rootTemplate.startOffset;
     const linesBeforeTemplate = content.substring(0, templateStartOffset).split('\n').length - 1;
+    const relPath = path.relative(rootDir, file).replace(/\\/g, '/');
 
-    const templateLines = templateContent.split('\n');
+    const stack: ElementNode[] = [];
+    let index = 0;
+    const len = templateContent.length;
 
-    for (let i = 0; i < templateLines.length; i++) {
-      const line = templateLines[i] ?? '';
-      const lineNumber = linesBeforeTemplate + i + 1;
-
-      // Skip HTML comments or emoji-ok escape hatches
-      if (line.includes('<!--') && line.includes('-->')) {
-        if (line.includes('emoji-ok') || line.trim().startsWith('<!--')) continue;
-      }
-      if (line.includes('emoji-ok')) continue;
-
-      // Strip regex literals like replace(/[♂♀]/g, '')
-      let textOnly = line.replace(/\/[^/\n\r]+\/[a-z]*/g, '');
-
-      // Strip HTML attributes to only inspect actual DOM text content
-      textOnly = textOnly
-        .replace(/(?:title|alt|placeholder|aria-label|v-tooltip|v-model)\s*=\s*(?:"[^"]*"|'[^']*')/gi, '')
-        .replace(/:(?:title|alt|placeholder|aria-label)\s*=\s*(?:"[^"]*"|'[^']*')/gi, '');
-
-      const emojis = textOnly.match(EMOJI_GLOBAL_REGEX);
-      if (!emojis || emojis.length === 0) continue;
-
-      totalEmojisFound += emojis.length;
-
-      // Check current line for approved class pattern
-      let hasApprovedClass = APPROVED_CLASS_PATTERNS.some(p => p.test(line));
-
-      // If not found on the immediate line, inspect up to 5 preceding lines for enclosing tag class
-      if (!hasApprovedClass) {
-        const startWindow = Math.max(0, i - 5);
-        const contextChunk = templateLines.slice(startWindow, i + 1).join(' ');
-        hasApprovedClass = APPROVED_CLASS_PATTERNS.some(p => p.test(contextChunk));
+    while (index < len) {
+      // 1. Comment <!-- ... -->
+      if (templateContent.startsWith('<!--', index)) {
+        const endComment = templateContent.indexOf('-->', index + 4);
+        if (endComment === -1) break;
+        index = endComment + 3;
+        continue;
       }
 
-      if (!hasApprovedClass) {
-        for (const emoji of emojis) {
-          const relPath = path.relative(rootDir, file).replace(/\\/g, '/');
-          violations.push({
-            file: relPath,
-            line: lineNumber,
-            emoji,
-            context: line.trim(),
-            message: `Emoji '${emoji}' appears without an approved icon/emoji class (.icon, .emoji-inline, .title-icon, .btn-emoji, .medal). Wrap it in <span class="emoji-inline">${emoji}</span> or an approved icon container.`
-          });
+      // 2. Tag <...>
+      if (templateContent[index] === '<') {
+        const isClosing = templateContent[index + 1] === '/';
+        const endTag = findNextTagEnd(templateContent, index);
+        if (endTag === -1) break;
+
+        const tagSlice = templateContent.slice(index, endTag + 1);
+        const isSelfClosing = tagSlice.endsWith('/>') || tagSlice.endsWith('/ >');
+
+        if (isClosing) {
+          const match = tagSlice.match(/<\/\s*([a-zA-Z0-9-]+)/);
+          const closeTagName = match ? (match[1] || '').toLowerCase() : '';
+          for (let s = stack.length - 1; s >= 0; s--) {
+            if (stack[s]?.tag === closeTagName) {
+              stack.splice(s, 1);
+              break;
+            }
+          }
+        } else {
+          const tagNameMatch = tagSlice.match(/^<\s*([a-zA-Z0-9-]+)/);
+          if (tagNameMatch && tagNameMatch[1]) {
+            const tagName = tagNameMatch[1].toLowerCase();
+            const attrs = tagSlice.slice(tagNameMatch[0].length, tagSlice.endsWith('/>') ? -2 : -1);
+
+            // Check static/dynamic props containing raw emojis mixed into text (e.g. title="...", label="...")
+            // Note: explicit 'icon' and 'emoji' props are allowed as glyph props; their rendering is validated via interpolation Rule B
+            const staticAttrRegex = /(?<![:@])\b(?:title|label|heading|caption|button-text)\s*=\s*(?:"([^"]*)"|'([^']*)')/gi;
+            let attrM: RegExpExecArray | null;
+            while ((attrM = staticAttrRegex.exec(attrs)) !== null) {
+              const attrVal = attrM[1] || attrM[2] || '';
+              const attrEmojis = matchEmojis(attrVal);
+              if (attrEmojis && attrEmojis.length > 0) {
+                const line = linesBeforeTemplate + templateContent.slice(0, index).split('\n').length;
+                for (const emoji of attrEmojis) {
+                  violations.push({
+                    file: relPath,
+                    line,
+                    emoji,
+                    context: tagSlice.slice(0, 100).replace(/\s+/g, ' '),
+                    message: `Emoji '${emoji}' appears in prop '${attrM[0]}'. Encapsulate in <span class="emoji">${emoji}</span> inside the slot/template instead of passing raw emojis in props.`
+                  });
+                }
+              }
+            }
+
+            // Check if this tag has class "emoji"
+            const classMatch = attrs.match(/\bclass\s*=\s*(?:"([^"]*)"|'([^']*)')/i);
+            const dynamicClassMatch = attrs.match(/:class\s*=\s*(?:"([^"]*)"|'([^']*)')/i);
+            const classVal = (classMatch ? (classMatch[1] || classMatch[2] || '') : '') + ' ' + (dynamicClassMatch ? (dynamicClassMatch[1] || dynamicClassMatch[2] || '') : '');
+            const hasEmojiClass = /\bemoji\b/i.test(classVal);
+
+            const voidElements: ReadonlySet<string> = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']); // runtime-set
+            if (!isSelfClosing && !voidElements.has(tagName)) {
+              stack.push({
+                tag: tagName,
+                hasEmojiClass
+              });
+            }
+          }
+        }
+
+        index = endTag + 1;
+        continue;
+      }
+
+      // 3. Text node between tags
+      const nextTag = templateContent.indexOf('<', index);
+      const textChunk = nextTag === -1 ? templateContent.slice(index) : templateContent.slice(index, nextTag);
+      const chunkStart = index;
+      index = nextTag === -1 ? len : nextTag;
+
+      if (textChunk.trim().length > 0) {
+        const currentParent = stack[stack.length - 1] || { tag: 'template', hasEmojiClass: false };
+        const isInsideEmojiTag = stack.some(node => node.hasEmojiClass);
+        const isOptionTag = currentParent.tag === 'option';
+
+        // A. Check literal emojis in textChunk (excluding regex literals and option tags)
+        if (!isInsideEmojiTag && !isOptionTag) {
+          const cleanChunk = textChunk.replace(/\/[^/\n\r]+\/[a-z]*/g, '');
+          const emojis = matchEmojis(cleanChunk);
+          if (emojis && emojis.length > 0) {
+            totalEmojisFound += emojis.length;
+            const line = linesBeforeTemplate + templateContent.slice(0, chunkStart).split('\n').length;
+            for (const emoji of emojis) {
+              violations.push({
+                file: relPath,
+                line,
+                emoji,
+                context: textChunk.trim().slice(0, 100).replace(/\s+/g, ' '),
+                message: `Emoji '${emoji}' appears in <${currentParent.tag}> without the .emoji class wrapper. Wrap it in <span class="emoji">${emoji}</span>.`
+              });
+            }
+          }
+        }
+
+        // B. Check Vue interpolations
+        const interpolationRegex = /{{\s*([\s\S]*?)\s*}}/g;
+        let interMatch: RegExpExecArray | null;
+        while ((interMatch = interpolationRegex.exec(textChunk)) !== null) {
+          const rawExpr = interMatch[1] || '';
+          const expr = rawExpr.replace(/\/[^/\n]+\/[gimsuy]*/g, '');
+          
+          const exprEmojis = matchEmojis(expr);
+          if (exprEmojis && exprEmojis.length > 0) {
+            totalEmojisFound += exprEmojis.length;
+            if (!isInsideEmojiTag) {
+              const line = linesBeforeTemplate + templateContent.slice(0, chunkStart + interMatch.index).split('\n').length;
+              for (const emoji of exprEmojis) {
+                violations.push({
+                  file: relPath,
+                  line,
+                  emoji,
+                  context: interMatch[0],
+                  message: `Expression '${interMatch[0]}' containing emoji '${emoji}' appears in <${currentParent.tag}> without the .emoji class wrapper. Wrap it in <span class="emoji">${interMatch[0]}</span>.`
+                });
+              }
+            }
+          }
+
+          const emojiVarMatch = expr.match(/\b([a-zA-Z0-9_]*(?:[eE]moji|[iI]con|[bB]ullet|[gG]lyph))\b/);
+          const varName = emojiVarMatch?.[1];
+          const isTextPropertyAccess = /\.(?:text|label|name|desc|description|title|count|qty)\b/i.test(expr);
+          if (varName && !isInsideEmojiTag && !isTextPropertyAccess) {
+            if (!/^(?:is|has|can|should|toggle|open|close|get[A-Z].*Url|.*Path|.*Class)\b/i.test(varName) && !/Url|Path|Class|Style/i.test(varName)) {
+              const line = linesBeforeTemplate + templateContent.slice(0, chunkStart + interMatch.index).split('\n').length;
+              violations.push({
+                file: relPath,
+                line,
+                emoji: varName,
+                context: interMatch[0],
+                message: `Interpolation '${interMatch[0]}' referencing emoji variable '${varName}' is rendered in <${currentParent.tag}> without the .emoji wrapper. Wrap it in <span class="emoji">{{ ${varName} }}</span>.`
+              });
+            }
+          }
         }
       }
     }

@@ -126,6 +126,13 @@ Whenever requested to "actualizar herramientas", "update tools", "preparar entor
 - `npm run validate:domain-types`: Domain-Type-First contract compliance auditor.
 - `npm run validate:o1`: $O(1)$ data structures and algorithmic performance auditor.
 - `npm run audit`: Unified standards scan. Displays summary Box-Drawing table in terminal and writes full JSON to `scratch/audits/latest_audit.json`. Accepts filters (e.g. `npm run audit --errors-only`, `npm run audit dox`, `npm run audit domain_data`).
+- `npm run audit:warnings` / `npm run audit:summary`: Consolidated Box-Drawing report of all warnings and errors grouped by category from `scratch/audits/latest_audit.json`. Supports `category=<category>` (e.g., `category=complejidad`, `category=dead-code`), `top=<N>`, and `json`.
+- `npm run audit:complexity`: Calculates and summarizes cognitive and cyclomatic complexity hotspots via Fallow AST.
+- `npm run audit:complexity:top`: Lists top 50 highest complexity functions across production layers.
+- `npm run audit:fallow`: Consolidated codebase intelligence dashboard (dupes, security, dead-code, health).
+- `npm run audit:fallow:dupes`: Fallow duplicate and triplicate code detector.
+- `npm run audit:fallow:security`: Fallow CWE security analysis.
+- `npm run audit:fallow:dead-code`: Fallow unused exports, orphan files, and dependency analyzer.
 - `npm run audit:fix`: Automatic standards repair (Node prefixes, Viewports).
 - `npm run audit:dox`: Dedicated DOX (AGENTS.md) integrity auditor.
 - `npm run lint`: Style and syntax verification (includes type-check).

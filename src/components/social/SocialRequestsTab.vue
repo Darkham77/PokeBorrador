@@ -71,7 +71,7 @@ watch(() => socialStore.pendingRequests.map((r) => r.id).join(','), () => {
       v-if="socialStore.pendingRequests.length === 0"
       class="empty-state"
     >
-      <div class="icon">
+      <div class="icon emoji">
         ✉️
       </div>
       <p>No tenés solicitudes pendientes.</p>

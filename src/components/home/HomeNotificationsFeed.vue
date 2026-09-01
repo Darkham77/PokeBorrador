@@ -70,7 +70,7 @@ onUnmounted(() => {
     <!-- Header -->
     <div class="feed-header-row">
       <div class="header-left">
-        <span class="feed-icon">📜</span>
+        <span class="emoji">📜</span>
         <h3 class="feed-title">
           HISTORIAL DE ACTIVIDAD ({{ history.length }}/50)
         </h3>
@@ -85,7 +85,7 @@ onUnmounted(() => {
         v-gsap-hover="{ scale: 1.01, y: -1, duration: 0.15 }"
         class="notif-row"
       >
-        <span class="notif-icon">{{ getIcon(n) }}</span>
+        <span class="emoji notif-icon">{{ getIcon(n) }}</span>
         <div class="notif-content">
           <div class="notif-text">
             <strong
@@ -105,7 +105,7 @@ onUnmounted(() => {
         v-if="history.length === 0"
         class="empty-feed"
       >
-        <span class="empty-icon">📭</span>
+        <span class="emoji empty-icon">📭</span>
         <span class="empty-text">Sin actividad reciente registrada.</span>
       </div>
     </div>

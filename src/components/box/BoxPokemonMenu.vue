@@ -197,7 +197,7 @@ const handleSellRocket = () => {
               v-if="pokemon?.gender"
               :class="['m-badge-gender', pokemon?.gender === 'm' ? 'male' : 'female']"
             >
-              <span class="icon">{{ pokemon?.gender === 'm' ? '♂' : '♀' }}</span>
+              <span class="emoji">{{ pokemon?.gender === 'm' ? '♂' : '♀' }}</span>
             </span>
             <span class="m-badge-level">Nv. {{ pokemon?.level }}</span>
             <span class="m-badge-iv">IV {{ (Object.values(pokemon?.ivs || {}) as number[]).reduce((s,v)=>s+(v||0),0) }}</span>
@@ -219,7 +219,7 @@ const handleSellRocket = () => {
               position="bottom"
             >
               <span class="status-indicator field-passive">
-                {{ fieldPassive.icon }}
+                <span class="emoji">{{ fieldPassive.icon }}</span>
               </span>
             </PVTooltip>
           </div>
@@ -300,9 +300,14 @@ const handleSellRocket = () => {
         v-if="isPokemonBusy(pokemon)" 
         class="busy-warning-banner"
       >
-        <span class="warning-icon">⚠️</span>
+        <span class="emoji warning-icon">⚠️</span>
         <span class="warning-text">
-          Este Pokémon está ocupado ({{ pokemon?.inDaycare ? '🥚 Guardería' : pokemon?.onMission ? '🧭 Misión' : pokemon?.onEvent ? '🏆 Evento' : '🛡️ Defensa' }}). 
+          Este Pokémon está ocupado (
+          <template v-if="pokemon?.inDaycare"><span class="emoji">🥚</span> Guardería</template>
+          <template v-else-if="pokemon?.onMission"><span class="emoji">🧭</span> Misión</template>
+          <template v-else-if="pokemon?.onEvent"><span class="emoji">🏆</span> Evento</template>
+          <template v-else><span class="emoji">🛡️</span> Defensa</template>
+          ). 
           Las acciones de equipo, venta y liberación están bloqueadas.
         </span>
       </div>
@@ -315,7 +320,7 @@ const handleSellRocket = () => {
           :disabled="isPokemonBusy(pokemon)"
           @click.stop="handleMoveToTeam"
         >
-          <span class="icon">➕</span> AGREGAR AL EQUIPO
+          <span class="emoji">➕</span> AGREGAR AL EQUIPO
         </button>
 
         <!-- Swap Section -->
@@ -356,7 +361,7 @@ const handleSellRocket = () => {
                   position="top"
                 >
                   <span class="status-indicator field-passive">
-                    {{ getFieldPassiveBadges(t)!.icon }}
+                    <span class="emoji">{{ getFieldPassiveBadges(t)!.icon }}</span>
                   </span>
                 </PVTooltip>
               </div>
@@ -405,27 +410,27 @@ const handleSellRocket = () => {
           class="menu-action-btn"
           @click.stop="handleUseItem"
         >
-          <span class="icon">🎒</span> USAR OBJETO
+          <span class="emoji">🎒</span> USAR OBJETO
         </button>
         <button
           class="menu-action-btn danger-btn"
           :disabled="!pokemon?.heldItem"
           @click.stop="handleUnequipItem"
         >
-          <span class="icon">❌</span> QUITAR OBJETO
+          <span class="emoji">❌</span> QUITAR OBJETO
         </button>
         <button
           class="menu-action-btn"
           @click.stop="handleMoveToBox"
         >
-          <span class="icon">📦</span> MOVER CAJA
+          <span class="emoji">📦</span> MOVER CAJA
         </button>
         <button
           class="menu-action-btn secondary-btn full-width"
           :disabled="isPokemonBusy(pokemon)"
           @click.stop="handleRelease"
         >
-          <span class="icon">⚡</span> LIBERAR
+          <span class="emoji">⚡</span> LIBERAR
         </button>
         <button
           v-if="isRocketMode"
@@ -433,7 +438,7 @@ const handleSellRocket = () => {
           :disabled="isPokemonBusy(pokemon)"
           @click.stop="handleSellRocket"
         >
-          <span class="icon">💀</span> VENDER MERCADO NEGRO
+          <span class="emoji">💀</span> VENDER MERCADO NEGRO
         </button>
       </div>
     </div>

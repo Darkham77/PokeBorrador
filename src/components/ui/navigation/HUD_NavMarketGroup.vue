@@ -38,7 +38,7 @@ const {
       @click.stop="toggleGroupMenu('MARKET')"
     >
       <template #icon>
-        🏪
+        <span class="emoji">🏪</span>
       </template>
       MARKET
     </PVHUDButton>
@@ -59,7 +59,7 @@ const {
           :class="{ active: modalStore.isOpen('GlobalMarket') }"
           @click.stop="handleTabChange('online-market'); uiStore.openHudGroup = null"
         >
-          <span class="icon">🌎</span>
+          <span class="emoji">🌎</span>
           <span class="nav-item-label">GLOBAL</span>
           <span
             v-if="gtsStore.unseenSalesCount > 0"
@@ -74,7 +74,7 @@ const {
           :class="{ active: modalStore.isOpen('Shop') }"
           @click.stop="handleTabChange('market'); uiStore.openHudGroup = null"
         >
-          <span class="icon">🛒</span>
+          <span class="emoji">🛒</span>
           <span class="nav-item-label">LOCAL</span>
         </button>
         <button
@@ -83,7 +83,7 @@ const {
           :class="{ active: modalStore.isOpen('BCShop') }"
           @click.stop="handleTabChange('trainer-shop'); uiStore.openHudGroup = null"
         >
-          <span class="icon">🎖️</span>
+          <span class="emoji">🎖️</span>
           <span class="nav-item-label">BC SHOP</span>
         </button>
         <button
@@ -93,7 +93,7 @@ const {
           :class="{ active: modalStore.isOpen('ReputationShop') }"
           @click.stop="handleTabChange('reputation-shop'); uiStore.openHudGroup = null"
         >
-          <span class="icon">★</span>
+          <span class="emoji">★</span>
           <span class="nav-item-label">REPUTACIÓN</span>
         </button>
         <button
@@ -102,7 +102,7 @@ const {
           :class="{ active: modalStore.isOpen('WarShop') }"
           @click.stop="handleTabChange('war-shop'); uiStore.openHudGroup = null"
         >
-          <span class="icon">🚩</span>
+          <span class="emoji">🚩</span>
           <span class="nav-item-label">GUERRA</span>
         </button>
       </div>

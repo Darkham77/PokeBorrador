@@ -65,7 +65,7 @@ const hatchEgg = (egg: PokemonEgg) => {
       v-if="eggs.length === 0"
       class="empty-state"
     >
-      <div class="icon">
+      <div class="emoji icon">
         🎒
       </div>
       <p>No tienes huevos en tu mochila. ¡Recoge huevos del almacén de la guardería!</p>
@@ -94,7 +94,7 @@ const hatchEgg = (egg: PokemonEgg) => {
             </span>
             <span
               v-if="egg.isShiny"
-              class="shiny-star"
+              class="emoji shiny-star"
             >✨</span>
           </div>
 
@@ -134,13 +134,13 @@ const hatchEgg = (egg: PokemonEgg) => {
             class="btn-vicio-success hatch-btn"
             @click.stop="hatchEgg(egg)"
           >
-            🐣 ECLOSIONAR HUEVO
+            <span class="emoji">🐣</span> ECLOSIONAR HUEVO
           </button>
           <div
             v-else
             class="walking-label"
           >
-            <span>🚶 Caminando...</span>
+            <span><span class="emoji">🚶</span> Caminando...</span>
           </div>
         </div>
       </div>

@@ -271,8 +271,7 @@ const handleCloseModal = () => {
     <template #header-icon>
       <span
         ref="fishingIconRef"
-        class="fishing-icon"
-        style="display: inline-block;"
+        class="emoji fishing-icon"
       >🎣</span>&nbsp;
     </template>
     <div

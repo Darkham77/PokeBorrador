@@ -72,7 +72,7 @@ function onBtnDown(e: Event) {
       @focus="onBtnEnter"
       @blur="onBtnLeave"
     >
-      <span class="btn-emoji">⚡</span> Agregar 10 de cada uno
+      <span class="emoji">⚡</span> Agregar 10 de cada uno
     </button>
     <input
       v-model="searchQuery"
@@ -94,7 +94,7 @@ function onBtnDown(e: Event) {
           class="debug-item-card"
           @click.stop="addItem(item)"
         >
-          <span class="icon">{{ item.icon || '🎒' }}</span>
+          <span class="emoji">{{ item.icon || '🎒' }}</span>
           <span class="name">{{ item.name }}</span>
           <span class="add">+10</span>
         </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 
 const SPRITE_SWAP_STRETCH_Y = 1.5;
 const SPRITE_SWAP_SQUEEZE_X = 0.15;
@@ -14,6 +14,7 @@ import type { BattleCombatantProps } from '@/types/battle/battle'
 import { useBattleCombatantAnims, onSparkleEnter, onBallEnter, onBallLeave } from './useBattleCombatantAnims.ts'
 import { useBattleCombatantState } from './useBattleCombatantState.ts'
 import { useBattleCombatantSpriteLoop } from './useBattleCombatantSpriteLoop.ts'
+import { computeCombatantVolatiles } from './combatantVolatilesHelper.ts'
 import BattleGroundHazards from './BattleGroundHazards.vue'
 
 // Referencias DOM
@@ -49,6 +50,8 @@ const props = withDefaults(defineProps<BattleCombatantProps>(), {
   zIndex: undefined,
   targetPosition: null
 })
+
+const volatilesProps = computed(() => computeCombatantVolatiles(props.pokemon, props.stages))
 
 
 const emit = defineEmits<{
@@ -257,26 +260,7 @@ const handleBallLeave = (el: Element, done: () => void) => {
             :is-guardian="pokemon.isGuardian"
             :is-silhouette="isSilhouette"
             :status="pokemon.status || undefined"
-            :is-confused="!!pokemon.confused || (pokemon.volatileCounters?.['confusion'] || 0) > 0"
-            :is-taunted="(pokemon.tauntTurns || 0) > 0 || (pokemon.volatileCounters?.['taunt'] || 0) > 0 || (pokemon.volatileCounters?.['tauntTurns'] || 0) > 0"
-            :is-substitute="!!pokemon.substitute || (pokemon.volatileCounters?.['substitute'] || 0) > 0"
-            :is-flinched="(pokemon.volatileCounters?.['flinch'] || 0) > 0"
-            :is-disabled="(pokemon.disabledTurns || 0) > 0 || (pokemon.volatileCounters?.['disable'] || 0) > 0 || (pokemon.volatileCounters?.['disabledTurns'] || 0) > 0"
-            :is-encored="(pokemon.encoreTurns || 0) > 0 || (pokemon.volatileCounters?.['encore'] || 0) > 0 || (pokemon.volatileCounters?.['encoreTurns'] || 0) > 0"
-            :is-cursed="!!pokemon.cursed || (pokemon.volatileCounters?.['curse'] || 0) > 0"
-            :is-seeded="!!pokemon.seeded || (pokemon.volatileCounters?.['leechseed'] || 0) > 0"
-            :is-trapped="!!(pokemon.trapped || (pokemon.bound && pokemon.bound > 0) || (pokemon.volatileCounters?.['trapped'] || 0) > 0 || (pokemon.volatileCounters?.['bound'] || 0) > 0 || (pokemon.volatileCounters?.['partiallytrapped'] || 0) > 0)"
-            :is-ingrained="!!(pokemon.ingrain || (pokemon.volatileCounters?.['ingrain'] || 0) > 0)"
-            :is-perish-song="(pokemon.perishSongCount || 0) > 0 || (pokemon.volatileCounters?.['perishsong'] || 0) > 0"
-            :attracted="!!pokemon.attracted || (pokemon.volatileCounters?.['attract'] || 0) > 0"
-            :is-focus-energy="!!pokemon.focusEnergy || (pokemon.volatileCounters?.['focusenergy'] || 0) > 0"
-            :is-protected="!!(pokemon.protect || pokemon.detect || (pokemon.volatileCounters?.['protect'] || 0) > 0)"
-            :is-enduring="!!pokemon.endure || (pokemon.volatileCounters?.['endure'] || 0) > 0"
-            :is-lock-on="!!pokemon.lockOn || (pokemon.volatileCounters?.['lockon'] || 0) > 0"
-            :has-reflect="(stages.reflect || 0) > 0"
-            :has-light-screen="(stages.lightScreen || 0) > 0"
-            :has-safeguard="(stages.safeguard || 0) > 0"
-            :has-mist="(stages.mist || 0) > 0"
+            v-bind="volatilesProps"
             :vibrant="true"
             :sparkle-count="8"
             :radius="fxRadius * 1.25"

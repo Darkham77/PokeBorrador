@@ -160,7 +160,7 @@ watch(
       v-if="subTab === 'received' && receivedCount === 0"
       class="empty-state"
     >
-      <div class="icon">
+      <div class="icon emoji">
         📥
       </div>
       <p>No tenés ofertas de intercambio recibidas.</p>
@@ -169,7 +169,7 @@ watch(
       v-else-if="subTab === 'sent' && sentCount === 0"
       class="empty-state"
     >
-      <div class="icon">
+      <div class="icon emoji">
         📤
       </div>
       <p>No tenés ofertas de intercambio enviadas en espera.</p>
@@ -178,7 +178,7 @@ watch(
       v-else-if="subTab === 'claims' && claimsCount === 0"
       class="empty-state"
     >
-      <div class="icon">
+      <div class="icon emoji">
         📦
       </div>
       <p>No tenés reclamos pendientes.</p>

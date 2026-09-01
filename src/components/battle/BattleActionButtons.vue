@@ -54,7 +54,7 @@ const hasAvailableBenchPokemon = computed(() => {
         :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || !!(battleStore.player?.volatileCounters?.['partiallytrapped']) || !!(battleStore.player?.trapped) || isLocked || !hasAvailableBenchPokemon || battleStore.currentFsmState === 'REORDER_TEAM' || battleStore.currentSubState !== 'WAIT_INPUT'"
         @click.stop="emit('switch')"
       >
-        <span class="icon">🔄</span> <span class="text">CAMBIAR</span>
+        <span class="emoji">🔄</span> <span class="text">CAMBIAR</span>
       </button>
 
       <BattleBallPicker 
@@ -70,7 +70,7 @@ const hasAvailableBenchPokemon = computed(() => {
         :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || isLocked"
         @click.stop="emit('bag')"
       >
-        <span class="icon">🎒</span> <span class="text">MOCHILA</span>
+        <span class="emoji">🎒</span> <span class="text">MOCHILA</span>
       </button>
     </div>
   </div>

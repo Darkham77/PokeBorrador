@@ -86,7 +86,7 @@ onMounted(() => {
         style="width: 100%; height: 36px; font-weight: bold;"
         @click.stop="startCombat"
       >
-        <span class="btn-emoji">⚔️</span> INICIAR COMBATE
+        <span class="emoji">⚔️</span> INICIAR COMBATE
       </button>
     </div>
 
@@ -189,7 +189,7 @@ onMounted(() => {
           style="width: 100%; height: 32px;"
           @click.stop="generateRandomTeam"
         >
-          <span class="btn-emoji">🎲</span> GENERAR NUEVO EQUIPO AL AZAR
+          <span class="emoji">🎲</span> GENERAR NUEVO EQUIPO AL AZAR
         </button>
       </div>
     </div>
@@ -204,7 +204,7 @@ onMounted(() => {
           class="btn-vicio-secondary sm"
           @click.stop="randomizeTrainer"
         >
-          <span class="btn-emoji">🎲</span> ALEATORIO
+          <span class="emoji">🎲</span> ALEATORIO
         </button>
       </div>
       
@@ -230,7 +230,7 @@ onMounted(() => {
                 class="btn-magic-fill btn-random-fill"
                 @click.stop="randomizeTrainerName"
               >
-                <span class="btn-emoji">🎲</span>
+                <span class="emoji">🎲</span>
               </button>
             </div>
             <input 
@@ -254,7 +254,7 @@ onMounted(() => {
                 class="btn-magic-fill btn-random-fill"
                 @click.stop="randomizeTrainerSprite"
               >
-                <span class="btn-emoji">🎲</span>
+                <span class="emoji">🎲</span>
               </button>
             </div>
             <select v-model="trainerSprite">
@@ -307,7 +307,7 @@ onMounted(() => {
           style="background: rgba(59, 139, 255, 0.15); border-color: rgba(59, 139, 255, 0.3); color: #5ea2ff;"
           @click.stop="loadPolicePreset"
         >
-          <span class="btn-emoji">🚨</span> CARGAR OFICIAL DE POLICÍA
+          <span class="emoji">🚨</span> CARGAR OFICIAL DE POLICÍA
         </button>
       </div>
     </div>
@@ -385,14 +385,14 @@ onMounted(() => {
             :class="{ active: combatLocationType === 'map' }"
             @click.stop="combatLocationType = 'map'"
           >
-            <span class="btn-emoji">🗺️</span> RUTA / MAPA
+            <span class="emoji">🗺️</span> RUTA / MAPA
           </button>
           <button 
             style="flex: 1;"
             :class="{ active: combatLocationType === 'gym' }"
             @click.stop="combatLocationType = 'gym'"
           >
-            <span class="btn-emoji">🏆</span> GIMNASIO
+            <span class="emoji">🏆</span> GIMNASIO
           </button>
         </div>
       </div>
@@ -460,7 +460,7 @@ onMounted(() => {
           style="width: 100%; height: 34px; font-weight: bold;"
           @click.stop="startCombat"
         >
-          <span class="btn-emoji">⚔️</span> INICIAR COMBATE
+          <span class="emoji">⚔️</span> INICIAR COMBATE
         </button>
       </div>
     </div>
@@ -468,7 +468,8 @@ onMounted(() => {
     <!-- Modal de Advertencia de Ilegalidad -->
     <DebugIllegalModal
       v-if="showIllegalModal"
-      title="⚠️ EQUIPO ILEGAL DETECTADO"
+      emoji="⚠️"
+      title="EQUIPO ILEGAL DETECTADO"
       description="No se puede iniciar el combate porque uno o más Pokémon del equipo incumplen las normas de legalidad del juego:"
       :issues="illegalIssues"
       @close="showIllegalModal = false"

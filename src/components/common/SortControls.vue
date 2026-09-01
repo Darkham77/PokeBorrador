@@ -47,7 +47,7 @@ const setSort = (key: SortKey) => {
       <span class="sort-label">ABC</span>
       <span
         v-if="modelValue === 'name'"
-        class="sort-arrow"
+        class="emoji sort-arrow"
       >
         {{ sortOrder === 'asc' ? '↑' : '↓' }}
       </span>
@@ -65,7 +65,7 @@ const setSort = (key: SortKey) => {
       </slot>
       <span
         v-if="modelValue === 'price'"
-        class="sort-arrow"
+        class="emoji sort-arrow"
       >
         {{ sortOrder === 'asc' ? '↑' : '↓' }}
       </span>
@@ -89,7 +89,7 @@ const setSort = (key: SortKey) => {
       </slot>
       <span
         v-if="modelValue === 'rarity'"
-        class="sort-arrow"
+        class="emoji sort-arrow"
       >
         {{ sortOrder === 'asc' ? '↑' : '↓' }}
       </span>

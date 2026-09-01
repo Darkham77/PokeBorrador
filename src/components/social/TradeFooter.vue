@@ -44,7 +44,7 @@ const handleGiftChange = (e: Event) => {
           type="checkbox"
           @change="handleGiftChange"
         >
-        <span class="toggle-label"><span class="icon">🎁</span> Es un regalo</span>
+        <span class="toggle-label"><span class="emoji">🎁</span> Es un regalo</span>
       </label>
 
       <button

@@ -35,75 +35,53 @@ function isSnowAffectedMoveName(value: string): boolean {
   return SNOW_AFFECTED_MOVE_NAMES_SET.has(value)
 }
 
+const BOOST_REGEXES: readonly RegExp[] = [
+  /aumenta la velocidad/i,
+  /aumenta el ataque/i,
+  /aumenta la defensa/i,
+  /aumenta la precisión/i,
+  /potencia el/i,
+  /sube el/i,
+  /potencia los/i,
+  /aumenta.*un\s*\d+%/i
+];
+
+const DEBUFF_REGEXES: readonly RegExp[] = [
+  /reduce/i,
+  /baja/i,
+  /debilita/i,
+  /pierde hp/i
+];
+
+const BLOCK_REGEXES: readonly RegExp[] = [
+  /evita/i,
+  /inmunidad/i,
+  /impide/i,
+  /protege/i
+];
+
+function classifyAbilitySentence(trimmed: string): string {
+  if (BLOCK_REGEXES.some(rx => rx.test(trimmed))) return `🚫 ${trimmed}`;
+  if (BOOST_REGEXES.some(rx => rx.test(trimmed))) return `▲ ${trimmed}`;
+  if (DEBUFF_REGEXES.some(rx => rx.test(trimmed))) return `▼ ${trimmed}`;
+  return `• ${trimmed}`;
+}
+
 function formatAbilityDescription(desc: string): string {
-  const lines: string[] = [] // no-domain
-  
-  const boostRegexes = [
-    /aumenta la velocidad/i,
-    /aumenta el ataque/i,
-    /aumenta la defensa/i,
-    /aumenta la precisión/i,
-    /potencia el/i,
-    /sube el/i,
-    /potencia los/i,
-    /aumenta.*un\s*\d+%/i
-  ]
-
-  const debuffRegexes = [
-    /reduce/i,
-    /baja/i,
-    /debilita/i,
-    /pierde hp/i
-  ]
-
-  const blockRegexes = [
-    /evita/i,
-    /inmunidad/i,
-    /impide/i,
-    /protege/i
-  ]
-
   if (/[▲▼⚡🚫•]/u.test(desc)) {
-    return desc
+    return desc;
   }
 
-  const sentences = desc.split(/(?<=[.!?])\s+/)
+  const sentences = desc.split(/(?<=[.!?])\s+/);
+  const lines: string[] = []; // no-domain
   for (const sentence of sentences) {
-    const trimmed = sentence.trim()
-    if (!trimmed) continue
-
-    let matched = false
-    for (const rx of blockRegexes) {
-      if (rx.test(trimmed)) {
-        lines.push(`🚫 ${trimmed}`)
-        matched = true
-        break
-      }
+    const trimmed = sentence.trim();
+    if (trimmed) {
+      lines.push(classifyAbilitySentence(trimmed));
     }
-    if (matched) continue
-
-    for (const rx of boostRegexes) {
-      if (rx.test(trimmed)) {
-        lines.push(`▲ ${trimmed}`)
-        matched = true
-        break
-      }
-    }
-    if (matched) continue
-
-    for (const rx of debuffRegexes) {
-      if (rx.test(trimmed)) {
-        lines.push(`▼ ${trimmed}`)
-        matched = true
-        break
-      }
-    }
-    if (matched) continue
-
-    lines.push(`• ${trimmed}`)
   }
 
-  return lines.join('\n')
+  return lines.join('\n');
 }
 
 interface UnifiedStatus {
@@ -127,33 +105,32 @@ interface VolatileStatusItem {
 }
 
 type ShowdownStatKey = 'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'acc' | 'eva';
+const SHOWDOWN_STAGE_KEYS = ['atk', 'def', 'spa', 'spd', 'spe', 'acc', 'eva'] as const satisfies readonly ShowdownStatKey[];
 
 export function useCombatantStatus(
   pokemonRef: MaybeRefOrGetter<Pokemon | null | undefined>,
   battleStore: ReturnType<typeof useBattleStore>,
   isPlayer: MaybeRefOrGetter<boolean>
 ) {
-  const p = computed(() => toValue(pokemonRef))
-  const isPlayerVal = computed(() => toValue(isPlayer))
-  const gameStore = useGameStore()
-  const profileStore = useProfileStore()
+  const p = computed(() => toValue(pokemonRef));
+  const isPlayerVal = computed(() => toValue(isPlayer));
+  const gameStore = useGameStore();
+  const profileStore = useProfileStore();
 
   const isIvScannerActive = computed(() => {
-    return (gameStore.state.ivScannerSecs || 0) > 0
-  })
+    return (gameStore.state.ivScannerSecs || 0) > 0;
+  });
 
   const isAdmin = computed(() => {
-    return profileStore.profileData.isAdmin || (typeof window !== 'undefined' && Boolean(Reflect.get(window, '__ADMIN_DEBUG__'))) || supabase.isLocal
-  })
+    return profileStore.profileData.isAdmin || (typeof window !== 'undefined' && Boolean(Reflect.get(window, '__ADMIN_DEBUG__'))) || supabase.isLocal;
+  });
 
   const activeStages = computed(() => {
-    const s = isPlayerVal.value ? battleStore.playerStages : battleStore.enemyStages
-    if (!s) return []
-    
-    const results = []
-    const keys = ['atk', 'def', 'spa', 'spd', 'spe', 'acc', 'eva'] as const satisfies readonly ShowdownStatKey[];
-    
-    for (const key of keys) {
+    const s = isPlayerVal.value ? battleStore.playerStages : battleStore.enemyStages;
+    if (!s) return [];
+
+    const results = [];
+    for (const key of SHOWDOWN_STAGE_KEYS) {
       const val = (s as Record<string, number | undefined>)[key] || 0 // open-record
       if (val !== 0) {
         const config = (STAT_EMOJI_MAP as Record<string, { icon: string; name: string }>)[key] || { icon: '❓', name: key } // open-record

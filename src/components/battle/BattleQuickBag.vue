@@ -167,7 +167,7 @@ const getTierColor = (t?: string) => {
         v-if="battleItems.length === 0"
         class="empty-bag-overlay"
       >
-        <span class="empty-icon">🎒</span>
+        <span class="emoji empty-icon">🎒</span>
         <span class="empty-text">SIN OBJETOS</span>
       </div>
     </div>

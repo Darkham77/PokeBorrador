@@ -21,8 +21,8 @@ defineProps<{
       v-if="activeDetails.tacticalInfo.hasAssaultVest"
       class="field-condition-row"
     >
-      <span class="field-condition-dot">🛡️</span>
-      <span class="field-condition-text penalized">Chaleco Asalto Rival: Activo (↓ daño especial)</span>
+      <span class="emoji">🛡️</span>
+      <span class="field-condition-text penalized">Chaleco Asalto Rival: Activo (<span class="emoji">↓</span> daño especial)</span>
     </div>
 
     <!-- Eviolite -->
@@ -30,8 +30,8 @@ defineProps<{
       v-if="activeDetails.tacticalInfo.hasEviolite"
       class="field-condition-row"
     >
-      <span class="field-condition-dot">💎</span>
-      <span class="field-condition-text penalized">Mineral Evolutivo Rival: Activo (↑ defensas)</span>
+      <span class="emoji">💎</span>
+      <span class="field-condition-text penalized">Mineral Evolutivo Rival: Activo (<span class="emoji">↑</span> defensas)</span>
     </div>
 
     <!-- Leech Seed -->
@@ -39,7 +39,7 @@ defineProps<{
       v-if="activeDetails.tacticalInfo.isLeechSeedActive"
       class="field-condition-row"
     >
-      <span class="field-condition-dot">🌱</span>
+      <span class="emoji">🌱</span>
       <span class="field-condition-text boosted">Drenadoras Activas (Drenaje pasivo)</span>
     </div>
 
@@ -48,7 +48,7 @@ defineProps<{
       v-if="activeDetails.tacticalInfo.isForesightActive"
       class="field-condition-row"
     >
-      <span class="field-condition-dot">👁️</span>
+      <span class="emoji">👁️</span>
       <span class="field-condition-text boosted">Gran Ojo / Profecía Activo (Ignora inmunidad Fantasma)</span>
     </div>
 
@@ -57,7 +57,7 @@ defineProps<{
       v-if="activeDetails.tacticalInfo.attackerTera"
       class="field-condition-row"
     >
-      <span class="field-condition-dot">🌟</span>
+      <span class="emoji">🌟</span>
       <span class="field-condition-text boosted">Tu Tipo Tera: {{ activeDetails.tacticalInfo.attackerTera }}</span>
     </div>
 
@@ -66,7 +66,7 @@ defineProps<{
       v-if="activeDetails.tacticalInfo.defenderTera"
       class="field-condition-row"
     >
-      <span class="field-condition-dot">🌟</span>
+      <span class="emoji">🌟</span>
       <span class="field-condition-text penalized">Tipo Tera Rival: {{ activeDetails.tacticalInfo.defenderTera }}</span>
     </div>
   </div>

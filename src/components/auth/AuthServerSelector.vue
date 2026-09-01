@@ -56,7 +56,7 @@ async function selectTab(value: string) {
         @mouseenter="handleServerTabEnter"
         @mouseleave="handleServerTabLeave"
       >
-        <span class="btn-emoji">🌐</span> Online
+        <span class="emoji">🌐</span> Online
       </button>
       <button 
         id="server-tab-local"
@@ -66,7 +66,7 @@ async function selectTab(value: string) {
         @mouseenter="handleServerTabEnter"
         @mouseleave="handleServerTabLeave"
       >
-        <span class="btn-emoji">💻</span> Local
+        <span class="emoji">💻</span> Local
       </button>
     </div>
   </div>

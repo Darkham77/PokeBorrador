@@ -216,7 +216,7 @@ onUnmounted(() => {
           :description="fieldPassive.desc"
         >
           <div class="status-indicator field-passive">
-            {{ fieldPassive.icon }}
+            <span class="emoji">{{ fieldPassive.icon }}</span>
           </div>
         </PVTooltip>
         <PVTooltip
@@ -225,7 +225,7 @@ onUnmounted(() => {
           description="Este Pokémon está en una misión activa."
         >
           <div class="status-indicator mission">
-            <span class="icon">🧭</span>
+            <span class="emoji">🧭</span>
           </div>
         </PVTooltip>
         <PVTooltip
@@ -234,7 +234,7 @@ onUnmounted(() => {
           description="Este Pokémon está participando en un evento o concurso activo."
         >
           <div class="status-indicator event">
-            <span class="icon">🏆</span>
+            <span class="emoji">🏆</span>
           </div>
         </PVTooltip>
         <PVTooltip
@@ -243,7 +243,7 @@ onUnmounted(() => {
           description="Este Pokémon está en la guardería."
         >
           <div class="status-indicator daycare">
-            <span class="icon">🥚</span>
+            <span class="emoji">🥚</span>
           </div>
         </PVTooltip>
         <PVTooltip
@@ -252,7 +252,7 @@ onUnmounted(() => {
           description="Este Pokémon está asignado a la defensa."
         >
           <div class="status-indicator defense">
-            <span class="icon">🛡️</span>
+            <span class="emoji">🛡️</span>
           </div>
         </PVTooltip>
       </div>
@@ -271,7 +271,7 @@ onUnmounted(() => {
         class="box-illegal-danger-badge"
         :title="props.pokemon.illegalReasons?.join('\n') || 'Pokémon Ilegal'"
       >
-        <span class="danger-icon">⚠️</span>
+        <span class="emoji danger-icon">⚠️</span>
         <span class="danger-label">ILEGAL</span>
       </div>
       <PVSpriteFX
@@ -318,7 +318,7 @@ onUnmounted(() => {
             v-if="props.pokemon.gender"
             :class="['m-badge-gender', 'mini', props.pokemon.gender === 'm' ? 'male' : 'female']"
           >
-            <span class="icon">{{ props.pokemon.gender === 'm' ? '♂' : '♀' }}</span>
+            <span class="emoji">{{ props.pokemon.gender === 'm' ? '♂' : '♀' }}</span>
           </div>
         </div>
         <div

@@ -157,7 +157,7 @@ const handleArchaeologyStart = () => {
       >
         <div 
           ref="fishingIcon" 
-          class="fishing-icon"
+          class="emoji fishing-icon"
         >
           🎣
         </div>
@@ -171,7 +171,7 @@ const handleArchaeologyStart = () => {
           class="btn-fishing" 
           @click.stop="handleFishingStart"
         >
-          <span class="icon">🎣</span> ¡MINIJUEGO DE PESCA!
+          <span class="emoji icon">🎣</span> ¡MINIJUEGO DE PESCA!
         </button>
       </div>
     </BaseModal>
@@ -195,7 +195,7 @@ const handleArchaeologyStart = () => {
       >
         <div 
           ref="fishingIcon" 
-          class="fishing-icon"
+          class="emoji fishing-icon"
         >
           ⛏️
         </div>
@@ -212,7 +212,7 @@ const handleArchaeologyStart = () => {
           class="btn-archaeology" 
           @click.stop="handleArchaeologyStart"
         >
-          <span class="icon">⛏️</span> ¡MINIJUEGO DE ARQUEOLOGÍA!
+          <span class="emoji icon">⛏️</span> ¡MINIJUEGO DE ARQUEOLOGÍA!
         </button>
       </div>
     </BaseModal>

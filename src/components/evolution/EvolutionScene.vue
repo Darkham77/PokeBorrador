@@ -338,7 +338,7 @@ const close = () => {
               class="btn-vicio-secondary"
               @click.stop="cancelEvolution"
             >
-              <span class="btn-emoji">❌</span> CANCELAR EVOLUCIÓN
+              <span class="emoji">❌</span> CANCELAR EVOLUCIÓN
             </button>
           </div>
         </div>

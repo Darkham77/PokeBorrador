@@ -65,7 +65,7 @@ const close = () => {
     <template #header>
       <div class="shop-modal-header">
         <div class="shop-title-group">
-          <span class="title-icon">🛒</span>
+          <span class="emoji">🛒</span>
           <div class="title-text-wrap">
             <span class="main-title">POKÉ MARKET</span>
             <span class="sub-title">TIENDA DE OBJETOS</span>
@@ -142,7 +142,7 @@ const close = () => {
             v-else
             class="shop-empty-state"
           >
-            <span class="empty-icon">🔍</span>
+            <span class="emoji empty-icon">🔍</span>
             <div class="empty-text">
               <h3>Sin resultados</h3>
               <p>Prueba con otros términos de búsqueda en esta sección</p>

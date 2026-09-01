@@ -59,7 +59,7 @@ const emit = defineEmits<{
           :disabled="isTraveling || !hasHealthyTeam"
           @click="emit('travel', conn.target)"
         >
-          <span class="dir-icon">⬅️</span>
+          <span class="emoji dir-icon">⬅️</span>
           <span class="dir-label">{{ conn.label }}</span>
           <span
             v-if="conn.mo"
@@ -86,7 +86,7 @@ const emit = defineEmits<{
             :disabled="isTraveling || !hasHealthyTeam"
             @click="emit('travel', conn.target)"
           >
-            <div class="dir-icon">
+            <div class="emoji dir-icon">
               ⬆️
             </div>
             <div class="dir-label">
@@ -129,7 +129,7 @@ const emit = defineEmits<{
             :disabled="!hasHealthyTeam"
             @click="emit('explore')"
           >
-            🔍 Explorar Zona
+            <span class="emoji">🔍</span> Explorar Zona
           </button>
           <button 
             v-if="pokemonCenterNodes.includes(originMap)"
@@ -138,7 +138,7 @@ const emit = defineEmits<{
             class="adv-action-btn heal-btn"
             @click="emit('heal')"
           >
-            🏥 Centro Pokémon
+            <span class="emoji">🏥</span> Centro Pokémon
           </button>
         </div>
       </div>
@@ -156,7 +156,7 @@ const emit = defineEmits<{
             :disabled="isTraveling || !hasHealthyTeam"
             @click="emit('travel', conn.target)"
           >
-            <p class="dir-icon">
+            <p class="emoji dir-icon">
               ⬇️
             </p>
             <p class="dir-label">
@@ -187,7 +187,7 @@ const emit = defineEmits<{
           :disabled="isTraveling || !hasHealthyTeam"
           @click="emit('travel', conn.target)"
         >
-          <strong class="dir-icon">➡️</strong>
+          <strong class="emoji dir-icon">➡️</strong>
           <strong class="dir-label">{{ conn.label }}</strong>
           <strong
             v-if="conn.mo"

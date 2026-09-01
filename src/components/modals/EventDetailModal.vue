@@ -10,10 +10,12 @@ import { normalizeZonedDateTime, getGMT3Date } from '@/logic/utils/timeUtils'
 import {
   resolveEventSubCompetitions,
   resolveWeeklyRotation,
+  getEventDisplayName,
   type Event as GameEvent,
   type EventConfig,
   type ResolvedSubCompetition,
-  type WeeklyRotationEntry
+  type WeeklyRotationEntry,
+  type UpcomingEventOccurrence
 } from '@/logic/events/eventEngine'
 import EventSubCompetitionsSection from './EventSubCompetitionsSection.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -21,10 +23,12 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 interface Props {
   show?: boolean
   event: GameEvent
+  occurrence?: UpcomingEventOccurrence
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  show: false
+  show: false,
+  occurrence: undefined
 })
 
 const emit = defineEmits<{
@@ -57,8 +61,22 @@ const cfg = computed<ExtendedEventConfig>(() => {
   return {}
 })
 
+const targetZdt = computed<Temporal.ZonedDateTime>(() => {
+  if (props.occurrence?.startInstant) {
+    return normalizeZonedDateTime(props.occurrence.startInstant)
+  }
+  if (props.event.start_at) {
+    try {
+      return normalizeZonedDateTime(Temporal.Instant.from(props.event.start_at))
+    } catch (_e) {
+      // ignore parse error, fallback below
+    }
+  }
+  return getGMT3Date()
+})
+
 const activeRotation = computed<WeeklyRotationEntry | null>(() => {
-  return resolveWeeklyRotation(cfg.value, getGMT3Date())
+  return resolveWeeklyRotation(cfg.value, targetZdt.value)
 })
 
 const effectiveBanner = computed<string | null>(() => {
@@ -66,7 +84,7 @@ const effectiveBanner = computed<string | null>(() => {
 })
 
 const effectiveTitle = computed<string>(() => {
-  return activeRotation.value?.title || props.event.name
+  return activeRotation.value?.title || getEventDisplayName(props.event, props.occurrence)
 })
 
 const effectiveSpeciesString = computed<string | null>(() => {
@@ -215,7 +233,7 @@ const prizes = computed<{ first?: Prize, second?: Prize, third?: Prize } | null>
 
 const subCompetitions = computed<ResolvedSubCompetition[]>(() => {
   if (cfg.value.hasCompetition !== true) return []
-  return resolveEventSubCompetitions(props.event, getGMT3Date())
+  return resolveEventSubCompetitions(props.event, targetZdt.value)
 })
 
 const getSubCompPrizes = (sub: ResolvedSubCompetition): { first?: Prize, second?: Prize, third?: Prize } | null => {
@@ -226,6 +244,13 @@ const getSubCompPrizes = (sub: ResolvedSubCompetition): { first?: Prize, second?
 }
 
 const scheduleText = computed(() => {
+  if (props.occurrence) {
+    const occ = props.occurrence
+    const dayPrefix = occ.dateLabel === 'Hoy' || occ.dateLabel === 'Mañana'
+      ? `${occ.dateLabel} (${occ.dayName})`
+      : `${occ.dateLabel} · ${occ.dayName}`
+    return `${dayPrefix} · ${occ.timeLabel} (ARG)`
+  }
   if (props.event.manual) return '🟢 Evento activo ahora mismo'
   if (sched.value.type === 'weekly' && sched.value.days) {
     const dayNames = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'] as const
@@ -437,7 +462,7 @@ const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
       </div>
       <div
         v-else-if="!bannerUrl && event.icon"
-        class="event-main-icon"
+        class="emoji event-main-icon"
       >
         {{ event.icon }}
       </div>
@@ -498,7 +523,7 @@ const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
         class="event-section"
       >
         <div class="section-tag">
-          <span class="title-icon">⏰</span> HORARIO
+          <span class="emoji">⏰</span> HORARIO
         </div>
         <div
           class="info-box schedule-box"
@@ -547,10 +572,10 @@ const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
         class="event-section"
       >
         <div class="section-tag">
-          <span class="title-icon">ℹ️</span> DETALLES DEL EVENTO
+          <span class="emoji">ℹ️</span> DETALLES DEL EVENTO
         </div>
         <div class="info-box empty-details-box">
-          <span class="metric-main"><span class="icon">{{ event.type === 'competition' ? '🏆' : '✨' }}</span> {{ event.type === 'competition' ? 'Concurso y Competición' : 'Evento Especial de Mundo' }}</span>
+          <span class="metric-main"><span class="emoji">{{ event.type === 'competition' ? '🏆' : '✨' }}</span> {{ event.type === 'competition' ? 'Concurso y Competición' : 'Evento Especial de Mundo' }}</span>
           <p class="tiebreaker-note">
             {{ event.description || 'Consulta los resultados y podio directamente en la lista de eventos.' }}
           </p>

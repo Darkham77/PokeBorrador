@@ -174,7 +174,7 @@ const handlePokemonClick = (index: number) => {
               class="rocket-trigger-btn"
               @click.stop="toggleRocketMode"
             >
-              <span class="btn-emoji">💀</span> MERCADO NEGRO
+              <span class="emoji">💀</span> MERCADO NEGRO
             </button>
           </PVTooltip>
 
@@ -188,7 +188,7 @@ const handlePokemonClick = (index: number) => {
               class="release-trigger-btn"
               @click.stop="toggleReleaseMode"
             >
-              <span class="btn-emoji">⚡</span> LIBERAR POKÉMON
+              <span class="emoji">⚡</span> LIBERAR POKÉMON
             </button>
           </PVTooltip>
         </div>
@@ -238,7 +238,7 @@ const handlePokemonClick = (index: number) => {
           :disabled="boxStore.boxRocketSelected.length === 0"
           @click.stop="handleConfirmRocketSell"
         >
-          💀 VENDER LOTE
+          <span class="emoji">💀</span> VENDER LOTE
         </button>
         <button 
           v-else
@@ -247,7 +247,7 @@ const handlePokemonClick = (index: number) => {
           :disabled="boxStore.boxReleaseSelected.length === 0"
           @click.stop="handleConfirmRelease"
         >
-          ⚡ LIBERAR LOTE
+          <span class="emoji">⚡</span> LIBERAR LOTE
         </button>
       </div>
     </div>

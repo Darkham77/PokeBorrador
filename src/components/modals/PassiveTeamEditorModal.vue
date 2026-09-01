@@ -33,7 +33,8 @@ if (typeof window !== 'undefined') {
 <template>
   <BaseModal
     :show="show"
-    title="🛡️ ARMADOR PASIVO"
+    emoji="🛡️"
+    title="ARMADOR PASIVO"
     max-width="440px"
     variant="retro"
     @close="closeEditor"
@@ -60,7 +61,7 @@ if (typeof window !== 'undefined') {
         class="btn-vicio-success btn-vicio-full"
         @click.stop="confirmSave"
       >
-        <span class="btn-emoji">💾</span> GUARDAR CONFIGURACIÓN
+        <span class="emoji">💾</span> GUARDAR CONFIGURACIÓN
       </button>
     </template>
   </BaseModal>

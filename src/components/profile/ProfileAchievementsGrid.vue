@@ -44,7 +44,7 @@ const { handleStatEnter, handleStatLeave } = useStatHover()
         @mouseenter="handleStatEnter"
         @mouseleave="handleStatLeave"
       >
-        <span class="stat-val shiny-text"><span class="emoji-inline">✨</span> {{ shinyCount }}</span>
+        <span class="stat-val shiny-text"><span class="emoji">✨</span> {{ shinyCount }}</span>
         <span class="stat-lbl">Shinies</span>
       </div>
       <div

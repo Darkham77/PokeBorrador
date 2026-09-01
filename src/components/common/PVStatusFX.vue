@@ -251,12 +251,12 @@ onUnmounted(() => {
       :data-fx-type="fx.type"
     >
       <span
-        v-for="n in 24"
-        :key="n"
-        class="status-particle"
+        v-for="i in resolveEffectSettings(fx.type, radius, { isBattle: props.isBattle }).activeRange[1]"
+        :key="i"
+        class="emoji status-particle primary-status"
       >
         <span
-          v-if="fx.type === 'frz' || fx.type === 'freeze'"
+          v-if="fx.type === 'freeze' || fx.type === 'frozen'"
           class="freeze-asset-wrapper"
         >
           <img
@@ -282,7 +282,7 @@ onUnmounted(() => {
       <span
         v-for="i in resolveEffectSettings(fx.type, radius, { isField: fx.isField, isSimplified: props.isSimplified, isBattle: props.isBattle }).activeRange[1]"
         :key="i"
-        class="status-particle secondary-status"
+        class="emoji status-particle secondary-status"
       >
         <span
           v-if="fx.type === 'shiny'"
@@ -315,7 +315,7 @@ onUnmounted(() => {
       <span
         v-for="i in resolveEffectSettings(fx.type, radius, { isSimplified: props.isSimplified, isBattle: props.isBattle }).activeRange[1]"
         :key="i"
-        class="status-particle tactical-status"
+        class="emoji status-particle tactical-status"
       >{{ fx.emoji }}</span>
     </div>
 
@@ -331,7 +331,7 @@ onUnmounted(() => {
       <span
         v-for="i in resolveEffectSettings(fx.type, radius, { isField: true, isSimplified: props.isSimplified, isBattle: props.isBattle }).activeRange[1]"
         :key="i"
-        class="status-particle field-status"
+        class="emoji status-particle field-status"
       >{{ fx.emoji }}</span>
     </div>
   </div>

@@ -56,15 +56,22 @@ describe('PokemonStatusSection - Tooltips', () => {
     expect(abilityTooltip!.props('description')).toContain('• El contacto físico puede envenenar al rival (30%).')
   })
 
-  it('should handle neutral nature description', () => {
+  it('should render the level progress bar correctly according to MAX_POKEMON_LEVEL', () => {
     const wrapper = mount(PokemonStatusSection, {
-      props: { pokemon: { ...mockPokemon, nature: 'serious' } as unknown as Pokemon }
+      props: { pokemon: mockPokemon as unknown as Pokemon }
     })
 
+    const levelBar = wrapper.find('.level-group')
+    expect(levelBar.exists()).toBe(true)
+    expect(levelBar.find('.bar-header span:first-child').text()).toBe('NIVEL')
+    expect(levelBar.find('.level-text').text()).toBe('Nv. 50 / 100')
+
+    const levelFill = wrapper.find('.level-fill')
+    expect(levelFill.attributes('style')).toContain('width: 50%')
+
     const tooltips = wrapper.findAllComponents({ name: 'PVTooltip' })
-    const natureTooltip = tooltips.find(t => t.props('title') === 'NATURALEZA')
-    
-    expect(natureTooltip).toBeDefined()
-    expect(natureTooltip!.props('description')).toBe('Sin efecto en estadísticas.')
+    const levelTooltip = tooltips.find(t => t.props('title') === 'NIVEL 50 / 100')
+    expect(levelTooltip).toBeDefined()
+    expect(levelTooltip!.props('description')).toContain('Nivel actual: 50. Faltan 50 niveles para alcanzar el nivel máximo (100).')
   })
 })

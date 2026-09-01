@@ -81,7 +81,7 @@ const transitionHooks = useGsapTransition({
       >
         <div class="error-card modal-scrollable-content">
           <div class="error-header">
-            <span class="error-icon">⚠️</span>
+            <span class="emoji error-icon">⚠️</span>
             <div class="error-title">
               ERROR EN EL JUEGO
             </div>
@@ -150,7 +150,7 @@ const transitionHooks = useGsapTransition({
               class="btn-vicio-neutral btn-vicio-sm"
               @click.stop="closeError"
             >
-              <span class="btn-emoji">✕</span> CERRAR
+              <span class="emoji">✕</span> CERRAR
             </button>
           </div>
         </div>

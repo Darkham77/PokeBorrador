@@ -167,7 +167,7 @@ onMounted(() => {
             :disabled="!newMessage.trim()"
             @click.stop="handleSendMessage"
           >
-            <span class="btn-emoji">➤</span>
+            <span class="emoji">➤</span>
           </button>
         </div>
         <p class="hint">

@@ -134,7 +134,7 @@ onMounted(() => {
         v-gsap-loop="'pulse-shadow'"
         class="adv-team-warning-banner"
       >
-        <span class="warning-icon">⚠️</span>
+        <span class="emoji warning-icon">⚠️</span>
         <span class="warning-text">Equipo debilitado o vacío. Añade o cura tus Pokémon en el panel de trucos para poder viajar o explorar.</span>
       </div>
 
@@ -167,7 +167,7 @@ onMounted(() => {
                 v-model="isBikeActive"
                 type="checkbox"
               >
-              <span class="adv-toggle-label"><span class="icon">🚲</span> Bicicleta</span>
+              <span class="adv-toggle-label"><span class="emoji">🚲</span> Bicicleta</span>
             </label>
             <div class="adv-hm-list">
               <button
@@ -201,7 +201,7 @@ onMounted(() => {
                 :key="passive.label"
                 style="background: rgba(76,175,80,0.15); border: 1px solid #4caf50; padding: 4px; border-radius: 4px; display: flex; flex-direction: column; gap: 2px;"
               >
-                <span style="color: #4caf50; font-weight: bold;"><span class="icon">🌟</span> {{ passive.label }}</span>
+                <span style="color: #4caf50; font-weight: bold;"><span class="emoji">🌟</span> {{ passive.label }}</span>
                 <span style="font-size: 6px; color: #ccc;">{{ passive.desc }}</span>
               </div>
               <div
@@ -225,7 +225,7 @@ onMounted(() => {
                 :disabled="move.pp <= 0"
                 @click="useActiveRouteMove(move.pokemonUid, move.moveName)"
               >
-                <span><span class="icon">{{ move.moveName.toLowerCase().includes('tele') ? '🔮' : '🌸' }}</span> {{ move.moveName }} ({{ move.pokemonName }})</span>
+                <span><span class="emoji">{{ move.moveName.toLowerCase().includes('tele') ? '🔮' : '🌸' }}</span> {{ move.moveName }} ({{ move.pokemonName }})</span>
                 <span :style="{ color: move.pp > 0 ? '#ffcb05' : '#ef5350' }">PP {{ move.pp }}/{{ move.maxPP }}</span>
               </button>
             </div>
@@ -256,7 +256,7 @@ onMounted(() => {
               style="margin-top: 10px; width: 100%; padding: 8px; font-family: var(--font-pixel); font-size: 8px;"
               @click="cancelTravel"
             >
-              Cancelar Viaje <span class="btn-emoji">🛑</span>
+              Cancelar Viaje <span class="emoji">🛑</span>
             </button>
           </div>
         </div>
@@ -279,14 +279,14 @@ onMounted(() => {
               class="adv-zoom-btn"
               @click.stop="() => handleZoomIn()"
             >
-              <span class="btn-emoji">➕</span>
+              <span class="emoji">➕</span>
             </button>
             <button
               v-gsap-hover
               class="adv-zoom-btn"
               @click.stop="() => handleZoomOut()"
             >
-              <span class="btn-emoji">➖</span>
+              <span class="emoji">➖</span>
             </button>
             <button
               v-gsap-hover
@@ -294,7 +294,7 @@ onMounted(() => {
               title="Centrar en mapa seleccionado"
               @click.stop="centerOnActiveNode"
             >
-              <span class="btn-emoji">🎯</span>
+              <span class="emoji">🎯</span>
             </button>
           </div>
 
@@ -381,7 +381,7 @@ onMounted(() => {
               >
                 <div
                   v-gsap-loop="'pulse-shadow'"
-                  class="adv-pc-icon-bubble"
+                  class="emoji adv-pc-icon-bubble"
                 >
                   🏥
                 </div>

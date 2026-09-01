@@ -13,6 +13,25 @@ function isShowdownStatKey(key: string): key is ShowdownStatKey {
   return SHOWDOWN_STAT_KEYS_SET.has(key);
 }
 
+function getTargetStages(ctx: SBCtx, target: NonNullable<ReturnType<SBCtx['getPoke']>>) {
+  const isPlayer = target === ctx.p;
+  return isPlayer ? ctx.store.playerStages.value : ctx.store.enemyStages.value;
+}
+
+function resetStages(stages: Record<ShowdownStatKey, number> | undefined) {
+  if (!stages) return;
+  for (const key of SHOWDOWN_STAT_KEYS) {
+    stages[key] = 0;
+  }
+}
+
+function copyStages(src: Record<ShowdownStatKey, number> | undefined, tgt: Record<ShowdownStatKey, number> | undefined) {
+  if (!src || !tgt) return;
+  for (const key of SHOWDOWN_STAT_KEYS) {
+    tgt[key] = src[key] || 0;
+  }
+}
+
 function applyBoostOrSet(ctx: SBCtx, isSet: boolean): boolean {
   const { store, parts, getPoke, getSide } = ctx;
   const target = getPoke(parts[2] || parts[1] || '');
@@ -53,15 +72,13 @@ function applyUnboost(ctx: SBCtx): boolean {
 }
 
 function applySwapBoost(ctx: SBCtx): boolean {
-  const { store, parts, line, p, getPoke } = ctx;
+  const { store, parts, line, getPoke } = ctx;
   if (line.includes('[silent]')) return true;
   const src = getPoke(parts[2] || '');
   const tgt = getPoke(parts[3] || '');
   if (src && tgt) {
-    const srcSide = src === p ? 'player' : 'enemy';
-    const tgtSide = tgt === p ? 'player' : 'enemy';
-    const srcStages = srcSide === 'player' ? store.playerStages.value : store.enemyStages.value;
-    const tgtStages = tgtSide === 'player' ? store.playerStages.value : store.enemyStages.value;
+    const srcStages = getTargetStages(ctx, src);
+    const tgtStages = getTargetStages(ctx, tgt);
     if (srcStages && tgtStages) {
       for (const key of SHOWDOWN_STAT_KEYS) {
         const srcVal = srcStages[key] || 0;
@@ -75,12 +92,11 @@ function applySwapBoost(ctx: SBCtx): boolean {
 }
 
 function applyInvertBoost(ctx: SBCtx): boolean {
-  const { store, parts, line, p, getPoke } = ctx;
+  const { store, parts, line, getPoke } = ctx;
   if (line.includes('[silent]')) return true;
   const target = getPoke(parts[2] || '');
   if (target) {
-    const side = target === p ? 'player' : 'enemy';
-    const stages = side === 'player' ? store.playerStages.value : store.enemyStages.value;
+    const stages = getTargetStages(ctx, target);
     if (stages) {
       for (const key of SHOWDOWN_STAT_KEYS) {
         stages[key] = -(stages[key] || 0);
@@ -92,17 +108,11 @@ function applyInvertBoost(ctx: SBCtx): boolean {
 }
 
 function applyClearBoost(ctx: SBCtx): boolean {
-  const { store, parts, line, p, getPoke } = ctx;
+  const { store, parts, line, getPoke } = ctx;
   if (line.includes('[silent]')) return true;
   const target = getPoke(parts[2] || '');
   if (target) {
-    const side = target === p ? 'player' : 'enemy';
-    const stages = side === 'player' ? store.playerStages.value : store.enemyStages.value;
-    if (stages) {
-      for (const key of SHOWDOWN_STAT_KEYS) {
-        stages[key] = 0;
-      }
-    }
+    resetStages(getTargetStages(ctx, target));
     store.addLog(`¡Los stats de ${target.name} volvieron a la normalidad!`, 'log-info', target);
   }
   return true;
@@ -111,47 +121,30 @@ function applyClearBoost(ctx: SBCtx): boolean {
 function applyClearAllBoost(ctx: SBCtx): boolean {
   const { store, line } = ctx;
   if (line.includes('[silent]')) return true;
-  if (store.playerStages.value) {
-    for (const key of SHOWDOWN_STAT_KEYS) {
-      store.playerStages.value[key] = 0;
-    }
-  }
-  if (store.enemyStages.value) {
-    for (const key of SHOWDOWN_STAT_KEYS) {
-      store.enemyStages.value[key] = 0;
-    }
-  }
+  resetStages(store.playerStages.value);
+  resetStages(store.enemyStages.value);
   store.addLog('¡Todos los cambios de stats se eliminaron!', 'log-info', '💨');
   return true;
 }
 
 function applyCopyBoost(ctx: SBCtx): boolean {
-  const { store, parts, line, p, getPoke } = ctx;
+  const { store, parts, line, getPoke } = ctx;
   if (line.includes('[silent]')) return true;
   const recipient = getPoke(parts[2] || '');
   const source = getPoke(parts[3] || '');
   if (recipient && source) {
-    const recSide = recipient === p ? 'player' : 'enemy';
-    const srcSide = source === p ? 'player' : 'enemy';
-    const recStages = recSide === 'player' ? store.playerStages.value : store.enemyStages.value;
-    const srcStages = srcSide === 'player' ? store.playerStages.value : store.enemyStages.value;
-    if (recStages && srcStages) {
-      for (const key of SHOWDOWN_STAT_KEYS) {
-        recStages[key] = srcStages[key] || 0;
-      }
-    }
+    copyStages(getTargetStages(ctx, source), getTargetStages(ctx, recipient));
     store.addLog(`¡${recipient.name} copió los cambios de stats de ${source.name}!`, 'log-info', recipient);
   }
   return true;
 }
 
 function applyClearDirectionalBoost(ctx: SBCtx, direction: 'positive' | 'negative'): boolean {
-  const { store, parts, line, p, getPoke } = ctx;
+  const { store, parts, line, getPoke } = ctx;
   if (line.includes('[silent]')) return true;
   const target = getPoke(parts[2] || '');
   if (target) {
-    const side = target === p ? 'player' : 'enemy';
-    const stages = side === 'player' ? store.playerStages.value : store.enemyStages.value;
+    const stages = getTargetStages(ctx, target);
     let cleared = false;
     if (stages) {
       for (const key of SHOWDOWN_STAT_KEYS) {

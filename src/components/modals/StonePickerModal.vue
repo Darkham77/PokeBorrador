@@ -134,7 +134,7 @@ const getPokemonName = (id: string) => {
             <span
               v-else
               class="fallback-icon"
-            ><span class="icon">🚫</span></span>
+            ><span class="emoji">🚫</span></span>
           </div>
 
           <div class="stone-details">
@@ -142,7 +142,7 @@ const getPokemonName = (id: string) => {
               {{ getStoneInfo(opt.stone).name }}
             </div>
             <div class="evo-target">
-              <span class="emoji-inline">→</span> {{ getPokemonName(opt.to) }} &nbsp;·&nbsp; x{{ gameStore.state.inventory[opt.stone] || 0 }}
+              <span class="emoji">→</span> {{ getPokemonName(opt.to) }} &nbsp;·&nbsp; x{{ gameStore.state.inventory[opt.stone] || 0 }}
             </div>
           </div>
 

@@ -233,7 +233,7 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
     <template #header>
       <div class="ranking-modal-header">
         <div class="ranking-title-group">
-          <span class="title-icon">🏆</span>
+          <span class="emoji">🏆</span>
           <div class="title-text-wrap">
             <span class="main-title">SALÓN DE LA FAMA</span>
             <span class="sub-title">Top 100 entrenadores globales</span>
@@ -247,7 +247,7 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
           @mouseenter="handleButtonEnter"
           @mouseleave="handleButtonLeave"
         >
-          <span class="btn-emoji">{{ socialStore.leaderboardLoading ? '...' : '🔄' }}</span>
+          <span class="emoji">{{ socialStore.leaderboardLoading ? '...' : '🔄' }}</span>
         </button>
       </div>
     </template>
@@ -270,7 +270,7 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
           </div>
           <div class="reward-item flex-stretch">
             <span class="reward-lbl">Recompensa:</span>
-            <span class="reward-val prize-highlight">✨ Mewtwo Armored</span>
+            <span class="reward-val prize-highlight"><span class="emoji">✨</span> Mewtwo Armored</span>
           </div>
         </div>
       </div>
@@ -345,15 +345,15 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
             <div class="rank-badge">
               <span
                 v-if="index === 0"
-                class="crown"
+                class="emoji crown"
               >🥇</span>
               <span
                 v-else-if="index === 1"
-                class="crown"
+                class="emoji crown"
               >🥈</span>
               <span
                 v-else-if="index === 2"
-                class="crown"
+                class="emoji crown"
               >🥉</span>
               <span
                 v-else

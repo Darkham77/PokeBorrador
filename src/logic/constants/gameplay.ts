@@ -220,12 +220,6 @@ export const BATTLE_MAX_STAGE_OFFSET = 6;
 /** Total stat stage count (13 stages from -6 to +6). */
 export const BATTLE_TOTAL_STAGES_COUNT = 13;
 
-// --- Auth / Network constants ---
-/** Delay in milliseconds between auth retry attempts. */
-export const AUTH_RETRY_DELAY_MS = 1500;
-
-/** HTTP 401 Unauthorized status code. */
-export const HTTP_STATUS_UNAUTHORIZED = 401;
 
 // --- Box store constants ---
 /** Criminality points added per Pokémon sold in black-market mode. */

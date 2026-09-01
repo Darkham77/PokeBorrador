@@ -81,11 +81,14 @@ export interface AuditFinding {
   context?: string;
 }
 
+export const AUDIT_STATUSES = ['passed', 'failed'] as const;
+export type AuditExecutionStatus = (typeof AUDIT_STATUSES)[number];
+
 export interface StandardAuditResult {
   id: string;
   name: string;
   family: AuditFamily;
-  status: 'passed' | 'failed';
+  status: AuditExecutionStatus;
   durationMs: number;
   metrics: Record<string, number | string>;
   findings: AuditFinding[];

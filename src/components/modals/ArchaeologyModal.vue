@@ -255,7 +255,7 @@ const handleCloseModal = () => {
     @close="handleCloseModal"
   >
     <template #header-icon>
-      ⛏️&nbsp;
+      <span class="emoji">⛏️</span>&nbsp;
     </template>
     <div
       class="archaeology-container"
@@ -308,11 +308,11 @@ const handleCloseModal = () => {
             >
             <span
               v-else-if="tile.clue === 'HOT'"
-              class="clue-tag hot"
+              class="emoji clue-tag hot"
             >🔥</span>
             <span
               v-else-if="tile.clue === 'COLD'"
-              class="clue-tag cold"
+              class="emoji clue-tag cold"
             >❄️</span>
           </template>
           <template v-else>

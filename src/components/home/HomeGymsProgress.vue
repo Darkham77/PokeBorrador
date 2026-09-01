@@ -25,7 +25,7 @@ const openGyms = () => {
   <div class="home-gyms-progress home-section-card">
     <div class="card-header-bar">
       <div class="title-wrap">
-        <span class="card-icon title-icon">🏆</span>
+        <span class="emoji">🏆</span>
         <div class="title-text-group">
           <h3 class="card-title">
             GIMNASIOS DE KANTO
@@ -41,7 +41,7 @@ const openGyms = () => {
           class="card-action-btn"
           @click.stop="openGyms"
         >
-          <span class="btn-icon">⚡</span>
+          <span class="emoji">⚡</span>
           DESAFIAR
         </button>
       </div>

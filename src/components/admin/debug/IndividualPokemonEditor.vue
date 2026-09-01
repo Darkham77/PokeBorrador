@@ -228,7 +228,7 @@ watch(() => activePoke.value?.level, (newLv) => {
               class="btn-magic-fill btn-random-fill"
               @click.stop="randomizeActiveSpecies"
             >
-              <span class="btn-emoji">🎲</span>
+              <span class="emoji">🎲</span>
             </button>
           </template>
         </DebugSearchSelect>
@@ -250,7 +250,7 @@ watch(() => activePoke.value?.level, (newLv) => {
               class="btn-magic-fill btn-random-fill"
               @click.stop="randomizeActiveLevel"
             >
-              🎲
+              <span class="emoji">🎲</span>
             </button>
           </div>
           <input
@@ -293,7 +293,7 @@ watch(() => activePoke.value?.level, (newLv) => {
               class="btn-magic-fill btn-random-fill"
               @click.stop="randomizeActiveNature"
             >
-              🎲
+              <span class="emoji">🎲</span>
             </button>
           </template>
         </DebugSearchSelect>
@@ -312,7 +312,7 @@ watch(() => activePoke.value?.level, (newLv) => {
               class="btn-magic-fill btn-random-fill"
               @click.stop="randomizeActiveAbility"
             >
-              🎲
+              <span class="emoji">🎲</span>
             </button>
           </template>
         </DebugSearchSelect>
@@ -334,7 +334,7 @@ watch(() => activePoke.value?.level, (newLv) => {
               class="btn-magic-fill btn-random-fill"
               @click.stop="randomizeActiveIVs"
             >
-              🎲
+              <span class="emoji">🎲</span>
             </button>
           </div>
           <PokemonIVEditor 
@@ -370,7 +370,7 @@ watch(() => activePoke.value?.level, (newLv) => {
               class="btn-magic-fill btn-random-fill"
               @click.stop="randomizeActiveHeldItem"
             >
-              🎲
+              <span class="emoji">🎲</span>
             </button>
           </template>
         </DebugSearchSelect>
@@ -392,7 +392,7 @@ watch(() => activePoke.value?.level, (newLv) => {
               class="btn-magic-fill btn-random-fill"
               @click.stop="randomizeActiveNickname"
             >
-              🎲
+              <span class="emoji">🎲</span>
             </button>
           </div>
           <input 

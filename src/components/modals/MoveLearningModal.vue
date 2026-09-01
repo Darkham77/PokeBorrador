@@ -93,7 +93,7 @@ const handleForget = () => {
           class="forget-btn"
           @click.stop="handleForget"
         >
-          <span class="btn-emoji">❌</span> CANCELAR Y NO APRENDER
+          <span class="emoji">❌</span> CANCELAR Y NO APRENDER
         </button>
       </div>
     </div>

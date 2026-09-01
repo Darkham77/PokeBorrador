@@ -38,7 +38,7 @@ const {
       @click.stop="toggleGroupMenu('POKEMON')"
     >
       <template #icon>
-        ⚡
+        <span class="emoji">⚡</span>
       </template>
       POKÉMON
     </PVHUDButton>
@@ -59,7 +59,7 @@ const {
           :class="{ active: modalStore.isOpen('TeamManagement') }"
           @click.stop="handleTabChange('team', $event); uiStore.openHudGroup = null"
         >
-          <span class="icon">⚡</span>
+          <span class="emoji">⚡</span>
           <span class="nav-item-label">EQUIPO</span>
         </button>
         <button
@@ -68,7 +68,7 @@ const {
           :class="{ active: activeTab === 'box' }"
           @click.stop="handleTabChange('box', $event); uiStore.openHudGroup = null"
         >
-          <span class="icon">📦</span>
+          <span class="emoji">📦</span>
           <span class="nav-item-label">CAJA PC</span>
         </button>
         <button
@@ -77,7 +77,7 @@ const {
           :class="{ active: modalStore.isOpen('EventMissions') || modalStore.isOpen('DaycareMissions') }"
           @click.stop="handleTabChange('missions'); uiStore.openHudGroup = null"
         >
-          <span class="icon">📜</span>
+          <span class="emoji">📜</span>
           <span class="nav-item-label">MISIONES</span>
           <span
             v-if="breedingStore.fulfillableMissionsCount > 0"
@@ -92,7 +92,7 @@ const {
           :class="{ active: activeTab === 'pokedex' }"
           @click.stop="handleTabChange('pokedex', $event); uiStore.openHudGroup = null"
         >
-          <span class="icon">📖</span>
+          <span class="emoji">📖</span>
           <span class="nav-item-label">POKÉDEX</span>
         </button>
       </div>

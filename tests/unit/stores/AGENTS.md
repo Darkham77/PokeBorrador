@@ -10,3 +10,7 @@ State Management & Store Infrastructure Team.
 
 - Initialize Pinia before each test using `setActivePinia(createPinia())`.
 - Verify reactive computation of indexed maps (`pokemonByUid`), sets (`caughtSpeciesSet`, `seenSpeciesSet`), and domain state mutations.
+
+## Child DOX Index
+
+- [events/](./events/AGENTS.md): Domain module documentation for events store tests.

@@ -294,7 +294,7 @@ const getCategoryIcon = (catId: string) => {
     <!-- Card Top Bar -->
     <div class="card-top">
       <div class="event-meta">
-        <span class="event-icon">{{ item.event_icon }}</span>
+        <span class="emoji event-icon">{{ item.event_icon }}</span>
         <div class="event-title-group">
           <div class="event-title-row">
             <h4 class="event-name">
@@ -313,7 +313,7 @@ const getCategoryIcon = (catId: string) => {
                 @mouseleave="onInfoBtnHover($event, false)"
                 @click.stop="openEventDetail"
               >
-                <span class="info-icon">ℹ️</span>
+                <span class="emoji info-icon">ℹ️</span>
               </button>
             </PVTooltip>
           </div>
@@ -332,7 +332,7 @@ const getCategoryIcon = (catId: string) => {
             @mouseleave="onBtnHover($event, false)"
             @click.stop="onClaimClick(item.myAward.id)"
           >
-            <span class="btn-emoji">🎁</span>
+            <span class="emoji">🎁</span>
             RECLAMAR PREMIO
           </button>
           <button
@@ -343,7 +343,7 @@ const getCategoryIcon = (catId: string) => {
             @mouseleave="onDiscardHover($event, false)"
             @click.stop="onDiscardClick(item.myAward.id)"
           >
-            <span class="btn-emoji">🗑️</span>
+            <span class="emoji">🗑️</span>
             DESCARTAR
           </button>
         </template>
@@ -352,14 +352,14 @@ const getCategoryIcon = (catId: string) => {
           v-else-if="item.isClaimed"
           class="claimed-badge"
         >
-          <span class="emoji-inline">✓</span> RECLAMADA
+          <span class="emoji">✓</span> RECLAMADA
         </div>
 
         <div
           v-else-if="item.isWinner"
           class="winner-badge"
         >
-          <span class="emoji-inline">🏆</span> GANADOR
+          <span class="emoji">🏆</span> GANADOR
         </div>
       </div>
     </div>
@@ -387,7 +387,7 @@ const getCategoryIcon = (catId: string) => {
           class="category-podium-block"
         >
           <div class="category-block-header pixelated">
-            <span class="cat-icon">{{ getCategoryIcon(catGroup.categoryId) }}</span>
+            <span class="emoji cat-icon">{{ getCategoryIcon(catGroup.categoryId) }}</span>
             <span class="cat-name">{{ catGroup.categoryName }}</span>
           </div>
 

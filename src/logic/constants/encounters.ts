@@ -79,14 +79,6 @@ export const DEBUG_TRAINER_OVERRIDE_CHANCE = 0.50;
 /** Debug 80% guardian encounter override probability. */
 export const DEBUG_GUARDIAN_OVERRIDE_CHANCE = 0.80;
 
-/** Required Trainer class level to double rival encounter chance. */
-export const ENTRENATOR_DOUBLE_RIVAL_CLASS_LEVEL = 20;
-
-/** Rival encounter probability multiplier for qualified Trainer class players. */
-export const ENTRENADOR_RIVAL_CHANCE_MULTIPLIER = 2;
-
-/** Defender encounter probability during non-dispute phase. */
-export const DEFENDER_ENCOUNTER_CHANCE = 0.20;
 
 /** Maximum attempts for repellent level-filtered wild encounter selection. */
 export const REPELLENT_MAX_ATTEMPTS = 10;
@@ -136,50 +128,8 @@ export const DEFAULT_SPAWN_RATE_WEIGHT = 10;
 /** Default neutral weather multiplier (1.0). */
 export const DEFAULT_WEATHER_MULTIPLIER_NORMAL = 1.0;
 
-/** Mock stats for debug fishing Magikarp encounter. */
-export const DEBUG_MOCK_MAGIKARP_STATS = {
-  LEVEL: 10,
-  HP: 30,
-  ATK: 10,
-  DEF: 10,
-  SPA: 15,
-  SPD: 15,
-  SPE: 20,
-  EXP: 0,
-  NEXT_LEVEL_EXP: 100
-} as const;
-
-/** Mock stats for debug archaeology Kabuto encounter. */
-export const DEBUG_MOCK_KABUTO_STATS = {
-  LEVEL: 10,
-  HP: 35,
-  ATK: 15,
-  DEF: 20,
-  SPA: 15,
-  SPD: 15,
-  SPE: 15,
-  EXP: 0,
-  NEXT_LEVEL_EXP: 100
-} as const;
-
-/** Mock stats for debug wild Pidgey encounter. */
-export const DEBUG_MOCK_PIDGEY_STATS = {
-  LEVEL: 5,
-  HP: 20,
-  ATK: 10,
-  DEF: 10,
-  SPA: 10,
-  SPD: 10,
-  SPE: 10,
-  EXP: 0,
-  NEXT_LEVEL_EXP: 50
-} as const;
-
 /** Debug trainer encounter chance percentage (50%). */
 export const DEBUG_TRAINER_CHANCE_PERCENT = 50;
-
-/** Debug guardian encounter chance percentage (80%). */
-export const DEBUG_GUARDIAN_CHANCE_PERCENT = 80;
 
 /** Percentage multiplier factor (100). */
 export const PERCENTAGE_MULTIPLIER_FACTOR = 100;

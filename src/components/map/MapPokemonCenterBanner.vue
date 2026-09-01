@@ -70,7 +70,7 @@ const openCenter = () => {
       />
       <div class="banner-overlay">
         <div class="banner-title">
-          <span class="title-icon">💊</span> CENTRO POKÉMON
+          <span class="emoji">💊</span> CENTRO POKÉMON
         </div>
         <div class="banner-desc">
           Saná a tu equipo y restaurá todos sus PP al instante.
@@ -84,13 +84,13 @@ const openCenter = () => {
         class="banner-tag-tooltip"
       >
         <span class="banner-tag cooldown">
-          <span class="icon">⏱️</span> {{ cooldownFormatted }}
+          <span class="emoji">⏱️</span> {{ cooldownFormatted }}
         </span>
       </PVTooltip>
       <span
         v-else
         class="banner-tag"
-      ><span class="icon">💊</span> CURACIÓN</span>
+      ><span class="emoji">💊</span> CURACIÓN</span>
     </div>
   </div>
 </template>

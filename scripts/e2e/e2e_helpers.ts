@@ -259,9 +259,8 @@ export async function confirmAndStartBattle(page: Page): Promise<void> {
 
   try {
     const startBtn = page.locator('#start-encounter-btn').first();
-    if ((await startBtn.count()) > 0 && (await startBtn.isVisible())) {
-      await clickResilient(startBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    }
+    await startBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await clickResilient(startBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
   } catch (_e) {
     // Transition dismounted start button cleanly
   }

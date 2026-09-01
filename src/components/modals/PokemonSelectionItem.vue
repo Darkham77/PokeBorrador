@@ -128,7 +128,7 @@ function handleClick() {
           class="sel-illegal-danger-badge"
           :title="item.pokemon.illegalReasons?.join('\n') || 'Pokémon Ilegal'"
         >
-          <span class="danger-icon">⚠️</span>
+          <span class="emoji danger-icon">⚠️</span>
           <span class="danger-label">ILEGAL</span>
         </div>
         <PVSpriteFX
@@ -162,7 +162,8 @@ function handleClick() {
           </div>
           <span
             v-if="item.pokemon.gender"
-            :class="['gender-icon', item.pokemon.gender === 'm' ? 'male' : 'female']"
+            class="emoji gender-icon"
+            :class="item.pokemon.gender === 'm' ? 'male' : 'female'"
           >
             {{ item.pokemon.gender === 'm' ? '♂' : '♀' }}
           </span>
@@ -184,7 +185,7 @@ function handleClick() {
             position="top"
           >
             <span
-              class="source-symbol"
+              class="emoji source-symbol"
               :class="item._source"
             >
               {{ item._source === 'team' ? '⚔️' : (item._source === 'box' ? '📦' : '🛒') }}
@@ -255,7 +256,7 @@ function handleClick() {
                 v-if="listCompatibility.eggSpecies"
                 class="egg-hint"
               >
-                <span class="emoji-inline">🥚</span> {{ eggSpeciesName }}
+                <span class="emoji">🥚</span> {{ eggSpeciesName }}
               </span>
             </template>
             <template v-else>
@@ -268,7 +269,7 @@ function handleClick() {
             class="vigor-status-mini"
           >
             <span class="label">VIGOR: </span>
-            <span :class="['value', { low: getVigor(item.pokemon) <= 2 }]"><span class="emoji-inline">⚡</span> {{ getVigor(item.pokemon) }}/{{ getMaxVigor(item.pokemon) }}</span>
+            <span :class="['value', { low: getVigor(item.pokemon) <= 2 }]"><span class="emoji">⚡</span> {{ getVigor(item.pokemon) }}/{{ getMaxVigor(item.pokemon) }}</span>
           </div>
         </div>
 
@@ -432,6 +433,9 @@ function handleClick() {
 .vigor-status-mini {
   font-size: 8px;
   @include pixelated;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   
   .label {
     color: var(--gray, #94a3b8);
@@ -440,6 +444,9 @@ function handleClick() {
   .value {
     color: #22c55e;
     font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
     &.low {
       color: #ef4444;
     }

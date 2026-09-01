@@ -102,14 +102,14 @@ const healActiveTeam = () => {
           style="flex: 1; font-size: 6px; padding: 4px; font-family: var(--font-pixel);"
           @click="injectTestTeam"
         >
-          <span class="btn-emoji">🐣</span> Inyectar Equipo
+          <span class="emoji">🐣</span> Inyectar Equipo
         </button>
         <button 
           class="adv-hm-btn" 
           style="flex: 1; font-size: 6px; padding: 4px; font-family: var(--font-pixel);"
           @click="healActiveTeam"
         >
-          <span class="btn-emoji">🏥</span> Curar Todo
+          <span class="emoji">🏥</span> Curar Todo
         </button>
       </div>
 
@@ -185,7 +185,7 @@ const healActiveTeam = () => {
         style="width: 100%; font-size: 8px; padding: 4px; font-family: var(--font-pixel);"
         @click="clearTestItems"
       >
-        🗑️ Limpiar Test Items
+        <span class="emoji">🗑️</span> Limpiar Test Items
       </button>
       <div
         class="adv-cheat-item-scroll"
@@ -195,7 +195,7 @@ const healActiveTeam = () => {
           class="adv-cheat-item-row"
           style="display: flex; align-items: center; justify-content: space-between; font-size: 8px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 4px;"
         >
-          <span style="font-family: var(--font-pixel);">🚲 Bici ({{ gameStore.state.inventory?.['bicycle'] || 0 }})</span>
+          <span style="font-family: var(--font-pixel);"><span class="emoji">🚲</span> Bici ({{ gameStore.state.inventory?.['bicycle'] || 0 }})</span>
           <div style="display: flex; gap: 2px;">
             <button
               class="adv-hm-btn"
@@ -220,7 +220,7 @@ const healActiveTeam = () => {
           style="display: flex; align-items: center; justify-content: space-between; font-size: 8px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 4px;"
         >
           <span style="font-family: var(--font-pixel); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 120px;">
-            {{ item.icon }} {{ item.name }} ({{ gameStore.state.inventory?.[item.id] || 0 }})
+            <span class="emoji">{{ item.icon }}</span> {{ item.name }} ({{ gameStore.state.inventory?.[item.id] || 0 }})
           </span>
           <div style="display: flex; gap: 2px; flex-shrink: 0;">
             <button

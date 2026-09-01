@@ -17,8 +17,10 @@ Frontend Developers / Systems Engineers.
 
 ## Child DOX Index
 
+- [auth/](./auth/AGENTS.md): Domain module documentation for auth.
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle.
 - [components/](./components/AGENTS.md): Domain module documentation for components.
+- [composables/](./composables/AGENTS.md): Domain module documentation for composables.
 - [data/](./data/AGENTS.md): Domain module documentation for data catalogs and O(1) dictionaries.
 - [debug/](./debug/AGENTS.md): Domain module documentation for debug.
 - [encounters/](./encounters/AGENTS.md): Domain module documentation for encounters.

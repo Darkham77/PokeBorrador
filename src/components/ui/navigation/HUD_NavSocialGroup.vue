@@ -40,7 +40,7 @@ const {
       @click.stop="toggleGroupMenu('SOCIAL')"
     >
       <template #icon>
-        👪
+        <span class="emoji">👪</span>
       </template>
       SOCIAL
     </PVHUDButton>
@@ -61,7 +61,7 @@ const {
           :class="{ active: modalStore.isOpen('SocialCenter') }"
           @click.stop="handleTabChange('friends'); uiStore.openHudGroup = null"
         >
-          <span class="icon">🤝</span>
+          <span class="emoji">🤝</span>
           <span class="nav-item-label">AMIGOS</span>
           <span
             v-if="(socialStore.notifications.chats + socialStore.notifications.friends + socialStore.notifications.trades + gameStore.state.claimQueue.length) > 0"
@@ -77,7 +77,7 @@ const {
           :class="{ active: modalStore.isOpen('Arena') }"
           @click.stop="handleTabChange('arena'); uiStore.openHudGroup = null"
         >
-          <span class="icon">🏟️</span>
+          <span class="emoji">🏟️</span>
           <span class="nav-item-label">ARENA</span>
           <span
             v-if="socialStore.notifications.battles > 0"
@@ -92,7 +92,7 @@ const {
           :class="{ active: modalStore.isOpen('Ranking') }"
           @click.stop="handleTabChange('ranking'); uiStore.openHudGroup = null"
         >
-          <span class="icon">🏅</span>
+          <span class="emoji">🏅</span>
           <span class="nav-item-label">RANKING</span>
         </button>
         <button
@@ -101,7 +101,7 @@ const {
           :class="{ active: modalStore.isOpen('FactionWar') }"
           @click.stop="modalStore.open('FactionWar'); uiStore.openHudGroup = null"
         >
-          <span class="icon">⚔️</span>
+          <span class="emoji">⚔️</span>
           <span class="nav-item-label">DOMINANCIA</span>
         </button>
         <button
@@ -110,7 +110,7 @@ const {
           :class="{ active: modalStore.isOpen('WorldEvents') }"
           @click.stop="modalStore.open('WorldEvents'); uiStore.openHudGroup = null"
         >
-          <span class="icon">🎁</span>
+          <span class="emoji">🎁</span>
           <span class="nav-item-label">EVENTOS</span>
           <span
             v-if="eventStore.pendingAwards.length > 0"

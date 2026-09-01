@@ -35,7 +35,7 @@ const requestItems = computed(() =>
           v-if="trade.offer_pokemon"
           class="asset-badge pokemon"
         >
-          <span class="icon">🐾</span>
+          <span class="emoji">🐾</span>
           <span class="badge-name">{{ trade.offer_pokemon.name }}</span>
           <span class="badge-level">Nv.{{ trade.offer_pokemon.level }}</span>
         </div>
@@ -51,7 +51,7 @@ const requestItems = computed(() =>
           :key="name"
           class="asset-badge item"
         >
-          <span class="icon">🎒</span>
+          <span class="emoji">🎒</span>
           <span class="badge-name">{{ name }}</span>
           <span class="badge-qty">x{{ qty }}</span>
         </div>
@@ -72,7 +72,7 @@ const requestItems = computed(() =>
           v-if="trade.request_pokemon"
           class="asset-badge pokemon requested"
         >
-          <span class="icon">🐾</span>
+          <span class="emoji">🐾</span>
           <span class="badge-name">{{ trade.request_pokemon.name }}</span>
           <span class="badge-level">Nv.{{ trade.request_pokemon.level }}</span>
         </div>
@@ -88,7 +88,7 @@ const requestItems = computed(() =>
           :key="name"
           class="asset-badge item requested"
         >
-          <span class="icon">🎒</span>
+          <span class="emoji">🎒</span>
           <span class="badge-name">{{ name }}</span>
           <span class="badge-qty">x{{ qty }}</span>
         </div>
@@ -96,7 +96,7 @@ const requestItems = computed(() =>
           v-if="!hasRequest"
           class="no-assets gift"
         >
-          ¡Es un Regalo! <span class="icon">🎁</span>
+          ¡Es un Regalo! <span class="emoji">🎁</span>
         </div>
       </div>
     </div>

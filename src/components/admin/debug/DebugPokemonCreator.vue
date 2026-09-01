@@ -75,7 +75,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
         class="btn-vicio-secondary sm" 
         @click.stop="handleRandomize"
       >
-        <span class="btn-emoji">🎲</span> ALEATORIO
+        <span class="emoji">🎲</span> ALEATORIO
       </button>
     </div>
     
@@ -94,7 +94,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
                 class="btn-magic-fill btn-random-fill lg"
                 @click.stop="randomizeBase"
               >
-                <span class="btn-emoji">🎲</span>
+                <span class="emoji">🎲</span>
               </button>
             </PVTooltip>
           </div>
@@ -119,7 +119,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
                 class="btn-magic-fill btn-random-fill"
                 @click.stop="randomizeSpecies"
               >
-                <span class="btn-emoji">🎲</span>
+                <span class="emoji">🎲</span>
               </button>
             </PVTooltip>
           </template>
@@ -140,7 +140,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
                 class="btn-magic-fill btn-random-fill"
                 @click.stop="randomizeLevel"
               >
-                🎲
+                <span class="emoji">🎲</span>
               </button>
             </PVTooltip>
           </div>
@@ -175,7 +175,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
                 class="btn-magic-fill btn-random-fill"
                 @click.stop="randomizeIVs"
               >
-                🎲
+                <span class="emoji">🎲</span>
               </button>
             </PVTooltip>
           </div>
@@ -203,7 +203,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
                 class="btn-magic-fill btn-random-fill"
                 @click.stop="randomizeNature"
               >
-                🎲
+                <span class="emoji">🎲</span>
               </button>
             </PVTooltip>
           </template>
@@ -226,7 +226,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
                 class="btn-magic-fill btn-random-fill"
                 @click.stop="randomizeAbility"
               >
-                🎲
+                <span class="emoji">🎲</span>
               </button>
             </PVTooltip>
           </template>
@@ -247,7 +247,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
                 class="btn-magic-fill btn-random-fill lg"
                 @click.stop="randomizeVisuals"
               >
-                🎲
+                <span class="emoji">🎲</span>
               </button>
             </PVTooltip>
           </div>
@@ -276,7 +276,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
           style="margin-top: 12px; margin-bottom: 4px;"
           @click.stop="handleRandomize"
         >
-          🎲 ALEATORIO
+          <span class="emoji">🎲</span> ALEATORIO
         </button>
       </div>
 
@@ -294,7 +294,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
                 class="btn-magic-fill btn-random-fill lg"
                 @click.stop="randomizeExtras"
               >
-                🎲
+                <span class="emoji">🎲</span>
               </button>
             </PVTooltip>
           </div>
@@ -315,7 +315,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
                 class="btn-magic-fill btn-random-fill"
                 @click.stop="randomizeNickname"
               >
-                🎲
+                <span class="emoji">🎲</span>
               </button>
             </PVTooltip>
           </div>
@@ -347,7 +347,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
                 class="btn-magic-fill btn-random-fill"
                 @click.stop="randomizeMinigame"
               >
-                🎲
+                <span class="emoji">🎲</span>
               </button>
             </PVTooltip>
           </div>
@@ -388,7 +388,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
                 class="btn-magic-fill btn-random-fill"
                 @click.stop="randomizeOrigin"
               >
-                🎲
+                <span class="emoji">🎲</span>
               </button>
             </PVTooltip>
           </template>
@@ -482,7 +482,8 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
     <!-- Modal de Advertencia de Ilegalidad -->
     <DebugIllegalModal
       v-if="showIllegalModal"
-      title="⚠️ POKÉMON ILEGAL DETECTADO"
+      emoji="⚠️"
+      title="POKÉMON ILEGAL DETECTADO"
       description="No se puede generar este Pokémon porque incumple las normas de legalidad del juego:"
       :issues="illegalIssues"
       @close="showIllegalModal = false"

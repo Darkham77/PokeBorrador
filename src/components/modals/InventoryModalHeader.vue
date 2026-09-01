@@ -11,7 +11,7 @@ defineProps<{
 <template>
   <div class="inventory-modal-header">
     <div class="inv-title-group">
-      <div class="title-icon">
+      <div class="title-icon emoji">
         🎒
       </div>
       <div class="title-text-wrap">

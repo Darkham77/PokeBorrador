@@ -60,7 +60,7 @@ onUnmounted(() => {
       @click.stop="handleTabChange('home')"
     >
       <template #icon>
-        🏠
+        <span class="emoji">🏠</span>
       </template>
       INICIO
     </PVHUDButton>
@@ -74,7 +74,7 @@ onUnmounted(() => {
       @click.stop="handleTabChange('map')"
     >
       <template #icon>
-        🗺️
+        <span class="emoji">🗺️</span>
       </template>
       MAPA
     </PVHUDButton>
@@ -84,7 +84,7 @@ onUnmounted(() => {
 
     <!-- 3. MOCHILA -->
     <PVTooltip
-      title="🎒 MOCHILA"
+      title="MOCHILA"
       :description="mochilaTooltipDescription"
       position="top"
     >
@@ -94,7 +94,7 @@ onUnmounted(() => {
         @click.stop="handleTabChange('bag')"
       >
         <template #icon>
-          🎒
+          <span class="emoji">🎒</span>
         </template>
         MOCHILA
       </PVHUDButton>
@@ -102,7 +102,7 @@ onUnmounted(() => {
     
     <!-- 4. GIMS -->
     <PVTooltip
-      title="🏆 GIMNASIOS"
+      title="GIMNASIOS"
       :description="medalsBreakdown"
       position="top"
     >
@@ -113,7 +113,7 @@ onUnmounted(() => {
         @click.stop="handleTabChange('gyms')"
       >
         <template #icon>
-          🏆
+          <span class="emoji">🏆</span>
         </template>
         GIMS
       </PVHUDButton>
@@ -121,7 +121,7 @@ onUnmounted(() => {
 
     <!-- 5. CRIANZA -->
     <PVTooltip
-      title="🥚 CRIANZA"
+      title="CRIANZA"
       :description="eggsBreakdown"
       position="top"
     >

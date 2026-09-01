@@ -1,21 +1,25 @@
 import { gameBus } from '@/logic/events/gameBus'
+import { gsapSleep } from '@/logic/utils/gsapHelpers'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { BattleSide } from '@/types/battle/battle'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { useUIStore } from '@/stores/ui'
 import { clearVolatileStatus } from './battleStatus.ts'
 import { registerRewardCombatant } from './rewardsDistributor.ts'
-import { gsapSleep } from '@/logic/utils/gsapHelpers'
 import {
   handlePoliceResolution,
   animatePlayerAutoSwap,
   handleEnemyForceSwitchExecution
 } from './helpers/battleResolutionHelpers.ts'
+import {
+  handleCombatantsExitAnimations,
+  handleBattleDefeatFlow,
+  handleBattleFleeFlow
+} from './battleTerminationOutcomes.ts'
 export { awardDebugExp } from './rewardsDistributor.ts'
 export { syncAndPersist } from './battleStateSync.ts'
 
 const TERMINATING_BATTLES = new WeakSet<object>()
-const ENEMY_FLEE_ANIMATION_DELAY_MS = 1000
 const DESTINY_BOND_SLEEP_DELAY_MS = 500
 
 function isCurrentBattle(ctx: BattleContext, battle: NonNullable<BattleContext['activeBattle']['value']>): boolean {
@@ -100,39 +104,13 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
   await handlePoliceResolution(ctx, active, win, fled, uiStore)
   
   const persistenceMode = active.persistenceMode as string || 'PERSISTENT' // spanish-ok
-  const isSingle = persistenceMode === 'SINGLE' || active.isGym || active.isPvP
+  const isSingle = Boolean(persistenceMode === 'SINGLE' || active.isGym || active.isPvP)
 
   syncAndPersist(ctx)
 
   // 1. Ejecutamos animaciones de salida en paralelo para el jugador y el enemigo si siguen activos
   if (fsm.currentState.value === BATTLE_STATES.ACTIVE_BATTLE) {
-    const isTrainerOrGym = active.isTrainer || active.isGym || active.isPvP
-    // El jugador NUNCA se retira de su asiento en una victoria — permanece visible
-    // hasta que el usuario haga clic en "Volver al Mapa/Gimnasios".
-    // Solo en derrota (!win && !fled) con un Pokémon vivo se ejecuta la animación de derrota.
-    const playerExited: Promise<void> = Promise.resolve()
-
-    let enemyExited: Promise<void> = Promise.resolve()
-    if (active.enemy && active.enemy.hp > 0 && !fled && !active.isCapture) {
-      if (isTrainerOrGym) {
-        enemyExited = ctx.animations?.handleCatchRequest
-          ? ctx.animations.handleCatchRequest({ side: 'enemy', pokemon: active.enemy })
-          : Promise.resolve()
-      } else {
-        if (win) {
-          enemyExited = ctx.animations?.handleFaintAnim
-            ? ctx.animations.handleFaintAnim({ side: 'enemy', pokemon: active.enemy })
-            : Promise.resolve()
-        } else {
-          gameBus.emit('PLAY_ESCAPE_ANIM', { side: 'enemy', type: 'flee' })
-          enemyExited = ctx.animations?.awaitTween
-            ? ctx.animations.awaitTween('escape-enemy')
-            : gsapSleep(ENEMY_FLEE_ANIMATION_DELAY_MS)
-        }
-      }
-    }
-
-    await Promise.all([playerExited, enemyExited])
+    await handleCombatantsExitAnimations(ctx, active, win, fled)
     if (!isCurrentBattle(ctx, active)) return
   }
 
@@ -169,42 +147,12 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
   }
 
   if (!win && !fled) {
-    await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
-    await ctx.gs.save(false)
-    if (!isCurrentBattle(ctx, active)) return
-    
-    ctx.audio.play('defeat')
-    
-    await fsm.transition(BATTLE_STATES.EXIT_BATTLE)
-    await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.ENTRY_CHECK)
-    await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.DEFEAT_SCREEN)
-    await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.DEFEAT_WAIT)
+    await handleBattleDefeatFlow(ctx, active)
     return
   }
 
   if (fled) {
-    if (active) active._initialEnemy = null
-    ctx.clearLogs?.()
-    if (fsm.currentState.value !== BATTLE_STATES.EXIT_BATTLE) {
-      await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.WAIT_LOG_QUEUE_ONLY)
-      await ctx.waitForLogs()
-    }
-    if (!isCurrentBattle(ctx, active)) return
-    
-    const playerFled = active.playerFled || false
-    const wasSearching = active.wasSearching || false
-    if (isSingle || playerFled || !wasSearching) {
-      await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.ENTRY_CHECK)
-      await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.EXECUTE_CLEANUP)
-      await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.CLEAR_UI)
-      await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.TRIGGER_CLOSE)
-      await fsm.transition(BATTLE_STATES.EXIT_BATTLE, BATTLE_SUBSTATES.RESET_FLAGS)
-      await ctx.completeBattleFlow('map')
-    } else {
-      await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.EMPTY_WAIT)
-      if (!isCurrentBattle(ctx, active)) return
-      await ctx.completeBattleFlow('search')
-    }
+    await handleBattleFleeFlow(ctx, active, isSingle)
     return
   }
   

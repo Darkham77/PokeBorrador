@@ -18,7 +18,7 @@ const emit = defineEmits<{
 <template>
   <div class="market-publish-filters">
     <div class="ps-search-row">
-      <span class="ps-search-icon">🔍</span>
+      <span class="emoji ps-search-icon">🔍</span>
       <input
         :value="itemSearchQuery"
         type="text"

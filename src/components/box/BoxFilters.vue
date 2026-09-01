@@ -2,6 +2,7 @@
 import { gsap } from 'gsap'
 import { BOX_TIER_CONFIG } from '@/logic/pokemon/tierEngine'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import PokemonSortBar from '@/components/pokemon/PokemonSortBar.vue'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import { POKEMON_TYPES } from '@/data/battle/types'
 
@@ -61,15 +62,6 @@ const emit = defineEmits<{
 
 const toggleFilters = () => {
   emit('update:isFiltersOpen', !props.isFiltersOpen)
-}
-
-const setSortMode = (val: string) => {
-  if (props.sortMode === val) {
-    emit('update:sortDirection', props.sortDirection === 'desc' ? 'asc' : 'desc')
-  } else {
-    emit('update:sortMode', val)
-    emit('update:sortDirection', 'desc')
-  }
 }
 
 const updateFilter = <K extends keyof BoxFilters>(key: K, val: BoxFilters[K]) => {
@@ -177,7 +169,7 @@ const leave = (el: Element, done: () => void) => {
       <!-- Renglón 1: Buscador + Filtros + Orden -->
       <div class="search-row-integrated">
         <div class="box-search-wrapper">
-          <span class="box-search-icon">🔍</span>
+          <span class="emoji box-search-icon">🔍</span>
           <input
             :value="filters.search"
             type="text"
@@ -204,111 +196,20 @@ const leave = (el: Element, done: () => void) => {
             :class="{ active: isFiltersOpen }"
             @click.stop="toggleFilters"
           >
-            <span class="box-icon-ref">⚙️</span>
+            <span class="emoji">⚙️</span>
             <span class="text">FILTROS</span>
           </button>
         </PVTooltip>
 
         <div class="sort-controls-integrated">
-          <div class="sort-group-mini">
-            <span class="mini-label">ORDEN:</span>
-            <PVTooltip
-              title="MÁS RECIENTES"
-              description="Orden cronológico de captura."
-              position="bottom"
-            >
-              <button
-                :class="['mini-sort-btn', { active: sortMode === 'recent' }]"
-                @click.stop="setSortMode('recent')"
-              >
-                REC {{ sortMode === 'recent' ? (sortDirection === 'desc' ? '▼' : '▲') : '' }}
-              </button>
-            </PVTooltip>
-            <PVTooltip
-              title="NIVEL"
-              description="Orden por nivel de combate."
-              position="bottom"
-            >
-              <button
-                :class="['mini-sort-btn', { active: sortMode === 'level' }]"
-                @click.stop="setSortMode('level')"
-              >
-                LVL {{ sortMode === 'level' ? (sortDirection === 'desc' ? '▼' : '▲') : '' }}
-              </button>
-            </PVTooltip>
-            <PVTooltip
-              title="IVs TOTALES"
-              description="Potencial genético acumulado."
-              position="bottom"
-            >
-              <button
-                :class="['mini-sort-btn', { active: sortMode === 'tier' }]"
-                @click.stop="setSortMode('tier')"
-              >
-                IVs {{ sortMode === 'tier' ? (sortDirection === 'desc' ? '▼' : '▲') : '' }}
-              </button>
-            </PVTooltip>
-            <PVTooltip
-              title="PODER TOTAL"
-              description="Suma de estadísticas base, IVs genéticos y bonificación por EVs entrenados (4 EVs = 1 IV)."
-              position="bottom"
-            >
-              <button
-                :class="['mini-sort-btn', { active: sortMode === 'bst' }]"
-                @click.stop="setSortMode('bst')"
-              >
-                TOTAL {{ sortMode === 'bst' ? (sortDirection === 'desc' ? '▼' : '▲') : '' }}
-              </button>
-            </PVTooltip>
-            <PVTooltip
-              title="NÚMERO POKÉDEX"
-              description="Orden numérico oficial."
-              position="bottom"
-            >
-              <button
-                :class="['mini-sort-btn', { active: sortMode === 'pokedex' }]"
-                @click.stop="setSortMode('pokedex')"
-              >
-                PDEX {{ sortMode === 'pokedex' ? (sortDirection === 'desc' ? '▼' : '▲') : '' }}
-              </button>
-            </PVTooltip>
-            <PVTooltip
-              title="PESO"
-              description="Ordenar por peso en kilogramos."
-              position="bottom"
-            >
-              <button
-                :class="['mini-sort-btn', { active: sortMode === 'weight' }]"
-                @click.stop="setSortMode('weight')"
-              >
-                PES {{ sortMode === 'weight' ? (sortDirection === 'desc' ? '▼' : '▲') : '' }}
-              </button>
-            </PVTooltip>
-            <PVTooltip
-              title="ALTURA"
-              description="Ordenar por altura en metros."
-              position="bottom"
-            >
-              <button
-                :class="['mini-sort-btn', { active: sortMode === 'height' }]"
-                @click.stop="setSortMode('height')"
-              >
-                ALT {{ sortMode === 'height' ? (sortDirection === 'desc' ? '▼' : '▲') : '' }}
-              </button>
-            </PVTooltip>
-            <PVTooltip
-              title="AMISTAD"
-              description="Ordenar por nivel de amistad y vínculo."
-              position="bottom"
-            >
-              <button
-                :class="['mini-sort-btn', { active: sortMode === 'friendship' }]"
-                @click.stop="setSortMode('friendship')"
-              >
-                AMI {{ sortMode === 'friendship' ? (sortDirection === 'desc' ? '▼' : '▲') : '' }}
-              </button>
-            </PVTooltip>
-          </div>
+          <PokemonSortBar
+            :model-value="sortMode"
+            :sort-direction="sortDirection"
+            :show-label="true"
+            label="ORDEN:"
+            @update:model-value="emit('update:sortMode', $event)"
+            @update:sort-direction="emit('update:sortDirection', $event)"
+          />
         </div>
       </div>
 
@@ -337,7 +238,7 @@ const leave = (el: Element, done: () => void) => {
                 :class="['mini-tag-btn', { active: filters.tags.includes(tag.id) }]"
                 @click.stop="toggleTag(tag.id)"
               >
-                <span class="box-tag-icon-inner">{{ tag.icon }}</span>
+                <span class="emoji box-tag-icon-inner">{{ tag.icon }}</span>
                 <span class="tag-text-small">{{ tag.label }}</span>
               </button>
             </PVTooltip>
@@ -570,13 +471,13 @@ const leave = (el: Element, done: () => void) => {
 
         <div class="filter-footer-compact">
           <div class="results-badge-mini">
-            <span class="box-icon-ref">⚡</span> {{ resultsCount }} POKÉMON ENCONTRADOS
+            <span class="emoji">⚡</span> {{ resultsCount }} POKÉMON ENCONTRADOS
           </div>
           <button
             class="btn-vicio-danger btn-vicio-sm"
             @click.stop="emit('reset')"
           >
-            <span class="emoji-inline">↺</span> REINICIAR TODO
+            <span class="emoji">↺</span> REINICIAR TODO
           </button>
         </div>
       </div>

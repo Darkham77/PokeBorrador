@@ -186,5 +186,56 @@ describe('EventDetailModal.vue', () => {
       context: 'pokedex'
     })
   })
+
+  it('resolves rotation title, banner, and species based on occurrence date', () => {
+    const rotatingEvent = {
+      id: 'torneo_pesca',
+      name: 'Torneo de Pesca Acuática',
+      icon: '🎣',
+      type: 'competition',
+      active: true,
+      manual: false,
+      description: '¡Competencia semanal de pesca!',
+      schedule: '{"type": "weekly", "days": [2], "startHour": 18, "endHour": 22}',
+      config: JSON.stringify({
+        hasCompetition: true,
+        rotationTheme: 'weekly_4',
+        weeklyRotations: {
+          '1': { species: 'magikarp,gyarados', banner: 'hora_magikarp_full', title: 'Torneo Magikarp & Gyarados' },
+          '4': { species: 'dratini,dragonair,lapras', banner: 'pesca_mistica_full', title: 'Torneo de Pesca Mística' }
+        }
+      })
+    }
+
+    // Occurrence on September 1st, 2026 (Week 1 of month)
+    const week1Occurrence = {
+      event: rotatingEvent as unknown as GameEvent,
+      startInstant: Temporal.Instant.from('2026-09-01T21:00:00Z'),
+      endInstant: Temporal.Instant.from('2026-09-02T01:00:00Z'),
+      dateLabel: 'Mañana',
+      dayName: 'Martes',
+      timeLabel: '18:00 - 22:00 hs',
+      startsInLabel: 'En 22h',
+      isActiveNow: false
+    }
+
+    const wrapper = mount(EventDetailModal, {
+      props: {
+        show: true,
+        event: rotatingEvent as unknown as GameEvent,
+        occurrence: week1Occurrence
+      },
+      global: {
+        stubs: globalStubs
+      }
+    })
+
+    const text = wrapper.text()
+    expect(text).toContain('Torneo Magikarp & Gyarados')
+    expect(text).toContain('MAGIKARP')
+    expect(text).toContain('GYARADOS')
+    expect(text).not.toContain('DRATINI')
+  })
 })
+
 

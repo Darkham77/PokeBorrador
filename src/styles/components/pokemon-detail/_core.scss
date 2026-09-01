@@ -74,7 +74,7 @@
     
     position: relative;
     
-    i.tab-icon { font-size: 18px;  }
+    .emoji { font-size: 18px; line-height: 1; }
     .tab-label { font-size: 9px; font-weight: 800; letter-spacing: 0.5px; }
     
     &.active {

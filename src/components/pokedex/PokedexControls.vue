@@ -52,7 +52,7 @@ const handleSortClick = (key: string) => {
           Nº
           <span
             v-if="sortBy === 'number'"
-            class="sort-arrow"
+            class="emoji sort-arrow"
           >
             {{ sortOrder === 'asc' ? '↑' : '↓' }}
           </span>
@@ -65,7 +65,7 @@ const handleSortClick = (key: string) => {
           A-Z
           <span
             v-if="sortBy === 'name'"
-            class="sort-arrow"
+            class="emoji sort-arrow"
           >
             {{ sortOrder === 'asc' ? '↑' : '↓' }}
           </span>
@@ -73,7 +73,7 @@ const handleSortClick = (key: string) => {
       </div>
 
       <div class="search-wrapper">
-        <i class="pdex-search-icon">🔍</i>
+        <span class="emoji pdex-search-icon">🔍</span>
         <input 
           :value="searchQuery" 
           type="text" 

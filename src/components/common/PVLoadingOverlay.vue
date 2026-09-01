@@ -177,7 +177,7 @@ watch(() => props.icon, (newIcon) => {
       >
         <span
           ref="iconRef"
-          class="wifi-icon"
+          class="emoji wifi-icon"
         >{{ icon }}</span>
       </div>
 

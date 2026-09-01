@@ -66,7 +66,7 @@ onMounted(async () => {
       :disabled="loading"
       @click.stop="emit('localLogin')"
     >
-      ▶ JUGAR LOCAL
+      <span class="emoji">▶</span> JUGAR LOCAL
     </button>
   </div>
 </template>

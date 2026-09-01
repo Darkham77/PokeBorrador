@@ -26,11 +26,11 @@ defineProps<Props>()
         {{ finalPower || '-' }}
         <span
           v-if="moveData && finalPower > (moveData.power || 0)"
-          class="arrow up"
+          class="emoji arrow up"
         >▲</span>
         <span
           v-if="moveData && finalPower < (moveData.power || 0)"
-          class="arrow down"
+          class="emoji arrow down"
         >▼</span>
       </span>
     </div>
@@ -45,17 +45,17 @@ defineProps<Props>()
       >
         <span
           v-if="moveData && moveData.acc === 1000"
-          class="infinity-emoji"
+          class="emoji"
         >♾️</span>
         <template v-else>
           {{ finalAccuracy || '-' }}
           <span
             v-if="moveData && finalAccuracy > (moveData.acc || 0)"
-            class="arrow up"
+            class="emoji arrow up"
           >▲</span>
           <span
             v-if="moveData && finalAccuracy < (moveData.acc || 0)"
-            class="arrow down"
+            class="emoji arrow down"
           >▼</span>
         </template>
       </span>

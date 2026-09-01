@@ -38,7 +38,7 @@ defineEmits<{
         @click.stop="$emit('action', item.id)"
       >
         <div class="btn-content">
-          <span class="icon">{{ item.icon }}</span>
+          <span class="emoji icon">{{ item.icon }}</span>
           <div class="text">
             <span 
               class="label"
@@ -52,7 +52,7 @@ defineEmits<{
           </div>
         </div>
         <span 
-          class="arrow"
+          class="emoji arrow"
           :style="arrowStyle"
         >▶</span>
       </button>

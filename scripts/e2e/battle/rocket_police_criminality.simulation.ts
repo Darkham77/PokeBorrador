@@ -64,7 +64,9 @@ class RocketPoliceSimWrapper extends BaseBattleSimulation {
 
 test.describe('Rocket Police Criminality and Difficulty E2E Simulation (Tier 3)', () => {
   test.beforeEach(async ({ request }) => {
-    await request.post('/api/dev-import-db-cleanup');
+    await request.post('/api/dev-sim-db-cleanup', {
+      headers: { 'x-db-key': 'sim_db_testrocketpolice' }
+    });
   });
 
   test('should display criminality bar progression with excess levels and reset to 0% after police resolution', async ({ page }) => {
@@ -161,12 +163,13 @@ test.describe('Rocket Police Criminality and Difficulty E2E Simulation (Tier 3)'
     const battleData = await page.evaluate(async () => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const store = useBattleStore();
+      const state = (store.state as { value?: typeof store.state } | undefined)?.value || store.state;
       return {
         isBattleActive: Boolean(store.isBattleActive),
-        archetype: store.state?.trainerArchetype,
-        trainerName: store.state?.trainerName,
-        teamLength: store.state?.enemyTeam?.length ?? 0,
-        firstEnemyLevel: store.state?.enemy?.level ?? 0
+        archetype: state?.trainerArchetype,
+        trainerName: state?.trainerName,
+        teamLength: state?.enemyTeam?.length ?? 0,
+        firstEnemyLevel: state?.enemy?.level ?? 0
       };
     });
 

@@ -109,7 +109,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
       :class="{ 'has-unread': !isOpen && chatStore.globalMessages.length > 0 }"
       @click.stop="toggleChat"
     >
-      <span class="icon">💬</span>
+      <span class="emoji">💬</span>
       <span class="label">Chat</span>
     </button>
 
@@ -191,7 +191,7 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
               :disabled="!canWrite || !newMessage.trim()"
               @click.stop="handleSendMessage"
             >
-              <span class="btn-emoji">➤</span>
+              <span class="emoji">➤</span>
             </button>
           </div>
           <p

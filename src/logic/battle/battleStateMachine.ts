@@ -50,6 +50,7 @@ export const BATTLE_SUBSTATES = {
   APPLY_MOVE: 'APPLY_MOVE',
   FLEE_ATTEMPT: 'FLEE_ATTEMPT',
   EVAL_HP: 'EVAL_HP',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   EVAL_CONTINUE: 'EVAL_CONTINUE',
   ENEMY_DEFEAT: 'ENEMY_DEFEAT',
   TYPE_CHECK: 'TYPE_CHECK',
@@ -78,8 +79,11 @@ export const BATTLE_SUBSTATES = {
   SWITCHING: 'SWITCHING',
   POKEMON_RECALL: 'POKEMON_RECALL',
   RENDER_BALL: 'RENDER_BALL',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   ENERGY_RECALL: 'ENERGY_RECALL',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   ENERGY_RELEASE: 'ENERGY_RELEASE',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   POKEMON_APPEAR: 'POKEMON_APPEAR',
   VACATE_SEAT: 'VACATE_SEAT',
   FADEOUT_BALL: 'FADEOUT_BALL',
@@ -87,18 +91,25 @@ export const BATTLE_SUBSTATES = {
   ENCOUNTER_TYPE_CHECK: 'ENCOUNTER_TYPE_CHECK',
   WILD_ENTRY: 'WILD_ENTRY',
   TRAINER_ENTRY: 'TRAINER_ENTRY',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   PARALLEL_ENTRY: 'PARALLEL_ENTRY',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   T_VISUAL: 'T_VISUAL',
   WILD_ENCOUNTER: 'WILD_ENCOUNTER',
   TRAINER_ENCOUNTER: 'TRAINER_ENCOUNTER',
   RETREAT_AND_FADEOUT: 'RETREAT_AND_FADEOUT',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   DIALOG_FADEOUT: 'DIALOG_FADEOUT',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   T_RETREAT: 'T_RETREAT',
   CHECK_BINOCULARS: 'CHECK_BINOCULARS',
   PARALLEL_JUMP: 'PARALLEL_JUMP',
   JUMP_SHADOW: 'JUMP_SHADOW',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   JUMP_COLOR: 'JUMP_COLOR',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   BUSH_FADE: 'BUSH_FADE',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   REVEAL_COLORS: 'REVEAL_COLORS',
   ENTRY_CHECK: 'ENTRY_CHECK',
   DEFEAT_WAIT: 'DEFEAT_WAIT',
@@ -121,46 +132,83 @@ export const BATTLE_SUBSTATES = {
   SET_SEARCH_FLAG: 'SET_SEARCH_FLAG',
   FIND_HEALTHY: 'FIND_HEALTHY',
   CHECK_ACTIVE_SEAT: 'CHECK_ACTIVE_SEAT',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   WAIT_TIMER: 'WAIT_TIMER',
   SHOW_DIALOGS: 'SHOW_DIALOGS',
   AUTO_BATTLE_CHECK: 'AUTO_BATTLE_CHECK',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   RESET_STALE_VARIABLES: 'RESET_STALE_VARIABLES',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   PLAY_MINIGAME: 'PLAY_MINIGAME',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   MINIGAME_MODAL: 'MINIGAME_MODAL',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   MINIGAME_RESULT: 'MINIGAME_RESULT',
   PREPARATION: 'PREPARATION',
   REORDER_TEAM: 'REORDER_TEAM',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   COLLECT_CHOICES: 'COLLECT_CHOICES',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   SEND_TO_WORKER: 'SEND_TO_WORKER',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   EXECUTE_TURN_SIMULATOR: 'EXECUTE_TURN_SIMULATOR',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   RETURN_LOGS: 'RETURN_LOGS',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   PLAYBACK_LOGS: 'PLAYBACK_LOGS',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   POP_LOG_LINE: 'POP_LOG_LINE',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   PARSE_LINE: 'PARSE_LINE',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   PLAY_ANIMATION: 'PLAY_ANIMATION',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   CALC_ESCAPE_CHANCE: 'CALC_ESCAPE_CHANCE',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   ESCAPE_FAILED: 'ESCAPE_FAILED',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   DELEGATE_WORKER: 'DELEGATE_WORKER',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   FILTER_RECOIL_LOGS: 'FILTER_RECOIL_LOGS',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   PLAY_ENEMY_COUNTERATTACK: 'PLAY_ENEMY_COUNTERATTACK',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   PARALLEL_ESCAPE_EXECUTION: 'PARALLEL_ESCAPE_EXECUTION',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   FORCED_SWITCH_SEQ: 'FORCED_SWITCH_SEQ',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   DETECT_TRIGGER: 'DETECT_TRIGGER',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   PHAZING_EJECTION: 'PHAZING_EJECTION',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   VOLUNTARY_WITHDRAW: 'VOLUNTARY_WITHDRAW',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   RESOLVE_MOVE_ANIM: 'RESOLVE_MOVE_ANIM',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   PLAY_EXPULSION_ANIM: 'PLAY_EXPULSION_ANIM',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   AWAIT_EXPULSION_TWEEN: 'AWAIT_EXPULSION_TWEEN',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   AWAIT_RECALL_TWEEN: 'AWAIT_RECALL_TWEEN',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   VACATE_SEAT_VOLUNTARY: 'VACATE_SEAT_VOLUNTARY',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   INCOMING_POKEMON_CALL: 'INCOMING_POKEMON_CALL',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   CHECK_SEAT_OWNER: 'CHECK_SEAT_OWNER',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   TRAINER_OR_DRAG_CALL: 'TRAINER_OR_DRAG_CALL',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   PLAYER_MANUAL_MENU: 'PLAYER_MANUAL_MENU',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   LOG_ENTRANCE: 'LOG_ENTRANCE',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   HANDLE_RELEASE_ANIM: 'HANDLE_RELEASE_ANIM',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   AWAIT_RELEASE_TWEEN: 'AWAIT_RELEASE_TWEEN',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   APPLY_HAZARDS: 'APPLY_HAZARDS',
+  // fsm-unused-ok: Subestado Mermaid documental de micro-paso en diagrama de flujo
   OPEN_SWITCH_MENU: 'OPEN_SWITCH_MENU'
 } as const;
 

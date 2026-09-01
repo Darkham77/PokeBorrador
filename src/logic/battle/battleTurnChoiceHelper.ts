@@ -13,14 +13,28 @@ interface ShowdownRequestMove {
 
 export function computeP1Choice(active: BattleState | null, move: Move | null, isStruggle: boolean, moveIndex?: number): string {
   if (isStruggle) return 'struggle'
-  const pReq = active?.playerRequest as ChoiceRequest | undefined
+  const activeState = ((active as { value?: BattleState } | null)?.value || active) as BattleState | null
+  const pReq = activeState?.playerRequest as ChoiceRequest | undefined
   const reqMoves = pReq?.active?.[0]?.moves
   if (reqMoves && Array.isArray(reqMoves)) {
+    // If Showdown explicitly returned a canonical single-move state (Recharge, Struggle, 2-turn charging move, locked move)
+    if (reqMoves.length === 1 && reqMoves[0]?.id) {
+      return 'move 1'
+    }
+
+    const isLocked = Boolean(
+      (active?.player?.volatileCounters?.['lockedmove'] && active.player.volatileCounters['lockedmove'] > 0) ||
+      (active?.player?.volatileCounters?.['twoturnmove'] && active.player.volatileCounters['twoturnmove'] > 0) ||
+      (active?.player?.volatileCounters?.['mustrecharge'] && active.player.volatileCounters['mustrecharge'] > 0) ||
+      (active?.player?.thrashTurns && active.player.thrashTurns > 0) ||
+      (active?.player?.moves && active.player.moves.length === 1)
+    )
+
     if (move?.id) {
       const idx = reqMoves.findIndex((m: { id?: string }) => m && m.id === move.id)
       if (idx !== -1) {
         const targetReqMove = reqMoves[idx]
-        if (targetReqMove?.disabled) {
+        if (targetReqMove?.disabled && !isLocked) {
           throw new Error(`[computeP1Choice] Move "${move.id}" is disabled. Reason: ${JSON.stringify(targetReqMove.disabled)}. PP: ${targetReqMove.pp}/${targetReqMove.maxpp}`)
         }
         return `move ${idx + 1}`
@@ -29,21 +43,24 @@ export function computeP1Choice(active: BattleState | null, move: Move | null, i
     // If moveIndex is provided and corresponds to a valid slot in Showdown request (e.g. Sketch/Transform/Mimic)
     if (typeof moveIndex === 'number' && moveIndex >= 0 && moveIndex < reqMoves.length && reqMoves[moveIndex]?.id) {
       const targetReqMove = reqMoves[moveIndex]
-      if (targetReqMove?.disabled) {
+      if (targetReqMove?.disabled && !isLocked) {
         throw new Error(`[computeP1Choice] Move "${targetReqMove.id}" is disabled. Reason: ${JSON.stringify(targetReqMove.disabled)}. PP: ${targetReqMove.pp}/${targetReqMove.maxpp}`)
       }
       return `move ${moveIndex + 1}`
     }
-    // If Showdown explicitly returned a canonical single-move state (Recharge, Struggle, 2-turn charging move, locked move)
-    if (reqMoves.length === 1 && reqMoves[0]?.id) {
-      return 'move 1'
-    }
     throw new Error(`[computeP1Choice] Move "${move?.id}" is not available in active Showdown request. Available request moves: ${JSON.stringify(reqMoves)}`)
+  }
+  if (typeof moveIndex === 'number' && moveIndex >= 0) {
+    return `move ${moveIndex + 1}`
+  }
+  if (move?.id && activeState?.player?.moves) {
+    const idx = activeState.player.moves.findIndex((m: Move | null) => m && m.id === move.id)
+    if (idx !== -1) return `move ${idx + 1}`
   }
   if (!move?.id) {
     throw new Error(`[computeP1Choice] Cannot compute choice: No move provided and playerRequest is missing.`)
   }
-  return `move ${move.id}`
+  return 'move 1'
 }
 
 export async function computeP2Choice(

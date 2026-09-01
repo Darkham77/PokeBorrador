@@ -36,7 +36,7 @@ const onGroundPopLeave = (el: Element, done: () => void) => {
           v-for="i in 3"
           :key="i"
           class="spike-item"
-        ><span class="icon">🌵</span></span>
+        ><span class="emoji">🌵</span></span>
       </div>
     </Transition>
     
@@ -51,7 +51,7 @@ const onGroundPopLeave = (el: Element, done: () => void) => {
         :key="`ingrain-${side}`"
         class="ground-fx ingrain"
       >
-        <span class="root-item"><span class="icon">🌳</span></span>
+        <span class="root-item"><span class="emoji">🌳</span></span>
       </div>
     </Transition>
   </div>

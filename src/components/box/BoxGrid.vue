@@ -35,14 +35,14 @@ const emit = defineEmits<{
     v-if="isBoxEmpty"
     class="empty-state glass-morphism"
   >
-    <span class="empty-icon">📦</span>
+    <span class="emoji empty-icon">📦</span>
     <p>SISTEMA DE ALMACENAMIENTO VACÍO</p>
   </div>
   <div
     v-else-if="displayList.length === 0"
     class="empty-state glass-morphism"
   >
-    <span class="empty-icon">🔍</span>
+    <span class="emoji empty-icon">🔍</span>
     <p>{{ hasActiveFilters ? 'SIN COINCIDENCIAS EN LA RED' : 'ESTA CAJA ESTÁ VACÍA' }}</p>
   </div>
   <div

@@ -283,7 +283,7 @@ const heldItemSprite = computed(() => {
         +
       </div>
       <div class="hint">
-        ⚡ DEPOSITAR POKÉMON
+        <span class="emoji">⚡</span> DEPOSITAR POKÉMON
       </div>
     </div>
 
@@ -312,7 +312,7 @@ const heldItemSprite = computed(() => {
             <span class="m-badge-level">NV.{{ pokemon.level }}</span>
             <span
               v-if="pokemon.gender"
-              class="m-badge-gender mini"
+              class="emoji m-badge-gender mini"
               :class="pokemon.gender === 'm' ? 'male' : 'female'"
             >{{ genderIcon }}</span>
           </div>
@@ -389,7 +389,7 @@ const heldItemSprite = computed(() => {
           >
           <span
             v-else
-            class="item-emoji-fallback"
+            class="emoji item-emoji-fallback"
           >📦</span>
           {{ pokemon.heldItem.toUpperCase() }}
         </div>

@@ -69,7 +69,7 @@ const handleWithdraw = () => {
     <div class="slot-action-modal-body">
       <!-- Category Header Pill -->
       <div class="category-header-pill">
-        <span class="title-icon">🏆</span>
+        <span class="emoji">🏆</span>
         <span class="cat-label">{{ categoryTitle }}</span>
       </div>
 
@@ -85,7 +85,7 @@ const handleWithdraw = () => {
           <span
             v-if="participant.isShiny"
             class="shiny-badge"
-          ><span class="emoji-inline">✨</span></span>
+          ><span class="emoji">✨</span></span>
         </div>
 
         <div class="pokemon-details">
@@ -112,7 +112,7 @@ const handleWithdraw = () => {
           class="btn-change"
           @click.stop="handleChange"
         >
-          <span class="btn-icon">🔄</span>
+          <span class="emoji">🔄</span>
           CAMBIAR POKÉMON
         </button>
 
@@ -121,7 +121,7 @@ const handleWithdraw = () => {
           class="btn-withdraw"
           @click.stop="handleWithdraw"
         >
-          <span class="btn-icon">❌</span>
+          <span class="emoji">❌</span>
           SACAR / DESINSCRIBIR POKÉMON
         </button>
       </div>

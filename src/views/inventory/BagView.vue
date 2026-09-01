@@ -131,7 +131,7 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
       <!-- Header -->
       <div class="bag-header">
         <div class="title-section">
-          <span class="icon">🎒</span>
+          <span class="emoji">🎒</span>
           <h1>Mochila</h1>
         </div>
         <div class="money-badge">
@@ -215,7 +215,7 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
           v-if="filteredBagItems.length === 0"
           class="empty-state"
         >
-          <span class="empty-icon">🔍</span>
+          <span class="emoji empty-icon">🔍</span>
           <p>No se encontraron objetos en esta categoría.</p>
         </div>
 
@@ -249,7 +249,7 @@ const onMainTabMouseLeave = (event: MouseEvent) => {
           @mouseleave="onSellModeMouseLeave"
           @click.stop="inventoryStore.toggleBagSellMode"
         >
-          <span class="btn-emoji">💰</span> Vender Objetos
+          <span class="emoji">💰</span> Vender Objetos
         </button>
       </div>
     </div>

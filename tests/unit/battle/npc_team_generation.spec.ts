@@ -77,18 +77,17 @@ function validateSet(set: PokemonSet): string[] {
   return violations;
 }
 
-import { ACTIVE_AI_TEAM_GENERATION_GEN } from '@/data/system/constants';
+import { ACTIVE_GENERATION } from '@/data/system/constants';
+import { getRandomSetForSpecies } from '@/logic/battle/rivalTeamGenerator';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Generator under test
 // ─────────────────────────────────────────────────────────────────────────────
 
-const generator = TeamGenerators.getTeamGenerator(`gen${ACTIVE_AI_TEAM_GENERATION_GEN}randombattle`);
+const generator = TeamGenerators.getTeamGenerator(`gen${ACTIVE_GENERATION}randombattle`);
 
-// Cast to access randomSet (not exposed on public TeamGenerator interface,
-// but always present on the underlying RandomTeams class).
-const gen = generator as unknown as {
-  randomSet: (species: string) => PokemonSet;
+const gen = {
+  randomSet: (species: string, level = 100): PokemonSet => getRandomSetForSpecies(species, level)
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -104,7 +104,7 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
         </div>
         <div class="info-item">
           <span class="label">Clima Activo:</span>
-          <span class="value">{{ weatherEmoji }} {{ weatherLabel }}</span>
+          <span class="value"><span class="emoji">{{ weatherEmoji }}</span> {{ weatherLabel }}</span>
         </div>
         <div class="info-item">
           <span class="label">Rango Nivel:</span>
@@ -117,7 +117,7 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
         <!-- Left panel: Weather description & Type modifiers -->
         <div class="weather-panel-details">
           <div class="weather-header-line">
-            <span class="weather-title-badge">{{ weatherEmoji }} EFECTOS EN COMBATE</span>
+            <span class="weather-title-badge"><span class="emoji">{{ weatherEmoji }}</span> EFECTOS EN COMBATE</span>
             <div
               v-if="parsedDescriptionLines.length"
               class="weather-desc-lines"
@@ -132,7 +132,7 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
                   v-if="line.label"
                   class="desc-line-label"
                 >
-                  <span class="desc-line-icon">
+                  <span class="emoji desc-line-icon">
                     <template v-if="line.icon === 'block'">🚫 </template>
                     <template v-else>{{ line.icon }}</template>
                   </span>
@@ -168,13 +168,13 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
             v-if="weatherDetails?.modifiers"
             class="weather-modifiers-section"
           >
-            <span class="weather-title-badge">⛅ APARICIÓN DE CLIMA</span>
+            <span class="weather-title-badge"><span class="emoji">⛅</span> APARICIÓN DE CLIMA</span>
             <div class="weather-type-modifiers">
               <div 
                 v-if="weatherDetails.modifiers.boost?.length" 
                 class="modifier-group boost"
               >
-                <span class="group-label">▲ BONIFICACIÓN:</span>
+                <span class="group-label"><span class="emoji">▲</span> BONIFICACIÓN:</span>
                 <div class="tags-row">
                   <PokemonTypeTag
                     v-for="t in weatherDetails.modifiers.boost"
@@ -189,7 +189,7 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
                 v-if="weatherDetails.modifiers.debuff?.length" 
                 class="modifier-group debuff"
               >
-                <span class="group-label">▼ PENALIZACIÓN:</span>
+                <span class="group-label"><span class="emoji">▼</span> PENALIZACIÓN:</span>
                 <div class="tags-row">
                   <PokemonTypeTag
                     v-for="t in weatherDetails.modifiers.debuff"
@@ -204,7 +204,7 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
                 v-if="weatherDetails.modifiers.block?.length" 
                 class="modifier-group block"
               >
-                <span class="group-label">🚫 BLOQUEADO:</span>
+                <span class="group-label"><span class="emoji">🚫</span> BLOQUEADO:</span>
                 <div class="tags-row">
                   <PokemonTypeTag
                     v-for="t in weatherDetails.modifiers.block"
@@ -220,7 +220,7 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
 
         <!-- Right panel: Terrain and features -->
         <div class="terrain-panel-details">
-          <span class="terrain-title-badge">🗺️ CARACTERÍSTICAS</span>
+          <span class="terrain-title-badge"><span class="emoji">🗺️</span> CARACTERÍSTICAS</span>
           <div class="terrain-items">
             <div class="terrain-item">
               <span class="label">Entorno:</span>
@@ -234,7 +234,7 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
               v-if="isOfficialRouteActive"
               class="terrain-item benefit-active-item"
             >
-              <span class="label text-primary">📍 Ruta Oficial:</span>
+              <span class="label text-primary"><span class="emoji">📍</span> Ruta Oficial:</span>
               <span class="value text-primary font-bold">
                 +1 REP por victoria (Restan: {{ timeRemainingText }})
               </span>
@@ -243,7 +243,7 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
               v-if="isExtortedRouteActive"
               class="terrain-item benefit-active-item"
             >
-              <span class="label text-danger">🏴‍☠️ Extorsionada:</span>
+              <span class="label text-danger"><span class="emoji">🏴‍☠️</span> Extorsionada:</span>
               <span class="value text-danger font-bold">
                 x1.5 ₽ por victoria (Restan: {{ timeRemainingText }})
               </span>
@@ -252,7 +252,7 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
             <div class="terrain-item">
               <span class="label">Caminar:</span>
               <span class="value">
-                🚶 Caminando —
+                <span class="emoji">🚶</span> Caminando —
                 <b :class="getProbClass(activeTerrestrialChance, baseTerrestrialChance)">{{ activeTerrestrialChance }}%</b>
                 <span
                   style="font-size: 9px; margin-left: 4px;"
@@ -268,7 +268,7 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
             >
               <span class="label">Pesca:</span>
               <span class="value">
-                🎣 Nv. {{ map.fishing.lv[0] }}-{{ map.fishing.lv[1] }} —
+                <span class="emoji">🎣</span> Nv. {{ map.fishing.lv[0] }}-{{ map.fishing.lv[1] }} —
                 <b :class="getProbClass(activeFishingChance, baseFishingChance)">{{ activeFishingChance }}%</b>
                 <span
                   style="font-size: 9px; margin-left: 4px;"
@@ -283,7 +283,7 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
               class="terrain-item"
             >
               <span class="label">Pesca:</span>
-              <span class="value gray-text">❌ No disponible</span>
+              <span class="value gray-text"><span class="emoji">❌</span> No disponible</span>
             </div>
 
             <div
@@ -292,7 +292,7 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
             >
               <span class="label">Arqueología:</span>
               <span class="value">
-                ⛏️ Nv. {{ map.archaeology.lv[0] }}-{{ map.archaeology.lv[1] }} —
+                <span class="emoji">⛏️</span> Nv. {{ map.archaeology.lv[0] }}-{{ map.archaeology.lv[1] }} —
                 <b :class="getProbClass(activeArchaeologyChance, baseArchaeologyChance)">{{ activeArchaeologyChance }}%</b>
                 <span
                   style="font-size: 9px; margin-left: 4px;"
@@ -307,7 +307,7 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
               class="terrain-item"
             >
               <span class="label">Arqueología:</span>
-              <span class="value gray-text">❌ No disponible</span>
+              <span class="value gray-text"><span class="emoji">❌</span> No disponible</span>
             </div>
 
             <!-- Class specific button actions in RouteSpawnsModal -->
@@ -321,14 +321,14 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
                   v-if="isOfficialRouteOnCooldown && !isOfficialRouteActive"
                   class="cooldown-tag"
                 >
-                  📍 Cooldown Oficial: {{ cooldownRemainingText }}
+                  <span class="emoji">📍</span> Cooldown Oficial: {{ cooldownRemainingText }}
                 </div>
                 <button
                   v-else-if="!isOfficialRouteActive"
                   class="btn-vicio-info btn-vicio-sm w-full btn-establish-route"
                   @click.stop="toggleOfficialRoute"
                 >
-                  📍 MARCAR RUTA OFICIAL
+                  <span class="emoji">📍</span> MARCAR RUTA OFICIAL
                 </button>
               </template>
 
@@ -338,14 +338,14 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
                   v-if="activeExtortedRouteId && activeExtortedRouteId !== map.id"
                   class="cooldown-tag"
                 >
-                  🏴‍☠️ Ya extorsionaste otra ruta hoy
+                  <span class="emoji">🏴‍☠️</span> Ya extorsionaste otra ruta hoy
                 </div>
                 <button
                   v-else-if="!isExtortedRouteActive"
                   class="btn-vicio-danger btn-vicio-sm w-full btn-establish-route"
                   @click.stop="toggleExtortion"
                 >
-                  🏴‍☠️ EXTORSIONAR RUTA
+                  <span class="emoji">🏴‍☠️</span> EXTORSIONAR RUTA
                 </button>
               </template>
             </div>
@@ -355,7 +355,8 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
 
       <!-- Terrestrial Spawns List -->
       <RouteSpawnsTable
-        title="🚶 ENCUENTROS TERRESTRES"
+        emoji="🚶"
+        title="ENCUENTROS TERRESTRES"
         :probability="activeTerrestrialChance"
         :base-probability="baseTerrestrialChance"
         :items="wildSpawns"
@@ -371,7 +372,8 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
       <!-- Fishing Spawns List -->
       <RouteSpawnsTable
         v-if="fishingSpawns.length"
-        title="🎣 ENCUENTROS DE PESCA"
+        emoji="🎣"
+        title="ENCUENTROS DE PESCA"
         :probability="activeFishingChance"
         :base-probability="baseFishingChance"
         :event-multiplier="eventFishingMultiplier"
@@ -388,7 +390,8 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
       <!-- Archaeology Rewards List -->
       <RouteSpawnsTable
         v-if="archaeologyRewards.length"
-        title="⛏️ RECOMPENSAS DE ARQUEOLOGÍA"
+        emoji="⛏️"
+        title="RECOMPENSAS DE ARQUEOLOGÍA"
         :probability="activeArchaeologyChance"
         :base-probability="baseArchaeologyChance"
         :event-multiplier="eventArchaeologyMultiplier"
@@ -404,7 +407,8 @@ const typedNpcSpawns = computed<NpcChanceInfo[]>(() => npcSpawns.value)
       <!-- NPC / Special Encounters List -->
       <RouteSpawnsTable
         v-if="typedNpcSpawns && typedNpcSpawns.length"
-        title="👥 ENCUENTROS ESPECIALES Y NPCS"
+        emoji="👥"
+        title="ENCUENTROS ESPECIALES Y NPCS"
         :probability="0"
         :base-probability="0"
         :items="typedNpcSpawns"

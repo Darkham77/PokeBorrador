@@ -156,7 +156,7 @@ function handleToggleBtnLeave(e: MouseEvent) {
     <template #header>
       <div class="arena-modal-header">
         <div class="arena-title-group">
-          <span class="title-icon">⚔️</span>
+          <span class="emoji">⚔️</span>
           <div class="title-text-wrap">
             <span class="main-title">ARENA DE BATALLA</span>
             <span class="sub-title">Compite en encuentros clasificatorios</span>
@@ -183,7 +183,7 @@ function handleToggleBtnLeave(e: MouseEvent) {
           <div class="lock-card">
             <span
               v-gsap-loop="{ effect: 'float', duration: 4, y: -5, rotation: 3 }"
-              class="icon"
+              class="emoji icon"
             >📡</span>
             <h3>ARENA DESCONECTADA</h3>
             <p>Conéctate a la red global para participar en encuentros clasificatorios y defender tu posición en el ranking.</p>
@@ -310,7 +310,7 @@ function handleToggleBtnLeave(e: MouseEvent) {
             :disabled="!seasonActive"
             @click.stop="startSearch"
           >
-            <span class="icon">{{ livePvP.isSearching ? '🛑' : '🔍' }}</span>
+            <span class="emoji icon">{{ livePvP.isSearching ? '🛑' : '🔍' }}</span>
             {{ seasonActive ? (livePvP.isSearching ? 'CANCELAR BÚSQUEDA' : 'BUSCAR PARTIDA') : 'TEMPORADA CERRADA' }}
           </button>
         </section>

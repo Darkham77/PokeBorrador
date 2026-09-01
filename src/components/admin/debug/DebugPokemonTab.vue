@@ -108,7 +108,7 @@ async function repairAllIllegal() {
               class="btn-vicio-primary btn-vicio-sm"
               @click.stop="repairAllIllegal"
             >
-              <span class="btn-emoji">⚠️</span> REPARAR ILEGALES
+              <span class="emoji">⚠️</span> REPARAR ILEGALES
             </button>
           </PVTooltip>
           <PVTooltip title="Sincroniza la pokedex con lo que tienes en el equipo/caja">

@@ -63,7 +63,7 @@ const handleEggClick = (egg: PokemonEgg) => {
     <!-- Header -->
     <div class="widget-header-row">
       <div class="header-left">
-        <span class="title-icon">🥚</span>
+        <span class="emoji">🥚</span>
         <h3 class="widget-title">
           EN CAMINATA & CRIANZA
         </h3>
@@ -75,7 +75,7 @@ const handleEggClick = (egg: PokemonEgg) => {
           class="card-action-btn"
           @click="openDaycare"
         >
-          <span class="btn-icon">🏡</span>
+          <span class="emoji">🏡</span>
           GUARDERÍA
         </button>
       </div>
@@ -88,8 +88,9 @@ const handleEggClick = (egg: PokemonEgg) => {
       :class="{ 'grid-cols-3': props.columns === 3 }"
     >
       <div
-        v-for="(egg, index) in eggs"
-        :key="egg.uid || index"
+        v-for="egg in eggs"
+        :id="`egg-hud-card-${egg.uid}`"
+        :key="egg.uid"
         v-gsap-hover="{ scale: 1.02, y: -2 }"
         class="egg-hud-card"
         :class="{ 'is-ready': isReady(egg) }"
@@ -104,7 +105,7 @@ const handleEggClick = (egg: PokemonEgg) => {
           />
           <span
             v-if="egg.isShiny"
-            class="shiny-star emoji-inline"
+            class="shiny-star emoji"
           >✨</span>
         </div>
 
@@ -144,7 +145,7 @@ const handleEggClick = (egg: PokemonEgg) => {
       class="empty-breeding-card"
       @click="openDaycare"
     >
-      <span class="empty-icon">🧺</span>
+      <span class="emoji empty-icon">🧺</span>
       <div class="empty-info">
         <span class="empty-title">No hay huevos en caminata</span>
         <span class="empty-sub">

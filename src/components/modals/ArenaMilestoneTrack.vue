@@ -214,13 +214,13 @@ function handlePillLeave(e: MouseEvent) {
           v-else-if="isClaimed(m.id)"
           class="claimed-badge"
         >
-          <span class="icon">✓</span>
+          <span class="emoji">✓</span>
         </div>
         <div
           v-else
           class="lock-badge"
         >
-          <span class="icon">🔒</span>
+          <span class="emoji">🔒</span>
         </div>
       </div>
     </div>

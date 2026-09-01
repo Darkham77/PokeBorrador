@@ -4,6 +4,9 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { useUIStore } from '@/stores/ui';
 import { findBestSwitchIndex } from '../ai/battleAI.ts';
 import { ShowdownTeamResolver } from '../showdownTeamResolver.ts';
+import { showdownWorker, executeTurnInWorker } from '../showdownWorkerClient.ts';
+import { parseShowdownLogLine, filterShowdownLogs } from '../showdownBridge.ts';
+import { ShowdownBattleRunner } from './showdownBattleRunner.ts';
 
 import { calculatePoliceBail, POLICE_STEAL_CHANCE_PERCENT } from '@/logic/player/classMath.ts';
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants.ts';
@@ -142,11 +145,9 @@ export async function handleEnemyForceSwitchExecution(
 
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL);
 
-  const { showdownWorker, executeTurnInWorker } = await import('../showdownWorkerClient.ts');
   if (showdownWorker && active.enemyTeam) {
     let p2Choice = `switch ${ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)}`;
     if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
-      const { ShowdownBattleRunner } = await import('./showdownBattleRunner.ts');
       const certifiedChoice = ShowdownBattleRunner.requireHistoryChoice(window.__VITE_DEBUG__, 'p2');
       if (certifiedChoice.startsWith('switch ')) {
         p2Choice = certifiedChoice;
@@ -156,13 +157,11 @@ export async function handleEnemyForceSwitchExecution(
     active.playerRequest = result.p1Request;
     active.enemyRequest = result.p2Request;
 
-    const { parseShowdownLogLine, filterShowdownLogs } = await import('../showdownBridge.ts');
     const filteredLogs = filterShowdownLogs(result.logs);
     for (const logLine of filteredLogs) {
       await parseShowdownLogLine(ctx, logLine, filteredLogs);
     }
     if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
-      const { ShowdownBattleRunner } = await import('./showdownBattleRunner.ts');
       ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__);
     }
   }

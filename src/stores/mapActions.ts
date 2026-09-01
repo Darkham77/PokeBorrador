@@ -145,7 +145,7 @@ export async function executeNavigation(
       });
     }
   } else if (wildEnc.type === 'rival') {
-    const { name, sprite, enemyTeam } = await buildRivalEncounter(gs.state.team);
+    const { name, sprite, enemyTeam, quote } = await buildRivalEncounter(gs.state.team);
 
     if (enemyTeam.length > 0 && enemyTeam[0]) {
       battleStore._startBattle(enemyTeam[0], {
@@ -156,6 +156,7 @@ export async function executeNavigation(
         trainerName: name,
         trainerSprite: requireNpcSpriteId(sprite),
         trainerArchetype: 'rival',
+        trainerQuote: quote,
         isRival: true,
         cannotEscape: true
       });

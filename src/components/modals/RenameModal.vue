@@ -205,14 +205,14 @@ const submitRename = async () => {
             :class="{ active: selectedGender === 'h' }"
             @click.prevent.stop="setGender('h', $event)"
           >
-            <span class="btn-emoji">♂️</span> MASCULINO
+            <span class="emoji">♂️</span> MASCULINO
           </button>
           <button
             class="gender-select-btn female"
             :class="{ active: selectedGender === 'm' }"
             @click.prevent.stop="setGender('m', $event)"
           >
-            <span class="btn-emoji">♀️</span> FEMENINO
+            <span class="emoji">♀️</span> FEMENINO
           </button>
         </div>
         
@@ -220,7 +220,7 @@ const submitRename = async () => {
           v-if="!canRename"
           class="cooldown-notice"
         >
-          <span class="emoji-inline">⏳</span> Cooldown activo: Faltan <span class="days-highlight">{{ daysUntilRename }} días</span>.
+          <span class="emoji">⏳</span> Cooldown activo: Faltan <span class="days-highlight">{{ daysUntilRename }} días</span>.
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { getUpcomingEventOccurrences, type Event as GameEvent, type UpcomingEventOccurrence } from '@/logic/events/eventEngine'
+import { getUpcomingEventOccurrences, getEventDisplayName, type Event as GameEvent, type UpcomingEventOccurrence } from '@/logic/events/eventEngine'
 import { getServerInstant, GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  openEventDetail: [event: GameEvent]
+  openEventDetail: [event: GameEvent, occurrence?: UpcomingEventOccurrence]
 }>()
 
 const upcomingOccurrences = computed(() => {
@@ -57,7 +57,7 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
     <div class="events-section-header">
       <div class="section-title-wrap">
         <h3 class="events-section-title">
-          <span class="section-title-icon">📅</span>
+          <span class="emoji section-title-icon">📅</span>
           <span>PRÓXIMOS EVENTOS (7 DÍAS)</span>
         </h3>
         <span class="events-section-subtitle">Calendario semanal (Hora Argentina ARG)</span>
@@ -95,7 +95,7 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
             :key="`${occ.event.id}-${occ.startInstant.epochMilliseconds}`"
             class="upcoming-event-card"
             :class="{ 'is-active': occ.isActiveNow }"
-            @click.stop="emit('openEventDetail', occ.event)"
+            @click.stop="emit('openEventDetail', occ.event, occ)"
           >
             <div class="upcoming-left-column">
               <div class="upcoming-badge-time">
@@ -103,11 +103,11 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
               </div>
 
               <div class="upcoming-main-info">
-                <div class="upcoming-icon">
+                <div class="upcoming-icon emoji">
                   {{ occ.event.icon || '🎁' }}
                 </div>
                 <div class="upcoming-texts">
-                  <span class="upcoming-title pixelated">{{ occ.event.name }}</span>
+                  <span class="upcoming-title pixelated">{{ getEventDisplayName(occ.event, occ) }}</span>
                   <span class="upcoming-desc">{{ occ.event.description }}</span>
                 </div>
               </div>
@@ -117,12 +117,15 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
               <span
                 v-if="occ.isActiveNow"
                 class="status-live pixelated"
-              ><span class="emoji-inline">🟢</span> ACTIVO AHORA</span>
+              ><span class="emoji">🟢</span> ACTIVO AHORA</span>
               <span
                 v-else
                 class="status-starts pixelated"
               >{{ occ.startsInLabel }}</span>
-              <button class="retro-btn details-btn pixelated">
+              <button
+                class="retro-btn details-btn pixelated"
+                @click.stop="emit('openEventDetail', occ.event, occ)"
+              >
                 REGLAS Y PREMIOS
               </button>
             </div>

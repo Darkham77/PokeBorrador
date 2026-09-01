@@ -21,7 +21,7 @@ const handleClaim = async (awardId: string) => {
   <div class="past-events-section">
     <div class="section-header">
       <div class="section-title-wrap">
-        <span class="section-icon">📜</span>
+        <span class="emoji section-icon">📜</span>
         <h3 class="section-title">
           ÚLTIMOS CONCURSOS Y GANADORES
         </h3>

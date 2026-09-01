@@ -1,11 +1,10 @@
-import { TRAINER_TYPES, isTrainerTypeKey, type TrainerTypeKey } from '@/data/player/trainerTypes';
+import { TRAINER_TYPES, TRAINER_TYPE_KEYS, getArchetypePool, type TrainerTypeKey } from '@/data/player/trainerTypes';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { MapLocation } from '@/types/pokemon/encounters';
 import type { MapRouteId } from '@/data/world/map-assets';
 import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
 import { requireNpcSpriteId, type NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
-import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { EnabledPokemonId } from '@/data/system/constants';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 import { buildTrainerTeam } from './trainerFactory.ts';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
@@ -74,7 +73,7 @@ function selectTrainerArchetype(
     return rivalChance > 0 ? 'rival' : 'policeman';
   }
 
-  const relativeKeys = Object.keys(TRAINER_TYPES).filter(isTrainerTypeKey).filter(
+  const relativeKeys = TRAINER_TYPE_KEYS.filter(
     k => k !== 'rival' && k !== 'policeman'
   );
 
@@ -99,104 +98,76 @@ function selectTrainerArchetype(
 export interface RivalEncounter {
   name: string;
   sprite: string;
+  quote?: string;
+  archetype?: string;
   enemyTeam: Pokemon[];
 }
 
 export async function buildRivalEncounter(playerTeam: Pokemon[]): Promise<RivalEncounter> {
   const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
   const { getSpritesForArchetype } = await import('@/logic/utils/npcSpriteRouter');
-  const { TeamGenerators } = await import('@pkmn/randoms');
   const { toID } = await import('@pkmn/sim');
-  const { isEnabledPokemonId, ENABLED_POKEMON_IDS, ACTIVE_AI_TEAM_GENERATION_GEN } = await import('@/data/system/constants');
-
-  const availableSprites = getSpritesForArchetype('rival');
-  const sprite = availableSprites[Math.floor(Math.random() * availableSprites.length)] || 'blue';
-
-  let name = '';
-  const base = sprite.split('-')[0] || sprite;
-  if (base === 'blue') {
-    name = 'Rival Azul';
-  } else if (base === 'red') {
-    name = 'Rival Rojo';
-  } else if (base === 'green') {
-    name = 'Rival Verde';
-  } else if (base === 'youngster') {
-    name = 'Rival Joven';
-  } else {
-    name = base.charAt(0).toUpperCase() + base.slice(1);
-  }
-
-  const teamSize = Math.max(3, playerTeam.length || 1);
-  const avgLevel = playerTeam.reduce((sum, p) => sum + p.level, 0) / (playerTeam.length || 1);
-  const rivalLevel = Math.floor(avgLevel) + 2;
-
-  // 1. Pick ace from the rival archetype pool (SSoT: TRAINER_TYPES)
-  const rivalPool = TRAINER_TYPES['rival'].pool;
-  const aceBase = rivalPool[Math.floor(Math.random() * rivalPool.length)] ?? 'charizard';
-  if (!isEnabledPokemonId(aceBase)) {
-    throw new Error(`[buildRivalEncounter] Non-enabled species in rival pool: ${aceBase}`);
-  }
-
-  // 2. Init randombattle generator based on active generation setting
-  const generator = TeamGenerators.getTeamGenerator(`gen${ACTIVE_AI_TEAM_GENERATION_GEN}randombattle`);
-  type RandSet = (species: string) => { moves: string[]; ability: string; item: string };
-  const getRandomSet = (s: string) => (Reflect.get(generator, 'randomSet') as RandSet).call(generator, s);
-
+  const { isEnabledPokemonId, MAX_POKEMON_LEVEL } = await import('@/data/system/constants');
+  const { RivalTeamGenerator } = await import('./rivalTeamGenerator');
   const { applyCompetitiveSet } = await import('./trainerFactory');
 
-  // 3. Build ace: 1 random Pokémon from rival pool + its competitive randomSet
-  const aceSet = getRandomSet(aceBase);
-
-  const acePokemon = makePokemon(aceBase, rivalLevel) as Pokemon;
-  if (!acePokemon) {
-    throw new Error(`[buildRivalEncounter] No se pudo crear el Pokémon as: ${aceBase}`);
+  const availableSprites = getSpritesForArchetype('rival');
+  const selectedSprite = availableSprites[Math.floor(Math.random() * availableSprites.length)];
+  if (!selectedSprite) {
+    throw new Error('[trainerSpawner] No NPC sprite registered for rival archetype');
   }
-  await applyCompetitiveSet(acePokemon, aceSet);
-  (acePokemon as Pokemon & { _revealed?: boolean })._revealed = true;
+  const tSprite = requireNpcSpriteId(selectedSprite);
+  const tName = generateNpcName({ spriteId: tSprite, archetype: 'rival', includeTitle: true });
+  const tQuote = getRandomQuoteForTrainer('rival');
 
-  // 4. Fill remaining slots strictly from enabled species pool + competitive randomSet
-  const enemyTeam: Pokemon[] = [acePokemon];
-  const usedSpecies: PokemonSpeciesId[] = [requirePokemonSpeciesId(toID(aceBase))];
+  // Nivel del rival: Promedio del equipo del jugador + 5 (tope en MAX_POKEMON_LEVEL)
+  const avgLevel = playerTeam.length > 0
+    ? playerTeam.reduce((acc, p) => acc + (p.level || 5), 0) / playerTeam.length
+    : 5;
+  const rivalLevel = Math.min(MAX_POKEMON_LEVEL, Math.floor(avgLevel) + 5);
 
-  const candidatePool: (PokemonSpeciesId | EnabledPokemonId)[] = [
-    ...rivalPool.filter(id => !usedSpecies.includes(requirePokemonSpeciesId(toID(id)))),
-    ...ENABLED_POKEMON_IDS.filter(id => !usedSpecies.includes(requirePokemonSpeciesId(toID(id))))
-  ];
+  // Tamaño del equipo: mínimo 3 o igual al tamaño del equipo del jugador si tiene más de 3
+  const targetTeamSize = Math.max(3, playerTeam.length);
 
-  while (enemyTeam.length < teamSize && candidatePool.length > 0) {
-    const idx = Math.floor(Math.random() * candidatePool.length);
-    const candidateId = candidatePool.splice(idx, 1)[0]!;
-    const speciesId = requirePokemonSpeciesId(toID(candidateId));
-    if (usedSpecies.includes(speciesId)) continue;
+  // 1. Pick ace from the rival archetype pool (SSoT: TRAINER_TYPES)
+  const rivalPool = getArchetypePool('rival');
+  const aceSpeciesId = rivalPool[Math.floor(Math.random() * rivalPool.length)] || 'dragonite';
+
+  // 2. Generate full balanced team using native Showdown engine rules
+  const generatedSets = RivalTeamGenerator.generateTeam({
+    level: rivalLevel,
+    teamSize: targetTeamSize,
+    aceSpeciesId
+  });
+
+  // 3. Convert generated PokemonSet[] into active Pokemon[] domain instances
+  const enemyTeam: Pokemon[] = [];
+  for (const set of generatedSets) {
+    const speciesId = requirePokemonSpeciesId(toID(set.species));
     if (!isEnabledPokemonId(speciesId)) {
-      throw new Error(`[buildRivalEncounter] Attempted to create non-enabled species: ${speciesId}`);
+      throw new Error(`[buildRivalEncounter] Non-enabled species returned by generator: ${speciesId}`);
     }
 
     const p = makePokemon(speciesId, rivalLevel) as Pokemon;
-    if (!p) continue;
-
-    try {
-      const set = getRandomSet(speciesId);
+    if (p) {
       await applyCompetitiveSet(p, set);
       (p as Pokemon & { _revealed?: boolean })._revealed = true;
-      usedSpecies.push(speciesId);
       enemyTeam.push(p);
-    } catch {
-      continue; // moves del set no disponibles en DB → probar siguiente candidato
     }
   }
 
-  return { name, sprite, enemyTeam };
+  return {
+    name: tName,
+    sprite: tSprite,
+    quote: tQuote,
+    archetype: 'rival',
+    enemyTeam
+  };
 }
 
-export interface TrainerEncounter {
-  name: string;
-  sprite: NpcSpriteId;
-  quote: string;
-  archetype: NpcArchetype;
-  enemyTeam: Pokemon[];
-}
-
+/**
+ * Función principal para generar el encuentro completo de un entrenador salvaje / mapa.
+ */
 export async function buildTrainerEncounter(
   gsState: {
     playerClass?: string | null;
@@ -204,7 +175,13 @@ export async function buildTrainerEncounter(
     trainerChance?: number;
   },
   locId: MapRouteId
-): Promise<TrainerEncounter> {
+): Promise<{
+  name: string;
+  sprite: NpcSpriteId;
+  quote: string;
+  archetype: NpcArchetype;
+  enemyTeam: Pokemon[];
+}> {
   gsState.trainerChance = 5;
 
   const mapsList = pokemonDataProvider.getMaps() as MapLocation[];
@@ -216,11 +193,10 @@ export async function buildTrainerEncounter(
   let tName = 'Entrenador';
   let tSprite: NpcSpriteId = 'youngster';
   let tQuote = '¡Prepárate para combatir! ¡No te lo pondré fácil!';
-  let typeKey: keyof typeof TRAINER_TYPES = 'default';
+  let typeKey: TrainerTypeKey = 'default';
   const enemyTeam: Pokemon[] = [];
 
   if (isMaxCriminality) {
-    const t = TRAINER_TYPES['policeman'];
     const availableSprites = getSpritesForArchetype('policeman');
     const selectedSprite = availableSprites[Math.floor(Math.random() * availableSprites.length)];
     if (!selectedSprite) {
@@ -230,19 +206,19 @@ export async function buildTrainerEncounter(
     tName = generateNpcName({ spriteId: tSprite, archetype: 'policeman', includeTitle: true });
     tQuote = getRandomQuoteForTrainer('policeman');
 
-    const criminality = gsState.classData?.criminality || 100;
+    const criminality = (gsState.classData?.criminality as number) || 100;
     const { calculatePoliceEffectiveLevel, calculatePoliceTeamSize } = await import('@/logic/player/classMath');
     const trainerLv = calculatePoliceEffectiveLevel(baseLv, criminality);
     const teamSize = calculatePoliceTeamSize(criminality);
 
-    const team = await buildTrainerTeam(t.pool, trainerLv, teamSize);
+    const team = await buildTrainerTeam(getArchetypePool('policeman'), trainerLv, teamSize);
     enemyTeam.push(...team);
     typeKey = 'policeman';
   } else {
     const mapChances = targetMap?.trainerChances || {};
     typeKey = selectTrainerArchetype(mapChances, false);
-    const t = TRAINER_TYPES[typeKey];
     
+    const t = TRAINER_TYPES[typeKey];
     const archetypeSprites = getSpritesForArchetype(t.archetype);
     const selectedSprite = archetypeSprites[Math.floor(Math.random() * archetypeSprites.length)];
     if (!selectedSprite) {
@@ -254,7 +230,7 @@ export async function buildTrainerEncounter(
     const trainerLv = baseLv + 2;
     const teamSize = Math.floor(Math.random() * 3) + 1;
 
-    const team = await buildTrainerTeam(t.pool, trainerLv, teamSize);
+    const team = await buildTrainerTeam(getArchetypePool(typeKey), trainerLv, teamSize);
     enemyTeam.push(...team);
   }
 

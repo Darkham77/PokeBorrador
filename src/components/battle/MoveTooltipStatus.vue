@@ -127,7 +127,7 @@ defineProps<{
         >
           <span class="stat-lbl">VALOR NETO</span>
           <span class="stat-val">
-            {{ parsedStatusEffect.initialStatVal }} ➔ {{ parsedStatusEffect.finalStatVal }}
+            {{ parsedStatusEffect.initialStatVal }} <span class="emoji">➔</span> {{ parsedStatusEffect.finalStatVal }}
           </span>
         </div>
       </div>

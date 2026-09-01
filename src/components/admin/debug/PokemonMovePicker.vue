@@ -75,7 +75,7 @@ function removeMove(slotIndex: number) {
             class="btn-magic-fill"
             @click.stop="$emit('autoFill')"
           >
-            🪄
+            <span class="emoji">🪄</span>
           </button>
         </PVTooltip>
         <PVTooltip
@@ -86,7 +86,7 @@ function removeMove(slotIndex: number) {
             class="btn-magic-fill btn-random-fill"
             @click.stop="$emit('randomFill')"
           >
-            <span class="btn-emoji">🎲</span>
+            <span class="emoji">🎲</span>
           </button>
         </PVTooltip>
       </div>

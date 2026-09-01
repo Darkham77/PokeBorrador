@@ -43,7 +43,7 @@ const localSortOrder = computed({
 <template>
   <div class="shop-search-wrapper">
     <div class="search-input-container">
-      <span class="search-icon">🔍</span>
+      <span class="emoji search-icon">🔍</span>
       <input
         v-model="localSearch"
         type="text"

@@ -99,7 +99,7 @@ const activeOverridesSummary = computed(() => {
       <div class="card-header">
         <label>PROBABILIDADES DE SPAWNS Y MINIJUEGOS</label>
         <PVTooltip title="Configura las probabilidades numéricas de cada evento del mapa y minijuego de captura.">
-          <span class="info-badge">ℹ️</span>
+          <span class="emoji info-badge">ℹ️</span>
         </PVTooltip>
       </div>
 
@@ -207,7 +207,7 @@ const activeOverridesSummary = computed(() => {
         class="full-btn reset-all-btn"
         @click.stop="debugStore.resetSpawnDefaults()"
       >
-        <span class="btn-emoji">🔄</span> RESTAURAR TODOS LOS VALORES POR DEFECTO
+        <span class="emoji">🔄</span> RESTAURAR TODOS LOS VALORES POR DEFECTO
       </button>
 
       <div class="debug-info-box">

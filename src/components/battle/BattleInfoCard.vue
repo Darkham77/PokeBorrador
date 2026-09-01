@@ -200,12 +200,12 @@ const teamBallsStatus = computed(() => {
                   v-if="getNatureData(p.nature)?.up"
                   class="stat-mod mod-up"
                   style="color: #32d74b; font-weight: bold; font-size: 7.5px;"
-                >▲ {{ getNatureData(p.nature)?.up?.toUpperCase() }} (+10%)</span>
+                ><span class="emoji">▲</span> {{ getNatureData(p.nature)?.up?.toUpperCase() }} (+10%)</span>
                 <span
                   v-if="getNatureData(p.nature)?.down"
                   class="stat-mod mod-down"
                   style="color: #ff453a; font-weight: bold; font-size: 7.5px;"
-                >▼ {{ getNatureData(p.nature)?.down?.toUpperCase() }} (-10%)</span>
+                ><span class="emoji">▼</span> {{ getNatureData(p.nature)?.down?.toUpperCase() }} (-10%)</span>
               </div>
               <p style="margin: 4px 0 0 0; font-size: 8px; color: #aeaebe; line-height: 1.4;">
                 {{ getNatureData(p.nature)?.desc || 'Sin efecto en estadísticas.' }}

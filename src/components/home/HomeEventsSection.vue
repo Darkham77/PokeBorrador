@@ -124,8 +124,8 @@ const upcomingOccurrencesToFill = computed<UpcomingEventOccurrence[]>(() => {
   return unactiveOccurrences.slice(0, emptySlots)
 })
 
-const openEventDetail = (event: GameEvent) => {
-  modalStore.open('EventDetail', { event })
+const openEventDetail = (event: GameEvent, occurrence?: UpcomingEventOccurrence) => {
+  modalStore.open('EventDetail', { event, occurrence })
 }
 
 onMounted(() => {
@@ -159,7 +159,7 @@ onUnmounted(() => {
     <!-- HEADER BAR -->
     <div class="card-header-bar">
       <div class="title-wrap">
-        <span class="card-icon">🏆</span>
+        <span class="emoji">🏆</span>
         <div class="title-text-group">
           <h2 class="card-title">
             EVENTOS MUNDIALES
@@ -182,7 +182,7 @@ onUnmounted(() => {
               aria-label="Anterior"
               @click.stop="prevSlide"
             >
-              ◀
+              <span class="emoji">◀</span>
             </button>
           </PVTooltip>
           <span class="carousel-page-indicator">{{ currentPage + 1 }} / {{ totalPages }}</span>
@@ -194,7 +194,7 @@ onUnmounted(() => {
               aria-label="Siguiente"
               @click.stop="nextSlide"
             >
-              ▶
+              <span class="emoji">▶</span>
             </button>
           </PVTooltip>
         </div>
@@ -206,7 +206,7 @@ onUnmounted(() => {
           :disabled="isLoading"
           @click.stop="eventStore.fetchEvents()"
         >
-          <span class="btn-icon">↻</span>
+          <span class="emoji">↻</span>
           REFRESCAR
         </button>
       </div>
@@ -228,7 +228,7 @@ onUnmounted(() => {
           v-if="activeEvents.length === 0 && upcomingOccurrencesToFill.length === 0"
           class="no-events-card"
         >
-          <span class="no-events-icon">⚡</span>
+          <span class="emoji no-events-icon">⚡</span>
           <p class="no-events-text">
             {{ isLoading ? 'Cargando eventos mundiales...' : 'No hay eventos especiales activos en este momento.' }}
           </p>
@@ -275,8 +275,8 @@ onUnmounted(() => {
           class="accordion-toggle"
           @click="showSchedule = !showSchedule"
         >
-          <span><span class="emoji-inline">📅</span> Calendario Semanal (Próximos 7 días)</span>
-          <span class="toggle-arrow">{{ showSchedule ? '▲' : '▼' }}</span>
+          <span class="accordion-title-wrap"><span class="emoji">📅</span> <span>Calendario Semanal (Próximos 7 días)</span></span>
+          <span class="toggle-arrow emoji">{{ showSchedule ? '▲' : '▼' }}</span>
         </button>
         <div
           v-if="showSchedule"
@@ -296,8 +296,8 @@ onUnmounted(() => {
           class="accordion-toggle"
           @click="showHistory = !showHistory"
         >
-          <span><span class="emoji-inline">📜</span> Archivo de Eventos Pasados ({{ pastEvents.length }})</span>
-          <span class="toggle-arrow">{{ showHistory ? '▲' : '▼' }}</span>
+          <span class="accordion-title-wrap"><span class="emoji">📜</span> <span>Archivo de Eventos Pasados ({{ pastEvents.length }})</span></span>
+          <span class="toggle-arrow emoji">{{ showHistory ? '▲' : '▼' }}</span>
         </button>
         <div
           v-if="showHistory"
@@ -614,6 +614,20 @@ onUnmounted(() => {
   font-weight: 600;
   cursor: pointer;
 
+  .accordion-title-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1;
+
+    .emoji {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+  }
+
   &:hover {
     background: Rgba(255, 255, 255, 0.04);
   }
@@ -621,6 +635,9 @@ onUnmounted(() => {
   .toggle-arrow {
     font-size: 9px;
     color: var(--gray, #94a3b8);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 

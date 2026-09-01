@@ -7,7 +7,8 @@ import { applyHealCheatToSide, syncRequestConditionsWithSimulator } from '../che
 import { syncSidePokemon } from '../helpers/showdownSyncHelper.ts';
 import { BattleCheatManager, type CertifiedCheatHistoryStep } from '../helpers/battleCheatManager.ts';
 import type { CertifiedBattleHistoryEntry } from '../../../../scripts/e2e/fuzzer/generators/fuzzer_team_generator.ts';
-import { resolveValidMoveChoice, getFirstValidMoveSlot } from '../helpers/showdownMoveChoiceHelper.ts';
+import { getFirstValidMoveSlot } from '../helpers/showdownMoveChoiceHelper.ts';
+import { resolveExplicitChoiceHelper, resolveForceSwitchFallback, resolveReplayerCandidate } from './showdownChoiceResolver.ts';
 import { ACTIVE_SHOWDOWN_FORMAT } from '../../../data/system/constants.ts';
 
 export type EngineMode = 'fuzzer' | 'replayer';
@@ -16,13 +17,6 @@ export interface BattleCheatRecord {
   turn: number;
   side: SideID;
   type: 'heal';
-}
-
-interface RequestPokemonItem {
-  ident?: string;
-  condition?: string;
-  active?: boolean;
-  fainted?: boolean;
 }
 
 export interface BattleAgent {
@@ -140,29 +134,9 @@ export class ShowdownBattleEngine {
     }
 
     if (explicitChoice !== undefined) {
-      if (isForceSwitch) {
-        const trimmed = explicitChoice.trim().toLowerCase();
-        const switchMatch = /^switch\s+(\d+)$/.exec(trimmed);
-        if (switchMatch) {
-          const targetSlot = parseInt(switchMatch[1]!, 10);
-          const targetPoke = simPokemons[targetSlot - 1] ?? (requestPokemons[targetSlot - 1] as RequestPokemonItem | undefined);
-          if (targetPoke) {
-            const isFnt = 'fainted' in targetPoke && typeof targetPoke.fainted === 'boolean'
-              ? targetPoke.fainted
-              : ('condition' in targetPoke && typeof targetPoke.condition === 'string' ? targetPoke.condition.includes('fnt') : false);
-            const isAct = 'active' in targetPoke && typeof targetPoke.active === 'boolean'
-              ? targetPoke.active
-              : activeList.includes(targetPoke as Pokemon);
-            if (!isFnt && !isAct) {
-              return explicitChoice;
-            }
-          } else {
-            return explicitChoice;
-          }
-        }
-      } else {
-        const activeMoves = (effectiveReq && 'active' in effectiveReq && Array.isArray(effectiveReq.active?.[0]?.moves)) ? effectiveReq.active[0]!.moves : [];
-        return resolveValidMoveChoice(explicitChoice, activeMoves);
+      const explicitRes = resolveExplicitChoiceHelper(explicitChoice, isForceSwitch, simPokemons, requestPokemons, activeList, effectiveReq);
+      if (explicitRes !== undefined) {
+        return explicitRes;
       }
     }
 
@@ -178,72 +152,16 @@ export class ShowdownBattleEngine {
 
     if (isForceSwitch) {
       if (choiceCandidate !== undefined) {
-        const trimmed = choiceCandidate.trim().toLowerCase();
-        const switchMatch = /^switch\s+(\d+)$/.exec(trimmed);
-        if (switchMatch) {
-          const targetSlot = parseInt(switchMatch[1]!, 10);
-          const targetPoke = simPokemons[targetSlot - 1] ?? (requestPokemons[targetSlot - 1] as RequestPokemonItem | undefined);
-          if (targetPoke) {
-            const isFnt = 'fainted' in targetPoke && typeof targetPoke.fainted === 'boolean'
-              ? targetPoke.fainted
-              : ('condition' in targetPoke && typeof targetPoke.condition === 'string' ? targetPoke.condition.includes('fnt') : false);
-            const isAct = 'active' in targetPoke && typeof targetPoke.active === 'boolean'
-              ? targetPoke.active
-              : activeList.includes(targetPoke as Pokemon);
-            if (!isFnt && !isAct) {
-              return choiceCandidate;
-            }
-          } else {
-            return choiceCandidate;
-          }
+        const validatedChoice = resolveExplicitChoiceHelper(choiceCandidate, true, simPokemons, requestPokemons, activeList, effectiveReq);
+        if (validatedChoice !== undefined) {
+          return validatedChoice;
         }
       }
-
-      const isReviving = reqKind === 'revive-target';
-      const targetIdx = simPokemons.length > 0
-        ? simPokemons.findIndex(p => p && !activeList.includes(p) && (isReviving ? (p.fainted || p.hp === 0) : (!p.fainted && p.hp > 0)))
-        : (requestPokemons as RequestPokemonItem[]).findIndex(p => p && !p.active && (isReviving ? (p.fainted || String(p.condition ?? '').includes('fnt')) : (!p.fainted && !String(p.condition ?? '').includes('fnt'))));
-
-      if (targetIdx !== -1) {
-        return `switch ${targetIdx + 1}`;
-      }
-      const hasAnyLiving = simPokemons.length > 0
-        ? simPokemons.some(p => p && !p.fainted && p.hp > 0)
-        : (requestPokemons as RequestPokemonItem[]).some(p => p && !p.fainted && !String(p?.condition ?? '').includes('fnt'));
-      if (!hasAnyLiving) {
-        return 'pass';
-      }
-      return 'default';
+      return resolveForceSwitchFallback(reqKind, simPokemons, requestPokemons, activeList);
     }
 
     if (choiceCandidate !== undefined) {
-      const activeMoves = (effectiveReq && 'active' in effectiveReq && Array.isArray(effectiveReq.active?.[0]?.moves)) ? effectiveReq.active[0]!.moves : [];
-      const trimmed = choiceCandidate.trim().toLowerCase();
-      if (trimmed.startsWith('move ')) {
-        return resolveValidMoveChoice(choiceCandidate, activeMoves);
-      }
-      const switchMatch = /^switch\s+(\d+)$/.exec(trimmed);
-      if (switchMatch) {
-        const targetSlot = parseInt(switchMatch[1]!, 10);
-        const targetPoke = simPokemons[targetSlot - 1] ?? (requestPokemons[targetSlot - 1] as RequestPokemonItem | undefined);
-        const isFnt = targetPoke && ('fainted' in targetPoke && typeof targetPoke.fainted === 'boolean'
-          ? targetPoke.fainted
-          : ('condition' in targetPoke && typeof targetPoke.condition === 'string' ? targetPoke.condition.includes('fnt') : false));
-        const isAct = targetPoke && ('active' in targetPoke && typeof targetPoke.active === 'boolean'
-          ? targetPoke.active
-          : activeList.includes(targetPoke as Pokemon));
-        if (isFnt || isAct) {
-          if (reqKind === 'move') {
-            return getFirstValidMoveSlot(activeMoves);
-          }
-          const validBenchIdx = simPokemons.findIndex(p => p && !activeList.includes(p) && !p.fainted && p.hp > 0);
-          if (validBenchIdx !== -1) {
-            return `switch ${validBenchIdx + 1}`;
-          }
-          return 'default';
-        }
-      }
-      return choiceCandidate;
+      return resolveReplayerCandidate(choiceCandidate, reqKind, effectiveReq, simPokemons, requestPokemons, activeList);
     }
 
     const choicesList = this.seatChoices.get(seatId) ?? [];

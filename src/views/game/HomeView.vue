@@ -55,7 +55,7 @@ onUnmounted(() => {
           <div class="home-section-card missions-card">
             <div class="card-header-bar">
               <div class="title-wrap">
-                <span class="card-icon">📜</span>
+                <span class="emoji card-icon">📜</span>
                 <h2 class="card-title">
                   MISIONES DIARIAS & DESPLIEGUES
                 </h2>

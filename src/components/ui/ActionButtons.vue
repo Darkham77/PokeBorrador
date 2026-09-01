@@ -34,7 +34,7 @@ onMounted(() => {
       @click.stop="uiStore.toggleProfile()"
     >
       <template #icon>
-        👤
+        <span class="emoji">👤</span>
       </template>
       Perfil
     </PVHUDButton>
@@ -45,7 +45,7 @@ onMounted(() => {
       @click.stop="uiStore.toggleSettings()"
     >
       <template #icon>
-        ⚙️
+        <span class="emoji">⚙️</span>
       </template>
       Ajustes
     </PVHUDButton>
@@ -56,7 +56,7 @@ onMounted(() => {
       @click.stop="uiStore.toggleLibrary()"
     >
       <template #icon>
-        📖
+        <span class="emoji">📖</span>
       </template>
       Libro
     </PVHUDButton>

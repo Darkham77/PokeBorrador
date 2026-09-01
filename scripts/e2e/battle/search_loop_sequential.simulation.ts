@@ -106,7 +106,7 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
     await this.speedUpAnimations();
   }
 
-  public async navigateToRoute1(): Promise<void> {
+  public override async navigateToRoute1(): Promise<void> {
     const card = this.page.locator('#map-card-route1').first();
     await card.waitFor({ state: 'visible', timeout: 15000 });
     await card.click();

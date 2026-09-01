@@ -157,7 +157,7 @@ export async function waitForWaitInput(page: Page): Promise<void> {
       if (!store || !store.state) return false;
       const fsmState = store.currentFsmState;
       const fsmSubState = store.currentSubState;
-      if (store.state.over || fsmState === 'REWARDS_PHASE' || fsmState === 'EXIT_BATTLE' || fsmState === 'SEARCH_PHASE') return true;
+      if (store.state.over || fsmState === 'REWARDS_PHASE' || fsmState === 'EXIT_BATTLE') return true;
       const isLocked = Boolean(document.querySelector('#battle-controls-layout.is-ui-locked, .battle-controls-layout.is-ui-locked'));
       if (isLocked) return false;
       return !store.isProcessing && fsmState === 'ACTIVE_BATTLE' &&

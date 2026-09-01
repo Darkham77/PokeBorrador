@@ -214,6 +214,7 @@ onMounted(async () => {
     try {
     const verUrl = new URL(`${import.meta.env.BASE_URL}version.json`, window.location.origin)
     verUrl.searchParams.set('t', Temporal.Now.instant().epochMilliseconds.toString())
+    // fallow-ignore-next-line security-sink
     const response = await fetch(verUrl, {
       cache: 'no-store'
     })

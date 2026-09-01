@@ -392,6 +392,167 @@ function calculateStartsInLabel(isActive: boolean, startInst: Temporal.Instant, 
   return `En ${d} día${d > 1 ? 's' : ''}`;
 }
 
+const DAY_NAMES_FULL = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'] as const;
+const DAY_NAMES_SHORT = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'] as const;
+
+function formatEventHour(hr: number): string {
+  const h = Math.floor(hr);
+  const m = Math.round((hr % 1) * 60);
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+function formatEventTimeRange(startHour: number, endHour: number): string {
+  const isAllDay = startHour === 0 && (endHour >= 23.9 || endHour === 24);
+  return isAllDay ? 'Todo el día' : `${formatEventHour(startHour)} – ${formatEventHour(endHour)} hs`;
+}
+
+function buildDailyOccurrence(
+  event: Event,
+  targetDay: Temporal.ZonedDateTime,
+  offset: number,
+  startHour: number,
+  endHour: number,
+  nowInstant: Temporal.Instant,
+  maxInstant: Temporal.Instant
+): UpcomingEventOccurrence | null {
+  const jsDay = targetDay.dayOfWeek % 7;
+  const startZdt = targetDay.with({ hour: startHour, minute: 0, second: 0, millisecond: 0, microsecond: 0, nanosecond: 0 });
+  const endZdt = startHour < endHour
+    ? targetDay.with({ hour: endHour, minute: 0, second: 0, millisecond: 0, microsecond: 0, nanosecond: 0 })
+    : targetDay.add({ days: 1 }).with({ hour: endHour, minute: 0, second: 0, millisecond: 0, microsecond: 0, nanosecond: 0 });
+
+  const startInst = startZdt.toInstant();
+  const endInst = endZdt.toInstant();
+
+  if (Temporal.Instant.compare(endInst, nowInstant) <= 0 || Temporal.Instant.compare(startInst, maxInstant) > 0) {
+    return null;
+  }
+
+  const isActive = Temporal.Instant.compare(nowInstant, startInst) >= 0 && Temporal.Instant.compare(nowInstant, endInst) < 0;
+  const shortDay = DAY_NAMES_SHORT[jsDay] ?? 'Día';
+  const fullDay = DAY_NAMES_FULL[jsDay] ?? 'Día';
+  const dateLabel = offset === 0 ? 'Hoy' : offset === 1 ? 'Mañana' : `${shortDay} ${targetDay.day}/${targetDay.month}`;
+
+  return {
+    event,
+    startInstant: startInst,
+    endInstant: endInst,
+    dateLabel,
+    dayName: fullDay,
+    timeLabel: formatEventTimeRange(startHour, endHour),
+    isActiveNow: isActive,
+    startsInLabel: calculateStartsInLabel(isActive, startInst, nowInstant)
+  };
+}
+
+function collectWeeklyOccurrences(
+  event: Event,
+  sched: Record<string, unknown>, // open-record
+  zdtNow: Temporal.ZonedDateTime,
+  daysAhead: number,
+  nowInstant: Temporal.Instant,
+  maxInstant: Temporal.Instant
+): UpcomingEventOccurrence[] {
+  const occurrences: UpcomingEventOccurrence[] = [];
+  if (!Array.isArray(sched.days)) return occurrences;
+  const days = sched.days as number[];
+  const startHour = (sched.startHour as number) ?? 0;
+  const endHour = (sched.endHour as number) ?? 24;
+
+  for (let offset = 0; offset <= daysAhead; offset++) {
+    const targetDay = zdtNow.add({ days: offset });
+    const jsDay = targetDay.dayOfWeek % 7;
+    if (days.includes(jsDay)) {
+      const occ = buildDailyOccurrence(event, targetDay, offset, startHour, endHour, nowInstant, maxInstant);
+      if (occ) occurrences.push(occ);
+    }
+  }
+  return occurrences;
+}
+
+function collectMonthlyOccurrences(
+  event: Event,
+  sched: Record<string, unknown>, // open-record
+  zdtNow: Temporal.ZonedDateTime,
+  daysAhead: number,
+  nowInstant: Temporal.Instant,
+  maxInstant: Temporal.Instant
+): UpcomingEventOccurrence[] {
+  const occurrences: UpcomingEventOccurrence[] = [];
+  const trigger = sched.trigger as string | undefined;
+  const startHour = (sched.startHour as number) ?? 0;
+  const endHour = (sched.endHour as number) ?? 24;
+
+  for (let offset = 0; offset <= daysAhead; offset++) {
+    const targetDay = zdtNow.add({ days: offset });
+    if (isMonthlyTriggerMatch(trigger, targetDay)) {
+      const occ = buildDailyOccurrence(event, targetDay, offset, startHour, endHour, nowInstant, maxInstant);
+      if (occ) occurrences.push(occ);
+    }
+  }
+  return occurrences;
+}
+
+function collectStaticDateOccurrences(
+  event: Event,
+  nowInstant: Temporal.Instant,
+  maxInstant: Temporal.Instant
+): UpcomingEventOccurrence[] {
+  const occurrences: UpcomingEventOccurrence[] = [];
+  if (!event.start_at || !event.end_at) return occurrences;
+
+  try {
+    const startInst = Temporal.Instant.from(event.start_at);
+    const endInst = Temporal.Instant.from(event.end_at);
+
+    if (Temporal.Instant.compare(endInst, nowInstant) > 0 && Temporal.Instant.compare(startInst, maxInstant) <= 0) {
+      const isActive = Temporal.Instant.compare(nowInstant, startInst) >= 0 && Temporal.Instant.compare(nowInstant, endInst) < 0;
+      const startZdt = normalizeZonedDateTime(startInst);
+      const endZdt = normalizeZonedDateTime(endInst);
+      const jsDayStart = startZdt.dayOfWeek % 7;
+      const jsDayEnd = endZdt.dayOfWeek % 7;
+
+      const isSameDay = startZdt.year === endZdt.year && startZdt.month === endZdt.month && startZdt.day === endZdt.day;
+      const isStartOfDay = startZdt.hour === 0 && startZdt.minute === 0;
+      const isEndOfDay = (endZdt.hour === 23 && endZdt.minute >= 59) || (endZdt.hour === 0 && endZdt.minute === 0);
+      const isAllDay = isStartOfDay && isEndOfDay;
+
+      const shortDayStart = DAY_NAMES_SHORT[jsDayStart] ?? 'Día';
+      const shortDayEnd = DAY_NAMES_SHORT[jsDayEnd] ?? 'Día';
+      const fullDayStart = DAY_NAMES_FULL[jsDayStart] ?? 'Día';
+
+      const formatTime = (timeZdt: Temporal.ZonedDateTime) =>
+        `${String(timeZdt.hour).padStart(2, '0')}:${String(timeZdt.minute).padStart(2, '0')}`;
+
+      let dateLabel = '';
+      let timeLabel = '';
+
+      if (isSameDay) {
+        const diffDays = Math.floor(startInst.since(nowInstant).total({ unit: 'day' }));
+        dateLabel = diffDays === 0 ? 'Hoy' : diffDays === 1 ? 'Mañana' : `${shortDayStart} ${startZdt.day}/${startZdt.month}`;
+        timeLabel = isAllDay ? 'Todo el día' : `${formatTime(startZdt)} – ${formatTime(endZdt)} hs`;
+      } else {
+        dateLabel = `${shortDayStart} ${startZdt.day}/${startZdt.month} al ${shortDayEnd} ${endZdt.day}/${endZdt.month}`;
+        timeLabel = isAllDay ? 'Todo el día' : `${formatTime(startZdt)} al ${formatTime(endZdt)} hs`;
+      }
+
+      occurrences.push({
+        event,
+        startInstant: startInst,
+        endInstant: endInst,
+        dateLabel,
+        dayName: fullDayStart,
+        timeLabel,
+        isActiveNow: isActive,
+        startsInLabel: calculateStartsInLabel(isActive, startInst, nowInstant)
+      });
+    }
+  } catch (e) {
+    logger.warn('EventEngine', `Invalid date format in event: ${event.id}`, e);
+  }
+  return occurrences;
+}
+
 /**
  * Calculates all upcoming and active event occurrences within the next X days (defaults to 7).
  */
@@ -403,159 +564,17 @@ export function getUpcomingEventOccurrences(
   const zdtNow = normalizeZonedDateTime(nowInstant);
   const occurrences: UpcomingEventOccurrence[] = [];
   const maxInstant = nowInstant.add({ hours: daysAhead * HOURS_PER_DAY });
-  const dayNamesFull = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'] as const;
-  const dayNamesShort = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'] as const;
 
   for (const event of events) {
     if (!event.active) continue;
 
     const sched = safeParse(event.schedule);
-    if (sched && sched.type === 'weekly' && Array.isArray(sched.days)) {
-      const days = sched.days as number[];
-      const startHour = (sched.startHour as number) ?? 0;
-      const endHour = (sched.endHour as number) ?? 24;
-
-      for (let offset = 0; offset <= daysAhead; offset++) {
-        const targetDay = zdtNow.add({ days: offset });
-        const jsDay = targetDay.dayOfWeek % 7; // 0=Sun, 1=Mon...6=Sat
-
-        if (days.includes(jsDay)) {
-          const startZdt = targetDay.with({ hour: startHour, minute: 0, second: 0, millisecond: 0, microsecond: 0, nanosecond: 0 });
-          const endZdt = startHour < endHour
-            ? targetDay.with({ hour: endHour, minute: 0, second: 0, millisecond: 0, microsecond: 0, nanosecond: 0 })
-            : targetDay.add({ days: 1 }).with({ hour: endHour, minute: 0, second: 0, millisecond: 0, microsecond: 0, nanosecond: 0 });
-
-          const startInst = startZdt.toInstant();
-          const endInst = endZdt.toInstant();
-
-          if (Temporal.Instant.compare(endInst, nowInstant) > 0 && Temporal.Instant.compare(startInst, maxInstant) <= 0) {
-            const isActive = Temporal.Instant.compare(nowInstant, startInst) >= 0 && Temporal.Instant.compare(nowInstant, endInst) < 0;
-            
-            const shortDay = dayNamesShort[jsDay] ?? 'Día';
-            const fullDay = dayNamesFull[jsDay] ?? 'Día';
-            const dateLabel = offset === 0 ? 'Hoy' : offset === 1 ? 'Mañana' : `${shortDay} ${targetDay.day}/${targetDay.month}`;
-            
-            const formatH = (hr: number) => {
-              const h = Math.floor(hr);
-              const m = Math.round((hr % 1) * 60);
-              return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-            };
-            const isAllDay = startHour === 0 && (endHour >= 23.9 || endHour === 24);
-            const timeLabel = isAllDay ? 'Todo el día' : `${formatH(startHour)} – ${formatH(endHour)} hs`;
-            const startsInLabel = calculateStartsInLabel(isActive, startInst, nowInstant);
-
-            occurrences.push({
-              event,
-              startInstant: startInst,
-              endInstant: endInst,
-              dateLabel,
-              dayName: fullDay,
-              timeLabel,
-              isActiveNow: isActive,
-              startsInLabel
-            });
-          }
-        }
-      }
+    if (sched && sched.type === 'weekly') {
+      occurrences.push(...collectWeeklyOccurrences(event, sched, zdtNow, daysAhead, nowInstant, maxInstant));
     } else if (sched && sched.type === 'monthly') {
-      const trigger = sched.trigger as string | undefined;
-      const startHour = (sched.startHour as number) ?? 0;
-      const endHour = (sched.endHour as number) ?? 24;
-
-      for (let offset = 0; offset <= daysAhead; offset++) {
-        const targetDay = zdtNow.add({ days: offset });
-        const jsDay = targetDay.dayOfWeek % 7; // 0=Sun, 6=Sat
-
-        if (isMonthlyTriggerMatch(trigger, targetDay)) {
-          const startZdt = targetDay.with({ hour: startHour, minute: 0, second: 0, millisecond: 0, microsecond: 0, nanosecond: 0 });
-          const endZdt = startHour < endHour
-            ? targetDay.with({ hour: endHour, minute: 0, second: 0, millisecond: 0, microsecond: 0, nanosecond: 0 })
-            : targetDay.add({ days: 1 }).with({ hour: endHour, minute: 0, second: 0, millisecond: 0, microsecond: 0, nanosecond: 0 });
-
-          const startInst = startZdt.toInstant();
-          const endInst = endZdt.toInstant();
-
-          if (Temporal.Instant.compare(endInst, nowInstant) > 0 && Temporal.Instant.compare(startInst, maxInstant) <= 0) {
-            const isActive = Temporal.Instant.compare(nowInstant, startInst) >= 0 && Temporal.Instant.compare(nowInstant, endInst) < 0;
-            
-            const shortDay = dayNamesShort[jsDay] ?? 'Día';
-            const fullDay = dayNamesFull[jsDay] ?? 'Día';
-            const dateLabel = offset === 0 ? 'Hoy' : offset === 1 ? 'Mañana' : `${shortDay} ${targetDay.day}/${targetDay.month}`;
-            
-            const formatH = (hr: number) => {
-              const h = Math.floor(hr);
-              const m = Math.round((hr % 1) * 60);
-              return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-            };
-            const isAllDay = startHour === 0 && (endHour >= 23.9 || endHour === 24);
-            const timeLabel = isAllDay ? 'Todo el día' : `${formatH(startHour)} – ${formatH(endHour)} hs`;
-            const startsInLabel = calculateStartsInLabel(isActive, startInst, nowInstant);
-
-            occurrences.push({
-              event,
-              startInstant: startInst,
-              endInstant: endInst,
-              dateLabel,
-              dayName: fullDay,
-              timeLabel,
-              isActiveNow: isActive,
-              startsInLabel
-            });
-          }
-        }
-      }
+      occurrences.push(...collectMonthlyOccurrences(event, sched, zdtNow, daysAhead, nowInstant, maxInstant));
     } else if (event.start_at && event.end_at) {
-      try {
-        const startInst = Temporal.Instant.from(event.start_at);
-        const endInst = Temporal.Instant.from(event.end_at);
-
-        if (Temporal.Instant.compare(endInst, nowInstant) > 0 && Temporal.Instant.compare(startInst, maxInstant) <= 0) {
-          const isActive = Temporal.Instant.compare(nowInstant, startInst) >= 0 && Temporal.Instant.compare(nowInstant, endInst) < 0;
-          const startZdt = normalizeZonedDateTime(startInst);
-          const endZdt = normalizeZonedDateTime(endInst);
-          const jsDayStart = startZdt.dayOfWeek % 7;
-          const jsDayEnd = endZdt.dayOfWeek % 7;
-          
-          const isSameDay = startZdt.year === endZdt.year && startZdt.month === endZdt.month && startZdt.day === endZdt.day;
-          const isStartOfDay = startZdt.hour === 0 && startZdt.minute === 0;
-          const isEndOfDay = (endZdt.hour === 23 && endZdt.minute >= 59) || (endZdt.hour === 0 && endZdt.minute === 0);
-          const isAllDay = isStartOfDay && isEndOfDay;
-
-          const shortDayStart = dayNamesShort[jsDayStart] ?? 'Día';
-          const shortDayEnd = dayNamesShort[jsDayEnd] ?? 'Día';
-          const fullDayStart = dayNamesFull[jsDayStart] ?? 'Día';
-
-          const formatTime = (timeZdt: Temporal.ZonedDateTime) =>
-            `${String(timeZdt.hour).padStart(2, '0')}:${String(timeZdt.minute).padStart(2, '0')}`;
-
-          let dateLabel = '';
-          let timeLabel = '';
-
-          if (isSameDay) {
-            const diffDays = Math.floor(startInst.since(nowInstant).total({ unit: 'day' }));
-            dateLabel = diffDays === 0 ? 'Hoy' : diffDays === 1 ? 'Mañana' : `${shortDayStart} ${startZdt.day}/${startZdt.month}`;
-            timeLabel = isAllDay ? 'Todo el día' : `${formatTime(startZdt)} – ${formatTime(endZdt)} hs`;
-          } else {
-            dateLabel = `${shortDayStart} ${startZdt.day}/${startZdt.month} al ${shortDayEnd} ${endZdt.day}/${endZdt.month}`;
-            timeLabel = isAllDay ? 'Todo el día' : `${formatTime(startZdt)} al ${formatTime(endZdt)} hs`;
-          }
-
-          const startsInLabel = calculateStartsInLabel(isActive, startInst, nowInstant);
-
-          occurrences.push({
-            event,
-            startInstant: startInst,
-            endInstant: endInst,
-            dateLabel,
-            dayName: fullDayStart,
-            timeLabel,
-            isActiveNow: isActive,
-            startsInLabel
-          });
-        }
-      } catch (e) {
-        logger.warn('EventEngine', `Invalid date format in event: ${event.id}`, e);
-      }
+      occurrences.push(...collectStaticDateOccurrences(event, nowInstant, maxInstant));
     }
   }
 

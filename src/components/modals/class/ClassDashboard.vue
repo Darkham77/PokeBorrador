@@ -244,7 +244,7 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
           @mouseenter="onRankCardMouseEnter"
           @mouseleave="onRankCardMouseLeave"
         >
-          <div class="card-icon">
+          <div class="card-icon emoji">
             🎖️
           </div>
           <div class="card-text">
@@ -258,7 +258,7 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
           @mouseenter="onRankCardMouseEnter"
           @mouseleave="onRankCardMouseLeave"
         >
-          <div class="card-icon">
+          <div class="card-icon emoji">
             🎓
           </div>
           <div class="card-text">
@@ -290,7 +290,7 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
             @mouseleave="onAbilityMouseLeave"
           >
             <div class="ability-checkbox">
-              <span class="icon">{{ (currentClass?.bonusLevels?.[Number(idx)] || 1) <= classLevel ? '✅' : '🔒' }}</span>
+              <span class="emoji">{{ (currentClass?.bonusLevels?.[Number(idx)] || 1) <= classLevel ? '✅' : '🔒' }}</span>
             </div>
             <div class="ability-content">
               <p :class="{ 'text-locked': (currentClass?.bonusLevels?.[Number(idx)] || 1) > classLevel }">
@@ -315,7 +315,7 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
               :delay="100"
               style="cursor: help;"
             >
-              <span class="ability-help"><span class="icon">❓</span></span>
+              <span class="ability-help"><span class="emoji">❓</span></span>
             </PVTooltip>
           </div>
         </div>
@@ -336,7 +336,7 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
             @mouseleave="onAbilityMouseLeave"
           >
             <div class="ability-checkbox">
-              <span class="icon">❌</span>
+              <span class="emoji">❌</span>
             </div>
             <div class="ability-content">
               <p>{{ penalty }}</p>
@@ -347,7 +347,7 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
               :delay="100"
               style="cursor: help;"
             >
-              <span class="ability-help"><span class="icon">❓</span></span>
+              <span class="ability-help"><span class="emoji">❓</span></span>
             </PVTooltip>
           </div>
         </div>
@@ -359,7 +359,7 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
           class="missions-btn-wide"
           @click.stop="openMissionsModal"
         >
-          <span class="icon">📋</span> MISIONES DE CLASE
+          <span class="emoji">📋</span> MISIONES DE CLASE
         </button>
 
         <div class="action-footer">
@@ -367,7 +367,7 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
             class="btn-secondary"
             @click.stop="emit('changeClass')"
           >
-            <span class="icon">🔄</span>
+            <span class="emoji">🔄</span>
             <div class="btn-label-stack">
               <span class="btn-label">CAMBIAR CLASE</span>
               <span class="price">10,000 BC</span>
@@ -377,7 +377,7 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
             class="btn-primary"
             @click.stop="emit('close')"
           >
-            <span class="icon check-icon">✓</span> ENTENDIDO
+            <span class="emoji check-icon">✓</span> ENTENDIDO
           </button>
         </div>
       </div>

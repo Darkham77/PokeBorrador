@@ -66,7 +66,7 @@ onUnmounted(() => {
         id="connection-lost-warning-pill"
         class="connection-lost-banner pixelated"
       >
-        <span class="banner-icon">📶</span>
+        <span class="emoji banner-icon">📶</span>
         <span class="banner-text">CONEXIÓN PERDIDA · Reconectando automáticamente...</span>
       </div>
     </Transition>

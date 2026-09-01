@@ -201,7 +201,7 @@ defineExpose({
               x{{ ball.qty }}
             </div>
             <div class="ball-action-arrow">
-              ▶
+              <span class="emoji">▶</span>
             </div>
           </button>
         </PVTooltip>

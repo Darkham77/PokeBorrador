@@ -118,11 +118,11 @@ const close = () => {
           <div class="n-effects">
             <template v-if="NATURE_DATA[n].up">
               <span class="stat-mod mod-up">
-                <span class="indicator-icon">▲</span>
+                <span class="emoji indicator-icon">▲</span>
                 <span>+10% {{ NATURE_DATA[n].up }}</span>
               </span>
               <span class="stat-mod mod-down">
-                <span class="indicator-icon">▼</span>
+                <span class="emoji indicator-icon">▼</span>
                 <span>-10% {{ NATURE_DATA[n].down }}</span>
               </span>
             </template>

@@ -316,16 +316,16 @@ watch(extraSacrifices, () => {
             v-if="showFailureTooltip"
             class="failure-tooltip font-pixel"
           >
-            <span class="emoji-inline">⚠️</span> ¡EXTRACCIÓN FALLIDA! Recursos consumidos.
+            <span class="emoji">⚠️</span> ¡EXTRACCIÓN FALLIDA! Recursos consumidos.
           </div>
           <button
             class="btn-clone"
             :disabled="!canClone"
             @click="handleClone"
           >
-            <span v-if="!hasEnoughFossils"><span class="icon">❌</span> FÓSILES INSUFICIENTES</span>
-            <span v-else-if="!hasEnoughMoney"><span class="icon">💰</span> DINERO INSUFICIENTE</span>
-            <span v-else><span class="icon">🧬</span> INICIAR CLONACIÓN GENÉTICA</span>
+            <span v-if="!hasEnoughFossils"><span class="emoji">❌</span> FÓSILES INSUFICIENTES</span>
+            <span v-else-if="!hasEnoughMoney"><span class="emoji">💰</span> DINERO INSUFICIENTE</span>
+            <span v-else><span class="emoji">🧬</span> INICIAR CLONACIÓN GENÉTICA</span>
           </button>
         </div>
       </div>

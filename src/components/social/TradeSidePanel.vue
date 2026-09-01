@@ -93,7 +93,7 @@ const mappedItems = computed(() => {
           :actions="[]"
         />
         <div class="change-hint-overlay">
-          <span><span class="icon">🔄</span> CAMBIAR POKÉMON</span>
+          <span><span class="emoji">🔄</span> CAMBIAR POKÉMON</span>
         </div>
       </div>
       <button
@@ -186,7 +186,7 @@ const mappedItems = computed(() => {
       class="gift-overlay"
     >
       <div class="gift-content">
-        <span class="gift-icon">🎁</span>
+        <span class="emoji gift-icon">🎁</span>
         <span class="gift-title">ESTÁS ENVIANDO UN REGALO</span>
         <p class="gift-text">
           No pedirás nada a cambio de tu oferta.

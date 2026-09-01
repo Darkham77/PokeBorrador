@@ -296,7 +296,7 @@ const handleTrashMouseLeave = (e: MouseEvent) => {
           @mouseenter="handleTrashMouseEnter"
           @mouseleave="handleTrashMouseLeave"
         >
-          <span class="icon">🗑️</span>
+          <span class="emoji">🗑️</span>
         </button>
 
         <div class="egg-visual">
@@ -311,7 +311,7 @@ const handleTrashMouseLeave = (e: MouseEvent) => {
             v-if="egg.inherited_ivs?._scanned"
             class="scanned-badge"
           >
-            <span class="emoji-inline">🔍</span> ESCANEADO
+            <span class="emoji">🔍</span> ESCANEADO
           </div>
         </div>
         

@@ -48,6 +48,8 @@ Frontend Developers / Systems Engineers.
   - Legacy/Archived awards cannot be claimed (claim button disabled/hidden) and can strictly only be discarded via `discardAward` with user confirmation in `ConfirmModal`.
 - **Automated Event Schema & Execution Integrity Testing**:
   - All database event seeds and dynamic configurations MUST be backed by Tier 1 unit tests (`events_future_proof_integrity.spec.ts`) and Tier 2 database migration integrity tests (`event_database_rewards_integrity.test.ts`), verifying encounter generation across all maps, minigames, and 52 calendar week transitions without runtime exceptions.
+- **Future Occurrence Rotation Parity & Client Engine Propagation**:
+  - Helpers and consumers resolving thematic configurations (`resolveWeeklyRotation`, `resolveEventSubCompetitions`, `getEventDisplayName`) MUST always accept and prioritize the target occurrence timestamp (`Temporal.Instant` or `Temporal.ZonedDateTime`) over current system time. When projecting future event windows, rotation weeks are computed strictly against the occurrence's `startInstant`.
 
 ## Work Guidance
 

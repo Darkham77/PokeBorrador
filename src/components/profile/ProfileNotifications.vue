@@ -66,7 +66,7 @@ function getTimestamp(n: NotificationItem): number {
         :key="n.id"
         class="notification-entry-legacy"
       >
-        <span class="notif-icon">{{ getIcon(n) }}</span>
+        <span class="emoji notif-icon">{{ getIcon(n) }}</span>
         <div class="notif-body">
           <div class="notif-text">
             <template v-if="n.title && n.title !== getIcon(n)">

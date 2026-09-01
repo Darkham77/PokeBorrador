@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
-import { gsap } from 'gsap'
 import { logger } from '@/logic/utils/logger.ts'
 import { supabase } from '@/logic/db/supabase.ts'
 import { syncServerTime } from '@/logic/auth/timeSync.ts'
@@ -9,10 +8,15 @@ import { useModalStore } from '@/stores/modals.ts'
 import { useGameStore } from './game.ts'
 import { safeStorage } from '@/logic/utils/storage.ts'
 import { SESSION_ID } from '@/logic/auth/sessionId.ts'
-import { requireUserRole, type AuthUser, type SessionMode } from '@/types/auth/auth.ts'
+import type { AuthUser, SessionMode } from '@/types/auth/auth.ts'
 import { requireGenderId, type GenderId } from '@/types/system/game.ts'
 import type { Session } from '@supabase/supabase-js'
-import { AUTH_RETRY_DELAY_MS, HTTP_STATUS_UNAUTHORIZED } from '@/logic/constants/gameplay.ts'
+import {
+  fetchOnlineSessionWithRetry,
+  recordSessionIdInProfile,
+  fetchProfileMetadata,
+  enrichAuthUser
+} from './auth/authSessionVerifier.ts'
 
 const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
 
@@ -94,118 +98,45 @@ export const useAuthStore = defineStore('auth', () => {
           supabase.setMode('online')
         }
 
-        // 1. Verificar sesión con estrategia de reintento para tolerar el arranque en frío del servidor de la NAS
-        let data: { session: Session | null } = { session: null }
-        let attempt = 1
-        const maxAttempts = 2
+        const onlineSession = await fetchOnlineSessionWithRetry(2)
         
-        while (attempt <= maxAttempts) {
-          try {
-            // El primer intento usa un timeout más corto (5s) para despertar al servidor si está en frío.
-            // El segundo intento usa un timeout más largo (15s) para dar tiempo a que responda.
-            const timeoutSeconds = attempt === 1 ? 5 : 15
-            const sessionPromise = supabase.auth.getSession()
-            const timeoutPromise = new Promise((_, reject) => gsap.delayedCall(timeoutSeconds, () => reject(new Error('TIMEOUT'))))
-            
-            const response = await Promise.race([sessionPromise, timeoutPromise]) as { data: { session: Session | null } }
-            data = response.data
-            break // Exitoso, salir del bucle
-          } catch (e) {
-            logger.warn('Auth', `Intento ${attempt}/${maxAttempts} de getSession falló o dio timeout: ${(e as Error).message}`)
-            if (attempt < maxAttempts) {
-              attempt++
-              // Esperar un breve delay antes del reintento para que el servidor termine de levantar
-              await new Promise(resolve => setTimeout(resolve, AUTH_RETRY_DELAY_MS))
-            } else {
-              throw e // Si se agotaron los intentos, propagar error
-            }
-          }
-        }
-        
-        let sessionValid = true
-        if (data?.session?.user) {
-          const rawUser = data.session.user as AuthUser
+        if (onlineSession?.user) {
+          const rawUser = onlineSession.user as AuthUser
           const isLocalId = rawUser?.id === 'local_user' || rawUser?.id?.startsWith('local_')
           
-          let dbVersion = 1
-          let userGender = 'h'
-          let userRole: string | undefined
-          let isUserBanned = false
-          let banMsg = 'Uso indebido de la plataforma'
-
+          let sessionValid = true
           if (!isLocalId) {
-            // Registrar sesión en DB para unicidad con timeout (10s)
-            try {
-              const updatePromise = supabase.from('profiles').update({ current_session_id: sessionId.value }).eq('id', rawUser?.id)
-              const updateRes = await Promise.race([updatePromise, new Promise((_, reject) => gsap.delayedCall(10, () => reject(new Error('UPDATE_TIMEOUT'))))]) as { error?: { message?: string; status?: number; code?: string } | null }
-              const updateError = updateRes?.error
-              if (updateError) {
-                logger.error('Auth', `Session ID update failed: ${updateError.message} (${updateError.status})`)
-                if (updateError.status === HTTP_STATUS_UNAUTHORIZED || updateError.code === 'PGRST301' || updateError.message?.toLowerCase().includes('jwt') || updateError.message?.toLowerCase().includes('invalid')) {
-                  sessionValid = false
-                }
-              }
-            } catch (e) {
-              logger.warn('Auth', `Session ID update failed or timed out: ${(e as Error).message}`)
-            }
+            sessionValid = await recordSessionIdInProfile(rawUser.id, sessionId.value)
           }
 
-          if (sessionValid && !isLocalId) {
-            // Fetch profile meta con timeout (10s)
-            try {
-              const profilePromise = supabase.from('profiles').select('db_version, is_banned, ban_reason, gender, role').eq('id', rawUser?.id).single()
-              const profileRes = await Promise.race([profilePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 10000))]) as { data: { db_version: number; is_banned: boolean; ban_reason: string | null; gender: GenderId; role?: string } | null; error?: { message?: string; status?: number; code?: string } | null }
-              const profile = profileRes.data
-              const profileError = profileRes.error
-              
-              if (profileError) {
-                logger.error('Auth', `Profile fetch failed: ${profileError.message} (${profileError.status})`)
-                if (profileError.status === HTTP_STATUS_UNAUTHORIZED || profileError.code === 'PGRST301' || profileError.message?.toLowerCase().includes('jwt') || profileError.message?.toLowerCase().includes('invalid')) {
-                  sessionValid = false
-                }
-              } else if (profile) {
-                dbVersion = profile.db_version || 1
-                userGender = profile.gender || 'h'
-                userRole = profile.role
-                if (profile.is_banned) {
-                  isUserBanned = true
-                  banMsg = profile.ban_reason || 'Uso indebido de la plataforma'
-                }
-              }
-            } catch (e) {
-              logger.warn('Auth', `Profile fetch failed or timed out: ${(e as Error).message}`)
-            }
-          }
+          const profileData = isLocalId ? {
+            dbVersion: 1,
+            userGender: requireGenderId('h'),
+            userRole: undefined,
+            isUserBanned: false,
+            banMsg: 'Uso indebido de la plataforma',
+            sessionValid: true,
+          } : await fetchProfileMetadata(rawUser.id)
 
-          if (isUserBanned) {
+          if (profileData.isUserBanned) {
             isBanned.value = true
-            banReason.value = banMsg
+            banReason.value = profileData.banMsg
             await logout()
             return
           }
 
-          if (!sessionValid && !isLocalId) {
+          if ((!sessionValid || !profileData.sessionValid) && !isLocalId) {
             logger.error('Auth', 'Session validation failed. Forcing logout with warning.')
             sessionStorage.setItem('pokevicio_logout_reason', 'session_invalidated')
             await logout()
             return
           }
 
-          // Build and assign the fully-configured user object AT THE VERY END
-          rawUser.db_version = dbVersion
-          if (!rawUser.user_metadata) {
-            rawUser.user_metadata = { username: rawUser.email || 'user' }
-          }
-          rawUser.user_metadata.gender = requireGenderId(userGender)
-          if (userRole) rawUser.role = requireUserRole(userRole)
-
-          session.value = data.session
-          user.value = rawUser
+          user.value = enrichAuthUser(rawUser, profileData)
+          session.value = onlineSession
           sessionMode.value = 'online'
 
           startSessionMonitoring()
-          
-          // Sync time only for online session
           syncServerTime()
           return // Finalizamos con éxito online
         }

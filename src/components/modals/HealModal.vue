@@ -285,8 +285,9 @@ onUnmounted(() => {
 <template>
   <BaseModal
     :show="show"
-    title="💊 CENTRO POKÉMON"
-    title-color="Rgba(239, 68, 68, 1)"
+    emoji="💊"
+    title="CENTRO POKÉMON"
+    title-color="rgba(239, 68, 68, 1)"
     header-background="Rgba(26, 28, 46, 1)"
     max-width="360px"
     variant="retro"
@@ -337,7 +338,7 @@ onUnmounted(() => {
                   v-if="needsHealing(p)" 
                   class="needs-heal-badge"
                 >
-                  <span class="emoji-inline">🚑</span>
+                  <span class="emoji">🚑</span>
                 </div>
               </Transition>
 
@@ -362,7 +363,7 @@ onUnmounted(() => {
             :key="'empty-' + i"
             class="slot empty"
           >
-            <div class="ball-icon">
+            <div class="ball-icon emoji">
               🔴
             </div>
           </div>

@@ -66,7 +66,7 @@ onMounted(() => {
     <template #header>
       <div class="social-modal-header">
         <div class="social-title-group">
-          <span class="title-icon">🤝</span>
+          <span class="emoji">🤝</span>
           <div class="title-text-wrap">
             <span class="main-title">AMIGOS</span>
             <span class="sub-title">CENTRO SOCIAL</span>

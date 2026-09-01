@@ -37,6 +37,12 @@ Frontend Developers / Systems Engineers.
   - **Active vs. Upcoming Contrast**: Active event cards (`.is-active-card`) must feature a radiant warm amber/obsidian background with solid glowing gold borders (`1.5px solid rgba(250, 204, 21, 0.45)`), golden headers (`#fef08a`), and emerald live badges (`✨ ACTIVO`), sharply distinguishing them from cool slate-navy dashed upcoming cards (`.is-upcoming-card`).
   - **GSAP Banner Hover Zoom Homogeneity**: All event card banners (`.banner-box img`, `.pokecenter-banner .banner-bg`) must smoothly scale via component GSAP hover tweens (`gsap.to(bannerImg, { scale: 1.04, duration: 0.35, ease: 'power2.out' })` and `clearProps: 'transform,scale'`) synchronized with card elevation (`y: -4`), strictly prohibiting static CSS `:hover { transform: scale(...) }` rules without transitions that produce jarring instantaneous snapping.
   - **High-Resolution Event Banner Exception**: In exception to the global `image-rendering: pixelated` mandate, high-resolution event artwork and illustration banners (`.banner-box img`, `.event-banner-img`, `.event-banner`) MUST declare `image-rendering: auto !important` to enable smooth bicubic browser filtering while keeping all Pokémon sprites and UI icons pixelated.
+- **Occurrence-Aware Event Details & Weekly Rotation Propagation (`EventDetailModal.vue`, `EventCard.vue`, `WorldEventsUpcomingSchedule.vue`)**:
+  - Modal openings (`EventDetailModal.vue`), event cards (`EventCard.vue`), and schedule lists (`WorldEventsUpcomingSchedule.vue`) MUST pass and consume `occurrence` when inspecting upcoming or recurring rotation events (`rotationTheme: 'weekly_4'`).
+  - `EventDetailModal.vue` must compute its reference date dynamically (`targetZdt`, prioritizing `occurrence.startInstant` -> `event.start_at` -> `getGMT3Date()`) to resolve the exact rotation title, banner, involved species, and sub-competitions corresponding to the inspected future date, preventing fallbacks to the current system date.
+  - `WorldEventsUpcomingSchedule.vue` MUST resolve upcoming card titles strictly via `getEventDisplayName(occ.event, occ)` to reflect thematic rotation names.
+- **Vue SFC Template Linter Suppression Directive Stacking**:
+  - In Vue Single-File Components (SFCs), when disabling template rules (such as `vue/no-v-html`) alongside Fallow CWE security annotations (`<!-- fallow-ignore-next-line cwe-79 -->`), developers MUST wrap the node in block directives (`<!-- eslint-disable vue/no-v-html --> ... <!-- eslint-enable vue/no-v-html -->`) to prevent multi-line comments from misaligning line-by-line ESLint disables with target DOM nodes.
 
 ## Work Guidance
 
@@ -52,5 +58,6 @@ Frontend Developers / Systems Engineers.
 - [class/](./class/AGENTS.md): Domain module documentation for class.
 - [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
 - [reputation-shop/](./reputation-shop/AGENTS.md): Domain module documentation for reputation-shop.
+- [spawns/](./spawns/AGENTS.md): Modular row components for route spawns, NPC encounters, and archaeology tables.
 - [shop/](./shop/AGENTS.md): Domain module documentation for shop.
 - [war-shop/](./war-shop/AGENTS.md): Domain module documentation for war-shop.

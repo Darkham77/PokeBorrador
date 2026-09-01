@@ -156,7 +156,7 @@ const getCompatText = (label: string) => {
         <div class="compat-label">
           <span
             v-if="getCompatEmoji(compatStyle.label)"
-            class="compat-emoji"
+            class="emoji compat-emoji"
           >{{ getCompatEmoji(compatStyle.label) }}</span>
           <span class="compat-text">{{ getCompatText(compatStyle.label) }}</span>
         </div>
@@ -165,22 +165,22 @@ const getCompatText = (label: string) => {
           class="timer"
         >
           <template v-if="!isCompatible">
-            <span class="timer-icon">⏳</span>
+            <span class="emoji timer-icon">⏳</span>
             {{ displayTime }}
           </template>
           <template v-else-if="!hasVigor">
-            <span class="timer-icon font-large">💤</span>
+            <span class="emoji timer-icon font-large">💤</span>
             <span style="color: #ef4444; font-weight: bold; text-shadow: 0 0 5px rgba(239, 68, 68, 0.4);">CANSADOS (SIN VIGOR)</span>
           </template>
           <template v-else>
-            <span class="timer-icon">⏳</span>
+            <span class="emoji timer-icon">⏳</span>
             {{ displayTime }}
           </template>
         </div>
       </div>
       <div
         ref="heartRef"
-        class="heart-fx"
+        class="heart-fx emoji"
       >
         ❤️
       </div>
@@ -191,7 +191,7 @@ const getCompatText = (label: string) => {
       class="forecast-card"
     >
       <div class="forecast-header">
-        <span class="icon">🧬</span>
+        <span class="emoji icon">🧬</span>
         <h4>Pronóstico de Herencia</h4>
       </div>
       
@@ -237,12 +237,15 @@ const getCompatText = (label: string) => {
           description="Movimientos especiales que el bebé puede aprender al nacer si alguno de los padres conoce un movimiento compatible en su lista de movimientos huevo."
         >
           <span class="label">Movimientos Huevo:</span>
-          <span class="value">{{ forecast.eggMovesCount > 0 ? 'SÍ ✨' : 'Ninguno' }}</span>
+          <span class="value">{{ forecast.eggMovesCount > 0 ? 'SÍ' : 'Ninguno' }} <span
+            v-if="forecast.eggMovesCount > 0"
+            class="emoji"
+          >✨</span></span>
         </PVTooltip>
       </div>
 
       <div class="forecast-help">
-        <p>ℹ️ Usa Piedra Eterna para la Naturaleza y Lazo Destino para heredar más IVs.</p>
+        <p><span class="emoji">ℹ️</span> Usa Piedra Eterna para la Naturaleza y Lazo Destino para heredar más IVs.</p>
       </div>
     </div>
   </div>

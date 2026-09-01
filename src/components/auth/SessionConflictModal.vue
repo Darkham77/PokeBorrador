@@ -47,7 +47,7 @@ async function handleLogout() {
             class="action-btn reclaim-btn"
             @click.stop="handleReconnect"
           >
-            ▶ USAR AQUÍ
+            <span class="emoji">▶</span> USAR AQUÍ
           </button>
           <button
             id="session-conflict-logout-btn"

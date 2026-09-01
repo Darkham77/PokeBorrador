@@ -64,7 +64,12 @@
             >
               <slot name="header">
                 <div class="modal-header-left">
-                  <slot name="header-icon" />
+                  <slot name="header-icon">
+                    <span
+                      v-if="emoji || icon"
+                      class="emoji modal-header-emoji"
+                    >{{ emoji || icon }}</span>
+                  </slot>
                   <div class="modal-title-stack">
                     <h2 
                       class="modal-title-text"
@@ -161,6 +166,8 @@ const props = defineProps({
   id: { type: String, default: '' },
   show: { type: Boolean, default: false },
   title: { type: String, default: '' },
+  emoji: { type: String, default: '' },
+  icon: { type: String, default: '' },
   maxWidth: { type: String, default: '500px' },
   maxHeight: { type: String, default: '92dvh' },
   closeOnClickOutside: { type: Boolean, default: true },

@@ -6,7 +6,6 @@ import {
   awaitBattleFlowCompletion,
   awaitBattleReadyForInput,
   clickResilient,
-  openDebugTab,
   type WindowWithResolver
 } from '../e2e_helpers.ts';
 
@@ -23,16 +22,27 @@ class CatchBreakoutWhiteoutSimWrapper extends BaseBattleSimulation {
 
   public async setupWildBossEncounter(): Promise<void> {
     await this.disableAutoMode();
-    await openDebugTab(this.page, 'items');
-    await this.page.locator('.search-input').fill('pokeball');
-    await this.page.locator('#debug-item-pokeball').click();
-
-    await openDebugTab(this.page, 'pokes');
-    await this.page.locator('#debug-input-especie').fill('mewtwo');
-    await this.page.locator('#option-mewtwo').click();
-    await this.page.locator('#debug-input-level').fill(MEWTWO_BOSS_LEVEL.toString());
     await armBattleReadyForInput(this.page);
-    await this.page.locator('#debug-btn-encounter').click();
+    await this.page.evaluate(async (bossLevel) => {
+      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+      const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
+      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+
+      const invStore = useInventoryStore();
+      await invStore.addItem('pokeball', 5);
+
+      const bossEnemy = pokemonDebugService.generate({
+        id: requirePokemonSpeciesId('mewtwo'),
+        level: bossLevel
+      });
+
+      const battleStore = useBattleStore();
+      await battleStore.startBattle(bossEnemy, {
+        isTrainer: false,
+        locationId: 'route1'
+      });
+    }, MEWTWO_BOSS_LEVEL);
     await awaitBattleReadyForInput(this.page);
   }
 

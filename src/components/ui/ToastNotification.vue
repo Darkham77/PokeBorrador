@@ -53,7 +53,7 @@ function onLeave(el: Element, done: () => void) {
           >
           <span
             v-else
-            class="toast-icon"
+            class="emoji toast-icon"
           >{{ n.icon }}</span>
           <span class="toast-msg">{{ n.msg }}</span>
         </div>

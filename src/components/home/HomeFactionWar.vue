@@ -42,7 +42,7 @@ onMounted(() => {
   <div class="home-faction-war home-section-card">
     <div class="card-header-bar">
       <div class="title-wrap">
-        <span class="card-icon">⚔️</span>
+        <span class="emoji">⚔️</span>
         <div class="title-text-group">
           <h3 class="card-title">
             GUERRA TERRITORIAL DE FACCIONES
@@ -51,7 +51,7 @@ onMounted(() => {
             class="phase-pill"
             :class="isDispute ? 'is-dispute' : 'is-dominance'"
           >
-            <span class="emoji-inline">{{ isDispute ? '⚔️' : '🏆' }}</span> {{ isDispute ? 'FASE DE DISPUTA' : 'FASE DE DOMINANCIA' }}
+            <span class="emoji">{{ isDispute ? '⚔️' : '🏆' }}</span> {{ isDispute ? 'FASE DE DISPUTA' : 'FASE DE DOMINANCIA' }}
           </span>
         </div>
       </div>
@@ -63,7 +63,7 @@ onMounted(() => {
           class="card-action-btn"
           @click.stop="openWarShop"
         >
-          <span class="btn-icon">🪙</span>
+          <span class="emoji">🪙</span>
           TIENDA
         </button>
         <button
@@ -72,7 +72,7 @@ onMounted(() => {
           class="card-action-btn primary"
           @click.stop="openWarModal"
         >
-          <span class="btn-icon">🗺️</span>
+          <span class="emoji">🗺️</span>
           MAPA DE GUERRA
         </button>
       </div>
@@ -135,10 +135,10 @@ onMounted(() => {
             :class="faction"
           >
             <template v-if="faction === 'union'">
-              <span class="emoji-inline">⭐</span> Unión
+              <span class="emoji">⭐</span> Unión
             </template>
             <template v-else-if="faction === 'poder'">
-              <span class="emoji-inline">✊</span> Poder
+              <span class="emoji">✊</span> Poder
             </template>
             <template v-else>
               Sin afiliar
@@ -151,7 +151,7 @@ onMounted(() => {
         </div>
         <div class="summary-chip">
           <span class="chip-label">MONEDAS DE GUERRA:</span>
-          <span class="chip-value coins">{{ warStore.warCoins }} <span class="emoji-inline">🪙</span></span>
+          <span class="chip-value coins">{{ warStore.warCoins }} <span class="emoji">🪙</span></span>
         </div>
       </div>
     </div>
@@ -384,6 +384,10 @@ onMounted(() => {
     @include pixelated;
     font-size: 8px;
     color: var(--white, #ffffff);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1;
 
     &.union {
       color: #60a5fa;

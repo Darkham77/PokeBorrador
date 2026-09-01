@@ -2,6 +2,7 @@
 // style-inherited: styles imported in parent PokemonSelectionModal.vue
 
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import PokemonSortBar from '@/components/pokemon/PokemonSortBar.vue'
 import { POKEMON_TAGS, POKEMON_BADGES } from '@/logic/constants/tags'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
@@ -17,15 +18,6 @@ const sortBy = defineModel<string>('sortBy', { required: true })
 const sortOrder = defineModel<string>('sortOrder', { required: true })
 const activeTags = defineModel<string[]>('activeTags', { required: true })
 const filterCompatibleOnly = defineModel<boolean>('filterCompatibleOnly', { required: true })
-
-function setSort(type: string) {
-  if (sortBy.value === type) {
-    sortOrder.value = sortOrder.value === 'desc' ? 'asc' : 'desc'
-  } else {
-    sortBy.value = type
-    sortOrder.value = 'desc'
-  }
-}
 
 function toggleTagFilter(tagId: string) {
   const idx = activeTags.value.indexOf(tagId)
@@ -48,7 +40,7 @@ function clearFilters() {
 <template>
   <div class="filters-bar">
     <div class="ps-search-row">
-      <span class="ps-search-icon">🔍</span>
+      <span class="emoji ps-search-icon">🔍</span>
       <input 
         v-model="searchQuery" 
         type="text" 
@@ -63,112 +55,10 @@ function clearFilters() {
         ×
       </button>
     </div>
-    <div class="ps-sort-btns">
-      <PVTooltip
-        title="MÁS RECIENTES"
-        description="Orden cronológico de captura."
-        position="bottom"
-        class="ps-sort-wrapper"
-      >
-        <button
-          :class="{ active: sortBy === 'recent' }"
-          @click.stop="setSort('recent')"
-        >
-          REC {{ sortBy === 'recent' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
-        </button>
-      </PVTooltip>
-      <PVTooltip
-        title="NIVEL"
-        description="Orden por nivel de combate."
-        position="bottom"
-        class="ps-sort-wrapper"
-      >
-        <button
-          :class="{ active: sortBy === 'level' }"
-          @click.stop="setSort('level')"
-        >
-          LVL {{ sortBy === 'level' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
-        </button>
-      </PVTooltip>
-      <PVTooltip
-        title="IVs"
-        description="Potencial genético total."
-        position="bottom"
-        class="ps-sort-wrapper"
-      >
-        <button
-          :class="{ active: sortBy === 'ivs' }"
-          @click.stop="setSort('ivs')"
-        >
-          IVs {{ sortBy === 'ivs' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
-        </button>
-      </PVTooltip>
-      <PVTooltip
-        title="PODER TOTAL"
-        description="Suma de estadísticas base, IVs genéticos y bonificación por EVs entrenados (4 EVs = 1 IV)."
-        position="bottom"
-        class="ps-sort-wrapper"
-      >
-        <button
-          :class="{ active: sortBy === 'TOT' }"
-          @click.stop="setSort('TOT')"
-        >
-          TOTAL {{ sortBy === 'TOT' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
-        </button>
-      </PVTooltip>
-      <PVTooltip
-        title="CRÍA"
-        description="Ordenar por Pokémon nacidos de huevo."
-        position="bottom"
-        class="ps-sort-wrapper"
-      >
-        <button
-          :class="{ active: sortBy === 'hatched' }"
-          @click.stop="setSort('hatched')"
-        >
-          CRÍA {{ sortBy === 'hatched' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
-        </button>
-      </PVTooltip>
-      <PVTooltip
-        title="PESO"
-        description="Ordenar por peso corporal en kilogramos."
-        position="bottom"
-        class="ps-sort-wrapper"
-      >
-        <button
-          :class="{ active: sortBy === 'weight' }"
-          @click.stop="setSort('weight')"
-        >
-          PESO {{ sortBy === 'weight' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
-        </button>
-      </PVTooltip>
-      <PVTooltip
-        title="ALTURA"
-        description="Ordenar por altura corporal en metros."
-        position="bottom"
-        class="ps-sort-wrapper"
-      >
-        <button
-          :class="{ active: sortBy === 'height' }"
-          @click.stop="setSort('height')"
-        >
-          ALT {{ sortBy === 'height' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
-        </button>
-      </PVTooltip>
-      <PVTooltip
-        title="AMISTAD"
-        description="Ordenar por nivel de amistad y vínculo."
-        position="bottom"
-        class="ps-sort-wrapper"
-      >
-        <button
-          :class="{ active: sortBy === 'friendship' }"
-          @click.stop="setSort('friendship')"
-        >
-          AMI {{ sortBy === 'friendship' ? (sortOrder === 'desc' ? '▼' : '▲') : '' }}
-        </button>
-      </PVTooltip>
-    </div>
+    <PokemonSortBar
+      v-model:model-value="sortBy"
+      v-model:sort-direction="sortOrder"
+    />
 
     <div class="ps-tags-section">
       <div class="ps-tags-row-unified">
@@ -182,7 +72,7 @@ function clearFilters() {
             :disabled="!(activeTags.length > 0 || searchQuery || sortBy !== 'recent' || filterCompatibleOnly)"
             @click.stop="clearFilters"
           >
-            <span class="btn-emoji">🧹</span>
+            <span class="emoji">🧹</span>
           </button>
         </PVTooltip>
 
@@ -198,7 +88,7 @@ function clearFilters() {
               :class="['ps-tag-' + t.id, { active: activeTags.includes(t.id) }]"
               @click.stop="toggleTagFilter(t.id)"
             >
-              <span class="icon">{{ t.icon }}</span>
+              <span class="emoji">{{ t.icon }}</span>
               <span class="ps-tag-label">{{ t.shortLabel || t.label }}</span>
             </button>
           </PVTooltip>
@@ -212,7 +102,7 @@ function clearFilters() {
               :class="['ps-tag-friendship-evo', { active: activeTags.includes('friendship-evo') }]"
               @click.stop="toggleTagFilter('friendship-evo')"
             >
-              <span class="icon">💎</span>
+              <span class="emoji">💎</span>
               <span class="ps-tag-label">EVO</span>
             </button>
           </PVTooltip>
@@ -226,7 +116,7 @@ function clearFilters() {
               :class="['ps-tag-friendship-max', { active: activeTags.includes('friendship-max') }]"
               @click.stop="toggleTagFilter('friendship-max')"
             >
-              <span class="icon">🎀</span>
+              <span class="emoji">🎀</span>
               <span class="ps-tag-label">MAX</span>
             </button>
           </PVTooltip>
@@ -241,7 +131,7 @@ function clearFilters() {
               :class="['ps-tag-shiny', { active: activeTags.includes('shiny') }]"
               @click.stop="toggleTagFilter('shiny')"
             >
-              <span class="icon">{{ POKEMON_BADGES.shiny.icon }}</span>
+              <span class="emoji">{{ POKEMON_BADGES.shiny.icon }}</span>
               <span class="ps-tag-label">{{ POKEMON_BADGES.shiny.shortLabel }}</span>
             </button>
           </PVTooltip>
@@ -256,7 +146,7 @@ function clearFilters() {
               :class="['ps-tag-compatible', { active: filterCompatibleOnly }]"
               @click.stop="filterCompatibleOnly = !filterCompatibleOnly"
             >
-              <span class="icon">❤️</span>
+              <span class="emoji">❤️</span>
               <span class="ps-tag-label">COMPATIBLE</span>
             </button>
           </PVTooltip>

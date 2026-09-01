@@ -12,6 +12,12 @@ export const SCALE_FULL = 1;
 /** Zero scale value (0) — collapsed/invisible scale for GSAP animations. */
 export const SCALE_ZERO = 0;
 
+/** Full opacity value (1.0) — completely visible. */
+export const OPACITY_FULL = 1;
+
+/** Zero opacity value (0) — completely invisible. */
+export const OPACITY_INVISIBLE = 0;
+
 /** Fast GSAP transition duration in seconds (0.15s). */
 export const GSAP_FAST_DURATION_SEC = 0.15;
 

@@ -18,7 +18,7 @@ defineProps<{
         ORDEN DE TURNO
       </div>
       <div class="extra-effect-row">
-        <span class="extra-effect-icon">{{ activeDetails.speedInfo.priority > 0 ? '⚡' : (activeDetails.speedInfo.outspeeds ? '▶️' : '⏱️') }}</span>
+        <span class="emoji">{{ activeDetails.speedInfo.priority > 0 ? '⚡' : (activeDetails.speedInfo.outspeeds ? '▶️' : '⏱️') }}</span>
         <span
           class="extra-effect-text"
           :class="activeDetails.speedInfo.outspeeds || activeDetails.speedInfo.priority > 0 ? 'boosted' : 'penalized'"
@@ -48,7 +48,7 @@ defineProps<{
         v-if="['lowkick', 'grassknot', 'heavyslam', 'heatcrash'].includes(moveId ?? '')"
         class="field-condition-row"
       >
-        <span class="field-condition-dot">⚖️</span>
+        <span class="emoji">⚖️</span>
         <span class="field-condition-text">Peso: Tu {{ activeDetails.tacticalInfo.attackerWeight }}kg vs Rival {{ activeDetails.tacticalInfo.defenderWeight }}kg</span>
       </div>
 
@@ -57,7 +57,7 @@ defineProps<{
         v-if="activeDetails.tacticalInfo.overrideOffensiveStat"
         class="field-condition-row"
       >
-        <span class="field-condition-dot">🧠</span>
+        <span class="emoji">🧠</span>
         <span class="field-condition-text">Usa tu DEFENSA para atacar</span>
       </div>
 
@@ -66,7 +66,7 @@ defineProps<{
         v-if="activeDetails.tacticalInfo.overrideDefensiveStat"
         class="field-condition-row"
       >
-        <span class="field-condition-dot">🧠</span>
+        <span class="emoji">🧠</span>
         <span class="field-condition-text">Ataca contra la DEFENSA FÍSICA del rival</span>
       </div>
 
@@ -75,7 +75,7 @@ defineProps<{
         v-if="activeDetails.tacticalInfo.ignoreDefensive"
         class="field-condition-row"
       >
-        <span class="field-condition-dot">🛡️</span>
+        <span class="emoji">🛡️</span>
         <span class="field-condition-text">Ignora aumentos de defensa del rival</span>
       </div>
 
@@ -84,7 +84,7 @@ defineProps<{
         v-if="activeDetails.tacticalInfo.breaksProtect"
         class="field-condition-row"
       >
-        <span class="field-condition-dot">💥</span>
+        <span class="emoji">💥</span>
         <span class="field-condition-text">Rompe la Protección del rival</span>
       </div>
 
@@ -93,7 +93,7 @@ defineProps<{
         v-if="activeDetails.tacticalInfo.hasCrashDamage"
         class="field-condition-row"
       >
-        <span class="field-condition-dot">⚠️</span>
+        <span class="emoji">⚠️</span>
         <span class="field-condition-text">Daño por colisión si falla</span>
       </div>
 
@@ -103,7 +103,7 @@ defineProps<{
         :key="warning"
         class="field-condition-row"
       >
-        <span class="field-condition-dot">💥</span>
+        <span class="emoji">💥</span>
         <span class="field-condition-text penalized">{{ warning }}</span>
       </div>
     </div>

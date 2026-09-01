@@ -143,7 +143,7 @@ onUnmounted(() => {
         class="hud-pill war-pill clickable-pill"
         @click.stop="modalStore.open('WarShop')"
       >
-        <span class="war-icon">⚔️</span>
+        <span class="emoji war-icon">⚔️</span>
         <span
           id="hud-war-coins"
           ref="warRef"

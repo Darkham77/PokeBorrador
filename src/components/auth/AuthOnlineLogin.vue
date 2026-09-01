@@ -51,7 +51,7 @@ const handleServerSelect = (e: Event) => {
       v-if="!isOnline" 
       class="internet-alert"
     >
-      <span class="emoji-inline">⚠️</span> SIN CONEXIÓN A INTERNET
+      <span class="emoji">⚠️</span> SIN CONEXIÓN A INTERNET
     </div>
 
     <div class="server-list-container">
@@ -112,7 +112,7 @@ const handleServerSelect = (e: Event) => {
       :disabled="loading || serverStatus !== 'online'"
       @click.stop="emit('login')"
     >
-      ▶ ENTRAR
+      <span class="emoji">▶</span> ENTRAR
     </button>
   </div>
 </template>

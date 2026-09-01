@@ -494,7 +494,7 @@ const { onBeforeEnter, onEnter, onLeave } = useGridTransitions(isCategorySwitchi
           class="battle-search-section"
         >
           <div class="search-input-wrap">
-            <span class="search-icon">🔍</span>
+            <span class="emoji search-icon">🔍</span>
             <input
               v-model="battleSearchQuery"
               type="text"
@@ -539,7 +539,7 @@ const { onBeforeEnter, onEnter, onLeave } = useGridTransitions(isCategorySwitchi
             class="empty-inventory-state"
           >
             <div class="empty-visual">
-              <span class="icon">🔍</span>
+              <span class="emoji icon">🔍</span>
             </div>
             <div class="empty-text">
               <h3>No hay resultados</h3>

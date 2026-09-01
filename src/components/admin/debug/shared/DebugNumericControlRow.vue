@@ -85,10 +85,10 @@ const isDefaultActive = () => {
         <div class="label-group">
           <span
             v-if="icon"
-            class="row-icon"
+            class="emoji row-icon"
           >{{ icon }}</span>
           <span class="row-label">{{ label }}</span>
-          <span class="info-badge">ℹ️</span>
+          <span class="emoji info-badge">ℹ️</span>
         </div>
       </PVTooltip>
       <span
@@ -143,7 +143,7 @@ const isDefaultActive = () => {
             :class="{ active: isDefaultActive() }"
             @click.stop="restoreDefault"
           >
-            <span class="btn-emoji">🔄</span> DEF
+            <span class="emoji">🔄</span> DEF
           </button>
         </PVTooltip>
       </div>

@@ -30,7 +30,7 @@ defineProps<{
           {{ formatPowerDisplay(activeDetails.power.base, activeDetails.power.final) }}
           <span
             v-if="getArrowForClass(activeDetails.power.class).show"
-            class="arrow"
+            class="emoji arrow"
             :class="getArrowForClass(activeDetails.power.class).isUp ? 'up' : 'down'"
           >{{ getArrowForClass(activeDetails.power.class).isUp ? '▲' : '▼' }}</span>
         </template>
@@ -46,13 +46,13 @@ defineProps<{
       >
         <span
           v-if="activeDetails.accuracy.base === 1000 && activeDetails.accuracy.final === 1000"
-          class="infinity-val"
+          class="emoji infinity-val"
         >♾️</span>
         <template v-else>
           {{ formatAccuracyDisplay(activeDetails.accuracy.base, activeDetails.accuracy.final) }}
           <span
             v-if="getArrowForClass(activeDetails.accuracy.class).show"
-            class="arrow"
+            class="emoji arrow"
             :class="getArrowForClass(activeDetails.accuracy.class).isUp ? 'up' : 'down'"
           >{{ getArrowForClass(activeDetails.accuracy.class).isUp ? '▲' : '▼' }}</span>
         </template>
@@ -105,7 +105,7 @@ defineProps<{
         {{ formatStatValueDisplay(activeDetails.attackerStat.base, activeDetails.attackerStat.final) }}
         <span
           v-if="getArrowForStage(activeDetails.attackerStat.stage).show"
-          class="arrow"
+          class="emoji arrow"
           :class="getArrowForStage(activeDetails.attackerStat.stage).isUp ? 'up' : 'down'"
         >{{ getArrowForStage(activeDetails.attackerStat.stage).isUp ? '▲' : '▼' }}</span>
       </span>
@@ -124,7 +124,7 @@ defineProps<{
         {{ formatStatValueDisplay(activeDetails.defenderStat.base, activeDetails.defenderStat.final) }}
         <span
           v-if="getArrowForStage(activeDetails.defenderStat.stage).show"
-          class="arrow"
+          class="emoji arrow"
           :class="getArrowForStage(activeDetails.defenderStat.stage).isUp ? 'up' : 'down'"
         >{{ getArrowForStage(activeDetails.defenderStat.stage).isUp ? '▲' : '▼' }}</span>
       </span>

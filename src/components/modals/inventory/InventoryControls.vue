@@ -38,7 +38,7 @@ const startMode = (mode: string) => {
     <div class="search-section">
       <div class="search-wrapper">
         <div class="search-input-wrap">
-          <span class="search-icon">🔍</span>
+          <span class="emoji search-icon">🔍</span>
           <input
             id="inventory-search-input"
             v-model="searchQuery"
@@ -76,7 +76,7 @@ const startMode = (mode: string) => {
             class="vicio-btn secondary sm"
             @click.stop="startMode('sell')"
           >
-            <span class="icon">💰</span>
+            <span class="emoji">💰</span>
             <span class="label">MODO VENTA</span>
           </button>
         </PVTooltip>
@@ -91,7 +91,7 @@ const startMode = (mode: string) => {
             class="vicio-btn danger sm"
             @click.stop="startMode('release')"
           >
-            <span class="icon">🗑️</span>
+            <span class="emoji">🗑️</span>
             <span class="label">TIRAR OBJETOS</span>
           </button>
         </PVTooltip>

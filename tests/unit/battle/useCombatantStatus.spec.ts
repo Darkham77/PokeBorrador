@@ -18,11 +18,14 @@ vi.mock('@/logic/services/assetService', () => ({
   }
 }));
 
-vi.mock('@/data/system/constants', () => ({
-  ACTIVE_GENERATION: 4,
-  IMPLEMENTED_GENERATION: 4,
-  MAX_DEX_NUMS: { 3: 386, 4: 493 }
-}));
+vi.mock('@/data/system/constants', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/data/system/constants')>();
+  return {
+    ...actual,
+    ACTIVE_GENERATION: 4,
+    MAX_DEX_NUMS: { 3: 386, 4: 493 }
+  };
+});
 
 describe('useCombatantStatus - Weather display filtering', () => {
   beforeEach(() => {

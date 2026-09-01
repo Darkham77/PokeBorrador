@@ -109,7 +109,7 @@ const handleImageError = () => {
           {{ item.name }}
         </h4>
         <div class="item-price-wrapper rep-price">
-          <span class="rep-star-icon">★</span>
+          <span class="emoji rep-star-icon">★</span>
           <span class="price-val">{{ item.repCost }} REP</span>
         </div>
       </div>

@@ -266,14 +266,14 @@ const toggleStatus = (side: string, type: string) => {
 <template>
   <div class="debug-menu custom-scrollbar-vicio">
     <div class="debug-header">
-      <span class="icon">🕹️</span>
+      <span class="emoji">🕹️</span>
       <span class="title">BATTLE ACTIONS & DEBUG</span>
       <button
         id="battle-debug-menu-close-btn"
         class="close-mini"
         @click.stop="emit('close')"
       >
-        <span class="btn-emoji">✕</span>
+        <span class="emoji">✕</span>
       </button>
     </div>
 
@@ -526,7 +526,7 @@ const toggleStatus = (side: string, type: string) => {
       </div>
 
       <div class="debug-footer">
-        ● VITE_DEBUG ACTIVE
+        <span class="emoji">●</span> VITE_DEBUG ACTIVE
       </div>
     </div>
   </div>

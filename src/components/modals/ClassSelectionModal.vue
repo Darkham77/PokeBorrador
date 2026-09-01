@@ -38,6 +38,14 @@ defineOptions({ inheritAttrs: false });
 const CLASS_CARD_HOVER_Y_OFFSET_PX = -10
 const CLASS_HOVER_ROTATE_X_DEG = 2
 const CLASS_HOVER_SPRITE_SCALE = 1.1
+
+function splitLeadingEmoji(text: string): { emoji: string | null; text: string } {
+  const match = text.match(/^(\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic})*)\s*(.*)$/u);
+  if (match) {
+    return { emoji: match[1] ?? null, text: match[2] ?? '' };
+  }
+  return { emoji: null, text };
+}
 const GSAP_CARD_HOVER_DURATION_SEC = 0.25
 const GLOW_ACTIVE_OPACITY = 0.2
 const GLOW_BASE_OPACITY = 0.05
@@ -151,7 +159,8 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
 <template>
   <BaseModal
     :show="show"
-    title="⚡ ELEGÍ TU CLASE ⚡"
+    emoji="⚡"
+    title="ELEGÍ TU CLASE"
     :type="isSmallScreen ? 'fullscreen' : 'center'"
     title-color="var(--yellow)"
     header-background="Rgba(26, 28, 46, 1)"
@@ -197,7 +206,7 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
 
           <div class="stats-comparison">
             <div class="stats-section pros">
-              <h3><span class="icon">✅</span> VENTAJAS</h3>
+              <h3><span class="emoji">✅</span> VENTAJAS</h3>
               <ul>
                 <li
                   v-for="(bonus, idx) in cls.bonuses"
@@ -209,14 +218,20 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
                     :delay="100"
                     style="cursor: help;"
                   >
-                    <span>{{ bonus }}</span>
+                    <span class="bullet-item-flex">
+                      <span
+                        v-if="splitLeadingEmoji(bonus).emoji"
+                        class="emoji bullet-icon"
+                      >{{ splitLeadingEmoji(bonus).emoji }}</span>
+                      <span class="bullet-text">{{ splitLeadingEmoji(bonus).text }}</span>
+                    </span>
                   </PVTooltip>
                 </li>
               </ul>
             </div>
 
             <div class="stats-section cons">
-              <h3><span class="icon">❌</span> PENALIZACIONES</h3>
+              <h3><span class="emoji">❌</span> PENALIZACIONES</h3>
               <ul>
                 <li
                   v-for="(penalty, idx) in cls.penalties"
@@ -228,7 +243,13 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
                     :delay="100"
                     style="cursor: help;"
                   >
-                    <span>{{ penalty }}</span>
+                    <span class="bullet-item-flex">
+                      <span
+                        v-if="splitLeadingEmoji(penalty).emoji"
+                        class="emoji bullet-icon"
+                      >{{ splitLeadingEmoji(penalty).emoji }}</span>
+                      <span class="bullet-text">{{ splitLeadingEmoji(penalty).text }}</span>
+                    </span>
                   </PVTooltip>
                 </li>
               </ul>
@@ -412,20 +433,38 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
       gap: 8px;
       li {
         font-size: 11px;
-        color: Rgba(255, 255, 255, 0.7);
+        color: Rgba(255, 255, 255, 0.85);
         line-height: 1.4;
         position: relative;
-        padding-left: 12px;
-        &::before {
-          content: '•';
-          position: absolute;
-          left: 0;
-          color: Rgba(255, 255, 255, 0.3);
-        }
+        padding: 0;
         
         :deep(.pv-tooltip-wrapper) {
-          display: inline !important;
+          display: flex !important;
+          width: 100%;
           line-height: 1.4 !important;
+        }
+
+        .bullet-item-flex {
+          display: flex;
+          align-items: flex-start;
+          gap: 6px;
+          line-height: 1.4;
+          width: 100%;
+
+          .bullet-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            line-height: 1.4;
+            flex-shrink: 0;
+            width: 16px;
+            height: 16px;
+          }
+
+          .bullet-text {
+            flex: 1;
+          }
         }
       }
     }

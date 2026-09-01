@@ -103,11 +103,11 @@ const handleItemImageError = (e: Event) => {
             >
             <span
               v-else
-              class="fallback-icon"
+              class="emoji fallback-icon"
             >{{ badge.icon || '🎒' }}</span>
           </template>
           <template v-else>
-            {{ badge.icon }}
+            <span class="emoji">{{ badge.icon }}</span>
           </template>
         </div>
       </PVTooltip>

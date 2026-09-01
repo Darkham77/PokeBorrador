@@ -215,7 +215,7 @@ async function startClassMission(missionId: string) {
         :disabled="breedingStore.missionRefreshes <= 0"
         @click.stop="breedingStore.refreshMissions"
       >
-        <span class="btn-icon">↻</span> REFRESCAR
+        <span class="emoji">↻</span> REFRESCAR
       </button>
     </header>
 

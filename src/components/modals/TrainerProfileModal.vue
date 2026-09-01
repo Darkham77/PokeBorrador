@@ -193,7 +193,7 @@ const getAssetUrlLocal = getAssetUrl
         v-else-if="error"
         class="error-state"
       >
-        <span class="error-icon">⚠️</span>
+        <span class="emoji error-icon">⚠️</span>
         <span class="error-message">{{ error }}</span>
         <button
           class="retry-btn"
@@ -233,7 +233,7 @@ const getAssetUrlLocal = getAssetUrl
               title="Cambiar Nombre"
               @click.prevent.stop="openRename"
             >
-              <span class="emoji-inline">✏️</span> CAMBIAR
+              <span class="emoji">✏️</span> CAMBIAR
             </a>
           </div>
           <div

@@ -46,7 +46,7 @@ const tms = computed(() => {
   <div class="tab-pane tms-pane">
     <div class="tm-controls">
       <div class="search-box">
-        <span class="icon">🔍</span>
+        <span class="emoji">🔍</span>
         <input
           v-model="tmSearchQuery"
           type="text"
@@ -94,7 +94,7 @@ const tms = computed(() => {
           />
         </div>
         <div class="tm-check">
-          <span class="icon">{{ tm.isCompatible ? '✓' : '✕' }}</span>
+          <span class="emoji">{{ tm.isCompatible ? '✓' : '✕' }}</span>
         </div>
       </div>
     </div>

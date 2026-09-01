@@ -33,7 +33,11 @@ class FleeTeleportSimWrapper extends BaseBattleSimulation {
 
 test.describe('Battle Flee and Teleport Simulations', () => {
   test.beforeEach(async ({ request }) => {
-    await request.post('/api/dev-import-db-cleanup');
+    for (const k of ['sim_db_testfleesuccess', 'sim_db_testfleefail', 'sim_db_testteleport']) {
+      await request.post('/api/dev-sim-db-cleanup', {
+        headers: { 'x-db-key': k }
+      });
+    }
   });
 
   test('should successfully flee from wild encounter via official UI and return cleanly to map', async ({ page }) => {

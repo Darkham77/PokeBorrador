@@ -142,14 +142,14 @@ const handleBtnLeave = (e: MouseEvent) => {
       <div class="header-main">
         <div class="leader-info">
           <div class="type-row">
-            <span class="type-icon">{{ typeIcon }}</span>
+            <span class="emoji type-icon">{{ typeIcon }}</span>
             <span
               class="gym-tag"
               :style="{ color: gym.typeColor }"
             >{{ gym.name }}</span>
           </div>
           <div class="location">
-            <span class="emoji-inline">📍</span> {{ gym.city }}
+            <span class="emoji">📍</span> {{ gym.city }}
           </div>
           <div class="leader-title">
             Líder: <span>{{ gym.leader }}</span>
@@ -190,7 +190,7 @@ const handleBtnLeave = (e: MouseEvent) => {
           v-if="isLocked"
           class="locked-tag"
         >
-          <span class="emoji-inline">🔒</span> BLOQUEADO ({{ gym.badgesRequired }} Medallas)
+          <span class="emoji">🔒</span> BLOQUEADO ({{ gym.badgesRequired }} Medallas)
         </div>
         <div
           v-else
@@ -215,7 +215,7 @@ const handleBtnLeave = (e: MouseEvent) => {
               <span
                 v-if="gymsStore.isDifficultyDefeated(gym.id, d)"
                 class="won-dot"
-              ><span class="emoji-inline">✓</span></span>
+              ><span class="emoji">✓</span></span>
             </button>
           </div>
 
@@ -223,7 +223,7 @@ const handleBtnLeave = (e: MouseEvent) => {
             v-if="isDefeated"
             class="won-tag"
           >
-            <span class="emoji-inline">✅</span> VICTORIA OBTENIDA en {{ selectedDifficulty === 'easy' ? 'FÁCIL' : selectedDifficulty === 'normal' ? 'NORMAL' : 'DIFÍCIL' }}
+            <span class="emoji">✅</span> VICTORIA OBTENIDA en {{ selectedDifficulty === 'easy' ? 'FÁCIL' : selectedDifficulty === 'normal' ? 'NORMAL' : 'DIFÍCIL' }}
           </div>
 
           <button
@@ -234,7 +234,7 @@ const handleBtnLeave = (e: MouseEvent) => {
             }"
             @click.stop="handleChallenge"
           >
-            <span class="btn-emoji">⚔️</span> {{ isDefeated ? 'REAFIRMAR' : 'DESAFIAR LÍDER' }}
+            <span class="emoji">⚔️</span> {{ isDefeated ? 'REAFIRMAR' : 'DESAFIAR LÍDER' }}
           </button>
         </div>
       </div>

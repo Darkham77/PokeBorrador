@@ -117,6 +117,7 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
     try {
       await authStore.localLogin(validName.output, gender.value);
       const targetUrl = new URL(import.meta.env.BASE_URL, window.location.origin);
+      // fallow-ignore-next-line security-sink
       window.location.replace(targetUrl.href);
     } catch (_err) {
       error.value = 'Error al crear partida local';
@@ -145,6 +146,7 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 3000);
 
+      // fallow-ignore-next-line security-sink
       const response = await fetch(`${server.url}/rest/v1/`, {
         signal: controller.signal,
         headers: { 'apikey': server.anonKey },

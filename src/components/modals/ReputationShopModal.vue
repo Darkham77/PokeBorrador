@@ -211,7 +211,7 @@ const close = () => {
     <template #header>
       <div class="rep-shop-modal-header">
         <div class="rep-shop-title-group">
-          <span class="title-icon">🎖️</span>
+          <span class="emoji">🎖️</span>
           <div class="title-text-wrap">
             <span class="main-title">TIENDA DE REPUTACIÓN</span>
             <span class="sub-title">EXCLUSIVO PARA EL ENTRENADOR DE RUTA</span>
@@ -222,7 +222,7 @@ const close = () => {
           <div class="stat-node reputation">
             <span class="shop-stat-label">MI REPUTACIÓN</span>
             <span class="value">
-              <span class="rep-star-icon">★</span>
+              <span class="emoji rep-star-icon">★</span>
               {{ reputation }}
             </span>
           </div>
@@ -285,7 +285,7 @@ const close = () => {
             v-else
             class="shop-empty-state"
           >
-            <span class="empty-icon">🔍</span>
+            <span class="emoji empty-icon">🔍</span>
             <span class="empty-text">
               <h3>Sin resultados</h3>
               <p>Prueba con otros términos de búsqueda en esta sección</p>

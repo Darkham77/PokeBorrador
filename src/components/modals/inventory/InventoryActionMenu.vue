@@ -64,7 +64,7 @@ const handleSelect = (actionType: ItemMenuAction) => {
         class="menu-btn vicio-primary"
         @click.stop="handleSelect('use')"
       >
-        <span class="icon">✨</span> USAR / EQUIPAR
+        <span class="emoji icon">✨</span> USAR / EQUIPAR
       </button>
       <button
         v-else-if="!battleMode && isItemUsableOrEquippable"
@@ -72,10 +72,10 @@ const handleSelect = (actionType: ItemMenuAction) => {
         @click.stop="handleSelect('use')"
       >
         <template v-if="isItemHeld">
-          <span class="icon">🎒</span> EQUIPAR
+          <span class="emoji icon">🎒</span> EQUIPAR
         </template>
         <template v-else>
-          <span class="icon">✨</span> USAR
+          <span class="emoji icon">✨</span> USAR
         </template>
       </button>
       <button
@@ -83,14 +83,14 @@ const handleSelect = (actionType: ItemMenuAction) => {
         class="menu-btn vicio-warning"
         @click.stop="handleSelect('sell')"
       >
-        <span class="icon">💰</span> VENDER
+        <span class="emoji icon">💰</span> VENDER
       </button>
       <button
         v-if="!battleMode"
         class="menu-btn vicio-danger"
         @click.stop="handleSelect('release')"
       >
-        <span class="icon">🗑️</span> TIRAR
+        <span class="emoji icon">🗑️</span> TIRAR
       </button>
     </div>
   </BaseModal>

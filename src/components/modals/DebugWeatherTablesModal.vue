@@ -232,7 +232,7 @@ function toggleRoute(routeId: MapRouteId) {
           v-if="regionTableData.length === 0"
           class="empty-state"
         >
-          <div class="pixel-icon">
+          <div class="pixel-icon emoji">
             🚫
           </div>
           <p>No hay datos de clima para la región de {{ activeRegion.toUpperCase() }} aún.</p>
@@ -247,7 +247,7 @@ function toggleRoute(routeId: MapRouteId) {
             class="route-title"
             @click.stop="toggleRoute(route.routeId)"
           >
-            <span class="arrow">{{ expandedRoutes[route.routeId] ? '▼' : '▶' }}</span>
+            <span class="emoji arrow">{{ expandedRoutes[route.routeId] ? '▼' : '▶' }}</span>
             {{ route.name }} 
             <span class="id-tag">#{{ route.routeId }}</span>
           </h2>
@@ -282,7 +282,7 @@ function toggleRoute(routeId: MapRouteId) {
                       :class="prob.weather"
                     >
                       <div class="prob-header">
-                        <span class="icon">{{ prob.icon }}</span>
+                        <span class="emoji">{{ prob.icon }}</span>
                         <span class="label">{{ prob.label }}</span>
                         <span class="chance">{{ prob.chance }}%</span>
                       </div>
@@ -295,7 +295,7 @@ function toggleRoute(routeId: MapRouteId) {
                           v-if="prob.modifiers.boost.length"
                           class="mod-group boost"
                         >
-                          <span class="mod-icon">▲</span>
+                          <span class="emoji mod-icon">▲</span>
                           <PokemonTypeTag
                             v-for="t in prob.modifiers.boost"
                             :key="t"
@@ -307,7 +307,7 @@ function toggleRoute(routeId: MapRouteId) {
                           v-if="prob.modifiers.debuff.length"
                           class="mod-group debuff"
                         >
-                          <span class="mod-icon">▼</span>
+                          <span class="emoji mod-icon">▼</span>
                           <PokemonTypeTag
                             v-for="t in prob.modifiers.debuff"
                             :key="t"
@@ -319,7 +319,7 @@ function toggleRoute(routeId: MapRouteId) {
                           v-if="prob.modifiers.block.length"
                           class="mod-group block"
                         >
-                          <span class="mod-icon">🚫</span>
+                          <span class="emoji mod-icon">🚫</span>
                           <PokemonTypeTag
                             v-for="t in prob.modifiers.block"
                             :key="t"

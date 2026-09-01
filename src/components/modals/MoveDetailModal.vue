@@ -90,7 +90,7 @@ const hexToRgba = (hex: string, alpha: number) => {
           class="pixelated"
         />
         <span class="cat-badge">
-          <span class="icon">{{ catInfo.icon }}</span>
+          <span class="emoji icon">{{ catInfo.icon }}</span>
           <span class="text pixelated">{{ catInfo.text.toUpperCase() }}</span>
         </span>
       </div>

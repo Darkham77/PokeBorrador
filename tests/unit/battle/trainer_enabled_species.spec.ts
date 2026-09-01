@@ -24,7 +24,7 @@ describe('NPC & Rival Team Generation - Enabled Species Enforcement', () => {
     );
   });
 
-  it('buildRivalEncounter produces strictly enabled Pokémon for all slots', async () => {
+  it('buildRivalEncounter produces strictly enabled Pokémon for all slots with level +5 and Ace at slot 0', async () => {
     const mockPlayerTeam = [
       { id: 'pikachu', level: 30 } as unknown as Pokemon,
       { id: 'charizard', level: 32 } as unknown as Pokemon,
@@ -34,7 +34,9 @@ describe('NPC & Rival Team Generation - Enabled Species Enforcement', () => {
     const rival = await buildRivalEncounter(mockPlayerTeam);
     expect(rival.enemyTeam.length).toBeGreaterThanOrEqual(3);
 
+    // Level should be avg(31) + 5 = 36
     for (const p of rival.enemyTeam) {
+      expect(p.level).toBe(36);
       expect(isEnabledPokemonId(p.id)).toBe(true);
     }
   });

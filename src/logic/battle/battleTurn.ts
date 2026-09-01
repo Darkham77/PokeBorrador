@@ -8,6 +8,10 @@ import {
   parseLogsWithSkip,
   resolvePostTurnSwitchesAndFaints
 } from './helpers/turnActionResolver.ts'
+import {
+  resolvePlayerForcedMoveIndex,
+  evaluateMoveValidityAndLock
+} from './helpers/turnMoveValidator.ts'
 
 export { runEnemyAction }
 
@@ -40,49 +44,11 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
   const fsm = store.fsm
   const { BATTLE_STATES, BATTLE_SUBSTATES } = store
 
-  // Thrash / lockedmove check
-  if (p.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0 && p.lastMove) {
-    const forcedIdx = p.moves.findIndex((m) => m?.id === p.lastMove?.id);
-    if (forcedIdx !== -1) moveIndex = forcedIdx;
-  } else if (p.thrashTurns && p.thrashTurns > 0) {
-    const forcedIdx = p.moves.findIndex((m) => m?.id === 'thrash');
-    if (forcedIdx !== -1) moveIndex = forcedIdx;
-  } else if (p.encoreTurns && p.encoreTurns > 0 && p.encoreMove) {
-    const forcedIdx = p.moves.findIndex((m) => m?.id === p.encoreMove?.id);
-    if (forcedIdx !== -1) moveIndex = forcedIdx;
-  }
+  const playerRequestMoves = store.activeBattle.value?.playerRequest?.active?.[0]?.moves
+  const { finalMoveIndex, isRecharge } = resolvePlayerForcedMoveIndex(p, moveIndex, playerRequestMoves)
+  const { isLocked, isStruggle, move, isValid } = evaluateMoveValidityAndLock(p, finalMoveIndex, isRecharge, store)
 
-  // If there is only 1 move available (e.g. Rollout, Recharge, Struggle, locked move),
-  // fallback moveIndex to 0 if the requested moveIndex is out of range.
-  if (p.moves.length === 1 && p.moves[0]) {
-    moveIndex = 0;
-  }
-
-  const isRecharge = Boolean(
-    (p.volatileCounters?.['mustrecharge'] && p.volatileCounters['mustrecharge'] > 0) ||
-    (store.activeBattle.value?.playerRequest?.active?.[0]?.moves?.length === 1 &&
-      (store.activeBattle.value?.playerRequest?.active?.[0]?.moves[0]?.id === 'recharge' ||
-       store.activeBattle.value?.playerRequest?.active?.[0]?.moves[0]?.move === 'Recharge'))
-  );
-  if (isRecharge) {
-    moveIndex = 0;
-  }
-
-  const isLocked = isRecharge ||
-                   !!(p.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0) || 
-                   !!(p.volatileCounters?.['twoturnmove'] && p.volatileCounters['twoturnmove'] > 0) || 
-                   !!(p.volatileCounters?.['mustrecharge'] && p.volatileCounters['mustrecharge'] > 0) ||
-                   !!(p.thrashTurns && p.thrashTurns > 0) ||
-                   p.moves.length === 1;
-  const isStruggle = moveIndex === -1;
-  const move = isStruggle ? null : p.moves[moveIndex];
-
-  if (!isStruggle && !isLocked && move?.id !== 'struggle' && !(typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode)) {
-    if (!move || move.pp <= 0) {
-      store.addLog(`¡No queda PP para ${move?.name || 'este movimiento'}!`, 'log-info', p)
-      return
-    }
-  }
+  if (!isValid) return
 
   const isWild = !store.activeBattle.value?.isTrainer && !store.activeBattle.value?.isGym
   
@@ -117,7 +83,7 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     if (intercepted) return
 
     const active = store.activeBattle.value
-    const choices = await resolveTurnChoices(store, p, e, move || null, isStruggle, isWild, p2Skip, eMove, moveIndex)
+    const choices = await resolveTurnChoices(store, p, e, move || null, isStruggle, isWild, p2Skip, eMove, finalMoveIndex)
     const p1Choice = choices.p1Choice
     let p2Choice = choices.p2Choice
     const p1Skip = choices.p1Skip

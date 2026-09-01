@@ -149,7 +149,7 @@ const close = () => {
     <template #header>
       <div class="gts-modal-header">
         <div class="gts-title-group">
-          <span class="title-icon">🛸</span>
+          <span class="emoji">🛸</span>
           <div class="title-text-wrap">
             <span class="main-title">
               GLOBAL TRADE STATION
@@ -191,7 +191,7 @@ const close = () => {
           @click.stop="activeTab = tab.id"
         >
           <div class="cat-icon-frame">
-            <span class="cat-icon">{{ tab.icon }}</span>
+            <span class="emoji cat-icon">{{ tab.icon }}</span>
           </div>
           <span class="cat-label">{{ tab.label }}</span>
           

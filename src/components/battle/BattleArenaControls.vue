@@ -28,33 +28,73 @@ const battle = computed(() => battleStore.state)
 const player = computed(() => battle.value?.player)
 const gs = computed(() => gameStore.state)
 
+const CONTROLS_DISABLED_STATES: ReadonlySet<string> = new Set<string>(['INITIALIZING', 'FIRST_INTRO', 'LEVEL_UP_MODAL', 'REWARDS_PHASE']); // runtime-set
+const AUTO_BATTLE_SUBSTATES: ReadonlySet<string> = new Set<string>(['COMBAT_OR_FLEE', 'SILHOUETTE_MODE']); // runtime-set
+const FINISH_OVERLAY_SEARCH_SUBSTATES: ReadonlySet<string> = new Set<string>(['WAIT_INPUT', 'COMBAT_OR_FLEE', 'PARALLEL_PREP', 'BUSH_VISIBLE', 'SILHOUETTE_MODE', 'GEN_NEW_S2']); // runtime-set
+
+function resolveForcedMoveIndex(
+  subState: string | null | undefined,
+  isProcessing: boolean,
+  p: Pokemon | null | undefined,
+  reqMoves?: { id?: string; move?: string }[]
+): number | null {
+  if (String(subState) !== 'WAIT_INPUT' || isProcessing || !p) return null;
+
+  const hasLockedMove = (p.volatileCounters?.['lockedmove'] ?? 0) > 0;
+  const hasTwoTurn = (p.volatileCounters?.['twoturnmove'] ?? 0) > 0;
+  const hasRecharge = (p.volatileCounters?.['mustrecharge'] ?? 0) > 0 || (reqMoves && reqMoves.length === 1 && (reqMoves[0]?.id === 'recharge' || reqMoves[0]?.move === 'Recharge'));
+  const hasThrash = (p.thrashTurns ?? 0) > 0;
+
+  if (hasRecharge) return 0;
+
+  if (hasLockedMove || hasTwoTurn || hasThrash) {
+    const targetId = p.lastMove?.id || (reqMoves && reqMoves.length === 1 ? reqMoves[0]?.id : undefined);
+    if (targetId) {
+      const forcedIdx = p.moves.findIndex(m => m?.id === targetId);
+      if (forcedIdx !== -1) return forcedIdx;
+    }
+    if (hasThrash) {
+      const thrashIdx = p.moves.findIndex(m => m?.id === 'thrash');
+      if (thrashIdx !== -1) return thrashIdx;
+    }
+  }
+
+  return null;
+}
+
 const isControlsDisabled = computed(() => {
-  const s = toValue(battleStore.currentFsmState)
+  const s = toValue(battleStore.currentFsmState);
   return !!(battleStore.isProcessing || 
          battleStore.isIntroAnimating || 
          battleStore.isFinishing ||
          battleStore.isSearching ||
          battle.value?.over ||
-         ['INITIALIZING', 'FIRST_INTRO', 'LEVEL_UP_MODAL', 'REWARDS_PHASE'].includes(s || ''))
-})
+         (s && CONTROLS_DISABLED_STATES.has(s)));
+});
 
 const isRewardsWait = computed(() => 
   toValue(battleStore.currentFsmState) === 'REWARDS_PHASE' && 
   toValue(battleStore.currentSubState) === 'EMPTY_WAIT'
-)
+);
 
+const isFinishOverlayVisible = computed(() => {
+  if (battleStore.isProcessing) return false;
+  const sub = String(battleStore.currentSubState);
+  const isSearchValid = battleStore.isSearching && FINISH_OVERLAY_SEARCH_SUBSTATES.has(sub);
+  return isSearchValid || battleStore.isReadyToExit || isRewardsWait.value;
+});
 
 const execShowBattleSwitch = () => { 
-  const isForced = uiStore.isBattleSwitchForced
-  uiStore.isBattleSwitchForced = false
+  const isForced = uiStore.isBattleSwitchForced;
+  uiStore.isBattleSwitchForced = false;
 
-  const team = (gameStore.state.team || []) as (Pokemon | null)[]
-  const activeUid = player.value?.uid
-  const hasBenchPokemon = team.some(p => p && p.hp > 0 && p.uid !== activeUid)
+  const team = (gameStore.state.team || []) as (Pokemon | null)[];
+  const activeUid = player.value?.uid;
+  const hasBenchPokemon = team.some(p => p && p.hp > 0 && p.uid !== activeUid);
 
   if (!hasBenchPokemon) {
-    uiStore.notify('No hay Pokémon disponibles para cambiar', '⚠️')
-    return
+    uiStore.notify('No hay Pokémon disponibles para cambiar', '⚠️');
+    return;
   }
 
   modalStore.open('PokemonSelection', {
@@ -66,69 +106,68 @@ const execShowBattleSwitch = () => {
     activePokemonUid: player.value?.uid,
     onConfirm: (pokes: Pokemon[]) => {
       if (pokes.length > 0 && pokes[0]) {
-        const index = team.findIndex(p => p && p.uid === pokes[0]?.uid)
+        const index = team.findIndex(p => p && p.uid === pokes[0]?.uid);
         if (index !== -1) {
           if (livePvP.battleState.active) {
-            livePvP._commitPick({ type: 'switch', switchIndex: index })
+            livePvP._commitPick({ type: 'switch', switchIndex: index });
           } else {
-            battleStore.executeSwitch(index, isForced)
+            battleStore.executeSwitch(index, isForced);
           }
         }
       }
     }
-  })
-}
+  });
+};
 
 const execTryCatch = () => { 
-  const inventory = gs.value.inventory || {}
-  const balls = Object.keys(inventory).filter(n => n.toLowerCase().includes('ball'))
+  const inventory = gs.value.inventory || {};
+  const balls = Object.keys(inventory).filter(n => n.toLowerCase().includes('ball'));
   if (balls.length === 0) {
-    uiStore.notify('¡No tienes Poké Balls!', '🚫')
-    return
+    uiStore.notify('¡No tienes Poké Balls!', '🚫');
+    return;
   }
   
   modalStore.open('Inventory', { 
     battleMode: true, 
     initialCategory: 'pokeballs' 
-  })
-}
+  });
+};
 
 const execShowBattleBag = () => { 
   modalStore.open('Inventory', { 
     battleMode: true, 
     initialCategory: 'potions' 
-  })
-}
+  });
+};
 
-const BATTLE_SWITCH_RECHECK_DELAY_SEC = 0.1
+const BATTLE_SWITCH_RECHECK_DELAY_SEC = 0.1;
 
 watch(() => uiStore.isBattleSwitchForced, (val) => {
   if (val) {
     if (battleStore.isProcessing) {
       const checkReady = () => {
         if (!battleStore.isProcessing) {
-          execShowBattleSwitch()
+          execShowBattleSwitch();
         } else {
-          gsap.delayedCall(BATTLE_SWITCH_RECHECK_DELAY_SEC, checkReady)
+          gsap.delayedCall(BATTLE_SWITCH_RECHECK_DELAY_SEC, checkReady);
         }
-      }
-      gsap.delayedCall(BATTLE_SWITCH_RECHECK_DELAY_SEC, checkReady)
+      };
+      gsap.delayedCall(BATTLE_SWITCH_RECHECK_DELAY_SEC, checkReady);
     } else {
-      execShowBattleSwitch()
+      execShowBattleSwitch();
     }
   }
-})
+});
 
 watch(() => battleStore.currentSubState, (subState) => {
   if (subState === 'SWITCH_MENU' && !uiStore.isBattleSwitchForced) {
-    uiStore.isBattleSwitchForced = true
+    uiStore.isBattleSwitchForced = true;
   }
-}, { immediate: true })
+}, { immediate: true });
 
-let autoBattleDelayedCall: gsap.core.Tween | null = null
+let autoBattleDelayedCall: gsap.core.Tween | null = null;
 
 // Auto-combatir: Inicia el encuentro automáticamente si está activado
-// En encuentros de Entrenador/NPC, espera AUTO_BATTLE_NPC_DIALOG_DELAY_SEC (3s) con timer GSAP para permitir leer el diálogo.
 watch(() => [
   battleStore.isSearching,
   battleStore.currentSubState,
@@ -139,8 +178,8 @@ watch(() => [
   battle.value?.isGym
 ] as const, ([isSearching, subState, isIntroAnimating, isProcessing, autoBattle, isTrainer, isGym]) => {
   if (autoBattleDelayedCall) {
-    autoBattleDelayedCall.kill()
-    autoBattleDelayedCall = null
+    autoBattleDelayedCall.kill();
+    autoBattleDelayedCall = null;
   }
 
   if (
@@ -148,40 +187,38 @@ watch(() => [
     isSearching &&
     !isIntroAnimating &&
     !isProcessing &&
-    ['COMBAT_OR_FLEE', 'SILHOUETTE_MODE'].includes(String(subState))
+    AUTO_BATTLE_SUBSTATES.has(String(subState))
   ) {
-    const isNpcEncounter = Boolean(isTrainer || isGym)
-    const delay = isNpcEncounter ? AUTO_BATTLE_NPC_DIALOG_DELAY_SEC : 0
+    const isNpcEncounter = Boolean(isTrainer || isGym);
+    const delay = isNpcEncounter ? AUTO_BATTLE_NPC_DIALOG_DELAY_SEC : 0;
 
     if (delay > 0) {
       autoBattleDelayedCall = gsap.delayedCall(delay, () => {
-        autoBattleDelayedCall = null
+        autoBattleDelayedCall = null;
         if (
           uiStore.autoBattle &&
           battleStore.isSearching &&
           !battleStore.isIntroAnimating &&
           !battleStore.isProcessing &&
-          ['COMBAT_OR_FLEE', 'SILHOUETTE_MODE'].includes(String(toValue(battleStore.currentSubState)))
+          AUTO_BATTLE_SUBSTATES.has(String(toValue(battleStore.currentSubState)))
         ) {
-          battleStore.startEncounter()
+          battleStore.startEncounter();
         }
-      })
+      });
     } else {
-      battleStore.startEncounter()
+      battleStore.startEncounter();
     }
   }
-}, { immediate: true })
+}, { immediate: true });
 
 onUnmounted(() => {
   if (autoBattleDelayedCall) {
-    autoBattleDelayedCall.kill()
-    autoBattleDelayedCall = null
+    autoBattleDelayedCall.kill();
+    autoBattleDelayedCall = null;
   }
-})
+});
 
-// Auto-ejecución de turnos forzados y bloqueados (lockedmove, twoturnmove, recharge, thrash, etc.).
-// Cuando el Pokémon está en un estado fijado y el combate espera input,
-// el turno se ejecuta automáticamente con el movimiento correspondiente.
+// Auto-ejecución de turnos forzados y bloqueados
 watch(() => [
   battleStore.currentSubState,
   battleStore.isProcessing,
@@ -191,62 +228,30 @@ watch(() => [
   player.value?.thrashTurns,
   player.value?.lastMove?.id,
   battleStore.state?.playerRequest?.active?.[0]?.moves
-] as const, ([subState, isProcessing, lockedMoveVolatile, twoTurnVolatile, mustRechargeVolatile, thrashTurns, lastMoveId, reqMoves]) => {
-  if (
-    String(subState) === 'WAIT_INPUT' &&
-    !isProcessing
-  ) {
-    const p = player.value
-    if (!p) return
-
-    const hasLockedMove = (lockedMoveVolatile ?? 0) > 0
-    const hasTwoTurn = (twoTurnVolatile ?? 0) > 0
-    const hasRecharge = (mustRechargeVolatile ?? 0) > 0 || (reqMoves && reqMoves.length === 1 && (reqMoves[0]?.id === 'recharge' || reqMoves[0]?.move === 'Recharge'))
-    const hasThrash = (thrashTurns ?? 0) > 0
-
-    if (hasRecharge) {
-      battleStore.executeMove(0)
-      return
-    }
-
-    if (hasLockedMove || hasTwoTurn || hasThrash) {
-      const targetId = lastMoveId || (reqMoves && reqMoves.length === 1 ? reqMoves[0]?.id : undefined)
-      if (targetId) {
-        const forcedIdx = p.moves.findIndex(m => m?.id === targetId)
-        if (forcedIdx !== -1) {
-          battleStore.executeMove(forcedIdx)
-          return
-        }
-      }
-      if (hasThrash) {
-        const thrashIdx = p.moves.findIndex(m => m?.id === 'thrash')
-        if (thrashIdx !== -1) {
-          battleStore.executeMove(thrashIdx)
-          return
-        }
-      }
-    }
+] as const, ([subState, isProcessing, , , , , , reqMoves]) => {
+  const forcedIdx = resolveForcedMoveIndex(subState, isProcessing, player.value, reqMoves);
+  if (forcedIdx !== null) {
+    battleStore.executeMove(forcedIdx);
   }
-})
-
+});
 
 // Dynamic button text/emoji for fishing & archaeology encounters
 const encounterBtnEmoji = computed(() => {
-  const mg = getActiveMinigame(battleStore.state)
-  if (mg === 'fishing') return '🎣'
-  if (mg === 'archaeology') return '⛏️'
-  return '⚔️'
-})
+  const mg = getActiveMinigame(battleStore.state);
+  if (mg === 'fishing') return '🎣';
+  if (mg === 'archaeology') return '⛏️';
+  return '⚔️';
+});
 
 const encounterBtnText = computed(() => {
-  const mg = getActiveMinigame(battleStore.state)
-  if (mg === 'fishing') return '¡PESCAR!'
-  if (mg === 'archaeology') return '¡EXCAVAR!'
-  return '¡COMBATIR!'
-})
+  const mg = getActiveMinigame(battleStore.state);
+  if (mg === 'fishing') return '¡PESCAR!';
+  if (mg === 'archaeology') return '¡EXCAVAR!';
+  return '¡COMBATIR!';
+});
 
-const GSAP_ARENA_CONTROLS_INITIAL_Y_OFFSET_PX = 30
-const GSAP_ARENA_CONTROLS_INITIAL_SCALE = 0.95
+const GSAP_ARENA_CONTROLS_INITIAL_Y_OFFSET_PX = 30;
+const GSAP_ARENA_CONTROLS_INITIAL_SCALE = 0.95;
 
 // GSAP Transition Hooks
 const onEnter = (el: Element, done: () => void) => {
@@ -260,8 +265,8 @@ const onEnter = (el: Element, done: () => void) => {
       ease: 'back.out(1.7)',
       onComplete: done
     }
-  )
-}
+  );
+};
 </script>
 
 <template>
@@ -315,7 +320,7 @@ const onEnter = (el: Element, done: () => void) => {
 
     <!-- Overlay de Finalización / Búsqueda (Cubre TODO el move-panel) -->
     <div
-      v-if="!battleStore.isProcessing && ((battleStore.isSearching && ['WAIT_INPUT', 'COMBAT_OR_FLEE', 'PARALLEL_PREP', 'BUSH_VISIBLE', 'SILHOUETTE_MODE', 'GEN_NEW_S2'].includes(String(battleStore.currentSubState))) || battleStore.isReadyToExit || isRewardsWait)"
+      v-if="isFinishOverlayVisible"
       class="battle-finish-overlay"
       :class="{ 'is-search-mode': battleStore.isSearching }"
     >
@@ -326,7 +331,7 @@ const onEnter = (el: Element, done: () => void) => {
           class="continue-btn-final fight-btn"
           @click.stop="battleStore.startEncounter()"
         >
-          <span class="btn-emoji">{{ encounterBtnEmoji }}</span>
+          <span class="emoji">{{ encounterBtnEmoji }}</span>
           <span class="btn-text">{{ encounterBtnText }}</span>
         </button>
         <button
@@ -336,11 +341,11 @@ const onEnter = (el: Element, done: () => void) => {
           @click.stop="battleStore.completeBattleFlow('map')"
         >
           <template v-if="battleStore.state?.isGym">
-            <span class="btn-emoji">🏆</span>
+            <span class="emoji">🏆</span>
             <span class="btn-text">VOLVER A GIMNASIOS</span>
           </template>
           <template v-else>
-            <span class="btn-emoji">🗺️</span>
+            <span class="emoji">🗺️</span>
             <span class="btn-text">VOLVER AL MAPA</span>
           </template>
         </button>

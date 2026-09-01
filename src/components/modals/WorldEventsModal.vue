@@ -48,9 +48,10 @@ const upcomingEventsToFillModal = computed<UpcomingEventOccurrence[]>(() => {
     .slice(0, neededSlots)
 })
 
-const openEventDetail = (event: GameEvent) => {
+const openEventDetail = (event: GameEvent, occurrence?: UpcomingEventOccurrence) => {
   modalStore.open('EventDetail', {
-    event
+    event,
+    occurrence
   })
 }
 
@@ -74,7 +75,7 @@ onMounted(() => {
     <template #header>
       <div class="events-modal-header">
         <div class="events-title-group">
-          <span class="title-icon">🏆</span>
+          <span class="emoji">🏆</span>
           <div class="title-text-wrap">
             <span class="main-title">EVENTOS MUNDIALES</span>
             <span class="sub-title">Compite con entrenadores de todo el mundo</span>
@@ -99,7 +100,7 @@ onMounted(() => {
       <div class="events-section-block">
         <div class="events-section-header">
           <h3 class="events-section-title">
-            ⚡ EVENTOS ACTIVOS AHORA
+            <span class="emoji">⚡</span> EVENTOS ACTIVOS AHORA
           </h3>
         </div>
 

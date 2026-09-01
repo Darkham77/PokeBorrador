@@ -77,14 +77,13 @@ export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
     ['psiquico', 'psychic']
   ])
 
-  const SPANISH_TYPES_REGEX = new RegExp(`\\b(${Object.keys(SPANISH_TYPE_MAP).join('|')})\\b`, 'gi')
+  const SPANISH_TYPES_REGEX = /\b(normal|fuego|agua|planta|eléctrico|electrico|hielo|lucha|veneno|tierra|volador|psíquico|psiquico|bicho|roca|fantasma|dragón|dragon|siniestro|acero|hada)\b/gi
 
   const parsedDescriptionLines = computed(() => {
     const desc = weatherDetails.value?.description || ''
     if (!desc) return []
 
     const sentences = desc.split(/\n|\.\s+/).map(s => s.trim()).filter(Boolean)
-    const regex = new RegExp(SPANISH_TYPES_REGEX.source, 'gi')
     return sentences.map(sentence => {
       // Sanitizar indicadores de viñeta manual si existen (por ej. ▲, ▼, •)
       const cleanSentence = sentence.endsWith('.') ? sentence : sentence
@@ -123,7 +122,7 @@ export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
         restOfSentence = currentSentence.substring(7).trim()
       }
 
-      const parts = restOfSentence.split(regex)
+      const parts = restOfSentence.split(SPANISH_TYPES_REGEX)
       const segments = parts.filter(Boolean).map(part => {
         const lower = part.toLowerCase() // text-ok
         const typeKey = SPANISH_TYPE_MAP[lower]

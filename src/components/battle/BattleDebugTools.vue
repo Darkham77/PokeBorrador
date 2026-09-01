@@ -35,14 +35,14 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
         class="effects-menu custom-scrollbar-vicio"
       >
         <div class="effects-header">
-          <span class="icon">✨</span>
+          <span class="emoji">✨</span>
           <span class="title">BATTLE EFFECTS & AUDIO</span>
           <button
             id="battle-debug-effects-close-btn"
             class="close-mini"
             @click.stop="isEffectsOpen = false"
           >
-            <span class="btn-emoji">✕</span>
+            <span class="emoji">✕</span>
           </button>
         </div>
         <div class="effects-scroll-area">
@@ -58,13 +58,13 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
         class="time-menu custom-scrollbar-vicio"
       >
         <div class="time-header">
-          <span class="icon">⌛</span>
+          <span class="emoji">⌛</span>
           <span class="title">TIME & WEATHER CONTROL</span>
           <button
             class="close-mini"
             @click.stop="isTimeOpen = false"
           >
-            <span class="btn-emoji">✕</span>
+            <span class="emoji">✕</span>
           </button>
         </div>
         <div class="time-scroll-area">
@@ -80,14 +80,14 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
         class="spawn-menu custom-scrollbar-vicio"
       >
         <div class="spawn-header">
-          <span class="icon">🎲</span>
+          <span class="emoji">🎲</span>
           <span class="title">SPAWN & MINIGAMES CONDITIONS</span>
           <button
             id="battle-debug-spawn-close-btn"
             class="close-mini"
             @click.stop="isSpawnOpen = false"
           >
-            <span class="btn-emoji">✕</span>
+            <span class="emoji">✕</span>
           </button>
         </div>
         <div class="spawn-scroll-area">
@@ -105,7 +105,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
           :class="{ active: isOpen }"
           @click.stop="isOpen = !isOpen; isEffectsOpen = false; isTimeOpen = false; isSpawnOpen = false"
         >
-          <span class="icon">🕹️</span>
+          <span class="emoji">🕹️</span>
           <span class="label">DEBUG</span>
         </button>
       </PVTooltip>
@@ -117,7 +117,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
           :class="{ active: isEffectsOpen }"
           @click.stop="isEffectsOpen = !isEffectsOpen; isOpen = false; isTimeOpen = false; isSpawnOpen = false"
         >
-          <span class="icon">✨</span>
+          <span class="emoji">✨</span>
           <span class="label">EFECTOS</span>
         </button>
       </PVTooltip>
@@ -128,7 +128,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
           :class="{ active: isTimeOpen }"
           @click.stop="isTimeOpen = !isTimeOpen; isOpen = false; isEffectsOpen = false; isSpawnOpen = false"
         >
-          <span class="icon">⌛</span>
+          <span class="emoji">⌛</span>
           <span class="label">TIEMPO</span>
         </button>
       </PVTooltip>
@@ -140,7 +140,7 @@ const isDebug = computed(() => typeof window !== 'undefined' && !!window.__VITE_
           :class="{ active: isSpawnOpen }"
           @click.stop="isSpawnOpen = !isSpawnOpen; isOpen = false; isEffectsOpen = false; isTimeOpen = false"
         >
-          <span class="icon">🎲</span>
+          <span class="emoji">🎲</span>
           <span class="label">SPAWN</span>
         </button>
       </PVTooltip>

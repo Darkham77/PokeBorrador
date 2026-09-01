@@ -141,20 +141,21 @@ export function getEffectiveStatPure(
   ).final;
 }
 
+const HELD_ITEM_TYPE_BOOSTERS: Record<string, string> = {
+  charcoal: 'fire',
+  magnet: 'electric',
+  mystic_water: 'water',
+  miracle_seed: 'grass',
+  black_belt: 'fighting',
+  twisted_spoon: 'psychic',
+  spell_tag: 'ghost',
+  silver_powder: 'bug',
+  poison_barb: 'poison'
+};
+
 function calculateHeldItemDamageMultiplier(heldItem: string | undefined, moveType: string, moveCat: string): number {
   if (!heldItem) return 1;
-  const typeBoosters: Record<string, string> = {
-    charcoal: 'fire',
-    magnet: 'electric',
-    mystic_water: 'water',
-    miracle_seed: 'grass',
-    black_belt: 'fighting',
-    twisted_spoon: 'psychic',
-    spell_tag: 'ghost',
-    silver_powder: 'bug',
-    poison_barb: 'poison'
-  };
-  if (typeBoosters[heldItem] === moveType) return 1.2;
+  if (HELD_ITEM_TYPE_BOOSTERS[heldItem] === moveType) return 1.2;
   if (heldItem === 'choiceband' && moveCat === 'physical') return 1.5;
   if (heldItem === 'choicespecs' && moveCat === 'special') return 1.5;
   if (heldItem === 'lifeorb') return 1.3;
@@ -221,6 +222,73 @@ function calculateDeltaStreamTypeEff(eff: number, defender: PurePokemon, moveTyp
   return eff;
 }
 
+function calculateCritOutcome(
+  attacker: PurePokemon,
+  defender: PurePokemon,
+  gen: number,
+  forceCrit?: boolean
+): { isCrit: boolean; critMult: number } {
+  let critStage = 0;
+  if (attacker.heldItem === 'scopelens' || attacker.heldItem === 'razorclaw') critStage += 1;
+  if (attacker.focusEnergy) critStage += 2;
+
+  let critRate: number;
+  if (gen >= 6) {
+    const rates = [1 / CRIT_ROLL_DENOMINATOR_GEN6_BASE, 1 / 8, 1 / 2, 1, 1];
+    critRate = rates[Math.min(critStage, 4)] ?? 1 / CRIT_ROLL_DENOMINATOR_GEN6_BASE;
+  } else if (gen === 5) {
+    const rates = [1 / CRIT_ROLL_DENOMINATOR_GEN5_BASE, 1 / 8, 1 / 4, 1 / 3, 1];
+    critRate = rates[Math.min(critStage, 4)] ?? 1 / CRIT_ROLL_DENOMINATOR_GEN5_BASE;
+  } else {
+    critRate = Math.min(1, (1 / CRIT_ROLL_DENOMINATOR_GEN5_BASE) * Math.pow(2, critStage));
+  }
+
+  let isCrit = forceCrit !== undefined ? forceCrit : (Math.random() < critRate);
+  if (defender.ability === 'shellarmor' || defender.ability === 'battlearmor') isCrit = false;
+
+  const critMult = isCrit ? (gen <= 5 ? 2.0 : 1.5) : 1;
+  return { isCrit, critMult };
+}
+
+function calculateStabMultiplier(attacker: PurePokemon, moveType: string): number {
+  let stab = (moveType === attacker.type || moveType === attacker.type2) ? 1.5 : 1;
+  if (attacker.ability === 'adaptability' && stab > 1) stab = 2;
+  return stab;
+}
+
+function getEffectivenessPresentation(eff: number): { value: number; label: string; class: string } {
+  let effLabel = 'Neutro';
+  let effClass = 'neutral';
+  if (eff > 1) {
+    effLabel = 'Súper eficaz';
+    effClass = 'boosted';
+  } else if (eff < 1 && eff > 0) {
+    effLabel = 'Poco eficaz';
+    effClass = 'penalized';
+  } else if (eff === 0) {
+    effLabel = 'Inmune';
+    effClass = 'penalized';
+  }
+  return { value: eff, label: effLabel, class: effClass };
+}
+
+function calculateKoChanceText(normalMin: number, normalMax: number, targetHp: number): string {
+  if (normalMin >= targetHp) return 'OHKO garantizado';
+  if (normalMax >= targetHp) {
+    const diff = normalMax - normalMin;
+    if (diff > 0) {
+      const pct = Math.round(((normalMax - targetHp) / diff) * 100);
+      return `OHKO posible (${pct}%)`;
+    }
+    return 'OHKO posible';
+  }
+  if (normalMin * 2 >= targetHp) return '2HKO garantizado';
+  if (normalMax * 2 >= targetHp) return '2HKO posible';
+  if (normalMin * 3 >= targetHp) return '3HKO garantizado';
+  if (normalMax * 3 >= targetHp) return '3HKO posible';
+  return '4+ HKO probable';
+}
+
 export function calculateDamagePure(
   attacker: PurePokemon,
   defender: PurePokemon,
@@ -256,27 +324,8 @@ export function calculateDamagePure(
   const aStages: PureBattleStages = { [isPhysical ? 'atk' : 'spa']: atkStages };
   const dStages: PureBattleStages = { [isPhysical ? 'def' : 'spd']: defStages };
 
-  // Crit chance: stage-based per generation (Showdown sim/data/conditions.ts)
-  // Gen 6+: stage 0 = 1/24, 1 = 1/8, 2 = 1/2, 3+ = always
-  // Gen 5:  stage 0 = 1/16, 1 = 1/8, 2 = 1/4, 3 = 1/3, 4+ = always
-  // Gen 1-4: simplified approximation (stage 0 = 1/16)
-  let critStage = 0;
-  if (attacker.heldItem === 'scopelens' || attacker.heldItem === 'razorclaw') critStage += 1;
-  if (attacker.focusEnergy) critStage += 2;
   const gen = ACTIVE_GENERATION as number;
-  let critRate: number;
-  if (gen >= 6) {
-    const rates = [1/CRIT_ROLL_DENOMINATOR_GEN6_BASE, 1/8, 1/2, 1, 1];
-    critRate = rates[Math.min(critStage, 4)] ?? 1/CRIT_ROLL_DENOMINATOR_GEN6_BASE;
-  } else if (gen === 5) {
-    const rates = [1/CRIT_ROLL_DENOMINATOR_GEN5_BASE, 1/8, 1/4, 1/3, 1];
-    critRate = rates[Math.min(critStage, 4)] ?? 1/CRIT_ROLL_DENOMINATOR_GEN5_BASE;
-  } else {
-    // Gen 1-4: 1/16 base, doubles per stage up to always
-    critRate = Math.min(1, (1/CRIT_ROLL_DENOMINATOR_GEN5_BASE) * Math.pow(2, critStage));
-  }
-  let isCrit = forceCrit !== undefined ? forceCrit : (Math.random() < critRate);
-  if (defender.ability === 'shellarmor' || defender.ability === 'battlearmor') isCrit = false;
+  const { isCrit, critMult } = calculateCritOutcome(attacker, defender, gen, forceCrit);
 
   if (isCrit) {
     const aKey = isPhysical ? 'atk' : 'spa';
@@ -284,9 +333,6 @@ export function calculateDamagePure(
     if ((aStages[aKey as keyof PureBattleStages] ?? 0) < 0) aStages[aKey as keyof PureBattleStages] = 0;
     if ((dStages[dKey as keyof PureBattleStages] ?? 0) > 0) dStages[dKey as keyof PureBattleStages] = 0;
   }
-
-  // Crit multiplier: Gen 1-5 = 2.0x, Gen 6+ = 1.5x (Showdown sim/battle-actions.ts)
-  const critMult = isCrit ? (gen <= 5 ? 2.0 : 1.5) : 1;
 
   const isGym = ctx.isGym || false;
   const A = getEffectiveStatPure(attacker, isPhysical ? 'atk' : 'spa', aStages, weather, dayCycle, isGym);
@@ -303,9 +349,7 @@ export function calculateDamagePure(
   }
 
   const itemMult = calculateHeldItemDamageMultiplier(attacker.heldItem, moveType, moveCat);
-
-  let stab = (moveType === attacker.type || moveType === attacker.type2) ? 1.5 : 1;
-  if (attacker.ability === 'adaptability' && stab > 1) stab = 2;
+  const stab = calculateStabMultiplier(attacker, moveType);
 
   const isMoveWeather = !!(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1);
   const cleanMoveId = toID(move.id);
@@ -314,19 +358,17 @@ export function calculateDamagePure(
   const isStrongWinds = Boolean((!isGym || isMoveWeather) && weather && weather.turns !== 0 && (weather.type === 'strong_winds' || weather.type === 'deltastream'));
   const finalEff = calculateDeltaStreamTypeEff(eff, defender, moveType, isStrongWinds);
 
-
   let terrainMult = 1;
   if (weather && weather.type === 'grassyterrain' && moveType === 'ground' && (cleanMoveId === 'earthquake' || cleanMoveId === 'bulldoze' || cleanMoveId === 'magnitude')) {
     terrainMult = 0.5;
   }
 
   // Random damage roll: Showdown uses integer 85-100 divided by 100 with floor (not a float multiply)
-  // Clamp to 100 to guard against mocked Math.random() === 1.0 producing 101
   const randomInt = randomFactor !== undefined
     ? Math.min(100, Math.round(randomFactor * 100))
-    : Math.min(100, DAMAGE_ROLL_MIN_INT + Math.floor(Math.random() * DAMAGE_ROLL_RANGE_INT)); // 85 to 100 inclusive
+    : Math.min(100, DAMAGE_ROLL_MIN_INT + Math.floor(Math.random() * DAMAGE_ROLL_RANGE_INT));
 
-  // Apply modifiers sequentially with floor at each step (matching Showdown's pokeRound chain)
+  // Apply modifiers sequentially with floor at each step
   let finalDmg = (power > 0 && finalEff > 0 && weatherMult > 0)
     ? Math.max(1, Math.floor(
         Math.floor(
@@ -377,25 +419,7 @@ export function calculateDamageRangePure(
   dayCycle: DayPhase = 'day'
 ): { effectiveness: { value: number; label: string; class: string } | null; damageRange: PureDamageRange | null } {
   const sim = calculateDamagePure(attacker, defender, move, ctx, dayCycle, 1.0, false);
-  const eff = sim.eff;
-  let effLabel = 'Neutro';
-  let effClass = 'neutral';
-  if (eff > 1) {
-    effLabel = 'Súper eficaz';
-    effClass = 'boosted';
-  } else if (eff < 1 && eff > 0) {
-    effLabel = 'Poco eficaz';
-    effClass = 'penalized';
-  } else if (eff === 0) {
-    effLabel = 'Inmune';
-    effClass = 'penalized';
-  }
-
-  const effectiveness = {
-    value: eff,
-    label: effLabel,
-    class: effClass
-  };
+  const effectiveness = getEffectivenessPresentation(sim.eff);
 
   let damageRange: PureDamageRange | null = null;
   const isStatus = move.cat === 'status';
@@ -414,27 +438,7 @@ export function calculateDamageRangePure(
     const critPctMax = Math.round((critMax / rivalMaxHp) * 100);
 
     const targetHp = (defender.hp !== undefined ? defender.hp : defender.maxHp) ?? 100;
-    let koChanceText = '4+ HKO probable';
-    
-    if (normalMin >= targetHp) {
-      koChanceText = 'OHKO garantizado';
-    } else if (normalMax >= targetHp) {
-      const diff = normalMax - normalMin;
-      if (diff > 0) {
-        const pct = Math.round(((normalMax - targetHp) / diff) * 100);
-        koChanceText = `OHKO posible (${pct}%)`;
-      } else {
-        koChanceText = 'OHKO posible';
-      }
-    } else if (normalMin * 2 >= targetHp) {
-      koChanceText = '2HKO garantizado';
-    } else if (normalMax * 2 >= targetHp) {
-      koChanceText = '2HKO posible';
-    } else if (normalMin * 3 >= targetHp) {
-      koChanceText = '3HKO garantizado';
-    } else if (normalMax * 3 >= targetHp) {
-      koChanceText = '3HKO posible';
-    }
+    const koChanceText = calculateKoChanceText(normalMin, normalMax, targetHp);
 
     damageRange = {
       normalMin,

@@ -6,7 +6,9 @@ This directory contains static code analysis, AST governance, TypeScript configu
 
 ## Directory Structure & Files
 
-- [audit_project.ts](./audit_project.ts): Master static code, line limit, duplicate constants, CSS check, and Fallow AST analyzer. Supports dynamic selective rule execution via `RuleDescriptor` and short-circuits unrequested suites.
+- [report_audit_warnings.ts](./report_audit_warnings.ts): Consolidated CLI reporter for audit warnings and errors (`npm run audit:warnings`, `npm run audit:summary`).
+- [report_complexity.ts](./report_complexity.ts): Fallow cyclomatic and cognitive complexity hotspot reporter (`npm run audit:complexity`, `npm run audit:complexity:top`).
+- [report_fallow.ts](./report_fallow.ts): Fallow codebase intelligence triage reporter (`npm run audit:fallow`).
 - [validate_build_tools.ts](./validate_build_tools.ts): Validates bundling, transpilation, and build tools integrity.
 - [validate_component_styles.ts](./validate_component_styles.ts): Audits Vue component style linkage, broken style links, and orphaned SCSS files.
 - [validate_emoji_typography.ts](./validate_emoji_typography.ts): Audits Vue templates for unwrapped emojis and enforces proper icon/emoji class styling and vertical centering.

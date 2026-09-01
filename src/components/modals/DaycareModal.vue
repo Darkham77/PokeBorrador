@@ -80,7 +80,7 @@ onMounted(() => {
   >
     <div class="daycare-modal-container custom-scrollbar-vicio">
       <div class="daycare-header-hint">
-        <span class="hint-icon">🔮</span>
+        <span class="emoji hint-icon">🔮</span>
         <p>Deposita dos Pokémon compatibles para conseguir huevos. Revisa su vigor y dales Piedra Eterna o Lazo Destino para heredar cualidades.</p>
       </div>
 

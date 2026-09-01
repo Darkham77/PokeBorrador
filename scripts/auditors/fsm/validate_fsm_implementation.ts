@@ -58,21 +58,64 @@ function parseMermaid(manualCode: string) {
   return { states, syncRequired };
 }
 
-function parseFsmConstants(fsmCode: string) {
+interface FsmConstantsInfo {
+  allKeys: Set<string>;
+  substates: Set<string>;
+  suppressedKeys: Set<string>;
+  invalidSuppressionErrors: string[];
+}
+
+function parseFsmConstants(fsmCode: string): FsmConstantsInfo {
   const allKeys = new Set<string>();
   const substates = new Set<string>();
-  const objRx = /export const (BATTLE_STATES|BATTLE_SUBSTATES)\s*=\s*\{([\s\S]*?)\}\s*(as const)?\s*;/g;
-  let m: RegExpExecArray | null;
-  while ((m = objRx.exec(fsmCode)) !== null) {
-    const isTop = m[1] === 'BATTLE_STATES';
-    const keyRx = /([A-Z][A-Z0-9_]+)\s*:/g;
-    let km: RegExpExecArray | null;
-    while ((km = keyRx.exec(m[2]!)) !== null) if (km?.[1]) {
-      allKeys.add(km[1]);
-      if (!isTop) substates.add(km[1]);
+  const suppressedKeys = new Set<string>();
+  const invalidSuppressionErrors: string[] = []; // no-domain
+
+  const lines = fsmCode.split('\n');
+  let currentBlock: 'TOP' | 'SUB' | null = null;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]!;
+    if (line.includes('export const BATTLE_STATES =')) {
+      currentBlock = 'TOP';
+      continue;
+    } else if (line.includes('export const BATTLE_SUBSTATES =')) {
+      currentBlock = 'SUB';
+      continue;
+    } else if (currentBlock && line.includes('} as const;')) {
+      currentBlock = null;
+      continue;
+    }
+
+    if (!currentBlock) continue;
+
+    const keyMatch = line.match(/^\s*([A-Z][A-Z0-9_]+)\s*:/);
+    if (keyMatch && keyMatch[1]) {
+      const key = keyMatch[1];
+      allKeys.add(key);
+      if (currentBlock === 'SUB') {
+        substates.add(key);
+      }
+
+      // Detectar supresión en la misma línea o en la línea inmediatamente anterior
+      const sameLineComment = line.includes('fsm-unused-ok') || line.includes('fsm-ignore');
+      const prevLineComment = i > 0 && (lines[i - 1]!.includes('fsm-unused-ok') || lines[i - 1]!.includes('fsm-ignore'));
+      const commentLine = sameLineComment ? line : (prevLineComment ? lines[i - 1]! : '');
+
+      if (commentLine) {
+        const match = commentLine.match(/(?:fsm-unused-ok|fsm-ignore)\s*(?::\s*(.*))?$/);
+        const reason = match && match[1] ? match[1].trim() : '';
+        const MIN_SUPPRESSION_REASON_LENGTH = 5;
+        if (!reason || reason.length < MIN_SUPPRESSION_REASON_LENGTH) {
+          invalidSuppressionErrors.push(`[CHECK 2] Supresión inválida para '${key}': Se requiere un comentario explicando el motivo técnico (ej. // fsm-unused-ok: motivo técnico).`);
+        } else {
+          suppressedKeys.add(key);
+        }
+      }
     }
   }
-  return { allKeys, substates };
+
+  return { allKeys, substates, suppressedKeys, invalidSuppressionErrors };
 }
 
 async function main() {
@@ -91,9 +134,9 @@ async function main() {
   const allCode = fileData.map(d => d.content).join('\n\n');
 
   const { states: mermaidStates, syncRequired } = parseMermaid(manualCode);
-  const { allKeys, substates } = parseFsmConstants(fsmCode);
+  const { allKeys, substates, suppressedKeys, invalidSuppressionErrors } = parseFsmConstants(fsmCode);
 
-  const errors: string[] = []; // no-domain
+  const errors: string[] = [...invalidSuppressionErrors]; // no-domain
   const warnings: string[] = []; // no-domain
 
   // 1. Mermaid -> JS
@@ -105,6 +148,7 @@ async function main() {
 
   // 2. Uso de Constantes
   allKeys.forEach(k => {
+    if (suppressedKeys.has(k)) return;
     const usageRx = new RegExp(`(?:\\.|'|")(${k})(?:'|")?`, 'g');
     if (!externalCode.match(usageRx)) {
       warnings.push(`[CHECK 2] Constante '${k}' definida pero sin uso real fuera de battleStateMachine.ts.`);
@@ -113,6 +157,7 @@ async function main() {
 
   // 3. Subestados (Referencias de transiciones)
   substates.forEach(s => {
+    if (suppressedKeys.has(s)) return;
     const refRx = new RegExp(`(?:isSubState|fsm\\.transition|emit|SUBSTATES)\\s*\\(\\s*[^)]*${s}|['"]${s}['"]`, 'g');
     if (!externalCode.match(refRx)) {
       warnings.push(`[CHECK 3] Subestado [PENDIENTE/HUÉRFANO]: '${s}'`);

@@ -75,7 +75,7 @@ const openFactionChoice = () => {
     <template #header>
       <div class="faction-war-modal-header">
         <div class="faction-war-title-group">
-          <span class="title-icon">⚔️</span>
+          <span class="emoji">⚔️</span>
           <div class="title-text-wrap">
             <span class="main-title">DOMINANCIA DE KANTO</span>
             <span class="sub-title">Guerra de Facciones - Temporada {{ warStore.currentWeekId }}</span>

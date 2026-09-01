@@ -30,7 +30,7 @@ onMounted(() => {
       <!-- Izquierda: Títulos apilados -->
       <div class="header-left">
         <h1 class="header-main-title">
-          <span class="title-icon">💊</span> CENTRO POKÉMON
+          <span class="emoji">💊</span> CENTRO POKÉMON
         </h1>
         <h2 class="header-sub-title">
           SISTEMA DE ALMACENAMIENTO — RED LAN
@@ -58,7 +58,7 @@ onMounted(() => {
             v-if="hint"
             class="hint-group"
           >
-            <span class="hint-icon">💡</span>
+            <span class="emoji">💡</span>
             <span class="hint-text">{{ hint }}</span>
           </div>
         </div>

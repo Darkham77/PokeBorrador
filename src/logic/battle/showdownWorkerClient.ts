@@ -1,6 +1,6 @@
 import { logger } from '../utils/logger.ts'
 import type { SideID } from '@pkmn/sim'
-import type { ShowdownPlayerRequest } from '@/types/battle/battle'
+import type { ShowdownPlayerRequest, BattleState } from '@/types/battle/battle'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle/battle'
@@ -226,17 +226,17 @@ export async function executeTurnInWorker(
   try {
     const { useBattleStore } = await import('@/stores/battle/battle');
     const battleStore = useBattleStore();
-    if (battleStore.state) {
-      weatherVal = typeof battleStore.state.weather === 'string' ? battleStore.state.weather : ((battleStore.state.weather as { type?: string } | null)?.type ?? 'none');
-      if (!battleStore.state.battleHistory) {
-        battleStore.state.battleHistory = [];
+    const activeState = ((battleStore.state as { value?: BattleState } | undefined)?.value || battleStore.state) as BattleState | null | undefined;
+    if (activeState) {
+      weatherVal = typeof activeState.weather === 'string' ? activeState.weather : ((activeState.weather as { type?: string } | null)?.type ?? 'none');
+      if (!activeState.battleHistory) {
+        activeState.battleHistory = [];
       }
-      battleStore.state.battleHistory.push({
-        turnCount: battleStore.state.turnCount,
+      activeState.battleHistory.push({
+        turnCount: activeState.turnCount,
         p1Choice,
         p2Choice: finalP2Choice || ''
       });
-
     }
 
     const { useGameStore } = await import('@/stores/game');
@@ -328,9 +328,10 @@ export async function executeTurnInWorker(
             battleStore = useBattleStore();
           }
 
-          if (battleStore?.state) {
-            battleStore.state.playerRequest = payload.p1Request;
-            battleStore.state.enemyRequest = payload.p2Request;
+          const activeState = ((battleStore?.state as { value?: BattleState } | undefined)?.value || battleStore?.state) as BattleState | null | undefined;
+          if (activeState) {
+            activeState.playerRequest = payload.p1Request;
+            activeState.enemyRequest = payload.p2Request;
           }
           ['p1', 'p2', 'p3', 'p4'].forEach(seatId => {
             const seatStateKey = `${seatId}TeamState` as keyof WorkerSuccessPayload;

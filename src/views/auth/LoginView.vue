@@ -265,7 +265,7 @@ const handleServerChange = () => {
         class="auth-pwa-update-panel"
         style="background: rgba(255, 68, 68, 0.1); border-color: #ff4444; box-shadow: 0 0 15px rgba(255, 68, 68, 0.2);"
       >
-        <div class="update-icon">
+        <div class="update-icon emoji">
           ⚠️
         </div>
         <div
@@ -291,7 +291,7 @@ const handleServerChange = () => {
         v-else-if="needRefresh"
         class="auth-pwa-update-panel"
       >
-        <div class="update-icon">
+        <div class="update-icon emoji">
           🔄
         </div>
         <div class="update-title">
@@ -359,7 +359,7 @@ const handleServerChange = () => {
           class="auth-ban-card show"
         >
           <div class="ban-title">
-            <span class="emoji-inline">🚫</span> ACCESO DENEGADO
+            <span class="emoji">🚫</span> ACCESO DENEGADO
           </div>
           <div class="ban-reason">
             {{ error.split(':')[1] }}
@@ -429,7 +429,7 @@ const handleServerChange = () => {
             v-if="loading"
             class="auth-loading-text"
           >
-            Cargando partida... <span class="emoji-inline">⌛</span>
+            Cargando partida... <span class="emoji">⌛</span>
           </div>
         </div>
       </template>
@@ -444,7 +444,7 @@ const handleServerChange = () => {
             class="pwa-install-btn"
             @click.stop="handleInstallApp"
           >
-            📲 INSTALAR APP (FULLSCREEN)
+            <span class="emoji">📲</span> INSTALAR APP (FULLSCREEN)
           </button>
         </div>
         {{ appVersion }}

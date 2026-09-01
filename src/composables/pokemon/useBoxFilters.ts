@@ -1,16 +1,11 @@
 import { ref, computed, watch, type Ref } from 'vue'
-import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { FriendshipSealTier } from '@/types/pokemon/friendship'
 import { getPokedexOrderIndex, requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { calculateTotalIVs, hasMaxIV } from '@/logic/pokemon/statsMath'
+import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
-import { hasPokemonTag } from '@/logic/constants/tags'
 import { getPokemonPhysicalWeight, getPokemonPhysicalHeight } from '@/logic/pokemon/physicalDimensionsMath'
-import {
-  isReadyForFriendshipEvolution,
-  resolveFriendshipSealTier,
-} from '@/logic/pokemon/friendshipLogic'
-import { FRIENDSHIP_BOUNDS, type FriendshipSealTier } from '@/types/pokemon/friendship'
+import { matchesAllBoxFilters } from './boxFilterPredicates.ts'
 
 interface FilterState {
   tier: string
@@ -122,77 +117,7 @@ const MAX_POKEMON_FRIENDSHIP_CONST = 255
     // Apply Filters
     list = list.filter(({ p }: { p: Pokemon | null }) => {
       if (!p) return false // Skip empty slots
-      const f = filters.value
-      const totalIv = calculateTotalIVs(p.ivs)
-      
-      if (f.tier !== 'all' && getPokemonTier(p).tier !== f.tier) return false
-      if (f.type !== 'all' && p.type !== f.type) return false
-      if (p.level < f.levelMin || p.level > f.levelMax) return false
-      if (totalIv < f.ivTotalMin || totalIv > f.ivTotalMax) return false
-      if (f.ivAny31 && !hasMaxIV(p.ivs)) return false
-      
-      // Individual IV Range (All stats must be within range)
-      const hp = p.ivs?.hp || 0
-      const atk = p.ivs?.atk || 0
-      const def = p.ivs?.def || 0
-      const spa = p.ivs?.spa || 0
-      const spd = p.ivs?.spd || 0
-      const spe = p.ivs?.spe || 0
-      if (hp < f.ivMin || hp > f.ivMax || atk < f.ivMin || atk > f.ivMax || def < f.ivMin || def > f.ivMax || spa < f.ivMin || spa > f.ivMax || spd < f.ivMin || spd > f.ivMax || spe < f.ivMin || spe > f.ivMax) {
-        return false
-      }
-
-      // Individual IV Filters (Specific stats)
-      if ((p.ivs?.hp || 0) < f.ivHP) return false
-      if ((p.ivs?.atk || 0) < f.ivATK) return false
-      if ((p.ivs?.def || 0) < f.ivDEF) return false
-      if ((p.ivs?.spa || 0) < f.ivSPA) return false
-      if ((p.ivs?.spd || 0) < f.ivSPD) return false
-      if ((p.ivs?.spe || 0) < f.ivSPE) return false
-
-      // Individual EV Filters (Specific stats)
-      if ((p.evs?.hp || 0) < f.evHP) return false
-      if ((p.evs?.atk || 0) < f.evATK) return false
-      if ((p.evs?.def || 0) < f.evDEF) return false
-      if ((p.evs?.spa || 0) < f.evSPA) return false
-      if ((p.evs?.spd || 0) < f.evSPD) return false
-      if ((p.evs?.spe || 0) < f.evSPE) return false
-
-      // Tags filter
-      if (f.tags && f.tags.length > 0) {
-        if (!f.tags.every(t => {
-          if (t === 'team') return false
-          return hasPokemonTag(p, t)
-        })) return false
-      }
-
-      // Friendship Filters
-      const pFriendship = p.friendship ?? 70
-      if (pFriendship < f.friendshipMin || pFriendship > f.friendshipMax) {
-        return false
-      }
-      if (f.friendshipSealTier !== 'all' && resolveFriendshipSealTier(p.friendship) !== f.friendshipSealTier) {
-        return false
-      }
-      if (f.friendshipEvoReady && !isReadyForFriendshipEvolution(p)) {
-        return false
-      }
-      if (f.friendshipMaxOnly && (p.friendship ?? 70) < FRIENDSHIP_BOUNDS.AFFINITY_PERK_THRESHOLD) {
-        return false
-      }
-
-      // TOTAL Filter (Species Base Stats + IVs + EVs)
-      const totalPower = calculateTotalPower(p)
-      if (totalPower < f.bstMin || totalPower > f.bstMax) return false
-
-      if (f.search) {
-        const query = f.search.toLowerCase() // text-ok
-        const nameMatch = p.name.toLowerCase().includes(query) // text-ok
-        const nickMatch = p.nickname?.toLowerCase().includes(query)
-        if (!nameMatch && !nickMatch) return false
-      }
-      
-      return true
+      return matchesAllBoxFilters(p, filters.value)
     })
 
     // Apply Sorting
@@ -203,11 +128,11 @@ const MAX_POKEMON_FRIENDSHIP_CONST = 255
         
         let result = 0
         if (sortMode.value === 'level') result = pB.level - pA.level;
-        else if (sortMode.value === 'tier') result = getPokemonTier(pB).total - getPokemonTier(pA).total;
+        else if (sortMode.value === 'tier' || sortMode.value === 'ivs') result = getPokemonTier(pB).total - getPokemonTier(pA).total;
         else if (sortMode.value === 'friendship') {
           result = (pB.friendship ?? 70) - (pA.friendship ?? 70);
         }
-        else if (sortMode.value === 'bst') {
+        else if (sortMode.value === 'bst' || sortMode.value === 'tot' || sortMode.value === 'TOT') {
           result = calculateTotalPower(pB) - calculateTotalPower(pA);
         }
         else if (sortMode.value === 'type') result = pA.type.localeCompare(pB.type);
@@ -216,12 +141,17 @@ const MAX_POKEMON_FRIENDSHIP_CONST = 255
           const tB = pB.obtainedAt || b.index || 0;
           result = tB - tA;
         }
-        else if (sortMode.value === 'pokedex') {
+        else if (sortMode.value === 'pokedex' || sortMode.value === 'pdex') {
           const indexA = getPokedexOrderIndex(requirePokemonSpeciesId(pA.id));
           const indexB = getPokedexOrderIndex(requirePokemonSpeciesId(pB.id));
           const idxA = indexA === -1 ? 9999 : indexA;
           const idxB = indexB === -1 ? 9999 : indexB;
           result = idxB - idxA;
+        }
+        else if (sortMode.value === 'hatched' || sortMode.value === 'egg') {
+          const hA = pA.obtainedMethod === 'egg' ? 1 : 0;
+          const hB = pB.obtainedMethod === 'egg' ? 1 : 0;
+          result = hB - hA;
         }
         else if (sortMode.value === 'weight') {
           result = getPokemonPhysicalWeight(pB) - getPokemonPhysicalWeight(pA);

@@ -279,7 +279,7 @@ const {
           id="gts-selection-hint"
           class="selection-hint"
         >
-          <div class="hint-icon">
+          <div class="emoji hint-icon">
             👈
           </div>
           <p>Selecciona un Pokémon u objeto para venderlo en el mercado mundial.</p>

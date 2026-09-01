@@ -38,7 +38,7 @@ const formatNum = (num: number) => formatCurrency(num)
         @mouseleave="handleStatLeave"
       >
         <span class="stat-val">
-          <span class="event-stat-icon">🎮</span>
+          <span class="emoji event-stat-icon">🎮</span>
           {{ formatNum(participations) }}
         </span>
         <span class="stat-lbl">Eventos Participados</span>
@@ -50,7 +50,7 @@ const formatNum = (num: number) => formatCurrency(num)
         @mouseleave="handleStatLeave"
       >
         <span class="stat-val">
-          <span class="event-stat-icon">🏆</span>
+          <span class="emoji event-stat-icon">🏆</span>
           {{ formatNum(medalsTotal) }}
         </span>
         <span class="stat-lbl">Medallas Totales</span>
@@ -66,7 +66,7 @@ const formatNum = (num: number) => formatCurrency(num)
         @mouseleave="handleStatLeave"
       >
         <span class="stat-val gold-text">
-          <span class="medal-icon">🥇</span>
+          <span class="emoji medal-icon">🥇</span>
           {{ formatNum(firstPlace) }}
         </span>
         <span class="stat-lbl">1er Puesto (Oro)</span>
@@ -79,7 +79,7 @@ const formatNum = (num: number) => formatCurrency(num)
         @mouseleave="handleStatLeave"
       >
         <span class="stat-val silver-text">
-          <span class="medal-icon">🥈</span>
+          <span class="emoji medal-icon">🥈</span>
           {{ formatNum(secondPlace) }}
         </span>
         <span class="stat-lbl">2do Puesto (Plata)</span>
@@ -92,7 +92,7 @@ const formatNum = (num: number) => formatCurrency(num)
         @mouseleave="handleStatLeave"
       >
         <span class="stat-val bronze-text">
-          <span class="medal-icon">🥉</span>
+          <span class="emoji medal-icon">🥉</span>
           {{ formatNum(thirdPlace) }}
         </span>
         <span class="stat-lbl">3er Puesto (Bronce)</span>

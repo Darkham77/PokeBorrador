@@ -337,7 +337,7 @@ onUnmounted(() => {
       @mouseenter="handlePlaceholderEnter"
       @mouseleave="handlePlaceholderLeave"
     >
-      <span class="plus-icon">✚</span>
+      <span class="emoji plus-icon">✚</span>
       <span class="label">AÑADIR</span>
     </div>
     

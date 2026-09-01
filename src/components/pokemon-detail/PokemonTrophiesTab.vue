@@ -48,7 +48,7 @@ const formatDate = (timestamp: number) => {
       v-if="!props.trophies || props.trophies.length === 0"
       class="trophies-empty-state"
     >
-      <span class="empty-icon">🏆</span>
+      <span class="emoji empty-icon">🏆</span>
       <p class="empty-title pixelated">
         SIN TROFEOS AÚN
       </p>

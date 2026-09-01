@@ -46,14 +46,14 @@ const {
         :class="{ active: genderValue === 'h' }"
         @click.prevent.stop="emit('update:genderValue', 'h')"
       >
-        <span class="btn-emoji">♂️</span> MASCULINO
+        <span class="emoji">♂️</span> MASCULINO
       </button>
       <button
         class="gender-select-btn female"
         :class="{ active: genderValue === 'm' }"
         @click.prevent.stop="emit('update:genderValue', 'm')"
       >
-        <span class="btn-emoji">♀️</span> FEMENINO
+        <span class="emoji">♀️</span> FEMENINO
       </button>
     </div>
 
@@ -62,7 +62,7 @@ const {
       :disabled="loading"
       @click.stop="emit('localSignup')"
     >
-      ▶ NUEVA PARTIDA
+      <span class="emoji">▶</span> NUEVA PARTIDA
     </button>
   </div>
 </template>

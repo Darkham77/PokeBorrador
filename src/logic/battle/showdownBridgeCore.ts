@@ -6,28 +6,182 @@ import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 import { isMatchingUid } from './showdownUidMapper.ts';
 import type { BattleContext } from '../../types/battle/battleContext.ts';
 
+function syncMatchingPokemon(team: (Pokemon | null)[] | undefined, target: Pokemon) {
+  if (!team) return;
+  const match = team.find((p: Pokemon | null) => p && isMatchingUid(p.uid, target.uid));
+  if (match && match !== target) {
+    match.hp = target.hp;
+    match.status = target.status;
+    match.fainted = target.fainted;
+  }
+}
+
 function syncCombatantToTeam(store: BattleContext, target: Pokemon | null) {
   if (!store || !target?.uid) return;
   const active = store.activeBattle.value;
   if (!active) return;
-  const inEnemy = active.enemyTeam?.find((p: Pokemon) => p && isMatchingUid(p.uid, target.uid));
-  if (inEnemy && inEnemy !== target) {
-    inEnemy.hp = target.hp;
-    inEnemy.status = target.status;
-    inEnemy.fainted = target.fainted;
+  syncMatchingPokemon(active.enemyTeam, target);
+  syncMatchingPokemon(active.playerTeam, target);
+  syncMatchingPokemon(store.gs?.state?.team, target);
+}
+
+function formatDamageFromLog(victimName: string, fromClause: string): string {
+  const fromLower = fromClause.toLowerCase(); // text-ok
+  if (fromLower.includes('recoil')) return `¡${victimName} recibió daño por el retroceso!`;
+  if (fromLower.includes('item: life orb')) return `¡${victimName} recibió daño de Vidasfera!`;
+  if (fromLower.includes('psn') || fromLower.includes('brn')) {
+    const cause = fromLower.includes('brn') ? 'la quemadura' : 'el veneno';
+    return `¡${victimName} sufrió daño por ${cause}!`;
   }
-  const inPlayerTeam = active.playerTeam?.find((p: Pokemon) => p && isMatchingUid(p.uid, target.uid));
-  if (inPlayerTeam && inPlayerTeam !== target) {
-    inPlayerTeam.hp = target.hp;
-    inPlayerTeam.status = target.status;
-    inPlayerTeam.fainted = target.fainted;
+  if (fromLower.includes('sandstorm') || fromLower.includes('hail')) {
+    const weatherName = fromLower.includes('sandstorm') ? 'la tormenta de arena' : 'el granizo';
+    return `¡${victimName} sufrió daño por ${weatherName}!`;
   }
-  const inGsTeam = store.gs?.state?.team?.find((p: Pokemon) => p && isMatchingUid(p.uid, target.uid));
-  if (inGsTeam && inGsTeam !== target) {
-    inGsTeam.hp = target.hp;
-    inGsTeam.status = target.status;
-    inGsTeam.fainted = target.fainted;
+  if (fromLower.includes('leech seed')) return `¡${victimName} fue dañado por las Drenadoras!`;
+  if (fromLower.includes('stealth rock') || fromLower.includes('spikes')) return `¡${victimName} sufrió daño por las trampa(s)!`;
+  if (fromLower.includes('item:')) {
+    const itemName = fromClause.split('item:')[1]?.trim() || 'Objeto';
+    return `¡${victimName} sufrió daño por ${itemName}!`;
   }
+  return `¡${victimName} recibió daño!`;
+}
+
+const STATUS_MESSAGES: Record<string, string> = {
+  brn: 'fue quemado!',
+  psn: 'fue envenenado!',
+  tox: 'fue gravemente envenenado!',
+  slp: 'se quedó dormido!',
+  par: 'fue paralizado! ¡Quizás no pueda moverse!',
+  frz: 'fue congelado!',
+};
+
+const CURE_STATUS_MESSAGES: Record<string, string> = {
+  slp: 'se despertó!',
+  frz: 'se descongeló!',
+  brn: 'se curó de la quemadura!',
+  psn: 'se curó del envenenamiento!',
+  tox: 'se curó del envenenamiento!',
+  par: 'se curó de la parálisis!',
+};
+
+async function handleDamageToken(ctx: SBCtx): Promise<boolean> {
+  const { store, parts, line, p, getPoke } = ctx;
+  const victim = getPoke(parts[2] || '');
+  const hpString = parts[3] || '';
+  if (victim && hpString) {
+    const [hpRatio] = hpString.trim().split(' ');
+    if (hpRatio) {
+      const hpParts = hpRatio.split('/');
+      const parsedHp = parseInt(hpParts[0] || '0', 10);
+      if (hpParts[1]) {
+        const parsedMax = parseInt(hpParts[1], 10);
+        if (!isNaN(parsedMax) && parsedMax > 0) {
+          const realMax = victim.maxHp || parsedMax;
+          victim.hp = Math.round((parsedHp / parsedMax) * realMax);
+        } else {
+          victim.hp = parsedHp;
+        }
+      } else {
+        victim.hp = parsedHp;
+      }
+    }
+    const fromClause = parts.find(part => part.startsWith('[from]'));
+    const isSilent = line.includes('[silent]');
+    if (!isSilent) {
+      const logMsg = fromClause ? formatDamageFromLog(victim.name, fromClause) : `¡${victim.name} recibió daño!`;
+      store.addLog(logMsg, 'log-info', victim);
+    }
+    const side = victim === p ? 'player' : 'enemy';
+    if (store.animations?.handleShakeRequest) {
+      await store.animations.handleShakeRequest({ side });
+    }
+    syncCombatantToTeam(store, victim);
+  }
+  return true;
+}
+
+function handleHealToken(ctx: SBCtx): boolean {
+  const { store, parts, getPoke } = ctx;
+  const target = getPoke(parts[2] || '');
+  const hpString = parts[3] || '';
+  if (target && hpString) {
+    const [hpRatio] = hpString.trim().split(' ');
+    if (hpRatio) {
+      const hpParts = hpRatio.split('/');
+      const parsedHp = parseInt(hpParts[0] || '0', 10);
+      if (hpParts[1]) {
+        const parsedMax = parseInt(hpParts[1], 10);
+        if (!isNaN(parsedMax) && parsedMax > 0) {
+          const realMax = target.maxHp || parsedMax;
+          target.hp = Math.round((parsedHp / parsedMax) * realMax);
+        } else {
+          target.hp = parsedHp;
+        }
+      } else {
+        target.hp = parsedHp;
+      }
+    }
+    if (target.hp > 0) {
+      target.fainted = false;
+    }
+    const fromClause = parts.find(part => part.startsWith('[from]'));
+    if (fromClause && fromClause.toLowerCase().includes('drain')) { // text-ok
+      store.addLog(`¡${target.name} absorbió salud!`, 'log-info', target);
+    } else {
+      store.addLog(`¡${target.name} recuperó salud!`, 'log-info', target);
+    }
+    syncCombatantToTeam(store, target);
+  }
+  return true;
+}
+
+function handleFaintToken(ctx: SBCtx): boolean {
+  const { store, parts, getPoke } = ctx;
+  const target = getPoke(parts[2] || '');
+  if (target) {
+    const remainedAlive = target.hp > 0;
+    target.hp = 0;
+    target.fainted = true;
+    target.status = '';
+    if (target.volatileCounters) {
+      target.volatileCounters = {};
+    }
+    if (remainedAlive) {
+      store.addLog(`¡${target.name} se debilitó!`, 'log-info', target);
+    }
+    syncCombatantToTeam(store, target);
+  }
+  return true;
+}
+
+function handleStatusToken(ctx: SBCtx): boolean {
+  const { store, parts, line, getPoke } = ctx;
+  if (line.includes('[silent]')) return true;
+  const target = getPoke(parts[2] || '');
+  const statusType = parts[3] || '';
+  if (target && statusType) {
+    target.status = statusType as PokemonStatus;
+    const desc = STATUS_MESSAGES[statusType];
+    const msg = desc ? `¡${target.name} ${desc}` : `¡${target.name} sufrió un problema de estado: ${statusType.toUpperCase()}!`; // text-ok
+    store.addLog(msg, 'log-info', target);
+    syncCombatantToTeam(store, target);
+  }
+  return true;
+}
+
+function handleCureStatusToken(ctx: SBCtx): boolean {
+  const { store, parts, line, getPoke } = ctx;
+  if (line.includes('[silent]')) return true;
+  const target = getPoke(parts[2] || '');
+  const curedStatus = parts[3] || '';
+  if (target) {
+    target.status = '';
+    const desc = CURE_STATUS_MESSAGES[curedStatus];
+    const msg = desc ? `¡${target.name} ${desc}` : `¡${target.name} se curó de su estado alterado!`;
+    store.addLog(msg, 'log-info', target);
+    syncCombatantToTeam(store, target);
+  }
+  return true;
 }
 
 async function handleMoveToken(ctx: SBCtx): Promise<boolean> {
@@ -138,160 +292,7 @@ function handlePrepareToken(ctx: SBCtx): boolean {
   return true;
 }
 
-async function handleDamageToken(ctx: SBCtx): Promise<boolean> {
-  const { store, parts, line, p, getPoke } = ctx;
-  const victim = getPoke(parts[2] || '');
-  const hpString = parts[3] || '';
-  if (victim && hpString) {
-    const [hpRatio] = hpString.trim().split(' ');
-    if (hpRatio) {
-      const hpParts = hpRatio.split('/');
-      const parsedHp = parseInt(hpParts[0] || '0', 10);
-      if (hpParts[1]) {
-        const parsedMax = parseInt(hpParts[1], 10);
-        if (!isNaN(parsedMax) && parsedMax > 0) {
-          const realMax = victim.maxHp || parsedMax;
-          victim.hp = Math.round((parsedHp / parsedMax) * realMax);
-        } else {
-          victim.hp = parsedHp;
-        }
-      } else {
-        victim.hp = parsedHp;
-      }
-    }
-    const fromClause = parts.find(part => part.startsWith('[from]'));
-    const isSilent = line.includes('[silent]');
-    if (fromClause && !isSilent) {
-      const fromLower = fromClause.toLowerCase(); // text-ok
-      if (fromLower.includes('recoil')) {
-        store.addLog(`¡${victim.name} recibió daño por el retroceso!`, 'log-info', victim);
-      } else if (fromLower.includes('item: life orb')) {
-        store.addLog(`¡${victim.name} recibió daño de Vidasfera!`, 'log-info', victim);
-      } else if (fromLower.includes('psn') || fromLower.includes('brn')) {
-        const cause = fromLower.includes('brn') ? 'la quemadura' : 'el veneno';
-        store.addLog(`¡${victim.name} sufrió daño por ${cause}!`, 'log-info', victim);
-      } else if (fromLower.includes('sandstorm') || fromLower.includes('hail')) {
-        const weatherName = fromLower.includes('sandstorm') ? 'la tormenta de arena' : 'el granizo';
-        store.addLog(`¡${victim.name} sufrió daño por ${weatherName}!`, 'log-info', victim);
-      } else if (fromLower.includes('leech seed')) {
-        store.addLog(`¡${victim.name} fue dañado por las Drenadoras!`, 'log-info', victim);
-      } else if (fromLower.includes('stealth rock') || fromLower.includes('spikes')) {
-        store.addLog(`¡${victim.name} sufrió daño por las trampa(s)!`, 'log-info', victim);
-      } else if (fromLower.includes('item:')) {
-        const itemName = fromClause.split('item:')[1]?.trim() || 'Objeto';
-        store.addLog(`¡${victim.name} sufrió daño por ${itemName}!`, 'log-info', victim);
-      } else {
-        store.addLog(`¡${victim.name} recibió daño!`, 'log-info', victim);
-      }
-    } else if (!isSilent) {
-      store.addLog(`¡${victim.name} recibió daño!`, 'log-info', victim);
-    }
-    const side = victim === p ? 'player' : 'enemy';
-    if (store.animations?.handleShakeRequest) {
-      await store.animations.handleShakeRequest({ side });
-    }
-    syncCombatantToTeam(store, victim);
-  }
-  return true;
-}
 
-function handleHealToken(ctx: SBCtx): boolean {
-  const { store, parts, getPoke } = ctx;
-  const target = getPoke(parts[2] || '');
-  const hpString = parts[3] || '';
-  if (target && hpString) {
-    const [hpRatio] = hpString.trim().split(' ');
-    if (hpRatio) {
-      const hpParts = hpRatio.split('/');
-      const parsedHp = parseInt(hpParts[0] || '0', 10);
-      if (hpParts[1]) {
-        const parsedMax = parseInt(hpParts[1], 10);
-        if (!isNaN(parsedMax) && parsedMax > 0) {
-          const realMax = target.maxHp || parsedMax;
-          target.hp = Math.round((parsedHp / parsedMax) * realMax);
-        } else {
-          target.hp = parsedHp;
-        }
-      } else {
-        target.hp = parsedHp;
-      }
-    }
-    if (target.hp > 0) {
-      target.fainted = false;
-    }
-    const fromClause = parts.find(part => part.startsWith('[from]'));
-    if (fromClause && fromClause.toLowerCase().includes('drain')) { // text-ok
-      store.addLog(`¡${target.name} absorbió salud!`, 'log-info', target);
-    } else {
-      store.addLog(`¡${target.name} recuperó salud!`, 'log-info', target);
-    }
-    syncCombatantToTeam(store, target);
-  }
-  return true;
-}
-
-function handleFaintToken(ctx: SBCtx): boolean {
-  const { store, parts, getPoke } = ctx;
-  const target = getPoke(parts[2] || '');
-  if (target) {
-    const remainedAlive = target.hp > 0;
-    target.hp = 0;
-    target.fainted = true;
-    target.status = '';
-    if (target.volatileCounters) {
-      target.volatileCounters = {};
-    }
-    if (remainedAlive) {
-      store.addLog(`¡${target.name} se debilitó!`, 'log-info', target);
-    }
-    syncCombatantToTeam(store, target);
-  }
-  return true;
-}
-
-function handleStatusToken(ctx: SBCtx): boolean {
-  const { store, parts, line, getPoke } = ctx;
-  if (line.includes('[silent]')) return true;
-  const target = getPoke(parts[2] || '');
-  const statusType = parts[3] || '';
-  if (target && statusType) {
-    target.status = statusType as PokemonStatus;
-    const statusMessages: Record<string, string> = {
-      brn: `¡${target.name} fue quemado!`,
-      psn: `¡${target.name} fue envenenado!`,
-      tox: `¡${target.name} fue gravemente envenenado!`,
-      slp: `¡${target.name} se quedó dormido!`,
-      par: `¡${target.name} fue paralizado! ¡Quizás no pueda moverse!`,
-      frz: `¡${target.name} fue congelado!`,
-    };
-    const msg = statusMessages[statusType] || `¡${target.name} sufrió un problema de estado: ${statusType.toUpperCase()}!`; // text-ok
-    store.addLog(msg, 'log-info', target);
-    syncCombatantToTeam(store, target);
-  }
-  return true;
-}
-
-function handleCureStatusToken(ctx: SBCtx): boolean {
-  const { store, parts, line, getPoke } = ctx;
-  if (line.includes('[silent]')) return true;
-  const target = getPoke(parts[2] || '');
-  const curedStatus = parts[3] || '';
-  if (target) {
-    target.status = '';
-    const cureMessages: Record<string, string> = {
-      slp: `¡${target.name} se despertó!`,
-      frz: `¡${target.name} se descongeló!`,
-      brn: `¡${target.name} se curó de la quemadura!`,
-      psn: `¡${target.name} se curó del envenenamiento!`,
-      tox: `¡${target.name} se curó del envenenamiento!`,
-      par: `¡${target.name} se curó de la parálisis!`,
-    };
-    const msg = cureMessages[curedStatus] || `¡${target.name} se curó de su estado alterado!`;
-    store.addLog(msg, 'log-info', target);
-    syncCombatantToTeam(store, target);
-  }
-  return true;
-}
 
 function handleCureStatusAllToken(ctx: SBCtx): boolean {
   const { store } = ctx;

@@ -166,7 +166,7 @@ function toggleSeason(s: string | null) {
             :class="{ active: mapStore.forcedSeason?.id === 'spring' }"
             @click.stop="toggleSeason('spring')"
           >
-            <span class="btn-emoji">🌸</span> PRI
+            <span class="emoji">🌸</span> PRI
           </button>
         </PVTooltip>
         <PVTooltip title="Forzar Verano.">
@@ -174,7 +174,7 @@ function toggleSeason(s: string | null) {
             :class="{ active: mapStore.forcedSeason?.id === 'summer' }"
             @click.stop="toggleSeason('summer')"
           >
-            <span class="btn-emoji">☀️</span> VER
+            <span class="emoji">☀️</span> VER
           </button>
         </PVTooltip>
         <PVTooltip title="Forzar Otoño.">
@@ -182,7 +182,7 @@ function toggleSeason(s: string | null) {
             :class="{ active: mapStore.forcedSeason?.id === 'autumn' }"
             @click.stop="toggleSeason('autumn')"
           >
-            <span class="btn-emoji">🍂</span> OTO
+            <span class="emoji">🍂</span> OTO
           </button>
         </PVTooltip>
         <PVTooltip title="Forzar Invierno.">
@@ -190,7 +190,7 @@ function toggleSeason(s: string | null) {
             :class="{ active: mapStore.forcedSeason?.id === 'winter' }"
             @click.stop="toggleSeason('winter')"
           >
-            <span class="btn-emoji">❄️</span> INV
+            <span class="emoji">❄️</span> INV
           </button>
         </PVTooltip>
       </div>
@@ -204,7 +204,7 @@ function toggleSeason(s: string | null) {
             :class="{ active: mapStore.forcedCycle === 'morning' }"
             @click.stop="toggleCycle('morning')"
           >
-            <span class="btn-emoji">🌅</span> AM
+            <span class="emoji">🌅</span> AM
           </button>
         </PVTooltip>
         <PVTooltip title="Forzar día.">
@@ -212,7 +212,7 @@ function toggleSeason(s: string | null) {
             :class="{ active: mapStore.forcedCycle === 'day' }"
             @click.stop="toggleCycle('day')"
           >
-            <span class="btn-emoji">☀️</span> DÍA
+            <span class="emoji">☀️</span> DÍA
           </button>
         </PVTooltip>
         <PVTooltip title="Forzar atardecer.">
@@ -220,7 +220,7 @@ function toggleSeason(s: string | null) {
             :class="{ active: mapStore.forcedCycle === 'dusk' }"
             @click.stop="toggleCycle('dusk')"
           >
-            <span class="btn-emoji">🌇</span> AT
+            <span class="emoji">🌇</span> AT
           </button>
         </PVTooltip>
         <PVTooltip title="Forzar noche.">
@@ -228,7 +228,7 @@ function toggleSeason(s: string | null) {
             :class="{ active: mapStore.forcedCycle === 'night' }"
             @click.stop="toggleCycle('night')"
           >
-            <span class="btn-emoji">🌙</span> NC
+            <span class="emoji">🌙</span> NC
           </button>
         </PVTooltip>
       </div>
@@ -242,7 +242,7 @@ function toggleSeason(s: string | null) {
             class="btn-vicio-neutral btn-vicio-sm"
             @click.stop="modalStore.open('DebugWeatherTables')"
           >
-            <span class="btn-emoji">📋</span> VER TABLAS
+            <span class="emoji">📋</span> VER TABLAS
           </button>
         </PVTooltip>
       </div>
@@ -257,7 +257,7 @@ function toggleSeason(s: string | null) {
             :class="{ active: mapStore.globalWeather === w.id }"
             @click.stop="toggleWeather(w.id)"
           >
-            {{ w.icon }} {{ w.label }}
+            <span class="emoji">{{ w.icon }}</span> {{ w.label }}
           </button>
         </PVTooltip>
       </div>

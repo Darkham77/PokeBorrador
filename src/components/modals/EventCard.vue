@@ -298,7 +298,8 @@ const handleSlotChipClick = (sub: ResolvedSubCompetition | SubCompetitionConfig)
 
 const openEventDetail = () => {
   modalStore.open('EventDetail', {
-    event: props.event
+    event: props.event,
+    occurrence: props.occurrence
   })
 }
 
@@ -401,7 +402,7 @@ onUnmounted(() => {
     <div class="card-body">
       <div class="body-header">
         <div class="event-id-icon">
-          {{ event.icon }}
+          <span class="emoji">{{ event.icon }}</span>
         </div>
         <div class="event-main-meta">
           <h2>{{ cardDisplayName }}</h2>
@@ -416,25 +417,25 @@ onUnmounted(() => {
               v-if="isUpcoming && occurrence?.dateLabel"
               class="catch-window-tag"
             >
-              <span class="emoji-inline">🗓️</span> {{ occurrence.dateLabel }} · {{ occurrence.timeLabel }}
+              <span class="emoji">🗓️</span> {{ occurrence.dateLabel }} · {{ occurrence.timeLabel }}
             </span>
             <template v-else>
               <span
                 v-if="parsedEventConfig.speciesShinyMult && parsedEventConfig.speciesShinyMult > 1"
                 class="type-tag shiny"
-              ><span class="emoji-inline">✨</span> x{{ parsedEventConfig.speciesShinyMult }} SHINY</span>
+              ><span class="emoji">✨</span> x{{ parsedEventConfig.speciesShinyMult }} SHINY</span>
               <span
                 v-if="parsedEventConfig.speciesRateMult && parsedEventConfig.speciesRateMult > 1"
                 class="type-tag spawn"
-              ><span class="emoji-inline">🎯</span> x{{ parsedEventConfig.speciesRateMult }} SPAWN</span>
+              ><span class="emoji">🎯</span> x{{ parsedEventConfig.speciesRateMult }} SPAWN</span>
               <span
                 v-if="parsedEventConfig.fishingMult && parsedEventConfig.fishingMult > 1"
                 class="type-tag fishing"
-              ><span class="emoji-inline">🎣</span> x{{ parsedEventConfig.fishingMult }} PESCA</span>
+              ><span class="emoji">🎣</span> x{{ parsedEventConfig.fishingMult }} PESCA</span>
               <span
                 v-if="parsedEventConfig.requireCaughtDuringEvent"
                 class="catch-window-tag"
-              ><span class="emoji-inline">🕒</span> SOLO CAPTURAS DEL EVENTO</span>
+              ><span class="emoji">🕒</span> SOLO CAPTURAS DEL EVENTO</span>
             </template>
           </div>
 
@@ -473,12 +474,12 @@ onUnmounted(() => {
         class="compact-competition-preview"
       >
         <div class="comp-preview-header">
-          <span class="comp-preview-title pixelated"><span class="title-icon">🏆</span> CATEGORÍAS EN JUEGO</span>
+          <span class="comp-preview-title pixelated"><span class="emoji title-icon">🏆</span> CATEGORÍAS EN JUEGO</span>
           <span
             v-if="enrolledCategoriesCount > 0"
             class="comp-preview-badge pixelated enrolled"
           >
-            ✓ {{ enrolledCategoriesCount }} Inscripto{{ enrolledCategoriesCount === 1 ? '' : 's' }}
+            <span class="emoji">✓</span> {{ enrolledCategoriesCount }} Inscripto{{ enrolledCategoriesCount === 1 ? '' : 's' }}
           </span>
         </div>
 
@@ -507,7 +508,7 @@ onUnmounted(() => {
                 <span
                   v-else
                   class="chip-global-icon"
-                ><span class="emoji-inline">🧬</span></span>
+                ><span class="emoji">🧬</span></span>
                 
                 <!-- Clean Metric Name (IVs / Peso / Altura) -->
                 <span class="chip-metric">{{ formatMetricLabel(sub) }}</span>
@@ -515,7 +516,7 @@ onUnmounted(() => {
 
               <!-- Simple Status Badge (+ or ✓) -->
               <span class="chip-status-pill">
-                {{ getParticipantForCategory(sub) ? '✓' : '+' }}
+                <span class="emoji">{{ getParticipantForCategory(sub) ? '✓' : '+' }}</span>
               </span>
             </button>
           </PVTooltip>
@@ -535,21 +536,21 @@ onUnmounted(() => {
           v-if="isUpcoming"
           class="upcoming-badge"
         >
-          <span class="emoji-inline">⏳</span> PRÓXIMO
+          <span class="emoji">⏳</span> PRÓXIMO
         </div>
         <button
           v-else-if="event.type === 'competition'"
           class="retro-btn rules-btn pixelated"
           @click.stop="openEventDetail"
         >
-          <span class="btn-emoji">📋</span> REGLAS Y PREMIOS
+          <span class="emoji">📋</span> REGLAS Y PREMIOS
         </button>
         <div 
           v-else 
           ref="badgeRef"
           class="active-badge"
         >
-          <span class="emoji-inline">✨</span> ACTIVO
+          <span class="emoji">✨</span> ACTIVO
         </div>
       </footer>
     </div>

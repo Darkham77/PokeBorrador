@@ -160,7 +160,12 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
 
 test.describe('GTS Multi-Account Transactions Simulation', () => {
   test.beforeEach(async ({ request }) => {
-    await request.post('http://127.0.0.1:5174/api/dev-import-db-cleanup');
+    await request.post('/api/dev-sim-db-cleanup', {
+      headers: { 'x-db-key': 'sim_db_gtsseller' }
+    });
+    await request.post('/api/dev-sim-db-cleanup', {
+      headers: { 'x-db-key': 'sim_db_gtsbuyer' }
+    });
   });
 
   test('should allow listing limits, pagination check, and successful purchase', async ({ browser, request }) => {

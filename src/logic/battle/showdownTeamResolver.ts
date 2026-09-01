@@ -1,5 +1,6 @@
 import type { Pokemon } from '../../types/pokemon/pokemon';
 import type { ShowdownPlayerRequest } from '../../types/battle/battle';
+import { isMatchingUid } from './showdownUidMapper.ts';
 
 interface RequestPokemonWithUid {
   ident: string;
@@ -42,7 +43,7 @@ export class ShowdownTeamResolver {
    */
   static getPokemonByUid(team: Pokemon[], uid: string): Pokemon | null {
     if (!uid) return null;
-    const found = team.find(p => p && p.uid === uid);
+    const found = team.find(p => p && isMatchingUid(p.uid, uid));
     if (!found) {
       throw new Error(`[ShowdownTeamResolver] Pokémon con UID "${uid}" no encontrado en el equipo.`);
     }
@@ -75,7 +76,7 @@ export class ShowdownTeamResolver {
       throw new Error(`[ShowdownTeamResolver] No se puede obtener slot para UID "${uid}" porque el request de Showdown está ausente.`);
     }
     const list = request.side.pokemon as Array<{ uid?: string } | null | undefined>;
-    const idx = list.findIndex((p) => p && p.uid === uid);
+    const idx = list.findIndex((p) => p && isMatchingUid(p.uid, uid));
     if (idx === -1) {
       const availableUids = list.map((p) => p?.uid || 'null');
       throw new Error(`[ShowdownTeamResolver] UID "${uid}" no encontrado en los UIDs del request: ${JSON.stringify(availableUids)}`);

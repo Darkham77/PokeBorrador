@@ -367,19 +367,47 @@
   font-weight: bold;
 }
 
-.penalty-text {
-  color: #ff453a; // Rojo — probabilidad reducida (penalización, otro buff compite)
+// Spawns section container and title
+.spawns-section {
+  margin-top: 14px;
+}
+
+.section-title-pixel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  color: #fff;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  line-height: 1;
+
+  .title-emoji {
+    font-size: 14px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .title-text {
+    display: inline-flex;
+    align-items: center;
+  }
 }
 
 // Badge de probabilidad junto al título de sección
 .section-prob-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-family: var(--font-pixel);
   font-size: 9px;
   color: var(--gray);
   margin-left: 8px;
   opacity: 0.85;
-  vertical-align: middle;
 
   &.bonus-text {
     color: #30d158;

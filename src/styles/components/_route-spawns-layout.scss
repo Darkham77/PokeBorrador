@@ -249,6 +249,9 @@
 }
 
 .section-title-pixel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-family: var(--font-pixel);
   font-size: 10px;
   color: #fff;

@@ -106,9 +106,11 @@ describe('Failed Flee Counter-Attack Integration', () => {
       }
     } as unknown as BattleContext;
 
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.99);
     await executeFlee(ctx);
     expect(confirmHandler).toBeDefined();
     await confirmHandler!();
+    randomSpy.mockRestore();
 
     gameBus.off('PLAY_CRY', onCry);
 

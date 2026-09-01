@@ -237,7 +237,15 @@
 .modal-header-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
+
+  .modal-header-emoji {
+    font-size: 16px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 .modal-title-text {

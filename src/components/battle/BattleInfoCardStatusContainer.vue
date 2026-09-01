@@ -36,9 +36,9 @@ function shouldShowStatsTable(status: UnifiedStatusItem, showStatsTable: boolean
         class="m-status-tag"
         :class="[status.class, { 'is-boosted': status.isBoosted }]"
       >
-        {{ status.emoji }}<span 
+        <span class="emoji">{{ status.emoji }}</span><span 
           v-if="status.stageValue !== undefined" 
-          class="stage-arrow"
+          class="stage-arrow emoji"
           :class="status.stageValue > 0 ? 'up' : 'down'"
         >{{ status.stageValue > 0 ? '▲' : '▼' }}{{ Math.abs(status.stageValue) }}</span>
         <span
@@ -58,7 +58,7 @@ function shouldShowStatsTable(status: UnifiedStatusItem, showStatsTable: boolean
             v-if="status.isAdminOnly"
             class="admin-only-disclaimer"
           >
-            <span class="emoji-inline">⚠️</span> esto es visible solo para administradores
+            <span class="emoji">⚠️</span> esto es visible solo para administradores
           </div>
           
           <template v-if="shouldShowStatsTable(status, showStatsTable)">

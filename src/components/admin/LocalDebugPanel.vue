@@ -48,7 +48,7 @@ onBeforeUnmount(() => window.removeEventListener(GAME_UI_EVENTS.BATTLE_ENTERING,
       :class="{ active: isOpen }"
       @click.stop="isOpen = true"
     >
-      <span class="icon">🛠️</span>
+      <span class="emoji">🛠️</span>
       <span class="label">DEBUG</span>
     </button>
 
@@ -64,7 +64,7 @@ onBeforeUnmount(() => window.removeEventListener(GAME_UI_EVENTS.BATTLE_ENTERING,
       @close="isOpen = false"
     >
       <template #header-icon>
-        <span class="modal-header-emoji">🛠️</span>
+        <span class="emoji modal-header-emoji">🛠️</span>
       </template>
 
       <div

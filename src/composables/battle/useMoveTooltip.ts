@@ -7,7 +7,7 @@ import { getMechanicalWeather } from '@/logic/weather/weatherRegistry';
 import { getDayCycle } from '@/logic/utils/timeUtils';
 import { getMoveDescription } from '@/logic/pokemon/pokemonUtils';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { getEffectiveStatPure, type PurePokemon } from '@/logic/battle/battleMath';
+import type { PurePokemon } from '@/logic/battle/battleMath';
 import {
   calculateMoveModifierInfo,
   calculateMovePower,
@@ -18,18 +18,13 @@ import {
 } from '@/logic/battle/moveTooltipMath';
 import { calculateDamageForTooltip } from '@/logic/battle/smogonAdapter';
 
-/** Format @smogon/calc KO chance as Spanish text for the tooltip badge. */
-function buildKoText(ko: { chance: number | undefined; n: number }): string {
-  if (!ko.n) return '';
-  const { chance, n } = ko;
-  const koLabel = n === 1 ? 'OHKO' : n <= 4 ? `${n}HKO` : `KO en ${n} turnos`;
-  if (chance === 1)            return `${koLabel} garantizado`;
-  if (chance === undefined || chance > 0) {
-    const pct = chance !== undefined ? ` (${Math.round(chance * 100)}%)` : '';
-    return `${koLabel} posible${pct}`;
-  }
-  return '';
-}
+import {
+  calculateAttackerStatDisplay,
+  calculateDefenderStatDisplay,
+  buildTooltipDamageRange,
+  buildTooltipSpeedInfo,
+  buildTooltipTacticalInfo
+} from './moveTooltipCalculator.ts';
 
 type SideConditions = Record<string, { turns: number; [key: string]: unknown }> | undefined;
 type TooltipMoveData = Partial<Pick<Move, 'cat' | 'type' | 'power' | 'acc' | 'effect' | 'priority'>>;
@@ -207,17 +202,7 @@ export function useMoveTooltip(
         )
       : null;
 
-    const damageRange = smogonResult ? {
-      normalMin:    smogonResult.minDmg,
-      normalMax:    smogonResult.maxDmg,
-      normalPctMin: Math.round(smogonResult.minPercent),
-      normalPctMax: Math.round(smogonResult.maxPercent),
-      critMin:      smogonResult.critMinDmg,
-      critMax:      smogonResult.critMaxDmg,
-      critPctMin:   Math.round(smogonResult.critMinPercent),
-      critPctMax:   Math.round(smogonResult.critMaxPercent),
-      koChanceText: buildKoText(smogonResult.koChance),
-    } : null;
+    const damageRange = buildTooltipDamageRange(smogonResult);
 
     // Field conditions active in this battle (for tooltip display)
     const fieldConditions = buildFieldConditionsList(
@@ -226,52 +211,27 @@ export function useMoveTooltip(
       battleStore.state?.terrain
     );
 
-    // Calculate actual attacker and defender stats with stages applied
-    let attackerStat = null;
-    if (isPhysical || isSpecial) {
-      const statKey = isPhysical ? 'atk' : 'spa';
-      const stage = isPhysical ? (battleStore.playerStages.atk || 0) : (battleStore.playerStages.spa || 0);
-      const rawVal = attacker[statKey] || 0;
-      const finalVal = defender ? getEffectiveStatPure(
-        attacker as PurePokemon, // domain-ok
-        statKey,
-        { [statKey]: stage },
-        weather ? { type: weather.type, turns: weather.turns } : null,
-        cycle,
-        isGym
-      ) : rawVal;
-      
-      attackerStat = {
-        name: isPhysical ? 'ATAQUE' : 'AT. ESP',
-        base: rawVal,
-        final: finalVal,
-        stage,
-        class: stage > 0 ? 'boosted' : (stage < 0 ? 'penalized' : '')
-      };
-    }
+    const weatherInfo = weather ? { type: weather.type, turns: weather.turns } : null;
+    const attackerStat = calculateAttackerStatDisplay(
+      attacker as PurePokemon, // domain-ok
+      defender as PurePokemon | null, // domain-ok
+      isPhysical,
+      isSpecial,
+      battleStore.playerStages,
+      weatherInfo,
+      cycle,
+      isGym
+    );
 
-    let defenderStat = null;
-    if (defender && (isPhysical || isSpecial)) {
-      const statKey = isPhysical ? 'def' : 'spd';
-      const stage = isPhysical ? (battleStore.enemyStages.def || 0) : (battleStore.enemyStages.spd || 0);
-      const rawVal = defender[statKey] || 0;
-      const finalVal = getEffectiveStatPure(
-        defender as PurePokemon, // domain-ok
-        statKey,
-        { [statKey]: stage },
-        weather ? { type: weather.type, turns: weather.turns } : null,
-        cycle,
-        isGym
-      );
-
-      defenderStat = {
-        name: isPhysical ? 'DEFENSA RIVAL' : 'DEF. ESP RIVAL',
-        base: rawVal,
-        final: finalVal,
-        stage,
-        class: stage > 0 ? 'penalized' : (stage < 0 ? 'boosted' : '')
-      };
-    }
+    const defenderStat = calculateDefenderStatDisplay(
+      defender as PurePokemon | null, // domain-ok
+      isPhysical,
+      isSpecial,
+      battleStore.enemyStages,
+      weatherInfo,
+      cycle,
+      isGym
+    );
 
     return {
       isStatus,
@@ -290,28 +250,8 @@ export function useMoveTooltip(
       recoil:   smogonResult?.recoil   ?? null,
       fieldConditions,
       smogonDesc: smogonResult?.smogonDesc ?? '',
-      speedInfo: smogonResult ? {
-        attackerSpeed: smogonResult.attackerSpeed,
-        defenderSpeed: smogonResult.defenderSpeed,
-        outspeeds: smogonResult.outspeeds,
-        priority: move.priority || md.priority || 0,
-      } : null,
-      tacticalInfo: smogonResult ? {
-        hasAssaultVest: smogonResult.hasAssaultVest,
-        hasEviolite: smogonResult.hasEviolite,
-        attackerWeight: smogonResult.attackerWeight,
-        defenderWeight: smogonResult.defenderWeight,
-        overrideOffensiveStat: smogonResult.overrideOffensiveStat,
-        overrideDefensiveStat: smogonResult.overrideDefensiveStat,
-        ignoreDefensive: smogonResult.ignoreDefensive,
-        breaksProtect: smogonResult.breaksProtect,
-        hasCrashDamage: smogonResult.hasCrashDamage,
-        terrainReductions: smogonResult.terrainReductions,
-        isLeechSeedActive: smogonResult.isLeechSeedActive,
-        isForesightActive: smogonResult.isForesightActive,
-        attackerTera: smogonResult.attackerTera,
-        defenderTera: smogonResult.defenderTera,
-      } : null,
+      speedInfo: buildTooltipSpeedInfo(smogonResult, move.priority || md.priority || 0),
+      tacticalInfo: buildTooltipTacticalInfo(smogonResult),
     };
   });
 

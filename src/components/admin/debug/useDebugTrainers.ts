@@ -8,7 +8,7 @@ import { ARCHETYPE_SPRITES } from '@/data/pokemon/npcSpriteCatalog'
 import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { pokemonDebugService } from '@/logic/debug/pokemonDebugService'
 import { GYMS, GYMS_BY_ID, isGymId } from '@/data/world/gyms'
-import { TRAINER_TYPES, isTrainerTypeKey, requireNpcArchetype } from '@/data/player/trainerTypes'
+import { TRAINER_TYPES, isTrainerTypeKey, requireNpcArchetype, getArchetypePool } from '@/data/player/trainerTypes'
 import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
 import { generateNpcName, type NpcNameOptions } from '@/logic/utils/npcNameGenerator'
 import type { Pokemon } from '@/types/pokemon/pokemon'
@@ -196,7 +196,7 @@ export function useDebugTrainers() {
       }
       trainerSprite.value = requireNpcSpriteId(randomSprite)
 
-      const pool: readonly PokemonSpeciesId[] = isTrainerTypeKey(archetype) ? TRAINER_TYPES[archetype].pool : ['rattata']
+      const pool: readonly PokemonSpeciesId[] = isTrainerTypeKey(archetype) ? getArchetypePool(archetype) : ['rattata']
       for (let i = 0; i < size; i++) {
         const randomSpecies = pool[Math.floor(Math.random() * pool.length)] || 'rattata'
         const level = Math.floor(Math.random() * (genMaxLevel.value - genMinLevel.value + 1)) + genMinLevel.value

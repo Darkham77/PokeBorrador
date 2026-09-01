@@ -51,6 +51,7 @@ State Architects / Frontend Developers.
 
 ## Child DOX Index
 
+- [auth/](./auth/AGENTS.md): Domain module documentation for auth store helpers.
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle.
 - [debug/](./debug/AGENTS.md): Domain module documentation for debug.
 - [events/](./events/AGENTS.md): Domain module documentation for events store actions.

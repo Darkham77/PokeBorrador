@@ -45,7 +45,7 @@ const isFactionValid = (faction: string | undefined | null) => {
     <!-- Season Info Panel (QoL) -->
     <div class="season-info">
       <div class="season-header">
-        <span class="season-icon">🏆</span>
+        <span class="emoji season-icon">🏆</span>
         <span class="season-name">TEMPORADA: RENACER DE KANTO</span>
       </div>
       <div class="season-rules">
@@ -59,7 +59,7 @@ const isFactionValid = (faction: string | undefined | null) => {
         </div>
         <div class="rule-item">
           <span class="rule-label">Recompensa:</span>
-          <span class="rule-val shiny"><span class="emoji-inline">✨</span> Mewtwo Armored</span>
+          <span class="rule-val shiny"><span class="emoji">✨</span> Mewtwo Armored</span>
         </div>
       </div>
     </div>
@@ -127,12 +127,21 @@ const isFactionValid = (faction: string | undefined | null) => {
           </div>
 
           <div class="rank-medal">
-            <span v-if="index === 0">🥇</span>
-            <span v-else-if="index === 1">🥈</span>
-            <span v-else-if="index === 2">🥉</span>
+            <span
+              v-if="index === 0"
+              class="emoji"
+            >🥇</span>
+            <span
+              v-else-if="index === 1"
+              class="emoji"
+            >🥈</span>
+            <span
+              v-else-if="index === 2"
+              class="emoji"
+            >🥉</span>
             <span 
               v-else 
-              class="generic-medal"
+              class="emoji generic-medal"
             >🛡️</span>
           </div>
         </div>

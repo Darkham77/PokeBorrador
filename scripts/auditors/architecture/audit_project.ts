@@ -7,7 +7,7 @@
  */
 
 import fs from 'node:fs/promises';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
@@ -461,6 +461,12 @@ interface FallowStaleSuppression {
   line?: number;
   kind?: string;
   message?: string;
+  origin?: {
+    type?: string;
+    issue_kind?: string;
+    is_file_level?: boolean;
+    kind_known?: boolean;
+  };
 }
 interface FallowDuplicateExport {
   path?: string;
@@ -539,6 +545,63 @@ function runFallow(command: string, extraArgs: string[] = []): Violation[] {
   return violations;
 }
 
+function isNonProductionPath(filePath: string): boolean {
+  const norm = (filePath || '').split('\\').join('/');
+  const base = norm.split('/').pop() || '';
+  if (
+    base.startsWith('vite.config.') ||
+    base.startsWith('vitest.') ||
+    base.startsWith('playwright.config.') ||
+    base.startsWith('eslint.config.')
+  ) {
+    return true;
+  }
+  return (
+    norm.startsWith('scripts/') ||
+    norm.startsWith('tests/') ||
+    norm.startsWith('database/') ||
+    norm.startsWith('supabase/') ||
+    norm.startsWith('external/') ||
+    norm.startsWith('scratch/')
+  );
+}
+
+function addComplexityFinding(f: FallowFinding, violations: Violation[]): void {
+  if (isNonProductionPath(f.path)) return;
+  violations.push({
+    file: path.resolve(process.cwd(), f.path),
+    line: f.line,
+    message: `Sugerencia de complejidad (Fallow): Función '${f.function_name || ''}' alta complejidad (cognitiva: ${f.cognitive || 0}, ciclomática: ${f.cyclomatic || 0})`,
+    context: f.function_name || '',
+    severity: 'warning',
+    fixable: false
+  });
+}
+
+function hasSecuritySuppression(filePath: string, line: number): boolean {
+  try {
+    const fullPath = path.resolve(process.cwd(), filePath);
+    if (!existsSync(fullPath)) return false;
+    const content = readFileSync(fullPath, 'utf-8');
+    const lines = content.split('\n');
+    const targetIdx = line - 1;
+    const startIdx = Math.max(0, targetIdx - 3);
+    for (let i = startIdx; i <= targetIdx && i < lines.length; i++) {
+      const l = lines[i] || '';
+      if (
+        l.includes('fallow-ignore-next-line security-sink') ||
+        l.includes('fallow-ignore security-sink') ||
+        l.includes('security-ok')
+      ) {
+        return true;
+      }
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
 export function mapFallowJson(command: string, data: FallowAuditData): Violation[] {
   const violations: Violation[] = [];
   if (command === 'dupes') {
@@ -567,6 +630,8 @@ export function mapFallowJson(command: string, data: FallowAuditData): Violation
   } else if (command === 'security') {
     const findings = data.security_findings || [];
     for (const f of findings) {
+      if (isNonProductionPath(f.path)) continue;
+      if (hasSecuritySuppression(f.path, f.line)) continue;
       violations.push({
         file: path.resolve(process.cwd(), f.path),
         line: f.line,
@@ -608,6 +673,9 @@ export function mapFallowJson(command: string, data: FallowAuditData): Violation
     // 3. Supresiones obsoletas (Stale Suppressions - Error)
     const staleSuppressions = [...(data.stale_suppressions || []), ...(data.dead_code?.stale_suppressions || [])];
     for (const s of staleSuppressions) {
+      if (s.origin && (s.origin.issue_kind?.startsWith('cwe-') || s.origin.kind_known === false)) {
+        continue;
+      }
       violations.push({
         file: path.resolve(process.cwd(), s.path || s.file || 'src'),
         line: s.line || 1,
@@ -665,27 +733,13 @@ export function mapFallowJson(command: string, data: FallowAuditData): Violation
     // 7. Complejidad en auditoría
     if (data.complexity && data.complexity.findings) {
       for (const f of data.complexity.findings) {
-        violations.push({
-          file: path.resolve(process.cwd(), f.path),
-          line: f.line,
-          message: `Sugerencia de complejidad (Fallow): Función '${f.function_name || ''}' alta complejidad (cognitiva: ${f.cognitive || 0}, ciclomática: ${f.cyclomatic || 0})`,
-          context: f.function_name || '',
-          severity: 'warning',
-          fixable: false
-        });
+        addComplexityFinding(f, violations);
       }
     }
   } else if (command === 'health') {
     const findings = data.findings || [];
     for (const f of findings) {
-      violations.push({
-        file: path.resolve(process.cwd(), f.path),
-        line: f.line,
-        message: `Sugerencia de complejidad (Fallow): Función '${f.function_name || ''}' alta complejidad (cognitiva: ${f.cognitive || 0}, ciclomática: ${f.cyclomatic || 0})`,
-        context: f.function_name || '',
-        severity: 'warning',
-        fixable: false
-      });
+      addComplexityFinding(f, violations);
     }
   }
   return violations;

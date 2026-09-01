@@ -12,7 +12,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Dex } from '@pkmn/sim';
 import { toID } from '../../src/logic/utils/strings.ts';
-import { ACTIVE_GENERATION, IMPLEMENTED_GENERATION } from '../../src/data/system/constants.ts';
+import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
 import { SPECIES_METADATA } from '../../src/data/pokemon/speciesMetadata.ts';
 import { requirePokemonMoveId } from '../../src/data/battle/moves.ts';
 import type { PokemonType } from '../../src/data/battle/types.ts';
@@ -39,14 +39,14 @@ const MAX_DEX_NUMS: Record<number, number> = {
   5: 649,
   6: 721,
   7: 809,
-  8: 905,
-  9: 1025
+  8: 898,
+  9: 1025,
 };
 
 const OUTPUT_FILE = path.resolve(process.cwd(), 'src/data/pokemon/pokemonDB.json');
 
 export async function generatePokemonDatabase(): Promise<void> {
-  const maxDexNum = MAX_DEX_NUMS[IMPLEMENTED_GENERATION] ?? 1025;
+  const maxDexNum = MAX_DEX_NUMS[ACTIVE_GENERATION] ?? 1025;
   const allSpecies = Dex.forGen(ACTIVE_GENERATION).species.all();
   type PokemonDbSpeciesId = keyof typeof SPECIES_METADATA;
 

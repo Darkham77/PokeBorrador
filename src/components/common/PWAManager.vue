@@ -14,11 +14,11 @@
         </p>
         <div class="permissions-list">
           <div class="permission-item">
-            <span class="p-icon">🔊</span>
+            <span class="emoji p-icon">🔊</span>
             <span class="p-text">Efectos de Sonido 8-bit</span>
           </div>
           <div class="permission-item">
-            <span class="p-icon">🔔</span>
+            <span class="emoji p-icon">🔔</span>
             <span class="p-text">Alertas de Eventos</span>
           </div>
         </div>

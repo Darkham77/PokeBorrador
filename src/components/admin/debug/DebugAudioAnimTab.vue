@@ -151,7 +151,7 @@ const isEffectActive = (type: string, category: string) => {
           :class="{ active: isEffectActive(st.id, 'status') }"
           @click.stop="setStatus(st.id)"
         >
-          <span class="icon">{{ st.icon }}</span>
+          <span class="emoji">{{ st.icon }}</span>
           {{ st.label }}
         </button>
       </div>
@@ -169,7 +169,7 @@ const isEffectActive = (type: string, category: string) => {
           class="stat-row"
         >
           <span class="stat-label">
-            <span class="icon">{{ s.icon }}</span>
+            <span class="emoji">{{ s.icon }}</span>
             {{ s.label }}
           </span>
           <div class="stat-actions">
@@ -189,7 +189,7 @@ const isEffectActive = (type: string, category: string) => {
               class="mini-tool-btn reset"
               @click.stop="setStatStage(activeSide, s.id, 0)"
             >
-              <span class="btn-emoji">✕</span>
+              <span class="emoji">✕</span>
             </button>
           </div>
         </div>
@@ -209,7 +209,7 @@ const isEffectActive = (type: string, category: string) => {
           :class="{ active: isEffectActive(se.id, 'secondary') }"
           @click.stop="toggleSecondary(se.id)"
         >
-          <span class="icon">{{ se.icon }}</span>
+          <span class="emoji">{{ se.icon }}</span>
           {{ se.label }}
         </button>
       </div>
@@ -228,7 +228,7 @@ const isEffectActive = (type: string, category: string) => {
           :class="{ active: isEffectActive(f.id, 'field') }"
           @click.stop="setField(f.id, 5)"
         >
-          <span class="icon">{{ f.icon }}</span>
+          <span class="emoji">{{ f.icon }}</span>
           {{ f.label }}
         </button>
       </div>
@@ -247,7 +247,7 @@ const isEffectActive = (type: string, category: string) => {
           class="debug-btn sound-btn"
           @click.stop="playSound(s.id)"
         >
-          <span class="icon">{{ s.icon }}</span>
+          <span class="emoji">{{ s.icon }}</span>
           {{ s.label }}
         </button>
       </div>
@@ -290,7 +290,7 @@ const isEffectActive = (type: string, category: string) => {
           class="debug-btn fx-btn"
           @click.stop="triggerAttack(fx.cat)"
         >
-          <span class="icon">{{ fx.icon }}</span>
+          <span class="emoji">{{ fx.icon }}</span>
           {{ fx.label }}
         </button>
       </div>

@@ -54,7 +54,7 @@ onMounted(async () => {
       :class="dispute ? 'dispute' : 'dominance'"
     >
       <div class="phase-title">
-        <span class="title-icon">{{ dispute ? '⚔️' : '🏆' }}</span> {{ dispute ? 'FASE DE DISPUTA' : 'FASE DE DOMINANCIA' }}
+        <span class="emoji">{{ dispute ? '⚔️' : '🏆' }}</span> {{ dispute ? 'FASE DE DISPUTA' : 'FASE DE DOMINANCIA' }}
       </div>
       <div class="phase-desc">
         {{ dispute ? 'Suma puntos capturando y venciendo en mapas' : 'Gana bonos en mapas dominados' }}

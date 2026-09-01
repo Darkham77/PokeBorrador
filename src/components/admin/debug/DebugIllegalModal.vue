@@ -3,6 +3,7 @@ defineProps<{
   title: string
   description: string
   issues: string[]
+  emoji?: string
 }>()
 
 const emit = defineEmits<{
@@ -19,7 +20,10 @@ const emit = defineEmits<{
     <div class="creator-illegal-modal">
       <div class="modal-header">
         <h4 class="illegal-title">
-          {{ title }}
+          <span
+            v-if="emoji"
+            class="emoji"
+          >{{ emoji }}</span> {{ title }}
         </h4>
       </div>
       <p class="illegal-desc">
@@ -31,7 +35,7 @@ const emit = defineEmits<{
           :key="i"
           class="illegal-item"
         >
-          <span class="emoji-inline">❌</span> {{ issue }}
+          <span class="emoji">❌</span> {{ issue }}
         </li>
       </ul>
       <div class="modal-footer">

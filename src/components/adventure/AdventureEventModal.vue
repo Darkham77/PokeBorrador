@@ -56,7 +56,7 @@ const emit = defineEmits<{
         style="width: 100%; padding: 10px; font-size: 8px;"
         @click="emit('resume')"
       >
-        <span class="btn-emoji">🚶</span> Continuar Viaje
+        <span class="emoji">🚶</span> Continuar Viaje
       </button>
       <template v-else>
         <button
@@ -66,7 +66,7 @@ const emit = defineEmits<{
           style="width: 100%; padding: 10px; font-size: 8px;"
           @click="emit('resolve')"
         >
-          <span class="btn-emoji">{{ activeEvent.type === 'obstacle_rock_smash' ? '⛏️' : activeEvent.type === 'fishing' ? '🎣' : activeEvent.type === 'obstacle_cut' ? '✂️' : activeEvent.type === 'obstacle_strength' ? '💪' : '⚔️' }}</span>
+          <span class="emoji">{{ activeEvent.type === 'obstacle_rock_smash' ? '⛏️' : activeEvent.type === 'fishing' ? '🎣' : activeEvent.type === 'obstacle_cut' ? '✂️' : activeEvent.type === 'obstacle_strength' ? '💪' : '⚔️' }}</span>
           {{ activeEvent.type === 'obstacle_rock_smash' ? ' Excavar Fósil' : activeEvent.type === 'fishing' ? ' Lanzar Caña' : activeEvent.type === 'obstacle_cut' ? ' Cortar Arbusto' : activeEvent.type === 'obstacle_strength' ? ' Empujar Roca' : ' Combatir' }}
         </button>
         <button
@@ -76,7 +76,7 @@ const emit = defineEmits<{
           style="width: 100%; padding: 10px; font-size: 8px;"
           @click="emit('resolve')"
         >
-          <span class="btn-emoji">🚶</span> Rodear Obstáculo
+          <span class="emoji">🚶</span> Rodear Obstáculo
         </button>
       </template>
     </div>

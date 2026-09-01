@@ -6,6 +6,7 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils'
 import { getFriendshipTooltipDetails } from '@/logic/pokemon/friendshipLogic'
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 
 interface Props {
   pokemon: Pokemon
@@ -40,6 +41,8 @@ const getHpClass = (pct: number) => {
   if (pct > HP_MID_THRESHOLD_PCT) return 'hp-mid'
   return 'hp-low'
 }
+
+const getLevelPct = (level: number) => Math.min(100, Math.max(0, (level / MAX_POKEMON_LEVEL) * 100))
 
 const getAbilityDesc = (ability: string) => {
   if (!ability) return 'Habilidad especial de este Pokémon.'
@@ -113,7 +116,7 @@ const abilityStyle = computed(() => ({
         class="info-card vigor-card"
       >
         <span class="label">Vigor</span>
-        <span class="val vigor-val"><span class="vigor-icon">⚡</span>{{ getVigor(p) }}/{{ getMaxVigor(p) }}</span>
+        <span class="val vigor-val"><span class="emoji">⚡</span><span>{{ getVigor(p) }}/{{ getMaxVigor(p) }}</span></span>
       </PVTooltip>
     </div>
 
@@ -122,7 +125,7 @@ const abilityStyle = computed(() => ({
       v-if="p.obtainedMethod === 'egg'"
       class="egg-born-badge pixelated"
     >
-      <span class="emoji-inline">🥚</span> Nacido de Huevo (Cría)
+      <span class="emoji">🥚</span> Nacido de Huevo (Cría)
     </div>
 
     <!-- HP & EXP -->
@@ -140,14 +143,43 @@ const abilityStyle = computed(() => ({
           />
         </div>
       </div>
-      <div
-        v-if="context === 'team'"
-        class="bar-group mt-12"
+
+      <!-- BARRA DE NIVEL -->
+      <PVTooltip
+        tag="div"
+        class="level-tooltip-block mt-12"
+        :title="`NIVEL ${p.level} / ${MAX_POKEMON_LEVEL}`"
+        :description="p.level >= MAX_POKEMON_LEVEL ? 'Este Pokémon ha alcanzado el nivel máximo permitido.' : `Nivel actual: ${p.level}. Faltan ${MAX_POKEMON_LEVEL - p.level} niveles para alcanzar el nivel máximo (${MAX_POKEMON_LEVEL}).`"
+        position="top"
+        :touch-instant="true"
       >
+        <div class="bar-group level-group">
+          <div class="bar-header">
+            <span>NIVEL</span>
+            <span
+              v-if="p.level >= MAX_POKEMON_LEVEL"
+              class="max-text"
+            >Nv. {{ p.level }} / {{ MAX_POKEMON_LEVEL }} (MAX)</span>
+            <span
+              v-else
+              class="level-text"
+            >Nv. {{ p.level }} / {{ MAX_POKEMON_LEVEL }}</span>
+          </div>
+          <div class="progress-outer level">
+            <div 
+              class="progress-inner level-fill" 
+              :style="{ width: getLevelPct(p.level) + '%' }"
+            />
+          </div>
+        </div>
+      </PVTooltip>
+
+      <!-- BARRA DE EXPERIENCIA -->
+      <div class="bar-group mt-12">
         <div class="bar-header">
           <span>EXPERIENCIA</span>
           <span
-            v-if="p.level >= 100"
+            v-if="p.level >= MAX_POKEMON_LEVEL"
             class="max-text"
           >MAX</span>
           <span
@@ -158,7 +190,7 @@ const abilityStyle = computed(() => ({
         <div class="progress-outer exp">
           <div 
             class="progress-inner exp-fill" 
-            :style="{ width: (p.level >= 100 ? 100 : (p.exp / p.expNeeded * 100)) + '%' }"
+            :style="{ width: (p.level >= MAX_POKEMON_LEVEL ? 100 : (p.exp / p.expNeeded * 100)) + '%' }"
           />
         </div>
       </div>
@@ -176,7 +208,7 @@ const abilityStyle = computed(() => ({
           <div class="bar-header">
             <span>AMISTAD ({{ friendshipSeal.label }})</span>
             <span class="friendship-val">
-              <span class="seal-emoji">{{ friendshipSeal.iconEmoji }}</span>
+              <span class="emoji">{{ friendshipSeal.iconEmoji }}</span>
               <span>{{ friendshipDetails.currentValue }} / 255</span>
             </span>
           </div>
@@ -204,7 +236,8 @@ const abilityStyle = computed(() => ({
   box-shadow: none; // Remove frame
 }
 
-.friendship-tooltip-block {
+.friendship-tooltip-block,
+.level-tooltip-block {
   display: block !important;
   width: 100%;
   cursor: help;
@@ -213,7 +246,8 @@ const abilityStyle = computed(() => ({
 .bar-group { 
   margin-bottom: 12px; 
   
-  &.friendship-group {
+  &.friendship-group,
+  &.level-group {
     margin-bottom: 0;
   }
 }
@@ -266,6 +300,12 @@ const abilityStyle = computed(() => ({
 .exp-fill { 
   background: Linear-Gradient(90deg, Rgba(139, 92, 246, 1), Rgba(168, 85, 247, 1)); 
   color: Rgba(139, 92, 246, 1);
+  @include will-animate(width);
+}
+
+.level-fill {
+  background: linear-gradient(90deg, #0ea5e9, #38bdf8, #60a5fa);
+  color: #38bdf8;
   @include will-animate(width);
 }
 
@@ -350,23 +390,19 @@ const abilityStyle = computed(() => ({
   width: 100%;
 }
 
+.info-card .val.vigor-val,
 .vigor-val { 
   color: var(--yellow) !important; 
   text-shadow: 0 0 10px Rgba(255, 214, 10, 0.3) !important;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-}
-
-.vigor-icon {
-  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
-  display: inline-block !important;
-  vertical-align: middle !important;
-  position: relative !important;
-  top: -1px !important;
-  font-size: 10px;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px;
   line-height: 1;
+
+  .vigor-icon {
+    font-size: 10px;
+  }
 }
 
 .egg-born-badge {
@@ -390,6 +426,7 @@ const abilityStyle = computed(() => ({
 
 .mt-12 { margin-top: 12px; }
 .max-text { color: var(--yellow); font-size: 8px; }
+.level-text { color: #38bdf8; font-size: 8px; }
 .exp-text { color: var(--purple-light); font-size: 8px; }
 
 @media (max-width: 480px) {

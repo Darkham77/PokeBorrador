@@ -62,6 +62,51 @@ const HELD_ITEM_TYPE_BOOSTERS_MAP: Readonly<Partial<Record<ItemId, PokemonType>>
   twistedspoon: 'psychic'
 } as const;
 
+function getSpecialMoveModifier(
+  moveId: string,
+  weather: string | undefined,
+  mechWeather: string
+): { type: string; text: string } | null {
+  const isSunny = mechWeather === WEATHER_MECHANICAL.SUN;
+  const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN;
+  const isSnowing = mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL;
+  const isThunderstorm = weather?.toLowerCase() === 'thunderstorm';
+
+  if (moveId === 'thunder' || moveId === 'hurricane') {
+    if (isSunny) return { type: 'penalized', text: WEATHER_PENALIZED_ACCURACY_TEXT };
+    if (isRaining || isThunderstorm) return { type: 'boosted', text: `Potenciado por ${isThunderstorm ? 'Tormenta Eléctrica' : 'Lluvia'} (¡No falla!)` };
+  }
+  if (moveId === 'blizzard' && isSnowing) {
+    return { type: 'boosted', text: 'Potenciado por Granizo/Nieve (¡No falla!)' };
+  }
+  if (moveId === 'solarbeam' || moveId === 'solarblade') {
+    if (isSunny) return { type: 'boosted', text: 'Carga instantánea por Sol.' };
+    if (mechWeather !== WEATHER_MECHANICAL.CLEAR) return { type: 'penalized', text: WEATHER_ADVERSE_PENALTY_TEXT };
+  }
+  if (moveId === 'weatherball' && mechWeather !== WEATHER_MECHANICAL.CLEAR) {
+    return { type: 'boosted', text: WEATHER_BALL_BOOST_TEXT };
+  }
+  return null;
+}
+
+function getTypeWeatherModifier(
+  moveType: string | undefined,
+  mechWeather: string
+): { type: string; text: string } | null {
+  const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN;
+  const isSunny = mechWeather === WEATHER_MECHANICAL.SUN;
+
+  if (moveType === 'fire') {
+    if (isRaining) return { type: 'penalized', text: WEATHER_RAIN_PENALTY_TEXT };
+    if (isSunny) return { type: 'boosted', text: WEATHER_SUN_BOOST_TEXT };
+  }
+  if (moveType === 'water') {
+    if (isSunny) return { type: 'penalized', text: WEATHER_SUN_PENALTY_TEXT };
+    if (isRaining) return { type: 'boosted', text: WEATHER_RAIN_BOOST_TEXT };
+  }
+  return null;
+}
+
 /**
  * Gets modifier info for a move based on weather and cycle.
  */
@@ -70,33 +115,11 @@ export function calculateMoveModifierInfo(
   weather: string | undefined,
   _cycle: string
 ): { type: string; text: string } | null {
-  const m = move;
   const mechWeather = getMechanicalWeather(weather);
+  const moveId = move.id || '';
 
-  const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN;
-  const isSunny = mechWeather === WEATHER_MECHANICAL.SUN;
-  const isSnowing = mechWeather === WEATHER_MECHANICAL.SNOW || mechWeather === WEATHER_MECHANICAL.HAIL;
-
-  const moveId = m.id || '';
-
-  if (moveId === 'thunder' || moveId === 'hurricane') {
-    const isThunderstorm = weather?.toLowerCase() === 'thunderstorm';
-    if (isSunny) return { type: 'penalized', text: WEATHER_PENALIZED_ACCURACY_TEXT };
-    if (isRaining || isThunderstorm) return { type: 'boosted', text: `Potenciado por ${isThunderstorm ? 'Tormenta Eléctrica' : 'Lluvia'} (¡No falla!)` };
-  }
-
-  if (moveId === 'blizzard') {
-    if (isSnowing) return { type: 'boosted', text: 'Potenciado por Granizo/Nieve (¡No falla!)' };
-  }
-
-  if (moveId === 'solarbeam' || moveId === 'solarblade') {
-    if (isSunny) return { type: 'boosted', text: 'Carga instantánea por Sol.' };
-    if (mechWeather !== WEATHER_MECHANICAL.CLEAR) return { type: 'penalized', text: WEATHER_ADVERSE_PENALTY_TEXT };
-  }
-
-  if (moveId === 'weatherball') {
-    if (mechWeather !== WEATHER_MECHANICAL.CLEAR) return { type: 'boosted', text: WEATHER_BALL_BOOST_TEXT };
-  }
+  const specialMod = getSpecialMoveModifier(moveId, weather, mechWeather);
+  if (specialMod) return specialMod;
 
   if (mechWeather === WEATHER_MECHANICAL.FOG) {
     const isMist = weather?.toLowerCase() === 'mist';
@@ -105,18 +128,113 @@ export function calculateMoveModifierInfo(
     return { type: 'penalized', text: `Precisión reducida al ${penalty} por ${label}.` };
   }
 
-  if (m.cat === 'status') return null;
+  if (move.cat === 'status') return null;
 
-  if (m.type === 'fire') {
-    if (isRaining) return { type: 'penalized', text: WEATHER_RAIN_PENALTY_TEXT };
-    if (isSunny) return { type: 'boosted', text: WEATHER_SUN_BOOST_TEXT };
+  return getTypeWeatherModifier(move.type, mechWeather);
+}
+
+interface PowerContext {
+  powerList: { label: string; mult: number }[];
+  currentPower: number;
+}
+
+function resolveWeatherBallAdaptation(
+  moveId: string | undefined,
+  moveType: string,
+  mechWeather: string,
+  ctx: PowerContext
+): string {
+  if (moveId !== 'weatherball') return moveType;
+  if (mechWeather === WEATHER_MECHANICAL.SUN) { ctx.currentPower = 100; ctx.powerList.push({ label: 'Weather Ball (Sol)', mult: 2.0 }); return 'fire'; }
+  if (mechWeather === WEATHER_MECHANICAL.RAIN) { ctx.currentPower = 100; ctx.powerList.push({ label: 'Weather Ball (Lluvia)', mult: 2.0 }); return 'water'; }
+  if (mechWeather === WEATHER_MECHANICAL.HAIL || mechWeather === WEATHER_MECHANICAL.SNOW) { ctx.currentPower = 100; ctx.powerList.push({ label: 'Weather Ball (Nieve)', mult: 2.0 }); return 'ice'; }
+  if (mechWeather === WEATHER_MECHANICAL.SANDSTORM) { ctx.currentPower = 100; ctx.powerList.push({ label: 'Weather Ball (Arena)', mult: 2.0 }); return 'rock'; }
+  return moveType;
+}
+
+function applyStabMultiplier(attacker: PurePokemon, moveType: string, ctx: PowerContext): void {
+  const isStab = attacker.type === moveType || attacker.type2 === moveType;
+  if (isStab) {
+    const stabMult = attacker.ability === 'adaptability' ? STAB_ADAPTABILITY_MULTIPLIER : STAB_STANDARD_MULTIPLIER;
+    ctx.powerList.push({ label: `STAB ${attacker.ability === 'adaptability' ? '(Adaptabilidad)' : ''}`.trim(), mult: stabMult });
+    ctx.currentPower *= stabMult;
   }
-  if (m.type === 'water') {
-    if (isSunny) return { type: 'penalized', text: WEATHER_SUN_PENALTY_TEXT };
-    if (isRaining) return { type: 'boosted', text: WEATHER_RAIN_BOOST_TEXT };
+}
+
+function applyWeatherPowerMod(moveId: string | undefined, moveType: string, mechWeather: string, ctx: PowerContext): void {
+  if (moveType === 'fire') {
+    if (mechWeather === WEATHER_MECHANICAL.SUN) { ctx.powerList.push({ label: 'Clima (Sol)', mult: 1.5 }); ctx.currentPower *= 1.5; }
+    else if (mechWeather === WEATHER_MECHANICAL.RAIN) { ctx.powerList.push({ label: 'Clima (Lluvia)', mult: 0.5 }); ctx.currentPower *= 0.5; }
+  } else if (moveType === 'water') {
+    if (mechWeather === WEATHER_MECHANICAL.RAIN) { ctx.powerList.push({ label: 'Clima (Lluvia)', mult: 1.5 }); ctx.currentPower *= 1.5; }
+    else if (mechWeather === WEATHER_MECHANICAL.SUN) { ctx.powerList.push({ label: 'Clima (Sol)', mult: 0.5 }); ctx.currentPower *= 0.5; }
   }
 
-  return null;
+  if (moveId === 'solarbeam' || moveId === 'solarblade') {
+    if (mechWeather !== WEATHER_MECHANICAL.SUN && mechWeather !== WEATHER_MECHANICAL.CLEAR) {
+      ctx.powerList.push({ label: 'Clima Adverso', mult: SOLARBEAM_CLIMATE_PENALTY_MULTIPLIER });
+      ctx.currentPower *= SOLARBEAM_CLIMATE_PENALTY_MULTIPLIER;
+    }
+  }
+}
+
+const LOW_HP_PINCH_ABILITIES: Readonly<Record<string, string>> = {
+  overgrow: 'grass',
+  blaze: 'fire',
+  torrent: 'water',
+  swarm: 'bug'
+};
+
+function applyAttackerAbilityPowerMod(attacker: PurePokemon, moveType: string, basePower: number, mechWeather: string, ctx: PowerContext): void {
+  if (!attacker.ability) return;
+  const a = attacker.ability;
+  const curHp = attacker.hp || 1;
+  const maxHp = attacker.maxHp || 1;
+  const isLowHp = curHp <= Math.floor(maxHp / LOW_HP_THIRD_DIVISOR);
+
+  let abilMult = DEFAULT_WEATHER_NEUTRAL_MULTIPLIER;
+  if (isLowHp && LOW_HP_PINCH_ABILITIES[a] === moveType) {
+    abilMult *= LOW_HP_ABILITY_MULTIPLIER;
+  }
+
+  if (a === 'technician' && basePower <= TECHNICIAN_POWER_CAP) abilMult *= 1.5;
+  if (a === 'sandforce' && mechWeather === WEATHER_MECHANICAL.SANDSTORM && (moveType === 'rock' || moveType === 'ground' || moveType === 'steel')) {
+    abilMult *= SAND_FORCE_MULTIPLIER;
+  }
+
+  if (abilMult !== DEFAULT_WEATHER_NEUTRAL_MULTIPLIER) {
+    ctx.powerList.push({ label: `Habilidad (${attacker.ability})`, mult: abilMult });
+    ctx.currentPower *= abilMult;
+  }
+}
+
+function applyDefenderAbilityPowerMod(defender: PurePokemon | null, moveType: string, ctx: PowerContext): void {
+  if (defender && defender.ability === 'thickfat' && (moveType === 'fire' || moveType === 'ice')) {
+    ctx.powerList.push({ label: 'Habilidad Rival (Sebo)', mult: THICK_FAT_REDUCTION_MULTIPLIER });
+    ctx.currentPower *= THICK_FAT_REDUCTION_MULTIPLIER;
+  }
+}
+
+function applyHeldItemPowerMod(attacker: PurePokemon, move: Move, moveType: string, ctx: PowerContext): void {
+  if (!attacker.heldItem) return;
+  const h = attacker.heldItem;
+  const canonicalKey = h.replace(/_/g, '');
+  const itemKey: ItemId | null = isItemId(h) ? h : (isItemId(canonicalKey) ? canonicalKey : null);
+  let itemMult = DEFAULT_WEATHER_NEUTRAL_MULTIPLIER;
+  if (itemKey && HELD_ITEM_TYPE_BOOSTERS_MAP[itemKey] === moveType) itemMult = HELD_ITEM_TYPE_BOOST_MULTIPLIER;
+  
+  if (h === 'choiceband' || h === 'choice_band') {
+    if (move.cat === 'physical') {
+      itemMult = STAB_STANDARD_MULTIPLIER;
+    } else {
+      ctx.powerList.push({ label: 'Objeto (choice_band - Solo Físico)', mult: DEFAULT_WEATHER_NEUTRAL_MULTIPLIER });
+    }
+  }
+
+  if (itemMult !== DEFAULT_WEATHER_NEUTRAL_MULTIPLIER) {
+    ctx.powerList.push({ label: `Objeto (${h})`, mult: itemMult });
+    ctx.currentPower *= itemMult;
+  }
 }
 
 /**
@@ -132,99 +250,61 @@ export function calculateMovePower(
   basePower: number,
   moveTypeOverride?: string
 ): { base: number; final: number; list: { label: string; mult: number }[]; class: string } {
-  let currentPower = basePower;
-  const powerList: { label: string; mult: number }[] = [];
+  const ctx: PowerContext = {
+    currentPower: basePower,
+    powerList: []
+  };
 
   if (basePower > 0) {
     let moveType = (moveTypeOverride || move.type || '').toLowerCase();
-
-    if (move.id === 'weatherball') {
-      if (mechWeather === WEATHER_MECHANICAL.SUN) { moveType = 'fire'; currentPower = 100; powerList.push({ label: 'Weather Ball (Sol)', mult: 2.0 }); }
-      else if (mechWeather === WEATHER_MECHANICAL.RAIN) { moveType = 'water'; currentPower = 100; powerList.push({ label: 'Weather Ball (Lluvia)', mult: 2.0 }); }
-      else if (mechWeather === WEATHER_MECHANICAL.HAIL || mechWeather === WEATHER_MECHANICAL.SNOW) { moveType = 'ice'; currentPower = 100; powerList.push({ label: 'Weather Ball (Nieve)', mult: 2.0 }); }
-      else if (mechWeather === WEATHER_MECHANICAL.SANDSTORM) { moveType = 'rock'; currentPower = 100; powerList.push({ label: 'Weather Ball (Arena)', mult: 2.0 }); }
-    }
-
-    const isStab = attacker.type === moveType || attacker.type2 === moveType;
-    if (isStab) {
-      const stabMult = attacker.ability === 'adaptability' ? STAB_ADAPTABILITY_MULTIPLIER : STAB_STANDARD_MULTIPLIER;
-      powerList.push({ label: `STAB ${attacker.ability === 'adaptability' ? '(Adaptabilidad)' : ''}`.trim(), mult: stabMult });
-      currentPower *= stabMult;
-    }
-
-    if (moveType === 'fire') {
-      if (mechWeather === WEATHER_MECHANICAL.SUN) { powerList.push({ label: 'Clima (Sol)', mult: 1.5 }); currentPower *= 1.5; }
-      else if (mechWeather === WEATHER_MECHANICAL.RAIN) { powerList.push({ label: 'Clima (Lluvia)', mult: 0.5 }); currentPower *= 0.5; }
-    } else if (moveType === 'water') {
-      if (mechWeather === WEATHER_MECHANICAL.RAIN) { powerList.push({ label: 'Clima (Lluvia)', mult: 1.5 }); currentPower *= 1.5; }
-      else if (mechWeather === WEATHER_MECHANICAL.SUN) { powerList.push({ label: 'Clima (Sol)', mult: 0.5 }); currentPower *= 0.5; }
-    }
-
-    if (move.id === 'solarbeam' || move.id === 'solarblade') {
-      if (mechWeather !== WEATHER_MECHANICAL.SUN && mechWeather !== WEATHER_MECHANICAL.CLEAR) {
-        powerList.push({ label: 'Clima Adverso', mult: SOLARBEAM_CLIMATE_PENALTY_MULTIPLIER });
-        currentPower *= SOLARBEAM_CLIMATE_PENALTY_MULTIPLIER;
-      }
-    }
-
-    let abilMult = DEFAULT_WEATHER_NEUTRAL_MULTIPLIER;
-    if (attacker.ability) {
-      const a = attacker.ability;
-      const curHp = attacker.hp || 1;
-      const maxHp = attacker.maxHp || 1;
-      const isLowHp = curHp <= Math.floor(maxHp / LOW_HP_THIRD_DIVISOR);
-
-      if (isLowHp) {
-        if (a === 'overgrow' && moveType === 'grass') abilMult *= LOW_HP_ABILITY_MULTIPLIER;
-        if (a === 'blaze' && moveType === 'fire') abilMult *= LOW_HP_ABILITY_MULTIPLIER;
-        if (a === 'torrent' && moveType === 'water') abilMult *= LOW_HP_ABILITY_MULTIPLIER;
-        if (a === 'swarm' && moveType === 'bug') abilMult *= LOW_HP_ABILITY_MULTIPLIER;
-      }
-
-      if (a === 'technician' && basePower <= TECHNICIAN_POWER_CAP) abilMult *= 1.5;
-      if (a === 'sandforce' && mechWeather === WEATHER_MECHANICAL.SANDSTORM && (moveType === 'rock' || moveType === 'ground' || moveType === 'steel')) {
-        abilMult *= SAND_FORCE_MULTIPLIER;
-      }
-    }
-    if (abilMult !== DEFAULT_WEATHER_NEUTRAL_MULTIPLIER) {
-      powerList.push({ label: `Habilidad (${attacker.ability})`, mult: abilMult });
-      currentPower *= abilMult;
-    }
-
-    if (defender && defender.ability === 'thickfat' && (moveType === 'fire' || moveType === 'ice')) {
-      powerList.push({ label: 'Habilidad Rival (Sebo)', mult: THICK_FAT_REDUCTION_MULTIPLIER });
-      currentPower *= THICK_FAT_REDUCTION_MULTIPLIER;
-    }
-
-    if (attacker.heldItem) {
-      const h = attacker.heldItem;
-      const canonicalKey = h.replace(/_/g, '');
-      const itemKey: ItemId | null = isItemId(h) ? h : (isItemId(canonicalKey) ? canonicalKey : null);
-      let itemMult = DEFAULT_WEATHER_NEUTRAL_MULTIPLIER;
-      if (itemKey && HELD_ITEM_TYPE_BOOSTERS_MAP[itemKey] === moveType) itemMult = HELD_ITEM_TYPE_BOOST_MULTIPLIER;
-      
-      if (h === 'choiceband' || h === 'choice_band') {
-        if (move.cat === 'physical') {
-          itemMult = STAB_STANDARD_MULTIPLIER;
-        } else {
-          powerList.push({ label: 'Objeto (choice_band - Solo Físico)', mult: DEFAULT_WEATHER_NEUTRAL_MULTIPLIER });
-        }
-      }
-
-      if (itemMult !== DEFAULT_WEATHER_NEUTRAL_MULTIPLIER) {
-        powerList.push({ label: `Objeto (${h})`, mult: itemMult });
-        currentPower *= itemMult;
-      }
-    }
+    moveType = resolveWeatherBallAdaptation(move.id, moveType, mechWeather, ctx);
+    applyStabMultiplier(attacker, moveType, ctx);
+    applyWeatherPowerMod(move.id, moveType, mechWeather, ctx);
+    applyAttackerAbilityPowerMod(attacker, moveType, basePower, mechWeather, ctx);
+    applyDefenderAbilityPowerMod(defender, moveType, ctx);
+    applyHeldItemPowerMod(attacker, move, moveType, ctx);
   }
 
-  const finalPower = Math.max(BASE_POWER_MINIMAL_BOUND, Math.round(currentPower));
+  const finalPower = Math.max(BASE_POWER_MINIMAL_BOUND, Math.round(ctx.currentPower));
   return {
     base: basePower,
     final: finalPower,
-    list: powerList,
+    list: ctx.powerList,
     class: finalPower > basePower ? 'boosted' : (finalPower < basePower ? 'penalized' : '')
   };
+}
+
+function applyWeatherAccuracyOverride(
+  moveId: string | undefined,
+  weather: { type: string; turns: number } | null,
+  mechWeather: string,
+  baseAcc: number,
+  accList: { label: string; mult: number | string }[]
+): number {
+  const isThunderOrHurricane = moveId === 'thunder' || moveId === 'hurricane';
+  if (isThunderOrHurricane) {
+    if (mechWeather === WEATHER_MECHANICAL.RAIN || weather?.type === 'thunderstorm') {
+      accList.push({ label: 'Lluvia (¡No falla!)', mult: '100%' });
+      return STAGE_PRECISION_LIMIT;
+    }
+    if (mechWeather === WEATHER_MECHANICAL.SUN) {
+      accList.push({ label: 'Sol (Precisión 50%)', mult: '0.5' });
+      return STAGE_PRECISION_SUN_PENALTY;
+    }
+  }
+
+  if (moveId === 'blizzard' && (mechWeather === WEATHER_MECHANICAL.HAIL || mechWeather === WEATHER_MECHANICAL.SNOW)) {
+    accList.push({ label: 'Nieve (¡No falla!)', mult: '100%' });
+    return STAGE_PRECISION_LIMIT;
+  }
+
+  if (mechWeather === WEATHER_MECHANICAL.FOG) {
+    const isMist = weather?.type === "mist" || weather?.type === "mist_visual";
+    const factor = isMist ? MIST_ACCURACY_PENALTY_PCT : FOG_ACCURACY_PENALTY_PCT;
+    accList.push({ label: `Niebla/Bruma`, mult: factor });
+    return Math.floor(baseAcc * factor);
+  }
+  return baseAcc;
 }
 
 /**
@@ -243,34 +323,13 @@ export function calculateMoveAccuracy(
   const accList: { label: string; mult: number | string }[] = [];
 
   if (baseAcc > 0 && baseAcc < STAGE_PRECISION_FULL) {
-    const isSunActive = mechWeather === WEATHER_MECHANICAL.SUN;
-    const isRainActive = mechWeather === WEATHER_MECHANICAL.RAIN;
-    const isThunderstorm = weather?.type === 'thunderstorm';
-
-    if ((isRainActive || isThunderstorm) && (move.id === 'thunder' || move.id === 'hurricane')) {
-      currentAcc = STAGE_PRECISION_LIMIT;
-      accList.push({ label: 'Lluvia (¡No falla!)', mult: '100%' });
-    } else if (isSunActive && (move.id === 'thunder' || move.id === 'hurricane')) {
-      currentAcc = STAGE_PRECISION_SUN_PENALTY;
-      accList.push({ label: 'Sol (Precisión 50%)', mult: '0.5' });
-    } else if ((mechWeather === WEATHER_MECHANICAL.HAIL || mechWeather === WEATHER_MECHANICAL.SNOW) && move.id === 'blizzard') {
-      currentAcc = STAGE_PRECISION_LIMIT;
-      accList.push({ label: 'Nieve (¡No falla!)', mult: '100%' });
-    } else if (mechWeather === WEATHER_MECHANICAL.FOG) {
-      const isMist = weather?.type === "mist" || weather?.type === "mist_visual";
-      const factor = isMist ? MIST_ACCURACY_PENALTY_PCT : FOG_ACCURACY_PENALTY_PCT;
-      currentAcc = Math.floor(baseAcc * factor);
-      accList.push({ label: `Niebla/Bruma`, mult: factor });
-    }
+    currentAcc = applyWeatherAccuracyOverride(move.id, weather, mechWeather, baseAcc, accList);
 
     const netStage = Math.max(STAGE_MIN_BOUND, Math.min(STAGE_MAX_BOUND, accStage - evaStage));
     if (netStage !== 0) {
-      let factor = DEFAULT_WEATHER_NEUTRAL_MULTIPLIER;
-      if (netStage >= 0) {
-        factor = (STAGE_MATH_BASE + netStage) / STAGE_MATH_BASE;
-      } else {
-        factor = STAGE_MATH_BASE / (STAGE_MATH_BASE - netStage);
-      }
+      const factor = netStage >= 0 
+        ? (STAGE_MATH_BASE + netStage) / STAGE_MATH_BASE
+        : STAGE_MATH_BASE / (STAGE_MATH_BASE - netStage);
       accList.push({ label: `Modificador Rango (${netStage > 0 ? '+' : ''}${netStage})`, mult: Number(factor.toFixed(3)) });
       currentAcc *= factor;
     }

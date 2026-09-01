@@ -276,7 +276,7 @@ function selectAdventure(_slotIndex: number) {
             :class="{ active: activeTab === 'adventure' }"
             @click="activeTab = 'adventure'"
           >
-            <span class="icon">🎒</span>
+            <span class="emoji">🎒</span>
             <span>AVENTURA</span>
             <span class="tab-count">{{ adventureCount }}/6</span>
           </button>
@@ -293,7 +293,7 @@ function selectAdventure(_slotIndex: number) {
             :class="{ active: activeTab === 'pvp' }"
             @click="activeTab = 'pvp'"
           >
-            <span class="icon">⚔️</span>
+            <span class="emoji">⚔️</span>
             <span>PVP</span>
             <span class="tab-count">{{ pvpCount }}/3</span>
           </button>
@@ -310,7 +310,7 @@ function selectAdventure(_slotIndex: number) {
             :class="{ active: activeTab === 'war' }"
             @click="activeTab = 'war'"
           >
-            <span class="icon">🛡️</span>
+            <span class="emoji">🛡️</span>
             <span>GUERRA</span>
             <span class="tab-count">{{ warCount }}/{{ maxWarSlots }}</span>
           </button>

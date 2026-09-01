@@ -151,7 +151,7 @@ const getRankLabel = (rank?: string | number): string => {
   >
     <!-- Column 1: Rank Badge / Medal (Standalone) -->
     <div class="rank-badge">
-      <span class="medal">{{ getRankMedal(winner.rank || rankIndex + 1) }}</span>
+      <span class="emoji medal">{{ getRankMedal(winner.rank || rankIndex + 1) }}</span>
       <span class="pos-text">{{ getRankLabel(winner.rank || rankIndex + 1) }}</span>
     </div>
 
@@ -203,7 +203,7 @@ const getRankLabel = (rank?: string | number): string => {
         >
           <span
             v-if="winner.entry_data.is_shiny"
-            class="emoji-inline"
+            class="emoji"
           >✨</span> {{ winner.entry_data.nickname || winner.entry_data.name }}
         </span>
 

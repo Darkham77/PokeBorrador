@@ -96,7 +96,7 @@ defineEmits<{
       v-if="socialStore.friends.length === 0"
       class="empty-state"
     >
-      <div class="icon">
+      <div class="icon emoji">
         👥
       </div>
       <p>Aún no tenés amigos agregados.</p>
@@ -139,7 +139,7 @@ defineEmits<{
                 :disabled="isChatActive(friend.id)"
                 @click.stop="openChat(friend)"
               >
-                💬
+                <span class="emoji">💬</span>
                 <span 
                   v-if="getUnreadCount(friend.id) > 0" 
                   class="chat-badge"
@@ -156,7 +156,7 @@ defineEmits<{
                 class="action-btn trade"
                 @click.stop="openTrade(friend)"
               >
-                🔄
+                <span class="emoji">🔄</span>
               </button>
             </PVTooltip>
 
@@ -170,7 +170,7 @@ defineEmits<{
                 disabled
                 @click.stop
               >
-                ⚔️
+                <span class="emoji">⚔️</span>
               </button>
             </PVTooltip>
 

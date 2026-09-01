@@ -164,7 +164,7 @@ if (typeof window !== 'undefined') {
     <template #header>
       <div class="war-shop-modal-header">
         <div class="war-shop-title-group">
-          <span class="title-icon">🚩</span>
+          <span class="emoji">🚩</span>
           <div class="title-text-wrap">
             <span class="main-title">TIENDA DE GUERRA</span>
             <span class="sub-title">CANJE DE MONEDAS FACCIONARIAS</span>
@@ -221,7 +221,7 @@ if (typeof window !== 'undefined') {
         <div class="shop-grid-wrapper custom-scrollbar">
           <!-- Hint Message Banner -->
           <div class="war-shop-hint-banner">
-            <span class="info-icon">ℹ️</span>
+            <span class="emoji info-icon">ℹ️</span>
             <span class="hint-text">Gana monedas participando en la Dominancia de Kanto.</span>
           </div>
 
@@ -241,7 +241,7 @@ if (typeof window !== 'undefined') {
             v-else
             class="shop-empty-state"
           >
-            <span class="empty-icon">🔍</span>
+            <span class="emoji empty-icon">🔍</span>
             <div class="empty-text">
               <h3>Sin resultados</h3>
               <p>Prueba con otros términos de búsqueda en esta sección</p>

@@ -85,7 +85,7 @@ const drainPP = () => {
         class="debug-btn exp-btn"
         @click.stop="addExpForNextLevel"
       >
-        <span class="btn-emoji">⚡</span> EXP AL SIGUIENTE NIVEL
+        <span class="emoji">⚡</span> EXP AL SIGUIENTE NIVEL
       </button>
     </div>
     <div class="debug-row">
@@ -94,7 +94,7 @@ const drainPP = () => {
         class="debug-btn pp-drain-btn"
         @click.stop="drainPP"
       >
-        <span class="btn-emoji">🧪</span> PP → 1 (SOFTLOCK TEST)
+        <span class="emoji">🧪</span> PP <span class="emoji">→</span> 1 (SOFTLOCK TEST)
       </button>
     </div>
   </div>

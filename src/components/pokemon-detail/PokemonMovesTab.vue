@@ -116,7 +116,7 @@ function handleReorder(fromIndex: number, toIndex: number) {
               />
             </div>
             <div class="grid-cell move-cat pixelated">
-              {{ (m.cat === 'physical' ? '⚔️ FÍSICO' : m.cat === 'special' ? '✨ ESPECIAL' : '🔮 ESTADO') }}
+              <span class="emoji">{{ m.cat === 'physical' ? '⚔️' : m.cat === 'special' ? '✨' : '🔮' }}</span> {{ (m.cat === 'physical' ? 'FÍSICO' : m.cat === 'special' ? 'ESPECIAL' : 'ESTADO') }}
             </div>
             <div class="grid-cell move-power pixelated">
               {{ m.power }}
@@ -124,7 +124,7 @@ function handleReorder(fromIndex: number, toIndex: number) {
             <div class="grid-cell move-acc pixelated">
               <span
                 v-if="m.acc === 1000"
-                class="infinity-emoji"
+                class="emoji infinity-emoji"
               >♾️</span>
               <template v-else>
                 {{ m.acc }}

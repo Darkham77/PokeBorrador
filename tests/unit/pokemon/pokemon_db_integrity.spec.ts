@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
 import { NATURES } from '@/data/battle/natures';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { IMPLEMENTED_GENERATION } from '@/data/system/constants';
+import { ACTIVE_GENERATION } from '@/data/system/constants';
 
 describe('Pokemon Database Integrity', () => {
   const species = Object.entries(POKEMON_DB);
@@ -20,7 +20,7 @@ describe('Pokemon Database Integrity', () => {
       8: 905,
       9: 1025
     };
-    const minExpected = expectedCounts[IMPLEMENTED_GENERATION] ?? 1025;
+    const minExpected = expectedCounts[ACTIVE_GENERATION] ?? 1025;
     expect(species.length).toBeGreaterThanOrEqual(minExpected);
   });
 

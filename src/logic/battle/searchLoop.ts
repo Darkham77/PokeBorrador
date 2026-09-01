@@ -133,7 +133,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
           ctx.activeBattle.value.isRival = false
         }
       } else if (encounter.type === 'rival') {
-        const { name, sprite, enemyTeam } = await buildRivalEncounter(ctx.gs.state.team)
+        const { name, sprite, enemyTeam, quote } = await buildRivalEncounter(ctx.gs.state.team)
 
         if (enemyTeam.length > 0 && enemyTeam[0]) {
           generatedPoke = enemyTeam[0]
@@ -142,6 +142,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
           ctx.activeBattle.value.trainerName = name
           ctx.activeBattle.value.trainerSprite = requireNpcSpriteId(sprite)
           ctx.activeBattle.value.trainerArchetype = 'rival'
+          ctx.activeBattle.value.quote = quote
           ctx.activeBattle.value.isRival = true
         }
       } else {

@@ -237,7 +237,7 @@ function handlePillLeave(e: MouseEvent) {
         <!-- Money or Custom Icon -->
         <span 
           v-else-if="item.icon" 
-          class="reward-icon"
+          class="emoji reward-icon"
         >
           {{ item.icon }}
         </span>

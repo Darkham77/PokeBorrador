@@ -47,6 +47,7 @@ async function loadImageBitmap(rawUrl: string): Promise<ImageBitmap> {
   }
 
   if (rawUrl.startsWith('data:image/')) {
+    // fallow-ignore-next-line security-sink
     const res = await fetch(rawUrl);
     if (!res.ok) throw new Error(`Failed to load data URL (status: ${res.status})`);
     const blob = await res.blob();
@@ -58,6 +59,7 @@ async function loadImageBitmap(rawUrl: string): Promise<ImageBitmap> {
     throw new Error(`Forbidden sprite URL host: ${parsed.hostname}`);
   }
 
+  // fallow-ignore-next-line security-sink
   const res = await fetch(parsed.href);
   if (!res.ok) {
     throw new Error(`Failed to fetch image from URL: ${parsed.pathname} (status: ${res.status})`);

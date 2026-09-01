@@ -101,7 +101,7 @@ function onMouseLeave() {
       @mouseleave="onMouseLeave"
     >
       <span
-        class="seal-icon"
+        class="emoji seal-icon"
         aria-hidden="true"
       >{{ seal.iconEmoji }}</span>
     </div>
@@ -116,7 +116,7 @@ function onMouseLeave() {
     @mouseleave="onMouseLeave"
   >
     <span
-      class="seal-icon"
+      class="emoji seal-icon"
       aria-hidden="true"
     >{{ seal.iconEmoji }}</span>
   </div>

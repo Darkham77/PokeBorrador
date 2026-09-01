@@ -4,12 +4,14 @@ import type { PendingAward, PastEventHistoryItem, PastCompetitionWinner, Competi
 import { getEventDisplayName, type Event as GameEvent } from '@/logic/events/eventEngine'
 import { GAME_TIMEZONE, getGMT3Date } from '@/logic/utils/timeUtils'
 import type { PokemonCompetitionTrophy } from '@/types/pokemon/pokemon'
-import { incrementRecordKey } from '@/logic/utils/mapUtils'
-import { getItemName } from '@/data/inventory/items'
-import { makePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory'
-import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { isAwardClaimable } from '@/logic/events/eventValidators'
 import { healStuckEventPokemon } from '@/logic/player/eventRecovery'
+import {
+  grantMoneyAward,
+  grantBattleCoinsAward,
+  grantItemsAward,
+  grantPokemonAward
+} from './eventPrizeGrantor.ts'
 import type { useGameStore } from '@/stores/game.ts'
 import type { useAuthStore } from '@/stores/auth.ts'
 import type { useUIStore } from '@/stores/ui.ts'
@@ -77,79 +79,12 @@ function applyAwardPrize(ctx: EventAwardsContext, rawPrize: unknown) {
   }
 
   if (!prize) return
+
   let totalNotified = 0
-
-  if (prize.type === 'money' || typeof prize.money === 'number') {
-    const amount = Number(prize.amount || prize.money || 0)
-    if (amount > 0) {
-      gameStore.state.money = (gameStore.state.money || 0) + amount
-      uiStore.notify(`¡Ganaste ₽${amount.toLocaleString()}!`, '💰')
-      totalNotified++
-    }
-  }
-
-  if (prize.type === 'bc' || typeof prize.battleCoins === 'number') {
-    const amount = Number(prize.amount || prize.battleCoins || 0)
-    if (amount > 0) {
-      gameStore.state.battleCoins = (gameStore.state.battleCoins || 0) + amount
-      uiStore.notify(`¡Ganaste ${amount.toLocaleString()} Battle Coins!`, '🪙')
-      totalNotified++
-    }
-  }
-
-  if ((prize.type === 'item' && prize.item) || (typeof prize.item === 'string' && prize.item)) {
-    const itemId = String(prize.item)
-    const qty = Number(prize.qty || 1)
-    if (!gameStore.state.inventory) gameStore.state.inventory = {}
-    incrementRecordKey(gameStore.state.inventory, itemId, qty)
-    const itemName = getItemName(itemId) || itemId
-    uiStore.notify(`¡Obtuviste ${itemName}${qty > 1 ? ` x${qty}` : ''}!`, '🎒')
-    totalNotified++
-  }
-
-  if (prize.items && typeof prize.items === 'object') {
-    if (!gameStore.state.inventory) gameStore.state.inventory = {}
-    for (const [k, v] of Object.entries(prize.items as Record<string, number>)) { // open-record
-      if (v && v > 0) {
-        incrementRecordKey(gameStore.state.inventory, k, v)
-        const itemName = getItemName(k) || k
-        uiStore.notify(`¡Obtuviste ${itemName}${v > 1 ? ` x${v}` : ''}!`, '🎒')
-        totalNotified++
-      }
-    }
-  }
-
-  if (prize.type === 'pokemon' || prize.species) {
-    const speciesId = String(prize.species || '')
-    if (speciesId && pokemonDataProvider.getPokemonData(speciesId)) {
-      const level = Number(prize.level || 5)
-      const isShiny = Boolean(prize.shiny)
-      const nature = typeof prize.nature === 'string' ? prize.nature : undefined
-      const rawIvs = (prize.ivs && typeof prize.ivs === 'object') ? (prize.ivs as Record<string, number>) : null // open-record
-      const ivFloor = rawIvs ? Math.min(...Object.values(rawIvs).filter((v: number) => typeof v === 'number')) : 0
-
-      const createdPoke = makePokemon(speciesId, level, {
-        isShiny,
-        nature,
-        ivFloor: Number.isFinite(ivFloor) ? ivFloor : 0
-      })
-
-      if (createdPoke) {
-        if (rawIvs) {
-          if (typeof rawIvs.hp === 'number') createdPoke.ivs.hp = rawIvs.hp
-          if (typeof rawIvs.atk === 'number') createdPoke.ivs.atk = rawIvs.atk
-          if (typeof rawIvs.def === 'number') createdPoke.ivs.def = rawIvs.def
-          if (typeof rawIvs.spa === 'number') createdPoke.ivs.spa = rawIvs.spa
-          if (typeof rawIvs.spd === 'number') createdPoke.ivs.spd = rawIvs.spd
-          if (typeof rawIvs.spe === 'number') createdPoke.ivs.spe = rawIvs.spe
-          recalcPokemonStats(createdPoke)
-        }
-        gameStore.addPokemon(createdPoke, { notify: false })
-        uiStore.notify(`¡Obtuviste a ${createdPoke.name}${isShiny ? ' ✨' : ''}!`, '🎁')
-        totalNotified++
-      }
-    }
-  }
+  totalNotified += grantMoneyAward(gameStore, uiStore, prize)
+  totalNotified += grantBattleCoinsAward(gameStore, uiStore, prize)
+  totalNotified += grantItemsAward(gameStore, uiStore, prize)
+  totalNotified += grantPokemonAward(gameStore, uiStore, prize)
 
   if (totalNotified === 0) {
     uiStore.notify('¡Recompensa reclamada!', '🎁')

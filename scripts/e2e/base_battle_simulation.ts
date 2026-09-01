@@ -57,6 +57,19 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
   }
 
   /**
+   * Navega de forma segura a la Ruta 1 activando primero la pestaña de mapa si no está activa.
+   */
+  public async navigateToRoute1(): Promise<void> {
+    await this.page.evaluate(async () => {
+      const { useUIStore } = await import('../../src/stores/ui.ts');
+      useUIStore().activeTab = 'map';
+    });
+    const mapCard = this.page.locator('#map-card-route1');
+    await mapCard.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await clickResilient(mapCard, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  }
+
+  /**
    * Acelera la escala de tiempo global de GSAP para que todas las animaciones de batalla ocurran n-veces más rápido.
    */
   public async speedUpAnimations(scale = SIMULATION_GSAP_TIME_SCALE): Promise<void> {
@@ -175,15 +188,23 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
   public async getBattleStoreState(): Promise<BattleStoreSnapshot | null> {
     return await this.page.evaluate(async () => {
       const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
+      const { useGameStore } = await import('../../src/stores/game.ts');
       const store = useBattleStore();
-      if (!store.state) return null;
+      const gameStore = useGameStore();
+      const bState = store?.state && typeof store.state === 'object' && 'value' in store.state
+        ? (store.state as { value?: { player?: { name?: string; uid?: string; hp?: number; maxHp?: number; status?: string | null }; playerTeam?: Array<{ uid?: string; name?: string; hp?: number; maxHp?: number; status?: string | null }> } }).value
+        : (store?.state as { player?: { name?: string; uid?: string; hp?: number; maxHp?: number; status?: string | null }; playerTeam?: Array<{ uid?: string; name?: string; hp?: number; maxHp?: number; status?: string | null }> } | undefined);
+      if (!bState) return null;
+      const team = (gameStore.state?.team && gameStore.state.team.length > 0)
+        ? gameStore.state.team
+        : (bState.playerTeam || []);
       return {
-        activePlayerName: store.state.player?.name ?? '',
-        activePlayerUid: store.state.player?.uid ?? '',
-        playerHp: store.state.player?.hp ?? 0,
-        playerMaxHp: store.state.player?.maxHp ?? 0,
-        playerStatus: store.state.player?.status || null,
-        playerTeam: (store.state.playerTeam ?? []).map((p: { uid?: string; name?: string; hp?: number; maxHp?: number; status?: string | null }) => ({ // type-ok
+        activePlayerName: bState.player?.name ?? '',
+        activePlayerUid: bState.player?.uid ?? '',
+        playerHp: bState.player?.hp ?? 0,
+        playerMaxHp: bState.player?.maxHp ?? 0,
+        playerStatus: bState.player?.status || null,
+        playerTeam: team.map((p: { uid?: string; name?: string; hp?: number; maxHp?: number; status?: string | null }) => ({ // type-ok
           uid: p?.uid ?? '',
           name: p?.name ?? '',
           hp: p?.hp ?? 0,
@@ -248,9 +269,10 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    */
   public async selectMove(moveIndex = 0): Promise<BattleReadyForInputDetail> {
     await this.page.waitForFunction(() => {
-      const debug = window.__VITE_DEBUG__ as { useBattleStore?: () => { isProcessing?: boolean; isIntroAnimating?: boolean } } | undefined;
+      const debug = window.__VITE_DEBUG__ as { useBattleStore?: () => { isProcessing?: boolean; isIntroAnimating?: boolean; player?: unknown; enemy?: unknown; isBattleActive?: boolean; over?: boolean } } | undefined;
       const store = debug?.useBattleStore?.();
-      return !store?.isProcessing && !store?.isIntroAnimating;
+      if (!store?.isBattleActive || store?.over) return true;
+      return !store?.isProcessing && !store?.isIntroAnimating && Boolean(store?.player) && Boolean(store?.enemy);
     }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     await armBattleReadyForInput(this.page);
@@ -395,12 +417,11 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
         const resolvedMoveIndex = await this.page.evaluate(({ targetIdx, targetMoveId }) => {
           const debug = window.__VITE_DEBUG__;
           const store = debug?.useBattleStore?.();
-          const bState = store?.state && typeof store.state === 'object' && 'playerRequest' in store.state
-            ? (store.state as { playerRequest?: unknown })
-            : (store?.state as { value?: { playerRequest?: unknown } } | undefined)?.value;
-          const pReq = bState?.playerRequest as { active?: Array<{ moves?: Array<{ id?: string; disabled?: boolean | string; pp?: number }> }> } | undefined;
+          const active = (store?.activeBattle || (store?.state as { value?: unknown } | undefined)?.value || store?.state) as { playerRequest?: unknown } | undefined;
+          const pReq = active?.playerRequest as { active?: Array<{ moves?: Array<{ id?: string; disabled?: boolean | string; pp?: number }> }> } | undefined;
           const activeMoves = pReq?.active?.[0]?.moves;
           if (Array.isArray(activeMoves)) {
+            if (activeMoves.length === 1 && activeMoves[0]?.id) return 0;
             // 1. Match exact slot by canonical Move ID if recorded in certified history
             if (targetMoveId) {
               const idMatchIdx = activeMoves.findIndex((m) => m && m.id === targetMoveId && !m.disabled && (m.pp === undefined || m.pp > 0));
@@ -423,11 +444,9 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
         const isTrappedOrRecharging = await this.page.evaluate(() => {
           const debug = window.__VITE_DEBUG__;
           const store = debug?.useBattleStore?.();
-          const bState = store?.state && typeof store.state === 'object' && 'playerRequest' in store.state
-            ? (store.state as { player?: { volatileCounters?: Record<string, number> }; playerRequest?: { active?: Array<{ trapped?: boolean; moves?: Array<{ id?: string }> }> } })
-            : (store?.state as { value?: { player?: { volatileCounters?: Record<string, number> }; playerRequest?: { active?: Array<{ trapped?: boolean; moves?: Array<{ id?: string }> }> } } } | undefined)?.value;
-          const p = bState?.player;
-          const req = bState?.playerRequest;
+          const active = (store?.activeBattle || (store?.state as { value?: unknown } | undefined)?.value || store?.state) as { player?: { volatileCounters?: Record<string, number> }; playerRequest?: { active?: Array<{ trapped?: boolean; moves?: Array<{ id?: string }> }> } } | undefined;
+          const p = active?.player;
+          const req = active?.playerRequest;
           const isRecharging = req?.active?.[0]?.moves?.length === 1 && req.active[0].moves[0]?.id === 'recharge';
           const isTrapped = req?.active?.[0]?.trapped === true || Boolean(p?.volatileCounters?.['mustrecharge']);
           return isRecharging || isTrapped;

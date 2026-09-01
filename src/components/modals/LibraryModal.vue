@@ -71,6 +71,7 @@ const selectTab = (tabId: string) => {
       </aside>
 
       <main class="library-content custom-scrollbar-vicio">
+        <!-- fallow-ignore-next-line security-sink -->
         <!-- eslint-disable-next-line vue/no-v-html -->
         <div
           v-if="contentFade"

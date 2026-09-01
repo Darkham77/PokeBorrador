@@ -396,7 +396,7 @@ watch(
         :description="(isCardLocked || isSafariLocked) ? lockDescription : `Ciclo: ${cycleName}\nEstación: ${seasonName}\nClima: ${weatherName}${weatherModifiersDescription}`"
         position="top"
       >
-        <span class="pill-content weather-emoji">
+        <span class="emoji pill-content weather-emoji">
           {{ (isCardLocked || isSafariLocked) ? '🔒' : (cycleEmoji + seasonEmoji + weatherEmoji) }}
         </span>
       </PVTooltip>
@@ -417,7 +417,7 @@ watch(
             ref="fishingPillRef"
             :class="['interactive-pill fishing-pill map-pill', { 'is-low-power': uiStore.isLowPowerActive }]"
           >
-            <span class="pill-icon">🎣</span>
+            <span class="emoji pill-icon">🎣</span>
           </div>
         </PVTooltip>
 
@@ -433,7 +433,7 @@ watch(
             ref="archaeologyPillRef"
             :class="['interactive-pill archaeology-pill map-pill', { 'is-low-power': uiStore.isLowPowerActive }]"
           >
-            <span class="pill-icon">⛏️</span>
+            <span class="emoji pill-icon">⛏️</span>
           </div>
         </PVTooltip>
 
@@ -447,7 +447,7 @@ watch(
           position="top"
         >
           <div class="pill-content">
-            <span class="faction-emoji">
+            <span class="emoji faction-emoji">
               {{ dominance.winner === 'union' ? '⭐' : '✊' }}
             </span>
           </div>
@@ -467,7 +467,7 @@ watch(
               v-if="!uiStore.isLowPowerActive" 
               class="crown-shine-aura" 
             />
-            <span class="pill-content icon">👑</span>
+            <span class="emoji pill-content icon">👑</span>
           </div>
         </PVTooltip>
       </div>

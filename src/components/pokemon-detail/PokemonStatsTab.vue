@@ -143,7 +143,7 @@ const totalPowerTooltipDescription = computed(() => {
           <span
             v-if="isEvMaxed"
             class="max-badge"
-          ><span class="emoji-inline">✨</span> MAX</span>
+          ><span class="emoji">✨</span> MAX</span>
         </div>
       </div>
       <PokemonStatBar

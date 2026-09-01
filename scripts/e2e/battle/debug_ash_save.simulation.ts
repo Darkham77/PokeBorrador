@@ -21,12 +21,18 @@ class AshSaveSimWrapper extends BaseBattleSimulation {
     await this.syncDevDb(request, dbBuffer);
     await this.setup();
 
-    await this.page.evaluate(() => {
-      const gs = window.__VITE_DEBUG__?.useGameStore?.();
-      if (gs?.state && 'classData' in gs.state && typeof gs.state.classData === 'object' && gs.state.classData !== null) {
-        const cd = gs.state.classData as { officialRouteId?: string; officialRouteTimestamp?: string };
-        cd.officialRouteId = 'route1';
-        cd.officialRouteTimestamp = String(Temporal.Now.instant().epochMilliseconds);
+    await this.page.evaluate(async () => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const { requireMapRouteId } = await import('../../../src/data/world/map-assets.ts');
+      const gs = useGameStore();
+      if (gs?.state) {
+        gs.state.map.currentMap = requireMapRouteId('route1');
+        if ('classData' in gs.state && typeof gs.state.classData === 'object' && gs.state.classData !== null) {
+          const cd = gs.state.classData as { officialRouteId?: string; officialRouteTimestamp?: string };
+          cd.officialRouteId = 'route1';
+          cd.officialRouteTimestamp = String(Temporal.Now.instant().epochMilliseconds);
+        }
+        await gs.saveGame();
       }
     });
   }
@@ -46,14 +52,16 @@ class AshSaveSimWrapper extends BaseBattleSimulation {
 }
 
 test.beforeEach(async ({ request }) => {
-  await request.post('/api/dev-import-db-cleanup');
+  await request.post('/api/dev-sim-db-cleanup', {
+    headers: { 'x-db-key': 'sim_db_ash' }
+  });
 });
 
 test('Debug ash save switch issue', async ({ page, request }) => {
   const sim = new AshSaveSimWrapper(page, 'ash');
   await sim.loadAshSave(request);
 
-  await page.locator('#map-card-route1').click();
+  await sim.navigateToRoute1();
   await confirmAndStartBattle(page);
   await waitForWaitInput(page);
 

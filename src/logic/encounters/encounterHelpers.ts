@@ -3,25 +3,22 @@ const FIRST_POOL_INDEX = 0;
 
 import { GAME_RATIOS } from '@/data/system/constants';
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
-import { getActivePinia } from 'pinia';
-import { useGameStore } from '@/stores/game';
-import { isDisputePhase } from '@/logic/war/warEngine';
-import { getGuardianData } from '@/logic/war/guardianEngine';
-import { GUARDIAN_ENCOUNTER_CHANCE_PERCENT } from '@/logic/constants/gameplay';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { MapLocation, Encounter, EncounterOptions, EncounterState } from '@/types/pokemon/encounters';
 import type { DayPhase } from '@/logic/utils/timeUtils';
 import type { Event as GameEvent } from '@/logic/events/eventEngine';
 import type { WeatherId } from '@/logic/weather/weatherRegistry';
-import { requireGymId, type GymId } from '@/data/world/gyms';
-import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
+import type { MapRouteId } from '@/data/world/map-assets';
+import {
+  checkDebugForcedEncounter,
+  checkRivalSpecialEncounter,
+  checkDefenderSpecialEncounter,
+  checkGuardianSpecialEncounter,
+  type ViteDebugEncounterConfig
+} from './specialEncounterCheckers.ts';
 import {
   DEBUG_TRAINER_CHANCE_PERCENT,
-  DEBUG_GUARDIAN_CHANCE_PERCENT,
   PERCENTAGE_MULTIPLIER_FACTOR,
-  ENTRENATOR_DOUBLE_RIVAL_CLASS_LEVEL,
-  ENTRENADOR_RIVAL_CHANCE_MULTIPLIER,
-  DEFENDER_ENCOUNTER_CHANCE,
   REPELLENT_MAX_ATTEMPTS,
   DEFAULT_WILD_MIN_LEVEL,
   DEFAULT_WILD_MAX_LEVEL,
@@ -35,9 +32,6 @@ import {
   MOUNTAIN_ARCHAEOLOGY_WEIGHT,
   VISITOR_WEIGHT_REPLACEMENT_VALUE,
   DEFAULT_WEATHER_MULTIPLIER_NORMAL,
-  DEBUG_MOCK_MAGIKARP_STATS,
-  DEBUG_MOCK_KABUTO_STATS,
-  DEBUG_MOCK_PIDGEY_STATS
 } from '@/logic/constants/encounters';
 
 import {
@@ -86,126 +80,32 @@ export function checkSpecialEncounters(
   options: EncounterOptions,
   allMapIds: MapRouteId[]
 ): Encounter | null {
-  // 0. Debug: configurable encounter overrides
   const win = (typeof window !== 'undefined' ? window : null) as (Window & {
-    __VITE_DEBUG__?: {
-      forceEncounterType?: string;
-      forceRival?: boolean;
-      trainerChance50?: boolean;
-      forceGuardian80?: boolean;
-      trainerChancePct?: number | null;
-      rivalChancePct?: number | null;
-      guardianChancePct?: number | null;
-      defenderChancePct?: number | null;
-    };
+    __VITE_DEBUG__?: ViteDebugEncounterConfig;
   }) | null;
   const debug = win?.__VITE_DEBUG__;
-  
-  const DEBUG_MOCK_MAGIKARP_UID = 'magikarp-fishing-debug';
 
-  if (debug?.forceEncounterType && debug.forceEncounterType !== 'none') {
-    if (debug.forceEncounterType === 'fishing') {
-      const p = makePokemon('magikarp', DEBUG_MOCK_MAGIKARP_STATS.LEVEL, { bypassWhitelist: true }) as Pokemon;
-      p.uid = DEBUG_MOCK_MAGIKARP_UID;
-      return { type: 'fishing', pokemon: p };
-    }
-    if (debug.forceEncounterType === 'archaeology') {
-      const p = makePokemon('kabuto', DEBUG_MOCK_KABUTO_STATS.LEVEL, { bypassWhitelist: true }) as Pokemon;
-      p.uid = 'kabuto-archaeology-1234'; // no-magic
-      return { type: 'archaeology', pokemon: p };
-    }
-    if (debug.forceEncounterType === 'trainer') {
-      return { type: 'trainer' };
-    }
-    if (debug.forceEncounterType === 'rival') {
-      return { type: 'rival' };
-    }
-    if (debug.forceEncounterType === 'wild') {
-      const p = makePokemon('pidgey', DEBUG_MOCK_PIDGEY_STATS.LEVEL, { bypassWhitelist: true }) as Pokemon;
-      p.uid = 'pidgey-wild-1234'; // no-magic
-      return { type: 'wild', pokemon: p };
-    }
-  }
-
-  if (debug?.forceRival || debug?.rivalChancePct === 100) {
-    return { type: 'rival' };
-  }
+  const forced = checkDebugForcedEncounter(debug);
+  if (forced) return forced;
 
   const hasTrainerOverride = debug?.trainerChancePct !== undefined && debug?.trainerChancePct !== null;
-  const trainerOverrideChance = hasTrainerOverride ? (debug!.trainerChancePct! / 100) : (debug?.trainerChance50 ? (DEBUG_TRAINER_CHANCE_PERCENT / 100) : null);
+  const trainerOverrideChance = hasTrainerOverride
+    ? (debug!.trainerChancePct! / 100)
+    : (debug?.trainerChance50 ? (DEBUG_TRAINER_CHANCE_PERCENT / 100) : null);
   if (!options.forceEncounter && trainerOverrideChance !== null) {
     if (Math.random() < trainerOverrideChance) {
       return { type: 'trainer' };
     }
   }
 
-  const hasGuardianOverride = debug?.guardianChancePct !== undefined && debug?.guardianChancePct !== null;
-  const guardianOverrideChance = hasGuardianOverride ? (debug!.guardianChancePct! / 100) : (debug?.forceGuardian80 ? (DEBUG_GUARDIAN_CHANCE_PERCENT / 100) : null);
-  if (!options.forceEncounter && guardianOverrideChance !== null) {
-    const dailyCaptures = state.dailyGuardianCaptures || (getActivePinia() ? useGameStore().dailyGuardianCaptures : []);
-    const capturedToday = (dailyCaptures || []).includes(locId);
-    if (!capturedToday && Math.random() < guardianOverrideChance) {
-      const guardian = getGuardianData(locId, allMapIds);
-      if (guardian) {
-        return { 
-          type: 'guardian', 
-          pokemon: makePokemon(guardian.id, guardian.lv, { shinyMultiplier: options.shinyMultiplier }) as Pokemon,
-          pts: guardian.pts
-        };
-      }
-    }
-  }
+  const rival = checkRivalSpecialEncounter(debug, state, options);
+  if (rival) return rival;
 
-  // 0. Especial: Rival Azul
-  if (!options.forceEncounter) {
-    let rivalChance = GAME_RATIOS.encounters.rival;
-    const hasRivalRateOverride = debug?.rivalChancePct !== undefined && debug?.rivalChancePct !== null;
-    if (hasRivalRateOverride) {
-      rivalChance = debug!.rivalChancePct! / 100;
-    } else {
-      const eventRivalBonus = options.eventRivalBonus || 1;
-      rivalChance *= eventRivalBonus;
+  const defender = checkDefenderSpecialEncounter(debug, locId, state, options);
+  if (defender) return defender;
 
-      if (state.playerClass === 'entrenador' && (state.classLevel || 1) >= ENTRENATOR_DOUBLE_RIVAL_CLASS_LEVEL) {
-        const gymIds = (['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian'] as const satisfies readonly GymId[]).map(requireGymId);
-        const allGymsHard = gymIds.every(id => state.gymProgress?.[id]?.hard === true);
-        if (allGymsHard) {
-          rivalChance *= ENTRENADOR_RIVAL_CHANCE_MULTIPLIER;
-        }
-      }
-    }
-
-    if (Math.random() < rivalChance) {
-      return { type: 'rival' };
-    }
-  }
-  
-  // 1. Especial: Fase de Dominancia (Finde) - Batallas de Defensores
-  if (!isDisputePhase() && !options.forceEncounter) {
-    const hasDefenderOverride = debug?.defenderChancePct !== undefined && debug?.defenderChancePct !== null;
-    const defenderChance = hasDefenderOverride ? (debug!.defenderChancePct! / 100) : DEFENDER_ENCOUNTER_CHANCE;
-    if (Math.random() < defenderChance && state.faction) {
-      const dominance = (options.dominanceData || {})[requireMapRouteId(locId)];
-      const winner = dominance?.winner || null;
-      if (winner && winner !== state.faction) {
-        return { type: 'defender', faction: winner };
-      }
-    }
-  }
-
-  // 2. Especial: Guardianes (Pokémon Alfa)
-  const guardian = getGuardianData(locId, allMapIds);
-  if (guardian && !options.forceEncounter) {
-    const dailyCaptures = state.dailyGuardianCaptures || (getActivePinia() ? useGameStore().dailyGuardianCaptures : []);
-    const capturedToday = (dailyCaptures || []).includes(locId);
-    if (!capturedToday && Math.random() < GUARDIAN_ENCOUNTER_CHANCE_PERCENT) {
-      return { 
-        type: 'guardian', 
-        pokemon: makePokemon(guardian.id, guardian.lv, { shinyMultiplier: options.shinyMultiplier }) as Pokemon,
-        pts: guardian.pts
-      };
-    }
-  }
+  const guardian = checkGuardianSpecialEncounter(debug, locId, state, options, allMapIds);
+  if (guardian) return guardian;
 
   return null;
 }

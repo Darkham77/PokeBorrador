@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { armBattleFlowCompletion, armBattleReadyForInput, awaitBattleFlowCompletion, awaitBattleReadyForInput, clickResilient, openDebugTab, type WindowWithResolver } from '../e2e_helpers.ts';
+import { armBattleFlowCompletion, armBattleReadyForInput, awaitBattleFlowCompletion, awaitBattleReadyForInput, clickResilient, type WindowWithResolver } from '../e2e_helpers.ts';
 import { MOVE_TRANSLATIONS_ES } from '../../../src/data/battle/moves.ts';
 
 class CaptureSimWrapper extends BaseBattleSimulation {
@@ -9,15 +9,28 @@ class CaptureSimWrapper extends BaseBattleSimulation {
   }
 
   public async setupScenario(speciesId: string, level: number): Promise<void> {
-    await openDebugTab(this.page, 'items');
-    await this.page.locator('.search-input').fill('masterball');
-    await this.page.locator('#debug-item-masterball').click();
-    await openDebugTab(this.page, 'pokes');
-    await this.page.locator('#debug-input-especie').fill(speciesId);
-    await this.page.locator(`#option-${speciesId}`).click();
-    await this.page.locator('#debug-input-level').fill(level.toString());
     await armBattleReadyForInput(this.page);
-    await this.page.locator('#debug-btn-encounter').click();
+    await this.page.evaluate(async ({ specId, lvl }) => {
+      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+      const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
+      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+      const { requireItemId } = await import('../../../src/data/inventory/items.ts');
+
+      const invStore = useInventoryStore();
+      await invStore.addItem(requireItemId('masterball'), 5);
+
+      const wildPoke = pokemonDebugService.generate({
+        id: requirePokemonSpeciesId(specId),
+        level: lvl
+      });
+
+      const battleStore = useBattleStore();
+      await battleStore.startBattle(wildPoke, {
+        isTrainer: false,
+        locationId: 'route1'
+      });
+    }, { specId: speciesId, lvl: level });
     await awaitBattleReadyForInput(this.page);
   }
 
@@ -30,7 +43,11 @@ class CaptureSimWrapper extends BaseBattleSimulation {
 
 test.describe('Sistema de Capturas y Animaciones de Combate', () => {
   test.beforeEach(async ({ request }) => {
-    await request.post('/api/dev-import-db-cleanup');
+    for (const p of ['sim_db_testplayer1', 'sim_db_testplayer2', 'sim_db_testplayer3', 'sim_db_testplayer4']) {
+      await request.post('/api/dev-sim-db-cleanup', {
+        headers: { 'x-db-key': p }
+      });
+    }
   });
 
   test('debería capturar un Pidgey salvaje con Master Ball y verificar que mantiene estadísticas, moves en español y sin errores', async ({ page }) => {

@@ -15,6 +15,7 @@ import {
   waitForStoreReady,
   confirmAndStartBattle,
   waitForWaitInput,
+  clickResilient,
   MAX_PER_ACTION_TIMEOUT_MS,
   type WindowWithResolver,
   type CertifiedTestBatch
@@ -107,8 +108,14 @@ class AntiCheatRefreshSimWrapper extends BaseBattleSimulation {
     await this.speedUpAnimations();
   }
 
-  public async navigateToRoute1(): Promise<void> {
-    await this.page.locator('#map-card-route1').click();
+  public override async navigateToRoute1(): Promise<void> {
+    await this.page.evaluate(async () => {
+      const { useUIStore } = await import('../../../src/stores/ui.ts');
+      useUIStore().activeTab = 'map';
+    });
+    const mapCard = this.page.locator('#map-card-route1');
+    await mapCard.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await clickResilient(mapCard, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
   }
 
   public async forceHealAll(): Promise<void> {

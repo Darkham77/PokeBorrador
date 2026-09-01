@@ -43,7 +43,7 @@ onMounted(() => {
     <template #header>
       <div class="missions-modal-header">
         <div class="missions-title-group">
-          <span class="title-icon">📜</span>
+          <span class="emoji">📜</span>
           <div class="title-text-wrap">
             <span class="main-title">MISIONES</span>
             <span class="sub-title">EVENTOS</span>

@@ -116,63 +116,15 @@ img, canvas, .pixelated-img, .sprite, [class*="sprite-"], .banner-bg, [class*="-
 // ~31px tall even at font-size:16px. Emoji (rendered by the system emoji font)
 // then align to the BASELINE of that tall line-box, appearing visually lower.
 //
-// Fix: any span/div that is exclusively an emoji/icon container inherits
-// emoji-only fonts so the em-square is normal and the parent flex centers it correctly.
-// This rule targets ALL icon containers across the app without touching components.
+// Universal Master Class: .emoji handles flex, standalone, and inline text centering.
 // ─────────────────────────────────────────────────────────────────────────────
-.icon:not(i):not([class*="fa"]),
-.emoji:not(i):not([class*="fa"]),
-.medal:not(i):not([class*="fa"]),
-.cat-icon:not(i):not([class*="fa"]),
-.toast-icon:not(i):not([class*="fa"]),
-.btn-emoji:not(i):not([class*="fa"]),
-.btn-icon:not(i):not([class*="fa"]),
-.sort-arrow:not(i):not([class*="fa"]),
-.weather-emoji:not(i):not([class*="fa"]),
-.desc-line-icon:not(i):not([class*="fa"]),
-.admin-icon-btn:not(i):not([class*="fa"]),
-.faction-emoji:not(i):not([class*="fa"]),
-.title-icon:not(i):not([class*="fa"]),
-.section-icon:not(i):not([class*="fa"]),
-.section-title-icon:not(i):not([class*="fa"]),
-.season-icon:not(i):not([class*="fa"]),
-.event-stat-icon:not(i):not([class*="fa"]),
-.event-id-icon:not(i):not([class*="fa"]),
-.event-main-icon:not(i):not([class*="fa"]),
-.event-icon:not(i):not([class*="fa"]),
-.upcoming-icon:not(i):not([class*="fa"]),
-.sub-comp-icon:not(i):not([class*="fa"]),
-.note-icon:not(i):not([class*="fa"]),
-.hint-icon:not(i):not([class*="fa"]),
-.trophies-header-icon:not(i):not([class*="fa"]),
-.empty-icon:not(i):not([class*="fa"]),
-.info-icon:not(i):not([class*="fa"]),
-.category-icon:not(i):not([class*="fa"]),
-.rank-icon:not(i):not([class*="fa"]),
-.status-icon:not(i):not([class*="fa"]),
-.header-icon:not(i):not([class*="fa"]),
-.field-condition-dot:not(i):not([class*="fa"]),
-.source-symbol:not(i):not([class*="fa"]),
-.pill-icon:not(i):not([class*="fa"]),
-.pill-content:not(i):not([class*="fa"]),
-.slide-icon:not(i):not([class*="fa"]),
-.tag-icon:not(i):not([class*="fa"]),
-.pc-banner-icon:not(i):not([class*="fa"]) {
+.emoji:not(i):not([class*="fa"]) {
   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   line-height: 1 !important;
-}
-
-// Global Inline Emoji Alignment Fix
-.emoji-inline {
-  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
-  display: inline-block !important;
   vertical-align: middle !important;
-  position: relative !important;
-  top: -1.5px !important; /* Counteracts the baseline drop caused by size-adjust on pixel font */
-  line-height: 1 !important;
 }
 
 

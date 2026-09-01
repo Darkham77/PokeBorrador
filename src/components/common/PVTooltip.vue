@@ -404,7 +404,7 @@ onUnmounted(() => {
                   <template v-else>
                     <span
                       v-if="line.hasBullet"
-                      class="bullet-icon"
+                      class="emoji bullet-icon"
                     >{{ line.bullet }}</span>
                     <span 
                       class="line-text"

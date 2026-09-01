@@ -378,7 +378,7 @@ const handleClose = () => {
         position="top"
       >
         <span class="pill-content">
-          {{ cycleEmoji + seasonEmoji + weatherEmoji }}
+          <span class="emoji">{{ cycleEmoji + seasonEmoji + weatherEmoji }}</span>
         </span>
       </PVTooltip>
     </div>

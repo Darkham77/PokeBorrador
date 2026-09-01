@@ -81,8 +81,8 @@ export async function discoverAuditors(options: DiscoveryOptions = {}): Promise<
           await scanDirectory(fullPath);
         }
       } else if (stat.isFile() && entry.endsWith('.ts') && !entry.startsWith('_')) {
-        // Skip unit tests or spec files if present inside auditors
-        if (entry.includes('.spec.') || entry.includes('.test.')) continue;
+        // Skip unit tests, spec files, or developer reporting tools
+        if (entry.includes('.spec.') || entry.includes('.test.') || entry.startsWith('report_')) continue;
 
         // Relative path from baseDir to infer family
         const relPath = path.relative(baseDir, fullPath).replace(/\\/g, '/');

@@ -64,7 +64,8 @@ const handleMove = (targetBoxIndex: number) => {
 <template>
   <BaseModal
     show
-    title="⚡ MOVER POKÉMON"
+    emoji="⚡"
+    title="MOVER POKÉMON"
     max-width="450px"
     @close="modalStore.close('BoxMove')"
   >

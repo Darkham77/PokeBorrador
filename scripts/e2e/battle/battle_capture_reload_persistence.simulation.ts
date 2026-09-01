@@ -12,7 +12,6 @@ import {
   awaitBattleFlowCompletion,
   awaitBattleReadyForInput,
   clickResilient,
-  openDebugTab,
   waitForStoreReady
 } from '../e2e_helpers.ts';
 
@@ -24,22 +23,24 @@ class CaptureReloadSimWrapper extends BaseBattleSimulation {
   }
 
   public async setupFullTeamAndMasterball(): Promise<void> {
-    await openDebugTab(this.page, 'items');
-    await this.page.locator('.search-input').fill('masterball');
-    await this.page.locator('#debug-item-masterball').click();
-
-    // Fill team to 6 Pokemon
     await this.page.evaluate(async (lvl) => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
+      const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
       const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+      const { requireItemId } = await import('../../../src/data/inventory/items.ts');
+
+      const invStore = useInventoryStore();
+      await invStore.addItem(requireItemId('masterball'), 5);
+
       const store = useGameStore();
       store.state.team = [
-        pokemonDebugService.generate({ id: 'pikachu', level: lvl }),
-        pokemonDebugService.generate({ id: 'bulbasaur', level: lvl }),
-        pokemonDebugService.generate({ id: 'charmander', level: lvl }),
-        pokemonDebugService.generate({ id: 'squirtle', level: lvl }),
-        pokemonDebugService.generate({ id: 'pidgeot', level: lvl }),
-        pokemonDebugService.generate({ id: 'butterfree', level: lvl }),
+        pokemonDebugService.generate({ id: requirePokemonSpeciesId('pikachu'), level: lvl }),
+        pokemonDebugService.generate({ id: requirePokemonSpeciesId('bulbasaur'), level: lvl }),
+        pokemonDebugService.generate({ id: requirePokemonSpeciesId('charmander'), level: lvl }),
+        pokemonDebugService.generate({ id: requirePokemonSpeciesId('squirtle'), level: lvl }),
+        pokemonDebugService.generate({ id: requirePokemonSpeciesId('pidgeot'), level: lvl }),
+        pokemonDebugService.generate({ id: requirePokemonSpeciesId('butterfree'), level: lvl }),
       ];
       store.state.box = [];
       await store.save();
@@ -47,12 +48,23 @@ class CaptureReloadSimWrapper extends BaseBattleSimulation {
   }
 
   public async startWildEncounter(speciesId: string, level: number): Promise<void> {
-    await openDebugTab(this.page, 'pokes');
-    await this.page.locator('#debug-input-especie').fill(speciesId);
-    await this.page.locator(`#option-${speciesId}`).click();
-    await this.page.locator('#debug-input-level').fill(level.toString());
     await armBattleReadyForInput(this.page);
-    await this.page.locator('#debug-btn-encounter').click();
+    await this.page.evaluate(async ({ specId, lvl }) => {
+      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+
+      const wildPoke = pokemonDebugService.generate({
+        id: requirePokemonSpeciesId(specId),
+        level: lvl
+      });
+
+      const battleStore = useBattleStore();
+      await battleStore.startBattle(wildPoke, {
+        isTrainer: false,
+        locationId: 'route1'
+      });
+    }, { specId: speciesId, lvl: level });
     await awaitBattleReadyForInput(this.page);
   }
 
@@ -65,7 +77,9 @@ class CaptureReloadSimWrapper extends BaseBattleSimulation {
 
 test.describe('Persistencia y Captura tras Recarga de Página (F5)', () => {
   test.beforeEach(async ({ request }) => {
-    await request.post('/api/dev-import-db-cleanup');
+    await request.post('/api/dev-sim-db-cleanup', {
+      headers: { 'x-db-key': 'sim_db_f5captureuser' }
+    });
   });
 
   test('captura a Rattata tras recargar a mitad de combate y verifica que se guarda en la Caja PC sin error de species', async ({ page }) => {
