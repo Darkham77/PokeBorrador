@@ -8,7 +8,7 @@ import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
 import { getRouteWeather, getWeatherMultiplier, getWeatherModifiersDescription } from '@/logic/weather/weatherUtils'
 import { getMechanicalWeather, requireWeatherId, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, type WeatherId } from '@/logic/weather/weatherRegistry'
-import { requireWeatherSeasonId } from '@/data/world/weather-tables'
+import { isWeatherTableRouteId, requireWeatherSeasonId } from '@/data/world/weather-tables'
 import { DAY_PHASES, type DayPhase } from '@/logic/utils/timeUtils'
 import { getSpeciesEntries } from '@/logic/encounters/encounters'
 import { checkPlayerWinner, calculateSpawnGrid } from '@/logic/map/mapCardHelper'
@@ -41,8 +41,11 @@ export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, i
   const mapStore = useMapStore()
 
   const computedWeather = computed<WeatherId>(() => {
-    return props.forcedWeather
-      || (mapStore.globalWeather ? requireWeatherId(mapStore.globalWeather) : getRouteWeather(props.map.id, requireWeatherSeasonId(mapStore.currentSeason.id), mapStore.currentEpochHour, props.cycle || 'day'))
+    if (props.forcedWeather) return props.forcedWeather
+    if (props.weather) return props.weather
+    if (mapStore.globalWeather) return requireWeatherId(mapStore.globalWeather)
+    if (!isWeatherTableRouteId(props.map.id)) return 'clear'
+    return getRouteWeather(props.map.id, requireWeatherSeasonId(mapStore.currentSeason.id), mapStore.currentEpochHour, props.cycle || 'day')
   })
 
   const imgPath = computed(() => {

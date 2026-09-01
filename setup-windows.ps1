@@ -105,17 +105,25 @@ foreach ($nvmDir in $nvmPossiblePaths) {
 if (-not $nvmRoot) {
     if (-not (Get-Command nvm -ErrorAction SilentlyContinue)) {
         Write-Host ""
-        Write-Host "[NVM] NVM para Windows no fue detectado. Instalando via winget..." -ForegroundColor Yellow
+        Write-Host "[NVM] NVM para Windows no fue detectado en las rutas estandar. Intentando instalar via winget..." -ForegroundColor Yellow
         try {
             winget install CoreyButler.NVMforWindows --accept-source-agreements --accept-package-agreements
             Refresh-ProcessEnvironment
         } catch {
-            Write-Host "  [WARN] No se pudo instalar NVM automaticamente via winget: $_" -ForegroundColor Red
+            Write-Host "  [WARN] No se pudo instalar NVM via winget: $_" -ForegroundColor Yellow
         }
     }
 }
 
-# 4. Asegurar el directorio receptor del Symlink/Junction de NVM
+# Si NVM sigue sin estar disponible, usar fallback nativo en AppData
+if (-not $nvmRoot) {
+    $nvmRoot = "$env:LOCALAPPDATA\nvm"
+    if (-not (Test-Path $nvmRoot)) {
+        New-Item -ItemType Directory -Path $nvmRoot -Force | Out-Null
+    }
+}
+
+# 4. Asegurar el directorio receptor del Symlink/Junction de Node
 $nodeSymlinkPath = if ($env:NVM_SYMLINK) { $env:NVM_SYMLINK } else { "C:\nvm4w\nodejs" }
 $parentSymlinkDir = Split-Path -Parent $nodeSymlinkPath
 if ($parentSymlinkDir -and -not (Test-Path -Path $parentSymlinkDir)) {
@@ -129,15 +137,50 @@ if ($parentSymlinkDir -and -not (Test-Path -Path $parentSymlinkDir)) {
     }
 }
 
-# 5. Instalar la version requerida de Node.js en NVM si no existe
-$targetNodeDir = if ($nvmRoot) { Join-Path $nvmRoot "v$targetNodeVer" } else { "" }
-if ($targetNodeDir -and -not (Test-Path $targetNodeDir)) {
+# 5. Instalar la version requerida de Node.js si no existe
+$targetNodeDir = Join-Path $nvmRoot "v$targetNodeVer"
+$nodeExePath = Join-Path $targetNodeDir "node.exe"
+
+if (-not (Test-Path $nodeExePath)) {
     Write-Host ""
-    Write-Host "[NODE] Instalando Node.js v$targetNodeVer en NVM..." -ForegroundColor Cyan
-    try {
-        nvm install $targetNodeVer
-    } catch {
-        Write-Host "  [WARN] Fallo la descarga de Node.js v$targetNodeVer via nvm install: $_" -ForegroundColor Yellow
+    Write-Host "[NODE] Instalando Node.js v$targetNodeVer..." -ForegroundColor Cyan
+    $installedViaNvm = $false
+    if (Get-Command nvm -ErrorAction SilentlyContinue) {
+        try {
+            nvm install $targetNodeVer
+            if (Test-Path $nodeExePath) {
+                $installedViaNvm = $true
+            }
+        } catch {}
+    }
+
+    # Fallback: Descarga directa y extraccion de Node.js oficial (dist x64)
+    if (-not $installedViaNvm -and -not (Test-Path $nodeExePath)) {
+        Write-Host "  [DOWNLOAD] Descargando binarios oficiales de Node.js v$targetNodeVer desde nodejs.org..." -ForegroundColor Cyan
+        $zipUrl = "https://nodejs.org/dist/v$targetNodeVer/node-v$targetNodeVer-win-x64.zip"
+        $tempZip = Join-Path $env:TEMP "node-v$targetNodeVer-win-x64.zip"
+        $tempExtractDir = Join-Path $env:TEMP "node-v$targetNodeVer-extract"
+
+        try {
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
+            Invoke-WebRequest -Uri $zipUrl -OutFile $tempZip -UseBasicParsing -TimeoutSec 120
+            
+            if (Test-Path $tempExtractDir) {
+                Remove-Item -Path $tempExtractDir -Recurse -Force -ErrorAction SilentlyContinue
+            }
+            Expand-Archive -Path $tempZip -DestinationPath $tempExtractDir -Force
+
+            $extractedSubdir = Join-Path $tempExtractDir "node-v$targetNodeVer-win-x64"
+            if (-not (Test-Path $targetNodeDir)) {
+                New-Item -ItemType Directory -Path $targetNodeDir -Force | Out-Null
+            }
+            Copy-Item -Path "$extractedSubdir\*" -Destination $targetNodeDir -Recurse -Force
+            Remove-Item -Path $tempZip, $tempExtractDir -Recurse -Force -ErrorAction SilentlyContinue
+            Write-Host "  [OK] Node.js v$targetNodeVer extraido correctamente en $targetNodeDir" -ForegroundColor Green
+        } catch {
+            Write-Host "  [ERROR] Fallo la descarga y extraccion de Node.js: $_" -ForegroundColor Red
+            exit 1
+        }
     }
 }
 
@@ -147,15 +190,17 @@ Write-Host "[NODE] Activando Node.js v$targetNodeVer..." -ForegroundColor Cyan
 $activated = $false
 
 # Intento 1: nvm use estandar
-try {
-    nvm use $targetNodeVer 2>$null
-    if (Test-Path (Join-Path $nodeSymlinkPath "node.exe")) {
-        $activated = $true
-    }
-} catch {}
+if (Get-Command nvm -ErrorAction SilentlyContinue) {
+    try {
+        nvm use $targetNodeVer 2>$null
+        if (Test-Path (Join-Path $nodeSymlinkPath "node.exe")) {
+            $activated = $true
+        }
+    } catch {}
+}
 
 # Intento 2: Junction directo (compatible con NTFS sin elevacion UAC)
-if (-not $activated -and $targetNodeDir -and (Test-Path $targetNodeDir)) {
+if (-not $activated -and (Test-Path $targetNodeDir)) {
     try {
         if (Test-Path $nodeSymlinkPath) {
             Remove-Item -Path $nodeSymlinkPath -Recurse -Force -ErrorAction SilentlyContinue
@@ -163,14 +208,34 @@ if (-not $activated -and $targetNodeDir -and (Test-Path $targetNodeDir)) {
         New-Item -ItemType Junction -Path $nodeSymlinkPath -Target $targetNodeDir -Force | Out-Null
         $activated = $true
     } catch {
-        Write-Host "  [WARN] No se pudo crear el enlace simbolico/junction para Node: $_" -ForegroundColor Yellow
+        # Si Junction falla en C:\, usar ruta en AppData
+        $nodeSymlinkPath = "$env:LOCALAPPDATA\nodejs"
+        if (Test-Path $nodeSymlinkPath) {
+            Remove-Item -Path $nodeSymlinkPath -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        New-Item -ItemType Junction -Path $nodeSymlinkPath -Target $targetNodeDir -Force | Out-Null
+        $activated = $true
     }
 }
 
-# Asegurar que el symlink activo de Node este en el PATH de la sesion actual
+# Asegurar que el symlink activo de Node y Roaming npm esten en el PATH de la sesion actual
+$npmRoamingPath = "$env:APPDATA\npm"
 if ($env:Path -notlike "*$nodeSymlinkPath*") {
     $env:Path = "$nodeSymlinkPath;" + $env:Path
 }
+if ($env:Path -notlike "*$npmRoamingPath*") {
+    $env:Path = "$npmRoamingPath;" + $env:Path
+}
+
+# Persistir rutas de Node y npm en el PATH de Usuario para sesiones futuras
+try {
+    $currentUserPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+    $userPathsToAdd = @($nodeSymlinkPath, $npmRoamingPath) | Where-Object { $currentUserPath -notlike "*$_*" }
+    if ($userPathsToAdd.Count -gt 0) {
+        $updatedUserPath = (($userPathsToAdd + ($currentUserPath -split ';')) | Where-Object { [string]::IsNullOrWhiteSpace($_) -eq $false } | Select-Object -Unique) -join ';'
+        [System.Environment]::SetEnvironmentVariable("Path", $updatedUserPath, "User")
+    }
+} catch {}
 
 # 7. Actualizar npm a la ultima version
 Write-Host ""

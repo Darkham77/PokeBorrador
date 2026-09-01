@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import MapCard from '@/components/map/MapCard.vue'
 import AdventureInventoryModal from './AdventureInventoryModal.vue'
@@ -15,6 +15,8 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { FIRE_RED_MAPS } from '@/data/world/maps'
 import { getRouteWeather } from '@/logic/weather/weatherUtils'
+import { isWeatherTableRouteId, requireWeatherSeasonId } from '@/data/world/weather-tables'
+import type { MapRouteId } from '@/data/world/map-assets'
 import { getMapSpawnPoolData } from '@/logic/encounters/encounterHelpers'
 import type { MapLocation } from '@/types/pokemon/encounters'
 
@@ -41,20 +43,27 @@ const SPACING_MULTIPLIER = 2.5
  
 const moIcons: Record<string, string> = { 'Corte': '✂️', 'Surf': '🌊', 'Flauta': '🎵', 'Medallas': '🏅', 'Vuelo': '🦅' }
 
-const URL_BICI = "https://images.wikidexcdn.net/mwuploads/wikidex/4/41/latest/20200501140954/Rojo_RFVF_bici.png"
-const FALLBACK_BICI = "https://images.wikidexcdn.net/mwuploads/wikidex/1/12/latest/20110203235447/Rojo_mini_RFVH.png" 
-const URL_VUELO = "https://archives.bulbagarden.net/media/upload/9/9d/FRLG_Surf_M.png"
-
-const HTML_BICI = `<img src="${URL_BICI}" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='${FALLBACK_BICI}';" class="pixel-art scale-[1.5]" alt="Bici">`
-const HTML_WALK = `<img src="${FALLBACK_BICI}" class="pixel-art scale-[1.6]" alt="Caminando">`
-const HTML_VUELO = `<img src="${URL_VUELO}" class="pixel-art scale-[1.5]" alt="Volando">`
-
 const baseWalkSpeed = 350 
 const baseBikeSpeed = 700
 const flySpeed = 1800 
 
-const ZOOM_SCALE = 2.4
-const MAP_SCALE = 0.8
+function getOptimalParkedScale(): number {
+  if (!viewport.value) return 1.3
+  const vpW = viewport.value.clientWidth
+  const vpH = viewport.value.clientHeight
+  // Target: MapCard (250px wide) fits comfortably occupying ~84% of narrow width or ~65% of height
+  const targetCardWidth = Math.min(vpW * 0.84, vpH * 0.65, 360)
+  const scale = targetCardWidth / 250
+  return Math.min(Math.max(scale, 0.8), 1.5)
+}
+
+function getOptimalMapScale(): number {
+  if (!viewport.value) return 0.75
+  const vpW = viewport.value.clientWidth
+  if (vpW < 500) return 0.55
+  if (vpW < 800) return 0.65
+  return 0.75
+}
 
 // Reactive State
 const playerInventory = ref<Record<string, boolean>>(
@@ -63,12 +72,8 @@ const playerInventory = ref<Record<string, boolean>>(
 const discoveredNodes = ref<string[]>(
   JSON.parse(localStorage.getItem('pokeVicioDiscovered') || '["pallet","route1","viridian"]')
 )
-const playerEnergy = ref<number>(
-  isNaN(parseInt(localStorage.getItem('pokeVicioEnergy') || '')) ? 100 : parseInt(localStorage.getItem('pokeVicioEnergy')!)
-)
 const activeCompanion = ref<string>(localStorage.getItem('pokeVicioCompanion') || 'none')
 const currentSwarmRoute = ref<string | null>(null)
-const infiniteEnergy = ref<boolean>(JSON.parse(localStorage.getItem('pokeVicioDebugEnergy') || 'false'))
 
 const currentNode = ref<string>('pallet')
 const isMoving = ref(false)
@@ -77,11 +82,18 @@ const isPlanning = ref(false)
 const playerDirection = ref<'down' | 'up' | 'left' | 'right'>('down')
 
 const playerSpriteTransform = computed(() => {
-  if (playerDirection.value === 'left') return 'scaleX(-1)'
   return 'scaleX(1)'
 })
 
-const currentScale = ref(ZOOM_SCALE)
+const walkFrame = ref(0)
+
+const isSurfing = computed(() => {
+  const node = mapNodes.value[currentNode.value]
+  if (!node) return false
+  return node.type === 'route_water' || currentNode.value === 'seafoam'
+})
+
+const currentScale = ref(1.3)
 const cardScale = computed(() => {
   const calculated = 0.85 / currentScale.value
   return Math.min(Math.max(calculated, 0.4), 0.85)
@@ -154,8 +166,11 @@ const currentCycle = computed(() => mapStore.currentCycle || 'day')
 
 // Atmosphere/Weather helper
 function getWeatherForMap(nodeId: string): string {
-  const officialId = officialMapIdMap[nodeId] || nodeId
-  return mapStore.globalWeather || getRouteWeather(officialId, mapStore.currentSeason.id, mapStore.currentEpochHour, currentCycle.value)
+  const officialId = (officialMapIdMap[nodeId] || nodeId) as MapRouteId
+  if (mapStore.globalWeather) return mapStore.globalWeather
+  if (!isWeatherTableRouteId(officialId)) return 'clear'
+  const seasonId = mapStore.currentSeason?.id ? requireWeatherSeasonId(mapStore.currentSeason.id) : 'spring'
+  return getRouteWeather(officialId, seasonId, mapStore.currentEpochHour, currentCycle.value)
 }
 
 // Spawn pool helper
@@ -212,8 +227,9 @@ function updateInventory(item: string, value: boolean) {
 }
 
 // Player visuals
-const playerSpriteHtml = ref(HTML_WALK)
-const updatePlayerVisuals = () => { playerSpriteHtml.value = playerInventory.value['Bicicleta'] ? HTML_BICI : HTML_WALK }
+const updatePlayerVisuals = () => {
+  walkFrame.value = (playerInventory.value['Bicicleta'] && !isSurfing.value) ? 0 : 1
+}
 
 // Modals toggles
 const showInventoryModal = ref(false)
@@ -235,8 +251,8 @@ function clampCamera() {
   if (!viewport.value) return
   const vpWidth = viewport.value.clientWidth
   const vpHeight = viewport.value.clientHeight
-  const scaledWidth = 3600 * currentScale.value
-  const scaledHeight = 5600 * currentScale.value
+  const scaledWidth = 3300 * currentScale.value
+  const scaledHeight = 4200 * currentScale.value
   let minX, maxX, minY, maxY
 
   if (scaledWidth <= vpWidth) {
@@ -279,15 +295,18 @@ function returnToCurrentLocation() {
 function enterParkedMode() {
   isZoomedIn.value = true
   isPlanning.value = false
+  playerDirection.value = 'down'
   setStatus("Estacionado", false)
   
-  centerCameraOn(mapNodes.value[currentNode.value].x, mapNodes.value[currentNode.value].y, true, ZOOM_SCALE)
+  const targetScale = getOptimalParkedScale()
+  centerCameraOn(mapNodes.value[currentNode.value].x, mapNodes.value[currentNode.value].y, true, targetScale)
 }
 
 function exitParkedMode() {
   isZoomedIn.value = false
   setStatus("Modo Libre", true)
-  centerCameraOn(mapNodes.value[currentNode.value].x, mapNodes.value[currentNode.value].y, true, MAP_SCALE)
+  const targetScale = getOptimalMapScale()
+  centerCameraOn(mapNodes.value[currentNode.value].x, mapNodes.value[currentNode.value].y, true, targetScale)
 }
 
 // Drag logic
@@ -338,13 +357,7 @@ function travelToAdjacent(targetId: string) {
     return
   }
 
-  currentEnergyCost.value = 5
-  if (!infiniteEnergy.value && playerEnergy.value < currentEnergyCost.value) {
-    showActionAlert("⚡ Sin Energía<br><br>No puedes viajar. Cúrate en un Centro Pokémon.")
-    return
-  }
-
-  currentPlanPaths.value = [{ nodes: [currentNode.value, targetId], cost: currentEnergyCost.value, isFly: false }]
+  currentPlanPaths.value = [{ nodes: [currentNode.value, targetId], cost: 0, isFly: false }]
   selectedPlanIndex.value = 0
   planningTarget.value = targetId
   
@@ -352,7 +365,6 @@ function travelToAdjacent(targetId: string) {
 }
 
 // GPS / Planning
-const currentEnergyCost = ref(0)
 
 function planTravel(targetId: string) {
   if (targetId === currentNode.value) {
@@ -415,15 +427,10 @@ function calculateRouteStats(nodesInPath: string[]) {
   return sums
 }
 
-const isConfirmTravelDisabled = computed(() => {
-  return !infiniteEnergy.value && playerEnergy.value < currentEnergyCost.value
-})
-
 function updatePlanUI() {
   const currentPath = currentPlanPaths.value[selectedPlanIndex.value]
   if (!currentPath) return
 
-  currentEnergyCost.value = currentPath.isFly ? 15 : (currentPath.nodes.length - 1) * 5
   drawPreviewPath(currentPath.nodes, currentPath.isFly)
   zoomToFitPath(currentPath.nodes)
 }
@@ -437,20 +444,53 @@ function zoomToFitPath(nodesIds: string[]) {
     if (n.y < minY) minY = n.y; if (n.y > maxY) maxY = n.y
   })
 
-  const paddingX = viewport.value.clientWidth * 0.4
-  const paddingY = viewport.value.clientHeight * 0.7
-  const pWidth = (maxX - minX) + paddingX
-  const pHeight = (maxY - minY) + paddingY
+  const pathWidth = maxX - minX
+  const pathHeight = maxY - minY
 
-  const scaleX = viewport.value.clientWidth / pWidth
-  const scaleY = viewport.value.clientHeight / pHeight
-  let newScale = Math.min(scaleX, scaleY, MAP_SCALE)
-  newScale = Math.max(newScale, 0.22)
+  // Define exact screen padding in pixels (independent of zoom)
+  const screenPaddingTop = 100    // To clear the 70px header + safety margin
+  const screenPaddingBottom = 260 // To clear the travel card at the bottom
+  const screenPaddingLeft = 60
+  const screenPaddingRight = 60
+
+  // Calculate available screen space
+  const availWidth = Math.max(200, viewport.value.clientWidth - (screenPaddingLeft + screenPaddingRight))
+  const availHeight = Math.max(200, viewport.value.clientHeight - (screenPaddingTop + screenPaddingBottom))
+
+  // Calculate scale needed to fit the path within the available space
+  const baseMapScale = getOptimalMapScale()
+  const scaleX = pathWidth > 0 ? availWidth / pathWidth : baseMapScale
+  const scaleY = pathHeight > 0 ? availHeight / pathHeight : baseMapScale
+
+  let newScale = Math.min(scaleX, scaleY, baseMapScale)
+  newScale = Math.max(newScale, 0.28) // Comfort zoom level: don't zoom out too much for long paths
 
   const midX = (minX + maxX) / 2
   const midY = (minY + maxY) / 2
-  const offsetY = (viewport.value.clientHeight / newScale) * 0.22
-  centerCameraOn(midX, midY + offsetY, true, newScale)
+
+  // Determine if the destination is closer to the top (north) or bottom (south) of the path
+  const destNodeId = nodesIds[nodesIds.length - 1]
+  const destNode = mapNodes.value[destNodeId]
+  const isDestAtTop = destNode ? Math.abs(destNode.y - minY) < Math.abs(destNode.y - maxY) : true
+
+  let y_center = midY
+
+  // If the path height exceeds the visible height at this zoom, align to the destination
+  if (pathHeight * newScale > availHeight) {
+    if (isDestAtTop) {
+      // Place the top-most node (minY) exactly at screenPaddingTop (100px)
+      y_center = minY + (viewport.value.clientHeight / 2 - screenPaddingTop) / newScale
+    } else {
+      // Place the bottom-most node (maxY) exactly at viewportHeight - screenPaddingBottom
+      y_center = maxY - (viewport.value.clientHeight / 2 - screenPaddingBottom) / newScale
+    }
+  } else {
+    // If it fits, center it in the visible area between header and card
+    const screenShiftY = (screenPaddingBottom - screenPaddingTop) / 2
+    y_center = midY + screenShiftY / newScale
+  }
+
+  centerCameraOn(midX, y_center, true, newScale)
 }
 
 function nextAlternative() {
@@ -485,13 +525,6 @@ const travelProgressText = ref('0%')
 const isTravelingProgressActive = ref(false)
 
 async function confirmTravel() {
-  if (!infiniteEnergy.value && playerEnergy.value < currentEnergyCost.value) return
-  
-  if (!infiniteEnergy.value) {
-    playerEnergy.value -= currentEnergyCost.value
-    localStorage.setItem('pokeVicioEnergy', String(playerEnergy.value))
-  }
-
   const pathData = currentPlanPaths.value[selectedPlanIndex.value]
   isPlanning.value = false
   isMoving.value = true
@@ -500,7 +533,6 @@ async function confirmTravel() {
 
   if (pathData.isFly) {
     setStatus(`Volando...`, true)
-    playerSpriteHtml.value = HTML_VUELO
   } else {
     setStatus(playerInventory.value['Bicicleta'] ? `Viajando Rápido...` : `Caminando...`, true)
     updatePlayerVisuals()
@@ -532,6 +564,21 @@ async function confirmTravel() {
   enterParkedMode()
 }
 
+function preloadTrainerSprites() {
+  const directions = ['down', 'up', 'left', 'right']
+  const types = ['walk', 'bike', 'surf', 'fly']
+  for (const type of types) {
+    for (const dir of directions) {
+      for (let f = 0; f < 3; f++) {
+        const img = new Image()
+        img.src = type === 'walk'
+          ? `/assets/sprites/trainers/red_walk_${dir}_${f}.png`
+          : `/assets/sprites/trainers/red_${type}_${dir}_${f}_v3.png`
+      }
+    }
+  }
+}
+
 function animatePlayerAndCamera(startId: string, endId: string, isFlying: boolean) {
   return new Promise<void>(resolve => {
     const start = mapNodes.value[startId]
@@ -542,19 +589,72 @@ function animatePlayerAndCamera(startId: string, endId: string, isFlying: boolea
 
     const distance = Math.hypot(dx, dy)
     const speed = isFlying ? flySpeed : (playerInventory.value['Bicicleta'] ? baseBikeSpeed : baseWalkSpeed)
-    const duration = distance / speed
+    const duration = Math.max(0.35, distance / speed)
 
-    const tl = gsap.timeline({ onComplete: resolve })
+    const isBike = !!playerInventory.value['Bicicleta'] && !isSurfing.value
+    const travelScale = getOptimalMapScale()
+    currentScale.value = travelScale
+
+    const vpWidth = viewport.value ? viewport.value.clientWidth : window.innerWidth
+    const vpHeight = viewport.value ? viewport.value.clientHeight : window.innerHeight
+
+    const startPanX = (vpWidth / 2) - (start.x * travelScale)
+    const startPanY = (vpHeight / 2) - (start.y * travelScale)
+    const endPanX = (vpWidth / 2) - (end.x * travelScale)
+    const endPanY = (vpHeight / 2) - (end.y * travelScale)
+
+    const tl = gsap.timeline({ 
+      onComplete: () => {
+        currentPanX.value = endPanX
+        currentPanY.value = endPanY
+        walkFrame.value = isBike ? 0 : 1
+        resolve()
+      } 
+    })
+
+    // 1. Direct GPU translation of player token
     if (playerToken.value) {
       tl.to(playerToken.value, { left: end.x, top: end.y, duration, ease: 'none' }, 0)
     }
-    const camObj = { x: start.x, y: start.y }
+
+    // 2. Direct 60fps GPU camera pan without layout re-flow triggers
+    const camObj = { x: startPanX, y: startPanY }
     tl.to(camObj, {
-      x: end.x,
-      y: end.y,
+      x: endPanX,
+      y: endPanY,
       duration,
       ease: 'none',
-      onUpdate: () => centerCameraOn(camObj.x, camObj.y, false, MAP_SCALE)
+      onUpdate: () => {
+        currentPanX.value = camObj.x
+        currentPanY.value = camObj.y
+        if (worldContainer.value) {
+          worldContainer.value.style.transform = `translate3d(${camObj.x}px, ${camObj.y}px, 0) scale(${travelScale})`
+        }
+      }
+    }, 0)
+
+    // 3. Smooth, locked frame progression
+    const stepDuration = isFlying ? 0.12 : (isBike ? 0.14 : 0.20)
+    const totalSteps = Math.round(duration / stepDuration) * 4
+    const frameObj = { frame: 0 }
+    
+    tl.to(frameObj, {
+      frame: Math.max(4, totalSteps),
+      duration,
+      ease: 'none',
+      onUpdate: () => {
+        const step = Math.floor(frameObj.frame) % 4
+        if (isBike) {
+          const bikeCycle = [0, 1, 0, 2]
+          walkFrame.value = bikeCycle[step]
+        } else if (isSurfing.value) {
+          const surfCycle = [0, 1, 2, 1]
+          walkFrame.value = surfCycle[step]
+        } else {
+          const walkCycle = [0, 1, 2, 1]
+          walkFrame.value = walkCycle[step]
+        }
+      }
     }, 0)
   })
 }
@@ -569,15 +669,7 @@ const triggerSwarm = () => {
 const exploreZone = () => showActionAlert(`La hierba alta de ${mapNodes.value[currentNode.value].name} se mueve... ¡Prepárate!`)
 
 function healPokemon() {
-  playerEnergy.value = 100
-  localStorage.setItem('pokeVicioEnergy', String(playerEnergy.value))
-  showActionAlert("Turururu-ru~<br><br>Tus Pokémon están listos para seguir luchando. <b class='text-yellow-600'>¡Energía restaurada al 100%!</b>")
-}
-
-function setInfiniteEnergy(val: boolean) {
-  infiniteEnergy.value = val
-  localStorage.setItem('pokeVicioDebugEnergy', String(val))
-  if (isPlanning.value) updatePlanUI()
+  showActionAlert("Turururu-ru~<br><br>Tus Pokémon están completamente sanos y listos para seguir luchando.")
 }
 
 // Debug features
@@ -642,15 +734,41 @@ const adjacentButtons = computed(() => {
   })
 })
 
+function handleResize() {
+  if (isZoomedIn.value && !isMoving.value && !isPlanning.value) {
+    const targetScale = getOptimalParkedScale()
+    centerCameraOn(mapNodes.value[currentNode.value].x, mapNodes.value[currentNode.value].y, false, targetScale)
+  } else if (isPlanning.value) {
+    const currentPath = currentPlanPaths.value[selectedPlanIndex.value]
+    if (currentPath) zoomToFitPath(currentPath.nodes)
+  } else {
+    clampCamera()
+    updateCameraTransform(false)
+  }
+}
+
 onMounted(() => {
+  preloadTrainerSprites()
   triggerSwarm()
   updatePlayerVisuals()
   updateDayNightCycle()
-  setInterval(updateDayNightCycle, 60000)
+  const dayNightTimer = setInterval(updateDayNightCycle, 60000)
+  window.addEventListener('resize', handleResize)
+
+  // Position player token initially
+  if (playerToken.value && mapNodes.value[currentNode.value]) {
+    playerToken.value.style.left = `${mapNodes.value[currentNode.value].x}px`
+    playerToken.value.style.top = `${mapNodes.value[currentNode.value].y}px`
+  }
 
   // Initial draw connections
   nextTick(() => {
     enterParkedMode()
+  })
+
+  onUnmounted(() => {
+    clearInterval(dayNightTimer)
+    window.removeEventListener('resize', handleResize)
   })
 })
 </script>
@@ -658,55 +776,39 @@ onMounted(() => {
 <template>
   <div class="flex flex-col font-sans h-[100dvh] w-screen overflow-hidden text-white">
     <!-- Header -->
-    <header class="h-[70px] bg-gradient-to-b from-red-500 to-red-600 text-white px-4 py-2 shadow-lg z-50 flex justify-between items-center shrink-0 border-b-[5px] border-red-800 relative hardware-accel">
-      <div class="flex items-center gap-3">
+    <header class="h-[64px] md:h-[70px] bg-gradient-to-b from-red-500 to-red-600 text-white px-3 md:px-6 py-2 shadow-lg z-50 flex justify-between items-center shrink-0 border-b-[4px] md:border-b-[5px] border-red-800 relative hardware-accel">
+      <div class="flex items-center gap-2 md:gap-3">
         <div>
-          <h1 class="font-black text-xl tracking-widest text-yellow-300 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)] flex items-center gap-2">
+          <h1 class="font-black text-lg md:text-xl tracking-widest text-yellow-300 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)] flex items-center gap-2">
             KANTO
             <span class="flex items-center mt-1">
               <span
                 class="w-2 h-2 rounded-full mr-1 animate-pulse"
                 :class="statusDotClass"
               />
-              <span class="text-red-100 text-[9px] font-bold uppercase tracking-wide">{{ statusText }}</span>
+              <span class="text-red-100 text-[8px] md:text-[9px] font-bold uppercase tracking-wide">{{ statusText }}</span>
             </span>
           </h1>
-          <div
-            class="flex items-center mt-0.5 bg-gray-900 rounded-full w-24 h-3 border border-gray-700 overflow-hidden relative"
-            title="Energía de Viaje"
-          >
-            <div
-              class="h-full transition-all duration-300"
-              :class="[infiniteEnergy ? 'bg-blue-400 w-full' : (playerEnergy > 50 ? 'bg-yellow-400' : (playerEnergy > 20 ? 'bg-orange-400' : 'bg-red-500'))]"
-              :style="{ width: infiniteEnergy ? '100%' : `${playerEnergy}%` }"
-            />
-            <span
-              class="absolute w-full text-center text-[8px] font-black tracking-widest leading-[12px]"
-              style="text-shadow: 0 1px 1px #000;"
-            >
-              {{ infiniteEnergy ? 'INFINITA' : 'ENERGÍA' }}
-            </span>
-          </div>
         </div>
         <button
-          class="bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 p-2 rounded-xl border-2 border-blue-800 shadow-[0_4px_0_#1e3a8a] active:shadow-[0_0px_0_#1e3a8a] active:translate-y-1 flex items-center transition-all ml-2"
+          class="bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 px-2.5 py-1.5 md:p-2 rounded-xl border-2 border-blue-800 shadow-[0_3px_0_#1e3a8a] md:shadow-[0_4px_0_#1e3a8a] active:shadow-[0_0px_0_#1e3a8a] active:translate-y-0.5 flex items-center transition-all ml-1 md:ml-2"
           @click="toggleInventoryModal"
         >
-          <span class="text-lg">🎒</span> <span class="hidden md:inline ml-1 text-xs font-black">Equipo</span>
+          <span class="text-base md:text-lg">🎒</span> <span class="hidden sm:inline ml-1 text-xs font-black">Equipo</span>
         </button>
       </div>
       <div
-        class="bg-gray-900 px-3 py-1.5 rounded-xl border-2 border-gray-600 shadow-inner text-right cursor-pointer hover:bg-gray-800 active:scale-95 transition-all"
+        class="bg-gray-900 px-2.5 py-1 md:px-3 md:py-1.5 rounded-xl border-2 border-gray-600 shadow-inner text-right cursor-pointer hover:bg-gray-800 active:scale-95 transition-all max-w-[140px] sm:max-w-[220px]"
         @click="returnToCurrentLocation"
       >
-        <span class="block text-[9px] text-gray-400 font-black uppercase tracking-wider">Ubicación 📍</span>
-        <span class="text-white font-bold text-sm">{{ mapNodes[currentNode]?.name || 'Cargando...' }}</span>
+        <span class="block text-[8px] md:text-[9px] text-gray-400 font-black uppercase tracking-wider">Ubicación 📍</span>
+        <span class="text-white font-bold text-xs md:text-sm truncate block">{{ mapNodes[currentNode]?.name || 'Cargando...' }}</span>
       </div>
     </header>
 
     <div
       v-if="currentSwarmRoute"
-      class="absolute top-[80px] left-4 bg-red-600 text-white text-xs font-black px-3 py-1.5 rounded-full border-2 border-red-800 shadow-lg z-40 animate-pulse"
+      class="absolute top-[72px] md:top-[80px] left-3 md:left-4 bg-red-600 text-white text-[10px] md:text-xs font-black px-2.5 py-1 md:px-3 md:py-1.5 rounded-full border-2 border-red-800 shadow-lg z-40 animate-pulse max-w-[65vw] truncate"
     >
       🔴 Enjambre en: {{ mapNodes[currentSwarmRoute]?.name }}
     </div>
@@ -802,7 +904,7 @@ onMounted(() => {
               }"
             >
               <div
-                :style="{ transform: `scale(${(isZoomedIn && !isMoving && !isPlanning && currentNode === id) ? cardScale * 3 : cardScale})` }"
+                :style="{ transform: `scale(${(isZoomedIn && !isMoving && !isPlanning && currentNode === id) ? 1.0 : cardScale})` }"
                 class="origin-center shadow-2xl rounded-2xl transition-all duration-300 hover:brightness-110 relative"
               >
                 <!-- True Spherical Background Glow Effect (Only Zoomed-out map, stationary) -->
@@ -888,17 +990,45 @@ onMounted(() => {
           >
             <img
               :src="companionSpriteUrl"
-              class="pixel-art"
+              class="pixel-art h-8 w-auto max-w-none"
               :class="{ 'anim-bounce-companion': isMoving }"
             >
           </div>
           <div
             id="player-sprite"
             ref="playerSprite"
-            :class="{ 'anim-bounce': isMoving }"
+            :class="{ 'anim-bounce': isMoving && !playerInventory['Bicicleta'] && !isSurfing && !currentPlanPaths[selectedPlanIndex]?.isFly }"
             :style="{ transform: playerSpriteTransform }"
-            v-html="playerSpriteHtml"
-          />
+          >
+            <!-- If flying -->
+            <img
+              v-if="isMoving && currentPlanPaths[selectedPlanIndex]?.isFly"
+              :src="`/assets/sprites/trainers/red_fly_${playerDirection}_${walkFrame}_v3.png`"
+              class="pixel-art h-12 w-auto max-w-none"
+              alt="Volando"
+            >
+            <!-- If surfing -->
+            <img
+              v-else-if="isSurfing"
+              :src="`/assets/sprites/trainers/red_surf_${playerDirection}_${walkFrame}_v3.png`"
+              class="pixel-art h-12 w-auto max-w-none"
+              alt="Surf"
+            >
+            <!-- If riding a bike -->
+            <img
+              v-else-if="playerInventory['Bicicleta']"
+              :src="`/assets/sprites/trainers/red_bike_${playerDirection}_${walkFrame}_v3.png`"
+              class="pixel-art h-12 w-auto max-w-none"
+              alt="Bici"
+            >
+            <!-- If walking (dynamic local sprite!) -->
+            <img
+              v-else
+              :src="`/assets/sprites/trainers/red_walk_${playerDirection}_${walkFrame}.png`"
+              class="pixel-art h-12 w-auto max-w-none"
+              alt="Caminando"
+            />
+          </div>
         </div>
       </div>
     </main>
@@ -1006,9 +1136,6 @@ onMounted(() => {
           <p class="text-[10px] text-gray-400 uppercase font-black tracking-wider mb-2 text-center">
             Previsión del Recorrido
           </p>
-          <div class="absolute top-2 right-3 text-xs font-black text-yellow-400 bg-gray-800 px-2 py-0.5 rounded">
-            ⚡ {{ currentEnergyCost }}
-          </div>
           
           <!-- Route stats computed from actual path -->
           <div
@@ -1069,11 +1196,10 @@ onMounted(() => {
             🔄 Alternativa
           </button>
           <button
-            :disabled="isConfirmTravelDisabled"
-            class="bg-gradient-to-b from-green-400 to-green-600 text-white px-5 py-2.5 rounded-xl font-black border-2 border-green-800 shadow-[0_4px_0_#14532d] active:shadow-[0_0px_0_#14532d] active:translate-y-1 flex-[1.5] transition-all text-lg disabled:opacity-50 disabled:grayscale"
+            class="bg-gradient-to-b from-green-400 to-green-600 text-white px-5 py-2.5 rounded-xl font-black border-2 border-green-800 shadow-[0_4px_0_#14532d] active:shadow-[0_0px_0_#14532d] active:translate-y-1 flex-[1.5] transition-all text-lg"
             @click="confirmTravel"
           >
-            {{ isConfirmTravelDisabled ? 'Sin Energía' : '¡VIAJAR!' }}
+            ¡VIAJAR!
           </button>
         </div>
       </div>
@@ -1135,7 +1261,7 @@ onMounted(() => {
             @click="() => {
               toggleRadarModal()
               if (isZoomedIn) exitParkedMode()
-              centerCameraOn(mapNodes[id].x, mapNodes[id].y, true, MAP_SCALE)
+              centerCameraOn(mapNodes[id].x, mapNodes[id].y, true, getOptimalMapScale())
             }"
           >
             📍 {{ mapNodes[id]?.name }}
@@ -1165,8 +1291,6 @@ onMounted(() => {
     <!-- Debug Modal -->
     <AdventureDebugModal
       :show="showDebugModal"
-      :infinite-energy="infiniteEnergy"
-      @update-infinite-energy="setInfiniteEnergy"
       @unlock-all="debugUnlockAll"
       @give-all-m-os="debugGiveAllMOs"
       @trigger-swarm="debugTriggerSwarm"

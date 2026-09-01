@@ -25,7 +25,6 @@ Core Frontend.
 
 ## Child DOX Index
 
-- [adventure/](./adventure/AGENTS.md): Domain module documentation for adventure.
 - [auth/](./auth/AGENTS.md): Domain module documentation for auth.
 - [game/](./game/AGENTS.md): Domain module documentation for game.
 - [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.

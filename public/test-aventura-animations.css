@@ -65,11 +65,14 @@
 body { overscroll-behavior: none; background-color: #0f172a; user-select: none; -webkit-tap-highlight-color: transparent; }
 
 #map-viewport {
-    width: 100vw; height: calc(100vh - 64px); overflow: hidden; position: relative; touch-action: none; background-color: #0f172a;
+    width: 100vw; height: calc(100vh - 64px); overflow: hidden; position: relative; touch-action: none;
+    background-color: #84cc5c;
+    background-image: radial-gradient(#73b84c 12%, transparent 13%), radial-gradient(#73b84c 12%, transparent 13%);
+    background-size: 80px 80px; background-position: 0 0, 40px 40px;
 }
 
 #world-container {
-    width: 3600px; height: 5600px; transform-origin: 0 0; 
+    width: 3300px; height: 4200px; transform-origin: 0 0; 
     background-color: #84cc5c;
     background-image: radial-gradient(#73b84c 12%, transparent 13%), radial-gradient(#73b84c 12%, transparent 13%);
     background-size: 80px 80px; background-position: 0 0, 40px 40px; position: absolute; top: 0; left: 0;
@@ -136,18 +139,24 @@ body { overscroll-behavior: none; background-color: #0f172a; user-select: none; 
 
 /* --- SPRITES JUGADOR Y COMPAÑERO --- */
 #player-token {
-    position: absolute; transform-origin: bottom center; transform: translate(-50%, -80%); 
-    z-index: calc(var(--z-map-ui) + 10); width: 56px; height: 56px; pointer-events: none;
-    transition-property: left, top; transition-duration: 0.2s; transition-timing-function: linear; will-change: left, top;
+    position: absolute;
+    transform-origin: bottom center;
+    transform: translate(-50%, -75%); 
+    z-index: 100;
+    width: 48px;
+    height: 48px;
+    pointer-events: none;
+    will-change: left, top;
 }
+
 #player-sprite {
-    width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; font-size: 40px;
+    width: 100%; height: 100%; display: flex; justify-content: center; align-items: flex-end;
     transition-property: transform;
     transition-duration: 0.2s;
 }
 
 #companion-token {
-    position: absolute; right: -35px; bottom: 5px; width: 40px; height: 40px;
+    position: absolute; right: -24px; bottom: 2px; width: 32px; height: 32px;
     transition-property: transform;
     transition-duration: 0.2s;
 }
@@ -168,16 +177,26 @@ body { overscroll-behavior: none; background-color: #0f172a; user-select: none; 
 
 .floating-btn {
     background: linear-gradient(145deg, #4B5563, #374151); color: white; border: 3px solid white; border-radius: 50%;
-    width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; box-shadow: 0 6px 12px rgba(0,0,0,0.5); font-size: 1.4rem;
+    width: 44px; height: 44px; display: flex; justify-content: center; align-items: center; box-shadow: 0 6px 12px rgba(0,0,0,0.5); font-size: 1.25rem;
     transition-property: transform;
     transition-duration: 0.1s;
 }
 .floating-btn:active { transform: scale(0.9); }
-#btn-free-map { position: absolute; top: 20px; right: 20px; }
-#btn-radar { position: absolute; top: 85px; right: 20px; }
-#btn-debug { position: absolute; top: 150px; right: 20px; }
+#btn-free-map { position: absolute; top: 16px; right: 16px; }
+#btn-radar { position: absolute; top: 68px; right: 16px; }
+#btn-debug { position: absolute; top: 120px; right: 16px; }
 
-#bottom-action-panel { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; width: 100%; justify-content: center; padding: 0 10px;}
+#bottom-action-panel { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; width: 100%; max-width: 480px; justify-content: center; padding: 0 12px;}
+
+@media (max-width: 640px) {
+    .floating-btn {
+        width: 38px; height: 38px; font-size: 1.05rem; border-width: 2px;
+    }
+    #btn-free-map { top: 10px; right: 10px; }
+    #btn-radar { top: 54px; right: 10px; }
+    #btn-debug { top: 98px; right: 10px; }
+    #bottom-action-panel { bottom: 12px; gap: 6px; }
+}
 
 /* --- GLASSMORPHISM & ALERTS --- */
 .glass-panel { background: rgba(31, 41, 55, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }

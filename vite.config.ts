@@ -99,6 +99,14 @@ function devDbImportPlugin() {
       };
 
       server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+        // --- 0. Adventure Prototype Direct Route ---
+        const reqPath = req.url ? req.url.split('?')[0] : '';
+        if (reqPath === '/test-aventura' || reqPath === '/test%20aventura' || reqPath === '/test%20aventura/' || reqPath === '/test-aventura/' || reqPath === '/test aventura') {
+          res.writeHead(302, { Location: '/test%20aventura/index.html' });
+          res.end();
+          return;
+        }
+
         // --- 1. Dedicated Manual User Backup Import Channel ---
         if (req.url?.startsWith('/api/dev-manual-import-check')) {
           try {
@@ -544,8 +552,7 @@ export default defineConfig({
   },
   optimizeDeps: {
     entries: [
-      'index.html',
-      'src/**/*.{ts,tsx,vue,js,jsx}'
+      'index.html'
     ]
   },
   css: {

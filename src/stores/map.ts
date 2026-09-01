@@ -11,7 +11,7 @@ import type { DayPhase, Season } from '@/logic/utils/timeUtils'
 import type { MapRouteId } from '@/data/world/map-assets';
 import type { WeatherId } from '@/logic/weather/weatherRegistry';
 import { requireMapRouteId } from '@/data/world/map-assets';
-import { requireWeatherSeasonId } from '@/data/world/weather-tables';
+import { isWeatherTableRouteId, requireWeatherSeasonId } from '@/data/world/weather-tables';
 import type { DominanceInfo } from '@/types/system/stores';
 import { ONE_HOUR_MS } from '@/logic/constants/items.ts';
 
@@ -96,6 +96,7 @@ export const useMapStore = defineStore('map', () => {
   
   const currentWeather = computed<WeatherId>(() => {
     if (globalWeather.value) return globalWeather.value
+    if (!isWeatherTableRouteId(currentMap.value)) return 'clear'
     return getRouteWeather(currentMap.value, requireWeatherSeasonId(currentSeason.value.id), currentEpochHour.value, currentCycle.value)
   })
 

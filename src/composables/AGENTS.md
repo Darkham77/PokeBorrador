@@ -19,7 +19,6 @@ Frontend Developers.
 
 ## Child DOX Index
 
-- [adventure/](./adventure/AGENTS.md): Domain module documentation for adventure.
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle.
 - [effects/](./effects/AGENTS.md): Domain module documentation for effects.
 - [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.

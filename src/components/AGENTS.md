@@ -58,7 +58,6 @@ Frontend UI Developers / UI Designers.
 ## Child DOX Index
 
 - [admin/](./admin/AGENTS.md): Domain module documentation for admin.
-- [adventure/](./adventure/AGENTS.md): Domain module documentation for adventure.
 - [auth/](./auth/AGENTS.md): Domain module documentation for auth.
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle.
 - [box/](./box/AGENTS.md): Domain module documentation for box.

@@ -1,11 +1,9 @@
 <script setup lang="ts">
 const props = defineProps<{
   show: boolean
-  infiniteEnergy: boolean
 }>()
 
 const emit = defineEmits<{
-  (e: 'updateInfiniteEnergy', value: boolean): void
   (e: 'unlockAll'): void
   (e: 'giveAllMOs'): void
   (e: 'triggerSwarm'): void
@@ -30,19 +28,6 @@ const emit = defineEmits<{
         <p class="text-xs text-gray-400 text-center font-bold uppercase mb-4">
           Herramientas de Testeo
         </p>
-        
-        <label class="flex items-center justify-between bg-gray-800 p-4 rounded-xl border border-gray-700 cursor-pointer hover:bg-gray-700 transition-colors">
-          <div class="flex items-center gap-3">
-            <span class="text-2xl">⚡</span>
-            <span class="font-bold text-md">Energía Infinita</span>
-          </div>
-          <input
-            type="checkbox"
-            :checked="props.infiniteEnergy"
-            class="w-6 h-6 accent-purple-500"
-            @change="emit('updateInfiniteEnergy', !props.infiniteEnergy)"
-          >
-        </label>
 
         <button
           class="w-full bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-xl border border-gray-600 font-bold flex items-center gap-3 transition-colors"
