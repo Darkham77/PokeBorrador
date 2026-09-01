@@ -1,0 +1,1 @@
+import{t as e}from"./timeSync-BMOlzMFS.js";export{e as syncServerTime};

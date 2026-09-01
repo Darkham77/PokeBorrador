@@ -1,0 +1,1 @@
+import{t as e}from"./supabase-Ba6kBIFF.js";export{e as default,e as supabase};

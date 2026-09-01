@@ -1,0 +1,1 @@
+import{L as e}from"./game-data-pokemon-Dd_sHEHj.js";export{e as requirePokemonSpeciesId};
