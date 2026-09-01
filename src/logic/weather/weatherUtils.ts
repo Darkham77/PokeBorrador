@@ -38,7 +38,10 @@ export function getRouteWeather(
   forcedCycle?: DayPhase
 ): WeatherId {
   if (!isWeatherTableRouteId(mapId)) {
-    return 'clear';
+    if (mapId === 'gym' || mapId === 'pvp') {
+      return 'clear';
+    }
+    throw new Error(`[weatherUtils] Route '${mapId}' has no registered weather table`);
   }
   const routeTables = ROUTE_WEATHER_TABLES[mapId];
   const seasonTable = routeTables[seasonId];

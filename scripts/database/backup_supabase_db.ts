@@ -30,6 +30,11 @@ const BACKUPS_DIR = path.resolve(process.cwd(), 'database/backups');
 export async function backupSupabaseDb() {
   console.log(styleText('bold', `\n--- 📦 SUPABASE DATABASE BACKUP MANAGER (Node.js ${BACKUP_TARGET_NODE_VERSION_LABEL}+) ---`))
 
+  const rawArgs = process.argv.slice(2);
+  if (rawArgs.includes('--help') || rawArgs.includes('-h') || rawArgs.includes('help')) {
+    parseServerArguments(rawArgs, [], []);
+  }
+
   const serverConfigs = await readAndParseEnv()
   const baseProfiles = Object.keys(serverConfigs)
   if (baseProfiles.length === 0) {

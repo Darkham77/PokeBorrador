@@ -27,8 +27,6 @@ enableCompileCache();
 export async function adminSupabaseUsers(): Promise<void> {
   console.log(styleText('bold', `\n--- 🛡️ SUPABASE USER ADMIN MANAGER (Node.js ${ADMIN_TARGET_NODE_VERSION_LABEL}+) ---`));
 
-  const { serverConfigs, baseProfiles, allAvailable } = await getValidatedServerConfigs();
-
   const { values, positionals } = parseArgs({
     options: {
       server: { type: 'string', short: 's' },
@@ -43,7 +41,6 @@ export async function adminSupabaseUsers(): Promise<void> {
     strict: false
   });
 
-  const knownActions = ['unban', 'set-password', 'set-email', 'set-username', 'promote'] as const;
   const rawArgs = process.argv.slice(2);
   const isHelp = values.help || rawArgs.includes('help') || rawArgs.includes('--help') || rawArgs.includes('-h');
 
@@ -56,9 +53,11 @@ export async function adminSupabaseUsers(): Promise<void> {
     console.log(styleText('gray', '  password=<pass>         : Nueva contraseña (requerido para set-password).'));
     console.log(styleText('gray', '  new-email=<email>       : Nuevo correo electrónico (requerido para set-email).'));
     console.log(styleText('gray', '  username=<nombre>       : Nombre de entrenador (para set-username o búsqueda).'));
-    console.log(styleText('cyan', `\nPerfiles disponibles: ${allAvailable.join(', ')}`));
     process.exit(0);
   }
+
+  const { serverConfigs, baseProfiles, allAvailable } = await getValidatedServerConfigs();
+  const knownActions = ['unban', 'set-password', 'set-email', 'set-username', 'promote'] as const;
 
   // Helper para extraer key=value, --key=value o flags
   const getParam = (key: string, shortKey?: string): string | undefined => {
