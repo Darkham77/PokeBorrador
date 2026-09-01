@@ -14,14 +14,11 @@ const emit = defineEmits<{
 
 <template>
   <div
-    class="fixed inset-0 z-[350] bg-black/80 backdrop-blur-md flex items-center justify-center transition-opacity duration-300"
-    :class="[props.show ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none']"
+    v-if="props.show"
+    class="adv-modal-overlay"
   >
-    <div
-      class="bg-gray-900 rounded-3xl w-11/12 max-w-sm overflow-hidden shadow-2xl border-4 border-purple-500 transition-transform duration-300"
-      :class="[props.show ? 'scale-100' : 'scale-90']"
-    >
-      <div class="bg-gradient-to-b from-purple-500 to-purple-700 text-white p-4 text-center font-black text-xl shadow-inner border-b-2 border-purple-800">
+    <div class="adv-modal-card border-purple">
+      <div class="adv-modal-header bg-gradient-to-b from-purple-500 to-purple-700">
         🐛 MENÚ DE DESARROLLO
       </div>
       <div class="p-5 space-y-3 text-white">

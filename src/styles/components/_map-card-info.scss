@@ -4,13 +4,16 @@
 /* Header & Info */
 .location-header {
   position: absolute;
-  top: 18px;
+  top: 8px;
   left: 0;
   right: 0;
-  padding: 0 85px;
+  padding: 0 12px;
   text-align: center;
   pointer-events: none;
   z-index: var(--z-map-ui);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .location-name {
@@ -22,25 +25,29 @@
      1px -1px 0 #000,
     -1px  1px 0 #000,
      1px  1px 0 #000,
-     0px  2px 0 #000; // Mantener la profundidad original sumada al contorno
+     0px  2px 0 #000;
   line-height: 1.2;
-  margin-bottom: 2px;
-  width: 100%;
+  margin-bottom: 1px;
+  max-width: 90%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .location-desc {
   @include pixelated;
   font-size: 8px;
-  line-height: 1.2;
-  color: Rgba(204, 204, 204, 1);
+  line-height: 1.1;
+  color: Rgba(225, 225, 225, 0.95);
   text-shadow: 
     -1px -1px 0 #000,  
      1px -1px 0 #000,
     -1px  1px 0 #000,
      1px  1px 0 #000;
-  width: 100%;
-  margin: 0 auto;
-  text-align: center;
+  max-width: 95%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 // Map Card Specific Layout Overrides for Pills

@@ -40,12 +40,14 @@ if (typeof gameStore.enterSandboxMode === 'function') {
 
 // Ported constants
 const SPACING_MULTIPLIER = 2.5
+const WORLD_WIDTH = 3600
+const WORLD_HEIGHT = 4600
  
 const moIcons: Record<string, string> = { 'Corte': '✂️', 'Surf': '🌊', 'Flauta': '🎵', 'Medallas': '🏅', 'Vuelo': '🦅' }
 
-const baseWalkSpeed = 350 
-const baseBikeSpeed = 700
-const flySpeed = 1800 
+const baseWalkSpeed = 520 
+const baseBikeSpeed = 1000
+const flySpeed = 2400 
 
 function getOptimalParkedScale(): number {
   if (!viewport.value) return 1.3
@@ -75,11 +77,12 @@ const discoveredNodes = ref<string[]>(
 const activeCompanion = ref<string>(localStorage.getItem('pokeVicioCompanion') || 'none')
 const currentSwarmRoute = ref<string | null>(null)
 
-const currentNode = ref<string>('pallet')
+const currentNode = ref<string>(localStorage.getItem('pokeVicioLocation') || 'pallet')
 const isMoving = ref(false)
 const isZoomedIn = ref(true)
 const isPlanning = ref(false)
 const playerDirection = ref<'down' | 'up' | 'left' | 'right'>('down')
+const activeTravelTerrain = ref<'land' | 'water'>('land')
 
 const playerSpriteTransform = computed(() => {
   return 'scaleX(1)'
@@ -88,6 +91,9 @@ const playerSpriteTransform = computed(() => {
 const walkFrame = ref(0)
 
 const isSurfing = computed(() => {
+  if (isMoving.value) {
+    return activeTravelTerrain.value === 'water'
+  }
   const node = mapNodes.value[currentNode.value]
   if (!node) return false
   return node.type === 'route_water' || currentNode.value === 'seafoam'
@@ -121,6 +127,31 @@ const mapNodes = computed(() => {
   }
   return result
 })
+
+const visibleWorldBounds = computed(() => {
+  const vpW = viewport.value ? viewport.value.clientWidth : (typeof window !== 'undefined' ? window.innerWidth : 800)
+  const vpH = viewport.value ? viewport.value.clientHeight : (typeof window !== 'undefined' ? window.innerHeight : 600)
+  const scale = currentScale.value || 0.75
+  const margin = 850 // Generous margin in world coords for ultra-smooth scrolling
+
+  const minX = (-currentPanX.value) / scale - margin
+  const maxX = (vpW - currentPanX.value) / scale + margin
+  const minY = (-currentPanY.value) / scale - margin
+  const maxY = (vpH - currentPanY.value) / scale + margin
+
+  return { minX, maxX, minY, maxY }
+})
+
+function isNodeNearViewport(node: MapNode, nodeId: string): boolean {
+  if (isPlanning.value) {
+    const plan = currentPlanPaths.value[selectedPlanIndex.value]
+    if (plan && plan.nodes.includes(nodeId)) return true
+  }
+  if (nodeId === currentNode.value || nodeId === planningTarget.value) return true
+
+  const bounds = visibleWorldBounds.value
+  return node.x >= bounds.minX && node.x <= bounds.maxX && node.y >= bounds.minY && node.y <= bounds.maxY
+}
 
 const cityDescriptions: Record<string, string> = {
   pallet: 'El comienzo de tu viaje.',
@@ -251,8 +282,8 @@ function clampCamera() {
   if (!viewport.value) return
   const vpWidth = viewport.value.clientWidth
   const vpHeight = viewport.value.clientHeight
-  const scaledWidth = 3300 * currentScale.value
-  const scaledHeight = 4200 * currentScale.value
+  const scaledWidth = WORLD_WIDTH * currentScale.value
+  const scaledHeight = WORLD_HEIGHT * currentScale.value
   let minX, maxX, minY, maxY
 
   if (scaledWidth <= vpWidth) {
@@ -295,7 +326,6 @@ function returnToCurrentLocation() {
 function enterParkedMode() {
   isZoomedIn.value = true
   isPlanning.value = false
-  playerDirection.value = 'down'
   setStatus("Estacionado", false)
   
   const targetScale = getOptimalParkedScale()
@@ -390,16 +420,20 @@ function planTravel(targetId: string) {
   let canFly = playerInventory.value['Vuelo'] && (targetNode.type === 'city' || targetNode.type === 'league')
   if (canFly && !discoveredNodes.value.includes(targetId)) canFly = false
 
-  if (canFly) {
-    currentPlanPaths.value = [{ nodes: [currentNode.value, targetId], cost: 0, isFly: true }]
-  } else {
-    currentPlanPaths.value = getAlternativePaths(currentNode.value, targetId, mapNodes.value, playerInventory.value, discoveredNodes.value, connections)
-    if (currentPlanPaths.value.length === 0) {
-      showActionAlert("Camino bloqueado. Necesitas una MO.")
-      return
-    }
+  const groundPaths = getAlternativePaths(currentNode.value, targetId, mapNodes.value, playerInventory.value, discoveredNodes.value, connections)
+  const paths: DijkstraPath[] = [...groundPaths]
+
+  // If player has Fly and target is not immediately adjacent, add Fly as an alternative option
+  if (canFly && !getAdjacentNodes(currentNode.value, connections).includes(targetId)) {
+    paths.push({ nodes: [currentNode.value, targetId], cost: 0, isFly: true })
   }
 
+  if (paths.length === 0) {
+    showActionAlert("Camino bloqueado. Necesitas una MO.")
+    return
+  }
+
+  currentPlanPaths.value = paths
   isPlanning.value = true
   isZoomedIn.value = false
   selectedPlanIndex.value = 0
@@ -444,14 +478,21 @@ function zoomToFitPath(nodesIds: string[]) {
     if (n.y < minY) minY = n.y; if (n.y > maxY) maxY = n.y
   })
 
+  // Add node card extent padding (130px) so card edges are fully framed
+  const cardRadius = 130
+  minX -= cardRadius
+  maxX += cardRadius
+  minY -= cardRadius
+  maxY += cardRadius
+
   const pathWidth = maxX - minX
   const pathHeight = maxY - minY
 
-  // Define exact screen padding in pixels (independent of zoom)
-  const screenPaddingTop = 100    // To clear the 70px header + safety margin
-  const screenPaddingBottom = 260 // To clear the travel card at the bottom
-  const screenPaddingLeft = 60
-  const screenPaddingRight = 60
+  // Exact screen padding in pixels to avoid UI collisions
+  const screenPaddingTop = 100     // Clears header (70px) + margin
+  const screenPaddingBottom = 330  // Clears bottom planning panel (~300px)
+  const screenPaddingLeft = 40
+  const screenPaddingRight = 40
 
   // Calculate available screen space
   const availWidth = Math.max(200, viewport.value.clientWidth - (screenPaddingLeft + screenPaddingRight))
@@ -463,7 +504,7 @@ function zoomToFitPath(nodesIds: string[]) {
   const scaleY = pathHeight > 0 ? availHeight / pathHeight : baseMapScale
 
   let newScale = Math.min(scaleX, scaleY, baseMapScale)
-  newScale = Math.max(newScale, 0.28) // Comfort zoom level: don't zoom out too much for long paths
+  newScale = Math.max(newScale, 0.40) // Keep clean framing without excessive zoom-out
 
   const midX = (minX + maxX) / 2
   const midY = (minY + maxY) / 2
@@ -478,10 +519,8 @@ function zoomToFitPath(nodesIds: string[]) {
   // If the path height exceeds the visible height at this zoom, align to the destination
   if (pathHeight * newScale > availHeight) {
     if (isDestAtTop) {
-      // Place the top-most node (minY) exactly at screenPaddingTop (100px)
       y_center = minY + (viewport.value.clientHeight / 2 - screenPaddingTop) / newScale
     } else {
-      // Place the bottom-most node (maxY) exactly at viewportHeight - screenPaddingBottom
       y_center = maxY - (viewport.value.clientHeight / 2 - screenPaddingBottom) / newScale
     }
   } else {
@@ -504,6 +543,7 @@ function drawPreviewPath(nodeIds: string[], isFly: boolean) {
   for (let i = 0; i < nodeIds.length - 1; i++) {
     const nA = mapNodes.value[nodeIds[i]]
     const nB = mapNodes.value[nodeIds[i + 1]]
+    if (!nA || !nB) continue
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
     line.setAttribute('x1', String(nA.x))
     line.setAttribute('y1', String(nA.y))
@@ -526,6 +566,20 @@ const isTravelingProgressActive = ref(false)
 
 async function confirmTravel() {
   const pathData = currentPlanPaths.value[selectedPlanIndex.value]
+  if (!pathData || !pathData.nodes || pathData.nodes.length < 2) return
+
+  const firstNode = mapNodes.value[pathData.nodes[0]]
+  const secondNode = mapNodes.value[pathData.nodes[1]]
+  if (firstNode && secondNode) {
+    const initDx = secondNode.x - firstNode.x
+    const initDy = secondNode.y - firstNode.y
+    const angle = Math.atan2(initDy, initDx) * (180 / Math.PI)
+    if (angle >= -45 && angle < 45) playerDirection.value = 'right'
+    else if (angle >= 45 && angle < 135) playerDirection.value = 'down'
+    else if (angle >= -135 && angle < -45) playerDirection.value = 'up'
+    else playerDirection.value = 'left'
+  }
+
   isPlanning.value = false
   isMoving.value = true
   isTravelingProgressActive.value = true
@@ -538,28 +592,19 @@ async function confirmTravel() {
     updatePlayerVisuals()
   }
 
-  for (let i = 0; i < pathData.nodes.length - 1; i++) {
-    currentNode.value = pathData.nodes[i + 1]
-    
-    if (!discoveredNodes.value.includes(currentNode.value)) {
-      discoveredNodes.value.push(currentNode.value)
-      localStorage.setItem('pokeVicioDiscovered', JSON.stringify(discoveredNodes.value))
-    }
-
-    const progressPct = Math.round(((i + 1) / (pathData.nodes.length - 1)) * 100)
-    travelProgressText.value = `${progressPct}%`
-
-    await animatePlayerAndCamera(pathData.nodes[i], pathData.nodes[i + 1], pathData.isFly)
-  }
+  await animateFullRoute(pathData.nodes, !!pathData.isFly)
 
   isMoving.value = false
   isTravelingProgressActive.value = false
 
   if (pathData.isFly) updatePlayerVisuals()
-  
-  localStorage.setItem('pokeVicioLocation', currentNode.value)
-  if (mapNodes.value[currentNode.value].hasEvent) {
-    setTimeout(() => showActionAlert(`¡Oye! Tienes un evento pendiente en ${mapNodes.value[currentNode.value].name}.`), 800)
+
+  const finalNode = pathData.nodes[pathData.nodes.length - 1]
+  currentNode.value = finalNode
+  localStorage.setItem('pokeVicioLocation', finalNode)
+
+  if (mapNodes.value[finalNode]?.hasEvent) {
+    setTimeout(() => showActionAlert(`¡Oye! Tienes un evento pendiente en ${mapNodes.value[finalNode].name}.`), 800)
   }
   enterParkedMode()
 }
@@ -579,75 +624,195 @@ function preloadTrainerSprites() {
   }
 }
 
-function animatePlayerAndCamera(startId: string, endId: string, isFlying: boolean) {
+function animateFullRoute(nodes: string[], isFlying: boolean) {
   return new Promise<void>(resolve => {
-    const start = mapNodes.value[startId]
-    const end = mapNodes.value[endId]
-    const dx = end.x - start.x
-    const dy = end.y - start.y
-    playerDirection.value = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up')
+    if (nodes.length < 2) {
+      resolve()
+      return
+    }
 
-    const distance = Math.hypot(dx, dy)
-    const speed = isFlying ? flySpeed : (playerInventory.value['Bicicleta'] ? baseBikeSpeed : baseWalkSpeed)
-    const duration = Math.max(0.35, distance / speed)
-
-    const isBike = !!playerInventory.value['Bicicleta'] && !isSurfing.value
     const travelScale = getOptimalMapScale()
     currentScale.value = travelScale
 
     const vpWidth = viewport.value ? viewport.value.clientWidth : window.innerWidth
     const vpHeight = viewport.value ? viewport.value.clientHeight : window.innerHeight
 
-    const startPanX = (vpWidth / 2) - (start.x * travelScale)
-    const startPanY = (vpHeight / 2) - (start.y * travelScale)
-    const endPanX = (vpWidth / 2) - (end.x * travelScale)
-    const endPanY = (vpHeight / 2) - (end.y * travelScale)
+    const getClampedPan = (nodeX: number, nodeY: number) => {
+      const scaledW = WORLD_WIDTH * travelScale
+      const scaledH = WORLD_HEIGHT * travelScale
+      const minX = scaledW <= vpWidth ? (vpWidth - scaledW) / 2 : vpWidth - scaledW
+      const maxX = scaledW <= vpWidth ? (vpWidth - scaledW) / 2 : 0
+      const minY = scaledH <= vpHeight ? (vpHeight - scaledH) / 2 : vpHeight - scaledH
+      const maxY = scaledH <= vpHeight ? (vpHeight - scaledH) / 2 : 0
 
-    const tl = gsap.timeline({ 
-      onComplete: () => {
-        currentPanX.value = endPanX
-        currentPanY.value = endPanY
-        walkFrame.value = isBike ? 0 : 1
-        resolve()
-      } 
-    })
-
-    // 1. Direct GPU translation of player token
-    if (playerToken.value) {
-      tl.to(playerToken.value, { left: end.x, top: end.y, duration, ease: 'none' }, 0)
+      const rawX = (vpWidth / 2) - (nodeX * travelScale)
+      const rawY = (vpHeight / 2) - (nodeY * travelScale)
+      return {
+        x: Math.max(minX, Math.min(maxX, rawX)),
+        y: Math.max(minY, Math.min(maxY, rawY))
+      }
     }
 
-    // 2. Direct 60fps GPU camera pan without layout re-flow triggers
-    const camObj = { x: startPanX, y: startPanY }
-    tl.to(camObj, {
-      x: endPanX,
-      y: endPanY,
-      duration,
-      ease: 'none',
-      onUpdate: () => {
-        currentPanX.value = camObj.x
-        currentPanY.value = camObj.y
-        if (worldContainer.value) {
-          worldContainer.value.style.transform = `translate3d(${camObj.x}px, ${camObj.y}px, 0) scale(${travelScale})`
-        }
-      }
-    }, 0)
+    const speed = isFlying ? flySpeed : (playerInventory.value['Bicicleta'] ? baseBikeSpeed : baseWalkSpeed)
+    const isBike = !!playerInventory.value['Bicicleta'] && !isSurfing.value
 
-    // 3. Smooth, locked frame progression
-    const stepDuration = isFlying ? 0.12 : (isBike ? 0.14 : 0.20)
-    const totalSteps = Math.round(duration / stepDuration) * 4
-    const frameObj = { frame: 0 }
-    
-    tl.to(frameObj, {
-      frame: Math.max(4, totalSteps),
-      duration,
+    interface RouteLeg {
+      startId: string
+      endId: string
+      startX: number
+      startY: number
+      endX: number
+      endY: number
+      dx: number
+      dy: number
+      duration: number
+      startTime: number
+      endTime: number
+      dir: 'down' | 'up' | 'left' | 'right'
+      terrain: 'land' | 'water'
+      progressPct: number
+    }
+
+    const legs: RouteLeg[] = []
+    let totalTime = 0
+
+    for (let i = 0; i < nodes.length - 1; i++) {
+      const startId = nodes[i]
+      const endId = nodes[i + 1]
+      const start = mapNodes.value[startId]
+      const end = mapNodes.value[endId]
+      if (!start || !end) continue
+
+      const dx = end.x - start.x
+      const dy = end.y - start.y
+      const dist = Math.hypot(dx, dy)
+      const duration = Math.max(0.12, dist / speed)
+
+      const dir: 'down' | 'up' | 'left' | 'right' = (() => {
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI)
+        if (angle >= -45 && angle < 45) return 'right'
+        if (angle >= 45 && angle < 135) return 'down'
+        if (angle >= -135 && angle < -45) return 'up'
+        return 'left'
+      })()
+      const terrain: 'land' | 'water' = (start.type === 'route_water' || startId === 'seafoam' || end.type === 'route_water' || endId === 'seafoam') ? 'water' : 'land'
+      const progressPct = Math.round(((i + 1) / (nodes.length - 1)) * 100)
+
+      legs.push({
+        startId,
+        endId,
+        startX: start.x,
+        startY: start.y,
+        endX: end.x,
+        endY: end.y,
+        dx,
+        dy,
+        duration,
+        startTime: totalTime,
+        endTime: totalTime + duration,
+        dir,
+        terrain,
+        progressPct
+      })
+
+      totalTime += duration
+    }
+
+    if (legs.length === 0) {
+      resolve()
+      return
+    }
+
+    // Set initial direction and terrain immediately
+    playerDirection.value = legs[0].dir
+    activeTravelTerrain.value = legs[0].terrain
+
+    // Clean up any residual tweens
+    if (playerToken.value) gsap.killTweensOf(playerToken.value)
+    if (worldContainer.value) gsap.killTweensOf(worldContainer.value)
+
+    const animState = { t: 0 }
+    const stepDuration = isFlying ? 0.10 : (isBike ? 0.11 : 0.16)
+    const totalSteps = Math.round(totalTime / stepDuration) * 4
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        const lastLeg = legs[legs.length - 1]
+        if (lastLeg) {
+          if (playerToken.value) {
+            playerToken.value.style.left = `${lastLeg.endX}px`
+            playerToken.value.style.top = `${lastLeg.endY}px`
+          }
+          const finalPan = getClampedPan(lastLeg.endX, lastLeg.endY)
+          currentPanX.value = finalPan.x
+          currentPanY.value = finalPan.y
+          if (worldContainer.value) {
+            worldContainer.value.style.transform = `translate3d(${finalPan.x}px, ${finalPan.y}px, 0) scale(${travelScale})`
+          }
+          currentNode.value = lastLeg.endId
+          travelProgressText.value = '100%'
+        }
+        walkFrame.value = isBike ? 0 : 1
+        resolve()
+      }
+    })
+
+    tl.to(animState, {
+      t: totalTime,
+      duration: totalTime,
       ease: 'none',
       onUpdate: () => {
-        const step = Math.floor(frameObj.frame) % 4
+        const currentTime = animState.t
+        let activeLeg = legs[legs.length - 1]
+        for (let i = 0; i < legs.length; i++) {
+          if (currentTime <= legs[i].endTime) {
+            activeLeg = legs[i]
+            break
+          }
+        }
+
+        if (activeLeg) {
+          const legElapsed = Math.max(0, currentTime - activeLeg.startTime)
+          const legRatio = activeLeg.duration > 0 ? Math.min(1, legElapsed / activeLeg.duration) : 1
+
+          const currentX = activeLeg.startX + activeLeg.dx * legRatio
+          const currentY = activeLeg.startY + activeLeg.dy * legRatio
+
+          if (playerToken.value) {
+            playerToken.value.style.left = `${currentX}px`
+            playerToken.value.style.top = `${currentY}px`
+          }
+
+          if (playerDirection.value !== activeLeg.dir) {
+            playerDirection.value = activeLeg.dir
+          }
+          if (activeTravelTerrain.value !== activeLeg.terrain) {
+            activeTravelTerrain.value = activeLeg.terrain
+          }
+          if (currentNode.value !== activeLeg.endId && legRatio > 0.5) {
+            currentNode.value = activeLeg.endId
+            if (!discoveredNodes.value.includes(activeLeg.endId)) {
+              discoveredNodes.value.push(activeLeg.endId)
+              localStorage.setItem('pokeVicioDiscovered', JSON.stringify(discoveredNodes.value))
+            }
+          }
+          travelProgressText.value = `${activeLeg.progressPct}%`
+
+          // Camera pan
+          const pan = getClampedPan(currentX, currentY)
+          currentPanX.value = pan.x
+          currentPanY.value = pan.y
+          if (worldContainer.value) {
+            worldContainer.value.style.transform = `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${travelScale})`
+          }
+        }
+
+        // Step cycle animation
+        const step = Math.floor((currentTime / totalTime) * totalSteps) % 4
         if (isBike) {
           const bikeCycle = [0, 1, 0, 2]
           walkFrame.value = bikeCycle[step]
-        } else if (isSurfing.value) {
+        } else if (activeTravelTerrain.value === 'water') {
           const surfCycle = [0, 1, 2, 1]
           walkFrame.value = surfCycle[step]
         } else {
@@ -655,7 +820,7 @@ function animatePlayerAndCamera(startId: string, endId: string, isFlying: boolea
           walkFrame.value = walkCycle[step]
         }
       }
-    }, 0)
+    })
   })
 }
 
@@ -776,7 +941,7 @@ onMounted(() => {
 <template>
   <div class="flex flex-col font-sans h-[100dvh] w-screen overflow-hidden text-white">
     <!-- Header -->
-    <header class="h-[64px] md:h-[70px] bg-gradient-to-b from-red-500 to-red-600 text-white px-3 md:px-6 py-2 shadow-lg z-50 flex justify-between items-center shrink-0 border-b-[4px] md:border-b-[5px] border-red-800 relative hardware-accel">
+    <header class="h-[64px] md:h-[70px] bg-gradient-to-b from-red-500 to-red-600 text-white px-3 md:px-6 py-2 shadow-lg z-50 flex justify-between items-center shrink-0 border-b-[4px] md:border-b-[5px] border-red-800 relative">
       <div class="flex items-center gap-2 md:gap-3">
         <div>
           <h1 class="font-black text-lg md:text-xl tracking-widest text-yellow-300 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)] flex items-center gap-2">
@@ -807,7 +972,7 @@ onMounted(() => {
     </header>
 
     <div
-      v-if="currentSwarmRoute"
+      v-if="currentSwarmRoute && !isPlanning"
       class="absolute top-[72px] md:top-[80px] left-3 md:left-4 bg-red-600 text-white text-[10px] md:text-xs font-black px-2.5 py-1 md:px-3 md:py-1.5 rounded-full border-2 border-red-800 shadow-lg z-40 animate-pulse max-w-[65vw] truncate"
     >
       🔴 Enjambre en: {{ mapNodes[currentSwarmRoute]?.name }}
@@ -820,8 +985,8 @@ onMounted(() => {
       @mousedown="startDrag($event.clientX, $event.clientY)"
       @mousemove="doDrag($event.clientX, $event.clientY)"
       @mouseup="endDrag"
-      @touchstart="startDrag($event.touches[0].clientX, $event.touches[0].clientY)"
-      @touchmove="doDrag($event.touches[0].clientX, $event.touches[0].clientY)"
+      @touchstart="$event.touches?.[0] && startDrag($event.touches[0].clientX, $event.touches[0].clientY)"
+      @touchmove="$event.touches?.[0] && doDrag($event.touches[0].clientX, $event.touches[0].clientY)"
       @touchend="endDrag"
     >
       <div
@@ -841,7 +1006,7 @@ onMounted(() => {
         <!-- Svg Connections -->
         <svg
           id="route-lines"
-          class="absolute top-0 left-0 w-full h-full pointer-events-none z-0 hardware-accel"
+          class="absolute top-0 left-0 w-full h-full pointer-events-none z-0"
           style="stroke-linejoin: round;"
         >
           <template
@@ -874,20 +1039,20 @@ onMounted(() => {
         <svg
           id="preview-lines"
           ref="previewLinesSvg"
-          class="absolute top-0 left-0 w-full h-full pointer-events-none z-[8] hardware-accel"
+          class="absolute top-0 left-0 w-full h-full pointer-events-none z-[8]"
           style="stroke-linejoin: round;"
         />
 
         <!-- Nodes Container -->
         <div
           id="nodes-container"
-          class="absolute top-0 left-0 w-full h-full z-10 hardware-accel"
+          class="absolute top-0 left-0 w-full h-full z-10"
         >
           <template
             v-for="(node, id) in mapNodes"
             :key="id"
           >
-            <!-- Discovered Node wrapper with MapCard (CLEAN, NO GLOBES) -->
+            <!-- Discovered Node wrapper with MapCard (ALWAYS CLICKABLE) -->
             <div
               v-if="discoveredNodes.includes(id as string) && mapLocationsById[id]"
               :id="`node-${id}`"
@@ -895,11 +1060,7 @@ onMounted(() => {
               :style="{ left: `${node.x}px`, top: `${node.y}px`, zIndex: (isZoomedIn && !isMoving && !isPlanning && currentNode === id) ? 20 : 10 }"
               @click.stop="() => {
                 if (!isMoving) {
-                  if (getAdjacentNodes(currentNode, connections).includes(id as string)) {
-                    travelToAdjacent(id as string)
-                  } else {
-                    planTravel(id as string)
-                  }
+                  planTravel(id as string)
                 }
               }"
             >
@@ -920,6 +1081,7 @@ onMounted(() => {
                   :weather="getWeatherForMap(id as string)"
                   :badge-count="8"
                   :spawn-pool="getSpawnPoolForMap(id as string)"
+                  :force-keep-warm="true"
                   style="width: 250px; pointer-events: none;"
                   @navigate="() => {}"
                 />
@@ -966,11 +1128,7 @@ onMounted(() => {
               :style="{ left: `${node.x}px`, top: `${node.y}px` }"
               @click.stop="() => {
                 if (!isMoving) {
-                  if (getAdjacentNodes(currentNode, connections).includes(id as string)) {
-                    travelToAdjacent(id as string)
-                  } else {
-                    planTravel(id as string)
-                  }
+                  planTravel(id as string)
                 }
               }"
             >
@@ -1033,18 +1191,25 @@ onMounted(() => {
       </div>
     </main>
 
-    <!-- UI Overlay for Parked Mode -->
-    <div
-      id="fixed-ui-overlay"
-      :class="{ 'active': isZoomedIn && !isMoving && !isPlanning }"
+    <!-- Floating Action Tools (Always accessible on map) -->
+    <aside
+      id="floating-tools"
+      class="floating-tools-container"
+      :class="{ 'tools-hidden': isMoving || isPlanning }"
     >
       <button
         id="btn-free-map"
         class="floating-btn"
-        title="Mapa Completo"
-        @click="exitParkedMode"
+        :title="isZoomedIn ? 'Ver Mapa Completo' : 'Volver a Ubicación'"
+        @click="() => {
+          if (isZoomedIn) {
+            exitParkedMode()
+          } else {
+            enterParkedMode()
+          }
+        }"
       >
-        🗺️
+        {{ isZoomedIn ? '🗺️' : '📍' }}
       </button>
       <button
         id="btn-radar"
@@ -1056,124 +1221,126 @@ onMounted(() => {
       </button>
       <button
         id="btn-debug"
-        class="floating-btn bg-purple-700"
+        class="floating-btn btn-debug-color"
         title="Menú de Testers (Debug)"
         @click="toggleDebugModal"
       >
         🐛
       </button>
+    </aside>
 
-      <!-- Botones de Navegación Adyacentes (Rodeando la tarjeta central) -->
-      <div class="fixed-navigation-arrows pointer-events-none">
-        <!-- North Group -->
-        <div class="absolute top-[calc(50%-360px)] left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-auto">
-          <button
-            v-for="btn in adjacentButtons.filter(b => b.direction === 'N')"
-            :key="btn.id"
-            class="px-5 py-3 bg-gradient-to-b from-gray-800 to-gray-900 hover:from-gray-700 border-2 border-yellow-400 rounded-xl text-sm font-black shadow-2xl uppercase tracking-wider flex items-center gap-1.5 active:scale-95 transition-transform text-white"
-            @click="travelToAdjacent(btn.id)"
-          >
-            <span>⬆️</span> {{ btn.discovered ? btn.name : '???' }}
-          </button>
-        </div>
-        
-        <!-- South Group -->
-        <div class="absolute top-[calc(50%+360px)] left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-auto">
-          <button
-            v-for="btn in adjacentButtons.filter(b => b.direction === 'S')"
-            :key="btn.id"
-            class="px-5 py-3 bg-gradient-to-b from-gray-800 to-gray-900 hover:from-gray-700 border-2 border-yellow-400 rounded-xl text-sm font-black shadow-2xl uppercase tracking-wider flex items-center gap-1.5 active:scale-95 transition-transform text-white"
-            @click="travelToAdjacent(btn.id)"
-          >
-            <span>⬇️</span> {{ btn.discovered ? btn.name : '???' }}
-          </button>
-        </div>
+    <!-- Botones de Navegación Adyacentes (Rodeando la tarjeta central) -->
+    <div
+      v-if="isZoomedIn && !isMoving && !isPlanning"
+      class="fixed-navigation-arrows"
+    >
+      <!-- North Group -->
+      <div class="nav-arrow-group north">
+        <button
+          v-for="btn in adjacentButtons.filter(b => b.direction === 'N')"
+          :key="btn.id"
+          class="nav-arrow-btn"
+          @click="travelToAdjacent(btn.id)"
+        >
+          <span>⬆️</span> {{ btn.discovered ? btn.name : '???' }}
+        </button>
+      </div>
+      
+      <!-- South Group -->
+      <div class="nav-arrow-group south">
+        <button
+          v-for="btn in adjacentButtons.filter(b => b.direction === 'S')"
+          :key="btn.id"
+          class="nav-arrow-btn"
+          @click="travelToAdjacent(btn.id)"
+        >
+          <span>⬇️</span> {{ btn.discovered ? btn.name : '???' }}
+        </button>
+      </div>
 
-        <!-- West Group -->
-        <div class="absolute left-[calc(50%-460px)] top-1/2 -translate-y-1/2 -translate-x-1/2 z-50 pointer-events-auto">
-          <button
-            v-for="btn in adjacentButtons.filter(b => b.direction === 'W')"
-            :key="btn.id"
-            class="px-5 py-3 bg-gradient-to-b from-gray-800 to-gray-900 hover:from-gray-700 border-2 border-yellow-400 rounded-xl text-sm font-black shadow-2xl uppercase tracking-wider flex items-center gap-1.5 active:scale-95 transition-transform text-white"
-            @click="travelToAdjacent(btn.id)"
-          >
-            <span>⬅️</span> {{ btn.discovered ? btn.name : '???' }}
-          </button>
-        </div>
+      <!-- West Group -->
+      <div class="nav-arrow-group west">
+        <button
+          v-for="btn in adjacentButtons.filter(b => b.direction === 'W')"
+          :key="btn.id"
+          class="nav-arrow-btn"
+          @click="travelToAdjacent(btn.id)"
+        >
+          <span>⬅️</span> {{ btn.discovered ? btn.name : '???' }}
+        </button>
+      </div>
 
-        <!-- East Group -->
-        <div class="absolute left-[calc(50%+460px)] top-1/2 -translate-y-1/2 -translate-x-1/2 z-50 pointer-events-auto">
-          <button
-            v-for="btn in adjacentButtons.filter(b => b.direction === 'E')"
-            :key="btn.id"
-            class="px-5 py-3 bg-gradient-to-b from-gray-800 to-gray-900 hover:from-gray-700 border-2 border-yellow-400 rounded-xl text-sm font-black shadow-2xl uppercase tracking-wider flex items-center gap-1.5 active:scale-95 transition-transform text-white"
-            @click="travelToAdjacent(btn.id)"
-          >
-            {{ btn.discovered ? btn.name : '???' }} <span>➡️</span>
-          </button>
-        </div>
+      <!-- East Group -->
+      <div class="nav-arrow-group east">
+        <button
+          v-for="btn in adjacentButtons.filter(b => b.direction === 'E')"
+          :key="btn.id"
+          class="nav-arrow-btn"
+          @click="travelToAdjacent(btn.id)"
+        >
+          {{ btn.discovered ? btn.name : '???' }} <span>➡️</span>
+        </button>
       </div>
     </div>
 
     <!-- Planning UI Panel -->
     <div
       id="planning-ui-panel"
-      class="fixed bottom-0 left-0 w-full p-3 pb-6 z-[150] flex justify-center pointer-events-none transition-transform duration-300"
-      :class="[isPlanning ? '' : 'translate-y-full pointer-events-none']"
+      :class="{ 'planning-hidden': !isPlanning }"
     >
-      <div class="glass-panel border border-gray-600 rounded-3xl p-4 shadow-2xl flex flex-col gap-3 w-full max-w-sm pointer-events-auto">
-        <div class="flex items-center justify-between border-b border-gray-600 pb-2">
-          <h3 class="text-white font-black text-lg uppercase flex items-center gap-2 truncate">
+      <div class="planning-card">
+        <div class="planning-header">
+          <h3 class="planning-title">
             <span class="text-yellow-400 shrink-0">📍</span>
-            <span class="truncate">{{ planningTarget ? (discoveredNodes.includes(planningTarget) ? mapNodes[planningTarget]?.name : "Zona Desconocida") : "Destino" }}</span>
+            <span>{{ planningTarget ? (discoveredNodes.includes(planningTarget) ? mapNodes[planningTarget]?.name : "Zona Desconocida") : "Destino" }}</span>
           </h3>
-          <span class="bg-gray-800 text-gray-300 text-xs font-bold px-3 py-1 rounded-full border border-gray-600 shrink-0">
-            {{ currentPlanPaths[selectedPlanIndex] ? (currentPlanPaths[selectedPlanIndex].isFly ? '🦅 Vuelo Directo' : `Opción ${selectedPlanIndex + 1}/${currentPlanPaths.length}`) : 'Calculando...' }}
+          <span class="planning-badge">
+            {{ currentPlanPaths[selectedPlanIndex] ? (currentPlanPaths[selectedPlanIndex].isFly ? '🦅 Vuelo' : `Opción ${selectedPlanIndex + 1}/${currentPlanPaths.length}`) : '...' }}
           </span>
         </div>
         
-        <div class="bg-gray-900/80 rounded-xl p-3 border border-gray-700 relative">
-          <p class="text-[10px] text-gray-400 uppercase font-black tracking-wider mb-2 text-center">
+        <div class="planning-stats-box">
+          <p class="planning-stats-title">
             Previsión del Recorrido
           </p>
           
           <!-- Route stats computed from actual path -->
           <div
             v-if="currentPlanPaths[selectedPlanIndex]"
-            class="grid grid-cols-4 gap-2 text-center mt-3"
+            class="planning-stats-grid"
           >
-            <div class="flex flex-col items-center">
-              <span class="text-xl">⚔️</span>
+            <div class="planning-stat-item">
+              <span class="planning-stat-icon">⚔️</span>
               <span
-                class="text-xs font-bold mt-1"
-                :class="[calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).t >= 70 ? 'text-yellow-400 text-sm' : 'text-white']"
+                class="planning-stat-val"
+                :class="{ 'stat-high': calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).t >= 70 }"
               >
                 {{ calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).t }}%
               </span>
             </div>
-            <div class="flex flex-col items-center">
-              <span class="text-xl">🌿</span>
+            <div class="planning-stat-item">
+              <span class="planning-stat-icon">🌿</span>
               <span
-                class="text-xs font-bold mt-1"
-                :class="[calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).w >= 70 ? 'text-yellow-400 text-sm' : 'text-white']"
+                class="planning-stat-val"
+                :class="{ 'stat-high': calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).w >= 70 }"
               >
                 {{ calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).w }}%
               </span>
             </div>
-            <div class="flex flex-col items-center">
-              <span class="text-xl">⛏️</span>
+            <div class="planning-stat-item">
+              <span class="planning-stat-icon">⛏️</span>
               <span
-                class="text-xs font-bold mt-1"
-                :class="[calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).m >= 70 ? 'text-yellow-400 text-sm' : 'text-white']"
+                class="planning-stat-val"
+                :class="{ 'stat-high': calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).m >= 70 }"
               >
                 {{ calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).m }}%
               </span>
             </div>
-            <div class="flex flex-col items-center">
-              <span class="text-xl">🎣</span>
+            <div class="planning-stat-item">
+              <span class="planning-stat-icon">🎣</span>
               <span
-                class="text-xs font-bold mt-1"
-                :class="[calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).f >= 70 ? 'text-yellow-400 text-sm' : 'text-white']"
+                class="planning-stat-val"
+                :class="{ 'stat-high': calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).f >= 70 }"
               >
                 {{ calculateRouteStats(currentPlanPaths[selectedPlanIndex].nodes).f }}%
               </span>
@@ -1181,22 +1348,22 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="flex gap-2 justify-center mt-1">
+        <div class="planning-actions">
           <button
-            class="bg-gradient-to-b from-gray-500 to-gray-600 text-white px-3 py-2.5 rounded-xl font-bold border-2 border-gray-700 shadow-[0_4px_0_#374151] active:shadow-[0_0px_0_#374151] active:translate-y-1 flex-1 transition-all text-sm"
+            class="planning-btn-cancel"
             @click="cancelPlanning"
           >
             Cancelar
           </button>
           <button
             v-if="currentPlanPaths.length > 1"
-            class="bg-gradient-to-b from-blue-500 to-blue-600 text-white px-3 py-2.5 rounded-xl font-bold border-2 border-blue-800 shadow-[0_4px_0_#1e3a8a] active:shadow-[0_0px_0_#1e3a8a] active:translate-y-1 flex-1 transition-all text-sm"
+            class="planning-btn-alt"
             @click="nextAlternative"
           >
             🔄 Alternativa
           </button>
           <button
-            class="bg-gradient-to-b from-green-400 to-green-600 text-white px-5 py-2.5 rounded-xl font-black border-2 border-green-800 shadow-[0_4px_0_#14532d] active:shadow-[0_0px_0_#14532d] active:translate-y-1 flex-[1.5] transition-all text-lg"
+            class="planning-btn-go"
             @click="confirmTravel"
           >
             ¡VIAJAR!
@@ -1221,19 +1388,16 @@ onMounted(() => {
 
     <!-- Custom Alert dialog -->
     <div
-      class="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-200"
-      :class="[alertOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none']"
+      v-if="alertOpen"
+      class="adv-modal-overlay"
     >
-      <div
-        class="poke-dialog w-11/12 max-w-sm p-6 flex flex-col transition-transform duration-200"
-        :class="[alertOpen ? 'scale-100' : 'scale-95']"
-      >
+      <div class="adv-modal-card p-6 flex flex-col">
         <p
           class="text-gray-800 font-bold text-lg mb-6 leading-relaxed"
           v-html="alertMsg"
         />
         <button
-          class="self-end bg-gray-800 text-white px-6 py-2 rounded font-bold hover:bg-black active:scale-95 transition-transform"
+          class="self-end bg-gray-800 text-white px-6 py-2 rounded-xl font-bold hover:bg-black active:scale-95 transition-transform"
           @click="closeAlert"
         >
           ▼ Siguiente
@@ -1243,17 +1407,14 @@ onMounted(() => {
 
     <!-- Radar Modal -->
     <div
-      class="fixed inset-0 z-[250] bg-black/60 backdrop-blur-sm flex items-center justify-center transition-opacity duration-300"
-      :class="[showRadarModal ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none']"
+      v-if="showRadarModal"
+      class="adv-modal-overlay"
     >
-      <div
-        class="bg-white rounded-3xl w-10/12 max-w-sm overflow-hidden shadow-2xl border-4 border-yellow-500 transition-transform duration-300"
-        :class="[showRadarModal ? 'scale-100' : 'scale-90']"
-      >
-        <div class="bg-gradient-to-b from-yellow-400 to-yellow-500 text-yellow-900 p-4 text-center font-black text-xl shadow-inner border-b-2 border-yellow-600">
+      <div class="adv-modal-card border-yellow">
+        <div class="adv-modal-header bg-gradient-to-b from-yellow-400 to-yellow-500 text-yellow-900 border-b-2 border-yellow-600">
           🧭 RADAR RÁPIDO
         </div>
-        <div class="p-4 max-h-[50vh] overflow-y-auto space-y-2">
+        <div class="adv-modal-body space-y-2">
           <button
             v-for="id in discoveredNodes.filter(n => mapNodes[n] && ['city', 'league'].includes(mapNodes[n].type))"
             :key="id"
@@ -1267,9 +1428,9 @@ onMounted(() => {
             📍 {{ mapNodes[id]?.name }}
           </button>
         </div>
-        <div class="p-4 bg-gray-100 border-t-2 border-gray-200">
+        <div class="adv-modal-footer">
           <button
-            class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-3.5 rounded-xl text-lg shadow-md active:scale-95 transition-transform"
+            class="adv-btn-close"
             @click="toggleRadarModal"
           >
             Cerrar

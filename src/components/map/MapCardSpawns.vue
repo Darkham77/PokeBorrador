@@ -32,6 +32,7 @@ defineProps<{
   processedRareAura: string
   processedAtmosAura: string
   isLowPowerActive: boolean
+  forceKeepWarm?: boolean
 }>()
 
 const spawnGridRef = ref<HTMLElement | null>(null)
@@ -43,7 +44,7 @@ defineExpose({
 
 <template>
   <div
-    v-if="!isLocked && !isPerformanceMode && isVisible && !hideMapPokemon"
+    v-if="!isLocked && !isPerformanceMode && (isVisible || forceKeepWarm) && !hideMapPokemon"
     class="location-spawns"
   >
     <div 

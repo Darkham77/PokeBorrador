@@ -18,14 +18,11 @@ const activeCompanionBtn = (comp: string) => {
 
 <template>
   <div
-    class="fixed inset-0 z-[350] bg-black/80 backdrop-blur-md flex items-center justify-center transition-opacity duration-300"
-    :class="[props.show ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none']"
+    v-if="props.show"
+    class="adv-modal-overlay"
   >
-    <div
-      class="bg-white rounded-3xl w-11/12 max-w-sm overflow-hidden shadow-2xl border-4 border-blue-500 transition-transform duration-300"
-      :class="[props.show ? 'scale-100' : 'scale-90']"
-    >
-      <div class="bg-gradient-to-b from-blue-500 to-blue-700 text-white p-4 text-center font-black text-xl shadow-inner border-b-2 border-blue-800">
+    <div class="adv-modal-card">
+      <div class="adv-modal-header bg-gradient-to-b from-blue-500 to-blue-700">
         🎒 EQUIPO Y OBJETOS
       </div>
       <div class="p-5 overflow-y-auto max-h-[60vh] space-y-4 text-gray-800">

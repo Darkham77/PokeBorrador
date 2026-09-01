@@ -89,7 +89,7 @@ export const connections = [
   ['saffron', 'route6'], ['route6', 'vermilion'],
   ['saffron', 'route7'], ['route7', 'celadon'],
   ['saffron', 'route8'], ['route8', 'lavender'],
-  ['route2_s', 'diglettcave'], ['diglettcave', 'vermilion'], ['vermilion', 'route11'], ['route11', 'route12'], 
+  ['diglettcave', 'vermilion'], ['vermilion', 'route11'], ['route11', 'route12'], 
   ['lavender', 'pokemontower'],
   ['lavender', 'route12'], ['route12', 'route13'], ['route13', 'route14'], ['route14', 'route15'], ['route15', 'fuchsia'],
   ['celadon', 'route16'], ['route16', 'route17'], ['route17', 'route18'], ['route18', 'fuchsia'],

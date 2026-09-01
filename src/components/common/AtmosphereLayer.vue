@@ -137,6 +137,7 @@ const initWorker = async () => {
   }
 
   if (!canvasRef.value) return
+  if (canvasEl.__offscreenTransferred) return
 
   let offscreen: OffscreenCanvas
   try {

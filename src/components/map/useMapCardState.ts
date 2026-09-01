@@ -33,6 +33,7 @@ interface MapCardProps {
   isRocketExtorted?: boolean
   spawnPool?: SpawnPool
   forcedWeather?: WeatherId | null
+  forceKeepWarm?: boolean
 }
 
 export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, isVisible: Ref<boolean>) {
@@ -244,6 +245,7 @@ export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, i
   })
 
   const keepWarm = computed(() => {
+    if (props.forceKeepWarm) return true
     const isMobileDevice = uiStore.windowWidth < 768
     return !isMobileDevice && !uiStore.isLowPowerActive
   })

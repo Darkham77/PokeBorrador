@@ -57,6 +57,7 @@ interface Props {
   isRocketExtorted?: boolean
   spawnPool?: SpawnPool
   forcedWeather?: WeatherId | null
+  forceKeepWarm?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -68,7 +69,8 @@ const props = withDefaults(defineProps<Props>(), {
   dominance: null,
   isRocketExtorted: false,
   spawnPool: () => ({ generic: [], specific: [], rates: {} }),
-  forcedWeather: null
+  forcedWeather: null,
+  forceKeepWarm: false
 })
 
 const emit = defineEmits<{
@@ -478,6 +480,7 @@ watch(
         :is-locked="isCardLocked"
         :is-performance-mode="isPerformanceMode"
         :is-visible="isVisible"
+        :force-keep-warm="forceKeepWarm"
         :hide-map-pokemon="uiStore.hideMapPokemon"
         :is-debug-grid-mode="uiStore.isDebugGridMode"
         :spawn-grid="spawnGrid"
