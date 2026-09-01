@@ -50,17 +50,10 @@ export function computeP1Choice(active: BattleState | null, move: Move | null, i
     }
     throw new Error(`[computeP1Choice] Move "${move?.id}" is not available in active Showdown request. Available request moves: ${JSON.stringify(reqMoves)}`)
   }
-  if (typeof moveIndex === 'number' && moveIndex >= 0) {
-    return `move ${moveIndex + 1}`
-  }
-  if (move?.id && activeState?.player?.moves) {
-    const idx = activeState.player.moves.findIndex((m: Move | null) => m && m.id === move.id)
-    if (idx !== -1) return `move ${idx + 1}`
-  }
   if (!move?.id) {
     throw new Error(`[computeP1Choice] Cannot compute choice: No move provided and playerRequest is missing.`)
   }
-  return 'move 1'
+  return `move ${move.id}`
 }
 
 export async function computeP2Choice(

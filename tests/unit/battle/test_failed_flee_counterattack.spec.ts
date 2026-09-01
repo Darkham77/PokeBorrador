@@ -131,4 +131,36 @@ describe('Failed Flee Counter-Attack Integration', () => {
     expect(activeBattleRef.value?.escapeAttempts).toBe(1);
     expect(ctx.isProcessing.value).toBe(false);
   });
+
+  it('rejects flee early when player is locked into a move (e.g. twoturnmove / lockedmove)', async () => {
+    const lockedPlayer = makePokemon('mew', 50)!;
+    lockedPlayer.uid = 'p1-mew';
+    lockedPlayer.volatileCounters = { twoturnmove: 1 };
+
+    const enemy = makePokemon('caterpie', 5)!;
+    enemy.uid = 'wild-caterpie-1';
+
+    const loggedMessages: string[] = [];
+    const openConfirmMock = vi.fn();
+
+    const ctx = {
+      isProcessing: ref(false),
+      activeBattle: ref({
+        player: lockedPlayer,
+        enemy,
+        cannotEscape: false,
+        isTrainer: false,
+        isGym: false
+      }),
+      addLog: (msg: string) => loggedMessages.push(msg),
+      uiStore: {
+        openConfirm: openConfirmMock
+      }
+    } as unknown as BattleContext;
+
+    await executeFlee(ctx);
+
+    expect(openConfirmMock).not.toHaveBeenCalled();
+    expect(loggedMessages).toContain('¡No puedes huir mientras estás ejecutando un movimiento bloqueado o atrapado!');
+  });
 });

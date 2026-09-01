@@ -1,4 +1,5 @@
 import { gameBus } from '@/logic/events/gameBus'
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
 const ESCAPE_ANIMATION_FALLBACK_DELAY_MS = 800
 import type { BattleContext } from '@/types/battle/battleContext'
 
@@ -12,6 +13,10 @@ export async function executeFlee(ctx: BattleContext) {
   }
   if (active && (active.isTrainer || active.isGym)) {
     ctx.addLog('¡No puedes huir de un combate de entrenador!', 'log-error', 'player')
+    return
+  }
+  if (active && (isPokemonLocked(active.player) || active.player?.trapped || active.player?.volatileCounters?.['partiallytrapped'])) {
+    ctx.addLog('¡No puedes huir mientras estás ejecutando un movimiento bloqueado o atrapado!', 'log-error', 'player')
     return
   }
 

@@ -28,6 +28,7 @@ import { requireDayPhase } from '@/logic/utils/timeUtils'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import { useRouteSpawnsFishing } from '@/composables/modals/useRouteSpawnsFishing'
 import { useRouteSpawnsArchaeology } from '@/composables/modals/useRouteSpawnsArchaeology'
+import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
 
 const debugStore = useDebugStore()
 const isDebugActive = computed(() => {
@@ -355,7 +356,7 @@ const handleClose = () => {
     variant="modern"
     overlay="dark"
     close-button-variant="yellow-solid"
-    :prevent-close="battleStore.isProcessing || (!!battleStore.state?.cannotEscape && !battleStore.isFinishing)"
+    :prevent-close="battleStore.isProcessing || (!!battleStore.state?.cannotEscape && !battleStore.isFinishing) || (!battleStore.isFinishing && isPokemonLocked(battleStore.state?.player))"
     :show-close-button="(!battleStore.state?.isTrainer && !battleStore.state?.isGym) || battleStore.isFinishing"
     :close-on-click-outside="false"
     :hide-header="true"
