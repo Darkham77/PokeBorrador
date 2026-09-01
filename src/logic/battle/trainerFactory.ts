@@ -52,7 +52,7 @@ export async function applyCompetitiveSet(
 
   const rawItemId = toID(set.item);
   p.heldItem = isItemId(rawItemId) ? rawItemId : null;
-  recalcPokemonStats(p);
+  recalcPokemonStats(p, true);
   validatePokemon(p, true);
 }
 

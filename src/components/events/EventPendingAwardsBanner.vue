@@ -240,7 +240,6 @@ const confirmDiscard = (awardId: string, eventName: string) => {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  line-height: 1;
   white-space: nowrap;
 
   .btn-emoji {

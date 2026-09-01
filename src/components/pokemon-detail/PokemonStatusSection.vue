@@ -267,7 +267,6 @@ const abilityStyle = computed(() => ({
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  line-height: 1;
 
   .seal-emoji {
     display: inline-flex;
@@ -398,7 +397,6 @@ const abilityStyle = computed(() => ({
   align-items: center !important;
   justify-content: center !important;
   gap: 4px;
-  line-height: 1;
 
   .vigor-icon {
     font-size: 10px;

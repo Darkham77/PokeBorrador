@@ -8,6 +8,7 @@ import { useUIStore } from '@/stores/ui';
 import { usePlayerClassStore } from '@/stores/player/playerClass';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { CLASS_MISSIONS, CLASS_MISSIONS_BY_ID, isMissionId } from '@/data/player/playerClasses';
+import { getClassMissionDetails } from '@/logic/player/classMissionsData';
 import MissionCard from './MissionCard.vue';
 import type { DaycareMission } from '@/types/breeding/breeding';
 import type { Pokemon } from '@/types/pokemon/pokemon';
@@ -105,36 +106,84 @@ const isMissionDone = computed(() => {
   return now.value >= activeMission.value.endsAt;
 });
 
-function getClassReward(clsId: string | undefined) {
-  if (clsId === 'rocket') return { icon: '₽', name: '₽ y Recompensas' };
-  if (clsId === 'cazabichos') return { icon: '🐛', name: 'Pokémon Bicho e Ítems' };
-  if (clsId === 'entrenador') return { icon: '📈', name: 'Experiencia de Combate' };
-  if (clsId === 'criador') return { icon: '🧬', name: 'Mejora de IVs' };
-  return { icon: '🎁', name: 'Recompensas de Clase' };
-}
+const getDailyMissionUnmetText = (mission: DaycareMission) => {
+  if (mission.completed) return '';
+  if (canDeliverMission(mission)) return '';
+  return `Requisito no cumplido: ${mission.reqText || 'Pokémon no encontrado en Equipo o Caja'}`;
+};
 
-function getMissionDesc(mId: string, clsId: string | undefined) {
-  if (clsId === 'cazabichos') {
-    if (mId === 'mission_6h') return 'Recolecta néctar y feromonas en el bosque para atraer especímenes comunes.';
-    if (mId === 'mission_12h') return 'Captura especímenes raros y cataloga la población de coleópteros de la zona.';
-    if (mId === 'mission_24h') return 'Expedición profunda en busca de especímenes exóticos con IVs genéticos excepcionales.';
+const getDailyMissionAvailableText = (mission: DaycareMission) => {
+  if (mission.completed) return '';
+  if (canDeliverMission(mission)) return '¡Tienes el Pokémon listo para entregar!';
+  return '';
+};
+
+const hasPoisonPokemonAvailable = computed(() => {
+  const team = gameStore.state.team || [];
+  const box = gameStore.state.box || [];
+  const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null); // o1-ok
+  return allPokes.some(p => {
+    if (p.onMission || p.inDaycare || p.onDefense || p.isIllegal) return false;
+    return p.type === 'poison' || p.type2 === 'poison';
+  });
+});
+
+const canStartClassMission = (m: (typeof CLASS_MISSIONS)[number]) => {
+  if (activeMission.value) return false;
+  if (trainerLevel.value < m.reqLv) return false;
+  if (classStore.currentClassDef?.id === 'rocket' && !hasPoisonPokemonAvailable.value) return false;
+  return true;
+};
+
+const isClassMissionDisabled = (m: (typeof CLASS_MISSIONS)[number]) => {
+  if (activeMission.value?.id === m.id) {
+    return !isMissionDone.value;
   }
-  if (clsId === 'rocket') {
-    if (mId === 'mission_6h') return 'Extorsión local a comerciantes y patrullaje de territorio bajo control Rocket.';
-    if (mId === 'mission_12h') return 'Exportación de especímenes incautados al mercado negro para obtener altos dividendos.';
-    if (mId === 'mission_24h') return 'Infiltración en las instalaciones de Silph Co. para sustraer prototipos de tecnología secreta.';
+  return !canStartClassMission(m);
+};
+
+const getClassMissionBtnText = (m: (typeof CLASS_MISSIONS)[number]) => {
+  if (activeMission.value?.id === m.id) {
+    return isMissionDone.value ? 'RECLAMAR' : 'EN CURSO';
   }
-  if (clsId === 'entrenador') {
-    if (mId === 'mission_6h') return 'Rutina de calentamiento y combates rápidos en el gimnasio local para afilar reflejos.';
-    if (mId === 'mission_12h') return 'Sesión intensa en gimnasio de alto rendimiento para potenciar la experiencia de combate.';
-    if (mId === 'mission_24h') return 'Maratón de duelos contra líderes veteranos y optimización táctica del equipo a nivel profesional.';
+  if (activeMission.value) return 'EN ESPERA';
+  if (trainerLevel.value < m.reqLv) return 'BLOQUEADO';
+  if (classStore.currentClassDef?.id === 'rocket' && !hasPoisonPokemonAvailable.value) return 'SIN POKÉMON';
+  return 'DESPLEGAR';
+};
+
+const getClassMissionUnmetText = (m: (typeof CLASS_MISSIONS)[number]) => {
+  if (activeMission.value?.id === m.id) return '';
+  if (activeMission.value) {
+    return 'Ya tienes una operación en curso';
   }
-  if (clsId === 'criador') {
-    if (mId === 'mission_6h') return 'Monitoreo y análisis nutricional de huevos en la incubadora de la guardería.';
-    if (mId === 'mission_12h') return 'Entrenamiento genético intensivo y selección de rasgos para mejorar estadísticas base.';
-    if (mId === 'mission_24h') return 'Optimización molecular avanzada de la cadena de ADN para transferir herencias genéticas perfectas.';
+  if (trainerLevel.value < m.reqLv) {
+    return `Requiere Nivel de Entrenador ${m.reqLv} (Tu nivel: ${trainerLevel.value})`;
   }
-  return 'Realiza tareas especiales de clase.';
+  if (classStore.currentClassDef?.id === 'rocket' && !hasPoisonPokemonAvailable.value) {
+    return 'Requiere 1 Pokémon tipo VENENO disponible en Equipo o Caja';
+  }
+  return '';
+};
+
+const getClassMissionAvailableText = (m: (typeof CLASS_MISSIONS)[number]) => {
+  if (activeMission.value?.id === m.id) {
+    return isMissionDone.value ? '¡Operación finalizada! Reclama tu botín' : 'Operación en curso';
+  }
+  if (canStartClassMission(m)) {
+    return `Listo para desplegar (Nivel ${m.reqLv} alcanzado)`;
+  }
+  return '';
+};
+
+function handleClassMissionAction(missionId: string) {
+  if (activeMission.value?.id === missionId) {
+    if (isMissionDone.value) {
+      classStore.collectMission();
+    }
+    return;
+  }
+  startClassMission(missionId);
 }
 
 async function startClassMission(missionId: string) {
@@ -222,6 +271,7 @@ async function startClassMission(missionId: string) {
     <div class="missions-grid">
       <MissionCard
         v-for="(mission, index) in (breedingStore.dailyMissions as DaycareMission[])"
+        :id="'daily-' + index"
         :key="index"
         :avatar="getAssetUrl(ASSET_TYPES.TRAINER, mission.trainerSprite)"
         is-avatar-url
@@ -231,9 +281,12 @@ async function startClassMission(missionId: string) {
         reward-label="Recompensa"
         :reward-val="mission.reward.name + ' x' + mission.reward.qty"
         :reward-id="mission.reward.id"
-        btn-text="ENTREGAR"
+        :btn-text="mission.completed ? 'ENTREGADA' : (canDeliverMission(mission) ? 'ENTREGAR' : 'NO DISPONIBLE')"
         :btn-disabled="!canDeliverMission(mission)"
         :is-completed="mission.completed"
+        :is-available="canDeliverMission(mission)"
+        :unmet-requirement="getDailyMissionUnmetText(mission)"
+        :available-requirement="getDailyMissionAvailableText(mission)"
         completed-badge-text="COMPLETADA"
         @action="openDelivery(index)"
       />
@@ -283,17 +336,21 @@ async function startClassMission(missionId: string) {
       <div class="missions-grid">
         <MissionCard
           v-for="m in CLASS_MISSIONS"
+          :id="'class-' + m.id"
           :key="m.id"
-          :avatar="classStore.currentClassDef?.icon"
+          :avatar="classStore.currentClassDef?.icon || '🚀'"
           :title="m.durationHs + 'H · REQUISITO: NV. ' + m.reqLv"
-          :dialogue="getMissionDesc(m.id, classStore.currentClassDef?.id)"
-          :reward-icon="getClassReward(classStore.currentClassDef?.id).icon"
-          reward-label="Recompensa Estimada"
-          :reward-val="getClassReward(classStore.currentClassDef?.id).name"
-          :btn-text="activeMission?.id === m.id ? 'EN CURSO' : (activeMission ? 'BLOQUEADO' : 'DESPLEGAR')"
-          :btn-disabled="trainerLevel < m.reqLv || !!activeMission"
-          :is-completed="activeMission?.id === m.id"
-          @action="startClassMission(m.id)"
+          :dialogue="getClassMissionDetails(classStore.currentClassDef?.id, m.id).dialogue"
+          :rules-text="getClassMissionDetails(classStore.currentClassDef?.id, m.id).rulesText"
+          :rewards-list="getClassMissionDetails(classStore.currentClassDef?.id, m.id).rewards"
+          :btn-text="getClassMissionBtnText(m)"
+          :btn-disabled="isClassMissionDisabled(m)"
+          :is-completed="activeMission?.id === m.id && isMissionDone"
+          :is-available="canStartClassMission(m) || (activeMission?.id === m.id)"
+          :unmet-requirement="getClassMissionUnmetText(m)"
+          :available-requirement="getClassMissionAvailableText(m)"
+          :completed-badge-text="activeMission?.id === m.id && isMissionDone ? 'LISTO PARA RECLAMAR' : (activeMission?.id === m.id ? 'EN CURSO' : '')"
+          @action="handleClassMissionAction(m.id)"
         />
       </div>
     </div>

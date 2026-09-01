@@ -168,7 +168,6 @@ function handleOptionClick(opt: PokemonSortOption) {
     }
 
     .label {
-      line-height: 1;
       font-size: 7.5px;
       white-space: nowrap;
     }

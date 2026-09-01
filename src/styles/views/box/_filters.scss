@@ -159,7 +159,6 @@
     .tag-text-small {
       display: inline-flex;
       align-items: center;
-      line-height: 1;
     }
 
     &:hover { background: Rgba(255, 255, 255, 0.08); border-color: Rgba(255, 255, 255, 0.2); }
@@ -180,7 +179,6 @@
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
-  line-height: 1;
 }
 
 .box-sort-btn {

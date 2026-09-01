@@ -62,7 +62,7 @@
     "test:combat:weather:report": "vitest run tests/unit/battle/test_weather_terrain.spec.ts --reporter=verbose > scratch/weather_report.txt",
     "test:combat:choice:report": "vitest run tests/unit/battle/test_choice_items.spec.ts --reporter=verbose > scratch/choice_report.txt",
     "sim:fuzzer:report": "npm run sim:fuzzer > scripts/e2e/results/fuzzer_report.txt",
-    "sim:combat:all:report": "npm run sim:fuzzer && playwright test scripts/e2e/ > scripts/e2e/results/playwright_report.txt",
+    "validate:line-height": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/architecture/validate_typography_line_height.ts",
     "lint": "npm run validate:domain-types && npm run validate:o1 && npm run validate:component-styles && npm run validate:types && eslint . --fix --cache && npm run lint:md",
     "lint:fix": "eslint . --fix --cache",
     "lint:report": "eslint . --cache -f codeframe -o scratch/lint_report.txt",

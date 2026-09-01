@@ -20,6 +20,7 @@ Frontend Developers / QA Engineers.
 ## Child DOX Index
 
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle UI tests.
+- [events/](./events/AGENTS.md): Domain module documentation for event and mission component tests.
 - [home/](./home/AGENTS.md): Domain module documentation for home.
 - [modals/](./modals/AGENTS.md): Domain module documentation for modals.
 - [pokemon-detail/](./pokemon-detail/AGENTS.md): Domain module documentation for pokemon-detail tabs tests.

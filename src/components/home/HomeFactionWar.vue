@@ -387,7 +387,6 @@ onMounted(() => {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    line-height: 1;
 
     &.union {
       color: #60a5fa;

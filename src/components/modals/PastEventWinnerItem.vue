@@ -277,7 +277,6 @@ const getRankLabel = (rank?: string | number): string => {
     @include pixelated;
     font-size: 8px;
     color: var(--gray-light);
-    line-height: 1;
   }
 }
 

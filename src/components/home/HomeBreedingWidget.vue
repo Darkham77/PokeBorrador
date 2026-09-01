@@ -206,8 +206,8 @@ const handleEggClick = (egg: PokemonEgg) => {
     font-size: 10px;
     color: var(--yellow, #facc15);
     margin: 0;
-    line-height: 1;
-    letter-spacing: 1px;
+    line-height: 1.35;
+    letter-spacing: 0.5px;
   }
 }
 
@@ -243,9 +243,17 @@ const handleEggClick = (egg: PokemonEgg) => {
 
   &.grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    @media (max-width: 768px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media (max-width: 400px) {
+      grid-template-columns: 1fr;
+    }
   }
 
-  @media (max-width: 520px) {
+  @media (max-width: 400px) {
     grid-template-columns: 1fr;
   }
 }
@@ -260,6 +268,12 @@ const handleEggClick = (egg: PokemonEgg) => {
   border: 1px solid Rgba(255, 255, 255, 0.08);
   box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.45);
   cursor: pointer;
+  min-width: 0;
+
+  @media (max-width: 480px) {
+    padding: 8px 10px;
+    gap: 8px;
+  }
 
   &:hover {
     transform: Translatey(-2px);
@@ -291,10 +305,20 @@ const handleEggClick = (egg: PokemonEgg) => {
   flex-shrink: 0;
   box-shadow: inset 0 0 6px Rgba(0, 0, 0, 0.3);
 
+  @media (max-width: 480px) {
+    width: 28px;
+    height: 28px;
+  }
+
   .egg-sprite-img {
     width: 26px;
     height: 26px;
     @include pixelated;
+
+    @media (max-width: 480px) {
+      width: 20px;
+      height: 20px;
+    }
   }
 
   .shiny-star {
@@ -317,12 +341,20 @@ const handleEggClick = (egg: PokemonEgg) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 4px;
+  min-width: 0;
 }
 
 .egg-status {
   @include pixelated;
   font-size: 7px;
+  line-height: 1.35;
   color: var(--gray, #94a3b8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  padding-left: 2px;
 
   &.status-ready {
     color: #4ade80;
@@ -333,7 +365,10 @@ const handleEggClick = (egg: PokemonEgg) => {
 .egg-pct {
   @include pixelated;
   font-size: 7px;
+  line-height: 1.35;
   color: var(--yellow, #facc15);
+  flex-shrink: 0;
+  padding-right: 2px;
 }
 
 .progress-track {
@@ -357,10 +392,12 @@ const handleEggClick = (egg: PokemonEgg) => {
 .steps-remaining {
   @include pixelated;
   font-size: 6px;
+  line-height: 1.35;
   color: var(--gray, #94a3b8);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  padding-left: 2px;
 }
 
 .empty-breeding-card {

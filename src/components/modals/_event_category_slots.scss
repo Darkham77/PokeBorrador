@@ -127,7 +127,6 @@
           flex-shrink: 0;
           display: inline-flex;
           align-items: center;
-          line-height: 1;
         }
       }
 
@@ -186,7 +185,6 @@
     cursor: pointer;
     white-space: nowrap;
     flex-shrink: 0;
-    line-height: 1;
 
     &.inscribe {
       background: var(--yellow);

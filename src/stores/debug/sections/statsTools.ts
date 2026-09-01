@@ -250,8 +250,17 @@ export function registerStatsTools(debug: DebugSystem) {
     command: 'setPlayerClass',
     category: 'stats',
     action: (c: string) => {
-      game.state.playerClass = requirePlayerClassId(c)
-      ui.notify(`Debug: Clase cambiada a ${c}`, '🎭')
+      const isNone = c === 'none' || c === 'null' || !c
+      const targetClass = isNone ? null : requirePlayerClassId(c)
+      game.state.playerClass = targetClass
+      if (isNone) {
+        game.state.classLevel = 1
+        game.state.classXP = 0
+        if (game.state.classData) {
+          game.state.classData.activeMission = null
+        }
+      }
+      ui.notify(`Debug: Clase cambiada a ${targetClass || 'ninguna'}`, '🎭')
       game.saveGame(false)
     },
     description: 'Establece la clase activa del jugador.'

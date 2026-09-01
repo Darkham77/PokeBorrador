@@ -188,7 +188,6 @@ const handleBadgeClick = (buff: ActiveBuffItem) => {
   font-size: 12px;
   font-weight: 700;
   @include pixelated;
-  line-height: 1;
 }
 
 /* Transitions */

@@ -132,14 +132,12 @@ const handleItemImageError = (e: Event) => {
     border: 1px solid Rgba(255, 255, 255, 0.1);
     @include gpu-layer;
     box-shadow: 0 4px 15px Rgba(0,0,0,0.5);
-    line-height: 0;
 
     :deep(.pv-tooltip-wrapper) {
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
       height: 100%;
-      line-height: 0;
       
       &:hover {
         cursor: pointer; // Unified pointer for all interactive badges

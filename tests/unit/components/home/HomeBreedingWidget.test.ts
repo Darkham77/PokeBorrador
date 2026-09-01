@@ -19,11 +19,14 @@ describe('HomeBreedingWidget.vue', () => {
         steps: 100,
         totalSteps: 500,
         ready: false
-      } as any
+      } as unknown as import('@/types/pokemon/pokemon').PokemonEgg
     ]
 
     const wrapper = mount(HomeBreedingWidget, {
       global: {
+        directives: {
+          GsapHover: () => {}
+        },
         stubs: {
           EggSprite: {
             template: '<span class="egg-sprite-mock">🥚</span>'
@@ -45,6 +48,9 @@ describe('HomeBreedingWidget.vue', () => {
 
     const wrapper = mount(HomeBreedingWidget, {
       global: {
+        directives: {
+          GsapHover: () => {}
+        },
         stubs: {
           EggSprite: {
             template: '<span class="egg-sprite-mock">🥚</span>'
@@ -56,5 +62,38 @@ describe('HomeBreedingWidget.vue', () => {
     expect(wrapper.text()).toContain('No hay huevos en caminata')
     await wrapper.find('.empty-breeding-card').trigger('click')
     expect(modalStore.isOpen('Daycare')).toBe(true)
+  })
+
+  it('binds 3-column classes correctly when columns=3 prop is provided', () => {
+    const gameStore = useGameStore()
+    gameStore.state.eggs = [
+      {
+        uid: 'egg-1',
+        species: 'eevee',
+        steps: 0,
+        totalSteps: 500,
+        ready: true
+      } as unknown as import('@/types/pokemon/pokemon').PokemonEgg
+    ]
+
+    const wrapper = mount(HomeBreedingWidget, {
+      props: {
+        columns: 3
+      },
+      global: {
+        directives: {
+          GsapHover: () => {}
+        },
+        stubs: {
+          EggSprite: {
+            template: '<span class="egg-sprite-mock">🥚</span>'
+          }
+        }
+      }
+    })
+
+    expect(wrapper.classes()).toContain('cols-3')
+    expect(wrapper.find('.eggs-grid').classes()).toContain('grid-cols-3')
+    expect(wrapper.text()).toContain('¡LISTO PARA ECLOSIONAR!')
   })
 })

@@ -103,7 +103,7 @@ const handleClaim = async (awardId: string) => {
     font-size: 11px;
     color: var(--yellow);
     margin: 0;
-    line-height: 1;
+    line-height: 1.35;
     letter-spacing: 0.5px;
   }
 

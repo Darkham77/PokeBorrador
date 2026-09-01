@@ -311,7 +311,6 @@ watch(trainerExpPct, (newPct) => {
     padding: 2px 4px;
     font-weight: bold;
     flex-shrink: 0;
-    line-height: 1;
   }
 
   .unlock-desc {

@@ -139,9 +139,7 @@ function triggerSampleError() {
     height: 40px;
     @include pixelated;
     font-size: 8px;
-    @include pixelated;
     outline: none;
-    line-height: 1;
 
     &:focus { border-color: var(--purple); }
   }

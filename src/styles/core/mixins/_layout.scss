@@ -89,7 +89,6 @@
 @mixin pixel-perfect($size: 8px) {
   @include pixelated;
   font-size: $size;
-  line-height: 1;
 }
 
 @mixin smooth {

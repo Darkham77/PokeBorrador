@@ -388,7 +388,6 @@ onUnmounted(() => {
     justify-content: center;
     cursor: pointer;
     padding: 0;
-    line-height: 1;
 
     &:hover:not(:disabled) {
       background: Rgba(250, 204, 21, 0.2);
@@ -409,48 +408,11 @@ onUnmounted(() => {
     white-space: nowrap;
     letter-spacing: 0.5px;
     padding: 0 4px;
-    line-height: 1;
   }
 }
 
 .card-action-btn {
-  @include pixelated;
-  font-size: 8px;
-  height: 28px;
-  padding: 0 10px;
-  border-radius: 6px;
-  background: Rgba(255, 255, 255, 0.06);
-  border: 1px solid Rgba(255, 255, 255, 0.14);
-  color: var(--white, #ffffff);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  line-height: 1;
-  white-space: nowrap;
-  letter-spacing: 0.5px;
-  box-sizing: border-box;
-
-  .btn-icon {
-    font-size: 11px;
-    line-height: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  &:hover:not(:disabled) {
-    background: Rgba(250, 204, 21, 0.15);
-    border-color: Rgba(250, 204, 21, 0.5);
-    color: var(--yellow, #facc15);
-    box-shadow: 0 0 8px Rgba(250, 204, 21, 0.25);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  @include widget-action-btn;
 }
 
 .pending-awards-card {
@@ -617,14 +579,16 @@ onUnmounted(() => {
   .accordion-title-wrap {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    line-height: 1;
+    gap: 8px;
+    line-height: 1.35;
+    text-align: left;
 
     .emoji {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       line-height: 1;
+      flex-shrink: 0;
     }
   }
 

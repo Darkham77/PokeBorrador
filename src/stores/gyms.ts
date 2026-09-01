@@ -12,12 +12,15 @@ function isPokemon(value: Pokemon | null): value is Pokemon {
 
 export const useGymsStore = defineStore('gyms', {
   state: () => ({
-    gyms: GYMS,
-    defeatedGyms: Array<GymId>()
+    gyms: GYMS
   }),
   getters: {
-    defeatedGymsSet(state): ReadonlySet<GymId> {
-      return new Set<GymId>(state.defeatedGyms) // runtime-set
+    defeatedGyms(): GymId[] {
+      const gameStore = useGameStore()
+      return gameStore.state.defeatedGyms || []
+    },
+    defeatedGymsSet(): ReadonlySet<GymId> {
+      return new Set<GymId>(this.defeatedGyms) // runtime-set
     },
     // fallow-ignore-next-line unused-store-members
     gymsById(): Record<GymId, Gym> {
@@ -26,8 +29,7 @@ export const useGymsStore = defineStore('gyms', {
   },
   actions: {
     async loadGymProgress() {
-      const gameStore = useGameStore()
-      this.defeatedGyms = gameStore.state.defeatedGyms || []
+      // SSoT is gameStore.state.defeatedGyms & gameStore.state.gymProgress
     },
     isGymDefeated(gymId: string): boolean {
       if (!isGymId(gymId)) return false
@@ -35,10 +37,11 @@ export const useGymsStore = defineStore('gyms', {
     },
     isDifficultyDefeated(gymId: string, difficulty: GymDifficultyId): boolean {
       const gameStore = useGameStore()
-      const validGymId = requireGymId(gymId)
-      const prog = gameStore.state.gymProgress[validGymId]
-      if (!prog) return false
-      return prog[difficulty] === true
+      if (!isGymId(gymId)) return false
+      const prog = gameStore.state.gymProgress[gymId]
+      if (prog && prog[difficulty] === true) return true
+      if (difficulty === 'easy' && this.isGymDefeated(gymId)) return true
+      return false
     },
     async challengeGym(gymId: string, difficulty: GymDifficultyId = 'easy') {
       const battleStore = useBattleStore()

@@ -132,7 +132,6 @@ function onMouseLeave() {
   cursor: pointer;
   user-select: none;
   transform-origin: center center;
-  line-height: 1;
 
   .seal-icon {
     display: inline-flex;

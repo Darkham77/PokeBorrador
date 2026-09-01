@@ -186,7 +186,6 @@ onUnmounted(() => {
     display: inline-block;
     width: auto;
     max-width: 100%;
-    line-height: 1;
     margin: 0;
   }
 

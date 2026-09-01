@@ -374,7 +374,6 @@ onMounted(() => {
       .label {
         font-size: clamp(8px, 6cqw, 9px);
         color: var(--yellow);
-        line-height: 1;
         margin-top: -1px; // Pixel font alignment
       }
 
@@ -383,7 +382,6 @@ onMounted(() => {
         font-size: clamp(8px, 6cqw, 9px);
         font-weight: 900;
         color: white;
-        line-height: 1;
       }
     }
   }
@@ -449,7 +447,6 @@ onMounted(() => {
       font-size: clamp(6.5px, 7cqw, 8.5px);
       font-weight: 900;
       color: #dcfce7;
-      line-height: 1;
       letter-spacing: 0.03em;
     }
   }

@@ -516,7 +516,6 @@ const onEnter = (el: Element, done: () => void) => {
   .btn-text {
     display: inline-flex;
     align-items: center;
-    line-height: 1;
   }
 }
 

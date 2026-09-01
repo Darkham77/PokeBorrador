@@ -127,7 +127,6 @@ const setSort = (key: SortKey) => {
   color: Rgba(255, 255, 255, 0.5);
   cursor: pointer;
   font-family: inherit;
-  line-height: 1;
 
   &:hover {
     background: Rgba(255, 255, 255, 0.1);
@@ -145,7 +144,6 @@ const setSort = (key: SortKey) => {
   .sort-label {
     @include pixelated;
     font-size: 8px;
-    line-height: 1;
     display: flex;
     align-items: center;
     letter-spacing: 0.02em;
