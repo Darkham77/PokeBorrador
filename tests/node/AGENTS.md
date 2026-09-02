@@ -20,6 +20,7 @@ Frontend Developers / Systems Engineers.
 ## Child DOX Index
 
 - [admin/](./admin/AGENTS.md): Domain module documentation for admin.
+- [adventure/](./adventure/AGENTS.md): Domain module documentation for adventure map logic tests.
 - [assets/](./assets/AGENTS.md): Domain module documentation for assets.
 - [auditors/](./auditors/AGENTS.md): Domain module documentation for auditors.
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle.

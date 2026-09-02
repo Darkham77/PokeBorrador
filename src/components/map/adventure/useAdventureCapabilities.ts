@@ -3,7 +3,7 @@ import { useGameStore } from '@/stores/game'
 import { isItemId } from '@/data/inventory/items'
 import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import type { MapNode } from './adventureMapData'
+import type { MapNode } from './adventureMapData.ts'
 
 export interface NodePassResult {
   canPass: boolean

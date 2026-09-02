@@ -10,6 +10,7 @@ Core Frontend.
 
 - Route visibility guards and session state handling.
 - Screen layouts must use `dvh` units to avoid mobile browser address bar clipping.
+- **Window Capture Event Interception Contract**: Global event listeners attached to `window` with `{ capture: true }` (such as background scroll lockers in `App.vue`) MUST verify that a blocking modal is actually active (`uiStore.isAnyBlockingModalOpen`) before calling `stopPropagation()` or `preventDefault()`. Calling `stopPropagation()` unconditionally during the window capture phase destroys the event at the root and prevents it from ever reaching child viewports or map controls.
 
 ## Work Guidance
 

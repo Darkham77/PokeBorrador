@@ -83,7 +83,7 @@ const emit = defineEmits<{
 .adv-modal-overlay {
   position: fixed;
   inset: 0;
-  width: 100vw;
+  width: dvw;
   height: 100dvh;
   background: Rgba(5, 10, 20, 0.85);
   backdrop-filter: Blur(8px);

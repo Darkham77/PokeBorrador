@@ -1986,7 +1986,7 @@ onActivated(() => {
   display: flex;
   flex-direction: column;
   height: 100dvh;
-  width: 100vw;
+  width: dvw;
   overflow: hidden;
   color: #ffffff;
   user-select: none;
@@ -2064,12 +2064,12 @@ onActivated(() => {
   background-size: cover;
   background-position: center;
   filter: Brightness(0.65) contrast(1.05);
-  z-index: 1;
+  z-index: calc(var(--z-base) + 1);
 }
 
 .tactical-header-badges {
   position: relative;
-  z-index: 2;
+  z-index: calc(var(--z-base) + 2);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2096,7 +2096,7 @@ onActivated(() => {
 
 .tactical-body {
   position: relative;
-  z-index: 2;
+  z-index: calc(var(--z-base) + 2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2128,7 +2128,7 @@ onActivated(() => {
   bottom: 8px;
   left: 50%;
   transform: Translatex(-50%);
-  z-index: 3;
+  z-index: calc(var(--z-base) + 3);
   background: Rgba(220, 38, 38, 0.95);
   color: #ffffff;
   font-family: 'Press Start 2P', monospace;
@@ -2399,7 +2399,7 @@ onActivated(() => {
 }
 
 #map-viewport {
-  width: 100vw;
+  width: dvw;
   height: 100dvh;
   overflow: hidden;
   position: relative;
@@ -2665,7 +2665,7 @@ onActivated(() => {
 
 .floating-tools-container {
   position: fixed;
-  top: clamp(190px, 24vh, 210px);
+  top: clamp(190px, dvh, 210px);
   right: 14px;
   z-index: calc(var(--z-modal) + 10);
   display: flex;
@@ -2739,7 +2739,7 @@ onActivated(() => {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
+  width: dvw;
   height: 100dvh;
   background: Rgba(0, 0, 0, 0.85);
   z-index: 50100;
@@ -2923,7 +2923,7 @@ onActivated(() => {
   flex-direction: column;
   gap: 10px;
   width: 100%;
-  max-width: min(380px, 92vw);
+  max-width: min(380px, dvw);
   pointer-events: auto;
   box-sizing: border-box;
 }

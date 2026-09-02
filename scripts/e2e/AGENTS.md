@@ -72,6 +72,7 @@ QA / Automation Engineers.
 - [gts/](./gts/AGENTS.md): Domain module documentation for gts.
 - [gyms/](./gyms/AGENTS.md): Domain module documentation for gyms.
 - [logging/](./logging/AGENTS.md): Domain module documentation for OOP logging framework (`BaseRunnerLogger`, `FuzzerRunnerLogger`, `SimulationRunnerLogger`).
+- [map/](./map/AGENTS.md): Domain module documentation for adventure map simulations.
 - [missions/](./missions/AGENTS.md): Domain module documentation for missions.
 - [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon UI and friendship simulations.
 - [results/](./results/AGENTS.md): Domain module documentation for results.
