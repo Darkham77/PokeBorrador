@@ -556,6 +556,25 @@ export default defineConfig({
   },
   worker: {
     format: 'es',
+    plugins: () => [
+      fixPkmnSimPlugin(),
+    ],
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/@pkmn/sim') || id.includes('node_modules/@pkmn/sets') || id.includes('pkmn_sim.js')) {
+            return 'worker-vendor-pkmn-sim';
+          }
+          if (id.includes('src/data/pokemon/')) {
+            return 'worker-game-data-pokemon';
+          }
+          if (id.includes('src/data/battle/')) {
+            return 'worker-game-data-battle';
+          }
+          return undefined;
+        }
+      }
+    }
   },
   optimizeDeps: {
     entries: [

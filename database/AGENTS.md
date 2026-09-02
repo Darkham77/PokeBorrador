@@ -52,6 +52,13 @@ Backend / Database Engineers.
   - Competition award functions (`fn_award_event_automated`) inserting rows into `public.awards` MUST safely aggregate and propagate `player_email` with `COALESCE(player_email, '')` directly in the ranking/aggregation step, preventing runtime `NOT NULL` constraint violations on `awards.winner_email`.
 - **PL/pgSQL Variable Scope Hygiene Mandate**:
   - Stored procedures and triggers MUST use distinct, unambiguous prefixes (`v_*` for local variables, `p_*` for input parameters) to prevent name collisions and variable shadowing with existing column identifiers in SQL queries and nested execution blocks.
+- **PostgreSQL JSON/JSONB Operator Coercion & Schema Typing Mandate**:
+  - In PostgreSQL, JSON extraction and navigation operators (`->`, `->>`) exist strictly for `JSON` and `JSONB` data types, NOT `TEXT`.
+  - When writing stored procedures / RPCs in PL/pgSQL that process JSON configurations or user payloads, procedures MUST NOT assume table columns are typed as `JSONB` if legacy migrations created them as `TEXT`.
+  - Stored procedures MUST explicitly coerce incoming record fields (e.g. `v_config := (event_rec.config)::jsonb;`, `(data)::jsonb->>'field'`) and migrations must include defensive column alterations (`ALTER TABLE public.<table_name> ALTER COLUMN <col> TYPE JSONB USING <col>::jsonb;`) to prevent runtime fatal errors (`operator does not exist: text ->> unknown`).
+- **Strict PostgreSQL RPC Execution Grants Mandate**:
+  - Every `CREATE OR REPLACE FUNCTION` defined in PostgreSQL migrations MUST explicitly declare execution privileges (`GRANT EXECUTE ON FUNCTION public.<func_name>(<args>) TO authenticated, anon, service_role;`) and set a secure search path (`SET search_path = public, pg_catalog;`).
+  - Without explicit `GRANT EXECUTE`, hardened database configurations and PostgREST will reject client RPC invocations with HTTP 403 / permission denied errors.
 
 ## Verification
 

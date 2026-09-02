@@ -129,4 +129,11 @@
 - **Explicit PL/pgSQL Variable Declaration Mandate**: All procedural functions (`LANGUAGE plpgsql`) defined in PostgreSQL migrations MUST explicitly declare all loop counter variables (`i INT;`, `j INT;`) and cursor records in the `DECLARE` block. Omitting loop variable declarations causes runtime compilation exceptions during RPC invocation, resulting in complete transaction aborts and rollbacks in production Supabase while local SQLite/TypeScript emulations appear green.
 - **Automated Awarding Null-Safe Insertion**: Automated prize distribution procedures inserting into `public.awards` MUST guarantee non-null values for mandatory columns (`winner_email`) by extracting `COALESCE(player_email, '')` in the winner aggregation JSON and inserting `COALESCE(w->>'player_email', '')` directly.
 
+## 20. PostgreSQL JSON/JSONB Operator Safety & RPC Execution Grants
+
+- **JSONB Coercion in PL/pgSQL Procedures**: PostgreSQL does not define `->` or `->>` operators on `TEXT` columns. When writing procedural logic or SQL queries accessing nested JSON fields on tables that may have legacy `TEXT` column types (`events_config.config`, `events_config.schedule`, `competition_entries.data`), all expressions MUST explicitly coerce the data via `(col)::jsonb` and migrations must upgrade column definitions to `JSONB` via `ALTER TABLE ... ALTER COLUMN ... TYPE JSONB USING col::jsonb`.
+- **Mandatory Function Execution Privileges (`GRANT EXECUTE`)**: Every stored procedure or RPC exposed to client queries via Supabase PostgREST MUST include explicit `GRANT EXECUTE ON FUNCTION public.<name>(<types>) TO authenticated, anon, service_role;`.
+- **Strict Forward-Only Migration Immutability**: Because migration runners (`update_supabase_db.ts`) track executed versions in `_migrations` as an immutable append-only ledger, editing an existing migration file in-place will cause remote environments to skip execution. Every fix or schema change MUST be delivered in a brand-new migration pair with a strictly monotonic incremented timestamp.
+
+
 

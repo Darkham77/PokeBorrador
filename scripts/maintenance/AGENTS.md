@@ -14,6 +14,7 @@ General system maintenance scripts, import fixes, server configurations, and dev
   - `admin_rename.ts` (`npm run admin:rename user=<id_or_name> name=<new_name>`)
   - `repair_account_legality.ts` (`npm run database:repair-account [server=<profile>] [user=<id_or_email>] [all] [fix]`)
   - `diagnose_account.ts` (`npm run database:diagnose-account [server=<profile>] [file=<backup_json>] [db=<sqlite_path>] user=<id_or_email_or_name> [save-json=<path>]` / `npm run database:diagnose-accounts [server=<profile>] [file=<backup_json>] [db=<sqlite_path>]`)
+- **Static Asset Pre-Compression & Reporting (`vite-plugin-precompress.ts`)**: The build precompression plugin generates `.br` (Brotli Q11) and `.gz` (Gzip L9) assets natively in `dist/` using asynchronous multithreaded `libuv` compression with a concurrent worker pool (`CONCURRENCY_LIMIT = 8`). Upon bundle completion (`closeBundle`), it outputs a consolidated Unicode Box-Drawing summary table reporting individual and total sizes across categories (Workers, WASM, App Shell, etc.), with automatic warning badges (`⚠️`) for assets approaching the 8 MB PWA Workbox limit.
 
 ## Child DOX Index
 
