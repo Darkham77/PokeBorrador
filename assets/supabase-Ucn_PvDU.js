@@ -1,0 +1,1 @@
+import{t as e}from"./supabase-BWrOKr-y.js";export{e as default,e as supabase};

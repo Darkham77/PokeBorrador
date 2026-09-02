@@ -1,0 +1,1 @@
+import{Jt as e}from"./auth-CLkk7dnY.js";export{e as computeP2Choice};
