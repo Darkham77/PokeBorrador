@@ -94,6 +94,12 @@ describe('Tier 1: PL/pgSQL Variable Scope & Multi-Category Event Awarding', () =
       const declareMatch = latestContent.match(/DECLARE([\s\S]*?)BEGIN/i)
       const declareBlock = declareMatch ? declareMatch[1] : ''
       expect(declareBlock).toMatch(/\bj\s+INT/i)
+
+      // Verify explicit GRANT EXECUTE is declared for PostgreSQL API roles
+      expect(latestContent).toMatch(/GRANT EXECUTE ON FUNCTION public\.fn_award_event_automated\s*\(\s*TEXT\s*\)\s*TO\s+[^;]*authenticated/i)
+
+      // Verify safe numeric casting for obtained_at
+      expect(latestContent).toMatch(/data->>'obtained_at'\s*\)\s*::numeric/i)
     }
   })
 

@@ -116,7 +116,10 @@ export const useEventStore = defineStore('events', () => {
               logger.info('Events', `Auto-awarding concluded event '${endedEventId}'...`)
               const awardRes = await db.rpc('fn_award_event_automated', { target_event_id: endedEventId })
               if (awardRes?.error) {
-                logger.error('Events', `Failed to award concluded event '${endedEventId}': ${awardRes.error}`)
+                const errMsg = typeof awardRes.error === 'object' && awardRes.error !== null
+                  ? ((awardRes.error as { message?: string }).message || JSON.stringify(awardRes.error))
+                  : String(awardRes.error)
+                logger.error('Events', `Failed to award concluded event '${endedEventId}': ${errMsg}`)
               } else {
                 logger.info('Events', `Successfully awarded concluded event '${endedEventId}'`)
               }

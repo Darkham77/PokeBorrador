@@ -1,10 +1,11 @@
 -- PostgreSQL Migration: 20260901230000_fix_fn_award_event_variable_scope
--- Description: Fixes PL/pgSQL variable scope in fn_award_event_automated (declares loop variable j INT and ensures safe player_email propagation).
+-- Description: Fixes PL/pgSQL variable scope in fn_award_event_automated, guarantees search_path & execution grants, and defines claim_award RPC.
 
 CREATE OR REPLACE FUNCTION public.fn_award_event_automated(target_event_id TEXT)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, pg_catalog
 AS $$
 DECLARE
     event_rec RECORD;
@@ -68,7 +69,7 @@ BEGIN
                               ELSE -(COALESCE(data->>'score', data->>'total_ivs', '0'))::numeric 
                          END) ASC,
                         (CASE WHEN (COALESCE(data->>'is_shiny', 'false'))::boolean = true THEN 1 ELSE 0 END) DESC,
-                        (COALESCE((data->>'obtained_at')::bigint, 9223372036854775807)) ASC,
+                        (COALESCE((data->>'obtained_at')::numeric, 9223372036854775807)) ASC,
                         submitted_at ASC
                 ) as rank_num
             FROM public.competition_entries
@@ -99,7 +100,7 @@ BEGIN
                         INSERT INTO public.awards (event_id, winner_id, winner_name, winner_email, prize, awarded_at)
                         VALUES (
                             target_event_id, 
-                            (w->>'player_id')::uuid, 
+                            (CASE WHEN (w->>'player_id') ~ '^[0-9a-fA-F-]{36}$' THEN (w->>'player_id')::uuid ELSE NULL END), 
                             w->>'player_name', 
                             COALESCE(w->>'player_email', ''),
                             p, 
@@ -136,6 +137,35 @@ BEGIN
     RETURN jsonb_build_object('ok', true, 'success', true, 'winners', all_winners_json);
 END;
 $$;
+
+-- Grant permissions for automated awarding
+GRANT EXECUTE ON FUNCTION public.fn_award_event_automated(TEXT) TO authenticated, anon, service_role;
+
+-- Define RPC for claiming awards with authorization check
+CREATE OR REPLACE FUNCTION public.claim_award(p_award_id UUID)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_catalog
+AS $$
+DECLARE
+    v_award RECORD;
+BEGIN
+    SELECT * INTO v_award FROM public.awards WHERE id = p_award_id;
+    IF NOT FOUND THEN
+        RETURN jsonb_build_object('ok', false, 'error', 'Recompensa no encontrada.');
+    END IF;
+    IF v_award.winner_id != auth.uid() THEN
+        RETURN jsonb_build_object('ok', false, 'error', 'No autorizado.');
+    END IF;
+    UPDATE public.awards 
+    SET claimed = true, claimed_at = NOW(), received_at = NOW() 
+    WHERE id = p_award_id;
+    RETURN jsonb_build_object('ok', true, 'success', true, 'prize', v_award.prize);
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.claim_award(UUID) TO authenticated, service_role;
 
 INSERT INTO public.system_config (key, value) VALUES ('db_version', '20260901230000'::jsonb)
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();
