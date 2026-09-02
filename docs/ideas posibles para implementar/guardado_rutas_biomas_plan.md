@@ -7,6 +7,7 @@ Este documento establece el diseño y arquitectura técnica para el sistema de *
 Permite que el entrenador deje de depender exclusivamente del cálculo automático del camino más corto y pueda diseñar manualmente expediciones a medida. Al seleccionar qué caminos, cuevas, costas o ciudades atravesar, el sistema analiza los **biomas** del recorrido, calculando en tiempo real la probabilidad de eventos específicos (bayas, minería/fósiles, pesca o combates con entrenadores) para que el jugador elija qué recurso desea farmear.
 
 ### Principios Fundamentales
+
 * **Libertad Topológica**: Soporte completo para rutas lineales (de ciudad A a ciudad B) y **circuitos cerrados** (bucles de patrulla que regresan al punto de partida para curar al equipo).
 * **Especialización por Biomas**: Cada mapa de Kanto aporta un peso porcentual a la probabilidad de eventos según su geografía natural.
 * **Sinergia con Habilidades de Equipo**: Los multiplicadores del terreno se fusionan con las pasivas de los 6 Pokémon del equipo ([`habilidades_equipo_aventura_plan.md`](./habilidades_equipo_aventura_plan.md)).
@@ -37,7 +38,8 @@ Cada nodo del mapa cartográfico se clasifica dentro de uno de los cuatro biomas
                               └─ Experiencia Alta
 ```
 
-### Tabla de Biomas de Kanto:
+### Tabla de Biomas de Kanto
+
 1. 🌿 **Vegetación / Bosques** (Rutas 1, 2, Bosque Verde, Rutas 24-25, Zona Safari):
    * *Evento Principal*: **Arbusto de Bayas Silvestres** (recolectar bayas Zreza, Meloc, Aranja para mochila o cultivo).
 2. ⛰️ **Montaña / Cavernas** (Mt. Moon, Túnel Roca, Ruta 4, Calle Victoria):
@@ -52,6 +54,7 @@ Cada nodo del mapa cartográfico se clasifica dentro de uno de los cuatro biomas
 ## 3. Modo Creador de Rutas y Cálculo de Afinidad en Tiempo Real
 
 ### 3.1 Flujo de Trazado de Waypoints
+
 1. El jugador pulsa el botón **"Trazar Nueva Ruta"** en el mapa.
 2. El mapa entra en modo planificación: el jugador va tocando los nodos en secuencia:
    * *Ejemplo*: `Pallet Town ──► Ruta 1 ──► Ciudad Verde ──► Ruta 22 ──► Bosque Verde ──► Ciudad Plateada`.
@@ -61,6 +64,7 @@ Cada nodo del mapa cartográfico se clasifica dentro de uno de los cuatro biomas
 4. El jugador puede cerrar el circuito volviendo al punto de inicio o finalizar en un nuevo destino.
 
 ### 3.2 Cálculo Ponderado de Eventos
+
 A medida que se agregan nodos, una barra segmentada en el HUD calcula la afinidad:
 
 $$\% \text{Evento} = \frac{\sum \text{Nodos del Bioma}}{\text{Total de Nodos de Ruta}} \times 100$$

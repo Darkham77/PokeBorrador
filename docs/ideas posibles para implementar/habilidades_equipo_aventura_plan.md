@@ -7,6 +7,7 @@ Este documento establece la arquitectura y reglas para el sistema de **Habilidad
 El objetivo es darle una utilidad viva y emocionante fuera del combate a las habilidades clásicas de la franquicia, incentivando al entrenador a estructurar equipos de expedición diversos y especializados según el tipo de recurso que desea conseguir (minerales, bayas, dinero, botín o crianza).
 
 ### Principios Fundamentales
+
 * **Diversificación Obligatoria (Cero Duplicados)**: Cada habilidad pasiva se aplica **una única vez**. Tener varios Pokémon con la misma habilidad (ej. dos Meowth con Recogida) no duplica el efecto; el sistema toma automáticamente el Pokémon de mayor nivel. Esto impide crear equipos absurdos de 6 Meowth y premia la variedad de los 6 miembros.
 * **Supervivencia y Salud (HP > 0)**: Solo los Pokémon conscientes aportan su bonificación. Si un Pokémon cae debilitado en la hierba o ante un entrenador, su pasiva se apaga inmediatamente hasta que sea curado en un Centro Pokémon.
 * **Botín Progresivo Escalado por Nivel**: Habilidades como *Recogida* recompensan subir de nivel a tu equipo de farmeo, pasando de simples pociones a nivel bajo a Caramelos Raros, Restos y Piedras Evolutivas a nivel 80-100.
@@ -82,7 +83,9 @@ Antes de viajar por una ruta o al estar estacionado en ella, el jugador dispone 
 ```
 
 ### Notificaciones en Tiempo Real (Toasts y Logs)
+
 Cuando una habilidad pasiva genera una recompensa o evento:
+
 * Se reproduce un sutil tintineo de objeto retro.
 * Aparece un Toast informativo:  
   * *"✨ ¡Meowth recogió un Caramelo Raro del suelo con Recogida!"*
@@ -107,6 +110,7 @@ src/
 ```
 
 ### 6.1 Algoritmo Anti-Duplicados y Consciencia
+
 ```typescript
 export function calculateTeamAdventurePassives(team: Pokemon[]): ActivePassivesSummary {
   const activeAbilities = new Map<string, Pokemon>();

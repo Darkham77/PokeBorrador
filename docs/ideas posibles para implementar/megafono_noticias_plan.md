@@ -2,11 +2,12 @@
 
 ## 1. Contexto y Propósito
 
-Para dotar a **Poké Vicio** de una atmósfera de "mundo vivo" y conectar a los jugadores en una experiencia compartida, se implementa el sistema de noticias **Radio Kanto**. 
+Para dotar a **Poké Vicio** de una atmósfera de "mundo vivo" y conectar a los jugadores en una experiencia compartida, se implementa el sistema de noticias **Radio Kanto**.
 
 Inspirado en la icónica **Torre Radio de Pueblo Lavanda** y los programas de radio de las ediciones clásicas, este sistema actúa como el megáfono oficial de la región, emitiendo en tiempo real un cintillo informativo en estilo teletipo GBA.
 
 ### Principios Fundamentales
+
 * **Integración Rolera (Diegética)**: La información se presenta como emisiones oficiales de la emisora *Radio Kanto (101.5 FM)*, evitando notificaciones genéricas o frías.
 * **Cero Pay-to-Win**: Diseñado exclusivamente para celebrar logros de la comunidad y anunciar eventos dinámicos del mapa.
 * **Rendimiento Retro-Modern**: Animación fluida acelerada por GPU mediante **GSAP** (sin bucles de temporizadores `setInterval` ni manipulación pesada del DOM).
@@ -125,6 +126,7 @@ Archivo: `src/stores/radioStore.ts`
 Archivo: `src/components/common/RadioKantoTicker.vue`
 
 ### Características de la UI
+
 * **Ubicación**: Barra superior fija en el layout principal del juego (`App.vue` o contenedor shell), fuera del marco interno de combate para no interferir con la acción.
 * **Estética GBA**:
   * Chasis oscuro metálico con bordes retro.
@@ -156,6 +158,7 @@ Archivo: `src/components/common/RadioKantoTicker.vue`
    * `tests/unit/radio/radio_store.spec.ts`: Verificar inserción FIFO, límite de cola y despacho secuencial.
 2. **Comando Debug CLI**:
    * Exponer en consola:
+
      ```javascript
      window.__VITE_DEBUG__.radio.emitMock({
        type: 'shiny',

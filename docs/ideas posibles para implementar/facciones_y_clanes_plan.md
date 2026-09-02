@@ -5,6 +5,7 @@
 El sistema de **Facciones y Clanes** es la columna vertebral comunitaria de **Poké Vicio**. Mientras que las dos macro-facciones (**Team Unión** y **Team Poder**) definen la disputa territorial semanal por las rutas de Kanto ([`dominancia_mapas_plan.md`](./dominancia_mapas_plan.md)), los **Clanes** actúan como escuadrones independientes donde los jugadores cooperan en grupos medianos (15 a 30 miembros), forjan identidad y se ayudan mutuamente a progresar.
 
 ### Principios Fundamentales
+
 * **Lealtad de Bando**: Cada clan nace jurando bandera a Team Unión o Team Poder. Todos los miembros comparten la misma facción.
 * **100% Fair Play (Anti-P2W)**: Prohibida la venta de clanes, buffs o ventajas por dinero real. La fundación y el progreso del clan se basan estrictamente en méritos dentro de la partida.
 * **Progresión Orgánica**: Cada combate ganado por cualquier miembro aporta experiencia para subir de nivel al clan, desbloqueando mejoras colectivas.
@@ -15,13 +16,16 @@ El sistema de **Facciones y Clanes** es la columna vertebral comunitaria de **Po
 ## 2. Estructura y Membresía
 
 ### 2.1 Requisitos de Fundación
+
 Para fundar un nuevo clan, el entrenador debe demostrar veteranía en la región:
+
 * Pertenecer formalmente a una facción (**Team Unión** o **Team Poder**).
 * Poseer al menos **4 Medallas de Gimnasio** de Kanto.
 * Pagar una tasa de registro de **50,000 P¥** (dinero del juego).
 * Elegir un **Nombre** (4-16 caracteres) y un **Tag** (2-4 caracteres alfanuméricos, ej. `[ROCA]`).
 
 ### 2.2 Capacidad de Miembros y Rangos
+
 * **Capacidad**: Comienza en **15 miembros** (Nivel 1) y aumenta progresivamente hasta un máximo de **30 miembros** (Nivel 5) para evitar la monopolización del servidor por un solo megagremio.
 * **Rangos Operativos**:
   1. **Líder**: Control total. Puede editar descripción/política de acceso, promover/degradar oficiales, transferir el liderazgo o disolver el clan.
@@ -29,6 +33,7 @@ Para fundar un nuevo clan, el entrenador debe demostrar veteranía en la región
   3. **Miembro**: Aporta experiencia jugando, disfruta de los buffs activos y participa en la dominancia de rutas.
 
 ### 2.3 Política de Ingreso y Periodo de Gracia
+
 * **Modalidades**: Clan de acceso **Libre** (ingreso directo si hay plazas) o **Por Solicitud** (requiere aprobación de Líder u Oficial).
 * **Cooldown de 24 horas**: Al abandonar o ser expulsado de un clan, el jugador debe esperar 24 horas antes de unirse a otro clan, evitando transferencias oportunistas durante los cierres de guerra de los viernes.
 

@@ -7,6 +7,7 @@ Este documento define la arquitectura y mecánicas para la búsqueda, encuentro 
 El objetivo es recuperar la emoción y el prestigio de los legendarios originales de la franquicia, evitando que se sientan como premios rutinarios o de fácil acceso. El sistema se divide en dos categorías según su rol en el mundo: **Aves Legendarias Errantes** y **Titanes de Endgame (Mewtwo y Mew)**.
 
 ### Principios Fundamentales
+
 * **Dificultad Épica**: La tasa de aparición es inferior a la de un Pokémon Variocolor (más rara que 1/3,000), situándose entre **1/8,000 y 1/10,000**.
 * **Capturas Múltiples Permitidas (Sin Límite Artificial)**: Los entrenadores pueden capturar más de un ejemplar a lo largo de su aventura si desean buscar mejores IVs, naturalezas competitivas o comerciarlos con otros jugadores.
 * **Vigor Cero (100% Canónico / Incriables)**: Siguiendo fielmente la regla de los juegos originales de Pokémon (Grupo Huevo *"No Descubierto"*), todos los Pokémon Legendarios y Míticos nacen con **`vigor: 0`** permanente; no pueden reproducirse ni poner huevos en la Guardería.
@@ -33,6 +34,7 @@ El objetivo es recuperar la emoción y el prestigio de los legendarios originale
 ```
 
 ### 2.1 Comportamiento y Desplazamiento
+
 * **Ciclo de Vuelo**: Cada **30 a 60 minutos**, cada una de las tres aves cambia a una nueva ruta de forma determinista para todo el servidor.
 * **Zonas Predilectas**:
   * **Articuno**: Rutas marítimas y frías (Rutas 19, 20, 21, Islas Espuma).
@@ -40,11 +42,14 @@ El objetivo es recuperar la emoción y el prestigio de los legendarios originale
   * **Moltres**: Rutas montañosas y senderos altos (Ruta 23, Camino de Bicis / Ruta 17, Monte Moon).
 
 ### 2.2 Pistas de Rastreo en Radio Kanto
+
 Radio Kanto emite pequeños avisos meteorológicos cuando un ave aterriza o sobrevuela una zona:
+
 * *"📻 ¡Atención entrenadores! El observatorio informa de intensas corrientes gélidas en las inmediaciones de la Ruta 20..."*
 * *"📻 ¡Boletín de Radio Kanto! Ráfagas de viento y chispas eléctricas detectadas sobre la Ruta 10..."*
 
 ### 2.3 Probabilidad y Combate
+
 * **Tasa de Encuentro**: **1 entre 8,000** combates salvajes **únicamente** si el jugador se encuentra en la misma ruta que el ave. En cualquier otra ruta, la probabilidad es 0.
 * **Mecánica de Combate (Fiel al Original)**:
   * El ave tiene una probabilidad del **50% de intentar huir en el primer turno** si no se aplican efectos de estado (Dormido o Congelado), habilidades trampa (Sombratrampa / Trampa Arena) o movimientos de bloqueo (Mal de Ojo / Telaraña).
@@ -56,12 +61,15 @@ Radio Kanto emite pequeños avisos meteorológicos cuando un ave aterriza o sobr
 ## 3. Categoría 2: Titanes de Endgame (Mewtwo y Mew)
 
 ### 3.1 Mecánica de Tickets como Buffs de Caza (60 Minutos)
+
 Al activar un **Ticket Cueva Celeste** o **Ticket Antiguo** desde la mochila:
+
 * Se añade un buff temporal de **60 minutos** en `useBuffsStore`.
 * Aparece un icono de cuenta regresiva en el HUD de buffs del jugador.
 * Durante esos 60 minutos, cada combate salvaje en el mapa correspondiente tiene activa la tirada de encuentro legendario (1/10,000). Al terminar el tiempo, la tirada se desactiva hasta consumir otro ticket.
 
 ### 3.2 Mewtwo (El Clon Supremo)
+
 * **Ubicación**: El piso más profundo de la **Cueva Celeste (Cerulean Cave)**.
 * **Condiciones de Entrada**:
   1. Ser **Campeón de la Liga Pokémon** (haber superado la Meseta Añil).
@@ -70,6 +78,7 @@ Al activar un **Ticket Cueva Celeste** o **Ticket Antiguo** desde la mochila:
 * **Combate**: Nivel 70 en Showdown, con movimientos poderosos (Psíquico, Recuperación, Onda Certera) y un catch rate extremadamente exigente.
 
 ### 3.3 Mew (El Ancestro Genético)
+
 * **Ubicación**: **Isla Lejana (Faraway Island)**, mapa secreto accesible en barco desde el Puerto de Carmín.
 * **Condiciones de Entrada**:
   1. Poseer el **Buff de Ticket Antiguo (*Old Sea Map*) (60 min)** activo.
@@ -120,6 +129,7 @@ Para fomentar una economía saludable entre jugadores y evitar callejones sin sa
 ## 6. Notificación Global de Captura
 
 Toda captura exitosa de Articuno, Zapdos, Moltres, Mewtwo o Mew se considera un **Acontecimiento Histórico**:
+
 * Interrumpe temporalmente la programación de **Radio Kanto**.
 * Emite un aviso en tiempo real a todo el servidor vía Supabase Broadcast:
   * *"🏆 ¡HISTORIA EN KANTO! El entrenador [Nombre] (Team Unión) ha desafiado a la leyenda y capturado a [Mewtwo] en la Cueva Celeste. ¡Un hito legendario!"*

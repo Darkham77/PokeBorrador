@@ -7,6 +7,7 @@ Este documento establece el diseño y arquitectura técnica para el **Rancho del
 Integra una experiencia de gestión, agricultura, crafteo y entrenamiento pasivo conectada directamente con las expediciones del Mapa de Aventura ([`guardado_rutas_biomas_plan.md`](./guardado_rutas_biomas_plan.md)) y las habilidades de equipo ([`habilidades_equipo_aventura_plan.md`](./habilidades_equipo_aventura_plan.md)). El sistema actúa además como el principal **Sumidero de Dinero (*Money Sink*)** del juego para proteger la economía contra la inflación.
 
 ### Principios Fundamentales
+
 * **Coherencia Rolera**: La Guardería pública de Kanto (Ruta 5) se mantiene como servicio público obligatorio presencial; construir una Guardería privada en tu rancho es una conquista de *endgame*.
 * **Incubadoras Crafteables (Estilo Pokémon GO)**: El jugador puede llevar 1 huevo base en la mochila de forma gratuita; para eclosionar múltiples huevos simultáneos durante sus viajes, debe craftear Incubadoras en su Taller.
 * **Blindaje Económico Anti-Bots**: Tiempos de crafteo escalonados por tier de ítem y colas de producción con ranuras limitadas.
@@ -38,16 +39,19 @@ Integra una experiencia de gestión, agricultura, crafteo y entrenamiento pasivo
 ```
 
 ### 3.1 Guardería Pública de Ruta 5 (Presencial)
+
 * Permite dejar **máximo 1 pareja de Pokémon**.
 * Requiere que el jugador viaje físicamente con su avatar hasta el nodo de la Ruta 5 en el Mapa de Aventura para depositar a los padres y volver a viajar para recoger el huevo generado.
 * El jugador cuenta siempre con **1 ranura gratuita de huevo** en su mochila de viaje para eclosionarlo caminando por las rutas.
 
 ### 3.2 Guardería Privada del Rancho (Estructura Crafteable)
+
 * Se construye en el rancho invirtiendo tablones de madera, lingotes de hierro y Pokéyen.
 * Permite gestionar la crianza directamente desde tu casa sin viajar a la Ruta 5.
 * Desbloquea corrales adicionales (**hasta 3 parejas criando simultáneamente**).
 
 ### 3.3 Las Incubadoras de Huevos (Crafteo en Taller)
+
 * Inspiradas en la mecánica de *Pokémon GO*, se fabrican en la Prensa del Taller:
   * **Incubadora Estándar**: Permite equipar y empollar **+1 huevo adicional** mientras viajas (durabilidad de 3 eclosiones).
   * **Súper Incubadora**: Permite empollar **+1 huevo adicional** y reduce los pasos necesarios un **33%** (crafteada con materiales raros de minería).

@@ -5,6 +5,7 @@
 Inspirado en el aclamado modelo de eventos de **PokeMMO** y las incursiones programadas, este sistema convierte el mundo de **Poké Vicio** en un ecosistema vivo y dinámico. En lugar de saturar cada ruta con jefes estáticos diarios, los eventos se concentran en **ventanas de tiempo específicas en una única ruta aleatoria**.
 
 ### Beneficios del Modelo
+
 * **Concentración Comunitaria**: Al haber **un solo evento activo en todo el mundo a la vez**, todos los jugadores (Team Unión y Team Poder) se desplazan hacia la misma ruta, generando un sentido de concurrencia y guerra territorial real.
 * **Alta Retención (*Appointment Gaming*)**: Ciclos predecibles cada 4 horas motivan a los entrenadores a entrar al juego a lo largo del día.
 * **Cero Frustración (Instanciación Justa)**: Aunque el evento está activo globalmente, el combate es individual. Ningún jugador pierde su oportunidad porque otro haya hecho clic antes.
@@ -15,6 +16,7 @@ Inspirado en el aclamado modelo de eventos de **PokeMMO** y las incursiones prog
 ## 2. El Guardián de Territorio (Jefe Alfa)
 
 ### 2.1 Calendario y Ventanas de Tiempo
+
 * **Frecuencia**: Se activa una ventana cada **4 horas** (6 apariciones diarias):
   * `02:00`, `06:00`, `10:00`, `14:00`, `18:00`, `22:00` (hora del servidor).
 * **Duración**: La ventana de aparición dura **75 minutos**.
@@ -22,13 +24,17 @@ Inspirado en el aclamado modelo de eventos de **PokeMMO** y las incursiones prog
 * **Restricción de Recompensa**: Un jugador puede desafiar y derrotar/capturar al Guardián de cada ventana una sola vez por ciclo.
 
 ### 2.2 Mecánica de Combate Alfa (Showdown Engine)
+
 El combate contra el Guardián se gestiona en el motor Showdown local con parámetros especiales de Jefe:
+
 * **Barra de Vida Aumentada**: Modificador de vitalidad (HP base x2 o x2.5).
 * **Aura Territorial**: Inicia el combate con un boost defensivo (+1 en Def y Def. Esp.).
 * **Nivel Adaptativo**: Su nivel se escala en función del progreso de medallas del jugador para mantener el reto justo y emocionante.
 
 ### 2.3 Resolución: Derrota o Captura Exigente
+
 El entrenador tiene dos opciones tácticas para resolver el encuentro:
+
 1. **Derrotar al Guardián**:
    * Otorga **150 Puntos de Territorio (PT)** a la facción del jugador para la guerra semanal.
    * Otorga **Monedas de Guerra** (canjeables en la tienda de guerra).
@@ -45,10 +51,12 @@ El entrenador tiene dos opciones tácticas para resolver el encuentro:
 Para garantizar actividad continua en el mundo entre una ventana de Guardián y otra, se alternan dos eventos complementarios:
 
 ### 3.1 Enjambres de Especies Raras (Swarms)
+
 * **Horarios**: Se intercalan entre las ventanas de los Guardianes (duración: 90 minutos).
 * **Mecánica**: Una especie exótica o difícil de encontrar (ej. Chansey, Scyther, Dratini, Lapras) experimenta una tasa de aparición masiva (+300%) en una ruta determinada.
 
 ### 3.2 Entrenadores Errantes (Retadores de Élite)
+
 * NPCs especiales (Líderes de Gimnasio fuera de servicio, miembros del Alto Mando de viaje o entrenadores legendarios como Red/Blue) aparecen en una ruta para aceptar desafíos.
 * **Reglas de Combate**: Combate táctico competitivo en Showdown con objetos competitivos equipados. Vencerlos otorga cosméticos exclusivos y Pokéyen elevado.
 
@@ -57,6 +65,7 @@ Para garantizar actividad continua en el mundo entre una ventana de Guardián y 
 ## 4. Notificaciones y Descubrimiento
 
 ### 4.1 En el Juego (In-Game)
+
 1. **Radio Kanto (101.5 FM)**: Interrupción de emergencia del locutor al iniciar la ventana:
    * *"🚨 ¡Interrumpimos la programación de Radio Kanto! ¡Un Tyranitar Alfa colosal ha sido avistado en la Ruta 10! Tienen 75 minutos antes de que regrese a las montañas."*
 2. **Marcador en el Mapa**:
@@ -66,6 +75,7 @@ Para garantizar actividad continua en el mundo entre una ventana de Guardián y 
      * 🧢 Silueta de gorra para Entrenadores Errantes.
 
 ### 4.2 En el Móvil (PWA Web Push Notifications)
+
 * Para los usuarios con Poké Vicio instalado en su teléfono como PWA:
   * El Service Worker recibe la alerta de inicio de ventana.
   * Notificación nativa con sonido retro:  

@@ -7,6 +7,7 @@ Este documento establece la especificación para graduar el prototipo del **Mapa
 Reemplaza la navegación estática por una experiencia inmersiva basada en una red cartográfica interactiva de Kanto, donde cada nodo es una tarjeta viva [`MapCard.vue`](file:///d:/Documentos/GitHub/PokeBorrador/src/components/map/MapCard.vue).
 
 ### Principios Fundamentales
+
 * **Doble Estado de Control**: Diferenciación estricta entre viajar hacia una ruta (clic lejano) e interactuar con su contenido (clic estacionado).
 * **Supresión de la Energía Artificial**: Eliminación de la barra de 100 de energía. Caminar y andar en bicicleta es libre; la verdadera limitación reside en los obstáculos de MO y la salud del equipo Pokémon.
 * **Ciudades como Hubs Comerciales y Cívicos**: Las Tiendas Pokémon (PokéMarts) son exclusivas de las ciudades; ningún entrenador puede comprar suministros en mitad de una cueva o ruta salvaje.

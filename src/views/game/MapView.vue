@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game'
 import { useMapStore } from '@/stores/map'
@@ -7,6 +7,7 @@ import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
 import MapPokemonCenterBanner from '@/components/map/MapPokemonCenterBanner.vue'
 import MapGrid from '@/components/map/MapGrid.vue'
+import AdventureWorldMap from '@/components/map/adventure/AdventureWorldMap.vue'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { isMapExtortable, getExtortionConfirmMessage, getOfficialRouteConfirmMessage } from '@/logic/map/mapCardHelper'
@@ -17,6 +18,8 @@ const gameStore = useGameStore()
 const mapStore = useMapStore()
 const uiStore = useUIStore()
 const modalStore = useModalStore()
+
+const isAdventureModalOpen = ref(false)
 
 let expirationTicker: gsap.core.Tween | null = null
 
@@ -125,10 +128,29 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
 
 <template>
   <div class="map-view-container legacy-ui">
+    <!-- Banner de Acceso al Croquis / Mapa de Aventura -->
+    <div class="adventure-map-launcher-banner">
+      <div class="launcher-content">
+        <span class="icon launcher-icon">🗺️</span>
+        <div class="launcher-text">
+          <span class="launcher-title">CROQUIS DE AVENTURA (GPS)</span>
+          <span class="launcher-desc">Explora Kanto en un mapa interactivo con carreteras y navegación GPS</span>
+        </div>
+      </div>
+      <button
+        id="open-adventure-map-modal-btn"
+        class="launcher-open-btn"
+        @click="isAdventureModalOpen = true"
+      >
+        <span>ABRIR CROQUIS</span>
+        <span class="icon btn-arrow">➡️</span>
+      </button>
+    </div>
+
     <!-- Centro Pokémon Banner -->
     <MapPokemonCenterBanner />
 
-    <!-- Localizaciones (Grilla de Mapas) -->
+    <!-- Localizaciones (Grilla de Mapas Clásica) -->
     <div class="legacy-divider">
       <span class="divider-text">REGIÓN DE KANTO</span>
     </div>
@@ -146,6 +168,12 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
       :daily-guardian-captures="gameStore.dailyGuardianCaptures"
       @navigate="navigateToMap"
     />
+
+    <!-- Dedicated Fullscreen Adventure Map Modal -->
+    <AdventureWorldMap
+      v-if="isAdventureModalOpen"
+      @close="isAdventureModalOpen = false"
+    />
   </div>
 </template>
 
@@ -156,6 +184,88 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
   padding: 0 0 40px;
   width: 100%;
   box-sizing: border-box;
+}
+
+.adventure-map-launcher-banner {
+  @include pixelated;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: linear-gradient(135deg, Rgba(15, 23, 42, 0.9), Rgba(30, 41, 59, 0.8));
+  border: 1.5px solid Rgba(56, 189, 248, 0.4);
+  border-radius: 12px;
+  padding: 12px 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 16px Rgba(0, 0, 0, 0.5), inset 0 1px 0 Rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #38bdf8;
+    box-shadow: 0 6px 20px Rgba(56, 189, 248, 0.25), inset 0 1px 0 Rgba(255, 255, 255, 0.2);
+  }
+
+  .launcher-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .launcher-icon {
+      font-size: 24px;
+      filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.5));
+    }
+
+    .launcher-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      .launcher-title {
+        font-size: 11px;
+        font-weight: bold;
+        color: #38bdf8;
+        letter-spacing: 1px;
+      }
+
+      .launcher-desc {
+        font-size: 9px;
+        color: #94a3b8;
+      }
+    }
+  }
+
+  .launcher-open-btn {
+    @include pixelated;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    border: 1px solid #38bdf8;
+    border-radius: 8px;
+    padding: 8px 16px;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 8px Rgba(2, 132, 199, 0.4);
+    transition: all 0.15s ease;
+    white-space: nowrap;
+
+    &:hover {
+      background: linear-gradient(135deg, #38bdf8, #0284c7);
+      transform: Translatey(-1px);
+      box-shadow: 0 4px 12px Rgba(56, 189, 248, 0.5);
+    }
+
+    .btn-arrow {
+      font-size: 11px;
+      transition: transform 0.15s ease;
+    }
+
+    &:hover .btn-arrow {
+      transform: Translatex(2px);
+    }
+  }
 }
 
 .legacy-divider {

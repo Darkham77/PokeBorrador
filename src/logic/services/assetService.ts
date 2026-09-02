@@ -113,6 +113,10 @@ export function getAssetUrl(type: AssetType, rawId: string | number, options: As
     }
 
     case ASSET_TYPES.MAP: {
+      const idStr = String(id);
+      if (idStr.startsWith('/') || idStr.startsWith('http')) {
+        return resolveAsset(idStr);
+      }
       let finalId = id;
       
       // Aplicar sufijos de ciclo horario si el mapa lo soporta

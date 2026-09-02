@@ -7,6 +7,7 @@ Para erradicar la sobrecarga cognitiva y la saturación visual (*Visual Clutter*
 Inspirado en los filtros cartográficos de grandes videojuegos de estrategia y exploración, este sistema permite al entrenador cambiar instantáneamente el enfoque del mapa con un solo clic o atajo de teclado, presentando únicamente la información relevante para su objetivo actual.
 
 ### Principios Fundamentales
+
 * **Cero Sobrecarga Cognitiva**: La información se segmenta en capas limpias y especializadas.
 * **Transiciones GSAP Fluidas**: Los cambios entre vistas se realizan mediante un *cross-fade* acelerado por GPU (0.25s), sin parpadeos, recargas de página ni saltos de cámara.
 * **Cero Peticiones de Red Adicionales**: Toda la información de las 3 capas reside reactivamente en los stores locales (`mapStore`, `warStore`, `gameStore`), garantizando un rendimiento constante a 60 FPS.
@@ -47,6 +48,7 @@ Un widget metálico flotante en relieve, con diseño *Retro-Modern*, posicionado
 ---
 
 ### 3.1 🌿 Lente 1: Vista Aventura / Exploración (Modo por Defecto)
+
 * **Objetivo**: La experiencia clásica de rol y viaje Pokémon.
 * **Elementos Visibles**:
   * Ilustración artística completa de la ruta o ciudad.
@@ -63,6 +65,7 @@ Un widget metálico flotante en relieve, con diseño *Retro-Modern*, posicionado
 ---
 
 ### 3.2 ⚔️ Lente 2: Vista de Guerra / Facciones (Geopolítica de Kanto)
+
 * **Objetivo**: Estrategia comunitaria, coordinación de clanes y dominancia de rutas semanal ([`facciones_y_clanes_plan.md`](./facciones_y_clanes_plan.md)).
 * **Elementos Visibles**:
   * **Marco de Dominancia**: Cada tarjeta se ilumina con el color del bando líder:
@@ -80,6 +83,7 @@ Un widget metálico flotante en relieve, con diseño *Retro-Modern*, posicionado
 ---
 
 ### 3.3 📖 Lente 3: Vista Pokédex / Hábitat (Coleccionismo)
+
 * **Objetivo**: Completar la Pokédex de Kanto sin tener que abrir menús externos ni adivinar qué falta atrapar.
 * **Elementos Visibles**:
   * **Insignia de Hábitat**:
@@ -111,6 +115,7 @@ src/
 ```
 
 ### 4.1 Orquestación de Transición con GSAP
+
 ```typescript
 // Transición determinista entre capas internas de MapCard.vue
 watch(() => lensStore.activeLens, (newLens) => {
@@ -138,6 +143,7 @@ watch(() => lensStore.activeLens, (newLens) => {
    * `tests/unit/map/pokedex_progress_helper.spec.ts`: Validar cálculo exacto de Pokémon capturados vs totales por ruta.
 2. **Comando Debug CLI**:
    * Exponer en consola:
+
      ```javascript
      window.__VITE_DEBUG__.map.setLens('war');      // Cambia a vista de guerra
      window.__VITE_DEBUG__.map.setLens('pokedex');  // Cambia a vista de pokédex
