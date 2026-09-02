@@ -13,6 +13,7 @@ import { checkCompatibility } from '@/logic/breeding/breedingEngine'
 import PokemonSelectionItem from './PokemonSelectionItem.vue'
 import PokemonSelectionFilters from './PokemonSelectionFilters.vue'
 import type { Pokemon, PokemonStorageLocation, PokemonSelectionSource } from '@/types/pokemon/pokemon'
+import type { ResolvedSubCompetition, SubCompetitionConfig } from '@/logic/events/eventCompetitions'
 import {
   isBabyPokemonSpeciesId,
   isFossilPokemonSpeciesId,
@@ -48,6 +49,7 @@ interface Props {
   customList?: Pokemon[]
   isDaycareContext?: boolean
   daycareSlotIdx?: number
+  subCompetition?: ResolvedSubCompetition | SubCompetitionConfig | null
   show?: boolean
 }
 
@@ -73,6 +75,7 @@ const props = withDefaults(defineProps<Props>(), {
   customList: () => [],
   isDaycareContext: false,
   daycareSlotIdx: 0,
+  subCompetition: null,
   show: true
 })
 
@@ -89,6 +92,7 @@ const contextKey = computed(() => {
   if (props.isBattleSwitch) return 'battle_switch'
   if (props.isDaycareContext) return 'daycare'
   if (props.isItemContext) return 'item_use'
+  if (props.subCompetition) return `competition_${props.subCompetition.metric}`
   if (props.battleMode === 'pvp') return 'pvp_selection'
   if (props.battleMode === 'war') return 'war_selection'
   return 'general'
@@ -108,13 +112,39 @@ const loadSavedFilters = (key: string): SavedFilters => {
 
 const initialFilters = loadSavedFilters(storageKey.value)
 
+const getInitialSortForSubComp = (sub: ResolvedSubCompetition | SubCompetitionConfig) => {
+  const sortDir = sub.order === 'min' ? 'asc' : 'desc'
+  if (sub.metric === 'weight') return { sortBy: 'weight', sortOrder: sortDir }
+  if (sub.metric === 'height') return { sortBy: 'height', sortOrder: sortDir }
+  if (sub.metric === 'total_ivs') return { sortBy: 'ivs', sortOrder: 'desc' }
+  if (sub.metric === 'stat_iv') return { sortBy: 'ivs', sortOrder: 'desc' }
+  if (sub.metric === 'level') return { sortBy: 'level', sortOrder: sortDir }
+  if (sub.metric === 'friendship') return { sortBy: 'friendship', sortOrder: sortDir }
+  return { sortBy: 'recent', sortOrder: 'desc' }
+}
+
+const initialSubCompSort = props.subCompetition ? getInitialSortForSubComp(props.subCompetition) : null
+
 // In battle switch mode, strictly reset search and tags to ensure team availability
 const isBattleMode = props.isBattleSwitch
 const searchQuery = ref(isBattleMode ? '' : (initialFilters.searchQuery || ''))
-const sortBy = ref(initialFilters.sortBy || 'recent')
-const sortOrder = ref(initialFilters.sortOrder || 'desc')
+const sortBy = ref(initialSubCompSort ? initialSubCompSort.sortBy : (initialFilters.sortBy || 'recent'))
+const sortOrder = ref(initialSubCompSort ? initialSubCompSort.sortOrder : (initialFilters.sortOrder || 'desc'))
 const activeTags = ref<string[]>(isBattleMode ? [] : (Array.isArray(initialFilters.activeTags) ? initialFilters.activeTags : []))
 const selectedUids = ref<string[]>([])
+
+// When a subCompetition is provided, always enforce its target sort metric and direction
+watch(
+  () => props.subCompetition,
+  (sub) => {
+    if (sub) {
+      const s = getInitialSortForSubComp(sub)
+      sortBy.value = s.sortBy
+      sortOrder.value = s.sortOrder
+    }
+  },
+  { immediate: true }
+)
 
 const breedingStore = useBreedingStore()
 
@@ -345,6 +375,7 @@ function openDetail(item: PokemonSelectionItemEntry) {
           :auto-confirm="props.autoConfirm"
           :is-daycare-context="props.isDaycareContext"
           :daycare-slot-idx="props.daycareSlotIdx"
+          :sub-competition="props.subCompetition"
           @select="toggleSelection"
           @open-detail="openDetail"
         />

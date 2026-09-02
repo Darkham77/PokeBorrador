@@ -202,16 +202,9 @@ const updateScrollbarWidth = () => {
   document.documentElement.style.setProperty('--scrollbar-width', `${scrollbarWidth}px`)
 }
 
-useWindowListener('resize', updateScrollbarWidth)
-
-onMounted(async () => {
-  // 1. Init Global Error Handlers (Vue Bridge)
-  initGlobalErrorHandlers()
-
-  // PWA version check — isolated IIFE so an early return never skips steps 2-5
-  await (async () => {
-    if (import.meta.env.DEV) return
-    try {
+const checkPwaVersion = async () => {
+  if (import.meta.env.DEV) return
+  try {
     const verUrl = new URL(`${import.meta.env.BASE_URL}version.json`, window.location.origin)
     verUrl.searchParams.set('t', Temporal.Now.instant().epochMilliseconds.toString())
     // fallow-ignore-next-line security-sink
@@ -231,7 +224,22 @@ onMounted(async () => {
   } catch (e) {
     logger.error('App', 'Failed to check PWA version.json', (e as Error).message)
   }
-  })()
+}
+
+useWindowListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    checkPwaVersion()
+  }
+})
+
+useWindowListener('resize', updateScrollbarWidth)
+
+onMounted(async () => {
+  // 1. Init Global Error Handlers (Vue Bridge)
+  initGlobalErrorHandlers()
+
+  // PWA version check — isolated call so errors never block session init
+  await checkPwaVersion()
 
   // 2. Recuperar sesión (Autologin)
   if (isLoginPage.value || isAdventureTestPage.value) {
@@ -472,6 +480,9 @@ const onLoadingLeave = (el: Element, done: () => void) => {
   max-width: 100dvw;
   max-height: 100dvh;
   overflow: hidden;
+  overscroll-behavior: none !important;
+  overscroll-behavior-x: none !important;
+  overscroll-behavior-y: none !important;
   position: relative;
   margin: 0;
   padding: 0;

@@ -8,7 +8,10 @@
  * - Browser: Uses CSS '%c' styling for premium DevTools appearance.
  */
 
-const isBrowser = typeof window !== 'undefined';
+const isWebWorker = typeof window === 'undefined' && typeof self !== 'undefined' && 'importScripts' in self;
+const isBrowser = typeof window !== 'undefined' || isWebWorker;
+const isNode = !isBrowser && typeof process !== 'undefined' && Boolean(process.versions?.node);
+
 // Use Vite's built-in env variable for production detection
 // Fallback to process.env.NODE_ENV for Node/API environments
 const isProduction = 
@@ -27,14 +30,14 @@ const COLORS = {
 // Pre-import node:util if in Node.js
 type StyleTextFn = (style: string, text: string) => string;
 let styleText: StyleTextFn = (_style: string, text: string) => text; // Fallback
-if (!isBrowser) {
+if (isNode) {
   try {
     // Hidden from Vite's static analysis to avoid browser bundling warnings
     const nodeUtil = 'node:util';
     const util = await import(/* @vite-ignore */ nodeUtil) as { styleText: StyleTextFn };
     styleText = util.styleText;
-  } catch (e) {
-    throw new Error(`[Logger] Failed to load node:util module in Node environment: ${String(e)}`);
+  } catch (_e) {
+    // Graceful fallback without crashing
   }
 }
 

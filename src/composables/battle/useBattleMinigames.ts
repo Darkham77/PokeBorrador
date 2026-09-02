@@ -5,6 +5,11 @@ import type { ItemId } from '@/data/inventory/items'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { resetBattleMinigameFlags } from '@/logic/battle/battleMinigames'
 import type { BattleMinigame } from '@/types/battle/battle'
+import {
+  applyFishingLevelAndIvBonus,
+  type FishingDifficultyKey,
+  FISHING_DIFFICULTIES
+} from '@/components/modals/fishingGameHelper'
 
 interface BattleStoreMinigameRef {
   state?: {
@@ -47,9 +52,26 @@ export function useBattleMinigames(
     await battleStore.completeBattleFlow('search')
   }
 
-  const handleFishingSuccess = async () => {
-    logger.success('BattleArenaView', 'Fishing SUCCESS')
+  const handleFishingSuccess = async (difficulty: unknown = 'easy') => {
+    const validDifficulty: FishingDifficultyKey = (typeof difficulty === 'string' && difficulty in FISHING_DIFFICULTIES)
+      ? (difficulty as FishingDifficultyKey)
+      : 'easy'
+    logger.success('BattleArenaView', `Fishing SUCCESS (${validDifficulty})`)
     useModalStore().close('Fishing')
+
+    if (enemy.value) {
+      const cfg = FISHING_DIFFICULTIES[validDifficulty] || FISHING_DIFFICULTIES.easy
+      const oldLevel = enemy.value.level
+      const levelBonus = applyFishingLevelAndIvBonus(enemy.value, validDifficulty)
+      if (levelBonus > 0) {
+        uiStore.notify(`¡Pesca ${cfg.label}! ${enemy.value.name} subió a Nivel ${enemy.value.level} (+${levelBonus})`, '🎣')
+        battleStore.addLog(`¡Pesca ${cfg.label}! ${enemy.value.name} subió de Nivel ${oldLevel} a ${enemy.value.level} (+${levelBonus}).`, 'log-info', '🎣')
+      }
+      if (cfg.rerollIVs) {
+        battleStore.addLog(`¡Pesca Experta! Se aplicó un reroll de IVs a ${enemy.value.name}.`, 'log-info', '🌟')
+      }
+    }
+
     if (battleStore.state) {
       resetBattleMinigameFlags(battleStore.state)
     }

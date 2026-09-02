@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import BaseModal from '@/components/common/BaseModal.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import {
-  calculateFishingTotalNotes,
-  calculateFishingSpeedBase,
-  calculateFishingHitWindow,
-} from '@/logic/minigames/minigameMath'
+  calculateFishingDifficulty,
+  FISHING_DIFFICULTIES,
+  type FishingDifficultyKey,
+} from '@/components/modals/fishingGameHelper'
 
 const MINIGAME_SPAWN_PADDING_PX = 60
 const MINIGAME_MIN_DISTANCE_PX = 85
@@ -15,7 +15,6 @@ const MINIGAME_MAX_POSITION_ATTEMPTS = 15
 const MINIGAME_FAIL_TIMER_BUFFER_MS = 150
 const MINIGAME_CONTAINER_SIZE_PX = 380
 
-const SPAWN_INTERVAL_MULTIPLIER = 0.7
 const INITIAL_RING_SCALE = 3.0
 const RING_FADE_OUT_DURATION_SEC = 0.1
 const SUCCESS_SCALE_DURATION_SEC = 0.1
@@ -32,7 +31,8 @@ interface Props {
   show?: boolean
   pokemon: Pokemon
   rarity?: number // 1-100
-  onWin?: (() => void) | null
+  difficulty?: string | null
+  onWin?: ((difficulty: string) => void) | null
   onFail?: (() => void) | null
   onCloseCallback?: (() => void) | null
 }
@@ -40,13 +40,14 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   show: false,
   rarity: DEFAULT_RARITY,
+  difficulty: null,
   onWin: null,
   onFail: null,
   onCloseCallback: null
 })
 
 const emit = defineEmits<{
-  (e: 'win'): void
+  (e: 'win', difficulty: FishingDifficultyKey): void
   (e: 'fail'): void
   (e: 'close'): void
 }>()
@@ -56,10 +57,19 @@ const feedback = ref('')
 
 let gameCall: gsap.core.Tween | null = null
 let iconTween: gsap.core.Tween | null = null
-const totalNotes = calculateFishingTotalNotes(props.rarity)
-const speedBase = calculateFishingSpeedBase(props.rarity)
-const hitWindow = calculateFishingHitWindow(props.rarity)
-const spawnInterval = speedBase * SPAWN_INTERVAL_MULTIPLIER
+
+const difficulty = computed<FishingDifficultyKey>(() => {
+  if (props.difficulty && props.difficulty in FISHING_DIFFICULTIES) {
+    return props.difficulty as FishingDifficultyKey
+  }
+  return calculateFishingDifficulty(props.rarity || DEFAULT_RARITY, props.pokemon?.level || 10)
+})
+
+const diffConfig = computed(() => FISHING_DIFFICULTIES[difficulty.value])
+const totalNotes = computed(() => diffConfig.value.notes)
+const speedBase = computed(() => diffConfig.value.speedBase)
+const hitWindow = computed(() => diffConfig.value.hitWindow)
+const spawnInterval = computed(() => diffConfig.value.spawnInterval)
 
 interface Note {
   id: number
@@ -95,7 +105,7 @@ function scheduleGameplayDelay(delaySec: number, callback: () => void): gsap.cor
 }
 
 const spawnNext = () => {
-  if (!gameActive.value || spawnedNotesCount.value >= totalNotes) return
+  if (!gameActive.value || spawnedNotesCount.value >= totalNotes.value) return
 
   spawnedNotesCount.value++
   const noteId = spawnedNotesCount.value
@@ -137,7 +147,7 @@ const spawnNext = () => {
   activeNotes.value.push(note)
 
   // Fail timer if not clicked
-  const failCall = scheduleGameplayDelay((speedBase + MINIGAME_FAIL_TIMER_BUFFER_MS) / MS_PER_SECOND, () => {
+  const failCall = scheduleGameplayDelay((speedBase.value + MINIGAME_FAIL_TIMER_BUFFER_MS) / MS_PER_SECOND, () => {
     if (!note.clicked && gameActive.value) {
       activePositions.value = activePositions.value.filter(p => p !== myPos)
       failGame('¡Perdiste el ritmo!')
@@ -152,7 +162,7 @@ const spawnNext = () => {
       const ringAnim = createGameplayTween(el, {
           scale: 1.0, 
           opacity: 1, 
-          duration: speedBase / MS_PER_SECOND, 
+          duration: speedBase.value / MS_PER_SECOND, 
           ease: 'none',
           onComplete: () => { gsap.to(el, { opacity: 0, duration: RING_FADE_OUT_DURATION_SEC }) }
       })
@@ -160,7 +170,7 @@ const spawnNext = () => {
     }
   })
 
-  gameCall = scheduleGameplayDelay(spawnInterval / MS_PER_SECOND, spawnNext)
+  gameCall = scheduleGameplayDelay(spawnInterval.value / MS_PER_SECOND, spawnNext)
 }
 
 const handleNoteClick = (note: Note) => {
@@ -172,9 +182,9 @@ const handleNoteClick = (note: Note) => {
   }
 
   const elapsed = getAnimationClockMs() - note.startTime
-  const accuracy = Math.abs(elapsed - speedBase)
+  const accuracy = Math.abs(elapsed - speedBase.value)
 
-  if (accuracy < hitWindow) {
+  if (accuracy < hitWindow.value) {
     note.clicked = true
     clickedNotesCount.value++
     
@@ -196,12 +206,12 @@ const handleNoteClick = (note: Note) => {
 
     gsap.delayedCall(REMOVE_NOTE_DELAY_SEC, () => {
       activeNotes.value = activeNotes.value.filter(n => n.id !== note.id)
-      if (clickedNotesCount.value >= totalNotes) {
+      if (clickedNotesCount.value >= totalNotes.value) {
         finishGame(true)
       }
     })
   } else {
-    failGame(accuracy < speedBase ? '¡Muy pronto!' : '¡Muy tarde!')
+    failGame(accuracy < speedBase.value ? '¡Muy pronto!' : '¡Muy tarde!')
   }
 }
 
@@ -212,7 +222,11 @@ const failGame = (msg: string) => {
   gsap.delayedCall(FAIL_FEEDBACK_DELAY_SEC, () => finishGame(false))
 }
 
+const isFinished = ref(false)
+
 const finishGame = (success: boolean) => {
+  if (isFinished.value) return
+  isFinished.value = true
   gameActive.value = false
   if (gameCall) gameCall.kill()
   activeTweens.forEach(tweens => tweens.forEach(t => t.kill()))
@@ -220,7 +234,7 @@ const finishGame = (success: boolean) => {
   activePositions.value = []
 
   if (success) {
-    emit('win')
+    emit('win', difficulty.value)
   } else {
     emit('fail')
   }
@@ -281,13 +295,21 @@ const handleCloseModal = () => {
       <!-- Background / Hint -->
       <div class="fishing-hint">
         <div class="fishing-text">
-          <p>Hacé clic en las notas en orden <span>1, 2, 3...</span></p>
+          <p>¡Algo picó el anzuelo! Hacé clic en orden <span>1, 2, 3...</span></p>
         </div>
       </div>
 
-      <!-- Counter -->
-      <div class="rhythm-counter pixel-text">
-        NOTAS: {{ clickedNotesCount }} / {{ totalNotes }}
+      <!-- Stats / Difficulty Row -->
+      <div class="stats-row">
+        <div
+          class="stat-pill difficulty-pill"
+          :style="{ borderColor: diffConfig.color, color: diffConfig.color }"
+        >
+          {{ diffConfig.label.toUpperCase() }}
+        </div>
+        <div class="stat-pill rhythm-counter pixel-text">
+          NOTAS: {{ clickedNotesCount }} / {{ totalNotes }}
+        </div>
       </div>
 
       <!-- Game Area (Fija 380x380 px) -->
@@ -338,37 +360,52 @@ const handleCloseModal = () => {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   background: Rgba(10, 132, 255, 0.1);
-  padding: 12px 20px;
+  padding: 10px 16px;
   border-radius: 16px;
   border: 1px solid Rgba(10, 132, 255, 0.2);
   width: 100%;
 
-  .fishing-icon {
-    font-size: 40px;
-  }
-
   .fishing-text {
-    h3 {
-      font-size: 11px;
-      color: var(--blue, #0a84ff);
-      margin-bottom: 4px;
-      text-shadow: 0 0 10px Rgba(10, 132, 255, 0.5);
-    }
+    width: 100%;
+    text-align: center;
     p {
-      font-size: 9px;
-      color: #ccc;
-      span { color: #fff; font-weight: bold; }
+      font-size: 11px;
+      color: #dfcbb5;
+      margin: 0;
+      span {
+        color: #fef08a;
+        font-weight: bold;
+      }
     }
   }
 }
 
+.stats-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  width: 100%;
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+
+.stat-pill {
+  @include pixelated;
+  font-size: 9px;
+  color: var(--white);
+  background: Rgba(255, 255, 255, 0.05);
+  padding: 6px 12px;
+  border-radius: 12px;
+  border: 1px solid Rgba(10, 132, 255, 0.3);
+  white-space: nowrap;
+}
+
 .rhythm-counter {
   text-align: center;
-  font-size: 12px;
+  font-size: 9px;
   color: #fff;
-  margin-bottom: 16px;
   letter-spacing: 1px;
 }
 

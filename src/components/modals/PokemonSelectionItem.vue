@@ -22,6 +22,12 @@ const { getHpColor } = useBattleVisuals()
 const uiStore = useUIStore()
 const breedingStore = useBreedingStore()
 
+import {
+  evaluatePokemonForSubCompetition,
+  type ResolvedSubCompetition,
+  type SubCompetitionConfig
+} from '@/logic/events/eventCompetitions'
+
 interface Props {
   item: {
     pokemon: Pokemon
@@ -34,6 +40,7 @@ interface Props {
   autoConfirm?: boolean
   isDaycareContext?: boolean
   daycareSlotIdx?: number
+  subCompetition?: ResolvedSubCompetition | SubCompetitionConfig | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -41,7 +48,8 @@ const props = withDefaults(defineProps<Props>(), {
   isBattleContext: false,
   autoConfirm: false,
   isDaycareContext: false,
-  daycareSlotIdx: 0
+  daycareSlotIdx: 0,
+  subCompetition: null
 })
 
 const emit = defineEmits<{
@@ -76,6 +84,36 @@ const listCompatibility = computed(() => {
 const eggSpeciesName = computed(() => {
   if (!listCompatibility.value?.eggSpecies) return ''
   return pokemonDataProvider.resolveSpeciesName(listCompatibility.value.eggSpecies)
+})
+
+const competitionEval = computed(() => {
+  if (!props.subCompetition) return null
+  const resolvedOrder = props.subCompetition.order === 'min' ? 'min' : 'max'
+  return evaluatePokemonForSubCompetition(props.item.pokemon, props.subCompetition, resolvedOrder)
+})
+
+const competitionMetricIcon = computed(() => {
+  if (!props.subCompetition) return '🏆'
+  const m = props.subCompetition.metric
+  if (m === 'total_ivs' || m === 'stat_iv') return '🧬'
+  if (m === 'weight') return '⚖️'
+  if (m === 'height') return '📏'
+  if (m === 'level') return '📈'
+  if (m === 'friendship') return '💖'
+  return '🏆'
+})
+
+const competitionLabel = computed(() => {
+  if (!props.subCompetition) return 'Torneo'
+  const dirLabel = props.subCompetition.order === 'min' ? 'Menor' : 'Mayor'
+  const m = props.subCompetition.metric
+  if (m === 'weight') return `${dirLabel} Peso`
+  if (m === 'height') return `${dirLabel} Altura`
+  if (m === 'total_ivs') return 'IVs Totales'
+  if (m === 'stat_iv' && props.subCompetition.targetStat) return `IV ${props.subCompetition.targetStat.toUpperCase()}`
+  if (m === 'level') return `${dirLabel} Nivel`
+  if (m === 'friendship') return `${dirLabel} Amistad`
+  return props.subCompetition.name || 'Torneo'
 })
 
 function handleOpenDetail() {
@@ -286,6 +324,20 @@ function handleClick() {
           <span>SPE: {{ item.pokemon.ivs.spe }}</span>
         </div>
       </div>
+
+      <!-- Tournament / Sub-Competition Evaluation Sub-Element -->
+      <div
+        v-if="competitionEval"
+        class="competition-item-meta"
+      >
+        <div class="competition-meta-row">
+          <div class="competition-metric-info">
+            <span class="emoji competition-icon">{{ competitionMetricIcon }}</span>
+            <span class="competition-label">{{ competitionLabel }}:</span>
+            <span class="competition-value highlight">{{ competitionEval.displayValue }}</span>
+          </div>
+        </div>
+      </div>
       
       <slot name="extra" />
     </div>
@@ -461,6 +513,56 @@ function handleClick() {
   color: #a7f3d0;
   @include pixelated;
   width: 100%;
+}
+
+.competition-item-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 4px 8px;
+  background: Rgba(250, 204, 21, 0.08);
+  border: 1px solid Rgba(250, 204, 21, 0.25);
+  border-radius: 4px;
+  width: 100%;
+}
+
+.competition-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+}
+
+.competition-metric-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 8.5px;
+  @include pixelated;
+  color: #fef08a;
+
+  .competition-icon {
+    font-size: 11px;
+    line-height: 1;
+  }
+
+  .competition-label {
+    color: Rgba(254, 240, 138, 0.75);
+    font-weight: 600;
+  }
+
+  .competition-value {
+    font-weight: bold;
+    color: #ffd700;
+
+    &.highlight {
+      color: #5eead4;
+      text-shadow: 0 0 6px Rgba(94, 234, 212, 0.3);
+    }
+  }
 }
 
 .info-tooltip-wrapper {

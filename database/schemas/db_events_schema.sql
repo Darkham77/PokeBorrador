@@ -181,6 +181,7 @@ BEGIN
             'category_name', sub_name,
             'player_id', player_id,
             'player_name', player_name,
+            'player_email', COALESCE(player_email, ''),
             'score', (COALESCE(data->>'score', data->>'total_ivs', '0'))::numeric,
             'entry_data', data
         )) INTO sub_winners
@@ -196,9 +197,14 @@ BEGIN
                     p := sub_prizes->(w->>'rank');
                     IF p IS NOT NULL THEN
                         INSERT INTO public.awards (event_id, winner_id, winner_name, winner_email, prize, awarded_at)
-                        VALUES (target_event_id, (w->>'player_id')::uuid, w->>'player_name', 
-                               (SELECT player_email FROM competition_entries WHERE player_id = (w->>'player_id')::uuid AND event_id = target_event_id AND category_id = cat_rec.cat_id LIMIT 1),
-                               p, NOW());
+                        VALUES (
+                            target_event_id, 
+                            (w->>'player_id')::uuid, 
+                            w->>'player_name', 
+                            COALESCE(w->>'player_email', ''),
+                            p, 
+                            NOW()
+                        );
                     END IF;
                 END LOOP;
             END IF;

@@ -35,12 +35,18 @@
         width: 100dvw;
         height: 100dvh;
         overflow: hidden;
+        overscroll-behavior: none;
+        overscroll-behavior-x: none;
+        overscroll-behavior-y: none;
       }
       #app { 
         background: #07080e; 
         width: 100dvw;
         height: 100dvh; 
         overflow: hidden;
+        overscroll-behavior: none;
+        overscroll-behavior-x: none;
+        overscroll-behavior-y: none;
       }
 
       /* Estilos para el fallback de conexión offline */
@@ -170,6 +176,14 @@
         font-family: monospace;
       }
       
+      .actions-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        margin-top: 12px;
+      }
+
       .retry-btn-modern {
         background: #ff453a;
         color: #ffffff;
@@ -182,6 +196,8 @@
         box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 69, 58, 0.3);
         transition: all 0.2s ease;
         outline: none;
+        width: 100%;
+        box-sizing: border-box;
       }
       
       .retry-btn-modern:hover {
@@ -192,6 +208,35 @@
       }
       
       .retry-btn-modern:active {
+        transform: translateY(1px);
+        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+      }
+
+      .login-btn-modern {
+        background: rgba(255, 255, 255, 0.08);
+        color: #ffd60a;
+        border: 2px solid rgba(255, 214, 10, 0.4);
+        padding: 12px 24px;
+        font-size: 9px;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
+        transition: all 0.2s ease;
+        outline: none;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .login-btn-modern:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 214, 10, 0.2);
+        border-color: #ffd60a;
+        color: #ffffff;
+        box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2), 0 0 15px rgba(255, 214, 10, 0.3);
+      }
+
+      .login-btn-modern:active {
         transform: translateY(1px);
         box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
       }
@@ -216,6 +261,58 @@
         if (message) message.innerHTML = 'El servidor de Poké Vicio está fuera de línea o no tienes conexión a internet.';
         if (loader) loader.style.display = 'none';
         if (errorContent) errorContent.style.display = 'block';
+      }
+
+      function retryConnection() {
+        if ('serviceWorker' in navigator) {
+          try {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+              registrations.forEach(function(r) {
+                if (r.waiting) r.waiting.postMessage({ type: 'SKIP_WAITING' });
+                r.update().catch(function() {});
+              });
+            }).catch(function() {});
+          } catch (e) {}
+        }
+        var cacheBuster = Date.now();
+        var url = new URL(window.location.href);
+        url.searchParams.set('reload_t', String(cacheBuster));
+        window.location.replace(url.toString());
+      }
+
+      function forceLoginAndFreshUpdate() {
+        try {
+          if (typeof sessionStorage !== 'undefined') {
+            sessionStorage.clear();
+            sessionStorage.setItem('block_autologin', 'true');
+          }
+          if (typeof localStorage !== 'undefined') {
+            localStorage.removeItem('pokevicio_local_user');
+            localStorage.removeItem('pokevicio_session_mode');
+          }
+        } catch (e) {}
+
+        if ('caches' in window) {
+          try {
+            caches.keys().then(function(keys) {
+              return Promise.all(keys.map(function(key) { return caches.delete(key); }));
+            }).catch(function() {});
+          } catch (e) {}
+        }
+
+        if ('serviceWorker' in navigator) {
+          try {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+              registrations.forEach(function(r) {
+                if (r.waiting) r.waiting.postMessage({ type: 'SKIP_WAITING' });
+                r.update().catch(function() {});
+              });
+            }).catch(function() {});
+          } catch (e) {}
+        }
+
+        var target = '/login?fresh_t=' + Date.now();
+        window.location.replace(target);
       }
 
       // Si el navegador ya detecta que no hay internet, actuar de inmediato
@@ -265,9 +362,14 @@
             <p class="error-details">
               Detalle: <code>WEB_OFFLINE / CONEXIÓN RECHAZADA</code>
             </p>
-            <button class="retry-btn-modern press-start" onclick="window.location.reload()">
-              REINTENTAR
-            </button>
+            <div class="actions-group">
+              <button class="retry-btn-modern press-start" onclick="retryConnection()">
+                REINTENTAR
+              </button>
+              <button class="login-btn-modern press-start" onclick="forceLoginAndFreshUpdate()">
+                VOLVER AL LOGIN / ACTUALIZAR
+              </button>
+            </div>
           </div>
         </div>
       </div>

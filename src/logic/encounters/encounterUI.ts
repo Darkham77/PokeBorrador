@@ -29,12 +29,19 @@ export function showFishingIntro(pokemon: Pokemon, rarity: number, onStart: () =
 /**
  * Starts the rhythm-based fishing minigame via Vue UI.
  */
-export function startFishingMinigame(enemy: Pokemon, rarity: number, onWin: () => void, onFail: () => void): void {
+export function startFishingMinigame(
+  enemy: Pokemon,
+  rarity: number,
+  onWin: (difficulty?: string) => void,
+  onFail: () => void,
+  difficulty?: string
+): void {
   const modalStore = useModalStore()
   
   modalStore.open('Fishing', {
     pokemon: enemy,
     rarity: rarity,
+    difficulty: difficulty,
     onWin: onWin,
     onFail: onFail
   })
@@ -56,12 +63,19 @@ export function showArchaeologyIntro(pokemon: Pokemon, rarity: number, onStart: 
 /**
  * Starts the grid-based archaeology minigame via Vue UI.
  */
-export function startArchaeologyMinigame(enemy: Pokemon, rarity: number, onWin: () => void, onFail: () => void): void {
+export function startArchaeologyMinigame(
+  enemy: Pokemon,
+  rarity: number,
+  onWin: (difficulty?: string) => void,
+  onFail: () => void,
+  difficulty?: string
+): void {
   const modalStore = useModalStore()
   
   modalStore.open('Archaeology', {
     pokemon: enemy,
     rarity: rarity,
+    difficulty: difficulty,
     onWin: onWin,
     onFail: onFail
   })

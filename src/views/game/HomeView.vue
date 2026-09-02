@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import HomeEventsSection from '@/components/home/HomeEventsSection.vue'
 import EventMissions from '@/components/events/EventMissions.vue'
@@ -7,9 +7,14 @@ import HomeBreedingWidget from '@/components/home/HomeBreedingWidget.vue'
 import HomeNotificationsFeed from '@/components/home/HomeNotificationsFeed.vue'
 import HomeGymsProgress from '@/components/home/HomeGymsProgress.vue'
 import HomeFactionWar from '@/components/home/HomeFactionWar.vue'
+import HomeClassMissionsWidget from '@/components/home/HomeClassMissionsWidget.vue'
+import HomeActiveBuffsWidget from '@/components/home/HomeActiveBuffsWidget.vue'
+import HomeEconomyWidget from '@/components/home/HomeEconomyWidget.vue'
 import { useBreedingStore } from '@/stores/breeding'
+import { useLoadingStore } from '@/stores/loading'
 
 const breedingStore = useBreedingStore()
+const loadingStore = useLoadingStore()
 
 const homeContainerRef = ref<HTMLElement | null>(null)
 let gsapCtx: gsap.Context | null = null
@@ -27,6 +32,17 @@ onMounted(() => {
       )
     }
   }, homeContainerRef.value || undefined)
+
+  // Ensure DOM and child widgets are fully laid out and painted before releasing loading overlay
+  void nextTick(() => {
+    if (typeof requestAnimationFrame !== 'undefined') {
+      requestAnimationFrame(() => {
+        loadingStore.markAppMounted()
+      })
+    } else {
+      loadingStore.markAppMounted()
+    }
+  })
 })
 
 onUnmounted(() => {
@@ -38,6 +54,7 @@ onUnmounted(() => {
 
 <template>
   <div
+    id="home-view-container"
     ref="homeContainerRef"
     class="home-view-container legacy-ui"
   >
@@ -45,13 +62,22 @@ onUnmounted(() => {
     <div class="home-masonry-layout">
       <!-- Columna Principal / Ancha (Izquierda en desktop) -->
       <main class="home-column-main">
-        <div class="home-widget-block widget-events">
+        <div
+          id="widget-events-section"
+          class="home-widget-block widget-events"
+        >
           <HomeEventsSection />
         </div>
-        <div class="home-widget-block widget-gyms">
+        <div
+          id="widget-gyms-progress"
+          class="home-widget-block widget-gyms"
+        >
           <HomeGymsProgress />
         </div>
-        <div class="home-widget-block widget-missions">
+        <div
+          id="widget-daily-missions"
+          class="home-widget-block widget-missions"
+        >
           <div class="home-section-card missions-card">
             <div class="card-header-bar">
               <div class="title-wrap">
@@ -66,17 +92,44 @@ onUnmounted(() => {
             </div>
           </div>
         </div>
+        <div
+          id="widget-class-missions"
+          class="home-widget-block widget-class"
+        >
+          <HomeClassMissionsWidget />
+        </div>
       </main>
 
       <!-- Columna Lateral / Widgets (Derecha en desktop) -->
       <aside class="home-column-sidebar">
-        <div class="home-widget-block widget-breeding">
+        <div
+          id="widget-breeding-section"
+          class="home-widget-block widget-breeding"
+        >
           <HomeBreedingWidget />
         </div>
-        <div class="home-widget-block widget-faction">
+        <div
+          id="widget-economy-section"
+          class="home-widget-block widget-economy"
+        >
+          <HomeEconomyWidget />
+        </div>
+        <div
+          id="widget-buffs-section"
+          class="home-widget-block widget-buffs"
+        >
+          <HomeActiveBuffsWidget />
+        </div>
+        <div
+          id="widget-faction-section"
+          class="home-widget-block widget-faction"
+        >
           <HomeFactionWar />
         </div>
-        <div class="home-widget-block widget-notifications">
+        <div
+          id="widget-notifications-section"
+          class="home-widget-block widget-notifications"
+        >
           <HomeNotificationsFeed />
         </div>
       </aside>
@@ -111,7 +164,7 @@ onUnmounted(() => {
       display: contents;
     }
 
-    // Mobile single-column sequence (Breeding is 2nd right after Events)
+    // Mobile single-column sequence
     .widget-events {
       order: 1;
     }
@@ -120,7 +173,7 @@ onUnmounted(() => {
       order: 2;
     }
 
-    .widget-gyms {
+    .widget-economy {
       order: 3;
     }
 
@@ -132,8 +185,20 @@ onUnmounted(() => {
       order: 5;
     }
 
-    .widget-notifications {
+    .widget-gyms {
       order: 6;
+    }
+
+    .widget-buffs {
+      order: 7;
+    }
+
+    .widget-class {
+      order: 8;
+    }
+
+    .widget-notifications {
+      order: 9;
     }
   }
 }

@@ -26,7 +26,11 @@
   - **Power Lens**: Sp. Attack
   - **Power Band**: Sp. Defense
   - **Power Anklet**: Speed
-- **Everstone**: If a parent holds it, it blocks their evolution and guarantees passing down their Nature to the offspring.
+- **Everstone**: If a parent holds it, it blocks their evolution and guarantees passing down their Nature to the offspring (using its canonical `NatureId`).
+- **Nature Inheritance & Generation Standards**:
+  - **Everstone Held**: If a parent holds an Everstone, its nature is guaranteed to pass down to the offspring (using its canonical `NatureId`).
+  - **No Everstone Held**: The offspring's nature MUST be rolled randomly from the complete canonical `NATURES` catalog (`NATURES[Math.floor(Math.random() * NATURES.length)]`). Defaulting to a static fallback nature (e.g., `'serious'`) or assigning Spanish strings (`'Serio'`) is strictly forbidden.
+  - **Fossil DNA Cloning**: Ancestral cloned eggs created via `executeCloneFossil` MUST receive a random canonical `NatureId` from `NATURES`.
 
 ---
 

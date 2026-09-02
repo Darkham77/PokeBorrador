@@ -164,6 +164,10 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
           }
           if (encounter.type === 'fishing' || encounter.type === 'archaeology') {
             minigame = encounter.type
+            const candidateRarity = 'rarity' in encounter ? (encounter as { rarity?: unknown }).rarity : undefined
+            if (typeof candidateRarity === 'number') {
+              ctx.activeBattle.value.rarity = candidateRarity
+            }
           }
         }
       }

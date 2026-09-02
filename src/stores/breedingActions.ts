@@ -10,6 +10,7 @@ import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils';
 import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
 import type { Ref } from 'vue';
 import type { DaycareEgg } from '@/types/breeding/breeding';
+import { NATURES } from '@/data/battle/natures';
 import { BREEDING_COST_LOWEST_TIER, BREEDING_COST_MID_LOW_TIER, BREEDING_COST_MID_HIGH_TIER, BREEDING_COST_MAXIMUM_TIER, BREEDING_TIER_1_MAX_PERFECT_IVS, BREEDING_TIER_2_MAX_PERFECT_IVS, BREEDING_TIER_3_MAX_PERFECT_IVS, EGG_WAREHOUSE_MAX_CAPACITY, FOSSIL_CLONE_BASE_SUCCESS_CHANCE, MAX_SINGLE_STAT_IV } from '@/logic/constants/gameplay.ts';
 
 export function calculateBreedingCost(pA: Pokemon, pB: Pokemon): number {
@@ -98,10 +99,12 @@ export function executeCloneFossil(
   const shinyChance = calculateCloningShinyChance(extraQty);
   const isShiny = Math.random() < shinyChance;
 
+  const randomNature = NATURES[Math.floor(Math.random() * NATURES.length)] || 'serious';
+
   const egg = eggFactory.createDaycareEgg({
     species: speciesId,
     ivs: bestIVs,
-    nature: 'Serio',
+    nature: randomNature,
     movesAtBirth: [],
     abilityIndex: 0,
     isShiny,

@@ -35,6 +35,8 @@ export const useWarStore = defineStore('war', () => {
   const mapDominance = ref<Partial<Record<MapRouteId, DominanceInfo>>>({})
   const dailyGuardianCaptures = ref<MapRouteId[]>([])
   const isLoading = ref(false)
+  const isLoaded = ref(false)
+  let inFlightPromise: Promise<void> | null = null
 
   // Reactive engine-based state
   const currentWeekId = computed(() => getWeekId())
@@ -44,52 +46,60 @@ export const useWarStore = defineStore('war', () => {
    * Loads all war-related data for the current session.
    * Handles Global vs Local instance isolation via gameStore.db (DBRouter).
    */
-  async function loadWarData() {
+  async function loadWarData(force = false) {
+    if (!force && isLoaded.value) return
+    if (inFlightPromise) return inFlightPromise
+
     isLoading.value = true
-    try {
-      // 0. Resolve previous week dominance & distribute rewards if applicable
-      await resolveWeekIfNeeded()
-      await distributeWeeklyWarCoins()
+    inFlightPromise = (async () => {
+      try {
+        // 0. Resolve previous week dominance & distribute rewards if applicable
+        await resolveWeekIfNeeded()
+        await distributeWeeklyWarCoins()
 
-      // 1. Load Faction and Coins from Game State (Synchronized via DBRouter)
-      faction.value = gameStore.state.faction || null
-      warCoins.value = gameStore.state.warCoins || 0
+        // 1. Load Faction and Coins from Game State (Synchronized via DBRouter)
+        faction.value = gameStore.state.faction || null
+        warCoins.value = gameStore.state.warCoins || 0
 
-      // 2. Load Individual Weekly Progress
-      if (authStore.user && gameStore.db) {
-        const { data: pts } = await gameStore.db.from('war_user_points')
-          .select('points')
-          .eq('user_id', authStore.user.id)
-          .eq('week_id', currentWeekId.value)
-        
-        weeklyPoints.value = (pts as { points: number }[] | null)?.reduce((acc, r) => acc + (r.points || 0), 0) || 0
+        // 2. Load Individual Weekly Progress
+        if (authStore.user && gameStore.db) {
+          const { data: pts } = await gameStore.db.from('war_user_points')
+            .select('points')
+            .eq('user_id', authStore.user.id)
+            .eq('week_id', currentWeekId.value)
+          
+          weeklyPoints.value = (pts as { points: number }[] | null)?.reduce((acc, r) => acc + (r.points || 0), 0) || 0
 
-        // 3. Load Guardian Captures for today (isolated world)
-        const today = requireISODateKey(Temporal.Now.plainDateISO().toString())
-        const { data: guardians } = await gameStore.db.from('guardian_captures')
-          .select('map_id')
-          .eq('user_id', authStore.user.id)
-          .eq('capture_date', today)
-        
-        const typedGuardians = guardians as { map_id: string }[] | null;
-        dailyGuardianCaptures.value = typedGuardians?.map(g => requireMapRouteId(g.map_id)) || []
+          // 3. Load Guardian Captures for today (isolated world)
+          const today = requireISODateKey(Temporal.Now.plainDateISO().toString())
+          const { data: guardians } = await gameStore.db.from('guardian_captures')
+            .select('map_id')
+            .eq('user_id', authStore.user.id)
+            .eq('capture_date', today)
+          
+          const typedGuardians = guardians as { map_id: string }[] | null;
+          dailyGuardianCaptures.value = typedGuardians?.map(g => requireMapRouteId(g.map_id)) || []
 
-        if (typedGuardians && Array.isArray(typedGuardians)) {
-          if (!gameStore.state.guardianCaptures) {
-            gameStore.state.guardianCaptures = {}
+          if (typedGuardians && Array.isArray(typedGuardians)) {
+            if (!gameStore.state.guardianCaptures) {
+              gameStore.state.guardianCaptures = {}
+            }
+            typedGuardians.forEach(g => {
+              const routeId = requireMapRouteId(g.map_id)
+              gameStore.state.guardianCaptures![routeId] = today
+            })
           }
-          typedGuardians.forEach(g => {
-            const routeId = requireMapRouteId(g.map_id)
-            gameStore.state.guardianCaptures![routeId] = today
-          })
         }
-      }
 
-      // 4. Load Dominance Data
-      await fetchMapDominance()
-    } finally {
-      isLoading.value = false
-    }
+        // 4. Load Dominance Data
+        await fetchMapDominance()
+        isLoaded.value = true
+      } finally {
+        isLoading.value = false
+        inFlightPromise = null
+      }
+    })()
+    return inFlightPromise
   }
 
   /**
@@ -414,6 +424,7 @@ export const useWarStore = defineStore('war', () => {
     isDisputeActive,
     currentWeekId,
     dailyGuardianCaptures,
+    isLoaded,
     loadWarData,
     addPoints,
     checkGuardian,

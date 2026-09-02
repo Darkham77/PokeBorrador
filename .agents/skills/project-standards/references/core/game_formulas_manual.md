@@ -334,5 +334,36 @@ $$\text{Outcome}(R_3) = \begin{cases} \text{Sleep Induction} & \text{if } R_3 < 
 
 $$\text{Damage}_{\text{Confusion}} = \left\lfloor \left( \left\lfloor \frac{\left\lfloor \frac{2 \cdot \text{Level}}{5} \right\rfloor + 2}{50} \cdot 40 \cdot \frac{\text{Atk}_{\text{stat}}}{\text{Def}_{\text{stat}}} \right\rfloor + 2 \right) \cdot \text{Random}(0.85, 1.00) \right\rfloor$$
 
+---
+
+## 14. 🎣 Fishing Minigame Mathematical Ratios & Dynamic Difficulty Scaling
+
+The fishing rhythm minigame dynamically scales difficulty, note count, ring collapse speed, and encounter rewards by combining encounter rarity and Pokemon level in [`src/components/modals/fishingGameHelper.ts`](file:///c:/Users/Franco/Trabajos/Juegos/PokeBorrador/src/components/modals/fishingGameHelper.ts).
+
+### 1. Continuous Difficulty Score ($\text{Score} \in [0, 100]$)
+
+$$\text{RarityScore} = 100 - \text{clamp}(1, 100, \text{Rarity})$$
+
+$$\text{LevelScore} = \min\left(100, \frac{\text{clamp}(1, 100, \text{Level})}{70} \times 100\right)$$
+
+$$\text{DifficultyScore} = \text{round}\left(0.40 \cdot \text{LevelScore} + 0.60 \cdot \text{RarityScore}\right)$$
+
+### 2. Difficulty Tiers & Parameter Calibration Matrix
+
+| Tier | Score Range | Notes | Speed Base (Collapse) | Spawn Interval | Hit Window | Level Bonus Range | IV Reroll |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Fácil (Easy)** | $\text{Score} \le 45$ | 5 | $910\text{ ms}$ | $680\text{ ms}$ | $200\text{ ms}$ | $+0$ | None |
+| **Medio (Medium)** | $46 \le \text{Score} \le 70$ | 8 | $780\text{ ms}$ | $580\text{ ms}$ | $160\text{ ms}$ | $+1 \text{ to } +4$ | None |
+| **Difícil (Hard)** | $71 \le \text{Score} \le 85$ | 11 | $680\text{ ms}$ | $500\text{ ms}$ | $130\text{ ms}$ | $+4 \text{ to } +7$ | None |
+| **Experto (Expert)** | $\text{Score} > 85$ | 13 | $580\text{ ms}$ | $420\text{ ms}$ | $100\text{ ms}$ | $+7 \text{ to } +10$ | 1 Reroll ($\max(\text{IV}_{\text{current}}, \text{Roll})$) |
+
+### 3. Random Level Bonus Resolution
+When a minigame is won, a discrete random integer is uniformly sampled from the tier's $[\text{minLevelBonus}, \text{maxLevelBonus}]$ range:
+
+$$\text{BonusLevel} = \lfloor \text{Random}() \times (\text{MaxBonus} - \text{MinBonus} + 1) \rfloor + \text{MinBonus}$$
+
+$$\text{NewLevel} = \min(100, \text{CurrentLevel} + \text{BonusLevel})$$
+
+
 
 

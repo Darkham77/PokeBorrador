@@ -130,7 +130,8 @@ export function validateAndSanitize(data: GameState | SaveDataDto | Record<strin
     uids.add(p.uid);
   };
 
-  const isDebugMode = typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'));
+  const isDebugMode = (typeof window !== 'undefined' && Boolean(window.__VITE_DEBUG__ || window.location?.search?.includes('debug'))) ||
+                      (typeof import.meta !== 'undefined' && Boolean(import.meta.env?.DEV));
 
   const validateSinglePokemon = (p: SaveDataDto['team'][number] | null, listName: string) => {
     if (!p) return;

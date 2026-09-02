@@ -481,6 +481,21 @@ export default defineConfig({
             }
           },
           {
+            // Dynamic event and PokeCenter UI banners (updated in background via StaleWhileRevalidate)
+            urlPattern: /\/assets\/ui\/(events|pokecenter)\/.*\.(png|webp|svg|gif|jpg|jpeg)(\?.*)?$/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'game-event-banners-v1',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
             // All game image assets (sprites, icons, backgrounds)
             urlPattern: /\/assets\/.*\.(png|webp|svg|gif|jpg|jpeg)(\?.*)?$/i,
             handler: 'CacheFirst',

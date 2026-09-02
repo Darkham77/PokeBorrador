@@ -14,6 +14,13 @@ import { getServerInstant } from '@/logic/utils/timeUtils'
 
 const CARD_MIN_WIDTH_PX = 250
 const CARD_GAP_PX = 12
+const SWIPE_THRESHOLD_PX = 40
+const SWIPE_MAX_DRAG_PX = 120
+const SLIDE_TRANSITION_DURATION_SEC = 0.28
+const SLIDE_OFFSET_PX = 30
+const DRAG_DAMPENING_BOUNDARY = 0.25
+const DRAG_DAMPENING_NORMAL = 0.85
+const SWIPE_LOCK_AXIS_THRESHOLD_PX = 8
 
 const eventStore = useEventStore()
 const modalStore = useModalStore()
@@ -23,9 +30,19 @@ const showSchedule = ref(false)
 const showHistory = ref(false)
 const sectionRef = ref<HTMLElement | null>(null)
 const containerRef = ref<HTMLElement | null>(null)
+const eventsRowRef = ref<HTMLElement | null>(null)
 const containerWidth = ref(1200)
 let gsapCtx: gsap.Context | null = null
 let resizeObserver: ResizeObserver | null = null
+
+// Touch / Mouse Drag & Swipe State
+const isDragging = ref(false)
+const dragOffsetPx = ref(0)
+const isPointerDown = ref(false)
+const startPointerX = ref(0)
+const startPointerY = ref(0)
+const activePointerId = ref<number | null>(null)
+const isHorizontalGesture = ref(false)
 
 // Responsive measurement of container width
 const updateLayout = () => {
@@ -88,18 +105,106 @@ const currentPage = computed(() => {
   return Math.floor(carouselIndex.value / visibleSlots.value)
 })
 
+const animateSlideTransition = (direction: 'next' | 'prev') => {
+  if (!eventsRowRef.value) return
+  const offset = direction === 'next' ? SLIDE_OFFSET_PX : -SLIDE_OFFSET_PX
+  
+  gsap.fromTo(
+    eventsRowRef.value,
+    { x: offset, opacity: 0.6 },
+    { x: 0, opacity: 1, duration: SLIDE_TRANSITION_DURATION_SEC, ease: 'power2.out', clearProps: 'transform,opacity' }
+  )
+}
+
 const prevSlide = () => {
+  if (carouselIndex.value <= 0) return
   carouselIndex.value = Math.max(0, carouselIndex.value - visibleSlots.value)
+  animateSlideTransition('prev')
 }
 
 const nextSlide = () => {
-  if (carouselIndex.value + visibleSlots.value < activeEvents.value.length) {
-    carouselIndex.value += visibleSlots.value
-  }
+  if (carouselIndex.value + visibleSlots.value >= activeEvents.value.length) return
+  carouselIndex.value += visibleSlots.value
+  animateSlideTransition('next')
 }
 
 const goToSlide = (pageIdx: number) => {
+  const current = currentPage.value
+  if (pageIdx === current) return
+  const dir = pageIdx > current ? 'next' : 'prev'
   carouselIndex.value = pageIdx * visibleSlots.value
+  animateSlideTransition(dir)
+}
+
+const onPointerDown = (e: PointerEvent) => {
+  if (!needsCarousel.value) return
+  if (e.button !== 0) return
+  
+  isPointerDown.value = true
+  startPointerX.value = e.clientX
+  startPointerY.value = e.clientY
+  activePointerId.value = e.pointerId
+  isHorizontalGesture.value = false
+  dragOffsetPx.value = 0
+}
+
+const onPointerMove = (e: PointerEvent) => {
+  if (!isPointerDown.value || activePointerId.value !== e.pointerId) return
+
+  const deltaX = e.clientX - startPointerX.value
+  const deltaY = e.clientY - startPointerY.value
+
+  if (!isHorizontalGesture.value) {
+    if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > SWIPE_LOCK_AXIS_THRESHOLD_PX) {
+      isPointerDown.value = false
+      return
+    }
+    if (Math.abs(deltaX) > SWIPE_LOCK_AXIS_THRESHOLD_PX) {
+      isHorizontalGesture.value = true
+      isDragging.value = true
+    }
+  }
+
+  if (isHorizontalGesture.value) {
+    const isAtStart = currentPage.value === 0 && deltaX > 0
+    const isAtEnd = currentPage.value === totalPages.value - 1 && deltaX < 0
+    const dampening = isAtStart || isAtEnd ? DRAG_DAMPENING_BOUNDARY : DRAG_DAMPENING_NORMAL
+    
+    const rawOffset = deltaX * dampening
+    dragOffsetPx.value = Math.max(-SWIPE_MAX_DRAG_PX, Math.min(SWIPE_MAX_DRAG_PX, rawOffset))
+  }
+}
+
+const handlePointerEnd = (e: PointerEvent) => {
+  if (!isPointerDown.value || activePointerId.value !== e.pointerId) return
+
+  const deltaX = e.clientX - startPointerX.value
+  const wasDragging = isDragging.value
+
+  isPointerDown.value = false
+  activePointerId.value = null
+  dragOffsetPx.value = 0
+
+  if (wasDragging) {
+    gsap.delayedCall(0.05, () => {
+      isDragging.value = false
+    })
+
+    if (deltaX < -SWIPE_THRESHOLD_PX) {
+      nextSlide()
+    } else if (deltaX > SWIPE_THRESHOLD_PX) {
+      prevSlide()
+    }
+  } else {
+    isDragging.value = false
+  }
+}
+
+const handleCardClickCapture = (e: MouseEvent) => {
+  if (isDragging.value) {
+    e.stopPropagation()
+    e.preventDefault()
+  }
 }
 
 const pagedActiveEvents = computed(() => {
@@ -125,6 +230,7 @@ const upcomingOccurrencesToFill = computed<UpcomingEventOccurrence[]>(() => {
 })
 
 const openEventDetail = (event: GameEvent, occurrence?: UpcomingEventOccurrence) => {
+  if (isDragging.value) return
   modalStore.open('EventDetail', { event, occurrence })
 }
 
@@ -169,36 +275,6 @@ onUnmounted(() => {
       </div>
 
       <div class="header-actions">
-        <!-- Carousel Nav Controls for Active Events -->
-        <div
-          v-if="needsCarousel"
-          class="carousel-nav-controls"
-        >
-          <PVTooltip title="Anterior">
-            <button
-              v-gsap-hover
-              class="carousel-nav-btn"
-              :disabled="carouselIndex === 0"
-              aria-label="Anterior"
-              @click.stop="prevSlide"
-            >
-              <span class="emoji">◀</span>
-            </button>
-          </PVTooltip>
-          <span class="carousel-page-indicator">{{ currentPage + 1 }} / {{ totalPages }}</span>
-          <PVTooltip title="Siguiente">
-            <button
-              v-gsap-hover
-              class="carousel-nav-btn"
-              :disabled="carouselIndex + visibleSlots >= activeEvents.length"
-              aria-label="Siguiente"
-              @click.stop="nextSlide"
-            >
-              <span class="emoji">▶</span>
-            </button>
-          </PVTooltip>
-        </div>
-
         <button
           id="home-events-refresh-btn"
           v-gsap-hover
@@ -206,7 +282,10 @@ onUnmounted(() => {
           :disabled="isLoading"
           @click.stop="eventStore.fetchEvents()"
         >
-          <span class="emoji">↻</span>
+          <i
+            class="fas fa-sync-alt"
+            :class="{ 'fa-spin': isLoading }"
+          />
           REFRESCAR
         </button>
       </div>
@@ -219,10 +298,21 @@ onUnmounted(() => {
     <div
       ref="containerRef"
       class="active-events-wrapper"
+      :class="{ 'is-swiping': isDragging }"
+      @pointerdown="onPointerDown"
+      @pointermove="onPointerMove"
+      @pointerup="handlePointerEnd"
+      @pointercancel="handlePointerEnd"
+      @pointerleave="handlePointerEnd"
     >
       <div
+        ref="eventsRowRef"
         class="events-single-row"
-        :style="{ '--visible-slots': visibleSlots }"
+        :style="{
+          '--visible-slots': visibleSlots,
+          transform: isDragging ? `translateX(${dragOffsetPx}px)` : undefined
+        }"
+        @click.capture="handleCardClickCapture"
       >
         <div
           v-if="activeEvents.length === 0 && upcomingOccurrencesToFill.length === 0"
@@ -250,19 +340,50 @@ onUnmounted(() => {
         />
       </div>
 
-      <!-- Carousel Pagination Dots (when multiple active pages) -->
+      <!-- Carousel Pagination Controls & Dots (when multiple active pages) -->
       <div
         v-if="needsCarousel"
-        class="carousel-dots-row"
+        class="carousel-pagination-bar"
       >
-        <button
-          v-for="page in totalPages"
-          :key="page"
-          v-gsap-hover="{ scale: 1.3, y: 0 }"
-          class="carousel-dot"
-          :class="{ active: currentPage === page - 1 }"
-          @click.stop="goToSlide(page - 1)"
-        />
+        <PVTooltip title="Página anterior">
+          <button
+            v-gsap-hover
+            class="carousel-nav-btn"
+            :disabled="currentPage === 0"
+            aria-label="Página anterior"
+            @click.stop="prevSlide"
+          >
+            <i class="fas fa-chevron-left" />
+          </button>
+        </PVTooltip>
+
+        <div class="carousel-dots-group">
+          <button
+            v-for="page in totalPages"
+            :key="page"
+            v-gsap-hover="{ scale: 1.15, y: 0 }"
+            class="carousel-dot"
+            :class="{ active: currentPage === page - 1 }"
+            :aria-label="`Ir a página ${page} de ${totalPages}`"
+            @click.stop="goToSlide(page - 1)"
+          >
+            <span class="dot-indicator" />
+          </button>
+        </div>
+
+        <span class="carousel-page-indicator">{{ currentPage + 1 }} / {{ totalPages }}</span>
+
+        <PVTooltip title="Página siguiente">
+          <button
+            v-gsap-hover
+            class="carousel-nav-btn"
+            :disabled="currentPage === totalPages - 1"
+            aria-label="Página siguiente"
+            @click.stop="nextSlide"
+          >
+            <i class="fas fa-chevron-right" />
+          </button>
+        </PVTooltip>
       </div>
     </div>
 
@@ -276,7 +397,10 @@ onUnmounted(() => {
           @click="showSchedule = !showSchedule"
         >
           <span class="accordion-title-wrap"><span class="emoji">📅</span> <span>Calendario Semanal (Próximos 7 días)</span></span>
-          <span class="toggle-arrow emoji">{{ showSchedule ? '▲' : '▼' }}</span>
+          <i
+            class="fas toggle-arrow"
+            :class="showSchedule ? 'fa-chevron-up' : 'fa-chevron-down'"
+          />
         </button>
         <div
           v-if="showSchedule"
@@ -297,7 +421,10 @@ onUnmounted(() => {
           @click="showHistory = !showHistory"
         >
           <span class="accordion-title-wrap"><span class="emoji">📜</span> <span>Archivo de Eventos Pasados ({{ pastEvents.length }})</span></span>
-          <span class="toggle-arrow emoji">{{ showHistory ? '▲' : '▼' }}</span>
+          <i
+            class="fas toggle-arrow"
+            :class="showHistory ? 'fa-chevron-up' : 'fa-chevron-down'"
+          />
         </button>
         <div
           v-if="showHistory"
@@ -332,15 +459,18 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     gap: 10px;
+    min-width: 0;
 
     .card-icon {
       font-size: 20px;
+      flex-shrink: 0;
     }
 
     .title-text-group {
       display: flex;
       flex-direction: column;
       gap: 2px;
+      min-width: 0;
     }
 
     .card-title {
@@ -349,11 +479,15 @@ onUnmounted(() => {
       color: var(--yellow, #facc15);
       margin: 0;
       letter-spacing: 0.5px;
+      white-space: nowrap;
     }
 
     .section-desc {
       font-size: 10px;
       color: var(--gray, #94a3b8);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 
@@ -361,53 +495,7 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     gap: 8px;
-  }
-}
-
-.carousel-nav-controls {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: Rgba(0, 0, 0, 0.4);
-  padding: 0 4px;
-  height: 28px;
-  border-radius: 6px;
-  border: 1px solid Rgba(255, 255, 255, 0.12);
-  box-sizing: border-box;
-
-  .carousel-nav-btn {
-    width: 20px;
-    height: 20px;
-    background: Rgba(255, 255, 255, 0.08);
-    border: 1px solid Rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
-    color: var(--white, #ffffff);
-    font-size: 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    padding: 0;
-
-    &:hover:not(:disabled) {
-      background: Rgba(250, 204, 21, 0.2);
-      border-color: var(--yellow, #facc15);
-      color: var(--yellow, #facc15);
-    }
-
-    &:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
-    }
-  }
-
-  .carousel-page-indicator {
-    @include pixelated;
-    font-size: 8px;
-    color: #cbd5e1;
-    white-space: nowrap;
-    letter-spacing: 0.5px;
-    padding: 0 4px;
+    flex-shrink: 0;
   }
 }
 
@@ -499,6 +587,19 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 10px;
   width: 100%;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-drag: none;
+  cursor: grab;
+
+  &.is-swiping {
+    cursor: grabbing;
+  }
+
+  img {
+    -webkit-user-drag: none;
+    user-select: none;
+  }
 }
 
 .events-single-row {
@@ -507,29 +608,87 @@ onUnmounted(() => {
   gap: 12px;
   width: 100%;
   box-sizing: border-box;
+  will-change: transform;
 }
 
-.carousel-dots-row {
-  display: flex;
-  justify-content: center;
+.carousel-pagination-bar {
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 4px;
+  justify-content: center;
+  gap: 8px;
+  margin: 4px auto 0;
+  padding: 4px 10px;
+  background: Rgba(0, 0, 0, 0.45);
+  border: 1px solid Rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  box-shadow: 0 2px 8px Rgba(0, 0, 0, 0.3);
+  backdrop-filter: Blur(4px);
 
-  .carousel-dot {
-    width: 6px;
-    height: 6px;
+  .carousel-nav-btn {
+    width: 22px;
+    height: 22px;
+    background: Rgba(255, 255, 255, 0.08);
+    border: 1px solid Rgba(255, 255, 255, 0.15);
     border-radius: 50%;
-    background: Rgba(255, 255, 255, 0.2);
-    border: none;
+    color: var(--white, #ffffff);
+    font-size: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     padding: 0;
 
-    &.active {
-      background: var(--yellow, #facc15);
-      transform: Scale(1.4);
-      box-shadow: 0 0 6px Rgba(250, 204, 21, 0.6);
+    &:hover:not(:disabled) {
+      background: Rgba(250, 204, 21, 0.2);
+      border-color: var(--yellow, #facc15);
+      color: var(--yellow, #facc15);
     }
+
+    &:disabled {
+      opacity: 0.25;
+      cursor: not-allowed;
+    }
+  }
+
+  .carousel-dots-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .carousel-dot {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 2px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+
+      .dot-indicator {
+        display: block;
+        width: 8px;
+        height: 6px;
+        border-radius: 3px;
+        background: Rgba(255, 255, 255, 0.25);
+        border: 1px solid Rgba(255, 255, 255, 0.15);
+      }
+
+      &.active .dot-indicator {
+        width: 18px;
+        background: var(--yellow, #facc15);
+        border-color: Rgba(250, 204, 21, 0.8);
+        box-shadow: 0 0 8px Rgba(250, 204, 21, 0.6);
+      }
+    }
+  }
+
+  .carousel-page-indicator {
+    @include pixelated;
+    font-size: 8px;
+    color: #cbd5e1;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+    padding: 0 4px;
   }
 }
 

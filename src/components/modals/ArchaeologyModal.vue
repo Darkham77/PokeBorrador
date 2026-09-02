@@ -25,6 +25,7 @@ interface Props {
   show?: boolean
   pokemon: Pokemon
   rarity?: number
+  difficulty?: string | null
   onWin?: ((difficulty: string) => void) | null
   onFail?: (() => void) | null
   onCloseCallback?: (() => void) | null
@@ -33,6 +34,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   show: false,
   rarity: 0,
+  difficulty: null,
   onWin: null,
   onFail: null,
   onCloseCallback: null
@@ -54,7 +56,13 @@ import {
 } from './archaeologyGameHelper.ts'
 
 // State
-const difficulty = ref<ArchaeologyDifficultyKey>('easy')
+const difficulty = computed<ArchaeologyDifficultyKey>(() => {
+  if (props.difficulty && props.difficulty in ARCHAEOLOGY_DIFFICULTIES) {
+    return props.difficulty as ArchaeologyDifficultyKey
+  }
+  return calculateArchaeologyDifficulty(props.rarity || 50)
+})
+
 const gridSize = ref(5)
 const maxEnergy = ref(12)
 const totalFossilParts = ref(3)
@@ -78,9 +86,7 @@ function scheduleGameplayDelay(delaySec: number, callback: () => void) {
 
 // Initialize Game
 function initGame() {
-  const diff = calculateArchaeologyDifficulty(props.rarity || 50)
-  difficulty.value = diff
-  const config = ARCHAEOLOGY_DIFFICULTIES[diff]
+  const config = ARCHAEOLOGY_DIFFICULTIES[difficulty.value]
   gridSize.value = config.grid
   maxEnergy.value = config.energy
   totalFossilParts.value = config.parts

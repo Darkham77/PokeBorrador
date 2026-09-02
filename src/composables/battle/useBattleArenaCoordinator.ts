@@ -59,7 +59,7 @@ export function useBattleArenaCoordinator(params: BattleArenaCoordinatorParams) 
           if (!modalStore.isOpen('Fishing')) modalStore.open('Fishing', {
             pokemon: targetEnemy,
             rarity: battle.value?.rarity || DEFAULT_MINIGAME_RARITY,
-            onWin: handleFishingSuccess,
+            onWin: (difficulty: string) => handleFishingSuccess(difficulty),
             onFail: handleFishingFail,
             onCloseCallback: handleMinigameCancel
           })

@@ -258,6 +258,12 @@ const openParticipationModal = (sub: ResolvedSubCompetition | SubCompetitionConf
 
   const allowedIds = eligible.map(p => p.uid)
   const subtitle = `Elige un Pokémon para la categoría: ${getSubCompTitle(props.event.id, sub)}`
+  const dir = resolveSubCompetitionDirection(props.event.id, sub.id, sub.order)
+  const resolvedSub: ResolvedSubCompetition = {
+    ...sub,
+    order: dir,
+    speciesScope: sub.speciesScope ?? 'global'
+  }
 
   modalStore.open('PokemonSelection', {
     title: 'SELECCIONAR POKÉMON',
@@ -266,6 +272,7 @@ const openParticipationModal = (sub: ResolvedSubCompetition | SubCompetitionConf
     minSelect: 1,
     includeTeam: true,
     context: 'event',
+    subCompetition: resolvedSub,
     allowedSpecies,
     allowedIds,
     onConfirm: async (selectedObjects: Pokemon[]) => {
@@ -395,6 +402,7 @@ onUnmounted(() => {
       <img
         :src="getAssetUrl(ASSET_TYPES.BANNER, cardBannerKey)"
         :alt="cardDisplayName"
+        draggable="false"
         @error="(e: Event) => ((e.target as HTMLImageElement).style.display='none')"
       >
     </div>
@@ -455,6 +463,7 @@ onUnmounted(() => {
                 <img
                   :src="getAssetUrl(ASSET_TYPES.POKEMON, sp)"
                   :alt="sp"
+                  draggable="false"
                   class="card-mini-sprite pixelated clickable"
                   @click.stop="openSpeciesDetail(sp)"
                 >
@@ -504,6 +513,7 @@ onUnmounted(() => {
                   :src="getAssetUrl(ASSET_TYPES.POKEMON, sub.targetSpecies)"
                   class="chip-poke-sprite"
                   :alt="sub.targetSpecies"
+                  draggable="false"
                 >
                 <span
                   v-else

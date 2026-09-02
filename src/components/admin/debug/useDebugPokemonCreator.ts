@@ -33,6 +33,7 @@ interface PokemonConfig {
   ivs: PokemonIVs
   moves: (string | null)[]
   protocol: string
+  minigameDifficulty?: 'auto' | 'easy' | 'medium' | 'hard' | 'expert'
 }
 
 interface SpeciesOption {
@@ -63,10 +64,16 @@ export function useDebugPokemonCreator() {
     mapId: 'route_1',
     ivs: { hp: PERFECT_IV_VAL, atk: PERFECT_IV_VAL, def: PERFECT_IV_VAL, spa: PERFECT_IV_VAL, spd: PERFECT_IV_VAL, spe: PERFECT_IV_VAL },
     moves: [],
-    protocol: 'catch'
+    protocol: 'catch',
+    minigameDifficulty: 'auto'
   })
 
   const selectedMinigame = ref<'fishing' | 'archaeology'>('fishing')
+  const selectedMinigameDifficulty = ref<'auto' | 'easy' | 'medium' | 'hard' | 'expert'>('auto')
+
+  watch(selectedMinigameDifficulty, (val) => {
+    config.value.minigameDifficulty = val
+  })
 
   const allSpecies = computed<SpeciesOption[]>(() => getSelectableSpecies(true))
   const allNatures = getSelectableNatures()
@@ -217,9 +224,15 @@ export function useDebugPokemonCreator() {
     config.value.gender = Math.random() > HALF_SPLIT_THRESHOLD ? 'm' : 'f'
   }
 
+  function randomizeMinigameDifficulty() {
+    const diffs: ('auto' | 'easy' | 'medium' | 'hard' | 'expert')[] = ['auto', 'easy', 'medium', 'hard', 'expert']
+    selectedMinigameDifficulty.value = diffs[Math.floor(Math.random() * diffs.length)] || 'auto'
+  }
+
   function randomizeExtras() {
     randomizeNickname()
     randomizeMinigame()
+    randomizeMinigameDifficulty()
     randomizeOrigin()
     config.value.friendship = Math.floor(Math.random() * (MAX_FRIENDSHIP_VAL + 1))
   }
@@ -247,6 +260,7 @@ export function useDebugPokemonCreator() {
   return {
     config,
     selectedMinigame,
+    selectedMinigameDifficulty,
     allSpecies,
     allNatures,
     allAbilities,
@@ -267,6 +281,7 @@ export function useDebugPokemonCreator() {
     randomizeExtras,
     randomizeNickname,
     randomizeMinigame,
+    randomizeMinigameDifficulty,
     randomizeOrigin,
     handleRandomize,
     validateLegality

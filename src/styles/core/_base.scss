@@ -8,6 +8,9 @@
 html, body {
   height: 100%;
   overflow: hidden !important;
+  overscroll-behavior: none !important;
+  overscroll-behavior-x: none !important;
+  overscroll-behavior-y: none !important;
 }
 
 body {
@@ -17,6 +20,9 @@ body {
   margin: 0;
   padding: 0;
   overflow: hidden !important;
+  overscroll-behavior: none !important;
+  overscroll-behavior-x: none !important;
+  overscroll-behavior-y: none !important;
   -webkit-user-select: none;
   user-select: none;
   background-color: var(--darker); // Pitch black backdrop
@@ -30,7 +36,9 @@ body {
 
   &.modal-open {
     overflow: hidden !important;
-    overscroll-behavior-x: contain !important;
+    overscroll-behavior: none !important;
+    overscroll-behavior-x: none !important;
+    overscroll-behavior-y: none !important;
 
     .zoom-target,
     #vue-app {
@@ -46,6 +54,9 @@ body {
   height: 100%;
   box-sizing: border-box;
   overflow: hidden !important;
+  overscroll-behavior: none !important;
+  overscroll-behavior-x: none !important;
+  overscroll-behavior-y: none !important;
   padding: 0;
 }
 

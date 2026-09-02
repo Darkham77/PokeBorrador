@@ -25,6 +25,7 @@ const SECS_PER_HOUR = 3600;
 
 interface DebugPokemon extends Pokemon {
   mapId?: MapRouteId | null
+  minigameDifficulty?: 'auto' | 'easy' | 'medium' | 'hard' | 'expert' | null
 }
 
 interface GenerateParams {
@@ -45,6 +46,7 @@ interface GenerateParams {
   protocol?: string | null
   name?: string | null
   uid?: string
+  minigameDifficulty?: 'auto' | 'easy' | 'medium' | 'hard' | 'expert' | null
 }
 
 function requireMoveIdsForDebugEgg(pokemon: Pokemon) {
@@ -115,6 +117,10 @@ export const pokemonDebugService = {
 
     if (mapId) {
       (p as DebugPokemon).mapId = requireMapRouteId(mapId)
+    }
+
+    if (params.minigameDifficulty) {
+      (p as DebugPokemon).minigameDifficulty = params.minigameDifficulty
     }
 
     // 2. Apply Overrides
@@ -281,6 +287,9 @@ export const pokemonDebugService = {
       case 'fishing_minigame': {
         const { showFishingIntro, startFishingMinigame } = await import('@/logic/encounters/encounterUI')
         const battleStore = useBattleStore();
+        const diffOverride = (p as DebugPokemon).minigameDifficulty && (p as DebugPokemon).minigameDifficulty !== 'auto'
+          ? (p as DebugPokemon).minigameDifficulty!
+          : undefined;
         showFishingIntro(p, FISHING_DEBUG_DIFFICULTY, () => {
           startFishingMinigame(
             p,
@@ -297,7 +306,8 @@ export const pokemonDebugService = {
             },
             () => {
               ui.notify('El Pokémon escapó...', '💨')
-            }
+            },
+            diffOverride
           )
         })
         break;
@@ -306,6 +316,9 @@ export const pokemonDebugService = {
       case 'archaeology_minigame': {
         const { showArchaeologyIntro, startArchaeologyMinigame } = await import('@/logic/encounters/encounterUI')
         const battleStore = useBattleStore();
+        const diffOverride = (p as DebugPokemon).minigameDifficulty && (p as DebugPokemon).minigameDifficulty !== 'auto'
+          ? (p as DebugPokemon).minigameDifficulty!
+          : undefined;
         showArchaeologyIntro(p, ARCHAEOLOGY_DEBUG_DIFFICULTY, () => {
           startArchaeologyMinigame(
             p,
@@ -322,7 +335,8 @@ export const pokemonDebugService = {
             },
             () => {
               ui.notify('El fósil se desmoronó...', '💨')
-            }
+            },
+            diffOverride
           )
         })
         break;

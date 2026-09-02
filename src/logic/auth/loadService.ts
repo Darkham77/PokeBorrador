@@ -1,9 +1,8 @@
 
 import type { DBRouter } from '@/logic/db/dbRouter';
-import { validateAndSanitize } from './saveService.ts';
-import { decompress, isGzip } from '@/logic/utils/compression';
 import { readOpfsFile, writeOpfsFile } from '@/logic/utils/opfsStorage';
 import { logger } from '@/logic/utils/logger';
+import { processSaveInWorker, compressSaveInWorker } from '@/logic/workers/saveWorkerClient';
 
 /**
  * Modernized Load Service.
@@ -94,49 +93,58 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
   }
 
   // 2. Fetch Local Save (Prioritize OPFS Binary over LocalStorage)
-  const opfsKey = `save_${user.id}.gz`
+  const opfsKey = `save_${user.id}.gz`;
   let localData: GameState | null = null;
+  const accumulatedIssues: string[] = []; // no-domain
 
   try {
-    const binary = await readOpfsFile(opfsKey)
+    const binary = await readOpfsFile(opfsKey);
     if (binary) {
-      const json = isGzip(binary) ? await decompress(binary) : new TextDecoder().decode(binary)
-      localData = JSON.parse(json) as GameState
+      const workerRes = await processSaveInWorker({ binary });
+      if (workerRes.valid && workerRes.data) {
+        localData = workerRes.data as GameState; // domain-ok
+        if (workerRes.issues?.length) accumulatedIssues.push(...workerRes.issues);
+      }
     }
   } catch (e) {
-    throw new Error(`[loadService] Error reading OPFS save file: ${(e as Error).message}`)
+    throw new Error(`[loadService] Error reading OPFS save file: ${(e as Error).message}`);
   }
 
   // Fallback to LocalStorage + Migration
   if (!localData) {
-    const lsKey = 'pokemon_local_save_' + user.id
-    let lsRaw = localStorage.getItem(lsKey)
+    const lsKey = 'pokemon_local_save_' + user.id;
+    let lsRaw = localStorage.getItem(lsKey);
     
     // Legacy Fallback (v1 -> v2 migration)
     if (!lsRaw) {
-      lsRaw = localStorage.getItem('pokevicio_save_v3_ash')
-      if (lsRaw) logger.info('LOAD', 'Legacy save found for migration.')
+      lsRaw = localStorage.getItem('pokevicio_save_v3_ash');
+      if (lsRaw) logger.info('LOAD', 'Legacy save found for migration.');
     }
 
     if (lsRaw) {
       try {
-        localData = JSON.parse(lsRaw) as GameState
+        const workerRes = await processSaveInWorker({ rawString: lsRaw });
+        if (workerRes.valid && workerRes.data) {
+          localData = workerRes.data as GameState; // domain-ok
+          if (workerRes.issues?.length) accumulatedIssues.push(...workerRes.issues);
+        } else {
+          localData = JSON.parse(lsRaw) as GameState;
+        }
         
         // AUTOMATED BACKUP & MIGRATION
-        logger.info('LOAD', 'Migrating localStorage to OPFS...')
-        const timestamp = Temporal.Now.instant().epochMilliseconds
+        logger.info('LOAD', 'Migrating localStorage to OPFS...');
+        const timestamp = Temporal.Now.instant().epochMilliseconds;
         const serverTime = Temporal.Now.instant().toString();
         db.setMockTime(serverTime);
         try {
-          const { compress } = await import('@/logic/utils/compression')
-          const compressed = await compress(lsRaw)
-          await writeOpfsFile(`backup_migration_${user.id}_${timestamp}.gz`, compressed)
-          await writeOpfsFile(opfsKey, compressed)
+          const compressed = await compressSaveInWorker(lsRaw);
+          await writeOpfsFile(`backup_migration_${user.id}_${timestamp}.gz`, compressed);
+          await writeOpfsFile(opfsKey, compressed);
         } catch (opfsErr) {
-          logger.warn('LOAD', `OPFS migration backup skipped: ${(opfsErr as Error).message}`)
+          logger.warn('LOAD', `OPFS migration backup skipped: ${(opfsErr as Error).message}`);
         }
       } catch (e) {
-        throw new Error(`[loadService] Error parsing localStorage save content: ${(e as Error).message}`)
+        throw new Error(`[loadService] Error parsing localStorage save content: ${(e as Error).message}`);
       }
     }
   }
@@ -151,8 +159,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
     }
     // Update local OPFS cache to stay synchronized with authoritative database state
     try {
-      const { compress } = await import('@/logic/utils/compression');
-      const compressed = await compress(JSON.stringify(finalSaveData));
+      const compressed = await compressSaveInWorker(JSON.stringify(finalSaveData));
       await writeOpfsFile(opfsKey, compressed);
     } catch (_) {
       // Non-blocking cache sync
@@ -167,16 +174,20 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
 
   if (!finalSaveData) return { data: null, issues: [], lastSaveId: null, isNewerThanCloud: false };
 
-  // Direct Validation & Sanitation without runtime fallback patching
-  const { data: sanitized, valid, issues, error: validationError } = validateAndSanitize(finalSaveData);
+  // Direct Validation & Sanitation without runtime fallback patching (executed via Worker)
+  const validationResult = await processSaveInWorker({ rawObject: finalSaveData });
+  const { data: sanitized, valid, issues, error: validationError } = validationResult;
   if (!valid || !sanitized) {
     logger.error('LOAD', 'Error crítico de validación al cargar partida:', validationError || issues);
     throw new Error(`Carga abortada por datos corruptos o inválidos: ${validationError || issues.join(', ')}`);
   }
+  if (issues?.length) {
+    accumulatedIssues.push(...issues);
+  }
 
   return {
     data: sanitized as GameState, // domain-ok
-    issues,
+    issues: accumulatedIssues,
     lastSaveId: cloudSaveRow?.last_save_id || null,
     isNewerThanCloud: false
   };

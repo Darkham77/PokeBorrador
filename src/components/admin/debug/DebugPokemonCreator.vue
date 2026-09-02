@@ -14,6 +14,7 @@ import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 const {
   config,
   selectedMinigame,
+  selectedMinigameDifficulty,
   allSpecies,
   allNatures,
   allAbilities,
@@ -33,6 +34,7 @@ const {
   randomizeExtras,
   randomizeNickname,
   randomizeMinigame,
+  randomizeMinigameDifficulty,
   randomizeOrigin,
   handleRandomize,
   validateLegality
@@ -365,6 +367,53 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
               </option>
               <option value="archaeology">
                 ⛏️ ARQUEOLOGÍA
+              </option>
+            </select>
+          </PVTooltip>
+        </div>
+
+        <div class="debug-input-group">
+          <div
+            class="label-row"
+            style="display: flex; justify-content: space-between; align-items: center; width: 100%;"
+          >
+            <label>DIFICULTAD MINIJUEGO</label>
+            <PVTooltip
+              title="Dificultad al azar"
+              description="Selecciona de forma aleatoria la dificultad del minijuego."
+            >
+              <button
+                id="debug-creator-random-minigame-diff-btn"
+                class="btn-magic-fill btn-random-fill"
+                @click.stop="randomizeMinigameDifficulty"
+              >
+                <span class="emoji">🎲</span>
+              </button>
+            </PVTooltip>
+          </div>
+          <PVTooltip
+            title="Dificultad del minijuego"
+            description="Fuerza una dificultad específica para testear el minijuego o usa el cálculo automático."
+          >
+            <select
+              id="debug-creator-minigame-diff-select"
+              v-model="selectedMinigameDifficulty"
+              class="debug-select-standard"
+            >
+              <option value="auto">
+                🎲 AUTOMÁTICA (Nivel / Rareza)
+              </option>
+              <option value="easy">
+                🟢 FÁCIL
+              </option>
+              <option value="medium">
+                🟡 MEDIO
+              </option>
+              <option value="hard">
+                🟠 DIFÍCIL
+              </option>
+              <option value="expert">
+                🔴 EXPERTO
               </option>
             </select>
           </PVTooltip>

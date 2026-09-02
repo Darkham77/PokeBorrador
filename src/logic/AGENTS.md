@@ -8,6 +8,7 @@ Logic Developers / Game Designers.
 
 ## Local Contracts
 
+- **Web Worker Off-Thread Save Processing**: CPU-intensive operations during save loading and state hydration (GZIP decompression, OPFS binary decoding, Valibot schema validation, duplicate UID filtering, and Showdown legality checks) MUST be processed off the main thread in a dedicated Web Worker (`save.worker.ts` via `saveWorkerClient.ts`). Legality validators running within worker scopes MUST support `import.meta.env.DEV` alongside `window.__VITE_DEBUG__` to ensure dev/test legality bypasses function correctly where `window` is undefined.
 - **100% State Serialization Completeness**: Whenever a new persisted domain field or progression property is introduced into the Pinia `GameState` / `INITIAL_STATE` (such as `playerClass`, `faction`, `classLevel`, `daycare_missions`, `map`, `claimQueue`), `serializeState()` in `src/logic/auth/saveSerializer.ts` MUST explicitly map and output the property into the `SaveDataDto` payload, and `saveDataSchema` in `src/logic/validation/schemas.ts` MUST validate it. Automated unit tests in `tests/unit/system/serialize_state.spec.ts` MUST maintain a 100% key parity assertion verifying that every non-transient property in `INITIAL_STATE` is serialized and accepted by `saveDataSchema`.
 - DBRouter-enforced isolation between online (Supabase) and offline (SQLite) data.
 - Complete separation of calculations from visual code (Pure Modules Pattern).
@@ -127,3 +128,4 @@ Logic Developers / Game Designers.
 - [validation/](./validation/AGENTS.md): Domain module documentation for validation.
 - [war/](./war/AGENTS.md): Domain module documentation for war.
 - [weather/](./weather/AGENTS.md): Domain module documentation for weather.
+- [workers/](./workers/AGENTS.md): Domain module documentation for workers.

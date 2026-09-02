@@ -277,7 +277,7 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     const buyerListingCount = await pageBuyer.evaluate(async () => {
       const { useGTSStore } = await import('../../../src/stores/gts.ts');
       const gts = useGTSStore();
-      await gts.fetchListings();
+      await gts.fetchListings(true);
       return gts.filteredListings.length;
     });
     if (buyerListingCount <= MOCK_LISTINGS_POOL_SIZE) {

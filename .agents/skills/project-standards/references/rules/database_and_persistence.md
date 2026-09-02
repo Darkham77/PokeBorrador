@@ -124,3 +124,9 @@
 - **Fast Static SQL Auditing (`npm run audit`)**: The persistence auditor (`scripts/auditors/persistence/validate_sql_migrations.ts`) is strictly focused on lightweight static validation: SQLite dialect translation syntax, monotonic timestamp progression, and `db_version` synchronization in sub-second times.
 - **Heavy Fixture & Save Data Integrity Testing (`npm run test`)**: End-to-end replay of all historical migrations over real player save fixtures (`server_franco_backup_fixture.json`), along with deep validation of Pokémon species, abilities, natures, held items, inventory catalogs, and Valibot schema conformance, MUST reside exclusively in automated Vitest integration tests (`tests/node/system/backup_migration_real.test.ts`) running in parallel worker pools.
 
+## 19. PostgreSQL PL/pgSQL Stored Procedure & Loop Variable Governance
+
+- **Explicit PL/pgSQL Variable Declaration Mandate**: All procedural functions (`LANGUAGE plpgsql`) defined in PostgreSQL migrations MUST explicitly declare all loop counter variables (`i INT;`, `j INT;`) and cursor records in the `DECLARE` block. Omitting loop variable declarations causes runtime compilation exceptions during RPC invocation, resulting in complete transaction aborts and rollbacks in production Supabase while local SQLite/TypeScript emulations appear green.
+- **Automated Awarding Null-Safe Insertion**: Automated prize distribution procedures inserting into `public.awards` MUST guarantee non-null values for mandatory columns (`winner_email`) by extracting `COALESCE(player_email, '')` in the winner aggregation JSON and inserting `COALESCE(w->>'player_email', '')` directly.
+
+

@@ -88,8 +88,38 @@ export const useGameStore = defineStore('game', () => {
       // Clear expired routes
       checkRouteExpirations()
 
+      // Parallel Boot Coordinator for child stores
+      const prefetchPromises: Promise<unknown>[] = []
 
-      // Initialize Session Hub for multi-tab/device locking
+      // 1. War Data
+      prefetchPromises.push(
+        import('@/stores/war.ts').then(({ useWarStore }) => useWarStore().loadWarData()).catch(e => {
+          logger.warn('Boot', `War data prefetch failed: ${(e as Error).message}`)
+        })
+      )
+
+      // 2. Events Data
+      prefetchPromises.push(
+        import('@/stores/events.ts').then(({ useEventStore }) => useEventStore().fetchEvents()).catch(e => {
+          logger.warn('Boot', `Events prefetch failed: ${(e as Error).message}`)
+        })
+      )
+
+      // 3. Daycare Data
+      prefetchPromises.push(
+        import('@/stores/breeding.ts').then(({ useBreedingStore }) => useBreedingStore().loadDaycare()).catch(e => {
+          logger.warn('Boot', `Daycare prefetch failed: ${(e as Error).message}`)
+        })
+      )
+
+      // 4. GTS Listings
+      prefetchPromises.push(
+        import('@/stores/gts.ts').then(({ useGTSStore }) => useGTSStore().fetchListings()).catch(e => {
+          logger.warn('Boot', `GTS prefetch failed: ${(e as Error).message}`)
+        })
+      )
+
+      // 5. Social & Session Hub
       if (authStore.user) {
         const { initSessionHub } = await import('@/logic/auth/sessionHub')
         initSessionHub(authStore.user.id)
@@ -102,19 +132,22 @@ export const useGameStore = defineStore('game', () => {
           isSaveLocked.value = false
         })
 
-        // Cargar datos sociales y notificar solicitudes pendientes al iniciar sesión
-        import('@/stores/social/social.ts').then(async ({ useSocialStore }) => {
-          const socialStore = useSocialStore()
-          await socialStore.loadSocialData()
-          if (socialStore.pendingRequests.length > 0) {
-            const { useUIStore } = await import('./ui.ts')
-            const uiStore = useUIStore()
-            uiStore.notify(`¡Tenés ${socialStore.pendingRequests.length} solicitud(es) de amistad pendiente(s)!`, '🤝')
-          }
-        }).catch(err => {
-          logger.error('Social', `Error al cargar notificaciones iniciales: ${(err as Error).message}`)
-        })
+        prefetchPromises.push(
+          import('@/stores/social/social.ts').then(async ({ useSocialStore }) => {
+            const socialStore = useSocialStore()
+            await socialStore.loadSocialData()
+            if (socialStore.pendingRequests.length > 0) {
+              const { useUIStore } = await import('./ui.ts')
+              const uiStore = useUIStore()
+              uiStore.notify(`¡Tenés ${socialStore.pendingRequests.length} solicitud(es) de amistad pendiente(s)!`, '🤝')
+            }
+          }).catch(err => {
+            logger.error('Social', `Error al cargar notificaciones iniciales: ${(err as Error).message}`)
+          })
+        )
       }
+
+      await Promise.allSettled(prefetchPromises)
     }
   }
 

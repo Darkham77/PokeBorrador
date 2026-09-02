@@ -31,6 +31,8 @@ export const useGTSStore = defineStore('gts', () => {
   })
 
   const loading = ref(false)
+  const isLoaded = ref(false)
+  let inFlightPromise: Promise<void> | null = null
   const publishing = ref(false)
 
   const filters = ref<MarketFilters>({
@@ -60,60 +62,74 @@ export const useGTSStore = defineStore('gts', () => {
   })
 
   // Actions
-  async function fetchListings() {
+  async function fetchListings(force = false) {
+    if (!force && isLoaded.value) return
+    if (inFlightPromise) return inFlightPromise
+
     loading.value = true
-    try {
-      const { data, error } = await game.db.from('market_listings')
-        .select('*')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(GTS_EXPLORE_LISTINGS_LIMIT) as { data: MarketListing[] | null, error: { message: string } | null }
-      
-      if (!error) listings.value = data || []
-    } finally {
-      loading.value = false
-    }
+    inFlightPromise = (async () => {
+      try {
+        const { data, error } = await game.db.from('market_listings')
+          .select('*')
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+          .limit(GTS_EXPLORE_LISTINGS_LIMIT) as { data: MarketListing[] | null, error: { message: string } | null }
+        
+        if (!error) {
+          listings.value = data || []
+          isLoaded.value = true
+        }
+      } finally {
+        loading.value = false
+        inFlightPromise = null
+      }
+    })()
+    return inFlightPromise
   }
 
   async function fetchUserData() {
-    if (!auth.user) return
+    if (!auth.user || !game.db) return
 
-    const mineRes = await game.db.from('market_listings')
-      .select('*')
-      .eq('seller_id', auth.user.id)
-      .neq('status', 'sold')
-      .order('created_at', { ascending: false });
-    const histRes = await game.db.from('market_listings')
-      .select('*')
-      .eq('seller_id', auth.user.id)
-      .eq('status', 'sold')
-      .order('created_at', { ascending: false })
-      .limit(GTS_SALES_HISTORY_LIMIT);
+    try {
+      const mineRes = await game.db.from('market_listings')
+        ?.select('*')
+        ?.eq('seller_id', auth.user.id)
+        ?.neq('status', 'sold')
+        ?.order('created_at', { ascending: false });
+      const histRes = await game.db.from('market_listings')
+        ?.select('*')
+        ?.eq('seller_id', auth.user.id)
+        ?.eq('status', 'sold')
+        ?.order('created_at', { ascending: false })
+        ?.limit(GTS_SALES_HISTORY_LIMIT);
 
-    const mineListings = mineRes.data as MarketListing[] | null; // domain-ok
-    const histListings = histRes.data as MarketListing[] | null; // domain-ok
+      const mineListings = mineRes?.data as MarketListing[] | null; // domain-ok
+      const histListings = histRes?.data as MarketListing[] | null; // domain-ok
 
-    myListings.value = mineListings || []
-    salesHistory.value = histListings || []
+      myListings.value = mineListings || []
+      salesHistory.value = histListings || []
 
-    // Check for new sales
-    if (histListings && histListings.length > 0) {
-      let updatedStats = false
-      histListings.forEach(sale => {
-        if (!isMarketSoldSeen(sale.id, game.state)) {
-          ui.notify(`¡Tu ${sale.data.name} se vendió por ₽${sale.price.toLocaleString()}!`, '💰')
-          markMarketSoldSeen(sale.id, game.state)
-          
-          if (!game.state.stats) {
-            game.state.stats = {}
+      // Check for new sales
+      if (histListings && histListings.length > 0) {
+        let updatedStats = false
+        histListings.forEach(sale => {
+          if (!isMarketSoldSeen(sale.id, game.state)) {
+            ui.notify(`¡Tu ${sale.data.name} se vendió por ₽${sale.price.toLocaleString()}!`, '💰')
+            markMarketSoldSeen(sale.id, game.state)
+            
+            if (!game.state.stats) {
+              game.state.stats = {}
+            }
+            game.state.stats.tradeVolume = (Number(game.state.stats.tradeVolume) || 0) + 1
+            updatedStats = true
           }
-          game.state.stats.tradeVolume = (Number(game.state.stats.tradeVolume) || 0) + 1
-          updatedStats = true
+        })
+        if (updatedStats) {
+          game.save(false)
         }
-      })
-      if (updatedStats) {
-        game.save(false)
       }
+    } catch (err) {
+      logger.warn('GTS', `fetchUserData ignored error: ${(err as Error).message}`)
     }
   }
 

@@ -41,12 +41,14 @@ export const useEventStore = defineStore('events', () => {
   const pendingAwards = ref<PendingAward[]>([])
   const userEntries = ref<Record<string, CompetitionEntry>>({})
   const isLoading = ref(false)
+  const isLoaded = ref(false)
+  let inFlightPromise: Promise<void> | null = null
 
   // Watch for game cycle ticks to re-evaluate active events
   watch(() => mapStore.currentEpochHour, (newVal, oldVal) => {
     if (newVal !== oldVal) {
       logger.info('Events', `Game cycle ticked (Epoch hour: ${newVal}). Refreshing active events...`)
-      fetchEvents()
+      fetchEvents(true)
     }
   })
 
@@ -74,64 +76,76 @@ export const useEventStore = defineStore('events', () => {
   /**
    * Fetches the full event configuration and filters based on Engine logic.
    */
-  async function fetchEvents() {
-    if (isLoading.value) return
+  async function fetchEvents(force = false) {
+    if (!force && isLoaded.value) return
+    if (inFlightPromise) return inFlightPromise
+
     isLoading.value = true
     
-    const db = gameStore.db
-    if (!db) {
-      isLoading.value = false
-      return
-    }
-    try {
-      // 1. Fetch from config (DBRouter handles source)
-      const res = await db.from('events_config').select('*')
-      const events = res.data as GameEvent[] | null // domain-ok
-      allEvents.value = events || []
-      
-      // 2. Filter using Engine logic with synchronized time
-      const synchronizedDate = Temporal.Instant.fromEpochMilliseconds(getServerTime())
-      activeEvents.value = (events || []).filter((ev: GameEvent) => isEventActiveNow(ev, synchronizedDate))
-
-      // 3. Check for concluded competition events with pending entries and award them automatically
+    inFlightPromise = (async () => {
+      const db = gameStore.db
+      if (!db) {
+        isLoading.value = false
+        return
+      }
       try {
-        const { data: rawEntries } = await db.from('competition_entries').select('event_id')
-        if (rawEntries && Array.isArray(rawEntries) && rawEntries.length > 0) {
-          const unAwardedEventIds = new Set<string>()
-          for (const entry of rawEntries as { event_id?: string }[]) {
-            if (entry.event_id) {
-              const evCfg = (events || []).find((e: GameEvent) => e.id === entry.event_id)
-              if (evCfg && !isEventActiveNow(evCfg, synchronizedDate)) {
-                unAwardedEventIds.add(entry.event_id)
+        // 1. Fetch from config (DBRouter handles source)
+        const res = await db.from('events_config').select('*')
+        const events = res.data as GameEvent[] | null // domain-ok
+        allEvents.value = events || []
+        
+        // 2. Filter using Engine logic with synchronized time
+        const synchronizedDate = Temporal.Instant.fromEpochMilliseconds(getServerTime())
+        activeEvents.value = (events || []).filter((ev: GameEvent) => isEventActiveNow(ev, synchronizedDate))
+
+        // 3. Check for concluded competition events with pending entries and award them automatically
+        try {
+          const { data: rawEntries } = await db.from('competition_entries').select('event_id')
+          if (rawEntries && Array.isArray(rawEntries) && rawEntries.length > 0) {
+            const unAwardedEventIds = new Set<string>()
+            for (const entry of rawEntries as { event_id?: string }[]) {
+              if (entry.event_id) {
+                const evCfg = (events || []).find((e: GameEvent) => e.id === entry.event_id)
+                if (!evCfg || !isEventActiveNow(evCfg, synchronizedDate)) {
+                  unAwardedEventIds.add(entry.event_id)
+                }
+              }
+            }
+
+            for (const endedEventId of unAwardedEventIds) {
+              logger.info('Events', `Auto-awarding concluded event '${endedEventId}'...`)
+              const awardRes = await db.rpc('fn_award_event_automated', { target_event_id: endedEventId })
+              if (awardRes?.error) {
+                logger.error('Events', `Failed to award concluded event '${endedEventId}': ${awardRes.error}`)
+              } else {
+                logger.info('Events', `Successfully awarded concluded event '${endedEventId}'`)
               }
             }
           }
-
-          for (const endedEventId of unAwardedEventIds) {
-            logger.info('Events', `Auto-awarding concluded event '${endedEventId}'...`)
-            await db.rpc('fn_award_event_automated', { target_event_id: endedEventId })
-          }
+        } catch (awardErr) {
+          logger.error('Events', `Failed to check or auto-award concluded events: ${(awardErr as Error).message}`, awardErr)
         }
-      } catch (awardErr) {
-        logger.warn('Events', 'Failed to check or auto-award concluded events', awardErr)
-      }
 
-      // 4. Fetch user competition entries, pending awards, and past event history
-      await fetchUserEntries()
-      await checkPendingAwards(false)
-      await fetchPastEvents()
+        // 4. Fetch user competition entries, pending awards, and past event history
+        await fetchUserEntries()
+        await checkPendingAwards(false)
+        await fetchPastEvents()
 
-      // 5. Automatically liberate any Pokémon stuck in concluded/legacy events
-      const healed = healStuckEventPokemon(gameStore.state.team, gameStore.state.box, activeEvents.value, userEntries.value)
-      if (healed) {
-        logger.info('Events', 'Rehabilitated Pokémon stuck in concluded event(s).')
-        gameStore.scheduleSave()
+        // 5. Automatically liberate any Pokémon stuck in concluded/legacy events
+        const healed = healStuckEventPokemon(gameStore.state.team, gameStore.state.box, activeEvents.value, userEntries.value)
+        if (healed) {
+          logger.info('Events', 'Rehabilitated Pokémon stuck in concluded event(s).')
+          gameStore.scheduleSave()
+        }
+        isLoaded.value = true
+      } catch (e) {
+        logger.error('Events', `Error fetching events: ${(e as Error).message}`)
+      } finally {
+        isLoading.value = false
+        inFlightPromise = null
       }
-    } catch (e) {
-      logger.error('Events', `Error fetching events: ${(e as Error).message}`)
-    } finally {
-      isLoading.value = false
-    }
+    })()
+    return inFlightPromise
   }
 
   const activeEventIdsSet = computed<ReadonlySet<string>>(() => {

@@ -70,7 +70,7 @@ class MultiSpeciesEventSimulation extends BaseE2ESimulation {
         });
       }
 
-      await eventStore.fetchEvents();
+      await eventStore.fetchEvents(true);
     });
   }
 }

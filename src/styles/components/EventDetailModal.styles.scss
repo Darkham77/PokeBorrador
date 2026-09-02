@@ -19,22 +19,23 @@
   align-items: center;
   justify-content: center;
   background: transparent;
+  aspect-ratio: 16 / 9;
 
   img,
   .event-banner-img {
     width: 100%;
-    height: auto;
+    height: 100%;
     display: block;
-    object-fit: contain;
+    object-fit: cover;
     image-rendering: auto !important;
   }
 }
 
 .event-banner-img {
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
-  object-fit: contain;
+  object-fit: cover;
   image-rendering: auto !important;
 }
 

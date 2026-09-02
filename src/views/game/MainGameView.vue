@@ -5,8 +5,6 @@ import { useBodyClass } from '@/composables/ui/useBodyClass'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle/battle'
-import { useWarStore } from '@/stores/war'
-import { useEventStore } from '@/stores/events'
 import { useLivePvPStore } from '@/stores/livePvP'
 import { useBreedingStore } from '@/stores/breeding'
 import { useLoadingStore } from '@/stores/loading'
@@ -30,8 +28,8 @@ const LocalDebugPanel = defineAsyncComponent(() => import('@/components/admin/Lo
 // Tab components
 const BoxView = defineAsyncComponent(() => import('@/components/box/BoxView.vue'))
 
-// Lazy loaded views
-const HomeView = defineAsyncComponent(() => import('@/views/game/HomeView.vue'))
+// Views
+import HomeView from '@/views/game/HomeView.vue'
 const PokedexView = defineAsyncComponent(() => import('@/views/pokemon/PokedexView.vue'))
 const MapView = defineAsyncComponent(() => import('@/views/game/MapView.vue'))
 const GymsView = defineAsyncComponent(() => import('@/views/game/GymsView.vue'))
@@ -40,13 +38,12 @@ const BagView = defineAsyncComponent(() => import('@/views/inventory/BagView.vue
 const GlobalChat = defineAsyncComponent(() => import('@/components/social/GlobalChat.vue'))
 const DirectChatWindow = defineAsyncComponent(() => import('@/components/social/DirectChatWindow.vue'))
 import { useChatStore } from '@/stores/social/chat'
+import { preloadSaveWorker } from '@/logic/workers/saveWorkerClient'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
 const battleStore = useBattleStore()
 const chatStore = useChatStore()
-const warStore = useWarStore()
-const eventStore = useEventStore()
 const livePvP = useLivePvPStore()
 const breedingStore = useBreedingStore()
 
@@ -76,18 +73,25 @@ onMounted(() => {
   updateHudHeight()
   gsap.delayedCall(HUD_HEIGHT_UPDATE_DELAY_SEC, updateHudHeight) 
 
-  // Load essential game data
-  warStore.loadWarData()
-  eventStore.fetchEvents()
-  eventStore.checkPendingAwards(true)
+  // Initialize background services
   livePvP.initInvitePoller()
   breedingStore.checkDailyReset()
-  // Preload Showdown simulation worker in background
   preloadShowdownWorker()
+  preloadSaveWorker()
 
   // Signal that DOM is ready
   const loadingStore = useLoadingStore()
-  loadingStore.markAppMounted()
+  if (activeTab.value !== 'home') {
+    loadingStore.markAppMounted()
+  } else {
+    // Fail-safe timeout in case HomeView fails to signal within 2.5s
+    const FAILSAFE_APP_MOUNT_DELAY_SEC = 2.5
+    gsap.delayedCall(FAILSAFE_APP_MOUNT_DELAY_SEC, () => {
+      if (!loadingStore.isAppMounted) {
+        loadingStore.markAppMounted()
+      }
+    })
+  }
 })
 
 onUnmounted(() => {

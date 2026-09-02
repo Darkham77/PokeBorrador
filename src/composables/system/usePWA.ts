@@ -38,7 +38,7 @@ const UPDATE_PROGRESS_STAGES = {
 
 const UPDATE_CHECK_TIMEOUT_SEC = 1.5;
 const SW_UPDATE_FAILSAFE_TIMEOUT_SEC = 4.0;
-const PRESERVED_CACHE_REGEXP = /^game-(images|audio)-v\d+$/i;
+const PRESERVED_CACHE_REGEXP = /^game-(images|audio|event-banners)-v\d+$/i;
 
 const updateServiceWorker = registerSW({
   immediate: true,

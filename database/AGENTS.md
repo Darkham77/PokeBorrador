@@ -45,6 +45,11 @@ Backend / Database Engineers.
 - **PostgreSQL RLS Public Read & GRANT Policy Contract**:
   - Whenever enabling Row Level Security (`ENABLE ROW LEVEL SECURITY`) on static, public, or global configuration tables (`events_config`, `system_config`, `ranked_rules_config`, `competition_results`, `market_listings`, `war_dominance`), migrations MUST explicitly declare both a public SELECT policy (`CREATE POLICY "Public read ..." ON public.<table_name> FOR SELECT USING (true);`) AND explicit role permissions (`GRANT SELECT ON public.<table_name> TO anon, authenticated, service_role;`).
   - Without this policy, Supabase PostgREST silently returns an empty set (`[]`) to client queries while local SQLite (which lacks RLS) appears to succeed, causing hidden online desynchronizations.
+- **PostgreSQL PL/pgSQL Loop Variable Declaration Mandate**:
+  - Whenever defining or updating stored procedures / RPCs in PostgreSQL (`CREATE OR REPLACE FUNCTION ... LANGUAGE plpgsql`), all loop iteration variables used in range or row loops (e.g. `FOR i IN ...`, `FOR j IN ...`) MUST be explicitly declared in the `DECLARE` block (e.g. `i INT;`, `j INT;`).
+  - Unlike some procedural environments, PostgreSQL PL/pgSQL requires explicit declaration for scalar loop counters. Omitting loop variable declarations causes runtime fatal errors (`record/variable "<var>" does not exist`), resulting in complete transaction rollbacks on live Supabase databases while offline TypeScript/SQLite RPC emulators pass silently.
+- **Automated Competition Award Email Safety Mandate**:
+  - Competition award functions (`fn_award_event_automated`) inserting rows into `public.awards` MUST safely aggregate and propagate `player_email` with `COALESCE(player_email, '')` directly in the ranking/aggregation step, preventing runtime `NOT NULL` constraint violations on `awards.winner_email`.
 
 ## Verification
 
