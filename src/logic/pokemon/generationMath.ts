@@ -18,7 +18,7 @@
  * @param isGuardian If true, ensures a fixed minimum floor of 12 (Guardian Alpha standard).
  * @returns A number between 0 and 31.
  */
-const TOTAL_IV_POSSIBILITIES_COUNT = 32;
+export const TOTAL_IV_POSSIBILITIES_COUNT = 32;
 const GUARDIAN_ALPHA_MIN_IV_FLOOR = 12;
 
 export function generateIvPure(

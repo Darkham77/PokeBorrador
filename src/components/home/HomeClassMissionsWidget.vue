@@ -1,33 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { gsap } from 'gsap'
+import { computed } from 'vue'
 import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { useModalStore } from '@/stores/modals'
 import ProfileXpCard from '@/components/profile/ProfileXpCard.vue'
 
 const classStore = usePlayerClassStore()
 const modalStore = useModalStore()
-
-const widgetRef = ref<HTMLElement | null>(null)
-let gsapCtx: gsap.Context | null = null
-
-onMounted(() => {
-  gsapCtx = gsap.context(() => {
-    if (widgetRef.value) {
-      gsap.fromTo(
-        widgetRef.value,
-        { opacity: 0, y: 10 },
-        { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }
-      )
-    }
-  }, widgetRef.value || undefined)
-})
-
-onUnmounted(() => {
-  if (gsapCtx) {
-    gsapCtx.revert()
-  }
-})
 
 const currentClass = computed(() => classStore.currentClassDef)
 const classLevel = computed(() => classStore.classLevel)
@@ -43,7 +21,6 @@ const openClassSelection = () => {
 
 <template>
   <div
-    ref="widgetRef"
     class="home-class-missions-widget home-section-card"
     :style="{ '--class-accent': currentClass?.color || 'var(--yellow)' }"
   >
@@ -134,16 +111,7 @@ const openClassSelection = () => {
 @use "@/styles/core/_mixins" as *;
 
 .home-class-missions-widget {
-  background: Rgba(18, 22, 34, 0.85);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 14px 16px;
-  box-sizing: border-box;
-  box-shadow: 0 4px 16px Rgba(0, 0, 0, 0.4);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
+  @include home-section-card;
 }
 
 .card-header-bar {

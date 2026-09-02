@@ -103,11 +103,11 @@
     align-items: center;
     justify-content: center;
     gap: 4px;
-    line-height: 1;
+    line-height: 1.35;
 
     .emoji {
       font-size: 10px;
-      line-height: 1;
+      line-height: 1.35;
     }
 
     &:hover {
@@ -161,7 +161,7 @@
         display: inline-flex;
         align-items: center;
         gap: 3px;
-        line-height: 1;
+        line-height: 1.35;
 
         &.enrolled {
           background: Rgba(74, 222, 128, 0.15);
@@ -369,11 +369,11 @@
       display: inline-flex;
       align-items: center;
       gap: 3px;
-      line-height: 1;
+      line-height: 1.35;
 
       .emoji {
         font-size: 8px;
-        line-height: 1;
+        line-height: 1.35;
       }
 
       &.competition {
@@ -421,11 +421,11 @@
       display: inline-flex;
       align-items: center;
       gap: 3px;
-      line-height: 1;
+      line-height: 1.35;
 
       .emoji {
         font-size: 8px;
-        line-height: 1;
+        line-height: 1.35;
       }
     }
 

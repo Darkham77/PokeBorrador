@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { gsap } from 'gsap'
+import { computed, onMounted } from 'vue'
 import { useGTSStore } from '@/stores/gts'
 import { useModalStore } from '@/stores/modals'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -11,28 +10,9 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 const gtsStore = useGTSStore()
 const modalStore = useModalStore()
 
-const widgetRef = ref<HTMLElement | null>(null)
-let gsapCtx: gsap.Context | null = null
-
 onMounted(async () => {
   if (gtsStore.listings.length === 0) {
     await gtsStore.fetchListings()
-  }
-
-  gsapCtx = gsap.context(() => {
-    if (widgetRef.value) {
-      gsap.fromTo(
-        widgetRef.value,
-        { opacity: 0, y: 10 },
-        { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }
-      )
-    }
-  }, widgetRef.value || undefined)
-})
-
-onUnmounted(() => {
-  if (gsapCtx) {
-    gsapCtx.revert()
   }
 })
 
@@ -46,7 +26,7 @@ const openGTS = () => {
 const getListingSprite = (listing: MarketListing): string => {
   if (listing.listing_type === 'pokemon') {
     const poke = listing.data as Pokemon
-    const speciesId = poke.id || poke.species
+    const speciesId = poke.species
     if (!speciesId) return ''
     return getAssetUrl(ASSET_TYPES.POKEMON, speciesId, { isShiny: poke.isShiny })
   }
@@ -67,7 +47,6 @@ const getListingTitle = (listing: MarketListing): string => {
 
 <template>
   <div
-    ref="widgetRef"
     class="home-gts-widget home-section-card"
   >
     <!-- Header -->
@@ -166,16 +145,7 @@ const getListingTitle = (listing: MarketListing): string => {
 @use "@/styles/core/_mixins" as *;
 
 .home-gts-widget {
-  background: Rgba(18, 22, 34, 0.85);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 14px 16px;
-  box-sizing: border-box;
-  box-shadow: 0 4px 16px Rgba(0, 0, 0, 0.4);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
+  @include home-section-card;
 }
 
 .card-header-bar {

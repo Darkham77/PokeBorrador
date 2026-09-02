@@ -401,42 +401,7 @@ const handleEggClick = (egg: PokemonEgg) => {
 }
 
 .empty-breeding-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  background: Rgba(0, 0, 0, 0.25);
-  border: 1px dashed Rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  cursor: pointer;
-
-  &:hover {
-    border-color: Rgba(255, 255, 255, 0.2);
-    background: Rgba(0, 0, 0, 0.35);
-  }
-
-  .empty-icon {
-    font-size: 20px;
-    flex-shrink: 0;
-  }
-
-  .empty-info {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-width: 0;
-  }
-
-  .empty-title {
-    font-size: 11px;
-    font-weight: bold;
-    color: #ffffff;
-  }
-
-  .empty-sub {
-    font-size: 9px;
-    color: var(--gray, #94a3b8);
-  }
+  @include empty-state-card;
 
   .empty-btn {
     @include pixelated;

@@ -50,6 +50,8 @@ Backend / Database Engineers.
   - Unlike some procedural environments, PostgreSQL PL/pgSQL requires explicit declaration for scalar loop counters. Omitting loop variable declarations causes runtime fatal errors (`record/variable "<var>" does not exist`), resulting in complete transaction rollbacks on live Supabase databases while offline TypeScript/SQLite RPC emulators pass silently.
 - **Automated Competition Award Email Safety Mandate**:
   - Competition award functions (`fn_award_event_automated`) inserting rows into `public.awards` MUST safely aggregate and propagate `player_email` with `COALESCE(player_email, '')` directly in the ranking/aggregation step, preventing runtime `NOT NULL` constraint violations on `awards.winner_email`.
+- **PL/pgSQL Variable Scope Hygiene Mandate**:
+  - Stored procedures and triggers MUST use distinct, unambiguous prefixes (`v_*` for local variables, `p_*` for input parameters) to prevent name collisions and variable shadowing with existing column identifiers in SQL queries and nested execution blocks.
 
 ## Verification
 

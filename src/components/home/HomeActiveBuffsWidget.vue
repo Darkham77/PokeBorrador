@@ -1,33 +1,14 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { gsap } from 'gsap'
+import { computed, onMounted } from 'vue'
 import { useBuffsStore, type ActiveBuffItem } from '@/stores/battle/buffs'
 import { useModalStore } from '@/stores/modals'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const buffsStore = useBuffsStore()
 const modalStore = useModalStore()
-const widgetRef = ref<HTMLElement | null>(null)
-let gsapCtx: gsap.Context | null = null
 
 onMounted(() => {
   buffsStore.initTick()
-
-  gsapCtx = gsap.context(() => {
-    if (widgetRef.value) {
-      gsap.fromTo(
-        widgetRef.value,
-        { opacity: 0, y: 10 },
-        { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }
-      )
-    }
-  }, widgetRef.value || undefined)
-})
-
-onUnmounted(() => {
-  if (gsapCtx) {
-    gsapCtx.revert()
-  }
 })
 
 const activeBuffs = computed<ActiveBuffItem[]>(() => buffsStore.activeBuffs)
@@ -170,16 +151,7 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
 @use "@/styles/core/_mixins" as *;
 
 .home-active-buffs-widget {
-  background: Rgba(18, 22, 34, 0.85);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 14px 16px;
-  box-sizing: border-box;
-  box-shadow: 0 4px 16px Rgba(0, 0, 0, 0.4);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
+  @include home-section-card;
 }
 
 .card-header-bar {
@@ -358,52 +330,6 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
 }
 
 .empty-buffs-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  background: Rgba(0, 0, 0, 0.25);
-  border: 1px dashed Rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  cursor: pointer;
-
-  &:hover {
-    border-color: Rgba(255, 255, 255, 0.2);
-    background: Rgba(0, 0, 0, 0.35);
-  }
-
-  .empty-icon {
-    font-size: 20px;
-    flex-shrink: 0;
-  }
-
-  .empty-info {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-width: 0;
-  }
-
-  .empty-title {
-    font-size: 11px;
-    font-weight: bold;
-    color: #ffffff;
-  }
-
-  .empty-sub {
-    font-size: 9px;
-    color: var(--gray, #94a3b8);
-  }
-
-  .empty-action-btn {
-    @include pixelated;
-    font-size: 7px;
-    padding: 4px 8px;
-    background: Rgba(255, 255, 255, 0.06);
-    border: 1px solid Rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
-    color: var(--yellow, #facc15);
-    cursor: pointer;
-  }
+  @include empty-state-card;
 }
 </style>

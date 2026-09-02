@@ -8,6 +8,7 @@
 
 import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
+import { TOTAL_IV_POSSIBILITIES_COUNT } from '@/logic/pokemon/generationMath';
 
 export const FISHING_DIFFICULTIES = {
   easy: {
@@ -61,7 +62,9 @@ export type FishingDifficultyKey = keyof typeof FISHING_DIFFICULTIES;
 const MAX_REFERENCE_LEVEL = 70;
 const LEVEL_WEIGHT = 0.40;
 const RARITY_WEIGHT = 0.60;
-const TOTAL_IV_POSSIBILITIES_COUNT = 32;
+const EASY_DIFFICULTY_MAX_SCORE = 45;
+const MEDIUM_DIFFICULTY_MAX_SCORE = 70;
+const HARD_DIFFICULTY_MAX_SCORE = 85;
 
 /**
  * Calculates a continuous difficulty score (0 - 100) combining level and rarity.
@@ -85,9 +88,9 @@ export function calculateFishingDifficultyScore(rarity: number, level: number): 
 export function calculateFishingDifficulty(rarity: number, level: number): FishingDifficultyKey {
   const score = calculateFishingDifficultyScore(rarity, level);
 
-  if (score <= 45) return 'easy';
-  if (score <= 70) return 'medium';
-  if (score <= 85) return 'hard';
+  if (score <= EASY_DIFFICULTY_MAX_SCORE) return 'easy';
+  if (score <= MEDIUM_DIFFICULTY_MAX_SCORE) return 'medium';
+  if (score <= HARD_DIFFICULTY_MAX_SCORE) return 'hard';
   return 'expert';
 }
 
