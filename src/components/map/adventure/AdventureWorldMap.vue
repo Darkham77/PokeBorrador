@@ -1007,7 +1007,7 @@ onMounted(() => {
           class="adv-chip-dot"
           :class="statusDotClass"
         />
-        <span class="adv-chip-location">📍 {{ mapNodes[currentNode]?.name || 'Cargando...' }}</span>
+        <span class="adv-chip-location"><span class="icon">📍</span> {{ mapNodes[currentNode]?.name || 'Cargando...' }}</span>
       </div>
       <div
         v-if="currentSwarmRoute"
@@ -1533,7 +1533,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   height: 100dvh;
-  width: 100vw;
+  width: dvw;
   overflow: hidden;
   color: #ffffff;
   user-select: none;
@@ -1602,7 +1602,7 @@ onMounted(() => {
   border: 1px solid #991b1b;
   box-shadow: 0 3px 8px Rgba(0, 0, 0, 0.4);
   animation: pulseActive 1.5s infinite;
-  max-width: 65vw;
+  max-width: dvw;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1631,7 +1631,7 @@ onMounted(() => {
   transform: Translatex(-50%);
   display: flex;
   gap: 6px;
-  z-index: 50;
+  z-index: var(--z-map-spawns);
   pointer-events: auto;
 }
 
@@ -1793,7 +1793,7 @@ onMounted(() => {
 }
 
 #map-viewport {
-  width: 100vw;
+  width: dvw;
   height: 100dvh;
   overflow: hidden;
   position: relative;
@@ -1827,7 +1827,7 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 1;
+  z-index: calc(var(--z-base) + 1);
   transition: background-color 2s ease;
 }
 
@@ -1838,7 +1838,7 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 5;
+  z-index: calc(var(--z-base) + 5);
   opacity: 0;
   transition: opacity 1.5s ease;
   background-image: radial-gradient(circle at 20% 30%, Rgba(139, 92, 246, 0.45) 0%, transparent 45%), radial-gradient(circle at 80% 70%, Rgba(109, 40, 217, 0.45) 0%, transparent 45%), radial-gradient(circle at 50% 50%, Rgba(76, 29, 149, 0.35) 0%, transparent 65%);
@@ -1859,11 +1859,11 @@ onMounted(() => {
 }
 
 .adv-route-lines {
-  z-index: 2;
+  z-index: calc(var(--z-base) + 2);
 }
 
 .adv-preview-lines {
-  z-index: 8;
+  z-index: calc(var(--z-map-floor) - 2);
 }
 
 .adv-nodes-container {
@@ -1872,7 +1872,7 @@ onMounted(() => {
   left: 0;
   width: 3600px;
   height: 4600px;
-  z-index: 10;
+  z-index: var(--z-modal-step);
   pointer-events: none;
 }
 
@@ -1883,7 +1883,7 @@ onMounted(() => {
   border-radius: 50%;
   filter: Blur(24px);
   opacity: 0.85;
-  z-index: -1;
+  z-index: calc(var(--z-base) - 1);
   pointer-events: none;
 }
 
@@ -1905,7 +1905,7 @@ onMounted(() => {
   background: linear-gradient(145deg, #3B82F6, #2563EB);
   border: 3px solid #1E3A8A;
   color: white;
-  z-index: 2;
+  z-index: calc(var(--z-base) + 2);
   padding: 8px 16px;
   font-weight: 800;
   text-shadow: 0 1px 2px Rgba(0,0,0,0.4);
@@ -1915,7 +1915,7 @@ onMounted(() => {
   background: linear-gradient(145deg, #F9FAFB, #E5E7EB);
   border: 3px solid #9CA3AF;
   color: #1F2937;
-  z-index: 2;
+  z-index: calc(var(--z-base) + 2);
   font-size: 0.8rem;
   padding: 4px 12px;
   border-radius: 9999px;
@@ -1926,7 +1926,7 @@ onMounted(() => {
   background: linear-gradient(145deg, #60A5FA, #3B82F6);
   border: 3px solid #1E40AF;
   color: white;
-  z-index: 2;
+  z-index: calc(var(--z-base) + 2);
   font-size: 0.8rem;
   padding: 4px 12px;
   border-radius: 9999px;
@@ -1938,7 +1938,7 @@ onMounted(() => {
   background: linear-gradient(145deg, #8B5CF6, #7C3AED);
   border: 3px solid #4C1D95;
   color: white;
-  z-index: 3;
+  z-index: calc(var(--z-base) + 3);
   padding: 6px 14px;
   font-size: 0.85rem;
   border-radius: 9999px;
@@ -1951,7 +1951,7 @@ onMounted(() => {
   border: 4px solid #B45309;
   color: #78350F;
   text-transform: uppercase;
-  z-index: 4;
+  z-index: calc(var(--z-base) + 4);
   padding: 10px 20px;
   font-size: 1.1rem;
   border-radius: 14px;
@@ -1974,7 +1974,7 @@ onMounted(() => {
   color: transparent !important;
   text-shadow: 0 0 0 #9ca3af !important;
   filter: Grayscale(100%) Brightness(50%);
-  z-index: 1 !important;
+  z-index: calc(var(--z-base) + 1) !important;
 }
 
 .node-swarm {
@@ -2127,7 +2127,7 @@ onMounted(() => {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
+  width: dvw;
   height: 100dvh;
   background: Rgba(0, 0, 0, 0.75);
   backdrop-filter: Blur(8px);
@@ -2172,7 +2172,7 @@ onMounted(() => {
 
 .adv-modal-body {
   padding: 16px;
-  max-height: 60vh;
+  max-height: dvh;
   overflow-y: auto;
   color: #1f2937;
 }
@@ -2203,7 +2203,7 @@ onMounted(() => {
   position: fixed;
   bottom: calc(var(--hud-bottom-padding, 0px) + 8px);
   left: 0;
-  width: 100vw;
+  width: dvw;
   padding: 12px 16px;
   z-index: 150;
   display: flex;
@@ -2230,7 +2230,7 @@ onMounted(() => {
   flex-direction: column;
   gap: 10px;
   width: 100%;
-  max-width: min(380px, 94vw);
+  max-width: min(380px, dvw);
   pointer-events: auto;
   box-sizing: border-box;
 }
@@ -2382,7 +2382,7 @@ onMounted(() => {
 
 .nav-arrow-group {
   position: absolute;
-  z-index: 50;
+  z-index: var(--z-map-spawns);
   pointer-events: auto;
   display: flex;
   gap: 6px;

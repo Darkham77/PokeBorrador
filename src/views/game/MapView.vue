@@ -198,7 +198,6 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
   padding: 12px 18px;
   margin-bottom: 16px;
   box-shadow: 0 4px 16px Rgba(0, 0, 0, 0.5), inset 0 1px 0 Rgba(255, 255, 255, 0.1);
-  transition: all 0.2s ease;
 
   &:hover {
     border-color: #38bdf8;
@@ -248,7 +247,6 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
     font-weight: bold;
     cursor: pointer;
     box-shadow: 0 2px 8px Rgba(2, 132, 199, 0.4);
-    transition: all 0.15s ease;
     white-space: nowrap;
 
     &:hover {
@@ -259,7 +257,6 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
 
     .btn-arrow {
       font-size: 11px;
-      transition: transform 0.15s ease;
     }
 
     &:hover .btn-arrow {

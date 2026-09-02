@@ -1,4 +1,4 @@
-import type { MapNode, DijkstraPath } from './adventureMapData'
+import type { MapNode, DijkstraPath } from './adventureMapData.ts'
 
 export function getAdjacentNodes(nodeId: string, connections: [string, string][]): string[] {
   const adj: string[] = [] // no-domain

@@ -20,4 +20,5 @@ Frontend Developers / QA Engineers.
 ## Child DOX Index
 
 - [home/](./home/AGENTS.md): Domain module documentation for home.
+- [map/](./map/AGENTS.md): Domain module documentation for map components and adventure pathfinding.
 - [modals/](./modals/AGENTS.md): Domain module documentation for modals.

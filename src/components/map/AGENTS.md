@@ -24,4 +24,4 @@ Frontend Developers / Systems Engineers.
 
 ## Child DOX Index
 
-- _This domain module does not contain nested sub-directories with independent AGENTS.md files._
+- [adventure/AGENTS.md](./adventure/AGENTS.md): GPS Adventure World Map draft mode, interactive road navigation, modals, and pathfinding logic.
