@@ -127,51 +127,56 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
 </script>
 
 <template>
-  <div class="map-view-container legacy-ui">
-    <!-- Banner de Acceso al Croquis / Mapa de Aventura -->
-    <div class="adventure-map-launcher-banner">
-      <div class="launcher-content">
-        <span class="icon launcher-icon">🗺️</span>
-        <div class="launcher-text">
-          <span class="launcher-title">CROQUIS DE AVENTURA (GPS)</span>
-          <span class="launcher-desc">Explora Kanto en un mapa interactivo con carreteras y navegación GPS</span>
+  <div
+    class="map-view-container legacy-ui"
+    :class="{ 'adventure-mode-active': isAdventureModalOpen }"
+  >
+    <template v-if="!isAdventureModalOpen">
+      <!-- Banner de Acceso al Croquis / Mapa de Aventura -->
+      <div class="adventure-map-launcher-banner">
+        <div class="launcher-content">
+          <span class="icon launcher-icon">🗺️</span>
+          <div class="launcher-text">
+            <span class="launcher-title">CROQUIS DE AVENTURA (GPS)</span>
+            <span class="launcher-desc">Explora Kanto en un mapa interactivo con carreteras y navegación GPS</span>
+          </div>
         </div>
+        <button
+          id="open-adventure-map-modal-btn"
+          class="launcher-open-btn"
+          @click="isAdventureModalOpen = true"
+        >
+          <span>ABRIR CROQUIS</span>
+          <span class="icon btn-arrow">➡️</span>
+        </button>
       </div>
-      <button
-        id="open-adventure-map-modal-btn"
-        class="launcher-open-btn"
-        @click="isAdventureModalOpen = true"
-      >
-        <span>ABRIR CROQUIS</span>
-        <span class="icon btn-arrow">➡️</span>
-      </button>
-    </div>
 
-    <!-- Centro Pokémon Banner -->
-    <MapPokemonCenterBanner />
+      <!-- Centro Pokémon Banner -->
+      <MapPokemonCenterBanner />
 
-    <!-- Localizaciones (Grilla de Mapas Clásica) -->
-    <div class="legacy-divider">
-      <span class="divider-text">REGIÓN DE KANTO</span>
-    </div>
+      <!-- Localizaciones (Grilla de Mapas Clásica) -->
+      <div class="legacy-divider">
+        <span class="divider-text">REGIÓN DE KANTO</span>
+      </div>
 
-    <MapGrid
-      :maps="mapStore.maps"
-      :badge-count="gameStore.state.badges || 0"
-      :cycle="mapStore.currentCycle"
-      :weather="mapStore.globalWeather || undefined"
-      :player-class="gameStore.state.playerClass || undefined"
-      :class-data="gameStore.state.classData"
-      :safari-ticket-secs="gameStore.state.safariTicketSecs || 0"
-      :cerulean-ticket-secs="gameStore.state.ceruleanTicketSecs || 0"
-      :dominance-data="mapStore.mapWinners"
-      :daily-guardian-captures="gameStore.dailyGuardianCaptures"
-      @navigate="navigateToMap"
-    />
+      <MapGrid
+        :maps="mapStore.maps"
+        :badge-count="gameStore.state.badges || 0"
+        :cycle="mapStore.currentCycle"
+        :weather="mapStore.globalWeather || undefined"
+        :player-class="gameStore.state.playerClass || undefined"
+        :class-data="gameStore.state.classData"
+        :safari-ticket-secs="gameStore.state.safariTicketSecs || 0"
+        :cerulean-ticket-secs="gameStore.state.ceruleanTicketSecs || 0"
+        :dominance-data="mapStore.mapWinners"
+        :daily-guardian-captures="gameStore.dailyGuardianCaptures"
+        @navigate="navigateToMap"
+      />
+    </template>
 
     <!-- Dedicated Fullscreen Adventure Map Modal -->
     <AdventureWorldMap
-      v-if="isAdventureModalOpen"
+      v-else
       @close="isAdventureModalOpen = false"
     />
   </div>
@@ -184,6 +189,11 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
   padding: 0 0 40px;
   width: 100%;
   box-sizing: border-box;
+
+  &.adventure-mode-active {
+    padding: 0;
+    margin: 0;
+  }
 }
 
 .adventure-map-launcher-banner {

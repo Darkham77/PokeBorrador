@@ -228,12 +228,12 @@
         showOfflineScreen();
       }
 
-      // Fallback de seguridad: si después de 6 segundos Vue no se ha montado, mostrar error
+      // Fallback de seguridad: si después de 25 segundos Vue no se ha montado, mostrar error
       setTimeout(function() {
         if (typeof window !== 'undefined' && !window.pwa_app_mounted) {
           showOfflineScreen();
         }
-      }, 6000);
+      }, 25000);
     </script>
 
     <!-- VUE ENTRY POINT -->

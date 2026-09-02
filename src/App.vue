@@ -281,39 +281,21 @@ watch(() => authStore.user, (newUser) => {
 
 // Intercept low-level events to prevent them from reaching background interactions when modals are open
 const blockEvents = (e: Event) => {
+  // If no modal is open, let all events flow normally
+  if (!uiStore.isAnyBlockingModalOpen) return
+
   const target = e.target as HTMLElement | null
   if (!target || typeof target.closest !== 'function') return
 
-  const isInsideModal = target.closest('.base-modal-root, .base-modal-content, .modal-host')
-  const isScrollable = (el: HTMLElement) => {
-    if (!el || el === document.body || el === document.documentElement) return false
-    const style = window.getComputedStyle(el)
-    const overflow = style.overflow + style.overflowY + style.overflowX
-    return /(auto|scroll)/.test(overflow)
-  }
-
-  // Find the nearest scrollable parent
-  let curr: HTMLElement | null = target
-  let foundScrollable = null
-  while (curr && curr !== document.body) {
-    if (isScrollable(curr)) {
-      foundScrollable = curr
-      break
-    }
-    curr = curr.parentElement
-  }
-
-  // CRITICAL: If we are inside a modal or a scrollable view, STOP propagation
-  if (foundScrollable || isInsideModal) {
-    e.stopPropagation()
+  const isInsideModal = target.closest('.base-modal-root, .base-modal-content, .modal-host, .adv-modal-card')
+  if (isInsideModal) {
+    // Allow normal scrolling inside the open modal
     return
   }
 
-  // 2. Only block the event entirely if a modal is open AND we are NOT inside it
-  if (uiStore.isAnyBlockingModalOpen) {
-    e.preventDefault()
-    e.stopImmediatePropagation()
-  }
+  // Block the background from scrolling/moving when a modal is active
+  e.preventDefault()
+  e.stopImmediatePropagation()
 }
 
 // Managed Window Listeners (Safe Lifecycle)

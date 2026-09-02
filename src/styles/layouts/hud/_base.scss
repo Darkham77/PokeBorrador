@@ -10,7 +10,7 @@
   @include gpu-layer;
   transform: translate3d(0, 0, 0);
   width: min(1800px, 98dvw);
-  z-index: var(--z-hud);
+  z-index: calc(var(--z-modal) + 500);
   pointer-events: none;
   @include will-animate(transform, opacity);
   

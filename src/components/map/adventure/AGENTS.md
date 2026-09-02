@@ -1,19 +1,18 @@
 # src/components/map/adventure/ - GPS Adventure World Map Components
 
-This directory contains the GPS-style Adventure World Map draft mode, interactive road navigation, modals, and pathfinding logic.
+This directory contains the GPS-style Adventure World Map mode, interactive road navigation, modals, and pathfinding logic.
 
 ## Directory Scope & Responsibilities
 
-- **`AdventureWorldMap.vue`**: Fullscreen modal/draft mode view rendering the Kanto region map with double-layered SVG routes, smooth GSAP camera panning/zooming, directional travel controls, wild encounter exploration integration, and live HUD stacking.
+- **`AdventureWorldMap.vue`**: Fullscreen modal/view rendering the Kanto region map with MapCards, GSAP camera panning/zooming, directional travel controls, wild encounter exploration integration, live HUD stacking, and real-time path traversal.
 - **`AdventureInventoryModal.vue`**: Adventure backpack modal displaying unlocked field items (Bicycle, Cut, Surf, Fly, Flute, Badges) and companion follower selection.
 - **`AdventureDebugModal.vue`**: QA & testing modal for cheat unlocking map nodes, MOs, and triggering swarms.
+- **`useAdventureCapabilities.ts`**: Composable auditing player's active team moves (`cut`, `surf`, `fly`) and badges (`gameStore.state.badges`) to determine field capabilities and follower Pokémon.
 - **`adventureMapData.ts`**: Static coordinate registry for Kanto cities, routes, water ways, POIs, farming ratings, and bidirectional connection graphs.
-- **`adventurePathfinding.ts`**: Dijkstra shortest path and alternative path calculation algorithms respecting player MO unlocks and discovered regions.
+- **`adventurePathfinding.ts`**: Dijkstra shortest path and alternative path calculation algorithms respecting player MO unlocks.
 
 ## Key Architectural Rules
 
-1. **Retro-Modern Visual Compliance**: Always maintain pixelated sprite scaling, custom HUD stacking with `var(--hud-top-padding)`, and GSAP-exclusive animations.
-2. **Deterministic Route Traversal**: Player sprite transitions must dynamically switch sprites (`up`, `down`, `left`, `right`, `surf`, `bike`, `fly`) matching the exact travel vector of each route leg.
-3. **Canonical Combat Integration**: Zone exploration (`exploreZone`) must strictly delegate to `mapStore.navigate(routeId)` to generate standard encounters without dynamic schema fallbacks.
-4. **Explicit SVG World Dimensions**: All map road lines and GPS preview paths in world containers (`3600px x 4600px`) must define explicit CSS dimensions, `pointer-events: none;`, `stroke-linejoin: round;`, and explicit `z-index` layering.
-5. **HUD Stacking & Padding Synchronization**: Avoid `<Teleport to="body">` for in-game immersive map view modes so the top trainer HUD and bottom navigation bar remain interactable; center camera offsets must account for dynamic HUD height (`var(--hud-top-padding)`).
+1. **Move-Based MO Unlocking**: MOs (Corte, Surf, Vuelo) require an active Pokémon in `gameStore.state.team` that actually knows that move, plus the corresponding gym badge.
+2. **GSAP Exclusive Mandate**: All camera panning, zooming, and player movement along paths must be animated strictly via GSAP timelines.
+3. **HUD Stacking & In-Game Immersion**: Center camera offsets and drawer padding must account for dynamic HUD height.

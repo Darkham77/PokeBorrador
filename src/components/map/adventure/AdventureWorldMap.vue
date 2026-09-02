@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, onActivated, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import MapCard from '@/components/map/MapCard.vue'
 import AdventureInventoryModal from './AdventureInventoryModal.vue'
 import AdventureDebugModal from './AdventureDebugModal.vue'
+import { useAdventureCapabilities } from './useAdventureCapabilities'
 
 // Import Kanto Map Data
 import { rawNodes, connections, officialMapIdMap, REVERSE_OFFICIAL_MAP_ID_MAP, type MapNode, type DijkstraPath, type AdventureDirection, type AdventureTerrain } from './adventureMapData'
@@ -13,14 +14,20 @@ import { getAdjacentNodes, getAlternativePaths } from './adventurePathfinding'
 import { useMapStore } from '@/stores/map'
 import { useUIStore } from '@/stores/ui'
 import { useShopStore } from '@/stores/inventory/shop'
+import { useBattleStore } from '@/stores/battle/battle'
 import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
 import { getRouteWeather } from '@/logic/weather/weatherUtils'
 import { isWeatherTableRouteId, requireWeatherSeasonId } from '@/data/world/weather-tables'
-import { isMapRouteId, requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
+import { isMapRouteId, requireMapRouteId, MAP_ROUTE_MAPPING, type MapRouteId } from '@/data/world/map-assets'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getMapSpawnPoolData } from '@/logic/encounters/encounterHelpers'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { WeatherId } from '@/logic/weather/weatherRegistry'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { useModalStore } from '@/stores/modals'
+import { useGameStore } from '@/stores/game'
+import { calculatePokemonCenterCooldown, pokemonNeedsHealing } from '@/logic/economy/economyFormulas'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 const emit = defineEmits<{
   (e: 'close'): void
@@ -29,6 +36,8 @@ const emit = defineEmits<{
 const mapStore = useMapStore()
 const uiStore = useUIStore()
 const shopStore = useShopStore()
+const modalStore = useModalStore()
+const gameStore = useGameStore()
 
 // Disable low power mode in the adventure view to ensure backgrounds are pre-rendered and kept warm
 uiStore.lowPowerMode = 'disabled'
@@ -44,31 +53,124 @@ const flySpeed = 2400
 
 function getOptimalParkedScale(): number {
   if (!viewport.value) return 1.3
-  const vpW = viewport.value.clientWidth
-  const vpH = viewport.value.clientHeight
+  const vpW = viewport.value.clientWidth || window.innerWidth
+  const vpH = viewport.value.clientHeight || window.innerHeight
   // Target: MapCard (250px wide) fits comfortably occupying ~84% of narrow width or ~65% of height
   const targetCardWidth = Math.min(vpW * 0.84, vpH * 0.65, 360)
   const scale = targetCardWidth / 250
   return Math.min(Math.max(scale, 0.8), 1.5)
 }
 
+const KANTO_TOTAL_WIDTH = 2600
+const KANTO_TOTAL_HEIGHT = 3500
+
+function getMinZoomScale(): number {
+  if (!viewport.value) return 0.4
+  const vpW = viewport.value.clientWidth || window.innerWidth
+  const vpH = viewport.value.clientHeight || window.innerHeight
+  // Zoom out stops when EITHER the whole width OR the whole height fits comfortably
+  const scaleW = vpW / KANTO_TOTAL_WIDTH
+  const scaleH = vpH / KANTO_TOTAL_HEIGHT
+  const fitScale = Math.max(scaleW, scaleH)
+  return Math.min(Math.max(fitScale, 0.35), 0.8)
+}
+
+function getMaxZoomScale(): number {
+  return 2.4
+}
+
 function getOptimalMapScale(): number {
   if (!viewport.value) return 0.75
-  const vpW = viewport.value.clientWidth
-  if (vpW < 500) return 0.55
-  if (vpW < 800) return 0.65
-  return 0.75
+  const vpW = viewport.value.clientWidth || window.innerWidth
+  if (vpW < 500) return Math.max(0.55, getMinZoomScale())
+  if (vpW < 800) return Math.max(0.65, getMinZoomScale())
+  return Math.max(0.75, getMinZoomScale())
+}
+
+const lastMousePos = ref<{ x: number; y: number } | null>(null)
+
+function applyFocalZoom(focalX: number, focalY: number, newScale: number, smooth = false) {
+  const clampedScale = Math.min(Math.max(newScale, getMinZoomScale()), getMaxZoomScale())
+  if (Math.abs(clampedScale - currentScale.value) < 0.001) return
+
+  const focalWorldX = (focalX - currentPanX.value) / currentScale.value
+  const focalWorldY = (focalY - currentPanY.value) / currentScale.value
+
+  currentScale.value = clampedScale
+  currentPanX.value = focalX - (focalWorldX * clampedScale)
+  currentPanY.value = focalY - (focalWorldY * clampedScale)
+
+  if (isZoomedIn.value) {
+    isZoomedIn.value = false
+    setStatus('Modo Libre', true)
+  }
+
+  clampCamera()
+  updateCameraTransform(smooth)
+}
+
+function getZoomFocalPoint(): { x: number; y: number } {
+  const vp = viewport.value
+  const vpW = vp?.clientWidth || window.innerWidth
+  const vpH = vp?.clientHeight || window.innerHeight
+
+  if (
+    lastMousePos.value &&
+    lastMousePos.value.x >= 0 &&
+    lastMousePos.value.x < vpW - 70 &&
+    lastMousePos.value.y >= 0 &&
+    lastMousePos.value.y <= vpH
+  ) {
+    return lastMousePos.value
+  }
+
+  return { x: vpW / 2, y: vpH / 2 }
+}
+
+function zoomIn() {
+  if (isMoving.value) return
+  const focal = getZoomFocalPoint()
+  const targetScale = currentScale.value * 1.25
+  applyFocalZoom(focal.x, focal.y, targetScale, true)
+}
+
+function zoomOut() {
+  if (isMoving.value) return
+  const focal = getZoomFocalPoint()
+  const targetScale = currentScale.value * 0.8
+  applyFocalZoom(focal.x, focal.y, targetScale, true)
+}
+
+function handleWheelZoom(e: WheelEvent) {
+  if (isMoving.value) return
+  e.preventDefault()
+  lastMousePos.value = { x: e.clientX, y: e.clientY }
+  const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85
+  const newScale = currentScale.value * zoomFactor
+  applyFocalZoom(e.clientX, e.clientY, newScale, false)
+}
+
+function handleMouseMove(e: MouseEvent) {
+  lastMousePos.value = { x: e.clientX, y: e.clientY }
 }
 
 // Reactive State
+const { playerCapabilitiesRecord } = useAdventureCapabilities()
+
 const playerInventory = ref<Record<string, boolean>>(
   JSON.parse(localStorage.getItem('pokeVicioInventory') || '{"Corte":false,"Surf":false,"Flauta":false,"Medallas":false,"Vuelo":false,"Bicicleta":true}')
 )
-const discoveredNodes = ref<string[]>(
-  JSON.parse(localStorage.getItem('pokeVicioDiscovered') || '["pallet","route1","viridian"]')
-)
+
+watch(playerCapabilitiesRecord, (caps) => {
+  for (const [key, val] of Object.entries(caps)) {
+    if (val) playerInventory.value[key] = true
+  }
+}, { immediate: true })
+const defaultAllNodes = Object.keys(rawNodes) // no-domain
+const savedDiscovered = localStorage.getItem('pokeVicioDiscovered')
+const initialDiscovered = savedDiscovered ? JSON.parse(savedDiscovered) : [...defaultAllNodes] // no-domain
+const discoveredNodes = ref<string[]>(initialDiscovered) // no-domain
 const activeCompanion = ref<string>(localStorage.getItem('pokeVicioCompanion') || 'none')
-const currentSwarmRoute = ref<string | null>(null)
 
 // Initialize current node from mapStore or localStorage
 const initialNode = (() => {
@@ -79,7 +181,25 @@ const initialNode = (() => {
   return localStorage.getItem('pokeVicioLocation') || 'pallet'
 })()
 
+if (!discoveredNodes.value.includes(initialNode)) {
+  discoveredNodes.value.push(initialNode)
+}
+
 const currentNode = ref<string>(initialNode)
+
+watch(() => mapStore.currentMap, (newOfficial) => {
+  if (newOfficial && REVERSE_OFFICIAL_MAP_ID_MAP[newOfficial]) {
+    const localId = REVERSE_OFFICIAL_MAP_ID_MAP[newOfficial]
+    if (currentNode.value !== localId) {
+      currentNode.value = localId
+      if (!discoveredNodes.value.includes(localId)) {
+        discoveredNodes.value.push(localId)
+      }
+      enterParkedMode()
+    }
+  }
+})
+
 const isMoving = ref(false)
 const isZoomedIn = ref(true)
 const isPlanning = ref(false)
@@ -122,6 +242,7 @@ const activePlanStats = computed(() => {
 const worldContainer = ref<HTMLElement | null>(null)
 const viewport = ref<HTMLElement | null>(null)
 const playerToken = ref<HTMLElement | null>(null)
+const playerTokenPos = ref<{ x: number; y: number }>({ x: 625, y: 3625 })
 const previewLinesSvg = ref<SVGElement | null>(null)
 
 const mapNodes = computed(() => {
@@ -166,13 +287,6 @@ const emptyWildRates = {
 const mapLocationsById = computed(() => {
   const map: Record<string, MapLocation> = {}
   for (const [localId, officialId] of Object.entries(officialMapIdMap)) {
-    if (isMapRouteId(officialId)) {
-      const loc = MAPS_BY_ROUTE_ID[officialId]
-      if (loc) {
-        map[localId] = loc
-        continue
-      }
-    }
     const rawNode = rawNodes[localId]
     if (rawNode && (rawNode.type === 'city' || rawNode.type === 'league')) {
       const validRouteId: MapRouteId = isMapRouteId(officialId) ? officialId : 'route1'
@@ -181,11 +295,29 @@ const mapLocationsById = computed(() => {
         name: rawNode.name,
         icon: rawNode.type === 'league' ? '🏆' : '🏙️',
         badges: 0,
-        desc: cityDescriptions[localId] || 'Centro urbano de Kanto.',
+        desc: cityDescriptions[localId] || (rawNode.type === 'league' ? 'La cumbre de la Liga Pokémon.' : 'Centro urbano de Kanto.'),
         wild: emptyWild,
         rates: emptyWildRates,
         lv: [1, 1],
         weather: {}
+      }
+      continue
+    }
+
+    if (isMapRouteId(officialId)) {
+      const loc = MAPS_BY_ROUTE_ID[officialId]
+      if (loc) {
+        if (localId === 'billshouse') {
+          map[localId] = {
+            ...loc,
+            name: 'Casa de Bill',
+            icon: '🏠',
+            desc: 'El laboratorio e investigación del Coleccionista Bill.'
+          }
+        } else {
+          map[localId] = loc
+        }
+        continue
       }
     }
   }
@@ -225,6 +357,32 @@ function getSpawnPoolForMap(nodeId: string) {
   )
 }
 
+function getNodeIcon(node: MapNode, id: string): string {
+  if (id === 'billshouse') return '🏠'
+  if (node.type === 'league') return '🏆'
+  if (node.type === 'city') return '🏙️'
+  if (node.type === 'route_water') return '🌊'
+  if (node.type === 'poi') return '⛰️'
+  return '🌿'
+}
+
+function getNodeImage(id: string): string {
+  const rawOfficialId = officialMapIdMap[id] || id
+  if (isMapRouteId(rawOfficialId)) {
+    const mapAssetId = MAP_ROUTE_MAPPING[rawOfficialId]
+    if (mapAssetId.startsWith('/')) return mapAssetId
+    return getAssetUrl(ASSET_TYPES.MAP, mapAssetId, {
+      cycle: currentCycle.value,
+      isLowPower: false
+    })
+  }
+  const fallbackAssetId = id === 'billshouse' ? 'route25' : 'ruta1'
+  return getAssetUrl(ASSET_TYPES.MAP, fallbackAssetId, {
+    cycle: currentCycle.value,
+    isLowPower: false
+  })
+}
+
 // Day/Night overlay color
 const dayNightOverlayColor = ref('transparent')
 function updateDayNightCycle() {
@@ -248,6 +406,45 @@ const alertOpen = ref(false)
 const alertMsg = ref('')
 const showActionAlert = (msg: string) => { alertMsg.value = msg; alertOpen.value = true }
 const closeAlert = () => { alertOpen.value = false }
+
+const alertIsHeal = computed(() => alertMsg.value.includes('sanos') || alertMsg.value.includes('Turururu'))
+const alertIsBlock = computed(() => alertMsg.value.includes('bloqueado') || alertMsg.value.includes('ZONA DESCONOCIDA') || alertMsg.value.includes('MO'))
+const alertIsCheat = computed(() => alertMsg.value.includes('Cheat'))
+
+const alertTitle = computed(() => {
+  if (alertIsHeal.value) return 'CENTRO POKÉMON'
+  if (alertIsBlock.value) return 'AVISO DE VIAJE'
+  if (alertIsCheat.value) return 'HERRAMIENTA DEBUG'
+  return 'AVISO DE AVENTURA'
+})
+
+const alertIcon = computed(() => {
+  if (alertIsHeal.value) return '💖'
+  if (alertIsBlock.value) return '🚧'
+  if (alertIsCheat.value) return '⚙️'
+  return '📢'
+})
+
+const alertThemeClass = computed(() => {
+  if (alertIsHeal.value) return 'border-pink'
+  if (alertIsBlock.value) return 'border-amber'
+  if (alertIsCheat.value) return 'border-purple'
+  return 'border-blue'
+})
+
+const alertHeaderClass = computed(() => {
+  if (alertIsHeal.value) return 'header-pink'
+  if (alertIsBlock.value) return 'header-amber'
+  if (alertIsCheat.value) return 'header-purple'
+  return 'header-blue'
+})
+
+const alertBtnClass = computed(() => {
+  if (alertIsHeal.value) return 'btn-pink'
+  if (alertIsBlock.value) return 'btn-amber'
+  if (alertIsCheat.value) return 'btn-purple'
+  return 'btn-blue'
+})
 
 function setCompanion(comp: string) {
   activeCompanion.value = comp
@@ -285,25 +482,22 @@ function updateCameraTransform(smooth = false) {
 
 function clampCamera() {
   if (!viewport.value) return
-  const vpWidth = viewport.value.clientWidth
-  const vpHeight = viewport.value.clientHeight
-  const scaledWidth = WORLD_WIDTH * currentScale.value
-  const scaledHeight = WORLD_HEIGHT * currentScale.value
-  let minX, maxX, minY, maxY
+  const vpWidth = viewport.value.clientWidth || window.innerWidth
+  const vpHeight = viewport.value.clientHeight || window.innerHeight
 
-  if (scaledWidth <= vpWidth) {
-    minX = maxX = (vpWidth - scaledWidth) / 2
-  } else {
-    minX = vpWidth - scaledWidth
-    maxX = 0
-  }
+  // Bounding box of Kanto nodes in canvas pixels (raw * 2.5)
+  // minX=625, maxX=3125, minY=750, maxY=4125
+  const padding = 150 * currentScale.value
+  const minNodeX = 625 * currentScale.value - padding
+  const maxNodeX = 3125 * currentScale.value + padding
+  const minNodeY = 750 * currentScale.value - padding
+  const maxNodeY = 4125 * currentScale.value + padding
 
-  if (scaledHeight <= vpHeight) {
-    minY = maxY = (vpHeight - scaledHeight) / 2
-  } else {
-    minY = vpHeight - scaledHeight
-    maxY = 0
-  }
+  const minX = (vpWidth / 2) - maxNodeX
+  const maxX = (vpWidth / 2) - minNodeX
+
+  const minY = (vpHeight / 2) - maxNodeY
+  const maxY = (vpHeight / 2) - minNodeY
 
   currentPanX.value = Math.max(minX, Math.min(maxX, currentPanX.value))
   currentPanY.value = Math.max(minY, Math.min(maxY, currentPanY.value))
@@ -313,19 +507,12 @@ function centerCameraOn(x: number, y: number, smooth = true, customScale: number
   if (!viewport.value) return
   if (customScale !== null) currentScale.value = customScale
   const centerYOffset = 30
-  currentPanX.value = (viewport.value.clientWidth / 2) - (x * currentScale.value)
-  currentPanY.value = (viewport.value.clientHeight / 2 + centerYOffset) - (y * currentScale.value)
+  const vpWidth = viewport.value.clientWidth || window.innerWidth
+  const vpHeight = viewport.value.clientHeight || window.innerHeight
+  currentPanX.value = (vpWidth / 2) - (x * currentScale.value)
+  currentPanY.value = (vpHeight / 2 + centerYOffset) - (y * currentScale.value)
   clampCamera()
   updateCameraTransform(smooth)
-}
-
-function returnToCurrentLocation() {
-  if (!isMoving.value && !isPlanning.value && !isZoomedIn.value) {
-    enterParkedMode()
-  }
-  if (isPlanning.value) {
-    cancelPlanning()
-  }
 }
 
 // Parked mode setup
@@ -337,6 +524,11 @@ function enterParkedMode() {
   const targetScale = getOptimalParkedScale()
   const node = mapNodes.value[currentNode.value]
   if (node) {
+    playerTokenPos.value = { x: node.x, y: node.y }
+    if (playerToken.value) {
+      playerToken.value.style.left = `${node.x}px`
+      playerToken.value.style.top = `${node.y}px`
+    }
     centerCameraOn(node.x, node.y, true, targetScale)
   }
 }
@@ -351,7 +543,9 @@ function exitParkedMode() {
   }
 }
 
-// Drag logic
+// Drag & Multi-Touch Pinch Zoom logic (Unified Pointer Architecture)
+const activePointers = new Map<number, { x: number, y: number }>()
+
 const dragState = {
   isDragging: false,
   isPointerDown: false,
@@ -361,32 +555,118 @@ const dragState = {
   dragStartY: 0
 }
 
-function startDrag(clientX: number, clientY: number) {
-  if ((isZoomedIn.value && !isPlanning.value) || isMoving.value) return
-  dragState.isPointerDown = true
-  dragState.isDragging = false
-  dragState.initialClickX = clientX
-  dragState.initialClickY = clientY
-  dragState.dragStartX = clientX - currentPanX.value
-  dragState.dragStartY = clientY - currentPanY.value
+const pinchState = {
+  initialDist: 0,
+  initialScale: 1.0,
+  focalWorldX: 0,
+  focalWorldY: 0
 }
 
-function doDrag(clientX: number, clientY: number) {
-  if (!dragState.isPointerDown) return
-  if (!dragState.isDragging && (Math.abs(clientX - dragState.initialClickX) > 8 || Math.abs(clientY - dragState.initialClickY) > 8)) {
-    dragState.isDragging = true
-  }
-  if (dragState.isDragging) {
-    currentPanX.value = clientX - dragState.dragStartX
-    currentPanY.value = clientY - dragState.dragStartY
-    clampCamera()
-    updateCameraTransform(false)
+function handlePointerDown(e: PointerEvent) {
+  if (isMoving.value) return
+  activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+  if (activePointers.size === 1) {
+    dragState.isPointerDown = true
+    dragState.isDragging = false
+    dragState.initialClickX = e.clientX
+    dragState.initialClickY = e.clientY
+    dragState.dragStartX = e.clientX - currentPanX.value
+    dragState.dragStartY = e.clientY - currentPanY.value
+  } else if (activePointers.size === 2) {
+    dragState.isDragging = false
+    dragState.isPointerDown = false
+    const pts = Array.from(activePointers.values())
+    const p1 = pts[0]
+    const p2 = pts[1]
+    if (p1 && p2) {
+      pinchState.initialDist = Math.hypot(p2.x - p1.x, p2.y - p1.y)
+      pinchState.initialScale = currentScale.value
+      
+      const midScreenX = (p1.x + p2.x) / 2
+      const midScreenY = (p1.y + p2.y) / 2
+
+      pinchState.focalWorldX = (midScreenX - currentPanX.value) / currentScale.value
+      pinchState.focalWorldY = (midScreenY - currentPanY.value) / currentScale.value
+
+      if (isZoomedIn.value && !isPlanning.value) {
+        isZoomedIn.value = false
+        setStatus('Modo Libre', true)
+      }
+    }
   }
 }
 
-function endDrag() {
-  dragState.isPointerDown = false
-  setTimeout(() => { dragState.isDragging = false }, 50)
+function handlePointerMove(e: PointerEvent) {
+  if (e.pointerType === 'mouse') {
+    lastMousePos.value = { x: e.clientX, y: e.clientY }
+  }
+  if (!activePointers.has(e.pointerId)) return
+  activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+  if (activePointers.size === 2 && pinchState.initialDist > 0) {
+    // Multi-touch Pinch Zoom centered between the two fingers
+    const pts = Array.from(activePointers.values())
+    const p1 = pts[0]
+    const p2 = pts[1]
+    if (p1 && p2) {
+      const currentDist = Math.hypot(p2.x - p1.x, p2.y - p1.y)
+      const scaleFactor = currentDist / pinchState.initialDist
+      const targetScale = pinchState.initialScale * scaleFactor
+      const currentMidScreenX = (p1.x + p2.x) / 2
+      const currentMidScreenY = (p1.y + p2.y) / 2
+      applyFocalZoom(currentMidScreenX, currentMidScreenY, targetScale, false)
+    }
+  } else if (activePointers.size === 1 && dragState.isPointerDown) {
+    // Single finger drag
+    const dx = e.clientX - dragState.initialClickX
+    const dy = e.clientY - dragState.initialClickY
+    if (!dragState.isDragging && Math.hypot(dx, dy) > 6) {
+      dragState.isDragging = true
+      if (isZoomedIn.value && !isPlanning.value) {
+        isZoomedIn.value = false
+        setStatus('Modo Libre', true)
+      }
+    }
+    if (dragState.isDragging) {
+      currentPanX.value = e.clientX - dragState.dragStartX
+      currentPanY.value = e.clientY - dragState.dragStartY
+      clampCamera()
+      updateCameraTransform(false)
+    }
+  }
+}
+
+function handlePointerUp(e: PointerEvent) {
+  activePointers.delete(e.pointerId)
+  if (activePointers.size === 0) {
+    dragState.isPointerDown = false
+    pinchState.initialDist = 0
+    setTimeout(() => { dragState.isDragging = false }, 200)
+  } else if (activePointers.size === 1) {
+    // Transition smoothly back to 1-finger drag
+    const remaining = Array.from(activePointers.values())[0]
+    if (remaining) {
+      dragState.initialClickX = remaining.x
+      dragState.initialClickY = remaining.y
+      dragState.dragStartX = remaining.x - currentPanX.value
+      dragState.dragStartY = remaining.y - currentPanY.value
+      dragState.isDragging = false
+    }
+  }
+}
+
+function handlePointerCancel(e: PointerEvent) {
+  handlePointerUp(e)
+}
+
+function handleNodeClick(id: string) {
+  if (isMoving.value) return
+  if (isZoomedIn.value && !isPlanning.value && currentNode.value === id) {
+    exploreZone()
+  } else {
+    planTravel(id)
+  }
 }
 
 // Travel confirms
@@ -403,11 +683,27 @@ function travelToAdjacent(targetId: string) {
   currentPlanPaths.value = [{ nodes: [currentNode.value, targetId], cost: 0, isFly: false }]
   selectedPlanIndex.value = 0
   planningTarget.value = targetId
+  updateFacingDirectionForPath([currentNode.value, targetId])
   
   confirmTravel()
 }
 
 // GPS / Planning
+function updateFacingDirectionForPath(pathNodes: string[]) {
+  if (pathNodes.length < 2) return
+  const idA = pathNodes[0]
+  const idB = pathNodes[1]
+  const nA = idA ? mapNodes.value[idA] : undefined
+  const nB = idB ? mapNodes.value[idB] : undefined
+  if (nA && nB) {
+    const angle = Math.atan2(nB.y - nA.y, nB.x - nA.x) * (180 / Math.PI)
+    if (angle >= -45 && angle < 45) playerDirection.value = 'right'
+    else if (angle >= 45 && angle < 135) playerDirection.value = 'down'
+    else if (angle >= -135 && angle < -45) playerDirection.value = 'up'
+    else playerDirection.value = 'left'
+  }
+}
+
 function planTravel(targetId: string) {
   if (targetId === currentNode.value) {
     if (!isZoomedIn.value) enterParkedMode()
@@ -450,6 +746,9 @@ function planTravel(targetId: string) {
   isZoomedIn.value = false
   selectedPlanIndex.value = 0
   planningTarget.value = targetId
+
+  const firstPath = paths[0]
+  if (firstPath) updateFacingDirectionForPath(firstPath.nodes)
   
   setStatus(`Planificando...`, true)
   updatePlanUI()
@@ -467,7 +766,6 @@ function calculateRouteStats(nodesInPath: string[]) {
     sums.w = Math.max(sums.w, f.w)
     sums.m = Math.max(sums.m, f.m)
     sums.f = Math.max(sums.f, f.f)
-    if (nId === currentSwarmRoute.value) sums.w = Math.min(100, sums.w + 50)
   }
   if (activeCompanion.value === 'pikachu') sums.t = Math.min(100, Math.floor(sums.t * 1.5))
   if (activeCompanion.value === 'meowth') sums.m = Math.min(100, Math.floor(sums.m * 1.5))
@@ -546,6 +844,8 @@ function zoomToFitPath(nodesIds: string[]) {
 
 function nextAlternative() {
   selectedPlanIndex.value = (selectedPlanIndex.value + 1) % currentPlanPaths.value.length
+  const currentPath = currentPlanPaths.value[selectedPlanIndex.value]
+  if (currentPath) updateFacingDirectionForPath(currentPath.nodes)
   updatePlanUI()
 }
 
@@ -564,8 +864,55 @@ function drawPreviewPath(nodeIds: string[], isFly: boolean) {
     line.setAttribute('y1', String(nA.y))
     line.setAttribute('x2', String(nB.x))
     line.setAttribute('y2', String(nB.y))
+    line.setAttribute('stroke', isFly ? '#60A5FA' : '#FBBF24')
+    line.setAttribute('stroke-width', '18')
+    line.setAttribute('stroke-linecap', 'round')
+    line.setAttribute('stroke-linejoin', 'round')
     line.setAttribute('class', isFly ? 'preview-line-fly' : 'preview-line')
     previewLinesSvg.value.appendChild(line)
+  }
+}
+
+function drawRemainingRouteTrail(
+  currentX: number,
+  currentY: number,
+  activeLegIdx: number,
+  legs: Array<{ startX: number, startY: number, endX: number, endY: number, terrain?: AdventureTerrain, isFly?: boolean }>
+) {
+  if (!previewLinesSvg.value) return
+  previewLinesSvg.value.innerHTML = ''
+
+  const activeLeg = legs[activeLegIdx]
+  if (!activeLeg) return
+
+  // 1. Line from current sprite position to end of active leg
+  const firstLine = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+  firstLine.setAttribute('x1', String(Math.round(currentX)))
+  firstLine.setAttribute('y1', String(Math.round(currentY)))
+  firstLine.setAttribute('x2', String(activeLeg.endX))
+  firstLine.setAttribute('y2', String(activeLeg.endY))
+  firstLine.setAttribute('stroke', activeLeg.isFly ? '#60A5FA' : '#FBBF24')
+  firstLine.setAttribute('stroke-width', '18')
+  firstLine.setAttribute('stroke-linecap', 'round')
+  firstLine.setAttribute('stroke-linejoin', 'round')
+  firstLine.setAttribute('class', activeLeg.isFly ? 'preview-line-fly' : 'preview-line')
+  previewLinesSvg.value.appendChild(firstLine)
+
+  // 2. Draw all subsequent legs ahead in full
+  for (let i = activeLegIdx + 1; i < legs.length; i++) {
+    const l = legs[i]
+    if (!l) continue
+    const nextLine = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+    nextLine.setAttribute('x1', String(l.startX))
+    nextLine.setAttribute('y1', String(l.startY))
+    nextLine.setAttribute('x2', String(l.endX))
+    nextLine.setAttribute('y2', String(l.endY))
+    nextLine.setAttribute('stroke', l.isFly ? '#60A5FA' : '#FBBF24')
+    nextLine.setAttribute('stroke-width', '18')
+    nextLine.setAttribute('stroke-linecap', 'round')
+    nextLine.setAttribute('stroke-linejoin', 'round')
+    nextLine.setAttribute('class', l.isFly ? 'preview-line-fly' : 'preview-line')
+    previewLinesSvg.value.appendChild(nextLine)
   }
 }
 
@@ -600,7 +947,6 @@ async function confirmTravel() {
   isPlanning.value = false
   isMoving.value = true
   isTravelingProgressActive.value = true
-  if (previewLinesSvg.value) previewLinesSvg.value.innerHTML = ''
 
   if (pathData.isFly) {
     setStatus(`Volando...`, true)
@@ -621,7 +967,17 @@ async function confirmTravel() {
     currentNode.value = finalNode
     localStorage.setItem('pokeVicioLocation', finalNode)
 
-    // Sync with official game map navigation
+    const finalNodeObj = mapNodes.value[finalNode]
+    if (finalNodeObj?.hasEvent) {
+      setTimeout(() => showActionAlert(`¡Oye! Tienes un evento pendiente en ${finalNodeObj.name}.`), 800)
+    }
+  }
+
+  // 1. Settle camera & player token cleanly into destination parked mode
+  enterParkedMode()
+
+  // 2. Sync with official game map navigation (which may trigger wild/trainer encounter)
+  if (finalNode) {
     const rawOfficialId = officialMapIdMap[finalNode]
     if (rawOfficialId && isMapRouteId(rawOfficialId)) {
       const routeId = requireMapRouteId(rawOfficialId)
@@ -629,13 +985,7 @@ async function confirmTravel() {
         await mapStore.navigate(routeId)
       }
     }
-
-    const finalNodeObj = mapNodes.value[finalNode]
-    if (finalNodeObj?.hasEvent) {
-      setTimeout(() => showActionAlert(`¡Oye! Tienes un evento pendiente en ${finalNodeObj.name}.`), 800)
-    }
   }
-  enterParkedMode()
 }
 
 function preloadTrainerSprites() {
@@ -773,6 +1123,7 @@ function animateFullRoute(nodes: string[], isFlying: boolean) {
       onComplete: () => {
         const lastLeg = legs[legs.length - 1]
         if (lastLeg) {
+          playerTokenPos.value = { x: lastLeg.endX, y: lastLeg.endY }
           if (playerToken.value) {
             playerToken.value.style.left = `${lastLeg.endX}px`
             playerToken.value.style.top = `${lastLeg.endY}px`
@@ -786,6 +1137,7 @@ function animateFullRoute(nodes: string[], isFlying: boolean) {
           currentNode.value = lastLeg.endId
           travelProgressText.value = '100%'
         }
+        if (previewLinesSvg.value) previewLinesSvg.value.innerHTML = ''
         walkFrame.value = isBike ? 0 : 1
         resolve()
       }
@@ -798,10 +1150,12 @@ function animateFullRoute(nodes: string[], isFlying: boolean) {
       onUpdate: () => {
         const currentTime = animState.t
         let activeLeg = legs[legs.length - 1]
+        let activeLegIdx = legs.length - 1
         for (let i = 0; i < legs.length; i++) {
           const l = legs[i]
           if (l && currentTime <= l.endTime) {
             activeLeg = l
+            activeLegIdx = i
             break
           }
         }
@@ -813,6 +1167,10 @@ function animateFullRoute(nodes: string[], isFlying: boolean) {
           const currentX = activeLeg.startX + activeLeg.dx * legRatio
           const currentY = activeLeg.startY + activeLeg.dy * legRatio
 
+          // Update real-time route trail consumption
+          drawRemainingRouteTrail(currentX, currentY, activeLegIdx, legs)
+
+          playerTokenPos.value = { x: currentX, y: currentY }
           if (playerToken.value) {
             playerToken.value.style.left = `${currentX}px`
             playerToken.value.style.top = `${currentY}px`
@@ -829,6 +1187,10 @@ function animateFullRoute(nodes: string[], isFlying: boolean) {
             if (!discoveredNodes.value.includes(activeLeg.endId)) {
               discoveredNodes.value.push(activeLeg.endId)
               localStorage.setItem('pokeVicioDiscovered', JSON.stringify(discoveredNodes.value))
+            }
+            const reachedNode = mapNodes.value[activeLeg.endId]
+            if (reachedNode?.hasCenter) {
+              shopStore.healAllPokemon(0)
             }
           }
           travelProgressText.value = `${activeLeg.progressPct}%`
@@ -859,13 +1221,6 @@ function animateFullRoute(nodes: string[], isFlying: boolean) {
   })
 }
 
-// Swarms
-const triggerSwarm = () => {
-  const routes = Object.keys(mapNodes.value).filter(id => mapNodes.value[id]?.type.includes('route'))
-  const randomRoute = routes[Math.floor(Math.random() * routes.length)]
-  currentSwarmRoute.value = randomRoute || null
-}
-
 // Explore & Heal
 const exploreZone = async () => {
   const rawOfficialId = officialMapIdMap[currentNode.value] || currentNode.value
@@ -877,8 +1232,28 @@ const exploreZone = async () => {
 }
 
 function healPokemon() {
-  shopStore.healAllPokemon(0)
-  showActionAlert('Turururu-ru~\n\nTus Pokémon están completamente sanos y listos para seguir luchando.')
+  const needsHeal = (gameStore.state.team as (Pokemon | null)[]).some(p => p && pokemonNeedsHealing(p))
+  if (!needsHeal) {
+    uiStore.notify('Tu equipo ya está en perfectas condiciones.', '💖')
+    return
+  }
+
+  const lastHeal = gameStore.state.lastPokemonCenterHeal || 0
+  const cooldownSecs = calculatePokemonCenterCooldown(gameStore.state.trainerLevel || 1)
+  if (cooldownSecs > 0 && lastHeal > 0) {
+    const elapsedMs = Temporal.Now.instant().epochMilliseconds - lastHeal
+    const remainingMs = (cooldownSecs * 1000) - elapsedMs
+    if (remainingMs > 0) {
+      const remainingSecs = Math.ceil(remainingMs / 1000)
+      const mins = Math.floor(remainingSecs / 60)
+      const secs = remainingSecs % 60
+      const formatted = `${mins}:${secs.toString().padStart(2, '0')}`
+      uiStore.notify(`El Centro Pokémon está en mantenimiento. Disponible en ${formatted}.`, '🏥')
+      return
+    }
+  }
+
+  modalStore.open('PokemonCenter')
 }
 
 // Debug features
@@ -893,12 +1268,6 @@ function debugGiveAllMOs() {
   localStorage.setItem('pokeVicioInventory', JSON.stringify(playerInventory.value))
   updatePlayerVisuals()
   showActionAlert('⚙️ Cheat: Tienes todos los Objetos y MOs.')
-}
-
-const debugTriggerSwarm = () => {
-  triggerSwarm()
-  const swarmNode = currentSwarmRoute.value ? mapNodes.value[currentSwarmRoute.value] : null
-  showActionAlert('⚙️ Enjambre forzado en: ' + (swarmNode?.name || 'Ruta desconocida'))
 }
 
 function debugHardReset() {
@@ -965,16 +1334,20 @@ function handleResize() {
 
 onMounted(() => {
   preloadTrainerSprites()
-  triggerSwarm()
   updatePlayerVisuals()
   updateDayNightCycle()
   const dayNightTimer = setInterval(updateDayNightCycle, 60000)
   window.addEventListener('resize', handleResize)
+  viewport.value?.addEventListener('wheel', handleWheelZoom, { passive: false })
+  viewport.value?.addEventListener('mousemove', handleMouseMove)
 
   const currentLoc = mapNodes.value[currentNode.value]
-  if (playerToken.value && currentLoc) {
-    playerToken.value.style.left = `${currentLoc.x}px`
-    playerToken.value.style.top = `${currentLoc.y}px`
+  if (currentLoc) {
+    playerTokenPos.value = { x: currentLoc.x, y: currentLoc.y }
+    if (playerToken.value) {
+      playerToken.value.style.left = `${currentLoc.x}px`
+      playerToken.value.style.top = `${currentLoc.y}px`
+    }
   }
 
   nextTick(() => {
@@ -984,49 +1357,47 @@ onMounted(() => {
   onUnmounted(() => {
     clearInterval(dayNightTimer)
     window.removeEventListener('resize', handleResize)
+    viewport.value?.removeEventListener('wheel', handleWheelZoom)
+    viewport.value?.removeEventListener('mousemove', handleMouseMove)
     if (playerToken.value) gsap.killTweensOf(playerToken.value)
     if (worldContainer.value) gsap.killTweensOf(worldContainer.value)
   })
+})
+
+const battleStore = useBattleStore()
+
+watch(
+  () => battleStore.isBattleActive,
+  (active, wasActive) => {
+    if (!active && wasActive && !isMoving.value) {
+      nextTick(() => {
+        enterParkedMode()
+      })
+    }
+  }
+)
+
+onActivated(() => {
+  if (!isMoving.value && !isPlanning.value) {
+    nextTick(() => {
+      enterParkedMode()
+    })
+  }
 })
 </script>
 
 <template>
   <div class="adventure-world-modal-fullscreen">
-    <!-- Top-Left Floating Info Chip -->
-    <div
-      class="adv-floating-info-chip"
-      :class="{ 'tools-hidden': isMoving || isPlanning }"
-    >
-      <div
-        class="adv-chip-main"
-        title="Centrar en Ubicación Actual"
-        @click="returnToCurrentLocation"
-      >
-        <span class="adv-chip-title">KANTO</span>
-        <span
-          class="adv-chip-dot"
-          :class="statusDotClass"
-        />
-        <span class="adv-chip-location"><span class="icon">📍</span> {{ mapNodes[currentNode]?.name || 'Cargando...' }}</span>
-      </div>
-      <div
-        v-if="currentSwarmRoute"
-        class="adv-chip-swarm"
-      >
-        <span class="icon">🔴</span> Enjambre: {{ mapNodes[currentSwarmRoute]?.name }}
-      </div>
-    </div>
-
     <!-- Map Viewport -->
     <main
       id="map-viewport"
-      ref="viewport" 
-      @mousedown="startDrag($event.clientX, $event.clientY)"
-      @mousemove="doDrag($event.clientX, $event.clientY)"
-      @mouseup="endDrag"
-      @touchstart="$event.touches?.[0] && startDrag($event.touches[0].clientX, $event.touches[0].clientY)"
-      @touchmove="$event.touches?.[0] && doDrag($event.touches[0].clientX, $event.touches[0].clientY)"
-      @touchend="endDrag"
+      ref="viewport"
+      @pointerdown="handlePointerDown"
+      @pointermove="handlePointerMove"
+      @pointerup="handlePointerUp"
+      @pointercancel="handlePointerCancel"
+      @wheel.prevent="handleWheelZoom"
+      @mousemove="handleMouseMove"
     >
       <div
         id="world-container"
@@ -1045,6 +1416,9 @@ onMounted(() => {
         <svg
           id="route-lines"
           class="adv-route-lines"
+          viewBox="0 0 3600 4600"
+          width="3600"
+          height="4600"
         >
           <template
             v-for="([idA, idB], idx) in connections"
@@ -1077,6 +1451,9 @@ onMounted(() => {
           id="preview-lines"
           ref="previewLinesSvg"
           class="adv-preview-lines"
+          viewBox="0 0 3600 4600"
+          width="3600"
+          height="4600"
         />
 
         <!-- Nodes Container -->
@@ -1094,15 +1471,7 @@ onMounted(() => {
               :id="`node-${id}`"
               class="adv-node-card-wrapper"
               :style="{ left: `${node.x}px`, top: `${node.y}px`, zIndex: (isZoomedIn && !isMoving && !isPlanning && currentNode === id) ? 20 : 10 }"
-              @click.stop="() => {
-                if (!isMoving) {
-                  if (isZoomedIn && !isPlanning && currentNode === id) {
-                    exploreZone()
-                  } else {
-                    planTravel(id as string)
-                  }
-                }
-              }"
+              @click.stop="handleNodeClick(id as string)"
             >
               <div
                 :style="{ transform: `scale(${(isZoomedIn && !isMoving && !isPlanning && currentNode === id) ? 1.0 : cardScale})` }"
@@ -1114,14 +1483,51 @@ onMounted(() => {
                   class="adv-node-spherical-glow animate-pulse-glow"
                 />
 
+                <!-- 1. TACTICAL MINIMAP CARD (Zoomed-out / Free Mode / In Transit / Any scale < 0.95) -->
+                <div
+                  v-if="!isZoomedIn || isMoving || currentScale < 0.95"
+                  class="adv-tactical-card"
+                  :class="[
+                    `node-type-${node.type}`,
+                    { 'is-active-target': isPlanning && planningTarget === id },
+                    { 'is-current-loc': currentNode === id }
+                  ]"
+                  :style="{
+                    '--bg-route-img': `url('${getNodeImage(id as string)}')`
+                  }"
+                >
+                  <div class="tactical-bg-layer" />
+                  <div class="tactical-header-badges">
+                    <span class="tactical-icon-badge">{{ getNodeIcon(node, id as string) }}</span>
+                    <span
+                      v-if="node.hasCenter"
+                      class="tactical-center-badge"
+                    >🏥</span>
+                  </div>
+                  <div class="tactical-body">
+                    <h4 class="tactical-zone-title">
+                      {{ mapLocationsById[id]?.name || node.name }}
+                    </h4>
+                  </div>
+                  <div
+                    v-if="node.requiresMO && !playerInventory[node.requiresMO]"
+                    class="tactical-lock-badge"
+                  >
+                    🔒 {{ node.requiresMO }}
+                  </div>
+                </div>
+
+                <!-- 2. FULL HIGH-FIDELITY MAPCARD (Zoomed-in & Stationary on Current Node ONLY when scale >= 0.95) -->
                 <MapCard 
+                  v-else-if="isZoomedIn && !isMoving && currentScale >= 0.95"
                   :map="mapLocationsById[id]"
                   :is-locked="!!(node.requiresMO && !playerInventory[node.requiresMO])"
                   :cycle="currentCycle"
                   :weather="getWeatherForMap(id as string)"
                   :badge-count="8"
                   :spawn-pool="getSpawnPoolForMap(id as string)"
-                  :force-keep-warm="true"
+                  :force-keep-warm="false"
+                  :is-performance-mode="false"
                   style="width: 250px; pointer-events: none;"
                   @navigate="() => {}"
                 />
@@ -1164,12 +1570,11 @@ onMounted(() => {
                 discoveredNodes.includes(id as string) ? '' : 'node-undiscovered',
                 currentNode === id ? 'active-node' : '',
                 (node.requiresMO && !playerInventory[node.requiresMO]) ? 'node-locked' : '',
-                id === currentSwarmRoute ? 'node-swarm' : '',
                 node.hasEvent ? 'node-event' : ''
               ]"
               :style="{ left: `${node.x}px`, top: `${node.y}px` }"
               @click.stop="() => {
-                if (!isMoving) {
+                if (!isMoving && !dragState.isDragging) {
                   planTravel(id as string)
                 }
               }"
@@ -1183,6 +1588,10 @@ onMounted(() => {
         <div
           id="player-token"
           ref="playerToken"
+          :style="{
+            left: `${playerTokenPos.x}px`,
+            top: `${playerTokenPos.y}px`
+          }"
         >
           <div
             v-if="activeCompanion !== 'none'"
@@ -1251,7 +1660,7 @@ onMounted(() => {
         id="btn-free-map"
         class="floating-btn"
         :title="isZoomedIn ? 'Ver Mapa Completo' : 'Volver a Ubicación'"
-        @click="() => {
+        @click.stop.prevent="() => {
           if (isZoomedIn) {
             exitParkedMode()
           } else {
@@ -1276,6 +1685,22 @@ onMounted(() => {
         @click="toggleRadarModal"
       >
         <span class="icon">🧭</span>
+      </button>
+      <button
+        id="btn-zoom-in"
+        class="floating-btn"
+        title="Acercar Cámara"
+        @click.stop="zoomIn"
+      >
+        <span class="icon">➕</span>
+      </button>
+      <button
+        id="btn-zoom-out"
+        class="floating-btn"
+        title="Alejar Cámara"
+        @click.stop="zoomOut"
+      >
+        <span class="icon">➖</span>
       </button>
       <button
         id="btn-debug"
@@ -1445,59 +1870,88 @@ onMounted(() => {
     </div>
 
     <!-- Custom Alert dialog -->
-    <div
-      v-if="alertOpen"
-      class="adv-modal-overlay"
-    >
-      <div class="adv-modal-card">
-        <p class="adv-alert-message">
-          {{ alertMsg }}
-        </p>
-        <button
-          class="adv-alert-btn"
-          @click="closeAlert"
+    <Teleport to="body">
+      <div
+        v-if="alertOpen"
+        class="adv-modal-overlay"
+        @click.self="closeAlert"
+      >
+        <div
+          class="adv-modal-card adv-alert-card"
+          :class="alertThemeClass"
         >
-          ▼ Siguiente
-        </button>
+          <div
+            class="adv-modal-header"
+            :class="alertHeaderClass"
+          >
+            <span class="icon">{{ alertIcon }}</span> {{ alertTitle }}
+          </div>
+          <div class="adv-alert-body">
+            <div
+              v-if="alertIsHeal"
+              class="adv-alert-nurse-avatar"
+            >
+              <span class="nurse-icon">👩‍⚕️</span>
+            </div>
+            <p class="adv-alert-message">
+              {{ alertMsg }}
+            </p>
+          </div>
+          <div class="adv-modal-footer">
+            <button
+              class="adv-btn-close"
+              :class="alertBtnClass"
+              @click="closeAlert"
+            >
+              ¡Entendido!
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    </Teleport>
 
     <!-- Radar Modal -->
-    <div
-      v-if="showRadarModal"
-      class="adv-modal-overlay"
-    >
-      <div class="adv-modal-card border-yellow">
-        <div class="adv-modal-header bg-gradient-to-b from-yellow-400 to-yellow-500 text-yellow-900 border-b-2 border-yellow-600">
-          <span class="icon">🧭</span> RADAR RÁPIDO
-        </div>
-        <div class="adv-modal-body space-y-2">
-          <button
-            v-for="id in discoveredNodes.filter(n => mapNodes[n] && ['city', 'league'].includes(mapNodes[n]?.type || ''))"
-            :key="id"
-            class="w-full text-left bg-gray-100 p-3 rounded-xl font-bold text-gray-800 border-2 border-gray-200 hover:bg-yellow-50 hover:border-yellow-400 active:scale-95 transition-all"
-            @click="() => {
-              toggleRadarModal()
-              if (isZoomedIn) exitParkedMode()
-              const loc = mapNodes[id]
-              if (loc) {
-                centerCameraOn(loc.x, loc.y, true, getOptimalMapScale())
-              }
-            }"
-          >
-            <span class="icon">📍</span> {{ mapNodes[id]?.name }}
-          </button>
-        </div>
-        <div class="adv-modal-footer">
-          <button
-            class="adv-btn-close"
-            @click="toggleRadarModal"
-          >
-            Cerrar
-          </button>
+    <Teleport to="body">
+      <div
+        v-if="showRadarModal"
+        class="adv-modal-overlay"
+        @click.self="toggleRadarModal"
+      >
+        <div class="adv-modal-card border-yellow">
+          <div class="adv-modal-header header-yellow">
+            <span class="icon">🧭</span> RADAR RÁPIDO
+          </div>
+          <div class="adv-modal-body">
+            <div class="radar-cities-list">
+              <button
+                v-for="id in discoveredNodes.filter(n => mapNodes[n] && ['city', 'league'].includes(mapNodes[n]?.type || ''))"
+                :key="id"
+                class="radar-city-btn"
+                @click="() => {
+                  toggleRadarModal()
+                  if (isZoomedIn) exitParkedMode()
+                  const loc = mapNodes[id]
+                  if (loc) {
+                    centerCameraOn(loc.x, loc.y, true, getOptimalMapScale())
+                  }
+                }"
+              >
+                <span class="city-name"><span class="icon">📍</span> {{ mapNodes[id]?.name }}</span>
+                <span class="city-type-badge">{{ mapNodes[id]?.type === 'league' ? 'LIGA' : 'CIUDAD' }}</span>
+              </button>
+            </div>
+          </div>
+          <div class="adv-modal-footer">
+            <button
+              class="adv-btn-close btn-yellow"
+              @click="toggleRadarModal"
+            >
+              Cerrar Radar
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </Teleport>
 
     <!-- Inventory Modal -->
     <AdventureInventoryModal
@@ -1514,7 +1968,6 @@ onMounted(() => {
       :show="showDebugModal"
       @unlock-all="debugUnlockAll"
       @give-all-m-os="debugGiveAllMOs"
-      @trigger-swarm="debugTriggerSwarm"
       @hard-reset="debugHardReset"
       @close="toggleDebugModal"
     />
@@ -1527,85 +1980,16 @@ onMounted(() => {
 .adventure-world-modal-fullscreen {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: var(--z-modal);
   background-color: #0f172a;
   font-family: 'Nunito', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   display: flex;
   flex-direction: column;
   height: 100dvh;
-  width: dvw;
+  width: 100vw;
   overflow: hidden;
   color: #ffffff;
   user-select: none;
-}
-
-.adv-floating-info-chip {
-  position: fixed;
-  top: calc(var(--hud-top-padding, 115px) + 4px);
-  left: 50%;
-  transform: Translatex(-50%);
-  z-index: 160;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  pointer-events: auto;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.adv-chip-main {
-  background: Rgba(17, 24, 39, 0.92);
-  backdrop-filter: Blur(12px);
-  -webkit-backdrop-filter: Blur(12px);
-  border: 1.5px solid #4b5563;
-  padding: 4px 12px;
-  border-radius: 9999px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.6);
-  cursor: pointer;
-  transition: transform 0.1s ease;
-  &:active { transform: Scale(0.96); }
-}
-
-.adv-chip-title {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.7rem;
-  font-weight: 900;
-  color: #fde047;
-  letter-spacing: 0.05em;
-  text-shadow: 0 1px 2px Rgba(0, 0, 0, 0.8);
-}
-
-.adv-chip-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  &.bg-green-400 { background-color: #4ade80; box-shadow: 0 0 6px #4ade80; }
-  &.bg-yellow-400 { background-color: #facc15; box-shadow: 0 0 6px #facc15; }
-}
-
-.adv-chip-location {
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: white;
-}
-
-.adv-chip-swarm {
-  background: #dc2626;
-  color: white;
-  font-size: 9px;
-  font-weight: 900;
-  padding: 2px 10px;
-  border-radius: 9999px;
-  border: 1px solid #991b1b;
-  box-shadow: 0 3px 8px Rgba(0, 0, 0, 0.4);
-  animation: pulseActive 1.5s infinite;
-  max-width: dvw;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .adv-node-card-wrapper {
@@ -1613,6 +1997,148 @@ onMounted(() => {
   transform: Translate(-50%, -50%);
   transform-origin: center center;
   cursor: pointer;
+  pointer-events: auto;
+  will-change: transform;
+}
+
+.adv-tactical-card {
+  width: 250px;
+  height: 140px;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border: 3px solid #374151;
+  box-shadow: 0 8px 24px Rgba(0, 0, 0, 0.6), inset 0 0 0 1px Rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+  background-color: #0f172a;
+
+  &.node-type-city {
+    border-color: #3b82f6;
+    box-shadow: 0 8px 24px Rgba(0, 0, 0, 0.6), 0 0 16px Rgba(59, 130, 246, 0.4);
+    .tactical-zone-title {
+      color: #93c5fd;
+      text-shadow: 0 2px 4px Rgba(0, 0, 0, 0.9), 0 0 8px Rgba(59, 130, 246, 0.6);
+    }
+  }
+
+  &.node-type-league {
+    border-color: #eab308;
+    box-shadow: 0 8px 24px Rgba(0, 0, 0, 0.6), 0 0 20px Rgba(234, 179, 8, 0.5);
+    .tactical-zone-title {
+      color: #fef08a;
+      text-shadow: 0 2px 4px Rgba(0, 0, 0, 0.9), 0 0 10px Rgba(234, 179, 8, 0.8);
+    }
+  }
+
+  &.node-type-route_water {
+    border-color: #06b6d4;
+  }
+
+  &.node-type-poi {
+    border-color: #a855f7;
+  }
+
+  &.is-current-loc {
+    border-color: #22c55e !important;
+    box-shadow: 0 8px 24px Rgba(0, 0, 0, 0.6), 0 0 20px Rgba(34, 197, 94, 0.7) !important;
+  }
+
+  &.is-active-target {
+    border-color: #f59e0b !important;
+    box-shadow: 0 8px 24px Rgba(0, 0, 0, 0.6), 0 0 20px Rgba(245, 158, 11, 0.8) !important;
+    animation: pulseActive 1.2s infinite;
+  }
+}
+
+.tactical-bg-layer {
+  position: absolute;
+  inset: 0;
+  background-image: var(--bg-route-img);
+  background-size: cover;
+  background-position: center;
+  filter: Brightness(0.65) contrast(1.05);
+  z-index: 1;
+}
+
+.tactical-header-badges {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.tactical-icon-badge {
+  font-size: 1.1rem;
+  background: Rgba(17, 24, 39, 0.85);
+  border-radius: 8px;
+  padding: 2px 6px;
+  border: 1px solid Rgba(255, 255, 255, 0.2);
+  line-height: 1;
+}
+
+.tactical-center-badge {
+  font-size: 1rem;
+  background: Rgba(236, 72, 153, 0.85);
+  border-radius: 8px;
+  padding: 2px 6px;
+  border: 1px solid #f472b6;
+  line-height: 1;
+}
+
+.tactical-body {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8px 12px;
+  background: Rgba(15, 23, 42, 0.90);
+  border-radius: 12px;
+  border: 2px solid Rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 16px Rgba(0, 0, 0, 0.7);
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.tactical-zone-title {
+  font-family: 'Pokemon FireRed LeafGreen', monospace;
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 4px Rgba(0, 0, 0, 0.95), 0 0 8px Rgba(0, 0, 0, 0.9);
+  margin: 0;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.tactical-lock-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: Translatex(-50%);
+  z-index: 3;
+  background: Rgba(220, 38, 38, 0.95);
+  color: #ffffff;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.6rem;
+  font-weight: 900;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid #fca5a5;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px Rgba(0, 0, 0, 0.6);
 }
 
 .adv-node-card-inner {
@@ -1710,25 +2236,105 @@ onMounted(() => {
   font-size: 0.9rem;
 }
 
-.adv-alert-message {
-  color: #1f2937;
-  font-weight: 700;
-  font-size: 1.1rem;
-  margin-bottom: 20px;
-  line-height: 1.5;
-  white-space: pre-line;
+.adv-alert-card {
+  max-width: 380px;
+  width: 100%;
+
+  &.border-pink {
+    border-color: #ec4899;
+    box-shadow: 0 20px 40px Rgba(0, 0, 0, 0.8), 0 0 20px Rgba(236, 72, 153, 0.25);
+  }
+
+  &.border-amber {
+    border-color: #f59e0b;
+    box-shadow: 0 20px 40px Rgba(0, 0, 0, 0.8), 0 0 20px Rgba(245, 158, 11, 0.25);
+  }
+
+  &.border-blue {
+    border-color: #3b82f6;
+    box-shadow: 0 20px 40px Rgba(0, 0, 0, 0.8), 0 0 20px Rgba(59, 130, 246, 0.25);
+  }
 }
 
-.adv-alert-btn {
-  align-self: flex-end;
-  background: #1f2937;
+.header-pink {
+  background: linear-gradient(180deg, #ec4899 0%, #be185d 100%);
   color: white;
-  padding: 10px 20px;
-  border-radius: 12px;
-  font-weight: 800;
-  border: none;
-  cursor: pointer;
-  &:active { transform: Scale(0.96); }
+  border-bottom: 2px solid #9d174d;
+}
+
+.header-amber {
+  background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+  color: #451a03;
+  border-bottom: 2px solid #b45309;
+}
+
+.header-blue {
+  background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border-bottom: 2px solid #1e40af;
+}
+
+.btn-pink {
+  background: linear-gradient(180deg, #ec4899 0%, #be185d 100%) !important;
+  color: white !important;
+  border-color: #f472b6 !important;
+  font-weight: 900 !important;
+  box-shadow: 0 4px 12px Rgba(190, 24, 93, 0.35);
+
+  &:hover {
+    filter: Brightness(1.1);
+  }
+}
+
+.btn-amber {
+  background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%) !important;
+  color: #451a03 !important;
+  border-color: #fbbf24 !important;
+  font-weight: 900 !important;
+  box-shadow: 0 4px 12px Rgba(217, 119, 6, 0.35);
+
+  &:hover {
+    filter: Brightness(1.1);
+  }
+}
+
+.btn-blue {
+  background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%) !important;
+  color: white !important;
+  border-color: #60a5fa !important;
+  font-weight: 900 !important;
+  box-shadow: 0 4px 12px Rgba(29, 78, 216, 0.35);
+
+  &:hover {
+    filter: Brightness(1.1);
+  }
+}
+
+.adv-alert-body {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 18px;
+}
+
+.adv-alert-nurse-avatar {
+  font-size: 2.2rem;
+  line-height: 1;
+  flex-shrink: 0;
+  background: Rgba(236, 72, 153, 0.15);
+  border: 1.5px solid Rgba(236, 72, 153, 0.35);
+  border-radius: 14px;
+  padding: 8px;
+  box-shadow: 0 4px 12px Rgba(236, 72, 153, 0.2);
+}
+
+.adv-alert-message {
+  color: #f8fafc;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+  white-space: pre-line;
 }
 
 @keyframes fogMove {
@@ -1793,7 +2399,7 @@ onMounted(() => {
 }
 
 #map-viewport {
-  width: dvw;
+  width: 100vw;
   height: 100dvh;
   overflow: hidden;
   position: relative;
@@ -1863,7 +2469,7 @@ onMounted(() => {
 }
 
 .adv-preview-lines {
-  z-index: calc(var(--z-map-floor) - 2);
+  z-index: calc(var(--z-map-floor) + 5);
 }
 
 .adv-nodes-container {
@@ -1872,7 +2478,7 @@ onMounted(() => {
   left: 0;
   width: 3600px;
   height: 4600px;
-  z-index: var(--z-modal-step);
+  z-index: calc(var(--z-map-floor) + 10);
   pointer-events: none;
 }
 
@@ -1888,6 +2494,7 @@ onMounted(() => {
 }
 
 .node {
+  position: absolute;
   transform: translate3d(-50%, -50%, 0);
   white-space: nowrap; 
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
@@ -1977,11 +2584,6 @@ onMounted(() => {
   z-index: calc(var(--z-base) + 1) !important;
 }
 
-.node-swarm {
-  animation: pulseActive 1.5s infinite !important;
-  border-color: #ef4444 !important;
-}
-
 .node-event::before {
   content: '❗';
   position: absolute;
@@ -1994,20 +2596,26 @@ onMounted(() => {
   animation: bounceEvent 0.8s infinite;
 }
 
+:deep(.preview-line),
 .preview-line {
-  stroke: #FCD34D;
+  stroke: #FBBF24;
   stroke-width: 18;
   stroke-linecap: round;
-  stroke-dasharray: 24, 16;
-  animation: gpsMove 0.7s linear infinite;
+  stroke-linejoin: round;
+  stroke-dasharray: 20, 14;
+  animation: gpsMove 0.6s linear infinite;
+  filter: Drop-Shadow(0 0 10px Rgba(251, 191, 36, 0.95)) Drop-Shadow(0 0 4px Rgba(0, 0, 0, 0.9));
 }
 
+:deep(.preview-line-fly),
 .preview-line-fly {
   stroke: #60A5FA;
   stroke-width: 16;
   stroke-linecap: round;
+  stroke-linejoin: round;
   stroke-dasharray: 18, 22;
   animation: gpsMove 0.4s linear infinite;
+  filter: Drop-Shadow(0 0 10px Rgba(96, 165, 250, 0.95));
 }
 
 #player-token {
@@ -2057,14 +2665,18 @@ onMounted(() => {
 
 .floating-tools-container {
   position: fixed;
-  top: calc(var(--hud-top-padding, 115px) + 8px);
+  top: clamp(190px, 24vh, 210px);
   right: 14px;
-  z-index: 160;
+  z-index: calc(var(--z-modal) + 10);
   display: flex;
   flex-direction: column;
   gap: 10px;
   pointer-events: auto;
   transition: opacity 0.2s ease, transform 0.2s ease;
+
+  @media (min-width: 960px) {
+    top: 90px;
+  }
 }
 
 .floating-tools-container.tools-hidden {
@@ -2127,11 +2739,9 @@ onMounted(() => {
   position: fixed;
   top: 0;
   left: 0;
-  width: dvw;
+  width: 100vw;
   height: 100dvh;
-  background: Rgba(0, 0, 0, 0.75);
-  backdrop-filter: Blur(8px);
-  -webkit-backdrop-filter: Blur(8px);
+  background: Rgba(0, 0, 0, 0.85);
   z-index: 50100;
   display: flex;
   align-items: center;
@@ -2141,76 +2751,161 @@ onMounted(() => {
 }
 
 .adv-modal-card {
-  background: white;
-  border-radius: 24px;
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border-radius: 20px;
   width: 100%;
-  max-width: 380px;
+  max-width: 420px;
   overflow: hidden;
-  box-shadow: 0 20px 40px Rgba(0, 0, 0, 0.6);
-  border: 4px solid #3b82f6;
+  box-shadow: 0 20px 40px Rgba(0, 0, 0, 0.8), inset 0 1px 0 Rgba(255, 255, 255, 0.1);
+  border: 2px solid #3b82f6;
   box-sizing: border-box;
-  padding: 24px;
   display: flex;
   flex-direction: column;
 }
 
 .adv-modal-card.border-purple {
   border-color: #a855f7;
+  box-shadow: 0 20px 40px Rgba(0, 0, 0, 0.8), 0 0 20px Rgba(168, 85, 247, 0.25);
 }
 
 .adv-modal-card.border-yellow {
   border-color: #eab308;
+  box-shadow: 0 20px 40px Rgba(0, 0, 0, 0.8), 0 0 20px Rgba(234, 179, 8, 0.25);
 }
 
 .adv-modal-header {
-  padding: 14px;
+  padding: 14px 16px;
   text-align: center;
   font-weight: 900;
   font-size: 1.15rem;
+  letter-spacing: 0.05em;
   color: white;
+  @include pixelated;
+
+  &.header-yellow {
+    background: linear-gradient(180deg, #facc15 0%, #ca8a04 100%);
+    color: #422006;
+    border-bottom: 2px solid #a16207;
+  }
 }
 
 .adv-modal-body {
   padding: 16px;
-  max-height: dvh;
+  max-height: 60dvh;
   overflow-y: auto;
-  color: #1f2937;
+  color: #f1f5f9;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: Rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
+}
+
+.radar-cities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radar-city-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: Rgba(30, 41, 59, 0.85);
+  border: 1.5px solid Rgba(234, 179, 8, 0.35);
+  border-radius: 12px;
+  padding: 10px 14px;
+  color: #f8fafc;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px Rgba(0, 0, 0, 0.3);
+
+  &:hover {
+    background: Rgba(234, 179, 8, 0.18);
+    border-color: #facc15;
+    transform: Translatex(4px);
+    box-shadow: 0 4px 12px Rgba(234, 179, 8, 0.25);
+  }
+
+  &:active {
+    transform: Scale(0.98);
+  }
+
+  .city-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .city-type-badge {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: Rgba(234, 179, 8, 0.2);
+    color: #fef08a;
+    border: 1px solid Rgba(234, 179, 8, 0.5);
+    letter-spacing: 0.05em;
+  }
 }
 
 .adv-modal-footer {
-  padding: 12px 16px;
-  background: #f3f4f6;
-  border-top: 2px solid #e5e7eb;
+  padding: 14px 16px;
+  background: #0b1120;
+  border-top: 1px solid Rgba(255, 255, 255, 0.08);
 }
 
 .adv-btn-close {
   width: 100%;
-  background: #1f2937;
+  background: #334155;
   color: white;
-  font-weight: 700;
+  font-weight: 800;
   padding: 12px;
   border-radius: 12px;
-  font-size: 1rem;
-  border: none;
+  font-size: 0.95rem;
+  border: 1.5px solid Rgba(255, 255, 255, 0.15);
   cursor: pointer;
-}
+  transition: all 0.2s ease;
 
-.adv-btn-close:active {
-  transform: Scale(0.97);
+  &.btn-yellow {
+    background: linear-gradient(180deg, #facc15 0%, #d97706 100%);
+    color: #451a03;
+    border-color: #b45309;
+    font-weight: 900;
+    box-shadow: 0 4px 12px Rgba(217, 119, 6, 0.35);
+
+    &:hover {
+      filter: Brightness(1.1);
+    }
+  }
+
+  &:active {
+    transform: Scale(0.97);
+  }
 }
 
 #planning-ui-panel {
-  position: fixed;
-  bottom: calc(var(--hud-bottom-padding, 0px) + 8px);
+  position: absolute;
+  bottom: calc(var(--hud-bottom-padding, 80px) + 8px);
   left: 0;
-  width: dvw;
-  padding: 12px 16px;
-  z-index: 150;
+  width: 100%;
+  padding: 8px 16px;
+  z-index: calc(var(--z-modal) + 20);
   display: flex;
   justify-content: center;
   pointer-events: none;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box;
+
+  @media (min-width: 960px) {
+    bottom: 24px;
+    padding: 12px 16px;
+  }
 }
 
 #planning-ui-panel.planning-hidden {
@@ -2220,8 +2915,6 @@ onMounted(() => {
 #planning-ui-panel .planning-card {
   background-color: #111827 !important;
   background: Rgba(17, 24, 39, 0.98);
-  backdrop-filter: Blur(16px);
-  -webkit-backdrop-filter: Blur(16px);
   border: 2px solid #4b5563;
   border-radius: 20px;
   padding: 14px 16px;
@@ -2230,7 +2923,7 @@ onMounted(() => {
   flex-direction: column;
   gap: 10px;
   width: 100%;
-  max-width: min(380px, dvw);
+  max-width: min(380px, 92vw);
   pointer-events: auto;
   box-sizing: border-box;
 }

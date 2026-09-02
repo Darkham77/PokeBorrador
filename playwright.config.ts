@@ -13,7 +13,7 @@ export default defineConfig({
   reporter: [['./scripts/e2e/logging/playwright_fuzzer_reporter.ts']],
   timeout: 60000,
   use: {
-    baseURL: 'http://localhost:5174',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5173',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -24,9 +24,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npx vite --port 5174 --strictPort',
-    url: 'http://localhost:5174',
-    reuseExistingServer: !process.env.CI,
+    command: 'npx vite --port 5173',
+    url: 'http://localhost:5173',
+    reuseExistingServer: true,
     timeout: 120000,
   },
 });

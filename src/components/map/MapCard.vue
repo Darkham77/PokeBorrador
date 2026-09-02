@@ -58,6 +58,7 @@ interface Props {
   spawnPool?: SpawnPool
   forcedWeather?: WeatherId | null
   forceKeepWarm?: boolean
+  isPerformanceMode?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -70,7 +71,8 @@ const props = withDefaults(defineProps<Props>(), {
   isRocketExtorted: false,
   spawnPool: () => ({ generic: [], specific: [], rates: {} }),
   forcedWeather: null,
-  forceKeepWarm: false
+  forceKeepWarm: false,
+  isPerformanceMode: undefined
 })
 
 const emit = defineEmits<{
@@ -91,6 +93,7 @@ const pokeballTriggerRef = ref<HTMLElement | null>(null)
 const spawnsRef = ref<InstanceType<typeof MapCardSpawns> | null>(null)
 
 const isPerformanceMode = computed(() => {
+  if (props.isPerformanceMode !== undefined) return props.isPerformanceMode
   return uiStore.isAnyBlockingModalOpen || battleStore.isBattleActive || uiStore.isDebugPerformanceMode
 })
 
@@ -305,7 +308,7 @@ watch(
     class="map-card-wrapper"
     @click.stop="() => {
       logger.debug('MapCard', `Click detected. isLocked: ${isCardLocked}, isPerformanceMode: ${isPerformanceMode}`);
-      if (!isCardLocked && !isPerformanceMode) {
+      if (!isCardLocked) {
         emit('navigate', props.map);
       } else {
         logger.warn('MapCard', 'Navigation blocked:', { isLocked: isCardLocked, isPerformanceMode, isBattleActive: battleStore.isBattleActive, isAnyBlockingModalOpen: uiStore.isAnyBlockingModalOpen });
@@ -344,6 +347,7 @@ watch(
       />
 
       <AtmosphereLayer
+        v-if="!isPerformanceMode"
         :weather="computedWeather"
         :cycle="cycle"
         :season="currentWeatherSeason"

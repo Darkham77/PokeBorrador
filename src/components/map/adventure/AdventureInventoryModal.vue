@@ -11,116 +11,129 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const activeCompanionBtn = (comp: string) => {
-  return props.activeCompanion === comp ? 'ring-4 ring-blue-500 scale-110' : (comp === 'none' ? 'opacity-50' : '')
-}
+const companions = [
+  { id: 'none', name: 'Ninguno', desc: 'Sin bonus', icon: '❌', sprite: '' },
+  { id: 'pikachu', name: 'Pikachu', desc: '+50% Combates', icon: '⚡', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png' },
+  { id: 'meowth', name: 'Meowth', desc: '+50% Monedas', icon: '💰', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/52.png' },
+  { id: 'squirtle', name: 'Squirtle', desc: '+50% Pesca', icon: '🌊', sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png' }
+]
+
+const mos = [
+  { id: 'Vuelo', icon: '🦅', label: 'Vuelo' },
+  { id: 'Corte', icon: '✂️', label: 'Corte' },
+  { id: 'Surf', icon: '🌊', label: 'Surf' },
+  { id: 'Flauta', icon: '🎵', label: 'Flauta' }
+]
 </script>
 
 <template>
-  <div
-    v-if="props.show"
-    class="adv-modal-overlay"
-  >
-    <div class="adv-modal-card">
-      <div class="adv-modal-header bg-gradient-to-b from-blue-500 to-blue-700">
-        <span class="icon">🎒</span> EQUIPO Y OBJETOS
-      </div>
-      <div class="p-5 overflow-y-auto max-h-[60vh] space-y-4 text-gray-800">
-        <p class="text-xs text-gray-500 text-center font-bold uppercase mb-4">
-          Acompañante Activo
-        </p>
-        <div class="flex justify-around items-center bg-gray-100 p-3 rounded-2xl border border-gray-200">
-          <button
-            :class="activeCompanionBtn('none')"
-            class="p-2 border-2 border-gray-300 rounded-xl bg-white hover:bg-gray-50"
-            title="Sin acompañante"
-            @click="emit('updateCompanion', 'none')"
-          >
-            <span class="icon">❌</span>
-          </button>
-          <button
-            :class="activeCompanionBtn('pikachu')"
-            class="p-2 border-2 border-yellow-400 rounded-xl bg-yellow-50 hover:bg-yellow-100"
-            title="+50% Combates"
-            @click="emit('updateCompanion', 'pikachu')"
-          >
-            <img
-              src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
-              class="w-8 h-8 pixel-art"
-              alt="Pikachu"
-            >
-          </button>
-          <button
-            :class="activeCompanionBtn('meowth')"
-            class="p-2 border-2 border-amber-400 rounded-xl bg-amber-50 hover:bg-amber-100"
-            title="+50% Monedas"
-            @click="emit('updateCompanion', 'meowth')"
-          >
-            <img
-              src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/52.png"
-              class="w-8 h-8 pixel-art"
-              alt="Meowth"
-            >
-          </button>
-          <button
-            :class="activeCompanionBtn('squirtle')"
-            class="p-2 border-2 border-blue-400 rounded-xl bg-blue-50 hover:bg-blue-100"
-            title="+50% Pesca"
-            @click="emit('updateCompanion', 'squirtle')"
-          >
-            <img
-              src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png"
-              class="w-8 h-8 pixel-art"
-              alt="Squirtle"
-            >
-          </button>
+  <Teleport to="body">
+    <div
+      v-if="props.show"
+      class="adv-modal-overlay"
+      @click.self="emit('close')"
+    >
+      <div class="adv-modal-card">
+        <div class="adv-modal-header">
+          <span class="icon">🎒</span> EQUIPO Y OBJETOS
         </div>
 
-        <p class="text-xs text-gray-500 text-center font-bold uppercase mb-4">
-          Modificadores de Viaje
-        </p>
-        <div class="grid grid-cols-2 gap-3 px-1 pb-2">
-          <label class="flex flex-col items-center justify-center bg-gray-100 p-3 rounded-2xl border-2 border-gray-300 cursor-pointer hover:bg-gray-200 transition-colors col-span-2">
-            <div class="flex items-center gap-3 w-full justify-center mb-1">
-              <span class="icon text-3xl">🚲</span>
-              <span class="font-black text-gray-800 text-md uppercase">Bicicleta</span>
+        <div class="adv-modal-body">
+          <!-- Companion Section -->
+          <div class="section-group">
+            <p class="section-title">
+              ACOMPAÑANTE ACTIVO
+            </p>
+            <div class="companion-grid">
+              <button
+                v-for="comp in companions"
+                :key="comp.id"
+                class="companion-btn"
+                :class="{ active: props.activeCompanion === comp.id }"
+                :title="comp.desc"
+                @click="emit('updateCompanion', comp.id)"
+              >
+                <div class="companion-avatar">
+                  <img
+                    v-if="comp.sprite"
+                    :src="comp.sprite"
+                    class="pixel-art"
+                    :alt="comp.name"
+                  >
+                  <span
+                    v-else
+                    class="empty-icon"
+                  >{{ comp.icon }}</span>
+                </div>
+                <span class="companion-name">{{ comp.name }}</span>
+                <span class="companion-desc">{{ comp.desc }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Vehicle & MOs Section -->
+          <div class="section-group">
+            <p class="section-title">
+              VEHÍCULO Y MOVIMIENTOS OCULTOS
+            </p>
+
+            <!-- Bicycle Toggle -->
+            <label
+              class="vehicle-card"
+              :class="{ active: props.playerInventory['Bicicleta'] }"
+            >
+              <div class="vehicle-info">
+                <span class="vehicle-icon">🚲</span>
+                <div class="vehicle-texts">
+                  <div class="vehicle-headline">
+                    <span class="vehicle-name">BICICLETA</span>
+                    <span class="vehicle-speed-badge">Velocidad x2</span>
+                  </div>
+                  <p class="vehicle-desc">Permite desplazarse al doble de velocidad en rutas terrestres.</p>
+                </div>
+              </div>
               <input
                 type="checkbox"
                 :checked="props.playerInventory['Bicicleta']"
-                class="w-6 h-6 accent-blue-600"
+                class="adv-checkbox"
                 @change="emit('updateInventory', 'Bicicleta', ($event.target as HTMLInputElement).checked)"
               >
-            </div>
-            <p class="text-[10px] text-gray-500 font-bold">Aumenta la velocidad de viaje x2</p>
-          </label>
+            </label>
 
-          <label
-            v-for="mo in ['Vuelo', 'Corte', 'Surf', 'Flauta']"
-            :key="mo"
-            class="flex flex-col items-center justify-center p-3 rounded-2xl border-2 cursor-pointer hover:bg-opacity-80 transition-colors"
-            :class="props.playerInventory[mo] ? 'bg-blue-50 border-blue-400 text-blue-900' : 'bg-gray-50 border-gray-200 text-gray-400'"
+            <!-- MOs Grid -->
+            <div class="mo-grid">
+              <label
+                v-for="mo in mos"
+                :key="mo.id"
+                class="mo-card"
+                :class="{ active: props.playerInventory[mo.id] }"
+              >
+                <div class="mo-header">
+                  <span class="mo-icon">{{ mo.icon }}</span>
+                  <span class="mo-title">{{ mo.label }}</span>
+                </div>
+                <input
+                  type="checkbox"
+                  :checked="props.playerInventory[mo.id]"
+                  class="adv-checkbox"
+                  @change="emit('updateInventory', mo.id, ($event.target as HTMLInputElement).checked)"
+                >
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="adv-modal-footer">
+          <button
+            class="adv-save-btn"
+            @click="emit('close')"
           >
-            <span class="icon text-2xl mb-1">{{ mo === 'Vuelo' ? '🦅' : (mo === 'Corte' ? '✂️' : (mo === 'Surf' ? '🌊' : '🎵')) }}</span>
-            <span class="font-black text-xs uppercase">{{ mo }}</span>
-            <input
-              type="checkbox"
-              :checked="props.playerInventory[mo]"
-              class="mt-2 w-4 h-4 accent-blue-600"
-              @change="emit('updateInventory', mo, ($event.target as HTMLInputElement).checked)"
-            >
-          </label>
+            Guardar y Salir
+          </button>
         </div>
       </div>
-      <div class="p-4 bg-gray-100 border-t border-gray-200">
-        <button
-          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl text-lg shadow-md active:scale-95 transition-transform"
-          @click="emit('close')"
-        >
-          Guardar y Salir
-        </button>
-      </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <style scoped lang="scss">
@@ -129,33 +142,300 @@ const activeCompanionBtn = (comp: string) => {
 .adv-modal-overlay {
   position: fixed;
   inset: 0;
-  background: Rgba(0, 0, 0, 0.75);
-  backdrop-filter: Blur(4px);
+  width: 100vw;
+  height: 100dvh;
+  background: Rgba(5, 10, 20, 0.85);
+  backdrop-filter: Blur(8px);
   z-index: 60000;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
+  box-sizing: border-box;
 }
 
 .adv-modal-card {
   width: 100%;
   max-width: 440px;
-  background: #ffffff;
-  border-radius: 16px;
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 20px 25px -5px Rgba(0, 0, 0, 0.5);
-  border: 2px solid #cbd5e1;
+  box-shadow: 0 20px 40px Rgba(0, 0, 0, 0.8), 0 0 20px Rgba(59, 130, 246, 0.2);
+  border: 2px solid #3b82f6;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 .adv-modal-header {
-  padding: 16px;
+  padding: 14px 16px;
   font-weight: 900;
   font-size: 1.15rem;
   text-align: center;
   color: #fff;
+  background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+  border-bottom: 2px solid #1e40af;
   letter-spacing: 0.05em;
   @include pixelated;
+}
+
+.adv-modal-body {
+  padding: 18px 16px;
+  max-height: 65dvh;
+  overflow-y: auto;
+  color: #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: Rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
+}
+
+.section-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.section-title {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin: 0;
+}
+
+.companion-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  background: Rgba(15, 23, 42, 0.7);
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid Rgba(255, 255, 255, 0.08);
+}
+
+.companion-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  border-radius: 12px;
+  background: Rgba(30, 41, 59, 0.6);
+  border: 1.5px solid Rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: Rgba(59, 130, 246, 0.15);
+    border-color: Rgba(59, 130, 246, 0.4);
+    transform: Translatey(-2px);
+  }
+
+  &.active {
+    background: Rgba(59, 130, 246, 0.25);
+    border-color: #60a5fa;
+    box-shadow: 0 0 12px Rgba(96, 165, 250, 0.4);
+    color: #fff;
+    transform: Scale(1.04);
+  }
+
+  .companion-avatar {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+
+    img {
+      width: 100%;
+      height: 100%;
+    }
+
+    .empty-icon {
+      font-size: 1.2rem;
+    }
+  }
+
+  .companion-name {
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  .companion-desc {
+    font-size: 0.62rem;
+    color: #93c5fd;
+    font-weight: 700;
+    margin-top: 2px;
+    text-align: center;
+    line-height: 1.1;
+  }
+}
+
+.vehicle-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: Rgba(15, 23, 42, 0.7);
+  border: 1.5px solid Rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: Rgba(59, 130, 246, 0.5);
+    background: Rgba(30, 41, 59, 0.8);
+  }
+
+  &.active {
+    border-color: #3b82f6;
+    background: Rgba(59, 130, 246, 0.15);
+    box-shadow: 0 0 14px Rgba(59, 130, 246, 0.25);
+  }
+
+  .vehicle-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .vehicle-icon {
+    font-size: 2rem;
+  }
+
+  .vehicle-texts {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .vehicle-headline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .vehicle-name {
+    font-size: 0.92rem;
+    font-weight: 900;
+    color: #f8fafc;
+    letter-spacing: 0.05em;
+  }
+
+  .vehicle-speed-badge {
+    font-size: 0.65rem;
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: Rgba(34, 197, 94, 0.2);
+    color: #86efac;
+    border: 1px solid Rgba(34, 197, 94, 0.4);
+    font-weight: 800;
+  }
+
+  .vehicle-desc {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    margin: 0;
+  }
+}
+
+.mo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.mo-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: Rgba(15, 23, 42, 0.7);
+  border: 1.5px solid Rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: Rgba(59, 130, 246, 0.5);
+    background: Rgba(30, 41, 59, 0.8);
+  }
+
+  &.active {
+    border-color: #38bdf8;
+    background: Rgba(56, 189, 248, 0.15);
+    box-shadow: 0 0 10px Rgba(56, 189, 248, 0.25);
+
+    .mo-title {
+      color: #bae6fd;
+    }
+  }
+
+  .mo-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mo-icon {
+    font-size: 1.35rem;
+  }
+
+  .mo-title {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #e2e8f0;
+    letter-spacing: 0.05em;
+  }
+}
+
+.adv-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #3b82f6;
+  cursor: pointer;
+}
+
+.adv-modal-footer {
+  padding: 14px 16px;
+  background: #0b1120;
+  border-top: 1px solid Rgba(255, 255, 255, 0.08);
+}
+
+.adv-save-btn {
+  width: 100%;
+  background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  font-weight: 900;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 1rem;
+  border: 1px solid #60a5fa;
+  box-shadow: 0 4px 14px Rgba(29, 78, 216, 0.4);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: all 0.2s ease;
+
+  &:hover {
+    filter: Brightness(1.1);
+    transform: Translatey(-1px);
+  }
+
+  &:active {
+    transform: Scale(0.97);
+  }
 }
 
 .pixel-art {
