@@ -1,0 +1,1 @@
+import{t as e}from"./FishingModal-DyeeJd4j.js";export{e as default};
