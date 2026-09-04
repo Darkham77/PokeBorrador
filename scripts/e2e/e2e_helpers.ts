@@ -100,8 +100,9 @@ export async function setupE2ESession(
     activeBuffer.push(formatted);
 
     if (
-      msg.type() === 'error' &&
-      (text.includes('[CRITICAL]') || text.includes('ReferenceError') || (text.includes('TypeError') && !text.includes('Failed to fetch dynamically imported module')))
+      text.includes('Failed to resolve component') ||
+      (msg.type() === 'error' &&
+        (text.includes('[CRITICAL]') || text.includes('ReferenceError') || (text.includes('TypeError') && !text.includes('Failed to fetch dynamically imported module'))))
     ) {
       throw new Error(`[CRITICAL-CONSOLE-ERROR] ${text}`);
     }

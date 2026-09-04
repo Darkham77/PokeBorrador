@@ -2,6 +2,7 @@
 // style-inherited: styles imported in parent PokemonSelectionModal.vue
 
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import PokemonSortBar from '@/components/pokemon/PokemonSortBar.vue'
 import { POKEMON_TAGS, POKEMON_BADGES, type PokemonFilterTagId } from '@/logic/constants/tags'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
