@@ -28,7 +28,7 @@ export interface CustomPokemonSet extends PokemonSet {
   uid?: string;
 }
 
-const debugLogs: string[] = []; // no-domain
+const debugLogs: string[] = []; // no-domain: Non-domain utility collection or data structure
 function logDebug(msg: string) {
   debugLogs.push(msg);
   console.debug(msg);
@@ -38,12 +38,12 @@ function reportInitStage(stage: string): void {
   self.postMessage({ type: 'WORKER_LOG', payload: { message: stage } });
 }
 
-let isDeterministicSimulation = false; // singleton-ok
+let isDeterministicSimulation = false; // singleton-ok: Singleton instance state container
 
 // Aplicar el monkey-patch unificado de spreadModify
 patchShowdownSpreadModify(() => isDeterministicSimulation);
 
-let currentBattle: Battle | null = null; // singleton-ok
+let currentBattle: Battle | null = null; // singleton-ok: Singleton instance state container
 
 export function setTestingBattle(battle: Battle | null): void {
   currentBattle = battle;
@@ -394,7 +394,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
 
 
       case 'CHECK_TRAPPED': {
-        const activeReq = currentBattle?.p1?.activeRequest as { active?: Array<{ trapped?: boolean } | null> } | undefined; // domain-ok
+        const activeReq = currentBattle?.p1?.activeRequest as { active?: Array<{ trapped?: boolean } | null> } | undefined; // domain-ok: Open dynamic text or non-domain string payload
         const activeMon = currentBattle?.p1?.active?.[0];
         const trapped = Boolean(activeReq?.active?.[0]?.trapped || activeMon?.trapped);
         self.postMessage({
@@ -464,7 +464,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
   }
 };
 
-let lastLogIndex = 0; // singleton-ok
+let lastLogIndex = 0; // singleton-ok: Singleton instance state container
 
 function getNewLogs(): string[] {
   if (!currentBattle) return [];

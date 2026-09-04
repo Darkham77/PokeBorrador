@@ -26,7 +26,7 @@ const UTILS_FILE = path.resolve(process.cwd(), 'src/logic/pokemon/pokemonUtils.t
 type MoveTranslationId = keyof typeof MOVE_TRANSLATIONS_ES;
 
 function isEnabledPokemonId(id: string): id is (typeof ENABLED_POKEMON_IDS)[number] {
-  return (ENABLED_POKEMON_IDS as readonly string[]).includes(id); // no-domain
+  return (ENABLED_POKEMON_IDS as readonly string[]).includes(id); // no-domain: Non-domain utility collection or data structure
 }
 
 function hasMoveTranslation(id: string): id is MoveTranslationId {
@@ -41,8 +41,8 @@ async function main() {
 
   await validator.checkFiles();
 
-  const errors: string[] = []; // no-domain
-  const warnings: string[] = []; // no-domain
+  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
+  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   validator.logStep(1, 2, 'Extrayendo movimientos únicos de learnsets en POKEMON_DB...');
   // Extraer todos los movimientos de los learnsets de especies habilitadas

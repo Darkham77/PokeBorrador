@@ -64,7 +64,7 @@ describe('Battle Mechanics Audit – New Weather & Abilities', () => {
   describe('Solar Beam Weather Penalties', () => {
     const attacker: PurePokemon = { level: 100, spa: 200, type: 'grass' };
     const defender: PurePokemon = { level: 100, spd: 100, type: 'normal' };
-    const move: PureMove = { id: 'solar_beam', name: 'Rayo Solar', type: 'grass', power: 120, cat: 'special' };
+    const move: PureMove = { id: 'solarbeam', name: 'Rayo Solar', type: 'grass', power: 120, cat: 'special' };
 
     const sandstorm: PureBattleWeather = { type: 'sandstorm', turns: 5 };
     const rain: PureBattleWeather = { type: 'rain', turns: 5 };

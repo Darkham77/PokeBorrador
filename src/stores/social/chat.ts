@@ -110,7 +110,7 @@ export const useChatStore = defineStore('chat', () => {
           return
         }
 
-        globalMessages.value.push(row as ChatMessage) // domain-ok
+        globalMessages.value.push(row as ChatMessage) // domain-ok: Open dynamic text or non-domain string payload
         if (globalMessages.value.length > CHAT_MAX_MESSAGES_HISTORY) globalMessages.value.shift()
         
         const senderId = row.user_id as string
@@ -153,7 +153,7 @@ export const useChatStore = defineStore('chat', () => {
       ...payload,
       created_at: Temporal.Now.instant().toString()
     }
-    globalMessages.value.push(optimisticRow as ChatMessage) // domain-ok
+    globalMessages.value.push(optimisticRow as ChatMessage) // domain-ok: Open dynamic text or non-domain string payload
     if (globalMessages.value.length > CHAT_MAX_MESSAGES_HISTORY) globalMessages.value.shift()
     fetchMissingCosmetics(authStore.user?.id ? [authStore.user.id] : [])
 

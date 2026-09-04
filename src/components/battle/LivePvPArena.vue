@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import { useChatStore } from '@/stores/social/chat'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { PLAYER_CLASSES } from '@/data/player/playerClasses'
+import { PLAYER_CLASSES, isPlayerClassId } from '@/data/player/playerClasses'
 import type { PvPBattleState } from '@/logic/pvp/pvpEngine'
 
 const livePvP = useLivePvPStore()
@@ -15,7 +15,7 @@ const gameStore = useGameStore()
 const ui = useUIStore()
 const chatStore = useChatStore()
 
-const battle = computed(() => livePvP.battleState as PvPBattleState & { // domain-ok 
+const battle = computed(() => livePvP.battleState as PvPBattleState & { // domain-ok: Open dynamic text or non-domain string payload 
   active: boolean, 
   opponentId: string | null,
   opponentAvatar?: string, 
@@ -28,10 +28,12 @@ const opponentCosmetics = computed(() => {
   return battle.value.opponentId ? chatStore.profileCosmetics[battle.value.opponentId] : null
 })
 
-// Local animations/visual state
 const playerAvatarId = computed(() => {
-  const pClass = (gameStore.state.playerClass || 'novato') as string
-  return (PLAYER_CLASSES as Record<string, { avatarSpriteId: string }>)[pClass]?.avatarSpriteId || 'red-lgpe' // open-record
+  const pClass = gameStore.state.playerClass
+  if (typeof pClass === 'string' && isPlayerClassId(pClass)) {
+    return PLAYER_CLASSES[pClass].avatarSpriteId || 'red-lgpe'
+  }
+  return 'red-lgpe'
 })
 
 const opponentClassId = computed(() => {
@@ -39,8 +41,8 @@ const opponentClassId = computed(() => {
 })
 
 const opponentAvatarId = computed(() => {
-  if (opponentClassId.value) {
-    return (PLAYER_CLASSES as Record<string, { avatarSpriteId: string }>)[opponentClassId.value]?.avatarSpriteId || opponentClassId.value // open-record
+  if (typeof opponentClassId.value === 'string' && isPlayerClassId(opponentClassId.value)) {
+    return PLAYER_CLASSES[opponentClassId.value].avatarSpriteId || opponentClassId.value
   }
   return battle.value.opponentAvatar || 'blue-gen3'
 })

@@ -14,7 +14,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'toggleItem', itemId: string): void
+  (e: 'toggleItem', itemId: TravelBuffItemId): void
   (e: 'confirm'): void
   (e: 'cancel'): void
 }>()

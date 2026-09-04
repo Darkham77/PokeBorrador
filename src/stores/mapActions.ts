@@ -23,10 +23,9 @@ import { NAVIGATE_THROTTLE_MS, PITY_TIMER_INCREMENT_THRESHOLD_MS, TRAINER_CHANCE
 import type { MapRouteId } from '@/data/world/map-assets';
 import type { WeatherId } from '@/logic/weather/weatherRegistry';
 import type { DayPhase } from '@/logic/utils/timeUtils';
-import { requireMapRouteId } from '@/data/world/map-assets';
 
 export async function executeNavigation(
-  rawLocId: string,
+  locId: MapRouteId,
   state: {
     currentMap: MapRouteId;
     currentEpochHour: number;
@@ -44,7 +43,6 @@ export async function executeNavigation(
     setLastTrainerChanceIncrementAt: (val: number) => void;
   }
 ) {
-  const locId = requireMapRouteId(rawLocId);
   const gs = useGameStore();
   const battleStore = useBattleStore();
   const uiStore = useUIStore();
@@ -164,8 +162,8 @@ export async function executeNavigation(
   }
 }
 
-export async function executeArchaeologyRewards(locId: string, gs: ReturnType<typeof useGameStore>, difficulty?: string) {
-  const mapsList = pokemonDataProvider.getMaps() as MapLocation[]; // domain-ok
+export async function executeArchaeologyRewards(locId: MapRouteId, gs: ReturnType<typeof useGameStore>, difficulty?: string) {
+  const mapsList = pokemonDataProvider.getMaps() as MapLocation[]; // domain-ok: Open dynamic text or non-domain string payload
   const loc = mapsList.find(m => m.id === locId);
   const inventoryStore = useInventoryStore();
   const uiStore = useUIStore();

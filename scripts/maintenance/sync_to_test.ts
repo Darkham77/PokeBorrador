@@ -8,7 +8,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SOURCE_DIR = path.resolve(__dirname, '..');
 const TARGET_DIR = path.resolve(SOURCE_DIR, '..', 'pokevicio-test');
 
-const DIRECTORIES_TO_COPY: string[] = [ // no-domain
+const DIRECTORIES_TO_COPY: string[] = [ // no-domain: Non-domain utility collection or data structure
   'api',
   path.join('database', 'migrations'),
   'public',
@@ -16,7 +16,7 @@ const DIRECTORIES_TO_COPY: string[] = [ // no-domain
   'src'
 ];
 
-const FILES_TO_COPY: string[] = [ // no-domain
+const FILES_TO_COPY: string[] = [ // no-domain: Non-domain utility collection or data structure
   'package.json',
   'package-lock.json',
   'vite.config.ts',
@@ -33,7 +33,7 @@ const FILES_TO_COPY: string[] = [ // no-domain
   path.join('tests', 'vitest.setup.ts')
 ];
 
-const PRESERVED_PATTERNS: string[] = [ // no-domain
+const PRESERVED_PATTERNS: string[] = [ // no-domain: Non-domain utility collection or data structure
   '.git',
   '.github'
 ];

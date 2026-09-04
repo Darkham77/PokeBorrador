@@ -10,8 +10,8 @@ export type VolatileStatusKey =
 
 export interface VolatileStatusDefinition {
   prop: VolatileStatusKey;
-  icon: string; // domain-ok
-  text: string; // domain-ok
+  icon: string; // domain-ok: Open dynamic text or non-domain string payload
+  text: string; // domain-ok: Open dynamic text or non-domain string payload
   isCounter?: boolean;
 }
 

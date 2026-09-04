@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { armBattleFlowCompletion, armBattleReadyForInput, awaitBattleFlowCompletion, awaitBattleReadyForInput, clickResilient, type WindowWithResolver } from '../e2e_helpers.ts';
+import { armBattleReadyForInput, awaitBattleReadyForInput, clickResilient, type WindowWithResolver } from '../e2e_helpers.ts';
 import { MOVE_TRANSLATIONS_ES } from '../../../src/data/battle/moves.ts';
 
 class CaptureSimWrapper extends BaseBattleSimulation {
@@ -9,7 +9,6 @@ class CaptureSimWrapper extends BaseBattleSimulation {
   }
 
   public async setupScenario(speciesId: string, level: number): Promise<void> {
-    await armBattleReadyForInput(this.page);
     await this.page.evaluate(async ({ specId, lvl }) => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
@@ -35,20 +34,11 @@ class CaptureSimWrapper extends BaseBattleSimulation {
   }
 
   public async throwMasterBall(): Promise<void> {
-    await armBattleFlowCompletion(this.page);
-    await clickResilient(this.page.locator('.quick-item-card[data-item-id="masterball"]:not(.is-disabled)').first());
-    await awaitBattleFlowCompletion(this.page);
+    await this.throwBall('masterball', { expectCapture: true });
   }
 }
 
-test.describe('Sistema de Capturas y Animaciones de Combate', () => {
-  test.beforeEach(async ({ request }) => {
-    for (const p of ['sim_db_testplayer1', 'sim_db_testplayer2', 'sim_db_testplayer3', 'sim_db_testplayer4']) {
-      await request.post('/api/dev-sim-db-cleanup', {
-        headers: { 'x-db-key': p }
-      });
-    }
-  });
+test.describe('Battle Capture and Wild Encounter State Persistence (Tier 3)', () => {
 
   test('debería capturar un Pidgey salvaje con Master Ball y verificar que mantiene estadísticas, moves en español y sin errores', async ({ page }) => {
     const sim = new CaptureSimWrapper(page, 'TestPlayer1');
@@ -130,7 +120,7 @@ test.describe('Sistema de Capturas y Animaciones de Combate', () => {
 
     const moveIdsToCheck = Object.keys(MOVE_TRANSLATIONS_ES);
     const unregisteredCategories = await page.evaluate(async (ids) => {
-      const missing: string[] = []; // no-domain
+      const missing: string[] = []; // no-domain: Non-domain utility collection or data structure
       const { pokemonDataProvider } = await import('../../../src/logic/providers/pokemonDataProvider');
       
       ids.forEach((id) => {

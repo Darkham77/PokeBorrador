@@ -11,7 +11,7 @@ interface ViteDebugBridge {
 const game = useGameStore()
 const debug = useDebugStore()
 
-const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge // domain-ok
+const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge // domain-ok: Open dynamic text or non-domain string payload
 
 const regenerate = () => {
   const bridge = getDebugBridge()

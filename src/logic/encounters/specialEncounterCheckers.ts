@@ -42,7 +42,7 @@ export function checkDebugForcedEncounter(debug?: ViteDebugEncounterConfig): Enc
     }
     if (debug.forceEncounterType === 'archaeology') {
       const p = makePokemon('kabuto', DEBUG_MOCK_KABUTO_STATS.LEVEL, { bypassWhitelist: true }) as Pokemon
-      p.uid = 'kabuto-archaeology-1234' // no-magic
+      p.uid = 'kabuto-archaeology-1234' // no-magic: Explicit mathematical constant or threshold value
       return { type: 'archaeology', pokemon: p }
     }
     if (debug.forceEncounterType === 'trainer') {
@@ -53,7 +53,7 @@ export function checkDebugForcedEncounter(debug?: ViteDebugEncounterConfig): Enc
     }
     if (debug.forceEncounterType === 'wild') {
       const p = makePokemon('pidgey', DEBUG_MOCK_PIDGEY_STATS.LEVEL, { bypassWhitelist: true }) as Pokemon
-      p.uid = 'pidgey-wild-1234' // no-magic
+      p.uid = 'pidgey-wild-1234' // no-magic: Explicit mathematical constant or threshold value
       return { type: 'wild', pokemon: p }
     }
   }

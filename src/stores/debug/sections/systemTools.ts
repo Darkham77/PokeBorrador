@@ -176,7 +176,7 @@ export function registerSystemTools(debug: DebugSystem) {
     category: 'navigation',
     action: (tabId: string) => {
       ui.activeTab = tabId
-      ui.notify(`Navegando a: ${tabId.toUpperCase()}`, '🚀') // text-ok
+      ui.notify(`Navegando a: ${tabId.toUpperCase()}`, '🚀') // text-ok: UI text display localization string
     },
     description: 'Cambia la pestaña principal activa (map, pc, battle, etc).'
   })

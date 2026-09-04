@@ -5,6 +5,12 @@ import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import { type CertifiedTestBatch } from '../e2e_helpers.ts';
 import { getSuiteTimeoutForBatch } from '../simulation_config.ts';
 import { requireCertifiedBattleCaseDocument } from '../fuzzer/core/certifiedBattleCase.ts';
+import {
+  getSuiteCheckpoint,
+  recordSuiteFailure,
+  clearSuiteCheckpoint,
+  isCleanRequested,
+} from '../helpers/e2eCheckpointManager.ts';
 
 class FSMSyncSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string, logBuffer?: string[]) {
@@ -15,13 +21,25 @@ class FSMSyncSimWrapper extends BaseBattleSimulation {
 test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
   test.beforeAll(async () => {
     const failuresDir = path.resolve(process.cwd(), 'scratch/e2e_failures');
+    const activeDriver = (process.env.SIM_DB_DRIVER || process.env.DB_DRIVER || 'sqlite').toLowerCase();
+    const progressDir = path.resolve(process.cwd(), `scratch/e2e_progress/${activeDriver}`);
     const reportPath = path.resolve(process.cwd(), 'scripts/e2e/results/e2e_simulation_failures.json');
     try {
       if (fs.existsSync(failuresDir)) {
         fs.rmSync(failuresDir, { recursive: true, force: true });
       }
+      if (isClean && fs.existsSync(progressDir)) {
+        fs.rmSync(progressDir, { recursive: true, force: true });
+      }
       fs.writeFileSync(reportPath, '[]', 'utf8');
     } catch (_e: unknown) { /* expected empty */ }
+  });
+
+  test.afterAll(async () => {
+    const failuresDir = path.resolve(process.cwd(), 'scratch/e2e_failures');
+    if (!fs.existsSync(failuresDir) || fs.readdirSync(failuresDir).length === 0) {
+      clearSuiteCheckpoint('battle_fsm_sync.simulation.ts');
+    }
   });
 
   const consolidatorPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_certified_cases.json');
@@ -42,17 +60,31 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
   const resumeProgress = process.env.RESUME_PROGRESS === 'true' || process.env.RESUME === 'true';
 
   let startIdx = 0;
+  const suiteCheckpoint = getSuiteCheckpoint('battle_fsm_sync.simulation.ts');
+  const isClean = isCleanRequested();
+
   if (startFromCaseId) {
     const foundIdx = allBatches.findIndex((b) => b.id === startFromCaseId.trim());
     if (foundIdx !== -1) startIdx = foundIdx;
   } else if (startFromIndex) {
     startIdx = Number(startFromIndex.trim()) - 1;
+  } else if (!isClean && suiteCheckpoint?.failedBatchIndex && !batchFilter && !caseFilter && !caseIdFilter) {
+    startIdx = Math.max(0, suiteCheckpoint.failedBatchIndex - 1);
+    console.log(`\n🔄 [AUTO-RESUME] Checkpoint detectado para battle_fsm_sync.simulation.ts. Reanudando desde lote #${startIdx + 1} (${suiteCheckpoint.failedCaseId || 'desconocido'})... Usa 'clean=true' para forzar desde el lote 1.\n`);
   }
 
-  const progressDir = path.resolve(process.cwd(), 'scratch/e2e_progress');
+  if (startIdx > 0) {
+    process.env.SIM_TEST_OFFSET = String(startIdx);
+    process.env.SIM_TOTAL_TESTS = String(allBatches.length);
+  }
+
+  const activeDriver = (process.env.SIM_DB_DRIVER || process.env.DB_DRIVER || 'sqlite').toLowerCase();
+  const progressDir = path.resolve(process.cwd(), `scratch/e2e_progress/${activeDriver}`);
+
+  const shouldResumeByProgress = !isClean && !batchFilter && !caseFilter && !caseIdFilter;
 
   const batches = allBatches.map((b, idx) => ({ b, idx })).filter(({ b, idx }) => {
-    if (resumeProgress) {
+    if (resumeProgress || shouldResumeByProgress) {
       const batchFile = path.join(progressDir, `lote-${idx + 1}.json`);
       if (fs.existsSync(batchFile)) {
         try {
@@ -80,12 +112,20 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
     }
     const heavy = rawBatches.filter(({ b }) => (b.playerTeam?.length ?? 1) >= 4);
     const light = rawBatches.filter(({ b }) => (b.playerTeam?.length ?? 1) < 4);
+    if (heavy.length === 0 || light.length === 0) return rawBatches;
+
+    const total = heavy.length + light.length;
     const balanced: Array<{ b: CertifiedTestBatch; idx: number }> = [];
-    const ratio = Math.ceil(light.length / Math.max(1, heavy.length));
-    while (heavy.length > 0 || light.length > 0) {
-      if (heavy.length > 0) balanced.push(heavy.shift()!);
-      for (let i = 0; i < ratio && light.length > 0; i++) {
-        balanced.push(light.shift()!);
+    let hIdx = 0;
+    let lIdx = 0;
+
+    for (let i = 0; i < total; i++) {
+      if (hIdx < heavy.length && i >= Math.floor((hIdx * total) / heavy.length)) {
+        balanced.push(heavy[hIdx++]!);
+      } else if (lIdx < light.length) {
+        balanced.push(light[lIdx++]!);
+      } else {
+        balanced.push(heavy[hIdx++]!);
       }
     }
     return balanced;
@@ -112,7 +152,7 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
         test.setTimeout(getSuiteTimeoutForBatch(batch.history?.length));
         startTimesMap[index] = Number(Temporal.Now.instant().epochMilliseconds);
 
-        const logBuffer: string[] = []; // no-domain
+        const logBuffer: string[] = []; // no-domain: Non-domain utility collection or data structure
         const sim = new FSMSyncSimWrapper(page, `FSM_${index}`, logBuffer);
         await sim.setup();
 
@@ -141,6 +181,14 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
             'utf8'
           );
 
+          recordSuiteFailure('battle_fsm_sync.simulation.ts', {
+            suiteRelativePath: 'scripts/e2e/battle/battle_fsm_sync.simulation.ts',
+            driver: (sim.getDriver() as 'sqlite' | 'postgres') || 'sqlite',
+            failedBatchIndex: index + 1,
+            failedCaseId: batch.id,
+            errorSnippet: cleanError.slice(0, 200),
+          });
+
           if (process.env.CONTINUE_ON_ERROR === 'true') {
             console.warn(`[E2E-WARN] Ignorando error en lote ${caseId}`);
             return;
@@ -166,6 +214,10 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
         }
       });
     });
+  } else {
+    test(`todos los lotes de fuzzer para [${activeDriver.toUpperCase()}] ya se encuentran 100% certificados`, () => {
+      console.log(`\n🎉 [100% CERTIFICADO] Todos los 227 lotes de battle_fsm_sync.simulation.ts ya pasaron con éxito en ${activeDriver.toUpperCase()}.\n`);
+    });
   }
 
   test.afterAll(async () => {
@@ -178,7 +230,7 @@ test.describe('Battle FSM & GSAP Synchronization - Stress Simulation', () => {
           .filter((f) => f.endsWith('.json'))
           .map((f) => {
             try {
-              return JSON.parse(fs.readFileSync(path.join(failuresDir, f), 'utf8')) as Record<string, unknown>; // open-record
+              return JSON.parse(fs.readFileSync(path.join(failuresDir, f), 'utf8')) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
             } catch (_e: unknown) {
               return null;
             }

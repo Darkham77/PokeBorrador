@@ -19,8 +19,8 @@ interface GTSListing {
 }
 
 async function runGTSFuzzer() {
-  const errors: string[] = []; // no-domain
-  const warnings: string[] = []; // no-domain
+  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
+  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
   const results: Array<{ type: string; price: number; success: boolean; errorMsg?: string }> = [];
 
   let passed = 0;

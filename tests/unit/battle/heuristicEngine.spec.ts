@@ -17,12 +17,13 @@ import type {
   DamageMatchup,
   DamageResult,
 } from '@/logic/battle/ai/heuristic/types';
+import type { PokemonMoveId } from '@/data/battle/moves';
 
 // ──────────────────────────────────────────
 // Synthetic state builders
 // ──────────────────────────────────────────
 
-function makeMove(id: string): HeuristicPokemonMove {
+function makeMove(id: PokemonMoveId): HeuristicPokemonMove {
   return {
     id,
     name: id,

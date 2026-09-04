@@ -17,7 +17,7 @@ import type {
 
 let saveWorkerInstance: Worker | null = null
 
-export function getSaveWorker(): Worker | null { // result-ok
+export function getSaveWorker(): Worker | null { // result-ok: Operation result wrapper payload
   if (!saveWorkerInstance && typeof window !== 'undefined' && typeof Worker !== 'undefined') {
     try {
       saveWorkerInstance = new Worker(new URL('./save.worker.ts', import.meta.url), { type: 'module' })
@@ -45,9 +45,9 @@ export async function processSaveInWorker(input: {
     let targetObj: Record<string, unknown> | GameState | null = null
     if (input.binary) {
       const json = isGzip(input.binary) ? await decompress(input.binary) : new TextDecoder().decode(input.binary)
-      targetObj = JSON.parse(json) as Record<string, unknown> // open-record
+      targetObj = JSON.parse(json) as Record<string, unknown> // open-record: Generic key-value data dictionary container
     } else if (input.rawString) {
-      targetObj = JSON.parse(input.rawString) as Record<string, unknown> // open-record
+      targetObj = JSON.parse(input.rawString) as Record<string, unknown> // open-record: Generic key-value data dictionary container
     } else if (input.rawObject) {
       targetObj = input.rawObject
     }

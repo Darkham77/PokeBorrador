@@ -140,7 +140,7 @@ export function syncRequestConditionsWithSimulator(side: CompatibleSide | null |
   reqPokemons.forEach((reqMon) => {
     if (!reqMon) return;
     const reqId = reqMon.uid || reqMon.ident?.replace(/^p[1-4]a?:\s*/, '') || '';
-    const reqMoves = (Reflect.get(reqMon, 'moves') as string[] | undefined) ?? []; // no-domain
+    const reqMoves = (Reflect.get(reqMon, 'moves') as string[] | undefined) ?? []; // no-domain: Non-domain utility collection or data structure
 
     let simMon = simPokemons.find(p => {
       if (!p || matchedSimMons.has(p)) return false;
@@ -156,7 +156,7 @@ export function syncRequestConditionsWithSimulator(side: CompatibleSide | null |
     if (!simMon && reqMoves.length > 0) {
       simMon = simPokemons.find(p => {
         if (!p || matchedSimMons.has(p)) return false;
-        const pMoves: string[] = p.moves ?? (p.moveSlots?.map(ms => (ms as { id?: string; move?: string }).id || (ms as { id?: string; move?: string }).move || '').filter(Boolean) ?? []); // no-domain
+        const pMoves: string[] = p.moves ?? (p.moveSlots?.map(ms => (ms as { id?: string; move?: string }).id || (ms as { id?: string; move?: string }).move || '').filter(Boolean) ?? []); // no-domain: Non-domain utility collection or data structure
         if (pMoves.length > 0 && reqMoves.every(rm => pMoves.some(pm => isMatchingUid(pm, rm)))) {
           return true;
         }

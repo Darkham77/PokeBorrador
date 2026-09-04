@@ -4,6 +4,9 @@
 // ============================================================
 
 import { toID } from '@pkmn/sim';
+import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
+import { isAbilityId } from '@/data/battle/abilities';
+import { isItemId } from '@/data/inventory/items';
 import { SetsDatabase } from './setsDatabase.ts';
 import { PokemonTracker } from './pokemonTracker.ts';
 import type { HeuristicBattleSnapshot, HeuristicPokemonState, InferredInfo } from './types.ts';
@@ -20,9 +23,11 @@ export class InferenceEngine {
   update(snapshot: HeuristicBattleSnapshot): void {
     for (const pokemon of snapshot.opponentSide.pokemon) {
       const tracker = this.getOrCreate(pokemon);
-      for (const move of pokemon.knownMoves) tracker.observeMove(move);
-      if (pokemon.knownAbility) tracker.observeAbility(pokemon.knownAbility);
-      if (pokemon.knownItem) tracker.observeItem(pokemon.knownItem);
+      for (const move of pokemon.knownMoves) {
+        if (isPokemonMoveId(move)) tracker.observeMove(move);
+      }
+      if (pokemon.knownAbility && isAbilityId(pokemon.knownAbility)) tracker.observeAbility(pokemon.knownAbility);
+      if (pokemon.knownItem && isItemId(pokemon.knownItem)) tracker.observeItem(pokemon.knownItem);
       if (pokemon.itemConsumed) tracker.observeItemConsumed();
     }
   }
@@ -43,7 +48,7 @@ export class InferenceEngine {
     return this.getOrCreate(active).computeMoveProbabilities();
   }
 
-  getLikelyUnrevealed(species: string, threshold = 0.3): Array<{ move: string; probability: number }> {
+  getLikelyUnrevealed(species: string, threshold = 0.3): Array<{ move: PokemonMoveId; probability: number }> {
     return this.trackers.get(toID(species))?.getLikelyUnrevealedMoves(threshold) ?? [];
   }
 

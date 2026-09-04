@@ -5,19 +5,19 @@ import type { PlayerClassId } from '@/data/player/playerClasses';
 import type { FactionId } from '@/types/system/game';
 
 export interface NickStyle {
-  readonly id: string; // domain-ok
-  readonly name: string; // domain-ok
-  readonly class: string; // domain-ok
-  readonly requiredRole?: string; // domain-ok
+  readonly id: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly name: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly class: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly requiredRole?: string; // domain-ok: Open dynamic text or non-domain string payload
   readonly requiredClass?: PlayerClassId;
   readonly requiredFaction?: FactionId;
 }
 
 export interface AvatarStyle {
-  readonly id: string; // domain-ok
-  readonly name: string; // domain-ok
-  readonly class: string; // domain-ok
-  readonly requiredRole?: string; // domain-ok
+  readonly id: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly name: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly class: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly requiredRole?: string; // domain-ok: Open dynamic text or non-domain string payload
   readonly requiredClass?: PlayerClassId;
   readonly requiredFaction?: FactionId;
 }

@@ -22,7 +22,7 @@ const DATA_FILE = path.resolve(process.cwd(), 'src/data/pokemon/pokemonDB.ts');
 type AbilityTranslationId = keyof typeof ABILITY_TRANSLATIONS_ES;
 
 function isEnabledPokemonId(id: string): id is (typeof ENABLED_POKEMON_IDS)[number] {
-  return (ENABLED_POKEMON_IDS as readonly string[]).includes(id); // no-domain
+  return (ENABLED_POKEMON_IDS as readonly string[]).includes(id); // no-domain: Non-domain utility collection or data structure
 }
 
 function hasAbilityTranslation(id: string): id is AbilityTranslationId {
@@ -37,8 +37,8 @@ async function main() {
 
   await validator.checkFiles();
 
-  const errors: string[] = []; // no-domain
-  const warnings: string[] = []; // no-domain
+  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
+  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   validator.logStep(1, 2, 'Extrayendo habilidades de especies habilitadas en POKEMON_DB...');
   // Extraer habilidades del POKEMON_DB de especies habilitadas

@@ -1,3 +1,8 @@
+import type { ShowdownRequestType } from '@/types/battle/battle';
+
+export const REQUEST_KINDS = ['none', 'team-preview', 'force-switch', 'revive-target', 'move', 'wait'] as const;
+export type RequestKind = (typeof REQUEST_KINDS)[number];
+
 export interface ChoiceRequestPokemon {
   ident: string;
   details: string;
@@ -47,11 +52,9 @@ export interface ChoiceRequest {
     id?: string;
     pokemon: ChoiceRequestPokemon[];
   };
-  requestType?: 'move' | 'switch' | 'team' | 'wait';
+  requestType?: ShowdownRequestType;
   noCancel?: boolean;
 }
-
-export type RequestKind = 'none' | 'team-preview' | 'force-switch' | 'revive-target' | 'move' | 'wait';
 
 export function isRevivingForceSwitchRequest(req: unknown): boolean {
   if (!req || typeof req !== 'object') return false;

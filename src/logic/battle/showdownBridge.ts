@@ -14,7 +14,7 @@ import { useGameStore } from '@/stores/game';
  * Filtra la lista de logs del simulador para evitar procesar líneas duplicadas generadas por |split|.
  */
 export function filterShowdownLogs(logs: string[], playerSide: string = 'p1'): string[] {
-  const filtered: string[] = []; // no-domain
+  const filtered: string[] = []; // no-domain: Non-domain utility collection or data structure
   for (let i = 0; i < logs.length; i++) {
     const line = logs[i] || '';
     if (line.startsWith('|split|')) {
@@ -56,9 +56,9 @@ if (typeof Worker !== 'undefined') {
     if (
       message &&
       typeof message === 'object' &&
-      (message as Record<string, unknown>).type === 'EXECUTE_TURN' // open-record
+      (message as Record<string, unknown>).type === 'EXECUTE_TURN' // open-record: Generic key-value data dictionary container
     ) {
-      const payload = (message as Record<string, unknown>).payload as Record<string, unknown> | undefined; // open-record
+      const payload = (message as Record<string, unknown>).payload as Record<string, unknown> | undefined; // open-record: Generic key-value data dictionary container
       if (payload) {
         try {
           const battleStore = useBattleStore();
@@ -201,7 +201,7 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     const namePart = rawId.includes(':') ? (rawId.split(':')[1]?.trim() ?? '') : '';
     let matchMon: Pokemon | null = null;
     if (namePart) {
-      matchMon = (team.find(mon => mon && (isMatchingUid(mon.uid, namePart) || mon.name?.toLowerCase() === namePart.toLowerCase() || mon.id === namePart)) ?? null) as Pokemon | null; // text-ok
+      matchMon = (team.find(mon => mon && (isMatchingUid(mon.uid, namePart) || mon.name?.toLowerCase() === namePart.toLowerCase() || mon.id === namePart)) ?? null) as Pokemon | null; // text-ok: UI text display localization string
       if (matchMon) {
         console.debug(`[E2E-GETPOKE-SUFFIX-MATCH] Matched rawId "${rawId}" to team UID "${matchMon.uid}" via name/UID`);
         return matchMon;

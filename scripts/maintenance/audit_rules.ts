@@ -34,10 +34,10 @@ export interface AuditRule extends Partial<RuleDescriptor> {
 export function matchesRule(descriptor: RuleDescriptor | AuditRule, selectedRules: ReadonlySet<string>): boolean {
   if (selectedRules.size === 0) return true;
   const tokens = [
-    ...(descriptor.id ? [descriptor.id.toLowerCase()] : []), // string-ok
-    ...(descriptor.name ? [descriptor.name.toLowerCase()] : []), // string-ok
-    ...(descriptor.category ? [descriptor.category.toLowerCase()] : []), // string-ok
-    ...(descriptor.aliases ? descriptor.aliases.map(a => a.toLowerCase()) : []) // string-ok
+    ...(descriptor.id ? [descriptor.id.toLowerCase()] : []), // string-ok: Internal string formatting or DOM token identifier
+    ...(descriptor.name ? [descriptor.name.toLowerCase()] : []), // string-ok: Internal string formatting or DOM token identifier
+    ...(descriptor.category ? [descriptor.category.toLowerCase()] : []), // string-ok: Internal string formatting or DOM token identifier
+    ...(descriptor.aliases ? descriptor.aliases.map(a => a.toLowerCase()) : []) // string-ok: Internal string formatting or DOM token identifier
   ];
   for (const selected of selectedRules) {
     if (tokens.some(t => t === selected || t.includes(selected) || selected.includes(t))) {
@@ -113,18 +113,20 @@ const Z_LAYERS_DIFF_SENTINEL = Z_SORTED_ENTRIES.length + 1;
  * Produces a normalized relative POSIX path from the project root for deterministic rule evaluation.
  */
 export function normalizeFilePath(filePath: string): string {
-  const rel = path.isAbsolute(filePath) ? path.relative(process.cwd(), filePath) : filePath;
-  return rel.split(path.sep).join(path.posix.sep).toLowerCase();
+  const posixConverted = filePath.replace(/\\/g, '/');
+  const cwdPosix = process.cwd().replace(/\\/g, '/');
+  const rel = path.posix.isAbsolute(posixConverted) ? path.posix.relative(cwdPosix, posixConverted) : posixConverted;
+  return rel.toLowerCase(); // string-ok: Internal string formatting or DOM token identifier
 }
 
-export const viewport: AuditRule = { // string-ok
+export const viewport: AuditRule = { // string-ok: Internal string formatting or DOM token identifier
   id: 'viewport',
   name: 'Viewport Units',
   category: 'Viewport (dvh/dvw)',
   aliases: ['viewport', 'dvh', 'dvw', 'vh', 'vw'],
   regex: /\b\d+(?:\.\d+)?(vw|vh)\b/gi,
   message: (match: string) => `Unidad legacy detectada: '${match}'. Usa 'd${match.slice(-2)}' para soporte mobile dinámico.`,
-  fix: (match: string) => `d${match.toLowerCase().slice(-2)}` // string-ok
+  fix: (match: string) => `d${match.toLowerCase().slice(-2)}` // string-ok: Internal string formatting or DOM token identifier
 };
 
 const CONTEXT_WINDOW_SPAN_CHARS = 500;
@@ -187,7 +189,7 @@ export const legacyDates: AuditRule = {
   aliases: ['temporal', 'date', 'dates', 'legacy-dates'],
   regex: /new Date\(|Date\.now\(\)/g,
   message: "Uso de 'Date' detectado. Usa 'Temporal'.",
-  severity: 'error', // string-ok
+  severity: 'error', // string-ok: Internal string formatting or DOM token identifier
   check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
     if (!filePath) return false;
     const lowerPath = normalizeFilePath(filePath);
@@ -204,7 +206,7 @@ export const hardcodedTimezone: AuditRule = {
   regex: /toZonedDateTimeISO\(\s*['"]([^'"]+)['"]\s*\)|toPlainDateTime\(\s*['"]([^'"]+)['"]\s*\)|Temporal\.TimeZone\.from\(\s*['"]([^'"]+)['"]\s*\)/g,
   message: (match: string) => `Timezone hardcodeado detectado: '${match}'. Usa la variable global 'GAME_TIMEZONE' importada desde '@/logic/utils/timeUtils' para respetar la configuración del servidor.`,
   severity: 'error',
-  check: (_content: string, _match: RegExpExecArray, filePath?: string) => { // string-ok
+  check: (_content: string, _match: RegExpExecArray, filePath?: string) => { // string-ok: Internal string formatting or DOM token identifier
     if (!filePath) return false;
     if (filePath.endsWith('timeUtils.ts')) return false;
     const lowerPath = normalizeFilePath(filePath);
@@ -215,14 +217,14 @@ export const hardcodedTimezone: AuditRule = {
 };
 
 export const noDomainIdFallbacks: AuditRule = {
-  regex: /(?:heldItem|item|species|ability|move)\s*(?:=|:)\s*.*(?:\?|\|\||\?\?)\s*['"]['"]|\b(?:id|species|ability|move|item)\s*(?:\|\||\?\?)\s*[^,\n;)]*\bname\b|\bname\s*(?:\|\||\?\?)\s*[^,\n;)]*\b(?:id|species|ability|move|item)\b|toID\s*\([^)]*(?:\|\||\?\?)[^)]*\)/g,
+  regex: /(?:heldItem|item|species|ability|move)\s*(?:=|:)\s*.*(?:\?|\|\||\?\?)\s*['"]['"]|\b(?:id|species|ability|move|item|moveId|itemId|speciesId|abilityId)\s*(?:\|\||\?\?)\s*[^,\n;)]*\b(?:name|moveName|itemName|speciesName|abilityName)\b|\b(?:name|moveName|itemName|speciesName|abilityName)\s*(?:\|\||\?\?)\s*[^,\n;)]*\b(?:id|species|ability|move|item|moveId|itemId|speciesId|abilityId)\b|toID\s*\([^)]*(?:\|\||\?\?)[^)]*\)/g,
   message: "FALLBACK SILENCIOSO EN ID DE DOMINIO / NOMBRE DETECTADO. Queda estrictamente prohibido usar fallbacks silenciosos (|| '', ?? '', .id || .name, .species || .name, toID(x || y)) para identificadores de dominio (ItemId, PokemonSpeciesId, AbilityId, PokemonMoveId). Debe usarse una función de validación estricta (requireItemId, requirePokemonSpeciesId, etc.) que lance un error explícito (Fail Loud) si el ID falta o es inválido.",
-  severity: 'error', // string-ok
+  severity: 'error', // string-ok: Internal string formatting or DOM token identifier
   check: (content: string, match: RegExpExecArray, filePath?: string) => {
     if (!filePath) return false;
     const normPath = normalizeFilePath(filePath);
     if (normPath.includes('audit_rules.ts') || normPath.includes('.test.') || normPath.includes('.spec.')) return false;
-    if (!normPath.includes('src/logic/') && !normPath.includes('src/stores/')) return false;
+    if (!normPath.includes('src/')) return false;
 
     // Respect standard escape hatches for pure display localization / text
     const matchIndex = match.index ?? 0;
@@ -239,6 +241,10 @@ export const noDomainIdFallbacks: AuditRule = {
 export const nodePrefix: AuditRule = {
   regex: /import .* from ['"](fs|path|os|crypto|util|url|events|stream|child_process)['"]/g,
   message: "Import de Node sin prefijo 'node:'.",
+  check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
+    if (!filePath || filePath.includes('audit_rules.ts')) return false;
+    return true;
+  },
   fix: (match: string) => match.replace(/['"](fs|path|os|crypto|util|url|events|stream|child_process)['"]/, (m) => m.slice(0, 1) + 'node:' + m.slice(1))
 };
 
@@ -250,7 +256,7 @@ export const esmExtensions: AuditRule = {
   severity: 'error',
   fix: (match: string) => match.replace(/(['"])(\.\.?\/[^'"]+)(?<!\.[jt]s)(?<!\.vue)(?<!\.json)(['"])/g, '$1$2.ts$3'),
   check: (_content: string, match: RegExpExecArray, filePath?: string) => {
-    if (!filePath || filePath.endsWith('.vue')) return false;
+    if (!filePath || filePath.endsWith('.vue') || filePath.includes('audit_rules.ts')) return false;
     const importPath = match[1] || '';
     if (/\.(ts|js|vue|json|scss|css|svg|png|jpg|jpeg|webp|ogg|mp3|wasm)$/i.test(importPath)) return false;
     return true;
@@ -450,10 +456,10 @@ export const zIndexAudit: AuditRule = {
     const numMatch = match.match(/-?\d+/);
     if (!numMatch || !numMatch[0]) return `Z-Index hardcodeado detectado: '${match}'. Usa 'var(--z-layer)'.`;
     const val = parseInt(numMatch[0]);
-     // string-ok
+     // string-ok: Internal string formatting or DOM token identifier
     const entry = Z_VALUE_MAP[val];
     if (entry) {
-      const key = entry.toLowerCase().replace(/_/g, '-'); // string-ok
+      const key = entry.toLowerCase().replace(/_/g, '-'); // string-ok: Internal string formatting or DOM token identifier
       return `Z-Index hardcodeado detectado: '${match}'. Corresponde a Z_LAYERS.${entry}. Usa 'var(--z-${key})'.`;
     }
 
@@ -465,11 +471,11 @@ export const zIndexAudit: AuditRule = {
         minDiff = diff;
         nearestKey = key;
       }
-    } // string-ok
+    } // string-ok: Internal string formatting or DOM token identifier
 
     if (nearestKey) {
-      const key = nearestKey.toLowerCase().replace(/_/g, '-'); // string-ok
-      const offset = val - Z_LAYERS[nearestKey as keyof typeof Z_LAYERS]; // domain-ok
+      const key = nearestKey.toLowerCase().replace(/_/g, '-'); // string-ok: Internal string formatting or DOM token identifier
+      const offset = val - Z_LAYERS[nearestKey as keyof typeof Z_LAYERS]; // domain-ok: Open dynamic text or non-domain string payload
       const sign = offset >= 0 ? '+' : '-';
       return `Z-Index relativo detectado: '${match}'. Cerca de Z_LAYERS.${nearestKey}. Usa 'calc(var(--z-${key}) ${sign} ${Math.abs(offset)})'.`;
     }
@@ -483,10 +489,10 @@ export const zIndexAudit: AuditRule = {
     const val = parseInt(valMatch[0]);
 
     const entry = Z_VALUE_MAP[val];
-    const isJsProp = match.startsWith('zIndex'); // string-ok
+    const isJsProp = match.startsWith('zIndex'); // string-ok: Internal string formatting or DOM token identifier
     const propName = isJsProp ? 'zIndex' : 'z-index';
     if (entry) {
-      const key = entry.toLowerCase().replace(/_/g, '-'); // string-ok
+      const key = entry.toLowerCase().replace(/_/g, '-'); // string-ok: Internal string formatting or DOM token identifier
       const valStr = `var(--z-${key})`;
       return isJsProp ? `${propName}: '${valStr}'` : `${propName}: ${valStr}`;
     }
@@ -499,11 +505,11 @@ export const zIndexAudit: AuditRule = {
         minDiff = diff;
         nearestKey = key;
       }
-    } // string-ok
+    } // string-ok: Internal string formatting or DOM token identifier
 
     if (nearestKey) {
-      const key = nearestKey.toLowerCase().replace(/_/g, '-'); // string-ok
-      const offset = val - Z_LAYERS[nearestKey as keyof typeof Z_LAYERS]; // domain-ok
+      const key = nearestKey.toLowerCase().replace(/_/g, '-'); // string-ok: Internal string formatting or DOM token identifier
+      const offset = val - Z_LAYERS[nearestKey as keyof typeof Z_LAYERS]; // domain-ok: Open dynamic text or non-domain string payload
       const sign = offset >= 0 ? '+' : '-';
       const valStr = `calc(var(--z-${key}) ${sign} ${Math.abs(offset)})`;
       return isJsProp ? `${propName}: '${valStr}'` : `${propName}: ${valStr}`;
@@ -634,7 +640,7 @@ export const forbiddenTypeCasts: AuditRule = {
 
 
 /** Standard numeric identity values and HTTP status codes exempt from magic number audit */
-export const EXEMPT_AUDIT_NUMERIC_LITERALS: ReadonlySet<number> = new Set([0, 1, 100, 200, 404, 500]); // runtime-set
+export const EXEMPT_AUDIT_NUMERIC_LITERALS: ReadonlySet<number> = new Set([0, 1, 100, 200, 404, 500]); // runtime-set: Fast O(1) membership lookup set
 
 export const magicNumbers: AuditRule = {
   regex: /([^A-Z0-9_\w#$])(\d{2,})(\b)/g,
@@ -745,7 +751,7 @@ function checkTypeScriptRuleMatch(content: string, match: RegExpExecArray, fileP
   const trimmed = line.trim();
 
   if (trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) return false;
-  if (line.includes('// domain-ok') || line.includes('// no-domain') || extraBypasses.some(b => line.includes(b))) return false;
+  if (line.includes('// domain-ok: Open dynamic text or non-domain string payload') || line.includes('// no-domain: Non-domain utility collection or data structure') || extraBypasses.some(b => line.includes(b))) return false;
 
   return true;
 }
@@ -754,7 +760,7 @@ export const noLiteralBooleanType: AuditRule = {
   regex: /\b(?:(?:export\s+)?const|let|var)\s+[A-Z_a-z]\w*\s*:\s*(?:true|false)\b|\b(?:export\s+)?type\s+[A-Z_a-z]\w*\s*=\s*(?:true|false)\s*;|^\s*(?:readonly\s+)?[A-Z_a-z]\w*\??:\s*(?:true|false)\s*;|\(\s*[A-Z_a-z]\w*\??:\s*(?:true|false)\b/gm,
   message: (match: string) => `Tipo de dato booleano literal detectado: '${match.trim()}'. Queda prohibido declarar tipos de datos con literales booleanos (: true / : false) en lugar del tipo de dato canónico 'boolean'. Usa ': boolean'.`,
   severity: 'error',
-  check: (content: string, match: RegExpExecArray, filePath?: string) => checkTypeScriptRuleMatch(content, match, filePath, ['// boolean-ok']),
+  check: (content: string, match: RegExpExecArray, filePath?: string) => checkTypeScriptRuleMatch(content, match, filePath, ['// boolean-ok: Explicit boolean flag annotation']),
   fixable: true,
   fix: (content: string) => content.replace(/:\s*(?:true|false)\b/g, ': boolean')
 };
@@ -763,7 +769,7 @@ export const noInlineAnonymousObjectType: AuditRule = {
   regex: /\(\s*(?:[A-Z_a-z]\w*\s*,\s*)*[A-Z_a-z]\w*\??\s*:\s*\{\s*(?:readonly\s+)?[A-Z_a-z]\w*\??\s*:\s*(?:string|number|boolean|unknown|any|[A-Z]\w*)(?:\[\])?\s*(?:;|,)\s*(?:readonly\s+)?[A-Z_a-z]\w*\??\s*:[^\n}]*\}\s*[,)]/g,
   message: (match: string) => `Tipo de objeto anónimo inline detectado en parámetro: '${match.trim()}'. Está PROHIBIDO usar estructuras de objeto anónimas inline en firmas de función (estilo Java). Define e importa una interface o tipo nombrado (ej. UserPayload).`,
   severity: 'error',
-  check: (content: string, match: RegExpExecArray, filePath?: string) => checkTypeScriptRuleMatch(content, match, filePath, ['// type-ok', 'withDefaults']),
+  check: (content: string, match: RegExpExecArray, filePath?: string) => checkTypeScriptRuleMatch(content, match, filePath, ['// type-ok: Type contract declaration', 'withDefaults']),
   fixable: false
 };
 
@@ -771,16 +777,16 @@ export const noFloatingPromises: AuditRule = {
   regex: /^\s*(?!(?:await|void|return|const|let|var)\s+)(?:[A-Z_a-z]\w*\.)?[a-z]\w*Async\s*\([^)]*\)\s*;/gm,
   message: (match: string) => `Promesa flotante detectada: '${match.trim()}'. Toda llamada a función asíncrona debe ser manejada explícitamente con await, void o .catch().`,
   severity: 'warning',
-  check: (content: string, match: RegExpExecArray, filePath?: string) => checkTypeScriptRuleMatch(content, match, filePath, ['// promise-ok']),
+  check: (content: string, match: RegExpExecArray, filePath?: string) => checkTypeScriptRuleMatch(content, match, filePath, ['// promise-ok: Background promise handler']),
   fixable: true,
   fix: (content: string) => content.replace(/^\s*([a-z]\w*Async\s*\([^)]*\)\s*;)/gm, 'void $1')
 };
 
 export const noLeakedGlobalState: AuditRule = {
   regex: /^(?:export\s+)?let\s+[a-z]\w*\s*=/gm,
-  message: (match: string) => `Variable mutable global detectada a nivel de módulo: '${match.trim()}'. Encapsula el estado dentro de un Pinia store, clase o marca // singleton-ok.`,
+  message: (match: string) => `Variable mutable global detectada a nivel de módulo: '${match.trim()}'. Encapsula el estado dentro de un Pinia store, clase o marca // singleton-ok: Singleton instance state container.`,
   severity: 'warning',
-  check: (content: string, match: RegExpExecArray, filePath?: string) => checkTypeScriptRuleMatch(content, match, filePath, ['// singleton-ok']),
+  check: (content: string, match: RegExpExecArray, filePath?: string) => checkTypeScriptRuleMatch(content, match, filePath, ['// singleton-ok: Singleton instance state container']),
   fixable: false
 };
 
@@ -803,7 +809,7 @@ export const missingInteractiveId: AuditRule = {
     const tagName = (match[1] || '').toLowerCase();
 
     // Is it an inherently interactive tag?
-    const isInteractiveTag = ['button', 'input', 'select', 'textarea'].includes(tagName); // no-domain
+    const isInteractiveTag = ['button', 'input', 'select', 'textarea'].includes(tagName); // no-domain: Non-domain utility collection or data structure
 
     // Does it have interactive event bindings?
     const hasInteractiveEvent = /@(?:click|change|submit|input|keydown\.enter)\b|v-on:(?:click|change|submit|input)/i.test(tagStr);
@@ -850,8 +856,144 @@ export const sassTraps: AuditRule = {
   }
 };
 
+const INFRA_AND_UUID_IDENTIFIERS: ReadonlySet<string> = new Set<string>([ // runtime-set: Fast O(1) membership lookup set
+  'userId', 'user_id', 'ownerId', 'owner_id', 'saveId', 'save_id', 'lastSaveId', 'last_save_id',
+  'listingId', 'listing_id', 'tradeId', 'trade_id', 'senderId', 'sender_id',
+  'recipientId', 'recipient_id', 'receiverId', 'receiver_id', 'winnerId', 'winner_id',
+  'sessionId', 'session_id', 'socketId', 'socket_id',
+  'notificationId', 'notification_id', 'taskId', 'task_id', 'jobId', 'job_id',
+  'clientId', 'client_id', 'profileId', 'profile_id', 'accountId', 'account_id',
+  'conversationId', 'conversation_id', 'terminalId', 'terminal_id',
+  'messageId', 'message_id', 'playerId', 'player_id', 'authId', 'auth_id',
+  'elementId', 'modalId', 'tabId', 'domId', 'htmlId', 'uid', 'toastId',
+  'targetUid', 'pokemonUid', 'pokeUid', 'pokemon_uid', 'cardId', 'slotId', 'audioId',
+  'sourceId', 'source_id', 'opponentId', 'opponent_id', 'challengerId', 'challenger_id',
+  'inviteId', 'invite_id', 'matchId', 'match_id', 'awardId', 'award_id',
+  'gameId', 'game_id', 'entryId', 'entry_id', 'otId', 'ot_id',
+  'motherId', 'mother_id', 'fatherId', 'father_id', 'eggId', 'egg_id',
+  'eventId', 'event_id', 'categoryId', 'category_id', 'categoryIdOrUid', 'maybeUid',
+  'friendId', 'friend_id', 'requesterId', 'requester_id', 'addresseeId', 'addressee_id',
+  'relId', 'rel_id', 'chatId', 'chat_id', 'targetChatId', 'targetId',
+  'claimId', 'claim_id', 'offerId', 'offer_id', 'sellerId', 'seller_id', 'buyerId', 'buyer_id',
+  'currentSessionId', 'current_session_id', 'inviterId', 'inviter_id', 'tradeOfferId', 'rawId',
+  'serverId', 'server_id', 'selectedServerId', 'selected_server_id', 'assetId', 'asset_id', 'expectedId', 'expected_id',
+  'nationalId', 'national_id', 'nationalDexId', 'national_dex_id', 'dexId', 'dex_id',
+  'catId', 'cat_id', 'shadowId', 'shadow_id'
+]);
+
+export const strictDomainParamTypes: AuditRule = {
+  id: 'strictDomainParamTypes',
+  name: 'Strict Domain Param Types',
+  regex: /\b([A-Za-z0-9_]{2,}[iI]d)\s*\??:\s*(?:string\b(?!\s*\[\])|(?:[A-Z]\w*Id|[A-Z]\w*)\s*\|\s*string\b)/g,
+  message: (match: string) => match.includes('|')
+    ? `[TUTORIAL DOMAIN-TYPE-FIRST] Parámetro o propiedad '${match}' combina un tipo de dominio con '| string'.
+   📚 REGLA: En Poké Vicio (/domain-type-first) está ESTRICTAMENTE PROHIBIDO combinar uniones finitas con '| string' (ej. 'PokemonMoveId | string').
+   💡 SOLUCIÓN: Usa exclusivamente la unión canónica pura (ej. 'speciesId: PokemonSpeciesId', 'moveId: PokemonMoveId', 'itemId: ItemId').`
+    : `[TUTORIAL DOMAIN-TYPE-FIRST] Parámetro o propiedad '${match}' tipado con 'string' plano.
+   📚 REGLA: Los IDs de dominio de catálogo DEBEN ser tipados con su unión canónica ('PokemonMoveId', 'PokemonSpeciesId', 'ItemId', 'AbilityId', 'NatureId', 'MapRouteId', 'GymId', 'FactionId', 'PlayerClassId', 'PokemonTagId', etc.).
+   💡 INSTANCIAS vs CATÁLOGO:
+      - Si representa una instancia dinámica / UUID (ej. Pokémon capturado, huevo), nómbralo como '*Uid' (ej. 'pokemonUid', 'targetUid', 'eggUid') para ser reconocido automáticamente.
+      - Si es un UUID o identificador de infraestructura externo no estándar (DOM, WebSocket), debe justificarse explícitamente mediante '// uuid-ok: <motivo técnico>' o '// infra-id-ok: <motivo técnico>'.`,
+  severity: 'error',
+  check: (content: string, match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return false;
+    const norm = normalizeFilePath(filePath);
+    if (norm.includes('audit_rules.ts') || norm.includes('.test.') || norm.includes('.spec.') || norm.includes('tests/')) return false;
+    if (norm.endsWith('database.ts') || norm.endsWith('database.types.ts')) return false;
+    if (!norm.includes('src/')) return false;
+
+    const idParamName = match[1];
+    if (!idParamName) return false;
+
+    // Wildcard unions with | string are NEVER allowed to be bypassed
+    if (match[0].includes('|')) {
+      return true;
+    }
+
+    // Check for genuine instance UIDs (e.g. pokemonUid, targetUid, eggUid, uid, pokemon_uid, _currentEnemyUid)
+    // Distinguishes genuine UIDs from domain IDs ending in 'u' + 'Id' (like 'australopithecuId')
+    const GENUINE_UID_PATTERN = /^_{0,2}(?:uid|UID|[a-zA-Z0-9_]+(?:Uid|UID|_uid|_UID)|[a-zA-Z0-9_]+[uU]idOr[a-zA-Z0-9_]+|[a-zA-Z0-9_]+OrUid)$/;
+    if (GENUINE_UID_PATTERN.test(idParamName)) {
+      return false;
+    }
+
+    // Check if it is in the standard infrastructure whitelist
+    if (INFRA_AND_UUID_IDENTIFIERS.has(idParamName)) {
+      return false;
+    }
+
+    // Check if it is a SQL RPC parameter prefixed with p_ matching standard infra whitelist
+    if (idParamName.startsWith('p_') && INFRA_AND_UUID_IDENTIFIERS.has(idParamName.slice(2))) {
+      return false;
+    }
+
+    const matchIndex = match.index ?? 0;
+    const lineStart = content.lastIndexOf('\n', matchIndex) + 1;
+    const lineEnd = content.indexOf('\n', matchIndex);
+    const line = content.slice(lineStart, lineEnd === -1 ? undefined : lineEnd);
+
+    // Require specific detailed ignore comments with reason: "// uuid-ok: <reason>", "// infra-id-ok: <reason>", or "// domain-ok: <reason>"
+    const justifiedIgnoreRegex = /\/\/\s*(?:uuid-ok|infra-id-ok|domain-ok):\s*\S+/i;
+    if (justifiedIgnoreRegex.test(line)) {
+      return false;
+    }
+
+    return true;
+  },
+  fixable: false
+};
+
+export const noInlineTypeImports: AuditRule = {
+  id: 'noInlineTypeImports',
+  name: 'No Inline Type Imports',
+  regex: /:\s*import\(['"][^'"]+['"]\)\.[A-Za-z0-9_]+/g,
+  message: (match: string) => `[TUTORIAL CLEAN IMPORTS] Uso de import de tipo inline '${match}'.
+   📚 REGLA: En Poké Vicio se prohíbe importar tipos inline en parámetros o propiedades dentro del código fuente (.ts/.vue).
+   💡 SOLUCIÓN: Agrega 'import type { ... } from '...'' explícitamente en la cabecera del archivo y usa el nombre del tipo directamente en la firma para mantener legible el código y claro el árbol de dependencias. (Solo archivos ambientales .d.ts están exentos).`,
+  severity: 'error',
+  check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return false;
+    const norm = normalizeFilePath(filePath);
+    if (!norm.includes('src/')) return false;
+    if (norm.endsWith('.d.ts')) return false; // Allowed in ambient .d.ts declaration files
+    if (norm.includes('.test.') || norm.includes('.spec.') || norm.includes('tests/')) return false;
+    return true;
+  },
+  fixable: false
+};
+
+export const noInlineLiteralUnions: AuditRule = {
+  id: 'noInlineLiteralUnions',
+  name: 'No Inline Literal Unions',
+  regex: /:\s*(?:'[^']+'|"[^"]+")(?:\s*\|\s*(?:'[^']+'|"[^"]+")){2,}/g,
+  message: (match: string) => `[TUTORIAL DOMAIN-TYPE-FIRST] Unión literal de strings inline detectada: '${match.slice(1).trim()}'.
+   📚 REGLA: En Poké Vicio (/domain-type-first) está PROHIBIDO declarar uniones de literales inline ad-hoc dispersas en componentes o funciones.
+   💡 SOLUCIÓN: Centraliza el catálogo en 'src/types/' mediante un array 'as const' y deriva el tipo canónico con '(typeof ARRAY)[number]' (ej. 'export const FOOS = [...] as const; export type Foo = (typeof FOOS)[number];').`,
+  severity: 'error',
+  check: (content: string, match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return false;
+    const norm = normalizeFilePath(filePath);
+    if (!norm.includes('src/')) return false;
+    if (norm.includes('/types/')) return false; // Allowed in canonical type definitions under src/types/
+    if (norm.includes('.test.') || norm.includes('.spec.') || norm.includes('tests/')) return false;
+
+    const matchIndex = match.index ?? 0;
+    const lineStart = content.lastIndexOf('\n', matchIndex) + 1;
+    const lineEnd = content.indexOf('\n', matchIndex);
+    const line = content.slice(lineStart, lineEnd === -1 ? undefined : lineEnd);
+
+    // Escape hatch check
+    if (/\/\/\s*(?:domain-ok|type-ok|string-ok):\s*\S+/i.test(line)) {
+      return false;
+    }
+
+    return true;
+  },
+  fixable: false
+};
+
 export const auditRulesConfig = {
-  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, zIndexConstantDeclaration, manualAnimations, manualTimersFrontend, zeroTimerBattleLogic, noPlaywrightWaitForTimeout, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, magicNumbers, badConstantNames, noAliasConstants, noLiteralSuffixInConstantName, noLiteralBooleanType, noInlineAnonymousObjectType, noFloatingPromises, noLeakedGlobalState, missingInteractiveId, sassTraps
+  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, zIndexConstantDeclaration, manualAnimations, manualTimersFrontend, zeroTimerBattleLogic, noPlaywrightWaitForTimeout, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, strictDomainParamTypes, noInlineTypeImports, noInlineLiteralUnions, magicNumbers, badConstantNames, noAliasConstants, noLiteralSuffixInConstantName, noLiteralBooleanType, noInlineAnonymousObjectType, noFloatingPromises, noLeakedGlobalState, missingInteractiveId, sassTraps
 };
 
 // Ensure every rule in auditRulesConfig has its descriptor fields populated dynamically
@@ -861,11 +1003,11 @@ for (const [key, rule] of Object.entries(auditRulesConfig)) {
     (r as { id: string }).id = key;
   }
   if (!r.name) {
-    (r as { name: string }).name = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); // string-ok
+    (r as { name: string }).name = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); // string-ok: Internal string formatting or DOM token identifier
   }
   if (!r.aliases) {
-    const keyParts = key.split(/(?=[A-Z])/).map(s => s.toLowerCase()); // string-ok
-    (r as { aliases: readonly string[] }).aliases = [key.toLowerCase(), ...keyParts]; // string-ok
+    const keyParts = key.split(/(?=[A-Z])/).map(s => s.toLowerCase()); // string-ok: Internal string formatting or DOM token identifier
+    (r as { aliases: readonly string[] }).aliases = [key.toLowerCase(), ...keyParts]; // string-ok: Internal string formatting or DOM token identifier
   }
 }
 

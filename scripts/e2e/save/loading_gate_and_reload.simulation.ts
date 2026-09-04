@@ -161,8 +161,8 @@ test.describe('Loading Gate, Reload Combinations & Single Source of Truth Simula
     await page.route('**/realtime/**', route => route.abort());
 
     try {
-      // 3. Reload in offline state (Vite delivers SPA, but cloud backend is unreachable)
-      await sim.reloadAndSync();
+      // 3. Reload in offline state (Vite delivers SPA, but cloud backend is unreachable; wait for network retry backoff)
+      await sim.reloadAndSync(35000);
 
       // 4. Verify game restored from local cache cleanly via Web Worker
       await sim.navigateToHome();

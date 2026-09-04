@@ -78,7 +78,7 @@ export function validateAndSanitize(data: GameState | SaveDataDto | Record<strin
     return { valid: false, issues: [], error: 'No data' };
   }
 
-  const issues: string[] = []; // no-domain
+  const issues: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   // Calculate box hash to check if it's dirty
   const rawData = typeof data === 'object' && data !== null ? (data as { box?: (Pokemon | null)[] }) : {};

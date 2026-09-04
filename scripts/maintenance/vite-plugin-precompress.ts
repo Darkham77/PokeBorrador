@@ -26,7 +26,7 @@ const COMPRESSIBLE_EXTENSIONS = [
 type CompressibleExtension = (typeof COMPRESSIBLE_EXTENSIONS)[number];
 
 function isCompressibleExtension(ext: string): ext is CompressibleExtension {
-  return (COMPRESSIBLE_EXTENSIONS as readonly string[]).includes(ext); // domain-ok
+  return (COMPRESSIBLE_EXTENSIONS as readonly string[]).includes(ext); // domain-ok: Open dynamic text or non-domain string payload
 }
 
 const MIN_SIZE_TO_COMPRESS_BYTES = 512;

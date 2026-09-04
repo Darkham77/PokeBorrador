@@ -1,7 +1,7 @@
 import { makePokemon } from '@/logic/pokemon/pokemonFactory';
 import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon';
 import type { GameState } from '@/types/system/game';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 /**
  * fossilEngine.ts
@@ -10,11 +10,8 @@ import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 /**
  * Restores a fossil and adds the resulting Pokemon to the player's collection.
- * @param {string} pokemonId - The ID of the species to restore.
- * @param {GameState} state - The player's game state.
- * @returns {any} { pokemon, sentTo }
  */
-export function restoreFossil(pokemonId: string, state: GameState): { pokemon: Pokemon; sentTo: PokemonStorageLocation } {
+export function restoreFossil(pokemonId: PokemonSpeciesId, state: GameState): { pokemon: Pokemon; sentTo: PokemonStorageLocation } {
   const speciesId = requirePokemonSpeciesId(pokemonId);
 
   // 1. Generate the Pokemon at Level 1

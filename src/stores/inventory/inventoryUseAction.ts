@@ -21,7 +21,7 @@ const HEAL_ITEM_IDS = [
 ] as const satisfies readonly ItemId[];
 type HealItemId = (typeof HEAL_ITEM_IDS)[number];
 
-const HEAL_ITEM_IDS_SET: ReadonlySet<string> = new Set<string>(HEAL_ITEM_IDS); // runtime-set
+const HEAL_ITEM_IDS_SET: ReadonlySet<string> = new Set<string>(HEAL_ITEM_IDS); // runtime-set: Fast O(1) membership lookup set
 
 function isHealItemId(value: ItemId): value is HealItemId {
   return HEAL_ITEM_IDS_SET.has(value);

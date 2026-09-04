@@ -5,8 +5,8 @@ const CRIT_ROLL_DENOMINATOR_GEN6_BASE = 24;
 const CRIT_ROLL_DENOMINATOR_GEN5_BASE = 16;
 const DAMAGE_ROLL_MIN_INT = 85;
 const DAMAGE_ROLL_RANGE_INT = 16;
-import { Dex, toID } from '@pkmn/sim';
 import type { DayPhase } from '@/logic/utils/timeUtils';
+import type { PokemonMoveId } from '@/data/battle/moves';
 import type {
   PurePokemon,
   PureMove,
@@ -16,6 +16,7 @@ import type {
   PureDamageResult
 } from './battleMathTypes.ts';
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
+import { Dex } from '@pkmn/sim';
 export * from './battleMathTypes.ts';
 
 export const STAGE_MULTIPLIERS_STAT: Record<string, number> = {
@@ -29,7 +30,7 @@ export const STAGE_MULTIPLIERS_ACC: Record<string, number> = {
 };
 
 const WEATHER_KEYS = { SUN: 'sun', RAIN: 'rain', SANDSTORM: 'sandstorm', SNOW: 'snow', HAIL: 'hail', FOG: 'fog', WIND: 'wind', CLEAR: 'clear' } as const;
-const DELTA_STREAM_WEAKNESS_SET: ReadonlySet<string> = new Set(['electric', 'ice', 'rock']); // runtime-set
+const DELTA_STREAM_WEAKNESS_SET: ReadonlySet<string> = new Set(['electric', 'ice', 'rock']); // runtime-set: Fast O(1) membership lookup set
 
 
 const dexGen = Dex.forGen(ACTIVE_GENERATION);
@@ -70,12 +71,13 @@ function getCombinedEff(moveType: string, defender: PurePokemon, attacker: PureP
 }
 
 import type { PokemonType } from '../../data/battle/types.ts';
+import type { MoveCategory } from '../../data/battle/moves.ts';
 
-const SPECIAL_POKEMON_TYPES_SET: ReadonlySet<PokemonType> = new Set<PokemonType>([ // runtime-set
+const SPECIAL_POKEMON_TYPES_SET: ReadonlySet<PokemonType> = new Set<PokemonType>([ // runtime-set: Fast O(1) membership lookup set
   'fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon', 'dark'
 ]);
 
-export function getMoveCategory(move: PureMove): 'status' | 'physical' | 'special' {
+export function getMoveCategory(move: PureMove): MoveCategory {
   if (move.cat === 'status') return 'status';
   if (ACTIVE_GENERATION <= 3) {
     if (move.type && SPECIAL_POKEMON_TYPES_SET.has(move.type)) return 'special';
@@ -166,10 +168,10 @@ function calculateWeatherDamageMultiplier(
   weather: PureBattleWeather | null | undefined,
   mechWeather: string,
   moveType: string,
-  cleanMoveId: string,
-  dayCycle: DayPhase | undefined,
   isGym: boolean,
-  isMoveWeather: boolean
+  isMoveWeather: boolean,
+  cleanMoveId?: PokemonMoveId,
+  dayCycle?: DayPhase
 ): number {
   let weatherMult = 1;
   if ((!isGym || isMoveWeather) && weather && weather.turns !== 0) {
@@ -348,18 +350,18 @@ export function calculateDamagePure(
     triggeredAbility = 'thickfat';
   }
 
-  const itemMult = calculateHeldItemDamageMultiplier(attacker.heldItem, moveType, moveCat);
+  const itemMult = calculateHeldItemDamageMultiplier(attacker.heldItem ?? undefined, moveType, moveCat);
   const stab = calculateStabMultiplier(attacker, moveType);
 
   const isMoveWeather = !!(weather && weather.type !== 'clear' && weather.type !== 'none' && weather.turns !== -1);
-  const cleanMoveId = toID(move.id);
-  const weatherMult = calculateWeatherDamageMultiplier(weather, mechWeather, moveType, cleanMoveId, dayCycle, isGym, isMoveWeather);
+  const cleanMoveId = move.id;
+  const weatherMult = calculateWeatherDamageMultiplier(weather, mechWeather, moveType, isGym, isMoveWeather, cleanMoveId, dayCycle);
 
-  const isStrongWinds = Boolean((!isGym || isMoveWeather) && weather && weather.turns !== 0 && (weather.type === 'strong_winds' || weather.type === 'deltastream'));
+  const isStrongWinds = Boolean((!isGym || isMoveWeather) && weather && weather.turns !== 0 && weather.type === 'strong_winds');
   const finalEff = calculateDeltaStreamTypeEff(eff, defender, moveType, isStrongWinds);
 
   let terrainMult = 1;
-  if (weather && weather.type === 'grassyterrain' && moveType === 'ground' && (cleanMoveId === 'earthquake' || cleanMoveId === 'bulldoze' || cleanMoveId === 'magnitude')) {
+  if (ctx.terrain === 'grassyterrain' && moveType === 'ground' && (cleanMoveId === 'earthquake' || cleanMoveId === 'bulldoze' || cleanMoveId === 'magnitude')) {
     terrainMult = 0.5;
   }
 

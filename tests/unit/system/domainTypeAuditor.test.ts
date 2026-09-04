@@ -53,15 +53,15 @@ describe('Generic Repeated String Literal Union Auditor', () => {
     expect(repeated.size).toBe(0);
   });
 
-  it('ignores lines annotated with // domain-ok or // no-domain escape hatches', () => {
+  it('ignores lines annotated with // domain-ok: Open dynamic text or non-domain string payload or // no-domain: Non-domain utility collection or data structure escape hatches', () => {
     const files = [
       {
         file: 'src/escapedA.ts',
-        content: `const side: 'player' | 'enemy' = 'player'; // domain-ok`,
+        content: `const side: 'player' | 'enemy' = 'player'; // domain-ok: Open dynamic text or non-domain string payload`,
       },
       {
         file: 'src/escapedB.ts',
-        content: `const side: 'player' | 'enemy' = 'enemy'; // domain-ok`,
+        content: `const side: 'player' | 'enemy' = 'enemy'; // domain-ok: Open dynamic text or non-domain string payload`,
       },
     ];
 

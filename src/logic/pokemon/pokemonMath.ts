@@ -62,7 +62,7 @@ export function getMoveDescriptionPure(_name: string, md: MoveBaseData | null): 
       throw new Error("ID de movimiento no proporcionado en getMoveDescriptionPure");
     }
     const cleanId = toID(md.id);
-    const translated = ((MOVE_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string }>)[cleanId] || {}); // open-record
+    const translated = ((MOVE_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string }>)[cleanId] || {}); // open-record: Generic key-value data dictionary container
     if (translated.desc) return translated.desc;
 
     const move = Dex.forGen(ACTIVE_GENERATION).moves.get(cleanId);

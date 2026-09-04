@@ -69,7 +69,7 @@ export function findSpriteCollisions(items: ShopItem[]): SpriteCollisionGroup[] 
     const rawCheck = checkRawAssetExistence(item.id);
     spriteMap.get(sprite)!.push({
       id: item.id,
-      name: item.name ?? 'Sin nombre', // text-ok
+      name: item.name ?? 'Sin nombre', // text-ok: UI text display localization string
       cat: item.cat || 'unknown',
       hasRawAsset: rawCheck.exists,
       rawAssetPath: rawCheck.path,
@@ -100,7 +100,7 @@ export function findMissingSprites(items: ShopItem[]): MissingSpriteError[] {
     if (!sprite) {
       missing.push({
         id: item.id,
-        name: item.name ?? 'Sin nombre', // text-ok
+        name: item.name ?? 'Sin nombre', // text-ok: UI text display localization string
         expectedPath: '',
         reason: 'missing_property',
       });
@@ -111,7 +111,7 @@ export function findMissingSprites(items: ShopItem[]): MissingSpriteError[] {
     if (!existsSync(physicalPath)) {
       missing.push({
         id: item.id,
-        name: item.name ?? 'Sin nombre', // text-ok
+        name: item.name ?? 'Sin nombre', // text-ok: UI text display localization string
         sprite,
         expectedPath: physicalPath,
         reason: 'file_not_found',
@@ -139,8 +139,8 @@ async function main() {
   const missingSprites = findMissingSprites(shopItems);
   const collisions = findSpriteCollisions(shopItems);
 
-  const errors: string[] = []; // no-domain
-  const warnings: string[] = []; // no-domain
+  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
+  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   for (const err of missingSprites) {
     if (err.reason === 'missing_property') {

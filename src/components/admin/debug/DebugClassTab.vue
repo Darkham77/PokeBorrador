@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useGameStore } from '@/stores/game'
 
-interface ViteDebugBridge extends Record<string, unknown> { // open-record
+interface ViteDebugBridge extends Record<string, unknown> { // open-record: Generic key-value data dictionary container
   setClassLevel: (val: number) => void;
   setReputation: (val: number) => void;
   setPlayerClass: (cls: string) => void;

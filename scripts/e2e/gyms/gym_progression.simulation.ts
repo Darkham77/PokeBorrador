@@ -42,7 +42,7 @@ class GymProgressionSimulation extends BaseBattleSimulation {
         return { success: false, error: String(err) };
       }
     });
-    console.log('[E2E-CHALLENGE] Result from page:', JSON.stringify(res));
+    this.logBuffer.push(`[E2E-CHALLENGE] Result from page: ${JSON.stringify(res)}`);
   }
 
   public async verifyBadgeEarned(): Promise<{ badgesCount: number; hasBadgeId: boolean }> {

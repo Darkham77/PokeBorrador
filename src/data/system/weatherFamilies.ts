@@ -4,7 +4,7 @@ import { WEATHER_MECHANICAL, WEATHER_REGISTRY, toRegisteredWeatherId, type Weath
  * Returns the canonical weather family (WeatherMechanical) for a given weather active state.
  * Accepts both game tokens ('rain', 'storm', 'mist') and Showdown weather condition IDs ('raindance', 'sunnyday', 'desolateland', etc.).
  */
-export function getWeatherFamily(weather: string): WeatherMechanical | null { // result-ok
+export function getWeatherFamily(weather: string): WeatherMechanical | null { // result-ok: Operation result wrapper payload
   if (!weather) return null;
   const weatherId = toRegisteredWeatherId(weather);
   if (weatherId === null) return null;

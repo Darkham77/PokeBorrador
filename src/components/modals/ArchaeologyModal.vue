@@ -21,12 +21,14 @@ const fossilSprite = computed(() => {
   return getAssetUrl(ASSET_TYPES.ITEM, 'helixfossil') // Fallback
 })
 
+import type { MinigameDifficulty } from '@/types/battle/battle'
+
 interface Props {
   show?: boolean
   pokemon: Pokemon
   rarity?: number
-  difficulty?: string | null
-  onWin?: ((difficulty: string) => void) | null
+  difficulty?: MinigameDifficulty | null
+  onWin?: ((difficulty: MinigameDifficulty) => void) | null
   onFail?: (() => void) | null
   onCloseCallback?: (() => void) | null
 }
@@ -41,7 +43,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'win', difficulty: string): void
+  (e: 'win', difficulty: MinigameDifficulty): void
   (e: 'fail'): void
   (e: 'close'): void
 }>()
@@ -51,14 +53,13 @@ import {
   calculateArchaeologyDifficulty,
   generateArchaeologyGrid,
   getDistanceToNearestFossil,
-  type ArchaeologyDifficultyKey,
   type ArchaeologyTile
 } from './archaeologyGameHelper.ts'
 
 // State
-const difficulty = computed<ArchaeologyDifficultyKey>(() => {
+const difficulty = computed<MinigameDifficulty>(() => {
   if (props.difficulty && props.difficulty in ARCHAEOLOGY_DIFFICULTIES) {
-    return props.difficulty as ArchaeologyDifficultyKey
+    return props.difficulty
   }
   return calculateArchaeologyDifficulty(props.rarity || 50)
 })
@@ -113,7 +114,7 @@ function handleTileClick(tile: Tile) {
   const GRID_SHAKE_STEP_SEC = 0.05
   // Click Animation: Shake Grid slightly
   gsap.fromTo('.archaeology-grid', 
-    { x: -GRID_SHAKE_OFFSET_PX }, // magic-ok
+    { x: -GRID_SHAKE_OFFSET_PX }, // magic-ok: Explicit mathematical constant or ratio
     { x: GRID_SHAKE_OFFSET_PX, duration: GRID_SHAKE_STEP_SEC, repeat: 5, yoyo: true, ease: 'none', onComplete: () => { gsap.set('.archaeology-grid', { x: 0 }) } }
   )
 

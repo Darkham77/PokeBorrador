@@ -11,8 +11,8 @@ describe('Audit Candidates 1:1 Showdown Parity Tests', () => {
       maxHp: 10,
       level: 50,
       type: 'electric',
-      ability: 'Static-Ability',
-      heldItem: 'Smoke-Ball'
+      ability: 'static',
+      heldItem: 'smokeball'
     };
     const wild: PurePokemon = {
       id: 'pidgey',
@@ -20,7 +20,7 @@ describe('Audit Candidates 1:1 Showdown Parity Tests', () => {
       maxHp: 10,
       level: 50,
       type: 'normal',
-      ability: 'Run-Away'
+      ability: 'runaway'
     };
     const result = calculateEscapeChancePure(poke, wild, 1, null);
     expect(result).toBe(true);

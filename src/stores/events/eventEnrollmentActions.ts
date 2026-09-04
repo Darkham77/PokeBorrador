@@ -142,8 +142,8 @@ export async function submitCompetitionEntry(
     const res = await gameStore.db.from('competition_entries').upsert(entryData, {
       onConflict: 'event_id, category_id, player_id'
     }).select().single()
-    const entry = res.data as { id?: string } | null // domain-ok
-    const error = res.error as { message?: string } | null // domain-ok
+    const entry = res.data as { id?: string } | null // domain-ok: Open dynamic text or non-domain string payload
+    const error = res.error as { message?: string } | null // domain-ok: Open dynamic text or non-domain string payload
     
     if (error) {
       const dbError = new Error(error.message || 'Error al registrar Pokémon en sub-competencia')
@@ -161,6 +161,19 @@ export async function submitCompetitionEntry(
         [`${eventId}:${categoryId}`]: { ...entryData, id: assignedId },
         ...(categoryId === 'ivs' ? { [eventId]: { ...entryData, id: assignedId } } : {})
       }
+      // If replacing an existing entry for this slot, release previous Pokemon if not enrolled elsewhere
+      if (existingEntry && existingEntry.pokemon_uid && existingEntry.pokemon_uid !== pokemonUid) {
+        const isPrevEnrolledElsewhere = Object.values(userEntries.value).some(
+          e => e && e.pokemon_uid === existingEntry.pokemon_uid && e.id !== assignedId
+        )
+        if (!isPrevEnrolledElsewhere) {
+          const prevPoke = gameStore.getPokemonByUid(existingEntry.pokemon_uid)
+          if (prevPoke) {
+            prevPoke.onEvent = false
+          }
+        }
+      }
+
       pokemon.onEvent = true
       if (!gameStore.state.stats) {
         gameStore.state.stats = {}
@@ -170,7 +183,7 @@ export async function submitCompetitionEntry(
         Number(gameStore.state.stats.eventParticipations || 0),
         activeUserEventIds.size
       )
-      gameStore.scheduleSave()
+      await gameStore.scheduleSave()
       uiStore.notify('¡Pokémon registrado exitosamente!', '✅')
     }
   } catch (e) {
@@ -234,7 +247,7 @@ export async function removeCompetitionEntry(
       }
     }
 
-    gameStore.scheduleSave()
+    await gameStore.scheduleSave()
     uiStore.notify('Inscripción cancelada. Pokémon liberado.', '✅')
     return true
   } catch (e) {

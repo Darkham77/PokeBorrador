@@ -66,7 +66,7 @@ export async function ensureSchemaIntegrity(db: SQLiteDatabase): Promise<void> {
       const existingCols = info[0]!.values.map((v: unknown[]) => (v[1] as string).toLowerCase())
       const colPart = schemaStr.substring(schemaStr.indexOf('(') + 1, schemaStr.lastIndexOf(')'))
       
-      const colDefs: string[] = [] // no-domain
+      const colDefs: string[] = [] // no-domain: Non-domain utility collection or data structure
       let current = ''
       let depth = 0
       for (let i = 0; i < colPart.length; i++) {
@@ -83,7 +83,7 @@ export async function ensureSchemaIntegrity(db: SQLiteDatabase): Promise<void> {
       if (current.trim()) colDefs.push(current.trim())
 
       for (const def of colDefs) {
-        const upperDef = def.toUpperCase() // text-ok
+        const upperDef = def.toUpperCase() // text-ok: UI text display localization string
         if (upperDef.startsWith('PRIMARY KEY') || upperDef.startsWith('FOREIGN KEY') || upperDef.startsWith('UNIQUE')) {
           continue
         }
@@ -138,7 +138,7 @@ export async function ensureSchemaIntegrity(db: SQLiteDatabase): Promise<void> {
         let saveData: Record<string, unknown> = {}
         try {
           if (typeof rawSave === 'string') {
-            saveData = JSON.parse(rawSave) as Record<string, unknown> // open-record
+            saveData = JSON.parse(rawSave) as Record<string, unknown> // open-record: Generic key-value data dictionary container
           }
         } catch (_) {
           continue

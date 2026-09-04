@@ -1,5 +1,6 @@
 import type { SBCtx } from './showdownBridgeCtx.ts';
 import { isForcedSwitchMove } from './helpers/forcedSwitchRegistry.ts';
+import { isPokemonMoveId } from '@/data/battle/moves';
 import { handleGimmickEvents } from './showdownBridgeGimmicks.ts';
 import { handleItemAndAbilityEvents } from './showdownBridgeItemAbility.ts';
 import { handleSwitchAndDragEvents } from './showdownBridgeSwitchDrag.ts';
@@ -9,7 +10,7 @@ const IGNORED_PROTOCOL_EVENTS = [
   'debug', 'bigerror', 'event', '-candynamax', '-center',
   '-combine', '-waiting', 'custom', '-anim',
 ] as const;
-const IGNORED_PROTOCOL_EVENTS_SET: ReadonlySet<string> = new Set<string>(IGNORED_PROTOCOL_EVENTS); // runtime-set
+const IGNORED_PROTOCOL_EVENTS_SET: ReadonlySet<string> = new Set<string>(IGNORED_PROTOCOL_EVENTS); // runtime-set: Fast O(1) membership lookup set
 
 function handleFailEvent(ctx: SBCtx): boolean {
   const { store, parts, line, p, getPoke } = ctx;
@@ -28,7 +29,7 @@ function handleFailEvent(ctx: SBCtx): boolean {
     : store.activeBattle.value?.player?.uid;
   const aliveOpponentsOnBench = opponentTeam.filter(mon => mon && mon.hp > 0 && mon.uid !== currentOpponentUid);
 
-  if (isForcedSwitchMove(lastMoveId) && aliveOpponentsOnBench.length === 0) {
+  if (isPokemonMoveId(lastMoveId) && isForcedSwitchMove(lastMoveId) && aliveOpponentsOnBench.length === 0) {
     store.addLog(`¡El movimiento de ${target.name} falló porque no hay ningún Pokémon en la banca para cambiar!`, style, target);
   } else {
     store.addLog(`¡El movimiento de ${target.name} falló!`, style, target);

@@ -17,7 +17,7 @@ import { syncSidePokemon } from '@/logic/battle/helpers/showdownSyncHelper.ts';
 import { BattleAgent } from '../../../../scripts/e2e/fuzzer/core/fuzzer_agent.ts';
 import { ActiveSlotRequest } from '@/logic/battle/helpers/showdownBattleAgent.ts';
 import { ChoiceRequest, classifyRequest } from '@/logic/battle/helpers/requestHelper.ts';
-import type { PureMove, PurePokemon } from '@/logic/battle/battleMathTypes.ts';
+import type { PureMove, PurePokemon, PureDamageOptions } from '@/logic/battle/battleMathTypes.ts';
 
 function purePokemon(pokemon: PurePokemon): PurePokemon {
   return pokemon;
@@ -61,8 +61,8 @@ describe('BUG-041 to BUG-060: Showdown 1:1 Parity Batch 3 Suite', () => {
     const attacker = purePokemon({ id: 'rhyhorn', level: 50, type: 'ground' })
     const defender = purePokemon({ id: 'pikachu', level: 50, type: 'electric', hp: 100, maxHp: 100 })
     const move = pureMove({ id: 'earthquake', type: 'ground', power: 100, cat: 'physical' })
-    const ctxNormal = { weather: null }
-    const ctxGrassy = { weather: { type: 'grassyterrain', turns: 5 } }
+    const ctxNormal: PureDamageOptions = { weather: null }
+    const ctxGrassy: PureDamageOptions = { weather: null, terrain: 'grassyterrain' }
     
     const dmgNormal = calculateDamagePure(attacker, defender, move, ctxNormal)
     const dmgGrassy = calculateDamagePure(attacker, defender, move, ctxGrassy)
@@ -74,7 +74,7 @@ describe('BUG-041 to BUG-060: Showdown 1:1 Parity Batch 3 Suite', () => {
 // --- From test_bug061_080.spec.ts ---
 describe('BUG-061 to BUG-080: Showdown 1:1 Parity Batch 4 Suite', () => {
   it('BUG-064: Choice Specs applies 1.5x special attack multiplier appropriately', () => {
-    const attackerNormal = purePokemon({ id: 'alakazam', level: 50, type: 'psychic', heldItem: '' })
+    const attackerNormal = purePokemon({ id: 'alakazam', level: 50, type: 'psychic', heldItem: undefined })
     const attackerSpecs = purePokemon({ id: 'alakazam', level: 50, type: 'psychic', heldItem: 'choicespecs' })
     const defender = purePokemon({ id: 'snorlax', level: 50, type: 'normal', hp: 200, maxHp: 200 })
     const move = pureMove({ id: 'psychic', type: 'psychic', power: 90, cat: 'special' })
@@ -89,7 +89,7 @@ describe('BUG-061 to BUG-080: Showdown 1:1 Parity Batch 4 Suite', () => {
 // --- From test_bug081_100.spec.ts ---
 describe('BUG-081 to BUG-100: Showdown 1:1 Parity Batch 5 Suite', () => {
   it('BUG-084: Choice Scarf speed multiplier applies 1.5x boost correctly', () => {
-    const attackerNormal = purePokemon({ id: 'aerodactyl', level: 50, spe: 100, type: 'rock', heldItem: '' })
+    const attackerNormal = purePokemon({ id: 'aerodactyl', level: 50, spe: 100, type: 'rock', heldItem: undefined })
     const attackerScarf = purePokemon({ id: 'aerodactyl', level: 50, spe: 100, type: 'rock', heldItem: 'choicescarf' })
     
     const speNormal = getEffectiveStatPure(attackerNormal, 'spe', {}, null, undefined)
@@ -130,11 +130,11 @@ describe('BUG-121 to BUG-140: Showdown 1:1 Parity Batch 7 Suite', () => {
 // --- From test_bug141_160.spec.ts ---
 describe('BUG-141 to BUG-160: Showdown 1:1 Parity Batch 8 Suite', () => {
   it('BUG-141: Solar Power applies 1.5x special attack multiplier in Sun', () => {
-    const attackerNormal = purePokemon({ id: 'charizard', level: 50, type: 'fire', ability: '', spa: 100 })
+    const attackerNormal = purePokemon({ id: 'charizard', level: 50, type: 'fire', ability: undefined, spa: 100 })
     const attackerSolar = purePokemon({ id: 'charizard', level: 50, type: 'fire', ability: 'solarpower', spa: 100 })
     const defender = purePokemon({ id: 'blastoise', level: 50, type: 'water', hp: 200, maxHp: 200 })
     const move = pureMove({ id: 'flamethrower', type: 'fire', power: 90, cat: 'special' })
-    const sunCtx = { weather: { type: 'sun', turns: 5 } }
+    const sunCtx: PureDamageOptions = { weather: { type: 'sun', turns: 5 } }
     const dmgNormal = calculateDamagePure(attackerNormal, defender, move, sunCtx, 'day', 1.0, false)
     const dmgSolar = calculateDamagePure(attackerSolar, defender, move, sunCtx, 'day', 1.0, false)
     

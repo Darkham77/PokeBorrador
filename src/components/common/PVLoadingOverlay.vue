@@ -3,13 +3,16 @@ import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { gsap } from 'gsap'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 
+const _LOADING_OVERLAY_THEMES = ['default', 'error', 'warning', 'purple'] as const;
+type LoadingOverlayTheme = (typeof _LOADING_OVERLAY_THEMES)[number];
+
 interface Props {
   title?: string
   message?: string
   statusText?: string
   icon?: string
   showSpinner?: boolean
-  theme?: 'default' | 'error' | 'warning' | 'purple'
+  theme?: LoadingOverlayTheme
   absolute?: boolean
   critical?: boolean
   cardClass?: string

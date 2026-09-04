@@ -102,7 +102,7 @@ export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, i
       if (data.type) types.push(toPokemonType(data.type))
       if (data.type2) types.push(toPokemonType(data.type2))
     }
-    return types.map(type => translateType(type)).join('/').toUpperCase() // text-ok
+    return types.map(type => translateType(type)).join('/').toUpperCase() // text-ok: UI text display localization string
   }
 
   const processedGuardian = computed(() => {
@@ -120,7 +120,7 @@ export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, i
     }
     
     const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
-    const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido' // text-ok
+    const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido' // text-ok: UI text display localization string
     const typeInfo = (isSeen && data) ? getFormattedTypes(data) : '???'
     const captured = props.dominance.guardian.captured || (gameStore.dailyGuardianCaptures || []).includes(props.map.id)
 
@@ -184,7 +184,7 @@ export function useMapCardState(props: MapCardProps, currentCols: Ref<number>, i
       const pool = props.spawnPool || { generic: [], specific: [], rates: {} }
       const rate = pool.rates?.[id] || 10
       const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
-      const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido' // text-ok
+      const name = isSeen ? (data?.name || id.toUpperCase()) : 'Desconocido' // text-ok: UI text display localization string
       const typeInfo = (isSeen && data) ? `Tipo: ${getFormattedTypes(data)}` : ''
 
       const cycles = DAY_PHASES

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Universal Pokémon info panel (Pokedex + Instance)
-import { ref, computed } from 'vue'
+import { ref, computed, type MaybeRefOrGetter } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { useInventoryStore } from '@/stores/inventory/inventory'
@@ -19,7 +19,9 @@ import PokemonStatsTab from '@/components/pokemon-detail/PokemonStatsTab.vue'
 import PokemonMovesTab from '@/components/pokemon-detail/PokemonMovesTab.vue'
 import PokemonTrophiesTab from '@/components/pokemon-detail/PokemonTrophiesTab.vue'
 import PokemonActionFooter from '@/components/pokemon-detail/PokemonActionFooter.vue'
-import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon'
+import type { Pokemon, PokemonStorageLocation, PokemonSelectionSource } from '@/types/pokemon/pokemon'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import type { PokemonTagId } from '@/logic/constants/tags'
 
 
 const NATIONAL_ID_PADDING_LENGTH = 3;
@@ -27,16 +29,16 @@ const HEX_RGB_SUBSTRING_OFFSET = 2;
 
 interface Props {
   show?: boolean
-  speciesId?: string
+  speciesId?: PokemonSpeciesId
   pokemon?: Pokemon | null
   index?: number
-  context?: string // 'team', 'box', 'market', 'pokedex'
+  context?: PokemonSelectionSource
   extra?: { offerId?: string, price?: number, type?: string } | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
   show: false,
-  speciesId: '',
+  speciesId: undefined,
   pokemon: null,
   index: -1,
   context: 'pokedex',
@@ -67,7 +69,7 @@ const {
   getSprite,
   finalIndex,
   finalContext
-} = usePokemonDetail(props as { pokemon: Pokemon | null, speciesId: string })
+} = usePokemonDetail(props as Record<string, MaybeRefOrGetter<unknown>>) // open-record: Generic key-value data dictionary container
 
 // --- LOCAL UI STATE ---
 const ui = useUIStore()
@@ -128,7 +130,7 @@ const hexToRgb = (hex: string) => {
   return `${r}, ${g}, ${b}`
 }
 
-const handleToggleTag = (tagOrId: string | { id?: string, dbId?: string }) => {
+const handleToggleTag = (tagOrId: PokemonTagId | { id?: PokemonTagId, dbId?: PokemonTagId }) => {
   const tagId = typeof tagOrId === 'string' ? tagOrId : (tagOrId.id || tagOrId.dbId)
   if (tagId && isInstance.value && finalIndex.value > -1) {
     const ctx = finalContext.value

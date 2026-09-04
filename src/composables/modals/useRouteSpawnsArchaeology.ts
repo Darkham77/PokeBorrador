@@ -187,7 +187,7 @@ export function useRouteSpawnsArchaeology(props: RouteSpawnsProps) {
   })
 
   function getArchaeologySpawnTooltip(reward: ArchaeologyRewardData) {
-    const lines: string[] = [] // no-domain
+    const lines: string[] = [] // no-domain: Non-domain utility collection or data structure
 
     lines.push(`CÁLCULO DE PROBABILIDAD BASE:`)
     lines.push(`• Peso Base del Grupo: ${reward.baseWeight.toFixed(1)} pts`)
@@ -224,7 +224,7 @@ export function useRouteSpawnsArchaeology(props: RouteSpawnsProps) {
         const toolName = names[pickaxeType] || 'Pico de excavación'
         const budget = pickaxeType === 'good' ? TOOL_BUDGET_GOOD : (pickaxeType === 'super' ? TOOL_BUDGET_SUPER : 0)
         if (budget > 0) {
-          lines.push(`• ${toolName} activo: agrega +${budget} pts en total (+50% a Raros, +25% a Comunes, +25% a Piedras).`) // no-magic
+          lines.push(`• ${toolName} activo: agrega +${budget} pts en total (+50% a Raros, +25% a Comunes, +25% a Piedras).`) // no-magic: Explicit mathematical constant or threshold value
         } else {
           lines.push(`• ${toolName} activo.`)
         }

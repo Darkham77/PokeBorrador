@@ -28,7 +28,7 @@ export const useTradeStore = defineStore('trade', () => {
   const audioStore = useAudioStore()
   const loadingStore = useLoadingStore()
 
-  const tradeTarget = ref<{ id: string; username: string } | null>(null)
+  const tradeTarget = ref<{ id: string; username: string } | null>(null) // uuid-ok: Supabase user UUID identifier
   const tradeFriendSave = ref<GameState | null>(null)
   
   const tradeOfferPoke = ref<Pokemon | null>(null)
@@ -77,9 +77,9 @@ export const useTradeStore = defineStore('trade', () => {
       db.from('trade_offers').select('*').eq('sender_id', authStore.user.id).eq('status', 'accepted')
     ])
 
-    const incomingRes = { data: incRes.data as TradeOffer[] | null } // domain-ok
-    const outgoingRes = { data: outRes.data as TradeOffer[] | null } // domain-ok
-    const acceptedRes = { data: accRes.data as TradeOffer[] | null } // domain-ok
+    const incomingRes = { data: incRes.data as TradeOffer[] | null } // domain-ok: Open dynamic text or non-domain string payload
+    const outgoingRes = { data: outRes.data as TradeOffer[] | null } // domain-ok: Open dynamic text or non-domain string payload
+    const acceptedRes = { data: accRes.data as TradeOffer[] | null } // domain-ok: Open dynamic text or non-domain string payload
 
     const validateOffers = (offers: TradeOffer[] | null): TradeOffer[] => {
       if (!offers) return []
@@ -113,7 +113,7 @@ export const useTradeStore = defineStore('trade', () => {
     })
 
     const saveRes = await gameStore.db.from('game_saves').select('save_data').eq('user_id', friendId).single()
-    const data = saveRes.data as { save_data: GameState } | null // domain-ok
+    const data = saveRes.data as { save_data: GameState } | null // domain-ok: Open dynamic text or non-domain string payload
     const error = saveRes.error
     
     if (error || !data) {
@@ -225,6 +225,18 @@ export const useTradeStore = defineStore('trade', () => {
       })
     
       if (rpcErr) throw new Error((rpcErr as { message: string }).message)
+
+      if (authStore.user) {
+        const { data: saveRow } = await db.from('game_saves').select('save_data, last_save_id').eq('user_id', authStore.user.id).single() as { data: { save_data: GameState; last_save_id?: string } | null }
+        if (saveRow?.save_data) {
+          gameStore.updateState(saveRow.save_data)
+        }
+        if (saveRow?.last_save_id) {
+          authStore.user.last_save_id = saveRow.last_save_id
+          const { setLatestCommittedSaveId } = await import('@/logic/auth/saveService.ts')
+          setLatestCommittedSaveId(saveRow.last_save_id)
+        }
+      }
 
       uiStore.notify('¡Intercambio aceptado! Los activos están en tu cola de reclamo.', '🎉')
       await gameStore.fetchClaimQueue()

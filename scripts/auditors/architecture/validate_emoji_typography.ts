@@ -50,7 +50,7 @@ function matchEmojis(text: string): string[] | null {
 }
 
 function getAllVueFiles(dir: string): string[] {
-  let results: string[] = []; // no-domain
+  let results: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!fs.existsSync(dir)) return results;
   const list = fs.readdirSync(dir);
   for (const file of list) {
@@ -201,7 +201,7 @@ export function auditEmojiTypography(): EmojiAuditResult {
             const classVal = (classMatch ? (classMatch[1] || classMatch[2] || '') : '') + ' ' + (dynamicClassMatch ? (dynamicClassMatch[1] || dynamicClassMatch[2] || '') : '');
             const hasEmojiClass = /\bemoji\b/i.test(classVal);
 
-            const voidElements: ReadonlySet<string> = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']); // runtime-set
+            const voidElements: ReadonlySet<string> = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']); // runtime-set: Fast O(1) membership lookup set
             if (!isSelfClosing && !voidElements.has(tagName)) {
               stack.push({
                 tag: tagName,
@@ -307,8 +307,8 @@ if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) ==
 
   const result = auditEmojiTypography();
 
-  const errors: string[] = []; // no-domain
-  const warnings: string[] = []; // no-domain
+  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
+  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   for (const v of result.violations) {
     errors.push(`[EMOJI_UNWRAPPED] ${v.file}:${v.line} → ${v.message} (Context: "${v.context}")`);

@@ -62,13 +62,13 @@ export function useBattleAtmosphere(battle: Ref<BattleState | null | undefined>)
   const effectiveBattleVisual = computed<string>(() => {
     // 1. Terrenos y efectos de campo activos en combate (máxima prioridad visual para iluminación de arena)
     if (battle.value?.fieldConditions) {
-      const terrain = (['electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain', 'trickroom', 'gravity'] as const).find(k => battle.value?.fieldConditions?.[k]) // o1-ok
+      const terrain = (['electricterrain', 'grassyterrain', 'mistyterrain', 'psychicterrain', 'trickroom', 'gravity'] as const).find(k => battle.value?.fieldConditions?.[k]) // o1-ok: O(1) data structure exception
       if (terrain) return terrain
     }
 
     // 2. Efectos de bando activos como neblina (mist), stealthrock, toxicspikes
     const sideConds = { ...battle.value?.enemySideConditions, ...battle.value?.playerSideConditions }
-    const sideField = (['mist', 'stealthrock', 'toxicspikes'] as const).find(k => sideConds[k]) // o1-ok
+    const sideField = (['mist', 'stealthrock', 'toxicspikes'] as const).find(k => sideConds[k]) // o1-ok: O(1) data structure exception
     if (sideField) return sideField
 
     // 3. Si hay un clima temporal activo en el combate (invocado por movimiento o habilidad)

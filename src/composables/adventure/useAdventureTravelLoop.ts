@@ -125,7 +125,7 @@ export function useAdventureTravelLoop(params: UseAdventureTravelLoopParams) {
     const nextSegIdx = currentSegmentIndex.value + 1
     if (nextSegIdx < path.length) {
       const nextNodeId = path[nextSegIdx]!
-      const nodeName = (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[nextNodeId]?.name || nextNodeId // open-record
+      const nodeName = (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[nextNodeId]?.name || nextNodeId // open-record: Generic key-value data dictionary container
       travelLog.value.push(`Entrando a: ${nodeName}`)
 
       if (isPokemonCenterNodeId(nextNodeId)) {
@@ -271,7 +271,7 @@ export function useAdventureTravelLoop(params: UseAdventureTravelLoopParams) {
 
     originMap.value = nodeId
     syncCurrentMapFromAdventureNode(nodeId)
-    const nodeName = (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[nodeId]?.name || nodeId // open-record
+    const nodeName = (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[nodeId]?.name || nodeId // open-record: Generic key-value data dictionary container
     travelLog.value.push(`📍 Ubicación actual: ${nodeName}. El selector de origen ha sido actualizado.`)
     calculateRoute()
   }
@@ -304,7 +304,7 @@ export function useAdventureTravelLoop(params: UseAdventureTravelLoopParams) {
     originMap.value = currentNodeId
     syncCurrentMapFromAdventureNode(currentNodeId)
     travelLog.value.push('❌ Viaje cancelado por el usuario.')
-    const currName = (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[currentNodeId]?.name || currentNodeId // open-record
+    const currName = (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[currentNodeId]?.name || currentNodeId // open-record: Generic key-value data dictionary container
     travelLog.value.push(`📍 Ubicación actual: ${currName}.`)
     calculateRoute()
   }

@@ -10,7 +10,7 @@ export interface MoveParityResult {
  * y verifica que se manejen dinámicamente en el bridge o motor de batalla.
  */
 export function auditShowdownMoveMechanics(showdownMovesPath: string, moveExecutorPath: string): MoveParityResult {
-  const missingMoveExecutors: string[] = []; // no-domain
+  const missingMoveExecutors: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!existsSync(showdownMovesPath) || !existsSync(moveExecutorPath)) {
     return { missingMoveExecutors };
   }

@@ -10,7 +10,7 @@ export interface ActionabilityResult {
 }
 
 export function auditPlaywrightActionability(testsDir: string): ActionabilityResult {
-  const forcedClickFiles: string[] = []; // no-domain
+  const forcedClickFiles: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!existsSync(testsDir)) return { forcedClickFiles };
 
   const files = getFilesRecursively(testsDir).filter(f => f.endsWith('.ts') || f.endsWith('.spec.ts'));

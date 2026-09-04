@@ -1,12 +1,13 @@
-import { Dex, toID } from '@pkmn/sim';
+import { Dex, toID, type ID } from '@pkmn/sim';
 import { ACTIVE_GENERATION, MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils';
 
 const MAX_LEGAL_RANDOM_MOVE_SLOTS = 4;
 
-function enqueueSpeciesLineage(currId: string, queue: string[]): void {
+function enqueueSpeciesLineage(currId: ID | PokemonSpeciesId, queue: ID[]): void {
   const species = Dex.species.get(currId);
   if (species.exists) {
     if (species.baseSpecies && toID(species.baseSpecies) !== currId) {
@@ -26,11 +27,11 @@ function enqueueSpeciesLineage(currId: string, queue: string[]): void {
  * Verifica si un Pokémon puede aprender un determinado movimiento según Showdown y base de datos local.
  * Si se especifica `level`, los movimientos aprendidos por nivel requieren `learnLevel <= level`.
  */
-export function canLearnMove(speciesId: string, moveId: string, level?: number): boolean {
+export function canLearnMove(speciesId: PokemonSpeciesId, moveId: PokemonMoveId, level?: number): boolean {
   if (!speciesId || !moveId) return false;
   const normMoveId = toID(moveId);
-  const visited = new Set<string>(); // runtime-set
-  const queue: string[] = [toID(speciesId)]; // no-domain
+  const visited = new Set<string>(); // runtime-set: Lineage traversal set
+  const queue: ID[] = [toID(speciesId)]; // domain-dex: Showdown ID lineage queue
 
   while (queue.length > 0) {
     const currId = queue.shift()!;
@@ -76,11 +77,11 @@ export function canLearnMove(speciesId: string, moveId: string, level?: number):
 /**
  * Obtiene la lista completa de movimientos legales para una especie dada y un nivel opcional.
  */
-export function getLegalSpeciesMoves(speciesId: string, level?: number): PokemonMoveId[] {
+export function getLegalSpeciesMoves(speciesId: PokemonSpeciesId, level?: number): PokemonMoveId[] {
   if (!speciesId) return [];
-  const visited = new Set<string>(); // runtime-set
-  const queue: string[] = [toID(speciesId)]; // no-domain
-  const legalMoveIds = new Set<PokemonMoveId>(); // runtime-set
+  const visited = new Set<string>(); // runtime-set: Lineage traversal set
+  const queue: ID[] = [toID(speciesId)]; // domain-dex: Showdown ID lineage queue
+  const legalMoveIds = new Set<PokemonMoveId>(); // runtime-set: Legal moves accumulator set
   const targetLevel = level !== undefined ? Math.max(1, Math.min(MAX_POKEMON_LEVEL, level)) : undefined;
 
   while (queue.length > 0) {
@@ -150,7 +151,7 @@ export function getLegalSpeciesMoves(speciesId: string, level?: number): Pokemon
 /**
  * Calcula la cantidad máxima de movimientos legales que puede poseer un Pokémon según su nivel.
  */
-export function getMaxAllowedMoves(speciesId: string, level: number): number {
+export function getMaxAllowedMoves(speciesId: PokemonSpeciesId, level: number): number {
   if (!speciesId) return 1;
   try {
     const defaultMoves = getMovesAtLevel(speciesId, level, true);
@@ -166,7 +167,7 @@ export function getMaxAllowedMoves(speciesId: string, level: number): number {
  * y rellena los slots restantes con `null`.
  */
 export function getRandomLegalMoves(
-  speciesId: string,
+  speciesId: PokemonSpeciesId,
   level: number,
   maxSlots: number = MAX_LEGAL_RANDOM_MOVE_SLOTS
 ): (PokemonMoveId | null)[] {

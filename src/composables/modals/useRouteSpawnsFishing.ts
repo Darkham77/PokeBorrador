@@ -128,7 +128,7 @@ export function useRouteSpawnsFishing(props: RouteSpawnsProps) {
   })
 
   function getFishingSpawnTooltip(poke: RouteSpawnMappedItem) {
-    const lines: string[] = [] // no-domain
+    const lines: string[] = [] // no-domain: Non-domain utility collection or data structure
     lines.push(`Probabilidad Base: ${poke.basePercentage.toFixed(1)}%`)
     const rodType = gameStore.state.fishingRodType
     const rodSecs = gameStore.state.fishingRodSecs || 0
@@ -144,9 +144,9 @@ export function useRouteSpawnsFishing(props: RouteSpawnsProps) {
       }
     }
     const weather = props.weather || 'clear'
-    const isRainy = (['rain', 'heavy_rain', 'storm', 'thunderstorm'] as const).includes((weather as string).toLowerCase() as never) // text-ok
+    const isRainy = (['rain', 'heavy_rain', 'storm', 'thunderstorm'] as const).includes((weather as string).toLowerCase() as never) // text-ok: UI text display localization string
     if (isRainy) {
-      lines.push(`• Clima (Lluvia): x1.20 a la tasa de pesca general`) // no-magic
+      lines.push(`• Clima (Lluvia): x1.20 a la tasa de pesca general`) // no-magic: Explicit mathematical constant or threshold value
     }
     lines.push(...getSpawnCommonTooltipLines(poke, props.weather))
     const eventFishingBonus = eventStore.globalMultipliers?.fishing || 1

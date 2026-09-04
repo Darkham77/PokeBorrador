@@ -3,12 +3,14 @@ import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useInventoryStore } from '@/stores/inventory/inventory'
 import { useShopStore } from '@/stores/inventory/shop'
-import { SHOP_ITEMS, type ItemId, isItemId } from '@/data/inventory/items'
+import { ITEMS_BY_ID, isItemId, type ItemId } from '@/data/inventory/items'
 import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 
-const props = defineProps<{
+interface Props {
   injectedItems: Set<ItemId>
-}>()
+}
+
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   (e: 'addLog', message: string): void
@@ -19,9 +21,7 @@ const gameStore = useGameStore()
 const inventoryStore = useInventoryStore()
 const shopStore = useShopStore()
 
-const filteredShopItems = computed(() => {
-  return SHOP_ITEMS.filter((item): item is typeof item & { id: ItemId } => isItemId(item.id) && !!item.name) // o1-ok
-})
+const filteredShopItems = computed(() => Object.values(ITEMS_BY_ID))
 
 const adjustItem = (itemId: ItemId, amount: number) => {
   const nextInjected = new Set(props.injectedItems)

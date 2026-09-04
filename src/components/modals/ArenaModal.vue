@@ -18,6 +18,7 @@ const EMOJI_HOVER_DURATION_SEC = 0.3;
 const TOGGLE_BTN_HOVER_DURATION_SEC = 0.25;
 import { useGsapTransition } from '@/composables/ui/useGsapTransition'
 import { toPokemonType, type PokemonType } from '@/data/battle/types'
+import type { RankedTierId } from '@/data/system/rankedData'
 
 interface Props {
   show?: boolean
@@ -68,7 +69,7 @@ const offlineTransitionHooks = useGsapTransition({
 
 const allowedTypes = computed<PokemonType[]>(() => (pvp.currentSeasonRules?.allowedTypes || []).map(toPokemonType))
 
-const getRankIcon = (tierId: string) => {
+const getRankIcon = (tierId: RankedTierId) => {
   return getAssetUrl(ASSET_TYPES.UI, `ranks/${tierId}`)
 }
 

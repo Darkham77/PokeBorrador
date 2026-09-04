@@ -122,7 +122,7 @@ async function main() {
                      spriteId.includes('fossil') ||
                      ['potion', 'revive', 'heal', 'ether', 'elixir', 'antidote', 'share', 'leftovers', 'bell', 'band', 'sash', 'lens', 'candy', 'up', 'egg', 'nugget', 'pearl', 'dust', 'piece', 'spoon', 'tag', 'powder', 'club', 'light', 'stick', 'ticket', 'radar', 'awakening'].some(k => mappedId.includes(k));
 
-    const pathsToCheck: string[] = []; // no-domain
+    const pathsToCheck: string[] = []; // no-domain: Non-domain utility collection or data structure
     if (item.sprite) {
       pathsToCheck.push(path.join(publicDir, 'assets/sprites', `${item.sprite}.webp`));
       pathsToCheck.push(path.join(publicDir, 'assets/sprites', `${item.sprite}.png`));
@@ -145,7 +145,7 @@ async function main() {
     }
 
     // Classify shops
-    const shops: string[] = []; // no-domain
+    const shops: string[] = []; // no-domain: Non-domain utility collection or data structure
     if (item.showInNormalShop !== false) {
       shops.push('Poké Market (Local)');
     }

@@ -38,7 +38,7 @@ const RAW_ITEMS_DIR = path.resolve(RAW_ASSETS_DIR, 'items');
 
 const POKEAPI_SPRITE_BASE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
 
-const POKESPRITE_FOLDERS = [ // no-domain
+const POKESPRITE_FOLDERS = [ // no-domain: Non-domain utility collection or data structure
   'hold-item', 'battle-item', 'berry', 'medicine', 'general', 'key-item', 'ball', 'evo-item', 'tm-hm', 'other'
 ] as const;
 
@@ -76,13 +76,13 @@ interface ShopItem {
  * Dynamically derives candidate URL slugs for an item using @pkmn/sim Showdown Dex
  */
 export function toItemSlugCandidates(id: string): string[] {
-  const clean = id.toLowerCase().trim(); // string-ok
+  const clean = id.toLowerCase().trim(); // string-ok: Internal string formatting or DOM token identifier
   const candidates: Set<string> = new Set([clean]);
 
   // 1. Check Pokémon Showdown Canon Dex
   const dexItem = Dex.items.get(toID(clean));
   if (dexItem.exists && dexItem.name) {
-    const slug = dexItem.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); // string-ok
+    const slug = dexItem.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); // string-ok: Internal string formatting or DOM token identifier
     candidates.add(slug);
     candidates.add(dexItem.id);
   }
@@ -131,7 +131,7 @@ export function toItemSlugCandidates(id: string): string[] {
   return Array.from(candidates);
 }
 
-const ALLOWED_ASSET_HOSTS = new Set([ // runtime-set
+const ALLOWED_ASSET_HOSTS = new Set([ // runtime-set: Fast O(1) membership lookup set
   'www.serebii.net',
   'raw.githubusercontent.com',
   'play.pokemonshowdown.com',
@@ -211,7 +211,7 @@ export async function downloadAllItems(): Promise<{
 
   let downloadedCount = 0;
   let existingCount = 0;
-  const failed: string[] = []; // no-domain
+  const failed: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   for (let i = 0; i < canonItems.length; i += CONCURRENCY_LIMIT) {
     const chunk = canonItems.slice(i, i + CONCURRENCY_LIMIT);

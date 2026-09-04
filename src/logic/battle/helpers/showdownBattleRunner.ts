@@ -21,18 +21,18 @@ export interface CertifiedReplayHistoryEntry {
   p2LockedMoveId?: string;
   p1Trapped?: boolean;
   p2Trapped?: boolean;
-  p1Volatiles?: string[]; // no-domain
-  p2Volatiles?: string[]; // no-domain
-  p1StatStages?: Record<string, number>; // open-record
-  p2StatStages?: Record<string, number>; // open-record
-  p1Status?: string; // string-ok
-  p2Status?: string; // string-ok
+  p1Volatiles?: string[]; // no-domain: Non-domain utility collection or data structure
+  p2Volatiles?: string[]; // no-domain: Non-domain utility collection or data structure
+  p1StatStages?: Record<string, number>; // open-record: Generic key-value data dictionary container
+  p2StatStages?: Record<string, number>; // open-record: Generic key-value data dictionary container
+  p1Status?: string; // string-ok: Internal string formatting or DOM token identifier
+  p2Status?: string; // string-ok: Internal string formatting or DOM token identifier
   p1Hp?: number;
   p2Hp?: number;
-  weather?: string; // string-ok
-  terrain?: string; // string-ok
-  p1SideConditions?: string[]; // no-domain
-  p2SideConditions?: string[]; // no-domain
+  weather?: string; // string-ok: Internal string formatting or DOM token identifier
+  terrain?: string; // string-ok: Internal string formatting or DOM token identifier
+  p1SideConditions?: string[]; // no-domain: Non-domain utility collection or data structure
+  p2SideConditions?: string[]; // no-domain: Non-domain utility collection or data structure
   p1Heal?: boolean;
   p2Heal?: boolean;
   p1PreHeal?: boolean;

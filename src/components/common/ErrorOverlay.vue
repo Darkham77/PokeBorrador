@@ -25,7 +25,7 @@ const accumulatedDetails = computed(() => {
 const copyError = async () => {
   if (errorStore.errors.length === 0) return
   
-  const report = [ // no-domain
+  const report = [ // no-domain: Non-domain utility collection or data structure
     'POKEBORRADOR ERROR REPORT',
     '',
     `¿QUÉ ESTABA HACIENDO EL JUGADOR?`,

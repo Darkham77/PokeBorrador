@@ -14,7 +14,7 @@ import { resolve } from 'node:path';
 import { styleText } from 'node:util';
 import { Dex, toID } from '@pkmn/sim';
 
-const CUSTOM_CATEGORIES = new Set([ // runtime-set
+const CUSTOM_CATEGORIES = new Set([ // runtime-set: Fast O(1) membership lookup set
   'raw_material',
   'refined_material',
   'component',
@@ -22,7 +22,7 @@ const CUSTOM_CATEGORIES = new Set([ // runtime-set
   'tools'
 ]);
 
-const CUSTOM_ITEM_IDS = new Set([ // runtime-set
+const CUSTOM_ITEM_IDS = new Set([ // runtime-set: Fast O(1) membership lookup set
   'ticketsafari',
   'ticketshiny',
   'ticketcerulean',
@@ -41,7 +41,7 @@ const CUSTOM_ITEM_IDS = new Set([ // runtime-set
   'ironingot'
 ]);
 
-const CANON_SPECIAL_IDS = new Set([ // runtime-set
+const CANON_SPECIAL_IDS = new Set([ // runtime-set: Fast O(1) membership lookup set
   'hpup',
   'protein',
   'iron',

@@ -3,19 +3,20 @@ import { Dex, toID, type PokemonSet } from '@pkmn/sim';
 import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS_SET, MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils';
 import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 export interface TrainerTeamOptions {
   level: number;
   teamSize: number;
-  allowedSpecies: ReadonlySet<string>;
-  aceSpeciesId?: string;
+  allowedSpecies: ReadonlySet<PokemonSpeciesId | string>;
+  aceSpeciesId?: PokemonSpeciesId;
 }
 
 export interface RivalTeamOptions {
   level: number;
   teamSize: number;
-  aceSpeciesId: string;
-  allowedSpecies?: ReadonlySet<string>;
+  aceSpeciesId: PokemonSpeciesId;
+  allowedSpecies?: ReadonlySet<PokemonSpeciesId | string>;
 }
 
 /**
@@ -23,14 +24,14 @@ export interface RivalTeamOptions {
  * Falls back to previous generations only if a species was cut in the active generation (Dexit).
  * For unevolved (NFE) species not in Showdown randomSets, synthesizes a legal moveset via learnset.
  */
-export function getRandomSetForSpecies(speciesId: string, level: number): PokemonSet {
+export function getRandomSetForSpecies(speciesId: PokemonSpeciesId, level: number): PokemonSet {
   const species = Dex.species.get(speciesId);
 
   // 1. Search downwards from ACTIVE_GENERATION to 2 (Gen 2-9 implement randomSets)
   for (let g = ACTIVE_GENERATION; g >= 2; g--) {
     try {
       const gen = TeamGenerators.getTeamGenerator(`gen${g}randombattle`);
-      const rawSets = Reflect.get(gen, 'randomSets') as Record<string, unknown> | undefined; // open-record
+      const rawSets = Reflect.get(gen, 'randomSets') as Record<string, unknown> | undefined; // open-record: Generic key-value data dictionary container
       if (rawSets) {
         const key = rawSets[species.id] ? species.id : rawSets[species.name] ? species.name : null;
         if (key) {
@@ -88,7 +89,7 @@ export class TrainerTeamGenerator {
     const generator = TeamGenerators.getTeamGenerator(formatString);
 
     // 2. Restrict internal species database to only allowed species
-    const rawData = (Reflect.get(generator, 'randomData') || Reflect.get(generator, 'randomSets')) as Record<string, unknown> | undefined; // open-record
+    const rawData = (Reflect.get(generator, 'randomData') || Reflect.get(generator, 'randomSets')) as Record<string, unknown> | undefined; // open-record: Generic key-value data dictionary container
     if (rawData) {
       const filtered = Object.fromEntries(
         Object.entries(rawData).filter(([speciesId]) => allowed.has(toID(speciesId)))
@@ -144,7 +145,7 @@ const MAX_TEAM_GENERATION_ATTEMPTS = 10;
         const idx = Math.floor(Math.random() * remainingSpecies.length);
         const fallbackId = remainingSpecies.splice(idx, 1)[0]!;
         try {
-          const fallbackSet = getRandomSetForSpecies(fallbackId, clampedLevel);
+          const fallbackSet = getRandomSetForSpecies(requirePokemonSpeciesId(fallbackId), clampedLevel);
           finalTeam.push(fallbackSet);
           usedSpecies.add(fallbackId);
         } catch {
@@ -158,7 +159,7 @@ const MAX_TEAM_GENERATION_ATTEMPTS = 10;
     while (finalTeam.length < targetTeamSize && allAllowed.length > 0) {
       const pickId = allAllowed[Math.floor(Math.random() * allAllowed.length)]!;
       try {
-        const fallbackSet = getRandomSetForSpecies(pickId, clampedLevel);
+        const fallbackSet = getRandomSetForSpecies(requirePokemonSpeciesId(pickId), clampedLevel);
         finalTeam.push(fallbackSet);
       } catch {
         break;

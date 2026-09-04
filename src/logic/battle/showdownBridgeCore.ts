@@ -26,7 +26,7 @@ function syncCombatantToTeam(store: BattleContext, target: Pokemon | null) {
 }
 
 function formatDamageFromLog(victimName: string, fromClause: string): string {
-  const fromLower = fromClause.toLowerCase(); // text-ok
+  const fromLower = fromClause.toLowerCase(); // text-ok: UI text display localization string
   if (fromLower.includes('recoil')) return `¡${victimName} recibió daño por el retroceso!`;
   if (fromLower.includes('item: life orb')) return `¡${victimName} recibió daño de Vidasfera!`;
   if (fromLower.includes('psn') || fromLower.includes('brn')) {
@@ -125,7 +125,7 @@ function handleHealToken(ctx: SBCtx): boolean {
       target.fainted = false;
     }
     const fromClause = parts.find(part => part.startsWith('[from]'));
-    if (fromClause && fromClause.toLowerCase().includes('drain')) { // text-ok
+    if (fromClause && fromClause.toLowerCase().includes('drain')) { // text-ok: UI text display localization string
       store.addLog(`¡${target.name} absorbió salud!`, 'log-info', target);
     } else {
       store.addLog(`¡${target.name} recuperó salud!`, 'log-info', target);
@@ -162,7 +162,7 @@ function handleStatusToken(ctx: SBCtx): boolean {
   if (target && statusType) {
     target.status = statusType as PokemonStatus;
     const desc = STATUS_MESSAGES[statusType];
-    const msg = desc ? `¡${target.name} ${desc}` : `¡${target.name} sufrió un problema de estado: ${statusType.toUpperCase()}!`; // text-ok
+    const msg = desc ? `¡${target.name} ${desc}` : `¡${target.name} sufrió un problema de estado: ${statusType.toUpperCase()}!`; // text-ok: UI text display localization string
     store.addLog(msg, 'log-info', target);
     syncCombatantToTeam(store, target);
   }

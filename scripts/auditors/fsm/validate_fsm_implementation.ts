@@ -69,7 +69,7 @@ function parseFsmConstants(fsmCode: string): FsmConstantsInfo {
   const allKeys = new Set<string>();
   const substates = new Set<string>();
   const suppressedKeys = new Set<string>();
-  const invalidSuppressionErrors: string[] = []; // no-domain
+  const invalidSuppressionErrors: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   const lines = fsmCode.split('\n');
   let currentBlock: 'TOP' | 'SUB' | null = null;
@@ -136,8 +136,8 @@ async function main() {
   const { states: mermaidStates, syncRequired } = parseMermaid(manualCode);
   const { allKeys, substates, suppressedKeys, invalidSuppressionErrors } = parseFsmConstants(fsmCode);
 
-  const errors: string[] = [...invalidSuppressionErrors]; // no-domain
-  const warnings: string[] = []; // no-domain
+  const errors: string[] = [...invalidSuppressionErrors]; // no-domain: Non-domain utility collection or data structure
+  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   // 1. Mermaid -> JS
   mermaidStates.forEach(s => {

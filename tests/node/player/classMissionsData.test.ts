@@ -1,7 +1,7 @@
 import { describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 import { getClassMissionDetails } from '../../../src/logic/player/classMissionsData.ts';
-import { CLASS_MISSIONS } from '../../../src/data/player/playerClasses.ts';
+import { CLASS_MISSIONS, type PlayerClassId } from '../../../src/data/player/playerClasses.ts';
 import { isItemId } from '../../../src/data/inventory/items.ts';
 
 describe('Class Missions Metadata & Rules Audit', () => {
@@ -38,7 +38,7 @@ describe('Class Missions Metadata & Rules Audit', () => {
   }
 
   it('returns fallback defaults when classId is invalid or undefined', () => {
-    const fallback = getClassMissionDetails(undefined, 'mission_6h');
+    const fallback = getClassMissionDetails('invalid_class' as unknown as PlayerClassId, 'mission_6h');
     assert.ok(fallback.dialogue.length > 0);
     assert.ok(fallback.rulesText.length > 0);
     assert.ok(fallback.rewards.length > 0);

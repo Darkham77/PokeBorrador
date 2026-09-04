@@ -23,19 +23,19 @@ export function patchShowdownSpreadModify(_getIsE2eMode: () => boolean) {
       const stats = statsMap.get(set.name);
       if (stats) {
         const clampStat = (val: number) => Math.max(1, Math.min(Math.floor(val), 9999));
-        const mapped = { ...(stats as Record<string, number>) }; // open-record
+        const mapped = { ...(stats as Record<string, number>) }; // open-record: Generic key-value data dictionary container
         if (mapped.maxHp !== undefined && mapped.hp === undefined) {
           mapped.hp = mapped.maxHp;
         }
         for (const k of Object.keys(mapped)) {
           if (typeof mapped[k] === 'number') mapped[k] = clampStat(mapped[k]);
         }
-        return mapped as StatsTable; // domain-ok
+        return mapped as StatsTable; // domain-ok: Open dynamic text or non-domain string payload
       }
     }
     if (set && Reflect.get(set, 'stats')) {
       const clampStat = (val: number) => Math.max(1, Math.min(Math.floor(val), 9999));
-      const setStats = Reflect.get(set, 'stats') as Record<string, number> | undefined; // open-record
+      const setStats = Reflect.get(set, 'stats') as Record<string, number> | undefined; // open-record: Generic key-value data dictionary container
       const stats = { ...(setStats || {}) };
       if (stats.maxHp !== undefined && stats.hp === undefined) {
         stats.hp = stats.maxHp;
@@ -43,7 +43,7 @@ export function patchShowdownSpreadModify(_getIsE2eMode: () => boolean) {
       for (const k of Object.keys(stats)) {
         if (typeof stats[k] === 'number') stats[k] = clampStat(stats[k]);
       }
-      return stats as StatsTable; // domain-ok
+      return stats as StatsTable; // domain-ok: Open dynamic text or non-domain string payload
     }
     return originalSpreadModify.call(this, baseStats, set);
   };

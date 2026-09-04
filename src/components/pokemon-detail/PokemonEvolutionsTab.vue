@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 
 interface Evolution {
-  to: string
+  to: PokemonSpeciesId
   requirement: string
   isSeen: boolean
   isCaught: boolean
@@ -12,7 +13,7 @@ interface Evolution {
 interface Props {
   evolutions: Evolution[]
   speciesName: string
-  speciesId: string
+  speciesId: PokemonSpeciesId
 }
 
 defineProps<Props>()

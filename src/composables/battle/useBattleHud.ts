@@ -22,16 +22,16 @@ function isSeatCapturing(seat: unknown): boolean {
   )
 }
 
-const INIT_FSM_STATES_SET: ReadonlySet<string> = new Set<string>(['INITIALIZING', 'CONTEXT_SETUP', 'SEARCH_PHASE', 'FIRST_INTRO']); // runtime-set
-const SILHOUETTE_FSM_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['ENTRY_ANIM', 'ENCOUNTER_ANIM', 'PARALLEL_PREP', 'PARALLEL_ENTRY', 'SILHOUETTE_MODE', 'COMBAT_OR_FLEE']); // runtime-set
+const INIT_FSM_STATES_SET: ReadonlySet<string> = new Set<string>(['INITIALIZING', 'CONTEXT_SETUP', 'SEARCH_PHASE', 'FIRST_INTRO']); // runtime-set: Fast O(1) membership lookup set
+const SILHOUETTE_FSM_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['ENTRY_ANIM', 'ENCOUNTER_ANIM', 'PARALLEL_PREP', 'PARALLEL_ENTRY', 'SILHOUETTE_MODE', 'COMBAT_OR_FLEE']); // runtime-set: Fast O(1) membership lookup set
 
 function checkScrambleState(subState: string | null | undefined, state: string | null | undefined): boolean {
   if (state && INIT_FSM_STATES_SET.has(state)) return true;
   return !!subState && SILHOUETTE_FSM_SUBSTATES_SET.has(subState);
 }
 
-const TECHNICAL_FSM_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['RECEIVE_CONFIG', 'WEIGHT_CALCULATION', 'INJECT_FILTERS', 'READY_FOR_GEN']); // runtime-set
-const TRAINER_VISIBLE_FSM_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['ENCOUNTER_TYPE_CHECK', 'TRAINER_ENTRY', 'T_VISUAL', 'SHOW_DIALOGS', 'TRAINER_ENCOUNTER', 'RETREAT_AND_FADEOUT', 'T_RETREAT']); // runtime-set
+const TECHNICAL_FSM_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['RECEIVE_CONFIG', 'WEIGHT_CALCULATION', 'INJECT_FILTERS', 'READY_FOR_GEN']); // runtime-set: Fast O(1) membership lookup set
+const TRAINER_VISIBLE_FSM_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['ENCOUNTER_TYPE_CHECK', 'TRAINER_ENTRY', 'T_VISUAL', 'SHOW_DIALOGS', 'TRAINER_ENCOUNTER', 'RETREAT_AND_FADEOUT', 'T_RETREAT']); // runtime-set: Fast O(1) membership lookup set
 
 function checkEnemyTechnicalHidden(subState: string | null | undefined, state: string | null | undefined, isTrainer: boolean): boolean {
   if (subState === 'GEN_TEAMS' || subState === 'MINIGAME_CHECK') return true;
@@ -52,17 +52,17 @@ function checkFloatingState(p: { id?: string | number; ability?: string } | Poke
   return data.type === 'flying' || data.type2 === 'flying' || p.ability === 'levitate';
 }
 
-const SILHOUETTE_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['PARALLEL_PREP', 'PARALLEL_ENTRY', 'BUSH_VISIBLE', 'SILHOUETTE_MODE', 'COMBAT_OR_FLEE']); // runtime-set
+const SILHOUETTE_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['PARALLEL_PREP', 'PARALLEL_ENTRY', 'BUSH_VISIBLE', 'SILHOUETTE_MODE', 'COMBAT_OR_FLEE']); // runtime-set: Fast O(1) membership lookup set
 
-const BUSH_BEHIND_STATES_SET: ReadonlySet<string> = new Set<string>(['ACTIVE_BATTLE', 'REORDER_TEAM', 'LEVEL_UP_MODAL', 'REWARDS_PHASE']); // runtime-set
-const BUSH_BEHIND_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['ENCOUNTER_ANIM', 'PARALLEL_JUMP', 'JUMP_SHADOW', 'REVEAL_COLORS', 'BUSH_FADE']); // runtime-set
+const BUSH_BEHIND_STATES_SET: ReadonlySet<string> = new Set<string>(['ACTIVE_BATTLE', 'REORDER_TEAM', 'LEVEL_UP_MODAL', 'REWARDS_PHASE']); // runtime-set: Fast O(1) membership lookup set
+const BUSH_BEHIND_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['ENCOUNTER_ANIM', 'PARALLEL_JUMP', 'JUMP_SHADOW', 'REVEAL_COLORS', 'BUSH_FADE']); // runtime-set: Fast O(1) membership lookup set
 
-const JUMPING_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['ENCOUNTER_ANIM', 'PARALLEL_JUMP', 'JUMP_SHADOW']); // runtime-set
-const PLAYER_TECH_HIDDEN_SET: ReadonlySet<string> = new Set<string>(['TRAINER_ENTRY', 'T_VISUAL']); // runtime-set
+const JUMPING_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['ENCOUNTER_ANIM', 'PARALLEL_JUMP', 'JUMP_SHADOW']); // runtime-set: Fast O(1) membership lookup set
+const PLAYER_TECH_HIDDEN_SET: ReadonlySet<string> = new Set<string>(['TRAINER_ENTRY', 'T_VISUAL']); // runtime-set: Fast O(1) membership lookup set
 
-const ENCOUNTER_EXCLUDE_STATES_SET: ReadonlySet<string> = new Set<string>(['ACTIVE_BATTLE', 'REORDER_TEAM', 'REWARDS_PHASE', 'LEVEL_UP_MODAL', 'EXIT_BATTLE']); // runtime-set
-const ENCOUNTER_ANIM_STATES_SET: ReadonlySet<string> = new Set<string>(['catching', 'trapped', 'releasing']); // runtime-set
-const ENCOUNTER_ACTIVE_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['PARALLEL_ENTRY', 'PARALLEL_JUMP', 'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'COMBAT_OR_FLEE', 'WILD_ENTRY', 'BUSH_FADE', 'REVEAL_COLORS']); // runtime-set
+const ENCOUNTER_EXCLUDE_STATES_SET: ReadonlySet<string> = new Set<string>(['ACTIVE_BATTLE', 'REORDER_TEAM', 'REWARDS_PHASE', 'LEVEL_UP_MODAL', 'EXIT_BATTLE']); // runtime-set: Fast O(1) membership lookup set
+const ENCOUNTER_ANIM_STATES_SET: ReadonlySet<string> = new Set<string>(['catching', 'trapped', 'releasing']); // runtime-set: Fast O(1) membership lookup set
+const ENCOUNTER_ACTIVE_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['PARALLEL_ENTRY', 'PARALLEL_JUMP', 'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'COMBAT_OR_FLEE', 'WILD_ENTRY', 'BUSH_FADE', 'REVEAL_COLORS']); // runtime-set: Fast O(1) membership lookup set
 
 /**
  * Composable para gestionar la visibilidad y estados del HUD en combate.

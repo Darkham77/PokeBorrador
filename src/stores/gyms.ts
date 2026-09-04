@@ -4,7 +4,7 @@ import { useBattleStore } from '@/stores/battle/battle.ts'
 import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
-import { GYMS, GYMS_BY_ID, requireGymId, isGymId, type GymDifficultyId, type GymId, type Gym } from '@/data/world/gyms.ts'
+import { GYMS, GYMS_BY_ID, requireGymId, type GymDifficultyId, type GymId, type Gym } from '@/data/world/gyms.ts'
 
 function isPokemon(value: Pokemon | null): value is Pokemon {
   return value !== null
@@ -20,7 +20,7 @@ export const useGymsStore = defineStore('gyms', {
       return gameStore.state.defeatedGyms || []
     },
     defeatedGymsSet(): ReadonlySet<GymId> {
-      return new Set<GymId>(this.defeatedGyms) // runtime-set
+      return new Set<GymId>(this.defeatedGyms) // runtime-set: Fast O(1) membership lookup set
     },
     // fallow-ignore-next-line unused-store-members
     gymsById(): Record<GymId, Gym> {
@@ -31,19 +31,17 @@ export const useGymsStore = defineStore('gyms', {
     async loadGymProgress() {
       // SSoT is gameStore.state.defeatedGyms & gameStore.state.gymProgress
     },
-    isGymDefeated(gymId: string): boolean {
-      if (!isGymId(gymId)) return false
+    isGymDefeated(gymId: GymId): boolean {
       return this.defeatedGymsSet.has(gymId)
     },
-    isDifficultyDefeated(gymId: string, difficulty: GymDifficultyId): boolean {
+    isDifficultyDefeated(gymId: GymId, difficulty: GymDifficultyId): boolean {
       const gameStore = useGameStore()
-      if (!isGymId(gymId)) return false
       const prog = gameStore.state.gymProgress[gymId]
       if (prog && prog[difficulty] === true) return true
       if (difficulty === 'easy' && this.isGymDefeated(gymId)) return true
       return false
     },
-    async challengeGym(gymId: string, difficulty: GymDifficultyId = 'easy') {
+    async challengeGym(gymId: GymId, difficulty: GymDifficultyId = 'easy') {
       const battleStore = useBattleStore()
       const validGymId = requireGymId(gymId)
       

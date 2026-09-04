@@ -2,11 +2,12 @@
 import { computed } from 'vue'
 import PokemonTypeTag from './PokemonTypeTag.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { ComponentPillSize } from '@/types/system/game'
 import { toPokemonType, type PokemonType } from '@/data/battle/types'
 
 interface Props {
   pokemon: Partial<Pokemon>
-  size?: 'ssm' | 'sm' | 'md' | 'lg'
+  size?: ComponentPillSize
 }
 
 const props = withDefaults(defineProps<Props>(), {

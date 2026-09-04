@@ -8,7 +8,7 @@ import { validatePokemon } from '@/logic/pokemon/pokemonFactory'
 import type { EventStore, BattleStore } from '@/types/system/stores'
 import type { LogFn } from '@/types/battle/battle'
 import type { BattleContext } from '@/types/battle/battleContext'
-import { getItemName, type ItemId } from '@/data/inventory/items'
+import { getItemName, requireItemId, type ItemId } from '@/data/inventory/items'
 import { initializePokemonVigor } from '@/logic/pokemon/pokemonUtils'
 import { getServerInstant } from '@/logic/utils/timeUtils'
 
@@ -64,16 +64,7 @@ export function cleanCapturedPokemonForStorage(
   capturedPoke.obtainedMethod = capturedPoke.obtainedMethod || 'wild'
 
   capturedPoke.tags = (capturedPoke.tags || []).filter(t => !t.startsWith('ball:'))
-  const normalizedBallId = ballId.toLowerCase() // domain-ok
-    .replace(/ /g, '')
-    .replace(/[áàäâ]/g, 'a')
-    .replace(/[éèëê]/g, 'e')
-    .replace(/[íìïî]/g, 'i')
-    .replace(/[óòöô]/g, 'o')
-    .replace(/[úùüû]/g, 'u')
-    .replace(/bola/g, 'ball')
-    .replace(/_/g, '')
-
+  const normalizedBallId = requireItemId(ballId)
   capturedPoke.tags.push(`ball:${normalizedBallId}`)
 
   if (capturedPoke.id === 'castform' && capturedPoke.form && capturedPoke.form !== 'normal') {
@@ -89,18 +80,18 @@ export function cleanCapturedPokemonForStorage(
 }
 
 export async function executePokeballCatchSequence(
-  itemName: ItemId,
+  ballId: ItemId,
   enemy: Pokemon,
   options: CatchSequenceOptions
 ): Promise<{ action: string; pokemon?: Pokemon }> {
   const { eventStore, addLog, consumeItem } = options
-  const displayName = getItemName(itemName)
+  const displayName = getItemName(ballId)
 
   if (options.fsm) {
     await options.fsm.transition('ACTIVE_BATTLE', 'CATCH_PROCESS')
   }
   addLog(`Usaste ${displayName}`, 'log-info', 'player')
-  addLog(`¡Has lanzado una ${displayName}!`, 'log-catch', itemName, 'player')
+  addLog(`¡Has lanzado una ${displayName}!`, 'log-catch', ballId, 'player')
 
   if (options.ctx?.gs?.state) {
     if (!options.ctx.gs.state.stats) {
@@ -109,15 +100,15 @@ export async function executePokeballCatchSequence(
     options.ctx.gs.state.stats.captureAttempts = (Number(options.ctx.gs.state.stats.captureAttempts) || 0) + 1
   }
 
-  consumeItem(itemName)
+  consumeItem(ballId)
 
   const eventCatchMult = eventStore.globalMultipliers?.catch || 1
-  const { caught, shakes } = calculateCatchRate(enemy, itemName, eventCatchMult, options.ctx || {})
+  const { caught, shakes } = calculateCatchRate(enemy, ballId, eventCatchMult, options.ctx || {})
 
   if (options.ctx?.animations?.handleCatchRequest) {
-    await options.ctx.animations.handleCatchRequest({ side: 'enemy', ballId: options.itemId || itemName })
+    await options.ctx.animations.handleCatchRequest({ side: 'enemy', ballId })
   } else {
-    gameBus.emit('PLAY_CATCH_ENERGY', { side: 'enemy', ballId: options.itemId || itemName })
+    gameBus.emit('PLAY_CATCH_ENERGY', { side: 'enemy', ballId })
     await awaitAnimation(gsap.delayedCall(1.0, () => {}))
   }
 
@@ -154,7 +145,7 @@ export async function executePokeballCatchSequence(
     addLog(`¡Ya está! ¡${enemy.name} atrapado!`, 'log-catch', enemy)
 
     const initialEnemy = options.ctx?.activeBattle.value?._initialEnemy
-    const capturedPoke = cleanCapturedPokemonForStorage(enemy, initialEnemy, options.itemId || itemName)
+    const capturedPoke = cleanCapturedPokemonForStorage(enemy, initialEnemy, ballId)
 
     if (options.fsm) {
       options.fsm.transition('ACTIVE_BATTLE', 'ADD_TO_STORAGE')

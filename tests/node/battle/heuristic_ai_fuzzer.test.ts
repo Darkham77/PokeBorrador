@@ -32,6 +32,7 @@ import type {
   DamageMatchup,
   DamageResult,
 } from '../../../src/logic/battle/ai/heuristic/types.ts';
+import type { PokemonMoveId } from '../../../src/data/battle/moves.ts';
 
 import {
   makeVolatiles,
@@ -52,9 +53,9 @@ let calc: HeuristicDamageCalculator;
 let inference: InferenceEngine;
 
 function makeMatchup(
-  myMove: string,
+  myMove: PokemonMoveId,
   myPercent: number,
-  oppMove: string,
+  oppMove: PokemonMoveId,
   oppPercent: number,
   extras: Partial<DamageResult> = {},
 ): DamageMatchup {
@@ -393,13 +394,13 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
     const STATUSES: Array<HeuristicPokemonState['status']> = ['', 'brn', 'par', 'psn', 'slp', 'frz', 'tox'];
     const ITEMS = ['', 'choiceband', 'choicespecs', 'lifeorb', 'leftovers', 'assaultvest', 'eviolite'];
     const WEATHERS: Array<HeuristicFieldState['weather']> = [null, 'sunnyday', 'raindance', 'sandstorm', 'snowscape'];
-    const MOVE_POOL = ['tackle', 'thunderbolt', 'flamethrower', 'icebeam', 'earthquake', 'swordsdance', 'stealthrock', 'uturn', 'shadowball', 'bulletpunch'];
+    const MOVE_POOL = ['tackle', 'thunderbolt', 'flamethrower', 'icebeam', 'earthquake', 'swordsdance', 'stealthrock', 'uturn', 'shadowball', 'bulletpunch'] as const satisfies readonly PokemonMoveId[];
 
     function randInt(min: number, max: number): number {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    function randElement<T>(arr: T[]): T {
+    function randElement<T>(arr: readonly T[] | T[]): T {
       return arr[Math.floor(Math.random() * arr.length)] as T;
     }
 

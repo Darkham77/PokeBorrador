@@ -4,31 +4,22 @@
  * Wrapper to export item configurations loaded from JSON.
  */
 import dbJson from './items.json' with { type: 'json' };
-import type { EvolutionStoneKind, Item, ItemCategory, ItemKind, ItemTier } from '@/types/inventory/items';
+import {
+  ITEM_CATEGORIES,
+  ITEM_TIERS,
+  ITEM_KINDS,
+  EVOLUTION_STONE_KINDS,
+  type EvolutionStoneKind,
+  type Item,
+  type ItemCategory,
+  type ItemKind,
+  type ItemTier
+} from '@/types/inventory/items';
 
-const ITEM_DATA_CATEGORIES = [
-  'pokeballs',
-  'potions',
-  'stones',
-  'combat_held',
-  'breeding_held',
-  'raw_material',
-  'refined_material',
-  'component',
-  'machinery',
-  'tools',
-  'tms',
-  'otros',
-] as const satisfies readonly ItemCategory[];
-
-const ITEM_TIERS = ['common', 'rare', 'epic', 'legend'] as const satisfies readonly ItemTier[];
-const ITEM_KINDS = ['held', 'usable', 'stone', 'booster'] as const satisfies readonly ItemKind[];
-const EVOLUTION_STONE_KINDS = ['fire', 'water', 'thunder', 'leaf', 'moon', 'sun', 'oval'] as const satisfies readonly EvolutionStoneKind[];
-
-const ITEM_DATA_CATEGORIES_SET: ReadonlySet<string> = new Set<string>(ITEM_DATA_CATEGORIES); // runtime-set
-const ITEM_TIERS_SET: ReadonlySet<string> = new Set<string>(ITEM_TIERS); // runtime-set
-const ITEM_KINDS_SET: ReadonlySet<string> = new Set<string>(ITEM_KINDS); // runtime-set
-const EVOLUTION_STONE_KINDS_SET: ReadonlySet<string> = new Set<string>(EVOLUTION_STONE_KINDS); // runtime-set
+const ITEM_DATA_CATEGORIES_SET: ReadonlySet<string> = new Set<string>(ITEM_CATEGORIES); // runtime-set: Fast O(1) membership lookup set
+const ITEM_TIERS_SET: ReadonlySet<string> = new Set<string>(ITEM_TIERS); // runtime-set: Fast O(1) membership lookup set
+const ITEM_KINDS_SET: ReadonlySet<string> = new Set<string>(ITEM_KINDS); // runtime-set: Fast O(1) membership lookup set
+const EVOLUTION_STONE_KINDS_SET: ReadonlySet<string> = new Set<string>(EVOLUTION_STONE_KINDS); // runtime-set: Fast O(1) membership lookup set
 
 function requireItemCategory(value: string): ItemCategory {
   if (ITEM_DATA_CATEGORIES_SET.has(value)) return value as ItemCategory;
@@ -59,13 +50,13 @@ export type MarketCategoryId = keyof typeof MARKET_CAT_ORDER;
 import { ITEM_IDS, type ItemId } from './itemIds.ts';
 export { ITEM_IDS, type ItemId };
 
-const ITEM_IDS_SET: ReadonlySet<string> = new Set(ITEM_IDS); // runtime-set
+const ITEM_IDS_SET: ReadonlySet<string> = new Set(ITEM_IDS); // runtime-set: Fast O(1) membership lookup set
 
 export function isItemId(value: unknown): value is ItemId {
   return typeof value === 'string' && ITEM_IDS_SET.has(value);
 }
 
-const ITEMS_BY_NAME: Readonly<Record<string, ItemId>> = Object.freeze( // open-record
+const ITEMS_BY_NAME: Readonly<Record<string, ItemId>> = Object.freeze( // open-record: Generic key-value data dictionary container
   Object.fromEntries(
     dbJson.SHOP_ITEMS.flatMap(item => {
       const entries: [string, ItemId][] = [];

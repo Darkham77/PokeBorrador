@@ -1,6 +1,6 @@
 
 import { ITEM_PRICES, INVENTORY_LEVEL_TIERS } from '../constants/items.ts';
-import type { BattleDifficulty } from '@/types/battle/battle';
+import type { BattleDifficulty, BattleItemEffectKind } from '@/types/battle/battle';
 
 const POKEBALL_BUDGET_HALF_RATIO = 0.5;
 const CURE_PURCHASE_ROLL_THRESHOLD = 0.8;
@@ -8,7 +8,7 @@ const CURE_PURCHASE_ROLL_THRESHOLD = 0.8;
 interface PurchaseCandidate {
   id: string;
   price: number;
-  type: 'heal' | 'cure' | 'revive';
+  type: BattleItemEffectKind;
 }
 
 /**
@@ -130,7 +130,7 @@ export function generateNPCInventory(
 }
 
 
-export const NPC_BUDGET_CONFIG = { // no-magic
+export const NPC_BUDGET_CONFIG = { // no-magic: Explicit mathematical constant or threshold value
   GYM_LEVEL_MULT: 100,
   GYM_BASE_BONUS: 1000,
   SPECIAL_LEVEL_MULT: 60,

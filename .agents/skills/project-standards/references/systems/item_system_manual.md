@@ -4,7 +4,7 @@ This manual defines the structure, categories, and validation protocols for all 
 
 ## 📦 Data Structure
 
-Items are managed in `src/data/items.ts` through two main objects:
+Items are managed in `src/data/inventory/items.ts` and `src/data/inventory/items.json` through two main objects:
 
 ### 1. `SHOP_ITEMS` (Catalog)
 
@@ -29,10 +29,32 @@ Defines how the item looks and how much it costs.
 Defines what the item does when used on a Pokémon or globally.
 
 - **Pre-validation (`isValidTarget`)**: ALWAYS check targets before opening selection modals. If no targets exist, do NOT open the selector and notify the user via Toast.
-- **Consumption**: The item is automatically consumed upon success.
+- **Immediate vs Deferred Consumption**:
+  - **Immediate Usables** (potions, revives, vitamins, stones, direct candy): Consumed immediately upon executing `useItem`.
+  - **Deferred Modals & Learning Queues** (`moverelearner`, `naturepatch`, `abilitypill`, `ppup`, `ppmax`, `tm` when knowing 4 moves): Return `{ success: true, deferred: true }` without immediate consumption. They are consumed strictly when the user confirms their selection in the secondary modal (`onComplete`). If the user cancels (`onCancel`), the item is NOT consumed (atomic rollback).
 - **Battle Mode**: In combat, the selection modal MUST use the `allowedIds` filter to ONLY show valid targets (e.g., only fainted Pokémon for Revives).
 - **Failure Handling**: If an item application fails, do NOT close the inventory. Notify the cause and let the user retry.
 - **Dynamic Tab Persistence**: The active tab state of the inventory/backpack modal must be dynamically persistent via `localStorage` so that the user's last tab selection is remembered across sessions. The system must not force a default tab choice globally, except when the inventory is opened with a pre-selected target Pokémon context (e.g., when choosing an item to apply directly to a Pokémon), in which case the `'utilizables'` tab must be dynamically activated to streamline the item selection process.
+
+---
+
+## 🧬 The 11 Functional Item Families
+
+All 582 items in Poké Vicio are taxonomized into 11 functional families governed by strict interaction contracts:
+
+1. **Direct Healing & Recovery** (`potion`, `revive`, `antidote`, `fullrestore`, `rarecandy`, `vigorrestorer`): Evaluates target health/status/level. Unafflicted status is strictly `''` (never `null`). Immediate consumption.
+2. **EVs, Friendship & Mochis** (`protein`, `healthfeather`, `musclemochi`, `freshstartmochi`, `pomegberry`): Modifies stat EVs, friendship (+50% bonus with `soothebell`), or resets all EVs to 0. Immediate consumption.
+3. **Global Timed Buffs** (`luckyegg`, `amuletcoin`, `repel`, `fishingrod`, `pickaxe`, `brush`, `incensefire`, `ivscanner`): Activated globally without target Pokémon. Synchronized in `gameStore.state` and HUD widgets. Enforces mutual tool exclusions (Pickaxe vs Brush) and tool tier storage.
+4. **Technical Machines (TMs / MTs)**: Evaluates species learnability. If knowing < 4 moves, teaches instantly and consumes. If knowing 4 moves, enqueues to `uiStore.learnQueue` and consumes only upon confirmed move replacement.
+5. **Move Relearner** (`moverelearner`): Discovers forgotten moves by backtracking the entire species evolution chain (`getPreEvolution`). Enqueues replacement if knowing 4 moves. Consumes 1 `moverelearner` strictly on completion.
+6. **Trait & Metagame Customization** (`naturepatch`, `abilitypill`, `ppup`, `ppmax`): Dedicated interactive modals for selecting 25 natures (with stats recalculation), canonical species alternative abilities, and raising move PP (+20% up to 160% ceiling). Deferred consumption on confirmation.
+7. **Evolutionary Stones & Catalysts** (`firestone`, `linkcable`): Validates evolution tree compatibility. `linkcable` delegates to `getTradeEvolution` to trigger trade evolutions locally. Immediate consumption.
+8. **Equippable Held Items** (`soothebell`, `everstone`, `leftovers`, competitive berries): Equipped and swapped atomically in inventory. Targetable on any party Pokémon (`isValidTarget` returns true).
+9. **Pokéballs (Catching)**: Combat-only capture rate modifiers based on enemy HP, status conditions, turn count, and environment.
+10. **Fossils & Cloning**: Restricted from direct backpack use (`isValidTarget = false`). Consumed exclusively in the Daycare cloning machine (`FossilCloning.vue`).
+11. **Crafting & Economy**: Raw materials (Tier 0), refined materials (Tier 1), components (Tier 2), and machinery (Tier 3). Unusable on Pokémon; consumed in crafting recipes or sold to the market at 50% value.
+
+---
 
 ### 2.1 Battle Quick Bag Protocol
 

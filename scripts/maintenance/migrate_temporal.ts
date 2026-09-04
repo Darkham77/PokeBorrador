@@ -9,10 +9,10 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', '_raw-assets', 'scripts']); // runtime-set
+const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', '_raw-assets', 'scripts']); // runtime-set: Fast O(1) membership lookup set
 
 async function getFilesToMigrate(dir: string): Promise<string[]> {
-  const files: string[] = []; // no-domain
+  const files: string[] = []; // no-domain: Non-domain utility collection or data structure
   const pattern = '**/*.{ts,js,vue}';
   
   for await (const entry of fs.glob(pattern, { cwd: dir, exclude: (p) => Array.from(IGNORE_DIRS).some(d => p.includes(d)) })) {
@@ -71,7 +71,7 @@ async function migrate(filePath: string) {
 }
 
 async function main() {
-  const targets = ['src', 'tests']; // no-domain
+  const targets = ['src', 'tests']; // no-domain: Non-domain utility collection or data structure
   for (const t of targets) {
     const files = await getFilesToMigrate(path.join(process.cwd(), t));
     for (const file of files) {

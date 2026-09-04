@@ -184,4 +184,17 @@ describeWithDatabase('GTS Transactions Dual Validation', (engine, getDb) => {
     const soldListing = await db.query<{ status: string }>('SELECT status FROM market_listings WHERE id = ?', [LIST_ID]);
     assert.strictEqual(soldListing[0]?.status, 'sold');
   });
+
+  it('should verify game_saves has last_save_id populated after updates', async () => {
+    const validUuid = '00000000-0000-0000-0000-000000000099';
+    await db.run(
+      'UPDATE game_saves SET last_save_id = ? WHERE user_id = ?',
+      [validUuid, SELLER_ID]
+    );
+    const updated = await db.query<{ last_save_id: string | null }>(
+      'SELECT last_save_id FROM game_saves WHERE user_id = ?',
+      [SELLER_ID]
+    );
+    assert.strictEqual(updated[0]?.last_save_id, validUuid);
+  });
 });

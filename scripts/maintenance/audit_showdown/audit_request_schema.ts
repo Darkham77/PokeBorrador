@@ -13,8 +13,8 @@ export interface SchemaAuditResult {
  * y verifica que estén presentes en los tipos TypeScript del proyecto (src/types/).
  */
 export function auditRequestSchema(showdownSimPath: string, srcTypesPath: string): SchemaAuditResult {
-  const missingFieldsInTypes: string[] = []; // no-domain
-  const mismatchedTypes: string[] = []; // no-domain
+  const missingFieldsInTypes: string[] = []; // no-domain: Non-domain utility collection or data structure
+  const mismatchedTypes: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   const sideFile = join(showdownSimPath, 'side.ts');
   if (!existsSync(sideFile) || !existsSync(srcTypesPath)) {

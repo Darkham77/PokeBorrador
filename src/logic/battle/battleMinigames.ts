@@ -18,7 +18,7 @@ export function isBattleMinigame(state: MinigameStateCarrier | null | undefined)
 /**
  * Gets the active minigame type ('fishing' | 'archaeology') or null if not a minigame.
  */
-export function getActiveMinigame(state: MinigameStateCarrier | null | undefined): BattleMinigame | null { // result-ok
+export function getActiveMinigame(state: MinigameStateCarrier | null | undefined): BattleMinigame | null { // result-ok: Operation result wrapper payload
   return state?.minigame ?? null
 }
 

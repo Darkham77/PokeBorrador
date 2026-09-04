@@ -72,7 +72,7 @@ export function resetRandomSeed() {
 // Logger intercept — shared per worker instance (Vitest isolates modules per
 // file, so each fuzzer spec has its own copy of this state).
 // ---------------------------------------------------------------------------
-const unhandledBridgeLines: string[] = []; // no-domain
+const unhandledBridgeLines: string[] = []; // no-domain: Non-domain utility collection or data structure
 const originalDebug = logger.debug;
 logger.debug = (tag: string, message: string, ...args: unknown[]) => {
   if (tag === 'ShowdownBridge' && message.includes('sin parseador')) {
@@ -80,7 +80,7 @@ logger.debug = (tag: string, message: string, ...args: unknown[]) => {
     const line = parts[1] || '';
     const lp = line.split('|').map(x => x.trim());
     const type = lp[1] || '';
-    const ignoredTypes = [ // no-domain
+    const ignoredTypes = [ // no-domain: Non-domain utility collection or data structure
       '', 't:', 'turn', 'upkeep', 'teampreview', 'gametype', 'player', 'gen', 'tier', 'clearpoke', 'poke', 'start', 'rule', 'teamsize', 'bigerror'
     ];
     if (!ignoredTypes.includes(type)) {
@@ -126,7 +126,7 @@ export function createLocalPoke(set: PokemonSet): Pokemon {
     } : null
   );
 
-  statsMap.set(set.name, { ...calculated }); // no-domain
+  statsMap.set(set.name, { ...calculated }); // no-domain: Non-domain utility collection or data structure
   Reflect.set(set, 'stats', calculated);
 
   const mainType = (speciesData.types[0] || 'normal').toLowerCase() as PokemonType;
@@ -136,7 +136,7 @@ export function createLocalPoke(set: PokemonSet): Pokemon {
     uid: (Reflect.get(set, 'uid') as string | undefined) || `uid-${toID(set.species)}`,
     id: toID(set.species) as PokemonSpeciesId,
     species: toID(set.species) as PokemonSpeciesId,
-    name: set.name, // no-domain
+    name: set.name, // no-domain: Non-domain utility collection or data structure
     level: set.level,
     isShiny: false,
     exp: 0,
@@ -193,14 +193,14 @@ function simplifyLogLine(line: string): string | null {
   switch (type) {
     case 'move': {
       const attacker = parts[2]?.split(': ')[1] || parts[2] || '';
-      const moveToken = parts[3] || ''; // text-ok
+      const moveToken = parts[3] || ''; // text-ok: UI text display localization string
       const target = parts[4]?.split(': ')[1] || parts[4] || '';
       return `ataca ${attacker} con ${moveToken}${target ? ` a ${target}` : ''}`;
     }
     case '-ability':
     case 'ability': {
       const poke = parts[2]?.split(': ')[1] || parts[2] || '';
-      const abilityToken = parts[3] || ''; // text-ok
+      const abilityToken = parts[3] || ''; // text-ok: UI text display localization string
       return `${poke} activa su habilidad ${abilityToken}`;
     }
     case '-miss': {
@@ -221,8 +221,8 @@ function simplifyLogLine(line: string): string | null {
 }
 
 export function abilityTriggeredInLog(line: string, abilityId: string): boolean {
-  const lower = line.toLowerCase(); // string-ok
-  const a = abilityId.toLowerCase(); // string-ok
+  const lower = line.toLowerCase(); // string-ok: Internal string formatting or DOM token identifier
+  const a = abilityId.toLowerCase(); // string-ok: Internal string formatting or DOM token identifier
   const norm = (s: string) => s.trim().replace(/[^a-z0-9]/g, '');
 
   if (lower.startsWith('|-ability|')) {
@@ -264,7 +264,7 @@ interface BatchLoopResult {
 export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBatches>[0], roundNum: number, totalRounds: number) {
   console.log(`▶️ [WORKER-${process.pid || 'THREAD'}] Iniciando Lote #${roundNum} / ${totalRounds} (${batch.movesToTest.length} movimientos)...`);
   resetRandomSeed();
-  const maxAttempts = 5; // no-domain
+  const maxAttempts = 5; // no-domain: Non-domain utility collection or data structure
   unhandledBridgeLines.length = 0;
   const localUnhandled: string[] = [];
 
@@ -277,7 +277,7 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
     }
   });
 
-  const belongsToThisBatch = (msg: string): boolean => { // string-ok
+  const belongsToThisBatch = (msg: string): boolean => { // string-ok: Internal string formatting or DOM token identifier
     const lower = msg.toLowerCase();
     const playerSpecies = batch.playerTeam.map(p => p.species.toLowerCase());
     return playerSpecies.some(sp => lower.includes(sp));
@@ -373,9 +373,9 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
         }
       });
 
-      let turn = 0; // no-domain
-      const maxTurns = MAX_BATTLE_TURNS; // no-domain
-      const steps: string[] = []; // no-domain
+      let turn = 0; // no-domain: Non-domain utility collection or data structure
+      const maxTurns = MAX_BATTLE_TURNS; // no-domain: Non-domain utility collection or data structure
+      const steps: string[] = []; // no-domain: Non-domain utility collection or data structure
       const batchChoices: string[] = [];
       const batchEnemyChoices: string[] = [];
       const batchHistory: CertifiedBattleHistoryEntry[] = [];
@@ -411,7 +411,7 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
             }
           }
 
-          const activeSidePoke = (p1Req as ChoiceRequest)?.side?.pokemon?.find((p: { active: boolean }) => p.active); // string-ok
+          const activeSidePoke = (p1Req as ChoiceRequest)?.side?.pokemon?.find((p: { active: boolean }) => p.active); // string-ok: Internal string formatting or DOM token identifier
           const activeAbilityId = activeSidePoke?.ability ?? '';
           const dynamicTriggerSlot = getTriggerSlot(activeAbilityId.toLowerCase().replace(/[^a-z0-9]/g, ''));
           if (dynamicTriggerSlot !== null) {
@@ -623,7 +623,7 @@ export async function runStandaloneBatch(batch: ReturnType<typeof generateTestBa
         }
       } catch (err: unknown) {
         const errMsg = err instanceof Error ? (err as Error).message : String(err);
-        const batchIdStr = (batch as { id?: string }).id ?? 'unknown'; // no-domain
+        const batchIdStr = (batch as { id?: string }).id ?? 'unknown'; // no-domain: Non-domain utility collection or data structure
         console.error(`❌ [FUZZER-BATCH-CRASH] Turn ${turn} Batch ${batchIdStr}: ${errMsg}`, err);
         
         batch.movesToTest.forEach(m => {
@@ -1054,11 +1054,11 @@ export async function runItemsFuzzer(): Promise<FuzzerResult[]> {
         true,
         batch.playerVoluntarySwitchObjective
       );
-      const agent2 = new BattleAgent('p2', new Set(enemyLead.moves), batch.enemyPriorityMove ? 1 : null); // no-domain
+      const agent2 = new BattleAgent('p2', new Set(enemyLead.moves), batch.enemyPriorityMove ? 1 : null); // no-domain: Non-domain utility collection or data structure
 
       const batchChoices: string[] = [];
       const batchEnemyChoices: string[] = [];
-      const batchHistory: ItemFuzzerHistoryEntry[] = []; // no-domain
+      const batchHistory: ItemFuzzerHistoryEntry[] = []; // no-domain: Non-domain utility collection or data structure
       const certifiedLogLengths: number[] = [];
       const steps: string[] = [];
 
@@ -1283,7 +1283,7 @@ export async function runScenariosFuzzer(): Promise<Array<{ label: string; passe
   let passed = 0;
   let failed = 0;
 
-  for (let idx = 0; idx < scenarios.length; idx++) { // no-domain
+  for (let idx = 0; idx < scenarios.length; idx++) { // no-domain: Non-domain utility collection or data structure
     const scenario = scenarios[idx]!;
     const unhandledBridgeLines: string[] = [];
 

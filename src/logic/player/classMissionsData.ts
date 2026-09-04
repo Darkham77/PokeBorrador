@@ -5,7 +5,7 @@
  */
 
 import type { ItemId } from '@/data/inventory/itemIds';
-import { type MissionId, isMissionId } from '@/data/player/playerClasses';
+import { type MissionId, isMissionId, type PlayerClassId } from '@/data/player/playerClasses';
 
 export interface DetailedMissionReward {
   readonly id?: ItemId;
@@ -383,9 +383,9 @@ const DEFAULT_MISSION_DETAILS: ClassMissionDetails = {
   ]
 };
 
-export function getClassMissionDetails(classId: string | undefined, missionId: string): ClassMissionDetails {
-  if (!classId || !isMissionId(missionId)) return DEFAULT_MISSION_DETAILS;
-  const classMeta = CLASS_MISSIONS_METADATA[classId];
+export function getClassMissionDetails(classId: PlayerClassId, missionId: MissionId): ClassMissionDetails {
+  if (!isMissionId(missionId)) return DEFAULT_MISSION_DETAILS;
+  const classMeta = (CLASS_MISSIONS_METADATA as Record<string, Record<MissionId, ClassMissionDetails>>)[classId]; // open-record: Generic key-value data dictionary container
   if (!classMeta) return DEFAULT_MISSION_DETAILS;
   return classMeta[missionId] || DEFAULT_MISSION_DETAILS;
 }

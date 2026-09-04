@@ -43,19 +43,22 @@ graph TD
         C2 -->|100% Pass| C3[2.3 npm run build\n🔒 THE BUILD GATE]
         
         C3 -->|Exit code ≠ 0 / Fail| REPAIR
-        C3 -->|Exit 0 ✅| C4[2.4 npm run fallow:health]
+        C3 -->|Exit 0 ✅| C4[2.4 Build Optimization & Compression Analysis]
+        C4 -->|Chunk bloat / missing optimizations| REPAIR
+        C4 -->|Optimized ✅| C5[2.5 npm run fallow:health]
         
-        C4 -->|Score < 85| REPAIR
+        C5 -->|Score < 85| REPAIR
         REPAIR -->|Re-verificar ciclo completo| C1
     end
 
-    C4 -->|Score ≥ 85 & Build Exit 0| EXIT_GATE[✅ Salida del Bucle]
+    C5 -->|Score ≥ 85 & Build Exit 0 & Optimized| EXIT_GATE[✅ Salida del Bucle]
     EXIT_GATE --> A3[Fase 3\nDOX + Lessons + Walkthrough]
     A3 --> STOP1{🛑 USER APPROVES\nlearning_proposal.md?}
     STOP1 -->|Approved| A4[Fase 4\nFinal Commit & Status]
 
     style LOOP fill:#1a1a2e,stroke:#e94560,stroke-width:2px,color:#fff
     style C3 fill:#e94560,stroke:#fff,stroke-width:2px,color:#fff
+    style C4 fill:#162447,stroke:#00b4d8,stroke-width:2px,color:#fff
     style EXIT_GATE fill:#0f3460,stroke:#00b4d8,stroke-width:2px,color:#fff
     style STOP1 fill:#533483,stroke:#fff,stroke-width:2px,color:#fff
 ```
@@ -95,7 +98,7 @@ This phase captures a safety snapshot. If subsequent audit auto-fixes or repairs
 **Step 1.3** — Record Baseline Fallow Health
 - Run `npm run fallow:health`.
 - Record `BASELINE_HEALTH = <score>` in `task.md`.
-- *Exemption*: If the pre-repair score is < 85, record `snapshot baseline below final gate` in `task.md` and continue. (Score ≥ 85 is enforced at Phase 2.4).
+- *Exemption*: If the pre-repair score is < 85, record `snapshot baseline below final gate` in `task.md` and continue. (Score ≥ 85 is enforced at Phase 2.5).
 
 **Step 1.4** — Snapshot Commit
 - Compose the commit message using the Elegant Protocol (see [commit-standards.md](./references/commit-standards.md)).
@@ -112,9 +115,9 @@ This phase captures a safety snapshot. If subsequent audit auto-fixes or repairs
 > **THE UNBREAKABLE BUILD GATE — INFINITE REPAIR LOOP**:
 > You are inside an active loop. The **ONLY** condition that allows exiting Phase 2 is when `npm run build` returns **Exit Code 0** AND all verification steps pass cleanly.
 >
-> If `audit:for-commit` fails, `npm run test` fails, `npm run build` fails (exit ≠ 0), or `fallow:health` is < 85:
+> If `audit:for-commit` fails, `npm run test` fails, `npm run build` fails (exit ≠ 0), compression/chunk optimizations require changes, or `fallow:health` is < 85:
 > **YOU MUST NOT ADVANCE TO PHASE 3.**
-> You must fix the code, apply repairs, and restart the verification cycle until `npm run build` succeeds with Exit Code 0.
+> You must fix the code, apply repairs, and restart the verification cycle until `npm run build` succeeds with Exit Code 0 and all gates pass.
 
 ### The Cycle Sequence
 
@@ -140,15 +143,26 @@ In every iteration of the loop, execute these checks sequentially:
      - Fix the underlying compilation, type, or auditor errors in source code.
      - Restart from Check 2.1 and re-run until `npm run build` returns Exit Code 0.
 
-4. **Check 2.4 — Fallow Health**: Run `npm run fallow:health`
+4. **Check 2.4 — Build Optimization & Data Compression Audit**:
+   - Analyze the build output and pre-compression report table (`⚡ POKÉ VICIO — PRE-COMPRESSION & ASSET SUMMARY`):
+     - **Pre-compression & Savings Verification**: Inspect Brotli Q11 and Gzip L9 sizes and savings ratios across all categories (Workers, WASM, App Shell, Vendor, Game Data, UI/Views). Verify that high compression savings are maintained without compression errors.
+     - **Chunk Size & Bloat Inspection**: Check individual chunks against size thresholds (Vite warning limit 3000 kB, PWA precache warning limit 5 MB `⚠️`). Check for unexpected chunk size inflation or accidental monolithic grouping.
+     - **Optimization Opportunities Assessment**: Evaluate whether newly added or modified code/assets require:
+       - Adjusting `manualChunks` in `vite.config.ts` (e.g. isolating large data domains, vendors, or worker modules).
+       - Code-splitting large static data into dynamic asynchronous chunks.
+       - Tree-shaking optimizations or removing unused asset references.
+     - *If optimization opportunities or chunk anomalies are found*: Implement the necessary optimizations in `vite.config.ts` or source code, record them under "Repairs applied" in `task.md`, and re-enter the loop from Check 2.1.
+     - *If optimized and clean*: Record key compression metrics (total original bytes, Brotli size, % savings) in `task.md` and proceed to Check 2.5.
+
+5. **Check 2.5 — Fallow Health**: Run `npm run fallow:health`
    - Score MUST be ≥ `BASELINE_HEALTH` and ≥ 85.
    - If < 85, refactor cognitive complexity / dead code and re-verify.
 
-5. **Check 2.5 — Database Parity (if DB changed)**:
+6. **Check 2.6 — Database Parity (if DB changed)**:
    - Verify SQL migration exists in `database/migrations/` and `src/logic/db/migrations_data.ts`.
 
 ### Loop Exit Condition
-Only when Check 2.1 ✅ (0 errors/warnings), Check 2.2 ✅ (tests pass), Check 2.3 ✅ (`npm run build` exit code 0), and Check 2.4 ✅ (health ≥ 85) are all satisfied consecutively on the current code:
+Only when Check 2.1 ✅ (0 errors/warnings), Check 2.2 ✅ (tests pass), Check 2.3 ✅ (`npm run build` exit code 0), Check 2.4 ✅ (compression & optimizations verified), and Check 2.5 ✅ (health ≥ 85) are all satisfied consecutively on the current code:
 **Phase 2 is complete.**
 
 **✓ Completion gate**: Mark Phase 2 `[x]` in `task.md`. Show snippet. Proceed to Phase 3.

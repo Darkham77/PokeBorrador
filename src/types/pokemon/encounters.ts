@@ -11,7 +11,14 @@ import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { FactionId, PlayerClassId } from '@/types/system/game';
 import type { ItemId } from '@/data/inventory/items';
 
-export type EncounterType = 'wild' | 'trainer' | 'fishing' | 'guardian' | 'defender' | 'archaeology' | 'rival';
+export const ENCOUNTER_TYPES = ['wild', 'trainer', 'fishing', 'guardian', 'defender', 'archaeology', 'rival'] as const;
+export type EncounterType = (typeof ENCOUNTER_TYPES)[number];
+
+export const ADVENTURE_EVENT_TYPES = ['combat', 'combat_won', 'obstacle_cut', 'obstacle_strength', 'obstacle_rock_smash', 'fishing'] as const;
+export type AdventureEventType = (typeof ADVENTURE_EVENT_TYPES)[number];
+
+export const ROUTE_SPAWN_TABS = ['pokemon', 'item', 'fishing', 'npc'] as const;
+export type RouteSpawnTab = (typeof ROUTE_SPAWN_TABS)[number];
 
 export interface Encounter {
   type: EncounterType;
@@ -23,10 +30,10 @@ export interface Encounter {
 
 export interface MapLocation {
   id: MapRouteId;
-  name: string; // domain-ok
-  icon?: string; // domain-ok
+  name: string; // domain-ok: Open dynamic text or non-domain string payload
+  icon?: string; // domain-ok: Open dynamic text or non-domain string payload
   badges?: number;
-  desc?: string; // domain-ok
+  desc?: string; // domain-ok: Open dynamic text or non-domain string payload
   isCave?: boolean;
   isIndoors?: boolean;
   isCrystalCave?: boolean;
@@ -107,7 +114,7 @@ export interface EncounterState {
   classData?: {
     criminality?: number;
     blackMarketSales?: number;
-    [key: string]: unknown; // open-record
+    [key: string]: unknown; // open-record: Generic key-value data dictionary container
   };
   gymProgress?: Partial<Record<GymId, { easy: boolean; normal: boolean; hard: boolean; attempts: number }>>;
 }

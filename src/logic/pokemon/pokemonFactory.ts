@@ -7,11 +7,13 @@ import { getMovesAtLevel, initializePokemonVigor } from '@/logic/pokemon/pokemon
 import { getActivePinia } from 'pinia';
 import { getSpeciesBoosts, getGlobalMultipliers, type Event as GameEvent } from '@/logic/events/eventEngine.ts';
 import type { ObtainedMethod, Pokemon, Move, PokemonIVs, PokemonGender } from '@/types/pokemon/pokemon';
-import { isFossilPokemonSpeciesId, isLegendaryPokemonSpeciesId, requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { isFossilPokemonSpeciesId, isLegendaryPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { getExpNeededPure, calcStatsPure } from './statsMath.ts';
 import { generateIvPure } from './generationMath.ts';
 import { createDefaultEvs } from './evMath.ts';
 import { getItemById, type ItemId } from '@/data/inventory/items';
+import type { MapRouteId } from '@/data/world/map-assets';
+import type { NatureId } from '@/data/battle/natures';
 import { Dex, toID } from '@pkmn/sim';
 import { requireAbilityId, type AbilityId } from '@/data/battle/abilities';
 import { assignGender, ensurePokemonGender, isGenderlessSpeciesId } from './pokemonGender.ts';
@@ -261,14 +263,14 @@ export function validatePokemon(p: Pokemon, bypassWhitelist = false): void {
 
 export interface PokemonCreationOptions {
   isShiny?: boolean;
-  nature?: string;
-  ability?: string;
+  nature?: NatureId;
+  ability?: AbilityId;
   abilitySlot?: number;
   gender?: PokemonGender;
   heldItem?: ItemId | null;
   heldItemRates?: { commonRate: number; rareRate: number; forceHeldChance?: number };
   ivFloor?: number;
-  mapId?: string;
+  mapId?: MapRouteId;
   shinyMultiplier?: number;
   forceGender?: PokemonGender;
   isGuardian?: boolean;
@@ -280,7 +282,7 @@ export interface PokemonCreationOptions {
 /**
  * Crea un objeto Pokemon completo.
  */
-export function makePokemon(idVal: string | number, level: number, options: PokemonCreationOptions = {}): Pokemon | null {
+export function makePokemon(idVal: PokemonSpeciesId | number | string, level: number, options: PokemonCreationOptions = {}): Pokemon | null {
   if (idVal === undefined || idVal === null || idVal === '') return null;
   const id = requirePokemonSpeciesId(toID(String(idVal)));
   

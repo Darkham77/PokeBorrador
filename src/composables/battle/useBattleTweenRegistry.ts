@@ -41,6 +41,39 @@ export function useBattleTweenRegistry() {
     pendingTweenResolvers.clear()
   }
 
+  const safeAwaitTween = async (tween: gsap.core.Tween | gsap.core.Timeline): Promise<void> => {
+    // If the tween already completed, or was killed/detached (parent === null), unblock immediately.
+    if (!tween.isActive() && (!tween.parent || tween.progress() === 1)) return
+
+    return new Promise<void>((resolve) => {
+      let resolved = false
+      let fallbackCall: gsap.core.Tween | null = null
+
+      const done = () => {
+        if (!resolved) {
+          resolved = true
+          if (fallbackCall) fallbackCall.kill()
+          resolve()
+        }
+      }
+
+      // Preserve existing callback chains
+      const origComplete = tween.eventCallback('onComplete')
+      tween.eventCallback('onComplete', () => {
+        if (typeof origComplete === 'function') origComplete()
+        done()
+      })
+      const origInterrupt = tween.eventCallback('onInterrupt')
+      tween.eventCallback('onInterrupt', () => {
+        if (typeof origInterrupt === 'function') origInterrupt()
+        done()
+      })
+
+      const durationSec = tween.totalDuration() || 0.5
+      fallbackCall = gsap.delayedCall(durationSec + 0.1, done)
+    })
+  }
+
   /**
    * Awaits a GSAP tween registered by BattleCombatant via REGISTER_TWEEN.
    *
@@ -54,8 +87,8 @@ export function useBattleTweenRegistry() {
     // Fast path: tween already registered
     const existing = activeTweens.get(animKey)
     if (existing) {
-      await existing
       activeTweens.delete(animKey)
+      await safeAwaitTween(existing)
       return
     }
 
@@ -81,8 +114,8 @@ export function useBattleTweenRegistry() {
     // Now await the actual GSAP tween (native GSAP coordination)
     const tween = activeTweens.get(animKey)
     if (tween) {
-      await tween
       activeTweens.delete(animKey)
+      await safeAwaitTween(tween)
     }
   }
 

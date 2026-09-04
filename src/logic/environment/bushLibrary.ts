@@ -10,7 +10,7 @@
 import { BUSH_FAMILIES, type BushFamily } from './bushCatalog.ts';
 export type BushLayerDepth = 'front' | 'back';
 import { MAPS_BY_ROUTE_ID } from '../../data/world/maps.ts';
-import { isMapRouteId } from '@/data/world/map-assets';
+import { isMapRouteId, type MapRouteId } from '@/data/world/map-assets';
 import { mulberry32 } from '../utils/math.ts';
 import {
   BUSH_SEED_MULTIPLIER,
@@ -42,7 +42,7 @@ export const BUSH_ANIMATION_MAPPING: Record<string, BushAnimationType> = {
 export function getAnimationTypeForFamily(family: string): BushAnimationType {
   const mapped = BUSH_ANIMATION_MAPPING[family];
   if (mapped) return mapped;
-  const lower = family.toLowerCase(); // text-ok
+  const lower = family.toLowerCase(); // text-ok: UI text display localization string
   if (lower.startsWith('rock') || lower.startsWith('box') || lower.startsWith('crystal')) {
     return 'none';
   }
@@ -55,7 +55,7 @@ export function getAnimationTypeForFamily(family: string): BushAnimationType {
 export interface ResolvedBushConfig {
   id: number;
   cls: string;
-  assetId: string;    // ej. 'bush-1', 'cactus-2', 'rock-1'
+  assetId: string; // domain-ok: Procedural visual bush asset file identifier
   family: BushFamily; // La familia seleccionada dinámicamente del catálogo
   animationType: BushAnimationType; // Tipo de animación
   tintClass: string;  // 'tint-desert', 'tint-swamp', 'tint-arctic', 'tint-cave', o ''
@@ -120,10 +120,10 @@ export const BIOME_BUSH_CONFIG: Record<string, BiomeBushWeights> = {
 import { MAP_BIOME_KEYS } from '@/logic/constants/encounters'
 
 export function isBushFamily(val: string): val is BushFamily {
-  return (Object.keys(BUSH_FAMILIES) as readonly string[]).includes(val); // domain-ok
+  return (Object.keys(BUSH_FAMILIES) as readonly string[]).includes(val); // domain-ok: Open dynamic text or non-domain string payload
 }
 
-export function getBiomeConfigForMap(locationId: string): BiomeBushWeights {
+export function getBiomeConfigForMap(locationId: MapRouteId): BiomeBushWeights {
   const map = isMapRouteId(locationId) ? MAPS_BY_ROUTE_ID[locationId] : undefined;
   let activeBiomeKey = 'isPlains';
 
@@ -154,7 +154,7 @@ export function resolveBushesForLayer(
   baseBushes: Array<{ id: number; cls: string; tx: number; ty: number; ad: string; ay: string }>,
   sessionSeed: number,
   layer: BushLayerDepth,
-  mapId: string
+  mapId: MapRouteId
 ): ResolvedBushConfig[] {
   const biomeConfig = getBiomeConfigForMap(mapId);
 
@@ -224,7 +224,7 @@ export function resolveBushesForLayer(
 }
 
 export function getActiveBushesForMap(
-  locationId: string,
+  locationId: MapRouteId,
   layer: BushLayerDepth,
   sessionSeed: number,
   baseBushes: Array<{ id: number; cls: string; scale?: number; tx?: number; ty?: number; ad?: string; ay?: string }>

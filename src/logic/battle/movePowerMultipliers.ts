@@ -1,6 +1,9 @@
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { PokemonType } from '@/data/battle/types'
-import { WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry'
+import { WEATHER_MECHANICAL, type WeatherMechanical } from '@/logic/weather/weatherRegistry'
+import type { PokemonMoveId } from '@/data/battle/moves'
+import type { DayPhase } from '@/logic/utils/timeUtils'
+import type { PureBattleWeather } from './battleMathTypes.ts'
 
 const BASE_STAB_MULT = 1.5
 const ADAPTABILITY_STAB_MULTIPLIER = 2
@@ -35,10 +38,10 @@ export function calculateStabMultiplier(
 
 export function calculateWeatherAndCyclePowerMultiplier(
   moveType: PokemonType,
-  moveId: string | undefined,
-  weather: { type?: string; visual?: string; turns?: number } | null | undefined,
-  mechWeather: string,
-  cycle: string
+  moveId?: PokemonMoveId,
+  weather?: PureBattleWeather | null,
+  mechWeather: WeatherMechanical = WEATHER_MECHANICAL.CLEAR,
+  cycle?: DayPhase
 ): number {
   let weatherMult = 1
 

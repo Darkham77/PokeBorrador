@@ -7,9 +7,10 @@
  * Absolute isolation: This module does not store state or connect to DB.
  */
 
-import { isPokemonSpeciesId, requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { isPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { getGMT3Date } from '@/logic/utils/timeUtils.ts';
 import { safeParse, resolveWeeklyRotation } from './eventSchedules.ts';
+import type { SubCompetitionConfig } from './eventCompetitions.ts';
 
 // Re-export scheduling and date helpers
 export * from './eventSchedules.ts';
@@ -54,32 +55,34 @@ export interface EventConfig {
   speciesRateMult?: number;
   speciesShinyMult?: number;
   ignoreTimeRestrictions?: boolean;
-  banner?: string; // domain-ok
-  metric?: string; // domain-ok
+  banner?: string; // domain-ok: Open dynamic text or non-domain string payload
+  metric?: string; // domain-ok: Open dynamic text or non-domain string payload
   hasCompetition?: boolean;
   competitionScope?: 'global' | 'per_species';
-  sortBy?: string; // domain-ok
+  sortBy?: string; // domain-ok: Open dynamic text or non-domain string payload
   requireCaughtDuringEvent?: boolean;
   catchStartDate?: string;
   catchEndDate?: string;
-  subCompetitions?: import('./eventCompetitions.ts').SubCompetitionConfig[];
+  subCompetitions?: SubCompetitionConfig[];
   minigameBuffs?: Record<string, MinigameEventBuffs>;
   customRules?: Array<{ label: string; value: string; color?: string }>;
   prizes?: {
-    first?: Record<string, unknown>; // open-record
-    second?: Record<string, unknown>; // open-record
-    third?: Record<string, unknown>; // open-record
+    first?: Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    second?: Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    third?: Record<string, unknown>; // open-record: Generic key-value data dictionary container
   };
   /** 4-week monthly rotation: week number (1-4) -> rotation data */
   rotationTheme?: RotationTheme;
   weeklyRotations?: Record<string, WeeklyRotationEntry>;
 }
 
+import type { EventTypeKind } from '@/types/system/stores';
+
 export interface Event {
   id: string;
   name: string;
   description: string;
-  type?: 'competition' | 'boost' | 'passive_bonus';
+  type?: EventTypeKind;
   icon?: string;
   active: boolean;
   manual?: boolean;
@@ -151,7 +154,7 @@ export function getGlobalMultipliers(activeEvents: Event[]): GlobalMultipliers {
 /**
  * Checks if a specific species has active boosts.
  */
-export function getSpeciesBoosts(activeEvents: Event[], speciesId: string): { rate: number; shiny: number } {
+export function getSpeciesBoosts(activeEvents: Event[], speciesId: PokemonSpeciesId): { rate: number; shiny: number } {
   let rateMult = 1;
   let shinyMult = 1;
   if (!isPokemonSpeciesId(speciesId)) return { rate: rateMult, shiny: shinyMult };
@@ -176,7 +179,7 @@ export function getSpeciesBoosts(activeEvents: Event[], speciesId: string): { ra
 /**
  * Calculates aggregated buffs for a specific minigame across all currently active events.
  */
-export function getMinigameBuffs(activeEvents: Event[], minigameId: string): MinigameEventBuffs {
+export function getMinigameBuffs(activeEvents: Event[], minigameId: string): MinigameEventBuffs { // infra-id-ok: Minigame string identifier
   let encounterRateMult = 1;
   let successRateMult = 1;
   let rareDropMult = 1;

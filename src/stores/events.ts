@@ -12,9 +12,11 @@ import {
   getMinigameBuffs,
   type Event as GameEvent 
 } from '@/logic/events/eventEngine'
+import type { PendingAward, CompetitionEntry, PastEventHistoryItem } from '@/types/system/stores'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import type { BattleMinigame } from '@/types/battle/battle'
 import { getServerTime } from '@/logic/utils/timeUtils'
 import { healStuckEventPokemon } from '@/logic/player/eventRecovery'
-import type { PendingAward, CompetitionEntry, PastEventHistoryItem } from '@/types/system/stores'
 import {
   fetchPastEvents as fetchPastEventsAction,
   checkPendingAwards as checkPendingAwardsAction,
@@ -91,7 +93,7 @@ export const useEventStore = defineStore('events', () => {
       try {
         // 1. Fetch from config (DBRouter handles source)
         const res = await db.from('events_config').select('*')
-        const events = res.data as GameEvent[] | null // domain-ok
+        const events = res.data as GameEvent[] | null // domain-ok: Open dynamic text or non-domain string payload
         allEvents.value = events || []
         
         // 2. Filter using Engine logic with synchronized time
@@ -187,11 +189,11 @@ export const useEventStore = defineStore('events', () => {
     return discardAwardAction(awardsContext.value, awardId)
   }
 
-  function getSpeciesBonuses(speciesId: string) {
+  function getSpeciesBonuses(speciesId: PokemonSpeciesId) {
     return getSpeciesBoosts(activeEvents.value, speciesId)
   }
 
-  function getMinigameBonuses(minigameId: string) {
+  function getMinigameBonuses(minigameId: BattleMinigame) {
     return getMinigameBuffs(activeEvents.value, minigameId)
   }
 

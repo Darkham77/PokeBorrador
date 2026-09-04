@@ -10,7 +10,7 @@ function parseCommandLineArgs() {
   const { values, positionals } = parseArgs({
     options: {
       category: { type: 'string' },
-      top: { type: 'string', default: '20' }, // no-magic
+      top: { type: 'string', default: '20' }, // no-magic: Explicit mathematical constant or threshold value
       json: { type: 'boolean', default: false }
     },
     strict: false,
@@ -23,13 +23,13 @@ function parseCommandLineArgs() {
 
   for (const pos of positionals) {
     if (pos.startsWith('category=')) {
-      category = pos.split('=')[1]?.toLowerCase() || ''; // domain-ok
+      category = pos.split('=')[1]?.toLowerCase() || ''; // domain-ok: Open dynamic text or non-domain string payload
     } else if (pos.startsWith('top=')) {
-      top = parseInt(pos.split('=')[1] || '20', RADIX_DECIMAL); // no-magic
+      top = parseInt(pos.split('=')[1] || '20', RADIX_DECIMAL); // no-magic: Explicit mathematical constant or threshold value
     } else if (pos === 'json') {
       jsonOutput = true;
     } else if (!category) {
-      const cleanPos = pos.toLowerCase(); // domain-ok
+      const cleanPos = pos.toLowerCase(); // domain-ok: Open dynamic text or non-domain string payload
       if (['dupes', 'duplicates', 'security', 'cwe', 'dead-code', 'deadcode', 'unused', 'complexity', 'all'].includes(cleanPos)) {
         category = cleanPos;
       }
@@ -43,9 +43,9 @@ function parseCommandLineArgs() {
   };
 }
 
-function runFallowCommand(command: string, extraArgs: string[] = []): Record<string, unknown> | null { // open-record
+function runFallowCommand(command: string, extraArgs: string[] = []): Record<string, unknown> | null { // open-record: Generic key-value data dictionary container
   try {
-    const args = ['--format', 'json', ...extraArgs]; // no-domain
+    const args = ['--format', 'json', ...extraArgs]; // no-domain: Non-domain utility collection or data structure
     const fallowBin = path.resolve(process.cwd(), 'node_modules/fallow/bin/fallow');
     const cmd = `node "${fallowBin}" ${command} ${args.join(' ')}`;
     const stdout = execSync(cmd, {
@@ -57,7 +57,7 @@ function runFallowCommand(command: string, extraArgs: string[] = []): Record<str
     });
     const jsonStart = stdout.indexOf('{');
     if (jsonStart !== -1) {
-      return JSON.parse(stdout.substring(jsonStart)) as Record<string, unknown>; // open-record
+      return JSON.parse(stdout.substring(jsonStart)) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
     }
   } catch (e: unknown) {
     const err = e as { stdout?: Buffer };
@@ -66,7 +66,7 @@ function runFallowCommand(command: string, extraArgs: string[] = []): Record<str
       const jsonStart = stdoutStr.indexOf('{');
       if (jsonStart !== -1) {
         try {
-          return JSON.parse(stdoutStr.substring(jsonStart)) as Record<string, unknown>; // open-record
+          return JSON.parse(stdoutStr.substring(jsonStart)) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
         } catch {
           // Ignore parse errors on fallback
         }

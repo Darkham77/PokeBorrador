@@ -80,7 +80,7 @@ export async function adminSupabaseUsers(): Promise<void> {
   const serverArg = getParam('server', 's') || positionals.find(p => allAvailable.includes(p) || baseProfiles.includes(p));
 
   // Resolver actionArg (flag explícito, key=value o coincidencia en positionals)
-  const actionArg = getParam('action', 'a') || positionals.find(p => (knownActions as readonly string[]).includes(p)); // domain-ok
+  const actionArg = getParam('action', 'a') || positionals.find(p => (knownActions as readonly string[]).includes(p)); // domain-ok: Open dynamic text or non-domain string payload
 
   // Resolver identificadores
   const nonTargetPositionals = positionals.filter(p => p !== serverArg && p !== actionArg && !p.includes('='));

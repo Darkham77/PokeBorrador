@@ -10,7 +10,7 @@ export interface TimerAuditResult {
 }
 
 export function auditFSMZeroTimer(targetDir: string): TimerAuditResult {
-  const timerViolations: string[] = []; // no-domain
+  const timerViolations: string[] = []; // no-domain: Non-domain utility collection or data structure
   const files = safeScanDirectoryFiles(targetDir);
 
   for (const file of files) {

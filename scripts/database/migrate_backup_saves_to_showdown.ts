@@ -38,7 +38,7 @@ interface BackupPayload {
   };
 }
 
-const SPECIES_TO_SHOWDOWN: Record<string, string> = { // no-magic
+const SPECIES_TO_SHOWDOWN: Record<string, string> = { // no-magic: Explicit mathematical constant or threshold value
   "1": "bulbasaur", "2": "ivysaur", "3": "venusaur", "4": "charmander", "5": "charmeleon", "6": "charizard",
   "7": "squirtle", "8": "wartortle", "9": "blastoise", "10": "caterpie", "11": "metapod", "12": "butterfree",
   "13": "weedle", "14": "kakuna", "15": "beedrill", "16": "pidgey", "17": "pidgeotto", "18": "pidgeot",
@@ -430,8 +430,8 @@ async function main() {
   const rawAbilities = await fs.readFile(path.resolve(process.cwd(), 'src/data/battle/abilities.json'), 'utf8');
   const rawMoves = await fs.readFile(path.resolve(process.cwd(), 'src/data/battle/moves.json'), 'utf8');
   const showdownDB = {
-    abilities: JSON.parse(rawAbilities) as Record<string, { name?: string }>, // open-record
-    moves: JSON.parse(rawMoves) as Record<string, { name?: string }> // open-record
+    abilities: JSON.parse(rawAbilities) as Record<string, { name?: string }>, // open-record: Generic key-value data dictionary container
+    moves: JSON.parse(rawMoves) as Record<string, { name?: string }> // open-record: Generic key-value data dictionary container
   };
 
   const abilityMap = buildAbilityMap(showdownDB.abilities);
@@ -450,7 +450,7 @@ async function main() {
 
     const teams = saveData.team || [];
     const boxes = saveData.box || [];
-    const allPokes = [...teams, ...boxes].filter(Boolean) as Record<string, unknown>[]; // open-record
+    const allPokes = [...teams, ...boxes].filter(Boolean) as Record<string, unknown>[]; // open-record: Generic key-value data dictionary container
 
     for (const poke of allPokes) {
       migratedPokes++;

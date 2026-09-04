@@ -29,9 +29,10 @@ import { emulatePublishListing } from '@/logic/db/rpcEmulations/marketRpc.ts'
 import { emulateSendTradeOffer, emulateAcceptTrade } from '@/logic/db/rpcEmulations/tradeRpc.ts'
 import { queryLocal } from '@/logic/db/sqliteEngine.ts'
 import type { SQLiteDatabase } from '@/logic/db/sqliteEngine.ts'
+import { type PokemonSpeciesId } from '@/data/pokemon/pokedex.ts'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
-function createLegalPokemon(id: string, name: string, level = 10, uid = 'legal-uid-1', customAbility?: string): Pokemon {
+function createLegalPokemon(id: PokemonSpeciesId, name: string, level = 10, uid = 'legal-uid-1', customAbility?: string): Pokemon {
   const abilities = pokemonDataProvider.getSpeciesAbilities(id)
   const ability = customAbility || abilities[0] || 'overgrow'
   return {

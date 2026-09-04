@@ -52,7 +52,7 @@ function canFulfill(t: TradeOffer): { can: boolean; reason?: string } {
         const owned = gameStore.state.inventory?.[id] ?? 0;
         if (owned < qty) {
           const item = getItemById(id);
-          return { can: false, reason: `Objeto insuficiente: ${item?.name || id} (tenés ${owned}/${qty})` };
+          return { can: false, reason: `Objeto insuficiente: ${item.name} (tenés ${owned}/${qty})` };
         }
       }
     }

@@ -49,8 +49,8 @@ function parseReportOptions() {
 
   for (const arg of argv) {
     if (arg === 'json' || arg === '--json') jsonOutput = true;
-    else if (arg.startsWith('category=')) category = arg.slice(9).toLowerCase(); // no-magic
-    else if (arg.startsWith('top=')) top = parseInt(arg.slice(4), RADIX_DECIMAL) || DEFAULT_TOP_LIMIT; // no-magic
+    else if (arg.startsWith('category=')) category = arg.slice(9).toLowerCase(); // no-magic: Explicit mathematical constant or threshold value
+    else if (arg.startsWith('top=')) top = parseInt(arg.slice(4), RADIX_DECIMAL) || DEFAULT_TOP_LIMIT; // no-magic: Explicit mathematical constant or threshold value
     else if (!arg.startsWith('-')) category = arg.toLowerCase();
   }
 

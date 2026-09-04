@@ -28,9 +28,9 @@ const battle = computed(() => battleStore.state)
 const player = computed(() => battle.value?.player)
 const gs = computed(() => gameStore.state)
 
-const CONTROLS_DISABLED_STATES: ReadonlySet<string> = new Set<string>(['INITIALIZING', 'FIRST_INTRO', 'LEVEL_UP_MODAL', 'REWARDS_PHASE']); // runtime-set
-const AUTO_BATTLE_SUBSTATES: ReadonlySet<string> = new Set<string>(['COMBAT_OR_FLEE', 'SILHOUETTE_MODE']); // runtime-set
-const FINISH_OVERLAY_SEARCH_SUBSTATES: ReadonlySet<string> = new Set<string>(['WAIT_INPUT', 'COMBAT_OR_FLEE', 'PARALLEL_PREP', 'BUSH_VISIBLE', 'SILHOUETTE_MODE', 'GEN_NEW_S2']); // runtime-set
+const CONTROLS_DISABLED_STATES: ReadonlySet<string> = new Set<string>(['INITIALIZING', 'FIRST_INTRO', 'LEVEL_UP_MODAL', 'REWARDS_PHASE']); // runtime-set: Fast O(1) membership lookup set
+const AUTO_BATTLE_SUBSTATES: ReadonlySet<string> = new Set<string>(['COMBAT_OR_FLEE', 'SILHOUETTE_MODE']); // runtime-set: Fast O(1) membership lookup set
+const FINISH_OVERLAY_SEARCH_SUBSTATES: ReadonlySet<string> = new Set<string>(['WAIT_INPUT', 'COMBAT_OR_FLEE', 'PARALLEL_PREP', 'BUSH_VISIBLE', 'SILHOUETTE_MODE', 'GEN_NEW_S2']); // runtime-set: Fast O(1) membership lookup set
 
 function resolveForcedMoveIndex(
   subState: string | null | undefined,

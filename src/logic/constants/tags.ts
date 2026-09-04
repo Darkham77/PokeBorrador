@@ -3,11 +3,52 @@ import { getItemById, isItemId, type ItemId } from '@/data/inventory/items'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { hasMaxIV } from '@/logic/pokemon/statsMath.ts'
 
-/**
- * TAG_DEFINITIONS - The Single Source of Truth for all Pokemon classification tags.
- */
+export const POKEMON_MANUAL_TAG_IDS = ['fav', 'breed', 'competitive', 'trade', 'iv31', 'hatched'] as const;
+export type PokemonManualTagId = (typeof POKEMON_MANUAL_TAG_IDS)[number];
+export const POKEMON_MANUAL_TAG_ID_SET: ReadonlySet<string> = new Set<string>(POKEMON_MANUAL_TAG_IDS);
+
+export function isPokemonManualTagId(value: unknown): value is PokemonManualTagId {
+  return typeof value === 'string' && POKEMON_MANUAL_TAG_ID_SET.has(value);
+}
+
+export const POKEMON_TAG_IDS = ['fav', 'breed', 'competitive', 'trade', 'iv31', 'hatched', 'friendship-evo', 'friendship-max', 'shiny', 'item', 'mission', 'event'] as const;
+export type PokemonTagId = (typeof POKEMON_TAG_IDS)[number];
+export const POKEMON_TAG_ID_SET: ReadonlySet<string> = new Set<string>(POKEMON_TAG_IDS); // runtime-set: Fast O(1) tag validation set
+
+export function isPokemonTagId(value: unknown): value is PokemonTagId {
+  return typeof value === 'string' && POKEMON_TAG_ID_SET.has(value);
+}
+
+export function requirePokemonTagId(value: unknown): PokemonTagId {
+  if (!isPokemonTagId(value)) {
+    throw new Error(`[tags] Invalid PokemonTagId: ${String(value)}`);
+  }
+  return value;
+}
+
+export const POKEMON_FILTER_TAG_IDS = [
+  ...POKEMON_TAG_IDS,
+  'favorite',
+  'comp',
+  'team',
+  'box'
+] as const;
+export type PokemonFilterTagId = (typeof POKEMON_FILTER_TAG_IDS)[number];
+export const POKEMON_FILTER_TAG_ID_SET: ReadonlySet<string> = new Set<string>(POKEMON_FILTER_TAG_IDS); // runtime-set: Fast O(1) filter tag validation set
+
+export function isPokemonFilterTagId(value: unknown): value is PokemonFilterTagId {
+  return typeof value === 'string' && POKEMON_FILTER_TAG_ID_SET.has(value);
+}
+
+export function requirePokemonFilterTagId(value: unknown): PokemonFilterTagId {
+  if (!isPokemonFilterTagId(value)) {
+    throw new Error(`[tags] Invalid PokemonFilterTagId: ${String(value)}`);
+  }
+  return value;
+}
+
 export interface TagDefinition {
-  id: string;
+  id: PokemonTagId;
   label: string;
   shortLabel: string;
   icon: string;
@@ -19,7 +60,7 @@ export interface TagDefinition {
   itemId?: ItemId;
 }
 
-export const TAG_DEFINITIONS: Record<string, TagDefinition> = {
+export const TAG_DEFINITIONS: Record<PokemonManualTagId, TagDefinition> = {
   fav: { 
     id: 'fav', 
     label: 'FAVORITO', 
@@ -38,7 +79,7 @@ export const TAG_DEFINITIONS: Record<string, TagDefinition> = {
   },
   competitive: { 
     id: 'competitive', 
-    label: 'COMPETITIVO', // spanish-ok
+    label: 'COMPETITIVO', // spanish-ok: UI Spanish text localization label
     shortLabel: 'CMP',
     icon: '🏆', 
     color: '#34C759', 
@@ -46,7 +87,7 @@ export const TAG_DEFINITIONS: Record<string, TagDefinition> = {
   },
   trade: { 
     id: 'trade', 
-    label: 'INTERCAMBIO', // spanish-ok
+    label: 'INTERCAMBIO', // spanish-ok: UI Spanish text localization label
     shortLabel: 'TRD',
     icon: '🔄', 
     color: '#AF52DE', 
@@ -160,7 +201,7 @@ export function getPokemonVisualBadges(pokemon: Partial<Pokemon> | null): TagDef
     badges.push({ 
       ...itemBadge, 
       id: 'item',
-      label: itemData.name.toUpperCase(), // text-ok
+      label: itemData.name.toUpperCase(), // text-ok: UI text display localization string
       shortLabel: itemBadge.shortLabel,
       desc: itemData.desc ?? itemBadge.desc ?? '',
       isAutomatic: true,
@@ -171,13 +212,15 @@ export function getPokemonVisualBadges(pokemon: Partial<Pokemon> | null): TagDef
   // 4. Manual Tags (From pokemon.tags array)
   const tags = pokemon.tags
   if (tags && Array.isArray(tags)) {
-    tags.forEach((tagId: string) => {
+    tags.forEach((tagId) => {
       // Avoid duplicating iv31 or hatched if already added automatically
       // Also ignore 'box' tag as it's being deprecated/replaced
       if (tagId === 'iv31' || tagId === 'hatched' || tagId === 'box') return 
       
-      const def = TAG_DEFINITIONS[tagId]
-      if (def) badges.push({ ...def, isAutomatic: false })
+      if (isPokemonManualTagId(tagId)) {
+        const def = TAG_DEFINITIONS[tagId]
+        if (def) badges.push({ ...def, isAutomatic: false })
+      }
     })
   }
 
@@ -210,7 +253,7 @@ export function getPokemonEditorBadges(pokemon: Partial<Pokemon> | null): TagDef
 /**
  * Standardized helper to check if a pokemon possesses a specific tag.
  */
-export const hasPokemonTag = (pokemon: Partial<Pokemon> | null, tagId: string): boolean => {
+export const hasPokemonTag = (pokemon: Partial<Pokemon> | null, tagId: PokemonFilterTagId): boolean => {
   if (!pokemon) return false
   const tags = pokemon.tags || []
   

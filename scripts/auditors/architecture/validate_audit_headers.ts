@@ -30,7 +30,8 @@ export type HeaderRuleId =
   | 'file-level-fallow-ignore'
   | 'file-level-eslint-disable'
   | 'banned-ts-suppression'
-  | 'header-auditor-escape';
+  | 'header-auditor-escape'
+  | 'unjustified-escape-hatch';
 
 export interface HeaderViolation {
   readonly file: string;
@@ -62,6 +63,7 @@ const TS_SUPPRESSION_REGEX = /^\s*\/\/\s*@ts-(nocheck|ignore|expect-error)\b/i;
 const ESLINT_DISABLE_BLOCK_REGEX = /^\s*\/\*\s*eslint-disable\b(?!\s*-(next-line|line)\b)/i;
 const ESLINT_DISABLE_TEMPLATE_REGEX = /^\s*<!--\s*eslint-disable\b(?!\s*-(next-line|line)\b)/i;
 const STANDALONE_ESCAPE_HATCHES_REGEX = /^\s*\/\/\s*(domain-ok|singleton-ok|no-magic|magic-ok|number-ok|string-ok|any-ok|boolean-ok|type-ok|alias-ok|value-ok|const-ok|o1-ok|linear-search-ok|map-ok|promise-ok|import-ok|result-ok|brand-ok|no-domain|text-ok)\b\s*$/i;
+const UNJUSTIFIED_ESCAPE_HATCH_REGEX = /\/\/\s*(domain-ok|singleton-ok|no-magic|magic-ok|number-ok|string-ok|any-ok|boolean-ok|type-ok|alias-ok|value-ok|const-ok|o1-ok|linear-search-ok|map-ok|promise-ok|import-ok|result-ok|brand-ok|no-domain|text-ok|uuid-ok|infra-id-ok|spanish-ok|open-record|runtime-set|runtime-map|lib-duplicate-ok|fallback-ok)\b(?!\s*:\s*\S+)/i;
 
 /**
  * Validates that a path component is safe against path traversal.
@@ -148,6 +150,30 @@ export function scanFileForIllegalHeaders(filePath: string, content: string): He
       });
       continue;
     }
+
+    // 5. Check for ANY unjustified escape hatch without mandatory ': <motivo>'
+    const unjustifiedMatch = rawLine.match(UNJUSTIFIED_ESCAPE_HATCH_REGEX);
+    if (unjustifiedMatch) {
+      violations.push({
+        file: filePath,
+        line: lineNum,
+        ruleId: 'unjustified-escape-hatch',
+        message: `[GUÍA DE ESCAPE HATCHES / IGNORES JUSTIFICADOS] Escape hatch '// ${unjustifiedMatch[1]}' sin justificación técnica obligatoria.
+   📚 FORMATO CANÓNICO REQUERIDO: '// ${unjustifiedMatch[1]}: <motivo técnico detallado>'
+   💡 EJEMPLOS VÁLIDOS SEGÚN EL CASO:
+      - // domain-ok: Texto dinámico de UI, mensajes de chat o cadenas narrativas
+      - // no-magic: Coeficiente matemático de fórmula física o easing visual
+      - // uuid-ok: UUID de base de datos o identificador único de sesión
+      - // infra-id-ok: Identificador DOM o socket de red externo
+      - // open-record: Contenedor JSON dinámico de clave-valor genérico
+      - // runtime-set: Set O(1) de validación rápida de identificadores
+      - // spanish-ok: Etiqueta o texto de interfaz en español
+   ⚠️ PROHIBICIÓN: Nunca uses ignores genéricos ni los uses para ocultar errores de tipado en entidades del juego.`,
+        context: trimmed,
+        severity: 'error'
+      });
+      continue;
+    }
   }
 
   return violations;
@@ -164,7 +190,7 @@ export function auditAuditHeaders(targetDir = process.cwd()): AuditHeadersResult
     .map(r => path.resolve(targetDir, r))
     .filter(p => fs.existsSync(p));
 
-  const allFiles: string[] = []; // no-domain
+  const allFiles: string[] = []; // no-domain: Non-domain utility collection or data structure
   for (const root of rootsToScan) {
     allFiles.push(...collectRepositoryFiles(root, targetDir, extraIgnorePatterns));
   }
@@ -174,7 +200,8 @@ export function auditAuditHeaders(targetDir = process.cwd()): AuditHeadersResult
     'file-level-fallow-ignore': 0,
     'file-level-eslint-disable': 0,
     'banned-ts-suppression': 0,
-    'header-auditor-escape': 0
+    'header-auditor-escape': 0,
+    'unjustified-escape-hatch': 0
   };
 
   for (const file of allFiles) {

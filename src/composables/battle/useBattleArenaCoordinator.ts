@@ -4,6 +4,7 @@ import { useModalStore } from '@/stores/modals'
 import { DEFAULT_MINIGAME_RARITY } from '@/logic/constants/gameplay'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleState } from '@/types/battle/battle'
+import { isFishingDifficultyKey, type FishingDifficultyKey } from '@/components/modals/fishingGameHelper'
 import type { useBattleStore } from '@/stores/battle/battle'
 import { getActiveMinigame } from '@/logic/battle/battleMinigames'
 
@@ -12,7 +13,7 @@ export interface BattleArenaCoordinatorParams {
   battle: ComputedRef<BattleState | null | undefined>
   enemy: ComputedRef<Pokemon | null | undefined>
   resetAll: () => void
-  handleFishingSuccess: (data?: unknown) => void | Promise<void>
+  handleFishingSuccess: (difficulty?: FishingDifficultyKey) => void | Promise<void>
   handleFishingFail: (data?: unknown) => void | Promise<void>
   handleArchaeologySuccess: (difficulty: string) => void | Promise<void>
   handleArchaeologyFail: (data?: unknown) => void | Promise<void>
@@ -59,7 +60,7 @@ export function useBattleArenaCoordinator(params: BattleArenaCoordinatorParams) 
           if (!modalStore.isOpen('Fishing')) modalStore.open('Fishing', {
             pokemon: targetEnemy,
             rarity: battle.value?.rarity || DEFAULT_MINIGAME_RARITY,
-            onWin: (difficulty: string) => handleFishingSuccess(difficulty),
+            onWin: (difficulty?: string) => handleFishingSuccess(isFishingDifficultyKey(difficulty) ? difficulty : undefined),
             onFail: handleFishingFail,
             onCloseCallback: handleMinigameCancel
           })

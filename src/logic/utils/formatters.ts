@@ -32,12 +32,12 @@ export const formatPlayerClass = (playerClass: string | null | undefined): strin
       !playerClass.trim()) {
     return 'SIN CLASE'
   }
-  const clean = playerClass.toLowerCase().trim() // text-ok
+  const clean = playerClass.toLowerCase().trim() // text-ok: UI text display localization string
   if (clean === 'entrenador') return 'Entrenador'
   if (clean === 'rocket') return 'Equipo Rocket'
   if (clean === 'cazabichos') return 'Cazabichos'
   if (clean === 'criador') return 'Criador'
-  return playerClass.toUpperCase() // text-ok
+  return playerClass.toUpperCase() // text-ok: UI text display localization string
 }
 
 /**
@@ -50,11 +50,11 @@ export const formatFaction = (faction: string | null | undefined): string => {
       faction === 'Null' || 
       faction === 'NULL' || 
       !faction.trim() || 
-      faction.toLowerCase() === 'none') { // text-ok
+      faction.toLowerCase() === 'none') { // text-ok: UI text display localization string
     return 'SIN BANDO'
   }
-  const clean = faction.toLowerCase().trim() // text-ok
+  const clean = faction.toLowerCase().trim() // text-ok: UI text display localization string
   if (clean === 'union') return 'Bando Unión'
   if (clean === 'poder') return 'Bando Poder'
-  return faction.toUpperCase() // text-ok
+  return faction.toUpperCase() // text-ok: UI text display localization string
 }

@@ -51,6 +51,7 @@ Frontend Developers / Systems Engineers.
     - `EventCard.vue` MUST resolve the concrete direction (`'min'` | `'max'`) via `resolveSubCompetitionDirection` before opening `PokemonSelection`, ensuring dynamic `'auto'` sub-competitions transmit concrete direction to the modal.
     - `PokemonSelectionModal.vue` MUST immediately and reactively calibrate its `sortBy` and `sortOrder` state based on `props.subCompetition` (`weight` + `min` -> `sortBy: 'weight'`, `sortOrder: 'asc'`; `height` + `max` -> `sortBy: 'height'`, `sortOrder: 'desc'`; `total_ivs` -> `sortBy: 'ivs'`, `sortOrder: 'desc'`; `friendship` -> `sortBy: 'friendship'`, `sortOrder: 'desc'`), taking absolute precedence over any persisted general filter storage.
     - `PokemonSelectionItem.vue` MUST render a dedicated `.competition-item-meta` sub-element without altering the card layout, encapsulating the category icon inside `<span class="emoji competition-icon">`, the category name/direction, and the formatted evaluated metric score (`displayValue`) with physical size tiers and target references.
+- **Deferred Multi-Step Item Modals & Rollback Guarantee**: Secondary item interaction modals (`MoveRelearnerModal.vue`, `MoveLearningModal.vue`, `NaturePatchModal.vue`, `AbilityPillModal.vue`, `PPUpModal.vue`) must isolate their inventory deduction to the final explicit confirmation action (`inventoryStore.removeItem(...)`). If the user cancels the interaction, rejects learning, or closes the modal, the item MUST NOT be consumed and game state must remain untouched.
 
 ## Work Guidance
 

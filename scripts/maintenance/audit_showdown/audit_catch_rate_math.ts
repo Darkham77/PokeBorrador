@@ -10,13 +10,13 @@ export interface CatchRateAuditResult {
  * contra los identificadores canónicos usados en Showdown (statusBonus, catchRate, ballBonus).
  */
 export function auditCatchRateMath(catchMathPath: string, _showdownRefPath: string): CatchRateAuditResult {
-  const catchMathDiscrepancies: string[] = []; // no-domain
+  const catchMathDiscrepancies: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!existsSync(catchMathPath)) return { catchMathDiscrepancies };
 
   const content = readFileSync(catchMathPath, 'utf-8').toLowerCase();
 
   // Parámetros canónicos de la fórmula de captura de Showdown
-  const requiredTerms = ['catchrate', 'statusbonus', 'ballbonus', 'maxhp', 'currenthp']; // no-domain
+  const requiredTerms = ['catchrate', 'statusbonus', 'ballbonus', 'maxhp', 'currenthp']; // no-domain: Non-domain utility collection or data structure
 
   for (const term of requiredTerms) {
     if (!content.includes(term)) {

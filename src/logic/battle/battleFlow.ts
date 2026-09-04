@@ -68,7 +68,7 @@ export function handleEntryAbilities(playerPoke: Pokemon, enemyPoke: Pokemon, pl
   }
 }
 
-const SAND_IMMUNE_TYPES_SET: ReadonlySet<string> = new Set(['rock', 'ground', 'steel']) // runtime-set
+const SAND_IMMUNE_TYPES_SET: ReadonlySet<string> = new Set(['rock', 'ground', 'steel']) // runtime-set: Fast O(1) membership lookup set
 
 async function applyEndTurnWeather(p: Pokemon, e: Pokemon, weather: BattleWeather | null, ctx: BattleContext) {
   if (p?.ability === 'cloudnine' || e?.ability === 'cloudnine') {
@@ -202,7 +202,7 @@ export async function applyEndTurnEffects(ctx: BattleContext) {
       if (stages[effect] > 0) {
         stages[effect]--
         if (stages[effect] === 0) {
-          const effectLabel = effect === 'reflect' ? 'Reflejo' : effect === 'lightScreen' ? 'Pantalla Luz' : effect // spanish-ok
+          const effectLabel = effect === 'reflect' ? 'Reflejo' : effect === 'lightScreen' ? 'Pantalla Luz' : effect // spanish-ok: UI Spanish text localization label
           ctx.addLog(`¡El efecto de ${effectLabel} del ${side.name} se desvaneció!`, side.log)
         }
       }

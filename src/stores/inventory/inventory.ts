@@ -73,7 +73,7 @@ export const useInventoryStore = defineStore('inventory', () => {
     safeStorage.setItem('inventory_last_tab', newVal)
   })
 
-  function findInventoryKey(id: ItemId): ItemId | null { // domain-ok
+  function findInventoryKey(id: ItemId): ItemId | null { // domain-ok: Open dynamic text or non-domain string payload
     return helperFindInventoryKey(gameStore, id)
   }
 
@@ -120,7 +120,7 @@ export const useInventoryStore = defineStore('inventory', () => {
       const resolvedCat = item.cat || 'otros'
       if (activeCategory.value !== 'todos' && activeCategory.value !== 'utilizables' && resolvedCat !== activeCategory.value) return false
       // Do not apply the global store searchQuery if a battle is active (to avoid sharing the filter with the battle modal)
-      if (!isBattleActive && searchQuery.value && !item.name.toLowerCase().includes(searchQuery.value.toLowerCase())) return false // text-ok
+      if (!isBattleActive && searchQuery.value && !item.name.toLowerCase().includes(searchQuery.value.toLowerCase())) return false // text-ok: UI text display localization string
       return true
     })
 

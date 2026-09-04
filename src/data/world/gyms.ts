@@ -9,27 +9,30 @@ import type { WeatherId } from '@/logic/weather/weatherRegistry';
 export const GYM_DIFFICULTY_IDS = ['easy', 'normal', 'hard'] as const;
 export type GymDifficultyId = (typeof GYM_DIFFICULTY_IDS)[number];
 
+export const GYM_IDS = ['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian'] as const;
+export type GymId = (typeof GYM_IDS)[number];
+
 export interface GymDifficulty {
-  pokemon: PokemonSpeciesId[];
-  levels: number[];
+  pokemon: readonly PokemonSpeciesId[];
+  levels: readonly number[];
 }
 
 export interface Gym {
-  id: string; // domain-ok
-  name: string; // domain-ok
-  city: string; // domain-ok
+  id: GymId;
+  name: string; // domain-ok: Open dynamic text or non-domain string payload
+  city: string; // domain-ok: Open dynamic text or non-domain string payload
   locationId: MapRouteId;
-  leader: string; // domain-ok
+  leader: string; // domain-ok: Open dynamic text or non-domain string payload
   type: PokemonType;
-  typeColor: string; // domain-ok
-  badge: string; // domain-ok
-  badgeName: string; // domain-ok
+  typeColor: string; // domain-ok: Open dynamic text or non-domain string payload
+  badge: string; // domain-ok: Open dynamic text or non-domain string payload
+  badgeName: string; // domain-ok: Open dynamic text or non-domain string payload
   sprite: NpcSpriteId;
-  quote: string; // domain-ok
-  victoryQuote: string; // domain-ok
+  quote: string; // domain-ok: Open dynamic text or non-domain string payload
+  victoryQuote: string; // domain-ok: Open dynamic text or non-domain string payload
   rewardTM: ItemId;
-  pokemon: PokemonSpeciesId[];
-  levels: number[];
+  pokemon: readonly PokemonSpeciesId[];
+  levels: readonly number[];
   badgesRequired: number;
   difficulties: Record<GymDifficultyId, GymDifficulty>;
   fixedCycle?: DayPhase;
@@ -159,8 +162,6 @@ export const GYMS = [
     }
   },
 ] as const satisfies readonly Gym[];
-export type GymId = (typeof GYMS)[number]['id'];
-export const GYM_IDS = GYMS.map(gym => gym.id);
 
 const gymMap: Record<GymId, Gym> = {
   pewter: GYMS[0],
@@ -186,7 +187,7 @@ export function requireGymId(value: string): GymId {
   throw new Error(`Invalid gym id: ${value}`);
 }
 
-export function getGymById(gymId: string): Gym {
+export function getGymById(gymId: GymId): Gym {
   const cleanId = requireGymId(gymId);
   const gym = GYMS_BY_ID[cleanId];
   if (!gym) throw new Error(`[gyms] Gimnasio no encontrado: "${gymId}"`);

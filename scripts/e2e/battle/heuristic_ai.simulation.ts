@@ -113,7 +113,7 @@ class HeuristicAISimWrapper extends BaseBattleSimulation {
       const resolver = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__;
       const store = resolver?.();
       if (!store) return false;
-      const storeObj = store as Record<string, unknown>; // open-record
+      const storeObj = store as Record<string, unknown>; // open-record: Generic key-value data dictionary container
       const fsmState = store.currentFsmState;
       const isFainted = (store.enemy?.hp === 0) || (store.player?.hp === 0) || (store.state?.enemy?.hp === 0) || (store.state?.player?.hp === 0);
       return !!(store.state?.over || storeObj.isBattleOver || fsmState === 'REWARDS_PHASE' || fsmState === 'EXIT_BATTLE' || fsmState === 'SEARCH_PHASE' || isFainted);

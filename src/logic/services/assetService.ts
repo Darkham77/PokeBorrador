@@ -38,6 +38,9 @@ export const ASSET_TYPES = {
   BADGE: 'badge'
 } as const;
 
+import type { DayPhase } from '../utils/timeUtils.ts';
+import type { TrainerAssetView } from '@/types/system/game';
+
 export type AssetType = typeof ASSET_TYPES[keyof typeof ASSET_TYPES];
 
 export interface AssetOptions {
@@ -47,8 +50,8 @@ export interface AssetOptions {
   back?: boolean; // Legacy fallback
   isAnimated?: boolean;
   animated?: boolean;
-  cycle?: 'morning' | 'day' | 'dusk' | 'night';
-  trainerSuffix?: 'avatar' | 'front' | 'back';
+  cycle?: DayPhase;
+  trainerSuffix?: TrainerAssetView;
   gender?: 'h' | 'm';
   isLowPower?: boolean;
   [key: string]: unknown;
@@ -63,8 +66,8 @@ export function getAssetUrl(type: typeof ASSET_TYPES.POKEMON, rawId: PokemonSpec
 export function getAssetUrl(type: typeof ASSET_TYPES.MAP, rawId: MapRouteId, options?: AssetOptions): string;
 export function getAssetUrl(type: typeof ASSET_TYPES.TRAINER, rawId: NpcSpriteId | PlayerClassId, options?: AssetOptions): string;
 export function getAssetUrl(type: typeof ASSET_TYPES.BADGE, rawId: GymId, options?: AssetOptions): string;
-export function getAssetUrl(type: AssetType, rawId: string | number, options?: AssetOptions): string;
-export function getAssetUrl(type: AssetType, rawId: string | number, options: AssetOptions = {}): string {
+export function getAssetUrl(type: AssetType, rawId: string | number, options?: AssetOptions): string; // domain-ok: Asset router generic fallback overload signature
+export function getAssetUrl(type: AssetType, rawId: string | number, options: AssetOptions = {}): string { // domain-ok: Asset router generic fallback implementation
   if (!rawId) {
     throw new Error(`[assetService] Cannot resolve asset URL for type '${type}': rawId is required and cannot be empty.`);
   }
@@ -92,10 +95,10 @@ export function getAssetUrl(type: AssetType, rawId: string | number, options: As
 
   switch (type) {
     case ASSET_TYPES.POKEMON: {
-      const stringId = String(id).toLowerCase(); // text-ok
-      if (typeof id === 'string' && id.toLowerCase().startsWith('egg')) return resolveAsset(`/assets/sprites/egg${extension}`); // text-ok
+      const stringId = String(id).toLowerCase(); // text-ok: UI text display localization string
+      if (typeof id === 'string' && id.toLowerCase().startsWith('egg')) return resolveAsset(`/assets/sprites/egg${extension}`); // text-ok: UI text display localization string
 
-      let num = (POKEMON_SPRITE_IDS as Record<string, number | string>)[stringId]; // open-record
+      let num = (POKEMON_SPRITE_IDS as Record<string, number | string>)[stringId]; // open-record: Generic key-value data dictionary container
       if (num === undefined) {
         const species = Dex.species.get(stringId);
         num = (species && species.exists) ? species.num : id;
@@ -154,7 +157,7 @@ export function getAssetUrl(type: AssetType, rawId: string | number, options: As
 
       // Sanitize ID: remove spaces and dots (e.g., "Lt. Surge" -> "ltsurge")
       const idStr = String(id);
-      const sanitizedId = idStr.toLowerCase().replace(/[\s.]/g, ''); // text-ok
+      const sanitizedId = idStr.toLowerCase().replace(/[\s.]/g, ''); // text-ok: UI text display localization string
       const finalId = LEGACY_MAPPING[sanitizedId] || sanitizedId;
 
       // Other remote URLs fallback
@@ -280,7 +283,7 @@ export function useAssets() {
  * Gets the PokeAPI sprite URL for a given species ID.
  */
 export function getSpriteUrl(id: string, isShiny = false) {
-  if (id && (id.toLowerCase() === 'egg' || id.toLowerCase().startsWith('egg_') || id.toLowerCase().startsWith('egg-'))) { // text-ok
+  if (id && (id.toLowerCase() === 'egg' || id.toLowerCase().startsWith('egg_') || id.toLowerCase().startsWith('egg-'))) { // text-ok: UI text display localization string
     return getAssetUrl(ASSET_TYPES.POKEMON, 'egg');
   }
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny });

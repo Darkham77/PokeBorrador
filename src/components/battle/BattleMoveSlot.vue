@@ -43,8 +43,8 @@ const HOVER_SCALED_MULT = 1.08;
 import { SCALE_DEFAULT_BASE_FACTOR } from '@/logic/constants/visuals';
 const HOVER_ANIM_DURATION_SEC = 0.3;
 // Relative z-index within the moves grid local stacking context
-const HOVER_Z_INDEX_ELEVATED = Z_LAYERS.BASE + 10; // no-magic
-const HOVER_Z_INDEX_NORMAL = Z_LAYERS.BASE + 1;   // no-magic
+const HOVER_Z_INDEX_ELEVATED = Z_LAYERS.BASE + 10; // no-magic: Explicit mathematical constant or threshold value
+const HOVER_Z_INDEX_NORMAL = Z_LAYERS.BASE + 1;   // no-magic: Explicit mathematical constant or threshold value
 
 const emit = defineEmits<{
   (e: 'use-move', index: number): void

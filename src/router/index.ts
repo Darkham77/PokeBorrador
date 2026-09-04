@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { logger } from '@/logic/utils/logger'
 import { safeStorage } from '@/logic/utils/storage'
+import { resilientRouteComponent } from '@/logic/utils/resilientComponent'
+import LoginView from '@/views/auth/LoginView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -9,19 +11,20 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: () => import('@/views/auth/LoginView.vue'),
+      component: LoginView,
     },
 
 
     {
       path: '/',
-      component: () => import('@/views/game/GameView.vue'),
+      alias: '/game',
+      component: resilientRouteComponent(() => import('@/views/game/GameView.vue')),
       meta: { requiresAuth: true },
       children: [
         {
           path: '',
           name: 'map',
-          component: () => import('@/views/game/MapView.vue'),
+          component: resilientRouteComponent(() => import('@/views/game/MapView.vue')),
         },
         // {
         //   path: 'team',
@@ -31,24 +34,24 @@ const router = createRouter({
         {
           path: 'pokedex',
           name: 'pokedex',
-          component: () => import('@/views/pokemon/PokedexView.vue'),
+          component: resilientRouteComponent(() => import('@/views/pokemon/PokedexView.vue')),
         },
         {
           path: 'social',
           name: 'social',
-          component: () => import('@/views/social/SocialView.vue'),
+          component: resilientRouteComponent(() => import('@/views/social/SocialView.vue')),
         },
         {
           path: 'bag',
           name: 'bag',
-          component: () => import('@/views/inventory/BagView.vue'),
+          component: resilientRouteComponent(() => import('@/views/inventory/BagView.vue')),
         }
       ]
     },
     {
       path: '/test-aventura',
       name: 'test-aventura',
-      component: () => import('@/views/adventure/AdventureTestView.vue')
+      component: resilientRouteComponent(() => import('@/views/adventure/AdventureTestView.vue'))
     }
   ],
 })
@@ -102,7 +105,7 @@ router.beforeEach(async (to, _from) => {
 
 router.onError((error, to) => {
   const msg = (error && typeof error === 'object' && 'message' in error) ? String(error.message) : String(error);
-  const isChunkError = /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module|Loading chunk/i.test(msg);
+  const isChunkError = /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module|Loading chunk|Couldn't resolve component/i.test(msg);
   if (isChunkError) {
     logger.warn('Router', `Fallo al cargar módulo/chunk dinámico hacia ${to?.fullPath || 'ruta'}. Emitiendo PWA_NEED_REFRESH...`);
     import('@/logic/events/gameBus.ts').then(({ gameBus }) => {

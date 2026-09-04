@@ -3,7 +3,7 @@ import { getMapBiomeAndTags } from '@/logic/battle/biomeHelper'
 
 describe('biomeHelper - getMapBiomeAndTags', () => {
   it('should return default biome and empty tags if location does not exist', () => {
-    const res = getMapBiomeAndTags('non-existent-location')
+    const res = getMapBiomeAndTags('non-existent-location' as unknown as import('@/data/world/map-assets').MapRouteId)
     expect(res.activeBiome).toBe('isPlains')
     expect(res.mapTags).toEqual([])
   })

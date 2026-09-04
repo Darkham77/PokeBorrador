@@ -1,6 +1,6 @@
 import { loadBestSave } from '@/logic/auth/loadService'
 import { gsap } from 'gsap'
-import { saveGame as performSave } from '@/logic/auth/saveService'
+import { saveGame as performSave, setLatestCommittedSaveId, getLatestCommittedSaveId } from '@/logic/auth/saveService'
 import { useLoadingStore } from '@/stores/loading'
 import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
@@ -40,7 +40,7 @@ export function useSaveActions(
     }
     
     let data: GameState | null = null;
-    let issues: string[] = []; // no-domain
+    let issues: string[] = []; // no-domain: Non-domain utility collection or data structure
     let lastSaveId: string | null = null;
     let attempts = 0;
     const maxAttempts = 2;
@@ -75,8 +75,8 @@ export function useSaveActions(
       const err = lastError as Error;
       const isTimeout = err.message === 'LOAD_TIMEOUT';
       const isNetworkError = err.message && (
-        err.message.toLowerCase().includes('fetch') || // text-ok
-        err.message.toLowerCase().includes('network') // text-ok
+        err.message.toLowerCase().includes('fetch') || // text-ok: UI text display localization string
+        err.message.toLowerCase().includes('network') // text-ok: UI text display localization string
       );
       
       if (isTimeout || isNetworkError || !navigator.onLine) {
@@ -131,6 +131,7 @@ export function useSaveActions(
       updateState(data)
       sessionStartTime = Temporal.Now.instant().epochMilliseconds
       authStore.user.last_save_id = lastSaveId || undefined
+      setLatestCommittedSaveId(lastSaveId || null)
       
       if (issues && issues.length > 0) {
         logger.warn('LOAD', 'Validación de partida - Advertencias encontradas:', issues)
@@ -210,7 +211,9 @@ export function useSaveActions(
       }
 
       if (result.migrated) authStore.user.db_version = 3
-      if (result.lastSaveId) authStore.user.last_save_id = result.lastSaveId
+      if (result.lastSaveId) {
+        authStore.user.last_save_id = getLatestCommittedSaveId() || result.lastSaveId
+      }
 
       if (result.rollback) {
         await handleSaveRollback(result, db.value, authStore.user, notifyFn, updateState)
@@ -232,6 +235,13 @@ export function useSaveActions(
       if (data) {
         updateState(data as GameState)
         state.claimQueue = state.claimQueue.filter((c: ClaimItem) => c.id !== claimId)
+        if (authStore.user) {
+          const { data: saveRow } = await db.value.from('game_saves').select('last_save_id').eq('user_id', authStore.user.id).single() as { data: { last_save_id?: string } | null }
+          if (saveRow?.last_save_id) {
+            authStore.user.last_save_id = saveRow.last_save_id
+            setLatestCommittedSaveId(saveRow.last_save_id)
+          }
+        }
         return true
       }
     } catch (e) {
@@ -249,7 +259,7 @@ export function useSaveActions(
       .select('*')
       .eq('user_id', authStore.user.id)
       .order('created_at', { ascending: true })
-    const data = claimRes.data as ClaimItem[] | null // domain-ok
+    const data = claimRes.data as ClaimItem[] | null // domain-ok: Open dynamic text or non-domain string payload
     const error = claimRes.error
     if (!error) state.claimQueue = data || []
   }

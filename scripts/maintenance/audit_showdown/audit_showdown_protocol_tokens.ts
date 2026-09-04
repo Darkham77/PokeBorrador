@@ -13,7 +13,7 @@ export interface ProtocolTokenAuditResult {
  * y audita dinámicamente todos los archivos TypeScript en src/logic/battle para verificar su soporte.
  */
 export function auditShowdownProtocolTokens(showdownCodePath: string, bridgePath: string): ProtocolTokenAuditResult {
-  const unhandledProtocolTokens: string[] = []; // no-domain
+  const unhandledProtocolTokens: string[] = []; // no-domain: Non-domain utility collection or data structure
   const foundTokens = new Set<string>();
 
   if (!existsSync(showdownCodePath) || !existsSync(bridgePath)) {

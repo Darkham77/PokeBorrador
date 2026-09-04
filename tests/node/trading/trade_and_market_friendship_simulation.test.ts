@@ -15,13 +15,14 @@ import { emulateSendTradeOffer, emulateAcceptTrade } from '@/logic/db/rpcEmulati
 import { emulatePublishListing, emulateBuyListing, emulateCancelListing, emulateClaimAsset } from '@/logic/db/rpcEmulations/marketRpc.ts';
 import { queryLocal } from '@/logic/db/sqliteEngine.ts';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider.ts';
+import { type PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
 
 vi.mock('@/logic/db/sqliteEngine.ts', () => ({
   queryLocal: vi.fn(),
   persistSQLite: vi.fn(async () => {}),
 }));
 
-function createLegalPokemon(id: string, name: string, level = 10, uid = 'legal-uid-1', friendship = 70): Pokemon {
+function createLegalPokemon(id: PokemonSpeciesId, name: string, level = 10, uid = 'legal-uid-1', friendship = 70): Pokemon {
   const abilities = pokemonDataProvider.getSpeciesAbilities(id);
   const ability = abilities[0] || 'waterabsorb';
   return {

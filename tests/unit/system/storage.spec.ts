@@ -22,28 +22,28 @@ describe('Tier Engine', () => {
 
 describe('Inventory Engine', () => {
   it('should calculate sell prices as half of buying price', () => {
-    // Pokéball is 200, so sell price should be 100
-    expect(getSellPrice('Pokéball')).toBe(100);
-    // Súper Ball is 500, so sell price should be 250
-    expect(getSellPrice('Súper Ball')).toBe(250);
+    // pokeball is 200, so sell price should be 100
+    expect(getSellPrice('pokeball')).toBe(100);
+    // greatball is 500, so sell price should be 250
+    expect(getSellPrice('greatball')).toBe(250);
     // Non-existent item
-    expect(getSellPrice('Objeto Imaginario')).toBe(0);
+    expect(getSellPrice('objeto_imaginario' as unknown as import('@/data/inventory/items').ItemId)).toBe(0);
   });
 
   it('should filter inventory by category', () => {
     const inv = {
-      'Pokéball': 10,
-      'Poción': 5,
-      'Piedra Fuego': 1,
-      'Objeto Desconocido': 2
+      'pokeball': 10,
+      'potion': 5,
+      'firestone': 1,
+      'objeto_desconocido': 2
     };
 
     const balls = filterInventoryByCategory(inv, 'pokeballs');
     expect(balls.length).toBe(1);
-    expect(balls[0]![0]).toBe('Pokéball');
+    expect(balls[0]![0]).toBe('pokeball');
 
     const potions = filterInventoryByCategory(inv, 'potions');
     expect(potions.length).toBe(1);
-    expect(potions[0]![0]).toBe('Poción');
+    expect(potions[0]![0]).toBe('potion');
   });
 });

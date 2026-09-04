@@ -6,9 +6,10 @@ import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver'
+import type { ItemId } from '@/data/inventory/items'
 
 interface ShopItem {
-  id: string
+  id: ItemId
   name: string
   warPrice?: number
   desc?: string

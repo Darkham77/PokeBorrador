@@ -14,6 +14,9 @@
 // ── Day Cycle ────────────────────────────────────────────────────────────────
 
 import type { DayPhase } from '../utils/timeUtils.ts';
+import type { MapRouteId } from '@/data/world/map-assets';
+import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
+import type { WeatherSeasonId } from '@/data/world/weather-tables';
 export type { DayPhase };
 
 /**
@@ -72,10 +75,10 @@ export type WeatherTable = Record<
  */
 export function getRouteWeatherPure(
   tables: WeatherTable,
-  mapId: string,
-  seasonId: string,
+  mapId: MapRouteId,
+  seasonId: WeatherSeasonId,
   epochHour: number,
-): string {
+): WeatherId {
   const routeTables = tables[mapId];
   if (!routeTables || !routeTables[seasonId]) return 'clear';
 
@@ -91,9 +94,9 @@ export function getRouteWeatherPure(
   const randNum = prng() * PROBABILITY_PERCENT_SCALE;
 
   let cumulative = 0;
-  for (const [weather, prob] of Object.entries(table as Record<string, number>)) { // open-record
+  for (const [weather, prob] of Object.entries(table as Record<string, number>)) { // open-record: Generic key-value data dictionary container
     cumulative += prob;
-    if (randNum < cumulative) return weather;
+    if (randNum < cumulative) return requireWeatherId(weather);
   }
 
   return 'clear';
@@ -137,8 +140,8 @@ export function getSessionWeatherSeed(): number {
  */
 const WEATHER_SEED_MODULO_SCALE = 1000;
 
-export function getWeatherAnimSeed(mapId: string): number {
-  const mapData = (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[mapId]; // open-record
+export function getWeatherAnimSeed(mapId: MapRouteId): number {
+  const mapData = (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[mapId]; // open-record: Generic key-value data dictionary container
   const keyString = mapData?.name || mapId;
   const charSum = keyString.split('').reduce((acc, char, i) => {
     return acc + (char.charCodeAt(0) * (i + 1));

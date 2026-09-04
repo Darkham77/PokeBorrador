@@ -27,7 +27,7 @@ describe('SQLiteQueryBuilder .or() filter clause parsing & query resolution', ()
       run: (sql: string, params: unknown[] = []) => rawDb.prepare(sql).run(...(params as (string | number | bigint | null | Uint8Array)[])),
       exec: (sql: string, params: unknown[] = []): SQLiteResult[] => {
         const stmt = rawDb.prepare(sql);
-        const rows = stmt.all(...(params as (string | number | bigint | null | Uint8Array)[])) as Record<string, unknown>[]; // open-record
+        const rows = stmt.all(...(params as (string | number | bigint | null | Uint8Array)[])) as Record<string, unknown>[]; // open-record: Generic key-value data dictionary container
         if (!rows.length) return [];
         const columns = Object.keys(rows[0]!);
         const values = rows.map(r => columns.map(c => r[c]));
@@ -71,7 +71,7 @@ describe('SQLiteQueryBuilder .or() filter clause parsing & query resolution', ()
       run: (sql: string, params: unknown[] = []) => rawDb.prepare(sql).run(...(params as (string | number | bigint | null | Uint8Array)[])),
       exec: (sql: string, params: unknown[] = []): SQLiteResult[] => {
         const stmt = rawDb.prepare(sql);
-        const rows = stmt.all(...(params as (string | number | bigint | null | Uint8Array)[])) as Record<string, unknown>[]; // open-record
+        const rows = stmt.all(...(params as (string | number | bigint | null | Uint8Array)[])) as Record<string, unknown>[]; // open-record: Generic key-value data dictionary container
         if (!rows.length) return [];
         const columns = Object.keys(rows[0]!);
         const values = rows.map(r => columns.map(c => r[c]));

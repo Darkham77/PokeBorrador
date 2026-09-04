@@ -32,14 +32,6 @@ class FleeTeleportSimWrapper extends BaseBattleSimulation {
 }
 
 test.describe('Battle Flee and Teleport Simulations', () => {
-  test.beforeEach(async ({ request }) => {
-    for (const k of ['sim_db_testfleesuccess', 'sim_db_testfleefail', 'sim_db_testteleport']) {
-      await request.post('/api/dev-sim-db-cleanup', {
-        headers: { 'x-db-key': k }
-      });
-    }
-  });
-
   test('should successfully flee from wild encounter via official UI and return cleanly to map', async ({ page }) => {
     const sim = new FleeTeleportSimWrapper(page, 'TestFleeSuccess');
     await sim.setup();
@@ -48,6 +40,7 @@ test.describe('Battle Flee and Teleport Simulations', () => {
     // Click official escape/close button in battle arena
     const fleeButton = page.locator('#battle-arena-modal-close-btn').first();
     await expect(fleeButton).toBeVisible();
+    await expect(fleeButton).toBeEnabled();
     await clickResilient(fleeButton);
 
     // Confirm dialog appears
@@ -65,6 +58,7 @@ test.describe('Battle Flee and Teleport Simulations', () => {
       return Boolean(store?.isBattleActive);
     });
     expect(isBattleActive).toBe(false);
+    sim.finish('should successfully flee from wild encounter via official UI and return cleanly to map');
   });
 
   test('should fail flee when player speed is penalized and receive enemy counter-attack', async ({ page }) => {
@@ -82,6 +76,8 @@ test.describe('Battle Flee and Teleport Simulations', () => {
 
     // Click flee button
     const fleeButton = page.locator('#battle-arena-modal-close-btn').first();
+    await expect(fleeButton).toBeVisible();
+    await expect(fleeButton).toBeEnabled();
     await clickResilient(fleeButton);
 
     const confirmButton = page.locator('#confirm-modal-btn').first();
@@ -98,6 +94,7 @@ test.describe('Battle Flee and Teleport Simulations', () => {
     expect(isBattleActive).toBe(true);
 
     await sim.forceFleeDebugger();
+    sim.finish('should fail flee when player speed is penalized and receive enemy counter-attack');
   });
 
   test('should handle Abra Teleport move with bench as a pivot switch without defeat slide', async ({ page }) => {
@@ -125,6 +122,7 @@ test.describe('Battle Flee and Teleport Simulations', () => {
         locationId: 'route1'
       });
     });
+    await awaitBattleReadyForInput(page);
 
     await armBattleReadyForInput(page);
     const moveBtn = page.locator('#move-btn-0').first();
@@ -140,5 +138,6 @@ test.describe('Battle Flee and Teleport Simulations', () => {
     expect(activeEnemyName).toBe('Kadabra');
 
     await sim.forceFleeDebugger();
+    sim.finish('should handle Abra Teleport move with bench as a pivot switch without defeat slide');
   });
 });

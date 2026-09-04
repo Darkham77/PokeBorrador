@@ -17,7 +17,7 @@ import {
   TYPE_EFFECTIVENESS_THRESHOLDS,
   DEFAULT_ACCURACY_BASE_STAT
 } from '@/logic/constants/gameplay';
-import { isLegendaryPokemonSpeciesId, isFossilPokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { isLegendaryPokemonSpeciesId, isFossilPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 /** Default maximum vigor value for standard non-legendary Pokémon. */
 export const DEFAULT_MAX_VIGOR = 10;
@@ -25,7 +25,7 @@ export const DEFAULT_MAX_VIGOR = 10;
 /** Maximum IV roll bound exclusive (0 to 31 inclusive). */
 export const MAX_IV_VALUE_EXCLUSIVE = 32;
 
-function isLegendaryOrFossil(pokemonId: string): boolean {
+function isLegendaryOrFossil(pokemonId: PokemonSpeciesId): boolean {
   if (!pokemonId) return false;
   const cleanId = toID(pokemonId);
   return isLegendaryPokemonSpeciesId(cleanId) || isFossilPokemonSpeciesId(cleanId);
@@ -206,7 +206,12 @@ export function getMoveDescription(id: string, mdProvided?: MoveBaseData | null)
     try {
       md = pokemonDataProvider.getMoveData(id);
     } catch {
-      // ignore
+      try {
+        const canonicalId = pokemonDataProvider.getMoveIdBySpanishName(id);
+        md = pokemonDataProvider.getMoveData(canonicalId);
+      } catch {
+        // ignore
+      }
     }
   }
   if (!md) {
@@ -231,7 +236,7 @@ export function getMoveDescription(id: string, mdProvided?: MoveBaseData | null)
   const cleanId = toID(md.id);
   if (cleanId) {
     try {
-      const translated = ((MOVE_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string }>)[cleanId] || {}); // open-record
+      const translated = ((MOVE_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string }>)[cleanId] || {}); // open-record: Generic key-value data dictionary container
       if (translated.desc) return translated.desc;
 
       const move = Dex.forGen(ACTIVE_GENERATION).moves.get(cleanId);

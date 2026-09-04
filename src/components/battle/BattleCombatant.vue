@@ -10,7 +10,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import VirtualEntity from './VirtualEntity.vue'
 import CombatShadow from './CombatShadow.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
-import type { BattleCombatantProps } from '@/types/battle/battle'
+import type { BattleCombatantProps, CombatantAnimTrigger } from '@/types/battle/battle'
 import { useBattleCombatantAnims, onSparkleEnter, onBallEnter, onBallLeave } from './useBattleCombatantAnims.ts'
 import { useBattleCombatantState } from './useBattleCombatantState.ts'
 import { useBattleCombatantSpriteLoop } from './useBattleCombatantSpriteLoop.ts'
@@ -41,6 +41,10 @@ const props = withDefaults(defineProps<BattleCombatantProps>(), {
   showGuides: false,
   isCaptureSuccess: false,
   sparkles: () => [],
+  isEnemy: false,
+  isShiny: false,
+  isBack: false,
+  isActive: true,
   isFainting: false,
   isEmerging: false,
   suppressFX: false,
@@ -56,7 +60,7 @@ const volatilesProps = computed(() => computeCombatantVolatiles(props.pokemon, p
 
 const emit = defineEmits<{
   (e: 'load', size: { w: number; h: number }): void
-  (e: 'animationEnd', type: 'attack' | 'faint' | 'damage'): void
+  (e: 'animationEnd', type: CombatantAnimTrigger): void
 }>()
 
 // Consumir el estado extraído en el composable

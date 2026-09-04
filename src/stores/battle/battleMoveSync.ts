@@ -50,7 +50,7 @@ export function syncActiveMovesFromRequest(active: BattleState | null, side: Bat
   }
 
   // Case B: Standard Pokemon - PRESERVE permanent moveset without truncating during lockedmove/twoturn/recharge/choice
-  const seenIds = new Set<string>() // runtime-set
+  const seenIds = new Set<string>() // runtime-set: Fast O(1) membership lookup set
 
   // 1. Update in-place all existing moves in poke.moves
   for (const move of currentMoves) {

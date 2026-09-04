@@ -7,6 +7,7 @@ import { ACTIVE_GENERATION, isEnabledPokemonId } from '@/data/system/constants'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { PokemonType } from '@/data/battle/types'
 import type { ItemId } from '@/data/inventory/items'
+import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { PokedexStatus } from '@/types/pokemon/pokemon'
 import {
   REPEL_ENCOUNTER_RATE_MODIFIER,
@@ -63,13 +64,19 @@ export function isTravelIncenseItemId(value: TravelBuffItemId): value is TravelI
 }
 
 
-export function getSelectableSpecies(bypassWhitelist = false) {
+export interface SelectableSpeciesOption {
+  id: PokemonSpeciesId
+  name: string
+  icon: string
+}
+
+export function getSelectableSpecies(bypassWhitelist = false): SelectableSpeciesOption[] {
   const db = pokemonDataProvider.getPokemonDb()
   return Object.keys(db)
-    .filter(id => bypassWhitelist || isEnabledPokemonId(id))
+    .filter((id): id is PokemonSpeciesId => isPokemonSpeciesId(id) && (bypassWhitelist || isEnabledPokemonId(id)))
     .map(id => ({
       id,
-      name: db[id]?.name ?? id, // text-ok
+      name: db[id]?.name ?? id, // domain-ok: UI text display localization string
       icon: pokemonDataProvider.getSpriteUrl(id)
     }))
 }
@@ -157,7 +164,7 @@ function getPokedexVisibility(
 
 function getPokemonBasicData(id: string, isSeen: boolean) {
   const data = isSeen ? pokemonDataProvider.getPokemonData(id) : null
-  const name = isSeen ? (data?.name ?? id.toUpperCase()) : 'Desconocido' // text-ok
+  const name = isSeen ? (data?.name ?? id.toUpperCase()) : 'Desconocido' // text-ok: UI text display localization string
   const types = data ? ([data.type, data.type2].filter((t): t is PokemonType => Boolean(t))) : []
   const hp = data?.hp || 0
   const atk = data?.atk || 0
@@ -206,11 +213,11 @@ interface SimpleEventStore {
   globalMultipliers?: {
     shiny?: number
   }
-  getSpeciesBonuses: (id: string) => { shiny?: number } | null | undefined
+  getSpeciesBonuses: (id: PokemonSpeciesId) => { shiny?: number; rate?: number } | null | undefined
 }
 
-export function getSharedShinyEventLines(id: string, eventStore: SimpleEventStore): string[] {
-  const lines: string[] = [] // no-domain
+export function getSharedShinyEventLines(id: PokemonSpeciesId, eventStore: SimpleEventStore): string[] {
+  const lines: string[] = [] // no-domain: Non-domain utility collection or data structure
   const globalShiny = eventStore.globalMultipliers?.shiny || 1
   if (globalShiny !== 1) {
     lines.push(`• Evento Shiny Global: x${globalShiny.toFixed(1)} de probabilidad Shiny`)
@@ -230,7 +237,7 @@ export interface SpawnTooltipData {
 }
 
 export function getSpawnCommonTooltipLines(poke: SpawnTooltipData, weather: string): string[] {
-  const lines: string[] = [] // no-domain
+  const lines: string[] = [] // no-domain: Non-domain utility collection or data structure
   if (poke.multiplier !== 1) {
     const change = poke.multiplier > 1 ? 'Aumento por Clima' : 'Reducción por Clima'
     const label = translateWeather(weather)
@@ -247,7 +254,7 @@ export function getSpawnCommonTooltipLines(poke: SpawnTooltipData, weather: stri
 
     const diffNet = poke.percentage - poke.basePercentage
     if (Math.abs(diffNet) > SPAWN_PERCENTAGE_DIFF_THRESHOLD_PCT) {
-      const direction = diffNet > 0 ? 'Aumento' : 'Reducción' // spanish-ok
+      const direction = diffNet > 0 ? 'Aumento' : 'Reducción' // spanish-ok: UI Spanish text localization label
       const detail = diffNet > 0
         ? 'redistribución proporcional al bloquearse, penalizarse o cambiar de hora otros Pokémon'
         : 'redistribución proporcional al inyectarse nuevos Pokémon o potenciarse otros encuentros'
@@ -310,7 +317,7 @@ export function applyFishingRodBudget(rates: number[], pool: string[], fishingRo
 }
 
 export interface RouteSpawnMappedItem {
-  id: string
+  id: PokemonSpeciesId
   name: string
   isSeen: boolean
   isCaught: boolean
@@ -336,7 +343,7 @@ export interface RouteSpawnMappedItem {
 }
 
 function buildRouteSpawnItem(
-  id: string,
+  id: PokemonSpeciesId,
   pData: { name: string; types: string[]; hp: number; atk: number; def: number; spa: number; spd: number; spe: number; totalStats: number },
   isSeen: boolean,
   isCaught: boolean,
@@ -388,7 +395,7 @@ function resolveEventBoostedStatus(statusClass: string, speciesBonuses: { rate: 
 }
 
 export interface BuildRouteSpawnParams {
-  id: string
+  id: PokemonSpeciesId
   percentage: number
   baseRate: number
   basePercentage: number

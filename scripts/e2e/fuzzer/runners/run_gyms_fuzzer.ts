@@ -9,8 +9,8 @@ import type { GymId } from '../../../../src/data/world/gyms.ts';
 const REPORT_FILE = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_gyms_coverage_report.json');
 
 async function runGymsFuzzer() {
-  const errors: string[] = []; // no-domain
-  const warnings: string[] = []; // no-domain
+  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
+  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
   const results: Array<{ gymId: string; diff: string; tmDropped: boolean; extraCoins: number; isFirst: boolean }> = [];
 
   let passed = 0;

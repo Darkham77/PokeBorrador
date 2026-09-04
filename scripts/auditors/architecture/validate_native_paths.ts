@@ -17,7 +17,7 @@
  *      on paths) that break POSIX/Windows cross-platform compatibility.
  *
  * Escape Hatches:
- *   `// path-ok`, `// url-ok`, `// env-ok`, `// cross-platform-ok`, `// security-ok`, `// string-ok`, `// no-domain`
+ *   `// path-ok`, `// url-ok`, `// env-ok`, `// cross-platform-ok`, `// security-ok`, `// string-ok: Internal string formatting or DOM token identifier`, `// no-domain: Non-domain utility collection or data structure`
  *
  * Usage:
  *   node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/architecture/validate_native_paths.ts
@@ -328,7 +328,7 @@ export function scanFileForNativePathViolations(filePath: string, content: strin
 
     // 4B. Hardcoded absolute Windows drive letters in string literals: 'C:\\...' or 'C:/...'
     if (/(['"`])([a-zA-Z]:(?:\\\\|\/)[^'"`\n]+)\1/.test(rawLine)) {
-      if (!rawLine.includes('// no-domain') && !rawLine.includes('// test-ok') && !rawLine.includes('// cross-platform-ok')) {
+      if (!rawLine.includes('// no-domain: Non-domain utility collection or data structure') && !rawLine.includes('// test-ok') && !rawLine.includes('// cross-platform-ok')) {
         violations.push({
           file: filePath,
           line: lineNum,
@@ -371,7 +371,7 @@ export function auditNativePaths(targetDir = process.cwd()): NativePathAuditResu
     .map(r => path.resolve(targetDir, r))
     .filter(p => fs.existsSync(p));
 
-  const allFiles: string[] = []; // no-domain
+  const allFiles: string[] = []; // no-domain: Non-domain utility collection or data structure
   for (const root of rootsToScan) {
     allFiles.push(...collectRepositoryFiles(root, targetDir, extraIgnorePatterns));
   }

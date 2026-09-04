@@ -31,29 +31,32 @@ export const TRAINER_TYPE_KEYS = [
 ] as const;
 
 export type TrainerTypeKey = (typeof TRAINER_TYPE_KEYS)[number];
-export const TRAINER_TYPE_KEYS_SET: ReadonlySet<string> = new Set(TRAINER_TYPE_KEYS); // runtime-set
+export const TRAINER_TYPE_KEYS_SET: ReadonlySet<string> = new Set(TRAINER_TYPE_KEYS); // runtime-set: Fast O(1) membership lookup set
 
 export function isTrainerTypeKey(raw: string): raw is TrainerTypeKey {
   return TRAINER_TYPE_KEYS_SET.has(raw);
 }
 
+export const TRAINER_TYPE_MATCH_MODES = ['any_type', 'pure_type', 'primary_type'] as const;
+export type TrainerTypeMatchMode = (typeof TRAINER_TYPE_MATCH_MODES)[number];
+
 export interface TrainerTypeDefinition {
-  readonly name: string; // domain-ok
+  readonly name: string; // domain-ok: Open dynamic text or non-domain string payload
   readonly sprite: NpcSpriteId;
   readonly archetype: NpcArchetype;
   readonly types?: readonly PokemonType[];
-  readonly matchMode?: 'any_type' | 'pure_type' | 'primary_type';
+  readonly matchMode?: TrainerTypeMatchMode;
   readonly extraPool?: readonly PokemonSpeciesId[];
   readonly excludedSpecies?: readonly PokemonSpeciesId[];
   readonly pool: readonly PokemonSpeciesId[];
 }
 
 export interface TrainerTypeRawConfig {
-  readonly name: string; // domain-ok
+  readonly name: string; // domain-ok: Open dynamic text or non-domain string payload
   readonly sprite: NpcSpriteId;
   readonly archetype: NpcArchetype;
   readonly types?: readonly PokemonType[];
-  readonly matchMode?: 'any_type' | 'pure_type' | 'primary_type';
+  readonly matchMode?: TrainerTypeMatchMode;
   readonly extraPool?: readonly PokemonSpeciesId[];
   readonly excludedSpecies?: readonly PokemonSpeciesId[];
   readonly pool?: readonly PokemonSpeciesId[];
@@ -63,7 +66,7 @@ export const EXCLUDED_LEGENDARY_IDS = [
   'articuno', 'zapdos', 'moltres', 'mewtwo', 'mew',
   'raikou', 'entei', 'suicune', 'lugia', 'hooh', 'celebi'
 ] as const;
-export const EXCLUDED_LEGENDARY_IDS_SET: ReadonlySet<string> = new Set(EXCLUDED_LEGENDARY_IDS); // runtime-set
+export const EXCLUDED_LEGENDARY_IDS_SET: ReadonlySet<string> = new Set(EXCLUDED_LEGENDARY_IDS); // runtime-set: Fast O(1) membership lookup set
 
 const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
   'caza_bichos': {
@@ -223,8 +226,8 @@ function computeTrainerTypes(): Record<TrainerTypeKey, TrainerTypeDefinition> {
     }
 
     const matched = new Set<PokemonSpeciesId>();
-    const allowedTypes = new Set<string>(def.types ? def.types.map(t => t.toLowerCase()) : []); // runtime-set
-    const excluded = new Set<string>(def.excludedSpecies ? def.excludedSpecies.map(s => s.toLowerCase()) : []); // runtime-set
+    const allowedTypes = new Set<string>(def.types ? def.types.map(t => t.toLowerCase()) : []); // runtime-set: Fast O(1) membership lookup set
+    const excluded = new Set<string>(def.excludedSpecies ? def.excludedSpecies.map(s => s.toLowerCase()) : []); // runtime-set: Fast O(1) membership lookup set
     const mode = def.matchMode ?? 'any_type';
 
     if (allowedTypes.size > 0) {

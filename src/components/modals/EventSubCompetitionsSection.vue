@@ -2,9 +2,10 @@
 import type { ResolvedSubCompetition, SubCompetitionConfig } from '@/logic/events/eventEngine'
 import { resolveSubCompetitionDirection } from '@/logic/events/eventEngine'
 import RewardPillsGroup from '@/components/shared/RewardPillsGroup.vue'
+import type { EventRewardType } from '@/types/system/stores'
 
-interface Prize extends Record<string, unknown> { // open-record
-  type?: 'money' | 'bc' | 'item' | 'pokemon' | 'mixed'
+interface Prize extends Record<string, unknown> { // open-record: Generic key-value data dictionary container
+  type?: EventRewardType
   amount?: number
   qty?: number
   money?: number
@@ -35,12 +36,12 @@ const getSubCompDefaultIcon = (catId: string) => {
 
 const getSubCompTitle = (sub: ResolvedSubCompetition | SubCompetitionConfig) => {
   const dir = resolveSubCompetitionDirection(props.eventId, sub.id, sub.order)
-  const speciesSuffix = ('targetSpecies' in sub && sub.targetSpecies) ? ` (${sub.targetSpecies.toUpperCase()})` : '' // domain-ok
+  const speciesSuffix = ('targetSpecies' in sub && sub.targetSpecies) ? ` (${sub.targetSpecies.toUpperCase()})` : '' // domain-ok: Open dynamic text or non-domain string payload
   if (sub.metric === 'total_ivs') {
     return 'Mayor cantidad de IVs totales (0 a 186)'
   }
   if (sub.metric === 'stat_iv' && sub.targetStat) {
-    return `Mayor IV en ${sub.targetStat.toUpperCase()}${speciesSuffix}` // domain-ok
+    return `Mayor IV en ${sub.targetStat.toUpperCase()}${speciesSuffix}` // domain-ok: Open dynamic text or non-domain string payload
   }
   if (sub.metric === 'weight') {
     return (dir === 'max' ? 'Mayor Peso' : 'Menor Peso') + speciesSuffix

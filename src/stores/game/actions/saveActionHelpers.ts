@@ -90,6 +90,8 @@ export async function handleSaveRollback(
     } catch (e) {
       logger.warn('SAVE', 'Error al actualizar almacenamiento local (LS/OPFS) durante el rollback:', e);
     } finally {
+      const { resetSaveOperationState } = await import('@/logic/auth/saveService.ts');
+      resetSaveOperationState();
       await Promise.resolve();
       if (typeof window !== 'undefined') window.location.reload();
     }

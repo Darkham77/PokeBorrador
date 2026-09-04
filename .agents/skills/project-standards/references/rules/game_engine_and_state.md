@@ -51,6 +51,7 @@
 
 - **English Identifier Mandate**: Logical identifiers (`id`) for items, Pokémon, abilities, natures, moves, etc., MUST be strictly in English (using official Showdown format). Spanish is reserved exclusively for user-facing UI text.
 - **Showdown ID Format**: All identifiers MUST be all lowercase, alphanumeric characters only (no spaces, no hyphens, no underscores). Correct non-conforming IDs across configs, code, and databases immediately upon discovery.
+- **Showdown Healthy Status Semantics**: An unafflicted Pokémon's status condition is represented strictly as an empty string `''` (never `null`). Status clearance and condition evaluations across engine, items, and UI logic MUST check `Boolean(pokemon.status)` to avoid falsely evaluating healthy Pokémon as afflicted.
 
 ## 7. Movepool & Learnset Legality Standards
 

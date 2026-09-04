@@ -12,7 +12,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 const gameStore = useGameStore()
 const livePvP = useLivePvPStore()
 
-const battle = computed(() => livePvP.battleState as PvPBattleState & { active: boolean, opponentName: string, opponentElo: number }) // domain-ok
+const battle = computed(() => livePvP.battleState as PvPBattleState & { active: boolean, opponentName: string, opponentElo: number }) // domain-ok: Open dynamic text or non-domain string payload
 
 // PvP Sync (Pure Vue)
 const syncToGameBus = () => {

@@ -152,13 +152,13 @@ describe('Database Isolation for Local User', () => {
     // Start first save (will block on writeOpfsFile)
     const firstSavePromise = saveGame(state, user, { db: mockDb, showNotif: false })
 
-    // Call saveGame again concurrently (should return null immediately)
-    const secondSaveResult = await saveGame(state, user, { db: mockDb, showNotif: false })
-    expect(secondSaveResult).toBeNull()
+    // Call saveGame again concurrently (should be queued safely without race condition)
+    const secondSavePromise = saveGame(state, user, { db: mockDb, showNotif: false })
 
     // Resolve the first save
     resolveSave()
-    const firstSaveResult = await firstSavePromise
+    const [firstSaveResult, secondSaveResult] = await Promise.all([firstSavePromise, secondSavePromise])
     expect(firstSaveResult?.success).toBe(true)
+    expect(secondSaveResult?.success).toBe(true)
   })
 })

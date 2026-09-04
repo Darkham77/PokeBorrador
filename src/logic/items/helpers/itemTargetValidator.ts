@@ -50,7 +50,7 @@ export const isValidTarget = (itemId: ItemId | (string & {}), pokemon: Pokemon):
   }
 
   // 5. PP (Restauración de PP)
-  if (['ether', 'elixir', 'elixirmax'].includes(resolvedId)) { // spanish-ok
+  if (['ether', 'elixir', 'elixirmax'].includes(resolvedId)) { // spanish-ok: UI Spanish text localization label
     return canRestorePP(pokemon);
   }
 
@@ -108,6 +108,14 @@ export const isValidTarget = (itemId: ItemId | (string & {}), pokemon: Pokemon):
   if (isTM) {
     const dynamicRes = getDynamicItemEffect(resolvedId, pokemon);
     return !!(dynamicRes && dynamicRes.success);
+  }
+
+  // 12. Objetos Equipables (Held Items)
+  if (itemExists && !isTM) {
+    const itemData = getItemById(resolvedId);
+    if (itemData && (itemData.cat === 'combat_held' || (itemData.cat === 'breeding_held' && itemData.id !== 'vigorrestorer' && !itemData.id.includes('berry')))) {
+      return true;
+    }
   }
 
   return false;

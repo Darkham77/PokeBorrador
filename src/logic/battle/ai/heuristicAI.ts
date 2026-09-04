@@ -42,7 +42,7 @@ function getValidMovesFromRequest(enemy: Pokemon, store?: BattleContext): Heuris
   return enemy.moves
     .filter((m): m is Move => !!m && m.pp > 0 && !(enemy.disabledMove && m.id === enemy.disabledMove.id))
     .map(m => {
-      const reqMove = reqMoves.find((r: { id?: string; disabled?: boolean | string; pp?: number }) => r.id === m.id); // type-ok
+      const reqMove = reqMoves.find((r: { id?: string; disabled?: boolean | string; pp?: number }) => r.id === m.id); // type-ok: Type contract declaration
       if (!m.id) throw new Error(`[HeuristicAI] Move is missing an id: ${JSON.stringify(m)}`);
       return {
         id: m.id,

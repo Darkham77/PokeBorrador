@@ -5,6 +5,7 @@ import { useEventStore } from '@/stores/events'
 import { useUIStore } from '@/stores/ui'
 import { isAwardClaimable } from '@/logic/events/eventValidators'
 import { getEventDisplayName as getEventDisplayNameCore } from '@/logic/events/eventEngine'
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 import type { PendingAward } from '@/types/system/stores'
 import RewardPillsGroup from '@/components/shared/RewardPillsGroup.vue'
 
@@ -12,22 +13,54 @@ const eventStore = useEventStore()
 const uiStore = useUIStore()
 const { pendingAwards, allEvents } = storeToRefs(eventStore)
 
-const getEventDisplayName = (eventId: string): string => {
+const getEventDisplayName = (eventId: string, awardedAt?: string): string => {
   const ev = (allEvents.value || []).find(e => e.id === eventId)
   if (!ev) return 'Evento desconocido'
+  if (awardedAt) {
+    try {
+      const awardedZdt = Temporal.Instant.from(awardedAt).toZonedDateTimeISO(GAME_TIMEZONE)
+      return getEventDisplayNameCore(ev, awardedZdt)
+    } catch {
+      // fallback
+    }
+  }
   return getEventDisplayNameCore(ev)
+}
+
+const getCategoryBadge = (award: PendingAward): { icon: string; name: string } | null => {
+  const catId = award.category_id || ''
+  let catName = award.category_name || ''
+  if (!catName && catId) {
+    catName = (
+      catId.startsWith('weight') ? 'Mayor/Menor Peso' :
+      catId.startsWith('height') ? 'Mayor/Menor Altura' :
+      catId.startsWith('level') ? 'Mayor Nivel' :
+      catId.startsWith('friendship') ? 'Mayor Amistad' :
+      'Mayor IVs'
+    )
+  }
+  if (catName) {
+    let icon = '🏆'
+    if (catId.startsWith('ivs') || catName.includes('Genética') || catName.includes('IV')) icon = '🧬'
+    else if (catId.startsWith('weight') || catName.includes('Peso') || catName.includes('Masa')) icon = '⚖️'
+    else if (catId.startsWith('height') || catName.includes('Altura') || catName.includes('Envergadura')) icon = '📏'
+    else if (catId.startsWith('level') || catName.includes('Nivel')) icon = '📈'
+    else if (catId.startsWith('friendship') || catName.includes('Amistad')) icon = '💖'
+    return { icon, name: catName }
+  }
+  return null
 }
 
 const parsePrize = (rawPrize: unknown): Record<string, unknown> => {
   if (!rawPrize) return {}
   if (typeof rawPrize === 'string') {
     try {
-      return JSON.parse(rawPrize) as Record<string, unknown> // open-record
+      return JSON.parse(rawPrize) as Record<string, unknown> // open-record: Generic key-value data dictionary container
     } catch {
       return {}
     }
   }
-  return typeof rawPrize === 'object' ? (rawPrize as Record<string, unknown>) : {} // open-record
+  return typeof rawPrize === 'object' ? (rawPrize as Record<string, unknown>) : {} // open-record: Generic key-value data dictionary container
 }
 
 const checkIfClaimable = (award: PendingAward): boolean => {
@@ -75,13 +108,20 @@ const confirmDiscard = (awardId: string, eventName: string) => {
       <div class="awards-list">
         <div
           v-for="award in pendingAwards"
+          :id="'pending-award-item-' + award.id"
           :key="award.id"
           class="award-item"
           :class="{ 'is-legacy': !checkIfClaimable(award) }"
         >
           <div class="award-info">
             <div class="award-name-row">
-              <span class="award-name">{{ getEventDisplayName(award.event_id || '') }}</span>
+              <span class="award-name">{{ getEventDisplayName(award.event_id || '', award.awarded_at) }}</span>
+              <span
+                v-if="getCategoryBadge(award)"
+                class="category-badge"
+              >
+                <span class="emoji">{{ getCategoryBadge(award)?.icon }}</span> {{ getCategoryBadge(award)?.name }}
+              </span>
               <span
                 v-if="!checkIfClaimable(award)"
                 class="legacy-badge"
@@ -205,6 +245,20 @@ const confirmDiscard = (awardId: string, eventName: string) => {
       border: 1px solid Rgba(239, 68, 68, 0.4);
       color: #fca5a5;
       letter-spacing: 0.5px;
+    }
+
+    .category-badge {
+      @include pixelated;
+      font-size: 7px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: Rgba(59, 130, 246, 0.15);
+      border: 1px solid Rgba(59, 130, 246, 0.4);
+      color: #93c5fd;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .award-name {

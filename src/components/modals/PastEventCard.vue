@@ -51,12 +51,12 @@ const openEventDetail = () => {
   if (!canOpenDetail.value || !matchingEvent.value) return
   const fullEvent: GameEvent & { ended_at?: string } = {
     ...matchingEvent.value,
-    name: matchingEvent.value.name || props.item.event_name,
-    description: matchingEvent.value.description || props.item.event_description,
-    icon: matchingEvent.value.icon || props.item.event_icon,
-    schedule: matchingEvent.value.schedule || props.item.event_schedule,
-    start_at: matchingEvent.value.start_at || props.item.start_at,
-    end_at: matchingEvent.value.end_at || props.item.end_at,
+    name: matchingEvent.value.name ? matchingEvent.value.name : props.item.event_name,
+    description: matchingEvent.value.description ? matchingEvent.value.description : props.item.event_description,
+    icon: matchingEvent.value.icon ? matchingEvent.value.icon : props.item.event_icon,
+    schedule: matchingEvent.value.schedule ? matchingEvent.value.schedule : props.item.event_schedule,
+    start_at: matchingEvent.value.start_at ? matchingEvent.value.start_at : props.item.start_at,
+    end_at: matchingEvent.value.end_at ? matchingEvent.value.end_at : props.item.end_at,
     ended_at: props.item.ended_at
   }
   modalStore.open('EventDetail', {
@@ -158,7 +158,7 @@ const formatDate = (isoString?: string): string => {
 }
 
 interface WeeklyScheduleData {
-  type?: string // domain-ok
+  type?: string // domain-ok: Open dynamic text or non-domain string payload
   days?: number[]
   startHour?: number
   endHour?: number

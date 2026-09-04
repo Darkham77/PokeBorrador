@@ -30,7 +30,7 @@ function isTradeEvolutionSpeciesId(id: string): id is TradeEvolutionSpeciesId {
 
 export function getLevelEvolution(id: string): { level: number; to: PokemonSpeciesId } | null {
   if (!isLevelEvolutionSpeciesId(id)) return null;
-  const evolution = EVOLUTION_TABLE[id as keyof typeof EVOLUTION_TABLE]; // domain-ok
+  const evolution = EVOLUTION_TABLE[id as keyof typeof EVOLUTION_TABLE]; // domain-ok: Open dynamic text or non-domain string payload
   if (!evolution || Array.isArray(evolution) || !('level' in evolution) || typeof evolution.level !== 'number') {
     return null;
   }
@@ -40,9 +40,9 @@ export function getLevelEvolution(id: string): { level: number; to: PokemonSpeci
   };
 }
 
-export function getTradeEvolution(id: string): PokemonSpeciesId | null { // result-ok
+export function getTradeEvolution(id: string): PokemonSpeciesId | null { // result-ok: Operation result wrapper payload
   if (!isTradeEvolutionSpeciesId(id)) return null;
-  return requirePokemonSpeciesId(TRADE_EVOLUTIONS[id as keyof typeof TRADE_EVOLUTIONS]); // domain-ok
+  return requirePokemonSpeciesId(TRADE_EVOLUTIONS[id as keyof typeof TRADE_EVOLUTIONS]); // domain-ok: Open dynamic text or non-domain string payload
 }
 
 /**
@@ -50,7 +50,7 @@ export function getTradeEvolution(id: string): PokemonSpeciesId | null { // resu
  */
 export function getStoneEvolution(id: string): { stone: string; to: PokemonSpeciesId } | null {
   if (isStoneEvolutionKey(id)) {
-    const evolution = STONE_EVOLUTIONS[id as keyof typeof STONE_EVOLUTIONS]; // domain-ok
+    const evolution = STONE_EVOLUTIONS[id as keyof typeof STONE_EVOLUTIONS]; // domain-ok: Open dynamic text or non-domain string payload
     return { stone: evolution.stone, to: requirePokemonSpeciesId(evolution.to) };
   }
   const prefix = `${id}_`;
@@ -90,6 +90,6 @@ const PRE_EVOLUTION_MAP: Partial<Record<PokemonSpeciesId, PokemonSpeciesId>> = O
   })()
 );
 
-export function getPreEvolution(speciesId: PokemonSpeciesId): PokemonSpeciesId | null { // domain-ok
+export function getPreEvolution(speciesId: PokemonSpeciesId): PokemonSpeciesId | null { // domain-ok: Open dynamic text or non-domain string payload
   return PRE_EVOLUTION_MAP[speciesId] ?? null;
 }

@@ -10,18 +10,21 @@ import { getGuardianData } from '@/logic/war/guardianEngine'
 import { GUARDIAN_ENCOUNTER_CHANCE_PERCENT } from '@/logic/constants/gameplay'
 
 import type { DominanceInfo } from '@/types/system/stores'
-import { requireFactionId, requireISODateKey, type FactionId } from '@/types/system/game'
+import { requireFactionId, requireISODateKey, FACTION_IDS, type FactionId } from '@/types/system/game'
 import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
 
 interface WarPointsRecord {
-  map_id: string
-  faction: string
+  map_id: MapRouteId
+  faction: FactionId
   points: number
 }
 
+export const WAR_WINNER_FACTIONS = [...FACTION_IDS, 'tie'] as const
+export type WarWinnerFaction = (typeof WAR_WINNER_FACTIONS)[number]
+
 interface DominanceRecord {
-  map_id: string
-  winner_faction: string
+  map_id: MapRouteId
+  winner_faction: WarWinnerFaction | null
 }
 
 export const useWarStore = defineStore('war', () => {
@@ -77,7 +80,7 @@ export const useWarStore = defineStore('war', () => {
             .eq('user_id', authStore.user.id)
             .eq('capture_date', today)
           
-          const typedGuardians = guardians as { map_id: string }[] | null;
+          const typedGuardians = guardians as { map_id: MapRouteId }[] | null;
           dailyGuardianCaptures.value = typedGuardians?.map(g => requireMapRouteId(g.map_id)) || []
 
           if (typedGuardians && Array.isArray(typedGuardians)) {
@@ -106,7 +109,7 @@ export const useWarStore = defineStore('war', () => {
    * Adds war points for the current faction.
    * Logic handles Daily Cap and Faction requirement.
    */
-  async function addPoints(mapId: string, eventType: string, success: boolean, customPoints?: number) {
+  async function addPoints(mapId: MapRouteId, eventType: string, success: boolean, customPoints?: number) {
     const routeId = requireMapRouteId(mapId)
     if (!faction.value || !isDisputeActive.value || !gameStore.db) return 0
     
@@ -158,7 +161,7 @@ export const useWarStore = defineStore('war', () => {
     const today = requireISODateKey(Temporal.Now.plainDateISO().toString())
     if (!gameStore.state.warDailyCoins) gameStore.state.warDailyCoins = {}
     
-    const dailyCoins = gameStore.state.warDailyCoins as Record<string, number> // open-record
+    const dailyCoins = gameStore.state.warDailyCoins as Record<string, number> // open-record: Generic key-value data dictionary container
     if (!dailyCoins[today]) dailyCoins[today] = 0
     if (!gameStore.state.warPointsAccumulator) gameStore.state.warPointsAccumulator = 0
 
@@ -219,7 +222,7 @@ export const useWarStore = defineStore('war', () => {
   /**
    * Records a guardian capture or defeat.
    */
-  async function claimGuardian(mapId: string, isDefeat = false) {
+  async function claimGuardian(mapId: MapRouteId, isDefeat = false) {
     const routeId = requireMapRouteId(mapId)
     const today = requireISODateKey(Temporal.Now.plainDateISO().toString())
     
@@ -285,7 +288,7 @@ export const useWarStore = defineStore('war', () => {
       ;(dom as DominanceRecord[] | null)?.forEach(row => {
         const routeId = requireMapRouteId(row.map_id)
         if (!newDom[routeId]) newDom[routeId] = { union: 0, poder: 0, winner: null }
-        newDom[routeId]!.winner = row.winner_faction === 'tie' ? null : requireFactionId(row.winner_faction)
+        newDom[routeId]!.winner = (!row.winner_faction || row.winner_faction === 'tie') ? null : requireFactionId(row.winner_faction)
       })
     }
 
@@ -295,7 +298,7 @@ export const useWarStore = defineStore('war', () => {
   /**
    * Triggers a guardian appearance check.
    */
-  function checkGuardian(mapId: string, allMapIds: string[]) {
+  function checkGuardian(mapId: MapRouteId, allMapIds: MapRouteId[]) {
     const routeId = requireMapRouteId(mapId)
     const routeIds = allMapIds.map(id => requireMapRouteId(id))
     if (dailyGuardianCaptures.value.includes(routeId)) return null
@@ -317,7 +320,7 @@ export const useWarStore = defineStore('war', () => {
       .select('map_id')
       .eq('week_id', prevWeek)
 
-    if (existingDom && (existingDom as Array<{ map_id: string }>).length > 0) {
+    if (existingDom && (existingDom as Array<{ map_id: MapRouteId }>).length > 0) {
       return
     }
 

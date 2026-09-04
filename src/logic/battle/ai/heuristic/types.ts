@@ -5,6 +5,7 @@
 
 import type { BattleConditionKey, BattleActionType } from '@/types/battle/battle';
 import type { PokemonStatus } from '@/types/pokemon/pokemon';
+import type { PokemonMoveId } from '@/data/battle/moves';
 import type { SideID } from '@pkmn/sim';
 
 const _HEURISTIC_VOLATILE_KEYS = [
@@ -19,7 +20,7 @@ const _HEURISTIC_VOLATILE_KEYS = [
   'yawn',
   'perishsong',
   'attract',
-  'embargo', // spanish-ok
+  'embargo', // spanish-ok: UI Spanish text localization label
   'healblock',
   'torment',
   'charge',
@@ -35,7 +36,7 @@ const _HEURISTIC_VOLATILE_KEYS = [
 export type HeuristicVolatileKey = typeof _HEURISTIC_VOLATILE_KEYS[number];
 
 export interface HeuristicPokemonMove {
-  id: string;
+  id: PokemonMoveId;
   name: string;
   type: string;
   category: string;
@@ -60,7 +61,7 @@ export interface HeuristicPokemonState {
   baseStats: { hp: number; atk: number; def: number; spa: number; spd: number; spe: number };
   stats: { hp: number; atk: number; def: number; spa: number; spd: number; spe: number };
   moves: HeuristicPokemonMove[];
-  knownMoves: string[];
+  knownMoves: PokemonMoveId[];
   ability: string;       // mapped from pokemon.ability (canonical)
   knownAbility: string | null;
   item: string;          // mapped from pokemon.heldItem (canonical)
@@ -93,7 +94,7 @@ export interface HeuristicBattleSnapshot {
 }
 
 export interface HeuristicMoveInfo {
-  id: string;
+  id: PokemonMoveId;
   pp: number;
   disabled: boolean;
 }
@@ -102,7 +103,7 @@ export type HeuristicDecisionSource = 'heuristic' | 'fallback' | 'random';
 
 export interface HeuristicDecision {
   type: BattleActionType;
-  moveId?: string;       // move ID (when type === 'move')
+  moveId?: PokemonMoveId;       // move ID (when type === 'move')
   moveIndex?: number;    // 1-based index into available moves
   switchTeamIndex?: number; // 0-based index into team array
   source: HeuristicDecisionSource;
@@ -160,7 +161,7 @@ export interface StrategicState {
 // ============================================================
 
 export interface DamageResult {
-  move: string;
+  move: PokemonMoveId;
   attacker: string;
   defender: string;
   minPercent: number;

@@ -13,6 +13,8 @@ import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { PokemonType } from '@/data/battle/types'
+import { isPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { toID } from '@/logic/utils/strings'
 import { logger } from '@/logic/utils/logger'
 
 const DEFAULT_SHADOW_BODY_RADIUS_PCT = 0.4;
@@ -20,13 +22,11 @@ const SHADOW_PERCENTAGE_SCALE_FACTOR = 250;
 const DEFAULT_STABLE_GROUND_Y_PCT = '75%';
 
 function computeAnimatedKey(
-  pokemonId: string | number | null | undefined,
+  pokemonId: PokemonSpeciesId,
   isBack = false,
   gender?: string | null
 ): AnimatedSpriteId | null {
-  if (!pokemonId) return null
-  const strId = String(pokemonId).toLowerCase() // text-ok
-  const spriteNum = requirePokemonSpriteValue(strId)
+  const spriteNum = requirePokemonSpriteValue(pokemonId)
   const match = String(spriteNum).match(/^(\d+)(.*)$/)
   if (!match) return null
   const numId = match[1]!
@@ -47,11 +47,12 @@ function computeAnimatedKey(
       }
     } else {
       const femaleFront = `${cand}_f`
+      const front = cand
       if (isFemale && hasAnimatedSpriteId(femaleFront)) {
         return femaleFront
       }
-      if (hasAnimatedSpriteId(cand)) {
-        return cand
+      if (hasAnimatedSpriteId(front)) {
+        return front
       }
     }
   }
@@ -59,13 +60,28 @@ function computeAnimatedKey(
   return null
 }
 
-function checkAnimated(pokemonId: string | null | undefined, gender?: string | null): boolean {
-  if (!pokemonId) return false
+function checkAnimated(pokemonId: PokemonSpeciesId, gender?: string | null): boolean {
   return !!computeAnimatedKey(pokemonId, false, gender) || !!computeAnimatedKey(pokemonId, true, gender)
 }
 
-function getFinalSpriteUrl(pokemon: { id: string | number; form?: string; gender?: string | null }, isShiny: boolean, isBack: boolean): string {
-  const spriteId = pokemon.form && pokemon.form !== 'normal' ? `${pokemon.id}-${pokemon.form}` : String(pokemon.id)
+interface SpriteResolutionTarget {
+  id: PokemonSpeciesId
+  form?: string
+  gender?: string | null
+}
+
+function getEffectiveSpriteId(pokemon: SpriteResolutionTarget): PokemonSpeciesId {
+  if (pokemon.form && pokemon.form !== 'normal') {
+    const combined = toID(`${pokemon.id}${pokemon.form}`)
+    if (isPokemonSpeciesId(combined)) {
+      return combined
+    }
+  }
+  return requirePokemonSpeciesId(pokemon.id)
+}
+
+function getFinalSpriteUrl(pokemon: SpriteResolutionTarget, isShiny: boolean, isBack: boolean): string {
+  const spriteId = getEffectiveSpriteId(pokemon)
   const isAnim = checkAnimated(spriteId, pokemon.gender)
   const url = getAssetUrl(ASSET_TYPES.POKEMON, spriteId, { isShiny, isBack, isAnimated: isAnim })
   if (isAnim && url) {
@@ -86,7 +102,7 @@ interface Position {
 }
 
 export function hasAnimatedShadowKey(
-  pokemonId: string | number | null | undefined,
+  pokemonId: PokemonSpeciesId,
   gender?: string | null
 ): boolean {
   return !!computeAnimatedKey(pokemonId, false, gender) || !!computeAnimatedKey(pokemonId, true, gender)
@@ -95,8 +111,8 @@ export function hasAnimatedShadowKey(
 export function computeShadowCoords(pokemon: Pokemon | null | undefined, isBack = false): { x: number; y: number } {
   if (!pokemon) return { x: 50, y: 80 }
   
-  const spriteId = String(pokemon.id).toLowerCase()
-  if (hasAnimatedShadowKey(spriteId, pokemon.gender)) {
+  const spriteId = pokemon.id ? getEffectiveSpriteId(pokemon as SpriteResolutionTarget) : undefined
+  if (spriteId && hasAnimatedShadowKey(spriteId, pokemon.gender)) {
     const key = computeAnimatedKey(spriteId, isBack, pokemon.gender)
     if (key) {
       const data = requireAnimatedSpriteData(key)
@@ -110,7 +126,7 @@ export function computeShadowCoords(pokemon: Pokemon | null | undefined, isBack 
   }
 
   // Fallback to static feet database
-  const url = getFinalSpriteUrl(pokemon, !!pokemon.isShiny, isBack)
+  const url = getFinalSpriteUrl(pokemon as SpriteResolutionTarget, !!pokemon.isShiny, isBack)
   const coords = getPokemonFeetCoords(url)
   return { x: coords.feetX, y: coords.feetY }
 }
@@ -122,8 +138,8 @@ export function computeShadowBodyRadius(
 ): string {
   if (!pokemon) return `${visualRadius * SHADOW_PERCENTAGE_SCALE_FACTOR}%`
 
-  const spriteId = String(pokemon.id).toLowerCase()
-  const animKey = computeAnimatedKey(spriteId, isBack, pokemon.gender) || computeAnimatedKey(spriteId, !isBack, pokemon.gender)
+  const spriteId = pokemon.id ? getEffectiveSpriteId(pokemon as SpriteResolutionTarget) : undefined
+  const animKey = spriteId ? (computeAnimatedKey(spriteId, isBack, pokemon.gender) || computeAnimatedKey(spriteId, !isBack, pokemon.gender)) : null
   const meta = animKey ? requireAnimatedSpriteData(animKey) : null
   const bodyRadius = meta?.bodyRadius ?? DEFAULT_SHADOW_BODY_RADIUS_PCT
   return `${bodyRadius * SHADOW_PERCENTAGE_SCALE_FACTOR}%`
@@ -135,17 +151,13 @@ export function isFlying(pokemon: Pokemon | null | undefined): boolean {
   if (!data) return false
   if (data.isFloating !== undefined) return data.isFloating
   
-  const types: PokemonType[] = [] // no-domain
+  const types: PokemonType[] = [] // no-domain: Non-domain utility collection or data structure
   if (data.type) types.push(data.type as PokemonType)
   if (data.type2) types.push(data.type2 as PokemonType)
   return types.includes('flying')
 }
 
-function getEffectiveSpriteId(pokemon: { id: string | number; form?: string }): string {
-  return pokemon.form && pokemon.form !== 'normal' ? `${pokemon.id}-${pokemon.form}` : String(pokemon.id)
-}
-
-function getShadowWidth(pokemon: { id: string | number; form?: string; gender?: string | null }, isBack: boolean): string {
+function getShadowWidth(pokemon: SpriteResolutionTarget, isBack: boolean): string {
   const spriteId = getEffectiveSpriteId(pokemon)
   const animKey = computeAnimatedKey(spriteId, isBack, pokemon.gender) || computeAnimatedKey(spriteId, !isBack, pokemon.gender)
   const meta = animKey ? requireAnimatedSpriteData(animKey) : null

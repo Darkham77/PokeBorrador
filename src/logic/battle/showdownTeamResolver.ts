@@ -21,7 +21,7 @@ export class ShowdownTeamResolver {
     
     const resolved: Pokemon[] = [];
     request.side.pokemon.forEach((reqMon) => {
-      const pWithUid = reqMon as RequestPokemonWithUid | null | undefined; // domain-ok
+      const pWithUid = reqMon as RequestPokemonWithUid | null | undefined; // domain-ok: Open dynamic text or non-domain string payload
       if (pWithUid && pWithUid.uid) {
         const found = team.find(p => p && p.uid === pWithUid.uid);
         if (found) resolved.push(found);
@@ -61,7 +61,7 @@ export class ShowdownTeamResolver {
       }
       return found;
     }
-    const reqMon = request.side.pokemon[slotNum - 1] as RequestPokemonWithUid | null | undefined; // domain-ok
+    const reqMon = request.side.pokemon[slotNum - 1] as RequestPokemonWithUid | null | undefined; // domain-ok: Open dynamic text or non-domain string payload
     if (!reqMon || !reqMon.uid) {
       throw new Error(`[ShowdownTeamResolver] Slot de Showdown ${slotNum} no tiene un Pokémon válido.`);
     }

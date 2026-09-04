@@ -57,7 +57,7 @@ Resumed at: Step 2 (E2E Simulations Execution)
 |---|---|---|---|---|
 | FIX-01 | Dead Code / Quality | Unused exports and obsolete mock constants | Removed export modifiers from internal calculation helpers and purged dead constants | `movePowerMultipliers.ts`, `npcEncounterChances.ts`, `gameplay.ts`, `encounters.ts` |
 | FIX-02 | Security (CWE-79) | Non-literal v-html sink flags in Vue components | Added hasSecuritySuppression bridge in audit_project.ts to recognize localized fallow-ignore annotations | `scripts/auditors/architecture/audit_project.ts` |
-| FIX-03 | UI Translation | Unannotated Spanish UI string in buffs helper | Marked name: 'Repelente' with // spanish-ok | `src/stores/battle/buffsHelper.ts` |
+| FIX-03 | UI Translation | Unannotated Spanish UI string in buffs helper | Marked name: 'Repelente' with // spanish-ok: UI Spanish text localization label | `src/stores/battle/buffsHelper.ts` |
 | FIX-04 | Audit CLI Tools | Ad-hoc node -e scripting for warnings reporting | Built official report_audit_warnings.ts CLI and package.json scripts audit:warnings / audit:summary | `scripts/auditors/architecture/report_audit_warnings.ts`, `package.json` |
 | FIX-05 | Breeding UI | Faltaba atributo :id determinista en tarjetas de huevos (`egg-hud-card-${egg.uid}`) | Agregado :id strictly usando `egg.uid` sin fallbacks | `src/components/home/HomeBreedingWidget.vue` |
 | FIX-06 | E2E Capture Suites | Uso de import inválido `requireInventoryItemId` y dependencias de UI de depuración inestables | Reemplazado por inicialización determinista de store con `requireItemId` | `battle_capture.simulation.ts`, `battle_capture_reload_persistence.simulation.ts`, `battle_catch_breakout_and_whiteout.simulation.ts` |

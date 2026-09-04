@@ -63,23 +63,33 @@ export function requireWeatherId(value: string): WeatherId {
   throw new Error(`Invalid weather id: ${value}`);
 }
 
-const SHOWDOWN_WEATHER_IDS = [
-  'raindance',
+export const SHOWDOWN_WEATHER_IDS = [
+  'none',
   'sunnyday',
+  'raindance',
+  'sandstorm',
+  'snow',
+  'hail',
+  'fog',
   'desolateland',
   'primordialsea',
-  'deltastream',
+  'deltastream'
 ] as const;
-type ShowdownWeatherId = (typeof SHOWDOWN_WEATHER_IDS)[number];
-const SHOWDOWN_WEATHER_IDS_SET: ReadonlySet<string> = new Set(SHOWDOWN_WEATHER_IDS);
+export type ShowdownWeatherId = (typeof SHOWDOWN_WEATHER_IDS)[number];
+export const SHOWDOWN_WEATHER_IDS_SET: ReadonlySet<string> = new Set(SHOWDOWN_WEATHER_IDS);
 
-function isShowdownWeatherId(value: string): value is ShowdownWeatherId {
-  return SHOWDOWN_WEATHER_IDS_SET.has(value);
+export function isShowdownWeatherId(value: unknown): value is ShowdownWeatherId {
+  return typeof value === 'string' && SHOWDOWN_WEATHER_IDS_SET.has(value);
 }
 
 const SHOWDOWN_WEATHER_TO_WEATHER_ID = {
-  raindance: 'rain',
+  none: 'none',
   sunnyday: 'sun',
+  raindance: 'rain',
+  sandstorm: 'sandstorm',
+  snow: 'snow',
+  hail: 'hail',
+  fog: 'fog',
   desolateland: 'intense_sun',
   primordialsea: 'heavy_rain',
   deltastream: 'strong_winds',
@@ -250,7 +260,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
   'hail': {
     id: 'hail',
     mech: WEATHER_MECHANICAL.HAIL,
-    label: 'GRANIZO', // spanish-ok
+    label: 'GRANIZO', // spanish-ok: UI Spanish text localization label
     icon: '🌨️',
     visual: 'hail',
     description: `Debilita no Hielo (${WEATHER_CHIP_HP_FRACTION_LABEL} HP por turno)\nEfecto: Ventisca 100% precisión`,
@@ -259,7 +269,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
   'blizzard': {
     id: 'blizzard',
     mech: WEATHER_MECHANICAL.HAIL,
-    label: 'VENTISCA', // spanish-ok
+    label: 'VENTISCA', // spanish-ok: UI Spanish text localization label
     icon: '🌬️',
     visual: 'blizzard',
     description: `Debilita no Hielo (${WEATHER_CHIP_HP_FRACTION_LABEL} HP por turno)\nEfecto: Ventisca 100% precisión`,
@@ -279,7 +289,7 @@ export const WEATHER_REGISTRY: Record<string, WeatherDefinition> & {
   'fog': {
     id: 'fog',
     mech: WEATHER_MECHANICAL.FOG,
-    label: 'NIEBLA', // spanish-ok
+    label: 'NIEBLA', // spanish-ok: UI Spanish text localization label
     icon: '🌫️',
     visual: 'fog',
     description: `Reduce la precisión en Gen 4+ (x${FOG_ACCURACY_MULT_LABEL}).`,

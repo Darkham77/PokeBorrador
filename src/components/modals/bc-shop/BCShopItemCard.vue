@@ -6,9 +6,10 @@ import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { formatCurrency } from '@/logic/utils/formatters'
 import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver'
+import type { ItemId } from '@/data/inventory/items'
 
 interface ShopItem {
-  id: string
+  id: ItemId
   name: string
   cat: string
   bcPrice?: number

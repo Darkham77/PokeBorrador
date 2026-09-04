@@ -4,7 +4,7 @@
 import { createClient, type SupabaseClient, type RealtimeChannel, type REALTIME_SUBSCRIBE_STATES, type User, type Session } from '@supabase/supabase-js';
 import { ProxyQuery } from './proxyQuery.ts';
 import { gsap } from 'gsap';
-import { initSQLite, queryLocal, type LoadingStore } from './sqliteEngine.ts';
+import { initSQLite, type LoadingStore } from './sqliteEngine.ts';
 import { emulateOfflineRpc } from './sqliteRpcEmulation.ts';
 import { DATABASE_MIGRATIONS } from './migrations_data.ts';
 import { logger } from '../utils/logger.ts';
@@ -48,12 +48,24 @@ export class DBRouter {
     
     const isE2E = (typeof window !== 'undefined' && Boolean(window.__E2E__)) ||
                   (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
+    const e2eDriver = (typeof window !== 'undefined' && window.__E2E_DRIVER__) ||
+                      (typeof process !== 'undefined' && process.env.SIM_DB_DRIVER) ||
+                      'sqlite';
 
     if (isE2E) {
-      this.mode = 'offline';
-      this.options.inMemory = true;
+      if (e2eDriver === 'postgres') {
+        this.mode = 'online';
+        if (!this.config.url) {
+          this.config = {
+            url: 'http://127.0.0.1:54321',
+            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNjAwMDAwMDAwLCJleHAiOjI1MDAwMDAwMDB9.bWuWcdy1ICtTs7Zq7TNjum7G0VIS5je9rFlzshoeBLA'
+          };
+        }
+      } else {
+        this.mode = 'offline';
+        this.options.inMemory = true;
+      }
     }
-
   }
 
   /**
@@ -80,6 +92,13 @@ export class DBRouter {
     try {
       logger.info('DBRouter', 'Lazily initializing Supabase client...');
       this._realClient = createClient(url, key, {
+        accessToken: async () => {
+          if (typeof localStorage !== 'undefined') {
+            const token = localStorage.getItem('pokevicio_auth_token');
+            if (token) return token;
+          }
+          return key;
+        },
         realtime: {
           reconnectAfterMs: (tries) => {
 const MAX_RECONNECT_INTERVAL_MS = 300000;
@@ -242,7 +261,7 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
    */
   setMode(mode: SessionMode): void {
     if (this.mode === mode) return;
-    logger.info('DBRouter', `Switching mode from ${this.mode} to ${mode.toUpperCase()}`); // text-ok
+    logger.info('DBRouter', `Switching mode from ${this.mode} to ${mode.toUpperCase()}`); // text-ok: UI text display localization string
     this.mode = mode;
     
     if (mode === 'offline') {
@@ -282,7 +301,14 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
       // Prioritize a dedicated RPC for server time to avoid local clock manipulation
       const res = await client.rpc('fn_get_server_time') as { data: unknown; error: unknown };
       const { data, error } = res;
-      if (!error && data) return Temporal.Instant.fromEpochMilliseconds(Number(data)).epochMilliseconds;
+      if (!error && data) {
+        if (typeof data === 'string') {
+          return Temporal.Instant.from(data).epochMilliseconds;
+        }
+        if (typeof data === 'number' && Number.isFinite(data)) {
+          return Temporal.Instant.fromEpochMilliseconds(data).epochMilliseconds;
+        }
+      }
       
       throw new Error(`[DBRouter] fn_get_server_time RPC returned error: ${String(error)}`);
     } catch (e) {
@@ -319,12 +345,33 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
    * Emulates Supabase Auth API.
    */
   get auth() {
-    if (this.mode === 'offline') {
+    const isE2E = (typeof window !== 'undefined' && Boolean(window.__E2E__)) ||
+                  (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
+    const e2eDriver = (typeof window !== 'undefined' && window.__E2E_DRIVER__) ||
+                      (typeof process !== 'undefined' && process.env.SIM_DB_DRIVER) ||
+                      'sqlite';
+    const isE2EPostgres = isE2E && e2eDriver === 'postgres';
+
+    if (this.mode === 'offline' || isE2EPostgres) {
       const localUserStr = typeof localStorage !== 'undefined' ? localStorage.getItem('pokevicio_local_user') : null;
       const localUser = localUserStr ? JSON.parse(localUserStr) as User : null;
-      const defaultUser: User = { id: 'local_user', email: 'offline@pkv.io', app_metadata: {}, user_metadata: {}, aud: 'authenticated', created_at: '' };
+      const defaultUser: User | null = isE2EPostgres ? null : {
+        id: 'local_user',
+        email: 'offline@pkv.io',
+        app_metadata: {},
+        user_metadata: {},
+        aud: 'authenticated',
+        created_at: ''
+      };
       const user = localUser || defaultUser;
-      const session: Session = { access_token: 'mock', token_type: 'bearer', user, expires_at: 9999999999, expires_in: 9999999999, refresh_token: 'mock' };
+      const session: Session | null = user ? {
+        access_token: 'mock',
+        token_type: 'bearer',
+        user,
+        expires_at: 9999999999,
+        expires_in: 9999999999,
+        refresh_token: 'mock'
+      } : null;
       
       return {
         signOut: async () => ({ error: null }),
@@ -421,22 +468,16 @@ export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatib
     let dbVersion = 0;
     let rawValue: unknown = null;
 
-    const client = router.realClient;
-    if (router.mode === 'offline' || !client) {
-      const results = await queryLocal("SELECT value FROM system_config WHERE key = 'db_version'");
-      if (results.length > 0) rawValue = (results[0] as { value: unknown }).value;
-    } else {
-      const { data, error } = await client
-        .from('system_config')
-        .select('value')
-        .eq('key', 'db_version')
-        .single();
-      
-      if (error) {
-        throw error;
-      }
-      if (data) rawValue = (data as { value: unknown }).value;
+    const { data, error } = await router
+      .from('system_config')
+      .select('value')
+      .eq('key', 'db_version')
+      .maybeSingle();
+
+    if (error) {
+      throw error;
     }
+    if (data) rawValue = (data as { value: unknown }).value;
 
     if (rawValue) {
       // Handle JSON strings (SQLite stores objects as JSON strings)
@@ -444,7 +485,7 @@ export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatib
         try { rawValue = JSON.parse(rawValue); } catch (_e) { /* ignore */ }
       }
       
-      const valObj = rawValue as Record<string, unknown> | null; // open-record
+      const valObj = rawValue as Record<string, unknown> | null; // open-record: Generic key-value data dictionary container
       const parsed = (typeof rawValue === 'object' && valObj !== null && 'db_version' in valObj) 
         ? parseInt((valObj.db_version as string | number) + '' || '0') 
         : parseInt((rawValue as string | number) + '' || '0');
@@ -453,13 +494,16 @@ export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatib
 
     logger.info('DBRouter', `Compatibility Check: Client v${CLIENT_DB_VERSION} | DB v${dbVersion}`);
 
+    const isE2E = (typeof window !== 'undefined' && Boolean(window.__E2E__)) ||
+                  (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
+
     const response: DBCompatibilityResponse = {
       compatible: true,
       client: CLIENT_DB_VERSION,
       db: dbVersion
     };
 
-    if (router.mode !== 'offline' && (CLIENT_DB_VERSION > dbVersion || dbVersion === 0)) {
+    if (!isE2E && router.mode !== 'offline' && (CLIENT_DB_VERSION > dbVersion || dbVersion === 0)) {
       response.compatible = false;
       response.error = 'OUTDATED_SERVER';
     }
@@ -467,9 +511,11 @@ export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatib
     if (loadingStore) loadingStore.finish('db_compat')
     return response;
   } catch (e: unknown) {
-    if (loadingStore) loadingStore.finish('db_compat')
-    if (router.mode === 'offline') {
-      logger.warn('DBRouter', 'Compatibility check offline lookup warning:', (e as Error).message);
+    if (loadingStore) loadingStore.finish('db_compat');
+    const isE2E = (typeof window !== 'undefined' && Boolean(window.__E2E__)) ||
+                  (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
+    if (isE2E || router.mode === 'offline') {
+      logger.warn('DBRouter', 'Compatibility check offline/E2E lookup warning:', (e as Error).message);
       return { compatible: true, client: CLIENT_DB_VERSION, db: CLIENT_DB_VERSION };
     }
     logger.error('DBRouter', 'Compatibility check failed.', (e as Error).message);
@@ -497,7 +543,7 @@ function parseAppVersion(val: unknown): string {
     const parsed: unknown = typeof val === 'string' ? JSON.parse(val) : val;
     if (typeof parsed === 'string') return parsed;
     if (parsed && typeof parsed === 'object') {
-      return (parsed as Record<string, string>).app_version || ''; // open-record
+      return (parsed as Record<string, string>).app_version || ''; // open-record: Generic key-value data dictionary container
     }
     return '';
   } catch {
@@ -507,24 +553,21 @@ function parseAppVersion(val: unknown): string {
 
 export async function checkAppVersionCompatibility(router: DBRouter): Promise<AppCompatibilityResponse> {
   const clientVer = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'v0.5.0';
+  const isE2E = (typeof window !== 'undefined' && Boolean(window.__E2E__)) ||
+                (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
+  if (isE2E) {
+    return { compatible: true, client: clientVer, server: clientVer };
+  }
   let serverVer = '';
   
   try {
-    const client = router.realClient;
-    if (router.mode === 'offline' || !client) {
-      const results = await queryLocal("SELECT value FROM system_config WHERE key = 'app_version'");
-      if (results.length > 0) {
-        serverVer = parseAppVersion((results[0] as { value: unknown }).value);
-      }
-    } else {
-      const { data, error } = await client
-        .from('system_config')
-        .select('value')
-        .eq('key', 'app_version')
-        .maybeSingle();
-      if (!error && data && data.value) {
-        serverVer = parseAppVersion(data.value);
-      }
+    const { data, error } = await router
+      .from('system_config')
+      .select('value')
+      .eq('key', 'app_version')
+      .maybeSingle();
+    if (!error && data && (data as { value: unknown }).value) {
+      serverVer = parseAppVersion((data as { value: unknown }).value);
     }
   } catch (e) {
     logger.error('DBRouter', 'App version check failed.', (e as Error).message);

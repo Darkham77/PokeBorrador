@@ -6,6 +6,7 @@ import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
 import { useUIStore } from '@/stores/ui'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import type { CompetitionParticipant } from '@/types/system/stores'
 import { 
   resolveEventSubCompetitions,
@@ -212,7 +213,7 @@ const getParticipantForCategory = (sub: SubCompetitionConfig): CompetitionPartic
     return {
       uid,
       id: data.species,
-      name: data.name || String(data.species),
+      name: pokemonDataProvider.resolveSpeciesName(data.species),
       nickname: data.nickname,
       level: data.level || 1,
       isShiny: Boolean(data.is_shiny),
@@ -243,15 +244,13 @@ const openParticipationModal = (sub: ResolvedSubCompetition | SubCompetitionConf
     ? [targetSp]
     : (cardSpeciesList.value.length > 0 ? cardSpeciesList.value : null)
 
-  const team = (gameStore.state.team || []) as (Pokemon | null)[]
-  const box = (gameStore.state.box || []) as (Pokemon | null)[]
-  const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null) // o1-ok
+  const allPokes = [...gameStore.allPokemonList] as Pokemon[]
   
   const eligible = getEligiblePokemonForSubCompetition(props.event, sub, allPokes, getServerInstant())
     .filter(p => !isPokemonEnrolledInOtherSubCompetition(eventStore.userEntries, props.event.id, sub.id, p.uid))
 
   if (eligible.length === 0) {
-    const spNote = targetSp ? ` (${targetSp})` : '' // domain-ok
+    const spNote = targetSp ? ` (${targetSp})` : '' // domain-ok: Open dynamic text or non-domain string payload
     uiStore.notify(`No tienes ningún Pokémon disponible para: ${getSubCompTitle(props.event.id, sub)}${spNote} (los ya inscritos en otra categoría no pueden repetir)`, '⚠️')
     return
   }
@@ -387,6 +386,7 @@ onUnmounted(() => {
 
 <template>
   <div
+    :id="'event-card-' + event.id + (occurrence ? '-' + occurrence.startInstant.epochMilliseconds : '')"
     class="event-card"
     :class="{ 'has-banner': Boolean(cardBannerKey), 'is-upcoming-card': isUpcoming, 'is-active-card': !isUpcoming }"
     @click.stop="openEventDetail"
@@ -501,6 +501,7 @@ onUnmounted(() => {
             position="top"
           >
             <button
+              :id="'comp-slot-chip-' + event.id + '-' + sub.id"
               type="button"
               class="comp-slot-chip pixelated"
               :class="{ enrolled: Boolean(getParticipantForCategory(sub)) }"
@@ -550,6 +551,7 @@ onUnmounted(() => {
         </div>
         <button
           v-else-if="event.type === 'competition'"
+          :id="'event-rules-btn-' + event.id"
           class="retro-btn rules-btn pixelated"
           @click.stop="openEventDetail"
         >

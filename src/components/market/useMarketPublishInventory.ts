@@ -23,17 +23,17 @@ export function useMarketPublishInventory(
   itemSortOrder: Ref<SortOrder>
 ) {
   const inventory = computed<InventoryItem[]>(() => {
-    return Object.entries(game.state.inventory as Record<string, number>) // open-record
-      .filter(([_name, qty]) => qty > 0)
-      .map(([name, qty]) => {
-        const dbItem = getItemById(name)
+    return Object.entries(game.state.inventory as Record<string, number>) // open-record: Generic key-value data dictionary container
+      .filter(([_id, qty]) => qty > 0)
+      .map(([id, qty]) => {
+        const dbItem = getItemById(id)
         return {
-          id: dbItem?.id ?? name.toLowerCase().replace(/\s+/g, '_'),
-          name: dbItem?.name ?? name,
+          id: dbItem.id,
+          name: dbItem.name,
           qty,
-          desc: dbItem?.desc ?? 'Objeto sin descripción.',
-          price: dbItem?.price || 0,
-          tier: (dbItem?.tier as ItemTier) || 'common'
+          desc: dbItem.desc || 'Objeto sin descripción.',
+          price: dbItem.price || 0,
+          tier: (dbItem.tier as ItemTier) || 'common'
         }
       })
   })
@@ -45,9 +45,8 @@ export function useMarketPublishInventory(
 
     const grouped: Record<string, number[]> = {}
     for (const listing of itemListings) {
-      const nameStr = listing.data.name || listing.data.id
-      if (!nameStr) continue
-      const itemId = String(nameStr)
+      const itemId = listing.data.id
+      if (!itemId) continue
       const qty = Number(listing.data.qty) || 1
       const unitPrice = listing.price / qty
 

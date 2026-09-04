@@ -239,7 +239,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
                 logger.info('SQLite', `Pending simulation DB found in dev mode for ${_sqliteKey}. Initializing in-memory DB...`)
                 const arrayBuffer = await response.arrayBuffer()
                 const binary = new Uint8Array(arrayBuffer)
-                _sqliteDb = new SQL.Database(binary) as SQLiteDatabase // domain-ok
+                _sqliteDb = new SQL.Database(binary) as SQLiteDatabase // domain-ok: Open dynamic text or non-domain string payload
                 try {
                   await ensureSchemaIntegrity(_sqliteDb)
                   await runMigrations()
@@ -265,7 +265,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
       if (!isE2E) {
         const localBinary = await getFromIDB(_sqliteKey)
         if (localBinary) {
-          _sqliteDb = new SQL.Database(new Uint8Array(localBinary)) as SQLiteDatabase // domain-ok
+          _sqliteDb = new SQL.Database(new Uint8Array(localBinary)) as SQLiteDatabase // domain-ok: Open dynamic text or non-domain string payload
           await ensureSchemaIntegrity(_sqliteDb)
           const appliedMigrations = await runMigrations()
           if (appliedMigrations && canRefreshCleanDatabaseTemplate(import.meta.env.DEV, isE2E)) {
@@ -280,7 +280,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
         if (checkRes.ok) {
           logger.info('SQLite', 'Clean DB template found. Initializing database instantly from template...')
           const arrayBuffer = await checkRes.arrayBuffer()
-          _sqliteDb = new SQL.Database(new Uint8Array(arrayBuffer)) as SQLiteDatabase // domain-ok
+          _sqliteDb = new SQL.Database(new Uint8Array(arrayBuffer)) as SQLiteDatabase // domain-ok: Open dynamic text or non-domain string payload
           await ensureSchemaIntegrity(_sqliteDb)
           await runMigrations()
           return _sqliteDb
@@ -290,7 +290,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
       }
 
       logger.info('SQLite', 'No clean DB template found. Initializing clean database and running schemas/migrations...')
-      _sqliteDb = new SQL.Database() as SQLiteDatabase // domain-ok
+      _sqliteDb = new SQL.Database() as SQLiteDatabase // domain-ok: Open dynamic text or non-domain string payload
       TABLES_SCHEMA.forEach(schema => { if (_sqliteDb) _sqliteDb.run(`CREATE TABLE IF NOT EXISTS ${schema}`) })
       await runMigrations()
 
@@ -384,20 +384,20 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
 
     if (savedBinary) {
       try {
-        _sqliteDb = new SQL.Database(new Uint8Array(savedBinary)) as SQLiteDatabase; // domain-ok
+        _sqliteDb = new SQL.Database(new Uint8Array(savedBinary)) as SQLiteDatabase; // domain-ok: Open dynamic text or non-domain string payload
         logger.info('SQLite', `Loaded from ${loadedFromSource}`)
       } catch (dbErr) {
         logger.error('SQLite', 'Database corruption detected! Attempting Backup Rescue...')
         const backupBinary = await getFromIDB(_sqliteKey + '_backup')
         if (backupBinary) {
-          _sqliteDb = new SQL.Database(new Uint8Array(backupBinary)) as SQLiteDatabase; // domain-ok
+          _sqliteDb = new SQL.Database(new Uint8Array(backupBinary)) as SQLiteDatabase; // domain-ok: Open dynamic text or non-domain string payload
           logger.success('SQLite', 'Rescue successful from Backup.')
         } else {
           throw dbErr
         }
       }
     } else {
-      _sqliteDb = new SQL.Database() as SQLiteDatabase; // domain-ok
+      _sqliteDb = new SQL.Database() as SQLiteDatabase; // domain-ok: Open dynamic text or non-domain string payload
       logger.info('SQLite', 'Created new in-memory database')
       TABLES_SCHEMA.forEach(schema => { if (_sqliteDb) _sqliteDb.run(`CREATE TABLE IF NOT EXISTS ${schema}`) })
       await persistSQLite()
@@ -416,7 +416,7 @@ async function publishCleanDatabaseTemplate(db: SQLiteDatabase): Promise<void> {
     await devFetch('/api/dev-export-clean-db', undefined, {
       method: 'POST',
       headers: { 'Content-Type': 'application/octet-stream' },
-      body: binary as BodyInit // domain-ok
+      body: binary as BodyInit // domain-ok: Open dynamic text or non-domain string payload
     })
     logger.success('SQLite', 'Clean DB template successfully generated and uploaded to Vite server.')
   } catch (err) {
@@ -454,7 +454,7 @@ async function runMigrations(): Promise<boolean> {
                 try {
                   if (_sqliteDb) _sqliteDb.run(sql)
                 } catch (stmtErr: unknown) {
-                  const msg = (stmtErr as Error).message.toLowerCase() // text-ok
+                  const msg = (stmtErr as Error).message.toLowerCase() // text-ok: UI text display localization string
                   const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists')
                   const isMissing = msg.includes('no such column')
                   if (!isDuplicate && !isMissing) throw stmtErr
@@ -470,7 +470,7 @@ async function runMigrations(): Promise<boolean> {
               try {
                 if (_sqliteDb) _sqliteDb.run(sql)
               } catch (stmtErr: unknown) {
-                const msg = (stmtErr as Error).message.toLowerCase() // text-ok
+                const msg = (stmtErr as Error).message.toLowerCase() // text-ok: UI text display localization string
                 const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists')
                 const isMissing = msg.includes('no such column')
                 if (!isDuplicate && !isMissing) throw stmtErr

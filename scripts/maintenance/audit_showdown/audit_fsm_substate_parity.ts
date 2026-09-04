@@ -10,7 +10,7 @@ export interface SubstateParityResult {
  * y verifica que cada uno tenga un handler correspondiente en el worker.
  */
 export function auditFsmSubstateParity(fsmPath: string): SubstateParityResult {
-  const unmappedSubstates: string[] = []; // no-domain
+  const unmappedSubstates: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!existsSync(fsmPath)) return { unmappedSubstates };
 
   const content = readFileSync(fsmPath, 'utf-8');

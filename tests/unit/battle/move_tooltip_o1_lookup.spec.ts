@@ -59,7 +59,6 @@ describe('moveTooltipMath & moveTooltipConditions - O(1) Lookups & Modifiers', (
       move,
       dummyAttacker,
       dummyDefender,
-      null,
       'clear',
       undefined,
       90

@@ -34,7 +34,7 @@ export async function emulateOfflineRpc(name: string, params: Record<string, unk
 
   // Determine current offline session context
   const localUserStr = typeof localStorage !== 'undefined' ? localStorage.getItem('pokevicio_local_user') : null;
-  const localUser = localUserStr ? JSON.parse(localUserStr) as Record<string, unknown> : null; // open-record
+  const localUser = localUserStr ? JSON.parse(localUserStr) as Record<string, unknown> : null; // open-record: Generic key-value data dictionary container
   const userId = (localUser as { id?: string } | null)?.id || 'local_user';
   const username = (localUser as { user_metadata?: { username?: string } } | null)?.user_metadata?.username || 'Invitado';
   

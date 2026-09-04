@@ -79,7 +79,7 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
     return
   }
   
-  if (oldPoke && !reallyForced && checkLockedVolatiles(oldPoke as { volatileCounters?: Record<string, number> })) { // domain-ok
+  if (oldPoke && !reallyForced && checkLockedVolatiles(oldPoke as { volatileCounters?: Record<string, number> })) { // domain-ok: Open dynamic text or non-domain string payload
     await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     return
   }

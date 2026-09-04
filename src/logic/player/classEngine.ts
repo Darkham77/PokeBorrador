@@ -1,9 +1,8 @@
-
 /**
  * src/logic/player/classEngine.ts
  * Core engine for calculating class modifiers and mission validation.
  */
-import { PLAYER_CLASSES } from '@/data/player/playerClasses';
+import { PLAYER_CLASSES, type PlayerClassId, type MissionId } from '@/data/player/playerClasses';
 
 export interface ModifierContext {
   isPvP?: boolean;
@@ -21,7 +20,7 @@ export function getClassModifier(playerClass: string, type: string, context: Mod
     return 1.0;
   }
 
-  const cls = (PLAYER_CLASSES as Record<string, { modifiers: Record<string, number> }>)[playerClass]; // open-record
+  const cls = (PLAYER_CLASSES as Record<string, { modifiers: Record<string, number> }>)[playerClass]; // open-record: Generic key-value data dictionary container
   if (!cls) return type === 'shopDiscount' ? 0 : 1.0;
 
   const m = cls.modifiers;
@@ -74,8 +73,8 @@ const CRIADOR_MISSION_DATA: Record<string, Record<string, unknown>> = {
 /**
  * Calculates the rewards and costs for a passive mission.
  */
-export function getMissionCostInfo(missionId: string, playerClass: string): Record<string, unknown> | null {
-  const cls = (PLAYER_CLASSES as Record<string, { id: string }>)[playerClass]; // open-record
+export function getMissionCostInfo(missionId: MissionId, playerClass: PlayerClassId): Record<string, unknown> | null {
+  const cls = (PLAYER_CLASSES as Record<string, { id: string }>)[playerClass]; // open-record: Generic key-value data dictionary container
   if (!cls) return null;
 
   if (playerClass === 'cazabichos') {

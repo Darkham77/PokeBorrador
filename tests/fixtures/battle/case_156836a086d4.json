@@ -1,0 +1,1300 @@
+{
+  "id": "case-156836a086d4",
+  "idx": 10,
+  "playerTeam": [
+    {
+      "name": "249a71a9",
+      "species": "mew",
+      "level": 100,
+      "gender": "N",
+      "item": "",
+      "ability": "synchronize",
+      "nature": "serious",
+      "evs": {
+        "hp": 4,
+        "atk": 252,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "floralhealing",
+        "flowertrick",
+        "fly",
+        "flyingpress"
+      ],
+      "uid": "249a71a9-b02e-442a-9093-6c7fbbed58b0",
+      "stats": {
+        "maxHp": 342,
+        "atk": 299,
+        "def": 236,
+        "spa": 236,
+        "spd": 236,
+        "spe": 299
+      }
+    },
+    {
+      "name": "2f904d15",
+      "species": "mew",
+      "level": 100,
+      "gender": "N",
+      "item": "",
+      "ability": "synchronize",
+      "nature": "serious",
+      "evs": {
+        "hp": 4,
+        "atk": 252,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "focusblast",
+        "focusenergy",
+        "focuspunch",
+        "followme"
+      ],
+      "uid": "2f904d15-e060-4cf4-8370-ab8b042b1014",
+      "stats": {
+        "maxHp": 342,
+        "atk": 299,
+        "def": 236,
+        "spa": 236,
+        "spd": 236,
+        "spe": 299
+      }
+    },
+    {
+      "name": "96cd8cfc",
+      "species": "mew",
+      "level": 100,
+      "gender": "N",
+      "item": "",
+      "ability": "synchronize",
+      "nature": "serious",
+      "evs": {
+        "hp": 4,
+        "atk": 252,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "forcepalm",
+        "forestscurse",
+        "foulplay",
+        "freezedry"
+      ],
+      "uid": "96cd8cfc-16b0-4c38-ac6d-37aa0ddb3bcf",
+      "stats": {
+        "maxHp": 342,
+        "atk": 299,
+        "def": 236,
+        "spa": 236,
+        "spd": 236,
+        "spe": 299
+      }
+    },
+    {
+      "name": "556eaaa7",
+      "species": "mew",
+      "level": 100,
+      "gender": "N",
+      "item": "",
+      "ability": "synchronize",
+      "nature": "serious",
+      "evs": {
+        "hp": 4,
+        "atk": 252,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "freezeshock",
+        "freezingglare",
+        "frenzyplant",
+        "frostbreath"
+      ],
+      "uid": "556eaaa7-8ef5-4a8f-bc61-93d1712c2644",
+      "stats": {
+        "maxHp": 342,
+        "atk": 299,
+        "def": 236,
+        "spa": 236,
+        "spd": 236,
+        "spe": 299
+      }
+    },
+    {
+      "name": "cac8be62",
+      "species": "mew",
+      "level": 100,
+      "gender": "N",
+      "item": "",
+      "ability": "synchronize",
+      "nature": "serious",
+      "evs": {
+        "hp": 4,
+        "atk": 252,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "furyattack",
+        "furycutter",
+        "furyswipes",
+        "fusionbolt"
+      ],
+      "uid": "cac8be62-c5c2-4c06-bea6-a0ebbfb6bfe7",
+      "stats": {
+        "maxHp": 342,
+        "atk": 299,
+        "def": 236,
+        "spa": 236,
+        "spd": 236,
+        "spe": 299
+      }
+    },
+    {
+      "name": "5c376472",
+      "species": "mew",
+      "level": 100,
+      "gender": "N",
+      "item": "",
+      "ability": "synchronize",
+      "nature": "serious",
+      "evs": {
+        "hp": 4,
+        "atk": 252,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "fusionflare",
+        "futuresight",
+        "gastroacid",
+        "gigadrain"
+      ],
+      "uid": "5c376472-1cbd-4396-bb14-d610cb30a5fe",
+      "stats": {
+        "maxHp": 342,
+        "atk": 299,
+        "def": 236,
+        "spa": 236,
+        "spd": 236,
+        "spe": 299
+      }
+    }
+  ],
+  "enemyTeam": [
+    {
+      "name": "e23a7ba3",
+      "species": "blissey",
+      "level": 100,
+      "gender": "F",
+      "item": "",
+      "ability": "naturalcure",
+      "nature": "serious",
+      "evs": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "splash",
+        "sunnyday",
+        "raindance",
+        "sandstorm"
+      ],
+      "uid": "e23a7ba3-7b98-42f3-b70d-11eb5b68ddf5",
+      "stats": {
+        "maxHp": 651,
+        "atk": 56,
+        "def": 56,
+        "spa": 186,
+        "spd": 306,
+        "spe": 209
+      }
+    },
+    {
+      "name": "b75df670",
+      "species": "blissey",
+      "level": 100,
+      "gender": "F",
+      "item": "",
+      "ability": "naturalcure",
+      "nature": "serious",
+      "evs": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "splash",
+        "sunnyday",
+        "raindance",
+        "sandstorm"
+      ],
+      "uid": "b75df670-adbe-477f-9c0f-00613bb77536",
+      "stats": {
+        "maxHp": 651,
+        "atk": 56,
+        "def": 56,
+        "spa": 186,
+        "spd": 306,
+        "spe": 209
+      }
+    },
+    {
+      "name": "74fd82e5",
+      "species": "blissey",
+      "level": 100,
+      "gender": "F",
+      "item": "",
+      "ability": "naturalcure",
+      "nature": "serious",
+      "evs": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "splash",
+        "sunnyday",
+        "raindance",
+        "sandstorm"
+      ],
+      "uid": "74fd82e5-58b5-40a3-8865-46de690c2c01",
+      "stats": {
+        "maxHp": 651,
+        "atk": 56,
+        "def": 56,
+        "spa": 186,
+        "spd": 306,
+        "spe": 209
+      }
+    },
+    {
+      "name": "51abd2fa",
+      "species": "blissey",
+      "level": 100,
+      "gender": "F",
+      "item": "",
+      "ability": "naturalcure",
+      "nature": "serious",
+      "evs": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "splash",
+        "sunnyday",
+        "raindance",
+        "sandstorm"
+      ],
+      "uid": "51abd2fa-3497-49fe-8b28-33b23cfbf905",
+      "stats": {
+        "maxHp": 651,
+        "atk": 56,
+        "def": 56,
+        "spa": 186,
+        "spd": 306,
+        "spe": 209
+      }
+    },
+    {
+      "name": "8394305b",
+      "species": "blissey",
+      "level": 100,
+      "gender": "F",
+      "item": "",
+      "ability": "naturalcure",
+      "nature": "serious",
+      "evs": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "splash",
+        "sunnyday",
+        "raindance",
+        "sandstorm"
+      ],
+      "uid": "8394305b-31b6-4b8c-be01-b30b6318d1aa",
+      "stats": {
+        "maxHp": 651,
+        "atk": 56,
+        "def": 56,
+        "spa": 186,
+        "spd": 306,
+        "spe": 209
+      }
+    },
+    {
+      "name": "f7fc8096",
+      "species": "blissey",
+      "level": 100,
+      "gender": "F",
+      "item": "",
+      "ability": "naturalcure",
+      "nature": "serious",
+      "evs": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "splash",
+        "sunnyday",
+        "raindance",
+        "sandstorm"
+      ],
+      "uid": "f7fc8096-5a23-4a06-ada7-c2253037c457",
+      "stats": {
+        "maxHp": 651,
+        "atk": 56,
+        "def": 56,
+        "spa": 186,
+        "spd": 306,
+        "spe": 209
+      }
+    }
+  ],
+  "movesToTest": [
+    "floralhealing",
+    "flowertrick",
+    "fly",
+    "flyingpress",
+    "focusblast",
+    "focusenergy",
+    "focuspunch",
+    "followme",
+    "forcepalm",
+    "forestscurse",
+    "foulplay",
+    "freezedry",
+    "freezeshock",
+    "freezingglare",
+    "frenzyplant",
+    "frostbreath",
+    "furyattack",
+    "furycutter",
+    "furyswipes",
+    "fusionbolt",
+    "fusionflare",
+    "futuresight",
+    "gastroacid",
+    "gigadrain"
+  ],
+  "abilitiesToTest": [],
+  "seed": [
+    18588,
+    21544,
+    54523,
+    34263
+  ],
+  "playerChoices": [
+    "move 1",
+    "move 2",
+    "move 3",
+    "move 1",
+    "move 4",
+    "switch 2",
+    "move 1",
+    "switch 2",
+    "move 4",
+    "switch 2",
+    "move 2",
+    "switch 2",
+    "move 4",
+    "switch 2",
+    "move 3",
+    "switch 2",
+    "move 4"
+  ],
+  "enemyChoices": [
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "switch 2",
+    "move 1",
+    "switch 3",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "switch 4",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "switch 5",
+    "move 1",
+    "move 1",
+    "switch 6",
+    "move 1",
+    "move 1"
+  ],
+  "history": [
+    {
+      "turnCount": 1,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 2,
+      "p1ActiveUid": "249a71a9-b02e-442a-9093-6c7fbbed58b0",
+      "p2ActiveUid": "e23a7ba3-7b98-42f3-b70d-11eb5b68ddf5",
+      "p1MoveId": "floralhealing",
+      "p2MoveId": "splash",
+      "p1MovePp": 16,
+      "p2MovePp": 64,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 651
+    },
+    {
+      "turnCount": 2,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 3,
+      "p1ActiveUid": "249a71a9-b02e-442a-9093-6c7fbbed58b0",
+      "p2ActiveUid": "e23a7ba3-7b98-42f3-b70d-11eb5b68ddf5",
+      "p1MoveId": "flowertrick",
+      "p2MoveId": "splash",
+      "p1MovePp": 16,
+      "p2MovePp": 63,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 217
+    },
+    {
+      "turnCount": 3,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 4,
+      "p1ActiveUid": "249a71a9-b02e-442a-9093-6c7fbbed58b0",
+      "p2ActiveUid": "e23a7ba3-7b98-42f3-b70d-11eb5b68ddf5",
+      "p1MoveId": "fly",
+      "p2MoveId": "splash",
+      "p1MovePp": 24,
+      "p2MovePp": 62,
+      "p1Volatiles": [
+        "twoturnmove",
+        "fly"
+      ],
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 217
+    },
+    {
+      "turnCount": 4,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 4,
+      "p1ActiveUid": "249a71a9-b02e-442a-9093-6c7fbbed58b0",
+      "p1MoveId": "fly",
+      "p2MoveId": "splash",
+      "p2MovePp": 61,
+      "p1LockedMoveId": "fly",
+      "p1Trapped": true,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342
+    },
+    {
+      "turnCount": 5,
+      "p1Choice": "",
+      "p2Choice": "switch 2",
+      "battleTurn": 5,
+      "p1ActiveUid": "249a71a9-b02e-442a-9093-6c7fbbed58b0",
+      "p2ActiveUid": "b75df670-adbe-477f-9c0f-00613bb77536",
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 651,
+      "p2ForceSwitch": true
+    },
+    {
+      "turnCount": 6,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 5,
+      "p1ActiveUid": "249a71a9-b02e-442a-9093-6c7fbbed58b0",
+      "p1MoveId": "flyingpress",
+      "p2MoveId": "splash",
+      "p1MovePp": 16,
+      "p2MovePp": 64,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342
+    },
+    {
+      "turnCount": 7,
+      "p1Choice": "",
+      "p2Choice": "switch 3",
+      "battleTurn": 6,
+      "p1ActiveUid": "249a71a9-b02e-442a-9093-6c7fbbed58b0",
+      "p2ActiveUid": "74fd82e5-58b5-40a3-8865-46de690c2c01",
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 651,
+      "p2ForceSwitch": true
+    },
+    {
+      "turnCount": 8,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 7,
+      "p1ActiveUid": "2f904d15-e060-4cf4-8370-ab8b042b1014",
+      "p2ActiveUid": "74fd82e5-58b5-40a3-8865-46de690c2c01",
+      "p2MoveId": "splash",
+      "p2MovePp": 64,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 651
+    },
+    {
+      "turnCount": 9,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 8,
+      "p1ActiveUid": "2f904d15-e060-4cf4-8370-ab8b042b1014",
+      "p2ActiveUid": "74fd82e5-58b5-40a3-8865-46de690c2c01",
+      "p1MoveId": "focusblast",
+      "p2MoveId": "splash",
+      "p1MovePp": 8,
+      "p2MovePp": 63,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 651
+    },
+    {
+      "turnCount": 10,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 9,
+      "p1ActiveUid": "249a71a9-b02e-442a-9093-6c7fbbed58b0",
+      "p2ActiveUid": "74fd82e5-58b5-40a3-8865-46de690c2c01",
+      "p2MoveId": "splash",
+      "p2MovePp": 62,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 651
+    },
+    {
+      "turnCount": 11,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 9,
+      "p1ActiveUid": "249a71a9-b02e-442a-9093-6c7fbbed58b0",
+      "p1MoveId": "flyingpress",
+      "p2MoveId": "splash",
+      "p1MovePp": 15,
+      "p2MovePp": 61,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342
+    },
+    {
+      "turnCount": 12,
+      "p1Choice": "",
+      "p2Choice": "switch 4",
+      "battleTurn": 10,
+      "p1ActiveUid": "249a71a9-b02e-442a-9093-6c7fbbed58b0",
+      "p2ActiveUid": "51abd2fa-3497-49fe-8b28-33b23cfbf905",
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 651,
+      "p2ForceSwitch": true
+    },
+    {
+      "turnCount": 13,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 11,
+      "p1ActiveUid": "2f904d15-e060-4cf4-8370-ab8b042b1014",
+      "p2ActiveUid": "51abd2fa-3497-49fe-8b28-33b23cfbf905",
+      "p2MoveId": "splash",
+      "p2MovePp": 64,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 651
+    },
+    {
+      "turnCount": 14,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 12,
+      "p1ActiveUid": "2f904d15-e060-4cf4-8370-ab8b042b1014",
+      "p2ActiveUid": "51abd2fa-3497-49fe-8b28-33b23cfbf905",
+      "p1MoveId": "focusenergy",
+      "p2MoveId": "splash",
+      "p1MovePp": 48,
+      "p2MovePp": 63,
+      "p1Volatiles": [
+        "focusenergy"
+      ],
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 651
+    },
+    {
+      "turnCount": 15,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 13,
+      "p1ActiveUid": "249a71a9-b02e-442a-9093-6c7fbbed58b0",
+      "p2ActiveUid": "51abd2fa-3497-49fe-8b28-33b23cfbf905",
+      "p2MoveId": "splash",
+      "p2MovePp": 62,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 651
+    },
+    {
+      "turnCount": 16,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 13,
+      "p1ActiveUid": "249a71a9-b02e-442a-9093-6c7fbbed58b0",
+      "p1MoveId": "flyingpress",
+      "p2MoveId": "splash",
+      "p1MovePp": 14,
+      "p2MovePp": 61,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342
+    },
+    {
+      "turnCount": 17,
+      "p1Choice": "",
+      "p2Choice": "switch 5",
+      "battleTurn": 14,
+      "p1ActiveUid": "249a71a9-b02e-442a-9093-6c7fbbed58b0",
+      "p2ActiveUid": "8394305b-31b6-4b8c-be01-b30b6318d1aa",
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 651,
+      "p2ForceSwitch": true
+    },
+    {
+      "turnCount": 18,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 15,
+      "p1ActiveUid": "2f904d15-e060-4cf4-8370-ab8b042b1014",
+      "p2ActiveUid": "8394305b-31b6-4b8c-be01-b30b6318d1aa",
+      "p2MoveId": "splash",
+      "p2MovePp": 64,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 651
+    },
+    {
+      "turnCount": 19,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 15,
+      "p1ActiveUid": "2f904d15-e060-4cf4-8370-ab8b042b1014",
+      "p1MoveId": "focuspunch",
+      "p2MoveId": "splash",
+      "p1MovePp": 32,
+      "p2MovePp": 63,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342
+    },
+    {
+      "turnCount": 20,
+      "p1Choice": "",
+      "p2Choice": "switch 6",
+      "battleTurn": 16,
+      "p1ActiveUid": "2f904d15-e060-4cf4-8370-ab8b042b1014",
+      "p2ActiveUid": "f7fc8096-5a23-4a06-ada7-c2253037c457",
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 651,
+      "p2ForceSwitch": true
+    },
+    {
+      "turnCount": 21,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 17,
+      "p1ActiveUid": "249a71a9-b02e-442a-9093-6c7fbbed58b0",
+      "p2ActiveUid": "f7fc8096-5a23-4a06-ada7-c2253037c457",
+      "p2MoveId": "splash",
+      "p2MovePp": 64,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 651
+    },
+    {
+      "turnCount": 22,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 17,
+      "p1ActiveUid": "249a71a9-b02e-442a-9093-6c7fbbed58b0",
+      "p1MoveId": "flyingpress",
+      "p2MoveId": "splash",
+      "p1MovePp": 13,
+      "p2MovePp": 63,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342
+    }
+  ],
+  "steps": [
+    "Turno 1: ataca 249a71a9 con Floral Healing a e23a7ba3",
+    "Turno 1: e23a7ba3 pero falló",
+    "Turno 1: ataca e23a7ba3 con Splash a e23a7ba3",
+    "Turno 2: ataca 249a71a9 con Flower Trick a e23a7ba3",
+    "Turno 2: ataca e23a7ba3 con Splash a e23a7ba3",
+    "Turno 3: ataca 249a71a9 con Fly",
+    "Turno 3: ataca e23a7ba3 con Splash a e23a7ba3",
+    "Turno 4: ataca 249a71a9 con Fly a e23a7ba3",
+    "Turno 4: e23a7ba3 se debilitó",
+    "Turno 6: ataca 249a71a9 con Flying Press a b75df670",
+    "Turno 6: b75df670 se debilitó",
+    "Turno 8: ataca 74fd82e5 con Splash a 74fd82e5",
+    "Turno 9: ataca 2f904d15 con Focus Blast a 74fd82e5",
+    "Turno 9: 2f904d15 falló el ataque",
+    "Turno 9: ataca 74fd82e5 con Splash a 74fd82e5",
+    "Turno 10: ataca 74fd82e5 con Splash a 74fd82e5",
+    "Turno 11: ataca 249a71a9 con Flying Press a 74fd82e5",
+    "Turno 11: 74fd82e5 se debilitó",
+    "Turno 13: ataca 51abd2fa con Splash a 51abd2fa",
+    "Turno 14: ataca 2f904d15 con Focus Energy a 2f904d15",
+    "Turno 14: ataca 51abd2fa con Splash a 51abd2fa",
+    "Turno 15: ataca 51abd2fa con Splash a 51abd2fa",
+    "Turno 16: ataca 249a71a9 con Flying Press a 51abd2fa",
+    "Turno 16: 51abd2fa se debilitó",
+    "Turno 18: ataca 8394305b con Splash a 8394305b",
+    "Turno 19: ataca 8394305b con Splash a 8394305b",
+    "Turno 19: ataca 2f904d15 con Focus Punch a 8394305b",
+    "Turno 19: 8394305b se debilitó",
+    "Turno 21: ataca f7fc8096 con Splash a f7fc8096",
+    "Turno 22: ataca 249a71a9 con Flying Press a f7fc8096",
+    "Turno 22: f7fc8096 se debilitó"
+  ],
+  "ended": true,
+  "winner": "p1",
+  "finalState": {
+    "isOver": true,
+    "winner": "p1",
+    "p1": [
+      {
+        "name": "249a71a9",
+        "hp": 342,
+        "maxHp": 342,
+        "fainted": false
+      },
+      {
+        "name": "2f904d15",
+        "hp": 342,
+        "maxHp": 342,
+        "fainted": false
+      },
+      {
+        "name": "96cd8cfc",
+        "hp": 342,
+        "maxHp": 342,
+        "fainted": false
+      },
+      {
+        "name": "556eaaa7",
+        "hp": 342,
+        "maxHp": 342,
+        "fainted": false
+      },
+      {
+        "name": "cac8be62",
+        "hp": 342,
+        "maxHp": 342,
+        "fainted": false
+      },
+      {
+        "name": "5c376472",
+        "hp": 342,
+        "maxHp": 342,
+        "fainted": false
+      }
+    ],
+    "p2": [
+      {
+        "name": "f7fc8096",
+        "hp": 0,
+        "maxHp": 651,
+        "fainted": true
+      },
+      {
+        "name": "e23a7ba3",
+        "hp": 0,
+        "maxHp": 651,
+        "fainted": true
+      },
+      {
+        "name": "b75df670",
+        "hp": 0,
+        "maxHp": 651,
+        "fainted": true
+      },
+      {
+        "name": "74fd82e5",
+        "hp": 0,
+        "maxHp": 651,
+        "fainted": true
+      },
+      {
+        "name": "51abd2fa",
+        "hp": 0,
+        "maxHp": 651,
+        "fainted": true
+      },
+      {
+        "name": "8394305b",
+        "hp": 0,
+        "maxHp": 651,
+        "fainted": true
+      }
+    ]
+  }
+}

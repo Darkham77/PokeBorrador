@@ -22,9 +22,9 @@ export function calculate(a: number, b: number): number {
 
     it('allows valid inline line-level escape hatches appended to code', () => {
       const codeWithInlineEscapes = [
-        'const name = getRawName(); // ' + 'domain-ok',
-        'let globalCache: Cache | null = null; // ' + 'singleton-ok',
-        'const shake = { x: -4 }; // ' + 'no-magic'
+        'const name = getRawName(); // ' + 'domain-ok: Open dynamic text or non-domain string payload',
+        'let globalCache: Cache | null = null; // ' + 'singleton-ok: Global persistent singleton instance',
+        'const shake = { x: -4 }; // ' + 'no-magic: Visual shake offset displacement'
       ].join('\n');
       const violations = scanFileForIllegalHeaders('src/logic/helpers.ts', codeWithInlineEscapes);
       expect(violations).toEqual([]);

@@ -64,7 +64,7 @@ export const usePlayerSearchStore = defineStore('playerSearch', () => {
           (allSavesRes.data || []).map(s => [s.user_id, s])
         )
 
-        const queryLower = query.toLowerCase() // text-ok
+        const queryLower = query.toLowerCase() // text-ok: UI text display localization string
         profiles = (profRes.data || []).filter((p: ProfileRow) => {
           if (p.id === authStore.user!.id) return false
           
@@ -73,8 +73,8 @@ export const usePlayerSearchStore = defineStore('playerSearch', () => {
           const originalUsername = p.username || ''
           
           const matchesQuery = 
-            trainerName.toLowerCase().includes(queryLower) || // text-ok
-            originalUsername.toLowerCase().includes(queryLower) // text-ok
+            trainerName.toLowerCase().includes(queryLower) || // text-ok: UI text display localization string
+            originalUsername.toLowerCase().includes(queryLower) // text-ok: UI text display localization string
             
           if (!matchesQuery) return false
           

@@ -14,7 +14,7 @@ import pokemonDbJson from './pokemonDB.json' with { type: 'json' };
 export type PokemonDbSpeciesId = keyof typeof SPECIES_METADATA;
 
 interface CompactDbEntry {
-  name: string; // domain-ok
+  name: string; // domain-ok: Open dynamic text or non-domain string payload
   type: PokemonType;
   type2?: PokemonType;
   hp: number;
@@ -27,7 +27,7 @@ interface CompactDbEntry {
   learnset: [number, string, number][];
 }
 
-const rawDb = pokemonDbJson as Record<PokemonDbSpeciesId, CompactDbEntry>; // open-record
+const rawDb = pokemonDbJson as Record<PokemonDbSpeciesId, CompactDbEntry>; // open-record: Generic key-value data dictionary container
 const cache = new Map<PokemonDbSpeciesId, PokemonBaseData>();
 
 function inflatePokemon(speciesId: PokemonDbSpeciesId): PokemonBaseData | undefined {
@@ -66,7 +66,7 @@ function inflatePokemon(speciesId: PokemonDbSpeciesId): PokemonBaseData | undefi
   return entry;
 }
 
-const targetDb: Partial<Record<PokemonDbSpeciesId, PokemonBaseData>> = {}; // open-record
+const targetDb: Partial<Record<PokemonDbSpeciesId, PokemonBaseData>> = {}; // open-record: Generic key-value data dictionary container
 
 export const POKEMON_DB: Record<PokemonDbSpeciesId, PokemonBaseData> = new Proxy(targetDb, {
   get(_target, prop: string | symbol) {

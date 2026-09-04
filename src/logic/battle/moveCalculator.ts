@@ -2,6 +2,8 @@ import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weathe
 import { getDayCycle } from '@/logic/utils/timeUtils'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { PokemonType } from '@/data/battle/types'
+import type { PokemonMoveId, MoveCategory } from '@/data/battle/moves'
+import type { PureBattleWeather } from '@/logic/battle/battleMathTypes'
 import {
   calculateStabMultiplier,
   calculateWeatherAndCyclePowerMultiplier,
@@ -26,7 +28,7 @@ export interface CombatEnvState {
 export function getCombatEnvState(
   attacker: Pokemon | null | undefined,
   defender: Pokemon | null | undefined,
-  weatherState: { type?: string; visual?: string; turns?: number } | null | undefined,
+  weatherState: PureBattleWeather | null | undefined,
   isGym: boolean
 ): CombatEnvState {
   const isAclimatacion = attacker?.ability === 'cloudnine' || defender?.ability === 'cloudnine'
@@ -57,14 +59,21 @@ export function getCombatEnvState(
   }
 }
 
+export interface MoveCalculationData {
+  type: PokemonType
+  power?: number
+  id?: PokemonMoveId
+  cat?: MoveCategory
+}
+
 /**
  * Calculates final move power applying STAB, weather, time cycles, abilities, and items.
  */
 export function calculateFinalPower(
-  md: { type: string; power?: number; id?: string; cat?: string } | null,
+  md: MoveCalculationData | null,
   attacker: Pokemon | null | undefined,
   defender: Pokemon | null | undefined,
-  weatherState: { type?: string; visual?: string; turns?: number } | null | undefined,
+  weatherState: PureBattleWeather | null | undefined,
   isGym: boolean
 ): number {
   if (!md || md.power === undefined || md.power === 0) return md?.power || 0
@@ -75,7 +84,7 @@ export function calculateFinalPower(
   const weather = isGym || isAclimatacion ? null : weatherState
   const mechWeather = isGym || isAclimatacion ? WEATHER_MECHANICAL.CLEAR : getMechanicalWeather(weather?.type)
   const cycle = getDayCycle()
-  const moveType = md.type as PokemonType
+  const moveType = md.type
 
   // 1. STAB
   power *= calculateStabMultiplier(moveType, attacker)

@@ -9,6 +9,7 @@ import PokemonPreview from './PokemonPreview.vue'
 import DebugSearchSelect from './DebugSearchSelect.vue'
 import DebugIllegalModal from './DebugIllegalModal.vue'
 import { useDebugPokemonCreator } from './useDebugPokemonCreator.ts'
+import { isPokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 
 const {
@@ -109,7 +110,7 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
           :options="allSpecies"
           tooltip-title="Buscador de especies"
           tooltip-desc="Busca y selecciona la especie base del Pokémon."
-          @select="selectSpecies"
+          @select="(opt) => isPokemonSpeciesId(opt.id) && selectSpecies({ id: opt.id, name: opt.name, icon: opt.icon })"
         >
           <template #label-action>
             <PVTooltip

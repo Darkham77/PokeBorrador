@@ -2,10 +2,8 @@ import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import {
   armBattleFlowCompletion,
-  armBattleReadyForInput,
   awaitBattleFlowCompletion,
   awaitBattleReadyForInput,
-  clickResilient,
   type WindowWithResolver
 } from '../e2e_helpers.ts';
 
@@ -22,7 +20,6 @@ class CatchBreakoutWhiteoutSimWrapper extends BaseBattleSimulation {
 
   public async setupWildBossEncounter(): Promise<void> {
     await this.disableAutoMode();
-    await armBattleReadyForInput(this.page);
     await this.page.evaluate(async (bossLevel) => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
@@ -73,6 +70,7 @@ class CatchBreakoutWhiteoutSimWrapper extends BaseBattleSimulation {
       pMaxHp: WHITEOUT_TEST_MAX_HP,
       enemyLevel: BOSS_DRAGONITE_LEVEL
     });
+    await awaitBattleReadyForInput(this.page);
   }
 }
 
@@ -81,12 +79,7 @@ test.describe('Battle Catch Breakout and Whiteout Defeat Simulations', () => {
     const sim = new CatchBreakoutWhiteoutSimWrapper(page, 'TestCatchBreakout');
     await sim.setup();
     await sim.setupWildBossEncounter();
-
-    // Throw regular Poké Ball at Level 70 full HP Mewtwo (guaranteed breakout)
-    await armBattleReadyForInput(page);
-    const pokeballCard = page.locator('.quick-item-card[data-item-id="pokeball"]').first();
-    await clickResilient(pokeballCard);
-    await awaitBattleReadyForInput(page);
+    await sim.throwBall('pokeball', { expectCapture: false });
 
     // Battle should continue and turn should be restored
     const isBattleActive = await page.evaluate(() => {
@@ -102,9 +95,7 @@ test.describe('Battle Catch Breakout and Whiteout Defeat Simulations', () => {
   test('should display defeat modal and allow clean return to map when all player Pokémon faint', async ({ page }) => {
     const sim = new CatchBreakoutWhiteoutSimWrapper(page, 'TestWhiteoutDefeat');
     await sim.setup();
-    await armBattleReadyForInput(page);
     await sim.setupWhiteoutScenario();
-    await awaitBattleReadyForInput(page);
 
     // Turn 1: Player moves, enemy Level 80 Dragonite OHKOs player 1 HP Pikachu
     await page.evaluate(async () => {

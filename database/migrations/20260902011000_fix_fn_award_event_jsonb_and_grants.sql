@@ -55,6 +55,9 @@ BEGIN
 
     -- Safely coerce config into JSONB
     v_config := (event_rec.config)::jsonb;
+    IF jsonb_typeof(v_config) = 'string' THEN
+        v_config := (event_rec.config #>> '{}')::jsonb;
+    END IF;
 
     -- Avoid awarding if it has no competition
     IF (v_config->>'hasCompetition')::boolean IS FALSE THEN
@@ -91,7 +94,8 @@ BEGIN
 
         WITH ranked_entries AS (
             SELECT 
-                player_id, player_name, player_email, (data)::jsonb AS entry_json,
+                player_id, player_name, player_email,
+                (CASE WHEN jsonb_typeof((data)::jsonb) = 'string' THEN ((data)::jsonb #>> '{}')::jsonb ELSE (data)::jsonb END) AS entry_json,
                 ROW_NUMBER() OVER (
                     ORDER BY 
                         (CASE WHEN sub_order = 'min' 

@@ -3,10 +3,11 @@ import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { getFriendshipTooltipDetails } from '@/logic/pokemon/friendshipLogic'
+import type { ComponentPillSize } from '@/types/system/game'
 
 interface Props {
   friendship?: number | null
-  size?: 'sm' | 'md' | 'lg'
+  size?: ComponentPillSize
   showTooltip?: boolean
 }
 

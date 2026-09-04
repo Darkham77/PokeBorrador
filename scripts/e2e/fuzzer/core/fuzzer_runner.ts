@@ -1,5 +1,6 @@
 import { styleText } from 'node:util';
 import { FuzzerRunnerLogger } from '../../logging/fuzzer_runner_logger.ts';
+import { formatExecutionTimestamp } from '../../logging/base_runner_logger.ts';
 
 export interface FuzzerResult {
   label: string;
@@ -20,6 +21,7 @@ export async function runFuzzerSuite(config: FuzzerSuiteConfig): Promise<void> {
   logger.startIntercepting();
 
   logger.progress(styleText('bold', `\n--- 🧪 FUZZER: ${config.suiteName} ---`));
+  logger.progress(`📅 Fecha y hora de inicio: ${formatExecutionTimestamp()}`);
 
   try {
     const results = await config.run();

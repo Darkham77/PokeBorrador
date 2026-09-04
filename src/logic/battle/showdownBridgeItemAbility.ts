@@ -36,7 +36,7 @@ function handleCantToken(ctx: SBCtx): boolean {
       delete target.volatileCounters['twoturnmove'];
     }
     const style = target === p ? 'log-player' : 'log-enemy';
-    const cleanReason = reason.toLowerCase(); // text-ok
+    const cleanReason = reason.toLowerCase(); // text-ok: UI text display localization string
     const hint = CANT_MESSAGES[cleanReason] ?? (cleanReason.includes('truant') ? 'está haraganeando (Truant)' : 'no puede moverse');
     store.addLog(`¡${target.name} ${hint}!`, style, target);
   }

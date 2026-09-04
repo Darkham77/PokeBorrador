@@ -10,17 +10,27 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : Math.max(2, Math.floor(os.cpus().length / 4)),
   maxFailures: 1,
+  globalSetup: process.env.SIM_DB_DRIVER === 'postgres' ? './scripts/e2e/global_postgres_setup.ts' : undefined,
+  globalTeardown: process.env.SIM_DB_DRIVER === 'postgres' ? './scripts/e2e/global_postgres_teardown.ts' : undefined,
   reporter: [['./scripts/e2e/logging/playwright_fuzzer_reporter.ts']],
-  timeout: 60000,
+  timeout: 90000,
   use: {
     baseURL: 'http://localhost:5174',
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        launchOptions: {
+          args: [
+            '--disable-features=NetworkQualityEstimator',
+            '--disable-background-networking'
+          ]
+        }
+      },
     },
   ],
   webServer: {

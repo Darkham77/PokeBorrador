@@ -7,7 +7,7 @@ import { modifyStatStage } from '@/logic/pokemon/statsMath';
  */
 export const SHOWDOWN_STAT_KEYS = ['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion'] as const;
 type ShowdownStatKey = typeof SHOWDOWN_STAT_KEYS[number];
-const SHOWDOWN_STAT_KEYS_SET: ReadonlySet<string> = new Set<string>(SHOWDOWN_STAT_KEYS); // runtime-set
+const SHOWDOWN_STAT_KEYS_SET: ReadonlySet<string> = new Set<string>(SHOWDOWN_STAT_KEYS); // runtime-set: Fast O(1) membership lookup set
 
 function isShowdownStatKey(key: string): key is ShowdownStatKey {
   return SHOWDOWN_STAT_KEYS_SET.has(key);
@@ -47,8 +47,8 @@ function applyBoostOrSet(ctx: SBCtx, isSet: boolean): boolean {
         modifyStatStage(stages, stat, amount);
       }
       const msg = amount === 6
-        ? `¡El ${stat.toUpperCase()} de ${target.name} se maximizó!` // text-ok
-        : `¡El ${stat.toUpperCase()} de ${target.name} aumentó!`; // text-ok
+        ? `¡El ${stat.toUpperCase()} de ${target.name} se maximizó!` // text-ok: Combat stat maximized log message
+        : `¡El ${stat.toUpperCase()} de ${target.name} aumentó!`; // text-ok: UI text display localization string
       store.addLog(msg, 'log-info', target);
     }
   }
@@ -65,7 +65,7 @@ function applyUnboost(ctx: SBCtx): boolean {
     const stages = targetSide === 'player' ? store.playerStages.value : store.enemyStages.value;
     if (stages) {
       stages[stat] = Math.max(-6, (stages[stat] || 0) - amount);
-      store.addLog(`¡El ${stat.toUpperCase()} de ${target.name} disminuyó!`, 'log-info', target); // text-ok
+      store.addLog(`¡El ${stat.toUpperCase()} de ${target.name} disminuyó!`, 'log-info', target); // text-ok: UI text display localization string
     }
   }
   return true;

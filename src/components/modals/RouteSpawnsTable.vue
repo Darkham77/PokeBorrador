@@ -6,6 +6,8 @@ import RouteSpawnsItemRows from './spawns/RouteSpawnsItemRows.vue';
 import type { NpcChanceInfo } from '@/logic/weather/weatherUtils';
 import type { RouteSpawnMappedItem } from '@/logic/utils/routeSpawnHelpers';
 import type { ArchaeologyRewardData } from '@/composables/modals/useRouteSpawnsArchaeology';
+import type { RouteSpawnTab } from '@/types/pokemon/encounters';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 type SpawnTableItem = RouteSpawnMappedItem | NpcChanceInfo | ArchaeologyRewardData;
 
@@ -15,7 +17,7 @@ interface Props {
   probability: number;
   baseProbability: number;
   items: SpawnTableItem[];
-  mode: 'pokemon' | 'item' | 'fishing' | 'npc';
+  mode: RouteSpawnTab;
 
   probClass: string;
   weatherEmoji: string;
@@ -23,8 +25,8 @@ interface Props {
   eventMultiplier?: number;
   getStatusTooltip?: (spawnType: string) => { title: string; desc: string };
   getCategoryTooltip?: (type: string) => { title: string; desc: string };
-  getSpawnTooltip?: (item: RouteSpawnMappedItem) => Record<string, unknown>; // open-record
-  getItemTooltip?: (item: ArchaeologyRewardData) => Record<string, unknown>; // open-record
+  getSpawnTooltip?: (item: RouteSpawnMappedItem) => Record<string, unknown>; // open-record: Generic key-value data dictionary container
+  getItemTooltip?: (item: ArchaeologyRewardData) => Record<string, unknown>; // open-record: Generic key-value data dictionary container
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -45,7 +47,7 @@ const npcItems = computed(() => props.items.filter((i): i is NpcChanceInfo => 'a
 const archaeologyItems = computed(() => props.items.filter((i): i is ArchaeologyRewardData => 'sprite' in i && !('isSeen' in i) && !('active' in i)));
 
 defineEmits<{
-  (e: 'select-pokemon', id: string, isSeen: boolean): void;
+  (e: 'select-pokemon', id: PokemonSpeciesId, isSeen: boolean): void;
 }>();
 </script>
 

@@ -63,10 +63,10 @@ export function usePokedex(gs: Ref<GameState>, currentOrder: Ref<readonly Pokemo
     // 2. Filter
     const filtered = list.filter(p => {
       if (!searchQuery.value) return true
-      const query = searchQuery.value.toLowerCase() // text-ok
+      const query = searchQuery.value.toLowerCase() // text-ok: UI text display localization string
       // If unseen, we can only search by #number
       if (!p.isSeen) return p.dexNum.includes(query)
-      return p.name.toLowerCase().includes(query) || p.dexNum.includes(query) // text-ok
+      return p.name.toLowerCase().includes(query) || p.dexNum.includes(query) // text-ok: UI text display localization string
     })
 
     // 3. Sort

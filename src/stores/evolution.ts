@@ -33,7 +33,7 @@ export const useEvolutionStore = defineStore('evolution', () => {
    */
   function startEvolution(
     pokemon: Pokemon, 
-    targetSpeciesId: string, 
+    targetSpeciesId: PokemonSpeciesId, 
     evItemName = '', 
     callback: ((data: EvolutionCompletePayload) => void) | null = null
   ) {

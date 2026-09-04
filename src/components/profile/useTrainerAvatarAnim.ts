@@ -213,12 +213,11 @@ export function useTrainerAvatarAnim(params: UseTrainerAvatarAnimParams): void {
       let spinDuration = AVATAR_CLASS_SPIN_DURATIONS_SEC.cazabichos!;
       let rotationDir = FULL_ROTATION_DEG;
 
-      const matchedSpinKey = Object.keys(SPIN_CONFIGS).find(k => cleanStyle.includes(k)); // o1-ok
-      if (matchedSpinKey) {
-        const config = SPIN_CONFIGS[matchedSpinKey]!;
-        spinDuration = config.duration;
-        if (config.rotationDir !== undefined) {
-          rotationDir = config.rotationDir;
+      const spinConfig = (SPIN_CONFIGS as Record<string, SpinConfig>)[cleanStyle]; // open-record: Generic key-value data dictionary container
+      if (spinConfig) {
+        spinDuration = spinConfig.duration;
+        if (spinConfig.rotationDir !== undefined) {
+          rotationDir = spinConfig.rotationDir;
         }
       }
 
@@ -238,10 +237,10 @@ export function useTrainerAvatarAnim(params: UseTrainerAvatarAnimParams): void {
     }
 
     let shadowAnim: ShadowConfig | null = null;
-    const matchedShadowKey = Object.keys(SHADOW_CONFIGS).find(k => cleanStyle.includes(k)); // o1-ok
+    const directShadowConfig = (SHADOW_CONFIGS as Record<string, ShadowConfig>)[cleanStyle]; // open-record: Generic key-value data dictionary container
 
-    if (matchedShadowKey) {
-      shadowAnim = SHADOW_CONFIGS[matchedShadowKey]!;
+    if (directShadowConfig) {
+      shadowAnim = directShadowConfig;
     } else if (cleanStyle.startsWith('type-')) {
       const typeName = cleanStyle.replace('type-', '');
       const colors = elementColors[typeName];

@@ -1,6 +1,6 @@
 <script lang="ts">
 // Shared global state across all PVTooltip instances to prevent overlapping tooltips
-let activeTooltipHide: ((immediate?: boolean) => void) | null = null; // singleton-ok
+let activeTooltipHide: ((immediate?: boolean) => void) | null = null; // singleton-ok: Singleton instance state container
 </script>
 
 <script setup lang="ts">

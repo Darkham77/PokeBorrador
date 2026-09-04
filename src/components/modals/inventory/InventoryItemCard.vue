@@ -4,6 +4,7 @@ import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { getItemTierLabel, getItemTierColor } from '@/logic/utils/itemTierResolver'
+import type { ItemTier } from '@/types/inventory/items'
 
 interface InventoryItem {
   id: string
@@ -12,7 +13,7 @@ interface InventoryItem {
   sprite?: string
   icon?: string
   qty: number
-  tier?: 'common' | 'rare' | 'epic' | 'legend'
+  tier?: ItemTier
   price?: number
 }
 

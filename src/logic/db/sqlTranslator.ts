@@ -8,7 +8,7 @@
  * Splits SQL by semicolon, respecting $$ blocks and strings.
  */
 export function splitSQLStatements(sql: string): string[] {
-  const statements: string[] = []; // no-domain
+  const statements: string[] = []; // no-domain: Non-domain utility collection or data structure
   let current = '';
   let inDollarQuote = false;
   let inString = false;
@@ -115,7 +115,7 @@ const SQL_SKIP_PATTERNS = [
 export function translatePostgresToSqlite(sql: string): string {
   if (!sql) return '';
   const cleanSql = sql.trim();
-  const upperSql = cleanSql.toUpperCase(); // text-ok
+  const upperSql = cleanSql.toUpperCase(); // text-ok: UI text display localization string
   
   // Logic Skipping for PostgreSQL-only constructs
   if (SQL_SKIP_PATTERNS.some(pattern => upperSql.startsWith(pattern))) {
@@ -143,7 +143,7 @@ export function translatePostgresToSqlite(sql: string): string {
     .replace(/::[a-z0-9]+/gi, '')
     // 2. Functions
     .replace(/\bNOW\(\)/gi, "strftime('%Y-%m-%dT%H:%M:%SZ', 'now')")
-    .replace(/\bgen_random_uuid\(\)/gi, "hex(randomblob(16))") // no-magic
+    .replace(/\bgen_random_uuid\(\)/gi, "hex(randomblob(16))") // no-magic: Explicit mathematical constant or threshold value
     .replace(/\bEXTRACT\(epoch\s+FROM\s+([^)]+)\)/gi, "unixepoch($1)")
     .replace(/\bARRAY_AGG\b/gi, "json_group_array")
     .replace(/\bstring_agg\b/gi, "group_concat")

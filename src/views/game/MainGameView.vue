@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, defineAsyncComponent, watch, nextTick } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { useBodyClass } from '@/composables/ui/useBodyClass'
 import { useGameStore } from '@/stores/game'
@@ -19,24 +19,25 @@ import ActionButtons from '@/components/ui/ActionButtons.vue'
 import TrainerPanel from '@/components/profile/TrainerPanel.vue'
 import HUD_Navigation from '@/components/ui/HUD_Navigation.vue'
 import InventoryPills from '@/components/inventory/InventoryPills.vue'
-const PvPArena = defineAsyncComponent(() => import('@/components/battle/PvPArena.vue'))
+import { defineResilientAsyncComponent } from '@/logic/utils/resilientComponent'
+const PvPArena = defineResilientAsyncComponent(() => import('@/components/battle/PvPArena.vue'))
 import CriminalityBar from '@/components/ui/CriminalityBar.vue'
 import BuffsOverlay from '@/components/overlays/BuffsOverlay.vue'
 import HUD_SidebarLeft from '@/components/ui/HUD_SidebarLeft.vue'
-const LocalDebugPanel = defineAsyncComponent(() => import('@/components/admin/LocalDebugPanel.vue'))
+const LocalDebugPanel = defineResilientAsyncComponent(() => import('@/components/admin/LocalDebugPanel.vue'))
 
 // Tab components
-const BoxView = defineAsyncComponent(() => import('@/components/box/BoxView.vue'))
+const BoxView = defineResilientAsyncComponent(() => import('@/components/box/BoxView.vue'))
 
 // Views
 import HomeView from '@/views/game/HomeView.vue'
-const PokedexView = defineAsyncComponent(() => import('@/views/pokemon/PokedexView.vue'))
-const MapView = defineAsyncComponent(() => import('@/views/game/MapView.vue'))
-const GymsView = defineAsyncComponent(() => import('@/views/game/GymsView.vue'))
-const BagView = defineAsyncComponent(() => import('@/views/inventory/BagView.vue'))
+const PokedexView = defineResilientAsyncComponent(() => import('@/views/pokemon/PokedexView.vue'))
+const MapView = defineResilientAsyncComponent(() => import('@/views/game/MapView.vue'))
+const GymsView = defineResilientAsyncComponent(() => import('@/views/game/GymsView.vue'))
+const BagView = defineResilientAsyncComponent(() => import('@/views/inventory/BagView.vue'))
 
-const GlobalChat = defineAsyncComponent(() => import('@/components/social/GlobalChat.vue'))
-const DirectChatWindow = defineAsyncComponent(() => import('@/components/social/DirectChatWindow.vue'))
+const GlobalChat = defineResilientAsyncComponent(() => import('@/components/social/GlobalChat.vue'))
+const DirectChatWindow = defineResilientAsyncComponent(() => import('@/components/social/DirectChatWindow.vue'))
 import { useChatStore } from '@/stores/social/chat'
 import { preloadSaveWorker } from '@/logic/workers/saveWorkerClient'
 
@@ -81,7 +82,7 @@ onMounted(() => {
 
   // Signal that DOM is ready
   const loadingStore = useLoadingStore()
-  if (activeTab.value !== 'home') {
+  if (activeTab.value !== 'home' || !gs.value.starterChosen) {
     loadingStore.markAppMounted()
   } else {
     // Fail-safe timeout in case HomeView fails to signal within 2.5s

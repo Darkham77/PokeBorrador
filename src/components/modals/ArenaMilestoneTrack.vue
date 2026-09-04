@@ -13,7 +13,7 @@ import { ref, onMounted, nextTick } from 'vue'
 import { usePvPStore } from '@/stores/pvp'
 import { RANKED_REWARD_MILESTONES } from '@/data/system/rankedData'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { getItemById } from '@/data/inventory/items'
+import { getItemById, requireItemId, type ItemId } from '@/data/inventory/items'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { Z_LAYERS } from '@/logic/constants/visuals'
 import { gsap } from 'gsap'
@@ -26,14 +26,14 @@ onMounted(() => {
   animateList()
 })
 
-const getItemDesc = (itemName: string) => {
-  const item = getItemById(itemName)
-  return item?.desc || 'Recompensa de la Arena de Batalla.'
+const getItemDesc = (itemId: ItemId) => {
+  const item = getItemById(itemId)
+  return item.desc || 'Recompensa de la Arena de Batalla.'
 }
 
-const getItemSpriteUrl = (itemName: string) => {
-  const item = getItemById(itemName)
-  const slug = item?.sprite || item?.id || itemName
+const getItemSpriteUrl = (itemId: ItemId) => {
+  const item = getItemById(itemId)
+  const slug = item.sprite || item.id
   return getAssetUrl(ASSET_TYPES.ITEM, slug)
 }
 
@@ -168,7 +168,7 @@ function handlePillLeave(e: MouseEvent) {
             <img
               v-for="[name] in Object.entries(m.rewards)"
               :key="name"
-              :src="getItemSpriteUrl(name)"
+              :src="getItemSpriteUrl(requireItemId(name))"
               class="pixel-art milestone-sprite"
               :alt="name"
               @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
@@ -184,7 +184,7 @@ function handlePillLeave(e: MouseEvent) {
               v-for="[name, qty] in Object.entries(m.rewards)"
               :key="name"
               :title="name.toUpperCase()"
-              :description="getItemDesc(name)"
+              :description="getItemDesc(requireItemId(name))"
               position="top"
             >
               <span
@@ -193,7 +193,7 @@ function handlePillLeave(e: MouseEvent) {
                 @mouseleave="handlePillLeave"
               >
                 <img
-                  :src="getItemSpriteUrl(name)"
+                  :src="getItemSpriteUrl(requireItemId(name))"
                   class="pixel-art pill-sprite"
                   :alt="name"
                   @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"

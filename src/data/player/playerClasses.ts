@@ -206,3 +206,5 @@ export const CLASS_MISSIONS_BY_ID: Readonly<Record<MissionId, ClassMission>> = O
 export function isMissionId(value: string): value is MissionId {
   return value in CLASS_MISSIONS_BY_ID;
 }
+
+export type PlayerClassDefinition = (typeof PLAYER_CLASSES)[keyof typeof PLAYER_CLASSES];

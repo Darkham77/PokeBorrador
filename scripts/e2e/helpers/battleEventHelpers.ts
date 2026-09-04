@@ -1,7 +1,7 @@
 import { type Page } from '@playwright/test';
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 import { BATTLE_UI_EVENTS, type BattleForcedSwitchDetail, type BattleReadyForInputDetail } from '../../../src/types/battle/battleEvents.ts';
-import { GAME_UI_EVENTS, type GameStoreReadyDetail } from '../../../src/types/system/gameEvents.ts';
+import { GAME_UI_EVENTS, type GameStoreReadyDetail, type StarterSelectReadyDetail } from '../../../src/types/system/gameEvents.ts';
 
 export type WindowWithResolver = Window;
 
@@ -16,7 +16,7 @@ export async function armBattleFlowCompletion(page: Page): Promise<void> {
           reject(new Error('[E2E] battle-flow-completed must be a CustomEvent.'));
           return;
         }
-        const detail = event.detail as Record<string, unknown> | null; // open-record
+        const detail = event.detail as Record<string, unknown> | null; // open-record: Generic key-value data dictionary container
         if (typeof detail !== 'object' || detail === null || !('destination' in detail) || detail.destination !== 'map') {
           reject(new Error('[E2E] battle-flow-completed has an invalid detail payload.'));
           return;
@@ -144,6 +144,50 @@ export async function awaitGameStoreReady(page: Page): Promise<void> {
       delete window.__E2E_GAME_STORE_READY__;
     }
   });
+}
+
+export async function armStarterSelectReady(page: Page): Promise<void> {
+  await page.evaluate((eventName) => {
+    if (window.__STARTER_SELECT_READY__) {
+      return;
+    }
+    if (window.__E2E_STARTER_SELECT_READY__) {
+      return;
+    }
+    window.__E2E_STARTER_SELECT_READY__ = new Promise<StarterSelectReadyDetail>((resolve, reject) => {
+      window.addEventListener(eventName, (event) => {
+        if (!(event instanceof CustomEvent)) {
+          reject(new Error(`[E2E] ${eventName} must be a CustomEvent.`));
+          return;
+        }
+        resolve(event.detail as StarterSelectReadyDetail);
+      }, { once: true });
+    });
+  }, GAME_UI_EVENTS.STARTER_SELECT_READY);
+}
+
+export async function awaitStarterSelectReady(page: Page): Promise<void> {
+  await page.evaluate(async (eventName) => {
+    if (window.__STARTER_SELECT_READY__) {
+      return;
+    }
+    const ready = window.__E2E_STARTER_SELECT_READY__;
+    if (ready) {
+      try {
+        await ready;
+      } finally {
+        delete window.__E2E_STARTER_SELECT_READY__;
+      }
+      return;
+    }
+    await new Promise<void>((resolve) => {
+      if (window.__STARTER_SELECT_READY__) {
+        resolve();
+        return;
+      }
+      window.addEventListener(eventName, () => resolve(), { once: true });
+    });
+  }, GAME_UI_EVENTS.STARTER_SELECT_READY);
 }
 
 export async function waitForWaitInput(page: Page): Promise<void> {

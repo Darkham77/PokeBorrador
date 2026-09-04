@@ -10,7 +10,7 @@ export const getDynamicItemEffect = (itemName: string, p: Pokemon): ItemEffectRe
   if (tmMatch) {
     const tmId = `TM${tmMatch[2]}`;
     const species = p.id;
-    const compatList = (TM_COMPAT as Record<string, readonly string[]>)[species] || []; // open-record
+    const compatList = (TM_COMPAT as Record<string, readonly string[]>)[species] || []; // open-record: Generic key-value data dictionary container
     if (!compatList.includes(tmId)) {
       return { success: false, message: 'Incompatible.' };
     }

@@ -24,13 +24,13 @@ const SACK_WEIGHT_MATCHUP_MAX = 0.15;
 const HAZARD_REMOVAL_MOVES_LIST = [
   'rapidspin', 'defog', 'tidyup', 'courtchange', 'mortalspin',
 ] as const;
-export const HAZARD_REMOVAL_MOVES: ReadonlySet<string> = new Set<string>(HAZARD_REMOVAL_MOVES_LIST); // runtime-set
+export const HAZARD_REMOVAL_MOVES: ReadonlySet<string> = new Set<string>(HAZARD_REMOVAL_MOVES_LIST); // runtime-set: Fast O(1) membership lookup set
 
 const SPEED_CONTROL_MOVES_LIST = [
   'thunderwave', 'glaciate', 'icywind', 'stickyweb', 'tailwind',
   'trickroom', 'electroweb',
 ] as const;
-const SPEED_CONTROL_MOVES: ReadonlySet<string> = new Set<string>(SPEED_CONTROL_MOVES_LIST); // runtime-set
+const SPEED_CONTROL_MOVES: ReadonlySet<string> = new Set<string>(SPEED_CONTROL_MOVES_LIST); // runtime-set: Fast O(1) membership lookup set
 
 export function calculateSackOrder(
   snapshot: HeuristicBattleSnapshot,

@@ -94,7 +94,7 @@ export function collectMarkdownFiles(targetPath: string, rootDir: string): strin
   const entries = fs.readdirSync(fullPath, { withFileTypes: true });
 
   for (const entry of entries) {
-    if ((SKIP_NAMES as readonly string[]).includes(entry.name)) continue; // no-domain
+    if ((SKIP_NAMES as readonly string[]).includes(entry.name)) continue; // no-domain: Non-domain utility collection or data structure
 
     const childPath = path.join(fullPath, entry.name);
     if (entry.isDirectory()) {
@@ -206,8 +206,8 @@ if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) ==
 
   const result = auditMarkdownLinks();
 
-  const errors: string[] = []; // no-domain
-  const warnings: string[] = []; // no-domain
+  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
+  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   for (const v of result.violations) {
     errors.push(`[${v.sourceFile}] Link "${v.linkText}" -> ${v.error} (${v.resolvedPath})`);

@@ -21,7 +21,7 @@ import {
   DEBUG_SPECIAL_MODES
 } from './debugConstants.ts'
 
-interface ViteDebugBridge extends Record<string, unknown> { // open-record
+interface ViteDebugBridge extends Record<string, unknown> { // open-record: Generic key-value data dictionary container
   setStatStage: (side: string, stat: string, val: number) => void;
   playSound: (id: string) => void;
   triggerAnim: (id: string, side: string, options?: Record<string, unknown>) => void;
@@ -96,16 +96,16 @@ const isEffectActive = (type: string, category: string) => {
 
   if (category === 'status') return (poke as Pokemon | undefined)?.status === type
   if (category === 'secondary') {
-    const p = poke as (Pokemon & Record<string, unknown>) | undefined // open-record
+    const p = poke as (Pokemon & Record<string, unknown>) | undefined // open-record: Generic key-value data dictionary container
     if (!p) return false
-    return ((p.volatileCounters as Record<string, number>)?.[type] || 0) > 0 || !!p[type] // open-record
+    return ((p.volatileCounters as Record<string, number>)?.[type] || 0) > 0 || !!p[type] // open-record: Generic key-value data dictionary container
   }
   if (category === 'field') {
     const key = requireBattleConditionKey(type)
     const cond = battleStore.state?.fieldConditions?.[key]
     const sideCond = (side === 'player' ? battleStore.state?.playerSideConditions : battleStore.state?.enemySideConditions)?.[key]
     const stageKey = key === 'lightscreen' ? 'lightScreen' : key
-    const stageVal = (stages as Record<string, number>)?.[stageKey] // open-record
+    const stageVal = (stages as Record<string, number>)?.[stageKey] // open-record: Generic key-value data dictionary container
     return !!cond || !!sideCond || (stageVal !== undefined && stageVal > 0)
   }
   if (category === 'weather') return battleStore.state?.weather?.type === type

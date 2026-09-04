@@ -10,7 +10,7 @@ export interface ExecutorDuplicationResult {
 }
 
 export function auditSharedExecutorDuplication(testsDir: string): ExecutorDuplicationResult {
-  const duplicatedExecutorFiles: string[] = []; // no-domain
+  const duplicatedExecutorFiles: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!existsSync(testsDir)) return { duplicatedExecutorFiles };
 
   const files = getFilesRecursively(testsDir).filter(f => f.endsWith('.ts') && (f.includes('replayer') || f.includes('simulation')));

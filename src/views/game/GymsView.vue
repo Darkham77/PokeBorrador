@@ -5,9 +5,8 @@ import { useGymsStore } from '@/stores/gyms'
 import { useGameStore } from '@/stores/game'
 import GymCard from '@/components/gyms/GymCard.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import type { Gym } from '@/types/gym/gym'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import type { GymDifficultyId, GymId } from '@/data/world/gyms'
+import type { GymDifficultyId, GymId, Gym } from '@/data/world/gyms'
 
 const gymsStore = useGymsStore()
 const gameStore = useGameStore()

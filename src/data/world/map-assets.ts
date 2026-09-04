@@ -64,7 +64,7 @@ const MAPS_WITH_CYCLES = [
 export type MapWithCycleId = (typeof MAPS_WITH_CYCLES)[number];
 
 export function isMapWithCycleId(value: string): value is MapWithCycleId {
-  return (MAPS_WITH_CYCLES as readonly string[]).includes(value); // domain-ok
+  return (MAPS_WITH_CYCLES as readonly string[]).includes(value); // domain-ok: Open dynamic text or non-domain string payload
 }
 
 export const AVAILABLE_BATTLE_MAPS = [
@@ -173,7 +173,7 @@ export function requireBattleMapAssetId(value: string): BattleMapAssetId {
   throw new Error(`Invalid battle map asset id: ${value}`);
 }
 
-export function getAvailableCyclesForMap(mapId: string): DayPhase[] {
+export function getAvailableCyclesForMap(mapId: MapRouteId): DayPhase[] {
   const assetKey = isMapRouteId(mapId) ? MAP_ROUTE_MAPPING[mapId] : mapId;
   const cycles: DayPhase[] = [];
   if (AVAILABLE_BATTLE_MAPS_SET.has(`${assetKey}_amanecer`)) cycles.push('morning');

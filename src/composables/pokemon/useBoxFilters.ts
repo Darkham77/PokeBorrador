@@ -1,11 +1,14 @@
 import { ref, computed, watch, type Ref } from 'vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { FriendshipSealTier } from '@/types/pokemon/friendship'
+import { FRIENDSHIP_SEAL_TIERS } from '@/types/pokemon/friendship'
 import { getPokedexOrderIndex, requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
 import { getPokemonPhysicalWeight, getPokemonPhysicalHeight } from '@/logic/pokemon/physicalDimensionsMath'
 import { matchesAllBoxFilters } from './boxFilterPredicates.ts'
+
+export const FRIENDSHIP_SEAL_TIER_FILTERS = ['all', ...FRIENDSHIP_SEAL_TIERS] as const
+export type FriendshipSealTierFilter = (typeof FRIENDSHIP_SEAL_TIER_FILTERS)[number]
 
 interface FilterState {
   tier: string
@@ -36,7 +39,7 @@ interface FilterState {
   search: string
   isOpen: boolean
   tags: string[]
-  friendshipSealTier: FriendshipSealTier | 'all'
+  friendshipSealTier: FriendshipSealTierFilter
   friendshipEvoReady: boolean
   friendshipMaxOnly: boolean
 }

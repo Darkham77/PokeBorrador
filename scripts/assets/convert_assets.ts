@@ -140,7 +140,7 @@ async function handleProcessFile(filePath: string) {
 
   const pathSegments = relPath.split(path.sep);
   const isMap = pathSegments.includes('maps');
-  const destFiles: string[] = [destFile]; // no-domain
+  const destFiles: string[] = [destFile]; // no-domain: Non-domain utility collection or data structure
 
   if (isMap) {
     image = image.resize({ width: MAP_DESKTOP_RESIZE_WIDTH_PX, kernel: 'nearest' });
@@ -304,8 +304,8 @@ async function main() {
   console.log(styleText('bold', '🚀 INICIANDO CONVERSIÓN Y PROCESAMIENTO MULTICORE DE ASSETS (Node.js 26+)'));
   const startTime = Date.now();
 
-  const pipelineWarnings: string[] = []; // no-domain
-  const pipelineErrors: string[] = []; // no-domain
+  const pipelineWarnings: string[] = []; // no-domain: Non-domain utility collection or data structure
+  const pipelineErrors: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   const files = await getFilesToConvert(SOURCE_DIR);
   console.log(`📦 Encontrados ${files.length} archivos para procesar en ${SOURCE_DIR}`);
@@ -318,7 +318,7 @@ async function main() {
 
   let successfulFiles = 0;
   let generatedWebps = 0;
-  const environmentFiles: string[] = []; // no-domain
+  const environmentFiles: string[] = []; // no-domain: Non-domain utility collection or data structure
   const pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }> = {};
 
   for (const r of results) {
@@ -373,7 +373,7 @@ async function main() {
   try {
     const frontFiles = (await fs.readdir(ANIMATED_FRONT_DIR))
       .filter(f => f.endsWith('.webp') || f.endsWith('.png'));
-    let backFiles: string[] = []; // no-domain
+    let backFiles: string[] = []; // no-domain: Non-domain utility collection or data structure
     try {
       backFiles = (await fs.readdir(ANIMATED_BACK_DIR))
         .filter(f => f.endsWith('.webp') || f.endsWith('.png'));

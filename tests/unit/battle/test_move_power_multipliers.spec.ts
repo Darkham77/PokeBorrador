@@ -22,7 +22,7 @@ describe('movePowerMultipliers', () => {
     const sunMult = calculateWeatherAndCyclePowerMultiplier(
       'fire',
       'flamethrower',
-      { type: 'sunny', turns: 5 },
+      { type: 'sun', turns: 5 },
       WEATHER_MECHANICAL.SUN,
       'day'
     )

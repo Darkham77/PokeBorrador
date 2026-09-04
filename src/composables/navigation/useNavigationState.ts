@@ -101,7 +101,7 @@ export function useNavigationState() {
   });
 
   const mochilaTooltipDescription = computed(() => {
-    const lines: string[] = []; // text-ok
+    const lines: string[] = []; // text-ok: UI text display localization string
     
     // Section 1: Poké Balls first
     lines.push("🔴 POKÉ BALLS");
@@ -174,7 +174,7 @@ export function useNavigationState() {
     const incubating = gameStore.state.eggs || [];
     const warehouse = breedingStore.warehouseEggs || [];
     
-    const lines: string[] = []; // text-ok
+    const lines: string[] = []; // text-ok: UI text display localization string
     
     if (incubating.length === 0 && warehouse.length === 0) {
       return "No tienes huevos en incubación ni en la guardería.\n¡Haz clic para ir a la Guardería!";

@@ -22,6 +22,7 @@ import {
 } from '@/data/pokemon/pokedex'
 import { getMaxVigor } from '@/logic/pokemon/pokemonUtils'
 
+import { isPokemonFilterTagId, type PokemonFilterTagId } from '@/logic/constants/tags'
 import { filterAndSortPokemon, getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
 
 const uiStore = useUIStore()
@@ -85,7 +86,7 @@ interface SavedFilters {
   searchQuery?: string
   sortBy?: string
   sortOrder?: string
-  activeTags?: string[]
+  activeTags?: PokemonFilterTagId[]
 }
 
 const contextKey = computed(() => {
@@ -130,7 +131,7 @@ const isBattleMode = props.isBattleSwitch
 const searchQuery = ref(isBattleMode ? '' : (initialFilters.searchQuery || ''))
 const sortBy = ref(initialSubCompSort ? initialSubCompSort.sortBy : (initialFilters.sortBy || 'recent'))
 const sortOrder = ref(initialSubCompSort ? initialSubCompSort.sortOrder : (initialFilters.sortOrder || 'desc'))
-const activeTags = ref<string[]>(isBattleMode ? [] : (Array.isArray(initialFilters.activeTags) ? initialFilters.activeTags : []))
+const activeTags = ref<PokemonFilterTagId[]>(isBattleMode ? [] : (Array.isArray(initialFilters.activeTags) ? initialFilters.activeTags.filter(isPokemonFilterTagId) : []))
 const selectedUids = ref<string[]>([])
 
 // When a subCompetition is provided, always enforce its target sort metric and direction
@@ -178,7 +179,7 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: PokemonSelectionS
   if (props.customList && props.customList.length > 0) {
     sourceList = props.customList.map((p, i) => ({ pokemon: p, _source: 'box' as const, index: i }))
   } else if (props.battleMode === 'pvp') {
-    const pvpUids = (gameStore.state.pvpTeam || []) as string[] // no-domain
+    const pvpUids = (gameStore.state.pvpTeam || []) as string[] // no-domain: Non-domain utility collection or data structure
     sourceList = pvpUids
       .map((uid, index) => {
         const p = gameStore.getPokemonByUid(uid)
@@ -191,7 +192,7 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: PokemonSelectionS
       })
       .filter((item): item is { pokemon: Pokemon, _source: PokemonStorageLocation, index: number } => item !== null)
   } else if (props.battleMode === 'war') {
-    const warUids = (gameStore.state.warTeam || []) as string[] // no-domain
+    const warUids = (gameStore.state.warTeam || []) as string[] // no-domain: Non-domain utility collection or data structure
     sourceList = warUids
       .map((uid, index) => {
         const p = gameStore.getPokemonByUid(uid)
@@ -317,7 +318,7 @@ function forceClose() {
 
 
 if (typeof window !== 'undefined') {
-  Reflect.set(window, '_openPokemonSelectionModal', (opts: Record<string, unknown>) => { // open-record
+  Reflect.set(window, '_openPokemonSelectionModal', (opts: Record<string, unknown>) => { // open-record: Generic key-value data dictionary container
     uiStore.open('PokemonSelection', { 
       title: '⚡ SELECCIONAR POKÉMON',
       subtitle: 'Elige un Pokémon para la tarea.',
@@ -336,6 +337,7 @@ function openDetail(item: PokemonSelectionItemEntry) {
 
 <template>
   <BaseModal
+    close-btn-id="pokemon-selection-modal-close-btn"
     :show="props.show"
     :title="props.title"
     max-width="640px"

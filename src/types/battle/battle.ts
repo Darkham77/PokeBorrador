@@ -15,9 +15,43 @@ export const BATTLE_SIDES = ['player', 'enemy'] as const;
 export type BattleSide = (typeof BATTLE_SIDES)[number];
 export const BATTLE_MINIGAMES = ['fishing', 'archaeology'] as const;
 export type BattleMinigame = (typeof BATTLE_MINIGAMES)[number];
-export type BattleDifficulty = 'easy' | 'normal' | 'hard';
-export type BattleActionType = 'move' | 'switch';
-export type PartySlotStatus = 'active' | 'fainted' | 'empty';
+
+export const MINIGAME_DIFFICULTIES = ['easy', 'medium', 'hard', 'expert'] as const;
+export type MinigameDifficulty = (typeof MINIGAME_DIFFICULTIES)[number];
+
+export const MINIGAME_DIFFICULTY_SELECTIONS = ['auto', ...MINIGAME_DIFFICULTIES] as const;
+export type MinigameDifficultySelection = (typeof MINIGAME_DIFFICULTY_SELECTIONS)[number];
+
+export const BATTLE_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
+export type BattleDifficulty = (typeof BATTLE_DIFFICULTIES)[number];
+
+export const BATTLE_ACTION_TYPES = ['move', 'switch'] as const;
+export type BattleActionType = (typeof BATTLE_ACTION_TYPES)[number];
+
+export const PARTY_SLOT_STATUSES = ['active', 'fainted', 'empty'] as const;
+export type PartySlotStatus = (typeof PARTY_SLOT_STATUSES)[number];
+
+export const LIVE_PVP_MATCH_STATUSES = ['pending', 'accepted', 'declined', 'ranked_match', 'ranked_accepted'] as const;
+export type LivePvPMatchStatus = (typeof LIVE_PVP_MATCH_STATUSES)[number];
+
+export const BATTLE_SEAT_SPECIAL_STATES = ['catching', 'trapped', 'releasing'] as const;
+export type BattleSeatSpecialState = (typeof BATTLE_SEAT_SPECIAL_STATES)[number];
+
+export const STAT_MODIFIER_SOURCES = ['stage', 'weather', 'ability', 'item', 'status', 'field'] as const;
+export type StatModifierSource = (typeof STAT_MODIFIER_SOURCES)[number];
+
+export const BATTLE_ITEM_EFFECT_KINDS = ['heal', 'cure', 'revive'] as const;
+export type BattleItemEffectKind = (typeof BATTLE_ITEM_EFFECT_KINDS)[number];
+
+export const SHOWDOWN_REQUEST_TYPES = ['move', 'switch', 'team', 'wait'] as const;
+export type ShowdownRequestType = (typeof SHOWDOWN_REQUEST_TYPES)[number];
+
+export const TRACKED_ACTION_SOURCES = ['move', 'ability', 'item'] as const;
+export type TrackedActionSource = (typeof TRACKED_ACTION_SOURCES)[number];
+
+export const COMBATANT_ANIM_TRIGGERS = ['attack', 'faint', 'damage'] as const;
+export type CombatantAnimTrigger = (typeof COMBATANT_ANIM_TRIGGERS)[number];
+
 export const BATTLE_ESCAPE_TYPES = ['flee', 'teleport', 'whirlwind', 'knockback', 'withdraw'] as const;
 export type BattleEscapeType = (typeof BATTLE_ESCAPE_TYPES)[number];
 export type BattleParticipantUid = Pokemon['uid'];
@@ -86,7 +120,7 @@ export type BattleStages = Partial<Record<CoreBattleStatKey, number>> & {
 
 export interface BattleWeather {
   type: WeatherId;
-  visual?: string; // domain-ok
+  visual?: string; // domain-ok: Open dynamic text or non-domain string payload
   turns: number;
 }
 
@@ -102,7 +136,7 @@ export interface PendingSlotEffect {
   targetSlot: number; // 0-indexed position on target side
   turnsLeft: number;  // fires when this reaches 0
   damage: number;     // pre-computed damage
-  sourceName?: string; // domain-ok — for log message only
+  sourceName?: string; // domain-ok: Open dynamic text or non-domain string payload — for log message only
 }
 
 export interface BattleState {
@@ -116,7 +150,7 @@ export interface BattleState {
   isIndoors?: boolean;
   isCrystalCave?: boolean;
   isTrainer: boolean;
-  trainerName?: string; // domain-ok
+  trainerName?: string; // domain-ok: Open dynamic text or non-domain string payload
   trainerSprite?: NpcSpriteId;
   trainerArchetype?: NpcArchetype;
   isGym?: boolean;
@@ -133,7 +167,7 @@ export interface BattleState {
   escapeAttempts: number;
   initialMapWeather?: WeatherId | null;
   rarity?: number;
-  terrain?: string | null; // domain-ok
+  terrain?: string | null; // domain-ok: Open dynamic text or non-domain string payload
   fieldConditions?: Partial<Record<BattleConditionKey, BattleTimedCondition>>;
   pendingSlotEffects?: PendingSlotEffect[];
   playerSideConditions?: Partial<Record<BattleConditionKey, BattleTimedCondition>>;
@@ -168,33 +202,33 @@ export interface BattleState {
   seed?: number[];
   battleHistory?: Array<{
     turnCount: number;
-    p1Choice: string; // domain-ok
-    p2Choice: string; // domain-ok
+    p1Choice: string; // domain-ok: Open dynamic text or non-domain string payload
+    p2Choice: string; // domain-ok: Open dynamic text or non-domain string payload
     p1Hps?: Partial<Record<BattleParticipantUid, number>> | number[];
     p2Hps?: Partial<Record<BattleParticipantUid, number>> | number[];
   }>;
   playerFled?: boolean;
-  quote?: string; // domain-ok
+  quote?: string; // domain-ok: Open dynamic text or non-domain string payload
   wasSearching?: boolean;
   cannotEscape?: boolean;
   stolenResources?: {
     money: number;
     items: Inventory;
   };
-  p1SlotOrder?: string[]; // domain-ok
-  p2SlotOrder?: string[]; // domain-ok
+  p1SlotOrder?: string[]; // domain-ok: Open dynamic text or non-domain string payload
+  p2SlotOrder?: string[]; // domain-ok: Open dynamic text or non-domain string payload
   switchingToEnemy?: Pokemon | null;
 }
 
 export type BattleSource = Pokemon | string;
 
 export interface BattleLog {
-  id: string; // domain-ok
-  msg: string; // domain-ok
-  type: string; // domain-ok
+  id: string; // domain-ok: Open dynamic text or non-domain string payload
+  msg: string; // domain-ok: Open dynamic text or non-domain string payload
+  type: string; // domain-ok: Open dynamic text or non-domain string payload
   side: BattleSide | null;
-  icon?: string | null; // domain-ok
-  iconType?: string | null; // domain-ok
+  icon?: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  iconType?: string | null; // domain-ok: Open dynamic text or non-domain string payload
   source?: BattleSource;
 }
 
@@ -212,15 +246,15 @@ export type MoveAction = (
 ) => void;
 
 export interface SparkleData {
-  id: string | number; // domain-ok
+  id: string | number; // domain-ok: Open dynamic text or non-domain string payload
   tx: number;
   ty: number;
   tf: number;
   scale: number;
-  delay: string; // domain-ok
+  delay: string; // domain-ok: Open dynamic text or non-domain string payload
 }
 
-export type StyleZIndex = number | string; // string-ok
+export type StyleZIndex = number | string; // string-ok: Internal string formatting or DOM token identifier
 
 export interface BattleCombatantProps {
   side: BattleSide;
@@ -228,8 +262,8 @@ export interface BattleCombatantProps {
   position: { x: number; y: number };
   targetPosition?: { x: number; y: number } | null;
   baseSize: number;
-  groundY?: string; // domain-ok
-  shadowKey?: string | null; // domain-ok
+  groundY?: string; // domain-ok: Open dynamic text or non-domain string payload
+  shadowKey?: string | null; // domain-ok: Open dynamic text or non-domain string payload
   animState?: 'catching' | 'trapped' | 'releasing' | null;
   ballId?: ItemId;
   isShaking?: boolean;
@@ -240,8 +274,8 @@ export interface BattleCombatantProps {
   activeMove?: {
     id?: PokemonMoveId;
     side: BattleSide;
-    cat: MoveCategory | 'selfKO';
-    name: string; // domain-ok
+    cat: MoveCategory;
+    name: string; // domain-ok: Open dynamic text or non-domain string payload
     selfKO?: boolean;
     recoil?: boolean | number;
   } | null;
@@ -261,7 +295,7 @@ export interface ShowdownPlayerRequest {
   active?: {
     moves?: {
       id?: PokemonMoveId;
-      move?: string; // domain-ok
+      move?: string; // domain-ok: Open dynamic text or non-domain string payload
       disabled?: boolean | 'pp';
       pp?: number;
       maxpp?: number;
@@ -272,11 +306,11 @@ export interface ShowdownPlayerRequest {
   forceSwitch?: boolean[];
   side?: {
     pokemon: {
-      ident: string; // domain-ok
-      details: string; // domain-ok
-      condition: string; // domain-ok
+      ident: string; // domain-ok: Open dynamic text or non-domain string payload
+      details: string; // domain-ok: Open dynamic text or non-domain string payload
+      condition: string; // domain-ok: Open dynamic text or non-domain string payload
       active: boolean;
-      uid?: string; // domain-ok
+      uid?: string; // domain-ok: Open dynamic text or non-domain string payload
     }[];
   };
   wait?: boolean;

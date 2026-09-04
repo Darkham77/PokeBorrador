@@ -9,11 +9,13 @@ import { useUIStore } from '@/stores/ui.ts'
 import { 
   RANKED_REWARD_MILESTONES, 
   RANKED_REWARD_MILESTONES_BY_ID, 
-  isRankedRewardMilestoneId
+  isRankedRewardMilestoneId,
+  type RankedRewardMilestoneId
 } from '@/data/system/rankedData'
 export { RANKED_REWARD_MILESTONES }
 import { getEloTier } from '@/logic/pvp/rankedEngine'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { GAME_TIMEZONE, parseZonedTime } from '@/logic/utils/timeUtils'
 import { DEFAULT_INITIAL_ELO, SEASON_DURATION_MONTHS, DEFAULT_MOVE_PP } from '@/logic/constants/gameplay.ts'
 
@@ -38,7 +40,7 @@ interface SeasonRules {
   endDate?: string
   seasonStartDate?: string
   seasonEndDate?: string
-  bannedPokemonIds?: string[]
+  bannedPokemonIds?: PokemonSpeciesId[]
   levelCap: number
   allowedTypes?: string[]
   maxPokemon: number
@@ -168,7 +170,7 @@ export const usePvPStore = defineStore('pvp', () => {
     }
   }
 
-  async function claimReward(milestoneId: string) {
+  async function claimReward(milestoneId: RankedRewardMilestoneId) {
     if (rewardsClaimed.value.includes(milestoneId)) return
     if (!isRankedRewardMilestoneId(milestoneId)) return
     

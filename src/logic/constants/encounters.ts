@@ -51,7 +51,7 @@ const SETUP_MOVES_LIST = [
   'swordsdance', 'nastyplot', 'dragondance', 'calmmind', 'quiverdance',
   'shellsmash', 'bulkup', 'bellydrum', 'coil', 'shiftgear', 'workup',
 ] as const;
-export const SETUP_MOVES: ReadonlySet<string> = new Set<string>(SETUP_MOVES_LIST); // runtime-set
+export const SETUP_MOVES: ReadonlySet<string> = new Set<string>(SETUP_MOVES_LIST); // runtime-set: Fast O(1) membership lookup set
 
 /** Priority move IDs for Heuristic AI threat calculation. */
 const PRIORITY_MOVES_LIST = [
@@ -59,7 +59,7 @@ const PRIORITY_MOVES_LIST = [
   'shadowsneak', 'aquajet', 'accelerock', 'watershuriken', 'firstimpression',
   'grassyglide', 'thunderclap', 'jetpunch',
 ] as const;
-export const PRIORITY_MOVES: ReadonlySet<string> = new Set<string>(PRIORITY_MOVES_LIST); // runtime-set
+export const PRIORITY_MOVES: ReadonlySet<string> = new Set<string>(PRIORITY_MOVES_LIST); // runtime-set: Fast O(1) membership lookup set
 
 /** Heuristic AI threat calculation weight for speed. */
 export const THREAT_WEIGHT_SPEED = 0.35;

@@ -10,6 +10,7 @@ import { getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
 
 import { GTS_ITEMS_PER_PAGE } from '@/logic/economy/market'
 import type { SortOrder, ItemSortKey } from '@/types/system/game'
+import type { PokemonTagId } from '@/logic/constants/tags'
 
 const game = useGameStore()
 const gtsStore = useGTSStore()
@@ -20,7 +21,7 @@ const activeMode = ref<'pokemon' | 'item'>('pokemon')
 const searchQuery = ref('')
 const sortBy = ref('recent')
 const sortOrder = ref('desc')
-const activeTags = ref<string[]>([])
+const activeTags = ref<PokemonTagId[]>([])
 const filterCompatibleOnly = ref(false)
 
 // Item Filters

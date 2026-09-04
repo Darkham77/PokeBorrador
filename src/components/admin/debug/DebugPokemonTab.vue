@@ -5,7 +5,7 @@ import DebugPokemonCreator from './DebugPokemonCreator.vue'
 
 const ui = useUIStore()
 
-interface ViteDebug extends Record<string, unknown> { // open-record
+interface ViteDebug extends Record<string, unknown> { // open-record: Generic key-value data dictionary container
   setPokedexMode: (mode: string) => void
   resetPokedexDB: () => void
   syncPokedex: () => void

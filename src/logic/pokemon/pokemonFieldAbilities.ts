@@ -321,9 +321,9 @@ export function resolveHoneyGather(
  * Cures persistent status conditions for party members with Natural Cure.
  * Returns the list of cured Pokemon names.
  */
-export function curePartyNaturalCure(team: (Pokemon | null)[] | null | undefined): string[] { // no-domain
+export function curePartyNaturalCure(team: (Pokemon | null)[] | null | undefined): string[] { // no-domain: Non-domain utility collection or data structure
   if (!team) return [];
-  const curedNames: string[] = []; // no-domain
+  const curedNames: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   team.forEach(p => {
     if (p && p.ability === 'naturalcure' && p.status) {

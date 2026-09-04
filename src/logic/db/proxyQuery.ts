@@ -2,7 +2,7 @@
 
 import { initSQLite, queryLocal, persistSQLite } from './sqliteEngine.ts';
 import type { DBRouter } from './dbRouter.ts';
-import type { DBResponse, ProxyQueryChainItem } from '@/types/system/database';
+import type { DBResponse, ProxyQueryChainItem, SqlProxyAction, SqlProxyCountMode } from '@/types/system/database';
 import { logger } from '../utils/logger.ts';
 
 export type DBQueryResultShape = 'single' | 'maybeSingle';
@@ -15,7 +15,7 @@ export class ProxyQuery {
   router: DBRouter;
   table: string;
   chain: ProxyQueryChainItem[];
-  action: 'select' | 'upsert' | 'update' | 'delete' | 'insert';
+  action: SqlProxyAction;
   actionData: unknown;
   actionOpts: unknown;
 
@@ -28,7 +28,7 @@ export class ProxyQuery {
     this.actionOpts = null;
   }
 
-  select(cols: string = '*', opts: { count?: 'exact' | 'planned' | 'estimated' | null, head?: boolean } = {}) { 
+  select(cols: string = '*', opts: { count?: SqlProxyCountMode | null, head?: boolean } = {}) { 
     this.chain.push({ type: 'select', args: [cols, opts] }); 
     return this; 
   }
@@ -172,7 +172,7 @@ export class ProxyQuery {
 
       // Default: select
       let sql = `SELECT * FROM ${this.table}`; // Simplistic, cols not used yet
-      const where: string[] = []; // no-domain
+      const where: string[] = []; // no-domain: Non-domain utility collection or data structure
       const params: unknown[] = [];
 
       this.chain.forEach(s => {
@@ -183,7 +183,7 @@ export class ProxyQuery {
         if (s.type === 'gte') { where.push(`${s.args[0]} >= ?`); params.push(s.args[1]); }
         if (s.type === 'lte') { where.push(`${s.args[0]} <= ?`); params.push(s.args[1]); }
         if (s.type === 'in') {
-          const arr = (s.args[1] as unknown[]) || []; // open-record
+          const arr = (s.args[1] as unknown[]) || []; // open-record: Generic key-value data dictionary container
           const marks = arr.map(() => '?').join(',');
           where.push(`${s.args[0]} IN (${marks})`);
           params.push(...arr);
@@ -202,7 +202,7 @@ export class ProxyQuery {
           }
         }
         if (s.type === 'match') {
-          Object.entries(s.args[0] as Record<string, unknown>).forEach(([k, v]) => { // open-record
+          Object.entries(s.args[0] as Record<string, unknown>).forEach(([k, v]) => { // open-record: Generic key-value data dictionary container
             where.push(`${k} = ?`);
             params.push(v);
           });
@@ -215,12 +215,12 @@ export class ProxyQuery {
           const filterStr = s.args[0] as string;
           if (filterStr.includes('and(')) {
             const clauses = filterStr.split(/\),?/);
-            const orClauses: string[] = []; // no-domain
+            const orClauses: string[] = []; // no-domain: Non-domain utility collection or data structure
             clauses.forEach(clause => {
               const cleanClause = clause.replace(/and\(/g, '').trim();
               if (!cleanClause) return;
               const subFilters = cleanClause.split(',');
-              const andClauses: string[] = []; // no-domain
+              const andClauses: string[] = []; // no-domain: Non-domain utility collection or data structure
               subFilters.forEach(f => {
                 const parts = f.split('.');
                 if (parts.length >= 3) {
@@ -242,7 +242,7 @@ export class ProxyQuery {
             }
           } else {
             const subFilters = filterStr.split(',');
-            const subClauses: string[] = []; // no-domain
+            const subClauses: string[] = []; // no-domain: Non-domain utility collection or data structure
             subFilters.forEach(f => {
               const parts = f.split('.');
               if (parts.length >= 3) {
@@ -318,7 +318,7 @@ export class ProxyQuery {
       const values = Array.isArray(this.actionData) ? this.actionData : [this.actionData];
       for (const row of values) {
         if (typeof row !== 'object' || row === null) continue;
-        const r = row as Record<string, unknown>; // open-record
+        const r = row as Record<string, unknown>; // open-record: Generic key-value data dictionary container
         const cols = Object.keys(r);
         const marks = cols.map(() => '?').join(',');
         const vals = cols.map(c => r[c] === undefined || r[c] === null ? null : typeof r[c] === 'object' ? JSON.stringify(r[c]) : r[c]);
@@ -335,15 +335,15 @@ export class ProxyQuery {
 
   async _executeLocalUpdate(sqliteDb: { run: (sql: string, params: unknown[]) => void }): Promise<DBResponse> {
     try {
-      const data = this.actionData as Record<string, unknown>; // open-record
+      const data = this.actionData as Record<string, unknown>; // open-record: Generic key-value data dictionary container
       const setClause = Object.keys(data).map(k => `${k} = ?`).join(',');
       const params: unknown[] = Object.values(data).map(v => v === undefined || v === null ? null : typeof v === 'object' ? JSON.stringify(v) : v);
       
-      const where: string[] = []; // no-domain
+      const where: string[] = []; // no-domain: Non-domain utility collection or data structure
       this.chain.forEach(s => {
         if (s.type === 'eq') { where.push(`${s.args[0]} = ?`); params.push(s.args[1] ?? null); }
         if (s.type === 'match') {
-          Object.entries(s.args[0] as Record<string, unknown>).forEach(([k, v]) => { // open-record
+          Object.entries(s.args[0] as Record<string, unknown>).forEach(([k, v]) => { // open-record: Generic key-value data dictionary container
             where.push(`${k} = ?`); params.push(v ?? null);
           });
         }
@@ -364,7 +364,7 @@ export class ProxyQuery {
   async _executeLocalDelete(sqliteDb: { run: (sql: string, params: unknown[]) => void }): Promise<DBResponse> {
     try {
       const params: unknown[] = [];
-      const where: string[] = []; // no-domain
+      const where: string[] = []; // no-domain: Non-domain utility collection or data structure
       this.chain.forEach(s => {
         if (s.type === 'eq') { where.push(`${s.args[0]} = ?`); params.push(s.args[1]); }
       });

@@ -1,5 +1,4 @@
 import { test, type Page, type APIRequestContext } from '@playwright/test';
-import fs from 'node:fs';
 import path from 'node:path';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import { confirmAndStartBattle, waitForWaitInput } from '../e2e_helpers.ts';
@@ -11,14 +10,10 @@ class AshSaveSimWrapper extends BaseBattleSimulation {
 
   public async loadAshSave(request: APIRequestContext): Promise<void> {
     const dbPath = path.resolve('tests/fixtures/poke_local_ash.db');
-    if (!fs.existsSync(dbPath)) {
-      throw new Error(`Base de datos no encontrada en ${dbPath}`);
-    }
     await this.page.addInitScript(() => {
       (window as Window & { __GTS_SIMULATION__?: boolean }).__GTS_SIMULATION__ = true;
     });
-    const dbBuffer = fs.readFileSync(dbPath);
-    await this.syncDevDb(request, dbBuffer);
+    await this.loadDatabaseFixture(dbPath, request);
     await this.setup();
 
     await this.page.evaluate(async () => {
@@ -50,12 +45,6 @@ class AshSaveSimWrapper extends BaseBattleSimulation {
     }
   }
 }
-
-test.beforeEach(async ({ request }) => {
-  await request.post('/api/dev-sim-db-cleanup', {
-    headers: { 'x-db-key': 'sim_db_ash' }
-  });
-});
 
 test('Debug ash save switch issue', async ({ page, request }) => {
   const sim = new AshSaveSimWrapper(page, 'ash');

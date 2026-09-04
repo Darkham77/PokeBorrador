@@ -95,7 +95,7 @@ export async function generateBattleMapCatalog(
 ): Promise<string[]> {
   console.log(styleText('yellow', `\n   📦 Generando catálogo de mapas de combate en src/data/map-assets.ts...`));
   const battleMapsSourceDir = safeResolve(sourceDir, 'public/assets/maps_battle');
-  const battleMaps: string[] = []; // no-domain
+  const battleMaps: string[] = []; // no-domain: Non-domain utility collection or data structure
   try {
     const entries = await fs.readdir(battleMapsSourceDir);
     for (const entry of entries) {
@@ -110,7 +110,7 @@ export async function generateBattleMapCatalog(
   battleMaps.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 
   console.log(styleText('yellow', `   🔍 Validando correspondencia de mapas de combate...`));
-  const missingMaps: string[] = []; // no-domain
+  const missingMaps: string[] = []; // no-domain: Non-domain utility collection or data structure
   const suffixes = ['_dia', '_noche', '_atardecer', '_amanecer'] as const;
 
   for (const [routeId, baseName] of Object.entries(mapRouteMapping)) {
@@ -272,7 +272,7 @@ export async function generateFeetAndCriesDatabase(
         .map(f => path.parse(f).name.toLowerCase())
     );
 
-    const missingOfficialCries: string[] = []; // no-domain
+    const missingOfficialCries: string[] = []; // no-domain: Non-domain utility collection or data structure
     const allSpecies = Dex.species.all();
 
     for (const spec of allSpecies) {
@@ -345,7 +345,7 @@ for (const [key, prefix] of [
   ['n', '/assets/sprites/npc/'],
   ['t', '/assets/sprites/trainers/']
 ] as const satisfies readonly (readonly [FeetSpriteGroupKey, FeetSpritePrefix])[]) {
-  const group = (PACKED_DATA as Record<string, Record<string, readonly number[]>>)[key] ?? {}; // open-record
+  const group = (PACKED_DATA as Record<string, Record<string, readonly number[]>>)[key] ?? {}; // open-record: Generic key-value data dictionary container
   for (const [subKey, tuple] of Object.entries(group)) {
     const dbPath: FeetDatabasePath = \`\${prefix}\${subKey}.webp\`;
     const y = requireFeetMetric(tuple as readonly number[], dbPath, 0);
@@ -462,7 +462,7 @@ export async function generateNpcSpriteCatalog(
         if (/_avatar|_back/i.test(entry)) continue;
 
         const baseName = path.parse(entry).name;
-        const normalized = baseName.toLowerCase().replace(/[-_]/g, ''); // string-ok
+        const normalized = baseName.toLowerCase().replace(/[-_]/g, ''); // string-ok: Internal string formatting or DOM token identifier
 
         classifyNpcSprite(baseName, normalized, ARCHETYPE_KEYWORDS, catalogLists);
       }
@@ -493,7 +493,7 @@ export type NpcSpriteId = (typeof ARCHETYPE_SPRITES)[keyof typeof ARCHETYPE_SPRI
 export const VALID_NPC_SPRITES = Object.values(ARCHETYPE_SPRITES).flat();
 
 export function isNpcSpriteId(value: string): value is NpcSpriteId {
-  return (VALID_NPC_SPRITES as readonly string[]).includes(value); // domain-ok
+  return (VALID_NPC_SPRITES as readonly string[]).includes(value); // domain-ok: Open dynamic text or non-domain string payload
 }
 
 export function requireNpcSpriteId(value: string): NpcSpriteId {

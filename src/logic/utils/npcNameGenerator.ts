@@ -23,7 +23,7 @@ export const FEMALE_NAMES = [
 ] as const;
 
 
-const KNOWN_FEMALE_SPRITES: readonly string[] = [ // no-domain
+const KNOWN_FEMALE_SPRITES: readonly string[] = [ // no-domain: Non-domain utility collection or data structure
   'nurse', 'nurseryaide', 'battlegirl', 'beauty', 'lass', 'aromalady', 'lady', 'skyla',
   'erika', 'misty', 'sabrina', 'sonia', 'sonia-professor', 'juniper', 'sada', 'sada-ai',
   'briar', 'miriam', 'raifort', 'kahili', 'winona', 'katy', 'bea', 'whitney', 'flannery',
@@ -33,7 +33,7 @@ const KNOWN_FEMALE_SPRITES: readonly string[] = [ // no-domain
   'doctorf', 'scientistf', 'skytrainerf', 'pokemonrangerf'
 ];
 
-const KNOWN_MALE_SPRITES: readonly string[] = [ // no-domain
+const KNOWN_MALE_SPRITES: readonly string[] = [ // no-domain: Non-domain utility collection or data structure
   'oak', 'elm', 'rowan', 'kukui', 'sycamore', 'birch', 'blaine', 'brock', 'lt-surge',
   'koga', 'giovanni', 'falkner', 'bugsy', 'morty', 'chuck', 'pryce', 'clair',
   'roark', 'byron', 'volkner', 'cilan', 'chili', 'cress', 'burgh', 'clay', 'drayden',
@@ -53,7 +53,7 @@ const ARCHETYPE_TITLES: Record<string, { M: string; F: string }> = {
   domador: { M: 'Domador', F: 'Domadora' },
   medium: { M: 'Médium', F: 'Médium' },
   motorista: { M: 'Motorista', F: 'Motorista' },
-  montanero: { M: 'Montañero', F: 'Montañera' }, // spanish-ok
+  montanero: { M: 'Montañero', F: 'Montañera' }, // spanish-ok: UI Spanish text localization label
   rocket: { M: 'Recluta Rocket', F: 'Recluta Rocket' },
   criador: { M: 'Criador Pokémon', F: 'Criadora Pokémon' },
   aristocrata: { M: 'Aristócrata', F: 'Aristócrata' },
@@ -72,7 +72,7 @@ export interface NpcNameOptions {
   includeTitle?: boolean;
 }
 
-export function detectGenderFromSprite(spriteId?: string): NpcGender {
+export function detectGenderFromSprite(spriteId?: NpcSpriteId): NpcGender {
   if (!spriteId) return Math.random() < 0.5 ? 'M' : 'F';
   const clean = spriteId.trim();
   const baseName = clean.split('-')[0] || clean;

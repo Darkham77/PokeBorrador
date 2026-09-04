@@ -61,7 +61,7 @@ class HeuristicAgent extends BattleAgent {
       species: activePoke.details.split(',')[0] ?? activePoke.ident,
       level: MAX_POKEMON_LEVEL,
       moves: legalMoveIds.length > 0 ? legalMoveIds : (activePoke.moves ?? []),
-      ability: activePoke.ability ? requireAbilityId(activePoke.ability) : '', // domain-ok
+      ability: activePoke.ability ? requireAbilityId(activePoke.ability) : '', // domain-ok: Open dynamic text or non-domain string payload
       item: '',
       name: activePoke.ident.split(': ')[1] ?? activePoke.ident,
       gender: 'M',
@@ -80,7 +80,7 @@ class HeuristicAgent extends BattleAgent {
         species: opponentPoke.details?.split(',')[0] ?? opponentPoke.ident ?? 'Pikachu',
         level: MAX_POKEMON_LEVEL,
         moves: opponentPoke.moves ?? [],
-        ability: opponentPoke.ability ? requireAbilityId(opponentPoke.ability) : '', // domain-ok
+        ability: opponentPoke.ability ? requireAbilityId(opponentPoke.ability) : '', // domain-ok: Open dynamic text or non-domain string payload
         item: '',
         name: opponentPoke.ident?.split(': ')[1] ?? opponentPoke.ident ?? 'Opponent',
         gender: 'M',
@@ -138,7 +138,7 @@ class HeuristicAgent extends BattleAgent {
 
     if (chosen) {
       const moves = slotReq.moves ?? [];
-      const slot = moves.findIndex((m: { id: string; disabled?: boolean | string; pp?: number }) => m.id === chosen.id && !m.disabled && (m.pp ?? 0) > 0); // type-ok
+      const slot = moves.findIndex((m: { id: string; disabled?: boolean | string; pp?: number }) => m.id === chosen.id && !m.disabled && (m.pp ?? 0) > 0); // type-ok: Type contract declaration
       if (slot !== -1) return `move ${slot + 1}${mega}${tera}`;
     }
 
@@ -181,9 +181,9 @@ export async function runAIFuzzer(): Promise<FuzzerResult[]> {
     const batch = batches[idx]!;
     console.log(`  ⚔️  Combate ${idx + 1}/${batches.length} (${batch.id})...`);
 
-    const p1Choices: string[] = []; // no-domain
-    const p2Choices: string[] = []; // no-domain
-    const steps: string[] = []; // no-domain
+    const p1Choices: string[] = []; // no-domain: Non-domain utility collection or data structure
+    const p2Choices: string[] = []; // no-domain: Non-domain utility collection or data structure
+    const steps: string[] = []; // no-domain: Non-domain utility collection or data structure
     let error: string | null = null;
     let ended = false;
     let winner: SideID | null = null;
@@ -222,7 +222,7 @@ export async function runAIFuzzer(): Promise<FuzzerResult[]> {
           if (line.includes('|move|')) {
             const parts = line.split('|');
             const attacker = parts[2]?.split(': ')[1] ?? parts[2] ?? '';
-            const moveName = parts[3] ?? ''; // text-ok
+            const moveName = parts[3] ?? ''; // text-ok: UI text display localization string
             steps.push(`T${simBattle.turn}: ${attacker} → ${moveName}`);
           } else if (line.includes('|faint|')) {
             const parts = line.split('|');

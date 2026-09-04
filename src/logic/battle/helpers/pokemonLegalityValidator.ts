@@ -3,6 +3,9 @@ import { Dex, toID, type PokemonSet } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { isAbilityId, type AbilityId } from '@/data/battle/abilities';
+import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
 
 export interface LegalityCheckResult {
   valid: boolean;
@@ -15,7 +18,7 @@ export class PokemonLegalityValidator {
   /**
    * Validates that the species exists in the active generation and is standard.
    */
-  public static validateSpecies(speciesId: string): LegalityCheckResult {
+  public static validateSpecies(speciesId: PokemonSpeciesId): LegalityCheckResult {
     const cleanId = toID(speciesId);
     if (!cleanId) {
       return { valid: false, errors: ['Species ID is empty or undefined.'] };
@@ -33,13 +36,12 @@ export class PokemonLegalityValidator {
   /**
    * Validates that the ability is natively available for the species.
    */
-  public static validateAbility(speciesId: string, abilityId: string): LegalityCheckResult {
-    const cleanSpecies = toID(speciesId);
+  public static validateAbility(speciesId: PokemonSpeciesId, abilityId: AbilityId): LegalityCheckResult {
     const cleanAbility = toID(abilityId);
     if (!cleanAbility) {
       return { valid: false, errors: [`Ability is empty for species "${speciesId}".`] };
     }
-    const legalAbilities = pokemonDataProvider.getSpeciesAbilities(cleanSpecies).map(a => toID(a));
+    const legalAbilities = pokemonDataProvider.getSpeciesAbilities(speciesId).map(a => toID(a));
     if (!legalAbilities.includes(cleanAbility)) {
       return {
         valid: false,
@@ -52,7 +54,7 @@ export class PokemonLegalityValidator {
   /**
    * Validates that the gender matches the species' biological gender ratio.
    */
-  public static validateGender(speciesId: string, gender: string | null | undefined): LegalityCheckResult {
+  public static validateGender(speciesId: PokemonSpeciesId, gender: string | null | undefined): LegalityCheckResult {
     const cleanSpecies = toID(speciesId);
     const species = this.dex.species.get(cleanSpecies);
     if (!species || !species.exists) {
@@ -81,8 +83,8 @@ export class PokemonLegalityValidator {
   /**
    * Validates that all moves exist in Showdown's database.
    */
-  public static validateMoves(speciesId: string, moves: readonly string[]): LegalityCheckResult {
-    const errors: string[] = []; // no-domain
+  public static validateMoves(speciesId: PokemonSpeciesId, moves: readonly PokemonMoveId[]): LegalityCheckResult {
+    const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
     if (!Array.isArray(moves) || moves.length === 0) {
       return { valid: false, errors: [`Species "${speciesId}" has no moves defined.`] };
     }
@@ -109,19 +111,29 @@ export class PokemonLegalityValidator {
    * Validates a full Pokemon entity or PokemonSet.
    */
   public static validatePokemon(poke: Pokemon | PokemonSet | Record<string, unknown>): LegalityCheckResult {
-    const allErrors: string[] = []; // no-domain
-    const speciesId = String(Reflect.get(poke, 'species') || Reflect.get(poke, 'id') || '');
-    const abilityId = String(Reflect.get(poke, 'ability') || '');
+    const allErrors: string[] = []; // no-domain: Non-domain utility collection or data structure
+    const rawSpecies = String(Reflect.get(poke, 'species') || Reflect.get(poke, 'id') || '');
+    if (!isPokemonSpeciesId(rawSpecies)) {
+      return { valid: false, errors: [`Invalid or non-existent species ID: "${rawSpecies}".`] };
+    }
+    const speciesId: PokemonSpeciesId = rawSpecies;
+    const rawAbility = String(Reflect.get(poke, 'ability') || '');
     const gender = (Reflect.get(poke, 'gender') as string | null | undefined) ?? null;
     const rawMoves = Reflect.get(poke, 'moves');
-    const moves: readonly string[] = Array.isArray(rawMoves) ? rawMoves : []; // no-domain
+    const moves: readonly PokemonMoveId[] = Array.isArray(rawMoves)
+      ? rawMoves.map(m => (typeof m === 'string' ? m : (typeof m === 'object' && m && 'id' in m ? String(m.id) : ''))).filter(isPokemonMoveId)
+      : [];
 
     const spRes = this.validateSpecies(speciesId);
     if (!spRes.valid) allErrors.push(...spRes.errors);
 
-    if (spRes.valid && abilityId) {
-      const abRes = this.validateAbility(speciesId, abilityId);
-      if (!abRes.valid) allErrors.push(...abRes.errors);
+    if (spRes.valid && rawAbility) {
+      if (!isAbilityId(rawAbility)) {
+        allErrors.push(`Invalid ability ID: "${rawAbility}".`);
+      } else {
+        const abRes = this.validateAbility(speciesId, rawAbility);
+        if (!abRes.valid) allErrors.push(...abRes.errors);
+      }
     }
 
     if (spRes.valid) {
@@ -145,7 +157,7 @@ export class PokemonLegalityValidator {
       throw new Error(`[PokemonLegality] ${teamLabel} is empty or not an array.`);
     }
 
-    const teamErrors: string[] = []; // no-domain
+    const teamErrors: string[] = []; // no-domain: Non-domain utility collection or data structure
     team.forEach((poke, idx) => {
       const res = this.validatePokemon(poke);
       if (!res.valid) {

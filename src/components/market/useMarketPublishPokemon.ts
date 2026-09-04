@@ -2,7 +2,7 @@ import { computed, type Ref } from 'vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality'
 import { filterAndSortPokemon } from '@/logic/pokemon/pokemonSelectionFilter.ts'
-import { isPokemonBusy } from '@/logic/constants/tags.ts'
+import { isPokemonBusy, isPokemonFilterTagId } from '@/logic/constants/tags.ts'
 import type { useGameStore } from '@/stores/game'
 
 export function useMarketPublishPokemon(
@@ -29,7 +29,7 @@ export function useMarketPublishPokemon(
       searchQuery: searchQuery.value,
       sortBy: sortBy.value,
       sortOrder: sortOrder.value,
-      activeTags: activeTags.value
+      activeTags: activeTags.value.filter(isPokemonFilterTagId)
     })
   })
 

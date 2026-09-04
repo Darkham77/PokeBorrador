@@ -10,13 +10,13 @@ import { toID } from '@/logic/utils/strings.ts';
  * Maps a Poké Vicio visual weather ID to its official Showdown weather ID
  * for a specific generation.
  */
-import { isWeatherId } from './weatherRegistry.ts';
+import { isWeatherId, type WeatherId, type ShowdownWeatherId } from './weatherRegistry.ts';
 
 const PALDEA_GENERATION_NUM = 9;
 const KALOS_GENERATION_NUM = 6;
 const SINNOH_GENERATION_NUM = 4;
 
-export function mapVisualToOfficialWeather(visualWeather: string | null | undefined, gen: number): string {
+export function mapVisualToOfficialWeather(visualWeather: string | null | undefined, gen: number): ShowdownWeatherId {
   if (!visualWeather) return 'none';
   const lower = isWeatherId(visualWeather) ? visualWeather : null;
   if (!lower) return 'none';
@@ -71,15 +71,15 @@ export function mapVisualToOfficialWeather(visualWeather: string | null | undefi
  * Returns the localized weather name in Spanish for a given official Showdown weather ID
  * depending on the generation.
  */
-export function getLocalizedWeatherName(weatherId: string | null | undefined, gen: number): string {
-  if (!weatherId || weatherId === 'none') return 'Despejado';
-  const lower = toID(weatherId);
+export function getLocalizedWeatherName(officialWeatherId: ShowdownWeatherId | WeatherId, gen: number): string {
+  if (officialWeatherId === 'none' || officialWeatherId === 'clear' || officialWeatherId === 'null') return 'Despejado';
+  const lower = toID(officialWeatherId);
 
   const localizedMap: Record<string, string> = {
     sunnyday: 'Sol',
     raindance: 'Lluvia',
     sandstorm: 'T. Arena',
-    hail: gen >= 9 ? 'Nieve' : 'Granizo', // spanish-ok
+    hail: gen >= 9 ? 'Nieve' : 'Granizo', // spanish-ok: UI Spanish text localization label
     snow: 'Nieve',
     desolateland: 'Sol Abrasador',
     primordialsea: 'Lluvia Torrencial',
@@ -104,12 +104,12 @@ export function getWeatherCombatDescription(visualWeather: string | null | undef
   }
   if (lower === 'sandstorm') {
     if (gen >= 4) {
-      return '▲ Potencia Especial Roca (x1.5)\n▼ Debilita a no Roca/Tierra/Acero (1/16 HP por turno)'; // no-magic
+      return '▲ Potencia Especial Roca (x1.5)\n▼ Debilita a no Roca/Tierra/Acero (1/16 HP por turno)'; // no-magic: Explicit mathematical constant or threshold value
     }
-    return '▼ Debilita a no Roca/Tierra/Acero (1/16 HP por turno)'; // no-magic
+    return '▼ Debilita a no Roca/Tierra/Acero (1/16 HP por turno)'; // no-magic: Explicit mathematical constant or threshold value
   }
   if (lower === 'hail') {
-    return '▼ Debilita a no Hielo (1/16 HP por turno)\n• Efecto: Ventisca 100% precisión'; // no-magic
+    return '▼ Debilita a no Hielo (1/16 HP por turno)\n• Efecto: Ventisca 100% precisión'; // no-magic: Explicit mathematical constant or threshold value
   }
   if (lower === 'snow') {
     return '▲ Potencia Defensa Hielo (x1.5)\n• Efecto: Ventisca 100% precisión';
@@ -144,7 +144,7 @@ export function mapOfficialToVisualWeather(officialWeather: string | null | unde
   if (lower === 'sunnyday' || lower === 'sun') return 'sun';
   if (lower === 'sandstorm') return 'sandstorm';
   if (lower === 'hail') return gen >= 9 ? 'snow' : 'hail';
-  if (lower === 'snowscape' || lower === 'snow') return 'snow'; // spanish-ok
+  if (lower === 'snowscape' || lower === 'snow') return 'snow'; // spanish-ok: UI Spanish text localization label
   if (lower === 'desolateland' || lower === 'intensesun') return 'intense_sun';
   if (lower === 'primordialsea' || lower === 'heavyrain') return 'heavy_rain';
   if (lower === 'deltastream' || lower === 'strongwinds') return 'strong_winds';

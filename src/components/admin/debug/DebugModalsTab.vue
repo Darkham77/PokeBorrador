@@ -11,13 +11,13 @@ const isTesting = ref(false)
 async function startTest() {
   if (isTesting.value) return
   isTesting.value = true
-  const bridge = Reflect.get(window, '__VITE_DEBUG__') as { testModalStack: (count: number) => Promise<void> } | undefined // domain-ok
+  const bridge = Reflect.get(window, '__VITE_DEBUG__') as { testModalStack: (count: number) => Promise<void> } | undefined // domain-ok: Open dynamic text or non-domain string payload
   await bridge?.testModalStack(modalCount.value)
   isTesting.value = false
 }
 
 function triggerSampleError() {
-  const bridge = Reflect.get(window, '__VITE_DEBUG__') as { triggerTestError: () => void } | undefined // domain-ok
+  const bridge = Reflect.get(window, '__VITE_DEBUG__') as { triggerTestError: () => void } | undefined // domain-ok: Open dynamic text or non-domain string payload
   bridge?.triggerTestError()
 }
 </script>

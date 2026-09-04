@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { getForcedExitConfig } from '@/logic/battle/helpers/forcedSwitchRegistry';
 import { BATTLE_ESCAPE_TYPES } from '@/types/battle/battle';
+import type { PokemonMoveId } from '@/data/battle/moves';
+import type { ItemId } from '@/data/inventory/items';
 
 describe('Audit Parity - Forced Switch Expulsion Animation (|drag|)', () => {
   beforeEach(() => {
@@ -9,7 +11,7 @@ describe('Audit Parity - Forced Switch Expulsion Animation (|drag|)', () => {
   });
 
   it('verifies that all forced switch escape types are valid domain union members', () => {
-    const moveIds = ['whirlwind', 'roar', 'dragontail', 'circlethrow', 'teleport', 'uturn', 'voltswitch', 'redcard', 'ejectbutton'];
+    const moveIds: readonly (PokemonMoveId | ItemId)[] = ['whirlwind', 'roar', 'dragontail', 'circlethrow', 'teleport', 'uturn', 'voltswitch', 'redcard', 'ejectbutton'] as const;
     for (const moveId of moveIds) {
       const config = getForcedExitConfig(moveId);
       expect(BATTLE_ESCAPE_TYPES).toContain(config.escapeType);

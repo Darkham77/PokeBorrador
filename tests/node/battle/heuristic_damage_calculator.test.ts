@@ -1,7 +1,7 @@
 import { describe, it, beforeEach } from 'vitest';
 import assert from 'node:assert/strict';
 import { HeuristicDamageCalculator } from '../../../src/logic/battle/ai/heuristic/damageCalculator.ts';
-import type { HeuristicBattleSnapshot } from '../../../src/logic/battle/ai/heuristic/types.ts';
+import type { HeuristicBattleSnapshot, HeuristicMoveInfo } from '../../../src/logic/battle/ai/heuristic/types.ts';
 
 describe('HeuristicAI - HeuristicDamageCalculator Unit Tests', () => {
   let calc: HeuristicDamageCalculator;
@@ -58,7 +58,7 @@ describe('HeuristicAI - HeuristicDamageCalculator Unit Tests', () => {
   });
 
   it('should calculate matchup damage correctly prioritizing type effectiveness', () => {
-    const validMoves = [{ id: 'thunderbolt', pp: 15, disabled: false }];
+    const validMoves: HeuristicMoveInfo[] = [{ id: 'thunderbolt', pp: 15, disabled: false }];
     const inferredMoves = new Map([['watergun', 1]]);
 
     const matchup = calc.calcMatchup(snapshot, validMoves, inferredMoves);
@@ -76,7 +76,7 @@ describe('HeuristicAI - HeuristicDamageCalculator Unit Tests', () => {
     const opp = snapshot.opponentSide.activePokemon!;
     opp.species = 'diglett';
 
-    const validMoves = [{ id: 'thunderbolt', pp: 15, disabled: false }];
+    const validMoves: HeuristicMoveInfo[] = [{ id: 'thunderbolt', pp: 15, disabled: false }];
     const inferredMoves = new Map([['mudslap', 1]]);
 
     const matchup = calc.calcMatchup(snapshot, validMoves, inferredMoves);
@@ -87,7 +87,7 @@ describe('HeuristicAI - HeuristicDamageCalculator Unit Tests', () => {
   });
 
   it('should apply STAB modifiers when move matches attacker type', () => {
-    const validMoves = [
+    const validMoves: HeuristicMoveInfo[] = [
       { id: 'thunderbolt', pp: 15, disabled: false }, // Electric (STAB)
       { id: 'quickattack', pp: 30, disabled: false }   // Normal (no STAB)
     ];

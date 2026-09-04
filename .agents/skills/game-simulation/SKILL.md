@@ -25,7 +25,7 @@ the source of truth. `src/` must conform to them, never the reverse.
 
 ## ⛔ HARD GATES & INVIOLABLE DEBUGGING LAWS (ZERO DEVIATION)
 
-> These 4 Hard Gates are immutable boundaries. Every AI agent MUST strictly adhere to them:
+> These 5 Hard Gates are immutable boundaries. Every AI agent MUST strictly adhere to them:
 
 1. **⛔ HARD GATE 1: PROHIBITION ON PLAYWRIGHT BEFORE VITEST RED-TO-GREEN CYCLE & NODE SUITE PASS**:
    - When ANY simulation or batch fails, it is **STRICTLY PROHIBITED** to modify `src/` or run Playwright commands as an exploratory fix attempt before completing Steps 4, 5, and 5.5.
@@ -46,6 +46,23 @@ the source of truth. `src/` must conform to them, never the reverse.
    - Replayer logic, workers, and battle runners MUST NOT intercept failed/disabled move choices with speculative fallbacks or automatic defaults.
    - All state desynchronizations, missing properties, or choice mismatches MUST fail fast and loudly (`throw new Error(...)`) so they can be repaired cleanly at the root cause.
 
+5. **⛔ HARD GATE 5: MANDATORY CLOSED-LOOP REPAIR & CLEAN ZERO SUITE REGRESSION PASS (NEVER ABANDON, ALWAYS REPAIR & RE-RUN FROM ZERO)**:
+   - When ANY simulation test fails, the failure is **NEVER a dead end** to stop and give up. It is the immediate trigger to enter the **Active Closed-Loop Repair Cycle**:
+     1. Stop the current suite run and isolate the exact failing case ID and fixture data.
+     2. Write an isolated static Vitest reproduction test in `tests/node/` reproducing the exact failure deterministically in **RED**.
+     3. Fix the true root cause in `src/` (or harden base simulation harnesses via inheritance).
+     4. Confirm the unit test turns **GREEN**.
+     5. Run the full Node regression suite (`npm run test:node`) to verify 0 regressions.
+     6. Fast-forward resume in Playwright from the checkpoint to reach the end of the suite. The checkpoint manager MUST preserve and merge `failedBatchIndex` and `failedCaseId`, automatically resuming from the exact failing batch and skipping all previously passed batches within the suite.
+   - **STRICT SERIAL DATABASE DRIVER EXECUTION**: Database drivers (SQLite and PostgreSQL) MUST execute strictly in series (`[1/2 SQLite]` followed by `[2/2 PostgreSQL]`), never concurrently. Concurrency is strictly reserved for the concurrent Playwright browser workers within each active suite.
+   - **MANDATORY UNCONDITIONALLY DUAL CLEAN ZERO PASS (PASO 6B)**: Once the suite reaches the end via checkpoint resumption, the runner **MUST AUTOMATICALLY EXECUTE THAT SUITE FROM ZERO IN DUAL MODE**:
+     1. `[6B 1/2 SQLite]`: Full clean pass from Case #1 on SQLite.
+     2. `[6B 2/2 PostgreSQL]`: Full clean pass from Case #1 on PostgreSQL.
+     Under no circumstances is a single-driver clean pass acceptable. Both engines MUST pass 100% from case 1.
+   - **AUTOMATIC MASTER PROGRESS ADVANCEMENT**: Upon successful dual clean pass completion, the checkpoint manager automatically advances the global master cursor (`recordMasterSuiteProgress`) to the next suite in the 38-suite catalog (`master.suiteIndex = i + 1`), allowing seamless continuation via `npm run sim:e2e` without manual arguments.
+   - If the clean run from zero detects ANY regression in either engine, the agent **MUST RE-ENTER THE REPAIR CYCLE IMMEDIATELY**.
+   - It is **STRICTLY PROHIBITED** to advance to the next simulation suite or declare the suite certified until the dual clean zero pass returns 100% PASS from case 1 in both engines.
+
 ---
 
 ## 🔴 MANDATORY SIMULATION DIRECTIVES (IMMUTABLE LAWS)
@@ -53,7 +70,9 @@ the source of truth. `src/` must conform to them, never the reverse.
 > These rules exist because they were violated in production and caused token waste or false reports. Every AI agent MUST strictly follow them without exception:
 
 1. **Strict Timeout Constants Policy (5s Per-Action Max / Parameter-Configured Suite Timeouts)**:
-   - **Per-Action Timeout (`MAX_PER_ACTION_TIMEOUT_MS = 5000`)**: Strictly 5 seconds per UI action, event wait (`battle-ready-for-input`), or turn reaction. A timeout here is NEVER a time shortage; it is 100% guaranteed to be an application bug in `src/`. Modifying, inflating, or wrapping this timeout in ad-hoc retry loops or dynamic multipliers is STRICTLY FORBIDDEN.
+   - **Per-Action Timeout (`MAX_PER_ACTION_TIMEOUT_MS = 5000`)**: Strictly 5 seconds per UI action or turn reaction once the FSM grants control to the player/AI (`isReady = true`, `WAIT_INPUT`, `SWITCH_MENU`, or `over`). This timeout governs the **input response window** for the simulator or player to select and submit their choice.
+   - **Engine Processing vs Input Response Distinction**: The 5-second per-action limit MUST NEVER abort or truncate the battle engine while it is actively and legitimately processing multi-action turn animations, status effects, ability triggers, or log queues (`isProcessing.value || isIntroAnimating.value`). While the engine is executing a turn, the inactivity watchdog (`waitForBattleReady`) resets its timer upon any observable activity (`battle-log-added`, GSAP tween execution, HP mutation, FSM substate progression). The timeout triggers if and only if the engine becomes completely deadlocked or inactive without granting control.
+   - **Full Battle Log Preservation Mandate**: Live battle logs (`battleLogs`) in `battleLogHelper.ts` MUST NEVER be artificially truncated or capped to arbitrary small numbers (such as 30 entries). Full combat history must be preserved throughout the battle so players can freely scroll and review prior turns. `clearLogs()` cleanses memory upon battle completion.
    - **Suite Total Timeout (`getSuiteTimeoutForBatch(turnCount?)`)**:
      - When replaying a certified batch with a known turn count (`turnCount > 0`), the test timeout MUST be pre-configured by parameter: `Math.max(MAX_SUITE_TOTAL_TIMEOUT_MS, turnCount * MAX_PER_ACTION_TIMEOUT_MS)`.
      - When a simulation does NOT have pre-generated fuzzer turns to replay (e.g. GTS, gym progression, daycare lifecycle, UI features), it MUST strictly use `MAX_SUITE_TOTAL_TIMEOUT_MS = 180000` (3 minutes statically).
@@ -85,6 +104,7 @@ the source of truth. `src/` must conform to them, never the reverse.
    - **IMMUTABLE LAW — NPC COMBAT ONLY**: Trainer, rival, gym, and every other NPC encounter is combat-only. Its official UI MUST NOT offer fleeing, and a simulation MUST select the combat control only. A visible or executable NPC flee path is a game defect to fix in `src/`, never a test escape hatch.
    - **NARROW BATTLE-INITIALIZATION EXCEPTION**: The sole permitted state injection is the initialization of a battle that reproduces a current, fuzzer-certified case. It may establish only the initial combat scenario and MUST NOT perform any subsequent gameplay action or transition. The test must then drive the battle exclusively through official visible UI controls. Manual scenarios without a fuzzer-certified battle have no injection exception.
    - **CERTIFIED IPB HEALING EXCEPTION**: The Infinite Punching Bag healing cheat remains permitted exactly as recorded by the certified fuzzer turn flags (`p1Heal` / `p2Heal`) and only during its prescribed coverage phase. It is a deterministic parity instrument, not a UI substitute; it does not authorize internal calls for clicks, menus, modal closure, movement, choices, switching, fleeing, confirmation, or battle exit.
+   - **MANDATORY GSAP ANIMATION & EVENT COORDINATION**: All UI readiness and interaction synchronization between application components and Playwright simulations MUST be 100% event-driven and coordinated directly with GSAP animation completions (`onComplete`). When UI views, dialogs, overlays, or starter selection cards mount and finish their GSAP intro animations or entrance timelines, they MUST dispatch a typed public event (such as `GAME_UI_EVENTS.STARTER_SELECT_READY`, `GAME_UI_EVENTS.STORE_READY`, `BATTLE_UI_EVENTS.BATTLE_READY_FOR_INPUT`). Simulators MUST arm the event listener BEFORE triggering navigation or action and await the event cleanly. It is **STRICTLY FORBIDDEN** to inflate action timeouts (e.g. from 5s to 10s or 35s) or use retry loops/sleeps to wait for UI stability: any timeout is 100% guaranteed to be a missing event emission upon GSAP completion that MUST be resolved by dispatching and awaiting the proper typed event in `src/`.
    - **NO AD-HOC HEURISTICS IN SIMULATION HELPERS**: It is **STRICTLY FORBIDDEN** to invent ad-hoc property checks (such as checking `hp === 0`), add manual poll loops, or alter helper functions like `waitForWaitInput` to force early returns. `waitForWaitInput` MUST purely observe FSM readiness states.
    - **PUBLIC-EVENT-ONLY SYNCHRONIZATION & ZERO-TIMER SYNC**: Every simulator wait MUST be armed before the UI action and resolved by a public, typed application event (specifically `battle-ready-for-input`, `battle-forced-switch-required`, a typed battle-flow completion event, or an explicit component event) with 100% zero-timer synchronization. `page.waitForFunction`, store/FSM property polling, DOM-state polling, `sleep`, `page.waitForTimeout`, turn counters, and low-level condition loops are strictly forbidden as synchronization mechanisms. A missing event is a source-code defect: add the typed event at the real transition boundary in `src/`, then consume it without mutating gameplay. It is **STRICTLY FORBIDDEN** to use retry-loop helpers (such as `clickResilient`) that attempt repeated clicks on UI elements while a turn or animation is in progress and the button is disabled.
    - **EVENTS FOLLOW REAL TRANSITIONS**: Tests must never dispatch, forge, or directly call an event to advance the game. A source event must be emitted only after the genuine FSM/UI transition and cleanup complete; a simulator is an observer that then clicks the next visible official control.
@@ -174,6 +194,95 @@ the source of truth. `src/` must conform to them, never the reverse.
     const species = target.species;
     ```
 
+12. **Dual Database Architecture & Execution Mandate (SQLite vs PostgreSQL Docker)**:
+    - **Dual Driver Model**:
+      - `sqlite` (Default): High-speed in-memory WASM database, ideal for fast day-to-day developer iteration, UI synchronization, combat simulations, and rapid CI verification without external runtime dependencies.
+      - `postgres` (Docker Integration): Connects against the ephemeral Docker container (`pokevicio-test-postgres` on port 54329), executing 100% real PL/pgSQL stored procedures (`fn_award_event_automated`, `save_game_trusted`, `claim_asset_v2`), foreign key constraints, and RLS policies.
+    - **Simulation Superclass Integration**:
+      - `BaseE2ESimulation` and `BaseBattleSimulation` support `SimulationOptions { driver: 'sqlite' | 'postgres' }` and `this.getDriver()`.
+      - Use `await this.queryTestDb(sql, params)` to execute direct verification queries post-simulation, automatically delegating to `node:sqlite` or `postgres.js` without leaking driver-specific boilerplate into simulation scenarios.
+    - **Multi-User Identity & State Isolation in PostgreSQL**:
+      - `loginTestUser`: Derives deterministic UUIDv4 identifiers using SHA-256 hashing of username strings to avoid collisions on PostgreSQL unique composite indexes (`UNIQUE(event_id, category_id, player_id)`).
+      - **Periodic Stored Procedure Reset**: Simulation suites sharing a PostgreSQL container must reset `last_awarded_at = NULL` and purge prior event data in `seedEventConfig` to avoid triggering temporal anti-farming lockouts (e.g. `< 10 minutes` rule in `fn_award_event_automated`).
+    - **Mandatory Dual-Driver Suite-by-Suite Certification Mandate (Atomic SQLite ➡️ PostgreSQL Rotation)**:
+      - When running the sequential simulation device (`npm run sim:e2e`), the runner defaults to `driver=dual`.
+      - For each of the 38 simulation suites, the runner executes:
+        1. **Stage 1 (SQLite)**: Verifies fast in-memory execution and UI behavior.
+        2. **Stage 2 (PostgreSQL)**: Verifies the exact same suite against the ephemeral Supabase Docker stack (PostgreSQL + PostgREST + Gateway).
+      - **Strict Stop-on-Failure**: If a suite fails in either engine, execution **HALTS IMMEDIATELY**. The agent must NOT proceed to subsequent suites until the failure is diagnosed, isolated via a RED reproduction Vitest test, fixed in `src/`, verified GREEN, and passed in both drivers.
+      - **Single-Driver Flags**: Developers may pass `npm run sim:e2e driver=sqlite` or `npm run sim:e2e driver=postgres` for isolated driver passes, but full certification strictly requires the dual suite-by-suite pass.
+    - **Standard CLI Invocation Commands & Orchestrator Parameters**:
+      - **Official CLI Parameters**:
+        - `filter=<suite_name>`: Filters execution to a single suite (or pattern) while displaying global canonical progress (e.g. `[ 61%] (23/38)`).
+        - `from=<n|name>`: Resumes the sequential pass from a specific suite index (e.g. `from=24`) or file basename (e.g. `from=save_shield_restrictions`), executing through Suite 38 without re-running prior certified suites.
+        - `clean=true` / `reset=true`:
+          - When combined with `filter=<suite>`: Scopes checkpoint cleanup exclusively to that individual suite, preserving the global master cursor intact.
+          - When used globally (without filter): Clears all checkpoints to force execution from Suite 1.
+        - `driver=dual` (default) | `driver=sqlite` | `driver=postgres`: Database engine selector.
+      - **POSIX / Linux / macOS (Terminal)**:
+        ```bash
+        # Full Dual-Driver Suite-by-Suite Certification (Default):
+        npm run sim:e2e
+
+        # Targeted Suite Execution (resumes from checkpoint if present):
+        npm run sim:e2e filter=search_loop_sequential
+
+        # Clean Suite Execution from Zero (Paso 6B):
+        npm run sim:e2e filter=search_loop_sequential clean=true
+
+        # Resume Master Pass from a Specific Suite:
+        npm run sim:e2e from=24
+        npm run sim:e2e from=save_shield_restrictions
+
+        # Explicit Driver Execution:
+        npm run sim:e2e driver=sqlite
+        npm run sim:e2e driver=postgres
+
+        # Direct Single Playwright Suite Invocation:
+        SIM_DB_DRIVER=postgres npx playwright test scripts/e2e/events/magikarp_contest_multiusers.simulation.ts --workers=1
+        npx playwright test scripts/e2e/events/magikarp_contest_multiusers.simulation.ts --workers=1
+        ```
+      - **Windows (PowerShell)**:
+        ```powershell
+        # Full Dual-Driver Suite-by-Suite Certification (Default):
+        npm run sim:e2e
+
+        # Targeted Suite Execution:
+        npm run sim:e2e filter=search_loop_sequential
+
+        # Clean Suite Execution from Zero (Paso 6B):
+        npm run sim:e2e filter=search_loop_sequential clean=true
+
+        # Resume Master Pass from a Specific Suite:
+        npm run sim:e2e from=24
+
+        # Explicit Driver Execution:
+        npm run sim:e2e driver=sqlite
+        npm run sim:e2e driver=postgres
+
+        # Direct Single Playwright Suite Invocation:
+        $env:SIM_DB_DRIVER="postgres"; npx playwright test scripts/e2e/events/magikarp_contest_multiusers.simulation.ts --workers=1
+        Remove-Item Env:\SIM_DB_DRIVER -ErrorAction SilentlyContinue; npx playwright test scripts/e2e/events/magikarp_contest_multiusers.simulation.ts --workers=1
+        ```
+
+13. **Mandatory Inheritance & Modularization Mandate (Base Class or Shared Module Over Ad-Hoc Patching)**:
+    - **Cross-Simulation Architectural Scope Check**: Whenever ANY bug, timeout, synchronization desync, database state pollution, selector fragility, or test harness failure is detected in a simulation:
+      - The agent **MUST NEVER** immediately apply an ad-hoc local patch isolated to only that single `*.simulation.ts` file.
+      - The agent **MUST PROACTIVELY INVESTIGATE**: *Is this problem a cross-cutting or recurring pattern across simulations? Can it be solved at the base class level via inheritance, or in a shared utility module via modularization?*
+    - **Inheritance vs. Modularization Selection**:
+      - **Por Herencia (`BaseE2ESimulation` / `BaseBattleSimulation`)**: When the capability belongs directly to the simulation instance lifecycle, state setup/teardown (`setup()`, `finish()`, `saveGameAndAwaitExport()`, `reloadAndSync()`), multi-driver fixture management (`loadDatabaseFixture()`), or instance assertion helpers (`this.expectToast()`).
+      - **Por Modularización (`scripts/e2e/e2e_helpers.ts`, `simulation_config.ts`)**: When the capability is a standalone, functional DOM helper, cross-context assertion, store resolver, locator builder, or pure calculation that any script or helper can compose independently without requiring class inheritance.
+    - **Universal Propagation to All 38+ Suites**:
+      - By implementing the fix in the base class or in a shared module, **ALL** 38+ existing simulation suites inherit or import the fix automatically without code duplication, fragile per-file overrides, or divergent behavior.
+    - **Standard Inherited / Modular Capabilities**:
+      1. **Pre-Test State Reset (`setup()`)**: Automatic deletion of ephemeral SQLite database files, cleanup of prior PostgreSQL test user entries, viewport initialization, and pre-loading `window.__E2E__ = true` init scripts so cold Vite compiles never trigger timeout fallbacks.
+      2. **Robust Semantic Assertions (`expectToast(text, timeout)`)**: Centralized text-filtered notification locator assertions, strictly forbidding fragile positional `.first()` indexing when multiple toast notifications are stacked.
+      3. **Universal Multi-Driver Fixture Loading (`loadDatabaseFixture(fixturePath, request)`)**: Seamless cross-driver fixture loading that automatically uploads SQLite binary state via dev server bridge in SQLite mode, AND synchronizes/inserts the fixture's `save_data` into PostgreSQL in Postgres mode.
+      4. **Deterministic Hydration Synchronization (`reloadAndSync(timeout)`)**: Centralized page reload awaiting Pinia store readiness with protective timeout bounds.
+      5. **Encapsulated Modal Operations (`openModal(name)` / `closeModal(name)`)**: Standardized modal opening and closing via ModalStore.
+    - **Subclass Refactoring Mandate**:
+      - When an inherited or modular method is introduced or hardened, all existing and future simulations MUST consume the inherited/modular method (`await this.expectToast(...)`, `await this.loadDatabaseFixture(...)`, `await this.setup()`) instead of maintaining local custom implementations.
+
 ## 🔄 Canonical Simulation & Debugging Lifecycle Order (Immutable Step-by-Step Flow)
 
 Every AI agent MUST follow this exact sequential order when running simulations, debugging failures, or verifying the codebase:
@@ -193,19 +302,32 @@ Every AI agent MUST follow this exact sequential order when running simulations,
    - Extract the exact static case parameters (`seed`, `playerTeam`, `enemyTeam`, and turn-by-turn choice streams from `history`) into a static fixture file (`tests/fixtures/battle/case_xxx.json`) or directly inside a dedicated Vitest test file (`tests/node/battle/reproduce_case_xxx.test.ts`).
    - Run `npm run test` and verify that the test fails deterministically in **RED**.
 
-5. **Step 5: Fix Root Cause in `src/` & Verify GREEN**:
-   - Diagnose the true root cause in `src/` and apply the clean fix without fallbacks.
+5. **Step 5: Fix Root Cause in `src/` & Harden Harness by Inheritance**:
+   - **Game Logic Fix**: Diagnose the true root cause in `src/` and apply the clean fix without fallbacks.
+   - **Harness & Simulation Fix by Inheritance**: If the failure stems from test infrastructure, timing, synchronization, database resets, or locators, implement the fix directly in `BaseE2ESimulation` / `BaseBattleSimulation` so that ALL simulations inherit the fix universally.
    - Re-run the reproduction test in Vitest to empirically demonstrate that it turns **GREEN**.
 
 6. **Step 5.5: Full Node Unit Regression Check (`npm run test:node`)**:
    - Execute the entire Node unit test suite across all 126+ test files to confirm 100% GREEN and 0 regressions before touching browser simulations.
 
-7. **Step 6: Re-run ONLY the Specific Failing Simulation in Playwright**:
-   - Execute ONLY the specific failing simulator or family (NOT the entire E2E suite).
+7. **Step 6A: Fast-Forward Resume from Checkpoint to End of Suite**:
+   - Re-run ONLY the specific failing simulation family or suite, automatically resuming from the failure checkpoint (`npm run sim:e2e filter=<nombre>`).
    - If another case fails in that family, repeat Steps 3 to 5.5 for that specific case.
+   - Continue until all cases to the end of the suite have executed successfully.
 
-8. **Step 7: Full E2E Master Regression Pass**:
-   - Only after all issues in the failing family are resolved and passing, re-run the full master E2E suite (`npm run sim:e2e`) to verify 100% clean project-wide certification.
+8. **Step 6B: Mandatory Inconditionally Dual Clean Zero Intra-Suite Regression Pass (`clean=true`)**:
+   - **MANDATO INMUTABLE**: Once the suite reaches the end via checkpoint resumption, execute a clean run of that specific suite **from ZERO in DUAL MODE**:
+     `npm run sim:e2e filter=<nombre> clean=true`
+   - The runner executes:
+     1. `[6B 1/2 SQLite]`: From case #1 on SQLite.
+     2. `[6B 2/2 PostgreSQL]`: From case #1 on PostgreSQL.
+   - Verify that 100% of all cases pass cleanly in both engines.
+   - **Automatic Master Cursor Progression**: Upon dual clean pass completion, the checkpoint manager automatically advances the global master cursor (`recordMasterSuiteProgress`) to the next suite (`master.suiteIndex = i + 1`), allowing seamless continuation without manual parameters.
+   - Under no circumstances may an agent proceed to the next suite or declare this suite certified without this dual clean pass passing 100% from case 1 in both engines.
+
+9. **Step 7: Full E2E Master Regression Pass**:
+   - Re-run or resume the master E2E suite (`npm run sim:e2e`). Because the master checkpoint cursor is continuously maintained and advanced upon every suite pass and Step 6B completion, running `npm run sim:e2e` automatically continues from the exact next uncertified suite through Suite 38.
+   - All 38 suites must complete with 100% DUAL PASS (SQLite + PostgreSQL).
 
 ### 📊 Simulation & Debugging Lifecycle Flowchart
 
@@ -221,13 +343,16 @@ flowchart TD
     E2ECheck -- "Yes (Failure Detected)" --> IsolateCase["3. Stop Suite & Isolate Specific Failing Family & Case ID"]
     IsolateCase --> ExtractFixture["4. Extract Static Fixture & Write Unit Test in tests/node/"]
     ExtractFixture --> RunRED["Run Unit Test -> Confirm RED Failure: npm run test"]
-    RunRED --> FixCode["5. Diagnose Root Cause & Apply Fix in src/"]
+    RunRED --> FixCode["5. Diagnose Root Cause: Fix src/ OR Harden Base Simulation by Inheritance"]
     FixCode --> RunGREEN["Re-run Unit Test -> Confirm GREEN"]
     RunGREEN --> RunNodeRegression["5.5. Run Full Node Suite: npm run test:node (0 regressions)"]
-    RunNodeRegression --> ReRunSpecific["6. Re-run ONLY Specific Failing Simulation Family"]
-    ReRunSpecific --> FamilyCheck{"More Failures in this Family?"}
+    RunNodeRegression --> ReRunResume["6A. Fast-Forward Resume from Checkpoint to End of Suite"]
+    ReRunResume --> FamilyCheck{"More Failures in this Suite?"}
     FamilyCheck -- "Yes" --> IsolateCase
-    FamilyCheck -- "No" --> RunMasterE2E["7. Re-run Full Master E2E Suite: npm run sim:e2e"]
+    FamilyCheck -- "No (Reached End)" --> CleanSuitePass["6B. Mandatory Clean Pass from ZERO: npm run sim:e2e filter=... clean=true"]
+    CleanSuitePass --> CleanPassCheck{"100% PASS from Zero in Dual Mode?"}
+    CleanPassCheck -- "No" --> IsolateCase
+    CleanPassCheck -- "Yes" --> RunMasterE2E["7. Re-run Full Master E2E Suite: npm run sim:e2e"]
     RunMasterE2E --> E2ECheck
 ```
 

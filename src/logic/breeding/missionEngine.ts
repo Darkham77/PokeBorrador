@@ -10,6 +10,7 @@ import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import { getSpritesForArchetype, type NpcArchetype } from '@/logic/utils/npcSpriteRouter';
 import { generateNpcName } from '@/logic/utils/npcNameGenerator';
 import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
+import type { ItemId } from '@/data/inventory/items';
 import { NATURE_DATA, NATURES } from '@/data/battle/natures';
 
 export interface MissionRequirement {
@@ -21,7 +22,7 @@ export interface MissionRequirement {
 }
 
 export interface MissionReward {
-  id: string;
+  id: ItemId;
   name: string;
   qty: number;
   icon: string;
@@ -189,20 +190,20 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
   // Rewards
   const rewardQty = trainerLevel >= TRAINER_LEVEL_MASTER_THRESHOLD ? 4 : (trainerLevel >= 20 ? 3 : 2);
   const possibleRewards: MissionReward[] = [
-    { id: 'berrybronze', name: 'Baya de Bronce', qty: rewardQty + 1, icon: '🥉' }, // spanish-ok
-    { id: 'berrysilver', name: 'Baya de Plata', qty: rewardQty, icon: '🥈' }, // spanish-ok
-    { id: 'berrygold', name: 'Baya de Oro', qty: Math.max(1, rewardQty - 2), icon: '🥇' }, // spanish-ok
-    { id: 'everstone', name: 'Piedra Eterna', qty: 1, icon: '🪨' } // spanish-ok
+    { id: 'berrybronze', name: 'Baya de Bronce', qty: rewardQty + 1, icon: '🥉' }, // spanish-ok: UI Spanish text localization label
+    { id: 'berrysilver', name: 'Baya de Plata', qty: rewardQty, icon: '🥈' }, // spanish-ok: UI Spanish text localization label
+    { id: 'berrygold', name: 'Baya de Oro', qty: Math.max(1, rewardQty - 2), icon: '🥇' }, // spanish-ok: UI Spanish text localization label
+    { id: 'everstone', name: 'Piedra Eterna', qty: 1, icon: '🪨' } // spanish-ok: UI Spanish text localization label
   ];
 
   if (trainerLevel >= TRAINER_LEVEL_IV31_UNLOCK_THRESHOLD) {
     const powerItems: MissionReward[] = [
-      { id: 'powerweight', name: 'Pesa Recia', qty: 1, icon: '🏋️' }, // spanish-ok
-      { id: 'powerbracer', name: 'Brazal Recio', qty: 1, icon: '🥊' }, // spanish-ok
-      { id: 'powerbelt', name: 'Cinto Recio', qty: 1, icon: '🛡️' }, // spanish-ok
-      { id: 'powerlens', name: 'Lente Recia', qty: 1, icon: '🔍' }, // spanish-ok
-      { id: 'powerband', name: 'Banda Recia', qty: 1, icon: '🎗️' }, // spanish-ok
-      { id: 'poweranklet', name: 'Franja Recia', qty: 1, icon: '👢' } // spanish-ok
+      { id: 'powerweight', name: 'Pesa Recia', qty: 1, icon: '🏋️' }, // spanish-ok: UI Spanish text localization label
+      { id: 'powerbracer', name: 'Brazal Recio', qty: 1, icon: '🥊' }, // spanish-ok: UI Spanish text localization label
+      { id: 'powerbelt', name: 'Cinto Recio', qty: 1, icon: '🛡️' }, // spanish-ok: UI Spanish text localization label
+      { id: 'powerlens', name: 'Lente Recia', qty: 1, icon: '🔍' }, // spanish-ok: UI Spanish text localization label
+      { id: 'powerband', name: 'Banda Recia', qty: 1, icon: '🎗️' }, // spanish-ok: UI Spanish text localization label
+      { id: 'poweranklet', name: 'Franja Recia', qty: 1, icon: '👢' } // spanish-ok: UI Spanish text localization label
     ];
     possibleRewards.push(...powerItems);
   }

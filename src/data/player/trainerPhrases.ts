@@ -214,7 +214,7 @@ const PRECOMPUTED_TRAINER_PHRASES: Partial<Record<TrainerPhraseKey, string[]>> =
 
 for (const trainerType in TRAINER_PERSONALITIES) {
   if (!isTrainerPhraseKey(trainerType)) continue;
-  const quotes: string[] = []; // no-domain
+  const quotes: string[] = []; // no-domain: Non-domain utility collection or data structure
   TRAINER_PERSONALITIES[trainerType].forEach(trait => {
     const traitQuotes = TRAINER_PHRASES[trait];
     quotes.push(...traitQuotes);

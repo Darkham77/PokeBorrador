@@ -19,8 +19,8 @@ export function getShowdownNickname(uid: string): string {
  */
 export function isMatchingUid(uidA: string | undefined | null, uidB: string | undefined | null): boolean {
   if (!uidA || !uidB) return false;
-  const a = uidA.toLowerCase(); // text-ok
-  const b = uidB.toLowerCase(); // text-ok
+  const a = uidA.toLowerCase(); // text-ok: UI text display localization string
+  const b = uidB.toLowerCase(); // text-ok: UI text display localization string
   if (a === b) return true;
   if (a.startsWith(b) && (a[b.length] === '-' || a[b.length] === '_')) return true;
   if (b.startsWith(a) && (b[a.length] === '-' || b[a.length] === '_')) return true;
@@ -57,6 +57,8 @@ export function findMatchingValue<T>(
 ): T | undefined {
   if (!targetUid || !map) return undefined;
   if (map[targetUid] !== undefined) return map[targetUid];
-  const matchedKey = Object.keys(map).find(k => isMatchingUid(k, targetUid)); // o1-ok
-  return matchedKey !== undefined ? map[matchedKey] : undefined;
+  for (const k in map) {
+    if (isMatchingUid(k, targetUid)) return map[k];
+  }
+  return undefined;
 }

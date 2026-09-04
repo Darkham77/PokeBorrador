@@ -198,7 +198,7 @@ function parsePendingRequests(
   const profilesMap = profilesData.reduce((acc, p) => {
     const reqId = p.id;
     const saveRow = savesByUserId[reqId];
-    const save = (saveRow?.save_data || {}) as Record<string, unknown>; // open-record
+    const save = (saveRow?.save_data || {}) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
     const capitalizedFallback = reqId.slice(0, 8).toUpperCase();
     const username = (save.trainer as string) || p?.username || capitalizedFallback;
 

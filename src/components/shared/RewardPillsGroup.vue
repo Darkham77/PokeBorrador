@@ -11,9 +11,10 @@ import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getItemById, getItemName } from '@/data/inventory/items'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import type { EventRewardType } from '@/types/system/stores'
 
 interface RawPrizeData {
-  type?: 'money' | 'bc' | 'item' | 'pokemon' | 'mixed'
+  type?: EventRewardType
   amount?: number
   qty?: number
   money?: number
@@ -39,7 +40,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 interface NormalizedReward {
   id: string
-  type: 'money' | 'bc' | 'item' | 'pokemon'
+  type: EventRewardType
   title: string
   label: string
   qtyText?: string
@@ -71,7 +72,7 @@ const normalizedList = computed<NormalizedReward[]>(() => {
         list.push({
           id: `item-${key}`,
           type: 'item',
-          title: name.toUpperCase(), // domain-ok
+          title: name.toUpperCase(), // domain-ok: Open dynamic text or non-domain string payload
           label: name,
           qtyText: `x${qty}`,
           spriteUrl: getItemSpriteUrl(key),
@@ -132,7 +133,7 @@ const normalizedList = computed<NormalizedReward[]>(() => {
     list.push({
       id: `reward-item-${itId}`,
       type: 'item',
-      title: name.toUpperCase(), // domain-ok
+      title: name.toUpperCase(), // domain-ok: Open dynamic text or non-domain string payload
       label: name,
       qtyText: `x${qty}`,
       spriteUrl: getItemSpriteUrl(itId),
@@ -149,7 +150,7 @@ const normalizedList = computed<NormalizedReward[]>(() => {
         list.push({
           id: `reward-item-map-${itId}`,
           type: 'item',
-          title: name.toUpperCase(), // domain-ok
+          title: name.toUpperCase(), // domain-ok: Open dynamic text or non-domain string payload
           label: name,
           qtyText: `x${itQty}`,
           spriteUrl: getItemSpriteUrl(itId),
@@ -168,8 +169,8 @@ const normalizedList = computed<NormalizedReward[]>(() => {
     list.push({
       id: `reward-poke-${sp}`,
       type: 'pokemon',
-      title: `${sp.toUpperCase()}${shiny ? ' ✨ SHINY' : ''}`, // domain-ok
-      label: `${sp.toUpperCase()}`, // domain-ok
+      title: `${sp.toUpperCase()}${shiny ? ' ✨ SHINY' : ''}`, // domain-ok: Open dynamic text or non-domain string payload
+      label: `${sp.toUpperCase()}`, // domain-ok: Open dynamic text or non-domain string payload
       qtyText: lv || (shiny ? '✨' : undefined),
       spriteUrl: getAssetUrl(ASSET_TYPES.POKEMON, sp, { isShiny: shiny }),
       description: `Ejemplar Pokémon especial ${shiny ? 'Variocolor (Shiny)' : ''} listo para sumarse a tu equipo.`,

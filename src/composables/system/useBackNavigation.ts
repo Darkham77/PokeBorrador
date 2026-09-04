@@ -48,7 +48,7 @@ export function useBackNavigation() {
   // Establishes a permanent state trap in browser history to prevent navigating away
   const ensureHistoryTrap = () => {
     try {
-      const currentState = (window.history.state as Record<string, unknown> | null) || {} // open-record
+      const currentState = (window.history.state as Record<string, unknown> | null) || {} // open-record: Generic key-value data dictionary container
       window.history.pushState({ ...currentState, pokevicioGuard: true }, '', window.location.href)
     } catch {
       // Ignore in restricted environments

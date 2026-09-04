@@ -6,6 +6,7 @@ import { useGameStore } from '@/stores/game.ts'
 import { useUIStore } from '@/stores/ui.ts'
 import { useAudioStore } from '@/stores/audio.ts'
 import { logger } from '@/logic/utils/logger'
+import { setLatestCommittedSaveId } from '@/logic/auth/saveService.ts'
 import { applyMarketFilters, markMarketSoldSeen, isMarketSoldSeen, GTS_MAX_ACTIVE_LISTINGS, GTS_MARKET_FEE, GTS_EXPLORE_LISTINGS_LIMIT, GTS_SALES_HISTORY_LIMIT } from '@/logic/economy/market'
 import type { MarketFilters, MarketListing, MarketListingType } from '@/logic/economy/market'
 import type { GameState } from '@/types/system/game'
@@ -103,8 +104,8 @@ export const useGTSStore = defineStore('gts', () => {
         ?.order('created_at', { ascending: false })
         ?.limit(GTS_SALES_HISTORY_LIMIT);
 
-      const mineListings = mineRes?.data as MarketListing[] | null; // domain-ok
-      const histListings = histRes?.data as MarketListing[] | null; // domain-ok
+      const mineListings = mineRes?.data as MarketListing[] | null; // domain-ok: Open dynamic text or non-domain string payload
+      const histListings = histRes?.data as MarketListing[] | null; // domain-ok: Open dynamic text or non-domain string payload
 
       myListings.value = mineListings || []
       salesHistory.value = histListings || []
@@ -199,6 +200,13 @@ export const useGTSStore = defineStore('gts', () => {
           game.state.stats = {}
         }
         game.state.stats.tradeVolume = (Number(game.state.stats.tradeVolume) || 0) + 1
+        if (auth.user) {
+          const { data: saveRow } = await game.db.from('game_saves').select('last_save_id').eq('user_id', auth.user.id).single() as { data: { last_save_id?: string } | null }
+          if (saveRow?.last_save_id) {
+            auth.user.last_save_id = saveRow.last_save_id
+            setLatestCommittedSaveId(saveRow.last_save_id)
+          }
+        }
         await game.save(false)
         
         ui.notify('¡ Compra exitosa ! Objeto enviado a tus Reclamos.', '✅')
@@ -252,13 +260,17 @@ export const useGTSStore = defineStore('gts', () => {
 
       // Refresh state to confirm removal
       if (!auth.user) return false
-      const { data: save } = await game.db.from('game_saves').select('save_data').eq('user_id', auth.user.id).single() as { data: { save_data: GameState } | null }
+      const { data: save } = await game.db.from('game_saves').select('save_data, last_save_id').eq('user_id', auth.user.id).single() as { data: { save_data: GameState; last_save_id?: string } | null }
       if (save?.save_data) {
         game.updateState(save.save_data)
       }
+      if (save?.last_save_id) {
+        auth.user.last_save_id = save.last_save_id
+        setLatestCommittedSaveId(save.last_save_id)
+      }
 
       ui.notify('¡ Publicación exitosa !', '🚀')
-      fetchUserData()
+      await fetchUserData()
       return true
     } catch (e) {
       const err = e as Error

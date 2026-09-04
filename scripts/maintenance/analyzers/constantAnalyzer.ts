@@ -15,7 +15,7 @@ export const CONSTANT_ANALYZER_DESCRIPTOR: RuleDescriptor = {
   aliases: ['duplicate-constants', 'constants', 'constantes', 'constantes-duplicadas']
 };
 
-const IGNORED_CONSTANT_NAMES = new Set([ // runtime-set
+const IGNORED_CONSTANT_NAMES = new Set([ // runtime-set: Fast O(1) membership lookup set
   'ID', 'NAME', 'TYPE', 'KEY', 'INDEX', 'COUNT', 'DEFAULT', 'SIZE', 'MAX', 'MIN',
   'VAL', 'VALUE', 'ITEM', 'STATE', 'MODE', 'TAG', 'URL', 'PATH', 'ERR', 'ERROR',
   'MSG', 'DATA', 'INFO', 'OPTIONS', 'CONFIG', 'RESULT', 'RES', 'REQ', 'STATUS',

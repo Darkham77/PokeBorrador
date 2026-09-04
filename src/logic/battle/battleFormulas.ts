@@ -50,13 +50,12 @@ export interface EscapeOptions {
 // ── Bridge Helpers ──────────────────────────────────────────────────────────
 
 function toPurePoke(p: Pokemon): PurePokemon {
-  return p as PurePokemon; // domain-ok
+  return p as PurePokemon; // domain-ok: Open dynamic text or non-domain string payload
 }
 
 function toPureMove(m: Partial<Move>): PureMove {
-  const resolvedId = m.id || '';
   return {
-    id: resolvedId,
+    id: m.id || undefined,
     type: m.type || 'normal',
     power: m.power || 0,
     cat: m.cat || 'physical'
@@ -235,10 +234,11 @@ export function getAbilityMultiplier(_attacker: Pokemon, _defender: Pokemon, _mo
 }
 
 import type { PokemonType } from '@/data/battle/types';
+import type { MoveCategory } from '@/data/battle/moves';
 
 const SPECIAL_TYPES_GEN3: readonly PokemonType[] = ['fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon', 'dark'];
 
-export function getMoveCategory(move: Partial<Move>): 'status' | 'physical' | 'special' {
+export function getMoveCategory(move: Partial<Move>): MoveCategory {
   if (move.cat === 'status') return 'status';
   if (ACTIVE_GENERATION <= 3) {
     if (move.type && SPECIAL_TYPES_GEN3.includes(move.type)) return 'special';

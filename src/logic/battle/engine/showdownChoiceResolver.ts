@@ -16,7 +16,7 @@ export function isPokemonFaintedOrActive(
   if (!targetPoke || typeof targetPoke !== 'object') {
     return { isFnt: false, isAct: false };
   }
-  const pokeObj = targetPoke as Record<string, unknown>; // open-record
+  const pokeObj = targetPoke as Record<string, unknown>; // open-record: Generic key-value data dictionary container
   const isFnt = typeof pokeObj.fainted === 'boolean'
     ? pokeObj.fainted
     : (typeof pokeObj.condition === 'string' ? pokeObj.condition.includes('fnt') : false);
@@ -35,7 +35,7 @@ export function resolveExplicitChoiceHelper(
   effectiveReq: ChoiceRequest | null | undefined
 ): string | undefined {
   if (isForceSwitch) {
-    const trimmed = explicitChoice.trim().toLowerCase(); // domain-ok
+    const trimmed = explicitChoice.trim().toLowerCase(); // domain-ok: Open dynamic text or non-domain string payload
     const switchMatch = /^switch\s+(\d+)$/.exec(trimmed);
     if (switchMatch) {
       const targetSlot = parseInt(switchMatch[1]!, 10);
@@ -87,7 +87,7 @@ export function resolveReplayerCandidate(
   activeList: SimPokemon[]
 ): string {
   const activeMoves = (effectiveReq && 'active' in effectiveReq && Array.isArray(effectiveReq.active?.[0]?.moves)) ? effectiveReq.active[0]!.moves : [];
-  const trimmed = choiceCandidate.trim().toLowerCase(); // domain-ok
+  const trimmed = choiceCandidate.trim().toLowerCase(); // domain-ok: Open dynamic text or non-domain string payload
   if (trimmed.startsWith('move ')) {
     return resolveValidMoveChoice(choiceCandidate, activeMoves);
   }

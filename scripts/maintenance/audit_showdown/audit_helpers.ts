@@ -2,7 +2,7 @@ import { readdirSync, statSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 export function getFilesRecursively(dir: string): string[] {
-  let results: string[] = []; // no-domain
+  let results: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!existsSync(dir)) return results;
   const list = readdirSync(dir);
   for (const file of list) {

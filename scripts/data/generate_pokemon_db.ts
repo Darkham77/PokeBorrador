@@ -18,7 +18,7 @@ import { requirePokemonMoveId } from '../../src/data/battle/moves.ts';
 import type { PokemonType } from '../../src/data/battle/types.ts';
 
 export interface CompactPokemonData {
-  name: string; // domain-ok
+  name: string; // domain-ok: Open dynamic text or non-domain string payload
   type: PokemonType;
   type2?: PokemonType;
   hp: number;
@@ -54,7 +54,7 @@ export async function generatePokemonDatabase(): Promise<void> {
     return Object.hasOwn(SPECIES_METADATA, id);
   }
 
-  const db: Partial<Record<PokemonDbSpeciesId, CompactPokemonData>> = {}; // open-record
+  const db: Partial<Record<PokemonDbSpeciesId, CompactPokemonData>> = {}; // open-record: Generic key-value data dictionary container
 
   for (const species of allSpecies) {
     if (species.num <= 0 || species.num > maxDexNum) {

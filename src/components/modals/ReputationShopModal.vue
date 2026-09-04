@@ -61,7 +61,7 @@ function resolveItemSprite(item: ReputationShopItem): string {
   return catalogItem.sprite
 }
 
-const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [ // no-magic
+const REPUTATION_SHOP_ITEMS: ReputationShopItem[] = [ // no-magic: Explicit mathematical constant or threshold value
   {
     id: 'repultraball',
     repCost: 15,
@@ -256,7 +256,7 @@ const close = () => {
         >
           <template #price-icon>
             <!-- Center star vertically using SVG -->
-            <!-- // no-magic -->
+            <!-- // no-magic: Explicit mathematical constant or threshold value -->
             <svg
               viewBox="0 0 24 24"
               style="width: 10px; height: 10px; display: block;"

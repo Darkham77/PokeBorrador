@@ -77,7 +77,7 @@ export async function safeFetch(rawUrl: string, options?: RequestInit, allowedHo
   if (parsed.protocol !== 'https:') {
     throw new Error(`Security Violation CWE-SSRF: Non-HTTPS protocol '${parsed.protocol}' rejected`);
   }
-  const host = parsed.hostname.toLowerCase(); // string-ok
+  const host = parsed.hostname.toLowerCase(); // string-ok: Internal string formatting or DOM token identifier
   const isAllowed = allowedHosts.some(h => host === h || host.endsWith(`.${h}`));
   if (!isAllowed) {
     throw new Error(`Security Violation CWE-SSRF: Host '${host}' is not in allowed hosts list`);

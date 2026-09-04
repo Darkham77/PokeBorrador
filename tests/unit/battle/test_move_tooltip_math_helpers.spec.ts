@@ -11,7 +11,7 @@ describe('Move Tooltip Math Helpers', () => {
   it('should calculate weather ball adaptation correctly', () => {
     const move = { id: 'weatherball', name: 'Weather Ball', type: 'normal', cat: 'special' } as Move;
     const attacker = { id: 1, type: 'fire', maxHp: 100, hp: 100 } as unknown as PurePokemon;
-    const res = calculateMovePower(move, attacker, null, null, 'sun', undefined, 50);
+    const res = calculateMovePower(move, attacker, null, 'sun', undefined, 50);
     expect(res.final).toBeGreaterThan(50);
     expect(res.list.some(l => l.label.includes('Weather Ball'))).toBe(true);
   });

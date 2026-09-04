@@ -125,7 +125,7 @@ export const useMapStore = defineStore('map', () => {
   const setGlobalWeather = (w: WeatherId | null) => { globalWeather.value = w }
   const setGlobalCycle = (c: DayPhase | null) => { forcedCycle.value = c }
 
-  const navigate = async (locId: string) => {
+  const navigate = async (locId: MapRouteId) => {
     const { executeNavigation } = await import('./mapActions')
     await executeNavigation(
       locId,
@@ -148,7 +148,7 @@ export const useMapStore = defineStore('map', () => {
     )
   }
 
-  const triggerArchaeologyRewards = async (locId: string, difficulty?: string) => {
+  const triggerArchaeologyRewards = async (locId: MapRouteId, difficulty?: string) => {
     const { executeArchaeologyRewards } = await import('./mapActions')
     await executeArchaeologyRewards(locId, gs, difficulty)
   }

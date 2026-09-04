@@ -35,7 +35,7 @@ import {
   ATTACK_DEFAULT_NY_ENEMY,
 } from '@/logic/constants/animations';
 
-const FAINT_BLINK_STEPS: readonly { t: number; op: number }[] = [ // no-magic
+const FAINT_BLINK_STEPS: readonly { t: number; op: number }[] = [ // no-magic: Explicit mathematical constant or threshold value
   { t: 0.05, op: 0 }, { t: 0.13, op: 1 },
   { t: 0.21, op: 0 }, { t: 0.29, op: 1 },
   { t: 0.37, op: 0 }, { t: 0.45, op: 1 },
@@ -106,7 +106,7 @@ export function buildAttackTimeline(
   const cleanMoveId = move.id || '';
   if (VOICE_MOVE_IDS_SET.has(cleanMoveId) && props.pokemon) {
     tl.add(() => {
-      gameBus.emit('PLAY_CRY', { name: props.pokemon!.id || props.pokemon!.name });
+      gameBus.emit('PLAY_CRY', { name: props.pokemon!.id });
     });
   }
 
@@ -136,7 +136,7 @@ export function buildAttackTimeline(
     }
   }
 
-  const isSelfKo = move.selfKO || cat === 'selfKO' || SELFKO_MOVE_IDS_SET.has(cleanMoveId);
+  const isSelfKo = move.selfKO || SELFKO_MOVE_IDS_SET.has(cleanMoveId);
   if (isSelfKo) {
     const shakeTimeline = gsap.timeline();
     for (let i = 0; i < SELFKO_SHAKE_COUNT; i++) {

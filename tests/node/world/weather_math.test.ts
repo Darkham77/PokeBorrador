@@ -23,7 +23,7 @@ import {
 // ── Inline test data (replaces vi.mock('@/data/world/weather-tables')) ──────────────
 
 const TEST_TABLES: WeatherTable = {
-  test_route: {
+  route1: {
     spring: {
       morning: { fog: 100 },
       day:     { clear: 100 },
@@ -37,7 +37,7 @@ const TEST_TABLES: WeatherTable = {
       night:   { clear: 100 },
     },
   },
-  bad_route: {
+  route2: {
     spring: {
       morning: { clear: 10, rain: 10 }, // doesn't sum to 100
     },
@@ -103,41 +103,41 @@ describe('getDayCyclePure', () => {
 
 describe('getRouteWeatherPure', () => {
   it('returns clear for unknown route', () => {
-    assert.strictEqual(getRouteWeatherPure(TEST_TABLES, 'unknown_route', 'spring', 0), 'clear');
+    assert.strictEqual(getRouteWeatherPure(TEST_TABLES, 'route3', 'spring', 0), 'clear');
   });
 
   it('returns clear for unknown season', () => {
-    assert.strictEqual(getRouteWeatherPure(TEST_TABLES, 'test_route', 'winter', 0), 'clear');
+    assert.strictEqual(getRouteWeatherPure(TEST_TABLES, 'route1', 'winter', 0), 'clear');
   });
 
   it('is deterministic for same inputs', () => {
-    const a = getRouteWeatherPure(TEST_TABLES, 'test_route', 'spring', 5000);
-    const b = getRouteWeatherPure(TEST_TABLES, 'test_route', 'spring', 5000);
+    const a = getRouteWeatherPure(TEST_TABLES, 'route1', 'spring', 5000);
+    const b = getRouteWeatherPure(TEST_TABLES, 'route1', 'spring', 5000);
     assert.strictEqual(a, b);
   });
 
-  it('returns fog at morning for spring/test_route (100% table)', () => {
+  it('returns fog at morning for spring/route1 (100% table)', () => {
     // epochHour=0 → phase 0 → morning
-    assert.strictEqual(getRouteWeatherPure(TEST_TABLES, 'test_route', 'spring', 0), 'fog');
+    assert.strictEqual(getRouteWeatherPure(TEST_TABLES, 'route1', 'spring', 0), 'fog');
   });
 
-  it('returns clear at day for spring/test_route', () => {
+  it('returns clear at day for spring/route1', () => {
     // epochHour=2 → phase 2 → day
-    assert.strictEqual(getRouteWeatherPure(TEST_TABLES, 'test_route', 'spring', 2), 'clear');
+    assert.strictEqual(getRouteWeatherPure(TEST_TABLES, 'route1', 'spring', 2), 'clear');
   });
 
-  it('returns storm at dusk for spring/test_route', () => {
+  it('returns storm at dusk for spring/route1', () => {
     // epochHour=4 → phase 4 → dusk
-    assert.strictEqual(getRouteWeatherPure(TEST_TABLES, 'test_route', 'spring', 4), 'storm');
+    assert.strictEqual(getRouteWeatherPure(TEST_TABLES, 'route1', 'spring', 4), 'storm');
   });
 
-  it('returns heatwave at day for summer/test_route', () => {
+  it('returns heatwave at day for summer/route1', () => {
     // epochHour=2 → phase 2 → day
-    assert.strictEqual(getRouteWeatherPure(TEST_TABLES, 'test_route', 'summer', 2), 'heatwave');
+    assert.strictEqual(getRouteWeatherPure(TEST_TABLES, 'route1', 'summer', 2), 'heatwave');
   });
 
   it('handles bad probability tables (probabilities < 100) gracefully', () => {
-    const weather = getRouteWeatherPure(TEST_TABLES, 'bad_route', 'spring', 0);
+    const weather = getRouteWeatherPure(TEST_TABLES, 'route2', 'spring', 0);
     assert.ok(typeof weather === 'string', 'Should return a string');
   });
 });

@@ -12,7 +12,7 @@ export interface SilentFallbackResult {
  * No se limita a funciones específicas — detecta el patrón de fallback genéricamente.
  */
 export function auditSilentFallbackPatterns(srcDir: string): SilentFallbackResult {
-  const fallbackViolations: string[] = []; // no-domain
+  const fallbackViolations: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!existsSync(srcDir)) return { fallbackViolations };
 
   const files = getFilesRecursively(srcDir).filter(f => f.endsWith('.ts') || f.endsWith('.vue'));

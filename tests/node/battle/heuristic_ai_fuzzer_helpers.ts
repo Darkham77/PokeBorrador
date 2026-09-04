@@ -14,6 +14,7 @@ import type {
   StrategicState,
   AIConfig,
 } from '../../../src/logic/battle/ai/heuristic/types.ts';
+import type { PokemonMoveId } from '../../../src/data/battle/moves.ts';
 
 export function makeBoosts() {
   return { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0 };
@@ -23,7 +24,7 @@ export function makeVolatiles(values: Iterable<HeuristicPokemonState['volatiles'
   return new Set(values);
 }
 
-export function makeMove(id: string): HeuristicPokemonMove {
+export function makeMove(id: PokemonMoveId): HeuristicPokemonMove {
   return {
     id,
     name: id,

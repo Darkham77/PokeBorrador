@@ -5,6 +5,7 @@
 // ============================================================
 
 import { toID } from '@pkmn/sim';
+import type { PokemonMoveId } from '@/data/battle/moves';
 import type {
   HeuristicBattleSnapshot,
   HeuristicPokemonState,
@@ -28,7 +29,7 @@ import {
 export const SHOWDOWN_CHOICE_INDEX_OFFSET = 1;
 
 /** Confidence score weights for heuristic AI decision layers. */
-export const HEURISTIC_CONFIDENCE_SCORES = { // no-magic
+export const HEURISTIC_CONFIDENCE_SCORES = { // no-magic: Explicit mathematical constant or threshold value
   HIGH_PRIORITY_KO: 0.93,
   GUARANTEED_OHKO: 0.95,
   RESCUE_PRIORITY_KO: 0.88,
@@ -47,7 +48,7 @@ const HEURISTIC_EVAL_DEFAULT_REPEATS = 0;
 const HEURISTIC_EVAL_MAX_PRESERVATION_SCORE = 1;
 
 /** Decision threshold values for heuristic AI evaluations. */
-export const HEURISTIC_THRESHOLDS = { // no-magic
+export const HEURISTIC_THRESHOLDS = { // no-magic: Explicit mathematical constant or threshold value
   WIN_CONDITION_SCORE: 0.5,
   HAZARD_REMOVAL_MIN_HP: 40,
   HAZARD_SET_MIN_HP: 60,
@@ -176,7 +177,7 @@ export function pickBestSwitch(
     switchTeamIndex: switchTeamIndex >= HEURISTIC_EVAL_DEFAULT_MOVE_INDEX ? switchTeamIndex : HEURISTIC_THRESHOLDS.DEFAULT_FALLBACK_INDEX,
     source: 'heuristic',
     confidence: HEURISTIC_CONFIDENCE_SCORES.BEST_SWITCH,
-    reasoning: `Best switch-in: ${best.pokemon.name} (score ${best.score.toFixed(2)})`, // no-magic
+    reasoning: `Best switch-in: ${best.pokemon.name} (score ${best.score.toFixed(2)})`, // no-magic: Explicit mathematical constant or threshold value
   };
 }
 
@@ -184,7 +185,7 @@ export function pickBestSwitch(
 // Helpers
 // ────────────────────────────────────────
 
-export function findMoveIndex(moves: HeuristicMoveInfo[], moveId: string): number {
+export function findMoveIndex(moves: HeuristicMoveInfo[], moveId: PokemonMoveId): number {
   return moves.findIndex(m => toID(m.id) === toID(moveId) && !m.disabled && m.pp > HEURISTIC_EVAL_DEFAULT_MOVE_INDEX);
 }
 

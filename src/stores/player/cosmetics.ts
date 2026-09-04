@@ -8,7 +8,9 @@ import {
   NICK_STYLES_BY_ID, 
   AVATAR_STYLES_BY_ID, 
   isNickStyleId,
-  isAvatarStyleId
+  isAvatarStyleId,
+  type NickStyleId,
+  type AvatarStyleId
 } from '@/data/player/cosmeticsData'
 import { COSMETIC_UNLOCK_CLASS_LEVEL } from '@/logic/player/classMath'
 
@@ -104,7 +106,7 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
   }
 
   // --- ACTIONS ---
-  async function equipNickStyle(styleId: string) {
+  async function equipNickStyle(styleId: NickStyleId | null) {
     if (!authStore.user || !gameStore.db) return
     
     // Validación de seguridad antes de equipar
@@ -141,7 +143,7 @@ export const useCosmeticsStore = defineStore('cosmetics', () => {
     }
   }
 
-  async function equipAvatarStyle(styleId: string) {
+  async function equipAvatarStyle(styleId: AvatarStyleId | null) {
     if (!authStore.user || !gameStore.db) return
     
     // Validación de seguridad antes de equipar

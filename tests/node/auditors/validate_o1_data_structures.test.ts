@@ -12,7 +12,7 @@ describe('validate_o1_data_structures (O(1) Data Structure Auditor)', () => {
       expect(issues[0]!.ruleId).toBe('o1-catalog-lookup');
       expect(issues[0]!.message).toContain('SHOP_ITEMS');
       expect(issues[0]!.message).toContain('ITEMS_BY_ID');
-      expect(issues[0]!.isWarning).toBe(true);
+      expect(issues[0]!.isWarning).toBe(false);
     });
 
     it('detects FIRE_RED_MAPS.find() and reports O(1) MAPS_BY_ROUTE_ID suggestion', () => {
@@ -138,18 +138,18 @@ describe('validate_o1_data_structures (O(1) Data Structure Auditor)', () => {
     });
   });
 
-  describe('Escape Hatch Support (// o1-ok, // linear-search-ok, // domain-ok)', () => {
-    it('ignores marked lines with // o1-ok without false positives', () => {
+  describe('Escape Hatch Support (// o1-ok: O(1) data structure exception, // linear-search-ok: Small bounded collection linear lookup, // domain-ok: Open dynamic text or non-domain string payload)', () => {
+    it('ignores marked lines with // o1-ok: O(1) data structure exception without false positives', () => {
       const code = `
-        const item = SHOP_ITEMS.find(i => i.id === itemId); // o1-ok
+        const item = SHOP_ITEMS.find(i => i.id === itemId); // o1-ok: O(1) data structure exception
       `;
       const issues = scanFileForO1Issues('src/components/MyComponent.vue', code);
       expect(issues.length).toBe(0);
     });
 
-    it('ignores marked lines with // linear-search-ok', () => {
+    it('ignores marked lines with // linear-search-ok: Small bounded collection linear lookup', () => {
       const code = `
-        const target = [...team, ...box].find(p => p.uid === uid); // linear-search-ok
+        const target = [...team, ...box].find(p => p.uid === uid); // linear-search-ok: Small bounded collection linear lookup
       `;
       const issues = scanFileForO1Issues('src/components/MyComponent.vue', code);
       expect(issues.length).toBe(0);

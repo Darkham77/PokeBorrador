@@ -46,14 +46,14 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
 
   // Initialize existing chats
   if (gameStore.state.chats) {
-    Object.assign(privateChats, getSanitizedChats(gameStore.state.chats as Record<string, PrivateChat>, true)) // open-record
+    Object.assign(privateChats, getSanitizedChats(gameStore.state.chats as Record<string, PrivateChat>, true)) // open-record: Generic key-value data dictionary container
   }
   isInitialized = true
 
   // Sync chats with game state updates
   watch(() => gameStore.state.chats, (newChats) => {
     if (newChats) {
-      const sanitized = getSanitizedChats(newChats as Record<string, PrivateChat>, false) // open-record
+      const sanitized = getSanitizedChats(newChats as Record<string, PrivateChat>, false) // open-record: Generic key-value data dictionary container
       for (const key in privateChats) {
         if (!sanitized[key]) {
           delete privateChats[key]
@@ -82,8 +82,8 @@ export const useChatPrivateStore = defineStore('chatPrivate', () => {
     }
 
     if (data && Array.isArray(data)) {
-      const lastSaveTime = ((gameStore.state as Record<string, unknown>)._last_updated as number) || 0 // open-record
-      const initialLastInteractions: Record<string, number> = {} // open-record
+      const lastSaveTime = ((gameStore.state as Record<string, unknown>)._last_updated as number) || 0 // open-record: Generic key-value data dictionary container
+      const initialLastInteractions: Record<string, number> = {} // open-record: Generic key-value data dictionary container
 
       data.forEach((row: Record<string, unknown>) => {
         const senderId = (row.senderId as string) || (row.senderid as string) || ''

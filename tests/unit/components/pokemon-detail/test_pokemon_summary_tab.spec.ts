@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
-import PokemonSummaryTab, { type SpeciesSummaryData } from '@/components/pokemon-detail/PokemonSummaryTab.vue'
+import PokemonSummaryTab from '@/components/pokemon-detail/PokemonSummaryTab.vue'
+import type { SpeciesSummaryData } from '@/components/pokemon-detail/pokemonSummaryTypes.ts'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 describe('PokemonSummaryTab.vue', () => {

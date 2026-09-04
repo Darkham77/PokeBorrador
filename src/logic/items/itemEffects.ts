@@ -27,7 +27,7 @@ export { isValidTarget, healHp, clearStatus, curaTotal, restorePP, handleStone, 
 
 const pokeEffect = (fn: (p: Pokemon) => ItemEffectResult) => (p: unknown) => fn(p as Pokemon);
 
-export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = { // open-record
+export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = { // open-record: Generic key-value data dictionary container
   // --- Healing & Status ---
   'potion': pokeEffect((p) => healHp(p, POTION_HEAL_HP)),
   'superpotion': pokeEffect((p) => healHp(p, SUPER_POTION_HEAL_HP)),
@@ -67,7 +67,7 @@ export const itemEffects: Record<string, (p: unknown) => ItemEffectResult> = { /
 
   // --- PP & Stats ---
   'ether': pokeEffect((p) => restorePP(p, ETHER_PP_RESTORE)),
-  'elixir': pokeEffect((p) => restorePP(p, ETHER_PP_RESTORE)), // spanish-ok
+  'elixir': pokeEffect((p) => restorePP(p, ETHER_PP_RESTORE)), // spanish-ok: UI Spanish text localization label
   'elixirmax': pokeEffect((p) => restorePP(p, MAX_PP_RESTORE_CAP)),
   
   // --- Buffs / Special ---

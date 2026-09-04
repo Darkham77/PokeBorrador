@@ -18,6 +18,7 @@ import ProfileFactionWarCard from './ProfileFactionWarCard.vue'
 import ProfileStatsSection from './ProfileStatsSection.vue'
 import { useTrainerProfile } from './useTrainerProfile.ts'
 import { useStatHover } from '@/composables/ui/useStatHover'
+import type { GymId } from '@/data/world/gyms'
 
 interface Props {
   show?: boolean
@@ -113,7 +114,7 @@ const GYM_BADGES = [
   { id: 'saffron', name: 'Marsh' },
   { id: 'cinnabar', name: 'Volcán' },
   { id: 'viridian', name: 'Tierra' }
-]
+] as const satisfies readonly { id: GymId; name: string }[]
 
 const formatNum = (num: unknown) => formatCurrency(Number(num || 0))
 
@@ -300,7 +301,7 @@ const getAssetUrlLocal = getAssetUrl
         />
 
         <ProfileXpCard 
-          v-if="playerClass && playerClass !== 'none' && playerClass !== 'undefined' && classDef"
+          v-if="playerClass && classDef"
           :level="classLevel"
           :exp="classXP"
           :exp-needed="classXPNeeded"

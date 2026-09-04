@@ -116,7 +116,7 @@ const adminStatConfig = [
 const getStatModifier = (key: string) => {
   const stages = props.isPlayer ? battleStore.playerStages : battleStore.enemyStages
   if (!stages) return 0
-  return (stages as Record<string, number>)[key] || 0 // open-record
+  return (stages as Record<string, number>)[key] || 0 // open-record: Generic key-value data dictionary container
 }
 
 import { isStatIdExceptHP, type StatIDExceptHP } from '@/logic/pokemon/statsMath'

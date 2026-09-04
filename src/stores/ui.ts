@@ -10,6 +10,7 @@ import type { Pokemon, Move, PokemonStorageLocation, PokedexStatus } from '@/typ
 import { MODAL_METADATA } from '@/logic/modals/registry'
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { ItemId } from '@/data/inventory/items'
+import type { PokemonMoveId } from '@/data/battle/moves'
 import { SMALL_SCREEN_BREAKPOINT_PX, MOBILE_SCREEN_BREAKPOINT_PX } from '@/logic/constants/gameplay.ts'
 import type { LowPowerModeSetting } from '@/types/system/game'
 
@@ -220,14 +221,14 @@ export const useUIStore = defineStore('ui', () => {
 
   function closePokemonDetail() { useModalStore().close('PokemonDetail') }
 
-  function openMoveDetail(moveName: string) {
-    selectedMove.value = moveName
-    useModalStore().open('MoveDetail', { moveName })
+  function openMoveDetail(moveId: PokemonMoveId) {
+    selectedMove.value = moveId
+    useModalStore().open('MoveDetail', { moveId })
   }
 
   function closeMoveDetail() { useModalStore().close('MoveDetail') }
 
-  function startEvolution(pokemon: Pokemon, targetId: string, itemName: string) {
+  function startEvolution(pokemon: Pokemon, targetId: PokemonSpeciesId, itemName: string) {
     const targetSpeciesId = requirePokemonSpeciesId(targetId)
     evolutionData.value = { pokemon, targetId: targetSpeciesId, itemName }
     useModalStore().open('Evolution')

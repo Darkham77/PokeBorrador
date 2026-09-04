@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { gsap } from 'gsap'
-import { getItemById, isItemId } from '@/data/inventory/items'
+import { getItemById, isItemId, type ItemId } from '@/data/inventory/items'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import type { DetailedMissionReward } from '@/logic/player/classMissionsData'
@@ -21,7 +21,7 @@ const props = withDefaults(defineProps<{
   rewardIcon?: string
   rewardLabel?: string
   rewardVal?: string
-  rewardId?: string
+  rewardId?: ItemId
   rewardTooltipTitle?: string
   rewardTooltipDescription?: string
   rewardsList?: readonly DetailedMissionReward[]
@@ -39,7 +39,7 @@ const props = withDefaults(defineProps<{
   rewardIcon: '🎁',
   rewardLabel: 'Recompensa',
   rewardVal: '',
-  rewardId: '',
+  rewardId: undefined,
   rewardTooltipTitle: '',
   rewardTooltipDescription: '',
   rewardsList: () => [],

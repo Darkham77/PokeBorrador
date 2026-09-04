@@ -154,7 +154,7 @@ function randomizeActiveNickname() {
 function selectEditPokeSpecies(p: { id: string }) {
   const speciesId = requirePokemonSpeciesId(p.id)
   activePoke.value.id = speciesId
-  activePoke.value.name = pokemonDataProvider.getPokemonDb()[speciesId]?.name || speciesId
+  activePoke.value.name = pokemonDataProvider.resolveSpeciesName(speciesId)
   
   // Set default ability
   const abilities = pokemonDataProvider.getSpeciesAbilities(speciesId)

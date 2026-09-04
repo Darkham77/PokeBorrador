@@ -53,7 +53,10 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
 </script>
 
 <template>
-  <div class="events-section-block upcoming-section">
+  <div
+    id="upcoming-events-schedule-section"
+    class="events-section-block upcoming-section"
+  >
     <div class="events-section-header">
       <div class="section-title-wrap">
         <h3 class="events-section-title">

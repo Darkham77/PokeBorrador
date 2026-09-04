@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { GYMS, type GymDifficultyId } from '@/data/world/gyms'
+import { GYMS, type GymId, type GymDifficultyId } from '@/data/world/gyms'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useGymsStore } from '@/stores/gyms'
@@ -11,18 +11,18 @@ const gameStore = useGameStore()
 const uiStore = useUIStore()
 const gymsStore = useGymsStore()
 
-const defeatedGyms = computed<string[]>(() => gameStore.state.defeatedGyms || [])
+const defeatedGyms = computed<readonly GymId[]>(() => gameStore.state.defeatedGyms || [])
 const defeatedCount = computed(() => defeatedGyms.value.length)
 
-const isGymDefeated = (gymId: string) => {
+const isGymDefeated = (gymId: GymId) => {
   return defeatedGyms.value.includes(gymId)
 }
 
-const isDiffWon = (gymId: string, diff: GymDifficultyId) => {
+const isDiffWon = (gymId: GymId, diff: GymDifficultyId) => {
   return gymsStore.isDifficultyDefeated(gymId, diff)
 }
 
-const getWonDiffCount = (gymId: string) => {
+const getWonDiffCount = (gymId: GymId) => {
   let count = 0
   if (isDiffWon(gymId, 'easy')) count++
   if (isDiffWon(gymId, 'normal')) count++
@@ -30,7 +30,7 @@ const getWonDiffCount = (gymId: string) => {
   return count
 }
 
-const isGymMastered = (gymId: string) => {
+const isGymMastered = (gymId: GymId) => {
   return getWonDiffCount(gymId) === 3
 }
 

@@ -2,8 +2,7 @@
 // style-inherited: styles imported in parent PokemonSelectionModal.vue
 
 import PVTooltip from '@/components/common/PVTooltip.vue'
-import PokemonSortBar from '@/components/pokemon/PokemonSortBar.vue'
-import { POKEMON_TAGS, POKEMON_BADGES } from '@/logic/constants/tags'
+import { POKEMON_TAGS, POKEMON_BADGES, type PokemonFilterTagId } from '@/logic/constants/tags'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 interface Props {
@@ -16,10 +15,10 @@ defineProps<Props>()
 const searchQuery = defineModel<string>('searchQuery', { required: true })
 const sortBy = defineModel<string>('sortBy', { required: true })
 const sortOrder = defineModel<string>('sortOrder', { required: true })
-const activeTags = defineModel<string[]>('activeTags', { required: true })
+const activeTags = defineModel<PokemonFilterTagId[]>('activeTags', { required: true })
 const filterCompatibleOnly = defineModel<boolean>('filterCompatibleOnly', { required: true })
 
-function toggleTagFilter(tagId: string) {
+function toggleTagFilter(tagId: PokemonFilterTagId) {
   const idx = activeTags.value.indexOf(tagId)
   if (idx > -1) {
     activeTags.value.splice(idx, 1)

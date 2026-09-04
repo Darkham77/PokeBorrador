@@ -3,19 +3,21 @@ import { calculateMapBonuses } from './warEngine.ts'
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory'
 import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon'
 import type { DominanceInfo } from '@/types/system/stores'
+import type { MapRouteId } from '@/data/world/map-assets'
+import type { FactionId } from '@/types/system/game'
 
 const DOMINANCE_MIN_IV_BOOST = 15
 const DOMINANCE_MONEY_BOOST_MULT = 1.2
 
 /**
  * Applies map dominance bonuses to a generated Pokémon.
- * @param {Pokemon} pokemon 
- * @param {string} mapId 
- * @param {string} faction 
- * @param {Record<string, DominanceInfo>} dominanceData 
- * @returns {Pokemon} The modified pokemon
  */
-export function applyEncounterBonuses(pokemon: Pokemon, mapId: string, faction: string | null, dominanceData?: Record<string, DominanceInfo> | null): Pokemon {
+export function applyEncounterBonuses(
+  pokemon: Pokemon,
+  mapId: MapRouteId,
+  faction: FactionId | null,
+  dominanceData?: Partial<Record<MapRouteId, DominanceInfo>> | Record<MapRouteId, DominanceInfo> | null
+): Pokemon {
   if (!faction || !dominanceData) return pokemon
 
   const winner = dominanceData[mapId]?.winner
@@ -43,14 +45,11 @@ export function applyEncounterBonuses(pokemon: Pokemon, mapId: string, faction: 
   return pokemon
 }
 
-/**
- * Calculates experience and money multipliers based on dominance.
- * @param {string} mapId 
- * @param {string} faction 
- * @param {Record<string, DominanceInfo>} dominanceData 
- * @returns {object} { expMult, moneyMult }
- */
-export function getBattleRewardModifiers(mapId: string, faction: string | null, dominanceData: Record<string, DominanceInfo>): { expMult: number; moneyMult: number } {
+export function getBattleRewardModifiers(
+  mapId: MapRouteId,
+  faction: FactionId | null,
+  dominanceData: Partial<Record<MapRouteId, DominanceInfo>> | Record<MapRouteId, DominanceInfo>
+): { expMult: number; moneyMult: number } {
   if (!faction || !dominanceData) return { expMult: 1, moneyMult: 1 }
 
   const winner = dominanceData[mapId]?.winner

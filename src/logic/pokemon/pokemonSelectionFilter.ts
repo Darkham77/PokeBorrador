@@ -1,5 +1,5 @@
 import type { Pokemon, PokemonSelectionSource } from '@/types/pokemon/pokemon'
-import { hasPokemonTag } from '@/logic/constants/tags'
+import { hasPokemonTag, isPokemonTagId, type PokemonFilterTagId } from '@/logic/constants/tags'
 import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
 import { getPokemonPhysicalWeight, getPokemonPhysicalHeight } from '@/logic/pokemon/physicalDimensionsMath'
 import { isReadyForFriendshipEvolution } from '@/logic/pokemon/friendshipLogic'
@@ -10,7 +10,7 @@ export interface PokemonFilterCriteria {
   searchQuery: string
   sortBy: string
   sortOrder: string
-  activeTags: string[]
+  activeTags: PokemonFilterTagId[]
   excludeUids?: string[]
   allowedIds?: string[] | null
   allowedSpecies?: string[] | null
@@ -41,7 +41,7 @@ export function filterAndSortPokemon(
     }
     
     if (criteria.searchQuery) {
-      const q = criteria.searchQuery.toLowerCase() // text-ok
+      const q = criteria.searchQuery.toLowerCase() // text-ok: UI text display localization string
       const matchName = p.name?.toLowerCase().includes(q)
       const matchNick = p.nickname?.toLowerCase().includes(q)
       const matchId = String(p.id).includes(q)
@@ -57,7 +57,7 @@ export function filterAndSortPokemon(
         if (tag === 'box') return item._source === 'box'
         if (tag === 'friendship-evo') return isReadyForFriendshipEvolution(p)
         if (tag === 'friendship-max') return (p.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE) >= FRIENDSHIP_BOUNDS.AFFINITY_PERK_THRESHOLD
-        return hasPokemonTag(p, tag)
+        return (isPokemonTagId(tag) || tag === 'favorite' || tag === 'comp') ? hasPokemonTag(p, tag) : false
       })) return false
     }
 

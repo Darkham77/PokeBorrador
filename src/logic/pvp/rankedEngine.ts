@@ -19,10 +19,8 @@ export interface RankedRules {
   bannedPokemonIds: string[];
 }
 
-import { RANKED_TIER_ORDER, RANKED_TIER_INDEX_MAP } from '@/data/system/rankedData.ts'
-export { RANKED_TIER_ORDER, RANKED_TIER_INDEX_MAP }
-export type RankedTierName = (typeof RANKED_TIER_ORDER)[number];
-export type RankedTierId = 'bronce' | 'plata' | 'oro' | 'platino' | 'diamante' | 'maestro';
+import { RANKED_TIER_ORDER, RANKED_TIER_INDEX_MAP, type RankedTierId, type RankedTierName } from '@/data/system/rankedData.ts'
+export { RANKED_TIER_ORDER, RANKED_TIER_INDEX_MAP, type RankedTierId, type RankedTierName }
 type RankedTierCode = 'BRONCE' | 'PLATA' | 'ORO' | 'PLATINO' | 'DIAMANTE' | 'MAESTRO';
 const RANKED_MAX_TIER_GAP = 1;
 

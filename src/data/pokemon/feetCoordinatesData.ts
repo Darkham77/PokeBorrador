@@ -7,10 +7,10 @@
 import dbJson from './pokemonFeetDatabase.json' with { type: 'json' };
 
 export interface PackedFeetDatabase {
-  p?: Record<string, readonly number[]>; // open-record
-  n?: Record<string, readonly number[]>; // open-record
-  t?: Record<string, readonly number[]>; // open-record
-  c?: Record<string, string>; // open-record
+  p?: Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
+  n?: Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
+  t?: Record<string, readonly number[]>; // open-record: Generic key-value data dictionary container
+  c?: Record<string, string>; // open-record: Generic key-value data dictionary container
 }
 
 export const FEET_COORDINATES_DATA: PackedFeetDatabase = dbJson;

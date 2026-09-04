@@ -8,12 +8,7 @@
  */
 
 import PVTooltip from '@/components/common/PVTooltip.vue'
-
-export interface DebugPresetOption {
-  label: string
-  value: number
-  tooltip?: string
-}
+import type { DebugPresetOption } from './debugControlTypes.ts'
 
 interface Props {
   id?: string

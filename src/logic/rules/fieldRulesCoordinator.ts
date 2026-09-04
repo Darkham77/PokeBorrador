@@ -39,11 +39,15 @@ import {
 } from '@/logic/pokemon/pokemonFieldAbilities';
 import { getGlobalMultipliers } from '@/logic/events/eventEngine';
 
+import type { MapRouteId } from '@/data/world/map-assets';
+import type { PlayerClassId } from '@/data/player/playerClasses';
+import type { FactionId } from '@/types/system/game';
+
 // --- ENCOUNTER CONTEXT & MODIFIERS ---
 
 export interface FieldEncounterContext {
   team: readonly (Pokemon | null)[] | null | undefined;
-  mapId: string;
+  mapId: MapRouteId;
   loc: MapLocation;
   weather: WeatherId;
   dayPhase?: DayPhase;
@@ -53,10 +57,10 @@ export interface FieldEncounterContext {
   fishingRodSecs?: number;
   pickaxeSecs?: number;
   brushSecs?: number;
-  playerClass?: string | null;
+  playerClass?: PlayerClassId | null;
   classData?: { captureStreak?: number; criminality?: number };
-  faction?: string | null;
-  dominanceData?: Record<string, DominanceInfo> | null;
+  faction?: FactionId | null;
+  dominanceData?: Partial<Record<MapRouteId, DominanceInfo>> | Record<MapRouteId, DominanceInfo> | null;
   activeEvents?: GameEvent[];
   options?: EncounterOptions;
   generation?: number;
@@ -223,9 +227,9 @@ export interface FieldBattleRewardContext {
   team: (Pokemon | null)[] | null | undefined;
   isWild: boolean;
   isTrainer: boolean;
-  mapId?: string;
-  faction?: string | null;
-  dominanceData?: Record<string, DominanceInfo> | null;
+  mapId?: MapRouteId;
+  faction?: FactionId | null;
+  dominanceData?: Record<MapRouteId, DominanceInfo> | null;
   activeEvents?: GameEvent[];
   randomFn?: () => number;
 }
@@ -233,7 +237,7 @@ export interface FieldBattleRewardContext {
 export interface ResolvedBattleRewards {
   pickupItems: Array<{ pokemonName: string; item: ItemId }>;
   honeyGathered: Array<{ pokemonName: string; item: ItemId }>;
-  curedMembers: string[]; // no-domain
+  curedMembers: string[]; // no-domain: Non-domain utility collection or data structure
   expMultiplier: number;
   moneyMultiplier: number;
 }

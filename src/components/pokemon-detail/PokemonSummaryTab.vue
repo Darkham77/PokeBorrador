@@ -8,15 +8,8 @@ import {
 } from '@/logic/pokemon/physicalDimensionsMath'
 import { resolveTrophyDisplayName } from '@/logic/events/eventEngine'
 import { useEventStore } from '@/stores/events'
-
-export interface SpeciesSummaryData {
-  nationalId?: string
-  name: string
-  type?: string[]
-  height?: number | [number, number] | null
-  weight?: number | [number, number] | null
-  description?: string
-}
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import type { SpeciesSummaryData } from './pokemonSummaryTypes.ts'
 
 interface PhysicalData {
   height: string | number
@@ -34,7 +27,7 @@ const props = defineProps<{
   instancePhysicalData: PhysicalData | null
   targetPokemon: Pokemon | null
   context?: string
-  targetSpeciesId: string
+  targetSpeciesId: PokemonSpeciesId
   captureDateFormatted: string | null
 }>()
 

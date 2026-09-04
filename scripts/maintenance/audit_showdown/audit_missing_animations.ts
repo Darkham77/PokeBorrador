@@ -12,7 +12,7 @@ export interface AnimationAuditResult {
  * el contenido agregado de los componentes de UI de combate.
  */
 export function auditMissingAnimations(srcDir: string): AnimationAuditResult {
-  const missingAnimations: string[] = []; // no-domain
+  const missingAnimations: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!existsSync(srcDir)) return { missingAnimations };
 
   const battleComponentsDir = path.join(srcDir, 'components', 'battle');

@@ -5,7 +5,7 @@ import type { SBCtx } from './showdownBridgeCtx.ts';
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 import { toPokemonType } from '@/data/battle/types';
 import { isPokemonMoveId, requirePokemonMoveId } from '@/data/battle/moves';
-import { requireWeatherId } from '../weather/weatherRegistry';
+import { isWeatherId, requireWeatherId } from '../weather/weatherRegistry';
 import { requireBattleConditionKey, type BattleConditionKey } from '@/types/battle/battle';
 import { requireVolatileStatusKey } from '@/types/pokemon/pokemon';
 
@@ -18,7 +18,7 @@ const WEATHER_EMOJIS: Record<string, string> = {
   'none': '🌤️'
 };
 
-const CANONICAL_TERRAINS = new Set<BattleConditionKey>([ // runtime-set
+const CANONICAL_TERRAINS = new Set<BattleConditionKey>([ // runtime-set: Fast O(1) membership lookup set
   'electricterrain',
   'grassyterrain',
   'mistyterrain',
@@ -158,7 +158,7 @@ function handleWeatherEvent(ctx: SBCtx, parts: string[], line: string): boolean 
 
     if (nextWeatherType !== currentWeatherType && !isUpkeep && !isFromDebug) {
       const emoji = WEATHER_EMOJIS[weatherType] || '🌤️';
-      const localizedName = getLocalizedWeatherName(weatherType, ACTIVE_GENERATION);
+      const localizedName = getLocalizedWeatherName(isWeatherId(weatherType) ? weatherType : 'none', ACTIVE_GENERATION);
       if (weatherType !== 'none' || nextWeatherType !== 'clear') {
         store.addLog(`¡El clima cambió a ${localizedName}!`, 'log-info', emoji);
       }
@@ -243,7 +243,7 @@ function handleSideStart(ctx: SBCtx, parts: string[], line: string): boolean {
   if (line.includes('[silent]')) return true;
   const rawSide = parts[2] || '';
   const conditionRaw = (parts[3] || '').replace('move: ', '');
-  const isPlayer = rawSide.toLowerCase().startsWith((ctx.playerSide || 'p1').toLowerCase()); // text-ok
+  const isPlayer = rawSide.toLowerCase().startsWith((ctx.playerSide || 'p1').toLowerCase()); // text-ok: UI text display localization string
   const sideLabel = isPlayer ? 'tu campo' : 'el campo rival';
   if (conditionRaw && ctx.store.activeBattle.value) {
     const key = requireBattleConditionKey(toID(conditionRaw));
@@ -268,7 +268,7 @@ function handleSideEnd(ctx: SBCtx, parts: string[], line: string): boolean {
   const conditionEndRaw = (parts[3] || '').replace('move: ', '');
   if (conditionEndRaw && ctx.store.activeBattle.value) {
     const key = requireBattleConditionKey(toID(conditionEndRaw));
-    const isPlayer = rawSideEnd.toLowerCase().startsWith((ctx.playerSide || 'p1').toLowerCase()); // text-ok
+    const isPlayer = rawSideEnd.toLowerCase().startsWith((ctx.playerSide || 'p1').toLowerCase()); // text-ok: UI text display localization string
     const sideObj = isPlayer
       ? ctx.store.activeBattle.value.playerSideConditions
       : ctx.store.activeBattle.value.enemySideConditions;

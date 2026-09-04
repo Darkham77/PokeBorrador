@@ -2,6 +2,8 @@ import { getItemName } from '@/data/inventory/items'
 import { incrementRecordKey } from '@/logic/utils/mapUtils'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { makePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory'
+import { isNatureId } from '@/data/battle/natures'
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { useGameStore } from '@/stores/game.ts'
 import type { useUIStore } from '@/stores/ui.ts'
 
@@ -46,7 +48,7 @@ export function grantItemsAward(gameStore: EventPrizeGameStore, uiStore: EventPr
 
   if (prize.items && typeof prize.items === 'object') {
     if (!gameStore.state.inventory) gameStore.state.inventory = {}
-    for (const [k, v] of Object.entries(prize.items as Record<string, number>)) { // open-record
+    for (const [k, v] of Object.entries(prize.items as Record<string, number>)) { // open-record: Generic key-value data dictionary container
       if (v && v > 0) {
         incrementRecordKey(gameStore.state.inventory, k, v)
         const itemName = getItemName(k) || k
@@ -60,12 +62,13 @@ export function grantItemsAward(gameStore: EventPrizeGameStore, uiStore: EventPr
 
 export function grantPokemonAward(gameStore: EventPrizeGameStore, uiStore: EventPrizeUIStore, prize: Record<string, unknown>): number {
   if (prize.type === 'pokemon' || prize.species) {
-    const speciesId = String(prize.species || '')
-    if (speciesId && pokemonDataProvider.getPokemonData(speciesId)) {
+    const rawSpecies = String(prize.species || '')
+    if (rawSpecies && pokemonDataProvider.getPokemonData(rawSpecies)) {
+      const speciesId = requirePokemonSpeciesId(rawSpecies)
       const level = Number(prize.level || 5)
       const isShiny = Boolean(prize.shiny)
-      const nature = typeof prize.nature === 'string' ? prize.nature : undefined
-      const rawIvs = (prize.ivs && typeof prize.ivs === 'object') ? (prize.ivs as Record<string, number>) : null // open-record
+      const nature = typeof prize.nature === 'string' && isNatureId(prize.nature) ? prize.nature : undefined
+      const rawIvs = (prize.ivs && typeof prize.ivs === 'object') ? (prize.ivs as Record<string, number>) : null // open-record: Generic key-value data dictionary container
       const ivFloor = rawIvs ? Math.min(...Object.values(rawIvs).filter((v: number) => typeof v === 'number')) : 0
 
       const createdPoke = makePokemon(speciesId, level, {

@@ -3,7 +3,7 @@ import { generateEncounter } from '@/logic/encounters/encounters'
 import { useMapStore } from '@/stores/map'
 import { useEventStore } from '@/stores/events'
 import { useWarStore } from '@/stores/war'
-import { requireMapRouteId } from '@/data/world/map-assets'
+import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
 import { requireWeatherId } from '@/logic/weather/weatherRegistry'
 import { requireDayPhase } from '@/logic/utils/timeUtils'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
@@ -11,13 +11,13 @@ import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 const BUG_ATTRACT_SPECIES: readonly PokemonSpeciesId[] = ['scyther', 'pinsir'];
 const CAZABICHOS_SPECIAL_ENCOUNTER_CHANCE = 0.005;
 
-export async function generateSearchLoopEncounter(ctx: BattleContext, locId: string) {
+export async function generateSearchLoopEncounter(ctx: BattleContext, locId: MapRouteId) {
   const routeId = requireMapRouteId(locId)
   const mapStore = useMapStore()
   const eventStore = useEventStore()
   const warStore = useWarStore()
   const debug = typeof window !== 'undefined' ? window.__VITE_DEBUG__ : undefined
-  const debugMults = (debug?.multipliers as Record<string, number> | undefined) || {} // open-record
+  const debugMults = (debug?.multipliers as Record<string, number> | undefined) || {} // open-record: Generic key-value data dictionary container
 
   const encounterOptions = {
     activeEvents: mapStore.activeEvents,

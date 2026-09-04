@@ -68,7 +68,7 @@ describe('fieldRulesCoordinator - Unified Modifiers Engine', () => {
 
       const modifiers = resolveFieldEncounterModifiers({
         team: [leader],
-        mapId: 'route-1',
+        mapId: 'route1',
         loc: mockLocation,
         weather: 'clear',
         generation: 9,
@@ -88,7 +88,7 @@ describe('fieldRulesCoordinator - Unified Modifiers Engine', () => {
 
       const modifiers = resolveFieldEncounterModifiers({
         team: [leader],
-        mapId: 'power-plant',
+        mapId: 'power_plant',
         loc: mockLocation,
         weather: 'clear',
         generation: 9,

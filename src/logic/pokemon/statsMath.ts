@@ -36,13 +36,13 @@ export interface IVs {
   spe: number;
 }
 
-export const COMBAT_STAT_IDS = ['atk', 'def', 'spa', 'spd', 'spe'] as const; // domain-ok
+export const COMBAT_STAT_IDS = ['atk', 'def', 'spa', 'spd', 'spe'] as const; // domain-ok: Open dynamic text or non-domain string payload
 export type StatIDExceptHP = (typeof COMBAT_STAT_IDS)[number];
-export const COMBAT_STAT_IDS_SET: ReadonlySet<string> = new Set(COMBAT_STAT_IDS); // runtime-set
+export const COMBAT_STAT_IDS_SET: ReadonlySet<string> = new Set(COMBAT_STAT_IDS); // runtime-set: Fast O(1) membership lookup set
 
 export const STAT_IDS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
 export type StatId = (typeof STAT_IDS)[number];
-export const STAT_IDS_SET: ReadonlySet<string> = new Set(STAT_IDS); // runtime-set
+export const STAT_IDS_SET: ReadonlySet<string> = new Set(STAT_IDS); // runtime-set: Fast O(1) membership lookup set
 
 export interface NatureData {
   up: StatId | null;

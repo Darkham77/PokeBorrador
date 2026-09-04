@@ -24,10 +24,13 @@ const CRIT_REDUCTION_ZERO = 0
 const CRIT_PERCENT_SCALE = 100
 
 import type { DayPhase } from '@/logic/utils/timeUtils'
-import { getMechanicalWeather, WEATHER_MECHANICAL } from '@/logic/weather/weatherRegistry'
-import { type PurePokemon, type PureMove, calculateDamageRangePure } from '@/logic/battle/battleMath'
-import type { Move } from '@/types/pokemon/pokemon'
-import type { PokemonType } from '@/data/battle/types'
+import { getMechanicalWeather, WEATHER_MECHANICAL, isWeatherId, type WeatherId, type WeatherMechanical } from '@/logic/weather/weatherRegistry'
+import { calculateDamageRangePure, type PurePokemon, type PureMove } from '@/logic/battle/battleMath'
+import type { PureBattleWeather, PureDamageOptions } from '@/logic/battle/battleMathTypes'
+import type { Pokemon, Move } from '@/types/pokemon/pokemon'
+import { toPokemonType, type PokemonType } from '@/data/battle/types'
+import { isPokemonMoveId } from '@/data/battle/moves'
+import type { PokemonMoveId } from '@/data/battle/moves'
 import { isItemId, type ItemId } from '@/data/inventory/items'
 import {
   STAB_STANDARD_MULTIPLIER,
@@ -63,9 +66,9 @@ const HELD_ITEM_TYPE_BOOSTERS_MAP: Readonly<Partial<Record<ItemId, PokemonType>>
 } as const;
 
 function getSpecialMoveModifier(
-  moveId: string,
-  weather: string | undefined,
-  mechWeather: string
+  moveId: PokemonMoveId,
+  weather: WeatherId | undefined,
+  mechWeather: WeatherMechanical
 ): { type: string; text: string } | null {
   const isSunny = mechWeather === WEATHER_MECHANICAL.SUN;
   const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN;
@@ -90,8 +93,8 @@ function getSpecialMoveModifier(
 }
 
 function getTypeWeatherModifier(
-  moveType: string | undefined,
-  mechWeather: string
+  moveType: PokemonType | undefined,
+  mechWeather: WeatherMechanical
 ): { type: string; text: string } | null {
   const isRaining = mechWeather === WEATHER_MECHANICAL.RAIN;
   const isSunny = mechWeather === WEATHER_MECHANICAL.SUN;
@@ -115,15 +118,16 @@ export function calculateMoveModifierInfo(
   weather: string | undefined,
   _cycle: string
 ): { type: string; text: string } | null {
+  const cleanWeather = typeof weather === 'string' && isWeatherId(weather) ? weather : undefined;
   const mechWeather = getMechanicalWeather(weather);
   const moveId = move.id || '';
 
-  const specialMod = getSpecialMoveModifier(moveId, weather, mechWeather);
+  const specialMod = isPokemonMoveId(moveId) ? getSpecialMoveModifier(moveId, cleanWeather, mechWeather) : null;
   if (specialMod) return specialMod;
 
   if (mechWeather === WEATHER_MECHANICAL.FOG) {
     const isMist = weather?.toLowerCase() === 'mist';
-    const label = isMist ? 'Bruma' : 'Niebla'; // spanish-ok
+    const label = isMist ? 'Bruma' : 'Niebla'; // spanish-ok: UI Spanish text localization label
     const penalty = isMist ? '80%' : '60%';
     return { type: 'penalized', text: `Precisión reducida al ${penalty} por ${label}.` };
   }
@@ -139,11 +143,11 @@ interface PowerContext {
 }
 
 function resolveWeatherBallAdaptation(
-  moveId: string | undefined,
-  moveType: string,
-  mechWeather: string,
-  ctx: PowerContext
-): string {
+  moveType: PokemonType,
+  mechWeather: WeatherMechanical,
+  ctx: PowerContext,
+  moveId?: PokemonMoveId
+): PokemonType {
   if (moveId !== 'weatherball') return moveType;
   if (mechWeather === WEATHER_MECHANICAL.SUN) { ctx.currentPower = 100; ctx.powerList.push({ label: 'Weather Ball (Sol)', mult: 2.0 }); return 'fire'; }
   if (mechWeather === WEATHER_MECHANICAL.RAIN) { ctx.currentPower = 100; ctx.powerList.push({ label: 'Weather Ball (Lluvia)', mult: 2.0 }); return 'water'; }
@@ -152,8 +156,9 @@ function resolveWeatherBallAdaptation(
   return moveType;
 }
 
-function applyStabMultiplier(attacker: PurePokemon, moveType: string, ctx: PowerContext): void {
-  const isStab = attacker.type === moveType || attacker.type2 === moveType;
+function applyStabMultiplier(attacker: PurePokemon | Pokemon | null | undefined, moveType: PokemonType, ctx: PowerContext): void {
+  if (!attacker) return;
+  const isStab = (attacker as PurePokemon).type === moveType || (attacker as PurePokemon).type2 === moveType || (attacker as Pokemon).type === moveType || (attacker as Pokemon).type2 === moveType;
   if (isStab) {
     const stabMult = attacker.ability === 'adaptability' ? STAB_ADAPTABILITY_MULTIPLIER : STAB_STANDARD_MULTIPLIER;
     ctx.powerList.push({ label: `STAB ${attacker.ability === 'adaptability' ? '(Adaptabilidad)' : ''}`.trim(), mult: stabMult });
@@ -161,7 +166,7 @@ function applyStabMultiplier(attacker: PurePokemon, moveType: string, ctx: Power
   }
 }
 
-function applyWeatherPowerMod(moveId: string | undefined, moveType: string, mechWeather: string, ctx: PowerContext): void {
+function applyWeatherPowerMod(moveType: PokemonType, mechWeather: WeatherMechanical, ctx: PowerContext, moveId?: PokemonMoveId): void {
   if (moveType === 'fire') {
     if (mechWeather === WEATHER_MECHANICAL.SUN) { ctx.powerList.push({ label: 'Clima (Sol)', mult: 1.5 }); ctx.currentPower *= 1.5; }
     else if (mechWeather === WEATHER_MECHANICAL.RAIN) { ctx.powerList.push({ label: 'Clima (Lluvia)', mult: 0.5 }); ctx.currentPower *= 0.5; }
@@ -185,8 +190,8 @@ const LOW_HP_PINCH_ABILITIES: Readonly<Record<string, string>> = {
   swarm: 'bug'
 };
 
-function applyAttackerAbilityPowerMod(attacker: PurePokemon, moveType: string, basePower: number, mechWeather: string, ctx: PowerContext): void {
-  if (!attacker.ability) return;
+function applyAttackerAbilityPowerMod(attacker: PurePokemon | Pokemon | null | undefined, moveType: string, basePower: number, mechWeather: string, ctx: PowerContext): void {
+  if (!attacker || !attacker.ability) return;
   const a = attacker.ability;
   const curHp = attacker.hp || 1;
   const maxHp = attacker.maxHp || 1;
@@ -208,26 +213,26 @@ function applyAttackerAbilityPowerMod(attacker: PurePokemon, moveType: string, b
   }
 }
 
-function applyDefenderAbilityPowerMod(defender: PurePokemon | null, moveType: string, ctx: PowerContext): void {
+function applyDefenderAbilityPowerMod(defender: PurePokemon | Pokemon | null | undefined, moveType: string, ctx: PowerContext): void {
   if (defender && defender.ability === 'thickfat' && (moveType === 'fire' || moveType === 'ice')) {
     ctx.powerList.push({ label: 'Habilidad Rival (Sebo)', mult: THICK_FAT_REDUCTION_MULTIPLIER });
     ctx.currentPower *= THICK_FAT_REDUCTION_MULTIPLIER;
   }
 }
 
-function applyHeldItemPowerMod(attacker: PurePokemon, move: Move, moveType: string, ctx: PowerContext): void {
-  if (!attacker.heldItem) return;
+function applyHeldItemPowerMod(attacker: PurePokemon | Pokemon | null | undefined, move: Move, moveType: string, ctx: PowerContext): void {
+  if (!attacker || !attacker.heldItem) return;
   const h = attacker.heldItem;
   const canonicalKey = h.replace(/_/g, '');
   const itemKey: ItemId | null = isItemId(h) ? h : (isItemId(canonicalKey) ? canonicalKey : null);
   let itemMult = DEFAULT_WEATHER_NEUTRAL_MULTIPLIER;
   if (itemKey && HELD_ITEM_TYPE_BOOSTERS_MAP[itemKey] === moveType) itemMult = HELD_ITEM_TYPE_BOOST_MULTIPLIER;
   
-  if (h === 'choiceband' || h === 'choice_band') {
+  if (h === 'choiceband') {
     if (move.cat === 'physical') {
       itemMult = STAB_STANDARD_MULTIPLIER;
     } else {
-      ctx.powerList.push({ label: 'Objeto (choice_band - Solo Físico)', mult: DEFAULT_WEATHER_NEUTRAL_MULTIPLIER });
+      ctx.powerList.push({ label: 'Objeto (choiceband - Solo Físico)', mult: DEFAULT_WEATHER_NEUTRAL_MULTIPLIER });
     }
   }
 
@@ -242,10 +247,9 @@ function applyHeldItemPowerMod(attacker: PurePokemon, move: Move, moveType: stri
  */
 export function calculateMovePower(
   move: Move,
-  attacker: PurePokemon,
-  defender: PurePokemon | null,
-  _weather: { type: string; turns: number } | null,
-  mechWeather: string,
+  attacker: PurePokemon | Pokemon | null | undefined,
+  defender: PurePokemon | Pokemon | null | undefined,
+  mechWeather: WeatherMechanical,
   _cycle: DayPhase | undefined,
   basePower: number,
   moveTypeOverride?: string
@@ -256,10 +260,10 @@ export function calculateMovePower(
   };
 
   if (basePower > 0) {
-    let moveType = (moveTypeOverride || move.type || '').toLowerCase();
-    moveType = resolveWeatherBallAdaptation(move.id, moveType, mechWeather, ctx);
+    let moveType = toPokemonType(moveTypeOverride || move.type || 'normal');
+    moveType = resolveWeatherBallAdaptation(moveType, mechWeather, ctx, move.id);
     applyStabMultiplier(attacker, moveType, ctx);
-    applyWeatherPowerMod(move.id, moveType, mechWeather, ctx);
+    applyWeatherPowerMod(moveType, mechWeather, ctx, move.id);
     applyAttackerAbilityPowerMod(attacker, moveType, basePower, mechWeather, ctx);
     applyDefenderAbilityPowerMod(defender, moveType, ctx);
     applyHeldItemPowerMod(attacker, move, moveType, ctx);
@@ -275,11 +279,11 @@ export function calculateMovePower(
 }
 
 function applyWeatherAccuracyOverride(
-  moveId: string | undefined,
-  weather: { type: string; turns: number } | null,
-  mechWeather: string,
+  weather: PureBattleWeather | null | undefined,
+  mechWeather: WeatherMechanical,
   baseAcc: number,
-  accList: { label: string; mult: number | string }[]
+  accList: { label: string; mult: number | string }[],
+  moveId?: PokemonMoveId
 ): number {
   const isThunderOrHurricane = moveId === 'thunder' || moveId === 'hurricane';
   if (isThunderOrHurricane) {
@@ -312,8 +316,8 @@ function applyWeatherAccuracyOverride(
  */
 export function calculateMoveAccuracy(
   move: Move,
-  weather: { type: string; turns: number } | null,
-  mechWeather: string,
+  weather: PureBattleWeather | null,
+  mechWeather: WeatherMechanical,
   _cycle: DayPhase | undefined,
   baseAcc: number,
   accStage: number,
@@ -323,7 +327,7 @@ export function calculateMoveAccuracy(
   const accList: { label: string; mult: number | string }[] = [];
 
   if (baseAcc > 0 && baseAcc < STAGE_PRECISION_FULL) {
-    currentAcc = applyWeatherAccuracyOverride(move.id, weather, mechWeather, baseAcc, accList);
+    currentAcc = applyWeatherAccuracyOverride(weather, mechWeather, baseAcc, accList, move.id);
 
     const netStage = Math.max(STAGE_MIN_BOUND, Math.min(STAGE_MAX_BOUND, accStage - evaStage));
     if (netStage !== 0) {
@@ -350,10 +354,15 @@ export function calculateMoveAccuracy(
 export function calculateCritChance(
   attacker: PurePokemon,
   defender: PurePokemon | null
-): { value: string; class: string } {
+): { value: string; percent: number; label: string; class: string } {
+  const heldItemKey = attacker.heldItem;
+  const isScopeLens = heldItemKey === 'scopelens';
+  const isFocusEnergy = attacker.focusEnergy;
+
   let critRate = DEFAULT_CRIT_RATE;
-  if (attacker.heldItem === 'scopelens') critRate = SCOPE_LENS_CRIT_RATE;
-  if (attacker.focusEnergy) critRate = FOCUS_ENERGY_CRIT_RATE;
+  if (isScopeLens) critRate = SCOPE_LENS_CRIT_RATE;
+  if (isFocusEnergy) critRate = FOCUS_ENERGY_CRIT_RATE;
+  if (isScopeLens && isFocusEnergy) critRate = 1.0;
   if (defender && (defender.ability === 'shellarmor' || defender.ability === 'battlearmor')) {
     critRate = CRIT_REDUCTION_ZERO;
   }
@@ -363,6 +372,8 @@ export function calculateCritChance(
 
   return {
     value: critVal,
+    percent: Math.round(critRate * 100),
+    label: `${critVal}%`,
     class: critClass
   };
 }
@@ -373,15 +384,15 @@ export function calculateCritChance(
 export function calculateMoveEffectivenessAndDamage(
   move: Move,
   md: { type?: PokemonType; cat?: Move['cat']; power?: number; acc?: number },
-  attacker: PurePokemon,
-  defender: PurePokemon | null,
-  weather: { type: string; turns: number } | null,
+  attacker: PurePokemon | null | undefined,
+  defender: PurePokemon | null | undefined,
+  weather: PureBattleWeather | null,
   cycle: DayPhase | undefined,
   basePower: number,
   playerStages: { atk?: number } | null,
   enemyStages: { def?: number } | null
 ) {
-  if (!defender) return { effectiveness: null, damageRange: null };
+  if (!attacker || !defender) return { effectiveness: null, damageRange: null };
 
   const pureMove: PureMove = {
     id: move.id,
@@ -392,10 +403,10 @@ export function calculateMoveEffectivenessAndDamage(
     effect: typeof move.effect === 'string' ? move.effect : undefined
   };
 
-  const pureCtx = {
+  const pureCtx: PureDamageOptions = {
     atkStages: playerStages?.atk || 0,
     defStages: enemyStages?.def || 0,
-    weather: weather ? { type: weather.type, turns: weather.turns } : null
+    weather
   };
 
   return calculateDamageRangePure(attacker, defender, pureMove, pureCtx, cycle);

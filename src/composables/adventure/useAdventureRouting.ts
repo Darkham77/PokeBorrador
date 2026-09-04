@@ -1,7 +1,7 @@
 import { ref, computed, watch, type Ref } from 'vue'
 import { findShortestPath, requireAdventureNodeId, type AdventureNodeId } from '../../../test aventura/kantoGraph.ts'
 import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
-import { SHOP_ITEMS, requireItemId } from '@/data/inventory/items'
+import { SHOP_ITEMS, requireItemId, type ItemId } from '@/data/inventory/items'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 import type { ShopItemData } from '@/data/inventory/items'
 import { useGameStore } from '@/stores/game'
@@ -61,7 +61,7 @@ export function useAdventureRouting(options: {
     }
   })
 
-  const toggleTravelItem = (itemId: string) => {
+  const toggleTravelItem = (itemId: ItemId) => {
     const travelItemId = requireItemId(itemId)
     if (!isTravelBuffItemId(travelItemId)) {
       throw new Error(`[useAdventureRouting] Invalid travel buff item id: ${itemId}`)
@@ -136,7 +136,7 @@ export function useAdventureRouting(options: {
       const originNode = originMap.value
       if (isMapRouteId(originNode)) options.mapStore.currentMap = originNode
       options.shopStore.healAllPokemon(0)
-      const originName = (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[originNode]?.name || originNode // open-record
+      const originName = (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[originNode]?.name || originNode // open-record: Generic key-value data dictionary container
       options.travelLog.value.push(`🏥 ¡Llegada segura a ${originName}! Tu equipo ha sido completamente curado.`)
     } else if (move.id === 'sweetscent') {
       activeSweetScent.value = true
@@ -175,7 +175,14 @@ export function useAdventureRouting(options: {
     const path = findShortestPath(originMap.value, destinationMap.value, activeHMs.value)
     if (path) {
       calculatedPath.value = path
-      options.travelLog.value = [`Ruta calculada: ${path.map(id => (MAPS_BY_ROUTE_ID as Record<string, { name: string }>)[id]?.name || id).join(' → ')}`] // open-record
+      const pathNames = path.map(nodeId => {
+        if (isMapRouteId(nodeId)) {
+          const mapData = MAPS_BY_ROUTE_ID[nodeId]
+          if (mapData) return mapData.name
+        }
+        return nodeId
+      })
+      options.travelLog.value = [`Ruta calculada: ${pathNames.join(' → ')}`]
     } else {
       calculatedPath.value = []
       options.travelLog.value = ['⚠️ No hay ruta transitable con las MOs actuales.']

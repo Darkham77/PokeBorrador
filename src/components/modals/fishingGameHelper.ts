@@ -7,6 +7,7 @@
  */
 
 import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
+import type { MinigameDifficulty } from '@/types/battle/battle';
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import { TOTAL_IV_POSSIBILITIES_COUNT } from '@/logic/pokemon/generationMath';
 
@@ -58,6 +59,19 @@ export const FISHING_DIFFICULTIES = {
 } as const;
 
 export type FishingDifficultyKey = keyof typeof FISHING_DIFFICULTIES;
+export const FISHING_DIFFICULTY_KEYS = Object.keys(FISHING_DIFFICULTIES) as readonly FishingDifficultyKey[];
+const FISHING_DIFFICULTY_KEYS_SET: ReadonlySet<string> = new Set(FISHING_DIFFICULTY_KEYS);
+
+export function isFishingDifficultyKey(value: unknown): value is FishingDifficultyKey {
+  return typeof value === 'string' && FISHING_DIFFICULTY_KEYS_SET.has(value);
+}
+
+export function requireFishingDifficultyKey(value: unknown): FishingDifficultyKey {
+  if (!isFishingDifficultyKey(value)) {
+    throw new Error(`[fishingGameHelper] Invalid FishingDifficultyKey: ${String(value)}`);
+  }
+  return value;
+}
 
 const MAX_REFERENCE_LEVEL = 70;
 const LEVEL_WEIGHT = 0.40;
@@ -85,7 +99,7 @@ export function calculateFishingDifficultyScore(rarity: number, level: number): 
  * Derives the discrete fishing difficulty tier ('easy' | 'medium' | 'hard' | 'expert')
  * from the encounter's rarity and the Pokemon's level.
  */
-export function calculateFishingDifficulty(rarity: number, level: number): FishingDifficultyKey {
+export function calculateFishingDifficulty(rarity: number, level: number): MinigameDifficulty {
   const score = calculateFishingDifficultyScore(rarity, level);
 
   if (score <= EASY_DIFFICULTY_MAX_SCORE) return 'easy';
@@ -100,7 +114,7 @@ export function calculateFishingDifficulty(rarity: number, level: number): Fishi
  */
 export function applyFishingLevelAndIvBonus(
   pokemon: Pokemon,
-  difficulty: FishingDifficultyKey,
+  difficulty: MinigameDifficulty,
   randomFn: () => number = Math.random
 ): number {
   const config = FISHING_DIFFICULTIES[difficulty];

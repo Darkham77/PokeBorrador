@@ -93,6 +93,12 @@ const P_UNENFORCED_STATIC_MAP = /\bexport\s+const\s+[A-Z][A-Z0-9_]{3,}\s*=\s*\{/
 const P_FLOATING_PROMISE = /^\s*(?!(?:await|void|return|const|let|var)\s+)(?:[A-Z_a-z]\w*\.)?[a-z]\w*Async\s*\([^)]*\)\s*;/gm;
 const P_LEAKED_GLOBAL_MUTABLE = /^(?:export\s+)?let\s+[a-z]\w*\s*=/gm;
 const P_DYNAMIC_IMPORT_IN_HOT_PATH = /\b(?:for|while)\s*\([^)]*\)\s*\{[^}]*?\bimport\s*\(/g;
+const P_PARAM_WILDCARD_STRING_UNION = /\b([A-Za-z0-9_]{2,}[iI]d)\s*\??:\s*(?:[A-Z]\w*Id|[A-Z]\w*)\s*\|\s*string\b/g;
+const P_PARAM_DOMAIN_ID_NULLABLE = /\b([A-Za-z0-9_]{2,}[iI]d)\s*:\s*(?:[A-Z]\w*Id)\s*\|\s*(?:null|undefined)\b|\b([A-Za-z0-9_]{2,}[iI]d)\s*:\s*(?:null|undefined)\s*\|\s*(?:[A-Z]\w*Id)\b/g;
+const P_DOMAIN_TYPE_NULLABLE = /\b(?:export\s+)?type\s+[A-Z]\w*Id\s*=[^;\n]*\|\s*(?:null|undefined)\b/g;
+const P_DOUBLE_CAST_DOMAIN_ID = /\bas\s+(?:unknown|any)\s+as\s+[A-Z]\w*Id\b/g;
+const P_PARAM_UNKNOWN_OR_ANY = /\b(species|poke|pokemon|move|item|ability|nature|weather|gym|route|map|class|difficulty|faction|status|category|gender|rank|badge|stage)\s*:\s*(?:unknown|any)\s*(?:=[^,)]+)?(?=[,)])/gi;
+const P_DOMAIN_LITERAL_MIXED_UNION = /\b([A-Z]\w*(?:Id|Type|Status|Category|Tier|Phase|Key))\s*\|\s*['"`][^'"`]+['"`]|['"`][^'"`]+['"`]\s*\|\s*([A-Z]\w*(?:Id|Type|Status|Category|Tier|Phase|Key))\b/g;
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 export type FindingSeverity = 'ERROR' | 'WARN';
@@ -112,7 +118,7 @@ type SeverityPicker = (match: RegExpExecArray, line: string, file: string) => Fi
 // ─── Scanner ─────────────────────────────────────────────────────────────────
 async function* walkFiles(dir: string): AsyncGenerator<string> {
   for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
-    if ((SKIP_DIRS as readonly string[]).includes(entry.name)) continue; // no-domain
+    if ((SKIP_DIRS as readonly string[]).includes(entry.name)) continue; // no-domain: Non-domain utility collection or data structure
 
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
@@ -131,7 +137,7 @@ function toRepoPath(filePath: string): string {
 }
 
 function hasEscapeHatch(line: string): boolean {
-  return ESCAPE_HATCHES.some(hatch => line.includes(`// ${hatch}`));
+  return ESCAPE_HATCHES.some(hatch => new RegExp(`//\\s*${hatch}:\\s*\\S+`).test(line));
 }
 
 function isCommentLine(line: string): boolean {
@@ -220,7 +226,7 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     content,
     rel,
     P_LITERAL_ARRAY_DECL,
-    'String literal array without `as const` — potential untyped domain (MUST use `as const satisfies readonly DomainType[]` or mark `// no-domain`)',
+    'String literal array without `as const` — potential untyped domain (MUST use `as const satisfies readonly DomainType[]` or mark `// no-domain: Non-domain utility collection or data structure`)',
     'ERROR',
     (match, line) => {
       if (match[0].includes('as const')) return false;
@@ -265,7 +271,7 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     'Redundant 1:1 type redefinition — use the canonical source type directly at usage sites instead of declaring passthrough aliases',
     'ERROR',
     (match, line) => {
-      if (line.includes('// alias-ok') || line.includes('// string-ok') || line.includes('// domain-ok') || line.includes('// type-ok')) return false;
+      if (line.includes('// alias-ok: Typed export alias for public API surface') || line.includes('// string-ok: Internal string formatting or DOM token identifier') || line.includes('// domain-ok: Open dynamic text or non-domain string payload') || line.includes('// type-ok: Type contract declaration')) return false;
       const aliasName = match[1];
       const targetName = match[2];
       if (aliasName === targetName) return false;
@@ -282,7 +288,7 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     'Redundant 1:1 value/function redefinition — use the canonical source value directly at usage sites instead of declaring passthrough aliases',
     'ERROR',
     (match, line) => {
-      if (line.includes('// alias-ok') || line.includes('// value-ok') || line.includes('// domain-ok') || line.includes('// const-ok')) return false;
+      if (line.includes('// alias-ok: Typed export alias for public API surface') || line.includes('// value-ok: Canonical constant value reference') || line.includes('// domain-ok: Open dynamic text or non-domain string payload') || line.includes('// const-ok: Constant declaration')) return false;
       const aliasName = match[1];
       const targetName = match[2];
       if (!aliasName || !targetName || aliasName === targetName) return false;
@@ -308,7 +314,88 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     'Strict domain type combined with `| string` wildcard union — erases compile-time type safety',
     'ERROR',
     (_match, _line, file) => isContractFile(file) && !isAmbientDeclarationFile(file),
-    true // overrideEscapeHatch: ignore // domain-ok if line contains a wildcard union
+    true // overrideEscapeHatch: ignore // domain-ok: Open dynamic text or non-domain string payload if line contains a wildcard union
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_PARAM_WILDCARD_STRING_UNION,
+    'Domain parameter combined with `| string` wildcard union — erases compile-time type safety. Use pure canonical domain type exclusively.',
+    'ERROR',
+    (_match, _line, file) => !isAmbientDeclarationFile(file) && !isTestFile(file),
+    true // overrideEscapeHatch: escape hatches are strictly forbidden from bypassing | string
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_PARAM_DOMAIN_ID_NULLABLE,
+    'Domain parameter combined with `| null` or `| undefined` in calculation/handling function — functions must require pure DomainId (guard preconditions at call-site).',
+    'ERROR',
+    (_match, line, file) => {
+      if (isAmbientDeclarationFile(file) || isTestFile(file)) return false;
+      if (line.includes('// state-ok: State setter allows clearing domain reference') || line.includes('// domain-ok: Open dynamic text or non-domain string payload')) return false;
+      // Exclude interface/type object properties (which legitimately hold nullable state like heldItem: ItemId | null)
+      if (line.trim().endsWith(';') && !line.includes('(') && !line.includes('=>') && !line.includes('function')) return false;
+      // Allow store state setters (e.g., set* or unequip actions in stores)
+      if (/\b(?:set[A-Z]\w*|update[A-Z]\w*|equip[A-Z]\w*|clear[A-Z]\w*)\b/.test(line)) return false;
+      return true;
+    },
+    true
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_DOMAIN_TYPE_NULLABLE,
+    'Domain type union definition contains `null` or `undefined` — domain types MUST be pure entities (optionality belongs to fields/state, not the domain type).',
+    'ERROR',
+    (_match, _line, file) => !isAmbientDeclarationFile(file)
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_DOUBLE_CAST_DOMAIN_ID,
+    'Double-cast assertion to DomainId (`as unknown as DomainId` / `as any as DomainId`) erases type safety — use boundary guard `isDomainId()` or `requireDomainId()`.',
+    'ERROR',
+    (_match, _line, file) => !isTestFile(file) && !isAmbientDeclarationFile(file)
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_PARAM_UNKNOWN_OR_ANY,
+    'Function parameter typed as `unknown` or `any` in business logic — use strong domain type or encapsulate within dedicated boundary parsers (parse*/is*/validate*).',
+    'ERROR',
+    (_match, line, file) => {
+      if (isTestFile(file) || isAmbientDeclarationFile(file)) return false;
+      if (line.includes('// boundary-ok: External runtime boundary deserializer') || line.includes('// parser-ok: Boundary input sanitizer') || line.includes('// domain-ok: Open dynamic text or non-domain string payload')) return false;
+      // Allow type predicates (`: val is Type`)
+      if (/\s+is\s+[A-Z]/.test(line)) return false;
+      // Allow error parameters (e.g. `error: unknown`, `err: unknown`)
+      if (/\b(?:err|error|exception|e)\s*:\s*(?:unknown|any)\b/.test(line)) return false;
+      // Allow schemas and boundary validation files
+      if (file.includes('schemas') || file.includes('validation') || file.includes('logger') || file.includes('types/')) return false;
+      // Allow boundary parsers, type-guards, assertions
+      if (/\b(?:catch|parse|is[A-Z]\w*|validate|assert|safe|sanitize|toID|deserialize|normalize|fromJSON|fromRaw|toDomain|wrapper|formatDate|formatTime)\b/i.test(line)) return false;
+      return true;
+    }
+  ));
+
+  findings.push(...findMatches(
+    content,
+    rel,
+    P_DOMAIN_LITERAL_MIXED_UNION,
+    'Mixed domain union: Combining a canonical Domain Type with raw string literals is forbidden. Include the literal in the canonical domain list or use the pure Domain Type directly.',
+    'ERROR',
+    (_match, line, file) => {
+      if (isTestFile(file) || isAmbientDeclarationFile(file)) return false;
+      if (line.includes('// domain-ok: Open dynamic text or non-domain string payload')) return false;
+      return true;
+    },
+    true
   ));
 
   findings.push(...findMatches(
@@ -326,7 +413,7 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     'Runtime string case normalization (toLowerCase/toUpperCase) inside domain code — use strict typed domain values directly without string transformations',
     'ERROR',
     (_match, line) => {
-      if (line.includes('// text-ok') || line.includes('// no-domain') || line.includes('// domain-ok')) return false;
+      if (line.includes('// text-ok: UI text display localization string') || line.includes('// no-domain: Non-domain utility collection or data structure') || line.includes('// domain-ok: Open dynamic text or non-domain string payload')) return false;
       // Filter out case-insensitive user search / filtering comparisons (e.g. name.toLowerCase().includes(search.toLowerCase()))
       if (/\.(?:includes|startsWith|endsWith|indexOf)\s*\(/.test(line) || /\b(?:search|query|filter|input)\b/i.test(line)) return false;
       // Filter out template literals used for UI formatting (`${...toUpperCase()}`)
@@ -369,7 +456,7 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     content,
     rel,
     P_DOMAIN_STRING_FIELD,
-    'Raw `string` field in type/data contract — use a strict domain type or mark truly open text (`// domain-ok` if genuinely open text)',
+    'Raw `string` field in type/data contract — use a strict domain type or mark truly open text (`// domain-ok: Open dynamic text or non-domain string payload` if genuinely open text)',
     'ERROR',
     (_match, _line, file) => isContractFile(file) && !isAmbientDeclarationFile(file)
   ));
@@ -395,7 +482,7 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     content,
     rel,
     P_TYPECAST_UNKNOWN,
-    'Double type assertion `as unknown as T` used to bypass domain contracts — use typed boundary guards or Window augmentations',
+    'Double type assertion (`as unknown` + `as T`) used to bypass domain contracts — use typed boundary guards or Window augmentations',
     'ERROR'
   ));
 
@@ -405,17 +492,17 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     P_TYPECAST_INLINE_ANY,
     'Type assertion `as any` used to bypass TypeScript checks — strictly forbidden by Zero-Any policy',
     'ERROR',
-    (_match, line) => !line.includes('// any-ok') && !line.includes('eslint-disable')
+    (_match, line) => !line.includes('// any-ok: External third-party untyped boundary payload') && !line.includes('eslint-disable')
   ));
 
   findings.push(...findMatches(
     content,
     rel,
     P_TYPECAST_READONLY_STRING_ARRAY,
-    'Type assertion `as readonly string[]` or `as string[]` used to bypass tuple domain inclusion check — use strict domain type parameter or `isDomainId` guard', // no-domain
+    'Type assertion `as readonly string[]` or `as string[]` used to bypass tuple domain inclusion check — use strict domain type parameter or `isDomainId` guard', // no-domain: Non-domain utility collection or data structure
     'ERROR',
     (_match, line, _file) => {
-      if (line.includes('// domain-ok') || line.includes('// no-domain')) return false;
+      if (line.includes('// domain-ok: Open dynamic text or non-domain string payload') || line.includes('// no-domain: Non-domain utility collection or data structure')) return false;
       return !/\bfunction\s+is[A-Z_a-z]\w*/.test(line) && !/\bis[A-Z_a-z]\w*\s*=\s*/.test(line);
     }
   ));
@@ -426,16 +513,16 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     P_TYPECAST_INLINE_DOMAIN_ID,
     'Inline type assertion `as DomainId` used to force dynamic string into domain type — use boundary guard `isDomainId()` or `requireDomainId()`',
     'ERROR',
-    (_match, line) => !/\bfunction\s+(?:is|require)[A-Z_a-z]\w*/.test(line) && !/\bis[A-Z_a-z]\w*\s*=\s*/.test(line) && !line.includes('// domain-ok')
+    (_match, line) => !/\bfunction\s+(?:is|require)[A-Z_a-z]\w*/.test(line) && !/\bis[A-Z_a-z]\w*\s*=\s*/.test(line) && !line.includes('// domain-ok: Open dynamic text or non-domain string payload')
   ));
 
   findings.push(...findMatches(
     content,
     rel,
     P_TYPECAST_RECORD_STRING,
-    'Type assertion `as Record<string, ...>` used to bypass strict domain map keys — use typed boundary guard', // open-record
+    'Type assertion `as Record<string, ...>` used to bypass strict domain map keys — use typed boundary guard', // open-record: Generic key-value data dictionary container
     'ERROR',
-    (_match, line) => !line.includes('// open-record') && !line.includes('// no-domain')
+    (_match, line) => !line.includes('// open-record: Generic key-value data dictionary container') && !line.includes('// no-domain: Non-domain utility collection or data structure')
   ));
 
   findings.push(...findMatches(
@@ -444,7 +531,7 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     P_TYPECAST_ARRAY_ANY_UNKNOWN,
     'Type assertion `as any[]` or `as unknown[]` erases element domain types — define explicit interface or discriminated union',
     'ERROR',
-    (_match, line) => !line.includes('// any-ok') && !line.includes('// no-domain')
+    (_match, line) => !line.includes('// any-ok: External third-party untyped boundary payload') && !line.includes('// no-domain: Non-domain utility collection or data structure')
   ));
 
   findings.push(...findMatches(
@@ -453,7 +540,7 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     P_OBJECT_KEYS_CAST,
     'Type assertion on `Object.keys(...)` or `Object.entries(...)` to `as DomainId[]` — use typed helper or `isDomainId` filtering',
     'ERROR',
-    (_match, line) => !/\bfunction\s+is[A-Z_a-z]\w*/.test(line) && !line.includes('// domain-ok')
+    (_match, line) => !/\bfunction\s+is[A-Z_a-z]\w*/.test(line) && !line.includes('// domain-ok: Open dynamic text or non-domain string payload')
   ));
 
   findings.push(...findMatches(
@@ -462,7 +549,7 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     P_INLINE_ANONYMOUS_OBJECT_PARAM,
     'Inline anonymous object type in function parameter prohibited — define a named interface or type contract',
     'ERROR',
-    (_match, line) => !line.includes('// type-ok') && !line.includes('// domain-ok') && !line.includes('withDefaults')
+    (_match, line) => !line.includes('// type-ok: Type contract declaration') && !line.includes('// domain-ok: Open dynamic text or non-domain string payload') && !line.includes('withDefaults')
   ));
 
   findings.push(...findMatches(
@@ -471,7 +558,7 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     P_UNNAMED_POSITIONAL_TUPLE_RETURN,
     'Positional array return without tuple type annotation — declare explicit tuple return type `: readonly [T1, T2]` or `as const`',
     'WARN',
-    (_match, line) => !line.includes('// type-ok') && !line.includes('as const')
+    (_match, line) => !line.includes('// type-ok: Type contract declaration') && !line.includes('as const')
   ));
 
   findings.push(...findMatches(
@@ -480,7 +567,7 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     P_UNBRANDED_DOMAIN_ID_ALIAS,
     'Unbranded domain ID alias detected — domain IDs should consume Brand<string, "IdName"> for nominal compile-time safety',
     'WARN',
-    (_match, line) => !line.includes('// brand-ok') && !line.includes('// domain-ok') && !line.includes('string-ok')
+    (_match, line) => !line.includes('// brand-ok: Domain branded primitive type') && !line.includes('// domain-ok: Open dynamic text or non-domain string payload') && !line.includes('string-ok')
   ));
 
   findings.push(...findMatches(
@@ -489,7 +576,7 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     P_AMBIGUOUS_NULL_DOMAIN_RETURN,
     'Ambiguous null/undefined domain return — consider returning Option<T> or Result<T, E> for explicit absence/error handling',
     'WARN',
-    (_match, line) => !line.includes('// result-ok') && !line.includes('// domain-ok')
+    (_match, line) => !line.includes('// result-ok: Operation result wrapper payload') && !line.includes('// domain-ok: Open dynamic text or non-domain string payload')
   ));
 
   findings.push(...findMatches(
@@ -504,7 +591,7 @@ async function auditFile(filePath: string): Promise<Finding[]> {
       const derivesDomainType = constName ? new RegExp(`export\\s+type\\s+[A-Z]\\w*\\s*=\\s*(?:keyof\\s+typeof|typeof|\\(typeof)\\s+${constName}`).test(content) : false;
       const hasSatisfies = constName ? new RegExp(`\\b${constName}\\s*=[\\s\\S]*?\\}\\s*(?:as\\s+const\\s+)?satisfies\\s+Record<`).test(content) : false;
       const hasAsConst = constName ? new RegExp(`\\b${constName}\\s*=[\\s\\S]*?\\}\\s*as\\s+const;`).test(content) : false;
-      return !line.includes('Record<') && !line.includes('satisfies') && !hasSatisfies && !derivesDomainType && !hasAsConst && !rel.includes('constants/') && !line.includes('// map-ok') && !line.includes('// domain-ok');
+      return !line.includes('Record<') && !line.includes('satisfies') && !hasSatisfies && !derivesDomainType && !hasAsConst && !rel.includes('constants/') && !line.includes('// map-ok: Dictionary map structure') && !line.includes('// domain-ok: Open dynamic text or non-domain string payload');
     }
   ));
 
@@ -514,16 +601,16 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     P_FLOATING_PROMISE,
     'Floating promise detected — async call must be handled with await, void, or .catch()',
     'WARN',
-    (_match, line) => !line.includes('// promise-ok') && !line.includes('// domain-ok')
+    (_match, line) => !line.includes('// promise-ok: Background promise handler') && !line.includes('// domain-ok: Open dynamic text or non-domain string payload')
   ));
 
   findings.push(...findMatches(
     content,
     rel,
     P_LEAKED_GLOBAL_MUTABLE,
-    'Mutable top-level let variable at module scope detected — move state inside Pinia store, class, or mark // singleton-ok',
+    'Mutable top-level let variable at module scope detected — move state inside Pinia store, class, or mark // singleton-ok: Singleton instance state container',
     'WARN',
-    (_match, line) => !line.includes('// singleton-ok') && !line.includes('// domain-ok') && !rel.includes('stores/') && !rel.includes('data/')
+    (_match, line) => !line.includes('// singleton-ok: Singleton instance state container') && !line.includes('// domain-ok: Open dynamic text or non-domain string payload') && !rel.includes('stores/') && !rel.includes('data/')
   ));
 
   findings.push(...findMatches(
@@ -532,8 +619,31 @@ async function auditFile(filePath: string): Promise<Finding[]> {
     P_DYNAMIC_IMPORT_IN_HOT_PATH,
     'Dynamic import() inside loop detected — pre-import modules at file scope to avoid combat animation jank',
     'WARN',
-    (_match, line) => !line.includes('// import-ok') && !line.includes('// domain-ok')
+    (_match, line) => !line.includes('// import-ok: Dynamic module import') && !line.includes('// domain-ok: Open dynamic text or non-domain string payload')
   ));
+
+  if (rel.endsWith('.vue')) {
+    const scriptSetupMatch = /<script\s+setup[^>]*>([\s\S]*?)<\/script>/i.exec(content);
+    if (scriptSetupMatch && typeof scriptSetupMatch[1] === 'string') {
+      const scriptContent = scriptSetupMatch[1];
+      const scriptStartIndex = scriptSetupMatch.index + scriptSetupMatch[0].indexOf(scriptContent);
+      const beforeLines = content.slice(0, scriptStartIndex).split('\n');
+      const baseLineNumber = beforeLines.length;
+      const lines = scriptContent.split('\n');
+      lines.forEach((line, idx) => {
+        if (/^\s*export\s+(?:const|type|interface|function|let|var|class|enum)\b/.test(line)) {
+          findings.push({
+            file: rel,
+            line: baseLineNumber + idx,
+            col: 1,
+            pattern: '`<script setup>` cannot contain ES module exports — extract shared contracts to a dedicated .ts module or un-export local types',
+            severity: 'ERROR',
+            snippet: line.trim()
+          });
+        }
+      });
+    }
+  }
 
   return findings;
 }
@@ -865,12 +975,12 @@ export async function runCliAudit(): Promise<void> {
   }
   lines.push('');
   lines.push('  💡 Escape hatches (for intentional exceptions — use sparingly):');
-  lines.push('    // domain-ok    → field genuinely accepts any string (open text)');
-  lines.push('    // string-ok    → type alias to string is intentional');
-  lines.push('    // open-record  → Record<string, ...> key is intentionally open');
-  lines.push('    // runtime-set  → Set used for runtime lookup (not domain typing)');
-  lines.push('    // runtime-map  → Map used for runtime lookup (not domain typing)');
-  lines.push('    // no-domain    → string array is dynamic data, not a finite domain');
+  lines.push('    // domain-ok: Open dynamic text or non-domain string payload    → field genuinely accepts any string (open text)');
+  lines.push('    // string-ok: Internal string formatting or DOM token identifier    → type alias to string is intentional');
+  lines.push('    // open-record: Generic key-value data dictionary container  → Record<string, ...> key is intentionally open');
+  lines.push('    // runtime-set: Fast O(1) membership lookup set  → Set used for runtime lookup (not domain typing)');
+  lines.push('    // runtime-map: Fast O(1) keyed lookup dictionary  → Map used for runtime lookup (not domain typing)');
+  lines.push('    // no-domain: Non-domain utility collection or data structure    → string array is dynamic data, not a finite domain');
   lines.push('');
 
   const report = lines.join('\n');

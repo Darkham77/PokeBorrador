@@ -1,9 +1,10 @@
 import { ref, computed, watch, nextTick, Ref } from 'vue'
 import { gsap } from 'gsap'
 import { useShopStore } from '@/stores/inventory/shop'
+import type { ItemId } from '@/data/inventory/items'
 
 interface ShopItem {
-  id: string
+  id: ItemId
   name: string
   cat: string
   price: number
@@ -46,7 +47,7 @@ export function useShopLogic(options: {
         if (isMaterialCat) return false
       }
       if (activeTab.value !== 'todos' && resolvedCat !== activeTab.value) return false
-      if (search.value && !item.name.toLowerCase().includes(search.value.toLowerCase())) return false // text-ok
+      if (search.value && !item.name.toLowerCase().includes(search.value.toLowerCase())) return false // text-ok: UI text display localization string
       return true
     })
 

@@ -83,8 +83,11 @@ function renderLoop() {
   requestAnimationFrame(renderLoop);
 }
 
+export const RENDER_WORKER_ACTIONS = ['INIT', 'RESIZE', 'UPDATE_STATE'] as const;
+export type RenderWorkerAction = (typeof RENDER_WORKER_ACTIONS)[number];
+
 interface RenderWorkerMessage {
-  type: 'INIT' | 'RESIZE' | 'UPDATE_STATE';
+  type: RenderWorkerAction;
   payload: {
     canvas?: OffscreenCanvas;
     width?: number;

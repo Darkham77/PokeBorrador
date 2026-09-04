@@ -3,10 +3,10 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import BaseModal from '@/components/common/BaseModal.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { MinigameDifficulty } from '@/types/battle/battle'
 import {
   calculateFishingDifficulty,
   FISHING_DIFFICULTIES,
-  type FishingDifficultyKey,
 } from '@/components/modals/fishingGameHelper'
 
 const MINIGAME_SPAWN_PADDING_PX = 60
@@ -31,8 +31,8 @@ interface Props {
   show?: boolean
   pokemon: Pokemon
   rarity?: number // 1-100
-  difficulty?: string | null
-  onWin?: ((difficulty: string) => void) | null
+  difficulty?: MinigameDifficulty | null
+  onWin?: ((difficulty: MinigameDifficulty) => void) | null
   onFail?: (() => void) | null
   onCloseCallback?: (() => void) | null
 }
@@ -47,7 +47,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'win', difficulty: FishingDifficultyKey): void
+  (e: 'win', difficulty: MinigameDifficulty): void
   (e: 'fail'): void
   (e: 'close'): void
 }>()
@@ -58,9 +58,9 @@ const feedback = ref('')
 let gameCall: gsap.core.Tween | null = null
 let iconTween: gsap.core.Tween | null = null
 
-const difficulty = computed<FishingDifficultyKey>(() => {
+const difficulty = computed<MinigameDifficulty>(() => {
   if (props.difficulty && props.difficulty in FISHING_DIFFICULTIES) {
-    return props.difficulty as FishingDifficultyKey
+    return props.difficulty
   }
   return calculateFishingDifficulty(props.rarity || DEFAULT_RARITY, props.pokemon?.level || 10)
 })

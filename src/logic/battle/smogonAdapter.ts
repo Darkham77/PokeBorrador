@@ -71,7 +71,7 @@ export interface SmogonTooltipResult {
 
 const CACHE_SIZE = 512;
 const cache = new Map<string, SmogonTooltipResult>();
-const cacheOrder: string[] = []; // no-domain
+const cacheOrder: string[] = []; // no-domain: Non-domain utility collection or data structure
 
 function addToCache(key: string, result: SmogonTooltipResult): void {
   if (cache.size >= CACHE_SIZE) {
@@ -356,13 +356,13 @@ export function calculateDamageForTooltip(
     const hasEviolite = defPkmn.item === 'Eviolite';
 
     // Terrain interactions
-    const terrainReductions: string[] = []; // no-domain
+    const terrainReductions: string[] = []; // no-domain: Non-domain utility collection or data structure
     if (state.terrain) {
-      const normTerrain = state.terrain.toLowerCase(); // text-ok
-      const normMoveType = (move.type ?? '').toLowerCase(); // text-ok
-      const defTypes = (defPkmn.types ?? []).map(t => t.toLowerCase()); // text-ok
+      const normTerrain = state.terrain.toLowerCase(); // text-ok: UI text display localization string
+      const normMoveType = (move.type ?? '').toLowerCase(); // text-ok: UI text display localization string
+      const defTypes = (defPkmn.types ?? []).map(t => t.toLowerCase()); // text-ok: UI text display localization string
       const isDefGrounded = !defTypes.includes('flying') && defPkmn.ability !== 'Levitate' && defPkmn.item !== 'airballoon' && defPkmn.item !== 'Air Balloon';
-      const atkTypes = (atkPkmn.types ?? []).map(t => t.toLowerCase()); // text-ok
+      const atkTypes = (atkPkmn.types ?? []).map(t => t.toLowerCase()); // text-ok: UI text display localization string
       const isAtkGrounded = !atkTypes.includes('flying') && atkPkmn.ability !== 'Levitate' && atkPkmn.item !== 'airballoon' && atkPkmn.item !== 'Air Balloon';
 
       if (isDefGrounded && normTerrain.includes('grassy') && ['earthquake', 'bulldoze', 'magnitude'].includes(moveId)) {
@@ -389,7 +389,7 @@ function translateRecoveryText(text: string): string {
   return text
     .replace(/recovered/gi, 'vida recuperada')
     .replace(/absorbed HP/gi, 'PS absorbidos')
-    .replace(/recovery/gi, 'recuperación'); // spanish-ok
+    .replace(/recovery/gi, 'recuperación'); // spanish-ok: UI Spanish text localization label
 }
 
     const out: SmogonTooltipResult = {

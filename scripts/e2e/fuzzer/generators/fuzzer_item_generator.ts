@@ -408,7 +408,7 @@ export function generateItemBatches(itemPool: ItemId[], batchSize = 6): ItemTest
         item: itemId,
         ability: pHolderAbility,
         nature: 'serious',
-        evs: (MAX_ATTACK_ENEMY_ITEM_IDS as readonly string[]).includes(itemId) // no-domain
+        evs: (MAX_ATTACK_ENEMY_ITEM_IDS as readonly string[]).includes(itemId) // no-domain: Non-domain utility collection or data structure
           ? { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
           : { hp: 252, atk: 252, def: 252, spa: 252, spd: 252, spe: 252 },
         ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },

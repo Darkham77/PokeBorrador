@@ -30,8 +30,8 @@ async function validateMigrations() {
 
   await validator.checkFiles();
 
-  const errors: string[] = []; // no-domain
-  const warnings: string[] = []; // no-domain
+  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
+  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   // 1. Validar integridad de nombres, fechas incrementales, no repetición y sincronización de db_version
   const dirEntries = await fs.readdir(MIGRATIONS_DIR);
@@ -49,7 +49,7 @@ async function validateMigrations() {
     }
   }
 
-  const seenTimestamps = new Set<string>(); // runtime-set
+  const seenTimestamps = new Set<string>(); // runtime-set: Fast O(1) membership lookup set
   let lastTimestamp = '';
   let validatedDbVersionStatements = 0;
 
@@ -115,7 +115,7 @@ async function validateMigrations() {
       try {
         db.exec(sql);
       } catch (stmtErr: unknown) {
-        const msg = (stmtErr as Error).message.toLowerCase(); // string-ok
+        const msg = (stmtErr as Error).message.toLowerCase(); // string-ok: Internal string formatting or DOM token identifier
         const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
         const isMissing = msg.includes('no such column');
         if (!isDuplicate && !isMissing) {

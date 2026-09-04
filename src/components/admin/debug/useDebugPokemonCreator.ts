@@ -4,7 +4,13 @@ import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { PokemonGender, PokemonIVs } from '@/types/pokemon/pokemon'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
-import { requireAbilityId } from '@/data/battle/abilities'
+import { requireAbilityId, type AbilityId } from '@/data/battle/abilities'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import type { NatureId } from '@/data/battle/natures'
+import type { ItemId } from '@/data/inventory/items'
+import type { MapRouteId } from '@/data/world/map-assets'
+import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves'
+import { MINIGAME_DIFFICULTY_SELECTIONS, type MinigameDifficultySelection, type BattleMinigame } from '@/types/battle/battle'
 import { canLearnMove, getLegalSpeciesMoves, getRandomLegalMoves, getMaxAllowedMoves } from '@/logic/pokemon/pokemonFactory'
 import { toID } from '@/logic/utils/strings.ts'
 
@@ -18,32 +24,32 @@ const INITIAL_DEBUG_POKEMON_LEVEL = 5
 const INITIAL_FRIENDSHIP_VAL = 70
 const PERFECT_IV_VAL = 31
 
-interface PokemonConfig {
-  id: string
+export interface PokemonConfig {
+  id: PokemonSpeciesId
   level: number
   isShiny: boolean
   isGuardian: boolean
-  nature: string
-  ability: string
+  nature: NatureId
+  ability: AbilityId
   gender: Exclude<PokemonGender, null>
   nickname: string
   friendship: number
-  heldItem: string
-  mapId: string
+  heldItem: ItemId | ''
+  mapId: MapRouteId
   ivs: PokemonIVs
-  moves: (string | null)[]
+  moves: (PokemonMoveId | null)[]
   protocol: string
-  minigameDifficulty?: 'auto' | 'easy' | 'medium' | 'hard' | 'expert'
+  minigameDifficulty?: MinigameDifficultySelection
 }
 
 interface SpeciesOption {
-  id: string
+  id: PokemonSpeciesId
   name: string
   icon?: string
 }
 
 interface MapOption {
-  id: string
+  id: MapRouteId
   name: string
 }
 
@@ -61,15 +67,15 @@ export function useDebugPokemonCreator() {
     nickname: '',
     friendship: INITIAL_FRIENDSHIP_VAL,
     heldItem: '',
-    mapId: 'route_1',
+    mapId: 'route1',
     ivs: { hp: PERFECT_IV_VAL, atk: PERFECT_IV_VAL, def: PERFECT_IV_VAL, spa: PERFECT_IV_VAL, spd: PERFECT_IV_VAL, spe: PERFECT_IV_VAL },
     moves: [],
     protocol: 'catch',
     minigameDifficulty: 'auto'
   })
 
-  const selectedMinigame = ref<'fishing' | 'archaeology'>('fishing')
-  const selectedMinigameDifficulty = ref<'auto' | 'easy' | 'medium' | 'hard' | 'expert'>('auto')
+  const selectedMinigame = ref<BattleMinigame>('fishing')
+  const selectedMinigameDifficulty = ref<MinigameDifficultySelection>('auto')
 
   watch(selectedMinigameDifficulty, (val) => {
     config.value.minigameDifficulty = val
@@ -79,15 +85,13 @@ export function useDebugPokemonCreator() {
   const allNatures = getSelectableNatures()
   const allAbilities = getSelectableAbilities()
 
-
-
   const allMaps = computed<MapOption[]>(() => {
     const maps = pokemonDataProvider.getMaps() as MapLocation[]
     return maps.map(m => ({ id: m.id, name: m.name }))
   })
 
   const filteredMaps = computed(() => {
-    const maps = pokemonDataProvider.getMaps() as MapLocation[] // domain-ok
+    const maps = pokemonDataProvider.getMaps() as MapLocation[] // domain-ok: Open dynamic text or non-domain string payload
     return maps
       .filter(m => {
         if (selectedMinigame.value === 'fishing') {
@@ -102,11 +106,11 @@ export function useDebugPokemonCreator() {
 
   watch(selectedMinigame, () => {
     if (filteredMaps.value.length > 0) {
-      config.value.mapId = filteredMaps.value[0]?.id || ''
+      config.value.mapId = filteredMaps.value[0]?.id || 'route1'
     }
   })
 
-  const speciesMoves = computed<string[]>(() => {
+  const speciesMoves = computed<PokemonMoveId[]>(() => {
     return getLegalSpeciesMoves(config.value.id, config.value.level)
   })
 
@@ -126,8 +130,8 @@ export function useDebugPokemonCreator() {
   function selectSpecies(p: SpeciesOption) {
     config.value.id = p.id
     const abilities = pokemonDataProvider.getSpeciesAbilities(p.id)
-    if (abilities.length > 0) {
-      config.value.ability = abilities[0] ? requireAbilityId(abilities[0]) : '' // text-ok
+    if (abilities.length > 0 && abilities[0]) {
+      config.value.ability = requireAbilityId(abilities[0])
     }
     autoFillMoves()
   }
@@ -146,10 +150,10 @@ export function useDebugPokemonCreator() {
       .map(m => m.id)
     
     const uniqueMoves = [...new Set(learnedMoves)].slice(0, MAX_MOVE_SLOTS_COUNT)
-    const finalMoves: (string | null)[] = [...uniqueMoves]
+    const finalMoves: (PokemonMoveId | null)[] = [...uniqueMoves]
     while (finalMoves.length < MAX_MOVE_SLOTS_COUNT) finalMoves.push(null)
     
-    config.value.moves = finalMoves as (string | null)[]
+    config.value.moves = finalMoves
   }
 
   function randomFillMoves() {
@@ -186,7 +190,7 @@ export function useDebugPokemonCreator() {
     if (abilities.length > 0) {
       const randomAbility = abilities[Math.floor(Math.random() * abilities.length)]
       if (randomAbility) {
-        config.value.ability = randomAbility
+        config.value.ability = requireAbilityId(randomAbility)
       }
     }
   }
@@ -225,8 +229,7 @@ export function useDebugPokemonCreator() {
   }
 
   function randomizeMinigameDifficulty() {
-    const diffs: ('auto' | 'easy' | 'medium' | 'hard' | 'expert')[] = ['auto', 'easy', 'medium', 'hard', 'expert']
-    selectedMinigameDifficulty.value = diffs[Math.floor(Math.random() * diffs.length)] || 'auto'
+    selectedMinigameDifficulty.value = MINIGAME_DIFFICULTY_SELECTIONS[Math.floor(Math.random() * MINIGAME_DIFFICULTY_SELECTIONS.length)] || 'auto'
   }
 
   function randomizeExtras() {
@@ -289,7 +292,7 @@ export function useDebugPokemonCreator() {
 }
 
 export function validatePokemonLegality(cfg: PokemonConfig): { valid: boolean; issues: string[] } {
-  const issues: string[] = [] // no-domain
+  const issues: string[] = [] // no-domain: Non-domain utility collection or data structure
   
   if (!cfg.id) {
     issues.push('La especie no está seleccionada.')
@@ -309,11 +312,11 @@ export function validatePokemonLegality(cfg: PokemonConfig): { valid: boolean; i
   if (cfg.ability) {
     const validAbilities = pokemonDataProvider.getSpeciesAbilities(cfg.id)
     if (!validAbilities.includes(cfg.ability as (typeof validAbilities)[number])) {
-      issues.push(`La habilidad "${cfg.ability}" es ilegal para ${speciesData.name || cfg.id}. Habilidades válidas: [${validAbilities.join(', ')}].`)
+      issues.push(`La habilidad "${cfg.ability}" es ilegal para ${speciesData.name}. Habilidades válidas: [${validAbilities.join(', ')}].`)
     }
   }
 
-  const activeMoves = (cfg.moves || []).filter((m): m is string => !!m)
+  const activeMoves = (cfg.moves || []).filter((m): m is PokemonMoveId => !!m)
   if (activeMoves.length === 0) {
     issues.push('El Pokémon debe tener al menos 1 movimiento asignado.')
   } else {
@@ -332,10 +335,10 @@ export function validatePokemonLegality(cfg: PokemonConfig): { valid: boolean; i
     moveSet.add(cleanMoveId)
 
     const moveData = pokemonDataProvider.getMoveData(cleanMoveId)
-    if (!moveData) {
+    if (!moveData || !isPokemonMoveId(cleanMoveId)) {
       issues.push(`El movimiento "${moveId}" no existe en la base de datos de movimientos.`)
     } else if (!canLearnMove(cfg.id, cleanMoveId, cfg.level)) {
-      issues.push(`El movimiento "${moveData.name || moveId}" (${cleanMoveId}) es ilegal para la especie ${speciesData.name || cfg.id} al nivel ${cfg.level}.`)
+      issues.push(`El movimiento "${moveData.name}" (${cleanMoveId}) es ilegal para la especie ${speciesData.name} al nivel ${cfg.level}.`)
     }
   }
 

@@ -2,7 +2,7 @@ import { gsap } from 'gsap'
 import type { Ref } from 'vue'
 import type { WeatherId } from '@/logic/weather/weatherRegistry'
 
-const SNOW_ATMOSPHERE_WEATHER_IDS_SET: ReadonlySet<WeatherId> = new Set<WeatherId>(['snow', 'blizzard', 'hail']) // runtime-set
+const SNOW_ATMOSPHERE_WEATHER_IDS_SET: ReadonlySet<WeatherId> = new Set<WeatherId>(['snow', 'blizzard', 'hail']) // runtime-set: Fast O(1) membership lookup set
 const HAIL_VERTICAL_DRIFT_PX = 512
 
 export function useAtmosphereSnowAnim(

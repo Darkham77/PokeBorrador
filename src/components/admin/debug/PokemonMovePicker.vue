@@ -3,35 +3,36 @@ import { ref, computed } from 'vue'
 import { Dex } from '@pkmn/sim'
 import { ACTIVE_GENERATION } from '@/data/system/constants'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { type PokemonMoveId, isPokemonMoveId, requirePokemonMoveId } from '@/data/battle/moves'
 
 interface Props {
-  modelValue: (string | null)[]
-  speciesMoves: string[]
+  modelValue: (PokemonMoveId | null)[]
+  speciesMoves: PokemonMoveId[]
 }
 
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: (string | null)[]): void
+  (e: 'update:modelValue', value: (PokemonMoveId | null)[]): void
   (e: 'autoFill'): void
   (e: 'randomFill'): void
 }>()
 const moveSearch = ref('')
 const activeMoveSlot = ref<number | null>(null)
 
-// Pre-map all moves with their Spanish translation for fast search
+// Pre-map all moves with their Spanish translation for fast search (search bar only)
 const allMovesList = Dex.forGen(ACTIVE_GENERATION).moves.all().map(m => {
-  const id = m.id
+  const id = requirePokemonMoveId(m.id)
   const moveData = pokemonDataProvider.getMoveData(id)
   return {
     id,
-    nameEs: moveData?.name || m.name
+    nameEs: moveData.name
   }
 })
 
-const filteredMoves = computed(() => {
+const filteredMoves = computed<PokemonMoveId[]>(() => {
   const s = moveSearch.value.toLowerCase().trim()
-  if (!s) return props.speciesMoves as string[] // no-domain
+  if (!s) return props.speciesMoves
   
   const MOVE_SEARCH_MAX_RESULTS = 30;
   return allMovesList
@@ -40,15 +41,16 @@ const filteredMoves = computed(() => {
     .slice(0, MOVE_SEARCH_MAX_RESULTS)
 })
 
-function getMoveDisplayName(id: string | null | undefined): string {
-  if (!id) return ''
-  return (pokemonDataProvider.getMoveData(id)?.name || id).toUpperCase()
+function getMoveDisplayName(id: PokemonMoveId | null | undefined): string {
+  if (!id || !isPokemonMoveId(id)) return ''
+  const md = pokemonDataProvider.getMoveData(id)
+  return md ? md.name.toUpperCase() : id.toUpperCase()
 }
 
-function addMove(m: string, slotIndex: number) {
+function addMove(m: PokemonMoveId, slotIndex: number) {
   const newMoves = [...props.modelValue]
   newMoves[slotIndex] = m
-  emit('update:modelValue', newMoves as (string | null)[])
+  emit('update:modelValue', newMoves)
   activeMoveSlot.value = null
   moveSearch.value = ''
 }
@@ -57,7 +59,7 @@ function removeMove(slotIndex: number) {
   const newMoves = [...props.modelValue]
   newMoves.splice(slotIndex, 1)
   newMoves.push(null)
-  emit('update:modelValue', newMoves as (string | null)[])
+  emit('update:modelValue', newMoves)
 }
 </script>
 

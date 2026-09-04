@@ -43,6 +43,7 @@ class ForcedSwitchSimWrapper extends BaseBattleSimulation {
         locationId: 'route1'
       });
     }, TRAINER_TEAM_TEST_LEVEL);
+    await awaitBattleReadyForInput(this.page);
   }
 
   public async setupWild1v1Battle(): Promise<void> {
@@ -69,16 +70,15 @@ class ForcedSwitchSimWrapper extends BaseBattleSimulation {
         locationId: 'route1'
       });
     }, { pLevel: TRAINER_TEAM_TEST_LEVEL, eLevel: WILD_CATERPIE_TEST_LEVEL });
+    await awaitBattleReadyForInput(this.page);
   }
 }
 
 test.describe('Battle Forced Switch (Phazing) UI Simulations', () => {
   test('should execute Whirlwind forced ejection on player and drag out bench Pokémon without position jumps', async ({ page }) => {
-    const sim = new ForcedSwitchSimWrapper(page, 'ForcedSwitchWhirlwind');
+    const sim = new ForcedSwitchSimWrapper(page, 'SwitchWhirlwind');
     await sim.setup();
-    await armBattleReadyForInput(page);
     await sim.setupTrainerBattleWithBench();
-    await awaitBattleReadyForInput(page);
 
     // Initial active player is Pikachu
     const initialSnapshot = await sim.getBattleStoreState();
@@ -97,11 +97,9 @@ test.describe('Battle Forced Switch (Phazing) UI Simulations', () => {
   });
 
   test('should fail cleanly when Whirlwind is used against wild 1v1 target without bench', async ({ page }) => {
-    const sim = new ForcedSwitchSimWrapper(page, 'ForcedSwitchEmptyBench');
+    const sim = new ForcedSwitchSimWrapper(page, 'SwitchEmptyBench');
     await sim.setup();
-    await armBattleReadyForInput(page);
     await sim.setupWild1v1Battle();
-    await awaitBattleReadyForInput(page);
 
     // Player uses Whirlwind (#move-btn-0)
     await armBattleReadyForInput(page);

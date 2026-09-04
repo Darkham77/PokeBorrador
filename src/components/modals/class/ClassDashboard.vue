@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
-import { gsap } from 'gsap'
-import { type ClassDefinition } from '@/stores/player/playerClass'
+import { type PlayerClassDefinition } from '@/data/player/playerClasses'
 import { useModalStore } from '@/stores/modals'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
@@ -12,7 +11,7 @@ import type { GenderId } from '@/types/system/game'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 interface Props {
-  currentClass?: ClassDefinition | null
+  currentClass?: PlayerClassDefinition | null
   trainerLevel?: number
   trainerRank?: string
   classLevel?: number
@@ -208,7 +207,7 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
         <div class="trainers-wrap">
           <PVTooltip :title="currentGender === 'h' ? '♂️ Masculino (Género Actual)' : (!canChangeGender ? `♂️ Masculino (Cooldown: Faltan ${daysUntilIdentityChange} días)` : '♂️ Masculino (Haz clic para cambiar)')">
             <img 
-              :src="getTrainerSprite(currentClass?.showdownSpriteId || currentClass?.id, 'h')"
+              :src="getTrainerSprite(currentClass?.avatarSpriteId, 'h')"
               class="trainer-big-img" 
               :class="{ active: currentGender === 'h', inactive: currentGender === 'm', locked: currentGender !== 'h' && !canChangeGender }"
               @click.stop="handleSelectGender('h')"
@@ -219,7 +218,7 @@ const onAbilityMouseLeave = (event: MouseEvent) => {
           </PVTooltip>
           <PVTooltip :title="currentGender === 'm' ? '♀️ Femenino (Género Actual)' : (!canChangeGender ? `♀️ Femenino (Cooldown: Faltan ${daysUntilIdentityChange} días)` : '♀️ Femenino (Haz clic para cambiar)')">
             <img 
-              :src="getTrainerSprite(currentClass?.showdownSpriteId || currentClass?.id, 'm')"
+              :src="getTrainerSprite(currentClass?.avatarSpriteId, 'm')"
               class="trainer-big-img" 
               :class="{ active: currentGender === 'm', inactive: currentGender === 'h', locked: currentGender !== 'm' && !canChangeGender }"
               @click.stop="handleSelectGender('m')"

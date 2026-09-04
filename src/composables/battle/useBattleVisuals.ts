@@ -1,6 +1,6 @@
-
 import { ref } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import type { MapRouteId } from '@/data/world/map-assets'
 
 export function useBattleVisuals() {
   const canvasRef = ref<HTMLCanvasElement | null>(null)
@@ -27,7 +27,7 @@ export function useBattleVisuals() {
     return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny, isBack })
   }
 
-  const redrawBackground = (isBattleActive: boolean, locationId: string, cycle: string) => {
+  const redrawBackground = (isBattleActive: boolean, locationId: MapRouteId, cycle: string) => {
     if (isBattleActive && typeof window.drawBattleBackground === 'function') {
       const arena = containerRef.value
       const canvas = canvasRef.value

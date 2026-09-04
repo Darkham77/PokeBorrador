@@ -1,4 +1,5 @@
 import { getEffectiveStatPure, type PurePokemon } from '@/logic/battle/battleMath'
+import type { PureBattleWeather } from '@/logic/battle/battleMathTypes'
 import type { SmogonTooltipResult } from '@/logic/battle/smogonAdapter'
 import type { DayPhase } from '@/logic/utils/timeUtils'
 
@@ -29,7 +30,7 @@ export function calculateAttackerStatDisplay(
   isPhysical: boolean,
   isSpecial: boolean,
   playerStages: { atk?: number; spa?: number },
-  weather: { type: string; turns: number } | null,
+  weather: PureBattleWeather | null,
   cycle: DayPhase | undefined,
   isGym: boolean
 ): TooltipStatDisplay | null {
@@ -55,7 +56,7 @@ export function calculateDefenderStatDisplay(
   isPhysical: boolean,
   isSpecial: boolean,
   enemyStages: { def?: number; spd?: number },
-  weather: { type: string; turns: number } | null,
+  weather: PureBattleWeather | null,
   cycle: DayPhase | undefined,
   isGym: boolean
 ): TooltipStatDisplay | null {

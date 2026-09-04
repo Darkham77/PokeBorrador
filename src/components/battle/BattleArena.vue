@@ -130,7 +130,7 @@ const weatherTooltipDescription = computed(() => {
   const weather = computedWeather.value
   const activeEvents = mapStore.activeEvents || []
 
-  const lines: string[] = [] // text-ok
+  const lines: string[] = [] // text-ok: UI text display localization string
 
   // 1. Wild Spawns
   if (loc.wild) {
@@ -208,7 +208,7 @@ const weatherTooltipDescription = computed(() => {
   if (fishingSpawns.value && fishingSpawns.value.length > 0) {
     lines.push('---')
     lines.push('🎣 Pesca:')
-    fishingSpawns.value.forEach((fs: { id: string; name: string; percentage: number }) => { // type-ok
+    fishingSpawns.value.forEach((fs: { id: string; name: string; percentage: number }) => { // type-ok: Type contract declaration
       const realName = pokemonDataProvider.getPokemonData(fs.id)?.name || fs.name
       lines.push(`• ${realName}: ${fs.percentage.toFixed(1)}%`)
     })
@@ -218,7 +218,7 @@ const weatherTooltipDescription = computed(() => {
   if (archaeologyRewards.value && archaeologyRewards.value.length > 0) {
     lines.push('---')
     lines.push('⛏️ Arqueología:')
-    archaeologyRewards.value.forEach((ar: { name: string; percentage: number }) => { // type-ok
+    archaeologyRewards.value.forEach((ar: { name: string; percentage: number }) => { // type-ok: Type contract declaration
       lines.push(`• ${ar.name}: ${ar.percentage.toFixed(1)}%`)
     })
   }

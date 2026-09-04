@@ -8,6 +8,7 @@ enableCompileCache();
 // Importar dinámicamente las bases de datos de Poké Vicio
 import { POKEMON_DB } from '../../src/data/pokemon/pokemonDB.ts';
 import { pokemonDataProvider } from '../../src/logic/providers/pokemonDataProvider.ts';
+import { requirePokemonSpeciesId } from '../../src/data/pokemon/pokedex.ts';
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
 
@@ -52,7 +53,7 @@ interface ShowdownMoveSpec {
 }
 
 function normalizeId(id: string): string {
-  return id.toLowerCase().replace(/[^a-z0-9]/g, ''); // string-ok
+  return id.toLowerCase().replace(/[^a-z0-9]/g, ''); // string-ok: Internal string formatting or DOM token identifier
 }
 
 type CorePokemonEntry = NonNullable<(typeof POKEMON_DB)[keyof typeof POKEMON_DB]>;
@@ -79,7 +80,7 @@ function comparePokemonTypes(
   sdPoke: ShowdownPokeSpec,
   pokemonDiffsTable: string[]
 ): number {
-  const coreTypes: string[] = []; // no-domain
+  const coreTypes: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (corePoke.type) coreTypes.push(TYPE_MAP[corePoke.type] || corePoke.type);
   const type2 = Reflect.get(corePoke, 'type2') as string | undefined;
   if (type2) coreTypes.push(TYPE_MAP[type2] || type2);
@@ -101,7 +102,7 @@ function comparePokemonAbilities(
   sdPoke: ShowdownPokeSpec,
   pokemonDiffsTable: string[]
 ): number {
-  const coreAbilities = pokemonDataProvider.getSpeciesAbilities(coreId);
+  const coreAbilities = pokemonDataProvider.getSpeciesAbilities(requirePokemonSpeciesId(coreId));
   const sdAbilities = sdPoke.abilities || [];
   const coreAbiStr = coreAbilities.slice().sort().map(a => toID(a)).join(', ');
   const sdAbiStr = sdAbilities.slice().sort().map((a: string) => toID(a)).join(', ');
@@ -114,7 +115,7 @@ function comparePokemonAbilities(
 }
 
 function comparePokemonSpecies(normalizedShowdownPoke: Map<string, ShowdownPokeSpec>) {
-  const pokemonDiffsTable: string[] = [ // no-domain
+  const pokemonDiffsTable: string[] = [ // no-domain: Non-domain utility collection or data structure
     '## 1. Comparación de Pokémon y Estadísticas',
     '| Pokémon | Atributo | Valor Juego | Valor Showdown | Tipo Discrepancia |',
     '| :--- | :--- | :--- | :--- | :--- |'
@@ -156,7 +157,7 @@ function comparePokemonSpecies(normalizedShowdownPoke: Map<string, ShowdownPokeS
 }
 
 function compareMoves(normalizedShowdownMoves: Map<string, ShowdownMoveSpec>) {
-  const moveDiffsTable: string[] = [ // no-domain
+  const moveDiffsTable: string[] = [ // no-domain: Non-domain utility collection or data structure
     '\n## 2. Comparación de Movimientos',
     '| Movimiento | Propiedad | Valor Juego | Valor Showdown |',
     '| :--- | :--- | :--- | :--- |'
@@ -237,7 +238,7 @@ async function main() {
   const pokeResults = comparePokemonSpecies(normalizedShowdownPoke);
   const moveResults = compareMoves(normalizedShowdownMoves);
 
-  const reportLines: string[] = [ // no-domain
+  const reportLines: string[] = [ // no-domain: Non-domain utility collection or data structure
     '# Reporte Detallado de Comparación de Bases de Datos',
     `*Generado el: ${new Date().toISOString()}*\n`,
     'Este reporte compara los Pokémon, habilidades y movimientos del juego core frente a la extracción de Pokémon Showdown (Gen 3).\n',

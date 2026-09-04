@@ -53,10 +53,10 @@ async function runMasterAudit() {
     strict: false
   });
 
-  const positionalFamily = positionals.find(p => (AUDIT_FAMILIES as readonly string[]).includes(p)); // domain-ok
+  const positionalFamily = positionals.find(p => (AUDIT_FAMILIES as readonly string[]).includes(p)); // domain-ok: Open dynamic text or non-domain string payload
   const targetFamily = values.family || positionalFamily;
 
-  const rawRuleArgs: string[] = []; // no-domain
+  const rawRuleArgs: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (values.rule) {
     if (Array.isArray(values.rule)) {
       for (const item of values.rule) rawRuleArgs.push(String(item));
@@ -72,7 +72,7 @@ async function runMasterAudit() {
     }
   }
   for (const pos of positionals) {
-    if (pos.toLowerCase() === 'dox' || pos.includes(',')) { // string-ok
+    if (pos.toLowerCase() === 'dox' || pos.includes(',')) { // string-ok: Internal string formatting or DOM token identifier
       rawRuleArgs.push(pos);
     }
   }

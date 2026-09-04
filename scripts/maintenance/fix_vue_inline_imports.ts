@@ -16,10 +16,10 @@
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { join, extname } from 'node:path';
 
-const IGNORE_DIRS = new Set(['node_modules', 'dist', '.git', 'backup_legacy_code', 'public', 'scripts']); // runtime-set
+const IGNORE_DIRS = new Set(['node_modules', 'dist', '.git', 'backup_legacy_code', 'public', 'scripts']); // runtime-set: Fast O(1) membership lookup set
 
 function walkDir(dir: string): string[] {
-  const results: string[] = []; // no-domain
+  const results: string[] = []; // no-domain: Non-domain utility collection or data structure
   for (const entry of readdirSync(dir)) {
     if (IGNORE_DIRS.has(entry)) continue;
     const full = join(dir, entry);
@@ -32,7 +32,7 @@ function walkDir(dir: string): string[] {
 const root = new URL('..', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1');
 const srcDir = join(root, 'src');
 
-let fixed = 0; // singleton-ok
+let fixed = 0; // singleton-ok: Singleton instance state container
 
 for (const file of walkDir(srcDir)) {
   const content = readFileSync(file, 'utf-8');

@@ -92,6 +92,21 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true
     useLoadingStore().start('auth_init', 'Iniciando sesión...', 'Conectando con el servidor', false, '📶')
     try {
+      const isE2EPostgres = (typeof window !== 'undefined' && (window as { __E2E_DRIVER__?: string }).__E2E_DRIVER__ === 'postgres');
+      if (isE2EPostgres) {
+        const localUser = safeStorage.getItem('pokevicio_local_user')
+        if (localUser) {
+          user.value = JSON.parse(localUser) as AuthUser
+          sessionMode.value = 'online'
+          if (supabase && typeof supabase.setMode === 'function') {
+            supabase.setMode('online')
+          }
+          loading.value = false
+          useLoadingStore().finish('auth_init')
+          return
+        }
+      }
+
       if (sessionMode.value === 'online') {
         // Sincronizar el enrutador en modo online antes de pedir la sesión
         if (supabase && typeof supabase.setMode === 'function') {
@@ -181,6 +196,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
+      if (!data.user) throw new Error('No user returned')
       
       session.value = data.session
       user.value = data.user as AuthUser
@@ -311,7 +327,7 @@ export const useAuthStore = defineStore('auth', () => {
     loadingStore.start('auth_action', 'Entrando como invitado...', 'Preparando partida local', true, '🎮')
     try {
       const userData = {
-        id: 'local_' + name.toLowerCase().replace(/\s+/g, '_'), // text-ok
+        id: 'local_' + name.toLowerCase().replace(/\s+/g, '_'), // text-ok: UI text display localization string
         email: name + '@local',
         user_metadata: { full_name: name, username: name, gender },
         db_version: 3

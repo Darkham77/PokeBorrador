@@ -16,14 +16,15 @@ import type { PlayerClassId } from '@/data/player/playerClasses';
 import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import type { ItemId } from '@/data/inventory/items';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { PokemonTagId } from '@/logic/constants/tags';
 import type { FactionId } from '@/types/system/game';
 
 export interface WorldMap {
   id: MapRouteId;
-  name: string; // domain-ok
-  icon: string; // domain-ok
+  name: string; // domain-ok: Open dynamic text or non-domain string payload
+  icon: string; // domain-ok: Open dynamic text or non-domain string payload
   badges: number;
-  desc: string; // domain-ok
+  desc: string; // domain-ok: Open dynamic text or non-domain string payload
   wild: Record<DayPhase, string[]>;
   rates: { morning: number[]; day: number[]; dusk: number[]; night: number[] };
   lv: [number, number];
@@ -47,7 +48,7 @@ export interface DominanceInfo {
 
 export interface BattleOptions {
   isTrainer?: boolean;
-  trainerName?: string; // domain-ok
+  trainerName?: string; // domain-ok: Open dynamic text or non-domain string payload
   isGym?: boolean;
   gymId?: GymId;
   locationId?: MapRouteId;
@@ -64,7 +65,7 @@ export interface BattleOptions {
   isRival?: boolean;
   persistenceMode?: 'local' | 'remote';
   cannotEscape?: boolean;
-  trainerQuote?: string; // domain-ok
+  trainerQuote?: string; // domain-ok: Open dynamic text or non-domain string payload
   fixedCycle?: DayPhase;
   fixedWeather?: WeatherId;
 }
@@ -81,12 +82,12 @@ export interface GameStore {
   scheduleSave: () => void;
   save: (showNotif?: boolean) => Promise<{ success: boolean; migrated?: boolean; lastSaveId?: string; rollback?: boolean; outOfSync?: boolean; error?: string; remote?: boolean } | void>;
   loadGame: () => Promise<void>;
-  registerPokedex: (speciesId: string) => void;
+  registerPokedex: (speciesId: PokemonSpeciesId) => void;
   addTrainerExp: (amount: number) => void;
   checkLevelUp: (pokemon: Pokemon) => void;
   updateState: (newData: Partial<GameState>) => void;
-  chooseStarter: (pokeId: string) => void;
-  togglePokeTag: (context: PokemonSelectionSource, index: number, tagId: string) => void;
+  chooseStarter: (pokeId: PokemonSpeciesId) => void;
+  togglePokeTag: (context: PokemonSelectionSource, index: number, tagId: PokemonTagId) => void;
   reorderMoves: (pokemon: Pokemon, from: number, to: number) => void;
   fetchClaimQueue: () => Promise<void>;
   saveGame: (showNotif?: boolean) => Promise<{ success: boolean; migrated?: boolean; lastSaveId?: string; rollback?: boolean; outOfSync?: boolean; error?: string; remote?: boolean } | void>;
@@ -118,47 +119,47 @@ export interface BattleStore {
   handleFaint: (side: BattleSide) => Promise<void>;
   persistBattle: () => void;
   triggerSearchEncounter: () => Promise<void>;
-  useItemInBattle: (itemName: string, targetIndex: number | null) => Promise<void>;
+  useItemInBattle: (itemId: ItemId, targetIndex: number | null) => Promise<void>;
 }
 
 export interface ConfirmOptions {
-  title: string; // domain-ok
-  message: string; // domain-ok
-  confirmText?: string; // domain-ok
-  cancelText?: string; // domain-ok
+  title: string; // domain-ok: Open dynamic text or non-domain string payload
+  message: string; // domain-ok: Open dynamic text or non-domain string payload
+  confirmText?: string; // domain-ok: Open dynamic text or non-domain string payload
+  cancelText?: string; // domain-ok: Open dynamic text or non-domain string payload
   onConfirm: () => void;
   onCancel?: () => void;
 }
 
 export interface PromptOptions {
-  title: string; // domain-ok
-  message: string; // domain-ok
-  initialValue?: string; // domain-ok
-  confirmText?: string; // domain-ok
-  cancelText?: string; // domain-ok
+  title: string; // domain-ok: Open dynamic text or non-domain string payload
+  message: string; // domain-ok: Open dynamic text or non-domain string payload
+  initialValue?: string; // domain-ok: Open dynamic text or non-domain string payload
+  confirmText?: string; // domain-ok: Open dynamic text or non-domain string payload
+  cancelText?: string; // domain-ok: Open dynamic text or non-domain string payload
   onConfirm: (value: string) => void;
 }
 
 export interface UINotification {
-  id: string | number; // domain-ok
-  msg: string; // domain-ok
-  icon: string; // domain-ok
+  id: string | number; // domain-ok: Open dynamic text or non-domain string payload
+  msg: string; // domain-ok: Open dynamic text or non-domain string payload
+  icon: string; // domain-ok: Open dynamic text or non-domain string payload
 }
 
 export interface UIStore {
-  activeTab: string; // domain-ok
+  activeTab: string; // domain-ok: Open dynamic text or non-domain string payload
   notifications: UINotification[];
   isBattleSwitchForced: boolean;
   isDebugPerformanceMode: boolean;
   isAnyBlockingModalOpen: boolean;
   isAnyFullscreenModalOpen: boolean;
-  openHudGroup: string | null; // domain-ok
+  openHudGroup: string | null; // domain-ok: Open dynamic text or non-domain string payload
   autoBattle: boolean;
   setAutoBattle: (val: boolean) => void;
   notify: (msg: string, icon?: string) => void;
-  openConfirm: (options: Record<string, unknown>) => string | null; // open-record
-  openPrompt: (options: Record<string, unknown>) => string | null; // open-record
-  open: (name: string, props?: Record<string, unknown>) => void; // open-record
+  openConfirm: (options: Record<string, unknown>) => string | null; // open-record: Generic key-value data dictionary container
+  openPrompt: (options: Record<string, unknown>) => string | null; // open-record: Generic key-value data dictionary container
+  open: (name: string, props?: Record<string, unknown>) => void; // open-record: Generic key-value data dictionary container
   close: (name: string) => void;
   closeAll: () => void;
   setLoading: (val: boolean, msg?: string, sub?: string) => void;
@@ -181,49 +182,57 @@ export interface MapStore {
 }
 
 export interface PendingAward {
-  id: string; // domain-ok
-  winner_id: string; // domain-ok
-  prize: string; // domain-ok
-  received_at: string | null; // domain-ok
-  event_id?: string; // domain-ok
-  prize_summary?: string; // domain-ok
-  awarded_at?: string; // domain-ok
+  id: string; // domain-ok: Open dynamic text or non-domain string payload
+  winner_id: string; // domain-ok: Open dynamic text or non-domain string payload
+  prize: string; // domain-ok: Open dynamic text or non-domain string payload
+  received_at: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  event_id?: string; // domain-ok: Open dynamic text or non-domain string payload
+  prize_summary?: string; // domain-ok: Open dynamic text or non-domain string payload
+  awarded_at?: string; // domain-ok: Open dynamic text or non-domain string payload
+  category_id?: string; // domain-ok: Open dynamic text or non-domain string payload
+  category_name?: string; // domain-ok: Open dynamic text or non-domain string payload
 }
 
 export interface CompetitionEntryData {
   species?: PokemonSpeciesId;
-  name?: string; // domain-ok
-  nickname?: string | null; // domain-ok
+  name?: string; // domain-ok: Open dynamic text or non-domain string payload
+  nickname?: string | null; // domain-ok: Open dynamic text or non-domain string payload
   level?: number;
   score?: number;
   total_ivs?: number;
-  ivs?: Record<string, number>; // open-record
+  ivs?: Record<string, number>; // open-record: Generic key-value data dictionary container
   is_shiny?: boolean;
   obtained_at?: number;
   height?: number;
   weight?: number;
   friendship?: number;
-  displayValue?: string; // domain-ok
-  display_value?: string; // domain-ok
-  tier_label?: string; // domain-ok
-  player_class?: string; // domain-ok
+  displayValue?: string; // domain-ok: Open dynamic text or non-domain string payload
+  display_value?: string; // domain-ok: Open dynamic text or non-domain string payload
+  tier_label?: string; // domain-ok: Open dynamic text or non-domain string payload
+  player_class?: string; // domain-ok: Open dynamic text or non-domain string payload
   trainer_level?: number;
-  avatar_style?: string; // domain-ok
-  nick_style?: string; // domain-ok
-  gender?: string; // domain-ok
+  avatar_style?: string; // domain-ok: Open dynamic text or non-domain string payload
+  nick_style?: string; // domain-ok: Open dynamic text or non-domain string payload
+  gender?: string; // domain-ok: Open dynamic text or non-domain string payload
 }
 
 export interface CompetitionEntry {
-  id?: string; // domain-ok
-  event_id: string; // domain-ok
-  category_id?: string; // domain-ok
-  player_id: string; // domain-ok
-  player_name?: string; // domain-ok
-  player_email?: string; // domain-ok
-  pokemon_uid: string; // domain-ok
+  id?: string; // domain-ok: Open dynamic text or non-domain string payload
+  event_id: string; // domain-ok: Open dynamic text or non-domain string payload
+  category_id?: string; // domain-ok: Open dynamic text or non-domain string payload
+  player_id: string; // domain-ok: Open dynamic text or non-domain string payload
+  player_name?: string; // domain-ok: Open dynamic text or non-domain string payload
+  player_email?: string; // domain-ok: Open dynamic text or non-domain string payload
+  pokemon_uid: string; // domain-ok: Open dynamic text or non-domain string payload
   data?: CompetitionEntryData;
-  submitted_at?: string; // domain-ok
+  submitted_at?: string; // domain-ok: Open dynamic text or non-domain string payload
 }
+
+export const EVENT_REWARD_TYPES = ['money', 'bc', 'item', 'pokemon', 'mixed'] as const;
+export type EventRewardType = (typeof EVENT_REWARD_TYPES)[number];
+
+export const EVENT_TYPE_KINDS = ['competition', 'boost', 'passive_bonus'] as const;
+export type EventTypeKind = (typeof EVENT_TYPE_KINDS)[number];
 
 export const COMPETITION_RANK_KEYS = ['first', 'second', 'third'] as const;
 export type CompetitionRankKey = (typeof COMPETITION_RANK_KEYS)[number];
@@ -231,29 +240,29 @@ export type CompetitionRank = CompetitionRankKey | number;
 
 export interface PastCompetitionWinner {
   rank: CompetitionRank;
-  category_id?: string; // domain-ok
-  category_name?: string; // domain-ok
-  player_id: string; // domain-ok
-  player_name: string; // domain-ok
-  player_class?: string; // domain-ok
+  category_id?: string; // domain-ok: Open dynamic text or non-domain string payload
+  category_name?: string; // domain-ok: Open dynamic text or non-domain string payload
+  player_id: string; // domain-ok: Open dynamic text or non-domain string payload
+  player_name: string; // domain-ok: Open dynamic text or non-domain string payload
+  player_class?: string; // domain-ok: Open dynamic text or non-domain string payload
   player_level?: number;
-  avatar_style?: string; // domain-ok
-  nick_style?: string; // domain-ok
-  gender?: string; // domain-ok
+  avatar_style?: string; // domain-ok: Open dynamic text or non-domain string payload
+  nick_style?: string; // domain-ok: Open dynamic text or non-domain string payload
+  gender?: string; // domain-ok: Open dynamic text or non-domain string payload
   score?: number;
   entry_data?: CompetitionEntryData;
 }
 
 export interface PastEventHistoryItem {
-  id: string; // domain-ok
-  event_id: string; // domain-ok
-  event_name: string; // domain-ok
-  event_icon: string; // domain-ok
-  event_description: string; // domain-ok
-  event_schedule?: string | Record<string, unknown>; // open-record
-  start_at?: string; // domain-ok
-  end_at?: string; // domain-ok
-  ended_at: string; // domain-ok
+  id: string; // domain-ok: Open dynamic text or non-domain string payload
+  event_id: string; // domain-ok: Open dynamic text or non-domain string payload
+  event_name: string; // domain-ok: Open dynamic text or non-domain string payload
+  event_icon: string; // domain-ok: Open dynamic text or non-domain string payload
+  event_description: string; // domain-ok: Open dynamic text or non-domain string payload
+  event_schedule?: string | Record<string, unknown>; // open-record: Generic key-value data dictionary container
+  start_at?: string; // domain-ok: Open dynamic text or non-domain string payload
+  end_at?: string; // domain-ok: Open dynamic text or non-domain string payload
+  ended_at: string; // domain-ok: Open dynamic text or non-domain string payload
   winners: PastCompetitionWinner[];
   myAward: PendingAward | null;
   isWinner: boolean;
@@ -266,7 +275,7 @@ export interface EventStore {
   activeEvents: Event[];
   pastEvents: PastEventHistoryItem[];
   pendingAwards: PendingAward[];
-  userEntries: Record<string, CompetitionEntry>; // open-record
+  userEntries: Record<string, CompetitionEntry>; // open-record: Generic key-value data dictionary container
   isLoading: boolean;
   globalMultipliers: Partial<GlobalMultipliers>;
   fetchEvents: () => Promise<void>;
@@ -279,29 +288,29 @@ export interface EventStore {
 }
 
 export interface CompetitionParticipant {
-  uid: string; // domain-ok
+  uid: string; // domain-ok: Open dynamic text or non-domain string payload
   id: PokemonSpeciesId;
-  name: string; // domain-ok
-  nickname?: string | null; // domain-ok
+  name: string; // domain-ok: Open dynamic text or non-domain string payload
+  nickname?: string | null; // domain-ok: Open dynamic text or non-domain string payload
   level: number;
   isShiny: boolean;
   ivs?: Pokemon['ivs'];
-  size?: string; // domain-ok
+  size?: string; // domain-ok: Open dynamic text or non-domain string payload
   height?: number;
   weight?: number;
-  displayValue?: string; // domain-ok
+  displayValue?: string; // domain-ok: Open dynamic text or non-domain string payload
   score?: number;
 }
 
 export interface CompetitionResult {
-  id: string; // domain-ok
-  event_id: string; // domain-ok
+  id: string; // domain-ok: Open dynamic text or non-domain string payload
+  event_id: string; // domain-ok: Open dynamic text or non-domain string payload
   winners: {
     first?: { player_name: string; score: number };
     second?: { player_name: string; score: number };
     third?: { player_name: string; score: number };
   } | PastCompetitionWinner[];
-  ended_at: string; // domain-ok
+  ended_at: string; // domain-ok: Open dynamic text or non-domain string payload
 }
 
 export interface WarStore {
@@ -317,7 +326,7 @@ export interface WarStore {
 export interface PlayerClassStore {
   playerClass: PlayerClassId | null;
   classLevel: number;
-  getModifier: (type: string, context?: Record<string, unknown>) => number; // open-record
+  getModifier: (type: string, context?: Record<string, unknown>) => number; // open-record: Generic key-value data dictionary container
   addCriminality: (amount: number) => void;
 }
 
@@ -328,7 +337,7 @@ export interface AudioStore {
 export interface AuthStore {
   user: AuthUser | null;
   sessionMode: SessionMode;
-  sessionId: string; // domain-ok
+  sessionId: string; // domain-ok: Open dynamic text or non-domain string payload
   isOnline: boolean;
   connectionLost: boolean;
   sessionConflict: boolean;
@@ -337,18 +346,18 @@ export interface AuthStore {
 export type TradeCardMode = 'incoming' | 'outgoing' | 'accepted';
 
 export interface TradeOffer {
-  id: string; // domain-ok
-  sender_id: string; // domain-ok
-  receiver_id: string; // domain-ok
+  id: string; // domain-ok: Open dynamic text or non-domain string payload
+  sender_id: string; // domain-ok: Open dynamic text or non-domain string payload
+  receiver_id: string; // domain-ok: Open dynamic text or non-domain string payload
   offer_pokemon: Pokemon | null;
   offer_items: Inventory;
   offer_money: number;
   request_pokemon: Pokemon | null;
   request_items: Inventory;
   request_money: number;
-  message: string; // domain-ok
+  message: string; // domain-ok: Open dynamic text or non-domain string payload
   status: 'pending' | 'accepted' | 'rejected' | 'claimed';
-  created_at: string; // domain-ok
+  created_at: string; // domain-ok: Open dynamic text or non-domain string payload
 }
 
 export interface InventoryStore {

@@ -47,7 +47,7 @@ if (!isMainThread) {
     const frontAnalysis = await analyzeVariantImage(frontPath, pokemonId, suffix);
 
     // 2. Procesar variantes
-    const folders = ['Front', 'Back', 'Front shiny', 'Back shiny'] as const; // no-domain
+    const folders = ['Front', 'Back', 'Front shiny', 'Back shiny'] as const; // no-domain: Non-domain utility collection or data structure
 
     const processVariant = async (folder: string): Promise<void> => {
       const varSourcePath = path.join(RAW_ASSETS_DIR, 'public', 'assets', 'sprites', 'pokemon', 'animated', folder, fileName);

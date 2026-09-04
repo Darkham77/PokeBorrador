@@ -14,7 +14,7 @@ export interface WobbleConfig {
   rotation: number
   duration: number
   yoyo?: boolean
-  ease?: string // domain-ok
+  ease?: string // domain-ok: Open dynamic text or non-domain string payload
 }
 
 export type ParticleShape = 'circle' | 'rect';
@@ -47,11 +47,11 @@ type EffectConfigPreset = {
   wobble?: boolean
 }
 
-const FIELD_EFFECT_KEYS_SET: ReadonlySet<string> = new Set(['reflect', 'lightscreen', 'safeguard', 'mist', 'spikes']) // runtime-set
-const FEET_EFFECTS_SET: ReadonlySet<string> = new Set(['seed', 'trapped', 'bound', 'ingrain', 'seeded', 'ingrained']) // runtime-set
-const HEAD_EFFECTS_SET: ReadonlySet<string> = new Set(['sleep', 'confusion', 'attract', 'confused', 'slp', 'perishsong']) // runtime-set
-const PRIMARY_STATUS_SET: ReadonlySet<string> = new Set(['brn', 'frz', 'slp', 'par', 'psn', 'tox']) // runtime-set
-const TACTICAL_STATUS_SET: ReadonlySet<string> = new Set(['protected', 'enduring', 'focus', 'lockon']) // runtime-set
+const FIELD_EFFECT_KEYS_SET: ReadonlySet<string> = new Set(['reflect', 'lightscreen', 'safeguard', 'mist', 'spikes']) // runtime-set: Fast O(1) membership lookup set
+const FEET_EFFECTS_SET: ReadonlySet<string> = new Set(['seed', 'trapped', 'bound', 'ingrain', 'seeded', 'ingrained']) // runtime-set: Fast O(1) membership lookup set
+const HEAD_EFFECTS_SET: ReadonlySet<string> = new Set(['sleep', 'confusion', 'attract', 'confused', 'slp', 'perishsong']) // runtime-set: Fast O(1) membership lookup set
+const PRIMARY_STATUS_SET: ReadonlySet<string> = new Set(['brn', 'frz', 'slp', 'par', 'psn', 'tox']) // runtime-set: Fast O(1) membership lookup set
+const TACTICAL_STATUS_SET: ReadonlySet<string> = new Set(['protected', 'enduring', 'focus', 'lockon']) // runtime-set: Fast O(1) membership lookup set
 
 export const resolveEffectSettings = (typeKey: string, ar: number, options: { isField?: boolean, isSimplified?: boolean, isBattle?: boolean, spriteScale?: number, pokeScale?: number } = {}): EffectSettings => {
   const isField = options.isField || FIELD_EFFECT_KEYS_SET.has(typeKey)
@@ -76,7 +76,7 @@ export const resolveEffectSettings = (typeKey: string, ar: number, options: { is
   }
 
   // 2. CONFIGURACIÓN CENTRALIZADA E INDEPENDIENTE
-  const configs: Record<string, EffectConfigPreset> = { // open-record
+  const configs: Record<string, EffectConfigPreset> = { // open-record: Generic key-value data dictionary container
     brn: { mult: 1.0, activeRange: getDynamicRange([12, 18]), useFade: false, duration: 1.2, randomizeVars: { min: 0.6, max: 2.0 } },
     frz: { mult: 0.4, activeRange: getDynamicRange([4, 6]), useFade: false, duration: 3.0 , randomizeVars: { min: 1.0, max: 2.0 } },
     slp: { mult: 1.0, activeRange: getDynamicRange([1, 2]), useFade: true, duration: 3.0, randomizeVars: { min: 1.0, max: 2.0 } },

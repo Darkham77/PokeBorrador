@@ -203,7 +203,7 @@ export const useGameStore = defineStore('game', () => {
     
     // Limpiar el estado actual y cargar el guardado del sandbox si existe
     Object.keys(state).forEach(key => {
-      delete (state as Record<string, unknown>)[key] // open-record
+      delete (state as Record<string, unknown>)[key] // open-record: Generic key-value data dictionary container
     })
     
     let initialSandbox = JSON.parse(JSON.stringify(INITIAL_STATE)) as GameState
@@ -233,7 +233,7 @@ export const useGameStore = defineStore('game', () => {
     
     // Limpiar y restaurar la partida real
     Object.keys(state).forEach(key => {
-      delete (state as Record<string, unknown>)[key] // open-record
+      delete (state as Record<string, unknown>)[key] // open-record: Generic key-value data dictionary container
     })
     
     if (realStateBackup.value) {
@@ -271,7 +271,22 @@ export const useGameStore = defineStore('game', () => {
     return map
   })
 
-  function getPokemonByUid(uid: string): Pokemon | null { // domain-ok
+  const allPokemonList = computed<readonly Pokemon[]>(() => {
+    const list: Pokemon[] = [];
+    if (state.team) {
+      for (const p of state.team) {
+        if (p) list.push(p);
+      }
+    }
+    if (state.box) {
+      for (const p of state.box) {
+        if (p) list.push(p);
+      }
+    }
+    return list;
+  });
+
+  function getPokemonByUid(uid: string): Pokemon | null { // domain-ok: Open dynamic text or non-domain string payload
     if (!uid) return null
     return pokemonByUid.value.get(uid)?.pokemon ?? null
   }
@@ -296,7 +311,7 @@ export const useGameStore = defineStore('game', () => {
 
   const defeatedGymsSet = computed<ReadonlySet<GymId>>(() => {
     const valid = (state.defeatedGyms || []).filter(isGymId)
-    return new Set<GymId>(valid) // runtime-set
+    return new Set<GymId>(valid) // runtime-set: Fast O(1) membership lookup set
   })
 
   function isGymDefeated(id: GymId): boolean {
@@ -313,6 +328,7 @@ export const useGameStore = defineStore('game', () => {
     db,
     dailyGuardianCaptures,
     pokemonByUid,
+    allPokemonList,
     getPokemonByUid,
     // fallow-ignore-next-line unused-store-members
     caughtSpeciesSet,

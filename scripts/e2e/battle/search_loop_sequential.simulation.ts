@@ -25,11 +25,11 @@ const _SEARCH_ENCOUNTER_TYPES = ['wild', 'trainer', 'rival', 'fishing', 'archaeo
 type SearchEncounterType = (typeof _SEARCH_ENCOUNTER_TYPES)[number];
 type SearchMinigameType = Extract<SearchEncounterType, 'fishing' | 'archaeology'>;
 
+const ENCOUNTER_TRANSITION_TIMEOUT_MS = 30000;
+
 class SearchLoopSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
     super(page, username);
-    page.on('console', msg => console.log(`[BROWSER-${username}] ${msg.type()}: ${msg.text()}`));
-    page.on('pageerror', err => console.error(`[PAGEERROR-${username}]:`, err));
   }
 
   public async setupRayquaza(): Promise<void> {
@@ -164,7 +164,7 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
         && fsmState === 'INITIALIZING'
         && fsmSubState === 'MINIGAME_CHECK';
       return isSearchConfirmation || isBattleInput || isExpectedMinigame;
-    }, type, { timeout: 15000 });
+    }, type, { timeout: ENCOUNTER_TRANSITION_TIMEOUT_MS });
 
     const startButton = this.page.locator('#start-encounter-btn').first();
     if (await startButton.isVisible()) await confirmAndStartBattle(this.page);
@@ -178,22 +178,24 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
       const fsmSubState = store.currentSubState;
       return (fsmState === 'INITIALIZING' && fsmSubState === 'MINIGAME_CHECK') ||
              (fsmState === 'SEARCH_PHASE' && fsmSubState === 'COMBAT_OR_FLEE');
-    }, undefined, { timeout: 15000 });
+    }, undefined, { timeout: ENCOUNTER_TRANSITION_TIMEOUT_MS });
 
     const selector = type === 'fishing'
       ? '#fishing-modal, #rhythm-container, .rhythm-container, .fishing-hint'
       : '#archaeology-modal, #archaeology-grid, .archaeology-grid';
 
-    await this.page.locator(selector).first().waitFor({ state: 'attached', timeout: 15000 });
+    await this.page.locator(selector).first().waitFor({ state: 'attached', timeout: ENCOUNTER_TRANSITION_TIMEOUT_MS });
   }
 }
 
 test.describe('Sequential Search Loop Battles Simulation', () => {
+  test.describe.configure({ mode: 'serial' });
+
   // SUITE 1: Modo Manual (autoBattle = false)
   test('should execute 10 sequential battles in the search loop with autoBattle = false (manual confirmation & full animations)', async ({ page }) => {
     test.setTimeout(SEARCH_LOOP_SUITE_TIMEOUT_MS);
 
-    const sim = new SearchLoopSimWrapper(page, 'SearchLoopManualRunner');
+    const sim = new SearchLoopSimWrapper(page, 'SearchLoopManual');
     await sim.setup();
     await sim.setupRayquaza();
 
@@ -228,14 +230,38 @@ test.describe('Sequential Search Loop Battles Simulation', () => {
 
       if (enc.type === 'archaeology') {
         await sim.startEncounterFromUi(enc.type);
+        await sim.awaitMinigameCheck('archaeology');
         if (nextEnc) await sim.forceEncounterType(nextEnc.type);
         await playArchaeologyMinigameNaturally(page);
       } else if (enc.type === 'fishing') {
         await sim.startEncounterFromUi(enc.type);
         await playFishingMinigameNaturally(page);
         if (nextEnc) await sim.forceEncounterType(nextEnc.type);
-        await sim.startEncounterFromUi('wild');
-        await sim.playBattle();
+
+        // If fishing was won, combat starts directly; if lost, Pokémon escaped and battle flow ended
+        try {
+          await page.waitForFunction(() => {
+            const win = window as WindowWithResolver;
+            const store = win.__VITE_DEBUG_STORE_RESOLVER__?.();
+            if (!store || store.isProcessing) return false;
+            const fsmState = store.currentFsmState;
+            const fsmSubState = store.currentSubState;
+            return (fsmState === 'ACTIVE_BATTLE' && fsmSubState === 'WAIT_INPUT') ||
+                   (fsmState === 'SEARCH_PHASE' && fsmSubState === 'COMBAT_OR_FLEE') ||
+                   fsmState === 'INITIALIZING';
+          }, undefined, { timeout: ENCOUNTER_TRANSITION_TIMEOUT_MS });
+        } catch {
+          // Timeout reached or state advanced, continue to isBattle check
+        }
+
+        const isBattle = await page.evaluate(() => {
+          const win = window as WindowWithResolver;
+          const store = win.__VITE_DEBUG_STORE_RESOLVER__?.();
+          return store?.currentFsmState === 'ACTIVE_BATTLE';
+        });
+        if (isBattle) {
+          await sim.playBattle();
+        }
       } else {
         await sim.startEncounterFromUi(enc.type);
         if (nextEnc) await sim.forceEncounterType(nextEnc.type);

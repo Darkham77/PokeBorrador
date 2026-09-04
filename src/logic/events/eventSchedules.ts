@@ -9,6 +9,7 @@ import { logger } from '@/logic/utils/logger.ts';
 import { getArgDateString, normalizeZonedDateTime } from '@/logic/utils/timeUtils.ts';
 import { MINUTES_PER_HOUR, HOURS_PER_DAY, MINUTES_PER_DAY } from '@/logic/constants/gameplay.ts';
 import type { Event, EventConfig, WeeklyRotationEntry } from './eventEngine.ts';
+import type { PokemonCompetitionTrophy } from '@/types/pokemon/pokemon.ts';
 
 export { getArgDateString };
 
@@ -33,7 +34,7 @@ export const safeParse = (val: string | object | null | undefined): Record<strin
     try {
       const parsed: unknown = JSON.parse(val);
       if (typeof parsed === 'object' && parsed !== null) {
-        return parsed as Record<string, unknown>; // open-record
+        return parsed as Record<string, unknown>; // open-record: Generic key-value data dictionary container
       }
       return {};
     } catch (_e) {
@@ -41,7 +42,7 @@ export const safeParse = (val: string | object | null | undefined): Record<strin
     }
   }
   if (typeof val === 'object' && val !== null) {
-    return val as Record<string, unknown>; // open-record
+    return val as Record<string, unknown>; // open-record: Generic key-value data dictionary container
   }
   return {};
 };
@@ -104,7 +105,7 @@ function isMonthlyTriggerMatch(trigger: string | undefined, zdt: Temporal.ZonedD
 /**
  * Resolves the active config (species, banner, title) for a rotation event based on current week of month or target species.
  */
-export function resolveWeeklyRotation( // domain-ok
+export function resolveWeeklyRotation( // domain-ok: Open dynamic text or non-domain string payload
   cfg: EventConfig,
   zdtOrSpecies?: Temporal.ZonedDateTime | string | null
 ): WeeklyRotationEntry | null {
@@ -170,7 +171,7 @@ export function getEventDisplayName(
  * Tries matching by species first, then by awarded date, with fallback to event name or trophy.eventName.
  */
 export function resolveTrophyDisplayName(
-  trophy: import('@/types/pokemon/pokemon.ts').PokemonCompetitionTrophy,
+  trophy: PokemonCompetitionTrophy,
   allEvents: readonly Event[],
   speciesOrName?: string
 ): string {
@@ -447,7 +448,7 @@ function buildDailyOccurrence(
 
 function collectWeeklyOccurrences(
   event: Event,
-  sched: Record<string, unknown>, // open-record
+  sched: Record<string, unknown>, // open-record: Generic key-value data dictionary container
   zdtNow: Temporal.ZonedDateTime,
   daysAhead: number,
   nowInstant: Temporal.Instant,
@@ -472,7 +473,7 @@ function collectWeeklyOccurrences(
 
 function collectMonthlyOccurrences(
   event: Event,
-  sched: Record<string, unknown>, // open-record
+  sched: Record<string, unknown>, // open-record: Generic key-value data dictionary container
   zdtNow: Temporal.ZonedDateTime,
   daysAhead: number,
   nowInstant: Temporal.Instant,

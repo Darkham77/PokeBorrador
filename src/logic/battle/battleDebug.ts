@@ -46,7 +46,7 @@ export function setupBattleDebug(ctx: BattleContext) {
       const bStore = useBattleStore()
       bStore.attackerSide = side as BattleSide
       bStore.activeMove = {
-        name: options.cat === 'selfKO' ? 'Autodestrucción' : 'Ataque Debug', // spanish-ok
+        name: options.cat === 'selfKO' ? 'Autodestrucción' : 'Ataque Debug', // spanish-ok: UI Spanish text localization label
         cat: options.cat === 'selfKO' ? 'special' : ((options.cat as MoveCategory | undefined) || 'physical'),
         selfKO: options.cat === 'selfKO',
         pp: 5,
@@ -96,12 +96,12 @@ export function setupBattleDebug(ctx: BattleContext) {
   }
 
   win.__VITE_DEBUG__.setSecondaryStatus = (side: string, type: string) => {
-    const target = (side === 'player' ? ctx.activeBattle.value?.player : ctx.activeBattle.value?.enemy) as Record<string, unknown> | undefined // open-record
+    const target = (side === 'player' ? ctx.activeBattle.value?.player : ctx.activeBattle.value?.enemy) as Record<string, unknown> | undefined // open-record: Generic key-value data dictionary container
     if (!target) return
 
     const key = requireVolatileStatusKey(type)
     if (!target.volatileCounters) target.volatileCounters = {}
-    const vc = target.volatileCounters as Record<string, number> // open-record
+    const vc = target.volatileCounters as Record<string, number> // open-record: Generic key-value data dictionary container
     vc[key] = vc[key] ? 0 : 3
   }
 
@@ -123,7 +123,7 @@ export function setupBattleDebug(ctx: BattleContext) {
     const isScreenOrHazard = (['reflect', 'lightscreen', 'safeguard', 'mist', 'spikes', 'stealthrock', 'toxicspikes'] as const).includes(key as 'reflect' | 'lightscreen' | 'safeguard' | 'mist' | 'spikes' | 'stealthrock' | 'toxicspikes')
     if (isScreenOrHazard) {
       const stageKey = key === 'lightscreen' ? 'lightScreen' : key
-      const current = (stagesRef.value as Record<string, number>)[stageKey] || 0 // open-record
+      const current = (stagesRef.value as Record<string, number>)[stageKey] || 0 // open-record: Generic key-value data dictionary container
       const newVal = current > 0 ? 0 : val
       stagesRef.value = {
         ...stagesRef.value,
@@ -245,14 +245,23 @@ export function setupBattleDebug(ctx: BattleContext) {
         }
       }
 
-      // 2. Reactividad Vue (watch) y evento battle-ready-for-input
       let unwatch: (() => void) | null = null
       let timer: NodeJS.Timeout | null = null
+
+      const onActivity = () => {
+        const res = checkCurrentReady()
+        if (res) {
+          onReady(res)
+        } else {
+          resetTimer()
+        }
+      }
 
       const cleanup = () => {
         if (unwatch) unwatch()
         if (timer) clearTimeout(timer)
         window.removeEventListener(BATTLE_UI_EVENTS.READY_FOR_INPUT, handler)
+        window.removeEventListener('battle-log-added', onActivity)
       }
 
       const onReady = (detail: unknown) => {
@@ -274,26 +283,42 @@ export function setupBattleDebug(ctx: BattleContext) {
         onReady(e.detail)
       }
 
-      timer = setTimeout(() => {
-        cleanup()
-        const currentDetail = getScriptedReplayReadiness()
-        if (currentDetail.isReady || currentDetail.over) {
-          resolve(currentDetail)
-          return
-        }
-        reject(new Error(`[battleDebug] Timeout (${timeoutMs}ms) waiting for battle-ready-for-input. Current state: ${JSON.stringify(currentDetail)}`))
-      }, timeoutMs)
+      const resetTimer = () => {
+        if (timer) clearTimeout(timer)
+        timer = setTimeout(() => {
+          const currentDetail = getScriptedReplayReadiness()
+          if (currentDetail.isReady || currentDetail.over) {
+            cleanup()
+            resolve(currentDetail)
+            return
+          }
+          if (ctx.isProcessing.value || ctx.isIntroAnimating.value) {
+            resetTimer()
+            return
+          }
+          cleanup()
+          reject(new Error(`[battleDebug] Timeout (${timeoutMs}ms) waiting for battle-ready-for-input. Current state: ${JSON.stringify(currentDetail)}`))
+        }, timeoutMs)
+      }
+
+      resetTimer()
 
       window.addEventListener(BATTLE_UI_EVENTS.READY_FOR_INPUT, handler, { once: true })
+      window.addEventListener('battle-log-added', onActivity)
 
       unwatch = watch(
-        [ctx.fsm.currentState, ctx.fsm.currentSubState, ctx.isProcessing, ctx.isIntroAnimating],
-        () => {
-          const res = checkCurrentReady()
-          if (res) {
-            onReady(res)
-          }
-        },
+        [
+          ctx.fsm.currentState,
+          ctx.fsm.currentSubState,
+          ctx.isProcessing,
+          ctx.isIntroAnimating,
+          () => ctx.battleLogs.value.length,
+          () => ctx.player.value?.hp,
+          () => ctx.enemy.value?.hp,
+          ctx.activeMove,
+          ctx.attackerSide,
+        ],
+        onActivity,
         { immediate: !options?.skipImmediate }
       )
     })

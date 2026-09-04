@@ -10,7 +10,7 @@
  * @module itemMath
  */
 
-import type { Pokemon, PokemonStatus } from '../../types/pokemon/pokemon.ts';
+import type { Pokemon, StatusClearTarget } from '../../types/pokemon/pokemon.ts';
 import type { ItemEffectResult } from '../../types/inventory/items.ts';
 
 // ── Target Validation ─────────────────────────────────────────────────────────
@@ -29,7 +29,7 @@ export function canHeal(p: Pokemon): boolean {
  * Returns true if a status-clearing item targets the right status.
  * Pass `'any'` to match any non-null status.
  */
-export function canClearStatus(p: Pokemon, type: PokemonStatus | 'any' | 'poison'): boolean {
+export function canClearStatus(p: Pokemon, type: StatusClearTarget): boolean {
   if (!p.status) return false;
   if (p.hp <= 0) return false;
   if (type === 'any') return true;
@@ -45,7 +45,7 @@ export function canRevive(p: Pokemon): boolean {
 export function canFullRestore(p: Pokemon): boolean {
   const hp = Number(p.hp ?? 0);
   const maxHp = Number(p.maxHp ?? 0);
-  return hp > 0 && (hp < maxHp || p.status !== null);
+  return hp > 0 && (hp < maxHp || Boolean(p.status));
 }
 
 import { DEFAULT_MOVE_PP } from '@/logic/constants/gameplay.ts'

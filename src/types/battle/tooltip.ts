@@ -11,15 +11,15 @@ export type TooltipStageStatName =
   | 'Todos los Stats';
 
 export interface ParsedStatusEffectInfo {
-  label: string; // domain-ok
+  label: string; // domain-ok: Open dynamic text or non-domain string payload
   chancePct?: number | null;
-  targetLabel?: string; // domain-ok
+  targetLabel?: string; // domain-ok: Open dynamic text or non-domain string payload
   isGuaranteed?: boolean;
   isCondition?: boolean;
   isSelf?: boolean;
-  targetName?: string; // domain-ok
+  targetName?: string; // domain-ok: Open dynamic text or non-domain string payload
   direction?: 'up' | 'down';
-  details?: string; // domain-ok
+  details?: string; // domain-ok: Open dynamic text or non-domain string payload
   effect?: string; // domain-ok: localized display text
   statName?: TooltipStageStatName;
   stat?: TooltipStageStatId;

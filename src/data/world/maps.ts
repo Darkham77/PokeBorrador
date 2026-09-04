@@ -4251,7 +4251,7 @@ export const MAPS_BY_ROUTE_ID: Record<MapRouteId, MapLocation> = Object.freeze(
   Object.fromEntries(FIRE_RED_MAPS.map(m => [m.id, m])) as Record<MapRouteId, MapLocation>
 );
 
-export function getMapLocationById(routeId: string): MapLocation {
+export function getMapLocationById(routeId: MapRouteId): MapLocation {
   const cleanId = requireMapRouteId(routeId);
   const loc = MAPS_BY_ROUTE_ID[cleanId];
   if (!loc) throw new Error(`[maps] Mapa no encontrado: "${routeId}"`);

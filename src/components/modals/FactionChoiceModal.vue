@@ -7,6 +7,7 @@ import { ref } from 'vue'
 import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import BaseModal from '@/components/common/BaseModal.vue'
+import type { FactionId } from '@/types/system/game'
 
 interface Props {
   show?: boolean
@@ -24,7 +25,7 @@ const classStore = usePlayerClassStore()
 
 const isProcessing = ref(false)
 
-const chooseFaction = async (faction: string) => {
+const chooseFaction = async (faction: FactionId) => {
   if (isProcessing.value) return
   
   isProcessing.value = true

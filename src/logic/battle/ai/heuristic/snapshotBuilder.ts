@@ -10,6 +10,7 @@ import { BATTLE_CONDITION_KEYS, type BattleState, type BattleStages, type Battle
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import { requireItemId } from '@/data/inventory/items';
 import { requireAbilityId } from '@/data/battle/abilities';
+import { requirePokemonMoveId } from '@/data/battle/moves';
 import type { HeuristicBattleSnapshot, HeuristicPokemonState, HeuristicSideState, HeuristicFieldState, HeuristicVolatileKey, HeuristicPokemonMove } from './types.ts';
 
 /**
@@ -82,10 +83,10 @@ function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): H
 
   // heldItem or item (fallback for compatibility across test fixtures)
   const rawItem = p.heldItem || p.item;
-  const heldItem = rawItem ? requireItemId(rawItem) : ''; // domain-ok
+  const heldItem = rawItem ? requireItemId(rawItem) : ''; // domain-ok: Open dynamic text or non-domain string payload
   const validMoves = (p.moves || []).filter((m): m is Move => Boolean(m));
   const moveInfos: HeuristicPokemonMove[] = validMoves.map(m => {
-    const id = toID(m.id);
+    const id = requirePokemonMoveId(toID(m.id));
     return {
       id,
       name: m.name,
@@ -134,7 +135,7 @@ function buildPokemonState(p: Pokemon, active: boolean, stages: BattleStages): H
     moves: moveInfos,
     knownMoves: moveIds,
     // AI-12 Fix: prefer current ability over baseAbility if present
-    ability: p.ability ? requireAbilityId(p.ability) : '', // domain-ok
+    ability: p.ability ? requireAbilityId(p.ability) : '', // domain-ok: Open dynamic text or non-domain string payload
     knownAbility: p.ability ? requireAbilityId(p.ability) : null,
     item: heldItem,
     knownItem: heldItem || null,

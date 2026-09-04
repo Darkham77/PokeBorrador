@@ -38,7 +38,7 @@ export interface ComponentStyleAuditResult {
   readonly passed: boolean;
 }
 
-const GLOBAL_UTILITY_CLASSES = new Set([ // runtime-set
+const GLOBAL_UTILITY_CLASSES = new Set([ // runtime-set: Fast O(1) membership lookup set
   'pixelated', 'clickable', 'flex', 'hidden', 'active', 'disabled', 'legacy-ui',
   'legacy-panel', 'legacy-confirm-btn', 'retro-btn', 'pulse', 'gold', 'silver', 'bronze',
   'w-full', 'h-full', 'truncate', 'pointer-events-none', 'pointer-events-auto', 'select-none',
@@ -46,7 +46,7 @@ const GLOBAL_UTILITY_CLASSES = new Set([ // runtime-set
 ]);
 
 function getAllFiles(dir: string, ext: string): string[] {
-  let results: string[] = []; // no-domain
+  let results: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!fs.existsSync(dir)) return results;
   const list = fs.readdirSync(dir);
   for (const file of list) {
@@ -167,7 +167,7 @@ export function auditComponentStyles(rootDir: string = process.cwd()): Component
     // Check missing style tag on component defining custom template classes
     if (!hasStyleTag && !content.includes('// style-inherited')) {
       const classMatches = content.matchAll(/class=["']([^"']+)["']/g);
-      const customClasses: string[] = []; // no-domain
+      const customClasses: string[] = []; // no-domain: Non-domain utility collection or data structure
 
       for (const m of classMatches) {
         const clsList = m[1]!.split(/\s+/).filter(Boolean);
@@ -232,8 +232,8 @@ if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) ==
 
   const result = auditComponentStyles();
 
-  const errors: string[] = []; // no-domain
-  const warnings: string[] = []; // no-domain
+  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
+  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   for (const v of result.violations) {
     errors.push(`[${v.type.toUpperCase()}] ${v.file}: ${v.message}`);

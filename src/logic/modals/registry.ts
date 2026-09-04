@@ -1,4 +1,4 @@
-import { defineAsyncComponent } from 'vue'
+import { defineResilientAsyncComponent as defineAsyncComponent } from '@/logic/utils/resilientComponent'
 
 
 /**

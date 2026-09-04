@@ -2,7 +2,7 @@ import { gsap } from 'gsap'
 import type { Ref } from 'vue'
 import type { WeatherId } from '@/logic/weather/weatherRegistry'
 
-const SANDSTORM_ATMOSPHERE_WEATHER_IDS_SET: ReadonlySet<WeatherId> = new Set<WeatherId>(['sandstorm', 'strong_winds', 'dust_storm']) // runtime-set
+const SANDSTORM_ATMOSPHERE_WEATHER_IDS_SET: ReadonlySet<WeatherId> = new Set<WeatherId>(['sandstorm', 'strong_winds', 'dust_storm']) // runtime-set: Fast O(1) membership lookup set
 
 export function useAtmosphereSandstormAnim(
   dustLayer1Ref: Ref<HTMLElement | null>,

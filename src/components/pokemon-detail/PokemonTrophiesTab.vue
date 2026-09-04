@@ -3,15 +3,16 @@ import type { PokemonCompetitionTrophy } from '@/types/pokemon/pokemon'
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 import { useEventStore } from '@/stores/events'
 import { resolveTrophyDisplayName } from '@/logic/events/eventEngine'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 
 interface Props {
   trophies?: PokemonCompetitionTrophy[]
-  speciesId?: string
+  speciesId?: PokemonSpeciesId
 }
 
 const props = withDefaults(defineProps<Props>(), {
   trophies: () => [],
-  speciesId: ''
+  speciesId: undefined
 })
 
 const eventStore = useEventStore()

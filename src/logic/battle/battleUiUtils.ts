@@ -28,17 +28,17 @@ export const STATUS_NAME_MAP = {
   slp: 'SUEÑO',
   par: 'PARÁLISIS',
   frz: 'CONGELACIÓN',
-  tox: 'TÓXICO' // spanish-ok
+  tox: 'TÓXICO' // spanish-ok: UI Spanish text localization label
 } as const satisfies Record<BattleStatusKey, string>
 
 
 export const STATUS_TOOLTIP_MAP = {
-  brn: 'QUEMADO: Pierde 1/8 HP por turno y su Ataque Físico se reduce al 50%.', // no-magic
-  psn: 'ENVENENADO: Pierde 1/8 HP por turno.', // no-magic
-  slp: 'DORMIDO: No puede atacar durante 1-3 turnos.', // no-magic
-  par: 'PARALIZADO: Su Velocidad se reduce al 50% y tiene un 25% de probabilidad de no atacar.', // no-magic
-  frz: 'CONGELADO: No puede atacar. 20% de probabilidad de descongelarse cada turno.', // no-magic
-  tox: 'TÓXICO: Envenenamiento grave cuyo daño aumenta exponencialmente cada turno.' // no-magic
+  brn: 'QUEMADO: Pierde 1/8 HP por turno y su Ataque Físico se reduce al 50%.', // no-magic: Explicit mathematical constant or threshold value
+  psn: 'ENVENENADO: Pierde 1/8 HP por turno.', // no-magic: Explicit mathematical constant or threshold value
+  slp: 'DORMIDO: No puede atacar durante 1-3 turnos.', // no-magic: Explicit mathematical constant or threshold value
+  par: 'PARALIZADO: Su Velocidad se reduce al 50% y tiene un 25% de probabilidad de no atacar.', // no-magic: Explicit mathematical constant or threshold value
+  frz: 'CONGELADO: No puede atacar. 20% de probabilidad de descongelarse cada turno.', // no-magic: Explicit mathematical constant or threshold value
+  tox: 'TÓXICO: Envenenamiento grave cuyo daño aumenta exponencialmente cada turno.' // no-magic: Explicit mathematical constant or threshold value
 } as const satisfies Record<BattleStatusKey, string>
 
 export const STAT_EMOJI_MAP = {

@@ -157,7 +157,7 @@ export async function initWorkerForBattle(
         weather: initialWeatherOfficial,
         seed: seedArr,
         isDeterministicSimulation: !!(typeof window !== 'undefined' && window.__VITE_DEBUG__ && window.__VITE_DEBUG__.isDeterministicSimulation),
-        history: (typeof window !== 'undefined' && window.__VITE_DEBUG__ && ((window.__VITE_DEBUG__ as Record<string, unknown>).history as unknown[])) || [] // open-record // no-domain
+        history: (typeof window !== 'undefined' && window.__VITE_DEBUG__ && ((window.__VITE_DEBUG__ as Record<string, unknown>).history as unknown[])) || [] // open-record: Generic key-value data dictionary container // no-domain: Non-domain utility collection or data structure
       }
     }
     try {

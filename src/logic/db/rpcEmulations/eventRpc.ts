@@ -1,5 +1,6 @@
 import { queryLocal, persistSQLite, type SQLiteDatabase } from '../sqliteEngine.ts';
 import { logger } from '@/logic/utils/logger.ts';
+import { getServerInstant } from '@/logic/utils/timeUtils.ts';
 import type { DBResponse } from '@/types/system/database';
 import type { CompetitionEntryData, CompetitionRankKey } from '@/types/system/stores';
 import { resolveSubCompetitionDirection, resolveEventSubCompetitions, type SubCompetitionConfig, type ResolvedSubCompetition, type Event as GameEvent } from '@/logic/events/eventEngine.ts';
@@ -12,9 +13,9 @@ interface EventConfigWithPrizes {
   metric?: string;
   subCompetitions?: SubCompetitionConfig[];
   prizes?: {
-    first?: Record<string, unknown>; // open-record
-    second?: Record<string, unknown>; // open-record
-    third?: Record<string, unknown>; // open-record
+    first?: Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    second?: Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    third?: Record<string, unknown>; // open-record: Generic key-value data dictionary container
   };
 }
 
@@ -73,7 +74,7 @@ export async function emulateAwardEventAutomated(
       name?: string;
       description?: string;
       active?: boolean | number;
-      config: string | Record<string, unknown>; // open-record
+      config: string | Record<string, unknown>; // open-record: Generic key-value data dictionary container
       last_awarded_at: string | null;
     } | undefined;
 
@@ -92,7 +93,7 @@ export async function emulateAwardEventAutomated(
       active: Boolean(eventRow.active),
       config: cfg
     };
-    const subComps = resolveEventSubCompetitions(gameEvent, Temporal.Now.instant());
+    const subComps = resolveEventSubCompetitions(gameEvent, getServerInstant());
 
     // Query all distinct categories present in competition_entries for this event
     const distinctCatRows = await queryLocal(`
@@ -117,7 +118,7 @@ export async function emulateAwardEventAutomated(
     }
 
     const allWinners: RankedWinner[] = [];
-    const nowIso = Temporal.Now.instant().toString();
+    const nowIso = getServerInstant().toString();
 
     for (const sub of allEvaluationSubComps) {
       // 1. Fetch entries for target event & sub-category
@@ -185,7 +186,7 @@ export async function emulateAwardEventAutomated(
         const rank = COMPETITION_RANKS[i]!;
         const rawPrize = prizes[rank] || { type: 'money', amount: 10000 };
         const prize = typeof rawPrize === 'object' && rawPrize !== null ? { ...rawPrize, rank } : { rank, type: 'money', amount: 10000 };
-        const awardId = `award_${targetEventId}_${sub.id}_${entry.player_id}_${Temporal.Now.instant().epochMilliseconds}_${i}`;
+        const awardId = `award_${targetEventId}_${sub.id}_${entry.player_id}_${getServerInstant().epochMilliseconds}_${i}`;
 
         await queryLocal(`
           INSERT INTO awards (id, event_id, winner_id, winner_name, winner_email, prize, awarded_at, claimed, received_at)
@@ -224,7 +225,7 @@ export async function emulateAwardEventAutomated(
     }
 
     // 4. Record competition result
-    const resultId = `result_${targetEventId}_${Temporal.Now.instant().epochMilliseconds}`;
+    const resultId = `result_${targetEventId}_${getServerInstant().epochMilliseconds}`;
     await queryLocal(`
       INSERT INTO competition_results (id, event_id, winners, ended_at)
       VALUES (?, ?, ?, ?)
@@ -270,7 +271,7 @@ export async function emulateClaimAward(
     const awardRows = await queryLocal('SELECT * FROM awards WHERE id = ?', [awardId]);
     const awardRow = awardRows[0] as {
       id: string;
-      prize: string | Record<string, unknown>; // open-record
+      prize: string | Record<string, unknown>; // open-record: Generic key-value data dictionary container
       claimed: number | boolean;
       received_at: string | null;
     } | undefined;
@@ -283,12 +284,12 @@ export async function emulateClaimAward(
       return { data: { ok: false, error: 'Recompensa ya reclamada' }, error: null };
     }
 
-    const nowIso = Temporal.Now.instant().toString();
+    const nowIso = getServerInstant().toString();
     await queryLocal('UPDATE awards SET claimed = 1, received_at = ? WHERE id = ?', [nowIso, awardId]);
     await persistSQLite();
 
     const prizeObj = typeof awardRow.prize === 'string'
-      ? (JSON.parse(awardRow.prize) as Record<string, unknown>) // open-record
+      ? (JSON.parse(awardRow.prize) as Record<string, unknown>) // open-record: Arbitrary award prize JSON payload
       : awardRow.prize;
 
     return {

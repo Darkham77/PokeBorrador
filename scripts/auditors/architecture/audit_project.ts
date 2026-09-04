@@ -33,11 +33,11 @@ enableCompileCache();
 const SLOC_WARNING_THRESHOLD = 500;
 const SLOC_ERROR_THRESHOLD = 1000;
 
-const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', 'dev-dist', 'backup_legacy_code', 'public', 'docs', 'scratch', 'showdown', 'external', 'test aventura']); // runtime-set
-const AUDIT_EXTENSIONS = new Set(['.vue', '.scss', '.css', '.ts', '.js', '.md']); // runtime-set
+const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', 'dev-dist', 'backup_legacy_code', 'public', 'docs', 'scratch', 'showdown', 'external', 'test aventura']); // runtime-set: Fast O(1) membership lookup set
+const AUDIT_EXTENSIONS = new Set(['.vue', '.scss', '.css', '.ts', '.js', '.md']); // runtime-set: Fast O(1) membership lookup set
 
 async function getFilesToAudit(dir: string): Promise<string[]> {
-  const files: string[] = []; // no-domain
+  const files: string[] = []; // no-domain: Non-domain utility collection or data structure
   const pattern = `**/*{${Array.from(AUDIT_EXTENSIONS).join(',')}}`;
   
   for await (const entry of fs.glob(pattern, { cwd: dir, exclude: (p: string) => Array.from(IGNORE_DIRS).some(d => p.includes(d)) })) {
@@ -238,7 +238,7 @@ async function auditFile(
         violations.push({
           file: filePath,
           line: 1,
-          message: `Mantenibilidad (500/1000 Rule): El archivo tiene ${slocCount} líneas reales de código (SLOC). Supera las ${SLOC_WARNING_THRESHOLD} líneas. Se recomienda fuertemente modularizar y extraer lógica a Composables (SRP).`, // no-magic
+          message: `Mantenibilidad (500/1000 Rule): El archivo tiene ${slocCount} líneas reales de código (SLOC). Supera las ${SLOC_WARNING_THRESHOLD} líneas. Se recomienda fuertemente modularizar y extraer lógica a Composables (SRP).`, // no-magic: Explicit mathematical constant or threshold value
           context: `SLOC: ${slocCount}`,
           severity: 'warning',
           fixable: false
@@ -308,7 +308,8 @@ function runRules(filePath: string, content: string, rules: AuditRule[], violati
       const lineNo = getLineNo(match.index);
       violations.push({
         file: filePath, line: lineNo, message: typeof rule.message === 'function' ? rule.message(match[0]) : rule.message, 
-        context: match[0], severity: rule.severity || 'warning', fixable: !!rule.fix
+        context: match[0], severity: rule.severity || 'warning', fixable: !!rule.fix,
+        ruleId: rule.id || rule.name
       });
     }
     const fixer = rule.fix;
@@ -366,10 +367,10 @@ async function checkZIndexConsistency(fix: boolean): Promise<string[]> {
   try {
     let scssContent = await fs.readFile(scssPath, 'utf-8');
     let modified = false;
-    const errors: string[] = []; // no-domain
+    const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
 
     for (const [key, value] of Object.entries(Z_LAYERS)) {
-      const dashedKey = key.toLowerCase().replace(/_/g, '-'); // string-ok
+      const dashedKey = key.toLowerCase().replace(/_/g, '-'); // string-ok: Internal string formatting or DOM token identifier
       const varName = `--z-${dashedKey}`;
       const regex = new RegExp(`${varName}\\s*:\\s*(-?\\d+)\\b`);
       const match = scssContent.match(regex);
@@ -506,7 +507,7 @@ function runFallow(command: string, extraArgs: string[] = []): Violation[] {
   const violations: Violation[] = [];
   let parsedSuccessfully = false;
   try {
-    const args = ['--format', 'json', ...extraArgs]; // no-domain
+    const args = ['--format', 'json', ...extraArgs]; // no-domain: Non-domain utility collection or data structure
     const fallowBin = path.resolve(process.cwd(), 'node_modules/fallow/bin/fallow');
     const cmd = `node "${fallowBin}" ${command} ${args.join(' ')}`;
     const stdout = execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'], maxBuffer: 50 * 1024 * 1024, timeout: 45000, killSignal: 'SIGKILL' });
@@ -774,15 +775,15 @@ export function getViolationCategory(v: Violation): string {
   if (msg.includes('Sugerencia de complejidad')) return 'Fallow: Complejidad';
   if (msg.includes('AGENTS.md') || msg.includes('DOX') || msg.includes('Enlace')) return 'DOX / AGENTS.md';
   if (msg.includes('css-checker') || msg.includes('CSS/SCSS duplicado')) return 'css-checker: SCSS/CSS duplicado';
-  if (msg.includes('Constante duplicada') || msg.includes('valores diferentes')) return 'Constantes duplicadas entre módulos';
+  if (msg.includes('tipado con \'string\' plano') || msg.includes('strictDomainParamTypes') || msg.includes('IDs de dominio DEBEN ser tipados')) return 'Tipado estricto de IDs de Dominio (Domain-Type-First)';
   if (msg.includes('Variable mutable')) return 'Variable mutable global (let)';
   return 'Otros';
 }
 
-const MAX_CONTEXT_SNIPPET_LENGTH = 50; // no-magic
-const DEFAULT_TOP_LIMIT = 15; // no-magic
-const MAX_FILES_TO_SHOW_IN_TERMINAL = 25; // no-magic
-const MAX_VIOLATIONS_PER_FILE_IN_TERMINAL = 10; // no-magic
+const MAX_CONTEXT_SNIPPET_LENGTH = 50; // no-magic: Explicit mathematical constant or threshold value
+const DEFAULT_TOP_LIMIT = 15; // no-magic: Explicit mathematical constant or threshold value
+const MAX_FILES_TO_SHOW_IN_TERMINAL = 25; // no-magic: Explicit mathematical constant or threshold value
+const MAX_VIOLATIONS_PER_FILE_IN_TERMINAL = 10; // no-magic: Explicit mathematical constant or threshold value
 function sanitizeContext(ctx: string): string {
   if (!ctx) return '';
   return ctx.replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim().slice(0, MAX_CONTEXT_SNIPPET_LENGTH);
@@ -871,7 +872,7 @@ async function main() {
   }
   
   let all: Violation[] = [];
-  let files: string[] = []; // no-domain
+  let files: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   if (values['css-only']) {
     logProgress(styleText('cyan', '[1/1] 🎨 Ejecutando análisis exclusivo de css-checker (SCSS duplicados)...'));
@@ -979,7 +980,7 @@ async function main() {
         if (isFallowDupesActive) {
           logProgress(styleText('cyan', '   ├─ [1/4] Fallow: Análisis de duplicación de código...'));
           all = all.concat(runFallow('dupes'));
-          all = all.concat(runFallow('dupes', ['--min-occurrences', '3', '--min-lines', '10', '--min-tokens', '60'])); // no-magic
+          all = all.concat(runFallow('dupes', ['--min-occurrences', '3', '--min-lines', '10', '--min-tokens', '60'])); // no-magic: Explicit mathematical constant or threshold value
         }
         if (isFallowSecurityActive) {
           logProgress(styleText('cyan', '   ├─ [2/4] Fallow: Análisis de seguridad (CWE)...'));

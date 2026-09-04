@@ -19,6 +19,7 @@ QA / Automation Engineers.
   1. **Tier 1 (Unit Test - RED-to-GREEN)**: Create an isolated, static reproduction test in `tests/node/` or `tests/unit/` that reproduces the exact failure in RED before modifying `src/`. Verify GREEN once repaired.
   2. **Tier 2 (Integrity / Integration Test)**: Verify cross-module data contracts, schema validations, FSM state machine transitions, store persistence roundtrips, and `@pkmn/sim` parity in `tests/integration/` or `tests/node/`.
   3. **Tier 3 (Playwright E2E Simulation)**: For UI, battle, or feature flows, verify or create Playwright E2E simulation cases adhering strictly to `/game-simulation` protocols (passive joystick, 100% ID-based locators, 5s per-action timeout limit, zero artificial timers, and certified combat replay).
+- **Mandatory Closed-Loop Repair & Clean Zero Intra-Suite Regression Mandate**: Whenever any simulation suite or test fails, failure is NEVER a dead end to halt execution and abandon. It is the immediate trigger to enter the 3-Tier Repair Cycle (isolate case, create Vitest RED reproduction test in `tests/node/`, fix root cause in `src/`, verify GREEN, and confirm `npm run test:node` with 0 regressions). After fast-forwarding to the end of the suite via checkpoint auto-resume, the agent MUST re-run that entire suite from ZERO (`clean=true`) in dual mode (`sqlite` + `postgres`). Advancing to the next simulation suite or declaring the suite certified without a 100% clean zero pass from case 1 is strictly forbidden.
 - **Exact Fainted State Synchronization Across Bench and Field Combatants**: All unit, integration, and E2E battle tests MUST verify exact fainted state synchronization (`0 fnt`, `hp <= 0`, `reviving: true`) across both active field combatants and bench party members. Tests must assert that faint transitions (`processFaint`) run to completion before switch menus or replacement choices are evaluated.
 - **Playwright Concurrency Mandate**: Playwright test executions and simulations MUST run using Playwright's default concurrency settings. Forcing serial mode (`test.describe.configure({ mode: 'serial' })`) is strictly forbidden.
 - **Playwright Browser Store Access**: Never use dynamic imports (`import('@/stores/game')`) inside `page.evaluate` or `page.waitForFunction`. Always use canonical store resolvers on `window`, such as `window.__VITE_DEBUG__.getGameStore()`.
@@ -31,6 +32,8 @@ QA / Automation Engineers.
   3. Exact presence of localized chat log announcements.
   4. Precise matching of active combatant UIDs and visual sprite representations without ghost entities or missing frames.
 - **Map & Gym Atmosphere Lifecycle Testing Mandate**: Automated tests (`gym_weather_isolation.spec.ts`, `gym_atmosphere_lifecycle_integration.spec.ts`) MUST assert that single-sprite arenas (gyms) remain isolated from natural time/weather shifts by default, accept configurable overrides (`fixedCycle`/`fixedWeather`), while multi-sprite locations dynamically reflect their supported day phases.
+- **Deterministic Buff Time Acceleration via Debug Primitives**: Playwright E2E and integration tests verifying timed global buffs (`luckyEggSecs`, `repelSecs`, `fishingRodSecs`, `pickaxeSecs`, etc.) MUST use `window.__VITE_DEBUG__.advanceBuffSeconds(sec)` or `window.__VITE_DEBUG__.setBuffDuration(field, sec)` to fast-forward time or trigger expirations deterministically. Using artificial browser timers (`page.waitForTimeout`) or sleep loops is strictly prohibited.
+- **Save Shield State Finalization in Evolution Simulations**: In Playwright E2E simulations executing stone evolutions, test routines must explicitly clear the evolution modal state (`uiStore.evolutionData = null`) after applying `evolvePokemonData` before invoking `gameStore.saveGame()`, preventing evolution Save Shield abort warnings.
 - **Resource Lifecycle in Test Factory Functions**: Helper factory functions that construct and return disposable resources to callers (such as `createMigratedDatabase(): DatabaseSync`) MUST NOT use `using db = ...` inside the factory body. Using `using` inside the factory disposes the instance upon returning from the function scope, resulting in `database is not open` errors for callers. The caller scope alone is responsible for managing the disposal lifecycle via `using db = createMigratedDatabase()`.
 - All test suites run under **Vitest** (vite-node) via `vitest.workspace.ts`. Regression checks MUST ALWAYS run the full test suite (`npm run test`), never subset commands like `test:unit` or `test:node` alone.
 
@@ -76,6 +79,7 @@ QA / Automation Engineers.
 
 ## Child DOX Index
 
+- [fixtures/](./fixtures/AGENTS.md): Domain module documentation for shared test fixtures and matrices.
 - [helpers/](./helpers/AGENTS.md): Domain module documentation for helpers.
 - [integration/](./integration/AGENTS.md): Domain module documentation for integration.
 - [node/](./node/AGENTS.md): Domain module documentation for node.

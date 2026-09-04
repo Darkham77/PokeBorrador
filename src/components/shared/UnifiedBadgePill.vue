@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { getPokemonVisualBadges, getPokemonEditorBadges } from '@/logic/constants/tags'
+import { getPokemonVisualBadges, getPokemonEditorBadges, isPokemonTagId, type TagDefinition, type PokemonTagId } from '@/logic/constants/tags'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { TagDefinition } from '@/logic/constants/tags'
 
 interface Props {
   pokemon: Pokemon | Partial<Pokemon>
@@ -29,7 +28,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  'toggle-tag': [tagId: string]
+  'toggle-tag': [tagId: PokemonTagId]
 }>()
 
 const badges = computed(() => {
@@ -53,7 +52,9 @@ const itemImageError = ref(false)
 const handleBadgeClick = (e: MouseEvent, badge: TagDefinition) => {
   if (!props.editable || badge.isAutomatic || badge.isLocked) return
   e.stopPropagation()
-  emit('toggle-tag', badge.id)
+  if (isPokemonTagId(badge.id)) {
+    emit('toggle-tag', badge.id)
+  }
 }
 
 const handleItemImageError = (e: Event) => {

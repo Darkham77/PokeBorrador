@@ -18,13 +18,13 @@ export const useShopStore = defineStore('shop', () => {
   const warStore = useWarStore()
   
   
-  const quantities = ref<Record<string, number>>({})
+  const quantities = ref<Partial<Record<ItemId, number>>>({})
 
-  function getQuantity(itemId: string) {
+  function getQuantity(itemId: ItemId) {
     return quantities.value[itemId] || 1
   }
 
-  function setQuantity(itemId: string, val: string | number) {
+  function setQuantity(itemId: ItemId, val: string | number) {
     let q = parseInt(String(val))
     if (isNaN(q) || q < 1) q = 1
     if (q > MAX_ITEM_PURCHASE_QTY) q = MAX_ITEM_PURCHASE_QTY
@@ -46,7 +46,7 @@ export const useShopStore = defineStore('shop', () => {
     return 1.0
   }
 
-  function buyItem(itemId: string) {
+  function buyItem(itemId: ItemId) {
     const item = getItemById(itemId)
     if (!item) return
     
@@ -81,7 +81,7 @@ export const useShopStore = defineStore('shop', () => {
     gameStore.scheduleSave()
   }
 
-  function buyItemBC(itemId: string) {
+  function buyItemBC(itemId: ItemId) {
     const item = getItemById(itemId)
     if (!item || !item.showInBCShop) return
 
@@ -110,7 +110,7 @@ export const useShopStore = defineStore('shop', () => {
     gameStore.scheduleSave()
   }
 
-  function buyItemWar(itemId: string) {
+  function buyItemWar(itemId: ItemId) {
     const item = getItemById(itemId)
     if (!item || !item.showInWarShop) return
 

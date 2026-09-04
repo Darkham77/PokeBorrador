@@ -7,14 +7,16 @@ import { getMoveDescription } from '@/logic/pokemon/pokemonUtils'
 import { toPokemonType } from '@/data/battle/types'
 import { PDEX_TYPE_COLORS as TYPE_COLORS } from '@/logic/constants/pokedexConstants'
 
+import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves'
+
 interface Props {
   show?: boolean
-  moveName?: string
+  moveId?: PokemonMoveId
 }
 
 const props = withDefaults(defineProps<Props>(), {
   show: false,
-  moveName: ''
+  moveId: undefined
 })
 
 const emit = defineEmits<{
@@ -22,18 +24,9 @@ const emit = defineEmits<{
 }>()
 
 const md = computed(() => {
-  if (!props.moveName) return null
-  let mId = props.moveName
-  let mData = pokemonDataProvider.getMoveData(mId)
-  if (!mData) {
-    try {
-      mId = pokemonDataProvider.getMoveIdBySpanishName(props.moveName)
-      mData = pokemonDataProvider.getMoveData(mId)
-    } catch {
-      // ignore
-    }
-  }
-  if (!mData) throw new Error(`[MoveDetailModal] No se encontró información en la base de datos para el movimiento: ${props.moveName}`)
+  if (!props.moveId || !isPokemonMoveId(props.moveId)) return null
+  const mData = pokemonDataProvider.getMoveData(props.moveId)
+  if (!mData) throw new Error(`[MoveDetailModal] No se encontró información en la base de datos para el movimiento: ${props.moveId}`)
   return mData
 })
 
@@ -55,8 +48,8 @@ const catInfo = computed(() => {
 })
 
 const description = computed(() => {
-  if (!props.moveName || !md.value) return ''
-  return getMoveDescription(props.moveName, md.value)
+  if (!props.moveId || !md.value) return ''
+  return getMoveDescription(props.moveId, md.value)
 })
 
 const hexToRgba = (hex: string, alpha: number) => {
@@ -71,7 +64,7 @@ const hexToRgba = (hex: string, alpha: number) => {
 <template>
   <BaseModal
     :show="show && !!md"
-    :title="moveName?.toUpperCase() || 'DETALLE'"
+    :title="md?.name?.toUpperCase() || 'DETALLE'"
     max-width="420px"
     @close="emit('close')"
   >

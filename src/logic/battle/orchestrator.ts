@@ -12,8 +12,8 @@ import { mapVisualToOfficialWeather } from '../weather/weatherGenerationProvider
 import { requireWeatherId } from '../weather/weatherRegistry.ts'
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts'
 import { generateNPCInventory } from './trainerInventory.ts'
-import { requireMapRouteId } from '@/data/world/map-assets'
-import { requireGymId } from '@/data/world/gyms'
+import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
+import { requireGymId, type GymId } from '@/data/world/gyms'
 import { requireNpcArchetype } from '@/logic/utils/npcSpriteRouter'
 import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter'
 import { requireNpcSpriteId, type NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
@@ -45,8 +45,8 @@ export {
 
 export interface BattleOptions {
   isGym?: boolean;
-  gymId?: string;
-  locationId?: string;
+  gymId?: GymId;
+  locationId?: MapRouteId;
   isTrainer?: boolean;
   enemyTeam?: Pokemon[];
   trainerName?: string;

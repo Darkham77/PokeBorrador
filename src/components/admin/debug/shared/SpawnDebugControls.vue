@@ -9,8 +9,8 @@
 
 import { computed } from 'vue'
 import { useDebugStore } from '@/stores/debug'
-import PVTooltip from '@/components/common/PVTooltip.vue'
-import DebugNumericControlRow, { type DebugPresetOption } from './DebugNumericControlRow.vue'
+import DebugNumericControlRow from './DebugNumericControlRow.vue'
+import type { DebugPresetOption } from './debugControlTypes.ts'
 
 const debugStore = useDebugStore()
 
@@ -65,7 +65,7 @@ const isAnyOverrideActive = computed(() => {
 })
 
 const activeOverridesSummary = computed(() => {
-  const active: string[] = [] // no-domain
+  const active: string[] = [] // no-domain: Non-domain utility collection or data structure
   if (debugStore.shinyRateOverride !== null || debugStore.forceShiny100) {
     const rate = debugStore.shinyRateOverride ?? (debugStore.forceShiny100 ? PRESET_SHINY_ALWAYS_RATE : DEFAULT_SHINY_RATE)
     active.push(rate === PRESET_SHINY_ALWAYS_RATE ? 'Shiny: 100%' : `Shiny: 1/${rate}`)

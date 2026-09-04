@@ -115,14 +115,14 @@ export function useBattleCombatantAnims(
       );
       gameBus.emit('REGISTER_TWEEN', { key: animKey, tween });
     } else if (val === 'releasing') {
-      const pokeName = props.pokemon ? (props.pokemon.id || props.pokemon.name) : undefined;
+      const pokeId = props.pokemon?.id;
       const tween = executeReleasingTween(
         spriteRef.value,
         shadowWrapperRef.value,
         spriteRotationRef.value,
         origin,
         coords,
-        pokeName,
+        pokeId,
         () => { activeBallAnim = null; }
       );
       gameBus.emit('REGISTER_TWEEN', { key: animKey, tween });

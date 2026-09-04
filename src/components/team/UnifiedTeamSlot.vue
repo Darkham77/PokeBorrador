@@ -47,7 +47,7 @@ const dragStartY = ref(0)
 const dragDeltaX = ref(0)
 const dragDeltaY = ref(0)
 const lastOverIndex = ref<number | null>(null)
-let hasMovedBeyondThreshold = false // singleton-ok
+let hasMovedBeyondThreshold = false // singleton-ok: Singleton instance state container
 let activePointerId: number | null = null
 
 const scrollContainerRef = ref<HTMLElement | null>(null)

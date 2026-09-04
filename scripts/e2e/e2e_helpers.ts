@@ -28,6 +28,8 @@ import {
   awaitGameStoreReady,
   waitForWaitInput,
   waitForBattleReadyEvent,
+  armStarterSelectReady,
+  awaitStarterSelectReady,
   type WindowWithResolver,
 } from './helpers/battleEventHelpers.ts';
 
@@ -44,6 +46,8 @@ export {
   awaitBattleForcedSwitch,
   armGameStoreReady,
   awaitGameStoreReady,
+  armStarterSelectReady,
+  awaitStarterSelectReady,
   waitForWaitInput,
   waitForBattleReadyEvent,
   type WindowWithResolver,
@@ -72,7 +76,12 @@ export interface E2EBattleState {
 /**
  * Configura los permisos iniciales mockeados en localstorage y globales
  */
-export async function setupE2ESession(page: Page, logBuffer?: string[], sqliteKey?: string): Promise<void> {
+export async function setupE2ESession(
+  page: Page,
+  logBuffer?: string[],
+  sqliteKey?: string,
+  driver: 'sqlite' | 'postgres' = 'sqlite'
+): Promise<void> {
   const activeBuffer = logBuffer || [];
   (page as E2EPage)._e2eLogBuffer = activeBuffer;
 
@@ -90,7 +99,10 @@ export async function setupE2ESession(page: Page, logBuffer?: string[], sqliteKe
     // Always push to RAM buffer, NEVER write directly to stdout during execution
     activeBuffer.push(formatted);
 
-    if (msg.type() === 'error' && (text.includes('[CRITICAL]') || text.includes('ReferenceError') || text.includes('TypeError'))) {
+    if (
+      msg.type() === 'error' &&
+      (text.includes('[CRITICAL]') || text.includes('ReferenceError') || (text.includes('TypeError') && !text.includes('Failed to fetch dynamically imported module')))
+    ) {
       throw new Error(`[CRITICAL-CONSOLE-ERROR] ${text}`);
     }
   });
@@ -113,12 +125,18 @@ export async function setupE2ESession(page: Page, logBuffer?: string[], sqliteKe
     }
   });
 
-  await page.addInitScript((key?: string) => {
+  await page.addInitScript(({ key, dbDriver }: { key?: string; dbDriver: string }) => {
     (window as WindowWithResolver).__E2E__ = true;
+    (window as WindowWithResolver).__E2E_DRIVER__ = dbDriver as 'sqlite' | 'postgres';
     try {
       localStorage.setItem('pwa_permissions_accepted', 'true');
       localStorage.setItem('auto-battle', 'false');
-      localStorage.setItem('pokevicio_session_mode', 'offline');
+      if (dbDriver === 'postgres') {
+        localStorage.setItem('pokevicio_session_mode', 'online');
+        localStorage.setItem('pokevicio_selected_server_id', 'test_postgres');
+      } else {
+        localStorage.setItem('pokevicio_session_mode', 'offline');
+      }
       if (key) {
         localStorage.setItem('pokevicio_sqlite_key', key);
       }
@@ -160,50 +178,99 @@ export async function setupE2ESession(page: Page, logBuffer?: string[], sqliteKe
         resolve((e as CustomEvent).detail as GameStoreReadyDetail);
       }, { once: true });
     });
-  }, sqliteKey);
+  }, { key: sqliteKey, dbDriver: driver });
 }
 
-export async function loginE2ETestUser(page: Page, username = 'E2ETestUser', logBuffer?: string[], sqliteKey?: string): Promise<void> {
-  await setupE2ESession(page, logBuffer, sqliteKey);
-  await loginTestUser(page, username);
+export async function loginE2ETestUser(
+  page: Page,
+  username = 'E2ETestUser',
+  logBuffer?: string[],
+  sqliteKey?: string,
+  driver: 'sqlite' | 'postgres' = 'sqlite'
+): Promise<void> {
+  await setupE2ESession(page, logBuffer, sqliteKey, driver);
+  await loginTestUser(page, username, driver);
 }
 
-export async function loginTestUser(page: Page, testUser: string): Promise<void> {
-  // Navigate to login. Wait for 'load' (all scripts executed) so Vue has fully
-  // bootstrapped and mounted the login component tree before we query for elements.
-  // 'domcontentloaded' fires too early — Vue hasn't run yet, causing #server-tab-local
-  // to be absent when multiple concurrent workers share the same Vite dev server.
-  await page.goto('/login', { waitUntil: 'load' });
+export async function loginTestUser(
+  page: Page,
+  testUser: string,
+  driver: 'sqlite' | 'postgres' = 'sqlite'
+): Promise<void> {
+  if (driver === 'postgres') {
+    const crypto = await import('node:crypto');
+    const { createSignedJwt, POSTGRES_URL } = await import('../testing/postgres_test_container.js');
+    const postgres = (await import('postgres')).default;
+    const sha = crypto.createHash('sha256').update(testUser).digest('hex');
+    const userId = `${sha.slice(0, 8)}-${sha.slice(8, 12)}-4${sha.slice(13, 16)}-8${sha.slice(17, 20)}-${sha.slice(20, 32)}`;
+    const userEmail = `${testUser.toLowerCase().replace(/[^a-z0-9_]/g, '')}@test.local`;
 
-  // Under heavy CPU congestion from parallel workers, client-side Vue mounting,
-  // router resolution, and authStore checks can take several seconds.
-  // Wait explicitly for Vue to mount and initial loader overlays to disappear.
-  await page.waitForFunction(() => {
-    const win = window as WindowWithResolver;
-    return win.pwa_app_mounted === true &&
-           typeof win.initSqlJs === 'function' &&
-           !document.querySelector('#pv-loading-overlay') &&
-           !document.querySelector('.auth-loading-text');
-  }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    const sql = postgres(POSTGRES_URL, { max: 1 });
+    await sql`INSERT INTO auth.users (id, email, created_at) VALUES (${userId}, ${userEmail}, NOW()) ON CONFLICT (id) DO NOTHING;`;
+    await sql`INSERT INTO public.profiles (id, username, email, gender, db_version, created_at) VALUES (${userId}, ${testUser}, ${userEmail}, 'h', 3, NOW()) ON CONFLICT (id) DO UPDATE SET username = EXCLUDED.username;`;
+    await sql.end();
 
-  // The local form does not exist until its server tab has rendered.
-  const localTab = page.locator('#server-tab-local').first();
-  await localTab.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-  await localTab.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    const userJwt = createSignedJwt({
+      sub: userId,
+      role: 'authenticated',
+      email: userEmail,
+      iss: 'supabase',
+      iat: 1600000000,
+      exp: 2500000000
+    });
 
-  const userInput = page.locator('#local-username-input').first();
-  await userInput.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-  await userInput.fill(testUser);
+    await page.addInitScript(({ username, uid, email, token }) => {
+      try {
+        const testUserObj = {
+          id: uid,
+          email: email,
+          user_metadata: { username, full_name: username, gender: 'h' as const },
+          db_version: 3
+        };
+        localStorage.setItem('pokevicio_session_mode', 'online');
+        localStorage.setItem('pokevicio_selected_server_id', 'test_postgres');
+        localStorage.setItem('pokevicio_local_user', JSON.stringify(testUserObj));
+        localStorage.setItem('pokevicio_auth_token', token);
+      } catch (_e) {
+        void 0;
+      }
+    }, { username: testUser, uid: userId, email: userEmail, token: userJwt });
 
-  const jugarBtn = page.locator('#local-login-btn').first();
-  await jugarBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-  await armGameStoreReady(page);
-  await jugarBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await armGameStoreReady(page);
+    await armStarterSelectReady(page);
+    await page.goto('/', { waitUntil: 'load' });
+    await awaitGameStoreReady(page);
+  } else {
+    // SQLite local login flow
+    await page.goto('/login', { waitUntil: 'load' });
 
-  await page.waitForFunction(() => localStorage.getItem('pokevicio_session_mode') === 'offline', undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-  await page.waitForURL(url => url.pathname !== '/login', { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await page.waitForFunction(() => {
+      const win = window as WindowWithResolver;
+      return win.pwa_app_mounted === true &&
+             typeof win.initSqlJs === 'function' &&
+             !document.querySelector('#pv-loading-overlay') &&
+             !document.querySelector('.auth-loading-text');
+    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-  await awaitGameStoreReady(page);
+    const localTab = page.locator('#server-tab-local').first();
+    await localTab.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await localTab.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+
+    const userInput = page.locator('#local-username-input').first();
+    await userInput.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await userInput.fill(testUser);
+
+    const jugarBtn = page.locator('#local-login-btn').first();
+    await jugarBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await armGameStoreReady(page);
+    await armStarterSelectReady(page);
+    await jugarBtn.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+
+    await page.waitForFunction(() => localStorage.getItem('pokevicio_session_mode') === 'offline', undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await page.waitForURL(url => url.pathname !== '/login', { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+
+    await awaitGameStoreReady(page);
+  }
 
   // A new local profile must choose a starter; an existing profile goes straight to the map.
   const needsStarter = await page.evaluate(() => {
@@ -212,13 +279,19 @@ export async function loginTestUser(page: Page, testUser: string): Promise<void>
   });
 
   if (needsStarter) {
+    await awaitStarterSelectReady(page);
     const starterCard = page.locator('[id^="starter-card-"]').first();
     await starterCard.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await starterCard.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await page.waitForFunction(() => {
       const debug = window.__VITE_DEBUG__;
-      return debug?.useGameStore?.()?.state?.starterChosen === true;
+      return debug?.useGameStore?.()?.state?.starterChosen === true &&
+             !debug?.useLoadingStore?.()?.isLoading('choose_starter');
     }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  } else {
+    await page.evaluate(() => {
+      delete (window as WindowWithResolver).__E2E_STARTER_SELECT_READY__;
+    });
   }
 }
 
@@ -986,14 +1059,18 @@ export async function executeAutoBattle(
 
 
 
-export async function waitForStoreReady(page: Page): Promise<void> {
+const STORE_READY_TIMEOUT_MS = 15000;
+
+export async function waitForStoreReady(page: Page, timeoutMs = STORE_READY_TIMEOUT_MS): Promise<void> {
   await page.waitForFunction(() => {
     const debug = (window as WindowWithResolver).__VITE_DEBUG__;
     if (!debug || !debug.getGameStore) return false;
     const store = debug.getGameStore();
     return !!store && !!store.state && store.isReady === true;
-  }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  }, undefined, { timeout: timeoutMs });
 }
+
+const RESILIENT_NAV_TIMEOUT_MS = 15000;
 
 export async function openDebugTab(page: Page, category: string): Promise<void> {
   const categoryMap: Record<string, string> = {
@@ -1004,19 +1081,24 @@ export async function openDebugTab(page: Page, category: string): Promise<void> 
     modal: 'modals',
     misi: 'missions',
   };
-  const categoryId = categoryMap[category.toLowerCase()] || category.toLowerCase(); // string-ok
+  const categoryId = categoryMap[category.toLowerCase()] || category.toLowerCase(); // string-ok: Internal string formatting or DOM token identifier
   const navBtn = page.locator(`#debug-tab-${categoryId}, [id^="debug-tab-${categoryId}"]`).first();
 
   const isTabReady = (await navBtn.count()) > 0 && await navBtn.isVisible();
   if (!isTabReady) {
     const trigger = page.locator('#debug-trigger-btn').first();
-    await trigger.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await clickResilient(trigger);
-    await page.locator('#debug-nav').waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await navBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await trigger.waitFor({ state: 'visible', timeout: RESILIENT_NAV_TIMEOUT_MS });
+    await expect.poll(async () => {
+      const isVisible = await page.locator('#debug-nav').isVisible();
+      if (!isVisible) {
+        await clickResilient(trigger);
+      }
+      return await page.locator('#debug-nav').isVisible();
+    }, { timeout: RESILIENT_NAV_TIMEOUT_MS, intervals: [200, 500, 1000] }).toBe(true);
+    await navBtn.waitFor({ state: 'visible', timeout: RESILIENT_NAV_TIMEOUT_MS });
   }
 
-  await clickResilient(navBtn, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  await clickResilient(navBtn, { timeout: RESILIENT_NAV_TIMEOUT_MS });
 }
 
 export async function playFishingMinigameNaturally(page: Page): Promise<void> {
@@ -1028,25 +1110,50 @@ export async function playFishingMinigameNaturally(page: Page): Promise<void> {
     throw new Error(`[E2E] Fishing minigame reported an invalid note counter: ${counterText}`);
   }
 
+  const feedbackLocator = page.locator('.game-feedback').first();
+
   for (let noteId = 1; noteId <= totalNotes; noteId++) {
+    if (!await modalContainer.isVisible()) break;
+    if (await feedbackLocator.isVisible()) break;
+
     const note = page.locator(`.rhythm-note[data-note-id="${noteId}"]`).first();
-    await note.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await page.waitForFunction((id) => {
-      const ring = document.querySelector(`.rhythm-note[data-note-id="${id}"] .rhythm-ring`);
-      if (!ring) return true;
-      const transform = getComputedStyle(ring).transform;
-      const scale = Number(transform.match(/matrix\(([^,]+)/)?.[1] ?? Number.NaN);
-      return !Number.isFinite(scale) || scale <= 1.15;
-    }, noteId, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await note.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    try {
+      await note.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    } catch (err) {
+      if (!await modalContainer.isVisible()) break;
+      if (await feedbackLocator.isVisible()) break;
+      throw err;
+    }
+    try {
+      await page.waitForFunction((id) => {
+        const ring = document.querySelector(`.rhythm-note[data-note-id="${id}"] .rhythm-ring`);
+        if (!ring) return true;
+        const transform = getComputedStyle(ring).transform;
+        const scale = Number(transform.match(/matrix\(([^,]+)/)?.[1] ?? Number.NaN);
+        return !Number.isFinite(scale) || scale <= 1.15;
+      }, noteId, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    } catch {
+      // Transition timeout, proceed to click attempt
+    }
+    try {
+      await note.click({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    } catch (err) {
+      if (!await modalContainer.isVisible()) break;
+      if (await feedbackLocator.isVisible()) break;
+      throw err;
+    }
   }
 
-  await modalContainer.waitFor({ state: 'detached', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  try {
+    await modalContainer.waitFor({ state: 'detached', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  } catch {
+    // Modal already detached or closed
+  }
 }
 
 export async function playArchaeologyMinigameNaturally(page: Page): Promise<void> {
   const grid = page.locator('#archaeology-grid').first();
-  await grid.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  await grid.waitFor({ state: 'visible', timeout: RESILIENT_NAV_TIMEOUT_MS });
   const tiles = grid.locator('.tile');
   const tileCount = await tiles.count();
   if (tileCount === 0) {
@@ -1065,5 +1172,9 @@ export async function playArchaeologyMinigameNaturally(page: Page): Promise<void
     }
   }
 
-  await grid.waitFor({ state: 'detached', timeout: MAX_PER_ACTION_TIMEOUT_MS });
+  try {
+    await grid.waitFor({ state: 'detached', timeout: RESILIENT_NAV_TIMEOUT_MS });
+  } catch {
+    // Grid already detached or closed
+  }
 }

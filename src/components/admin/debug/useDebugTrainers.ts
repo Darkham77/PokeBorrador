@@ -7,7 +7,7 @@ import { getSpritesForArchetype, type NpcArchetype, type NpcSpriteId } from '@/l
 import { ARCHETYPE_SPRITES } from '@/data/pokemon/npcSpriteCatalog'
 import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { pokemonDebugService } from '@/logic/debug/pokemonDebugService'
-import { GYMS, GYMS_BY_ID, isGymId } from '@/data/world/gyms'
+import { GYMS, GYMS_BY_ID, isGymId, type GymId } from '@/data/world/gyms'
 import { TRAINER_TYPES, isTrainerTypeKey, requireNpcArchetype, getArchetypePool } from '@/data/player/trainerTypes'
 import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
 import { generateNpcName, type NpcNameOptions } from '@/logic/utils/npcNameGenerator'
@@ -15,6 +15,8 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleDifficulty, BattleMinigame } from '@/types/battle/battle'
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { MapLocation } from '@/types/pokemon/encounters'
+import type { MapRouteId } from '@/data/world/map-assets'
+import type { ItemId } from '@/data/inventory/items'
 import type { BattleOptions } from '@/types/system/stores'
 import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality'
 
@@ -35,16 +37,16 @@ interface ExtendedBattleOptions {
   isTrainer?: boolean
   trainerName?: string
   isGym?: boolean
-  gymId?: string
-  locationId?: string
+  gymId?: GymId
+  locationId?: MapRouteId
   wasSearching?: boolean
   enemyTeam?: Pokemon[]
   minigame?: BattleMinigame | null
   isGuardian?: boolean
   pts?: number
   isDebug?: boolean
-  difficulty?: string
-  rewardTM?: string
+  difficulty?: BattleDifficulty
+  rewardTM?: ItemId
   battleOptions?: Record<string, unknown>
 }
 
@@ -74,7 +76,7 @@ export function useDebugTrainers() {
   const selectedPreset = ref('random')
 
   const combatLocationType = ref<'map' | 'gym'>('map')
-  const selectedMapId = ref('route1')
+  const selectedMapId = ref<MapRouteId>('route1')
   const selectedGymId = ref('pewter')
   const gymDifficulty = ref<BattleDifficulty>('normal')
 
@@ -96,7 +98,7 @@ export function useDebugTrainers() {
   })
 
   const allMapsList = computed(() => {
-    const maps = pokemonDataProvider.getMaps() as MapLocation[] // domain-ok
+    const maps = pokemonDataProvider.getMaps() as MapLocation[] // domain-ok: Open dynamic text or non-domain string payload
     return maps.map(m => ({ id: m.id, name: m.name }))
   })
 
@@ -106,7 +108,7 @@ export function useDebugTrainers() {
     const sprites = preset !== 'random'
       ? getSpritesForArchetype(preset as NpcArchetype)
       : ALL_CATALOG_SPRITES
-    return (sprites as readonly string[]).map(id => ({ id, label: id })) // domain-ok
+    return (sprites as readonly string[]).map(id => ({ id, label: id })) // domain-ok: Open dynamic text or non-domain string payload
   })
 
   const gymList = computed(() => {
@@ -302,11 +304,11 @@ export function useDebugTrainers() {
       }
     }
 
-    await battleStore.startBattle(firstEnemy, opts as BattleOptions) // domain-ok
+    await battleStore.startBattle(firstEnemy, opts as BattleOptions) // domain-ok: Open dynamic text or non-domain string payload
   }
 
   function validateTeamLegality(): { valid: boolean; issues: string[] } {
-    const issues: string[] = [] // no-domain
+    const issues: string[] = [] // no-domain: Non-domain utility collection or data structure
     if (enemyTeam.value.length === 0) {
       issues.push('El equipo del entrenador debe tener al menos 1 Pokémon.')
       return { valid: false, issues }

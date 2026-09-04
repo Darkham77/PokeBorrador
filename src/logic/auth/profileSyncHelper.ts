@@ -29,7 +29,7 @@ export async function syncUserProfileData(db: DBRouter, user: AuthUser, saveData
     }
 
     const shinyCount = (saveData.team.filter(p => p?.isShiny).length) + (saveData.box.filter(p => p?.isShiny).length);
-    const statsRecord = (saveData.stats || {}) as Record<string, unknown>; // open-record
+    const statsRecord = (saveData.stats || {}) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
     const maxDamage = Number(statsRecord.maxDamage) || 0;
     const totalBattles = Number(statsRecord.totalBattles) || 0;
     const tradeVolume = Number(statsRecord.tradeVolume) || 0;

@@ -98,7 +98,7 @@ const getStoneInfo = (name: string) => {
 };
 
 const getPokemonName = (id: string) => {
-  return pokemonDataProvider.getPokemonData(id)?.name || id;
+  return pokemonDataProvider.resolveSpeciesName(id);
 };
 </script>
 

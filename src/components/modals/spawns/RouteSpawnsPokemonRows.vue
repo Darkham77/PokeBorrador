@@ -3,19 +3,20 @@ import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue';
 import PVTooltip from '@/components/common/PVTooltip.vue';
 import { toPokemonType } from '@/data/battle/types';
 import type { RouteSpawnMappedItem } from '@/logic/utils/routeSpawnHelpers';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 interface Props {
   spawnItems: RouteSpawnMappedItem[];
   weatherEmoji: string;
   weatherLabel: string;
   getStatusTooltip: (spawnType: string) => { title: string; desc: string };
-  getSpawnTooltip: (item: RouteSpawnMappedItem) => Record<string, unknown>; // open-record
+  getSpawnTooltip: (item: RouteSpawnMappedItem) => Record<string, unknown>; // open-record: Generic key-value data dictionary container
 }
 
 defineProps<Props>();
 
 defineEmits<{
-  (e: 'select-pokemon', id: string, isSeen: boolean): void;
+  (e: 'select-pokemon', id: PokemonSpeciesId, isSeen: boolean): void;
 }>();
 </script>
 

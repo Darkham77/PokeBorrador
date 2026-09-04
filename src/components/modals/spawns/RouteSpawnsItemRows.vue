@@ -5,7 +5,7 @@ import type { ArchaeologyRewardData } from '@/composables/modals/useRouteSpawnsA
 interface Props {
   archaeologyItems: ArchaeologyRewardData[];
   getCategoryTooltip: (type: string) => { title: string; desc: string };
-  getItemTooltip: (item: ArchaeologyRewardData) => Record<string, unknown>; // open-record
+  getItemTooltip: (item: ArchaeologyRewardData) => Record<string, unknown>; // open-record: Generic key-value data dictionary container
 }
 
 defineProps<Props>();

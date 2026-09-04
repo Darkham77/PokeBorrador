@@ -28,10 +28,11 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider.ts'
 import { emulatePublishListing } from '@/logic/db/rpcEmulations/marketRpc.ts'
 import { emulateSendTradeOffer } from '@/logic/db/rpcEmulations/tradeRpc.ts'
 import type { SQLiteDatabase } from '@/logic/db/sqliteEngine.ts'
+import { type PokemonSpeciesId } from '@/data/pokemon/pokedex.ts'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 function createSamplePokemon(
-  id: string,
+  id: PokemonSpeciesId,
   name: string,
   level = 10,
   uid = 'sample-uid-1',

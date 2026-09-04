@@ -26,7 +26,7 @@ export const useModalStore = defineStore('modals', () => {
       return null
     }
 
-    const component = (MODAL_REGISTRY as Record<string, Component>)[name] // open-record
+    const component = (MODAL_REGISTRY as Record<string, Component>)[name] // open-record: Generic key-value data dictionary container
     if (!component) {
       logger.error('ModalStore', `Modal "${name}" not found in registry`)
       return null

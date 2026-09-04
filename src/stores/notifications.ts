@@ -47,7 +47,9 @@ export const useNotificationStore = defineStore('notifications', () => {
       throw new Error(`[notify] Failed to persist notification to history: ${String(err)}`)
     })
 
-    gsap.delayedCall(NOTIFICATION_DISMISS_DELAY_SEC, () => {
+    const isE2E = typeof window !== 'undefined' && Boolean(window.__E2E__);
+    const dismissDelay = isE2E ? NOTIFICATION_DISMISS_DELAY_SEC * 100 : NOTIFICATION_DISMISS_DELAY_SEC;
+    gsap.delayedCall(dismissDelay, () => {
       notifications.value = notifications.value.filter(n => n.id !== id)
     })
   }

@@ -61,7 +61,7 @@ export function requireNpcArchetype(value: string): NpcArchetype {
 export function classifyNpcArchetype(spriteIdOrName: string): NpcArchetype {
   if (!spriteIdOrName) return 'default';
 
-  const normalized = spriteIdOrName.toLowerCase().replace(/[-_]/g, ''); // text-ok
+  const normalized = spriteIdOrName.toLowerCase().replace(/[-_]/g, ''); // text-ok: UI text display localization string
 
   // 1. Prioridad Alta: Búsqueda exacta y coincidencia de palabras clave
   for (const [archetype, keywords] of Object.entries(ARCHETYPE_KEYWORDS)) {

@@ -75,7 +75,7 @@ export function renderAuditTaskRow(res: StandardAuditResult): string {
   return `  ${badge} │ ${styleText('bold', nameStr)} │ ${styleText('dim', durationStr)} │ ${metricStr} │ ${errStr} │ ${warnStr}`;
 }
 
-const DEFAULT_MAX_FINDINGS_PREVIEW = 30; // no-magic
+const DEFAULT_MAX_FINDINGS_PREVIEW = 30; // no-magic: Explicit mathematical constant or threshold value
 
 export function renderFindingsDetail(findings: AuditFinding[], maxLimit: number = DEFAULT_MAX_FINDINGS_PREVIEW): string {
   if (!Array.isArray(findings) || findings.length === 0) return '';
@@ -173,7 +173,7 @@ export function renderMarkdownReport(
   md += `**Errores**: \`${totalErrors}\` | **Advertencias**: \`${totalWarnings}\`\n\n`;
 
   // Group by family
-  const byFamily = new Map<AuditFamily, StandardAuditResult[]>(); // runtime-map
+  const byFamily = new Map<AuditFamily, StandardAuditResult[]>(); // runtime-map: Fast O(1) keyed lookup dictionary
   for (const r of results) {
     if (!byFamily.has(r.family)) byFamily.set(r.family, []);
     byFamily.get(r.family)!.push(r);

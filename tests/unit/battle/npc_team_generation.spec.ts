@@ -79,6 +79,7 @@ function validateSet(set: PokemonSet): string[] {
 
 import { ACTIVE_GENERATION } from '@/data/system/constants';
 import { getRandomSetForSpecies } from '@/logic/battle/rivalTeamGenerator';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Generator under test
@@ -87,7 +88,7 @@ import { getRandomSetForSpecies } from '@/logic/battle/rivalTeamGenerator';
 const generator = TeamGenerators.getTeamGenerator(`gen${ACTIVE_GENERATION}randombattle`);
 
 const gen = {
-  randomSet: (species: string, level = 100): PokemonSet => getRandomSetForSpecies(species, level)
+  randomSet: (species: string, level = 100): PokemonSet => getRandomSetForSpecies(requirePokemonSpeciesId(species), level)
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

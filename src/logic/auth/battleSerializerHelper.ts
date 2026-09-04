@@ -16,20 +16,25 @@ import type { Inventory } from '@/types/inventory/items';
 import type { SaveDataDto } from '@/logic/validation/schemas';
 import { requireAbilityId } from '@/data/battle/abilities';
 import { requireWeatherId } from '@/logic/weather/weatherRegistry';
-import { requireMapRouteId } from '@/data/world/map-assets';
+import { requireMapRouteId, isMapRouteId } from '@/data/world/map-assets';
 import { logger } from '@/logic/utils/logger';
+
+import type { GymId } from '@/data/world/gyms';
+import type { MapRouteId } from '@/data/world/map-assets';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
+import type { ItemId } from '@/data/inventory/items';
 
 const DEFAULT_POKEMON_FRIENDSHIP_FALLBACK = 70;
 
 export interface ActiveBattleSerialized {
   isGym: boolean;
-  gymId: string | null;
+  gymId: GymId | null;
   isTrainer: boolean;
   trainerName: string | null;
   trainerSprite?: string | null;
   trainerArchetype?: string | null;
   quote?: string | null;
-  locationId: string | null;
+  locationId: MapRouteId | null;
   wasSearching?: boolean;
   participants?: string[];
   enemyTeamIndex?: number;
@@ -39,7 +44,7 @@ export interface ActiveBattleSerialized {
   escapeAttempts?: number;
   cannotEscape?: boolean;
   weather?: BattleWeather | null;
-  initialMapWeather?: string | null;
+  initialMapWeather?: WeatherId | null;
   terrain?: string | null;
   fieldConditions?: Partial<Record<BattleConditionKey, BattleTimedCondition>> | null;
   playerSideConditions?: Partial<Record<BattleConditionKey, BattleTimedCondition>> | null;
@@ -53,7 +58,7 @@ export interface ActiveBattleSerialized {
   rarity?: number;
   enemyMoney?: number | null;
   enemyMaxLevel?: number | null;
-  rewardTM?: string | null;
+  rewardTM?: ItemId | null;
   enemyInventory?: Inventory | null;
   stolenResources?: { money: number; items: Inventory } | null;
   fled?: boolean;
@@ -171,7 +176,7 @@ function serializePvPBattle(battle?: (BattleState & Partial<ActiveBattleSerializ
 
 function serializeSearchingBattle(
   battle: BattleState & Partial<ActiveBattleSerialized>,
-  fallbackMapId?: string | null
+  fallbackMapId?: MapRouteId | null
 ): ActiveBattleSerialized {
   return {
     isGym: false,
@@ -214,7 +219,9 @@ export function serializeActiveBattle(state: GameState | SaveDataDto): ActiveBat
   }
 
   if (battle.wasSearching || (!battle.isTrainer && !battle.isGym)) {
-    return serializeSearchingBattle(battle, state.map?.currentMap);
+    const rawMap = state.map?.currentMap;
+    const currentMap = typeof rawMap === 'string' && isMapRouteId(rawMap) ? rawMap : null;
+    return serializeSearchingBattle(battle, currentMap);
   }
 
   return null;

@@ -13,8 +13,8 @@ import type { PokemonType } from '../../../../src/data/battle/types.ts';
 const REPORT_FILE = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_missions_coverage_report.json');
 
 async function runMissionsFuzzer() {
-  const errors: string[] = []; // no-domain
-  const warnings: string[] = []; // no-domain
+  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
+  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
   const results: Array<{ level: number; target: string; text: string; matched: boolean }> = [];
 
   let passed = 0;

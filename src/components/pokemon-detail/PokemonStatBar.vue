@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import type { StatBarMode } from '@/types/pokemon/pokemon'
 
 interface Props {
   label: string
@@ -7,7 +8,7 @@ interface Props {
   max?: number
   color?: string
   iv?: number | null
-  mode?: 'full' | 'stat' | 'iv'
+  mode?: StatBarMode
 }
 
 const DEFAULT_MAX_BASE_STAT = 255

@@ -17,6 +17,7 @@ DevOps / QA Engineers.
 
 ## Key Files
 
+- [`postgres_test_container.ts`](./postgres_test_container.ts): Modular Docker discovery, ephemeral container lifecycle, and SQL migration runner.
 - [`run_tests.ts`](./run_tests.ts): Test orchestrator managing Docker detection, container lifecycle, SQL migrations, and Vitest execution.
 
 ## Child DOX Index

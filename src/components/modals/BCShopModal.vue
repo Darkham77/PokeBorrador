@@ -129,7 +129,7 @@ const close = () => {
         >
           <template #price-icon>
             <!-- Coin stack SVG — same technique as the star, no FA dependency -->
-            <!-- // no-magic -->
+            <!-- // no-magic: Explicit mathematical constant or threshold value -->
             <svg
               viewBox="0 0 24 24"
               class="w-4 h-4 text-emerald-400 shrink-0"

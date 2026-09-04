@@ -33,7 +33,7 @@ async function saveToCache(cacheKey: string, blob: Blob): Promise<void> {
   }
 }
 
-const ALLOWED_SPRITE_HOSTS = new Set([ // runtime-set
+const ALLOWED_SPRITE_HOSTS = new Set([ // runtime-set: Fast O(1) membership lookup set
   'raw.githubusercontent.com',
   'play.pokemonshowdown.com',
   'localhost',

@@ -6,12 +6,21 @@ export class SimulationRunnerLogger extends BaseRunnerLogger {
   }
 
   protected isProgressLog(message: string): boolean {
-    const progressPatterns = [ // no-domain
-      '🚀 DISPOSITIVO',
+    const progressPatterns = [ // no-domain: Non-domain utility collection or data structure
+      '🚀',
       '▶️',
-      '✅ PASS',
-      '❌ FAIL',
-      '🎉 TODAS',
+      '✅',
+      '❌',
+      '🎉',
+      '✨',
+      '⚔️',
+      '⚠️',
+      '⏭️',
+      '[WORKER',
+      'Completado:',
+      'FALLÓ:',
+      '[SIM:',
+      '[REPLAY:',
       'RUNNING',
       '[E2E-PROGRESS]',
       '[E2E-TEST]',

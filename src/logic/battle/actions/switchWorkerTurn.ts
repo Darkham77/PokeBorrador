@@ -27,6 +27,7 @@ export async function processNonForcedSwitchWorkerTurn(
   const active = activeBattle.value
   if (!active || !active.enemy || !active.player) {
     console.warn('[switchAction] activeBattle or participants are null!', { active: !!active, enemy: !!active?.enemy, player: !!active?.player })
+    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     return
   }
 

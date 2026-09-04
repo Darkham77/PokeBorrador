@@ -30,10 +30,10 @@ interface GameDB {
   getTimeOffset?: () => number
 }
 
-const getDB = () => game.db as GameDB // domain-ok
+const getDB = () => game.db as GameDB // domain-ok: Open dynamic text or non-domain string payload
 const timeOffsetLabel = ref(`${getDB()?.getTimeOffset?.() || 0}ms`)
 
-interface ViteDebugBridge extends Record<string, unknown> { // open-record
+interface ViteDebugBridge extends Record<string, unknown> { // open-record: Generic key-value data dictionary container
   setMockTime: (date: string) => void;
   resetTime: () => void;
   addHours: (h: number) => void;

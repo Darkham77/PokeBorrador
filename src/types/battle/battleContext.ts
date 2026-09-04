@@ -4,6 +4,7 @@ import { Pokemon, Move } from '@/types/pokemon/pokemon';
 import { GameStore, BattleStore, UIStore, WarStore, EventStore, PlayerClassStore, AudioStore, BattleOptions } from '@/types/system/stores';
 import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine';
 import type { ItemId } from '@/data/inventory/items';
+import type { SeatState } from '@/composables/battle/useBattleSeats';
 
 export type BattleSeatId = 'seat1' | 'seat2' | 'seat3' | 'seat4';
 
@@ -54,7 +55,7 @@ export interface BattleContext {
   initBattle: (options?: { initialPlayer?: Pokemon | null; initialEnemy?: Pokemon | null; wasSearching?: boolean }) => Promise<void>;
   
   animations?: {
-    seats?: import('vue').Ref<Record<BattleSeatId, import('@/composables/battle/useBattleSeats').SeatState>>;
+    seats?: Ref<Record<BattleSeatId, SeatState>>;
     triggerSearchEncounter: () => Promise<void>;
     revealWildPokemon: (isInstant?: boolean) => Promise<void>;
     triggerWildEmergence: () => Promise<void>;

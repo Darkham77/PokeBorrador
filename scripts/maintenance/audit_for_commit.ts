@@ -134,7 +134,7 @@ async function getModifiedFiles(): Promise<Set<string>> {
     for (const f of files) {
       const ext = path.extname(f).toLowerCase();
       const isConfigFile = /^(vite|vitest|playwright|eslint)\.config\./i.test(path.basename(f)) || path.basename(f).startsWith('vitest.');
-      if ((AUDIT_EXTENSIONS as readonly string[]).includes(ext) && !isConfigFile && !f.includes('node_modules') && !f.startsWith('external/') && !f.startsWith('external\\') && !f.startsWith('dist/') && !f.startsWith('dev-dist/') && !f.startsWith('scratch/') && !f.startsWith('test aventura')) { // no-domain
+      if ((AUDIT_EXTENSIONS as readonly string[]).includes(ext) && !isConfigFile && !f.includes('node_modules') && !f.startsWith('external/') && !f.startsWith('external\\') && !f.startsWith('dist/') && !f.startsWith('dev-dist/') && !f.startsWith('scratch/') && !f.startsWith('test aventura')) { // no-domain: Non-domain utility collection or data structure
         filteredFiles.add(f);
       }
     }

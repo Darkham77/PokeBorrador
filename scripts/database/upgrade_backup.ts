@@ -160,7 +160,7 @@ export async function upgradeBackup(): Promise<string> {
             try {
               db.exec(sql);
             } catch (stmtErr: unknown) {
-              const msg = (stmtErr as Error).message.toLowerCase(); // text-ok
+              const msg = (stmtErr as Error).message.toLowerCase(); // text-ok: UI text display localization string
               const isDuplicate = msg.includes('duplicate column') || msg.includes('already exists');
               const isMissing = msg.includes('no such column');
               if (!isDuplicate && !isMissing) {
@@ -188,7 +188,7 @@ export async function upgradeBackup(): Promise<string> {
   const tableList = tablesStmt.all() as { name: string }[];
 
   for (const t of tableList) {
-    const rows = db.prepare(`SELECT * FROM "${t.name}"`).all() as Record<string, unknown>[]; // open-record
+    const rows = db.prepare(`SELECT * FROM "${t.name}"`).all() as Record<string, unknown>[]; // open-record: Generic key-value data dictionary container
     const cleanRows = rows.map(r => {
       const clean: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(r)) {

@@ -22,3 +22,21 @@ export function canExecuteScriptedReplayAction(readiness: ScriptedReplayReadines
     && (requiresSwitchSelection || !readiness.isIntroAnimating)
     && (requiresSwitchSelection || !readiness.hasPendingSwitch)
 }
+
+export interface ReplaySwitchRequirementCheck {
+  subState?: string | null
+  hasPendingForceSwitch?: boolean
+  hasPlayer?: boolean
+  hasEnemy?: boolean
+  isBattleActive?: boolean
+  isOver?: boolean
+}
+
+export function isReplaySwitchRequired(options: ReplaySwitchRequirementCheck): boolean {
+  if (options.isOver) return false
+  if (options.subState === 'SWITCH_MENU') return true
+  if (options.hasPendingForceSwitch) return true
+  if (options.isBattleActive && !options.hasPlayer && options.hasEnemy) return true
+  return false
+}
+

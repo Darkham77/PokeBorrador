@@ -27,7 +27,7 @@ watch(() => props.initialTab, (newTab) => {
 })
 
 const currentContent = computed(() => {
-  return (libraryContent as Record<string, string>)[selectedTab.value] || '<h1>Próximamente</h1><p>En construcción.</p>' // open-record
+  return (libraryContent as Record<string, string>)[selectedTab.value] || '<h1>Próximamente</h1><p>En construcción.</p>' // open-record: Generic key-value data dictionary container
 })
 
 const TAB_SWITCH_FADE_DELAY_SEC = 0.15

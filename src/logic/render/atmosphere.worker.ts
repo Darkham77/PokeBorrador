@@ -75,10 +75,10 @@ const ATMOSPHERE_CYCLE_DURATION_CALM = 5;
 /** Pulse cycle base for strong weather (added to animSeed). */
 const ATMOSPHERE_CYCLE_DURATION_STRONG_BASE = 1.5;
 
-let canvas: OffscreenCanvas | null = null; // singleton-ok
-let ctx: OffscreenCanvasRenderingContext2D | null = null; // singleton-ok
-let isPaused = false; // singleton-ok
-let params: AtmosphereParams = { // singleton-ok
+let canvas: OffscreenCanvas | null = null; // singleton-ok: Singleton instance state container
+let ctx: OffscreenCanvasRenderingContext2D | null = null; // singleton-ok: Singleton instance state container
+let isPaused = false; // singleton-ok: Singleton instance state container
+let params: AtmosphereParams = { // singleton-ok: Singleton instance state container
   weather: 'clear',
   isLowPower: false,
   animSeed: 0.5,
@@ -87,7 +87,7 @@ let params: AtmosphereParams = { // singleton-ok
 const patterns: Record<string, CanvasPattern> = {};
 const textures: Record<string, ImageBitmap> = {};
 
-let lastTime = 0; // singleton-ok
+let lastTime = 0; // singleton-ok: Singleton instance state container
 const textureOffsets = {
   layer1: { x: 0, y: 0 },
   layer2: { x: 0, y: 0 }
@@ -244,8 +244,11 @@ function drawPattern(pattern: CanvasPattern, scale: number, offsetX: number, off
   localCtx.globalAlpha = 1.0;
 }
 
+export const ATMOSPHERE_WORKER_ACTIONS = ['INIT', 'RESIZE', 'UPDATE_PARAMS', 'PAUSE', 'RESUME'] as const;
+export type AtmosphereWorkerAction = (typeof ATMOSPHERE_WORKER_ACTIONS)[number];
+
 interface AtmosphereWorkerMessage {
-  type: 'INIT' | 'RESIZE' | 'UPDATE_PARAMS' | 'PAUSE' | 'RESUME';
+  type: AtmosphereWorkerAction;
   payload: {
     canvas?: OffscreenCanvas;
     noise1?: ImageBitmap;

@@ -88,7 +88,7 @@ export const P_STATIC_ARRAY_INCLUDES = /(?:\(\s*)?\b([A-Z][A-Z0-9_]+_(?:IDS|LIST
 export const P_OBJECT_SCAN_LOOKUP = /\bObject\.(?:keys|values|entries)\s*\([^)]+\)\.(?:find|findLast)\s*\(/g;
 
 // Escape hatch comments (strictly o1-specific, domain-ok is forbidden here)
-export const ESCAPE_HATCHES = ['// o1-ok', '// linear-search-ok'] as const;
+export const ESCAPE_HATCHES = ['// o1-ok:', '// linear-search-ok:'] as const;
 
 export function shouldIgnoreLine(line: string): boolean {
   return ESCAPE_HATCHES.some(hatch => line.includes(hatch));
@@ -123,7 +123,7 @@ export function scanFileForO1Issues(
           message: `Linear O(N) search on '${catalog.name}'. Use O(1) alternative: ${catalog.alternative}`,
           line: lineNumber,
           context: lineText.trim(),
-          isWarning: true
+          isWarning: false
         });
       }
     }
@@ -136,7 +136,7 @@ export function scanFileForO1Issues(
         message: "Redundant array copying `[...team, ...box]` in linear search. Use O(1) `gameStore.getPokemonByUid(uid)`",
         line: lineNumber,
         context: lineText.trim(),
-        isWarning: true
+        isWarning: false
       });
     }
 
@@ -150,7 +150,7 @@ export function scanFileForO1Issues(
         message: `Linear membership check on '${arrayName}'. Convert to 'ReadonlySet' and use '.has()' for O(1) lookup`,
         line: lineNumber,
         context: lineText.trim(),
-        isWarning: true
+        isWarning: false
       });
     }
 
@@ -162,7 +162,7 @@ export function scanFileForO1Issues(
         message: "Linear scan on Object.keys()/values(). Use direct property access `obj[key]` or an inverted lookup Record",
         line: lineNumber,
         context: lineText.trim(),
-        isWarning: true
+        isWarning: false
       });
     }
   }

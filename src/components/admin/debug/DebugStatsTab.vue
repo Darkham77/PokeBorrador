@@ -6,7 +6,7 @@ import { useGymsStore } from '@/stores/gyms'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { GymId } from '@/data/world/gyms'
 
-interface ViteDebugBridge extends Record<string, unknown> { // open-record
+interface ViteDebugBridge extends Record<string, unknown> { // open-record: Generic key-value data dictionary container
   setMoney: (val: number) => void;
   setElo: (val: number) => void;
   setLevel: (val: number) => void;

@@ -9,7 +9,7 @@ import { POKEMON_STAT_KEYS } from '@/types/pokemon/pokemon'
 import type { Pokemon, PokedexStatus } from '@/types/pokemon/pokemon'
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB'
 import { EVOLUTION_TABLE, TRADE_EVOLUTIONS, getStoneEvolution } from '@/data/pokemon/evolutionData'
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { requireItemId } from '@/data/inventory/items'
 import { requireMapRouteId } from '@/data/world/map-assets'
 
@@ -32,7 +32,7 @@ export function registerPokeTools(debug: DebugSystem) {
         ui.notify('Pokedex REAL RESTAURADA', '✅')
       } else {
         ui.debugPokedexMode = mode as PokedexStatus | null
-        ui.notify(`Pokedex modo: ${mode.toUpperCase()}`, '👁️') // text-ok
+        ui.notify(`Pokedex modo: ${mode.toUpperCase()}`, '👁️') // text-ok: UI text display localization string
       }
     },
     description: 'Cambia el modo de visualización de la pokedex (none, seen, caught, real).'
@@ -132,7 +132,7 @@ export function registerPokeTools(debug: DebugSystem) {
         throw new Error('[pokeTools] Cannot trigger encounter: mapStore.currentMap is null or empty')
       }
       const routeId = requireMapRouteId(mapStore.currentMap)
-      const p = pokemonDebugService.generate({ id, level, isShiny: shiny })
+      const p = pokemonDebugService.generate({ id: id ? requirePokemonSpeciesId(id) : undefined, level, isShiny: shiny })
       await pokemonDebugService.triggerEncounter(p, routeId)
     },
     description: 'Inicia un combate rápido contra un pokemon específico.'
@@ -203,7 +203,7 @@ export function registerPokeTools(debug: DebugSystem) {
     label: 'PROBAR EVOLUCIÓN (CLI)',
     command: 'testEvolution',
     category: 'pokes',
-    action: (slotIndex: number = 0, targetSpeciesId?: string, itemName?: string) => {
+    action: (slotIndex: number = 0, targetSpeciesId?: PokemonSpeciesId, itemName?: string) => {
       const pokemon = game.state.team[slotIndex]
       if (!pokemon) {
         ui.notify('No hay un Pokémon en la ranura especificada', '❌')
@@ -211,13 +211,13 @@ export function registerPokeTools(debug: DebugSystem) {
       }
 
       let target = targetSpeciesId
-      let item = itemName ? requireItemId(itemName) : '' // text-ok
+      let item = itemName ? requireItemId(itemName) : '' // text-ok: UI text display localization string
 
       if (!target) {
         // 1. Buscar en tabla de nivel
-        const levelEvo = (EVOLUTION_TABLE as Record<string, { to: string }>)[pokemon.id] // open-record
+        const levelEvo = (EVOLUTION_TABLE as Record<string, { to: string }>)[pokemon.id] // open-record: Generic key-value data dictionary container
         if (levelEvo) {
-          target = levelEvo.to
+          target = requirePokemonSpeciesId(levelEvo.to)
         } else {
           // 2. Buscar en tabla de piedras (eevee y formas con múltiples variantes usan patrón {species}_{disambiguator})
           const stoneEvo = getStoneEvolution(pokemon.id)
@@ -226,9 +226,9 @@ export function registerPokeTools(debug: DebugSystem) {
             item = stoneEvo.stone
           } else {
             // 3. Buscar en tabla de intercambio
-            const tradeEvo = (TRADE_EVOLUTIONS as Record<string, string>)[pokemon.id] // open-record
+            const tradeEvo = (TRADE_EVOLUTIONS as Record<string, string>)[pokemon.id] // open-record: Generic key-value data dictionary container
             if (tradeEvo) {
-              target = tradeEvo
+              target = requirePokemonSpeciesId(tradeEvo)
             }
           }
         }
@@ -255,7 +255,7 @@ export function registerPokeTools(debug: DebugSystem) {
       
       const warehouse = breedingStore.warehouseEggs.map(e => ({
         id: e.id,
-        especie: db[e.species]?.name ?? e.species, // text-ok
+        especie: db[e.species]?.name ?? e.species, // text-ok: UI text display localization string
         nivel: e.level,
         naturaleza: e.nature,
         shiny: e.isShiny ? '✨ SÍ' : 'NO',
@@ -266,7 +266,7 @@ export function registerPokeTools(debug: DebugSystem) {
 
       const backpack = (game.state.eggs || []).map(e => ({
         uid: e.uid,
-        especie: db[e.id]?.name ?? e.id, // text-ok
+        especie: db[e.id]?.name ?? e.id, // text-ok: UI text display localization string
         pasosRestantes: e.steps,
         listo: e.ready ? '🐣 SÍ' : 'NO',
         shiny: e.isShiny ? '✨ SÍ' : 'NO',
@@ -306,7 +306,7 @@ export function registerPokeTools(debug: DebugSystem) {
       const db = POKEMON_DB
       let scannedCount = 0
 
-      const scanAll = !idOrAll || idOrAll.toLowerCase() === 'all' // text-ok
+      const scanAll = !idOrAll || idOrAll.toLowerCase() === 'all' // text-ok: UI text display localization string
 
       // Scan warehouse eggs
       breedingStore.warehouseEggs.forEach(e => {
@@ -451,7 +451,7 @@ export function registerPokeTools(debug: DebugSystem) {
       const allPokes = [...game.state.team, ...(game.state.box || [])].filter((p): p is Pokemon => p != null)
       
       const targetPoke = uidOrTarget 
-        ? allPokes.find(p => p.uid === uidOrTarget || p.name?.toLowerCase() === uidOrTarget.toLowerCase()) // domain-ok
+        ? allPokes.find(p => p.uid === uidOrTarget || p.name?.toLowerCase() === uidOrTarget.toLowerCase()) // domain-ok: Debug tool flexible name/UID lookup
         : (game.state.team[0] || null)
 
       if (!targetPoke) {

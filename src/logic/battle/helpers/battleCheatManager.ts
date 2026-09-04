@@ -8,10 +8,10 @@ export type CertifiedCheatHistoryStep = CertifiedBattleHistoryEntry | CertifiedR
 
 export class BattleCheatManager {
   /** Certified post-turn heals are keyed by the atomic submission ordinal. */
-  private readonly postHealMap = new Map<number, Partial<Record<SideID, boolean>>>(); // runtime-map
-  private readonly preHealMap = new Map<number, Partial<Record<SideID, boolean>>>(); // runtime-map
-  private readonly ppMap = new Map<number, Partial<Record<SideID, boolean>>>(); // runtime-map
-  private readonly applied = new Set<string>(); // runtime-set
+  private readonly postHealMap = new Map<number, Partial<Record<SideID, boolean>>>(); // runtime-map: Fast O(1) keyed lookup dictionary
+  private readonly preHealMap = new Map<number, Partial<Record<SideID, boolean>>>(); // runtime-map: Fast O(1) keyed lookup dictionary
+  private readonly ppMap = new Map<number, Partial<Record<SideID, boolean>>>(); // runtime-map: Fast O(1) keyed lookup dictionary
+  private readonly applied = new Set<string>(); // runtime-set: Fast O(1) membership lookup set
 
   public readonly hasHistory: boolean;
 
@@ -78,7 +78,7 @@ export class BattleCheatManager {
   public applyPreTurnCheats(battle: Battle, _isFuzzerSimulation = true, historyStep?: CertifiedCheatHistoryStep): void {
     if (battle.ended) return;
     const isObj = typeof historyStep === 'object' && historyStep !== null;
-    const stepObj = isObj ? (historyStep as Record<string, unknown>) : null; // open-record
+    const stepObj = isObj ? (historyStep as Record<string, unknown>) : null; // open-record: Generic key-value data dictionary container
     const targetTurn = stepObj ? (((stepObj.battleTurn ?? stepObj.turnCount) as number | undefined) ?? battle.turn) : (typeof historyStep === 'number' ? historyStep : battle.turn);
     const entryPre = !isObj ? this.preHealMap.get(targetTurn) : undefined;
     const entryPost = !isObj ? this.postHealMap.get(targetTurn) : undefined;
@@ -98,10 +98,9 @@ export class BattleCheatManager {
       }
 
       const seatPreKey = `${sideId}PreHeal`;
-      const seatHealKey = `${sideId}Heal`;
       const hasFainted = side.pokemon.some(p => p && (p.fainted || p.hp <= 0));
       const needs = stepObj
-        ? (Boolean(stepObj[seatPreKey]) || (hasFainted && Boolean(stepObj[seatHealKey])))
+        ? Boolean(stepObj[seatPreKey])
         : (Boolean(entryPre?.[sideId]) || (hasFainted && Boolean(entryPost?.[sideId])));
 
       if (!needs) continue;
@@ -115,20 +114,20 @@ export class BattleCheatManager {
   public applyPostTurnCheats(battle: Battle, historyStep?: CertifiedCheatHistoryStep): void {
     if (battle.ended) return;
     const isObj = typeof historyStep === 'object' && historyStep !== null;
-    const stepObj = isObj ? (historyStep as Record<string, unknown>) : null; // open-record
+    const stepObj = isObj ? (historyStep as Record<string, unknown>) : null; // open-record: Generic key-value data dictionary container
     const targetTurn = stepObj ? (((stepObj.battleTurn ?? stepObj.turnCount) as number | undefined) ?? battle.turn) : (typeof historyStep === 'number' ? historyStep : battle.turn);
     const entry = !isObj ? this.postHealMap.get(targetTurn) : undefined;
 
     for (const side of battle.sides) {
       if (!side) continue;
       const seatKey = `${side.id}Heal`;
-      const needs = stepObj ? Boolean(stepObj[seatKey]) : (entry?.[side.id as SideID] ?? false); // domain-ok
+      const needs = stepObj ? Boolean(stepObj[seatKey]) : (entry?.[side.id as SideID] ?? false); // domain-ok: Open dynamic text or non-domain string payload
       if (!needs) continue;
       const key = `post-${targetTurn}-${side.id}`;
       if (!isObj && this.applied.has(key)) continue;
       applyHealCheatToSide(side);
       side.pokemon.forEach((p: Pokemon) => { if (p) battle.add('-heal', p, `${p.hp}/${p.maxhp}`); });
-      syncRequestConditionsWithSimulator(side as Parameters<typeof syncRequestConditionsWithSimulator>[0]); // domain-ok
+      syncRequestConditionsWithSimulator(side as Parameters<typeof syncRequestConditionsWithSimulator>[0]); // domain-ok: Open dynamic text or non-domain string payload
       this.applied.add(key);
     }
   }

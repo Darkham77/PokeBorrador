@@ -7,7 +7,7 @@
 
 import fs from 'node:fs';
 
-const SASS_TRAPS = [ // no-domain
+const SASS_TRAPS = [ // no-domain: Non-domain utility collection or data structure
   'scale', 'grayscale', 'invert', 'opacity', 'brightness', 
   'blur', 'rotate', 'translate', 'saturate', 'drop-shadow',
   'translatex', 'translatey', 'translatez', 'skewx', 'skewy', 'matrix',
@@ -21,7 +21,7 @@ export function sassTrapsFixer() {
       // 1. If preceded by . or $, it's a SASS module or variable call. IGNORE.
       if (prefix) return match;
 
-      const lowerFunc = func.toLowerCase(); // string-ok
+      const lowerFunc = func.toLowerCase(); // string-ok: Internal string formatting or DOM token identifier
       if (SASS_TRAPS.includes(lowerFunc)) {
         // 2. Capitalize traps
         if (lowerFunc.includes('-')) {

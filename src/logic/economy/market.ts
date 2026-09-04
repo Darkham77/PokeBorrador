@@ -15,17 +15,23 @@ export interface MarketItemData {
   qty?: number;
 }
 
+export const MARKET_LISTING_STATUSES = ['active', 'sold', 'cancelled', 'expired'] as const;
+export type MarketListingStatus = (typeof MARKET_LISTING_STATUSES)[number];
+
+export const MARKET_LISTING_TYPES = ['pokemon', 'item'] as const;
+export type MarketListingType = (typeof MARKET_LISTING_TYPES)[number];
+
+export const MARKET_ASSET_TYPES = ['pokemon', 'item', 'money'] as const;
+export type MarketAssetType = (typeof MARKET_ASSET_TYPES)[number];
+
 interface MarketListingBase {
   id: string;
   seller_name?: string;
   price: number;
-  status: 'active' | 'sold' | 'cancelled' | 'expired';
+  status: MarketListingStatus;
   seller_id: string;
   created_at: string;
 }
-
-export type MarketListingType = 'pokemon' | 'item';
-export type MarketAssetType = 'pokemon' | 'item' | 'money';
 
 export type MarketListing =
   | (MarketListingBase & { listing_type: 'pokemon'; data: Pokemon })
@@ -63,7 +69,7 @@ function getMarketSoldSeenSet(state: GameState): Set<string> {
   let cached = MARKET_SOLD_SEEN_CACHE.get(state);
   if (!cached) {
     const ids = ensureMarketSoldSeenState(state);
-    cached = new Set<string>(ids); // runtime-set
+    cached = new Set<string>(ids); // runtime-set: Fast O(1) membership lookup set
     MARKET_SOLD_SEEN_CACHE.set(state, cached);
   }
   return cached;
@@ -121,7 +127,7 @@ export function applyMarketFilters(
 
       // Search
       if (filters.search) {
-        const query = filters.search.toLowerCase(); // text-ok
+        const query = filters.search.toLowerCase(); // text-ok: UI text display localization string
         const nameMatch = poke.name?.toLowerCase().includes(query);
         const nickMatch = poke.nickname?.toLowerCase().includes(query);
         if (!nameMatch && !nickMatch) return false;
@@ -146,13 +152,13 @@ export function applyMarketFilters(
 
       // Search
       if (filters.search) {
-        const query = filters.search.toLowerCase(); // text-ok
+        const query = filters.search.toLowerCase(); // text-ok: UI text display localization string
         if (!itemData.name?.toLowerCase().includes(query)) return false;
       }
 
       // Item Category
       if (filters.itemCat !== 'all') {
-        const key = itemData.id ? String(itemData.id) : (itemData.name || null); // domain-ok
+        const key = itemData.id ? String(itemData.id) : (itemData.name || null); // domain-ok: Open dynamic text or non-domain string payload
         try {
           const shopItem = key ? getItemById(key) : null;
           if (shopItem?.cat !== filters.itemCat) return false;

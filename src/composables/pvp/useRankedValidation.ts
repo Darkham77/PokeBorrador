@@ -1,6 +1,7 @@
 import { usePvPStore } from '@/stores/pvp';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { PokemonType } from '@/data/battle/types';
+import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 export function useRankedValidation() {
   const rankedStore = usePvPStore();
@@ -17,7 +18,7 @@ export function useRankedValidation() {
     const pokeId = String(pokemon.id || '').toLowerCase();
 
     // 1. Ban List
-    if (rules.bannedPokemonIds?.includes(pokeId)) {
+    if (isPokemonSpeciesId(pokeId) && rules.bannedPokemonIds?.includes(pokeId)) {
       return { ok: false, reason: `${pokemon.name} está baneado esta temporada.` };
     }
 

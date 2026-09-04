@@ -22,13 +22,13 @@ const props = defineProps<{
 
 function getEvValue(key: string): number {
   if (!props.pokemon?.evs) return 0
-  const evs = props.pokemon.evs as PokemonEVs // domain-ok
+  const evs = props.pokemon.evs as PokemonEVs // domain-ok: Open dynamic text or non-domain string payload
   return Number(evs[key as keyof PokemonEVs] || 0)
 }
 
 function getIvValue(key: string): number {
   if (!props.pokemon?.ivs) return 0
-  const ivs = props.pokemon.ivs as PokemonIVs // domain-ok
+  const ivs = props.pokemon.ivs as PokemonIVs // domain-ok: Open dynamic text or non-domain string payload
   return Number(ivs[key as keyof PokemonIVs] || 0)
 }
 

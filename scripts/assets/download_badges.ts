@@ -41,7 +41,7 @@ async function downloadFile(rawUrl: string, filepath: string) {
 
     const response = await safeFetch(rawUrl, {
       headers: {
-        'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${USER_AGENT_CHROME_VERSION} Safari/537.36`, // no-magic
+        'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${USER_AGENT_CHROME_VERSION} Safari/537.36`, // no-magic: Explicit mathematical constant or threshold value
         'Referer': 'https://bulbapedia.bulbagarden.net/'
       }
     });

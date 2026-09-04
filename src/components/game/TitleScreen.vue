@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
-import { computed } from 'vue'
+import { useLoadingStore } from '@/stores/loading'
+import { computed, watch, onMounted, nextTick } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { STARTER_POKEMON } from '@/data/pokemon/starters.ts'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { GAME_UI_EVENTS, type StarterSelectReadyDetail } from '@/types/system/gameEvents.ts'
 import { gsap } from 'gsap'
 
 const STARTER_SEED_OFFSET = 0.1
@@ -16,7 +19,31 @@ const GSAP_LEAVE_DURATION_SEC = 0.3
 
 const gameStore = useGameStore()
 const authStore = useAuthStore()
+const loadingStore = useLoadingStore()
 const gs = computed(() => gameStore.state)
+
+const emitStarterSelectReady = () => {
+  if (!gs.value.starterChosen && gameStore.isReady && loadingStore.isGateOpen) {
+    nextTick(() => {
+      if (typeof window !== 'undefined') {
+        window.__STARTER_SELECT_READY__ = true
+        const detail: StarterSelectReadyDetail = { ready: true }
+        window.dispatchEvent(new CustomEvent<StarterSelectReadyDetail>(GAME_UI_EVENTS.STARTER_SELECT_READY, { detail }))
+      }
+    })
+  }
+}
+
+onMounted(() => {
+  emitStarterSelectReady()
+})
+
+watch(
+  () => [gs.value.starterChosen, gameStore.isReady, loadingStore.isGateOpen],
+  () => {
+    emitStarterSelectReady()
+  }
+)
 
 const STARTER_BASE_HP_FALLBACK = 45
 const STARTER_BASE_ATK_FALLBACK = 49
@@ -29,7 +56,7 @@ const starterList = computed(() => {
     const typeLabel = primaryType === 'grass' ? '🌿 Planta' : primaryType === 'fire' ? '🔥 Fuego' : primaryType === 'water' ? '💧 Agua' : primaryType
     return {
       id: config.id,
-      name: data.name || config.id,
+      name: data.name,
       type: primaryType,
       typeLabel,
       seed: STARTER_SEED_OFFSET + index * STARTER_SEED_MULTIPLIER,
@@ -42,7 +69,7 @@ const starterList = computed(() => {
   })
 })
 
-const handleChooseStarter = async (id: string) => {
+const handleChooseStarter = async (id: PokemonSpeciesId) => {
   await gameStore.chooseStarter(id)
 }
 

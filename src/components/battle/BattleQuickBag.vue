@@ -25,7 +25,7 @@ interface BattleItem {
   cat: string
   sprite: string
   qty: number
-  tier?: 'common' | 'rare' | 'epic' | 'legend'
+  tier?: ItemTier
 }
 
 const inventory = computed(() => gameStore.state.inventory || {})

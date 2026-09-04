@@ -21,7 +21,7 @@ import {
 } from './encounterHelpers.ts';
 
 import { generateFishingEncounter } from './fishingEncounterHelper.ts'
-import { requireMapRouteId } from '@/data/world/map-assets'
+import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
 import { getMapLocationById } from '@/data/world/maps'
 import { requireWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
@@ -42,7 +42,7 @@ function generateGroundEncounter(
   state: EncounterState,
   options: EncounterOptions,
   activeEvents: GameEvent[],
-  locId: string
+  locId: MapRouteId
 ): Encounter | null {
   let { pool, rates } = getFinalGroundRates(loc, cycle, weather, activeEvents);
 
@@ -116,7 +116,7 @@ function generateGroundEncounter(
  * Main logic to generate a wild encounter.
  * Decomposes complex logic flows into single-responsibility utilities.
  */
-export async function generateEncounter(locId: string, state: EncounterState, options: EncounterOptions = {}): Promise<Encounter | null> {
+export async function generateEncounter(locId: MapRouteId, state: EncounterState, options: EncounterOptions = {}): Promise<Encounter | null> {
   const routeId = requireMapRouteId(locId);
   const maps = pokemonDataProvider.getMaps();
   const loc = maps.find(l => l.id === routeId) || getMapLocationById(routeId);

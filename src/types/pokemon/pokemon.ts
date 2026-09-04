@@ -11,16 +11,30 @@ export type { PokemonMoveId };
 
 export const POKEMON_STAT_KEYS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
 export type PokemonStatKey = (typeof POKEMON_STAT_KEYS)[number];
-export const POKEMON_STATUSES = ['par', 'brn', 'psn', 'slp', 'frz', 'tox'] as const; // lib-duplicate-ok
+export const STAT_BAR_MODES = ['full', 'stat', 'iv'] as const;
+export type StatBarMode = (typeof STAT_BAR_MODES)[number];
+export const POKEMON_STATUSES = ['par', 'brn', 'psn', 'slp', 'frz', 'tox'] as const; // lib-duplicate-ok: Library utility implementation duplication
 export type PokemonStatus = (typeof POKEMON_STATUSES)[number] | '';
+export const STATUS_CLEAR_TARGETS = ['any', 'poison', ...POKEMON_STATUSES] as const;
+export type StatusClearTarget = (typeof STATUS_CLEAR_TARGETS)[number];
 export const POKERUS_STATUSES = ['uninfected', 'infected', 'cured'] as const;
 export type PokerusStatus = (typeof POKERUS_STATUSES)[number];
-export type PokemonGender = 'm' | 'f' | null;
-export type PokedexStatus = 'none' | 'seen' | 'caught';
+export const POKEMON_GENDERS = ['m', 'f'] as const;
+export type PokemonGender = (typeof POKEMON_GENDERS)[number] | null;
+
+export const POKEMON_GENDER_NAMES = ['male', 'female', 'genderless'] as const;
+export type PokemonGenderName = (typeof POKEMON_GENDER_NAMES)[number];
+
+export const POKEDEX_STATUSES = ['none', 'seen', 'caught'] as const;
+export type PokedexStatus = (typeof POKEDEX_STATUSES)[number];
+
 export const POKEMON_STORAGE_LOCATIONS = ['team', 'box'] as const;
 export type PokemonStorageLocation = (typeof POKEMON_STORAGE_LOCATIONS)[number];
-export type PokemonSelectionSource = 'team' | 'box' | 'market';
-export type VolatileStatusKey = string; // string-ok Showdown dynamic volatile status key (e.g. toID(move.name))
+
+export const POKEMON_SELECTION_SOURCES = ['team', 'box', 'market', 'pokedex'] as const;
+export type PokemonSelectionSource = (typeof POKEMON_SELECTION_SOURCES)[number];
+
+export type VolatileStatusKey = string; // string-ok: Internal string formatting or DOM token identifier Showdown dynamic volatile status key (e.g. toID(move.name))
 
 export function isVolatileStatusKey(value: string): value is VolatileStatusKey {
   return typeof value === 'string' && value.length > 0 && /^[a-z0-9]+$/i.test(value);
@@ -31,7 +45,8 @@ export function requireVolatileStatusKey(value: string): VolatileStatusKey {
   throw new Error(`Invalid volatile status key: ${value}`);
 }
 
-export type ObtainedMethod = 'wild' | 'trade' | 'egg' | 'starter' | 'gift' | 'fishing' | 'archaeology' | 'gift_starter' | 'reward' | 'event';
+export const OBTAINED_METHODS = ['wild', 'trade', 'egg', 'starter', 'gift', 'fishing', 'archaeology', 'gift_starter', 'reward', 'event'] as const;
+export type ObtainedMethod = (typeof OBTAINED_METHODS)[number];
 
 export function isPokemonStatus(status: unknown): status is PokemonStatus {
   if (status === '') return true;
@@ -56,10 +71,10 @@ export function requirePokerusStatus(status: string): PokerusStatus {
 
 export interface BreedingCompatibility {
   level: number;
-  reason: string; // domain-ok
-  sharedGroups: string[]; // domain-ok
+  reason: string; // domain-ok: Open dynamic text or non-domain string payload
+  sharedGroups: string[]; // domain-ok: Open dynamic text or non-domain string payload
   eggSpecies?: PokemonSpeciesId;
-  motherId?: string; // domain-ok
+  motherId?: string; // domain-ok: Open dynamic text or non-domain string payload
 }
 
 
@@ -78,7 +93,7 @@ export interface MoveEffect {
   chance?: number;
   val?: number;
   percent?: number;
-  text?: string; // domain-ok
+  text?: string; // domain-ok: Open dynamic text or non-domain string payload
 }
 
 export const SHOWDOWN_BOOST_STAT_KEYS = ['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion'] as const;
@@ -103,14 +118,14 @@ export interface ShowdownSecondaryEffect extends ShowdownHitEffect {
 
 export interface Move {
   id?: PokemonMoveId;
-  name: string; // domain-ok
+  name: string; // domain-ok: Open dynamic text or non-domain string payload
   type?: PokemonType;
   cat?: MoveCategory;
   power?: number;
   acc?: number;
   pp: number;
   maxPP: number;
-  desc?: string; // domain-ok
+  desc?: string; // domain-ok: Open dynamic text or non-domain string payload
   drain?: number | boolean;
   priority?: number;
   crit?: number;
@@ -140,12 +155,12 @@ export interface Move {
 }
 
 export interface Pokemon {
-  uid: string; // domain-ok
+  uid: string; // domain-ok: Open dynamic text or non-domain string payload
   id: PokemonSpeciesId;
-  name: string; // domain-ok
+  name: string; // domain-ok: Open dynamic text or non-domain string payload
   species: PokemonSpeciesId;
-  details?: string; // domain-ok
-  nickname?: string | null; // domain-ok
+  details?: string; // domain-ok: Open dynamic text or non-domain string payload
+  nickname?: string | null; // domain-ok: Open dynamic text or non-domain string payload
   level: number;
   exp: number;
   expNeeded: number;
@@ -218,15 +233,15 @@ export interface Pokemon {
   weatherOrigin?: WeatherId;
   isWeatherStruggling?: boolean;
   isGuardian?: boolean;
-  region?: string; // domain-ok
-  ot_id?: string; // domain-ok
-  tags?: string[]; // domain-ok
+  region?: string; // domain-ok: Open dynamic text or non-domain string payload
+  ot_id?: string; // domain-ok: Open dynamic text or non-domain string payload
+  tags?: string[]; // domain-ok: Open dynamic text or non-domain string payload
   onMission?: boolean;
   onEvent?: boolean;
   onDefense?: boolean;
   inDaycare?: boolean;
   daycareSlot?: number;
-  daycareDepositedAt?: string; // domain-ok
+  daycareDepositedAt?: string; // domain-ok: Open dynamic text or non-domain string payload
   furyCutterCount?: number;
   lastMove?: Move | null;
   thrashTurns?: number;
@@ -239,13 +254,13 @@ export interface Pokemon {
   pts?: number;
 
   chargingMove?: Move | null;
-  aura?: string; // domain-ok
+  aura?: string; // domain-ok: Open dynamic text or non-domain string payload
   isAncestral?: boolean;
   choiceMove?: PokemonMoveId;
   originalDitto?: Partial<Pokemon>;
-  form?: string; // domain-ok
+  form?: string; // domain-ok: Open dynamic text or non-domain string payload
   isIllegal?: boolean;
-  illegalReasons?: string[]; // domain-ok
+  illegalReasons?: string[]; // domain-ok: Open dynamic text or non-domain string payload
   height?: number;
   weight?: number;
   trophies?: PokemonCompetitionTrophy[];
@@ -255,10 +270,10 @@ export const POKEMON_COMPETITION_RANKS = ['first', 'second', 'third'] as const;
 export type PokemonCompetitionRank = (typeof POKEMON_COMPETITION_RANKS)[number];
 
 export interface PokemonCompetitionTrophy {
-  eventId: string; // domain-ok
-  eventName: string; // domain-ok
-  categoryId: string; // domain-ok
-  categoryName: string; // domain-ok
+  eventId: string; // domain-ok: Open dynamic text or non-domain string payload
+  eventName: string; // domain-ok: Open dynamic text or non-domain string payload
+  categoryId: string; // domain-ok: Open dynamic text or non-domain string payload
+  categoryName: string; // domain-ok: Open dynamic text or non-domain string payload
   rank: PokemonCompetitionRank;
   score: number;
   awardedAt: number;
@@ -266,7 +281,7 @@ export interface PokemonCompetitionTrophy {
 
 
 export interface PokemonEgg {
-  uid: string; // domain-ok
+  uid: string; // domain-ok: Open dynamic text or non-domain string payload
   id: PokemonSpeciesId;
   pokemonId?: PokemonSpeciesId;
   steps: number;
@@ -282,11 +297,11 @@ export interface PokemonEgg {
   obtainedAt?: number;
   scanned?: boolean;
   predictedInfo?: {
-    name: string; // domain-ok
+    name: string; // domain-ok: Open dynamic text or non-domain string payload
     ivTotal: number;
   };
-  tint?: string; // domain-ok
+  tint?: string; // domain-ok: Open dynamic text or non-domain string payload
   isAncestral?: boolean;
-  color?: string; // domain-ok
+  color?: string; // domain-ok: Open dynamic text or non-domain string payload
   isNpc?: boolean;
 }

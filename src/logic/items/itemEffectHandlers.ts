@@ -1,5 +1,6 @@
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { ItemEffectResult } from '@/types/inventory/items'
+import type { ItemId } from '@/data/inventory/items'
 import { checkStoneEvolution } from '../evolution/evolutionLogic.ts'
 
 export function healHp(p: Pokemon, amount: number): ItemEffectResult {
@@ -23,9 +24,9 @@ export function revive(p: Pokemon, amount: number): ItemEffectResult {
   return { success: true, message: `revivió con ${p.hp} HP` }
 }
 
-import type { PokemonStatus } from '@/types/pokemon/pokemon';
+import type { StatusClearTarget } from '@/types/pokemon/pokemon';
 
-export function clearStatus(p: Pokemon, type: PokemonStatus | 'any' | 'poison'): ItemEffectResult {
+export function clearStatus(p: Pokemon, type: StatusClearTarget): ItemEffectResult {
   if (p.hp <= 0) return { success: false, message: 'El Pokémon está debilitado.' };
   if (!p.status) return { success: false, message: 'No tiene problemas de estado.' };
 
@@ -65,8 +66,8 @@ export function restorePP(p: Pokemon, amount: number): ItemEffectResult {
     : { success: false, message: 'Los PP ya están al máximo.' };
 }
 
-export function handleStone(p: Pokemon, stoneName: string): ItemEffectResult {
-  const nextId = checkStoneEvolution(p, stoneName);
+export function handleStone(p: Pokemon, stoneId: ItemId): ItemEffectResult {
+  const nextId = checkStoneEvolution(p, stoneId);
   if (!nextId) return { success: false, message: 'No tiene efecto sobre este Pokémon.' };
   return { 
     success: true, 

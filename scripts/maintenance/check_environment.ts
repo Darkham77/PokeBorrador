@@ -11,7 +11,7 @@ function parseSemver(v: string): { major: number; minor: number; patch: number }
   };
 }
 
-function compareVersions(current: { major: number; minor: number; patch: number }, required: { major: number; minor: number; patch: number }): boolean { // type-ok
+function compareVersions(current: { major: number; minor: number; patch: number }, required: { major: number; minor: number; patch: number }): boolean { // type-ok: Type contract declaration
   if (current.major > required.major) return true;
   if (current.major < required.major) return false;
   if (current.minor > required.minor) return true;

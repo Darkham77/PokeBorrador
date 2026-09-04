@@ -26,7 +26,7 @@ import {
 
 enableCompileCache();
 
-export const CANONICAL_IGNORE_DIRS: ReadonlySet<string> = new Set([ // runtime-set
+export const CANONICAL_IGNORE_DIRS: ReadonlySet<string> = new Set([ // runtime-set: Fast O(1) membership lookup set
   'node_modules',
   '.git',
   '.agents',
@@ -47,7 +47,7 @@ export const CANONICAL_IGNORE_DIRS: ReadonlySet<string> = new Set([ // runtime-s
   '_raw-assets'
 ]);
 
-export const SCANNABLE_EXTENSIONS: ReadonlySet<string> = new Set(['.ts', '.js', '.vue', '.cjs', '.mjs']); // runtime-set
+export const SCANNABLE_EXTENSIONS: ReadonlySet<string> = new Set(['.ts', '.js', '.vue', '.cjs', '.mjs']); // runtime-set: Fast O(1) membership lookup set
 
 /**
  * Validates that a path component is safe against path traversal.
@@ -107,7 +107,7 @@ export function collectRepositoryFiles(
   extraIgnorePatterns: readonly string[] = [],
   allowedExtensions: ReadonlySet<string> = SCANNABLE_EXTENSIONS
 ): string[] {
-  const results: string[] = []; // no-domain
+  const results: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!nodeFs.existsSync(dir)) return results;
 
   const entries = nodeFs.readdirSync(dir, { withFileTypes: true });
@@ -184,7 +184,7 @@ export function setupAuditor(config: AuditorConfig): AuditorContext {
     ignorePatterns: combinedIgnores,
     isPathIgnored: (relPath: string) => isPathIgnored(relPath, combinedIgnores),
     collectFiles: (roots = ['scripts', 'src', 'database', 'tests', 'supabase'], allowedExtensions = SCANNABLE_EXTENSIONS) => {
-      const all: string[] = []; // no-domain
+      const all: string[] = []; // no-domain: Non-domain utility collection or data structure
       for (const root of roots) {
         const fullRoot = path.resolve(projectRoot, root);
         all.push(...collectRepositoryFiles(fullRoot, projectRoot, combinedIgnores, allowedExtensions));

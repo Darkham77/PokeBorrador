@@ -10,7 +10,7 @@ import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import FriendshipSealBadge from '@/components/pokemon/FriendshipSealBadge.vue'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
-import { getPokemonVisualBadges } from '@/logic/constants/tags'
+import { getPokemonVisualBadges, type PokemonTagId } from '@/logic/constants/tags'
 import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
 import { getFieldPassiveBadges } from '@/logic/pokemon/pokemonFieldAbilities'
 
@@ -40,7 +40,7 @@ const emit = defineEmits<{
   unequipItem: [index: number]
   sendToBox: [index: number]
   select: [index: number]
-  'toggle-tag': [tagId: string]
+  'toggle-tag': [tagId: PokemonTagId]
 }>()
 
 const cardRef = ref(null)
@@ -108,7 +108,7 @@ const fieldPassive = computed(() => getFieldPassiveBadges(props.pokemon))
 const isPremiumTier = computed(() => tierInfo.value.tier === 'S' || tierInfo.value.tier === 'S+')
 
 const cardClasses = computed(() => {
-  const classes = ['pokemon-display-card'] // no-domain
+  const classes = ['pokemon-display-card'] // no-domain: Non-domain utility collection or data structure
   if (props.pokemon.onMission) classes.push('on-mission')
   if (props.pokemon.onEvent) classes.push('on-event')
   if (hasBadges.value) classes.push('with-badges')

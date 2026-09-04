@@ -71,7 +71,7 @@ export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
 
   const SPANISH_TYPE_ENTRIES = Object.entries(TYPE_TRANSLATIONS) as [PokemonType, string][]
   const SPANISH_TYPE_MAP: Record<string, PokemonType> = Object.fromEntries([
-    ...SPANISH_TYPE_ENTRIES.map(([eng, esp]) => [esp.toLowerCase(), eng]), // text-ok
+    ...SPANISH_TYPE_ENTRIES.map(([eng, esp]) => [esp.toLowerCase(), eng]), // text-ok: UI text display localization string
     ['electrico', 'electric'],
     ['dragon', 'dragon'],
     ['psiquico', 'psychic']
@@ -88,7 +88,7 @@ export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
       // Sanitizar indicadores de viñeta manual si existen (por ej. ▲, ▼, •)
       const cleanSentence = sentence.endsWith('.') ? sentence : sentence
       const currentSentence = cleanSentence.replace(/^[▲▼•]\s*/u, '').trim()
-      const lowerSentence = currentSentence.toLowerCase() // text-ok
+      const lowerSentence = currentSentence.toLowerCase() // text-ok: UI text display localization string
 
       let typeClass = ''
       let icon = ''
@@ -124,7 +124,7 @@ export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
 
       const parts = restOfSentence.split(SPANISH_TYPES_REGEX)
       const segments = parts.filter(Boolean).map(part => {
-        const lower = part.toLowerCase() // text-ok
+        const lower = part.toLowerCase() // text-ok: UI text display localization string
         const typeKey = SPANISH_TYPE_MAP[lower]
         return {
           text: part,
@@ -183,7 +183,7 @@ export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
 
   const terrainTags = computed(() => {
     const m = props.map as ExtendedMapLocation
-    const tags: string[] = [] // no-domain
+    const tags: string[] = [] // no-domain: Non-domain utility collection or data structure
     if (m.isCrystalCave) tags.push('💎 Cueva de Cristal')
     if (m.isCave) tags.push('🧗 Cueva')
     if (m.isVolcanic) tags.push('🌋 Volcánico')
@@ -202,7 +202,7 @@ export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
 
   const activeWeights = computed(() => {
     const weather = props.weather || 'clear'
-    const isRainy = (['rain', 'heavy_rain', 'storm', 'thunderstorm'] as const).includes((weather as string).toLowerCase() as never) // text-ok
+    const isRainy = (['rain', 'heavy_rain', 'storm', 'thunderstorm'] as const).includes((weather as string).toLowerCase() as never) // text-ok: UI text display localization string
     const climateFishingMultiplier = isRainy ? RAINY_FISHING_CLIMATE_MULTIPLIER : 1.0
     const eventFishingBonus = eventStore.globalMultipliers?.fishing || 1
     const fishingBonus = eventFishingBonus * climateFishingMultiplier
@@ -311,7 +311,7 @@ export function useRouteSpawnsCalculation(props: RouteSpawnsProps) {
   }
 
   const npcSpawns = computed(() => {
-    const maps = pokemonDataProvider.getMaps() as MapLocation[] // domain-ok
+    const maps = pokemonDataProvider.getMaps() as MapLocation[] // domain-ok: Open dynamic text or non-domain string payload
     const mapIds = maps.map(m => m.id)
     return getNpcEncounterChances(props.map.id, gameStore.state, {}, mapIds)
   })

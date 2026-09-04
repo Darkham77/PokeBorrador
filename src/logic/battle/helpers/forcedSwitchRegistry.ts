@@ -1,5 +1,8 @@
 import type { BattleEscapeType } from '@/types/battle/battle';
 import { toID } from '@/logic/utils/strings';
+import type { PokemonMoveId } from '@/data/battle/moves';
+import type { AbilityId } from '@/data/battle/abilities';
+import type { ItemId } from '@/data/inventory/items';
 
 export interface ForcedExitConfig {
   readonly escapeType: BattleEscapeType;
@@ -77,15 +80,15 @@ const FORCED_SWITCH_REGISTRY: Record<string, ForcedExitConfig> = {
 /**
  * Resolves the visual exit animation and localized combat log for a forced switch trigger.
  */
-export function getForcedExitConfig(triggerId?: string | null): ForcedExitConfig {
+export function getForcedExitConfig(triggerId?: PokemonMoveId | AbilityId | ItemId | null): ForcedExitConfig {
   if (!triggerId) return DEFAULT_FORCED_EXIT_CONFIG;
   const cleanId = toID(triggerId);
   return FORCED_SWITCH_REGISTRY[cleanId] || DEFAULT_FORCED_EXIT_CONFIG;
 }
 
-const FORCED_SWITCH_MOVES_SET: ReadonlySet<string> = new Set(['whirlwind', 'roar', 'dragontail', 'circlethrow']); // runtime-set
+const FORCED_SWITCH_MOVES_SET: ReadonlySet<string> = new Set(['whirlwind', 'roar', 'dragontail', 'circlethrow']); // runtime-set: Fast O(1) membership lookup set
 
-export function isForcedSwitchMove(moveId?: string | null): boolean {
+export function isForcedSwitchMove(moveId?: PokemonMoveId | null): boolean {
   if (!moveId) return false;
   const cleanId = toID(moveId);
   return FORCED_SWITCH_MOVES_SET.has(cleanId);

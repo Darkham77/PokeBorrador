@@ -35,7 +35,7 @@ function buildFieldConditionsList(
   enemySC:  SideConditions,
   terrain:  string | null | undefined
 ): string[] {
-  const list: string[] = []; // no-domain
+  const list: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (playerSC?.['reflect'])     list.push('Reflect (↓ daño físico enemigo)');
   if (playerSC?.['lightscreen']) list.push('Pantalla de Luz (↓ daño esp. enemigo)');
   if (playerSC?.['auroraveil'])  list.push('Aurora Velo (↓ todo daño enemigo)');
@@ -138,9 +138,8 @@ export function useMoveTooltip(
     // 1. Power details
     const power = calculateMovePower(
       move,
-      attacker as PurePokemon, // domain-ok
-      defender as PurePokemon | null, // domain-ok
-      weather ? { type: weather.type, turns: weather.turns } : null,
+      attacker as PurePokemon, // domain-ok: Open dynamic text or non-domain string payload
+      defender as PurePokemon | null, // domain-ok: Open dynamic text or non-domain string payload
       mechWeather,
       cycle,
       basePower,
@@ -163,8 +162,8 @@ export function useMoveTooltip(
 
     // 3. Crit Chance
     const critChance = calculateCritChance(
-      attacker as PurePokemon, // domain-ok
-      defender as PurePokemon | null // domain-ok
+      attacker as PurePokemon, // domain-ok: Open dynamic text or non-domain string payload
+      defender as PurePokemon | null // domain-ok: Open dynamic text or non-domain string payload
     );
 
     // 4. Effectiveness (type chart) + Damage range via @smogon/calc
@@ -180,8 +179,8 @@ export function useMoveTooltip(
     const enemyStagesEff  = enemyStageFull.def  !== undefined ? { def: isPhysical ? enemyStageFull.def  : enemyStageFull.spd  } : null;
     const { effectiveness } = calculateMoveEffectivenessAndDamage(
       move, md,
-      attacker as PurePokemon, // domain-ok
-      defender as PurePokemon | null, // domain-ok
+      attacker as PurePokemon, // domain-ok: Open dynamic text or non-domain string payload
+      defender as PurePokemon | null, // domain-ok: Open dynamic text or non-domain string payload
       weather ? { type: weather.type, turns: weather.turns } : null,
       cycle, basePower, playerStagesEff, enemyStagesEff
     );
@@ -213,8 +212,8 @@ export function useMoveTooltip(
 
     const weatherInfo = weather ? { type: weather.type, turns: weather.turns } : null;
     const attackerStat = calculateAttackerStatDisplay(
-      attacker as PurePokemon, // domain-ok
-      defender as PurePokemon | null, // domain-ok
+      attacker as PurePokemon, // domain-ok: Open dynamic text or non-domain string payload
+      defender as PurePokemon | null, // domain-ok: Open dynamic text or non-domain string payload
       isPhysical,
       isSpecial,
       battleStore.playerStages,
@@ -224,7 +223,7 @@ export function useMoveTooltip(
     );
 
     const defenderStat = calculateDefenderStatDisplay(
-      defender as PurePokemon | null, // domain-ok
+      defender as PurePokemon | null, // domain-ok: Open dynamic text or non-domain string payload
       isPhysical,
       isSpecial,
       battleStore.enemyStages,
@@ -265,8 +264,8 @@ export function useMoveTooltip(
 
     return parseStatusEffectInfo(
       move,
-      attacker as PurePokemon, // domain-ok
-      defender as PurePokemon | null, // domain-ok
+      attacker as PurePokemon, // domain-ok: Open dynamic text or non-domain string payload
+      defender as PurePokemon | null, // domain-ok: Open dynamic text or non-domain string payload
       battleStore.playerStages,
       battleStore.enemyStages
     );
@@ -274,9 +273,9 @@ export function useMoveTooltip(
 
   const moveDescriptionText = computed(() => {
     const move = toValue(moveInput);
-    const moveId = move.id || '';
-    const moveDataObj = moveId ? pokemonDataProvider.getMoveData(moveId) : null;
-    return getMoveDescription(moveId || move.name, moveDataObj);
+    if (!move || !move.id) return '';
+    const moveDataObj = pokemonDataProvider.getMoveData(move.id);
+    return getMoveDescription(move.id, moveDataObj);
   });
 
   return {

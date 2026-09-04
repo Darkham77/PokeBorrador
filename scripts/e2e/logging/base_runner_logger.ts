@@ -6,6 +6,17 @@ export interface LoggerOptions {
   readonly reportDir?: string;
 }
 
+export function formatExecutionTimestamp(date: Date = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const seconds = pad(date.getSeconds());
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 export abstract class BaseRunnerLogger {
   protected readonly logName: string;
   protected readonly reportDir: string;
@@ -92,7 +103,7 @@ export abstract class BaseRunnerLogger {
   public flushBlock(blockHeader?: string): void {
     if (this.memoryBuffer.length === 0) return;
 
-    const blockLines: string[] = []; // no-domain
+    const blockLines: string[] = []; // no-domain: Non-domain utility collection or data structure
     if (blockHeader) {
       blockLines.push(`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
       blockLines.push(`[${new Date().toISOString()}] LOG BLOCK: ${blockHeader}`);

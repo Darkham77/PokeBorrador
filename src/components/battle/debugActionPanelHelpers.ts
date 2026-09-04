@@ -3,7 +3,7 @@ import { hasPokemonSpriteId, requirePokemonSpriteValue } from '@/data/pokemon/sp
 
 const ALL_PDEX: readonly PokemonSpeciesId[] = [...PDEX_ORDER, ...GEN2_PDEX_ORDER]
 
-const resolveToSpriteNumber = (fullId: string): { numId: string; rest: string[] } => {
+const resolveToSpriteNumber = (fullId: string): { numId: string; rest: string[] } => { // domain-ok: Debug panel raw identifier parser input
   const parts = fullId.split('_')
 
   for (let i = parts.length; i >= 1; i--) {
@@ -20,7 +20,7 @@ const resolveToSpriteNumber = (fullId: string): { numId: string; rest: string[] 
   throw new Error(`[DebugActionPanel] Unknown pokemon id: ${fullId}`)
 }
 
-export const deconstructPokemonId = (fullId: string) => {
+export const deconstructPokemonId = (fullId: string) => { // domain-ok: Debug panel raw identifier parser input
   const { numId, rest } = resolveToSpriteNumber(fullId)
   let variant = ''
   let gender = ''
@@ -40,7 +40,7 @@ export const deconstructPokemonId = (fullId: string) => {
   return { baseId: numId, variant, gender }
 }
 
-function requireSpeciesFromDebugBase(baseId: string): PokemonSpeciesId {
+function requireSpeciesFromDebugBase(baseId: string): PokemonSpeciesId { // domain-ok: Debug panel raw base numeric or name string
   const cleanBase = baseId.trim().toLowerCase()
   if (/^\d+$/.test(cleanBase)) {
     const species = ALL_PDEX[Number(cleanBase) - 1]
@@ -50,7 +50,7 @@ function requireSpeciesFromDebugBase(baseId: string): PokemonSpeciesId {
   return requirePokemonSpeciesId(cleanBase)
 }
 
-export const constructPokemonId = (baseId: string, variant: string, gender: string): PokemonSpeciesId => {
+export const constructPokemonId = (baseId: string, variant: string, gender: string): PokemonSpeciesId => { // domain-ok: Debug panel raw base numeric or name string
   let id = requireSpeciesFromDebugBase(baseId)
   const cleanVariant = variant.trim().toLowerCase()
   const cleanGender = gender.trim().toLowerCase()

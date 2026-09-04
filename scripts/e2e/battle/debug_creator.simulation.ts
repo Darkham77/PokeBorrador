@@ -1,6 +1,7 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+import { BaseBattleSimulation } from '../base_battle_simulation.ts';
 import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
-import { setupE2ESession, loginTestUser, openDebugTab, armBattleReadyForInput, awaitBattleReadyForInput, type WindowWithResolver } from '../e2e_helpers.ts';
+import { openDebugTab, armBattleReadyForInput, awaitBattleReadyForInput, type WindowWithResolver } from '../e2e_helpers.ts';
 
 const CHARMANDER_EXPECTED_HP = 97;
 const CHARMANDER_EXPECTED_ATK = 46;
@@ -37,13 +38,17 @@ interface E2ECharmander {
   moves?: Array<{ id?: string; name?: string } | null>;
 }
 
-test.describe('Admin Debug Panel E2E Simulations', () => {
-  test.beforeEach(async ({ page }) => {
-    await setupE2ESession(page, []);
-    await loginTestUser(page, 'DEBUG_ADMIN');
-  });
+class DebugCreatorSimWrapper extends BaseBattleSimulation {
+  constructor(page: Page, username: string) {
+    super(page, username);
+  }
+}
 
+test.describe('Admin Debug Panel E2E Simulations', () => {
   test('should create a custom pokemon and verify its properties in battle', async ({ page }) => {
+    const sim = new DebugCreatorSimWrapper(page, 'DebugCreatorAdmin');
+    await sim.setup();
+
     // 1. Open POKES tab
     await openDebugTab(page, 'POKES');
 
@@ -157,9 +162,13 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     for (const mId of activePokemonState.moves) {
       expect(mId).not.toBe('');
     }
+    sim.finish('should create a custom pokemon and verify its properties in battle', 'passed');
   });
 
   test('should create custom encounter and verify enemy properties in battle', async ({ page }) => {
+    const sim = new DebugCreatorSimWrapper(page, 'DebugCreatorEncounter');
+    await sim.setup();
+
     // 1. Open POKES tab
     await openDebugTab(page, 'POKES');
 
@@ -193,9 +202,13 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
 
     expect(enemyState.id).toBe('bulbasaur');
     expect(enemyState.level).toBe(E2E_BULBASAUR_LEVEL);
+    sim.finish('should create custom encounter and verify enemy properties in battle', 'passed');
   });
 
   test('should configure and start trainer combat from ENTREN tab', async ({ page }) => {
+    const sim = new DebugCreatorSimWrapper(page, 'DebugCreatorTrainer');
+    await sim.setup();
+
     // 1. Open ENTREN tab
     await openDebugTab(page, 'ENTREN');
 
@@ -234,9 +247,13 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
 
     expect(battleTrainerState.isTrainer).toBe(true);
     expect(battleTrainerState.trainerName).toBe('BROCK_TEST');
+    sim.finish('should configure and start trainer combat from ENTREN tab', 'passed');
   });
 
   test('should manipulate cycle/weather from TIEMPO tab and verify combat weather sync', async ({ page }) => {
+    const sim = new DebugCreatorSimWrapper(page, 'DebugCreatorWeather');
+    await sim.setup();
+
     // 1. Open TIEMPO tab
     await openDebugTab(page, 'TIEMPO');
 
@@ -265,5 +282,6 @@ test.describe('Admin Debug Panel E2E Simulations', () => {
     });
 
     expect(weatherState).toBe('sandstorm');
+    sim.finish('should manipulate cycle/weather from TIEMPO tab and verify combat weather sync', 'passed');
   });
 });

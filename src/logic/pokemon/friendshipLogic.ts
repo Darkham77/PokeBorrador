@@ -8,6 +8,7 @@
 import {
   FRIENDSHIP_BOUNDS,
   FRIENDSHIP_SEAL_MAP,
+  type FriendshipLogTone,
   type FriendshipSealMetadata,
   type FriendshipSealTier,
 } from '@/types/pokemon/friendship.ts';
@@ -175,8 +176,8 @@ export function calculateFriendshipLevelUpDelta(currentFriendship: number, hasSo
 }
 
 export interface FriendshipTransitionLog {
-  readonly message: string; // domain-ok
-  readonly type: 'log-player' | 'log-info' | 'log-error';
+  readonly message: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly type: FriendshipLogTone;
   readonly direction: 'up' | 'down';
   readonly oldTier: FriendshipSealTier;
   readonly newTier: FriendshipSealTier;
@@ -186,11 +187,11 @@ export interface FriendshipTransitionLog {
  * Checks if a change in friendship crosses a significant tier boundary,
  * and generates the appropriate combat log announcement.
  */
-export function getFriendshipTransitionLog( // result-ok
+export function getFriendshipTransitionLog( // result-ok: Operation result wrapper payload
   oldFriendship: number | undefined | null,
   newFriendship: number | undefined | null,
   pokemonName: string
-): FriendshipTransitionLog | null { // result-ok
+): FriendshipTransitionLog | null { // result-ok: Operation result wrapper payload
   const oldClamped = clampFriendship(oldFriendship);
   const newClamped = clampFriendship(newFriendship);
   const oldTier = resolveFriendshipSealTier(oldClamped);

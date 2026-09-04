@@ -12,7 +12,8 @@ export function useBattleTrainerVisuals(
   const gameStore = useGameStore()
 
   const playerBackSpriteUrl = computed(() => {
-    const spriteId = classStore.currentClassDef?.avatarSpriteId || classStore.currentClassDef?.id || 'entrenador'
+    const cls = classStore.currentClassDef
+    const spriteId = cls?.avatarSpriteId || 'entrenador'
     const gender = gameStore.state.gender || 'h'
     return getAssetUrl(ASSET_TYPES.TRAINER, spriteId, { trainerSuffix: 'back', gender })
   })

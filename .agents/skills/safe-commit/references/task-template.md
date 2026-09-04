@@ -21,6 +21,7 @@
     - [ ] `npm run audit:for-commit` (0 errors, 0 new warnings)
     - [ ] `npm run test` (100% test suites passing)
     - [ ] `npm run build` 🔒 **THE BUILD GATE** (STRICT Exit Code 0 — zero bypasses)
+    - [ ] Build Optimization & Data Compression Analysis (Inspect Brotli/Gzip tables, chunk sizes, manualChunks, and PWA caching budgets)
     - [ ] `npm run fallow:health` (Score ≥ 85 and ≥ BASELINE_HEALTH)
     - [ ] *(If DB changed)* Database Parity Sync verified
   - [ ] **Loop Repair Action (Triggered on ANY failure above; repeat until build exits 0)**:
@@ -54,6 +55,7 @@
 - **audit:for-commit**: `PENDING`
 - **test**: `PENDING`
 - **npm run build (THE GATE)**: `PENDING (MUST BE EXIT 0)`
+- **build_compression_and_optimizations**: `PENDING (Brotli/Gzip savings & chunk health verified)`
 - **final fallow health**: `PENDING`
 - **Repairs Applied**:
   - `(none yet)`

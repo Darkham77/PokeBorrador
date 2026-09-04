@@ -3,12 +3,13 @@ const SECONDS_PER_HOUR_FACTOR = 3600;
 
 import { ref, computed, onMounted, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
-import { PLAYER_CLASSES } from '@/data/player/playerClasses'
+import { PLAYER_CLASSES, isPlayerClassId, type PlayerClassId } from '@/data/player/playerClasses'
 import { useAuthStore } from '@/stores/auth'
 import { useChatStore } from '@/stores/social/chat'
 import { useSocialStore, type Friend } from '@/stores/social/social'
 import { getXPNeededForClassLevel } from '@/logic/player/classMath'
 import type { GameStatKey } from '@/types/system/game'
+import type { GymId } from '@/data/world/gyms'
 import {
   resolveCosmeticField,
   resolveStatField,
@@ -227,8 +228,8 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
     return profile.value?.faction || saveState.value?.faction || null
   })
 
-  const playerClass = computed(() =>
-    resolveCosmeticField(
+  const playerClass = computed<PlayerClassId | null>(() => {
+    const raw = resolveCosmeticField(
       isOwnProfile.value,
       gameStore.state.playerClass,
       cachedCosmetic.value?.player_class,
@@ -237,11 +238,12 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
       saveState.value?.playerClass,
       null
     )
-  )
+    return raw && isPlayerClassId(raw) ? raw : null
+  })
 
   const classDef = computed(() => {
-    if (!playerClass.value) return null
-    return (PLAYER_CLASSES as Record<string, { id: string; name: string; color: string; description: string }>)[playerClass.value] || null // open-record
+    if (!playerClass.value || !isPlayerClassId(playerClass.value)) return null
+    return PLAYER_CLASSES[playerClass.value] || null
   })
 
   const trainerLevel = computed(() =>
@@ -353,7 +355,7 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
     return points.reduce((a: number, b: number) => Number(a) + Number(b), 0)
   })
 
-  const isGymDefeated = (gymId: string) => {
+  const isGymDefeated = (gymId: GymId) => {
     const list = isOwnProfile.value ? (gameStore.state.defeatedGyms || []) : (saveState.value?.defeatedGyms || [])
     return list.includes(gymId)
   }

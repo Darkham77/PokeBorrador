@@ -4,14 +4,14 @@
  * Pure domain generation and calculation helpers for the Archaeology minigame.
  */
 
-export const ARCHAEOLOGY_DIFFICULTIES = {
+import type { MinigameDifficulty } from '@/types/battle/battle';
+
+export const ARCHAEOLOGY_DIFFICULTIES: Record<MinigameDifficulty, { grid: number; energy: number; parts: number; label: string; items: number; color: string }> = {
   easy: { grid: 5, energy: 12, parts: 3, label: 'Fácil', items: 1, color: '#4ade80' },
   medium: { grid: 6, energy: 10, parts: 4, label: 'Medio', items: 2, color: '#facc15' },
   hard: { grid: 7, energy: 8, parts: 5, label: 'Difícil', items: 3, color: '#fb923c' },
   expert: { grid: 8, energy: 6, parts: 6, label: 'Experto', items: 4, color: '#f87171' }
 } as const;
-
-export type ArchaeologyDifficultyKey = keyof typeof ARCHAEOLOGY_DIFFICULTIES;
 
 export interface ArchaeologyTile {
   r: number;
@@ -34,7 +34,7 @@ const MANHATTAN_MAX_INITIAL_DISTANCE = 999;
 export function calculateArchaeologyDifficulty(
   rarity: number,
   randRoll: number = Math.random() * 100
-): ArchaeologyDifficultyKey {
+): MinigameDifficulty {
   const isRare = (rarity || 50) < 15;
 
   if (isRare) {

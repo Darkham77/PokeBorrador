@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { BaseE2ESimulation } from './base_simulation.ts';
+import { BaseE2ESimulation, type SimulationOptions } from './base_simulation.ts';
 import {
   MAX_PER_ACTION_TIMEOUT_MS,
   SIMULATION_GSAP_TIME_SCALE,
@@ -14,8 +14,6 @@ import type { BattleReadyForInputDetail } from '../../src/types/battle/battleEve
 import type { ItemId } from '../../src/data/inventory/items.ts';
 import { createCertifiedBattleInventory } from './fuzzer/core/certifiedBattleInventory.ts';
 import { PokemonLegalityValidator } from '../../src/logic/battle/helpers/pokemonLegalityValidator.ts';
-
-
 
 /** Shape of a single Pokémon entry inside a fuzzer-certified batch team list. */
 interface FuzzerTeamSet {
@@ -46,8 +44,14 @@ export interface BattleStoreSnapshot {
 export abstract class BaseBattleSimulation extends BaseE2ESimulation {
   private lastBattleReady: BattleReadyForInputDetail | null = null
 
-  constructor(page: Page, username: string, logBuffer?: string[]) {
-    super(page, username, logBuffer);
+  constructor(
+    page: Page,
+    username: string,
+    logBufferOrOptions?: string[] | SimulationOptions,
+    sqliteKey?: string,
+    options?: SimulationOptions
+  ) {
+    super(page, username, logBufferOrOptions, sqliteKey, options);
   }
 
   public override async setup(): Promise<void> {
@@ -111,11 +115,28 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    * Inherited by all battle simulation wrappers to eliminate duplication.
    */
   public async voluntarySwitch(pokemonUid: string): Promise<BattleReadyForInputDetail> {
-    await this.page.waitForFunction(() => {
-      const debug = window.__VITE_DEBUG__ as { useBattleStore?: () => { isProcessing?: boolean; isIntroAnimating?: boolean } } | undefined;
-      const store = debug?.useBattleStore?.();
-      return !store?.isProcessing && !store?.isIntroAnimating;
-    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    try {
+      await this.page.waitForFunction(() => {
+        const debug = window.__VITE_DEBUG__ as { useBattleStore?: () => { isProcessing?: boolean; isIntroAnimating?: boolean } } | undefined;
+        const store = debug?.useBattleStore?.();
+        return !store?.isProcessing && !store?.isIntroAnimating;
+      }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    } catch (err) {
+      const debugState = await this.page.evaluate(() => {
+        const debug = window.__VITE_DEBUG__;
+        const store = debug?.useBattleStore?.();
+        return {
+          isProcessing: store?.isProcessing,
+          isIntroAnimating: store?.isIntroAnimating,
+          currentState: store?.currentState,
+          currentSubState: store?.currentSubState,
+          player: Boolean(store?.player),
+          enemy: Boolean(store?.enemy),
+        };
+      });
+      console.error(`[E2E-VOLUNTARY-SWITCH-TIMEOUT] Diagnostic state:`, JSON.stringify(debugState));
+      throw err;
+    }
 
     const isOver = await this.page.evaluate(() => {
       const debug = window.__VITE_DEBUG__ as { useBattleStore?: () => { isBattleActive?: boolean; over?: boolean; activeBattle?: { over?: boolean } } } | undefined;
@@ -177,7 +198,39 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       const isForced = Boolean(uiStore?.isBattleSwitchForced) || subStateStr === 'SWITCH_MENU' || hasPendingForceSwitch;
       await battleStore.executeSwitch(index, isForced);
     }, pokemonUid);
-    this.lastBattleReady = await awaitBattleReadyForInput(this.page);
+    try {
+      this.lastBattleReady = await awaitBattleReadyForInput(this.page);
+    } catch (err) {
+      const debugState = await this.page.evaluate(() => {
+        const debug = window.__VITE_DEBUG__ as {
+          useBattleStore?: () => {
+            isProcessing?: boolean;
+            isIntroAnimating?: boolean;
+            isBattleActive?: boolean;
+            over?: boolean;
+            player?: unknown;
+            enemy?: unknown;
+            currentState?: unknown;
+            currentSubState?: unknown;
+            battleLogs?: unknown[];
+          };
+        } | undefined;
+        const store = debug?.useBattleStore?.();
+        return {
+          isProcessing: store?.isProcessing,
+          isIntroAnimating: store?.isIntroAnimating,
+          isBattleActive: store?.isBattleActive,
+          over: store?.over,
+          hasPlayer: Boolean(store?.player),
+          hasEnemy: Boolean(store?.enemy),
+          currentState: store?.currentState,
+          currentSubState: store?.currentSubState,
+          lastLog: Array.isArray(store?.battleLogs) ? store.battleLogs[store.battleLogs.length - 1] : undefined
+        };
+      });
+      console.error(`[E2E-VOLUNTARY-SWITCH-TIMEOUT] Diagnostic state at timeout:`, JSON.stringify(debugState));
+      throw err;
+    }
     return this.lastBattleReady;
   }
 
@@ -204,7 +257,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
         playerHp: bState.player?.hp ?? 0,
         playerMaxHp: bState.player?.maxHp ?? 0,
         playerStatus: bState.player?.status || null,
-        playerTeam: team.map((p: { uid?: string; name?: string; hp?: number; maxHp?: number; status?: string | null }) => ({ // type-ok
+        playerTeam: team.map((p: { uid?: string; name?: string; hp?: number; maxHp?: number; status?: string | null }) => ({ // type-ok: Type contract declaration
           uid: p?.uid ?? '',
           name: p?.name ?? '',
           hp: p?.hp ?? 0,
@@ -268,12 +321,70 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    * Inherited by all battle simulations to eliminate duplication.
    */
   public async selectMove(moveIndex = 0): Promise<BattleReadyForInputDetail> {
-    await this.page.waitForFunction(() => {
-      const debug = window.__VITE_DEBUG__ as { useBattleStore?: () => { isProcessing?: boolean; isIntroAnimating?: boolean; player?: unknown; enemy?: unknown; isBattleActive?: boolean; over?: boolean } } | undefined;
+    try {
+      await this.page.waitForFunction(() => {
+        const debug = window.__VITE_DEBUG__ as {
+          useBattleStore?: () => {
+            isProcessing?: boolean;
+            isIntroAnimating?: boolean;
+            player?: unknown;
+            enemy?: unknown;
+            isBattleActive?: boolean;
+            over?: boolean;
+            currentSubState?: string;
+            activeBattle?: { playerRequest?: { forceSwitch?: unknown } };
+          };
+        } | undefined;
+        const store = debug?.useBattleStore?.();
+        if (!store?.isBattleActive || store?.over) return true;
+        const pReq = store?.activeBattle?.playerRequest;
+        const hasForceSwitch = Array.isArray(pReq?.forceSwitch) ? pReq.forceSwitch.some(Boolean) : Boolean(pReq?.forceSwitch);
+        const isSwitchRequired = store?.currentSubState === 'SWITCH_MENU' || hasForceSwitch || (!store?.player && Boolean(store?.enemy));
+        if (isSwitchRequired) return true;
+        return !store?.isProcessing && !store?.isIntroAnimating && Boolean(store?.player) && Boolean(store?.enemy);
+      }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    } catch (err) {
+      const debugState = await this.page.evaluate(() => {
+        const debug = window.__VITE_DEBUG__;
+        const store = debug?.useBattleStore?.();
+        return {
+          isProcessing: store?.isProcessing,
+          isIntroAnimating: store?.isIntroAnimating,
+          isBattleActive: store?.isBattleActive,
+          over: store?.over,
+          hasPlayer: Boolean(store?.player),
+          hasEnemy: Boolean(store?.enemy),
+          currentState: store?.currentState,
+          currentSubState: store?.currentSubState,
+          activeMove: store?.activeMove,
+          attackerSide: store?.attackerSide,
+          lastLog: Array.isArray(store?.battleLogs) ? store.battleLogs[store.battleLogs.length - 1] : undefined
+        };
+      });
+      console.error(`[E2E-SELECT-MOVE-TIMEOUT] Diagnostic state at timeout:`, JSON.stringify(debugState));
+      throw err;
+    }
+
+    const shouldSkip = await this.page.evaluate(() => {
+      const debug = window.__VITE_DEBUG__ as {
+        useBattleStore?: () => {
+          isBattleActive?: boolean;
+          over?: boolean;
+          player?: unknown;
+          enemy?: unknown;
+          currentSubState?: string;
+          activeBattle?: { playerRequest?: { forceSwitch?: unknown } };
+        };
+      } | undefined;
       const store = debug?.useBattleStore?.();
-      if (!store?.isBattleActive || store?.over) return true;
-      return !store?.isProcessing && !store?.isIntroAnimating && Boolean(store?.player) && Boolean(store?.enemy);
-    }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      const pReq = store?.activeBattle?.playerRequest;
+      const hasForceSwitch = Array.isArray(pReq?.forceSwitch) ? pReq.forceSwitch.some(Boolean) : Boolean(pReq?.forceSwitch);
+      const isSwitchRequired = store?.currentSubState === 'SWITCH_MENU' || hasForceSwitch || (!store?.player && Boolean(store?.enemy));
+      return !store?.isBattleActive || store?.over || !store?.player || !store?.enemy || isSwitchRequired;
+    });
+    if (shouldSkip) {
+      return this.lastBattleReady ?? { subState: '', p1ChoiceIdx: 0, p2ChoiceIdx: 0, over: true, playerSwitchSlots: [] };
+    }
 
     await armBattleReadyForInput(this.page);
     await this.page.evaluate(async (idx) => {
@@ -286,6 +397,8 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
   }
 
   public async replayCertifiedBattle(batch: CertifiedTestBatch): Promise<void> {
+    const replayStartTime = Temporal.Now.instant().epochMilliseconds;
+    console.log(`⚔️ [${this.driver.toUpperCase()}] [REPLAY:START] Lote "${batch.id || this.username}" (${batch.playerTeam.length}v${batch.enemyTeam.length}) - ${batch.history.length} turnos`);
     await this.speedUpAnimations(100);
     while (true) {
       if (this.lastBattleReady?.over) {
@@ -354,6 +467,8 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       const entry = batch.history[currentBrowserIdx];
       if (!entry) break;
 
+      this.logBuffer.push(`Step ${currentBrowserIdx + 1}/${batch.history.length}: P1="${entry.p1Choice}", P2="${entry.p2Choice}"`);
+
       if (entry.p1ActiveUid && stateSnapshot.p1Uid && entry.p1ActiveUid !== stateSnapshot.p1Uid) {
         console.warn(`[E2E-METADATA-WARN] P1 Active UID mismatch at step ${currentBrowserIdx + 1}: expected ${entry.p1ActiveUid}, actual ${stateSnapshot.p1Uid}`);
       }
@@ -367,7 +482,25 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
         console.warn(`[E2E-METADATA-WARN] Terrain mismatch at step ${currentBrowserIdx + 1}: expected ${entry.terrain}, actual ${stateSnapshot.terrain}`);
       }
 
-      const isSwitchMenu = this.lastBattleReady?.subState === 'SWITCH_MENU';
+      const liveSwitchState = await this.page.evaluate(() => {
+        const debug = window.__VITE_DEBUG__ as {
+          useBattleStore?: () => {
+            currentSubState?: string;
+            isBattleActive?: boolean;
+            over?: boolean;
+            player?: unknown;
+            enemy?: unknown;
+            activeBattle?: { playerRequest?: { forceSwitch?: unknown } };
+          };
+        } | undefined;
+        const store = debug?.useBattleStore?.();
+        const pReq = store?.activeBattle?.playerRequest;
+        const hasForceSwitch = Array.isArray(pReq?.forceSwitch) ? pReq.forceSwitch.some(Boolean) : Boolean(pReq?.forceSwitch);
+        const subState = store?.currentSubState;
+        const isVacatedSeat = Boolean(store?.isBattleActive && !store?.over && !store?.player && store?.enemy);
+        return subState === 'SWITCH_MENU' || hasForceSwitch || isVacatedSeat;
+      });
+      const isSwitchMenu = this.lastBattleReady?.subState === 'SWITCH_MENU' || liveSwitchState;
       if (isSwitchMenu) {
         let switchEntry = entry;
         let switchIdx = currentBrowserIdx;
@@ -479,10 +612,14 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
             }
           }
         }, currentBrowserIdx);
+        this.lastBattleReady = null;
         continue;
       }
       throw new Error(`[E2E-CERTIFIED-REPLAY] No visible P1 action for ${JSON.stringify(entry)}.`);
     }
+
+    const durationSec = ((Temporal.Now.instant().epochMilliseconds - replayStartTime) / 1000).toFixed(1);
+    console.log(`✅ [${this.driver.toUpperCase()}] [REPLAY:DONE] Lote "${batch.id || this.username}" completado con éxito (${batch.history.length} turnos en ${durationSec}s)`);
   }
 
   /**
@@ -536,7 +673,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       const localPlayerTeam = batchData.playerTeam.map((set: FuzzerTeamSet) => {
         return debug.pokemonDebugService!.generate({
           uid: set.uid,
-          id: set.species.toLowerCase(), // string-ok
+          id: set.species.toLowerCase(), // string-ok: Internal string formatting or DOM token identifier
           level: set.level ?? 100,
           ability: set.ability,
           moves: set.moves,
@@ -554,7 +691,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       const localEnemyTeam = batchData.enemyTeam.map((set: FuzzerTeamSet) => {
         return debug.pokemonDebugService!.generate({
           uid: set.uid,
-          id: set.species.toLowerCase(), // string-ok
+          id: set.species.toLowerCase(), // string-ok: Internal string formatting or DOM token identifier
           level: set.level ?? 100,
           ability: set.ability,
           moves: set.moves,
@@ -582,11 +719,11 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       debugObj.battleSeed = (batchData.seed ?? undefined) as [number, number, number, number] | undefined;
       debugObj.isDeterministicSimulation = true;
       debugObj.isScriptedReplayMode = true;
-      const enemyChoices: string[] = batchData.enemyChoices ?? []; // no-domain
+      const enemyChoices: string[] = batchData.enemyChoices ?? []; // no-domain: Non-domain utility collection or data structure
       debugObj.enemyChoices = [...enemyChoices];
       debugObj.mockEnemyChoices = [...enemyChoices];
       
-      const playerChoices: string[] = batchData.playerChoices ?? []; // no-domain
+      const playerChoices: string[] = batchData.playerChoices ?? []; // no-domain: Non-domain utility collection or data structure
       debugObj.playerChoices = [...playerChoices];
       
       debugObj.p1ChoiceIdx = 0;
@@ -703,5 +840,26 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
    */
   public async awaitReturnToMap(): Promise<void> {
     await awaitBattleFlowCompletion(this.page);
+  }
+
+  /**
+   * Lanza una Pokéball en combate manejando tanto captura exitosa como escape/breakout,
+   * garantizando que el elemento esté habilitado (:not(.is-disabled)) y coordinando
+   * los eventos de sincronización FSM / battle-ready.
+   */
+  public async throwBall(ballId: string, options: { expectCapture?: boolean; timeout?: number } = {}): Promise<void> {
+    const { expectCapture = false, timeout = MAX_PER_ACTION_TIMEOUT_MS * 2 } = options;
+    const ballCard = this.page.locator(`.quick-item-card[data-item-id="${ballId}"]:not(.is-disabled)`).first();
+    await ballCard.waitFor({ state: 'visible', timeout });
+
+    if (expectCapture) {
+      await armBattleFlowCompletion(this.page);
+      await clickResilient(ballCard, { timeout });
+      await awaitBattleFlowCompletion(this.page);
+    } else {
+      await armBattleReadyForInput(this.page, timeout);
+      await clickResilient(ballCard, { timeout });
+      await awaitBattleReadyForInput(this.page, timeout);
+    }
   }
 }

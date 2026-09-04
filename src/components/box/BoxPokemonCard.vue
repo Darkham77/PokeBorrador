@@ -13,6 +13,7 @@ import { useUIStore } from '@/stores/ui'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
 
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { ComponentPillSize } from '@/types/system/game'
 
 const uiStore = useUIStore()
 
@@ -23,7 +24,7 @@ const props = withDefaults(defineProps<{
   selectionType?: string | null
   isPerformanceMode?: boolean
   hideStats?: boolean
-  typePillSize?: 'ssm' | 'sm' | 'md' | 'lg'
+  typePillSize?: ComponentPillSize
 }>(), {
   isSelected: false,
   selectionType: null,

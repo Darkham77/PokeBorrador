@@ -4,6 +4,7 @@ import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
 import type { PokemonData, LearnsetMove } from '@/types/system/database';
 import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { ItemId } from '@/data/inventory/items';
 import { requireAbilityId } from '@/data/battle/abilities';
 import { isReadyForFriendshipEvolution } from '@/logic/pokemon/friendshipLogic';
 import { isEnabledPokemonId } from '@/data/system/constants';
@@ -12,7 +13,7 @@ import { isEnabledPokemonId } from '@/data/system/constants';
  * Realiza la evolución de los datos de un Pokémon.
  * @returns {Object} { pendingMoves, fromId, toId }
  */
-export function evolvePokemonData(pokemon: Pokemon, toId: string) {
+export function evolvePokemonData(pokemon: Pokemon, toId: PokemonSpeciesId) {
   const targetSpeciesId = requirePokemonSpeciesId(toId);
   const toData: PokemonData | null = pokemonDataProvider.getPokemonData(targetSpeciesId);
   if (!toData) return null;
@@ -46,8 +47,8 @@ export function evolvePokemonData(pokemon: Pokemon, toId: string) {
   const pendingMoves: Move[] = [];
   if (toData.learnset) {
     (toData.learnset as LearnsetMove[]).filter(m => m.lv === pokemon.level).forEach(m => {
-      if (!pokemon.moves.find(em => em && em.name === m.name)) {
-        pendingMoves.push({ name: m.name, pp: m.pp, maxPP: m.pp });
+      if (!pokemon.moves.find(em => em && em.id === m.id)) {
+        pendingMoves.push({ id: m.id, name: m.name, pp: m.pp, maxPP: m.pp });
       }
     });
   }
@@ -196,12 +197,16 @@ export function getEvolvedForm(id: string, level: number): PokemonSpeciesId {
  * Comprueba si un Pokémon puede evolucionar con una piedra específica.
  * @param stoneId - Official Showdown item ID (e.g. 'waterstone', 'thunderstone')
  */
-export function checkStoneEvolution(pokemon: Pokemon, stoneId: string): PokemonSpeciesId | null {
+export function checkStoneEvolution(pokemon: Pokemon, stoneId: ItemId): PokemonSpeciesId | null {
   if (pokemon.id === 'eevee') {
     if (stoneId === 'waterstone') return requirePokemonSpeciesId('vaporeon');
     if (stoneId === 'thunderstone') return requirePokemonSpeciesId('jolteon');
     if (stoneId === 'firestone') return requirePokemonSpeciesId('flareon');
     return null;
+  }
+
+  if (stoneId === 'linkcable') {
+    return getTradeEvolution(pokemon.id);
   }
 
   const evo = getStoneEvolution(pokemon.id);

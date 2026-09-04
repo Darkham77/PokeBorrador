@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useInputAnimations } from '@/composables/ui/useInputAnimations'
+import type { ServerConnectionStatus } from '@/types/auth/auth'
 
 interface Server {
   id: string
@@ -12,7 +13,7 @@ interface Server {
 interface Props {
   loading: boolean
   isOnline: boolean
-  serverStatus: 'checking' | 'online' | 'offline'
+  serverStatus: ServerConnectionStatus
   serverStatusDetail: string
   selectedServerId: string
   officialServers: Server[]

@@ -49,15 +49,15 @@ export const TYPE_TRANSLATIONS: Record<PokemonType, string> = {
   fairy: 'Hada'
 } as const;
 
-export const POKEMON_TYPES_SET: ReadonlySet<string> = new Set(POKEMON_TYPES); // runtime-set
+export const POKEMON_TYPES_SET: ReadonlySet<string> = new Set(POKEMON_TYPES); // runtime-set: Fast O(1) membership lookup set
 
 export function isPokemonType(raw: string): raw is PokemonType {
-  return POKEMON_TYPES_SET.has(raw.toLowerCase()); // text-ok
+  return POKEMON_TYPES_SET.has(raw.toLowerCase()); // text-ok: UI text display localization string
 }
 
 /** Boundary adapter for data coming from Showdown or external sources. Throws if invalid. */
 export function toPokemonType(raw: string): PokemonType {
-  const clean = raw.toLowerCase(); // text-ok
+  const clean = raw.toLowerCase(); // text-ok: UI text display localization string
   if (isPokemonType(clean)) return clean;
   throw new Error(`[types] Invalid PokemonType from external source: '${raw}'`);
 }

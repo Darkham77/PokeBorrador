@@ -41,7 +41,7 @@ describe('Static Catalogs O(1) Lookups & Domain Contracts', () => {
     });
 
     it('should throw explicit error for invalid route IDs', () => {
-      expect(() => getMapLocationById('fake_route_999')).toThrow();
+      expect(() => getMapLocationById('fake_route_999' as unknown as import('@/data/world/map-assets').MapRouteId)).toThrow();
     });
   });
 
@@ -69,7 +69,7 @@ describe('Static Catalogs O(1) Lookups & Domain Contracts', () => {
       expect(getPokedexOrderIndex('ivysaur')).toBe(1);
       expect(getPokedexOrderIndex('mew')).toBe(150);
       expect(getPokedexOrderIndex('chikorita')).toBe(151);
-      expect(getPokedexOrderIndex('non_existent_species')).toBe(-1);
+      expect(getPokedexOrderIndex('non_existent_species' as unknown as import('@/data/pokemon/pokedex').PokemonSpeciesId)).toBe(-1);
     });
 
     it('should index all GAME_TMS in GAME_TMS_BY_ID in O(1)', () => {
@@ -91,7 +91,7 @@ describe('Static Catalogs O(1) Lookups & Domain Contracts', () => {
       expect(isGymId('pewter')).toBe(true);
       expect(isGymId('cerulean')).toBe(true);
       expect(isGymId('fake_gym')).toBe(false);
-      expect(() => getGymById('fake_gym')).toThrow();
+      expect(() => getGymById('fake_gym' as unknown as import('@/data/world/gyms').GymId)).toThrow();
     });
   });
 });

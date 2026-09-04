@@ -1,0 +1,2939 @@
+{
+  "id": "case-8b72ec9e5b96",
+  "idx": 23,
+  "playerTeam": [
+    {
+      "name": "0fe95ed6",
+      "species": "mew",
+      "level": 100,
+      "gender": "N",
+      "item": "",
+      "ability": "synchronize",
+      "nature": "serious",
+      "evs": {
+        "hp": 4,
+        "atk": 252,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "sludge",
+        "sludgebomb",
+        "sludgewave",
+        "smackdown"
+      ],
+      "uid": "0fe95ed6-c410-4f3e-8e7f-5d5294e5c20b",
+      "stats": {
+        "maxHp": 342,
+        "atk": 299,
+        "def": 236,
+        "spa": 236,
+        "spd": 236,
+        "spe": 299
+      }
+    },
+    {
+      "name": "93620ddd",
+      "species": "mew",
+      "level": 100,
+      "gender": "N",
+      "item": "",
+      "ability": "synchronize",
+      "nature": "serious",
+      "evs": {
+        "hp": 4,
+        "atk": 252,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "smartstrike",
+        "smog",
+        "smokescreen",
+        "snarl"
+      ],
+      "uid": "93620ddd-92f5-4617-bd5a-42f361bd5d99",
+      "stats": {
+        "maxHp": 342,
+        "atk": 299,
+        "def": 236,
+        "spa": 236,
+        "spd": 236,
+        "spe": 299
+      }
+    },
+    {
+      "name": "edaa0f8a",
+      "species": "mew",
+      "level": 100,
+      "gender": "N",
+      "item": "",
+      "ability": "synchronize",
+      "nature": "serious",
+      "evs": {
+        "hp": 4,
+        "atk": 252,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "snipeshot",
+        "snore",
+        "snowscape",
+        "soak"
+      ],
+      "uid": "edaa0f8a-1859-4729-9bbf-34717bd36121",
+      "stats": {
+        "maxHp": 342,
+        "atk": 299,
+        "def": 236,
+        "spa": 236,
+        "spd": 236,
+        "spe": 299
+      }
+    },
+    {
+      "name": "fcbf41f7",
+      "species": "mew",
+      "level": 100,
+      "gender": "N",
+      "item": "",
+      "ability": "synchronize",
+      "nature": "serious",
+      "evs": {
+        "hp": 4,
+        "atk": 252,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "softboiled",
+        "solarbeam",
+        "solarblade",
+        "spacialrend"
+      ],
+      "uid": "fcbf41f7-dc04-4ca8-bd11-8600b7b9d9d1",
+      "stats": {
+        "maxHp": 342,
+        "atk": 299,
+        "def": 236,
+        "spa": 236,
+        "spd": 236,
+        "spe": 299
+      }
+    },
+    {
+      "name": "72c5372a",
+      "species": "mew",
+      "level": 100,
+      "gender": "N",
+      "item": "",
+      "ability": "synchronize",
+      "nature": "serious",
+      "evs": {
+        "hp": 4,
+        "atk": 252,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "spark",
+        "sparklingaria",
+        "speedswap",
+        "spicyextract"
+      ],
+      "uid": "72c5372a-ad3c-4f50-baeb-091d5e1414a6",
+      "stats": {
+        "maxHp": 342,
+        "atk": 299,
+        "def": 236,
+        "spa": 236,
+        "spd": 236,
+        "spe": 299
+      }
+    },
+    {
+      "name": "a596756c",
+      "species": "mew",
+      "level": 100,
+      "gender": "N",
+      "item": "",
+      "ability": "synchronize",
+      "nature": "serious",
+      "evs": {
+        "hp": 4,
+        "atk": 252,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "spikes",
+        "spikyshield",
+        "spinout",
+        "spiritbreak"
+      ],
+      "uid": "a596756c-6901-4a14-8c48-84aa99dec4a5",
+      "stats": {
+        "maxHp": 342,
+        "atk": 299,
+        "def": 236,
+        "spa": 236,
+        "spd": 236,
+        "spe": 299
+      }
+    }
+  ],
+  "enemyTeam": [
+    {
+      "name": "dc5619aa",
+      "species": "blissey",
+      "level": 100,
+      "gender": "F",
+      "item": "",
+      "ability": "naturalcure",
+      "nature": "serious",
+      "evs": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "thunderbolt",
+        "surf",
+        "flamethrower",
+        "bodyslam"
+      ],
+      "uid": "dc5619aa-b422-4d4d-a019-e4c3f160f64a",
+      "stats": {
+        "maxHp": 651,
+        "atk": 56,
+        "def": 56,
+        "spa": 186,
+        "spd": 306,
+        "spe": 209
+      }
+    },
+    {
+      "name": "0809642f",
+      "species": "blissey",
+      "level": 100,
+      "gender": "F",
+      "item": "",
+      "ability": "naturalcure",
+      "nature": "serious",
+      "evs": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "thunderbolt",
+        "surf",
+        "flamethrower",
+        "bodyslam"
+      ],
+      "uid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "stats": {
+        "maxHp": 651,
+        "atk": 56,
+        "def": 56,
+        "spa": 186,
+        "spd": 306,
+        "spe": 209
+      }
+    },
+    {
+      "name": "a61174ce",
+      "species": "blissey",
+      "level": 100,
+      "gender": "F",
+      "item": "",
+      "ability": "naturalcure",
+      "nature": "serious",
+      "evs": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "thunderbolt",
+        "surf",
+        "flamethrower",
+        "bodyslam"
+      ],
+      "uid": "a61174ce-a222-4ac5-9edb-bbec90abcd9d",
+      "stats": {
+        "maxHp": 651,
+        "atk": 56,
+        "def": 56,
+        "spa": 186,
+        "spd": 306,
+        "spe": 209
+      }
+    },
+    {
+      "name": "5dc7d588",
+      "species": "blissey",
+      "level": 100,
+      "gender": "F",
+      "item": "",
+      "ability": "naturalcure",
+      "nature": "serious",
+      "evs": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "thunderbolt",
+        "surf",
+        "flamethrower",
+        "bodyslam"
+      ],
+      "uid": "5dc7d588-a02e-437f-932f-db0e44583185",
+      "stats": {
+        "maxHp": 651,
+        "atk": 56,
+        "def": 56,
+        "spa": 186,
+        "spd": 306,
+        "spe": 209
+      }
+    },
+    {
+      "name": "af09f752",
+      "species": "blissey",
+      "level": 100,
+      "gender": "F",
+      "item": "",
+      "ability": "naturalcure",
+      "nature": "serious",
+      "evs": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "thunderbolt",
+        "surf",
+        "flamethrower",
+        "bodyslam"
+      ],
+      "uid": "af09f752-887f-48b4-9da9-7f07378df179",
+      "stats": {
+        "maxHp": 651,
+        "atk": 56,
+        "def": 56,
+        "spa": 186,
+        "spd": 306,
+        "spe": 209
+      }
+    },
+    {
+      "name": "80abd126",
+      "species": "blissey",
+      "level": 100,
+      "gender": "F",
+      "item": "",
+      "ability": "naturalcure",
+      "nature": "serious",
+      "evs": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 252
+      },
+      "ivs": {
+        "hp": 31,
+        "atk": 31,
+        "def": 31,
+        "spa": 31,
+        "spd": 31,
+        "spe": 31
+      },
+      "moves": [
+        "thunderbolt",
+        "surf",
+        "flamethrower",
+        "bodyslam"
+      ],
+      "uid": "80abd126-0911-4214-b57c-22a10d836002",
+      "stats": {
+        "maxHp": 651,
+        "atk": 56,
+        "def": 56,
+        "spa": 186,
+        "spd": 306,
+        "spe": 209
+      }
+    }
+  ],
+  "movesToTest": [
+    "sludge",
+    "sludgebomb",
+    "sludgewave",
+    "smackdown",
+    "smartstrike",
+    "smog",
+    "smokescreen",
+    "snarl",
+    "snipeshot",
+    "snore",
+    "snowscape",
+    "soak",
+    "softboiled",
+    "solarbeam",
+    "solarblade",
+    "spacialrend",
+    "spark",
+    "sparklingaria",
+    "speedswap",
+    "spicyextract",
+    "spikes",
+    "spikyshield",
+    "spinout",
+    "spiritbreak"
+  ],
+  "abilitiesToTest": [],
+  "seed": [
+    18588,
+    21544,
+    54523,
+    34263
+  ],
+  "playerChoices": [
+    "move 1",
+    "move 2",
+    "move 3",
+    "switch 2",
+    "move 1",
+    "move 2",
+    "move 3",
+    "switch 2",
+    "move 4",
+    "switch 2",
+    "move 4",
+    "switch 2",
+    "move 3",
+    "switch 3",
+    "move 1",
+    "switch 2",
+    "move 1",
+    "switch 2",
+    "move 2",
+    "switch 2",
+    "move 1",
+    "switch 2",
+    "move 3",
+    "switch 2",
+    "move 1",
+    "switch 2",
+    "move 4",
+    "switch 2",
+    "move 1",
+    "switch 4",
+    "move 1",
+    "switch 2",
+    "move 1",
+    "switch 2",
+    "move 2",
+    "move 1",
+    "move 3",
+    "move 1",
+    "move 4",
+    "switch 2",
+    "move 1",
+    "switch 5",
+    "move 1",
+    "switch 2",
+    "move 3",
+    "move 1",
+    "switch 2",
+    "move 2",
+    "move 3",
+    "move 4",
+    "switch 6",
+    "move 1",
+    "move 2",
+    "move 3",
+    "move 4",
+    "move 3",
+    "move 3",
+    "move 3",
+    "move 3",
+    "move 3"
+  ],
+  "enemyChoices": [
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "switch 2",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "switch 3",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "switch 2",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "switch 3",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "move 1",
+    "switch 4",
+    "move 1",
+    "move 1",
+    "switch 5",
+    "move 1",
+    "move 1",
+    "switch 6",
+    "move 1",
+    "move 1"
+  ],
+  "history": [
+    {
+      "turnCount": 1,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 2,
+      "p1ActiveUid": "0fe95ed6-c410-4f3e-8e7f-5d5294e5c20b",
+      "p2ActiveUid": "dc5619aa-b422-4d4d-a019-e4c3f160f64a",
+      "p1MoveId": "sludge",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 32,
+      "p2MovePp": 24,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 285,
+      "p2Hp": 607
+    },
+    {
+      "turnCount": 2,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 3,
+      "p1ActiveUid": "0fe95ed6-c410-4f3e-8e7f-5d5294e5c20b",
+      "p2ActiveUid": "dc5619aa-b422-4d4d-a019-e4c3f160f64a",
+      "p1MoveId": "sludgebomb",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 16,
+      "p2MovePp": 23,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p2Status": "par",
+      "p1Hp": 232,
+      "p2Hp": 548
+    },
+    {
+      "turnCount": 3,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 4,
+      "p1ActiveUid": "0fe95ed6-c410-4f3e-8e7f-5d5294e5c20b",
+      "p2ActiveUid": "dc5619aa-b422-4d4d-a019-e4c3f160f64a",
+      "p1MoveId": "sludgewave",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 16,
+      "p2MovePp": 22,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p2Status": "par",
+      "p1Hp": 232,
+      "p2Hp": 491
+    },
+    {
+      "turnCount": 4,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 5,
+      "p1ActiveUid": "93620ddd-92f5-4617-bd5a-42f361bd5d99",
+      "p2ActiveUid": "dc5619aa-b422-4d4d-a019-e4c3f160f64a",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 22,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2Status": "par",
+      "p1Hp": 283,
+      "p2Hp": 491
+    },
+    {
+      "turnCount": 5,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 6,
+      "p1ActiveUid": "93620ddd-92f5-4617-bd5a-42f361bd5d99",
+      "p2ActiveUid": "dc5619aa-b422-4d4d-a019-e4c3f160f64a",
+      "p1MoveId": "smartstrike",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 16,
+      "p2MovePp": 21,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2Status": "par",
+      "p1Hp": 232,
+      "p2Hp": 217
+    },
+    {
+      "turnCount": 6,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 7,
+      "p1ActiveUid": "93620ddd-92f5-4617-bd5a-42f361bd5d99",
+      "p2ActiveUid": "dc5619aa-b422-4d4d-a019-e4c3f160f64a",
+      "p1MoveId": "smog",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 32,
+      "p2MovePp": 20,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2Status": "par",
+      "p1Hp": 232,
+      "p2Hp": 200
+    },
+    {
+      "turnCount": 7,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 8,
+      "p1ActiveUid": "93620ddd-92f5-4617-bd5a-42f361bd5d99",
+      "p2ActiveUid": "dc5619aa-b422-4d4d-a019-e4c3f160f64a",
+      "p1MoveId": "smokescreen",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 32,
+      "p2MovePp": 20,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": -1,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p2Status": "par",
+      "p1Hp": 155,
+      "p2Hp": 200
+    },
+    {
+      "turnCount": 8,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 9,
+      "p1ActiveUid": "0fe95ed6-c410-4f3e-8e7f-5d5294e5c20b",
+      "p2ActiveUid": "dc5619aa-b422-4d4d-a019-e4c3f160f64a",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 19,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": -1,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p2Status": "par",
+      "p1Hp": 177,
+      "p2Hp": 200
+    },
+    {
+      "turnCount": 9,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 9,
+      "p1ActiveUid": "0fe95ed6-c410-4f3e-8e7f-5d5294e5c20b",
+      "p1MoveId": "smackdown",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 24,
+      "p2MovePp": 18,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p1Hp": 177
+    },
+    {
+      "turnCount": 10,
+      "p1Choice": "",
+      "p2Choice": "switch 2",
+      "battleTurn": 10,
+      "p1ActiveUid": "0fe95ed6-c410-4f3e-8e7f-5d5294e5c20b",
+      "p2ActiveUid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p1Hp": 177,
+      "p2Hp": 651,
+      "p2ForceSwitch": true
+    },
+    {
+      "turnCount": 11,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 11,
+      "p1ActiveUid": "93620ddd-92f5-4617-bd5a-42f361bd5d99",
+      "p2ActiveUid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 24,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p1Hp": 98,
+      "p2Hp": 651
+    },
+    {
+      "turnCount": 12,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 12,
+      "p1ActiveUid": "93620ddd-92f5-4617-bd5a-42f361bd5d99",
+      "p2ActiveUid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "p1MoveId": "snarl",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 24,
+      "p2MovePp": 23,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": -1,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 615,
+      "p1Heal": true
+    },
+    {
+      "turnCount": 13,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 13,
+      "p1ActiveUid": "0fe95ed6-c410-4f3e-8e7f-5d5294e5c20b",
+      "p2ActiveUid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 22,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": -1,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p2Status": "par",
+      "p1Hp": 307,
+      "p2Hp": 615
+    },
+    {
+      "turnCount": 14,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 14,
+      "p1ActiveUid": "0fe95ed6-c410-4f3e-8e7f-5d5294e5c20b",
+      "p2ActiveUid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "p1MoveId": "sludgewave",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 16,
+      "p2MovePp": 21,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": -1,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p2Status": "par",
+      "p1Hp": 272,
+      "p2Hp": 615
+    },
+    {
+      "turnCount": 15,
+      "p1Choice": "switch 3",
+      "p2Choice": "move 1",
+      "battleTurn": 15,
+      "p1ActiveUid": "edaa0f8a-1859-4729-9bbf-34717bd36121",
+      "p2ActiveUid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 20,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": -1,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p2Status": "par",
+      "p1Hp": 303,
+      "p2Hp": 615
+    },
+    {
+      "turnCount": 16,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 16,
+      "p1ActiveUid": "edaa0f8a-1859-4729-9bbf-34717bd36121",
+      "p2ActiveUid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "p1MoveId": "snipeshot",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 24,
+      "p2MovePp": 19,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": -1,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p2Status": "par",
+      "p1Hp": 303,
+      "p2Hp": 564
+    },
+    {
+      "turnCount": 17,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 17,
+      "p1ActiveUid": "93620ddd-92f5-4617-bd5a-42f361bd5d99",
+      "p2ActiveUid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 19,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": -1,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2Status": "par",
+      "p1Hp": 304,
+      "p2Hp": 564
+    },
+    {
+      "turnCount": 18,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 18,
+      "p1ActiveUid": "93620ddd-92f5-4617-bd5a-42f361bd5d99",
+      "p2ActiveUid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "p1MoveId": "smartstrike",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 16,
+      "p2MovePp": 18,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": -1,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2Status": "par",
+      "p1Hp": 304,
+      "p2Hp": 268
+    },
+    {
+      "turnCount": 19,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 19,
+      "p1ActiveUid": "edaa0f8a-1859-4729-9bbf-34717bd36121",
+      "p2ActiveUid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 18,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": -1,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p2Status": "par",
+      "p1Hp": 264,
+      "p2Hp": 268
+    },
+    {
+      "turnCount": 20,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 20,
+      "p1ActiveUid": "edaa0f8a-1859-4729-9bbf-34717bd36121",
+      "p2ActiveUid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "p1MoveId": "snore",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 24,
+      "p2MovePp": 17,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": -1,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p2Status": "par",
+      "p1Hp": 264,
+      "p2Hp": 268
+    },
+    {
+      "turnCount": 21,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 21,
+      "p1ActiveUid": "93620ddd-92f5-4617-bd5a-42f361bd5d99",
+      "p2ActiveUid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 17,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": -1,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2Status": "par",
+      "p1Hp": 304,
+      "p2Hp": 268
+    },
+    {
+      "turnCount": 22,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 21,
+      "p1ActiveUid": "93620ddd-92f5-4617-bd5a-42f361bd5d99",
+      "p1MoveId": "smartstrike",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 15,
+      "p2MovePp": 17,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 304
+    },
+    {
+      "turnCount": 23,
+      "p1Choice": "",
+      "p2Choice": "switch 3",
+      "battleTurn": 22,
+      "p1ActiveUid": "93620ddd-92f5-4617-bd5a-42f361bd5d99",
+      "p2ActiveUid": "a61174ce-a222-4ac5-9edb-bbec90abcd9d",
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 304,
+      "p2Hp": 651,
+      "p2ForceSwitch": true
+    },
+    {
+      "turnCount": 24,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 23,
+      "p1ActiveUid": "edaa0f8a-1859-4729-9bbf-34717bd36121",
+      "p2ActiveUid": "a61174ce-a222-4ac5-9edb-bbec90abcd9d",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 24,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p1Hp": 208,
+      "p2Hp": 651
+    },
+    {
+      "turnCount": 25,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 24,
+      "p1ActiveUid": "edaa0f8a-1859-4729-9bbf-34717bd36121",
+      "p2ActiveUid": "a61174ce-a222-4ac5-9edb-bbec90abcd9d",
+      "p1MoveId": "snowscape",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 16,
+      "p2MovePp": 23,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p1Hp": 155,
+      "p2Hp": 651,
+      "weather": "snowscape"
+    },
+    {
+      "turnCount": 26,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 25,
+      "p1ActiveUid": "93620ddd-92f5-4617-bd5a-42f361bd5d99",
+      "p2ActiveUid": "a61174ce-a222-4ac5-9edb-bbec90abcd9d",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 22,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 246,
+      "p2Hp": 651,
+      "weather": "snowscape"
+    },
+    {
+      "turnCount": 27,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 26,
+      "p1ActiveUid": "93620ddd-92f5-4617-bd5a-42f361bd5d99",
+      "p2ActiveUid": "a61174ce-a222-4ac5-9edb-bbec90abcd9d",
+      "p1MoveId": "smartstrike",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 14,
+      "p2MovePp": 21,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 155,
+      "p2Hp": 340,
+      "weather": "snowscape"
+    },
+    {
+      "turnCount": 28,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 27,
+      "p1ActiveUid": "edaa0f8a-1859-4729-9bbf-34717bd36121",
+      "p2ActiveUid": "a61174ce-a222-4ac5-9edb-bbec90abcd9d",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 20,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p1Hp": 99,
+      "p2Hp": 340,
+      "weather": "snowscape"
+    },
+    {
+      "turnCount": 29,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 28,
+      "p1ActiveUid": "edaa0f8a-1859-4729-9bbf-34717bd36121",
+      "p2ActiveUid": "a61174ce-a222-4ac5-9edb-bbec90abcd9d",
+      "p1MoveId": "soak",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 32,
+      "p2MovePp": 19,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 340,
+      "p1Heal": true
+    },
+    {
+      "turnCount": 30,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 29,
+      "p1ActiveUid": "93620ddd-92f5-4617-bd5a-42f361bd5d99",
+      "p2ActiveUid": "a61174ce-a222-4ac5-9edb-bbec90abcd9d",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 18,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 288,
+      "p2Hp": 340
+    },
+    {
+      "turnCount": 31,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 30,
+      "p1ActiveUid": "93620ddd-92f5-4617-bd5a-42f361bd5d99",
+      "p2ActiveUid": "a61174ce-a222-4ac5-9edb-bbec90abcd9d",
+      "p1MoveId": "smartstrike",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 16,
+      "p2MovePp": 17,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 233,
+      "p2Hp": 202
+    },
+    {
+      "turnCount": 32,
+      "p1Choice": "switch 4",
+      "p2Choice": "move 1",
+      "battleTurn": 31,
+      "p1ActiveUid": "fcbf41f7-dc04-4ca8-bd11-8600b7b9d9d1",
+      "p2ActiveUid": "a61174ce-a222-4ac5-9edb-bbec90abcd9d",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 16,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 281,
+      "p2Hp": 202
+    },
+    {
+      "turnCount": 33,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 32,
+      "p1ActiveUid": "fcbf41f7-dc04-4ca8-bd11-8600b7b9d9d1",
+      "p2ActiveUid": "a61174ce-a222-4ac5-9edb-bbec90abcd9d",
+      "p1MoveId": "softboiled",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 8,
+      "p2MovePp": 15,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 288,
+      "p2Hp": 202
+    },
+    {
+      "turnCount": 34,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 33,
+      "p1ActiveUid": "edaa0f8a-1859-4729-9bbf-34717bd36121",
+      "p2ActiveUid": "a61174ce-a222-4ac5-9edb-bbec90abcd9d",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 14,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 287,
+      "p2Hp": 202
+    },
+    {
+      "turnCount": 35,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 34,
+      "p1ActiveUid": "edaa0f8a-1859-4729-9bbf-34717bd36121",
+      "p2ActiveUid": "a61174ce-a222-4ac5-9edb-bbec90abcd9d",
+      "p1MoveId": "snipeshot",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 24,
+      "p2MovePp": 13,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 230,
+      "p2Hp": 178
+    },
+    {
+      "turnCount": 36,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 35,
+      "p1ActiveUid": "fcbf41f7-dc04-4ca8-bd11-8600b7b9d9d1",
+      "p2ActiveUid": "a61174ce-a222-4ac5-9edb-bbec90abcd9d",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 12,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 235,
+      "p2Hp": 178
+    },
+    {
+      "turnCount": 37,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 36,
+      "p1ActiveUid": "fcbf41f7-dc04-4ca8-bd11-8600b7b9d9d1",
+      "p2ActiveUid": "a61174ce-a222-4ac5-9edb-bbec90abcd9d",
+      "p1MoveId": "solarbeam",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 16,
+      "p2MovePp": 11,
+      "p1Volatiles": [
+        "twoturnmove",
+        "solarbeam"
+      ],
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 182,
+      "p2Hp": 651,
+      "p2Heal": true
+    },
+    {
+      "turnCount": 38,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 37,
+      "p1ActiveUid": "fcbf41f7-dc04-4ca8-bd11-8600b7b9d9d1",
+      "p2ActiveUid": "a61174ce-a222-4ac5-9edb-bbec90abcd9d",
+      "p1MoveId": "solarbeam",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 10,
+      "p1LockedMoveId": "solarbeam",
+      "p1Trapped": true,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 124,
+      "p2Hp": 517
+    },
+    {
+      "turnCount": 39,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 38,
+      "p1ActiveUid": "fcbf41f7-dc04-4ca8-bd11-8600b7b9d9d1",
+      "p2ActiveUid": "a61174ce-a222-4ac5-9edb-bbec90abcd9d",
+      "p1MoveId": "solarblade",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 16,
+      "p2MovePp": 23,
+      "p1Volatiles": [
+        "twoturnmove",
+        "solarblade"
+      ],
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 517,
+      "p1Heal": true
+    },
+    {
+      "turnCount": 40,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 38,
+      "p1ActiveUid": "fcbf41f7-dc04-4ca8-bd11-8600b7b9d9d1",
+      "p1MoveId": "solarblade",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 22,
+      "p1LockedMoveId": "solarblade",
+      "p1Trapped": true,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342
+    },
+    {
+      "turnCount": 41,
+      "p1Choice": "",
+      "p2Choice": "switch 2",
+      "battleTurn": 39,
+      "p1ActiveUid": "fcbf41f7-dc04-4ca8-bd11-8600b7b9d9d1",
+      "p2ActiveUid": "dc5619aa-b422-4d4d-a019-e4c3f160f64a",
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 651,
+      "p2ForceSwitch": true
+    },
+    {
+      "turnCount": 42,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 40,
+      "p1ActiveUid": "fcbf41f7-dc04-4ca8-bd11-8600b7b9d9d1",
+      "p2ActiveUid": "dc5619aa-b422-4d4d-a019-e4c3f160f64a",
+      "p1MoveId": "spacialrend",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 8,
+      "p2MovePp": 24,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 285,
+      "p2Hp": 555
+    },
+    {
+      "turnCount": 43,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 41,
+      "p1ActiveUid": "edaa0f8a-1859-4729-9bbf-34717bd36121",
+      "p2ActiveUid": "dc5619aa-b422-4d4d-a019-e4c3f160f64a",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 23,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 286,
+      "p2Hp": 555
+    },
+    {
+      "turnCount": 44,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 42,
+      "p1ActiveUid": "edaa0f8a-1859-4729-9bbf-34717bd36121",
+      "p2ActiveUid": "dc5619aa-b422-4d4d-a019-e4c3f160f64a",
+      "p1MoveId": "snipeshot",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 24,
+      "p2MovePp": 22,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 227,
+      "p2Hp": 507
+    },
+    {
+      "turnCount": 45,
+      "p1Choice": "switch 5",
+      "p2Choice": "move 1",
+      "battleTurn": 43,
+      "p1ActiveUid": "72c5372a-ad3c-4f50-baeb-091d5e1414a6",
+      "p2ActiveUid": "dc5619aa-b422-4d4d-a019-e4c3f160f64a",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 21,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 291,
+      "p2Hp": 507
+    },
+    {
+      "turnCount": 46,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 44,
+      "p1ActiveUid": "72c5372a-ad3c-4f50-baeb-091d5e1414a6",
+      "p2ActiveUid": "dc5619aa-b422-4d4d-a019-e4c3f160f64a",
+      "p1MoveId": "spark",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 32,
+      "p2MovePp": 20,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2Status": "par",
+      "p1Hp": 233,
+      "p2Hp": 238
+    },
+    {
+      "turnCount": 47,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 45,
+      "p1ActiveUid": "fcbf41f7-dc04-4ca8-bd11-8600b7b9d9d1",
+      "p2ActiveUid": "dc5619aa-b422-4d4d-a019-e4c3f160f64a",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 19,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2Status": "par",
+      "p1Hp": 229,
+      "p2Hp": 238
+    },
+    {
+      "turnCount": 48,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 46,
+      "p1ActiveUid": "fcbf41f7-dc04-4ca8-bd11-8600b7b9d9d1",
+      "p2ActiveUid": "dc5619aa-b422-4d4d-a019-e4c3f160f64a",
+      "p1MoveId": "solarblade",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 16,
+      "p2MovePp": 18,
+      "p1Volatiles": [
+        "twoturnmove",
+        "solarblade"
+      ],
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2Status": "par",
+      "p1Hp": 174,
+      "p2Hp": 238
+    },
+    {
+      "turnCount": 49,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 46,
+      "p1ActiveUid": "fcbf41f7-dc04-4ca8-bd11-8600b7b9d9d1",
+      "p1MoveId": "solarblade",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 17,
+      "p1LockedMoveId": "solarblade",
+      "p1Trapped": true,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 174
+    },
+    {
+      "turnCount": 50,
+      "p1Choice": "",
+      "p2Choice": "switch 3",
+      "battleTurn": 47,
+      "p1ActiveUid": "fcbf41f7-dc04-4ca8-bd11-8600b7b9d9d1",
+      "p2ActiveUid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 174,
+      "p2Hp": 651,
+      "p2ForceSwitch": true
+    },
+    {
+      "turnCount": 51,
+      "p1Choice": "switch 2",
+      "p2Choice": "move 1",
+      "battleTurn": 48,
+      "p1ActiveUid": "72c5372a-ad3c-4f50-baeb-091d5e1414a6",
+      "p2ActiveUid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 24,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 174,
+      "p2Hp": 651
+    },
+    {
+      "turnCount": 52,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 49,
+      "p1ActiveUid": "72c5372a-ad3c-4f50-baeb-091d5e1414a6",
+      "p2ActiveUid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "p1MoveId": "sparklingaria",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 16,
+      "p2MovePp": 23,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 115,
+      "p2Hp": 596
+    },
+    {
+      "turnCount": 53,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 50,
+      "p1ActiveUid": "72c5372a-ad3c-4f50-baeb-091d5e1414a6",
+      "p2ActiveUid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "p1MoveId": "speedswap",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 16,
+      "p2MovePp": 22,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 596,
+      "p1Heal": true
+    },
+    {
+      "turnCount": 54,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 51,
+      "p1ActiveUid": "72c5372a-ad3c-4f50-baeb-091d5e1414a6",
+      "p2ActiveUid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "p1MoveId": "spicyextract",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 24,
+      "p2MovePp": 21,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 2,
+        "def": -2,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 286,
+      "p2Hp": 596
+    },
+    {
+      "turnCount": 55,
+      "p1Choice": "switch 6",
+      "p2Choice": "move 1",
+      "battleTurn": 52,
+      "p1ActiveUid": "a596756c-6901-4a14-8c48-84aa99dec4a5",
+      "p2ActiveUid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "p2MoveId": "thunderbolt",
+      "p2MovePp": 20,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 2,
+        "def": -2,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 262,
+      "p2Hp": 596
+    },
+    {
+      "turnCount": 56,
+      "p1Choice": "move 1",
+      "p2Choice": "move 1",
+      "battleTurn": 53,
+      "p1ActiveUid": "a596756c-6901-4a14-8c48-84aa99dec4a5",
+      "p2ActiveUid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "p1MoveId": "spikes",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 32,
+      "p2MovePp": 19,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 2,
+        "def": -2,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 207,
+      "p2Hp": 596,
+      "p2SideConditions": [
+        "spikes"
+      ]
+    },
+    {
+      "turnCount": 57,
+      "p1Choice": "move 2",
+      "p2Choice": "move 1",
+      "battleTurn": 54,
+      "p1ActiveUid": "a596756c-6901-4a14-8c48-84aa99dec4a5",
+      "p2ActiveUid": "0809642f-3b0a-4e77-b79e-95e20f7ae697",
+      "p1MoveId": "spikyshield",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 16,
+      "p2MovePp": 18,
+      "p1Volatiles": [
+        "stall"
+      ],
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 2,
+        "def": -2,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 207,
+      "p2Hp": 596,
+      "p2SideConditions": [
+        "spikes"
+      ]
+    },
+    {
+      "turnCount": 58,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 54,
+      "p1ActiveUid": "a596756c-6901-4a14-8c48-84aa99dec4a5",
+      "p1MoveId": "spinout",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 8,
+      "p2MovePp": 17,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": -2,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 150,
+      "p2SideConditions": [
+        "spikes"
+      ]
+    },
+    {
+      "turnCount": 59,
+      "p1Choice": "",
+      "p2Choice": "switch 4",
+      "battleTurn": 55,
+      "p1ActiveUid": "a596756c-6901-4a14-8c48-84aa99dec4a5",
+      "p2ActiveUid": "5dc7d588-a02e-437f-932f-db0e44583185",
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": -2,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 150,
+      "p2Hp": 570,
+      "p2SideConditions": [
+        "spikes"
+      ],
+      "p2ForceSwitch": true
+    },
+    {
+      "turnCount": 60,
+      "p1Choice": "move 4",
+      "p2Choice": "move 1",
+      "battleTurn": 56,
+      "p1ActiveUid": "a596756c-6901-4a14-8c48-84aa99dec4a5",
+      "p2ActiveUid": "5dc7d588-a02e-437f-932f-db0e44583185",
+      "p1MoveId": "spiritbreak",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 24,
+      "p2MovePp": 24,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": -2,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": -1,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Hp": 342,
+      "p2Hp": 260,
+      "p2SideConditions": [
+        "spikes"
+      ],
+      "p1Heal": true
+    },
+    {
+      "turnCount": 61,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 56,
+      "p1ActiveUid": "a596756c-6901-4a14-8c48-84aa99dec4a5",
+      "p1MoveId": "spinout",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 7,
+      "p2MovePp": 23,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": -4,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p1Hp": 303,
+      "p2SideConditions": [
+        "spikes"
+      ]
+    },
+    {
+      "turnCount": 62,
+      "p1Choice": "",
+      "p2Choice": "switch 5",
+      "battleTurn": 57,
+      "p1ActiveUid": "a596756c-6901-4a14-8c48-84aa99dec4a5",
+      "p2ActiveUid": "af09f752-887f-48b4-9da9-7f07378df179",
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": -4,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p1Hp": 303,
+      "p2Hp": 570,
+      "p2SideConditions": [
+        "spikes"
+      ],
+      "p2ForceSwitch": true
+    },
+    {
+      "turnCount": 63,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 58,
+      "p1ActiveUid": "a596756c-6901-4a14-8c48-84aa99dec4a5",
+      "p2ActiveUid": "af09f752-887f-48b4-9da9-7f07378df179",
+      "p1MoveId": "spinout",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 7,
+      "p2MovePp": 24,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": -6,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p1Hp": 243,
+      "p2Hp": 129,
+      "p2SideConditions": [
+        "spikes"
+      ]
+    },
+    {
+      "turnCount": 64,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 58,
+      "p1ActiveUid": "a596756c-6901-4a14-8c48-84aa99dec4a5",
+      "p1MoveId": "spinout",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 6,
+      "p2MovePp": 23,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": -6,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p1Hp": 191,
+      "p2SideConditions": [
+        "spikes"
+      ]
+    },
+    {
+      "turnCount": 65,
+      "p1Choice": "",
+      "p2Choice": "switch 6",
+      "battleTurn": 59,
+      "p1ActiveUid": "a596756c-6901-4a14-8c48-84aa99dec4a5",
+      "p2ActiveUid": "80abd126-0911-4214-b57c-22a10d836002",
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": -6,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p1Hp": 191,
+      "p2Hp": 570,
+      "p2SideConditions": [
+        "spikes"
+      ],
+      "p2ForceSwitch": true
+    },
+    {
+      "turnCount": 66,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 60,
+      "p1ActiveUid": "a596756c-6901-4a14-8c48-84aa99dec4a5",
+      "p2ActiveUid": "80abd126-0911-4214-b57c-22a10d836002",
+      "p1MoveId": "spinout",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 5,
+      "p2MovePp": 24,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": -6,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p2StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 0,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p1Hp": 140,
+      "p2Hp": 120,
+      "p2SideConditions": [
+        "spikes"
+      ]
+    },
+    {
+      "turnCount": 67,
+      "p1Choice": "move 3",
+      "p2Choice": "move 1",
+      "battleTurn": 60,
+      "p1ActiveUid": "a596756c-6901-4a14-8c48-84aa99dec4a5",
+      "p1MoveId": "spinout",
+      "p2MoveId": "thunderbolt",
+      "p1MovePp": 4,
+      "p2MovePp": 23,
+      "p1StatStages": {
+        "atk": 0,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": -6,
+        "accuracy": 0,
+        "evasion": 0
+      },
+      "p1Status": "par",
+      "p1Hp": 88,
+      "p2SideConditions": [
+        "spikes"
+      ]
+    }
+  ],
+  "steps": [
+    "Turno 1: ataca 0fe95ed6 con Sludge a dc5619aa",
+    "Turno 1: ataca dc5619aa con Thunderbolt a 0fe95ed6",
+    "Turno 2: ataca 0fe95ed6 con Sludge Bomb a dc5619aa",
+    "Turno 2: ataca dc5619aa con Thunderbolt a 0fe95ed6",
+    "Turno 3: ataca 0fe95ed6 con Sludge Wave a dc5619aa",
+    "Turno 4: ataca dc5619aa con Thunderbolt a 93620ddd",
+    "Turno 5: ataca 93620ddd con Smart Strike a dc5619aa",
+    "Turno 5: ataca dc5619aa con Thunderbolt a 93620ddd",
+    "Turno 6: ataca 93620ddd con Smog a dc5619aa",
+    "Turno 7: ataca 93620ddd con Smokescreen a dc5619aa",
+    "Turno 7: ataca dc5619aa con Thunderbolt a 93620ddd",
+    "Turno 7: dc5619aa pero falló",
+    "Turno 8: ataca dc5619aa con Thunderbolt a 0fe95ed6",
+    "Turno 9: ataca 0fe95ed6 con Smack Down a dc5619aa",
+    "Turno 9: dc5619aa se debilitó",
+    "Turno 11: ataca 0809642f con Thunderbolt a 93620ddd",
+    "Turno 12: ataca 0809642f con Thunderbolt a 93620ddd",
+    "Turno 12: ataca 93620ddd con Snarl a 0809642f",
+    "Turno 13: ataca 0809642f con Thunderbolt a 0fe95ed6",
+    "Turno 14: ataca 0809642f con Thunderbolt a 0fe95ed6",
+    "Turno 15: ataca 0809642f con Thunderbolt a edaa0f8a",
+    "Turno 15: 0809642f pero falló",
+    "Turno 16: ataca edaa0f8a con Snipe Shot a 0809642f",
+    "Turno 17: ataca 0809642f con Thunderbolt a 93620ddd",
+    "Turno 18: ataca 93620ddd con Smart Strike a 0809642f",
+    "Turno 19: ataca 0809642f con Thunderbolt a edaa0f8a",
+    "Turno 20: ataca edaa0f8a con Snore",
+    "Turno 20: edaa0f8a pero falló",
+    "Turno 22: ataca 93620ddd con Smart Strike a 0809642f",
+    "Turno 22: 0809642f se debilitó",
+    "Turno 24: ataca a61174ce con Thunderbolt a edaa0f8a",
+    "Turno 25: ataca a61174ce con Thunderbolt a edaa0f8a",
+    "Turno 25: ataca edaa0f8a con Snowscape a edaa0f8a",
+    "Turno 26: ataca a61174ce con Thunderbolt a 93620ddd",
+    "Turno 27: ataca 93620ddd con Smart Strike a a61174ce",
+    "Turno 27: ataca a61174ce con Thunderbolt a 93620ddd",
+    "Turno 28: ataca a61174ce con Thunderbolt a edaa0f8a",
+    "Turno 29: ataca a61174ce con Thunderbolt a edaa0f8a",
+    "Turno 29: ataca edaa0f8a con Soak a a61174ce",
+    "Turno 30: ataca a61174ce con Thunderbolt a 93620ddd",
+    "Turno 31: ataca 93620ddd con Smart Strike a a61174ce",
+    "Turno 31: ataca a61174ce con Thunderbolt a 93620ddd",
+    "Turno 32: ataca a61174ce con Thunderbolt a fcbf41f7",
+    "Turno 33: ataca fcbf41f7 con Soft-Boiled a fcbf41f7",
+    "Turno 33: ataca a61174ce con Thunderbolt a fcbf41f7",
+    "Turno 34: ataca a61174ce con Thunderbolt a edaa0f8a",
+    "Turno 35: ataca edaa0f8a con Snipe Shot a a61174ce",
+    "Turno 35: ataca a61174ce con Thunderbolt a edaa0f8a",
+    "Turno 36: ataca a61174ce con Thunderbolt a fcbf41f7",
+    "Turno 37: ataca fcbf41f7 con Solar Beam",
+    "Turno 37: ataca a61174ce con Thunderbolt a fcbf41f7",
+    "Turno 38: ataca fcbf41f7 con Solar Beam a a61174ce",
+    "Turno 38: ataca a61174ce con Thunderbolt a fcbf41f7",
+    "Turno 39: ataca fcbf41f7 con Solar Blade",
+    "Turno 39: ataca a61174ce con Thunderbolt a fcbf41f7",
+    "Turno 40: ataca fcbf41f7 con Solar Blade a a61174ce",
+    "Turno 40: a61174ce se debilitó",
+    "Turno 42: ataca fcbf41f7 con Spacial Rend a dc5619aa",
+    "Turno 42: ataca dc5619aa con Thunderbolt a fcbf41f7",
+    "Turno 43: ataca dc5619aa con Thunderbolt a edaa0f8a",
+    "Turno 44: ataca edaa0f8a con Snipe Shot a dc5619aa",
+    "Turno 44: ataca dc5619aa con Thunderbolt a edaa0f8a",
+    "Turno 45: ataca dc5619aa con Thunderbolt a 72c5372a",
+    "Turno 46: ataca 72c5372a con Spark a dc5619aa",
+    "Turno 46: ataca dc5619aa con Thunderbolt a 72c5372a",
+    "Turno 47: ataca dc5619aa con Thunderbolt a fcbf41f7",
+    "Turno 48: ataca fcbf41f7 con Solar Blade",
+    "Turno 48: ataca dc5619aa con Thunderbolt a fcbf41f7",
+    "Turno 49: ataca fcbf41f7 con Solar Blade a dc5619aa",
+    "Turno 49: dc5619aa se debilitó",
+    "Turno 51: ataca 0809642f con Thunderbolt a 72c5372a",
+    "Turno 52: ataca 72c5372a con Sparkling Aria a 0809642f",
+    "Turno 52: ataca 0809642f con Thunderbolt a 72c5372a",
+    "Turno 53: ataca 72c5372a con Speed Swap a 0809642f",
+    "Turno 53: ataca 0809642f con Thunderbolt a 72c5372a",
+    "Turno 54: ataca 0809642f con Thunderbolt a 72c5372a",
+    "Turno 54: ataca 72c5372a con Spicy Extract a 0809642f",
+    "Turno 55: ataca 0809642f con Thunderbolt a a596756c",
+    "Turno 56: ataca a596756c con Spikes a 0809642f",
+    "Turno 56: ataca 0809642f con Thunderbolt a a596756c",
+    "Turno 57: ataca a596756c con Spiky Shield a a596756c",
+    "Turno 57: ataca 0809642f con Thunderbolt a a596756c",
+    "Turno 58: ataca 0809642f con Thunderbolt a a596756c",
+    "Turno 58: ataca a596756c con Spin Out a 0809642f",
+    "Turno 58: 0809642f se debilitó",
+    "Turno 60: ataca 5dc7d588 con Thunderbolt a a596756c",
+    "Turno 60: ataca a596756c con Spirit Break a 5dc7d588",
+    "Turno 61: ataca 5dc7d588 con Thunderbolt a a596756c",
+    "Turno 61: ataca a596756c con Spin Out a 5dc7d588",
+    "Turno 61: 5dc7d588 se debilitó",
+    "Turno 63: ataca af09f752 con Thunderbolt a a596756c",
+    "Turno 63: ataca a596756c con Spin Out a af09f752",
+    "Turno 64: ataca af09f752 con Thunderbolt a a596756c",
+    "Turno 64: ataca a596756c con Spin Out a af09f752",
+    "Turno 64: af09f752 se debilitó",
+    "Turno 66: ataca 80abd126 con Thunderbolt a a596756c",
+    "Turno 66: ataca a596756c con Spin Out a 80abd126",
+    "Turno 67: ataca 80abd126 con Thunderbolt a a596756c",
+    "Turno 67: ataca a596756c con Spin Out a 80abd126",
+    "Turno 67: 80abd126 se debilitó"
+  ],
+  "ended": true,
+  "winner": "p1",
+  "finalState": {
+    "isOver": true,
+    "winner": "p1",
+    "p1": [
+      {
+        "name": "a596756c",
+        "hp": 88,
+        "maxHp": 342,
+        "fainted": false
+      },
+      {
+        "name": "fcbf41f7",
+        "hp": 342,
+        "maxHp": 342,
+        "fainted": false
+      },
+      {
+        "name": "0fe95ed6",
+        "hp": 342,
+        "maxHp": 342,
+        "fainted": false
+      },
+      {
+        "name": "93620ddd",
+        "hp": 342,
+        "maxHp": 342,
+        "fainted": false
+      },
+      {
+        "name": "edaa0f8a",
+        "hp": 342,
+        "maxHp": 342,
+        "fainted": false
+      },
+      {
+        "name": "72c5372a",
+        "hp": 342,
+        "maxHp": 342,
+        "fainted": false
+      }
+    ],
+    "p2": [
+      {
+        "name": "80abd126",
+        "hp": 0,
+        "maxHp": 651,
+        "fainted": true
+      },
+      {
+        "name": "a61174ce",
+        "hp": 0,
+        "maxHp": 651,
+        "fainted": true
+      },
+      {
+        "name": "dc5619aa",
+        "hp": 0,
+        "maxHp": 651,
+        "fainted": true
+      },
+      {
+        "name": "0809642f",
+        "hp": 0,
+        "maxHp": 651,
+        "fainted": true
+      },
+      {
+        "name": "5dc7d588",
+        "hp": 0,
+        "maxHp": 651,
+        "fainted": true
+      },
+      {
+        "name": "af09f752",
+        "hp": 0,
+        "maxHp": 651,
+        "fainted": true
+      }
+    ]
+  }
+}

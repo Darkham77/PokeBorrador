@@ -16,7 +16,7 @@ const HIDDEN_ABILITY_HERITAGE_PCT = 60
  */
 
 /** Memoized: Egg Moves de una especie base consultadas desde @pkmn/sim. */
-const _eggMovesCache = new Map<PokemonSpeciesId, PokemonMoveId[]>() // runtime-map
+const _eggMovesCache = new Map<PokemonSpeciesId, PokemonMoveId[]>() // runtime-map: Fast O(1) keyed lookup dictionary
 function getEggMoves(speciesId: PokemonSpeciesId): PokemonMoveId[] {
   if (_eggMovesCache.has(speciesId)) return _eggMovesCache.get(speciesId)!
   const learnset = Dex.data.Learnsets[speciesId]?.learnset ?? {}

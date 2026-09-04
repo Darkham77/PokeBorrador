@@ -2,7 +2,7 @@ import { gsap } from 'gsap'
 import type { Ref } from 'vue'
 import type { WeatherId } from '@/logic/weather/weatherRegistry'
 
-const RAIN_ATMOSPHERE_WEATHER_IDS_SET: ReadonlySet<WeatherId> = new Set<WeatherId>(['rain', 'storm', 'heavy_rain', 'thunderstorm']) // runtime-set
+const RAIN_ATMOSPHERE_WEATHER_IDS_SET: ReadonlySet<WeatherId> = new Set<WeatherId>(['rain', 'storm', 'heavy_rain', 'thunderstorm']) // runtime-set: Fast O(1) membership lookup set
 
 const HEAVY_RAIN_BASE_SPEED = 0.35
 const HEAVY_RAIN_VAR_SPEED = 0.2

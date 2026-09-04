@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { armBattleReadyForInput, awaitBattleReadyForInput, awaitGameStoreReady, type WindowWithResolver } from '../e2e_helpers.ts';
+import { awaitBattleReadyForInput, awaitGameStoreReady, type WindowWithResolver } from '../e2e_helpers.ts';
 import type { BattleState } from '../../../src/types/battle/battle.ts';
 
 class ManualScenariosSimWrapper extends BaseBattleSimulation {
@@ -27,6 +27,7 @@ class ManualScenariosSimWrapper extends BaseBattleSimulation {
       const pikachu = pokemonDebugService.generate({ id: 'pikachu', level: 5 });
       await battleStore.startBattle(pikachu, { locationId: 'route1' });
     });
+    await awaitBattleReadyForInput(this.page);
   }
 
   public async getCharmanderHp(): Promise<number> {
@@ -38,12 +39,12 @@ class ManualScenariosSimWrapper extends BaseBattleSimulation {
 }
 
 test.describe('Battle Manual E2E Scenarios', () => {
+  test.describe.configure({ mode: 'serial' });
+
   test('debería consumir un Revivir en un Pokémon de la banca debilitado y jugar el combate hasta el final', async ({ page }) => {
     const sim = new ManualScenariosSimWrapper(page, 'ManualRevive');
     await sim.setup();
-    await armBattleReadyForInput(page);
     await sim.setupReviveScenario();
-    await awaitBattleReadyForInput(page);
 
     const charmanderUid = await page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
@@ -60,7 +61,6 @@ test.describe('Battle Manual E2E Scenarios', () => {
     await sim.setup();
 
     // 1. Iniciar un combate de entrenador con clima, hazards y el 2do Pokémon activo
-    await armBattleReadyForInput(page);
     await page.evaluate(async () => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');

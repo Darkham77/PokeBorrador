@@ -34,7 +34,7 @@ export async function checkDoxIntegrity(
     // no .gitignore found — skip silently
   }
 
-  const doxDirs: string[] = []; // no-domain
+  const doxDirs: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   async function hasCodeFiles(dir: string): Promise<boolean> {
     try {

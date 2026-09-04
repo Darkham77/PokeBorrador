@@ -259,6 +259,7 @@ onUnmounted(() => {
 
 <template>
   <div
+    id="home-events-section"
     ref="sectionRef"
     class="home-events-section home-section-card"
   >
@@ -392,6 +393,7 @@ onUnmounted(() => {
       <!-- UPCOMING 7-DAY SCHEDULE -->
       <div class="accordion-panel">
         <button
+          id="home-events-schedule-toggle-btn"
           v-gsap-hover="{ scale: 1.01, y: -1 }"
           class="accordion-toggle"
           @click="showSchedule = !showSchedule"
@@ -416,6 +418,7 @@ onUnmounted(() => {
       <!-- PAST CONCLUDED EVENTS -->
       <div class="accordion-panel">
         <button
+          id="home-events-history-toggle-btn"
           v-gsap-hover="{ scale: 1.01, y: -1 }"
           class="accordion-toggle"
           @click="showHistory = !showHistory"

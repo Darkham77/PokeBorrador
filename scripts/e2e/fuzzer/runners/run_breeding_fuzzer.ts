@@ -9,8 +9,8 @@ import { requirePokemonSpeciesId, isPokemonSpeciesId } from '../../../../src/dat
 const REPORT_FILE = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_breeding_coverage_report.json');
 
 async function runBreedingFuzzer() {
-  const errors: string[] = []; // no-domain
-  const warnings: string[] = []; // no-domain
+  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
+  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
   
   // Obtener todas las especies válidas en nuestro Pokédex que tienen grupos de huevo definidos
   const speciesList = Array.from(Dex.species.all()).filter(s => s.exists && s.eggGroups && isPokemonSpeciesId(Dex.toID(s.name)));
@@ -121,7 +121,7 @@ async function runBreedingFuzzer() {
           }
 
           // 2. Power Items
-          const ivs = calculateInheritance(pA, pB, 'powerweight', 'powerbracer') as Record<string, number>; // open-record
+          const ivs = calculateInheritance(pA, pB, 'powerweight', 'powerbracer') as Record<string, number>; // open-record: Generic key-value data dictionary container
           if (ivs.hp !== pA.ivs.hp || ivs.atk !== pB.ivs.atk) {
             errors.push(`[Error] Power items fallaron en cruce ${pA.name} x ${pB.name}`);
             failed++;
@@ -129,7 +129,7 @@ async function runBreedingFuzzer() {
           }
 
           // Validar límites numéricos de todos los IVs resultantes [0, 31]
-          const stats = ['hp', 'atk', 'def', 'spa', 'spd', 'spe']; // no-domain
+          const stats = ['hp', 'atk', 'def', 'spa', 'spd', 'spe']; // no-domain: Non-domain utility collection or data structure
           let ivsRangeValid = true;
           for (const s of stats) {
             const val = ivs[s];

@@ -6,7 +6,7 @@ import { GYMS } from '@/data/world/gyms';
 import { FIRE_RED_MAPS } from '@/data/world/maps';
 import { NATURE_DATA } from '@/data/battle/natures';
 import { SPECIES_METADATA } from '@/data/pokemon/speciesMetadata';
-import { POKEMON_AESTHETICS, POKEMON_SPRITE_IDS, requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { POKEMON_AESTHETICS, POKEMON_SPRITE_IDS, requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION, isEnabledPokemonId } from '@/data/system/constants';
 import { MOVE_TRANSLATIONS_ES, requirePokemonMoveId } from '@/data/battle/moves';
@@ -72,9 +72,9 @@ function toShowdownSecondaryEffect(effect: RawShowdownSecondaryEffect | undefine
  */
 
 // Estado reactivo para la base de datos (optimizado con shallowRef)
-const _pokemonDb = shallowRef(POKEMON_DB as Record<string, PokemonBaseData>); // open-record
-const _speciesMetadata = shallowRef(SPECIES_METADATA as Record<string, SpeciesMetadata>); // open-record
-const _pokemonAesthetics = shallowRef(POKEMON_AESTHETICS as Record<string, PokemonAesthetics>); // open-record
+const _pokemonDb = shallowRef(POKEMON_DB as Record<string, PokemonBaseData>); // open-record: Generic key-value data dictionary container
+const _speciesMetadata = shallowRef(SPECIES_METADATA as Record<string, SpeciesMetadata>); // open-record: Generic key-value data dictionary container
+const _pokemonAesthetics = shallowRef(POKEMON_AESTHETICS as Record<string, PokemonAesthetics>); // open-record: Generic key-value data dictionary container
 
 /** Mapa inverso: número sprite → nombre canónico (ej: 12 → "butterfree") */
 const SPRITE_ID_TO_NAME: Record<number, string> = Object.fromEntries(
@@ -82,7 +82,7 @@ const SPRITE_ID_TO_NAME: Record<number, string> = Object.fromEntries(
 );
 
 function requireMoveCategory(category: string): MoveBaseData['cat'] {
-    const normalized = category.toLowerCase(); // text-ok
+    const normalized = category.toLowerCase(); // text-ok: UI text display localization string
     if (normalized === 'physical' || normalized === 'special' || normalized === 'status') return normalized;
     throw new Error(`[pokemonDataProvider] Invalid move category from Showdown: ${category}`);
 }
@@ -162,7 +162,7 @@ export const pokemonDataProvider = {
 
         if (!ability || !ability.exists) {
             // Intenta buscar por nombre en español en las traducciones estáticas
-            const nameLower = name.trim().toLowerCase(); // text-ok
+            const nameLower = name.trim().toLowerCase(); // text-ok: UI text display localization string
             const spanishId = ABILITIES_BY_SPANISH_NAME[nameLower];
             if (spanishId) {
                 cleanId = toID(spanishId);
@@ -175,7 +175,7 @@ export const pokemonDataProvider = {
         }
 
         // Buscar traducción en las traducciones estáticas
-        const translated = (ABILITY_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string; icon?: string }>)[cleanId]; // open-record
+        const translated = (ABILITY_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string; icon?: string }>)[cleanId]; // open-record: Generic key-value data dictionary container
         if (!translated || !translated.name || !translated.desc) {
             throw new Error(`[pokemonDataProvider] Traducción al español faltante para la habilidad: ${cleanId}`);
         }
@@ -194,7 +194,7 @@ export const pokemonDataProvider = {
     /**
      * Obtiene la lista de habilidades posibles para una especie.
      */
-    getSpeciesAbilities(speciesId: string): string[] {
+    getSpeciesAbilities(speciesId: PokemonSpeciesId): string[] {
         if (!speciesId) return [];
         const species = Dex.forGen(ACTIVE_GENERATION).species.get(speciesId);
         if (!species || !species.exists) return [];
@@ -206,7 +206,7 @@ export const pokemonDataProvider = {
     /**
      * Obtiene el rendimiento de EVs (EV Yield) de una especie al ser derrotada.
      */
-    getEvYield(speciesId: string): EvYield {
+    getEvYield(speciesId: PokemonSpeciesId): EvYield {
         if (!speciesId) return {};
         const cleanId = requirePokemonSpeciesId(toID(speciesId));
         return getEvYieldForSpecies(cleanId);
@@ -231,7 +231,7 @@ export const pokemonDataProvider = {
             const translated = MOVE_TRANSLATIONS_ES[moveId];
             return {
                 id: moveId,
-                name: translated.name || 'Recargando', // spanish-ok
+                name: translated.name || 'Recargando', // spanish-ok: UI Spanish text localization label
                 power: 0,
                 acc: PERFECT_ACCURACY_FLAG,
                 type: 'normal',
@@ -246,14 +246,14 @@ export const pokemonDataProvider = {
 
         const moveId = requirePokemonMoveId(move.id);
         const translated = MOVE_TRANSLATIONS_ES[moveId];
-        const espName = translated.name ?? move.name; // text-ok
+        const espName = translated.name ?? move.name; // text-ok: UI text display localization string
 
         const moveData: MoveBaseData = {
             id: moveId,
             name: espName,
             power: move.basePower,
             acc: move.accuracy === true ? PERFECT_ACCURACY_FLAG : move.accuracy,
-            type: toPokemonType(move.type.toLowerCase()), // text-ok
+            type: toPokemonType(move.type.toLowerCase()), // text-ok: UI text display localization string
             cat: requireMoveCategory(move.category),
             pp: move.pp,
             priority: move.priority || 0,
@@ -319,7 +319,7 @@ export const pokemonDataProvider = {
     getNatureData(name: string): NatureBaseData | null {
         if (!name) return null;
         const cleanId = toID(name);
-        const staticData = (NATURE_DATA as Record<string, { name: string; up: string | null; down: string | null; desc: string }>)[cleanId]; // open-record
+        const staticData = (NATURE_DATA as Record<string, { name: string; up: string | null; down: string | null; desc: string }>)[cleanId]; // open-record: Generic key-value data dictionary container
         if (!staticData) return null;
 
         const sdNature = Dex.natures.get(cleanId);
@@ -373,7 +373,7 @@ export const pokemonDataProvider = {
      * Lanza error si no se encuentra.
      */
     getMoveIdBySpanishName(spanishName: string): string {
-        const nameLower = spanishName.trim().toLowerCase(); // text-ok
+        const nameLower = spanishName.trim().toLowerCase(); // text-ok: UI text display localization string
         for (const [id, trans] of Object.entries(MOVE_TRANSLATIONS_ES)) {
             if (trans.name.toLowerCase() === nameLower) {
                 return id;
@@ -381,7 +381,7 @@ export const pokemonDataProvider = {
         }
         // También intentar coincidencia por ID normalizado
         const possibleId = toID(spanishName);
-        if ((MOVE_TRANSLATIONS_ES as Record<string, unknown>)[possibleId]) { // open-record
+        if ((MOVE_TRANSLATIONS_ES as Record<string, unknown>)[possibleId]) { // open-record: Generic key-value data dictionary container
             return possibleId;
         }
         throw new Error(`No se pudo resolver el movimiento a partir del nombre en español: ${spanishName}`);

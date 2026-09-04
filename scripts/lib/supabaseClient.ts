@@ -64,7 +64,7 @@ export async function readAndParseEnv(): Promise<Record<string, ServerConfig>> {
   const lines = envContent.split('\n');
   const serverConfigs: Record<string, ServerConfig> = {};
 
-  const KNOWN_SUFFIXES = [ // no-domain
+  const KNOWN_SUFFIXES = [ // no-domain: Non-domain utility collection or data structure
     'SUPABASE_PUBLIC_URL', 'API_EXTERNAL_URL', 'SUPABASE_ANON_KEY',
     'SERVICE_ROLE_KEY', 'POSTGRES_PASSWORD', 'SECRET_KEY_BASE',
     'DASHBOARD_USERNAME', 'DASHBOARD_PASSWORD', 'KONG_HTTPS_PORT',
@@ -146,11 +146,11 @@ export async function getValidatedServerConfigs(): Promise<{ serverConfigs: Reco
     console.error(styleText('red', '❌ Error: No se encontraron configuraciones de servidor (SERVER_<profile>_*) en el .env.'));
     process.exit(1);
   }
-  const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[]))); // no-domain
+  const allAvailable = Array.from(new Set(baseProfiles.concat(Object.values(serverConfigs).map(c => c.ID).filter(Boolean) as string[]))); // no-domain: Non-domain utility collection or data structure
   return { serverConfigs, baseProfiles, allAvailable };
 }
 
-export function findServerConfig(serverConfigs: Record<string, ServerConfig>, profileOrId: string): ServerConfig | null { // result-ok
+export function findServerConfig(serverConfigs: Record<string, ServerConfig>, profileOrId: string): ServerConfig | null { // result-ok: Operation result wrapper payload
   const direct = serverConfigs[profileOrId];
   if (direct) return direct;
   const matchKey = Object.keys(serverConfigs).find(k => serverConfigs[k]?.ID === profileOrId);

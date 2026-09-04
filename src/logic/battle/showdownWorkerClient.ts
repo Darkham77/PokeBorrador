@@ -22,7 +22,7 @@ export function setShowdownWorker(worker: Worker | null) {
   }
 }
 
-export function getShowdownWorker(): Worker | null { // result-ok
+export function getShowdownWorker(): Worker | null { // result-ok: Operation result wrapper payload
   if (!showdownWorker && typeof window !== 'undefined' && window.__showdownWorker__) {
     showdownWorker = window.__showdownWorker__;
   }
@@ -97,7 +97,7 @@ export async function syncTeamsFromLastWorkerState(): Promise<void> {
   let gameStore: GameStoreType | null = null;
 
   if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.getGameStore) {
-    const debug = window.__VITE_DEBUG__ as Record<string, unknown>; // open-record
+    const debug = window.__VITE_DEBUG__ as Record<string, unknown>; // open-record: Generic key-value data dictionary container
     gameStore = (debug.getGameStore as () => GameStoreType)();
     battleStore = (Reflect.get(gameStore, 'gs') as BattleStoreType | undefined) || ((window.__VITE_DEBUG_STORE_RESOLVER__ as (() => BattleStoreType) | undefined)?.()) || null;
   }
@@ -184,18 +184,27 @@ export async function executeTurnInWorker(
 
   const isSimulation = typeof window !== 'undefined' && !!window.__VITE_DEBUG__?.isScriptedReplayMode;
   const finalP2Choice = p2Choice;
-  const debugObj = (typeof window !== 'undefined' ? window.__VITE_DEBUG__ : undefined) as Record<string, unknown> | undefined; // open-record
+  const debugObj = (typeof window !== 'undefined' ? window.__VITE_DEBUG__ : undefined) as Record<string, unknown> | undefined; // open-record: Generic key-value data dictionary container
   const history = debugObj?.history;
   const certifiedHistoryIndex = isSimulation && debugObj
     ? (Reflect.get(debugObj, 'replayHistoryIdx') as number | undefined)
     : undefined;
+
+  if (isSimulation && debugObj) {
+    const isEnded = Reflect.get(debugObj, 'certifiedReplayWorkerEnded') === true;
+    if (isEnded || (Array.isArray(history) && typeof certifiedHistoryIndex === 'number' && certifiedHistoryIndex >= history.length)) {
+      console.warn('[ShowdownWorkerClient] Bypassing executeTurnInWorker because certified replay has already finished all history steps.');
+      return { logs: [], isOver: true, winner: null };
+    }
+  }
+
   if (isSimulation && (typeof certifiedHistoryIndex !== 'number' || certifiedHistoryIndex < 0)) {
     throw new Error(`[ShowdownWorkerClient] Certified replay submission is missing its atomic history cursor. context=${JSON.stringify({ certifiedHistoryIndex, historyLength: Array.isArray(history) ? history.length : undefined, p1Choice, p2Choice: finalP2Choice })}`);
   }
   const certifiedHistoryStep = typeof certifiedHistoryIndex === 'number' ? certifiedHistoryIndex + 1 : undefined;
   if (isSimulation && debugObj) {
     const trace = Reflect.get(debugObj, 'certifiedReplaySubmissionTrace');
-    const entries = (Array.isArray(trace) ? trace : []) as Record<string, unknown>[]; // open-record
+    const entries = (Array.isArray(trace) ? trace : []) as Record<string, unknown>[]; // open-record: Generic key-value data dictionary container
     entries.push({ historyIndex: Reflect.get(debugObj, 'replayHistoryIdx'), p1Choice, p2Choice: finalP2Choice ?? '', p1Skip: !!p1Skip, p2Skip: !!p2Skip, p1UsedBattleItem: !!p1UsedBattleItem });
     Reflect.set(debugObj, 'certifiedReplaySubmissionTrace', entries);
   }
@@ -314,7 +323,7 @@ export async function executeTurnInWorker(
           let gameStore: GameStoreType | null = null;
 
           if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.getGameStore) {
-            const debug = window.__VITE_DEBUG__ as Record<string, unknown>; // open-record
+            const debug = window.__VITE_DEBUG__ as Record<string, unknown>; // open-record: Generic key-value data dictionary container
             gameStore = (debug.getGameStore as () => GameStoreType)();
             battleStore = (Reflect.get(gameStore, 'gs') as BattleStoreType | undefined) || ((window.__VITE_DEBUG_STORE_RESOLVER__ as (() => BattleStoreType) | undefined)?.()) || null;
           }

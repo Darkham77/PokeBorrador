@@ -18,7 +18,10 @@ const handleClaim = async (awardId: string) => {
 </script>
 
 <template>
-  <div class="past-events-section">
+  <div
+    id="past-events-history-section"
+    class="past-events-section"
+  >
     <div class="section-header">
       <div class="section-title-wrap">
         <span class="emoji section-icon">📜</span>

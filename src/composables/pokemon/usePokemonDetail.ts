@@ -12,7 +12,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { MoveBaseData } from '@/types/system/database'
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 import { toPokemonType } from '@/data/battle/types'
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { MoveCategory } from '@/data/battle/moves'
 import { calculateInstancePhysicalData } from '@/logic/pokemon/physicalDimensionsMath'
 
@@ -27,7 +27,7 @@ function requireMoveCategory(value: string | undefined): MoveCategory {
 interface EvolutionEntry {
   type: EvolutionTriggerType;
   requirement: string;
-  to: string;
+  to: PokemonSpeciesId;
   isSeen: boolean;
   isCaught: boolean;
 }
@@ -103,20 +103,20 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
     const caught = gameStore.state.pokedex || []
     const seen = gameStore.state.seenPokedex || []
 
-    const enrichEvo = (evo: { type: EvolutionTriggerType, requirement: string, to: string }): EvolutionEntry => { // type-ok
+    const enrichEvo = (evo: { type: EvolutionTriggerType, requirement: string, to: string }): EvolutionEntry => { // type-ok: Type contract declaration
       const toId = requirePokemonSpeciesId(evo.to)
       const isCaught = caught.includes(toId)
       const isSeen = isCaught || seen.includes(toId)
-      return { ...evo, isSeen, isCaught }
+      return { ...evo, to: toId, isSeen, isCaught }
     }
 
-    const evoTable = EVOLUTION_TABLE as Record<string, { level: number, to: string } | undefined> // open-record
+    const evoTable = EVOLUTION_TABLE as Record<string, { level: number, to: string } | undefined> // open-record: Generic key-value data dictionary container
     if (evoTable[id]) {
       const ev = evoTable[id]!
       list.push(enrichEvo({ type: 'level', requirement: `Nv. ${ev.level}`, to: ev.to }))
     }
     
-    const stoneTable = STONE_EVOLUTIONS as Record<string, { stone: string, to: string } | undefined> // open-record
+    const stoneTable = STONE_EVOLUTIONS as Record<string, { stone: string, to: string } | undefined> // open-record: Generic key-value data dictionary container
     Object.keys(stoneTable).forEach(key => {
       if (key === id || key.startsWith(`${id}_`)) {
         const ev = stoneTable[key]!
@@ -124,7 +124,7 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
       }
     })
 
-    const tradeTable = TRADE_EVOLUTIONS as Record<string, string | undefined> // open-record
+    const tradeTable = TRADE_EVOLUTIONS as Record<string, string | undefined> // open-record: Generic key-value data dictionary container
     if (tradeTable[id]) {
       list.push(enrichEvo({ type: 'trade', requirement: 'Intercambio', to: tradeTable[id]! }))
     }
@@ -143,17 +143,17 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
       spe: 'Rgba(250, 146, 178, 1)' 
     }
     return Object.keys(species.value.stats).map(key => {
-      const base = (species.value?.stats as Record<string, number>)[key] || 0 // open-record
+      const base = (species.value?.stats as Record<string, number>)[key] || 0 // open-record: Generic key-value data dictionary container
       const current = isInstance.value && targetPokemon.value ? ((Reflect.get(targetPokemon.value, key) as number | undefined) || base) : base
       return {
         id: key,
-        label: labels[key] || key.toUpperCase(), // text-ok
+        label: labels[key] || key.toUpperCase(), // text-ok: UI text display localization string
         value: current,
         baseValue: base,
         max: MAX_BASE_STAT_VALUE,
         color: colors[key] || '#888',
-        iv: isInstance.value ? (targetPokemon.value?.ivs as Record<string, number> | undefined)?.[key] || 0 : 0, // open-record
-        ev: isInstance.value ? (targetPokemon.value?.evs as Record<string, number> | undefined)?.[key] || 0 : 0 // open-record
+        iv: isInstance.value ? (targetPokemon.value?.ivs as Record<string, number> | undefined)?.[key] || 0 : 0, // open-record: Generic key-value data dictionary container
+        ev: isInstance.value ? (targetPokemon.value?.evs as Record<string, number> | undefined)?.[key] || 0 : 0 // open-record: Generic key-value data dictionary container
       }
     })
   })

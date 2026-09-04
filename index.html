@@ -245,6 +245,7 @@
     <script>
       // Función para mostrar pantalla de error si falla la carga o no hay internet
       function showOfflineScreen() {
+        if (typeof window !== 'undefined' && window.__E2E__) return;
         var card = document.getElementById('offline-card');
         var icon = document.getElementById('offline-icon');
         var title = document.getElementById('offline-title');
@@ -316,18 +317,19 @@
       }
 
       // Si el navegador ya detecta que no hay internet, actuar de inmediato
-      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      if (typeof navigator !== 'undefined' && !navigator.onLine && (typeof window === 'undefined' || !window.__E2E__)) {
         setTimeout(showOfflineScreen, 0);
       }
 
       // Capturar fallos en la carga del script principal o assets
       function handleEntryPointError() {
+        if (typeof window !== 'undefined' && window.__E2E__) return;
         showOfflineScreen();
       }
 
       // Fallback de seguridad: si después de 6 segundos Vue no se ha montado, mostrar error
       setTimeout(function() {
-        if (typeof window !== 'undefined' && !window.pwa_app_mounted) {
+        if (typeof window !== 'undefined' && !window.pwa_app_mounted && !window.__E2E__) {
           showOfflineScreen();
         }
       }, 6000);

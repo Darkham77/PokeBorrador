@@ -80,10 +80,85 @@ If it represents a finite domain, design and use the domain type first.
 - **Forbidden Pattern**: `rewardTM: 'MT39 Tumba Rocas' | 'MT03 Pulso Agua'`, `function useItem(itemName: string)`
 - **Canonical Pattern**: `rewardTM: ItemId`, `function useItem(itemId: ItemId)`
 
-## Absolute Prohibition on `// domain-ok` Abuse on Domain Entities (`noDomainOkOnEntities`)
+## Mandatory Technical Justification on 100% of Escape Hatches
 
-- **Prose-Only Mandate**: The `// domain-ok` suppression directive is STRICTLY RESERVED for purely narrative prose (e.g. NPC dialogue lines, lore quotes, battle victory speech strings).
-- **Entity Prohibition**: It is STRICTLY FORBIDDEN to use `// domain-ok` on fields that represent entities, foreign keys, items, moves, pokemon, maps, gyms, or rewards to silence TypeScript errors. If TypeScript reports a mismatch, fix the underlying data contract to use the canonical domain ID.
+- **Zero Naked Ignores Policy**: It is STRICTLY FORBIDDEN to use naked, generic, or unexplained escape hatch comments (e.g. `// domain-ok`, `// no-magic`, `// string-ok`, `// open-record`, `// any-ok`, `// uuid-ok`, `// infra-id-ok`).
+- **Mandatory Rationale Format**: Every suppression directive across the entire codebase MUST include a colon followed by a detailed, explicit technical justification:
+  - `// domain-ok: UI Spanish text localization label`
+  - `// no-magic: Formula coefficient for linear stat interpolation`
+  - `// uuid-ok: Database user UUID winner identifier`
+  - `// open-record: Generic key-value data dictionary container`
+- **Auditor Enforcement**: The rule `unjustified-escape-hatch` in `validate_audit_headers.ts` checks 100% of files and fails if any comment omits the technical explanation.
+- **Prose-Only Mandate**: The `// domain-ok: <reason>` directive is STRICTLY RESERVED for purely narrative prose (e.g. NPC dialogue lines, lore quotes, battle victory speech strings). It is STRICTLY FORBIDDEN to use it to silence type mismatches on entities, foreign keys, items, moves, or stats.
+
+## Pure Canonical Domain Types & Absolute Ban on `DomainId | string` Wildcards
+
+- **Zero-Wildcard Mandate**: Domain function parameters, method arguments, and interface properties representing finite domain entities MUST consume pure canonical domain types (`PokemonSpeciesId`, `PokemonMoveId`, `ItemId`, `AbilityId`, `GymId`, `MapRouteId`, `FactionId`, `ItemCategory`, `PlayerClassId`, `PokemonTagId`, etc.).
+- **Un-ignorable Wildcard Prohibition**: It is STRICTLY FORBIDDEN to type domain parameters as `DomainId | string` or use wildcard unions combining finite types with `string`. The audit rules `strictDomainParamTypes` and `P_PARAM_WILDCARD_STRING_UNION` enforce this with `overrideEscapeHatch: true` — no escape hatch can bypass a wildcard union.
+
+## Root Contract First Mandate & Prohibition on Defensive Downstream Type Interrogation
+
+- **Root Contract First**: When domain logic needs to consume an entity from an interface (e.g., `pokemon.id`, `pokemon.ability`, `move.id`), agents **MUST NEVER** add defensive runtime interrogations (`typeof pokemon.id === 'string' && isPokemonSpeciesId(pokemon.id)`) inside internal business logic or calculation helpers.
+- **Fix the Interface Definition at the Source**: If an interface or DTO (like `PurePokemon`, `PureMove`, `PureBattleWeather`) contains loose primitives (`id?: string`, `ability?: string | null`, `type: string`), agents **MUST IMMEDIATELY REFACOR THE ROOT INTERFACE** to use canonical domain types (`id?: PokemonSpeciesId`, `ability?: AbilityId | null`, `type: WeatherId | 'clear' | 'none'`).
+- **Zero Defensive Clutter in Internal Logic**: With strongly-typed root contracts, internal calculation logic consumes typed properties directly. Runtime type guards (`isDomainId(raw)`) and parsing assertions (`requireDomainId(raw)`) belong **exclusively at external I/O boundaries** (user inputs, network events, local storage, DB router), NEVER in internal domain calculations.
+
+## Absolute Prohibition on Mixed Domain Literal Unions (`noMixedDomainLiteralUnions`)
+
+- **Zero Mixed Literal Unions**: It is STRICTLY FORBIDDEN to mix a named canonical domain type with raw string literals (e.g., `WeatherId | 'clear' | 'none'`, `ItemId | 'custom_item'`, or `PokemonType | 'shadow'`).
+- **Single Source of Truth**:
+  1. If a literal belongs to the domain (e.g. `'clear'`, `'none'`), it **MUST BE INCLUDED** in the canonical array (`WEATHER_IDS = [...] as const`) and derived automatically.
+  2. If a literal is external to the domain, it must be encapsulated into a separate named union or converted into a strongly typed sum type.
+
+## Pure Domain Type Definitions (Zero `null` / `undefined` in Domain Unions)
+
+- **Pure Entity Mandate**: A domain type (`AbilityId`, `ItemId`, `PokemonSpeciesId`, `MapRouteId`) represents a real, finite entity in the game catalog. It is STRICTLY FORBIDDEN to include `null` or `undefined` within a domain type union definition (e.g. `type AbilityId = ... | null;` is FORBIDDEN).
+- **Location of Nullability**: `null` and `undefined` represent the *absence of a value* and belong strictly to the **state container, interface field, or property** holding the entity (e.g. `heldItem: ItemId | null`, `activeMove?: PokemonMoveId`), NEVER to the domain type itself.
+
+## Domain Function Precondition & Call-Site Guarding Mandate
+
+- **Strict Preconditions on Domain Logic**: Functions that execute domain calculations, battle mechanics, or entity handlers (e.g. `resolveAbilityModifier`, `resolveItemModifier`, `calculateMovePower`) MUST demand pure `DomainId` parameters. It is STRICTLY FORBIDDEN to accept `DomainId | null` or `DomainId | undefined` in domain calculation handlers.
+- **Call-Site Guarding**: The caller is responsible for validating preconditions before calling domain logic:
+  ```ts
+  // ❌ FORBIDDEN: Domain function polluted with nullable parameter
+  function resolveAbilityModifier(statKey: StatIDExceptHP, abId: AbilityId | undefined, ...): number;
+
+  // ❌ FORBIDDEN: Defensive runtime checks on strongly-typed entities
+  const abId = typeof pokemon.ability === 'string' && isAbilityId(pokemon.ability) ? pokemon.ability : undefined;
+
+  // ✅ CANONICAL: Strongly-typed root interface + Pure domain parameter with call-site guarding
+  function resolveAbilityModifier(statKey: StatIDExceptHP, abId: AbilityId, ...): number;
+
+  // At call site (clean, direct precondition check):
+  const abilityMult = pokemon.ability ? resolveAbilityModifier(statKey, pokemon.ability, pokemon, ...) : 1.0;
+  ```
+
+## Absolute Prohibition on `unknown` and `any` in Business Logic Signatures
+
+- **No Type Erasure in Business Logic**: It is STRICTLY FORBIDDEN to type function parameters, return types, or variables as `unknown` or `any` in gameplay, calculation, battle, store, or composable code (e.g. `handleAction(difficulty: unknown = 'easy')` is FORBIDDEN).
+- **Boundary Functions Exception**: `unknown` is strictly reserved for dedicated **boundary deserializers, type-guards, and input parsers** (e.g. `isDomainId(raw: unknown): raw is DomainId`, `parseSaveData(json: unknown)`, `safeToDomain(val: unknown)`). Business logic receiving data past the boundary must always be strongly typed.
+
+## Absolute Prohibition on Double-Casting (`as unknown as DomainId`) in Production Code
+
+- **Zero Escape Hatches on Domain Boundary**: It is STRICTLY FORBIDDEN to force dynamic strings into domain types using double-casting (`x as unknown as DomainId` or `x as any as DomainId`) inside `src/`. All data entering from dynamic sources MUST pass through canonical type guards (`isDomainId(x)`) or throwing assertion helpers (`requireDomainId(x)`). Double-casting is strictly reserved for controlled error-simulation unit tests in `tests/`.
+
+## Architectural Distinction: Catalog Domain IDs (`*Id`) vs Dynamic Instance UIDs (`*Uid`)
+
+- **Catalog Domain IDs (`*Id`)**: Represent finite, pre-indexed entities defined in static game catalogs and canonical databases (`speciesId: PokemonSpeciesId`, `moveId: PokemonMoveId`, `itemId: ItemId`, `routeId: MapRouteId`, `gymId: GymId`). They MUST be strictly typed with their finite domain union.
+- **Dynamic Instance UIDs (`*Uid` / `*UID` / `*uid`)**: Represent dynamic runtime unique identifiers or UUIDs generated via `crypto.randomUUID()` to track individual live instances (e.g. `pokemonUid`, `targetUid`, `eggUid`, `partyUid`, `uid`, `pokemon_uid`). By definition, instance UIDs are dynamic `string` values, NOT finite catalog unions.
+- **Auditor Pattern (`GENUINE_UID_PATTERN`)**: The auditor automatically recognizes genuine instance UIDs matching `/^(?:uid|UID|[a-zA-Z0-9]+(?:Uid|UID|_uid|_UID)|[a-zA-Z0-9]+[uU]idOr[a-zA-Z0-9]+|[a-zA-Z0-9]+OrUid)$/` while strictly enforcing domain types on catalog IDs (preventing false positives on nouns like `australopithecuId`).
+
+## Absolute Prohibition on Inline Type Imports in Function Parameters and Properties (`noInlineTypeImports`)
+
+- **Clean Signature Mandate**: It is STRICTLY FORBIDDEN to use inline `import('...').Type` inside function parameter types, return types, variable types, or interface properties in `.ts` and `.vue` source files.
+- **Top-Level `import type` SSoT**: All types MUST be imported explicitly in the file header using `import type { ... } from '...'` to preserve module dependency visibility and maintain clean, readable function signatures.
+- **Exception**: Ambient declaration files (`.d.ts`) such as `env.d.ts` are exempt to preserve global scope declarations without creating module scope collisions.
+
+## Absolute Prohibition on ES Module Exports inside Vue `<script setup>` (`noScriptSetupExports`)
+
+- **Vue SFC Compiler Standard**: `<script setup>` is strictly scoped to the component template/runtime and CANNOT contain ES module exports (`export const`, `export type`, `export interface`, `export function`, `export default`).
+- **Shared Contracts Extraction**: If any type, interface, or constant needs to be shared across multiple components or tests, it MUST be extracted to a companion `.ts` module (e.g. `src/components/.../*Types.ts` or `src/types/...`).
+- **Local Types Unexported**: Types, interfaces, and filter tuples that are only used within that specific SFC must remain unexported (without the `export` keyword) and use the `_` prefix for local filter arrays (`const _FILTER_MODES = ['all', ...DOMAINS] as const;`).
+- **Auditor Enforcement**: The auditor `scripts/auditors/domain_data/validate_domain_types.ts` scans all `.vue` files and immediately flags any `export` inside `<script setup>` as a blocking `ERROR`.
 ## Nominal Branded Types for Domain IDs (`Brand<T, B>`)
 
 - **Nominal Safety Mandate**: Finite domain identifiers (`PokemonSpeciesId`, `ItemId`, `PokemonMoveId`) SHOULD be defined as Nominal Branded Types using `Brand<T, B>` from `@/types/system/branding` to prevent accidental assignability across distinct domains.
@@ -238,6 +313,40 @@ If code seems to need an inline cast (e.g., `(DATABASE as Record<string, T>)[key
 2. Implement the index check safely inside the data module (using `in`, `isDomainId()`, or `requireDomainId()`).
 3. Call the clean helper from business logic without any inline `as` type assertions.
 
+
+## AST Audit Rules & Anti-Patterns Reference
+
+### A. Prohibited Inline Literal Unions (`noInlineLiteralUnions`)
+- ❌ **Anti-pattern**: `mode?: 'pokemon' | 'item' | 'fishing' | 'npc'` or `theme?: 'default' | 'error' | 'warning'`
+- ✅ **Canonical**: Centralize in `src/types/` as an `as const` array and derive the union:
+  ```typescript
+  export const ROUTE_SPAWN_TABS = ['pokemon', 'item', 'fishing', 'npc'] as const;
+  export type RouteSpawnTab = (typeof ROUTE_SPAWN_TABS)[number];
+  ```
+
+### B. Prohibited Inline Type Imports (`noInlineTypeImports`)
+- ❌ **Anti-pattern**: `function format(date: import('temporal-polyfill').Temporal.ZonedDateTime)`
+- ✅ **Canonical**: Explicitly import in the file header:
+  ```typescript
+  import type { Temporal } from 'temporal-polyfill';
+  ```
+
+### C. Prohibited Anonymous Object Types in Parameters (`noInlineAnonymousObjectType`)
+- ❌ **Anti-pattern**: `send: (payload: { type: ChannelType, event: string, payload: unknown }) => void`
+- ✅ **Canonical**: Declare a named interface:
+  ```typescript
+  export interface ChannelPayload {
+    type: ChannelType;
+    event: string;
+    payload: unknown;
+  }
+  export interface Channel {
+    send: (payload: ChannelPayload) => void;
+  }
+  ```
+
+### D. Shared Minigame Difficulties
+- All minigame systems (Pesca, Minería / Arqueología, etc.) must consume the shared `MinigameDifficulty` / `MINIGAME_DIFFICULTIES` from `@/types/battle/battle` (`'easy' | 'medium' | 'hard' | 'expert'`).
 
 ## Generated Data Workflow
 

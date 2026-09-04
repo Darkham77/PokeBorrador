@@ -63,9 +63,9 @@ self.onmessage = async (e: MessageEvent<SaveWorkerIncomingMessage>) => {
       if (data.payload.binary) {
         const bin = data.payload.binary
         const json = isGzip(bin) ? await decompress(bin) : new TextDecoder().decode(bin)
-        targetObj = JSON.parse(json) as Record<string, unknown> // open-record
+        targetObj = JSON.parse(json) as Record<string, unknown> // open-record: Generic key-value data dictionary container
       } else if (data.payload.rawString) {
-        targetObj = JSON.parse(data.payload.rawString) as Record<string, unknown> // open-record
+        targetObj = JSON.parse(data.payload.rawString) as Record<string, unknown> // open-record: Generic key-value data dictionary container
       } else if (data.payload.rawObject) {
         targetObj = data.payload.rawObject
       }

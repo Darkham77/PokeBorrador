@@ -3,7 +3,7 @@ import type { Ref } from 'vue'
 import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { MapLocation } from '@/types/pokemon/encounters'
+import type { MapLocation, AdventureEventType } from '@/types/pokemon/encounters'
 import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle/battle'
 import { useInventoryStore } from '@/stores/inventory/inventory'
@@ -20,7 +20,8 @@ import { TRAINER_TYPES } from '@/data/player/trainerTypes'
 import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases'
 import { getSpritesForArchetype } from '@/logic/utils/npcSpriteRouter'
 
-export type AdventureTriggerType = 'combat' | 'obstacle_cut' | 'obstacle_strength' | 'obstacle_rock_smash' | 'fishing';
+export const ADVENTURE_TRIGGER_TYPES = ['combat', 'obstacle_cut', 'obstacle_strength', 'obstacle_rock_smash', 'fishing'] as const;
+export type AdventureTriggerType = (typeof ADVENTURE_TRIGGER_TYPES)[number];
 
 const ADVENTURE_TRAINER_ENCOUNTER_PROBABILITY = 0.3
 
@@ -45,7 +46,6 @@ interface AdventureEventsConfig {
   getSpawnPoolForMap: (loc: MapLocation) => { generic: string[]; specific: string[]; rates: Record<string, number> }
   getTravelTween: () => gsap.core.Tween | null
   getMarkerTimeline: () => gsap.core.Timeline | null
-  
   gameStore: ReturnType<typeof useGameStore>
   battleStore: ReturnType<typeof useBattleStore>
   inventoryStore: ReturnType<typeof useInventoryStore>
@@ -54,7 +54,7 @@ interface AdventureEventsConfig {
 }
 
 export interface ActiveAdventureEvent {
-  type: 'combat' | 'combat_won' | 'obstacle_cut' | 'obstacle_strength' | 'obstacle_rock_smash' | 'fishing'
+  type: AdventureEventType
   title: string
   desc: string
   moRequired?: string
@@ -100,7 +100,7 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
     }
   }
 
-  const triggerRandomEvent = async (targetMapId?: string) => {
+  const triggerRandomEvent = async (targetMapId?: AdventureNodeId) => {
     const travelTween = config.getTravelTween()
     const markerTimeline = config.getMarkerTimeline()
 
@@ -113,7 +113,7 @@ export function useAdventureEvents(config: AdventureEventsConfig) {
       : config.currentMapId.value
 
     const mapId = (targetMapId || nextSegmentMapId || 'route1') as string
-    const mapData = (MAPS_BY_ROUTE_ID as Record<string, MapLocation>)[mapId] as MapLocation | undefined // open-record
+    const mapData = (MAPS_BY_ROUTE_ID as Record<string, MapLocation>)[mapId] as MapLocation | undefined // open-record: Generic key-value data dictionary container
 
     if (!mapData) return
 
@@ -404,7 +404,7 @@ const ADVENTURE_EVENT_PROBABILITY_THRESHOLD = 0.70;
       const originNode = config.originMap.value
       if (isMapRouteId(originNode)) config.mapStore.currentMap = originNode
       config.shopStore.healAllPokemon(0)
-      const originName = (MAPS_BY_ROUTE_ID as Record<string, MapLocation>)[originNode]?.name || originNode // open-record
+      const originName = (MAPS_BY_ROUTE_ID as Record<string, MapLocation>)[originNode]?.name || originNode // open-record: Generic key-value data dictionary container
       config.travelLog.value.push(`🏥 Regresaste de inmediato a ${originName}. Tu equipo ha sido curado.`)
       activeEvent.value = null
       return

@@ -16,6 +16,10 @@ import {
   DEFAULT_WEATHER_TURNS_COUNT
 } from '../e2e/simulation_config.ts';
 import { toPokemonType } from '../../src/data/battle/types.ts';
+import { isPokemonMoveId } from '../../src/data/battle/moves.ts';
+import { isAbilityId } from '../../src/data/battle/abilities.ts';
+import { isItemId } from '../../src/data/inventory/items.ts';
+import { isWeatherId } from '../../src/logic/weather/weatherRegistry.ts';
 import { calculateDamagePure, getMoveCategory } from '../../src/logic/battle/battleMath.ts';
 import type { PurePokemon, PureMove, PureBattleWeather, PureDamageOptions } from '../../src/logic/battle/battleMathTypes.ts';
 
@@ -228,7 +232,7 @@ function executeComparison(options: RunOptions): ComparisonResult {
   }
 
   // Aplicar stages en Showdown (basado en tipos de Gen 3)
-  const physicalTypes = ['normal', 'fighting', 'flying', 'poison', 'ground', 'rock', 'bug', 'ghost', 'steel']; // no-domain
+  const physicalTypes = ['normal', 'fighting', 'flying', 'poison', 'ground', 'rock', 'bug', 'ghost', 'steel']; // no-domain: Non-domain utility collection or data structure
   const isPhysical = physicalTypes.includes(moveSpec.type.toLowerCase());
   const statKeyAtk = isPhysical ? 'atk' : 'spa';
   const statKeyDef = isPhysical ? 'def' : 'spd';
@@ -259,8 +263,8 @@ function executeComparison(options: RunOptions): ComparisonResult {
     spe: act1.storedStats.spe,
     type: toPokemonType((p1Spec.types[0] ?? 'normal').toLowerCase()),
     type2: p1Spec.types[1] ? toPokemonType(p1Spec.types[1].toLowerCase()) : undefined,
-    ability: p1AbilityEs,
-    heldItem: p1Item
+    ability: p1AbilityEs && isAbilityId(p1AbilityEs) ? p1AbilityEs : undefined,
+    heldItem: p1Item && isItemId(p1Item) ? p1Item : undefined
   };
 
   const ourDefender: PurePokemon = {
@@ -272,19 +276,20 @@ function executeComparison(options: RunOptions): ComparisonResult {
     spe: act2.storedStats.spe,
     type: toPokemonType((p2Spec.types[0] ?? 'normal').toLowerCase()),
     type2: p2Spec.types[1] ? toPokemonType(p2Spec.types[1].toLowerCase()) : undefined,
-    ability: p2AbilityEs,
-    heldItem: p2Item
+    ability: p2AbilityEs && isAbilityId(p2AbilityEs) ? p2AbilityEs : undefined,
+    heldItem: p2Item && isItemId(p2Item) ? p2Item : undefined
   };
 
+  const cleanMoveId = isPokemonMoveId(moveSpec.id) ? moveSpec.id : undefined;
   const ourMove: PureMove = {
-    id: moveSpec.id,
+    id: cleanMoveId,
     name: moveSpec.name,
-    type: toPokemonType(moveSpec.type.toLowerCase()), // string-ok
+    type: toPokemonType(moveSpec.type.toLowerCase()), // string-ok: Internal string formatting or DOM token identifier
     power: moveSpec.basePower,
-    cat: getMoveCategory({ id: moveSpec.id, type: toPokemonType(moveSpec.type.toLowerCase()), power: moveSpec.basePower }) // string-ok
+    cat: getMoveCategory({ id: cleanMoveId, type: toPokemonType(moveSpec.type.toLowerCase()), power: moveSpec.basePower }) // string-ok: Internal string formatting or DOM token identifier
   };
 
-  const weatherObj: PureBattleWeather | null = weatherType !== 'clear' ? { type: weatherType, turns: DEFAULT_WEATHER_TURNS_COUNT } : null;
+  const weatherObj: PureBattleWeather | null = isWeatherId(weatherType) && weatherType !== 'clear' ? { type: weatherType, turns: DEFAULT_WEATHER_TURNS_COUNT } : null;
   const ctx: PureDamageOptions = {
     atkStages,
     defStages,
@@ -338,7 +343,7 @@ export const COMPARISON_ITERATIONS_COUNT = 500;
 export const MAX_FAILURE_SAMPLES_COUNT = 10;
 
 const iterations = COMPARISON_ITERATIONS_COUNT;
-const reports: string[] = []; // no-domain
+const reports: string[] = []; // no-domain: Non-domain utility collection or data structure
 
 console.log('Iniciando comparación por fases...');
 

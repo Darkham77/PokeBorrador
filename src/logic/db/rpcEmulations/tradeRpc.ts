@@ -92,9 +92,10 @@ export async function emulateSendTradeOffer(
     senderSave.money = currentMoney - p_offer_money;
   }
 
+  const newTradeSaveId = crypto.randomUUID();
   sqliteDb.run(
-    "UPDATE game_saves SET save_data = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
-    [JSON.stringify(senderSave), userId]
+    "UPDATE game_saves SET save_data = ?, last_save_id = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
+    [JSON.stringify(senderSave), newTradeSaveId, userId]
   );
 
   const generatedId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11) + Temporal.Now.instant().epochMilliseconds.toString(36);
@@ -151,9 +152,9 @@ export async function emulateAcceptTrade(
 
   // Parse columns since SQLite stores objects as strings/JSON strings
   const offerPokeObj = trade.offer_pokemon ? (JSON.parse(trade.offer_pokemon) as Pokemon) : null;
-  const offerItemsObj = trade.offer_items ? (JSON.parse(trade.offer_items) as Record<string, number>) : null; // open-record
+  const offerItemsObj = trade.offer_items ? (JSON.parse(trade.offer_items) as Record<string, number>) : null; // open-record: Generic key-value data dictionary container
   const requestPokeObj = trade.request_pokemon ? (JSON.parse(trade.request_pokemon) as Pokemon) : null;
-  const requestItemsObj = trade.request_items ? (JSON.parse(trade.request_items) as Record<string, number>) : null; // open-record
+  const requestItemsObj = trade.request_items ? (JSON.parse(trade.request_items) as Record<string, number>) : null; // open-record: Generic key-value data dictionary container
 
   if (offerPokeObj && (offerPokeObj.isIllegal || !checkPokemonLegality(offerPokeObj).isLegal)) {
     return { data: null, error: { message: 'La oferta contiene un Pokémon ilegal y no puede ser aceptada.' } };
@@ -196,7 +197,7 @@ export async function emulateAcceptTrade(
   // 1c. Items
   if (requestItemsObj) {
     receiverSave.inventory = receiverSave.inventory || {};
-    for (const [itemName, qty] of Object.entries(requestItemsObj as Record<string, number>)) { // open-record
+    for (const [itemName, qty] of Object.entries(requestItemsObj as Record<string, number>)) { // open-record: Generic key-value data dictionary container
       const currentQty = receiverSave.inventory[itemName] || 0;
       if (currentQty < qty) {
         return { data: null, error: { message: `Cantidad insuficiente de ${itemName}.` } };
@@ -209,9 +210,10 @@ export async function emulateAcceptTrade(
   }
 
   // 2. Persistir cambio en save del receptor
+  const newAcceptSaveId = crypto.randomUUID();
   sqliteDb.run(
-    "UPDATE game_saves SET save_data = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
-    [JSON.stringify(receiverSave), userId]
+    "UPDATE game_saves SET save_data = ?, last_save_id = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
+    [JSON.stringify(receiverSave), newAcceptSaveId, userId]
   );
 
   // 3. Mover activos a la COLA DE RECLAMO
@@ -231,7 +233,7 @@ export async function emulateAcceptTrade(
     );
   }
   if (offerItemsObj) {
-    for (const [itemName, qty] of Object.entries(offerItemsObj as Record<string, number>)) { // open-record
+    for (const [itemName, qty] of Object.entries(offerItemsObj as Record<string, number>)) { // open-record: Generic key-value data dictionary container
       if (qty > 0) {
         const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
         sqliteDb.run(
@@ -258,7 +260,7 @@ export async function emulateAcceptTrade(
     );
   }
   if (requestItemsObj) {
-    for (const [itemName, qty] of Object.entries(requestItemsObj as Record<string, number>)) { // open-record
+    for (const [itemName, qty] of Object.entries(requestItemsObj as Record<string, number>)) { // open-record: Generic key-value data dictionary container
       if (qty > 0) {
         const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
         sqliteDb.run(
@@ -308,7 +310,7 @@ export async function emulateRejectTrade(
 
   // Devolver activos al emisor (trade.sender_id) en su claim_queue
   const offerPokeObj = trade.offer_pokemon ? (JSON.parse(trade.offer_pokemon) as Pokemon) : null;
-  const offerItemsObj = trade.offer_items ? (JSON.parse(trade.offer_items) as Record<string, number>) : null; // open-record
+  const offerItemsObj = trade.offer_items ? (JSON.parse(trade.offer_items) as Record<string, number>) : null; // open-record: Generic key-value data dictionary container
 
   if (offerPokeObj) {
     const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
@@ -325,7 +327,7 @@ export async function emulateRejectTrade(
     );
   }
   if (offerItemsObj) {
-    for (const [itemName, qty] of Object.entries(offerItemsObj as Record<string, number>)) { // open-record
+    for (const [itemName, qty] of Object.entries(offerItemsObj as Record<string, number>)) { // open-record: Generic key-value data dictionary container
       if (qty > 0) {
         const claimId = 'claim_' + Math.random().toString(36).substring(2, 11);
         sqliteDb.run(

@@ -37,7 +37,7 @@ export function createMockBattleContext(
   const playerRef = ref<Pokemon | null | undefined>(playerPoke);
   const enemyRef = ref<Pokemon | null | undefined>(enemyPoke);
 
-  const logs: string[] = []; // no-domain
+  const logs: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   const addLog = (msg: string, type?: string, _source?: Pokemon | string | null) => {
     logs.push(`[${type || 'info'}] ${msg}`);

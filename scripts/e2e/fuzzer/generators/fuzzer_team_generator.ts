@@ -6,7 +6,7 @@ import { getShowdownNickname } from '../../../../src/logic/battle/showdownUidMap
 import { resolveBaseStats } from '../../../../src/logic/battle/showdownAdapter.ts';
 import { calcStatsPure } from '../../../../src/logic/pokemon/statsMath.ts';
 
-export function generateBatchHash(batch: { playerTeam: unknown[]; enemyTeam: unknown[]; steps?: string[] }): string { // type-ok
+export function generateBatchHash(batch: { playerTeam: unknown[]; enemyTeam: unknown[]; steps?: string[] }): string { // type-ok: Type contract declaration
   const data = {
     playerTeam: batch.playerTeam,
     enemyTeam: batch.enemyTeam,
@@ -307,9 +307,9 @@ export const ENEMY_TRIGGER_MOVES = [
 export function getTriggerSlot(abilityId: string): number | null {
   const trigger = ABILITY_TRIGGER_MAP[abilityId];
   if (!trigger) return null;
-  const move = trigger.enemyMove.toLowerCase().replace(/[^a-z0-9]/g, ''); // string-ok
+  const move = trigger.enemyMove.toLowerCase().replace(/[^a-z0-9]/g, ''); // string-ok: Internal string formatting or DOM token identifier
   const idx = ENEMY_TRIGGER_MOVES.findIndex(
-    m => m.toLowerCase().replace(/[^a-z0-9]/g, '') === move // string-ok
+    m => m.toLowerCase().replace(/[^a-z0-9]/g, '') === move // string-ok: Internal string formatting or DOM token identifier
   );
   // Si el trigger move es uno de los 4 universales, usar ese slot.
   // Si es un movimiento especial (p.ej. Charm, Earthquake, Whirlwind),
@@ -374,7 +374,7 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
     for (let p = 0; p < batchSize; p++) {
       if (moveIdx >= movePool.length && abilityIdx >= abilityPool.length) break;
 
-      const pMoves: string[] = []; // no-domain
+      const pMoves: string[] = []; // no-domain: Non-domain utility collection or data structure
       for (let m = 0; m < 4; m++) {
         if (moveIdx < movePool.length) {
           const moveName = movePool[moveIdx]!;

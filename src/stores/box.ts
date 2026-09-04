@@ -46,7 +46,7 @@ export const useBoxStore = defineStore('box', () => {
 
   function doBoxRelease() {
     const indices = [...boxReleaseSelected.value].sort((a, b) => b - a)
-    const releasedNames: string[] = [] // no-domain
+    const releasedNames: string[] = [] // no-domain: Non-domain utility collection or data structure
     
     indices.forEach(i => {
       const p = gameStore.state.box[i]

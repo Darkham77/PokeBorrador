@@ -2,22 +2,19 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
+import { useInventoryStore } from '@/stores/inventory/inventory'
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB'
+import type { LearnsetMove } from '@/types/system/database'
 import { getPreEvolution } from '@/data/pokemon/evolutionData'
-import { isPokemonSpeciesId, requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import type { PokemonMoveId } from '@/data/battle/moves'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { toPokemonType } from '@/data/battle/types'
 import BaseModal from '@/components/common/BaseModal.vue'
 import BattleMoveSlot from '@/components/battle/BattleMoveSlot.vue'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 
-interface LearnsetEntry {
-  lv: number
-  name: string
-  pp: number
-  id?: string
-  fromId?: string
-}
+type RelearnMoveEntry = LearnsetMove & { fromId?: PokemonSpeciesId }
 
 interface Props {
   show?: boolean
@@ -40,45 +37,50 @@ const uiStore = useUIStore()
 
 const pokemon = computed(() => props.pokemon || uiStore.activePokemonForRelearner)
 
-const forgottenMoves = computed<LearnsetEntry[]>(() => {
+const forgottenMoves = computed<RelearnMoveEntry[]>(() => {
   if (!pokemon.value) return []
   const p = pokemon.value
-  const learnedMovesSet = new Set(p.moves.filter((m): m is NonNullable<typeof m> => !!m).map(m => m.name))
-  const possibleMoves: LearnsetEntry[] = []
-  const addedMoveNames = new Set<string>()
-  const processedIds = new Set<string>()
-  let currentId: string | null = p.id
+  const learnedMoveIdsSet = new Set(
+    p.moves
+      .filter((m): m is NonNullable<typeof m> => !!m && !!m.id)
+      .map(m => m.id!)
+  )
+  const possibleMoves: RelearnMoveEntry[] = []
+  const addedMoveIds = new Set<PokemonMoveId>()
+  const processedSpecies = new Set<PokemonSpeciesId>()
+  let currentSpecies: PokemonSpeciesId | null = isPokemonSpeciesId(p.id) ? p.id : null
   
   // Trace back evolution chain to gather all potential moves in O(1) per step
-  while (currentId && isPokemonSpeciesId(currentId) && !processedIds.has(currentId)) {
-    processedIds.add(currentId)
-    const dbEntry = (POKEMON_DB as Record<string, { learnset?: LearnsetEntry[] }>)[currentId] // open-record
+  while (currentSpecies && !processedSpecies.has(currentSpecies)) {
+    processedSpecies.add(currentSpecies)
+    const dbEntry = POKEMON_DB[currentSpecies]
     
     if (dbEntry && dbEntry.learnset) {
       for (const m of dbEntry.learnset) {
         // Only moves at or below current level and not currently known
-        if (m.lv <= p.level && !learnedMovesSet.has(m.name) && !addedMoveNames.has(m.name)) {
-          addedMoveNames.add(m.name)
-          possibleMoves.push({ ...m, fromId: currentId })
+        if (m.lv <= p.level && !learnedMoveIdsSet.has(m.id) && !addedMoveIds.has(m.id)) {
+          addedMoveIds.add(m.id)
+          possibleMoves.push({ ...m, fromId: currentSpecies })
         }
       }
     }
     
     // Find previous stage in O(1)
-    const prevSpecies = getPreEvolution(requirePokemonSpeciesId(currentId))
-    currentId = prevSpecies
+    const prevSpecies = getPreEvolution(currentSpecies)
+    currentSpecies = prevSpecies
   }
   
   return possibleMoves.sort((a, b) => (a.lv || 0) - (b.lv || 0))
 })
 
-const getMoveFullData = (mv: LearnsetEntry): Move => {
-  const base = mv.id ? pokemonDataProvider.getMoveData(mv.id) : null
+const getMoveFullData = (mv: RelearnMoveEntry): Move => {
+  const base = pokemonDataProvider.getMoveData(mv.id)
   const cat = base?.cat
   if (cat !== undefined && cat !== 'physical' && cat !== 'special' && cat !== 'status') {
     throw new Error(`Invalid relearn move category for ${mv.name}: ${cat}`)
   }
   const fullMove: Move = {
+    id: mv.id,
     name: mv.name,
     pp: base?.pp ?? mv.pp,
     maxPP: base?.pp ?? mv.pp,
@@ -91,14 +93,14 @@ const getMoveFullData = (mv: LearnsetEntry): Move => {
   return fullMove
 }
 
-const handleRelearn = (move: LearnsetEntry) => {
+const handleRelearn = (move: RelearnMoveEntry) => {
   const p = pokemon.value
   if (!p) return
   
-  const itemId = 'move_relearner'
-  const inventory = gameStore.state.inventory as Record<string, number> // open-record
+  const inventory = gameStore.state.inventory as Record<string, number> // open-record: Generic key-value data dictionary container
+  const hasItem = (inventory['moverelearner'] && inventory['moverelearner'] > 0) || (inventory['move_relearner'] && inventory['move_relearner'] > 0)
   
-  if (!inventory[itemId]) {
+  if (!hasItem) {
     uiStore.notify('No tienes Recordadores de Movimientos.', '⚠️')
     return
   }
@@ -107,19 +109,19 @@ const handleRelearn = (move: LearnsetEntry) => {
 
   // If moves < 4, just add it
   if (p.moves.length < 4) {
-    p.moves.push({ name: moveData.name, pp: moveData.pp, maxPP: moveData.pp })
-    consumeItem(itemId)
+    p.moves.push({ id: moveData.id, name: moveData.name, pp: moveData.pp, maxPP: moveData.pp })
+    consumeItem()
     uiStore.notify(`¡${p.name} recordó ${moveData.name.toUpperCase()}!`, '🧠')
     props.onLearned(true)
     handleClose()
   } else {
     // If moves == 4, we need to forget one. Consume only on completion!
-    const moveEntry: Move = { name: moveData.name, pp: moveData.pp, maxPP: moveData.pp }
+    const moveEntry: Move = { id: moveData.id, name: moveData.name, pp: moveData.pp, maxPP: moveData.pp }
     uiStore.addToLearnQueue({ 
       pokemon: p, 
       move: moveEntry,
       onComplete: () => {
-        consumeItem(itemId)
+        consumeItem()
       }
     })
     props.onLearned(true)
@@ -132,11 +134,16 @@ const handleClose = () => {
   emit('close')
 }
 
-const consumeItem = (id: string) => {
-  const inventory = gameStore.state.inventory as Record<string, number> // open-record
-  if (inventory[id]) inventory[id]--
-  if (inventory[id] !== undefined && inventory[id] <= 0) delete inventory[id]
-  gameStore.save()
+const consumeItem = () => {
+  const inventoryStore = useInventoryStore()
+  const inventory = gameStore.state.inventory as Record<string, number> // open-record: Generic key-value data dictionary container
+  if (inventory['moverelearner'] && inventory['moverelearner'] > 0) {
+    inventoryStore.removeItem('moverelearner', 1)
+  } else if (inventory['move_relearner'] && inventory['move_relearner'] > 0) {
+    inventory['move_relearner']--
+    if (inventory['move_relearner'] <= 0) delete inventory['move_relearner']
+    gameStore.save(false)
+  }
 }
 </script>
 

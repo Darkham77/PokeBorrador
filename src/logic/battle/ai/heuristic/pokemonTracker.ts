@@ -5,6 +5,9 @@
 
 import { toID } from '@pkmn/sim';
 import type { ItemId } from '@/data/inventory/items';
+import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
+import type { AbilityId } from '@/data/battle/abilities';
+import type { TrackedActionSource } from '@/types/battle/battle';
 import type { InferredInfo, InferredSet, RandomBattleSetEntry } from './types.ts';
 
 const CHOICE_ITEMS: readonly ItemId[] = ['choiceband', 'choicescarf', 'choicespecs'];
@@ -30,7 +33,7 @@ export class PokemonTracker {
     }
   }
 
-  observeMove(moveId: string): void {
+  observeMove(moveId: PokemonMoveId): void {
     const mv = toID(moveId);
     this.revealedMoves.add(mv);
     if (this.lastMove === mv) this.repeatedMove = mv;
@@ -38,12 +41,12 @@ export class PokemonTracker {
     this.eliminateSetsWithout('move', mv);
   }
 
-  observeAbility(ability: string): void {
+  observeAbility(ability: AbilityId): void {
     this.revealedAbility = toID(ability);
     if (this.revealedAbility) this.eliminateSetsWithout('ability', this.revealedAbility);
   }
 
-  observeItem(item: string): void {
+  observeItem(item: ItemId): void {
     this.revealedItem = toID(item);
     if (this.revealedItem) this.eliminateSetsWithout('item', this.revealedItem);
   }
@@ -84,16 +87,18 @@ export class PokemonTracker {
     };
   }
 
-  getLikelyUnrevealedMoves(threshold = 0.3): Array<{ move: string; probability: number }> {
+  getLikelyUnrevealedMoves(threshold = 0.3): Array<{ move: PokemonMoveId; probability: number }> {
     const probs = this.computeMoveProbabilities();
-    const result: Array<{ move: string; probability: number }> = [];
+    const result: Array<{ move: PokemonMoveId; probability: number }> = [];
     for (const [move, prob] of probs) {
-      if (!this.revealedMoves.has(move) && prob >= threshold) result.push({ move, probability: prob });
+      if (!this.revealedMoves.has(move) && prob >= threshold && isPokemonMoveId(move)) {
+        result.push({ move, probability: prob });
+      }
     }
     return result.sort((a, b) => b.probability - a.probability);
   }
 
-  isMoveLikely(moveId: string, threshold = 0.5): boolean {
+  isMoveLikely(moveId: PokemonMoveId, threshold = 0.5): boolean {
     return (this.computeMoveProbabilities().get(toID(moveId)) ?? 0) >= threshold;
   }
 
@@ -101,7 +106,7 @@ export class PokemonTracker {
   // Private
   // ──────────────────────────────────────────
 
-  private eliminateSetsWithout(field: 'move' | 'ability' | 'item', value: string): void {
+  private eliminateSetsWithout(field: TrackedActionSource, value: string): void {
     let changed = false;
     for (const set of this.sets) {
       if (set.probability <= 0) continue;
@@ -114,7 +119,7 @@ export class PokemonTracker {
     if (changed) this.renormalize();
   }
 
-  private adjustItemProbability(itemId: string, multiplier: number): void {
+  private adjustItemProbability(itemId: ItemId, multiplier: number): void {
     for (const set of this.sets) {
       if (set.probability <= 0) continue;
       if (toID(set.item) === itemId) set.probability *= multiplier;

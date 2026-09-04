@@ -11,7 +11,7 @@ const SHADOW_WHITE_OPACITY_SUBTLE = 0.25
 const BORDER_RADIUS_CIRCLE_PCT = '50%'
 const SQUARE_FRAME_BORDER_RADIUS_PX = 6
 import { computed, type CSSProperties, ref } from 'vue';
-import { PLAYER_CLASSES } from '@/data/player/playerClasses';
+import { PLAYER_CLASSES, isPlayerClassId } from '@/data/player/playerClasses';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { Z_LAYERS } from '@/logic/constants/visuals';
 import { DEFAULT_AVATAR_SIZE_PX } from '@/logic/constants/animations';
@@ -74,19 +74,10 @@ const resolvedGender = computed((): 'h' | 'm' | undefined => {
   return props.gender === 'm' ? 'm' : (props.gender === 'h' ? 'h' : undefined);
 });
 
-interface PlayerClass {
-  id: string
-  name: string
-  color: string
-  avatarSpriteId?: string
-  faceScale?: string
-  facePos?: string
-}
-
 const cls = computed(() => {
   const pClass = resolvedPlayerClass.value;
-  if (!pClass) return null;
-  return (PLAYER_CLASSES as Record<string, PlayerClass>)[pClass] || null; // open-record
+  if (typeof pClass !== 'string' || !isPlayerClassId(pClass)) return null;
+  return PLAYER_CLASSES[pClass];
 });
 
 const borderColor = computed(() => {
@@ -179,9 +170,9 @@ const faceStyles = computed((): CSSProperties => {
     };
   }
 
-  const bgSize = cls.value.faceScale || 'cover';
-  const bgPos = cls.value.facePos || 'center';
-  const displayUrl = getAssetUrl(ASSET_TYPES.TRAINER, cls.value.avatarSpriteId || cls.value.id, { 
+  const bgSize = 'cover';
+  const bgPos = 'center';
+  const displayUrl = getAssetUrl(ASSET_TYPES.TRAINER, cls.value.avatarSpriteId, { 
     trainerSuffix: 'avatar',
     gender: resolvedGender.value || 'h'
   });

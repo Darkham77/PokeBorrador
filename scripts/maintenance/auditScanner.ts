@@ -41,7 +41,7 @@ const DEFAULT_PERMISSIONS = [
 ] as const;
 
 function getPermissionsForTask(filename: string): string[] {
-  const perms: string[] = [...DEFAULT_PERMISSIONS]; // no-domain
+  const perms: string[] = [...DEFAULT_PERMISSIONS]; // no-domain: Non-domain utility collection or data structure
   if (filename.includes('audit_project') || filename.includes('validate_fsm_all') || filename.includes('validate_build_tools')) {
     perms.push('--allow-child-process');
   }
@@ -65,7 +65,7 @@ export async function discoverAuditors(options: DiscoveryOptions = {}): Promise<
   const discovered: AuditTaskDefinition[] = [];
 
   async function scanDirectory(currentDir: string) {
-    let entries: string[] = []; // no-domain
+    let entries: string[] = []; // no-domain: Non-domain utility collection or data structure
     try {
       entries = await fs.readdir(currentDir);
     } catch {

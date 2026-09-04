@@ -17,7 +17,7 @@ export const BATTLE_STATES = {
 } as const;
 
 export type BattleStateName = typeof BATTLE_STATES[keyof typeof BATTLE_STATES];
-const BATTLE_STATES_SET: ReadonlySet<string> = new Set(Object.values(BATTLE_STATES)); // runtime-set
+const BATTLE_STATES_SET: ReadonlySet<string> = new Set(Object.values(BATTLE_STATES)); // runtime-set: Fast O(1) membership lookup set
 
 function isBattleStateName(val: string): val is BattleStateName {
   return BATTLE_STATES_SET.has(val);
@@ -213,7 +213,7 @@ export const BATTLE_SUBSTATES = {
 } as const;
 
 export type BattleSubStateName = typeof BATTLE_SUBSTATES[keyof typeof BATTLE_SUBSTATES];
-const BATTLE_SUBSTATES_SET: ReadonlySet<string> = new Set(Object.values(BATTLE_SUBSTATES)); // runtime-set
+const BATTLE_SUBSTATES_SET: ReadonlySet<string> = new Set(Object.values(BATTLE_SUBSTATES)); // runtime-set: Fast O(1) membership lookup set
 
 export function isBattleSubStateName(val: string): val is BattleSubStateName {
   return BATTLE_SUBSTATES_SET.has(val);

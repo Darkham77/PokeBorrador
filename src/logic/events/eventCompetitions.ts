@@ -16,8 +16,9 @@ import { normalizeZonedDateTime } from '@/logic/utils/timeUtils.ts';
 import { safeParse, resolveWeeklyRotation } from './eventSchedules.ts';
 import type { Event, EventConfig } from './eventEngine.ts';
 
-// Re-export eligibility functions
+// Re-export eligibility functions and types
 export * from './eventEligibility.ts';
+export type { CompetitionEntry } from '@/types/system/stores.ts';
 
 // fallow-ignore-next-line unused-export
 export const SUB_COMPETITION_METRICS = ['total_ivs', 'weight', 'height', 'level', 'stat_iv', 'friendship'] as const;
@@ -52,9 +53,9 @@ export interface SubCompetitionConfig {
   order?: SubCompetitionOrder;
   filters?: SubCompetitionFilters;
   prizes?: {
-    first?: Record<string, unknown>; // open-record
-    second?: Record<string, unknown>; // open-record
-    third?: Record<string, unknown>; // open-record
+    first?: Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    second?: Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    third?: Record<string, unknown>; // open-record: Generic key-value data dictionary container
   };
 }
 
@@ -227,7 +228,7 @@ export function isNewEntryBetter(
   if (!existingData) return true;
   
   const toRecord = (obj: unknown): Record<string, unknown> | null => {
-    return (obj && typeof obj === 'object') ? (obj as Record<string, unknown>) : null; // open-record
+    return (obj && typeof obj === 'object') ? (obj as Record<string, unknown>) : null; // open-record: Generic key-value data dictionary container
   };
 
   const getVal = (obj: unknown, path: string): number => {
@@ -371,7 +372,7 @@ export function getSubCompTitle(eventId: string, sub: SubCompetitionConfig): str
     return `Mayor IVs${speciesSuffix}`;
   }
   if (sub.metric === 'stat_iv' && sub.targetStat) {
-    return `Mayor IV en ${sub.targetStat.toUpperCase()}${speciesSuffix}`; // domain-ok
+    return `Mayor IV en ${sub.targetStat.toUpperCase()}${speciesSuffix}`; // domain-ok: Open dynamic text or non-domain string payload
   }
   if (sub.metric === 'weight') {
     return (dir === 'max' ? 'Mayor Peso' : 'Menor Peso') + speciesSuffix;

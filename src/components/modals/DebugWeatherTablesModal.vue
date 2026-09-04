@@ -61,7 +61,7 @@ interface Region {
 }
 
 const REGIONS: Region[] = [
-  { id: 'kanto', name: 'Kanto', maps: (Object.keys(MAPS_BY_ROUTE_ID) as string[]).filter(isWeatherTableRouteId) }, // open-record
+  { id: 'kanto', name: 'Kanto', maps: (Object.keys(MAPS_BY_ROUTE_ID) as string[]).filter(isWeatherTableRouteId) }, // open-record: Generic key-value data dictionary container
   { id: 'johto', name: 'Johto', maps: [] },
   { id: 'hoenn', name: 'Hoenn', maps: [] },
   { id: 'sinnoh', name: 'Sinnoh', maps: [] }
@@ -103,7 +103,7 @@ const PRECOMPUTED_WEATHER_DATA = (() => {
     const mapsData = region.maps
       .map(routeId => {
         const rawRouteData = ROUTE_WEATHER_TABLES[routeId]
-        const map = (MAPS_BY_ROUTE_ID as Record<string, { name: string; weather?: Record<string, unknown>; isCave?: boolean }>)[routeId] // open-record
+        const map = (MAPS_BY_ROUTE_ID as Record<string, { name: string; weather?: Record<string, unknown>; isCave?: boolean }>)[routeId] // open-record: Generic key-value data dictionary container
         if (!map) throw new Error(`[DebugWeatherTablesModal] Missing map data for weather route: ${routeId}`)
         
         const seasons = WEATHER_SEASON_IDS.map(seasonId => {
@@ -119,7 +119,7 @@ const PRECOMPUTED_WEATHER_DATA = (() => {
               let exclusive: { name: string; sprite: string }[] = []
               
               if (map && map.weather) {
-                const weatherData = (map.weather as Record<string, unknown>)[weather] as { visitors?: Record<string, unknown>; exclusive?: Record<string, unknown> } | undefined // open-record
+                const weatherData = (map.weather as Record<string, unknown>)[weather] as { visitors?: Record<string, unknown>; exclusive?: Record<string, unknown> } | undefined // open-record: Generic key-value data dictionary container
                 if (weatherData) {
                   const rawVis = weatherData.visitors || {}
                   const rawExc = weatherData.exclusive || {}

@@ -87,7 +87,7 @@ export class ShowdownBattleEngine {
 
     this.battle = createShowdownBattle(options.format || ACTIVE_SHOWDOWN_FORMAT, options.seed as string | number[] | null | undefined);
     // p1 = player seat, all others (p2, p3, p4) use the enemyChoices stream.
-    this.seatChoices = new Map([ // runtime-map
+    this.seatChoices = new Map([ // runtime-map: Fast O(1) keyed lookup dictionary
       ['p1', options.playerChoices ?? []],
       ['p2', options.enemyChoices ?? []],
       ['p3', options.enemyChoices ?? []],

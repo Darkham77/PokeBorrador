@@ -50,7 +50,7 @@ function parseSingleFilter(expr: string, params: unknown[]): string {
 }
 
 function parseOrClause(orString: string, params: unknown[]): string {
-  const parts: string[] = []; // no-domain
+  const parts: string[] = []; // no-domain: Non-domain utility collection or data structure
   let depth = 0;
   let current = '';
   for (let i = 0; i < orString.length; i++) {
@@ -167,12 +167,12 @@ export class SQLiteQueryBuilder implements QueryBuilder {
   }
 
   private _buildWhereClause(params: unknown[]): string {
-    const whereParts: string[] = []; // no-domain
+    const whereParts: string[] = []; // no-domain: Non-domain utility collection or data structure
     if (this._filters.length) {
       whereParts.push(...this._filters.map((f: QueryFilter) => {
         if (f.op === 'IN') {
-          const placeholders = (f.val as unknown[]).map(() => '?').join(','); // open-record
-          (f.val as unknown[]).forEach((v) => params.push(v)); // open-record
+          const placeholders = (f.val as unknown[]).map(() => '?').join(','); // open-record: Generic key-value data dictionary container
+          (f.val as unknown[]).forEach((v) => params.push(v)); // open-record: Generic key-value data dictionary container
           return `"${f.col}" IN (${placeholders})`;
         }
         params.push(f.val);
@@ -205,9 +205,9 @@ export class SQLiteQueryBuilder implements QueryBuilder {
     }
     const result = res[0]!;
     const data = result.values.map((row: unknown[]) => {
-      const obj: Record<string, unknown> = {}; // open-record
+      const obj: Record<string, unknown> = {}; // open-record: Generic key-value data dictionary container
       result.columns.forEach((col: string, i: number) => {
-        obj[col] = row[i]; // open-record
+        obj[col] = row[i]; // open-record: Generic key-value data dictionary container
       });
       return obj;
     });
@@ -221,7 +221,7 @@ export class SQLiteQueryBuilder implements QueryBuilder {
     const items = Array.isArray(payload) ? payload : [payload];
     for (const item of items) {
       if (typeof item !== 'object' || item === null) continue;
-      const r = item as Record<string, unknown>; // open-record
+      const r = item as Record<string, unknown>; // open-record: Generic key-value data dictionary container
       const cols = Object.keys(r);
       const vals = Object.values(r);
       const sql = `INSERT INTO ${this._table} (${cols.map(c => `"${c}"`).join(',')}) VALUES (${cols.map(() => '?').join(',')})`;

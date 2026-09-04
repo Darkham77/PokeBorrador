@@ -24,7 +24,7 @@ const DB_FILE = path.resolve(process.cwd(), 'src/data/pokemon/pokemonDB.ts');
 const STAT_KEYS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
 
 function isEnabledPokemonId(id: string): id is (typeof ENABLED_POKEMON_IDS)[number] {
-  return (ENABLED_POKEMON_IDS as readonly string[]).includes(id); // no-domain
+  return (ENABLED_POKEMON_IDS as readonly string[]).includes(id); // no-domain: Non-domain utility collection or data structure
 }
 
 async function main() {
@@ -35,8 +35,8 @@ async function main() {
 
   await validator.checkFiles();
 
-  const errors: string[] = []; // no-domain
-  const warnings: string[] = []; // no-domain
+  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
+  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   validator.logStep(1, 2, 'Validando estadísticas y tipos base contra Showdown Dex...');
   let count = 0;
@@ -62,7 +62,7 @@ async function main() {
     }
 
     // B. Validar tipos
-    const coreTypes: string[] = []; // no-domain
+    const coreTypes: string[] = []; // no-domain: Non-domain utility collection or data structure
     if (corePoke.type) coreTypes.push(corePoke.type);
     const type2 = (corePoke as { type2?: string }).type2;
     if (type2) coreTypes.push(type2);

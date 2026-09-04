@@ -62,7 +62,7 @@ describe('Weather Generation Provider', () => {
       expect(getLocalizedWeatherName('primordialsea', 6)).toBe('Lluvia Torrencial');
       expect(getLocalizedWeatherName('deltastream', 6)).toBe('Turbulencias');
       expect(getLocalizedWeatherName('none', 3)).toBe('Despejado');
-      expect(getLocalizedWeatherName(null, 3)).toBe('Despejado');
+      expect(getLocalizedWeatherName('clear', 3)).toBe('Despejado');
     });
   });
 

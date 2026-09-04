@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { Dex } from '@pkmn/sim';
 import { HeuristicDamageCalculator } from '../../../src/logic/battle/ai/heuristic/damageCalculator.ts';
 import type { HeuristicBattleSnapshot } from '../../../src/logic/battle/ai/heuristic/types.ts';
+import { requirePokemonMoveId, type PokemonMoveId } from '../../../src/data/battle/moves.ts';
 
 describe('HeuristicAI - Damage Parity Checks (@pkmn/sim vs @smogon/calc)', () => {
   let calc: HeuristicDamageCalculator;
@@ -90,7 +91,7 @@ describe('HeuristicAI - Damage Parity Checks (@pkmn/sim vs @smogon/calc)', () =>
       baseSnapshot.opponentSide.activePokemon!.species = tc.defSpecies;
 
       // Un movimiento ficticio con potencia base para medir la efectividad
-      const testMove = { id: 'testmove', pp: 10, disabled: false };
+      const testMove: { id: PokemonMoveId; pp: number; disabled: boolean } = { id: 'tackle', pp: 10, disabled: false };
       
       // Mock de base de datos de movimientos para evitar errores de smogon/calc
       // Smogon/calc mapea tipos según el ID del movimiento, así que usamos movimientos reales que coinciden
@@ -101,7 +102,7 @@ describe('HeuristicAI - Damage Parity Checks (@pkmn/sim vs @smogon/calc)', () =>
         fighting: 'machpunch',
         water: 'surf'
       };
-      testMove.id = moveMapping[tc.moveType] || 'tackle';
+      testMove.id = requirePokemonMoveId(moveMapping[tc.moveType] || 'tackle');
 
       const matchup = calc.calcMatchup(baseSnapshot, [testMove]);
       const res = matchup.myAttacking[0];

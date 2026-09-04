@@ -107,7 +107,7 @@ export function registerBattleTools(debug: DebugSystem) {
         const battle = useBattleStore()
         battle.attackerSide = side as BattleSide
         battle.activeMove = {
-          name: options.cat === 'selfKO' ? 'Autodestrucción' : (options.cat === 'recoil' ? 'Retroceso' : 'Ataque Debug'), // spanish-ok
+          name: options.cat === 'selfKO' ? 'Autodestrucción' : (options.cat === 'recoil' ? 'Retroceso' : 'Ataque Debug'), // spanish-ok: UI Spanish text localization label
           cat: options.cat === 'selfKO' ? 'special' : ((options.cat as MoveCategory | undefined) || 'physical'),
           selfKO: options.cat === 'selfKO',
           recoil: options.cat === 'recoil' ? true : undefined,
@@ -251,7 +251,7 @@ export function registerBattleTools(debug: DebugSystem) {
     action: (side: string, stat: string, val: string) => {
       import('@/stores/battle/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
-        const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number> // open-record
+        const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number> // open-record: Generic key-value data dictionary container
         const sKey = stat
         if (stages && stages[sKey] !== undefined) {
           stages[sKey] = Math.max(-6, Math.min(6, parseInt(val)))
@@ -271,7 +271,7 @@ export function registerBattleTools(debug: DebugSystem) {
     action: (side: string, stat: string, delta: string) => {
       import('@/stores/battle/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
-        const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number> // open-record
+        const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number> // open-record: Generic key-value data dictionary container
         const sKey = stat
         if (stages && stages[sKey] !== undefined) {
           stages[sKey] = Math.max(-6, Math.min(6, (stages[sKey] || 0) + parseInt(delta)))
@@ -291,7 +291,7 @@ export function registerBattleTools(debug: DebugSystem) {
     action: (side: string, effect: string, val: string) => {
       import('@/stores/battle/battle').then(({ useBattleStore }) => {
         const battle = useBattleStore()
-        const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number> // open-record
+        const stages = (side === 'player' ? battle.playerStages : battle.enemyStages) as Record<string, number> // open-record: Generic key-value data dictionary container
         
         // Screens & Hazards (Stage based)
         const isStageEffect = (['reflect', 'lightScreen', 'safeguard', 'mist', 'spikes'] as const).includes(effect as 'reflect')

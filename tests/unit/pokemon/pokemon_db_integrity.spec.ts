@@ -4,6 +4,7 @@ import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
 import { NATURES } from '@/data/battle/natures';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 describe('Pokemon Database Integrity', () => {
   const species = Object.entries(POKEMON_DB);
@@ -94,7 +95,7 @@ describe('Pokemon Database Integrity', () => {
     const errors: string[] = [];
     
     Object.keys(POKEMON_DB).forEach(pokeId => {
-      const abilities = pokemonDataProvider.getSpeciesAbilities(pokeId);
+      const abilities = pokemonDataProvider.getSpeciesAbilities(requirePokemonSpeciesId(pokeId));
       if (abilities.length === 0) {
         errors.push(`Pokemon "${pokeId}" does not have any abilities.`);
       }

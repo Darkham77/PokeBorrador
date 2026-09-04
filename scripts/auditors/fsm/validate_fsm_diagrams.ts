@@ -89,8 +89,8 @@ async function main() {
   const { states: mermaidStates, transitions: mermaidTransitions } = parseMermaid(manualCode);
   const { allKeys: jsKeys, jsTransitions } = parseJsFsm(fsmCode);
 
-  const errors: string[] = []; // no-domain
-  const warnings: string[] = []; // no-domain
+  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
+  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   validator.logStep(1, 2, `Comparando ${mermaidStates.size} estados Mermaid del manual contra constantes JS...`);
   // [CHECK 1] Nodos Mermaid -> Constantes JS
@@ -102,7 +102,7 @@ async function main() {
   validator.logStep(2, 2, `Auditando ${mermaidTransitions.length} transiciones Mermaid contra validTransitions en JS...`);
 
   // [CHECK 3] Constantes JS -> Nodos Mermaid (Búsqueda de Código Basura)
-  const IGNORED_JS_STATES = new Set([ // runtime-set
+  const IGNORED_JS_STATES = new Set([ // runtime-set: Fast O(1) membership lookup set
     'FIRST_INTRO',
     'EXEC_TURN',
     'ANIM_SYNC',

@@ -22,10 +22,10 @@ import {
 } from './heuristicEngine.ts';
 
 const HAZARD_MOVES_LIST = ['stealthrock', 'spikes', 'toxicspikes', 'stickyweb'] as const;
-const HAZARD_MOVES: ReadonlySet<string> = new Set<string>(HAZARD_MOVES_LIST); // runtime-set
+const HAZARD_MOVES: ReadonlySet<string> = new Set<string>(HAZARD_MOVES_LIST); // runtime-set: Fast O(1) membership lookup set
 
 const PIVOT_MOVES_LIST = ['uturn', 'voltswitch', 'flipturn', 'partingshot', 'teleport'] as const;
-const PIVOT_MOVES: ReadonlySet<string> = new Set<string>(PIVOT_MOVES_LIST); // runtime-set
+const PIVOT_MOVES: ReadonlySet<string> = new Set<string>(PIVOT_MOVES_LIST); // runtime-set: Fast O(1) membership lookup set
 
 const INVALID_MOVE_INDEX = -1;
 const DEFAULT_ZERO = 0;
@@ -57,7 +57,7 @@ export function evaluatePriorityKOLayer(
     moveIndex: moveIdx + SHOWDOWN_CHOICE_INDEX_OFFSET,
     source: 'heuristic',
     confidence: HEURISTIC_CONFIDENCE_SCORES.HIGH_PRIORITY_KO,
-    reasoning: `Priority KO on ${oppActive.name} at ${oppActive.hpPercent.toFixed(0)}%`, // no-magic
+    reasoning: `Priority KO on ${oppActive.name} at ${oppActive.hpPercent.toFixed(0)}%`, // no-magic: Explicit mathematical constant or threshold value
   };
 }
 
@@ -97,7 +97,7 @@ export function evaluateGuaranteedKOLayer(
     moveIndex: moveIdx + SHOWDOWN_CHOICE_INDEX_OFFSET,
     source: 'heuristic',
     confidence: HEURISTIC_CONFIDENCE_SCORES.GUARANTEED_OHKO,
-    reasoning: `Guaranteed OHKO with ${guaranteedKO.move} (${guaranteedKO.minPercent.toFixed(0)}-${guaranteedKO.maxPercent.toFixed(0)}%)`, // no-magic
+    reasoning: `Guaranteed OHKO with ${guaranteedKO.move} (${guaranteedKO.minPercent.toFixed(0)}-${guaranteedKO.maxPercent.toFixed(0)}%)`, // no-magic: Explicit mathematical constant or threshold value
   };
 }
 
@@ -274,7 +274,7 @@ export function evaluateAttackAndSwitchLayers(
             moveIndex: moveIdx + SHOWDOWN_CHOICE_INDEX_OFFSET,
             source: 'heuristic',
             confidence: HEURISTIC_CONFIDENCE_SCORES.BEST_ATTACK,
-            reasoning: `Best damage: ${bestMove.move} (${bestMove.minPercent.toFixed(0)}-${bestMove.maxPercent.toFixed(0)}%)`, // no-magic
+            reasoning: `Best damage: ${bestMove.move} (${bestMove.minPercent.toFixed(0)}-${bestMove.maxPercent.toFixed(0)}%)`, // no-magic: Explicit mathematical constant or threshold value
           };
         }
       }

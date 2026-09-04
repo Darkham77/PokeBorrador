@@ -23,7 +23,7 @@ interface Props {
   level?: number
   exp?: number
   expNeeded?: number
-  classId?: string | null
+  classId?: PlayerClassId | null
   classColor?: string
   hideUnlocks?: boolean
   title?: string

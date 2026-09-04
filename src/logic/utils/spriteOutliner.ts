@@ -7,8 +7,8 @@ const auraCache = new Map<string, string>();
 const auraProcessingCache = new Map<string, Promise<string>>();
 
 // Web Worker state management
-let spriteWorker: Worker | null = null; // singleton-ok
-let jobCounter = 0; // singleton-ok
+let spriteWorker: Worker | null = null; // singleton-ok: Singleton instance state container
+let jobCounter = 0; // singleton-ok: Singleton instance state container
 const pendingJobs = new Map<
   number,
   {

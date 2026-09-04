@@ -6,14 +6,15 @@ import { useBattleStore } from '@/stores/battle/battle';
 import { useUIStore } from '@/stores/ui';
 import { useModalStore } from '@/stores/modals';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import type { Pokemon, PokemonEgg, PokemonGender } from '@/types/pokemon/pokemon';
+import type { Pokemon, PokemonEgg, PokemonGender, PokemonGenderName } from '@/types/pokemon/pokemon';
 import { logger } from '../utils/logger.ts';
 import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets';
-import { requirePokemonMoveId, type MoveCategory } from '@/data/battle/moves';
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { requireAbilityId } from '@/data/battle/abilities';
-import { toNatureId } from '@/data/battle/natures';
+import { requirePokemonMoveId, type MoveCategory, type PokemonMoveId } from '@/data/battle/moves';
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { requireAbilityId, type AbilityId } from '@/data/battle/abilities';
+import { toNatureId, type NatureId } from '@/data/battle/natures';
 import type { ItemId } from '@/data/inventory/items';
+import type { MinigameDifficultySelection } from '@/types/battle/battle';
 
 const DEFAULT_DEBUG_MOVE_PP = 35;
 const DEFAULT_DEBUG_MOVE_ACC = 100;
@@ -25,28 +26,28 @@ const SECS_PER_HOUR = 3600;
 
 interface DebugPokemon extends Pokemon {
   mapId?: MapRouteId | null
-  minigameDifficulty?: 'auto' | 'easy' | 'medium' | 'hard' | 'expert' | null
+  minigameDifficulty?: MinigameDifficultySelection | null
 }
 
 interface GenerateParams {
-  id?: string
+  id?: PokemonSpeciesId
   level?: number
   ivs?: Partial<Pokemon['ivs']> | null
   evs?: Partial<Pokemon['evs']> | null
   isShiny?: boolean
   isGuardian?: boolean
-  nature?: string | null
-  ability?: string | null
-  gender?: 'male' | 'female' | 'genderless' | null
-  moves?: string[] | null
+  nature?: NatureId | null
+  ability?: AbilityId | null
+  gender?: PokemonGenderName | null
+  moves?: PokemonMoveId[] | null
   nickname?: string | null
   friendship?: number
   heldItem?: ItemId | null
-  mapId?: string | null
+  mapId?: MapRouteId | null
   protocol?: string | null
   name?: string | null
   uid?: string
-  minigameDifficulty?: 'auto' | 'easy' | 'medium' | 'hard' | 'expert' | null
+  minigameDifficulty?: MinigameDifficultySelection | null
 }
 
 function requireMoveIdsForDebugEgg(pokemon: Pokemon) {
@@ -139,8 +140,8 @@ export const pokemonDebugService = {
     // 3. Handle Moves
     if (moves && Array.isArray(moves)) {
       p.moves = moves
-        .filter((m): m is string => typeof m === 'string' && !!m)
-        .map((mName: string) => {
+        .filter((m): m is PokemonMoveId => typeof m === 'string' && !!m)
+        .map((mName: PokemonMoveId) => {
           const mData = pokemonDataProvider.getMoveData(mName);
           const basePp = mData?.pp || DEFAULT_DEBUG_MOVE_PP;
           const maxPp = Math.floor(basePp * 1.6);
@@ -173,7 +174,7 @@ export const pokemonDebugService = {
     const ui = useUIStore();
     const animationsEnabled = ui.debugAnimationsEnabled ?? true;
 
-    logger.debug('DEBUG', `Executing ${protocol.toUpperCase()} protocol for ${p.name}`); // text-ok
+    logger.debug('DEBUG', `Executing ${protocol.toUpperCase()} protocol for ${p.name}`); // text-ok: UI text display localization string
 
     switch (protocol) {
       case 'catch':
@@ -194,7 +195,7 @@ export const pokemonDebugService = {
         const { pokemonDataProvider } = await import('@/logic/providers/pokemonDataProvider');
         const babyName = pokemonDataProvider.resolveSpeciesName(eggSpecies);
 
-        const state = game.state as Record<string, unknown>; // open-record
+        const state = game.state as Record<string, unknown>; // open-record: Generic key-value data dictionary container
         const key = `${eggSpecies}TicketSecs`;
         if (state[key] !== undefined) {
           state[key] = (Number(state[key]) || 0) + EGG_TICKET_BONUS_HOURS * SECS_PER_HOUR;

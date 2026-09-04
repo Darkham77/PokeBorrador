@@ -5,7 +5,7 @@ import { isGlobalItem } from '@/logic/providers/itemProvider.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { Inventory, Item as ItemData, ItemCategory, BagMainTab } from '@/types/inventory/items';
 
-export function findInventoryKey(gameStore: ReturnType<typeof useGameStore>, id: ItemId): ItemId | null { // domain-ok
+export function findInventoryKey(gameStore: ReturnType<typeof useGameStore>, id: ItemId): ItemId | null { // domain-ok: Open dynamic text or non-domain string payload
   if (!id) return null;
   const inv = gameStore.state.inventory || {};
   if (isItemId(id) && inv[id] !== undefined) return id;
@@ -131,13 +131,13 @@ export function getAdjustedProductCategory(item: Pick<ItemData, 'cat' | 'id' | '
     return cat;
   }
 
-  const nameLower = item.name.toLowerCase(); // text-ok
+  const nameLower = item.name.toLowerCase(); // text-ok: UI text display localization string
 
   if (id.includes('stone') || nameLower.includes('piedra')) {
     return 'stones';
   }
 
-  if (id.includes('root') || id.includes('revive') || nameLower.includes('pocion') || nameLower.includes('revivir')) { // spanish-ok
+  if (id.includes('root') || id.includes('revive') || nameLower.includes('pocion') || nameLower.includes('revivir')) { // spanish-ok: UI Spanish text localization label
     return 'potions';
   }
 

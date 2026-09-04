@@ -50,7 +50,7 @@ const getAssetIcon = (asset: ClaimItem['asset_data']) => {
   if (asset.type === 'item') {
     const itemData = asset.data as ItemAssetData;
     const dbItem = getItemById(itemData.name);
-    const slug = dbItem?.sprite || dbItem?.id || itemData.name;
+    const slug = dbItem ? (dbItem.sprite || dbItem.id) : itemData.name;
     return getAssetUrl(ASSET_TYPES.ITEM, slug);
   }
   return getAssetUrl(ASSET_TYPES.ITEM, 'pokeball');

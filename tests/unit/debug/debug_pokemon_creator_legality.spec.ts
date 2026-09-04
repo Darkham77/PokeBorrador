@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import DebugPokemonCreator from '@/components/admin/debug/DebugPokemonCreator.vue'
-import { validatePokemonLegality } from '@/components/admin/debug/useDebugPokemonCreator.ts'
+import { validatePokemonLegality, type PokemonConfig } from '@/components/admin/debug/useDebugPokemonCreator.ts'
 
 describe('Debug Pokemon Creator Legality Guard & Modal', () => {
   beforeEach(() => {
@@ -10,7 +10,7 @@ describe('Debug Pokemon Creator Legality Guard & Modal', () => {
   })
 
   it('detects illegal moves for a species and returns explicit reasons', () => {
-    const illegalConfig = {
+    const illegalConfig: PokemonConfig = {
       id: 'gengar',
       level: 50,
       isShiny: false,
@@ -21,7 +21,7 @@ describe('Debug Pokemon Creator Legality Guard & Modal', () => {
       nickname: '',
       friendship: 70,
       heldItem: '',
-      mapId: 'route_1',
+      mapId: 'route1',
       ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
       moves: ['lastresort', 'copycat'], // Eevee moves, illegal for Gengar
       protocol: 'catch'
@@ -34,7 +34,7 @@ describe('Debug Pokemon Creator Legality Guard & Modal', () => {
   })
 
   it('detects illegal abilities for a species', () => {
-    const illegalAbilityConfig = {
+    const illegalAbilityConfig: PokemonConfig = {
       id: 'pikachu',
       level: 25,
       isShiny: false,
@@ -45,7 +45,7 @@ describe('Debug Pokemon Creator Legality Guard & Modal', () => {
       nickname: '',
       friendship: 70,
       heldItem: '',
-      mapId: 'route_1',
+      mapId: 'route1',
       ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
       moves: ['thunderbolt', 'quickattack'],
       protocol: 'catch'
@@ -57,7 +57,7 @@ describe('Debug Pokemon Creator Legality Guard & Modal', () => {
   })
 
   it('validates a completely legal Pokemon successfully with zero issues', () => {
-    const legalConfig = {
+    const legalConfig: PokemonConfig = {
       id: 'gengar',
       level: 50,
       isShiny: false,
@@ -68,7 +68,7 @@ describe('Debug Pokemon Creator Legality Guard & Modal', () => {
       nickname: '',
       friendship: 70,
       heldItem: '',
-      mapId: 'route_1',
+      mapId: 'route1',
       ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
       moves: ['shadowball', 'sludgebomb', 'thunderbolt', 'focusblast'],
       protocol: 'catch'
@@ -145,7 +145,7 @@ describe('Debug Pokemon Creator Legality Guard & Modal', () => {
     expect(cosmogMoves[2]).toBeNull()
     expect(cosmogMoves[3]).toBeNull()
 
-    const config = {
+    const config: PokemonConfig = {
       id: 'unown',
       level: 1,
       isShiny: false,
@@ -156,7 +156,7 @@ describe('Debug Pokemon Creator Legality Guard & Modal', () => {
       nickname: '',
       friendship: 70,
       heldItem: '',
-      mapId: 'route_1',
+      mapId: 'route1',
       ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
       moves: unownMoves,
       protocol: 'catch'
@@ -189,7 +189,7 @@ describe('Debug Pokemon Creator Legality Guard & Modal', () => {
       expect(canLearnMove('bulbasaur', m, 10)).toBe(true)
     }
 
-    const config = {
+    const config: PokemonConfig = {
       id: 'bulbasaur',
       level: 10,
       isShiny: false,
@@ -200,7 +200,7 @@ describe('Debug Pokemon Creator Legality Guard & Modal', () => {
       nickname: '',
       friendship: 70,
       heldItem: '',
-      mapId: 'route_1',
+      mapId: 'route1',
       ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
       moves: movesLv10,
       protocol: 'catch'
@@ -217,7 +217,7 @@ describe('Debug Pokemon Creator Legality Guard & Modal', () => {
       }
     } as any
 
-    const illegalLevel2Config = {
+    const illegalLevel2Config: PokemonConfig = {
       id: 'tangela',
       level: 2,
       isShiny: false,
@@ -228,7 +228,7 @@ describe('Debug Pokemon Creator Legality Guard & Modal', () => {
       nickname: '',
       friendship: 70,
       heldItem: '',
-      mapId: 'route_1',
+      mapId: 'route1',
       ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
       moves: ['bind', 'absorb', 'leechseed', 'growth'], // 4 moves at lv 2 is illegal
       protocol: 'catch'
@@ -262,7 +262,7 @@ describe('Debug Pokemon Creator Legality Guard & Modal', () => {
 
   it('verifies 50 random iterations across diverse species and levels yield 100% legal moves without duplicates', async () => {
     const { getRandomLegalMoves, canLearnMove } = await import('@/logic/pokemon/pokemonFactory')
-    const testSpecies = ['charmander', 'squirtle', 'pikachu', 'gengar', 'snorlax', 'dragonite', 'eevee']
+    const testSpecies = ['charmander', 'squirtle', 'pikachu', 'gengar', 'snorlax', 'dragonite', 'eevee'] as const satisfies readonly import('@/data/pokemon/pokedex').PokemonSpeciesId[]
     
     for (let i = 0; i < 50; i++) {
       const sp = testSpecies[i % testSpecies.length] || 'bulbasaur'

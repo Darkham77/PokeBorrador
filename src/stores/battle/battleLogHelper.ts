@@ -48,7 +48,7 @@ export function createBattleLoggerHelper(
       }
 
       const batchSize = logQueue.value.length > 6 ? 3 : (logQueue.value.length > 3 ? 2 : 1)
-      const MAX_BATTLE_LOG_ENTRIES = 30
+      const MAX_BATTLE_LOG_ENTRIES = 1000
       
       for (let i = 0; i < batchSize; i++) {
         if (logQueue.value.length === 0) break

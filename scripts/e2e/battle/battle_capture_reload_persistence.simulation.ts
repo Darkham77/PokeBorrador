@@ -76,12 +76,6 @@ class CaptureReloadSimWrapper extends BaseBattleSimulation {
 }
 
 test.describe('Persistencia y Captura tras Recarga de Página (F5)', () => {
-  test.beforeEach(async ({ request }) => {
-    await request.post('/api/dev-sim-db-cleanup', {
-      headers: { 'x-db-key': 'sim_db_f5captureuser' }
-    });
-  });
-
   test('captura a Rattata tras recargar a mitad de combate y verifica que se guarda en la Caja PC sin error de species', async ({ page }) => {
     const errorLogs: string[] = [];
     page.on('console', (msg) => {

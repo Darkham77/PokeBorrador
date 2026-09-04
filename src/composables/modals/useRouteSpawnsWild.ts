@@ -132,7 +132,7 @@ export function useRouteSpawnsWild(props: RouteSpawnsProps) {
 
   function getWildSpawnTooltip(poke: RouteSpawnMappedItem) {
     const pokeId = requirePokemonSpeciesId(poke.id)
-    const lines: string[] = [] // no-domain
+    const lines: string[] = [] // no-domain: Non-domain utility collection or data structure
     lines.push(`Probabilidad Base: ${poke.basePercentage.toFixed(1)}%`)
     lines.push(...getSpawnCommonTooltipLines(poke, props.weather))
     const speciesEvent = eventStore.activeEvents.find(e => {

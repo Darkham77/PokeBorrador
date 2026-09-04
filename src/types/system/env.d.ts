@@ -8,7 +8,7 @@ declare global {
   // FileSystem API (OPFS)
   interface FileSystemHandle {
     kind: 'file' | 'directory';
-    name: string; // string-ok
+    name: string; // string-ok: Internal string formatting or DOM token identifier
   }
   interface FileSystemFileHandle extends FileSystemHandle {
     createWritable(): Promise<FileSystemWritableFileStream>;
@@ -80,19 +80,19 @@ declare global {
   interface DebugPokemon {
     id?: string;
     level?: number;
-    uid?: string; // domain-ok
-    name?: string; // domain-ok
+    uid?: string; // domain-ok: Open dynamic text or non-domain string payload
+    name?: string; // domain-ok: Open dynamic text or non-domain string payload
     hp?: number;
     maxHp?: number;
-    status?: string; // domain-ok
-    nickname?: string; // domain-ok
+    status?: string; // domain-ok: Open dynamic text or non-domain string payload
+    nickname?: string; // domain-ok: Open dynamic text or non-domain string payload
     moves?: Array<{ id: string; pp?: number; maxpp?: number } | null>;
-    volatileCounters?: Record<string, unknown> | null; // open-record
+    volatileCounters?: Record<string, unknown> | null; // open-record: Generic key-value data dictionary container
   }
 
   interface BattleLogEntry {
     side: BattleSide;
-    msg: string; // string-ok
+    msg: string; // string-ok: Internal string formatting or DOM token identifier
   }
 
   interface DebugGameStore {
@@ -106,8 +106,8 @@ declare global {
   }
 
   interface DebugStore {
-    currentFsmState?: string; // domain-ok
-    currentSubState?: string; // domain-ok
+    currentFsmState?: string; // domain-ok: Open dynamic text or non-domain string payload
+    currentSubState?: string; // domain-ok: Open dynamic text or non-domain string payload
     isProcessing?: boolean;
     isIntroAnimating?: boolean;
     battleLogs?: BattleLogEntry[];
@@ -135,7 +135,7 @@ declare global {
       enemy?: DebugPokemon | null;
       playerTeam?: Array<{ uid: string; name: string; hp: number; maxHp: number; status?: string | null }> | null;
       enemyTeam?: Array<{ uid: string; name: string; hp: number; maxHp: number; fainted?: boolean }> | null;
-      p1SlotOrder?: string[]; // domain-ok
+      p1SlotOrder?: string[]; // domain-ok: Open dynamic text or non-domain string payload
       activeBattle?: {
         player?: DebugPokemon | null;
         enemy?: DebugPokemon | null;
@@ -147,19 +147,19 @@ declare global {
     /** Semilla RNG inyectada por el E2E para combates deterministas */
     battleSeed?: number[];
     /** Cola de choices del enemigo consumida por el motor de combate en tests */
-    enemyChoicesQueue?: string[]; // domain-ok
-    enemyChoices?: string[]; // domain-ok
-    mockEnemyChoices?: string[]; // domain-ok
+    enemyChoicesQueue?: string[]; // domain-ok: Open dynamic text or non-domain string payload
+    enemyChoices?: string[]; // domain-ok: Open dynamic text or non-domain string payload
+    mockEnemyChoices?: string[]; // domain-ok: Open dynamic text or non-domain string payload
     enemyChoiceIndex?: number;
     cheats?: Array<{ turn: number; side: SideID; type: 'heal' }>;
-    mockChoices?: string[]; // domain-ok
+    mockChoices?: string[]; // domain-ok: Open dynamic text or non-domain string payload
     /** Genera un Pokémon de debug vía encuentro */
     spawnEncounter?: (config: unknown) => Promise<void>;
     /** Crea un Pokémon de debug directamente en el equipo */
     createPokemon?: (config: unknown) => Promise<void>;
     getSimulatorState?: () => Promise<{ p1: unknown[]; p2: unknown[] }>;
-    nextEnemyChoice?: string; // domain-ok
-    getGameStore?: () => { state: { team: unknown[]; money?: number } } & Record<string, unknown>; // open-record
+    nextEnemyChoice?: string; // domain-ok: Open dynamic text or non-domain string payload
+    getGameStore?: () => { state: { team: unknown[]; money?: number } } & Record<string, unknown>; // open-record: Generic key-value data dictionary container
     p1ChoiceIdx?: number;
     p2ChoiceIdx?: number;
     isDeterministicSimulation?: boolean;
@@ -167,11 +167,11 @@ declare global {
     freezeClock?: boolean;
     setFreezeClock?: (freeze?: boolean) => void;
     setFixedTime?: (epochHour: number, cycle?: string, weather?: string) => void;
-    playerChoices?: string[]; // domain-ok
+    playerChoices?: string[]; // domain-ok: Open dynamic text or non-domain string payload
     waitForBattleReady?: (timeoutMs?: number, options?: { skipImmediate?: boolean }) => Promise<import('../battle/battleEvents.ts').BattleReadyForInputDetail>;
     getScriptedReplayReadiness?: () => import('../battle/battleEvents.ts').BattleReadyForInputDetail & { isReady: boolean };
     certifiedReplayIntroDiagnostics?: { isIntroInProgress: boolean; isWildEntryAnimation: boolean; wildRevealActive: boolean; isEmerging: boolean; upcomingIsEmerging: boolean; trainerAnimState: import('@/composables/battle/useBattleTrainerAnimations').TrainerAnimationState | null; isCaptureSequenceActive: boolean };
-    useItemInBattle?: (itemId: string, targetUid: string) => void;
+    useItemInBattle?: (itemId: import('@/data/inventory/items').ItemId, targetUid: string) => void;
     healAll?: () => void;
     forceFlee?: () => void | Promise<void>;
     forceEncounterType?: 'none' | 'wild' | 'trainer' | 'rival' | 'fishing' | 'archaeology' | null;
@@ -187,17 +187,18 @@ declare global {
     fishingChancePct?: number | null;
     archaeologyChancePct?: number | null;
     testResetShowdownWorker?: () => void;
-    useBattleStore?: () => { state: Record<string, unknown> | null; isBattleActive: boolean; fsm?: { currentState: string }; startBattle: (mon: unknown, opts?: unknown) => Promise<void> } & Record<string, unknown>; // open-record
-    useGameStore?: () => { state: { team: unknown[]; starterChosen: boolean; money?: number } } & Record<string, unknown>; // open-record
-    useMapStore?: () => { setGlobalWeather: (weather: string) => void } & Record<string, unknown>; // open-record
-    useModalStore?: () => { open: (name: string, props?: Record<string, unknown>) => string | null; close: (identifier: string) => void; stack?: Array<{ id: string; name: string; closing?: boolean }> }; // open-record
+    useBattleStore?: () => { state: Record<string, unknown> | null; isBattleActive: boolean; fsm?: { currentState: string }; startBattle: (mon: unknown, opts?: unknown) => Promise<void> } & Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    useGameStore?: () => { state: { team: unknown[]; starterChosen: boolean; money?: number } } & Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    useLoadingStore?: () => { isLoading: (key?: string) => boolean } & Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    useMapStore?: () => { setGlobalWeather: (weather: string) => void } & Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    useModalStore?: () => { open: (name: string, props?: Record<string, unknown>) => string | null; close: (identifier: string) => void; stack?: Array<{ id: string; name: string; closing?: boolean }> }; // open-record: Generic key-value data dictionary container
     useUIStore?: () => { isBattleSwitchForced: boolean; notify: (msg: string, icon?: string) => void };
     pokemonDebugService?: { generate: (config: unknown) => unknown };
     certifiedReplayWorkerEnded?: boolean;
     certifiedReplayWorkerFinalState?: unknown;
     history?: unknown[];
-    multipliers?: Record<string, number>; // open-record
-    triggerAnim?: (type: string, side?: string, options?: Record<string, unknown>) => void; // open-record
+    multipliers?: Record<string, number>; // open-record: Generic key-value data dictionary container
+    triggerAnim?: (type: string, side?: string, options?: Record<string, unknown>) => void; // open-record: Generic key-value data dictionary container
     playSound?: (id: string) => void;
     setStatus?: (side: string, status: string) => void;
     setSecondaryStatus?: (side: string, type: string) => void;
@@ -205,26 +206,31 @@ declare global {
     modifyStatStage?: (side: string, stat: keyof BattleStages, delta: number) => void;
     setFieldEffect?: (side: string, effect: string, val: number) => void;
     toggleSilhouette?: () => void;
+    advanceBuffSeconds?: (seconds: number) => void;
+    setBuffDuration?: (field: string, seconds: number) => void;
     battle?: unknown;
-    [key: string]: unknown; // open-record
+    [key: string]: unknown; // open-record: Generic key-value data dictionary container
   }
 
   interface Window {
     __VITE_DEBUG__?: ViteDebugApi;
     __VITE_DEBUG_STORE_RESOLVER__?: () => DebugStore;
-    drawBattleBackground?: (locationId: string, cycle: string) => void;
+    drawBattleBackground?: (locationId: import('@/data/world/map-assets').MapRouteId, cycle: string) => void;
     pwa_app_mounted?: boolean;
     initSqlJs?: (options?: unknown) => Promise<unknown>;
     __GTS_SIMULATION__?: boolean;
     __E2E__?: boolean;
+    __E2E_DRIVER__?: 'sqlite' | 'postgres';
     __E2E_BATTLE_FLOW_COMPLETION__?: Promise<void>;
     __E2E_BATTLE_FORCED_SWITCH__?: Promise<BattleForcedSwitchDetail>;
     __E2E_BATTLE_READY_FOR_INPUT__?: Promise<BattleReadyForInputDetail>;
     __E2E_GAME_STORE_READY__?: Promise<GameStoreReadyDetail>;
+    __E2E_STARTER_SELECT_READY__?: Promise<import('@/types/system/gameEvents').StarterSelectReadyDetail>;
+    __STARTER_SELECT_READY__?: boolean;
     __showdownWorker__?: Worker;
     __SIMULATOR_BATTLE__?: { p1?: { active?: Array<{ hp?: number }> }; p2?: { active?: Array<{ hp?: number }> } };
     __VITE_DEBUG_BREEDING_STORE_RESOLVER__?: () => unknown;
-    showGameError?: (error: Error | string, context?: Record<string, unknown>) => void; // domain-ok // string-ok // open-record
+    showGameError?: (error: Error | string, context?: Record<string, unknown>) => void; // domain-ok: Open dynamic text or non-domain string payload // string-ok: Internal string formatting or DOM token identifier // open-record: Generic key-value data dictionary container
     __WEATHER_SESSION_SEED__?: number;
     __GET_DB_TIME_OFFSET__?: () => number;
     gsap?: typeof import('gsap').gsap;

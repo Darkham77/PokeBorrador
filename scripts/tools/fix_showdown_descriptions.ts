@@ -20,7 +20,7 @@ interface ShowdownDB {
   abilities: Record<string, unknown>;
 }
 
-const CLEAN_DESCRIPTIONS: Record<string, string> = { // no-magic
+const CLEAN_DESCRIPTIONS: Record<string, string> = { // no-magic: Explicit mathematical constant or threshold value
   assist: 'El usuario realiza un movimiento elegido al azar de entre los de su equipo.',
   bide: 'El usuario aguanta golpes durante dos turnos y devuelve el doble del daño recibido.',
   feintattack: 'Ataque rápido y garantizado que no puede fallar.',

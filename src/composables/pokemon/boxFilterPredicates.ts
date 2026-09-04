@@ -1,7 +1,7 @@
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { calculateTotalIVs, hasMaxIV } from '@/logic/pokemon/statsMath'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
-import { hasPokemonTag } from '@/logic/constants/tags'
+import { hasPokemonTag, isPokemonTagId } from '@/logic/constants/tags'
 import {
   resolveFriendshipSealTier,
   isReadyForFriendshipEvolution,
@@ -47,8 +47,8 @@ export function matchesCoreFilters(p: Pokemon, f: BoxFilterStateData): boolean {
   if (f.type !== 'all' && p.type !== f.type) return false
   if (p.level < f.levelMin || p.level > f.levelMax) return false
   if (f.search) {
-    const query = f.search.toLowerCase() // text-ok
-    const nameMatch = p.name.toLowerCase().includes(query) // text-ok
+    const query = f.search.toLowerCase() // text-ok: UI text display localization string
+    const nameMatch = p.name.toLowerCase().includes(query) // text-ok: UI text display localization string
     const nickMatch = p.nickname?.toLowerCase().includes(query)
     if (!nameMatch && !nickMatch) return false
   }
@@ -96,11 +96,14 @@ export function matchesEvFilters(p: Pokemon, f: BoxFilterStateData): boolean {
   return true
 }
 
-export function matchesTagsFilter(p: Pokemon, tags?: string[]): boolean {
+export function matchesTagsFilter(p: Pokemon, tags?: readonly string[]): boolean {
   if (!tags || tags.length === 0) return true
   return tags.every(t => {
     if (t === 'team') return false
-    return hasPokemonTag(p, t)
+    if (isPokemonTagId(t) || t === 'favorite' || t === 'comp') {
+      return hasPokemonTag(p, t)
+    }
+    return false
   })
 }
 

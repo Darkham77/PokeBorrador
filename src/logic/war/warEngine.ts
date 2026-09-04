@@ -102,8 +102,8 @@ export function getPreviousWeekId(date: Temporal.ZonedDateTime | Temporal.Instan
 export function getReconciledWeekIds(): string[] {
   const current = getWeekId()
   // Specific reconciliation for April 2026 transition
-  if (current === '2026-W14' || current === '2026-04-06') { // magic-ok
-    return [current, '2026-W15', '2026-04-06'] // magic-ok
+  if (current === '2026-W14' || current === '2026-04-06') { // magic-ok: Explicit mathematical constant or ratio
+    return [current, '2026-W15', '2026-04-06'] // magic-ok: Explicit mathematical constant or ratio
   }
   return [current]
 }

@@ -63,7 +63,7 @@ describe('Forced Switch & Phazing Animation Parity (|drag| & forced |switch|)', 
 
       expect(getForcedExitConfig('uturn').escapeType).toBe('withdraw');
       expect(getForcedExitConfig('redcard').escapeType).toBe('knockback');
-      expect(getForcedExitConfig('unknown_move').escapeType).toBe('whirlwind');
+      expect(getForcedExitConfig(undefined).escapeType).toBe('whirlwind');
     });
   });
 

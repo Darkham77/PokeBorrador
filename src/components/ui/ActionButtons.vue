@@ -8,9 +8,9 @@ const uiStore = useUIStore()
 const modalStore = useModalStore()
 
 const preloadHudModals = () => {
-  void import('@/components/modals/ProfileModal.vue')
-  void import('@/components/modals/SettingsModal.vue')
-  void import('@/components/modals/LibraryModal.vue')
+  import('@/components/modals/ProfileModal.vue').catch(() => { /* optional prefetch */ })
+  import('@/components/modals/SettingsModal.vue').catch(() => { /* optional prefetch */ })
+  import('@/components/modals/LibraryModal.vue').catch(() => { /* optional prefetch */ })
 }
 
 onMounted(() => {

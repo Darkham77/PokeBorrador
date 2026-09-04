@@ -136,8 +136,8 @@ const activeBonuses = computed<BonusItem[]>(() => {
   // Bonificaciones de Especies (resueltas desde rotación temática o configuración)
   const resolvedSpecies = involvedSpecies.value
   const spNames = resolvedSpecies.length > 0
-    ? resolvedSpecies.map(s => s.toUpperCase()).join(', ') // domain-ok
-    : (effectiveSpeciesString.value && effectiveSpeciesString.value !== '*' ? effectiveSpeciesString.value.toUpperCase() : null) // domain-ok
+    ? resolvedSpecies.map(s => s.toUpperCase()).join(', ') // domain-ok: UI uppercase formatted species list string
+    : (effectiveSpeciesString.value && effectiveSpeciesString.value !== '*' ? effectiveSpeciesString.value.toUpperCase() : null) // domain-ok: Open dynamic text or non-domain string payload
 
   if (c.speciesShinyMult && c.speciesShinyMult > 1) {
     const label = spNames ? `✨ Más chances de encontrar ${spNames} Variocolor (Shiny)` : '✨ Más chances de encontrar Pokémon del Evento Variocolor (Shiny)'
@@ -212,8 +212,10 @@ const activeBonuses = computed<BonusItem[]>(() => {
 
 
 
-interface Prize extends Record<string, unknown> { // open-record
-  type?: 'money' | 'bc' | 'item' | 'pokemon' | 'mixed'
+import type { EventRewardType } from '@/types/system/stores'
+
+interface Prize extends Record<string, unknown> { // open-record: Generic key-value data dictionary container
+  type?: EventRewardType
   amount?: number
   qty?: number
   money?: number

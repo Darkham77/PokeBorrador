@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { gsap } from 'gsap'
+import type { ItemTier } from '@/types/inventory/items'
 
 interface InventoryItem {
   id: string
@@ -10,7 +11,7 @@ interface InventoryItem {
   qty: number
   desc: string
   price?: number
-  tier?: 'common' | 'rare' | 'epic' | 'legend'
+  tier?: ItemTier
 }
 
 const props = defineProps<{

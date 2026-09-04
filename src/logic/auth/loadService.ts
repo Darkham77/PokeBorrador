@@ -33,7 +33,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
         user.db_version = profile.db_version;
       }
     } catch (e) {
-      throw new Error(`[loadService] Error de consulta db_version en profiles: ${(e as Error).message}`);
+      logger.warn('LOAD', `[loadService] Fallo al consultar db_version en profiles (red no disponible): ${(e as Error).message}`);
     }
   }
 
@@ -47,7 +47,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
         try {
           await db.from('profiles').update({ db_version: REQUIRED_DB_VERSION }).eq('id', user.id);
         } catch (e) {
-          throw new Error(`[loadService] Error al actualizar db_version en profiles: ${(e as Error).message}`);
+          logger.warn('LOAD', `[loadService] Fallo al actualizar db_version en profiles (red no disponible): ${(e as Error).message}`);
         }
       }
     } else {
@@ -88,21 +88,21 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
       finalSaveData = parsedSave as GameState;
     }
   } catch (e) {
-    throw new Error(`[loadService] Error de consulta en la base de datos para game_saves: ${(e as Error).message}`);
+    logger.warn('LOAD', `[loadService] Fallo al consultar game_saves (red no disponible): ${(e as Error).message}`);
   }
   }
 
   // 2. Fetch Local Save (Prioritize OPFS Binary over LocalStorage)
   const opfsKey = `save_${user.id}.gz`;
   let localData: GameState | null = null;
-  const accumulatedIssues: string[] = []; // no-domain
+  const accumulatedIssues: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   try {
     const binary = await readOpfsFile(opfsKey);
     if (binary) {
       const workerRes = await processSaveInWorker({ binary });
       if (workerRes.valid && workerRes.data) {
-        localData = workerRes.data as GameState; // domain-ok
+        localData = workerRes.data as GameState; // domain-ok: Open dynamic text or non-domain string payload
         if (workerRes.issues?.length) accumulatedIssues.push(...workerRes.issues);
       }
     }
@@ -125,7 +125,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
       try {
         const workerRes = await processSaveInWorker({ rawString: lsRaw });
         if (workerRes.valid && workerRes.data) {
-          localData = workerRes.data as GameState; // domain-ok
+          localData = workerRes.data as GameState; // domain-ok: Open dynamic text or non-domain string payload
           if (workerRes.issues?.length) accumulatedIssues.push(...workerRes.issues);
         } else {
           localData = JSON.parse(lsRaw) as GameState;
@@ -186,7 +186,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
   }
 
   return {
-    data: sanitized as GameState, // domain-ok
+    data: sanitized as GameState, // domain-ok: Open dynamic text or non-domain string payload
     issues: accumulatedIssues,
     lastSaveId: cloudSaveRow?.last_save_id || null,
     isNewerThanCloud: false

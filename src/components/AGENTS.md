@@ -11,6 +11,10 @@ Frontend UI Developers / UI Designers.
 - Strict compliance with [ui_ux_standards.md](../../.agents/skills/project-standards/references/core/ui_ux_standards.md) and [sass_styling_manual.md](../../.agents/skills/project-standards/references/technical/sass_styling_manual.md).
 - Zero template-level database queries or heavy computations.
 - **Interactive Elements Deterministic ID Mandate**: Every interactive UI control (`<button>`, `<input>`, `<select>`, `<textarea>`, or elements binding `@click`/`@change`) MUST define an explicit static or dynamic `id` attribute (e.g. `id="nav-events-btn"` or `:id="'claim-btn-' + item.id"`). Locating elements by text or CSS class hierarchy in automated tests is strictly forbidden.
+- **Vue 3 SFC `<script setup>` Export Prohibition & Types Extraction Mandate**: ES module `export` statements (`export const`, `export type`, `export interface`, `export function`) are strictly forbidden inside Vue SFC `<script setup>` blocks (`vue/no-export-in-script-setup`).
+  1. **Shared Types Extraction**: If an interface or type needs to be shared across components, stores, or test files (e.g., `DebugPresetOption`, `SpeciesSummaryData`), it MUST be extracted to a companion `.ts` file (e.g. `*Types.ts` co-located with the component). Importing types from `.vue` SFC files is strictly prohibited.
+  2. **Local Component Types**: Types and constants declared solely for internal component logic or template filter derivation must remain unexported without `export`, and local arrays prefixed with `_` (e.g. `const _MARKET_TYPE_FILTERS = ['all', ...POKEMON_TYPES] as const; type MarketTypeFilter = (typeof _MARKET_TYPE_FILTERS)[number];`).
+  3. **Automated Enforcement**: Validated automatically via `scripts/auditors/domain_data/validate_domain_types.ts` during `npm run lint` and `npm run audit`.
 
 ## Work Guidance
 

@@ -85,16 +85,25 @@ export async function configureOfficialServers(): Promise<void> {
  */
 
 export interface OfficialServer {
-  id: string; // domain-ok
-  name: string; // domain-ok
-  region: string; // domain-ok
-  url: string; // domain-ok
-  anonKey: string; // domain-ok
+  id: string; // domain-ok: Open dynamic text or non-domain string payload
+  name: string; // domain-ok: Open dynamic text or non-domain string payload
+  region: string; // domain-ok: Open dynamic text or non-domain string payload
+  url: string; // domain-ok: Open dynamic text or non-domain string payload
+  anonKey: string; // domain-ok: Open dynamic text or non-domain string payload
   isDefault?: boolean;
 }
 
+export const TEST_DOCKER_SERVER: OfficialServer = {
+  id: 'test_postgres',
+  name: 'Local Docker Test Server',
+  region: 'Testing',
+  url: 'http://127.0.0.1:54321',
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNjAwMDAwMDAwLCJleHAiOjI1MDAwMDAwMDB9.bWuWcdy1ICtTs7Zq7TNjum7G0VIS5je9rFlzshoeBLA'
+};
+
 export const OFFICIAL_SERVERS: OfficialServer[] = [
-${officialServers.join(',\n')}
+${officialServers.join(',\n')},
+  TEST_DOCKER_SERVER
 ];
 
 export const DEFAULT_SERVER = (OFFICIAL_SERVERS.find(s => s.isDefault) || OFFICIAL_SERVERS[0]) as OfficialServer;

@@ -6,7 +6,7 @@ import { useModalStore } from '@/stores/modals'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import type { WeatherId } from '@/logic/weather/weatherRegistry'
 import type { DayPhase } from '@/logic/utils/timeUtils'
-import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { toPokemonType } from '@/data/battle/types'
 import { isMapExtortable } from '@/logic/map/mapCardHelper'
 import { useRouteSpawnsCalculation } from '@/composables/modals/useRouteSpawnsCalculation'
@@ -44,7 +44,7 @@ const {
   toggleOfficialRoute
 } = useRoutePerks({ map: mapRef })
 
-const openPokemonDetail = (speciesId: string, isSeen: boolean) => {
+const openPokemonDetail = (speciesId: PokemonSpeciesId, isSeen: boolean) => {
   if (!isSeen) return
   modalStore.open('PokemonDetail', { speciesId: requirePokemonSpeciesId(speciesId), context: 'pokedex' })
 }

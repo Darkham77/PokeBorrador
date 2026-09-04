@@ -10,7 +10,7 @@ vi.mock('@/logic/db/sqliteEngine.ts', () => ({
     const isSelect = trimmed.toUpperCase().startsWith('SELECT');
     const stmt = memoryDb.prepare(sql);
     if (isSelect) {
-      return stmt.all(...(params as string[])) as Record<string, unknown>[]; // open-record
+      return stmt.all(...(params as string[])) as Record<string, unknown>[]; // open-record: Generic key-value data dictionary container
     }
     stmt.run(...(params as string[]));
     return [];
@@ -144,7 +144,7 @@ describe('Magikarp Contest Automated Awarding & Claiming (SQLite RPC)', () => {
     // 4. Run automated awarding
     const awardResult = await emulateAwardEventAutomated(mockSqliteDb, { target_event_id: 'hora_magikarp' });
     assert.strictEqual(awardResult.error, null);
-    const awardData = awardResult.data as { ok?: boolean; success?: boolean }; // domain-ok
+    const awardData = awardResult.data as { ok?: boolean; success?: boolean }; // domain-ok: Open dynamic text or non-domain string payload
     assert.ok(awardData?.ok || awardData?.success);
 
     // 5. Verify competition_results table
@@ -205,7 +205,7 @@ describe('Magikarp Contest Automated Awarding & Claiming (SQLite RPC)', () => {
     // 7. Test claiming an award
     const claimRes = await emulateClaimAward(mockSqliteDb, { p_award_id: awardP1.id });
     assert.strictEqual(claimRes.error, null);
-    const claimData = claimRes.data as { ok?: boolean; prize?: { type: string; amount: number; rank?: string } }; // domain-ok
+    const claimData = claimRes.data as { ok?: boolean; prize?: { type: string; amount: number; rank?: string } }; // domain-ok: Open dynamic text or non-domain string payload
     assert.ok(claimData?.ok);
     assert.deepStrictEqual(claimData?.prize, { type: 'money', amount: 50000, rank: 'first' });
 
@@ -217,7 +217,7 @@ describe('Magikarp Contest Automated Awarding & Claiming (SQLite RPC)', () => {
 
     // Trying to claim again should be rejected
     const repeatClaim = await emulateClaimAward(mockSqliteDb, { p_award_id: awardP1.id });
-    const repeatData = repeatClaim.data as { ok?: boolean }; // domain-ok
+    const repeatData = repeatClaim.data as { ok?: boolean }; // domain-ok: Open dynamic text or non-domain string payload
     assert.strictEqual(repeatData?.ok, false);
 
     // 8. Verify entries table was cleaned up

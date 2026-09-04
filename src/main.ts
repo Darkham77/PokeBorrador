@@ -30,6 +30,10 @@ const pinia = createPinia()
 if (typeof window !== 'undefined') {
   window.Pinia = pinia
   window.gsap = gsap
+  if (window.__E2E__ || window.location.search.includes('e2e=true')) {
+    gsap.globalTimeline.timeScale(100);
+    console.debug('⚡ [E2E] GSAP timeScale set to 100x for instant animations.');
+  }
 }
 
 app.component('PVTooltip', PVTooltip)
@@ -77,13 +81,6 @@ if (typeof window !== 'undefined') {
       gameBus.emit('PWA_NEED_REFRESH')
     })
   })
-
-  if (window.__E2E__ || window.location.search.includes('e2e=true')) {
-    import('gsap').then(({ gsap }) => {
-      gsap.globalTimeline.timeScale(100);
-      console.debug('⚡ [E2E] GSAP timeScale set to 100x for instant animations.');
-    });
-  }
 }
 
 

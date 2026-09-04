@@ -1,5 +1,6 @@
 import { SPECIES_METADATA, type PokemonSpeciesId } from './speciesMetadata.ts';
 import type { PokemonMoveId } from '@/types/pokemon/pokemon';
+import { toID } from '../../logic/utils/strings.ts';
 
 export type { PokemonSpeciesId };
 
@@ -440,16 +441,18 @@ export function isPokemonSpeciesId(value: string): value is PokemonSpeciesId {
 
 export function requirePokemonSpeciesId(value: string): PokemonSpeciesId {
   if (isPokemonSpeciesId(value)) return value;
+  const canonicalId = toID(value);
+  if (isPokemonSpeciesId(canonicalId)) return canonicalId;
   throw new Error(`Invalid Pokemon species id: ${value}`);
 }
 
 export const TM_COMPAT_SETS: Partial<Record<PokemonSpeciesId, ReadonlySet<string>>> = Object.freeze(
   Object.fromEntries(
-    Object.entries(TM_COMPAT).map(([sp, tms]) => [sp, new Set(tms)]) // runtime-set
+    Object.entries(TM_COMPAT).map(([sp, tms]) => [sp, new Set(tms)]) // runtime-set: Fast O(1) membership lookup set
   ) as Partial<Record<PokemonSpeciesId, ReadonlySet<string>>>
 );
 
-export function isTmCompatible(speciesId: PokemonSpeciesId, tmId: string): boolean {
+export function isTmCompatible(speciesId: PokemonSpeciesId, tmId: TmId): boolean {
   return TM_COMPAT_SETS[speciesId]?.has(tmId) ?? false;
 }
 

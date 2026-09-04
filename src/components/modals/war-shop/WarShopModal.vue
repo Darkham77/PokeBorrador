@@ -47,7 +47,7 @@ const filteredItems = computed<Item[]>(() => {
   const coins = warStore.warCoins || 0
   const trainerLevel = gameStore.state.trainerLevel || 1
 
-  const items = (SHOP_ITEMS as readonly Item[]).filter(item => { // domain-ok
+  const items = (SHOP_ITEMS as readonly Item[]).filter(item => { // domain-ok: Open dynamic text or non-domain string payload
     if (!item.showInWarShop) return false
     const resolvedCat = item.cat || 'otros'
     if (activeTab.value !== 'todos' && resolvedCat !== activeTab.value) return false
@@ -90,7 +90,7 @@ const filteredItems = computed<Item[]>(() => {
 
 const availableCategories = computed<string[]>(() => {
   const cats = new Set<string>()
-  for (const item of (SHOP_ITEMS as readonly Item[])) { // domain-ok
+  for (const item of (SHOP_ITEMS as readonly Item[])) { // domain-ok: Open dynamic text or non-domain string payload
     if (!item.showInWarShop) continue
     cats.add(item.cat || 'otros')
   }

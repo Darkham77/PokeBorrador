@@ -28,11 +28,11 @@ function parseShowdownSeed(seed: unknown): [number, number, number, number] | un
  */
 export function parseShowdownSeedForBattle(seed: unknown): `${number},${string}` | undefined {
   const parsed = parseShowdownSeed(seed);
-  return parsed as `${number},${string}` | undefined; // domain-ok
+  return parsed as `${number},${string}` | undefined; // domain-ok: Open dynamic text or non-domain string payload
 }
 
 const DEFAULT_RNG_INITIAL_SEED = 12345;
-let rngSeed = DEFAULT_RNG_INITIAL_SEED; // singleton-ok
+let rngSeed = DEFAULT_RNG_INITIAL_SEED; // singleton-ok: Singleton instance state container
 export function resetDeterministicMathRandom(initialSeed = DEFAULT_RNG_INITIAL_SEED) {
   rngSeed = initialSeed;
   Math.random = () => {

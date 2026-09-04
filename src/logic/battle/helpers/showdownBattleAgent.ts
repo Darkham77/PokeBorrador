@@ -77,7 +77,7 @@ export abstract class ShowdownBattleAgent {
       
       // Showdown accepts at most ONE event modifier per move choice (mega, terastallize, zmove, ultra, etc.)
       let modifier = '';
-      const availableModifiers: string[] = []; // no-domain
+      const availableModifiers: string[] = []; // no-domain: Non-domain utility collection or data structure
       if (Reflect.get(slotReq, 'canMegaEvoX')) {
         availableModifiers.push(' megax');
       } else if (Reflect.get(slotReq, 'canMegaEvoY')) {

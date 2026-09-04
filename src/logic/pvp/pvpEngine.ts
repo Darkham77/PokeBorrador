@@ -31,15 +31,27 @@ export interface PvPActionResult {
   effectLog: string[];
 }
 
+export const SUPABASE_REALTIME_CHANNELS = ['presence', 'postgres_changes', 'broadcast'] as const;
+export type SupabaseRealtimeChannel = (typeof SUPABASE_REALTIME_CHANNELS)[number];
+
+export const PVP_BATTLE_PHASES = ['sync', 'choosing', 'resolving', 'animating', 'faint_switch', 'over', 'waiting'] as const;
+export type PvPBattlePhase = (typeof PVP_BATTLE_PHASES)[number];
+
+export interface PvPChannelPayload {
+  type: SupabaseRealtimeChannel;
+  event: string;
+  payload: unknown;
+}
+
 export interface PvPChannel {
-  send: (payload: { type: 'presence' | 'postgres_changes' | 'broadcast', event: string, payload: unknown }) => void;
+  send: (payload: PvPChannelPayload) => void;
   unsubscribe: () => void;
 }
 
 export interface PvPBattleState {
   isHost: boolean;
   isRanked: boolean;
-  phase: 'sync' | 'choosing' | 'resolving' | 'animating' | 'faint_switch' | 'over' | 'waiting';
+  phase: PvPBattlePhase;
   myTeam: Pokemon[];
   enemyTeam: Pokemon[];
   myActiveIdx: number;
@@ -67,7 +79,7 @@ export interface PvPTurnResult {
   clientStages: BattleStages;
 }
 
-export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | undefined { // result-ok
+export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | undefined { // result-ok: Operation result wrapper payload
   if (!battleState.isHost || battleState.phase === 'resolving') return
   battleState.phase = 'resolving'
   
@@ -110,7 +122,7 @@ export function resolvePvPTurn(battleState: PvPBattleState): PvPTurnResult | und
 
   // 2. Helper to calculate a single action
   const calcAction = (actorIsHost: boolean): PvPActionResult => {
-    const effectLog: string[] = [] // no-domain
+    const effectLog: string[] = [] // no-domain: Non-domain utility collection or data structure
     const attacker = actorIsHost ? hostPoke : clientPoke
     const defender = actorIsHost ? clientPoke : hostPoke
     const atkS = actorIsHost ? battleState.myStages : battleState.enemyStages

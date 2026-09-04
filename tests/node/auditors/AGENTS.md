@@ -15,5 +15,5 @@ Developer Tooling & Codebase Quality Team.
 
 ## Local Contracts
 
-- Test pattern detection rules, false-positive prevention, and escape hatch annotations (`// o1-ok`, `// linear-search-ok`, `// path-ok`).
+- Test pattern detection rules, false-positive prevention, and escape hatch annotations (`// o1-ok: O(1) data structure exception`, `// linear-search-ok: Small bounded collection linear lookup`, `// path-ok`).
 - Ensure all tests run deterministically in Vitest Node environment without external dependencies.

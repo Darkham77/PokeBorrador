@@ -12,7 +12,7 @@ export interface StatusNullAuditResult {
  * Debe utilizarse estrictamente cadena vacía '' en las instancias del simulador.
  */
 export function auditShowdownStatusNull(targetDir: string): StatusNullAuditResult {
-  const statusNullViolations: string[] = []; // no-domain
+  const statusNullViolations: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!existsSync(targetDir)) return { statusNullViolations };
 
   const files = getFilesRecursively(targetDir).filter(f => f.endsWith('.ts'));

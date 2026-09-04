@@ -135,5 +135,11 @@
 - **Mandatory Function Execution Privileges (`GRANT EXECUTE`)**: Every stored procedure or RPC exposed to client queries via Supabase PostgREST MUST include explicit `GRANT EXECUTE ON FUNCTION public.<name>(<types>) TO authenticated, anon, service_role;`.
 - **Strict Forward-Only Migration Immutability**: Because migration runners (`update_supabase_db.ts`) track executed versions in `_migrations` as an immutable append-only ledger, editing an existing migration file in-place will cause remote environments to skip execution. Every fix or schema change MUST be delivered in a brand-new migration pair with a strictly monotonic incremented timestamp.
 
+## 21. Dual Database E2E Bridge & JSONB Transport Governance
+
+- **JSONB Serialization Parity**: When passing JSON structures to PostgreSQL via dev query bridges or test query runners (`queryTestDb`), payloads MUST NOT be double-stringified. Drivers like `postgres.js` serialize native JavaScript objects directly into PostgreSQL `JSONB`. Passing string scalars (`"{\"foo\": ...}"`) causes PostgreSQL to store them as string scalars (`jsonb_typeof = 'string'`), breaking JSON path operators (`->`, `->>`). Bridges MUST automatically sanitize and parse JSON strings back to native objects before query dispatch.
+- **Dynamic Upsert Conflict Targeting**: Query adapters and proxies emulating Supabase `upsert` MUST extract target conflict columns dynamically (`actionOpts.onConflict`) to construct `ON CONFLICT ("col1", "col2") DO UPDATE SET ...`, strictly avoiding hardcoded `(id)` constraints on tables with composite keys.
+- **Transaction-Level Identity Propagation (RLS Emulation)**: When running tests against PostgreSQL, proxy bridges MUST wrap queries and RPC calls in a transaction injecting `SET LOCAL "request.jwt.claim.sub" = '<user_id>'` from the `x-user-id` header. This guarantees that `auth.uid()` in PL/pgSQL policies and functions evaluates with the exact simulated player's identity.
+
 
 

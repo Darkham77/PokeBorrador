@@ -6,7 +6,7 @@
 
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { getItemById } from '@/data/inventory/items';
-import { PLAYER_CLASSES } from '@/data/player/playerClasses';
+import { PLAYER_CLASSES, isPlayerClassId } from '@/data/player/playerClasses';
 import { logger } from '../utils/logger.ts';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { BattleLog, BattleSource, BattleSide } from '@/types/battle/battle';
@@ -28,7 +28,7 @@ interface LogContext {
 
 // Re-use exported types
 
-let nextLogSequenceId = 0; // singleton-ok
+let nextLogSequenceId = 0; // singleton-ok: Singleton instance state container
 
 /**
  * Procesa un mensaje de log y devuelve el objeto listo para la cola del store.
@@ -51,7 +51,8 @@ export function formatBattleLog(msg: string, type: string, source: BattleSource,
     iconType = 'emoji';
   } else if (source) {
     if (source === 'player') {
-      const cls = (PLAYER_CLASSES as Record<string, { avatarSpriteId: string }>)[gs.state.playerClass || '']; // open-record
+      const pClass = gs.state.playerClass;
+      const cls = typeof pClass === 'string' && isPlayerClassId(pClass) ? PLAYER_CLASSES[pClass] : null;
       const spriteId = cls?.avatarSpriteId || gs.state.avatar_style || 'entrenador';
       icon = getAssetUrl(ASSET_TYPES.TRAINER, spriteId, { trainerSuffix: 'avatar' });
       iconType = 'player_avatar';

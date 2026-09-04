@@ -77,7 +77,7 @@ export async function buildTrainerTeam(
   const { TrainerTeamGenerator } = await import('./rivalTeamGenerator');
   const { requirePokemonSpeciesId } = await import('@/data/pokemon/pokedex');
 
-  const poolSet = new Set(pool); // runtime-set
+  const poolSet = new Set(pool); // runtime-set: Fast O(1) membership lookup set
   const generatedSets = TrainerTeamGenerator.generateTeam({
     level: trainerLv,
     teamSize,

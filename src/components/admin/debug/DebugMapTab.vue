@@ -4,7 +4,7 @@ import SpawnDebugControls from './shared/SpawnDebugControls.vue'
 
 const ui = useUIStore()
 
-interface ViteDebug extends Record<string, unknown> { // open-record
+interface ViteDebug extends Record<string, unknown> { // open-record: Generic key-value data dictionary container
   toggleGrid: () => void
   togglePerf: () => void
 }

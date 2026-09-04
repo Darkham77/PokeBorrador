@@ -26,7 +26,7 @@ export interface AccountRepairDetail {
   userId: string;
   modified: boolean;
   fixedPokemonCount: number;
-  details: string[]; // no-domain
+  details: string[]; // no-domain: Non-domain utility collection or data structure
 }
 
 export interface RepairSummary {
@@ -59,7 +59,7 @@ export function auditAndRepairSaveData(
 ): { modified: boolean; fixedPokemonCount: number; details: string[] } {
   let accountModified = false;
   let accountFixedPokemonCount = 0;
-  const accountDetails: string[] = []; // no-domain
+  const accountDetails: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   // 1. Purgar Huevos no habilitados en incubadora (saveData.eggs)
   if (Array.isArray(saveData.eggs)) {
@@ -86,7 +86,7 @@ export function auditAndRepairSaveData(
     const initialWhCount = warehouse.length;
     const remainingWh = warehouse.filter(item => {
       if (!item || typeof item !== 'object') return false;
-      const entry = item as Record<string, unknown>; // open-record
+      const entry = item as Record<string, unknown>; // open-record: Generic key-value data dictionary container
       const rawSpecies = String(entry.species || entry.id || '');
       const cleanSpecies = rawSpecies.startsWith('egg_') ? rawSpecies.replace(/^egg_\d+_[a-z0-9]+_?/, '') : rawSpecies;
       const targetSpecies = entry.species ? String(entry.species) : cleanSpecies;
@@ -257,7 +257,7 @@ export function repairAccountsInSqlite(options: RepairAccountOptions): RepairSum
   }
 
   let queryStr = 'SELECT user_id, save_data FROM game_saves';
-  const params: string[] = []; // no-domain
+  const params: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (targetUserId) {
     queryStr += ' WHERE user_id = ?';
     params.push(targetUserId);

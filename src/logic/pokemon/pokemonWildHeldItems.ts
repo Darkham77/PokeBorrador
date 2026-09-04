@@ -30,7 +30,7 @@ export const WILD_HELD_ITEMS: Partial<Record<PokemonSpeciesId, { common?: ItemId
   dragonite: { rare: 'dragonscale' }
 };
 
-export function getWildHeldItem( // domain-ok
+export function getWildHeldItem( // domain-ok: Open dynamic text or non-domain string payload
   id: PokemonSpeciesId,
   rates?: { commonRate: number; rareRate: number; forceHeldChance?: number }
 ): ItemId | null {

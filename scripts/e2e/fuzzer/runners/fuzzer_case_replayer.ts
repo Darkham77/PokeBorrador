@@ -10,6 +10,7 @@ import { ShowdownLogEnricher } from '../../../../src/logic/battle/helpers/showdo
 import { ShowdownBattleRunner } from '../../../../src/logic/battle/helpers/showdownBattleRunner.ts';
 import { ACTIVE_SHOWDOWN_FORMAT } from '../../../../src/data/system/constants.ts';
 import { resetDeterministicMathRandom } from '../../../../src/logic/battle/helpers/seedInitializer.ts';
+import { formatExecutionTimestamp } from '../../logging/base_runner_logger.ts';
 
 // Aplicar el monkey-patch unificado de Showdown
 patchShowdownSpreadModify(() => true);
@@ -99,8 +100,9 @@ if (!match) {
 }
 
 console.log('--- STARTING EXACT CERTIFIED CHOICES REPLAY ---');
+console.log(`📅 Fecha y hora de inicio: ${formatExecutionTimestamp()}`);
 
-let turn = 0; // singleton-ok
+let turn = 0; // singleton-ok: Singleton instance state container
 
 for (let historyIndex = 0; historyIndex < match.history.length; historyIndex++) {
   const step = ShowdownBattleRunner.requireHistoryEntry(match.history, historyIndex);

@@ -498,7 +498,7 @@ export function runBatteryOfDiagnostics(saveData: GameState): DiagnosticFinding[
   const warehouse = saveData.daycareWarehouse;
   if (Array.isArray(warehouse)) {
     for (let wIdx = 0; wIdx < warehouse.length; wIdx++) {
-      const entry = warehouse[wIdx] as Record<string, unknown>; // open-record
+      const entry = warehouse[wIdx] as Record<string, unknown>; // open-record: Generic key-value data dictionary container
       if (!entry || typeof entry !== 'object') continue;
       const rawSpecies = String(entry.species || entry.id || '');
       const cleanSpecies = rawSpecies.startsWith('egg_') ? rawSpecies.replace(/^egg_\d+_[a-z0-9]+_?/, '') : rawSpecies;

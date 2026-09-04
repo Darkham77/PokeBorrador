@@ -20,7 +20,6 @@ const DEFAULT_WILD_ENEMY_LEVEL = 20;
 class FishingEventSimulation extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
     super(page, username);
-    this.page.on('console', msg => console.log('BROWSER CONSOLE:', msg.text()));
   }
 
   public async setupFishingEventScenario(): Promise<void> {

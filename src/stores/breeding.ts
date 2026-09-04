@@ -16,8 +16,9 @@ import {
 import { eggFactory } from '@/logic/breeding/eggFactory';
 import { EGG_SPAWN_INTERVAL_MS } from '@/logic/breeding/breedingData';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
-import { NATURES, toNatureId } from '@/data/battle/natures';
+import { NATURES, isNatureId } from '@/data/battle/natures';
 import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
+import type { BreedingActivitySource } from '@/types/breeding/breeding';
 import { usePlayerClassStore } from '@/stores/player/playerClass.ts';
 import { useEventStore } from '@/stores/events.ts';
 import { useDaycareMissionsStore } from '@/stores/daycareMissions.ts';
@@ -279,8 +280,8 @@ export const useBreedingStore = defineStore('breeding', () => {
 
     const breedingCost = calculateBreedingCost(pA, pB);
     const inheritedNature = inheritNature(pA, pB, itemA, itemB);
-    const chosenNature = inheritedNature 
-      ? toNatureId(inheritedNature) 
+    const chosenNature = (inheritedNature && isNatureId(inheritedNature))
+      ? inheritedNature 
       : (NATURES[Math.floor(Math.random() * NATURES.length)] || 'serious');
 
     const egg = eggFactory.createDaycareEgg({
@@ -419,8 +420,8 @@ export const useBreedingStore = defineStore('breeding', () => {
     daycareMissionsStore.completeMission(missionIndex, pokemonUid);
   }
 
-  function reduceHatchTimers(activity: 'battle' | 'capture' | 'gym' | 'minigame') {
-    const REDUCTIONS = { battle: 2, capture: 3, gym: 10, minigame: 1 };
+  function reduceHatchTimers(activity: BreedingActivitySource) {
+    const REDUCTIONS: Record<BreedingActivitySource, number> = { battle: 2, capture: 3, gym: 10, minigame: 1 };
     const baseReduction = REDUCTIONS[activity] || 0;
     if (baseReduction === 0) return;
 

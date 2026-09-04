@@ -24,10 +24,26 @@ export interface SaveResult {
   lastSaveId?: string;
 }
 
-const saveOperationState = {
+export const saveOperationState = {
   isSaving: false,
   isRollingBack: false,
 };
+
+let latestCommittedSaveId: string | null = null; // uuid-ok: Database save UUID identifier
+
+export function setLatestCommittedSaveId(id: string | null): void { // uuid-ok: Database save UUID identifier
+  latestCommittedSaveId = id;
+}
+
+export function getLatestCommittedSaveId(): string | null {
+  return latestCommittedSaveId;
+}
+
+export function resetSaveOperationState(): void {
+  saveOperationState.isSaving = false;
+  saveOperationState.isRollingBack = false;
+  latestCommittedSaveId = null;
+}
 
 export interface SaveOptions {
   showNotif?: boolean;
@@ -79,9 +95,10 @@ async function performRemoteSave(
   const { showNotif = true, notifyFn } = options;
 
   try {
+    const expectedId = latestCommittedSaveId || user.last_save_id || options.lastSaveId || null;
     const { data: res, error } = await db.rpc('save_game_trusted', {
       p_save_data: persistedSaveData,
-      p_expected_id: options.lastSaveId || null
+      p_expected_id: expectedId
     });
 
     if (error) throw error;
@@ -91,6 +108,11 @@ async function performRemoteSave(
       logger.warn('SAVE', 'Concurrencia detectada. El servidor tiene una versión más nueva.');
       saveOperationState.isRollingBack = true;
       return { rollback: true, outOfSync: true };
+    }
+
+    if (resData?.last_save_id) {
+      latestCommittedSaveId = resData.last_save_id;
+      user.last_save_id = resData.last_save_id;
     }
 
     await syncUserProfileData(db, user, saveData);
@@ -126,10 +148,11 @@ async function performRemoteSave(
   }
 }
 
-export async function saveGame(state: GameState, user: AuthUser, options: SaveOptions = {}): Promise<SaveResult | null> {
-  const { showNotif = true, notifyFn, db } = options;
-  if (!user || saveOperationState.isSaving || saveOperationState.isRollingBack) return null;
+let activeSavePromise: Promise<SaveResult | null> | null = null;
+let pendingResolvers: ((result: SaveResult | null) => void)[] = [];
 
+async function executeSaveDirect(state: GameState, user: AuthUser, options: SaveOptions = {}): Promise<SaveResult | null> {
+  const { showNotif = true, notifyFn, db } = options;
   saveOperationState.isSaving = true;
   try {
     const raw_data = serializeState(state);
@@ -137,7 +160,6 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
 
     if (!validation.valid) {
       logger.error('SAVE', 'Abortando proceso de guardado por estado de datos erróneo:', validation.error || validation.issues);
-      saveOperationState.isSaving = false;
       if (showNotif && notifyFn) {
         notifyFn(`Error al guardar: ${validation.error || 'Datos corruptos o inválidos'}`, '🔴');
       }
@@ -181,4 +203,36 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
   } finally {
     saveOperationState.isSaving = false;
   }
+}
+
+export async function saveGame(state: GameState, user: AuthUser, options: SaveOptions = {}): Promise<SaveResult | null> {
+  if (!user || saveOperationState.isRollingBack) {
+    if (saveOperationState.isRollingBack) {
+      logger.warn('SAVE', 'saveGame blocked early because rollback is in progress.');
+    }
+    return null;
+  }
+
+  if (activeSavePromise) {
+    return new Promise<SaveResult | null>((resolve) => {
+      pendingResolvers.push(resolve);
+    });
+  }
+
+  const runWithQueue = async (): Promise<SaveResult | null> => {
+    try {
+      return await executeSaveDirect(state, user, options);
+    } finally {
+      activeSavePromise = null;
+      if (pendingResolvers.length > 0) {
+        const waiting = pendingResolvers;
+        pendingResolvers = [];
+        const followUp = await saveGame(state, user, { ...options, lastSaveId: latestCommittedSaveId || undefined });
+        waiting.forEach(r => r(followUp));
+      }
+    }
+  };
+
+  activeSavePromise = runWithQueue();
+  return activeSavePromise;
 }

@@ -10,7 +10,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 
 function isValidDaycareMission(m: unknown): m is DaycareMission {
   if (!m || typeof m !== 'object') return false;
-  const mission = m as Record<string, unknown>; // open-record
+  const mission = m as Record<string, unknown>; // open-record: Generic key-value data dictionary container
   return (
     typeof mission.date === 'string' &&
     typeof mission.targetId === 'string' &&
@@ -62,7 +62,7 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
     
     const team = gameStore.state.team || [];
     const box = gameStore.state.box || [];
-    const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null); // o1-ok
+    const allPokes = [...team, ...box].filter((p): p is Pokemon => p !== null); // o1-ok: O(1) data structure exception
     
     return missions.filter(mission => {
       const targetId = mission.targetId;

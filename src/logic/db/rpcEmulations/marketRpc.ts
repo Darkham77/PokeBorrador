@@ -82,9 +82,10 @@ const RANDOM_STRING_SUBSTRING_END = 11;
     }
   }
 
+  const newSaveId = crypto.randomUUID();
   sqliteDb.run(
-    "UPDATE game_saves SET save_data = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
-    [JSON.stringify(saveObj), userId]
+    "UPDATE game_saves SET save_data = ?, last_save_id = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
+    [JSON.stringify(saveObj), newSaveId, userId]
   );
 
   sqliteDb.run(
@@ -119,15 +120,16 @@ export async function emulateBuyListing(
   }
 
   buyerSave.money = (buyerSave.money || 0) - price;
+  const newBuyerSaveId = crypto.randomUUID();
   sqliteDb.run(
-    "UPDATE game_saves SET save_data = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
-    [JSON.stringify(buyerSave), userId]
+    "UPDATE game_saves SET save_data = ?, last_save_id = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
+    [JSON.stringify(buyerSave), newBuyerSaveId, userId]
   );
 
   let assetDataObj = listing.data;
   if (typeof assetDataObj === 'string') {
     try {
-      assetDataObj = JSON.parse(assetDataObj) as Record<string, unknown>; // open-record
+      assetDataObj = JSON.parse(assetDataObj) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
     } catch (_e) {
       void 0;
     }
@@ -165,7 +167,7 @@ export async function emulateBuyListing(
 
 export async function emulateCancelListing(
   sqliteDb: SQLiteDatabase,
-  params: Record<string, unknown>, // open-record
+  params: Record<string, unknown>, // open-record: Generic key-value data dictionary container
   context: { userId: string }
 ): Promise<DBResponse> {
   const { p_listing_id } = params;
@@ -179,7 +181,7 @@ export async function emulateCancelListing(
   let assetDataObj = listing.data;
   if (typeof assetDataObj === 'string') {
     try {
-      assetDataObj = JSON.parse(assetDataObj) as Record<string, unknown>; // open-record
+      assetDataObj = JSON.parse(assetDataObj) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
     } catch (_e) {
       void 0;
     }
@@ -191,7 +193,7 @@ export async function emulateCancelListing(
 
   if (listing.listing_type === 'pokemon') {
     saveObj.box = saveObj.box || [];
-    saveObj.box.push(assetDataObj as Record<string, unknown>); // open-record
+    saveObj.box.push(assetDataObj as Record<string, unknown>); // open-record: Generic key-value data dictionary container
   } else {
     saveObj.inventory = saveObj.inventory || {};
     const itemName = (assetDataObj as { name: string }).name;
@@ -199,9 +201,10 @@ export async function emulateCancelListing(
     saveObj.inventory[itemName] = (saveObj.inventory[itemName] || 0) + qty;
   }
 
+  const newCancelSaveId = crypto.randomUUID();
   sqliteDb.run(
-    "UPDATE game_saves SET save_data = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
-    [JSON.stringify(saveObj), userId]
+    "UPDATE game_saves SET save_data = ?, last_save_id = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
+    [JSON.stringify(saveObj), newCancelSaveId, userId]
   );
 
   sqliteDb.run(
@@ -215,7 +218,7 @@ export async function emulateCancelListing(
 
 export async function emulateClaimAsset(
   sqliteDb: SQLiteDatabase,
-  params: Record<string, unknown>, // open-record
+  params: Record<string, unknown>, // open-record: Generic key-value data dictionary container
   context: { userId: string }
 ): Promise<DBResponse> {
   const { p_claim_id } = params;
@@ -242,18 +245,18 @@ export async function emulateClaimAsset(
   }
 
   if (assetPayload && assetPayload.type === 'pokemon') {
-    let rawPoke: Record<string, unknown> | null = null; // open-record
+    let rawPoke: Record<string, unknown> | null = null; // open-record: Generic key-value data dictionary container
     if (typeof assetPayload.data === 'string') {
       try {
-        rawPoke = JSON.parse(assetPayload.data) as Record<string, unknown>; // open-record
+        rawPoke = JSON.parse(assetPayload.data) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
       } catch {
         rawPoke = null;
       }
     } else if (typeof assetPayload.data === 'object' && assetPayload.data !== null) {
-      rawPoke = assetPayload.data as Record<string, unknown>; // open-record
+      rawPoke = assetPayload.data as Record<string, unknown>; // open-record: Generic key-value data dictionary container
     }
     // Reset friendship to canonical base value (70) upon transferring to a new trainer
-    const poke: Record<string, unknown> = { // open-record
+    const poke: Record<string, unknown> = { // open-record: Generic key-value data dictionary container
       ...(rawPoke || {}),
       friendship: 70,
     };
@@ -274,9 +277,10 @@ export async function emulateClaimAsset(
     userSave.inventory[itemName] = (userSave.inventory[itemName] || 0) + qty;
   }
 
+  const newClaimSaveId = crypto.randomUUID();
   sqliteDb.run(
-    "UPDATE game_saves SET save_data = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
-    [JSON.stringify(userSave), userId]
+    "UPDATE game_saves SET save_data = ?, last_save_id = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
+    [JSON.stringify(userSave), newClaimSaveId, userId]
   );
 
   sqliteDb.run("DELETE FROM claim_queue WHERE id = ?", [p_claim_id]);

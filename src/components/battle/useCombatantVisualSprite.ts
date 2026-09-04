@@ -59,7 +59,7 @@ function determineIdleSpriteKey(spriteKeyVal: string, isPlayerSide: boolean, gen
   const suffix = match[2]!;
   const isFemale = gender === 'f';
 
-  const candidates = [`${numId}i${suffix}`, `${numId}${suffix}`]; // no-domain
+  const candidates = [`${numId}i${suffix}`, `${numId}${suffix}`]; // no-domain: Non-domain utility collection or data structure
   for (const cand of candidates) {
     if (isPlayerSide) {
       const femaleBack = `${cand}_f_back`;

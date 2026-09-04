@@ -46,8 +46,8 @@ export async function deleteOpfsFile(fileName: string) {
 }
 
 export async function listBackups(): Promise<string[]> {
-  const root = (await navigator.storage.getDirectory()) as FileSystemDirectoryHandle & { values(): AsyncIterable<{ name: string }> }; // domain-ok
-  const backups: string[] = [] // no-domain
+  const root = (await navigator.storage.getDirectory()) as FileSystemDirectoryHandle & { values(): AsyncIterable<{ name: string }> }; // domain-ok: Open dynamic text or non-domain string payload
+  const backups: string[] = [] // no-domain: Non-domain utility collection or data structure
   for await (const entry of root.values()) {
     if (entry.name.startsWith('backup_')) {
       backups.push(entry.name)
@@ -64,7 +64,7 @@ export async function purgeAllCachedSaves(): Promise<void> {
   // 1. Purge OPFS cached save files
   if (typeof navigator !== 'undefined' && navigator.storage && typeof navigator.storage.getDirectory === 'function') {
     try {
-      const root = (await navigator.storage.getDirectory()) as FileSystemDirectoryHandle & { values(): AsyncIterable<{ name: string }> }; // domain-ok
+      const root = (await navigator.storage.getDirectory()) as FileSystemDirectoryHandle & { values(): AsyncIterable<{ name: string }> }; // domain-ok: Open dynamic text or non-domain string payload
       for await (const entry of root.values()) {
         const name = entry.name;
         if (name.startsWith('save_') || name.startsWith('backup_') || name.startsWith('pokevicio_save') || name.endsWith('.gz')) {
@@ -80,7 +80,7 @@ export async function purgeAllCachedSaves(): Promise<void> {
   // 2. Purge localStorage cached saves
   if (typeof localStorage !== 'undefined') {
     try {
-      const keysToRemove: string[] = []; // no-domain
+      const keysToRemove: string[] = []; // no-domain: Non-domain utility collection or data structure
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key && (

@@ -67,15 +67,15 @@ function grantTrophyToPokemon(
 function applyAwardPrize(ctx: EventAwardsContext, rawPrize: unknown) {
   const { gameStore, uiStore } = ctx
   if (!rawPrize) return
-  let prize: Record<string, unknown> | null = null // open-record
+  let prize: Record<string, unknown> | null = null // open-record: Generic key-value data dictionary container
   if (typeof rawPrize === 'string') {
     try {
-      prize = JSON.parse(rawPrize) as Record<string, unknown> // open-record
+      prize = JSON.parse(rawPrize) as Record<string, unknown> // open-record: Generic key-value data dictionary container
     } catch {
       prize = null
     }
   } else if (rawPrize && typeof rawPrize === 'object') {
-    prize = rawPrize as Record<string, unknown> // open-record
+    prize = rawPrize as Record<string, unknown> // open-record: Generic key-value data dictionary container
   }
 
   if (!prize) return
@@ -240,7 +240,7 @@ export async function claimAward(ctx: EventAwardsContext, awardId: string): Prom
 
   try {
     const { data, error } = await gameStore.db.rpc('claim_award', { p_award_id: awardId })
-    const claimResult = data as { ok?: boolean; success?: boolean; prize?: unknown } | null // domain-ok
+    const claimResult = data as { ok?: boolean; success?: boolean; prize?: unknown } | null // domain-ok: Open dynamic text or non-domain string payload
     
     if (!error && (claimResult?.ok || claimResult?.success)) {
       pendingAwards.value = pendingAwards.value.filter(a => a.id !== awardId)

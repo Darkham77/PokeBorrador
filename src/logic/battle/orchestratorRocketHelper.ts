@@ -2,7 +2,7 @@ import type { BattleContext } from '@/types/battle/battleContext'
 import { incrementRecordKey } from '@/logic/utils/mapUtils'
 import { CRIMINALITY_GAINED_ON_STEAL } from '@/logic/constants/gameplay'
 import type { BattleState } from '@/types/battle/battle'
-import { getItemById, isItemId, type ItemId } from '@/data/inventory/items'
+import { getItemById, getItemName, isItemId, type ItemId } from '@/data/inventory/items'
 import { calculateQuickStealChance, calculateMaxNpcRobberyLimit } from '@/logic/player/classMath'
 import { classifyNpcArchetype } from '@/logic/utils/npcSpriteRouter'
 
@@ -52,7 +52,8 @@ function stealItemsFromEnemy(
       }
 
       stolenTotalCost += qtyToSteal * itemPrice
-      stolenItemsList.push({ id: itemId, qty: qtyToSteal, name: itemDef?.name || itemId })
+      const itemName = itemDef ? itemDef.name : itemId
+      stolenItemsList.push({ id: itemId, qty: qtyToSteal, name: itemName })
     }
   }
 
@@ -179,13 +180,7 @@ async function executeEnemyRocketSteal(
     }
 
     for (const [itemId, qty] of Object.entries(stolenItems)) {
-      let itemDef = null
-      try {
-        itemDef = getItemById(itemId)
-      } catch {
-        // usar el ID directamente
-      }
-      const displayName = itemDef?.name || itemId
+      const displayName = getItemName(itemId)
       ctx.uiStore.notify(`¡Te robaron ${qty}x ${displayName}!`, '🎒')
     }
 

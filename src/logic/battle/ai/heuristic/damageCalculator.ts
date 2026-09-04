@@ -7,6 +7,7 @@ import { Generations, Pokemon, Move, Field, calculate, type Result, type Generat
 import { toID, type SideID } from '@pkmn/sim';
 import { requireItemId } from '../../../../data/inventory/items.ts';
 import { requireAbilityId } from '../../../../data/battle/abilities.ts';
+import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
 import type { HeuristicPokemonState, HeuristicFieldState, DamageResult, DamageMatchup, HeuristicMoveInfo, HeuristicBattleSnapshot } from './types.ts';
 
 // Priority moves (positive = priority, negative = delayed, protection = high positive)
@@ -53,7 +54,7 @@ export class HeuristicDamageCalculator {
   calcDamage(
     attacker: HeuristicPokemonState,
     defender: HeuristicPokemonState,
-    moveId: string,
+    moveId: PokemonMoveId,
     field: HeuristicFieldState,
   ): DamageResult {
     const key = this.cacheKey(attacker, defender, moveId, field);
@@ -91,10 +92,10 @@ export class HeuristicDamageCalculator {
       myAttacking.push(this.calcDamage(my, opp, m.id, snapshot.field));
     }
 
-    const oppMoves = new Set<string>(opp.knownMoves);
+    const oppMoves = new Set<PokemonMoveId>(opp.knownMoves);
     if (inferredOpponentMoves) {
       for (const [mv, prob] of inferredOpponentMoves) {
-        if (prob >= INFERRED_MOVE_MIN_PROBABILITY) oppMoves.add(mv);
+        if (prob >= INFERRED_MOVE_MIN_PROBABILITY && isPokemonMoveId(mv)) oppMoves.add(mv);
       }
     }
 
@@ -194,7 +195,7 @@ export class HeuristicDamageCalculator {
     return map[toID(species)] ?? (species.charAt(0).toUpperCase() + species.slice(1));
   }
 
-  private parseResult(result: Result, moveId: string, attacker: string, defender: string): DamageResult {
+  private parseResult(result: Result, moveId: PokemonMoveId, attacker: string, defender: string): DamageResult {
     const damage = result.damage;
     let min = 0, max = 0;
 
@@ -229,7 +230,7 @@ export class HeuristicDamageCalculator {
     };
   }
 
-  private fallback(moveId: string, attacker: string, defender: string): DamageResult {
+  private fallback(moveId: PokemonMoveId, attacker: string, defender: string): DamageResult {
     return { move: moveId, attacker, defender, minPercent: 0, maxPercent: 0, isOHKO: false, is2HKO: false, priority: PRIORITY_MAP[toID(moveId)] ?? 0 };
   }
 

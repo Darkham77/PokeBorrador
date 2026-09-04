@@ -43,7 +43,7 @@ describe('Domain Type Audit Pattern Recognition', () => {
       const line = "const gymId = req.params.gym as GymId;";
       expect(testRegex(P_TYPECAST_INLINE_DOMAIN_ID, line)).toBe(true);
       expect(isGuardFunctionLine(line)).toBe(false);
-      expect(line.includes('// domain-ok')).toBe(false);
+      expect(line.includes('// domain-ok: Open dynamic text or non-domain string payload')).toBe(false);
     });
 
     it('detects inline cast to keyof typeof', () => {
@@ -51,9 +51,9 @@ describe('Domain Type Audit Pattern Recognition', () => {
       expect(testRegex(P_TYPECAST_INLINE_DOMAIN_ID, line)).toBe(true);
     });
 
-    it('allows inline cast when explicitly annotated with // domain-ok', () => {
-      const line = "const externalTitle = payload.title as DisplayTitleId; // domain-ok";
-      expect(line.includes('// domain-ok')).toBe(true);
+    it('allows inline cast when explicitly annotated with // domain-ok: Open dynamic text or non-domain string payload', () => {
+      const line = "const externalTitle = payload.title as DisplayTitleId; // domain-ok: Open dynamic text or non-domain string payload";
+      expect(line.includes('// domain-ok: Open dynamic text or non-domain string payload')).toBe(true);
     });
   });
 
@@ -61,12 +61,12 @@ describe('Domain Type Audit Pattern Recognition', () => {
     it('detects illegal cast to Record<string, ...>', () => {
       const line = "const value = (STORE_MAP as Record<string, Item>)[key];";
       expect(testRegex(P_TYPECAST_RECORD_STRING, line)).toBe(true);
-      expect(line.includes('// open-record')).toBe(false);
+      expect(line.includes('// open-record: Generic key-value data dictionary container')).toBe(false);
     });
 
-    it('allows cast when marked with // open-record escape hatch', () => {
-      const line = "const rawMap = (data as Record<string, unknown>)[id]; // open-record";
-      expect(line.includes('// open-record')).toBe(true);
+    it('allows cast when marked with // open-record: Generic key-value data dictionary container escape hatch', () => {
+      const line = "const rawMap = (data as Record<string, unknown>)[id]; // open-record: Generic key-value data dictionary container";
+      expect(line.includes('// open-record: Generic key-value data dictionary container')).toBe(true);
     });
   });
 

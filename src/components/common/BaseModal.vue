@@ -83,7 +83,7 @@
               
               <button
                 v-if="showCloseButton"
-                :id="id ? `${id}-close-btn` : undefined"
+                :id="closeBtnId || (id ? `${id}-close-btn` : undefined)"
                 class="modal-close-btn"
                 :class="{ 
                   'is-solid': closeButtonVariant === 'solid',
@@ -164,6 +164,7 @@ defineOptions({
 
 const props = defineProps({
   id: { type: String, default: '' },
+  closeBtnId: { type: String, default: '' },
   show: { type: Boolean, default: false },
   title: { type: String, default: '' },
   emoji: { type: String, default: '' },

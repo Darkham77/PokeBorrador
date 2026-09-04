@@ -41,10 +41,10 @@ export interface LineHeightAuditResult {
   readonly passed: boolean;
 }
 
-const IGNORE_DIRS: ReadonlySet<string> = new Set(['node_modules', '.git', 'dist', 'dev-dist', 'external', 'backup_legacy_code', 'scratch']); // runtime-set
+const IGNORE_DIRS: ReadonlySet<string> = new Set(['node_modules', '.git', 'dist', 'dev-dist', 'external', 'backup_legacy_code', 'scratch']); // runtime-set: Fast O(1) membership lookup set
 
 function getAllStyleAndVueFiles(dir: string): string[] {
-  let results: string[] = []; // no-domain
+  let results: string[] = []; // no-domain: Non-domain utility collection or data structure
   if (!fs.existsSync(dir)) return results;
   const list = fs.readdirSync(dir);
   for (const file of list) {
@@ -127,7 +127,7 @@ export function auditLineHeight(): LineHeightAuditResult {
 
     for (const block of blocks) {
       const lines = block.content.split('\n');
-      const selectorStack: string[] = []; // no-domain
+      const selectorStack: string[] = []; // no-domain: Non-domain utility collection or data structure
 
       for (let i = 0; i < lines.length; i++) {
         const lineText = lines[i] || '';
@@ -205,8 +205,8 @@ if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) ==
 
   const result = auditLineHeight();
 
-  const errors: string[] = []; // no-domain
-  const warnings: string[] = []; // no-domain
+  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
+  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   for (const v of result.violations) {
     errors.push(`[LINE_HEIGHT_OVERLAP] ${v.file}:${v.line} → ${v.message}`);

@@ -41,17 +41,19 @@ const handleClose = () => {
 }
 
 const handleChange = () => {
-  emit('change')
   if (props.onChange) {
     props.onChange()
+  } else {
+    emit('change')
   }
   emit('close')
 }
 
 const handleWithdraw = () => {
-  emit('withdraw')
   if (props.onWithdraw) {
     props.onWithdraw()
+  } else {
+    emit('withdraw')
   }
   emit('close')
 }

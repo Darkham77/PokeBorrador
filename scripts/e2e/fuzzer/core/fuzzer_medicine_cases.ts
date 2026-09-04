@@ -45,11 +45,11 @@ function snapshotSide(side: { pokemon: Array<{ name: string; hp: number; maxhp: 
   return side.pokemon.map((pokemon) => ({ name: pokemon.name, hp: pokemon.fainted ? 0 : pokemon.hp, maxHp: pokemon.maxhp, fainted: pokemon.fainted }));
 }
 
-function winnerSeat(battle: { winner?: string; p1: { name: string }; p2: { name: string } }): 'p1' | 'p2' | 'tie' { // type-ok
+function winnerSeat(battle: { winner?: string; p1: { name: string }; p2: { name: string } }): 'p1' | 'p2' | 'tie' { // type-ok: Type contract declaration
   return battle.winner === battle.p1.name ? 'p1' : battle.winner === battle.p2.name ? 'p2' : 'tie';
 }
 
-function syncGamePokemonFromShowdown(gamePokemon: { hp: number; maxHp: number; status: string }, showdownPokemon: { hp: number; maxhp: number; status: string }): void { // type-ok
+function syncGamePokemonFromShowdown(gamePokemon: { hp: number; maxHp: number; status: string }, showdownPokemon: { hp: number; maxhp: number; status: string }): void { // type-ok: Type contract declaration
   gamePokemon.hp = showdownPokemon.hp;
   gamePokemon.maxHp = showdownPokemon.maxhp;
   gamePokemon.status = showdownPokemon.status;

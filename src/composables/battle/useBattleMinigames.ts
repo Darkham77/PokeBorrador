@@ -3,6 +3,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useModalStore } from '@/stores/modals'
 import type { ItemId } from '@/data/inventory/items'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import type { MapRouteId } from '@/data/world/map-assets'
 import { resetBattleMinigameFlags } from '@/logic/battle/battleMinigames'
 import type { BattleMinigame } from '@/types/battle/battle'
 import {
@@ -14,7 +15,7 @@ import {
 interface BattleStoreMinigameRef {
   state?: {
     minigame?: BattleMinigame | null
-    locationId?: string
+    locationId?: MapRouteId
     rarity?: number
   } | null
   attackerSide: string | null
@@ -26,7 +27,7 @@ interface BattleStoreMinigameRef {
 }
 
 interface MapStoreMinigameRef {
-  triggerArchaeologyRewards: (locId: string, difficulty: string) => Promise<void>
+  triggerArchaeologyRewards: (locId: MapRouteId, difficulty: string) => Promise<void>
 }
 
 interface UIStoreMinigameRef {
@@ -52,17 +53,14 @@ export function useBattleMinigames(
     await battleStore.completeBattleFlow('search')
   }
 
-  const handleFishingSuccess = async (difficulty: unknown = 'easy') => {
-    const validDifficulty: FishingDifficultyKey = (typeof difficulty === 'string' && difficulty in FISHING_DIFFICULTIES)
-      ? (difficulty as FishingDifficultyKey)
-      : 'easy'
-    logger.success('BattleArenaView', `Fishing SUCCESS (${validDifficulty})`)
+  const handleFishingSuccess = async (difficulty: FishingDifficultyKey = 'easy') => {
+    logger.success('BattleArenaView', `Fishing SUCCESS (${difficulty})`)
     useModalStore().close('Fishing')
 
     if (enemy.value) {
-      const cfg = FISHING_DIFFICULTIES[validDifficulty] || FISHING_DIFFICULTIES.easy
+      const cfg = FISHING_DIFFICULTIES[difficulty] || FISHING_DIFFICULTIES.easy
       const oldLevel = enemy.value.level
-      const levelBonus = applyFishingLevelAndIvBonus(enemy.value, validDifficulty)
+      const levelBonus = applyFishingLevelAndIvBonus(enemy.value, difficulty)
       if (levelBonus > 0) {
         uiStore.notify(`¡Pesca ${cfg.label}! ${enemy.value.name} subió a Nivel ${enemy.value.level} (+${levelBonus})`, '🎣')
         battleStore.addLog(`¡Pesca ${cfg.label}! ${enemy.value.name} subió de Nivel ${oldLevel} a ${enemy.value.level} (+${levelBonus}).`, 'log-info', '🎣')

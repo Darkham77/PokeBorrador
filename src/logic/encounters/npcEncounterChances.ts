@@ -147,7 +147,7 @@ function calculateTrainerOrPoliceEncounterChance(
       chance: baseTrainerChance,
       type: 'police',
       active: true,
-      details: hasTrainerOverride ? 'Forzado por Debug' : (repelActive ? 'Repelente' : `Crim: ${criminality}`) // spanish-ok
+      details: hasTrainerOverride ? 'Forzado por Debug' : (repelActive ? 'Repelente' : `Crim: ${criminality}`) // spanish-ok: UI Spanish text localization label
     }
   }
 
@@ -156,7 +156,7 @@ function calculateTrainerOrPoliceEncounterChance(
     chance: baseTrainerChance,
     type: 'trainer',
     active: true,
-    details: hasTrainerOverride ? 'Forzado por Debug' : (repelActive ? 'Repelente' : undefined) // spanish-ok
+    details: hasTrainerOverride ? 'Forzado por Debug' : (repelActive ? 'Repelente' : undefined) // spanish-ok: UI Spanish text localization label
   }
 }
 

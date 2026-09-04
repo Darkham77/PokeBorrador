@@ -141,7 +141,7 @@ export async function generateEvYields() {
 
   let matched = 0;
   let fallbackToBase = 0;
-  const missing: string[] = []; // no-domain
+  const missing: string[] = []; // no-domain: Non-domain utility collection or data structure
 
   for (const speciesKey of allSpeciesKeys) {
     const cleanId = toID(speciesKey);
@@ -170,7 +170,7 @@ export async function generateEvYields() {
 
     // 3. Prefix matching for megas/forms if not explicitly different
     if (!ev) {
-      const prefixes = ['mega', 'gmax', 'alola', 'galar', 'hisui', 'paldea', 'totem', 'primal', 'origin']; // no-domain
+      const prefixes = ['mega', 'gmax', 'alola', 'galar', 'hisui', 'paldea', 'totem', 'primal', 'origin']; // no-domain: Non-domain utility collection or data structure
       for (const p of prefixes) {
         if (cleanId.includes(p)) {
           const stripped = cleanId.replace(p, '');

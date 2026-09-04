@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'vitest'
-import { canExecuteScriptedReplayAction } from '../../../src/logic/battle/helpers/scriptedReplayReadiness.ts'
+import { canExecuteScriptedReplayAction, isReplaySwitchRequired } from '../../../src/logic/battle/helpers/scriptedReplayReadiness.ts'
 
 describe('scriptedReplayReadiness', () => {
   it('a certified replacement remains actionable while SWITCH_MENU records its pending switch', () => {
@@ -31,5 +31,13 @@ describe('scriptedReplayReadiness', () => {
       isIntroAnimating: true,
       hasPendingSwitch: false,
     }), true)
+  })
+
+  it('detects replay switch requirement when in SWITCH_MENU, on forced switch, or vacated seat', () => {
+    assert.equal(isReplaySwitchRequired({ subState: 'SWITCH_MENU' }), true)
+    assert.equal(isReplaySwitchRequired({ hasPendingForceSwitch: true }), true)
+    assert.equal(isReplaySwitchRequired({ isBattleActive: true, isOver: false, hasPlayer: false, hasEnemy: true }), true)
+    assert.equal(isReplaySwitchRequired({ isBattleActive: true, isOver: false, hasPlayer: true, hasEnemy: true, subState: 'WAIT_INPUT' }), false)
+    assert.equal(isReplaySwitchRequired({ isOver: true, subState: 'SWITCH_MENU' }), false)
   })
 })

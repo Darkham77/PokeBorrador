@@ -8,7 +8,7 @@ import type { HeuristicBattleSnapshot, PositionEvaluation, WinCondition } from '
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 import type { BattleConditionKey } from '@/types/battle/battle';
 
-const POSITION_WEIGHTS = { // no-magic
+const POSITION_WEIGHTS = { // no-magic: Explicit mathematical constant or threshold value
   pokemonAdvantage: 0.20,
   hpAdvantage: 0.15,
   hazardAdvantage: 0.10,

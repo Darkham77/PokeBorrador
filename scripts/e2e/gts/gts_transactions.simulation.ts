@@ -24,55 +24,75 @@ const E2E_MONEY_PURCHASE_TIMEOUT_MS = 20000;
 const DEFAULT_MOVE_PP_COUNT = 35;
 const MAX_ACTIVE_MARKET_LISTINGS_LIMIT = 10;
 
-function seedMockListings(dbPath: string, count: number) {
+async function seedMockListings(dbPath: string, count: number) {
+  const isPostgres = process.env.SIM_DB_DRIVER === 'postgres';
+  const species = ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'ekans', 'sandshrew']; // no-domain: Non-domain utility collection or data structure
+  const speciesTypes: Record<string, { type: string, type2?: string }> = {
+    caterpie: { type: 'bug' },
+    weedle: { type: 'bug', type2: 'poison' },
+    pidgey: { type: 'normal', type2: 'flying' },
+    rattata: { type: 'normal' },
+    spearow: { type: 'normal', type2: 'flying' },
+    ekans: { type: 'poison' },
+    sandshrew: { type: 'ground' }
+  };
+
+  const mockItems: Array<{ uid: string; name: string; type: string; price: number; pkmn: Record<string, unknown> }> = [];
+  for (let i = 0; i < count; i++) {
+    const sp = species[i % species.length]!;
+    const typeInfo = speciesTypes[sp] || { type: 'normal' };
+    const mockPkmn = {
+      uid: `${sp}-mock-${i}`,
+      id: sp,
+      name: sp.charAt(0).toUpperCase() + sp.slice(1),
+      level: MOCK_POKEMON_LEVEL,
+      type: typeInfo.type,
+      type2: typeInfo.type2,
+      hp: MOCK_POKEMON_HP,
+      maxHp: MOCK_POKEMON_HP,
+      atk: MOCK_POKEMON_STAT,
+      def: MOCK_POKEMON_STAT,
+      spa: MOCK_POKEMON_STAT,
+      spd: MOCK_POKEMON_STAT,
+      spe: MOCK_POKEMON_STAT,
+      status: '',
+      moves: [{ name: 'Placaje', pp: DEFAULT_MOVE_PP_COUNT, maxPP: DEFAULT_MOVE_PP_COUNT }],
+      nickname: `MOCK_${sp.toUpperCase()}_${i}`
+    };
+    mockItems.push({
+      uid: mockPkmn.uid,
+      name: `Vendedor_${i}`,
+      type: 'pokemon',
+      price: DEFAULT_MOCK_LISTING_PRICE,
+      pkmn: mockPkmn
+    });
+  }
+
+  if (isPostgres) {
+    const { POSTGRES_URL } = await import('../../testing/postgres_test_container.js');
+    const postgres = (await import('postgres')).default;
+    const sql = postgres(POSTGRES_URL, { max: 1 });
+    const mockSellerId = '00000000-0000-4000-8000-000000000050';
+    await sql`INSERT INTO auth.users (id, email, created_at) VALUES (${mockSellerId}, 'mock_seller@local.test', NOW()) ON CONFLICT (id) DO NOTHING;`;
+    await sql`INSERT INTO public.profiles (id, username, email, created_at) VALUES (${mockSellerId}, 'MockVendor', 'mock_seller@local.test', NOW()) ON CONFLICT (id) DO NOTHING;`;
+
+    for (const item of mockItems) {
+      await sql`INSERT INTO market_listings (seller_id, seller_name, listing_type, data, price, status, created_at) VALUES (${mockSellerId}, ${item.name}, ${item.type}, ${sql.json(item.pkmn as never)}, ${item.price}, 'active', NOW());`;
+    }
+    await sql.end();
+    return;
+  }
+
   using db = new DatabaseSync(dbPath, { readOnly: false });
   try {
     const insertStmt = db.prepare(`
       INSERT INTO market_listings (seller_id, seller_name, listing_type, data, price, status, created_at)
       VALUES (?, ?, ?, ?, ?, 'active', strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
     `);
-
-    const species = ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'ekans', 'sandshrew']; // no-domain
-    const speciesTypes: Record<string, { type: string, type2?: string }> = {
-      caterpie: { type: 'bug' },
-      weedle: { type: 'bug', type2: 'poison' },
-      pidgey: { type: 'normal', type2: 'flying' },
-      rattata: { type: 'normal' },
-      spearow: { type: 'normal', type2: 'flying' },
-      ekans: { type: 'poison' },
-      sandshrew: { type: 'ground' }
-    };
-    
     db.exec('BEGIN TRANSACTION;');
-    for (let i = 0; i < count; i++) {
-      const sp = species[i % species.length]!;
-      const typeInfo = speciesTypes[sp] || { type: 'normal' };
-      const mockPkmn = {
-        uid: `${sp}-mock-${i}`,
-        id: sp,
-        name: sp.charAt(0).toUpperCase() + sp.slice(1),
-        level: MOCK_POKEMON_LEVEL,
-        type: typeInfo.type,
-        type2: typeInfo.type2,
-        hp: MOCK_POKEMON_HP,
-        maxHp: MOCK_POKEMON_HP,
-        atk: MOCK_POKEMON_STAT,
-        def: MOCK_POKEMON_STAT,
-        spa: MOCK_POKEMON_STAT,
-        spd: MOCK_POKEMON_STAT,
-        spe: MOCK_POKEMON_STAT,
-        status: '',
-        moves: [{ name: 'Placaje', pp: DEFAULT_MOVE_PP_COUNT, maxPP: DEFAULT_MOVE_PP_COUNT }],
-        nickname: `MOCK_${sp.toUpperCase()}_${i}`
-      };
-
-      insertStmt.run(
-        `seller-mock-${i}`,
-        `Vendedor_${i}`,
-        'pokemon',
-        JSON.stringify(mockPkmn),
-        DEFAULT_MOCK_LISTING_PRICE
-      );
+    for (let i = 0; i < mockItems.length; i++) {
+      const item = mockItems[i]!;
+      insertStmt.run(`seller-mock-${i}`, item.name, item.type, JSON.stringify(item.pkmn), item.price);
     }
     db.exec('COMMIT;');
   } finally {
@@ -97,7 +117,7 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
 
         const team: typeof game.state.team = [];
         const box: typeof game.state.box = [];
-        const species = ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'ekans', 'sandshrew']; // no-domain
+        const species = ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'ekans', 'sandshrew'] as const satisfies readonly import('../../../src/data/pokemon/pokedex.ts').PokemonSpeciesId[];
         for (let k = 0; k < pokemonCount; k++) {
           const sp = species[k % species.length]!;
           const pkmn = pokemonDebugService.generate({ id: sp, level: setupLevel });
@@ -159,29 +179,17 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
 }
 
 test.describe('GTS Multi-Account Transactions Simulation', () => {
-  test.beforeEach(async ({ request }) => {
-    await request.post('/api/dev-sim-db-cleanup', {
-      headers: { 'x-db-key': 'sim_db_gtsseller' }
-    });
-    await request.post('/api/dev-sim-db-cleanup', {
-      headers: { 'x-db-key': 'sim_db_gtsbuyer' }
-    });
-  });
-
   test('should allow listing limits, pagination check, and successful purchase', async ({ browser, request }) => {
     test.setTimeout(GTS_SUITE_TIMEOUT_MS);
 
     const sellerContext = await browser.newContext();
     const pageSeller = await sellerContext.newPage();
-    pageSeller.on('console', msg => {
-      console.log('[PAGE SELLER CONSOLE]:', msg.text());
-    });
     await pageSeller.addInitScript(() => {
       window.__GTS_SIMULATION__ = true;
     });
     const seller = new GTSSimulationWrapper(pageSeller, 'GtsSeller');
 
-    // 1. Login y Setup Vendedor (12 Pokémon en banca: 9 se publican directo, 1 via UI, quedan 2 disponibles para el intento del 11º)
+    // 1. Login y Setup Vendedor (limpieza de estado heredada en setup())
     await seller.setup();
     await waitForStoreReady(pageSeller);
     await seller.setupUserInventory(INITIAL_SELLER_MONEY, SELLER_POKEMON_BATCH_COUNT);
@@ -221,19 +229,25 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     const publishBtn = pageSeller.locator('#gts-publish-offer-btn').first();
     await clickResilient(publishBtn);
 
-    // Esperar que se limpie la selección (10/10 alcanzados)
+    // Esperar que se limpie la selección y que el store confirme los 10 registros activos sin estar publicando
     await expect(pageSeller.locator('#gts-selection-hint')).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await pageSeller.waitForFunction(async (expectedLimit) => {
+      const { useGTSStore } = await import('../../../src/stores/gts.ts');
+      const store = useGTSStore();
+      return !store.publishing && store.activeMyListings.length >= expectedLimit;
+    }, MAX_ACTIVE_MARKET_LISTINGS_LIMIT, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     const nextSelectionItem = pageSeller.locator('[id^="pokemon-select-"]').first();
     await nextSelectionItem.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await nextSelectionItem.scrollIntoViewIfNeeded();
     await clickResilient(nextSelectionItem);
+
+    await expect(publishBtn).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+    await expect(publishBtn).toBeEnabled({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await priceInput.fill(String(DEFAULT_MOCK_LISTING_PRICE));
     await clickResilient(publishBtn);
 
-    const toast = pageSeller.locator('[id^="toast-item-"]').first();
-    await toast.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
-    await expect(toast).toContainText(`Límite de publicaciones alcanzado (${MAX_ACTIVE_MARKET_LISTINGS_LIMIT})`);
+    await seller.expectToast(`Límite de publicaciones alcanzado (${MAX_ACTIVE_MARKET_LISTINGS_LIMIT})`);
 
     // Guardar partida para exportar
     await seller.saveGameAndAwaitExport();
@@ -247,11 +261,13 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     fs.writeFileSync(seller.getDbPath(), Buffer.from(sellerDbBytes));
 
     // Inundar mercado con 50 ofertas mockeadas en la DB del servidor ANTES del setup del comprador
-    seedMockListings(seller.getDbPath(), MOCK_LISTINGS_POOL_SIZE);
+    await seedMockListings(seller.getDbPath(), MOCK_LISTINGS_POOL_SIZE);
 
-    // Sync disk changes back to Vite dev server's RAM cache so subsequent GET requests see them
-    const updatedDbBuffer = fs.readFileSync(seller.getDbPath());
-    await seller.syncDevDb(request, updatedDbBuffer);
+    if (process.env.SIM_DB_DRIVER !== 'postgres') {
+      // Sync disk changes back to Vite dev server's RAM cache so subsequent GET requests see them
+      const updatedDbBuffer = fs.readFileSync(seller.getDbPath());
+      await seller.syncDevDb(request, updatedDbBuffer);
+    }
 
     // 6. Setup Comprador (Logear e inyectar inventario inicial, lo cual descargará la DB con los mocks)
     const buyerContext = await browser.newContext();

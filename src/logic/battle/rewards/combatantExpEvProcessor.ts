@@ -159,7 +159,7 @@ function spreadPokerus(ctx: BattleContext) {
 
   if (infectedMonIndices.length === 0) return;
 
-  const newlyInfectedNames: string[] = []; // no-domain
+  const newlyInfectedNames: string[] = []; // no-domain: Non-domain utility collection or data structure
   for (const idx of infectedMonIndices) {
     if (Math.random() < POKERUS_SPREAD_PROBABILITY) {
       const leftIdx = idx - 1;

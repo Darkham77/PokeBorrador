@@ -12,7 +12,7 @@ import { healStuckEventPokemon } from '@/logic/player/eventRecovery'
 import { getActivePinia } from 'pinia'
 import type { Event as GameEvent } from '@/logic/events/eventEngine'
 import type { CompetitionEntry } from '@/types/system/stores'
-import { isPokemonBusy } from '@/logic/constants/tags'
+import { isPokemonBusy, type PokemonTagId } from '@/logic/constants/tags'
 
 
 export function usePokemonActions(
@@ -26,7 +26,7 @@ export function usePokemonActions(
     if (caught && !state.pokedex.includes(id)) state.pokedex.push(id)
   }
   
-  async function chooseStarter(id: string) {
+  async function chooseStarter(id: PokemonSpeciesId) {
     const speciesId = requirePokemonSpeciesId(id)
     const loadingStore = useLoadingStore()
     loadingStore.start('choose_starter', 'Preparando aventura...', 'Asignando primer compañero', true, '🎒')
@@ -136,7 +136,7 @@ export function usePokemonActions(
     return true
   }
 
-  function togglePokeTag(context: PokemonStorageLocation, index: number, tagId: string) {
+  function togglePokeTag(context: PokemonStorageLocation, index: number, tagId: PokemonTagId) {
     const p = context === 'team' ? state.team[index] : (state.box ? state.box[index] : null)
     if (!p) return
     

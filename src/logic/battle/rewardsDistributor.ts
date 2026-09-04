@@ -136,7 +136,7 @@ export async function awardDebugExp(ctx: BattleContext) {
 
   ctx.addLog(`DEBUG: Añadiendo ${needed} EXP para subir de nivel...`, 'log-info', p);
 
-  const participantsSet = new Set([p.uid]); // runtime-set
+  const participantsSet = new Set([p.uid]); // runtime-set: Fast O(1) membership lookup set
   const reward = processExpGain(teamPoke, needed, participantsSet, {
     isActive: true,
     classMult: 1,

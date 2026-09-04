@@ -28,9 +28,10 @@ import { gsap } from 'gsap'
 import { GSAP_FAST_DURATION_SEC, COMBATANT_EMERGE_SPARKLE_FADE_DURATION_SEC, SCALE_FULL } from '@/logic/constants/animations'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getActiveBushesForMap, type ResolvedBushConfig, BUSH_FAMILIES, type BushFamily, type BushLayerDepth } from '@/logic/environment/bushLibrary'
+import type { MapRouteId } from '@/data/world/map-assets'
 
 interface Props {
-  locationId?: string
+  locationId?: MapRouteId
   layer: BushLayerDepth
   groundY: string
   /** Semilla de azar única por combate, generada por el padre. */

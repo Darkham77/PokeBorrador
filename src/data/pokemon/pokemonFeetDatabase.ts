@@ -35,7 +35,7 @@ for (const [key, prefix] of [
   ['n', '/assets/sprites/npc/'],
   ['t', '/assets/sprites/trainers/']
 ] as const satisfies readonly (readonly [FeetSpriteGroupKey, FeetSpritePrefix])[]) {
-  const group = (PACKED_DATA as Record<string, Record<string, readonly number[]>>)[key] ?? {}; // open-record
+  const group = (PACKED_DATA as Record<string, Record<string, readonly number[]>>)[key] ?? {}; // open-record: Generic key-value data dictionary container
   for (const [subKey, tuple] of Object.entries(group)) {
     const dbPath: FeetDatabasePath = `${prefix}${subKey}.webp`;
     const y = requireFeetMetric(tuple as readonly number[], dbPath, 0);

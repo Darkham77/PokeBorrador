@@ -18,7 +18,7 @@ const TOOLTIP_STAGE_STAT_NAMES = {
   all: 'Todos los Stats',
 } as const satisfies Record<TooltipStageStatId, TooltipStageStatName>;
 
-const TOOLTIP_CONDITION_DETAILS = { // no-magic
+const TOOLTIP_CONDITION_DETAILS = { // no-magic: Explicit mathematical constant or threshold value
   psn: {
     label: 'Envenenamiento',
     effect: 'Estado Alterado (PSN)',
@@ -56,7 +56,7 @@ const TOOLTIP_CONDITION_DETAILS = { // no-magic
     isSelf: false,
   },
   confusion: {
-    label: 'Confusión', // spanish-ok
+    label: 'Confusión', // spanish-ok: UI Spanish text localization label
     effect: 'Estado Volátil',
     details: 'El objetivo se confunde durante 1 a 4 turnos. En cada turno, puede golpearse a sí mismo.',
     isSelf: false,

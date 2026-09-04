@@ -5,17 +5,18 @@ import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils'
 import { toID } from '@/logic/utils/strings.ts'
 import { MAX_POKEMON_LEVEL, isEnabledPokemonId } from '@/data/system/constants'
 import { requireAbilityId } from '@/data/battle/abilities'
+import { requirePokemonMoveId } from '@/data/battle/moves'
 import { isLegendaryPokemonSpeciesId, isFossilPokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 
 export interface PokemonLegalityReport {
   isLegal: boolean
-  issues: string[] // no-domain
+  issues: string[] // no-domain: Non-domain utility collection or data structure
 }
 
 export interface PokemonRepairReport {
   repaired: boolean
-  changes: string[] // no-domain
+  changes: string[] // no-domain: Non-domain utility collection or data structure
 }
 
 export interface CheckPokemonLegalityOptions {
@@ -33,7 +34,7 @@ export function checkPokemonLegality(
   p: Pokemon | null | undefined,
   options?: CheckPokemonLegalityOptions
 ): PokemonLegalityReport {
-  const issues: string[] = [] // no-domain
+  const issues: string[] = [] // no-domain: Non-domain utility collection or data structure
 
   if (!p) {
     return { isLegal: true, issues: [] }
@@ -77,7 +78,7 @@ export function checkPokemonLegality(
     }
   }
 
-  const moveSet = new Set<string>() // runtime-set
+  const moveSet = new Set<string>() // runtime-set: Fast O(1) membership lookup set
   for (const m of activeMoves) {
     const cleanId = toID(m.id)
     if (moveSet.has(cleanId)) {
@@ -86,10 +87,11 @@ export function checkPokemonLegality(
     moveSet.add(cleanId)
 
     try {
-      const moveData = pokemonDataProvider.getMoveData(cleanId)
+      const canonicalMoveId = requirePokemonMoveId(cleanId)
+      const moveData = pokemonDataProvider.getMoveData(canonicalMoveId)
       if (!moveData) {
         issues.push(`Movimiento "${m.id}" no existe en la base de datos.`)
-      } else if (!canLearnMove(p.id, cleanId, p.level)) {
+      } else if (!canLearnMove(p.id, canonicalMoveId, p.level)) {
         issues.push(`Movimiento "${moveData.name}" (${cleanId}) es ilegal para la especie ${speciesData.name} al nivel ${p.level}.`)
       }
     } catch {
@@ -112,7 +114,7 @@ export function checkPokemonLegality(
  * - Clears isIllegal flag
  */
 export function repairPokemonLegality(p: Pokemon): PokemonRepairReport {
-  const changes: string[] = [] // no-domain
+  const changes: string[] = [] // no-domain: Non-domain utility collection or data structure
   if (!p || !p.id) return { repaired: false, changes }
 
   const speciesData = pokemonDataProvider.getPokemonData(p.id, true)
@@ -162,7 +164,7 @@ export function repairPokemonLegality(p: Pokemon): PokemonRepairReport {
 
   // 5. Repair Moves
   const legalMoves: Move[] = []
-  const seenMoveIds = new Set<string>() // runtime-set
+  const seenMoveIds = new Set<string>() // runtime-set: Fast O(1) membership lookup set
 
   for (const m of p.moves || []) {
     if (!m || !m.id) continue
@@ -170,8 +172,9 @@ export function repairPokemonLegality(p: Pokemon): PokemonRepairReport {
     if (!cleanId || seenMoveIds.has(cleanId)) continue
 
     try {
-      const moveData = pokemonDataProvider.getMoveData(cleanId)
-      if (moveData && canLearnMove(p.id, cleanId, p.level)) {
+      const canonicalMoveId = requirePokemonMoveId(cleanId)
+      const moveData = pokemonDataProvider.getMoveData(canonicalMoveId)
+      if (moveData && canLearnMove(p.id, canonicalMoveId, p.level)) {
         legalMoves.push({
           id: moveData.id,
           name: moveData.name,

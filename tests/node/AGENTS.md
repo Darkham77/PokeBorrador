@@ -25,6 +25,7 @@ Frontend Developers / Systems Engineers.
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle.
 - [box/](./box/AGENTS.md): Domain module documentation for box.
 - [breeding/](./breeding/AGENTS.md): Domain module documentation for breeding.
+- [e2e/](./e2e/AGENTS.md): Domain module documentation for e2e.
 - [evolution/](./evolution/AGENTS.md): Domain module documentation for evolution.
 - [events/](./events/AGENTS.md): Domain module documentation for events.
 - [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
@@ -34,5 +35,6 @@ Frontend Developers / Systems Engineers.
 - [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon.
 - [system/](./system/AGENTS.md): Domain module documentation for system.
 - [trading/](./trading/AGENTS.md): Domain module documentation for trading.
+- [utils/](./utils/AGENTS.md): Domain module documentation for utils.
 - [validation/](./validation/AGENTS.md): Domain module documentation for validation.
 - [world/](./world/AGENTS.md): Domain module documentation for world.

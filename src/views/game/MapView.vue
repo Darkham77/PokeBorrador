@@ -41,6 +41,7 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
   const id = requireMapRouteId(typeof loc === 'object' ? loc.id : String(loc))
   const maps = pokemonDataProvider.getMaps()
   const targetMap = maps.find(m => m.id === id)
+  const mapDisplayName = targetMap ? targetMap.name : id
   
   // Lógica de extorsión del Team Rocket
   if (gameStore.state.playerClass === 'rocket' && isMapExtortable(targetMap)) {
@@ -52,7 +53,7 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
     if (isExpired) {
       modalStore.open('Confirm', {
         title: '🏴‍☠️ RUTA DE EXTORSISÓN',
-        message: getExtortionConfirmMessage(targetMap?.name || id),
+        message: getExtortionConfirmMessage(mapDisplayName),
         confirmText: 'EXTORSIONAR',
         cancelText: 'IGNORAR',
         variant: 'retro',
@@ -69,7 +70,7 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
           }
           gameStore.state.classData.extortedRouteId = id
           gameStore.state.classData.extortedRouteTimestamp = String(now)
-          uiStore.notify(`¡Has tomado control y extorsionado la ${targetMap?.name || id}!`, '💰')
+          uiStore.notify(`¡Has tomado control y extorsionado la ${mapDisplayName}!`, '💰')
           await gameStore.save(false)
           mapStore.navigate(id)
         },
@@ -91,7 +92,7 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
     if (isExpired) {
       modalStore.open('Confirm', {
         title: '📍 RUTA OFICIAL',
-        message: getOfficialRouteConfirmMessage(targetMap?.name || id),
+        message: getOfficialRouteConfirmMessage(mapDisplayName),
         confirmText: 'ESTABLECER',
         cancelText: 'IGNORAR',
         variant: 'retro',
@@ -108,7 +109,7 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
           }
           gameStore.state.classData.officialRouteId = id
           gameStore.state.classData.officialRouteTimestamp = String(now)
-          uiStore.notify(`¡Estableciste la ${targetMap?.name || id} como tu Ruta Oficial!`, '📍')
+          uiStore.notify(`¡Estableciste la ${mapDisplayName} como tu Ruta Oficial!`, '📍')
           await gameStore.save(false)
           mapStore.navigate(id)
         },

@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import type { ActiveMoveDetails } from '@/composables/battle/useMoveTooltip'
+import type { PokemonMoveId } from '@/data/battle/moves'
 
 defineProps<{
   activeDetails: ActiveMoveDetails
-  moveId?: string
+  moveId?: PokemonMoveId
 }>()
 </script>
 

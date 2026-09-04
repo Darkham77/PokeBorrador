@@ -14,15 +14,18 @@ export const FRIENDSHIP_SEAL_TIERS = [
 
 export type FriendshipSealTier = (typeof FRIENDSHIP_SEAL_TIERS)[number];
 
+export const FRIENDSHIP_LOG_TONES = ['log-player', 'log-info', 'log-error'] as const;
+export type FriendshipLogTone = (typeof FRIENDSHIP_LOG_TONES)[number];
+
 export interface FriendshipSealMetadata {
   readonly id: FriendshipSealTier;
   readonly minFriendship: number;
   readonly maxFriendship: number;
-  readonly label: string; // domain-ok
-  readonly iconEmoji: string; // domain-ok
-  readonly iconName: string; // domain-ok
-  readonly barGradientClass: string; // domain-ok
-  readonly evaluatorQuote: string; // domain-ok
+  readonly label: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly iconEmoji: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly iconName: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly barGradientClass: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly evaluatorQuote: string; // domain-ok: Open dynamic text or non-domain string payload
   readonly isEvolutionReady: boolean;
   readonly isCombatPerksActive: boolean;
 }

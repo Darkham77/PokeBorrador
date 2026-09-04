@@ -153,7 +153,7 @@ describe('Daycare Egg Nature ID Canonical Standards Suite', () => {
     // Creating with non-canonical nature throws loudly
     expect(() => {
       makePokemon('charmander', 1, {
-        nature: 'Serio',
+        nature: 'Serio' as unknown as import('@/data/battle/natures').NatureId,
         obtainedMethod: 'egg'
       });
     }).toThrow("[natures] Invalid NatureId: 'serio'");

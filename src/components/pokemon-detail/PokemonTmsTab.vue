@@ -78,7 +78,7 @@ const tms = computed(() => {
         :key="tm.id"
         class="tm-item clickable-item"
         :class="{ incompatible: !tm.isCompatible }"
-        @click.stop="ui.openMoveDetail(tm.name)"
+        @click.stop="ui.openMoveDetail(tm.moveId)"
       >
         <div
           class="tm-id"

@@ -255,7 +255,7 @@ export const useBattleStore = defineStore('battle', () => {
   )
 
   const executeMove = async (moveIndex: number) => {
-    if (isProcessing.value || !isBattleActive.value) return
+    if (isProcessing.value || !isBattleActive.value || !activeBattle.value || activeBattle.value.over || !activeBattle.value.player || !activeBattle.value.enemy) return
     isProcessing.value = true
     try {
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EXEC_TURN)
@@ -319,7 +319,7 @@ export const useBattleStore = defineStore('battle', () => {
   }
 
   const executeStruggle = async () => {
-    if (isProcessing.value || !isBattleActive.value) return
+    if (isProcessing.value || !isBattleActive.value || !activeBattle.value || activeBattle.value.over || !activeBattle.value.player || !activeBattle.value.enemy) return
     isProcessing.value = true
     try {
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EXEC_TURN)

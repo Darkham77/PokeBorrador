@@ -9,7 +9,7 @@ const tradeStore = useTradeStore()
 const gameStore = useGameStore()
 
 const getOfferSummary = (t: TradeOffer) => {
-  const parts: string[] = [] // text-ok
+  const parts: string[] = [] // text-ok: UI text display localization string
   if (t.offer_pokemon) parts.push(t.offer_pokemon.name)
   if (t.offer_items) {
     Object.entries(t.offer_items).forEach(([name, qty]) => {
@@ -21,7 +21,7 @@ const getOfferSummary = (t: TradeOffer) => {
 }
 
 const getRequestSummary = (t: TradeOffer) => {
-  const parts: string[] = [] // text-ok
+  const parts: string[] = [] // text-ok: UI text display localization string
   if (t.request_pokemon) parts.push(t.request_pokemon.name)
   if (t.request_items) {
     Object.entries(t.request_items).forEach(([name, qty]) => {
@@ -53,7 +53,7 @@ const canFulfillTrade = (t: TradeOffer): { can: boolean; reason?: string } => {
         const ownedQty = gameStore.state.inventory?.[id] || 0
         if (ownedQty < qty) {
           const item = getItemById(id)
-          return { can: false, reason: `Objeto insuficiente: ${item?.name || id} (tienes ${ownedQty}/${qty})` }
+          return { can: false, reason: `Objeto insuficiente: ${item.name} (tienes ${ownedQty}/${qty})` }
         }
       }
     }

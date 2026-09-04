@@ -17,7 +17,7 @@ import {
 } from '../../../src/logic/battle/battleMath.ts';
 import { calculateMoveAccuracy } from '../../../src/logic/battle/moveTooltipMath.ts';
 import { mapVisualToOfficialWeather } from '../../../src/logic/weather/weatherGenerationProvider.ts';
-import { getMechanicalWeather } from '../../../src/logic/weather/weatherRegistry.ts';
+import { getMechanicalWeather, type WeatherId } from '../../../src/logic/weather/weatherRegistry.ts';
 import type { Move } from '../../../src/types/pokemon/pokemon.ts';
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 
@@ -78,7 +78,7 @@ const CLOYSTER: PurePokemon = {
 
 const FLAMETHROWER: PureMove = { id: 'flamethrower', type: 'fire', power: 90, cat: 'special' };
 const SURF: PureMove = { id: 'surf', type: 'water', power: 90, cat: 'special' };
-const SOLAR_BEAM: PureMove = { id: 'solar_beam', type: 'grass', power: 120, cat: 'special' };
+const SOLAR_BEAM: PureMove = { id: 'solarbeam', type: 'grass', power: 120, cat: 'special' };
 const THUNDERBOLT: PureMove = { id: 'thunderbolt', type: 'electric', power: 90, cat: 'special' };
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -168,7 +168,7 @@ describe('Battle Math Core (Weather & Cycles)', () => {
       
       const accGen3 = calculateMoveAccuracy(
         { id: 'tackle' } as unknown as Move,
-        { type: officialWeatherGen3, turns: 5 },
+        { type: officialWeatherGen3 as WeatherId, turns: 5 },
         mechWeatherGen3,
         'day',
         100,
@@ -186,7 +186,7 @@ describe('Battle Math Core (Weather & Cycles)', () => {
 
       const accGen4 = calculateMoveAccuracy(
         { id: 'tackle' } as unknown as Move,
-        { type: officialWeatherGen4, turns: 5 },
+        { type: officialWeatherGen4 as WeatherId, turns: 5 },
         mechWeatherGen4,
         'day',
         100,

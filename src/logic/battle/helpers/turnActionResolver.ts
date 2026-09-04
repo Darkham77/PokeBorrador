@@ -189,6 +189,10 @@ export async function resolvePostTurnSwitchesAndFaints(
   store: BattleContext,
   result: { p1Request?: { forceSwitch?: unknown[] }; p2Request?: { forceSwitch?: unknown[] }; isOver?: boolean }
 ) {
+  if (result.isOver && store.activeBattle.value) {
+    store.activeBattle.value.over = true;
+  }
+
   const playerFainted = !store.activeBattle.value?.player || store.activeBattle.value.player.hp <= 0;
   const enemyFainted = !store.activeBattle.value?.enemy || store.activeBattle.value.enemy.hp <= 0;
 
@@ -209,8 +213,5 @@ export async function resolvePostTurnSwitchesAndFaints(
     if (isFinished) return true;
   }
 
-  if (result.isOver && store.activeBattle.value) {
-    store.activeBattle.value.over = true;
-  }
   return false;
 }

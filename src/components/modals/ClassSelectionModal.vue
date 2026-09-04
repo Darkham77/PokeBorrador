@@ -3,7 +3,7 @@ import { useUIStore } from '@/stores/ui'
 import { computed } from 'vue';
 import { gsap } from 'gsap';
 import { usePlayerClassStore } from '@/stores/player/playerClass';
-import { PLAYER_CLASSES } from '@/data/player/playerClasses';
+import { PLAYER_CLASSES, type PlayerClassId } from '@/data/player/playerClasses';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import BaseModal from '@/components/common/BaseModal.vue';
 import PVTooltip from '@/components/common/PVTooltip.vue';
@@ -18,7 +18,7 @@ interface RenderPlayerClass {
   penalties: readonly string[]
   technicalBonuses: readonly string[]
   technicalPenalties: readonly string[]
-  spriteId: string
+  spriteId: PlayerClassDefinition['showdownSpriteId']
 }
 
 interface Props {
@@ -68,7 +68,7 @@ const close = () => {
   emit('close');
 };
 
-const handleSelect = async (id: string) => {
+const handleSelect = async (id: PlayerClassId) => {
   const res = await classStore.selectClass(id);
   if (res.success) close();
 };
@@ -77,7 +77,7 @@ const getTrainerSprite = (id: string) => {
   return getAssetUrl(ASSET_TYPES.TRAINER, id, { trainerSuffix: 'avatar' });
 };
 
-const getButtonVariant = (clsId: string) => {
+const getButtonVariant = (clsId: PlayerClassId) => {
   switch (clsId) {
     case 'rocket': return 'danger';
     case 'cazabichos': return 'success';

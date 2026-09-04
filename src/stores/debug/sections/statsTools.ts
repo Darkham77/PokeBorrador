@@ -1,5 +1,5 @@
 import type { DebugSystem } from '@/stores/debug'
-import { GYM_IDS, isGymId, requireGymId } from '@/data/world/gyms'
+import { GYM_IDS, isGymId, requireGymId, type GymId } from '@/data/world/gyms'
 
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
@@ -170,7 +170,7 @@ export function registerStatsTools(debug: DebugSystem) {
     label: 'WIN GYM (SIMULATE)',
     command: 'winGym',
     category: 'stats',
-    action: async (gymId: string, difficulty: BattleDifficulty = 'easy') => {
+    action: async (gymId: GymId, difficulty: BattleDifficulty = 'easy') => {
       const resolvedGymId = requireGymId(gymId)
       const gymsStore = (await import('@/stores/gyms')).useGymsStore()
       const gym = gymsStore.gyms.find(g => g.id === resolvedGymId)
@@ -206,8 +206,8 @@ export function registerStatsTools(debug: DebugSystem) {
       game.state.money += moneyGained
       
       const msg = isFirstWin 
-        ? `¡Victoria Simulada (${difficulty.toUpperCase()})! Recibiste la ${gym.badgeName}${gym.rewardTM ? ` y la ${gym.rewardTM}` : ''}. +₱${moneyGained}` // text-ok
-        : `¡Reafirmación Simulada (${difficulty.toUpperCase()})! Ganaste ₱${moneyGained} y experiencia para tu equipo.`; // text-ok
+        ? `¡Victoria Simulada (${difficulty.toUpperCase()})! Recibiste la ${gym.badgeName}${gym.rewardTM ? ` y la ${gym.rewardTM}` : ''}. +₱${moneyGained}` // text-ok: Debug tool simulated victory notification
+        : `¡Reafirmación Simulada (${difficulty.toUpperCase()})! Ganaste ₱${moneyGained} y experiencia para tu equipo.`; // text-ok: UI text display localization string
 
       ui.notify(msg, '🏆')
       game.saveGame(false)

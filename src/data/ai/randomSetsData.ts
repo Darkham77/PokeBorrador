@@ -15,7 +15,7 @@ export interface RandomSetItem {
   moves: PokemonMoveId[];
   ability: AbilityId;
   item?: ItemId;
-  role: string; // domain-ok
+  role: string; // domain-ok: Open dynamic text or non-domain string payload
 }
 
 export interface RandomSetEntry {

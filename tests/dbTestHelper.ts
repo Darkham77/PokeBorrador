@@ -134,6 +134,17 @@ export async function initTestDatabaseContext(engine: DBEngine, suiteName: strin
         const listings = mockStorage.market_listings || [];
         const listing = listings.find(l => l.id === p[1]);
         if (listing) listing.status = p[0];
+      } else if (sql.includes('UPDATE game_saves')) {
+        const saves = mockStorage.game_saves || [];
+        if (sql.includes('last_save_id = ?')) {
+          const p = params as [string, string];
+          const save = saves.find(s => s.user_id === p[1]);
+          if (save) save.last_save_id = p[0];
+        } else if (sql.includes('save_data = ?')) {
+          const p = params as [string, string];
+          const save = saves.find(s => s.user_id === p[1]);
+          if (save) save.save_data = typeof p[0] === 'string' ? JSON.parse(p[0]) : p[0];
+        }
       }
     },
     async query<T = Record<string, unknown>>(sql: string, params: unknown[] = []): Promise<T[]> {

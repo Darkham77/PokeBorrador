@@ -4,12 +4,12 @@
  * Pure validator helpers for event awards and legacy detection.
  */
 
-import type { PendingAward } from '@/types/system/stores'
+import type { PendingAward, EventRewardType } from '@/types/system/stores'
 import type { Event as GameEvent } from '@/logic/events/eventEngine'
 import { safeParse } from './eventSchedules.ts'
 
 export interface ParsedAwardPrize {
-  type?: 'money' | 'bc' | 'item' | 'pokemon' | 'mixed'
+  type?: EventRewardType
   amount?: number
   qty?: number
   money?: number
@@ -47,7 +47,7 @@ export function parseAwardPrize(rawPrize: unknown): ParsedAwardPrize | null {
  */
 // fallow-ignore-next-line unused-export
 export function getEventConfiguredPrizes(event: GameEvent): ParsedAwardPrize[] {
-  const cfg = (typeof event.config === 'string' ? safeParse(event.config) : event.config) as Record<string, unknown> | null // open-record
+  const cfg = (typeof event.config === 'string' ? safeParse(event.config) : event.config) as Record<string, unknown> | null // open-record: Generic key-value data dictionary container
   if (!cfg || typeof cfg !== 'object') return []
 
   const list: ParsedAwardPrize[] = []
@@ -66,7 +66,7 @@ export function getEventConfiguredPrizes(event: GameEvent): ParsedAwardPrize[] {
 
   // 2. Event-level prizes (e.g. { first: {...}, second: {...}, third: {...} })
   if (cfg.prizes && typeof cfg.prizes === 'object') {
-    for (const prizeObj of Object.values(cfg.prizes as Record<string, unknown>)) { // open-record
+    for (const prizeObj of Object.values(cfg.prizes as Record<string, unknown>)) { // open-record: Generic key-value data dictionary container
       const parsed = parseAwardPrize(prizeObj)
       if (parsed) list.push(parsed)
     }

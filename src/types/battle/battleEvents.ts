@@ -24,7 +24,7 @@ export type BattleReadySubState = BattleSubStateName | '';
 
 export interface BattleReadySwitchSlot {
   showdownSlot: CertifiedBattleTeamSlot;
-  pokemonUid: string; // domain-ok
+  pokemonUid: string; // domain-ok: Open dynamic text or non-domain string payload
 }
 
 export interface BattleReadyForInputDetail {
@@ -37,7 +37,7 @@ export interface BattleReadyForInputDetail {
 
 export function isBattleReadyForInputDetail(value: unknown): value is BattleReadyForInputDetail {
   if (typeof value !== 'object' || value === null) return false;
-  const obj = value as Record<string, unknown>; // open-record
+  const obj = value as Record<string, unknown>; // open-record: Generic key-value data dictionary container
   if (!('subState' in obj) || !('p1ChoiceIdx' in obj) || !('p2ChoiceIdx' in obj) || !('over' in obj) || !('playerSwitchSlots' in obj)) return false;
 
   const { subState, p1ChoiceIdx, p2ChoiceIdx, over, playerSwitchSlots } = obj;
@@ -49,7 +49,7 @@ export function isBattleReadyForInputDetail(value: unknown): value is BattleRead
     Array.isArray(playerSwitchSlots) &&
     playerSwitchSlots.every((slot) => {
       if (typeof slot !== 'object' || slot === null) return false;
-      const s = slot as Record<string, unknown>; // open-record
+      const s = slot as Record<string, unknown>; // open-record: Generic key-value data dictionary container
       return 'showdownSlot' in s &&
         CERTIFIED_BATTLE_TEAM_SLOTS.some((candidate) => candidate === s.showdownSlot) &&
         'pokemonUid' in s &&

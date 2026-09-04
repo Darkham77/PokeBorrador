@@ -6,13 +6,17 @@ import { runMovesFuzzer, runAbilitiesFuzzer, runItemsFuzzer, runScenariosFuzzer,
 import { runMedicineFuzzer } from '../core/fuzzer_medicine_cases.ts';
 import { runFuzzerSuite } from '../core/fuzzer_runner.ts';
 import { FuzzerRunnerLogger } from '../../logging/fuzzer_runner_logger.ts';
+import { formatExecutionTimestamp } from '../../logging/base_runner_logger.ts';
 
 async function main() {
   const logger = new FuzzerRunnerLogger();
   logger.startIntercepting();
 
   try {
+    logger.progress('==================================================');
     logger.progress('🚀 [FUZZER] Iniciando Suite Completa Unificada en Memoria...');
+    logger.progress(`📅 Fecha y hora de inicio: ${formatExecutionTimestamp()}`);
+    logger.progress('==================================================');
     const suites = [
       { name: 'Movimientos', run: runMovesFuzzer },
       { name: 'Habilidades', run: runAbilitiesFuzzer },

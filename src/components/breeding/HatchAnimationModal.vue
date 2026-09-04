@@ -244,8 +244,8 @@ const handleEggClick = () => {
     const wobble = gsap.fromTo('.egg-sprite',
       { x: 0, rotation: 0 },
       {
-        x: 'random(-10, 10)', // no-magic
-        rotation: 'random(-7, 7)', // no-magic
+        x: 'random(-10, 10)', // no-magic: Explicit mathematical constant or threshold value
+        rotation: 'random(-7, 7)', // no-magic: Explicit mathematical constant or threshold value
         duration: GSAP_FAST_DURATION_SEC / 2,
         repeat: HATCH_WOBBLE_2_REPEATS,
         yoyo: true,
@@ -274,8 +274,8 @@ const handleEggClick = () => {
     hatchTimeline.fromTo('.egg-sprite',
       { x: 0, rotation: 0 },
       {
-        x: 'random(-14, 14)', // no-magic
-        rotation: 'random(-10, 10)', // no-magic
+        x: 'random(-14, 14)', // no-magic: Explicit mathematical constant or threshold value
+        rotation: 'random(-10, 10)', // no-magic: Explicit mathematical constant or threshold value
         duration: HATCH_SHAKE_DURATION_SEC,
         repeat: HATCH_SHAKE_REPEAT_COUNT,
         yoyo: true,
@@ -351,8 +351,8 @@ const handleEggClick = () => {
               y: ty,
               opacity: 0,
               scale: 0,
-              duration: 'random(1.2, 2.0)', // no-magic
-              delay: 'random(0, 0.25)', // no-magic
+              duration: 'random(1.2, 2.0)', // no-magic: Explicit mathematical constant or threshold value
+              delay: 'random(0, 0.25)', // no-magic: Explicit mathematical constant or threshold value
               ease: 'power2.out'
             }
           )

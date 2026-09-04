@@ -48,14 +48,14 @@ export function getNatureInfo(nature: NatureId) {
   return NATURE_DATA[nature];
 }
 
-const NATURES_BY_SPANISH_NAME: Readonly<Record<string, (typeof NATURE_DATA)[NatureId]>> = Object.freeze( // open-record
+const NATURES_BY_SPANISH_NAME: Readonly<Record<string, (typeof NATURE_DATA)[NatureId]>> = Object.freeze( // open-record: Generic key-value data dictionary container
   Object.fromEntries(
-    Object.values(NATURE_DATA).map(n => [n.name.toLowerCase(), n]) // text-ok
+    Object.values(NATURE_DATA).map(n => [n.name.toLowerCase(), n]) // text-ok: UI text display localization string
   )
 );
 
 export function getNatureDataByNameOrId(key: string): (typeof NATURE_DATA)[NatureId] | undefined {
-  const lower = key.toLowerCase(); // text-ok
+  const lower = key.toLowerCase(); // text-ok: UI text display localization string
   if (isNatureId(lower)) return NATURE_DATA[lower];
   return NATURES_BY_SPANISH_NAME[lower];
 }

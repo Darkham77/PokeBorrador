@@ -153,7 +153,7 @@ export async function resolveTurnChoices(
   let p2Choice = await computeP2Choice(store, p, e, isWild, p2Skip, eMove)
 
   if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
-    const debugObj = window.__VITE_DEBUG__ as Record<string, unknown> // open-record
+    const debugObj = window.__VITE_DEBUG__ as Record<string, unknown> // open-record: Generic key-value data dictionary container
     const historyChoice = ShowdownBattleRunner.requireHistoryChoice(debugObj, 'p2')
     if (historyChoice) {
       p2Choice = historyChoice

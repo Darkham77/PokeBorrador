@@ -1,8 +1,13 @@
-import type { PokemonType } from '../../data/battle/types.ts';
-import type { MoveCategory } from '../../data/battle/moves.ts';
+import type { PokemonType } from '@/data/battle/types';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { PokemonMoveId, MoveCategory } from '@/data/battle/moves';
+import type { PokemonStatus } from '@/types/pokemon/pokemon';
+import type { AbilityId } from '@/data/battle/abilities';
+import type { ItemId } from '@/data/inventory/items';
+import type { WeatherId } from '@/logic/weather/weatherRegistry';
 
 export interface PurePokemon {
-  id?: string;
+  id?: PokemonSpeciesId;
   name?: string;
   level: number;
   hp?: number;
@@ -13,10 +18,10 @@ export interface PurePokemon {
   spd?: number;
   spe?: number;
   type: PokemonType;
-  type2?: PokemonType;
-  status?: string;
-  ability?: string | null;
-  heldItem?: string;
+  type2?: PokemonType | null;
+  status?: PokemonStatus;
+  ability?: AbilityId | null;
+  heldItem?: ItemId | null;
   catchRate?: number;
   furyCutterCount?: number;
   focusEnergy?: boolean;
@@ -29,14 +34,14 @@ export interface PureMove {
   power?: number;
   cat?: MoveCategory;
   effect?: string;
-  id?: string;
+  id?: PokemonMoveId;
   fixedDmg?: number;
   levelDmg?: boolean;
   halfHP?: boolean;
 }
 
 export interface PureBattleWeather {
-  type: string;
+  type: WeatherId;
   turns: number;
   visual?: string;
 }
@@ -55,6 +60,7 @@ export interface PureDamageOptions {
   atkStages?: number;
   defStages?: number;
   weather?: PureBattleWeather | null;
+  terrain?: string | null;
   magnitudeSet?: boolean;
   isGym?: boolean;
 }

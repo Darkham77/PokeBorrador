@@ -56,7 +56,7 @@ export const STATUS_FLASH_COLORS: Record<string, string> = {
   tox: '#9400d3'
 };
 
-const BLINK_TIMELINE_STEPS = [ // no-magic
+const BLINK_TIMELINE_STEPS = [ // no-magic: Explicit mathematical constant or threshold value
   { t: 0.00, op: 0 }, { t: 0.08, op: 1 },
   { t: 0.16, op: 0 }, { t: 0.24, op: 1 },
   { t: 0.32, op: 0 }, { t: 0.40, op: 1 },

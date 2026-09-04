@@ -73,7 +73,7 @@ function formatAbilityDescription(desc: string): string {
   }
 
   const sentences = desc.split(/(?<=[.!?])\s+/);
-  const lines: string[] = []; // no-domain
+  const lines: string[] = []; // no-domain: Non-domain utility collection or data structure
   for (const sentence of sentences) {
     const trimmed = sentence.trim();
     if (trimmed) {
@@ -131,9 +131,9 @@ export function useCombatantStatus(
 
     const results = [];
     for (const key of SHOWDOWN_STAGE_KEYS) {
-      const val = (s as Record<string, number | undefined>)[key] || 0 // open-record
+      const val = (s as Record<string, number | undefined>)[key] || 0 // open-record: Generic key-value data dictionary container
       if (val !== 0) {
-        const config = (STAT_EMOJI_MAP as Record<string, { icon: string; name: string }>)[key] || { icon: '❓', name: key } // open-record
+        const config = (STAT_EMOJI_MAP as Record<string, { icon: string; name: string }>)[key] || { icon: '❓', name: key } // open-record: Generic key-value data dictionary container
         const mult = getStatMultiplier(val || 0)
         const pct = Math.round((mult - 1) * 100)
         const pctText = pct > 0 ? `+${pct}%` : `${pct}%`
@@ -267,7 +267,7 @@ function buildWeatherVolatileItem(target: Pokemon, weather?: { type?: string; vi
   const mechWeather = getMechanicalWeather(weather.type);
   const visualWeather = weather.visual || weather.type || '';
 
-  let weatherAffects = (['sandstorm', 'hail', 'fog'] as readonly string[]).includes(mechWeather || '') || (['blizzard', 'coldwave', 'fog'] as readonly string[]).includes(visualWeather); // no-domain
+  let weatherAffects = (['sandstorm', 'hail', 'fog'] as readonly string[]).includes(mechWeather || '') || (['blizzard', 'coldwave', 'fog'] as readonly string[]).includes(visualWeather); // no-domain: Non-domain utility collection or data structure
   if (mechWeather === 'sun' && (types.includes('fire') || types.includes('water') || types.includes('grass'))) weatherAffects = true;
   if (mechWeather === 'rain' && (types.includes('fire') || types.includes('water') || types.includes('electric'))) weatherAffects = true;
   if (mechWeather === 'snow' && types.includes('ice')) weatherAffects = true;
@@ -336,9 +336,9 @@ function buildWeatherVolatileItem(target: Pokemon, weather?: { type?: string; vi
     // 1. Estado Primario
     if (target.status) {
       const s = target.status as PokemonStatus
-      const emoji = (STATUS_EMOJI_MAP as Record<string, string>)[s] // open-record
-      const title = (STATUS_NAME_MAP as Record<string, string>)[s] // open-record
-      const description = (STATUS_TOOLTIP_MAP as Record<string, string>)[s] // open-record
+      const emoji = (STATUS_EMOJI_MAP as Record<string, string>)[s] // open-record: Generic key-value data dictionary container
+      const title = (STATUS_NAME_MAP as Record<string, string>)[s] // open-record: Generic key-value data dictionary container
+      const description = (STATUS_TOOLTIP_MAP as Record<string, string>)[s] // open-record: Generic key-value data dictionary container
 
       if (!emoji || !title || !description) {
         throw new Error(

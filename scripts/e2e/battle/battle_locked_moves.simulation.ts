@@ -18,12 +18,13 @@ class LockedMovesSimWrapper extends BaseBattleSimulation {
       const battleStore = useBattleStore();
 
       const { requirePokemonMoveId } = await import('../../../src/data/battle/moves.ts');
+      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
       const { toID } = await import('../../../src/logic/utils/strings.ts');
 
       const { MAXIMUM_POKEMON_LEVEL } = await import('../../../src/logic/constants/gameplay.ts');
       const ATTACKER_TEST_LEVEL = 50;
 
-      const attacker = pokemonDebugService.generate({ id: pokemonId, level: ATTACKER_TEST_LEVEL });
+      const attacker = pokemonDebugService.generate({ id: requirePokemonSpeciesId(pokemonId), level: ATTACKER_TEST_LEVEL });
       attacker.moves = moveIds.map(id => {
         const cleanId = requirePokemonMoveId(toID(id));
         const md = pokemonDataProvider.getMoveData(cleanId);
@@ -92,7 +93,7 @@ test.describe('Exhaustive Locked & Forced Moves E2E Simulations (Tier 3)', () =>
       };
     });
 
-    console.log('[DEBUG-E2E-OUTRAGE]', JSON.stringify(battleState, null, 2));
+    sim.addLog(`[DEBUG-E2E-OUTRAGE] ${JSON.stringify(battleState, null, 2)}`);
 
     expect(battleState.turnCount).toBeGreaterThanOrEqual(1);
   });

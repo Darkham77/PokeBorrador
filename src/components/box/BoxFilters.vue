@@ -83,7 +83,7 @@ const onSearchInput = (e: Event) => {
 
 const onRangeInput = (key: keyof BoxFilters, e: Event) => {
   const val = Number((e.target as HTMLInputElement).value)
-  updateFilter(key, val as BoxFilters[keyof BoxFilters]) // domain-ok
+  updateFilter(key, val as BoxFilters[keyof BoxFilters]) // domain-ok: Open dynamic text or non-domain string payload
 }
 
 // Colores de estadísticas estandarizados (Corregidos con Hexadecimales)

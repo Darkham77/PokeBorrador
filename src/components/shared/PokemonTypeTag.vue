@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { translateType, type PokemonType } from '@/data/battle/types'
+import type { ComponentPillSize } from '@/types/system/game'
 
 interface Props {
   type: PokemonType
-  size?: 'ssm' | 'sm' | 'md' | 'lg'
+  size?: ComponentPillSize
   tag?: 'span' | 'button'
   active?: boolean
 }

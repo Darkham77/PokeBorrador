@@ -7,7 +7,9 @@ import {
   CLASS_MISSIONS_BY_ID, 
   requirePlayerClassId, 
   isMissionId,
-  type PlayerClassId 
+  type PlayerClassId,
+  type MissionId,
+  type PlayerClassDefinition
 } from '@/data/player/playerClasses'
 import { supabase } from '@/logic/db/supabase'
 import { useInventoryStore } from '@/stores/inventory/inventory'
@@ -15,13 +17,15 @@ import { getClassModifier } from '@/logic/player/classEngine'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
 import { getXPNeededForClassLevel, MAX_PLAYER_CLASS_LEVEL, CLASS_CHANGE_COST_BATTLE_COINS, MAX_CRIMINALITY_LEVEL } from '@/logic/player/classMath'
-import { requireFactionId } from '@/types/system/game'
+import { requireFactionId, type FactionId } from '@/types/system/game'
 import { ONE_HOUR_MS } from '@/logic/constants/items.ts'
 import { FACTION_CHANGE_COST } from '@/logic/war/warEngine.ts'
 import { MAX_SINGLE_STAT_IV, MAX_POKEMON_VIGOR } from '@/logic/constants/gameplay.ts'
 
 
 import { AVATAR_STYLES_BY_ID, isAvatarStyleId } from '@/data/player/cosmeticsData'
+import type { MapRouteId } from '@/data/world/map-assets'
+import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
 
 interface ActiveMission {
   id: string
@@ -33,7 +37,7 @@ interface ActiveMission {
 }
 
 export interface ClassDefinition {
-  id: string
+  id: PlayerClassId
   name: string
   icon: string
   color: string
@@ -44,8 +48,8 @@ export interface ClassDefinition {
   penalties?: readonly string[]
   technicalBonuses?: readonly string[]
   technicalPenalties?: readonly string[]
-  showdownSpriteId?: string
-  avatarSpriteId?: string
+  showdownSpriteId?: NpcSpriteId
+  avatarSpriteId?: NpcSpriteId
 }
 
 interface ClassData {
@@ -56,10 +60,10 @@ interface ClassData {
   criminality?: number
   activeMission?: ActiveMission | null
   blackMarketDaily?: { date: string, items: unknown[], purchased: unknown[] }
-  extortedRouteId?: string | null
+  extortedRouteId?: MapRouteId | null
   extortedRouteTimestamp?: string | null
   lastEggScanDate?: string | null
-  officialRouteId?: string | null
+  officialRouteId?: MapRouteId | null
   kitCaptures?: number
 }
 
@@ -76,11 +80,11 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   const classLevel = computed(() => gameStore.state.classLevel || 1)
   const classXP = computed(() => gameStore.state.classXP || 0)
   const classXPNeeded = computed(() => getXPNeededForClassLevel(classLevel.value))
-  const classData = computed<ClassData>(() => (gameStore.state.classData as ClassData) || {}) // domain-ok
+  const classData = computed<ClassData>(() => (gameStore.state.classData as ClassData) || {}) // domain-ok: Open dynamic text or non-domain string payload
   
-  const currentClassDef = computed<ClassDefinition | null>(() => {
+  const currentClassDef = computed<PlayerClassDefinition | null>(() => {
     if (!playerClass.value) return null
-    return (PLAYER_CLASSES[playerClass.value as keyof typeof PLAYER_CLASSES] as ClassDefinition) || null // domain-ok
+    return (PLAYER_CLASSES[playerClass.value as keyof typeof PLAYER_CLASSES] as PlayerClassDefinition) || null // domain-ok: Open dynamic text or non-domain string payload
   })
 
   const activeMission = computed(() => classData.value.activeMission || null)
@@ -121,9 +125,9 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   /**
    * Selecciona o cambia la clase del jugador.
    */
-  async function selectClass(classId: string) {
+  async function selectClass(classId: PlayerClassId) {
     const resolvedClassId = requirePlayerClassId(classId)
-    const cls = PLAYER_CLASSES[resolvedClassId as keyof typeof PLAYER_CLASSES] as ClassDefinition | undefined // domain-ok
+    const cls = PLAYER_CLASSES[resolvedClassId as keyof typeof PLAYER_CLASSES] as PlayerClassDefinition | undefined // domain-ok: Open dynamic text or non-domain string payload
     if (!cls) return { success: false, msg: 'Clase no válida' }
 
     const isChange = !!playerClass.value
@@ -187,7 +191,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   /**
    * Establece la facción del jugador (Unión o Poder).
    */
-  async function setFaction(factionId: string) {
+  async function setFaction(factionId: FactionId) {
     const resolvedFactionId = requireFactionId(factionId)
     
     const currentFaction = gameStore.state.faction
@@ -207,7 +211,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     }
 
     gameStore.state.faction = resolvedFactionId
-    uiStore.notify(`¡Te uniste al Equipo ${resolvedFactionId.toUpperCase()}!`, '🚩') // text-ok
+    uiStore.notify(`¡Te uniste al Equipo ${resolvedFactionId.toUpperCase()}!`, '🚩') // text-ok: UI text display localization string
     await gameStore.save(false)
     return { success: true }
   }
@@ -246,7 +250,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   /**
    * Inicia una misión idle con validación de tiempo del servidor.
    */
-  async function startMission(missionId: string, extraData: Record<string, unknown> = {}) {
+  async function startMission(missionId: MissionId, extraData: Record<string, unknown> = {}) {
     if (!isMissionId(missionId)) return
     const m = CLASS_MISSIONS_BY_ID[missionId]
     if (!m) return
@@ -288,7 +292,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     }
 
     const now = await db.getServerTime()
-    const currentData = gameStore.state.classData as ClassData // domain-ok
+    const currentData = gameStore.state.classData as ClassData // domain-ok: Open dynamic text or non-domain string payload
 
     currentData.activeMission = {
       id: missionId,
