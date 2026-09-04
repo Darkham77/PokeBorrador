@@ -1,6 +1,6 @@
 import { test, describe } from 'vitest';
 import assert from 'node:assert';
-import { calculateIndividualHealCost, calculateTotalHealCost, calculatePokemonCenterCooldown } from '../../../src/logic/economy/economyFormulas.ts';
+import { calculateIndividualHealCost, calculateTotalHealCost, calculatePokemonCenterCooldown, pokemonNeedsHealing } from '../../../src/logic/economy/economyFormulas.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
 
 describe('Economy Formulas - Individual Heal Cost (Rocket)', () => {
@@ -87,3 +87,62 @@ describe('Economy Formulas - Pokemon Center Cooldown', () => {
     assert.strictEqual(calculatePokemonCenterCooldown(30), 858);
   });
 });
+
+describe('Economy Formulas - Pokemon Needs Healing Checks', () => {
+  test('returns false for completely healthy pokemon with full HP, no status, and full PP', () => {
+    const healthy = {
+      hp: 100,
+      maxHp: 100,
+      status: '',
+      moves: [
+        { name: 'Tackle', pp: 35, maxPP: 35 },
+        { name: 'Growl', pp: 40, maxPP: 40 }
+      ]
+    } as unknown as Pokemon;
+    assert.strictEqual(pokemonNeedsHealing(healthy), false);
+  });
+
+  test('returns true when pokemon HP is below maxHp (damaged)', () => {
+    const damaged = {
+      hp: 80,
+      maxHp: 100,
+      status: '',
+      moves: [{ name: 'Tackle', pp: 35, maxPP: 35 }]
+    } as unknown as Pokemon;
+    assert.strictEqual(pokemonNeedsHealing(damaged), true);
+  });
+
+  test('returns true when pokemon is fainted (hp === 0)', () => {
+    const fainted = {
+      hp: 0,
+      maxHp: 100,
+      status: '',
+      moves: [{ name: 'Tackle', pp: 35, maxPP: 35 }]
+    } as unknown as Pokemon;
+    assert.strictEqual(pokemonNeedsHealing(fainted), true);
+  });
+
+  test('returns true when pokemon has altered status condition', () => {
+    const paralyzed = {
+      hp: 100,
+      maxHp: 100,
+      status: 'par',
+      moves: [{ name: 'Tackle', pp: 35, maxPP: 35 }]
+    } as unknown as Pokemon;
+    assert.strictEqual(pokemonNeedsHealing(paralyzed), true);
+  });
+
+  test('returns true when pokemon has expended PP on any move', () => {
+    const ppDepleted = {
+      hp: 100,
+      maxHp: 100,
+      status: '',
+      moves: [
+        { name: 'Tackle', pp: 35, maxPP: 35 },
+        { name: 'Thunderbolt', pp: 14, maxPP: 15 }
+      ]
+    } as unknown as Pokemon;
+    assert.strictEqual(pokemonNeedsHealing(ppDepleted), true);
+  });
+});
+

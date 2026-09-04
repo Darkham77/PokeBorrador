@@ -37,5 +37,6 @@ State & Type Architects.
 - [gym/](./gym/AGENTS.md): Domain module documentation for gym.
 - [home/](./home/AGENTS.md): Domain module documentation for home.
 - [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
+- [map/](./map/AGENTS.md): Domain module documentation for map and world exploration.
 - [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon.
 - [system/](./system/AGENTS.md): Domain module documentation for system.

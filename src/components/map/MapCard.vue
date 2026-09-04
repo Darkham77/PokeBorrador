@@ -19,6 +19,8 @@ import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle/battle'
 import { useMapStore } from '@/stores/map'
 import { useModalStore } from '@/stores/modals'
+import { useGameStore } from '@/stores/game'
+import { useWarStore } from '@/stores/war'
 import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts'
 import { requireWeatherSeasonId } from '@/data/world/weather-tables'
 
@@ -39,6 +41,8 @@ import type { DominanceInfo } from '@/types/system/stores'
 import type { WeatherId } from '@/logic/weather/weatherRegistry'
 import type { DayPhase } from '@/logic/utils/timeUtils'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import type { MapLens } from '@/types/map/mapLenses'
+import MapCardWarLayer from './layers/MapCardWarLayer.vue'
 
 interface SpawnPool {
   generic: PokemonSpeciesId[]
@@ -59,6 +63,7 @@ interface Props {
   forcedWeather?: WeatherId | null
   forceKeepWarm?: boolean
   isPerformanceMode?: boolean
+  activeLens?: MapLens
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -72,7 +77,8 @@ const props = withDefaults(defineProps<Props>(), {
   spawnPool: () => ({ generic: [], specific: [], rates: {} }),
   forcedWeather: null,
   forceKeepWarm: false,
-  isPerformanceMode: undefined
+  isPerformanceMode: undefined,
+  activeLens: 'adventure'
 })
 
 const emit = defineEmits<{
@@ -83,6 +89,8 @@ const uiStore = useUIStore()
 const battleStore = useBattleStore()
 const mapStore = useMapStore()
 const modalStore = useModalStore()
+const gameStore = useGameStore()
+const warStore = useWarStore()
 
 const cardRef = ref<HTMLElement | null>(null)
 const bgRef = ref<HTMLElement | null>(null)
@@ -407,127 +415,146 @@ watch(
         </span>
       </PVTooltip>
 
-      <!-- 4. Bottom Left Actions — all 4 left pills in one container (grows upward from bottom) -->
-      <!-- DOM order (column-reverse): fishing → archaeology → faction → crown -->
-      <!-- Visual order from bottom: fishing, archaeology, faction, crown -->
-      <div class="map-left-pills-container">
-        <!-- Fishing Icon -->
-        <PVTooltip
-          v-if="map.fishing && !isPerformanceMode && !isCardLocked && !isSafariLocked && isVisible"
-          class="fishing-pill-standalone"
-          title="PESCA"
-          description="¡Esta zona tiene agua! Puedes pescar Pokémon aquí."
-          position="top"
-        >
-          <div 
-            ref="fishingPillRef"
-            :class="['interactive-pill fishing-pill map-pill', { 'is-low-power': uiStore.isLowPowerActive }]"
-          >
-            <span class="pill-icon">🎣</span>
-          </div>
-        </PVTooltip>
-
-        <!-- Archaeology Icon -->
-        <PVTooltip
-          v-if="map.archaeology && !isPerformanceMode && !isCardLocked && !isSafariLocked && isVisible"
-          class="archaeology-pill-standalone"
-          title="ARQUEOLOGÍA"
-          description="¡Esta zona tiene rocas antiguas! Puedes excavar fósiles y minerales aquí."
-          position="top"
-        >
-          <div 
-            ref="archaeologyPillRef"
-            :class="['interactive-pill archaeology-pill map-pill', { 'is-low-power': uiStore.isLowPowerActive }]"
-          >
-            <span class="pill-icon">⛏️</span>
-          </div>
-        </PVTooltip>
-
-        <!-- Faction Status Pill -->
-        <PVTooltip
-          v-if="dominance?.winner && !isPerformanceMode && !isCardLocked && !isSafariLocked && isVisible"
-          ref="factionPillRef"
-          class="faction-status-pill"
-          title="DOMINIO FACCIÓN"
-          :description="`Controlado por ${dominance.winner === 'union' ? 'Unión' : 'Poder'}`"
-          position="top"
-        >
-          <div class="pill-content">
-            <span class="faction-emoji">
-              {{ dominance.winner === 'union' ? '⭐' : '✊' }}
-            </span>
-          </div>
-        </PVTooltip>
-
-        <!-- Winner Crown -->
-        <PVTooltip
-          v-if="isPlayerWinner && !isPerformanceMode && !isCardLocked && !isSafariLocked"
-          ref="crownRef"
-          class="dom-badge winning"
-          title="DOMINADO"
-          description="¡Bonus de captura activo por dominio de facción!"
-          position="top"
-        >
-          <div class="crown-glow-wrapper">
-            <div 
-              v-if="!uiStore.isLowPowerActive" 
-              class="crown-shine-aura" 
-            />
-            <span class="pill-content icon">👑</span>
-          </div>
-        </PVTooltip>
+      <!-- Modo Guerra: Capa Táctica de Facciones -->
+      <div
+        v-if="activeLens === 'war' && !isCardLocked && !isSafariLocked"
+        class="map-card-war-wrapper"
+      >
+        <MapCardWarLayer
+          :map="map"
+          :dominance="dominance"
+          :player-faction="gameStore.state.faction"
+          :is-dispute-active="warStore.isDisputeActive"
+          :is-guardian-available="!!processedGuardian && !processedGuardian.captured"
+          :has-guardian-captured-today="!!processedGuardian?.captured"
+          @action="() => emit('navigate', props.map)"
+        />
       </div>
 
-      <!-- 5. Spawns Grid (Rendered using MapCardSpawns subcomponent) -->
-      <MapCardSpawns
-        ref="spawnsRef"
-        :is-locked="isCardLocked"
-        :is-performance-mode="isPerformanceMode"
-        :is-visible="isVisible"
-        :force-keep-warm="forceKeepWarm"
-        :hide-map-pokemon="uiStore.hideMapPokemon"
-        :is-debug-grid-mode="uiStore.isDebugGridMode"
-        :spawn-grid="spawnGrid"
-        :processed-grid="processedGrid"
-        :processed-sprites="processedSprites"
-        :processed-rare-aura="processedRareAura"
-        :processed-atmos-aura="processedAtmosAura"
-        :is-low-power-active="uiStore.isLowPowerActive"
-      />
+      <!-- Modo Aventura: Píldoras, Spawns y Pokébola de Reporte -->
+      <template v-else>
+        <!-- 4. Bottom Left Actions — all 4 left pills in one container (grows upward from bottom) -->
+        <!-- DOM order (column-reverse): fishing → archaeology → faction → crown -->
+        <!-- Visual order from bottom: fishing, archaeology, faction, crown -->
+        <div class="map-left-pills-container">
+          <!-- Fishing Icon -->
+          <PVTooltip
+            v-if="map.fishing && !isPerformanceMode && !isCardLocked && !isSafariLocked && isVisible"
+            class="fishing-pill-standalone"
+            title="PESCA"
+            description="¡Esta zona tiene agua! Puedes pescar Pokémon aquí."
+            position="top"
+          >
+            <div 
+              ref="fishingPillRef"
+              :class="['interactive-pill fishing-pill map-pill', { 'is-low-power': uiStore.isLowPowerActive }]"
+            >
+              <span class="pill-icon">🎣</span>
+            </div>
+          </PVTooltip>
 
-      <!-- 6. Map Name/Header -->
-      <MapCardHeader
-        :name="map.name"
-        :desc="map.desc || ''"
-        :is-performance-mode="isPerformanceMode"
-      />
+          <!-- Archaeology Icon -->
+          <PVTooltip
+            v-if="map.archaeology && !isPerformanceMode && !isCardLocked && !isSafariLocked && isVisible"
+            class="archaeology-pill-standalone"
+            title="ARQUEOLOGÍA"
+            description="¡Esta zona tiene rocas antiguas! Puedes excavar fósiles y minerales aquí."
+            position="top"
+          >
+            <div 
+              ref="archaeologyPillRef"
+              :class="['interactive-pill archaeology-pill map-pill', { 'is-low-power': uiStore.isLowPowerActive }]"
+            >
+              <span class="pill-icon">⛏️</span>
+            </div>
+          </PVTooltip>
 
-      <!-- 8. Spawns Report Pokéball Trigger (Bottom Right Corner) -->
-      <PVTooltip
-        v-if="!isCardLocked && !isSafariLocked && !isPerformanceMode"
-        title="REPORTE DE ENCUENTROS"
-        description="Ver probabilidades en tiempo real de todos los Pokémon."
-        position="top"
-        class="pokeball-route-tooltip"
-      >
-        <div
-          class="pokeball-route-trigger"
-          @click.stop.prevent="openRouteSpawnsModal"
-          @mouseenter="onPokeballMouseEnter"
-          @mouseleave="onPokeballMouseLeave"
+          <!-- Faction Status Pill -->
+          <PVTooltip
+            v-if="dominance?.winner && !isPerformanceMode && !isCardLocked && !isSafariLocked && isVisible"
+            ref="factionPillRef"
+            class="faction-status-pill"
+            title="DOMINIO FACCIÓN"
+            :description="`Controlado por ${dominance.winner === 'union' ? 'Unión' : 'Poder'}`"
+            position="top"
+          >
+            <div class="pill-content">
+              <span class="faction-emoji">
+                {{ dominance.winner === 'union' ? '⭐' : '✊' }}
+              </span>
+            </div>
+          </PVTooltip>
+
+          <!-- Winner Crown -->
+          <PVTooltip
+            v-if="isPlayerWinner && !isPerformanceMode && !isCardLocked && !isSafariLocked"
+            ref="crownRef"
+            class="dom-badge winning"
+            title="DOMINADO"
+            description="¡Bonus de captura activo por dominio de facción!"
+            position="top"
+          >
+            <div class="crown-glow-wrapper">
+              <div 
+                v-if="!uiStore.isLowPowerActive" 
+                class="crown-shine-aura" 
+              />
+              <span class="pill-content icon">👑</span>
+            </div>
+          </PVTooltip>
+        </div>
+
+        <!-- 5. Spawns Grid (Rendered using MapCardSpawns subcomponent) -->
+        <MapCardSpawns
+          ref="spawnsRef"
+          :is-locked="isCardLocked"
+          :is-performance-mode="isPerformanceMode"
+          :is-visible="isVisible"
+          :force-keep-warm="forceKeepWarm"
+          :hide-map-pokemon="uiStore.hideMapPokemon"
+          :is-debug-grid-mode="uiStore.isDebugGridMode"
+          :spawn-grid="spawnGrid"
+          :processed-grid="processedGrid"
+          :processed-sprites="processedSprites"
+          :processed-rare-aura="processedRareAura"
+          :processed-atmos-aura="processedAtmosAura"
+          :is-low-power-active="uiStore.isLowPowerActive"
+        />
+
+        <!-- 6. Map Name/Header -->
+        <MapCardHeader
+          :name="map.name"
+          :desc="map.desc || ''"
+          :is-performance-mode="isPerformanceMode"
+        />
+
+        <!-- 8. Spawns Report Pokéball Trigger (Bottom Right Corner) -->
+        <PVTooltip
+          v-if="!isCardLocked && !isSafariLocked && !isPerformanceMode"
+          title="REPORTE DE ENCUENTROS"
+          description="Ver probabilidades en tiempo real de todos los Pokémon."
+          position="top"
+          class="pokeball-route-tooltip"
         >
           <div
-            ref="pokeballTriggerRef"
-            class="pokeball-icon-wrapper"
+            class="pokeball-route-trigger"
+            @click.stop.prevent="openRouteSpawnsModal"
+            @mouseenter="onPokeballMouseEnter"
+            @mouseleave="onPokeballMouseLeave"
           >
-            <img
-              :src="getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')"
-              class="pokeball-icon"
-              alt="Spawns"
+            <div
+              ref="pokeballTriggerRef"
+              class="pokeball-icon-wrapper"
             >
+              <img
+                :src="getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')"
+                class="pokeball-icon"
+                alt="Spawns"
+              >
+            </div>
           </div>
-        </div>
-      </PVTooltip>
+        </PVTooltip>
+      </template>
     </div>
   </div>
 </template>

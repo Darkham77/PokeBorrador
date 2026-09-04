@@ -1,0 +1,516 @@
+{
+  "region": "kanto",
+  "worldWidth": 3600,
+  "worldHeight": 4600,
+  "tileSize": 16,
+  "chunkSize": 32,
+  "chunkPixels": 512,
+  "chunksX": 8,
+  "chunksY": 9,
+  "chunks": [
+    {
+      "cx": 0,
+      "cy": 0,
+      "x": 0,
+      "y": 0,
+      "file": "/assets/maps/kanto/chunk_0_0.webp"
+    },
+    {
+      "cx": 1,
+      "cy": 0,
+      "x": 512,
+      "y": 0,
+      "file": "/assets/maps/kanto/chunk_1_0.webp"
+    },
+    {
+      "cx": 2,
+      "cy": 0,
+      "x": 1024,
+      "y": 0,
+      "file": "/assets/maps/kanto/chunk_2_0.webp"
+    },
+    {
+      "cx": 3,
+      "cy": 0,
+      "x": 1536,
+      "y": 0,
+      "file": "/assets/maps/kanto/chunk_3_0.webp"
+    },
+    {
+      "cx": 4,
+      "cy": 0,
+      "x": 2048,
+      "y": 0,
+      "file": "/assets/maps/kanto/chunk_4_0.webp"
+    },
+    {
+      "cx": 5,
+      "cy": 0,
+      "x": 2560,
+      "y": 0,
+      "file": "/assets/maps/kanto/chunk_5_0.webp"
+    },
+    {
+      "cx": 6,
+      "cy": 0,
+      "x": 3072,
+      "y": 0,
+      "file": "/assets/maps/kanto/chunk_6_0.webp"
+    },
+    {
+      "cx": 7,
+      "cy": 0,
+      "x": 3584,
+      "y": 0,
+      "file": "/assets/maps/kanto/chunk_7_0.webp"
+    },
+    {
+      "cx": 0,
+      "cy": 1,
+      "x": 0,
+      "y": 512,
+      "file": "/assets/maps/kanto/chunk_0_1.webp"
+    },
+    {
+      "cx": 1,
+      "cy": 1,
+      "x": 512,
+      "y": 512,
+      "file": "/assets/maps/kanto/chunk_1_1.webp"
+    },
+    {
+      "cx": 2,
+      "cy": 1,
+      "x": 1024,
+      "y": 512,
+      "file": "/assets/maps/kanto/chunk_2_1.webp"
+    },
+    {
+      "cx": 3,
+      "cy": 1,
+      "x": 1536,
+      "y": 512,
+      "file": "/assets/maps/kanto/chunk_3_1.webp"
+    },
+    {
+      "cx": 4,
+      "cy": 1,
+      "x": 2048,
+      "y": 512,
+      "file": "/assets/maps/kanto/chunk_4_1.webp"
+    },
+    {
+      "cx": 5,
+      "cy": 1,
+      "x": 2560,
+      "y": 512,
+      "file": "/assets/maps/kanto/chunk_5_1.webp"
+    },
+    {
+      "cx": 6,
+      "cy": 1,
+      "x": 3072,
+      "y": 512,
+      "file": "/assets/maps/kanto/chunk_6_1.webp"
+    },
+    {
+      "cx": 7,
+      "cy": 1,
+      "x": 3584,
+      "y": 512,
+      "file": "/assets/maps/kanto/chunk_7_1.webp"
+    },
+    {
+      "cx": 0,
+      "cy": 2,
+      "x": 0,
+      "y": 1024,
+      "file": "/assets/maps/kanto/chunk_0_2.webp"
+    },
+    {
+      "cx": 1,
+      "cy": 2,
+      "x": 512,
+      "y": 1024,
+      "file": "/assets/maps/kanto/chunk_1_2.webp"
+    },
+    {
+      "cx": 2,
+      "cy": 2,
+      "x": 1024,
+      "y": 1024,
+      "file": "/assets/maps/kanto/chunk_2_2.webp"
+    },
+    {
+      "cx": 3,
+      "cy": 2,
+      "x": 1536,
+      "y": 1024,
+      "file": "/assets/maps/kanto/chunk_3_2.webp"
+    },
+    {
+      "cx": 4,
+      "cy": 2,
+      "x": 2048,
+      "y": 1024,
+      "file": "/assets/maps/kanto/chunk_4_2.webp"
+    },
+    {
+      "cx": 5,
+      "cy": 2,
+      "x": 2560,
+      "y": 1024,
+      "file": "/assets/maps/kanto/chunk_5_2.webp"
+    },
+    {
+      "cx": 6,
+      "cy": 2,
+      "x": 3072,
+      "y": 1024,
+      "file": "/assets/maps/kanto/chunk_6_2.webp"
+    },
+    {
+      "cx": 7,
+      "cy": 2,
+      "x": 3584,
+      "y": 1024,
+      "file": "/assets/maps/kanto/chunk_7_2.webp"
+    },
+    {
+      "cx": 0,
+      "cy": 3,
+      "x": 0,
+      "y": 1536,
+      "file": "/assets/maps/kanto/chunk_0_3.webp"
+    },
+    {
+      "cx": 1,
+      "cy": 3,
+      "x": 512,
+      "y": 1536,
+      "file": "/assets/maps/kanto/chunk_1_3.webp"
+    },
+    {
+      "cx": 2,
+      "cy": 3,
+      "x": 1024,
+      "y": 1536,
+      "file": "/assets/maps/kanto/chunk_2_3.webp"
+    },
+    {
+      "cx": 3,
+      "cy": 3,
+      "x": 1536,
+      "y": 1536,
+      "file": "/assets/maps/kanto/chunk_3_3.webp"
+    },
+    {
+      "cx": 4,
+      "cy": 3,
+      "x": 2048,
+      "y": 1536,
+      "file": "/assets/maps/kanto/chunk_4_3.webp"
+    },
+    {
+      "cx": 5,
+      "cy": 3,
+      "x": 2560,
+      "y": 1536,
+      "file": "/assets/maps/kanto/chunk_5_3.webp"
+    },
+    {
+      "cx": 6,
+      "cy": 3,
+      "x": 3072,
+      "y": 1536,
+      "file": "/assets/maps/kanto/chunk_6_3.webp"
+    },
+    {
+      "cx": 7,
+      "cy": 3,
+      "x": 3584,
+      "y": 1536,
+      "file": "/assets/maps/kanto/chunk_7_3.webp"
+    },
+    {
+      "cx": 0,
+      "cy": 4,
+      "x": 0,
+      "y": 2048,
+      "file": "/assets/maps/kanto/chunk_0_4.webp"
+    },
+    {
+      "cx": 1,
+      "cy": 4,
+      "x": 512,
+      "y": 2048,
+      "file": "/assets/maps/kanto/chunk_1_4.webp"
+    },
+    {
+      "cx": 2,
+      "cy": 4,
+      "x": 1024,
+      "y": 2048,
+      "file": "/assets/maps/kanto/chunk_2_4.webp"
+    },
+    {
+      "cx": 3,
+      "cy": 4,
+      "x": 1536,
+      "y": 2048,
+      "file": "/assets/maps/kanto/chunk_3_4.webp"
+    },
+    {
+      "cx": 4,
+      "cy": 4,
+      "x": 2048,
+      "y": 2048,
+      "file": "/assets/maps/kanto/chunk_4_4.webp"
+    },
+    {
+      "cx": 5,
+      "cy": 4,
+      "x": 2560,
+      "y": 2048,
+      "file": "/assets/maps/kanto/chunk_5_4.webp"
+    },
+    {
+      "cx": 6,
+      "cy": 4,
+      "x": 3072,
+      "y": 2048,
+      "file": "/assets/maps/kanto/chunk_6_4.webp"
+    },
+    {
+      "cx": 7,
+      "cy": 4,
+      "x": 3584,
+      "y": 2048,
+      "file": "/assets/maps/kanto/chunk_7_4.webp"
+    },
+    {
+      "cx": 0,
+      "cy": 5,
+      "x": 0,
+      "y": 2560,
+      "file": "/assets/maps/kanto/chunk_0_5.webp"
+    },
+    {
+      "cx": 1,
+      "cy": 5,
+      "x": 512,
+      "y": 2560,
+      "file": "/assets/maps/kanto/chunk_1_5.webp"
+    },
+    {
+      "cx": 2,
+      "cy": 5,
+      "x": 1024,
+      "y": 2560,
+      "file": "/assets/maps/kanto/chunk_2_5.webp"
+    },
+    {
+      "cx": 3,
+      "cy": 5,
+      "x": 1536,
+      "y": 2560,
+      "file": "/assets/maps/kanto/chunk_3_5.webp"
+    },
+    {
+      "cx": 4,
+      "cy": 5,
+      "x": 2048,
+      "y": 2560,
+      "file": "/assets/maps/kanto/chunk_4_5.webp"
+    },
+    {
+      "cx": 5,
+      "cy": 5,
+      "x": 2560,
+      "y": 2560,
+      "file": "/assets/maps/kanto/chunk_5_5.webp"
+    },
+    {
+      "cx": 6,
+      "cy": 5,
+      "x": 3072,
+      "y": 2560,
+      "file": "/assets/maps/kanto/chunk_6_5.webp"
+    },
+    {
+      "cx": 7,
+      "cy": 5,
+      "x": 3584,
+      "y": 2560,
+      "file": "/assets/maps/kanto/chunk_7_5.webp"
+    },
+    {
+      "cx": 0,
+      "cy": 6,
+      "x": 0,
+      "y": 3072,
+      "file": "/assets/maps/kanto/chunk_0_6.webp"
+    },
+    {
+      "cx": 1,
+      "cy": 6,
+      "x": 512,
+      "y": 3072,
+      "file": "/assets/maps/kanto/chunk_1_6.webp"
+    },
+    {
+      "cx": 2,
+      "cy": 6,
+      "x": 1024,
+      "y": 3072,
+      "file": "/assets/maps/kanto/chunk_2_6.webp"
+    },
+    {
+      "cx": 3,
+      "cy": 6,
+      "x": 1536,
+      "y": 3072,
+      "file": "/assets/maps/kanto/chunk_3_6.webp"
+    },
+    {
+      "cx": 4,
+      "cy": 6,
+      "x": 2048,
+      "y": 3072,
+      "file": "/assets/maps/kanto/chunk_4_6.webp"
+    },
+    {
+      "cx": 5,
+      "cy": 6,
+      "x": 2560,
+      "y": 3072,
+      "file": "/assets/maps/kanto/chunk_5_6.webp"
+    },
+    {
+      "cx": 6,
+      "cy": 6,
+      "x": 3072,
+      "y": 3072,
+      "file": "/assets/maps/kanto/chunk_6_6.webp"
+    },
+    {
+      "cx": 7,
+      "cy": 6,
+      "x": 3584,
+      "y": 3072,
+      "file": "/assets/maps/kanto/chunk_7_6.webp"
+    },
+    {
+      "cx": 0,
+      "cy": 7,
+      "x": 0,
+      "y": 3584,
+      "file": "/assets/maps/kanto/chunk_0_7.webp"
+    },
+    {
+      "cx": 1,
+      "cy": 7,
+      "x": 512,
+      "y": 3584,
+      "file": "/assets/maps/kanto/chunk_1_7.webp"
+    },
+    {
+      "cx": 2,
+      "cy": 7,
+      "x": 1024,
+      "y": 3584,
+      "file": "/assets/maps/kanto/chunk_2_7.webp"
+    },
+    {
+      "cx": 3,
+      "cy": 7,
+      "x": 1536,
+      "y": 3584,
+      "file": "/assets/maps/kanto/chunk_3_7.webp"
+    },
+    {
+      "cx": 4,
+      "cy": 7,
+      "x": 2048,
+      "y": 3584,
+      "file": "/assets/maps/kanto/chunk_4_7.webp"
+    },
+    {
+      "cx": 5,
+      "cy": 7,
+      "x": 2560,
+      "y": 3584,
+      "file": "/assets/maps/kanto/chunk_5_7.webp"
+    },
+    {
+      "cx": 6,
+      "cy": 7,
+      "x": 3072,
+      "y": 3584,
+      "file": "/assets/maps/kanto/chunk_6_7.webp"
+    },
+    {
+      "cx": 7,
+      "cy": 7,
+      "x": 3584,
+      "y": 3584,
+      "file": "/assets/maps/kanto/chunk_7_7.webp"
+    },
+    {
+      "cx": 0,
+      "cy": 8,
+      "x": 0,
+      "y": 4096,
+      "file": "/assets/maps/kanto/chunk_0_8.webp"
+    },
+    {
+      "cx": 1,
+      "cy": 8,
+      "x": 512,
+      "y": 4096,
+      "file": "/assets/maps/kanto/chunk_1_8.webp"
+    },
+    {
+      "cx": 2,
+      "cy": 8,
+      "x": 1024,
+      "y": 4096,
+      "file": "/assets/maps/kanto/chunk_2_8.webp"
+    },
+    {
+      "cx": 3,
+      "cy": 8,
+      "x": 1536,
+      "y": 4096,
+      "file": "/assets/maps/kanto/chunk_3_8.webp"
+    },
+    {
+      "cx": 4,
+      "cy": 8,
+      "x": 2048,
+      "y": 4096,
+      "file": "/assets/maps/kanto/chunk_4_8.webp"
+    },
+    {
+      "cx": 5,
+      "cy": 8,
+      "x": 2560,
+      "y": 4096,
+      "file": "/assets/maps/kanto/chunk_5_8.webp"
+    },
+    {
+      "cx": 6,
+      "cy": 8,
+      "x": 3072,
+      "y": 4096,
+      "file": "/assets/maps/kanto/chunk_6_8.webp"
+    },
+    {
+      "cx": 7,
+      "cy": 8,
+      "x": 3584,
+      "y": 4096,
+      "file": "/assets/maps/kanto/chunk_7_8.webp"
+    }
+  ]
+}
