@@ -78,7 +78,7 @@ const lenses: Array<{ id: MapLens; label: string; icon: string; key: string }> =
   box-shadow: 0 4px 16px Rgba(0, 0, 0, 0.6), inset 0 1px 0 Rgba(255, 255, 255, 0.15);
   backdrop-filter: Blur(8px);
   user-select: none;
-  z-index: 50;
+  z-index: var(--z-map-spawns);
 
   .lens-switcher-header {
     display: flex;
@@ -121,7 +121,6 @@ const lenses: Array<{ id: MapLens; label: string; icon: string; key: string }> =
     font-size: 9px;
     font-weight: bold;
     cursor: pointer;
-    transition: All 0.15s ease-out;
 
     .lens-icon {
       font-size: 12px;

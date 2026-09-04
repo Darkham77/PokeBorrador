@@ -43,6 +43,7 @@ import type { DayPhase } from '@/logic/utils/timeUtils'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import type { MapLens } from '@/types/map/mapLenses'
 import MapCardWarLayer from './layers/MapCardWarLayer.vue'
+import { useMapLensStore } from '@/stores/mapLens'
 
 interface SpawnPool {
   generic: PokemonSpeciesId[]
@@ -78,7 +79,7 @@ const props = withDefaults(defineProps<Props>(), {
   forcedWeather: null,
   forceKeepWarm: false,
   isPerformanceMode: undefined,
-  activeLens: 'adventure'
+  activeLens: undefined
 })
 
 const emit = defineEmits<{
@@ -91,6 +92,9 @@ const mapStore = useMapStore()
 const modalStore = useModalStore()
 const gameStore = useGameStore()
 const warStore = useWarStore()
+const mapLensStore = useMapLensStore()
+
+const activeLens = computed<MapLens>(() => props.activeLens ?? mapLensStore.activeLens)
 
 const cardRef = ref<HTMLElement | null>(null)
 const bgRef = ref<HTMLElement | null>(null)
@@ -537,6 +541,7 @@ watch(
           class="pokeball-route-tooltip"
         >
           <div
+            :id="`pokeball-route-trigger-${map.id}`"
             class="pokeball-route-trigger"
             @click.stop.prevent="openRouteSpawnsModal"
             @mouseenter="onPokeballMouseEnter"

@@ -7,6 +7,7 @@ import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
 import MapPokemonCenterBanner from '@/components/map/MapPokemonCenterBanner.vue'
 import MapGrid from '@/components/map/MapGrid.vue'
+import MapLensSwitcher from '@/components/map/adventure/MapLensSwitcher.vue'
 import AdventureWorldMap from '@/components/map/adventure/AdventureWorldMap.vue'
 import type { MapLocation } from '@/types/pokemon/encounters'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
@@ -158,6 +159,8 @@ const navigateToMap = async (loc: MapLocation | string | number) => {
       <div class="legacy-divider">
         <span class="divider-text">REGIÓN DE KANTO</span>
       </div>
+
+      <MapLensSwitcher />
 
       <MapGrid
         :maps="mapStore.maps"

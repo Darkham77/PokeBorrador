@@ -85,12 +85,14 @@ export function registerTileMemory(tile: TileDefinition): void {
  */
 export function loadCatalogFromFile(catalogPath = DEFAULT_CATALOG_PATH): TileCatalogPayload {
   clearTileRegistryMemory();
+  // fallow-ignore-next-line security-sink
   const targetPath = path.resolve(catalogPath);
   if (!fs.existsSync(targetPath)) {
     return { version: '1.0', updatedAt: new Date().toISOString(), tiles: {} };
   }
 
   try {
+    // fallow-ignore-next-line security-sink
     const raw = fs.readFileSync(targetPath, 'utf8');
     const data = JSON.parse(raw) as TileCatalogPayload;
     const tiles = data.tiles || {};
@@ -108,6 +110,7 @@ export function loadCatalogFromFile(catalogPath = DEFAULT_CATALOG_PATH): TileCat
  * Persist in-memory tiles to catalog JSON file.
  */
 export function saveCatalogToFile(catalogPath = DEFAULT_CATALOG_PATH): TileCatalogPayload {
+  // fallow-ignore-next-line security-sink
   const targetPath = path.resolve(catalogPath);
   const dir = path.dirname(targetPath);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });

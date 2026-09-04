@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { setupLocalStorageMock } from '../system/localStorageMock'
+import { setupLocalStorageMock } from '../system/localStorageMock.ts'
 import { useMapLensStore, MAP_LENS_STORAGE_KEY } from '@/stores/mapLens'
+import type { MapLens } from '@/types/map/mapLenses'
 
 describe('useMapLensStore', () => {
   let storageMock: ReturnType<typeof setupLocalStorageMock>
@@ -40,8 +41,7 @@ describe('useMapLensStore', () => {
   it('rejects invalid lens value with an error', () => {
     const store = useMapLensStore()
     expect(() => {
-      // @ts-expect-error testing invalid input
-      store.setLens('invalid_lens')
+      store.setLens('invalid_lens' as unknown as MapLens)
     }).toThrow()
   })
 })

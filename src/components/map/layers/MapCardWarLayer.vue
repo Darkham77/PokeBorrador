@@ -67,15 +67,16 @@ const isWinningForPlayer = computed(() => {
         class="war-winner-tag"
         :class="`winner-${dominance.winner}`"
       >
-        {{ dominance.winner === 'union' ? '⚪ TEAM UNIÓN' : '⚫ TEAM PODER' }}
+        <span class="emoji-inline">{{ dominance.winner === 'union' ? '⚪' : '⚫' }}</span>
+        <span>{{ dominance.winner === 'union' ? ' TEAM UNIÓN' : ' TEAM PODER' }}</span>
       </div>
     </div>
 
     <!-- Barra de Dominancia Territorial -->
     <div class="war-progress-section">
       <div class="war-progress-labels">
-        <span class="label-union">⚪ Unión {{ unionPct }}%</span>
-        <span class="label-poder">{{ poderPct }}% Poder ⚫</span>
+        <span class="label-union"><span class="emoji-inline">⚪</span> Unión {{ unionPct }}%</span>
+        <span class="label-poder">{{ poderPct }}% Poder <span class="emoji-inline">⚫</span></span>
       </div>
       <div class="war-progress-bar-track">
         <div
@@ -97,7 +98,7 @@ const isWinningForPlayer = computed(() => {
       v-if="!isDisputeActive && isWinningForPlayer"
       class="war-weekend-bonus-banner"
     >
-      <span class="bonus-sparkle">✨</span>
+      <span class="bonus-sparkle emoji-inline">✨</span>
       <span class="bonus-text">BONO DOMINANCIA: +30% EXP & SHINY</span>
     </div>
 
@@ -224,7 +225,6 @@ const isWinningForPlayer = computed(() => {
 
       .war-bar-fill {
         height: 100%;
-        transition: Width 0.3s ease-out;
 
         &.union-fill {
           background: linear-gradient(90deg, #3b82f6, #60a5fa);
@@ -252,7 +252,6 @@ const isWinningForPlayer = computed(() => {
     border: 1px solid #eab308;
     border-radius: 4px;
     padding: 4px;
-    animation: Pulse-Glow 2s infinite ease-in-out;
 
     .bonus-sparkle {
       font-size: 10px;
@@ -286,7 +285,6 @@ const isWinningForPlayer = computed(() => {
       font-weight: bold;
       cursor: pointer;
       box-shadow: 0 2px 8px Rgba(185, 28, 28, 0.4);
-      transition: All 0.15s ease-out;
 
       &:hover {
         background: linear-gradient(135deg, #ef4444, #b91c1c);
@@ -309,16 +307,6 @@ const isWinningForPlayer = computed(() => {
         font-size: 11px;
       }
     }
-  }
-}
-
-@keyframes pulse-glow {
-  0%, 100% {
-    opacity: 0.9;
-  }
-  50% {
-    opacity: 1;
-    border-color: #facc15;
   }
 }
 </style>

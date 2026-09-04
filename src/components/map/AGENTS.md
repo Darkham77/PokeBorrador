@@ -25,3 +25,4 @@ Frontend Developers / Systems Engineers.
 ## Child DOX Index
 
 - [adventure/AGENTS.md](./adventure/AGENTS.md): GPS Adventure World Map draft mode, interactive road navigation, modals, and pathfinding logic.
+- [layers/AGENTS.md](./layers/AGENTS.md): Tactical and informational overlay layers for map location cards (faction war, dominance).

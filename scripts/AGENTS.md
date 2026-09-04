@@ -24,6 +24,8 @@ DevOps / Tooling Engineers.
 - **Native Node.js 26 TypeScript Imports**: All internal scripts and maintenance modules executed with Node 26 (`--experimental-strip-types`) MUST use native `.ts` relative extensions (e.g., `import './audit_helpers.ts'`), strictly prohibiting legacy `.js` extensions.
 - **Windows Environment & Native Tooling Resilience**: Setup and initialization scripts (`setup-windows.ps1`, `setup-linux.sh`) MUST preserve system `PATH` by additively concatenating `Machine` and `User` paths, never overwriting `Machine` paths to prevent losing `C:\Windows\System32` and native utilities (such as `chcp`). Setup scripts on Windows MUST apply Defender exclusions (`Add-MpPreference`), recursively unblock native binary extensions (`.node`, `.dll`, `.exe`) in `node_modules` (`Unblock-File`), and invoke `npm run validate:tools` immediately after `npm ci`.
 - **Map Asset Ingestion & Semantic Tile Classification**: All external tilesets, spritesheets, and graphical slices ingested for map generation are managed via the standard pipeline (`npm run map:tiles:download`, `npm run map:tiles:extract`, `npm run map:tiles:studio`). Slices are extracted using a hybrid model (atomic 32x32/16x16 tiles for autotiling terrain and full prefabs for structures/vehicles) into `scratch/map_lab/tilesets/staged/`. Classification is handled via the interactive web studio (`tile_classifier_studio.html`) and organized into `scratch/map_lab/tilesets/catalog/` with $O(1)$ fast lookups provided by `scripts/map/tile_registry.mjs`.
+- **Separation of Build and Pre-Commit Audit Gates**: The build script (`npm run build`) is strictly reserved for validating tools, full static type checking (`vue-tsc --noEmit`), and generating the production application bundle via Vite (`vite build`). The pre-commit audit contract (`npm run audit:warnings-diff`) is the single source of truth for gating changed files against `origin/main` (0 project errors, 0 new warnings). Chaining global repository-wide AST audits (`npm run audit`) into `npm run build` is strictly forbidden.
+- **FSM Diagram Parser Support for Modern Set Types**: Validators in `scripts/auditors/fsm/` (such as `validate_fsm_diagrams.ts`) MUST support typed collection signatures including `Record<string, ReadonlySet<string>>` and `new Set([...])` when parsing `validTransitions` from FSM state definitions, preventing false positive audit failures when validating Mermaid diagrams against strongly typed transition maps.
 
 ## Work Guidance
 
@@ -65,6 +67,7 @@ DevOps / Tooling Engineers.
 - [database/](./database/AGENTS.md): Domain module documentation for database.
 - [e2e/](./e2e/AGENTS.md): Domain module documentation for e2e.
 - [maintenance/](./maintenance/AGENTS.md): Domain module documentation for maintenance.
+- [map/](./map/AGENTS.md): Map generation scripts, tileset ingestion pipelines, and terrain compilers.
 - [testing/](./testing/AGENTS.md): Test execution orchestration, ephemeral Docker PostgreSQL lifecycle, and dual test runner.
 - [auditors/](./auditors/AGENTS.md): Domain module documentation for auditors and validators.
 - [tools/](./tools/AGENTS.md): Domain module documentation for tools.
