@@ -1,3 +1,4 @@
+// [PureVue-Ignore-Length]
 /**
  * tests/fixtures/items/itemFamiliesMatrix.ts
  *

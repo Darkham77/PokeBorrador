@@ -108,18 +108,14 @@ export abstract class BaseE2ESimulation {
     const fs = await import('node:fs');
     if (fs.existsSync(dbPath)) {
       const { DatabaseSync } = await import('node:sqlite');
-      const db = new DatabaseSync(dbPath);
-      try {
-        const stmt = db.prepare(sql);
-        const isSelect = sql.trim().toUpperCase().startsWith('SELECT');
-        if (isSelect) {
-          return stmt.all(...(params as (string | number | bigint | null)[])) as T[];
-        }
-        stmt.run(...(params as (string | number | bigint | null)[]));
-        return [] as T[];
-      } finally {
-        db.close();
+      using db = new DatabaseSync(dbPath);
+      const stmt = db.prepare(sql);
+      const isSelect = sql.trim().toUpperCase().startsWith('SELECT');
+      if (isSelect) {
+        return stmt.all(...(params as (string | number | bigint | null)[])) as T[];
       }
+      stmt.run(...(params as (string | number | bigint | null)[]));
+      return [] as T[];
     }
 
     // Fallback if db is purely in browser memory: evaluate in browser
@@ -153,25 +149,21 @@ export abstract class BaseE2ESimulation {
 
     if (this.driver === 'postgres') {
       const { DatabaseSync } = await import('node:sqlite');
-      const fixtureDb = new DatabaseSync(fixturePath, { readOnly: true });
+      using fixtureDb = new DatabaseSync(fixturePath, { readOnly: true });
       let saveDataJson: string | null = null;
-      try {
-        const targetKey = this.username.toLowerCase();
-        let stmt = fixtureDb.prepare("SELECT save_data FROM game_saves WHERE user_id = ? OR user_id = ? LIMIT 1");
-        let row = stmt.get(`local_${targetKey}`, targetKey) as { save_data: string } | undefined;
-        if (!row) {
-          stmt = fixtureDb.prepare("SELECT save_data FROM game_saves WHERE json_extract(save_data, '$.trainer') = ? LIMIT 1");
-          row = stmt.get(targetKey) as { save_data: string } | undefined;
-        }
-        if (!row) {
-          stmt = fixtureDb.prepare("SELECT save_data FROM game_saves LIMIT 1");
-          row = stmt.get() as { save_data: string } | undefined;
-        }
-        if (row && row.save_data) {
-          saveDataJson = typeof row.save_data === 'string' ? row.save_data : JSON.stringify(row.save_data);
-        }
-      } finally {
-        fixtureDb.close();
+      const targetKey = this.username.toLowerCase();
+      let stmt = fixtureDb.prepare("SELECT save_data FROM game_saves WHERE user_id = ? OR user_id = ? LIMIT 1");
+      let row = stmt.get(`local_${targetKey}`, targetKey) as { save_data: string } | undefined;
+      if (!row) {
+        stmt = fixtureDb.prepare("SELECT save_data FROM game_saves WHERE json_extract(save_data, '$.trainer') = ? LIMIT 1");
+        row = stmt.get(targetKey) as { save_data: string } | undefined;
+      }
+      if (!row) {
+        stmt = fixtureDb.prepare("SELECT save_data FROM game_saves LIMIT 1");
+        row = stmt.get() as { save_data: string } | undefined;
+      }
+      if (row && row.save_data) {
+        saveDataJson = typeof row.save_data === 'string' ? row.save_data : JSON.stringify(row.save_data);
       }
 
       if (saveDataJson) {

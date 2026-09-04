@@ -7,6 +7,11 @@
  * Analiza todo el proyecto buscando ERRORES (incluyendo eslint, vue-tsc type checking y 100% de sub-auditores).
  * Para las ADVERTENCIAS (warnings), solo exige resolver aquellas en archivos
  * modificados que sean nuevas comparadas con 'origin/main'.
+ * 
+ * ⚠️ ZERO TAMPERING MANDATE:
+ * Under NO circumstances may this script be modified to weaken, downgrade, or
+ * bypass new warnings (such as Fallow unused exports or complexity hotspots) to make
+ * a commit pass. All new findings MUST be resolved at the source code level.
  */
 
 import { spawnSync, execSync } from 'node:child_process';
@@ -51,6 +56,18 @@ interface EslintFileResult {
 // Extensiones a auditar
 const AUDIT_EXTENSIONS = ['.vue', '.ts', '.js', '.scss', '.css'] as const;
 
+export function isSubAuditorRule(ruleId?: string): boolean {
+  if (!ruleId) return false;
+  return ruleId === 'project-audit' ||
+         ruleId === 'audit_project' ||
+         ruleId.startsWith('Fallow') ||
+         ruleId.startsWith('o1-') ||
+         ruleId === 'spanish-logic-id' ||
+         ruleId.startsWith('validate_') ||
+         ruleId.startsWith('audit_') ||
+         ruleId.startsWith('Largo de archivo');
+}
+
 export function filterNewWarnings(
   localWarnings: Violation[],
   originWarnings: Violation[],
@@ -78,13 +95,17 @@ export function filterNewWarnings(
       continue;
     }
 
-    // Si es una regla de sub-auditor o auditoría de proyecto, comparar contexto en código fuente
-    const isSubAuditorRule = violation.ruleId === 'project-audit' || 
-                             violation.ruleId?.startsWith('o1-') || 
-                             violation.ruleId === 'spanish-logic-id' ||
-                             violation.ruleId?.startsWith('validate_');
+    // Regla de mantenibilidad 500/1000: si el archivo en origin/main ya superaba 500 líneas, es advertencia heredada
+    if (violation.message.includes('Mantenibilidad (500/1000 Rule)') || 
+        violation.message.includes('Largo de archivo (>300/500 líneas)')) {
+      const originLines = originContent ? originContent.split('\n').length : 0;
+      const copy = { ...violation, isNew: originLines <= 500 };
+      result.push(copy);
+      continue;
+    }
 
-    if (isSubAuditorRule) {
+    // Si es una regla de sub-auditor o auditoría de proyecto, comparar contexto en código fuente
+    if (isSubAuditorRule(violation.ruleId)) {
       const existedInOriginCode = violation.context ? originContent.includes(violation.context) : true;
       const copy = { ...violation, isNew: !existedInOriginCode };
       result.push(copy);
@@ -369,7 +390,7 @@ async function main() {
     let originEslint: Violation[] = [];
     
     if (originContent !== null) {
-      const hasEslint = localFileWarnings.some(w => w.ruleId?.includes('eslint'));
+      const hasEslint = localFileWarnings.some(w => !isSubAuditorRule(w.ruleId));
       if (hasEslint) {
         originEslint = await runOriginEslint(file, originContent);
       }

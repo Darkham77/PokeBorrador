@@ -3,9 +3,11 @@ name: systematic-debugging
 description: >
   MANDATORY orchestrator for evidence-based troubleshooting, bug resolution, and failure triage across Poké Vicio.
   YOU MUST trigger this skill whenever a bug, error, test failure, crash, desync, unhandled rejection, visual glitch,
+  database bug, persistence failure, SQL migration mismatch, multi-engine database divergence (SQLite, PostgreSQL),
   or unexpected behavior is reported by the user or detected during execution in both Spanish and English
   (e.g., "reparar bug", "arreglar error", "falló el test", "debug", "solucionar fallo", "fix bug", "investigate error",
-  "trace error", "investigar fallo", "reproduce error", "hay un bug", "no funciona", or when any Vitest or Playwright test fails).
+  "trace error", "investigar fallo", "reproduce error", "hay un bug", "no funciona", "error en base de datos", "error migraciones",
+  "sqlite y postgres", or when any Vitest or Playwright test fails).
   Governs the full 4-Phase Reactive Protocol: (1) Trace Ingestion & DOX Triage, (2) Mandatory 3-Tier Reproduction Tests in RED,
   (3) Root Cause Repair with Dual Consultation Gate (Explicit vs Automatic), and (4) Closed-Loop Verification with a 5-iteration cap.
 ---
@@ -29,6 +31,12 @@ description: >
    - Querying mutable live fuzzer files (`fuzzer_certified_cases.json`) dynamically is strictly prohibited.
 4. **⛔ GATE 4: MAXIMUM 5-ITERATION CAP**:
    - The repair loop is strictly capped at 5 attempts. If a bug resists repair after 5 attempts, execution MUST halt with a structured blocker report.
+5. **⛔ GATE 5: DUAL DATABASE PARITY & MULTI-ENGINE VERIFICATION GATE**:
+   - Whenever a bug touches persistence, SQL queries, schemas, database migrations, RPCs, DBRouter, store serialization/rehydration, or any data storage functionality, and the project supports multiple database engines (e.g. SQLite and PostgreSQL):
+     - Reproduction tests in Tier 1 (Unit) and Tier 2 (Integrity) MUST NOT test only a single engine. They MUST run and assert identical behavior across ALL active database engines (e.g., using `describeWithDatabase` from `tests/dbTestHelper.ts` or executing against both in-memory SQLite and isolated PostgreSQL schemas).
+     - Both engines MUST reproduce the bug in **RED**, and both must turn **GREEN** once fixed.
+     - Tier 3 (Playwright E2E Simulation) MUST be verified in dual mode (`driver=dual` or dual clean zero pass), certifying both `[1/2 SQLite]` and `[2/2 PostgreSQL]`.
+     - **1:1 Behavioral Parity**: Migrations, table schemas, constraints, query responses, error triggers, and data transformations MUST behave 100% identically across both database engines. If one engine behaves differently (e.g., succeeds while the other fails, silently returns empty arrays, or throws dialect/type errors), that divergence is an empirical bug that must be resolved.
 
 ---
 
@@ -51,14 +59,15 @@ flowchart TD
 ### Phase 1: Trace Ingestion & DOX Triage
 
 1. **Extract & Parse Available Traces**:
-   - **Playwright Failures**: Read `scratch/test-results/` for console logs, stack traces, and screenshots. Check `scripts/e2e/results/e2e_checkpoints.json` for failing suite name, batch index, and error snippet.
+   - **Playwright Failures**: Read `scratch/test-results/` for console logs, stack traces, and screenshots. Check `scripts/e2e/results/e2e_checkpoints.json` for failing suite name, batch index, database driver (`sqlite` or `postgres`), and error snippet.
    - **Fuzzer / Replayer Failures**: Extract failing case ID (`case-xxx`), seed, active UIDs, and diverging turn index from `scripts/e2e/results/fuzzer_certified_cases.json`.
+   - **Database & Persistence Failures**: Detect whether the failure originates from SQL syntax, migrations, schema discrepancies, RLS policies, serialization roundtrips, or DBRouter query proxies. Identify if it reproduces in SQLite, PostgreSQL, or diverges between them.
    - **Verbal / Informal Reports**: If the report lacks traces, DO NOT execute heavy suites. Prompt the user for minimal context: (1) exact reproduction steps, (2) team/game state, and (3) observed error message in DevTools console.
    - *Detailed extraction guide: [Trace Ingestion & Bug Triage Guide](./references/trace_ingestion_and_triage.md)*.
 
 2. **Map to Authoritative DOX Contract (`dox-navigator`)**:
    - Identify the owning module in `src/` (e.g. `src/logic/battle/`, `src/stores/`, `src/components/`, `database/`).
-   - Read the nearest `AGENTS.md` and relevant manuals in `references/rules/` to identify the non-negotiable invariants before planning fixes.
+   - Read the nearest `AGENTS.md` and relevant manuals in `references/rules/` (`database_and_persistence.md`, `testing_and_simulations.md`) to identify non-negotiable invariants before planning fixes.
 
 3. **Pre-Fix Fallback Audit**:
    - Scan the failing code path for existing masking fallbacks (`||`, `??`, default assignments). Remove them immediately so the engine fails loudly with an explicit stack trace.
@@ -71,13 +80,16 @@ Create deterministic reproduction tests before touching `src/`:
 
 | Testing Tier | Scope & Trigger Condition | Target Location | Template |
 | :--- | :--- | :--- | :--- |
-| **Tier 1: Unit Test (Mandatory)** | Isolated logic, pure functions, state actions, schema parsing. | `tests/node/<domain>/reproduce_<slug>.test.ts` or `tests/unit/` | [Unit Template](./templates/reproduction_unit_test.template.ts) |
-| **Tier 2: Integrity Test (Mandatory)** | Cross-boundary contracts, FSM transitions, DBRouter roundtrips, Showdown engine parity. | `tests/integration/<domain>/` or `tests/node/` | [Integration Template](./templates/reproduction_integration_test.template.ts) |
+| **Tier 1: Unit Test (Mandatory)** | Isolated logic, pure functions, state actions, schema parsing, SQL queries. | `tests/node/<domain>/reproduce_<slug>.test.ts` or `tests/unit/` | [Unit Template](./templates/reproduction_unit_test.template.ts) |
+| **Tier 2: Integrity Test (Mandatory)** | Cross-boundary contracts, FSM transitions, DBRouter roundtrips, Showdown engine parity, DB migrations. | `tests/integration/<domain>/` or `tests/node/` | [Integration Template](./templates/reproduction_integration_test.template.ts) |
 | **Tier 3: Playwright Sim (Conditional)** | **ONLY IF** the bug affects UI interaction, GSAP animations, interface events (`GAME_UI_EVENTS`), visual combat, or F5 page refresh. | `scripts/e2e/<family>/reproduce_<slug>.simulation.ts` | [Playwright Template](./templates/reproduction_playwright_sim.template.ts) |
 
 #### Rules for Reproduction Tests:
 1. **Inline Static Data**: Inline all failing Pokémon sets, seeds, stats, and choice sequences. Never query dynamic fuzzer files.
-2. **Confirm Deterministic RED**: Execute the reproduction test and confirm that it fails with the exact reported error:
+2. **Mandatory Dual-Engine Testing for Database Bugs**:
+   - If the bug involves database queries, migrations, schemas, persistence roundtrips, or DBRouter, the reproduction test MUST run across **BOTH database engines** (SQLite and PostgreSQL) using `describeWithDatabase` from `tests/dbTestHelper.ts` (or testing both SQLite in-memory and isolated PostgreSQL schemas).
+   - Assert identical behavior, constraint enforcement, and error shapes across both engines.
+3. **Confirm Deterministic RED**: Execute the reproduction test and confirm that it fails with the exact reported error:
    ```bash
    npx vitest run tests/node/<domain>/reproduce_<slug>.test.ts
    ```
@@ -93,7 +105,7 @@ Before modifying `src/` or `database/`, evaluate the invocation context:
 
 1. **Explicit Mode (Invoked by User via `/systematic-debugging` or Direct Prompt)**:
    - **MANDATORY PAUSE**: If the fix requires:
-     - SQL database migrations or schema alterations (`database/migrations/`, Supabase).
+     - SQL database migrations or schema alterations (`database/migrations/`, Supabase). All schema changes MUST deliver synchronized companion `.sql` (PostgreSQL) and `.sqlite.sql` (SQLite) migrations with monotonic timestamps and bumped `db_version`.
      - Breaking changes to public store actions, DTOs, or engine APIs.
      - Contradictions or relaxations of rules in `AGENTS.md` or `references/rules/`.
      - Non-trivial architectural trade-offs between two or more valid designs.
@@ -109,11 +121,11 @@ Before modifying `src/` or `database/`, evaluate the invocation context:
 
 Verify all test tiers in strict sequential order. If any test fails, re-enter Phase 3 (capped at 5 attempts total):
 
-1. **Tier 1 Pass**: Re-run the reproduction unit test. Confirm that it turns **GREEN**.
+1. **Tier 1 Pass**: Re-run the reproduction unit test. Confirm that it turns **GREEN** (across both SQLite and PostgreSQL if database-related):
    ```bash
    npx vitest run tests/node/<domain>/reproduce_<slug>.test.ts
    ```
-2. **Tier 2 Pass**: Verify integrity/integration tests turn **GREEN**.
+2. **Tier 2 Pass**: Verify integrity/integration tests turn **GREEN** (across both database engines for persistence bugs).
 3. **Full Node Unit Regression**: Run the entire Node test suite to confirm 0 regressions:
    ```bash
    npm run test:node

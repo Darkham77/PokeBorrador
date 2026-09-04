@@ -63,6 +63,15 @@ npm run test:node
 ```
 If any unrelated test fails, it is an empirical regression caused by the edit in `src/`. Re-enter the repair loop immediately.
 
+**Database-Specific Step 1 Pass (Multi-Engine Verification)**:
+If the bug touched persistence, database migrations, SQL schemas, or DBRouter:
+1. Confirm the reproduction test runs and passes GREEN across **all supported database engines** (SQLite and PostgreSQL) using `describeWithDatabase` from `tests/dbTestHelper.ts`.
+2. Both SQLite in-memory and PostgreSQL container tests must succeed with identical schema shapes and behavior.
+3. Validate SQL migration syntax and dialect synchronization:
+   ```bash
+   npm run validate:sql
+   ```
+
 ### Step 2: Playwright Simulation Verification (If Tier 3 Applies)
 If the bug affected UI, GSAP animations, visual combat, or F5 persistence:
 1. **Resume / Targeted Run**:
@@ -74,7 +83,7 @@ If the bug affected UI, GSAP animations, visual combat, or F5 persistence:
    ```bash
    npm run sim:e2e filter=<suite_name> clean=true
    ```
-   Both SQLite and PostgreSQL must pass 100% clean.
+   Both SQLite (`[6B 1/2 SQLite]`) and PostgreSQL (`[6B 2/2 PostgreSQL]`) must pass 100% clean. Single-engine clean passes are strictly prohibited.
 
 ### Step 3: Fast Quality Gate & DOX Pass
 1. **Fast Development Lint**:

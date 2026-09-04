@@ -98,7 +98,7 @@ const handleRelearn = (move: RelearnMoveEntry) => {
   if (!p) return
   
   const inventory = gameStore.state.inventory as Record<string, number> // open-record: Generic key-value data dictionary container
-  const hasItem = (inventory['moverelearner'] && inventory['moverelearner'] > 0) || (inventory['move_relearner'] && inventory['move_relearner'] > 0)
+  const hasItem = (inventory['moverelearner'] || 0) > 0
   
   if (!hasItem) {
     uiStore.notify('No tienes Recordadores de Movimientos.', '⚠️')
@@ -136,14 +136,7 @@ const handleClose = () => {
 
 const consumeItem = () => {
   const inventoryStore = useInventoryStore()
-  const inventory = gameStore.state.inventory as Record<string, number> // open-record: Generic key-value data dictionary container
-  if (inventory['moverelearner'] && inventory['moverelearner'] > 0) {
-    inventoryStore.removeItem('moverelearner', 1)
-  } else if (inventory['move_relearner'] && inventory['move_relearner'] > 0) {
-    inventory['move_relearner']--
-    if (inventory['move_relearner'] <= 0) delete inventory['move_relearner']
-    gameStore.save(false)
-  }
+  inventoryStore.removeItem('moverelearner', 1)
 }
 </script>
 

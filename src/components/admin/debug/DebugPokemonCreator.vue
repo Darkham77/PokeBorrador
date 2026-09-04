@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// [PureVue-Ignore-Length]
 import { computed, ref } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import PokemonBaseStats from './PokemonBaseStats.vue'

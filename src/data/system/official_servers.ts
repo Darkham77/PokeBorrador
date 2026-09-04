@@ -16,7 +16,7 @@ export interface OfficialServer {
   isDefault?: boolean;
 }
 
-export const TEST_DOCKER_SERVER: OfficialServer = {
+const TEST_DOCKER_SERVER: OfficialServer = {
   id: 'test_postgres',
   name: 'Local Docker Test Server',
   region: 'Testing',

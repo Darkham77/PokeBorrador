@@ -54,6 +54,23 @@ When a developer reports a bug verbally without a stack trace (e.g. *"The switch
    - **Game state & team context**: Active Pokémon, bench party, game mode (Wild encounter, Trainer, Gym, GTS).
    - **Observed behavior vs Expected behavior**: Exact error message or visual freeze in the DevTools console.
 
+### D. Database & Persistence Failures (Multi-Engine Triage)
+
+When a failure involves storage, SQL migrations, schemas, query builders, or persistence roundtrips:
+
+1. **Identify the Storage Boundary**:
+   - Client SQLite (WASM / OPFS / `node:sqlite`).
+   - Remote Supabase / PostgreSQL (Docker ephemeral container on port 54329).
+   - DBRouter abstraction (`src/logic/db/dbRouter.ts`).
+2. **Determine Engine-Specific vs Divergent Failure**:
+   - **SQLite-Specific Pitfalls**: Parameter binding (`undefined` vs `null`), deep nested JSON recursion limits, missing table recreate steps in migrations, missing local schema columns.
+   - **PostgreSQL-Specific Pitfalls**: Undeclared PL/pgSQL loop variables, silent empty sets due to missing RLS SELECT policies, missing `GRANT EXECUTE` on RPCs, double-stringified JSONB scalars, or composite unique constraint conflicts.
+   - **Divergence Pitfalls**: A query, migration, or constraint that succeeds in SQLite but aborts transactions in PostgreSQL (or vice versa). Both engines MUST behave identically at the application layer.
+3. **Inspect Active Database Traces**:
+   - Check `scratch/audits/latest_audit.json` for persistence auditor warnings.
+   - Check Docker container logs: `docker logs pokevicio-test-postgres` if container is running.
+   - Extract raw SQL statement, error code (`23505`, `42P01`, `SQLITE_ERROR`), and bound parameter array.
+
 ---
 
 ## 2. DOX Contract Mapping (`dox-navigator`)

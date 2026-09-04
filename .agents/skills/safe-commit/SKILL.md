@@ -21,9 +21,11 @@ This workflow is a **strict state machine**, not a loose checklist. Each step pr
 | **No optional phases** | Phases 0–4 are mandatory. Skipping phases is STRICTLY FORBIDDEN. |
 | **Update `task.md` continuously** | Update `<appDataDir>/brain/<conversation-id>/task.md` after each step. |
 | **Unbroken Repair Loop** | You MUST NEVER exit Phase 2 until `npm run build` exits with code 0 on the final code. |
+| **Zero Gatekeeper Tampering** | Agents MUST NEVER weaken, alter, relax, or reinterpret the verification rules, thresholds, or filtering logic of `audit_for_commit.ts`, `audit_project.ts`, or any quality gatekeeper to make checks pass. All project errors and NEW warnings (including unused exports and complexity) MUST be resolved cleanly at the code source. Suppressing auditor findings or altering auditor intentions without explicit user consultation is STRICTLY FORBIDDEN. |
+| **Dynamic Modules & Domain Exports Analysis** | When resolving unused exports (Fallow), NEVER blindly strip `export` without analyzing whether the symbol is needed by dynamically loaded modules (dynamic routes, Vite glob imports, Web Workers, reflection), test suites, or public domain type contracts (`src/types/**`). If an export is an intentional domain contract or required for dynamic loading, register it under `ignoreExports` in `.fallowrc.json` with clear justification instead of breaking runtime accessibility. Only strictly file-private helpers in implementation files may have `export` removed. |
 
 > [!CAUTION]
-> The most common failure mode is batching commands, assuming a fix worked without re-running `npm run build`, or skipping output verification. The cost is committing broken code into **permanent, irreversible** git history.
+> The most common failure modes are batching commands, assuming a fix worked without re-running `npm run build`, skipping output verification, or **modifying auditor scripts to suppress warnings instead of fixing source code**. Modifying gatekeeper scripts to bypass new warnings (e.g. converting new unused exports or complexity into legacy/ignored) is a critical violation of system integrity and trust. The cost is committing unverified or degraded code into **permanent, irreversible** git history.
 
 ---
 
@@ -127,6 +129,10 @@ In every iteration of the loop, execute these checks sequentially:
    - *If errors or new warnings exist*:
      - Run `npm run audit:fix` (auto-repairs simple imports, viewport tags, etc.).
      - Apply manual fixes to the source code for remaining issues.
+     - **Unused Exports Handling**: When Fallow flags unused exports, perform root cause analysis:
+       - If the export is a legitimate public domain contract in `src/types/**` or needed by dynamic modules/workers/tests, add it to `ignoreExports` in `.fallowrc.json`.
+       - If it is strictly an internal helper or private tuple in an implementation file, remove `export`.
+       - Never blindly strip `export` if dynamic modules or reflection might break.
      - Record fixes under "Repairs applied" in `task.md`.
      - Re-run `npm run audit:for-commit` until it reports **0 errors and 0 new warnings**.
    - *If clean (0 errors, 0 new warnings)*: Proceed immediately to Check 2.2.

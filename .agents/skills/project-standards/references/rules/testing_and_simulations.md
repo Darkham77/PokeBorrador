@@ -21,9 +21,11 @@ Whenever ANY bug, regression, or state desynchronization occurs across the proje
 1. **Tier 1: Isolated Unit Test (RED-to-GREEN Reproduction)**:
    - You **MUST FIRST** create an isolated, self-contained unit test in `tests/node/` (pure Node logic) or `tests/unit/` (Vue/JSDOM components) that reproduces the failure deterministically in **RED** before writing or proposing any fix in `src/`.
    - The reproduction test MUST **extract and inline all failing data, seeds, and choice streams** (or use a dedicated static JSON fixture under `tests/fixtures/battle/`). Searching or referencing dynamic live fuzzer outputs is strictly forbidden because regenerated fuzzer runs invalidate temporary IDs.
+   - **Dual Database Mandate**: If the bug touches persistence, SQL queries, schemas, database migrations, or DBRouter, the reproduction unit test MUST be written and executed across **ALL active database engines** (e.g. SQLite and PostgreSQL via `describeWithDatabase` from `tests/dbTestHelper.ts`) to reproduce the failure in RED and verify repair in GREEN on both engines.
    - Run `npx vitest run <path_to_test>` to confirm the deterministic RED failure.
 2. **Tier 2: Integrity & Integration Test**:
    - You MUST create or update an integration test under `tests/integration/` or `tests/node/` that validates contract boundaries, schema integrity, FSM state machine lifecycle transitions, store roundtrips (`serializeState` -> `validateAndSanitize` -> `updateState`), and `@pkmn/sim` Showdown engine parity.
+   - For database-related logic, integrity tests MUST assert identical schema structures, constraint enforcement, and query behavior across both SQLite and PostgreSQL.
    - This ensures the fix integrates cleanly across module boundaries without generating silent regressions.
 3. **Tier 3: Playwright E2E Simulation (Following `@/game-simulation`)**:
    - For all bugs touching UI interactions, combat choreography, FSM orchestration, or user-facing features, verify and add Playwright E2E simulation cases governed strictly by the protocols in `@/game-simulation` (`.agents/skills/game-simulation/SKILL.md`):
@@ -32,6 +34,7 @@ Whenever ANY bug, regression, or state desynchronization occurs across the proje
      - **Strict 5s Per-Action Timeout**: `MAX_PER_ACTION_TIMEOUT_MS = 5000`. A timeout indicates a source code bug in `src/`, NEVER a time shortage. Timeout inflation is strictly forbidden.
      - **Zero-Timer Synchronization**: Synchronization must be 100% event-driven. Polling loops (`waitForFunction`), `sleep`, `waitForTimeout`, and retry wrappers (`clickResilient`) are strictly forbidden.
      - **Certified Combat Replay**: Combats replay certified cases through the shared `ShowdownBattleRunner` with identical seeds, history, and native choices.
+     - **Dual Database Persistence Verification**: Simulations verifying persistence, database migrations, or storage state MUST execute under dual-driver mode (`driver=dual` or dual clean zero pass) certifying 100% clean passes on both `[1/2 SQLite]` and `[2/2 PostgreSQL]`.
 
 ## 3. Logging Standards (`console.debug`)
 

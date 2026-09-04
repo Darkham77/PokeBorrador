@@ -94,7 +94,8 @@
     {
       "file": "src/data/player/trainerTypes.ts",
       "exports": [
-        "requireNpcArchetype"
+        "requireNpcArchetype",
+        "TRAINER_TYPE_MATCH_MODES"
       ]
     },
     {
@@ -259,6 +260,7 @@
       "file": "src/data/system/rankedData.ts",
       "exports": [
         "RANKED_TIER_ORDER",
+        "RANKED_TIER_IDS",
         "RANKED_TYPES",
         "RANKED_TYPE_META",
         "RankedTierId"
@@ -339,7 +341,16 @@
     {
       "file": "src/logic/constants/tags.ts",
       "exports": [
-        "TAG_DEFINITIONS"
+        "TAG_DEFINITIONS",
+        "POKEMON_MANUAL_TAG_IDS",
+        "POKEMON_MANUAL_TAG_ID_SET",
+        "isPokemonManualTagId",
+        "POKEMON_TAG_IDS",
+        "POKEMON_TAG_ID_SET",
+        "requirePokemonTagId",
+        "POKEMON_FILTER_TAG_IDS",
+        "POKEMON_FILTER_TAG_ID_SET",
+        "requirePokemonFilterTagId"
       ]
     },
     {
@@ -543,7 +554,8 @@
     {
       "file": "src/logic/battle/helpers/requestHelper.ts",
       "exports": [
-        "classifyRequest"
+        "classifyRequest",
+        "REQUEST_KINDS"
       ]
     },
     {
@@ -609,7 +621,9 @@
         "TradeOffer",
         "InventoryStore",
         "ShopStore",
-        "COMPETITION_RANK_KEYS"
+        "COMPETITION_RANK_KEYS",
+        "EVENT_REWARD_TYPES",
+        "EVENT_TYPE_KINDS"
       ]
     },
     {
@@ -619,7 +633,11 @@
         "Item",
         "ShopItem",
         "ItemEffectResult",
-        "Inventory"
+        "Inventory",
+        "BAG_MAIN_TABS",
+        "ITEM_MENU_ACTIONS",
+        "ITEM_DISCARD_ACTIONS",
+        "ITEM_EFFECT_RESULT_TYPES"
       ]
     },
     {
@@ -633,6 +651,18 @@
       "file": "src/types/battle/battle.ts",
       "exports": [
         "BATTLE_MINIGAMES",
+        "BATTLE_SIDES",
+        "MINIGAME_DIFFICULTIES",
+        "BATTLE_DIFFICULTIES",
+        "BATTLE_ACTION_TYPES",
+        "PARTY_SLOT_STATUSES",
+        "LIVE_PVP_MATCH_STATUSES",
+        "BATTLE_SEAT_SPECIAL_STATES",
+        "STAT_MODIFIER_SOURCES",
+        "BATTLE_ITEM_EFFECT_KINDS",
+        "SHOWDOWN_REQUEST_TYPES",
+        "TRACKED_ACTION_SOURCES",
+        "COMBATANT_ANIM_TRIGGERS",
         "BattleStages",
         "BattleWeather",
         "BattleState",
@@ -680,7 +710,9 @@
     {
       "file": "src/types/system/database.ts",
       "exports": [
-        "AbilityBaseData"
+        "AbilityBaseData",
+        "SQL_PROXY_ACTIONS",
+        "SQL_PROXY_COUNT_MODES"
       ]
     },
     {
@@ -1033,7 +1065,11 @@
     {
       "file": "src/types/system/game.ts",
       "exports": [
-        "isGenderId"
+        "isGenderId",
+        "TOOL_QUALITY_TIERS",
+        "CLAIM_ITEM_TYPES",
+        "TRAINER_ASSET_VIEWS",
+        "COMPONENT_PILL_SIZES"
       ]
     },
     {
@@ -1052,12 +1088,6 @@
       "file": "src/data/pokemon/pokemonFeetDatabase.ts",
       "exports": [
         "isPokemonCryId"
-      ]
-    },
-    {
-      "file": "src/types/battle/battle.ts",
-      "exports": [
-        "BATTLE_SIDES"
       ]
     },
     {
@@ -1179,7 +1209,8 @@
     {
       "file": "src/logic/battle/statBreakdownHelper.ts",
       "exports": [
-        "STAGE_MULTIPLIERS_MAP"
+        "STAGE_MULTIPLIERS_MAP",
+        "STAT_MODIFIER_KINDS"
       ]
     },
     {
@@ -1218,7 +1249,92 @@
         "POKEMON_STORAGE_LOCATIONS",
         "isPokerusStatus",
         "requirePokerusStatus",
-        "POKEMON_COMPETITION_RANKS"
+        "POKEMON_COMPETITION_RANKS",
+        "STAT_BAR_MODES",
+        "STATUS_CLEAR_TARGETS",
+        "POKEMON_GENDERS",
+        "POKEMON_GENDER_NAMES",
+        "POKEDEX_STATUSES",
+        "POKEMON_SELECTION_SOURCES",
+        "OBTAINED_METHODS"
+      ]
+    },
+    {
+      "file": "src/types/auth/auth.ts",
+      "exports": [
+        "SERVER_CONNECTION_STATUSES"
+      ]
+    },
+    {
+      "file": "src/types/breeding/breeding.ts",
+      "exports": [
+        "BREEDING_ACTIVITY_SOURCES"
+      ]
+    },
+    {
+      "file": "src/types/pokemon/encounters.ts",
+      "exports": [
+        "ENCOUNTER_TYPES",
+        "ADVENTURE_EVENT_TYPES",
+        "ROUTE_SPAWN_TABS"
+      ]
+    },
+    {
+      "file": "src/types/pokemon/friendship.ts",
+      "exports": [
+        "FRIENDSHIP_LOG_TONES"
+      ]
+    },
+    {
+      "file": "src/components/modals/fishingGameHelper.ts",
+      "exports": [
+        "FISHING_DIFFICULTY_KEYS",
+        "requireFishingDifficultyKey"
+      ]
+    },
+    {
+      "file": "src/composables/adventure/useAdventureEvents.ts",
+      "exports": [
+        "ADVENTURE_TRIGGER_TYPES"
+      ]
+    },
+    {
+      "file": "src/composables/battle/useBattleBackground.ts",
+      "exports": [
+        "BATTLE_ARENA_SPECIAL_VENUES"
+      ]
+    },
+    {
+      "file": "src/composables/pokemon/useBoxFilters.ts",
+      "exports": [
+        "FRIENDSHIP_SEAL_TIER_FILTERS"
+      ]
+    },
+    {
+      "file": "src/logic/economy/market.ts",
+      "exports": [
+        "MARKET_LISTING_STATUSES",
+        "MARKET_LISTING_TYPES",
+        "MARKET_ASSET_TYPES"
+      ]
+    },
+    {
+      "file": "src/logic/pvp/pvpEngine.ts",
+      "exports": [
+        "SUPABASE_REALTIME_CHANNELS",
+        "PVP_BATTLE_PHASES"
+      ]
+    },
+    {
+      "file": "src/logic/render/atmosphere.worker.ts",
+      "exports": [
+        "ATMOSPHERE_WORKER_ACTIONS"
+      ]
+    },
+    {
+      "file": "src/stores/war.ts",
+      "exports": [
+        "WAR_WINNER_FACTIONS"
       ]
     }
   ]

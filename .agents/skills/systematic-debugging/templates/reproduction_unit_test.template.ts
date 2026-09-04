@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
+// If testing database/persistence logic, import describeWithDatabase:
+// import { describeWithDatabase, type DBEngine, type TestDatabaseContext } from '../../dbTestHelper.ts';
 
 /**
  * REPRODUCTION UNIT TEST TEMPLATE (Tier 1)
@@ -12,8 +14,12 @@ import { setActivePinia, createPinia } from 'pinia';
  *    NEVER dynamically query mutable files like fuzzer_certified_cases.json.
  * 2. Verify deterministic RED failure before editing src/.
  * 3. Verify GREEN once src/ is fixed.
+ * 4. DUAL DATABASE MANDATE: If the bug touches database queries, migrations, schemas,
+ *    or storage persistence, you MUST test across ALL supported database engines
+ *    (SQLite and PostgreSQL) using describeWithDatabase to ensure 1:1 parity.
  */
 
+// --- STANDARD UNIT TEST PATTERN ---
 describe('Reproduction: [Brief Bug Title]', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
@@ -42,3 +48,14 @@ describe('Reproduction: [Brief Bug Title]', () => {
     expect(true).toBe(true);
   });
 });
+
+// --- DUAL-ENGINE DATABASE REPRODUCTION PATTERN (MANDATORY FOR DB BUGS) ---
+// describeWithDatabase('Reproduction: [Database Bug Title]', (engine: DBEngine, getDb: () => TestDatabaseContext) => {
+//   it(`behaves identically in [${engine.toUpperCase()}] and reproduces the fix in GREEN`, async () => {
+//     const db = getDb();
+//     // Execute query or persistence operation against the active engine (SQLite or PostgreSQL)
+//     // await db.run('INSERT INTO ...');
+//     // const rows = await db.query('SELECT ...');
+//     // expect(rows).toHaveLength(1);
+//   });
+// });
