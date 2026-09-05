@@ -1,0 +1,1 @@
+import{t as e}from"./pokemonDataProvider-DLK97jFU.js";export{e as pokemonDataProvider};

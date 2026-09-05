@@ -1,0 +1,1 @@
+import{_ as e}from"./game-data-world-BesotQjx.js";export{e as requireMapRouteId};

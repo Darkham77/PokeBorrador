@@ -1,0 +1,1 @@
+import{R as e}from"./game-data-pokemon-Vbl3h-Yp.js";export{e as requirePokemonSpeciesId};

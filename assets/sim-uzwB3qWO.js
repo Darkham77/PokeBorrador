@@ -1,0 +1,1 @@
+import{B as e}from"./game-data-system-As7b0W2R.js";export{e as toID};
