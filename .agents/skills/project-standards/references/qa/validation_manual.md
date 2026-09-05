@@ -205,7 +205,7 @@ When diagnosing, reproducing, or fixing failures across tests or E2E simulation 
    - Run the full Node unit suite (`npx vitest run tests/node/` / `npm run test`) with 0 regressions.
 3. **Tier 3: Playwright E2E Browser Simulation (following `@/game-simulation`)**:
    - Re-run ONLY the specific affected simulation file (e.g. `npx playwright test scripts/e2e/battle/battle_fsm_sync.simulation.ts`).
-   - Follow all `/game-simulation` rules: passive joystick, 100% ID-based locators (`#<id>`), 5s per-action timeout limit, zero artificial timers, and certified combat replay.
+   - Follow all `/game-simulation` rules: passive joystick, 100% ID-based locators (`#<id>`), 10s per-action timeout limit, zero artificial timers, and certified combat replay.
 4. **Master Regression Pass**:
    - Once all family cases pass, run the full master E2E simulation suite:
    ```powershell

@@ -1,8 +1,8 @@
 import { test, expect, type Page } from '@playwright/test';
-import fs from 'node:fs';
-import path from 'node:path';
 import { BaseBattleSimulation } from '../base_battle_simulation.ts';
-import { waitForWaitInput, verifyHpParity, type CertifiedTestBatch, type WindowWithResolver } from '../e2e_helpers.ts';
+import { waitForWaitInput, verifyHpParity, type CertifiedTestBatch } from '../e2e_helpers.ts';
+import { loadCertifiedBattleCases } from '../helpers/certifiedCaseLoader.ts';
+import { registerCertifiedBatchTests } from '../helpers/batchSimulationHarness.ts';
 import { MAX_SUITE_TOTAL_TIMEOUT_MS } from '../simulation_config.ts';
 
 const E2E_SNORLAX_LEVEL = 50;
@@ -16,93 +16,37 @@ class HeldItemsSimWrapper extends BaseBattleSimulation {
   }
 
   public async setupLeftoversScenario(): Promise<void> {
-    await this.page.evaluate(async ({ snrLvl, catLvl }: { snrLvl: number; catLvl: number }) => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-
-      const snorlax = pokemonDebugService.generate({
-        id: 'snorlax',
-        level: snrLvl,
-        heldItem: 'leftovers',
-        moves: ['substitute', 'defensecurl']
-      });
-
-      const caterpie = pokemonDebugService.generate({
-        id: 'caterpie',
-        level: catLvl,
-        moves: ['stringshot']
-      });
-
-      useGameStore().state.team = [snorlax];
-      await useBattleStore().startBattle(caterpie, { locationId: 'route1' });
-    }, { snrLvl: E2E_SNORLAX_LEVEL, catLvl: E2E_CATERPIE_LEVEL });
+    await this.setupWildBattle(
+      { id: 'caterpie', level: E2E_CATERPIE_LEVEL, moves: ['stringshot'] },
+      {
+        playerTeam: [
+          { id: 'snorlax', level: E2E_SNORLAX_LEVEL, heldItem: 'leftovers', moves: ['substitute', 'defensecurl'] }
+        ]
+      }
+    );
   }
 
   public async setupLifeOrbScenario(): Promise<void> {
-    await this.page.evaluate(async (lvl: number) => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-
-      const mew = pokemonDebugService.generate({
-        id: 'mew',
-        level: lvl,
-        heldItem: 'lifeorb',
-        moves: ['psychic']
-      });
-      const blissey = pokemonDebugService.generate({
-        id: 'blissey',
-        level: lvl,
-        moves: ['softboiled']
-      });
-
-      useGameStore().state.team = [mew];
-      await useBattleStore().startBattle(blissey, { locationId: 'route1', enemyTeam: [blissey] });
-    }, E2E_SNORLAX_LEVEL);
+    await this.setupTrainerBattle(
+      [{ id: 'blissey', level: E2E_SNORLAX_LEVEL, moves: ['softboiled'] }],
+      {
+        playerTeam: [
+          { id: 'mew', level: E2E_SNORLAX_LEVEL, heldItem: 'lifeorb', moves: ['psychic'] }
+        ]
+      }
+    );
   }
 
   public async setupFocusSashScenario(): Promise<void> {
-    await this.page.evaluate(async ({ sunkernLvl, mewtwoLvl }: { sunkernLvl: number; mewtwoLvl: number }) => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { useMapStore } = await import('../../../src/stores/map.ts');
-      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
-
-      useMapStore().setGlobalWeather('clear');
-
-      const sunkern = pokemonDebugService.generate({
-        id: 'sunkern',
-        level: sunkernLvl,
-        ability: 'chlorophyll',
-        heldItem: 'focussash',
-        moves: ['tackle']
-      });
-      const mewtwo = pokemonDebugService.generate({
-        id: 'mewtwo',
-        level: mewtwoLvl,
-        moves: ['psystrike', 'psychic']
-      });
-
-      useGameStore().state.team = [sunkern];
-      await useBattleStore().startBattle(mewtwo, { locationId: 'route1' });
-    }, { sunkernLvl: E2E_CATERPIE_LEVEL, mewtwoLvl: E2E_MEWTWO_LEVEL });
-  }
-
-  public async getPlayerHp(): Promise<number> {
-    return await this.page.evaluate(() => (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.().state?.player?.hp ?? 0);
-  }
-
-  public async getPlayerHpInfo(): Promise<{ hp: number; maxHp: number }> {
-    return await this.page.evaluate(async () => {
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const battleStore = useBattleStore();
-      const gameStore = useGameStore();
-      const player = battleStore.player || battleStore.state?.player;
-      const team0 = gameStore.state?.team?.[0];
-      return { hp: player?.hp ?? team0?.hp ?? 0, maxHp: player?.maxHp ?? team0?.maxHp ?? 1 };
-    });
+    await this.setupWildBattle(
+      { id: 'mewtwo', level: E2E_MEWTWO_LEVEL, moves: ['psystrike', 'psychic'] },
+      {
+        weather: 'clear',
+        playerTeam: [
+          { id: 'sunkern', level: E2E_CATERPIE_LEVEL, ability: 'chlorophyll', heldItem: 'focussash', moves: ['tackle'] }
+        ]
+      }
+    );
   }
 }
 
@@ -114,8 +58,6 @@ test.describe('E2E Held Items Verification', () => {
   test('should apply passive healing from Leftovers at the end of a turn', async ({ page }) => {
     const sim = new HeldItemsSimWrapper(page, 'TestPlayerItems');
     await sim.setup();
-    await sim.speedUpAnimations(100);
-    await sim.enableE2EWorkerFlag();
     await sim.setupLeftoversScenario();
     await waitForWaitInput(page);
 
@@ -135,11 +77,9 @@ test.describe('E2E Held Items Verification', () => {
   test('should apply Life Orb recoil damage after attacking', async ({ page }) => {
     const sim = new HeldItemsSimWrapper(page, 'TestPlayerOrb');
     await sim.setup();
-    await sim.speedUpAnimations(100);
-    await sim.enableE2EWorkerFlag();
     await sim.setupLifeOrbScenario();
     await waitForWaitInput(page);
-    
+
     // Execute turn
     await sim.selectMove(0);
 
@@ -150,8 +90,6 @@ test.describe('E2E Held Items Verification', () => {
   test('should activate Focus Sash on a fatal blow and survive with 1 HP', async ({ page }) => {
     const sim = new HeldItemsSimWrapper(page, 'TestPlayerSash');
     await sim.setup();
-    await sim.speedUpAnimations(100);
-    await sim.enableE2EWorkerFlag();
     await sim.setupFocusSashScenario();
     await waitForWaitInput(page);
 
@@ -161,60 +99,16 @@ test.describe('E2E Held Items Verification', () => {
     expect(await sim.getPlayerHp()).toBe(E2E_SASH_SURVIVAL_HP);
   });
 
-  // Cargar y ejecutar lotes fuzzer
-  const consolidatorPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_certified_cases.json');
-  if (!fs.existsSync(consolidatorPath)) {
-    throw new Error(`[E2E] Missing regenerated fuzzer item artifacts: ${consolidatorPath}`);
-  }
-  const content = JSON.parse(fs.readFileSync(consolidatorPath, 'utf8')) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
-  if (!Array.isArray(content.items)) {
-    throw new Error('[E2E] Regenerated fuzzer artifacts do not contain an items array.');
-  }
-  const itemBatches = content.items as CertifiedTestBatch[];
+  // Cargar y registrar lotes fuzzer de items usando el harness unificado
+  const itemBatches = loadCertifiedBattleCases('items') as CertifiedTestBatch[];
 
-  const caseFilter = process.env.TEST_CASE;
-  const caseIdFilter = process.env.TEST_CASE_ID;
-  const startFromCaseId = process.env.TEST_START_FROM_CASE_ID;
-  const startFromIndex = process.env.TEST_START_FROM_INDEX;
-
-  let startIdx = 0;
-  if (startFromCaseId) {
-    const foundIdx = itemBatches.findIndex((b) => b.id === startFromCaseId.trim());
-    if (foundIdx !== -1) startIdx = foundIdx;
-  } else if (startFromIndex) {
-    const parsed = Number(startFromIndex);
-    if (!Number.isNaN(parsed) && parsed > 0) startIdx = parsed - 1;
-  }
-
-  const filteredItemBatches = itemBatches.map((b, idx) => ({ b, idx })).filter(({ b, idx }) => {
-    if (caseIdFilter) return b.id === caseIdFilter.trim();
-    if (caseFilter) return (idx + 1) === Number(caseFilter.trim());
-    return idx >= startIdx;
+  registerCertifiedBatchTests({
+    suiteName: 'battle_held_items.simulation.ts',
+    suiteRelativePath: 'scripts/e2e/battle/battle_held_items.simulation.ts',
+    batches: itemBatches,
+    baseTestCount: 3,
+    simWrapperFactory: (page, testId) => new HeldItemsSimWrapper(page, testId),
+    formatTestTitle: (batch, index) =>
+      `debería ejecutar el lote de fuzzer de items #${index + 1} (${batch.playerTeam.length} Pokémon) de forma determinista`
   });
-
-  if (filteredItemBatches.length > 0) {
-    filteredItemBatches.forEach(({ b: batch, idx: index }) => {
-      test(`debería ejecutar el lote de fuzzer de items #${index + 1} (${batch.playerTeam.length} Pokémon) de forma determinista`, async ({ page }) => {
-        test.setTimeout(MAX_SUITE_TOTAL_TIMEOUT_MS);
-        const sim = new HeldItemsSimWrapper(page, `Item_${index}`);
-        await sim.setup();
-
-        // Inyectar el lote usando la clase base unificada
-        await sim.setupFuzzerScenario(batch);
-
-        try {
-          await sim.replayCertifiedBattle(batch);
-        } catch (error: unknown) {
-          const caseId = batch.id || `lote-items-${index + 1}`;
-          const logBuf = (page as { _e2eLogBuffer?: string[] })._e2eLogBuffer || [];
-          console.error(`[E2E-FAIL-LOGS-START: ${caseId}]\n` + logBuf.join('\n') + `\n[E2E-FAIL-LOGS-END: ${caseId}]`);
-          if (process.env.CONTINUE_ON_ERROR === 'true') {
-            console.warn(`[E2E-WARN] Ignorando error en lote de items ${caseId}`);
-            return;
-          }
-          throw new Error(`[Fallo en Items ${caseId}]: ${error instanceof Error ? error.message : String(error)}`);
-        }
-      });
-    });
-  }
 });

@@ -178,6 +178,7 @@ test.describe('Magikarp Tournament Multi-User Podium & GUI Awarding E2E Simulati
   test('ranks 4 players deterministically by IVs, awards top 3, excludes 4th, and verifies GUI claim', async ({ page }) => {
     const sim = new MagikarpContestMultiuserSimulation(page, 'ContestChampion');
     await sim.setup();
+    await sim.purgeEventState('torneo_pesca');
 
     try {
       // 1. Fail-fast canonical validation
@@ -234,7 +235,11 @@ test.describe('Magikarp Tournament Multi-User Podium & GUI Awarding E2E Simulati
       // 11. Verify competition results in store / database
       const winners = await page.evaluate(async () => {
         const { useGameStore } = await import('../../../src/stores/game.ts');
-        const res = await useGameStore().db.from('competition_results').select('*').eq('event_id', 'torneo_pesca');
+        const res = await useGameStore()
+          .db.from('competition_results')
+          .select('*')
+          .eq('event_id', 'torneo_pesca')
+          .order('ended_at', { ascending: false });
         const rows = (res.data || []) as Array<{ winners?: unknown }>;
         if (rows.length === 0) return [];
         const latestResult = rows[0];

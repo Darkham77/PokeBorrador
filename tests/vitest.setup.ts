@@ -142,7 +142,9 @@ vi.mock('gsap', () => {
       return { 
         kill: vi.fn(), 
         eventCallback: vi.fn().mockReturnThis(),
-        progress: vi.fn().mockReturnThis(),
+        progress: vi.fn().mockReturnValue(1),
+        isActive: vi.fn().mockReturnValue(false),
+        totalDuration: vi.fn().mockReturnValue(0.01),
         pause: vi.fn().mockReturnThis(),
         play: vi.fn().mockReturnThis()
       };
@@ -152,7 +154,9 @@ vi.mock('gsap', () => {
       return { 
         kill: vi.fn(), 
         eventCallback: vi.fn().mockReturnThis(),
-        progress: vi.fn().mockReturnThis(),
+        progress: vi.fn().mockReturnValue(1),
+        isActive: vi.fn().mockReturnValue(false),
+        totalDuration: vi.fn().mockReturnValue(0.01),
         pause: vi.fn().mockReturnThis(),
         play: vi.fn().mockReturnThis()
       };
@@ -211,7 +215,9 @@ vi.mock('gsap', () => {
       kill: vi.fn().mockReturnThis(),
       addLabel: vi.fn().mockReturnThis(),
       eventCallback: vi.fn().mockReturnThis(),
-      progress: vi.fn().mockReturnThis(),
+      progress: vi.fn().mockReturnValue(1),
+      isActive: vi.fn().mockReturnValue(false),
+      totalDuration: vi.fn().mockReturnValue(0.01),
     }),
     utils: {
       clamp: (min: number, max: number, v?: number) => v !== undefined ? Math.min(Math.max(v, min), max) : (val: number) => Math.min(Math.max(val, min), max),

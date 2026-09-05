@@ -1,8 +1,6 @@
 import type { PokemonSet } from '@pkmn/sim';
-import fs from 'node:fs';
-import path from 'node:path';
 import type { CertifiedBattleCase } from '../generators/fuzzer_team_generator.ts';
-import { requireCertifiedBattleCaseDocument } from '../core/certifiedBattleCase.ts';
+import { loadCertifiedBattleCases } from '../../helpers/certifiedCaseLoader.ts';
 import { statsMap, patchShowdownSpreadModify } from '../../../../src/logic/battle/showdownAdapter.ts';
 import { createShowdownBattle } from '../../../../src/logic/battle/helpers/showdownBattleFactory.ts';
 import { ShowdownTeamMapper, type CustomPokemonSet } from '../../../../src/logic/battle/helpers/showdownTeamMapper.ts';
@@ -40,14 +38,7 @@ let enemyTeam: PokemonSet[] = [];
 let match: CertifiedBattleCase | null = null;
 
 if (caseId) {
-  const casesPath = path.resolve(process.cwd(), 'scripts/e2e/results/fuzzer_certified_cases.json');
-  if (!fs.existsSync(casesPath)) {
-    console.error(`Error: Certified cases file not found at ${casesPath}`);
-    process.exit(1);
-  }
-  const fileContent = fs.readFileSync(casesPath, 'utf8');
-  const rawCases: unknown = JSON.parse(fileContent);
-  const casesList = requireCertifiedBattleCaseDocument(rawCases, casesPath).battle;
+  const casesList = loadCertifiedBattleCases('battle') as CertifiedBattleCase[];
   match = casesList.find((c) => 
     (c.seed && c.seed.join(',') === caseId) || 
     c.id === caseId

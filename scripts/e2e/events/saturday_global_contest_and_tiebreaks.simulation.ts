@@ -93,6 +93,7 @@ test.describe('Saturday Global Open Contest & Tiebreaks E2E Simulation', () => {
   test('enrolls contestants into open categories, advances time past Saturday, and claims epic awards in GUI', async ({ page }) => {
     const sim = new SaturdayGlobalContestSimulation(page, 'SaturdayChamp');
     await sim.setup();
+    await sim.purgeEventState('gran_concurso_sabado');
 
     try {
       // 1. Fail-fast canonical validation

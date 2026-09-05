@@ -132,7 +132,7 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
              (fsmState === 'FIRST_INTRO') ||
              (fsmState === 'REWARDS_PHASE') ||
              fsmState === 'EXIT_BATTLE';
-    }, undefined, { timeout: 20000 });
+    }, undefined, { timeout: ENCOUNTER_TRANSITION_TIMEOUT_MS });
   }
 
   public async forceEncounterType(type: SearchEncounterType): Promise<void> {
@@ -189,8 +189,6 @@ class SearchLoopSimWrapper extends BaseBattleSimulation {
 }
 
 test.describe('Sequential Search Loop Battles Simulation', () => {
-  test.describe.configure({ mode: 'serial' });
-
   // SUITE 1: Modo Manual (autoBattle = false)
   test('should execute 10 sequential battles in the search loop with autoBattle = false (manual confirmation & full animations)', async ({ page }) => {
     test.setTimeout(SEARCH_LOOP_SUITE_TIMEOUT_MS);

@@ -55,7 +55,7 @@ app.config.errorHandler = (err, _instance, info) => {
   } catch (e) {
     console.error('Failed to log Vue error to errorStore:', e)
   }
-  console.error(err)
+  console.error('[Vue error]:', err)
 }
 
 app.mount('#app')

@@ -34,9 +34,12 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 interface Props {
   event: GameEvent
   occurrence?: UpcomingEventOccurrence
+  idPrefix?: string
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  idPrefix: ''
+})
 
 const eventStore = useEventStore()
 const gameStore = useGameStore()
@@ -386,7 +389,7 @@ onUnmounted(() => {
 
 <template>
   <div
-    :id="'event-card-' + event.id + (occurrence ? '-' + occurrence.startInstant.epochMilliseconds : '')"
+    :id="(idPrefix || '') + 'event-card-' + event.id + (occurrence ? '-' + occurrence.startInstant.epochMilliseconds : '')"
     class="event-card"
     :class="{ 'has-banner': Boolean(cardBannerKey), 'is-upcoming-card': isUpcoming, 'is-active-card': !isUpcoming }"
     @click.stop="openEventDetail"
@@ -501,7 +504,7 @@ onUnmounted(() => {
             position="top"
           >
             <button
-              :id="'comp-slot-chip-' + event.id + '-' + sub.id"
+              :id="(idPrefix || '') + 'comp-slot-chip-' + event.id + '-' + sub.id"
               type="button"
               class="comp-slot-chip pixelated"
               :class="{ enrolled: Boolean(getParticipantForCategory(sub)) }"
@@ -551,7 +554,7 @@ onUnmounted(() => {
         </div>
         <button
           v-else-if="event.type === 'competition'"
-          :id="'event-rules-btn-' + event.id"
+          :id="(idPrefix || '') + 'event-rules-btn-' + event.id"
           class="retro-btn rules-btn pixelated"
           @click.stop="openEventDetail"
         >

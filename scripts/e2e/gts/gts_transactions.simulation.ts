@@ -337,6 +337,7 @@ test.describe('GTS Multi-Account Transactions Simulation', () => {
     seller.finish('GTS Multi-Account Transactions Simulation');
 
     // Cleanup
+    await seller.cleanupSimulationDb();
     await sellerContext.close();
     await buyerContext.close();
   });

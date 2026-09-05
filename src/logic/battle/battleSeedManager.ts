@@ -3,7 +3,9 @@
  * Proporciona tipos fuertes y métodos deterministas para la creación, formateo e inyección de semillas.
  */
 
-export type NumericSeed = [number, number, number, number];
+import type { NumericSeed } from '@/types/battle/battle';
+
+export type { NumericSeed };
 export type ShowdownSeed = `${number},${string}`;
 
 /**

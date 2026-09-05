@@ -133,7 +133,6 @@ export function useBattleCombatantAnims(
     if ((val === 'releasing' || val === 'catching') && spriteRef.value) {
       const origin = getSpriteFeetOrigin();
       const coords = getBallTargetCoords();
-      gsap.killTweensOf(spriteRef.value);
       if (spriteRotationRef.value) {
         gsap.set(spriteRotationRef.value, { rotation: 0, clearProps: 'transform,rotation' });
       }

@@ -491,7 +491,6 @@ export const useBattleStore = defineStore('battle', () => {
   return {
     state: activeBattle, isBattleActive, awardDebugExp, isFinishing, isProcessing,
     isSearching, player, enemy,
-    // fallow-ignore-next-line unused-store-member
     playerUsedMoves, isIntroAnimating,
     // fallow-ignore-next-line unused-store-member
     isPvP,

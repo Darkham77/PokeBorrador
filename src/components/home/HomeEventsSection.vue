@@ -330,6 +330,7 @@ onUnmounted(() => {
           v-for="event in pagedActiveEvents"
           :key="event.id"
           :event="event"
+          id-prefix="home-"
         />
 
         <!-- Future Events (Only fills empty slot in single row, NEVER wrapped) -->
@@ -338,6 +339,7 @@ onUnmounted(() => {
           :key="occ.event.id + '_' + occ.startInstant.epochMilliseconds"
           :event="occ.event"
           :occurrence="occ"
+          id-prefix="home-"
         />
       </div>
 

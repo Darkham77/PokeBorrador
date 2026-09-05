@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import { type Page, expect } from '@playwright/test';
 import { toID } from '@pkmn/sim';
 import {
@@ -76,6 +77,90 @@ export interface E2EBattleState {
 /**
  * Configura los permisos iniciales mockeados en localstorage y globales
  */
+/**
+ * Determina si un mensaje de la consola del navegador representa un error crítico que debe abortar el test.
+ * Eleva todos los [Vue warn] y [Vue error] a errores fatales, junto con fallos de resolución de componentes,
+ * directivas, errores de referencia y excepciones de tipo no transitorias.
+ */
+export function isCriticalConsoleMessage(text: string, msgType: string): boolean {
+  if (text.includes('[Vue warn]') || text.includes('[Vue error]')) {
+    return true;
+  }
+  if (text.includes('Failed to resolve component') || text.includes('Failed to resolve directive')) {
+    return true;
+  }
+  if (text.includes('Vue Render Error')) {
+    return true;
+  }
+  if (msgType === 'error') {
+    if (text.includes('[CRITICAL]') || text.includes('ReferenceError')) {
+      return true;
+    }
+    if (text.includes('TypeError') && !text.includes('Failed to fetch dynamically imported module')) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Determina de forma determinista si un error o mensaje corresponde a un microcorte transitorio
+ * de red o transporte de infraestructura a nivel de host/Chromium (veth churn, socket reset,
+ * corte de WiFi o reconexión de docker bridge).
+ *
+ * Casos Positivos:
+ * - net::ERR_NETWORK_CHANGED
+ * - net::ERR_CONNECTION_RESET
+ * - net::ERR_CONNECTION_REFUSED
+ * - net::ERR_INTERNET_DISCONNECTED
+ * - net::ERR_NAME_NOT_RESOLVED
+ * - Failed to fetch dynamically imported module
+ * - ECONNREFUSED a puertos locales de dev
+ *
+ * Casos Negativos (Errores de código/lógica del juego que NUNCA deben clasificarse como red):
+ * - Errores de renderizado de Vue, advertencias de componentes o directivas
+ * - ReferenceError, RangeError, desincronizaciones de FSM o aserciones
+ */
+export function isTransientNetworkError(error: unknown): boolean {
+  if (!error) return false;
+  const text = typeof error === 'string' ? error : (error instanceof Error ? error.message : String(error));
+  if (!text || typeof text !== 'string') return false;
+
+  // Errores de transporte nativos de Chromium / libuv
+  if (
+    text.includes('net::ERR_NETWORK_CHANGED') ||
+    text.includes('net::ERR_CONNECTION_RESET') ||
+    text.includes('net::ERR_CONNECTION_REFUSED') ||
+    text.includes('net::ERR_INTERNET_DISCONNECTED') ||
+    text.includes('net::ERR_NAME_NOT_RESOLVED') ||
+    text.includes('ECONNREFUSED')
+  ) {
+    return true;
+  }
+
+  // Aborto de importación dinámica por corte de transporte HTTP hacia Vite
+  if (text.includes('Failed to fetch dynamically imported module')) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Determina de forma pura si un fallo de ejecución en simulación fue ocasionado por
+ * un microcorte de red/transporte de infraestructura, examinando tanto el mensaje de
+ * error lanzado como los eventos del buffer de logs en RAM del navegador.
+ */
+export function isTransientNetworkFailure(error: unknown, logBuffer?: readonly string[]): boolean {
+  if (isTransientNetworkError(error)) {
+    return true;
+  }
+  if (logBuffer && logBuffer.length > 0) {
+    return logBuffer.some(log => isTransientNetworkError(log));
+  }
+  return false;
+}
+
 export async function setupE2ESession(
   page: Page,
   logBuffer?: string[],
@@ -99,11 +184,7 @@ export async function setupE2ESession(
     // Always push to RAM buffer, NEVER write directly to stdout during execution
     activeBuffer.push(formatted);
 
-    if (
-      text.includes('Failed to resolve component') ||
-      (msg.type() === 'error' &&
-        (text.includes('[CRITICAL]') || text.includes('ReferenceError') || (text.includes('TypeError') && !text.includes('Failed to fetch dynamically imported module'))))
-    ) {
+    if (isCriticalConsoleMessage(text, msg.type())) {
       throw new Error(`[CRITICAL-CONSOLE-ERROR] ${text}`);
     }
   });
@@ -189,8 +270,31 @@ export async function loginE2ETestUser(
   sqliteKey?: string,
   driver: 'sqlite' | 'postgres' = 'sqlite'
 ): Promise<void> {
-  await setupE2ESession(page, logBuffer, sqliteKey, driver);
-  await loginTestUser(page, username, driver);
+  const MAX_SETUP_NETWORK_RETRIES = 3;
+  let attempt = 0;
+  while (true) {
+    attempt++;
+    try {
+      await setupE2ESession(page, logBuffer, sqliteKey, driver);
+      await loginTestUser(page, username, driver);
+      break;
+    } catch (error: unknown) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      const isNetFailure = isTransientNetworkFailure(errorMsg, logBuffer);
+      if (isNetFailure && attempt <= MAX_SETUP_NETWORK_RETRIES) {
+        const reason = isTransientNetworkError(errorMsg)
+          ? errorMsg
+          : (logBuffer?.find(log => isTransientNetworkError(log)) || errorMsg);
+        console.warn(`⚠️ [SETUP-NETWORK-RETRY] Microcorte de red detectado durante login de "${username}" (intento ${attempt}/${MAX_SETUP_NETWORK_RETRIES}): ${reason.slice(0, 120)}. Purgando logs y reintentando login en 1s...`);
+        if (logBuffer) {
+          logBuffer.length = 0;
+        }
+        await setTimeout(1000);
+        continue;
+      }
+      throw error;
+    }
+  }
 }
 
 export async function loginTestUser(

@@ -12,8 +12,19 @@ import {
 import { armBattleFlowCompletion, armBattleReadyForInput, awaitBattleFlowCompletion, awaitBattleReadyForInput, confirmAndStartBattle, executeAutoBattle, executeNativeAutoBattle, clickResilient, type CertifiedTestBatch, type WindowWithResolver } from './e2e_helpers.ts';
 import type { BattleReadyForInputDetail } from '../../src/types/battle/battleEvents.ts';
 import type { ItemId } from '../../src/data/inventory/items.ts';
+import type { PokemonSpeciesId } from '../../src/data/pokemon/pokedex.ts';
+import type { PokemonMoveId } from '../../src/data/battle/moves.ts';
+import type { AbilityId } from '../../src/data/battle/abilities.ts';
+import type { MapRouteId } from '../../src/data/world/map-assets.ts';
+import type { WeatherId } from '../../src/logic/weather/weatherRegistry.ts';
+import type { NatureId } from '../../src/data/battle/natures.ts';
+import type { Pokemon, PokemonGenderName } from '../../src/types/pokemon/pokemon.ts';
+import type { NpcSpriteId } from '../../src/data/pokemon/npcSpriteCatalog.ts';
+import type { NumericSeed } from '../../src/types/battle/battle.ts';
 import { createCertifiedBattleInventory } from './fuzzer/core/certifiedBattleInventory.ts';
 import { PokemonLegalityValidator } from '../../src/logic/battle/helpers/pokemonLegalityValidator.ts';
+
+const DEFAULT_SCENARIO_POKEMON_LEVEL = 50;
 
 /** Shape of a single Pokémon entry inside a fuzzer-certified batch team list. */
 interface FuzzerTeamSet {
@@ -41,6 +52,39 @@ export interface BattleStoreSnapshot {
   playerTeam: Array<{ uid: string; name: string; hp: number; maxHp: number; status: string | null }>;
 }
 
+export interface DebugPokemonSpec {
+  id: PokemonSpeciesId;
+  level?: number;
+  ability?: AbilityId | null;
+  moves?: PokemonMoveId[] | null;
+  heldItem?: ItemId | null;
+  nickname?: string | null;
+  nature?: NatureId | null;
+  gender?: PokemonGenderName | null;
+  shiny?: boolean;
+  isShiny?: boolean;
+  ivs?: Partial<Pokemon['ivs']> | null;
+  evs?: Partial<Pokemon['evs']> | null;
+  uid?: string;
+  hp?: number;
+  fainted?: boolean;
+  exp?: number;
+}
+
+export interface BattleScenarioOptions {
+  playerTeam?: DebugPokemonSpec[];
+  enemy?: DebugPokemonSpec;
+  enemyTeam?: DebugPokemonSpec[];
+  locationId?: MapRouteId;
+  weather?: WeatherId;
+  isTrainer?: boolean;
+  trainerName?: string;
+  trainerSprite?: NpcSpriteId;
+  isGym?: boolean;
+  inventory?: Partial<Record<ItemId, number>> | Array<{ id: ItemId; quantity: number }>;
+  seed?: NumericSeed;
+}
+
 export abstract class BaseBattleSimulation extends BaseE2ESimulation {
   private lastBattleReady: BattleReadyForInputDetail | null = null
 
@@ -58,6 +102,180 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
     await super.setup();
     await this.speedUpAnimations(SIMULATION_GSAP_TIME_SCALE);
     await this.disableAutoMode();
+    await this.enableE2EWorkerFlag();
+  }
+
+  /**
+   * Obtiene los puntos de salud actuales del Pokémon activo del jugador.
+   */
+  public async getPlayerHp(): Promise<number> {
+    return await this.page.evaluate(() => (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.().state?.player?.hp ?? 0);
+  }
+
+  /**
+   * Obtiene la información de salud actual y máxima del Pokémon del jugador.
+   */
+  public async getPlayerHpInfo(): Promise<{ hp: number; maxHp: number }> {
+    return await this.page.evaluate(async () => {
+      const debug = window.__VITE_DEBUG__ as {
+        useBattleStore?: () => { player?: { hp?: number; maxHp?: number }; state?: { player?: { hp?: number; maxHp?: number } } };
+        useGameStore?: () => { state?: { team?: Array<{ hp?: number; maxHp?: number }> } };
+      } | undefined;
+      const battleStore = debug?.useBattleStore?.();
+      const gameStore = debug?.useGameStore?.();
+      const player = battleStore?.player || battleStore?.state?.player;
+      const team0 = gameStore?.state?.team?.[0];
+      return { hp: player?.hp ?? team0?.hp ?? 0, maxHp: player?.maxHp ?? team0?.maxHp ?? 1 };
+    });
+  }
+
+  /**
+   * Configura el clima global en el MapStore para la simulación.
+   */
+  public async setMapWeather(weather: WeatherId = 'clear'): Promise<void> {
+    await this.page.evaluate(async (w: WeatherId) => {
+      const { useMapStore } = await import('../../src/stores/map.ts');
+      useMapStore().setGlobalWeather(w);
+    }, weather);
+  }
+
+  /**
+   * Siembra items en el inventario del jugador de forma determinista.
+   */
+  public async seedInventory(items: Partial<Record<ItemId, number>> | Array<{ id: ItemId; quantity: number }>): Promise<void> {
+    await this.page.evaluate(async (inventoryItems) => {
+      const { useGameStore } = await import('../../src/stores/game.ts');
+      const gameStore = useGameStore();
+      const currentInv: Partial<Record<ItemId, number>> = { ...gameStore.state.inventory };
+      if (Array.isArray(inventoryItems)) {
+        for (const item of inventoryItems) {
+          currentInv[item.id] = (currentInv[item.id] || 0) + item.quantity;
+        }
+      } else {
+        const entries = Object.entries(inventoryItems) as Array<[ItemId, number | undefined]>;
+        for (const [id, qty] of entries) {
+          if (qty !== undefined) {
+            currentInv[id] = (currentInv[id] || 0) + qty;
+          }
+        }
+      }
+      gameStore.state.inventory = currentInv;
+    }, items);
+  }
+
+  /**
+   * Configura e inicializa declarativamente un escenario completo de batalla (Pokémon, rival, clima, inventario).
+   */
+  public async setupBattleScenario(options: BattleScenarioOptions): Promise<void> {
+    await this.page.evaluate(async (opts: BattleScenarioOptions) => {
+      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
+      const { useGameStore } = await import('../../src/stores/game.ts');
+      const { useMapStore } = await import('../../src/stores/map.ts');
+      const { pokemonDebugService } = await import('../../src/logic/debug/pokemonDebugService.ts');
+
+      const battleStore = useBattleStore();
+      const gameStore = useGameStore();
+      const mapStore = useMapStore();
+
+      if (opts.weather) {
+        mapStore.setGlobalWeather(opts.weather);
+      }
+
+      if (opts.inventory) {
+        const inv: Partial<Record<ItemId, number>> = { ...gameStore.state.inventory };
+        if (Array.isArray(opts.inventory)) {
+          for (const it of opts.inventory) {
+            inv[it.id] = (inv[it.id] || 0) + it.quantity;
+          }
+        } else {
+          const entries = Object.entries(opts.inventory) as Array<[ItemId, number | undefined]>;
+          for (const [id, qty] of entries) {
+            if (qty !== undefined) {
+              inv[id] = (inv[id] || 0) + qty;
+            }
+          }
+        }
+        gameStore.state.inventory = inv;
+      }
+
+      const generateOne = (spec: DebugPokemonSpec): Pokemon => {
+        const mon = pokemonDebugService.generate({
+          id: spec.id,
+          level: spec.level ?? DEFAULT_SCENARIO_POKEMON_LEVEL,
+          ability: spec.ability,
+          moves: spec.moves,
+          heldItem: spec.heldItem,
+          nickname: spec.nickname,
+          nature: spec.nature,
+          gender: spec.gender,
+          isShiny: spec.isShiny ?? spec.shiny ?? false,
+          ivs: spec.ivs,
+          evs: spec.evs,
+          uid: spec.uid
+        });
+        if (spec.hp !== undefined) {
+          mon.hp = spec.hp;
+          if (spec.hp <= 0) mon.fainted = true;
+        }
+        if (spec.fainted !== undefined) {
+          mon.fainted = spec.fainted;
+        }
+        if (spec.exp !== undefined) {
+          mon.exp = spec.exp;
+        }
+        return mon;
+      };
+
+      if (opts.playerTeam && opts.playerTeam.length > 0) {
+        gameStore.state.team = opts.playerTeam.map(generateOne);
+      }
+
+      const enemyTeamList = opts.enemyTeam?.length
+        ? opts.enemyTeam.map(generateOne)
+        : (opts.enemy ? [generateOne(opts.enemy)] : []);
+
+      const primaryEnemy = enemyTeamList[0];
+      if (!primaryEnemy) {
+        throw new Error('[BaseBattleSimulation] Cannot setup battle scenario without at least one enemy');
+      }
+
+      if (opts.seed) {
+        const win = window as WindowWithResolver;
+        win.__VITE_DEBUG__ = win.__VITE_DEBUG__ || {};
+        win.__VITE_DEBUG__.battleSeed = opts.seed;
+      }
+
+      await battleStore.startBattle(primaryEnemy, {
+        locationId: opts.locationId || 'route1',
+        isTrainer: opts.isTrainer ?? false,
+        trainerName: opts.trainerName,
+        trainerSprite: opts.trainerSprite,
+        isGym: opts.isGym ?? false,
+        enemyTeam: enemyTeamList.length > 1 ? enemyTeamList : undefined
+      });
+    }, options);
+  }
+
+  /**
+   * Configuración simplificada para un combate contra Pokémon salvaje.
+   */
+  public async setupWildBattle(enemy: DebugPokemonSpec, options?: Omit<BattleScenarioOptions, 'enemy' | 'isTrainer'>): Promise<void> {
+    await this.setupBattleScenario({
+      ...options,
+      enemy,
+      isTrainer: false
+    });
+  }
+
+  /**
+   * Configuración simplificada para un combate contra entrenador NPC o Gimnasio.
+   */
+  public async setupTrainerBattle(enemyTeam: DebugPokemonSpec[], options?: Omit<BattleScenarioOptions, 'enemyTeam' | 'isTrainer'>): Promise<void> {
+    await this.setupBattleScenario({
+      ...options,
+      enemyTeam,
+      isTrainer: true
+    });
   }
 
   /**
@@ -623,51 +841,154 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
   }
 
   /**
-   * Configura e inyecta el escenario del fuzzer de manera idéntica al último commit de producción,
-   * garantizando paridad matemática de semillas, LCG, reseteo de workers y mapeo de slots de equipos.
+   * Ejecuta el protocolo de 7 pilares para purgar y resetear completamente el estado del cliente
+   * a bajo nivel, garantizando cero contaminación entre ejecuciones consecutivas sin recargar la página.
    */
-  public async setupFuzzerScenario(b: CertifiedTestBatch): Promise<void> {
-    PokemonLegalityValidator.assertTeamLegality(b.playerTeam, `Certified Batch ${b.id} Player Team`);
-    PokemonLegalityValidator.assertTeamLegality(b.enemyTeam, `Certified Batch ${b.id} Enemy Team`);
-    await this.speedUpAnimations(100);
-    const certifiedItemIds = b.history.flatMap((entry) => entry.p1GameAction?.kind === 'bag-item'
-      ? [entry.p1GameAction.itemId]
-      : []);
-    const certifiedInventory = createCertifiedBattleInventory(certifiedItemIds, DEBUG_ITEM_MAX_QUANTITY);
-    await this.page.evaluate(async ({ batchData, certifiedInitialInventory, constants }) => {
-      // 1. Acelerar la escala de tiempo global de GSAP antes de que inicie cualquier animación
-      const winWithGsap = window as Window & { gsap?: { globalTimeline: { timeScale: (n: number) => void } } };
-      if (winWithGsap.gsap) {
-        winWithGsap.gsap.globalTimeline.timeScale(constants.simulationGsapTimeScale);
+  public async resetToCleanState(): Promise<void> {
+    // 1. Limpieza de persistencia en backend (PostgreSQL / SQLite)
+    if (this.driver === 'postgres') {
+      try {
+        await this.queryTestDb(
+          `DELETE FROM game_saves WHERE user_id IN (SELECT id FROM profiles WHERE username = $1);`,
+          [this.username]
+        );
+      } catch {
+        // Ignorar si la tabla aún no tiene datos del usuario
+      }
+    }
+
+    // 2. Ejecución de los 7 pilares de reseteo a bajo nivel dentro del navegador
+    await this.page.evaluate(async (simTimeScale) => {
+      const win = window as Window & {
+        gsap?: { killTweensOf: (target: unknown) => void; globalTimeline: { clear: () => void; timeScale: (n: number) => void } };
+        __VITE_DEBUG__?: Record<string, unknown>;
+        __E2E_BATTLE_READY_FOR_INPUT__?: unknown;
+        __E2E_BATTLE_FORCED_SWITCH__?: unknown;
+        __E2E_BATTLE_FLOW_COMPLETION__?: unknown;
+      };
+
+      // Pilar 1: Showdown Worker Reset
+      const debug = win.__VITE_DEBUG__;
+      const testResetShowdownWorker = debug?.testResetShowdownWorker as (() => void) | undefined;
+      if (testResetShowdownWorker) {
+        testResetShowdownWorker();
       }
 
-      // 2. Sobrescribir Math.random con una función determinista idéntica al worker y fuzzer
+      // Pilar 2: GSAP & Animaciones
+      if (win.gsap) {
+        win.gsap.killTweensOf('*');
+        win.gsap.globalTimeline.clear();
+        win.gsap.globalTimeline.timeScale(simTimeScale);
+      }
+
+      // Pilar 3: Pinia Stores Deep Clean
+      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
+      const { useGameStore } = await import('../../src/stores/game.ts');
+      const { useUIStore } = await import('../../src/stores/ui.ts');
+      const { useModalStore } = await import('../../src/stores/modals.ts');
+      const { useMapStore } = await import('../../src/stores/map.ts');
+      const { useErrorStore } = await import('../../src/stores/errorStore.ts');
+      const { BATTLE_STATES } = await import('../../src/logic/battle/battleStateMachine.ts');
+
+      const battleStore = useBattleStore();
+      const gameStore = useGameStore();
+      const uiStore = useUIStore();
+      const modalStore = useModalStore();
+      const mapStore = useMapStore();
+      const errorStore = useErrorStore();
+
+      // Reset BattleStore
+      battleStore.state = null;
+      if (battleStore.fsm?.transition) {
+        await battleStore.fsm.transition(BATTLE_STATES.CONTEXT_SETUP);
+      }
+      const initialStages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 };
+      battleStore.playerStages = { ...initialStages };
+      battleStore.enemyStages = { ...initialStages };
+      battleStore.battleLogs = [];
+      if (Array.isArray(battleStore.playerUsedMoves)) {
+        battleStore.playerUsedMoves.length = 0;
+      }
+      battleStore.isIntroAnimating = false;
+      battleStore.isProcessing = false;
+      battleStore.exitingPlayer = null;
+      battleStore.exitingEnemy = null;
+      battleStore.trainerAnimState = 'idle';
+      battleStore.isSilhouetteMode = false;
+      battleStore.attackerSide = null;
+      battleStore.activeMove = null;
+
+      // Reset GameStore
+      gameStore.state.team = [];
+      gameStore.state.inventory = {};
+      gameStore.state.starterChosen = true;
+      gameStore.state.notificationHistory = [];
+      gameStore.state.activeBattle = null;
+
+      // Reset UIStore & ModalStore
+      uiStore.activeTab = 'battle';
+      uiStore.isBattleSwitchForced = false;
+      modalStore.closeAll();
+
+      // Reset MapStore & ErrorStore
+      mapStore.setGlobalWeather('clear');
+      errorStore.clearError();
+
+      // Pilar 4: DOM Hygiene & Ciclos de renderizado de Vue
+      document.querySelectorAll('[id^="toast-item-"]').forEach(el => el.remove());
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+      // Pilar 5: PRNG & Debug globals
       let seedVal = 12345;
       Math.random = () => {
         const x = Math.sin(seedVal++) * 10000;
         return x - Math.floor(x);
       };
 
+      if (debug) {
+        debug.p1ChoiceIdx = 0;
+        debug.p2ChoiceIdx = 0;
+        Reflect.set(debug, 'replayHistoryIdx', 0);
+        Reflect.set(debug, 'certifiedReplayWorkerEnded', false);
+        Reflect.deleteProperty(debug, 'certifiedReplayWorkerFinalState');
+        Reflect.deleteProperty(debug, 'certifiedReplayIntroDiagnostics');
+        Reflect.set(debug, 'certifiedReplaySubmissionTrace', []);
+        debug.enemyChoiceIndex = 0;
+        debug.playerChoices = [];
+        debug.enemyChoices = [];
+        debug.mockEnemyChoices = [];
+        debug.history = [];
+        Reflect.deleteProperty(debug, 'battleSeed');
+      }
+
+      // Pilar 6: E2E Event Promises purge
+      delete win.__E2E_BATTLE_READY_FOR_INPUT__;
+      delete win.__E2E_BATTLE_FORCED_SWITCH__;
+      delete win.__E2E_BATTLE_FLOW_COMPLETION__;
+    }, SIMULATION_GSAP_TIME_SCALE);
+
+    this.lastBattleReady = null;
+  }
+
+  /**
+   * Configura e inyecta el escenario del fuzzer de manera idéntica al último commit de producción,
+   * garantizando paridad matemática de semillas, LCG, reseteo de workers y mapeo de slots de equipos.
+   */
+  public async setupFuzzerScenario(b: CertifiedTestBatch): Promise<void> {
+    PokemonLegalityValidator.assertTeamLegality(b.playerTeam, `Certified Batch ${b.id} Player Team`);
+    PokemonLegalityValidator.assertTeamLegality(b.enemyTeam, `Certified Batch ${b.id} Enemy Team`);
+    await this.resetToCleanState();
+    const certifiedItemIds = b.history.flatMap((entry) => entry.p1GameAction?.kind === 'bag-item'
+      ? [entry.p1GameAction.itemId]
+      : []);
+    const certifiedInventory = createCertifiedBattleInventory(certifiedItemIds, DEBUG_ITEM_MAX_QUANTITY);
+    await this.page.evaluate(async ({ batchData, certifiedInitialInventory, constants }) => {
       // Inyectar contexto a través de la API debug global expuesta en window
       const debug = window.__VITE_DEBUG__;
       if (!debug || !debug.useBattleStore || !debug.useGameStore || !debug.useMapStore || !debug.pokemonDebugService) return;
 
-      if (debug.testResetShowdownWorker) {
-        debug.testResetShowdownWorker();
-      }
-
       const battleStore = debug.useBattleStore();
       const gameStore = debug.useGameStore();
-
-      battleStore.state = null;
-      gameStore.state.team = [];
-      gameStore.state.starterChosen = true;
-
-      // Esperar reactivamente a que Vue procese el desmontado del componente de batalla previo usando ciclos de animación nativos
-      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-
-      // Forzar el clima a despejado ('clear') en el MapStore para coincidir 1:1 con el fuzzer
-      debug.useMapStore().setGlobalWeather('clear');
 
       // Generar equipo local para el jugador usando la API de depuración con el formato de nicknames correcto
       const localPlayerTeam = batchData.playerTeam.map((set: FuzzerTeamSet) => {
@@ -716,7 +1037,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       const w = window as WindowWithResolver;
       w.__VITE_DEBUG__ = w.__VITE_DEBUG__ ?? {};
       const debugObj = w.__VITE_DEBUG__;
-      debugObj.battleSeed = (batchData.seed ?? undefined) as [number, number, number, number] | undefined;
+      debugObj.battleSeed = (batchData.seed ?? undefined) as NumericSeed | undefined;
       debugObj.isDeterministicSimulation = true;
       debugObj.isScriptedReplayMode = true;
       const enemyChoices: string[] = batchData.enemyChoices ?? []; // no-domain: Non-domain utility collection or data structure

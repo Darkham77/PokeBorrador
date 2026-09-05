@@ -178,12 +178,18 @@ IV_Effective = max(ContextualBonus, IV_Generated)
 Next_Level_XP = floor(Current_XP * 1.2)
 ```
 
-### 2. EXP Yield per Defeated Foe
+### 2. EXP & EV Yield per Defeated or Captured Foe
 ```text
 Exp_Yield = floor(Enemy_Level * 4 * Distribution * ClassMultiplier * GlobalMultiplier)
 ```
-- **Distribution**: `1.0` (Active combatant), `0.5` (EXP Share).
-- **Max Level Cap**: `100` (`MAX_POKEMON_LEVEL` in `src/data/system/constants.ts`).
+- **Distribution (Party-wide Gen 6–9 Engine)**:
+  - `1.0`: Active combatants / participants, or living bench members holding `expshare`.
+  - `0.5`: Living benched party members without `expshare`.
+  - `0.0`: Any Pokémon with `hp <= 0` (fainted Pokémon are strictly excluded from earning EXP or EVs).
+- **100% Undivided EV Parity**:
+  - Every Pokémon receiving `Exp_Yield > 0` receives the **100% full, undivided EV yield** of the opponent species. Effort values are never split, halved, or fractioned across party members.
+  - Individual held items (`poweritems`, `machobrace`) and `pokerus` apply multiplicatively/additively only to the specific recipient.
+- **Max Level Cap**: `100` (`MAX_POKEMON_LEVEL` in `src/data/system/constants.ts`). Living level 100 Pokémon continue to gain EVs and recalculate stats in real time.
 
 ---
 

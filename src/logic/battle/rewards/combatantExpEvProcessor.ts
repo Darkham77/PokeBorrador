@@ -47,6 +47,9 @@ export async function processCombatantExpAndEvs(
 
     const baseExp = calculateBaseExp(e);
     for (const p of ctx.gs.state.team) {
+      // Canonical Rule: A newly captured Pokemon never gains Exp/EVs from its own capture
+      if (active.isCapture && p.uid === e.uid) continue;
+
       const reward = processExpGain(p, baseExp, participantsSet, {
         isActive: p.uid === active.player?.uid,
         classMult,
@@ -90,6 +93,9 @@ export async function processCombatantExpAndEvs(
 
     // Process EV gains
     for (const p of ctx.gs.state.team) {
+      // Canonical Rule: A newly captured Pokemon never gains Exp/EVs from its own capture
+      if (active.isCapture && p.uid === e.uid) continue;
+
       const evReward = processEvGain(p, e, participantsSet);
       if (evReward && evReward.totalGained > 0) {
         recalcPokemonStats(p);

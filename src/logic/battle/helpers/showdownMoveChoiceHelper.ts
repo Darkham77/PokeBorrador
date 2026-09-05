@@ -27,17 +27,24 @@ export function resolveValidMoveChoice(
   if (!moveMatch) return choiceStr;
 
   const movesList = Array.isArray(activeMoves) ? activeMoves : [];
-  if (movesList.length === 1 && (movesList[0]?.id === 'recharge' || movesList[0]?.move === 'Recharge')) {
-    const suffix = moveMatch[2] ?? '';
+  if (movesList.length === 0) return choiceStr;
+
+  const suffix = moveMatch[2] ?? '';
+
+  // If there is only 1 move slot available in the request (e.g. locked into 2-turn move like Shadow Force/Solar Beam/Fly,
+  // recharge, struggle, or single-move set), Showdown only accepts slot 1.
+  if (movesList.length === 1 && movesList[0]?.id) {
     return `move 1${suffix}`;
   }
 
   const requestedSlot = parseInt(moveMatch[1]!, 10);
   const targetMove = movesList[requestedSlot - 1];
-  if (targetMove && (targetMove.disabled || targetMove.pp === 0)) {
+
+  // If requested move does not exist in request (out of bounds slot) or is disabled or has 0 PP,
+  // find the first legal move slot with available PP.
+  if (!targetMove || targetMove.disabled || targetMove.pp === 0) {
     const firstValidIdx = movesList.findIndex(m => m && !m.disabled && (m.pp === undefined || m.pp > 0));
     if (firstValidIdx !== -1) {
-      const suffix = moveMatch[2] ?? '';
       return `move ${firstValidIdx + 1}${suffix}`;
     }
   }

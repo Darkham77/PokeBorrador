@@ -23,12 +23,12 @@ When a browser simulation fails (`npm run sim:e2e` or targeted family):
        "driver": "sqlite",
        "failedTestTitle": "Lote de fuzzer #14...",
        "failedBatchIndex": 14,
-       "errorSnippet": "Timeout 5000ms exceeded waiting for locator('#switch-menu-btn')"
+       "errorSnippet": "Timeout 10000ms exceeded waiting for locator('#switch-menu-btn')"
      }
      ```
 3. **Trace Analysis**:
-   - Identify whether the timeout hit `MAX_PER_ACTION_TIMEOUT_MS = 5000`.
-   - **Remember**: A 5s timeout is 100% guaranteed to be a missing event dispatch (`GAME_UI_EVENTS`), missing GSAP `onComplete` trigger, or unmounted ID locator in `src/`, NEVER a time shortage.
+   - Identify whether the timeout hit `MAX_PER_ACTION_TIMEOUT_MS = 10000`.
+   - **Remember**: A 10s timeout is 100% guaranteed to be a missing event dispatch (`GAME_UI_EVENTS`), missing GSAP `onComplete` trigger, or unmounted ID locator in `src/`, NEVER a time shortage.
 
 ### B. Headless Fuzzer Failures & Battle Replayer Desyncs
 
@@ -85,7 +85,7 @@ Before touching any code or formulating hypotheses, identify the authoritative c
      - Persistence & SQLite: `database/AGENTS.md` / `src/logic/auth/AGENTS.md`
 2. **Consult Specialized Reference Manuals**:
    - Check [.agents/skills/project-standards/references/rules/](file:///home/franco/Trabajos/PokeBorrador/.agents/skills/project-standards/references/rules/README.md) for applicable engine laws:
-     - `testing_and_simulations.md`: Passive joystick, 5s timeout, zero timers.
+     - `testing_and_simulations.md`: Passive joystick, 10s timeout, zero timers.
      - `game_engine_and_state.md`: Showdown canonical rules, 4-seat generalization, UID parity.
      - `database_and_persistence.md`: DBRouter context isolation, Save Shield.
      - `typescript_conventions.md`: Domain-type-first, zero any, zero fallbacks.

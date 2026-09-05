@@ -1203,7 +1203,11 @@ _Note: Manual Fleeing (via Run Button) triggers `EXIT_BATTLE` directly and close
 
 During the `REWARDS_PHASE` (1.0s transition), the system processes asynchronous calculations:
 
-- **XP Processing**: XP gained is calculated and applied to team members.
+- **Party-Wide Exp & EV Distribution (Gen VI–IX Canonical Parity)**:
+  - Triggered upon either defeating (`ENEMY_DEFEAT`) or capturing (`CATCH_SUCCESS`) an enemy Pokémon.
+  - **Strict Zero HP / Fainted Exclusion**: Any party member with `hp <= 0` or `fainted === true` is strictly excluded and receives 0 Exp and 0 EVs.
+  - **Exp Gain Formula**: Active battle participants and Pokémon holding the `expshare` item receive full experience (`share = 1.0`). Living benched members receive 50% experience (`share = 0.5`).
+  - **100% Undivided EV Yield**: Every living Pokémon in the party receives 100% of the defeated foe's base EV yield. EVs are never halved, divided, or reduced for bench recipients. Held item modifiers (`powerbracer`, `poweranklet`, `machobrace`, etc.) and Pokérus multipliers apply individually per Pokémon.
 - **Level Detection**: If the new XP exceeds the current level threshold, the Pokémon levels up.
 - **Gold Distribution**: Gold earned is added to the player's balance.
 

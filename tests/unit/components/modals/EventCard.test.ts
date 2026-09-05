@@ -85,4 +85,23 @@ describe('EventCard.vue', () => {
     await wrapper.trigger('click')
     expect(modalStore.isOpen('EventDetail')).toBe(true)
   })
+
+  it('supports idPrefix prop to prevent DOM ID collision between home widget and modal', () => {
+    const modalWrapper = mount(EventCard, {
+      props: { event: mockActiveEvent },
+      global: { plugins: [pinia] }
+    })
+
+    const homeWrapper = mount(EventCard, {
+      props: {
+        event: mockActiveEvent,
+        idPrefix: 'home-'
+      },
+      global: { plugins: [pinia] }
+    })
+
+    expect(modalWrapper.attributes('id')).toBe('event-card-fiebre_oro')
+    expect(homeWrapper.attributes('id')).toBe('home-event-card-fiebre_oro')
+    expect(modalWrapper.attributes('id')).not.toBe(homeWrapper.attributes('id'))
+  })
 })

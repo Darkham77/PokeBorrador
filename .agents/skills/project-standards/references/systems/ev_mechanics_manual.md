@@ -68,15 +68,18 @@ Consumables allow direct adjustment of EVs from the inventory (`src/logic/items/
 
 ## 4. ⚔️ Battle Rewards & Distribution Flow
 
-Battle EV gains are orchestrated by `processEvGain()` in [`src/logic/battle/battleRewards.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/battle/battleRewards.ts) and executed in [`rewardsDistributor.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/battle/rewardsDistributor.ts):
+Battle EV gains are orchestrated by `processEvGain()` in [`src/logic/battle/battleRewards.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/battle/battleRewards.ts) and executed in [`rewardsDistributor.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/battle/rewardsDistributor.ts) alongside `processCombatantExpAndEvs()` in [`combatantExpEvProcessor.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/battle/rewards/combatantExpEvProcessor.ts):
 
-1. **Eligible Recipients**:
-   - Any Pokémon that actively entered combat (`participantsSet.has(p.uid)`).
-   - Any benched team Pokémon holding `expshare`.
+1. **Modern Canonical Party Distribution (Gen 6–9 Engine Parity)**:
+   - **All Living Party Members**: Every non-fainted Pokémon in the player's party (`hp > 0`) earns Exp and EVs upon defeating or capturing a foe.
+   - **100% Full Undivided EV Yield**: Unlike base Experience which is shared (100% active, 50% bench), Effort Values **NEVER divide into fractions or split across participants**. Every eligible Pokémon receiving Exp earns the **100% full base EV yield** of the defeated/captured foe.
+   - **Boosted Exp Share (`expshare`)**: While modern party sharing is passive for the entire party, equipping `expshare` on a benched Pokémon boosts its Exp share from 50% to 100% full share.
+   - **Strict 0 HP Exclusion Rule**: Any Pokémon with `hp <= 0` (or `fainted = true`) at the moment of victory/capture is **strictly excluded** and earns **0 Exp and 0 EVs**, even if it actively battled earlier or carries `expshare`.
 2. **Yield Lookup**:
    - Retrieves base species yield from `pokemonDataProvider.getEvYield(enemySpecies)` ([`evYields.ts`](file:///home/franco/Trabajos/PokeBorrador/src/data/pokemon/evYields.ts)).
 3. **Calculation & Clamping**:
    - `applyEvGains(currentEvs, baseYield, heldItem, hasPokerus)` applies modifiers and clamps within single-stat (252) and total (510) limits.
+   - Training items (`powerweight`, `machobrace`) and Pokérus scale only the specific holder's gains without contaminating teammates.
 4. **Recalculation & Logging**:
    - If `totalGained > 0`, invokes `recalcPokemonStats(p)` and emits an in-game action log in Spanish (e.g. `¡Pikachu ganó +2 ATQ, +1 VEL (EVs)!`).
 

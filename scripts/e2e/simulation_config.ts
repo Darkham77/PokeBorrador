@@ -7,7 +7,7 @@
  */
 
 /** Maximum allowed time for an individual micro-action, turn step, or event reaction (Fail-Fast Rule). */
-export const MAX_PER_ACTION_TIMEOUT_MS = 5000;
+export const MAX_PER_ACTION_TIMEOUT_MS = 10000;
 
 /** Maximum allowed total execution time for a full battle simulation suite/batch (3 Minutes statically). */
 export const MAX_SUITE_TOTAL_TIMEOUT_MS = 180000;

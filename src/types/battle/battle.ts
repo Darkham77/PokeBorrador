@@ -9,6 +9,8 @@ import type { MapRouteId } from '@/data/world/map-assets';
 import type { MoveCategory } from '@/data/battle/moves';
 import type { DayPhase } from '@/logic/utils/timeUtils';
 
+/** Canonical Showdown PRNG 4-word integer seed tuple ([w, x, y, z]) */
+export type NumericSeed = [number, number, number, number];
 
 export type CoreBattleStatKey = 'atk' | 'def' | 'spa' | 'spd' | 'spe' | 'accuracy' | 'evasion' | 'reflect' | 'lightScreen' | 'safeguard' | 'mist' | 'spikes';
 export const BATTLE_SIDES = ['player', 'enemy'] as const;

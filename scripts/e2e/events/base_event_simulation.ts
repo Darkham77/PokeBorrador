@@ -23,6 +23,25 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
   }
 
   /**
+   * Overrides base setup to purge leftover awards and entries for this test user.
+   * Enforces Dual Database Shared State Reset Contract (AGENTS.md line 12).
+   */
+  public override async setup(): Promise<void> {
+    await super.setup();
+    if (this.driver === 'postgres') {
+      await this.queryTestDb('DELETE FROM awards WHERE winner_name = ?', [this.username]);
+      await this.queryTestDb('DELETE FROM competition_entries WHERE player_name = ?', [this.username]);
+    } else {
+      await this.page.evaluate(async (user) => {
+        const { queryLocal, persistSQLite } = await import('../../../src/logic/db/sqliteEngine.ts');
+        await queryLocal('DELETE FROM awards WHERE winner_name = ?', [user]);
+        await queryLocal('DELETE FROM competition_entries WHERE player_name = ?', [user]);
+        await persistSQLite();
+      }, this.username);
+    }
+  }
+
+  /**
    * Sets the game client's virtual clock to a deterministic date and time.
    * Dispatches time-sync-update to trigger immediate reactive updates across all stores.
    */
@@ -83,6 +102,28 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
         const { useEventStore } = await import('../../../src/stores/events.ts');
         await useEventStore().fetchEvents(true);
       }, targetEventId);
+    }
+  }
+
+  /**
+   * Resets all competition entries, results, awards, and lockout for an event.
+   * Enforces Dual Database Shared State Reset Contract (AGENTS.md).
+   */
+  public async purgeEventState(eventId: string): Promise<void> {
+    if (this.driver === 'postgres') {
+      await this.queryTestDb('DELETE FROM competition_entries WHERE event_id = ?', [eventId]);
+      await this.queryTestDb('DELETE FROM competition_results WHERE event_id = ?', [eventId]);
+      await this.queryTestDb('DELETE FROM awards WHERE event_id = ?', [eventId]);
+      await this.queryTestDb('UPDATE events_config SET last_awarded_at = NULL WHERE id = ?', [eventId]);
+    } else {
+      await this.page.evaluate(async (id) => {
+        const { queryLocal, persistSQLite } = await import('../../../src/logic/db/sqliteEngine.ts');
+        await queryLocal('DELETE FROM competition_entries WHERE event_id = ?', [id]);
+        await queryLocal('DELETE FROM competition_results WHERE event_id = ?', [id]);
+        await queryLocal('DELETE FROM awards WHERE event_id = ?', [id]);
+        await queryLocal('UPDATE events_config SET last_awarded_at = NULL WHERE id = ?', [id]);
+        await persistSQLite();
+      }, eventId);
     }
   }
 

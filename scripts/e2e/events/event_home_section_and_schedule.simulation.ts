@@ -4,7 +4,7 @@
  * E2E Simulation Suite 5: Home View Events Section & Live Schedule Synchronization
  * Validates:
  * 1. Home dashboard events widget (#home-events-section) mounting and rendering.
- * 2. Real-time active event card presence (#event-card-torneo_pesca) on the dashboard.
+ * 2. Real-time active event card presence (#home-event-card-torneo_pesca) on the dashboard.
  * 3. Weekly 7-day schedule accordion toggle (#home-events-schedule-toggle-btn).
  * 4. Manual / reactive event refresh button (#home-events-refresh-btn).
  * 5. Dynamic time advancement past event end and past events history accordion (#home-events-history-toggle-btn).
@@ -78,7 +78,7 @@ test.describe('World Events Home Dashboard & Schedule E2E Simulation', () => {
       await expect(homeSection).toBeVisible({ timeout: E2E_ACTION_TIMEOUT_MS });
 
       // 5. Verify active event card is rendered inside home widget
-      const activeCard = homeSection.locator('#event-card-torneo_pesca');
+      const activeCard = homeSection.locator('#home-event-card-torneo_pesca');
       await expect(activeCard).toBeVisible({ timeout: E2E_ACTION_TIMEOUT_MS });
 
       // 6. Test Weekly 7-Day Schedule Accordion Toggle:

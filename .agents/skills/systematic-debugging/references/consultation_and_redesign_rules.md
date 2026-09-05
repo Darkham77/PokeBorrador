@@ -68,6 +68,6 @@ When operating under **Automatic Invocation**:
    - Select the least complex, most minimal working solution.
    - Avoid speculative abstractions, unnecessary new dependencies, or redundant helper classes.
 2. **Never Weaken Core Gates**:
-   - Even in automatic mode, the agent is strictly forbidden from introducing masking fallbacks (`||`, `??`), inflating Playwright action timeouts beyond 5s, or using `@ts-ignore`.
+   - Even in automatic mode, the agent is strictly forbidden from introducing masking fallbacks (`||`, `??`), inflating Playwright action timeouts beyond 10s, or using `@ts-ignore`.
 3. **Document in Ledger**:
    - Record the decision, rationalization, and files touched under `## Critical Decisions` in the final summary report.

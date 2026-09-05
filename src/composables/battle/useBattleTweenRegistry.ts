@@ -43,7 +43,9 @@ export function useBattleTweenRegistry() {
 
   const safeAwaitTween = async (tween: gsap.core.Tween | gsap.core.Timeline): Promise<void> => {
     // If the tween already completed, or was killed/detached (parent === null), unblock immediately.
-    if (!tween.isActive() && (!tween.parent || tween.progress() === 1)) return
+    const isActive = typeof tween.isActive === 'function' ? tween.isActive() : false
+    const progress = typeof tween.progress === 'function' ? (typeof tween.progress() === 'number' ? tween.progress() : 0) : 0
+    if (!isActive && (!tween.parent || progress === 1)) return
 
     return new Promise<void>((resolve) => {
       let resolved = false
@@ -58,18 +60,20 @@ export function useBattleTweenRegistry() {
       }
 
       // Preserve existing callback chains
-      const origComplete = tween.eventCallback('onComplete')
-      tween.eventCallback('onComplete', () => {
-        if (typeof origComplete === 'function') origComplete()
-        done()
-      })
-      const origInterrupt = tween.eventCallback('onInterrupt')
-      tween.eventCallback('onInterrupt', () => {
-        if (typeof origInterrupt === 'function') origInterrupt()
-        done()
-      })
+      if (typeof tween.eventCallback === 'function') {
+        const origComplete = tween.eventCallback('onComplete')
+        tween.eventCallback('onComplete', () => {
+          if (typeof origComplete === 'function') origComplete()
+          done()
+        })
+        const origInterrupt = tween.eventCallback('onInterrupt')
+        tween.eventCallback('onInterrupt', () => {
+          if (typeof origInterrupt === 'function') origInterrupt()
+          done()
+        })
+      }
 
-      const durationSec = tween.totalDuration() || 0.5
+      const durationSec = typeof tween.totalDuration === 'function' ? (tween.totalDuration() || 0.5) : 0.5
       fallbackCall = gsap.delayedCall(durationSec + 0.1, done)
     })
   }
@@ -99,6 +103,7 @@ export function useBattleTweenRegistry() {
         pendingTweenResolvers.delete(animKey)
         resolve()
       })
+
       pendingTweenResolvers.set(animKey, {
         resolve: () => {
           fallbackTimer.kill()

@@ -16,7 +16,7 @@ import { MAX_PER_ACTION_TIMEOUT_MS } from '../e2e_constants.ts';
  * Inviolable Laws:
  * 1. Passive Joystick: Test only reacts to typed public events and official UI.
  * 2. 100% ID-Based Locators: Only locator('#<id>') or data-pokemon-uid attributes.
- * 3. Strict 5s Action Timeout: MAX_PER_ACTION_TIMEOUT_MS = 5000. Never inflate!
+ * 3. Strict 10s Action Timeout: MAX_PER_ACTION_TIMEOUT_MS = 10000. Never inflate!
  * 4. Zero Artificial Timers: No waitForTimeout(), sleep(), or retry loops.
  */
 

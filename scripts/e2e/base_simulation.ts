@@ -20,6 +20,7 @@ export abstract class BaseE2ESimulation {
   protected sqliteKey: string;
   protected logBuffer: string[];
   protected driver: SimulationDbDriver;
+  protected isSharedDatabase: boolean;
   protected startTime: number = Temporal.Now.instant().epochMilliseconds;
 
   constructor(
@@ -46,6 +47,7 @@ export abstract class BaseE2ESimulation {
 
     this.driver = resolvedOptions?.driver ||
       (typeof process !== 'undefined' && process.env.SIM_DB_DRIVER === 'postgres' ? 'postgres' : 'sqlite');
+    this.isSharedDatabase = Boolean(sqliteKey || resolvedOptions?.sqliteKey);
     this.sqliteKey = sqliteKey || resolvedOptions?.sqliteKey || `sim_db_${username.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`; // string-ok: Internal string formatting or DOM token identifier
     this.logBuffer = resolvedBuffer || resolvedOptions?.logBuffer || [];
   }
@@ -205,6 +207,24 @@ export abstract class BaseE2ESimulation {
   }
 
   /**
+   * Limpia completamente la base de datos temporal de simulación en disco y en la memoria RAM del Vite Dev Server
+   */
+  public async cleanupSimulationDb(): Promise<void> {
+    if (this.driver === 'sqlite') {
+      const dbPath = this.getDbPath();
+      const fs = await import('node:fs');
+      if (fs.existsSync(dbPath)) {
+        try { fs.unlinkSync(dbPath); } catch { /* ignore non-existent db */ }
+      }
+      try {
+        await this.page.request.post('/api/dev-sim-db-cleanup', {
+          headers: { 'x-db-key': this.sqliteKey }
+        });
+      } catch { /* ignore if dev server not reachable or in non-browser context */ }
+    }
+  }
+
+  /**
    * Ejecuta el setup de sesión y realiza el login determinista con selección de inicial automático
    */
   public async setup(): Promise<void> {
@@ -213,10 +233,8 @@ export abstract class BaseE2ESimulation {
 
     // Pre-test State Reset by Inheritance
     if (this.driver === 'sqlite') {
-      const dbPath = this.getDbPath();
-      const fs = await import('node:fs');
-      if (fs.existsSync(dbPath)) {
-        try { fs.unlinkSync(dbPath); } catch { /* ignore non-existent db */ }
+      if (!this.isSharedDatabase) {
+        await this.cleanupSimulationDb();
       }
     } else {
       try {

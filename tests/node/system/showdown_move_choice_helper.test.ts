@@ -83,13 +83,16 @@ describe('showdownMoveChoiceHelper - Comprehensive Unit Tests', () => {
       expect(resolveValidMoveChoice('move 1 2', moves)).toBe('move 2 2');
     });
 
-    it('should normalize single-move recharge state to move 1', () => {
+    it('should normalize single-move locked/recharge states to move 1', () => {
       const rechargeById: ActiveRequestMove[] = [{ id: 'recharge', disabled: false }];
       const rechargeByName: ActiveRequestMove[] = [{ move: 'Recharge', disabled: false }];
+      const shadowForce: ActiveRequestMove[] = [{ id: 'shadowforce', move: 'Shadow Force', disabled: false }];
 
       expect(resolveValidMoveChoice('move 3', rechargeById)).toBe('move 1');
       expect(resolveValidMoveChoice('move 4', rechargeByName)).toBe('move 1');
+      expect(resolveValidMoveChoice('move 3', shadowForce)).toBe('move 1');
       expect(resolveValidMoveChoice('move 2 terastallize', rechargeById)).toBe('move 1 terastallize');
+      expect(resolveValidMoveChoice('move 3 terastallize', shadowForce)).toBe('move 1 terastallize');
     });
 
     it('should return original choice if all moves are disabled or out of PP', () => {
@@ -101,11 +104,17 @@ describe('showdownMoveChoiceHelper - Comprehensive Unit Tests', () => {
       expect(resolveValidMoveChoice('move 2', moves)).toBe('move 2');
     });
 
-    it('should return original choice if requested slot is out of bounds', () => {
+    it('should redirect out of bounds move slots to the first legal move slot', () => {
       const moves: ActiveRequestMove[] = [
         { id: 'thunderbolt', move: 'Thunderbolt', pp: 24, disabled: false }
       ];
-      expect(resolveValidMoveChoice('move 5', moves)).toBe('move 5');
+      expect(resolveValidMoveChoice('move 5', moves)).toBe('move 1');
+
+      const allDisabled: ActiveRequestMove[] = [
+        { id: 'thunderbolt', move: 'Thunderbolt', pp: 0, disabled: true },
+        { id: 'surf', move: 'Surf', pp: 0, disabled: true }
+      ];
+      expect(resolveValidMoveChoice('move 5', allDisabled)).toBe('move 5');
     });
 
     it('should handle undefined or empty activeMoves gracefully', () => {

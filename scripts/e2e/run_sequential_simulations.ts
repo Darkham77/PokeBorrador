@@ -78,10 +78,15 @@ function discoverPlaywrightTargets(): SimulationTarget[] {
   const countMap = new Map<string, number>();
 
   try {
+    const isClean = isCleanRequested(process.argv);
     const output = execSync('npx playwright test --list --reporter=json', {
       encoding: 'utf8',
       stdio: ['pipe', 'pipe', 'ignore'],
-      maxBuffer: 30 * 1024 * 1024
+      maxBuffer: 30 * 1024 * 1024,
+      env: {
+        ...process.env,
+        ...(isClean ? { SIM_CLEAN: 'true' } : {})
+      }
     });
     const parsed = JSON.parse(output) as { suites?: PlaywrightSuiteNode[] };
 
@@ -499,6 +504,7 @@ async function runAllSequentialSuites(): Promise<void> {
       const suiteDisplayIdx = globalIdx !== -1 ? globalIdx + 1 : i + 1;
       const totalDisplayCount = rawFilter ? targets.length : activeTargets.length;
 
+      logger.progress('\n' + '━'.repeat(80));
       if (selectedDriver === 'dual') {
         let sqliteSec = '0.0';
         if (!skipSqlite) {
@@ -520,6 +526,14 @@ async function runAllSequentialSuites(): Promise<void> {
             process.exit(1);
           }
           sqliteSec = ((Date.now() - sqliteStart) / 1000).toFixed(1);
+          if (!rawFilter) {
+            recordMasterSuiteProgress({
+              suiteIndex: i,
+              suiteName: target.name,
+              suiteRelativePath: target.relativePath,
+              driver: 'postgres',
+            });
+          }
         } else {
           logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `⏭️ [1/2 SQLite] Omitido por checkpoint previo: "${target.name}" ya superó SQLite.`);
         }
@@ -553,6 +567,7 @@ async function runAllSequentialSuites(): Promise<void> {
             suiteName: nextTarget.name,
             suiteRelativePath: nextTarget.relativePath,
             driver: 'sqlite',
+            completedSuiteName: target.name,
           });
         }
       } else {
@@ -565,6 +580,17 @@ async function runAllSequentialSuites(): Promise<void> {
           const durationSec = ((Date.now() - startTime) / 1000).toFixed(1);
           logger.progressPercent(suiteDisplayIdx, totalDisplayCount, `✅ PASS: ${target.name} (${durationSec}s)`);
           passedCount++;
+
+          if (!rawFilter && i + 1 < activeTargets.length) {
+            const nextTarget = activeTargets[i + 1]!;
+            recordMasterSuiteProgress({
+              suiteIndex: i + 1,
+              suiteName: nextTarget.name,
+              suiteRelativePath: nextTarget.relativePath,
+              driver: selectedDriver,
+              completedSuiteName: target.name,
+            });
+          }
         } catch (_err: unknown) {
           const durationSec = ((Date.now() - startTime) / 1000).toFixed(1);
           logger.error(`\n❌ [${i + 1}/${activeTargets.length}] FAIL en [${driverName}]: "${target.name}" ha fallado tras ${durationSec}s.`);

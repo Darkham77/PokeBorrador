@@ -42,18 +42,22 @@ export default class PlaywrightFuzzerReporter implements Reporter {
     const totalOverride = process.env.SIM_TOTAL_TESTS ? parseInt(process.env.SIM_TOTAL_TESTS, 10) : 0;
     const pendingTests = suite.allTests().length;
     this.totalTests = totalOverride > 0 ? totalOverride : (pendingTests + offset);
-    this.completedTests = offset;
+    // When all tests (including skipped ones) are registered statically in Playwright (pendingTests >= totalTests),
+    // Playwright dispatches onTestEnd for every skipped test. Initializing completedTests to offset causes double-counting.
+    this.completedTests = (pendingTests >= this.totalTests && offset > 0) ? 0 : offset;
     this.startTime = Date.now();
     const firstTest = suite.allTests()[0];
     if (firstTest?.location?.file) {
       this.activeSuiteName = path.basename(firstTest.location.file);
     }
     const startFormatted = formatExecutionTimestamp();
+    logSync('─'.repeat(80));
     if (offset > 0) {
-      logSync(`\n🚀 [SIMULATION] Reanudando suite en test ${offset + 1}/${this.totalTests} (${pendingTests} restantes) usando ${config.workers} workers concurrentes...`);
+      const remainingCount = Math.max(0, this.totalTests - offset);
+      logSync(`🚀 [SIMULATION] Reanudando suite en test ${offset + 1}/${this.totalTests} (${remainingCount} restantes) usando ${config.workers} workers concurrentes...`);
       logSync(`📅 [SIMULATION] Fecha y hora de inicio: ${startFormatted}\n`);
     } else {
-      logSync(`\n🚀 [SIMULATION] Iniciando suite con ${this.totalTests} tests usando ${config.workers} workers concurrentes...`);
+      logSync(`🚀 [SIMULATION] Iniciando suite con ${this.totalTests} tests usando ${config.workers} workers concurrentes...`);
       logSync(`📅 [SIMULATION] Fecha y hora de inicio: ${startFormatted}\n`);
     }
   }
@@ -85,8 +89,21 @@ export default class PlaywrightFuzzerReporter implements Reporter {
 
       try {
         if (test.location?.file) {
-          const suiteRelativePath = path.relative(process.cwd(), test.location.file);
-          const suiteName = path.basename(test.location.file);
+          let suiteRelativePath = path.relative(process.cwd(), test.location.file);
+          let suiteName = path.basename(test.location.file);
+
+          if (suiteName.toLowerCase() === 'batchsimulationharness.ts' && test.parent) {
+            let p: typeof test.parent | undefined = test.parent;
+            while (p) {
+              if (p.location?.file && path.basename(p.location.file).toLowerCase() !== 'batchsimulationharness.ts') {
+                suiteRelativePath = path.relative(process.cwd(), p.location.file);
+                suiteName = path.basename(p.location.file);
+                break;
+              }
+              p = p.parent;
+            }
+          }
+
           const driver = (process.env.SIM_DB_DRIVER === 'postgres' ? 'postgres' : 'sqlite') as SimDriver;
           const batchMatch = test.title.match(/lote de fuzzer #(\d+)/i);
           const failedBatchIndex = batchMatch ? Number(batchMatch[1]) : undefined;

@@ -96,4 +96,40 @@ describe('E2E Checkpoint Manager Unit Tests', () => {
     clearAllCheckpoints();
     assert.strictEqual(fs.existsSync(CHECKPOINT_FILE_PATH), false);
   });
+
+  it('does not overwrite earlier failedBatchIndex with subsequent higher batch index', () => {
+    recordSuiteFailure('battle_fsm_sync.simulation.ts', {
+      suiteRelativePath: 'scripts/e2e/battle/battle_fsm_sync.simulation.ts',
+      driver: 'sqlite',
+      failedBatchIndex: 109,
+      failedCaseId: 'case-initial-fail',
+      errorSnippet: 'Failed to fetch module',
+    });
+
+    recordSuiteFailure('battle_fsm_sync.simulation.ts', {
+      suiteRelativePath: 'scripts/e2e/battle/battle_fsm_sync.simulation.ts',
+      driver: 'sqlite',
+      failedBatchIndex: 194,
+      failedCaseId: 'case-interrupted',
+      errorSnippet: 'page.evaluate: Test ended.',
+    });
+
+    const cp = getSuiteCheckpoint('battle_fsm_sync.simulation.ts');
+    assert.ok(cp !== null);
+    assert.strictEqual(cp.failedBatchIndex, 109);
+    assert.strictEqual(cp.failedCaseId, 'case-initial-fail');
+  });
+
+  it('ignores interruption errors (Test ended / Target closed)', () => {
+    recordSuiteFailure('battle_fsm_sync.simulation.ts', {
+      suiteRelativePath: 'scripts/e2e/battle/battle_fsm_sync.simulation.ts',
+      driver: 'sqlite',
+      failedBatchIndex: 194,
+      failedCaseId: 'case-interrupted',
+      errorSnippet: 'page.evaluate: Test ended.',
+    });
+
+    const cp = getSuiteCheckpoint('battle_fsm_sync.simulation.ts');
+    assert.strictEqual(cp, null);
+  });
 });

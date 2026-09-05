@@ -32,7 +32,10 @@ export function processExpGain(p: Pokemon, baseExp: number, _participants: Set<s
     participantsSet = null 
   } = options
 
-  if (!participantsSet?.has(p.uid) && p.heldItem !== 'expshare') return null
+  // Strict Gen 6-9 Rule: Fainted Pokemon (0 HP) never receive Exp
+  if ((p.hp !== undefined && p.hp <= 0) || p.fainted === true) {
+    return null;
+  }
 
   if (p.level >= MAX_POKEMON_LEVEL) {
     p.exp = 0;
@@ -40,7 +43,11 @@ export function processExpGain(p: Pokemon, baseExp: number, _participants: Set<s
     return { gained: 0, levelUp: false, levelsGained: 0 };
   }
 
-  const share = isActive ? 1 : 0.5
+  // Active combatants or expshare holders receive 100% share; benched living members receive 50%
+  const isParticipant = isActive || (participantsSet?.has(p.uid) ?? false);
+  const isHoldingExpShare = p.heldItem === 'expshare';
+  const share = (isParticipant || isHoldingExpShare) ? 1 : 0.5;
+
   const gained = Math.floor(baseExp * share * classMult * totalExpMult);
   p.exp += gained
 
@@ -76,13 +83,17 @@ export function calculateMoneyGain(enemyPoke: Pokemon, options: RewardOptions = 
   return Math.floor(baseMoney * totalMoneyMult)
 }
 
-export function processEvGain(p: Pokemon, enemyPoke: Pokemon, participantsSet: Set<string> | null): EvGainResult | null {
-  if (!participantsSet?.has(p.uid) && p.heldItem !== 'expshare') return null;
+export function processEvGain(p: Pokemon, enemyPoke: Pokemon, _participantsSet?: Set<string> | null): EvGainResult | null {
+  // Strict Gen 6-9 Rule: Fainted Pokemon (0 HP) never receive EVs
+  if ((p.hp !== undefined && p.hp <= 0) || p.fainted === true) {
+    return null;
+  }
 
   const evYield = pokemonDataProvider.getEvYield(enemyPoke.id);
   if (!evYield || Object.keys(evYield).length === 0) return null;
 
   const hasPokerus = p.pokerus === 'infected';
+  // In Gen 6-9, all living party members that earn Exp receive the 100% full, undivided EV yield
   const result = applyEvGains(p.evs, evYield, p.heldItem, hasPokerus);
   p.evs = result.updatedEvs;
   return result;
