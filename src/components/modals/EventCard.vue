@@ -38,6 +38,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  occurrence: undefined,
   idPrefix: ''
 })
 
