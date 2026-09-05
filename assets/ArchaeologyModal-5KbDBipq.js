@@ -1,1 +1,0 @@
-import{t as e}from"./ArchaeologyModal-Y4-hmNwh.js";export{e as default};
