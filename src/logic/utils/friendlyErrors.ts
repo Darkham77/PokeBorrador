@@ -3,6 +3,8 @@
  * Transforma errores técnicos en mensajes con personalidad.
  */
 
+import { logger } from './logger.ts';
+
 export const getFriendlyErrorMessage = (error: unknown): string => {
   let message = '';
   
@@ -49,5 +51,6 @@ export const getFriendlyErrorMessage = (error: unknown): string => {
   }
 
   // Fallback
+  logger.error('FriendlyError', 'Error técnico no clasificado mostrado al usuario:', error);
   return 'Algo salió mal. Por favor, intenta de nuevo más tarde 🔧';
 };

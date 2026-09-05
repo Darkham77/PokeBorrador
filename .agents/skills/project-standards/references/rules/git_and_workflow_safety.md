@@ -21,6 +21,7 @@
 ## 3. Autonomous Git Commit & Main Branch Push Prohibitions
 
 - **Commit Prohibition**: It is STRICTLY FORBIDDEN to execute any commit or safe-commit flow autonomously without an explicit user instruction to commit or save the repository. The agent MUST NOT assume completion or initiate the Git pipeline on its own.
+- **Single Atomic Certified Commit & Zero-Commit Backup Mandate**: The safe-commit pipeline executes exactly ONE atomic commit in Phase 4 once all tests, audits, typechecks, builds, and user approvals pass. Premature snapshot commits in early phases are strictly forbidden. Pre-audit backups must be stored as source-code-only patches in `scratch/backups/` (excluding binaries, wasm, and large generated JSON files) to prevent unverified commits from entering Git history.
 - **Main Branch Push Protection Mandate**: AI agents are STRICTLY FORBIDDEN from executing `git push` towards the `main` branch (`origin/main` or while checked out on `main`). Pushing to `main` must always be performed manually by the user.
 - **Controlled Push to Non-Main Branches**: When explicitly requested by the user (e.g., "hace push"), the agent MAY execute `git push origin <branch>` ONLY IF the current branch is a non-main branch (such as `desarrollo` or a feature branch) and does not touch or target `main` or any other branch.
 

@@ -9,6 +9,7 @@ import type { Router } from 'vue-router';
 import { validateAuthLogin, validateAuthRegister, validateTrainerName } from '@/logic/validation/schemas';
 import { OFFICIAL_SERVERS } from '@/data/system/official_servers';
 import type { useAuthStore } from '@/stores/auth';
+import { logger } from '@/logic/utils/logger';
 
 export interface UseLoginHandlersParams {
   authStore: ReturnType<typeof useAuthStore>;
@@ -58,6 +59,7 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
       await authStore.login(validRes.output.email, validRes.output.password);
       await router.replace('/');
     } catch (err: unknown) {
+      logger.error('Auth', 'Error técnico al iniciar sesión (handleLogin):', err);
       error.value = getFriendlyErrorMessage(err);
     } finally {
       loading.value = false;
@@ -82,6 +84,7 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
       success.value = '¡Cuenta creada! Revisa tu email para confirmar.';
       authTab.value = 'login';
     } catch (err: unknown) {
+      logger.error('Auth', 'Error técnico al registrar usuario (handleSignup):', err);
       error.value = (err as Error).message || 'Error al registrarse';
     } finally {
       loading.value = false;
@@ -99,7 +102,8 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
     try {
       await authStore.localLogin(validName.output);
       await router.replace('/');
-    } catch (_err) {
+    } catch (err) {
+      logger.error('Auth', 'Error técnico al entrar en modo local (handleLocalLogin):', err);
       error.value = 'Error al entrar en modo local';
     } finally {
       loading.value = false;
@@ -119,7 +123,8 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
       const targetUrl = new URL(import.meta.env.BASE_URL, window.location.origin);
       // fallow-ignore-next-line security-sink
       window.location.replace(targetUrl.href);
-    } catch (_err) {
+    } catch (err) {
+      logger.error('Auth', 'Error técnico al crear partida local (handleLocalSignup):', err);
       error.value = 'Error al crear partida local';
     } finally {
       loading.value = false;

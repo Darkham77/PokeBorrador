@@ -10,12 +10,12 @@
 - [ ] **Phase 0: Mandatory Artifact Initialization**
   - [ ] Write `<appDataDir>/brain/<conversation-id>/task.md` with complete checklist
   - [ ] Note scratch directory path: `<appDataDir>/brain/<conversation-id>/scratch/`
-- [ ] **Phase 1: Test Gap Analysis & Workspace Snapshot**
+- [ ] **Phase 1: Test Gap Analysis & Zero-Commit Safety Backup**
   - [ ] `git status` & `git diff` review (Inspect changes and session artifacts)
   - [ ] Test Gap Analysis (Audit non-trivial logic for unit tests in `tests/unit/` / `tests/node/`)
   - [ ] `npm run fallow:health` (Record BASELINE_HEALTH)
-  - [ ] Compose commit message (The Elegant Protocol synthesis)
-  - [ ] `git add .` & `git commit -m "<message>"` (Snapshot Commit)
+  - [ ] Code-Only Safety Backup (`git diff HEAD -- '*.ts' '*.vue' '*.js' '*.scss' '*.css' 'database/**/*.sql' ':!*.json' > scratch/backups/pre_audit_backup.patch`)
+  - [ ] Pre-draft commit message (The Elegant Protocol synthesis in `task.md`)
 - [ ] **Phase 2: Active Verification & Repair Loop 🔁 (Exits ONLY on `npm run build` Exit Code 0)**
   - [ ] **Loop Cycle Checks (Must ALL pass consecutively on final code)**:
     - [ ] `npm run audit:for-commit` (0 errors, 0 new warnings)
@@ -25,7 +25,7 @@
     - [ ] `npm run fallow:health` (Score ≥ 85 and ≥ BASELINE_HEALTH)
     - [ ] *(If DB changed)* Database Parity Sync verified
   - [ ] **Loop Repair Action (Triggered on ANY failure above; repeat until build exits 0)**:
-    - [ ] `npm run audit:fix` (auto-repairs) & Manual code fixes applied
+    - [ ] `npm run audit:fix` (auto-repairs) & Manual code fixes applied in workspace
     - [ ] Re-run cycle checks until `npm run build` returns exit code 0
 - [ ] **Phase 3: Unified DOX, Lessons Extraction & 🛑 Hard Stop**
   - [ ] DOX Maintenance (`AGENTS.md` updated via `/dox-navigator`)
@@ -35,9 +35,10 @@
   - [ ] Workspace cleanup (Clean temporary files from `scratch/`)
   - [ ] Call `ask_question` for user approval
   - [ ] 🛑 HARD STOP (Wait for approval before Phase 4)
-- [ ] **Phase 4: Final Commit & Completion**
+- [ ] **Phase 4: Single Atomic Certified Commit & Completion**
   - [ ] Apply approved lessons to `AGENTS.md`
-  - [ ] `git add .` & `git commit` (`docs(agents):` or `refactor(audit):`) if files modified
+  - [ ] Synthesize final Elegant Protocol commit message (feature + tests + audit fixes + DOX)
+  - [ ] `git add .` & `git commit -m "<message>"` (Single Atomic Certified Commit)
   - [ ] Display push status or instructions & db update commands
   - [ ] Mark Phase 4 `[x]`
 
@@ -45,10 +46,13 @@
 
 ## Step Records & Execution Metrics
 
-### Workspace Snapshot
+### Workspace Safety Backup
 - **Modified Files**:
   - `(none recorded yet)`
+- **Safety Patch File**: `scratch/backups/pre_audit_backup.patch`
 - **Baseline Fallow Health**: `BASELINE_HEALTH = UNSET`
+- **Pre-Drafted Commit Message**:
+  - `(drafted in Step 1.4)`
 
 ### Verification & Repair Loop Status
 - **Loop Iteration Count**: `0`

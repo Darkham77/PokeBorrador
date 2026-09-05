@@ -2,20 +2,25 @@
 
 Commit messages MUST NOT be terse. They MUST provide a clear, technical chronicle of the "what", "why", and "how" to maintain the project's high-rigor history.
 
-## Source of Truth per Phase
+## Source of Truth for Commit Synthesis
 
-- **Phase 1 (The Snapshot)**: The source of truth is a synthesis of:
-  1. The actual **`git diff` of all modified files** (staged and unstaged workspace changes).
-  2. All **session artifacts** stored in `<appDataDir>/brain/<conversation-id>/` (`implementation_plan.md`, `task.md`, `walkthrough.md`, custom skill artifacts, scratch notes, and plan logs).
-  You MUST cross-reference the code diff with the functional intent and feature/fix context from these artifacts to produce a precise, high-rigor technical chronicle. Do not rely on unverified memory alone.
-- **Phase 4 (The Optimization / Docs Log)**: Use the current `task.md` and `walkthrough.md` as the primary sources. A commit message that ignores the granular steps recorded in these artifacts is considered a failure.
+The final commit message is synthesized exclusively in **Phase 4 (Step 4.2)** from:
+1. The actual **`git diff` of all modified files** across the session.
+2. All **session artifacts** stored in `<appDataDir>/brain/<conversation-id>/` (`implementation_plan.md`, `task.md`, `walkthrough.md`, custom skill artifacts, scratch notes, and plan logs).
+3. The **unit tests added in Phase 1**, **audit repairs / optimizations in Phase 2**, and **lessons / DOX updated in Phase 3**.
 
-## Dual-Commit Strategy
+You MUST cross-reference the code diff with the functional intent and feature/fix context from these artifacts to produce a precise, high-rigor technical chronicle. Do not rely on unverified memory alone.
 
-| Commit | Phase | Purpose | Tone |
+## Single Atomic Certified Commit Strategy
+
+The project mandates **Atomic Commits**. A commit is never created until all tests, audits, typechecks, builds, and documentation approvals are complete.
+
+| Phase | Action | Purpose | Output |
 |:---|:---|:---|:---|
-| **The Snapshot** | Phase 1 | Capture creative/logical work & unit tests | Elegant Protocol (Header + Body with bullets) |
-| **The Optimization Log** | Phase 4 | Document technical cleanup & approved docs | Concise — only audit repairs, linting fixes, DOX updates |
+| **Phase 1** | Safety Backup & Pre-Draft | Safe local recovery & early message drafting | Patch file in `scratch/backups/` (Zero git commits) |
+| **Phase 2** | Active Verification | Verify and repair code in workspace | Clean code, 0 errors, 0 new warnings, build exit 0 |
+| **Phase 3** | Documentation & Approval | Document lessons & get user review | `AGENTS.md` and walkthrough updated |
+| **Phase 4** | Single Atomic Commit | Consolidate entire verified unit of work | Exactly ONE elegant commit in Git history |
 
 ## Structure (The Elegant Protocol)
 
@@ -45,16 +50,8 @@ feat(battle): optimize silhouette rendering and sync wild encounter timing
 - Synchronized isWildSilhouetteHalfway trigger at 550ms with the sprite jump animation.
 - Implemented isFloating metadata check to automatically hide ground grass bushes for flying species.
 - Refactored useBattleAnimations.ts to centralize encounter phase constants.
-```
-
-## Optimization Log Example
-
-```text
-refactor(audit): resolve SASS traps and 12 linting warnings in BattleHUD
-
-- Replaced hardcoded z-index 99 with $z-battle-hud variable from visuals.ts.
-- Added will-change: transform to 3 filter chains missing GPU promotion.
-- Fixed 4 unused import warnings introduced during composable extraction.
+- Added comprehensive unit tests in tests/unit/battle/ verifying all silhouette states.
+- Updated AGENTS.md in src/components/battle/ with the GPU matrix filter pattern.
 ```
 
 ## Forbidden Patterns

@@ -89,16 +89,25 @@ export class DBRouter {
       throw new Error('[DBRouter] Missing Supabase configuration (URL or API key). Online operations cannot proceed.');
     }
 
+    const isE2E = (typeof window !== 'undefined' && Boolean(window.__E2E__)) ||
+                  (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
+    const e2eDriver = (typeof window !== 'undefined' && window.__E2E_DRIVER__) ||
+                      (typeof process !== 'undefined' && process.env.SIM_DB_DRIVER) ||
+                      'sqlite';
+    const isE2EPostgres = isE2E && e2eDriver === 'postgres';
+
     try {
       logger.info('DBRouter', 'Lazily initializing Supabase client...');
       this._realClient = createClient(url, key, {
-        accessToken: async () => {
-          if (typeof localStorage !== 'undefined') {
-            const token = localStorage.getItem('pokevicio_auth_token');
-            if (token) return token;
+        ...(isE2EPostgres ? {
+          accessToken: async () => {
+            if (typeof localStorage !== 'undefined') {
+              const token = localStorage.getItem('pokevicio_auth_token');
+              if (token) return token;
+            }
+            return key;
           }
-          return key;
-        },
+        } : {}),
         realtime: {
           reconnectAfterMs: (tries) => {
 const MAX_RECONNECT_INTERVAL_MS = 300000;

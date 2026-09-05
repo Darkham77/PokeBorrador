@@ -34,9 +34,9 @@ This workflow is a **strict state machine**, not a loose checklist. Each step pr
 ```mermaid
 graph TD
     A0[Fase 0\nCreate task.md] --> A1
-    A1[Fase 1\nTest Gaps + Snapshot Commit] --> LOOP
+    A1[Fase 1\nTest Gaps + Zero-Commit Safety Backup] --> LOOP
 
-    subgraph LOOP ["🔁 Fase 2 — Active Repair Loop (Exits ONLY on npm run build exit code 0)"]
+    subgraph LOOP ["🔁 Fase 2 — Active Repair Loop (Workspace)"]
         direction TB
         C1[2.1 npm run audit:for-commit] -->|Errors / Warnings| REPAIR[🛠️ Reparación:\n1. npm run audit:fix\n2. Edición manual de código]
         C1 -->|0 errors, 0 warnings| C2[2.2 npm run test]
@@ -56,7 +56,7 @@ graph TD
     C5 -->|Score ≥ 85 & Build Exit 0 & Optimized| EXIT_GATE[✅ Salida del Bucle]
     EXIT_GATE --> A3[Fase 3\nDOX + Lessons + Walkthrough]
     A3 --> STOP1{🛑 USER APPROVES\nlearning_proposal.md?}
-    STOP1 -->|Approved| A4[Fase 4\nFinal Commit & Status]
+    STOP1 -->|Approved| A4[Fase 4\nSingle Atomic Certified Commit]
 
     style LOOP fill:#1a1a2e,stroke:#e94560,stroke-width:2px,color:#fff
     style C3 fill:#e94560,stroke:#fff,stroke-width:2px,color:#fff
@@ -84,9 +84,9 @@ The temporary working directory is `<appDataDir>/brain/<conversation-id>/scratch
 
 ---
 
-## Phase 1: Test Gap Analysis & Workspace Snapshot
+## Phase 1: Test Gap Analysis & Zero-Commit Safety Backup
 
-This phase captures a safety snapshot. If subsequent audit auto-fixes or repairs corrupt logic, `git diff HEAD~1` allows instantaneous recovery.
+This phase audits test coverage for modified logic and captures a zero-commit safety backup in the workspace. If subsequent audit auto-fixes or repairs corrupt logic, the patch file in `scratch/backups/` allows instantaneous recovery without polluting git history with premature, unverified commits.
 
 **Step 1.1** — Inspect changes (`git status` & `git diff`)
 - Run `git status` to identify modified, untracked, and deleted files.
@@ -95,17 +95,23 @@ This phase captures a safety snapshot. If subsequent audit auto-fixes or repairs
 **Step 1.2** — Test Gap Analysis
 - For each modified file containing non-trivial logic (`src/logic/`, `src/stores/`, `src/composables/`, `src/utils/`):
   - Check if corresponding unit tests exist in `tests/unit/` or `tests/node/`.
-  - If non-trivial logic lacks tests, implement the required unit tests **now** (before creating the snapshot).
+  - If non-trivial logic lacks tests, implement the required unit tests **now** (before proceeding to verification).
 
 **Step 1.3** — Record Baseline Fallow Health
 - Run `npm run fallow:health`.
 - Record `BASELINE_HEALTH = <score>` in `task.md`.
 - *Exemption*: If the pre-repair score is < 85, record `snapshot baseline below final gate` in `task.md` and continue. (Score ≥ 85 is enforced at Phase 2.5).
 
-**Step 1.4** — Snapshot Commit
-- Compose the commit message using the Elegant Protocol (see [commit-standards.md](./references/commit-standards.md)).
-- Execute `git add .` (MANDATORY `.` — selective staging is strictly forbidden to prevent unprotected untracked files).
-- Execute `git commit -m "<message>"` and verify success.
+**Step 1.4** — Zero-Commit Safety Backup
+- **PROHIBITION ON PREMATURE COMMITS**: Executing `git commit` at this stage is strictly forbidden. Creating commits before verification hides diffs from local comparisons and puts unverified code into Git history.
+- **STRICT CODE-ONLY LIMITATION**: To avoid shell freezes, disk bloat, and memory exhaustion from massive binary assets, media files, or large generated JSON catalogs, the backup patch MUST strictly target source code files and exclude binaries, media, and huge JSON data.
+- Create directory `scratch/backups/` if it does not exist.
+- Generate the code-only safety patch backup:
+  - PowerShell / Bash:
+    ```bash
+    git diff HEAD -- '*.ts' '*.vue' '*.js' '*.scss' '*.css' 'database/**/*.sql' ':!*.json' ':!*.min.js' ':!*.wasm' > scratch/backups/pre_audit_backup.patch
+    ```
+- Pre-draft the target commit message using the Elegant Protocol (see [commit-standards.md](./references/commit-standards.md)) and record it in `task.md` under "Target Commit Message" for use in Phase 4.
 
 **✓ Completion gate**: Mark Phase 1 `[x]` in `task.md`. Show snippet. Proceed to Phase 2.
 
@@ -200,18 +206,21 @@ Only when Check 2.1 ✅ (0 errors/warnings), Check 2.2 ✅ (tests pass), Check 2
 
 ---
 
-## Phase 4: Final Commit & Completion
+## Phase 4: Single Atomic Certified Commit & Completion
 
 This phase begins **only after** the user explicitly responds to Phase 3.
 
 **Step 4.1** — Apply Approved Lessons
 - Persist approved lessons into their respective `AGENTS.md` files.
 
-**Step 4.2** — Final Optimization / Docs Commit
-- Run `git status`.
-- If modified files exist (DOX updates, audit fixes):
-  - `git add .`
-  - Commit with header `docs(agents):` or `refactor(audit):` (see [commit-standards.md](./references/commit-standards.md)).
+**Step 4.2** — Single Atomic Certified Commit
+- Run `git status` to verify modified files (including feature code, tests, audit fixes, and updated DOX).
+- Synthesize the final commit message using the Elegant Protocol (see [commit-standards.md](./references/commit-standards.md)):
+  - Retrieve the pre-drafted message from `task.md` (Step 1.4).
+  - Supplement it with bullets for unit tests added (Phase 1), audit fixes / optimizations applied (Phase 2), and lessons / DOX updated (Phase 3).
+- Execute `git add .` (MANDATORY `.` — selective staging is strictly forbidden).
+- Execute `git commit -m "<message>"`.
+- Run `git status` to confirm working tree is clean. Exactly ONE atomic, verified commit has been added to history.
 
 **Step 4.3** — Final Status & Deployment Instructions
 - Notify the user that the process is complete.
@@ -235,6 +244,7 @@ Mark Phase 4 `[x]` in `task.md`. Workflow complete.
 
 ## Anti-Shortcut Policy
 
+- **Premature Commit Prohibition**: Creating commits in Phase 1 (such as snapshot commits) is STRICTLY FORBIDDEN. Commits are reserved exclusively for Phase 4 after all gates pass.
 - **No Phase-Jumping**: Phase 4 cannot execute if Phases 0–3 have unresolved items.
 - **Missing Tests Prohibition**: Committing code with unwritten unit tests identified during Phase 1.2 is STRICTLY FORBIDDEN.
 - **Strict Build Exit 0**: Exiting Phase 2 without `npm run build` returning Exit Code 0 is STRICTLY FORBIDDEN.
