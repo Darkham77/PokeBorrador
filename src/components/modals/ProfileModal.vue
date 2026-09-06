@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useProfileStore } from '@/stores/player/profile'
 import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { useModalStore } from '@/stores/modals'
+import { useLivePvPStore } from '@/stores/livePvP'
 import { useTrainerProfile } from '@/components/modals/useTrainerProfile'
 import { useStatHover } from '@/composables/ui/useStatHover'
 
@@ -18,12 +19,15 @@ import ProfileTradeNotifs from '@/components/profile/ProfileTradeNotifs.vue'
 import ProfileXpCard from '@/components/profile/ProfileXpCard.vue'
 import ProfileAchievementsGrid from '@/components/profile/ProfileAchievementsGrid.vue'
 import ProfileEventStatsCard from '@/components/profile/ProfileEventStatsCard.vue'
+import ProfileRankedMedalsCard from '@/components/profile/ProfileRankedMedalsCard.vue'
+import ProfilePinnedReplaysCard from '@/components/profile/ProfilePinnedReplaysCard.vue'
 import ProfileFactionWarCard from './ProfileFactionWarCard.vue'
 import ProfilePokedexCard from '@/components/profile/ProfilePokedexCard.vue'
 import ProfileStatsSection from './ProfileStatsSection.vue'
 import ProfileIdentityCard from './ProfileIdentityCard.vue'
 import { formatCurrency } from '@/logic/utils/formatters'
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
+import type { BattleReplayRecord } from '@/types/battle/pvp'
 
 interface Props {
   show?: boolean
@@ -71,7 +75,9 @@ const {
   eventMedalsTotal,
   eventMedalsFirst,
   eventMedalsSecond,
-  eventMedalsThird
+  eventMedalsThird,
+  rankedMedals,
+  pinnedReplays
 } = useTrainerProfile(() => authStore.user?.id)
 
 const formatNum = (num: unknown) => formatCurrency(Number(num || 0))
@@ -125,6 +131,12 @@ const lastSaveFormatted = computed(() => {
 })
 
 const modalStore = useModalStore()
+const livePvPStore = useLivePvPStore()
+
+const handleWatchReplay = (replay: BattleReplayRecord) => {
+  livePvPStore.watchReplay(replay)
+  close()
+}
 
 const openRename = () => {
   modalStore.open('Rename')
@@ -237,6 +249,16 @@ const handleFactionChoice = () => {
           :third-place="eventMedalsThird"
           :handle-stat-enter="handleStatEnter"
           :handle-stat-leave="handleStatLeave"
+        />
+
+        <!-- Medallas de Temporadas Ranked -->
+        <ProfileRankedMedalsCard :medals="rankedMedals" />
+
+        <!-- Repeticiones Fijadas -->
+        <ProfilePinnedReplaysCard
+          :pinned-replays="pinnedReplays"
+          :is-own-profile="true"
+          @watch-replay="handleWatchReplay"
         />
 
         <!-- Faction War Contribution -->

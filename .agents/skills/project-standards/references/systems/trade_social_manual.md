@@ -55,3 +55,30 @@ To guarantee reliable message delivery across active sessions and maintain an im
 ## 🔴 Notification Badges & Aggregation
 
 1. **Submenu Aggregation**: The notification badge on grouped primary HUD buttons (such as `SOCIAL`, which hosts chats, friend requests, and event missions) MUST represent the mathematical sum of all individual unread or actionable notifications within its submenus. This ensures no notifications remain hidden or "orphaned" under nested panels.
+
+---
+
+## 🏆 Monthly Competitive Ranked Seasons & Social Hub
+
+The competitive Ranked circuit operates within the Social view (`SocialRankings.vue`), managing global standings, matchmaking, asynchronous challenges against offline trainers, and automated monthly season awards.
+
+### 1. Matchmaking & Queue Modes
+1. **Live Online Matchmaking**:
+   - Trainers join `public.ranked_queue` via `livePvPStore.startSearch()`.
+   - The queue matches opponents within valid rank tier differentials (`isAllowedRankGap`).
+   - Match mode options:
+     - `mode: 'ranked'`: Strict level 50 flat, 6v6, seasonal team validation (`validateTeamForRanked`), and ELO calculation on finish.
+     - `mode: 'casual'`: Flexible 3v3 or 6v6 combat without rating updates.
+
+2. **Asynchronous Offline Battles & Team Autofill**:
+   - When challenging any trainer from the Global Leaderboard or Friend List who is currently **offline**, the combat executes **asynchronously**.
+   - The offline opponent's dedicated PvP team (`pvpTeam` for 3v3 or `pvpTeam6` for 6v6) is loaded and driven by the competitive AI (`@pkmn/sim` ScriptedAI).
+   - **Mandatory Autofill Rule**: If an offline trainer's dedicated team has fewer than the required 3 or 6 Pokémon, the system deterministically autofills the slots by pulling from their available party and storage boxes. Dedicated PvP teams can never fight empty.
+   - Upon completion, ranked battles update ratings and generate a combat summary report in `public.passive_battle_reports` via `record_passive_battle_result` so the defender receives a notification upon next login.
+
+### 2. Automated Monthly Season Awarding (`fn_award_ranked_season_automated`)
+- Seasons run for 1 calendar month.
+- An automated stored procedure in PostgreSQL (`fn_award_ranked_season_automated`) evaluates all participants with at least 5 matches played in the target season.
+- Rewards are placed into `public.awards` for atomic claiming via `claim_award()`.
+- An identical SQLite RPC emulation (`src/logic/db/rpcEmulations/rankedRpc.ts`) ensures 100% behavioral parity in offline and test environments.
+- When an active player logs in after a season rollover, `RankedSeasonRewardModal.vue` triggers automatically if unclaimed seasonal rewards exist.

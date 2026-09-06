@@ -24,6 +24,7 @@ function migrateBackupSaves(filePath: string): Array<{ user_id: string; save_dat
     db.exec(`CREATE TABLE IF NOT EXISTS ${ddl}`);
   }
   db.exec(`CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT)`);
+  db.exec('BEGIN TRANSACTION;');
 
   const insertSave = db.prepare('INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at) VALUES (?, ?, ?, ?)');
   for (const save of gameSaves) {
@@ -32,27 +33,50 @@ function migrateBackupSaves(filePath: string): Array<{ user_id: string; save_dat
   }
 
   for (const migration of DATABASE_MIGRATIONS) {
-    const sqlSource = migration.sqlite_sql !== undefined ? migration.sqlite_sql : migration.sql;
-    const isSqliteSpec = migration.sqlite_sql !== undefined;
-    const statements = splitSQLStatements(sqlSource);
-    for (const stmt of statements) {
-      if (stmt.trim()) {
-        const sql = isSqliteSpec ? stmt : translatePostgresToSqlite(stmt);
-        if (sql) {
-          try {
-            db.exec(sql);
-          } catch (stmtErr: unknown) {
-            const msg = (stmtErr as Error).message.toLowerCase();
-            const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
-            const isMissing = msg.includes('no such column');
-            if (!isDuplicate && !isMissing) {
-              throw stmtErr;
+    if (migration.sqlite_sql !== undefined) {
+      if (migration.sqlite_sql.trim()) {
+        try {
+          db.exec(migration.sqlite_sql);
+        } catch {
+          const statements = splitSQLStatements(migration.sqlite_sql);
+          for (const stmt of statements) {
+            if (!stmt.trim()) continue;
+            try {
+              db.exec(stmt);
+            } catch (stmtErr: unknown) {
+              const msg = (stmtErr as Error).message.toLowerCase();
+              const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
+              const isMissing = msg.includes('no such column');
+              if (!isDuplicate && !isMissing) {
+                throw stmtErr;
+              }
+            }
+          }
+        }
+      }
+    } else {
+      const statements = splitSQLStatements(migration.sql);
+      for (const stmt of statements) {
+        if (stmt.trim()) {
+          const sql = translatePostgresToSqlite(stmt);
+          if (sql) {
+            try {
+              db.exec(sql);
+            } catch (stmtErr: unknown) {
+              const msg = (stmtErr as Error).message.toLowerCase();
+              const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
+              const isMissing = msg.includes('no such column');
+              if (!isDuplicate && !isMissing) {
+                throw stmtErr;
+              }
             }
           }
         }
       }
     }
   }
+
+  db.exec('COMMIT;');
 
   const selectSaves = db.prepare('SELECT user_id, save_data FROM game_saves');
   return selectSaves.all() as { user_id: string; save_data: string }[];

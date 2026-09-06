@@ -420,7 +420,12 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
           return mock as RealtimeChannel;
         },
         async send(args: unknown) {
-          bc.postMessage(args);
+          try {
+            const sanitized = JSON.parse(JSON.stringify(args));
+            bc.postMessage(sanitized);
+          } catch {
+            bc.postMessage(args);
+          }
           return 'ok' as const;
         },
         async unsubscribe() { bc.close(); return 'ok' as const; }

@@ -60,6 +60,7 @@ Backend / Database Engineers.
 - **Strict PostgreSQL RPC Execution Grants Mandate**:
   - Every `CREATE OR REPLACE FUNCTION` defined in PostgreSQL migrations MUST explicitly declare execution privileges (`GRANT EXECUTE ON FUNCTION public.<func_name>(<args>) TO authenticated, anon, service_role;`) and set a secure search path (`SET search_path = public, pg_catalog;`).
   - Without explicit `GRANT EXECUTE`, hardened database configurations and PostgREST will reject client RPC invocations with HTTP 403 / permission denied errors.
+- **All-Container Entity Normalization Mandate**: Database migrations normalizing serialized Pokémon or egg attributes (such as canonical Showdown `NatureId` strings, lowercase identifiers, or species whitelisting) MUST apply transformations exhaustively across ALL persisted entity containers in `save_data` (`team`, `box`, `eggs`, and `daycareWarehouse`). Partial migrations that update `eggs` while omitting `daycareWarehouse` leave orphaned legacy strings that cause fatal crashes upon hatching (`[natures] Invalid NatureId`). All migrations MUST adhere strictly to forward-only monotonic timestamps ($t_i > t_{i-1}$) matching their filename prefix and `system_config` `db_version`.
 
 ## Verification
 

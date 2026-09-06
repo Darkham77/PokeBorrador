@@ -11,12 +11,14 @@ Automation scripts for assets downloads, multi-core WebP sprite conversion, craf
   - `crafting/tier3/`: Finished products, consumables, TMs, Mochis, Pokéballs, and held battle items (`item.craftingTier === 3`).
 - **Prohibition on Flat Directories**: Creating flat asset directories (like `items/`) or altering `items.json` paths away from `crafting/tierX/<id>` is strictly forbidden.
 - **Zero Hardcoded Dates on Event Banners Mandate**: When generating, editing, or importing event banner illustrations into `_raw-assets/public/assets/ui/events/`, images MUST NEVER contain burned-in calendar dates, specific years (e.g. 2024), timeslots, fixed venue names, or aspect ratio watermarks (`16:9`). Event banners must remain timeless and reusable; event dates and scheduling are managed exclusively by the database and UI engine.
+- **Mandatory Enabled Pokémon Species Whitelist for Artwork and Rewards**: Any artwork, event banners, tournament illustrations, or rewards generated or registered for the game MUST strictly and exclusively depict Pokémon from the official enabled species whitelist (`ENABLED_POKEMON_IDS` in `src/data/system/constants.ts`). Using unreleased, non-whitelisted, or custom unapproved Pokémon species (such as Lucario, Garchomp, Greninja, Metagross, Tyranitar, Darkrai, Blaziken, or custom concepts like Mewtwo Armored) in illustration prompts or reward tables is STRICTLY FORBIDDEN.
 
 ## Key Files & Canonical Commands
 
 - `convert_assets.ts`: Zero-config, multi-core WebP conversion pipeline reading `_raw-assets` and generating asset databases (`npm run assets:convert`).
 - `organize_item_sprites_by_tier.ts`: Re-tiering script that moves item sprites into `crafting/tier[0-3]/` based on `item.craftingTier` and synchronizes `items.json`.
 - `download_assets.ts`: Downloads missing official sprites from CDN/Bulbapedia/Serebii (`npm run assets:download:items`).
+- `download_ranked_medals.ts`: Downloads the 6 official rank medals from Bulbapedia Archives into `_raw-assets/public/assets/sprites/ranked_medals/` (`npm run assets:download:medals`).
 - `audit_item_assets.ts`: Compares database items against physical images in `public/assets/sprites/` to ensure zero missing assets.
 - `audit_item_sprite_collisions.ts`: Scans `items.json` to detect duplicate sprite usages across items and emits structured warnings.
 - `optimize_sprites.ts`: Sprite optimization and compression.

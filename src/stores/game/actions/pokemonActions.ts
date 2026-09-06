@@ -19,8 +19,14 @@ export function usePokemonActions(
   state: GameState, 
   scheduleSave: () => Promise<void>, 
   autoFillPvpTeam: () => void, 
-  autoFillWarTeam: () => void
+  autoFillWarTeam: () => void,
+  autoFillPvpTeam6?: () => void
 ) {
+  function autoFillPvpBoth() {
+    autoFillPvpTeam()
+    autoFillPvpTeam6?.()
+  }
+
   function registerPokedex(id: PokemonSpeciesId, caught = false) {
     if (!state.seenPokedex.includes(id)) state.seenPokedex.push(id)
     if (caught && !state.pokedex.includes(id)) state.pokedex.push(id)
@@ -68,7 +74,7 @@ export function usePokemonActions(
     }
 
     scheduleSave()
-    autoFillPvpTeam()
+    autoFillPvpBoth()
     autoFillWarTeam()
     return { success: true, target }
   }
@@ -81,7 +87,7 @@ export function usePokemonActions(
       const p = state.team[teamIdx]
       if (p && isPokemonBusy(p)) return false
       state.team.splice(teamIdx, 1)
-      autoFillPvpTeam()
+      autoFillPvpBoth()
       scheduleSave()
       return true
     }
@@ -90,7 +96,7 @@ export function usePokemonActions(
       const p = state.box[boxIdx]
       if (!p || isPokemonBusy(p)) return false
       state.box.splice(boxIdx, 1)
-      autoFillPvpTeam()
+      autoFillPvpBoth()
       autoFillWarTeam()
       scheduleSave()
       return true
@@ -130,7 +136,7 @@ export function usePokemonActions(
     state.team.splice(index, 1)
     state.box.push(p)
     useUIStore().notify(`¡${p.name} fue enviado a la Caja PC!`, '📦')
-    autoFillPvpTeam()
+    autoFillPvpBoth()
     autoFillWarTeam()
     scheduleSave()
     return true
@@ -204,7 +210,7 @@ export function usePokemonActions(
       })
 
       state.team = teamToKeep
-      autoFillPvpTeam()
+      autoFillPvpBoth()
       autoFillWarTeam()
       scheduleSave()
     }

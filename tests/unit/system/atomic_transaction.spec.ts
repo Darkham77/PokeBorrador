@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createTestDBRouter, cleanupTestDB } from '../../dbTestHelper.ts';
 import { executeAtomicSaveTransaction, queryLocal } from '@/logic/db/sqliteEngine';

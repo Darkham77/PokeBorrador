@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 import VirtualEntity from './VirtualEntity.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -32,6 +32,12 @@ const props = defineProps<{
   trainerName?: string
   playerBackSpriteUrl: string
 }>()
+
+const resolvedEnemyTrainerSprite = computed(() => {
+  if (props.trainerSprite) return props.trainerSprite
+  if (props.isPvP) return 'entrenador'
+  return props.trainerName || 'entrenador'
+})
 
 const trainerRef = ref<InstanceType<typeof VirtualEntity> | null>(null)
 const standingTrainerRef = ref<InstanceType<typeof VirtualEntity> | null>(null)
@@ -174,7 +180,7 @@ defineExpose({
           :style="{ filter: 'var(--atmosphere-filter)' }"
         >
           <img 
-            :src="getAssetUrl(ASSET_TYPES.TRAINER, trainerSprite || trainerName || 'entrenador')" 
+            :src="getAssetUrl(ASSET_TYPES.TRAINER, resolvedEnemyTrainerSprite)" 
             class="trainer-image"
             @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador')"
           >
@@ -183,7 +189,7 @@ defineExpose({
     </div>
     <div 
       class="trainer-shadow"
-      :style="getTrainerShadowStyle(getAssetUrl(ASSET_TYPES.TRAINER, trainerSprite || trainerName || 'entrenador'), baseEntitySizeEnemy * (objectScale || 2))"
+      :style="getTrainerShadowStyle(getAssetUrl(ASSET_TYPES.TRAINER, resolvedEnemyTrainerSprite), baseEntitySizeEnemy * (objectScale || 2))"
     />
     <div
       v-if="showGuides"
@@ -213,7 +219,7 @@ defineExpose({
           :style="{ filter: 'var(--atmosphere-filter)' }"
         >
           <img 
-            :src="getAssetUrl(ASSET_TYPES.TRAINER, trainerSprite || trainerName || 'entrenador')" 
+            :src="getAssetUrl(ASSET_TYPES.TRAINER, resolvedEnemyTrainerSprite)" 
             class="trainer-image"
             @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador')"
           >
@@ -222,7 +228,7 @@ defineExpose({
     </div>
     <div 
       class="trainer-shadow"
-      :style="getTrainerShadowStyle(getAssetUrl(ASSET_TYPES.TRAINER, trainerSprite || trainerName || 'entrenador'), baseEntitySizeEnemy * (objectScale || 2))"
+      :style="getTrainerShadowStyle(getAssetUrl(ASSET_TYPES.TRAINER, resolvedEnemyTrainerSprite), baseEntitySizeEnemy * (objectScale || 2))"
     />
     <div
       v-if="showGuides"

@@ -44,6 +44,7 @@ To prevent initialization race conditions (TDZ) and ensure reactive stability:
   - Web games require complete isolation from browser history navigation gestures.
   - **CSS Layer**: Global root containers (`html`, `body`, `#app`, `#vue-app`) MUST enforce `overscroll-behavior: none !important` on both X and Y axes to disable trackpad and touch edge-swipe history navigation.
   - **Event Interception Layer**: Mouse side buttons (buttons 3 and 4), navigation hotkeys (`Alt+Left`, `BrowserBack`, and non-input `Backspace`), and `popstate` events MUST be intercepted via `useBackNavigation`. A permanent history trap (`pokevicioGuard`) guarantees that the browser never leaves the game route or displays unstyled history states.
+- **Title and Badge/Pill Anti-Duplication Mandate**: When a card, table row, or banner provides a dedicated semantic badge or pill (such as competition categories, tier pills, or status chips), the primary text title MUST NOT concatenate or duplicate the label displayed inside the badge. The primary title identifies the parent entity/event cleanly (e.g. `"Gran Concurso Abierto del Sábado"`), while the adjacent pill (`[ ⚖️ Menor Peso ]`) communicates the specific category or variant. Text-only confirmation prompts (such as `ConfirmModal` messages) are exempt and may use composite titles (`"Evento - Categoría"`) to ensure unambiguous user confirmation.
 
 This manual defines the visual identity and interaction patterns of the Poké Vicio project, ensuring a premium **Hybrid Retro-Modern** experience.
 

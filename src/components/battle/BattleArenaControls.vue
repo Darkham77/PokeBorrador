@@ -13,6 +13,7 @@ import BattleActionButtons from './BattleActionButtons.vue'
 import BattleQuickTeam from './BattleQuickTeam.vue'
 import BattleQuickBag from './BattleQuickBag.vue'
 import StruggleOverlay from './StruggleOverlay.vue'
+import PvPTurnTimerClock from './PvPTurnTimerClock.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getActiveMinigame } from '@/logic/battle/battleMinigames'
 
@@ -88,7 +89,7 @@ const execShowBattleSwitch = () => {
   const isForced = uiStore.isBattleSwitchForced;
   uiStore.isBattleSwitchForced = false;
 
-  const team = (gameStore.state.team || []) as (Pokemon | null)[];
+  const team = ((battleStore.isPvP ? battleStore.state?.playerTeam : gameStore.state.team) || []) as (Pokemon | null)[];
   const activeUid = player.value?.uid;
   const hasBenchPokemon = team.some(p => p && p.hp > 0 && p.uid !== activeUid);
 
@@ -100,7 +101,7 @@ const execShowBattleSwitch = () => {
   modalStore.open('PokemonSelection', {
     title: '⚡ CAMBIAR POKÉMON',
     isBattleSwitch: true,
-    battleMode: 'wild',
+    battleMode: battleStore.isPvP ? 'pvp' : 'wild',
     includeTeam: true,
     preventClose: isForced, 
     activePokemonUid: player.value?.uid,
@@ -288,7 +289,9 @@ const onEnter = (el: Element, done: () => void) => {
         </aside>
 
         <div class="controls-content">
-          <!-- Tools moved to sidebar -->
+          <!-- PvP Turn Timer Clock -->
+          <PvPTurnTimerClock v-if="battleStore.isPvP" />
+
           <!-- Wrapper relativo para poder superponer la tarjeta de Forcejeo -->
           <div class="moves-wrapper">
             <BattleMovesGrid
@@ -311,8 +314,11 @@ const onEnter = (el: Element, done: () => void) => {
           />
         </div>
 
-        <!-- Zona 2: Mochila Rápida (Derecha) -->
-        <aside class="quick-shortcut-zone zone-bag">
+        <!-- Zona 2: Mochila Rápida (Derecha - deshabilitada en PvP) -->
+        <aside
+          v-if="!battleStore.isPvP"
+          class="quick-shortcut-zone zone-bag"
+        >
           <BattleQuickBag />
         </aside>
       </div>

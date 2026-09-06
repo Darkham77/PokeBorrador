@@ -15,11 +15,15 @@ import {
   resolveStatField,
   computeShiniesCount,
   computeEventTrophyCounts,
+  extractRankedMedals,
   resolveFactionLabel,
   resolveFactionColor,
   type ProfileRow,
   type SaveStateData
 } from './trainerProfileResolver.ts'
+import type { RankedSeasonMedal, BattleReplayRecord, BattleCode } from '@/types/battle/pvp.ts'
+import { isSeasonalThemeId } from '@/data/system/rankedData'
+import type { SideID } from '@pkmn/sim'
 
 export function useTrainerProfile(getUserId: () => string | null | undefined) {
   const gameStore = useGameStore()
@@ -41,6 +45,8 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
   const eventMedalsFirstDb = ref(0)
   const eventMedalsSecondDb = ref(0)
   const eventMedalsThirdDb = ref(0)
+  const rankedMedals = ref<RankedSeasonMedal[]>([])
+  const pinnedReplays = ref<BattleReplayRecord[]>([])
 
   const fetchData = async () => {
     const id = userId.value
@@ -59,17 +65,37 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
       if (!db) return
 
       try {
-        const [profRes, awardsRes, compEntryRes] = await Promise.all([
+        const [profRes, awardsRes, compEntryRes, replaysRes] = await Promise.all([
           db.from('profiles').select('*').eq('id', id).maybeSingle(),
           db.from('awards').select('prize, event_id').eq('winner_id', id),
-          db.from('competition_entries').select('event_id').eq('player_id', id)
+          db.from('competition_entries').select('event_id').eq('player_id', id),
+          db.from('battle_replays').select('*').or(`p1_user_id.eq.${id},p2_user_id.eq.${id}`).order('created_at', { ascending: false }).limit(5)
         ])
 
         if (profRes.data) {
           profile.value = profRes.data as ProfileRow
         }
 
+        if (replaysRes?.data && Array.isArray(replaysRes.data)) {
+          pinnedReplays.value = replaysRes.data.map(r => ({
+            id: String(r.id),
+            battleCode: String(r.battle_code || r.battleCode) as BattleCode,
+            seasonId: String(r.season_id || r.seasonId || ''),
+            themeId: isSeasonalThemeId(r.theme_id) ? r.theme_id : (isSeasonalThemeId(r.themeId) ? r.themeId : 'masters_allstars'),
+            p1: typeof r.p1_data === 'string' ? JSON.parse(r.p1_data) : (r.p1 || {}),
+            p2: typeof r.p2_data === 'string' ? JSON.parse(r.p2_data) : (r.p2 || {}),
+            turnsCount: Number(r.turns_count ?? r.turnsCount ?? 0),
+            winnerSide: String(r.winner_side || r.winnerSide || 'p1') as SideID,
+            choiceStream: typeof r.choice_stream === 'string' ? JSON.parse(r.choice_stream) : (r.choiceStream || []),
+            initialSeed: typeof r.initial_seed === 'string' ? JSON.parse(r.initial_seed) : (r.initialSeed || [0, 0, 0, 0]),
+            isTop10Archived: Boolean(r.is_top10_archived ?? r.isTop10Archived),
+            viewsCount: Number(r.views_count ?? r.viewsCount ?? 0),
+            createdAt: String(r.created_at || r.createdAt || '')
+          }))
+        }
+
         if (awardsRes.data && Array.isArray(awardsRes.data)) {
+          rankedMedals.value = extractRankedMedals(awardsRes.data, gameStore.state.rankedMedals)
           let firstCount = 0
           let secondCount = 0
           let thirdCount = 0
@@ -108,6 +134,7 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
     eventMedalsFirstDb.value = 0
     eventMedalsSecondDb.value = 0
     eventMedalsThirdDb.value = 0
+    rankedMedals.value = []
 
     try {
       const db = gameStore.db
@@ -160,6 +187,7 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
           .eq('winner_id', id)
 
         if (awardsRows && Array.isArray(awardsRows)) {
+          rankedMedals.value = extractRankedMedals(awardsRows, saveState.value?.rankedMedals)
           let firstCount = 0
           let secondCount = 0
           let thirdCount = 0
@@ -510,6 +538,8 @@ export function useTrainerProfile(getUserId: () => string | null | undefined) {
     eventMedalsFirst,
     eventMedalsSecond,
     eventMedalsThird,
+    rankedMedals,
+    pinnedReplays,
     fetchData
   }
 }

@@ -3,7 +3,7 @@ import { computed, watch } from 'vue'
 import { gsap } from 'gsap'
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 import type { PastEventHistoryItem, PastCompetitionWinner } from '@/types/system/stores'
-import { getEventDisplayName, type Event as GameEvent } from '@/logic/events/eventEngine'
+import { getEventDisplayName, getSubCompTitle, getDefaultSubCompetitions, type Event as GameEvent } from '@/logic/events/eventEngine'
 import { useChatCosmeticsStore } from '@/stores/social/chatCosmetics'
 import { useEventStore } from '@/stores/events'
 import { useModalStore } from '@/stores/modals'
@@ -251,18 +251,27 @@ interface CategoryGroup {
 
 const groupedWinners = computed<CategoryGroup[]>(() => {
   const groups: Record<string, CategoryGroup> = {}
+  const targetEvent = matchingEvent.value || props.item.raw_event
+  const subComps = targetEvent ? getDefaultSubCompetitions(targetEvent) : []
+
   for (const w of props.item.winners) {
     const catId = w.category_id || 'ivs'
     let catName = w.category_name
-    if (!catName || catName.includes('Genética') || catName.includes('Titán') || catName.includes('Miniatura') || catName.includes('Envergadura') || catName.includes('Gran Salto') || catName.includes('Masa')) {
-      const speciesSuffix = catId.includes('_') ? ` (${catId.split('_').slice(1).join('_').toUpperCase()})` : ''
-      catName = (
-        catId.startsWith('weight') ? 'Mayor/Menor Peso' :
-        catId.startsWith('height') ? 'Mayor/Menor Altura' :
-        catId.startsWith('level') ? 'Mayor Nivel' :
-        catId.startsWith('friendship') ? 'Mayor Amistad' :
-        'Mayor IVs'
-      ) + speciesSuffix
+    if (!catName || catName.includes('/') || catName.includes('Genética') || catName.includes('Titán') || catName.includes('Miniatura') || catName.includes('Envergadura') || catName.includes('Gran Salto') || catName.includes('Masa')) {
+      const subComp = subComps.find(s => s.id === catId || catId.startsWith(s.id))
+      if (subComp) {
+        catName = getSubCompTitle(props.item.event_id, subComp)
+      } else if (catId.startsWith('weight')) {
+        catName = getSubCompTitle(props.item.event_id, { id: catId, metric: 'weight', order: 'auto', name: 'Peso' })
+      } else if (catId.startsWith('height')) {
+        catName = getSubCompTitle(props.item.event_id, { id: catId, metric: 'height', order: 'auto', name: 'Altura' })
+      } else if (catId.startsWith('level')) {
+        catName = 'Mayor Nivel'
+      } else if (catId.startsWith('friendship')) {
+        catName = 'Mayor Amistad'
+      } else {
+        catName = 'Mayor IVs'
+      }
     }
     if (!groups[catId]) {
       groups[catId] = {

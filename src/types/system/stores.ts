@@ -68,6 +68,13 @@ export interface BattleOptions {
   trainerQuote?: string; // domain-ok: Open dynamic text or non-domain string payload
   fixedCycle?: DayPhase;
   fixedWeather?: WeatherId;
+  isPvP?: boolean;
+  isRanked?: boolean;
+  pvpMatchId?: string; // domain-ok: Open dynamic text or non-domain string payload
+  pvpIsHost?: boolean;
+  pvpOpponentId?: string; // domain-ok: Open dynamic text or non-domain string payload
+  pvpOpponentName?: string; // domain-ok: Open dynamic text or non-domain string payload
+  playerTeam?: Pokemon[];
 }
 
 export interface GameStore {

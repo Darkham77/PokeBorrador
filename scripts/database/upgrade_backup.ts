@@ -87,6 +87,7 @@ export async function upgradeBackup(): Promise<string> {
   // 1. Inicializar SQLite con el esquema canónico y tablas del backup
   using db = new DatabaseSync(':memory:');
   db.exec('PRAGMA foreign_keys = OFF;');
+  db.exec('BEGIN TRANSACTION;');
 
   for (const [tableName, rows] of Object.entries(backupData)) {
     if (!Array.isArray(rows) || rows.length === 0) continue;
@@ -124,6 +125,7 @@ export async function upgradeBackup(): Promise<string> {
     }
   }
 
+  db.exec('COMMIT;');
   db.exec('CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT)');
 
   // 2. Identificar migraciones ya aplicadas

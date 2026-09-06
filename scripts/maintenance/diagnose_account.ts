@@ -498,7 +498,7 @@ export function runBatteryOfDiagnostics(saveData: GameState): DiagnosticFinding[
   const warehouse = saveData.daycareWarehouse;
   if (Array.isArray(warehouse)) {
     for (let wIdx = 0; wIdx < warehouse.length; wIdx++) {
-      const entry = warehouse[wIdx] as Record<string, unknown>; // open-record: Generic key-value data dictionary container
+      const entry = warehouse[wIdx];
       if (!entry || typeof entry !== 'object') continue;
       const rawSpecies = String(entry.species || entry.id || '');
       const cleanSpecies = rawSpecies.startsWith('egg_') ? rawSpecies.replace(/^egg_\d+_[a-z0-9]+_?/, '') : rawSpecies;
@@ -531,6 +531,7 @@ export function testInMemoryMigrations(saveData: GameState, userId: string): {
   `).run(userId, JSON.stringify(saveData), 'diag-test', new Date().toISOString());
 
   // Ejecutar todas las migraciones oficiales
+  db.exec('BEGIN TRANSACTION;');
   for (const migration of DATABASE_MIGRATIONS) {
     const sqlSource = migration.sqlite_sql !== undefined ? migration.sqlite_sql : migration.sql;
     const isSqlite = migration.sqlite_sql !== undefined;
@@ -546,6 +547,7 @@ export function testInMemoryMigrations(saveData: GameState, userId: string): {
       }
     }
   }
+  db.exec('COMMIT;');
 
   // Legalizar cuentas
   repairAccountsInSqlite({ dbInstance: db, all: true, silent: true });

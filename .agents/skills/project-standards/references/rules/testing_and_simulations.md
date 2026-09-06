@@ -173,5 +173,22 @@ Whenever ANY bug, test failure, or simulation desync occurs, the agent MUST foll
 - **Normalized DB Path Resolution**: `BaseE2ESimulation.getDbPath()` MUST normalize keys to avoid duplicate prefixes (`sim_sim_...`).
 - **Category ID Alignment**: Sub-competition category identifiers submitted in simulation helpers (`submitCompetitionEntry`) MUST strictly match the IDs declared in `events_config` and rendered by `EventCard.vue` (`'ivs'`, `'weight'`, `'height'`).
 
+## 17. Comprehensive Test Suite Architecture, Placement Taxonomy & Performance Standards
+
+- **Strict Test Directory Taxonomy**:
+  1. `tests/node/` (Real Node.js Environment): Reserved for server-side logic, database migrations, SQL queries, DBRouter operations, CLI maintenance scripts, fuzzer case replays, and pure backend modules. Never place Vue component tests or DOM-dependent code here.
+  2. `tests/unit/` (Frontend Unit Suites): Reserved for Vue component tests, composables, frontend stores, and battle math. Operates under `environment: 'node'` by default. Any test file mounting Vue components or touching DOM APIs (`document`, `window`, `HTMLCanvasElement`, `localStorageMock`) MUST declare `// @vitest-environment jsdom` at line 1.
+  3. `tests/integration/` (Cross-Module Integration): Reserved for multi-module flows, store roundtrips, and bridge parity. Files touching DOM must declare `// @vitest-environment jsdom`.
+  4. `scripts/e2e/` (Playwright E2E Simulations): Reserved exclusively for browser simulations following `/game-simulation` protocols (`*.simulation.ts`).
+- **Anti-Micro-Test Fragmentation Mandate**:
+  - Creating dozens of micro-test files (<60 lines) for individual cases is strictly prohibited. Every test file incurs a new Vitest worker thread, Vite transform cache thrashing, and repeated dependency import overhead.
+  - Consolidate related test scenarios into unified suites under 500 lines (e.g. `fuzzer_reproduced_cases.test.ts`, `move_tooltip_suite.spec.ts`).
+- **SQLite Memory Pragmas & Atomic Transactions**:
+  - In-memory SQLite tests that insert fixtures or execute schema migrations MUST execute inside `BEGIN TRANSACTION;` and `COMMIT;` with memory pragmas (`PRAGMA synchronous = OFF; PRAGMA journal_mode = MEMORY;`).
+  - Pre-translated `.sqlite.sql` migration scripts must be executed in bulk via `db.exec(migration.sqlite_sql)` to avoid 10,000+ JavaScript loop iterations.
+- **Cross-Platform Vitest Environment Directive (`// @vitest-environment jsdom`)**:
+  - To ensure 100% deterministic environment selection across Windows (with `\`) and POSIX (`/`), all tests requiring DOM MUST declare `// @vitest-environment jsdom` at line 1.
+
+
 
 

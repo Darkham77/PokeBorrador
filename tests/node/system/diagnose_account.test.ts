@@ -6,16 +6,16 @@ import { runBatteryOfDiagnostics, testInMemoryMigrations } from '../../../script
 import type { GameState } from '../../../src/types/system/game.ts';
 
 describe('Diagnose Account Tool', () => {
+  const backupRelPath = 'database/backups/server_franco/server_franco_backup_2026-06-27T05-06-25-158315918Z.json';
+  const backupPath = path.resolve(backupRelPath);
+  assert.ok(fs.existsSync(backupPath), `Backup file must exist at ${backupRelPath}`);
+
+  const backupContent = fs.readFileSync(backupPath, 'utf8');
+  const backupData = JSON.parse(backupContent);
+  const profiles: Array<{ id: string; email?: string; username?: string }> = backupData.data.profiles || [];
+  const gameSaves: Array<{ user_id?: string; save_data: string | GameState }> = backupData.data.game_saves || [];
+
   it('should diagnose kenviota account from recent backup and verify migration fix', () => {
-    const backupRelPath = 'database/backups/server_franco/server_franco_backup_2026-06-27T05-06-25-158315918Z.json';
-    const backupPath = path.resolve(backupRelPath);
-    assert.ok(fs.existsSync(backupPath), `Backup file must exist at ${backupRelPath}`);
-
-    const backupContent = fs.readFileSync(backupPath, 'utf8');
-    const backupData = JSON.parse(backupContent);
-    const profiles = backupData.data.profiles || [];
-    const gameSaves = backupData.data.game_saves || [];
-
     const kenProfile = profiles.find((p: { email?: string }) => p.email === 'kenviota@gmail.com');
     assert.ok(kenProfile, 'Must find kenviota profile');
 
@@ -37,13 +37,6 @@ describe('Diagnose Account Tool', () => {
   });
 
   it('should diagnose oucae account and verify egg IDs and negative inventory fix', () => {
-    const backupRelPath = 'database/backups/server_franco/server_franco_backup_2026-06-27T05-06-25-158315918Z.json';
-    const backupPath = path.resolve(backupRelPath);
-    const backupContent = fs.readFileSync(backupPath, 'utf8');
-    const backupData = JSON.parse(backupContent);
-    const profiles = backupData.data.profiles || [];
-    const gameSaves = backupData.data.game_saves || [];
-
     const oucaeProfile = profiles.find((p: { username?: string }) => p.username === 'oucae');
     assert.ok(oucaeProfile, 'Must find oucae profile');
 

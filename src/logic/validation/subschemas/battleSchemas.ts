@@ -124,6 +124,11 @@ export const activeBattleSchema = object({
   timestamp: number(),
   isPvP: optional(boolean()),
   isRival: optional(boolean()),
+  pvpMatchId: optional(nullable(string())),
+  pvpIsHost: optional(nullable(boolean())),
+  pvpOpponentId: optional(nullable(string())),
+  pvpOpponentName: optional(nullable(string())),
+  playerTeam: optional(nullable(array(pokemonSchema))),
 });
 
 export type ActiveBattleDto = InferOutput<typeof activeBattleSchema>;

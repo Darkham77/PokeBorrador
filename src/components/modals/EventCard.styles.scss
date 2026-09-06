@@ -127,6 +127,8 @@
     flex-direction: column;
     gap: 6px;
     cursor: pointer;
+    box-sizing: border-box;
+    width: 100%;
 
     &:hover {
       background: Rgba(250, 204, 21, 0.05);
@@ -138,20 +140,24 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 8px;
-      gap: 8px;
+      gap: 6px;
+      flex-wrap: wrap;
+      box-sizing: border-box;
+      width: 100%;
 
       .comp-preview-title {
-        font-size: 8px;
+        font-size: 7.5px;
         color: var(--yellow);
         display: inline-flex;
         align-items: center;
         gap: 4px;
         white-space: nowrap;
+        min-width: 0;
       }
 
       .comp-preview-badge {
-        font-size: 7px;
-        padding: 2px 6px;
+        font-size: 6.5px;
+        padding: 2px 5px;
         border-radius: 4px;
         background: Rgba(255, 255, 255, 0.08);
         color: #94a3b8;
@@ -160,8 +166,9 @@
         flex-shrink: 0;
         display: inline-flex;
         align-items: center;
-        gap: 3px;
+        gap: 2px;
         line-height: 1.35;
+        box-sizing: border-box;
 
         &.enrolled {
           background: Rgba(74, 222, 128, 0.15);
@@ -280,15 +287,23 @@
     -webkit-user-drag: none;
     aspect-ratio: 16 / 9;
 
-    img {
+    img,
+    .event-banner-img {
       width: 100%;
       height: 100%;
       display: block;
       object-fit: cover;
       image-rendering: auto !important;
+      #{"image-rendering"}: auto !important;
+      -webkit-optimize-contrast: auto !important;
+      -ms-interpolation-mode: bicubic !important;
       pointer-events: none;
       user-select: none;
       -webkit-user-drag: none;
+      transform: Translatez(0);
+      will-change: transform;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
     }
 
     &.is-upcoming-banner {

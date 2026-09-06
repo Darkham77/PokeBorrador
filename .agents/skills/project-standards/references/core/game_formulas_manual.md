@@ -370,6 +370,56 @@ $$\text{BonusLevel} = \lfloor \text{Random}() \times (\text{MaxBonus} - \text{Mi
 
 $$\text{NewLevel} = \min(100, \text{CurrentLevel} + \text{BonusLevel})$$
 
+---
+
+## 15. 🏆 Monthly Competitive Ranked Seasons & ELO Rating System
+
+The monthly competitive ranked tournament operates on an automatic 1-month seasonal rotation governed by [`src/logic/battle/rankedSeasonManager.ts`](file:///c:/Users/Franco/Trabajos/Juegos/PokeBorrador/src/logic/battle/rankedSeasonManager.ts) and [`src/data/system/rankedData.ts`](file:///c:/Users/Franco/Trabajos/Juegos/PokeBorrador/src/data/system/rankedData.ts).
+
+### 1. Expected Win Probability (ELO Matchup Math)
+
+For a match between Player A with rating $R_A$ and Player B with rating $R_B$:
+
+$$E_A = \frac{1}{1 + 10^{(R_B - R_A) / 400}}, \quad E_B = \frac{1}{1 + 10^{(R_A - R_B) / 400}}$$
+
+### 2. Rating Adjustment ($\Delta R$)
+
+Let $S_A \in \{1, 0.5, 0\}$ be the actual outcome for Player A (1 for win, 0.5 for draw, 0 for loss):
+
+$$\Delta R_A = \text{round}\left( K \cdot (S_A - E_A) \right)$$
+
+$$\Delta R_B = \text{round}\left( K \cdot (S_B - E_B) \right)$$
+
+- **Dynamic K-Factor Scale**:
+  - $K = 32$ for developmental ratings ($R < 2100$, Tiers Bronce through Oro).
+  - $K = 16$ for master tier ratings ($R \ge 2100$, Tiers Platino, Diamante, Maestro).
+- **Rating Floor**:
+  $$R_{\text{new}} = \max(1000, R_{\text{old}} + \Delta R)$$
+  The base rating is strictly anchored at $1000$ (`MIN_INITIAL_ELO`).
+
+### 3. Proportional Soft Reset (End of Season)
+
+When a monthly season concludes, ratings undergo a proportional soft reset rather than a full reset to preserve skill tiering while re-opening ladder climb:
+
+$$\text{newElo} = \left\lfloor \max\left(1000, 1000 + \frac{\text{currentElo} - 1000}{2}\right) \right\rfloor$$
+
+- A 1000 ELO novice starts the new season at $1000$ ELO (Bronce).
+- A 2200 ELO player starts at $1600$ ELO (Oro).
+- A 3400 ELO Maestro starts at $2200$ ELO (Platino).
+
+### 4. Canonical Tier Progression & Seasonal Reward Milestones
+
+| Tier Name | Code | LP Range | Badge / Medal Sprite | Minimum Battles | Seasonal Reward Package |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Bronce** | `bronce` | $1000 - 1199$ | `/assets/sprites/ranked_medals/bronce.webp` | 5 | 25 Battle Coins |
+| **Plata** | `plata` | $1200 - 1599$ | `/assets/sprites/ranked_medals/plata.webp` | 5 | 1x Ticket Cueva Celeste + 75 Battle Coins |
+| **Oro** | `oro` | $1600 - 2099$ | `/assets/sprites/ranked_medals/oro.webp` | 5 | 1x Ticket Cueva Celeste + 1x Ticket Islas Espumas + 150 Battle Coins |
+| **Platino** | `platino` | $2100 - 2699$ | `/assets/sprites/ranked_medals/platino.webp` | 5 | 2x Ticket Cueva Celeste + 2x Ticket Islas Espumas + 250 Battle Coins |
+| **Diamante** | `diamante` | $2700 - 3399$ | `/assets/sprites/ranked_medals/diamante.webp` | 5 | Seasonal Themed Pokémon (High IVs) + 2x Ticket CC + 2x Ticket IE + 350 Battle Coins |
+| **Maestro** | `maestro` | $\ge 3400$ | `/assets/sprites/ranked_medals/maestro.webp` | 5 | Guaranteed 6 IV 31 Competitive Shiny Pokémon + 3x Ticket CC + 3x Ticket IE + 500 Battle Coins |
+
+Rewards are awarded automatically into `public.awards` by `fn_award_ranked_season_automated` (PostgreSQL) and emulated in SQLite via `src/logic/db/rpcEmulations/rankedRpc.ts`.
+
 
 
 

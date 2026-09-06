@@ -59,10 +59,22 @@ export const useGameStore = defineStore('game', () => {
   )
 
   // 2. Team Actions (Special teams management)
-  const { autoFillPvpTeam, swapPvpSlot, reorderPvpTeam, autoFillWarTeam, swapWarSlot, reorderWarTeam } = useTeamActions(state, scheduleSave)
+  const {
+    autoFillPvpTeam,
+    swapPvpSlot,
+    reorderPvpTeam,
+    removePvpSlot,
+    autoFillPvpTeam6,
+    swapPvp6Slot,
+    reorderPvp6Team,
+    removePvp6Slot,
+    autoFillWarTeam,
+    swapWarSlot,
+    reorderWarTeam
+  } = useTeamActions(state, scheduleSave)
 
   // 3. Pokemon Actions
-  const { registerPokedex, chooseStarter, addPokemon, removePokemon, reorderTeam, reorderMoves, sendToBox, togglePokeTag, validateAll } = usePokemonActions(state, scheduleSave, autoFillPvpTeam, autoFillWarTeam)
+  const { registerPokedex, chooseStarter, addPokemon, removePokemon, reorderTeam, reorderMoves, sendToBox, togglePokeTag, validateAll } = usePokemonActions(state, scheduleSave, autoFillPvpTeam, autoFillWarTeam, autoFillPvpTeam6)
 
   // 4. Trainer Actions
   const { addTrainerExp, checkLevelUp } = useTrainerActions(state, scheduleSave)
@@ -320,7 +332,10 @@ export const useGameStore = defineStore('game', () => {
 
   // --- WATCHERS ---
   watch(() => state.team.length, (newLen, oldLen) => {
-    if (newLen > oldLen && state.pvpTeam.length < 3) autoFillPvpTeam()
+    if (newLen > oldLen) {
+      if (state.pvpTeam.length < 3) autoFillPvpTeam()
+      if ((state.pvpTeam6 || []).length < 6) autoFillPvpTeam6()
+    }
   })
 
   return {
@@ -360,13 +375,18 @@ export const useGameStore = defineStore('game', () => {
     checkLevelUp,
     reorderTeam,
     reorderPvpTeam,
+    reorderPvp6Team,
     reorderWarTeam,
     reorderMoves,
     sendToBox,
     addPokemon,
     removePokemon,
     autoFillPvpTeam,
+    autoFillPvpTeam6,
     swapPvpSlot,
+    swapPvp6Slot,
+    removePvpSlot,
+    removePvp6Slot,
     swapWarSlot,
     togglePokeTag,
     executeHatch,

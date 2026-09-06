@@ -163,6 +163,7 @@ export const useAudioStore = defineStore('audio', () => {
       case 'defeat': engine.playDefeatSound(ctx, dest); break;
       case 'steal': engine.playStealSound(ctx, dest); break;
       case 'siren': engine.playSirenSound(ctx, dest); break;
+      case 'pvpChallenge': engine.playPvPChallengeSound(ctx, dest); break;
     }
   };
 

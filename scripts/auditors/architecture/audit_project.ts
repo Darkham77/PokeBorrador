@@ -966,8 +966,8 @@ async function main() {
       }
     }
 
-    // 5. Integración de Fallow
-    const anyFallowActive = isFallowDupesActive || isFallowSecurityActive || isFallowDeadCodeActive || isFallowHealthActive;
+    // 5. Integración de Fallow (solo si no está acotado por --path)
+    const anyFallowActive = (isFallowDupesActive || isFallowSecurityActive || isFallowDeadCodeActive || isFallowHealthActive) && !values.path;
     if (anyFallowActive) {
       logProgress(styleText('cyan', '[4/6] 🛡️ Ejecutando suite de inteligencia Fallow (dupes, security, dead-code, health)...'));
       if (changedSince) {
@@ -1216,7 +1216,16 @@ async function main() {
   }
 }
 
-main().catch(err => {
-  console.error(styleText('red', `\n💥 Error fatal en el audit: ${(err as Error).stack || (err as Error).message}`));
-  process.exit(1);
-});
+const isDirectCliExecution = Boolean(
+  process.argv[1] && (
+    process.argv[1].endsWith('audit_project.ts') ||
+    (typeof import.meta.filename === 'string' && process.argv[1] === import.meta.filename)
+  )
+);
+
+if (isDirectCliExecution) {
+  main().catch(err => {
+    console.error(styleText('red', `\n💥 Error fatal en el audit: ${(err as Error).stack || (err as Error).message}`));
+    process.exit(1);
+  });
+}

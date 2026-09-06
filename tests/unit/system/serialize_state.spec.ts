@@ -229,6 +229,7 @@ describe('serializeState - Active Battle serialization', () => {
         }
       ],
       pvpTeam: ['p-1'],
+      pvpTeam6: ['p-1'],
       warTeam: ['p-1'],
       warSlots: 6,
       notificationHistory: [],
@@ -246,6 +247,7 @@ describe('serializeState - Active Battle serialization', () => {
     expect(validation.data.trainerChance).toBe(8);
     expect(validation.data.guardianCaptures?.['route1']).toBe('2026-08-23');
     expect(validation.data.pvpTeam).toEqual(['p-1']);
+    expect(validation.data.pvpTeam6).toEqual(['p-1']);
     expect(validation.data.warTeam).toEqual(['p-1']);
     expect(validation.data.warSlots).toBe(6);
     expect(validation.data.warPointsAccumulator).toBe(1200);

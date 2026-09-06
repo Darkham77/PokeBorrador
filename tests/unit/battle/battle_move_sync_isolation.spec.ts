@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect } from 'vitest'
 import { syncActiveMovesFromRequest } from '@/stores/battle/battleMoveSync.ts'
 import type { BattleState } from '@/types/battle/battle'

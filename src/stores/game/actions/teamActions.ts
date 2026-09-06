@@ -1,38 +1,19 @@
 import { useUIStore } from '@/stores/ui'
 import type { GameState } from '@/types/system/game'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { MAX_PVP_SLOTS, MAX_PVP6_SLOTS } from '@/types/battle/pvp'
+
+import { ensurePvpTeamsFilled } from '@/logic/pvp/pvpTeamHelper.ts'
 
 export function useTeamActions(state: GameState, scheduleSave: () => Promise<void>) {
   function autoFillPvpTeam() {
     const uiStore = useUIStore()
     if (uiStore.pvpAutoFillDisabled) return
-    
-    const allPokes = [...state.team, ...(state.box || [])].filter((p): p is Pokemon => p != null && !p.isIllegal)
-    if (allPokes.length === 0) {
-      state.pvpTeam = []
-      return
-    }
-
-    const existingUids = new Set(allPokes.map(p => p.uid))
-    state.pvpTeam = (state.pvpTeam || []).filter(uid => existingUids.has(uid))
-
-    const targetCount = Math.min(3, allPokes.length)
-    if (state.pvpTeam.length < targetCount) {
-      for (const p of allPokes) {
-        if (state.pvpTeam.length >= targetCount) break
-        if (!state.pvpTeam.includes(p.uid)) {
-          state.pvpTeam.push(p.uid)
-        }
-      }
-    }
-    
-    if (state.pvpTeam.length > 3) {
-      state.pvpTeam = state.pvpTeam.slice(0, 3)
-    }
+    ensurePvpTeamsFilled(state)
   }
 
   function swapPvpSlot(slotIndex: number, newPokemonUid: string) {
-    if (slotIndex < 0 || slotIndex >= 3) return
+    if (slotIndex < 0 || slotIndex >= MAX_PVP_SLOTS) return
     const allPokes = [...state.team, ...(state.box || [])]
     const poke = allPokes.find(p => p?.uid === newPokemonUid)
     if (!poke || poke.isIllegal) return
@@ -55,6 +36,80 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
     newPvpTeam.splice(targetIndex, 0, moved)
     state.pvpTeam = newPvpTeam
     scheduleSave()
+  }
+
+  function removePvpSlot(slotIndex: number) {
+    if (slotIndex < 0 || slotIndex >= MAX_PVP_SLOTS) return
+    const newPvpTeam = [...(state.pvpTeam || [])]
+    if (slotIndex < newPvpTeam.length) {
+      newPvpTeam.splice(slotIndex, 1)
+      state.pvpTeam = newPvpTeam
+      scheduleSave()
+    }
+  }
+
+  function autoFillPvpTeam6() {
+    const uiStore = useUIStore()
+    if (uiStore.pvpAutoFillDisabled) return
+    
+    const allPokes = [...state.team, ...(state.box || [])].filter((p): p is Pokemon => p != null && !p.isIllegal)
+    if (allPokes.length === 0) {
+      state.pvpTeam6 = []
+      return
+    }
+
+    const existingUids = new Set(allPokes.map(p => p.uid))
+    state.pvpTeam6 = (state.pvpTeam6 || []).filter(uid => existingUids.has(uid))
+
+    const targetCount = Math.min(MAX_PVP6_SLOTS, allPokes.length)
+    if (state.pvpTeam6.length < targetCount) {
+      for (const p of allPokes) {
+        if (state.pvpTeam6.length >= targetCount) break
+        if (!state.pvpTeam6.includes(p.uid)) {
+          state.pvpTeam6.push(p.uid)
+        }
+      }
+    }
+    
+    if (state.pvpTeam6.length > MAX_PVP6_SLOTS) {
+      state.pvpTeam6 = state.pvpTeam6.slice(0, MAX_PVP6_SLOTS)
+    }
+  }
+
+  function swapPvp6Slot(slotIndex: number, newPokemonUid: string) {
+    if (slotIndex < 0 || slotIndex >= MAX_PVP6_SLOTS) return
+    const allPokes = [...state.team, ...(state.box || [])]
+    const poke = allPokes.find(p => p?.uid === newPokemonUid)
+    if (!poke || poke.isIllegal) return
+    const pvpTeam6 = state.pvpTeam6 || []
+    const alreadyIn = pvpTeam6.includes(newPokemonUid)
+
+    if (!alreadyIn) {
+      if (!state.pvpTeam6) state.pvpTeam6 = []
+      state.pvpTeam6[slotIndex] = newPokemonUid
+      scheduleSave()
+    }
+  }
+
+  function reorderPvp6Team(draggedIndex: number, targetIndex: number) {
+    if (draggedIndex === targetIndex) return
+    const newPvpTeam6 = [...(state.pvpTeam6 || [])]
+    const moved = newPvpTeam6[draggedIndex]
+    if (!moved) return
+    newPvpTeam6.splice(draggedIndex, 1)
+    newPvpTeam6.splice(targetIndex, 0, moved)
+    state.pvpTeam6 = newPvpTeam6
+    scheduleSave()
+  }
+
+  function removePvp6Slot(slotIndex: number) {
+    if (slotIndex < 0 || slotIndex >= MAX_PVP6_SLOTS) return
+    const newPvpTeam6 = [...(state.pvpTeam6 || [])]
+    if (slotIndex < newPvpTeam6.length) {
+      newPvpTeam6.splice(slotIndex, 1)
+      state.pvpTeam6 = newPvpTeam6
+      scheduleSave()
+    }
   }
 
   function unequipFromTeam(uid: string) {
@@ -128,5 +183,19 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
     scheduleSave()
   }
 
-  return { autoFillPvpTeam, swapPvpSlot, reorderPvpTeam, unequipFromTeam, unequipFromBox, autoFillWarTeam, swapWarSlot, reorderWarTeam }
+  return {
+    autoFillPvpTeam,
+    swapPvpSlot,
+    reorderPvpTeam,
+    removePvpSlot,
+    autoFillPvpTeam6,
+    swapPvp6Slot,
+    reorderPvp6Team,
+    removePvp6Slot,
+    unequipFromTeam,
+    unequipFromBox,
+    autoFillWarTeam,
+    swapWarSlot,
+    reorderWarTeam
+  }
 }

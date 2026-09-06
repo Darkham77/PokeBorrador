@@ -26,11 +26,13 @@ describe('Profile Sync SQLite Column Parity', () => {
 
     try {
       using db = new DatabaseSync(tempDbPath);
+      db.exec('PRAGMA synchronous = OFF; PRAGMA journal_mode = MEMORY;');
 
       // Run all migrations to ensure full schema
       const { DATABASE_MIGRATIONS } = await import('../../../src/logic/db/migrations_data.ts');
       const { translatePostgresToSqlite } = await import('../../../src/logic/db/sqlTranslator.ts');
 
+      db.exec('BEGIN TRANSACTION;');
       for (const migration of DATABASE_MIGRATIONS) {
         let alreadyApplied = false;
         try {
@@ -57,6 +59,7 @@ describe('Profile Sync SQLite Column Parity', () => {
           }
         }
       }
+      db.exec('COMMIT;');
 
       // Inspect SQLite columns of profiles table
       const pragmaCols = db.prepare("PRAGMA table_info('profiles')").all() as Array<{ name: string }>;

@@ -18,7 +18,8 @@ import type { Event, EventConfig } from './eventEngine.ts';
 
 // Re-export eligibility functions and types
 export * from './eventEligibility.ts';
-export type { CompetitionEntry } from '@/types/system/stores.ts';
+import type { CompetitionEntry, PendingAward, PastCompetitionWinner } from '@/types/system/stores.ts';
+export type { CompetitionEntry, PendingAward, PastCompetitionWinner };
 
 // fallow-ignore-next-line unused-export
 export const SUB_COMPETITION_METRICS = ['total_ivs', 'weight', 'height', 'level', 'stat_iv', 'friendship'] as const;
@@ -419,5 +420,112 @@ export function getSubCompDescription(eventId: string, sub: SubCompetitionConfig
       : `Premia al Pokémon con Menor Amistad${speciesText}.`;
   }
   return sub.description || `Compite por el mejor puntaje en ${sub.name}.`;
+}
+
+export interface ResolvedAwardCategory {
+  categoryId: string;
+  categoryTitle: string;
+  icon: string;
+}
+
+/**
+ * Resolves the concrete category, title, and icon for an event award.
+ * Inquires explicit award metadata, prize payloads, prize item match, and winner podio.
+ */
+export function resolveAwardCategory(
+  award: PendingAward,
+  event?: Event | null,
+  winners?: PastCompetitionWinner[]
+): ResolvedAwardCategory | null {
+  let parsedPrize: Record<string, unknown> = {};
+  if (typeof award.prize === 'string') {
+    try {
+      parsedPrize = JSON.parse(award.prize) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
+    } catch {
+      parsedPrize = {};
+    }
+  } else if (typeof award.prize === 'object' && award.prize !== null) {
+    parsedPrize = award.prize as Record<string, unknown>; // open-record: Generic key-value data dictionary container
+  }
+
+  let catId = (award.category_id || (parsedPrize.category_id as string | undefined) || '') as string;
+
+  if (!catId && event) {
+    const subComps = getDefaultSubCompetitions(event);
+    const prizeItems = (parsedPrize.items || {}) as Record<string, number>; // open-record: Generic key-value data dictionary container
+    const prizeItemKeys = Object.keys(prizeItems);
+
+    if (prizeItemKeys.length > 0) {
+      for (const sub of subComps) {
+        if (!sub.prizes) continue;
+        for (const rankKey of ['first', 'second', 'third'] as const) {
+          const candidatePrize = sub.prizes[rankKey] as Record<string, unknown> | undefined; // open-record: Generic key-value data dictionary container
+          if (!candidatePrize) continue;
+          const candidateItems = (candidatePrize.items || {}) as Record<string, number>; // open-record: Generic key-value data dictionary container
+          const candidateKeys = Object.keys(candidateItems);
+          if (candidateKeys.length > 0 && candidateKeys.every(k => k in prizeItems)) {
+            catId = sub.id;
+            break;
+          }
+        }
+        if (catId) break;
+      }
+    }
+  }
+
+  if (!catId && winners && winners.length > 0) {
+    const userWinners = award.winner_id ? winners.filter(w => w.player_id === award.winner_id) : winners;
+    if (userWinners.length === 1 && userWinners[0]?.category_id) {
+      catId = userWinners[0].category_id;
+    }
+  }
+
+  if (!catId && award.id && award.id.startsWith('award_')) {
+    const parts = award.id.split('_');
+    if (parts.length >= 3 && parts[2]) {
+      catId = parts[2];
+    }
+  }
+
+  if (!catId) return null;
+
+  const eventId = award.event_id || event?.id || '';
+  const subComp = event ? getDefaultSubCompetitions(event).find(s => s.id === catId || catId.startsWith(s.id)) : null;
+
+  let categoryTitle = '';
+  if (subComp) {
+    categoryTitle = getSubCompTitle(eventId, subComp);
+  } else if (catId.startsWith('weight')) {
+    categoryTitle = getSubCompTitle(eventId, { id: catId, metric: 'weight', order: 'auto', name: 'Peso' });
+  } else if (catId.startsWith('height')) {
+    categoryTitle = getSubCompTitle(eventId, { id: catId, metric: 'height', order: 'auto', name: 'Altura' });
+  } else if (catId.startsWith('level')) {
+    categoryTitle = 'Mayor Nivel';
+  } else if (catId.startsWith('friendship')) {
+    categoryTitle = 'Mayor Amistad';
+  } else {
+    categoryTitle = 'Mayor IVs';
+  }
+
+  let icon = '🏆';
+  if (subComp) {
+    icon = subComp.icon || getSubCompIcon(subComp.metric);
+  } else if (catId.startsWith('weight')) {
+    icon = '⚖️';
+  } else if (catId.startsWith('height')) {
+    icon = '📏';
+  } else if (catId.startsWith('friendship')) {
+    icon = '💖';
+  } else if (catId.startsWith('level')) {
+    icon = '⭐';
+  } else if (catId.startsWith('ivs')) {
+    icon = '🧬';
+  }
+
+  return {
+    categoryId: catId,
+    categoryTitle,
+    icon
+  };
 }
 

@@ -35,6 +35,19 @@ QA / Automation Engineers.
 - **Deterministic Buff Time Acceleration via Debug Primitives**: Playwright E2E and integration tests verifying timed global buffs (`luckyEggSecs`, `repelSecs`, `fishingRodSecs`, `pickaxeSecs`, etc.) MUST use `window.__VITE_DEBUG__.advanceBuffSeconds(sec)` or `window.__VITE_DEBUG__.setBuffDuration(field, sec)` to fast-forward time or trigger expirations deterministically. Using artificial browser timers (`page.waitForTimeout`) or sleep loops is strictly prohibited.
 - **Save Shield State Finalization in Evolution Simulations**: In Playwright E2E simulations executing stone evolutions, test routines must explicitly clear the evolution modal state (`uiStore.evolutionData = null`) after applying `evolvePokemonData` before invoking `gameStore.saveGame()`, preventing evolution Save Shield abort warnings.
 - **Resource Lifecycle in Test Factory Functions**: Helper factory functions that construct and return disposable resources to callers (such as `createMigratedDatabase(): DatabaseSync`) MUST NOT use `using db = ...` inside the factory body. Using `using` inside the factory disposes the instance upon returning from the function scope, resulting in `database is not open` errors for callers. The caller scope alone is responsible for managing the disposal lifecycle via `using db = createMigratedDatabase()`.
+- **Test Placement Taxonomy (Strict Directory Governance)**:
+  - `tests/node/`: Strictly for pure Node.js tests running in a real Node runtime (zero DOM). Used for database schemas, SQL migrations, DBRouter operations, CLI maintenance scripts, Showdown fuzzer replays, and backend logic.
+  - `tests/unit/`: Strictly for frontend unit tests. Runs under `environment: 'node'` by default. Any test that mounts Vue components (`@vue/test-utils`, `mount`, `shallowMount`), tests Vue views/modals, or accesses DOM/browser globals (`document`, `window`, `HTMLCanvasElement`, `localStorageMock`) MUST declare `// @vitest-environment jsdom` at line 1. Pure frontend math, formulas, and state logic run without JSDOM overhead.
+  - `tests/integration/`: For multi-module integration tests verifying cross-boundary behaviors, store + UI lifecycles, and bridge sync. Declare `// @vitest-environment jsdom` at line 1 if touching browser/DOM APIs.
+  - `scripts/e2e/`: Strictly reserved for Playwright browser simulations (`*.simulation.ts`).
+- **Anti-Micro-Test Fragmentation Mandate**:
+  - It is STRICTLY FORBIDDEN to create dozens of tiny 20-50 line test files (`case_*.test.ts`, single-assertion specs). Each test file spawns a separate Vitest worker, thrashing Vite transform caches and repeatedly re-importing heavy packages like `@pkmn/sim` and `@smogon/calc`.
+  - Related test scenarios (such as fuzzer reproduction fixtures or sub-component math helpers) MUST be grouped in consolidated test suites under the 500-line SRP threshold.
+- **SQLite In-Memory Test Optimization Standard**:
+  - Test suites performing mass insertions or executing database migrations in SQLite MUST encapsulate operations inside `BEGIN TRANSACTION;` and `COMMIT;` with memory pragmas (`PRAGMA synchronous = OFF; PRAGMA journal_mode = MEMORY;`).
+  - Companion SQLite migration files (`.sqlite.sql`) must be executed in bulk via `db.exec(migration.sqlite_sql)` rather than string-splitting into individual JavaScript loops.
+- **Cross-Platform Vitest Environment Directive**:
+  - Tests requiring JSDOM MUST explicitly declare `// @vitest-environment jsdom` at line 1. This guarantees deterministic environment routing across both Windows (with backslashes `\`) and POSIX (`/`) file systems without relying on path glob nuances.
 - All test suites run under **Vitest** (vite-node) via `vitest.workspace.ts`. Regression checks MUST ALWAYS run the full test suite (`npm run test`), never subset commands like `test:unit` or `test:node` alone.
 
 ## Work Guidance
@@ -47,7 +60,7 @@ QA / Automation Engineers.
   2. Implement/update Integrity/Integration tests in `tests/integration/` or `tests/node/` to ensure contract consistency across boundaries (verifying schema/constraint parity across both engines).
   3. Verify/implement Playwright E2E browser simulations adhering strictly to `/game-simulation` rules (executing dual clean zero pass for persistence flows).
   4. Fix root cause in `src/` (zero fallbacks) and confirm all 3 test tiers pass cleanly in GREEN across both engines.
-- **Runner**: All tests use Vitest. `tests/node/` runs with `environment: 'node'`; `tests/unit/` and `tests/integration/` run with `environment: 'jsdom'`. To validate all changes across the codebase, ALWAYS execute `npm run test`.
+- **Runner**: All tests use Vitest. `tests/node/` runs with `environment: 'node'`; `tests/unit/` defaults to `environment: 'node'` and selectively enables JSDOM via `// @vitest-environment jsdom` for component/DOM tests. To validate all changes across the codebase, ALWAYS execute `npm run test`.
 - **Imports**: Use `import { describe, it, vi, beforeAll, beforeEach } from 'vitest'`. Do NOT import from `node:test`.
 - **@/ aliases**: Fully supported in both environments. No workarounds needed.
 - **Mocks**: Use `vi.fn()`, `vi.spyOn()`, `vi.stubGlobal()`. Never use `node:test`'s `mock` object.

@@ -23,7 +23,7 @@ import {
   type InferInput
 } from 'valibot';
 
-import { pokemonSchema, pokemonEggSchema } from './subschemas/pokemonSchemas.ts';
+import { pokemonSchema, pokemonEggSchema, daycareEggSchema } from './subschemas/pokemonSchemas.ts';
 import { activeBattleSchema } from './subschemas/battleSchemas.ts';
 import { daycareMissionSchema, claimItemSchema, notificationItemSchema, tradeOfferSchema, gtsListingSchema } from './subschemas/socialSchemas.ts';
 import {
@@ -110,7 +110,7 @@ export const saveDataSchema = object({
   incenseSecs: optional(number()),
   incenseType: optional(nullable(string())),
   daycare_berry_egg_time: optional(number()),
-  daycareWarehouse: optional(array(unknown())),
+  daycareWarehouse: optional(array(union([daycareEggSchema, pokemonSchema]))),
   boxCount: number(),
   chats: optional(record(string(), unknown())),
   playerClass: optional(nullable(union([literal('cazabichos'), literal('criador'), literal('rocket'), literal('entrenador')]))),
@@ -144,6 +144,7 @@ export const saveDataSchema = object({
   lastResolvedWeek: optional(nullable(string())),
   claimQueue: optional(array(claimItemSchema)),
   pvpTeam: optional(array(string())),
+  pvpTeam6: optional(array(string())),
   warTeam: optional(array(string())),
   warSlots: optional(number()),
   notificationHistory: optional(array(union([notificationItemSchema, string(), record(string(), unknown())]))),

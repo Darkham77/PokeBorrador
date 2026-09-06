@@ -29,6 +29,7 @@ describe('Player Saves Migration & Compatibility Audit', () => {
     expect(gameSaves.length).toBeGreaterThan(0);
 
     // Insertar los saves crudos en la base de datos temporal
+    db.exec('BEGIN TRANSACTION;');
     const insertSave = db.prepare('INSERT INTO game_saves (user_id, save_data, last_save_id, updated_at) VALUES (?, ?, ?, ?)');
     for (const save of gameSaves) {
       const dataStr = typeof save.save_data === 'string' ? save.save_data : JSON.stringify(save.save_data);
@@ -45,6 +46,7 @@ describe('Player Saves Migration & Compatibility Audit', () => {
         }
       }
     }
+    db.exec('COMMIT;');
 
     // 4. Leer los saves ya migrados de la base de datos
     const selectSaves = db.prepare('SELECT user_id, save_data FROM game_saves');

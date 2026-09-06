@@ -5,6 +5,7 @@ import { useEventStore } from '@/stores/events'
 import { useUIStore } from '@/stores/ui'
 import { isAwardClaimable } from '@/logic/events/eventValidators'
 import { getEventDisplayName as getEventDisplayNameCore } from '@/logic/events/eventEngine'
+import { resolveAwardCategory } from '@/logic/events/eventCompetitions'
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 import type { PendingAward } from '@/types/system/stores'
 import RewardPillsGroup from '@/components/shared/RewardPillsGroup.vue'
@@ -27,26 +28,29 @@ const getEventDisplayName = (eventId: string, awardedAt?: string): string => {
   return getEventDisplayNameCore(ev)
 }
 
-const getCategoryBadge = (award: PendingAward): { icon: string; name: string } | null => {
-  const catId = award.category_id || ''
-  let catName = award.category_name || ''
-  if (!catName && catId) {
-    catName = (
-      catId.startsWith('weight') ? 'Mayor/Menor Peso' :
-      catId.startsWith('height') ? 'Mayor/Menor Altura' :
-      catId.startsWith('level') ? 'Mayor Nivel' :
-      catId.startsWith('friendship') ? 'Mayor Amistad' :
-      'Mayor IVs'
-    )
+const getAwardCategory = (award: PendingAward) => {
+  const ev = (allEvents.value || []).find(e => e.id === award.event_id)
+  const pastEv = (eventStore.pastEvents || []).find(pe => pe.event_id === award.event_id)
+  return resolveAwardCategory(award, ev, pastEv?.winners)
+}
+
+const getAwardEventName = (award: PendingAward): string => {
+  return getEventDisplayName(award.event_id || '', award.awarded_at)
+}
+
+const getAwardFullDisplayName = (award: PendingAward): string => {
+  const baseName = getAwardEventName(award)
+  const cat = getAwardCategory(award)
+  if (cat?.categoryTitle) {
+    return `${baseName} - ${cat.categoryTitle}`
   }
-  if (catName) {
-    let icon = '🏆'
-    if (catId.startsWith('ivs') || catName.includes('Genética') || catName.includes('IV')) icon = '🧬'
-    else if (catId.startsWith('weight') || catName.includes('Peso') || catName.includes('Masa')) icon = '⚖️'
-    else if (catId.startsWith('height') || catName.includes('Altura') || catName.includes('Envergadura')) icon = '📏'
-    else if (catId.startsWith('level') || catName.includes('Nivel')) icon = '📈'
-    else if (catId.startsWith('friendship') || catName.includes('Amistad')) icon = '💖'
-    return { icon, name: catName }
+  return baseName
+}
+
+const getCategoryBadge = (award: PendingAward): { icon: string; name: string } | null => {
+  const cat = getAwardCategory(award)
+  if (cat) {
+    return { icon: cat.icon, name: cat.categoryTitle }
   }
   return null
 }
@@ -115,7 +119,7 @@ const confirmDiscard = (awardId: string, eventName: string) => {
         >
           <div class="award-info">
             <div class="award-name-row">
-              <span class="award-name">{{ getEventDisplayName(award.event_id || '', award.awarded_at) }}</span>
+              <span class="award-name">{{ getAwardEventName(award) }}</span>
               <span
                 v-if="getCategoryBadge(award)"
                 class="category-badge"
@@ -153,7 +157,7 @@ const confirmDiscard = (awardId: string, eventName: string) => {
               :class="{ 'only-action': !checkIfClaimable(award) }"
               @mouseenter="onDiscardHover($event, true)"
               @mouseleave="onDiscardHover($event, false)"
-              @click.stop="confirmDiscard(award.id, getEventDisplayName(award.event_id || ''))"
+              @click.stop="confirmDiscard(award.id, getAwardFullDisplayName(award))"
             >
               <span class="emoji">🗑️</span>
               DESCARTAR

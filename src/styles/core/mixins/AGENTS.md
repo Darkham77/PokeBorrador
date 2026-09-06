@@ -13,6 +13,10 @@ Frontend Developers.
   - `@mixin pixelated` (in `_layout.scss`) is exclusively for **typography and font smoothing** (`font-family: var(--font-pixel)`, `-webkit-font-smoothing: none`).
   - `@mixin sprite-render` (in `_gpu.scss`) is exclusively for **pixel-art sprite images and textures** on GPU layers (`image-rendering: pixelated`, `contain: layout style paint`).
   - Applying `@include pixelated` to `<img>` tags or visual sprite wrappers is strictly prohibited as it does not set `image-rendering` and leads to compositor bilinear blur during CSS/GSAP transforms.
+- **High-Resolution Artwork Antialiasing Mixin (`_layout.scss`)**:
+  - `@mixin allow-aliasing` is exclusively for **high-resolution event artwork, wallpapers, and detailed illustration banners** that require smooth browser filtering instead of retro nearest-neighbor pixelation.
+  - It combines `image-rendering: auto !important`, `-webkit-optimize-contrast: auto !important`, and `-ms-interpolation-mode: bicubic !important` with persistent GPU compositor layer promotion (`transform: translateZ(0)`, `will-change: transform`, `backface-visibility: hidden`).
+  - Using `@mixin allow-aliasing` on game sprites, Pokémon icons, or pixel-art assets is strictly prohibited to preserve the retro pixel aesthetic.
 - **Pixel Font Line-Height & Multiline Inheritance (`_layout.scss`)**:
   - `@mixin pixelated` and `@mixin pixelated-proportional` enforce a safe base `line-height: 1.35` to ensure multiline pixelated text inherits sufficient vertical spacing.
   - Overriding text containers or headings with destructive `line-height: 1` or `line-height: 1.1` is strictly prohibited on elements that can wrap across multiple lines, preventing pixel glyph collisions.

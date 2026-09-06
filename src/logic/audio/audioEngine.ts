@@ -334,4 +334,23 @@ export function playSirenSound(ctx: AudioContext, dest: AudioNode | null) {
   playGlide(ctx, dest, AUDIO_FREQUENCIES_HZ.SIREN_HIGH, AUDIO_FREQUENCIES_HZ.SIREN_LOW, t + SEGMENT_DURATION_SEC * 3, SEGMENT_DURATION_SEC, VOLUME, 'sawtooth');
 }
 
+/**
+ * PVP CHALLENGE FANFARE (Ascending 8-bit battle challenge arpeggio)
+ */
+export function playPvPChallengeSound(ctx: AudioContext, dest: AudioNode | null) {
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const notes = [
+    AUDIO_FREQUENCIES_HZ.C5,
+    AUDIO_FREQUENCIES_HZ.E5,
+    AUDIO_FREQUENCIES_HZ.G5,
+    AUDIO_FREQUENCIES_HZ.B5
+  ];
+  const { STEP_INTERVAL_SEC, NOTE_DURATION_SEC, NOTE_VOLUME, FINAL_OFFSET_SEC, FINAL_DURATION_SEC } = AUDIO_SOUND_PARAMS.PVP_CHALLENGE;
+  notes.forEach((freq, i) => {
+    playNote(ctx, dest, freq, t + i * STEP_INTERVAL_SEC, NOTE_DURATION_SEC, NOTE_VOLUME, 'square');
+  });
+  playNote(ctx, dest, AUDIO_FREQUENCIES_HZ.C6, t + FINAL_OFFSET_SEC, FINAL_DURATION_SEC, NOTE_VOLUME, 'triangle');
+}
+
+
 

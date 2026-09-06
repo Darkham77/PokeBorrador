@@ -1,11 +1,11 @@
 /**
  * Global registry of trainer archetype definitions, sprites, and spawn pools.
  */
-import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
-import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { PokemonType } from '@/data/battle/types';
-import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS, ENABLED_POKEMON_IDS_SET } from '@/data/system/constants';
+import type { NpcArchetype } from '../../logic/utils/npcSpriteRouter.ts';
+import type { NpcSpriteId } from '../pokemon/npcSpriteCatalog.ts';
+import type { PokemonSpeciesId } from '../pokemon/pokedex.ts';
+import type { PokemonType } from '../battle/types.ts';
+import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS, ENABLED_POKEMON_IDS_SET } from '../system/constants.ts';
 import { Dex } from '@pkmn/sim';
 
 export const TRAINER_TYPE_KEYS = [

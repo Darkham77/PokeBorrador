@@ -38,7 +38,10 @@ export async function initWorkerForBattle(
   }
 
   const battleState = ctx.activeBattle.value
-  const rawPlayerTeam = [...(ctx.gs.state.team || [])]
+  const effectiveTeam = (battleState?.isPvP && battleState?.playerTeam && battleState.playerTeam.length > 0)
+    ? battleState.playerTeam
+    : (ctx.gs.state.team || [])
+  const rawPlayerTeam = [...effectiveTeam]
   const p1Data = prepareSeatPayload(rawPlayerTeam, initialPlayer, debugSeed, 'Player')
 
   const rawEnemyTeam = [...(battleState?.enemyTeam || (initialEnemy ? [initialEnemy] : []))]

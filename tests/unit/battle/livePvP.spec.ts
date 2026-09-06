@@ -40,10 +40,11 @@ describe('LivePvPStore (Combat Engine)', () => {
 
     ;(game as unknown as { db: unknown }).db = dbMock
     
+    const pika = { uid: 'pika_1', id: 'pikachu', name: 'Pikachu', hp: 100, maxHp: 100, atk: 55, def: 40, spa: 50, spd: 50, spe: 90, level: 50, type: 'electric', moves: [{ id: 'tackle', name: 'Tackle', pp: 35, maxPP: 35 }] } as unknown as Pokemon
     game.state = {
-      team: [
-        { id: 'pikachu', name: 'Pikachu', hp: 100, maxHp: 100, atk: 55, def: 40, spa: 50, spd: 50, spe: 90, level: 50, type: 'electric', moves: [{ id: 'tackle', name: 'Tackle', pp: 35, maxPP: 35 }] } as unknown as Pokemon
-      ]
+      team: [pika],
+      pvpTeam: ['pika_1'],
+      box: []
     } as unknown as typeof game.state
   })
 
@@ -53,11 +54,11 @@ describe('LivePvPStore (Combat Engine)', () => {
     await pvp.sendInvite('user_2', 'Player 2')
     
     expect(dbMock.from).toHaveBeenCalledWith('battle_invites')
-    expect(dbMock.insert).toHaveBeenCalledWith({
+    expect(dbMock.insert).toHaveBeenCalledWith(expect.objectContaining({
       challenger_id: 'user_1',
       opponent_id: 'user_2',
       status: 'pending'
-    })
+    }))
   })
 
   it('should resolve turn correctly when both players move', async () => {

@@ -5,8 +5,16 @@ import { useAuthStore } from '@/stores/auth';
 import { useUIStore } from '@/stores/ui';
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
+import ChatBattleCodeBadge from './ChatBattleCodeBadge.vue';
 import { gsap } from 'gsap';
 import { formatChatTimestamp } from '@/logic/utils/timeUtils';
+import { BATTLE_CODE_REGEX } from '@/logic/constants/gameplay';
+
+function extractBattleCode(message?: string): string | null {
+  if (!message) return null;
+  const match = message.match(BATTLE_CODE_REGEX);
+  return match ? match[0].toUpperCase() : null;
+}
 
 
 interface Props {
@@ -147,6 +155,10 @@ onMounted(() => {
               <p class="text">
                 {{ msg.text }}
               </p>
+              <ChatBattleCodeBadge
+                v-if="extractBattleCode(msg.text)"
+                :battle-code="extractBattleCode(msg.text)!"
+              />
             </div>
           </div>
         </TransitionGroup>

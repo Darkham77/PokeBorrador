@@ -13,6 +13,7 @@ import {
   resolveSubCompetitionDirection,
   getSubCompTitle,
   getSubCompDescription,
+  getSubCompIcon,
   evaluatePokemonForSubCompetition, 
   getEligiblePokemonForSubCompetition, 
   isPokemonEnrolledInOtherSubCompetition,
@@ -353,8 +354,7 @@ const onCardHover = (event: MouseEvent, isEntering: boolean) => {
         scale: 1,
         duration: 0.3,
         ease: 'power2.out',
-        overwrite: 'auto',
-        clearProps: 'transform,scale'
+        overwrite: 'auto'
       })
     }
   }
@@ -406,6 +406,7 @@ onUnmounted(() => {
       <img
         :src="getAssetUrl(ASSET_TYPES.BANNER, cardBannerKey)"
         :alt="cardDisplayName"
+        class="event-banner-img allow-aliasing"
         draggable="false"
         @error="(e: Event) => ((e.target as HTMLImageElement).style.display='none')"
       >
@@ -523,7 +524,7 @@ onUnmounted(() => {
                 <span
                   v-else
                   class="chip-global-icon"
-                ><span class="emoji">🧬</span></span>
+                ><span class="emoji">{{ sub.icon || getSubCompIcon(sub.metric) }}</span></span>
                 
                 <!-- Clean Metric Name (IVs / Peso / Altura) -->
                 <span class="chip-metric">{{ formatMetricLabel(sub) }}</span>

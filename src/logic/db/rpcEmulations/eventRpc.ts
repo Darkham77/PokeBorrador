@@ -3,7 +3,7 @@ import { logger } from '@/logic/utils/logger.ts';
 import { getServerInstant } from '@/logic/utils/timeUtils.ts';
 import type { DBResponse } from '@/types/system/database';
 import type { CompetitionEntryData, CompetitionRankKey } from '@/types/system/stores';
-import { resolveSubCompetitionDirection, resolveEventSubCompetitions, type SubCompetitionConfig, type ResolvedSubCompetition, type Event as GameEvent } from '@/logic/events/eventEngine.ts';
+import { resolveSubCompetitionDirection, resolveEventSubCompetitions, getSubCompTitle, type SubCompetitionConfig, type ResolvedSubCompetition, type Event as GameEvent } from '@/logic/events/eventEngine.ts';
 
 const COMPETITION_RANKS: readonly CompetitionRankKey[] = ['first', 'second', 'third'] as const;
 const MAX_STORED_COMPETITION_RESULTS = 100;
@@ -185,7 +185,10 @@ export async function emulateAwardEventAutomated(
         const entry = top3[i]!;
         const rank = COMPETITION_RANKS[i]!;
         const rawPrize = prizes[rank] || { type: 'money', amount: 10000 };
-        const prize = typeof rawPrize === 'object' && rawPrize !== null ? { ...rawPrize, rank } : { rank, type: 'money', amount: 10000 };
+        const resolvedCategoryName = getSubCompTitle(targetEventId, sub);
+        const prize = typeof rawPrize === 'object' && rawPrize !== null
+          ? { ...rawPrize, rank }
+          : { rank, type: 'money', amount: 10000 };
         const awardId = `award_${targetEventId}_${sub.id}_${entry.player_id}_${getServerInstant().epochMilliseconds}_${i}`;
 
         await queryLocal(`
@@ -204,7 +207,7 @@ export async function emulateAwardEventAutomated(
         allWinners.push({
           rank,
           category_id: sub.id,
-          category_name: sub.name,
+          category_name: resolvedCategoryName,
           player_id: entry.player_id,
           player_name: entry.player_name,
           player_class: entry.data.player_class,

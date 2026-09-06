@@ -16,6 +16,10 @@ import ProfileXpCard from '@/components/profile/ProfileXpCard.vue'
 import ProfilePokedexCard from '@/components/profile/ProfilePokedexCard.vue'
 import ProfileFactionWarCard from './ProfileFactionWarCard.vue'
 import ProfileStatsSection from './ProfileStatsSection.vue'
+import ProfileRankedMedalsCard from '@/components/profile/ProfileRankedMedalsCard.vue'
+import ProfilePinnedReplaysCard from '@/components/profile/ProfilePinnedReplaysCard.vue'
+import { useLivePvPStore } from '@/stores/livePvP'
+import type { BattleReplayRecord } from '@/types/battle/pvp'
 import { useTrainerProfile } from './useTrainerProfile.ts'
 import { useStatHover } from '@/composables/ui/useStatHover'
 import type { GymId } from '@/data/world/gyms'
@@ -82,6 +86,8 @@ const {
   eventMedalsFirst,
   eventMedalsSecond,
   eventMedalsThird,
+  rankedMedals,
+  pinnedReplays,
   saveState,
   fetchData
 } = useTrainerProfile(() => props.userId)
@@ -162,6 +168,13 @@ watch(loading, (newVal) => {
 
 // Asset loaders
 const getAssetUrlLocal = getAssetUrl
+
+const livePvPStore = useLivePvPStore()
+
+const handleWatchReplay = (replay: BattleReplayRecord) => {
+  livePvPStore.watchReplay(replay)
+  close()
+}
 </script>
 
 <template>
@@ -334,6 +347,16 @@ const getAssetUrlLocal = getAssetUrl
           :third-place="eventMedalsThird"
           :handle-stat-enter="handleStatEnter"
           :handle-stat-leave="handleStatLeave"
+        />
+
+        <!-- Medallas de Temporadas Ranked -->
+        <ProfileRankedMedalsCard :medals="rankedMedals" />
+
+        <!-- Repeticiones Fijadas -->
+        <ProfilePinnedReplaysCard
+          :pinned-replays="pinnedReplays"
+          :is-own-profile="isOwnProfile"
+          @watch-replay="handleWatchReplay"
         />
 
         <!-- Faction War Contribution -->

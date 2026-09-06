@@ -22,6 +22,7 @@ export const MODAL_REGISTRY = {
   Rename: defineAsyncComponent(() => import('@/components/modals/RenameModal.vue')),
   TrainerProfile: defineAsyncComponent(() => import('@/components/modals/TrainerProfileModal.vue')),
   Ranking: defineAsyncComponent(() => import('@/components/modals/RankingModal.vue')),
+  BattleReplay: defineAsyncComponent(() => import('@/components/battle/BattleReplayModal.vue')),
   Arena: defineAsyncComponent(() => import('@/components/modals/ArenaModal.vue')),
   Library: defineAsyncComponent(() => import('@/components/modals/LibraryModal.vue')),
   Cosmetics: defineAsyncComponent(() => import('@/components/modals/CosmeticsModal.vue')),
@@ -59,7 +60,10 @@ export const MODAL_REGISTRY = {
   DebugStackTest: defineAsyncComponent(() => import('@/components/modals/DebugStackTestModal.vue')),
   DebugWeatherTables: defineAsyncComponent(() => import('@/components/modals/DebugWeatherTablesModal.vue')),
   RouteSpawns: defineAsyncComponent(() => import('@/components/modals/RouteSpawnsModal.vue')),
-  EventSlotAction: defineAsyncComponent(() => import('@/components/modals/EventSlotActionModal.vue'))
+  EventSlotAction: defineAsyncComponent(() => import('@/components/modals/EventSlotActionModal.vue')),
+  PvPChallenge: defineAsyncComponent(() => import('@/components/modals/PvPChallengeModal.vue')),
+  PvPOpponentOffline: defineAsyncComponent(() => import('@/components/modals/PvPOpponentOfflineModal.vue')),
+  RankedSeasonReward: defineAsyncComponent(() => import('@/components/modals/RankedSeasonRewardModal.vue'))
 }
 
 export type ModalRegistryKey = keyof typeof MODAL_REGISTRY;

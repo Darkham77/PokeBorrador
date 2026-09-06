@@ -19,6 +19,10 @@ QA / Automation Engineers.
 - Write specific simulations for held items (`held_items.sim.ts`) and weather conditions (`weather.sim.ts`).
 - `rocket_police_criminality.simulation.ts` covers Team Rocket criminality progression, visual HUD scaling (`#criminality-bar`), scaled SWAT police encounters, and post-battle resolution resets.
 - `battle_party_rewards_exp_ev.simulation.ts` covers canonical Gen VI–IX party-wide Exp and EV distribution, 100% undivided EV yield, `expshare` boost, strict 0 HP fainted exclusion, Power item isolation, and capture rewards.
+- `pvp_ranked_matchmaking_combat.simulation.ts` covers Flat 50 scaling, visual clock, turn flow, dynamic ELO gain, and Battle Coins rewarding.
+- `pvp_casual_no_elo_change.simulation.ts` covers casual friendly PvP isolation guaranteeing zero ELO rating delta.
+- `pvp_season_end_award_claim.simulation.ts` covers season celebration modal display, podio tag, soft reset preview, and automated award claims.
+- `pvp_offline_rival_asynchronous_combat.simulation.ts` covers asynchronous offline rival challenge and `passive_battle_reports` persistence.
 
 ## Verification
 

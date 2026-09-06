@@ -198,6 +198,10 @@ export interface BattleState {
   winnerResult?: BattleSide | 'tie';
   learnQueue?: unknown[];
   isPvP?: boolean;
+  pvpMatchId?: string; // domain-ok: Open dynamic text or non-domain string payload
+  pvpIsHost?: boolean;
+  pvpOpponentId?: string; // domain-ok: Open dynamic text or non-domain string payload
+  pvpOpponentName?: string; // domain-ok: Open dynamic text or non-domain string payload
   inSearchPhase?: boolean;
   difficulty?: BattleDifficulty;
   _lastActivePlayer?: Pokemon | null;

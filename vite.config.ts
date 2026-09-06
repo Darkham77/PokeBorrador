@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type HmrContext } from 'vite'
 import { type ViteDevServer } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'node:path'
@@ -311,6 +311,7 @@ function devDbImportPlugin() {
 // recalculate it, so that the deployed web app and the DB always match.
 
 const isCI = !!process.env.GITHUB_ACTIONS;
+const isVitest = !!process.env.VITEST;
 
 /** Read the version already committed to public/version.json (used in CI). */
 function readCommittedVersion(): string {
@@ -409,7 +410,6 @@ export default defineConfig({
   base,
   plugins: [
     fixPkmnSimPlugin(),
-    pokemonDbGeneratorPlugin(),
     vue({
       template: {
         compilerOptions: {
@@ -419,14 +419,16 @@ export default defineConfig({
         }
       }
     }),
-    migrationsPlugin(),
-    devDbImportPlugin(),
-    sassTrapsFixer(),
-    versionPlugin(),
-    VitePWA({
-      registerType: 'prompt',
-      includeAssets: ['sql-wasm.wasm', 'assets/fondo/logo%203.webp'],
-      manifest: {
+    ...(!isVitest ? [
+      pokemonDbGeneratorPlugin(),
+      migrationsPlugin(),
+      devDbImportPlugin(),
+      sassTrapsFixer(),
+      versionPlugin(),
+      VitePWA({
+        registerType: 'prompt',
+        includeAssets: ['sql-wasm.wasm', 'assets/fondo/logo%203.webp'],
+        manifest: {
         name: 'Poké Vicio',
         short_name: 'PokéVicio',
         description: 'El juego definitivo de Pokémon para navegador',
@@ -532,18 +534,19 @@ export default defineConfig({
         type: 'module'
       }
     }),
-    staticPrecompressPlugin(),
-    {
-      name: 'worker-reload-plugin',
-      handleHotUpdate({ file, server }) {
-        if (file.endsWith('showdown.worker.ts')) {
-          server.config.logger.info(`[HMR] showdown.worker.ts modificado. Forzando recarga de página.`);
-          server.ws.send({ type: 'full-reload' });
-          return [];
+      staticPrecompressPlugin(),
+      {
+        name: 'worker-reload-plugin',
+        handleHotUpdate({ file, server }: HmrContext) {
+          if (file.endsWith('showdown.worker.ts')) {
+            server.config.logger.info(`[HMR] showdown.worker.ts modificado. Forzando recarga de página.`);
+            server.ws.send({ type: 'full-reload' });
+            return [];
+          }
+          return;
         }
-        return;
       }
-    }
+    ] : [])
   ],
   define: {
     __BUILD_TIME__: JSON.stringify(appVersion.slice(1, 5)),

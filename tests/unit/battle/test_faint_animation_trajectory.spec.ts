@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { buildFaintTimeline } from '@/components/battle/helpers/combatantActionAnims';
 import { useBattleCaptureAnimations } from '@/composables/battle/useBattleCaptureAnimations';

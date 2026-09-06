@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, test, beforeEach } from 'vitest';
 import assert from 'node:assert';
 import { setActivePinia, createPinia } from 'pinia';

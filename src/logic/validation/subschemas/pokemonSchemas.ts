@@ -19,6 +19,7 @@ import {
   nullable,
   literal,
   partial,
+  unknown,
   type InferOutput,
 } from 'valibot';
 
@@ -248,3 +249,28 @@ export type PokemonEVsDto = InferOutput<typeof pokemonEVsSchema>;
 export type MoveSchemaDto = InferOutput<typeof moveSchema>;
 export type PokemonInstanceDto = InferOutput<typeof pokemonSchema>;
 export type PokemonEggDto = InferOutput<typeof pokemonEggSchema>;
+
+export const daycareEggSchema = object({
+  id: string(),
+  species: string(),
+  name: string(),
+  level: number(),
+  isEgg: boolean(),
+  steps: number(),
+  motherId: optional(string()),
+  mother_id: optional(string()),
+  depositedAt: optional(string()),
+  deposited_at: optional(string()),
+  ivs: optional(union([pokemonIVsSchema, partialPokemonIVsSchema])),
+  nature: string(),
+  movesAtBirth: optional(array(string())),
+  abilityIndex: optional(number()),
+  isShiny: optional(boolean()),
+  cost: optional(number()),
+  tint: optional(string()),
+  isAncestral: optional(boolean()),
+  inheritedIvs: optional(record(string(), unknown())),
+  inherited_ivs: optional(record(string(), unknown()))
+});
+
+export type DaycareEggDto = InferOutput<typeof daycareEggSchema>;

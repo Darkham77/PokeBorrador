@@ -51,6 +51,7 @@ describe('Dynamic Multi-Table Real Backup Validation & Dex Compatibility Test', 
     // 2. Set up SQLite in-memory DB and dynamically load ALL tables from the backup
     using db = new DatabaseSync(':memory:');
     db.exec('PRAGMA foreign_keys = OFF;');
+    db.exec('BEGIN TRANSACTION;');
 
     for (const [tableName, rows] of Object.entries(backupData)) {
       if (!Array.isArray(rows) || rows.length === 0) continue;
@@ -88,6 +89,7 @@ describe('Dynamic Multi-Table Real Backup Validation & Dex Compatibility Test', 
       }
     }
 
+    db.exec('COMMIT;');
     db.exec('CREATE TABLE IF NOT EXISTS _migrations (id TEXT PRIMARY KEY, applied_at TEXT)');
 
     // 3. Verify that all physical .sql files in database/migrations/ are present in DATABASE_MIGRATIONS
@@ -107,6 +109,7 @@ describe('Dynamic Multi-Table Real Backup Validation & Dex Compatibility Test', 
     const appliedSet = new Set(appliedRows.map(r => r.id));
 
     let appliedCount = 0;
+    db.exec('BEGIN TRANSACTION;');
     for (const migration of DATABASE_MIGRATIONS) {
       if (appliedSet.has(migration.id)) continue;
 
@@ -146,6 +149,7 @@ describe('Dynamic Multi-Table Real Backup Validation & Dex Compatibility Test', 
       db.prepare('INSERT OR REPLACE INTO _migrations (id, applied_at) VALUES (?, ?)').run(migration.id, new Date().toISOString());
       appliedCount++;
     }
+    db.exec('COMMIT;');
 
     assert.ok(appliedCount > 0, `At least 1 pending migration must be applied to the old backup (applied: ${appliedCount})`);
 

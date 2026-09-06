@@ -33,7 +33,7 @@ const isLocked = computed(() => {
 })
 
 const hasAvailableBenchPokemon = computed(() => {
-  const team = (gameStore.state?.team || []) as (Pokemon | null)[]
+  const team = (battleStore.isPvP ? battleStore.state?.playerTeam : gameStore.state?.team || []) as (Pokemon | null)[]
   const activeUid = battleStore.player?.uid
   return team.some((p) => p && p.hp > 0 && p.uid !== activeUid)
 })
@@ -59,7 +59,7 @@ const hasAvailableBenchPokemon = computed(() => {
 
       <BattleBallPicker 
         :is-finishing="props.isFinishing"
-        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || isLocked"
+        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || isLocked || battleStore.isPvP"
         @select-ball="(id: ItemId) => emit('select-ball', id)"
         @catch="emit('catch')"
       />
@@ -67,7 +67,7 @@ const hasAvailableBenchPokemon = computed(() => {
       <button
         id="battle-bag-btn"
         class="action-btn bag-btn"
-        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || isLocked"
+        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || isLocked || battleStore.isPvP"
         @click.stop="emit('bag')"
       >
         <span class="emoji">🎒</span> <span class="text">MOCHILA</span>

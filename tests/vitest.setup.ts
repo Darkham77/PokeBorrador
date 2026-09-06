@@ -78,19 +78,21 @@ Object.defineProperty(global, 'IntersectionObserver', {
   writable: true
 })
 // Mock matchMedia (Missing in JSDOM)
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: vi.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(), // deprecated
-    removeListener: vi.fn(), // deprecated
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
-})
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn().mockImplementation(query => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(), // deprecated
+      removeListener: vi.fn(), // deprecated
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  })
+}
 
 // Mock Canvas 2D context for JSDOM
 if (typeof HTMLCanvasElement !== 'undefined') {

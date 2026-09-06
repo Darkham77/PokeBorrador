@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import '../../helpers/battleMockSetup'
 import { handleBattleFlowCompletion } from '@/logic/battle/searchLoop'

@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
@@ -177,4 +178,28 @@ describe('EventCard.vue', () => {
     expect(wrapper.text()).toContain('FINALIZA EN:')
     expect(wrapper.text()).not.toContain('Indefinido')
   })
+
+  it('renders high-resolution banner image with event-banner-img and allow-aliasing classes', () => {
+    const bannerEvent: Event = {
+      id: 'doble_exp',
+      name: 'Fin de Semana Doble EXP',
+      icon: '⚡',
+      type: 'passive_bonus',
+      active: true,
+      manual: false,
+      config: JSON.stringify({ banner: 'doble_exp_full' }),
+      description: 'Doble EXP'
+    }
+
+    const wrapper = mount(EventCard, {
+      props: { event: bannerEvent },
+      global: { stubs: globalStubs }
+    })
+
+    const bannerImg = wrapper.find('.banner-box img')
+    expect(bannerImg.exists()).toBe(true)
+    expect(bannerImg.classes()).toContain('event-banner-img')
+    expect(bannerImg.classes()).toContain('allow-aliasing')
+  })
 })
+

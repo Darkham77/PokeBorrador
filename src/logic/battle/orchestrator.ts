@@ -66,6 +66,13 @@ export interface BattleOptions {
   trainerQuote?: string;
   fixedCycle?: DayPhase;
   fixedWeather?: WeatherId;
+  isPvP?: boolean;
+  isRanked?: boolean;
+  pvpMatchId?: string; // domain-ok: Open dynamic text or non-domain string payload
+  pvpIsHost?: boolean;
+  pvpOpponentId?: string; // domain-ok: Open dynamic text or non-domain string payload
+  pvpOpponentName?: string; // domain-ok: Open dynamic text or non-domain string payload
+  playerTeam?: Pokemon[];
 }
 
 /**
@@ -85,7 +92,13 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     battleOptions = {}, minigame = options.minigame ?? null, wasSearching: wasSearchingOpt = options.wasSearching ?? null,
     trainerSprite = undefined, trainerArchetype = undefined, isRival = false,
     difficulty = undefined, rewardTM = undefined, cannotEscape = false,
-    trainerQuote = undefined
+    trainerQuote = undefined,
+    isPvP = false,
+    pvpMatchId = undefined,
+    pvpIsHost = undefined,
+    pvpOpponentId = undefined,
+    pvpOpponentName = undefined,
+    playerTeam = undefined
   } = options
 
   const optionTrainerArchetype = typeof battleOptions.trainerArchetype === 'string'
@@ -104,7 +117,8 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   const tagsStr = mapTags.join(', ') || 'ninguno'
   logger.info('Orchestrator', `startBattleSequence starting... Biome: ${activeBiome} (Tags: ${tagsStr}) for location: ${resolvedLocationId}`, { isTrainer, isGym, wasSearchingOpt })
 
-  const playerPoke = ctx.gs.state.team.find((p) => p.hp > 0 && !p.onMission && !p.onDefense)
+  const effectivePlayerTeam: Pokemon[] = (isPvP && playerTeam && playerTeam.length > 0) ? playerTeam : (ctx.gs.state.team || [])
+  const playerPoke = effectivePlayerTeam.find((p: Pokemon) => p.hp > 0 && !p.onMission && !p.onDefense)
   if (!playerPoke) {
     const { useUIStore } = await import('@/stores/ui')
     useUIStore().notify('No tienes Pokémon sanos para combatir', '❌')
@@ -119,7 +133,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
 
   if (!isDebugOrReplay) {
     const { checkPokemonLegality } = await import('@/logic/pokemon/pokemonLegality')
-    const illegalPoke = ctx.gs.state.team.find((p) => {
+    const illegalPoke = effectivePlayerTeam.find((p: Pokemon) => {
       if (!p) return false
       if (p.isIllegal) return true
       const legality = checkPokemonLegality(p)
@@ -181,6 +195,11 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     _initialEnemy: structuredClone(toRaw(startingEnemyPoke)),
     _rewardCombatants: [],
     isGym, gymId: resolvedGymId, isTrainer, enemyTeam: finalEnemyTeam, difficulty: resolvedDifficulty, rewardTM: resolvedRewardTM,
+    isPvP,
+    pvpMatchId,
+    pvpIsHost,
+    pvpOpponentId,
+    pvpOpponentName,
     fixedCycle: options.fixedCycle,
     fixedWeather: options.fixedWeather,
     enemyInventory,
@@ -189,7 +208,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     trainerSprite: resolvedTrainerSprite ? requireNpcSpriteId(resolvedTrainerSprite) : undefined,
     trainerArchetype: resolvedTrainerArchetype,
     isRival: isRival || battleOptions.isRival === true,
-    playerTeam: ctx.gs.state.team,
+    playerTeam: effectivePlayerTeam,
     trainerName, locationId: resolvedLocationId,
     quote: trainerQuote || (battleOptions.quote as string) || undefined,
     isCave: locationMap?.isCave || false,
@@ -204,7 +223,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
       visual: isGym ? 'clear' : mapStore.currentWeather, 
       turns: -1 
     },
-    playerTeamIndex: ctx.gs.state.team.indexOf(playerPoke),
+    playerTeamIndex: effectivePlayerTeam.indexOf(playerPoke),
     enemyTeamIndex: 0,
     participants: [playerPoke.uid], learnQueue: [],
     escapeAttempts: 0,
@@ -233,7 +252,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     ctx.activeBattle.value.enemy = (!isTrainer && !isGym) ? finalEnemyPoke : null 
     
     const currentP = ctx.activeBattle.value.player
-    const team = (ctx.gs.state.team as Pokemon[]) || []
+    const team = (effectivePlayerTeam as Pokemon[]) || []
     const firstAlive = team.find(p => p && p.hp > 0)
     if (!currentP || !firstAlive || currentP.uid !== (firstAlive?.uid)) {
       ctx.activeBattle.value.player = null

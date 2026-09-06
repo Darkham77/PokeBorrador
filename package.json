@@ -82,6 +82,7 @@
     "database:generate-migrations": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/database/generate_migrations.ts",
     "assets:download": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-net=raw.githubusercontent.com,play.pokemonshowdown.com,img.pokemondb.net,www.serebii.net scripts/assets/download_assets.ts",
     "assets:download:items": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-net=raw.githubusercontent.com,play.pokemonshowdown.com,img.pokemondb.net,www.serebii.net scripts/assets/download_assets.ts items",
+    "assets:download:medals": "node --permission --experimental-strip-types --allow-addons --allow-fs-read=. --allow-fs-write=. --allow-net=archives.bulbagarden.net scripts/assets/download_ranked_medals.ts",
     "assets:convert": "node --permission --experimental-strip-types --allow-worker --allow-addons --allow-fs-read=. --allow-fs-write=. scripts/assets/convert_assets.ts",
     "assets:organize-tiers": "node --permission --experimental-strip-types --allow-addons --allow-fs-read=. --allow-fs-write=. scripts/assets/organize_item_sprites_by_tier.ts",
     "audit": "node --max-old-space-size=8192 --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* --allow-child-process --allow-addons scripts/maintenance/audit_full.ts",

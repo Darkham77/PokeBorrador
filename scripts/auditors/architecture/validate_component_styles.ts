@@ -39,7 +39,7 @@ export interface ComponentStyleAuditResult {
 }
 
 const GLOBAL_UTILITY_CLASSES = new Set([ // runtime-set: Fast O(1) membership lookup set
-  'pixelated', 'clickable', 'flex', 'hidden', 'active', 'disabled', 'legacy-ui',
+  'pixelated', 'allow-aliasing', 'clickable', 'flex', 'hidden', 'active', 'disabled', 'legacy-ui',
   'legacy-panel', 'legacy-confirm-btn', 'retro-btn', 'pulse', 'gold', 'silver', 'bronze',
   'w-full', 'h-full', 'truncate', 'pointer-events-none', 'pointer-events-auto', 'select-none',
   'custom-scrollbar', 'empty-state', 'scrollable-content', 'modal-footer', 'm-type-tag'

@@ -18,6 +18,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { GAME_TIMEZONE, parseZonedTime } from '@/logic/utils/timeUtils'
 import { DEFAULT_INITIAL_ELO, SEASON_DURATION_MONTHS, DEFAULT_MOVE_PP } from '@/logic/constants/gameplay.ts'
+import { calculateEloDelta, applyEloDelta } from '@/logic/pvp/eloRatingMath.ts'
 
 
 export const RANKED_REWARD_TIER_MARKS = [
@@ -213,11 +214,16 @@ export const usePvPStore = defineStore('pvp', () => {
     }
   })
 
-  async function updateElo(won: boolean) {
+  async function updateElo(won: boolean, opponentElo: number = DEFAULT_INITIAL_ELO) {
     if (!authStore.user || !gameStore.db) return 0
     
-    const delta = won ? 15 + Math.floor(Math.random() * 5) : -(10 + Math.floor(Math.random() * 5))
-    elo.value = Math.max(0, elo.value + delta)
+    const delta = calculateEloDelta(elo.value, opponentElo, won)
+    elo.value = applyEloDelta(elo.value, delta)
+    gameStore.state.eloRating = elo.value
+
+    // Reward Battle Coins (15 for win, 5 for loss)
+    const bcEarned = won ? 15 : 5
+    gameStore.state.battleCoins = (gameStore.state.battleCoins || 0) + bcEarned
     
     if (won) {
       stats.value.wins++
@@ -233,7 +239,8 @@ export const usePvPStore = defineStore('pvp', () => {
     await gameStore.db.from('profiles').update({
       elo_rating: elo.value,
       pvp_wins: stats.value.wins,
-      pvp_losses: stats.value.losses
+      pvp_losses: stats.value.losses,
+      ranked_max_elo: maxElo.value
     }).eq('id', authStore.user.id)
     
     gameStore.save(false)

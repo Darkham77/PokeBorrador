@@ -5,6 +5,9 @@
  * cached cosmetics, friends list, and fetched profile/save data.
  */
 
+import type { RankedSeasonMedal } from '@/types/battle/pvp.ts'
+import { isRankedTierId } from '@/data/system/rankedData.ts'
+
 export interface ProfileRow {
   id: string
   username?: string | null
@@ -85,6 +88,7 @@ export interface SaveStateData {
     longestStreak?: number
   }
   warMyPtsLocal?: Record<string, number>
+  rankedMedals?: RankedSeasonMedal[]
 }
 
 const FACTION_LABELS: Record<string, string> = {
@@ -210,3 +214,52 @@ export function computeEventTrophyCounts(
     total: finalFirst + finalSecond + finalThird
   };
 }
+
+export function extractRankedMedals(
+  awardsData: unknown[] | undefined | null,
+  savedMedals: RankedSeasonMedal[] | undefined | null
+): RankedSeasonMedal[] {
+  const medals: RankedSeasonMedal[] = [];
+  const seenSeasons = new Set<string>();
+
+  if (Array.isArray(awardsData)) {
+    for (const a of awardsData) {
+      if (!a || typeof a !== 'object') continue;
+      const row = a as { prize?: unknown; event_id?: string; awarded_at?: string; id?: string };
+      let p = row.prize;
+      if (typeof p === 'string') {
+        try { p = JSON.parse(p); } catch { p = null; }
+      }
+      if (p && typeof p === 'object') {
+        const pObj = p as Record<string, unknown>; // open-record: Generic key-value data dictionary container
+        if (pObj.type === 'ranked_medal') {
+          const season = String(pObj.season || row.event_id || 'TEMPORADA ACTUAL');
+          if (!seenSeasons.has(season)) {
+            seenSeasons.add(season);
+            const tierVal = pObj.tier;
+            medals.push({
+              id: row.id || `medal_${row.event_id || 'ranked'}`,
+              seasonName: season,
+              tier: isRankedTierId(tierVal) ? tierVal : 'bronce',
+              rank: pObj.rank ? Number(pObj.rank) : undefined,
+              finalElo: Number(pObj.elo) || 1000,
+              awardedAt: String(row.awarded_at || '')
+            });
+          }
+        }
+      }
+    }
+  }
+
+  if (Array.isArray(savedMedals)) {
+    for (const m of savedMedals) {
+      if (m && m.seasonName && !seenSeasons.has(m.seasonName)) {
+        seenSeasons.add(m.seasonName);
+        medals.push(m);
+      }
+    }
+  }
+
+  return medals;
+}
+

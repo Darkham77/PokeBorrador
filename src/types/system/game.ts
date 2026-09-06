@@ -1,5 +1,5 @@
 import { Pokemon, PokemonEgg } from '@/types/pokemon/pokemon';
-import type { DaycareMission } from '@/types/breeding/breeding';
+import type { DaycareMission, DaycareWarehouseItem } from '@/types/breeding/breeding';
 import type { BattleState } from '@/types/battle/battle';
 import type { Inventory } from '@/types/inventory/items';
 import type { GymId } from '@/data/world/gyms';
@@ -8,6 +8,7 @@ import type { PlayerClassId } from '@/data/player/playerClasses';
 import type { ItemId } from '@/data/inventory/items';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { MarketAssetType } from '@/logic/economy/market';
+import type { RankedSeasonMedal } from '@/types/battle/pvp';
 
 export const TOOL_QUALITY_TIERS = ['standard', 'good', 'super'] as const;
 export type ToolQualityTier = (typeof TOOL_QUALITY_TIERS)[number];
@@ -154,6 +155,7 @@ export interface GameState {
   starterChosen: boolean;
   lastPokemonCenterHeal?: number;
   lastRankedSeason: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  rankedMedals?: RankedSeasonMedal[];
   nick_style: string | null; // domain-ok: Open dynamic text or non-domain string payload
   avatar_style: string | null; // domain-ok: Open dynamic text or non-domain string payload
   stats: Partial<Record<GameStatKey, number>>;
@@ -185,7 +187,7 @@ export interface GameState {
   incenseType: ItemId | null;
   incenseSecs: number;
   daycare_berry_egg_time: number;
-  daycareWarehouse?: unknown[];
+  daycareWarehouse?: DaycareWarehouseItem[];
   boxCount: number;
   chats: Record<string, unknown>; // open-record: Generic key-value data dictionary container
   playerClass: PlayerClassId | null;
@@ -218,6 +220,7 @@ export interface GameState {
   marketSoldSeenIds: string[]; // domain-ok: Open dynamic text or non-domain string payload
   claimQueue: ClaimItem[];
   pvpTeam: string[]; // domain-ok: Open dynamic text or non-domain string payload
+  pvpTeam6: string[]; // domain-ok: Open dynamic text or non-domain string payload
   warTeam: string[]; // domain-ok: Open dynamic text or non-domain string payload
   warSlots: number;
   isOverlayLoading?: boolean;

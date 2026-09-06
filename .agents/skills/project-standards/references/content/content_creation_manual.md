@@ -31,6 +31,7 @@
 18. **Dialogue Exception Test Coverage**: Test suites must verify that phrase/quote resolution functions execute cleanly without throwing errors for all registered database keys, and assert that they throw when queried with an invalid key.
 19. **Item Sprite Crafting Tier Hierarchy**: All inventory and shop item sprites in `public/assets/sprites/` MUST strictly follow the 4-tier domain hierarchy (`crafting/tier0/`, `crafting/tier1/`, `crafting/tier2/`, `crafting/tier3/`) derived from `item.craftingTier`.
 20. **Zero Hardcoded Dates on Event Artwork**: When authoring or generating event graphics and promotional banners, images MUST NOT include burned-in dates, years, start/end hours, or watermarks. All date information is dynamic and rendered via UI overlays.
+21. **Mandatory Enabled Pokémon Species Whitelist for Event Artwork & Rewards**: Any artwork, event banners, tournament illustrations, or rewards generated or registered for the game MUST strictly and exclusively depict Pokémon from the official enabled species whitelist (`ENABLED_POKEMON_IDS` in `src/data/system/constants.ts`). Using unreleased, non-whitelisted, or custom unapproved Pokémon species (such as Lucario, Garchomp, Greninja, Metagross, Tyranitar, Darkrai, Blaziken, or custom concepts like Mewtwo Armored) in illustration prompts or reward tables is STRICTLY FORBIDDEN.
 
 ---
 

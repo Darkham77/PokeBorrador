@@ -37,6 +37,8 @@ export interface DaycareEgg {
   inherited_ivs?: Record<string, unknown> & { _scanned?: boolean; _cost?: number }; // open-record: Generic key-value data dictionary container
 }
 
+export type DaycareWarehouseItem = DaycareEgg | Pokemon;
+
 export interface DaycareMission {
   date: string; // domain-ok: Open dynamic text or non-domain string payload
   targetId: PokemonSpeciesId;

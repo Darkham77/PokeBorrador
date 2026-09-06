@@ -26,6 +26,15 @@ Upon game boot or page reload (`F5`):
    - Sets `ctx.isProcessing.value = false` and `d.over = false`.
    - Transitions the FSM directly to `ACTIVE_BATTLE / WAIT_INPUT`.
 
+### 1.3 Online PvP Battle Persistence & Disconnection Governance (`livePvPStore.ts`)
+Live PvP battles (Ranked and Casual) communicate across network boundaries via Supabase Realtime / Broadcast or asynchronous challenge worker:
+- **Matchmaking Persistence**: Public queue entries exist in `public.ranked_queue` with player UID, username, rating, and expiration timestamps. In SQLite offline mode, queue operations are emulated in-memory without remote calls.
+- **Turn-Timer Anti-Stall**: A visual countdown timer (30s) enforces fail-fast turn driving. If a player exceeds their allocated turn duration, the system automatically concessions or forces a default move action to prevent hostage-taking.
+- **Disconnection & Anti-Ragequit Protocol**:
+  - If a player deliberately closes the application or disconnects mid-ranked battle, the opposing player receives an automatic victory.
+  - The disconnecting player is assessed an immediate match forfeit: loss registered, ELO deducted per standard $K$-factor, and win recorded for the connected trainer.
+  - The battle state in `livePvPStore` resets cleanly to prevent corrupted game saves.
+
 ---
 
 ## 2. Anti-Cheat Page Refresh (F5) Governance

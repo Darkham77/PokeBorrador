@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { h } from 'vue'
 import { mount } from '@vue/test-utils'

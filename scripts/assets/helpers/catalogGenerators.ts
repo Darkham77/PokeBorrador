@@ -149,13 +149,26 @@ export async function generateBattleMapCatalog(
 export const AVAILABLE_BATTLE_MAPS = ${JSON.stringify(battleMaps, null, 2)} as const;
 export type BattleMapAssetId = (typeof AVAILABLE_BATTLE_MAPS)[number];
 
+export const AVAILABLE_BATTLE_MAPS_SET: ReadonlySet<string> = new Set<string>(AVAILABLE_BATTLE_MAPS);
+
 export function isBattleMapAssetId(value: string): value is BattleMapAssetId {
-  return AVAILABLE_BATTLE_MAPS.some(id => id === value);
+  return AVAILABLE_BATTLE_MAPS_SET.has(value);
 }
 
 export function requireBattleMapAssetId(value: string): BattleMapAssetId {
   if (isBattleMapAssetId(value)) return value;
   throw new Error(\`Invalid battle map asset id: \${value}\`);
+}
+
+export function getAvailableCyclesForMap(mapId: MapRouteId): DayPhase[] {
+  const assetKey = isMapRouteId(mapId) ? MAP_ROUTE_MAPPING[mapId] : mapId;
+  const cycles: DayPhase[] = [];
+  if (AVAILABLE_BATTLE_MAPS_SET.has(\`\${assetKey}_amanecer\`)) cycles.push('morning');
+  if (AVAILABLE_BATTLE_MAPS_SET.has(\`\${assetKey}_dia\`)) cycles.push('day');
+  if (AVAILABLE_BATTLE_MAPS_SET.has(\`\${assetKey}_atardecer\`)) cycles.push('dusk');
+  if (AVAILABLE_BATTLE_MAPS_SET.has(\`\${assetKey}_noche\`)) cycles.push('night');
+  if (cycles.length === 0 && AVAILABLE_BATTLE_MAPS_SET.has(assetKey)) cycles.push('day');
+  return cycles;
 }
 `;
 
@@ -491,9 +504,10 @@ export const ARCHETYPE_SPRITES = ${JSON.stringify(catalogLists, null, 2)} as con
 export type NpcSpriteId = (typeof ARCHETYPE_SPRITES)[keyof typeof ARCHETYPE_SPRITES][number];
 
 export const VALID_NPC_SPRITES = Object.values(ARCHETYPE_SPRITES).flat();
+export const VALID_NPC_SPRITES_SET: ReadonlySet<string> = new Set<string>(VALID_NPC_SPRITES);
 
 export function isNpcSpriteId(value: string): value is NpcSpriteId {
-  return (VALID_NPC_SPRITES as readonly string[]).includes(value); // domain-ok: Open dynamic text or non-domain string payload
+  return VALID_NPC_SPRITES_SET.has(value);
 }
 
 export function requireNpcSpriteId(value: string): NpcSpriteId {

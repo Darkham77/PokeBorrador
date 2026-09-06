@@ -8,7 +8,8 @@ Frontend Developers / Systems Engineers.
 
 ## Local Contracts
 
-- Follow standard repository modularity guidelines.
+- **Default Node Environment & Explicit JSDOM Directive**: `tests/unit/` runs with `environment: 'node'` by default to eliminate JSDOM CPU overhead for pure math and logic tests. Any file that mounts Vue components (`mount`, `shallowMount`), tests Vue templates, or accesses `window`, `document`, or browser APIs MUST explicitly declare `// @vitest-environment jsdom` at line 1.
+- **Prohibition on Heavy Node CLI & DB Migrations**: `tests/unit/` is strictly for frontend unit testing. Tests parsing full production backup JSON files, executing 84 database migrations, or running Node CLI scripts belong strictly in `tests/node/system/`.
 - **Global Stub Lifecycle Cleanup**: Any test using `vi.stubGlobal()` (e.g. `Worker`, `localStorage`) MUST register `afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); })` to prevent cross-suite contamination.
 
 ## Work Guidance

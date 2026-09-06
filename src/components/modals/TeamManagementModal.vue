@@ -10,9 +10,9 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import UnifiedTeamSlot from '@/components/team/UnifiedTeamSlot.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { MAX_PVP_SLOTS, MAX_PVP6_SLOTS } from '@/types/battle/pvp'
 
 const MAX_ADVENTURE_SLOTS = 6
-const MAX_PVP_SLOTS = 3
 const DEFAULT_WAR_SLOTS = 6
 const TAB_TRANSITION_Y_PX = 4
 const TAB_TRANSITION_DURATION_SEC = 0.3
@@ -23,7 +23,7 @@ const uiStore = useUIStore()
 const ui = useUIStore()
 const isSmallScreen = computed(() => ui.isSmallScreen)
 
-const activeTab = ref('adventure') // 'adventure', 'pvp', 'war'
+const activeTab = ref('adventure') // 'adventure', 'pvp', 'pvp6', 'war'
 
 const adventureTeam = computed(() => {
   const team = gameStore.state.team || []
@@ -45,6 +45,17 @@ const pvpTeam = computed(() => {
   return slots
 })
 
+const pvpTeam6 = computed(() => {
+  const pvpUids = (gameStore.state.pvpTeam6 || []) as string[] // no-domain: Non-domain utility collection or data structure
+  const allPokes = [...((gameStore.state.team || []) as (Pokemon | null)[]), ...((gameStore.state.box || []) as (Pokemon | null)[])].filter((p): p is Pokemon => p !== null)
+  const slots: (Pokemon | null)[] = []
+  for (let i = 0; i < MAX_PVP6_SLOTS; i++) {
+    const uid = pvpUids[i]
+    slots.push(allPokes.find(p => p.uid === uid) || null)
+  }
+  return slots
+})
+
 const warTeam = computed(() => {
   const warUids = (gameStore.state.warTeam || []) as string[] // no-domain: Non-domain utility collection or data structure
   const maxSlots = gameStore.state.warSlots || DEFAULT_WAR_SLOTS
@@ -59,6 +70,7 @@ const warTeam = computed(() => {
 
 const adventureCount = computed(() => (gameStore.state.team || []).filter(Boolean).length)
 const pvpCount = computed(() => (gameStore.state.pvpTeam || []).length)
+const pvp6Count = computed(() => (gameStore.state.pvpTeam6 || []).length)
 const warCount = computed(() => (gameStore.state.warTeam || []).length)
 const maxWarSlots = computed(() => gameStore.state.warSlots || DEFAULT_WAR_SLOTS)
 
@@ -93,6 +105,8 @@ function handleDropDirect(fromIndex: number, toIndex: number) {
     }
   } else if (activeTab.value === 'pvp') {
     gameStore.reorderPvpTeam(fromIndex, toIndex)
+  } else if (activeTab.value === 'pvp6') {
+    gameStore.reorderPvp6Team(fromIndex, toIndex)
   } else if (activeTab.value === 'war') {
     gameStore.reorderWarTeam(fromIndex, toIndex)
   }
@@ -106,6 +120,10 @@ function handleSlotSelect(index: number) {
   } else if (activeTab.value === 'pvp') {
     if (!pvpTeam.value[index]) {
       selectPvp(index)
+    }
+  } else if (activeTab.value === 'pvp6') {
+    if (!pvpTeam6.value[index]) {
+      selectPvp6(index)
     }
   } else if (activeTab.value === 'war') {
     if (!warTeam.value[index]) {
@@ -188,6 +206,28 @@ function selectPvp(slotIndex: number) {
     callbackConfirm: (selected: Pokemon[]) => {
       if (selected && selected.length > 0 && selected[0]) {
         gameStore.swapPvpSlot(slotIndex, selected[0].uid)
+      }
+    }
+  })
+}
+
+function selectPvp6(slotIndex: number) {
+  const currentPvpTeam6 = (gameStore.state.pvpTeam6 || []) as string[] // no-domain: Non-domain utility collection or data structure
+  const allPokes = [...((gameStore.state.team || []) as (Pokemon | null)[]), ...((gameStore.state.box || []) as (Pokemon | null)[])]
+  const available = allPokes.filter((p): p is Pokemon => p !== null && !currentPvpTeam6.includes(p.uid))
+  
+  if (available.length === 0) {
+    uiStore.notify('No tienes más Pokémon disponibles para asignar al equipo PVP 6v6.', '⚠️')
+    return
+  }
+
+  uiStore.open('PokemonSelection', {
+    title: '⚡ SELECCIONAR POKÉMON',
+    subtitle: 'Elige un Pokémon para tu equipo de combate 6v6.',
+    excludeUids: currentPvpTeam6,
+    callbackConfirm: (selected: Pokemon[]) => {
+      if (selected && selected.length > 0 && selected[0]) {
+        gameStore.swapPvp6Slot(slotIndex, selected[0].uid)
       }
     }
   })
@@ -283,8 +323,8 @@ function selectAdventure(_slotIndex: number) {
         </PVTooltip>
 
         <PVTooltip 
-          title="EQUIPO PVP"
-          description="Selecciona tus 3 Pokémon para combates online contra otros jugadores."
+          title="EQUIPO PVP 3v3"
+          description="Selecciona tus 3 Pokémon para combates online 3v3 contra otros jugadores."
           position="top"
         >
           <button 
@@ -294,8 +334,25 @@ function selectAdventure(_slotIndex: number) {
             @click="activeTab = 'pvp'"
           >
             <span class="emoji">⚔️</span>
-            <span>PVP</span>
+            <span>PVP 3v3</span>
             <span class="tab-count">{{ pvpCount }}/3</span>
+          </button>
+        </PVTooltip>
+
+        <PVTooltip 
+          title="EQUIPO PVP 6v6"
+          description="Selecciona tus 6 Pokémon para combates online 6v6 contra otros jugadores."
+          position="top"
+        >
+          <button 
+            id="team-management-tab-pvp6-btn"
+            class="tm-tab" 
+            :class="{ active: activeTab === 'pvp6' }"
+            @click="activeTab = 'pvp6'"
+          >
+            <span class="emoji">⚔️</span>
+            <span>PVP 6v6</span>
+            <span class="tab-count">{{ pvp6Count }}/6</span>
           </button>
         </PVTooltip>
 
@@ -362,6 +419,37 @@ function selectAdventure(_slotIndex: number) {
           <UnifiedTeamSlot
             v-for="(p, i) in pvpTeam"
             :key="'pvp-' + i"
+            :pokemon="p"
+            :index="i"
+            :is-dragging-any="isDragging"
+            :is-touch-over="touchOverIndex === i"
+            is-pvp
+            @open-detail="openDetail(p)"
+            @open-item="openItem(p)"
+            @unequip-item="unequipItem(p)"
+            @select="handleSlotSelect"
+            @drag-start="handleDragStart"
+            @drag-over="(idx) => touchOverIndex = idx"
+            @drag-end="handleDragEnd"
+            @drop-pokemon="handleDrop"
+          />
+        </div>
+      </section>
+    </Transition>
+
+    <!-- PVP 6v6 SECTION -->
+    <Transition
+      :css="false"
+      @enter="(el, done) => gsap.fromTo(el, { opacity: 0, y: TAB_TRANSITION_Y_PX }, { opacity: 1, y: 0, duration: TAB_TRANSITION_DURATION_SEC, ease: 'power2.out', onComplete: done })"
+    >
+      <section
+        v-if="activeTab === 'pvp6'"
+        class="tm-section-container"
+      >
+        <div class="slots-grid">
+          <UnifiedTeamSlot
+            v-for="(p, i) in pvpTeam6"
+            :key="'pvp6-' + i"
             :pokemon="p"
             :index="i"
             :is-dragging-any="isDragging"

@@ -423,7 +423,7 @@ const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
         <img
           :src="bannerUrl"
           :alt="effectiveTitle"
-          class="event-banner-img"
+          class="event-banner-img allow-aliasing"
           @error="(e: Event) => ((e.target as HTMLImageElement).style.display='none')"
         >
       </div>

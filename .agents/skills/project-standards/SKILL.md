@@ -21,6 +21,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
     - `npm run audit:fallow:security`: Audits CWE vulnerabilities in production `src/` code.
     - `npm run audit:fallow:dead-code`: Analyzes circular dependencies, orphan files, and unused exports/packages.
 - **Strict No-Test Mandate for Documentation**: Running test suites (`npm run test`, `test:node`, Vitest, or E2E Playwright simulations) when only editing `.md` documents, DOX indices, or `.agents/` skill files is STRICTLY FORBIDDEN. Verification for documentation tasks is strictly limited to `npm run audit:dox` and `npm run lint:md` (or fast `npm run lint`).
+- **Mandatory Work Plan Compliance Mandate**: Whenever creating any work plan, technical proposal, or `implementation_plan.md`, agents MUST obligatorily include and enforce strict compliance with `@/project-standards`, `@/domain-type-first`, and all project quality auditor rules (`npm run audit`, Fallow complexity/dead-code checks).
 - **Mandatory DOX Navigation**: You MUST always use the `dox-navigator` skill (or trigger the `/dox-navigator` command) to analyze the project context, search for files, components, and manuals, and update any index or documentation within the project.
 - **Objective-Driven Fuzzer Coverage & Deterministic History**: Fuzzer scenarios MUST prioritize legal actions exercising the mechanic under test. Fuzzer battle histories MUST record rich state metadata on disk (`fuzzer_certified_cases.json`) to enable deterministic 1:1 Playwright combat replays and fail fast on desync. Detailed history schema and simulator rules are governed in [Testing & Simulations](./references/rules/testing_and_simulations.md).
 
@@ -93,6 +94,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 ### 9. Asset Pipeline, Crafting Tiers & CLI Safety Mandate
 - **Mandatory Crafting Tier Hierarchy**: All inventory and shop item sprites in `public/assets/sprites/` MUST follow the 4-tier domain hierarchy (`crafting/tier0/`, `crafting/tier1/`, `crafting/tier2/`, `crafting/tier3/`) mapped from `item.craftingTier`. Detailed asset pipeline commands and sprite organization are governed in [Asset Service Manual](./references/technical/asset_service_manual.md).
 - **Canonical Asset Pipeline Execution**: New sprites MUST be saved into `_raw-assets/public/assets/sprites/` under their canonical tier folder, and converted via `npm run assets:convert`. Ad-hoc conversions bypassing `_raw-assets/` are strictly forbidden.
+- **Mandatory Enabled Pokémon Species Whitelist for Event Artwork & Rewards**: Any artwork, event banners, tournament illustrations, or rewards generated or registered for the game MUST strictly and exclusively depict Pokémon from the official enabled species whitelist (`ENABLED_POKEMON_IDS` in `src/data/system/constants.ts`). Using unreleased, non-whitelisted, or custom unapproved Pokémon species (such as Lucario, Garchomp, Greninja, Metagross, Tyranitar, Darkrai, Blaziken, or custom concepts like Mewtwo Armored) in illustration prompts or reward tables is STRICTLY FORBIDDEN. Detailed event system standards are governed in [Event System Manual](./references/systems/event_system_manual.md).
 - **Prohibition of Multi-Line Inline Node CLI Commands (`noInteractiveCliHangs`)**:
   - AI agents MUST NEVER run multi-line inline scripts (`npx tsx -e "..."` or `node -e "..."`) in terminal background tasks on Windows. Doing so causes child processes to hang or await interactive stdin indefinitely.
   - All validations, diagnostic checks, and tests MUST be executed via dedicated Vitest test files (`npx vitest run <path>`) or dedicated script files in `scripts/` or `scratch/`.
@@ -149,6 +151,7 @@ Before writing or updating any rule, manual, or architectural lesson, consult th
 | **Manual QA verification of battle animations, forced switches, flee & teleport, catch** | [manual_testing_battle_animations.md](./references/qa/manual_testing_battle_animations.md) | `qa/browser_testing_manual.md` |
 | **Pre-release audit checklists, gate verifications, release protocols** | [audit_checklist.md](./references/qa/audit_checklist.md) | `qa/validation_manual.md` |
 | **Content design, event authoring, quest crafting, and dialog trees** | [content_creation_manual.md](./references/content/content_creation_manual.md) | `core/ui_ux_standards.md` |
+| **World events, tournaments, event banners, artwork whitelist, seasonal rewards** | [event_system_manual.md](./references/systems/event_system_manual.md) | `rules/game_engine_and_state.md` |
 | **Low power mode, battery savings, mobile rendering throttling** | [low_power_mode_manual.md](./references/technical/low_power_mode_manual.md) | `technical/gpu_optimization_manual.md` |
 | **Specific gameplay systems (Daycare, Gyms, Items, War, Trade, Spawn Grid, EV, Capture)** | [systems/*_manual.md](./references/systems/) | `core/ui_ux_standards.md` |
 | **Generation-specific capturing mechanics (Gen I through Gen IX)** | [capturing_manual.md](./references/systems/capturing_manual.md) | `core/game_formulas_manual.md` |
@@ -214,6 +217,7 @@ Before writing or updating any rule, manual, or architectural lesson, consult th
 - [Trade & Social Manual](./references/systems/trade_social_manual.md)
 - [Faction War Manual](./references/systems/war_system_manual.md)
 - [Mystery Dungeon Equipment](./references/systems/mystery_dungeon_equipment_standards.md)
+- [Event System Manual](./references/systems/event_system_manual.md)
 
 ---
 

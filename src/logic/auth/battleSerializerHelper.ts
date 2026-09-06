@@ -74,6 +74,11 @@ export interface ActiveBattleSerialized {
   isPvP?: boolean;
   isRival?: boolean;
   over?: boolean;
+  pvpMatchId?: string | null; // uuid-ok: Supabase battle match uuid
+  pvpIsHost?: boolean | null;
+  pvpOpponentId?: string | null; // uuid-ok: Supabase opponent user uuid
+  pvpOpponentName?: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  playerTeam?: Pokemon[] | null;
 }
 
 function serializeSlotEffects(effects?: PendingSlotEffect[]): PendingSlotEffect[] {
@@ -161,16 +166,27 @@ function serializeCombatBattle(
   }
 }
 
-function serializePvPBattle(battle?: (BattleState & Partial<ActiveBattleSerialized>) | null): ActiveBattleSerialized {
+function serializePvPBattle(battle?: (BattleState & Partial<ActiveBattleSerialized> & { enemy?: Pokemon }) | null): ActiveBattleSerialized {
+  const rawEnemyTeam = battle?.enemyTeam || (battle?.enemy ? [battle.enemy] : null);
+  const rawPlayerTeam = battle?.playerTeam;
   return {
     isGym: Boolean(battle?.isGym),
     gymId: battle?.gymId || null,
-    isTrainer: Boolean(battle?.isTrainer),
-    trainerName: battle?.trainerName || null,
-    locationId: battle?.locationId || null,
-    enemyTeam: null,
+    isTrainer: true,
+    trainerName: battle?.trainerName || battle?.pvpOpponentName || 'Rival',
+    locationId: battle?.locationId ? requireMapRouteId(battle.locationId) : null,
+    enemyTeam: serializeEnemyTeamForSave(rawEnemyTeam as Pokemon[] | null),
+    playerTeam: serializeEnemyTeamForSave(rawPlayerTeam as Pokemon[] | null),
     timestamp: Temporal.Now.instant().epochMilliseconds,
-    isPvP: true
+    isPvP: true,
+    pvpMatchId: battle?.pvpMatchId || null,
+    pvpIsHost: battle?.pvpIsHost ?? null,
+    pvpOpponentId: battle?.pvpOpponentId || null,
+    pvpOpponentName: battle?.pvpOpponentName || null,
+    turnCount: typeof battle?.turnCount === 'number' ? battle.turnCount : 1,
+    battleLogs: Array.isArray(battle?.battleLogs) ? battle.battleLogs : [],
+    weather: battle?.weather || null,
+    over: Boolean(battle?.over),
   };
 }
 
@@ -202,6 +218,10 @@ export function serializeActiveBattle(state: GameState | SaveDataDto): ActiveBat
   const battle = state.activeBattle as (BattleState & Partial<ActiveBattleSerialized> & { enemy?: Pokemon }) | null;
   if (!battle || battle.over) return null;
 
+  if (battle.isPvP) {
+    return serializePvPBattle(state.activeBattle as (BattleState & Partial<ActiveBattleSerialized> & { enemy?: Pokemon }) | null);
+  }
+
   const hasActiveEnemy = Boolean(battle.enemy || (battle.enemyTeam && battle.enemyTeam.length > 0));
   const isActualCombat = Boolean(
     (battle.turnCount && battle.turnCount > 0) ||
@@ -212,10 +232,6 @@ export function serializeActiveBattle(state: GameState | SaveDataDto): ActiveBat
 
   if ((battle.isTrainer || battle.isGym || hasActiveEnemy) && isActualCombat) {
     return serializeCombatBattle(battle);
-  }
-
-  if (battle.isPvP) {
-    return serializePvPBattle(state.activeBattle as (BattleState & Partial<ActiveBattleSerialized>) | null);
   }
 
   if (battle.wasSearching || (!battle.isTrainer && !battle.isGym)) {

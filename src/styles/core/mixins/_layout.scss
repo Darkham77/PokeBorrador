@@ -98,6 +98,19 @@
   image-rendering: auto; // Ensures smooth backgrounds
 }
 
+@mixin allow-aliasing {
+  image-rendering: auto !important;
+  #{"image-rendering"}: auto !important;
+  -webkit-optimize-contrast: auto !important;
+  -ms-interpolation-mode: bicubic !important;
+  transform: Translatez(0);
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+
+
 @mixin hover-neon-yellow($border-width: 1px) {
   
   

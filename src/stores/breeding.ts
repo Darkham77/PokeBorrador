@@ -69,6 +69,8 @@ export const useBreedingStore = defineStore('breeding', () => {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(`daycare_warehouse_eggs_${userId}`, JSON.stringify(warehouseEggs.value));
     }
+    gameStore.state.daycareWarehouse = [...warehouseEggs.value];
+    gameStore.scheduleSave();
   }
 
   // --- GETTERS ---
@@ -118,10 +120,28 @@ export const useBreedingStore = defineStore('breeding', () => {
           { pokemon: null, slotIndex: 1, deposited_at: null }
         ];
 
-        // Restore eggs from LocalStorage
+        // Restore eggs from gameStore.state.daycareWarehouse (single source of truth)
+        // or recover from LocalStorage if upgrading/migrating
         const userId = authStore.user?.id || 'default';
-        const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(`daycare_warehouse_eggs_${userId}`) : null;
-        warehouseEggs.value = stored ? JSON.parse(stored) as DaycareEgg[] : [];
+        if (Array.isArray(gameStore.state.daycareWarehouse) && gameStore.state.daycareWarehouse.length > 0) {
+          warehouseEggs.value = gameStore.state.daycareWarehouse.filter((e): e is DaycareEgg => 'isEgg' in e && Boolean(e.isEgg));
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem(`daycare_warehouse_eggs_${userId}`, JSON.stringify(warehouseEggs.value));
+          }
+        } else {
+          const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(`daycare_warehouse_eggs_${userId}`) : null;
+          if (stored) {
+            try {
+              warehouseEggs.value = JSON.parse(stored) as DaycareEgg[];
+              gameStore.state.daycareWarehouse = [...warehouseEggs.value];
+              gameStore.scheduleSave();
+            } catch {
+              warehouseEggs.value = [];
+            }
+          } else {
+            warehouseEggs.value = [];
+          }
+        }
 
         const team = gameStore.state.team || [];
         const box = gameStore.state.box || [];

@@ -255,7 +255,7 @@ defineExpose({
               class="carousel-slide-wrapper"
             >
               <div
-                class="carousel-slide event-banner"
+                class="carousel-slide event-banner allow-aliasing"
                 :style="{ backgroundImage: `url('${getEventBannerUrl(ev)}')` }"
                 @click.stop="handleEventClick(ev)"
               />
@@ -295,7 +295,7 @@ defineExpose({
           class="event-tooltip-container"
         >
           <div
-            class="event-banner single-event-banner"
+            class="event-banner single-event-banner allow-aliasing"
             :style="{ backgroundImage: `url('${getEventBannerUrl(ev)}')` }"
             @click.stop="handleEventClick(ev)"
           />

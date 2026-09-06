@@ -52,7 +52,7 @@
 ## 6. Artifact Governance Lifecycle (MANDATORY)
 
 To ensure rigor and traceability, every complex task MUST follow the artifact lifecycle:
-1. **Planning**: Create `implementation_plan.md`. Wait for approval from the user.
+1. **Planning**: Create `implementation_plan.md`. Wait for approval from the user. Every work plan MUST obligatorily include and enforce strict compliance with `@/project-standards`, `@/domain-type-first`, and all project quality auditor rules (`npm run audit`, Fallow complexity/dead-code checks).
 2. **Execution**: Maintain `task.md` as the source of truth during implementation.
 3. **Closure**: Create `walkthrough.md` with concrete evidence (test logs, screenshots) of task success.
 

@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { buildAttackTimeline } from '@/components/battle/helpers/combatantActionAnims';
 import type { BattleCombatantProps } from '@/types/battle/battle';

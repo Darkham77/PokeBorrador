@@ -29,11 +29,14 @@ export async function restoreBattleState(ctx: BattleContext, battleData: unknown
   }
 
   // 1. Identify active player Pokemon
-  const desiredIndex = typeof d.playerTeamIndex === 'number' && d.playerTeamIndex >= 0 && d.playerTeamIndex < ctx.gs.state.team.length ? d.playerTeamIndex : -1
-  const candidatePoke = desiredIndex !== -1 ? ctx.gs.state.team[desiredIndex] : null
+  const sourceTeam = (d.isPvP && Array.isArray(d.playerTeam) && d.playerTeam.length > 0)
+    ? d.playerTeam
+    : ctx.gs.state.team
+  const desiredIndex = typeof d.playerTeamIndex === 'number' && d.playerTeamIndex >= 0 && d.playerTeamIndex < sourceTeam.length ? d.playerTeamIndex : -1
+  const candidatePoke = desiredIndex !== -1 ? sourceTeam[desiredIndex] : null
   const playerPoke = (candidatePoke && candidatePoke.hp > 0 && !candidatePoke.onMission && !candidatePoke.onDefense)
     ? candidatePoke
-    : ctx.gs.state.team.find((p: Pokemon) => p && p.hp > 0 && !p.onMission && !p.onDefense)
+    : sourceTeam.find((p: Pokemon) => p && p.hp > 0 && !p.onMission && !p.onDefense)
 
   // 2. Identify active enemy Pokemon
   const enemyTeamIndex = typeof d.enemyTeamIndex === 'number' && d.enemyTeamIndex >= 0 && (d.enemyTeam ? d.enemyTeamIndex < d.enemyTeam.length : true)
@@ -51,11 +54,11 @@ export async function restoreBattleState(ctx: BattleContext, battleData: unknown
   const isSearchPhase = Boolean(
     (d as { inSearchPhase?: boolean }).inSearchPhase === true ||
     (d as { fsmState?: string }).fsmState === 'SEARCH_PHASE' ||
-    (d.wasSearching && !d.isTrainer && !d.isGym && (!d.turnCount || d.turnCount === 0) && !d.battleHistory?.length)
+    (d.wasSearching && !d.isTrainer && !d.isGym && !d.isPvP && (!d.turnCount || d.turnCount === 0) && !d.battleHistory?.length)
   );
   const isActualCombatInProgress = Boolean(
     !isSearchPhase &&
-    ((d.turnCount && d.turnCount > 0) || d.isTrainer || d.isGym || (!d.wasSearching && enemyPoke))
+    ((d.turnCount && d.turnCount > 0) || d.isTrainer || d.isGym || d.isPvP || (!d.wasSearching && enemyPoke))
   );
 
   if (playerPoke && enemyPoke && isActualCombatInProgress) {
@@ -68,8 +71,8 @@ export async function restoreBattleState(ctx: BattleContext, battleData: unknown
         d._initialEnemy = JSON.parse(JSON.stringify(enemyPoke)) as Pokemon
       }
     }
-    d.playerTeam = ctx.gs.state.team
-    const matchedIndex = ctx.gs.state.team.findIndex((p: Pokemon) => p && isMatchingUid(p.uid, playerPoke.uid))
+    d.playerTeam = sourceTeam
+    const matchedIndex = sourceTeam.findIndex((p: Pokemon) => p && isMatchingUid(p.uid, playerPoke.uid))
     d.playerTeamIndex = matchedIndex !== -1 ? matchedIndex : (desiredIndex !== -1 ? desiredIndex : 0)
     d.enemyTeamIndex = enemyTeamIndex
     d.participants = Array.isArray(d.participants) && d.participants.length > 0 ? d.participants : [playerPoke.uid]
@@ -104,6 +107,11 @@ export async function restoreBattleState(ctx: BattleContext, battleData: unknown
     await initWorkerForBattle(ctx, playerPoke, enemyPoke)
     await ctx.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT)
     ctx.isProcessing.value = false
+
+    if (d.isPvP) {
+      const { useLivePvPStore } = await import('@/stores/livePvP')
+      useLivePvPStore().reconnectBattle(d)
+    }
     return
   }
 

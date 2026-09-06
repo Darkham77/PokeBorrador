@@ -8,6 +8,7 @@ Node.js logical tests for battle engine execution, faint sequences, forced switc
 
 - `reproduce_enemy_faint_switch.test.ts`: Deterministic reproduction of faint replacement and mid-turn switch timing.
 - `test_similar_switch_and_faint_mechanics.test.ts`: Comprehensive parity tests for pivots (U-turn, Volt Switch), self-destruct (Explosion), fatal recoil (Head Smash), forced phazing (Dragon Tail), item switches (Eject Button), and ability switches (Emergency Exit).
+- `fuzzer_reproduced_cases.test.ts`: Consolidated deterministic fixture replayer certifying 11 recorded fuzzer battle scenarios turn-by-turn.
 
 ## Child DOX Index
 

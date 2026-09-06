@@ -191,6 +191,7 @@ This is the final, non-negotiable gate before implementation begins.
    - Use `ArtifactType: 'implementation_plan'`.
    - Set `request_feedback: true` in the metadata.
    - Detail the technical steps, file changes, and verification plan.
+   - **MANDATORY COMPLIANCE**: Obligatorily include and enforce strict compliance with `@/project-standards`, `@/domain-type-first`, and all project quality auditor rules (`npm run audit`, Fallow gatekeepers).
 3. **Create task.md**:
    - Use `ArtifactType: 'task'`.
    - List the granular steps for implementation.

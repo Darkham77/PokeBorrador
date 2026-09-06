@@ -4,6 +4,7 @@ import { useSocialStore } from '@/stores/social/social'
 import { useChatStore } from '@/stores/social/chat'
 import { useTradeStore } from '@/stores/trade'
 import { useUIStore } from '@/stores/ui'
+import { useModalStore } from '@/stores/modals'
 import TrainerCard from './TrainerCard.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { gsap } from 'gsap'
@@ -20,9 +21,14 @@ const socialStore = useSocialStore()
 const chatStore = useChatStore()
 const tradeStore = useTradeStore()
 const uiStore = useUIStore()
+const modalStore = useModalStore()
 
 function openTrainerProfile(userId: string) {
   uiStore.open('TrainerProfile', { userId })
+}
+
+function openPvPChallenge(friend: Friend) {
+  modalStore.open('PvPChallenge', { friend })
 }
 
 const listRef = ref<HTMLElement | null>(null)
@@ -161,14 +167,14 @@ defineEmits<{
             </PVTooltip>
 
             <PVTooltip
-              title="DESAFÍO (NO DISPONIBLE)"
-              description="Los combates PvP en vivo no están disponibles actualmente."
+              :title="friend.isOnline ? 'DESAFÍO PVP' : 'DESAFÍO (DESCONECTADO)'"
+              :description="friend.isOnline ? 'Desafiar a un combate PvP en tiempo real.' : 'El entrenador debe estar conectado para combatir.'"
               position="top"
             >
               <button
                 class="action-btn battle"
-                disabled
-                @click.stop
+                :disabled="!friend.isOnline"
+                @click.stop="openPvPChallenge(friend)"
               >
                 <span class="emoji">⚔️</span>
               </button>

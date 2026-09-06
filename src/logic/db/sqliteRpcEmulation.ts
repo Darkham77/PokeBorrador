@@ -20,6 +20,12 @@ import {
   emulateAwardEventAutomated,
   emulateClaimAward
 } from './rpcEmulations/eventRpc.ts';
+import {
+  emulateAwardRankedSeasonAutomated,
+  emulateRecordPassiveBattleResult,
+  emulatePublishBattleReplay,
+  emulateGetFeaturedReplays
+} from './rpcEmulations/rankedRpc.ts';
 
 /**
  * Emulates Supabase RPC calls on local SQLite database in offline mode.
@@ -76,6 +82,18 @@ export async function emulateOfflineRpc(name: string, params: Record<string, unk
 
     case 'claim_award':
       return emulateClaimAward(sqliteDb, params);
+
+    case 'fn_award_ranked_season_automated':
+      return emulateAwardRankedSeasonAutomated(sqliteDb, params);
+
+    case 'record_passive_battle_result':
+      return emulateRecordPassiveBattleResult(sqliteDb, params, context);
+
+    case 'fn_publish_battle_replay':
+      return emulatePublishBattleReplay(sqliteDb, params, context);
+
+    case 'fn_get_featured_replays':
+      return emulateGetFeaturedReplays(sqliteDb, params);
 
     default:
       // Default mock success for other RPCs in offline mode

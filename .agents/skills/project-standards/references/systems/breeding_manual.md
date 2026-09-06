@@ -55,6 +55,10 @@ The cost in PokéDollars scales according to the total number of perfect IVs (30
 ## 5. 🗺️ HUD & Map Indicators
 
 - **Daycare Warehouse Indicators**: Banners, alerts, and counters in the map or HUD regarding pending daycare actions MUST reflect the daycare warehouse (`daycareWarehouse`) inventory size (e.g., pending generated eggs) rather than the active incubating team slots, to prevent data redundancy and keep the trainer correctly informed about outstanding actions.
+- **Daycare Warehouse Persistence & Strict Domain Contracts**:
+  - The Daycare Warehouse inventory (`daycareWarehouse`) is persisted directly inside `game_saves.save_data` through `gameStore.state.daycareWarehouse`.
+  - In TypeScript, it is governed by the canonical domain union `DaycareWarehouseItem = DaycareEgg | Pokemon`, validated at the schema boundary with `union([daycareEggSchema, pokemonSchema])`.
+  - `breedingStore.warehouseEggs` acts as the active reactive slice for unclaimed eggs (`DaycareEgg[]`). All mutations (`checkAndGenerateEgg`, `claimEgg`, `deleteEgg`, `cloneFossil`) MUST immediately synchronize to `gameStore.state.daycareWarehouse` and schedule a save via `gameStore.scheduleSave()`.
 
 ---
 

@@ -9,7 +9,15 @@ import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
+import ChatBattleCodeBadge from './ChatBattleCodeBadge.vue';
 import { formatChatTimestamp } from '@/logic/utils/timeUtils';
+import { BATTLE_CODE_REGEX } from '@/logic/constants/gameplay';
+
+function extractBattleCode(message?: string): string | null {
+  if (!message) return null;
+  const match = message.match(BATTLE_CODE_REGEX);
+  return match ? match[0].toUpperCase() : null;
+}
 
 
 const chatStore = useChatStore();
@@ -170,6 +178,10 @@ useDocumentListener('click', handleOutsideClick); // [PureVue-Ignore]
                 <p class="text">
                   {{ msg.message }}
                 </p>
+                <ChatBattleCodeBadge
+                  v-if="extractBattleCode(msg.message)"
+                  :battle-code="extractBattleCode(msg.message)!"
+                />
               </div>
             </div>
           </TransitionGroup>

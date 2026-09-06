@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useUIStore } from '@/stores/ui'
 import { gsap } from 'gsap'
+import PvPChallengeToast from '@/components/social/PvPChallengeToast.vue'
 
 const uiStore = useUIStore()
 
@@ -59,6 +60,7 @@ function onLeave(el: Element, done: () => void) {
         </div>
       </TransitionGroup>
     </div>
+    <PvPChallengeToast />
   </Teleport>
 </template>
 

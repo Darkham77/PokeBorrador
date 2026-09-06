@@ -419,3 +419,6 @@ export const HOURS_PER_DAY = 24;
 export const MINUTES_PER_DAY = HOURS_PER_DAY * MINUTES_PER_HOUR;
 export const MILLISECONDS_PER_HOUR = 1000 * SECONDS_PER_MINUTE * MINUTES_PER_HOUR;
 
+/** Regular expression to detect battle replay codes (e.g. BTL-XXXX-XXXX) in chat and text. */
+export const BATTLE_CODE_REGEX = /BTL-[A-Z0-9]{4}-[A-Z0-9]{3,4}/i;
+

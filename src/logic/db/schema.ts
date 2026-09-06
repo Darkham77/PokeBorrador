@@ -24,7 +24,7 @@ export const TABLES_SCHEMA = [
   "events_config (id TEXT PRIMARY KEY, name TEXT, description TEXT, icon TEXT, type TEXT, config TEXT, active BOOLEAN, manual BOOLEAN, start_at TEXT, end_at TEXT, schedule TEXT, last_awarded_at TEXT, updated_at TEXT)",
   "chat_messages (id INTEGER PRIMARY KEY AUTOINCREMENT, senderId TEXT, senderName TEXT, message TEXT, type TEXT, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
   "market_listings (id INTEGER PRIMARY KEY AUTOINCREMENT, seller_id TEXT, seller_name TEXT, listing_type TEXT, data TEXT, price INTEGER, status TEXT, buyer_id TEXT, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
-  "ranked_rules_config (id TEXT PRIMARY KEY, season_name TEXT, config TEXT, updated_at TEXT)",
+  "ranked_rules_config (id TEXT PRIMARY KEY, season_name TEXT, config TEXT, last_awarded_at TEXT, updated_at TEXT)",
   "war_dominance (week_id TEXT, map_id TEXT, winner_faction TEXT, union_points INTEGER DEFAULT 0, poder_points INTEGER DEFAULT 0, resolved_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')), PRIMARY KEY (week_id, map_id))",
   "war_points (id INTEGER PRIMARY KEY AUTOINCREMENT, week_id TEXT, map_id TEXT, faction TEXT, points INTEGER DEFAULT 0, updated_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')), UNIQUE (week_id, map_id, faction))",
   "war_user_points (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, map_id TEXT, week_id TEXT, points INTEGER DEFAULT 0, faction TEXT, updated_at TEXT)",
@@ -38,5 +38,6 @@ export const TABLES_SCHEMA = [
   "war_defenders (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, map_id TEXT, pokemon_uid TEXT, pokemon_data TEXT, wins_count INTEGER DEFAULT 0, week_id TEXT, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
   "claim_queue (id TEXT PRIMARY KEY, user_id TEXT, source_type TEXT, source_id TEXT, asset_data TEXT, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
   "system_config (key TEXT PRIMARY KEY, value TEXT, updated_at TEXT)",
-  "config (key TEXT PRIMARY KEY, value TEXT, updated_at TEXT)"
+  "config (key TEXT PRIMARY KEY, value TEXT, updated_at TEXT)",
+  "battle_replays (id TEXT PRIMARY KEY, battle_code TEXT UNIQUE NOT NULL, season_id TEXT NOT NULL, theme_id TEXT NOT NULL, p1_user_id TEXT, p2_user_id TEXT, p1_data TEXT NOT NULL, p2_data TEXT NOT NULL, turns_count INTEGER NOT NULL DEFAULT 0, winner_side TEXT NOT NULL, choice_stream TEXT NOT NULL DEFAULT '[]', initial_seed TEXT NOT NULL DEFAULT '[0,0,0,0]', is_top10_archived INTEGER NOT NULL DEFAULT 0, views_count INTEGER NOT NULL DEFAULT 0, created_at TEXT DEFAULT CURRENT_TIMESTAMP)"
 ] as const;

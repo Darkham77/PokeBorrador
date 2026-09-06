@@ -113,13 +113,36 @@ body .pixelated {
   -webkit-text-stroke: 0px !important;
 }
 
-// Crisp nearest-neighbor interpolation for game elements only
-img, canvas, .pixelated-img, .sprite, [class*="sprite-"], .banner-bg, [class*="-banner"] {
+// Crisp nearest-neighbor interpolation for game elements only (excluding smooth high-res artwork)
+img:not(.allow-aliasing):not(.event-banner-img):not(.event-banner),
+canvas,
+.pixelated-img,
+.sprite,
+[class*="sprite-"],
+.banner-bg {
   image-rendering: -webkit-optimize-contrast !important;
   #{"image-rendering"}: crisp-edges !important;
   image-rendering: pixelated !important;
   -ms-interpolation-mode: nearest-neighbor !important;
 }
+
+// Global Exception: High-Resolution Event Artwork & Anti-Aliased Elements
+.allow-aliasing,
+.event-banner-img,
+.event-banner,
+img.allow-aliasing,
+img.event-banner-img {
+  image-rendering: auto !important;
+  #{"image-rendering"}: auto !important;
+  -webkit-optimize-contrast: auto !important;
+  -ms-interpolation-mode: bicubic !important;
+  transform: Translatez(0);
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+
 
 // ─── Global Emoji Centering Fix ──────────────────────────────────────────────
 // The pixel font ('Pokemon FireRed LeafGreen') has size-adjust:128%.

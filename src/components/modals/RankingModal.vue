@@ -4,6 +4,8 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
 import { useSocialStore } from '@/stores/social/social'
 import { useUIStore } from '@/stores/ui'
+import { getSeasonalThemeForMonth } from '@/data/system/rankedData'
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
 import { gsap } from 'gsap'
 
 const RANK_CARD_HOVER_X_OFFSET = 4
@@ -39,6 +41,14 @@ const listRef = ref<HTMLElement | null>(null)
 // Responsiveness
 const ui = useUIStore()
 const isSmallScreen = computed(() => ui.isSmallScreen)
+
+const currentTheme = computed(() => {
+  return getSeasonalThemeForMonth(Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE).month)
+})
+const currentRewardLabel = computed(() => {
+  const species = currentTheme.value.rewardPokemon.maestro.species
+  return species.charAt(0).toUpperCase() + species.slice(1)
+})
 
 // Faction styling mapping
 const getFactionColor = (faction: string) => {
@@ -257,7 +267,7 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
       <div class="season-info-card">
         <div class="season-header-bar">
           <span class="season-badge">TEMPORADA ACTUAL</span>
-          <span class="season-title">RENACER DE KANTO</span>
+          <span class="season-title">{{ currentTheme.name.toUpperCase() }}</span>
         </div>
         <div class="season-rewards-bar">
           <div class="reward-item">
@@ -270,7 +280,7 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
           </div>
           <div class="reward-item flex-stretch">
             <span class="reward-lbl">Recompensa:</span>
-            <span class="reward-val prize-highlight"><span class="emoji">✨</span> Mewtwo Armored</span>
+            <span class="reward-val prize-highlight"><span class="emoji">✨</span> {{ currentRewardLabel }} Shiny (IV 31x4)</span>
           </div>
         </div>
       </div>
