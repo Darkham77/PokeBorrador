@@ -6,6 +6,7 @@ import { getPokemonTier } from '@/logic/pokemon/tierEngine'
 import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
 import { getPokemonPhysicalWeight, getPokemonPhysicalHeight } from '@/logic/pokemon/physicalDimensionsMath'
 import { matchesAllBoxFilters } from './boxFilterPredicates.ts'
+import type { PokemonFilterTagId } from '@/logic/constants/tags'
 
 export const FRIENDSHIP_SEAL_TIER_FILTERS = ['all', ...FRIENDSHIP_SEAL_TIERS] as const
 export type FriendshipSealTierFilter = (typeof FRIENDSHIP_SEAL_TIER_FILTERS)[number]
@@ -38,7 +39,7 @@ interface FilterState {
   evSPE: number
   search: string
   isOpen: boolean
-  tags: string[]
+  tags: PokemonFilterTagId[]
   friendshipSealTier: FriendshipSealTierFilter
   friendshipEvoReady: boolean
   friendshipMaxOnly: boolean

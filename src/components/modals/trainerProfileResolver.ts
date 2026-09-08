@@ -6,7 +6,7 @@
  */
 
 import type { RankedSeasonMedal } from '@/types/battle/pvp.ts'
-import { isRankedTierId } from '@/data/system/rankedData.ts'
+import { isRankedTierId, isSeasonalThemeId } from '@/data/system/rankedData.ts'
 
 export interface ProfileRow {
   id: string
@@ -237,9 +237,16 @@ export function extractRankedMedals(
           if (!seenSeasons.has(season)) {
             seenSeasons.add(season);
             const tierVal = pObj.tier;
+            const tournamentName = typeof pObj.tournamentName === 'string'
+              ? pObj.tournamentName
+              : (typeof pObj.tournament_name === 'string' ? pObj.tournament_name : undefined);
+            const rawTheme = pObj.themeId ?? pObj.theme_id;
+            const themeId = isSeasonalThemeId(rawTheme) ? rawTheme : undefined;
             medals.push({
               id: row.id || `medal_${row.event_id || 'ranked'}`,
               seasonName: season,
+              tournamentName,
+              themeId,
               tier: isRankedTierId(tierVal) ? tierVal : 'bronce',
               rank: pObj.rank ? Number(pObj.rank) : undefined,
               finalElo: Number(pObj.elo) || 1000,

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
 
 const props = defineProps<{
   gs: {
@@ -30,10 +31,6 @@ const displayFaction = computed(() => {
   if (clean === 'poder') return 'EQUIPO PODER'
   return clean.toUpperCase()
 })
-
-const isFemale = computed(() => props.gs.gender === 'f' || props.gs.gender === 'mujer' || props.gs.gender === 'm')
-const genderSymbol = computed(() => (isFemale.value ? '♀️' : '♂️'))
-const genderClass = computed(() => (isFemale.value ? 'female' : 'male'))
 
 const emit = defineEmits<{
   (e: 'edit-profile'): void
@@ -73,13 +70,11 @@ const emit = defineEmits<{
           >
             {{ displayUsername }}
           </span>
-          <span
-            class="gender-symbol"
-            :class="genderClass"
-            :title="isFemale ? 'Femenino' : 'Masculino'"
-          >
-            {{ genderSymbol }}
-          </span>
+          <PVGenderBadge
+            :gender="gs.gender"
+            is-trainer
+            size="sm"
+          />
         </div>
         <button
           class="row-action-btn"
@@ -202,24 +197,7 @@ const emit = defineEmits<{
       }
     }
 
-    .gender-symbol {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
-      font-size: 13px !important;
-      line-height: 1;
-      font-weight: 900;
-      display: inline-flex;
-      align-items: center;
 
-      &.male {
-        color: #38bdf8;
-        text-shadow: 0 0 6px Rgba(56, 189, 248, 0.7);
-      }
-
-      &.female {
-        color: #f472b6;
-        text-shadow: 0 0 6px Rgba(244, 114, 182, 0.7);
-      }
-    }
 
     .value {
       font-size: 10px;

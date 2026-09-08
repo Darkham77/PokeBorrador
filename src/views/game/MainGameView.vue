@@ -20,7 +20,6 @@ import TrainerPanel from '@/components/profile/TrainerPanel.vue'
 import HUD_Navigation from '@/components/ui/HUD_Navigation.vue'
 import InventoryPills from '@/components/inventory/InventoryPills.vue'
 import { defineResilientAsyncComponent } from '@/logic/utils/resilientComponent'
-const PvPArena = defineResilientAsyncComponent(() => import('@/components/battle/PvPArena.vue'))
 import CriminalityBar from '@/components/ui/CriminalityBar.vue'
 import BuffsOverlay from '@/components/overlays/BuffsOverlay.vue'
 import HUD_SidebarLeft from '@/components/ui/HUD_SidebarLeft.vue'
@@ -253,9 +252,6 @@ watch(() => gs.value.starterChosen, (val) => {
           :friend-id="(friendId as string)"
         />
       </div>
-
-      <!-- BATTLE ARENA (ABOVE ALL) -->
-      <PvPArena v-if="battleStore.isBattleActive" />
     </div>
   </div>
 </template>

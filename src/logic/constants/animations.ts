@@ -591,3 +591,16 @@ export const MODAL_ANIM_INITIAL_SCALE_MIN = 0.8;
 
 /** Modal initial Y offset in pixels for open animation. */
 export const MODAL_ANIM_INITIAL_Y_OFFSET = 20;
+
+/** Floating animation amplitude offset for arena rank tier icon in pixels. */
+export const ARENA_TIER_ICON_FLOAT_Y_PX = -6;
+
+/** Floating animation amplitude offset for home widget rank tier icon in pixels. */
+export const HOME_TIER_ICON_FLOAT_Y_PX = -4;
+
+/** Floating animation cycle duration for rank tier icon in seconds. */
+export const TIER_ICON_FLOAT_DURATION_SEC = 2;
+
+/** Hover animation duration for defense toggle button in seconds. */
+export const DEFENSE_TOGGLE_BTN_HOVER_DURATION_SEC = 0.25;
+

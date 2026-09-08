@@ -256,6 +256,7 @@ if (values.list || positionals.includes('list')) {
 }
 
 import { spawn, type ChildProcess } from 'node:child_process';
+import https from 'node:https';
 import { SimulationRunnerLogger } from './logging/simulation_runner_logger.ts';
 import { formatExecutionTimestamp } from './logging/base_runner_logger.ts';
 
@@ -263,21 +264,30 @@ const logger = new SimulationRunnerLogger();
 logger.startIntercepting();
 
 const VITE_PORT = 5174;
-const VITE_URL = `http://localhost:${VITE_PORT}`;
-const VITE_ENDPOINT = new URL(VITE_URL);
+const VITE_URL = `https://localhost:${VITE_PORT}`;
 const HEALTH_CHECK_TIMEOUT_MS = 30000;
 const HEALTH_CHECK_INTERVAL_MS = 250;
 
+const VITE_PROBE_TIMEOUT_MS = 1500;
+
+function probeViteServer(urlStr: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const req = https.get(urlStr, { rejectUnauthorized: false }, (res) => {
+      resolve(Boolean(res.statusCode && res.statusCode < 500));
+    });
+    req.on('error', () => resolve(false));
+    req.setTimeout(VITE_PROBE_TIMEOUT_MS, () => {
+      req.destroy();
+      resolve(false);
+    });
+  });
+}
+
 async function startPersistentViteServer(): Promise<ChildProcess | null> {
   // 1. Check if already responding
-  try {
-    const res = await fetch(VITE_ENDPOINT.href);
-    if (res.ok) {
-      logger.progress(`🔥 Servidor web existente detectado en ${VITE_URL} (Listo).`);
-      return null;
-    }
-  } catch {
-    // Not running yet, spawn it
+  if (await probeViteServer(VITE_URL)) {
+    logger.progress(`🔥 Servidor web existente detectado en ${VITE_URL} (Listo).`);
+    return null;
   }
 
   logger.progress(`🚀 Inicializando servidor web persistente en ${VITE_URL}...`);
@@ -292,14 +302,9 @@ async function startPersistentViteServer(): Promise<ChildProcess | null> {
 
   const startTime = Date.now();
   while (Date.now() - startTime < HEALTH_CHECK_TIMEOUT_MS) {
-    try {
-      const res = await fetch(VITE_ENDPOINT.href);
-      if (res.ok) {
-        logger.progress(`🔥 Servidor Vite persistente pre-calentado y listo en ${VITE_URL} (${((Date.now() - startTime) / 1000).toFixed(1)}s).\n`);
-        return viteProcess;
-      }
-    } catch {
-      // Wait before next probe
+    if (await probeViteServer(VITE_URL)) {
+      logger.progress(`🔥 Servidor Vite persistente pre-calentado y listo en ${VITE_URL} (${((Date.now() - startTime) / 1000).toFixed(1)}s).\n`);
+      return viteProcess;
     }
     await new Promise((resolve) => setTimeout(resolve, HEALTH_CHECK_INTERVAL_MS));
   }
@@ -307,6 +312,7 @@ async function startPersistentViteServer(): Promise<ChildProcess | null> {
   viteProcess.kill('SIGKILL');
   throw new Error(`[SIMULATION-RUNNER] Timeout esperando que el servidor Vite en ${VITE_URL} responda.`);
 }
+
 
 function stopPersistentViteServer(viteProcess: ChildProcess | null): void {
   if (viteProcess && !viteProcess.killed) {

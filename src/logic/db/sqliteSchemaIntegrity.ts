@@ -69,15 +69,50 @@ export async function ensureSchemaIntegrity(db: SQLiteDatabase): Promise<void> {
       const colDefs: string[] = [] // no-domain: Non-domain utility collection or data structure
       let current = ''
       let depth = 0
+      let inSingleQuote = false
+      let inDoubleQuote = false
+
       for (let i = 0; i < colPart.length; i++) {
-        if (colPart[i] === '(') depth++
-        else if (colPart[i] === ')') depth--
-        
-        if (colPart[i] === ',' && depth === 0) {
+        const char = colPart[i]!
+
+        if (inSingleQuote) {
+          current += char
+          if (char === "'") {
+            if (i + 1 < colPart.length && colPart[i + 1] === "'") {
+              current += "'"
+              i++
+            } else {
+              inSingleQuote = false
+            }
+          }
+          continue
+        }
+
+        if (inDoubleQuote) {
+          current += char
+          if (char === '"') {
+            inDoubleQuote = false
+          }
+          continue
+        }
+
+        if (char === "'") {
+          inSingleQuote = true
+          current += char
+        } else if (char === '"') {
+          inDoubleQuote = true
+          current += char
+        } else if (char === '(') {
+          depth++
+          current += char
+        } else if (char === ')') {
+          depth--
+          current += char
+        } else if (char === ',' && depth === 0) {
           colDefs.push(current.trim())
           current = ''
         } else {
-          current += colPart[i]
+          current += char
         }
       }
       if (current.trim()) colDefs.push(current.trim())

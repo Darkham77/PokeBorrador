@@ -61,6 +61,10 @@
 
 .poke-level {
   margin-bottom: 0;
+  white-space: nowrap !important;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
 }
 
 .level-row {
@@ -68,6 +72,8 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
+  flex-wrap: nowrap;
+  width: 100%;
 
   @media (max-width: 600px) {
     gap: 4px;
@@ -82,6 +88,15 @@
 .m-badge-level {
   @include pixelated;
   font-size: 8px;
+  white-space: nowrap !important;
+  flex-shrink: 0;
+}
+
+.poke-types {
+  flex-shrink: 0;
+  margin-left: auto;
+  width: auto;
+  max-width: none;
 }
 
 .m-badge-nature {
@@ -117,8 +132,6 @@
   font-weight: 400;
 }
 
-.gender-male { color: Rgba(59, 139, 255, 1); }
-.gender-female { color: Rgba(255, 110, 255, 1); }
 
 .admin-info-trigger {
   margin-left: auto;

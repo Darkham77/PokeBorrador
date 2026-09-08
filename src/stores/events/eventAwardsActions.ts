@@ -10,7 +10,8 @@ import {
   grantMoneyAward,
   grantBattleCoinsAward,
   grantItemsAward,
-  grantPokemonAward
+  grantPokemonAward,
+  validateStorageCapacityForAwards
 } from './eventPrizeGrantor.ts'
 import type { useGameStore } from '@/stores/game.ts'
 import type { useAuthStore } from '@/stores/auth.ts'
@@ -64,8 +65,10 @@ function grantTrophyToPokemon(
   }
 }
 
-function applyAwardPrize(ctx: EventAwardsContext, rawPrize: unknown) {
+function applyAwardPrize(ctx: EventAwardsContext, rawPrize: unknown, options: { autoSave?: boolean; silent?: boolean } = {}) {
   const { gameStore, uiStore } = ctx
+  const autoSave = options.autoSave ?? true
+  const silent = options.silent ?? false
   if (!rawPrize) return
   let prize: Record<string, unknown> | null = null // open-record: Generic key-value data dictionary container
   if (typeof rawPrize === 'string') {
@@ -81,16 +84,18 @@ function applyAwardPrize(ctx: EventAwardsContext, rawPrize: unknown) {
   if (!prize) return
 
   let totalNotified = 0
-  totalNotified += grantMoneyAward(gameStore, uiStore, prize)
-  totalNotified += grantBattleCoinsAward(gameStore, uiStore, prize)
-  totalNotified += grantItemsAward(gameStore, uiStore, prize)
-  totalNotified += grantPokemonAward(gameStore, uiStore, prize)
+  totalNotified += grantMoneyAward(gameStore, uiStore, prize, silent)
+  totalNotified += grantBattleCoinsAward(gameStore, uiStore, prize, silent)
+  totalNotified += grantItemsAward(gameStore, uiStore, prize, silent)
+  totalNotified += grantPokemonAward(gameStore, uiStore, prize, silent)
 
-  if (totalNotified === 0) {
+  if (!silent && totalNotified === 0) {
     uiStore.notify('¡Recompensa reclamada!', '🎁')
   }
 
-  gameStore.save(false).catch(err => logger.warn('Events', 'Failed to auto-save after claiming award', err))
+  if (autoSave) {
+    gameStore.save(false).catch(err => logger.warn('Events', 'Failed to auto-save after claiming award', err))
+  }
 }
 
 export async function checkPendingAwards(ctx: EventAwardsContext, notifyOnPending = false) {
@@ -214,6 +219,7 @@ export async function fetchPastEvents(ctx: EventAwardsContext) {
         ended_at: res.ended_at,
         winners: parsedWinners,
         myAward: matchingAward,
+        myAwards: matchingAwards,
         isWinner,
         hasUnclaimedAward,
         isClaimed,
@@ -228,56 +234,97 @@ export async function fetchPastEvents(ctx: EventAwardsContext) {
   }
 }
 
-export async function claimAward(ctx: EventAwardsContext, awardId: string): Promise<string | null> {
+function updatePastEventsAwardClaimed(pastEvents: Ref<PastEventHistoryItem[]>, awardId: string, claimedTimestamp: string) {
+  pastEvents.value = pastEvents.value.map(pe => {
+    const hasThisAward = pe.myAward?.id === awardId || (pe.myAwards && pe.myAwards.some(a => a.id === awardId))
+    if (!hasThisAward) return pe
+
+    const currentAwards = pe.myAwards || (pe.myAward ? [pe.myAward] : [])
+    const updatedAwards = currentAwards.map(a => {
+      if (a.id === awardId) {
+        return { ...a, received_at: claimedTimestamp }
+      }
+      return a
+    })
+
+    const hasUnclaimedAward = updatedAwards.some(a => a.received_at === null)
+    const isClaimed = updatedAwards.length > 0 && updatedAwards.every(a => a.received_at !== null)
+    const nextUnclaimed = updatedAwards.find(a => a.received_at === null) || updatedAwards[0] || null
+
+    return {
+      ...pe,
+      myAward: nextUnclaimed,
+      myAwards: updatedAwards,
+      hasUnclaimedAward,
+      isClaimed
+    }
+  })
+}
+
+function updatePastEventsAwardDiscarded(pastEvents: Ref<PastEventHistoryItem[]>, awardId: string) {
+  pastEvents.value = pastEvents.value.map(pe => {
+    const hasThisAward = pe.myAward?.id === awardId || (pe.myAwards && pe.myAwards.some(a => a.id === awardId))
+    if (!hasThisAward) return pe
+
+    const currentAwards = pe.myAwards || (pe.myAward ? [pe.myAward] : [])
+    const updatedAwards = currentAwards.filter(a => a.id !== awardId)
+    const hasUnclaimedAward = updatedAwards.some(a => a.received_at === null)
+    const isClaimed = updatedAwards.length > 0 && updatedAwards.every(a => a.received_at !== null)
+    const nextUnclaimed = updatedAwards.find(a => a.received_at === null) || updatedAwards[0] || null
+
+    return {
+      ...pe,
+      myAward: nextUnclaimed,
+      myAwards: updatedAwards,
+      hasUnclaimedAward,
+      isClaimed
+    }
+  })
+}
+
+export async function claimAward(ctx: EventAwardsContext, awardId: string, options: { autoSave?: boolean; silent?: boolean } = {}): Promise<string | null> {
   const { gameStore, pendingAwards, pastEvents, allEvents, userEntries, uiStore } = ctx
   if (!gameStore.db) return null
-  const targetAward = pendingAwards.value.find(a => a.id === awardId) || pastEvents.value.find(pe => pe.myAward?.id === awardId)?.myAward
+  const targetAward = pendingAwards.value.find(a => a.id === awardId)
+    || pastEvents.value.find(pe => pe.myAwards?.some(a => a.id === awardId))?.myAwards?.find(a => a.id === awardId)
+    || pastEvents.value.find(pe => pe.myAward?.id === awardId)?.myAward
 
   if (!targetAward || !isAwardClaimable(targetAward, allEvents.value)) {
-    uiStore.notify('Esta recompensa pertenece a un evento archivado o no es válida. Puedes descartarla.', '⚠️')
+    if (!options.silent) {
+      uiStore.notify('Esta recompensa pertenece a un evento archivado o no es válida. Puedes descartarla.', '⚠️')
+    }
+    return null
+  }
+
+  const capacityCheck = validateStorageCapacityForAwards(gameStore, [targetAward])
+  if (!capacityCheck.ok) {
+    if (!options.silent) {
+      uiStore.notify(capacityCheck.errorMsg || 'No tienes suficiente espacio en tu equipo o cajas para recibir al Pokémon de recompensa.', '⚠️')
+    }
     return null
   }
 
   try {
+    const nowIso = Temporal.Now.instant().toString()
     const { data, error } = await gameStore.db.rpc('claim_award', { p_award_id: awardId })
     const claimResult = data as { ok?: boolean; success?: boolean; prize?: unknown } | null // domain-ok: Open dynamic text or non-domain string payload
     
     if (!error && (claimResult?.ok || claimResult?.success)) {
       pendingAwards.value = pendingAwards.value.filter(a => a.id !== awardId)
-      pastEvents.value = pastEvents.value.map(pe => {
-        if (pe.myAward?.id === awardId) {
-          return {
-            ...pe,
-            hasUnclaimedAward: false,
-            isClaimed: true,
-            myAward: pe.myAward ? { ...pe.myAward, received_at: Temporal.Now.instant().toString() } : null
-          }
-        }
-        return pe
-      })
-      applyAwardPrize(ctx, claimResult?.prize || targetAward?.prize)
+      updatePastEventsAwardClaimed(pastEvents, awardId, nowIso)
+      applyAwardPrize(ctx, claimResult?.prize || targetAward?.prize, options)
       healStuckEventPokemon(gameStore.state?.team, gameStore.state?.box, allEvents.value, userEntries.value)
       return typeof claimResult?.prize === 'string' ? claimResult.prize : 'claimed'
     }
 
     const { error: updateErr } = await gameStore.db.from('awards')
-      .update({ received_at: Temporal.Now.instant().toString(), claimed: true })
+      .update({ received_at: nowIso, claimed: true })
       .eq('id', awardId)
 
     if (!updateErr) {
       pendingAwards.value = pendingAwards.value.filter(a => a.id !== awardId)
-      pastEvents.value = pastEvents.value.map(pe => {
-        if (pe.myAward?.id === awardId) {
-          return {
-            ...pe,
-            hasUnclaimedAward: false,
-            isClaimed: true,
-            myAward: pe.myAward ? { ...pe.myAward, received_at: Temporal.Now.instant().toString() } : null
-          }
-        }
-        return pe
-      })
-      applyAwardPrize(ctx, targetAward?.prize)
+      updatePastEventsAwardClaimed(pastEvents, awardId, nowIso)
+      applyAwardPrize(ctx, targetAward?.prize, options)
       healStuckEventPokemon(gameStore.state?.team, gameStore.state?.box, allEvents.value, userEntries.value)
       return 'claimed'
     }
@@ -285,6 +332,46 @@ export async function claimAward(ctx: EventAwardsContext, awardId: string): Prom
     logger.error('Events', `Error claiming award: ${(e as Error).message}`)
   }
   return null
+}
+
+export async function claimAllEventAwards(
+  ctx: EventAwardsContext,
+  eventId: string
+): Promise<{ success: boolean; claimedCount: number }> {
+  const { gameStore, pendingAwards, pastEvents, allEvents, uiStore } = ctx
+  if (!gameStore.db) return { success: false, claimedCount: 0 }
+
+  const pastEvent = pastEvents.value.find(pe => pe.event_id === eventId)
+  const eventAwards = (pastEvent?.myAwards && pastEvent.myAwards.length > 0)
+    ? pastEvent.myAwards
+    : pendingAwards.value.filter(a => a.event_id === eventId)
+
+  const pendingList = eventAwards.filter(a => a.received_at === null && isAwardClaimable(a, allEvents.value))
+  if (pendingList.length === 0) {
+    uiStore.notify('No hay recompensas pendientes para reclamar en este evento.', 'ℹ️')
+    return { success: true, claimedCount: 0 }
+  }
+
+  const capacityCheck = validateStorageCapacityForAwards(gameStore, pendingList)
+  if (!capacityCheck.ok) {
+    uiStore.notify(capacityCheck.errorMsg || 'Espacio insuficiente en tus cajas para recibir los Pokémon de recompensa.', '⚠️')
+    return { success: false, claimedCount: 0 }
+  }
+
+  let claimedCount = 0
+  for (const award of pendingList) {
+    const res = await claimAward(ctx, award.id, { autoSave: false, silent: true })
+    if (res) {
+      claimedCount++
+    }
+  }
+
+  if (claimedCount > 0) {
+    await gameStore.save(false)
+    uiStore.notify(`¡${claimedCount} ${claimedCount === 1 ? 'recompensa reclamada' : 'recompensas reclamadas'} con éxito!`, '🎁')
+  }
+
+  return { success: claimedCount > 0, claimedCount }
 }
 
 export async function discardAward(ctx: EventAwardsContext, awardId: string): Promise<boolean> {
@@ -298,16 +385,7 @@ export async function discardAward(ctx: EventAwardsContext, awardId: string): Pr
 
     if (!error) {
       pendingAwards.value = pendingAwards.value.filter(a => a.id !== awardId)
-      pastEvents.value = pastEvents.value.map(pe => {
-        if (pe.myAward?.id === awardId) {
-          return {
-            ...pe,
-            hasUnclaimedAward: false,
-            myAward: null
-          }
-        }
-        return pe
-      })
+      updatePastEventsAwardDiscarded(pastEvents, awardId)
       healStuckEventPokemon(gameStore.state?.team, gameStore.state?.box, allEvents.value, userEntries.value)
       if (typeof gameStore.scheduleSave === 'function') {
         gameStore.scheduleSave()

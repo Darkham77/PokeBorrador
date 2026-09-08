@@ -3,7 +3,7 @@ import type { CertifiedBattleGameAction } from '@/types/battle/certifiedBattleAc
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { decideEnemyMove, shouldEnemySwitch, findBestSwitchIndex, evaluateAndUseNPCItem } from '../ai/battleAI.ts'
 import { ShowdownTeamResolver } from '../showdownTeamResolver.ts'
-import { showdownWorker, executeTurnInWorker, syncTeamsFromLastWorkerState } from '../showdownWorkerClient.ts'
+import { getShowdownWorker, executeTurnInWorker, syncTeamsFromLastWorkerState } from '../showdownWorkerClient.ts'
 import { filterShowdownLogs, parseShowdownLogLine } from '../showdownBridge.ts'
 import { requireCertifiedBagItemResponse } from './certifiedBagItemActionResolver.ts'
 import { ShowdownBattleRunner } from './showdownBattleRunner.ts'
@@ -73,7 +73,7 @@ export async function runEnemyAction(store: BattleContext, bagAction?: Certified
     : await resolveEnemyTurnChoice(store, p, e, isWild);
   let p2Choice = initialP2Choice;
 
-  if (showdownWorker) {
+  if (getShowdownWorker()) {
     interface ShowdownMoveRequest {
       id?: string;
       move?: string;

@@ -1,0 +1,359 @@
+@use "@/styles/core/_variables" as *;
+@use "@/styles/core/_mixins" as *;
+
+.market-my-items {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  @include smooth-scroll;
+}
+
+.mkt-section-title {
+  @include pixelated;
+  font-size: 8px;
+  color: #38bdf8;
+  margin: 0 0 10px 0;
+  letter-spacing: 1px;
+  line-height: 1.4;
+}
+
+.listings-section {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.my-listings-grid-unified {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.my-listing-item-wrapper {
+  @include shop-item-card($yellow);
+  padding: 0;
+  gap: 0;
+  position: relative;
+  overflow: visible !important;
+
+  .listing-card-override {
+    background: transparent !important;
+    padding: 15px !important;
+    pointer-events: auto;
+    box-shadow: none !important;
+    width: 100%;
+    cursor: pointer;
+
+    :deep(.list-item) {
+      transform: none !important;
+      border: none !important;
+      box-shadow: none !important;
+      background: transparent !important;
+
+      &:hover {
+        transform: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+      }
+    }
+  }
+
+  .listing-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    padding-top: 10px;
+    background: Rgba(0, 0, 0, 0.3);
+    border-top: 1px dashed Rgba(255, 255, 255, 0.1);
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
+
+    .price-tag {
+      @include pixelated;
+      font-size: 16px;
+      color: $coin-gold;
+      line-height: 1.3;
+    }
+  }
+}
+
+.my-listing-item-card {
+  padding: 15px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  box-sizing: border-box;
+
+  .card-visual {
+    width: 48px;
+    height: 48px;
+    background: Rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    .i-sprite { width: 36px; height: 36px; object-fit: contain; }
+  }
+
+  .card-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    .name {
+      @include pixelated;
+      font-size: 9px;
+      font-weight: bold;
+      color: var(--white);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+      line-height: 1.5;
+      padding-top: 2px;
+    }
+    .i-meta {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      .qty { @include pixelated; font-size: 8px; color: $gray; line-height: 1.3; }
+      .price { @include pixelated; font-size: 11px; color: $coin-gold; line-height: 1.3; }
+    }
+  }
+}
+
+.history-section {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+
+  .mkt-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+
+    .title-with-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .mkt-section-title {
+        margin: 0;
+      }
+
+      .inline-badge {
+        position: relative !important;
+        top: auto !important;
+        right: auto !important;
+      }
+    }
+  }
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: Rgba(0, 0, 0, 0.2);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  @include smooth-scroll;
+}
+
+.history-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: Rgba(255, 255, 255, 0.025);
+  border: 1px solid Rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  gap: 14px;
+  box-sizing: border-box;
+
+  &.is-unclaimed {
+    background: Rgba(34, 197, 94, 0.05);
+    border-color: Rgba(34, 197, 94, 0.25);
+  }
+
+  &:hover {
+    background: Rgba(255, 255, 255, 0.045);
+    border-color: Rgba(56, 189, 248, 0.25);
+  }
+
+  .sale-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .sale-visual {
+    width: 40px;
+    height: 40px;
+    background: Rgba(0, 0, 0, 0.35);
+    border: 1px solid Rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .sale-sprite {
+      image-rendering: pixelated;
+      object-fit: contain;
+
+      &.pokemon {
+        width: 36px;
+        height: 36px;
+      }
+
+      &.item {
+        width: 26px;
+        height: 26px;
+      }
+    }
+  }
+
+  .sale-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+
+    .item-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+
+      .item-name {
+        @include pixelated;
+        font-size: 9px;
+        font-weight: bold;
+        color: var(--white);
+        line-height: 1.4;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .sale-badge {
+        @include pixelated;
+        font-size: 7px;
+        color: #22c55e;
+        background: Rgba(34, 197, 94, 0.12);
+        border: 1px solid Rgba(34, 197, 94, 0.3);
+        border-radius: 4px;
+        padding: 2px 5px;
+        letter-spacing: 0.5px;
+        flex-shrink: 0;
+        line-height: 1.2;
+
+        &.badge-pending {
+          color: #f59e0b;
+          background: Rgba(245, 158, 11, 0.15);
+          border-color: Rgba(245, 158, 11, 0.4);
+        }
+
+        &.badge-purchase {
+          color: #38bdf8;
+          background: Rgba(56, 189, 248, 0.12);
+          border-color: Rgba(56, 189, 248, 0.3);
+        }
+      }
+    }
+
+    .sale-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      @include pixelated;
+      font-size: 7px;
+      color: $gray;
+      line-height: 1.3;
+
+      .date {
+        color: $gray;
+      }
+    }
+  }
+
+  .sale-value {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-shrink: 0;
+
+    .net-gain {
+      @include pixelated;
+      font-size: 13px;
+      font-weight: bold;
+      color: var(--green);
+      text-shadow: 0 0 10px Rgba(74, 222, 128, 0.25);
+      letter-spacing: 0.5px;
+      line-height: 1.3;
+
+      &.asset-gain {
+        color: #38bdf8;
+        text-shadow: 0 0 10px Rgba(56, 189, 248, 0.25);
+        font-size: 10px;
+      }
+    }
+
+    .claim-btn {
+      min-width: 80px;
+      font-size: 8px;
+    }
+
+    .claimed-badge {
+      @include pixelated;
+      font-size: 7px;
+      color: $gray;
+      background: Rgba(255, 255, 255, 0.05);
+      border: 1px solid Rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      padding: 3px 6px;
+      line-height: 1.2;
+    }
+  }
+}
+
+.empty-state {
+  padding: 30px;
+  text-align: center;
+  color: $gray;
+  background: Rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  border: 1px dashed Rgba(255, 255, 255, 0.08);
+  box-sizing: border-box;
+
+  p {
+    @include pixelated;
+    font-size: 8px;
+    color: $gray;
+    margin: 0;
+    line-height: 1.4;
+  }
+}

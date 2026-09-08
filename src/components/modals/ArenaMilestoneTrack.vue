@@ -11,6 +11,8 @@ const MILESTONE_HOVER_DURATION_SEC = 0.2
 const MILESTONE_SPRITE_DURATION_SEC = 0.3
 import { ref, onMounted, nextTick } from 'vue'
 import { usePvPStore } from '@/stores/pvp'
+import { useUIStore } from '@/stores/ui'
+import { useModalStore } from '@/stores/modals'
 import { RANKED_REWARD_MILESTONES } from '@/data/system/rankedData'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getItemById, requireItemId, type ItemId } from '@/data/inventory/items'
@@ -19,8 +21,15 @@ import { Z_LAYERS } from '@/logic/constants/visuals'
 import { gsap } from 'gsap'
 
 const pvp = usePvPStore()
+const uiStore = useUIStore()
+const modalStore = useModalStore()
 const listRef = ref<HTMLElement | null>(null)
 const milestones = RANKED_REWARD_MILESTONES
+
+const goToHomeRewards = () => {
+  modalStore.closeAll()
+  uiStore.activeTab = 'home'
+}
 
 onMounted(() => {
   animateList()
@@ -145,8 +154,10 @@ function handlePillLeave(e: MouseEvent) {
 <template>
   <section class="milestone-track">
     <div class="header-with-timer">
-      <h3>RECOMPENSAS DE TEMPORADA</h3>
-      <span class="season-timer">
+      <h3 class="text-outline">
+        RECOMPENSAS DE TEMPORADA
+      </h3>
+      <span class="season-timer text-outline">
         {{ (pvp.seasonRange?.daysLeft || 0) > 0 ? `Termina en ${pvp.seasonRange.daysLeft}d` : 'Temporada Finalizada' }}
       </span>
     </div>
@@ -178,7 +189,7 @@ function handlePillLeave(e: MouseEvent) {
           </div>
         </div>
         <div class="m-info">
-          <span class="m-elo">{{ m.elo }} ELO</span>
+          <span class="m-elo text-outline">{{ m.elo }} ELO</span>
           <div class="m-prizes-list">
             <PVTooltip
               v-for="[name, qty] in Object.entries(m.rewards)"
@@ -205,23 +216,23 @@ function handlePillLeave(e: MouseEvent) {
         </div>
         <button
           v-if="isUnlocked(m.elo) && !isClaimed(m.id)"
-          class="claim-btn"
-          @click.stop="pvp.claimReward(m.id)"
+          class="btn-vicio-claim text-outline"
+          @click.stop="goToHomeRewards"
         >
-          RECLAMAR
+          RECLAMAR EN INICIO
         </button>
-        <div
+        <span
           v-else-if="isClaimed(m.id)"
-          class="claimed-badge"
+          class="claimed-pill text-outline"
         >
-          <span class="emoji">✓</span>
-        </div>
-        <div
+          <span class="emoji">✓</span> RECLAMADO
+        </span>
+        <span
           v-else
-          class="lock-badge"
+          class="locked-pill text-outline"
         >
-          <span class="emoji">🔒</span>
-        </div>
+          <span class="emoji">🔒</span> BLOQUEADO
+        </span>
       </div>
     </div>
   </section>

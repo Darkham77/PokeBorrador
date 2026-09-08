@@ -223,7 +223,7 @@ export class SQLiteQueryBuilder implements QueryBuilder {
       if (typeof item !== 'object' || item === null) continue;
       const r = item as Record<string, unknown>; // open-record: Generic key-value data dictionary container
       const cols = Object.keys(r);
-      const vals = Object.values(r);
+      const vals = Object.values(r).map(v => (v !== null && typeof v === 'object' && !(v instanceof Uint8Array)) ? JSON.stringify(v) : v);
       const sql = `INSERT INTO ${this._table} (${cols.map(c => `"${c}"`).join(',')}) VALUES (${cols.map(() => '?').join(',')})`;
       db.run(sql, vals);
     }
@@ -235,7 +235,7 @@ export class SQLiteQueryBuilder implements QueryBuilder {
     const db = this.getDb();
     if (!db) return { data: payload, error: 'DB not ready' };
     const cols = Object.keys(payload);
-    const vals = Object.values(payload);
+    const vals = Object.values(payload).map(v => (v !== null && typeof v === 'object' && !(v instanceof Uint8Array)) ? JSON.stringify(v) : v);
     let sql = `UPDATE ${this._table} SET ` + cols.map(c => `"${c}" = ?`).join(',');
     const params = [...vals];
     sql += this._buildWhereClause(params);

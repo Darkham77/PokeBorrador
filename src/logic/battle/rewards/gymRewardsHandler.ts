@@ -48,6 +48,23 @@ export async function processGymBattleRewards(ctx: BattleContext, active: Battle
     }
   }
 
+  // Manejo de Revanchas Diarias de Líderes
+  if (active.isRematch) {
+    const { GYM_REMATCHES, recordGymRematchCompletion } = await import('@/data/world/gymRematches');
+    recordGymRematchCompletion(ctx.gs.state, gid);
+    const rematchConfig = GYM_REMATCHES[gid];
+    if (rematchConfig) {
+      for (const reward of rematchConfig.rewardItems) {
+        incrementRecordKey(ctx.gs.state.inventory, reward.itemId, reward.quantity);
+        const itemObj = getItemById(reward.itemId);
+        ctx.addLog(`¡Bono de Revancha: Recibiste x${reward.quantity} ${itemObj.name}!`, 'log-success', reward.itemId);
+      }
+      ctx.gs.state.battleCoins = (ctx.gs.state.battleCoins || 0) + rematchConfig.rewardBattleCoins;
+      ctx.addLog(`¡Bono de Revancha: Recibiste ${rematchConfig.rewardBattleCoins} Battle Coins!`, 'log-success', 'player');
+      ctx.uiStore.notify(`¡Victoria en Revancha Diaria! +${rematchConfig.rewardBattleCoins} BC y premios especiales.`, '🔥');
+    }
+  }
+
   // Registrar progreso específico por dificultad
   if (!ctx.gs.state.gymProgress[gid] || typeof ctx.gs.state.gymProgress[gid] !== 'object') {
     ctx.gs.state.gymProgress[gid] = { easy: false, normal: false, hard: false, attempts: 0 };

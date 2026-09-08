@@ -5,6 +5,7 @@ import { useBreedingStore } from '@/stores/breeding'
 import { useModalStore } from '@/stores/modals'
 import EggSprite from '@/components/common/EggSprite.vue'
 import type { PokemonEgg } from '@/types/pokemon/pokemon'
+import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue'
 
 interface Props {
   columns?: 2 | 3
@@ -69,15 +70,7 @@ const handleEggClick = (egg: PokemonEgg) => {
         </h3>
       </div>
       <div class="header-actions">
-        <button
-          id="home-daycare-btn"
-          v-gsap-hover
-          class="card-action-btn"
-          @click="openDaycare"
-        >
-          <span class="emoji">🏡</span>
-          GUARDERÍA
-        </button>
+        <HomeWidgetMinimizeBtn widget-id="breeding" />
       </div>
     </div>
 
@@ -212,8 +205,7 @@ const handleEggClick = (egg: PokemonEgg) => {
 }
 
 .header-actions {
-  display: flex;
-  gap: 6px;
+  @include widget-header-actions;
 }
 
 .missions-badge-btn {
@@ -229,10 +221,6 @@ const handleEggClick = (egg: PokemonEgg) => {
   &:hover {
     background: Rgba(250, 204, 21, 0.25);
   }
-}
-
-.card-action-btn {
-  @include widget-action-btn;
 }
 
 .eggs-grid {

@@ -1,13 +1,19 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { PastCompetitionWinner } from '@/types/system/stores'
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
+import PVTooltip from '@/components/common/PVTooltip.vue'
 import { useUIStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
+import { useModalStore } from '@/stores/modals'
 import { useChatCosmeticsStore } from '@/stores/social/chatCosmetics'
 import { getTierFromTotalIvs } from '@/logic/pokemon/tierEngine'
 import { getPhysicalDimensionTier } from '@/logic/pokemon/physicalDimensionsMath'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
+import { toID } from '@/logic/utils/strings.ts'
 
 interface Props {
   winner: PastCompetitionWinner
@@ -15,17 +21,59 @@ interface Props {
   rankIndex: number
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const uiStore = useUIStore()
 const authStore = useAuthStore()
 const gameStore = useGameStore()
+const modalStore = useModalStore()
 const chatCosmetics = useChatCosmeticsStore()
 
 const openTrainerProfile = (userId?: string) => {
   if (userId) {
     uiStore.open('TrainerProfile', { userId })
   }
+}
+
+const getWinnerSpeciesId = (w: PastCompetitionWinner): PokemonSpeciesId | null => {
+  const rawSpecies = w.entry_data?.species
+  if (rawSpecies && isPokemonSpeciesId(rawSpecies)) {
+    return rawSpecies
+  }
+  const rawName = w.entry_data?.name ? toID(w.entry_data.name) : ''
+  if (rawName && isPokemonSpeciesId(rawName)) {
+    return rawName
+  }
+  return null
+}
+
+const getWinnerSpeciesName = (w: PastCompetitionWinner): string => {
+  const speciesId = getWinnerSpeciesId(w)
+  if (speciesId) {
+    const data = pokemonDataProvider.getPokemonData(speciesId, true)
+    if (data?.name) return data.name
+  }
+  return w.entry_data?.name || 'Pokémon'
+}
+
+const formatPokemonDisplayName = (w: PastCompetitionWinner): string => {
+  const speciesName = getWinnerSpeciesName(w)
+  const nickname = w.entry_data?.nickname
+  if (nickname && nickname.trim().toLowerCase() !== speciesName.trim().toLowerCase()) {
+    return `${nickname} (${speciesName})`
+  }
+  return speciesName
+}
+
+const winnerSpeciesId = computed<PokemonSpeciesId | null>(() => getWinnerSpeciesId(props.winner))
+const winnerSpeciesName = computed<string>(() => getWinnerSpeciesName(props.winner))
+const pokemonDisplayName = computed<string>(() => formatPokemonDisplayName(props.winner))
+
+const openSpeciesDetail = (speciesId: PokemonSpeciesId) => {
+  modalStore.open('PokedexDetail', {
+    speciesId,
+    context: 'pokedex'
+  })
 }
 
 const getWinnerProfile = (w: PastCompetitionWinner) => {
@@ -76,10 +124,13 @@ const formatWinnerMetric = (w: PastCompetitionWinner, catId: string): string => 
   }
 
   if (catId.startsWith('weight')) {
-    const score = Number(w.score ?? data?.weight ?? 0)
-    const speciesId = data?.species ? String(data.species) : undefined
+    let score = Number(w.score ?? data?.weight ?? 0)
+    const speciesId = getWinnerSpeciesId(w)
     const spec = speciesId ? pokemonDataProvider.getPokemonData(speciesId, true) : null
     const baseWeight = spec?.weight || null
+    if (score <= 0 && baseWeight) {
+      score = baseWeight
+    }
     const tier = baseWeight ? getPhysicalDimensionTier(score, baseWeight) : null
 
     const maxTarget = baseWeight ? (baseWeight * 1.15).toFixed(1) : null
@@ -93,10 +144,13 @@ const formatWinnerMetric = (w: PastCompetitionWinner, catId: string): string => 
   }
 
   if (catId.startsWith('height')) {
-    const score = Number(w.score ?? data?.height ?? 0)
-    const speciesId = data?.species ? String(data.species) : undefined
+    let score = Number(w.score ?? data?.height ?? 0)
+    const speciesId = getWinnerSpeciesId(w)
     const spec = speciesId ? pokemonDataProvider.getPokemonData(speciesId, true) : null
     const baseHeight = spec?.height || null
+    if (score <= 0 && baseHeight) {
+      score = baseHeight
+    }
     const tier = baseHeight ? getPhysicalDimensionTier(score, baseHeight) : null
 
     const maxTarget = baseHeight ? (baseHeight * 1.15).toFixed(1) : null
@@ -159,30 +213,44 @@ const getRankLabel = (rank?: string | number): string => {
     <div class="winner-content-wrap">
       <!-- Trainer Profile -->
       <div class="winner-trainer-group">
-        <div
-          class="winner-avatar-wrap"
+        <PVTooltip
           :title="`Ver perfil de ${getWinnerName(winner)}`"
-          @click.stop="openTrainerProfile(winner.player_id)"
+          position="top"
         >
-          <TrainerAvatar
-            :profile="getWinnerProfile(winner)"
-            :size="26"
-          />
-        </div>
-
-        <div
-          class="winner-player-wrap"
-          :title="`Ver perfil de ${getWinnerName(winner)}`"
-          @click.stop="openTrainerProfile(winner.player_id)"
-        >
-          <span
-            v-gsap-nick="getWinnerNickStyle(winner)"
-            class="player-name"
-            :class="getWinnerNickStyle(winner)"
+          <div
+            class="winner-avatar-wrap"
+            role="button"
+            tabindex="0"
+            @click.stop="openTrainerProfile(winner.player_id)"
+            @keydown.enter.stop="openTrainerProfile(winner.player_id)"
           >
-            {{ getWinnerName(winner) }}
-          </span>
-        </div>
+            <TrainerAvatar
+              :profile="getWinnerProfile(winner)"
+              :size="26"
+            />
+          </div>
+        </PVTooltip>
+
+        <PVTooltip
+          :title="`Ver perfil de ${getWinnerName(winner)}`"
+          position="top"
+        >
+          <div
+            class="winner-player-wrap"
+            role="button"
+            tabindex="0"
+            @click.stop="openTrainerProfile(winner.player_id)"
+            @keydown.enter.stop="openTrainerProfile(winner.player_id)"
+          >
+            <span
+              v-gsap-nick="getWinnerNickStyle(winner)"
+              class="player-name"
+              :class="getWinnerNickStyle(winner)"
+            >
+              {{ getWinnerName(winner) }}
+            </span>
+          </div>
+        </PVTooltip>
       </div>
 
       <!-- Divider (visible when inline on same row) -->
@@ -196,16 +264,49 @@ const getRankLabel = (rank?: string | number): string => {
         v-if="winner.entry_data?.name || winner.score !== undefined"
         class="winner-details-group"
       >
-        <span
-          v-if="winner.entry_data?.name"
-          class="entry-poke"
-          :class="{ shiny: winner.entry_data.is_shiny }"
-        >
+        <!-- Pokemon Sprite & Name Pill -->
+        <div class="winner-poke-pill">
+          <PVTooltip
+            v-if="winnerSpeciesId"
+            :title="`Ver información de Pokédex de ${winnerSpeciesName}`"
+            position="top"
+          >
+            <div
+              class="winner-poke-interactive clickable"
+              role="button"
+              tabindex="0"
+              @click.stop="openSpeciesDetail(winnerSpeciesId)"
+              @keydown.enter.stop="openSpeciesDetail(winnerSpeciesId)"
+            >
+              <img
+                :src="getAssetUrl(ASSET_TYPES.POKEMON, winnerSpeciesId, { isShiny: winner.entry_data?.is_shiny })"
+                :alt="winnerSpeciesName"
+                draggable="false"
+                class="winner-poke-sprite pixelated"
+              >
+              <span
+                class="entry-poke"
+                :class="{ shiny: winner.entry_data?.is_shiny }"
+              >
+                <span
+                  v-if="winner.entry_data?.is_shiny"
+                  class="emoji"
+                >✨</span> {{ pokemonDisplayName }}
+              </span>
+            </div>
+          </PVTooltip>
+
           <span
-            v-if="winner.entry_data.is_shiny"
-            class="emoji"
-          >✨</span> {{ winner.entry_data.nickname || winner.entry_data.name }}
-        </span>
+            v-else-if="winner.entry_data?.name"
+            class="entry-poke"
+            :class="{ shiny: winner.entry_data.is_shiny }"
+          >
+            <span
+              v-if="winner.entry_data.is_shiny"
+              class="emoji"
+            >✨</span> {{ winner.entry_data.nickname || winner.entry_data.name }}
+          </span>
+        </div>
 
         <span
           v-if="winner.entry_data?.name && (winner.score !== undefined || winner.entry_data?.display_value)"
@@ -340,6 +441,40 @@ const getRankLabel = (rank?: string | number): string => {
   font-size: 8.5px;
   line-height: 1.35;
   min-width: 0;
+
+  .winner-poke-pill {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .winner-poke-interactive {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 1px 4px 1px 2px;
+    background: Rgba(255, 255, 255, 0.04);
+    border: 1px solid Rgba(255, 255, 255, 0.08);
+
+    &:hover {
+      background: Rgba(255, 215, 0, 0.08);
+      border-color: Rgba(255, 215, 0, 0.35);
+
+      .entry-poke {
+        color: var(--white);
+        text-shadow: 0 0 6px Rgba(250, 204, 21, 0.4);
+      }
+    }
+  }
+
+  .winner-poke-sprite {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
 
   .entry-poke {
     color: var(--yellow);

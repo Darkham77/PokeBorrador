@@ -2,6 +2,8 @@
 import { getItemById, isItemId, type ItemId } from '@/data/inventory/items'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { hasMaxIV } from '@/logic/pokemon/statsMath.ts'
+import { isReadyForFriendshipEvolution } from '@/logic/pokemon/friendshipLogic.ts'
+import { FRIENDSHIP_BOUNDS } from '@/types/pokemon/friendship.ts'
 
 export const POKEMON_MANUAL_TAG_IDS = ['fav', 'breed', 'competitive', 'trade', 'iv31', 'hatched'] as const;
 export type PokemonManualTagId = (typeof POKEMON_MANUAL_TAG_IDS)[number];
@@ -31,7 +33,8 @@ export const POKEMON_FILTER_TAG_IDS = [
   'favorite',
   'comp',
   'team',
-  'box'
+  'box',
+  'shy'
 ] as const;
 export type PokemonFilterTagId = (typeof POKEMON_FILTER_TAG_IDS)[number];
 export const POKEMON_FILTER_TAG_ID_SET: ReadonlySet<string> = new Set<string>(POKEMON_FILTER_TAG_IDS); // runtime-set: Fast O(1) filter tag validation set
@@ -250,6 +253,27 @@ export function getPokemonEditorBadges(pokemon: Partial<Pokemon> | null): TagDef
   return badges
 }
 
+export interface FilterTagDefinition {
+  readonly id: PokemonFilterTagId;
+  readonly label: string;
+  readonly shortLabel: string;
+  readonly icon: string;
+  readonly desc: string;
+}
+
+export const CANONICAL_FILTER_TAGS: readonly FilterTagDefinition[] = [
+  { id: 'fav', label: 'FAVORITO', shortLabel: 'FAV', icon: '⭐', desc: 'Pokémon marcados como favoritos.' },
+  { id: 'breed', label: 'GENÉTICA', shortLabel: 'GEN', icon: '🧬', desc: 'Marcado para breeding en la guardería o crianza selectiva.' },
+  { id: 'comp', label: 'COMPETITIVO', shortLabel: 'CMP', icon: '🏆', desc: 'Pokémon entrenados y listos para torneos y duelos.' },
+  { id: 'trade', label: 'INTERCAMBIO', shortLabel: 'TRD', icon: '🔄', desc: 'Disponible para intercambio con otros entrenadores.' },
+  { id: 'iv31', label: 'IV PERFECTO', shortLabel: 'IV', icon: '31', desc: 'Tiene al menos una estadística con potencial individual máximo (31).' },
+  { id: 'shiny', label: 'VARIOPINTO', shortLabel: 'SHY', icon: '✨', desc: 'Este Pokémon tiene una coloración especial extremadamente rara.' },
+  { id: 'team', label: 'EQUIPO', shortLabel: 'TEM', icon: '👥', desc: 'Pokémon asignados a tu equipo actual.' },
+  { id: 'hatched', label: 'CRÍA', shortLabel: 'CRI', icon: '🥚', desc: 'Pokémon nacido de un huevo.' },
+  { id: 'friendship-evo', label: 'LISTO P/ EVOLUCIONAR', shortLabel: 'EVO', icon: '💎', desc: 'Pokémon listo para evolucionar por amistad.' },
+  { id: 'friendship-max', label: 'VÍNCULO MÁXIMO', shortLabel: 'MAX', icon: '🎀', desc: 'Pokémon con amistad y vínculo al máximo (220+).' }
+] as const;
+
 /**
  * Standardized helper to check if a pokemon possesses a specific tag.
  */
@@ -266,7 +290,15 @@ export const hasPokemonTag = (pokemon: Partial<Pokemon> | null, tagId: PokemonFi
     case 'hatched':
       return tags.includes('hatched') || pokemon.obtainedMethod === 'egg'
     case 'fav':
+    case 'favorite':
       return tags.includes('fav') || tags.includes('favorite')
+    case 'shy':
+    case 'shiny':
+      return Boolean(pokemon.isShiny)
+    case 'friendship-evo':
+      return isReadyForFriendshipEvolution(pokemon)
+    case 'friendship-max':
+      return (pokemon.friendship ?? FRIENDSHIP_BOUNDS.DEFAULT_BASE) >= FRIENDSHIP_BOUNDS.AFFINITY_PERK_THRESHOLD
     default:
       return tags.includes(tagId)
   }

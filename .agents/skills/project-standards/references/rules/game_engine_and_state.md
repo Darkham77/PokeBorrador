@@ -101,3 +101,32 @@ Pokémon participating in active missions (`onMission: true`), competition event
 - **Evolution Legality Clamping**: The auto-evolution engine (`getEvolvedForm` in `src/logic/evolution/evolutionLogic.ts`), wild encounter scalers, and trainer team generators MUST strictly clamp evolutions within the active `ENABLED_POKEMON_IDS` whitelist (`isEnabledPokemonId`).
 - **Prohibition on Unreleased Evolutions**: Generating or evolving Pokémon into unreleased generations (e.g. Magnemite evolving into Gen 4 Magnezone when only Gen 1-2 are active) in standard gameplay or difficulty scaling is strictly prohibited. Eliminating `bypassWhitelist` is mandatory across all gameplay combat and encounter paths.
 
+## 14. Deterministic Physical Dimensions & Special Forms (Weight 0 kg Protection)
+
+- **Mandatory Instance Dimensions**: All Pokémon instances created via `makePokemon` MUST possess deterministic, non-zero physical dimensions (`height` in meters and `weight` in kilograms) stored directly on the entity.
+- **Gigamax & 0 kg Base Species Fallback**: When querying base dimensions from Showdown for special forms (such as Gigamax species like `eeveegmax`, where Showdown canonical data sets `weightkg: 0`), data providers (`pokemonDataProvider.getPokemonData`) and dimension generators MUST fall back to the base species (`species.baseSpecies`) and enforce a positive non-zero floor (`0.1`), strictly forbidding 0.0 kg/m entities from entering active teams, boxes, or competition leaderboards.
+
+## 15. Storage Capacity Pre-Flight Validation for Reward Grantors
+
+- **Pre-Flight Storage Guard**: Any system, modal, or action granting Pokémon rewards (competition awards, daycare baby rewards, mystery gifts, battle rewards) MUST validate storage capacity BEFORE attempting to generate or grant Pokémon.
+- **Capacity Formula**: If the player's total occupied slots (`team.length + box.length`) plus incoming Pokémon count exceeds maximum capacity (`6 + (boxCount || 4) * 50`), the operation MUST fail-fast with a descriptive warning, preventing box overflow and data corruption.
+
+## 16. Mandatory Zero Battle Duplication & Canonical Combat Engine SSoT
+
+- **Unified Turn Execution**: All combat encounters regardless of game mode MUST delegate their turn resolution to the canonical turn runner `executeCanonicalTurn` (`src/logic/battle/helpers/canonicalTurnRunner.ts`). The runner is the authoritative orchestrator for dispatching worker messages to `@pkmn/sim`, advancing the FSM through `BUILD_QUEUE` -> `POP_ACTION` -> `APPLY_MOVE` -> `EVAL_HP`, parsing GSAP animation logs, synchronizing team HP snapshots, and evaluating post-turn faints/switches.
+- **BattleSession Hierarchy (Strategy Pattern)**: Divergent mode-specific lifecycles MUST NOT inject scattering `if (isPvP)` / `if (isGym)` checks into core battle loops. Instead, combat orchestration delegates to polymorphic session subclasses (`BaseBattleSession` -> `PvEBattleSession`, `GymBattleSession`, `PvPBattleSession`, `SpectatorBattleSession`, `ReplayBattleSession`) instantiated through `BattleSessionFactory`.
+- **Declarative UI Parameterization**: Mode-specific UI features (PvP turn clocks, spectator banners, replay playback controls, bag locks, forfeit buttons, gym leader dialogue) MUST be driven exclusively by `BattleUiConfig` (`createBattleUiConfig(mode, overrides)`). Duplicating arena components or creating mode-specific arenas is strictly prohibited.
+- **Universal Switch Modals**: Voluntary switches and forced faint replacement switches in all modes MUST reuse the universal `PokemonSelectionModal` with `isBattleSwitch: true` and `preventClose: true`, as well as the in-arena `BattleQuickTeam` bench panel.
+
+## 17. Mandatory Centralized Asset Management SSoT (`getAssetUrl`)
+
+- **Single Source of Truth for Visual Assets**: All visual assets across the entire application—including Pokémon sprites, trainer sprites, inventory/shop items, maps, UI icons, banners, gym badges, battle backgrounds, and ranked medals—MUST be resolved strictly and exclusively through `getAssetUrl(ASSET_TYPES.<CATEGORY>, id, options)` from `@/logic/services/assetService`.
+- **Absolute Prohibition on Hardcoded Path Strings**: Directly hardcoding asset paths (e.g. `'/assets/...'`, `'/sprites/...'`, or relative asset paths) in Vue component templates, CSS/SCSS styles, Pinia stores, or static configuration files (`src/data/`) is STRICTLY FORBIDDEN.
+- **Static Catalogs Store Domain IDs Only**: Static datasets (`src/data/`) must only store canonical domain identifiers (`ItemId`, `PokemonSpeciesId`, `GymId`, `RankedTierId`, `NpcSpriteId`). Path construction and routing logic is the exclusive responsibility of `assetService.ts`.
+- **Strict Domain Overload Requirement**: Any new asset category added to `ASSET_TYPES` MUST be equipped with a corresponding strictly typed function overload in `assetService.ts` mapping the category to its canonical domain type union.
+
+## 18. Pokémon Instance Invariant: Capture Timestamp & Method Integrity
+
+- **Mandatory Instance Invariant**: Every Pokémon instance across all stages of gameplay—including wild captures, starter selection, breeding hatches, event awards, GTS market claims, trade exchanges, and debug test fixtures—MUST possess a valid numeric timestamp `obtainedAt: number` (epoch milliseconds) and a canonical `obtainedMethod: ObtainedMethod` (`'wild' | 'trade' | 'egg' | 'starter' | 'gift' | 'fishing' | 'archaeology' | 'gift_starter' | 'reward' | 'event'`).
+- **Defensive Ingestion Guarantees**: Any ingest boundary adding Pokémon to the player state (`addPokemon`, `claimAsset`, `emulateClaimAsset`) MUST verify and populate missing timestamps with current server epoch time (`Temporal.Now.instant().epochMilliseconds`) and assign `'reward'` as fallback method, preventing `'SIN FECHA'` UI states without requiring database migrations.
+- **Debug Fixture Parity**: Debug simulators and mock generators MUST never instantiate incomplete Pokémon object literals lacking capture metadata.

@@ -21,6 +21,7 @@ import {
   fetchPastEvents as fetchPastEventsAction,
   checkPendingAwards as checkPendingAwardsAction,
   claimAward as claimAwardAction,
+  claimAllEventAwards as claimAllEventAwardsAction,
   discardAward as discardAwardAction,
   type EventAwardsContext
 } from './events/eventAwardsActions.ts'
@@ -30,6 +31,12 @@ import {
   removeCompetitionEntry as removeCompetitionEntryAction,
   type EventEnrollmentContext
 } from './events/eventEnrollmentActions.ts'
+import { useModalStore } from '@/stores/modals'
+import {
+  evaluateCapturedPokemonForEvents,
+  computeOptimalAutoFillAssignments
+} from '@/logic/events/eventAutoEnrollHelper'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 export const useEventStore = defineStore('events', () => {
   const gameStore = useGameStore()
@@ -44,6 +51,7 @@ export const useEventStore = defineStore('events', () => {
   const userEntries = ref<Record<string, CompetitionEntry>>({})
   const isLoading = ref(false)
   const isLoaded = ref(false)
+  const simEventsEnabled = ref(true)
   let inFlightPromise: Promise<void> | null = null
 
   // Watch for game cycle ticks to re-evaluate active events
@@ -181,8 +189,12 @@ export const useEventStore = defineStore('events', () => {
     return fetchPastEventsAction(awardsContext.value)
   }
 
-  async function claimAward(awardId: string): Promise<string | null> {
-    return claimAwardAction(awardsContext.value, awardId)
+  async function claimAward(awardId: string, options: { autoSave?: boolean; silent?: boolean } = {}): Promise<string | null> {
+    return claimAwardAction(awardsContext.value, awardId, options)
+  }
+
+  async function claimAllEventAwards(eventId: string): Promise<{ success: boolean; claimedCount: number }> {
+    return claimAllEventAwardsAction(awardsContext.value, eventId)
   }
 
   async function discardAward(awardId: string): Promise<boolean> {
@@ -195,6 +207,63 @@ export const useEventStore = defineStore('events', () => {
 
   function getMinigameBonuses(minigameId: BattleMinigame) {
     return getMinigameBuffs(activeEvents.value, minigameId)
+  }
+
+  async function checkCaptureAndPrompt(pokemon: Pokemon): Promise<void> {
+    if (!simEventsEnabled.value || !pokemon) return
+
+    if (!isLoaded.value) {
+      await fetchEvents()
+    }
+    if (Object.keys(userEntries.value).length === 0 && authStore.user) {
+      await fetchUserEntries()
+    }
+
+    const synchronizedInstant = Temporal.Instant.fromEpochMilliseconds(getServerTime())
+    const candidates = evaluateCapturedPokemonForEvents(
+      pokemon,
+      activeEvents.value,
+      userEntries.value,
+      synchronizedInstant
+    )
+
+    if (candidates.length > 0) {
+      const modalStore = useModalStore()
+      modalStore.open('EventAutoEnroll', {
+        pokemon,
+        candidates
+      })
+    }
+  }
+
+  async function autoFillBestEntries(eventId: string): Promise<number> {
+    const event = allEvents.value.find(e => e.id === eventId)
+    if (!event) return 0
+
+    const synchronizedInstant = Temporal.Instant.fromEpochMilliseconds(getServerTime())
+    const allUserPokemon: Pokemon[] = [...gameStore.allPokemonList] as Pokemon[]
+
+    const assignments = computeOptimalAutoFillAssignments(
+      event,
+      allUserPokemon,
+      userEntries.value,
+      synchronizedInstant
+    )
+
+    if (assignments.length === 0) return 0
+
+    let enrolledCount = 0
+    for (const assignment of assignments) {
+      if (!assignment.isImprovement) continue
+      try {
+        await submitCompetitionEntry(event.id, assignment.subComp.id, assignment.pokemon.uid)
+        enrolledCount++
+      } catch (err) {
+        logger.error('Events', `Failed to auto-fill assignment for category ${assignment.subComp.id}`, err)
+      }
+    }
+
+    return enrolledCount
   }
 
   // Listen for time-sync updates from DBRouter (Debug mode)
@@ -213,6 +282,7 @@ export const useEventStore = defineStore('events', () => {
     pendingAwards,
     userEntries,
     isLoading,
+    simEventsEnabled,
     globalMultipliers,
     fetchEvents,
     fetchPastEvents,
@@ -221,9 +291,12 @@ export const useEventStore = defineStore('events', () => {
     removeCompetitionEntry,
     checkPendingAwards,
     claimAward,
+    claimAllEventAwards,
     discardAward,
     getSpeciesBonuses,
     getMinigameBonuses,
-    isEventActive
+    isEventActive,
+    checkCaptureAndPrompt,
+    autoFillBestEntries
   }
 })

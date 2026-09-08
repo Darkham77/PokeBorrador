@@ -109,10 +109,10 @@ export async function executeFlee(ctx: BattleContext) {
           enemyMove = e.lastMove
         }
 
-        const { showdownWorker, executeTurnInWorker } = await import('./showdownWorkerClient.ts')
+        const { getShowdownWorker, executeTurnInWorker } = await import('./showdownWorkerClient.ts')
         const { parseShowdownLogLine, filterShowdownLogs } = await import('./showdownBridge.ts')
 
-        if (showdownWorker && enemyMove) {
+        if (getShowdownWorker() && enemyMove) {
           await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.BUILD_QUEUE)
           await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.POP_ACTION)
 

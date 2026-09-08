@@ -24,11 +24,20 @@ import {
   RANKED_TIER_ORDER,
   RANKED_TIER_INDEX_MAP,
   RANKED_MEDAL_CONFIGS,
+  SPANISH_MONTH_NAMES,
+  findSeasonalTheme,
+  getSeasonalThemeForMonth,
+  isSeasonalThemeId,
+  SEASONAL_THEMES_BY_ID,
   type RankedTierId,
-  type RankedTierName
+  type RankedTierName,
+  type SeasonalThemeId
 } from '@/data/system/rankedData.ts'
 export { RANKED_TIER_ORDER, RANKED_TIER_INDEX_MAP, type RankedTierId, type RankedTierName }
 export type RankedTierCode = 'BRONCE' | 'PLATA' | 'ORO' | 'PLATINO' | 'DIAMANTE' | 'MAESTRO';
+import type { RankedSeasonMedal } from '@/types/battle/pvp.ts';
+import { GAME_TIMEZONE, getGMT3Date } from '@/logic/utils/timeUtils.ts';
+import { toID } from '@/logic/utils/strings.ts';
 const RANKED_MAX_TIER_GAP = 1;
 
 export const ELO_THRESHOLD_PLATA = 1200;
@@ -37,13 +46,15 @@ export const ELO_THRESHOLD_PLATINO = 2100;
 export const ELO_THRESHOLD_DIAMANTE = 2700;
 export const ELO_THRESHOLD_MAESTRO = 3400;
 
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+
 export const RANKED_TIERS: Record<RankedTierCode, EloTier> = {
-  BRONCE:   { id: 'bronce',   name: 'Bronce',   minElo: 0,                      color: RANKED_MEDAL_CONFIGS.bronce.color,   icon: RANKED_MEDAL_CONFIGS.bronce.fallbackEmoji,   sprite: RANKED_MEDAL_CONFIGS.bronce.sprite },
-  PLATA:    { id: 'plata',    name: 'Plata',    minElo: ELO_THRESHOLD_PLATA,    color: RANKED_MEDAL_CONFIGS.plata.color,    icon: RANKED_MEDAL_CONFIGS.plata.fallbackEmoji,    sprite: RANKED_MEDAL_CONFIGS.plata.sprite },
-  ORO:      { id: 'oro',      name: 'Oro',      minElo: ELO_THRESHOLD_ORO,      color: RANKED_MEDAL_CONFIGS.oro.color,      icon: RANKED_MEDAL_CONFIGS.oro.fallbackEmoji,      sprite: RANKED_MEDAL_CONFIGS.oro.sprite },
-  PLATINO:  { id: 'platino',  name: 'Platino',  minElo: ELO_THRESHOLD_PLATINO,  color: RANKED_MEDAL_CONFIGS.platino.color,  icon: RANKED_MEDAL_CONFIGS.platino.fallbackEmoji,  sprite: RANKED_MEDAL_CONFIGS.platino.sprite },
-  DIAMANTE: { id: 'diamante', name: 'Diamante', minElo: ELO_THRESHOLD_DIAMANTE, color: RANKED_MEDAL_CONFIGS.diamante.color, icon: RANKED_MEDAL_CONFIGS.diamante.fallbackEmoji, sprite: RANKED_MEDAL_CONFIGS.diamante.sprite },
-  MAESTRO:  { id: 'maestro',  name: 'Maestro',  minElo: ELO_THRESHOLD_MAESTRO,  color: RANKED_MEDAL_CONFIGS.maestro.color,  icon: RANKED_MEDAL_CONFIGS.maestro.fallbackEmoji,  sprite: RANKED_MEDAL_CONFIGS.maestro.sprite }
+  BRONCE:   { id: 'bronce',   name: 'Bronce',   minElo: 0,                      color: RANKED_MEDAL_CONFIGS.bronce.color,   icon: RANKED_MEDAL_CONFIGS.bronce.fallbackEmoji,   sprite: getAssetUrl(ASSET_TYPES.RANK, 'bronce') },
+  PLATA:    { id: 'plata',    name: 'Plata',    minElo: ELO_THRESHOLD_PLATA,    color: RANKED_MEDAL_CONFIGS.plata.color,    icon: RANKED_MEDAL_CONFIGS.plata.fallbackEmoji,    sprite: getAssetUrl(ASSET_TYPES.RANK, 'plata') },
+  ORO:      { id: 'oro',      name: 'Oro',      minElo: ELO_THRESHOLD_ORO,      color: RANKED_MEDAL_CONFIGS.oro.color,      icon: RANKED_MEDAL_CONFIGS.oro.fallbackEmoji,      sprite: getAssetUrl(ASSET_TYPES.RANK, 'oro') },
+  PLATINO:  { id: 'platino',  name: 'Platino',  minElo: ELO_THRESHOLD_PLATINO,  color: RANKED_MEDAL_CONFIGS.platino.color,  icon: RANKED_MEDAL_CONFIGS.platino.fallbackEmoji,  sprite: getAssetUrl(ASSET_TYPES.RANK, 'platino') },
+  DIAMANTE: { id: 'diamante', name: 'Diamante', minElo: ELO_THRESHOLD_DIAMANTE, color: RANKED_MEDAL_CONFIGS.diamante.color, icon: RANKED_MEDAL_CONFIGS.diamante.fallbackEmoji, sprite: getAssetUrl(ASSET_TYPES.RANK, 'diamante') },
+  MAESTRO:  { id: 'maestro',  name: 'Maestro',  minElo: ELO_THRESHOLD_MAESTRO,  color: RANKED_MEDAL_CONFIGS.maestro.color,  icon: RANKED_MEDAL_CONFIGS.maestro.fallbackEmoji,  sprite: getAssetUrl(ASSET_TYPES.RANK, 'maestro') }
 };
 
 export interface SeasonalTierReward {
@@ -205,4 +216,82 @@ export function validateTeamForRanked(team: (Pokemon | null)[], rules: RankedRul
   }
 
   return { ok: true };
+}
+
+export interface ResolvedMedalTournamentInfo {
+  readonly tournamentName: string;
+  readonly formattedDate: string;
+  readonly exactDate: string;
+  readonly themeId?: SeasonalThemeId;
+  readonly isAvailable: boolean;
+}
+
+function isGenericSeasonName(name: string): boolean {
+  const norm = name.trim().toLowerCase();
+  return (
+    norm.startsWith('temporada') ||
+    norm.startsWith('season') ||
+    norm.startsWith('ranked_season') ||
+    norm === 'actual' ||
+    norm === ''
+  );
+}
+
+export function resolveMedalTournamentInfo(
+  medal: RankedSeasonMedal,
+  currentSeasonName?: string
+): ResolvedMedalTournamentInfo {
+  let zdt: Temporal.ZonedDateTime | null = null;
+  if (medal.awardedAt) {
+    try {
+      const inst = Temporal.Instant.from(medal.awardedAt);
+      zdt = inst.toZonedDateTimeISO(GAME_TIMEZONE);
+    } catch {
+      zdt = null;
+    }
+  }
+  if (!zdt) {
+    zdt = getGMT3Date();
+  }
+
+  const monthIndex = zdt.month;
+  const year = zdt.year;
+  const monthName = SPANISH_MONTH_NAMES[monthIndex - 1] ?? 'Septiembre';
+  const formattedDate = `${monthName} ${year}`;
+  const exactDate = `${String(zdt.day).padStart(2, '0')}/${String(monthIndex).padStart(2, '0')}/${year}`;
+
+  let themeConfig = (medal.themeId && isSeasonalThemeId(medal.themeId))
+    ? SEASONAL_THEMES_BY_ID[medal.themeId]
+    : undefined;
+
+  if (!themeConfig && medal.seasonName) {
+    themeConfig = findSeasonalTheme(medal.seasonName);
+  }
+
+  if (!themeConfig) {
+    themeConfig = getSeasonalThemeForMonth(monthIndex);
+  }
+
+  const tournamentName = medal.tournamentName
+    || (medal.seasonName && !isGenericSeasonName(medal.seasonName) ? medal.seasonName : undefined)
+    || themeConfig?.name
+    || 'Frontera Kanto & Johto';
+
+  const nowZdt = getGMT3Date();
+  const currentTheme = getSeasonalThemeForMonth(nowZdt.month);
+
+  const isSameMonthAndYear = (zdt.month === nowZdt.month && zdt.year === nowZdt.year);
+  const matchesCurrentTournament = (themeConfig?.id === currentTheme.id) ||
+    (toID(tournamentName) === toID(currentTheme.name)) ||
+    (currentSeasonName ? toID(tournamentName) === toID(currentSeasonName) : false);
+
+  const isAvailable = matchesCurrentTournament && isSameMonthAndYear;
+
+  return {
+    tournamentName,
+    formattedDate,
+    exactDate,
+    themeId: themeConfig?.id,
+    isAvailable
+  };
 }

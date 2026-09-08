@@ -49,6 +49,11 @@ const softResetElo = computed(() => calculateSoftResetElo(props.finalElo))
 
 const tierColor = computed(() => tierInfo.value.color)
 
+function formatTierName(tier?: unknown): string {
+  if (typeof tier !== 'string' || !tier) return ''
+  return tier.charAt(0).toUpperCase() + tier.slice(1).toLowerCase()
+}
+
 // Animation on modal show
 watch(
   () => props.show,
@@ -71,12 +76,15 @@ watch(
 
 async function handleClaimAll() {
   if (isClaiming.value || isClaimed.value) return
-  if (!gameStore.db) return
 
   isClaiming.value = true
   try {
-    for (const award of props.awards) {
-      await gameStore.db.rpc('claim_award', { p_award_id: award.id })
+    if (gameStore.db) {
+      for (const award of props.awards) {
+        if (award.id && !award.id.startsWith('local_')) {
+          await gameStore.db.rpc('claim_award', { p_award_id: award.id })
+        }
+      }
     }
 
     isClaimed.value = true
@@ -193,10 +201,10 @@ function handleClose() {
             </template>
 
             <!-- Battle Coins Prize -->
-            <template v-else-if="award.prize.type === 'bc'">
+            <template v-else-if="award.prize.type === 'bc' || award.prize.type === 'battle_coins'">
               <span class="emoji prize-icon">🪙</span>
               <div class="prize-info">
-                <span class="prize-title">{{ award.prize.amount }} Battle Coins</span>
+                <span class="prize-title">{{ award.prize.amount }} Battle Coins ({{ award.prize.amount }} Monedas de Batalla)</span>
                 <span class="prize-sub">Moneda de Torneo y Tienda BC</span>
               </div>
             </template>
@@ -205,7 +213,7 @@ function handleClose() {
             <template v-else-if="award.prize.type === 'ranked_medal'">
               <span class="emoji prize-icon">🎖️</span>
               <div class="prize-info">
-                <span class="prize-title">Medalla de Temporada {{ award.prize.season }}</span>
+                <span class="prize-title">Medalla {{ formatTierName(award.prize.tier) }} (Medalla de Temporada {{ award.prize.season }})</span>
                 <span class="prize-sub">Rango {{ String(award.prize.tier).toUpperCase() }}</span>
               </div>
             </template>

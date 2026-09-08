@@ -13,7 +13,6 @@ import BattleActionButtons from './BattleActionButtons.vue'
 import BattleQuickTeam from './BattleQuickTeam.vue'
 import BattleQuickBag from './BattleQuickBag.vue'
 import StruggleOverlay from './StruggleOverlay.vue'
-import PvPTurnTimerClock from './PvPTurnTimerClock.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getActiveMinigame } from '@/logic/battle/battleMinigames'
 
@@ -289,9 +288,7 @@ const onEnter = (el: Element, done: () => void) => {
         </aside>
 
         <div class="controls-content">
-          <!-- PvP Turn Timer Clock -->
-          <PvPTurnTimerClock v-if="battleStore.isPvP" />
-
+          <!-- Tools moved to sidebar -->
           <!-- Wrapper relativo para poder superponer la tarjeta de Forcejeo -->
           <div class="moves-wrapper">
             <BattleMovesGrid
@@ -314,9 +311,9 @@ const onEnter = (el: Element, done: () => void) => {
           />
         </div>
 
-        <!-- Zona 2: Mochila Rápida (Derecha - deshabilitada en PvP) -->
+        <!-- Zona 2: Mochila Rápida (Derecha) -->
         <aside
-          v-if="!battleStore.isPvP"
+          v-if="battleStore.uiConfig.allowBag"
           class="quick-shortcut-zone zone-bag"
         >
           <BattleQuickBag />

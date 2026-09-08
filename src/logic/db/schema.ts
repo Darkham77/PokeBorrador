@@ -8,14 +8,14 @@ export const DEFAULT_DB_ELO_RATING = 1000;
 export const DEFAULT_GUARDIAN_POINTS = 150;
 export const DEFAULT_EGG_HATCH_STEPS = 1000;
 
-export const TABLES_SCHEMA = [
+export const TABLES_SCHEMA = [ // no-domain: Non-domain utility collection or data structure
   `profiles (id TEXT PRIMARY KEY, username TEXT, email TEXT, trainer_level INTEGER DEFAULT 1, player_class TEXT, faction TEXT, nick_style TEXT, avatar_style TEXT, gender TEXT DEFAULT 'h', role TEXT DEFAULT 'user', elo_rating INTEGER DEFAULT ${DEFAULT_DB_ELO_RATING}, pvp_wins INTEGER DEFAULT 0, pvp_losses INTEGER DEFAULT 0, pvp_draws INTEGER DEFAULT 0, badges INTEGER DEFAULT 0, current_session_id TEXT, db_version INTEGER DEFAULT 1, last_renamed_at TEXT, created_at TEXT, updated_at TEXT, is_banned BOOLEAN DEFAULT FALSE, ban_reason TEXT, playtime INTEGER DEFAULT 0, last_played_at TEXT, ranked_max_elo INTEGER DEFAULT ${DEFAULT_DB_ELO_RATING}, class_level INTEGER DEFAULT 1, box_count INTEGER DEFAULT 0, longest_streak INTEGER DEFAULT 0, shiny_count INTEGER DEFAULT 0, max_damage INTEGER DEFAULT 0, total_battles INTEGER DEFAULT 0, trade_volume INTEGER DEFAULT 0, capture_attempts INTEGER DEFAULT 0, capture_successes INTEGER DEFAULT 0)`, // text-ok: UI text display localization string
   "game_saves (user_id TEXT PRIMARY KEY, save_data TEXT, last_save_id TEXT, updated_at TEXT)",
   "friendships (id INTEGER PRIMARY KEY AUTOINCREMENT, requester_id TEXT, addressee_id TEXT, status TEXT, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
-  "battle_invites (id INTEGER PRIMARY KEY AUTOINCREMENT, sender_id TEXT, challenger_id TEXT, opponent_id TEXT, status TEXT, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
+  "battle_invites (id INTEGER PRIMARY KEY AUTOINCREMENT, sender_id TEXT, challenger_id TEXT, opponent_id TEXT, status TEXT, config TEXT, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
   `ranked_queue (user_id TEXT PRIMARY KEY, elo INTEGER DEFAULT ${DEFAULT_DB_ELO_RATING}, status TEXT, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))`,
   "global_chat_messages (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, username TEXT, message TEXT, player_class TEXT, trainer_level INTEGER, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
-  "passive_teams (user_id TEXT PRIMARY KEY, team_data TEXT, updated_at TEXT)",
+  "passive_teams (user_id TEXT PRIMARY KEY, team_data TEXT, elo_rating INTEGER DEFAULT 1000, is_active BOOLEAN DEFAULT 0, updated_at TEXT)",
   "passive_battle_reports (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, opponent_id TEXT, result TEXT, report_data TEXT, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
   "daycare_slots (id INTEGER PRIMARY KEY AUTOINCREMENT, player_id TEXT, pokemon_id TEXT, slot_index INTEGER, deposited_at TEXT, created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",
   "daycare_upgrades (player_id TEXT PRIMARY KEY, egg_capacity INTEGER DEFAULT 1, slot_boost INTEGER DEFAULT 0, updated_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))",

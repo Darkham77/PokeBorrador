@@ -330,6 +330,60 @@ export function repairAccountsInSqlite(options: RepairAccountOptions): RepairSum
     });
   }
 
+  // Auditar y reparar Pokémon en claim_queue
+  try {
+    const claimRows = db.prepare("SELECT id, asset_data FROM claim_queue").all() as Array<{ id: string; asset_data: string }>;
+    if (!isSilent) console.log(`📦 Auditando claim_queue (${claimRows.length} registros)...`);
+    for (const claimRow of claimRows) {
+      if (!claimRow.asset_data) continue;
+      try {
+        const parsed = JSON.parse(claimRow.asset_data) as { type?: string; data?: unknown };
+        if (parsed && parsed.type === 'pokemon' && parsed.data && typeof parsed.data === 'object') {
+          const poke = parsed.data as Pokemon;
+          const initialCheck = checkPokemonLegality(poke);
+          if (!initialCheck.isLegal || poke.isIllegal || !poke.species || poke.status === null || poke.maxVigor === undefined) {
+            const report = repairPokemonLegality(poke);
+            if (report.repaired) {
+              db.prepare("UPDATE claim_queue SET asset_data = ? WHERE id = ?").run(JSON.stringify(parsed), claimRow.id);
+              summary.pokemonRepaired++;
+              if (!isSilent) console.log(`  ↳ 📦 Pokémon en claim_queue (ID: ${claimRow.id}) reparado: ${report.changes.join(', ')}`);
+            }
+          }
+        }
+      } catch (err) {
+        if (!isSilent) console.error('Error parsing claim_queue row:', err);
+      }
+    }
+  } catch (err) {
+    if (!isSilent) console.error('Error accessing claim_queue table:', err);
+  }
+
+  // Auditar y reparar Pokémon en market_listings
+  try {
+    const marketRows = db.prepare("SELECT id, data FROM market_listings WHERE listing_type = 'pokemon'").all() as Array<{ id: string; data: string }>;
+    for (const mRow of marketRows) {
+      if (!mRow.data) continue;
+      try {
+        const poke = (typeof mRow.data === 'string' ? JSON.parse(mRow.data) : mRow.data) as Pokemon;
+        if (poke && typeof poke === 'object') {
+          const initialCheck = checkPokemonLegality(poke);
+          if (!initialCheck.isLegal || poke.isIllegal || !poke.species || poke.status === null || poke.maxVigor === undefined) {
+            const report = repairPokemonLegality(poke);
+            if (report.repaired) {
+              db.prepare("UPDATE market_listings SET data = ? WHERE id = ?").run(JSON.stringify(poke), mRow.id);
+              summary.pokemonRepaired++;
+              if (!isSilent) console.log(`  ↳ 🏪 Pokémon en market_listings (ID: ${mRow.id}) reparado: ${report.changes.join(', ')}`);
+            }
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+  } catch {
+    // market_listings table might not exist
+  }
+
   if (!isSilent) {
     console.log(`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
     console.log(`🎉 Resumen de Reparación (SQLite):`);

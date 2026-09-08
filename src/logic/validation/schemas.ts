@@ -46,6 +46,20 @@ export * from './subschemas/socialSchemas.ts';
 // SAVE DATA SCHEMAS
 // ==========================================
 
+export const personalPvPMatchSummarySchema = object({
+  id: string(),
+  battleCode: string(),
+  opponentId: string(),
+  opponentName: string(),
+  opponentAvatar: optional(string()),
+  format: union([literal('3v3'), literal('6v6')]),
+  isRanked: boolean(),
+  result: union([literal('victory'), literal('defeat'), literal('draw')]),
+  deltaElo: optional(number()),
+  turnsCount: number(),
+  timestamp: string()
+});
+
 export const saveDataSchema = object({
   trainer: string(),
   gender: optional(union([literal('h'), literal('m')])),
@@ -145,10 +159,13 @@ export const saveDataSchema = object({
   claimQueue: optional(array(claimItemSchema)),
   pvpTeam: optional(array(string())),
   pvpTeam6: optional(array(string())),
+  pvpMatchHistory: optional(array(personalPvPMatchSummarySchema)),
+  lastResolvedSeasonId: optional(string()),
+  dailyGymRematches: optional(record(string(), string())),
   warTeam: optional(array(string())),
   warSlots: optional(number()),
   notificationHistory: optional(array(union([notificationItemSchema, string(), record(string(), unknown())]))),
-  marketSoldSeenIds: optional(array(string())),
+  marketSoldSeenIds: optional(array(union([string(), number()]))),
   lastPokemonCenterHeal: number(),
   playtime: number(),
   lastSeen: optional(union([number(), string()])),

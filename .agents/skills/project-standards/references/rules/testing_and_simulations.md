@@ -70,6 +70,10 @@ Whenever ANY bug, regression, or state desynchronization occurs across the proje
 - **Selective Page Pool Scope Mandate**: Worker-scoped browser page reuse (`WorkerSessionPool` and `resetToCleanState()`) is strictly limited to high-density combat suites. Applying page reuse to cold-start lifecycle tests (`/loading`, raw boot), multi-user/multi-page suites (`gts_transactions`), or short domain suites is strictly prohibited to prevent masking boot regressions and to ensure natural Chromium RAM/WebGL purging across sequential test runs.
 - **Dual-Stage Checkpoint Architecture (Master Progress vs Intra-Suite Failure)**: Checkpoint tracking MUST strictly segregate intra-suite failure states (`doc.suites[suiteKey]`) used for isolated RED reproduction from the master sequential progress cursor (`doc.master` and `doc.passedSuites`). Calling `clearSuiteCheckpoint` MUST NEVER clear `doc.master`. Progress MUST be saved atomically after each driver completes (SQLite followed by PostgreSQL), ensuring instant, deterministic resumption from the exact pending suite and database engine after any interruption.
 - **Showdown Locked Move Single-Slot Parity**: Multi-turn moves (*Shadow Force, Solar Beam, Fly, Dig, Recharge*) lock the active Pokémon and cause Showdown to return a single-move array (`moves.length === 1`). All choice builders and simulation helpers MUST normalize input choices to `move 1` whenever the legal move count is 1, and fall back to the first available move with valid PP if an out-of-range slot is requested.
+- **Simulation Event Isolation & Opt-In Contract (`enableEvents: false` by default)**:
+  - All E2E Playwright simulations inheriting from `BaseBattleSimulation` or `BaseSimulation` MUST default to `enableEvents: false` in `BaseSimulationOptions` (automatically setting `eventStore.simEventsEnabled = false`).
+  - This ensures standard wild capture, gym, trainer, and dungeon simulation suites are never interrupted by unexpected event auto-enrollment modals (`EventAutoEnrollModal.vue`).
+  - Simulations specifically testing event features, competition records, or auto-enrollment flows MUST explicitly opt in by passing `{ enableEvents: true }` in their wrapper configuration.
 
 ## 6. Mandatory Shared Code & Parity
 
@@ -188,6 +192,22 @@ Whenever ANY bug, test failure, or simulation desync occurs, the agent MUST foll
   - Pre-translated `.sqlite.sql` migration scripts must be executed in bulk via `db.exec(migration.sqlite_sql)` to avoid 10,000+ JavaScript loop iterations.
 - **Cross-Platform Vitest Environment Directive (`// @vitest-environment jsdom`)**:
   - To ensure 100% deterministic environment selection across Windows (with `\`) and POSIX (`/`), all tests requiring DOM MUST declare `// @vitest-environment jsdom` at line 1.
+
+## 18. Absolute Prohibition on Tautological Mocking (Zero-Fake-Mock Law)
+
+- **Prohibition on Mocking the System Under Test**: An integration test that mocks the core module it claims to verify is an empty tautology. In `tests/integration/`, mocking the primary execution client (`showdownWorkerClient.ts`, `executeTurnInWorker`, `syncTeamsFromLastWorkerState`, or `canonicalTurnRunner.ts`) is **STRICTLY PROHIBITED**.
+- **Real Engine Parity Requirement**: Tests verifying combat parity, turn resolution loops, or worker communication MUST execute against:
+  1. Real `@pkmn/sim` instances in `tests/node/` (using canonical battle runners or direct simulator calls), OR
+  2. The real Web Worker lifecycle in browser/Playwright E2E simulations (`scripts/e2e/`).
+- **Forbidden Mock Signatures**: Any PR or test containing:
+  ```typescript
+  vi.mock('@/logic/battle/showdownWorkerClient.ts', () => ({
+    showdownWorker: {},
+    executeTurnInWorker: vi.fn(...)
+  }))
+  ```
+  is considered a critical quality breach and must be rejected immediately.
+- **Mandatory Tier-3 Certification**: Whenever editing combat execution, FSM turn loops, or worker clients in `src/logic/battle/`, unit tests alone are insufficient. Agents MUST execute at least one Playwright E2E combat simulation (`npm run sim:e2e:combat` or certified fuzzer replay) to prove that the real browser Web Worker initializes and executes turns without crashing.
 
 
 

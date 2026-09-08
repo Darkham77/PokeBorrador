@@ -10,9 +10,7 @@ class PvpReplaySpectatorSimWrapper extends BaseE2ESimulation {
   public async launchTacticalReplay(): Promise<void> {
     await this.page.evaluate(async () => {
       const { useLivePvPStore } = await import('../../../src/stores/livePvP.ts');
-      const { useModalStore } = await import('../../../src/stores/modals.ts');
       const livePvPStore = useLivePvPStore();
-      const modalStore = useModalStore();
 
       const mockReplay = {
         id: 'sim_replay_e2e_001',
@@ -76,7 +74,6 @@ class PvpReplaySpectatorSimWrapper extends BaseE2ESimulation {
       };
 
       livePvPStore.watchReplay(mockReplay as never);
-      modalStore.open('BattleReplay', { replay: mockReplay });
     });
   }
 }

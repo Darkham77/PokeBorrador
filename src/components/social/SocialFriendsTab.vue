@@ -141,6 +141,7 @@ defineEmits<{
               position="top"
             >
               <button
+                v-gsap-hover
                 class="action-btn chat"
                 :disabled="isChatActive(friend.id)"
                 @click.stop="openChat(friend)"
@@ -148,7 +149,7 @@ defineEmits<{
                 <span class="emoji">💬</span>
                 <span 
                   v-if="getUnreadCount(friend.id) > 0" 
-                  class="chat-badge"
+                  class="hud-notification-badge"
                 >{{ getUnreadCount(friend.id) }}</span>
               </button>
             </PVTooltip>
@@ -159,6 +160,7 @@ defineEmits<{
               position="top"
             >
               <button
+                v-gsap-hover
                 class="action-btn trade"
                 @click.stop="openTrade(friend)"
               >
@@ -172,6 +174,7 @@ defineEmits<{
               position="top"
             >
               <button
+                v-gsap-hover
                 class="action-btn battle"
                 :disabled="!friend.isOnline"
                 @click.stop="openPvPChallenge(friend)"
@@ -186,6 +189,7 @@ defineEmits<{
               position="top"
             >
               <button
+                v-gsap-hover
                 class="action-btn remove"
                 @click.stop="confirmRemoveFriend(friend)"
               >

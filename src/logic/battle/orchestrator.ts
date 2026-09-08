@@ -2,6 +2,7 @@ const INITIAL_RATE_CUMULATIVE_SUM = 0;
 
 import { PERCENTAGE_SCALE_FACTOR } from '@/logic/constants/encounters'
 import { toRaw } from 'vue'
+import { cloneReactive } from '@/logic/utils/cloneUtils.ts'
 import { getMapBiomeAndTags } from './biomeHelper.ts'
 import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
 import { logger } from '../utils/logger.ts'
@@ -45,6 +46,7 @@ export {
 
 export interface BattleOptions {
   isGym?: boolean;
+  isRematch?: boolean;
   gymId?: GymId;
   locationId?: MapRouteId;
   isTrainer?: boolean;
@@ -232,7 +234,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   }
 
   if (battleOptions.isDebug) {
-    ctx.debugLoopPokemon.value = JSON.parse(JSON.stringify(enemyPoke)) as Pokemon
+    ctx.debugLoopPokemon.value = cloneReactive(enemyPoke) as Pokemon
     if (!wasSearching) ctx.debugLoopPokemon.value = null
   }
 

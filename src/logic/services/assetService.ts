@@ -7,6 +7,7 @@ import { isPlayerClassId, type PlayerClassId } from '@/data/player/playerClasses
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import type { GymId } from '@/data/world/gyms';
+import type { RankedTierId } from '@/data/system/rankedData';
 import { Dex } from '@pkmn/sim';
 
 /**
@@ -66,6 +67,7 @@ export function getAssetUrl(type: typeof ASSET_TYPES.POKEMON, rawId: PokemonSpec
 export function getAssetUrl(type: typeof ASSET_TYPES.MAP, rawId: MapRouteId, options?: AssetOptions): string;
 export function getAssetUrl(type: typeof ASSET_TYPES.TRAINER, rawId: NpcSpriteId | PlayerClassId, options?: AssetOptions): string;
 export function getAssetUrl(type: typeof ASSET_TYPES.BADGE, rawId: GymId, options?: AssetOptions): string;
+export function getAssetUrl(type: typeof ASSET_TYPES.RANK, rawId: RankedTierId, options?: AssetOptions): string;
 export function getAssetUrl(type: AssetType, rawId: string | number, options?: AssetOptions): string; // domain-ok: Asset router generic fallback overload signature
 export function getAssetUrl(type: AssetType, rawId: string | number, options: AssetOptions = {}): string { // domain-ok: Asset router generic fallback implementation
   if (!rawId) {
@@ -238,7 +240,7 @@ export function getAssetUrl(type: AssetType, rawId: string | number, options: As
       return resolveAsset(`/assets/factions/${id}${extension}`);
 
     case ASSET_TYPES.RANK:
-      return resolveAsset(`/assets/ui/ranks/${id}${extension}`);
+      return resolveAsset(`/assets/sprites/ranked_medals/${id}${extension}`);
 
     case ASSET_TYPES.ICON:
       return resolveAsset(`/assets/ui/icons/${id}${extension}`);

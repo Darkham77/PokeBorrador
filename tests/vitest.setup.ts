@@ -140,7 +140,7 @@ if (typeof window !== 'undefined' && window.location) {
 vi.mock('gsap', () => {
   const gsapMock = {
     to: (_target: unknown, vars: Record<string, unknown>) => {
-      if (typeof vars.onComplete === 'function') vars.onComplete();
+      if (typeof vars.onComplete === 'function' && (!vars.duration || Number(vars.duration) < 5)) vars.onComplete();
       return { 
         kill: vi.fn(), 
         eventCallback: vi.fn().mockReturnThis(),
@@ -152,7 +152,19 @@ vi.mock('gsap', () => {
       };
     },
     fromTo: (_target: unknown, _fromVars: Record<string, unknown>, toVars: Record<string, unknown>) => {
-      if (typeof toVars.onComplete === 'function') toVars.onComplete();
+      if (typeof toVars.onComplete === 'function' && (!toVars.duration || Number(toVars.duration) < 5)) toVars.onComplete();
+      return { 
+        kill: vi.fn(), 
+        eventCallback: vi.fn().mockReturnThis(),
+        progress: vi.fn().mockReturnValue(1),
+        isActive: vi.fn().mockReturnValue(false),
+        totalDuration: vi.fn().mockReturnValue(0.01),
+        pause: vi.fn().mockReturnThis(),
+        play: vi.fn().mockReturnThis()
+      };
+    },
+    from: (_target: unknown, vars: Record<string, unknown>) => {
+      if (typeof vars.onComplete === 'function' && (!vars.duration || Number(vars.duration) < 5)) vars.onComplete();
       return { 
         kill: vi.fn(), 
         eventCallback: vi.fn().mockReturnThis(),

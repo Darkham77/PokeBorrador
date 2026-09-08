@@ -1,3 +1,4 @@
+import { cloneReactive } from '@/logic/utils/cloneUtils.ts';
 import { useGameStore } from '@/stores/game.ts';
 import { useBattleStore } from '@/stores/battle/battle.ts';
 import { useUIStore } from '@/stores/ui.ts';
@@ -83,7 +84,7 @@ export async function executeNavigation(
   // 3. Generate Encounter
   const encounter = battleStore.debugLoopPokemon 
     ? (() => {
-        const nextPoke = JSON.parse(JSON.stringify(battleStore.debugLoopPokemon)) as Pokemon;
+        const nextPoke = cloneReactive(battleStore.debugLoopPokemon) as Pokemon;
         nextPoke.hp = nextPoke.maxHp;
         nextPoke.status = '';
         nextPoke.confused = 0;

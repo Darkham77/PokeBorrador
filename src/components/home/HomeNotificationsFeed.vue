@@ -4,6 +4,7 @@ import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game'
 import { formatTime } from '@/logic/utils/timeUtils'
 import type { NotificationItem } from '@/types/system/game'
+import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue'
 
 const gameStore = useGameStore()
 const feedRef = ref<HTMLElement | null>(null)
@@ -75,6 +76,9 @@ onUnmounted(() => {
           HISTORIAL DE ACTIVIDAD ({{ history.length }}/50)
         </h3>
       </div>
+      <div class="header-actions">
+        <HomeWidgetMinimizeBtn widget-id="notifications" />
+      </div>
     </div>
 
     <!-- Notifications Scroll List (Scrollbar when > 10 items) -->
@@ -133,15 +137,25 @@ onUnmounted(() => {
   align-items: center;
   padding-bottom: 8px;
   border-bottom: 1px solid Rgba(255, 255, 255, 0.06);
+  gap: 8px;
+}
+
+.header-actions {
+  @include widget-header-actions;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .header-left {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex: 1;
+  min-width: 0;
 
   .feed-icon {
     font-size: 16px;
+    flex-shrink: 0;
   }
 
   .feed-title {

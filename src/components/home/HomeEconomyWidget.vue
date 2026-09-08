@@ -6,6 +6,8 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getItemById } from '@/data/inventory/items'
 import type { MarketListing } from '@/logic/economy/market'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue'
+import HomeWidgetRefreshBtn from './HomeWidgetRefreshBtn.vue'
 
 const gtsStore = useGTSStore()
 const modalStore = useModalStore()
@@ -16,7 +18,7 @@ onMounted(async () => {
   }
 })
 
-const unseenSalesCount = computed(() => gtsStore.unseenSalesCount)
+const unclaimedGtsCount = computed(() => gtsStore.unclaimedGtsCount)
 const recentListings = computed<MarketListing[]>(() => gtsStore.listings.slice(0, 5))
 
 const openGTS = () => {
@@ -64,36 +66,34 @@ const getListingTitle = (listing: MarketListing): string => {
       </div>
 
       <div class="header-actions">
-        <button
-          id="home-gts-view-all-btn"
-          v-gsap-hover
-          class="card-action-btn"
-          @click.stop="openGTS"
-        >
-          VER TODO <span class="emoji">➔</span>
-        </button>
+        <HomeWidgetRefreshBtn
+          id="home-gts-refresh-btn"
+          :loading="gtsStore.loading"
+          @click="gtsStore.fetchListings(true)"
+        />
+        <HomeWidgetMinimizeBtn widget-id="economy" />
       </div>
     </div>
 
     <!-- GTS Sales / Listings Content -->
     <div class="gts-body-section">
-      <!-- Unseen Sales Alert Banner -->
+      <!-- Unclaimed Sales Alert Banner -->
       <div
-        v-if="unseenSalesCount > 0"
+        v-if="unclaimedGtsCount > 0"
         v-gsap-hover="{ scale: 1.01, y: -1 }"
         class="gts-sales-alert"
         @click.stop="openGTS"
       >
         <span class="emoji alert-icon">🔔</span>
         <div class="alert-info">
-          <span class="alert-title">¡Ventas completadas en GTS!</span>
-          <span class="alert-sub">Tienes {{ unseenSalesCount }} {{ unseenSalesCount === 1 ? 'venta realizada' : 'ventas realizadas' }} pendientes de cobro.</span>
+          <span class="alert-title">¡Reclamos pendientes en GTS!</span>
+          <span class="alert-sub">Tienes {{ unclaimedGtsCount }} {{ unclaimedGtsCount === 1 ? 'transacción pendiente' : 'transacciones pendientes' }} de cobro o retiro.</span>
         </div>
         <button
           v-gsap-hover
           class="alert-claim-btn"
         >
-          RECLAMAR
+          VER EN GTS
         </button>
       </div>
 
@@ -154,7 +154,6 @@ const getListingTitle = (listing: MarketListing): string => {
   align-items: center;
   padding-bottom: 8px;
   border-bottom: 1px solid Rgba(255, 255, 255, 0.06);
-  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -162,6 +161,8 @@ const getListingTitle = (listing: MarketListing): string => {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 1;
+  min-width: 0;
 
   .card-icon {
     font-size: 20px;
@@ -169,12 +170,14 @@ const getListingTitle = (listing: MarketListing): string => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
   }
 
   .title-text-group {
     display: flex;
     flex-direction: column;
     gap: 3px;
+    min-width: 0;
   }
 
   .card-title {
@@ -194,12 +197,9 @@ const getListingTitle = (listing: MarketListing): string => {
 }
 
 .header-actions {
-  display: flex;
-  gap: 6px;
-}
-
-.card-action-btn {
-  @include widget-action-btn;
+  @include widget-header-actions;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .gts-body-section {

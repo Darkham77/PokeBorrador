@@ -18,9 +18,12 @@
   overflow: hidden;
   height: 195px;
   justify-content: space-between;
+  gap: 4px;
 
   &:hover {
-    & .box-card-sprite { @include pokemon-sprite-hover-standard; }
+    & .box-card-sprite { 
+      @include pokemon-sprite-hover-standard;
+    }
   }
 
   &.performance-mode {
@@ -73,24 +76,40 @@
   }
 
   .box-sprite-wrapper {
-    width: 64px;
-    height: 64px;
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 64px;
     position: relative;
     @include flex-center;
     margin-left: 0;
+    overflow: visible;
 
     .with-badges & {
       margin-left: 12px; 
     }
 
+    .pv-fx-wrapper,
+    .pv-fx-sprite-layer {
+      overflow: visible;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     & .box-card-sprite { 
-      width: 100%;
-      height: 100%;
+      width: 83px !important;
+      height: 83px !important;
+      min-width: 83px !important;
+      min-height: 83px !important;
+      max-width: none !important;
+      max-height: none !important;
+      object-fit: contain;
       @include pokemon-sprite-base-standard;
     }
   }
 
   .card-info {
+    flex-shrink: 0;
     text-align: center;
     width: 100%;
     padding-left: 0;
@@ -147,6 +166,13 @@
       align-items: center;
       gap: 3px;
       margin-top: 2px;
+
+      .level-gender-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+      }
     }
 
     .hp-bar-mini {

@@ -136,7 +136,7 @@ export const pokemonSchema = object({
   isGuardian: optional(boolean()),
   isFloating: optional(boolean()),
   gender: optional(nullable(union([literal('m'), literal('f'), literal('M'), literal('F'), literal('N'), literal('')]))),
-  status: optional(union([literal('par'), literal('brn'), literal('psn'), literal('slp'), literal('frz'), literal('tox'), literal('')])),
+  status: optional(nullable(union([literal('par'), literal('brn'), literal('psn'), literal('slp'), literal('frz'), literal('tox'), literal('')]))),
   statusTurns: optional(number()),
   sleepTurns: optional(number()),
   confused: optional(number()),

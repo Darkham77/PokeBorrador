@@ -1,0 +1,320 @@
+@use "@/styles/core/_mixins" as *;
+
+.home-events-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+
+  .title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+
+    .card-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .title-text-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .card-title {
+      @include pixelated;
+      font-size: 13px;
+      color: var(--yellow, #facc15);
+      margin: 0;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .section-desc {
+      font-size: 10px;
+      color: var(--gray, #94a3b8);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .header-actions {
+    @include widget-header-actions;
+  }
+}
+
+.pending-awards-card {
+  background: Rgba(234, 179, 8, 0.1);
+  border: 1px solid Rgba(234, 179, 8, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+
+  .awards-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+
+    h3 {
+      @include pixelated;
+      font-size: 10px;
+      color: var(--yellow, #facc15);
+      margin: 0;
+    }
+  }
+
+  .awards-body {
+    .awards-hint {
+      font-size: 11px;
+      color: var(--gray, #94a3b8);
+      margin-bottom: 10px;
+    }
+  }
+
+  .awards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .award-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    background: Rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    gap: 8px;
+  }
+
+  .award-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .award-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .award-name {
+    font-size: 11px;
+    font-weight: bold;
+    color: #ffffff;
+  }
+
+  .legacy-badge {
+    @include pixelated;
+    font-size: 7px;
+    padding: 1px 4px;
+    border-radius: 4px;
+    background: Rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+  }
+
+  .award-actions-wrap {
+    display: flex;
+    gap: 6px;
+  }
+}
+
+.active-events-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-drag: none;
+  cursor: grab;
+
+  &.is-swiping {
+    cursor: grabbing;
+  }
+
+  img {
+    -webkit-user-drag: none;
+    user-select: none;
+  }
+}
+
+.events-single-row {
+  display: grid;
+  grid-template-columns: repeat(var(--visible-slots, 2), minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  will-change: transform;
+}
+
+.carousel-pagination-bar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 4px auto 0;
+  padding: 4px 10px;
+  background: Rgba(0, 0, 0, 0.45);
+  border: 1px solid Rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  box-shadow: 0 2px 8px Rgba(0, 0, 0, 0.3);
+  backdrop-filter: Blur(4px);
+
+  .carousel-nav-btn {
+    width: 22px;
+    height: 22px;
+    background: Rgba(255, 255, 255, 0.08);
+    border: 1px solid Rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    color: var(--white, #ffffff);
+    font-size: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+
+    &:hover:not(:disabled) {
+      background: Rgba(250, 204, 21, 0.2);
+      border-color: var(--yellow, #facc15);
+      color: var(--yellow, #facc15);
+    }
+
+    &:disabled {
+      opacity: 0.25;
+      cursor: not-allowed;
+    }
+  }
+
+  .carousel-dots-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .carousel-dot {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 2px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+
+      .dot-indicator {
+        display: block;
+        width: 8px;
+        height: 6px;
+        border-radius: 3px;
+        background: Rgba(255, 255, 255, 0.25);
+        border: 1px solid Rgba(255, 255, 255, 0.15);
+      }
+
+      &.active .dot-indicator {
+        width: 18px;
+        background: var(--yellow, #facc15);
+        border-color: Rgba(250, 204, 21, 0.8);
+        box-shadow: 0 0 8px Rgba(250, 204, 21, 0.6);
+      }
+    }
+  }
+
+  .carousel-page-indicator {
+    @include pixelated;
+    font-size: 8px;
+    color: #cbd5e1;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+    padding: 0 4px;
+  }
+}
+
+.no-events-card {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 24px;
+  background: Rgba(18, 22, 34, 0.6);
+  border: 1px dashed Rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: var(--gray, #94a3b8);
+  font-size: 11px;
+
+  .no-events-icon {
+    font-size: 24px;
+    display: block;
+    margin-bottom: 6px;
+  }
+}
+
+.events-extra-accordions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.accordion-panel {
+  background: Rgba(18, 22, 34, 0.6);
+  border: 1px solid Rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  overflow: visible;
+}
+
+.accordion-toggle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  color: var(--white, #ffffff);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+
+  .accordion-title-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1.35;
+    text-align: left;
+
+    .emoji {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+  }
+
+  &:hover {
+    background: Rgba(255, 255, 255, 0.04);
+  }
+
+  .toggle-arrow {
+    font-size: 9px;
+    color: var(--gray, #94a3b8);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.accordion-body {
+  padding: 12px;
+  border-top: 1px solid Rgba(255, 255, 255, 0.06);
+}

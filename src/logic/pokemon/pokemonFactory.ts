@@ -19,6 +19,7 @@ import { requireAbilityId, type AbilityId } from '@/data/battle/abilities';
 import { assignGender, ensurePokemonGender, isGenderlessSpeciesId } from './pokemonGender.ts';
 import { canLearnMove } from './pokemonLearnset.ts';
 import { getWildHeldItem } from './pokemonWildHeldItems.ts';
+import { getPokemonPhysicalHeight, getPokemonPhysicalWeight } from './physicalDimensionsMath.ts';
 import { getServerInstant } from '@/logic/utils/timeUtils';
 
 export { assignGender, ensurePokemonGender, isGenderlessSpeciesId } from './pokemonGender.ts';
@@ -380,6 +381,9 @@ export function makePokemon(idVal: PokemonSpeciesId | number | string, level: nu
     evs: createDefaultEvs(),
     hp: 0, maxHp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0
   };
+
+  p.height = Number(getPokemonPhysicalHeight(p).toFixed(1));
+  p.weight = Number(getPokemonPhysicalWeight(p).toFixed(1));
 
   initializePokemonVigor(p, options.obtainedMethod, options.isNpcEgg);
   recalcPokemonStats(p, bypass);

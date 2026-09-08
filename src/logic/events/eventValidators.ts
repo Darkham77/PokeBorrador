@@ -9,7 +9,7 @@ import type { Event as GameEvent } from '@/logic/events/eventEngine'
 import { safeParse } from './eventSchedules.ts'
 
 export interface ParsedAwardPrize {
-  type?: EventRewardType
+  type?: EventRewardType | 'ranked_medal' | string // domain-ok: Open dynamic text or non-domain string payload
   amount?: number
   qty?: number
   money?: number
@@ -21,6 +21,11 @@ export interface ParsedAwardPrize {
   level?: number
   nature?: string
   ivs?: Record<string, number>
+  tier?: string
+  season?: string
+  tournamentName?: string
+  rank?: number
+  elo?: number
 }
 
 /**
@@ -138,7 +143,25 @@ export function isAwardClaimable(
 ): boolean {
   if (!award || !award.event_id) return false
 
-  // 1. Validate that the event exists in configured events
+  // 1. Ranked season awards are official periodic arena payout competitions
+  if (award.event_id.startsWith('ranked_season_')) {
+    const prize = parseAwardPrize(award.prize)
+    if (!prize) return false
+    return Boolean(
+      prize.type === 'ranked_medal' ||
+      prize.tier ||
+      prize.money ||
+      prize.battleCoins ||
+      prize.item ||
+      prize.items ||
+      prize.species ||
+      prize.type === 'pokemon' ||
+      prize.type === 'bc' ||
+      prize.type === 'item'
+    )
+  }
+
+  // 2. Validate that the event exists in configured events
   const matchingEvent = allEvents.find((e) => e.id === award.event_id)
   if (!matchingEvent || award.event_id.startsWith('custom_') || matchingEvent.name?.startsWith('custom_')) {
     return false

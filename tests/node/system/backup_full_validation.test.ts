@@ -296,7 +296,113 @@ describe('Dynamic Multi-Table Real Backup Validation & Dex Compatibility Test', 
 
     assert.deepStrictEqual(saveErrors, [], `Save data errors found:\n${saveErrors.join('\n')}`);
 
-    // 9. SPECIALIZED DOMAIN AUDIT: profiles & system_config
+    // 8.5 SPECIALIZED DOMAIN AUDIT: Escrow & Transit Tables (claim_queue, market_listings, trade_offers)
+    const escrowErrors: string[] = [];
+
+    // Audit claim_queue
+    if (discoveredTables.includes('claim_queue')) {
+      const claimRows = db.prepare('SELECT id, user_id, source_type, source_id, asset_data, created_at FROM claim_queue').all() as Record<string, unknown>[];
+      for (const row of claimRows) {
+        const claimId = String(row.id);
+        let parsedAsset: { type?: string; data?: unknown } | null = null;
+        if (typeof row.asset_data === 'string') {
+          try {
+            parsedAsset = JSON.parse(row.asset_data);
+          } catch (e) {
+            escrowErrors.push(`[claim_queue ID: ${claimId}] Invalid JSON in asset_data: ${(e as Error).message}`);
+            continue;
+          }
+        } else if (typeof row.asset_data === 'object' && row.asset_data !== null) {
+          parsedAsset = row.asset_data as { type?: string; data?: unknown };
+        }
+
+        if (parsedAsset && parsedAsset.type === 'pokemon' && parsedAsset.data && typeof parsedAsset.data === 'object') {
+          const poke = parsedAsset.data as Pokemon;
+          if (poke.species && !Dex.species.get(poke.species).exists) {
+            escrowErrors.push(`[claim_queue ID: ${claimId}] Invalid species '${poke.species}'`);
+          }
+          if (poke.nature && !isNatureId(poke.nature)) {
+            escrowErrors.push(`[claim_queue ID: ${claimId}] Invalid nature '${poke.nature}'`);
+          }
+          if (poke.status === null) {
+            escrowErrors.push(`[claim_queue ID: ${claimId}] status must not be null`);
+          }
+          if (!poke.species) {
+            escrowErrors.push(`[claim_queue ID: ${claimId}] species must be defined`);
+          }
+        }
+      }
+    }
+
+    // Audit market_listings
+    if (discoveredTables.includes('market_listings')) {
+      const marketRows = db.prepare("SELECT id, seller_id, seller_name, listing_type, data, price, status, created_at FROM market_listings WHERE listing_type = 'pokemon'").all() as Record<string, unknown>[];
+      for (const row of marketRows) {
+        const listingId = String(row.id);
+        let poke: Pokemon | null = null;
+        if (typeof row.data === 'string') {
+          try {
+            poke = JSON.parse(row.data);
+          } catch (e) {
+            escrowErrors.push(`[market_listings ID: ${listingId}] Invalid JSON in data: ${(e as Error).message}`);
+            continue;
+          }
+        } else if (typeof row.data === 'object' && row.data !== null) {
+          poke = row.data as Pokemon;
+        }
+
+        if (poke) {
+          if (poke.species && !Dex.species.get(poke.species).exists) {
+            escrowErrors.push(`[market_listings ID: ${listingId}] Invalid species '${poke.species}'`);
+          }
+          if (poke.nature && !isNatureId(poke.nature)) {
+            escrowErrors.push(`[market_listings ID: ${listingId}] Invalid nature '${poke.nature}'`);
+          }
+          if (poke.status === null) {
+            escrowErrors.push(`[market_listings ID: ${listingId}] status must not be null`);
+          }
+          if (!poke.species) {
+            escrowErrors.push(`[market_listings ID: ${listingId}] species must be defined`);
+          }
+        }
+      }
+    }
+
+    // Audit trade_offers
+    if (discoveredTables.includes('trade_offers')) {
+      const tradeRows = db.prepare('SELECT id, offer_pokemon, request_pokemon FROM trade_offers WHERE offer_pokemon IS NOT NULL OR request_pokemon IS NOT NULL').all() as Record<string, unknown>[];
+      for (const row of tradeRows) {
+        const tradeId = String(row.id);
+        const checkTradeMon = (rawMon: unknown, label: string) => {
+          if (!rawMon) return;
+          let poke: Pokemon | null = null;
+          if (typeof rawMon === 'string') {
+            try { poke = JSON.parse(rawMon); } catch { return; }
+          } else if (typeof rawMon === 'object') {
+            poke = rawMon as Pokemon;
+          }
+          if (poke && poke.id) {
+            if (poke.species && !Dex.species.get(poke.species).exists) {
+              escrowErrors.push(`[trade_offers ID: ${tradeId} ${label}] Invalid species '${poke.species}'`);
+            }
+            if (poke.nature && !isNatureId(poke.nature)) {
+              escrowErrors.push(`[trade_offers ID: ${tradeId} ${label}] Invalid nature '${poke.nature}'`);
+            }
+            if (poke.status === null) {
+              escrowErrors.push(`[trade_offers ID: ${tradeId} ${label}] status must not be null`);
+            }
+            if (!poke.species) {
+              escrowErrors.push(`[trade_offers ID: ${tradeId} ${label}] species must be defined`);
+            }
+          }
+        };
+        checkTradeMon(row.offer_pokemon, 'offer');
+        checkTradeMon(row.request_pokemon, 'request');
+      }
+    }
+
+    assert.deepStrictEqual(escrowErrors, [], `Escrow data errors found:\n${escrowErrors.join('\n')}`);
+
     const profileRows = db.prepare('SELECT id, username, email, trainer_level FROM profiles').all() as Record<string, unknown>[];
     assert.ok(profileRows.length > 0, 'Profiles must not be empty');
 

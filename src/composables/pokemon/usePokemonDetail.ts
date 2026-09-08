@@ -55,11 +55,32 @@ export function usePokemonDetail(propsRefs: Record<string, MaybeRefOrGetter<unkn
   })
 
   const targetPokemon = computed(() => {
+    const directPokemon = getProp<Pokemon>('pokemon') || uiData.value.pokemon
+    if (directPokemon) {
+      if (finalIndex.value > -1) {
+        if (finalContext.value === 'team') {
+          const teamMon = gameStore.state.team[finalIndex.value]
+          if (teamMon?.uid === directPokemon.uid) return teamMon
+        } else if (finalContext.value === 'box') {
+          const boxMon = gameStore.state.box[finalIndex.value]
+          if (boxMon?.uid === directPokemon.uid) return boxMon
+        }
+      }
+      // If index in storage has a different Pokémon, look up the real storage slot to preserve reactivity:
+      if (finalContext.value === 'team') {
+        const realIdx = (gameStore.state.team || []).findIndex(p => p?.uid === directPokemon.uid)
+        if (realIdx !== -1) return gameStore.state.team[realIdx]
+      } else if (finalContext.value === 'box') {
+        const realIdx = (gameStore.state.box || []).findIndex(p => p?.uid === directPokemon.uid)
+        if (realIdx !== -1) return gameStore.state.box[realIdx]
+      }
+      return directPokemon
+    }
     if (finalIndex.value > -1) {
       if (finalContext.value === 'team') return gameStore.state.team[finalIndex.value]
       if (finalContext.value === 'box') return gameStore.state.box[finalIndex.value]
     }
-    return getProp<Pokemon>('pokemon') || uiData.value.pokemon
+    return directPokemon
   })
 
   const isInstance = computed(() => !!targetPokemon.value)

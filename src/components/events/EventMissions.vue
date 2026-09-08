@@ -10,8 +10,17 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { CLASS_MISSIONS, CLASS_MISSIONS_BY_ID, isMissionId, type MissionId } from '@/data/player/playerClasses';
 import { getClassMissionDetails } from '@/logic/player/classMissionsData';
 import MissionCard from './MissionCard.vue';
+import HomeWidgetRefreshBtn from '@/components/home/HomeWidgetRefreshBtn.vue';
 import type { DaycareMission } from '@/types/breeding/breeding';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+
+interface Props {
+  hideRefresh?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  hideRefresh: false
+});
 
 const breedingStore = useBreedingStore();
 const modalStore = useModalStore();
@@ -138,7 +147,7 @@ const isClassMissionDisabled = (m: (typeof CLASS_MISSIONS)[number]) => {
 
 const getClassMissionBtnText = (m: (typeof CLASS_MISSIONS)[number]) => {
   if (activeMission.value?.id === m.id) {
-    return isMissionDone.value ? 'RECLAMAR' : 'EN CURSO';
+    return isMissionDone.value ? 'RECLAMAR EN INICIO' : 'EN CURSO';
   }
   if (activeMission.value) return 'EN ESPERA';
   if (trainerLevel.value < m.reqLv) return 'BLOQUEADO';
@@ -162,7 +171,7 @@ const getClassMissionUnmetText = (m: (typeof CLASS_MISSIONS)[number]) => {
 
 const getClassMissionAvailableText = (m: (typeof CLASS_MISSIONS)[number]) => {
   if (activeMission.value?.id === m.id) {
-    return isMissionDone.value ? '¡Operación finalizada! Reclama tu botín' : 'Operación en curso';
+    return isMissionDone.value ? '¡Operación finalizada! Reclámala en Inicio' : 'Operación en curso';
   }
   if (canStartClassMission(m)) {
     return `Listo para desplegar (Nivel ${m.reqLv} alcanzado)`;
@@ -170,10 +179,15 @@ const getClassMissionAvailableText = (m: (typeof CLASS_MISSIONS)[number]) => {
   return '';
 };
 
+function goToHomeRewards() {
+  modalStore.closeAll();
+  uiStore.activeTab = 'home';
+}
+
 function handleClassMissionAction(missionId: MissionId) {
   if (activeMission.value?.id === missionId) {
     if (isMissionDone.value) {
-      classStore.collectMission();
+      goToHomeRewards();
     }
     return;
   }
@@ -247,16 +261,18 @@ async function startClassMission(missionId: MissionId) {
     <header class="missions-header">
       <div class="title-wrap">
         <h3>Misiones Diarias</h3>
-        <span class="refresh-count">Refrescos: {{ breedingStore.missionRefreshes }}/3</span>
       </div>
-      <button 
-        id="missions-refresh-btn"
-        class="card-action-btn" 
-        :disabled="breedingStore.missionRefreshes <= 0"
-        @click.stop="breedingStore.refreshMissions"
+      <div
+        v-if="!props.hideRefresh"
+        class="missions-header-actions"
       >
-        <span class="emoji">↻</span> REFRESCAR
-      </button>
+        <span class="refresh-count">Refrescos: {{ breedingStore.missionRefreshes }}/3</span>
+        <HomeWidgetRefreshBtn 
+          id="missions-refresh-btn"
+          :disabled="breedingStore.missionRefreshes <= 0"
+          @click.stop="breedingStore.refreshMissions"
+        />
+      </div>
     </header>
 
     <div class="missions-grid">
@@ -314,9 +330,9 @@ async function startClassMission(missionId: MissionId) {
         <button
           v-if="isMissionDone"
           class="collect-btn"
-          @click.stop="classStore.collectMission"
+          @click.stop="goToHomeRewards"
         >
-          RECLAMAR
+          RECLAMAR EN INICIO
         </button>
         <div
           v-else
@@ -340,7 +356,7 @@ async function startClassMission(missionId: MissionId) {
           :is-available="canStartClassMission(m) || (activeMission?.id === m.id)"
           :unmet-requirement="getClassMissionUnmetText(m)"
           :available-requirement="getClassMissionAvailableText(m)"
-          :completed-badge-text="activeMission?.id === m.id && isMissionDone ? 'LISTO PARA RECLAMAR' : (activeMission?.id === m.id ? 'EN CURSO' : '')"
+          :completed-badge-text="activeMission?.id === m.id && isMissionDone ? 'DISPONIBLE EN INICIO' : (activeMission?.id === m.id ? 'EN CURSO' : '')"
           @action="handleClassMissionAction(m.id)"
         />
       </div>
@@ -360,12 +376,23 @@ async function startClassMission(missionId: MissionId) {
   align-items: center;
   margin-bottom: 20px;
 
-  h3 { font-weight: 800; @include pixelated; font-size: 10px; color: Rgba(250, 204, 21, 1); }
-  .refresh-count { font-size: 12px; color: Rgba(148, 163, 184, 1); }
-}
+  h3 { font-weight: 800; @include pixelated; font-size: 10px; color: var(--yellow, #facc15); margin: 0; }
 
-.card-action-btn {
-  @include widget-action-btn;
+  .missions-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .refresh-count { 
+      font-size: 10px; 
+      color: var(--gray, #94a3b8); 
+      @include pixelated;
+      background: Rgba(255, 255, 255, 0.05);
+      border: 1px solid Rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 3px 8px;
+    }
+  }
 }
 
 .missions-grid {

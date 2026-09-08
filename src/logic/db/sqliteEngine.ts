@@ -142,9 +142,7 @@ export async function persistSQLite(): Promise<void> {
     if (!_isInMemory) {
       await saveToOPFS(_sqliteKey, binary)
       await setToIDB(_sqliteKey, binary)
-      // Shadow Backup for DB
-      await setToIDB(_sqliteKey + '_backup', binary)
-      logger.success('SQLite', `Persistence successful (OPFS + Main + Backup)`)
+      logger.success('SQLite', `Persistence successful (OPFS + IndexedDB)`)
     }
 
     const isE2E = typeof window !== 'undefined' && window.__E2E__ === true
@@ -324,10 +322,9 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
               const arrayBuffer = await response.arrayBuffer()
               const binary = new Uint8Array(arrayBuffer)
               
-              // Save directly to OPFS, IDB and Shadow Backup for the user's sqliteKey
+              // Save directly to OPFS and IDB for the user's sqliteKey
               await saveToOPFS(_sqliteKey, binary)
               await setToIDB(_sqliteKey, binary)
-              await setToIDB(_sqliteKey + '_backup', binary)
               logger.success('SQLite', 'Manual backup successfully imported and persisted to OPFS and IndexedDB!')
               
               // Invalidate all stale individual save caches
@@ -373,29 +370,9 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
       loadedFromSource = 'IndexedDB'
     }
 
-    if (!savedBinary) {
-      logger.warn('SQLite', 'Primary database missing, checking Shadow Backup...')
-      savedBinary = await getFromIDB(_sqliteKey + '_backup')
-      if (savedBinary) {
-        loadedFromSource = 'Shadow Backup'
-        logger.info('SQLite', 'Restored from Shadow Backup!')
-      }
-    }
-
     if (savedBinary) {
-      try {
-        _sqliteDb = new SQL.Database(new Uint8Array(savedBinary)) as SQLiteDatabase; // domain-ok: Open dynamic text or non-domain string payload
-        logger.info('SQLite', `Loaded from ${loadedFromSource}`)
-      } catch (dbErr) {
-        logger.error('SQLite', 'Database corruption detected! Attempting Backup Rescue...')
-        const backupBinary = await getFromIDB(_sqliteKey + '_backup')
-        if (backupBinary) {
-          _sqliteDb = new SQL.Database(new Uint8Array(backupBinary)) as SQLiteDatabase; // domain-ok: Open dynamic text or non-domain string payload
-          logger.success('SQLite', 'Rescue successful from Backup.')
-        } else {
-          throw dbErr
-        }
-      }
+      _sqliteDb = new SQL.Database(new Uint8Array(savedBinary)) as SQLiteDatabase; // domain-ok: Open dynamic text or non-domain string payload
+      logger.info('SQLite', `Loaded from ${loadedFromSource}`)
     } else {
       _sqliteDb = new SQL.Database() as SQLiteDatabase; // domain-ok: Open dynamic text or non-domain string payload
       logger.info('SQLite', 'Created new in-memory database')

@@ -1,11 +1,16 @@
 ---
 name: grill-with-docs
-description: Grilling session that challenges your plan against the DOX indices (AGENTS.md hierarchy), sharpens terminology, and updates local contracts inline as decisions crystallise. Use when the user wants to stress-test a plan against their project's rules, constraints, and documented decisions.
+description: >-
+  Specialized DOX documentation audit session that stress-tests a plan strictly against the project's
+  AGENTS.md hierarchy, validates local contracts, and updates AGENTS.md files inline.
+  Trigger ONLY when the user explicitly invokes `/grill-with-docs`, "grill with docs", or specifically
+  requests auditing/stress-testing a plan against DOX indices or AGENTS.md contracts.
+  DO NOT trigger for standard `/grill-me` slash commands, general design interviews, or standard decision alignment.
 ---
 
 <what-to-do>
 
-Interview me relentlessly about every aspect of this plan until we reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one. For each question, provide your recommended answer.
+Conduct a DOX-driven architectural review session challenging this plan against the AGENTS.md documentation hierarchy until all contract decisions are crystallized. Walk down each branch of the design tree, resolving dependencies and checking compliance with local AGENTS.md rules. For each question, provide your recommended answer.
 
 Ask the questions one at a time, waiting for feedback on each question before continuing. Asking multiple questions at once is bewildering. When asking a question with discrete options, you MUST call the `ask_question` tool instead of writing options as plain text. This renders an interactive UI the user can click. Use open-ended plain text questions only when the answer space is truly unbounded.
 

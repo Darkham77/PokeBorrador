@@ -41,7 +41,6 @@ const blockingModalIndex = computed(() => {
       <component
         :is="modal.component"
         v-bind="modal.props"
-        :id="modal.id"
         :show="!modal.closing"
         @close="modalStore.close(modal.id)"
       />

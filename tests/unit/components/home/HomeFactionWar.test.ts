@@ -4,7 +4,6 @@ import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import HomeFactionWar from '@/components/home/HomeFactionWar.vue'
 import { useWarStore } from '@/stores/war'
-import { useModalStore } from '@/stores/modals'
 
 describe('HomeFactionWar.vue', () => {
   let pinia: ReturnType<typeof createPinia>
@@ -31,29 +30,13 @@ describe('HomeFactionWar.vue', () => {
     expect(wrapper.text()).toContain('75 🪙')
   })
 
-  it('opens FactionWar modal when clicking map button', async () => {
-    const modalStore = useModalStore()
+  it('does not render redundant HUD navigation buttons (war map and shop)', () => {
     const wrapper = mount(HomeFactionWar, {
       global: { plugins: [pinia] }
     })
 
-    const warBtn = wrapper.find('#home-war-open-btn')
-    expect(warBtn.exists()).toBe(true)
-
-    await warBtn.trigger('click')
-    expect(modalStore.isOpen('FactionWar')).toBe(true)
-  })
-
-  it('opens WarShop modal when clicking shop button', async () => {
-    const modalStore = useModalStore()
-    const wrapper = mount(HomeFactionWar, {
-      global: { plugins: [pinia] }
-    })
-
-    const shopBtn = wrapper.find('#home-war-shop-btn')
-    expect(shopBtn.exists()).toBe(true)
-
-    await shopBtn.trigger('click')
-    expect(modalStore.isOpen('WarShop')).toBe(true)
+    expect(wrapper.find('#home-war-open-btn').exists()).toBe(false)
+    expect(wrapper.find('#home-war-shop-btn').exists()).toBe(false)
+    expect(wrapper.find('.header-actions').exists()).toBe(true)
   })
 })

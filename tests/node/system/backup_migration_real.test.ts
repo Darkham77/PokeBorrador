@@ -170,6 +170,54 @@ describe('Real Backup Upgrade Pipeline & Dynamic Table Sanitization Test', () =>
       }
     }
 
+    // Specialized Escrow Audit on Upgraded Backup data
+    if (upgradedObj.data.claim_queue) {
+      for (const row of upgradedObj.data.claim_queue) {
+        const rawAsset = row.asset_data;
+        const asset = typeof rawAsset === 'string' ? JSON.parse(rawAsset) : rawAsset;
+        if (asset && asset.type === 'pokemon' && asset.data) {
+          const poke = asset.data as Pokemon;
+          assert.ok(poke.species, `claim_queue Pokemon must have species defined in ${row.id}`);
+          assert.ok(Dex.species.get(poke.species).exists, `claim_queue Pokemon species '${poke.species}' must exist in Dex`);
+          assert.ok(isNatureId(poke.nature), `claim_queue Pokemon nature '${poke.nature}' must be a valid English nature`);
+          assert.notStrictEqual(poke.status, null, `claim_queue Pokemon status must not be null`);
+        }
+      }
+    }
+
+    if (upgradedObj.data.market_listings) {
+      for (const row of upgradedObj.data.market_listings) {
+        if (row.listing_type === 'pokemon' && row.data) {
+          const poke = (typeof row.data === 'string' ? JSON.parse(row.data) : row.data) as Pokemon;
+          assert.ok(poke.species, `market_listings Pokemon must have species defined in ${row.id}`);
+          assert.ok(Dex.species.get(poke.species).exists, `market_listings Pokemon species '${poke.species}' must exist in Dex`);
+          assert.ok(isNatureId(poke.nature), `market_listings Pokemon nature '${poke.nature}' must be a valid English nature`);
+          assert.notStrictEqual(poke.status, null, `market_listings Pokemon status must not be null`);
+        }
+      }
+    }
+
+    if (upgradedObj.data.trade_offers) {
+      for (const row of upgradedObj.data.trade_offers) {
+        for (const k of ['offer_pokemon', 'request_pokemon']) {
+          const rawMon = row[k];
+          if (!rawMon) continue;
+          let poke: Pokemon | null = null;
+          if (typeof rawMon === 'string') {
+            try { poke = JSON.parse(rawMon); } catch { continue; }
+          } else if (typeof rawMon === 'object') {
+            poke = rawMon as Pokemon;
+          }
+          if (poke && poke.id) {
+            assert.ok(poke.species, `trade_offers Pokemon ${k} must have species defined in ${row.id}`);
+            assert.ok(Dex.species.get(poke.species).exists, `trade_offers Pokemon species '${poke.species}' must exist in Dex`);
+            assert.ok(isNatureId(poke.nature), `trade_offers Pokemon nature '${poke.nature}' must be a valid English nature`);
+            assert.notStrictEqual(poke.status, null, `trade_offers Pokemon status must not be null`);
+          }
+        }
+      }
+    }
+
     // Clean up temporary upgraded test artifact if needed
     try {
       if (generatedUpgradedPath.includes('fixtures')) {

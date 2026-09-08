@@ -91,6 +91,43 @@
     }
   }
 
+  .comp-footer-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .auto-fill-btn {
+    background: linear-gradient(180deg, Rgba(250, 204, 21, 0.25) 0%, Rgba(202, 138, 4, 0.25) 100%);
+    border: 1px solid Rgba(250, 204, 21, 0.5);
+    color: #fef08a;
+    font-size: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    line-height: 1.35;
+
+    .emoji {
+      font-size: 10px;
+      line-height: 1.35;
+    }
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(180deg, Rgba(250, 204, 21, 0.4) 0%, Rgba(202, 138, 4, 0.4) 100%);
+      border-color: Rgba(250, 204, 21, 0.8);
+      box-shadow: 0 0 10px Rgba(250, 204, 21, 0.35);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
   .rules-btn {
     background: Rgba(255, 255, 255, 0.08);
     border-color: Rgba(255, 255, 255, 0.2);
@@ -114,166 +151,6 @@
       background: Rgba(250, 204, 21, 0.15);
       border-color: Rgba(250, 204, 21, 0.4);
       box-shadow: 0 0 8px Rgba(250, 204, 21, 0.2);
-    }
-  }
-
-  .compact-competition-preview {
-    background: Rgba(0, 0, 0, 0.25);
-    border: 1px solid Rgba(250, 204, 21, 0.2);
-    border-radius: 8px;
-    padding: 8px 10px;
-    margin-bottom: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    cursor: pointer;
-    box-sizing: border-box;
-    width: 100%;
-
-    &:hover {
-      background: Rgba(250, 204, 21, 0.05);
-      border-color: Rgba(250, 204, 21, 0.4);
-    }
-
-    .comp-preview-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      gap: 6px;
-      flex-wrap: wrap;
-      box-sizing: border-box;
-      width: 100%;
-
-      .comp-preview-title {
-        font-size: 7.5px;
-        color: var(--yellow);
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        white-space: nowrap;
-        min-width: 0;
-      }
-
-      .comp-preview-badge {
-        font-size: 6.5px;
-        padding: 2px 5px;
-        border-radius: 4px;
-        background: Rgba(255, 255, 255, 0.08);
-        color: #94a3b8;
-        border: 1px solid Rgba(255, 255, 255, 0.1);
-        white-space: nowrap;
-        flex-shrink: 0;
-        display: inline-flex;
-        align-items: center;
-        gap: 2px;
-        line-height: 1.35;
-        box-sizing: border-box;
-
-        &.enrolled {
-          background: Rgba(74, 222, 128, 0.15);
-          color: var(--green-bright);
-          border-color: Rgba(74, 222, 128, 0.4);
-        }
-      }
-    }
-
-    .comp-categories-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 6px;
-
-      :deep(.pv-tooltip-wrapper) {
-        width: 100%;
-        display: flex;
-      }
-
-      .comp-slot-chip {
-        width: 100%;
-        @include pixelated;
-        font-size: 7px;
-        height: 28px;
-        padding: 0 6px;
-        border-radius: 6px;
-        background: Rgba(255, 255, 255, 0.04);
-        border: 1px solid Rgba(250, 204, 21, 0.25);
-        color: #fef08a;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 4px;
-        box-sizing: border-box;
-
-        .chip-content {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          min-width: 0;
-        }
-
-        .chip-poke-sprite {
-          width: 18px;
-          height: 18px;
-          object-fit: contain;
-          flex-shrink: 0;
-          filter: Drop-Shadow(0 1px 2px Rgba(0, 0, 0, 0.5));
-          user-select: none;
-          -webkit-user-drag: none;
-          pointer-events: none;
-        }
-
-        .chip-global-icon {
-          font-size: 10px;
-          line-height: 1;
-          display: inline-flex;
-          align-items: center;
-        }
-
-        .chip-metric {
-          font-size: 7px;
-          letter-spacing: 0.3px;
-          white-space: nowrap;
-        }
-
-        .chip-status-pill {
-          width: 16px;
-          height: 16px;
-          border-radius: 4px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 8px;
-          font-weight: bold;
-          background: Rgba(250, 204, 21, 0.15);
-          color: var(--yellow);
-          border: 1px solid Rgba(250, 204, 21, 0.35);
-          flex-shrink: 0;
-        }
-
-        &:hover {
-          background: Rgba(250, 204, 21, 0.15);
-          border-color: var(--yellow);
-          transform: Translatey(-1px);
-        }
-
-        &.enrolled {
-          background: Rgba(74, 222, 128, 0.08);
-          border-color: Rgba(74, 222, 128, 0.4);
-          color: #86efac;
-
-          .chip-status-pill {
-            background: Rgba(74, 222, 128, 0.2);
-            color: var(--green-bright);
-            border-color: var(--green-bright);
-          }
-
-          &:hover {
-            background: Rgba(74, 222, 128, 0.18);
-            border-color: var(--green-bright);
-          }
-        }
-      }
     }
   }
 

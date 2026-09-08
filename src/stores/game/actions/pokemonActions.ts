@@ -57,6 +57,12 @@ export function usePokemonActions(
 
   function addPokemon(pokemon: Pokemon | null, options = { notify: true }) {
     if (!pokemon) return { success: false, target: null }
+    if (!pokemon.obtainedAt) {
+      pokemon.obtainedAt = Temporal.Now.instant().epochMilliseconds
+    }
+    if (!pokemon.obtainedMethod) {
+      pokemon.obtainedMethod = 'reward'
+    }
     registerPokedex(pokemon.id, true)
 
     let target: PokemonStorageLocation = 'team'

@@ -36,23 +36,23 @@ export const BUSH_FAMILIES = {
   "crystalblack": [
     "crystalblack-1"
   ],
-  "crystaldarkred": [
-    "crystaldarkred-1"
-  ],
   "crystalblue": [
     "crystalblue-1"
   ],
+  "crystaldarkred": [
+    "crystaldarkred-1"
+  ],
   "crystalgreen": [
     "crystalgreen-1"
-  ],
-  "crystalpink": [
-    "crystalpink-1"
   ],
   "crystalred": [
     "crystalred-1"
   ],
   "crystalviolet": [
     "crystalviolet-1"
+  ],
+  "crystalpink": [
+    "crystalpink-1"
   ],
   "crystalyellow": [
     "crystalyellow-1"
@@ -70,14 +70,14 @@ export const BUSH_FAMILIES = {
   "grass": [
     "grass-1"
   ],
+  "grassflower": [
+    "grassflower-1"
+  ],
   "rock": [
     "rock-1",
     "rock-2",
     "rock-3",
     "rock-4"
-  ],
-  "grassflower": [
-    "grassflower-1"
   ],
   "treebroken": [
     "treebroken-1",

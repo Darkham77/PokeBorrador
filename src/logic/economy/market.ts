@@ -7,7 +7,7 @@ export const GTS_ITEMS_PER_PAGE = 50 as const;
 export const GTS_MAX_ACTIVE_LISTINGS = 10 as const;
 export const GTS_MARKET_FEE = 0.05 as const;
 export const GTS_EXPLORE_LISTINGS_LIMIT = 100 as const;
-export const GTS_SALES_HISTORY_LIMIT = 20 as const;
+export const GTS_SALES_HISTORY_LIMIT = 50 as const;
 
 export interface MarketItemData {
   id?: string | number;
@@ -25,11 +25,12 @@ export const MARKET_ASSET_TYPES = ['pokemon', 'item', 'money'] as const;
 export type MarketAssetType = (typeof MARKET_ASSET_TYPES)[number];
 
 interface MarketListingBase {
-  id: string;
+  id: string | number;
   seller_name?: string;
   price: number;
   status: MarketListingStatus;
   seller_id: string;
+  buyer_id?: string;
   created_at: string;
 }
 
@@ -59,8 +60,9 @@ const MARKET_SOLD_SEEN_CACHE = new WeakMap<GameState, Set<string>>();
 export function ensureMarketSoldSeenState(state: GameState): string[] {
   if (!Array.isArray(state.marketSoldSeenIds)) state.marketSoldSeenIds = [];
   state.marketSoldSeenIds = [...new Set(
-    (state.marketSoldSeenIds)
-      .filter((id: string) => typeof id === 'string' && id.trim().length > 0 && !id.includes('invalid'))
+    (state.marketSoldSeenIds as (string | number)[])
+      .map((id) => (id !== null && id !== undefined ? String(id).trim() : ''))
+      .filter((id: string) => id.length > 0 && !id.includes('invalid'))
   )].slice(-MAX_MARKET_SOLD_SEEN_HISTORY);
   return state.marketSoldSeenIds;
 }
@@ -75,18 +77,20 @@ function getMarketSoldSeenSet(state: GameState): Set<string> {
   return cached;
 }
 
-export function isMarketSoldSeen(listingId: string, state: GameState): boolean {
-  if (!listingId) return true;
-  return getMarketSoldSeenSet(state).has(listingId);
+export function isMarketSoldSeen(listingId: string | number | undefined | null, state: GameState): boolean {
+  if (listingId === null || listingId === undefined || listingId === '') return true;
+  return getMarketSoldSeenSet(state).has(String(listingId));
 }
 
-export function markMarketSoldSeen(listingId: string, state: GameState): void {
-  if (!listingId) return;
+export function markMarketSoldSeen(listingId: string | number | undefined | null, state: GameState): void {
+  if (listingId === null || listingId === undefined || listingId === '') return;
+  const idStr = String(listingId).trim();
+  if (!idStr) return;
   const set = getMarketSoldSeenSet(state);
-  if (set.has(listingId)) return;
-  set.add(listingId);
+  if (set.has(idStr)) return;
+  set.add(idStr);
   const seen = ensureMarketSoldSeenState(state);
-  seen.push(listingId);
+  seen.push(idStr);
   state.marketSoldSeenIds = seen.slice(-MAX_MARKET_SOLD_SEEN_HISTORY);
 }
 

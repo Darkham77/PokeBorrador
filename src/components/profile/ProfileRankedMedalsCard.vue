@@ -2,6 +2,11 @@
 import type { RankedSeasonMedal, RankedTierId } from '@/types/battle/pvp.ts'
 import { useStatHover } from '@/composables/ui/useStatHover'
 import { RANKED_MEDAL_CONFIGS } from '@/data/system/rankedData.ts'
+import { resolveMedalTournamentInfo } from '@/logic/pvp/rankedEngine.ts'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { useModalStore } from '@/stores/modals'
+import { useUIStore } from '@/stores/ui'
+import { usePvPStore } from '@/stores/pvp'
 
 interface Props {
   medals: RankedSeasonMedal[]
@@ -10,6 +15,10 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   medals: () => []
 })
+
+const modalStore = useModalStore()
+const uiStore = useUIStore()
+const pvpStore = usePvPStore()
 
 const { handleStatEnter, handleStatLeave } = useStatHover()
 
@@ -21,8 +30,25 @@ function getTierDisplay(tierId: RankedTierId) {
   return {
     name: config.name,
     icon: config.fallbackEmoji,
-    sprite: config.sprite,
+    sprite: getAssetUrl(ASSET_TYPES.RANK, tierId),
     color: config.color
+  }
+}
+
+function getMedalInfo(medal: RankedSeasonMedal) {
+  return resolveMedalTournamentInfo(medal, pvpStore.currentSeasonRules?.name)
+}
+
+function handleMedalClick(medal: RankedSeasonMedal) {
+  const info = getMedalInfo(medal)
+  if (info.isAvailable) {
+    modalStore.open('RankedTournamentDetail', {
+      themeId: info.themeId,
+      tournamentName: info.tournamentName,
+      medal
+    })
+  } else {
+    uiStore.notify(`El torneo "${info.tournamentName}" ya ha finalizado y sus salas no están disponibles.`, 'ℹ️')
   }
 }
 </script>
@@ -51,7 +77,14 @@ function getTierDisplay(tierId: RankedTierId) {
         v-for="medal in props.medals"
         :key="medal.id"
         class="ranked-medal-item"
+        :class="{ 'is-available': getMedalInfo(medal).isAvailable }"
         :style="{ borderColor: getTierDisplay(medal.tier).color }"
+        role="button"
+        tabindex="0"
+        :title="getMedalInfo(medal).isAvailable ? `Ver detalles del torneo ${getMedalInfo(medal).tournamentName}` : `Torneo ${getMedalInfo(medal).tournamentName} (Finalizado)`"
+        @click="handleMedalClick(medal)"
+        @keydown.enter="handleMedalClick(medal)"
+        @keydown.space.prevent="handleMedalClick(medal)"
         @mouseenter="handleStatEnter"
         @mouseleave="handleStatLeave"
       >
@@ -69,8 +102,21 @@ function getTierDisplay(tierId: RankedTierId) {
           >{{ getTierDisplay(medal.tier).icon }}</span>
         </div>
         <div class="medal-info">
-          <div class="season-name">
-            {{ medal.seasonName }}
+          <div
+            class="season-name"
+            :title="getMedalInfo(medal).tournamentName"
+          >
+            {{ getMedalInfo(medal).tournamentName }}
+          </div>
+          <div class="season-meta">
+            <span class="season-date">{{ getMedalInfo(medal).formattedDate }}</span>
+            <span
+              v-if="getMedalInfo(medal).isAvailable"
+              class="active-tag"
+              title="Torneo activo actualmente en el Coliseo"
+            >
+              En Curso
+            </span>
           </div>
           <div
             class="tier-name"
@@ -84,7 +130,19 @@ function getTierDisplay(tierId: RankedTierId) {
           class="podium-tag"
           :class="{ 'top-1': medal.rank === 1, 'top-3': medal.rank <= 3 }"
         >
-          #{{ medal.rank }}
+          <span
+            v-if="medal.rank === 1"
+            class="emoji"
+          >🥇</span>
+          <span
+            v-else-if="medal.rank === 2"
+            class="emoji"
+          >🥈</span>
+          <span
+            v-else-if="medal.rank === 3"
+            class="emoji"
+          >🥉</span>
+          <span v-else>Top {{ medal.rank }}</span>
         </div>
       </div>
     </div>
@@ -121,7 +179,7 @@ function getTierDisplay(tierId: RankedTierId) {
 
 .ranked-medals-shelf {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 8px;
   margin-top: 6px;
 }
@@ -136,7 +194,8 @@ function getTierDisplay(tierId: RankedTierId) {
   border-radius: 8px;
   position: relative;
   overflow: hidden;
-  cursor: default;
+  cursor: pointer;
+  user-select: none;
 
   .medal-icon-wrap {
     display: flex;
@@ -176,6 +235,32 @@ function getTierDisplay(tierId: RankedTierId) {
       text-overflow: ellipsis;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+    }
+
+    .season-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 1px;
+
+      .season-date {
+        font-size: 0.65rem;
+        color: #94a3b8;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+
+      .active-tag {
+        font-size: 0.58rem;
+        font-weight: 700;
+        padding: 1px 4px;
+        border-radius: 3px;
+        background: Rgba(34, 197, 94, 0.2);
+        color: #4ade80;
+        border: 1px solid Rgba(34, 197, 94, 0.4);
+        line-height: 1.2;
+        letter-spacing: 0.3px;
+      }
     }
 
     .tier-name {

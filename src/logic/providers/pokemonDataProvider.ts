@@ -92,7 +92,7 @@ function requireMoveCategory(category: string): MoveBaseData['cat'] {
  */
 const deepClone = <T>(obj: T): T => {
     if (!obj) return obj;
-    return JSON.parse(JSON.stringify(obj)) as T;
+    return structuredClone(obj);
 };
 
 export const pokemonDataProvider = {
@@ -128,6 +128,30 @@ export const pokemonDataProvider = {
         const aesthetics = _pokemonAesthetics.value[normalizedId];
         const species = Dex.forGen(ACTIVE_GENERATION).species.get(normalizedId);
 
+        let height = species?.exists ? species.heightm : null;
+        let weight = species?.exists ? species.weightkg : null;
+
+        if (species?.exists && (!weight || weight <= 0) && species.baseSpecies) {
+            const baseSpec = Dex.forGen(ACTIVE_GENERATION).species.get(species.baseSpecies);
+            if (baseSpec?.exists && baseSpec.weightkg > 0) {
+                weight = baseSpec.weightkg;
+            }
+        }
+
+        if (species?.exists && (!height || height <= 0) && species.baseSpecies) {
+            const baseSpec = Dex.forGen(ACTIVE_GENERATION).species.get(species.baseSpecies);
+            if (baseSpec?.exists && baseSpec.heightm > 0) {
+                height = baseSpec.heightm;
+            }
+        }
+
+        if (weight !== null && weight <= 0) {
+            weight = 0.1;
+        }
+        if (height !== null && height <= 0) {
+            height = 0.1;
+        }
+
         const data = deepClone(dbData);
 
         // Añadimos el id al objeto retornado para conveniencia
@@ -135,8 +159,8 @@ export const pokemonDataProvider = {
             ...data,
             id: requirePokemonSpeciesId(normalizedId),
             category: metadata?.category || 'Pokémon Desconocido',
-            height: species?.exists ? species.heightm : null,
-            weight: species?.exists ? species.weightkg : null,
+            height,
+            weight,
             description: metadata?.description || 'No hay datos disponibles en la Pokédex.',
             isFloating: aesthetics?.floating,
             type2: data.type2 || undefined
@@ -148,8 +172,14 @@ export const pokemonDataProvider = {
     /**
      * Obtiene la base de datos completa de Pokémon (solo lectura).
      */
-    getPokemonDb() {
-        return deepClone(_pokemonDb.value);
+    getPokemonDb(): Record<string, PokemonBaseData> {
+        const raw = _pokemonDb.value;
+        const result: Record<string, PokemonBaseData> = {};
+        for (const key of Object.keys(raw)) {
+            const entry = raw[key];
+            if (entry) result[key] = entry;
+        }
+        return result;
     },
 
     /**

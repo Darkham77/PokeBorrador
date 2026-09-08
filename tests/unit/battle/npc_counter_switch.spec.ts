@@ -20,6 +20,7 @@ vi.mock('@/logic/battle/orchestrator', () => ({
 // resolution.ts uses dynamic import from showdownWorkerClient (not orchestrator)
 vi.mock('@/logic/battle/showdownWorkerClient', () => ({
   showdownWorker: {}, // Truthy worker
+  getShowdownWorker: vi.fn(() => ({})),
   executeTurnInWorker: mockExecuteTurn,
   syncTeamsFromLastWorkerState: vi.fn(async () => {})
 }))

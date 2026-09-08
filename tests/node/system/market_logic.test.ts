@@ -3,11 +3,15 @@ import assert from 'node:assert/strict';
 import { 
   applyMarketFilters, 
   buildMarketSaleLabel, 
-  ensureMarketSoldSeenState 
+  ensureMarketSoldSeenState,
+  markMarketSoldSeen,
+  isMarketSoldSeen
 } from '../../../src/logic/economy/market.ts';
 import type { MarketListing, MarketFilters } from '../../../src/logic/economy/market.ts';
 import type { GameState } from '../../../src/types/system/game.ts';
 import type { Pokemon } from '../../../src/types/pokemon/pokemon.ts';
+import { validateAndSanitize } from '../../../src/logic/auth/saveSanitizer.ts';
+import { INITIAL_STATE } from '../../../src/stores/gameInitialState.ts';
 
 const mockPokemon: Pokemon = {
   uid: 'test-uid-pikachu',
@@ -100,5 +104,35 @@ describe('Market Logic', () => {
     state.marketSoldSeenIds = ['valid-id', '', '  ', 'invalid-type-simulated'];
     const cleaned = ensureMarketSoldSeenState(state);
     assert.deepStrictEqual(cleaned, ['valid-id']);
+  });
+
+  test('Market Logic: numeric SQLite listing IDs in markMarketSoldSeen & isMarketSoldSeen', () => {
+    const state = { marketSoldSeenIds: [] } as unknown as GameState;
+    const numericId = 2083620643;
+
+    assert.strictEqual(isMarketSoldSeen(numericId, state), false);
+    assert.strictEqual(isMarketSoldSeen(String(numericId), state), false);
+
+    markMarketSoldSeen(numericId as unknown as string, state);
+
+    // Must be converted to string, never stored as raw number
+    assert.deepStrictEqual(state.marketSoldSeenIds, ['2083620643']);
+    assert.strictEqual(typeof state.marketSoldSeenIds[0], 'string');
+
+    // Both number and string lookups should succeed
+    assert.strictEqual(isMarketSoldSeen(numericId, state), true);
+    assert.strictEqual(isMarketSoldSeen('2083620643', state), true);
+  });
+
+  test('Market Logic: save validation accepts and sanitizes numeric marketSoldSeenIds', () => {
+    const stateWithNumericId = {
+      ...INITIAL_STATE,
+      trainer: 'Franco',
+      marketSoldSeenIds: [2083620643]
+    };
+
+    const result = validateAndSanitize(stateWithNumericId);
+    assert.strictEqual(result.valid, true, `Expected validation to succeed, got: ${result.error}`);
+    assert.deepStrictEqual(result.data.marketSoldSeenIds, ['2083620643']);
   });
 });

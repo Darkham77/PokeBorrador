@@ -365,10 +365,14 @@ export const useUIStore = defineStore('ui', () => {
     openMoveDetail,
     closeMoveDetail,
     
-    toggleTeamManagement: () => {
+    toggleTeamManagement: (initialTab?: unknown) => {
       const modalStore = useModalStore()
-      if (modalStore.isOpen('TeamManagement')) modalStore.close('TeamManagement')
-      else modalStore.open('TeamManagement')
+      if (modalStore.isOpen('TeamManagement')) {
+        modalStore.close('TeamManagement')
+      } else {
+        const tab = typeof initialTab === 'string' ? initialTab : undefined
+        modalStore.open('TeamManagement', tab ? { initialTab: tab } : {})
+      }
     },
     
     setDebugPokedex: (mode: PokedexStatus | null) => { debugPokedexMode.value = mode },

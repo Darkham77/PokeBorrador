@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
-import { formatPlayerClass, formatFaction } from '@/logic/utils/formatters'
+import { formatPlayerClass } from '@/logic/utils/formatters'
+import { resolveFactionColor, resolveFactionLabel } from '@/components/modals/trainerProfileResolver'
 
 interface ProfileData {
   id: string
@@ -33,6 +34,24 @@ const emit = defineEmits<{
 function onClickProfile() {
   emit('click-profile', props.profile.id)
 }
+
+function hasValidFaction(faction?: string | null): boolean {
+  if (!faction) return false
+  const clean = faction.trim().toLowerCase()
+  return clean !== '' && clean !== 'null' && clean !== 'undefined' && clean !== 'sin bando'
+}
+
+function getFactionColor(faction?: string | null): string {
+  return resolveFactionColor(faction)
+}
+
+function getFactionLabel(faction?: string | null): string {
+  const clean = faction?.trim().toLowerCase() || ''
+  if (clean === 'poder') return 'PODER'
+  if (clean === 'union') return 'UNIÓN'
+  if (clean === 'rocket') return 'ROCKET'
+  return resolveFactionLabel(faction).toUpperCase()
+}
 </script>
 
 <template>
@@ -57,23 +76,26 @@ function onClickProfile() {
       </TrainerAvatar>
 
       <div class="trainer-info">
-        <div
-          v-gsap-nick="profile.nick_style || 'normal'"
-          class="name clickable-username"
-          :class="profile.nick_style || 'normal'"
-          @click.stop="onClickProfile"
-        >
-          {{ profile.username }}
+        <div class="trainer-name-row">
+          <span
+            v-gsap-nick="profile.nick_style || 'normal'"
+            class="name clickable-username text-outline"
+            :class="profile.nick_style || 'normal'"
+            @click.stop="onClickProfile"
+          >
+            {{ profile.username }}
+          </span>
+          <span
+            v-if="hasValidFaction(profile.faction)"
+            class="faction-tag-badge text-outline"
+            :style="{ backgroundColor: getFactionColor(profile.faction) }"
+          >
+            {{ getFactionLabel(profile.faction) }}
+          </span>
         </div>
         <div class="meta">
           <slot name="subtext">
             Nv.{{ profile.level }} • {{ formatPlayerClass(profile.playerClass) }}
-            <template v-if="profile.faction && formatFaction(profile.faction) !== 'SIN BANDO'">
-              • <span :class="profile.faction.toLowerCase() /* text-ok */ .trim() + '-text-small'">{{ formatFaction(profile.faction) }}</span>
-            </template>
-            <template v-else>
-              • {{ formatFaction(profile.faction) }}
-            </template>
           </slot>
         </div>
       </div>
@@ -92,14 +114,21 @@ function onClickProfile() {
 <style scoped lang="scss">
 @use "@/styles/core/_mixins" as *;
 
-.union-text-small {
-  color: #60a5fa;
-  font-weight: bold;
+.trainer-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.poder-text-small {
-  color: #f87171;
-  font-weight: bold;
+.faction-tag-badge {
+  font-size: 6px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  color: white;
+  text-transform: uppercase;
+  @include pixelated;
+  letter-spacing: 0.5px;
+  line-height: 1.25;
 }
 
 .trainer-card {

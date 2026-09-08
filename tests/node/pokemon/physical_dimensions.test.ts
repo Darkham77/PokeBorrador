@@ -228,4 +228,27 @@ describe('Pokémon Physical Dimensions Gaussian Math & Tiers', () => {
     assert.strictEqual(sortedHeightDesc[2]?.pokemon.uid, 'u-light');
   });
 
+  test('G-Max and special forms fallback to baseSpecies weight and height (not 0.0 kg)', async () => {
+    const { pokemonDataProvider } = await import('../../../src/logic/providers/pokemonDataProvider.ts');
+    const { makePokemon } = await import('../../../src/logic/pokemon/pokemonFactory.ts');
+
+    const gmaxData = pokemonDataProvider.getPokemonData('eeveegmax', true);
+    assert.ok(gmaxData, 'eeveegmax data should exist');
+    assert.ok(gmaxData.weight !== null && gmaxData.weight > 0, `eeveegmax weight should be > 0, got ${gmaxData.weight}`);
+
+    const gmaxPoke = { uid: 'test-eevee-gmax-uid', id: 'eeveegmax' } as unknown as Pokemon;
+    const calcWeight = getPokemonPhysicalWeight(gmaxPoke);
+    assert.ok(calcWeight > 0, `getPokemonPhysicalWeight for eeveegmax must be > 0, got ${calcWeight}`);
+
+    const createdPika = makePokemon('pikachu', 5);
+    assert.ok(createdPika, 'pikachu must be created');
+    assert.ok(typeof createdPika.height === 'number' && createdPika.height > 0, `created pikachu must have height > 0, got ${createdPika?.height}`);
+    assert.ok(typeof createdPika.weight === 'number' && createdPika.weight > 0, `created pikachu must have weight > 0, got ${createdPika?.weight}`);
+
+    const createdGmax = makePokemon('eeveegmax', 5, { bypassWhitelist: true });
+    assert.ok(createdGmax, 'eeveegmax must be created');
+    assert.ok(typeof createdGmax.weight === 'number' && createdGmax.weight > 0, `created eeveegmax must have weight > 0, got ${createdGmax?.weight}`);
+  });
+
 });
+

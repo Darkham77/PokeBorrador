@@ -88,6 +88,10 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   })
 
   const activeMission = computed(() => classData.value.activeMission || null)
+  const isMissionDone = computed(() => {
+    if (!activeMission.value) return false
+    return Temporal.Now.instant().epochMilliseconds >= activeMission.value.endsAt
+  })
 
   /**
    * Obtiene modificadores de clase para batalla o economía.
@@ -308,13 +312,16 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   /**
    * Finaliza y cobra una misión. (Implementación de Phase 21).
    */
-  async function collectMission() {
+  async function collectMission(options: { autoSave?: boolean; silent?: boolean } = {}) {
+    const autoSave = options.autoSave ?? true
+    const silent = options.silent ?? false
+
     const mission = activeMission.value
     if (!mission) return
 
     const now = await db.getServerTime()
     if ((now as number) < mission.endsAt) {
-      uiStore.notify('La misión aún no ha terminado.', '⏳')
+      if (!silent) uiStore.notify('La misión aún no ha terminado.', '⏳')
       return;
     }
 
@@ -390,8 +397,12 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
 
     const currentData = gameStore.state.classData as ClassData
     currentData.activeMission = null
-    uiStore.notify(msg, '🎁')
-    await gameStore.save()
+    if (!silent) {
+      uiStore.notify(msg, '🎁')
+    }
+    if (autoSave) {
+      await gameStore.save()
+    }
   }
 
   return {
@@ -402,6 +413,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     classData,
     currentClassDef,
     activeMission,
+    isMissionDone,
     getModifier,
     selectClass,
     addXP,

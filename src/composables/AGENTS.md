@@ -22,11 +22,14 @@ Frontend Developers.
 - [adventure/](./adventure/AGENTS.md): Domain module documentation for adventure.
 - [battle/](./battle/AGENTS.md): Domain module documentation for battle.
 - [effects/](./effects/AGENTS.md): Domain module documentation for effects.
+- [events/](./events/AGENTS.md): Domain module documentation for events.
+- [home/](./home/AGENTS.md): Domain module documentation for home.
 - [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
 - [map/](./map/AGENTS.md): Domain module documentation for map.
 - [modals/](./modals/AGENTS.md): Domain module documentation for modals.
 - [navigation/](./navigation/AGENTS.md): Domain module documentation for navigation.
 - [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon.
 - [pvp/](./pvp/AGENTS.md): Domain module documentation for pvp.
+- [rewards/](./rewards/AGENTS.md): Domain module documentation for rewards.
 - [system/](./system/AGENTS.md): Domain module documentation for system.
 - [ui/](./ui/AGENTS.md): Domain module documentation for ui.

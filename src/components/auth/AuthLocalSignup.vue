@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useInputAnimations } from '@/composables/ui/useInputAnimations'
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
 import type { GenderId } from '@/types/system/game'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 interface Props {
   loading: boolean
@@ -46,14 +48,22 @@ const {
         :class="{ active: genderValue === 'h' }"
         @click.prevent.stop="emit('update:genderValue', 'h')"
       >
-        <span class="emoji">♂️</span> MASCULINO
+        <PVGenderBadge
+          gender="h"
+          is-trainer
+          size="sm"
+        /> MASCULINO
       </button>
       <button
         class="gender-select-btn female"
         :class="{ active: genderValue === 'm' }"
         @click.prevent.stop="emit('update:genderValue', 'm')"
       >
-        <span class="emoji">♀️</span> FEMENINO
+        <PVGenderBadge
+          gender="m"
+          is-trainer
+          size="sm"
+        /> FEMENINO
       </button>
     </div>
 
@@ -62,7 +72,14 @@ const {
       :disabled="loading"
       @click.stop="emit('localSignup')"
     >
-      <span class="emoji">▶</span> NUEVA PARTIDA
+      <img
+        :src="getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')"
+        alt=""
+        class="auth-btn-icon"
+        draggable="false"
+        aria-hidden="true"
+      >
+      <span>NUEVA PARTIDA</span>
     </button>
   </div>
 </template>

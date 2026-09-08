@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-import { gsapSleep } from '@/logic/utils/gsapHelpers'
 import { ref, computed, watch, nextTick } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import { safeStorage } from '@/logic/utils/storage.ts'
@@ -24,6 +23,7 @@ import { setupBattleDebug } from '@/logic/battle/battleDebug.ts'
 import { executeSwitch as switchAction } from '@/logic/battle/actions/switchAction.ts'
 import type { BattleSide } from '@/types/battle/battle'
 import { setupBattleEventWatchers } from './battleEventWatchers.ts'
+import { checkAndAutoRecharge, consumeInventoryItem } from './battleRechargeHelper.ts'
 import { findMatchingPokemon } from '@/logic/battle/showdownUidMapper.ts'
 import { createBattleLoggerHelper } from './battleLogHelper.ts'
 import { requireWeatherId } from '@/logic/weather/weatherRegistry.ts'
@@ -32,9 +32,9 @@ import { GAME_UI_EVENTS, type BattleEnteringDetail } from '@/types/system/gameEv
 
 import type { GameStore, EventStore, AudioStore, UIStore, BattleOptions } from '@/types/system/stores'
 import type { BattleContext } from '@/types/battle/battleContext'
-import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { BattleState, BattleStages, BattleLog } from '@/types/battle/battle'
-import type { Move } from '@/types/pokemon/pokemon'
+import type { Move, Pokemon } from '@/types/pokemon/pokemon'
+import { createBattleUiConfig, type BattleMode, type BattleUiConfig } from '@/types/battle/battleConfig'
 
 const INITIAL_STAGES: BattleStages = { 
   atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, 
@@ -175,6 +175,24 @@ export const useBattleStore = defineStore('battle', () => {
 
   const isPvP = computed(() => !!activeBattle.value?.isPvP)
 
+  const uiConfig = computed<BattleUiConfig>(() => {
+    const b = activeBattle.value
+    if (!b) return createBattleUiConfig('wild')
+    let mode: BattleMode = 'wild'
+    if (b.isPvP) {
+      mode = b.isRanked ? 'pvp_ranked' : 'pvp_casual'
+    } else if (b.isGym) {
+      mode = 'gym'
+    } else if (b.isTrainer) {
+      mode = 'trainer'
+    }
+    return createBattleUiConfig(mode, {
+      allowCatch: !b.isTrainer && !b.isGym && !b.isPvP && !b.cannotEscape,
+      allowFlee: !b.isTrainer && !b.isGym && !b.isPvP && !b.cannotEscape,
+      enableContinuousSearch: !b.isTrainer && !b.isGym && !b.isPvP && b.wasSearching !== false
+    })
+  })
+
   const getContext = (): BattleContext => ({
     gs: gs as GameStore,
     warStore, 
@@ -194,6 +212,7 @@ export const useBattleStore = defineStore('battle', () => {
     isReadyToExit, 
     isIntroAnimating,
     isPvP,
+    uiConfig,
     isProcessing, 
     debugBinoculars, 
     debugLoopPokemon,
@@ -256,6 +275,16 @@ export const useBattleStore = defineStore('battle', () => {
 
   const executeMove = async (moveIndex: number) => {
     if (isProcessing.value || !isBattleActive.value || !activeBattle.value || activeBattle.value.over || !activeBattle.value.player || !activeBattle.value.enemy) return
+    if (isPvP.value) {
+      const { useLivePvPStore } = await import('@/stores/livePvP')
+      const livePvP = useLivePvPStore()
+      livePvP._commitPick({
+        type: 'move',
+        moveIndex,
+        choiceString: `move ${moveIndex + 1}`
+      })
+      return
+    }
     isProcessing.value = true
     try {
       fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EXEC_TURN)
@@ -399,6 +428,17 @@ export const useBattleStore = defineStore('battle', () => {
   const _executeSwitch = async (teamIndex: number, isForced = false) => {
     if (isProcessing.value && !isForced) return
     
+    if (isPvP.value) {
+      const { useLivePvPStore } = await import('@/stores/livePvP')
+      const livePvP = useLivePvPStore()
+      livePvP._commitPick({
+        type: 'switch',
+        switchIndex: teamIndex,
+        choiceString: `switch ${teamIndex + 1}`
+      })
+      return
+    }
+
     if (!isForced) {
       const isTrapped = await isPlayerTrappedInWorker()
       if (isTrapped) {
@@ -419,12 +459,7 @@ export const useBattleStore = defineStore('battle', () => {
     }
   }
 
-  const consumeItem = (itemId: ItemId) => {
-    if (gs.state?.inventory?.[itemId]) {
-      gs.state.inventory[itemId]!--
-      if (gs.state.inventory[itemId]! <= 0) delete gs.state.inventory[itemId]
-    }
-  }
+  const consumeItem = (itemId: ItemId) => consumeInventoryItem(gs, itemId)
 
   const completeBattleFlow = async (option?: string) => await handleBattleFlowCompletion(getContext(), option)
 
@@ -433,28 +468,6 @@ export const useBattleStore = defineStore('battle', () => {
   const awardDebugExp = async () => {
     const { awardDebugExp: awardExpFn } = await import('@/logic/battle/resolution.ts')
     await awardExpFn(getContext())
-  }
-
-  const checkAndAutoRecharge = async () => {
-    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isDeterministicSimulation) return
-    if (!activeBattle.value || activeBattle.value.over) return
-    const req = activeBattle.value.playerRequest
-    if (req && req.active?.[0]?.moves) {
-      const moves = req.active[0].moves
-      if (moves && moves.length === 1 && moves[0] && moves[0].move === 'Recharge') {
-        logger.info('BattleStore', 'Forced recharge detected, waiting for isProcessing to clear...')
-        await nextTick()
-        let retries = 0
-        const MAX_PROCESSING_WAIT_RETRIES = 20
-        const PROCESSING_WAIT_SLEEP_MS = 20
-        while (isProcessing.value && retries < MAX_PROCESSING_WAIT_RETRIES) {
-          await gsapSleep(PROCESSING_WAIT_SLEEP_MS)
-          retries++
-        }
-        logger.info('BattleStore', 'Auto-submitting executeMove(0) for forced recharge.')
-        await executeMove(0)
-      }
-    }
   }
 
   watch(fsm.currentSubState, async (newVal) => {
@@ -471,7 +484,7 @@ export const useBattleStore = defineStore('battle', () => {
           Reflect.deleteProperty(activeBattle.value, 'switchingToEnemy')
         }
       }
-      await checkAndAutoRecharge()
+      await checkAndAutoRecharge(activeBattle, isProcessing, executeMove)
     }
   })
 
@@ -492,7 +505,7 @@ export const useBattleStore = defineStore('battle', () => {
     state: activeBattle, isBattleActive, awardDebugExp, isFinishing, isProcessing,
     isSearching, player, enemy,
     playerUsedMoves, isIntroAnimating,
-    isPvP,
+    isPvP, uiConfig,
     playerStages, enemyStages, battleLogs, debugLoopPokemon, debugBinoculars,
     debugShowGuides, debugShowFxRadius, debugShowPokeRadius, debugZoom,
     attackerSide, activeMove, exitingPlayer, exitingEnemy, animations,

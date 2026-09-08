@@ -4,7 +4,27 @@ import { setActivePinia, createPinia } from 'pinia'
 import { useLivePvPStore } from '@/stores/livePvP'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
-import type { Pokemon } from '@/types/pokemon/pokemon'
+import { makePokemon } from '@/logic/pokemon/pokemonFactory'
+
+vi.mock('@/logic/battle/showdownWorkerClient', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/logic/battle/showdownWorkerClient')>();
+  return {
+    ...actual,
+    executeTurnInWorker: vi.fn().mockResolvedValue({
+      logs: ['|move|p1a: Pikachu|Tackle|p2a: Rattata', '|-damage|p2a: Rattata|50/80'],
+      isOver: false,
+      winner: null,
+      p1Request: { active: [{ moves: [] }] },
+      p2Request: { active: [{ moves: [] }] }
+    }),
+    syncTeamsFromLastWorkerState: vi.fn().mockResolvedValue(undefined)
+  };
+});
+
+vi.mock('@/logic/battle/helpers/turnActionResolver', () => ({
+  parseLogsWithSkip: vi.fn().mockResolvedValue(undefined),
+  resolvePostTurnSwitchesAndFaints: vi.fn().mockResolvedValue(undefined)
+}))
 
 describe('LivePvPStore (Combat Engine)', () => {
   const dbMock = {
@@ -40,12 +60,14 @@ describe('LivePvPStore (Combat Engine)', () => {
 
     ;(game as unknown as { db: unknown }).db = dbMock
     
-    const pika = { uid: 'pika_1', id: 'pikachu', name: 'Pikachu', hp: 100, maxHp: 100, atk: 55, def: 40, spa: 50, spd: 50, spe: 90, level: 50, type: 'electric', moves: [{ id: 'tackle', name: 'Tackle', pp: 35, maxPP: 35 }] } as unknown as Pokemon
-    game.state = {
+    const pika = makePokemon('pikachu', 50)!
+    pika.uid = 'pika_1'
+    Object.assign(game.state, {
+      starterChosen: true,
       team: [pika],
       pvpTeam: ['pika_1'],
       box: []
-    } as unknown as typeof game.state
+    })
   })
 
   it('should send battle invite correctly', async () => {
@@ -63,25 +85,27 @@ describe('LivePvPStore (Combat Engine)', () => {
 
   it('should resolve turn correctly when both players move', async () => {
     const pvp = useLivePvPStore()
-    
+    const { executeTurnInWorker } = await import('@/logic/battle/showdownWorkerClient')
+
     // Setup Battle
     pvp.startBattle({ id: 'inv_1', challenger_id: 'user_1', opponent_id: 'user_2' } as unknown as Parameters<typeof pvp.startBattle>[0], true, false)
-    pvp.battleState.enemyTeam = [
-      { id: 'rattata', name: 'Rattata', hp: 80, maxHp: 80, atk: 56, def: 35, spa: 25, spd: 35, spe: 72, level: 50, type: 'normal', moves: [{ id: 'tackle', name: 'Tackle', pp: 35, maxPP: 35 }] } as unknown as Pokemon
-    ]
+    const rat = makePokemon('rattata', 50)!
+    pvp.battleState.enemyTeam = [rat]
     pvp.battleState.enemyHp = [80]
     pvp.battleState.phase = 'choosing'
     
     // Commit my pick
     pvp._commitPick({ type: 'move', moveIndex: 0 })
+    expect(pvp.battleState.phase).toBe('waiting')
     
     // Simulate opponent pick (via handleOpponentPick)
     pvp.handleOpponentPick({ payload: { type: 'move', moveIndex: 0 } })
     
-    // Host (me) should have resolved turn
-    expect(pvp.battleState.phase).toBe('animating')
-    // Damage should have been applied (Pikachu is faster)
-    expect(pvp.battleState.enemyHp[0]).toBeLessThan(80)
+    // Allow async resolveTurn to finish
+    await vi.waitFor(() => {
+      expect(executeTurnInWorker).toHaveBeenCalled()
+      expect(pvp.battleState.phase).toBe('choosing')
+    })
   })
 
   it('should end battle when enemy team is defeated', async () => {

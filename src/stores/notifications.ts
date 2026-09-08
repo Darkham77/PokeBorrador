@@ -26,8 +26,9 @@ export const useNotificationStore = defineStore('notifications', () => {
         }
         const cleanMsg = msg.replace(/<[^>]*>/g, '').trim()
         const isWelcomeMsg = cleanMsg.toLowerCase().includes('bienvenido')
+        const isSaveMsg = cleanMsg.toLowerCase().includes('guardad') || cleanMsg.toLowerCase().includes('guardar')
         
-        if (!isWelcomeMsg) {
+        if (!isWelcomeMsg && !isSaveMsg) {
           gameStore.state.notificationHistory.push({
             id,
             type: 'general',

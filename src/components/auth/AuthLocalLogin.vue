@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useInputAnimations } from '@/composables/ui/useInputAnimations'
 import { queryLocal } from '@/logic/db/sqliteEngine'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 interface Props {
   loading: boolean
@@ -66,7 +67,14 @@ onMounted(async () => {
       :disabled="loading"
       @click.stop="emit('localLogin')"
     >
-      <span class="emoji">▶</span> JUGAR LOCAL
+      <img
+        :src="getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')"
+        alt=""
+        class="auth-btn-icon"
+        draggable="false"
+        aria-hidden="true"
+      >
+      <span>JUGAR LOCAL</span>
     </button>
   </div>
 </template>

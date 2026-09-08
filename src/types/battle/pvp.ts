@@ -1,13 +1,54 @@
 import type { GymId } from '@/data/world/gyms';
 import type { MapRouteId } from '@/data/world/map-assets';
-import type { SeasonalThemeId } from '@/data/system/rankedData';
 import type { SideID } from '@pkmn/sim';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { BattleStages, BattleActionType } from '@/types/battle/battle';
+import {
+  SEASONAL_THEME_IDS,
+  type SeasonalThemeId,
+  type SeasonalRewardPokemonConfig,
+  type SeasonalThemeConfig,
+  isSeasonalThemeId,
+  requireSeasonalThemeId,
+  type RankedTierId
+} from '@/data/system/rankedData.ts';
+
+export const PVP_BATTLE_PHASES = ['sync', 'team_preview', 'choosing', 'resolving', 'animating', 'faint_switch', 'over', 'waiting'] as const;
+export type PvPBattlePhase = (typeof PVP_BATTLE_PHASES)[number];
+
+export interface PvPAction {
+  type: BattleActionType;
+  moveIndex?: number;
+  switchIndex?: number;
+  choiceString?: string; // domain-ok: Open dynamic text or non-domain string payload
+}
+
+export interface PvPBattleState {
+  isHost: boolean;
+  isRanked: boolean;
+  phase: PvPBattlePhase;
+  myTeam: Pokemon[];
+  enemyTeam: Pokemon[];
+  myActiveIdx: number;
+  enemyActiveIdx: number;
+  myHp: number[];
+  enemyHp: number[];
+  myStages: BattleStages;
+  enemyStages: BattleStages;
+  myPick: PvPAction | null;
+  enemyPick: PvPAction | null;
+  logs: string[]; // domain-ok: Open dynamic text or non-domain string payload
+}
 
 export const PVP_TURN_TIMEOUT_SEC = 45 as const;
 export const PVP_AFK_MAX_STRIKES = 2 as const;
 export const PVP_RECONNECT_WINDOW_SEC = 60 as const;
+export const MATCHMAKING_TIMEOUT_SEC = 60 as const;
 export const MAX_PVP_SLOTS = 3 as const;
 export const MAX_PVP6_SLOTS = 6 as const;
+
+export const TEAM_MANAGEMENT_TABS = ['adventure', 'pvp', 'pvp6', 'war'] as const;
+export type TeamManagementTab = (typeof TEAM_MANAGEMENT_TABS)[number];
 export { PVP_INVITE_EXPIRY_MS } from '@/logic/constants/gameplay';
 
 export const PVP_MATCH_FORMATS = ['3v3', '6v6'] as const;
@@ -38,10 +79,15 @@ export function requirePvpLevelRule(value: unknown): PvpLevelRule {
 
 export const PVP_CHANNEL_EVENTS = [
   'pvp_ready',
+  'pvp_team',
+  'pvp_team_order',
   'pvp_pick',
   'pvp_turn_stream',
+  'pvp_turn_result',
   'pvp_reconnect',
-  'pvp_forfeit'
+  'pvp_forfeit',
+  'pvp_spectate_join',
+  'pvp_spectate_sync'
 ] as const;
 export type PvpChannelEvent = (typeof PVP_CHANNEL_EVENTS)[number];
 const PVP_CHANNEL_EVENTS_SET: ReadonlySet<string> = new Set(PVP_CHANNEL_EVENTS);
@@ -49,6 +95,8 @@ const PVP_CHANNEL_EVENTS_SET: ReadonlySet<string> = new Set(PVP_CHANNEL_EVENTS);
 export function isPvpChannelEvent(value: unknown): value is PvpChannelEvent {
   return typeof value === 'string' && PVP_CHANNEL_EVENTS_SET.has(value);
 }
+
+export type PvpRoomCode = string & { readonly __brand: unique symbol };
 
 export const PVP_INVITE_STATUSES = [
   'pending',
@@ -145,8 +193,9 @@ export {
   type SeasonalRewardPokemonConfig,
   type SeasonalThemeConfig,
   isSeasonalThemeId,
-  requireSeasonalThemeId
-} from '@/data/system/rankedData.ts';
+  requireSeasonalThemeId,
+  type RankedTierId
+};
 
 export type BattleCode = string & { readonly __brand: unique symbol };
 
@@ -201,6 +250,31 @@ export interface BattleReplayRecord {
   createdAt: string; // domain-ok: Open dynamic text or non-domain string payload
 }
 
+export const MAX_PERSONAL_MATCH_HISTORY = 20;
+
+export interface PersonalPvPMatchSummary {
+  readonly id: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly battleCode: BattleCode;
+  readonly opponentId: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly opponentName: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly opponentAvatar?: string; // domain-ok: Asset path URI string
+  readonly format: PvpMatchFormat;
+  readonly isRanked: boolean;
+  readonly result: 'victory' | 'defeat' | 'draw';
+  readonly deltaElo?: number;
+  readonly turnsCount: number;
+  readonly timestamp: string; // domain-ok: ISO date string
+}
+
+export function appendPersonalMatchHistory(
+  history: readonly PersonalPvPMatchSummary[] | undefined,
+  newMatch: PersonalPvPMatchSummary
+): PersonalPvPMatchSummary[] {
+  const current = history || [];
+  const filtered = current.filter(m => m.battleCode !== newMatch.battleCode && m.id !== newMatch.id);
+  return [newMatch, ...filtered].slice(0, MAX_PERSONAL_MATCH_HISTORY);
+}
+
 export interface PassiveBattleReport {
   id: string; // domain-ok: Open dynamic text or non-domain string payload
   user_id: string; // domain-ok: Open dynamic text or non-domain string payload
@@ -211,12 +285,11 @@ export interface PassiveBattleReport {
   created_at: string; // domain-ok: Open dynamic text or non-domain string payload
 }
 
-import type { RankedTierId } from '@/data/system/rankedData.ts';
-export type { RankedTierId };
-
 export interface RankedSeasonMedal {
   id: string; // domain-ok: Open dynamic text or non-domain string payload
   seasonName: string; // domain-ok: Open dynamic text or non-domain string payload
+  tournamentName?: string; // domain-ok: Open dynamic text or non-domain string payload
+  themeId?: SeasonalThemeId;
   tier: RankedTierId;
   rank?: number;
   finalElo: number;
@@ -230,6 +303,7 @@ export interface PvpTurnPayload {
 
 export interface PvpTurnStreamPayload {
   turnNumber: number;
+  turn?: number;
   streamLines: string[]; // domain-ok: Open dynamic text or non-domain string payload
   over?: boolean;
   winnerSide?: SideID;

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import gsap from 'gsap'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
@@ -10,7 +10,15 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import UnifiedTeamSlot from '@/components/team/UnifiedTeamSlot.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import { MAX_PVP_SLOTS, MAX_PVP6_SLOTS } from '@/types/battle/pvp'
+import { MAX_PVP_SLOTS, MAX_PVP6_SLOTS, type TeamManagementTab } from '@/types/battle/pvp'
+
+interface Props {
+  initialTab?: TeamManagementTab
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  initialTab: 'adventure'
+})
 
 const MAX_ADVENTURE_SLOTS = 6
 const DEFAULT_WAR_SLOTS = 6
@@ -23,7 +31,13 @@ const uiStore = useUIStore()
 const ui = useUIStore()
 const isSmallScreen = computed(() => ui.isSmallScreen)
 
-const activeTab = ref('adventure') // 'adventure', 'pvp', 'pvp6', 'war'
+const activeTab = ref<TeamManagementTab>(props.initialTab || 'adventure')
+
+watch(() => props.initialTab, (newTab) => {
+  if (newTab) {
+    activeTab.value = newTab
+  }
+})
 
 const adventureTeam = computed(() => {
   const team = gameStore.state.team || []
@@ -114,21 +128,13 @@ function handleDropDirect(fromIndex: number, toIndex: number) {
 
 function handleSlotSelect(index: number) {
   if (activeTab.value === 'adventure') {
-    if (!adventureTeam.value[index]) {
-      selectAdventure(index)
-    }
+    selectAdventure(index)
   } else if (activeTab.value === 'pvp') {
-    if (!pvpTeam.value[index]) {
-      selectPvp(index)
-    }
+    selectPvp(index)
   } else if (activeTab.value === 'pvp6') {
-    if (!pvpTeam6.value[index]) {
-      selectPvp6(index)
-    }
+    selectPvp6(index)
   } else if (activeTab.value === 'war') {
-    if (!warTeam.value[index]) {
-      selectWar(index)
-    }
+    selectWar(index)
   }
 }
 
@@ -501,114 +507,5 @@ function selectAdventure(_slotIndex: number) {
   </BaseModal>
 </template>
 
-<style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
+<style scoped src="./TeamManagementModal.styles.scss" lang="scss"></style>
 
-.team-header-tabs {
-  display: flex;
-  gap: 12px;
-  margin-left: 0;
-  padding: 4px 0;
-  overflow-x: auto;
-  flex: 1;
-  min-width: 0;
-  -webkit-overflow-scrolling: touch;
-
-  @media (max-width: 600px) {
-    gap: 8px;
-    padding-right: 40px; // Space for close button
-  }
-}
-
-.tm-tab {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  background: Rgba(255, 255, 255, 0.03);
-  border: 1px solid Rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  color: var(--gray);
-  cursor: pointer;
-  @include pixelated;
-  font-size: 8px;
-  white-space: nowrap;
-  flex-shrink: 0;
-  letter-spacing: 1px;
-  position: relative;
-
-  .icon { font-size: 14px; }
-
-  .tab-count {
-    margin-left: 4px;
-    font-size: 7px;
-    opacity: 0.6;
-    background: Rgba(0, 0, 0, 0.2);
-    padding: 2px 4px;
-    border-radius: 4px;
-  }
-
-  &.active {
-    background: Rgba(255, 255, 255, 0.08);
-    border-color: var(--blue);
-    color: var(--blue);
-    box-shadow: 0 0 15px Rgba(10, 132, 255, 0.15);
-
-    .tab-count {
-      opacity: 1;
-      color: var(--white);
-      background: Rgba(10, 132, 255, 0.1);
-    }
-  }
-
-  &:hover:not(.active) {
-    background: Rgba(255, 255, 255, 0.1);
-    color: var(--white);
-  }
-}
-
-.tm-section-container {
-  background: none !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  overscroll-behavior: contain;
-  overscroll-behavior-x: none;
-}
-
-.slots-grid {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(3, 1fr);
-  
-  @media (max-width: 650px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  @media (max-width: 580px) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-  }
-}
-
-:deep(.modal-header-premium) {
-  border-bottom: none !important;
-  padding: 12px 16px !important;
-}
-
-:deep(.modal-content-premium) {
-  background: Rgba(15, 23, 42, 0.95) !important;
-  -webkit-will-change: transform, filter, opacity;
-  will-change: transform, filter, opacity;
-  backdrop-filter: Blur(25px);
-  @include gpu-layer;
-  overscroll-behavior: contain;
-  overscroll-behavior-x: none;
-}
-
-:deep(.modal-scrollable-content) {
-  padding: 15px !important;
-  overscroll-behavior: contain;
-  overscroll-behavior-x: none;
-}
-</style>

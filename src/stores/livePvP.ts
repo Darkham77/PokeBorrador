@@ -1,39 +1,81 @@
 import { defineStore } from 'pinia'
 import { ref, reactive, getCurrentScope, onScopeDispose } from 'vue'
 import { gsap } from 'gsap'
+
+type DelayedCall = { kill: () => void }
+
 import { useAuthStore } from '@/stores/auth.ts'
 import { useGameStore } from '@/stores/game.ts'
 import { useUIStore } from '@/stores/ui.ts'
 import { usePvPStore } from '@/stores/pvp.ts'
 import { useModalStore } from '@/stores/modals.ts'
 import { useBattleStore } from '@/stores/battle/battle.ts'
-import { resolvePvPTurn, applyPvPTurnResult, type PvPBattleState, type PvPTurnResult, type PvPAction } from '@/logic/pvp/pvpEngine'
+import type { PvPAction } from '@/types/battle/pvp'
 import { PvPTimerManager } from '@/logic/pvp/pvpTimerHelper.ts'
-import { ShowdownPerspectiveAdapter } from '@/logic/battle/helpers/showdownPerspectiveAdapter.ts'
-import { parseInstantSafe } from '@/logic/utils/timeUtils.ts'
-import type { RealtimeChannel } from '@supabase/supabase-js'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import {
-  DEFAULT_INITIAL_ELO,
-  ONLINE_PRESENCE_WINDOW_MS
-} from '@/logic/constants/gameplay.ts'
+import { DEFAULT_INITIAL_ELO } from '@/logic/constants/gameplay.ts'
 import {
   PVP_TURN_TIMEOUT_SEC,
   PVP_RECONNECT_WINDOW_SEC,
-  PVP_INVITE_EXPIRY_MS,
+  MATCHMAKING_TIMEOUT_SEC,
   type BattleInvite,
   type BattleReplayRecord,
   type PvpChallengeConfig,
   type PvpTurnStreamPayload,
-  type PvpForfeitPayload,
-  type PvpReconnectPayload
+  type PvpReconnectPayload,
+  type PvpRoomCode
 } from '@/types/battle/pvp'
-
-interface RankedQueueEntry {
-  user_id: string
-  elo: number
-  looking_since: string
-}
+import {
+  createRoomAction,
+  cancelRoomAction,
+  joinRoomAction
+} from '@/logic/pvp/pvpRoomActionsHelper'
+import {
+  executeForfeit,
+  executeEndBattle
+} from '@/logic/pvp/livePvPEndBattleHandler.ts'
+import type { PvpSpectateSyncPayload } from '@/logic/pvp/pvpSpectatorHelper'
+import {
+  executeReconnectBattle,
+  executeSpectateMatch,
+  executeHandleSpectateJoin,
+  executeHandleSpectateSync,
+  executeHandleOpponentReconnect
+} from '@/logic/pvp/livePvPReconnectionHandler'
+import {
+  executeStartPassiveBattle,
+  executeFallbackToPassiveBattle
+} from '@/logic/pvp/livePvPPassiveFallbackHandler'
+import type { ShowdownPlayerRequest } from '@/types/battle/battle'
+import {
+  checkUserOnline as checkUserOnlineHelper,
+  executePollMatchmaking,
+  executeInitInvitePoller,
+  executeStartSearch,
+  executeCancelSearch,
+  executeSendInvite,
+  executeAcceptInvite,
+  executeDeclineInvite,
+  executeStartSearchCountdown
+} from '@/logic/pvp/livePvPMatchmakingHandler.ts'
+import {
+  executeResolveTurn,
+  executeHandleTurnStream,
+  executeCommitPick,
+  executeCheckReadyToResolve,
+  executeHandleTurnTimeout,
+  executeCheckPostTurn
+} from '@/logic/pvp/livePvPTurnExecutionHandler.ts'
+import {
+  resolvePvpTeam as resolvePvpTeamHelper,
+  executeStartBattle,
+  executeConfirmTeamPreview,
+  executeHandleOpponentTeam,
+  executeHandleOpponentTeamOrder,
+  executeSetupBattleChannel,
+  createInitialLivePvPBattleState,
+  type LiveBattleState
+} from '@/logic/pvp/livePvPBattleSetupHandler.ts'
 
 export const useLivePvPStore = defineStore('livePvP', () => {
   const authStore = useAuthStore()
@@ -44,6 +86,9 @@ export const useLivePvPStore = defineStore('livePvP', () => {
 
   const activeInvite = ref<BattleInvite | null>(null)
   const isSearching = ref(false)
+  const searchSecondsRemaining = ref<number>(MATCHMAKING_TIMEOUT_SEC)
+  const searchPhase = ref<'human' | 'passive_fallback' | 'matched'>('human')
+  let searchCountdownTween: DelayedCall | null = null
   const activeReplay = ref<BattleReplayRecord | null>(null)
 
   function watchReplay(replay: BattleReplayRecord) {
@@ -56,6 +101,11 @@ export const useLivePvPStore = defineStore('livePvP', () => {
   const reconnectSecondsRemaining = ref<number>(PVP_RECONNECT_WINDOW_SEC)
   const afkStrikes = ref<number>(0)
   const isReconnecting = ref<boolean>(false)
+  const activeRoomCode = ref<PvpRoomCode | null>(null)
+  const isSpectator = ref<boolean>(false)
+  const myTeamConfirmed = ref<boolean>(false)
+  const enemyTeamConfirmed = ref<boolean>(false)
+  let roomHostPoller: DelayedCall | null = null
 
   const timerManager = new PvPTimerManager({
     onTurnTick: (seconds: number) => {
@@ -73,72 +123,23 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     }
   })
 
-  interface LiveBattleState extends PvPBattleState {
-    active: boolean
-    opponentId: string | null
-    opponentName: string
-    opponentElo: number
-    deadline: number | null
-    ch: RealtimeChannel | null
-    inviteId: string | null
-    config?: PvpChallengeConfig
-  }
+  const battleState = reactive<LiveBattleState>(createInitialLivePvPBattleState())
 
-  const battleState = reactive<LiveBattleState>({
-    active: false,
-    ch: null,
-    inviteId: null,
-    isHost: false,
-    isRanked: false,
-    opponentId: null,
-    opponentName: 'Rival',
-    opponentElo: DEFAULT_INITIAL_ELO,
-    phase: 'sync',
-    myTeam: [],
-    enemyTeam: [],
-    myActiveIdx: 0,
-    enemyActiveIdx: 0,
-    myHp: [],
-    enemyHp: [],
-    myStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 },
-    enemyStages: { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 },
-    myPick: null,
-    enemyPick: null,
-    logs: [],
-    deadline: null,
-  })
-
-  let invitePoller: gsap.core.Tween | null = null
-  let matchmakingPoller: gsap.core.Tween | null = null
+  let invitePoller: DelayedCall | null = null
+  let matchmakingPoller: DelayedCall | null = null
 
   async function checkUserOnline(userId: string): Promise<boolean> {
-    if (!gameStore.db) return false
-    try {
-      const { data } = await gameStore.db
-        .from('game_saves')
-        .select('updated_at')
-        .eq('user_id', userId)
-        .single() as { data: { updated_at: string } | null }
-
-      if (!data?.updated_at) return false
-      const lastSeen = parseInstantSafe(data.updated_at)
-      if (!lastSeen) return false
-      const now = Temporal.Now.instant().epochMilliseconds
-      return (now - lastSeen.epochMilliseconds) < ONLINE_PRESENCE_WINDOW_MS
-    } catch {
-      return false
-    }
+    return checkUserOnlineHelper(gameStore.db, userId)
   }
 
   function handleTurnTimeout(isForfeit: boolean) {
-    if (isForfeit) {
-      uiStore.notify('Has perdido por inactividad (2 strikes AFK).', '⚠️')
-      _forfeit()
-    } else {
-      uiStore.notify('Tiempo de turno agotado (Strike 1/2). Ejecutando acción automática.', '⏱️')
-      // Auto-pick: select first valid attack move to prevent game freeze
-      _commitPick({ type: 'move', moveIndex: 0 })
-    }
+    executeHandleTurnTimeout(isForfeit, {
+      uiStore,
+      forfeit: _forfeit,
+      battleStore: useBattleStore(),
+      battleState,
+      commitPick: _commitPick
+    })
   }
 
   function handleReconnectTimeout() {
@@ -148,369 +149,315 @@ export const useLivePvPStore = defineStore('livePvP', () => {
   }
 
   async function _pollMatchmaking() {
-    if (!isSearching.value || !gameStore.db || !authStore.user) return
-    const res = await gameStore.db.from('ranked_queue').select('*').neq('user_id', authStore.user.id).order('looking_since', { ascending: true }).limit(1)
-    const data = res.data as RankedQueueEntry[] | null
-    if (data && data.length > 0 && authStore.user && gameStore.db) {
-      const match = data[0]
-      if (!match) return
-      const invRes = await gameStore.db.from('battle_invites').insert({
-        challenger_id: authStore.user.id,
-        sender_id: authStore.user.id,
-        opponent_id: match.user_id,
-        status: 'ranked_match',
-        config: { format: '6v6', levelRule: 'flat50', arena: { gymId: 'celadon' }, mode: 'ranked' }
-      }).select().single()
-      const invite = invRes.data as BattleInvite | null
-      const error = invRes.error
-      if (!error && invite) {
-        await gameStore.db.from('ranked_queue').delete().in('user_id', [authStore.user.id, match.user_id])
-        isSearching.value = false
-        startBattle(invite, true, true)
-      }
-    }
+    await executePollMatchmaking({
+      db: gameStore.db,
+      userId: authStore.user?.id,
+      isSearching,
+      searchPhase,
+      killSearchCountdown: () => { if (searchCountdownTween) searchCountdownTween.kill() },
+      onMatched: (invite) => startBattle(invite, true, true)
+    })
   }
 
   function initInvitePoller() {
     if (invitePoller) invitePoller.kill()
-    if (authStore.sessionMode === 'offline') return
-
-    const poll = async () => {
-      if (!authStore.user || !gameStore.db) return
-      const { data } = await gameStore.db
-        .from('battle_invites')
-        .select('*')
-        .eq('opponent_id', authStore.user.id)
-        .in('status', ['pending', 'ranked_match'])
-        .order('created_at', { ascending: false })
-        .limit(1) as { data: BattleInvite[] | null }
-
-      if (data && data.length > 0 && gameStore.db) {
-        const inv = data[0]
-        if (!inv) return
-        const diffMs = Temporal.Now.instant().epochMilliseconds - Temporal.Instant.from(inv.created_at).epochMilliseconds
-        if (diffMs > PVP_INVITE_EXPIRY_MS) return
-
-        if (inv.status === 'ranked_match') {
-          if (isSearching.value) acceptInvite(inv.id, true)
-          else await gameStore.db.from('battle_invites').update({ status: 'declined' }).eq('id', inv.id)
-        } else {
-          activeInvite.value = inv
-        }
-      }
-      invitePoller = gsap.delayedCall(4, poll)
-    }
-
-    invitePoller = gsap.delayedCall(4, poll)
+    invitePoller = executeInitInvitePoller({
+      db: gameStore.db,
+      userId: authStore.user?.id,
+      isSearching,
+      searchPhase,
+      activeInvite,
+      killSearchCountdown: () => { if (searchCountdownTween) searchCountdownTween.kill() },
+      onAcceptRankedInvite: (id) => acceptInvite(id, true),
+      scheduleNext: (cb) => gsap.delayedCall(4, cb)
+    })
   }
 
-  async function startSearch() {
-    if (!authStore.user || !gameStore.db) return
-    isSearching.value = true
-    await gameStore.db.from('ranked_queue').upsert({
-      user_id: authStore.user.id,
-      elo: gameStore.state.eloRating || DEFAULT_INITIAL_ELO,
-      looking_since: Temporal.Now.instant().toString()
+  function _startSearchCountdown() {
+    if (searchCountdownTween) searchCountdownTween.kill()
+    searchCountdownTween = executeStartSearchCountdown({
+      isSearching,
+      searchSecondsRemaining,
+      fallbackToPassiveBattle: _fallbackToPassiveBattle,
+      scheduleNext: (cb) => gsap.delayedCall(1, cb)
     })
-    uiStore.notify('Buscando oponente...', '🔍')
+  }
+
+
+  async function startSearch() {
     if (matchmakingPoller) matchmakingPoller.kill()
-
-    const poll = async () => {
-      await _pollMatchmaking()
-      if (isSearching.value) {
-        matchmakingPoller = gsap.delayedCall(3, poll)
-      }
-    }
-
-    await poll()
+    matchmakingPoller = await executeStartSearch({
+      db: gameStore.db,
+      userId: authStore.user?.id,
+      myElo: gameStore.state.eloRating || DEFAULT_INITIAL_ELO,
+      currentSeasonRules: pvpStore.currentSeasonRules,
+      resolvePvpTeam,
+      notify: (msg, icon) => uiStore.notify(msg, icon),
+      isSearching,
+      searchSecondsRemaining,
+      searchPhase,
+      startSearchCountdown: _startSearchCountdown,
+      pollMatchmaking: _pollMatchmaking,
+      scheduleMatchmakingPoll: (cb) => gsap.delayedCall(3, cb)
+    })
   }
 
   async function cancelSearch() {
-    if (!authStore.user || !gameStore.db) return
-    isSearching.value = false
-    if (matchmakingPoller) matchmakingPoller.kill()
-    await gameStore.db.from('ranked_queue').delete().eq('user_id', authStore.user.id)
+    await executeCancelSearch({
+      db: gameStore.db,
+      userId: authStore.user?.id,
+      isSearching,
+      searchPhase,
+      searchSecondsRemaining,
+      killSearchCountdown: () => { if (searchCountdownTween) searchCountdownTween.kill() },
+      killMatchmakingPoller: () => { if (matchmakingPoller) matchmakingPoller.kill() }
+    })
+  }
+
+  async function _fallbackToPassiveBattle() {
+    if (!gameStore.db) return
+    await executeFallbackToPassiveBattle({
+      userId: authStore.user?.id,
+      db: gameStore.db,
+      isSearching,
+      searchPhase,
+      searchCountdownTween,
+      matchmakingPoller,
+      myElo: gameStore.state.eloRating || DEFAULT_INITIAL_ELO,
+      notify: (msg, icon) => uiStore.notify(msg, icon),
+      onMatched: (params) => _startPassiveBattle(params)
+    })
+  }
+
+  function _startPassiveBattle(params: {
+    opponentId: string
+    opponentName: string
+    opponentElo: number
+    enemyTeam: Pokemon[]
+  }) {
+    executeStartPassiveBattle(params, {
+      resolvePvpTeam,
+      notify: (msg, icon) => uiStore.notify(msg, icon),
+      timerManager,
+      afkStrikes,
+      myTeamConfirmed,
+      enemyTeamConfirmed,
+      currentSeasonRules: pvpStore.currentSeasonRules,
+      battleState
+    })
   }
 
   async function sendInvite(opponentId: string, opponentName: string, config?: PvpChallengeConfig) {
-    if (!authStore.user || !gameStore.db) return
-    const challengeConfig: PvpChallengeConfig = config || {
-      format: '3v3',
-      levelRule: 'real',
-      arena: { gymId: 'celadon' }
-    }
-
-    const invRes = await gameStore.db.from('battle_invites').insert({
-      challenger_id: authStore.user.id,
-      sender_id: authStore.user.id,
-      opponent_id: opponentId,
-      status: 'pending',
-      config: challengeConfig
-    }).select().single()
-
-    const data = invRes.data as BattleInvite | null
-    const error = invRes.error
-    if (error || !data) {
-      uiStore.notify('Error al enviar invitación', '❌')
-      return
-    }
-
-    uiStore.notify(`Invitación enviada a ${opponentName}`, '✉️')
-    startBattle(data, true, false)
+    await executeSendInvite({
+      db: gameStore.db,
+      userId: authStore.user?.id,
+      opponentId,
+      opponentName,
+      config,
+      notify: (msg, icon) => uiStore.notify(msg, icon),
+      onStartBattle: (data) => startBattle(data, true, false)
+    })
   }
 
   async function acceptInvite(inviteId: string, isRanked = false) {
-    if (!gameStore.db) return
-    const { data: invite } = await gameStore.db
-      .from('battle_invites')
-      .select('*')
-      .eq('id', inviteId)
-      .single() as { data: BattleInvite | null }
-
-    if (!invite) return
-
-    const senderId = invite.sender_id || invite.challenger_id || ''
-    const isOnline = await checkUserOnline(senderId)
-    if (!isOnline) {
-      await gameStore.db.from('battle_invites').update({ status: 'cancelled_offline' }).eq('id', inviteId)
-      activeInvite.value = null
-      modalStore.open('PvPOpponentOffline', { opponentName: 'El oponente' })
-      return
-    }
-
-    const status = isRanked ? 'ranked_accepted' : 'accepted'
-    await gameStore.db.from('battle_invites').update({ status }).eq('id', inviteId)
-    activeInvite.value = null
-    startBattle(invite, false, isRanked)
+    await executeAcceptInvite({
+      db: gameStore.db,
+      inviteId,
+      isRanked,
+      activeInvite,
+      openOfflineModal: (name) => modalStore.open('PvPOpponentOffline', { opponentName: name }),
+      onStartBattle: (inv) => startBattle(inv, false, isRanked)
+    })
   }
 
   async function declineInvite(inviteId: string) {
-    if (gameStore.db) {
-      await gameStore.db.from('battle_invites').update({ status: 'declined' }).eq('id', inviteId)
-    }
-    activeInvite.value = null
+    await executeDeclineInvite({
+      db: gameStore.db,
+      inviteId,
+      activeInvite
+    })
   }
 
-  function _commitPick(pick: PvPAction) {
-    if (battleState.phase !== 'choosing') return
-    timerManager.stopTurnTimer()
-    timerManager.resetStrikes()
-    afkStrikes.value = 0
+  async function _commitPick(pick: PvPAction) {
+    await executeCommitPick(pick, {
+      battleState,
+      timerManager,
+      afkStrikes,
+      battleStore: useBattleStore(),
+      resolveTurn
+    })
+  }
 
-    battleState.myPick = pick
-    battleState.phase = 'waiting'
-    if (battleState.isHost) {
-      if (battleState.enemyPick) resolveTurn()
-    } else {
-      if (battleState.ch) {
-        battleState.ch.send({ type: 'broadcast', event: 'pvp_pick', payload: pick })
-      }
-    }
+  function _checkReadyToResolve() {
+    executeCheckReadyToResolve(battleState, useBattleStore(), resolveTurn)
   }
 
   function _forfeit() {
-    timerManager.stopTurnTimer()
-    timerManager.stopReconnectCountdown()
-    if (battleState.ch) {
-      const forfeitPayload: PvpForfeitPayload = {
-        actorSide: battleState.isHost ? 'p1' : 'p2',
-        reason: 'forfeit'
-      }
-      battleState.ch.send({ type: 'broadcast', event: 'pvp_forfeit', payload: forfeitPayload })
-    }
-    endBattle(false, 'Te has rendido.')
+    executeForfeit({
+      battleState,
+      timerManager,
+      endBattle
+    })
   }
 
   async function endBattle(won: boolean, reason: string) {
-    timerManager.stopTurnTimer()
-    timerManager.stopReconnectCountdown()
-    isReconnecting.value = false
-    battleState.active = false
-    battleState.phase = 'over'
-    if (battleState.ch) battleState.ch.unsubscribe()
-
-    let eloDelta = 0
-    if (battleState.isRanked) {
-      eloDelta = await pvpStore.updateElo(won, battleState.opponentElo)
-      if (battleState.opponentId && battleState.config?.isAsynchronous && gameStore.db) {
-        const defenderDelta = -eloDelta
-        await gameStore.db.rpc('record_passive_battle_result', {
-          p_defender_id: battleState.opponentId,
-          p_result: won ? 'defeat' : 'victory',
-          p_delta_elo: defenderDelta,
-          p_report_data: {
-            opponent: authStore.user?.user_metadata?.username || gameStore.state.trainer || 'Rival',
-            turns: battleState.logs.length,
-            endedAt: Temporal.Now.instant().toString()
-          }
-        })
-      }
-    }
-
-    uiStore.notify(
-      `${reason || (won ? '¡Has ganado!' : 'Has perdido.')}${eloDelta !== 0 ? ` (${eloDelta > 0 ? '+' : ''}${eloDelta} ELO)` : ''}`,
-      won ? '🏆' : '💀'
-    )
-    if (gameStore.state) {
-      gameStore.state.activeBattle = null
-      gameStore.save(false)
-    }
+    const battleStore = useBattleStore()
+    await executeEndBattle(won, reason, {
+      battleState,
+      timerManager,
+      isReconnecting,
+      pvpStore,
+      gameStore,
+      authStore,
+      uiStore,
+      battleStore
+    })
   }
 
-  function resolveTurn() {
-    const res = resolvePvPTurn(battleState)
-    if (res) applyTurnResult(res)
+  async function resolveTurn() {
+    const battleStore = useBattleStore()
+    await executeResolveTurn({
+      battleState,
+      battleStore,
+      timerManager,
+      uiStore,
+      endBattle,
+      resolveTurnRecursion: resolveTurn
+    })
   }
 
-  async function applyTurnResult(result: PvPTurnResult) {
-    await applyPvPTurnResult(battleState, result, endBattle)
-    if (battleState.active && battleState.phase === 'choosing') {
-      timerManager.startTurnTimer()
-    }
+  function selectFaintReplacement(switchIndex: number) {
+    _commitPick({ type: 'switch', switchIndex, choiceString: `switch ${switchIndex + 1}` })
   }
 
   function resolvePvpTeam(format?: string): Pokemon[] {
-    const is6v6 = format === '6v6'
-    let uids = is6v6 ? gameStore.state.pvpTeam6 : gameStore.state.pvpTeam
-    if (!uids || uids.length === 0) {
-      if (is6v6) gameStore.autoFillPvpTeam6()
-      else gameStore.autoFillPvpTeam()
-      uids = is6v6 ? gameStore.state.pvpTeam6 : gameStore.state.pvpTeam
-    }
-    const allPokes = [
-      ...((gameStore.state.team || []) as (Pokemon | null)[]),
-      ...((gameStore.state.box || []) as (Pokemon | null)[])
-    ].filter((p): p is Pokemon => p !== null)
-
-    const resolved: Pokemon[] = []
-    for (const uid of (uids || [])) {
-      const poke = allPokes.find(p => p.uid === uid)
-      if (poke) resolved.push(JSON.parse(JSON.stringify(poke)) as Pokemon)
-    }
-    return resolved
+    return resolvePvpTeamHelper(gameStore, format)
   }
 
   function startBattle(invite: BattleInvite, isHost: boolean, isRanked: boolean) {
-    const myTeam = resolvePvpTeam(invite.config?.format)
-    const hasIllegal = myTeam.some((p: Pokemon) => p && p.isIllegal)
-    if (hasIllegal) {
-      uiStore.notify('No puedes participar en PvP con Pokémon ilegales en tu equipo.', '⚠️')
-      return
-    }
-
-    timerManager.resetStrikes()
-    afkStrikes.value = 0
-
-    battleState.active = true
-    battleState.isHost = isHost
-    battleState.isRanked = isRanked
-    battleState.inviteId = invite.id
-    battleState.config = invite.config
-    battleState.opponentId = isHost ? invite.opponent_id : (invite.sender_id || invite.challenger_id || null)
-    battleState.myTeam = myTeam
-    battleState.myHp = battleState.myTeam.map((p: Pokemon) => p.hp)
-    battleState.myActiveIdx = 0
-    battleState.phase = 'sync'
-    battleState.logs = ['¡Comienza la batalla!']
-    battleState.myPick = null
-    battleState.enemyPick = null
-
-    setupBattleChannel(invite.id)
-
-    const broadcastTeam = () => {
-      if (battleState.ch) {
-        battleState.ch.send({
-          type: 'broadcast',
-          event: 'pvp_team',
-          payload: { team: battleState.myTeam, format: invite.config?.format }
-        })
-      }
-    }
-    gsap.delayedCall(0.5, broadcastTeam)
-    gsap.delayedCall(2.0, broadcastTeam)
+    executeStartBattle(invite, isHost, isRanked, {
+      resolvePvpTeam,
+      uiStore,
+      gameStore,
+      timerManager,
+      afkStrikes,
+      myTeamConfirmed,
+      enemyTeamConfirmed,
+      battleState,
+      setupBattleChannel
+    })
   }
 
   function setupBattleChannel(inviteId: string) {
-    if (!gameStore.db) return
-    const ch = gameStore.db.channel(`pvp-${inviteId}`)
-    battleState.ch = ch
-    ch.on('broadcast' as const, { event: 'pvp_team' }, handleOpponentTeam)
-      .on('broadcast' as const, { event: 'pvp_pick' }, handleOpponentPick)
-      .on('broadcast' as const, { event: 'pvp_turn_stream' }, handleTurnStream)
-      .on('broadcast' as const, { event: 'pvp_turn_result' }, handleTurnResult)
-      .on('broadcast' as const, { event: 'pvp_reconnect' }, handleOpponentReconnect)
-      .on('broadcast' as const, { event: 'pvp_forfeit' }, handleOpponentForfeit)
-      .subscribe((status: string) => {
-        if (status === 'SUBSCRIBED') {
-          ch.send({
-            type: 'broadcast',
-            event: 'pvp_team',
-            payload: { team: battleState.myTeam }
-          })
-        }
-      })
+    executeSetupBattleChannel(inviteId, {
+      db: gameStore.db,
+      battleState,
+      trainerName: gameStore.state.trainer,
+      handlers: {
+        onOpponentTeam: handleOpponentTeam,
+        onOpponentTeamOrder: handleOpponentTeamOrder,
+        onOpponentPick: handleOpponentPick,
+        onTurnStream: handleTurnStream,
+        onOpponentReconnect: handleOpponentReconnect,
+        onOpponentForfeit: handleOpponentForfeit,
+        onSpectateJoin: handleSpectateJoin,
+        onSpectateSync: handleSpectateSync
+      }
+    })
   }
 
-  function handleOpponentTeam({ payload }: { payload: { team: Pokemon[] } }) {
-    if (battleState.enemyTeam.length > 0) return
-    battleState.enemyTeam = payload.team
-    battleState.enemyHp = payload.team.map((p: Pokemon) => p.hp)
-    battleState.enemyActiveIdx = 0
-    if (battleState.phase === 'sync') {
-      battleState.phase = 'choosing'
-      battleState.logs.push('¡El rival está listo!')
-      timerManager.startTurnTimer()
+  function handleOpponentTeam({ payload }: { payload: { team: Pokemon[]; trainerName?: string } }) {
+    executeHandleOpponentTeam(payload, battleState)
+  }
 
-      // Also ensure battleStore is started for arena UI integration
-      const battleStore = useBattleStore()
-      if (!battleStore.isPvP && battleState.enemyTeam.length > 0) {
-        const enemyLeader = battleState.enemyTeam[0]
-        if (enemyLeader) {
-          battleStore.startBattle(enemyLeader, {
-            isPvP: true,
-            pvpMatchId: battleState.inviteId || undefined,
-            pvpIsHost: battleState.isHost,
-            pvpOpponentId: battleState.opponentId || undefined,
-            pvpOpponentName: battleState.opponentName,
-            enemyTeam: battleState.enemyTeam,
-            playerTeam: battleState.myTeam,
-            isTrainer: true,
-            trainerName: battleState.opponentName,
-            trainerSprite: 'blue',
-            locationId: 'gym'
-          })
-        }
-      }
-    }
+  function confirmTeamPreview(orderedPicks: Pokemon[]) {
+    executeConfirmTeamPreview(orderedPicks, {
+      battleState,
+      myTeamConfirmed,
+      enemyTeamConfirmed,
+      timerManager,
+      battleStore: useBattleStore()
+    })
+  }
+
+  function handleOpponentTeamOrder({ payload }: { payload: { orderedUids: string[] } }) {
+    executeHandleOpponentTeamOrder(payload, {
+      battleState,
+      myTeamConfirmed,
+      enemyTeamConfirmed,
+      timerManager,
+      battleStore: useBattleStore()
+    })
   }
 
   function handleOpponentPick({ payload }: { payload: PvPAction }) {
     battleState.enemyPick = payload
-    if (battleState.isHost && battleState.myPick) resolveTurn()
-  }
-
-  function handleTurnResult({ payload }: { payload: PvPTurnResult }) {
-    if (!battleState.isHost) applyTurnResult(payload)
-  }
-
-  function handleTurnStream({ payload }: { payload: PvpTurnStreamPayload }) {
-    if (battleState.isHost) return
-    // Invert Showdown stream perspective for Guest (p1 <-> p2)
-    const invertedLines = ShowdownPerspectiveAdapter.invertStream(payload.streamLines)
-    battleState.logs.push(...invertedLines)
-    if (payload.over) {
-      const won = payload.winnerSide === 'p2' // guest perspective
-      endBattle(won, won ? '¡Victoria en PvP!' : 'Derrota en PvP.')
-    } else {
-      battleState.phase = 'choosing'
-      timerManager.startTurnTimer()
+    if (battleState.isHost) {
+      _checkReadyToResolve()
     }
   }
 
+  async function handleTurnStream({ payload }: { payload: PvpTurnStreamPayload & { request?: ShowdownPlayerRequest } }) {
+    const battleStore = useBattleStore()
+    await executeHandleTurnStream(payload, {
+      battleState,
+      battleStore,
+      timerManager,
+      uiStore,
+      isSpectator: isSpectator.value,
+      endBattle
+    })
+  }
+
+  async function createRoom(config?: PvpChallengeConfig): Promise<PvpRoomCode | null> {
+    return createRoomAction(config, {
+      userId: authStore.user?.id,
+      db: gameStore.db,
+      notify: (msg, icon) => uiStore.notify(msg, icon),
+      activeRoomCode,
+      getRoomHostPoller: () => roomHostPoller,
+      setRoomHostPoller: (p) => { roomHostPoller = p },
+      startBattle
+    })
+  }
+
+  async function cancelRoom() {
+    await cancelRoomAction(activeRoomCode, gameStore.db, roomHostPoller, (p) => { roomHostPoller = p })
+  }
+
+  async function joinRoom(code: PvpRoomCode): Promise<boolean> {
+    return joinRoomAction(code, {
+      userId: authStore.user?.id,
+      db: gameStore.db,
+      notify: (msg, icon) => uiStore.notify(msg, icon),
+      startBattle
+    })
+  }
+
+  async function spectateMatch(matchId: string) {
+    executeSpectateMatch(matchId, {
+      battleState,
+      isSpectator,
+      setupBattleChannel,
+      userId: authStore.user?.id,
+      hasDb: Boolean(gameStore.db)
+    })
+  }
+
+  function handleSpectateJoin() {
+    executeHandleSpectateJoin({ battleState })
+  }
+
+  function handleSpectateSync({ payload }: { payload: PvpSpectateSyncPayload }) {
+    executeHandleSpectateSync(payload, isSpectator.value)
+  }
+
   function handleOpponentReconnect({ payload }: { payload: PvpReconnectPayload }) {
-    uiStore.notify(`El rival se ha reconectado (Turno ${payload.lastTurnNumber}).`, '🔄')
-    timerManager.stopReconnectCountdown()
-    isReconnecting.value = false
+    executeHandleOpponentReconnect(payload, {
+      notify: (msg, icon) => uiStore.notify(msg, icon),
+      timerManager,
+      isReconnecting
+    })
   }
 
   function handleOpponentForfeit() {
@@ -518,59 +465,30 @@ export const useLivePvPStore = defineStore('livePvP', () => {
   }
 
   function reconnectBattle(restoredBattle: unknown) {
-    const b = restoredBattle as {
-      pvpMatchId?: string; // uuid-ok: Supabase battle match uuid
-      isPvP?: boolean;
-      pvpIsHost?: boolean;
-      pvpOpponentId?: string; // uuid-ok: Supabase opponent user uuid
-      turnCount?: number;
-    }
-    if (!b?.isPvP || !b.pvpMatchId) return
-
-    battleState.active = true
-    battleState.inviteId = b.pvpMatchId
-    battleState.isHost = Boolean(b.pvpIsHost)
-    battleState.opponentId = b.pvpOpponentId || null
-
-    setupBattleChannel(b.pvpMatchId)
-
-    // Notify opponent of reconnection and start reconnect timer window
-    timerManager.startReconnectCountdown()
-    isReconnecting.value = true
-
-    const payload: PvpReconnectPayload = {
-      matchId: b.pvpMatchId,
-      side: battleState.isHost ? 'p1' : 'p2',
-      lastTurnNumber: b.turnCount || 1
-    }
-    gsap.delayedCall(0.8, () => {
-      if (battleState.ch) {
-        battleState.ch.send({ type: 'broadcast', event: 'pvp_reconnect', payload })
-      }
+    executeReconnectBattle(restoredBattle, {
+      battleState,
+      timerManager,
+      isReconnecting,
+      setupBattleChannel
     })
   }
 
   function _checkPostTurn() {
-    const myHp = battleState.myHp[battleState.myActiveIdx] || 0
-    const enHp = battleState.enemyHp[battleState.enemyActiveIdx] || 0
-    if (myHp <= 0) {
-      if (!battleState.myHp.some(h => h > 0)) endBattle(false, '¡Has sido derrotado!')
-      else battleState.phase = 'faint_switch'
-    } else if (enHp <= 0) {
-      if (!battleState.enemyHp.some(h => h > 0)) endBattle(true, '¡Has ganado la batalla!')
-      else battleState.phase = 'waiting'
-    } else {
-      battleState.phase = 'choosing'
-      battleState.myPick = null
-      battleState.enemyPick = null
-      timerManager.startTurnTimer()
-    }
+    executeCheckPostTurn({
+      battleState,
+      uiStore,
+      timerManager,
+      endBattle
+    })
   }
+
 
   if (getCurrentScope()) {
     onScopeDispose(() => {
+      if (searchCountdownTween) searchCountdownTween.kill()
       if (invitePoller) invitePoller.kill()
       if (matchmakingPoller) matchmakingPoller.kill()
+      if (roomHostPoller) roomHostPoller.kill()
       timerManager.destroy()
       if (battleState.ch) battleState.ch.unsubscribe()
     })
@@ -578,14 +496,19 @@ export const useLivePvPStore = defineStore('livePvP', () => {
 
   return {
     isSearching,
+    searchSecondsRemaining,
+    searchPhase,
     battleState,
     activeInvite,
+    activeRoomCode,
+    isSpectator,
     turnSecondsRemaining,
     reconnectSecondsRemaining,
     afkStrikes,
     isReconnecting,
     activeReplay,
     watchReplay,
+    checkUserOnline,
     initInvitePoller,
     sendInvite,
     acceptInvite,
@@ -594,6 +517,14 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     reconnectBattle,
     startSearch,
     cancelSearch,
+    _fallbackToPassiveBattle,
+    resolvePvpTeam,
+    createRoom,
+    cancelRoom,
+    joinRoom,
+    spectateMatch,
+    confirmTeamPreview,
+    selectFaintReplacement,
     _commitPick,
     _forfeit,
     handleOpponentPick,

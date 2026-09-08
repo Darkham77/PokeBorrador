@@ -49,6 +49,11 @@ const handleChallenge = () => {
   gymsStore.challengeGym(props.gym.id, selectedDifficulty.value)
 }
 
+const handleRematch = () => {
+  if (props.isLocked) return
+  gymsStore.challengeRematch(props.gym.id)
+}
+
 const typeIcon = computed(() => {
   const icons: Partial<Record<PokemonType, string>> = {
     rock: '🪨', water: '💧', electric: '⚡', grass: '🌿',
@@ -225,6 +230,24 @@ const handleBtnLeave = (e: MouseEvent) => {
           >
             <span class="emoji">✅</span> VICTORIA OBTENIDA en {{ selectedDifficulty === 'easy' ? 'FÁCIL' : selectedDifficulty === 'normal' ? 'NORMAL' : 'DIFÍCIL' }}
           </div>
+
+          <!-- Revancha Diaria (desbloqueada tras vencer modo Difícil) -->
+          <template v-if="gymsStore.isDifficultyDefeated(gym.id, 'hard')">
+            <button
+              v-if="gymsStore.isRematchAvailable(gym.id)"
+              :id="'btn-rematch-' + gym.id"
+              class="rematch-challenge-btn"
+              @click.stop="handleRematch"
+            >
+              <span class="emoji">🔥</span> REVANCHA DIARIA (Lv 70-80)
+            </button>
+            <div
+              v-else-if="gymsStore.isRematchDoneToday(gym.id)"
+              class="rematch-completed-tag"
+            >
+              <span class="emoji">✓</span> Revancha Diaria Completada Hoy
+            </div>
+          </template>
 
           <button
             class="pv-challenge-btn"

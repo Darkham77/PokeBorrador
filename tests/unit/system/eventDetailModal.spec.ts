@@ -113,10 +113,22 @@ describe('EventDetailModal.vue', () => {
       })
     }
 
+    const week1Occurrence = {
+      event: rotatingEvent as unknown as GameEvent,
+      startInstant: Temporal.Instant.from('2026-09-01T21:00:00Z'),
+      endInstant: Temporal.Instant.from('2026-09-02T01:00:00Z'),
+      dateLabel: 'Mañana',
+      dayName: 'Martes',
+      timeLabel: '18:00 - 22:00 hs',
+      startsInLabel: 'En 22h',
+      isActiveNow: false
+    }
+
     const wrapper = mount(EventDetailModal, {
       props: {
         show: true,
-        event: rotatingEvent as unknown as GameEvent
+        event: rotatingEvent as unknown as GameEvent,
+        occurrence: week1Occurrence
       },
       global: {
         stubs: globalStubs

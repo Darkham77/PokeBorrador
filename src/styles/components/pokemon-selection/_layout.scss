@@ -15,6 +15,18 @@ body .selection-container {
   gap: 4px;
   margin-bottom: 0;
   padding: 0 20px;
+  box-sizing: border-box;
+  width: 100%;
+
+  &.is-compact {
+    padding: 0 10px;
+    gap: 3px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0 10px;
+    gap: 3px;
+  }
 }
 
 // Unused .ps-search-box removed to resolve redundancy
@@ -62,6 +74,7 @@ body .selection-container {
   display: flex;
   justify-content: center;
   width: 100%;
+  overflow: visible;
 
   .ps-tags-row-unified {
     display: flex;
@@ -74,18 +87,35 @@ body .selection-container {
     border-radius: 8px;
     padding: 4px 8px;
     min-height: 36px;
+    box-sizing: border-box;
+    overflow: visible;
+
+    &.is-compact {
+      gap: 4px;
+      padding: 5px 8px;
+      min-height: 34px;
+      flex-wrap: nowrap;
+      overflow: visible;
+    }
+
+    @media (max-width: 768px) {
+      gap: 4px;
+      padding: 5px 8px;
+      min-height: 34px;
+      flex-wrap: nowrap;
+      overflow: visible;
+    }
   }
 
   .ps-clear-icon-btn {
     background: Rgba(255, 255, 255, 0.03);
     border: 1px solid Rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
-    width: 22px;
-    height: 22px;
-    display: flex;
+    border-radius: 8px;
+    padding: 5px 8px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 9px;
+    font-size: 8.5px;
     cursor: pointer;
     flex-shrink: 0;
     
@@ -93,6 +123,16 @@ body .selection-container {
       transform: Scale(1.05);
       background: Rgba(255, 255, 255, 0.08);
       border-color: Rgba(255, 255, 255, 0.15);
+    }
+
+    &.is-compact {
+      padding: 5px 6px;
+      font-size: 9px;
+    }
+
+    @media (max-width: 768px) {
+      padding: 5px 6px;
+      font-size: 9px;
     }
 
     &.disabled {
@@ -123,6 +163,62 @@ body .selection-container {
     &::-webkit-scrollbar { display: none; height: 0; }
     scrollbar-width: none;
     -ms-overflow-style: none;
+
+    &.is-compact {
+      flex-wrap: wrap;
+      overflow-x: visible;
+      gap: 3px;
+      padding: 2px 0;
+
+      .pv-tooltip-wrapper {
+        flex-shrink: 0;
+        min-width: auto;
+      }
+
+      button {
+        height: 22px;
+        min-width: 22px;
+        padding: 0 4px;
+        justify-content: center;
+
+        .emoji {
+          font-size: 10px;
+          transform: none;
+        }
+
+        .ps-tag-label {
+          display: none !important;
+        }
+      }
+    }
+
+    @media (max-width: 768px) {
+      flex-wrap: wrap;
+      overflow-x: visible;
+      gap: 3px;
+      padding: 2px 0;
+
+      .pv-tooltip-wrapper {
+        flex-shrink: 0;
+        min-width: auto;
+      }
+
+      button {
+        height: 22px;
+        min-width: 22px;
+        padding: 0 4px;
+        justify-content: center;
+
+        .emoji {
+          font-size: 10px;
+          transform: none;
+        }
+
+        .ps-tag-label {
+          display: none !important;
+        }
+      }
+    }
 
     .pv-tooltip-wrapper {
       flex-shrink: 0 !important;

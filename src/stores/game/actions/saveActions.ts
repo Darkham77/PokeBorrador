@@ -13,6 +13,7 @@ import { ref, type Ref } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import type { DBRouter } from '@/logic/db/dbRouter'
 import { canSaveState, updateSessionPlaytime, handleSaveRollback } from '@/stores/game/actions/saveActionHelpers'
+import { saveCoordinator } from '@/logic/auth/saveCoordinator'
 
 export function useSaveActions(
   state: GameState, 
@@ -155,7 +156,14 @@ export function useSaveActions(
     return { success: true }
   }
 
-  async function save(showNotif = true) {
+  async function save(showNotif = true, immediate = true) {
+    if (saveCoordinator.isBatchActive() && !immediate) {
+      saveCoordinator.schedule(async () => {
+        await save(showNotif, true)
+      })
+      return { success: true }
+    }
+
     const modalStore = useModalStore()
     const saveCheck = canSaveState(state, (name) => modalStore.isOpen(name))
     if (!saveCheck.allowed) {
@@ -222,14 +230,50 @@ export function useSaveActions(
     return result || { success: false }
   }
 
-  async function scheduleSave() {
-    await save(false)
+  async function scheduleSave(delayMs?: number) {
+    saveCoordinator.schedule(async () => {
+      await save(false, true)
+    }, delayMs)
+  }
+
+  async function withBatchSave<T>(action: () => Promise<T>, showNotifOnEnd = true): Promise<T> {
+    return saveCoordinator.withBatchSave(action, async () => {
+      await save(showNotifOnEnd, true)
+    })
   }
 
   async function claimAsset(claimId: string | number) {
     if (isSandboxActive.value) return false
     if (!authStore.user || !db.value) return false
     try {
+      const localClaim = (state.claimQueue || []).find((c: ClaimItem) => String(c.id) === String(claimId))
+      if (localClaim) {
+        try {
+          const { data: existing } = await db.value
+            .from('claim_queue')
+            .select('id')
+            .eq('id', claimId)
+            .maybeSingle()
+          if (!existing) {
+            await db.value.from('claim_queue').insert([
+              {
+                id: localClaim.id,
+                user_id: authStore.user.id,
+                source_type: localClaim.source_type || 'gts',
+                source_id: localClaim.source_id,
+                asset_data: typeof localClaim.asset_data === 'string' ? JSON.parse(localClaim.asset_data) : localClaim.asset_data,
+                created_at: localClaim.created_at || Temporal.Now.instant().toString()
+              }
+            ])
+          }
+        } catch {
+          // continue to RPC
+        }
+      }
+
+      // Ensure recent in-memory changes (milestones, class loot) are flushed to DB before claim_asset_v2 reads game_saves
+      await save(false, true)
+
       const { data, error } = await db.value.rpc('claim_asset_v2', { p_claim_id: claimId })
       if (error) throw error
       if (data) {
@@ -264,5 +308,5 @@ export function useSaveActions(
     if (!error) state.claimQueue = data || []
   }
 
-  return { loadGame, save, scheduleSave, claimAsset, fetchClaimQueue, saveBlocked, validationErrorDetails }
+  return { loadGame, save, scheduleSave, withBatchSave, claimAsset, fetchClaimQueue, saveBlocked, validationErrorDetails }
 }

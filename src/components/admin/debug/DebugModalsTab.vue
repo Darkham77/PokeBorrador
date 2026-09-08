@@ -2,11 +2,48 @@
 import { ref } from 'vue'
 import { useModalStore } from '@/stores/modals'
 import { useUIStore } from '@/stores/ui'
+import { useEventStore } from '@/stores/events'
+import { useGameStore } from '@/stores/game'
+import { useAuthStore } from '@/stores/auth'
+import { useGTSStore } from '@/stores/gts'
+import { usePvPStore } from '@/stores/pvp'
+import { simulatePastEventAndMissionsReward, clearDebugSimulatedRewards } from '@/logic/debug/rewardsDebugSimulation'
 
 const modalStore = useModalStore()
 const uiStore = useUIStore()
+const eventStore = useEventStore()
+const gameStore = useGameStore()
+const authStore = useAuthStore()
+const gtsStore = useGTSStore()
+const pvpStore = usePvPStore()
+
 const modalCount = ref(5)
 const isTesting = ref(false)
+const isSimulatingRewards = ref(false)
+const isClearingRewards = ref(false)
+const lastSimulationSummary = ref('')
+
+async function handleSimulateRewards() {
+  if (isSimulatingRewards.value) return
+  isSimulatingRewards.value = true
+  try {
+    const summary = await simulatePastEventAndMissionsReward(eventStore, gameStore, authStore, uiStore, modalStore, gtsStore, pvpStore)
+    lastSimulationSummary.value = summary
+  } finally {
+    isSimulatingRewards.value = false
+  }
+}
+
+async function handleClearRewards() {
+  if (isClearingRewards.value) return
+  isClearingRewards.value = true
+  try {
+    await clearDebugSimulatedRewards(eventStore, gameStore, uiStore, gtsStore, pvpStore)
+    lastSimulationSummary.value = ''
+  } finally {
+    isClearingRewards.value = false
+  }
+}
 
 async function startTest() {
   if (isTesting.value) return
@@ -65,6 +102,49 @@ function triggerSampleError() {
             DISPARAR ERROR
           </button>
         </PVTooltip>
+      </div>
+    </div>
+
+    <div class="debug-group">
+      <label>TESTING RECOMPENSAS & BADGES</label>
+      <div class="button-row">
+        <PVTooltip title="Busca el último torneo o evento pasado, simula ganarlo (puesto aleatorio), inyecta misión y cobro GTS, y redirige a Inicio.">
+          <button
+            id="btn-debug-simulate-rewards"
+            class="btn-vicio-primary btn-vicio-sm"
+            :disabled="isSimulatingRewards"
+            @click.stop="handleSimulateRewards"
+          >
+            <template v-if="isSimulatingRewards">
+              SIMULANDO...
+            </template>
+            <template v-else>
+              <span class="emoji">🎯</span> SIMULAR RECOMPENSAS COMPLETAS
+            </template>
+          </button>
+        </PVTooltip>
+
+        <PVTooltip title="Elimina las recompensas, misiones y cobros GTS generados por la simulación de pruebas.">
+          <button
+            id="btn-debug-clear-rewards"
+            class="btn-vicio-danger btn-vicio-sm"
+            :disabled="isClearingRewards"
+            @click.stop="handleClearRewards"
+          >
+            <template v-if="isClearingRewards">
+              LIMPIANDO...
+            </template>
+            <template v-else>
+              <span class="emoji">🧹</span> LIMPIAR PREMIOS
+            </template>
+          </button>
+        </PVTooltip>
+      </div>
+      <div
+        v-if="lastSimulationSummary"
+        class="simulation-summary-box"
+      >
+        {{ lastSimulationSummary }}
       </div>
     </div>
 
@@ -152,5 +232,16 @@ function triggerSampleError() {
   color: $muted;
   margin: 0;
   line-height: 1.4;
+}
+
+.simulation-summary-box {
+  background: Rgba(34, 197, 94, 0.12);
+  border: 1px solid Rgba(34, 197, 94, 0.3);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 8px;
+  color: #86efac;
+  line-height: 1.4;
+  @include pixelated;
 }
 </style>

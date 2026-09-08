@@ -1,4 +1,4 @@
-import { toRaw } from 'vue'
+import { cloneReactive } from '@/logic/utils/cloneUtils.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { BattleState, BattleStages, BattleLog } from '@/types/battle/battle'
 import type { Pokemon } from '@/types/pokemon/pokemon'
@@ -65,11 +65,7 @@ export async function restoreBattleState(ctx: BattleContext, battleData: unknown
     d.player = playerPoke
     d.enemy = enemyPoke
     if (!d._initialEnemy) {
-      try {
-        d._initialEnemy = structuredClone(toRaw(enemyPoke))
-      } catch {
-        d._initialEnemy = JSON.parse(JSON.stringify(enemyPoke)) as Pokemon
-      }
+      d._initialEnemy = cloneReactive(enemyPoke)
     }
     d.playerTeam = sourceTeam
     const matchedIndex = sourceTeam.findIndex((p: Pokemon) => p && isMatchingUid(p.uid, playerPoke.uid))

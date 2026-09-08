@@ -1,7 +1,7 @@
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { calculateTotalIVs, hasMaxIV } from '@/logic/pokemon/statsMath'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
-import { hasPokemonTag, isPokemonTagId } from '@/logic/constants/tags'
+import { hasPokemonTag, isPokemonFilterTagId } from '@/logic/constants/tags'
 import {
   resolveFriendshipSealTier,
   isReadyForFriendshipEvolution,
@@ -100,10 +100,7 @@ export function matchesTagsFilter(p: Pokemon, tags?: readonly string[]): boolean
   if (!tags || tags.length === 0) return true
   return tags.every(t => {
     if (t === 'team') return false
-    if (isPokemonTagId(t) || t === 'favorite' || t === 'comp') {
-      return hasPokemonTag(p, t)
-    }
-    return false
+    return isPokemonFilterTagId(t) ? hasPokemonTag(p, t) : false
   })
 }
 

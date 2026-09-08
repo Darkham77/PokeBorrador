@@ -182,8 +182,8 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
       gameBus.emit('PLAY_SEND_OUT', { side: 'enemy', pokemon: nextEnemy })
     }
     
-    const { showdownWorker, executeTurnInWorker } = await import('./showdownWorkerClient.ts')
-    if (showdownWorker && active.enemyTeam) {
+    const { getShowdownWorker, executeTurnInWorker } = await import('./showdownWorkerClient.ts')
+    if (getShowdownWorker() && active.enemyTeam) {
       const p2Choice = `switch ${ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)}`
       const result = await executeTurnInWorker('', p2Choice, true, false)
       if (!isCurrentActiveBattle()) return

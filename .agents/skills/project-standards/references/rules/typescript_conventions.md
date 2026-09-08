@@ -67,6 +67,8 @@
   13. **No Mixed Domain Literal Unions (`noMixedDomainLiteralUnions`)**: Never combine domain union types with ad-hoc sentinel strings (e.g. `WeatherId | 'clear'`, `PokemonType | 'all'`). Composite filter types must be derived from dedicated `as const` arrays (`export const MARKET_TYPE_FILTERS = ['all', ...POKEMON_TYPES] as const; export type MarketTypeFilter = (typeof MARKET_TYPE_FILTERS)[number];`).
   14. **Canonical Domain Pureness (`canonicalDomainPureness`)**: `null` and `undefined` must NEVER be part of canonical catalogue domain unions (`WeatherId`, `PokemonSpeciesId`, `ItemId`). Nullability belongs exclusively to the container property or state variable (`weather: WeatherId | null`).
   15. **No Exports in Vue Script Setup (`noScriptSetupExports`)**: `<script setup>` in `.vue` files CANNOT contain ES module exports (`export const`, `export type`, `export interface`). Shared contracts must be extracted to companion `*Types.ts` files, and local types must remain unexported.
+  16. **Vue SFC Template Binding Quote Escaping (`vueTemplateQuoteEscaping`)**: When passing string literals within double-quoted Vue SFC template bindings (e.g. `:alt="..."`, `:style="..."`), developers MUST strictly use single quotes for inner string literals (e.g. `:alt="tier?.name || 'Bronce'"`), never unescaped double quotes (`:alt="tier?.name || "Bronce""`). Unescaped inner double quotes violate Vue SFC template parsing and trigger fatal Vite pre-transform errors (`Unexpected token`).
+  17. **Storage Collection Index Preservation Before Filtering (`storageIndexPreservation`)**: When transforming or rendering subsets of storage collections (`team`, `box`, `inventory`) where items pass their slot index to mutation handlers, selection routers, or detail composables (`openPokemonDetail(pokemon, index, context)`), developers MUST preserve the true storage slot index by mapping (`.map((item, originalIndex) => ({ ...item, originalIndex }))`) BEFORE applying `.filter(...)`. Passing post-filter array indices into storage mutation handlers or index-based composables silently targets the wrong storage slot, causing severe state desync or displaying incorrect Pokémon entities.
 
 ## 3. Mandatory Typed Domain Data Wrappers for JSON Files
 
@@ -129,5 +131,14 @@ When an escape hatch or localized ignore annotation is strictly necessary, it MU
 - `// spanish-ok: UI Spanish text localization label`
 
 Naked tags (e.g. `// domain-ok` or `// no-magic` without `: reason`) are flagged as critical errors by `validate_audit_headers.ts`. Under no circumstances may escape hatches be used to suppress type errors on domain entities.
+
+## 12. Deep Cloning, Vue Reactivity & High-Performance Object Duplication
+
+- **Prohibition on `JSON.parse(JSON.stringify)` (`o1-json-clone`)**: It is STRICTLY FORBIDDEN to use `JSON.parse(JSON.stringify(x))` for cloning objects, arrays, or states. This anti-pattern is enforced as an audit error by `scripts/auditors/domain_data/validate_o1_data_structures.ts` (`P_JSON_CLONE`).
+- **Plain Serializable Objects**: Use native `structuredClone(obj)`.
+- **Reactive Vue 3 State & Pinia Entities (`cloneReactive`)**: Because Vue 3's `toRaw()` is shallow, nested objects, arrays, and properties inside reactive state (e.g. `pokemon.ivs`, `pokemon.moves`, `team`, `box`) remain wrapped in Vue Proxies. Passing nested reactive proxies to native `structuredClone` throws `DOMException: DataCloneError: #<Object> could not be cloned`.
+  - When cloning reactive state or entities, developers MUST use `cloneReactive(entity)` from `@/logic/utils/cloneUtils.ts`.
+  - To unwrap proxies without creating an isolated deep clone, use `deepToRaw(entity)` from `@/logic/utils/cloneUtils.ts`.
+
 
 

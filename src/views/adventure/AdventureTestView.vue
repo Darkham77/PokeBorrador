@@ -360,7 +360,7 @@ onMounted(() => {
                     class="adv-mo-icon-bubble"
                     :class="{ 'mo-unlocked': activeHMs.has(edge.mo) }"
                   >
-                    <span class="bubble-emoji">{{ edge.mo === 'surf' ? '🌊' : edge.mo === 'cut' ? '🌳' : edge.mo === 'strength' ? '🪨' : edge.mo === 'rock_smash' ? '🧱' : '🔑' }}</span>
+                    <span class="bubble-emoji">{{ edge.mo === 'surf' ? '🌊' : edge.mo === 'cut' ? '🌳' : edge.mo === 'strength' ? '🪨' : edge.mo === 'rock_smash' ? '🧱' : '🔑' }}</span> <!-- // text-ok: UI text display localization string -->
                   </div>
                 </PVTooltip>
               </div>

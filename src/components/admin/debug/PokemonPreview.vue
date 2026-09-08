@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
 
 interface Props {
   spriteUrl?: string
@@ -71,7 +72,10 @@ const emit = defineEmits<{
           :class="[gender === 'm' ? 'male' : 'female']"
           @click.stop="emit('toggleGender')"
         >
-          <span class="emoji">{{ gender === 'm' ? '♂️' : '♀️' }}</span>
+          <PVGenderBadge
+            :gender="gender"
+            size="sm"
+          />
         </button>
       </PVTooltip>
     </div>

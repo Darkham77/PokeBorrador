@@ -387,6 +387,13 @@ export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
         ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON ROUTINES TO anon, authenticated, service_role;
       END $$;
     `);
+
+    // Notify PostgREST to reload its schema cache
+    try {
+      await sql.unsafe("NOTIFY pgrst, 'reload schema';");
+    } catch {
+      // Ignore notification error if pgrst is restarting
+    }
   } finally {
     await sql.end();
   }
@@ -468,6 +475,11 @@ export async function applyMigrationsToPostgres(dbUrl: string): Promise<void> {
       const isPostgrestRunning = await waitForPostgrest(1);
       if (isPgRunning && isPostgrestRunning) {
         console.log(styleText('green', '✅ Pila Supabase (PostgreSQL + PostgREST + Gateway) ya activa y lista en RAM.'));
+        try {
+          await applyMigrationsToPostgres(POSTGRES_URL);
+        } catch (migErr) {
+          console.error(styleText('red', `❌ Error al aplicar migraciones incrementales en PostgreSQL: ${(migErr as Error).message}`));
+        }
         return { isReady: true, postgresUrl: POSTGRES_URL, postgrestUrl: POSTGREST_URL, dockerBin };
       }
     }

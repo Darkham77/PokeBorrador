@@ -49,6 +49,9 @@ export class SaturdayGlobalContestSimulation extends BaseEventSimulation {
       gameStore.state.battleCoins = 50; // no-magic: Test seed balance
       gameStore.state.inventory = { goldbottlecap: 0, rarecandy: 0 };
       gameStore.state.starterChosen = true;
+      gameStore.state.rankedRewardsClaimed = ['bronce_1000'];
+      const { usePvPStore } = await import('../../../src/stores/pvp.ts');
+      usePvPStore().rewardsClaimed = ['bronce_1000'];
 
       // Heavyweight Snorlax for 'weight' category
       const snorlax = pokemonDebugService.generate({

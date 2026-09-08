@@ -6,6 +6,8 @@ import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachi
 import type { ItemId } from '@/data/inventory/items';
 import type { SeatState } from '@/composables/battle/useBattleSeats';
 
+import type { BattleUiConfig } from '@/types/battle/battleConfig';
+
 export type BattleSeatId = 'seat1' | 'seat2' | 'seat3' | 'seat4';
 
 export interface BattleContext {
@@ -27,6 +29,7 @@ export interface BattleContext {
   isReadyToExit: Ref<boolean>;
   isIntroAnimating: Ref<boolean>;
   isPvP: Ref<boolean>;
+  uiConfig?: Ref<BattleUiConfig>;
   isProcessing: Ref<boolean>;
   debugBinoculars: Ref<boolean>;
   debugLoopPokemon: Ref<Pokemon | null>;
@@ -45,6 +48,7 @@ export interface BattleContext {
   handleFaint: (side: BattleSide) => Promise<void>;
   addLog: (msg: string, type?: string, source?: BattleSource | null, sideOverride?: BattleSide | null) => void;
   endBattle: (win: boolean, fled: boolean) => Promise<void>;
+  processBattleEndRewards?: () => Promise<void>;
   completeBattleFlow: (option?: string) => Promise<void>;
   persistBattle: () => void;
   waitForLogs: () => Promise<void>;

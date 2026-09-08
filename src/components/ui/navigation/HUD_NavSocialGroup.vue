@@ -12,9 +12,8 @@ const {
   uiStore,
   modalStore,
   socialStore,
-  gameStore,
-  eventStore,
   totalSocialNotifications,
+  tradeClaimsCount,
   handleMouseEnter,
   handleMouseLeave,
   toggleGroupMenu,
@@ -35,7 +34,7 @@ const {
     <PVHUDButton
       id="nav-social-btn"
       custom-class="group-btn"
-      :active="modalStore.isOpen('Arena') || modalStore.isOpen('Ranking') || uiStore.openHudGroup === 'SOCIAL' || modalStore.isOpen('SocialCenter') || modalStore.isOpen('WorldEvents') || modalStore.isOpen('FactionWar')"
+      :active="modalStore.isOpen('Arena') || uiStore.openHudGroup === 'SOCIAL' || modalStore.isOpen('SocialCenter') || modalStore.isOpen('FactionWar')"
       :badge-value="totalSocialNotifications"
       @click.stop="toggleGroupMenu('SOCIAL')"
     >
@@ -64,10 +63,10 @@ const {
           <span class="emoji">🤝</span>
           <span class="nav-item-label">AMIGOS</span>
           <span
-            v-if="(socialStore.notifications.chats + socialStore.notifications.friends + socialStore.notifications.trades + gameStore.state.claimQueue.length) > 0"
+            v-if="(socialStore.notifications.chats + socialStore.notifications.friends + socialStore.notifications.trades + tradeClaimsCount) > 0"
             class="hud-notification-badge"
           >
-            {{ socialStore.notifications.chats + socialStore.notifications.friends + socialStore.notifications.trades + gameStore.state.claimQueue.length }}
+            {{ socialStore.notifications.chats + socialStore.notifications.friends + socialStore.notifications.trades + tradeClaimsCount }}
           </span>
         </button>
 
@@ -78,22 +77,13 @@ const {
           @click.stop="handleTabChange('arena'); uiStore.openHudGroup = null"
         >
           <span class="emoji">🏟️</span>
-          <span class="nav-item-label">ARENA</span>
+          <span class="nav-item-label">COLISEO</span>
           <span
             v-if="socialStore.notifications.battles > 0"
             class="hud-notification-badge"
           >
             {{ socialStore.notifications.battles }}
           </span>
-        </button>
-        <button
-          id="nav-social-ranking-btn"
-          class="hud-nav-btn"
-          :class="{ active: modalStore.isOpen('Ranking') }"
-          @click.stop="handleTabChange('ranking'); uiStore.openHudGroup = null"
-        >
-          <span class="emoji">🏅</span>
-          <span class="nav-item-label">RANKING</span>
         </button>
         <button
           id="nav-social-dominance-btn"
@@ -103,21 +93,6 @@ const {
         >
           <span class="emoji">⚔️</span>
           <span class="nav-item-label">DOMINANCIA</span>
-        </button>
-        <button
-          id="nav-social-events-btn"
-          class="hud-nav-btn"
-          :class="{ active: modalStore.isOpen('WorldEvents') }"
-          @click.stop="modalStore.open('WorldEvents'); uiStore.openHudGroup = null"
-        >
-          <span class="emoji">🎁</span>
-          <span class="nav-item-label">EVENTOS</span>
-          <span
-            v-if="eventStore.pendingAwards.length > 0"
-            class="hud-notification-badge"
-          >
-            {{ eventStore.pendingAwards.length }}
-          </span>
         </button>
       </div>
     </Transition>

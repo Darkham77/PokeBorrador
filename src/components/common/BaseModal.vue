@@ -41,6 +41,7 @@
         >
           <div 
             v-if="show"
+            :id="id || undefined"
             class="modal-content-premium base-modal-card"
             :class="[
               padding === 'raw' ? 'padding-raw' : 'padding-standard', 

@@ -5,6 +5,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getVigor, getMaxVigor } from '@/logic/pokemon/pokemonUtils'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
 import { NATURE_DATA, isNatureId, getNatureInfo } from '@/data/battle/natures'
 import { useGameStore } from '@/stores/game'
 import { useInventoryStore } from '@/stores/inventory/inventory'
@@ -238,10 +239,6 @@ const handleItemClick = () => {
   }
 }
 
-const genderIcon = computed(() => {
-  if (!props.pokemon?.gender) return ''
-  return props.pokemon.gender === 'm' ? '♂' : '♀'
-})
 
 const getSprite = (id: string | number, isShiny: boolean) => {
   return getAssetUrl(ASSET_TYPES.POKEMON, id, { isShiny })
@@ -310,11 +307,11 @@ const heldItemSprite = computed(() => {
           </div>
           <div class="lv-gender-line">
             <span class="m-badge-level">NV.{{ pokemon.level }}</span>
-            <span
+            <PVGenderBadge
               v-if="pokemon.gender"
-              class="emoji m-badge-gender mini"
-              :class="pokemon.gender === 'm' ? 'male' : 'female'"
-            >{{ genderIcon }}</span>
+              :gender="pokemon.gender"
+              size="mini"
+            />
           </div>
           <div class="iv-grid-daycare">
             <div class="iv-item">

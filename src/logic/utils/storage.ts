@@ -5,34 +5,38 @@
  */
 import { logger } from './logger.ts';
 
+const memoryStore = new Map<string, string>()
+
+function getStorageBackend(): Storage | null { // result-ok: Operation result wrapper payload
+  try {
+    if (typeof localStorage !== 'undefined') return localStorage
+    if (typeof window !== 'undefined' && window.localStorage) return window.localStorage
+  } catch {
+    // ignore
+  }
+  return null
+}
+
 export const safeStorage = {
   getItem(key: string): string | null {
     try {
-      if (typeof localStorage === 'undefined') return null
-      const val = localStorage.getItem(key)
-      
-      // Shadow Backup Rescue: If primary is missing, try backup
-      if (val === null) {
-        const backup = localStorage.getItem(key + '_backup')
-        if (backup !== null) {
-          logger.warn('Storage', `Primary key "${key}" missing. Restoring from Shadow Backup.`)
-          localStorage.setItem(key, backup) // Auto-heal
-          return backup
-        }
+      const storage = getStorageBackend()
+      if (!storage) {
+        return memoryStore.get(key) ?? null
       }
-      return val
+      return storage.getItem(key)
     } catch (e: unknown) {
       logger.warn('Storage', `Failed to get item "${key}": ${e instanceof Error ? e.message : String(e)}`)
-      return null
+      return memoryStore.get(key) ?? null
     }
   },
 
   setItem(key: string, value: string): void {
     try {
-      if (typeof localStorage === 'undefined') return
-      localStorage.setItem(key, value)
-      // Create shadow backup for everything
-      localStorage.setItem(key + '_backup', value)
+      memoryStore.set(key, value)
+      const storage = getStorageBackend()
+      if (!storage) return
+      storage.setItem(key, value)
     } catch (e: unknown) {
       logger.warn('Storage', `Failed to set item "${key}": ${e instanceof Error ? e.message : String(e)}`)
     }
@@ -40,9 +44,10 @@ export const safeStorage = {
 
   removeItem(key: string): void {
     try {
-      if (typeof localStorage === 'undefined') return
-      localStorage.removeItem(key)
-      localStorage.removeItem(key + '_backup')
+      memoryStore.delete(key)
+      const storage = getStorageBackend()
+      if (!storage) return
+      storage.removeItem(key)
     } catch (e: unknown) {
       logger.warn('Storage', `Failed to remove item "${key}": ${e instanceof Error ? e.message : String(e)}`)
     }

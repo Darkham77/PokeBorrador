@@ -3,8 +3,10 @@ import { gsap } from 'gsap'
 import { BOX_TIER_CONFIG } from '@/logic/pokemon/tierEngine'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import PokemonSortBar from '@/components/pokemon/PokemonSortBar.vue'
+import PokemonTagBar from '@/components/pokemon/PokemonTagBar.vue'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import { POKEMON_TYPES } from '@/data/battle/types'
+import type { PokemonFilterTagId } from '@/logic/constants/tags'
 
 interface BoxFilters {
   tier: string
@@ -33,7 +35,7 @@ interface BoxFilters {
   bstMin: number
   bstMax: number
   search: string
-  tags: string[]
+  tags: PokemonFilterTagId[]
   friendshipSealTier?: string
   friendshipEvoReady?: boolean
   friendshipMaxOnly?: boolean
@@ -66,14 +68,6 @@ const toggleFilters = () => {
 
 const updateFilter = <K extends keyof BoxFilters>(key: K, val: BoxFilters[K]) => {
   emit('update:filters', { ...props.filters, [key]: val })
-}
-
-const toggleTag = (tag: string) => {
-  const currentTags = [...(props.filters.tags || [])]
-  const idx = currentTags.indexOf(tag)
-  if (idx > -1) currentTags.splice(idx, 1)
-  else currentTags.push(tag)
-  updateFilter('tags', currentTags)
 }
 
 const onSearchInput = (e: Event) => {
@@ -109,21 +103,6 @@ const getSliderStyle = (val: number, max: number, color: string) => {
     background: `Linear-Gradient(to right, ${color} 0%, ${color} ${percentage}%, Rgba(255,255,255,0.1) ${percentage}%, Rgba(255,255,255,0.1) 100%)`
   }
 }
-
-const PERFECT_IV_LABEL_TEXT = '31'
-
-const AVAILABLE_TAGS = [
-  { id: 'fav', label: 'FAV', icon: '⭐' },
-  { id: 'breed', label: 'GEN', icon: '🧬' },
-  { id: 'comp', label: 'CMP', icon: '🏆' },
-  { id: 'trade', label: 'TRD', icon: '🔄' },
-  { id: 'iv31', label: 'IV', icon: PERFECT_IV_LABEL_TEXT },
-  { id: 'shy', label: 'SHY', icon: '✨' },
-  { id: 'team', label: 'TEM', icon: '👥' },
-  { id: 'hatched', label: 'CRI', icon: '🥚' },
-  { id: 'friendship-evo', label: 'EVO', icon: '💎' },
-  { id: 'friendship-max', label: 'MAX', icon: '🎀' }
-]
 
 const BOX_FILTERS_ENTER_DURATION_SEC = 0.35
 const BOX_FILTERS_LEAVE_DURATION_SEC = 0.25
@@ -215,36 +194,13 @@ const leave = (el: Element, done: () => void) => {
 
       <!-- Renglón 2: Etiquetas -->
       <div class="tags-row-compact">
-        <div class="tags-group-mini">
-          <span class="mini-label">ETIQUETAS:</span>
-          <div class="tags-scroll-container">
-            <PVTooltip 
-              v-for="tag in AVAILABLE_TAGS" 
-              :key="tag.id"
-              :title="tag.label"
-              :description="(tag.id === 'fav' ? 'Pokémon marcados con estrella.' : 
-                tag.id === 'breed' ? 'Marcado para breeding o crianza selectiva.' :
-                tag.id === 'comp' ? 'Pokémon entrenados para torneos.' :
-                tag.id === 'trade' ? 'Pokémon listos para intercambio.' :
-                tag.id === 'iv31' ? 'Pokémon con estadísticas perfectas (31 IV).' :
-                tag.id === 'shy' ? 'Pokémon Shiny con colores alternativos.' :
-                tag.id === 'team' ? 'Pokémon asignados a tu equipo actual.' :
-                tag.id === 'hatched' ? 'Pokémon nacidos de un huevo.' : 
-                tag.id === 'friendship-evo' ? 'Pokémon listos para evolucionar por amistad.' :
-                tag.id === 'friendship-max' ? 'Pokémon con amistad y vínculo al máximo (220+).' : '') || ''"
-              position="bottom"
-            >
-              <button
-                :class="['mini-tag-btn', { active: filters.tags.includes(tag.id) }]"
-                @click.stop="toggleTag(tag.id)"
-              >
-                <span class="emoji box-tag-icon-inner">{{ tag.icon }}</span>
-                <span class="tag-text-small">{{ tag.label }}</span>
-              </button>
-            </PVTooltip>
-          </div> <!-- end tags-scroll-container -->
-        </div> <!-- end tags-group-mini -->
-      </div> <!-- end tags-row-compact -->
+        <PokemonTagBar
+          :model-value="filters.tags"
+          :show-label="true"
+          label="ETIQUETAS:"
+          @update:model-value="updateFilter('tags', $event)"
+        />
+      </div>
     </div> <!-- end box-controls-compact -->
 
     <!-- Panel Extendido de Filtros (Optimizado Mixto) -->

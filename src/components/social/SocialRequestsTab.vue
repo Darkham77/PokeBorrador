@@ -97,12 +97,14 @@ watch(() => socialStore.pendingRequests.map((r) => r.id).join(','), () => {
         <template #actions>
           <div class="request-btns">
             <button
+              v-gsap-hover
               class="btn-vicio-success btn-vicio-sm"
               @click.stop="socialStore.respondRequest(req.id, 'accepted')"
             >
               ACEPTAR
             </button>
             <button
+              v-gsap-hover
               class="btn-vicio-danger btn-vicio-sm reject-btn"
               @click.stop="socialStore.respondRequest(req.id, 'rejected')"
             >

@@ -301,3 +301,18 @@
   pointer-events: none;
 }
 
+/* --- FLOATING BATTLE CONTROLS (PvP Turn Timer, Spectator & Replay) --- */
+.battle-arena-floating-controls {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: Translatex(-50%);
+  z-index: var(--z-hud);
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+

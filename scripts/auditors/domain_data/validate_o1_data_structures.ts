@@ -12,6 +12,7 @@
  *   2. o1-pokemon-lookup: [...team, ...box].find() or .filter() instead of gameStore.getPokemonByUid().
  *   3. o1-linear-membership: Array constant .includes() instead of ReadonlySet.has().
  *   4. o1-object-keys-values-scan: Object.keys() / Object.values() linear search instead of key index.
+ *   5. o1-json-clone: JSON.parse(JSON.stringify(...)) anti-pattern instead of structuredClone or factory.
  *
  * Usage:
  *   node scripts/auditors/domain_data/validate_o1_data_structures.ts
@@ -86,6 +87,7 @@ export const O1_CATALOG_PATTERNS: Array<{
 export const P_POKEMON_SPREAD_LOOKUP = /\[\s*\.\.\.[a-zA-Z0-9_.]*(?:team|box)[^,\]]*,\s*\.\.\.[a-zA-Z0-9_.]*(?:team|box)[^\]]*\]\.(?:find|filter|some)\s*\(/g;
 export const P_STATIC_ARRAY_INCLUDES = /(?:\(\s*)?\b([A-Z][A-Z0-9_]+_(?:IDS|LIST|TYPES|CATEGORIES|NAMES|KINDS|ORDER))\b(?:\s+as\s+[^)]+)?(?:\s*\))?\.(?:includes|indexOf)\s*\(/g;
 export const P_OBJECT_SCAN_LOOKUP = /\bObject\.(?:keys|values|entries)\s*\([^)]+\)\.(?:find|findLast)\s*\(/g;
+export const P_JSON_CLONE = /\bJSON\.parse\s*\(\s*JSON\.stringify\s*\(/g;
 
 // Escape hatch comments (strictly o1-specific, domain-ok is forbidden here)
 export const ESCAPE_HATCHES = ['// o1-ok:', '// linear-search-ok:'] as const;
@@ -160,6 +162,18 @@ export function scanFileForO1Issues(
       issues.push({
         ruleId: 'o1-object-scan',
         message: "Linear scan on Object.keys()/values(). Use direct property access `obj[key]` or an inverted lookup Record",
+        line: lineNumber,
+        context: lineText.trim(),
+        isWarning: false
+      });
+    }
+
+    // 5. JSON.parse(JSON.stringify(...)) Deep Clone Anti-Pattern
+    P_JSON_CLONE.lastIndex = 0;
+    if (P_JSON_CLONE.test(lineText)) {
+      issues.push({
+        ruleId: 'o1-json-clone',
+        message: "Anti-pattern 'JSON.parse(JSON.stringify(...))' detected. Use native 'structuredClone(obj)' or an object factory function instead.",
         line: lineNumber,
         context: lineText.trim(),
         isWarning: false

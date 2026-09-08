@@ -48,6 +48,9 @@ export class EventAwardsGuiLifecycleSimulation extends BaseEventSimulation {
       gameStore.state.battleCoins = 10; // no-magic: Test seed baseline balance
       gameStore.state.inventory = { goldbottlecap: 0, rarecandy: 0 };
       gameStore.state.starterChosen = true;
+      gameStore.state.rankedRewardsClaimed = ['bronce_1000'];
+      const { usePvPStore } = await import('../../../src/stores/pvp.ts');
+      usePvPStore().rewardsClaimed = ['bronce_1000'];
 
       // Shellder: Heavy weight contestant for 'weight' category
       const shellder = pokemonDebugService.generate({

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// [PureVue-Ignore-Length]
 import { computed, ref } from 'vue'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import PokemonBaseStats from './PokemonBaseStats.vue'
@@ -9,6 +8,7 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 import PokemonPreview from './PokemonPreview.vue'
 import DebugSearchSelect from './DebugSearchSelect.vue'
 import DebugIllegalModal from './DebugIllegalModal.vue'
+import DebugPokemonCreatorFooter from './DebugPokemonCreatorFooter.vue'
 import { useDebugPokemonCreator } from './useDebugPokemonCreator.ts'
 import { isPokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { MAX_POKEMON_LEVEL } from '@/data/system/constants'
@@ -448,87 +448,10 @@ const currentSprite = computed(() => pokemonDataProvider.getSpriteUrl(config.val
     </div>
 
     <!-- Footer: Protocols -->
-    <div class="creator-footer">
-      <div class="action-buttons">
-        <PVTooltip
-          title="Atrapar ahora"
-          description="Añade el Pokémon directamente a tu equipo o PC."
-        >
-          <button
-            id="debug-btn-catch"
-            class="btn-vicio-primary"
-            @click.stop="executeAction('catch')"
-          >
-            ATRAPAR
-          </button>
-        </PVTooltip>
-          
-        <PVTooltip
-          title="Iniciar minijuego de captura"
-          description="Inicia la secuencia y el minijuego de captura seleccionado."
-        >
-          <button
-            id="debug-creator-minigame-action-btn"
-            class="btn-vicio-success"
-            @click.stop="executeAction(selectedMinigame + '_minigame')"
-          >
-            MINIJUEGO
-          </button>
-        </PVTooltip>
-          
-        <PVTooltip
-          title="Añadir huevo listo (1 paso)"
-          description="Genera un huevo en tu mochila que eclosionará al dar el siguiente paso."
-        >
-          <button
-            id="debug-creator-walk-egg-btn"
-            class="btn-vicio-primary secondary"
-            @click.stop="executeAction('egg_silent')"
-          >
-            CAMINAR HUEVO
-          </button>
-        </PVTooltip>
-          
-        <PVTooltip
-          title="Añadir huevo con animación"
-          description="Genera un huevo que iniciará la secuencia de eclosión."
-        >
-          <button
-            id="debug-creator-anim-egg-btn"
-            class="btn-vicio-primary secondary"
-            @click.stop="executeAction('egg_anim')"
-          >
-            HUEVO ANIM.
-          </button>
-        </PVTooltip>
-
-        <PVTooltip
-          title="Añadir huevo al almacén"
-          description="Genera un huevo directamente en el almacén de la guardería (sin tener que caminar)."
-        >
-          <button
-            id="debug-creator-warehouse-egg-btn"
-            class="btn-vicio-primary secondary"
-            @click.stop="executeAction('egg_warehouse')"
-          >
-            HUEVO ALMACÉN
-          </button>
-        </PVTooltip>
-          
-        <PVTooltip
-          title="Iniciar encuentro"
-          description="Genera un encuentro salvaje con este Pokémon."
-        >
-          <button
-            id="debug-btn-encounter"
-            class="btn-vicio-danger"
-            @click.stop="executeAction('encounter')"
-          >
-            ENCONTRAR
-          </button>
-        </PVTooltip>
-      </div>
-    </div>
+    <DebugPokemonCreatorFooter
+      :selected-minigame="selectedMinigame"
+      @action="executeAction"
+    />
 
     <!-- Modal de Advertencia de Ilegalidad -->
     <DebugIllegalModal

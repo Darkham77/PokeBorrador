@@ -12,6 +12,7 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getItemById, getItemName } from '@/data/inventory/items'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import type { EventRewardType } from '@/types/system/stores'
+import type { UnifiedRewardPill } from '@/types/rewards/rewards'
 
 interface RawPrizeData {
   type?: EventRewardType
@@ -27,12 +28,14 @@ interface RawPrizeData {
 }
 
 interface Props {
+  pills?: readonly UnifiedRewardPill[] | null
   prize?: RawPrizeData | Record<string, unknown> | null
   rewards?: Record<string, number> | null
   size?: 'sm' | 'md'
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  pills: null,
   prize: null,
   rewards: null,
   size: 'sm'
@@ -62,6 +65,21 @@ function getItemSpriteUrl(itemIdOrName: string): string {
 }
 
 const normalizedList = computed<NormalizedReward[]>(() => {
+  // 0. If unified reward pills are provided directly, render them with highest fidelity
+  if (props.pills && props.pills.length > 0) {
+    return props.pills.map((pill, idx) => ({
+      id: pill.id || `pill-${idx}`,
+      type: (pill.colorClass === 'money' ? 'money' : pill.colorClass === 'bc' ? 'bc' : pill.colorClass === 'pokemon' ? 'pokemon' : 'item') as EventRewardType,
+      title: (pill.label || 'Recompensa').toUpperCase(), // domain-ok: Open dynamic text or non-domain string payload
+      label: pill.label,
+      qtyText: pill.qtyText,
+      spriteUrl: pill.spriteUrl,
+      icon: pill.icon,
+      description: pill.description || 'Recompensa obtenida.',
+      colorClass: pill.colorClass || 'special'
+    }))
+  }
+
   const list: NormalizedReward[] = []
 
   // 1. If rewards map is provided (e.g. from Arena: { goldbottlecap: 1, ... })
@@ -84,15 +102,15 @@ const normalizedList = computed<NormalizedReward[]>(() => {
     return list
   }
 
-  const p = props.prize as RawPrizeData | null
+  const p = props.prize as RawPrizeData | Record<string, unknown> | null
   if (!p) return list
 
   // 2. Money (₽)
   let money = 0
-  if (typeof p.money === 'number') {
-    money = p.money
-  } else if (p.type === 'money' && typeof p.amount === 'number') {
-    money = p.amount
+  if (typeof (p as RawPrizeData).money === 'number') {
+    money = (p as RawPrizeData).money!
+  } else if ((p as RawPrizeData).type === 'money' && typeof (p as RawPrizeData).amount === 'number') {
+    money = (p as RawPrizeData).amount!
   }
   if (money > 0) {
     list.push({
@@ -108,10 +126,10 @@ const normalizedList = computed<NormalizedReward[]>(() => {
 
   // 3. Battle Coins (BC)
   let bc = 0
-  if (typeof p.battleCoins === 'number') {
-    bc = p.battleCoins
-  } else if (p.type === 'bc' && typeof p.amount === 'number') {
-    bc = p.amount
+  if (typeof (p as RawPrizeData).battleCoins === 'number') {
+    bc = (p as RawPrizeData).battleCoins!
+  } else if ((p as RawPrizeData).type === 'bc' && typeof (p as RawPrizeData).amount === 'number') {
+    bc = (p as RawPrizeData).amount!
   }
   if (bc > 0) {
     list.push({
@@ -126,9 +144,9 @@ const normalizedList = computed<NormalizedReward[]>(() => {
   }
 
   // 4. Single item
-  if (p.item) {
-    const itId = String(p.item)
-    const qty = typeof p.qty === 'number' ? p.qty : (typeof p.amount === 'number' ? p.amount : 1)
+  if ((p as RawPrizeData).item) {
+    const itId = String((p as RawPrizeData).item)
+    const qty = typeof (p as RawPrizeData).qty === 'number' ? (p as RawPrizeData).qty! : (typeof (p as RawPrizeData).amount === 'number' ? (p as RawPrizeData).amount! : 1)
     const name = getItemName(itId)
     list.push({
       id: `reward-item-${itId}`,
@@ -143,8 +161,8 @@ const normalizedList = computed<NormalizedReward[]>(() => {
   }
 
   // 5. Multiple items map: { [itemId]: qty }
-  if (p.items && typeof p.items === 'object') {
-    for (const [itId, itQty] of Object.entries(p.items)) {
+  if ((p as RawPrizeData).items && typeof (p as RawPrizeData).items === 'object') {
+    for (const [itId, itQty] of Object.entries((p as RawPrizeData).items!)) {
       if (typeof itQty === 'number' && itQty > 0) {
         const name = getItemName(itId)
         list.push({
@@ -161,11 +179,34 @@ const normalizedList = computed<NormalizedReward[]>(() => {
     }
   }
 
+  // 5b. Direct items on prize object (e.g. Ranked Milestones: { naturepatch: 2, vigorcandy: 1 })
+  for (const [key, val] of Object.entries(p)) {
+    if (['type', 'amount', 'qty', 'money', 'battleCoins', 'item', 'items', 'species', 'shiny', 'level'].includes(key)) {
+      continue
+    }
+    if (typeof val === 'number' && val > 0) {
+      const itDef = getItemById(key)
+      if (itDef) {
+        const name = getItemName(key)
+        list.push({
+          id: `reward-item-direct-${key}`,
+          type: 'item',
+          title: name.toUpperCase(), // domain-ok: Open dynamic text or non-domain string payload
+          label: name,
+          qtyText: `x${val}`,
+          spriteUrl: getItemSpriteUrl(key),
+          description: getItemDesc(key),
+          colorClass: 'item'
+        })
+      }
+    }
+  }
+
   // 6. Pokémon reward
-  if (p.type === 'pokemon' || p.species) {
-    const sp = String(p.species || '')
-    const shiny = Boolean(p.shiny)
-    const lv = p.level ? `Nv. ${p.level}` : ''
+  if ((p as RawPrizeData).type === 'pokemon' || (p as RawPrizeData).species) {
+    const sp = String((p as RawPrizeData).species || '')
+    const shiny = Boolean((p as RawPrizeData).shiny)
+    const lv = (p as RawPrizeData).level ? `Nv. ${(p as RawPrizeData).level}` : ''
     list.push({
       id: `reward-poke-${sp}`,
       type: 'pokemon',

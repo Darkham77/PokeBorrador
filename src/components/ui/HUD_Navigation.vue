@@ -25,6 +25,8 @@ const {
   medalsBreakdown,
   crianzaBadgeValue,
   eggsBreakdown,
+  totalHomeNotifications,
+  homeTooltipDescription,
   handleTabChange
 } = useNavigationState();
 
@@ -52,18 +54,25 @@ onUnmounted(() => {
     :class="[`pos-${position}`]"
   >
     <!-- 0. INICIO -->
-    <PVHUDButton
-      id="nav-home-btn"
-      custom-class="home-btn"
-      :active="activeTab === 'home'"
-      data-tab="home"
-      @click.stop="handleTabChange('home')"
+    <PVTooltip
+      title="INICIO"
+      :description="homeTooltipDescription"
+      position="top"
     >
-      <template #icon>
-        <span class="emoji">🏠</span>
-      </template>
-      INICIO
-    </PVHUDButton>
+      <PVHUDButton
+        id="nav-home-btn"
+        custom-class="home-btn"
+        :active="activeTab === 'home'"
+        :badge-value="totalHomeNotifications"
+        data-tab="home"
+        @click.stop="handleTabChange('home')"
+      >
+        <template #icon>
+          <span class="emoji">🏠</span>
+        </template>
+        INICIO
+      </PVHUDButton>
+    </PVTooltip>
 
     <!-- 1. MAPA -->
     <PVHUDButton

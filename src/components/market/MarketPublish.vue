@@ -2,18 +2,24 @@
 import { ref, computed, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { useGTSStore } from '@/stores/gts'
+import { useUIStore } from '@/stores/ui'
 import PokemonSelectionItem from '../modals/PokemonSelectionItem.vue'
 import PokemonSelectionFilters from '@/components/modals/PokemonSelectionFilters.vue'
 import MarketItemFilters from './MarketItemFilters.vue'
 import MarketItemCard from './MarketItemCard.vue'
+import BoxPokemonCard from '@/components/box/BoxPokemonCard.vue'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
 
 import { GTS_ITEMS_PER_PAGE } from '@/logic/economy/market'
 import type { SortOrder, ItemSortKey } from '@/types/system/game'
 import type { PokemonTagId } from '@/logic/constants/tags'
+import type { Pokemon } from '@/types/pokemon/pokemon'
 
 const game = useGameStore()
 const gtsStore = useGTSStore()
+const ui = useUIStore()
+const isSmallScreen = computed(() => ui.isSmallScreen)
 
 const activeMode = ref<'pokemon' | 'item'>('pokemon')
 
@@ -92,6 +98,35 @@ const {
   fee,
   net
 } = useMarketPublishActions(gtsStore, activeMode)
+
+const selectedPokemon = computed<Pokemon | null>(() => {
+  if (activeMode.value === 'pokemon' && selection.value && 'uid' in selection.value) {
+    return selection.value as Pokemon
+  }
+  return null
+})
+
+const itemSpriteUrl = computed<string>(() => {
+  if (activeMode.value === 'item' && selection.value && 'id' in selection.value) {
+    return getAssetUrl(ASSET_TYPES.ITEM, selection.value.id)
+  }
+  return ''
+})
+
+function handleOpenDetail() {
+  if (!selectedPokemon.value) return
+  const teamIdx = (game.state.team || []).findIndex(p => p?.uid === selectedPokemon.value?.uid)
+  if (teamIdx !== -1) {
+    ui.openPokemonDetail(selectedPokemon.value, teamIdx, 'team', { source: 'selection' })
+    return
+  }
+  const boxIdx = (game.state.box || []).findIndex(p => p?.uid === selectedPokemon.value?.uid)
+  if (boxIdx !== -1) {
+    ui.openPokemonDetail(selectedPokemon.value, boxIdx, 'box', { source: 'selection' })
+    return
+  }
+  ui.openPokemonDetail(selectedPokemon.value, -1, 'selection', { source: 'selection' })
+}
 </script>
 
 <template>
@@ -116,9 +151,15 @@ const {
       </p>
     </div>
 
-    <div class="main-split">
+    <div
+      class="main-split"
+      :class="{ 'is-mobile-view': isSmallScreen }"
+    >
       <!-- Selector List -->
-      <div class="selection-container">
+      <div
+        v-if="!isSmallScreen || !selection"
+        class="selection-container"
+      >
         <!-- Pokémon Filters -->
         <PokemonSelectionFilters
           v-if="activeMode === 'pokemon'"
@@ -127,6 +168,7 @@ const {
           v-model:sort-order="sortOrder"
           v-model:active-tags="activeTags"
           v-model:filter-compatible-only="filterCompatibleOnly"
+          compact
         />
 
         <!-- Item Filters -->
@@ -219,14 +261,55 @@ const {
       </div>
 
       <!-- Price & Confirm -->
-      <div class="publish-panel">
+      <div
+        v-if="!isSmallScreen || selection"
+        class="publish-panel"
+      >
         <div
           v-if="selection"
           class="form-container"
         >
           <div class="selected-summary">
             <span class="label">VAS A VENDER:</span>
-            <span class="val">{{ selection.name }}</span>
+            
+            <!-- Mini tarjeta estilo Caja para Pokémon seleccionado -->
+            <div
+              v-if="selectedPokemon"
+              id="gts-selected-pokemon-preview"
+              class="selected-pokemon-card-wrap"
+              @click.stop="handleOpenDetail"
+            >
+              <BoxPokemonCard
+                :pokemon="selectedPokemon"
+                :index="0"
+                :hide-stats="false"
+                type-pill-size="ssm"
+                class="selected-card-preview"
+                @click="handleOpenDetail"
+              />
+              <span class="card-click-hint">
+                <span class="emoji">🔍</span> Click para ver detalles
+              </span>
+            </div>
+
+            <!-- Preview para Objetos -->
+            <div
+              v-else-if="activeMode === 'item' && selection"
+              class="selected-item-preview"
+            >
+              <img
+                v-if="itemSpriteUrl"
+                :src="itemSpriteUrl"
+                class="item-icon"
+                alt="item"
+              >
+              <span class="val">{{ selection.name }}</span>
+            </div>
+
+            <span
+              v-else
+              class="val"
+            >{{ selection.name }}</span>
           </div>
 
           <div
@@ -265,15 +348,27 @@ const {
             </div>
           </div>
 
+          <div class="form-actions">
+            <button 
+              id="gts-publish-offer-btn"
+              v-gsap-hover
+              class="btn-vicio-secondary btn-vicio-sm" 
+              :disabled="gtsStore.publishing"
+              @click.stop="handlePublish"
+            >
+              {{ gtsStore.publishing ? 'PROCESANDO...' : 'PUBLICAR OFERTA' }}
+            </button>
 
-          <button 
-            id="gts-publish-offer-btn"
-            class="btn-vicio-secondary btn-vicio-sm" 
-            :disabled="gtsStore.publishing"
-            @click.stop="handlePublish"
-          >
-            {{ gtsStore.publishing ? 'PROCESANDO...' : 'PUBLICAR OFERTA' }}
-          </button>
+            <button
+              v-if="isSmallScreen && selection"
+              id="gts-change-selection-btn"
+              v-gsap-hover
+              class="btn-vicio-neutral btn-vicio-sm back-to-list-btn"
+              @click.stop="selection = null"
+            >
+              <span class="emoji">←</span> CAMBIAR SELECCIÓN
+            </button>
+          </div>
         </div>
         <div
           v-else
@@ -290,248 +385,5 @@ const {
   </div>
 </template>
 
-<style lang="scss">
-@use "@/styles/components/pokemon-selection";
-</style>
+<style src="./MarketPublish.styles.scss" lang="scss"></style>
 
-<style lang="scss">
-@use "@/styles/core/_mixins" as *;
-
-.market-publish-wizard {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  padding: 0 20px 20px 0;
-
-  .publish-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-
-    .limit-info {
-      font-size: 10px;
-      color: $muted;
-      font-weight: bold;
-    }
-  }
-
-  .mode-selector {
-    display: flex;
-    background: Rgba(0, 0, 0, 0.3);
-    padding: 4px;
-    border-radius: 12px;
-    gap: 4px;
-
-    button {
-      padding: 8px 16px;
-      border: 1px solid transparent;
-      background: transparent;
-      color: $muted;
-      @include pixelated;
-      font-size: 8px;
-      cursor: pointer;
-      border-radius: 10px;
-
-      &.active {
-        background: Rgba(56, 189, 248, 1);
-        color: $white;
-        border-color: #000000;
-        text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
-        box-shadow: 0 0 15px Rgba(56, 189, 248, 0.3);
-      }
-    }
-  }
-
-  .main-split {
-    flex: 1;
-    display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-    gap: 20px;
-    min-height: 0;
-
-    @include responsive(950px) {
-      grid-template-columns: 1fr;
-      overflow-y: auto;
-      gap: 32px;
-    }
-  }
-
-  .selection-container {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    min-width: 0; // Allow shrinking
-    background: Rgba(0, 0, 0, 0.15);
-    border-radius: 20px;
-    border: 1px solid Rgba(255, 255, 255, 0.05);
-    overflow: hidden;
-  }
-
-  .selection-list {
-    flex: 1;
-    padding: 12px 10px;
-    overflow-x: auto; // Add horizontal scroll if cards are too wide
-    overflow-y: auto;
-    
-    // Ensure horizontal scrollbar is visible if needed
-    &::-webkit-scrollbar:horizontal {
-      height: 6px;
-    }
-  }
-
-  .publish-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    overflow-y: auto;
-    min-height: 0;
-    padding-right: 6px;
-  }
-
-  .i-icon { font-size: 24px; }
-
-  .publish-panel {
-    background: Rgba(255, 255, 255, 0.02);
-    border-radius: 24px;
-    border: 1px solid Rgba(255, 255, 255, 0.05);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-
-
-  .selection-hint {
-    text-align: center;
-    color: $muted;
-    .hint-icon { font-size: 40px; margin-bottom: 15px; opacity: 0.2; }
-    p { font-size: 13px; max-width: 200px; line-height: 1.6; }
-  }
-
-  .form-container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-  }
-
-  .selected-summary {
-    text-align: center;
-    .label { display: block; font-size: 9px; color: $muted; margin-bottom: 5px; }
-    .val { font-size: 18px; font-weight: 900; color: var(--white); text-transform: uppercase; }
-  }
-
-  .input-group {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    width: 100% !important;
-
-    label {
-      display: block !important;
-      font-size: 9px;
-      @include pixelated;
-      color: Rgba(56, 189, 248, 1);
-      margin-bottom: 12px !important;
-      text-align: center !important;
-    }
-
-    .price-input {
-      width: 100% !important;
-      background: var(--black);
-      border: 2px solid Rgba(255, 255, 255, 0.1);
-      border-radius: 16px;
-      padding: 16px;
-      color: $coin-gold;
-      @include pixelated;
-      font-size: 16px;
-      text-align: center;
-      outline: none;
-      box-sizing: border-box;
-
-      /* Hide standard HTML5 up/down spin buttons */
-      &::-webkit-outer-spin-button,
-      &::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        appearance: none;
-        margin: 0;
-      }
-      &[type=number] {
-        -moz-appearance: textfield;
-        appearance: textfield;
-      }
-
-      &:focus { border-color: Rgba(255, 215, 0, 0.27); }
-    }
-  }
-
-  .financials {
-    background: Rgba(0, 0, 0, 0.2);
-    border-radius: 16px;
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-
-    .row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 11px;
-      color: Rgba(148, 163, 184, 1);
-      gap: 12px;
-
-      span {
-        white-space: nowrap;
-      }
-
-      &.total {
-         border-top: 1px solid Rgba(255, 255, 255, 0.05);
-         padding-top: 10px;
-         margin-top: 5px;
-         font-weight: bold;
-         font-size: 13px;
-         color: var(--white);
-      }
-      .neg { color: Rgba(248, 113, 113, 1); }
-      .pos { color: Rgba(34, 197, 94, 1); }
-    }
-  }
-
-
-  .empty-list { text-align: center; padding: 40px; color: $muted; font-size: 12px; }
-
-  .market-publish-filters {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0 20px;
-    margin-bottom: 6px;
-    
-    .ps-search-row {
-      flex: 1;
-      margin-bottom: 0;
-    }
-  }
-
-  .gts-pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    margin-top: 15px;
-    padding: 10px 0;
-    border-top: 1px solid Rgba(255, 255, 255, 0.05);
-    @include pixelated;
-    font-size: 10px;
-
-    .page-info {
-      color: var(--yellow);
-    }
-  }
-}
-</style>

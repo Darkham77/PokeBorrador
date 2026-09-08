@@ -42,8 +42,6 @@ const activeTab = ref('explore') // 'explore' | 'publish' | 'my_items'
 watch(() => props.show, async (isVisible) => {
   if (isVisible) {
     activeTab.value = 'explore'
-    const { initSQLite } = await import('@/logic/db/sqliteEngine')
-    await initSQLite({ forceReload: true })
     await Promise.all([
       gtsStore.fetchListings(),
       gtsStore.fetchUserData()
@@ -149,7 +147,7 @@ const close = () => {
     <template #header>
       <div class="gts-modal-header">
         <div class="gts-title-group">
-          <span class="emoji">🛸</span>
+          <span class="emoji title-icon">🛸</span>
           <div class="title-text-wrap">
             <span class="main-title">
               GLOBAL TRADE STATION
@@ -194,7 +192,12 @@ const close = () => {
             <span class="emoji cat-icon">{{ tab.icon }}</span>
           </div>
           <span class="cat-label">{{ tab.label }}</span>
-          
+          <span
+            v-if="tab.id === 'my_items' && gtsStore.unclaimedGtsCount > 0"
+            class="hud-notification-badge text-outline"
+          >
+            {{ gtsStore.unclaimedGtsCount }}
+          </span>
           <div class="active-indicator" />
         </button>
       </aside>

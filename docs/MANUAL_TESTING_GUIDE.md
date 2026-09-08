@@ -13,7 +13,7 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
    ```
 
 2. **Open the Game in Browser**:
-   - URL: `http://localhost:5173`
+   - URL: `https://localhost:5173` (HTTPS / Secure Context)
    - Recommended: Chromium or Firefox with Developer Tools (`F12`) open to the **Console** tab to observe debug logs.
 3. **Optional (Admin / Debug Mode)**:
    - For rapid manual testing, open Console and verify `window.__VITE_DEBUG__` flags or utilize the in-game Debug Admin Panel (`Admin / Debug`).
@@ -199,11 +199,11 @@ This guide provides an exhaustive, step-by-step test protocol to manually verify
 
 ## 🏆 5. Events, Missions & Past Events History
 
-### 5.1 World Events & Active Missions (`WorldEventsModal.vue` / `EventMissions.vue`)
+### 5.1 World Events & Active Missions (`HomeEventsSection.vue` / `EventMissions.vue`)
 
-- **Target Component**: [`WorldEventsModal.vue`](file:///home/franco/Trabajos/PokeBorrador/src/components/modals/WorldEventsModal.vue), [`EventMissions.vue`](file:///home/franco/Trabajos/PokeBorrador/src/components/events/EventMissions.vue), [`events.ts`](file:///home/franco/Trabajos/PokeBorrador/src/stores/events.ts)
+- **Target Component**: [`HomeEventsSection.vue`](file:///c:/Users/Franco/Trabajos/Juegos/PokeBorrador/src/components/home/HomeEventsSection.vue), [`EventMissions.vue`](file:///c:/Users/Franco/Trabajos/Juegos/PokeBorrador/src/components/events/EventMissions.vue), [`events.ts`](file:///c:/Users/Franco/Trabajos/Juegos/PokeBorrador/src/stores/events.ts)
 - **Steps**:
-  1. Open the **Eventos Mundiales** modal from the navigation bar.
+  1. Inspect the **Eventos Mundiales** section in the Home dashboard.
   2. **Active Events View**:
      - Verify active event banner, countdown timer to event conclusion, and event rules.
   3. **Event Missions Tab**:

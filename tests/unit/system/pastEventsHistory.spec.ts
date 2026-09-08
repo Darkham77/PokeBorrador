@@ -160,8 +160,11 @@ describe('PastEventsList.vue - Past Events and Rewards Claiming', () => {
   })
 
   it('renders claim button when user has an unclaimed award', async () => {
-    const eventStore = useEventStore()
-    const claimSpy = vi.spyOn(eventStore, 'claimAward').mockResolvedValue('Master Ball x1')
+    const { useUIStore } = await import('@/stores/ui')
+    const { useModalStore } = await import('@/stores/modals')
+    const uiStore = useUIStore()
+    const modalStore = useModalStore()
+    const closeSpy = vi.spyOn(modalStore, 'closeAll')
 
     const wrapper = mount(PastEventsList, {
       props: { pastEvents: mockPastEvents, isLoading: false }
@@ -169,10 +172,11 @@ describe('PastEventsList.vue - Past Events and Rewards Claiming', () => {
 
     const claimBtn = wrapper.find('.retro-btn.claim-btn')
     expect(claimBtn.exists()).toBe(true)
-    expect(claimBtn.text()).toContain('RECLAMAR PREMIO')
+    expect(claimBtn.text()).toContain('RECLAMAR EN INICIO')
 
     await claimBtn.trigger('click')
-    expect(claimSpy).toHaveBeenCalledWith('award-101')
+    expect(uiStore.activeTab).toBe('home')
+    expect(closeSpy).toHaveBeenCalled()
   })
 
   it('renders claimed badge when user already claimed the award', () => {

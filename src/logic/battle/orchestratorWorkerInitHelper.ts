@@ -4,7 +4,7 @@ import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { ShowdownPlayerRequest } from '@/types/battle/battle'
 import {
-  showdownWorker,
+  getShowdownWorker,
   preloadShowdownWorker,
   getSimulatorState
 } from './showdownWorkerClient.ts'
@@ -18,7 +18,7 @@ export async function initWorkerForBattle(
   if (typeof window === 'undefined' || typeof Worker === 'undefined') return
 
   preloadShowdownWorker()
-  const workerInstance = showdownWorker!
+  const workerInstance = getShowdownWorker()!
   if (typeof window !== 'undefined') {
     window.__showdownWorker__ = workerInstance;
   }
@@ -52,7 +52,7 @@ export async function initWorkerForBattle(
   console.debug(`[E2E-SEED-DEBUG] Initializing worker battle. context=${JSON.stringify({ initialWeatherOfficial, debugSeed, seedArr })}`)
 
   return new Promise<void>((resolve, reject) => {
-    const worker = showdownWorker!
+    const worker = getShowdownWorker()!
     const handleWorkerError = (event: ErrorEvent) => {
       const errorText = event.message || 'Showdown worker failed before initializing the battle'
       logger.error('ShowdownWorker', `Error del worker al inicializar batalla: ${errorText}`)
@@ -90,7 +90,7 @@ export async function initWorkerForBattle(
         }
         return
       }
-      const activeWorker = showdownWorker!
+      const activeWorker = worker
       if (responseType === 'INIT_BATTLE_SUCCESS' || responseType === 'INIT_SUCCESS') {
         logger.info('ShowdownWorker', 'Batalla inicializada con éxito en el worker.')
         console.debug('[E2E-ORCHESTRATOR-INIT-DEBUG] responsePayload keys:', Object.keys(responsePayload || {}))

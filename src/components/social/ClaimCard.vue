@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { gsap } from 'gsap';
 import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
+import { useGTSStore } from '@/stores/gts';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { getItemById } from '@/data/inventory/items';
 import type { ClaimItem } from '@/types/system/game';
@@ -24,6 +25,7 @@ const props = defineProps<{
 
 const gameStore = useGameStore();
 const uiStore = useUIStore();
+const gtsStore = useGTSStore();
 
 const isProcessing = ref(false);
 const isCooldown = ref(false);
@@ -31,6 +33,34 @@ const isCooldown = ref(false);
 const pokemonAsset = computed(() => props.claim.asset_data.type === 'pokemon' ? (props.claim.asset_data.data as PokemonAssetData) : null);
 const itemAsset = computed(() => props.claim.asset_data.type === 'item' ? (props.claim.asset_data.data as ItemAssetData) : null);
 const moneyAsset = computed(() => props.claim.asset_data.type === 'money' ? (props.claim.asset_data.data as number) : 0);
+
+const soldDetails = computed(() => {
+  if (props.claim.asset_data.type !== 'money') return null;
+  const soldItem = props.claim.asset_data.sold_item;
+  const soldPoke = props.claim.asset_data.sold_pokemon;
+  if (soldItem?.name) {
+    const dbItem = getItemById(soldItem.name);
+    const name = dbItem?.name || soldItem.name;
+    return `Venta: ${name}${soldItem.qty && soldItem.qty > 1 ? ` x${soldItem.qty}` : ''}`;
+  }
+  if (soldPoke?.name) {
+    return `Venta: ${soldPoke.name}${soldPoke.level ? ` (Nv. ${soldPoke.level})` : ''}`;
+  }
+  const matchingSale = (gtsStore.salesHistory || []).find(s => String(s.id) === String(props.claim.source_id));
+  if (matchingSale) {
+    if (matchingSale.listing_type === 'item') {
+      const itemData = matchingSale.data as { name?: string; qty?: number };
+      const dbItem = getItemById(itemData.name || '');
+      const name = dbItem?.name || itemData.name || 'Artículo';
+      return `Venta: ${name}${itemData.qty && itemData.qty > 1 ? ` x${itemData.qty}` : ''}`;
+    }
+    if (matchingSale.listing_type === 'pokemon') {
+      const pokeData = matchingSale.data as { name?: string; level?: number };
+      return `Venta: ${pokeData.name || 'Pokémon'}${pokeData.level ? ` (Nv. ${pokeData.level})` : ''}`;
+    }
+  }
+  return null;
+});
 
 const getFriendlySourceType = (sourceType: string) => {
   switch (sourceType) {
@@ -104,6 +134,10 @@ const onClaim = async () => {
           </template>
           <template v-else-if="claim.asset_data.type === 'money'">
             ₽{{ moneyAsset.toLocaleString() }}
+            <span
+              v-if="soldDetails"
+              class="lvl-label"
+            >{{ soldDetails }}</span>
           </template>
           <template v-else-if="claim.asset_data.type === 'item' && itemAsset">
             {{ itemAsset.name }}

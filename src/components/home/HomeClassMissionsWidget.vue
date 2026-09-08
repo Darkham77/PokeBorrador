@@ -3,16 +3,13 @@ import { computed } from 'vue'
 import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { useModalStore } from '@/stores/modals'
 import ProfileXpCard from '@/components/profile/ProfileXpCard.vue'
+import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue'
 
 const classStore = usePlayerClassStore()
 const modalStore = useModalStore()
 
 const currentClass = computed(() => classStore.currentClassDef)
 const classLevel = computed(() => classStore.classLevel)
-
-const openClassManagement = () => {
-  modalStore.open('ClassMissions')
-}
 
 const openClassSelection = () => {
   modalStore.open('ClassSelection')
@@ -39,26 +36,7 @@ const openClassSelection = () => {
       </div>
 
       <div class="header-actions">
-        <button
-          v-if="currentClass"
-          id="home-class-change-btn"
-          v-gsap-hover
-          class="card-action-btn"
-          @click.stop="openClassSelection"
-        >
-          <span class="emoji">🔄</span>
-          CAMBIAR
-        </button>
-        <button
-          v-if="currentClass"
-          id="home-class-missions-open-btn"
-          v-gsap-hover
-          class="card-action-btn primary"
-          @click.stop="openClassManagement"
-        >
-          <span class="emoji">📋</span>
-          DETALLES
-        </button>
+        <HomeWidgetMinimizeBtn widget-id="class" />
       </div>
     </div>
 
@@ -120,7 +98,6 @@ const openClassSelection = () => {
   align-items: center;
   padding-bottom: 8px;
   border-bottom: 1px solid Rgba(255, 255, 255, 0.06);
-  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -128,6 +105,8 @@ const openClassSelection = () => {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 1;
+  min-width: 0;
 
   .card-icon {
     font-size: 20px;
@@ -135,12 +114,14 @@ const openClassSelection = () => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
   }
 
   .title-text-group {
     display: flex;
     flex-direction: column;
     gap: 3px;
+    min-width: 0;
   }
 
   .card-title {
@@ -160,23 +141,9 @@ const openClassSelection = () => {
 }
 
 .header-actions {
-  display: flex;
-  gap: 6px;
-}
-
-.card-action-btn {
-  @include widget-action-btn;
-
-  &.primary {
-    background: Rgba(250, 204, 21, 0.15);
-    border-color: Rgba(250, 204, 21, 0.4);
-    color: var(--yellow, #facc15);
-
-    &:hover {
-      background: Rgba(250, 204, 21, 0.25);
-      border-color: var(--yellow, #facc15);
-    }
-  }
+  @include widget-header-actions;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .class-xp-cards-layout {

@@ -40,7 +40,6 @@ export const MODAL_REGISTRY = {
   Daycare: defineAsyncComponent(() => import('@/components/modals/DaycareModal.vue')),
   DaycareMissions: defineAsyncComponent(() => import('@/components/modals/EventMissionsModal.vue')),
   EventMissions: defineAsyncComponent(() => import('@/components/modals/EventMissionsModal.vue')),
-  WorldEvents: defineAsyncComponent(() => import('@/components/modals/WorldEventsModal.vue')),
   FactionWar: defineAsyncComponent(() => import('@/components/modals/FactionWarModal.vue')),
   BattleSwitch: defineAsyncComponent(() => import('@/components/modals/PokemonSelectionModal.vue')),
   SessionConflict: defineAsyncComponent(() => import('@/components/auth/SessionConflictModal.vue')),
@@ -63,7 +62,10 @@ export const MODAL_REGISTRY = {
   EventSlotAction: defineAsyncComponent(() => import('@/components/modals/EventSlotActionModal.vue')),
   PvPChallenge: defineAsyncComponent(() => import('@/components/modals/PvPChallengeModal.vue')),
   PvPOpponentOffline: defineAsyncComponent(() => import('@/components/modals/PvPOpponentOfflineModal.vue')),
-  RankedSeasonReward: defineAsyncComponent(() => import('@/components/modals/RankedSeasonRewardModal.vue'))
+  RankedSeasonReward: defineAsyncComponent(() => import('@/components/modals/RankedSeasonRewardModal.vue')),
+  EventAutoEnroll: defineAsyncComponent(() => import('@/components/modals/EventAutoEnrollModal.vue')),
+  RankedTournamentDetail: defineAsyncComponent(() => import('@/components/modals/RankedTournamentDetailModal.vue')),
+  RankedTeamBuilder: defineAsyncComponent(() => import('@/components/modals/RankedTeamBuilderModal.vue'))
 }
 
 export type ModalRegistryKey = keyof typeof MODAL_REGISTRY;

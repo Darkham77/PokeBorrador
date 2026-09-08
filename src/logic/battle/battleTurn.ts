@@ -1,13 +1,8 @@
 import { decideEnemyMove, evaluateAndUseNPCItem } from './ai/battleAI.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
-import { logger } from '../utils/logger.ts'
 import { resolveTurnChoices } from './battleTurnChoiceHelper.ts'
 import { updateCastformForm } from './battleFlow.ts'
-import {
-  runEnemyAction,
-  parseLogsWithSkip,
-  resolvePostTurnSwitchesAndFaints
-} from './helpers/turnActionResolver.ts'
+import { runEnemyAction } from './helpers/turnActionResolver.ts'
 import {
   resolvePlayerForcedMoveIndex,
   evaluateMoveValidityAndLock
@@ -41,8 +36,6 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     updateCastformForm(e, store.activeBattle.value.weather?.type, store.addLog)
   }
 
-  const fsm = store.fsm
-  const { BATTLE_STATES, BATTLE_SUBSTATES } = store
 
   const playerRequestMoves = store.activeBattle.value?.playerRequest?.active?.[0]?.moves
   const { finalMoveIndex, isRecharge } = resolvePlayerForcedMoveIndex(p, moveIndex, playerRequestMoves)
@@ -67,13 +60,10 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
   }
 
   // Importar dinámicamente dependencias asíncronas para evitar dependencias circulares
-  const { showdownWorker, executeTurnInWorker } = await import('./showdownWorkerClient.ts')
-  const { filterShowdownLogs } = await import('./showdownBridge.ts')
+  const { getShowdownWorker } = await import('./showdownWorkerClient.ts')
+  const worker = getShowdownWorker()
 
-  if (showdownWorker) {
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.BUILD_QUEUE)
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POP_ACTION)
-
+  if (worker) {
     if (move && move.pp > 0 && !isLocked) {
       move.pp--
     }
@@ -82,7 +72,6 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
     const intercepted = await validateAndInterceptFaintedPlayer(store)
     if (intercepted) return
 
-    const active = store.activeBattle.value
     const choices = await resolveTurnChoices(store, p, e, move || null, isStruggle, isWild, p2Skip, eMove, finalMoveIndex)
     const p1Choice = choices.p1Choice
     let p2Choice = choices.p2Choice
@@ -92,44 +81,8 @@ export async function executeTurn(store: BattleContext, moveIndex: number) {
       p2Choice = '';
       p2Skip = true;
     }
-    const result = await executeTurnInWorker(p1Choice, p2Choice, p1Skip, p2Skip)
-    if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
-      const { ShowdownBattleRunner } = await import('./helpers/showdownBattleRunner.ts')
-      ShowdownBattleRunner.advanceHistoryAfterAcceptedTurn(window.__VITE_DEBUG__)
-    }
-    logger.info('BattleTurn', 'Logs recibidos de pkms:', result.logs)
 
-    if (active) {
-      active.playerRequest = result.p1Request;
-      active.enemyRequest = result.p2Request;
-    }
-
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.APPLY_MOVE)
-
-    // Reproducir todos los logs del simulador asíncronamente omitiendo efectos de dummy moves.
-    const filteredLogs = filterShowdownLogs(result.logs);
-    await parseLogsWithSkip(store, filteredLogs, false, p2Skip);
-
-    const { syncTeamsFromLastWorkerState } = await import('./showdownWorkerClient.ts');
-    await syncTeamsFromLastWorkerState();
-
-    await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.EVAL_HP)
-
-    const shouldReturn = await resolvePostTurnSwitchesAndFaints(store, result)
-    if (shouldReturn) return
+    const { executeCanonicalTurn } = await import('./helpers/canonicalTurnRunner.ts')
+    await executeCanonicalTurn(store, p1Choice, p2Choice, p1Skip, p2Skip)
   }
-
-  if (store.activeBattle.value?.over) {
-    if (store.activeBattle.value.fled) {
-      await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM)
-      if (store.animations?.awaitTween) {
-        await store.animations.awaitTween('escape-enemy')
-      }
-      await store.endBattle(false, true)
-    }
-    return
-  }
-  
-  console.debug(`[BattleTurn] executeTurn finished. calling store.persistBattle`);
-  if (store.persistBattle) store.persistBattle()
 }

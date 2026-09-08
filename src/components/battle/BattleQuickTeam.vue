@@ -8,11 +8,17 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import { isPokemonLocked } from '@/logic/pokemon/pokemonUtils'
 import { isRevivingForceSwitchRequest } from '@/logic/battle/helpers/requestHelper.ts'
 
+import { useLivePvPStore } from '@/stores/livePvP'
+
 const gameStore = useGameStore()
 const battleStore = useBattleStore()
 const uiStore = useUIStore()
+const livePvP = useLivePvPStore()
 
 const team = computed<Pokemon[]>(() => {
+  if (battleStore.isPvP && battleStore.state?.playerTeam) {
+    return (battleStore.state.playerTeam || []).filter(Boolean) as Pokemon[]
+  }
   const rawTeam = (gameStore.state.team || []).filter(Boolean) as Pokemon[]
   return rawTeam
 })
@@ -46,26 +52,31 @@ const handleSwitch = (index: number) => {
   const pokemon = team.value[index]
   if (!pokemon) return
 
-  const originalIndex = (gameStore.state.team || []).findIndex((p) => p && p.uid === pokemon.uid)
+  const originalTeam = battleStore.isPvP ? (battleStore.state?.playerTeam || []) : (gameStore.state.team || [])
+  const originalIndex = originalTeam.findIndex((p) => p && p.uid === pokemon.uid)
   if (originalIndex === -1) {
     console.warn('[BattleQuickTeam] Could not find original index for UID:', pokemon.uid)
     return
   }
 
   const isForced = uiStore.isBattleSwitchForced || toValue(battleStore.currentSubState) === 'SWITCH_MENU'
-  console.debug(`[BattleQuickTeam] handleSwitch clicked for index: ${index} (original: ${originalIndex}), pokemon: ${pokemon.name}, hp: ${pokemon.hp}, activeUid: ${activePokemonUid.value}, canSwitch: ${canSwitch.value}, isForced: ${isForced}`);
+  console.debug(`[BattleQuickTeam] handleSwitch clicked for index: ${index} (original: ${originalIndex}), pokemon: ${pokemon.name}, hp: ${pokemon.hp}, activeUid: ${activePokemonUid.value}, canSwitch: ${canSwitch.value}, isForced: ${isForced}`)
   
   if ((pokemon.hp <= 0 && !isSelectingReviveTarget.value) || pokemon.uid === activePokemonUid.value) {
-    console.debug(`[BattleQuickTeam] handleSwitch early return check failed`);
+    console.debug(`[BattleQuickTeam] handleSwitch early return check failed`)
     return
   }
   if (!canSwitch.value) {
-    console.debug(`[BattleQuickTeam] handleSwitch canSwitch is false`);
+    console.debug(`[BattleQuickTeam] handleSwitch canSwitch is false`)
     return
   }
   
-  console.debug(`[BattleQuickTeam] Calling battleStore.executeSwitch with originalIndex: ${originalIndex}, isForced: ${isForced}`);
-  battleStore.executeSwitch(originalIndex, isForced)
+  if (livePvP.battleState.active) {
+    livePvP._commitPick({ type: 'switch', switchIndex: originalIndex })
+  } else {
+    console.debug(`[BattleQuickTeam] Calling battleStore.executeSwitch with originalIndex: ${originalIndex}, isForced: ${isForced}`)
+    battleStore.executeSwitch(originalIndex, isForced)
+  }
 }
 </script>
 
@@ -111,43 +122,73 @@ const handleSwitch = (index: number) => {
   background: transparent !important; 
   border: none !important;
   padding: 0 !important;
-  height: auto !important;
-  min-height: 100%; // Fix flex scroll collapse
+  height: 100% !important;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto !important;
-  overflow-x: hidden !important; // Evitar estrictamente scrollbars horizontales
+  overflow-x: hidden !important;
   @include gpu-layer;
   @include smooth-scroll;
 }
 
 .quick-team-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 115px); // Ancho fijo reducido para evitar deformación y asegurar que entren 6
+  grid-template-columns: repeat(auto-fill, 115px);
+  grid-auto-rows: 184px;
+  align-content: start;
   justify-content: center;
-  gap: 6px; // Gap reducido para ahorrar espacio
+  gap: 6px;
   width: 100%;
-  padding: 12px 4px 6px 4px;
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: 4px 6px; // 4px arriba y 4px abajo simétricos (184 + 8 = 192px exactos)
 }
 
 /* Overrides para integrar la tarjeta de la caja en el grid compacto de combate */
 :deep(.quick-card-override) {
   width: 115px !important; // Ancho fijo compacto
-  height: 155px !important; // Altura suficiente para mostrar la barra de HP sin cortes
-  min-height: 155px !important;
+  height: 184px !important; // Altura exacta para el contenedor de 192px
+  min-height: 184px !important; // Evita aplastamiento de filas al hacer wrap
+  max-height: 184px !important;
   margin: 0 !important;
-  padding: 8px !important;
+  padding: 6px !important;
   background: Rgba(15, 23, 42, 0.7) !important; // Un poco más oscuro para resaltar borde
   -webkit-will-change: transform, opacity;
   will-change: transform, opacity;
   @include gpu-layer;
   border: 1px solid var(--tier-color); // MARCO DE GRADO OBLIGATORIO
   border-radius: 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 4px !important;
+  box-sizing: border-box !important;
+
+  .box-sprite-wrapper {
+    width: 100% !important;
+    flex: 1 1 auto !important;
+    min-height: 64px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
+    overflow: visible !important;
+  }
 
   .card-info {
+    flex-shrink: 0 !important;
+    width: 100% !important;
     padding-left: 0 !important; // Forzar alineación y centrado perfectos
     text-align: center !important;
     display: flex;
     flex-direction: column;
     align-items: center;
+
+    .hp-bar-mini {
+      margin: 4px auto 0 !important;
+    }
   }
 
   &.is-active {
@@ -174,8 +215,12 @@ const handleSwitch = (index: number) => {
 }
 
 .empty-slot-card {
+  width: 115px !important;
+  height: 184px !important;
+  min-height: 184px !important;
+  box-sizing: border-box !important;
   background: Rgba(255, 255, 255, 0.01);
   border: 1px dashed Rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
+  border-radius: 20px;
 }
 </style>

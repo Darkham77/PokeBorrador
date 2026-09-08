@@ -4,7 +4,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { useUIStore } from '@/stores/ui';
 import { findBestSwitchIndex } from '../ai/battleAI.ts';
 import { ShowdownTeamResolver } from '../showdownTeamResolver.ts';
-import { showdownWorker, executeTurnInWorker } from '../showdownWorkerClient.ts';
+import { getShowdownWorker, executeTurnInWorker } from '../showdownWorkerClient.ts';
 import { parseShowdownLogLine, filterShowdownLogs } from '../showdownBridge.ts';
 import { ShowdownBattleRunner } from './showdownBattleRunner.ts';
 
@@ -145,7 +145,7 @@ export async function handleEnemyForceSwitchExecution(
 
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.POKEMON_CALL);
 
-  if (showdownWorker && active.enemyTeam) {
+  if (getShowdownWorker() && active.enemyTeam) {
     let p2Choice = `switch ${ShowdownTeamResolver.getShowdownSlotForUid(active.enemyRequest, nextEnemy.uid)}`;
     if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.isScriptedReplayMode) {
       const certifiedChoice = ShowdownBattleRunner.requireHistoryChoice(window.__VITE_DEBUG__, 'p2');

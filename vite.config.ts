@@ -1,6 +1,7 @@
 import { defineConfig, type HmrContext } from 'vite'
 import { type ViteDevServer } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import * as compiler from 'vue/compiler-sfc'
 import path from 'node:path'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
@@ -9,8 +10,10 @@ import { generateMigrations } from './scripts/database/generate_migrations.ts'
 import { generatePokemonDatabase } from './scripts/data/generate_pokemon_db.ts'
 import { sassTrapsFixer } from './scripts/maintenance/vite-plugin-sass-traps.ts'
 import { staticPrecompressPlugin } from './scripts/maintenance/vite-plugin-precompress.ts'
+import { lanPvPPlugin } from './scripts/maintenance/vite-plugin-lan-pvp.ts'
 
 import { VitePWA } from 'vite-plugin-pwa'
+import basicSsl from '@vitejs/plugin-basic-ssl'
 
 import fsPromises from 'node:fs/promises'
 import fs from 'node:fs'
@@ -411,6 +414,7 @@ export default defineConfig({
   plugins: [
     fixPkmnSimPlugin(),
     vue({
+      compiler,
       template: {
         compilerOptions: {
           hoistStatic: true,
@@ -420,6 +424,8 @@ export default defineConfig({
       }
     }),
     ...(!isVitest ? [
+      basicSsl(),
+      lanPvPPlugin(),
       pokemonDbGeneratorPlugin(),
       migrationsPlugin(),
       devDbImportPlugin(),

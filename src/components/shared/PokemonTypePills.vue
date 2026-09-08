@@ -45,7 +45,11 @@ const types = computed<PokemonType[]>(() => {
   flex-wrap: wrap;
 
   &.ssm {
-    gap: 1.5px;
+    flex-wrap: nowrap !important;
+    flex-direction: row;
+    gap: 2px;
+    width: auto;
+    max-width: 100%;
   }
 
   &.sm {

@@ -82,3 +82,9 @@ The competitive Ranked circuit operates within the Social view (`SocialRankings.
 - Rewards are placed into `public.awards` for atomic claiming via `claim_award()`.
 - An identical SQLite RPC emulation (`src/logic/db/rpcEmulations/rankedRpc.ts`) ensures 100% behavioral parity in offline and test environments.
 - When an active player logs in after a season rollover, `RankedSeasonRewardModal.vue` triggers automatically if unclaimed seasonal rewards exist.
+
+### 3. Local Arena & Sandbox PvP Testing
+- When operating in offline or local development mode (`isOffline = true` or local sandbox accounts `local_*`), the Battle Arena (`ArenaModal.vue`) remains completely unlocked with a visible `MODO LOCAL` badge in the header.
+- Local accounts have full capability to test matchmaking, challenge other local instances, test ranked mechanics, and manage defense teams.
+- Direct invite polling runs via local storage / `BroadcastChannel` instead of Supabase Realtime channels.
+- Automated season rollover keeps ranked mode active regardless of static calendar end dates.

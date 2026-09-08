@@ -178,7 +178,20 @@
   
   // Custom tweaks for login view context if needed
   font-size: 9px;
-  padding: 16px;
+  height: 46px;
+  padding: 0 16px;
+
+  .auth-btn-icon {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    @include sprite-render;
+    flex-shrink: 0;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    transform: Translatey(-1px);
+  }
 }
 
 .auth-error {
@@ -267,6 +280,11 @@
 
 .login-server-tab {
   flex: 1;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px;
+  line-height: 1.25;
   padding: 8px;
   text-align: center;
   cursor: pointer;
@@ -278,6 +296,11 @@
   will-change: color, background-color;
   letter-spacing: 1px;
   text-transform: uppercase;
+
+  .emoji {
+    font-size: 10px;
+    line-height: 1;
+  }
 
   &.active {
     background: Linear-Gradient(135deg, var(--blue), var(--purple));

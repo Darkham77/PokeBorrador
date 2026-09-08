@@ -186,6 +186,7 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
             <button 
               v-if="player.status === 'none'" 
               :id="`social-search-send-btn-${player.id}`"
+              v-gsap-hover
               class="btn-vicio-secondary btn-vicio-sm" 
               @click.stop="socialStore.sendFriendRequest(player.id)"
             >
@@ -195,6 +196,7 @@ watch(() => socialStore.searchResults.map((p) => p.id).join(','), () => {
             <button 
               v-else-if="player.status === 'pending' && !player.isRequester"
               :id="`social-search-accept-btn-${player.id}`"
+              v-gsap-hover
               class="btn-vicio-success btn-vicio-sm" 
               @click.stop="player.relId && socialStore.respondRequest(player.relId, 'accepted')"
             >

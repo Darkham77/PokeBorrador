@@ -6,6 +6,7 @@ import type {
   Suite,
   TestCase,
   TestResult,
+  TestError,
   FullResult
 } from '@playwright/test/reporter';
 import {
@@ -119,6 +120,13 @@ export default class PlaywrightFuzzerReporter implements Reporter {
       } catch {
         // Non-fatal
       }
+    }
+  }
+
+  onError(error: TestError): void {
+    errSync(`❌ [PLAYWRIGHT ERROR] ${error.message || error.value || 'Unknown error'}`);
+    if (error.stack) {
+      errSync(`   Stack: ${error.stack.split('\n').slice(0, 10).join('\n   ')}`);
     }
   }
 

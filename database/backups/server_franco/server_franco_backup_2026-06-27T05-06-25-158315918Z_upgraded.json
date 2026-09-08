@@ -1,11 +1,11 @@
 {
   "metadata": {
     "profile": "server_franco",
-    "timestamp": "2026-08-31T04:04:47.706Z",
-    "totalTables": 26,
-    "totalRows": 1111,
+    "timestamp": "2026-09-08T01:50:51.698Z",
+    "totalTables": 27,
+    "totalRows": 1124,
     "upgradedFrom": "server_franco_backup_2026-06-27T05-06-25-158315918Z.json",
-    "db_version": "20260831010000_purge_disabled_species_and_eggs"
+    "db_version": "20260907050000_heal_escrow_pokemon_schemas"
   },
   "data": {
     "_migrations": [
@@ -183,143 +183,195 @@
       },
       {
         "id": "20260619202000_migrate_saves_to_showdown_ids",
-        "applied_at": "2026-08-31T04:04:20.339Z"
+        "applied_at": "2026-09-08T01:50:12.027Z"
       },
       {
         "id": "20260622000000_migrate_saves_to_pure_showdown_ids",
-        "applied_at": "2026-08-31T04:04:20.370Z"
+        "applied_at": "2026-09-08T01:50:12.070Z"
       },
       {
         "id": "20260622000100_migrate_save_move_ids",
-        "applied_at": "2026-08-31T04:04:20.392Z"
+        "applied_at": "2026-09-08T01:50:12.102Z"
       },
       {
         "id": "20260622000200_fix_accented_spanish_move_ids",
-        "applied_at": "2026-08-31T04:04:20.420Z"
+        "applied_at": "2026-09-08T01:50:12.141Z"
       },
       {
         "id": "20260622000300_migrate_save_eggs_and_missions",
-        "applied_at": "2026-08-31T04:04:20.429Z"
+        "applied_at": "2026-09-08T01:50:12.153Z"
       },
       {
         "id": "20260627023400_fix_corrupted_n_move_ids",
-        "applied_at": "2026-08-31T04:04:25.401Z"
+        "applied_at": "2026-09-08T01:50:19.377Z"
       },
       {
         "id": "20260629230200_migrate_item_ids_in_saves_v3",
-        "applied_at": "2026-08-31T04:04:25.407Z"
+        "applied_at": "2026-09-08T01:50:19.383Z"
       },
       {
         "id": "20260630125200_migrate_saves_to_pure_pkms_item_ids",
-        "applied_at": "2026-08-31T04:04:25.435Z"
+        "applied_at": "2026-09-08T01:50:19.419Z"
+      },
+      {
+        "id": "20260701100000_migrate_save_egg_natures_to_showdown_ids",
+        "applied_at": "2026-09-08T01:50:19.424Z"
       },
       {
         "id": "20260701140000_migrate_custom_item_ids",
-        "applied_at": "2026-08-31T04:04:25.462Z"
+        "applied_at": "2026-09-08T01:50:19.459Z"
       },
       {
         "id": "20260701160000_fix_missing_item_ids",
-        "applied_at": "2026-08-31T04:04:25.489Z"
+        "applied_at": "2026-09-08T01:50:19.493Z"
       },
       {
         "id": "20260711183500_fix_active_nature_in_saves",
-        "applied_at": "2026-08-31T04:04:25.510Z"
+        "applied_at": "2026-09-08T01:50:19.519Z"
       },
       {
         "id": "20260712180500_fix_item_ids_final",
-        "applied_at": "2026-08-31T04:04:25.537Z"
+        "applied_at": "2026-09-08T01:50:19.553Z"
       },
       {
         "id": "20260713170000_heal_illegal_moves_and_abilities_v3",
-        "applied_at": "2026-08-31T04:04:25.539Z"
+        "applied_at": "2026-09-08T01:50:19.555Z"
       },
       {
         "id": "20260713180000_heal_pidgey_local_moves",
-        "applied_at": "2026-08-31T04:04:25.559Z"
+        "applied_at": "2026-09-08T01:50:19.581Z"
       },
       {
         "id": "20260714200000_fix_fossils_and_missing_item_ids",
-        "applied_at": "2026-08-31T04:04:25.589Z"
+        "applied_at": "2026-09-08T01:50:19.622Z"
       },
       {
         "id": "20260803221000_add_pokemon_uid_to_competition_entries",
-        "applied_at": "2026-08-31T04:04:25.590Z"
+        "applied_at": "2026-09-08T01:50:19.623Z"
       },
       {
         "id": "20260818080000_normalize_strict_schemas",
-        "applied_at": "2026-08-31T04:04:25.651Z"
+        "applied_at": "2026-09-08T01:50:19.708Z"
       },
       {
         "id": "20260825110500_heal_tangela_local_moves",
-        "applied_at": "2026-08-31T04:04:25.672Z"
+        "applied_at": "2026-09-08T01:50:19.736Z"
       },
       {
         "id": "20260826140000_update_magikarp_event_config",
-        "applied_at": "2026-08-31T04:04:25.672Z"
+        "applied_at": "2026-09-08T01:50:19.736Z"
       },
       {
         "id": "20260826200000_normalize_active_battle_enemy_team",
-        "applied_at": "2026-08-31T04:04:25.674Z"
+        "applied_at": "2026-09-08T01:50:19.739Z"
       },
       {
         "id": "20260827110000_remove_legacy_pokemon_size",
-        "applied_at": "2026-08-31T04:04:25.693Z"
+        "applied_at": "2026-09-08T01:50:19.765Z"
       },
       {
         "id": "20260827120000_update_events_bonuses_and_minigames",
-        "applied_at": "2026-08-31T04:04:25.693Z"
+        "applied_at": "2026-09-08T01:50:19.765Z"
       },
       {
         "id": "20260828100000_seed_complete_weekly_events",
-        "applied_at": "2026-08-31T04:04:25.694Z"
+        "applied_at": "2026-09-08T01:50:19.765Z"
       },
       {
         "id": "20260828110000_fix_event_reward_item_ids",
-        "applied_at": "2026-08-31T04:04:25.694Z"
+        "applied_at": "2026-09-08T01:50:19.765Z"
       },
       {
         "id": "20260828114000_fix_event_enabled_species",
-        "applied_at": "2026-08-31T04:04:25.694Z"
+        "applied_at": "2026-09-08T01:50:19.765Z"
       },
       {
         "id": "20260828130000_reorganize_monthly_events_schedule",
-        "applied_at": "2026-08-31T04:04:25.694Z"
+        "applied_at": "2026-09-08T01:50:19.765Z"
       },
       {
         "id": "20260830000000_reset_friendship_on_claim_asset",
-        "applied_at": "2026-08-31T04:04:25.694Z"
+        "applied_at": "2026-09-08T01:50:19.765Z"
       },
       {
         "id": "20260830190000_repair_all_player_saves",
-        "applied_at": "2026-08-31T04:04:25.734Z"
+        "applied_at": "2026-09-08T01:50:19.819Z"
       },
       {
         "id": "20260830200000_fix_egg_species_ids",
-        "applied_at": "2026-08-31T04:04:25.738Z"
+        "applied_at": "2026-09-08T01:50:19.825Z"
       },
       {
         "id": "20260830210000_fix_legacy_natures_in_eggs_and_saves",
-        "applied_at": "2026-08-31T04:04:25.744Z"
+        "applied_at": "2026-09-08T01:50:19.834Z"
       },
       {
         "id": "20260830220000_comprehensive_egg_sanitization",
-        "applied_at": "2026-08-31T04:04:25.751Z"
+        "applied_at": "2026-09-08T01:50:19.844Z"
       },
       {
         "id": "20260830230000_ensure_canonical_events_and_data",
-        "applied_at": "2026-08-31T04:04:25.751Z"
+        "applied_at": "2026-09-08T01:50:19.844Z"
       },
       {
         "id": "20260830233000_universal_sanitize_all_entities_and_moves",
-        "applied_at": "2026-08-31T04:04:47.052Z"
+        "applied_at": "2026-09-08T01:50:51.018Z"
       },
       {
         "id": "20260830234500_fix_events_config_rls_and_canonical_seed",
-        "applied_at": "2026-08-31T04:04:47.052Z"
+        "applied_at": "2026-09-08T01:50:51.018Z"
       },
       {
         "id": "20260831010000_purge_disabled_species_and_eggs",
-        "applied_at": "2026-08-31T04:04:47.082Z"
+        "applied_at": "2026-09-08T01:50:51.060Z"
+      },
+      {
+        "id": "20260831120000_fix_fn_award_event_automated_multicategories",
+        "applied_at": "2026-09-08T01:50:51.061Z"
+      },
+      {
+        "id": "20260831140000_harden_competition_entries_and_awards",
+        "applied_at": "2026-09-08T01:50:51.061Z"
+      },
+      {
+        "id": "20260901230000_fix_fn_award_event_variable_scope",
+        "applied_at": "2026-09-08T01:50:51.061Z"
+      },
+      {
+        "id": "20260902011000_fix_fn_award_event_jsonb_and_grants",
+        "applied_at": "2026-09-08T01:50:51.061Z"
+      },
+      {
+        "id": "20260902120000_normalize_all_natures_and_relearner_items",
+        "applied_at": "2026-09-08T01:50:51.066Z"
+      },
+      {
+        "id": "20260906000000_create_fn_award_ranked_season_automated",
+        "applied_at": "2026-09-08T01:50:51.066Z"
+      },
+      {
+        "id": "20260907000000_create_battle_replays",
+        "applied_at": "2026-09-08T01:50:51.067Z"
+      },
+      {
+        "id": "20260907010000_synchronize_and_harden_daycare_eggs",
+        "applied_at": "2026-09-08T01:50:51.079Z"
+      },
+      {
+        "id": "20260907020000_heal_daycare_missions_item_ids",
+        "applied_at": "2026-09-08T01:50:51.086Z"
+      },
+      {
+        "id": "20260907030000_add_config_to_battle_invites",
+        "applied_at": "2026-09-08T01:50:51.086Z"
+      },
+      {
+        "id": "20260907040000_set_ranked_rules_canonical_6v6",
+        "applied_at": "2026-09-08T01:50:51.086Z"
+      },
+      {
+        "id": "20260907050000_heal_escrow_pokemon_schemas",
+        "applied_at": "2026-09-08T01:50:51.087Z"
       }
     ],
     "awards": [
@@ -1778,30 +1830,33 @@
             "maxHp": 15,
             "moves": [
               {
-                "pp": 33,
-                "acc": 95,
-                "cat": "physical",
+                "id": "tackle",
                 "name": "Placaje",
                 "type": "normal",
+                "cat": "physical",
+                "power": 40,
+                "acc": 100,
+                "pp": 35,
                 "maxPP": 35,
-                "power": 35
+                "priority": 0
               },
               {
-                "pp": 29,
-                "acc": 100,
-                "cat": "status",
+                "id": "tailwhip",
                 "name": "Látigo",
                 "type": "normal",
-                "maxPP": 30,
+                "cat": "status",
                 "power": 0,
-                "effect": "stat_down_enemy_def"
+                "acc": 100,
+                "pp": 30,
+                "maxPP": 30,
+                "priority": 0
               }
             ],
             "vigor": 5,
             "gender": "M",
-            "nature": "Modesto",
-            "status": null,
-            "ability": "Fuga",
+            "nature": "modest",
+            "status": "",
+            "ability": "runaway",
             "isShiny": false,
             "confused": 0,
             "flinched": false,
@@ -1811,12 +1866,16 @@
             "inDaycare": false,
             "protected": false,
             "friendship": 70,
-            "isFloating": false,
             "obtainedAt": 1779221015952,
             "rageActive": false,
             "sleepTurns": 0,
             "lastPhysDmg": 0,
-            "lastSpecDmg": 0
+            "lastSpecDmg": 0,
+            "species": "rattata",
+            "maxVigor": 100,
+            "volatileCounters": {},
+            "isIllegal": false,
+            "illegalReasons": []
           },
           "type": "pokemon"
         },
@@ -3670,7 +3729,7 @@
             {
               "date": "2026-03-30",
               "reward": {
-                "id": "berry_bronze",
+                "id": "berrybronze",
                 "qty": 3,
                 "icon": "🥉",
                 "name": "berrybronze"
@@ -3690,7 +3749,7 @@
             {
               "date": "2026-03-30",
               "reward": {
-                "id": "berry_gold",
+                "id": "berrygold",
                 "qty": 1,
                 "icon": "🥇",
                 "name": "berrygold"
@@ -3731,10 +3790,11 @@
           "notificationHistory": [],
           "marketSoldSeenIds": [],
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "8386330c5b560b0ec0660176898fe085"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "c436653d55a21dc92203fae523782cbe"
       },
       {
         "user_id": "dee2dd08-59d9-4122-9cdf-7ec9022f0245",
@@ -3891,10 +3951,11 @@
           "notificationHistory": [],
           "marketSoldSeenIds": [],
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "f9aed83b6e5da8250be865a20e69efc8"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "ec86527513bbf2b71310d0072388f6e4"
       },
       {
         "user_id": "57bd0b82-ab09-47eb-b459-616188aaf8fa",
@@ -4447,7 +4508,7 @@
                 "_cost": 2000,
                 "_haBoost": true
               },
-              "uid": "egg_58B29C1BD7DD9E05",
+              "uid": "egg_BAC8474C253BA358",
               "nature": "serious",
               "isNpc": false
             },
@@ -4459,7 +4520,7 @@
               "origin": "encounter",
               "pokemonId": "pichu",
               "totalSteps": 220,
-              "uid": "egg_BE33C2609B913BA5",
+              "uid": "egg_389B37A6EE59BC4B",
               "nature": "serious",
               "isShiny": false,
               "isNpc": false
@@ -5046,7 +5107,7 @@
             {
               "date": "2026-04-13",
               "reward": {
-                "id": "berry_bronze",
+                "id": "berrybronze",
                 "qty": 3,
                 "icon": "🥉",
                 "name": "berrybronze"
@@ -5171,10 +5232,11 @@
           "daycare_mission_refreshes": 3,
           "gender": "h",
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "e869c74cc7f15526cc4a3a35d803ab8b"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "5bfd9e85449d8819693af93b3e2053ec"
       },
       {
         "user_id": "b4da2989-5bf8-4448-82df-4ce19be7c9cd",
@@ -6238,7 +6300,7 @@
             {
               "date": "2026-05-03",
               "reward": {
-                "id": "berry_silver",
+                "id": "berrysilver",
                 "qty": 2,
                 "icon": "🥈",
                 "name": "berrysilver"
@@ -6347,10 +6409,11 @@
           "daycare_mission_refreshes": 3,
           "gender": "h",
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "79210d4d13bd30a16cacd90eb7e51296"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "84761eb8bdb98480966466f1c0f854c4"
       },
       {
         "user_id": "5105e21d-c952-479a-8cf1-814383b599a1",
@@ -7020,10 +7083,11 @@
           "daycare_mission_refreshes": 3,
           "gender": "h",
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "2cd1508eeea362c212e6c69db37bd2a7"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "9a6cacc52fd512c02eb5a600f5b37330"
       },
       {
         "user_id": "d8a92877-70f3-40a5-ac49-1b1f7e09b37e",
@@ -7237,10 +7301,11 @@
           "notificationHistory": [],
           "marketSoldSeenIds": [],
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "b9a13c3874a70aee4f9135247241f8d9"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "ffe9a4c8d93ba8b08bc57f527a12ec04"
       },
       {
         "user_id": "4a62b560-a1a3-4fb1-bac0-c4b16530b543",
@@ -8013,10 +8078,11 @@
           "notificationHistory": [],
           "marketSoldSeenIds": [],
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "487e1d2e42348397586f284f4ef8051c"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "6f4f9be2c03a3e6dd4cc654bf0ed22c8"
       },
       {
         "user_id": "8226e266-c181-4ae1-ba99-22b540595819",
@@ -8175,7 +8241,7 @@
             {
               "date": "2026-04-03",
               "reward": {
-                "id": "berry_bronze",
+                "id": "berrybronze",
                 "qty": 3,
                 "icon": "🥉",
                 "name": "berrybronze"
@@ -8195,7 +8261,7 @@
             {
               "date": "2026-04-03",
               "reward": {
-                "id": "berry_gold",
+                "id": "berrygold",
                 "qty": 1,
                 "icon": "🥇",
                 "name": "berrygold"
@@ -8234,10 +8300,11 @@
           "notificationHistory": [],
           "marketSoldSeenIds": [],
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "0d99c2965ed4ae309279a680584fe237"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "03f9e344a66a26937c62a38c59f5874d"
       },
       {
         "user_id": "e72ca0d8-34f5-4812-9efd-e19e1dc892be",
@@ -8390,10 +8457,11 @@
           "notificationHistory": [],
           "marketSoldSeenIds": [],
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "9a1e28155cae630f9b8565206d201481"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "6489ad6cc4253eb975e409de01e775ce"
       },
       {
         "user_id": "88cc46df-668d-42e5-9428-84e86b864f0e",
@@ -12218,10 +12286,11 @@
           "notificationHistory": [],
           "marketSoldSeenIds": [],
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "0396b81ab1ec931868e2096d794c10bb"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "39bc9aa26fe994fcf73dad41a055cf09"
       },
       {
         "user_id": "3c00d89c-01ba-4e21-a7d3-1fb1457c90c5",
@@ -12368,10 +12437,11 @@
           "notificationHistory": [],
           "marketSoldSeenIds": [],
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "bd90b27b8dc7cf9e2c4cff3dd3424093"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "f4afa2f399ddc0198e608f6daf4e66d7"
       },
       {
         "user_id": "d5034349-822e-458e-9c49-075b54be430e",
@@ -12661,7 +12731,7 @@
             {
               "date": "2026-04-11",
               "reward": {
-                "id": "berry_gold",
+                "id": "berrygold",
                 "qty": 1,
                 "icon": "🥇",
                 "name": "berrygold"
@@ -12681,7 +12751,7 @@
             {
               "date": "2026-04-11",
               "reward": {
-                "id": "berry_bronze",
+                "id": "berrybronze",
                 "qty": 3,
                 "icon": "🥉",
                 "name": "berrybronze"
@@ -12784,10 +12854,11 @@
           "daycare_mission_refreshes": 3,
           "gender": "h",
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "596423288744341c343d91e7caa11054"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "26eab1739386057521b2101f21f6b8cd"
       },
       {
         "user_id": "58f8968f-90d9-4a28-b219-1ef097d3e4b2",
@@ -13034,7 +13105,7 @@
             {
               "date": "2026-04-10",
               "reward": {
-                "id": "berry_gold",
+                "id": "berrygold",
                 "qty": 1,
                 "icon": "🥇",
                 "name": "berrygold"
@@ -13054,7 +13125,7 @@
             {
               "date": "2026-04-10",
               "reward": {
-                "id": "berry_gold",
+                "id": "berrygold",
                 "qty": 1,
                 "icon": "🥇",
                 "name": "berrygold"
@@ -13093,10 +13164,11 @@
           "daycare_mission_refreshes": 3,
           "gender": "h",
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "9993df7857a84adff2f0b16993955265"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "5c179e1ada426920f87a6a44649dec12"
       },
       {
         "user_id": "143ffccc-d17d-4b7e-b021-2e05c5b76b2a",
@@ -13681,7 +13753,7 @@
             {
               "date": "2026-03-26",
               "reward": {
-                "id": "berry_bronze",
+                "id": "berrybronze",
                 "qty": 3,
                 "icon": "🥉",
                 "name": "berrybronze"
@@ -13701,7 +13773,7 @@
             {
               "date": "2026-03-26",
               "reward": {
-                "id": "berry_silver",
+                "id": "berrysilver",
                 "qty": 2,
                 "icon": "🥈",
                 "name": "berrysilver"
@@ -13752,10 +13824,11 @@
           "notificationHistory": [],
           "marketSoldSeenIds": [],
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "031ea5145dd6fe52f2d3f9ed579ee5d9"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "a67bdde0d67b03461cc9b986db791486"
       },
       {
         "user_id": "3f415779-2f3c-4e9a-9236-1a646e5ad5b3",
@@ -13916,7 +13989,7 @@
             {
               "date": "2026-04-15",
               "reward": {
-                "id": "berry_silver",
+                "id": "berrysilver",
                 "qty": 2,
                 "icon": "🥈",
                 "name": "berrysilver"
@@ -13936,7 +14009,7 @@
             {
               "date": "2026-04-15",
               "reward": {
-                "id": "berry_gold",
+                "id": "berrygold",
                 "qty": 1,
                 "icon": "🥇",
                 "name": "berrygold"
@@ -13983,10 +14056,11 @@
           "daycare_mission_refreshes": 3,
           "gender": "h",
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "43ee631a66a8b7bdaa6902565330658e"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "7e82071998f9231464f7dcd3983b3ce2"
       },
       {
         "user_id": "d02c61c1-f14d-4c73-ba6f-1ddfe84701d2",
@@ -17109,7 +17183,7 @@
               "origin": "encounter",
               "pokemonId": "elekid",
               "totalSteps": 193,
-              "uid": "egg_C2028ED3C39CD17F",
+              "uid": "egg_FF933458BA3D084A",
               "nature": "serious",
               "isShiny": false,
               "isNpc": false
@@ -18373,10 +18447,11 @@
           "daycare_mission_refreshes": 3,
           "gender": "h",
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "6ec8c6827087944aafca164115dc146a"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "092a7fc7aefbc03fa4a23617a7e022cf"
       },
       {
         "user_id": "259ef49f-54b2-40c6-a797-5951dc966cb4",
@@ -37316,7 +37391,7 @@
             {
               "date": "2026-06-25",
               "reward": {
-                "id": "power_bracer",
+                "id": "powerbracer",
                 "qty": 1,
                 "icon": "🥊",
                 "name": "powerbracer"
@@ -37336,7 +37411,7 @@
             {
               "date": "2026-06-25",
               "reward": {
-                "id": "power_anklet",
+                "id": "poweranklet",
                 "qty": 1,
                 "icon": "👢",
                 "name": "poweranklet"
@@ -37481,10 +37556,11 @@
           ],
           "lastPokemonCenterHeal": 1781911043863,
           "daycare_berry_egg_time": 0,
-          "daycare_mission_refreshes": 3
+          "daycare_mission_refreshes": 3,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "130c26393e67878f154584e024f2c8c7"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "eb83a1bbc90b3c2befe8ec44bc3592b4"
       },
       {
         "user_id": "8048a95a-0585-4b24-83f7-db18e55e7db5",
@@ -41035,7 +41111,7 @@
               "origin": "encounter",
               "pokemonId": "pichu",
               "totalSteps": 256,
-              "uid": "egg_4D62D23CC20CCACF",
+              "uid": "egg_D533F1A747E658A3",
               "ready": false,
               "nature": "serious",
               "isShiny": false,
@@ -41695,10 +41771,11 @@
           "notificationHistory": [],
           "marketSoldSeenIds": [],
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "08440ec41637899cc943ca0edf39b11c"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "3fb6263b6bffd16df40a522952ddcc9e"
       },
       {
         "user_id": "6ffae092-ab26-4f07-b5e2-10247347ed69",
@@ -43697,7 +43774,7 @@
                 "spe": 19,
                 "_cost": 2000
               },
-              "uid": "egg_8DB849D4DB005687",
+              "uid": "egg_039677D035D0E31A",
               "nature": "serious",
               "isNpc": false
             }
@@ -44578,7 +44655,7 @@
             {
               "date": "2026-05-03",
               "reward": {
-                "id": "berry_gold",
+                "id": "berrygold",
                 "qty": 1,
                 "icon": "🥇",
                 "name": "berrygold"
@@ -44598,7 +44675,7 @@
             {
               "date": "2026-05-03",
               "reward": {
-                "id": "berry_silver",
+                "id": "berrysilver",
                 "qty": 2,
                 "icon": "🥈",
                 "name": "berrysilver"
@@ -44703,10 +44780,11 @@
           "daycare_mission_refreshes": 3,
           "gender": "h",
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "24d3d43ba432afaa65f9b561dac3dac3"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "c245598b7e2b1449931ed667e2b47184"
       },
       {
         "user_id": "e47c45fc-78c3-4694-9cb6-af330cb2cb6d",
@@ -45597,7 +45675,7 @@
             {
               "date": "2026-04-09",
               "reward": {
-                "id": "berry_silver",
+                "id": "berrysilver",
                 "qty": 2,
                 "icon": "🥈",
                 "name": "berrysilver"
@@ -45656,10 +45734,11 @@
           "notificationHistory": [],
           "marketSoldSeenIds": [],
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "d33eed85e7bdb1f48e80a320522acea7"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "0fcaa6661312fdb003b0ce86af9b9d5e"
       },
       {
         "user_id": "52b6b4e1-b908-4cc2-b7a8-7ce4fe0a2e06",
@@ -46835,7 +46914,7 @@
               "origin": "encounter",
               "pokemonId": "magby",
               "totalSteps": 264,
-              "uid": "egg_C912E875F27EF75E",
+              "uid": "egg_BAF7CFB5F5F648CE",
               "nature": "serious",
               "isShiny": false,
               "isNpc": false
@@ -47904,7 +47983,7 @@
             {
               "date": "2026-04-15",
               "reward": {
-                "id": "berry_silver",
+                "id": "berrysilver",
                 "qty": 2,
                 "icon": "🥈",
                 "name": "berrysilver"
@@ -47958,10 +48037,11 @@
           "daycare_mission_refreshes": 3,
           "gender": "h",
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "16b0288963a420d1dd6c831449c5f688"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "99e784d0d14af9994c36ed5b21d2f46b"
       },
       {
         "user_id": "ed26b669-37f6-4434-a0f6-0fc200fa468a",
@@ -48074,7 +48154,7 @@
               "origin": "encounter",
               "pokemonId": "magby",
               "totalSteps": 205,
-              "uid": "egg_3893564C7A8A27D3",
+              "uid": "egg_6C64AA2B87EE03A3",
               "nature": "serious",
               "isShiny": false,
               "isNpc": false
@@ -48700,7 +48780,7 @@
             {
               "date": "2026-03-21",
               "reward": {
-                "id": "berry_bronze",
+                "id": "berrybronze",
                 "qty": 3,
                 "icon": "🥉",
                 "name": "berrybronze"
@@ -48776,10 +48856,11 @@
           "notificationHistory": [],
           "marketSoldSeenIds": [],
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "d98733bd33891e2439bd5d2516b5840a"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "9e74c62eff18a1abba9b867f744e59e0"
       },
       {
         "user_id": "b6fa2c62-23c9-4781-9c2a-9822b48bf30e",
@@ -49851,7 +49932,7 @@
               "origin": "encounter",
               "pokemonId": "igglybuff",
               "totalSteps": 231,
-              "uid": "egg_4C17C3E96ADD00D2",
+              "uid": "egg_AD7DD8DAB698195C",
               "nature": "serious",
               "isShiny": false,
               "isNpc": false
@@ -49874,7 +49955,7 @@
                 "spe": 8,
                 "_cost": 2000
               },
-              "uid": "egg_125966F4B9935810",
+              "uid": "egg_A8B5CE1E5888E762",
               "nature": "serious",
               "isNpc": false
             }
@@ -50548,7 +50629,7 @@
             {
               "date": "2026-05-02",
               "reward": {
-                "id": "berry_bronze",
+                "id": "berrybronze",
                 "qty": 3,
                 "icon": "🥉",
                 "name": "berrybronze"
@@ -50671,10 +50752,11 @@
           "daycare_mission_refreshes": 3,
           "gender": "h",
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "7623a1173c9b0e0680ff943f05abb331"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "dfd18253574cf7669f0ef8afc860d28e"
       },
       {
         "user_id": "44934c84-7e56-4740-a97d-ae749f5447de",
@@ -50899,7 +50981,7 @@
             {
               "date": "2026-03-30",
               "reward": {
-                "id": "berry_gold",
+                "id": "berrygold",
                 "qty": 1,
                 "icon": "🥇",
                 "name": "berrygold"
@@ -50919,7 +51001,7 @@
             {
               "date": "2026-03-30",
               "reward": {
-                "id": "berry_silver",
+                "id": "berrysilver",
                 "qty": 2,
                 "icon": "🥈",
                 "name": "berrysilver"
@@ -50960,10 +51042,11 @@
           "notificationHistory": [],
           "marketSoldSeenIds": [],
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "1116fb4138183cd37ceed799ffc48d0e"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "5e691ee25195b4367840bbe4e3fdd341"
       },
       {
         "user_id": "5222d170-c695-422f-a74a-87ea65f18a5f",
@@ -70546,7 +70629,7 @@
             {
               "date": "2026-06-21",
               "reward": {
-                "id": "power_anklet",
+                "id": "poweranklet",
                 "qty": 1,
                 "icon": "👢",
                 "name": "poweranklet"
@@ -70566,7 +70649,7 @@
             {
               "date": "2026-06-21",
               "reward": {
-                "id": "power_bracer",
+                "id": "powerbracer",
                 "qty": 1,
                 "icon": "🥊",
                 "name": "powerbracer"
@@ -70715,10 +70798,11 @@
           ],
           "lastPokemonCenterHeal": 1782015075332,
           "daycare_berry_egg_time": 1775993836425,
-          "daycare_mission_refreshes": 3
+          "daycare_mission_refreshes": 3,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "29dbd25679ef37c79ef2c272b2d4badf"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "cb8a86223b0290f0f2e7785fc2e38d2a"
       },
       {
         "user_id": "816e03dc-c4ca-40ae-a077-66c43251b404",
@@ -82026,7 +82110,7 @@
                 "spe": 28,
                 "_cost": 2000
               },
-              "uid": "egg_496C73C1D9F8D2F2",
+              "uid": "egg_D7860DC1E72B9DF9",
               "nature": "serious",
               "isNpc": false
             }
@@ -83149,7 +83233,7 @@
             {
               "date": "2026-05-03",
               "reward": {
-                "id": "berry_bronze",
+                "id": "berrybronze",
                 "qty": 3,
                 "icon": "🥉",
                 "name": "berrybronze"
@@ -83169,7 +83253,7 @@
             {
               "date": "2026-05-03",
               "reward": {
-                "id": "power_lens",
+                "id": "powerlens",
                 "qty": 1,
                 "icon": "🔍",
                 "name": "powerlens"
@@ -83276,10 +83360,11 @@
           "daycare_mission_refreshes": 3,
           "gender": "h",
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "ba2be550e903365abb0f66588169048b"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "730480db487755ed70db3d2f56c5d631"
       },
       {
         "user_id": "6f4dd8cc-1ad9-4bde-9339-4d1e8bbd713d",
@@ -93811,7 +93896,7 @@
             {
               "date": "2026-06-19",
               "reward": {
-                "id": "berry_silver",
+                "id": "berrysilver",
                 "qty": 2,
                 "icon": "🥈",
                 "name": "berrysilver"
@@ -93954,10 +94039,11 @@
           ],
           "lastPokemonCenterHeal": 1781581289972,
           "daycare_berry_egg_time": 1776211033337,
-          "daycare_mission_refreshes": 3
+          "daycare_mission_refreshes": 3,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "068a7ea2859426972eafb93047039366"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "65ebb543f7356d40e9cb486d0828448d"
       },
       {
         "user_id": "b8c3006c-7aa5-49ae-ae09-c75d22ce8153",
@@ -94447,10 +94533,11 @@
           "notificationHistory": [],
           "marketSoldSeenIds": [],
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "cb4fe11d826266e11ea35b1292ed0620"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "5604d98e909e3f935d10910331ac4a5a"
       },
       {
         "user_id": "8fd48bca-ce13-4228-b6f0-ee89dc146a3a",
@@ -94525,7 +94612,7 @@
               "gender": "m",
               "isIllegal": false,
               "illegalReasons": [],
-              "uid": "migrated_B4691F1C15A154FF",
+              "uid": "migrated_1189CBDEF406A00C",
               "isShiny": false,
               "status": "",
               "evs": {
@@ -94597,10 +94684,11 @@
           "notificationHistory": [],
           "marketSoldSeenIds": [],
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "c08ec8e1150bcf61862663990f08d018"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "75dcbd4295b60b6fe4cfd7016bb551eb"
       },
       {
         "user_id": "fe7c650d-e480-4825-a975-b558e05d3147",
@@ -94773,7 +94861,7 @@
             {
               "date": "2026-03-30",
               "reward": {
-                "id": "berry_gold",
+                "id": "berrygold",
                 "qty": 1,
                 "icon": "🥇",
                 "name": "berrygold"
@@ -94814,10 +94902,11 @@
           "notificationHistory": [],
           "marketSoldSeenIds": [],
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "a884679bf664803cda9eb7c1fdfa54c8"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "c0790c63e9294f8f3042f36a4c33da0e"
       },
       {
         "user_id": "58772cc4-cead-485b-b8ac-5c7acfc1e4cb",
@@ -94894,7 +94983,7 @@
               "gender": "m",
               "isIllegal": false,
               "illegalReasons": [],
-              "uid": "migrated_2545D6CFC393C6E8",
+              "uid": "migrated_5B42C08C66332D84",
               "isShiny": false,
               "status": "",
               "evs": {
@@ -94964,10 +95053,11 @@
           "notificationHistory": [],
           "marketSoldSeenIds": [],
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "eb9d70feba3b97152dca67ac3e473d7f"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "0d12f258369237d1ba7a9884b02c4a4d"
       },
       {
         "user_id": "6bebbf64-e799-4229-bf19-089e2c9c7248",
@@ -97059,7 +97149,7 @@
             {
               "date": "2026-04-05",
               "reward": {
-                "id": "berry_silver",
+                "id": "berrysilver",
                 "qty": 2,
                 "icon": "🥈",
                 "name": "berrysilver"
@@ -97098,10 +97188,11 @@
           "notificationHistory": [],
           "marketSoldSeenIds": [],
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "23225bd6c843522c2cd33e2eb720e3da"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "3db4bf3ecd1247c093f3673b637f1fea"
       },
       {
         "user_id": "1e078f36-034f-48d1-880a-9e64d4927d99",
@@ -97193,7 +97284,7 @@
               "gender": "m",
               "isIllegal": false,
               "illegalReasons": [],
-              "uid": "migrated_9E40D0026A711206",
+              "uid": "migrated_F336F2F2815CB73A",
               "isShiny": false,
               "evs": {
                 "hp": 0,
@@ -97275,7 +97366,7 @@
               "gender": "m",
               "isIllegal": false,
               "illegalReasons": [],
-              "uid": "migrated_8DF597DBB277C4C3",
+              "uid": "migrated_B01D2F2A50608C85",
               "isShiny": false,
               "evs": {
                 "hp": 0,
@@ -97372,7 +97463,7 @@
               "gender": "m",
               "isIllegal": false,
               "illegalReasons": [],
-              "uid": "migrated_5580D9949E39D584",
+              "uid": "migrated_3164A01A89010DFE",
               "evs": {
                 "hp": 0,
                 "atk": 0,
@@ -97471,7 +97562,7 @@
               "gender": "f",
               "isIllegal": false,
               "illegalReasons": [],
-              "uid": "migrated_52E62CEE1944ECD1",
+              "uid": "migrated_235EA92029545FCE",
               "evs": {
                 "hp": 0,
                 "atk": 0,
@@ -97549,10 +97640,11 @@
           "notificationHistory": [],
           "marketSoldSeenIds": [],
           "lastPokemonCenterHeal": 0,
-          "playtime": 0
+          "playtime": 0,
+          "daycareWarehouse": []
         },
-        "updated_at": "2026-08-31T04:04:25Z",
-        "last_save_id": "ad2c888b7a25837c77df22285b77f6b9"
+        "updated_at": "2026-09-08T01:50:19Z",
+        "last_save_id": "6bbd4e3e89f5e254d8aab36b0df20338"
       }
     ],
     "global_chat_messages": [
@@ -98595,7 +98687,7 @@
           "hp": 20,
           "id": "psyduck",
           "atk": 10,
-          "def": 11,
+          "def": 10,
           "exp": 0,
           "ivs": {
             "hp": 12,
@@ -98605,9 +98697,9 @@
             "spd": 27,
             "spe": 4
           },
-          "spa": 12,
-          "spd": 9,
-          "spe": 10,
+          "spa": 10,
+          "spd": 11,
+          "spe": 11,
           "uid": "bd22b917-c4a1-4865-8bc9-7d8e0545f13a",
           "name": "Psyduck",
           "type": "water",
@@ -98616,18 +98708,44 @@
           "maxHp": 20,
           "moves": [
             {
-              "pp": 33,
+              "id": "scratch",
               "name": "Arañazo",
               "type": "normal",
+              "cat": "physical",
+              "power": 40,
+              "acc": 100,
+              "pp": 35,
               "maxPP": 35,
-              "power": 40
+              "priority": 0
+            },
+            {
+              "id": "tailwhip",
+              "name": "Látigo",
+              "type": "normal",
+              "cat": "status",
+              "power": 0,
+              "acc": 100,
+              "pp": 30,
+              "maxPP": 30,
+              "priority": 0
+            },
+            {
+              "id": "watergun",
+              "name": "Pistola Agua",
+              "type": "water",
+              "cat": "special",
+              "power": 40,
+              "acc": 100,
+              "pp": 25,
+              "maxPP": 25,
+              "priority": 0
             }
           ],
           "vigor": 6,
           "gender": "M",
-          "nature": "Jovial",
-          "status": null,
-          "ability": "Obstruir",
+          "nature": "jolly",
+          "status": "",
+          "ability": "damp",
           "isShiny": false,
           "confused": 0,
           "flinched": false,
@@ -98636,7 +98754,12 @@
           "expNeeded": 91,
           "inDaycare": false,
           "friendship": 70,
-          "sleepTurns": 0
+          "sleepTurns": 0,
+          "species": "psyduck",
+          "maxVigor": 100,
+          "volatileCounters": {},
+          "isIllegal": false,
+          "illegalReasons": []
         },
         "price": "1000",
         "status": "claimed",
@@ -98653,7 +98776,7 @@
           "hp": 84,
           "id": "growlithe",
           "atk": 61,
-          "def": 41,
+          "def": 38,
           "exp": 0,
           "ivs": {
             "hp": 3,
@@ -98663,9 +98786,9 @@
             "spd": 14,
             "spe": 12
           },
-          "spa": 55,
-          "spd": 39,
-          "spe": 51,
+          "spa": 49,
+          "spd": 44,
+          "spe": 56,
           "uid": "0d26e859-de6d-45b5-9947-89a9a1806815",
           "name": "Growlithe",
           "type": "fire",
@@ -98674,39 +98797,56 @@
           "maxHp": 84,
           "moves": [
             {
-              "pp": 18,
-              "name": "Rugido",
-              "type": "normal",
-              "maxPP": 20,
-              "power": 0
-            },
-            {
-              "pp": 25,
-              "name": "Ascuas",
-              "type": "fire",
-              "maxPP": 25,
-              "power": 40
-            },
-            {
-              "pp": 29,
-              "name": "Malicioso",
-              "type": "normal",
-              "maxPP": 30,
-              "power": 0
-            },
-            {
-              "pp": 20,
+              "id": "takedown",
               "name": "Derribo",
               "type": "normal",
+              "cat": "physical",
+              "power": 90,
+              "acc": 85,
+              "pp": 20,
               "maxPP": 20,
-              "power": 90
+              "recoil": 4,
+              "priority": 0
+            },
+            {
+              "id": "retaliate",
+              "name": "Represalia",
+              "type": "normal",
+              "cat": "physical",
+              "power": 70,
+              "acc": 100,
+              "pp": 5,
+              "maxPP": 5,
+              "priority": 0
+            },
+            {
+              "id": "crunch",
+              "name": "Triturar",
+              "type": "dark",
+              "cat": "physical",
+              "power": 80,
+              "acc": 100,
+              "pp": 15,
+              "maxPP": 15,
+              "priority": 0
+            },
+            {
+              "id": "flamethrower",
+              "name": "Lanzallamas",
+              "type": "fire",
+              "cat": "special",
+              "power": 90,
+              "acc": 100,
+              "pp": 15,
+              "maxPP": 15,
+              "priority": 0
             }
           ],
           "vigor": 3,
           "gender": "F",
-          "nature": "Jovial",
-          "status": null,
-          "ability": "Intimidación",
+          "nature": "jolly",
+          "status": "",
+          "ability": "intimidate",
           "isShiny": false,
           "confused": 0,
           "flinched": false,
@@ -98715,7 +98855,12 @@
           "expNeeded": 3781,
           "inDaycare": false,
           "friendship": 70,
-          "sleepTurns": 0
+          "sleepTurns": 0,
+          "species": "growlithe",
+          "maxVigor": 100,
+          "volatileCounters": {},
+          "isIllegal": false,
+          "illegalReasons": []
         },
         "price": "10",
         "status": "sold",
@@ -98742,9 +98887,9 @@
             "spd": 14,
             "spe": 17
           },
-          "spa": 23,
+          "spa": 21,
           "spd": 17,
-          "spe": 16,
+          "spe": 17,
           "uid": "e19687e0-2a03-4578-9910-a67dc161ea56",
           "name": "Geodude",
           "tags": [
@@ -98756,31 +98901,56 @@
           "maxHp": 48,
           "moves": [
             {
-              "pp": 35,
-              "name": "Placaje",
-              "maxPP": 35
-            },
-            {
-              "pp": 15,
-              "name": "Defensa Férrea",
-              "maxPP": 15
-            },
-            {
-              "pp": 15,
+              "id": "rockthrow",
               "name": "Lanzarrocas",
-              "maxPP": 15
+              "type": "rock",
+              "cat": "physical",
+              "power": 50,
+              "acc": 90,
+              "pp": 15,
+              "maxPP": 15,
+              "priority": 0
             },
             {
-              "pp": 30,
-              "name": "Magnitud",
-              "maxPP": 30
+              "id": "bulldoze",
+              "name": "Terratemblor",
+              "type": "ground",
+              "cat": "physical",
+              "power": 60,
+              "acc": 100,
+              "pp": 20,
+              "maxPP": 20,
+              "priority": 0
+            },
+            {
+              "id": "selfdestruct",
+              "name": "Autodestrucción",
+              "type": "normal",
+              "cat": "physical",
+              "power": 200,
+              "acc": 100,
+              "pp": 5,
+              "maxPP": 5,
+              "selfKO": true,
+              "priority": 0
+            },
+            {
+              "id": "smackdown",
+              "name": "Antiaéreo",
+              "type": "rock",
+              "cat": "physical",
+              "power": 50,
+              "acc": 100,
+              "pp": 15,
+              "maxPP": 15,
+              "priority": 0
             }
           ],
           "vigor": 3,
           "gender": "F",
-          "nature": "Ingenuo",
-          "status": null,
-          "ability": "Robustez",
+          "nature": "naive",
+          "status": "",
+          "ability": "rockhead",
           "isShiny": true,
           "confused": 0,
           "flinched": false,
@@ -98789,7 +98959,14 @@
           "inDaycare": false,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 3
+          "lastPhysDmg": 3,
+          "species": "geodude",
+          "maxVigor": 100,
+          "volatileCounters": {},
+          "type2": "ground",
+          "isFloating": false,
+          "isIllegal": false,
+          "illegalReasons": []
         },
         "price": "20000",
         "status": "sold",
@@ -98832,35 +99009,69 @@
           "maxHp": 19,
           "moves": [
             {
-              "pp": 30,
-              "name": "Lengüetazo",
-              "maxPP": 30
-            },
-            {
-              "pp": 10,
+              "id": "confuseray",
               "name": "Rayo Confuso",
+              "type": "ghost",
+              "cat": "status",
+              "power": 0,
+              "acc": 100,
+              "pp": 10,
               "maxPP": 10,
-              "power": 0
+              "priority": 0
             },
             {
-              "pp": 20,
+              "id": "hypnosis",
               "name": "Hipnosis",
+              "type": "psychic",
+              "cat": "status",
+              "power": 0,
+              "acc": 60,
+              "pp": 20,
               "maxPP": 20,
-              "power": 0
+              "priority": 0
+            },
+            {
+              "id": "lick",
+              "name": "Lengüetazo",
+              "type": "ghost",
+              "cat": "physical",
+              "power": 30,
+              "acc": 100,
+              "pp": 30,
+              "maxPP": 30,
+              "priority": 0
+            },
+            {
+              "id": "spite",
+              "name": "Rencor",
+              "type": "ghost",
+              "cat": "status",
+              "power": 0,
+              "acc": 100,
+              "pp": 10,
+              "maxPP": 10,
+              "priority": 0
             }
           ],
           "vigor": 0,
           "gender": "F",
-          "nature": "Osado",
-          "status": null,
-          "ability": "Levitación",
+          "nature": "bold",
+          "status": "",
+          "ability": "levitate",
           "isShiny": false,
           "heldItem": null,
           "expNeeded": 91,
           "inDaycare": false,
           "onMission": false,
           "friendship": 70,
-          "sleepTurns": 0
+          "sleepTurns": 0,
+          "species": "gastly",
+          "maxVigor": 100,
+          "volatileCounters": {},
+          "type2": "poison",
+          "isFloating": true,
+          "isIllegal": false,
+          "illegalReasons": []
         },
         "price": "30000",
         "status": "sold",
@@ -98901,39 +99112,56 @@
           "maxHp": 63,
           "moves": [
             {
-              "pp": 40,
-              "name": "Disparo Demora",
-              "type": "bug",
-              "maxPP": 40,
-              "power": 0
-            },
-            {
-              "pp": 35,
-              "name": "Picotazo Veneno",
-              "type": "poison",
-              "maxPP": 35,
-              "power": 15
-            },
-            {
-              "pp": 25,
-              "name": "Confusión",
-              "type": "psychic",
-              "maxPP": 25,
-              "power": 50
-            },
-            {
-              "pp": 34,
+              "id": "poisonpowder",
               "name": "Polvo Veneno",
-              "type": "grass",
+              "type": "poison",
+              "cat": "status",
+              "power": 0,
+              "acc": 75,
+              "pp": 35,
               "maxPP": 35,
-              "power": 0
+              "priority": 0
+            },
+            {
+              "id": "leechlife",
+              "name": "Chupavidas",
+              "type": "bug",
+              "cat": "physical",
+              "power": 80,
+              "acc": 100,
+              "pp": 10,
+              "maxPP": 10,
+              "drain": true,
+              "priority": 0
+            },
+            {
+              "id": "psybeam",
+              "name": "Psicorrayo",
+              "type": "psychic",
+              "cat": "special",
+              "power": 65,
+              "acc": 100,
+              "pp": 20,
+              "maxPP": 20,
+              "priority": 0
+            },
+            {
+              "id": "stunspore",
+              "name": "Paralizador",
+              "type": "grass",
+              "cat": "status",
+              "power": 0,
+              "acc": 75,
+              "pp": 30,
+              "maxPP": 30,
+              "priority": 0
             }
           ],
           "vigor": 6,
           "gender": "F",
-          "nature": "Modesto",
-          "status": null,
-          "ability": "Ojo Compuesto",
+          "nature": "modest",
+          "status": "",
+          "ability": "compoundeyes",
           "isShiny": true,
           "confused": 0,
           "flinched": false,
@@ -98946,7 +99174,13 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "venonat",
+          "maxVigor": 100,
+          "volatileCounters": {},
+          "type2": "poison",
+          "isIllegal": false,
+          "illegalReasons": []
         },
         "price": "10000",
         "status": "sold",
@@ -98985,39 +99219,56 @@
           "maxHp": 151,
           "moves": [
             {
-              "pp": 25,
-              "name": "Paralizador",
+              "id": "worryseed",
+              "name": "Abatidoras",
               "type": "grass",
-              "maxPP": 30,
-              "power": 0
-            },
-            {
-              "pp": 3,
-              "name": "Huevo Bomba",
-              "type": "normal",
+              "cat": "status",
+              "power": 0,
+              "acc": 100,
+              "pp": 10,
               "maxPP": 10,
-              "power": 100
+              "priority": 0
             },
             {
-              "pp": 34,
-              "name": "Polvo Veneno",
+              "id": "gigadrain",
+              "name": "Gigadrenado",
               "type": "grass",
-              "maxPP": 35,
-              "power": 0
+              "cat": "special",
+              "power": 75,
+              "acc": 100,
+              "pp": 10,
+              "maxPP": 10,
+              "drain": true,
+              "priority": 0
             },
             {
-              "pp": 13,
-              "name": "Somnífera",
-              "type": "normal",
-              "maxPP": 15,
-              "power": 0
+              "id": "extrasensory",
+              "name": "Paranormal",
+              "type": "psychic",
+              "cat": "special",
+              "power": 80,
+              "acc": 100,
+              "pp": 20,
+              "maxPP": 20,
+              "priority": 0
+            },
+            {
+              "id": "solarbeam",
+              "name": "Rayo Solar",
+              "type": "grass",
+              "cat": "special",
+              "power": 120,
+              "acc": 100,
+              "pp": 10,
+              "maxPP": 10,
+              "priority": 0
             }
           ],
           "vigor": 6,
           "gender": "M",
-          "nature": "Dócil",
-          "status": null,
-          "ability": "Clorofila",
+          "nature": "docile",
+          "status": "",
+          "ability": "chlorophyll",
           "isShiny": false,
           "confused": 0,
           "flinched": false,
@@ -99033,7 +99284,13 @@
           "guardianPts": 300,
           "lastPhysDmg": 0,
           "lastSpecDmg": 0,
-          "guardianFaction": "poder"
+          "guardianFaction": "poder",
+          "species": "exeggutor",
+          "maxVigor": 100,
+          "volatileCounters": {},
+          "type2": "psychic",
+          "isIllegal": false,
+          "illegalReasons": []
         },
         "price": "10000",
         "status": "sold",
@@ -99071,37 +99328,56 @@
           "maxHp": 130,
           "moves": [
             {
-              "pp": 35,
-              "name": "Arañazo",
+              "id": "growth",
+              "name": "Desarrollo",
               "type": "normal",
-              "maxPP": 35,
-              "power": 40
-            },
-            {
-              "pp": 15,
-              "name": "Espora",
-              "type": "grass",
-              "maxPP": 15,
-              "power": 0
-            },
-            {
+              "cat": "status",
+              "power": 0,
+              "acc": 1000,
               "pp": 20,
-              "name": "Cuchillada",
-              "type": "normal",
               "maxPP": 20,
-              "power": 70
+              "priority": 0
             },
             {
-              "pp": 10,
+              "id": "gigadrain",
               "name": "Gigadrenado",
-              "maxPP": 10
+              "type": "grass",
+              "cat": "special",
+              "power": 75,
+              "acc": 100,
+              "pp": 10,
+              "maxPP": 10,
+              "drain": true,
+              "priority": 0
+            },
+            {
+              "id": "xscissor",
+              "name": "Tijera X",
+              "type": "bug",
+              "cat": "physical",
+              "power": 80,
+              "acc": 100,
+              "pp": 15,
+              "maxPP": 15,
+              "priority": 0
+            },
+            {
+              "id": "ragepowder",
+              "name": "Polvo Ira",
+              "type": "bug",
+              "cat": "status",
+              "power": 0,
+              "acc": 1000,
+              "pp": 20,
+              "maxPP": 20,
+              "priority": 2
             }
           ],
           "vigor": 5,
           "gender": "F",
-          "nature": "Serio",
-          "status": null,
-          "ability": "Efecto Espora",
+          "nature": "serious",
+          "status": "",
+          "ability": "effectspore",
           "isShiny": true,
           "confused": 0,
           "flinched": false,
@@ -99112,7 +99388,13 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 50
+          "lastPhysDmg": 50,
+          "species": "parasect",
+          "maxVigor": 100,
+          "volatileCounters": {},
+          "type2": "grass",
+          "isIllegal": false,
+          "illegalReasons": []
         },
         "price": "500000",
         "status": "sold",
@@ -99128,7 +99410,7 @@
         "data": {
           "hp": 43,
           "id": "eevee",
-          "atk": 20,
+          "atk": 23,
           "def": 21,
           "exp": 46,
           "ivs": {
@@ -99141,7 +99423,7 @@
           },
           "spa": 22,
           "spd": 28,
-          "spe": 26,
+          "spe": 24,
           "uid": "eb49939c-9df5-4bb3-aaa2-5766b01fa0ad",
           "name": "Eevee",
           "type": "normal",
@@ -99150,30 +99432,55 @@
           "maxHp": 43,
           "moves": [
             {
-              "pp": 35,
-              "name": "Placaje",
-              "type": "normal",
-              "maxPP": 35,
-              "power": 35
-            },
-            {
-              "pp": 30,
-              "name": "Látigo",
-              "type": "normal",
-              "maxPP": 30,
-              "power": 0
-            },
-            {
-              "pp": 15,
+              "id": "sandattack",
               "name": "Ataque Arena",
-              "maxPP": 15
+              "type": "ground",
+              "cat": "status",
+              "power": 0,
+              "acc": 100,
+              "pp": 15,
+              "maxPP": 15,
+              "priority": 0
+            },
+            {
+              "id": "babydolleyes",
+              "name": "Ojitos Tiernos",
+              "type": "fairy",
+              "cat": "status",
+              "power": 0,
+              "acc": 100,
+              "pp": 30,
+              "maxPP": 30,
+              "priority": 1
+            },
+            {
+              "id": "quickattack",
+              "name": "Ataque Rápido",
+              "type": "normal",
+              "cat": "physical",
+              "power": 40,
+              "acc": 100,
+              "pp": 30,
+              "maxPP": 30,
+              "priority": 1
+            },
+            {
+              "id": "swift",
+              "name": "Rapidez",
+              "type": "normal",
+              "cat": "special",
+              "power": 60,
+              "acc": 1000,
+              "pp": 20,
+              "maxPP": 20,
+              "priority": 0
             }
           ],
           "vigor": 0,
           "gender": "M",
-          "nature": "Tímido",
-          "status": null,
-          "ability": "Adaptable",
+          "nature": "bashful",
+          "status": "",
+          "ability": "runaway",
           "isShiny": false,
           "confused": 0,
           "flinched": false,
@@ -99186,7 +99493,12 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "eevee",
+          "maxVigor": 100,
+          "volatileCounters": {},
+          "isIllegal": false,
+          "illegalReasons": []
         },
         "price": "10",
         "status": "sold",
@@ -99224,30 +99536,33 @@
           "maxHp": 15,
           "moves": [
             {
-              "pp": 33,
-              "acc": 95,
-              "cat": "physical",
+              "id": "tackle",
               "name": "Placaje",
               "type": "normal",
+              "cat": "physical",
+              "power": 40,
+              "acc": 100,
+              "pp": 35,
               "maxPP": 35,
-              "power": 35
+              "priority": 0
             },
             {
-              "pp": 29,
-              "acc": 100,
-              "cat": "status",
+              "id": "tailwhip",
               "name": "Látigo",
               "type": "normal",
-              "maxPP": 30,
+              "cat": "status",
               "power": 0,
-              "effect": "stat_down_enemy_def"
+              "acc": 100,
+              "pp": 30,
+              "maxPP": 30,
+              "priority": 0
             }
           ],
           "vigor": 5,
           "gender": "M",
-          "nature": "Modesto",
-          "status": null,
-          "ability": "Fuga",
+          "nature": "modest",
+          "status": "",
+          "ability": "runaway",
           "isShiny": false,
           "confused": 0,
           "flinched": false,
@@ -99257,12 +99572,16 @@
           "inDaycare": false,
           "protected": false,
           "friendship": 70,
-          "isFloating": false,
           "obtainedAt": 1779221015952,
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "rattata",
+          "maxVigor": 100,
+          "volatileCounters": {},
+          "isIllegal": false,
+          "illegalReasons": []
         },
         "price": "1000",
         "status": "sold",
@@ -103608,22 +103927,15 @@
     "ranked_rules_config": [
       {
         "id": "current",
-        "season_name": "TEMPORADA 1",
+        "season_name": "Frontera Kanto & Johto",
         "config": {
+          "name": "Frontera Kanto & Johto",
+          "maxPokemon": 6,
           "levelCap": 50,
-          "maxPokemon": 3,
           "allowedTypes": [],
-          "seasonEndDate": "2026-05-10",
-          "seasonStartDate": "2026-04-10",
-          "bannedPokemonIds": [
-            "articuno",
-            "zapdos",
-            "mewtwo",
-            "moltres",
-            "mew"
-          ]
+          "bannedPokemonIds": []
         },
-        "updated_at": "2026-04-10T21:47:09.321Z"
+        "updated_at": "2026-09-08 01:50:51"
       }
     ],
     "system_config": [
@@ -103634,8 +103946,8 @@
       },
       {
         "key": "db_version",
-        "value": "\"20260831010000\"",
-        "updated_at": "2026-08-31T04:04:47Z"
+        "value": "20260907050000",
+        "updated_at": "2026-09-08T01:50:51Z"
       }
     ],
     "trade_offers": [
@@ -103691,8 +104003,8 @@
           "type2": "poison",
           "vigor": 4,
           "gender": "M",
-          "nature": "Tranquilo",
-          "status": null,
+          "nature": "quiet",
+          "status": "",
           "ability": "Polvo escudo",
           "isShiny": false,
           "confused": 0,
@@ -103709,7 +104021,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "weedle"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -103770,8 +104083,8 @@
               "maxPP": 25
             }
           ],
-          "nature": "Modesto",
-          "status": null,
+          "nature": "modest",
+          "status": "",
           "ability": "Lluvia Ligera",
           "isShiny": false,
           "confused": 0,
@@ -103780,7 +104093,8 @@
           "expNeeded": 817,
           "choiceMove": null,
           "friendship": 70,
-          "sleepTurns": 0
+          "sleepTurns": 0,
+          "species": "wartortle"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -103855,8 +104169,8 @@
           ],
           "vigor": 6,
           "gender": "M",
-          "nature": "Alocado",
-          "status": null,
+          "nature": "rash",
+          "status": "",
           "ability": "Intimidación",
           "isShiny": false,
           "confused": 0,
@@ -103865,7 +104179,8 @@
           "expNeeded": 1141,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 47
+          "lastPhysDmg": 47,
+          "species": "growlithe"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -103922,15 +104237,16 @@
           ],
           "vigor": 2,
           "gender": "M",
-          "nature": "Tímido",
-          "status": null,
+          "nature": "bashful",
+          "status": "",
           "ability": "Adaptable",
           "isShiny": false,
           "heldItem": null,
           "expNeeded": 91,
           "inDaycare": false,
           "friendship": 70,
-          "sleepTurns": 0
+          "sleepTurns": 0,
+          "species": "eevee"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -103987,14 +104303,15 @@
           ],
           "vigor": 1,
           "gender": "M",
-          "nature": "Serio",
-          "status": null,
+          "nature": "serious",
+          "status": "",
           "ability": "Lluvia Ligera",
           "isShiny": false,
           "heldItem": null,
           "expNeeded": 91,
           "friendship": 70,
-          "sleepTurns": 0
+          "sleepTurns": 0,
+          "species": "squirtle"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -104066,8 +104383,8 @@
           ],
           "vigor": 3,
           "gender": "M",
-          "nature": "Grosero",
-          "status": null,
+          "nature": "sassy",
+          "status": "",
           "ability": "Cura Natural",
           "isShiny": false,
           "heldItem": null,
@@ -104076,7 +104393,8 @@
           "friendship": 70,
           "isFloating": false,
           "obtainedAt": 1779221762162,
-          "sleepTurns": 0
+          "sleepTurns": 0,
+          "species": "cleffa"
         },
         "offer_items": {
           "Poción": 2
@@ -104200,8 +104518,8 @@
           ],
           "vigor": 5,
           "gender": "M",
-          "nature": "Dócil",
-          "status": null,
+          "nature": "docile",
+          "status": "",
           "ability": "Intimidación",
           "isShiny": false,
           "confused": 0,
@@ -104214,7 +104532,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "gyarados"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -104387,8 +104706,8 @@
           ],
           "vigor": 4,
           "gender": "F",
-          "nature": "Alocado",
-          "status": null,
+          "nature": "rash",
+          "status": "",
           "ability": "Sincronía",
           "isShiny": false,
           "confused": 0,
@@ -104402,7 +104721,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "kadabra"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -104463,8 +104783,8 @@
               "maxPP": 25
             }
           ],
-          "nature": "Modesto",
-          "status": null,
+          "nature": "modest",
+          "status": "",
           "ability": "Lluvia Ligera",
           "isShiny": false,
           "confused": 0,
@@ -104473,7 +104793,8 @@
           "expNeeded": 817,
           "choiceMove": null,
           "friendship": 70,
-          "sleepTurns": 0
+          "sleepTurns": 0,
+          "species": "wartortle"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -104530,14 +104851,15 @@
           ],
           "vigor": 1,
           "gender": "M",
-          "nature": "Grosero",
-          "status": null,
+          "nature": "sassy",
+          "status": "",
           "ability": "Clorofila",
           "isShiny": false,
           "heldItem": null,
           "expNeeded": 91,
           "friendship": 70,
-          "sleepTurns": 0
+          "sleepTurns": 0,
+          "species": "bulbasaur"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -104611,8 +104933,8 @@
           ],
           "vigor": 3,
           "gender": "F",
-          "nature": "Osado",
-          "status": null,
+          "nature": "bold",
+          "status": "",
           "ability": "Robustez",
           "isShiny": false,
           "confused": 0,
@@ -104627,7 +104949,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "graveler"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -104689,8 +105012,8 @@
             }
           ],
           "gender": "M",
-          "nature": "Plácido",
-          "status": null,
+          "nature": "relaxed",
+          "status": "",
           "ability": "Nerviosismo",
           "isShiny": false,
           "confused": 0,
@@ -104700,7 +105023,8 @@
           "expNeeded": 1657,
           "choiceMove": null,
           "friendship": 70,
-          "sleepTurns": 0
+          "sleepTurns": 0,
+          "species": "geodude"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -104766,8 +105090,8 @@
           ],
           "vigor": 3,
           "gender": "F",
-          "nature": "Plácido",
-          "status": null,
+          "nature": "relaxed",
+          "status": "",
           "ability": "Espesura",
           "isShiny": false,
           "confused": 0,
@@ -104778,7 +105102,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 1
+          "lastPhysDmg": 1,
+          "species": "gengar"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -104844,8 +105169,8 @@
           ],
           "vigor": 3,
           "gender": "F",
-          "nature": "Plácido",
-          "status": null,
+          "nature": "relaxed",
+          "status": "",
           "ability": "Espesura",
           "isShiny": false,
           "confused": 0,
@@ -104856,7 +105181,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 1
+          "lastPhysDmg": 1,
+          "species": "haunter"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -104930,8 +105256,8 @@
           ],
           "vigor": 3,
           "gender": "F",
-          "nature": "Plácido",
-          "status": null,
+          "nature": "relaxed",
+          "status": "",
           "ability": "Sincronía",
           "isShiny": false,
           "confused": 0,
@@ -104946,7 +105272,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "kadabra"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -105003,8 +105330,8 @@
             }
           ],
           "gender": "F",
-          "nature": "Grosero",
-          "status": null,
+          "nature": "sassy",
+          "status": "",
           "ability": "Espesura",
           "isShiny": false,
           "confused": 0,
@@ -105013,7 +105340,8 @@
           "expNeeded": 1519,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 1
+          "lastPhysDmg": 1,
+          "species": "haunter"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -105063,8 +105391,8 @@
             }
           ],
           "gender": "F",
-          "nature": "Plácido",
-          "status": null,
+          "nature": "relaxed",
+          "status": "",
           "ability": "Mar Llamas",
           "isShiny": false,
           "confused": 0,
@@ -105073,7 +105401,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 2
+          "lastPhysDmg": 2,
+          "species": "charmeleon"
         },
         "request_items": {},
         "request_money": "0",
@@ -105127,8 +105456,8 @@
             }
           ],
           "gender": "F",
-          "nature": "Grosero",
-          "status": null,
+          "nature": "sassy",
+          "status": "",
           "ability": "Espesura",
           "isShiny": false,
           "confused": 0,
@@ -105138,7 +105467,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 1
+          "lastPhysDmg": 1,
+          "species": "haunter"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -105200,8 +105530,8 @@
             }
           ],
           "gender": "F",
-          "nature": "Dócil",
-          "status": null,
+          "nature": "docile",
+          "status": "",
           "ability": "Espesura",
           "isShiny": false,
           "confused": 0,
@@ -105212,7 +105542,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 1
+          "lastPhysDmg": 1,
+          "species": "haunter"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -105274,8 +105605,8 @@
             }
           ],
           "gender": "F",
-          "nature": "Dócil",
-          "status": null,
+          "nature": "docile",
+          "status": "",
           "ability": "Espesura",
           "isShiny": false,
           "confused": 0,
@@ -105286,7 +105617,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 1
+          "lastPhysDmg": 1,
+          "species": "gengar"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -105352,8 +105684,8 @@
           ],
           "vigor": 3,
           "gender": "F",
-          "nature": "Plácido",
-          "status": null,
+          "nature": "relaxed",
+          "status": "",
           "ability": "Espesura",
           "isShiny": false,
           "confused": 0,
@@ -105364,7 +105696,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 1
+          "lastPhysDmg": 1,
+          "species": "haunter"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -105427,8 +105760,8 @@
           ],
           "vigor": 5,
           "gender": "M",
-          "nature": "Serio",
-          "status": null,
+          "nature": "serious",
+          "status": "",
           "ability": "Electricidad Estática",
           "isShiny": false,
           "confused": 0,
@@ -105439,7 +105772,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 138
+          "lastPhysDmg": 138,
+          "species": "raichu"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -105505,8 +105839,8 @@
           ],
           "vigor": 3,
           "gender": "F",
-          "nature": "Plácido",
-          "status": null,
+          "nature": "relaxed",
+          "status": "",
           "ability": "Espesura",
           "isShiny": false,
           "confused": 0,
@@ -105517,7 +105851,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 1
+          "lastPhysDmg": 1,
+          "species": "haunter"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -105571,13 +105906,14 @@
           ],
           "vigor": 1,
           "gender": "F",
-          "nature": "Modesto",
-          "status": null,
+          "nature": "modest",
+          "status": "",
           "ability": "Escape",
           "isShiny": false,
           "expNeeded": 91,
           "friendship": 70,
-          "sleepTurns": 0
+          "sleepTurns": 0,
+          "species": "eevee"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -105651,8 +105987,8 @@
           ],
           "vigor": 3,
           "gender": "F",
-          "nature": "Plácido",
-          "status": null,
+          "nature": "relaxed",
+          "status": "",
           "ability": "Sincronía",
           "isShiny": false,
           "confused": 0,
@@ -105667,7 +106003,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "alakazam"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -105733,8 +106070,8 @@
           ],
           "vigor": 3,
           "gender": "F",
-          "nature": "Plácido",
-          "status": null,
+          "nature": "relaxed",
+          "status": "",
           "ability": "Espesura",
           "isShiny": false,
           "confused": 0,
@@ -105745,7 +106082,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 1
+          "lastPhysDmg": 1,
+          "species": "gengar"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -105793,8 +106131,8 @@
           ],
           "vigor": 5,
           "gender": "M",
-          "nature": "Raro",
-          "status": null,
+          "nature": "quirky",
+          "status": "",
           "ability": "Sincronía",
           "isShiny": false,
           "confused": 0,
@@ -105805,7 +106143,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 34
+          "lastPhysDmg": 34,
+          "species": "kadabra"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -105853,8 +106192,8 @@
           ],
           "vigor": 5,
           "gender": "M",
-          "nature": "Raro",
-          "status": null,
+          "nature": "quirky",
+          "status": "",
           "ability": "Sincronía",
           "isShiny": false,
           "confused": 0,
@@ -105865,7 +106204,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 34
+          "lastPhysDmg": 34,
+          "species": "alakazam"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -105939,8 +106279,8 @@
           ],
           "vigor": 3,
           "gender": "F",
-          "nature": "Osado",
-          "status": null,
+          "nature": "bold",
+          "status": "",
           "ability": "Robustez",
           "isShiny": false,
           "confused": 0,
@@ -105955,7 +106295,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "golem"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -106013,8 +106354,8 @@
           ],
           "vigor": 6,
           "gender": "M",
-          "nature": "Alocado",
-          "status": null,
+          "nature": "rash",
+          "status": "",
           "ability": "Intimidación",
           "isShiny": false,
           "confused": 0,
@@ -106023,7 +106364,8 @@
           "expNeeded": 1141,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 47
+          "lastPhysDmg": 47,
+          "species": "growlithe"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -106086,8 +106428,8 @@
           ],
           "vigor": 3,
           "gender": "M",
-          "nature": "Modesto",
-          "status": null,
+          "nature": "modest",
+          "status": "",
           "ability": "Levitación",
           "isShiny": false,
           "confused": 0,
@@ -106098,7 +106440,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 1
+          "lastPhysDmg": 1,
+          "species": "haunter"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -106161,8 +106504,8 @@
           ],
           "vigor": 3,
           "gender": "F",
-          "nature": "Plácido",
-          "status": null,
+          "nature": "relaxed",
+          "status": "",
           "ability": "Absorbe Fuego",
           "isShiny": false,
           "confused": 0,
@@ -106171,7 +106514,8 @@
           "expNeeded": 1261,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 14
+          "lastPhysDmg": 14,
+          "species": "vulpix"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -106234,8 +106578,8 @@
           ],
           "vigor": 3,
           "gender": "M",
-          "nature": "Modesto",
-          "status": null,
+          "nature": "modest",
+          "status": "",
           "ability": "Levitación",
           "isShiny": false,
           "confused": 0,
@@ -106246,7 +106590,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 1
+          "lastPhysDmg": 1,
+          "species": "haunter"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -106317,8 +106662,8 @@
           ],
           "vigor": 4,
           "gender": null,
-          "nature": "Agitado",
-          "status": null,
+          "nature": "impish",
+          "status": "",
           "ability": "Imán",
           "isShiny": false,
           "confused": 0,
@@ -106332,7 +106677,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "magneton"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -106391,8 +106737,8 @@
           ],
           "vigor": 1,
           "gender": "M",
-          "nature": "Firme",
-          "status": null,
+          "nature": "adamant",
+          "status": "",
           "ability": "Espesura",
           "isShiny": false,
           "confused": 0,
@@ -106403,7 +106749,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 75
+          "lastPhysDmg": 75,
+          "species": "kadabra"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -106462,8 +106809,8 @@
           ],
           "vigor": 1,
           "gender": "M",
-          "nature": "Firme",
-          "status": null,
+          "nature": "adamant",
+          "status": "",
           "ability": "Espesura",
           "isShiny": false,
           "confused": 0,
@@ -106474,7 +106821,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 75
+          "lastPhysDmg": 75,
+          "species": "kadabra"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -106533,8 +106881,8 @@
           ],
           "vigor": 1,
           "gender": "M",
-          "nature": "Firme",
-          "status": null,
+          "nature": "adamant",
+          "status": "",
           "ability": "Espesura",
           "isShiny": false,
           "confused": 0,
@@ -106545,7 +106893,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 75
+          "lastPhysDmg": 75,
+          "species": "kadabra"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -106604,8 +106953,8 @@
           ],
           "vigor": 1,
           "gender": "M",
-          "nature": "Firme",
-          "status": null,
+          "nature": "adamant",
+          "status": "",
           "ability": "Espesura",
           "isShiny": false,
           "confused": 0,
@@ -106616,7 +106965,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 75
+          "lastPhysDmg": 75,
+          "species": "kadabra"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -106679,8 +107029,8 @@
           ],
           "vigor": 3,
           "gender": "M",
-          "nature": "Modesto",
-          "status": null,
+          "nature": "modest",
+          "status": "",
           "ability": "Levitación",
           "isShiny": false,
           "confused": 0,
@@ -106691,7 +107041,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 1
+          "lastPhysDmg": 1,
+          "species": "haunter"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -106754,8 +107105,8 @@
           ],
           "vigor": 5,
           "gender": "M",
-          "nature": "Moderado",
-          "status": null,
+          "nature": "mild",
+          "status": "",
           "ability": "Sincronía",
           "isShiny": false,
           "confused": 0,
@@ -106766,7 +107117,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 55
+          "lastPhysDmg": 55,
+          "species": "kadabra"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -106837,8 +107189,8 @@
           ],
           "vigor": 6,
           "gender": "F",
-          "nature": "Osado",
-          "status": null,
+          "nature": "bold",
+          "status": "",
           "ability": "Foco interno",
           "isShiny": false,
           "confused": 0,
@@ -106852,7 +107204,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "dragonite"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -106915,8 +107268,8 @@
           ],
           "vigor": 5,
           "gender": "M",
-          "nature": "Moderado",
-          "status": null,
+          "nature": "mild",
+          "status": "",
           "ability": "Sincronía",
           "isShiny": false,
           "confused": 0,
@@ -106927,7 +107280,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 55
+          "lastPhysDmg": 55,
+          "species": "kadabra"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -106990,8 +107344,8 @@
           ],
           "vigor": 4,
           "gender": "F",
-          "nature": "Tranquilo",
-          "status": null,
+          "nature": "quiet",
+          "status": "",
           "ability": "Levitación",
           "isShiny": false,
           "confused": 0,
@@ -107002,7 +107356,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 45
+          "lastPhysDmg": 45,
+          "species": "haunter"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -107065,8 +107420,8 @@
           ],
           "vigor": 4,
           "gender": "F",
-          "nature": "Tranquilo",
-          "status": null,
+          "nature": "quiet",
+          "status": "",
           "ability": "Levitación",
           "isShiny": false,
           "confused": 0,
@@ -107077,7 +107432,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 45
+          "lastPhysDmg": 45,
+          "species": "haunter"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -107148,8 +107504,8 @@
           ],
           "vigor": 5,
           "gender": "M",
-          "nature": "Serio",
-          "status": null,
+          "nature": "serious",
+          "status": "",
           "ability": "Insomnio",
           "isShiny": false,
           "confused": 0,
@@ -107162,7 +107518,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "drowzee"
         },
         "offer_items": {
           "Poción": 5,
@@ -107229,8 +107586,8 @@
           ],
           "vigor": 5,
           "gender": "M",
-          "nature": "Moderado",
-          "status": null,
+          "nature": "mild",
+          "status": "",
           "ability": "Sincronía",
           "isShiny": false,
           "confused": 0,
@@ -107243,7 +107600,8 @@
           "sleepTurns": 0,
           "lastPhysDmg": 59,
           "disabledMove": null,
-          "disabledTurns": 0
+          "disabledTurns": 0,
+          "species": "alakazam"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -107306,8 +107664,8 @@
           ],
           "vigor": 5,
           "gender": "M",
-          "nature": "Moderado",
-          "status": null,
+          "nature": "mild",
+          "status": "",
           "ability": "Sincronía",
           "isShiny": false,
           "confused": 0,
@@ -107320,7 +107678,8 @@
           "sleepTurns": 0,
           "lastPhysDmg": 59,
           "disabledMove": null,
-          "disabledTurns": 0
+          "disabledTurns": 0,
+          "species": "kadabra"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -107383,8 +107742,8 @@
           ],
           "vigor": 4,
           "gender": "F",
-          "nature": "Tranquilo",
-          "status": null,
+          "nature": "quiet",
+          "status": "",
           "ability": "Levitación",
           "isShiny": false,
           "confused": 0,
@@ -107395,7 +107754,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 95
+          "lastPhysDmg": 95,
+          "species": "gengar"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -107475,8 +107835,8 @@
           ],
           "vigor": 4,
           "gender": "F",
-          "nature": "Tranquilo",
-          "status": null,
+          "nature": "quiet",
+          "status": "",
           "ability": "Levitación",
           "isShiny": false,
           "confused": 0,
@@ -107487,7 +107847,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 95
+          "lastPhysDmg": 95,
+          "species": "haunter"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -107540,13 +107901,14 @@
           ],
           "vigor": 4,
           "gender": "F",
-          "nature": "Cauto",
-          "status": null,
+          "nature": "careful",
+          "status": "",
           "ability": "Espesura",
           "isShiny": false,
           "expNeeded": 91,
           "friendship": 70,
-          "sleepTurns": 0
+          "sleepTurns": 0,
+          "species": "togepi"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -107603,8 +107965,8 @@
           ],
           "vigor": 3,
           "gender": "M",
-          "nature": "Cauto",
-          "status": null,
+          "nature": "careful",
+          "status": "",
           "ability": "Mudar",
           "isShiny": false,
           "confused": 0,
@@ -107614,7 +107976,8 @@
           "expNeeded": 91,
           "inDaycare": false,
           "friendship": 70,
-          "sleepTurns": 0
+          "sleepTurns": 0,
+          "species": "metapod"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -107671,8 +108034,8 @@
           ],
           "vigor": 3,
           "gender": "M",
-          "nature": "Cauto",
-          "status": null,
+          "nature": "careful",
+          "status": "",
           "ability": "Mudar",
           "isShiny": false,
           "confused": 0,
@@ -107681,7 +108044,8 @@
           "_revealed": true,
           "expNeeded": 91,
           "friendship": 70,
-          "sleepTurns": 0
+          "sleepTurns": 0,
+          "species": "metapod"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -107738,8 +108102,8 @@
           ],
           "vigor": 3,
           "gender": "F",
-          "nature": "Plácido",
-          "status": null,
+          "nature": "relaxed",
+          "status": "",
           "ability": "Mudar",
           "isShiny": false,
           "confused": 0,
@@ -107749,7 +108113,8 @@
           "expNeeded": 37,
           "inDaycare": false,
           "friendship": 70,
-          "sleepTurns": 0
+          "sleepTurns": 0,
+          "species": "metapod"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -107814,8 +108179,8 @@
           ],
           "vigor": 6,
           "gender": "F",
-          "nature": "Ingenuo",
-          "status": null,
+          "nature": "naive",
+          "status": "",
           "ability": "Sincronía",
           "isShiny": false,
           "confused": 0,
@@ -107829,7 +108194,8 @@
           "sleepTurns": 0,
           "lastPhysDmg": 29,
           "disabledMove": null,
-          "disabledTurns": 0
+          "disabledTurns": 0,
+          "species": "kadabra"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -107874,14 +108240,15 @@
           ],
           "vigor": 5,
           "gender": "F",
-          "nature": "Grosero",
-          "status": null,
+          "nature": "sassy",
+          "status": "",
           "ability": "Mar Llamas",
           "isShiny": false,
           "heldItem": null,
           "expNeeded": 91,
           "friendship": 70,
-          "sleepTurns": 0
+          "sleepTurns": 0,
+          "species": "charmander"
         },
         "request_items": {},
         "request_money": "0",
@@ -107943,8 +108310,8 @@
           ],
           "vigor": 6,
           "gender": "F",
-          "nature": "Ingenuo",
-          "status": null,
+          "nature": "naive",
+          "status": "",
           "ability": "Sincronía",
           "isShiny": false,
           "confused": 0,
@@ -107958,7 +108325,8 @@
           "sleepTurns": 0,
           "lastPhysDmg": 4,
           "disabledMove": null,
-          "disabledTurns": 0
+          "disabledTurns": 0,
+          "species": "alakazam"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -108025,8 +108393,8 @@
           ],
           "vigor": 5,
           "gender": "F",
-          "nature": "Agitado",
-          "status": null,
+          "nature": "impish",
+          "status": "",
           "ability": "Lluvia Ligera",
           "isShiny": false,
           "confused": 0,
@@ -108040,7 +108408,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "squirtle"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -108109,8 +108478,8 @@
           ],
           "vigor": 4,
           "gender": "M",
-          "nature": "Dócil",
-          "status": null,
+          "nature": "docile",
+          "status": "",
           "ability": "Levitación",
           "isShiny": false,
           "confused": 0,
@@ -108123,7 +108492,8 @@
           "sleepTurns": 0,
           "lastPhysDmg": 0,
           "disabledMove": null,
-          "disabledTurns": 0
+          "disabledTurns": 0,
+          "species": "haunter"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -108209,8 +108579,8 @@
           ],
           "vigor": 4,
           "gender": "M",
-          "nature": "Dócil",
-          "status": null,
+          "nature": "docile",
+          "status": "",
           "ability": "Levitación",
           "isShiny": false,
           "confused": 0,
@@ -108223,7 +108593,8 @@
           "sleepTurns": 0,
           "lastPhysDmg": 0,
           "disabledMove": null,
-          "disabledTurns": 0
+          "disabledTurns": 0,
+          "species": "gengar"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -108294,8 +108665,8 @@
           ],
           "vigor": 5,
           "gender": "M",
-          "nature": "Agitado",
-          "status": null,
+          "nature": "impish",
+          "status": "",
           "ability": "Levitación",
           "isShiny": false,
           "confused": 0,
@@ -108304,7 +108675,8 @@
           "_revealed": true,
           "expNeeded": 1519,
           "friendship": 70,
-          "sleepTurns": 0
+          "sleepTurns": 0,
+          "species": "gengar"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -108375,8 +108747,8 @@
           ],
           "vigor": 5,
           "gender": "M",
-          "nature": "Agitado",
-          "status": null,
+          "nature": "impish",
+          "status": "",
           "ability": "Levitación",
           "isShiny": false,
           "confused": 0,
@@ -108385,7 +108757,8 @@
           "_revealed": true,
           "expNeeded": 1519,
           "friendship": 70,
-          "sleepTurns": 0
+          "sleepTurns": 0,
+          "species": "haunter"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -108449,8 +108822,8 @@
           ],
           "vigor": 4,
           "gender": "M",
-          "nature": "Jovial",
-          "status": null,
+          "nature": "jolly",
+          "status": "",
           "ability": "Levitación",
           "isShiny": false,
           "confused": 0,
@@ -108460,7 +108833,8 @@
           "expNeeded": 1951,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 0
+          "lastPhysDmg": 0,
+          "species": "haunter"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -108542,8 +108916,8 @@
           ],
           "vigor": 5,
           "gender": null,
-          "nature": "Manso",
-          "status": null,
+          "nature": "quiet",
+          "status": "",
           "ability": "Cura Natural",
           "isShiny": false,
           "confused": 0,
@@ -108556,7 +108930,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 40
+          "lastPhysDmg": 40,
+          "species": "starmie"
         },
         "request_items": {},
         "request_money": "0",
@@ -108624,8 +108999,8 @@
           ],
           "vigor": 3,
           "gender": "F",
-          "nature": "Tímido",
-          "status": null,
+          "nature": "bashful",
+          "status": "",
           "ability": "Nerviosismo",
           "isShiny": false,
           "confused": 0,
@@ -108639,7 +109014,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "graveler"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -108710,8 +109086,8 @@
           ],
           "vigor": 4,
           "gender": "M",
-          "nature": "Raro",
-          "status": null,
+          "nature": "quirky",
+          "status": "",
           "ability": "Robustez",
           "isShiny": false,
           "confused": 0,
@@ -108723,7 +109099,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 49
+          "lastPhysDmg": 49,
+          "species": "graveler"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -108794,8 +109171,8 @@
           ],
           "vigor": 4,
           "gender": "M",
-          "nature": "Raro",
-          "status": null,
+          "nature": "quirky",
+          "status": "",
           "ability": "Robustez",
           "isShiny": false,
           "confused": 0,
@@ -108807,7 +109184,8 @@
           "choiceMove": null,
           "friendship": 70,
           "sleepTurns": 0,
-          "lastPhysDmg": 49
+          "lastPhysDmg": 49,
+          "species": "golem"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -108878,8 +109256,8 @@
           ],
           "vigor": 0,
           "gender": "F",
-          "nature": "Osado",
-          "status": null,
+          "nature": "bold",
+          "status": "",
           "ability": "Levitación",
           "isShiny": false,
           "confused": 0,
@@ -108895,7 +109273,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "gastly"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -108966,8 +109345,8 @@
           ],
           "vigor": 0,
           "gender": "F",
-          "nature": "Osado",
-          "status": null,
+          "nature": "bold",
+          "status": "",
           "ability": "Levitación",
           "isShiny": false,
           "confused": 0,
@@ -108983,7 +109362,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "gastly"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -109047,8 +109427,8 @@
           ],
           "vigor": 6,
           "gender": "F",
-          "nature": "Audaz",
-          "status": null,
+          "nature": "brave",
+          "status": "",
           "ability": "Recogida",
           "isShiny": false,
           "confused": 0,
@@ -109062,7 +109442,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 7,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "meowth"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -109133,8 +109514,8 @@
           ],
           "vigor": 4,
           "gender": "M",
-          "nature": "Moderado",
-          "status": null,
+          "nature": "mild",
+          "status": "",
           "ability": "Pararrayos",
           "isShiny": false,
           "confused": 0,
@@ -109148,7 +109529,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 7,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "pikachu"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -109219,8 +109601,8 @@
           ],
           "vigor": 3,
           "gender": "M",
-          "nature": "Alocado",
-          "status": null,
+          "nature": "rash",
+          "status": "",
           "ability": "Agallas",
           "isShiny": false,
           "confused": 0,
@@ -109233,7 +109615,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "machoke"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -109304,8 +109687,8 @@
           ],
           "vigor": 4,
           "gender": null,
-          "nature": "Tranquilo",
-          "status": null,
+          "nature": "quiet",
+          "status": "",
           "ability": "Insonorizar",
           "isShiny": false,
           "confused": 0,
@@ -109318,7 +109701,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "voltorb"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -109389,8 +109773,8 @@
           ],
           "vigor": 4,
           "gender": null,
-          "nature": "Tranquilo",
-          "status": null,
+          "nature": "quiet",
+          "status": "",
           "ability": "Insonorizar",
           "isShiny": false,
           "confused": 0,
@@ -109403,7 +109787,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "voltorb"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -109474,8 +109859,8 @@
           ],
           "vigor": 4,
           "gender": "F",
-          "nature": "Osado",
-          "status": null,
+          "nature": "bold",
+          "status": "",
           "ability": "Sincronía",
           "isShiny": false,
           "confused": 0,
@@ -109489,7 +109874,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "kadabra"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -109560,8 +109946,8 @@
           ],
           "vigor": 5,
           "gender": "F",
-          "nature": "Activo",
-          "status": null,
+          "nature": "hasty",
+          "status": "",
           "ability": "Robustez",
           "isShiny": false,
           "confused": 0,
@@ -109574,7 +109960,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "graveler"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -109645,8 +110032,8 @@
           ],
           "vigor": 0,
           "gender": "F",
-          "nature": "Osado",
-          "status": null,
+          "nature": "bold",
+          "status": "",
           "ability": "Levitación",
           "isShiny": false,
           "confused": 0,
@@ -109664,7 +110051,8 @@
           "lastPhysDmg": 0,
           "lastSpecDmg": 0,
           "disabledMove": null,
-          "disabledTurns": 0
+          "disabledTurns": 0,
+          "species": "haunter"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -109735,8 +110123,8 @@
           ],
           "vigor": 0,
           "gender": "F",
-          "nature": "Osado",
-          "status": null,
+          "nature": "bold",
+          "status": "",
           "ability": "Levitación",
           "isShiny": false,
           "confused": 0,
@@ -109754,7 +110142,8 @@
           "lastPhysDmg": 0,
           "lastSpecDmg": 0,
           "disabledMove": null,
-          "disabledTurns": 0
+          "disabledTurns": 0,
+          "species": "gengar"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -109804,8 +110193,8 @@
           ],
           "vigor": 4,
           "gender": null,
-          "nature": "Cauto",
-          "status": null,
+          "nature": "careful",
+          "status": "",
           "ability": "Flexibilidad",
           "isShiny": false,
           "confused": 0,
@@ -109818,7 +110207,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "ditto"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -109889,8 +110279,8 @@
           ],
           "vigor": 4,
           "gender": "F",
-          "nature": "Dócil",
-          "status": null,
+          "nature": "docile",
+          "status": "",
           "ability": "Levitación",
           "isShiny": false,
           "confused": 1,
@@ -109903,7 +110293,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "haunter"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -109974,8 +110365,8 @@
           ],
           "vigor": 4,
           "gender": "M",
-          "nature": "Manso",
-          "status": null,
+          "nature": "quiet",
+          "status": "",
           "ability": "Mudar",
           "isShiny": false,
           "confused": 0,
@@ -109988,7 +110379,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "dragonair"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -110062,8 +110454,8 @@
           ],
           "vigor": 6,
           "gender": null,
-          "nature": "Audaz",
-          "status": null,
+          "nature": "brave",
+          "status": "",
           "ability": "Imán",
           "isShiny": false,
           "confused": 0,
@@ -110078,7 +110470,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "magneton"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -110152,8 +110545,8 @@
           ],
           "vigor": 3,
           "gender": "M",
-          "nature": "Tímido",
-          "status": null,
+          "nature": "bashful",
+          "status": "",
           "ability": "Mudar",
           "isShiny": false,
           "confused": 0,
@@ -110167,7 +110560,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "dragonair"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -110241,8 +110635,8 @@
           ],
           "vigor": 3,
           "gender": "M",
-          "nature": "Tímido",
-          "status": null,
+          "nature": "bashful",
+          "status": "",
           "ability": "Mudar",
           "isShiny": false,
           "confused": 0,
@@ -110256,7 +110650,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "dragonair"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -110327,8 +110722,8 @@
           ],
           "vigor": 4,
           "gender": "F",
-          "nature": "Osado",
-          "status": null,
+          "nature": "bold",
+          "status": "",
           "ability": "Sincronía",
           "isShiny": false,
           "confused": 0,
@@ -110342,7 +110737,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "alakazam"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -110413,8 +110809,8 @@
           ],
           "vigor": 5,
           "gender": "M",
-          "nature": "Agitado",
-          "status": null,
+          "nature": "impish",
+          "status": "",
           "ability": "Trampa Arena",
           "isShiny": false,
           "confused": 0,
@@ -110429,7 +110825,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "dugtrio"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -110500,8 +110897,8 @@
           ],
           "vigor": 5,
           "gender": "M",
-          "nature": "Agitado",
-          "status": null,
+          "nature": "impish",
+          "status": "",
           "ability": "Trampa Arena",
           "isShiny": false,
           "confused": 0,
@@ -110516,7 +110913,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "dugtrio"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -110587,8 +110985,8 @@
           ],
           "vigor": 3,
           "gender": "M",
-          "nature": "Alocado",
-          "status": null,
+          "nature": "rash",
+          "status": "",
           "ability": "Agallas",
           "isShiny": false,
           "confused": 0,
@@ -110601,7 +110999,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "machamp"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -110672,8 +111071,8 @@
           ],
           "vigor": 5,
           "gender": "M",
-          "nature": "Agitado",
-          "status": null,
+          "nature": "impish",
+          "status": "",
           "ability": "Trampa Arena",
           "isShiny": false,
           "confused": 0,
@@ -110688,7 +111087,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "dugtrio"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -110762,8 +111162,8 @@
           ],
           "vigor": 5,
           "gender": "M",
-          "nature": "Pícaro",
-          "status": null,
+          "nature": "naughty",
+          "status": "",
           "ability": "Mudar",
           "isShiny": false,
           "confused": 0,
@@ -110776,7 +111176,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "dragonair"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -110847,8 +111248,8 @@
           ],
           "vigor": 3,
           "gender": "F",
-          "nature": "Tímido",
-          "status": null,
+          "nature": "bashful",
+          "status": "",
           "ability": "Nerviosismo",
           "isShiny": false,
           "confused": 0,
@@ -110862,7 +111263,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "golem"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -110936,8 +111338,8 @@
           ],
           "vigor": 5,
           "gender": "M",
-          "nature": "Pícaro",
-          "status": null,
+          "nature": "naughty",
+          "status": "",
           "ability": "Mudar",
           "isShiny": false,
           "confused": 0,
@@ -110950,7 +111352,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "dragonair"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -111024,8 +111427,8 @@
           ],
           "vigor": 6,
           "gender": "M",
-          "nature": "Audaz",
-          "status": null,
+          "nature": "brave",
+          "status": "",
           "ability": "Agallas",
           "isShiny": false,
           "confused": 0,
@@ -111039,7 +111442,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "machoke"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -111110,8 +111514,8 @@
           ],
           "vigor": 3,
           "gender": "M",
-          "nature": "Osado",
-          "status": null,
+          "nature": "bold",
+          "status": "",
           "ability": "Foco interno",
           "isShiny": false,
           "confused": 0,
@@ -111125,7 +111529,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "dragonite"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -111197,8 +111602,8 @@
           ],
           "vigor": 5,
           "gender": "M",
-          "nature": "Pícaro",
-          "status": null,
+          "nature": "naughty",
+          "status": "",
           "ability": "Electricidad estática",
           "isShiny": false,
           "confused": 0,
@@ -111213,7 +111618,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "pikachu"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -111287,8 +111693,8 @@
           ],
           "vigor": 6,
           "gender": "M",
-          "nature": "Audaz",
-          "status": null,
+          "nature": "brave",
+          "status": "",
           "ability": "Agallas",
           "isShiny": false,
           "confused": 0,
@@ -111302,7 +111708,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "machamp"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -111376,8 +111783,8 @@
           ],
           "vigor": 3,
           "gender": "F",
-          "nature": "Osado",
-          "status": null,
+          "nature": "bold",
+          "status": "",
           "ability": "Robustez",
           "isShiny": false,
           "confused": 0,
@@ -111392,7 +111799,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 36,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "graveler"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -111466,8 +111874,8 @@
           ],
           "vigor": 3,
           "gender": "F",
-          "nature": "Osado",
-          "status": null,
+          "nature": "bold",
+          "status": "",
           "ability": "Robustez",
           "isShiny": false,
           "confused": 0,
@@ -111482,7 +111890,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 36,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "golem"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -111556,8 +111965,8 @@
           ],
           "vigor": 3,
           "gender": "F",
-          "nature": "Plácido",
-          "status": null,
+          "nature": "relaxed",
+          "status": "",
           "ability": "Sincronía",
           "isShiny": false,
           "confused": 0,
@@ -111572,7 +111981,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "kadabra"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -111646,8 +112056,8 @@
           ],
           "vigor": 3,
           "gender": "F",
-          "nature": "Plácido",
-          "status": null,
+          "nature": "relaxed",
+          "status": "",
           "ability": "Sincronía",
           "isShiny": false,
           "confused": 0,
@@ -111662,7 +112072,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "alakazam"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -111733,8 +112144,8 @@
           ],
           "vigor": 3,
           "gender": "F",
-          "nature": "Pícaro",
-          "status": null,
+          "nature": "naughty",
+          "status": "",
           "ability": "Agallas",
           "isShiny": false,
           "confused": 0,
@@ -111747,7 +112158,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "machoke"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -111821,8 +112233,8 @@
           ],
           "vigor": 3,
           "gender": "M",
-          "nature": "Tímido",
-          "status": null,
+          "nature": "bashful",
+          "status": "",
           "ability": "Robustez",
           "isShiny": false,
           "confused": 0,
@@ -111837,7 +112249,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "graveler"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -111911,8 +112324,8 @@
           ],
           "vigor": 3,
           "gender": "M",
-          "nature": "Tímido",
-          "status": null,
+          "nature": "bashful",
+          "status": "",
           "ability": "Robustez",
           "isShiny": false,
           "confused": 0,
@@ -111927,7 +112340,8 @@
           "rageActive": false,
           "sleepTurns": 0,
           "lastPhysDmg": 0,
-          "lastSpecDmg": 0
+          "lastSpecDmg": 0,
+          "species": "golem"
         },
         "offer_items": {},
         "offer_money": "0",
@@ -115039,7 +115453,8 @@
         "created_at": "2026-05-04T21:55:11.290Z",
         "updated_at": "2026-05-19T19:40:37.579Z"
       }
-    ]
+    ],
+    "battle_replays": []
   },
   "auth": {
     "users": [

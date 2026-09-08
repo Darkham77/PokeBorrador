@@ -42,7 +42,7 @@ describe('Daycare Missions Integrity & Self-Repair', () => {
   it('should detect corrupted mission (missing trainerSprite) and auto-repair by regenerating', () => {
     const gameStore = useGameStore();
     const missionsStore = useDaycareMissionsStore();
-    const loggerSpy = vi.spyOn(logger, 'error').mockImplementation(() => {});
+    const loggerSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {});
 
     // Corrupted mission from older save format (missing trainerSprite)
     const corruptedMission = {
@@ -74,10 +74,47 @@ describe('Daycare Missions Integrity & Self-Repair', () => {
     loggerSpy.mockRestore();
   });
 
+  it('should detect corrupted mission with invalid reward ID (e.g. berry_silver) and auto-repair with warning log', () => {
+    const gameStore = useGameStore();
+    const missionsStore = useDaycareMissionsStore();
+    const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {});
+
+    // Corrupted mission from older format where reward was legacy berry_silver
+    const missionWithLegacyItem = {
+      date: '2026-08-24',
+      targetId: 'pidgey',
+      requirement: { type: 'level', minLevel: 15 },
+      reqText: 'Nv. 15+',
+      reward: { id: 'berry_silver', name: 'Baya de Plata', qty: 2, icon: '🥈' },
+      completed: false,
+      trainerType: 'cientifico',
+      trainerName: 'Científico',
+      trainerSprite: 'scientist',
+      dialogue: '¡Investigación urgente!'
+    } as unknown as DaycareMission;
+
+    gameStore.state.daycare_missions = [missionWithLegacyItem];
+
+    // Accessing dailyMissions should detect the invalid reward id, warn, and regenerate
+    const missions = missionsStore.dailyMissions;
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      'daycareMissions',
+      expect.stringContaining('Corrupted daycare mission detected')
+    );
+    expect(missions).toHaveLength(2);
+    expect(missions[0]?.reward.id).toBeDefined();
+    expect(missions[0]?.reward.id).not.toBe('berry_silver');
+    expect(missions[1]?.reward.id).toBeDefined();
+    expect(missions[1]?.reward.id).not.toBe('berry_silver');
+
+    warnSpy.mockRestore();
+  });
+
   it('should regenerate missions on checkDailyReset when corrupted missions exist', () => {
     const gameStore = useGameStore();
     const missionsStore = useDaycareMissionsStore();
-    const loggerSpy = vi.spyOn(logger, 'error').mockImplementation(() => {});
+    const loggerSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {});
 
     gameStore.state.daycare_missions = [{
       date: Temporal.Now.plainDateISO().toString(),
@@ -87,6 +124,10 @@ describe('Daycare Missions Integrity & Self-Repair', () => {
 
     missionsStore.checkDailyReset();
 
+    expect(loggerSpy).toHaveBeenCalledWith(
+      'daycareMissions',
+      expect.stringContaining('Corrupted daycare mission detected')
+    );
     expect(gameStore.state.daycare_missions).toHaveLength(2);
     expect(gameStore.state.daycare_missions[0]?.trainerSprite).toBeTruthy();
 

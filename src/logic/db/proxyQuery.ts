@@ -1,9 +1,10 @@
 
 
-import { initSQLite, queryLocal, persistSQLite } from './sqliteEngine.ts';
+import { initSQLite, queryLocal, persistSQLite, type SQLiteDatabase } from './sqliteEngine.ts';
 import type { DBRouter } from './dbRouter.ts';
 import type { DBResponse, ProxyQueryChainItem, SqlProxyAction, SqlProxyCountMode } from '@/types/system/database';
 import { logger } from '../utils/logger.ts';
+import { isLanDevPvP, executeLanDev } from './proxyQueryLanDev.ts';
 
 export type DBQueryResultShape = 'single' | 'maybeSingle';
 
@@ -97,12 +98,35 @@ export class ProxyQuery {
 
         if (this.action === 'upsert') {
           const fn = Reflect.get(q, 'upsert') as Callable;
-          return (await Reflect.apply(fn, q, [this.actionData, this.actionOpts])) as DBResponse;
+          let upsQ: unknown = Reflect.apply(fn, q, [this.actionData, this.actionOpts]);
+          for (const s of this.chain) {
+            if (upsQ && typeof upsQ === 'object') {
+              const chainFn = Reflect.get(upsQ, s.type) as Callable | undefined;
+              if (chainFn) upsQ = Reflect.apply(chainFn, upsQ, s.args);
+            }
+          }
+          if (final && upsQ && typeof upsQ === 'object') {
+            const finalFn = Reflect.get(upsQ, final) as Callable | undefined;
+            if (finalFn) upsQ = Reflect.apply(finalFn, upsQ, []);
+          }
+          return await (upsQ as Promise<DBResponse>);
         }
         if (this.action === 'insert') {
           const fn = Reflect.get(q, 'insert') as Callable;
-          return (await Reflect.apply(fn, q, [this.actionData])) as DBResponse;
+          let insQ: unknown = Reflect.apply(fn, q, [this.actionData]);
+          for (const s of this.chain) {
+            if (insQ && typeof insQ === 'object') {
+              const chainFn = Reflect.get(insQ, s.type) as Callable | undefined;
+              if (chainFn) insQ = Reflect.apply(chainFn, insQ, s.args);
+            }
+          }
+          if (final && insQ && typeof insQ === 'object') {
+            const finalFn = Reflect.get(insQ, final) as Callable | undefined;
+            if (finalFn) insQ = Reflect.apply(finalFn, insQ, []);
+          }
+          return await (insQ as Promise<DBResponse>);
         }
+
 
         if (this.action === 'update') {
           const updateFn = Reflect.get(q, 'update') as Callable;
@@ -161,12 +185,16 @@ export class ProxyQuery {
   }
 
   async executeLocal(final: DBQueryResultShape | null = null): Promise<DBResponse> {
+    if (isLanDevPvP(this.table)) {
+      return executeLanDev(this.table, this.action, this.actionData, this.chain, final);
+    }
+
     try {
       const sqliteDb = await initSQLite();
       if (!sqliteDb) return { data: null, error: 'Database not initialized' };
       
-      if (this.action === 'upsert') return await this._executeLocalUpsert(sqliteDb);
-      if (this.action === 'insert') return await this._executeLocalUpsert(sqliteDb); // Reusing upsert for simplicity in local mode
+      if (this.action === 'upsert') return await this._executeLocalUpsert(sqliteDb, final);
+      if (this.action === 'insert') return await this._executeLocalUpsert(sqliteDb, final); // Reusing upsert for simplicity in local mode
       if (this.action === 'update') return await this._executeLocalUpdate(sqliteDb);
       if (this.action === 'delete') return await this._executeLocalDelete(sqliteDb);
 
@@ -295,6 +323,9 @@ export class ProxyQuery {
       
       // Auto-parse JSON fields (known to be JSON in this project)
       data.forEach((row: Record<string, unknown>) => {
+        if (this.table === 'battle_invites' && row.id !== undefined && row.id !== null) {
+          row.id = String(row.id);
+        }
         if (row.save_data && typeof row.save_data === 'string') try { row.save_data = JSON.parse(row.save_data); } catch(_e){ /* ignore */ }
         if (row.team_data && typeof row.team_data === 'string') try { row.team_data = JSON.parse(row.team_data); } catch(_e){ /* ignore */ }
         if (row.data && typeof row.data === 'string') try { row.data = JSON.parse(row.data); } catch(_e){ /* ignore */ }
@@ -313,9 +344,10 @@ export class ProxyQuery {
     }
   }
 
-  async _executeLocalUpsert(sqliteDb: { run: (sql: string, params: unknown[]) => void }): Promise<DBResponse> {
+  async _executeLocalUpsert(sqliteDb: SQLiteDatabase, final: DBQueryResultShape | null = null): Promise<DBResponse> {
     try {
       const values = Array.isArray(this.actionData) ? this.actionData : [this.actionData];
+      let lastInsertedRowId: unknown = null;
       for (const row of values) {
         if (typeof row !== 'object' || row === null) continue;
         const r = row as Record<string, unknown>; // open-record: Generic key-value data dictionary container
@@ -323,8 +355,33 @@ export class ProxyQuery {
         const marks = cols.map(() => '?').join(',');
         const vals = cols.map(c => r[c] === undefined || r[c] === null ? null : typeof r[c] === 'object' ? JSON.stringify(r[c]) : r[c]);
         sqliteDb.run(`INSERT OR REPLACE INTO ${this.table} (${cols.join(',')}) VALUES (${marks})`, vals);
+        const idRes = sqliteDb.exec('SELECT last_insert_rowid()');
+        lastInsertedRowId = idRes[0]?.values[0]?.[0];
       }
       await persistSQLite();
+
+      const hasSelect = this.chain.some(s => s.type === 'select');
+      if (hasSelect) {
+        const rows = lastInsertedRowId !== null && lastInsertedRowId !== undefined
+          ? await queryLocal(`SELECT * FROM ${this.table} WHERE rowid = ?`, [lastInsertedRowId])
+          : [];
+        rows.forEach((row: Record<string, unknown>) => {
+          if (this.table === 'battle_invites' && row.id !== undefined && row.id !== null) {
+            row.id = String(row.id);
+          }
+          if (row.save_data && typeof row.save_data === 'string') try { row.save_data = JSON.parse(row.save_data); } catch(_e){ /* ignore */ }
+          if (row.team_data && typeof row.team_data === 'string') try { row.team_data = JSON.parse(row.team_data); } catch(_e){ /* ignore */ }
+          if (row.data && typeof row.data === 'string') try { row.data = JSON.parse(row.data); } catch(_e){ /* ignore */ }
+          if (row.config && typeof row.config === 'string') try { row.config = JSON.parse(row.config); } catch(_e){ /* ignore */ }
+          if (row.schedule && typeof row.schedule === 'string') try { row.schedule = JSON.parse(row.schedule); } catch(_e){ /* ignore */ }
+          if (row.asset_data && typeof row.asset_data === 'string') try { row.asset_data = JSON.parse(row.asset_data); } catch(_e){ /* ignore */ }
+        });
+
+        if (final === 'single') return { data: rows[0] || null, error: rows.length === 0 ? { message: 'Not found' } : null };
+        if (final === 'maybeSingle') return { data: rows[0] || null, error: null };
+        return { data: Array.isArray(this.actionData) ? rows : (rows[0] || null), error: null };
+      }
+
       return { data: this.actionData, error: null };
     } catch (e: unknown) {
       const errorMsg = e instanceof Error ? e.message : String(e);
@@ -333,7 +390,7 @@ export class ProxyQuery {
     }
   }
 
-  async _executeLocalUpdate(sqliteDb: { run: (sql: string, params: unknown[]) => void }): Promise<DBResponse> {
+  async _executeLocalUpdate(sqliteDb: SQLiteDatabase): Promise<DBResponse> {
     try {
       const data = this.actionData as Record<string, unknown>; // open-record: Generic key-value data dictionary container
       const setClause = Object.keys(data).map(k => `${k} = ?`).join(',');
@@ -361,12 +418,20 @@ export class ProxyQuery {
     }
   }
 
-  async _executeLocalDelete(sqliteDb: { run: (sql: string, params: unknown[]) => void }): Promise<DBResponse> {
+  async _executeLocalDelete(sqliteDb: SQLiteDatabase): Promise<DBResponse> {
     try {
       const params: unknown[] = [];
       const where: string[] = []; // no-domain: Non-domain utility collection or data structure
       this.chain.forEach(s => {
         if (s.type === 'eq') { where.push(`${s.args[0]} = ?`); params.push(s.args[1]); }
+        if (s.type === 'in') {
+          const list = s.args[1];
+          if (Array.isArray(list) && list.length > 0) {
+            const marks = list.map(() => '?').join(',');
+            where.push(`${s.args[0]} IN (${marks})`);
+            params.push(...list);
+          }
+        }
       });
       
       let sql = `DELETE FROM ${this.table}`;
@@ -380,4 +445,6 @@ export class ProxyQuery {
       return { data: null, error: e };
     }
   }
+
 }
+

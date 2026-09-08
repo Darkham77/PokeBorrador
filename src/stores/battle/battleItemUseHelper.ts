@@ -79,6 +79,7 @@ export async function processUseItemInBattle(
   const castRes = res as { action: string, pokemon?: Pokemon }
   if (castRes.action === 'capture') {
     activeBattle.isCapture = true
+    activeBattle.capturedPokemon = castRes.pokemon
     activeBattle.over = true
 
     // Cazabichos: Red Maestra (20% chance to duplicate captured bug Pokemon)

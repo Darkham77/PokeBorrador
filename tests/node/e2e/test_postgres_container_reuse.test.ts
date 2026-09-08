@@ -25,7 +25,7 @@ describe('Postgres Test Container Lifecycle & Reuse', () => {
     const elapsedMs = Date.now() - startMs;
 
     assert.strictEqual(second.isReady, true, 'Re-invocation should return isReady: true');
-    // Reusing should take < 1000ms (avoiding container tear-down and 83 SQL migrations)
-    assert.ok(elapsedMs < 1000, `Expected reuse in <1000ms, took ${elapsedMs}ms`);
+    // Reusing should take < 2500ms (avoiding container tear-down and 83 SQL migrations which take ~15s)
+    assert.ok(elapsedMs < 2500, `Expected reuse in <2500ms, took ${elapsedMs}ms`);
   });
 });

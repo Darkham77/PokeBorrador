@@ -13,7 +13,7 @@ This document outlines the comprehensive manual testing protocol to verify all u
    ```
 
 2. **Open the Game Client**:
-   Navigate to `http://localhost:5173` in a modern Chromium or Firefox browser.
+   Navigate to `https://localhost:5173` in a modern Chromium or Firefox browser.
 3. **Open Developer Tools Console** (`F12`):
    Ensure `Console` and `Network` tabs are visible for real-time state logging.
 
@@ -141,9 +141,9 @@ This document outlines the comprehensive manual testing protocol to verify all u
 
 ## 🏆 5. Events, Missions & Past Events History
 
-### 5.1 World Events & Missions (`WorldEventsModal.vue` / `EventMissions.vue`)
+### 5.1 World Events & Missions (`HomeEventsSection.vue` / `EventMissions.vue`)
 
-- **Step 1**: Open **Eventos Mundiales** modal.
+- **Step 1**: Go to **Eventos Mundiales** section in Home view.
 - **Step 2**: Inspect active missions (e.g. "Catch 5 Fire-type Pokémon").
 - **Step 3**: Complete mission -> Click **"Reclamar Recompensa"** -> Verify items/funds credited.
 

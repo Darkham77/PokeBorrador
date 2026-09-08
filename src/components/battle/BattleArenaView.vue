@@ -38,6 +38,9 @@ import CameraZoomControls from './CameraZoomControls.vue'
 import BattleArenaHud from './BattleArenaHud.vue'
 import BattleTrainerSpeechBubble from './BattleTrainerSpeechBubble.vue'
 import BattleTrainerEntities from './BattleTrainerEntities.vue'
+import PvPTurnTimerClock from './PvPTurnTimerClock.vue'
+import BattleSpectatorOverlay from './BattleSpectatorOverlay.vue'
+import BattleReplayControls from './BattleReplayControls.vue'
 import { playTrainerAnimation } from './helpers/trainerEntranceAnims.ts'
 
 const { BASE_ENTITY_SIZE_PLAYER, BASE_ENTITY_SIZE_ENEMY, OBJECT_SCALE } = WORLD_CONSTANTS
@@ -460,6 +463,16 @@ watch(() => battleStore.isBattleActive, (active) => {
 
     <!-- Controles de Zoom de Cámara -->
     <CameraZoomControls />
+
+    <!-- Controles Flotantes PvP, Replay y Espectador (Flotando sobre el suelo del viewport sin reducir la cámara) -->
+    <div
+      v-if="battleStore.uiConfig.showTurnTimer || battleStore.uiConfig.showSpectatorBadge || battleStore.uiConfig.showReplayControls"
+      class="battle-arena-floating-controls"
+    >
+      <PvPTurnTimerClock v-if="battleStore.uiConfig.showTurnTimer" />
+      <BattleSpectatorOverlay v-if="battleStore.uiConfig.showSpectatorBadge" />
+      <BattleReplayControls v-if="battleStore.uiConfig.showReplayControls" />
+    </div>
 
     <!-- Rival Special Presentation Alert -->
     <div

@@ -21,8 +21,9 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
     const alreadyIn = pvpTeam.includes(newPokemonUid)
 
     if (!alreadyIn) {
-      if (!state.pvpTeam) state.pvpTeam = []
-      state.pvpTeam[slotIndex] = newPokemonUid
+      const updated = [...(state.pvpTeam || [])]
+      updated[slotIndex] = newPokemonUid
+      state.pvpTeam = updated
       scheduleSave()
     }
   }
@@ -85,8 +86,9 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
     const alreadyIn = pvpTeam6.includes(newPokemonUid)
 
     if (!alreadyIn) {
-      if (!state.pvpTeam6) state.pvpTeam6 = []
-      state.pvpTeam6[slotIndex] = newPokemonUid
+      const updated = [...(state.pvpTeam6 || [])]
+      updated[slotIndex] = newPokemonUid
+      state.pvpTeam6 = updated
       scheduleSave()
     }
   }
@@ -166,8 +168,9 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
     const alreadyIn = warTeam.includes(newPokemonUid)
 
     if (!alreadyIn) {
-      if (!state.warTeam) state.warTeam = []
-      state.warTeam[slotIndex] = newPokemonUid
+      const updated = [...(state.warTeam || [])]
+      updated[slotIndex] = newPokemonUid
+      state.warTeam = updated
       scheduleSave()
     }
   }

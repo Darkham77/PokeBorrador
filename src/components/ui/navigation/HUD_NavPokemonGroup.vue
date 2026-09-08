@@ -11,7 +11,6 @@ withDefaults(defineProps<{
 const {
   uiStore,
   modalStore,
-  breedingStore,
   activeTab,
   handleMouseEnter,
   handleMouseLeave,
@@ -33,8 +32,7 @@ const {
     <PVHUDButton
       id="nav-pokemon-btn"
       custom-class="group-btn"
-      :active="['box', 'pokedex'].includes(activeTab) || uiStore.openHudGroup === 'POKEMON' || modalStore.isOpen('TeamManagement') || modalStore.isOpen('EventMissions') || modalStore.isOpen('DaycareMissions')"
-      :badge-value="breedingStore.fulfillableMissionsCount"
+      :active="['box', 'pokedex'].includes(activeTab) || uiStore.openHudGroup === 'POKEMON' || modalStore.isOpen('TeamManagement')"
       @click.stop="toggleGroupMenu('POKEMON')"
     >
       <template #icon>
@@ -70,21 +68,6 @@ const {
         >
           <span class="emoji">📦</span>
           <span class="nav-item-label">CAJA PC</span>
-        </button>
-        <button
-          id="nav-pokemon-missions-btn"
-          class="hud-nav-btn"
-          :class="{ active: modalStore.isOpen('EventMissions') || modalStore.isOpen('DaycareMissions') }"
-          @click.stop="handleTabChange('missions'); uiStore.openHudGroup = null"
-        >
-          <span class="emoji">📜</span>
-          <span class="nav-item-label">MISIONES</span>
-          <span
-            v-if="breedingStore.fulfillableMissionsCount > 0"
-            class="hud-notification-badge"
-          >
-            {{ breedingStore.fulfillableMissionsCount }}
-          </span>
         </button>
         <button
           id="nav-pokemon-pokedex-btn"

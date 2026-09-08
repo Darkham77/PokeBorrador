@@ -6,6 +6,7 @@ import { useSocialStore } from '@/stores/social/social';
 import { useTradeStore } from '@/stores/trade';
 import { useGameStore } from '@/stores/game';
 import BaseModal from '@/components/common/BaseModal.vue';
+import type { ClaimItem } from '@/types/system/game';
 import SocialFriendsTab from './SocialFriendsTab.vue';
 import SocialRequestsTab from './SocialRequestsTab.vue';
 import SocialSearchTab from './SocialSearchTab.vue';
@@ -24,6 +25,12 @@ const props = withDefaults(defineProps<Props>(), {
 const socialStore = useSocialStore();
 const gameStore = useGameStore();
 const tradeStore = useTradeStore();
+
+const tradeClaimsCount = computed(() =>
+  (gameStore.state.claimQueue ?? []).filter(
+    (c: ClaimItem) => c.source_type === 'trade' || c.source_type === 'trade_refund'
+  ).length
+);
 
 const activeTab = ref(props.initialTab === 'claims' ? 'trades' : props.initialTab);
 const bodyRef = ref<HTMLElement | null>(null);
@@ -85,13 +92,14 @@ onMounted(() => {
     <div class="social-modal-content-inner">
       <nav class="modal-tabs">
         <button 
+          v-gsap-hover
           :class="{ active: activeTab === 'friends' }" 
           @click.stop="activeTab = 'friends'"
         >
           AMIGOS
           <span
             v-if="socialStore.notifications.chats > 0"
-            class="badge-notif"
+            class="hud-notification-badge"
           >{{ socialStore.notifications.chats }}</span>
           <span
             v-else-if="socialStore.friends.length"
@@ -99,30 +107,33 @@ onMounted(() => {
           >{{ socialStore.friends.length }}</span>
         </button>
         <button 
+          v-gsap-hover
           :class="{ active: activeTab === 'requests' }" 
           @click.stop="activeTab = 'requests'"
         >
           SOLICITUDES
           <span
             v-if="socialStore.notifications.friends > 0"
-            class="badge-notif"
+            class="hud-notification-badge"
           >{{ socialStore.notifications.friends }}</span>
         </button>
         <button 
+          v-gsap-hover
           :class="{ active: activeTab === 'search' }" 
           @click.stop="activeTab = 'search'"
         >
           BUSCAR
         </button>
         <button 
+          v-gsap-hover
           :class="{ active: activeTab === 'trades' }" 
           @click.stop="activeTab = 'trades'"
         >
           INTERCAMBIOS
           <span
-            v-if="(tradeStore.pendingCount + gameStore.state.claimQueue.length) > 0"
-            class="badge-notif"
-          >{{ tradeStore.pendingCount + gameStore.state.claimQueue.length }}</span>
+            v-if="(tradeStore.pendingCount + tradeClaimsCount) > 0"
+            class="hud-notification-badge"
+          >{{ tradeStore.pendingCount + tradeClaimsCount }}</span>
         </button>
       </nav>
 
@@ -222,7 +233,6 @@ onMounted(() => {
       background: Rgba(255, 255, 255, 0.05);
       color: Rgba(255, 255, 255, 0.8);
       border-color: Rgba(199, 125, 255, 0.15);
-      transform: Translatey(-1px);
     }
 
     &.active {
@@ -242,23 +252,6 @@ onMounted(() => {
       border-radius: 6px;
       margin-left: 6px;
       border: 1px solid Rgba(168, 85, 247, 0.2);
-    }
-
-    .badge-notif {
-      position: absolute;
-      top: -4px;
-      right: -4px;
-      background: Rgba(239, 68, 68, 1);
-      color: var(--white);
-      font-size: 8px;
-      min-width: 14px;
-      height: 14px;
-      border-radius: 7px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 8px Rgba(239, 68, 68, 0.5);
-      border: 1px solid Rgba(0, 0, 0, 0.2);
     }
   }
 }

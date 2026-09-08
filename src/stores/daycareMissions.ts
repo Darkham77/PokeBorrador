@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useGameStore } from '@/stores/game.ts';
 import { useUIStore } from '@/stores/ui.ts';
 import { generateMission, validateMissionPokemon } from '@/logic/breeding/missionEngine';
+import { isItemId } from '@/data/inventory/items';
 import { incrementRecordKey } from '@/logic/utils/mapUtils';
 import { logger } from '@/logic/utils/logger';
 import type { DaycareMission } from '@/types/breeding/breeding';
@@ -11,6 +12,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 function isValidDaycareMission(m: unknown): m is DaycareMission {
   if (!m || typeof m !== 'object') return false;
   const mission = m as Record<string, unknown>; // open-record: Generic key-value data dictionary container
+  const reward = (mission.reward && typeof mission.reward === 'object') ? mission.reward as Record<string, unknown> : null; // open-record: Generic key-value data dictionary container
   return (
     typeof mission.date === 'string' &&
     typeof mission.targetId === 'string' &&
@@ -20,8 +22,10 @@ function isValidDaycareMission(m: unknown): m is DaycareMission {
     typeof mission.dialogue === 'string' &&
     typeof mission.reqText === 'string' &&
     typeof mission.completed === 'boolean' &&
-    typeof mission.reward === 'object' &&
-    mission.reward !== null
+    reward !== null &&
+    isItemId(reward.id) &&
+    typeof reward.qty === 'number' &&
+    reward.qty > 0
   );
 }
 
@@ -34,7 +38,7 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
       const missions = gameStore.state.daycare_missions || [];
       const hasCorrupted = missions.some(m => !isValidDaycareMission(m));
       if (hasCorrupted) {
-        logger.error('daycareMissions', 'Corrupted daycare mission detected (missing trainerSprite or required fields). Regenerating fresh missions.');
+        logger.warn('daycareMissions', 'Corrupted daycare mission detected (missing trainerSprite or required fields). Regenerating fresh missions.');
         const today = Temporal.Now.plainDateISO().toString();
         const level = gameStore.state.trainerLevel || 1;
         const m1 = generateMission(level, today) as DaycareMission;
@@ -91,7 +95,7 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
 
     if (lastDate !== today || hasCorrupted) {
       if (hasCorrupted && missions.length > 0) {
-        logger.error('daycareMissions', 'Corrupted daycare mission detected in daily reset. Regenerating fresh missions.');
+        logger.warn('daycareMissions', 'Corrupted daycare mission detected in daily reset. Regenerating fresh missions.');
       }
       regenerateMissions(today);
       missionRefreshes.value = 3;

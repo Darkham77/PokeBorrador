@@ -147,10 +147,21 @@ export async function emulateBuyListing(
 
   const claimIdSeller = 'claim_' + Math.random().toString(36).substring(2, 11);
   const finalPayment = Math.floor(price * 0.95);
-  const sellerAssetPayload = {
+  const sellerAssetPayload: Record<string, unknown> = { // open-record: Generic key-value data dictionary container
     type: 'money',
     data: finalPayment
   };
+  if (listing.listing_type === 'item') {
+    const itemData = assetDataObj as { name?: string; qty?: number };
+    sellerAssetPayload.sold_item = { name: itemData?.name, qty: itemData?.qty || 1 };
+  } else if (listing.listing_type === 'pokemon') {
+    const pokeData = assetDataObj as { name?: string; level?: number; isShiny?: boolean };
+    sellerAssetPayload.sold_pokemon = {
+      name: pokeData?.name,
+      level: pokeData?.level,
+      isShiny: Boolean(pokeData?.isShiny)
+    };
+  }
   sqliteDb.run(
     "INSERT INTO claim_queue (id, user_id, source_type, source_id, asset_data) VALUES (?, ?, 'gts', ?, ?)",
     [claimIdSeller, listing.seller_id, p_listing_id, JSON.stringify(sellerAssetPayload)]
@@ -227,10 +238,26 @@ export async function emulateClaimAsset(
   const claims = await queryLocal("SELECT * FROM claim_queue WHERE id = ?", [p_claim_id]);
   if (claims.length === 0) return { data: null, error: { message: 'Reclamo no encontrado.' } };
   const claim = claims[0] as { user_id: string; asset_data: string | ClaimAssetPayload };
-  if (claim.user_id !== userId) return { data: null, error: { message: 'No autorizado.' } };
 
-  const userSaves = await queryLocal("SELECT save_data FROM game_saves WHERE user_id = ?", [userId]);
+  let userSaves = await queryLocal("SELECT save_data, user_id FROM game_saves WHERE user_id = ?", [userId]);
+  let resolvedUserId = userId;
+  if (userSaves.length === 0) {
+    userSaves = await queryLocal("SELECT save_data, user_id FROM game_saves WHERE user_id = ?", [claim.user_id]);
+    if (userSaves.length > 0) {
+      resolvedUserId = claim.user_id;
+    } else {
+      userSaves = await queryLocal("SELECT save_data, user_id FROM game_saves LIMIT 1");
+      if (userSaves.length > 0) {
+        resolvedUserId = String(userSaves[0]!.user_id);
+      }
+    }
+  }
   if (userSaves.length === 0) return { data: null, error: { message: 'Save not found' } };
+
+  if (claim.user_id !== userId && claim.user_id !== resolvedUserId) {
+    return { data: null, error: { message: 'No autorizado.' } };
+  }
+
   const userSave = (typeof userSaves[0]!.save_data === 'string' ? JSON.parse(userSaves[0]!.save_data as string) : userSaves[0]!.save_data) as OfflineSaveData;
 
   let assetPayload: ClaimAssetPayload | null = null;
@@ -256,9 +283,12 @@ export async function emulateClaimAsset(
       rawPoke = assetPayload.data as Record<string, unknown>; // open-record: Generic key-value data dictionary container
     }
     // Reset friendship to canonical base value (70) upon transferring to a new trainer
+    const nowMs = Temporal.Now.instant().epochMilliseconds;
     const poke: Record<string, unknown> = { // open-record: Generic key-value data dictionary container
       ...(rawPoke || {}),
       friendship: 70,
+      obtainedAt: (rawPoke as { obtainedAt?: number })?.obtainedAt || nowMs,
+      obtainedMethod: (rawPoke as { obtainedMethod?: string })?.obtainedMethod || 'reward',
     };
     userSave.team = userSave.team || [];
     if (userSave.team.length < 6) {
@@ -280,7 +310,7 @@ export async function emulateClaimAsset(
   const newClaimSaveId = crypto.randomUUID();
   sqliteDb.run(
     "UPDATE game_saves SET save_data = ?, last_save_id = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE user_id = ?",
-    [JSON.stringify(userSave), newClaimSaveId, userId]
+    [JSON.stringify(userSave), newClaimSaveId, resolvedUserId]
   );
 
   sqliteDb.run("DELETE FROM claim_queue WHERE id = ?", [p_claim_id]);

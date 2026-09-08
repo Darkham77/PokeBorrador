@@ -30,6 +30,7 @@ Frontend Developers / Systems Engineers.
 - [maintenance/](./maintenance/AGENTS.md): Domain module documentation for maintenance.
 - [modals/](./modals/AGENTS.md): Domain module documentation for modals.
 - [player/](./player/AGENTS.md): Domain module documentation for player.
+- [pvp/](./pvp/AGENTS.md): Domain module documentation for pvp.
 - [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon.
 - [stores/](./stores/AGENTS.md): Domain module documentation for Pinia stores.
 - [system/](./system/AGENTS.md): Domain module documentation for system.

@@ -157,10 +157,15 @@ export function serializeState(state: GameState | SaveDataDto): SaveDataDto {
     claimQueue: (state.claimQueue || []) as SaveDataDto['claimQueue'],
     pvpTeam: state.pvpTeam || [],
     pvpTeam6: state.pvpTeam6 || [],
+    pvpMatchHistory: (state.pvpMatchHistory || []) as SaveDataDto['pvpMatchHistory'],
+    lastResolvedSeasonId: state.lastResolvedSeasonId || '',
+    dailyGymRematches: (state.dailyGymRematches || {}) as SaveDataDto['dailyGymRematches'],
     warTeam: state.warTeam || [],
     warSlots: state.warSlots || 6,
     notificationHistory: (state.notificationHistory || []) as SaveDataDto['notificationHistory'],
-    marketSoldSeenIds: state.marketSoldSeenIds || [],
+    marketSoldSeenIds: Array.isArray(state.marketSoldSeenIds)
+      ? [...new Set((state.marketSoldSeenIds as (string | number)[]).map(id => (id !== null && id !== undefined ? String(id).trim() : '')).filter(id => id.length > 0 && !id.includes('invalid')))]
+      : [],
     lastPokemonCenterHeal: state.lastPokemonCenterHeal || 0,
     playtime: state.playtime || 0,
     activeBattle: activeBattle as SaveDataDto['activeBattle'],

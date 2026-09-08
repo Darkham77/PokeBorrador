@@ -5,22 +5,14 @@ import { createPinia, setActivePinia } from 'pinia'
 import HomeEventsSection from '@/components/home/HomeEventsSection.vue'
 import { useEventStore } from '@/stores/events'
 import type { Event as GameEvent } from '@/logic/events/eventEngine'
-import type { PendingAward } from '@/types/system/stores'
 
 describe('HomeEventsSection.vue', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
   })
 
-  it('renders pending awards box and active events with clean header', async () => {
+  it('renders active events with clean header and refresh button', async () => {
     const eventStore = useEventStore()
-    const mockAward: PendingAward = {
-      id: 'award-1',
-      winner_id: 'user-1',
-      event_id: 'fiebre_oro',
-      prize: JSON.stringify({ money: 1000 }),
-      received_at: null
-    }
     const mockEvent: GameEvent = {
       id: 'fiebre_oro',
       name: 'Fiebre del Oro',
@@ -29,14 +21,12 @@ describe('HomeEventsSection.vue', () => {
       active: true
     }
 
-    eventStore.pendingAwards = [mockAward]
     eventStore.activeEvents = [mockEvent]
 
     const wrapper = mount(HomeEventsSection, {
       global: {
         stubs: {
           EventCard: { template: '<div class="stub-event-card">EventCard: Fiebre del Oro</div>' },
-          RewardPillsGroup: { template: '<div class="stub-reward-pills">$1,000</div>' },
           WorldEventsUpcomingSchedule: { template: '<div>Upcoming</div>' },
           PastEventsList: { template: '<div>Past</div>' },
           PVTooltip: { template: '<div><slot /></div>' }
@@ -48,13 +38,13 @@ describe('HomeEventsSection.vue', () => {
     })
 
     expect(wrapper.text()).toContain('EVENTOS MUNDIALES')
-    expect(wrapper.text()).toContain('RECOMPENSAS PENDIENTES')
     expect(wrapper.find('.stub-event-card').exists()).toBe(true)
 
     // Verify refresh button is present in header
     const refreshBtn = wrapper.find('#home-events-refresh-btn')
     expect(refreshBtn.exists()).toBe(true)
-    expect(refreshBtn.text()).toContain('REFRESCAR')
+    expect(refreshBtn.classes()).toContain('btn-refresh-header')
+    expect(refreshBtn.find('svg.refresh-icon').exists()).toBe(true)
 
     // Test clicking refresh button
     const fetchSpy = vi.spyOn(eventStore, 'fetchEvents').mockResolvedValue()

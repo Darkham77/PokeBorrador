@@ -5,6 +5,7 @@ import { useProfileStore } from '@/stores/player/profile'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
 import BaseModal from '@/components/common/BaseModal.vue'
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
 import { validateTrainerName } from '@/logic/validation/schemas'
 import { getDaysUntilIdentityChange, canChangeIdentity } from '@/logic/player/identityCooldown'
 import type { GenderId } from '@/types/system/game'
@@ -205,14 +206,22 @@ const submitRename = async () => {
             :class="{ active: selectedGender === 'h' }"
             @click.prevent.stop="setGender('h', $event)"
           >
-            <span class="emoji">♂️</span> MASCULINO
+            <PVGenderBadge
+              gender="h"
+              is-trainer
+              size="sm"
+            /> MASCULINO
           </button>
           <button
             class="gender-select-btn female"
             :class="{ active: selectedGender === 'm' }"
             @click.prevent.stop="setGender('m', $event)"
           >
-            <span class="emoji">♀️</span> FEMENINO
+            <PVGenderBadge
+              gender="m"
+              is-trainer
+              size="sm"
+            /> FEMENINO
           </button>
         </div>
         

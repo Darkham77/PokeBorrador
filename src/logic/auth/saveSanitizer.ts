@@ -115,6 +115,16 @@ export function validateAndSanitize(data: GameState | SaveDataDto | Record<strin
   sanitizedData.team?.forEach(normalizeRuntimePokemonGender);
   sanitizedData.box?.forEach((p) => { if (p) normalizeRuntimePokemonGender(p); });
 
+  if (Array.isArray(sanitizedData.marketSoldSeenIds)) {
+    sanitizedData.marketSoldSeenIds = [
+      ...new Set(
+        (sanitizedData.marketSoldSeenIds as (string | number)[])
+          .map((id) => (id !== null && id !== undefined ? String(id).trim() : ''))
+          .filter((id) => id.length > 0 && !id.includes('invalid'))
+      )
+    ];
+  }
+
   sanitizeNumericFields(sanitizedData, issues);
   sanitizeInventoryQuantities(sanitizedData.inventory, issues);
 

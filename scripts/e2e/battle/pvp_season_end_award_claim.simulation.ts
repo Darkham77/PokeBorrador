@@ -60,7 +60,7 @@ test.describe('PvP Season End Award & Claim Simulation', () => {
     // 1. Modal header is visible with celebration
     const title = page.locator('#ranked-reward-title');
     await expect(title).toBeVisible({ timeout: 10000 });
-    await expect(title).toContainText('TEMPORADA 1');
+    await expect(title).toContainText('TEMPORADA 1', { ignoreCase: true });
 
     // 2. Podio badge #1
     const podiumTag = page.locator('.podium-tag');

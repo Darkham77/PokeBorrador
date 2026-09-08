@@ -67,7 +67,9 @@
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
     line-height: 1 !important;
 
-    &:hover:not(:disabled) { transform: Scale(1.1); }
+    &:hover:not(:disabled) {
+      filter: Brightness(1.15);
+    }
     &:disabled {
       opacity: 0.35;
       cursor: not-allowed;
@@ -81,25 +83,6 @@
       @include btn-vicio-danger;
       width: 32px; height: 32px; // Keep same size
       font-size: 14px;
-    }
-
-    .chat-badge {
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      background: Rgba(239, 68, 68, 1);
-      color: white;
-      border-radius: 50%;
-      min-width: 14px;
-      height: 14px;
-      font-size: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: sans-serif;
-      border: 1px solid Rgba(0, 0, 0, 0.3);
-      box-shadow: 0 2px 4px Rgba(0, 0, 0, 0.3);
-      padding: 0 3px;
     }
   }
 }

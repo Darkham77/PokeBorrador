@@ -4,7 +4,7 @@ This manual establishes the standard protocol for visual and functional verifica
 
 ## 🌐 Local Environment Configuration
 
-- **URL**: `http://localhost:5173` (Vite).
+- **URL**: `https://localhost:5173` (Vite HTTPS / Secure Context).
 - **Test User**: `ASH`.
 - **Authentication**: Password fields are not required locally; only the username identifies the session.
 - **Service Worker & Vite Watcher Sync**: Programmatically clearing and recreating public directories (such as `public/assets` inside scripts) while Vite's Dev Server is active interrupts Vite's file watchers and causes the PWA Service Worker to cache empty/404 responses. If images appear broken or missing, you must perform a **Hard Refresh** (`Ctrl+F5` / `Cmd+Shift+R`) or clear the browser's storage via the _Application -> Storage -> Clear site data_ tab in DevTools to force assets re-synchronization.

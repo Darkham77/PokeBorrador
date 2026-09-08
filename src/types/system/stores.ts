@@ -50,6 +50,7 @@ export interface BattleOptions {
   isTrainer?: boolean;
   trainerName?: string; // domain-ok: Open dynamic text or non-domain string payload
   isGym?: boolean;
+  isRematch?: boolean;
   gymId?: GymId;
   locationId?: MapRouteId;
   wasSearching?: boolean;
@@ -86,8 +87,9 @@ export interface GameStore {
   isSaveLocked: boolean;
   addPokemon: (p: Pokemon, options?: { silent?: boolean; source?: string; notify?: boolean }) => void;
   removePokemon: (uid: string) => void;
-  scheduleSave: () => void;
-  save: (showNotif?: boolean) => Promise<{ success: boolean; migrated?: boolean; lastSaveId?: string; rollback?: boolean; outOfSync?: boolean; error?: string; remote?: boolean } | void>;
+  scheduleSave: (delayMs?: number) => void;
+  withBatchSave: <T>(action: () => Promise<T>, showNotifOnEnd?: boolean) => Promise<T>;
+  save: (showNotif?: boolean, immediate?: boolean) => Promise<{ success: boolean; migrated?: boolean; lastSaveId?: string; rollback?: boolean; outOfSync?: boolean; error?: string; remote?: boolean } | void>;
   loadGame: () => Promise<void>;
   registerPokedex: (speciesId: PokemonSpeciesId) => void;
   addTrainerExp: (amount: number) => void;
@@ -97,7 +99,7 @@ export interface GameStore {
   togglePokeTag: (context: PokemonSelectionSource, index: number, tagId: PokemonTagId) => void;
   reorderMoves: (pokemon: Pokemon, from: number, to: number) => void;
   fetchClaimQueue: () => Promise<void>;
-  saveGame: (showNotif?: boolean) => Promise<{ success: boolean; migrated?: boolean; lastSaveId?: string; rollback?: boolean; outOfSync?: boolean; error?: string; remote?: boolean } | void>;
+  saveGame: (showNotif?: boolean, immediate?: boolean) => Promise<{ success: boolean; migrated?: boolean; lastSaveId?: string; rollback?: boolean; outOfSync?: boolean; error?: string; remote?: boolean } | void>;
 }
 
 export interface BattleStore {
@@ -272,6 +274,7 @@ export interface PastEventHistoryItem {
   ended_at: string; // domain-ok: Open dynamic text or non-domain string payload
   winners: PastCompetitionWinner[];
   myAward: PendingAward | null;
+  myAwards?: PendingAward[];
   isWinner: boolean;
   hasUnclaimedAward: boolean;
   isClaimed: boolean;
@@ -291,6 +294,7 @@ export interface EventStore {
   checkPendingAwards: (notifyOnPending?: boolean) => Promise<void>;
   submitCompetitionEntry: (eventId: string, categoryIdOrUid: string, maybeUid?: string) => Promise<void>;
   claimAward: (awardId: string) => Promise<string | null>;
+  claimAllEventAwards: (eventId: string) => Promise<{ success: boolean; claimedCount: number }>;
   discardAward: (awardId: string) => Promise<boolean>;
 }
 

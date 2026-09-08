@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { logger } from '@/logic/utils/logger.ts'
 import { supabase } from '@/logic/db/supabase.ts'
 import { syncServerTime } from '@/logic/auth/timeSync.ts'
@@ -17,8 +17,7 @@ import {
   fetchProfileMetadata,
   enrichAuthUser
 } from './auth/authSessionVerifier.ts'
-
-const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+import { isLocalEnvironment } from '@/logic/utils/env.ts'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<AuthUser | null>(null)
@@ -26,11 +25,13 @@ export const useAuthStore = defineStore('auth', () => {
   const loading = ref(true)
   const sessionId = ref(SESSION_ID)
   const sessionConflict = ref(false)
-  const sessionMode = ref<SessionMode>((safeStorage.getItem('pokevicio_session_mode') as SessionMode) || (isLocalhost ? 'offline' : 'online')) // 'online' | 'offline'
+  const sessionMode = ref<SessionMode>((safeStorage.getItem('pokevicio_session_mode') as SessionMode) || (isLocalEnvironment() ? 'offline' : 'online')) // 'online' | 'offline'
   const isOnline = ref(navigator.onLine)
   const connectionLost = ref(false)
   const isBanned = ref(false)
   const banReason = ref('')
+
+  const currentUserId = computed<string>(() => user.value?.id || 'local_user')
 
   // Monitoreo de Conectividad (Solo para modo Online)
   if (typeof window !== 'undefined') {
@@ -401,6 +402,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     user,
+    currentUserId,
     loading,
     sessionId,
     sessionConflict,

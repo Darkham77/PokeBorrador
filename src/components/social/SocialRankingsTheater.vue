@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useGameStore } from '@/stores/game'
+import BaseRefreshButton from '@/components/common/BaseRefreshButton.vue'
 import { useLivePvPStore } from '@/stores/livePvP'
 import { useModalStore } from '@/stores/modals'
 import { formatBattleCodeInput } from '@/logic/pvp/replayCodeGenerator'
@@ -164,15 +165,14 @@ onMounted(() => {
     <div class="featured-feed-section">
       <div class="feed-header">
         <span class="feed-title"><span class="emoji">🌟</span> COMBATES DESTACADOS DEL MES</span>
-        <button
+        <BaseRefreshButton
           id="btn-refresh-theater"
-          v-gsap-hover="'button'"
-          class="refresh-btn"
+          variant="pill"
+          :loading="listLoading"
+          label="ACTUALIZAR"
           title="Actualizar Repeticiones"
           @click="fetchFeaturedReplays"
-        >
-          <span class="emoji">🔄</span> ACTUALIZAR
-        </button>
+        />
       </div>
 
       <div
@@ -337,16 +337,7 @@ onMounted(() => {
       font-weight: bold;
     }
 
-    .refresh-btn {
-      background: transparent;
-      border: 1px solid #475569;
-      color: #94a3b8;
-      font-family: inherit;
-      font-size: 0.6rem;
-      padding: 4px 8px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
+
   }
 
   .loading-state, .empty-state {

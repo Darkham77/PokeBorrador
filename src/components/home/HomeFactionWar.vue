@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useWarStore } from '@/stores/war'
-import { useModalStore } from '@/stores/modals'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue'
 
 const warStore = useWarStore()
-const modalStore = useModalStore()
 
 const isDispute = computed(() => warStore.isDisputeActive)
 const faction = computed(() => warStore.faction)
@@ -24,14 +23,6 @@ const globalScore = computed(() => {
   const poderPercent = 100 - unionPercent
   return { union, poder, unionPercent, poderPercent }
 })
-
-const openWarModal = () => {
-  modalStore.open('FactionWar')
-}
-
-const openWarShop = () => {
-  modalStore.open('WarShop')
-}
 
 onMounted(() => {
   void warStore.loadWarData()
@@ -57,24 +48,7 @@ onMounted(() => {
       </div>
 
       <div class="header-actions">
-        <button
-          id="home-war-shop-btn"
-          v-gsap-hover
-          class="card-action-btn"
-          @click.stop="openWarShop"
-        >
-          <span class="emoji">🪙</span>
-          TIENDA
-        </button>
-        <button
-          id="home-war-open-btn"
-          v-gsap-hover
-          class="card-action-btn primary"
-          @click.stop="openWarModal"
-        >
-          <span class="emoji">🗺️</span>
-          MAPA DE GUERRA
-        </button>
+        <HomeWidgetMinimizeBtn widget-id="faction" />
       </div>
     </div>
 
@@ -176,27 +150,30 @@ onMounted(() => {
 .card-header-bar {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   padding-bottom: 8px;
   border-bottom: 1px solid Rgba(255, 255, 255, 0.06);
-  flex-wrap: wrap;
   gap: 8px;
 }
 
 .title-wrap {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
+  flex: 1;
+  min-width: 0;
 
   .card-icon {
     font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
   }
 
   .title-text-group {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
   }
 
   .card-title {
@@ -204,7 +181,8 @@ onMounted(() => {
     font-size: 10px;
     color: var(--yellow, #facc15);
     margin: 0;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
+    line-height: 1.35;
   }
 
   .phase-pill {
@@ -212,6 +190,7 @@ onMounted(() => {
     font-size: 7px;
     padding: 2px 6px;
     border-radius: 4px;
+    align-self: flex-start;
 
     &.is-dispute {
       background: Rgba(239, 68, 68, 0.15);
@@ -228,23 +207,9 @@ onMounted(() => {
 }
 
 .header-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.card-action-btn {
-  @include widget-action-btn;
-
-  &.primary {
-    background: Rgba(250, 204, 21, 0.12);
-    border-color: Rgba(250, 204, 21, 0.35);
-    color: var(--yellow, #facc15);
-
-    &:hover {
-      background: Rgba(250, 204, 21, 0.22);
-      border-color: var(--yellow, #facc15);
-    }
-  }
+  @include widget-header-actions;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .war-body {

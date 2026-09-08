@@ -12,6 +12,7 @@ export interface SimulationOptions {
   driver?: SimulationDbDriver;
   sqliteKey?: string;
   logBuffer?: string[];
+  enableEvents?: boolean;
 }
 
 export abstract class BaseE2ESimulation {
@@ -21,6 +22,7 @@ export abstract class BaseE2ESimulation {
   protected logBuffer: string[];
   protected driver: SimulationDbDriver;
   protected isSharedDatabase: boolean;
+  protected enableEvents: boolean;
   protected startTime: number = Temporal.Now.instant().epochMilliseconds;
 
   constructor(
@@ -50,6 +52,7 @@ export abstract class BaseE2ESimulation {
     this.isSharedDatabase = Boolean(sqliteKey || resolvedOptions?.sqliteKey);
     this.sqliteKey = sqliteKey || resolvedOptions?.sqliteKey || `sim_db_${username.toLowerCase().replace(/[^a-z0-9_]/g, '_')}`; // string-ok: Internal string formatting or DOM token identifier
     this.logBuffer = resolvedBuffer || resolvedOptions?.logBuffer || [];
+    this.enableEvents = Boolean(resolvedOptions?.enableEvents);
   }
 
   /**
@@ -241,12 +244,19 @@ export abstract class BaseE2ESimulation {
         await this.queryTestDb(`DELETE FROM market_listings WHERE seller_name = $1 OR seller_name LIKE $2`, [this.username, `${this.username}%`]);
         await this.queryTestDb(`DELETE FROM claim_queue WHERE user_id IN (SELECT id FROM profiles WHERE username = $1)`, [this.username]);
         await this.queryTestDb(`DELETE FROM competition_entries WHERE player_name = $1 OR player_name LIKE $2`, [this.username, `${this.username}%`]);
+        if (!this.isSharedDatabase) {
+          await this.queryTestDb(`DELETE FROM game_saves WHERE user_id IN (SELECT id FROM profiles WHERE username = $1)`, [this.username]);
+        }
       } catch { /* ignore if tables empty or not initialized */ }
     }
 
     await loginE2ETestUser(this.page, this.username, this.logBuffer, this.sqliteKey, this.driver);
     // Wait for Pinia stores to be fully ready before any page.evaluate() call.
     await waitForStoreReady(this.page);
+    await this.page.evaluate(async (enableEvents) => {
+      const { useEventStore } = await import('../../src/stores/events.ts');
+      useEventStore().simEventsEnabled = enableEvents;
+    }, this.enableEvents);
     console.log(`▶️ [${this.driver.toUpperCase()}] [SIM:START] [${this.username}] Escenario listo.`);
   }
 

@@ -14,6 +14,7 @@ Frontend Developers / Systems Engineers.
 - **Factory Resource Disposal Scoping**: When writing helper factory functions that instantiate disposable resources (such as `new DatabaseSync(':memory:')`), do NOT declare the instance with `using` inside the helper body. Return the raw instance so the calling test block retains ownership and disposes of it with `using db = createMigratedDatabase()`.
 - **Deterministic & Self-Contained Tests**: Vitest tests under `tests/node/` must be 100% self-contained and deterministic with frozen in-memory fixtures. They must NEVER dynamically read or depend on transient/mutable CLI output files from `scripts/e2e/results/`.
 - **Auditor Subprocess Scoping**: When executing CLI maintenance scripts (`audit_project.ts`, `audit_full.ts`, etc.) via `execSync` / `child_process` in tests, ALWAYS scope target paths using `--path=<dir>` (e.g. `--path=src/data/inventory`). Never execute un-scoped repository-wide audits inside test assertions.
+- **Container Reuse Concurrency Resilience Contract**: Micro-benchmark assertions validating Docker test container reuse MUST distinguish between warm container reuse and full cold-start SQL migration replays (~15,000ms). To eliminate false-positive timing flakiness under high Vitest worker concurrency (550+ test files), reuse threshold assertions MUST allow a resilient ceiling (e.g. `< 2500ms`) rather than ultra-tight micro-benchmarks (< 1000ms), absorbing CPU scheduling latency while strictly preventing container restarts.
 
 ## Work Guidance
 

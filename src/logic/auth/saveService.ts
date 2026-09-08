@@ -9,6 +9,7 @@ import { validateAndSanitize, isValidState } from '@/logic/auth/saveSanitizer';
 import { syncUserProfileData } from '@/logic/auth/profileSyncHelper';
 
 import type { SaveDataDto } from '@/logic/validation/schemas';
+import { safeStorage } from '@/logic/utils/storage';
 
 export { serializeState, isValidState, validateAndSanitize };
 
@@ -57,7 +58,7 @@ export interface SaveOptions {
 async function persistSaveLocally(persistedSaveData: unknown, userId: string): Promise<void> {
   try {
     const json = JSON.stringify(persistedSaveData);
-    localStorage.setItem('pokemon_local_save_' + userId, json);
+    safeStorage.setItem('pokemon_local_save_' + userId, json);
 
     const compressed = await compress(json);
     await writeOpfsFile(`save_${userId}.gz`, compressed);
@@ -227,7 +228,7 @@ export async function saveGame(state: GameState, user: AuthUser, options: SaveOp
       if (pendingResolvers.length > 0) {
         const waiting = pendingResolvers;
         pendingResolvers = [];
-        const followUp = await saveGame(state, user, { ...options, lastSaveId: latestCommittedSaveId || undefined });
+        const followUp = await saveGame(state, user, { ...options, showNotif: false, lastSaveId: latestCommittedSaveId || undefined });
         waiting.forEach(r => r(followUp));
       }
     }

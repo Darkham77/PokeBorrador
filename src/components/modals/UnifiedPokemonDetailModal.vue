@@ -10,6 +10,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 
 import PokemonSummaryTab from '@/components/pokemon-detail/PokemonSummaryTab.vue'
@@ -203,6 +204,11 @@ const handleReorderMoves = (from: number, to: number) => {
             >
               <span class="emoji">✏️</span>
             </button>
+            <PVGenderBadge
+              v-if="targetPokemon?.gender"
+              :gender="targetPokemon.gender"
+              size="sm"
+            />
             <div class="name-container">
               <span
                 v-if="targetPokemon?.nickname"

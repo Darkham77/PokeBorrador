@@ -71,14 +71,15 @@ const selectTab = (tabId: string) => {
       </aside>
 
       <main class="library-content custom-scrollbar-vicio">
-        <!-- fallow-ignore-next-line security-sink -->
-        <!-- eslint-disable-next-line vue/no-v-html -->
         <div
           v-if="contentFade"
           id="library-article-content"
           class="library-article"
-          v-html="currentContent"
-        />
+        >
+          <!-- fallow-ignore-next-line security-sink -->
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <div v-html="currentContent" />
+        </div>
       </main>
     </div>
   </BaseModal>

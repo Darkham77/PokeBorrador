@@ -12,7 +12,6 @@ import ErrorOverlay from '@/components/common/ErrorOverlay.vue'
 import ModalHost from '@/components/common/ModalHost.vue'
 import ToastNotification from '@/components/ui/ToastNotification.vue'
 import ConnectionWarning from '@/components/ui/ConnectionWarning.vue'
-const LivePvPArena = defineResilientAsyncComponent(() => import('@/components/battle/LivePvPArena.vue'))
 const BattleArena = defineResilientAsyncComponent(() => import('@/components/battle/BattleArena.vue'))
 import PWAManager from '@/components/common/PWAManager.vue'
 import SVGFilters from '@/components/common/SVGFilters.vue'
@@ -187,6 +186,16 @@ const initGameSession = async () => {
       } else if (gameStore.state.activeBattle && !gameStore.state.activeBattle.over) {
         logger.info('App', 'Detectado combate persistente. Restaurando estado...')
         await battleStore.restoreBattle(gameStore.state.activeBattle)
+      }
+
+      // Check active PvP session in sessionStorage for seamless F5 reconnection
+      const { getActivePvPSession } = await import('@/logic/pvp/pvpReconnectHelper')
+      const activePvPSession = getActivePvPSession()
+      if (activePvPSession) {
+        const { useLivePvPStore } = await import('@/stores/livePvP')
+        const livePvPStore = useLivePvPStore()
+        logger.info('App', `Detectada sesión PvP activa (${activePvPSession.matchId}). Intentando reconexión...`)
+        livePvPStore.reconnectBattle(activePvPSession)
       }
       
       profileStore.syncProfileFromAuth(authStore.user, gameStore.state)
@@ -463,7 +472,6 @@ const onLoadingLeave = (el: Element, done: () => void) => {
     <ModalHost />
     <ToastNotification />
     <ConnectionWarning />
-    <LivePvPArena />
     <BattleArena />
     <PWAManager />
     

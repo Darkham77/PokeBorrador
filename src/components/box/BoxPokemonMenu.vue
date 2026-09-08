@@ -10,6 +10,7 @@ import { getNatureInfo } from '@/data/battle/natures'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import UnifiedBadgePill from '@/components/shared/UnifiedBadgePill.vue'
 import FriendshipSealBadge from '@/components/pokemon/FriendshipSealBadge.vue'
@@ -193,12 +194,11 @@ const handleSellRocket = () => {
           </div>
 
           <div class="header-badges">
-            <span
+            <PVGenderBadge
               v-if="pokemon?.gender"
-              :class="['m-badge-gender', pokemon?.gender === 'm' ? 'male' : 'female']"
-            >
-              <span class="emoji">{{ pokemon?.gender === 'm' ? '♂' : '♀' }}</span>
-            </span>
+              :gender="pokemon.gender"
+              size="mini"
+            />
             <span class="m-badge-level">Nv. {{ pokemon?.level }}</span>
             <span class="m-badge-iv">IV {{ (Object.values(pokemon?.ivs || {}) as number[]).reduce((s,v)=>s+(v||0),0) }}</span>
             <PVTooltip

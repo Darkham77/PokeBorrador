@@ -9,7 +9,7 @@ import { logger } from '@/logic/utils/logger'
 import { setLatestCommittedSaveId } from '@/logic/auth/saveService.ts'
 import { applyMarketFilters, markMarketSoldSeen, isMarketSoldSeen, GTS_MAX_ACTIVE_LISTINGS, GTS_MARKET_FEE, GTS_EXPLORE_LISTINGS_LIMIT, GTS_SALES_HISTORY_LIMIT } from '@/logic/economy/market'
 import type { MarketFilters, MarketListing, MarketListingType } from '@/logic/economy/market'
-import type { GameState } from '@/types/system/game'
+import type { GameState, ClaimItem } from '@/types/system/game'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality'
 import { isPokemonBusy } from '@/logic/constants/tags.ts'
@@ -28,8 +28,30 @@ export const useGTSStore = defineStore('gts', () => {
   
   const unseenSalesCount = computed(() => {
     if (auth.sessionMode === 'offline') return 0
-    return salesHistory.value.filter(sale => sale.status === 'sold' && !isMarketSoldSeen(sale.id, game.state)).length
+    return salesHistory.value.filter(sale => sale.status === 'sold' && !isMarketSoldSeen(String(sale.id), game.state)).length
   })
+
+  const pendingSalesClaims = computed(() => {
+    return (game.state.claimQueue || []).filter(
+      (c: ClaimItem) => c.source_type === 'gts' && c.asset_data?.type === 'money'
+    )
+  })
+
+  const pendingPurchaseClaims = computed(() => {
+    return (game.state.claimQueue || []).filter(
+      (c: ClaimItem) => (c.source_type === 'gts' || c.source_type === 'gts_cancel') && c.asset_data?.type !== 'money'
+    )
+  })
+
+  const allPendingGtsClaims = computed(() => {
+    return (game.state.claimQueue || []).filter(
+      (c: ClaimItem) => c.source_type === 'gts' || c.source_type === 'gts_cancel'
+    )
+  })
+
+  const unclaimedSalesCount = computed(() => pendingSalesClaims.value.length)
+  const unclaimedPurchasesCount = computed(() => pendingPurchaseClaims.value.length)
+  const unclaimedGtsCount = computed(() => allPendingGtsClaims.value.length)
 
   const loading = ref(false)
   const isLoaded = ref(false)
@@ -89,17 +111,19 @@ export const useGTSStore = defineStore('gts', () => {
   }
 
   async function fetchUserData() {
-    if (!auth.user || !game.db) return
+    const currentUserUid = auth.currentUserId // uuid-ok: User account auth identifier
+    if (!game.db) return
 
     try {
+      await game.fetchClaimQueue()
       const mineRes = await game.db.from('market_listings')
         ?.select('*')
-        ?.eq('seller_id', auth.user.id)
+        ?.eq('seller_id', currentUserUid)
         ?.neq('status', 'sold')
         ?.order('created_at', { ascending: false });
       const histRes = await game.db.from('market_listings')
         ?.select('*')
-        ?.eq('seller_id', auth.user.id)
+        ?.eq('seller_id', currentUserUid)
         ?.eq('status', 'sold')
         ?.order('created_at', { ascending: false })
         ?.limit(GTS_SALES_HISTORY_LIMIT);
@@ -108,15 +132,30 @@ export const useGTSStore = defineStore('gts', () => {
       const histListings = histRes?.data as MarketListing[] | null; // domain-ok: Open dynamic text or non-domain string payload
 
       myListings.value = mineListings || []
-      salesHistory.value = histListings || []
+
+      // Merge fetched history with existing in-memory sales history (e.g. simulated or current session sales)
+      const mergedMap = new Map<string, MarketListing>()
+      if (histListings) {
+        for (const item of histListings) {
+          mergedMap.set(String(item.id), item)
+        }
+      }
+      for (const item of salesHistory.value) {
+        if (!mergedMap.has(String(item.id))) {
+          if (item.seller_id === currentUserUid || item.seller_id === 'local_user') {
+            mergedMap.set(String(item.id), item)
+          }
+        }
+      }
+      salesHistory.value = Array.from(mergedMap.values()).slice(0, GTS_SALES_HISTORY_LIMIT)
 
       // Check for new sales
       if (histListings && histListings.length > 0) {
         let updatedStats = false
         histListings.forEach(sale => {
-          if (!isMarketSoldSeen(sale.id, game.state)) {
+          if (!isMarketSoldSeen(String(sale.id), game.state)) {
             ui.notify(`¡Tu ${sale.data.name} se vendió por ₽${sale.price.toLocaleString()}!`, '💰')
-            markMarketSoldSeen(sale.id, game.state)
+            markMarketSoldSeen(String(sale.id), game.state)
             
             if (!game.state.stats) {
               game.state.stats = {}
@@ -282,7 +321,7 @@ export const useGTSStore = defineStore('gts', () => {
     }
   }
 
-  async function cancelListing(listingId: string) {
+  async function cancelListing(listingId: string | number) {
     try {
       console.debug('[GTS] Accion: cancelListing iniciada para ID:', listingId, typeof listingId)
       ui.setLoading(true)
@@ -319,9 +358,13 @@ export const useGTSStore = defineStore('gts', () => {
 
   // Auto-initialize realtime sales and fetch data on user login
   watch(() => auth.user, (newUser) => {
-    if (newUser && auth.sessionMode !== 'offline') {
+    if (newUser) {
       fetchUserData()
-      initRealtime()
+      if (auth.sessionMode !== 'offline') {
+        initRealtime()
+      } else {
+        stopRealtime()
+      }
     } else {
       stopRealtime()
       myListings.value = []
@@ -334,7 +377,8 @@ export const useGTSStore = defineStore('gts', () => {
     MARKET_FEE: GTS_MARKET_FEE,
     MAX_LISTINGS: GTS_MAX_ACTIVE_LISTINGS,
     filteredListings, activeMyListings,
-    unseenSalesCount,
+    unseenSalesCount, pendingSalesClaims, unclaimedSalesCount,
+    pendingPurchaseClaims, allPendingGtsClaims, unclaimedPurchasesCount, unclaimedGtsCount,
     fetchListings, fetchUserData, initRealtime, stopRealtime,
     buyListing, publishListing, cancelListing
   }

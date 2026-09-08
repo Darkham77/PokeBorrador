@@ -127,6 +127,27 @@ Global built-in functions are deprecated in Dart Sass 2.0+ and will be removed i
 }
 ```
 
+### 8. SCSS Mixin Selector List Syntax Trap
+
+In Dart Sass, combining CSS selectors with `@include mixin(...)` in a comma-separated list (e.g. `&.is-mobile-view, @include responsive(...) { ... }`) is invalid syntax and triggers fatal Vite/Sass 500 preprocessor errors. Selector lists and mixin inclusions must always be declared as separate blocks:
+
+```scss
+// ❌ FORBIDDEN: Mixing selector and @include in a comma list
+&.is-mobile-view,
+@include responsive(950px) {
+  // syntax error!
+}
+
+// ✅ MANDATORY: Separate rules
+&.is-mobile-view {
+  // rules
+}
+
+@include responsive(950px) {
+  // rules
+}
+```
+
 ---
 
 ## 🏗️ Modern Architecture: @use Mandate
@@ -190,12 +211,14 @@ All game-specific content **MUST** be strictly Pixel Art to preserve the game's 
   - **Inner Element**: Must be `display: inline-block`. This element handles the `Rotate` and `Scale`.
   - **Why**: Standard `inline` text elements ignore many 2D/3D transforms in modern rendering engines.
 
-### 8. Pixel Font Line-Height & Multiline Collision Protection
+### 8. Pixel Font Line-Height, Subtitle Anti-Truncation & Descender Protection
 
-The primary game font (`Pokemon FireRed LeafGreen`) has tall ascenders and descenders. Setting `line-height: 1` or `line-height: 1.1` on elements that can wrap causes vertical glyph collision and visual overlap.
+The primary game font (`Pokemon FireRed LeafGreen`) has tall ascenders and deep descenders (`j`, `y`, `p`, `q`, `g`). Setting `line-height: 1` or `line-height: 1.1` on elements that can wrap causes vertical glyph collision and visual overlap.
 
 - **MANDATORY Base Line-Height**: All pixelated text elements MUST inherit `line-height: 1.35` (guaranteed by `@mixin pixelated` and `@mixin pixelated-proportional` in `_layout.scss`).
-- **FORBIDDEN**: Applying `line-height: 1` to titles, badges, or descriptions that may wrap onto multiple lines in mobile or compact viewports.
+- **FORBIDDEN**: Applying `line-height: 1` or `line-height: 1.2` with `overflow: hidden; white-space: nowrap; text-overflow: ellipsis;` to card subtitles, descriptions, or badges. Doing so slices off the lower pixels of characters with descenders, creating visual artifacts and rendering text broken.
+- **Natural Wrapping for Subtitles**: Card subtitles (`.card-subtitle`, `.gyms-sub`, `.buffs-sub`) must use `line-height: 1.35` and permit natural multiline wrapping without single-line overflow clipping.
+- **Zero Text Evasion on Visual Glitches**: When text appears visually clipped, chopped, or distorted in the UI, developers/agents MUST NEVER alter, delete, or paraphrase the textual copy to avoid characters with descenders (such as removing words with `j`). The root cause is ALWAYS CSS container bounds, overflow restrictions, or inadequate line-height, and MUST be resolved cleanly at the CSS/layout level.
 
 ---
 

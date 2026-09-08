@@ -6,9 +6,10 @@ import { useSocialStore } from "@/stores/social/social";
 import { useModalStore } from "@/stores/modals";
 import { useGTSStore } from "@/stores/gts";
 import { useBreedingStore } from "@/stores/breeding";
-import { useEventStore } from "@/stores/events";
 import { useGymsStore } from "@/stores/gyms";
 import { getItemById } from "@/data/inventory/items";
+import { useUnifiedRewards } from "@/composables/rewards/useUnifiedRewards";
+import type { ClaimItem } from "@/types/system/game";
 
 const HUD_NAV_ENTER_Y_OFFSET_PX = 20;
 const HUD_NAV_LEAVE_Y_OFFSET_PX = 15;
@@ -26,22 +27,109 @@ export function useNavigationState() {
   const modalStore = useModalStore();
   const gtsStore = useGTSStore();
   const breedingStore = useBreedingStore();
-  const eventStore = useEventStore();
   const gymsStore = useGymsStore();
+  const { unifiedRewards, totalActionableMissions, isClassMissionReadyToDeploy, totalHomeNotifications: baseHomeNotifications } = useUnifiedRewards();
+
+  const readyEggsCount = computed(() => {
+    return (gameStore.state.eggs || []).filter(egg => egg.ready === true || egg.steps <= 0).length;
+  });
+
+  const totalHomeNotifications = computed(() => {
+    return baseHomeNotifications.value + readyEggsCount.value + gymsStore.availableRematchesCount;
+  });
+
+  const homeTooltipDescription = computed(() => {
+    const allRewards = unifiedRewards.value || [];
+    const claimables = allRewards.filter(r => r.isClaimable);
+    const discardables = allRewards.filter(r => r.isLegacy);
+    
+    const eventsAndRanked = claimables.filter(r => r.source === 'event' || r.source === 'ranked_milestone').length;
+    const legacyToDiscard = discardables.length;
+    const gtsSales = claimables.filter(r => r.source === 'gts_claim' && (r.title.toLowerCase().includes('venta') || (r.prize && 'money' in r.prize))).length;
+    const gtsPurchases = claimables.filter(r => r.source === 'gts_claim' && r.title.toLowerCase().includes('compra')).length;
+    const gtsReturns = claimables.filter(r => r.source === 'gts_claim' && (r.title.toLowerCase().includes('devolución') || r.title.toLowerCase().includes('devolucion'))).length;
+    const gtsTrades = claimables.filter(r => r.source === 'gts_claim' && (r.title.toLowerCase().includes('intercambio') || r.title.toLowerCase().includes('recepción') || r.title.toLowerCase().includes('recepcion'))).length;
+    const gtsOther = claimables.filter(r => r.source === 'gts_claim' && !(
+      r.title.toLowerCase().includes('venta') || (r.prize && 'money' in r.prize) ||
+      r.title.toLowerCase().includes('compra') ||
+      r.title.toLowerCase().includes('devolución') || r.title.toLowerCase().includes('devolucion') ||
+      r.title.toLowerCase().includes('intercambio') || r.title.toLowerCase().includes('recepción') || r.title.toLowerCase().includes('recepcion')
+    )).length;
+    const classLoot = claimables.filter(r => r.source === 'class_mission').length;
+    const dailyMissions = totalActionableMissions.value;
+    const classDeploy = isClassMissionReadyToDeploy.value ? 1 : 0;
+    const readyEggs = readyEggsCount.value;
+
+    const total = totalHomeNotifications.value;
+    if (total === 0) {
+      return "Panel central con eventos mundiales, crianza, mercado y misiones activas.\n\nHaz clic para ir a Inicio.";
+    }
+
+    const lines: string[] = []; // text-ok: UI text display localization string
+    lines.push(`Novedades pendientes (${total}):`);
+
+    if (eventsAndRanked > 0) {
+      lines.push(`• ${eventsAndRanked} ${eventsAndRanked === 1 ? 'recompensa' : 'recompensas'}`);
+    }
+    if (legacyToDiscard > 0) {
+      lines.push(`• ${legacyToDiscard} ${legacyToDiscard === 1 ? 'recompensa para descartar' : 'recompensas para descartar'}`);
+    }
+    if (readyEggs > 0) {
+      lines.push(`• ${readyEggs} ${readyEggs === 1 ? 'huevo listo para eclosionar' : 'huevos listos para eclosionar'}`);
+    }
+    if (gtsSales > 0) {
+      lines.push(`• ${gtsSales} ${gtsSales === 1 ? 'venta en GTS' : 'ventas en GTS'}`);
+    }
+    if (gtsPurchases > 0) {
+      lines.push(`• ${gtsPurchases} ${gtsPurchases === 1 ? 'compra en GTS' : 'compras en GTS'}`);
+    }
+    if (gtsReturns > 0) {
+      lines.push(`• ${gtsReturns} ${gtsReturns === 1 ? 'devolución de GTS' : 'devoluciones de GTS'}`);
+    }
+    if (gtsTrades > 0) {
+      lines.push(`• ${gtsTrades} ${gtsTrades === 1 ? 'intercambio pendiente' : 'intercambios pendientes'}`);
+    }
+    if (gtsOther > 0) {
+      lines.push(`• ${gtsOther} ${gtsOther === 1 ? 'reclamo de mercado pendiente' : 'reclamos de mercado pendientes'}`);
+    }
+    if (classLoot > 0) {
+      lines.push(`• ${classLoot} ${classLoot === 1 ? 'botín de clase para reclamar' : 'botines de clase para reclamar'}`);
+    }
+    if (dailyMissions > 0) {
+      lines.push(`• ${dailyMissions} ${dailyMissions === 1 ? 'misión diaria para entregar' : 'misiones diarias para entregar'}`);
+    }
+    if (classDeploy > 0) {
+      lines.push("• 1 misión de clase para desplegar");
+    }
+    const rematches = gymsStore.availableRematchesCount;
+    if (rematches > 0) {
+      lines.push(`• ${rematches} ${rematches === 1 ? 'revancha diaria de líder disponible' : 'revanchas diarias de líderes disponibles'} 🔥`);
+    }
+
+    const accounted = eventsAndRanked + legacyToDiscard + classLoot + gtsSales + gtsPurchases + gtsReturns + gtsTrades + gtsOther;
+    const unaccounted = allRewards.length - accounted;
+    if (unaccounted > 0) {
+      lines.push(`• ${unaccounted} ${unaccounted === 1 ? 'otra novedad pendiente' : 'otras novedades pendientes'}`);
+    }
+
+    lines.push("");
+    lines.push("Haz clic para ir a Inicio.");
+    return lines.join("\n");
+  });
 
   const activeTab = computed({
     get: () => uiStore.activeTab,
     set: (val: string) => { uiStore.activeTab = val; }
   });
 
-  const totalSocialNotifications = computed(() => {
-    return socialStore.notifications.total +
-           gameStore.state.claimQueue.length +
-           eventStore.pendingAwards.length;
+  const tradeClaimsCount = computed(() => {
+    return (gameStore.state.claimQueue || []).filter(
+      (c: ClaimItem) => c.source_type === 'trade' || c.source_type === 'trade_refund'
+    ).length;
   });
 
-  const readyEggsCount = computed(() => {
-    return (gameStore.state.eggs || []).filter(egg => egg.ready === true || egg.steps <= 0).length;
+  const totalSocialNotifications = computed(() => {
+    return socialStore.notifications.total + tradeClaimsCount.value;
   });
 
   const ballsList = computed(() => {
@@ -139,8 +227,7 @@ export function useNavigationState() {
   });
 
   const gymRematchesCount = computed(() => {
-    const defeatedIds = gameStore.state.defeatedGyms || [];
-    return gymsStore.gyms.filter(g => !defeatedIds.includes(g.id)).length;
+    return gymsStore.availableRematchesCount;
   });
 
   const medalsBreakdown = computed(() => {
@@ -153,7 +240,11 @@ export function useNavigationState() {
       .filter(g => defeated.includes(g.id))
       .map(g => `${g.badge} ${g.badgeName} (${g.leader})`);
       
-    return `Medallas obtenidas (${defeated.length}/8):\n${earnedList.map(item => `• ${item}`).join("\n")}\n\nDesbloquean nuevas zonas y Pokémon.\n\nHaz clic para ver los Gimnasios.`;
+    const rematchNote = gymsStore.availableRematchesCount > 0
+      ? `\n\n🔥 ¡Hay ${gymsStore.availableRematchesCount} revancha${gymsStore.availableRematchesCount > 1 ? 's' : ''} diaria${gymsStore.availableRematchesCount > 1 ? 's' : ''} disponible${gymsStore.availableRematchesCount > 1 ? 's' : ''}!`
+      : "";
+
+    return `Medallas obtenidas (${defeated.length}/8):\n${earnedList.map(item => `• ${item}`).join("\n")}${rematchNote}\n\nDesbloquean nuevas zonas y Pokémon.\n\nHaz clic para ver los Gimnasios.`;
   });
 
   const warehouseEggsCount = computed(() => breedingStore.warehouseEggs?.length || 0);
@@ -339,10 +430,12 @@ export function useNavigationState() {
     modalStore,
     gtsStore,
     breedingStore,
-    eventStore,
     gymsStore,
     activeTab,
+    totalHomeNotifications,
+    homeTooltipDescription,
     totalSocialNotifications,
+    tradeClaimsCount,
     mochilaTooltipDescription,
     gymRematchesCount,
     medalsBreakdown,

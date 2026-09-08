@@ -258,6 +258,7 @@ const handleFactionChoice = () => {
         <ProfilePinnedReplaysCard
           :pinned-replays="pinnedReplays"
           :is-own-profile="true"
+          :user-id="authStore.user?.id"
           @watch-replay="handleWatchReplay"
         />
 

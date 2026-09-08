@@ -9,6 +9,7 @@ import { ref } from 'vue';
 
 vi.mock('@/logic/battle/showdownWorkerClient.ts', () => ({
   showdownWorker: {},
+  getShowdownWorker: vi.fn(() => ({})),
   executeTurnInWorker: vi.fn().mockResolvedValue({
     logs: ['|move|p2a: Caterpie|Tackle|p1a: Pikachu', '|-damage|p1a: Pikachu|80/100'],
     isOver: false,

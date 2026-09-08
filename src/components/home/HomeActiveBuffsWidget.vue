@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue'
 import { useBuffsStore, type ActiveBuffItem } from '@/stores/battle/buffs'
 import { useModalStore } from '@/stores/modals'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue'
 
 const buffsStore = useBuffsStore()
 const modalStore = useModalStore()
@@ -58,15 +59,7 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
       </div>
 
       <div class="header-actions">
-        <button
-          id="home-buffs-inventory-btn"
-          v-gsap-hover
-          class="card-action-btn"
-          @click.stop="openInventory"
-        >
-          <span class="emoji">🎒</span>
-          MOCHILA
-        </button>
+        <HomeWidgetMinimizeBtn widget-id="buffs" />
       </div>
     </div>
 
@@ -166,6 +159,8 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 1;
+  min-width: 0;
 
   .card-icon {
     font-size: 20px;
@@ -174,12 +169,14 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
     align-items: center;
     justify-content: center;
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+    flex-shrink: 0;
   }
 
   .title-text-group {
     display: flex;
     flex-direction: column;
     gap: 3px;
+    min-width: 0;
   }
 
   .card-title {
@@ -198,8 +195,10 @@ const handleBuffClick = (buff: ActiveBuffItem) => {
   }
 }
 
-.card-action-btn {
-  @include widget-action-btn;
+.header-actions {
+  @include widget-header-actions;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .buffs-grid {

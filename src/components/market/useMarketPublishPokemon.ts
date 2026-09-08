@@ -14,12 +14,16 @@ export function useMarketPublishPokemon(
 ) {
   const availablePokemon = computed(() => {
     const team = (game.state.team || [])
-      .filter((p): p is Pokemon => p !== null && !isPokemonBusy(p) && !p.isIllegal && checkPokemonLegality(p).isLegal)
       .map((p, i) => ({ pokemon: p, _source: 'team' as const, index: i }))
+      .filter((item): item is { pokemon: Pokemon, _source: 'team', index: number } => 
+        item.pokemon !== null && !isPokemonBusy(item.pokemon) && !item.pokemon.isIllegal && checkPokemonLegality(item.pokemon).isLegal
+      )
 
     const box = (game.state.box || [])
-      .filter((p): p is Pokemon => p !== null && !isPokemonBusy(p) && !p.isIllegal && checkPokemonLegality(p).isLegal)
       .map((p, i) => ({ pokemon: p, _source: 'box' as const, index: i }))
+      .filter((item): item is { pokemon: Pokemon, _source: 'box', index: number } => 
+        item.pokemon !== null && !isPokemonBusy(item.pokemon) && !item.pokemon.isIllegal && checkPokemonLegality(item.pokemon).isLegal
+      )
 
     return [...team, ...box]
   })

@@ -147,6 +147,7 @@ describe('Pokemon Resilience & System Safeguards', () => {
       spe: 350,
       type: 'ghost',
       isShiny: false,
+      status: '',
       vigor: 100,
       maxVigor: 100,
       nature: 'timid',

@@ -81,7 +81,7 @@ Sigue estos pasos para configurar e iniciar tu entorno de desarrollo:
    npm run dev
    ```
 
-El servidor estará disponible en `http://localhost:5173`.
+El servidor estará disponible en `https://localhost:5173` (HTTPS / Secure Context).
 
 ## 🗄️ Base de Datos (Supabase)
 
@@ -133,7 +133,7 @@ npm run dev
 
 3. **Vite Dev Server & OPFS Sync (Navegador)**:
    - Al iniciar `npm run dev`, Vite expone `database/temp/manual_user_backup_import.db` a través del endpoint `/api/dev-manual-import-*`.
-   - Al abrir `http://localhost:5173/`, el motor del cliente (`sqliteEngine.ts` / `loadingStore.ts`) detecta la base importada manual, la descarga y la persiste en el almacenamiento privado del navegador (**OPFS** / `pokevicio_sqlite_v2`).
+   - Al abrir `https://localhost:5173/`, el motor del cliente (`sqliteEngine.ts` / `loadingStore.ts`) detecta la base importada manual, la descarga y la persiste en el almacenamiento privado del navegador (**OPFS** / `pokevicio_sqlite_v2`).
    - El juego inicia sesión en modo offline instantáneamente con todas las cuentas, Pokémon y estados listos para jugar.
 
 ## 🚀 Despliegue (Hosting)

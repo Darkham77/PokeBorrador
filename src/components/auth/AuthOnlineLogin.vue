@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useInputAnimations } from '@/composables/ui/useInputAnimations'
 import type { ServerConnectionStatus } from '@/types/auth/auth'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 
 interface Server {
   id: string
@@ -113,7 +114,14 @@ const handleServerSelect = (e: Event) => {
       :disabled="loading || serverStatus !== 'online'"
       @click.stop="emit('login')"
     >
-      <span class="emoji">▶</span> ENTRAR
+      <img
+        :src="getAssetUrl(ASSET_TYPES.ITEM, 'pokeball')"
+        alt=""
+        class="auth-btn-icon"
+        draggable="false"
+        aria-hidden="true"
+      >
+      <span>ENTRAR</span>
     </button>
   </div>
 </template>

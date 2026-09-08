@@ -1,4 +1,5 @@
 import type { SideID } from '@pkmn/sim';
+import type { ShowdownPlayerRequest } from '@/types/battle/battle';
 
 /**
  * ShowdownPerspectiveAdapter
@@ -79,5 +80,30 @@ export class ShowdownPerspectiveAdapter {
   static mapLocalSideToSeat(side: 'player' | 'enemy', mySeat: SideID): SideID {
     if (side === 'player') return mySeat;
     return this.invertSide(mySeat);
+  }
+
+  /**
+   * Inverts an authoritative P2 ShowdownPlayerRequest into a local player (P1) perspective.
+   */
+  static invertRequest(request?: ShowdownPlayerRequest): ShowdownPlayerRequest | undefined {
+    if (!request) return undefined;
+
+    const cloned: ShowdownPlayerRequest = structuredClone(request);
+    if (cloned.side) {
+      if (cloned.side.id === 'p2') cloned.side.id = 'p1';
+      else if (cloned.side.id === 'p1') cloned.side.id = 'p2';
+    }
+    if (cloned.side?.pokemon) {
+      cloned.side.pokemon.forEach((p) => {
+        if (p.ident) {
+          if (p.ident.startsWith('p2:')) {
+            p.ident = p.ident.replace('p2:', 'p1:');
+          } else if (p.ident.startsWith('p1:')) {
+            p.ident = p.ident.replace('p1:', 'p2:');
+          }
+        }
+      });
+    }
+    return cloned;
   }
 }

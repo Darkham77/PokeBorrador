@@ -11,6 +11,7 @@ import { getPokemonVisualBadges } from '@/logic/constants/tags'
 import { getFieldPassiveBadges } from '@/logic/pokemon/pokemonFieldAbilities'
 import { useUIStore } from '@/stores/ui'
 import PokemonTypePills from '@/components/shared/PokemonTypePills.vue'
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
 
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { ComponentPillSize } from '@/types/system/game'
@@ -280,6 +281,7 @@ onUnmounted(() => {
         :is-shiny="props.pokemon.isShiny"
         :is-guardian="props.pokemon.isGuardian"
         :sparkle-count="5"
+        :sprite-scale="1.3"
         :enabled="!isPerformanceActive"
       >
         <img
@@ -315,12 +317,11 @@ onUnmounted(() => {
           <div class="m-badge-level">
             Nv. {{ props.pokemon.level }}
           </div>
-          <div 
+          <PVGenderBadge
             v-if="props.pokemon.gender"
-            :class="['m-badge-gender', 'mini', props.pokemon.gender === 'm' ? 'male' : 'female']"
-          >
-            <span class="emoji">{{ props.pokemon.gender === 'm' ? '♂' : '♀' }}</span>
-          </div>
+            :gender="props.pokemon.gender"
+            size="mini"
+          />
         </div>
         <div
           v-if="!props.hideStats"
@@ -421,6 +422,35 @@ onUnmounted(() => {
     }
   }
 
+  .box-sprite-wrapper {
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 64px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+
+    :deep(.pv-fx-wrapper),
+    :deep(.pv-fx-sprite-layer) {
+      overflow: visible;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    :deep(.box-card-sprite) {
+      width: 83px !important;
+      height: 83px !important;
+      min-width: 83px !important;
+      min-height: 83px !important;
+      max-width: none !important;
+      max-height: none !important;
+      object-fit: contain;
+    }
+  }
+
   // --- PERFORMANCE MODE OVERRIDES ---
   &.performance-mode {
     
@@ -431,7 +461,7 @@ onUnmounted(() => {
       &::before { opacity: 0 !important; }
       
       :deep(.box-card-sprite) {
-        transform: Scale(1.05) !important;
+        transform: Translatey(-4px) !important;
       }
     }
 

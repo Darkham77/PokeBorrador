@@ -92,13 +92,17 @@ function onTradeAccepted() {
   animateCards();
 }
 
-/* ── Claims typed list ── */
-const claimQueue = computed(() => (gameStore.state.claimQueue ?? []) as ClaimItem[]);
+/* ── Claims typed list (trade claims only) ── */
+const tradeClaims = computed(() =>
+  (gameStore.state.claimQueue ?? []).filter(
+    (c: ClaimItem) => c.source_type === 'trade' || c.source_type === 'trade_refund'
+  ) as ClaimItem[]
+);
 
 /* ── Reactive badge counts ── */
 const receivedCount = computed(() => tradeStore.pendingIncoming.length);
 const sentCount = computed(() => tradeStore.pendingOutgoing.length + tradeStore.pendingAccepted.length);
-const claimsCount = computed(() => claimQueue.value.length);
+const claimsCount = computed(() => tradeClaims.value.length);
 
 onMounted(async () => {
   await tradeStore.refreshPendingTrades();
@@ -113,7 +117,7 @@ onMounted(async () => {
 });
 
 watch(
-  [subTab, () => tradeStore.pendingIncoming, () => tradeStore.pendingOutgoing, () => tradeStore.pendingAccepted, claimQueue],
+  [subTab, () => tradeStore.pendingIncoming, () => tradeStore.pendingOutgoing, () => tradeStore.pendingAccepted, tradeClaims],
   animateCards,
   { deep: true }
 );
@@ -124,33 +128,36 @@ watch(
     <!-- Sub-navigation -->
     <div class="trades-sub-nav">
       <button
+        v-gsap-hover
         :class="{ active: subTab === 'received' }"
         @click.stop="switchSubTab('received')"
       >
         RECIBIDOS
         <span
           v-if="receivedCount > 0"
-          class="sub-badge"
+          class="hud-notification-badge"
         >{{ receivedCount }}</span>
       </button>
       <button
+        v-gsap-hover
         :class="{ active: subTab === 'sent' }"
         @click.stop="switchSubTab('sent')"
       >
         ENVIADOS
         <span
           v-if="sentCount > 0"
-          class="sub-badge gray"
+          class="hud-notification-badge gray"
         >{{ sentCount }}</span>
       </button>
       <button
+        v-gsap-hover
         :class="{ active: subTab === 'claims' }"
         @click.stop="switchSubTab('claims')"
       >
         RECLAMOS
         <span
           v-if="claimsCount > 0"
-          class="sub-badge orange"
+          class="hud-notification-badge orange"
         >{{ claimsCount }}</span>
       </button>
     </div>
@@ -222,7 +229,7 @@ watch(
       <!-- RECLAMOS -->
       <template v-else-if="subTab === 'claims'">
         <ClaimCard
-          v-for="claim in claimQueue"
+          v-for="claim in tradeClaims"
           :key="claim.id"
           :claim="claim"
         />
@@ -249,6 +256,7 @@ watch(
 
   button {
     flex: 1;
+    position: relative;
     background: transparent;
     /* KEY FIX: transparent border prevents height shift on .active */
     border: 1px solid transparent;
@@ -274,23 +282,6 @@ watch(
       background: Rgba(168, 85, 247, 0.12);
       color: var(--purple-light);
       border-color: Rgba(168, 85, 247, 0.25);
-    }
-
-    .sub-badge {
-      background: #ef4444;
-      color: white;
-      border-radius: 6px;
-      font-size: 8px;
-      min-width: 12px;
-      height: 12px;
-      padding: 0 4px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 6px Rgba(239, 68, 68, 0.4);
-
-      &.gray   { background: #475569; box-shadow: none; color: #e2e8f0; }
-      &.orange { background: #f59e0b; box-shadow: 0 0 6px Rgba(245, 158, 11, 0.4); color: #1e293b; }
     }
   }
 }

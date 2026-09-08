@@ -51,11 +51,28 @@
     height: 100%;
   }
 
+  @include responsive(950px) {
+    height: 100%;
+    flex: 1;
+    min-height: 0;
+  }
+
   .gts-sidebar {
     @include shop-sidebar;
 
     .cat-btn {
       @include shop-sidebar-button(#38bdf8);
+
+      .hud-notification-badge {
+        position: absolute !important;
+        top: 6px !important;
+        right: 8px !important;
+
+        @include responsive(950px) {
+          top: 2px !important;
+          right: 4px !important;
+        }
+      }
     }
   }
 

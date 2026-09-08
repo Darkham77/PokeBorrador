@@ -356,6 +356,7 @@ const handleWatchReplay = (replay: BattleReplayRecord) => {
         <ProfilePinnedReplaysCard
           :pinned-replays="pinnedReplays"
           :is-own-profile="isOwnProfile"
+          :user-id="props.userId || undefined"
           @watch-replay="handleWatchReplay"
         />
 

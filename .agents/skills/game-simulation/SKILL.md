@@ -136,7 +136,7 @@ the source of truth. `src/` must conform to them, never the reverse.
    - **SOLE EXCEPTION — EXPLICIT SHARED-DB TRANSACTION TESTS**: The ONLY legitimate reason to share a DB user across parallel tests is when the test scenario explicitly requires cross-worker shared state (e.g. GTS buy/sell flows where Player A and Player B transact with each other). In all other cases, any username is valid — workers CANNOT interfere with each other's DB.
 
 8. **Dedicated Simulation Port Law (Port 5174 Isolation)**:
-   - All E2E simulations and Playwright test runners MUST strictly use port `5174` (`http://localhost:5174`), leaving port `5173` strictly reserved for interactive developer use.
+   - All E2E simulations and Playwright test runners MUST strictly use port `5174` (`https://localhost:5174`), leaving port `5173` strictly reserved for interactive developer use.
    - When resetting ports before simulation runs, agents MUST execute `npx kill-port 5174` (it is STRICTLY FORBIDDEN to kill port `5173`).
 
 9. **Mandatory Isolated Reproduction Test Mandate (RED-to-GREEN Unit/Integration Test Before src/ Fix)**:

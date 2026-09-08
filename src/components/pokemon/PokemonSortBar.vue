@@ -16,6 +16,7 @@ interface Props {
   allowedKeys?: readonly string[]
   showLabel?: boolean
   label?: string
+  compact?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -26,7 +27,8 @@ const props = withDefaults(defineProps<Props>(), {
   sortMode: undefined,
   allowedKeys: undefined,
   showLabel: false,
-  label: 'ORDEN:'
+  label: 'ORDEN:',
+  compact: false
 })
 
 const emit = defineEmits<{
@@ -76,7 +78,10 @@ function handleOptionClick(opt: PokemonSortOption) {
 </script>
 
 <template>
-  <div class="pokemon-sort-bar">
+  <div
+    class="pokemon-sort-bar"
+    :class="{ 'is-compact': compact }"
+  >
     <span
       v-if="showLabel"
       class="mini-label"
@@ -94,11 +99,14 @@ function handleOptionClick(opt: PokemonSortOption) {
           v-gsap-hover
           type="button"
           class="sort-pill-btn"
-          :class="{ active: isSortOptionActive(opt, activeKey) }"
+          :class="{ active: isSortOptionActive(opt, activeKey), 'is-compact': compact }"
           @click.stop="handleOptionClick(opt)"
         >
           <span class="emoji">{{ opt.icon }}</span>
-          <span class="label">{{ opt.shortLabel }}</span>
+          <span
+            v-if="!compact"
+            class="label"
+          >{{ opt.shortLabel }}</span>
           <span
             v-if="isSortOptionActive(opt, activeKey)"
             class="emoji arrow"
@@ -134,7 +142,7 @@ function handleOptionClick(opt: PokemonSortOption) {
 
   .sort-items {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
     gap: 4px;
@@ -191,6 +199,44 @@ function handleOptionClick(opt: PokemonSortOption) {
       background: Rgba(255, 255, 255, 0.08);
       color: var(--white);
       border-color: Rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  &.is-compact {
+    gap: 4px;
+
+    .sort-items {
+      gap: 3px;
+    }
+
+    .sort-pill-btn {
+      padding: 5px 6px;
+      gap: 2px;
+
+      .emoji {
+        font-size: 10px;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    gap: 4px;
+
+    .label {
+      display: none;
+    }
+
+    .sort-items {
+      gap: 3px;
+    }
+
+    .sort-pill-btn {
+      padding: 5px 6px;
+      gap: 2px;
+
+      .emoji {
+        font-size: 10px;
+      }
     }
   }
 }

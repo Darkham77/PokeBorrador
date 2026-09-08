@@ -39,6 +39,12 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
         await persistSQLite();
       }, this.username);
     }
+    await this.page.evaluate(async () => {
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const { usePvPStore } = await import('../../../src/stores/pvp.ts');
+      useGameStore().state.rankedRewardsClaimed = ['bronce_1000'];
+      usePvPStore().rewardsClaimed = ['bronce_1000'];
+    });
   }
 
   /**
@@ -128,21 +134,13 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
   }
 
   /**
-   * Opens the World Events modal through official HUD navbar user controls:
-   * Opens the social submenu and clicks #nav-social-events-btn.
+   * Opens/navigates to the World Events section through official HUD navbar user controls:
+   * Navigates to the Home dashboard tab and verifies the integrated events section.
    */
   public async openWorldEventsViaHud(): Promise<void> {
-    await this.page.evaluate(async () => {
-      const { useUIStore } = await import('../../../src/stores/ui.ts');
-      useUIStore().openHudGroup = 'SOCIAL';
-    });
-
-    const eventsBtn = this.page.locator('.hud-center #nav-social-events-btn, #nav-social-events-btn').first();
-    await eventsBtn.waitFor({ state: 'visible', timeout: 5000 });
-    await eventsBtn.click();
-
-    const modalHeader = this.page.locator('.events-modal-header, .events-modal-content-inner').first();
-    await modalHeader.waitFor({ state: 'visible', timeout: 5000 });
+    await this.navigateToHome();
+    const eventsSection = this.page.locator('#home-events-section, .home-events-section').first();
+    await eventsSection.waitFor({ state: 'visible', timeout: 5000 });
   }
 
   /**
@@ -157,31 +155,19 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
   }
 
   /**
-   * Opens the World Events modal directly via store (useful for secondary browser contexts).
+   * Opens the World Events section directly (delegates to openWorldEventsViaHud).
    */
   public async openWorldEventsModal(): Promise<void> {
-    await this.page.evaluate(async () => {
-      const { useModalStore } = await import('../../../src/stores/modals.ts');
-      const { useEventStore } = await import('../../../src/stores/events.ts');
-      await useEventStore().fetchEvents(true);
-      useModalStore().open('WorldEvents');
-    });
-    const modalHeader = this.page.locator('.events-modal-header, .events-modal-content-inner');
-    await modalHeader.first().waitFor({ state: 'visible', timeout: 5000 });
+    await this.openWorldEventsViaHud();
   }
 
   /**
-   * Closes the World Events modal cleanly.
+   * Closes any open modal/dialog cleanly if present.
    */
   public async closeWorldEventsModal(): Promise<void> {
     const closeBtn = this.page.locator('#modal-close-btn, .modal-close-btn').first();
     if (await closeBtn.isVisible()) {
       await closeBtn.click();
-    } else {
-      await this.page.evaluate(async () => {
-        const { useModalStore } = await import('../../../src/stores/modals.ts');
-        useModalStore().close('WorldEvents');
-      });
     }
   }
 
@@ -290,7 +276,7 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
    * Claims the first available pending award in the awards banner.
    */
   public async claimFirstPendingAward(): Promise<void> {
-    const firstClaimBtn = this.page.locator('[id^="claim-pending-award-btn-"]').first();
+    const firstClaimBtn = this.page.locator('[id^="claim-pending-award-btn-"], [id^="claim-pending-reward-btn-"]').first();
     await expect(firstClaimBtn).toBeVisible({ timeout: E2E_ACTION_TIMEOUT_MS });
     await firstClaimBtn.click();
   }
@@ -299,7 +285,7 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
    * Discards the first available pending award via ConfirmModal.
    */
   public async discardFirstPendingAward(): Promise<void> {
-    const discardBtn = this.page.locator('[id^="discard-pending-award-btn-"]').first();
+    const discardBtn = this.page.locator('[id^="discard-pending-award-btn-"], [id^="discard-pending-reward-btn-"]').first();
     await expect(discardBtn).toBeVisible({ timeout: E2E_ACTION_TIMEOUT_MS });
     await discardBtn.click();
 
@@ -366,7 +352,7 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
    * Claims an award directly through the UI banner button.
    */
   public async claimPendingAward(awardId: string): Promise<void> {
-    const claimBtn = this.page.locator(`#claim-pending-award-btn-${awardId}`);
+    const claimBtn = this.page.locator(`#claim-pending-award-btn-${awardId}, #claim-pending-reward-btn-event-${awardId}`);
     await claimBtn.waitFor({ state: 'visible', timeout: E2E_ACTION_TIMEOUT_MS });
     await claimBtn.click();
     await expect(claimBtn).toHaveCount(0, { timeout: E2E_ACTION_TIMEOUT_MS });
@@ -376,7 +362,7 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
    * Discards an award through the UI banner button with confirmation dialog.
    */
   public async discardPendingAward(awardId: string): Promise<void> {
-    const discardBtn = this.page.locator(`#discard-pending-award-btn-${awardId}`);
+    const discardBtn = this.page.locator(`#discard-pending-award-btn-${awardId}, #discard-pending-reward-btn-event-${awardId}`);
     await discardBtn.waitFor({ state: 'visible', timeout: E2E_ACTION_TIMEOUT_MS });
     await discardBtn.click();
 

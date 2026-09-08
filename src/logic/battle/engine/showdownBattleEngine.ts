@@ -183,6 +183,7 @@ export class ShowdownBattleEngine {
 
   private executeEnemyOnlyResponse(input: TurnExecutionInput, appliedCheats: BattleCheatRecord[]): TurnExecutionOutput {
     const battle = this.battle;
+    const startLogIdx = Array.isArray(battle.log) ? battle.log.length : 0;
     if (input.p2Skip) {
       throw new Error('[ShowdownBattleEngine] A bag-medicine response cannot skip both sides without a certified game-action transition.');
     }
@@ -225,11 +226,11 @@ export class ShowdownBattleEngine {
       }
     }
 
-    const logLines = battle.getDebugLog ? battle.getDebugLog() : [];
+    const turnLogs = Array.isArray(battle.log) ? battle.log.slice(startLogIdx) : [];
     return {
       p1AcceptedChoice: '',
       p2AcceptedChoice: enemyChoice,
-      turnLogs: Array.isArray(logLines) ? logLines.map(String) : [],
+      turnLogs,
       battleTurn: battle.turn,
       appliedCheats,
     };
@@ -240,6 +241,7 @@ export class ShowdownBattleEngine {
    */
   public executeTurn(input: TurnExecutionInput = {}): TurnExecutionOutput {
     const battle = this.battle;
+    const startLogIdx = Array.isArray(battle.log) ? battle.log.length : 0;
     const appliedCheats: BattleCheatRecord[] = [];
 
     // Pre-turn synchronization (weather, HP, status override from client if provided)
@@ -386,8 +388,7 @@ export class ShowdownBattleEngine {
     }
 
 
-    const logLines = battle.getDebugLog ? battle.getDebugLog() : [];
-    const turnLogs = Array.isArray(logLines) ? logLines.map(String) : [];
+    const turnLogs = Array.isArray(battle.log) ? battle.log.slice(startLogIdx) : [];
 
     return {
       p1AcceptedChoice: acceptedChoices.get('p1') ?? '',

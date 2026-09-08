@@ -11,6 +11,7 @@ Core Frontend.
 - Route visibility guards and session state handling.
 - Screen layouts must use `dvh` units to avoid mobile browser address bar clipping.
 - **Loading Gate Synchronization & Zero Pop-In Mandate**: Top-level game orchestrators (`MainGameView.vue`) MUST import primary dashboard views (`HomeView.vue`) statically (avoiding intermediate async chunk boundaries on initial boot) and release the loading gate (`loadingStore.markAppMounted()`) strictly after `nextTick()` + `requestAnimationFrame()` frame paint signals. This guarantees 100% simultaneous mounting and rendering of dashboard widgets before the loading veil dissolves, completely eliminating visual pop-in.
+- **Mandatory Centralized Asset Management Mandate (`getAssetUrl`)**: Views, dashboard layouts, and top-level pages MUST NEVER hardcode asset path strings. All asset URLs (map backgrounds, tournament banners, modal icons, sprites) MUST be resolved strictly through `getAssetUrl(ASSET_TYPES.<CATEGORY>, id, options)` from `@/logic/services/assetService`.
 
 ## Work Guidance
 

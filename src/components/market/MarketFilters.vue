@@ -83,7 +83,7 @@ const getTypeEmoji = (type: string) => {
         class="toggle-btn"
         @click.stop="isExpanded = !isExpanded"
       >
-        <span class="label"><span class="emoji">🔍</span> FILTROS GTS</span>
+        <span class="label"><span class="emoji">🔍</span><span>FILTROS GTS</span></span>
         <span class="emoji arrow">{{ isExpanded ? '▲' : '▼' }}</span>
       </div>
 
@@ -96,14 +96,16 @@ const getTypeEmoji = (type: string) => {
           :class="{ active: filters.mode === 'pokemon' }"
           @click.stop="setFilter('mode', 'pokemon')"
         >
-          <span class="emoji">⚡</span> Pokes
+          <span class="emoji">⚡</span>
+          <span>Pokes</span>
         </button>
         <button
           id="market-filters-mode-item-btn"
           :class="{ active: filters.mode === 'item' }"
           @click.stop="setFilter('mode', 'item')"
         >
-          <span class="emoji">🎒</span> Objetos
+          <span class="emoji">🎒</span>
+          <span>Objetos</span>
         </button>
       </div>
       <span
@@ -129,7 +131,7 @@ const getTypeEmoji = (type: string) => {
       <!-- Price Range -->
       <div class="filter-group">
         <div class="group-header">
-          <span>Precio <span class="emoji">💰</span></span>
+          <span class="price-title"><span>Precio</span> <span class="emoji">💰</span></span>
           <span class="range-val">₽{{ filters.priceMin.toLocaleString() }} - ₽{{ filters.priceMax === 1000000 ? 'Máx' : filters.priceMax.toLocaleString() }}</span>
         </div>
         <input
@@ -246,7 +248,7 @@ const getTypeEmoji = (type: string) => {
 }
 
 .toggle-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
@@ -256,11 +258,27 @@ const getTypeEmoji = (type: string) => {
   @include pixelated;
   font-size: 8px;
   color: var(--blue-light);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.35;
+
+  .emoji {
+    font-size: 9px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 .arrow {
   color: var(--gray);
-  font-size: 12px;
+  font-size: 9px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mode-switch {
@@ -272,6 +290,11 @@ const getTypeEmoji = (type: string) => {
 }
 
 .mode-switch button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  line-height: 1.35;
   padding: 4px 10px;
   font-size: 9px;
   border-radius: 7px;
@@ -279,7 +302,14 @@ const getTypeEmoji = (type: string) => {
   cursor: pointer;
   background: transparent;
   color: var(--gray);
-  
+
+  .emoji {
+    font-size: 10px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 .mode-switch button.active {
@@ -344,6 +374,19 @@ const getTypeEmoji = (type: string) => {
   margin-bottom: 8px;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+
+  .price-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1.35;
+
+    .emoji {
+      font-size: 10px;
+      line-height: 1;
+    }
+  }
 }
 
 .range-input {

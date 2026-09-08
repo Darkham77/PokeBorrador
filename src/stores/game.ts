@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
-import { reactive, ref, computed, watch, type Ref } from 'vue'
+import { reactive, ref, shallowRef, computed, watch, type Ref } from 'vue'
 import { logger } from '@/logic/utils/logger'
 import { useAuthStore } from '@/stores/auth.ts'
 import { supabase } from '@/logic/db/supabase'
-import { INITIAL_STATE } from '@/stores/gameInitialState.ts'
+import { createInitialGameState } from '@/stores/gameInitialState.ts'
 import type { GameState } from '@/types/system/game'
 import type { Pokemon, PokemonStorageLocation } from '@/types/pokemon/pokemon'
 import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
@@ -24,9 +24,9 @@ import { GAME_UI_EVENTS, type GameStoreReadyDetail } from '@/types/system/gameEv
 
 export const useGameStore = defineStore('game', () => {
   const authStore = useAuthStore()
-  const state = reactive<GameState>(JSON.parse(JSON.stringify(INITIAL_STATE)) as GameState)
+  const state = reactive<GameState>(createInitialGameState())
   
-  const db = ref<DBRouter>(supabase)
+  const db = shallowRef<DBRouter>(supabase)
   const isDataLoaded = ref(false)
   const isEngineReady = ref(false)
   const isSaveLocked = ref(false)
@@ -50,7 +50,7 @@ export const useGameStore = defineStore('game', () => {
   // --- ACTIONS INITIALIZATION ---
   
   // 1. Save Actions (Basics needed for others)
-  const { loadGame: rawLoad, save, scheduleSave, claimAsset, fetchClaimQueue, saveBlocked, validationErrorDetails } = useSaveActions(
+  const { loadGame: rawLoad, save, scheduleSave, withBatchSave, claimAsset, fetchClaimQueue, saveBlocked, validationErrorDetails } = useSaveActions(
     state, 
     authStore, 
     db as Ref<DBRouter>, 
@@ -211,14 +211,14 @@ export const useGameStore = defineStore('game', () => {
 
   function enterSandboxMode() {
     if (isSandboxActive.value) return
-    realStateBackup.value = JSON.parse(JSON.stringify(state)) as GameState
+    realStateBackup.value = structuredClone(state) as GameState
     
     // Limpiar el estado actual y cargar el guardado del sandbox si existe
     Object.keys(state).forEach(key => {
       delete (state as Record<string, unknown>)[key] // open-record: Generic key-value data dictionary container
     })
     
-    let initialSandbox = JSON.parse(JSON.stringify(INITIAL_STATE)) as GameState
+    let initialSandbox = createInitialGameState()
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('pvs_sandbox_save')
       if (saved) {
@@ -252,7 +252,7 @@ export const useGameStore = defineStore('game', () => {
       Object.assign(state, realStateBackup.value)
       realStateBackup.value = null
     } else {
-      Object.assign(state, JSON.parse(JSON.stringify(INITIAL_STATE)))
+      Object.assign(state, createInitialGameState())
     }
     
     isDataLoaded.value = false // Reset data loaded so real save gets fetched when entering normal game
@@ -358,6 +358,7 @@ export const useGameStore = defineStore('game', () => {
     updateState,
     registerPokedex,
     scheduleSave,
+    withBatchSave,
     claimAsset,
     fetchClaimQueue,
     loadGame,

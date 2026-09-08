@@ -8,6 +8,7 @@ import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import type { MapRouteId } from '@/data/world/map-assets';
 import type { MoveCategory } from '@/data/battle/moves';
 import type { DayPhase } from '@/logic/utils/timeUtils';
+import type { SideID } from '@pkmn/sim';
 
 /** Canonical Showdown PRNG 4-word integer seed tuple ([w, x, y, z]) */
 export type NumericSeed = [number, number, number, number];
@@ -156,6 +157,7 @@ export interface BattleState {
   trainerSprite?: NpcSpriteId;
   trainerArchetype?: NpcArchetype;
   isGym?: boolean;
+  isRematch?: boolean;
   gymId?: GymId;
   fixedCycle?: DayPhase;
   fixedWeather?: WeatherId;
@@ -165,6 +167,7 @@ export interface BattleState {
   fled?: boolean;
   turn?: BattleSide | null;
   isCapture?: boolean;
+  capturedPokemon?: Pokemon;
   isRival?: boolean;
   escapeAttempts: number;
   initialMapWeather?: WeatherId | null;
@@ -198,6 +201,7 @@ export interface BattleState {
   winnerResult?: BattleSide | 'tie';
   learnQueue?: unknown[];
   isPvP?: boolean;
+  isRanked?: boolean;
   pvpMatchId?: string; // domain-ok: Open dynamic text or non-domain string payload
   pvpIsHost?: boolean;
   pvpOpponentId?: string; // domain-ok: Open dynamic text or non-domain string payload
@@ -302,6 +306,7 @@ export interface ShowdownPlayerRequest {
     moves?: {
       id?: PokemonMoveId;
       move?: string; // domain-ok: Open dynamic text or non-domain string payload
+      target?: string; // domain-ok: Showdown target token
       disabled?: boolean | 'pp';
       pp?: number;
       maxpp?: number;
@@ -311,14 +316,29 @@ export interface ShowdownPlayerRequest {
   }[];
   forceSwitch?: boolean[];
   side?: {
+    name?: string; // domain-ok: Open dynamic text or non-domain string payload
+    id?: SideID;
     pokemon: {
       ident: string; // domain-ok: Open dynamic text or non-domain string payload
       details: string; // domain-ok: Open dynamic text or non-domain string payload
       condition: string; // domain-ok: Open dynamic text or non-domain string payload
       active: boolean;
+      stats?: {
+        hp?: number;
+        atk?: number;
+        def?: number;
+        spa?: number;
+        spd?: number;
+        spe?: number;
+      };
+      moves?: string[]; // domain-ok: Open dynamic text or non-domain string payload
+      baseAbility?: string; // domain-ok: Open dynamic text or non-domain string payload
+      item?: string; // domain-ok: Open dynamic text or non-domain string payload
+      pokeball?: string; // domain-ok: Open dynamic text or non-domain string payload
       uid?: string; // domain-ok: Open dynamic text or non-domain string payload
     }[];
   };
   wait?: boolean;
   teamPreview?: boolean;
+  rqid?: number;
 }

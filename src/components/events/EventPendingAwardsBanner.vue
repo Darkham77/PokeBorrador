@@ -55,16 +55,30 @@ const getCategoryBadge = (award: PendingAward): { icon: string; name: string } |
   return null
 }
 
+const prizeStringCache = new Map<string, Record<string, unknown>>()
+const prizeObjectCache = new WeakMap<object, Record<string, unknown>>()
+
 const parsePrize = (rawPrize: unknown): Record<string, unknown> => {
   if (!rawPrize) return {}
   if (typeof rawPrize === 'string') {
+    const cached = prizeStringCache.get(rawPrize)
+    if (cached) return cached
     try {
-      return JSON.parse(rawPrize) as Record<string, unknown> // open-record: Generic key-value data dictionary container
+      const parsed = JSON.parse(rawPrize) as Record<string, unknown> // open-record: Generic key-value data dictionary container
+      prizeStringCache.set(rawPrize, parsed)
+      return parsed
     } catch {
       return {}
     }
   }
-  return typeof rawPrize === 'object' ? (rawPrize as Record<string, unknown>) : {} // open-record: Generic key-value data dictionary container
+  if (typeof rawPrize === 'object') {
+    const cached = prizeObjectCache.get(rawPrize)
+    if (cached) return cached
+    const obj = rawPrize as Record<string, unknown> // open-record: Generic key-value data dictionary container
+    prizeObjectCache.set(rawPrize, obj)
+    return obj
+  }
+  return {}
 }
 
 const checkIfClaimable = (award: PendingAward): boolean => {

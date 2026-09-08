@@ -71,4 +71,50 @@ describe('GTS Store', () => {
     expect(ui.setLoading).toHaveBeenCalledWith(true);
     expect(ui.notify).toHaveBeenCalledWith(expect.stringContaining('Compra exitosa'), '✅');
   });
+
+  it('correctly categorizes sales vs purchases claims and unifies GTS count', () => {
+    const gts = useGTSStore();
+    const game = useGameStore();
+    const now = Temporal.Now.instant().toString();
+
+    game.state.claimQueue = [
+      {
+        id: 'claim-1',
+        source_type: 'gts',
+        source_id: 'list-1',
+        created_at: now,
+        asset_data: { type: 'money', data: 950 }
+      },
+      {
+        id: 'claim-2',
+        source_type: 'gts',
+        source_id: 'list-2',
+        created_at: now,
+        asset_data: { type: 'pokemon', data: { name: 'Rattata', species: 'rattata' } }
+      },
+      {
+        id: 'claim-3',
+        source_type: 'gts_cancel',
+        source_id: 'list-3',
+        created_at: now,
+        asset_data: { type: 'item', data: { name: 'potion', qty: 5 } }
+      },
+      {
+        id: 'claim-4',
+        source_type: 'event',
+        source_id: 'event-1',
+        created_at: now,
+        asset_data: { type: 'money', data: 1000 }
+      }
+    ];
+
+    expect(gts.pendingSalesClaims.length).toBe(1);
+    expect(gts.unclaimedSalesCount).toBe(1);
+
+    expect(gts.pendingPurchaseClaims.length).toBe(2);
+    expect(gts.unclaimedPurchasesCount).toBe(2);
+
+    expect(gts.allPendingGtsClaims.length).toBe(3);
+    expect(gts.unclaimedGtsCount).toBe(3);
+  });
 });

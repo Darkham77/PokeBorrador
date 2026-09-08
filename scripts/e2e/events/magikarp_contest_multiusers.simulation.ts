@@ -42,6 +42,9 @@ export class MagikarpContestMultiuserSimulation extends BaseEventSimulation {
       gameStore.state.money = 10000;
       gameStore.state.battleCoins = 50;
       gameStore.state.starterChosen = true;
+      gameStore.state.rankedRewardsClaimed = ['bronce_1000'];
+      const { usePvPStore } = await import('../../../src/stores/pvp.ts');
+      usePvPStore().rewardsClaimed = ['bronce_1000'];
 
       // 1. Valid Magikarp with 180 IVs (caught during event window)
       const validMagikarp = pokemonDebugService.generate({
@@ -263,7 +266,7 @@ test.describe('Magikarp Tournament Multi-User Podium & GUI Awarding E2E Simulati
       expect(fourthPlace).toBeUndefined(); // P4 excluded from podium
 
       // 12. Claim 1st place award in GUI
-      const claimBtn = page.locator('[id^="claim-pending-award-btn-"]').first();
+      const claimBtn = page.locator('[id^="claim-pending-award-btn-"], [id^="claim-pending-reward-btn-"]').first();
       await expect(claimBtn).toBeVisible({ timeout: 5000 });
       await claimBtn.click();
 

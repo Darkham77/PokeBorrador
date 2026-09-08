@@ -1,5 +1,6 @@
 import type { PokemonType } from '../battle/types.ts';
 import type { PokemonSpeciesId } from '../pokemon/pokedex.ts';
+import { toID } from '@/logic/utils/strings.ts';
 
 export const RANKED_TIER_ORDER = ['Bronce', 'Plata', 'Oro', 'Platino', 'Diamante', 'Maestro'] as const;
 export type RankedTierName = (typeof RANKED_TIER_ORDER)[number];
@@ -25,7 +26,6 @@ export interface RankedTierConfig {
   readonly id: RankedTierId;
   readonly name: RankedTierName;
   readonly color: string; // domain-ok: Hex color code
-  readonly sprite: string; // domain-ok: Asset path URI string
   readonly fallbackEmoji: string; // domain-ok: Unicode emoji character
 }
 
@@ -34,42 +34,36 @@ export const RANKED_MEDAL_CONFIGS: Readonly<Record<RankedTierId, RankedTierConfi
     id: 'bronce',
     name: 'Bronce',
     color: '#c8a060',
-    sprite: '/assets/sprites/ranked_medals/bronce.webp',
     fallbackEmoji: '🥉'
   },
   plata: {
     id: 'plata',
     name: 'Plata',
     color: '#9E9E9E',
-    sprite: '/assets/sprites/ranked_medals/plata.webp',
     fallbackEmoji: '🥈'
   },
   oro: {
     id: 'oro',
     name: 'Oro',
     color: '#FFB800',
-    sprite: '/assets/sprites/ranked_medals/oro.webp',
     fallbackEmoji: '🥇'
   },
   platino: {
     id: 'platino',
     name: 'Platino',
     color: '#E5C100',
-    sprite: '/assets/sprites/ranked_medals/platino.webp',
     fallbackEmoji: '🔶'
   },
   diamante: {
     id: 'diamante',
     name: 'Diamante',
     color: '#89CFF0',
-    sprite: '/assets/sprites/ranked_medals/diamante.webp',
     fallbackEmoji: '💎'
   },
   maestro: {
     id: 'maestro',
     name: 'Maestro',
     color: '#FFD700',
-    sprite: '/assets/sprites/ranked_medals/maestro.webp',
     fallbackEmoji: '👑'
   }
 });
@@ -178,6 +172,7 @@ export interface SeasonalThemeConfig {
   readonly allowedTypes?: readonly PokemonType[];
   readonly bannedPokemonIds?: readonly PokemonSpeciesId[];
   readonly isLittleCup?: boolean;
+  readonly levelCap?: number;
   readonly requiresDualType?: boolean;
   readonly requiresMonotype?: boolean;
   readonly rewardPokemon: {
@@ -346,6 +341,32 @@ export function getSeasonalThemeForMonth(month: number): SeasonalThemeConfig {
     throw new Error('[PVP] No seasonal themes configured');
   }
   return found;
+}
+
+export const SPANISH_MONTH_NAMES = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+] as const;
+
+const THEMES_BY_LOOKUP_KEY: Readonly<Record<string, SeasonalThemeConfig>> = Object.freeze( // open-record: Generic key-value data dictionary container
+  (() => {
+    const map: Record<string, SeasonalThemeConfig> = {}; // open-record: Generic key-value data dictionary container
+    for (const theme of SEASONAL_ANNUAL_THEMES) {
+      map[theme.id] = theme;
+      map[theme.name] = theme;
+      map[toID(theme.name)] = theme;
+      map[toID(theme.id)] = theme;
+    }
+    return map;
+  })()
+);
+
+export function findSeasonalTheme(identifier?: string | null): SeasonalThemeConfig | undefined { // result-ok: Operation result wrapper payload
+  if (!identifier) return undefined;
+  if (isSeasonalThemeId(identifier)) {
+    return SEASONAL_THEMES_BY_ID[identifier];
+  }
+  return THEMES_BY_LOOKUP_KEY[identifier] ?? THEMES_BY_LOOKUP_KEY[toID(identifier)];
 }
 
 export function getSeasonalThemeConfig(id: SeasonalThemeId): SeasonalThemeConfig {

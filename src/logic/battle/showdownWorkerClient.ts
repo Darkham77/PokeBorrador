@@ -133,11 +133,12 @@ export async function syncTeamsFromLastWorkerState(): Promise<void> {
 }
 
 export async function getSimulatorState(): Promise<{ p1: unknown[]; p2: unknown[] }> {
-  if (!showdownWorker) throw new Error('showdownWorker is null');
-  showdownWorker.postMessage({ type: 'GET_SIMULATOR_STATE' });
+  const worker = getShowdownWorker();
+  if (!worker) throw new Error('showdownWorker is null');
+  worker.postMessage({ type: 'GET_SIMULATOR_STATE' });
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
-      if (showdownWorker) showdownWorker.removeEventListener('message', handler);
+      worker.removeEventListener('message', handler);
       reject(new Error('[ShowdownWorkerClient] Timeout waiting for GET_SIMULATOR_STATE_RESPONSE'));
     }, 5000);
 
@@ -146,11 +147,11 @@ export async function getSimulatorState(): Promise<{ p1: unknown[]; p2: unknown[
       const { type, payload } = data;
       if (type === 'GET_SIMULATOR_STATE_RESPONSE') {
         clearTimeout(timer);
-        showdownWorker!.removeEventListener('message', handler);
+        worker.removeEventListener('message', handler);
         resolve(payload);
       }
     };
-    showdownWorker!.addEventListener('message', handler);
+    worker.addEventListener('message', handler);
   });
 }
 
@@ -178,7 +179,8 @@ export async function executeTurnInWorker(
   p2Skip?: boolean,
   p1UsedBattleItem?: boolean
 ): Promise<{ logs: string[]; isOver: boolean; winner: string | null; p1ForceSwitch?: boolean; p2ForceSwitch?: boolean; p1Request?: ShowdownPlayerRequest; p2Request?: ShowdownPlayerRequest }> {
-  if (!showdownWorker) {
+  const worker = getShowdownWorker();
+  if (!worker) {
     throw new Error('showdownWorker is null')
   }
 
@@ -274,7 +276,6 @@ export async function executeTurnInWorker(
         logger.debug('ShowdownWorker', `[WORKER] ${String(payload)}`);
         return;
       }
-      const worker = showdownWorker!
       if (type === 'ERROR' || type === 'TURN_ERROR') {
         if (worker.removeEventListener) {
           worker.removeEventListener('message', handler)
@@ -408,11 +409,6 @@ export async function executeTurnInWorker(
         reject(err);
       }
     }
-    const worker = showdownWorker;
-    if (!worker) {
-      reject(new Error('showdownWorker is null'));
-      return;
-    }
     if (worker.addEventListener) {
       worker.addEventListener('message', handler)
     } else {
@@ -426,16 +422,15 @@ export async function executeTurnInWorker(
 }
 
 export async function isPlayerTrappedInWorker(): Promise<boolean> {
-  if (!showdownWorker) return false
-  showdownWorker.postMessage({
+  const worker = getShowdownWorker()
+  if (!worker) return false
+  worker.postMessage({
     type: 'CHECK_TRAPPED'
   })
   return new Promise((resolve) => {
-    if (!showdownWorker) return resolve(false)
     const handler = (event: MessageEvent) => {
       const data = event.data as { type: string; payload: { trapped: boolean } };
       const { type, payload } = data;
-      const worker = showdownWorker!
       if (type === 'CHECK_TRAPPED_RESPONSE') {
         if (worker.removeEventListener) {
           worker.removeEventListener('message', handler)
@@ -445,17 +440,17 @@ export async function isPlayerTrappedInWorker(): Promise<boolean> {
         resolve(!!payload.trapped)
       }
     }
-    if (showdownWorker.addEventListener) {
-      showdownWorker.addEventListener('message', handler)
+    if (worker.addEventListener) {
+      worker.addEventListener('message', handler)
     } else {
-      showdownWorker.onmessage = handler
+      worker.onmessage = handler
     }
   })
 }
 
 
 export async function applyCheatsInWorker(cheats: Array<{ side: SideID; type: 'heal' }>): Promise<void> {
-  const worker = showdownWorker;
+  const worker = getShowdownWorker();
   if (!worker) return;
   worker.postMessage({
     type: 'APPLY_CHEATS',
@@ -494,7 +489,7 @@ export async function applyCheatsInWorker(cheats: Array<{ side: SideID; type: 'h
 }
 
 export async function applyDebugStatusInWorker(side: SideID, uid: string, status: string): Promise<void> {
-  const worker = showdownWorker;
+  const worker = getShowdownWorker();
   if (!worker) return;
   worker.postMessage({ type: 'APPLY_DEBUG_STATUS', payload: { debugStatus: { side, uid, status } } });
   return new Promise((resolve) => {
@@ -517,8 +512,9 @@ export async function applyDebugStatusInWorker(side: SideID, uid: string, status
 }
 
 export function notifyWorkerBattleWin(side: SideID = 'p1'): void {
-  if (showdownWorker) {
-    showdownWorker.postMessage({
+  const worker = getShowdownWorker();
+  if (worker) {
+    worker.postMessage({
       type: 'WIN_BATTLE',
       payload: { side }
     });

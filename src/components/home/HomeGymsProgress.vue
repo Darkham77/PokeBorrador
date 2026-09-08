@@ -6,6 +6,7 @@ import { useUIStore } from '@/stores/ui'
 import { useGymsStore } from '@/stores/gyms'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
@@ -44,7 +45,15 @@ const getGymTooltipDesc = (gym: (typeof GYMS)[number]) => {
   const hard = isDiffWon(gym.id, 'hard') ? '✅ Difícil' : '⏳ Difícil (Pendiente)'
   const count = getWonDiffCount(gym.id)
   const status = count === 3 ? '👑 ¡Gimnasio Dominado al 100%!' : `${count}/3 Dificultades superadas`
-  return `${gym.leader} (${gym.city}) · ${status} | ${easy} · ${norm} · ${hard}`
+  
+  let rematchStatus = ''
+  if (gymsStore.isRematchAvailable(gym.id)) {
+    rematchStatus = ' | 🔥 ¡Revancha diaria disponible hoy!'
+  } else if (gymsStore.isRematchDoneToday(gym.id)) {
+    rematchStatus = ' | ✓ Revancha completada hoy'
+  }
+
+  return `${gym.leader} (${gym.city}) · ${status} | ${easy} · ${norm} · ${hard}${rematchStatus}`
 }
 
 const openGyms = () => {
@@ -68,16 +77,24 @@ const openGyms = () => {
       </div>
 
       <div class="header-actions">
-        <button
-          id="home-gyms-open-btn"
-          v-gsap-hover
-          class="card-action-btn"
-          @click.stop="openGyms"
-        >
-          <span class="emoji">⚡</span>
-          DESAFIAR
-        </button>
+        <HomeWidgetMinimizeBtn widget-id="gyms" />
       </div>
+    </div>
+
+    <!-- Banner de Revanchas Diarias si hay líderes listos para revancha -->
+    <div
+      v-if="gymsStore.availableRematchesCount > 0"
+      v-gsap-hover
+      class="rematches-banner"
+      @click.stop="openGyms"
+    >
+      <div class="rematches-banner-left">
+        <span class="emoji flame">🔥</span>
+        <span class="banner-title">
+          {{ gymsStore.availableRematchesCount }} REVANCHA{{ gymsStore.availableRematchesCount > 1 ? 'S' : '' }} DIARIA{{ gymsStore.availableRematchesCount > 1 ? 'S' : '' }} DISPONIBLE{{ gymsStore.availableRematchesCount > 1 ? 'S' : '' }}
+        </span>
+      </div>
+      <span class="banner-btn">DESAFIAR <span class="emoji">➔</span></span>
     </div>
 
     <div class="medals-row">
@@ -92,7 +109,8 @@ const openGyms = () => {
           class="medal-slot"
           :class="{ 
             'is-conquered': isGymDefeated(gym.id),
-            'is-mastered': isGymMastered(gym.id)
+            'is-mastered': isGymMastered(gym.id),
+            'has-rematch': gymsStore.isRematchAvailable(gym.id)
           }"
           @click.stop="openGyms"
         >
@@ -102,6 +120,11 @@ const openGyms = () => {
               :alt="gym.badgeName"
               class="badge-sprite-img"
             >
+            <span
+              v-if="gymsStore.isRematchAvailable(gym.id)"
+              class="rematch-fire-badge emoji"
+              title="Revancha diaria disponible"
+            >🔥</span>
             <span
               v-if="isGymMastered(gym.id)"
               class="master-crown emoji"
@@ -163,12 +186,15 @@ const openGyms = () => {
   align-items: center;
   padding-bottom: 8px;
   border-bottom: 1px solid Rgba(255, 255, 255, 0.06);
+  gap: 8px;
 }
 
 .title-wrap {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 1;
+  min-width: 0;
 
   .card-icon {
     font-size: 20px;
@@ -177,12 +203,14 @@ const openGyms = () => {
     align-items: center;
     justify-content: center;
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+    flex-shrink: 0;
   }
 
   .title-text-group {
     display: flex;
     flex-direction: column;
     gap: 3px;
+    min-width: 0;
   }
 
   .card-title {
@@ -201,8 +229,55 @@ const openGyms = () => {
   }
 }
 
-.card-action-btn {
-  @include widget-action-btn;
+.header-actions {
+  @include widget-header-actions;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.rematches-banner {
+  background: linear-gradient(135deg, Rgba(234, 88, 12, 0.25) 0%, Rgba(180, 83, 9, 0.2) 100%);
+  border: 1px solid Rgba(249, 115, 22, 0.4);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  box-shadow: 0 2px 12px Rgba(234, 88, 12, 0.2);
+
+  &:hover {
+    background: linear-gradient(135deg, Rgba(234, 88, 12, 0.35) 0%, Rgba(180, 83, 9, 0.3) 100%);
+    border-color: #f97316;
+    transform: Translatey(-1px);
+  }
+
+  .rematches-banner-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .flame {
+      font-size: 14px;
+    }
+
+    .banner-title {
+      font-size: 11px;
+      font-weight: bold;
+      color: #fdba74;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  .banner-btn {
+    font-size: 10px;
+    font-weight: bold;
+    color: #fed7aa;
+    background: Rgba(249, 115, 22, 0.3);
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid Rgba(249, 115, 22, 0.4);
+  }
 }
 
 .medals-row {
@@ -233,6 +308,13 @@ const openGyms = () => {
   box-sizing: border-box;
   width: 100%;
 
+  &.has-rematch {
+    border-color: Rgba(249, 115, 22, 0.5);
+    background: Rgba(249, 115, 22, 0.08);
+    filter: none;
+    box-shadow: 0 0 10px Rgba(249, 115, 22, 0.2);
+  }
+
   &:hover {
     background: Rgba(255, 255, 255, 0.06);
     border-color: Rgba(255, 255, 255, 0.2);
@@ -257,12 +339,24 @@ const openGyms = () => {
       image-rendering: pixelated;
     }
 
+    .rematch-fire-badge {
+      position: absolute;
+      top: -6px;
+      left: -6px;
+      font-size: 11px;
+      line-height: 1.25 !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      filter: Drop-Shadow(0 0 4px #f97316);
+    }
+
     .master-crown {
       position: absolute;
       top: -6px;
       right: -6px;
       font-size: 9px;
-      line-height: 1 !important;
+      line-height: 1.25 !important;
       display: inline-flex;
       align-items: center;
       justify-content: center;

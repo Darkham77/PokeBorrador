@@ -63,3 +63,29 @@
 .close-btn-primary, .action-btn-primary {
   @include btn-vicio('primary', 'md', true);
 }
+
+// Global Tab Buttons for Modals
+.modal-tab-btn {
+  @include modal-tab-btn;
+}
+
+// Global Claim Action Button (Home & Events standard)
+.btn-vicio-claim {
+  @include btn-vicio-claim;
+}
+
+// Global Refresh Buttons (Header Circular & Section Pill)
+.btn-refresh-header {
+  @include btn-refresh-header;
+}
+
+.btn-refresh-pill {
+  @include btn-refresh-pill;
+}
+
+// Global Widget Minimize Button
+.minimize-widget-btn {
+  @include widget-minimize-btn;
+}
+
+

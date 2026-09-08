@@ -118,4 +118,33 @@ describe('RankedSeasonRewardModal.vue', () => {
     expect(wrapper.emitted('claimed')).toBeTruthy()
     expect(wrapper.emitted('close')).toBeTruthy()
   })
+
+  it('correctly handles battle_coins prize type and renders Medalla <Tier>', () => {
+    const awards = [
+      {
+        id: 'aw_1',
+        prize: { type: 'ranked_medal', tier: 'maestro', season: 'Temporada 1' }
+      },
+      {
+        id: 'aw_2',
+        prize: { type: 'battle_coins', amount: 500 }
+      }
+    ]
+
+    const wrapper = mount(RankedSeasonRewardModal, {
+      props: {
+        show: true,
+        seasonName: 'Temporada 1: Renacer de Kanto',
+        tier: 'maestro',
+        finalElo: 3500,
+        awards
+      },
+      global: {
+        stubs: { Teleport: true }
+      }
+    })
+
+    expect(wrapper.text()).toContain('Medalla Maestro')
+    expect(wrapper.text()).toContain('500 Monedas de Batalla')
+  })
 })

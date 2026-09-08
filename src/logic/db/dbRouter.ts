@@ -4,12 +4,16 @@
 import { createClient, type SupabaseClient, type RealtimeChannel, type REALTIME_SUBSCRIBE_STATES, type User, type Session } from '@supabase/supabase-js';
 import { ProxyQuery } from './proxyQuery.ts';
 import { gsap } from 'gsap';
-import { initSQLite, type LoadingStore } from './sqliteEngine.ts';
+import { initSQLite } from './sqliteEngine.ts';
 import { emulateOfflineRpc } from './sqliteRpcEmulation.ts';
-import { DATABASE_MIGRATIONS } from './migrations_data.ts';
+import { lanRelayBridge } from './lanRelayBridge.ts';
+import { parseAppVersion } from './dbCompatibility.ts';
 import { logger } from '../utils/logger.ts';
 import { GAME_TIMEZONE } from '../utils/timeUtils.ts';
+import { cloneReactive } from '../utils/cloneUtils.ts';
 import type { DBConfig, SessionMode, DBRouterOptions, DBCompatibilityResponse, DBResponse } from '@/types/system/database';
+
+declare const __APP_VERSION__: string;
 
 export type { DBCompatibilityResponse };
 
@@ -406,13 +410,48 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
   channel(name: string): RealtimeChannel {
     if (this.mode === 'offline') {
       const bc = new BroadcastChannel(name);
+      const listeners: Array<{
+        type: string;
+        event?: string;
+        cb: (payload: unknown) => void;
+      }> = [];
+      const seenMsgUids = new Set<string>();
+      const MAX_SEEN_IDS = 100;
+
+      const dispatchPayload = (rawPayload: unknown) => {
+        if (!rawPayload || typeof rawPayload !== 'object') return;
+        const msg = rawPayload as { type?: string; event?: string; payload?: unknown; _msgUid?: string };
+        if (msg._msgUid) {
+          if (seenMsgUids.has(msg._msgUid)) return;
+          seenMsgUids.add(msg._msgUid);
+          if (seenMsgUids.size > MAX_SEEN_IDS) {
+            const first = seenMsgUids.values().next().value;
+            if (first) seenMsgUids.delete(first);
+          }
+        }
+        for (const listener of listeners) {
+          if (listener.type && msg.type && listener.type !== msg.type) continue;
+          if (listener.event && msg.event && listener.event !== msg.event) continue;
+          listener.cb(msg);
+        }
+      };
+
+      bc.onmessage = (ev: MessageEvent) => {
+        dispatchPayload(ev.data);
+      };
+
+      const unsubscribeLan = lanRelayBridge.subscribe(name, (networkData: unknown) => {
+        dispatchPayload(networkData);
+      });
+
       const mock: Partial<RealtimeChannel> = {
-        on(_type: unknown, _filter: unknown, cb: unknown) {
-          bc.onmessage = (ev) => {
-            if (ev.data && typeof ev.data === 'object') {
-              (cb as (payload: unknown) => void)(ev.data);
-            }
-          };
+        on(type: unknown, filter: unknown, cb: unknown) {
+          const filterObj = (filter && typeof filter === 'object') ? filter as { event?: string } : {};
+          listeners.push({
+            type: String(type || ''),
+            event: filterObj.event,
+            cb: cb as (payload: unknown) => void
+          });
           return mock as RealtimeChannel;
         },
         subscribe(cb?: (status: REALTIME_SUBSCRIBE_STATES, err?: Error) => void) {
@@ -420,15 +459,30 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
           return mock as RealtimeChannel;
         },
         async send(args: unknown) {
+          let sanitized: Record<string, unknown>;
           try {
-            const sanitized = JSON.parse(JSON.stringify(args));
-            bc.postMessage(sanitized);
+            sanitized = cloneReactive(args) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
           } catch {
-            bc.postMessage(args);
+            sanitized = (typeof args === 'object' && args !== null)
+              ? { ...(args as Record<string, unknown>) } // open-record: Generic key-value data dictionary container
+              : { payload: args };
           }
+          if (!sanitized._msgUid) {
+            sanitized._msgUid = `${Math.random().toString(36).substring(2)}_${Temporal.Now.instant().epochMilliseconds}`;
+          }
+          try {
+            bc.postMessage(sanitized);
+          } catch (postErr) {
+            logger.warn('DBRouter', 'Failed to postMessage on BroadcastChannel:', postErr);
+          }
+          lanRelayBridge.broadcast(name, sanitized);
           return 'ok' as const;
         },
-        async unsubscribe() { bc.close(); return 'ok' as const; }
+        async unsubscribe() {
+          unsubscribeLan();
+          bc.close();
+          return 'ok' as const;
+        }
       };
       return mock as RealtimeChannel;
     }
@@ -452,161 +506,10 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
   }
 }
 
-/**
- * DB Compatibility Check
- * Ensures the client version is not greater than the DB version.
- */
-// Use the last migration ID as the client version (Automated)
-const lastMigration = DATABASE_MIGRATIONS.length > 0 ? DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1] : null;
-export const CLIENT_DB_VERSION = lastMigration 
-  ? parseInt(lastMigration.id.split('_')[0] || '0') 
-  : 0;
+export {
+  CLIENT_DB_VERSION,
+  checkDBCompatibility,
+  checkAppVersionCompatibility,
+  type AppCompatibilityResponse
+} from './dbCompatibility.ts';
 
-
-
-export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatibilityResponse> {
-  let loadingStore: LoadingStore | null = null;
-  try {
-    if (typeof window !== 'undefined') {
-      const { useLoadingStore } = await import('../../stores/loading.ts');
-      loadingStore = useLoadingStore();
-    }
-  } catch (_) {
-    // Fail silently in node test context
-  }
-
-  if (loadingStore) {
-    loadingStore.start('db_compat', 'Verificando Versión...', 'Comprobando compatibilidad de DB', false)
-  }
-  try {
-    let dbVersion = 0;
-    let rawValue: unknown = null;
-
-    const { data, error } = await router
-      .from('system_config')
-      .select('value')
-      .eq('key', 'db_version')
-      .maybeSingle();
-
-    if (error) {
-      throw error;
-    }
-    if (data) rawValue = (data as { value: unknown }).value;
-
-    if (rawValue) {
-      // Handle JSON strings (SQLite stores objects as JSON strings)
-      if (typeof rawValue === 'string' && (rawValue.startsWith('{') || rawValue.startsWith('['))) {
-        try { rawValue = JSON.parse(rawValue); } catch (_e) { /* ignore */ }
-      }
-      
-      const valObj = rawValue as Record<string, unknown> | null; // open-record: Generic key-value data dictionary container
-      const parsed = (typeof rawValue === 'object' && valObj !== null && 'db_version' in valObj) 
-        ? parseInt((valObj.db_version as string | number) + '' || '0') 
-        : parseInt((rawValue as string | number) + '' || '0');
-      dbVersion = isNaN(parsed) ? 0 : parsed;
-    }
-
-    logger.info('DBRouter', `Compatibility Check: Client v${CLIENT_DB_VERSION} | DB v${dbVersion}`);
-
-    const isE2E = (typeof window !== 'undefined' && Boolean(window.__E2E__)) ||
-                  (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
-
-    const response: DBCompatibilityResponse = {
-      compatible: true,
-      client: CLIENT_DB_VERSION,
-      db: dbVersion
-    };
-
-    if (!isE2E && router.mode !== 'offline' && (CLIENT_DB_VERSION > dbVersion || dbVersion === 0)) {
-      response.compatible = false;
-      response.error = 'OUTDATED_SERVER';
-    }
-
-    if (loadingStore) loadingStore.finish('db_compat')
-    return response;
-  } catch (e: unknown) {
-    if (loadingStore) loadingStore.finish('db_compat');
-    const isE2E = (typeof window !== 'undefined' && Boolean(window.__E2E__)) ||
-                  (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
-    if (isE2E || router.mode === 'offline') {
-      logger.warn('DBRouter', 'Compatibility check offline/E2E lookup warning:', (e as Error).message);
-      return { compatible: true, client: CLIENT_DB_VERSION, db: CLIENT_DB_VERSION };
-    }
-    logger.error('DBRouter', 'Compatibility check failed.', (e as Error).message);
-    return { 
-      compatible: false, 
-      client: CLIENT_DB_VERSION, 
-      db: 0,
-      error: 'OUTDATED_SERVER' 
-    };
-  }
-}
-
-declare const __APP_VERSION__: string;
-
-export interface AppCompatibilityResponse {
-  compatible: boolean;
-  client: string;
-  server: string;
-  error?: 'OUTDATED_SERVER' | 'OUTDATED_CLIENT';
-}
-
-function parseAppVersion(val: unknown): string {
-  if (!val) return '';
-  try {
-    const parsed: unknown = typeof val === 'string' ? JSON.parse(val) : val;
-    if (typeof parsed === 'string') return parsed;
-    if (parsed && typeof parsed === 'object') {
-      return (parsed as Record<string, string>).app_version || ''; // open-record: Generic key-value data dictionary container
-    }
-    return '';
-  } catch {
-    return typeof val === 'string' ? val : '';
-  }
-}
-
-export async function checkAppVersionCompatibility(router: DBRouter): Promise<AppCompatibilityResponse> {
-  const clientVer = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'v0.5.0';
-  const isE2E = (typeof window !== 'undefined' && Boolean(window.__E2E__)) ||
-                (typeof process !== 'undefined' && process.env.VITE_E2E === 'true');
-  if (isE2E) {
-    return { compatible: true, client: clientVer, server: clientVer };
-  }
-  let serverVer = '';
-  
-  try {
-    const { data, error } = await router
-      .from('system_config')
-      .select('value')
-      .eq('key', 'app_version')
-      .maybeSingle();
-    if (!error && data && (data as { value: unknown }).value) {
-      serverVer = parseAppVersion((data as { value: unknown }).value);
-    }
-  } catch (e) {
-    logger.error('DBRouter', 'App version check failed.', (e as Error).message);
-  }
-
-  if (!serverVer) {
-    if (router.mode === 'offline') {
-      return { compatible: true, client: clientVer, server: clientVer };
-    }
-    return { compatible: false, client: clientVer, server: 'v0.0.0', error: 'OUTDATED_SERVER' };
-  }
-
-  if (clientVer === serverVer) {
-    return { compatible: true, client: clientVer, server: serverVer };
-  }
-
-  // Allow bypass in local development mode to prevent dev lockout, except during tests
-  if (import.meta.env.DEV && import.meta.env.MODE !== 'test' && !(typeof process !== 'undefined' && (process.env.VITEST || process.env.NODE_ENV === 'test'))) {
-    logger.warn('DBRouter', `[DEV] Mismatch de versión ignorado en modo desarrollo (Cliente: ${clientVer} vs Servidor: ${serverVer})`);
-    return { compatible: true, client: clientVer, server: serverVer };
-  }
-
-  if (clientVer > serverVer) {
-    return { compatible: false, client: clientVer, server: serverVer, error: 'OUTDATED_SERVER' };
-  } else {
-    return { compatible: false, client: clientVer, server: serverVer, error: 'OUTDATED_CLIENT' };
-  }
-}

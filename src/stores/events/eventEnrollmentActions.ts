@@ -9,6 +9,7 @@ import {
   type Event as GameEvent 
 } from '@/logic/events/eventEngine'
 import { getServerTime } from '@/logic/utils/timeUtils'
+import { getPokemonPhysicalHeight, getPokemonPhysicalWeight } from '@/logic/pokemon/physicalDimensionsMath'
 import type { CompetitionEntry } from '@/types/system/stores'
 import type { useGameStore } from '@/stores/game.ts'
 import type { useAuthStore } from '@/stores/auth.ts'
@@ -127,8 +128,8 @@ export async function submitCompetitionEntry(
         ivs: evalRes.ivs || ivs,
         is_shiny: pokemon.isShiny,
         obtained_at: pokemon.obtainedAt,
-        height: pokemon.height,
-        weight: pokemon.weight,
+        height: typeof pokemon.height === 'number' ? pokemon.height : Number(getPokemonPhysicalHeight(pokemon).toFixed(1)),
+        weight: typeof pokemon.weight === 'number' ? pokemon.weight : Number(getPokemonPhysicalWeight(pokemon).toFixed(1)),
         displayValue: evalRes.displayValue,
         player_class: gameStore.state.playerClass || 'entrenador',
         trainer_level: gameStore.state.trainerLevel || 1,

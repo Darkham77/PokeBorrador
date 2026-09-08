@@ -105,6 +105,16 @@ export async function processBattleRewardsPhase(ctx: BattleContext, win: boolean
     await handleStolenResources(ctx, active, uiStore)
     await handleFieldPassiveRewards(ctx, active, uiStore)
     handleHatchTimers(active)
+
+    if (active.isCapture && active.capturedPokemon) {
+      try {
+        const { useEventStore } = await import('@/stores/events')
+        const eventStore = useEventStore()
+        await eventStore.checkCaptureAndPrompt(active.capturedPokemon)
+      } catch (err) {
+        console.error('Failed to check event auto enrollment on capture:', err)
+      }
+    }
   }
 
   if (ctx.activeBattle.value !== active || hasExitedBattle(ctx)) return

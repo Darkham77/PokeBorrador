@@ -1,23 +1,189 @@
 <script setup lang="ts">
-
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useGTSStore } from '@/stores/gts'
+import { useGameStore } from '@/stores/game'
+import { useAudioStore } from '@/stores/audio'
 import { formatCurrency } from '@/logic/utils/formatters'
 import PokemonSelectionItem from '@/components/modals/PokemonSelectionItem.vue'
 import { formatDisplayDate } from '@/logic/utils/timeUtils'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useUIStore } from '@/stores/ui'
 import { getItemById } from '@/data/inventory/items'
+import type { MarketListingType } from '@/logic/economy/market'
+import type { ClaimItem } from '@/types/system/game'
 
 import { getPokemonTotalPower } from '@/logic/pokemon/pokemonSelectionFilter.ts'
 
 const gtsStore = useGTSStore()
+const gameStore = useGameStore()
+const audioStore = useAudioStore()
 const uiStore = useUIStore()
 
 const activeListings = computed(() => gtsStore.activeMyListings)
 const history = computed(() => gtsStore.salesHistory)
+const allPendingGtsClaims = computed(() => gtsStore.allPendingGtsClaims)
+const unclaimedCount = computed(() => gtsStore.unclaimedGtsCount)
 
-function handleCancel(listingId: string) {
+const isClaimingId = ref<string | number | null>(null)
+const isClaimingAll = ref(false)
+
+const claimsBySaleId = computed(() => {
+  const map = new Map<string, ClaimItem>() // runtime-map: Fast O(1) keyed lookup dictionary
+  for (const claim of allPendingGtsClaims.value) {
+    if (claim.source_id) {
+      map.set(String(claim.source_id), claim)
+    }
+    map.set(String(claim.id), claim)
+  }
+  return map
+})
+
+function getClaimForSale(saleId: string | number): ClaimItem | undefined { // domain-ok: Dynamic UI lookup returning found element or undefined
+  return claimsBySaleId.value.get(String(saleId))
+}
+
+function isPurchaseRow(sale: MarketHistoryRow): boolean {
+  const claim = getClaimForSale(sale.id)
+  if (claim && claim.asset_data?.type !== 'money') return true
+  return sale.status === 'purchased'
+}
+
+interface MarketHistoryRow {
+  id: string | number
+  seller_id: string
+  seller_name?: string
+  listing_type: MarketListingType
+  data: unknown
+  price: number
+  status: string
+  created_at: string
+}
+
+function getSaleAmount(sale: MarketHistoryRow): number {
+  const claim = getClaimForSale(sale.id)
+  if (claim && typeof claim.asset_data?.data === 'number') {
+    return claim.asset_data.data
+  }
+  return Math.floor(sale.price * (1 - gtsStore.MARKET_FEE))
+}
+
+const displayHistory = computed<MarketHistoryRow[]>(() => {
+  const list: MarketHistoryRow[] = [...history.value]
+  const matchedClaimIds = new Set<string | number>()
+
+  for (const sale of list) {
+    const claim = getClaimForSale(sale.id)
+    if (claim) {
+      matchedClaimIds.add(claim.id)
+    }
+  }
+
+  for (const claim of allPendingGtsClaims.value) {
+    if (!matchedClaimIds.has(claim.id)) {
+      const isMoney = claim.asset_data?.type === 'money'
+      if (isMoney) {
+        const soldItem = claim.asset_data?.sold_item
+        const soldPoke = claim.asset_data?.sold_pokemon
+        const listingType: MarketListingType = soldPoke ? 'pokemon' : 'item'
+        const data = soldPoke || soldItem || { name: 'Venta GTS' }
+        const amount = typeof claim.asset_data?.data === 'number' ? claim.asset_data.data : 0
+        const item: MarketHistoryRow = {
+          id: claim.source_id || claim.id,
+          seller_id: (claim as { user_id?: string }).user_id || '',
+          seller_name: '',
+          listing_type: listingType,
+          data,
+          price: Math.round(amount / (1 - gtsStore.MARKET_FEE)),
+          status: 'sold',
+          created_at: claim.created_at || Temporal.Now.instant().toString()
+        }
+        list.unshift(item)
+      } else {
+        const isPokemon = claim.asset_data?.type === 'pokemon'
+        const listingType: MarketListingType = isPokemon ? 'pokemon' : 'item'
+        const data = claim.asset_data?.data || { name: isPokemon ? 'Pokémon' : 'Objeto' }
+        const item: MarketHistoryRow = {
+          id: claim.source_id || claim.id,
+          seller_id: (claim as { user_id?: string }).user_id || '',
+          seller_name: '',
+          listing_type: listingType,
+          data,
+          price: 0,
+          status: 'purchased',
+          created_at: claim.created_at || Temporal.Now.instant().toString()
+        }
+        list.unshift(item)
+      }
+    }
+  }
+
+  return list
+})
+
+async function handleClaimSale(claim: ClaimItem, saleName: string) {
+  if (isClaimingId.value) return
+  isClaimingId.value = claim.id
+  try {
+    const isMoney = claim.asset_data?.type === 'money'
+    const amount = typeof claim.asset_data?.data === 'number' ? claim.asset_data.data : 0
+    const success = await gameStore.claimAsset(claim.id)
+    if (success) {
+      if (isMoney) {
+        audioStore.play('money')
+        uiStore.notify(`¡Has cobrado ₽${formatCurrency(amount)} por la venta de ${saleName}!`, '💰')
+      } else {
+        audioStore.play('level_up')
+        uiStore.notify(`¡Has retirado ${saleName} de tus compras en GTS!`, '🎁')
+      }
+      await gtsStore.fetchUserData()
+    }
+  } finally {
+    isClaimingId.value = null
+  }
+}
+
+async function handleClaimAll() {
+  if (isClaimingAll.value) return
+  isClaimingAll.value = true
+  try {
+    const claimsToProcess = [...allPendingGtsClaims.value]
+    let totalCollected = 0
+    let assetsCount = 0
+    for (const claim of claimsToProcess) {
+      const isMoney = claim.asset_data?.type === 'money'
+      const amount = typeof claim.asset_data?.data === 'number' ? claim.asset_data.data : 0
+      const success = await gameStore.claimAsset(claim.id)
+      if (success) {
+        if (isMoney) {
+          totalCollected += amount
+        } else {
+          assetsCount++
+        }
+      }
+    }
+    if (totalCollected > 0 || assetsCount > 0) {
+      audioStore.play('money')
+      let msg = '¡Reclamos procesados con éxito!'
+      if (totalCollected > 0 && assetsCount > 0) {
+        msg = `¡Has cobrado ₽${formatCurrency(totalCollected)} y retirado ${assetsCount} compra(s) de GTS!`
+      } else if (totalCollected > 0) {
+        msg = `¡Has cobrado un total de ₽${formatCurrency(totalCollected)} de tus ventas!`
+      } else {
+        msg = `¡Has retirado ${assetsCount} compra(s) de GTS!`
+      }
+      uiStore.notify(msg, '💰')
+      await gtsStore.fetchUserData()
+    }
+  } finally {
+    isClaimingAll.value = false
+  }
+}
+
+onMounted(() => {
+  void gtsStore.fetchUserData()
+})
+
+function handleCancel(listingId: string | number) {
   console.debug('[GTS] UI: handleCancel disparado para ID:', listingId)
   uiStore.openConfirm({
     title: '¿CANCELAR PUBLICACIÓN?',
@@ -36,12 +202,63 @@ function handleCancel(listingId: string) {
   })
 }
 
+function parseSaleData(data: unknown): Record<string, unknown> {
+  if (!data) return {}
+  if (typeof data === 'string') {
+    try {
+      return JSON.parse(data) as Record<string, unknown> // open-record: Generic key-value data dictionary container
+    } catch {
+      return {}
+    }
+  }
+  return typeof data === 'object' ? (data as Record<string, unknown>) : {} // open-record: Generic key-value data dictionary container
+}
+
+function getSoldItemName(sale: MarketHistoryRow): string {
+  const data = parseSaleData(sale.data)
+  if (sale.listing_type === 'pokemon') {
+    const pokeName = (data.name as string) || (data.species as string) || 'Pokémon'
+    const isShiny = Boolean(data.shiny || data.isShiny)
+    const level = data.level ? ` (Nv. ${data.level})` : ''
+    return `${pokeName}${level}${isShiny ? ' ✨' : ''}`
+  }
+  const itemName = (data.name as string) || 'Objeto'
+  const found = getItemById(itemName)
+  const qty = typeof data.qty === 'number' && data.qty > 1 ? ` x${data.qty}` : ''
+  return `${found?.name || itemName}${qty}`
+}
+
+function getSaleVisual(sale: MarketHistoryRow): {
+  type: MarketListingType
+  url: string
+  fallbackUrl: string
+} {
+  const data = parseSaleData(sale.data)
+  if (sale.listing_type === 'pokemon') {
+    const species = (data.id as string) || (data.species as string) || (data.name as string) || 'pikachu'
+    const isShiny = Boolean(data.shiny || data.isShiny)
+    return {
+      type: 'pokemon',
+      url: getAssetUrl(ASSET_TYPES.POKEMON, species, { isShiny }),
+      fallbackUrl: getAssetUrl(ASSET_TYPES.POKEMON, 'pikachu')
+    }
+  }
+  const rawName = (data.name as string) || 'potion'
+  const found = getItemById(rawName)
+  const spriteId = found?.sprite || found?.id || rawName
+  return {
+    type: 'item',
+    url: getAssetUrl(ASSET_TYPES.ITEM, spriteId),
+    fallbackUrl: getAssetUrl(ASSET_TYPES.ITEM, 'potion')
+  }
+}
+
 // formatTime is now centralized in timeUtils.ts as formatDisplayDate
 const formatTime = formatDisplayDate
 </script>
 
 <template>
-  <div class="market-my-items">
+  <div class="market-my-items custom-scrollbar">
     <section class="listings-section">
       <h3 class="mkt-section-title">
         PUBLICACIONES ACTIVAS ({{ activeListings.length }}/{{ gtsStore.MAX_LISTINGS }})
@@ -116,15 +333,33 @@ const formatTime = formatDisplayDate
     </section>
 
     <section class="history-section">
-      <h3 class="mkt-section-title">
-        HISTORIAL DE VENTAS
-      </h3>
+      <div class="mkt-section-header">
+        <div class="title-with-badge">
+          <h3 class="mkt-section-title">
+            HISTORIAL DE TRANSACCIONES
+          </h3>
+          <span
+            v-if="unclaimedCount > 0"
+            class="hud-notification-badge text-outline inline-badge"
+          >
+            {{ unclaimedCount }}
+          </span>
+        </div>
+        <button
+          v-if="unclaimedCount > 1"
+          class="btn-vicio-success btn-vicio-sm"
+          :disabled="isClaimingAll"
+          @click.stop="handleClaimAll"
+        >
+          {{ isClaimingAll ? '...COBRANDO' : `RECLAMAR TODO (${unclaimedCount})` }}
+        </button>
+      </div>
       
       <div
-        v-if="history.length === 0"
+        v-if="displayHistory.length === 0"
         class="empty-state"
       >
-        <p>No hay ventas registradas recientemente.</p>
+        <p>No hay transacciones registradas recientemente.</p>
       </div>
 
       <div
@@ -132,17 +367,62 @@ const formatTime = formatDisplayDate
         class="history-list custom-scrollbar"
       >
         <div
-          v-for="sale in history"
+          v-for="sale in displayHistory"
           :key="sale.id"
           class="history-row"
+          :class="{ 'is-unclaimed': Boolean(getClaimForSale(sale.id)) }"
         >
-          <div class="sale-info">
-            <span class="date">{{ formatTime(sale.created_at) }}</span>
-            <span class="item-name">Vendido: <strong>{{ getItemById(sale.data.name || '')?.name || sale.data.name }}</strong></span>
+          <div class="sale-main">
+            <div class="sale-visual">
+              <img
+                :src="getSaleVisual(sale).url"
+                class="sale-sprite pixelated"
+                :class="getSaleVisual(sale).type"
+                @error="(e: Event) => (e.target as HTMLImageElement).src = getSaleVisual(sale).fallbackUrl"
+              >
+            </div>
+            <div class="sale-info">
+              <div class="item-title-row">
+                <span class="item-name">{{ getSoldItemName(sale) }}</span>
+                <span 
+                  class="sale-badge"
+                  :class="{
+                    'badge-pending': Boolean(getClaimForSale(sale.id)),
+                    'badge-purchase': isPurchaseRow(sale)
+                  }"
+                >
+                  {{ getClaimForSale(sale.id) ? (isPurchaseRow(sale) ? 'COMPRA PENDIENTE' : 'SIN RECLAMAR') : (isPurchaseRow(sale) ? 'COMPRADO' : 'VENDIDO') }}
+                </span>
+              </div>
+              <div class="sale-meta">
+                <span class="date">{{ formatTime(sale.created_at) }}</span>
+              </div>
+            </div>
           </div>
           <div class="sale-value">
-            <span class="net-gain">+ ₽{{ formatCurrency(sale.price * (1 - gtsStore.MARKET_FEE)) }}</span>
-            <span class="gross-price">PVP: ₽{{ formatCurrency(sale.price) }}</span>
+            <span
+              v-if="!isPurchaseRow(sale)"
+              class="net-gain"
+            >+ ₽{{ formatCurrency(getSaleAmount(sale)) }}</span>
+            <span
+              v-else
+              class="net-gain asset-gain"
+            >ACTIVO</span>
+            <button
+              v-if="getClaimForSale(sale.id)"
+              :id="`market-claim-sale-btn-${sale.id}`"
+              class="btn-vicio-success btn-vicio-sm claim-btn"
+              :disabled="isClaimingId === getClaimForSale(sale.id)!.id"
+              @click.stop="handleClaimSale(getClaimForSale(sale.id)!, getSoldItemName(sale))"
+            >
+              {{ isClaimingId === getClaimForSale(sale.id)!.id ? '...' : 'RECLAMAR' }}
+            </button>
+            <span
+              v-else
+              class="claimed-badge"
+            >
+              {{ isPurchaseRow(sale) ? 'RETIRADO' : 'RECLAMADO' }}
+            </span>
           </div>
         </div>
       </div>
@@ -150,186 +430,5 @@ const formatTime = formatDisplayDate
   </div>
 </template>
 
-<style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
-.market-my-items {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-}
+<style scoped src="./MarketMyItems.styles.scss" lang="scss"></style>
 
-.mkt-section-title {
-  @include pixelated;
-  font-size: 8px;
-  color: Rgba(56, 189, 248, 1);
-  margin: 20px;
-  margin-bottom: 0;
-  letter-spacing: 1px;
-}
-
-.listings-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.my-listings-grid-unified {
-  @include shop-grid-wrapper-unified;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  grid-auto-rows: min-content;
-  align-items: start;
-  gap: 20px;
-}
-
-.my-listing-item-wrapper {
-  @include shop-item-card($yellow);
-  padding: 0;
-  gap: 0;
-  position: relative;
-  overflow: visible !important;
-
-  .listing-card-override {
-    background: transparent !important;
-    padding: 15px !important;
-    pointer-events: auto;
-    box-shadow: none !important;
-    width: 100%;
-    cursor: pointer;
-
-    :deep(.list-item) {
-      transform: none !important;
-      border: none !important;
-      box-shadow: none !important;
-      background: transparent !important;
-
-      &:hover {
-        transform: none !important;
-        border: none !important;
-        box-shadow: none !important;
-        background: transparent !important;
-      }
-    }
-  }
-
-  .listing-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px;
-    padding-top: 10px;
-    background: Rgba(0, 0, 0, 0.3);
-    border-top: 1px dashed Rgba(255, 255, 255, 0.1);
-    border-bottom-left-radius: inherit;
-    border-bottom-right-radius: inherit;
-
-    .price-tag {
-      @include pixelated;
-      font-size: 16px;
-      color: $coin-gold;
-    }
-  }
-}
-
-.my-listing-item-card {
-  padding: 15px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 15px;
-  width: 100%;
-  box-sizing: border-box;
-
-  .card-visual {
-    width: 48px;
-    height: 48px;
-    background: Rgba(0, 0, 0, 0.2);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    .i-sprite { width: 36px; height: 36px; object-fit: contain; }
-  }
-
-  .card-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    .name {
-      @include pixelated;
-      font-size: 9px;
-      font-weight: bold;
-      color: var(--white);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 4px;
-      line-height: 1.5;
-      padding-top: 2px;
-    }
-    .i-meta {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      .qty { @include pixelated; font-size: 8px; color: $muted; }
-      .price { @include pixelated; font-size: 11px; color: $coin-gold; }
-    }
-  }
-}
-
-.history-list {
-  background: Rgba(0, 0, 0, 0.15);
-  border-radius: 16px;
-  max-height: 250px;
-  overflow-y: auto;
-  min-height: 0;
-}
-
-.history-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 20px;
-  border-bottom: 1px solid Rgba(255, 255, 255, 0.05);
-  &:last-child { border-bottom: none; }
-
-  .sale-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    .date { font-size: 10px; color: $muted; }
-    .item-name {
-      @include pixelated;
-      font-size: 9px;
-      color: var(--white);
-      line-height: 1.5;
-      padding-top: 2px;
-      strong { color: Rgba(56, 189, 248, 1); }
-    }
-  }
-
-  .sale-value {
-    text-align: right;
-    display: flex;
-    flex-direction: column;
-    .net-gain { font-size: 14px; font-weight: bold; color: Rgba(34, 197, 94, 1); }
-    .gross-price { font-size: 9px; color: $muted; }
-  }
-}
-
-.empty-state {
-  padding: 30px;
-  text-align: center;
-  color: $muted;
-  font-size: 12px;
-  background: Rgba(255, 255, 255, 0.01);
-  border-radius: 12px;
-  border: 1px dashed Rgba(255, 255, 255, 0.05);
-}
-
-</style>

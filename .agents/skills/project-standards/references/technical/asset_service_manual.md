@@ -16,14 +16,21 @@ const url = getAssetUrl(ASSET_TYPES.POKEMON, 'pikachu', { isShiny: false });
 
 | Type | Source | Description |
 | :--- | :--- | :--- |
-| `POKEMON` | Local (WebP) | (Formerly PokeAPI) Resolves to local sprites in `/assets/sprites/pokemon/`. Supports `isShiny` and `isBack`. |
+| `POKEMON` | Local (WebP) | Resolves to local sprites in `/assets/sprites/pokemon/`. Supports `isShiny`, `isBack`, `isAnimated`. |
 | `ITEM` | Local (WebP) | Resolves to `/assets/sprites/crafting/tier[0-3]/` structured by `craftingTier`. |
-| `MAP` | Local (WebP) | Resolves map IDs to `/assets/maps/`. |
-| `TRAINER` | Local (WebP) | (Formerly Showdown) Resolves all trainer IDs (Leaders & Generic) to `/assets/sprites/trainers/`. |
-| `BANNER` | Local (WebP) | Route banners in `/assets/ui/banners/`. |
-| `BATTLE_BG` | Local (WebP) | Battle backgrounds in `/assets/sprites/battle/`. |
+| `MAP` | Local (WebP) | Resolves map IDs to `/assets/maps/`. Supports day cycle suffixes and low power mode. |
+| `TRAINER` | Local (WebP) | Resolves trainer/NPC IDs to `/assets/sprites/trainers/` or `/assets/sprites/npc/`. |
+| `BANNER` | Local (WebP) | Route banners in `/assets/ui/banners/`, event banners in `/assets/ui/events/`, Pokécenter in `/assets/ui/pokecenter/`. |
+| `BATTLE_BG` | Local (WebP) | Battle backgrounds in `/assets/maps_battle/`. |
 | `UI` | Local (WebP) | General UI assets in `/assets/ui/`. |
+| `VFX` | Local (WebP) | Visual effects in `/assets/ui/`. |
+| `ATLAS` | Local (WebP) | Atlas sprite graphics in `/assets/ui/`. |
 | `FACTION` | Local (WebP) | Faction icons in `/assets/factions/`. |
+| `RANK` | Local (WebP) | Ranked tier medals in `/assets/sprites/ranked_medals/` (`bronce`, `plata`, `oro`, `platino`, `diamante`, `maestro`). |
+| `ICON` | Local (WebP) | UI icons in `/assets/ui/icons/`. |
+| `ENVIRONMENT` | Local (WebP) | Environment props in `/assets/environment/`. |
+| `FX` | Local (WebP) | Battle FX textures in `/assets/fx/`. |
+| `DATA` | Local (JSON) | Asset data files in `/assets/data/`. |
 | `BADGE` | Local (WebP) | Kanto gym badges in `/assets/sprites/badges/`. |
 
 ## Implementation Guidelines
@@ -114,7 +121,10 @@ _raw-assets/
 
 - **Individual Files**: All assets (Banners, Backgrounds, Sprites, Icons) must be stored as individual WebP files.
 - **Batched Sprites**: For animations, use CSS sprites or sequential WebP loading. The project no longer uses JSON atlases.
-- **Event Banners Timeless Design Mandate**: All event banners and promotional artwork stored under `_raw-assets/public/assets/ui/events/` and resolved through `ASSET_TYPES.UI` MUST NEVER contain hardcoded calendar dates, years (e.g., 2024, 2026), hours, or physical location strings burned into the image pixels. Event scheduling and active timeframes must be rendered dynamically by Vue components overlaying the clean artwork.
+- **Event Banners Timeless Design & Spanish Typography Mandate**: All event banners and promotional artwork stored under `_raw-assets/public/assets/ui/events/` and resolved through `ASSET_TYPES.UI` or `ASSET_TYPES.BANNER`:
+  1. **Strict Spanish Typography**: Any burned-in typography, stadium banners, logos, or slogans MUST be strictly and exclusively in Spanish (e.g. `"TORNEO FRONTERA JOHTO-KANTO"`). English text burned into graphic pixels is strictly forbidden.
+  2. **Zero Hardcoded Dates**: Images MUST NEVER contain calendar dates, years (e.g. 2024, 2026), days, timeslots, fixed hours, or aspect ratio watermarks. Scheduling and countdowns are rendered dynamically by Vue overlay components.
+  3. **Species Whitelist**: All featured Pokémon must strictly belong to `ENABLED_POKEMON_IDS` (Kanto #001-#151, 8 baby Pokémon, Castform variants). Detailed standards are governed in [Event System Manual](../systems/event_system_manual.md).
 
 #### Execution & Pipeline Commands
 

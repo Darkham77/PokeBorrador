@@ -224,7 +224,7 @@ export function isNewEntryBetter(
   existingData: unknown,
   newData: unknown,
   sortBy: string = 'data.score',
-  order: 'max' | 'min' = 'max'
+  order: ResolvedSubCompetitionOrder = 'max'
 ): boolean {
   if (!existingData) return true;
   
@@ -432,7 +432,7 @@ export interface ResolvedAwardCategory {
  * Resolves the concrete category, title, and icon for an event award.
  * Inquires explicit award metadata, prize payloads, prize item match, and winner podio.
  */
-export function resolveAwardCategory(
+export function resolveAwardCategory( // result-ok: Operation result wrapper payload
   award: PendingAward,
   event?: Event | null,
   winners?: PastCompetitionWinner[]

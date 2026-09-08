@@ -64,11 +64,29 @@ interface ExtendedConfig extends EventConfig {
   weeklyRotations?: Record<string, WeeklyRotationEntry>
 }
 
+const eventConfigCache = new WeakMap<GameEvent, ExtendedConfig>()
+
+function getParsedEventConfig(event: GameEvent | null): ExtendedConfig {
+  if (!event) return {}
+  let cached = eventConfigCache.get(event)
+  if (!cached) {
+    if (typeof event.config === 'string') {
+      try {
+        cached = JSON.parse(event.config) as ExtendedConfig
+      } catch {
+        cached = {}
+      }
+    } else {
+      cached = (event.config || {}) as ExtendedConfig
+    }
+    eventConfigCache.set(event, cached)
+  }
+  return cached
+}
+
 function getEventBannerUrl(event: GameEvent | null): string {
   if (!event) return getAssetUrl(ASSET_TYPES.BANNER, 'war_full')
-  const cfg = (typeof event.config === 'string'
-    ? (() => { try { return JSON.parse(event.config) as ExtendedConfig } catch { return {} } })()
-    : (event.config || {})) as ExtendedConfig
+  const cfg = getParsedEventConfig(event)
   const rotation = resolveWeeklyRotation(cfg, getGMT3Date())
   const bannerKey = rotation?.banner || cfg.banner || event.id
   return getAssetUrl(ASSET_TYPES.BANNER, String(bannerKey))
@@ -76,9 +94,7 @@ function getEventBannerUrl(event: GameEvent | null): string {
 
 function getEventTooltipTitle(event: GameEvent | null, idx?: number, total?: number): string {
   if (!event) return 'Sin eventos activos'
-  const cfg = (typeof event.config === 'string'
-    ? (() => { try { return JSON.parse(event.config) as ExtendedConfig } catch { return {} } })()
-    : (event.config || {})) as ExtendedConfig
+  const cfg = getParsedEventConfig(event)
   const rotation = resolveWeeklyRotation(cfg, getGMT3Date())
   const effectiveName = rotation?.title || event.name
   const suffix = total && total > 1 && idx !== undefined ? ` (${idx + 1}/${total})` : ''

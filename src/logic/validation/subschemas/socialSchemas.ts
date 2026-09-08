@@ -110,7 +110,16 @@ export const claimItemSchema = object({
   type: optional(union([literal('pokemon'), literal('item'), literal('currency')])),
   asset_data: object({
     type: union([literal('pokemon'), literal('item'), literal('money'), literal('currency')]),
-    data: unknown()
+    data: unknown(),
+    sold_item: optional(object({
+      name: optional(string()),
+      qty: optional(number())
+    })),
+    sold_pokemon: optional(object({
+      name: optional(string()),
+      level: optional(number()),
+      isShiny: optional(boolean())
+    }))
   }),
   source_type: string(),
   source_id: string(),

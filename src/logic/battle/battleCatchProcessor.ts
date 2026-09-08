@@ -1,4 +1,4 @@
-import { toRaw } from 'vue'
+import { cloneReactive } from '@/logic/utils/cloneUtils.ts'
 import { awaitAnimation } from '@/logic/utils/gsapHelpers'
 import gsap from 'gsap'
 import { calculateCatchRate } from './battleEngine.ts'
@@ -26,22 +26,14 @@ export function cleanCapturedPokemonForStorage(
   initialEnemy: Pokemon | null | undefined,
   ballId: ItemId
 ): Pokemon {
-  let capturedPoke: Pokemon
+  const capturedPoke: Pokemon = initialEnemy
+    ? (cloneReactive(initialEnemy) as Pokemon)
+    : (cloneReactive(enemy) as Pokemon)
+
   if (initialEnemy) {
-    try {
-      capturedPoke = structuredClone(toRaw(initialEnemy)) as Pokemon
-    } catch {
-      capturedPoke = JSON.parse(JSON.stringify(initialEnemy)) as Pokemon
-    }
     const currentHpRatio = enemy.maxHp > 0 ? enemy.hp / enemy.maxHp : 1
     capturedPoke.hp = Math.max(1, Math.round(capturedPoke.maxHp * currentHpRatio))
     capturedPoke.status = enemy.status
-  } else {
-    try {
-      capturedPoke = structuredClone(toRaw(enemy)) as Pokemon
-    } catch {
-      capturedPoke = JSON.parse(JSON.stringify(enemy)) as Pokemon
-    }
   }
 
   capturedPoke.volatileCounters = {}

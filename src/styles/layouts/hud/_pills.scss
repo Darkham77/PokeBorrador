@@ -208,6 +208,7 @@
   color: white !important;
   border: none !important;
   @include pixelated;
+  @include text-outline(var(--black, #000), 1px);
   font-size: 7px !important;
   padding: 4px 6px !important;
   border-radius: 8px !important;
@@ -217,4 +218,24 @@
   min-width: unset !important;
   display: inline-block !important;
   z-index: var(--z-map-spawns) !important;
+
+  &.green,
+  &.is-active {
+    background: #22c55e !important;
+    box-shadow: 0 2px 8px Rgba(34, 197, 94, 0.4) !important;
+    color: white !important;
+  }
+
+  &.gray,
+  &.is-inactive {
+    background: #475569 !important;
+    box-shadow: none !important;
+    color: #e2e8f0 !important;
+  }
+
+  &.orange {
+    background: #f59e0b !important;
+    box-shadow: 0 2px 8px Rgba(245, 158, 11, 0.4) !important;
+    color: #1e293b !important;
+  }
 }

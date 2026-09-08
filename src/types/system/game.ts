@@ -7,8 +7,8 @@ import type { MapRouteId } from '@/data/world/map-assets';
 import type { PlayerClassId } from '@/data/player/playerClasses';
 import type { ItemId } from '@/data/inventory/items';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { RankedSeasonMedal, PersonalPvPMatchSummary } from '@/types/battle/pvp';
 import type { MarketAssetType } from '@/logic/economy/market';
-import type { RankedSeasonMedal } from '@/types/battle/pvp';
 
 export const TOOL_QUALITY_TIERS = ['standard', 'good', 'super'] as const;
 export type ToolQualityTier = (typeof TOOL_QUALITY_TIERS)[number];
@@ -49,6 +49,8 @@ export interface ClaimItem {
   asset_data: {
     type: MarketAssetType;
     data: unknown; // open-record: Generic key-value data dictionary container
+    sold_item?: { name?: string; qty?: number };
+    sold_pokemon?: { name?: string; level?: number; isShiny?: boolean };
   };
   source_type: string; // domain-ok: Open dynamic text or non-domain string payload
   source_id: string; // domain-ok: Open dynamic text or non-domain string payload
@@ -221,6 +223,9 @@ export interface GameState {
   claimQueue: ClaimItem[];
   pvpTeam: string[]; // domain-ok: Open dynamic text or non-domain string payload
   pvpTeam6: string[]; // domain-ok: Open dynamic text or non-domain string payload
+  pvpMatchHistory?: PersonalPvPMatchSummary[];
+  lastResolvedSeasonId?: string; // domain-ok: Open dynamic text or non-domain string payload
+  dailyGymRematches?: Partial<Record<GymId, string>>;
   warTeam: string[]; // domain-ok: Open dynamic text or non-domain string payload
   warSlots: number;
   isOverlayLoading?: boolean;

@@ -203,9 +203,6 @@
         text-transform: uppercase;
       }
 
-      .pdc-gender-badge {
-        @include badge-gender(18px);
-      }
     }
 
     .pdc-types {

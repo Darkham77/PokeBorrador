@@ -16,6 +16,7 @@ Frontend Developers / Systems Engineers.
 - **Egg Data Contract Parity in Saves**: In `game_saves.save_data.eggs` (`PokemonEgg`), `id` represents the canonical `PokemonSpeciesId` (e.g. `'charmander'`, `'togepi'`), while `uid` represents the unique instance identifier. Migrations must NEVER overwrite `egg.id` with opaque tokens like `'egg_...'`.
 - **JSONB Operator Safety in Migrations**: Never use `->` or `->>` on un-coerced table columns without verifying they are defined as `JSONB`. Always include `ALTER COLUMN ... TYPE JSONB USING ...` or coerce explicitly `(col)::jsonb` in PL/pgSQL functions.
 - **RPC Grant Execution Requirements**: All PostgreSQL migrations introducing or updating stored procedures MUST include matching `GRANT EXECUTE ON FUNCTION ... TO authenticated, anon, service_role;` and `ALTER FUNCTION ... SET search_path = public, pg_catalog;`.
+- **Escrow & Pending Transaction Normalization**: Any data sanitization or Dex normalization migration targeting Pokémon entities MUST include companion queries for `claim_queue` (`asset_data`), `market_listings` (`data`), and `trade_offers` (`offer_pokemon`, `request_pokemon`) alongside `game_saves`.
 - Follow standard repository modularity guidelines.
 
 ## Work Guidance

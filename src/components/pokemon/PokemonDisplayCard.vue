@@ -3,6 +3,7 @@ import { ref, inject, computed, type ComputedRef } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
+import PVGenderBadge from '@/components/common/PVGenderBadge.vue'
 import { useUIStore } from '@/stores/ui'
 import { useElementVisibility } from '@/composables/ui/useElementVisibility'
 
@@ -134,17 +135,7 @@ const cardClasses = computed(() => {
   return classes
 })
 
-function renderGenderSymbol(gender: string) {
-  if (gender === 'm') return '♂'
-  if (gender === 'f') return '♀'
-  return ''
-}
 
-function getGenderClass(gender: string) {
-  if (gender === 'm') return 'gender-male'
-  if (gender === 'f') return 'gender-female'
-  return 'gender-none'
-}
 </script>
 
 <template>
@@ -277,12 +268,11 @@ function getGenderClass(gender: string) {
             class="pdc-species-subtitle"
           >{{ pokemon.name }}</span>
         </div>
-        <div
+        <PVGenderBadge
           v-if="pokemon.gender"
-          :class="['pdc-gender-badge', 'emoji', getGenderClass(pokemon.gender)]"
-        >
-          {{ renderGenderSymbol(pokemon.gender) }}
-        </div>
+          :gender="pokemon.gender"
+          size="md"
+        />
       </div>
 
       <!-- Types Pills -->

@@ -182,7 +182,7 @@ export async function upgradeBackup(): Promise<string> {
   // 4. Auditar y legalizar automáticamente todos los Pokémon de las cuentas
   const { repairAccountsInSqlite } = await import('../maintenance/repair_account_legality.ts');
   console.log(styleText('cyan', '⚖️ Auditando y legalizando Pokémon en las cuentas...'));
-  repairAccountsInSqlite({ dbInstance: db, all: true, silent: true });
+  repairAccountsInSqlite({ dbInstance: db, all: true, silent: false });
 
   // 5. Extraer todas las tablas actualizadas desde SQLite (migradas 100% vía SQL canónico)
   const upgradedBackupData: Record<string, unknown[]> = {};

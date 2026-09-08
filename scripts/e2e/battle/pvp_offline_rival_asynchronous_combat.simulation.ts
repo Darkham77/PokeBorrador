@@ -4,6 +4,7 @@ import { awaitBattleReadyForInput, clickResilient } from '../e2e_helpers.ts';
 
 const SIM_OFFLINE_RIVAL_INITIAL_ELO = 1700 as const;
 const SIM_LOW_HP_VALUE = 10 as const;
+const SIM_OFFLINE_RIVAL_ID = '3a111111-1111-4111-8111-111111111111' as const;
 
 class PvpOfflineRivalSimWrapper extends BaseBattleSimulation {
   constructor(page: Page, username: string) {
@@ -11,7 +12,20 @@ class PvpOfflineRivalSimWrapper extends BaseBattleSimulation {
   }
 
   public async setupAsynchronousBattle(): Promise<void> {
-    await this.page.evaluate(async ({ initialElo, lowHp }) => {
+    if (this.driver === 'postgres') {
+      await this.queryTestDb(`
+        INSERT INTO auth.users (id, email, created_at)
+        VALUES ($1, 'rival_blue@test.local', NOW())
+        ON CONFLICT (id) DO NOTHING;
+      `, [SIM_OFFLINE_RIVAL_ID]);
+      await this.queryTestDb(`
+        INSERT INTO public.profiles (id, username, elo_rating, created_at)
+        VALUES ($1, 'Offline Rival Blue', 1500, NOW())
+        ON CONFLICT (id) DO NOTHING;
+      `, [SIM_OFFLINE_RIVAL_ID]);
+    }
+
+    await this.page.evaluate(async ({ initialElo, lowHp, rivalId }) => {
       const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const { useLivePvPStore } = await import('../../../src/stores/livePvP.ts');
@@ -38,7 +52,14 @@ class PvpOfflineRivalSimWrapper extends BaseBattleSimulation {
 
       livePvPStore.battleState.active = true;
       livePvPStore.battleState.isRanked = true;
-      livePvPStore.battleState.opponentId = 'sim-offline-rival-id';
+      livePvPStore.battleState.opponentId = rivalId;
+      livePvPStore.battleState.config = {
+        format: '3v3',
+        levelRule: 'flat50',
+        arena: { gymId: 'celadon' },
+        mode: 'ranked',
+        isAsynchronous: true
+      };
 
       await battleStore.startBattle(rivalGengar, {
         isPvP: true,
@@ -53,7 +74,7 @@ class PvpOfflineRivalSimWrapper extends BaseBattleSimulation {
         trainerSprite: 'blue',
         locationId: 'gym'
       });
-    }, { initialElo: SIM_OFFLINE_RIVAL_INITIAL_ELO, lowHp: SIM_LOW_HP_VALUE });
+    }, { initialElo: SIM_OFFLINE_RIVAL_INITIAL_ELO, lowHp: SIM_LOW_HP_VALUE, rivalId: SIM_OFFLINE_RIVAL_ID });
     await awaitBattleReadyForInput(this.page);
   }
 }
@@ -76,23 +97,23 @@ test.describe('PvP Offline Rival Asynchronous Combat Simulation', () => {
     await clickResilient(move0);
 
     // 3. Conclude battle and verify passive report recording
-    const reportRecorded = await page.evaluate(async () => {
+    const reportRecorded = await page.evaluate(async ({ rivalId }) => {
       const { useLivePvPStore } = await import('../../../src/stores/livePvP.ts');
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const livePvPStore = useLivePvPStore();
       const gameStore = useGameStore();
 
-      livePvPStore.endBattle(true, '¡Victoria sobre el rival asíncrono!');
+      await livePvPStore.endBattle(true, '¡Victoria sobre el rival asíncrono!');
 
       if (gameStore.db) {
         const { data } = await gameStore.db
           .from('passive_battle_reports')
           .select('*')
-          .eq('opponent_id', 'sim-offline-rival-id') as { data: unknown[] | null };
+          .eq('user_id', rivalId) as { data: unknown[] | null };
         return Boolean(data && data.length > 0);
       }
       return true;
-    });
+    }, { rivalId: SIM_OFFLINE_RIVAL_ID });
 
     expect(reportRecorded).toBe(true);
   });

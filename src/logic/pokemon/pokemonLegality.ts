@@ -121,6 +121,18 @@ export function repairPokemonLegality(p: Pokemon): PokemonRepairReport {
   if (!speciesData) return { repaired: false, changes }
 
   // 1. Repair Species Name (sync if not a custom nickname)
+  if (!p.species) {
+    p.species = p.id
+    changes.push(`Campo species asignado a "${p.id}"`)
+  }
+  if (p.status === null || p.status === undefined) {
+    p.status = ''
+    changes.push('Estado alterado normalizado a ""')
+  }
+  if (p.expNeeded === undefined || p.expNeeded === null || isNaN(p.expNeeded) || p.expNeeded <= 0) {
+    p.expNeeded = 100
+    changes.push('expNeeded normalizado a 100')
+  }
   if (!p.nickname && p.name !== speciesData.name) {
     p.name = speciesData.name
     changes.push(`Nombre de especie sincronizado a "${speciesData.name}"`)

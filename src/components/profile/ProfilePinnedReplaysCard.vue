@@ -5,11 +5,13 @@ import { useStatHover } from '@/composables/ui/useStatHover'
 interface Props {
   pinnedReplays?: BattleReplayRecord[]
   isOwnProfile?: boolean
+  userId?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   pinnedReplays: () => [],
-  isOwnProfile: false
+  isOwnProfile: false,
+  userId: undefined
 })
 
 const emit = defineEmits<{
@@ -19,12 +21,25 @@ const emit = defineEmits<{
 
 const { handleStatEnter, handleStatLeave } = useStatHover()
 
-function getResultText(replay: BattleReplayRecord, isP1: boolean) {
+function isUserP1(replay: BattleReplayRecord): boolean {
+  if (props.userId && replay.p2.userId === props.userId) {
+    return false
+  }
+  return true
+}
+
+function getRival(replay: BattleReplayRecord) {
+  return isUserP1(replay) ? replay.p2 : replay.p1
+}
+
+function getResultText(replay: BattleReplayRecord) {
+  const isP1 = isUserP1(replay)
   const won = (isP1 && replay.winnerSide === 'p1') || (!isP1 && replay.winnerSide === 'p2')
   return won ? 'VICTORIA' : 'DERROTA'
 }
 
-function getResultIcon(replay: BattleReplayRecord, isP1: boolean) {
+function getResultIcon(replay: BattleReplayRecord) {
+  const isP1 = isUserP1(replay)
   const won = (isP1 && replay.winnerSide === 'p1') || (!isP1 && replay.winnerSide === 'p2')
   return won ? '🏆' : '💀'
 }
@@ -42,13 +57,15 @@ function getResultIcon(replay: BattleReplayRecord, isP1: boolean) {
       class="empty-pinned-replays"
     >
       <span class="emoji empty-icon">🎬</span>
-      <span class="empty-text">Sin combates fijados en el perfil.</span>
-      <span
-        v-if="props.isOwnProfile"
-        class="empty-sub"
-      >
-        Fija tus victorias más épicas desde la pantalla de resultados PvP.
-      </span>
+      <div class="empty-content">
+        <span class="empty-text">Sin combates fijados en el perfil.</span>
+        <span
+          v-if="props.isOwnProfile"
+          class="empty-sub"
+        >
+          Fija tus victorias más épicas desde la pantalla de resultados PvP.
+        </span>
+      </div>
     </div>
 
     <!-- Replays List -->
@@ -66,14 +83,14 @@ function getResultIcon(replay: BattleReplayRecord, isP1: boolean) {
         <div class="replay-main-info">
           <div
             class="result-badge"
-            :class="getResultText(replay, true).toLowerCase()"
+            :class="getResultText(replay).toLowerCase()"
           >
-            <span class="emoji">{{ getResultIcon(replay, true) }}</span>
-            <span class="result-txt">{{ getResultText(replay, true) }}</span>
+            <span class="emoji">{{ getResultIcon(replay) }}</span>
+            <span class="result-txt">{{ getResultText(replay) }}</span>
           </div>
 
           <div class="matchup-text">
-            <span class="rival-txt">vs {{ replay.p2.username }} ({{ replay.p2.elo }} LP)</span>
+            <span class="rival-txt">vs {{ getRival(replay).username }} ({{ getRival(replay).elo }} LP)</span>
             <span class="meta-txt">{{ replay.battleCode }} · {{ replay.turnsCount }}T</span>
           </div>
         </div>
@@ -105,36 +122,43 @@ function getResultIcon(replay: BattleReplayRecord, isP1: boolean) {
 </template>
 
 <style scoped lang="scss">
+@use "@/styles/core/_mixins" as *;
+@use "@/styles/core/tools" as *;
+@use "@/styles/components/_profile-shared.scss" as *;
+
 .pinned-replays-card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  margin-top: 10px;
 }
 
 .empty-pinned-replays {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 16px 10px;
-  gap: 4px;
-  text-align: center;
-  background: Rgba(0, 0, 0, 0.2);
-  border-radius: 6px;
+  gap: 12px;
+  padding: 12px 14px;
+  background: Rgba(15, 23, 42, 0.4);
+  border-radius: 8px;
+  border: 1px dashed Rgba(148, 163, 184, 0.2);
 
   .empty-icon {
-    font-size: 1.5rem;
-    filter: Grayscale(0.5);
+    font-size: 1.4rem;
+    opacity: 0.6;
+  }
+
+  .empty-content {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    text-align: left;
   }
 
   .empty-text {
-    font-size: 0.65rem;
+    font-size: 0.8rem;
     color: #94a3b8;
-    font-family: inherit;
+    font-style: italic;
   }
 
   .empty-sub {
-    font-size: 0.55rem;
+    font-size: 0.65rem;
     color: #64748b;
   }
 }
@@ -149,10 +173,11 @@ function getResultIcon(replay: BattleReplayRecord, isP1: boolean) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 10px;
+  padding: 8px 12px;
   background: Rgba(15, 23, 42, 0.6);
   border: 1px solid Rgba(255, 255, 255, 0.08);
   border-radius: 6px;
+  @include gpu-layer;
 
   &:hover {
     border-color: Rgba(234, 179, 8, 0.4);
@@ -161,16 +186,17 @@ function getResultIcon(replay: BattleReplayRecord, isP1: boolean) {
   .replay-main-info {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 
     .result-badge {
       display: flex;
       align-items: center;
-      gap: 3px;
-      padding: 2px 6px;
+      gap: 4px;
+      padding: 3px 8px;
       border-radius: 4px;
       font-size: 0.55rem;
       font-weight: bold;
+      @include pixelated;
 
       &.victoria {
         background: Rgba(34, 197, 94, 0.2);
@@ -188,16 +214,18 @@ function getResultIcon(replay: BattleReplayRecord, isP1: boolean) {
     .matchup-text {
       display: flex;
       flex-direction: column;
+      gap: 2px;
 
       .rival-txt {
-        font-size: 0.62rem;
+        font-size: 0.65rem;
         color: #f1f5f9;
         font-weight: bold;
       }
 
       .meta-txt {
-        font-size: 0.52rem;
+        font-size: 0.55rem;
         color: #94a3b8;
+        @include pixelated;
       }
     }
   }
@@ -205,16 +233,16 @@ function getResultIcon(replay: BattleReplayRecord, isP1: boolean) {
   .replay-actions {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
 
     .action-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 24px;
-      height: 24px;
+      width: 26px;
+      height: 26px;
       border-radius: 4px;
-      font-size: 0.6rem;
+      font-size: 0.65rem;
       cursor: pointer;
       font-family: inherit;
 

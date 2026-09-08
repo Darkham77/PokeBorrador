@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, nextTick, computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
+import BaseRefreshButton from '@/components/common/BaseRefreshButton.vue'
 import TrainerAvatar from '@/components/profile/TrainerAvatar.vue'
 import { useSocialStore } from '@/stores/social/social'
 import { useUIStore } from '@/stores/ui'
 import { getSeasonalThemeForMonth } from '@/data/system/rankedData'
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
+import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
+import { toPokemonType, type PokemonType } from '@/data/battle/types'
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+import { getEloTier } from '@/logic/pvp/rankedEngine'
 import { gsap } from 'gsap'
 
 const RANK_CARD_HOVER_X_OFFSET = 4
@@ -17,7 +22,6 @@ const RANK_LIST_EASE_STRING = 'back.out(1.15)'
 const RANK_SPINNER_ROTATION_DEG = 360
 const RANK_ANIM_FAST_DURATION_SEC = 0.2
 const RANK_SPINNER_DURATION_SEC = 1.5
-const RANK_BTN_Y_OFFSET = -1
 
 interface Props {
   show?: boolean
@@ -45,10 +49,13 @@ const isSmallScreen = computed(() => ui.isSmallScreen)
 const currentTheme = computed(() => {
   return getSeasonalThemeForMonth(Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE).month)
 })
-const currentRewardLabel = computed(() => {
-  const species = currentTheme.value.rewardPokemon.maestro.species
-  return species.charAt(0).toUpperCase() + species.slice(1)
-})
+const allowedTypes = computed<PokemonType[]>(() =>
+  (currentTheme.value.allowedTypes || []).map(toPokemonType)
+)
+
+const getPokemonRewardSprite = (species: string, isShiny = true) => {
+  return getAssetUrl(ASSET_TYPES.POKEMON, species, { isShiny })
+}
 
 // Faction styling mapping
 const getFactionColor = (faction: string) => {
@@ -120,26 +127,6 @@ const handleCardLeave = (e: MouseEvent) => {
   })
 }
 
-const handleButtonEnter = (e: MouseEvent) => {
-  gsap.to(e.currentTarget, {
-    y: RANK_BTN_Y_OFFSET,
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    duration: RANK_ANIM_FAST_DURATION_SEC,
-    ease: 'power2.out'
-  })
-}
-
-const handleButtonLeave = (e: MouseEvent) => {
-  gsap.to(e.currentTarget, {
-    y: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    duration: RANK_ANIM_FAST_DURATION_SEC,
-    ease: 'power2.out',
-    clearProps: 'y,backgroundColor,borderColor'
-  })
-}
 
 const handleTabEnter = (e: MouseEvent) => {
   const el = e.currentTarget as HTMLElement
@@ -156,7 +143,7 @@ const handleTabLeave = (e: MouseEvent) => {
   const el = e.currentTarget as HTMLElement
   if (el.classList.contains('active')) return
   gsap.to(el, {
-    color: 'rgba(255, 255, 255, 0.5)',
+    color: '#94a3b8',
     backgroundColor: 'transparent',
     duration: RANK_ANIM_FAST_DURATION_SEC,
     ease: 'power2.out',
@@ -213,19 +200,17 @@ watch(activeSort, async () => {
 
 // Watch loading state to animate the spinner via GSAP
 watch(() => socialStore.leaderboardLoading, (newVal) => {
-  if (newVal) {
-    nextTick(() => {
-      const spinner = document.querySelector('.retro-spinner')
-      if (spinner) {
-        gsap.to(spinner, {
-          rotation: RANK_SPINNER_ROTATION_DEG,
-          duration: RANK_SPINNER_DURATION_SEC,
-          repeat: -1,
-          ease: 'none'
-        })
-      }
-    })
-  }
+  nextTick(() => {
+    const spinner = document.querySelector('.retro-spinner')
+    if (newVal && spinner) {
+      gsap.to(spinner, {
+        rotation: RANK_SPINNER_ROTATION_DEG,
+        duration: RANK_SPINNER_DURATION_SEC,
+        repeat: -1,
+        ease: 'none'
+      })
+    }
+  })
 }, { immediate: true })
 </script>
 
@@ -233,8 +218,8 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
   <BaseModal
     :show="show"
     :type="isSmallScreen ? 'fullscreen' : 'center'"
-    :max-width="isSmallScreen ? '100dvw' : '600px'"
-    :height="isSmallScreen ? '100dvh' : '650px'"
+    :max-width="isSmallScreen ? '100dvw' : '680px'"
+    :height="isSmallScreen ? '100dvh' : '780px'"
     variant="retro"
     padding="raw"
     accent-color="var(--yellow)"
@@ -245,51 +230,112 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
         <div class="ranking-title-group">
           <span class="emoji">🏆</span>
           <div class="title-text-wrap">
-            <span class="main-title">SALÓN DE LA FAMA</span>
+            <span class="main-title text-outline">SALÓN DE LA FAMA</span>
             <span class="sub-title">Top 100 entrenadores globales</span>
           </div>
         </div>
-        <button
+        <BaseRefreshButton
           id="ranking-modal-refresh-btn"
-          class="retro-btn refresh"
-          :disabled="socialStore.leaderboardLoading"
-          @click.stop="loadLeaderboard"
-          @mouseenter="handleButtonEnter"
-          @mouseleave="handleButtonLeave"
-        >
-          <span class="emoji">{{ socialStore.leaderboardLoading ? '...' : '🔄' }}</span>
-        </button>
+          size="md"
+          :loading="socialStore.leaderboardLoading"
+          title="Actualizar ranking"
+          @click="loadLeaderboard"
+        />
       </div>
     </template>
 
     <div class="ranking-modal-content custom-scrollbar">
-      <!-- Season Card Info (Retro Premium Style) -->
-      <div class="season-info-card">
-        <div class="season-header-bar">
-          <span class="season-badge">TEMPORADA ACTUAL</span>
-          <span class="season-title">{{ currentTheme.name.toUpperCase() }}</span>
+      <!-- Season Tournament Card (EventCard & Coliseo standard) -->
+      <section class="season-tournament-card">
+        <div class="tournament-banner-wrapper">
+          <img
+            :src="currentTheme.bannerImage"
+            :alt="currentTheme.name"
+            class="tournament-banner-img allow-aliasing"
+            @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"
+          >
         </div>
-        <div class="season-rewards-bar">
-          <div class="reward-item">
-            <span class="reward-lbl">Nivel Máx:</span>
-            <span class="reward-val">100</span>
+
+        <div class="tournament-details">
+          <div class="tournament-header-row">
+            <span class="season-badge">TORNEO DE TEMPORADA</span>
+            <h3 class="tournament-name text-outline">
+              {{ currentTheme.name }}
+            </h3>
           </div>
-          <div class="reward-item">
-            <span class="reward-lbl">Modo:</span>
-            <span class="reward-val">6 vs 6 (Single)</span>
+
+          <p class="tournament-desc">
+            {{ currentTheme.description }}
+          </p>
+
+          <div class="tournament-badges-row">
+            <span class="rule-badge text-outline">
+              <span class="emoji">⚔️</span> 6 vs 6 (Single)
+            </span>
+            <span class="rule-badge text-outline">
+              <span class="emoji">⭐</span> Nivel Máx: 100
+            </span>
+            <span
+              v-if="currentTheme.isLittleCup"
+              class="rule-badge special-rule text-outline"
+            >
+              <span class="emoji">🐣</span> Little Cup
+            </span>
+            <span
+              v-if="currentTheme.requiresMonotype"
+              class="rule-badge special-rule text-outline"
+            >
+              <span class="emoji">🧬</span> Monotipo
+            </span>
+            <span
+              v-if="currentTheme.requiresDualType"
+              class="rule-badge special-rule text-outline"
+            >
+              <span class="emoji">⚡</span> Doble Tipo
+            </span>
+
+            <!-- Allowed Types Badges -->
+            <div
+              v-if="allowedTypes.length"
+              class="types-pills-row"
+            >
+              <PokemonTypeTag
+                v-for="t in allowedTypes"
+                :key="t"
+                :type="t"
+                size="ssm"
+              />
+            </div>
+            <span
+              v-else
+              class="rule-badge all-types text-outline"
+            >
+              Todos los tipos permitidos
+            </span>
           </div>
-          <div class="reward-item flex-stretch">
-            <span class="reward-lbl">Recompensa:</span>
-            <span class="reward-val prize-highlight"><span class="emoji">✨</span> {{ currentRewardLabel }} Shiny (IV 31x4)</span>
+
+          <!-- Shiny Reward Preview for Diamante / Maestro -->
+          <div class="tournament-reward-preview">
+            <img
+              :src="getPokemonRewardSprite(currentTheme.rewardPokemon.maestro.species, true)"
+              :alt="currentTheme.rewardPokemon.maestro.species"
+              class="reward-sprite pixel-art"
+            >
+            <div class="reward-text-group">
+              <span class="reward-tag text-outline">RECOMPENSA EXCLUSIVA MAESTRO</span>
+              <span class="reward-name text-outline">
+                <span class="emoji">✨</span> {{ currentTheme.rewardPokemon.maestro.species }} SHINY (IVs 31x4)
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- Sorting Selectors -->
       <div class="sorting-controls">
         <button
           id="ranking-modal-sort-elo-btn"
-          class="sort-tab"
+          class="modal-tab-btn sort-tab text-outline"
           :class="{ active: activeSort === 'elo_rating' }"
           @click.stop="activeSort = 'elo_rating'"
           @mouseenter="handleTabEnter"
@@ -299,7 +345,7 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
         </button>
         <button
           id="ranking-modal-sort-level-btn"
-          class="sort-tab"
+          class="modal-tab-btn sort-tab text-outline"
           :class="{ active: activeSort === 'trainer_level' }"
           @click.stop="activeSort = 'trainer_level'"
           @mouseenter="handleTabEnter"
@@ -309,7 +355,7 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
         </button>
         <button
           id="ranking-modal-sort-badges-btn"
-          class="sort-tab"
+          class="modal-tab-btn sort-tab text-outline"
           :class="{ active: activeSort === 'badges' }"
           @click.stop="activeSort = 'badges'"
           @mouseenter="handleTabEnter"
@@ -367,8 +413,17 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
               >🥉</span>
               <span
                 v-else
-                class="generic-rank"
-              >#{{ index + 1 }}</span>
+                class="generic-rank text-outline"
+              >
+                {{ index + 1 }}
+              </span>
+              <img
+                v-if="activeSort === 'elo_rating'"
+                :src="getAssetUrl(ASSET_TYPES.RANK, getEloTier(player.elo).id)"
+                :alt="getEloTier(player.elo).name"
+                class="ranked-medal-mini"
+                :title="`Rango: ${getEloTier(player.elo).name}`"
+              >
             </div>
 
             <!-- Avatar -->
@@ -391,7 +446,7 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
               <div class="player-name-row">
                 <span
                   v-gsap-nick="player.nick_style || 'normal'"
-                  class="player-name-text"
+                  class="player-name-text text-outline"
                   :class="player.nick_style || 'normal'"
                 >
                   {{ player.username }}
@@ -413,7 +468,7 @@ watch(() => socialStore.leaderboardLoading, (newVal) => {
 
             <!-- Score -->
             <div class="score-badge">
-              <span class="score-value">
+              <span class="score-value text-outline">
                 {{ activeSort === 'elo_rating' ? `${player.elo} ELO` : (activeSort === 'trainer_level' ? `Nv. ${player.level}` : `${player.badges} Medallas`) }}
               </span>
             </div>

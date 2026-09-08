@@ -15,7 +15,8 @@ export default defineConfig({
   reporter: [['./scripts/e2e/logging/playwright_fuzzer_reporter.ts']],
   timeout: 90000,
   use: {
-    baseURL: 'http://localhost:5174',
+    baseURL: 'https://localhost:5174',
+    ignoreHTTPSErrors: true,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
@@ -35,7 +36,8 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npx vite --port 5174 --strictPort',
-    url: 'http://localhost:5174',
+    url: 'https://localhost:5174',
+    ignoreHTTPSErrors: true,
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },

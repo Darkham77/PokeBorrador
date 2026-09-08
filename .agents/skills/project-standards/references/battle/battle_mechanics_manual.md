@@ -70,6 +70,72 @@ Pokémon Showdown emits specialized request structures and log tokens for multi-
 4. **`uproar`, `rollout`, `bide`**:
    - Successive turns maintain fixed action execution and UI slot disabling until expiration.
 
+### 6. Canonical Combat Engine & BattleSession Architecture (Zero Duplication)
+
+Poké Vicio enforces a strict Zero Duplication policy across all 8 combat modes (`wild`, `trainer`, `gym`, `war`, `pvp-casual`, `pvp-ranked`, `spectator`, `replay`):
+
+1. **Authoritative Turn Runner (`executeCanonicalTurn`)**:
+   - Located at `src/logic/battle/helpers/canonicalTurnRunner.ts`.
+   - Single source of truth for executing `@pkmn/sim` turns across PvE, PvP, and simulations.
+   - Coordinates worker turn requests, FSM state pipeline, GSAP log animation playback, HP snapshot synchronization, and faint checks.
+
+2. **Session Hierarchy (`src/logic/battle/session/`)**:
+   - `BaseBattleSession`: Abstract root holding `BattleContext`, mode identifier, and reactive `BattleUiConfig`.
+   - `PvEBattleSession`: Implements AI opponent decision routines and adventure rewards.
+   - `GymBattleSession`: Inherits from `PvEBattleSession`, injects leader dialogue and commits gym badges to persistence.
+   - `PvPBattleSession`: Coordinates Realtime network commit picks, turn clocks, and ELO calculations.
+   - `SpectatorBattleSession`: Listens passively to live combat streams with user controls locked.
+   - `ReplayBattleSession`: Step-by-step playback via `ITacticalReplayEngine` without network or AI interference.
+
+3. **Declarative UI Configuration (`BattleUiConfig`)**:
+   - Defined in `src/types/battle/battleConfig.ts`.
+   - Generates immutable boolean flags (`allowCatch`, `allowBag`, `allowForfeit`, `showTurnTimer`, `showSpectatorOverlay`, `showReplayControls`, `showLeaderDialogue`, `showTeamPreview`).
+   - Directly consumed by `BattleArena.vue`, `BattleArenaControls.vue`, and `BattleActionButtons.vue` to dynamically render widgets without component bifurcation.
+
+### 7. PvP Network Lifecycle: 2-Strike AFK Resolution & F5 Reconnection Protocol
+
+#### 2-Strike AFK Turn Resolution
+During live PvP matches (`isPvP: true`), each player has a 45-second turn countdown governed by `PvPTimerManager`.
+- **Manual Move Selection**: Committing a valid move or switch clears AFK strikes back to 0.
+- **Strike 1 (Turn Timeout)**: The player is notified with a ⏱️ warning. `determineLegalAutoPick()` inspects the player's active Showdown request. If a switch is forced, it auto-picks the first healthy bench Pokémon (`switch N`). If moves are active, it picks the first non-disabled move with available PP (`move N`). This prevents Showdown engine crashes and keeps the battle moving.
+- **Strike 2 (Double Turn Timeout)**: The player is assessed a second strike. Combat immediately ends in automatic forfeit. `livePvP._forfeit()` broadcasts `pvp_forfeit` over the Realtime channel, updates ELO, clears session storage, and invokes `battleStore.endBattle(false, false)` to cleanly transition FSM to `REWARDS_PHASE` -> `EMPTY_WAIT` with the `#exit-battle-btn` overlay displayed.
+
+```mermaid
+flowchart TD
+    A["PvPTimerManager Turn Clock (45s)"] --> B{"Turn Timer Reaches 0?"}
+    B -- No / Player acts --> C["resetStrikes() -> Proceed normal turn"]
+    B -- Yes --> D{"Current afkStrikes"}
+    D -- "0 Strikes" --> E["Strike 1: afkStrikes = 1"]
+    E --> F["determineLegalAutoPick(request, team)"]
+    F --> G["Auto-commit legal move or forced switch"]
+    G --> H["Notify: Tiempo agotado (Strike 1/2)"]
+    D -- ">= 1 Strikes" --> I["Strike 2: Forfeit triggered"]
+    I --> J["Broadcast pvp_forfeit payload"]
+    J --> K["endBattle(won: false, reason: Forfeit)"]
+    K --> L["clearActivePvPSession()"]
+    L --> M["battleStore.endBattle(false) -> FSM REWARDS_PHASE"]
+```
+
+#### F5 In-Combat Reconnection Window (60s)
+When a PvP match begins, `saveActivePvPSession()` persists the match metadata (`matchId`, `isHost`, `opponentId`, `opponentName`, `isRanked`, `turnCount`, `timestamp`) into browser `sessionStorage`.
+- **Page Reload (F5)**: Upon reloading, `App.vue` (`initGameSession`) invokes `getActivePvPSession()`. If the session is under 60 seconds old, it calls `livePvPStore.reconnectBattle(session)`.
+- **Opponent Notification**: The reconnected player re-subscribes to `pvp-{matchId}`, sends a `pvp_reconnect` broadcast, and restarts the 60-second reconnection window countdown timer.
+- **Battle Finalization**: When combat terminates by win, defeat, or forfeit, `clearActivePvPSession()` removes the match key so subsequent page visits start cleanly at the map.
+
+```mermaid
+flowchart TD
+    A["PvP Battle Start (startBattle)"] --> B["saveActivePvPSession(matchId, isHost, ...)"]
+    B --> C["Player Reloads Browser (F5)"]
+    C --> D["App.vue onMounted -> initGameSession()"]
+    D --> E["getActivePvPSession()"]
+    E --> F{"Active session < 60s?"}
+    F -- No / Expired --> G["clearActivePvPSession() -> Standard map view"]
+    F -- Yes --> H["livePvPStore.reconnectBattle(session)"]
+    H --> I["Re-subscribe to pvp-matchId channel"]
+    I --> J["Broadcast pvp_reconnect payload to opponent"]
+    J --> K["Opponent receives pvp_reconnect -> Stop reconnect clock"]
+```
+
 ---
 
 ## 🌪️ Weather Influence
@@ -1524,5 +1590,69 @@ gsap.delayedCall(delayInSeconds, () => {
 
 For a complete step-by-step reproduction guide and verification matrix covering all forced switch variants, flee & teleport mechanics, attack VFX, switch workflows, faint sequences, and catch flows, consult:
 - **[Manual Testing Guide (Battle Animations)](../qa/manual_testing_battle_animations.md)**
+
+---
+
+## 7. ⏱️ Live PvP Turn Timer, 2-Strike AFK Forfeit Protocol & F5 Reconnection Lifecycle
+
+To guarantee competitive integrity and prevent griefing or stalled battles, all live PvP matches follow a strict 45-second turn timer, a 2-strike AFK forfeit protocol, and a 60-second in-combat F5 reconnection window.
+
+### 1. 45s Turn Timer & 2-Strike Protocol
+1. **Turn Clock**: Managed by `PvPTimerManager` (`src/logic/pvp/pvpTimerHelper.ts`). Ticks down from 45 seconds during player input states (`choosing`, `faint_switch`).
+2. **Strike 1 (Warning & Auto-Pick)**: If the 45s window expires:
+   - Increments player AFK strikes (`afkStrikes = 1`).
+   - Displays a warning badge/toast: `"Tiempo de turno agotado (Strike 1/2). Ejecutando acción automática."`
+   - Executes `determineLegalAutoPick(request, team)`: selects the first legal move with PP > 0, or the first valid living benched replacement if forced to switch. This prevents the Showdown engine worker from stalling or throwing desync errors.
+3. **Strike 2 (Automatic Forfeit)**: If 45s expire a second time:
+   - Emits a broadcast `pvp_forfeit` payload to the opponent.
+   - Updates ELO ratings (treating the AFK player as defeated).
+   - Cleans up `sessionStorage` (`pvp_active_match`).
+   - Ends combat in `battleStore`, gracefully transitioning the Showdown FSM to `REWARDS_PHASE` -> `EMPTY_WAIT` and returning the player to the map without UI locks.
+
+### 2. In-Combat Reconnection (F5 Refresh)
+1. **Session Persistence**: On battle start, active match metadata (`matchId`, `isHost`, `isRanked`, `opponentId`, `opponentName`, `turnCount`) is saved to `sessionStorage` (`pvp_active_match`).
+2. **Reconnection Window**: On page reload (F5), `App.vue` (`initGameSession`) detects the active session and calls `livePvPStore.reconnectBattle`.
+3. **Channel Re-subscription & Broadcast**:
+   - Re-subscribes to `pvp-{matchId}`.
+   - Starts a 60-second reconnection countdown timer.
+   - Emits `pvp_reconnect` payload with `lastTurnNumber` to notify the opponent.
+   - The opponent receives the broadcast, clears the reconnect warning banner, and resumes turn synchronization.
+4. **DataCloneError Prevention**: All data broadcast across offline `BroadcastChannel` in `DBRouter` MUST be deep-unwrapped via `cloneReactive` from `@/logic/utils/cloneUtils.ts` to prevent browser `DataCloneError` on nested Vue 3 proxies.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor P1 as Player 1 (Active)
+    actor P2 as Player 2 (AFK / Reloading)
+    participant LivePvP as LivePvP Store / PvPTimerManager
+    participant Showdown as Showdown Worker Engine
+    participant DB as DBRouter / BroadcastChannel
+
+    rect rgb(30, 41, 59)
+    Note over P2,LivePvP: Scenario A: Turn Timeout & 2-Strike Protocol
+    LivePvP->>LivePvP: Turn timer reaches 0s (45s elapsed)
+    LivePvP->>P2: Strike 1/2 Warning Toast
+    LivePvP->>Showdown: Auto-pick legal move / forced switch (determineLegalAutoPick)
+    Showdown-->>LivePvP: Turn resolved normally
+    Note over LivePvP: Turn starts again... P2 remains AFK
+    LivePvP->>LivePvP: Turn timer reaches 0s again (Strike 2)
+    LivePvP->>DB: Broadcast "pvp_forfeit"
+    LivePvP->>LivePvP: Update ELO & Clear sessionStorage
+    LivePvP->>Showdown: endBattle(won=false) -> REWARDS_PHASE -> EMPTY_WAIT
+    DB->>P1: Receive "pvp_forfeit" (Victory)
+    end
+
+    rect rgb(15, 23, 42)
+    Note over P2,LivePvP: Scenario B: F5 Page Refresh & Reconnection
+    P2->>P2: Player reloads page (F5)
+    Note over P2: App.vue initGameSession() reads sessionStorage("pvp_active_match")
+    P2->>LivePvP: reconnectBattle(session)
+    LivePvP->>DB: Re-subscribe to pvp-{matchId}
+    LivePvP->>DB: Broadcast "pvp_reconnect" (lastTurnNumber)
+    DB->>P1: Receive "pvp_reconnect"
+    P1->>P1: Stop reconnect timer, resume active match
+    end
+```
+
 
 

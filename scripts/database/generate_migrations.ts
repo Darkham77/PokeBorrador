@@ -122,6 +122,7 @@ export async function generateMigrations() {
  * 
  * Contains all static SQL migrations for deterministic offline/in-memory schema upgrades.
  */
+// [PureVue-Ignore-Length]
 
 export const DATABASE_MIGRATIONS = ${JSON.stringify(migrations, null, 2)};
 `;

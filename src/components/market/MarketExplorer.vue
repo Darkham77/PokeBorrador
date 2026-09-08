@@ -100,7 +100,7 @@ function getTierColor(tier?: string) {
           :style="item.listing_type === 'item' ? { '--tier-color': getTierColor(getItemById(item.data.name || '')?.tier) } : {}"
         >
           <div class="seller-tag">
-            <span class="s-name"><span class="emoji">👤</span> {{ item.seller_name }}</span>
+            <span class="s-name"><span class="emoji">👤</span> <span>{{ item.seller_name }}</span></span>
             <span class="s-time">{{ formatTime(item.created_at) }}</span>
           </div>
 
@@ -227,7 +227,21 @@ function getTierColor(tier?: string) {
     @include pixelated;
     color: $muted;
 
-    .s-name { color: var(--blue); }
+    .s-name {
+      color: var(--blue);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      line-height: 1.35;
+
+      .emoji {
+        font-size: 9px;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
   }
 
   .listing-card-override {

@@ -165,6 +165,9 @@ export function generateGaussianPhysicalDimensionPure(
   if (baseValueOrRange === null || baseValueOrRange === undefined) {
     return 0;
   }
+  if (typeof baseValueOrRange === 'number' && baseValueOrRange <= 0) {
+    return 0.1;
+  }
 
   let min: number;
   let max: number;

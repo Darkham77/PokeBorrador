@@ -56,16 +56,17 @@ describe('HomeGymsProgress.vue', () => {
     expect(ceruleanSlot?.find('.diff-chip.is-hard.won').exists()).toBe(false)
   })
 
-  it('switches to gyms tab when clicking challenge button', async () => {
+  it('switches to gyms tab when clicking a medal slot and does not render redundant button', async () => {
     const uiStore = useUIStore()
     const wrapper = mount(HomeGymsProgress, {
       global: { plugins: [pinia] }
     })
 
-    const challengeBtn = wrapper.find('#home-gyms-open-btn')
-    expect(challengeBtn.exists()).toBe(true)
+    expect(wrapper.find('#home-gyms-open-btn').exists()).toBe(false)
 
-    await challengeBtn.trigger('click')
+    const medalSlot = wrapper.find('.medal-slot')
+    expect(medalSlot.exists()).toBe(true)
+    await medalSlot.trigger('click')
     expect(uiStore.activeTab).toBe('gyms')
   })
 })

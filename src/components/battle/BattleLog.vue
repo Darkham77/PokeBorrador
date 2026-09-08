@@ -111,12 +111,11 @@ onMounted(() => {
             @error="handleImgError"
           >
         </div>
-        <!-- fallow-ignore-next-line security-sink -->
-        <!-- eslint-disable-next-line vue/no-v-html -->
-        <span
-          class="log-text"
-          v-html="log.msg"
-        />
+        <span class="log-text">
+          <!-- fallow-ignore-next-line security-sink -->
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <span v-html="log.msg" />
+        </span>
       </div>
     </div>
   </div>

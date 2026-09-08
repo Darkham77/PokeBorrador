@@ -7,7 +7,7 @@ import { useAuthStore } from '@/stores/auth'
 import type { BattleInvite } from '@/types/battle/pvp'
 
 describe('Matchmaking Queue Lifecycle & Ranked Pairing Integration', () => {
-  let rankedQueueEntries: Record<string, { user_id: string; elo: number; looking_since: string }>
+  let rankedQueueEntries: Record<string, { user_id: string; elo: number; status?: string; created_at: string }>
   let dbInvites: Record<string, BattleInvite>
 
   beforeEach(() => {
@@ -31,7 +31,7 @@ describe('Matchmaking Queue Lifecycle & Ranked Pairing Integration', () => {
       from: vi.fn().mockImplementation((table: string) => {
         if (table === 'ranked_queue') {
           return {
-            upsert: vi.fn().mockImplementation((entry: { user_id: string; elo: number; looking_since: string }) => {
+            upsert: vi.fn().mockImplementation((entry: { user_id: string; elo: number; status?: string; created_at: string }) => {
               rankedQueueEntries[entry.user_id] = entry
               return Promise.resolve({ error: null })
             }),
@@ -127,7 +127,7 @@ describe('Matchmaking Queue Lifecycle & Ranked Pairing Integration', () => {
     rankedQueueEntries['usr-player-bob'] = {
       user_id: 'usr-player-bob',
       elo: 1600,
-      looking_since: new Date().toISOString()
+      created_at: new Date().toISOString()
     }
 
     const livePvP = useLivePvPStore()

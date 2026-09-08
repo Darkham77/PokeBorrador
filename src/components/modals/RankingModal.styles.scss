@@ -35,27 +35,11 @@
 
   .sub-title {
     font-size: 9px;
-    color: var(--gray);
+    color: #94a3b8;
     margin-top: 1px;
   }
 }
 
-.retro-btn {
-  @include pixelated;
-  cursor: pointer;
-  background: Rgba(255, 255, 255, 0.05);
-  border: 2px solid Rgba(255, 255, 255, 0.1);
-  color: var(--white);
-  border-radius: 6px;
-
-  &.refresh {
-    font-size: 10px;
-    padding: 6px 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-}
 
 .ranking-modal-content {
   height: 100%;
@@ -67,79 +51,6 @@
   gap: 16px;
 }
 
-// Season Info
-.season-info-card {
-  background: linear-gradient(135deg, Rgba(251, 191, 36, 0.08), Rgba(0, 0, 0, 0.5));
-  border: 1px solid Rgba(251, 191, 36, 0.25);
-  border-radius: 12px;
-  padding: 12px 14px;
-  box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.4);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-
-  .season-header-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    .season-badge {
-      font-size: 6px;
-      padding: 4px 8px;
-      border-radius: 4px;
-      background: var(--yellow);
-      color: var(--white);
-      border: 1px solid #000000;
-      text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
-      @include pixelated;
-    }
-
-    .season-title {
-      @include pixelated;
-      font-size: 8px;
-      color: Rgba(251, 191, 36, 1);
-      letter-spacing: 0.5px;
-    }
-  }
-
-  .season-rewards-bar {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    flex-wrap: wrap;
-
-    .reward-item {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      min-width: 60px;
-
-      .reward-lbl {
-        font-size: 8px;
-        color: Rgba(255, 255, 255, 0.4);
-        text-transform: uppercase;
-      }
-
-      .reward-val {
-        font-size: 10px;
-        color: var(--white);
-        font-weight: bold;
-      }
-
-      .prize-highlight {
-        color: Rgba(244, 114, 174, 1);
-        text-shadow: 0 0 6px Rgba(244, 114, 174, 0.4);
-      }
-    }
-
-    .flex-stretch {
-      flex: 1;
-      text-align: right;
-      align-items: flex-end;
-    }
-  }
-}
-
 // Sorting Controls
 .sorting-controls {
   display: grid;
@@ -148,26 +59,7 @@
   border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 10px;
   padding: 3px;
-
-  .sort-tab {
-    @include pixelated;
-    font-size: 8px;
-    background: transparent;
-    border: 1px solid transparent;
-    padding: 8px 0;
-    color: Rgba(255, 255, 255, 0.5);
-    cursor: pointer;
-    border-radius: 8px;
-
-    &.active {
-      background: var(--yellow);
-      color: var(--white);
-      font-weight: bold;
-      border-color: #000000;
-      text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
-      box-shadow: 0 2px 6px Rgba(251, 191, 36, 0.3);
-    }
-  }
+  gap: 4px;
 }
 
 // Leaderboard container
@@ -180,7 +72,7 @@
   .loading-view, .empty-view {
     text-align: center;
     padding: 40px;
-    color: Rgba(255, 255, 255, 0.4);
+    color: #94a3b8;
     font-size: 11px;
     display: flex;
     flex-direction: column;
@@ -233,7 +125,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
+  gap: 5px;
+  width: auto;
+  min-width: 32px;
   flex-shrink: 0;
 
   .crown {
@@ -243,7 +137,19 @@
   .generic-rank {
     @include pixelated;
     font-size: 8px;
-    color: Rgba(255, 255, 255, 0.3);
+    color: #94a3b8;
+
+    &.top-1 { color: #f59e0b; }
+    &.top-2 { color: #cbd5e1; }
+    &.top-3 { color: #b45309; }
+  }
+
+  .ranked-medal-mini {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+    @include pixelated;
   }
 }
 
@@ -287,14 +193,14 @@
     align-items: center;
     gap: 6px;
     font-size: 9px;
-    color: Rgba(255, 255, 255, 0.45);
+    color: #94a3b8;
 
     .player-class-info {
       text-transform: capitalize;
     }
 
     .divider {
-      color: Rgba(255, 255, 255, 0.2);
+      color: Rgba(255, 255, 255, 0.4);
     }
   }
 }

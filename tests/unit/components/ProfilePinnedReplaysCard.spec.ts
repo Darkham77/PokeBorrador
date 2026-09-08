@@ -127,6 +127,25 @@ describe('ProfilePinnedReplaysCard.vue', () => {
     expect(wrapper.find('.action-btn.unpin').exists()).toBe(false)
   })
 
+  it('correctly inverts rival and result when userId matches p2', () => {
+    const wrapper = mount(ProfilePinnedReplaysCard, {
+      props: {
+        pinnedReplays: sampleReplays,
+        isOwnProfile: false,
+        userId: 'u2' // In sampleReplays[0], u2 is p2 who lost against Red
+      },
+      global: {
+        directives: {
+          'gsap-hover': {}
+        }
+      }
+    })
+
+    // In sampleReplays[0], winnerSide is 'p1'. So for u2 (p2), it is a DERROTA against Red
+    expect(wrapper.text()).toContain('DERROTA')
+    expect(wrapper.text()).toContain('vs Red (2200 LP)')
+  })
+
   it('emits watch-replay when play button is clicked', async () => {
     const wrapper = mount(ProfilePinnedReplaysCard, {
       props: {

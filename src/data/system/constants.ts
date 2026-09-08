@@ -23,7 +23,10 @@ export const ENABLED_POKEMON_IDS = [
   'castform',
   'castform-sunny',
   'castform-rainy',
-  'castform-snowy'
+  'castform-snowy',
+  'castformsunny',
+  'castformrainy',
+  'castformsnowy'
 ] as const;
 
 export type EnabledPokemonId = (typeof ENABLED_POKEMON_IDS)[number];

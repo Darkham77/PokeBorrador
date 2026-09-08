@@ -34,7 +34,7 @@ const {
       id="nav-market-btn"
       custom-class="group-btn"
       :active="uiStore.openHudGroup === 'MARKET' || modalStore.isOpen('GlobalMarket') || modalStore.isOpen('Shop') || modalStore.isOpen('BCShop') || modalStore.isOpen('WarShop') || modalStore.isOpen('ReputationShop')"
-      :badge-value="gtsStore.unseenSalesCount"
+      :badge-value="gtsStore.unclaimedGtsCount"
       @click.stop="toggleGroupMenu('MARKET')"
     >
       <template #icon>
@@ -62,10 +62,10 @@ const {
           <span class="emoji">🌎</span>
           <span class="nav-item-label">GLOBAL</span>
           <span
-            v-if="gtsStore.unseenSalesCount > 0"
+            v-if="gtsStore.unclaimedGtsCount > 0"
             class="hud-notification-badge"
           >
-            {{ gtsStore.unseenSalesCount }}
+            {{ gtsStore.unclaimedGtsCount }}
           </span>
         </button>
         <button

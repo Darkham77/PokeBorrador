@@ -71,7 +71,7 @@ export function requireItemId(value: string): ItemId {
   if (isItemId(value)) return value;
   const match = ITEMS_BY_NAME[value];
   if (match) return match;
-  throw new Error(`[items] Invalid item id or name: ${value}`);
+  throw new Error(`[items] Invalid item id: ${value}`);
 }
 
 export const SHOP_ITEMS = dbJson.SHOP_ITEMS.map((item): Item => {

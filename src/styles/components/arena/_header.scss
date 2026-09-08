@@ -34,6 +34,29 @@
   box-sizing: border-box;
 }
 
+.arena-nav-tabs {
+  display: flex;
+  background: Rgba(0, 0, 0, 0.4);
+  border-bottom: 1px solid Rgba(255, 255, 255, 0.1);
+  padding: 8px 12px;
+  gap: 8px;
+
+  .modal-tab-btn {
+    flex: 1;
+    height: 34px;
+    font-size: 8px;
+    gap: 6px;
+    white-space: nowrap;
+
+    .tab-icon {
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+    }
+  }
+}
+
+
 .offline-mask {
   position: absolute;
   inset: 0;
