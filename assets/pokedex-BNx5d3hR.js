@@ -1,0 +1,1 @@
+import{L as e}from"./game-data-pokemon-Dogp5xl5.js";export{e as requirePokemonSpeciesId};

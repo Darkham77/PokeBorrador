@@ -1,1 +1,0 @@
-import{t as e}from"./ArchaeologyModal-PayQ40MN.js";export{e as default};

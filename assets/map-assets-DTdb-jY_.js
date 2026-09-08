@@ -1,0 +1,1 @@
+import{B as e}from"./game-data-world-CxmlDBq5.js";export{e as requireMapRouteId};

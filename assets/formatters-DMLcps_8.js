@@ -1,0 +1,1 @@
+var e=(e,t=999999)=>e>t?`${Math.floor(e/1e6)}M`:(e||0).toLocaleString(),t=e=>{if(!e||e===`null`||e===`undefined`||e===`Null`||e===`NULL`||!e.trim())return`SIN CLASE`;let t=e.toLowerCase().trim();return t===`entrenador`?`Entrenador`:t===`rocket`?`Equipo Rocket`:t===`cazabichos`?`Cazabichos`:t===`criador`?`Criador`:e.toUpperCase()};export{t as n,e as t};
