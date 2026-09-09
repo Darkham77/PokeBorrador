@@ -1,0 +1,1 @@
+import{rn as e}from"./auth-DARADgEj.js";export{e as computeP2Choice};

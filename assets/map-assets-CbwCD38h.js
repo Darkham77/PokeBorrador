@@ -1,1 +1,0 @@
-import{B as e}from"./game-data-world-B2iwfw19.js";export{e as requireMapRouteId};

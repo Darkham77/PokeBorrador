@@ -1,0 +1,1 @@
+import{t as e}from"./FishingModal-d5SJKHXr.js";export{e as default};
