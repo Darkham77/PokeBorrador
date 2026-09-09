@@ -1,1 +1,0 @@
-import{t as e}from"./FishingModal-C220a4AS.js";export{e as default};

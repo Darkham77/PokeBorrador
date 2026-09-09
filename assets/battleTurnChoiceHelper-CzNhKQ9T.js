@@ -1,0 +1,1 @@
+import{tn as e}from"./auth-DlxQRmT-.js";export{e as computeP2Choice};

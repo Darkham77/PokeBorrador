@@ -1,1 +1,0 @@
-import"./game-data-pokemon-Dogp5xl5.js";import{n as e,t}from"./assetService-D05tXHPI.js";export{t as ASSET_TYPES,e as getAssetUrl};
