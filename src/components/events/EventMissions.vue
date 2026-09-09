@@ -9,6 +9,7 @@ import { usePlayerClassStore } from '@/stores/player/playerClass';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
 import { CLASS_MISSIONS, CLASS_MISSIONS_BY_ID, isMissionId, type MissionId } from '@/data/player/playerClasses';
 import { getClassMissionDetails } from '@/logic/player/classMissionsData';
+import { getItemById } from '@/data/inventory/items';
 import MissionCard from './MissionCard.vue';
 import HomeWidgetRefreshBtn from '@/components/home/HomeWidgetRefreshBtn.vue';
 import type { DaycareMission } from '@/types/breeding/breeding';
@@ -122,6 +123,10 @@ const getDailyMissionAvailableText = (mission: DaycareMission) => {
   if (mission.completed) return '';
   if (canDeliverMission(mission)) return '¡Tienes el Pokémon listo para entregar!';
   return '';
+};
+
+const getMissionRewardItem = (mission: DaycareMission) => {
+  return getItemById(mission.reward.id);
 };
 
 const hasPoisonPokemonAvailable = computed(() => {
@@ -284,9 +289,9 @@ async function startClassMission(missionId: MissionId) {
         is-avatar-url
         :title="mission.trainerName + ' dice:'"
         :dialogue="mission.dialogue"
-        :reward-icon="mission.reward.icon"
+        :reward-icon="getMissionRewardItem(mission).icon || '🎁'"
         reward-label="Recompensa"
-        :reward-val="mission.reward.name + ' x' + mission.reward.qty"
+        :reward-val="getMissionRewardItem(mission).name + ' x' + mission.reward.qty"
         :reward-id="mission.reward.id"
         :btn-text="mission.completed ? 'ENTREGADA' : (canDeliverMission(mission) ? 'ENTREGAR' : 'NO DISPONIBLE')"
         :btn-disabled="!canDeliverMission(mission)"

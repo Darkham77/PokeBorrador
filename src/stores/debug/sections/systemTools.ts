@@ -162,7 +162,7 @@ export function registerSystemTools(debug: DebugSystem) {
     command: 'forceSyncCloud',
     category: 'emergency',
     action: async () => {
-      await game.save(true)
+      await game.save(true, true, true)
       ui.notify('Sincronización forzada completada', '🔄')
     },
     description: 'Fuerza el guardado inmediato en la nube saltándose el debounce.'

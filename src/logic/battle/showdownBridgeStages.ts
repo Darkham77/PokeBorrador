@@ -1,16 +1,15 @@
 import type { SBCtx } from './showdownBridgeCtx';
 import { modifyStatStage } from '@/logic/pokemon/statsMath';
+import { SHOWDOWN_BOOST_STAT_KEYS, type ShowdownBoostStatKey } from '@/types/pokemon/pokemon';
 
 /** 
  * NATIVE SHOWDOWN STAT STAGE KEYS
  * Showdown natively emits: atk, def, spa, spd, spe, accuracy, evasion
  */
-export const SHOWDOWN_STAT_KEYS = ['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion'] as const;
-type ShowdownStatKey = typeof SHOWDOWN_STAT_KEYS[number];
-const SHOWDOWN_STAT_KEYS_SET: ReadonlySet<string> = new Set<string>(SHOWDOWN_STAT_KEYS); // runtime-set: Fast O(1) membership lookup set
+const SHOWDOWN_BOOST_STAT_KEYS_SET: ReadonlySet<string> = new Set<string>(SHOWDOWN_BOOST_STAT_KEYS); // runtime-set: Fast O(1) membership lookup set
 
-function isShowdownStatKey(key: string): key is ShowdownStatKey {
-  return SHOWDOWN_STAT_KEYS_SET.has(key);
+function isShowdownStatKey(key: string): key is ShowdownBoostStatKey {
+  return SHOWDOWN_BOOST_STAT_KEYS_SET.has(key);
 }
 
 function getTargetStages(ctx: SBCtx, target: NonNullable<ReturnType<SBCtx['getPoke']>>) {
@@ -18,16 +17,16 @@ function getTargetStages(ctx: SBCtx, target: NonNullable<ReturnType<SBCtx['getPo
   return isPlayer ? ctx.store.playerStages.value : ctx.store.enemyStages.value;
 }
 
-function resetStages(stages: Record<ShowdownStatKey, number> | undefined) {
+function resetStages(stages: Record<ShowdownBoostStatKey, number> | undefined) {
   if (!stages) return;
-  for (const key of SHOWDOWN_STAT_KEYS) {
+  for (const key of SHOWDOWN_BOOST_STAT_KEYS) {
     stages[key] = 0;
   }
 }
 
-function copyStages(src: Record<ShowdownStatKey, number> | undefined, tgt: Record<ShowdownStatKey, number> | undefined) {
+function copyStages(src: Record<ShowdownBoostStatKey, number> | undefined, tgt: Record<ShowdownBoostStatKey, number> | undefined) {
   if (!src || !tgt) return;
-  for (const key of SHOWDOWN_STAT_KEYS) {
+  for (const key of SHOWDOWN_BOOST_STAT_KEYS) {
     tgt[key] = src[key] || 0;
   }
 }
@@ -80,7 +79,7 @@ function applySwapBoost(ctx: SBCtx): boolean {
     const srcStages = getTargetStages(ctx, src);
     const tgtStages = getTargetStages(ctx, tgt);
     if (srcStages && tgtStages) {
-      for (const key of SHOWDOWN_STAT_KEYS) {
+      for (const key of SHOWDOWN_BOOST_STAT_KEYS) {
         const srcVal = srcStages[key] || 0;
         srcStages[key] = tgtStages[key] || 0;
         tgtStages[key] = srcVal;
@@ -98,7 +97,7 @@ function applyInvertBoost(ctx: SBCtx): boolean {
   if (target) {
     const stages = getTargetStages(ctx, target);
     if (stages) {
-      for (const key of SHOWDOWN_STAT_KEYS) {
+      for (const key of SHOWDOWN_BOOST_STAT_KEYS) {
         stages[key] = -(stages[key] || 0);
       }
     }
@@ -147,7 +146,7 @@ function applyClearDirectionalBoost(ctx: SBCtx, direction: 'positive' | 'negativ
     const stages = getTargetStages(ctx, target);
     let cleared = false;
     if (stages) {
-      for (const key of SHOWDOWN_STAT_KEYS) {
+      for (const key of SHOWDOWN_BOOST_STAT_KEYS) {
         const val = stages[key] || 0;
         if ((direction === 'positive' && val > 0) || (direction === 'negative' && val < 0)) {
           stages[key] = 0;

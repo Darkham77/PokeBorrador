@@ -19,7 +19,7 @@ Logic Developers / Game Designers.
 - **Multi-seat 2vs2 Layout Mapping**: When parsing Showdown logs or resolving active combatants in `showdownBridge`, never assume there is only one active seat (`player` / `enemy`). Support the 4-seat architecture (up to 2 active seats per side, e.g., `player`, `player2`, `ally`, `enemy`, `enemy2`). Lookups MUST dynamically scan all active seat keys on the battle state to return the correct reactive seat instance, preventing state desynchronization.
 - **Showdown Trapping Mechanics**: In Gen 4 / customgame formats without Team Preview, Showdown's `activeRequest` does not set `trapped: true` for Arena Trap/Shadow Tag. Instead, it sets `maybeTrapped: true`. Client-side trapping checks must verify both `trapped` and `maybeTrapped`.
 - **Disabled Move NPC AI Checks**: The enemy AI decision-making logic (`decideEnemyMove`) must filter out any moves that match `enemy.disabledMove` (e.g., from Disable or Cursed Body) to prevent selecting disabled moves and crashing the battle engine with `INVALID_CHOICE`. The client state `disabledMove` is kept in sync via `-start|disable` / `-end|disable` parsing in `showdownBridgeField.ts`.
-- **@pkmn/sim Internal Type Access Pattern**: Never define an interface that mirrors `@pkmn/sim`'s internal `Side` or `Pokemon` types exactly — they contain branded types and union variants (e.g. `trapped: boolean | "hidden"`) that cause irreconcilable type conflicts. Instead: ① define a minimal structural interface with only the fields your code reads, using the broadest compatible type; ② cast at the call site with `as unknown as YourInterface`. For one-off field accesses, use an inline cast: `(x as unknown as { active?: ... })`.
+- **@pkmn/sim Internal Type Access Pattern**: Never define an interface that mirrors `@pkmn/sim`'s internal `Side` or `Pokemon` types directly when doing so causes type conflicts with internal branded types or complex union variants. Instead: ① define a minimal structural interface with only the fields your code reads; ② use dedicated boundary accessor functions or type guards to access properties safely at the integration boundary rather than using double type assertions (`as unknown as T`).
 - **TypeScript Narrowing in Async Callbacks**: TypeScript's control-flow analysis does not narrow module-level `let` variables inside `new Promise(...)` callbacks, even when a null-guard runs immediately before the `new Promise` call. To satisfy strict null-checks, capture the variable into a `const` at the top of the callback: `const worker = showdownWorker!` — the `!` is safe because the outer guard already returned.
 - **Showdown Team Order Synchronization**: The simulator's internal side state (`side.pokemon`) dynamically shifts the active Pokémon to index 0. Therefore, all pre-turn state synchronization (HP and statuses) MUST map values using `resolveCurrentTeamOrder` (active-swapped order) to match the simulator's active-first slot, while choice actions (like forced replacement switches) MUST resolve simulator slot numbers using the static original team order.
 - **Showdown Revival Blessing Target Validation**: When resolving a forced switch request containing `reviving: true` on the active slot, the candidate switch target MUST be a fainted bench Pokémon (`hp <= 0` / `0 fnt`). Selecting an alive Pokémon is rejected by Showdown with `Invalid choice`.
@@ -68,7 +68,7 @@ Logic Developers / Game Designers.
 - All check logic on equipped items must use English IDs (`exp_share`, etc.); Spanish translations are strictly for UI presentation.
 - When writing UI conditionals on database models (e.g., war factions), compare against official DB values in Spanish (`'poder'`, not `'power'`).
 - Decouple components using `GameBus` signals rather than tight dependencies.
-- **Trainer Archetype SSoT**: All archetype definitions (name, sprite, pool, key) live exclusively in `src/data/trainerTypes.ts`. Derive keys via `Object.keys(TRAINER_TYPES)` — never maintain a local copy.
+- **Trainer Archetype SSoT**: All archetype definitions (name, sprite, pool, key) live exclusively in `src/data/player/trainerTypes.ts`. Derive keys via `Object.keys(TRAINER_TYPES)` — never maintain a local copy.
 - **Move Description Fallback Chain**: Spanish move translations MUST follow: ① `pokemonDataProvider` → ② `move_descriptions.json` → ③ Showdown `shortDesc`. No English leaks.
 - **Struggle Choice Resolution**: In `@pkmn/sim` battles, when all move PP is depleted, pass `'default'` as the choice to execute native Struggle.
 - **Double KO Sequence Order**: In Double KO scenarios, always trigger and await the enemy's faint animation before the player's faint sequence to prevent premature FSM exits and UI animation cutoffs.
@@ -82,7 +82,7 @@ Logic Developers / Game Designers.
 
 ## Verification
 
-- Run `npm run test:node` using the native Node.js test runner for pure mathematical logic.
+- Run `npm run test:node` using Vitest (node project) for pure mathematical logic.
 - Run `npm run audit` to verify type integrity and avoid any `any` usage.
 
 ## Reference Manuals

@@ -152,6 +152,42 @@
     }
   }
 
+  .defense-card-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    &.ineligible-card {
+      :deep(.defense-card-override) {
+        filter: Grayscale(0.85);
+        opacity: 0.7;
+        border-color: #ef4444 !important;
+      }
+    }
+
+    .ineligible-cartel {
+      position: absolute;
+      bottom: 6px;
+      left: 4px;
+      right: 4px;
+      background: Rgba(239, 68, 68, 0.9);
+      border: 1px solid #f87171;
+      border-radius: 4px;
+      color: #ffffff;
+      font-size: 7px;
+      font-weight: 800;
+      text-align: center;
+      padding: 2px 4px;
+      z-index: calc(var(--z-base) + 5);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      @include pixelated;
+    }
+  }
+
   .empty-team-msg {
     font-size: 9px;
     color: var(--gray, #94a3b8);

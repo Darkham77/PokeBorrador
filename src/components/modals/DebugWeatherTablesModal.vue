@@ -8,14 +8,14 @@
  */
 import { ref, computed } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
-import { isWeatherTableRouteId, ROUTE_WEATHER_TABLES, WEATHER_CYCLE_IDS, WEATHER_SEASON_IDS, type WeatherSeasonId, type WeatherTableRouteId } from '@/data/world/weather-tables'
+import { isWeatherTableRouteId, ROUTE_WEATHER_TABLES, WEATHER_SEASON_IDS, type WeatherSeasonId, type WeatherTableRouteId } from '@/data/world/weather-tables'
 import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
 import { getMechanicalWeather, requireWeatherId, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA, WEATHER_REGISTRY, type WeatherId } from '@/logic/weather/weatherRegistry'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { MapRouteId } from '@/data/world/map-assets'
 import type { PokemonType } from '@/data/battle/types'
-import type { DayPhase } from '@/logic/utils/timeUtils'
+import { DAY_PHASES, type DayPhase } from '@/types/system/time'
 
 interface Props {
   id?: string
@@ -107,7 +107,7 @@ const PRECOMPUTED_WEATHER_DATA = (() => {
         if (!map) throw new Error(`[DebugWeatherTablesModal] Missing map data for weather route: ${routeId}`)
         
         const seasons = WEATHER_SEASON_IDS.map(seasonId => {
-          const cycles = WEATHER_CYCLE_IDS.map(cycleId => {
+          const cycles = DAY_PHASES.map(cycleId => {
             const rawProbs = rawRouteData[seasonId][cycleId]
             const probs = Object.entries(rawProbs)
               .filter((entry): entry is [string, number] => entry[1] !== undefined)

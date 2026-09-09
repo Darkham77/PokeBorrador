@@ -25,6 +25,8 @@ interface Props {
   // Permite configurar qué botones se muestran: 'item', 'details', 'box'
   actions?: string[]
   disableCardClick?: boolean
+  isRuleViolated?: boolean
+  ruleViolationReason?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -32,7 +34,9 @@ const props = withDefaults(defineProps<Props>(), {
   isPvp: false,
   maxObeyLv: 100,
   actions: () => ['item', 'details', 'box'],
-  disableCardClick: false
+  disableCardClick: false,
+  isRuleViolated: false,
+  ruleViolationReason: ''
 })
 
 const emit = defineEmits<{
@@ -131,6 +135,7 @@ const cardClasses = computed(() => {
   if (props.pokemon.isShiny) classes.push('is-shiny')
   if (props.pokemon.isGuardian) classes.push('is-guardian')
   if (isPremiumTier.value) classes.push('is-premium-tier')
+  if (props.isRuleViolated) classes.push('is-rule-violated')
   
   return classes
 })
@@ -149,6 +154,15 @@ const cardClasses = computed(() => {
     }"
     @click.stop="!disableCardClick && emit('openDetail', index)"
   >
+    <!-- Rule Violation Cartel -->
+    <div
+      v-if="props.isRuleViolated"
+      class="rule-violation-cartel text-outline"
+    >
+      <span class="emoji">⚠️</span>
+      <span class="violation-reason-text">{{ props.ruleViolationReason || 'No cumple las reglas' }}</span>
+    </div>
+
     <!-- Top Row: Items/Tags + Tier -->
     <div class="top-row">
       <!-- Píldora de Insignias Centralizada -->
@@ -388,6 +402,51 @@ const cardClasses = computed(() => {
     color: #ff6b6b;
     letter-spacing: 0.5px;
     margin-top: 2px;
+  }
+}
+
+.pokemon-display-card.is-rule-violated {
+  border-color: Rgba(239, 68, 68, 0.85) !important;
+  box-shadow: 0 0 12px Rgba(239, 68, 68, 0.4) !important;
+
+  .sprite-section,
+  .pokemon-info,
+  .top-row {
+    filter: Grayscale(0.85);
+    opacity: 0.75;
+  }
+}
+
+.rule-violation-cartel {
+  position: absolute;
+  top: 36px;
+  left: 6px;
+  right: 6px;
+  z-index: var(--z-modal-step);
+  background: Rgba(185, 28, 28, 0.95);
+  border: 1px solid Rgba(254, 202, 202, 0.8);
+  border-radius: 6px;
+  padding: 3px 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+
+  .emoji {
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
+  .violation-reason-text {
+    font-size: 8px;
+    line-height: 1.1;
+    color: #ffffff;
+    font-weight: bold;
+    letter-spacing: 0.2px;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 </style>

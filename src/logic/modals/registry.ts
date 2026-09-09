@@ -64,8 +64,7 @@ export const MODAL_REGISTRY = {
   PvPOpponentOffline: defineAsyncComponent(() => import('@/components/modals/PvPOpponentOfflineModal.vue')),
   RankedSeasonReward: defineAsyncComponent(() => import('@/components/modals/RankedSeasonRewardModal.vue')),
   EventAutoEnroll: defineAsyncComponent(() => import('@/components/modals/EventAutoEnrollModal.vue')),
-  RankedTournamentDetail: defineAsyncComponent(() => import('@/components/modals/RankedTournamentDetailModal.vue')),
-  RankedTeamBuilder: defineAsyncComponent(() => import('@/components/modals/RankedTeamBuilderModal.vue'))
+  RankedTournamentDetail: defineAsyncComponent(() => import('@/components/modals/RankedTournamentDetailModal.vue'))
 }
 
 export type ModalRegistryKey = keyof typeof MODAL_REGISTRY;

@@ -1,8 +1,7 @@
 
-import type { StatId } from '@/logic/pokemon/statsMath';
 import type { PokemonType } from '@/data/battle/types';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { PokemonMoveId, PokemonStatus, MoveEffect, MoveEffectBoosts, ShowdownSecondaryEffect } from '@/types/pokemon/pokemon';
+import type { PokemonMoveId, PokemonStatus, MoveEffect, MoveEffectBoosts, ShowdownSecondaryEffect, PokemonStatKey } from '@/types/pokemon/pokemon';
 import type { PlayerClassId } from '@/data/player/playerClasses';
 import type { FactionId, GenderId } from '@/types/system/game';
 export type { SessionMode } from '../auth/auth.ts';
@@ -95,8 +94,8 @@ export interface PokemonAesthetics {
 
 export interface NatureBaseData {
   name: string; // domain-ok: Open dynamic text or non-domain string payload
-  up: StatId | null;
-  down: StatId | null;
+  up: PokemonStatKey | null;
+  down: PokemonStatKey | null;
   desc: string; // domain-ok: Open dynamic text or non-domain string payload
 }
 

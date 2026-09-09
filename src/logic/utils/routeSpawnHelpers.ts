@@ -1,5 +1,6 @@
 import { NATURE_DATA, NATURES } from '@/data/battle/natures'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
+import { calculateTotalBaseStats } from '@/logic/pokemon/statsMath'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/weather/weatherRegistry'
 import { getWeatherMultiplier } from '@/logic/weather/weatherUtils'
 import { Dex } from '@pkmn/sim'
@@ -172,7 +173,7 @@ function getPokemonBasicData(id: string, isSeen: boolean) {
   const spa = data?.spa || 0
   const spd = data?.spd || 0
   const spe = data?.spe || 0
-  const totalStats = data ? (data.hp + data.atk + data.def + data.spa + data.spd + data.spe) : 0
+  const totalStats = calculateTotalBaseStats(data)
 
   return { name, types, hp, atk, def, spa, spd, spe, totalStats }
 }

@@ -1,6 +1,6 @@
-import type { BattleMinigame } from '@/types/battle/battle.ts'
+import { BATTLE_MINIGAMES, type BattleMinigame } from '@/types/battle/battle.ts'
 
-export const BATTLE_MINIGAMES = ['fishing', 'archaeology'] as const
+export { BATTLE_MINIGAMES }
 
 export interface MinigameStateCarrier {
   minigame?: BattleMinigame | null

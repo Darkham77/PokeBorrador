@@ -1,7 +1,7 @@
 
 import { calculateMapBonuses } from './warEngine.ts'
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory'
-import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon'
+import { POKEMON_STAT_KEYS, type Pokemon } from '@/types/pokemon/pokemon'
 import type { DominanceInfo } from '@/types/system/stores'
 import type { MapRouteId } from '@/data/world/map-assets'
 import type { FactionId } from '@/types/system/game'
@@ -33,8 +33,7 @@ export function applyEncounterBonuses(
 
   // 2. IV Boost (Legacy rule: Guaranteed higher IVs)
   if (isDominant && bonuses.ivBoost > 0) {
-    const ivKeys: (keyof PokemonIVs)[] = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
-    ivKeys.forEach(stat => {
+    POKEMON_STAT_KEYS.forEach(stat => {
       pokemon.ivs[stat] = Math.max(Number(pokemon.ivs[stat]) || 0, DOMINANCE_MIN_IV_BOOST) // Boost to at least 15
     })
     

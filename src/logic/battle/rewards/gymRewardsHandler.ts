@@ -2,6 +2,8 @@ import type { BattleContext } from '@/types/battle/battleContext';
 import type { BattleDifficulty, BattleState } from '@/types/battle/battle';
 import { getItemById, requireItemId } from '@/data/inventory/items';
 import { incrementRecordKey } from '@/logic/utils/mapUtils';
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
+import { getExpNeededPure } from '@/logic/pokemon/statsMath';
 
 const REMATCH_TM_CHANCE_NORMAL = 0.03;
 const REMATCH_TM_CHANCE_HARD = 0.05;
@@ -98,29 +100,40 @@ export async function processGymBattleRewards(ctx: BattleContext, active: Battle
           const team = ctx.gs.state.team || [];
           if (team.length > 0) {
             const expPerPoke = Math.floor(expReward / team.length);
-            const { getExpNeeded, levelUpPokemon } = await import('@/logic/pokemon/pokemonFactory');
+            const { levelUpPokemon } = await import('@/logic/pokemon/pokemonFactory');
+            const { useUIStore } = await import('@/stores/ui');
+            const uiStore = useUIStore();
             for (const p of team) {
-              if (p.level >= 100) continue;
-              p.exp += expPerPoke;
+              if (p.level >= MAX_POKEMON_LEVEL) continue;
+              let incomingExp = p.exp + expPerPoke;
+              let levelsGained = 0;
 
-              let leveledUp = false;
-              let tempLevel = p.level;
-              let tempExpNeeded = p.expNeeded || getExpNeeded(tempLevel);
-
-              while (p.exp >= tempExpNeeded && tempLevel < 100) {
-                p.exp -= tempExpNeeded;
-                leveledUp = true;
-                tempLevel++;
-                tempExpNeeded = getExpNeeded(tempLevel);
+              while (p.level < MAX_POKEMON_LEVEL) {
+                const needed = p.expNeeded || getExpNeededPure(p.level);
+                if (incomingExp < needed) {
+                  p.exp = incomingExp;
+                  p.expNeeded = needed;
+                  break;
+                }
+                incomingExp -= needed;
+                p.exp = 0;
+                const pendingMoves = levelUpPokemon(p);
+                if (pendingMoves === null) {
+                  p.exp = incomingExp;
+                  break; // Blocked by Everstone
+                }
+                levelsGained++;
+                if (pendingMoves.length > 0) {
+                  uiStore.addToLearnQueue(pendingMoves.map(m => ({ pokemon: p, move: m })));
+                }
               }
 
-              if (leveledUp) {
-                const diffLevels = tempLevel - p.level;
-                p.level = tempLevel;
-                p.expNeeded = tempLevel >= 100 ? 0 : tempExpNeeded;
-                for (let i = 0; i < diffLevels; i++) {
-                  levelUpPokemon(p);
-                }
+              if (p.level >= MAX_POKEMON_LEVEL) {
+                p.exp = 0;
+                p.expNeeded = 0;
+              }
+
+              if (levelsGained > 0) {
                 ctx.addLog(`¡Bono de Gimnasio: ${p.name} subió al nivel ${p.level}!`, 'log-success', p);
               }
               ctx.addLog(`¡Bono de Gimnasio: ${p.name} ganó ${expPerPoke} EXP!`, 'log-success', p);

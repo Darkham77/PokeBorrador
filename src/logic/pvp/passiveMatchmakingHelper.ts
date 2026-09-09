@@ -4,6 +4,7 @@ import { logger } from '@/logic/utils/logger.ts';
 import type { ShowdownPlayerRequest } from '@/types/battle/battle.ts';
 import type { PvPAction } from '@/types/battle/pvp.ts';
 import type { DBRouter } from '@/logic/db/dbRouter.ts';
+import { evaluatePokemonForSeason } from '@/logic/pvp/seasonTeamFilter.ts';
 
 export interface PassiveTeamCandidate {
   user_id: string;
@@ -128,9 +129,10 @@ export async function executePassiveMatchmakingFallback(params: {
   db: DBRouter | null;
   userUid: string;
   myElo: number;
+  seasonRules?: Record<string, unknown> | null;
   notify: (msg: string, icon?: string) => void;
 }): Promise<PassiveFallbackResult | null> {
-  const { db, userUid, myElo, notify } = params;
+  const { db, userUid, myElo, seasonRules, notify } = params;
   if (!db || !userUid) return null;
 
   try {
@@ -140,7 +142,26 @@ export async function executePassiveMatchmakingFallback(params: {
       .eq('is_active', true);
     const candidates = (res?.data || []) as PassiveTeamCandidate[];
 
-    const selected = selectPassiveOpponent(candidates, myElo, userUid);
+    // Filter candidates by current active season rules and prune stale teams
+    const validCandidates: PassiveTeamCandidate[] = [];
+    for (const candidate of candidates) {
+      if (!candidate || !candidate.team_data) continue;
+      const team = parsePassiveTeamSnapshot(candidate.team_data);
+      if (team.length === 0) continue;
+
+      if (seasonRules) {
+        const hasIneligible = team.some(p => !evaluatePokemonForSeason(p, seasonRules).eligible);
+        if (hasIneligible) {
+          if (candidate.user_id) {
+            void db.from('passive_teams').update({ is_active: false }).eq('user_id', candidate.user_id);
+          }
+          continue;
+        }
+      }
+      validCandidates.push(candidate);
+    }
+
+    const selected = selectPassiveOpponent(validCandidates, myElo, userUid);
     if (!selected) {
       notify('No se encontraron defensas pasivas disponibles en este rango.', 'ℹ️');
       return null;

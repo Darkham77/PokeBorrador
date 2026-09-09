@@ -216,6 +216,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
 
   async function _fallbackToPassiveBattle() {
     if (!gameStore.db) return
+    const pvpStore = usePvPStore()
     await executeFallbackToPassiveBattle({
       userId: authStore.user?.id,
       db: gameStore.db,
@@ -224,6 +225,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
       searchCountdownTween,
       matchmakingPoller,
       myElo: gameStore.state.eloRating || DEFAULT_INITIAL_ELO,
+      seasonRules: pvpStore.currentSeasonRules,
       notify: (msg, icon) => uiStore.notify(msg, icon),
       onMatched: (params) => _startPassiveBattle(params)
     })

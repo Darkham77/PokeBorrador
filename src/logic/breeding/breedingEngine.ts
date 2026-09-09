@@ -6,8 +6,9 @@ import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves'
 import { isPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { BASE_SHINY_DENOMINATOR } from '@/logic/constants/gameplay.ts'
 import { canLearnMove } from '@/logic/pokemon/pokemonLearnset.ts'
+import { POKEMON_STAT_KEYS } from '@/types/pokemon/pokemon.ts'
+import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils.ts'
 
-const BREEDING_IV_MAX_RANGE = 32
 const HIDDEN_ABILITY_HERITAGE_PCT = 60
 
 /**
@@ -115,9 +116,7 @@ export function checkCompatibility(pA: Pokemon, pB: Pokemon): BreedingCompatibil
  * Soporta Objetos Recios (force stat) y Lazo Destino (hereda 5 stats).
  */
 export function calculateInheritance(pA: Pokemon, pB: Pokemon, itemA: string, itemB: string, playerClass: string = ''): PokemonIVs {
-  const STATS: (keyof PokemonIVs)[] = ['hp', 'atk', 'def', 'spa', 'spd', 'spe']
-  const ivs: PokemonIVs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
-  STATS.forEach(s => ivs[s] = Math.floor(Math.random() * BREEDING_IV_MAX_RANGE))
+  const ivs: PokemonIVs = generateRandomIVs();
 
   const powerMap: Record<string, keyof PokemonIVs> = {
     power_weight: 'hp',
@@ -152,7 +151,7 @@ export function calculateInheritance(pA: Pokemon, pB: Pokemon, itemA: string, it
   
   const countToInherit = Math.max(0, baseInheritCount - forcedCount)
   
-  const remainingStats = STATS.filter(s => s !== forcedA && s !== forcedB)
+  const remainingStats = POKEMON_STAT_KEYS.filter(s => s !== forcedA && s !== forcedB)
     .sort(() => Math.random() - 0.5)
     .slice(0, countToInherit)
     

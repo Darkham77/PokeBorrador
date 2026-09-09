@@ -3,7 +3,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 import type { ItemId } from '@/data/inventory/items'
 import { getItemName } from '@/data/inventory/items'
-import type { AdventureMinigameType } from '@/types/system/game'
+import type { BattleMinigame } from '@/types/battle/battle'
 
 const FOSSIL_POKEMON_IDS = ['omanyte', 'kabuto', 'aerodactyl'] as const
 const FISH_POKEMON_IDS = ['magikarp', 'goldeen', 'staryu'] as const
@@ -23,7 +23,7 @@ export function useAdventureMinigames(config: MinigameConfig) {
 
 const MINIGAME_SPAWN_LEVEL = 20
 
-  const startMinigame = (type: AdventureMinigameType) => {
+  const startMinigame = (type: BattleMinigame) => {
     if (type === 'archaeology') {
       const fossilId = FOSSIL_POKEMON_IDS[Math.floor(Math.random() * FOSSIL_POKEMON_IDS.length)]!
       minigamePokemon.value = makePokemon(fossilId, MINIGAME_SPAWN_LEVEL) as Pokemon
@@ -37,7 +37,7 @@ const MINIGAME_SPAWN_LEVEL = 20
     }
   }
 
-  const handleMinigameWin = (source: AdventureMinigameType) => {
+  const handleMinigameWin = (source: BattleMinigame) => {
     showArchaeology.value = false
     showFishing.value = false
     minigamePokemon.value = null
@@ -61,7 +61,7 @@ const MINIGAME_SPAWN_LEVEL = 20
     config.resumeTravelAfterEvent()
   }
 
-  const handleMinigameFail = (source: AdventureMinigameType) => {
+  const handleMinigameFail = (source: BattleMinigame) => {
     showArchaeology.value = false
     showFishing.value = false
     minigamePokemon.value = null

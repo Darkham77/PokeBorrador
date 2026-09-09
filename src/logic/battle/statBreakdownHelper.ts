@@ -40,13 +40,12 @@ export const STAGE_MULTIPLIERS_MAP: Record<string, number> = {
   '0': 1.0, '1': 3 / 2, '2': 4 / 2, '3': 5 / 2, '4': 6 / 2, '5': 7 / 2, '6': 8 / 2
 }
 
-export const STAT_MODIFIER_KINDS = ['stage', 'weather', 'ability', 'item', 'status', 'field'] as const;
-export type StatModifierKind = (typeof STAT_MODIFIER_KINDS)[number];
+import type { StatModifierSource } from '@/types/battle/battle.ts';
 
-export interface StatModifierSource {
+export interface StatModifierDetail {
   name: string
   mult: number
-  type: StatModifierKind
+  type: StatModifierSource
 }
 
 export interface DetailedStatBreakdown {
@@ -62,7 +61,7 @@ export interface DetailedStatBreakdown {
   fieldMult: number
   isUp: boolean
   isDown: boolean
-  sources: StatModifierSource[]
+  sources: StatModifierDetail[]
 }
 
 export interface StatBreakdownOptions {
@@ -77,7 +76,7 @@ function resolveWeatherModifier(
   pTypes: PokemonType[],
   mechWeather: WeatherMechanical,
   rawWeatherType: WeatherId | string,
-  sources: StatModifierSource[]
+  sources: StatModifierDetail[]
 ): number {
   if (statKey === 'def') {
     const isSnowBoost = mechWeather === 'snow' || (mechWeather === 'hail' && ACTIVE_GENERATION >= 9)
@@ -108,7 +107,7 @@ function resolveAbilityModifier(
   mechWeather: WeatherMechanical,
   isElectricTerrain: boolean,
   isGrassyTerrain: boolean,
-  sources: StatModifierSource[]
+  sources: StatModifierDetail[]
 ): number {
   if (statKey === 'atk') {
     if (abId === 'hugepower' || abId === 'purepower') {
@@ -182,7 +181,7 @@ function resolveItemModifier(
   statKey: StatIDExceptHP,
   itemId: ItemId,
   pokemon: PurePokemon,
-  sources: StatModifierSource[]
+  sources: StatModifierDetail[]
 ): number {
   if (statKey === 'spe') {
     if (itemId === 'choicescarf') {
@@ -248,7 +247,7 @@ function resolveItemModifier(
 function resolveStatusModifier(
   statKey: StatIDExceptHP,
   pokemon: PurePokemon,
-  sources: StatModifierSource[]
+  sources: StatModifierDetail[]
 ): number {
   if (statKey === 'spe' && pokemon.status === 'par' && pokemon.ability !== 'quickfeet') {
     const mult = ACTIVE_GENERATION <= 6 ? PARALYSIS_SPEED_MULTIPLIER_LEGACY : PARALYSIS_SPEED_MULTIPLIER_GEN7_PLUS
@@ -265,7 +264,7 @@ function resolveStatusModifier(
 function resolveFieldModifier(
   statKey: StatIDExceptHP,
   sideConditions: Record<string, unknown>,
-  sources: StatModifierSource[]
+  sources: StatModifierDetail[]
 ): number {
   let mult = 1.0
   if (statKey === 'spe') {
@@ -304,7 +303,7 @@ export function calculateDetailedStatBreakdown(
   if (statKey === 'atk' && !pokemon.atk) base = pokemon.spa ?? DEFAULT_FALLBACK_STAT
   if (statKey === 'def' && !pokemon.def) base = pokemon.spd ?? DEFAULT_FALLBACK_STAT
 
-  const sources: StatModifierSource[] = []
+  const sources: StatModifierDetail[] = []
   const pTypes = [pokemon.type, pokemon.type2].filter((t): t is PokemonType => Boolean(t))
 
   // 2. Weather Multipliers

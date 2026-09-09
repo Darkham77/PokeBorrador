@@ -88,8 +88,11 @@ function startSearch() {
   livePvP.startSearch();
 }
 
-function openTeamBuilder() {
-  modalStore.open('RankedTeamBuilder');
+
+function handleTournamentCardClick() {
+  if (!modalStore.isOpen('Arena')) {
+    modalStore.open('Arena', { initialTab: 'ranked' });
+  }
 }
 
 function handleEmojiEnter(e: MouseEvent) {
@@ -120,7 +123,11 @@ function handleEmojiLeave(e: MouseEvent) {
 <template>
   <div class="arena-ranked-overview">
     <!-- 1. Top Section: Seasonal Tournament Banner & Official Rules (EventCard style) -->
-    <section class="season-tournament-card">
+    <section
+      v-gsap-hover
+      class="season-tournament-card"
+      @click="handleTournamentCardClick"
+    >
       <div class="tournament-banner-wrapper">
         <img
           :src="getAssetUrl(ASSET_TYPES.BANNER, currentTheme.bannerImage)"
@@ -278,15 +285,6 @@ function handleEmojiLeave(e: MouseEvent) {
       <div class="actions-buttons-group">
         <button
           v-if="!livePvP.isSearching"
-          v-gsap-hover
-          class="config-team-btn"
-          @click.stop="openTeamBuilder"
-        >
-          <span class="emoji icon">⚙️</span>
-          CONFIGURAR EQUIPO
-        </button>
-        <button
-          v-if="!livePvP.isSearching"
           class="search-btn"
           :disabled="!seasonActive"
           @click.stop="startSearch"
@@ -316,35 +314,17 @@ function handleEmojiLeave(e: MouseEvent) {
   width: 100%;
 }
 
+.season-tournament-card {
+  cursor: pointer;
+}
+
 .actions-buttons-group {
   display: flex;
   gap: 8px;
   width: 100%;
 
-  .config-team-btn {
-    flex: 1;
-    min-height: 32px;
-    padding: 6px 12px;
-    background: Rgba(30, 41, 59, 0.9);
-    border: 1px solid Rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
-    color: #fff;
-    font-size: 10px;
-    font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-
-    &:hover {
-      background: Rgba(51, 65, 85, 0.95);
-      border-color: #38bdf8;
-    }
-  }
-
   .search-btn {
-    flex: 1.5;
+    width: 100%;
   }
 }
 </style>

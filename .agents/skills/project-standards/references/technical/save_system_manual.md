@@ -25,7 +25,7 @@ When adding or evolving properties in the save state schema (`game_saves` in SQL
 Saving in Supabase (`game_saves`) overwrites the entire JSON.
 
 - **Defense**: NEVER overwrite with an empty state. Always verify the `_saveLoaded` flag before allowing `saveGame()`.
-- **Save Race**: The `DBRouter` makes local saving (SQLite/IndexedDB) compete with the cloud. Data with the most recent timestamp is always preferred.
+- **Database Precedence (SSoT)**: The `game_saves` database row (online Supabase or offline SQLite via OPFS) is the absolute Single Source of Truth. Local browser caches serve strictly as offline fallbacks and must NEVER overwrite authoritative database rows during load/login flows. Un-synchronized clients attempting to save trigger optimistic concurrency control (`last_save_id`) protection.
 
 ### 3. "Real Index" Integrity
 
@@ -181,13 +181,21 @@ If the player receives an external update (e.g., an accepted trade) while in bat
 - **Deferral**: The system queues external changes to avoid corrupting the active fight.
 - **Merge**: After the battle, the client downloads the "truth" from the server and applies the results (EXP, Gold) earned locally on top of that new state.
 
-### 2. The 60-Second Principle
+### 2. The 60-Second Principle & Two-Tier Persistence Architecture
 
-To optimize performance and server load:
+To optimize performance, prevent server saturation, and guarantee zero data loss, the persistence engine enforces a strict two-tier architecture coordinated by `SaveCoordinator`:
 
-- **Local Cache**: Minor changes accumulate locally and are synchronized every 60 seconds.
-- **Critical Events**: Actions such as winning a badge, catching a legendary, or performing a trade force an immediate atomic save.
-- **Pre-Action Flush**: Before any social action, a save is forced to ensure that the local state matches the server.
+- **Tier 1 (Local Persistence - 1.5s Coalescing Debounce)**: Minor gameplay mutations (moving items, level ups, box transfers) are debounced with a 1.5-second coalescing window (`DEFAULT_SAVE_DEBOUNCE_MS = 1500`). Local mutations persist directly to `safeStorage` (LocalStorage) and compressed binary `OPFS GZIP` via background Web Worker (`save.worker.ts`).
+- **Tier 2 (Cloud Persistence - 60s Throttle Window)**: Routine cloud synchronization to Supabase (`save_game_trusted`) is throttled to a 60-second window (`CLOUD_SAVE_THROTTLE_MS = 60000`). If local changes occur during an active throttle window, the coordinator marks state as dirty (`isCloudDirty = true`) and schedules a trailing sync to commit accumulated state to the database once the remainder of the 60s window elapses.
+- **Critical Event Bypass (`forceRemote: true`)**: The 60s cloud throttle is immediately bypassed, forcing an atomic cloud save for critical events:
+  - Winning a Gym Badge.
+  - Capturing a Legendary Pokémon.
+  - Completing GTS Market trades or claims.
+  - Claiming major event or ranked milestone awards.
+  - Explicit user manual clicks on "Guardar Partida" in UI/Settings.
+  - Pre-action flush before entering live PvP combat.
+- **Emergency Unload Flush (`beforeunload`)**: The window listener invokes `saveCoordinator.flushPendingSave()`, immediately committing both pending debounced local state and pending dirty cloud state before the browser tab terminates.
+- **Passive Defense Snapshot Coalescing**: Defending team snapshot updates to `passive_teams` follow this same coalescing principle: valid roster adjustments debounce for 1.5s (`scheduleDefenseSnapshotSync`), while any rule violation (illegal species, level exceeding cap) triggers **instant (0ms) fail-fast deactivation** (`deactivatePassiveDefense`), canceling any pending sync and setting `is_active: false` in the database.
 
 ### 3. Concurrency Protection (Locking)
 

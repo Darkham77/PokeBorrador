@@ -10,6 +10,7 @@ import { syncUserProfileData } from '@/logic/auth/profileSyncHelper';
 
 import type { SaveDataDto } from '@/logic/validation/schemas';
 import { safeStorage } from '@/logic/utils/storage';
+import { saveCoordinator } from '@/logic/auth/saveCoordinator';
 
 export { serializeState, isValidState, validateAndSanitize };
 
@@ -53,6 +54,7 @@ export interface SaveOptions {
   userVersion?: number;
   lastSaveId?: string;
   skipRemote?: boolean;
+  forceRemote?: boolean;
 }
 
 async function persistSaveLocally(persistedSaveData: unknown, userId: string): Promise<void> {
@@ -200,7 +202,26 @@ async function executeSaveDirect(state: GameState, user: AuthUser, options: Save
       return { success: true, remote: false };
     }
 
-    return await performRemoteSave(db, user, persistedSaveData, save_data, options, hadDuplicates);
+    // Tier 2: Cloud Throttle Gatekeeper (The 60-Second Principle)
+    const canSaveCloud = options.forceRemote || saveCoordinator.shouldExecuteCloudSave();
+    if (!canSaveCloud) {
+      saveCoordinator.markCloudDirty(async () => {
+        await saveGame(state, user, {
+          ...options,
+          forceRemote: true,
+          showNotif: false,
+          lastSaveId: latestCommittedSaveId || undefined
+        });
+      });
+      logger.debug('SAVE', 'Remote cloud save throttled (60s window). Local progress cached cleanly.');
+      return { success: true, remote: false };
+    }
+
+    const remoteResult = await performRemoteSave(db, user, persistedSaveData, save_data, options, hadDuplicates);
+    if (remoteResult.success) {
+      saveCoordinator.notifyCloudSaveSuccess();
+    }
+    return remoteResult;
   } finally {
     saveOperationState.isSaving = false;
   }

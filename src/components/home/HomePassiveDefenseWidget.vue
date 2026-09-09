@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { gsap } from 'gsap';
 import { usePvPStore, type PassiveBattleReport } from '@/stores/pvp';
 import { useGameStore } from '@/stores/game';
@@ -10,6 +10,8 @@ import TrainerAvatar from '@/components/profile/TrainerAvatar.vue';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { DEFENSE_TOGGLE_BTN_HOVER_DURATION_SEC } from '@/logic/constants/animations';
 import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue';
+import { resolveDefendingTeam } from '@/logic/pvp/pvpTeamHelper';
+import { evaluatePokemonForSeason } from '@/logic/pvp/seasonTeamFilter';
 
 interface Props {
   inModal?: boolean;
@@ -31,24 +33,50 @@ const gameStore = useGameStore();
 const uiStore = useUIStore();
 
 const defenseTeam = computed<Pokemon[]>(() => {
-  const pvp6Uids = gameStore.state.pvpTeam6 || [];
-  if (pvp6Uids.length > 0) {
-    const allPokes = [
-      ...((gameStore.state.team || []) as (Pokemon | null)[]),
-      ...((gameStore.state.box || []) as (Pokemon | null)[])
-    ].filter((p): p is Pokemon => p !== null);
-    const resolved: Pokemon[] = [];
-    for (const uid of pvp6Uids) {
-      const mon = allPokes.find(p => p.uid === uid);
-      if (mon) resolved.push(mon);
-    }
-    if (resolved.length > 0) return resolved;
-  }
-  return ((gameStore.state.team || []) as (Pokemon | null)[]).filter((p): p is Pokemon => p !== null);
+  return resolveDefendingTeam(gameStore.state);
 });
+
+const teamEligibility = computed(() => {
+  const rules = pvp.currentSeasonRules;
+  const map = new Map<string, { eligible: boolean; reason: string }>();
+  if (!rules) return map;
+  for (const mon of defenseTeam.value) {
+    const check = evaluatePokemonForSeason(mon, rules);
+    map.set(mon.uid || mon.id, {
+      eligible: check.eligible,
+      reason: check.reason || 'no cumple las reglas'
+    });
+  }
+  return map;
+});
+
+watch(
+  [() => pvp.passiveTeamActive, defenseTeam, () => pvp.currentSeasonRules],
+  async ([isActive, team, rules]) => {
+    if (!isActive || team.length === 0) return;
+    if (rules) {
+      for (const mon of team) {
+        const check = evaluatePokemonForSeason(mon, rules);
+        if (!check.eligible) {
+          const reason = check.reason || 'no cumple las reglas de la temporada';
+          await pvp.deactivatePassiveDefense(
+            `Defensa Pasiva desactivada: ${mon.name} no cumple las reglas de la temporada (${reason}).`
+          );
+          return;
+        }
+      }
+    }
+    pvp.scheduleDefenseSnapshotSync();
+  },
+  { deep: true }
+);
 
 onMounted(() => {
   void pvp.loadPvPData();
+});
+
+onBeforeUnmount(() => {
+  void pvp.flushPendingDefenseSnapshotSync();
 });
 
 function handleToggleBtnEnter(e: MouseEvent) {
@@ -170,16 +198,27 @@ function openTeamManagement() {
         class="defense-grid"
         :style="{ '--defense-cols': props.columns }"
       >
-        <BoxPokemonCard
+        <div
           v-for="(mon, idx) in defenseTeam"
           :key="mon.uid || mon.id"
-          :pokemon="mon"
-          :index="idx"
-          :hide-stats="true"
-          type-pill-size="ssm"
-          class="defense-card-override clickable-defense-card"
-          @click="() => handlePokemonClick(mon, idx)"
-        />
+          class="defense-card-wrapper"
+          :class="{ 'ineligible-card': teamEligibility.get(mon.uid || mon.id)?.eligible === false }"
+        >
+          <BoxPokemonCard
+            :pokemon="mon"
+            :index="idx"
+            :hide-stats="true"
+            type-pill-size="ssm"
+            class="defense-card-override clickable-defense-card"
+            @click="() => handlePokemonClick(mon, idx)"
+          />
+          <div
+            v-if="teamEligibility.get(mon.uid || mon.id)?.eligible === false"
+            class="ineligible-cartel text-outline"
+          >
+            <span class="emoji">⚠️</span> {{ teamEligibility.get(mon.uid || mon.id)?.reason }}
+          </div>
+        </div>
       </div>
       <div
         v-else

@@ -1,9 +1,9 @@
 import type { Ref } from 'vue'
 import { logger } from '@/logic/utils/logger'
-import type { PendingAward, PastEventHistoryItem, PastCompetitionWinner, CompetitionRankKey, CompetitionEntry } from '@/types/system/stores'
+import type { PendingAward, PastEventHistoryItem, PastCompetitionWinner, CompetitionEntry } from '@/types/system/stores'
 import { getEventDisplayName, type Event as GameEvent } from '@/logic/events/eventEngine'
 import { GAME_TIMEZONE, getGMT3Date } from '@/logic/utils/timeUtils'
-import type { PokemonCompetitionTrophy } from '@/types/pokemon/pokemon'
+import type { PokemonCompetitionTrophy, PokemonCompetitionRank } from '@/types/pokemon/pokemon'
 import { isAwardClaimable } from '@/logic/events/eventValidators'
 import { healStuckEventPokemon } from '@/logic/player/eventRecovery'
 import {
@@ -198,7 +198,7 @@ export async function fetchPastEvents(ctx: EventAwardsContext) {
                 eventName: resolvedEventName,
                 categoryId: catId,
                 categoryName: winner.category_name || (catId.startsWith('weight') ? 'Masa y Peso' : catId.startsWith('height') ? 'Envergadura y Altura' : 'Genética Superior (IVs)'),
-                rank: (winner.rank as CompetitionRankKey) || 'first',
+                rank: (winner.rank as PokemonCompetitionRank) || 'first',
                 score: winner.score || 0,
                 awardedAt: Temporal.Instant.from(res.ended_at).epochMilliseconds
               }, pokeUid)

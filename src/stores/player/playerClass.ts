@@ -21,6 +21,7 @@ import { requireFactionId, type FactionId } from '@/types/system/game'
 import { ONE_HOUR_MS } from '@/logic/constants/items.ts'
 import { FACTION_CHANGE_COST } from '@/logic/war/warEngine.ts'
 import { MAX_SINGLE_STAT_IV, MAX_POKEMON_VIGOR } from '@/logic/constants/gameplay.ts'
+import { POKEMON_STAT_KEYS } from '@/types/pokemon/pokemon.ts'
 
 
 import { AVATAR_STYLES_BY_ID, isAvatarStyleId } from '@/data/player/cosmeticsData'
@@ -377,8 +378,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     } else if (cls === 'criador') {
       // Recompensa en IVs aleatorios a cambio de Vigor
       if (p) {
-        const stats = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
-        const stat = stats[Math.floor(Math.random() * stats.length)];
+        const stat = POKEMON_STAT_KEYS[Math.floor(Math.random() * POKEMON_STAT_KEYS.length)];
         if (stat) {
           const gain = Math.floor(Math.random() * 3) + 1;
           if (!p.ivs) p.ivs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };

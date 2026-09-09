@@ -157,10 +157,10 @@ export function useSaveActions(
     return { success: true }
   }
 
-  async function save(showNotif = true, immediate = true) {
+  async function save(showNotif = true, immediate = true, forceRemote = false) {
     if (saveCoordinator.isBatchActive() && !immediate) {
       saveCoordinator.schedule(async () => {
-        await save(showNotif, true)
+        await save(showNotif, true, forceRemote)
       })
       return { success: true }
     }
@@ -211,7 +211,8 @@ export function useSaveActions(
       db: db.value,
       userVersion: authStore.user.db_version,
       lastSaveId: authStore.user.last_save_id,
-      skipRemote: locked
+      skipRemote: locked,
+      forceRemote
     }) as { success: boolean, migrated?: boolean, lastSaveId?: string, rollback?: boolean, outOfSync?: boolean, error?: string, remote?: boolean, issues?: string[] }
 
     if (result) {
@@ -235,15 +236,15 @@ export function useSaveActions(
     return result || { success: false }
   }
 
-  async function scheduleSave(delayMs?: number) {
+  async function scheduleSave(delayMs?: number, forceRemote = false) {
     saveCoordinator.schedule(async () => {
-      await save(false, true)
+      await save(false, true, forceRemote)
     }, delayMs)
   }
 
   async function withBatchSave<T>(action: () => Promise<T>, showNotifOnEnd = true): Promise<T> {
     return saveCoordinator.withBatchSave(action, async () => {
-      await save(showNotifOnEnd, true)
+      await save(showNotifOnEnd, true, true)
     })
   }
 
@@ -277,7 +278,7 @@ export function useSaveActions(
       }
 
       // Ensure recent in-memory changes (milestones, class loot) are flushed to DB before claim_asset_v2 reads game_saves
-      await save(false, true)
+      await save(false, true, true)
 
       const { data, error } = await db.value.rpc('claim_asset_v2', { p_claim_id: claimId })
       if (error) throw error

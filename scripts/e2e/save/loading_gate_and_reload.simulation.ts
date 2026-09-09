@@ -46,7 +46,7 @@ class LoadingGateReloadSimulation extends BaseE2ESimulation {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const game = useGameStore();
       game.state.money += amt;
-      await game.save(false);
+      await game.save(false, true, true);
       return game.state.money;
     }, amount);
   }

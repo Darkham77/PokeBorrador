@@ -6,7 +6,8 @@ import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import GymRewardPanel from './GymRewardPanel.vue'
 import { toPokemonType, type PokemonType } from '@/data/battle/types'
-import { GYM_DIFFICULTY_IDS, type Gym, type GymDifficultyId } from '@/data/world/gyms'
+import type { Gym } from '@/data/world/gyms'
+import { BATTLE_DIFFICULTIES, type BattleDifficulty } from '@/types/battle/battle'
 
 const GYM_CARD_HOVER_BG_OPACITY_PERCENT = 0.05
 const GYM_CARD_HOVER_BTN_BG_OPACITY_PERCENT = 0.15
@@ -26,7 +27,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const gymsStore = useGymsStore()
-const selectedDifficulty = defineModel<GymDifficultyId>('difficulty', { default: 'easy' })
+const selectedDifficulty = defineModel<BattleDifficulty>('difficulty', { default: 'easy' })
 const cardRef = ref<HTMLElement | null>(null)
 
 const GYM_CARD_MOUNT_OFFSET_Y = 20;
@@ -204,7 +205,7 @@ const handleBtnLeave = (e: MouseEvent) => {
           <!-- Selector de dificultad siempre disponible para permitir rematches en otros niveles -->
           <div class="diff-selector">
             <button 
-              v-for="d in GYM_DIFFICULTY_IDS" 
+              v-for="d in BATTLE_DIFFICULTIES" 
               :key="d"
               class="diff-btn"
               :class="{ 

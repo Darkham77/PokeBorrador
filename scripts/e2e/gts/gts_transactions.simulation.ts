@@ -129,10 +129,10 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
           }
         }
         game.updateState({ money, team, box, starterChosen: true });
-        let saveRes = await game.save(false);
+        let saveRes = await game.save(false, true, true);
         while (!saveRes?.success) {
           await new Promise(r => window.setTimeout(r, 100));
-          saveRes = await game.save(false);
+          saveRes = await game.save(false, true, true);
         }
         console.log('[DEBUG GTS] setupUserInventory save result:', saveRes);
       },
@@ -152,7 +152,7 @@ class GTSSimulationWrapper extends BaseE2ESimulation {
         const gts = useGTSStore();
         const game = useGameStore();
         // MANDATORY: Ensure initial game save exists in SQLite game_saves table before RPC calls
-        await game.save(false);
+        await game.save(false, true, true);
 
         const toPublish = [...game.state.box].slice(0, publishLimit);
         for (const p of toPublish) {

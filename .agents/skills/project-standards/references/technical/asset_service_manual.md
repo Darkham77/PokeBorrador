@@ -53,21 +53,19 @@ const spriteUrl = computed(() => getAssetUrl(ASSET_TYPES.POKEMON, props.pokemon.
 
 ### 1.1 Resolving Held Items dynamically
 
-When resolving a Pokémon's held item represented by its database name string (e.g. `'Compartir EXP'`), you must map the name to its metadata first using `getItemByName` from `@/data/items` to obtain its sprite key before calling the asset service:
+When resolving a Pokémon's held item, the property is stored strictly as a canonical `ItemId` (e.g. `'expshare'`). Resolve the sprite directly via the asset service using the domain identifier:
 
 ```vue
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
-import { getItemByName } from '@/data/items';
+import type { PurePokemon } from '@/types/pokemon/purePokemon';
 
-const props = defineProps(['pokemon']);
+const props = defineProps<{ pokemon: PurePokemon }>();
 
 const heldItemSprite = computed(() => {
   if (!props.pokemon?.heldItem) return '';
-  const item = getItemByName(props.pokemon.heldItem);
-  if (!item?.sprite) return '';
-  return getAssetUrl(ASSET_TYPES.ITEM, item.sprite);
+  return getAssetUrl(ASSET_TYPES.ITEM, props.pokemon.heldItem);
 });
 </script>
 ```

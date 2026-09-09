@@ -1,12 +1,13 @@
 import type { Ref } from 'vue';
 import type { GameState } from '@/types/system/game';
-import type { Pokemon, PokemonSelectionSource } from '@/types/pokemon/pokemon';
+import type { Pokemon, PokemonSelectionSource, PokemonCompetitionRank } from '@/types/pokemon/pokemon';
 import type { BattleState, BattleStages, BattleLog, BattleSource, BattleSide, BattleDifficulty, BattleMinigame } from '@/types/battle/battle';
 import type { BattleStateName, BattleSubStateName } from '@/logic/battle/battleStateMachine';
 import type { Event, GlobalMultipliers } from '@/logic/events/eventEngine';
 import type { AuthUser, SessionMode } from '@/types/auth/auth';
 import type { DBRouter } from '@/logic/db/dbRouter';
-import type { DayPhase, Season } from '@/logic/utils/timeUtils';
+import type { DayPhase } from '@/types/system/time';
+import type { Season } from '@/logic/utils/timeUtils';
 import type { Inventory } from '@/types/inventory/items';
 import type { MapRouteId } from '@/data/world/map-assets';
 import type { GymId } from '@/data/world/gyms';
@@ -87,9 +88,9 @@ export interface GameStore {
   isSaveLocked: boolean;
   addPokemon: (p: Pokemon, options?: { silent?: boolean; source?: string; notify?: boolean }) => void;
   removePokemon: (uid: string) => void;
-  scheduleSave: (delayMs?: number) => void;
+  scheduleSave: (delayMs?: number, forceRemote?: boolean) => void;
   withBatchSave: <T>(action: () => Promise<T>, showNotifOnEnd?: boolean) => Promise<T>;
-  save: (showNotif?: boolean, immediate?: boolean) => Promise<{ success: boolean; migrated?: boolean; lastSaveId?: string; rollback?: boolean; outOfSync?: boolean; error?: string; remote?: boolean } | void>;
+  save: (showNotif?: boolean, immediate?: boolean, forceRemote?: boolean) => Promise<{ success: boolean; migrated?: boolean; lastSaveId?: string; rollback?: boolean; outOfSync?: boolean; error?: string; remote?: boolean } | void>;
   loadGame: () => Promise<void>;
   registerPokedex: (speciesId: PokemonSpeciesId) => void;
   addTrainerExp: (amount: number) => void;
@@ -99,7 +100,7 @@ export interface GameStore {
   togglePokeTag: (context: PokemonSelectionSource, index: number, tagId: PokemonTagId) => void;
   reorderMoves: (pokemon: Pokemon, from: number, to: number) => void;
   fetchClaimQueue: () => Promise<void>;
-  saveGame: (showNotif?: boolean, immediate?: boolean) => Promise<{ success: boolean; migrated?: boolean; lastSaveId?: string; rollback?: boolean; outOfSync?: boolean; error?: string; remote?: boolean } | void>;
+  saveGame: (showNotif?: boolean, immediate?: boolean, forceRemote?: boolean) => Promise<{ success: boolean; migrated?: boolean; lastSaveId?: string; rollback?: boolean; outOfSync?: boolean; error?: string; remote?: boolean } | void>;
 }
 
 export interface BattleStore {
@@ -243,9 +244,7 @@ export type EventRewardType = (typeof EVENT_REWARD_TYPES)[number];
 export const EVENT_TYPE_KINDS = ['competition', 'boost', 'passive_bonus'] as const;
 export type EventTypeKind = (typeof EVENT_TYPE_KINDS)[number];
 
-export const COMPETITION_RANK_KEYS = ['first', 'second', 'third'] as const;
-export type CompetitionRankKey = (typeof COMPETITION_RANK_KEYS)[number];
-export type CompetitionRank = CompetitionRankKey | number;
+export type CompetitionRank = PokemonCompetitionRank | number;
 
 export interface PastCompetitionWinner {
   rank: CompetitionRank;

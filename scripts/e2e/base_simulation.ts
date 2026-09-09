@@ -290,7 +290,7 @@ export abstract class BaseE2ESimulation {
   public async saveGameAndAwaitExport(): Promise<void> {
     await this.page.evaluate(async () => {
       const { useGameStore } = await import('../../src/stores/game.ts');
-      await useGameStore().saveGame();
+      await useGameStore().saveGame(false, true, true);
     });
   }
 

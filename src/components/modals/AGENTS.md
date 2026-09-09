@@ -77,6 +77,11 @@ Frontend Developers / Systems Engineers.
     - `ArenaRankedOverview.vue` is the canonical SSoT for the tournament card (16:9 uncropped banner, title, description, rule badges, shiny reward) and rank card (tier medal, stats, matchmaking button), shared 100% identically between `ArenaRankedPanel.vue` and `HomeRankedWidget.vue`.
     - In `.rank-card`, action button groups (`.actions-buttons-group`) must maintain explicit separation (`margin-top: 20px`) from data/stats rows (`.rank-summary-row`) above them, avoiding flush contact while preserving clean negative space below.
     - `ArenaPassivePanel.vue` reuses `HomePassiveDefenseWidget.vue` with `:in-modal="true"` and `:columns="props.columns"`, eliminating bifurcated layouts or stretched buttons.
+- **PVP Team Management & Season Rules Architecture (`TeamManagementModal.vue`, `useSlotReorder.ts`)**:
+  - `TeamManagementModal.vue` is the canonical SSoT team configurator for all game formats: Adventure, PVP 3v3, PVP 6v6, and Clan War.
+  - In PVP 3v3 and 6v6 tabs, it displays the active seasonal tournament header with rule badges and provides an atomic "⚡ AUTO-AJUSTAR" button powered by `buildAutoRankedTeam`.
+  - Evaluates active slots in real-time against `currentRules` via `evaluatePokemonForSeason`. Any Pokémon violating rules (level cap, banned species, types, Little Cup) is dynamically grayed out with an alarm cartel (`⚠️ {{ reason }}`).
+  - Adheres strictly to the **No-Delete / Swap-Only Mandate**: competitive teams must never have empty slots if the player owns sufficient Pokémon. Eradicates delete actions (`✕`) in favor of slot reordering (drag & drop and tap-to-swap) and in-place slot replacements via `PokemonSelectionModal`.
 - **Event Post-Capture Auto-Enrollment Modal Contract (`EventAutoEnrollModal.vue`)**:
   - Modal element `#event-auto-enroll-modal` automatically appears during the post-wild-capture rewards phase whenever a newly caught Pokémon sets a new personal record across active competition categories.
   - Renders the captured Pokémon's animated sprite via canonical `requirePokemonSpeciesId`, shiny sparkle badge if applicable, qualifying category icon and name, previous record vs new record with delta gain pill (`+XX`), and interactive category switcher when qualifying for multiple categories.

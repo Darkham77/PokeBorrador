@@ -7,6 +7,7 @@
  */
 
 import type { Pokemon } from '@/types/pokemon/pokemon';
+import { calculateTotalIVs, hasMaxIV } from '@/logic/pokemon/statsMath.ts';
 
 export interface TierConfig {
   min: number;
@@ -46,11 +47,7 @@ export function getTierFromTotalIvs(total: number): TierConfig & { tier: string;
  */
 export function getPokemonTier(pokemon: Partial<Pokemon> | null) {
   if (!pokemon) return getTierFromTotalIvs(0);
-  
-  const ivs = pokemon.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
-  const total = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + 
-                (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0);
-
+  const total = calculateTotalIVs(pokemon.ivs);
   return getTierFromTotalIvs(total);
 }
 
@@ -59,8 +56,6 @@ export function getPokemonTier(pokemon: Partial<Pokemon> | null) {
  * @param {Object} pokemon
  * @returns {boolean}
  */
-import { hasMaxIV } from '@/logic/pokemon/statsMath.ts';
-
 export function hasPerfectIV(pokemon: Partial<Pokemon> | null): boolean {
   if (!pokemon || !pokemon.ivs) return false;
   return hasMaxIV(pokemon.ivs);

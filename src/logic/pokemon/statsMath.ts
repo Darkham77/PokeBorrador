@@ -8,6 +8,13 @@
  */
 
 import { MAX_POKEMON_LEVEL } from '../../data/system/constants.ts';
+import {
+  ROCKET_SELL_LEVEL_MULTIPLIER,
+  MAX_TOTAL_IVS_STAT_SUM,
+  ROCKET_SELL_IV_BONUS_CAP,
+  ROCKET_SELL_CUT_MULTIPLIER,
+} from '../constants/gameplay.ts';
+import { POKEMON_STAT_KEYS, type PokemonStatKey } from '@/types/pokemon/pokemon.ts';
 
 /**
  * Calculates the EXP needed for the current level.
@@ -36,17 +43,33 @@ export interface IVs {
   spe: number;
 }
 
-export const COMBAT_STAT_IDS = ['atk', 'def', 'spa', 'spd', 'spe'] as const; // domain-ok: Open dynamic text or non-domain string payload
-export type StatIDExceptHP = (typeof COMBAT_STAT_IDS)[number];
+export type StatIDExceptHP = Exclude<PokemonStatKey, 'hp'>;
+export const COMBAT_STAT_IDS = POKEMON_STAT_KEYS.filter((s): s is StatIDExceptHP => s !== 'hp');
 export const COMBAT_STAT_IDS_SET: ReadonlySet<string> = new Set(COMBAT_STAT_IDS); // runtime-set: Fast O(1) membership lookup set
 
-export const STAT_IDS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'] as const;
-export type StatId = (typeof STAT_IDS)[number];
-export const STAT_IDS_SET: ReadonlySet<string> = new Set(STAT_IDS); // runtime-set: Fast O(1) membership lookup set
+export const POKEMON_STAT_KEYS_SET: ReadonlySet<string> = new Set(POKEMON_STAT_KEYS); // runtime-set: Fast O(1) membership lookup set
+
+export const STAT_NAMES_ES: Record<PokemonStatKey, string> = {
+  hp: 'PS',
+  atk: 'Ataque',
+  def: 'Defensa',
+  spa: 'At. Especial',
+  spd: 'Def. Especial',
+  spe: 'Velocidad',
+};
+
+export const STAT_SHORT_NAMES_ES: Record<PokemonStatKey, string> = {
+  hp: 'PS',
+  atk: 'Ataque',
+  def: 'Defensa',
+  spa: 'At. Esp',
+  spd: 'Def. Esp',
+  spe: 'Velocidad',
+};
 
 export interface NatureData {
-  up: StatId | null;
-  down: StatId | null;
+  up: PokemonStatKey | null;
+  down: PokemonStatKey | null;
 }
 
 export interface CalculatedStats {
@@ -70,7 +93,7 @@ export function calcStatsPure(
   evs?: { hp?: number; atk?: number; def?: number; spa?: number; spd?: number; spe?: number } | null,
   isDittoQuickPowder: boolean = false
 ): CalculatedStats {
-  const getStat = (baseVal: number, iv: number, ev: number, lvl: number, statId: StatId) => {
+  const getStat = (baseVal: number, iv: number, ev: number, lvl: number, statId: PokemonStatKey) => {
     let val = Math.floor(((baseVal * 2) + iv + Math.floor(ev / 4)) * lvl / 100 + 5);
     if (natureData.up === statId) val = Math.floor(val * 1.1);
     if (natureData.down === statId) val = Math.floor(val * 0.9);
@@ -110,8 +133,8 @@ export function calcStatsPure(
   return { maxHp, atk, def, spa, spd, spe };
 }
 
-export function isStatId(stat: string): stat is StatId {
-  return STAT_IDS_SET.has(stat);
+export function isStatId(stat: string): stat is PokemonStatKey {
+  return POKEMON_STAT_KEYS_SET.has(stat);
 }
 
 export function isStatIdExceptHP(stat: string): stat is StatIDExceptHP {
@@ -125,14 +148,14 @@ export function requireStatIdExceptHP(stat: string): StatIDExceptHP {
   return stat;
 }
 
-export function calculateTotalIVs(ivs?: Partial<Record<StatId, number>> | null): number {
+export function calculateTotalIVs(ivs?: Partial<Record<PokemonStatKey, number>> | null): number {
   if (!ivs) return 0;
   return (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0);
 }
 
 export const MAX_IV_VALUE = 31 as const;
 
-export function hasMaxIV(ivs?: Partial<Record<StatId, number>> | null): boolean {
+export function hasMaxIV(ivs?: Partial<Record<PokemonStatKey, number>> | null): boolean {
   if (!ivs) return false;
   return (
     ivs.hp === MAX_IV_VALUE ||
@@ -155,6 +178,15 @@ export function modifyStatStage(stages: Record<string, number>, stat: string, de
   stages[stat] = next;
   return next;
 }
+
+/**
+ * Pure mathematical formula for selling a Pokémon to Team Rocket (Black Market).
+ * Formula: floor((Level * 50 + (Total IVs / 186) * 500) * 0.8)
+ */
+export function calculateRocketSellPriceRaw(level: number, totalIvs: number): number {
+  return Math.floor((level * ROCKET_SELL_LEVEL_MULTIPLIER + (totalIvs / MAX_TOTAL_IVS_STAT_SUM) * ROCKET_SELL_IV_BONUS_CAP) * ROCKET_SELL_CUT_MULTIPLIER);
+}
+
 
 
 

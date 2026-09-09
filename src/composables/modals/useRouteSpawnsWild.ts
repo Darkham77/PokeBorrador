@@ -5,7 +5,8 @@ import { useGameStore } from '@/stores/game'
 import { useEventStore } from '@/stores/events'
 import { useUIStore } from '@/stores/ui'
 import { requirePokemonSpeciesId, isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { DAY_PHASES, getGMT3Date } from '@/logic/utils/timeUtils'
+import { getGMT3Date } from '@/logic/utils/timeUtils'
+import { DAY_PHASES } from '@/types/system/time'
 import { resolveWeeklyRotation, safeParse, type EventConfig } from '@/logic/events/eventEngine'
 import {
   getSpawnStatus,

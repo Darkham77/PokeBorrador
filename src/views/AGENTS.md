@@ -17,7 +17,7 @@ Core Frontend.
 
 - Keep page views clean. Extract complex visual state management to composables.
 - Standardize the loading screen gate; hide the loading veil entirely via `v-if` when `onMounted` triggers to prevent DOM blockages.
-- Do not apply CSS `zoom` transforms to canvas wrappers (like Phaser `.battle-arena`); apply zooms strictly to surrounding UI panels.
+- Do not apply CSS `zoom` transforms to canvas wrappers (such as battle arena or map canvas wrappers); apply zooms strictly to surrounding UI panels.
 - **Just-in-Time Web Worker Preloading**: Do not launch heavy simulation Web Workers (such as the Showdown Worker) during root application boot in `main.ts`. Preload them in `MainGameView.vue` `onMounted()` when entering the active game view.
 - **Asynchronous View & Debug Panel Splitting**: Top-level views (`MainGameView`) and developer debug panels (`LocalDebugPanel`) must be loaded asynchronously via `defineAsyncComponent` to isolate their dependencies from the initial login chunk.
 

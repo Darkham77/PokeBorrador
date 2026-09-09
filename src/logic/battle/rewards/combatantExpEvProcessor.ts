@@ -6,16 +6,9 @@ import type { Pokemon, Move, PokemonStatKey } from '@/types/pokemon/pokemon';
 import { useUIStore } from '@/stores/ui';
 import { useModalStore } from '@/stores/modals';
 
-const POKERUS_SPREAD_PROBABILITY = 0.33;
+import { STAT_SHORT_NAMES_ES as STAT_NAMES_ES } from '@/logic/pokemon/statsMath';
 
-const STAT_NAMES_ES: Record<PokemonStatKey, string> = {
-  hp: 'PS',
-  atk: 'Ataque',
-  def: 'Defensa',
-  spa: 'At. Esp.',
-  spd: 'Def. Esp.',
-  spe: 'Velocidad',
-};
+const POKERUS_SPREAD_PROBABILITY = 0.33;
 
 export interface ExpEvDistributorParams {
   combatants: Pokemon[];

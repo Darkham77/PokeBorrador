@@ -5,24 +5,7 @@ import type { AdventureNodeId, GraphEdge } from '../../../test aventura/kantoGra
 import type { MapLocation } from '@/types/pokemon/encounters'
 
 
-const POKEMON_CENTER_NODES = [
-  'route2',          // Ciudad Verde / Plateada
-  'route4',          // Centro Mt. Moon
-  'route5',          // Ciudad Celeste
-  'route6',          // Ciudad Carmín
-  'route7',          // Ciudad Azulona
-  'pokemon_tower',   // Pueblo Lavanda
-  'safari_zone',     // Ciudad Fucsia
-  'mansion',         // Isla Canela
-  'route10',         // Centro Túnel Roca
-  'route23'          // Meseta Añil
-] as const
-
-type PokemonCenterNodeId = (typeof POKEMON_CENTER_NODES)[number]
-
-function isPokemonCenterNodeId(value: AdventureNodeId): value is PokemonCenterNodeId {
-  return (POKEMON_CENTER_NODES as readonly AdventureNodeId[]).includes(value)
-}
+import { isPokemonCenterNodeId } from './helpers/adventureSimulationConstants.ts'
 
 const CANVAS_W = 6400
 const CANVAS_H = 4400

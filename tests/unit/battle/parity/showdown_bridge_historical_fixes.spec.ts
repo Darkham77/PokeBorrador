@@ -2,9 +2,9 @@ import { describe, it, expect, vi } from 'vitest';
 import { calculateCatchRatePure, calculateEscapeChancePure } from '@/logic/battle/battleCatchMath.ts';
 import { calculateDamagePure, getEffectiveStatPure } from '@/logic/battle/battleMath.ts';
 import { ref } from 'vue';
-import { Pokemon } from '@/types/pokemon/pokemon';
+import { Pokemon, SHOWDOWN_BOOST_STAT_KEYS } from '@/types/pokemon/pokemon';
 import { BattleContext } from '@/types/battle/battleContext';
-import { handleStageEvents, SHOWDOWN_STAT_KEYS } from '@/logic/battle/showdownBridgeStages';
+import { handleStageEvents } from '@/logic/battle/showdownBridgeStages';
 import { SBCtx } from '@/logic/battle/showdownBridgeCtx';
 import { BattleStages } from '@/types/battle/battle';
 import assert from 'node:assert/strict';
@@ -280,7 +280,7 @@ describe('Showdown Round 11 Audit Fixes', () => {
 // --- From showdown_round12_fixes.spec.ts ---
 describe('Showdown Round 12 Native Parity Fixes', () => {
   it('should use native Showdown stat keys (accuracy, evasion, atk, def, spa, spd, spe)', () => {
-    expect(SHOWDOWN_STAT_KEYS).toEqual(['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion']);
+    expect(SHOWDOWN_BOOST_STAT_KEYS).toEqual(['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion']);
   });
 
   it('should correctly modify accuracy and evasion without conversion tables', () => {

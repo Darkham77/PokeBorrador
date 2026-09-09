@@ -119,7 +119,6 @@ export function isGenderId(value: unknown): value is GenderId {
 export function requireGenderId(value: unknown, fallback: GenderId = 'h'): GenderId {
   return isGenderId(value) ? value : fallback;
 }
-export type AdventureMinigameType = 'archaeology' | 'fishing';
 export type LowPowerModeSetting = 'auto' | 'enabled' | 'disabled';
 export type SortOrder = 'asc' | 'desc';
 export type ItemSortKey = 'name' | 'price' | 'rarity';

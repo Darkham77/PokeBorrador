@@ -51,6 +51,7 @@ interface Props {
   isDaycareContext?: boolean
   daycareSlotIdx?: number
   subCompetition?: ResolvedSubCompetition | SubCompetitionConfig | null
+  seasonRules?: Record<string, unknown> | null
   show?: boolean
 }
 
@@ -73,7 +74,8 @@ const props = withDefaults(defineProps<Props>(), {
   allowedIds: null,
   allowedSpecies: null,
   isItemContext: false,
-  customList: () => [],
+  seasonRules: null,
+  customList: undefined,
   isDaycareContext: false,
   daycareSlotIdx: 0,
   subCompetition: null,
@@ -378,6 +380,7 @@ function openDetail(item: PokemonSelectionItemEntry) {
           :is-daycare-context="props.isDaycareContext"
           :daycare-slot-idx="props.daycareSlotIdx"
           :sub-competition="props.subCompetition"
+          :season-rules="props.seasonRules"
           @select="toggleSelection"
           @open-detail="openDetail"
         />

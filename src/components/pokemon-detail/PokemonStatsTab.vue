@@ -4,7 +4,8 @@ import PokemonStatBar from '@/components/pokemon-detail/PokemonStatBar.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { calculateTotalEvs, calculateEvBonusIvs, MAX_TOTAL_EVS } from '@/logic/pokemon/evMath'
-import { calculateTotalIVs } from '@/logic/pokemon/statsMath'
+import { calculateTotalBaseStats, calculateTotalIVs } from '@/logic/pokemon/statsMath'
+import { calculateTotalPower } from '@/logic/pokemon/pokemonUtils'
 
 interface StatDisplay {
   id: string
@@ -51,14 +52,7 @@ const pokerusStatus = computed(() => {
 })
 
 const bst = computed(() => {
-  return (
-    props.species.hp +
-    props.species.atk +
-    props.species.def +
-    props.species.spa +
-    props.species.spd +
-    props.species.spe
-  )
+  return calculateTotalBaseStats(props.species)
 })
 
 const totalIvs = computed(() => {
@@ -72,6 +66,9 @@ const totalEvIvs = computed(() => {
 })
 
 const totalPower = computed(() => {
+  if (props.isInstance && props.pokemon) {
+    return calculateTotalPower(props.pokemon)
+  }
   return bst.value + totalIvs.value + totalEvIvs.value
 })
 

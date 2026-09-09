@@ -1,13 +1,14 @@
 import { PDEX_ORDER } from '../pokemon/pokedex.ts';
 
+import type { FactionId } from '@/types/system/game.ts';
+
 export const ACTIVE_GENERATION = 9;
 export const ACTIVE_SHOWDOWN_FORMAT = ACTIVE_GENERATION < 5 ? `gen${ACTIVE_GENERATION}customgame` : `gen${ACTIVE_GENERATION}customgame@@@!Team Preview`;
 
-export const FACTIONS = {
+export const FACTIONS: Record<'UNION' | 'POWER', FactionId> = {
   UNION: 'union',
   POWER: 'poder'
 } as const;
-export type FactionId = typeof FACTIONS[keyof typeof FACTIONS];
 
 
 export const ENABLED_POKEMON_IDS = [

@@ -5,14 +5,13 @@ import { getItemById, isItemId, type ItemId } from '@/data/inventory/items'
 import PokemonDisplayCard from '@/components/pokemon/PokemonDisplayCard.vue'
 import InventoryItemCard from '@/components/modals/inventory/InventoryItemCard.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { Inventory } from '@/types/inventory/items'
+import { ITEM_TIERS, type Inventory, type ItemTier } from '@/types/inventory/items'
 
-const _ITEM_TIERS = ['common', 'rare', 'epic', 'legend'] as const
-type ItemTier = (typeof _ITEM_TIERS)[number]
+const ITEM_TIERS_SET: ReadonlySet<string> = new Set(ITEM_TIERS) // runtime-set: Fast O(1) membership lookup set
 
 function requireItemTier(value: string | undefined): ItemTier | undefined {
   if (value === undefined) return undefined
-  if (value === 'common' || value === 'rare' || value === 'epic' || value === 'legend') return value
+  if (ITEM_TIERS_SET.has(value)) return value as ItemTier
   throw new Error(`Invalid item tier: ${value}`)
 }
 

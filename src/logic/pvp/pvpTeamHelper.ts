@@ -3,7 +3,82 @@ import { MAX_PVP_SLOTS, MAX_PVP6_SLOTS, type PvpMatchFormat } from '@/types/batt
 import type { SeasonalThemeConfig } from '@/data/system/rankedData.ts';
 import type { PokemonType } from '@/data/battle/types';
 import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { calculatePokemonStrengthScore } from '@/logic/pokemon/pokemonUtils';
+import { DEFAULT_MOVE_PP } from '@/logic/constants/gameplay.ts';
 import { Dex } from '@pkmn/sim';
+
+export interface PassiveTeamSnapshotEntry {
+  id: string;
+  name: string;
+  level: number;
+  type: string;
+  hp: number;
+  maxHp: number;
+  atk: number;
+  def: number;
+  spa: number;
+  spd: number;
+  spe: number;
+  moves: Array<{ name: string; pp: number }>;
+  heldItem?: string | null;
+  isShiny?: boolean;
+}
+
+/**
+ * Resolves the 6 defending Pokémon for passive defense from saved team data.
+ * Prioritizes pvpTeam6 UIDs, falling back to active adventure team.
+ */
+export function resolveDefendingTeam(saveData: {
+  team: (Pokemon | null)[];
+  box?: (Pokemon | null)[];
+  pvpTeam6?: string[];
+}): Pokemon[] {
+  const pvp6Uids = saveData.pvpTeam6 || [];
+  const allPokes = [
+    ...(saveData.team || []),
+    ...(saveData.box || [])
+  ].filter((p): p is Pokemon => p !== null);
+
+  if (pvp6Uids.length > 0) {
+    const pokesByUid = new Map<string, Pokemon>();
+    for (const p of allPokes) {
+      if (p.uid) {
+        pokesByUid.set(p.uid, p);
+      }
+    }
+    const resolved: Pokemon[] = [];
+    for (const uid of pvp6Uids) {
+      const mon = pokesByUid.get(uid);
+      if (mon) resolved.push(mon);
+    }
+    if (resolved.length > 0) return resolved;
+  }
+  return (saveData.team || []).filter((p): p is Pokemon => p !== null);
+}
+
+/**
+ * Serializes a team into a standardized JSON snapshot string for the passive_teams database table.
+ */
+export function createPassiveTeamSnapshot(team: Pokemon[]): string {
+  const snapshot: PassiveTeamSnapshotEntry[] = team.map((p) => ({
+    id: p.id,
+    name: p.name,
+    level: p.level,
+    type: p.type,
+    hp: p.hp,
+    maxHp: p.maxHp,
+    atk: p.atk,
+    def: p.def,
+    spa: p.spa,
+    spd: p.spd,
+    spe: p.spe,
+    moves: (p.moves || []).filter(Boolean).map((m) => ({ name: m!.name, pp: m!.maxPP || DEFAULT_MOVE_PP })),
+    heldItem: p.heldItem || null,
+    isShiny: Boolean(p.isShiny)
+  }));
+  return JSON.stringify(snapshot);
+}
+
 
 /**
  * Fills a list of PVP slot UIDs up to maxSlots from all available non-illegal Pokémon.
@@ -81,7 +156,6 @@ export function resolveOfflineRivalTeam(
   return filledUids.map(uid => pokesByUid.get(uid)).filter((p): p is Pokemon => p != null);
 }
 
-const SCORE_LEVEL_MULTIPLIER = 1000;
 const KANTO_MAX_DEX_NUM = 151;
 const JOHTO_MAX_DEX_NUM = 251;
 
@@ -136,23 +210,6 @@ export function isPokemonLegalForTheme(pokemon: Pokemon | null | undefined, them
 }
 
 /**
- * Calculates competitive ranking score for auto-fill prioritization (level desc, IVs total desc).
- */
-function calculatePokemonScore(p: Pokemon): number {
-  const ivs = p.ivs;
-  const totalIvs = ivs
-    ? (Number(ivs.hp) || 0) +
-      (Number(ivs.atk) || 0) +
-      (Number(ivs.def) || 0) +
-      (Number(ivs.spa) || 0) +
-      (Number(ivs.spd) || 0) +
-      (Number(ivs.spe) || 0)
-    : 0;
-
-  return (p.level || 1) * SCORE_LEVEL_MULTIPLIER + totalIvs;
-}
-
-/**
  * Automatically assembles the best legal team from available Pokémon according to seasonal theme rules.
  * Prioritizes highest level and best total IVs, while satisfying all constraints (including team-wide monotype).
  */
@@ -168,7 +225,7 @@ export function autoFillLegalTeamForTheme(
   if (validCandidates.length === 0) return [];
 
   // Sort candidates by score descending
-  const sorted = [...validCandidates].sort((a, b) => calculatePokemonScore(b) - calculatePokemonScore(a));
+  const sorted = [...validCandidates].sort((a, b) => calculatePokemonStrengthScore(b) - calculatePokemonStrengthScore(a));
 
   // If theme requires monotype, find the common element that maximizes team score
   if (theme.requiresMonotype) {
@@ -184,7 +241,7 @@ export function autoFillLegalTeamForTheme(
     for (const commonType of allTypesInPool) {
       const matchingPokes = sorted.filter(p => p.type === commonType || p.type2 === commonType);
       const candidateTeam = matchingPokes.slice(0, targetCount);
-      const teamScore = candidateTeam.reduce((acc, p) => acc + calculatePokemonScore(p), 0);
+      const teamScore = candidateTeam.reduce((acc, p) => acc + calculatePokemonStrengthScore(p), 0);
 
       // Prefer larger legal teams, then higher score
       if (candidateTeam.length > bestTeam.length || (candidateTeam.length === bestTeam.length && teamScore > bestScore)) {

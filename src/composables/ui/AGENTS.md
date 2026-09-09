@@ -9,6 +9,7 @@ Frontend Developers / Systems Engineers.
 ## Local Contracts
 
 - Follow standard repository modularity guidelines.
+- `useSlotReorder.ts`: Composable managing slot reordering, tap-to-swap lifecycle, in-place replacements, and HTML5 drag-and-drop state without creating empty slots or duplicate entries.
 
 ## Work Guidance
 

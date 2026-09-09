@@ -55,19 +55,12 @@ describe('reproduce claim all rewards bug', () => {
 
     await simulatePastEventAndMissionsReward(eventStore, gameStore, authStore, uiStore, modalStore, gtsStore, pvpStore)
 
-    const { unifiedRewards, totalClaimableRewards, claimAllRewards } = useUnifiedRewards()
-
-    console.log('Total claimable before:', totalClaimableRewards.value)
-    console.log('Claimable list:', unifiedRewards.value.map(r => ({ id: r.id, source: r.source, claimable: r.isClaimable })))
+    const { totalClaimableRewards, claimAllRewards } = useUnifiedRewards()
 
     const saveSpy = vi.spyOn(gameStore, 'save')
     const saveGameSpy = vi.spyOn(gameStore, 'saveGame')
 
-    const claimed = await claimAllRewards()
-    console.log('Claimed count:', claimed)
-    console.log('save calls count:', saveSpy.mock.calls.length)
-    console.log('saveGame calls count:', saveGameSpy.mock.calls.length)
-    console.log('Total claimable after:', totalClaimableRewards.value)
+    await claimAllRewards()
 
     // A bulk claim should execute claims without triggering an individual full save per item,
     // and instead perform at most 1 consolidated atomic save at the end.

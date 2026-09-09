@@ -3,7 +3,7 @@ import { FIRE_RED_MAPS } from '@/data/world/maps';
 import { isBabyPokemonSpeciesId, isLegendaryPokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { clampLegendaryRates, getFinalGroundRates } from '@/logic/encounters/encounters';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { DayPhase } from '@/logic/utils/timeUtils';
+import type { DayPhase } from '@/types/system/time';
 import { isWeatherId, type WeatherId } from '@/logic/weather/weatherRegistry';
 
 describe('Spawn integrity and Capping - Vitest Unit tests', () => {

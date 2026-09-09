@@ -63,7 +63,7 @@ class DaycareMissionsSimulation extends BaseE2ESimulation {
               icon: '🍬'
             },
             completed: false,
-            trainerType: 'cazabichos',
+            trainerType: 'caza_bichos',
             trainerName: 'Juan',
             trainerSprite: 'bugcatcher',
             dialogue: `Se busca un Caterpie con nivel superior a ${opts.minLevelReq}.`

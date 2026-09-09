@@ -10,6 +10,7 @@ import {
 } from '@/logic/events/eventEngine'
 import { getServerTime } from '@/logic/utils/timeUtils'
 import { getPokemonPhysicalHeight, getPokemonPhysicalWeight } from '@/logic/pokemon/physicalDimensionsMath'
+import { calculateTotalIVs } from '@/logic/pokemon/statsMath'
 import type { CompetitionEntry } from '@/types/system/stores'
 import type { useGameStore } from '@/stores/game.ts'
 import type { useAuthStore } from '@/stores/auth.ts'
@@ -96,8 +97,7 @@ export async function submitCompetitionEntry(
       return
     }
 
-    const ivs = pokemon.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
-    const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0)
+    const totalIvs = calculateTotalIVs(pokemon.ivs)
 
     const subComps = eventCfg ? resolveEventSubCompetitions(eventCfg, synchronizedDate) : []
     const subComp = subComps.find(s => s.id === categoryId) || {
@@ -125,7 +125,7 @@ export async function submitCompetitionEntry(
         level: pokemon.level,
         score: evalRes.score,
         total_ivs: totalIvs,
-        ivs: evalRes.ivs || ivs,
+        ivs: evalRes.ivs || pokemon.ivs,
         is_shiny: pokemon.isShiny,
         obtained_at: pokemon.obtainedAt,
         height: typeof pokemon.height === 'number' ? pokemon.height : Number(getPokemonPhysicalHeight(pokemon).toFixed(1)),

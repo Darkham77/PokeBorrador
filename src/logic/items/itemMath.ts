@@ -12,6 +12,7 @@
 
 import type { Pokemon, StatusClearTarget } from '../../types/pokemon/pokemon.ts';
 import type { ItemEffectResult } from '../../types/inventory/items.ts';
+import { calculateTotalBaseStats, calculateTotalIVs, calculateRocketSellPriceRaw } from '../pokemon/statsMath.ts';
 
 // ── Target Validation ─────────────────────────────────────────────────────────
 
@@ -137,30 +138,22 @@ import type { StatSpread } from '@/types/pokemon/pokemon';
 
 /**
  * Calculates total power of a Pokémon (BST + IV sum).
+ * Delegates to canonical calculateTotalBaseStats and calculateTotalIVs.
  */
 export function calcTotalPower(
   base: StatSpread,
   ivs: StatSpread,
 ): number {
-  const bst = base.hp + base.atk + base.def + base.spa + base.spd + base.spe;
-  const totalIvs = ivs.hp + ivs.atk + ivs.def + ivs.spa + ivs.spd + ivs.spe;
-  return bst + totalIvs;
+  return calculateTotalBaseStats(base) + calculateTotalIVs(ivs);
 }
-
-import {
-  ROCKET_SELL_LEVEL_MULTIPLIER,
-  MAX_TOTAL_IVS_STAT_SUM,
-  ROCKET_SELL_IV_BONUS_CAP,
-  ROCKET_SELL_CUT_MULTIPLIER
-} from '../constants/gameplay.ts';
 
 /**
  * Calculates the sell price to Team Rocket (Black Market).
+ * Delegates to canonical calculateRocketSellPriceRaw and calculateTotalIVs.
  */
 export function calcRocketSellPrice(
   level: number,
   ivs: { hp: number; atk: number; def: number; spa: number; spd: number; spe: number },
 ): number {
-  const totalIvs = ivs.hp + ivs.atk + ivs.def + ivs.spa + ivs.spd + ivs.spe;
-  return Math.floor((level * ROCKET_SELL_LEVEL_MULTIPLIER + (totalIvs / MAX_TOTAL_IVS_STAT_SUM) * ROCKET_SELL_IV_BONUS_CAP) * ROCKET_SELL_CUT_MULTIPLIER);
+  return calculateRocketSellPriceRaw(level, calculateTotalIVs(ivs));
 }

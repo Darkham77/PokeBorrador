@@ -82,5 +82,5 @@ The `.map-card` component **MUST** use `isolation: isolate;`. This ensures negat
 ### 4.1 Grid-to-Card State Sync
 The route environment state (weather, time cycle) must be evaluated at the parent grid level (`MapGrid`) and passed down to children via props (`forced-weather`). This prevents UI badge mismatches with the active encounter pool.
 
-### 4.2 Fallback for Custom/Mock Maps
-If a map definition does not specify cycle-based wild spawn lists (`props.map.wild` is undefined), default to active wild status (`isWildActive = true`) for all candidate species to prevent empty rendering in test or debug environments.
+### 4.2 Strict Schema for Custom/Mock Maps
+Map definitions must explicitly provide canonical wild spawn lists (`wild: []` or populated arrays). If a custom or mock map lacks valid spawn structures, boundary validators must throw an explicit configuration error rather than applying silent dynamic fallbacks.

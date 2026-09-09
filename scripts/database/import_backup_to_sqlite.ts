@@ -64,7 +64,8 @@ if (!backupPath) {
   }
 
   files.sort();
-  const latestBackupFile = files[files.length - 1]!;
+  const upgradedFiles = files.filter(f => f.includes('_upgraded.json')).sort();
+  const latestBackupFile = upgradedFiles.length > 0 ? upgradedFiles[upgradedFiles.length - 1]! : files[files.length - 1]!;
   backupPath = path.join(backupDir, latestBackupFile);
   console.log(styleText('cyan', `📂 Respaldo detectado para [${serverName}]: ${latestBackupFile}`));
 } else {
@@ -341,7 +342,13 @@ using db = new DatabaseSync(dbPath);
 // 5. Crear esquemas de tablas
 console.log('⚡ Inicializando esquemas de tablas...');
 db.exec('PRAGMA foreign_keys = OFF;');
-TABLES_SCHEMA.forEach(schema => {
+
+const ALL_SCHEMAS = [
+  ...TABLES_SCHEMA,
+  '_migrations (id TEXT PRIMARY KEY, applied_at TEXT)'
+];
+
+ALL_SCHEMAS.forEach(schema => {
   try {
     db.exec(`CREATE TABLE IF NOT EXISTS ${schema};`);
   } catch (e) {
@@ -353,7 +360,7 @@ TABLES_SCHEMA.forEach(schema => {
 const tableColumns = new Map<string, Set<string>>();
 const tableIntPk = new Map<string, boolean>();
 
-TABLES_SCHEMA.forEach(schemaStr => {
+ALL_SCHEMAS.forEach(schemaStr => {
   const parts = schemaStr.split('(');
   if (parts.length < 2) return;
   const tableName = parts[0]!.replace('CREATE TABLE IF NOT EXISTS', '').trim();

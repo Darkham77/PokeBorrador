@@ -16,6 +16,7 @@ import { useCombatantStatus } from '@/composables/battle/useCombatantStatus'
 
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { getPokemonTier } from '@/logic/pokemon/tierEngine'
+import { calculateTotalIVs } from '@/logic/pokemon/statsMath'
 import { NATURE_DATA, getNatureDataByNameOrId } from '@/data/battle/natures'
 
 const getNatureData = (nat: string | undefined) => {
@@ -42,8 +43,7 @@ import { useGameStore } from '@/stores/game'
 const gameStore = useGameStore()
 
 const ivTotal = computed(() => {
-  if (!p.value || !p.value.ivs) return 0
-  return (p.value.ivs.hp || 0) + (p.value.ivs.atk || 0) + (p.value.ivs.def || 0) + (p.value.ivs.spa || 0) + (p.value.ivs.spd || 0) + (p.value.ivs.spe || 0)
+  return calculateTotalIVs(p.value?.ivs)
 })
 
 const pokemonTierInfo = computed(() => {

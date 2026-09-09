@@ -152,6 +152,11 @@ export const useAuthStore = defineStore('auth', () => {
           session.value = onlineSession
           sessionMode.value = 'online'
 
+          if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('pvp_session_initialized') !== 'true') {
+            sessionStorage.setItem('pvp_session_initialized', 'true')
+            sessionStorage.setItem('pvp_login_reminder_pending', 'true')
+          }
+
           startSessionMonitoring()
           syncServerTime()
           return // Finalizamos con éxito online
@@ -168,6 +173,10 @@ export const useAuthStore = defineStore('auth', () => {
           supabase.setMode('offline')
         }
         if (user.value && !user.value.db_version) user.value.db_version = 1
+        if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('pvp_session_initialized') !== 'true') {
+          sessionStorage.setItem('pvp_session_initialized', 'true')
+          sessionStorage.setItem('pvp_login_reminder_pending', 'true')
+        }
       }
     } catch (e) {
       logger.warn('Auth', `CheckSession failed or timed out: ${(e as Error).message}`)
@@ -247,6 +256,11 @@ export const useAuthStore = defineStore('auth', () => {
         user.value.user_metadata.gender = profile.gender || 'h'
       }
       
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem('pvp_session_initialized', 'true')
+        sessionStorage.setItem('pvp_login_reminder_pending', 'true')
+      }
+
       startSessionMonitoring()
       syncServerTime()
       return data
@@ -342,6 +356,11 @@ export const useAuthStore = defineStore('auth', () => {
       connectionLost.value = false 
       safeStorage.setItem('pokevicio_local_user', JSON.stringify(userData))
       
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem('pvp_session_initialized', 'true')
+        sessionStorage.setItem('pvp_login_reminder_pending', 'true')
+      }
+
       // Sync time will handle offline state internally
       syncServerTime()
 
@@ -390,6 +409,10 @@ export const useAuthStore = defineStore('auth', () => {
     connectionLost.value = false
     sessionConflict.value = false
 
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem('pvp_login_reminder_pending')
+      sessionStorage.removeItem('pvp_session_initialized')
+    }
     sessionStorage.setItem('block_autologin', 'true')
 
     // Navigate cleanly to /login to reset reactive state without looping

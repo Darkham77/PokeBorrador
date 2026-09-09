@@ -4,8 +4,31 @@ import type { NatureId } from '@/data/battle/natures'
 import type { ItemId } from '@/data/inventory/items'
 import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
 
+import type { TrainerTypeKey } from '@/data/player/trainerTypes'
+
 export const BREEDING_ACTIVITY_SOURCES = ['battle', 'capture', 'gym', 'minigame'] as const;
 export type BreedingActivitySource = (typeof BREEDING_ACTIVITY_SOURCES)[number];
+
+export const DAYCARE_MISSION_REQUIREMENT_TYPES = ['level', 'nature', 'iv_total', 'iv_31'] as const;
+export type DaycareMissionRequirementType = (typeof DAYCARE_MISSION_REQUIREMENT_TYPES)[number];
+
+export const DAYCARE_MISSION_DIFFICULTIES = ['novice', 'apprentice', 'veteran', 'master'] as const;
+export type DaycareMissionDifficulty = (typeof DAYCARE_MISSION_DIFFICULTIES)[number];
+
+export interface MissionRequirement {
+  type: DaycareMissionRequirementType;
+  minLevel?: number;
+  minIvTotal?: number;
+  nature?: NatureId;
+  stat31?: keyof PokemonIVs;
+}
+
+export interface MissionReward {
+  id: ItemId;
+  name: string; // domain-ok: UI Spanish text localization label
+  qty: number;
+  icon: string; // domain-ok: UI emoji icon
+}
 
 export interface DaycareSlot {
   pokemon: Pokemon | null;
@@ -42,22 +65,11 @@ export type DaycareWarehouseItem = DaycareEgg | Pokemon;
 export interface DaycareMission {
   date: string; // domain-ok: Open dynamic text or non-domain string payload
   targetId: PokemonSpeciesId;
-  requirement: {
-    type: string; // domain-ok: Open dynamic text or non-domain string payload
-    minLevel?: number;
-    minIvTotal?: number;
-    nature?: NatureId;
-    stat31?: keyof PokemonIVs;
-  };
+  requirement: MissionRequirement;
   reqText: string; // domain-ok: Open dynamic text or non-domain string payload
-  reward: {
-    id: ItemId;
-    name: string; // domain-ok: Open dynamic text or non-domain string payload
-    qty: number;
-    icon: string; // domain-ok: Open dynamic text or non-domain string payload
-  };
+  reward: MissionReward;
   completed: boolean;
-  trainerType: string; // domain-ok: Open dynamic text or non-domain string payload
+  trainerType: TrainerTypeKey;
   trainerName: string; // domain-ok: Open dynamic text or non-domain string payload
   trainerSprite: NpcSpriteId;
   dialogue: string; // domain-ok: Open dynamic text or non-domain string payload

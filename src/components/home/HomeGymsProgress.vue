@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { GYMS, type GymId, type GymDifficultyId } from '@/data/world/gyms'
+import { GYMS, type GymId } from '@/data/world/gyms'
+import type { BattleDifficulty } from '@/types/battle/battle'
 import { useGameStore } from '@/stores/game'
 import { useUIStore } from '@/stores/ui'
 import { useGymsStore } from '@/stores/gyms'
@@ -19,7 +20,7 @@ const isGymDefeated = (gymId: GymId) => {
   return defeatedGyms.value.includes(gymId)
 }
 
-const isDiffWon = (gymId: GymId, diff: GymDifficultyId) => {
+const isDiffWon = (gymId: GymId, diff: BattleDifficulty) => {
   return gymsStore.isDifficultyDefeated(gymId, diff)
 }
 

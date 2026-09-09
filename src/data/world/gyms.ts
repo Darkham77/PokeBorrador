@@ -3,11 +3,10 @@ import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import type { MapRouteId } from '@/data/world/map-assets';
 import type { ItemId } from '@/data/inventory/items';
-import type { DayPhase } from '@/logic/utils/timeUtils';
+import type { DayPhase } from '@/types/system/time.ts';
 import type { WeatherId } from '@/logic/weather/weatherRegistry';
 
-export const GYM_DIFFICULTY_IDS = ['easy', 'normal', 'hard'] as const;
-export type GymDifficultyId = (typeof GYM_DIFFICULTY_IDS)[number];
+import type { BattleDifficulty } from '@/types/battle/battle';
 
 export const GYM_IDS = ['pewter', 'cerulean', 'vermilion', 'celadon', 'fuchsia', 'saffron', 'cinnabar', 'viridian'] as const;
 export type GymId = (typeof GYM_IDS)[number];
@@ -34,7 +33,7 @@ export interface Gym {
   pokemon: readonly PokemonSpeciesId[];
   levels: readonly number[];
   badgesRequired: number;
-  difficulties: Record<GymDifficultyId, GymDifficulty>;
+  difficulties: Record<BattleDifficulty, GymDifficulty>;
   fixedCycle?: DayPhase;
   fixedWeather?: WeatherId;
   weatherEnabled?: boolean;

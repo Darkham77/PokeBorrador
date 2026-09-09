@@ -39,6 +39,7 @@ Frontend Developers / Systems Engineers.
 - [pvp/](./pvp/AGENTS.md): Node.js unit tests for PvP persistence and team actions.
 - [system/](./system/AGENTS.md): Domain module documentation for system.
 - [trading/](./trading/AGENTS.md): Domain module documentation for trading.
+- [ui/](./ui/AGENTS.md): Node.js unit tests for headless UI state logic and composables.
 - [utils/](./utils/AGENTS.md): Domain module documentation for utils.
 - [validation/](./validation/AGENTS.md): Domain module documentation for validation.
 - [world/](./world/AGENTS.md): Domain module documentation for world.

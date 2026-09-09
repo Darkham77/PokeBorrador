@@ -97,7 +97,8 @@ describe('Assisted Legal Team Auto-Fill', () => {
 
       expect(result).toHaveLength(3);
       // Even though Blastoise has higher level (60), it cannot form a 3-member monotype team with Fire mons
-      expect(result.map(p => p.uid)).toEqual(['f1', 'f2', 'f3']);
+      // Arcanine (BST 555) > Charizard (BST 534) > Ninetales (Lv 45)
+      expect(result.map(p => p.uid)).toEqual(['f2', 'f1', 'f3']);
     });
   });
 });

@@ -5,41 +5,25 @@
  */
 
 import { POKEMON_DB, isPokemonDbSpeciesId } from '@/data/pokemon/pokemonDB';
-import { TRAINER_TYPES, requireNpcArchetype } from '@/data/player/trainerTypes';
+import { TRAINER_TYPES, TRAINER_TYPE_KEYS, requireNpcArchetype, type TrainerTypeKey } from '@/data/player/trainerTypes';
 import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import { getSpritesForArchetype, type NpcArchetype } from '@/logic/utils/npcSpriteRouter';
 import { generateNpcName } from '@/logic/utils/npcNameGenerator';
-import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
-import type { ItemId } from '@/data/inventory/items';
+import type { Pokemon } from '@/types/pokemon/pokemon';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type {
+  DaycareMission,
+  MissionRequirement,
+  MissionReward,
+  DaycareMissionDifficulty,
+  DaycareMissionRequirementType
+} from '@/types/breeding/breeding';
 import { NATURE_DATA, NATURES } from '@/data/battle/natures';
+import { getItemById, type ItemId } from '@/data/inventory/items';
+import { STAT_SHORT_NAMES_ES } from '@/logic/pokemon/statsMath';
+import { POKEMON_STAT_KEYS } from '@/types/pokemon/pokemon';
 
-export interface MissionRequirement {
-  type: string;
-  minLevel?: number;
-  minIvTotal?: number;
-  nature?: string;
-  stat31?: keyof PokemonIVs;
-}
-
-export interface MissionReward {
-  id: ItemId;
-  name: string;
-  qty: number;
-  icon: string;
-}
-
-export interface DaycareMission {
-  date: string;
-  targetId: string;
-  requirement: MissionRequirement;
-  reqText: string;
-  reward: MissionReward;
-  completed: boolean;
-  trainerType: string;
-  trainerName: string;
-  trainerSprite: string;
-  dialogue: string;
-}
+export type { DaycareMission, MissionRequirement, MissionReward };
 
 const TRAINER_LEVEL_APPRENTICE_THRESHOLD = 10;
 const TRAINER_LEVEL_VETERAN_THRESHOLD = 25;
@@ -47,7 +31,7 @@ const TRAINER_LEVEL_MASTER_THRESHOLD = 40;
 const TRAINER_LEVEL_IV31_UNLOCK_THRESHOLD = 15;
 const MAX_PERFECT_IV_VAL = 31;
 
-const POOLS: Record<string, string[]> = {
+const POOLS: Record<DaycareMissionDifficulty, readonly PokemonSpeciesId[]> = {
   novice: ['caterpie', 'weedle', 'pidgey', 'rattata', 'spearow', 'zubat', 'geodude', 'sandshrew', 'nidoranf', 'nidoranm', 'magikarp', 'ekans', 'paras'],
   apprentice: ['pikachu', 'abra', 'gastly', 'drowzee', 'machop', 'bellsprout', 'oddish', 'venonat', 'psyduck', 'poliwag', 'meowth', 'mankey', 'vulpix', 'clefairy', 'jigglypuff', 'pidgeotto', 'raticate', 'fearow', 'golbat', 'graveler', 'kakuna', 'metapod'],
   veteran: ['growlithe', 'ponyta', 'slowpoke', 'magnemite', 'doduo', 'seel', 'grimer', 'shellder', 'krabby', 'voltorb', 'exeggcute', 'cubone', 'horsea', 'goldeen', 'staryu', 'kadabra', 'machoke', 'haunter', 'weepinbell', 'gloom', 'poliwhirl'],
@@ -152,14 +136,15 @@ const MISSION_DIALOGUES_BASE: Record<string, string[]> = {
  * Generates a new mission object.
  */
 export function generateMission(trainerLevel: number, dateStr: string): DaycareMission {
-  let possibleTargets = [...(POOLS['novice'] || [])];
+  let possibleTargets: PokemonSpeciesId[] = [...(POOLS['novice'] || [])];
   if (trainerLevel >= TRAINER_LEVEL_APPRENTICE_THRESHOLD) possibleTargets = possibleTargets.concat(POOLS['apprentice'] || []);
   if (trainerLevel >= TRAINER_LEVEL_VETERAN_THRESHOLD) possibleTargets = possibleTargets.concat(POOLS['veteran'] || []);
   if (trainerLevel >= TRAINER_LEVEL_MASTER_THRESHOLD) possibleTargets = possibleTargets.concat(POOLS['master'] || []);
 
-  const targetId = possibleTargets[Math.floor(Math.random() * possibleTargets.length)] || 'magikarp';
-  const missionTypes: Array<MissionRequirement['type']> = ['level', 'nature', 'iv_total'];
-  if (trainerLevel >= TRAINER_LEVEL_IV31_UNLOCK_THRESHOLD) missionTypes.push('iv_31');
+  const targetId: PokemonSpeciesId = possibleTargets[Math.floor(Math.random() * possibleTargets.length)] || 'magikarp';
+  const missionTypes: readonly DaycareMissionRequirementType[] = trainerLevel >= TRAINER_LEVEL_IV31_UNLOCK_THRESHOLD 
+    ? ['level', 'nature', 'iv_total', 'iv_31'] 
+    : ['level', 'nature', 'iv_total'];
 
   const type = missionTypes[Math.floor(Math.random() * missionTypes.length)] || 'level';
   const requirement: MissionRequirement = { type };
@@ -180,36 +165,52 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
     const espName = NATURE_DATA[targetNature]?.name || targetNature;
     reqText = `naturaleza ${espName}`;
   } else if (type === 'iv_31') {
-    const stats: (keyof PokemonIVs)[] = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
-    const statLabels: Record<string, string> = { hp: 'PS', atk: 'Ataque', def: 'Defensa', spa: 'At. Esp', spd: 'Def. Esp', spe: 'Velocidad' };
-    const targetStat = stats[Math.floor(Math.random() * stats.length)] || 'hp';
+    const targetStat = POKEMON_STAT_KEYS[Math.floor(Math.random() * POKEMON_STAT_KEYS.length)] || 'hp';
     requirement.stat31 = targetStat;
-    reqText = `IV ${MAX_PERFECT_IV_VAL} en ${statLabels[targetStat] || 'PS'}`;
+    reqText = `IV ${MAX_PERFECT_IV_VAL} en ${STAT_SHORT_NAMES_ES[targetStat] || 'PS'}`;
   }
 
   // Rewards
   const rewardQty = trainerLevel >= TRAINER_LEVEL_MASTER_THRESHOLD ? 4 : (trainerLevel >= 20 ? 3 : 2);
-  const possibleRewards: MissionReward[] = [
-    { id: 'berrybronze', name: 'Baya de Bronce', qty: rewardQty + 1, icon: '🥉' }, // spanish-ok: UI Spanish text localization label
-    { id: 'berrysilver', name: 'Baya de Plata', qty: rewardQty, icon: '🥈' }, // spanish-ok: UI Spanish text localization label
-    { id: 'berrygold', name: 'Baya de Oro', qty: Math.max(1, rewardQty - 2), icon: '🥇' }, // spanish-ok: UI Spanish text localization label
-    { id: 'everstone', name: 'Piedra Eterna', qty: 1, icon: '🪨' } // spanish-ok: UI Spanish text localization label
-  ];
 
-  if (trainerLevel >= TRAINER_LEVEL_IV31_UNLOCK_THRESHOLD) {
-    const powerItems: MissionReward[] = [
-      { id: 'powerweight', name: 'Pesa Recia', qty: 1, icon: '🏋️' }, // spanish-ok: UI Spanish text localization label
-      { id: 'powerbracer', name: 'Brazal Recio', qty: 1, icon: '🥊' }, // spanish-ok: UI Spanish text localization label
-      { id: 'powerbelt', name: 'Cinto Recio', qty: 1, icon: '🛡️' }, // spanish-ok: UI Spanish text localization label
-      { id: 'powerlens', name: 'Lente Recia', qty: 1, icon: '🔍' }, // spanish-ok: UI Spanish text localization label
-      { id: 'powerband', name: 'Banda Recia', qty: 1, icon: '🎗️' }, // spanish-ok: UI Spanish text localization label
-      { id: 'poweranklet', name: 'Franja Recia', qty: 1, icon: '👢' } // spanish-ok: UI Spanish text localization label
-    ];
-    possibleRewards.push(...powerItems);
+  interface RewardCandidate {
+    readonly id: ItemId;
+    readonly qty: number;
   }
 
-  const reward = possibleRewards[Math.floor(Math.random() * possibleRewards.length)] || possibleRewards[0] as MissionReward;
-  const tKeys = Object.keys(TRAINER_TYPES);
+  const baseRewards: readonly RewardCandidate[] = [
+    { id: 'berrybronze', qty: rewardQty + 1 },
+    { id: 'berrysilver', qty: rewardQty },
+    { id: 'berrygold', qty: Math.max(1, rewardQty - 2) },
+    { id: 'everstone', qty: 1 }
+  ];
+
+  const powerItemIds: readonly ItemId[] = [
+    'powerweight',
+    'powerbracer',
+    'powerbelt',
+    'powerlens',
+    'powerband',
+    'poweranklet'
+  ];
+
+  const activeCandidates: RewardCandidate[] = [...baseRewards];
+  if (trainerLevel >= TRAINER_LEVEL_IV31_UNLOCK_THRESHOLD) {
+    for (const powerId of powerItemIds) {
+      activeCandidates.push({ id: powerId, qty: 1 });
+    }
+  }
+
+  const chosenReward = activeCandidates[Math.floor(Math.random() * activeCandidates.length)] || activeCandidates[0] as RewardCandidate;
+  const itemDef = getItemById(chosenReward.id);
+
+  const reward: MissionReward = {
+    id: chosenReward.id,
+    name: itemDef.name,
+    qty: chosenReward.qty,
+    icon: itemDef.icon || '🎁'
+  };
+  const tKeys: readonly TrainerTypeKey[] = TRAINER_TYPE_KEYS.filter(k => k in TRAINER_TYPES);
   const tKey = tKeys[Math.floor(Math.random() * tKeys.length)] || 'caza_bichos';
 
   const archetypeSprites = getSpritesForArchetype(tKey as NpcArchetype);
@@ -218,8 +219,9 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
     throw new Error(`[missionEngine] generateMission failed: no sprites found for archetype ${tKey}`);
   }
 
+  const spriteId = requireNpcSpriteId(chosenSprite);
   const trainerName = generateNpcName({
-    spriteId: requireNpcSpriteId(chosenSprite),
+    spriteId,
     archetype: requireNpcArchetype(tKey),
     includeTitle: true
   });
@@ -238,7 +240,7 @@ export function generateMission(trainerLevel: number, dateStr: string): DaycareM
     completed: false,
     trainerType: tKey,
     trainerName,
-    trainerSprite: chosenSprite,
+    trainerSprite: spriteId,
     dialogue
   };
 }

@@ -69,12 +69,12 @@ The roll succeeds if a random integer in $[0, 255] < CC$.
 
 | Caught Species in Pokédex | Multiplier ($P$) |
 | :--- | :--- |
-| $> 600$ | $2.5\times$ |
-| $451 - 600$ | $2.0\times$ |
-| $301 - 450$ | $1.5\times$ |
-| $151 - 300$ | $1.0\times$ |
-| $31 - 150$ | $0.5\times$ |
-| $0 - 30$ | $0\times$ (Critical capture disabled) |
+| $> 150$ (Complete Dex) | $2.5\times$ |
+| $101 - 150$ | $2.0\times$ |
+| $61 - 100$ | $1.5\times$ |
+| $31 - 60$ | $1.0\times$ |
+| $10 - 30$ | $0.5\times$ |
+| $0 - 9$ | $0\times$ (Critical capture disabled) |
 
 *$Ch = 2$ if player holds Catching Charm; $1$ otherwise.*
 

@@ -24,6 +24,13 @@
   &.is-premium-tier {
     @include pokemon-card-premium-tier;
   }
+
+  &.is-rule-violated {
+    filter: Grayscale(0.85);
+    opacity: 0.75;
+    border-color: Rgba(239, 68, 68, 0.7) !important;
+    cursor: not-allowed;
+  }
 }
 
 .m-badge-level {
@@ -252,5 +259,33 @@
     color: #ff6b6b;
     letter-spacing: 0.5px;
     margin-top: 1px;
+  }
+}
+
+.sel-season-violation-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: Rgba(220, 38, 38, 0.92);
+  border: 1px solid Rgba(254, 202, 202, 0.8);
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin-top: 4px;
+  max-width: 100%;
+
+  .emoji {
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  .violation-label {
+    font-size: 7.5px;
+    line-height: 1.1;
+    color: #ffffff;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 220px;
   }
 }

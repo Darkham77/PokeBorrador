@@ -4,7 +4,8 @@ import { useBattleStore } from '@/stores/battle/battle.ts'
 import { makePokemon } from '@/logic/pokemon/pokemonFactory'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
-import { GYMS, GYMS_BY_ID, requireGymId, type GymDifficultyId, type GymId, type Gym } from '@/data/world/gyms.ts'
+import { GYMS, GYMS_BY_ID, requireGymId, type GymId, type Gym } from '@/data/world/gyms.ts'
+import type { BattleDifficulty } from '@/types/battle/battle'
 import { 
   GYM_REMATCHES, 
   getAvailableGymRematches, 
@@ -49,7 +50,7 @@ export const useGymsStore = defineStore('gyms', {
     isGymDefeated(gymId: GymId): boolean {
       return this.defeatedGymsSet.has(gymId)
     },
-    isDifficultyDefeated(gymId: GymId, difficulty: GymDifficultyId): boolean {
+    isDifficultyDefeated(gymId: GymId, difficulty: BattleDifficulty): boolean {
       const gameStore = useGameStore()
       const prog = gameStore.state.gymProgress[gymId]
       if (prog && prog[difficulty] === true) return true
@@ -64,7 +65,7 @@ export const useGymsStore = defineStore('gyms', {
       const gameStore = useGameStore()
       return isGymRematchCompletedToday(gameStore.state, gymId)
     },
-    async challengeGym(gymId: GymId, difficulty: GymDifficultyId = 'easy') {
+    async challengeGym(gymId: GymId, difficulty: BattleDifficulty = 'easy') {
       const battleStore = useBattleStore()
       const validGymId = requireGymId(gymId)
       

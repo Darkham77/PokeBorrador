@@ -13,6 +13,8 @@ interface Props {
   maxObeyLv?: number
   isDraggingAny?: boolean
   isTouchOver?: boolean
+  isRuleViolated?: boolean
+  ruleViolationReason?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -20,7 +22,9 @@ const props = withDefaults(defineProps<Props>(), {
   isPvp: false,
   maxObeyLv: 100,
   isDraggingAny: false,
-  isTouchOver: false
+  isTouchOver: false,
+  isRuleViolated: false,
+  ruleViolationReason: ''
 })
 
 const DRAG_MOVE_THRESHOLD_SQ = 16
@@ -351,6 +355,8 @@ onUnmounted(() => {
         :index="index"
         :is-pvp="isPvp"
         :max-obey-lv="maxObeyLv"
+        :is-rule-violated="isRuleViolated"
+        :rule-violation-reason="ruleViolationReason"
         disable-card-click
         @open-detail="emit('open-detail', index)"
         @open-item="emit('open-item', index)"

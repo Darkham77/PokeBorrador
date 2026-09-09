@@ -93,6 +93,7 @@ export interface FallbackRunnerContext {
   searchCountdownTween: { kill: () => void } | null;
   matchmakingPoller: { kill: () => void } | null;
   myElo: number;
+  seasonRules?: Record<string, unknown> | null;
   notify: (msg: string, icon?: string) => void;
   onMatched: (params: PassiveFallbackParams) => void;
 }
@@ -112,6 +113,7 @@ export async function executeFallbackToPassiveBattle(ctx: FallbackRunnerContext)
       db: ctx.db,
       userUid: ctx.userId,
       myElo: ctx.myElo || DEFAULT_INITIAL_ELO,
+      seasonRules: ctx.seasonRules,
       notify: (msg, icon) => ctx.notify(msg, icon)
     });
 

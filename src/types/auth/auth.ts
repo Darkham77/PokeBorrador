@@ -1,11 +1,11 @@
 import type { GenderId } from '@/types/system/game';
 
-export type UserRole = 'user' | 'admin';
-
-const USER_ROLES = ['user', 'admin'] as const satisfies readonly UserRole[];
+export const USER_ROLES = ['user', 'admin'] as const;
+export type UserRole = (typeof USER_ROLES)[number];
+const USER_ROLES_SET: ReadonlySet<string> = new Set(USER_ROLES); // runtime-set: Fast O(1) membership lookup set
 
 function isUserRole(value: string): value is UserRole {
-  return (USER_ROLES as readonly string[]).includes(value); // domain-ok: Open dynamic text or non-domain string payload
+  return USER_ROLES_SET.has(value);
 }
 
 export function requireUserRole(value: string): UserRole {

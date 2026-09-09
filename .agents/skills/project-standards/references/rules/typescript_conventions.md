@@ -69,6 +69,8 @@
   15. **No Exports in Vue Script Setup (`noScriptSetupExports`)**: `<script setup>` in `.vue` files CANNOT contain ES module exports (`export const`, `export type`, `export interface`). Shared contracts must be extracted to companion `*Types.ts` files, and local types must remain unexported.
   16. **Vue SFC Template Binding Quote Escaping (`vueTemplateQuoteEscaping`)**: When passing string literals within double-quoted Vue SFC template bindings (e.g. `:alt="..."`, `:style="..."`), developers MUST strictly use single quotes for inner string literals (e.g. `:alt="tier?.name || 'Bronce'"`), never unescaped double quotes (`:alt="tier?.name || "Bronce""`). Unescaped inner double quotes violate Vue SFC template parsing and trigger fatal Vite pre-transform errors (`Unexpected token`).
   17. **Storage Collection Index Preservation Before Filtering (`storageIndexPreservation`)**: When transforming or rendering subsets of storage collections (`team`, `box`, `inventory`) where items pass their slot index to mutation handlers, selection routers, or detail composables (`openPokemonDetail(pokemon, index, context)`), developers MUST preserve the true storage slot index by mapping (`.map((item, originalIndex) => ({ ...item, originalIndex }))`) BEFORE applying `.filter(...)`. Passing post-filter array indices into storage mutation handlers or index-based composables silently targets the wrong storage slot, causing severe state desync or displaying incorrect Pokémon entities.
+  18. **Absolute Prohibition on Passthrough Aliases & Eradication of `// alias-ok` (`noRedundantAliases`)**: It is STRICTLY FORBIDDEN to create passthrough type or value aliases (`export type Foo = Bar;`, `export const FOO = BAR;`). The bypass escape hatch `// alias-ok` has been permanently deleted from the codebase and auditor scripts. Every module MUST import canonical domain types and constants directly from their SSoT in `src/types/` or canonical data modules.
+  19. **Dynamic AST Domain Collection Auditing (Zero Hardcoding) (`noRedundantDomainCollections`)**: Static analysis tools in `scripts/auditors/domain_data/validate_domain_types.ts` dynamically harvest canonical `as const` string arrays across the repository. Declaring array literals that duplicate canonical collections ($A = D$) or define redundant subcollections ($A \subset D$ where length $\ge 3$) is strictly prohibited. Subsets must be derived dynamically from SSoT arrays using `.filter()`.
 
 ## 3. Mandatory Typed Domain Data Wrappers for JSON Files
 
@@ -107,7 +109,7 @@
 - **CLI Flag Parsing**: All utility, database, and maintenance scripts accepting arguments MUST use `import { parseArgs } from 'node:util'` with explicit option dictionaries. Positional arguments without flag names are strictly prohibited.
 - **Permission Model**: Utility scripts must use the Node.js 26 Permission Model (`--permission`). All maintenance scripts in `package.json` like `audit:fix` MUST use `--allow-fs-read=*` to allow reading `node_modules` and external dependencies across the filesystem.
 - **Explicit Resource Management**: Mandatory use of `using` for file handles and database connections in Node scripts.
-- **Native Test & Timer Promises**: Prefer `node:test` for pure logic unit tests (non-browser). Prefer `node:timers/promises` for delays in utility/maintenance scripts (Note: 0 timers remain strictly enforced in client/game logic).
+- **Vitest Exclusivity & Timer Promises**: All automated unit, node, and integration tests run exclusively under Vitest via `vitest.workspace.ts` (governed by `tests/AGENTS.md`); importing from `node:test` is strictly forbidden. Prefer `node:timers/promises` for delays in utility/maintenance scripts (Note: 0 timers remain strictly enforced in client/game logic).
 - **Node.js 26 Native TypeScript Extension Standards**: When importing relative TypeScript modules within `scripts/` or `database/` executed directly via Node.js 26 (`--experimental-strip-types`), import paths MUST explicitly use the `.ts` extension (e.g., `import { foo } from './helpers.ts'`). Never use legacy `.js` aliases or omitted extensions in direct script execution.
 
 ## 9. Cross-Platform Path Standard
@@ -127,7 +129,6 @@ When an escape hatch or localized ignore annotation is strictly necessary, it MU
 - `// no-magic: Visual spring animation damping coefficient`
 - `// runtime-set: Fast O(1) membership lookup set`
 - `// singleton-ok: Global persistent database router instance`
-- `// o1-ok: Bounded 2-element collection linear check`
 - `// spanish-ok: UI Spanish text localization label`
 
 Naked tags (e.g. `// domain-ok` or `// no-magic` without `: reason`) are flagged as critical errors by `validate_audit_headers.ts`. Under no circumstances may escape hatches be used to suppress type errors on domain entities.

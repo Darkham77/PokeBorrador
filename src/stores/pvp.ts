@@ -1,6 +1,7 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
+import { logger } from '@/logic/utils/logger.ts'
 import { incrementRecordKey } from '@/logic/utils/mapUtils'
 
 import { useAuthStore } from '@/stores/auth.ts'
@@ -20,8 +21,10 @@ import { getEloTier } from '@/logic/pvp/rankedEngine'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { GAME_TIMEZONE, parseZonedTime } from '@/logic/utils/timeUtils'
-import { DEFAULT_INITIAL_ELO, SEASON_DURATION_MONTHS, DEFAULT_MOVE_PP } from '@/logic/constants/gameplay.ts'
+import { DEFAULT_INITIAL_ELO, SEASON_DURATION_MONTHS } from '@/logic/constants/gameplay.ts'
 import { calculateEloDelta, applyEloDelta } from '@/logic/pvp/eloRatingMath.ts'
+import { resolveDefendingTeam, createPassiveTeamSnapshot } from '@/logic/pvp/pvpTeamHelper'
+import { evaluatePokemonForSeason } from '@/logic/pvp/seasonTeamFilter'
 
 
 export const RANKED_REWARD_TIER_MARKS = [
@@ -38,7 +41,7 @@ interface PvPStats {
   draws: number
 }
 
-interface SeasonRules {
+export interface SeasonRules {
   name: string
   startDate?: string
   endDate?: string
@@ -193,6 +196,33 @@ export const usePvPStore = defineStore('pvp', () => {
     
     passiveTeamActive.value = passive?.is_active || false
 
+    // Validate defending team eligibility against active season rules
+    const defendingTeam = resolveDefendingTeam(gameStore.state)
+    if (passiveTeamActive.value && currentSeasonRules.value && defendingTeam.length > 0) {
+      let firstInvalid: { mon: Pokemon; reason: string } | null = null
+      for (const mon of defendingTeam) {
+        const check = evaluatePokemonForSeason(mon, currentSeasonRules.value)
+        if (!check.eligible) {
+          firstInvalid = {
+            mon,
+            reason: check.reason || 'no cumple las reglas de la temporada'
+          }
+          break
+        }
+      }
+      if (firstInvalid) {
+        await deactivatePassiveDefense(
+          `Defensa Pasiva desactivada: ${firstInvalid.mon.name} no cumple las reglas de la temporada (${firstInvalid.reason}).`
+        )
+      }
+    }
+
+    // Login reminder toast if defense is disabled and pending flag is present
+    if (!passiveTeamActive.value && typeof sessionStorage !== 'undefined' && sessionStorage.getItem('pvp_login_reminder_pending') === 'true') {
+      sessionStorage.removeItem('pvp_login_reminder_pending')
+      uiStore.notify('Recuerda activar tu Defensa Pasiva en el Home para proteger tu ELO.', '🛡️')
+    }
+
     // Fetch Passive Defense Reports
     await fetchDefenseReports()
 
@@ -218,6 +248,11 @@ export const usePvPStore = defineStore('pvp', () => {
       if (resolution.resolved) {
         if (resolution.newElo !== undefined) {
           elo.value = resolution.newElo
+        }
+        if (passiveTeamActive.value) {
+          void deactivatePassiveDefense('Defensa Pasiva desactivada por finalización de temporada.')
+        } else if (gameStore.db && authStore.user) {
+          void gameStore.db.from('passive_teams').update({ is_active: false }).eq('user_id', authStore.user.id)
         }
         if (resolution.rewardPokemon || resolution.medal) {
           const modalStore = useModalStore()
@@ -348,7 +383,74 @@ export const usePvPStore = defineStore('pvp', () => {
         }
       }
     } catch (err) {
-      console.error('[fetchDefenseReports Error]', err)
+      logger.error('PVP', 'Error al consultar reportes de defensa:', err)
+    }
+  }
+
+  const DEFENSE_SNAPSHOT_DEBOUNCE_MS = 1500;
+
+  // audit-disable timers: Low-level persistence debounce for passive defense snapshot
+  let defenseSnapshotTimer: ReturnType<typeof setTimeout> | null = null
+
+  function scheduleDefenseSnapshotSync(delayMs = DEFENSE_SNAPSHOT_DEBOUNCE_MS) {
+    if (defenseSnapshotTimer) {
+      clearTimeout(defenseSnapshotTimer)
+      defenseSnapshotTimer = null
+    }
+    defenseSnapshotTimer = setTimeout(() => {
+      defenseSnapshotTimer = null
+      void syncDefendingTeamSnapshot()
+    }, delayMs)
+  }
+
+  async function flushPendingDefenseSnapshotSync() {
+    if (defenseSnapshotTimer) {
+      clearTimeout(defenseSnapshotTimer)
+      defenseSnapshotTimer = null
+      await syncDefendingTeamSnapshot()
+    }
+  }
+
+  async function deactivatePassiveDefense(reason?: string) {
+    if (defenseSnapshotTimer) {
+      clearTimeout(defenseSnapshotTimer)
+      defenseSnapshotTimer = null
+    }
+    if (!gameStore.db || !authStore.user) return
+    try {
+      await gameStore.db.from('passive_teams').update({ is_active: false }).eq('user_id', authStore.user.id)
+    } catch (err) {
+      logger.error('PVP', 'Error al desactivar defensa pasiva en BD:', err)
+    }
+    passiveTeamActive.value = false
+    if (reason) {
+      uiStore.notify(reason, '⚠️')
+    }
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem('pvp_login_reminder_pending')
+    }
+  }
+
+  async function syncDefendingTeamSnapshot() {
+    if (!passiveTeamActive.value || !gameStore.db || !authStore.user) return
+    const defendingTeam = resolveDefendingTeam(gameStore.state)
+    if (defendingTeam.length === 0) return
+    if (currentSeasonRules.value) {
+      const hasIneligible = defendingTeam.some(p => !evaluatePokemonForSeason(p, currentSeasonRules.value!).eligible)
+      if (hasIneligible) {
+        return
+      }
+    }
+    const snapshotJson = createPassiveTeamSnapshot(defendingTeam)
+    try {
+      await gameStore.db.from('passive_teams').upsert({
+        user_id: authStore.user.id,
+        team_data: snapshotJson,
+        is_active: true,
+        updated_at: Temporal.Now.instant().toString()
+      })
+    } catch (err) {
+      logger.error('PVP', 'Error al sincronizar snapshot de defensa pasiva:', err)
     }
   }
 
@@ -357,36 +459,28 @@ export const usePvPStore = defineStore('pvp', () => {
     
     if (newState) {
       if (!gameStore.db || !authStore.user) return
-      // Create Snapshot (prefer pvpTeam6, fallback to adventure team)
-      const allPokes = [
-        ...((gameStore.state.team || []) as (Pokemon | null)[]),
-        ...((gameStore.state.box || []) as (Pokemon | null)[])
-      ].filter((p): p is Pokemon => p !== null);
-      const pvp6Uids = gameStore.state.pvpTeam6 || [];
-      const teamToSnapshot = pvp6Uids.length > 0
-        ? pvp6Uids.map(uid => allPokes.find(p => p.uid === uid)).filter((p): p is Pokemon => p !== null)
-        : ((gameStore.state.team || []) as (Pokemon | null)[]).filter((p): p is Pokemon => p !== null);
+      const defendingTeam = resolveDefendingTeam(gameStore.state)
+      if (defendingTeam.length === 0) {
+        uiStore.notify('No tienes Pokémon disponibles para defender.', '⚠️')
+        return
+      }
 
-      const snapshot = teamToSnapshot.map((p) => ({
-        id: p.id,
-        name: p.name,
-        level: p.level,
-        type: p.type,
-        hp: p.hp,
-        maxHp: p.maxHp,
-        atk: p.atk,
-        def: p.def,
-        spa: p.spa,
-        spd: p.spd,
-        spe: p.spe,
-        moves: p.moves.filter(m => !!m).map((m) => ({ name: m!.name, pp: m!.maxPP || DEFAULT_MOVE_PP })),
-        heldItem: p.heldItem,
-        isShiny: p.isShiny
-      }))
+      if (currentSeasonRules.value) {
+        for (const mon of defendingTeam) {
+          const check = evaluatePokemonForSeason(mon, currentSeasonRules.value)
+          if (!check.eligible) {
+            const reason = check.reason || 'no cumple las reglas de la temporada'
+            uiStore.notify(`No puedes activar la Defensa Pasiva: ${mon.name} no cumple las reglas (${reason}).`, '⚠️')
+            return
+          }
+        }
+      }
+
+      const snapshotJson = createPassiveTeamSnapshot(defendingTeam)
 
       const { error } = await gameStore.db.from('passive_teams').upsert({
         user_id: authStore.user.id,
-        team_data: JSON.stringify(snapshot),
+        team_data: snapshotJson,
         is_active: true,
         updated_at: Temporal.Now.instant().toString()
       })
@@ -396,9 +490,7 @@ export const usePvPStore = defineStore('pvp', () => {
         uiStore.notify('Equipo de Defensa Pasiva activado.', '🛡️')
       }
     } else {
-      if (!gameStore.db || !authStore.user) return
-      await gameStore.db.from('passive_teams').update({ is_active: false }).eq('user_id', authStore.user.id)
-      passiveTeamActive.value = false
+      await deactivatePassiveDefense()
       uiStore.notify('Defensa Pasiva desactivada.', '⏸️')
     }
   }
@@ -514,6 +606,10 @@ export const usePvPStore = defineStore('pvp', () => {
     loadPvPData,
     checkSeasonRollover,
     togglePassiveTeam,
+    deactivatePassiveDefense,
+    syncDefendingTeamSnapshot,
+    scheduleDefenseSnapshotSync,
+    flushPendingDefenseSnapshotSync,
     claimReward,
     updateElo,
     rules: currentSeasonRules,

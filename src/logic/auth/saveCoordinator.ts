@@ -14,6 +14,7 @@ import { logger } from '@/logic/utils/logger';
 export type SaveExecutor = () => Promise<unknown>;
 
 export const DEFAULT_SAVE_DEBOUNCE_MS = 1500 as const;
+export const CLOUD_SAVE_THROTTLE_MS = 60_000 as const;
 
 export class SaveCoordinator {
   private timer: ReturnType<typeof setTimeout> | null = null;
@@ -22,10 +23,27 @@ export class SaveCoordinator {
   private batchDirty = false;
   private defaultDelayMs: number = DEFAULT_SAVE_DEBOUNCE_MS;
   private isUnloadRegistered = false;
+  private timeProvider: () => number = () => Temporal.Now.instant().epochMilliseconds;
 
-  constructor(delayMs: number = DEFAULT_SAVE_DEBOUNCE_MS) {
+  // Tier 2: Cloud Throttling State
+  private lastCloudSaveTime = 0;
+  private isCloudDirty = false;
+  private cloudTimer: ReturnType<typeof setTimeout> | null = null;
+  private pendingCloudSaveFn: SaveExecutor | null = null;
+  private cloudThrottleMs: number = CLOUD_SAVE_THROTTLE_MS;
+
+  constructor(delayMs: number = DEFAULT_SAVE_DEBOUNCE_MS, cloudThrottleMs: number = CLOUD_SAVE_THROTTLE_MS) {
     this.defaultDelayMs = delayMs;
+    this.cloudThrottleMs = cloudThrottleMs;
     this.registerUnloadHandler();
+  }
+
+  public setTimeProvider(provider: () => number): void {
+    this.timeProvider = provider;
+  }
+
+  private now(): number {
+    return this.timeProvider();
   }
 
   private registerUnloadHandler(): void {
@@ -45,7 +63,67 @@ export class SaveCoordinator {
   }
 
   /**
-   * Schedules a debounced save operation.
+   * Evaluates whether a remote cloud save is authorized given the throttle window.
+   */
+  public shouldExecuteCloudSave(forceRemote = false): boolean {
+    if (forceRemote) return true;
+    if (this.lastCloudSaveTime === 0) return true;
+    return (this.now() - this.lastCloudSaveTime) >= this.cloudThrottleMs;
+  }
+
+  /**
+   * Records a successful remote cloud save, updating the timestamp and clearing dirty status.
+   */
+  public notifyCloudSaveSuccess(): void {
+    this.lastCloudSaveTime = this.now();
+    this.isCloudDirty = false;
+    if (this.cloudTimer) {
+      clearTimeout(this.cloudTimer);
+      this.cloudTimer = null;
+    }
+    this.pendingCloudSaveFn = null;
+  }
+
+  /**
+   * Marks cloud state as dirty and schedules a trailing sync when the throttle window expires.
+   */
+  public markCloudDirty(cloudSaveFn: SaveExecutor): void {
+    this.isCloudDirty = true;
+    this.pendingCloudSaveFn = cloudSaveFn;
+
+    if (!this.cloudTimer) {
+      const elapsed = this.now() - this.lastCloudSaveTime;
+      const remaining = Math.max(0, this.cloudThrottleMs - elapsed);
+
+      this.cloudTimer = setTimeout(() => {
+        this.cloudTimer = null;
+        void this.flushPendingCloudSave();
+      }, remaining);
+    }
+  }
+
+  /**
+   * Immediately flushes any pending throttled cloud save without waiting for the throttle timer.
+   */
+  public async flushPendingCloudSave(): Promise<void> {
+    if (this.cloudTimer) {
+      clearTimeout(this.cloudTimer);
+      this.cloudTimer = null;
+    }
+
+    if (this.isCloudDirty && this.pendingCloudSaveFn) {
+      const fn = this.pendingCloudSaveFn;
+      this.pendingCloudSaveFn = null;
+      try {
+        await fn();
+      } catch (err) {
+        logger.error('SAVE', 'Failed executing flushed cloud save:', err);
+      }
+    }
+  }
+
+  /**
+   * Schedules a debounced local save operation.
    * If inside a batch, saves are suppressed and marked dirty for single execution at batch completion.
    */
   public schedule(saveFn: SaveExecutor, delayMs?: number): void {
@@ -68,14 +146,14 @@ export class SaveCoordinator {
 
     this.timer = setTimeout(() => {
       this.timer = null;
-      void this.flushPendingSave();
+      void this.flushPendingLocalSave();
     }, resolvedDelayMs);
   }
 
   /**
-   * Immediately executes any scheduled debounced save without waiting for the timer.
+   * Flushes only the pending debounced local save.
    */
-  public async flushPendingSave(): Promise<void> {
+  private async flushPendingLocalSave(): Promise<void> {
     if (this.timer) {
       clearTimeout(this.timer);
       this.timer = null;
@@ -87,9 +165,17 @@ export class SaveCoordinator {
       try {
         await fn();
       } catch (err) {
-        logger.error('SAVE', 'Failed executing flushed save:', err);
+        logger.error('SAVE', 'Failed executing flushed local save:', err);
       }
     }
+  }
+
+  /**
+   * Immediately executes any scheduled debounced save and any pending cloud save.
+   */
+  public async flushPendingSave(): Promise<void> {
+    await this.flushPendingLocalSave();
+    await this.flushPendingCloudSave();
   }
 
   /**
@@ -125,6 +211,41 @@ export class SaveCoordinator {
   }
 
   /**
+   * Inspects whether a local debounced save timer is currently pending.
+   */
+  public hasPendingLocalSave(): boolean {
+    return this.timer !== null;
+  }
+
+  /**
+   * Inspects whether local changes are pending cloud synchronization.
+   */
+  public isDirty(): boolean {
+    return this.isCloudDirty;
+  }
+
+  /**
+   * Returns the epoch millisecond timestamp of the last successful remote cloud save.
+   */
+  public getLastCloudSaveTime(): number {
+    return this.lastCloudSaveTime;
+  }
+
+  /**
+   * Configures the cloud throttle window (ms), useful for tests.
+   */
+  public setCloudThrottleMs(ms: number): void {
+    this.cloudThrottleMs = ms;
+  }
+
+  /**
+   * Overrides last cloud save timestamp, useful for tests.
+   */
+  public setLastCloudSaveTime(time: number): void {
+    this.lastCloudSaveTime = time;
+  }
+
+  /**
    * Resets coordinator state (useful for tests).
    */
   public reset(): void {
@@ -132,9 +253,16 @@ export class SaveCoordinator {
       clearTimeout(this.timer);
       this.timer = null;
     }
+    if (this.cloudTimer) {
+      clearTimeout(this.cloudTimer);
+      this.cloudTimer = null;
+    }
     this.pendingSaveFn = null;
+    this.pendingCloudSaveFn = null;
     this.batchStack = [];
     this.batchDirty = false;
+    this.isCloudDirty = false;
+    this.lastCloudSaveTime = 0;
   }
 }
 

@@ -65,13 +65,31 @@ If it represents a finite domain, design and use the domain type first.
 ## Absolute Prohibition on Local Reinvention of Library Domain Types (`noLibraryDomainDuplicates`)
 
 - **Direct Dependency Consumption**: It is STRICTLY FORBIDDEN to redeclare or invent local domain types or string literal arrays (`['p1', 'p2', 'p3', 'p4']`, `'M' | 'F' | 'N'`, `'brn' | 'par' | ...`) when an identical domain type is already exported by an installed library (`SideID`, `GenderName` from `@pkmn/sim`, `StatusName` from `@smogon/calc`, etc.).
-- **Dynamic Auditor Indexing**: The auditor `scripts/validation/validate_domain_types.ts` dynamically indexes all exported union types from `node_modules/` `.d.ts` files at runtime and will fail if local code duplicates a library domain.
+- **Dynamic Auditor Indexing**: The auditor `scripts/auditors/domain_data/validate_domain_types.ts` dynamically indexes all exported union types from `node_modules/` `.d.ts` files at runtime and will fail if local code duplicates a library domain.
 
-## Absolute Prohibition on Redundant 1:1 Type Aliases (`noRedundantTypeAliases`)
+## Absolute Prohibition on Redundant 1:1 Type & Value Aliases (`noRedundantAliases`)
 
-- **Zero-Passthrough Mandate**: It is STRICTLY FORBIDDEN to create 1-to-1 type aliases (`export type Foo = Bar;`) that merely rename an existing type without adding structural or domain value.
-- **Forbidden Pattern**: `export type ActivePokemonStatus = StatusName;`, `export type PersistedPokemonGender = GenderName;`, `export type ReplaySeat = SideID;` (WRONG — unnecessary indirection).
-- **Canonical Pattern**: Use `StatusName`, `GenderName`, `SideID` directly at all usage sites across the repository.
+- **Zero-Passthrough Mandate**: It is STRICTLY FORBIDDEN to create 1-to-1 type aliases (`export type Foo = Bar;`) or value aliases (`export const FOO = BAR;`) that merely rename an existing type or collection without adding structural or domain value.
+- **Permanent Eradication of `// alias-ok`**: The bypass directive `// alias-ok` has been permanently deleted and eradicated from the project. There are NO exceptions or escape hatches for passthrough aliases.
+- **Forbidden Pattern**: `export type ActivePokemonStatus = StatusName;`, `export const GYM_DIFFICULTY_IDS = BATTLE_DIFFICULTIES;`, `export const STAT_IDS = POKEMON_STAT_KEYS;` (WRONG — unnecessary indirection).
+- **Canonical Pattern**: Import and consume canonical contracts (`StatusName`, `BATTLE_DIFFICULTIES`, `POKEMON_STAT_KEYS`) directly at all usage sites across the repository.
+
+## Dynamic AST Domain Collection Auditing & Zero Hardcoding (`noRedundantDomainCollections`)
+
+- **Dynamic Harvesting**: The domain auditor (`scripts/auditors/domain_data/validate_domain_types.ts`) dynamically extracts canonical exported domain collections (`as const` arrays) from `src/types/` and `src/data/` at audit time using TypeScript AST traversal.
+- **Zero-Hardcoding Mandate**: Auditors must never hardcode domain names or literals (e.g. `'hp'`, `'atk'`) to detect duplication. All comparisons are performed dynamically against harvested domain sets.
+- **Exact Duplicates & Redundant Subsets**: The auditor scans all array literals in `src/` and `scripts/` and reports blocking errors for:
+  1. Exact duplicate collections ($A = D$) where an array literal reproduces an existing canonical domain array.
+  2. Redundant subcollections ($A \subset D$ with length $\ge 3$) where an array literal defines a subset of a canonical domain instead of deriving it dynamically via `.filter()`.
+- **Canonical Derivation**: Subsets of canonical domains MUST be derived dynamically from the SSoT array:
+  ```ts
+  // ❌ FORBIDDEN: Redundant literal subcollection
+  const COMBAT_STATS = ['atk', 'def', 'spa', 'spd', 'spe'];
+
+  // ✅ CANONICAL: Derived dynamically from SSoT
+  export const COMBAT_STAT_IDS = POKEMON_STAT_KEYS.filter((s): s is StatIDExceptHP => s !== 'hp');
+  ```
+
 
 ## Absolute Prohibition on Translated String Unions & Display Names in Contracts (`noTranslatedStringUnions`)
 
@@ -366,7 +384,7 @@ Examples:
 
 ## Audit Workflow & Command Reference
 
-The canonical domain type auditor is `scripts/validation/validate_domain_types.ts`. It scans both `src/` and `scripts/` directories automatically.
+The canonical domain type auditor is `scripts/auditors/domain_data/validate_domain_types.ts`. It scans both `src/` and `scripts/` directories automatically.
 
 ### Running the Domain Type Auditor
 

@@ -56,21 +56,8 @@ export function isItemId(value: unknown): value is ItemId {
   return typeof value === 'string' && ITEM_IDS_SET.has(value);
 }
 
-const ITEMS_BY_NAME: Readonly<Record<string, ItemId>> = Object.freeze( // open-record: Generic key-value data dictionary container
-  Object.fromEntries(
-    dbJson.SHOP_ITEMS.flatMap(item => {
-      const entries: [string, ItemId][] = [];
-      if (isItemId(item.id)) entries.push([item.id, item.id]);
-      if (item.name && isItemId(item.id)) entries.push([item.name, item.id]);
-      return entries;
-    })
-  )
-);
-
 export function requireItemId(value: string): ItemId {
   if (isItemId(value)) return value;
-  const match = ITEMS_BY_NAME[value];
-  if (match) return match;
   throw new Error(`[items] Invalid item id: ${value}`);
 }
 
@@ -102,7 +89,7 @@ export const getItemById = (id: string): ShopItemData => {
   const item = ITEMS_BY_ID[cleanId];
 
   if (!item) {
-    throw new Error(`[items] Objeto no encontrado por ID o nombre: "${id}"`);
+    throw new Error(`[items] Objeto no encontrado por ID: "${id}"`);
   }
   return item;
 };

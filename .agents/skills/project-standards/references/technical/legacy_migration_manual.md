@@ -38,5 +38,5 @@ When modernizing complex interactive screens or mini-games (e.g., Fossil Cloning
 
 ## 3. 🚨 Reference Rules
 
-- **Prohibition of "Islands"**: Do not create new styling systems if a global mixin exists in `src/assets/styles/`.
+- **Prohibition of "Islands"**: Do not create new styling systems if a global mixin exists in `src/styles/`.
 - **Change Detection**: If you discover legacy logic that contradicts current standards (e.g., an obsolete damage calculation), ALWAYS prioritize the standard documented in `project-standards`.

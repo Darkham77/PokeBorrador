@@ -6,10 +6,11 @@
  * human-accessible rhythm speeds, note counts, and battle bonuses.
  */
 
-import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
+import { POKEMON_STAT_KEYS, type Pokemon } from '@/types/pokemon/pokemon';
 import type { MinigameDifficulty } from '@/types/battle/battle';
 import { recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
-import { TOTAL_IV_POSSIBILITIES_COUNT } from '@/logic/pokemon/generationMath';
+import { generateIvPure } from '@/logic/pokemon/generationMath';
+import { MAX_POKEMON_LEVEL } from '@/data/system/constants';
 
 export const FISHING_DIFFICULTIES = {
   easy: {
@@ -127,16 +128,15 @@ export function applyFishingLevelAndIvBonus(
     const max = config.maxLevelBonus;
     bonus = Math.floor(randomFn() * (max - min + 1)) + min;
     if (bonus > 0) {
-      pokemon.level = Math.min(100, pokemon.level + bonus);
+      pokemon.level = Math.min(MAX_POKEMON_LEVEL, pokemon.level + bonus);
     }
   }
 
   // 2. Expert IV single reroll (keep highest)
   if (config.rerollIVs && pokemon.ivs) {
-    const stats: (keyof PokemonIVs)[] = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
-    stats.forEach(stat => {
+    POKEMON_STAT_KEYS.forEach(stat => {
       const current = pokemon.ivs[stat] || 0;
-      const reroll = Math.floor(randomFn() * TOTAL_IV_POSSIBILITIES_COUNT);
+      const reroll = generateIvPure(randomFn);
       pokemon.ivs[stat] = Math.max(current, reroll);
     });
   }

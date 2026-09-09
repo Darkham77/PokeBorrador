@@ -1,6 +1,7 @@
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { isPokemonType } from '@/data/battle/types';
+import { Dex } from '@pkmn/sim';
 
 export interface EloTier {
   id: RankedTierId;
@@ -18,6 +19,7 @@ export interface RankedRules {
   levelCap: number;
   allowedTypes: string[];
   bannedPokemonIds: string[];
+  allowedGenerations?: number[];
 }
 
 import {
@@ -172,7 +174,8 @@ export function normalizeRankedRules(raw: Partial<RankedRules> = {}, seasonName:
     maxPokemon: Math.max(MIN_TEAM_MEMBERS, Math.min(MAX_TEAM_MEMBERS, Number(raw.maxPokemon) || MAX_TEAM_MEMBERS)),
     levelCap: Math.max(MIN_RANKED_POKEMON_LEVEL, Math.min(MAX_RANKED_POKEMON_LEVEL, Number(raw.levelCap) || MAX_RANKED_POKEMON_LEVEL)),
     allowedTypes: Array.isArray(raw.allowedTypes) ? raw.allowedTypes.map(t => String(t).toLowerCase()).filter((t): t is PokemonType => isPokemonType(t)) : [],
-    bannedPokemonIds: Array.isArray(raw.bannedPokemonIds) ? raw.bannedPokemonIds.map(id => String(id).toLowerCase()).filter((id): id is PokemonSpeciesId => isPokemonSpeciesId(id)) : []
+    bannedPokemonIds: Array.isArray(raw.bannedPokemonIds) ? raw.bannedPokemonIds.map(id => String(id).toLowerCase()).filter((id): id is PokemonSpeciesId => isPokemonSpeciesId(id)) : [],
+    allowedGenerations: Array.isArray(raw.allowedGenerations) ? raw.allowedGenerations.map(Number).filter(n => !isNaN(n) && n > 0) : undefined
   };
 }
 
@@ -196,6 +199,14 @@ export function validatePokemonForRanked(pokemon: Pokemon | null, rules: RankedR
     const hasAllowedType = types.some((t: PokemonType) => rules.allowedTypes.includes(t));
     if (!hasAllowedType) {
       return { ok: false, reason: `${pokemon.name} no tiene un tipo permitido.` };
+    }
+  }
+
+  if (rules.allowedGenerations && rules.allowedGenerations.length > 0) {
+    const spec = Dex.species.get(pokemon.id);
+    const monGen = spec.gen || 1;
+    if (!rules.allowedGenerations.includes(monGen)) {
+      return { ok: false, reason: `${pokemon.name} pertenece a una generación no permitida (Gen ${monGen}).` };
     }
   }
 

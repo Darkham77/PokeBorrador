@@ -67,8 +67,8 @@ describe('saveService Concurrency Queue', () => {
     };
 
     // Trigger two saves concurrently: save 1 starts, save 2 arrives while save 1 is in-flight
-    const p1 = saveGame(state1, user, { db: mockDb, showNotif: false });
-    const p2 = saveGame(state2, user, { db: mockDb, showNotif: false });
+    const p1 = saveGame(state1, user, { db: mockDb, showNotif: false, forceRemote: true });
+    const p2 = saveGame(state2, user, { db: mockDb, showNotif: false, forceRemote: true });
 
     const [res1, res2] = await Promise.all([p1, p2]);
 

@@ -2,9 +2,11 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { SeasonalThemeConfig } from '@/data/system/rankedData';
 import type { PokemonType } from '@/data/battle/types';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { calculatePokemonStrengthScore } from '@/logic/pokemon/pokemonUtils';
 import { Dex } from '@pkmn/sim';
 
-const LEVEL_WEIGHT_MULTIPLIER = 1000 as const;
+export { calculatePokemonStrengthScore } from '@/logic/pokemon/pokemonUtils';
+
 const DEFAULT_LEVEL_FALLBACK = 1 as const;
 const DEFAULT_TEAM_COUNT = 6 as const;
 
@@ -40,16 +42,38 @@ export function evaluatePokemonForSeason(
     return { eligible: false, reason: 'Especie baneada en esta temporada' };
   }
 
-  // 2. Little cup checks
+  // 2. Level cap checks (general levelCap or Little Cup levelCap)
+  const effectiveLevelCap = rules.isLittleCup
+    ? (('levelCap' in rules && typeof rules.levelCap === 'number') ? rules.levelCap : 5)
+    : (('levelCap' in rules && typeof rules.levelCap === 'number' && rules.levelCap > 0) ? rules.levelCap : undefined);
+
+  if (effectiveLevelCap !== undefined && (pokemon.level || DEFAULT_LEVEL_FALLBACK) > effectiveLevelCap) {
+    return {
+      eligible: false,
+      reason: rules.isLittleCup
+        ? `Nivel excede el límite de Little Cup (Nivel máximo: ${effectiveLevelCap})`
+        : `Nivel excede el límite de la temporada (Nivel máximo: ${effectiveLevelCap})`
+    };
+  }
+
+  // 3. Little cup checks
   if (rules.isLittleCup) {
-    const levelCap = ('levelCap' in rules && typeof rules.levelCap === 'number') ? rules.levelCap : 5;
-    if ((pokemon.level || 1) > levelCap) {
-      return { eligible: false, reason: `Nivel excede el límite de Little Cup (Máx Lv ${levelCap})` };
-    }
     const hasPrevo = Boolean(spec.prevo);
     const hasEvos = Boolean(spec.evos && spec.evos.length > 0);
     if (hasPrevo || !hasEvos) {
       return { eligible: false, reason: 'En Little Cup sólo se permiten crías o formas base con evolución' };
+    }
+  }
+
+  // 4. Allowed generations check
+  const allowedGens = (rules.allowedGenerations || []) as readonly number[];
+  if (allowedGens.length > 0) {
+    const monGen = spec.gen || 1;
+    if (!allowedGens.includes(monGen)) {
+      return {
+        eligible: false,
+        reason: `Generación (Gen ${monGen}) no permitida en esta temporada (Permitidas: ${allowedGens.join(', ')})`
+      };
     }
   }
 
@@ -85,20 +109,6 @@ export function evaluatePokemonForSeason(
   }
 
   return { eligible: true };
-}
-
-export function calculatePokemonStrengthScore(p: Pokemon): number {
-  const ivs = p.ivs;
-  const totalIvs = ivs
-    ? (Number(ivs.hp) || 0) +
-      (Number(ivs.atk) || 0) +
-      (Number(ivs.def) || 0) +
-      (Number(ivs.spa) || 0) +
-      (Number(ivs.spd) || 0) +
-      (Number(ivs.spe) || 0)
-    : 0;
-
-  return (p.level || DEFAULT_LEVEL_FALLBACK) * LEVEL_WEIGHT_MULTIPLIER + totalIvs;
 }
 
 export function buildAutoRankedTeam(

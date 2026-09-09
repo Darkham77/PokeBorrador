@@ -12,15 +12,13 @@ Defines how the item looks and how much it costs.
 
 ```js
 {
-  id: 'snake_case_id',
-  craftingTier: 0|1|2|3, // Numeric processing tier level
-  name: 'Visible Name',
-  cat: 'healing|held|tm|breeding|special|stone|stones',
-  sprite: 'URL_pixel_art',
+  id: 'showdown_item_id', // Canonical lowercase alphanumeric Showdown ItemId (e.g. 'abilityshield', 'potion')
+  craftingTier: 0 | 1 | 2 | 3, // Numeric processing tier level (0-3)
+  name: 'Visible Spanish Name',
+  cat: 'raw_material' | 'refined_material' | 'component' | 'pokeballs' | 'potions' | 'stones' | 'combat_held' | 'breeding_held' | 'machinery' | 'tools' | 'tms' | 'otros',
   icon: 'emoji',
   price: 1000,
-  desc: 'Description...',
-  effect: (qty) => { inventoryStore.addItem('Name', qty); }
+  desc: 'Spanish description...',
 }
 ```
 
@@ -63,7 +61,7 @@ Accessing items via the combat sidebar HUD must mirror the full inventory logic:
 - **Immediate Action**: Direct use only for Pokéballs (targeting the enemy).
 - **Selection Flow**: For healing/buff items, ALWAYS verify `isValidTarget` first, then open `PokemonSelection` modal to pick the target.
 - **Consistency**: Never bypass the "Ask who to apply" step if the item target is the team.
-- **Item Lookup**: Always query items by both `id` and `name` (`item.id === key || item.name === key`) to match stored inventory items correctly and prevent target resolution failures.
+- **Item Lookup**: Always query items strictly by canonical `ItemId` (via `getItemById(id)` or `requireItemId(id)`). Querying by localized name or falling back (`item.id === key || item.name === key`) is strictly forbidden and flagged by project auditors.
 
 ### 3. Log Orchestration (Battle Mode)
 

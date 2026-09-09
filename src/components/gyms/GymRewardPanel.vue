@@ -3,11 +3,12 @@ import { computed } from 'vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { useGymsStore } from '@/stores/gyms'
 import { getItemById } from '@/data/inventory/items'
-import type { Gym, GymDifficultyId } from '@/data/world/gyms'
+import type { Gym } from '@/data/world/gyms'
+import type { BattleDifficulty } from '@/types/battle/battle'
 
 const props = defineProps<{
   gym: Gym
-  difficulty: GymDifficultyId
+  difficulty: BattleDifficulty
 }>()
 
 // Expose to template
@@ -30,7 +31,7 @@ const estimatedRewards = computed(() => {
   const avgLevel = diff.levels.reduce((a, b) => a + b, 0) / diff.levels.length
   
   // Fórmulas de recompensa escaladas
-  const mults: Record<GymDifficultyId, number> = { easy: 1, normal: 2.2, hard: 4.5 }
+  const mults: Record<BattleDifficulty, number> = { easy: 1, normal: 2.2, hard: 4.5 }
   const mult = mults[props.difficulty]
   
   return {

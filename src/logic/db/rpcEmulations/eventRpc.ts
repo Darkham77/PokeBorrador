@@ -2,10 +2,10 @@ import { queryLocal, persistSQLite, type SQLiteDatabase } from '../sqliteEngine.
 import { logger } from '@/logic/utils/logger.ts';
 import { getServerInstant } from '@/logic/utils/timeUtils.ts';
 import type { DBResponse } from '@/types/system/database';
-import type { CompetitionEntryData, CompetitionRankKey } from '@/types/system/stores';
+import type { CompetitionEntryData } from '@/types/system/stores';
+import { POKEMON_COMPETITION_RANKS, type PokemonCompetitionRank } from '@/types/pokemon/pokemon.ts';
 import { resolveSubCompetitionDirection, resolveEventSubCompetitions, getSubCompTitle, type SubCompetitionConfig, type ResolvedSubCompetition, type Event as GameEvent } from '@/logic/events/eventEngine.ts';
 
-const COMPETITION_RANKS: readonly CompetitionRankKey[] = ['first', 'second', 'third'] as const;
 const MAX_STORED_COMPETITION_RESULTS = 100;
 
 interface EventConfigWithPrizes {
@@ -28,7 +28,7 @@ interface StoredCompetitionEntry {
 }
 
 interface RankedWinner {
-  rank: CompetitionRankKey;
+  rank: PokemonCompetitionRank;
   category_id?: string;
   category_name?: string;
   player_id: string;
@@ -183,7 +183,7 @@ export async function emulateAwardEventAutomated(
       // 3. Insert awards for top 3 in category
       for (let i = 0; i < top3.length; i++) {
         const entry = top3[i]!;
-        const rank = COMPETITION_RANKS[i]!;
+        const rank = POKEMON_COMPETITION_RANKS[i]!;
         const rawPrize = prizes[rank] || { type: 'money', amount: 10000 };
         const resolvedCategoryName = getSubCompTitle(targetEventId, sub);
         const prize = typeof rawPrize === 'object' && rawPrize !== null

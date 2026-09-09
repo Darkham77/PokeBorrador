@@ -11,6 +11,10 @@ import UnifiedTeamSlot from '@/components/team/UnifiedTeamSlot.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { MAX_PVP_SLOTS, MAX_PVP6_SLOTS, type TeamManagementTab } from '@/types/battle/pvp'
+import { usePvPStore } from '@/stores/pvp'
+import { getSeasonalThemeForMonth } from '@/data/system/rankedData'
+import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
+import { evaluatePokemonForSeason, buildAutoRankedTeam, type PokemonSeasonEvaluation } from '@/logic/pvp/seasonTeamFilter'
 
 interface Props {
   initialTab?: TeamManagementTab
@@ -87,6 +91,87 @@ const pvpCount = computed(() => (gameStore.state.pvpTeam || []).length)
 const pvp6Count = computed(() => (gameStore.state.pvpTeam6 || []).length)
 const warCount = computed(() => (gameStore.state.warTeam || []).length)
 const maxWarSlots = computed(() => gameStore.state.warSlots || DEFAULT_WAR_SLOTS)
+
+const pvpStore = usePvPStore()
+
+const currentRules = computed(() => {
+  if (pvpStore.currentSeasonRules) return pvpStore.currentSeasonRules
+  const month = Temporal.Now.zonedDateTimeISO(GAME_TIMEZONE).month
+  return getSeasonalThemeForMonth(month)
+})
+
+const tournamentThemeName = computed<string>(() => {
+  const r = currentRules.value
+  const tName = 'themeName' in r && typeof r.themeName === 'string' ? r.themeName : ''
+  const name = 'name' in r && typeof r.name === 'string' ? r.name : ''
+  return tName || name || 'TEMPORADA COMPETITIVA'
+})
+
+const tournamentLevelCap = computed<number | null>(() => {
+  const r = currentRules.value
+  return 'levelCap' in r && typeof r.levelCap === 'number' && r.levelCap > 0 ? r.levelCap : null
+})
+
+const tournamentIsLittleCup = computed<boolean>(() => {
+  const r = currentRules.value
+  return 'isLittleCup' in r && Boolean(r.isLittleCup)
+})
+
+const TOTAL_POKEMON_TYPES = 18
+
+const tournamentAllowedTypes = computed<string | null>(() => {
+  const r = currentRules.value
+  if ('allowedTypes' in r && Array.isArray(r.allowedTypes) && r.allowedTypes.length > 0 && r.allowedTypes.length < TOTAL_POKEMON_TYPES) {
+    return (r.allowedTypes as readonly string[]).join(', ') // no-domain: Non-domain utility collection or data structure
+  }
+  return null
+})
+
+const pvpEvaluations = computed(() => {
+  const map = new Map<string, PokemonSeasonEvaluation>()
+  const rules = currentRules.value
+  for (const p of pvpTeam.value) {
+    if (p) map.set(p.uid, evaluatePokemonForSeason(p, rules))
+  }
+  return map
+})
+
+const pvp6Evaluations = computed(() => {
+  const map = new Map<string, PokemonSeasonEvaluation>()
+  const rules = currentRules.value
+  for (const p of pvpTeam6.value) {
+    if (p) map.set(p.uid, evaluatePokemonForSeason(p, rules))
+  }
+  return map
+})
+
+function runAutoFillTeam(tab: 'pvp' | 'pvp6') {
+  const allPokes = [
+    ...((gameStore.state.team || []) as (Pokemon | null)[]),
+    ...((gameStore.state.box || []) as (Pokemon | null)[])
+  ].filter((p): p is Pokemon => p !== null)
+
+  const slotsCount = tab === 'pvp' ? 3 : 6
+  const autoTeam = buildAutoRankedTeam(allPokes, currentRules.value, slotsCount)
+
+  if (autoTeam.length === 0) {
+    uiStore.notify('No se encontraron Pokémon elegibles para esta temporada.', '⚠️')
+    return
+  }
+
+  if (tab === 'pvp') {
+    gameStore.state.pvpTeam = autoTeam.map(p => p.uid)
+  } else {
+    gameStore.state.pvpTeam6 = autoTeam.map(p => p.uid)
+  }
+
+  gsap.fromTo('.slots-grid .team-slot',
+    { scale: 0.9, opacity: 0.6 },
+    { scale: 1, opacity: 1, duration: 0.35, stagger: 0.05, ease: 'back.out(1.7)' }
+  )
+
+  uiStore.notify(`¡Equipo auto-ajustado con ${autoTeam.length} Pokémon elegibles!`, '⚡')
+}
 
 // Drag and Drop Logic
 const draggedIndex = ref<number | null>(null)
@@ -209,6 +294,7 @@ function selectPvp(slotIndex: number) {
     title: '⚡ SELECCIONAR POKÉMON',
     subtitle: 'Elige un Pokémon para tu equipo de combate.',
     excludeUids: pvpTeam,
+    seasonRules: currentRules.value,
     callbackConfirm: (selected: Pokemon[]) => {
       if (selected && selected.length > 0 && selected[0]) {
         gameStore.swapPvpSlot(slotIndex, selected[0].uid)
@@ -231,6 +317,7 @@ function selectPvp6(slotIndex: number) {
     title: '⚡ SELECCIONAR POKÉMON',
     subtitle: 'Elige un Pokémon para tu equipo de combate 6v6.',
     excludeUids: currentPvpTeam6,
+    seasonRules: currentRules.value,
     callbackConfirm: (selected: Pokemon[]) => {
       if (selected && selected.length > 0 && selected[0]) {
         gameStore.swapPvp6Slot(slotIndex, selected[0].uid)
@@ -421,6 +508,44 @@ function selectAdventure(_slotIndex: number) {
         v-if="activeTab === 'pvp'"
         class="tm-section-container"
       >
+        <!-- Tournament Rules & Auto-Adjust Action Header -->
+        <div class="tournament-rules-header">
+          <div class="rules-info">
+            <div class="rules-title">
+              <span class="emoji">🏆</span>
+              <span class="theme-name text-outline">{{ tournamentThemeName }}</span>
+            </div>
+            <div class="rules-badges">
+              <span
+                v-if="tournamentLevelCap"
+                class="rule-badge text-outline"
+              >
+                Nv. Máx {{ tournamentLevelCap }}
+              </span>
+              <span
+                v-if="tournamentIsLittleCup"
+                class="rule-badge little-cup text-outline"
+              >
+                <span class="emoji">🍼</span> Little Cup
+              </span>
+              <span
+                v-if="tournamentAllowedTypes"
+                class="rule-badge types text-outline"
+              >
+                Tipos: {{ tournamentAllowedTypes }}
+              </span>
+            </div>
+          </div>
+          <button
+            v-gsap-hover
+            class="auto-adjust-btn"
+            @click="runAutoFillTeam('pvp')"
+          >
+            <span class="emoji">⚡</span>
+            <span>AUTO-AJUSTAR</span>
+          </button>
+        </div>
+
         <div class="slots-grid">
           <UnifiedTeamSlot
             v-for="(p, i) in pvpTeam"
@@ -430,6 +555,8 @@ function selectAdventure(_slotIndex: number) {
             :is-dragging-any="isDragging"
             :is-touch-over="touchOverIndex === i"
             is-pvp
+            :is-rule-violated="p ? !pvpEvaluations.get(p.uid)?.eligible : false"
+            :rule-violation-reason="p ? pvpEvaluations.get(p.uid)?.reason : ''"
             @open-detail="openDetail(p)"
             @open-item="openItem(p)"
             @unequip-item="unequipItem(p)"
@@ -452,6 +579,44 @@ function selectAdventure(_slotIndex: number) {
         v-if="activeTab === 'pvp6'"
         class="tm-section-container"
       >
+        <!-- Tournament Rules & Auto-Adjust Action Header -->
+        <div class="tournament-rules-header">
+          <div class="rules-info">
+            <div class="rules-title">
+              <span class="emoji">🏆</span>
+              <span class="theme-name text-outline">{{ tournamentThemeName }}</span>
+            </div>
+            <div class="rules-badges">
+              <span
+                v-if="tournamentLevelCap"
+                class="rule-badge text-outline"
+              >
+                Nv. Máx {{ tournamentLevelCap }}
+              </span>
+              <span
+                v-if="tournamentIsLittleCup"
+                class="rule-badge little-cup text-outline"
+              >
+                <span class="emoji">🍼</span> Little Cup
+              </span>
+              <span
+                v-if="tournamentAllowedTypes"
+                class="rule-badge types text-outline"
+              >
+                Tipos: {{ tournamentAllowedTypes }}
+              </span>
+            </div>
+          </div>
+          <button
+            v-gsap-hover
+            class="auto-adjust-btn"
+            @click="runAutoFillTeam('pvp6')"
+          >
+            <span class="emoji">⚡</span>
+            <span>AUTO-AJUSTAR</span>
+          </button>
+        </div>
+
         <div class="slots-grid">
           <UnifiedTeamSlot
             v-for="(p, i) in pvpTeam6"
@@ -461,6 +626,8 @@ function selectAdventure(_slotIndex: number) {
             :is-dragging-any="isDragging"
             :is-touch-over="touchOverIndex === i"
             is-pvp
+            :is-rule-violated="p ? !pvp6Evaluations.get(p.uid)?.eligible : false"
+            :rule-violation-reason="p ? pvp6Evaluations.get(p.uid)?.reason : ''"
             @open-detail="openDetail(p)"
             @open-item="openItem(p)"
             @unequip-item="unequipItem(p)"

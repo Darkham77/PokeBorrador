@@ -1,4 +1,6 @@
 import { logger } from './logger.ts';
+import { DAY_PHASES, type DayPhase } from '@/types/system/time.ts';
+export { DAY_PHASES, type DayPhase } from '@/types/system/time.ts';
 
 export const GAME_TIMEZONE = (
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_TIMEZONE) ||
@@ -50,11 +52,8 @@ export function getGMT3Date(): Temporal.ZonedDateTime {
   return getServerInstant().toZonedDateTimeISO(GAME_TIMEZONE);
 }
 
-export type DayPhase = 'morning' | 'day' | 'dusk' | 'night';
-export const DAY_PHASES = ['morning', 'day', 'dusk', 'night'] as const;
-
 function isDayPhase(value: string): value is DayPhase {
-  return DAY_PHASES.includes(value as DayPhase);
+  return DAY_PHASES.some(phase => phase === value);
 }
 
 export function requireDayPhase(value: string): DayPhase {

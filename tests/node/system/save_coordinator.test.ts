@@ -7,6 +7,7 @@ describe('SaveCoordinator Architecture Suite', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     coordinator = new SaveCoordinator(1500);
+    coordinator.setTimeProvider(Date.now);
   });
 
   it('coalesces multiple rapid save requests into a single debounced save', async () => {
@@ -81,5 +82,75 @@ describe('SaveCoordinator Architecture Suite', () => {
 
     expect(coordinator.isBatchActive()).toBe(false);
     expect(rootSaveMock).toHaveBeenCalledTimes(1);
+  });
+
+  describe('Tier 2 Cloud Throttling Suite (The 60-Second Principle)', () => {
+    it('authorizes initial cloud save on fresh session', () => {
+      expect(coordinator.shouldExecuteCloudSave()).toBe(true);
+      expect(coordinator.shouldExecuteCloudSave(false)).toBe(true);
+    });
+
+    it('throttles cloud saves within the 60-second window', () => {
+      coordinator.notifyCloudSaveSuccess();
+      expect(coordinator.isDirty()).toBe(false);
+
+      // Immediately afterwards: should be throttled
+      expect(coordinator.shouldExecuteCloudSave(false)).toBe(false);
+
+      // Advance 30 seconds: still throttled
+      vi.advanceTimersByTime(30_000);
+      expect(coordinator.shouldExecuteCloudSave(false)).toBe(false);
+
+      // Advance past 60 seconds: authorized again
+      vi.advanceTimersByTime(30_001);
+      expect(coordinator.shouldExecuteCloudSave(false)).toBe(true);
+    });
+
+    it('bypasses 60s throttle immediately when forceRemote is true', () => {
+      coordinator.notifyCloudSaveSuccess();
+      expect(coordinator.shouldExecuteCloudSave(false)).toBe(false);
+
+      // forceRemote bypasses throttle
+      expect(coordinator.shouldExecuteCloudSave(true)).toBe(true);
+    });
+
+    it('marks cloud state dirty and executes trailing sync after remaining throttle time', async () => {
+      coordinator.notifyCloudSaveSuccess();
+      const trailingCloudSaveMock = vi.fn().mockResolvedValue(true);
+
+      // Mark dirty 10 seconds into the 60s window
+      vi.advanceTimersByTime(10_000);
+      coordinator.markCloudDirty(trailingCloudSaveMock);
+
+      expect(coordinator.isDirty()).toBe(true);
+      expect(trailingCloudSaveMock).not.toHaveBeenCalled();
+
+      // Advance 49 seconds (total 59s elapsed): still waiting
+      vi.advanceTimersByTime(49_000);
+      expect(trailingCloudSaveMock).not.toHaveBeenCalled();
+      expect(coordinator.isDirty()).toBe(true);
+
+      // Advance 2 seconds (total 61s elapsed): trailing cloud save executes!
+      vi.advanceTimersByTime(2000);
+      expect(trailingCloudSaveMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('flushes pending dirty cloud save immediately on flushPendingSave()', async () => {
+      coordinator.notifyCloudSaveSuccess();
+      const trailingCloudSaveMock = vi.fn().mockResolvedValue(true);
+
+      vi.advanceTimersByTime(5000);
+      coordinator.markCloudDirty(trailingCloudSaveMock);
+      expect(coordinator.isDirty()).toBe(true);
+
+      // Emergency flush (e.g. beforeunload / logout)
+      await coordinator.flushPendingSave();
+
+      expect(trailingCloudSaveMock).toHaveBeenCalledTimes(1);
+
+      // Advancing timer afterwards should NOT call it again
+      vi.advanceTimersByTime(60_000);
+      expect(trailingCloudSaveMock).toHaveBeenCalledTimes(1);
+    });
   });
 });

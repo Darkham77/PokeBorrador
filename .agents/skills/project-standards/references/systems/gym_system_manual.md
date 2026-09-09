@@ -48,7 +48,7 @@ Each gym can be faced in three difficulties:
 
 ## 🧠 Leader Battle Logic
 
-1. **The Ace**: The last Pokémon of the team is always the leader's "Ace" and usually carries an equipped item.
+1. **The Ace**: The last Pokémon of the static gym team (`team[team.length - 1]`) is always the leader's canonical "Ace" and carries an equipped item (in contrast to dynamic rival teams in `RivalTeamGenerator` which enforce the Ace in slot 0 for lead combat pressure).
 2. **AI Priority**: Leaders have an improved AI that prioritizes super-effective moves and status changes.
 3. **Rewards**: The `rewardTM` is granted only on the first victory. In rematches, scaled money and XP are granted according to the difficulty using the internal `gymProgress` scaling factors.
 4. **Progress Persistence**: Wins are tracked independently per difficulty in `game.state.gymProgress[gymId]`. A "Completed" status requires defeating the leader in all 3 modes.

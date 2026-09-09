@@ -6,14 +6,10 @@ import type { Pokemon, Move, PokemonIVs, ObtainedMethod } from '@/types/pokemon/
 import { Dex, toID } from '@pkmn/sim';
 import { ACTIVE_GENERATION, isEnabledPokemonId } from '@/data/system/constants';
 import { MOVE_TRANSLATIONS_ES, type MoveCategory } from '@/data/battle/moves';
-import { calculateTotalBaseStats, calculateTotalIVs } from '@/logic/pokemon/statsMath';
+import { calculateTotalBaseStats, calculateTotalIVs, calculateRocketSellPriceRaw } from '@/logic/pokemon/statsMath';
 import { calculateEvBonusIvs } from '@/logic/pokemon/evMath';
 import {
   MAX_LEARNED_MOVES_SLOTS,
-  ROCKET_SELL_LEVEL_MULTIPLIER,
-  MAX_TOTAL_IVS_STAT_SUM,
-  ROCKET_SELL_IV_BONUS_CAP,
-  ROCKET_SELL_CUT_MULTIPLIER,
   TYPE_EFFECTIVENESS_THRESHOLDS,
   DEFAULT_ACCURACY_BASE_STAT
 } from '@/logic/constants/gameplay';
@@ -97,15 +93,25 @@ export function generateRandomIVs(): PokemonIVs {
   };
 }
 
+/** Dominant level multiplier for Pokémon strength scoring (level 50 min beats level 49 max). */
+export const SCORE_LEVEL_MULTIPLIER = 10000;
+
+/**
+ * Calculates a composite strength score for a Pokémon (Level * 10000 + Total Power).
+ * Guarantees strict level dominance while breaking ties by BST, IVs, and EV training.
+ */
+export function calculatePokemonStrengthScore(p: Pokemon): number {
+  if (!p) return 0;
+  return (p.level * SCORE_LEVEL_MULTIPLIER) + calculateTotalPower(p);
+}
+
 /**
  * Calculates the price for selling a pokemon to the Black Market (Team Rocket).
  */
 export function calculateRocketSellPrice(p: Pokemon): number {
   if (!p) return 0;
-  const ivs = p.ivs;
-  const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0);
-  // Formula: (Level * 50 + (Total IVs / 186) * 500) * 0.8 (Rocket Cut)
-  return Math.floor((p.level * ROCKET_SELL_LEVEL_MULTIPLIER + (totalIvs / MAX_TOTAL_IVS_STAT_SUM) * ROCKET_SELL_IV_BONUS_CAP) * ROCKET_SELL_CUT_MULTIPLIER);
+  const totalIvs = calculateTotalIVs(p.ivs);
+  return calculateRocketSellPriceRaw(p.level, totalIvs);
 }
 
 /**

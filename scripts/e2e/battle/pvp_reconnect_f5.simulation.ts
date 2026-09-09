@@ -40,7 +40,7 @@ class PvpReconnectSimWrapper extends BaseBattleSimulation {
       });
 
       // Save game state with active battle
-      await gameStore.save(false);
+      await gameStore.save(false, true, true);
     });
     await awaitBattleReadyForInput(this.page);
   }

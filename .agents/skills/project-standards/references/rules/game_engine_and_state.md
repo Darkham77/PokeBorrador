@@ -94,7 +94,7 @@
 Pokémon participating in active missions (`onMission: true`), competition events (`onEvent: true`), daycare (`inDaycare: true`), or passive defense (`onDefense: true`) are classified as busy (`isPokemonBusy`):
 1. **Visual Indicators**: Automatically badged with `mission` (`🧭 EN MISIÓN`) or `event` (`🏆 EN EVENTO`) via `getPokemonVisualBadges()`.
 2. **Action Locking**: Release, Black Market selling, P2P trade offers, and GTS publishing are strictly blocked across UI, Pinia stores, and database RPCs.
-3. **Lifecycle Rehabilitation & Orphan Event Liberation**: Once a mission is claimed, an event concludes, or event awards are claimed (`claimAward`) or discarded (`discardAward`), all busy flags MUST be reset to `false` via `healStuckEventPokemon`. If a Pokémon remains marked with `onEvent` from an archived, legacy, or concluded event, `fetchEvents` and `validateAll` automatically self-heal and liberate the Pokémon across Team, Box, and Daycare Warehouse.
+3. **Lifecycle Rehabilitation & Orphan Event Liberation**: Once a mission is claimed, an event concludes, or event awards are claimed (`claimAward`) or discarded (`discardAward`), all busy flags MUST be reset to `false` via `healStuckEventPokemon`. Resetting busy flags upon legitimate event closure is an intentional business lifecycle transition, NOT an ad-hoc runtime auto-heal. State consistency between active events and Pokémon busy flags must be preserved at boundary ingestion.
 
 ## 13. Species Evolution Whitelist Boundary
 
@@ -128,5 +128,5 @@ Pokémon participating in active missions (`onMission: true`), competition event
 ## 18. Pokémon Instance Invariant: Capture Timestamp & Method Integrity
 
 - **Mandatory Instance Invariant**: Every Pokémon instance across all stages of gameplay—including wild captures, starter selection, breeding hatches, event awards, GTS market claims, trade exchanges, and debug test fixtures—MUST possess a valid numeric timestamp `obtainedAt: number` (epoch milliseconds) and a canonical `obtainedMethod: ObtainedMethod` (`'wild' | 'trade' | 'egg' | 'starter' | 'gift' | 'fishing' | 'archaeology' | 'gift_starter' | 'reward' | 'event'`).
-- **Defensive Ingestion Guarantees**: Any ingest boundary adding Pokémon to the player state (`addPokemon`, `claimAsset`, `emulateClaimAsset`) MUST verify and populate missing timestamps with current server epoch time (`Temporal.Now.instant().epochMilliseconds`) and assign `'reward'` as fallback method, preventing `'SIN FECHA'` UI states without requiring database migrations.
+- **Ingestion Validation & SQL Migration Integrity**: Ingest boundaries creating new Pokémon (`claimAsset`, `emulateClaimAsset`, egg hatching, wild capture) MUST always supply a valid `obtainedAt` timestamp (`Temporal.Now.instant().epochMilliseconds`) and valid `obtainedMethod`. For legacy persisted saves, missing capture fields MUST be backfilled exclusively through static SQL migrations in `database/migrations/`, NEVER synthesized or patched via ad-hoc runtime fallbacks in application memory.
 - **Debug Fixture Parity**: Debug simulators and mock generators MUST never instantiate incomplete Pokémon object literals lacking capture metadata.

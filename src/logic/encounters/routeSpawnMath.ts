@@ -2,7 +2,8 @@ import { isPokemonSpeciesId, requirePokemonSpeciesId, type PokemonSpeciesId, isL
 import { getWeatherFamily } from '@/data/system/weatherFamilies.ts';
 import { redistributeWeatherSpawns } from '@/logic/utils/routeSpawnHelpers';
 import { getWeatherMultiplier } from '@/logic/weather/weatherUtils';
-import { DAY_PHASES, getGMT3Date, type DayPhase } from '@/logic/utils/timeUtils';
+import { getGMT3Date } from '@/logic/utils/timeUtils';
+import { DAY_PHASES, type DayPhase } from '@/types/system/time';
 import type { MapLocation } from '@/types/pokemon/encounters';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { resolveWeeklyRotation, safeParse, type Event as GameEvent, type EventConfig } from '@/logic/events/eventEngine';

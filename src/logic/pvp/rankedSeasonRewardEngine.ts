@@ -6,7 +6,7 @@ import {
 } from '@/data/system/rankedData';
 import { makePokemon, recalcPokemonStats } from '@/logic/pokemon/pokemonFactory';
 import type { GameState } from '@/types/system/game';
-import type { Pokemon } from '@/types/pokemon/pokemon';
+import { POKEMON_STAT_KEYS, type Pokemon } from '@/types/pokemon/pokemon';
 import type { RankedSeasonMedal } from '@/types/battle/pvp';
 
 const BASE_RANKED_ELO = 1000 as const;
@@ -78,10 +78,9 @@ export function checkAndResolveSeasonEnd(
     const created = makePokemon(rewardConfig.species, rewardConfig.level || DEFAULT_REWARD_POKEMON_LEVEL);
     if (created) {
       created.isShiny = true;
-      const statsList: (keyof typeof created.ivs)[] = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
       const guaranteedCount = rewardConfig.guaranteedMaxIvs || (tier === 'maestro' ? MAX_IVS_MAESTRO : MAX_IVS_DIAMANTE);
-      for (let i = 0; i < guaranteedCount && i < statsList.length; i++) {
-        const statKey = statsList[i];
+      for (let i = 0; i < guaranteedCount && i < POKEMON_STAT_KEYS.length; i++) {
+        const statKey = POKEMON_STAT_KEYS[i];
         if (statKey) {
           created.ivs[statKey] = PERFECT_IV;
         }

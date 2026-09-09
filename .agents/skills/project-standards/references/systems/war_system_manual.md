@@ -6,9 +6,12 @@ This manual documents the faction rules, the map dominance system, and the war e
 
 ### 1. Available Factions
 
-- **Union**: Loyal to the league and order.
-- **Power**: Seek strength above all else.
-- **Rocket**: Special class (requires membership/event) with criminality mechanics.
+There are strictly two canonical factions in Poké Vicio (`FACTION_IDS` in `src/types/system/game.ts`):
+
+- **Union (`'union'`)**: Loyal to the Pokémon League, cooperation, and regional order.
+- **Poder (`'poder'`)**: Seek strength and dominance above all else.
+
+*(Note: Rocket is a specialized player class (`PlayerClassId: 'rocket'`), not a war faction).*
 
 ### 2. Changing Factions
 

@@ -17,7 +17,7 @@
 
 ## 2. Zero-Pokemon Save Prohibition (Save Shield)
 
-- To prevent data corruption or accidental reset overlays, it is STRICTLY FORBIDDEN to save the game state (to IndexedDB, LocalStorage, OPFS, or Supabase) if the state contains 0 Pokémon (i.e. `team` and `box` are empty) OR if `starterChosen` is `false`.
+- To prevent data corruption or accidental reset overlays, it is STRICTLY FORBIDDEN to save the game state (to LocalStorage, SQLite via OPFS, or Supabase) if the state contains 0 Pokémon (i.e. `team` and `box` are empty) OR if `starterChosen` is `false`.
 - A valid active session must always have at least 1 Pokémon. Abort saving immediately if this condition is met.
 
 ## 3. Absolute Prohibition on Remote Database Updates & Safe Commit Mandate
@@ -30,11 +30,12 @@
 
 - **UID-Based Nicknames**: Showdown natively truncates nicknames to 18 characters. To prevent destructive truncation when mapping UIDs, team initialization in the simulator MUST use the first 8 characters of the UID (`uid.split('-')[0]`) as the Showdown nickname (`name`).
 - **UID Resolution**: All UID mappings and injections (`injectUidsIntoRequest`) and log resolutions (`getPoke`) MUST be strictly based on UID or UID prefix. Name or slot-index fallbacks are strictly prohibited.
-- **Showdown Status Representation**: Any status clearance or assignment on a Showdown simulator Pokemon instance MUST use an empty string `''` to denote no status. Assigning `null` to `status` on simulator instances will cause internal simulator crashes. Client-side Vue store Pokémon representations may still use `null` to indicate no status.
+- **Showdown Status Representation**: Any status clearance or assignment on a Showdown simulator Pokemon instance MUST use an empty string `''` to denote no status. Assigning `null` to `status` on simulator instances will cause internal simulator crashes. Pokémon representations across all layers (UI, Vue/Pinia stores, Showdown worker, and database) MUST strictly use empty string `''` as the sole canonical sentinel for un-afflicted status (never `null`), preserving 1:1 parity with Showdown engine contracts.
 
 ## 5. Static Database Migrations Over Runtime Fallbacks
 
 - **Zero Runtime Fallback Mandate**: All schema evolutions, missing field backfills, and data shape normalizations MUST be resolved statically via SQL migrations (`.sqlite.sql` and `.sql`) traversing all persisted user saves in `game_saves`. Runtime schema fallbacks (e.g. Valibot `fallback()`, dynamic ad-hoc object patching like `normalizeData`) are strictly prohibited.
+- **Absolute Prohibition on Runtime Auto-Heal & In-Memory Entity Translation Mandate**: Application code in `src/` (including entity factories, validators, stores, load services, sanitizers, or domain dictionaries like `items.ts`, `natures.ts`, `abilities.ts`) MUST NEVER attempt to "auto-heal", alias, dynamically translate (e.g. Spanish-to-English entity translation), synthesize missing properties, or silently swallow invalid IDs at runtime. Application code MUST fail fast and loudly when data violates domain contracts. 100% of data migrations, entity translations, missing field population, legacy schema evolutions, and data cleanups MUST be performed strictly and exclusively through static SQL database migrations (`.sql` for PostgreSQL, `.sqlite.sql` for SQLite companion). If unmigrated or corrupt data reaches runtime, it is an empirical bug in the database migration layer that must be resolved at the database level, NEVER patched in application memory.
 - **Legacy Code Detection & User Notification**: If any legacy runtime data repair, ad-hoc fallback, or normalization code is discovered in the application layer, the AI agent MUST immediately inform the user so it can be refactored into a static SQL migration.
 - **Save Shield Validation Lock & Auto-Unlock**: When schema validation (Valibot) detects corrupted or non-compliant save data during login or runtime, the account MUST enter an error state locking state persistence (`saveBlocked = true`) to prevent corrupting database rows. The lock MUST automatically clear (`saveBlocked = false`) as soon as a subsequent application update or in-memory state re-validates cleanly against the canonical schema.
 
@@ -94,6 +95,8 @@
 - **Identifier Sanitization & Local Remapping**: The local import tool (`npm run database:local-import file=<path_upgraded.json>`) MUST convert remote Supabase UUIDs to clean local identifiers (`local_<username>`), ensuring all foreign keys across `chat_messages` (both `senderId` and `type: 'private:local_<username>'`), `friendships`, `daycare_slots`, `eggs`, and `war_*` tables maintain 100% relational integrity.
 - **Local Dev Server Freshness & OPFS Persistence**: The compiled database is written to `database/temp/manual_user_backup_import.db`. The Vite dev server middleware MUST serve fresh disk files over stale RAM buffers via `/api/dev-manual-import-*`. Upon loading, the client's SQLite engine (`sqliteEngine.ts`) persists it directly into OPFS (`pokevicio_sqlite_v2`) and purges all previous individual save caches via `purgeAllCachedSaves()`.
 - **PostgREST Query Emulation Compatibility**: The SQLite query adapter (`SQLiteQueryBuilder`) MUST support PostgREST query syntax used by stores in local mode (e.g. `.or()` clauses for private chats and friendships, `.eq()`, `.order()`) to guarantee 1:1 runtime parity with online Supabase queries.
+- **Mandatory `_migrations` Ledger Preservation**: The local SQLite import tool (`npm run database:local-import`) MUST explicitly include the `_migrations` schema (`_migrations (id TEXT PRIMARY KEY, applied_at TEXT)`) and populate all applied migration rows from the upgraded backup JSON. Omitting `_migrations` leaves the imported local SQLite database with 0 recorded migrations, causing the client browser engine (`sqliteEngine.ts`) to mistakenly trigger redundant re-execution of all historical migrations on startup.
+- **Deterministic `*_upgraded.json` Priority**: In multi-file backup directories (`database/backups/<server>/`), import tools MUST filter and prioritize files matching `*_upgraded.json`. Ingesting raw, un-upgraded backup files directly into the local SQLite database without running `npm run database:upgrade-backup` is strictly prohibited.
 
 ## 14. Database SSoT & Optimistic Concurrency Control (OCC) Protection
 

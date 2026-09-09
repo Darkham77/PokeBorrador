@@ -43,7 +43,7 @@ class CaptureReloadSimWrapper extends BaseBattleSimulation {
         pokemonDebugService.generate({ id: requirePokemonSpeciesId('butterfree'), level: lvl }),
       ];
       store.state.box = [];
-      await store.save();
+      await store.save(false, true, true);
     }, DUMMY_TEAM_LEVEL);
   }
 
@@ -95,7 +95,7 @@ test.describe('Persistencia y Captura tras Recarga de Página (F5)', () => {
     await page.evaluate(async () => {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const store = useGameStore();
-      await store.save();
+      await store.save(false, true, true);
     });
 
     // 3. Recargar la página (simulando F5 en pleno combate)

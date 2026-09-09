@@ -7,6 +7,7 @@ import { eggFactory } from '@/logic/breeding/eggFactory';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
 import { calculateCloningCost, calculateCloningRerolls, calculateCloningShinyChance } from '@/logic/minigames/minigameMath';
 import { generateRandomIVs } from '@/logic/pokemon/pokemonUtils';
+import { calculateTotalIVs } from '@/logic/pokemon/statsMath';
 import type { Pokemon, PokemonIVs } from '@/types/pokemon/pokemon';
 import type { Ref } from 'vue';
 import type { DaycareEgg } from '@/types/breeding/breeding';
@@ -86,10 +87,10 @@ export function executeCloneFossil(
   const rollIVs = (): PokemonIVs => generateRandomIVs();
 
   let bestIVs = rollIVs();
-  let bestSum = bestIVs.hp + bestIVs.atk + bestIVs.def + bestIVs.spa + bestIVs.spd + bestIVs.spe;
+  let bestSum = calculateTotalIVs(bestIVs);
   for (let i = 1; i < rolls; i++) {
     const currentIVs = rollIVs();
-    const currentSum = currentIVs.hp + currentIVs.atk + currentIVs.def + currentIVs.spa + currentIVs.spd + currentIVs.spe;
+    const currentSum = calculateTotalIVs(currentIVs);
     if (currentSum > bestSum) {
       bestIVs = currentIVs;
       bestSum = currentSum;

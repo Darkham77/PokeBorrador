@@ -309,7 +309,7 @@ describe('Debug System (Commands & Tools)', () => {
         const game = useGameStore()
         const saveSpy = vi.spyOn(game, 'save')
         await (callDebug('forceSyncCloud') as unknown)
-        expect(saveSpy).toHaveBeenCalledWith(true)
+        expect(saveSpy).toHaveBeenCalledWith(true, true, true)
       })
     })
   })

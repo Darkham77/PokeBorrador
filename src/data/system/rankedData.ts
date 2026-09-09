@@ -1,4 +1,4 @@
-import type { PokemonType } from '../battle/types.ts';
+import { POKEMON_TYPES, type PokemonType } from '../battle/types.ts';
 import type { PokemonSpeciesId } from '../pokemon/pokedex.ts';
 import { toID } from '@/logic/utils/strings.ts';
 
@@ -77,11 +77,7 @@ export const RANKED_MEDAL_CONFIGS_BY_NAME: Readonly<Record<RankedTierName, Ranke
   Maestro: RANKED_MEDAL_CONFIGS.maestro
 });
 
-export const RANKED_TYPES: PokemonType[] = [
-  'normal', 'fire', 'water', 'electric', 'grass', 'ice',
-  'fighting', 'poison', 'ground', 'flying', 'psychic',
-  'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel'
-];
+export const RANKED_TYPES: readonly PokemonType[] = POKEMON_TYPES.filter(type => type !== 'fairy');
 
 export const RANKED_REWARD_MILESTONES = [
   { id: 'bronce_1000', tier: 'Bronce', elo: 1000, rewards: { 'naturepatch': 1 }, icon: '🍃' },
@@ -171,6 +167,7 @@ export interface SeasonalThemeConfig {
   readonly bannerImage: string; // domain-ok: Canonical banner asset identifier
   readonly allowedTypes?: readonly PokemonType[];
   readonly bannedPokemonIds?: readonly PokemonSpeciesId[];
+  readonly allowedGenerations?: readonly number[];
   readonly isLittleCup?: boolean;
   readonly levelCap?: number;
   readonly requiresDualType?: boolean;
@@ -188,6 +185,7 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
     description: 'Todos los integrantes del equipo deben compartir al menos un tipo elemental común.',
     monthIndex: 1,
     bannerImage: 'tournament_monotype_full',
+    levelCap: 50,
     requiresMonotype: true,
     rewardPokemon: {
       diamante: { species: 'charmander', level: 50, shiny: true, guaranteedMaxIvs: 3 },
@@ -200,6 +198,8 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
     description: 'Exclusivo para Pokémon de la Pokédex original de Kanto (#001 a #151). Míticos y Legendarios prohibidos.',
     monthIndex: 2,
     bannerImage: 'tournament_kanto_full',
+    levelCap: 50,
+    allowedGenerations: [1],
     bannedPokemonIds: ['mewtwo', 'mew', 'articuno', 'zapdos', 'moltres'],
     rewardPokemon: {
       diamante: { species: 'squirtle', level: 50, shiny: true, guaranteedMaxIvs: 3 },
@@ -212,6 +212,7 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
     description: 'Solo Pokémon en su primera etapa evolutiva que tengan la capacidad de evolucionar.',
     monthIndex: 3,
     bannerImage: 'tournament_little_cup_full',
+    levelCap: 5,
     isLittleCup: true,
     rewardPokemon: {
       diamante: { species: 'pichu', level: 50, shiny: true, guaranteedMaxIvs: 3 },
@@ -224,6 +225,7 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
     description: 'Batallas bajo climas extremos. Tipos permitidos: Agua, Fuego, Roca, Hielo y Planta.',
     monthIndex: 4,
     bannerImage: 'tournament_weather_masters_full',
+    levelCap: 50,
     allowedTypes: ['water', 'fire', 'rock', 'ice', 'grass'],
     rewardPokemon: {
       diamante: { species: 'vulpix', level: 50, shiny: true, guaranteedMaxIvs: 3 },
@@ -236,6 +238,7 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
     description: 'Solo se permiten Pokémon que posean exactamente dos tipos elementales combinados.',
     monthIndex: 5,
     bannerImage: 'tournament_dual_type_duo_full',
+    levelCap: 50,
     requiresDualType: true,
     rewardPokemon: {
       diamante: { species: 'gastly', level: 50, shiny: true, guaranteedMaxIvs: 3 },
@@ -248,6 +251,7 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
     description: 'Formato estándar competitivo OU con restricción absoluta de Pokémon Legendarios y Míticos.',
     monthIndex: 6,
     bannerImage: 'tournament_no_legendaries_full',
+    levelCap: 50,
     bannedPokemonIds: ['articuno', 'zapdos', 'moltres', 'mewtwo', 'mew'],
     rewardPokemon: {
       diamante: { species: 'snorlax', level: 50, shiny: true, guaranteedMaxIvs: 3 },
@@ -260,6 +264,7 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
     description: 'Agilidad y distorsión temporal. Tipos permitidos: Eléctrico, Volador, Psíquico y Fantasma.',
     monthIndex: 7,
     bannerImage: 'tournament_speed_warp_full',
+    levelCap: 50,
     allowedTypes: ['electric', 'flying', 'psychic', 'ghost'],
     rewardPokemon: {
       diamante: { species: 'jolteon', level: 50, shiny: true, guaranteedMaxIvs: 3 },
@@ -272,6 +277,7 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
     description: 'El clásico triángulo de combate. Solo Pokémon con al menos un tipo entre Fuego, Agua o Planta.',
     monthIndex: 8,
     bannerImage: 'tournament_elemental_triad_full',
+    levelCap: 50,
     allowedTypes: ['fire', 'water', 'grass'],
     rewardPokemon: {
       diamante: { species: 'bulbasaur', level: 50, shiny: true, guaranteedMaxIvs: 3 },
@@ -284,6 +290,8 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
     description: 'Enfrentamiento clásico regional. Solo especies descubiertas en Kanto y Johto.',
     monthIndex: 9,
     bannerImage: 'tournament_johto_kanto_frontier_full',
+    levelCap: 50,
+    allowedGenerations: [1, 2],
     rewardPokemon: {
       diamante: { species: 'eevee', level: 50, shiny: true, guaranteedMaxIvs: 3 },
       maestro: { species: 'lapras', level: 50, shiny: true, guaranteedMaxIvs: 4 }
@@ -295,6 +303,7 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
     description: 'Especial tenebroso de Halloween. Solo se permiten especies de tipo Fantasma, Siniestro o Veneno.',
     monthIndex: 10,
     bannerImage: 'tournament_halloween_spook_full',
+    levelCap: 50,
     allowedTypes: ['ghost', 'dark', 'poison'],
     rewardPokemon: {
       diamante: { species: 'haunter', level: 50, shiny: true, guaranteedMaxIvs: 3 },
@@ -307,6 +316,7 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
     description: 'El poder destructivo de los pesos pesados. Solo tipos Dragón, Acero y Lucha.',
     monthIndex: 11,
     bannerImage: 'tournament_titan_clash_full',
+    levelCap: 50,
     allowedTypes: ['dragon', 'steel', 'fighting'],
     rewardPokemon: {
       diamante: { species: 'dratini', level: 50, shiny: true, guaranteedMaxIvs: 3 },
@@ -319,6 +329,7 @@ export const SEASONAL_ANNUAL_THEMES: readonly SeasonalThemeConfig[] = Object.fre
     description: 'Gran clausura anual abierta sin restricciones de tipo ni región. Máxima libertad estratégica.',
     monthIndex: 12,
     bannerImage: 'tournament_masters_allstars_full',
+    levelCap: 50,
     rewardPokemon: {
       diamante: { species: 'eevee', level: 50, shiny: true, guaranteedMaxIvs: 3 },
       maestro: { species: 'gyarados', level: 50, shiny: true, guaranteedMaxIvs: 4 }

@@ -4,9 +4,8 @@ Static inventory item database, prices, shop configurations, crafting tiers, vit
 
 ## Local Contracts
 
-- **Crafting Tier Sprite Paths**: Every item in `items.json` and `items.ts` must have a numeric `craftingTier` (0 to 3) and its `sprite` property MUST follow the exact format `crafting/tier${craftingTier}/${id}`.
-- **Prohibition on Flat Sprite Paths**: Never set `sprite` to flat paths like `items/<id>` or plain `<id>`.
-- **Domain Wrapping**: Access to `items.json` MUST always go through typed domain helpers (`getItemById`, `getItemByName`, `SHOP_ITEMS`) exported from `items.ts`.
+- **Centralized Asset Resolution**: Item sprites MUST be resolved strictly via `getAssetUrl(ASSET_TYPES.ITEM, item.id)`. Direct manipulation or hardcoding of asset paths in application code is strictly forbidden.
+- **Canonical Item Queries**: Access to items MUST always query by canonical Showdown `ItemId` through typed domain helpers (`getItemById`, `requireItemId`, `SHOP_ITEMS`) exported from `items.ts`. Querying items by localized name (e.g. `getItemByName` or `id || name`) is strictly prohibited.
 - **Mandatory Spanish Localization**: All items in `items.json` must have their `name` and `desc` localized into Spanish. Raw English description strings imported from Pokémon Showdown or untranslated category suffixes (e.g. `Berry`, `Sweet`, `Orb`, `Plate`) are strictly forbidden.
 
 ## Child DOX Index

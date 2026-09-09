@@ -12,6 +12,7 @@ import { hashString, mulberry32 } from '@/logic/utils/math.ts';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider.ts';
 import { getPokemonPhysicalWeight, getPokemonPhysicalHeight, getPhysicalDimensionTier } from '@/logic/pokemon/physicalDimensionsMath.ts';
 import { getPokemonTier } from '@/logic/pokemon/tierEngine.ts';
+import { calculateTotalIVs } from '@/logic/pokemon/statsMath.ts';
 import { normalizeZonedDateTime } from '@/logic/utils/timeUtils.ts';
 import { safeParse, resolveWeeklyRotation } from './eventSchedules.ts';
 import type { Event, EventConfig } from './eventEngine.ts';
@@ -143,7 +144,7 @@ export function evaluatePokemonForSubCompetition(
 
   if (subComp.metric === 'total_ivs') {
     const ivs = pokemon.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
-    const totalIvs = (ivs.hp || 0) + (ivs.atk || 0) + (ivs.def || 0) + (ivs.spa || 0) + (ivs.spd || 0) + (ivs.spe || 0);
+    const totalIvs = calculateTotalIVs(pokemon.ivs);
     const tier = getPokemonTier(pokemon);
     return {
       score: totalIvs,
