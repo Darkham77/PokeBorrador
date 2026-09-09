@@ -6,6 +6,7 @@ import { useUIStore } from '@/stores/ui'
 import { useModalStore } from '@/stores/modals'
 import { isSaveLocked } from '@/logic/auth/sessionHub'
 import { checkAppVersionCompatibility } from '@/logic/db/dbRouter'
+import { useUpdateStore } from '@/stores/update'
 import { gameBus } from '@/logic/events/gameBus'
 import { requireGenderId, type GameState, type ClaimItem } from '@/types/system/game'
 import type { AuthUser } from '@/types/auth/auth'
@@ -192,6 +193,10 @@ export function useSaveActions(
       if (!appComp.compatible && appComp.error === 'OUTDATED_CLIENT') {
         logger.warn('SAVE', `Guardado bloqueado: Cliente desactualizado (${appComp.client}) vs Servidor (${appComp.server}).`)
         gameBus.emit('PWA_NEED_REFRESH')
+        useUpdateStore().notifyOutdatedClient({
+          client: appComp.client,
+          server: appComp.server
+        })
         uiStore.notify('Actualización requerida para guardar', '⚠️')
         return { success: false, error: 'OUTDATED_CLIENT' }
       }

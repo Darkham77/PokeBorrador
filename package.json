@@ -54,6 +54,7 @@
     "sim:e2e:gyms": "playwright test scripts/e2e/gyms/",
     "sim:e2e:events": "playwright test scripts/e2e/events/",
     "sim:e2e:pokemon": "playwright test scripts/e2e/pokemon/",
+    "sim:e2e:system": "playwright test scripts/e2e/system/",
     "test:populate-inventory": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. .agents/skills/populate-tester-inventory/scripts/populate_inventory.ts",
     "test:combat:cleanup": "vitest run tests/unit/battle/test_switch_cleanup.spec.ts",
     "test:combat:weather": "vitest run tests/unit/battle/test_weather_terrain.spec.ts",

@@ -91,8 +91,7 @@ const applyGenericParticleSystem = (els: HTMLElement[], typeKey: string, engineI
         x: 0,
         rotation: 0,
         imageRendering: 'auto',
-        webkitFontSmoothing: 'none',
-        filter: 'none'
+        webkitFontSmoothing: 'none'
       })
 
       const growScale = settings.randomizeVars 
@@ -346,6 +345,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   z-index: calc(v-bind('Z_LAYERS.MAP_SPAWNS') + 3);
+  filter: var(--weather-filter, none);
 }
 
 .status-particle {

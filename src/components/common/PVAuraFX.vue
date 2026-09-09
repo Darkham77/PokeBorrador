@@ -74,6 +74,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   z-index: calc(v-bind('Z_LAYERS.MAP_SPAWNS') + 4);
+  filter: var(--weather-filter, none);
 }
 
 .pv-fx-screen-overlay {

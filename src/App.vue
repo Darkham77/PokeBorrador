@@ -5,7 +5,7 @@ import { gsap } from 'gsap'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { initGlobalErrorHandlers } from '@/logic/utils/errorHandler'
-import { checkDBCompatibility, DBRouter, type DBCompatibilityResponse, checkAppVersionCompatibility, type AppCompatibilityResponse } from '@/logic/db/dbRouter'
+import { checkDBCompatibility, DBRouter, checkAppVersionCompatibility } from '@/logic/db/dbRouter'
 
 const MainGameView = defineResilientAsyncComponent(() => import('@/views/game/MainGameView.vue'))
 import ErrorOverlay from '@/components/common/ErrorOverlay.vue'
@@ -18,7 +18,6 @@ import SVGFilters from '@/components/common/SVGFilters.vue'
 import PVLoadingOverlay from '@/components/common/PVLoadingOverlay.vue'
 const VersionLockOverlay = defineResilientAsyncComponent(() => import('@/components/overlays/VersionLockOverlay.vue'))
 const SessionLockOverlay = defineResilientAsyncComponent(() => import('@/components/overlays/SessionLockOverlay.vue'))
-import { gameBus } from '@/logic/events/gameBus'
 import { useUIStore } from '@/stores/ui'
 import { useBattleStore } from '@/stores/battle/battle'
 import { useLoadingStore } from '@/stores/loading'
@@ -32,6 +31,7 @@ import { useSocialStore } from '@/stores/social/social'
 import { useRoute, useRouter } from 'vue-router'
 import { useBackNavigation } from '@/composables/system/useBackNavigation'
 import { usePWA } from '@/composables/system/usePWA'
+import { useUpdateStore } from '@/stores/update'
 
 const authStore = useAuthStore()
 const gameStore = useGameStore()
@@ -40,6 +40,7 @@ const profileStore = useProfileStore()
 const socialStore = useSocialStore()
 const battleStore = useBattleStore()
 const loadingStore = useLoadingStore()
+const updateStore = useUpdateStore()
 const route = useRoute()
 const router = useRouter()
 
@@ -56,10 +57,10 @@ useBackNavigation()
 declare const __APP_VERSION__: string
 
 
-const dbIncompatible = ref(false)
-const dbVersionInfo = ref<DBCompatibilityResponse | null>(null)
-const appIncompatible = ref(false)
-const appVersionInfo = ref<AppCompatibilityResponse | null>(null)
+const dbIncompatible = computed(() => updateStore.modalType === 'db_outdated')
+const dbVersionInfo = computed(() => updateStore.versionInfo ? { client: updateStore.versionInfo.client, db: updateStore.versionInfo.db || updateStore.versionInfo.server, compatible: false } : null)
+const appIncompatible = computed(() => updateStore.modalType === 'server_outdated')
+const appVersionInfo = computed(() => updateStore.versionInfo ? { client: updateStore.versionInfo.client, server: updateStore.versionInfo.server, compatible: false, error: 'OUTDATED_SERVER' as const } : null)
 // Mutex: prevents concurrent executions of initGameSession() caused by the
 // watcher firing while onMounted's async call is still in progress.
 const isSessionInitializing = ref(false)
@@ -132,12 +133,12 @@ const isReadyToSeeGame = computed(() => {
 })
 
 const showLoadingOverlay = computed(() => {
-  if (dbIncompatible.value) return false
+  if (updateStore.modalType === 'db_outdated' || updateStore.modalType === 'server_outdated') return false
   if (isAdventureTestPage.value) return false
   // Show global blocking overlay for updates only if the user is currently logged in/playing.
   // If they are logged out (on the login page), we don't cover the screen with the global loading overlay,
   // allowing the login view to render and present the update option inline.
-  if (needRefresh.value && authStore.user) return true
+  if (updateStore.isUpdateAvailable && authStore.user) return true
 
   if (isLoginPage.value) {
     return loadingInfo.value.active
@@ -157,20 +158,27 @@ const initGameSession = async () => {
     try {
       const comp = await checkDBCompatibility(gameStore.db as DBRouter) // domain-ok: Open dynamic text or non-domain string payload
       if (!comp.compatible) {
-        dbIncompatible.value = true
-        dbVersionInfo.value = comp
+        updateStore.notifyDbIncompatible({
+          client: String(comp.client || ''),
+          server: String(comp.db || ''),
+          db: comp.db
+        })
         return
       }
 
       const appComp = await checkAppVersionCompatibility(gameStore.db as DBRouter) // domain-ok: Open dynamic text or non-domain string payload
       if (!appComp.compatible) {
-        appVersionInfo.value = appComp
         if (appComp.error === 'OUTDATED_SERVER') {
-          appIncompatible.value = true
+          updateStore.notifyOutdatedServer({
+            client: appComp.client,
+            server: appComp.server
+          })
           return
         } else if (appComp.error === 'OUTDATED_CLIENT') {
-          logger.warn('App', `Cliente desactualizado (${appComp.client}) vs Servidor (${appComp.server}). Mostrando botón de actualización manual.`)
-          gameBus.emit('PWA_NEED_REFRESH')
+          updateStore.notifyOutdatedClient({
+            client: appComp.client,
+            server: appComp.server
+          })
           return
         }
       }
@@ -228,7 +236,10 @@ const checkPwaVersion = async () => {
       
       if (clientVersion && serverVersion && clientVersion < serverVersion) {
         logger.warn('App', `PWA: Client version (${clientVersion}) is older than server version (${serverVersion}). Presentando cartel de actualización manual.`)
-        gameBus.emit('PWA_NEED_REFRESH')
+        updateStore.notifyOutdatedClient({
+          client: clientVersion,
+          server: serverVersion
+        })
       }
     }
   } catch (e) {
@@ -343,19 +354,13 @@ useWindowListener('touchmove', blockEvents, { capture: true, passive: false }); 
 useBodyClass('modal-open', () => uiStore.isAnyBlockingModalOpen)
 
 const handleRetry = () => {
-  window.location.reload()
+  updateStore.retryCheck()
 }
 
 const handleLogout = async () => {
-  // Reset all version/compatibility lock flags BEFORE logout so the login
-  // page renders cleanly instead of getting stuck on "CONECTANDO..."
-  appIncompatible.value = false
-  dbIncompatible.value = false
-  appVersionInfo.value = null
-  dbVersionInfo.value = null
   loadingStore.clearAll()
   loadingStore.markAppMounted()
-  await authStore.logout()
+  await updateStore.exitToLogin()
 }
 
 const handleReclaim = async () => {
@@ -406,7 +411,7 @@ const onLoadingLeave = (el: Element, done: () => void) => {
             <button
               id="app-loading-overlay-update-btn"
               class="pv-button-retro"
-              @click.stop="handleUpdate()"
+              @click.stop="handleUpdate({ forceNoSave: true, targetPath: 'login' })"
             >
               CERRAR SESIÓN Y ACTUALIZAR
             </button>

@@ -150,5 +150,11 @@
 - **Synchronized Companion Migration Pairs**: Every schema modification, table addition, or data backfill MUST be delivered as a synchronized pair of forward-only migrations: `.sql` for PostgreSQL and `.sqlite.sql` for SQLite. Both files MUST share an identical monotonic timestamp prefix (`YYYYMMDDHHmmss`) and update `system_config` with the matching `db_version`. Validating syntax via `npm run validate:sql` is mandatory before any database commit.
 - **Zero Divergence Policy (Divergence is a Bug)**: If a query, migration, or constraint succeeds in one database engine but fails, produces divergent data shapes, or behaves differently in the other (e.g., PostgreSQL throwing on unquoted identifiers, undeclared loop variables, or missing RLS policies while SQLite passes, or SQLite rejecting nested JSON expressions), this discrepancy constitutes an empirical bug that must be resolved at the source, never masked with engine-specific runtime shortcuts.
 
+## 23. Update Lifecycle, Version Incompatibility & Atomic Logout Protocol (Save Shield & /login Mandate)
 
-
+- **Save Shield During Incompatible Updates**: When the client detects an outdated client (`status = 'outdated_client'`), outdated server (`status = 'outdated_server'`), or database schema mismatch (`status = 'db_incompatible'`), all database writes and auto-save routines MUST be blocked immediately.
+- **Unconditional Atomic Logout with Save Prohibition**: Initiating an update or clicking a version lock logout button MUST invoke `authStore.logout(true, true)` with `preventSave = true`. Saving game state from an outdated client code bundle is strictly forbidden because it risks serializing stale schema shapes into `game_saves`.
+- **Auto-Login Prevention & Single Source of Truth**:
+  - `executeCleanUpdate()` and `exitToLogin()` in `useUpdateStore` MUST store `sessionStorage.setItem('block_autologin', 'true')`.
+  - Active background Web Workers (Showdown simulation workers) MUST be terminated prior to unloading.
+  - Page reloads or redirections MUST target `${origin}${cleanBase}login?reload_t=${timestamp}`. Redirecting to `/` or calling `window.location.reload()` without changing the route is strictly prohibited, as it causes infinite update loops with active user sessions.

@@ -4,14 +4,17 @@ This directory contains standalone HTML templates and interactive demos showcasi
 
 ## Contents
 
-- [**`pixel_ui_template.html`**](./pixel_ui_template.html): Master catalog of all standardized UI primitives:
+- [**`pixel_ui_standard_manual.md`**](./pixel_ui_standard_manual.md): **Authoritative Architecture & Design System Manual**. Complete mathematical polygon algorithms, 4-tier frame hierarchy, dual-scale contrast rules, centering mandates, and Playwright verification protocols for AI agents.
+- [**`pixel_ui.css`**](./pixel_ui.css): **Modular Single Source of Truth (SSoT) Stylesheet**. Centralizes the Base64 GBA font, mathematical polygon clip-paths, 3 color themes, 4-tier frame hierarchy, and all standard UI primitives (buttons, tabs, inputs, badges, cards, login layouts).
+- [**`pixel_ui.js`**](./pixel_ui.js): **Modular Interactive & Mathematical Script**. Centralizes the Bresenham polygon generation engine, GSAP interaction listeners (hover and 3D click physics), dynamic pixel scaling (`updatePixelScale`), and UI event callbacks.
+- [**`pixel_ui_template.html`**](./pixel_ui_template.html): Master catalog of all standardized UI primitives linking directly to `pixel_ui.css` and `pixel_ui.js`:
   - **3px Virtual Pixel Curvature**: Mathematical stepped clip polygons (`--s: 3px`).
   - **Retro Pixel Checkboxes**: Recessed cavities with crisp pixel art SVG checkmarks and GSAP toggle physics.
   - **Inventory & PC Slots**: Continuous 360° recessed bevel cavities with zero corner gap holes.
   - **Parametric Buttons**: 7 color variants and 4 scales (XS, SM, MD, LG) with 100% GSAP microswitch click/hover physics.
   - **Combatant Status HUD**: 1:1 replica of Generation 3 battle HUD (Wingull Lv12).
   - **Type Pills & Status Badges**: Micro-chamfer pixel borders.
-- [**`pixel_login_demo.html`**](./pixel_login_demo.html): Interactive demo of the game login screen:
+- [**`pixel_login_demo.html`**](./pixel_login_demo.html): Interactive demo of the game login screen linking to the shared `pixel_ui.css` and `pixel_ui.js`:
   - Stepped GBA Wingull corner profile.
   - Real-time theme toggle (Vicio Dark vs Wingull GBA Light vs Cyber Neon).
   - Real-time density scale toggle (2px, 3px, 4px).

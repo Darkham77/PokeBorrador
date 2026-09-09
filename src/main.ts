@@ -74,12 +74,17 @@ if (typeof window !== 'undefined') {
     }
   })
 
-  window.addEventListener('vite:preloadError', (event) => {
+  window.addEventListener('vite:preloadError', async (event) => {
     event.preventDefault()
-    console.warn('[Vite] Chunk preload error detected (stale deployment assets). Triggering PWA update flow.')
-    import('@/logic/events/gameBus.ts').then(({ gameBus }) => {
-      gameBus.emit('PWA_NEED_REFRESH')
-    })
+    console.warn('[Vite] Chunk preload error detected (stale deployment assets). Triggering update flow.')
+    try {
+      const { useUpdateStore } = await import('@/stores/update')
+      useUpdateStore(pinia).notifyChunkLoadError(event)
+    } catch {
+      import('@/logic/events/gameBus.ts').then(({ gameBus }) => {
+        gameBus.emit('PWA_NEED_REFRESH')
+      })
+    }
   })
 }
 

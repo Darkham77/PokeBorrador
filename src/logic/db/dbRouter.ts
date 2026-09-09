@@ -253,6 +253,13 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
             import('../events/gameBus.ts').then(({ gameBus }) => {
               gameBus.emit('PWA_NEED_REFRESH');
             });
+            import('@/stores/update').then(({ useUpdateStore }) => {
+              try {
+                useUpdateStore().notifyOutdatedClient({ client: clientVer, server: newServerVer });
+              } catch {
+                // Pinia might not be ready yet
+              }
+            });
           }
         })
         .subscribe();

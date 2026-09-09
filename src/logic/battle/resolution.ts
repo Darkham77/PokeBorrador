@@ -162,7 +162,12 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
   
   syncTeamHP(ctx)
 
-  if (active) active._initialEnemy = null
+  if (active) {
+    active._initialEnemy = null
+    if (!active.isCapture) {
+      active.enemy = null
+    }
+  }
 
   if (isSingle) {
     // Para combates isSingle (Gym, PvP), NO se realiza reordenamiento animado.

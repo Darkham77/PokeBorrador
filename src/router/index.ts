@@ -107,9 +107,19 @@ router.onError((error, to) => {
   const msg = (error && typeof error === 'object' && 'message' in error) ? String(error.message) : String(error);
   const isChunkError = /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module|Loading chunk|Couldn't resolve component/i.test(msg);
   if (isChunkError) {
-    logger.warn('Router', `Fallo al cargar módulo/chunk dinámico hacia ${to?.fullPath || 'ruta'}. Emitiendo PWA_NEED_REFRESH...`);
-    import('@/logic/events/gameBus.ts').then(({ gameBus }) => {
-      gameBus.emit('PWA_NEED_REFRESH');
+    logger.warn('Router', `Fallo al cargar módulo/chunk dinámico hacia ${to?.fullPath || 'ruta'}. Emitiendo actualización...`);
+    import('@/stores/update').then(({ useUpdateStore }) => {
+      try {
+        useUpdateStore().notifyChunkLoadError(error);
+      } catch {
+        import('@/logic/events/gameBus.ts').then(({ gameBus }) => {
+          gameBus.emit('PWA_NEED_REFRESH');
+        });
+      }
+    }).catch(() => {
+      import('@/logic/events/gameBus.ts').then(({ gameBus }) => {
+        gameBus.emit('PWA_NEED_REFRESH');
+      });
     });
   }
 })

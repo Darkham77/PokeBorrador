@@ -37,7 +37,15 @@ export const useErrorStore = defineStore('error', () => {
 
     if (isUpdateOrNetwork) {
       logger.warn('errorStore', 'Fallo de conexión o actualización detectado, activando pantalla de PWA/Relogin.', context)
-      gameBus.emit('PWA_NEED_REFRESH')
+      import('@/stores/update').then(({ useUpdateStore }) => {
+        try {
+          useUpdateStore().notifyChunkLoadError(error)
+        } catch {
+          gameBus.emit('PWA_NEED_REFRESH')
+        }
+      }).catch(() => {
+        gameBus.emit('PWA_NEED_REFRESH')
+      })
       return
     }
 

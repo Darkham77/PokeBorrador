@@ -560,5 +560,26 @@ To ensure flicker-free sprite rendering and eliminate ground teleportation durin
 3. **Shadow Identity Anchor**: The ground shadow is tied strictly to the Pokémon's unique `uid`. When replacing or capturing a combatant, explicitly track and clear `lastShadowId` to prevent orphan shadows.
 4. **Preloading Gate**: All candidate sprites MUST be pre-scanned during initialization (`preloadCombatCoords`) so coordinates are guaranteed to be available prior to entrance animations.
 
+---
 
+## 48. Wild Encounter Silhouette Lifecycle & Pre-Combat Exit Guards
 
+To prevent single-frame full-color sprite glitches and visual leaks during wild encounter reveals:
+
+1. **Frame 0 Silhouette Pre-Configuration**: In wild battles, enemy combatants MUST initialize with silhouette mode active (`activeEnemyIsSilhouette = true`, `isWildSilhouette = true`, `silhouetteOpacity = 0`) during technical setup FSM states (`CONTEXT_SETUP`, `INITIALIZING`) before transitioning into `SEARCH_PHASE`. Sprites must never be rendered unmasked before GSAP entrance timelines start.
+2. **Pre-Combat Exit Protection**: If a wild encounter is exited or fled while still in `SEARCH_PHASE` (prior to confirming combat or transitioning into `ACTIVE_BATTLE`), the animation composable cleanup MUST preserve `isWildSilhouette = true` until the battle view unmounts, preventing the unmasked sprite from flashing when closing the encounter.
+3. **Defeated Combatant Evacuation**: At the conclusion of a battle (during `REWARDS_PHASE` and `EXIT_BATTLE`), defeated enemy combatants must be immediately filtered out from the active combatants array and `active.enemy` must be cleared in `terminateBattle` (unless active capture animations are playing). This eliminates stale enemy sprites flashing on Frame 0 of subsequent search loop encounters.
+
+---
+
+## 49. Combat FX Filter Decoupling: Environmental Lighting vs Weather Filter Isolation
+
+To prevent visual effects and particles from darkening during nighttime cycles while ensuring they properly reflect weather:
+
+1. **Physical Entity Atmosphere Scope**: The CSS variable `var(--atmosphere-filter)` is reserved strictly for environmental illumination of physical 3D arena actors and props: Pokémon sprites, trainer sprites, the physical Pokéball sphere, and ground shadows.
+2. **Prohibition on Atmospheric Cascading**: Visual effects (such as catch sparkles `.catch-success-sparkles`, status ailment particles in `PVStatusFX`, auras in `PVAuraFX`, ground hazards, and smoke) MUST NEVER be placed inside parent DOM containers that carry `filter: var(--atmosphere-filter)`. CSS filter inheritance darkens luminous particles to near-black at night.
+3. **Dedicated Weather Filter Assignment**: All combat FX, status indicators, and particles MUST explicitly declare:
+   ```css
+   filter: var(--weather-filter, none);
+   ```
+   This completely isolates visual FX from time-of-day darkening while preserving dynamic responsiveness to environmental weather (rain, sandstorm, snow, harsh sunlight).

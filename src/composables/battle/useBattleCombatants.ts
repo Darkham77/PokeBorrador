@@ -35,6 +35,14 @@ export function useBattleCombatants(
       return list
     }
 
+    const isBattleOver = Boolean(battleStore.state?.over)
+    const isRewardsPhase = fsmState === 'REWARDS_PHASE' || fsmState === 'EXIT_BATTLE'
+    const isEnemyFaintedOrDefeated = isRewardsPhase && isBattleOver && !battleStore.state?.isCapture
+
+    if (isEnemyFaintedOrDefeated) {
+      return list
+    }
+
     const exiting = unref(battleStore.exitingEnemy)
     if (exiting && exiting.uid) {
       list.push(exiting)

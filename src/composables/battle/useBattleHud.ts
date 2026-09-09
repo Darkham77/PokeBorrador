@@ -30,13 +30,17 @@ function checkScrambleState(subState: string | null | undefined, state: string |
   return !!subState && SILHOUETTE_FSM_SUBSTATES_SET.has(subState);
 }
 
-const TECHNICAL_FSM_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['RECEIVE_CONFIG', 'WEIGHT_CALCULATION', 'INJECT_FILTERS', 'READY_FOR_GEN']); // runtime-set: Fast O(1) membership lookup set
+const TECHNICAL_FSM_SUBSTATES_SET: ReadonlySet<string> = new Set<string>([ // runtime-set: Fast O(1) membership lookup set
+  'RECEIVE_CONFIG', 'APPLY_ITEM_MODIFIERS', 'WEIGHT_CALCULATION', 'INJECT_FILTERS', 'READY_FOR_GEN',
+  'VACATE_ALL_SEATS', 'CHECK_CONTEXT', 'ASYNC_THREAD', 'GEN_TEAMS', 'MARK_EVENT', 'PRELOAD_FINAL_COORDS',
+  'SET_SEARCH_FLAG', 'PRELOAD_COORDS', 'PREPARATION', 'AUTO_BATTLE_CHECK', 'UPDATE_BUTTON'
+]);
 const TRAINER_VISIBLE_FSM_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['ENCOUNTER_TYPE_CHECK', 'TRAINER_ENTRY', 'T_VISUAL', 'SHOW_DIALOGS', 'TRAINER_ENCOUNTER', 'RETREAT_AND_FADEOUT', 'T_RETREAT']); // runtime-set: Fast O(1) membership lookup set
 
 function checkEnemyTechnicalHidden(subState: string | null | undefined, state: string | null | undefined, isTrainer: boolean): boolean {
   if (subState === 'GEN_TEAMS' || subState === 'MINIGAME_CHECK') return true;
   
-  if (state === 'SEARCH_PHASE') {
+  if (state === 'CONTEXT_SETUP' || state === 'INITIALIZING' || state === 'SEARCH_PHASE') {
     if (subState && TECHNICAL_FSM_SUBSTATES_SET.has(subState)) return true;
   }
 
@@ -167,11 +171,24 @@ export function useBattleHud(
 
     if (animations.isWildSilhouette.value) return true;
     if (toValue(battleStore.isSilhouetteMode)) return true;
+
     const state = toValue(battleStore.fsm?.currentState);
-    if (state === 'SEARCH_PHASE') {
-      if (s && !s.isTrainer && !s.isGym) return true;
-    }
     const sub = toValue(battleStore.fsm?.currentSubState);
+
+    const isSearchWild = !!(s?.wasSearching || toValue(battleStore.isSearching));
+    if (isSearchWild) {
+      if (state === 'CONTEXT_SETUP' || state === 'INITIALIZING' || state === 'SEARCH_PHASE') {
+        return true;
+      }
+      if ((state === 'REWARDS_PHASE' || state === 'EXIT_BATTLE') && !animations.isWildEntryAnimation.value) {
+        return true;
+      }
+    }
+
+    if (state === 'SEARCH_PHASE') {
+      return true;
+    }
+
     return !!sub && SILHOUETTE_SUBSTATES_SET.has(sub);
   });
 

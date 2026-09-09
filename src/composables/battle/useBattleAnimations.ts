@@ -110,22 +110,28 @@ export function useBattleAnimations(
 
       if (isCleanupState) {
         isGlobalFadeActive.value = (state === 'EXIT_BATTLE' && !['DEFEAT_SCREEN', 'DEFEAT_WAIT'].includes(String(subState)))
+        const wasPreCombatWild = !battleStore.state?.isTrainer && !battleStore.state?.isGym && !isWildEntryAnimation.value && (battleStore.state?.wasSearching || battleStore.isSearching)
         resetAll()
+        if (wasPreCombatWild) {
+          isWildSilhouette.value = true
+        }
         return
       }
 
       if (sub) logger.debug('useBattleAnimations', `SubState: ${sub}`);
 
+      if (state === 'INITIALIZING' || state === 'CONTEXT_SETUP') {
+        const isTrainer = Boolean(battleStore.state?.isTrainer || battleStore.state?.isGym || battleStore.state?.isPvP)
+        isWildSilhouette.value = !isTrainer
+        wildRevealActive.value = !isTrainer
+        isWildEntryAnimation.value = false
+        isEmerging.value = false
+        silhouetteOpacity.value = 0
+        trainerAnimState.value = null
+        isTrainerVisible.value = false
+      }
+
       switch (sub) {
-        case 'INITIALIZING':
-          isWildSilhouette.value = true
-          wildRevealActive.value = true
-          isWildEntryAnimation.value = false
-          isEmerging.value = false
-          silhouetteOpacity.value = 0
-          trainerAnimState.value = null
-          isTrainerVisible.value = false
-          break
 
         case 'PARALLEL_PREP':
         case 'PARALLEL_ENTRY':

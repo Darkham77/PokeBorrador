@@ -214,6 +214,7 @@
   pointer-events: none;
   z-index: var(--z-low);
   overflow: visible;
+  filter: var(--weather-filter, none);
 
   .sparkle {
     position: absolute;
@@ -248,6 +249,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  filter: var(--weather-filter, none);
 }
 
 .ground-fx {
@@ -280,6 +282,7 @@
   pointer-events: none;
   z-index: var(--z-map-ui);
   overflow: visible;
+  filter: var(--weather-filter, none);
 }
 
 .smoke-particle {

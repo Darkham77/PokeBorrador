@@ -422,24 +422,26 @@ const handleBallLeave = (el: Element, done: () => void) => {
         v-if="isBallVisible"
         :key="`ball-${side}-${pokemon.uid || pokemon.id}`"
         class="trapped-pokeball"
-        :style="[memorizedBallCoords, { width: `${pokeballSize}px`, height: `${pokeballSize}px`, filter: 'var(--atmosphere-filter)' }]"
+        :style="[memorizedBallCoords, { width: `${pokeballSize}px`, height: `${pokeballSize}px` }]"
       >
         <img
           ref="pokeballImgRef"
           :src="getAssetUrl(ASSET_TYPES.ITEM, internalBallId)"
           alt="Pokeball"
+          :style="{ filter: 'var(--atmosphere-filter)' }"
           @error="handleBallError"
         >
         
         <div
           class="pokeball-shadow"
-          :style="{ backgroundImage: pokeballShadowUrl }"
+          :style="{ backgroundImage: pokeballShadowUrl, filter: 'var(--atmosphere-filter)' }"
         />
 
         <!-- Success Sparkles -->
         <TransitionGroup 
           tag="div"
           class="catch-success-sparkles"
+          :style="{ filter: 'var(--weather-filter, none)' }"
           :css="false"
           @enter="onSparkleEnter"
         >

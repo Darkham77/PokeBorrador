@@ -75,6 +75,7 @@ QA / Automation Engineers.
 - Run `npm run sim:e2e:breeding` to run breeding-related simulations.
 - Run `npm run sim:e2e:missions` to run missions-related simulations.
 - Run `npm run sim:e2e:gyms` to run gym progression simulations.
+- Run `npm run sim:e2e:system` to run system-level update and version lock simulations.
 
 ## Child DOX Index
 
@@ -91,3 +92,4 @@ QA / Automation Engineers.
 - [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon UI and friendship simulations.
 - [results/](./results/AGENTS.md): Domain module documentation for results.
 - [save/](./save/AGENTS.md): Domain module documentation for save.
+- [system/](./system/AGENTS.md): Domain module documentation for system-level update and session simulations.

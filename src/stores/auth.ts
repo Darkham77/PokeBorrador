@@ -353,18 +353,20 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function logout(preventReload = false) {
+  async function logout(preventReload = false, preventSave = false) {
     logger.info('AuthStore', 'Iniciando cierre de sesión...')
 
-    // Safe preventative save if game is active
-    try {
-      const gameStore = useGameStore()
-      if (gameStore.isReady && gameStore.save) {
-        logger.info('AuthStore', 'Guardando partida de forma segura antes de cerrar sesión...')
-        await gameStore.save(false)
+    // Safe preventative save if game is active and not explicitly prevented
+    if (!preventSave) {
+      try {
+        const gameStore = useGameStore()
+        if (gameStore.isReady && gameStore.save) {
+          logger.info('AuthStore', 'Guardando partida de forma segura antes de cerrar sesión...')
+          await gameStore.save(false)
+        }
+      } catch (e) {
+        logger.warn('AuthStore', `Error al guardar antes de cerrar sesión: ${(e as Error).message}`)
       }
-    } catch (e) {
-      logger.warn('AuthStore', `Error al guardar antes de cerrar sesión: ${(e as Error).message}`)
     }
 
     try {
@@ -390,12 +392,11 @@ export const useAuthStore = defineStore('auth', () => {
 
     sessionStorage.setItem('block_autologin', 'true')
 
-    // Reload the page to reset all reactive state cleanly.
-    // We do NOT unregister the Service Worker — that's what was breaking the
-    // PWA standalone mode. The SW stays registered so the app remains installable
-    // and the standalone layout is preserved across reloads.
+    // Navigate cleanly to /login to reset reactive state without looping
     if (!preventReload && import.meta.env.MODE !== 'test') {
-      window.location.reload()
+      const baseUrl = import.meta.env.BASE_URL || '/'
+      const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`
+      window.location.replace(`${window.location.origin}${cleanBase}login`)
     }
   }
 

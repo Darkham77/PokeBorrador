@@ -357,19 +357,19 @@ watch(() => battleStore.isBattleActive, (active) => {
             :is-shaking="getPokemonIsShaking('enemy', p)"
             :is-blinking="getPokemonIsBlinking('enemy', p)"
             :is-healing="getPokemonIsHealing('enemy', p)"
-            :is-silhouette="activeEnemyIsSilhouette && p.uid === activeEnemyData?.uid"
+            :is-silhouette="activeEnemyIsSilhouette && (!activeEnemyData || p.uid === activeEnemyData?.uid)"
             :is-attacking="battleStore.attackerSide === 'enemy' && p.uid === enemy?.uid"
             :active-move="battleStore.activeMove ? { side: battleStore.activeMove.side || 'enemy', cat: battleStore.activeMove.cat || 'physical', name: battleStore.activeMove.name, selfKO: battleStore.activeMove.selfKO, recoil: battleStore.activeMove.recoil } : null"
             :show-guides="showGuides"
             :is-capture-success="getPokemonCaptureActive('enemy', p)"
             :sparkles="catchSparkles.filter(s => s.side === 'enemy')"
             :is-fainting="isFaintInProgress && faintedPokemonSnapshot?.side === 'enemy' && !(battle?.isTrainer || battle?.isGym) && faintedPokemonSnapshot?.uid === p.uid"
-            :is-emerging="enemyIsJumping && p.uid === activeEnemyData?.uid"
+            :is-emerging="enemyIsJumping && (!activeEnemyData || p.uid === activeEnemyData?.uid)"
             :suppress-fx="isSearching || isIntroInProgress"
             :stages="battleStore.enemyStages"
-            :hidden="isEnemyTechnicalHidden && p.uid === activeEnemyData?.uid"
+            :hidden="isEnemyTechnicalHidden || (activeEnemyData?.uid ? p.uid !== activeEnemyData.uid : false)"
             :has-seat="true"
-            :style="{ opacity: activeEnemyIsSilhouette && p.uid === activeEnemyData?.uid ? silhouetteOpacity : 1 }"
+            :style="{ opacity: activeEnemyIsSilhouette && (!activeEnemyData || p.uid === activeEnemyData?.uid) ? silhouetteOpacity : 1 }"
           />
 
           <!-- Arbustos Adelante -->
