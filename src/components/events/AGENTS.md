@@ -16,6 +16,7 @@ Frontend Developers / Systems Engineers.
 - **Bounded Dynamic Collection Heights**: Variable-length reward collections (such as pending awards) must enforce a bounded `max-height` (e.g., `280px`) with custom retro scrollbar and `overflow-y: auto` to prevent unbounded vertical stretch in dashboards and modals.
 - **GSAP Hover Inline Style Isolation**: When animating interactive elements (buttons, cards, badges) with GSAP on hover, avoid setting inline `backgroundColor` or `borderColor` without `clearProps: 'transform,scale,backgroundColor,background,borderColor'` on `mouseleave`. Always prioritize delegating color and background transitions to component CSS classes to prevent specificity collisions with conditional modifier classes like `.only-action`.
 - **Sub-Competition Award Specificity & Semantic Badging (`EventPendingAwardsBanner.vue`)**: Award banners representing pending competition rewards MUST display the clean event name alongside a dedicated category pill with its resolved semantic metric icon (`resolveAwardCategory`), strictly prohibiting duplicating category names inside the event title text and forbidding ambiguous fallback labels.
+- **Multi-Species Competition Tabs (`EventCardCategoryPreview.vue`)**: Multi-species competition event cards MUST render species selection micro-tabs (`.species-tabs-container`) with responsive wrapping (`flex-wrap: wrap`), species mini-sprites, and completion check pills (`✓`) to maintain a bounded preview height and prevent card elongation in dashboards.
 
 ## Work Guidance
 

@@ -1,6 +1,7 @@
 import { computed } from 'vue';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService';
+import { resolveAsset } from '@/logic/utils/assetResolver';
 import { requirePokemonSpriteValue } from '@/data/pokemon/spriteMapping';
 import {
   MAX_ANIMATED_SPRITE_SIZE_FRONT,
@@ -185,7 +186,7 @@ export function useCombatantVisualSprite(props: BattleCombatantProps) {
     const parts = cleanUrl.split('/');
     const filename = parts.pop();
     const folder = parts.slice(PATH_SLICE_OFFSET).join('/');
-    return `/public/assets/sprites/${folder}/${filename}`;
+    return resolveAsset(`/assets/sprites/${folder}/${filename}`);
   });
 
   return {

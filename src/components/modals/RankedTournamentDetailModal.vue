@@ -81,7 +81,7 @@ const getPokemonRewardSprite = (species: string, isShiny = true) => {
       <section class="season-tournament-card">
         <div class="tournament-banner-wrapper">
           <img
-            :src="resolvedTheme.bannerImage"
+            :src="getAssetUrl(ASSET_TYPES.BANNER, resolvedTheme.bannerImage)"
             :alt="tournamentTitle"
             class="tournament-banner-img allow-aliasing"
             @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')"

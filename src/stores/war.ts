@@ -8,6 +8,7 @@ import { useUIStore } from '@/stores/ui.ts'
 import { getWeekId, getPreviousWeekId, isDisputePhase, getPointReward, FACTION_CHANGE_COST, DAILY_MAP_CAP, WEEKLY_REWARD_MILESTONES, DAILY_COIN_CAP, WAR_POINTS_PER_COIN, GUARDIAN_DEFEAT_POINTS_MULTIPLIER, FACTION_VICTORY_BONUS_COINS } from '@/logic/war/warEngine'
 import { getGuardianData } from '@/logic/war/guardianEngine'
 import { GUARDIAN_ENCOUNTER_CHANCE_PERCENT } from '@/logic/constants/gameplay'
+import { logger } from '@/logic/utils/logger.ts'
 
 import type { DominanceInfo } from '@/types/system/stores'
 import { requireFactionId, requireISODateKey, FACTION_IDS, type FactionId } from '@/types/system/game'
@@ -355,7 +356,15 @@ export const useWarStore = defineStore('war', () => {
     })
 
     if (dominanceRows.length > 0) {
-      await gameStore.db.from('war_dominance').upsert(dominanceRows)
+      try {
+        const { error } = await gameStore.db.from('war_dominance').upsert(dominanceRows)
+        if (error) {
+          const errMsg = (error as { message?: string })?.message || String(error)
+          logger.warn('WarStore', `Failed to upsert war dominance: ${errMsg}`)
+        }
+      } catch (err) {
+        logger.warn('WarStore', `Error resolving weekly dominance: ${(err as Error).message}`)
+      }
     }
   }
 

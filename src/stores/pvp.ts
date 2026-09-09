@@ -270,16 +270,36 @@ export const usePvPStore = defineStore('pvp', () => {
 
       if (reports && reports.length > 0) {
         const opponentIds = [...new Set(reports.map(r => r.opponent_id).filter(id => id && id !== 'local_user'))]
-        const profileMap = new Map<string, Record<string, unknown>>()
+        const profileMap = new Map<string, PassiveOpponentProfile>()
         if (opponentIds.length > 0) {
           try {
             const { data: profiles } = await gameStore.db
               .from('profiles')
-              .select('id, username, playerClass, level, avatar, avatarFrame, avatarDecor, avatar_style, nick_style, faction, elo_rating')
-              .in('id', opponentIds) as { data: Array<Record<string, unknown>> | null }
+              .select('id, username, player_class, trainer_level, avatar_style, nick_style, faction, elo_rating')
+              .in('id', opponentIds) as { data: Array<{
+                id: string
+                username?: string
+                player_class?: string
+                trainer_level?: number
+                avatar_style?: string
+                nick_style?: string
+                faction?: string
+                elo_rating?: number
+              }> | null }
             if (profiles) {
               for (const p of profiles) {
-                profileMap.set(String(p.id), p)
+                profileMap.set(String(p.id), {
+                  id: p.id,
+                  username: p.username,
+                  playerClass: p.player_class || 'Entrenador',
+                  level: p.trainer_level || 1,
+                  trainer_level: p.trainer_level || 1,
+                  avatar_style: p.avatar_style,
+                  avatarStyle: p.avatar_style,
+                  nick_style: p.nick_style,
+                  faction: p.faction,
+                  elo_rating: p.elo_rating
+                })
               }
             }
           } catch {

@@ -548,5 +548,11 @@ export const DATABASE_MIGRATIONS = [
       "table": "claim_queue",
       "column": "id"
     }
+  },
+  {
+    "id": "20260909000000_add_war_dominance_rls_policies",
+    "sql": "GRANT SELECT, INSERT, UPDATE ON public.war_dominance TO authenticated;\nDROP POLICY IF EXISTS \"Upsert autenticado war_dominance\" ON public.war_dominance;\nCREATE POLICY \"Upsert autenticado war_dominance\" ON public.war_dominance\nFOR INSERT WITH CHECK (auth.role() = 'authenticated');\nDROP POLICY IF EXISTS \"Update autenticado war_dominance\" ON public.war_dominance;\nCREATE POLICY \"Update autenticado war_dominance\" ON public.war_dominance\nFOR UPDATE USING (auth.role() = 'authenticated');\nINSERT INTO public.system_config (key, value)\nVALUES ('db_version', '20260909000000'::jsonb)\nON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW();",
+    "sqlite_sql": "INSERT INTO system_config (key, value, updated_at)\nVALUES ('db_version', '20260909000000', strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))\nON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at;",
+    "check": null
   }
 ];

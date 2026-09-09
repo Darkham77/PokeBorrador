@@ -123,7 +123,7 @@ function handleEmojiLeave(e: MouseEvent) {
     <section class="season-tournament-card">
       <div class="tournament-banner-wrapper">
         <img
-          :src="currentTheme.bannerImage"
+          :src="getAssetUrl(ASSET_TYPES.BANNER, currentTheme.bannerImage)"
           :alt="currentTheme.name"
           class="tournament-banner-img allow-aliasing"
           @error="(e: Event) => (e.target as HTMLImageElement).style.display = 'none'"

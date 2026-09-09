@@ -225,7 +225,8 @@ export function getAssetUrl(type: AssetType, rawId: string | number, options: As
         const cleanId = idStr.replace('pokecenter_', '');
         return resolveAsset(`/assets/ui/pokecenter/${cleanId}${extension}`);
       }
-      return resolveAsset(`/assets/ui/events/${idStr}${extension}`);
+      const cleanBannerId = idStr.replace(/^\/?(?:public\/)?assets\/ui\/events\//, '');
+      return resolveAsset(`/assets/ui/events/${cleanBannerId}${extension}`);
     }
 
     case ASSET_TYPES.BATTLE_BG:

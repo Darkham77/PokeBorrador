@@ -218,7 +218,7 @@ async function handleSendChallenge() {
         class="seasonal-theme-banner"
       >
         <img
-          :src="currentTheme.bannerImage"
+          :src="getAssetUrl(ASSET_TYPES.BANNER, currentTheme.bannerImage)"
           :alt="currentTheme.name"
           class="theme-banner-img"
           @error="(e: Event) => { if (e.target) (e.target as HTMLElement).style.display = 'none' }"

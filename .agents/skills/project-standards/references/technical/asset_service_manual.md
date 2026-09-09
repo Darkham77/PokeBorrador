@@ -72,6 +72,12 @@ const heldItemSprite = computed(() => {
 </script>
 ```
 
+### 1.2 Subpath Parity & Anti-Bypass Auditor Mandate
+
+- **Subpath Prefix Parity (`import.meta.env.BASE_URL`)**: All asset resolution through `getAssetUrl` and `resolveAsset` automatically injects the canonical base URL (`BASE_URL`). In deployments running under subpaths (such as GitHub Pages or scoped PWA hosting at `/PokeBorrador/`), hardcoded absolute paths like `src="/assets/..."` bypass the base prefix, causing browsers to request non-existent root domain URLs (HTTP 404).
+- **Prohibition on Hardcoded Asset Paths**: Hardcoding raw paths (`/assets/...`, `/sprites/...`, `/public/...`) in Vue templates or saving static path strings in data catalogues (`src/data/**`) is strictly forbidden. Static datasets must store only canonical domain IDs (`BannerId`, `ItemId`, `PokemonSpeciesId`).
+- **Asset Usage Auditor Gatekeeper**: The quality auditor `validate_asset_usage.ts` actively enforces compliance across all Vue templates, TypeScript logic, and data arrays during `npm run audit`.
+
 ### 2. In Game Logic
 
 Avoid hardcoding strings. Use the `ASSET_TYPES` enum.

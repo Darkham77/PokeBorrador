@@ -158,3 +158,9 @@
   - `executeCleanUpdate()` and `exitToLogin()` in `useUpdateStore` MUST store `sessionStorage.setItem('block_autologin', 'true')`.
   - Active background Web Workers (Showdown simulation workers) MUST be terminated prior to unloading.
   - Page reloads or redirections MUST target `${origin}${cleanBase}login?reload_t=${timestamp}`. Redirecting to `/` or calling `window.location.reload()` without changing the route is strictly prohibited, as it causes infinite update loops with active user sessions.
+
+## 24. Mandatory RLS Mutator Policies & Tautological Mock Prohibition
+
+- **Mandatory RLS Policies for Mutating Operations**: Whenever Row Level Security (RLS) is enabled on any table (such as `war_dominance`), all mutations performed by authenticated game clients (`INSERT`, `UPDATE`, `UPSERT`) MUST have explicit RLS policies granted to the `authenticated` role (`WITH CHECK (true)` / `USING (true)`). A table with only `SELECT` policies will reject client-side mutations with HTTP 403 Forbidden.
+- **Prohibition on Tautological Persistence Mocks**: In unit and integration test suites, agents MUST NEVER mock out database mutations with dummy resolved values (`upsert: vi.fn().mockResolvedValue({ error: null })`) that conceal missing RLS policies or schema mismatches. Persistence contracts must be certified against genuine schema queries or static schema validators.
+

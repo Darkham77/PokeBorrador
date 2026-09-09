@@ -328,7 +328,10 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <p class="description">
+      <p
+        v-if="event.type !== 'competition' && event.description"
+        class="description"
+      >
         {{ event.description }}
       </p>
 

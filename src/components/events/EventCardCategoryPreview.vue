@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useEventStore } from '@/stores/events'
 import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
@@ -39,6 +39,16 @@ const eventStore = useEventStore()
 const gameStore = useGameStore()
 const modalStore = useModalStore()
 const uiStore = useUIStore()
+
+interface SpeciesTabItem {
+  id: string
+  species?: PokemonSpeciesId
+  name: string
+  icon?: string
+  totalCount: number
+  enrolledCount: number
+  isComplete: boolean
+}
 
 const getEntryForCategory = (catId: string) => {
   return eventStore.userEntries[`${props.event.id}:${catId}`] || (catId === 'ivs' ? eventStore.userEntries[props.event.id] : undefined)
@@ -192,10 +202,107 @@ const handleAutoFill = async () => {
     isAutoFilling.value = false
   }
 }
+
+// Check if this event has multiple participating species
+const isMultiSpecies = computed(() => {
+  const speciesSet = new Set<PokemonSpeciesId>()
+  for (const sub of props.resolvedSubComps) {
+    if (sub.targetSpecies) {
+      speciesSet.add(sub.targetSpecies)
+    }
+  }
+  for (const sp of props.cardSpeciesList) {
+    speciesSet.add(sp)
+  }
+  return speciesSet.size > 1
+})
+
+// Derived Species Tabs with Completion Check (only activated for multi-species events)
+const speciesTabs = computed<SpeciesTabItem[]>(() => {
+  if (!isMultiSpecies.value) {
+    return []
+  }
+
+  const tabs: SpeciesTabItem[] = []
+
+  // 1. Global categories
+  const globalSubs = props.resolvedSubComps.filter(s => !s.targetSpecies || s.speciesScope === 'global')
+  if (globalSubs.length > 0) {
+    const enrolled = globalSubs.filter(s => Boolean(getParticipantForCategory(s))).length
+    tabs.push({
+      id: 'global',
+      name: 'Global',
+      icon: '🧬',
+      totalCount: globalSubs.length,
+      enrolledCount: enrolled,
+      isComplete: enrolled === globalSubs.length && globalSubs.length > 0
+    })
+  }
+
+  // 2. Species categories in stable order
+  const speciesSeen = new Set<PokemonSpeciesId>()
+  const speciesList: PokemonSpeciesId[] = []
+  for (const sp of props.cardSpeciesList) {
+    if (!speciesSeen.has(sp)) {
+      speciesSeen.add(sp)
+      speciesList.push(sp)
+    }
+  }
+  for (const sub of props.resolvedSubComps) {
+    if (sub.targetSpecies && !speciesSeen.has(sub.targetSpecies)) {
+      speciesSeen.add(sub.targetSpecies)
+      speciesList.push(sub.targetSpecies)
+    }
+  }
+
+  for (const sp of speciesList) {
+    const spSubs = props.resolvedSubComps.filter(s => s.targetSpecies === sp)
+    if (spSubs.length > 0) {
+      const enrolled = spSubs.filter(s => Boolean(getParticipantForCategory(s))).length
+      tabs.push({
+        id: sp,
+        species: sp,
+        name: pokemonDataProvider.resolveSpeciesName(sp),
+        totalCount: spSubs.length,
+        enrolledCount: enrolled,
+        isComplete: enrolled === spSubs.length && spSubs.length > 0
+      })
+    }
+  }
+
+  return tabs
+})
+
+const activeTabId = ref<string>('global')
+
+watch(
+  speciesTabs,
+  (tabs) => {
+    if (tabs.length === 0) return
+    const currentValid = tabs.some(t => t.id === activeTabId.value)
+    if (!currentValid) {
+      const firstIncomplete = tabs.find(t => !t.isComplete)
+      const firstTab = tabs[0]
+      activeTabId.value = firstIncomplete ? firstIncomplete.id : (firstTab ? firstTab.id : 'global')
+    }
+  },
+  { immediate: true }
+)
+
+const activeSubComps = computed<ResolvedSubCompetition[]>(() => {
+  if (speciesTabs.value.length <= 1) {
+    return props.resolvedSubComps
+  }
+  if (activeTabId.value === 'global') {
+    return props.resolvedSubComps.filter(s => !s.targetSpecies || s.speciesScope === 'global')
+  }
+  return props.resolvedSubComps.filter(s => s.targetSpecies === activeTabId.value)
+})
 </script>
 
 <template>
   <div class="compact-competition-preview">
+    <!-- Header with Anti-Collision Flex-Wrap -->
     <div class="comp-preview-header">
       <div class="header-title-group">
         <span class="comp-preview-title pixelated"><span class="emoji title-icon">🏆</span> CATEGORÍAS EN JUEGO</span>
@@ -203,7 +310,7 @@ const handleAutoFill = async () => {
           v-if="enrolledCategoriesCount > 0"
           class="comp-preview-badge pixelated enrolled"
         >
-          <span class="emoji">✓</span> {{ enrolledCategoriesCount }} Inscripto{{ enrolledCategoriesCount === 1 ? '' : 's' }}
+          <span class="emoji">✓</span> {{ enrolledCategoriesCount }}/{{ resolvedSubComps.length }}
         </span>
       </div>
       <button
@@ -217,9 +324,59 @@ const handleAutoFill = async () => {
       </button>
     </div>
 
+    <!-- Species Selection Micro-Tabs (Wrapped into multiple lines if many) -->
+    <div
+      v-if="speciesTabs.length > 1"
+      class="species-tabs-container"
+    >
+      <button
+        v-for="tab in speciesTabs"
+        :id="(idPrefix || '') + 'event-species-tab-' + event.id + '-' + tab.id"
+        :key="tab.id"
+        type="button"
+        class="species-tab-btn pixelated"
+        :class="{
+          active: activeTabId === tab.id,
+          'is-complete': tab.isComplete,
+          'has-enrolled': tab.enrolledCount > 0 && !tab.isComplete
+        }"
+        @click.stop="activeTabId = tab.id"
+      >
+        <img
+          v-if="tab.species"
+          :src="getAssetUrl(ASSET_TYPES.POKEMON, tab.species)"
+          class="tab-poke-sprite"
+          :alt="tab.name"
+          draggable="false"
+        >
+        <span
+          v-else
+          class="tab-global-icon"
+        ><span class="emoji">{{ tab.icon || '🧬' }}</span></span>
+
+        <span class="tab-label">{{ tab.name }}</span>
+
+        <!-- Green Check Pill if Completed -->
+        <span
+          v-if="tab.isComplete"
+          class="tab-check-pill complete"
+          title="Categorías completadas"
+        >
+          <span class="emoji">✓</span>
+        </span>
+        <span
+          v-else-if="tab.enrolledCount > 0"
+          class="tab-check-pill partial"
+        >
+          {{ tab.enrolledCount }}/{{ tab.totalCount }}
+        </span>
+      </button>
+    </div>
+
+    <!-- Active Filtered Categories Grid -->
     <div class="comp-categories-grid">
       <PVTooltip
-        v-for="sub in resolvedSubComps"
+        v-for="sub in activeSubComps"
         :key="sub.id"
         :title="getSubCompTitle(event.id, sub)"
         :description="getSubCompDescription(event.id, sub)"
@@ -233,18 +390,10 @@ const handleAutoFill = async () => {
           @click.stop="handleSlotChipClick(sub)"
         >
           <div class="chip-content">
-            <!-- Pokémon Species Mini Sprite (or 🧬 icon for global IVs) -->
-            <img
-              v-if="sub.targetSpecies"
-              :src="getAssetUrl(ASSET_TYPES.POKEMON, sub.targetSpecies)"
-              class="chip-poke-sprite"
-              :alt="sub.targetSpecies"
-              draggable="false"
-            >
-            <span
-              v-else
-              class="chip-global-icon"
-            ><span class="emoji">{{ sub.icon || getSubCompIcon(sub.metric) }}</span></span>
+            <!-- Metric Icon (🧬 Genética, ⚖️ Peso, 📏 Altura, etc.) -->
+            <span class="chip-metric-icon">
+              <span class="emoji">{{ sub.icon || getSubCompIcon(sub.metric) }}</span>
+            </span>
             
             <!-- Clean Metric Name (IVs / Peso / Altura) -->
             <span class="chip-metric">{{ formatMetricLabel(sub) }}</span>
@@ -260,200 +409,4 @@ const handleAutoFill = async () => {
   </div>
 </template>
 
-<style scoped lang="scss">
-@use "@/styles/core/mixins" as *;
-
-.compact-competition-preview {
-  background: Rgba(0, 0, 0, 0.25);
-  border: 1px solid Rgba(250, 204, 21, 0.2);
-  border-radius: 8px;
-  padding: 8px 10px;
-  margin-bottom: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  cursor: pointer;
-  box-sizing: border-box;
-  width: 100%;
-
-  &:hover {
-    background: Rgba(250, 204, 21, 0.05);
-    border-color: Rgba(250, 204, 21, 0.4);
-  }
-
-  .comp-preview-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-    gap: 6px;
-    box-sizing: border-box;
-    width: 100%;
-
-    .header-title-group {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      min-width: 0;
-      flex-wrap: wrap;
-    }
-
-    .comp-preview-title {
-      font-size: 7.5px;
-      color: var(--yellow);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      white-space: nowrap;
-      min-width: 0;
-    }
-
-    .comp-preview-badge {
-      font-size: 6.5px;
-      padding: 2px 5px;
-      border-radius: 4px;
-      background: Rgba(255, 255, 255, 0.08);
-      color: #94a3b8;
-      border: 1px solid Rgba(255, 255, 255, 0.1);
-      white-space: nowrap;
-      flex-shrink: 0;
-      display: inline-flex;
-      align-items: center;
-      gap: 2px;
-      line-height: 1.35;
-      box-sizing: border-box;
-
-      &.enrolled {
-        background: Rgba(74, 222, 128, 0.15);
-        color: var(--green-bright);
-        border-color: Rgba(74, 222, 128, 0.4);
-      }
-    }
-
-    .auto-fill-btn {
-      @include pixelated;
-      font-size: 7px;
-      padding: 4px 8px;
-      border-radius: 4px;
-      background: Rgba(250, 204, 21, 0.15);
-      border: 1px solid Rgba(250, 204, 21, 0.4);
-      color: var(--yellow, #facc15);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      flex-shrink: 0;
-
-      &:hover:not(:disabled) {
-        background: Rgba(250, 204, 21, 0.25);
-        border-color: var(--yellow, #facc15);
-      }
-
-      &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-    }
-  }
-
-  .comp-categories-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 6px;
-
-    :deep(.pv-tooltip-wrapper) {
-      width: 100%;
-      display: flex;
-    }
-
-    .comp-slot-chip {
-      @include pixelated;
-      background: Rgba(255, 255, 255, 0.04);
-      border: 1px solid Rgba(255, 255, 255, 0.1);
-      border-radius: 6px;
-      padding: 4px 6px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      cursor: pointer;
-      width: 100%;
-      box-sizing: border-box;
-      color: Rgba(255, 255, 255, 0.85);
-      font-size: 8px;
-      will-change: transform, background-color, border-color;
-
-      .chip-content {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        min-width: 0;
-
-        .chip-poke-sprite {
-          width: 18px;
-          height: 18px;
-          object-fit: contain;
-          flex-shrink: 0;
-          filter: Drop-Shadow(0 1px 2px Rgba(0, 0, 0, 0.5));
-          image-rendering: pixelated;
-        }
-
-        .chip-global-icon {
-          font-size: 11px;
-          line-height: 1;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 18px;
-          height: 18px;
-          flex-shrink: 0;
-        }
-
-        .chip-metric {
-          font-size: 7px;
-          letter-spacing: 0.3px;
-          white-space: nowrap;
-        }
-      }
-
-      .chip-status-pill {
-        width: 16px;
-        height: 16px;
-        border-radius: 4px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 8px;
-        font-weight: bold;
-        background: Rgba(250, 204, 21, 0.15);
-        color: var(--yellow);
-        border: 1px solid Rgba(250, 204, 21, 0.35);
-        flex-shrink: 0;
-      }
-
-      &:hover {
-        background: Rgba(250, 204, 21, 0.15);
-        border-color: var(--yellow);
-        transform: Translatey(-1px);
-      }
-
-      &.enrolled {
-        background: Rgba(74, 222, 128, 0.08);
-        border-color: Rgba(74, 222, 128, 0.4);
-        color: #86efac;
-
-        .chip-status-pill {
-          background: Rgba(74, 222, 128, 0.2);
-          color: var(--green-bright);
-          border-color: var(--green-bright);
-        }
-
-        &:hover {
-          background: Rgba(74, 222, 128, 0.18);
-          border-color: var(--green-bright);
-        }
-      }
-    }
-  }
-}
-</style>
+<style scoped src="./EventCardCategoryPreview.styles.scss" lang="scss"></style>
