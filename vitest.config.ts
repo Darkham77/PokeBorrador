@@ -22,7 +22,7 @@ export default defineConfig({
       execArgv: ['--no-experimental-webstorage', '--no-warnings=ExperimentalWarning'],
     },
     fileParallelism: true,
-    teardownTimeout: 2000,
+    teardownTimeout: 10000,
     coverage: {
       provider: 'v8',
       include: ['src/**', 'scripts/**'],

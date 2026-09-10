@@ -5,10 +5,11 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { execSync } from 'node:child_process';
 import {
   requireFeetPoints
 } from '../../../src/data/pokemon/pokemonFeetDatabase.ts';
+import type { PackedFeetDatabase } from '../../../src/data/pokemon/feetCoordinatesData.ts';
+import legacyFeetDb from '../../fixtures/assets/pokemonFeetDatabase.legacy.json' with { type: 'json' };
 
 describe('pokemonFeetDatabase', () => {
   describe('Base Sprite Resolution', () => {
@@ -97,23 +98,9 @@ describe('pokemonFeetDatabase', () => {
     });
   });
 
-  describe('Legacy Database Parity (Regression against HEAD)', () => {
-    it('achieves 100% exact parity against all legacy entries from git HEAD', () => {
-      let oldDbRaw: string;
-      try {
-        oldDbRaw = execSync('git show HEAD:src/data/pokemon/pokemonFeetDatabase.json', {
-          maxBuffer: 50 * 1024 * 1024,
-          stdio: ['pipe', 'pipe', 'ignore']
-        }).toString();
-      } catch {
-        return;
-      }
-
-      const oldDb = JSON.parse(oldDbRaw) as {
-        p?: Record<string, [number, number]>;
-        n?: Record<string, [number, number]>;
-        t?: Record<string, [number, number]>;
-      };
+  describe('Legacy Database Parity (Regression against Static Snapshot)', () => {
+    it('achieves 100% exact parity against all 19,024 legacy entries from pre-deduplication snapshot', () => {
+      const oldDb: PackedFeetDatabase = legacyFeetDb;
 
       const prefixMap: Record<string, string> = {
         p: '/assets/sprites/pokemon/',
@@ -126,8 +113,10 @@ describe('pokemonFeetDatabase', () => {
       const mismatches: Array<{ path: string; expected: [number, number]; actual: [number, number] }> = [];
 
       for (const [groupKey, prefix] of Object.entries(prefixMap)) {
-        const group = oldDb[groupKey as keyof typeof oldDb] ?? {};
-        for (const [subKey, [expectedY, expectedX]] of Object.entries(group)) {
+        const group = (oldDb[groupKey as keyof PackedFeetDatabase] as Record<string, readonly number[]> | undefined) ?? {};
+        for (const [subKey, coords] of Object.entries(group)) {
+          const expectedY = coords[0] ?? 0;
+          const expectedX = coords[1] ?? 0;
           totalChecked++;
           const fullPath = `${prefix}${subKey}.webp`;
           try {
@@ -154,7 +143,7 @@ describe('pokemonFeetDatabase', () => {
         }
       }
 
-      expect(totalChecked).toBeGreaterThan(15000);
+      expect(totalChecked).toBe(19024);
       expect(mismatches).toHaveLength(0);
       expect(exactMatches).toBe(totalChecked);
     });

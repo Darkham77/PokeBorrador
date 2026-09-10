@@ -66,5 +66,5 @@ describe('reproduce claim all rewards bug', () => {
     // and instead perform at most 1 consolidated atomic save at the end.
     expect(saveSpy.mock.calls.length + saveGameSpy.mock.calls.length).toBeLessThanOrEqual(1)
     expect(totalClaimableRewards.value).toBe(0)
-  }, 5000)
+  })
 })

@@ -28,12 +28,19 @@ export interface E2ECheckpointDocument {
   suites: Record<string, E2ESuiteFailureCheckpoint>;
 }
 
-const CHECKPOINT_FILE_PATH = path.resolve(process.cwd(), 'scratch/e2e_checkpoints.json');
+export function getCheckpointFilePath(): string {
+  const envPath = process.env.E2E_CHECKPOINT_FILE_PATH;
+  if (envPath && !envPath.includes('..')) {
+    return path.resolve(envPath);
+  }
+  return path.resolve(process.cwd(), 'scratch/e2e_checkpoints.json');
+}
 
 export function loadCheckpointDocument(): E2ECheckpointDocument {
+  const filePath = getCheckpointFilePath();
   try {
-    if (fs.existsSync(CHECKPOINT_FILE_PATH)) {
-      const raw = fs.readFileSync(CHECKPOINT_FILE_PATH, 'utf8');
+    if (fs.existsSync(filePath)) {
+      const raw = fs.readFileSync(filePath, 'utf8');
       const parsed = JSON.parse(raw) as E2ECheckpointDocument;
       return {
         master: parsed.master ?? null,
@@ -52,12 +59,13 @@ export function loadCheckpointDocument(): E2ECheckpointDocument {
 }
 
 export function saveCheckpointDocument(doc: E2ECheckpointDocument): void {
+  const filePath = getCheckpointFilePath();
   try {
-    const dir = path.dirname(CHECKPOINT_FILE_PATH);
+    const dir = path.dirname(filePath);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    fs.writeFileSync(CHECKPOINT_FILE_PATH, JSON.stringify(doc, null, 2), 'utf8');
+    fs.writeFileSync(filePath, JSON.stringify(doc, null, 2), 'utf8');
   } catch {
     // Non-fatal if checkpoint write fails
   }
@@ -203,9 +211,10 @@ export function clearSuiteCheckpoint(suiteName: string): void {
 }
 
 export function clearAllCheckpoints(): void {
+  const filePath = getCheckpointFilePath();
   try {
-    if (fs.existsSync(CHECKPOINT_FILE_PATH)) {
-      fs.unlinkSync(CHECKPOINT_FILE_PATH);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
     }
     const progressDir = path.resolve(process.cwd(), 'scratch/e2e_progress');
     if (fs.existsSync(progressDir)) {

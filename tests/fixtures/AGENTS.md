@@ -12,4 +12,5 @@ QA / Automation Engineers.
 
 ## Child DOX Index
 
+- [assets/](./assets/AGENTS.md): Domain module documentation for sprite geometry and asset snapshots.
 - [items/](./items/AGENTS.md): Domain module documentation for item families matrix fixtures.

@@ -59,7 +59,19 @@ echo -e "\n⚡ Activando y fijando Node.js v$TARGET_NODE_VER..."
 nvm use "$TARGET_NODE_VER" || echo "⚠️ Advertencia al activar Node v$TARGET_NODE_VER."
 nvm alias default "$TARGET_NODE_VER" 2>/dev/null || true
 
-# 3. Detectar ruta de binarios y asegurar enlaces simbólicos en ~/.local/bin (Paridad con Symlink/Junction de Windows)
+# 3. Limpiar versiones obsoletas de Node.js en NVM para mantener el entorno limpio
+echo -e "\n🧹 Limpiando versiones obsoletas de Node.js en NVM..."
+if [ -d "$NVM_DIR/versions/node" ]; then
+    for old_dir in "$NVM_DIR/versions/node"/v*; do
+        if [ -d "$old_dir" ] && [ "$(basename "$old_dir")" != "v$TARGET_NODE_VER" ]; then
+            old_ver=$(basename "$old_dir" | sed 's/^v//')
+            echo "  [-] Eliminando versión obsoleta: $old_ver..."
+            nvm uninstall "$old_ver" 2>/dev/null || rm -rf "$old_dir"
+        fi
+    done
+fi
+
+# 4. Detectar ruta de binarios y asegurar enlaces simbólicos en ~/.local/bin (Paridad con Symlink/Junction de Windows)
 NODE_BIN_DIR="$NVM_DIR/versions/node/v$TARGET_NODE_VER/bin"
 if [ ! -d "$NODE_BIN_DIR" ]; then
     NODE_BIN_DIR="$(dirname "$(nvm which "$TARGET_NODE_VER" 2>/dev/null || which node)")"

@@ -4,6 +4,7 @@ import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import HomeView from '@/views/game/HomeView.vue'
 import { useBreedingStore } from '@/stores/breeding'
+import { useLoadingStore } from '@/stores/loading'
 
 describe('HomeView.vue', () => {
   beforeEach(() => {
@@ -11,9 +12,11 @@ describe('HomeView.vue', () => {
     const breedingStore = useBreedingStore()
     breedingStore.loadDaycare = vi.fn()
     breedingStore.checkDailyReset = vi.fn()
+    const loadingStore = useLoadingStore()
+    loadingStore.markAppMounted = vi.fn()
   })
 
-  it('mounts and renders the modular essentials (Events, Missions, Breeding, Notifications)', () => {
+  it('mounts and renders the modular essentials (Events, Missions, Breeding, Notifications)', async () => {
     const wrapper = mount(HomeView, {
       global: {
         directives: {
@@ -45,7 +48,8 @@ describe('HomeView.vue', () => {
     expect(wrapper.find('#widget-coliseum-dual-section').exists()).toBe(true)
     expect(wrapper.find('.stub-passive-defense').exists()).toBe(true)
     expect(wrapper.find('.stub-ranked').exists()).toBe(true)
-
+ 
+    await wrapper.vm.$nextTick()
     wrapper.unmount()
   })
 })

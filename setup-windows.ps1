@@ -189,8 +189,31 @@ Write-Host ""
 Write-Host "[NODE] Activando Node.js v$targetNodeVer..." -ForegroundColor Cyan
 $activated = $false
 
-# Intento 1: nvm use estandar
-if (Get-Command nvm -ErrorAction SilentlyContinue) {
+# Intento 1: Junction directo (compatible con NTFS sin elevacion UAC)
+if (Test-Path $targetNodeDir) {
+    try {
+        if (Test-Path $nodeSymlinkPath) {
+            Remove-Item -Path $nodeSymlinkPath -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        New-Item -ItemType Junction -Path $nodeSymlinkPath -Target $targetNodeDir -Force | Out-Null
+        if (Test-Path (Join-Path $nodeSymlinkPath "node.exe")) {
+            $activated = $true
+        }
+    } catch {
+        # Si Junction falla en C:\, usar ruta en AppData
+        $nodeSymlinkPath = "$env:LOCALAPPDATA\nodejs"
+        if (Test-Path $nodeSymlinkPath) {
+            Remove-Item -Path $nodeSymlinkPath -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        New-Item -ItemType Junction -Path $nodeSymlinkPath -Target $targetNodeDir -Force | Out-Null
+        if (Test-Path (Join-Path $nodeSymlinkPath "node.exe")) {
+            $activated = $true
+        }
+    }
+}
+
+# Intento 2: nvm use estandar (fallback si Junction fallo)
+if (-not $activated -and (Get-Command nvm -ErrorAction SilentlyContinue)) {
     try {
         nvm use $targetNodeVer 2>$null
         if (Test-Path (Join-Path $nodeSymlinkPath "node.exe")) {
@@ -199,24 +222,15 @@ if (Get-Command nvm -ErrorAction SilentlyContinue) {
     } catch {}
 }
 
-# Intento 2: Junction directo (compatible con NTFS sin elevacion UAC)
-if (-not $activated -and (Test-Path $targetNodeDir)) {
-    try {
-        if (Test-Path $nodeSymlinkPath) {
-            Remove-Item -Path $nodeSymlinkPath -Recurse -Force -ErrorAction SilentlyContinue
-        }
-        New-Item -ItemType Junction -Path $nodeSymlinkPath -Target $targetNodeDir -Force | Out-Null
-        $activated = $true
-    } catch {
-        # Si Junction falla en C:\, usar ruta en AppData
-        $nodeSymlinkPath = "$env:LOCALAPPDATA\nodejs"
-        if (Test-Path $nodeSymlinkPath) {
-            Remove-Item -Path $nodeSymlinkPath -Recurse -Force -ErrorAction SilentlyContinue
-        }
-        New-Item -ItemType Junction -Path $nodeSymlinkPath -Target $targetNodeDir -Force | Out-Null
-        $activated = $true
+# 7. Limpiar versiones obsoletas de Node.js en NVM para mantener el entorno limpio
+Write-Host ""
+Write-Host "[CLEANUP] Limpiando versiones obsoletas de Node.js..." -ForegroundColor Cyan
+try {
+    Get-ChildItem -Path $nvmRoot -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '^v\d+\.\d+\.\d+$' -and $_.Name -ne "v$targetNodeVer" } | ForEach-Object {
+        Write-Host "  [-] Eliminando version obsoleta: $($_.Name)..." -ForegroundColor Yellow
+        Remove-Item -Path $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
     }
-}
+} catch {}
 
 # Asegurar que el symlink activo de Node y Roaming npm esten en el PATH de la sesion actual
 $npmRoamingPath = "$env:APPDATA\npm"

@@ -14,7 +14,8 @@ import {
   isCleanRequested,
 } from "../../../scripts/e2e/helpers/e2eCheckpointManager.ts";
 
-const CHECKPOINT_FILE_PATH = path.resolve(process.cwd(), "scratch/e2e_checkpoints.json");
+const CHECKPOINT_FILE_PATH = path.resolve(process.cwd(), "scratch/e2e_checkpoints_suite_continuation.json");
+process.env.E2E_CHECKPOINT_FILE_PATH = CHECKPOINT_FILE_PATH;
 
 describe("Suite Continuation Algorithm & Clean Zero Pass Unit Tests", () => {
   let backupContent: string | null = null;
