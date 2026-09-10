@@ -1,1 +1,0 @@
-import{t as e}from"./ArchaeologyModal-DP_nccCr.js";export{e as default};

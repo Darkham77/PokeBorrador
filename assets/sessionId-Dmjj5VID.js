@@ -1,0 +1,1 @@
+var e=crypto.randomUUID();export{e as t};

@@ -1,1 +1,0 @@
-import{$ as e,U as t,dt as n}from"./vendor-vue-iQ3wrblV.js";function r(r,i){let a=e=>{e?document.body.classList.add(r):document.body.classList.remove(r)};e(()=>n(i),e=>{a(e)},{immediate:!0}),t(()=>{document.body.classList.remove(r)})}export{r as t};

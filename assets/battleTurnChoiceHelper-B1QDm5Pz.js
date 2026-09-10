@@ -1,1 +1,0 @@
-import{rn as e}from"./auth-CKrE07C6.js";export{e as computeP2Choice};
