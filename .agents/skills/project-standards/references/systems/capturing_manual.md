@@ -65,16 +65,16 @@ $$CC = \left\lfloor \frac{\min(255, X) \cdot P \cdot Ch}{6} \right\rfloor$$
 
 The roll succeeds if a random integer in $[0, 255] < CC$.
 
-### Pokédex Completion Multiplier ($P$)
+### Pokédex Completion Multiplier ($P$) (251 Species SSoT)
 
-| Caught Species in Pokédex | Multiplier ($P$) |
-| :--- | :--- |
-| $> 150$ (Complete Dex) | $2.5\times$ |
-| $101 - 150$ | $2.0\times$ |
-| $61 - 100$ | $1.5\times$ |
-| $31 - 60$ | $1.0\times$ |
-| $10 - 30$ | $0.5\times$ |
-| $0 - 9$ | $0\times$ (Critical capture disabled) |
+| Caught Species in Pokédex | Multiplier ($P$) | Notes |
+| :--- | :--- | :--- |
+| $\ge 200$ | $2.5\times$ | Master collector tier |
+| $150 - 199$ | $2.0\times$ | High tier |
+| $100 - 149$ | $1.5\times$ | Mid-high tier |
+| $50 - 99$ | $1.0\times$ | Standard baseline |
+| $15 - 49$ | $0.5\times$ | Novice tier |
+| $0 - 14$ | $0\times$ | Critical capture disabled |
 
 *$Ch = 2$ if player holds Catching Charm; $1$ otherwise.*
 

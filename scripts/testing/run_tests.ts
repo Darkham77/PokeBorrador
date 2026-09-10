@@ -73,16 +73,39 @@ async function main(): Promise<void> {
     console.log(styleText('bold', styleText('cyan', `🧪 INICIANDO EJECUCIÓN DE TESTS (${postgresReady ? 'DUAL: PostgreSQL + SQLite' : 'SQLite RAM'})`)));
     console.log(styleText('bold', styleText('blue', '------------------------------------------------------------\n')));
 
-    const vitestProcess = spawnSync(
-      'node',
-      ['--no-experimental-webstorage', './node_modules/vitest/vitest.mjs', 'run', ...args],
-      {
-        stdio: 'inherit',
-        env: childEnv
+    if (args.length === 0) {
+      const unitProcess = spawnSync(
+        'node',
+        ['--no-experimental-webstorage', './node_modules/vitest/vitest.mjs', 'run', '--project', 'unit'],
+        {
+          stdio: 'inherit',
+          env: childEnv
+        }
+      );
+      if (unitProcess.status !== 0) {
+        vitestExitCode = unitProcess.status ?? 1;
+      } else {
+        const nodeProcess = spawnSync(
+          'node',
+          ['--no-experimental-webstorage', './node_modules/vitest/vitest.mjs', 'run', '--project', 'node'],
+          {
+            stdio: 'inherit',
+            env: childEnv
+          }
+        );
+        vitestExitCode = nodeProcess.status ?? 0;
       }
-    );
-
-    vitestExitCode = vitestProcess.status ?? 0;
+    } else {
+      const vitestProcess = spawnSync(
+        'node',
+        ['--no-experimental-webstorage', './node_modules/vitest/vitest.mjs', 'run', ...args],
+        {
+          stdio: 'inherit',
+          env: childEnv
+        }
+      );
+      vitestExitCode = vitestProcess.status ?? 0;
+    }
   } finally {
     cleanupContainer();
   }

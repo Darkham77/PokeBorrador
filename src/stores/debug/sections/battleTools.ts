@@ -82,9 +82,14 @@ export function registerBattleTools(debug: DebugSystem) {
     command: 'triggerAnim',
     description: 'Disparar una animación de combate via Bus.',
     action: (type: string, side = 'enemy', options: Record<string, unknown> = {}) => {
+      if (typeof window !== 'undefined' && window.__VITE_DEBUG__?.triggerAnim && (type === 'full_catch_normal' || type === 'full_catch_critical')) {
+        window.__VITE_DEBUG__.triggerAnim(type, side, options)
+        return
+      }
       const eventMap: Record<string, string> = {
         'release': 'PLAY_RELEASE_ENERGY',
         'catch': 'PLAY_CATCH_ENERGY',
+        'critical_capture_fx': 'CRITICAL_CAPTURE_FX',
         'shake': 'CATCH_SHAKE',
         'shake_damage': 'PLAY_DAMAGE',
         'recoil_rebound': 'PLAY_RECOIL',

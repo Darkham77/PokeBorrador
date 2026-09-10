@@ -25,7 +25,7 @@ In full accordance with official Pokémon Showdown rules, combat damage, stat bo
 | **Rain** | `rain` | 🌧️ | Water ($1.5\times$), Electric ($1.2\times$) | Fire ($0.5\times$), Rock/Ground ($0.8\times$) | — | — | Thunder & Hurricane ($100\%$ Acc, bypass accuracy check), Solar Beam ($50\%$ Pow), Synthesis ($25\%$ HP) |
 | **Heavy Rain** | `heavy_rain` | ☔ | Water ($2.0\times$) | Fire (Blocked 🚫) | — | — | Thunder/Hurricane ($100\%$ Acc), Water Spout ($+25\%$ Pow) |
 | **Storm** | `storm` | ⛈️ | Water ($1.5\times$), Electric ($1.5\times$), Dragon ($1.2\times$) | Fire (Blocked 🚫), Flying (Blocked 🚫), Bug (Blocked 🚫) | — | Non-Water/Elec ($1/16$ HP) | Thunder ($100\%$ Acc, $+10\%$ Crit), Hurricane ($100\%$ Acc) |
-| **Thunderstorm** | `thunderstorm` | 🌩️ | Electric ($2.0\times$), Dragon ($1.5\times$) | Flying (Blocked 🚫) | — | — | Thunder ($100\%$ Acc, $+20\%$ Pow, $50\%$ Paralysis chance) |
+| **Thunderstorm** | `thunderstorm` | 🌩️ | — | — | — | — | **Sin efectos en combate** (Mapea a `WEATHER_MECHANICAL.CLEAR` para evitar penalizaciones indebidas a tipos Fuego). |
 | **Snow** | `snow` | ❄️ | Ice ($1.3\times$) | Fire ($0.8\times$), Bug ($0.8\times$) | Ice ($1.5\times$ Physical Defense) | **None** (Gen 9 Standard) | Blizzard ($100\%$ Acc), Solar Beam ($50\%$ Pow), Synthesis ($25\%$ HP) |
 | **Hail** | `hail` | 🌨️ | Ice ($1.3\times$) | Grass ($0.8\times$), Fire ($0.8\times$) | — | Non-Ice ($1/16$ HP per turn) | Blizzard ($100\%$ Acc), Solar Beam ($50\%$ Pow), Synthesis ($25\%$ HP) |
 | **Blizzard** | `blizzard` | 🌬️ | Ice ($2.0\times$) | Fire (Blocked 🚫), Grass (Blocked 🚫), Bug (Blocked 🚫), Flying (Blocked 🚫) | Ice ($1.5\times$ Def & SpD) | Non-Ice ($1/8$ HP per turn) | Blizzard ($100\%$ Acc, $+20\%$ Freeze chance), Cold-based moves $+30\%$ Pow |

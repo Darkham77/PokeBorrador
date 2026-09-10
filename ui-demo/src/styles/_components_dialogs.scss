@@ -1,0 +1,113 @@
+// ui-demo/src/styles/_components_dialogs.scss
+@use 'variables' as *;
+@use 'frames' as *;
+
+// 6. DIÁLOGOS Y VENTANAS
+.pv-dialog-box {
+  padding: 16px 20px;
+  background: var(--color-surface-sunken);
+  position: relative;
+  font-family: var(--font-pixel);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  .dialog-speaker {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    padding: 3px 8px;
+    background: var(--color-accent-blue);
+    color: #ffffff;
+    font-size: 7.5px;
+    font-weight: bold;
+    line-height: 1.35;
+    --frame-border: Rgba(0, 0, 0, 0.4);
+  }
+
+  .dialog-text {
+    font-size: 9px;
+    color: var(--color-text-main);
+    line-height: 1.45;
+  }
+
+  .dialog-arrow {
+    position: absolute;
+    bottom: 8px;
+    right: 14px;
+    font-size: 8px;
+    color: var(--color-text-gold);
+  }
+}
+
+.pv-window-frame {
+  background: var(--color-panel-bg);
+  padding: 12px;
+  font-family: var(--font-pixel);
+
+  .pv-window-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--color-divider);
+    padding-bottom: 8px;
+  }
+
+  .pv-window-title {
+    font-size: 9.5px;
+    color: var(--color-text-gold);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.35;
+  }
+
+  .pv-window-close {
+    width: 20px;
+    height: 20px;
+    background: #dc2626;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    --frame-border: #b91c1c;
+
+    &:hover {
+      background: #ef4444;
+      --frame-border: #f87171;
+    }
+  }
+
+  .pv-data-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 8px;
+    padding: 4px 8px;
+    border-left: 3px solid;
+    background: var(--color-surface-sunken);
+    line-height: 1.35;
+  }
+}
+
+.pv-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: Rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  padding: 16px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.pv-modal-floating-content {
+  width: 100%;
+  max-width: 720px;
+  max-height: 90dvh;
+  overflow-y: auto;
+  position: relative;
+}

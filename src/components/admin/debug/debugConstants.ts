@@ -77,7 +77,10 @@ export const DEBUG_COMBAT_ANIMS: DebugItem[] = [
 ]
 
 export const DEBUG_CATCH_ANIMS: DebugItem[] = [
+  { id: 'full_catch_normal', label: 'CAPTURA NORMAL (COMPLETA)', icon: '🔴', desc: 'Rayo + 3 sacudidas + Éxito' },
+  { id: 'full_catch_critical', label: 'CAPTURA CRÍTICA (COMPLETA)', icon: '⚡', desc: 'Rayo + Banner/Whistle + 1 sacudida + Éxito' },
   { id: 'catch', label: 'FASE 1: RAYO ATRAPAR', icon: '📥' },
+  { id: 'critical_capture_fx', label: 'FX BANNER CRÍTICO + AUDIO', icon: '✨' },
   { id: 'shake', label: 'FASE 2: SACUDIDA', icon: '🫨' },
   { id: 'success', label: 'FASE 3: ÉXITO (CLIC)', icon: '🌟' },
   { id: 'release', label: 'FALLA: ESCAPAR', icon: '📤' }

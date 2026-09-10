@@ -1,0 +1,153 @@
+// ui-demo/src/styles/_app_layout.scss
+@use 'variables' as *;
+
+.ui-demo-root {
+  min-height: 100dvh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.lab-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-hud);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: var(--color-surface-header, #1e293b);
+  border-bottom: 2px solid var(--color-divider, #334155);
+  box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.4);
+  flex-wrap: wrap;
+  font-family: var(--font-pixel, monospace);
+}
+
+.lab-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  .emoji {
+    font-size: 14px;
+  }
+
+  .title-text {
+    font-size: 9px;
+    font-weight: bold;
+    color: var(--color-text-gold, #ffd60a);
+    letter-spacing: 0.5px;
+  }
+}
+
+.lab-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  .group-label {
+    font-size: 8px;
+    color: var(--color-text-muted, #94a3b8);
+  }
+}
+
+.lab-btn {
+  padding: 4px 8px;
+  background: var(--color-control-bg, #111726);
+  border: 1px solid var(--color-control-border, #384666);
+  color: var(--color-text-muted, #94a3b8);
+  font-family: var(--font-pixel, monospace);
+  font-size: 7.5px;
+  border-radius: 3px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-text-main, #ffffff);
+    border-color: var(--color-accent-blue, #0a84ff);
+  }
+
+  &.active {
+    background: var(--color-accent-blue, #0a84ff);
+    border-color: #60a5fa;
+    color: #ffffff;
+    font-weight: bold;
+  }
+
+  &.modal-trigger-btn {
+    background: color-mix(in srgb, var(--color-control-bg) 70%, #ffd60a 30%);
+    color: var(--color-text-gold, #ffd60a);
+    border-color: #ffd60a;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    &:hover {
+      background: #ffd60a;
+      color: #000000;
+    }
+  }
+}
+
+.lab-nav-links {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+  flex-wrap: wrap;
+
+  .nav-link-btn {
+    padding: 3px 6px;
+    background: transparent;
+    border: 1px solid var(--color-divider, #334155);
+    color: var(--color-text-muted, #94a3b8);
+    font-family: var(--font-pixel, monospace);
+    font-size: 7px;
+    border-radius: 3px;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--color-surface-sunken, #101625);
+      color: var(--color-text-gold, #ffd60a);
+      border-color: var(--color-text-gold, #ffd60a);
+    }
+  }
+}
+
+.catalog-container {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.demo-section-wrapper {
+  scroll-margin-top: 70px;
+  width: 100%;
+}
+
+// MODAL FLOTANTE Y BACKDROP ESTILIZADO CON ESTÉTICA RETRO-MODERNA
+.pv-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: Rgba(3, 7, 18, 0.82);
+  backdrop-filter: Blur(5px);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.pv-floating-modal-dialog {
+  max-width: 900px;
+  width: 100%;
+  margin: auto;
+  position: relative;
+  z-index: calc(var(--z-modal) + 1);
+  display: flex;
+  justify-content: center;
+}

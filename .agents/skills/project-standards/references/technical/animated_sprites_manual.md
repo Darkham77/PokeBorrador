@@ -72,7 +72,7 @@ The script `scripts/optimize_sprites.ts` automates spritesheet analysis by compa
 
 ### Frame Padding Spec
 
-To avoid subpixel texture bleeding and rendering seams in Phaser/WebGL when sprites are scaled:
+To avoid subpixel texture bleeding and rendering seams in hardware-accelerated GPU layers and WebGL viewports when sprites are scaled:
 
 - Each frame is extracted as a square (`height × height`).
 - A transparent border of **1px** is added to all four sides (`top`, `bottom`, `left`, `right`).
@@ -82,7 +82,7 @@ To avoid subpixel texture bleeding and rendering seams in Phaser/WebGL when spri
 
 ## 4. Metadata & Database Generation
 
-During `npm run assets:convert` (run by `scripts/convert_assets.ts`), all processed `i` and `v` spritesheets are converted to **lossless WebP** and scanned to compile the metadata registry in [animatedSpriteDatabase.ts](../../../../../src/data/pokemon/animatedSpriteDatabase.ts).
+During `npm run assets:convert` (run by `scripts/assets/convert_assets.ts`), all processed `i` and `v` spritesheets are converted to **lossless WebP** and scanned to compile the metadata registry in [animatedSpriteDatabase.ts](../../../../../src/data/pokemon/animatedSpriteDatabase.ts).
 
 ### Database Schema
 

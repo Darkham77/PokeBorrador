@@ -138,7 +138,7 @@ describe('rewardsDistributor - calculateBattleRewards', () => {
   it('should award TM and badge on first gym victory', async () => {
     mockCtx.activeBattle.value.isGym = true
     mockCtx.activeBattle.value.gymId = 'pewter'
-    mockCtx.activeBattle.value.rewardTM = 'MT39 Tumba Rocas'
+    mockCtx.activeBattle.value.rewardTM = 'tm39'
 
     await calculateBattleRewards(mockCtx as unknown as BattleContext)
 
@@ -153,7 +153,7 @@ describe('rewardsDistributor - calculateBattleRewards', () => {
     mockCtx.activeBattle.value.isGym = true
     mockCtx.activeBattle.value.gymId = 'pewter'
     mockCtx.activeBattle.value.difficulty = 'normal'
-    mockCtx.activeBattle.value.rewardTM = 'MT39 Tumba Rocas'
+    mockCtx.activeBattle.value.rewardTM = 'tm39'
     mockCtx.gs.state.defeatedGyms = ['pewter']
     mockCtx.gs.state.gymProgress = { pewter: { easy: true, normal: false, hard: false, attempts: 1 } }
     mockCtx.gs.state.inventory['tm39'] = 1

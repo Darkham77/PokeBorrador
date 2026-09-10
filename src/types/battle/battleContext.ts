@@ -64,7 +64,8 @@ export interface BattleContext {
     revealWildPokemon: (isInstant?: boolean) => Promise<void>;
     triggerWildEmergence: () => Promise<void>;
     triggerCatchSparkles: (side: string) => Promise<void>;
-    handleCatchRequest: (detail: string | { side?: string; ballId?: ItemId; pokemon?: Pokemon }) => Promise<void>;
+    triggerCriticalCaptureFx?: (side: string) => Promise<void>;
+    handleCatchRequest: (detail: string | { side?: string; ballId?: ItemId; pokemon?: Pokemon; isCritical?: boolean }) => Promise<void>;
     handleReleaseRequest: (detail: string | { side?: string; pokemon?: Pokemon }) => Promise<void>;
     handleWithdrawRequest?: (detail: string | { side?: string; pokemon?: Pokemon }) => Promise<void>;
     handleShakeRequest: (detail: string | { side?: string; isCapture?: boolean }) => Promise<void>;

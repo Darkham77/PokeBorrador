@@ -39,6 +39,8 @@ export interface CatchOptions {
   turnCount?: number;
   cycle?: DayPhase;
   isCave?: boolean;
+  pokedexCount?: number;
+  forceCritical?: boolean;
 }
 
 export interface EscapeOptions {
@@ -202,7 +204,9 @@ export function calculateCatchRate(pokemon: Pokemon, rawBallType: ItemId = 'poke
       weather: toPureWeather(activeWeather),
       turnCount: ctx.turnCount,
       cycle: ctx.cycle || getDayCycle(),
-      isCave: ctx.isCave
+      isCave: ctx.isCave,
+      pokedexCount: ctx.pokedexCount,
+      forceCritical: ctx.forceCritical
     }
   );
 }

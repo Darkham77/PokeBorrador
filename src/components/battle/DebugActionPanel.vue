@@ -119,6 +119,68 @@ const debugCapture = async () => {
   battleStore.isProcessing = false
 }
 
+const debugCriticalCapture = async () => {
+  if (!battleStore.state?.enemy || battleStore.isProcessing) return
+  
+  battleStore.isProcessing = true
+  const e = battleStore.state.enemy
+  const ballId = 'ultraball'
+  const itemName = getItemName(ballId)
+  
+  battleStore.addLog(`DEBUG: Lanzando ${itemName} (¡CAPTURA CRÍTICA FORZADA!)...`, 'log-catch', itemName)
+  
+  const anims = battleStore.animations
+
+  // 1. Critical whistle and ball hit
+  audio.play('criticalThrow')
+  audio.play('ballHit')
+  if (anims?.handleCatchRequest) {
+    await anims.handleCatchRequest({ side: 'enemy', ballId, isCritical: true })
+  } else {
+    gameBus.emit('PLAY_CATCH_ENERGY', { side: 'enemy', ballId, isCritical: true })
+    await gsapSleep(DEBUG_CATCH_FALLBACK_SLEEP_MS)
+  }
+
+  // 2. Critical Capture Banner FX & Sparks
+  if (anims?.triggerCriticalCaptureFx) {
+    await anims.triggerCriticalCaptureFx('enemy')
+  } else {
+    gameBus.emit('CRITICAL_CAPTURE_FX', { side: 'enemy' })
+    await gsapSleep(800)
+  }
+
+  // 3. Exactly 1 Shake (Critical Capture resolution)
+  audio.play('wobble')
+  if (anims?.handleShakeRequest) {
+    await anims.handleShakeRequest({ side: 'enemy' })
+  } else {
+    gameBus.emit('CATCH_SHAKE', { side: 'enemy' })
+    await gsapSleep(DEBUG_CATCH_FALLBACK_SLEEP_MS)
+  }
+
+  // 4. Success celebration
+  audio.play('caught')
+  battleStore.addLog(`¡Ya está! ¡${e.name} atrapado con captura crítica!`, 'log-catch', e)
+  
+  battleStore.state.isCapture = true
+  gameStore.addPokemon(e, { notify: true })
+
+  if (anims?.playCatchCelebration) {
+    await anims.playCatchCelebration('enemy')
+  } else {
+    await gsapSleep(DEBUG_CATCH_CELEBRATION_SLEEP_MS)
+  }
+
+  if (anims?.playBallFadeOut) {
+    await anims.playBallFadeOut('enemy')
+  } else {
+    await gsapSleep(DEBUG_CATCH_FADEOUT_SLEEP_MS)
+  }
+  
+  await battleStore.endBattle(true, false)
+  battleStore.isProcessing = false
+}
+
 const toggleBinoculars = () => {
   battleStore.debugBinoculars = !battleStore.debugBinoculars
 }
@@ -475,13 +537,22 @@ const toggleStatus = (side: string, type: string) => {
             </option>
           </select>
         </div>
-        <button
-          id="battle-debug-super-ball-btn"
-          class="debug-btn catch-btn"
-          @click.stop="debugCapture"
-        >
-          CAPTURA INMEDIATA (100%)
-        </button>
+        <div class="catch-buttons-group">
+          <button
+            id="battle-debug-super-ball-btn"
+            class="debug-btn catch-btn"
+            @click.stop="debugCapture"
+          >
+            CAPTURA INMEDIATA (100%)
+          </button>
+          <button
+            id="battle-debug-critical-catch-btn"
+            class="debug-btn crit-catch-btn"
+            @click.stop="debugCriticalCapture"
+          >
+            CAPTURA CRÍTICA (DEBUG)
+          </button>
+        </div>
       </div>
 
       <!-- CAMERA -->

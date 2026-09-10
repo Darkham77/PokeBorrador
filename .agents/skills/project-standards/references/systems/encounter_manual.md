@@ -9,7 +9,7 @@
 
 ## 2. Guardians (Alpha Pokémon)
 
-- **Spawn**: 1% probability on disputed maps.
+- **Spawn**: 1.5% probability on disputed maps (`GUARDIAN_ENCOUNTER_CHANCE_PERCENT = 0.015`).
 - **Limit**: Only 1 guardian catch per map per day.
 
 ## 3. Repels and Incenses
@@ -83,7 +83,7 @@ Guardian Pokémon utilize a **Double Dice Roll** algorithm. Two random values ar
 
 If a map is under the total control of the player's faction, the **Dominance Bonus** activates:
 
-- **Effect**: All wild Pokémon caught on that map have a guaranteed floor of **15 IVs** across all stats.
+- **Effect**: All wild Pokémon caught on that map receive a bonus of **+1 IV** across all stats (`DOMINANCE_BONUS_IV_BOOST = 1`).
 
 ## 7. Police and Criminality Encounters
 

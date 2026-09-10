@@ -24,7 +24,7 @@ The system uses a hierarchical approach to determine the active weather and ensu
 - **Time Zone**: Always use `America/Argentina/Buenos_Aires` as the reference for server-time synchronization.
 - **Precision**: Use `Temporal.Instant` for absolute timestamps and `Temporal.Duration` for calculations.
 - **SQLite ISO Format**: Standard SQLite `datetime('now')` produces non-ISO strings. You MUST use `strftime('%Y-%m-%dT%H:%M:%SZ', 'now')` for all `DEFAULT` values in `schema.ts` to ensure compatibility with `Temporal.Instant.from()`.
-- **Centralized Formatting**: UI components MUST NOT implement local date formatting. Use `formatDisplayDate(ts)` from `src/logic/timeUtils.ts` to handle robust parsing of legacy strings and automated timezone adjustment (standardized to GMT-3 for display).
+- **Centralized Formatting**: UI components MUST NOT implement local date formatting. Use `formatDisplayDate(ts)` from `src/logic/utils/timeUtils.ts` to handle robust parsing of legacy strings and automated timezone adjustment (standardized to GMT-3 for display).
 - **24-Hour Time Format Mandate**: All in-game clocks and logs MUST use a strict 24-hour format (`HH:mm`) without AM/PM tags. Use the centralized `formatTime(ts)` utility from `src/logic/utils/timeUtils.ts` (which guarantees formatting with `hour12: false` and timezone normalization under `GAME_TIMEZONE`) instead of local `.toLocaleString()` browser calls that vary depending on the client's locale.
 - **Chat Message Timestamp Formatting Standard**: Chat interfaces (both Global and Private chats) MUST use `formatChatTimestamp(ts)` from `src/logic/utils/timeUtils.ts`. Messages sent today (relative to `GAME_TIMEZONE`) display strictly `HH:mm` (e.g. `14:46`). Messages sent prior to today MUST display full calendar date with 4-digit year and time `DD/MM/YYYY HH:mm` (e.g. `29/08/2026 21:52`). Chat timestamp CSS classes MUST enforce `white-space: nowrap; flex-shrink: 0;` to prevent layout reflows.
 - **Persistence & Standardization**: To ensure absolute consistency between clients and persistence layers, all timestamps MUST be stored in **ISO 8601** format (e.g., `YYYY-MM-DDTHH:MM:SSZ`). Legacy database records MUST be migrated to this format to prevent parsing failures in the Temporal API.
@@ -156,7 +156,7 @@ It is **STRICTLY FORBIDDEN** to use light-based weather states during the night 
 |**Water**|Rain|🌧️|🔼 Water/Elec. 🔽 Fire/Rock/Ground.|🔼 Water, Bug, Electric. 🔽 Fire, Rock, Ground.|
 ||Heavy Rain|☔|🚫 Fire. 🔼 Water (2x).|🔼 Water. 🚫 Fire. 🔽 Rock, Ground.|
 ||Storm|⛈️|🚫 Fire, Flying, Bug.|🔼 Water, Electric, Dragon. 🚫 Fire, Flying.|
-||Thunderstorm|🌩️|🔼 Electric (1.5x), Dragon (1.5x). Perfect Thunder.|🔼 Electric (2x), Dragon. 🚫 Flying.|
+||Thunderstorm|🌩️|**Sin efectos en combate** (Mapea a Clima Neutro/Despejado).|🔼 Electric (2x), Dragon. 🚫 Flying.|
 |**Ice**|Snow|❄️|🔼 Physical Def Ice (+50%).|🔼 Ice, Steel. 🔽 Fire, Bug, Flying.|
 ||Hail|🌨️|**Residual Damage**.|🔼 Ice. 🔽 Grass, Fire, Bug, Flying.|
 ||Blizzard|🌬️|🚫 Fire, Grass, Bug, Flying.|🔼 Ice. 🚫 Fire, Grass, Bug, Flying.|
@@ -258,7 +258,7 @@ To ensure atmospheric variety and geographical consistency, all maps must be tag
 
 1. **Inheritance**: A map can have multiple tags (e.g., `isCave` + `isMountain`). In such cases, the MOST restrictive rule applies (e.g., `isCave` bans `snow` even if `isMountain` favors it).
 2. **Probability Bias**: Regional weather tables MUST prioritize "Favored Weather" weights during the corresponding favored season (e.g., `isMountain` during Winter).
-3. **Data Source**: Tags are defined in `src/data/maps.ts`.
+3. **Data Source**: Tags are defined in `src/data/world/maps.ts`.
 
 ---
 

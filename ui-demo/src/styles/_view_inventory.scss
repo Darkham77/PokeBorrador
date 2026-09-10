@@ -1,0 +1,377 @@
+// ui-demo/src/styles/_view_inventory.scss
+@use 'variables' as *;
+@use 'frames' as *;
+
+// 13. MODAL DE MOCHILA E INVENTARIO CANÓNICO 1:1 CON MEDIA_1789002324882.PNG
+.inventory-modal-wrap {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  filter: Drop-Shadow(calc(var(--s, 3px) * 2) calc(var(--s, 3px) * 2) 0 var(--color-cast-shadow, Rgba(0, 0, 0, 0.85)));
+}
+
+.inventory-window-frame {
+  width: 100%;
+  background: #121829;
+  padding: 16px 20px 20px;
+  font-family: var(--font-pixel);
+  box-sizing: border-box;
+  --frame-border: #ef4444; // Borde rojo/coral canónico de la mochila 1:1
+  box-shadow: 0 40px 100px Rgba(0, 0, 0, 0.9), inset 0 0 20px Rgba(0, 0, 0, 0.5);
+}
+
+// HEADER: MOCHILA, CRÉDITOS Y CERRAR
+.inv-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+
+  .inv-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .inv-backpack-icon {
+      font-size: 26px;
+      line-height: 1;
+    }
+
+    .inv-title-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      .inv-main-heading {
+        font-size: 13px;
+        font-weight: 900;
+        color: #ffd60a;
+        letter-spacing: 1px;
+        line-height: 1;
+      }
+
+      .inv-sub-heading {
+        font-size: 7.5px;
+        color: #94a3b8;
+        letter-spacing: 0.5px;
+        line-height: 1;
+      }
+    }
+  }
+
+  .inv-header-meta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    .meta-node {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+
+      .meta-label {
+        font-size: 6.5px;
+        color: #94a3b8;
+        letter-spacing: 0.5px;
+        line-height: 1;
+      }
+
+      .meta-val {
+        font-size: 13px;
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: 0.5px;
+
+        &.totals { color: #ffffff; }
+        &.credits {
+          color: #22c55e;
+          text-shadow: 0 0 10px Rgba(34, 197, 94, 0.4);
+        }
+      }
+    }
+
+    .inv-close-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: Rgba(255, 255, 255, 0.05);
+      border: 1px solid Rgba(255, 255, 255, 0.15);
+      color: #94a3b8;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      &:hover { color: #ffffff; background: Rgba(255, 255, 255, 0.12); }
+    }
+  }
+}
+
+// BARRA DE CONTROLES: TABS PRODUCTOS/MATERIALES, BÚSQUEDA, MODO VENTA/TIRAR
+.inv-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+
+  .inv-main-tabs {
+    display: flex;
+    gap: 8px;
+
+    .tab-btn {
+      height: 28px;
+      padding: 0 14px;
+      font-family: var(--font-pixel);
+      font-size: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 8px;
+      background: Rgba(255, 255, 255, 0.03);
+      --frame-border: Rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+
+      &.active {
+        background: Rgba(239, 68, 68, 0.2);
+        --frame-border: #ef4444;
+        color: #ffffff;
+        box-shadow: 0 0 8px Rgba(239, 68, 68, 0.4);
+      }
+    }
+  }
+
+  .inv-search-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    justify-content: flex-end;
+
+    .inv-search-box {
+      display: flex;
+      align-items: center;
+      background: Rgba(0, 0, 0, 0.35);
+      --frame-border: Rgba(255, 255, 255, 0.08);
+      padding: 0 10px;
+      height: 28px;
+      width: 180px;
+
+      .search-icon { font-size: 9px; margin-right: 6px; opacity: 0.6; }
+      .search-input {
+        width: 100%;
+        background: none;
+        border: none;
+        color: #ffffff;
+        font-family: var(--font-pixel);
+        font-size: 7.5px;
+        &::placeholder { color: Rgba(255, 255, 255, 0.3); }
+      }
+    }
+
+    .inv-sort-btn {
+      height: 28px;
+      padding: 0 8px;
+      background: Rgba(255, 214, 10, 0.1);
+      --frame-border: #ffd60a;
+      color: #ffd60a;
+      font-family: var(--font-pixel);
+      font-size: 7.5px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .inv-btn-sell {
+      height: 28px;
+      padding: 0 12px;
+      background: Rgba(168, 85, 247, 0.2);
+      --frame-border: #a855f7;
+      color: #ffffff;
+      font-family: var(--font-pixel);
+      font-size: 7.5px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      &:hover { background: Rgba(168, 85, 247, 0.35); }
+    }
+
+    .inv-btn-trash {
+      height: 28px;
+      padding: 0 12px;
+      background: Rgba(239, 68, 68, 0.25);
+      --frame-border: #ef4444;
+      color: #ffffff;
+      font-family: var(--font-pixel);
+      font-size: 7.5px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      &:hover { background: Rgba(239, 68, 68, 0.4); }
+    }
+  }
+}
+
+// CONTENIDO PRINCIPAL: SIDEBAR IZQUIERDA + CUADRÍCULA DE ITEMS 1:1
+.inv-main-layout {
+  display: flex;
+  gap: 12px;
+  min-height: 380px;
+
+  .inv-sidebar {
+    width: 140px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: Rgba(0, 0, 0, 0.25);
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid Rgba(255, 255, 255, 0.05);
+
+    .cat-btn {
+      height: 26px;
+      padding: 0 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: Rgba(255, 255, 255, 0.02);
+      --frame-border: Rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+      color: #94a3b8;
+      font-family: var(--font-pixel);
+      font-size: 7px;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: left;
+      user-select: none;
+
+      .cat-icon {
+        font-size: 8.5px;
+        font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+      }
+
+      &:hover:not(.active) {
+        background: Rgba(255, 255, 255, 0.06);
+        color: #ffffff;
+      }
+
+      &.active {
+        background: Rgba(239, 68, 68, 0.18);
+        --frame-border: #ef4444;
+        color: #ffffff;
+        box-shadow: inset 2px 0 0 #ef4444;
+      }
+    }
+  }
+
+  .inv-grid-container {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 8px;
+    align-content: start;
+    overflow-y: auto;
+    max-height: 420px;
+    padding-right: 4px;
+  }
+}
+
+// TARJETA DE ITEM CANÓNICA 1:1 (ASPECT RATIO ~1:1.25)
+.inv-card-item {
+  aspect-ratio: 1 / 1.25;
+  background: Rgba(18, 24, 40, 0.85);
+  --frame-border: Rgba(255, 255, 255, 0.1);
+  padding: 6px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  box-sizing: border-box;
+  position: relative;
+  border-radius: 6px;
+  user-select: none;
+
+  &:hover {
+    background: Rgba(30, 41, 68, 0.95);
+    --frame-border: Rgba(255, 255, 255, 0.3);
+    transform: Translatey(-2px);
+  }
+
+  &.is-selected {
+    --frame-border: #ffd60a;
+    box-shadow: 0 0 10px Rgba(255, 214, 10, 0.35);
+    background: Rgba(35, 45, 75, 0.95);
+  }
+
+  &.is-purple-border {
+    --frame-border: #a855f7;
+    box-shadow: 0 0 8px Rgba(168, 85, 247, 0.3);
+  }
+
+  &.is-blue-border {
+    --frame-border: #3b82f6;
+    box-shadow: 0 0 8px Rgba(59, 130, 246, 0.3);
+  }
+
+  &.is-gold-border {
+    --frame-border: #ffd60a;
+    box-shadow: 0 0 8px Rgba(255, 214, 10, 0.3);
+  }
+
+  .inv-card-visual {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+
+    .item-sprite {
+      width: 26px;
+      height: 26px;
+      image-rendering: pixelated;
+      filter: Drop-Shadow(0 2px 4px Rgba(0, 0, 0, 0.6));
+    }
+
+    .inv-card-qty-pill {
+      position: absolute;
+      bottom: -3px;
+      right: -8px;
+      background: #000000;
+      border: 1px solid #eab308;
+      border-radius: 3px;
+      padding: 0 3px;
+      font-size: 6.5px;
+      font-weight: 900;
+      color: #ffd60a;
+      line-height: 11px;
+      letter-spacing: -0.3px;
+      font-family: var(--font-pixel);
+    }
+  }
+
+  .inv-card-name {
+    font-size: 6.5px;
+    font-weight: bold;
+    color: #ffffff;
+    text-align: center;
+    line-height: 1.15;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+    margin-top: 4px;
+  }
+}

@@ -291,6 +291,7 @@ export interface BattleCombatantProps {
   } | null;
   showGuides?: boolean;
   isCaptureSuccess?: boolean;
+  isCriticalCapture?: boolean;
   sparkles?: SparkleData[];
   isFainting?: boolean;
   isEmerging?: boolean;

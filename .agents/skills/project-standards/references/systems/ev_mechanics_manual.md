@@ -2,8 +2,8 @@
 
 > **Scope**: Comprehensive reference for Effort Value (EV) mathematics, training items, consumables, battle yield distribution, stat recalculation, and Showdown/fuzzer integration across Poké Vicio.
 > **Sources of Truth**:
-> - [`src/logic/pokemon/evMath.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/pokemon/evMath.ts) (Pure mathematical formulas & limits)
-> - [`src/data/pokemon/evYields.ts`](file:///home/franco/Trabajos/PokeBorrador/src/data/pokemon/evYields.ts) (Canonical species yield catalog)
+> - `src/logic/pokemon/evMath.ts` (Pure mathematical formulas & limits)
+> - `src/data/pokemon/evYields.ts` (Canonical species yield catalog)
 > - [Game Formulas Manual (Math SSoT)](../core/game_formulas_manual.md) (Formulas, IVs, Level & Nature scaling, stat modifications)
 > - Pokémon Showdown source at `external/pokemon-showdown-code/`.
 
@@ -68,7 +68,7 @@ Consumables allow direct adjustment of EVs from the inventory (`src/logic/items/
 
 ## 4. ⚔️ Battle Rewards & Distribution Flow
 
-Battle EV gains are orchestrated by `processEvGain()` in [`src/logic/battle/battleRewards.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/battle/battleRewards.ts) and executed in [`rewardsDistributor.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/battle/rewardsDistributor.ts) alongside `processCombatantExpAndEvs()` in [`combatantExpEvProcessor.ts`](file:///home/franco/Trabajos/PokeBorrador/src/logic/battle/rewards/combatantExpEvProcessor.ts):
+Battle EV gains are orchestrated by `processEvGain()` in `src/logic/battle/battleRewards.ts` and executed in `rewardsDistributor.ts` alongside `processCombatantExpAndEvs()` in `combatantExpEvProcessor.ts`:
 
 1. **Modern Canonical Party Distribution (Gen 6–9 Engine Parity)**:
    - **All Living Party Members**: Every non-fainted Pokémon in the player's party (`hp > 0`) earns Exp and EVs upon defeating or capturing a foe.
@@ -76,7 +76,7 @@ Battle EV gains are orchestrated by `processEvGain()` in [`src/logic/battle/batt
    - **Boosted Exp Share (`expshare`)**: While modern party sharing is passive for the entire party, equipping `expshare` on a benched Pokémon boosts its Exp share from 50% to 100% full share.
    - **Strict 0 HP Exclusion Rule**: Any Pokémon with `hp <= 0` (or `fainted = true`) at the moment of victory/capture is **strictly excluded** and earns **0 Exp and 0 EVs**, even if it actively battled earlier or carries `expshare`.
 2. **Yield Lookup**:
-   - Retrieves base species yield from `pokemonDataProvider.getEvYield(enemySpecies)` ([`evYields.ts`](file:///home/franco/Trabajos/PokeBorrador/src/data/pokemon/evYields.ts)).
+   - Retrieves base species yield from `pokemonDataProvider.getEvYield(enemySpecies)` (`src/data/pokemon/evYields.ts`).
 3. **Calculation & Clamping**:
    - `applyEvGains(currentEvs, baseYield, heldItem, hasPokerus)` applies modifiers and clamps within single-stat (252) and total (510) limits.
    - Training items (`powerweight`, `machobrace`) and Pokérus scale only the specific holder's gains without contaminating teammates.

@@ -352,5 +352,13 @@ export function playPvPChallengeSound(ctx: AudioContext, dest: AudioNode | null)
   playNote(ctx, dest, AUDIO_FREQUENCIES_HZ.C6, t + FINAL_OFFSET_SEC, FINAL_DURATION_SEC, NOTE_VOLUME, 'triangle');
 }
 
-
-
+/**
+ * CRITICAL CAPTURE THROW WHISTLE
+ * Characteristic ascending high-frequency glide (whistle/chirp)
+ */
+export function playCriticalThrowSound(ctx: AudioContext, dest: AudioNode | null) {
+  const t = ctx.currentTime + AUDIO_INITIAL_LEAD_TIME_SEC;
+  const { GLIDE_START_HZ, GLIDE_END_HZ, GLIDE_DURATION_SEC, GLIDE_VOLUME, NOTE_FREQ_HZ, NOTE_OFFSET_SEC, NOTE_DURATION_SEC, NOTE_VOLUME } = AUDIO_SOUND_PARAMS.CRITICAL_THROW;
+  playGlide(ctx, dest, GLIDE_START_HZ, GLIDE_END_HZ, t, GLIDE_DURATION_SEC, GLIDE_VOLUME, 'triangle');
+  playNote(ctx, dest, NOTE_FREQ_HZ, t + NOTE_OFFSET_SEC, NOTE_DURATION_SEC, NOTE_VOLUME, 'sine');
+}

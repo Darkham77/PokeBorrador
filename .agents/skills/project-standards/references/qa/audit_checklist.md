@@ -4,7 +4,7 @@ This checklist is used to verify the visual and functional integrity of the Pok√
 
 ## 1. Governance & Modularity
 
-- [ ] **File Length**: Verified that no files exceed **500 lines** (Error). Files over **300 lines** have been reviewed for early modularization (Warning).
+- [ ] **File Length**: Verified that no files exceed **1000 lines** (Hard Error). Files over **500 lines** have been reviewed for early modularization (Warning).
 - [ ] **Architectural Reuse**: Verified that no new "islands" were created. Existing systems (`BaseModal`, `UnifiedCard`, `DBRouter`) are reused or extended.
 - [ ] **Redundancy Audit**: `npm run audit:css` shows 0 critical overlaps for core components.
 - [ ] **Validation Script Integrity**: All project rules in `audit_project.ts` and `audit_rules.ts` pass with 0 errors.

@@ -99,7 +99,8 @@ const {
   trainerAnimState, isTrainerVisible, isGlobalFadeActive,
   isWildEntryAnimation, wildRevealActive, isEmerging, upcomingIsEmerging, isCaptureSequenceActive,
   resetAll, getPokemonAnimState, getPokemonBallId, getPokemonCaptureActive,
-  getPokemonIsShaking, getPokemonIsBlinking, getPokemonIsHealing, silhouetteOpacity
+  getPokemonIsShaking, getPokemonIsBlinking, getPokemonIsHealing, silhouetteOpacity,
+  isCriticalCaptureActive
 } = animations
 
 initListeners()
@@ -362,6 +363,7 @@ watch(() => battleStore.isBattleActive, (active) => {
             :active-move="battleStore.activeMove ? { side: battleStore.activeMove.side || 'enemy', cat: battleStore.activeMove.cat || 'physical', name: battleStore.activeMove.name, selfKO: battleStore.activeMove.selfKO, recoil: battleStore.activeMove.recoil } : null"
             :show-guides="showGuides"
             :is-capture-success="getPokemonCaptureActive('enemy', p)"
+            :is-critical-capture="!!isCriticalCaptureActive.enemy"
             :sparkles="catchSparkles.filter(s => s.side === 'enemy')"
             :is-fainting="isFaintInProgress && faintedPokemonSnapshot?.side === 'enemy' && !(battle?.isTrainer || battle?.isGym) && faintedPokemonSnapshot?.uid === p.uid"
             :is-emerging="enemyIsJumping && (!activeEnemyData || p.uid === activeEnemyData?.uid)"
@@ -413,6 +415,7 @@ watch(() => battleStore.isBattleActive, (active) => {
             :active-move="battleStore.activeMove ? { side: battleStore.activeMove.side || 'player', cat: battleStore.activeMove.cat || 'physical', name: battleStore.activeMove.name, selfKO: battleStore.activeMove.selfKO, recoil: battleStore.activeMove.recoil } : null"
             :show-guides="showGuides"
             :is-capture-success="getPokemonCaptureActive('player', p)"
+            :is-critical-capture="!!isCriticalCaptureActive.player"
             :sparkles="catchSparkles.filter(s => s.side === 'player')"
             :stages="battleStore.playerStages"
             :is-fainting="false"

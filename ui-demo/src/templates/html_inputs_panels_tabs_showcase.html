@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo Completo: Inputs, Paneles y Tabs en HTML</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    dialog::backdrop {
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+    }
+    [popover]::backdrop {
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(2px);
+    }
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+    input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+    input[type="color"]::-webkit-color-swatch {
+      border: none;
+      border-radius: 0.375rem;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="p-2 bg-indigo-600 text-white rounded-lg shadow-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+        </span>
+        <div>
+          <h1 class="font-bold text-slate-900 text-base sm:text-lg leading-none">HTML5 Explorer</h1>
+          <p class="text-xs text-slate-500 font-medium">Inputs, Paneles y Tabs Interactivos</p>
+        </div>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-1 text-sm font-medium text-slate-600">
+        <a href="#inputs-section" class="px-3 py-1.5 rounded-lg hover:text-indigo-600 hover:bg-slate-100 transition-colors">Inputs (22)</a>
+        <a href="#panels-section" class="px-3 py-1.5 rounded-lg hover:text-indigo-600 hover:bg-slate-100 transition-colors">Paneles & Modales</a>
+        <a href="#tabs-section" class="px-3 py-1.5 rounded-lg hover:text-indigo-600 hover:bg-slate-100 transition-colors">Pestañas (Tabs)</a>
+        <a href="#console-section" class="px-3 py-1.5 rounded-lg hover:text-indigo-600 hover:bg-slate-100 transition-colors">Inspector</a>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <button id="reset-all-btn" class="text-xs font-semibold px-3 py-1.5 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-100 active:scale-95 transition">
+          Reset Datos
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+    <section class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 rounded-2xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden">
+      <div class="relative z-10 max-w-3xl space-y-3">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/30 text-indigo-200 border border-indigo-400/30">
+          HTML Living Standard & WAI-ARIA
+        </span>
+        <h2 class="text-2xl sm:text-4xl font-extrabold tracking-tight">Plantilla Viva de Elementos HTML</h2>
+        <p class="text-sm sm:text-base text-indigo-200 font-normal leading-relaxed">
+          Explora los 22 tipos oficiales de <code class="font-mono bg-white/10 px-1.5 py-0.5 rounded text-white">&lt;input&gt;</code>, contenedores de paneles semánticos (<code class="font-mono bg-white/10 px-1.5 py-0.5 rounded text-white">&lt;dialog&gt;</code>, <code class="font-mono bg-white/10 px-1.5 py-0.5 rounded text-white">&lt;details&gt;</code>, Popovers) y el patrón estándar de tabs con accesibilidad completa por teclado.
+        </p>
+      </div>
+    </section>
+
+    <section id="inputs-section" class="space-y-6">
+      <div class="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <span class="w-2.5 h-6 bg-indigo-600 rounded-full inline-block"></span>
+            1. Todos los Tipos de &lt;input&gt; (22 Variantes Oficiales)
+          </h2>
+          <p class="text-sm text-slate-500 mt-1">Todos los campos están activos. Observa la consola al final para inspeccionar sus eventos en vivo.</p>
+        </div>
+        <span class="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full bg-slate-200 text-slate-700">
+          22 de 22 representados
+        </span>
+      </div>
+
+      <form id="master-form" onsubmit="event.preventDefault(); window.recordFormSubmit();" class="space-y-8">
+        <!-- Input Group: Texto e Identidad -->
+        <fieldset class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+          <legend class="font-semibold text-slate-800 text-sm px-2 text-indigo-700 flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+            Grupo A: Texto, Credenciales y Búsqueda
+          </legend>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- 1. text -->
+            <div class="space-y-1.5">
+              <label for="inp-text" class="text-xs font-semibold text-slate-700 flex justify-between items-center">
+                <span>1. Texto Estándar</span>
+                <span class="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">type="text"</span>
+              </label>
+              <input type="text" id="inp-text" name="txt_user" value="John Doe" placeholder="Escribe tu nombre..." class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+              <p class="text-[11px] text-slate-600">Entrada de texto plano en una línea.</p>
+            </div>
+
+            <!-- 2. password -->
+            <div class="space-y-1.5">
+              <label for="inp-password" class="text-xs font-semibold text-slate-700 flex justify-between items-center">
+                <span>2. Contraseña</span>
+                <span class="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">type="password"</span>
+              </label>
+              <input type="password" id="inp-password" name="txt_pass" value="SuperSecreto123!" placeholder="Clave secreta..." class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+              <p class="text-[11px] text-slate-600">Caracteres ofuscados nativamente.</p>
+            </div>
+
+            <!-- 3. search -->
+            <div class="space-y-1.5">
+              <label for="inp-search" class="text-xs font-semibold text-slate-700 flex justify-between items-center">
+                <span>3. Búsqueda</span>
+                <span class="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">type="search"</span>
+              </label>
+              <input type="search" id="inp-search" name="txt_search" placeholder="Buscar consultas..." class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+              <p class="text-[11px] text-slate-600">Incluye botón de limpieza rápida nativo.</p>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Input Group: Comunicación y Números -->
+        <fieldset class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+          <legend class="font-semibold text-slate-800 text-sm px-2 text-indigo-700 flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            Grupo B: Contacto, Validación y Cantidades
+          </legend>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <!-- 4. email -->
+            <div class="space-y-1.5">
+              <label for="inp-email" class="text-xs font-semibold text-slate-700 flex justify-between items-center">
+                <span>4. Correo Electrónico</span>
+                <span class="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">type="email"</span>
+              </label>
+              <input type="email" id="inp-email" name="txt_email" value="contacto@ejemplo.com" placeholder="usuario@dominio.com" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+              <p class="text-[11px] text-slate-600">Validación de sintaxis RFC estándar.</p>
+            </div>
+
+            <!-- 5. tel -->
+            <div class="space-y-1.5">
+              <label for="inp-tel" class="text-xs font-semibold text-slate-700 flex justify-between items-center">
+                <span>5. Teléfono</span>
+                <span class="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">type="tel"</span>
+              </label>
+              <input type="tel" id="inp-tel" name="txt_tel" value="+34 600 123 456" placeholder="+54 9 11..." class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+              <p class="text-[11px] text-slate-600">Dispara teclado numérico en smartphones.</p>
+            </div>
+
+            <!-- 6. url -->
+            <div class="space-y-1.5">
+              <label for="inp-url" class="text-xs font-semibold text-slate-700 flex justify-between items-center">
+                <span>6. Dirección Web</span>
+                <span class="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">type="url"</span>
+              </label>
+              <input type="url" id="inp-url" name="txt_url" value="https://developer.mozilla.org" placeholder="https://..." class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+              <p class="text-[11px] text-slate-600">Exige protocolo formal (http/https).</p>
+            </div>
+
+            <!-- 7. number -->
+            <div class="space-y-1.5">
+              <label for="inp-number" class="text-xs font-semibold text-slate-700 flex justify-between items-center">
+                <span>7. Número</span>
+                <span class="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">type="number"</span>
+              </label>
+              <input type="number" id="inp-number" name="num_qty" min="0" max="100" step="5" value="25" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+              <p class="text-[11px] text-slate-600">Soporta <code class="text-slate-700 font-mono">min</code>, <code class="text-slate-700 font-mono">max</code> y <code class="text-slate-700 font-mono">step</code>.</p>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Input Group: Cronología y Fechas -->
+        <fieldset class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+          <legend class="font-semibold text-slate-800 text-sm px-2 text-indigo-700 flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            Grupo C: Selectores Temporales
+          </legend>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <!-- 8. date -->
+            <div class="space-y-1.5">
+              <label for="inp-date" class="text-xs font-semibold text-slate-700 flex justify-between items-center">
+                <span>8. Fecha</span>
+                <span class="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">type="date"</span>
+              </label>
+              <input type="date" id="inp-date" name="dt_date" value="2026-09-09" class="w-full px-2.5 py-2 text-xs sm:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+              <p class="text-[11px] text-slate-600">Día, mes y año.</p>
+            </div>
+
+            <!-- 9. datetime-local -->
+            <div class="space-y-1.5">
+              <label for="inp-datetime" class="text-xs font-semibold text-slate-700 flex justify-between items-center">
+                <span>9. Fecha y Hora</span>
+                <span class="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">datetime-local</span>
+              </label>
+              <input type="datetime-local" id="inp-datetime" name="dt_local" value="2026-09-09T18:30" class="w-full px-2 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+              <p class="text-[11px] text-slate-600">Sin zona horaria (local).</p>
+            </div>
+
+            <!-- 10. time -->
+            <div class="space-y-1.5">
+              <label for="inp-time" class="text-xs font-semibold text-slate-700 flex justify-between items-center">
+                <span>10. Hora</span>
+                <span class="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">type="time"</span>
+              </label>
+              <input type="time" id="inp-time" name="tm_time" value="14:45" class="w-full px-2.5 py-2 text-xs sm:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+              <p class="text-[11px] text-slate-600">Horas, minutos y segundos.</p>
+            </div>
+
+            <!-- 11. month -->
+            <div class="space-y-1.5">
+              <label for="inp-month" class="text-xs font-semibold text-slate-700 flex justify-between items-center">
+                <span>11. Mes</span>
+                <span class="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">type="month"</span>
+              </label>
+              <input type="month" id="inp-month" name="dt_month" value="2026-09" class="w-full px-2.5 py-2 text-xs sm:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+              <p class="text-[11px] text-slate-600">Año y mes únicamente.</p>
+            </div>
+
+            <!-- 12. week -->
+            <div class="space-y-1.5">
+              <label for="inp-week" class="text-xs font-semibold text-slate-700 flex justify-between items-center">
+                <span>12. Semana</span>
+                <span class="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">type="week"</span>
+              </label>
+              <input type="week" id="inp-week" name="dt_week" value="2026-W37" class="w-full px-2.5 py-2 text-xs sm:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+              <p class="text-[11px] text-slate-600">Año y número de semana ISO.</p>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Input Group: Selectores, Gráficos y Rango -->
+        <fieldset class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+          <legend class="font-semibold text-slate-800 text-sm px-2 text-indigo-700 flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+            Grupo D: Opciones, Gráficos y Deslizadores
+          </legend>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <!-- 13. checkbox -->
+            <div class="space-y-2 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-700">13. Checkbox</span>
+                <span class="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">type="checkbox"</span>
+              </div>
+              <div class="space-y-1.5 pt-1">
+                <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                  <input type="checkbox" name="opt_terms" checked class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
+                  Acepto los términos
+                </label>
+                <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                  <input type="checkbox" name="opt_newsletter" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
+                  Recibir boletín semanal
+                </label>
+              </div>
+            </div>
+
+            <!-- 14. radio -->
+            <div class="space-y-2 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-700">14. Radio Buttons</span>
+                <span class="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">type="radio"</span>
+              </div>
+              <div class="space-y-1.5 pt-1">
+                <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                  <input type="radio" name="plan_tier" value="free" checked class="w-4 h-4 text-indigo-600 border-slate-300 focus:ring-indigo-500">
+                  Plan Gratuito
+                </label>
+                <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                  <input type="radio" name="plan_tier" value="pro" class="w-4 h-4 text-indigo-600 border-slate-300 focus:ring-indigo-500">
+                  Plan Pro (Exclusivo)
+                </label>
+              </div>
+            </div>
+
+            <!-- 15. color -->
+            <div class="space-y-2 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-700">15. Selector de Color</span>
+                <span class="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">type="color"</span>
+              </div>
+              <div class="flex items-center gap-3 pt-1">
+                <input type="color" id="inp-color" name="clr_primary" value="#4f46e5" class="w-10 h-10 cursor-pointer border border-slate-300 rounded shadow-sm">
+                <div>
+                  <span id="color-hex-val" class="font-mono text-xs font-bold text-indigo-600">#4f46e5</span>
+                  <p class="text-[11px] text-slate-600">Selector nativo RGB</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 16. range -->
+            <div class="space-y-2 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-700">16. Rango (Slider)</span>
+                <span class="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">type="range"</span>
+              </div>
+              <div class="space-y-1 pt-1">
+                <div class="flex justify-between text-xs font-medium text-slate-700">
+                  <span>Volumen</span>
+                  <output id="range-val" class="font-mono font-bold text-indigo-600">75%</output>
+                </div>
+                <input type="range" id="inp-range" name="rng_volume" min="0" max="100" value="75" class="w-full accent-indigo-600 cursor-pointer">
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Input Group: Archivos, Oculto y Botones -->
+        <fieldset class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+          <legend class="font-semibold text-slate-800 text-sm px-2 text-indigo-700 flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+            Grupo E: Carga de Archivos, Ocultos y Botones de Acción
+          </legend>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <!-- 17. file -->
+            <div class="space-y-1.5">
+              <label for="inp-file" class="text-xs font-semibold text-slate-700 flex justify-between items-center">
+                <span>17. Selector de Archivo</span>
+                <span class="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">type="file"</span>
+              </label>
+              <input type="file" id="inp-file" name="file_upload" class="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-300 rounded-lg">
+              <p class="text-[11px] text-slate-600">Permite <code class="text-slate-700 font-mono">accept</code> y <code class="text-slate-700 font-mono">multiple</code>.</p>
+            </div>
+
+            <!-- 18. hidden -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-semibold text-slate-700 flex justify-between items-center">
+                <span>18. Campo Oculto</span>
+                <span class="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">type="hidden"</span>
+              </label>
+              <input type="hidden" id="inp-hidden" name="sec_csrf_token" value="tok_987xzy412alpha">
+              <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-xs">
+                <div class="font-semibold flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"></path></svg>
+                  Invisible en el DOM renderizado
+                </div>
+                <p class="mt-0.5 font-mono text-[11px] text-amber-900">token: "tok_987xzy412alpha"</p>
+              </div>
+            </div>
+
+            <!-- 19. image -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-semibold text-slate-700 flex justify-between items-center">
+                <span>19. Botón Imagen</span>
+                <span class="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">type="image"</span>
+              </label>
+              <div class="flex items-center gap-3">
+                <input type="image" src="https://placehold.co/120x38/4f46e5/ffffff?text=Click+Image" alt="Enviar Formulario Gráfico" class="rounded-lg shadow hover:opacity-90 active:scale-95 transition border border-indigo-700">
+                <span class="text-[11px] text-slate-600">Envía coordenadas (x,y) del clic.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botones de Acción Oficiales -->
+          <div class="pt-4 border-t border-slate-200 flex flex-wrap items-center gap-3">
+            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider mr-2">Botones Nativos:</span>
+
+            <!-- 20. submit -->
+            <div class="inline-flex flex-col">
+              <input type="submit" value="20. type='submit'" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-700 active:scale-95 cursor-pointer shadow-sm transition">
+            </div>
+
+            <!-- 21. reset -->
+            <div class="inline-flex flex-col">
+              <input type="reset" value="21. type='reset'" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-300 active:scale-95 cursor-pointer transition">
+            </div>
+
+            <!-- 22. button -->
+            <div class="inline-flex flex-col">
+              <input type="button" id="generic-btn" value="22. type='button'" class="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-50 active:scale-95 cursor-pointer shadow-sm transition">
+            </div>
+
+            <span class="text-xs text-slate-600 ml-auto italic">Haz clic en submit para ver la carga útil completa en el inspector</span>
+          </div>
+        </fieldset>
+      </form>
+
+      <!-- Extras Semánticos -->
+      <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-2">
+          <span>Controles de Entrada Adicionales (No &lt;input&gt;)</span>
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">&lt;textarea&gt;</label>
+            <textarea rows="2" placeholder="Texto multilínea..." class="w-full text-xs p-2 border border-slate-300 rounded-lg focus:ring-1 focus:ring-indigo-500"></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">&lt;select&gt; & &lt;option&gt;</label>
+            <select class="w-full text-xs p-2 border border-slate-300 rounded-lg focus:ring-1 focus:ring-indigo-500 bg-white">
+              <option value="1">Opción A: Estándar</option>
+              <option value="2">Opción B: Avanzada</option>
+              <option value="3">Opción C: Experto</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">&lt;progress&gt;</label>
+            <div class="pt-2">
+              <progress value="65" max="100" class="w-full h-3 rounded-full overflow-hidden accent-indigo-600"></progress>
+              <span class="text-[11px] text-slate-600 font-mono">Progreso: 65%</span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">&lt;meter&gt;</label>
+            <div class="pt-2">
+              <meter min="0" max="100" low="30" high="80" optimum="90" value="85" class="w-full h-3"></meter>
+              <span class="text-[11px] text-slate-600 font-mono">Medición: 85 (Óptimo)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="panels-section" class="space-y-6 pt-6 border-t border-slate-200">
+      <div class="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <span class="w-2.5 h-6 bg-emerald-600 rounded-full inline-block"></span>
+            2. Paneles, Modales y Contenedores Nativos
+          </h2>
+          <p class="text-sm text-slate-500 mt-1">Estructuras para aislar vistas, desplegables sin JavaScript y diálogos modernos.</p>
+        </div>
+        <span class="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">
+          details, dialog, popover, aside
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Panel 1: Acordeón Nativo con <details> & <summary> -->
+        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-xs">&lt;details&gt;</span>
+              Acordeón Nativo (Con atributo name exclusivo)
+            </h3>
+          </div>
+          <p class="text-xs text-slate-600">Al compartir el atributo <code class="font-mono text-slate-700 bg-slate-100 px-1 py-0.5 rounded">name="faq"</code>, abrir uno cierra automáticamente el anterior sin requerir librerías externas.</p>
+
+          <div class="space-y-2.5">
+            <!-- Item 1 -->
+            <details name="faq-group" open class="group border border-slate-200 rounded-lg p-3 open:bg-slate-50 transition-colors">
+              <summary class="flex justify-between items-center font-medium text-xs sm:text-sm text-slate-800 cursor-pointer select-none">
+                <span class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  Panel 1: ¿Cómo funciona sin Javascript?
+                </span>
+                <span class="transition group-open:rotate-180 text-slate-400">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </span>
+              </summary>
+              <div class="mt-3 text-xs text-slate-600 border-t border-slate-200 pt-2 leading-relaxed">
+                El navegador gestiona el estado binario (abierto/cerrado) internamente mediante el atributo booleano <code class="font-mono bg-slate-200 px-1 rounded">open</code>. Es 100% accesible mediante la tecla Espacio o Enter.
+              </div>
+            </details>
+
+            <!-- Item 2 -->
+            <details name="faq-group" class="group border border-slate-200 rounded-lg p-3 open:bg-slate-50 transition-colors">
+              <summary class="flex justify-between items-center font-medium text-xs sm:text-sm text-slate-800 cursor-pointer select-none">
+                <span class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-slate-400 group-open:bg-emerald-500"></span>
+                  Panel 2: ¿Qué es el atributo `name` en details?
+                </span>
+                <span class="transition group-open:rotate-180 text-slate-400">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </span>
+              </summary>
+              <div class="mt-3 text-xs text-slate-600 border-t border-slate-200 pt-2 leading-relaxed">
+                Es la especificación oficial de acordeón exclusivo introducida recientemente en todos los motores modernos (Chromium, Firefox, WebKit). Garantiza que solo un panel esté abierto a la vez.
+              </div>
+            </details>
+
+            <!-- Item 3 -->
+            <details name="faq-group" class="group border border-slate-200 rounded-lg p-3 open:bg-slate-50 transition-colors">
+              <summary class="flex justify-between items-center font-medium text-xs sm:text-sm text-slate-800 cursor-pointer select-none">
+                <span class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-slate-400 group-open:bg-emerald-500"></span>
+                  Panel 3: Personalización visual del Summary
+                </span>
+                <span class="transition group-open:rotate-180 text-slate-400">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </span>
+              </summary>
+              <div class="mt-3 text-xs text-slate-600 border-t border-slate-200 pt-2 leading-relaxed">
+                Utilizando <code class="font-mono text-[11px] bg-slate-200 px-1 rounded">summary::-webkit-details-marker { display:none }</code> ocultamos la flecha negra nativa para sustituirla con cualquier icono SVG personalizado.
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <!-- Panel 2: <dialog> y Nueva API Popover -->
+        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-xs">&lt;dialog&gt; & Popover</span>
+              Paneles Superpuestos y Diálogos
+            </h3>
+          </div>
+          <p class="text-xs text-slate-600">HTML incluye primitivas de alto nivel para superposiciones sin dependencias de JavaScript pesado.</p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <!-- Trigger Modal -->
+            <button onclick="document.getElementById('native-modal-dialog').showModal()" class="flex flex-col items-start p-4 border border-slate-200 hover:border-indigo-500 rounded-xl bg-slate-50 hover:bg-indigo-50/40 text-left transition group">
+              <span class="font-bold text-xs text-slate-800 group-hover:text-indigo-600 flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                Abrir Modal Nativo
+              </span>
+              <span class="text-[11px] text-slate-600 mt-1 font-mono">dialog.showModal()</span>
+              <span class="text-[10px] text-slate-600 mt-2">Bloquea la interacción de fondo con trampa de foco y soporte para tecla ESC.</span>
+            </button>
+
+            <!-- Trigger Popover Moderno -->
+            <button popovertarget="demo-popover" class="flex flex-col items-start p-4 border border-slate-200 hover:border-emerald-500 rounded-xl bg-slate-50 hover:bg-emerald-50/40 text-left transition group">
+              <span class="font-bold text-xs text-slate-800 group-hover:text-emerald-600 flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Abrir Popover Nativo
+              </span>
+              <span class="text-[11px] text-slate-600 mt-1 font-mono">popovertarget="id"</span>
+              <span class="text-[10px] text-slate-600 mt-2">API HTML moderna: se cierra al hacer clic fuera automáticamente sin JS.</span>
+            </button>
+          </div>
+
+          <!-- Drawer Lateral Simulado con Aside Semántico -->
+          <div class="border border-dashed border-slate-300 rounded-xl p-4 flex items-center justify-between bg-slate-50">
+            <div>
+              <div class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 font-mono text-[10px]">&lt;aside&gt;</span>
+                Panel Lateral Deslizante (Slide-Over Drawer)
+              </div>
+              <p class="text-[11px] text-slate-600">Estructura semántica de barra lateral.</p>
+            </div>
+            <button onclick="window.toggleDrawer(true)" class="px-3 py-1.5 text-xs font-semibold bg-slate-900 text-white rounded-lg hover:bg-slate-800 active:scale-95 transition shadow-sm">
+              Mostrar Panel
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tabs-section" class="space-y-6 pt-6 border-t border-slate-200">
+      <div class="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <span class="w-2.5 h-6 bg-violet-600 rounded-full inline-block"></span>
+            3. Sistema Oficial de Tabs (WAI-ARIA Pattern)
+          </h2>
+          <p class="text-sm text-slate-500 mt-1">Implementación completa según la especificación W3C con navegación por teclado (<kbd class="px-1 py-0.5 bg-slate-100 border border-slate-300 rounded text-[10px] font-mono">&larr;</kbd> <kbd class="px-1 py-0.5 bg-slate-100 border border-slate-300 rounded text-[10px] font-mono">&rarr;</kbd> <kbd class="px-1 py-0.5 bg-slate-100 border border-slate-300 rounded text-[10px] font-mono">Home</kbd> <kbd class="px-1 py-0.5 bg-slate-100 border border-slate-300 rounded text-[10px] font-mono">End</kbd>).</p>
+        </div>
+        <span class="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full bg-violet-100 text-violet-800">
+          role="tablist" | tab | tabpanel
+        </span>
+      </div>
+
+      <!-- Componente Tabs Accesible -->
+      <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <!-- Tab List Header -->
+        <div class="border-b border-slate-200 bg-slate-50/70 px-4 pt-3">
+          <div role="tablist" aria-label="Secciones de información técnica" class="flex flex-wrap gap-1 sm:gap-2 -mb-px">
+            <button role="tab"
+                    id="tab-btn-1"
+                    aria-selected="true"
+                    aria-controls="tab-panel-1"
+                    tabindex="0"
+                    class="tab-trigger px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-t-lg border-b-2 border-indigo-600 text-indigo-700 bg-white shadow-sm flex items-center gap-2 transition-all">
+              <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+              Tab 1: Perfil de Usuario
+            </button>
+
+            <button role="tab"
+                    id="tab-btn-2"
+                    aria-selected="false"
+                    aria-controls="tab-panel-2"
+                    tabindex="-1"
+                    class="tab-trigger px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100 flex items-center gap-2 transition-all">
+              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
+              Tab 2: Configuración
+            </button>
+
+            <button role="tab"
+                    id="tab-btn-3"
+                    aria-selected="false"
+                    aria-controls="tab-panel-3"
+                    tabindex="-1"
+                    class="tab-trigger px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100 flex items-center gap-2 transition-all">
+              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+              Tab 3: Notificaciones
+            </button>
+
+            <button role="tab"
+                    id="tab-btn-4"
+                    aria-selected="false"
+                    aria-controls="tab-panel-4"
+                    tabindex="-1"
+                    class="tab-trigger px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100 flex items-center gap-2 transition-all">
+              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              Tab 4: Código & Estándares
+            </button>
+          </div>
+        </div>
+
+        <!-- Tab Panels -->
+        <div class="p-6">
+          <!-- Panel 1 -->
+          <div id="tab-panel-1" role="tabpanel" aria-labelledby="tab-btn-1" tabindex="0" class="tab-panel space-y-4 focus:outline-none">
+            <div class="flex items-center gap-4">
+              <div class="w-14 h-14 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xl">JD</div>
+              <div>
+                <h4 class="font-bold text-slate-900 text-base">John Doe (Desarrollador Web)</h4>
+                <p class="text-xs text-slate-500">Sesión iniciada vía Credencial HTML5 &bull; Venado Tuerto, Santa Fe</p>
+              </div>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Este panel demuestra cómo vincular <code class="font-mono text-indigo-600 bg-indigo-50 px-1 py-0.5 rounded">aria-controls="tab-panel-1"</code> con <code class="font-mono text-indigo-600 bg-indigo-50 px-1 py-0.5 rounded">aria-labelledby="tab-btn-1"</code>. El tab seleccionado mantiene <code class="font-mono text-indigo-600 bg-indigo-50 px-1 py-0.5 rounded">tabindex="0"</code> para recibir foco directo.
+            </p>
+          </div>
+
+          <!-- Panel 2 -->
+          <div id="tab-panel-2" role="tabpanel" aria-labelledby="tab-btn-2" tabindex="0" class="tab-panel space-y-3 hidden focus:outline-none">
+            <h4 class="font-bold text-slate-900 text-sm">Preferencias del Sistema</h4>
+            <div class="space-y-2 text-xs">
+              <label class="flex items-center gap-2 text-slate-700">
+                <input type="checkbox" checked class="rounded text-indigo-600"> Activar modo de alto contraste para inputs
+              </label>
+              <label class="flex items-center gap-2 text-slate-700">
+                <input type="checkbox" checked class="rounded text-indigo-600"> Auto-enfocar primer elemento modal
+              </label>
+            </div>
+          </div>
+
+          <!-- Panel 3 -->
+          <div id="tab-panel-3" role="tabpanel" aria-labelledby="tab-btn-3" tabindex="0" class="tab-panel space-y-3 hidden focus:outline-none">
+            <h4 class="font-bold text-slate-900 text-sm">Centro de Notificaciones</h4>
+            <div class="p-3 bg-indigo-50 border border-indigo-100 rounded-lg text-indigo-900 text-xs flex items-center justify-between">
+              <span>Tienes 3 formularios pendientes de sincronizar con el backend.</span>
+              <button class="font-bold hover:underline">Revisar</button>
+            </div>
+          </div>
+
+          <!-- Panel 4 -->
+          <div id="tab-panel-4" role="tabpanel" aria-labelledby="tab-btn-4" tabindex="0" class="tab-panel space-y-3 hidden focus:outline-none">
+            <h4 class="font-bold text-slate-900 text-sm">Estructura WAI-ARIA Oficial</h4>
+            <pre class="bg-slate-900 text-indigo-300 p-4 rounded-lg font-mono text-xs overflow-x-auto"><code>&lt;div role="tablist" aria-label="..."&gt;
+  &lt;button role="tab" aria-selected="true" aria-controls="panel-1" id="tab-1" tabindex="0"&gt;Tab 1&lt;/button&gt;
+  &lt;button role="tab" aria-selected="false" aria-controls="panel-2" id="tab-2" tabindex="-1"&gt;Tab 2&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;div id="panel-1" role="tabpanel" aria-labelledby="tab-1" tabindex="0"&gt;Contenido 1&lt;/div&gt;
+&lt;div id="panel-2" role="tabpanel" aria-labelledby="tab-2" tabindex="0" hidden&gt;Contenido 2&lt;/div&gt;</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección de Inspección en Tiempo Real -->
+    <section id="console-section" class="bg-slate-900 text-white rounded-2xl p-6 shadow-xl space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+          <h3 class="font-bold text-sm text-slate-200">Consola de Estado e Inspector en Vivo</h3>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="clear-console-btn" class="text-xs px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 transition">
+            Limpiar Consola
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div>
+          <span class="text-xs font-semibold text-slate-400 block mb-1">Último Evento Detectado:</span>
+          <div id="event-display" class="bg-slate-950 p-3 rounded-lg font-mono text-xs text-emerald-400 border border-slate-800 h-28 overflow-y-auto space-y-1">
+            <p class="text-slate-400">// Listo. Modifica cualquier input o interactúa con los paneles...</p>
+          </div>
+        </div>
+
+        <div>
+          <span class="text-xs font-semibold text-slate-400 block mb-1">Valores Serializados del Formulario:</span>
+          <pre id="form-serialized-display" class="bg-slate-950 p-3 rounded-lg font-mono text-xs text-indigo-300 border border-slate-800 h-28 overflow-y-auto whitespace-pre-wrap">Presiona "type='submit'" o cambia inputs para inspeccionar.</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Dialog Modal Nativo -->
+  <dialog id="native-modal-dialog" class="rounded-2xl p-0 shadow-2xl border border-slate-200 max-w-md w-[90%] backdrop:bg-slate-900/60 text-slate-800">
+    <div class="p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="p-1.5 bg-indigo-100 text-indigo-700 rounded-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          </span>
+          <h3 class="font-bold text-slate-900 text-base">Ventana &lt;dialog&gt; Nativa</h3>
+        </div>
+        <button onclick="document.getElementById('native-modal-dialog').close()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-600 leading-relaxed">
+        Este panel modal se invoca con la API estándar <code class="font-mono bg-slate-100 px-1 py-0.5 rounded text-indigo-600">dialog.showModal()</code>. Proporciona de forma nativa:
+      </p>
+
+      <ul class="text-xs space-y-1.5 text-slate-600 list-disc list-inside">
+        <li>Capa de oscurecimiento configurable mediante el pseudo-elemento <code class="font-mono text-slate-800 font-bold">::backdrop</code>.</li>
+        <li>Trampa de foco de accesibilidad para lectores de pantalla.</li>
+        <li>Cierre inmediato al pulsar la tecla <kbd class="px-1 py-0.5 bg-slate-100 border rounded font-mono">Escape</kbd>.</li>
+      </ul>
+
+      <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+        <button onclick="document.getElementById('native-modal-dialog').close()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition">
+          Cerrar Diálogo
+        </button>
+        <button onclick="window.logConsole('Modal confirmado'); document.getElementById('native-modal-dialog').close()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold transition">
+          Confirmar Acción
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Popover Nativo Moderno -->
+  <div id="demo-popover" popover class="rounded-xl p-5 shadow-2xl border border-slate-200 max-w-xs w-full bg-white text-slate-800 m-auto">
+    <div class="space-y-3">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+        <h4 class="font-bold text-xs text-slate-900 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          Popover API Oficial
+        </h4>
+        <button popovertarget="demo-popover" popovertargetaction="hide" class="text-slate-400 hover:text-slate-700 text-xs font-bold px-1.5 py-0.5 rounded">
+          ✕
+        </button>
+      </div>
+      <p class="text-xs text-slate-600 leading-relaxed">
+        Declarado simplemente con el atributo <code class="font-mono bg-slate-100 px-1 py-0.5 rounded text-emerald-700">popover</code>. Se posiciona en la capa superior (Top Layer) del navegador sin z-index hacks y se auto-cierra con "light dismiss".
+      </p>
+      <button popovertarget="demo-popover" popovertargetaction="hide" class="w-full py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition">
+        Entendido
+      </button>
+    </div>
+  </div>
+
+  <!-- Drawer Lateral Deslizante -->
+  <div id="drawer-backdrop" onclick="window.toggleDrawer(false)" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+  <aside id="slide-drawer" class="fixed top-0 right-0 bottom-0 w-80 max-w-full bg-white shadow-2xl z-50 p-6 flex flex-col justify-between transform translate-x-full transition-transform duration-300 ease-in-out border-l border-slate-200">
+    <div class="space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2">
+          <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
+          Panel Lateral (&lt;aside&gt;)
+        </h3>
+        <button onclick="window.toggleDrawer(false)" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-600 leading-relaxed">
+        El elemento semántico <code class="font-mono bg-slate-100 px-1 rounded text-slate-800">&lt;aside&gt;</code> representa una porción de contenido tangencial al documento principal, ideal para barras laterales de herramientas, configuraciones o navegación secundaria.
+      </p>
+
+      <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+        <span class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Atajos Rápidos</span>
+        <button onclick="document.getElementById('inp-text').focus(); window.toggleDrawer(false);" class="w-full text-left text-xs p-1.5 hover:bg-white rounded transition text-slate-600 hover:text-indigo-600">
+          &bull; Enfocar campo de texto
+        </button>
+        <button onclick="document.getElementById('inp-color').click(); window.toggleDrawer(false);" class="w-full text-left text-xs p-1.5 hover:bg-white rounded transition text-slate-600 hover:text-indigo-600">
+          &bull; Abrir selector de color
+        </button>
+      </div>
+    </div>
+
+    <button onclick="window.toggleDrawer(false)" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold transition">
+      Cerrar Panel
+    </button>
+  </aside>
+
+  <footer class="bg-white border-t border-slate-200 py-6 mt-12">
+    <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 space-y-1">
+      <p class="font-medium text-slate-700">HTML5 Living Standard Demo & Component Guide</p>
+      <p>Todos los componentes son nativos y cumplen con accesibilidad WCAG y WAI-ARIA 1.2</p>
+    </div>
+  </footer>
+
+  <script>
+    // Console log utility
+    window.logConsole = function(msg) {
+      const consoleBox = document.getElementById('event-display');
+      const time = new Date().toLocaleTimeString();
+      const p = document.createElement('p');
+      p.innerHTML = `<span class="text-slate-500">[${time}]</span> ${msg}`;
+      consoleBox.prepend(p);
+    };
+
+    // Serialize and display form data
+    window.recordFormSubmit = function() {
+      const form = document.getElementById('master-form');
+      const formData = new FormData(form);
+      const dataObj = {};
+      
+      formData.forEach((value, key) => {
+        // Handle files representation nicely
+        if (value instanceof File) {
+          dataObj[key] = value.name ? `[Archivo: ${value.name} (${value.size}B)]` : '[Sin archivo]';
+        } else {
+          dataObj[key] = value;
+        }
+      });
+
+      const serializedText = JSON.stringify(dataObj, null, 2);
+      document.getElementById('form-serialized-display').textContent = serializedText;
+      window.logConsole(`Formulario enviado con <span class="text-indigo-400 font-bold">${Object.keys(dataObj).length}</span> campos serializados.`);
+    };
+
+    // Clear console helper
+    document.getElementById('clear-console-btn').addEventListener('click', () => {
+      document.getElementById('event-display').innerHTML = '<p class="text-slate-500">// Consola limpia.</p>';
+      document.getElementById('form-serialized-display').textContent = 'Esperando nuevos eventos...';
+    });
+
+    // Reset button
+    document.getElementById('reset-all-btn').addEventListener('click', () => {
+      document.getElementById('master-form').reset();
+      document.getElementById('range-val').textContent = '75%';
+      document.getElementById('color-hex-val').textContent = '#4f46e5';
+      window.logConsole('Formulario reiniciado a sus valores por defecto.');
+    });
+
+    // Range slider dynamic display
+    const rangeInp = document.getElementById('inp-range');
+    const rangeOut = document.getElementById('range-val');
+    rangeInp.addEventListener('input', (e) => {
+      rangeOut.textContent = `${e.target.value}%`;
+      window.logConsole(`type="range": nuevo valor = ${e.target.value}%`);
+    });
+
+    // Color picker dynamic display
+    const colorInp = document.getElementById('inp-color');
+    const colorHex = document.getElementById('color-hex-val');
+    colorInp.addEventListener('input', (e) => {
+      colorHex.textContent = e.target.value;
+      colorHex.style.color = e.target.value;
+      window.logConsole(`type="color": seleccionado = ${e.target.value}`);
+    });
+
+    // Generic button click handler
+    document.getElementById('generic-btn').addEventListener('click', () => {
+      window.logConsole('type="button" presionado (sin comportamiento de submit por defecto).');
+    });
+
+    // Drawer toggler
+    window.toggleDrawer = function(open) {
+      const drawer = document.getElementById('slide-drawer');
+      const backdrop = document.getElementById('drawer-backdrop');
+      if (open) {
+        drawer.classList.remove('translate-x-full');
+        backdrop.classList.remove('opacity-0', 'pointer-events-none');
+        window.logConsole('Panel lateral &lt;aside&gt; abierto.');
+      } else {
+        drawer.classList.add('translate-x-full');
+        backdrop.classList.add('opacity-0', 'pointer-events-none');
+        window.logConsole('Panel lateral &lt;aside&gt; cerrado.');
+      }
+    };
+
+    // Keyboard and click logic for WAI-ARIA Tabs
+    const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+    const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
+
+    function switchTab(newTab) {
+      // Deactivate all tabs
+      tabs.forEach(tab => {
+        tab.setAttribute('aria-selected', 'false');
+        tab.setAttribute('tabindex', '-1');
+        tab.classList.remove('border-indigo-600', 'text-indigo-700', 'bg-white', 'shadow-sm');
+        tab.classList.add('border-transparent', 'text-slate-500');
+      });
+
+      // Hide all panels
+      panels.forEach(panel => {
+        panel.classList.add('hidden');
+      });
+
+      // Activate chosen tab
+      newTab.setAttribute('aria-selected', 'true');
+      newTab.setAttribute('tabindex', '0');
+      newTab.classList.remove('border-transparent', 'text-slate-500');
+      newTab.classList.add('border-indigo-600', 'text-indigo-700', 'bg-white', 'shadow-sm');
+      newTab.focus();
+
+      // Show associated panel
+      const targetPanelId = newTab.getAttribute('aria-controls');
+      const targetPanel = document.getElementById(targetPanelId);
+      if (targetPanel) {
+        targetPanel.classList.remove('hidden');
+      }
+
+      window.logConsole(`Tab activada: <strong>${newTab.textContent.trim()}</strong>`);
+    }
+
+    tabs.forEach((tab, idx) => {
+      tab.addEventListener('click', () => switchTab(tab));
+
+      // Accessible Keyboard Navigation
+      tab.addEventListener('keydown', (e) => {
+        let targetIndex = null;
+        if (e.key === 'ArrowRight') {
+          targetIndex = (idx + 1) % tabs.length;
+        } else if (e.key === 'ArrowLeft') {
+          targetIndex = (idx - 1 + tabs.length) % tabs.length;
+        } else if (e.key === 'Home') {
+          targetIndex = 0;
+        } else if (e.key === 'End') {
+          targetIndex = tabs.length - 1;
+        }
+
+        if (targetIndex !== null) {
+          e.preventDefault();
+          switchTab(tabs[targetIndex]);
+        }
+      });
+    });
+
+    // Log input change events globally on the master form
+    document.getElementById('master-form').addEventListener('change', (e) => {
+      const target = e.target;
+      if (target.name) {
+        window.logConsole(`Cambio en <code>${target.name}</code> (${target.type}): valor = "${target.value}"`);
+      }
+    });
+  </script>
+</body>
+</html>

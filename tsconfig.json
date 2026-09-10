@@ -11,6 +11,6 @@
       "@/styles/*": ["./src/styles/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "scripts/**/*.ts", "tests/**/*.ts", "tests/**/*.tsx", "vite.config.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "scripts/**/*.ts", "tests/**/*.ts", "tests/**/*.tsx", "vite.config.ts", "ui-demo/**/*.ts", "ui-demo/**/*.vue"],
   "exclude": []
 }

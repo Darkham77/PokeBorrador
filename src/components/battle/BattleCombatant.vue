@@ -11,7 +11,7 @@ import VirtualEntity from './VirtualEntity.vue'
 import CombatShadow from './CombatShadow.vue'
 import PVSpriteFX from '@/components/common/PVSpriteFX.vue'
 import type { BattleCombatantProps, CombatantAnimTrigger } from '@/types/battle/battle'
-import { useBattleCombatantAnims, onSparkleEnter, onBallEnter, onBallLeave } from './useBattleCombatantAnims.ts'
+import { useBattleCombatantAnims, onSparkleEnter, onBallEnter, onBallLeave, onCriticalBannerEnter } from './useBattleCombatantAnims.ts'
 import { useBattleCombatantState } from './useBattleCombatantState.ts'
 import { useBattleCombatantSpriteLoop } from './useBattleCombatantSpriteLoop.ts'
 import { computeCombatantVolatiles } from './combatantVolatilesHelper.ts'
@@ -437,6 +437,21 @@ const handleBallLeave = (el: Element, done: () => void) => {
           :style="{ backgroundImage: pokeballShadowUrl, filter: 'var(--atmosphere-filter)' }"
         />
 
+        <!-- Critical Capture Arcade Banner -->
+        <Transition 
+          :css="false" 
+          @enter="onCriticalBannerEnter"
+        >
+          <div
+            v-if="isCriticalCapture"
+            class="critical-capture-banner"
+          >
+            <span class="crit-icon emoji">⚡</span>
+            <span class="crit-text">¡CAPTURA CRÍTICA!</span>
+            <span class="crit-icon emoji">⚡</span>
+          </div>
+        </Transition>
+
         <!-- Success Sparkles -->
         <TransitionGroup 
           tag="div"
@@ -464,6 +479,47 @@ const handleBallLeave = (el: Element, done: () => void) => {
         </TransitionGroup>
       </div>
     </Transition>
+
+    <!-- Standalone Critical Capture Banner & Sparkles (when ball is not active) -->
+    <Transition 
+      :css="false" 
+      @enter="onCriticalBannerEnter"
+    >
+      <div
+        v-if="isCriticalCapture && !isBallVisible"
+        class="critical-capture-banner standalone"
+      >
+        <span class="crit-icon emoji">⚡</span>
+        <span class="crit-text">¡CAPTURA CRÍTICA!</span>
+        <span class="crit-icon emoji">⚡</span>
+      </div>
+    </Transition>
+
+    <TransitionGroup 
+      v-if="!isBallVisible && sparkles.length > 0"
+      tag="div"
+      class="catch-success-sparkles standalone"
+      :style="{ filter: 'var(--weather-filter, none)' }"
+      :css="false"
+      @enter="onSparkleEnter"
+    >
+      <span
+        v-for="s in sparkles"
+        :key="s.id"
+        class="sparkle"
+        :data-tx="s.tx"
+        :data-ty="s.ty"
+        :data-tf="s.tf"
+        :data-scale="s.scale"
+        :data-delay="s.delay"
+      >
+        <img
+          :src="getAssetUrl(ASSET_TYPES.FX, 'shiny')"
+          class="shiny-asset-mini"
+          alt="Sparkle"
+        >
+      </span>
+    </TransitionGroup>
 
     <!-- Partículas de Humo de Escape -->
     <div

@@ -42,6 +42,31 @@ La Pokéball realizará hasta **4 comprobaciones**. Para que el Pokémon sea cap
 - Si el número es **menor que b**, la sacudida tiene éxito y pasa a la siguiente.
 - Si falla en cualquier paso, el Pokémon rompe la bola y el número de sacudidas visuales corresponde a los éxitos acumulados.
 
+### 3. Captura Crítica (Refinamiento Gen 5+)
+
+Al lanzar una Pokéball, existe una probabilidad de ejecutar una **Captura Crítica**, reduciendo el proceso a **una sola sacudida** de alta tensión:
+
+```javascript
+CC = Math.floor((Math.min(255, a) × P) / 6)
+```
+
+Donde **P** es el multiplicador según las especies capturadas en la Pokédex (escala de 251 especies de Gen 1 y 2):
+
+| Especies Capturadas | Multiplicador (**P**) |
+| :-- | :-- |
+| **Menos de 15** | 0 |
+| **15 a 49** | 0.5 |
+| **50 a 99** | 1.0 |
+| **100 a 149** | 1.5 |
+| **150 a 199** | 2.0 |
+| **200 o más** | 2.5 |
+
+- **Tirada Crítica**: Se genera un número aleatorio entre 0 y 255. Si es **menor que CC**, la captura se convierte en crítica.
+- **Resolución de Sacudida Única**: En una captura crítica, se realiza únicamente **1 comprobación** contra **b**:
+  - Si tiene éxito: el Pokémon se captura de inmediato tras **1 sacudida** visual y el festejo de estrellas.
+  - Si falla: el Pokémon rompe la Pokéball inmediatamente (0 sacudidas).
+- **FX & Audio**: Se reproduce un silbido 8-bit ascendente en el aire y un cartel flotante retro arcade `"¡CAPTURA CRÍTICA!"` con destellos dorados.
+
 ---
 
 ## 🔴 Multiplicadores de Pokéballs (`BallMult`)

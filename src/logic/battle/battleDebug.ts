@@ -1,5 +1,6 @@
 import { watch } from 'vue'
 import { logger } from '@/logic/utils/logger'
+import { gsapSleep } from '@/logic/utils/gsapHelpers'
 import { useDebugStore } from '@/stores/debug'
 import { gameBus } from '@/logic/events/gameBus'
 import { useAudioStore } from '@/stores/audio'
@@ -22,6 +23,8 @@ export { canExecuteScriptedReplayAction } from './helpers/scriptedReplayReadines
 
 const DEBUG_INDEFINITE_WEATHER_TURNS = 99;
 const MAX_BATTLE_READY_TIMEOUT_MS = 5000;
+const DEBUG_CATCH_AUDIO_DELAY_MS = 300;
+const DEBUG_CATCH_RELEASE_DELAY_MS = 1500;
 
 interface ScriptedReplayReadinessDetail extends BattleReadyForInputDetail {
   isReady: boolean
@@ -37,7 +40,71 @@ export function setupBattleDebug(ctx: BattleContext) {
   
   win.__VITE_DEBUG__ = win.__VITE_DEBUG__ || {}
 
+  const runFullCatchDebug = async (side = 'enemy', isCritical = false) => {
+    const audio = useAudioStore()
+    const bStore = useBattleStore()
+    const anims = bStore.animations
+    const ballId = 'pokeball'
+
+    if (isCritical) {
+      audio.play('criticalThrow')
+    }
+    audio.play('ballHit')
+
+    if (anims?.handleCatchRequest) {
+      await anims.handleCatchRequest({ side, ballId, isCritical })
+    } else {
+      gameBus.emit('PLAY_CATCH_ENERGY', { side, ballId, isCritical })
+      await gsapSleep(800)
+    }
+
+    if (isCritical) {
+      if (anims?.triggerCriticalCaptureFx) {
+        await anims.triggerCriticalCaptureFx(side)
+      } else {
+        gameBus.emit('CRITICAL_CAPTURE_FX', { side })
+        await gsapSleep(800)
+      }
+    }
+
+    const shakes = isCritical ? 1 : 3
+    for (let i = 0; i < shakes; i++) {
+      await gsapSleep(300)
+      audio.play('wobble')
+      if (anims?.handleShakeRequest) {
+        await anims.handleShakeRequest({ side, isCapture: true })
+      } else {
+        gameBus.emit('CATCH_SHAKE', { side })
+        await gsapSleep(600)
+      }
+    }
+
+    await gsapSleep(DEBUG_CATCH_AUDIO_DELAY_MS)
+    audio.play('caught')
+    if (anims?.playCatchCelebration) {
+      await anims.playCatchCelebration(side)
+    } else {
+      gameBus.emit('CATCH_SUCCESS', { side })
+      await gsapSleep(1200)
+    }
+
+    await gsapSleep(DEBUG_CATCH_RELEASE_DELAY_MS)
+    if (anims?.handleReleaseRequest) {
+      await anims.handleReleaseRequest({ side })
+    } else {
+      gameBus.emit('PLAY_RELEASE_ENERGY', { side })
+    }
+  }
+
   win.__VITE_DEBUG__.triggerAnim = (type: string, side = 'enemy', options: Record<string, unknown> = {}) => {
+    if (type === 'full_catch_normal') {
+      void runFullCatchDebug(side, false)
+      return
+    }
+    if (type === 'full_catch_critical') {
+      void runFullCatchDebug(side, true)
+      return
+    }
     if (type === 'attack') {
       if (options.cat === 'recoil') {
         gameBus.emit('PLAY_RECOIL', { side })
@@ -58,6 +125,7 @@ export function setupBattleDebug(ctx: BattleContext) {
     const eventMap: Record<string, string> = {
       'release': 'PLAY_RELEASE_ENERGY',
       'catch': 'PLAY_CATCH_ENERGY',
+      'critical_capture_fx': 'CRITICAL_CAPTURE_FX',
       'shake': 'CATCH_SHAKE',
       'shake_damage': 'PLAY_DAMAGE',
       'recoil_rebound': 'PLAY_RECOIL',

@@ -78,6 +78,13 @@ export interface PureDamageResult {
   triggeredAbility?: string | null;
 }
 
+export interface CatchRateResult {
+  caught: boolean;
+  shakes: number;
+  isCritical: boolean;
+  statusMultiplierApplied: boolean;
+}
+
 export interface PureCatchOptions {
   weather?: PureBattleWeather | null;
   turnCount?: number;
@@ -87,4 +94,7 @@ export interface PureCatchOptions {
   classLevel?: number;
   activeTeam?: { type1: string; type2?: string | null }[];
   ivTotal?: number;
+  pokedexCount?: number;
+  forceCritical?: boolean;
 }
+

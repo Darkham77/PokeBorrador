@@ -46,6 +46,10 @@ describe('battleItems.js', () => {
     // We expect PLAY_CATCH_ENERGY to be emitted
     await handleItemUsage('pokeball', p, e, mockOptions)
     
-    expect(gameBus.emit).toHaveBeenCalledWith('PLAY_CATCH_ENERGY', { side: 'enemy', ballId: 'pokeball' })
+    expect(gameBus.emit).toHaveBeenCalledWith('PLAY_CATCH_ENERGY', {
+      side: 'enemy',
+      ballId: 'pokeball',
+      isCritical: false
+    })
   })
 });

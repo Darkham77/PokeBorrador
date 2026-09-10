@@ -33,10 +33,11 @@ import {
 import {
   onSparkleEnter,
   onBallEnter,
-  onBallLeave
+  onBallLeave,
+  onCriticalBannerEnter
 } from './helpers/combatantSparkleBallHooks.ts';
 
-export { onSparkleEnter, onBallEnter, onBallLeave };
+export { onSparkleEnter, onBallEnter, onBallLeave, onCriticalBannerEnter };
 
 const POKEBALL_SEPIA_RATIO = 0.5;
 

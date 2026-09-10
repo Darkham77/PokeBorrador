@@ -22,7 +22,8 @@
     "database/**/*.{ts,js}",
     "vitest.config.ts",
     "vitest.node.config.ts",
-    "vitest.workspace.ts"
+    "vitest.workspace.ts",
+    "ui-demo/src/main.ts"
   ],
   "duplicates": {
     "minOccurrences": 2,

@@ -1,0 +1,118 @@
+// ui-demo/src/styles/_frames.scss
+
+// MIXIN BASE PARA MARCOS CON BORDE PSEUDO-ELEMENTO
+@mixin pv-frame-shape($var-name, $border-color-var: --frame-border) {
+  position: relative;
+  clip-path: var(--clip-#{$var-name}-outer);
+  border: none !important;
+  border-radius: 0 !important;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    clip-path: var(--clip-#{$var-name}-border);
+    background-color: var(#{$border-color-var}, var(--color-control-border));
+    pointer-events: none;
+    z-index: calc(var(--z-base, 1) + 4);
+  }
+}
+
+// 1. MARCOS SEMÁNTICOS CANÓNICOS (Mapeados dinámicamente)
+.pv-frame-pill {
+  @include pv-frame-shape('pill');
+}
+
+.pv-frame-control {
+  @include pv-frame-shape('control');
+}
+
+.pv-frame-btn {
+  @include pv-frame-shape('btn', --frame-border);
+}
+
+.pv-frame-panel {
+  @include pv-frame-shape('panel', --frame-border);
+}
+
+// 2. CURVAS ESCALONADAS BRESENHAM (XS -> XXL)
+.pv-curve-xs, .pv-frame-curve-xs {
+  @include pv-frame-shape('curve-xs');
+}
+
+.pv-curve-sm, .pv-frame-curve-sm {
+  @include pv-frame-shape('curve-sm');
+}
+
+.pv-curve-md, .pv-frame-curve-md {
+  @include pv-frame-shape('curve-md');
+}
+
+.pv-curve-lg, .pv-frame-curve-lg {
+  @include pv-frame-shape('curve-lg');
+}
+
+.pv-curve-xl, .pv-frame-curve-xl {
+  @include pv-frame-shape('curve-xl');
+}
+
+.pv-curve-xxl, .pv-frame-curve-xxl {
+  @include pv-frame-shape('curve-xxl');
+}
+
+// 3. CHAFLANES RECTOS 45° (Notch lineal diagonal para estética sci-fi / arcade)
+.pv-chamfer-xs {
+  @include pv-frame-shape('chamfer-xs');
+}
+
+.pv-chamfer-sm {
+  @include pv-frame-shape('chamfer-sm');
+}
+
+.pv-chamfer-md {
+  @include pv-frame-shape('chamfer-md');
+}
+
+.pv-chamfer-lg {
+  @include pv-frame-shape('chamfer-lg');
+}
+
+.pv-chamfer-xl {
+  @include pv-frame-shape('chamfer-xl');
+}
+
+// 4. VENTANAS Y TARJETAS SEMÁNTICAS PRECONFIGURADAS
+.pv-modal-window {
+  @include pv-frame-shape('curve-xl');
+}
+
+.pv-card-window {
+  @include pv-frame-shape('curve-lg');
+}
+
+// 5. ENVOLTORIO DE SOMBRA PROYECTADA ADAPTABLE PIXELADA (GBA RETRO - 0 BLUR)
+.pv-panel-wrap {
+  position: relative;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+
+  &.has-cast-shadow {
+    filter: Drop-Shadow(calc(var(--s, 3px) * 2) calc(var(--s, 3px) * 2) 0 var(--color-cast-shadow, Rgba(0, 0, 0, 0.85)));
+  }
+
+  // Modales y ventanas semánticas con sombra proyectada pixelada 1:1
+  &.shadow-curve-xl,
+  &.shadow-curve-xxl,
+  &.shadow-chamfer-xl {
+    filter: Drop-Shadow(calc(var(--s, 3px) * 2) calc(var(--s, 3px) * 2) 0 var(--color-cast-shadow, Rgba(0, 0, 0, 0.85)));
+  }
+}
+
+.pv-panel-surface {
+  position: relative;
+  z-index: calc(var(--z-base, 1) + 1);
+  width: 100%;
+  background: var(--color-panel-bg);
+  padding: 16px;
+}

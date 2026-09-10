@@ -129,6 +129,7 @@ For topic-specific mandates, consult the specialized rule modules under [.agents
 - [src/views/AGENTS.md](./src/views/AGENTS.md): Top-level page views layout, routing entry points, and view-level orchestration.
 - [supabase/AGENTS.md](./supabase/AGENTS.md): Online cloud persistence, migration versioning, and row-level security.
 - [tests/AGENTS.md](./tests/AGENTS.md): Automated unit, integration, and E2E browser tests suites.
+- [ui-demo/AGENTS.md](./ui-demo/AGENTS.md): Interactive sandbox and technical showcase for retro-modern pixelated UI controls and components.
 - [external/](./external/): External reference codebases (read-only, excluded from all linting/build/audit/fallow).
   - [external/pokemon-showdown-code/](./external/pokemon-showdown-code/): Source code of Pokémon Showdown used as reference and source of truth.
   - [external/pokemon-showdown-ai/](./external/pokemon-showdown-ai/): Reference AI implementation from <https://github.com/fr33lo/pokemon-showdown-ai>.

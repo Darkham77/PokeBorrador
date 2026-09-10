@@ -1,0 +1,90 @@
+// ui-demo/src/styles/_view_login.scss
+@use 'variables' as *;
+@use 'frames' as *;
+
+// 1. LOGIN VIEW
+.login-container {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  margin: 20px auto 35px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-logo {
+  position: relative;
+  z-index: calc(var(--z-base, 1) + 20);
+  margin-bottom: -32px;
+  filter: Drop-Shadow(0 8px 16px Rgba(0, 0, 0, 0.7));
+
+  img {
+    width: 260px;
+    max-width: 85dvw;
+    height: auto;
+    display: block;
+  }
+}
+
+.logo-text-fallback {
+  font-size: 28px;
+  font-weight: 900;
+  color: #60a5fa;
+  text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 0 4px 0 #1d4ed8;
+  letter-spacing: 2px;
+  padding: 10px 20px;
+  display: none;
+  font-family: var(--font-pixel);
+}
+
+.auth-sub {
+  color: var(--color-text-gold);
+  font-size: 8px;
+  text-align: center;
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px Rgba(255, 214, 10, 0.3);
+  font-family: var(--font-pixel);
+  line-height: 1.35;
+}
+
+.server-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 7px;
+  margin-bottom: 6px;
+  line-height: 1.35;
+  font-family: var(--font-pixel);
+  color: var(--color-text-muted);
+}
+
+.server-status-red {
+  color: #ff453a;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1.35;
+}
+
+.pv-btn-full {
+  width: 100%;
+}
+
+.pokeball-pixel-svg {
+  width: 14px;
+  height: 14px;
+}
+
+.auth-version {
+  margin-top: 18px;
+  font-size: 7px;
+  color: var(--color-text-muted);
+  text-align: center;
+  letter-spacing: 0.5px;
+  font-family: var(--font-pixel);
+  line-height: 1.35;
+}

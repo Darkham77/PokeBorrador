@@ -207,6 +207,43 @@
   opacity: 0.8;
 }
 
+.critical-capture-banner {
+  position: absolute;
+  top: -32px;
+  left: 50%;
+  transform: Translatex(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: calc(var(--z-map-ui) + 5);
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  @include pixelated;
+
+  &.standalone {
+    top: 15%;
+  }
+
+  .crit-icon {
+    font-size: 22px;
+    line-height: 1;
+    filter: Drop-Shadow(1.5px 1.5px 0 #000) Drop-Shadow(-1.5px -1.5px 0 #000);
+  }
+
+  .crit-text {
+    font-size: 24px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #ffffff;
+    @include text-outline(#000, 2px);
+  }
+}
+
 .catch-success-sparkles {
   position: absolute;
   top: 50%;
@@ -215,6 +252,10 @@
   z-index: var(--z-low);
   overflow: visible;
   filter: var(--weather-filter, none);
+
+  &.standalone {
+    top: 45%;
+  }
 
   .sparkle {
     position: absolute;

@@ -16,11 +16,13 @@ To guarantee data integrity in a multiplayer environment, Poké Vicio uses a cus
 
 To prevent spam and database overload, the following centralized limits apply:
 
-- **Slots**: Maximum **50 slots** for:
-  - Pending friend requests.
-  - Active trade offers.
-  - Simultaneous GTS postings.
-- **Claim Cooldown**: Mandatory waiting time of **5 seconds** between individual claims to avoid race conditions.
+- **GTS & Social Quotas**:
+  - **GTS Active Listings**: Maximum **10 active listings** simultaneously per user (`GTS_MAX_ACTIVE_LISTINGS = 10`).
+  - **GTS Market View**: Displays **50 items per page** (`GTS_ITEMS_PER_PAGE = 50`).
+  - **Friend Requests Anti-Spam Rate Limit**: Maximum **10 requests per minute** (`MAX_FRIEND_REQUESTS_PER_MINUTE = 10`).
+  - **Pending Requests Inbox Capacity**: Maximum **50 pending requests** in storage.
+  - **Active Trade Offers**: Maximum **50 simultaneous offers**.
+- **Atomic Claim Protection**: Claims are executed atomically through server RPC (`claim_asset_v2`). The UI applies in-flight button disabling and loading indicators to prevent duplicate submissions or race conditions without imposing an artificial multi-second cooldown.
 
 ---
 

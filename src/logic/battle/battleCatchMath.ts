@@ -1,6 +1,7 @@
-import type { PurePokemon, PureCatchOptions, PureBattleWeather, PureBattleStages } from './battleMathTypes.ts'
+import type { PurePokemon, PureCatchOptions, PureBattleWeather, PureBattleStages, CatchRateResult } from './battleMathTypes.ts'
 const CATCH_MATH_65535_MAX = 65535
 const CATCH_MATH_256_MAX = 256
+const CATCH_MATH_255_MAX = 255
 import { getEffectiveStatPure } from './battleMath.ts'
 
 import { getMechanicalWeather } from '@/logic/weather/weatherRegistry';
@@ -33,10 +34,32 @@ const BALL_BEHAVIORS: Partial<Record<ItemId, { guaranteed?: boolean, mult?: numb
     }
 }
 
-export function calculateCatchRatePure(pokemon: PurePokemon, rawBallType: ItemId = 'pokeball', eventCatchMult = 1, ctx: PureCatchOptions = {}) {
+export function getPokedexCriticalFactor(pokedexCount: number): number {
+  if (pokedexCount < 15) return 0
+  if (pokedexCount < 50) return 0.5
+  if (pokedexCount < 100) return 1.0
+  if (pokedexCount < 150) return 1.5
+  if (pokedexCount < 200) return 2.0
+  return 2.5
+}
+
+export function calculateCriticalCaptureThreshold(a: number, pokedexCount: number): number {
+  const p = getPokedexCriticalFactor(pokedexCount)
+  if (p <= 0) return 0
+  return Math.floor((Math.min(CATCH_MATH_255_MAX, a) * p) / 6)
+}
+
+export function calculateCatchRatePure(
+  pokemon: PurePokemon,
+  rawBallType: ItemId = 'pokeball',
+  eventCatchMult = 1,
+  ctx: PureCatchOptions = {}
+): CatchRateResult {
   const behavior = BALL_BEHAVIORS[rawBallType] ?? { mult: 1.0 }
 
-  if (behavior.guaranteed) return { caught: true, shakes: 3 }
+  if (behavior.guaranteed) {
+    return { caught: true, shakes: 3, isCritical: false, statusMultiplierApplied: false }
+  }
 
   let ballMult = 1.0
   if (typeof behavior.mult === 'function') ballMult = behavior.mult(pokemon, ctx)
@@ -47,24 +70,54 @@ export function calculateCatchRatePure(pokemon: PurePokemon, rawBallType: ItemId
   const hpFactor = (3 * maxHp - 2 * currenthp) / (3 * maxHp)
   const catchRate = pokemon.catchRate ?? 45
 
-  const statusbonus = (pokemon.status === 'slp' || pokemon.status === 'frz') ? 2.5 : 
-                      (pokemon.status ? 1.5 : 1.0)
-  const statusMult = statusbonus
+  // Status multiplier: 2.0 for Sleep/Freeze, 1.5 for Paralyzed/Burn/Poison, 1.0 without status
+  const statusMult = (pokemon.status === 'slp' || pokemon.status === 'frz') ? 2.0 : 
+                     (pokemon.status ? 1.5 : 1.0)
 
   const eventBonus = eventCatchMult - 1
   const ballbonus = Math.max(0.1, ballMult + eventBonus)
   const totalMult = ballbonus
 
-  const finalRate = Math.min(255, Math.max(1, Math.floor(catchRate * totalMult * hpFactor * statusMult)))
-  const b = Math.floor(CATCH_MATH_65535_MAX * Math.pow(finalRate / 255, 0.25))
-  
+  const rawRate = Math.floor(catchRate * totalMult * hpFactor * statusMult)
+  const statusApplied = statusMult > 1.0
+
+  // 06_captura.md: If a >= 255, captured automatically without checking shakes
+  if (rawRate >= CATCH_MATH_255_MAX) {
+    return { caught: true, shakes: 3, isCritical: false, statusMultiplierApplied: statusApplied }
+  }
+
+  const finalRate = Math.max(1, rawRate)
+  const b = Math.floor(CATCH_MATH_65535_MAX * Math.pow(finalRate / CATCH_MATH_255_MAX, 0.25))
+
+  // Critical Capture Roll
+  const pokedexCount = ctx.pokedexCount ?? 0
+  const ccThreshold = calculateCriticalCaptureThreshold(finalRate, pokedexCount)
+  const isCritical = !!ctx.forceCritical || (ccThreshold > 0 && Math.random() * CATCH_MATH_256_MAX < ccThreshold)
+
+  if (isCritical) {
+    // Critical capture only performs 1 shake check against b
+    const criticalSuccess = Math.random() * CATCH_MATH_65535_MAX < b
+    return {
+      caught: criticalSuccess,
+      shakes: criticalSuccess ? 1 : 0,
+      isCritical: true,
+      statusMultiplierApplied: statusApplied
+    }
+  }
+
+  // Standard 4 shakes loop
   let shakes = 0
   for (let i = 0; i < 4; i++) {
     if (Math.random() * CATCH_MATH_65535_MAX < b) shakes++
     else break
   }
 
-  return { caught: shakes === 4, shakes: Math.min(3, shakes), statusMultiplierApplied: statusMult > 1.0 }
+  return {
+    caught: shakes === 4,
+    shakes: Math.min(3, shakes),
+    isCritical: false,
+    statusMultiplierApplied: statusApplied
+  }
 }
 
 export function calculateEscapeChancePure(
@@ -107,7 +160,8 @@ export function calculateEscapeChancePure(
     return true
   }
 
-  const f = Math.floor((pSpe * 128) / safeESpe) + 30 * attempts
+  const enemyQuarter = Math.max(1, Math.floor(safeESpe / 4))
+  const f = Math.floor((pSpe * 32) / enemyQuarter) + 30 * attempts
   if (f >= CATCH_MATH_256_MAX) {
     return true
   }

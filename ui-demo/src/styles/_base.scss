@@ -1,0 +1,142 @@
+// ui-demo/src/styles/_base.scss
+@use 'variables' as *;
+@use 'frames' as *;
+
+// Desbloqueo obligatorio del scroll para la suite de demostración UI
+html {
+  height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: scroll !important; // Barra visible siempre para evitar saltos de layout
+  overscroll-behavior: auto !important;
+  overscroll-behavior-y: auto !important;
+  scrollbar-gutter: stable;
+}
+
+// Reset nativo estricto para erradicar bordes 3D outset y líneas descolgadas
+button, input, select, textarea {
+  font-family: var(--font-pixel) !important;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  border: none !important;
+  outline: none !important;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  height: auto !important;
+  min-height: 100dvh !important;
+  overflow: visible !important;
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
+  overscroll-behavior: auto !important;
+  overscroll-behavior-y: auto !important;
+  background-color: var(--color-body-bg);
+  background-image: 
+    var(--body-overlay),
+    url('/assets/fondo/WALLPAPER.webp');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  font-family: var(--font-pixel);
+  color: var(--color-text-main);
+  user-select: none;
+}
+
+#app,
+.ui-demo-root {
+  min-height: 100dvh;
+  width: 100%;
+  overflow: visible !important;
+}
+
+// Barra de desplazamiento pixel-art retro estilizada
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface-sunken, #0a0e17);
+  box-shadow: inset 1px 1px 0 Rgba(0, 0, 0, 0.8), inset -1px -1px 0 Rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-control-border, #384666);
+  border: 2px solid var(--color-surface-sunken, #0a0e17);
+  box-shadow: inset 1px 1px 0 Rgba(255, 255, 255, 0.25), inset -1px -1px 0 Rgba(0, 0, 0, 0.5);
+
+  &:hover {
+    background: var(--color-accent-blue, #0a84ff);
+  }
+
+  &:active {
+    background: var(--color-text-gold, #ffd60a);
+  }
+}
+
+.section-title {
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  color: var(--color-section-title);
+  margin: 24px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.5px;
+  line-height: 1.35;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.pill-cluster {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.sub-label {
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  color: var(--color-text-muted);
+  margin: 10px 0 6px;
+  line-height: 1.35;
+}
+
+.text-outline {
+  text-shadow: 1px 1px 0 #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;
+}
+
+// REGLA PRIMARIA OBLIGATORIA: TODA FUENTE BLANCA LLEVA BORDE NEGRO 360°
+.text-white,
+.is-white,
+[style*="color: white"],
+[style*="color: #fff"],
+[style*="color: #ffffff"],
+.pv-btn,
+.pv-type-pill,
+.pv-status-badge,
+.pv-server-btn.active,
+.modal-main-title,
+.selection-main-title,
+.inventory-main-title,
+.team-pokemon-name,
+.pdc-pokemon-name,
+.item-name,
+.dock-poke-name,
+.dock-move-name,
+.m-badge-tot,
+.m-badge-level,
+.m-badge-iv {
+  text-shadow: 1px 1px 0 #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;
+}

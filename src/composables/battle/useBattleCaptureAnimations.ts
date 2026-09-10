@@ -6,6 +6,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon'
 import { useBattleSeats } from '@/composables/battle/useBattleSeats'
 import { useBattleTweenRegistry } from '@/composables/battle/useBattleTweenRegistry'
 import { useGameStore } from '@/stores/game'
+import { useAudioStore } from '@/stores/audio'
 import { logger } from '@/logic/utils/logger'
 import { isItemId, type ItemId } from '@/data/inventory/items'
 import { COMBATANT_DAMAGE_SHAKE_DUR_SEC } from '@/logic/constants/animations'
@@ -32,6 +33,7 @@ export function useBattleCaptureAnimations(
   const isFaintInProgress = ref(false)
   const faintedPokemonSnapshot = ref<(Partial<Pokemon> & { side: string }) | null>(null)
   const catchSparkles = ref<CatchSparkle[]>([])
+  const isCriticalCaptureActive = ref<Record<string, boolean>>({ player: false, enemy: false })
 
   const {
     seats,
@@ -125,12 +127,54 @@ export function useBattleCaptureAnimations(
     return awaitAnimation(tl)
   }
 
+  const triggerCriticalCaptureFx = (side: string) => {
+    isCriticalCaptureActive.value[side] = true
+    useAudioStore().play('criticalThrow')
+    const tl = createTimeline()
+    const count = 8
+    
+    tl.to({}, {
+      duration: 1.2,
+      onStart: () => {
+        for (let i = 0; i < count; i++) {
+          const angle = (i / count) * Math.PI * 2
+          const dist = 40 + Math.random() * 25
+          const tx = Math.cos(angle) * dist
+          const ty = -(35 + Math.random() * 30)
+          const tf = ty + 25
+          const scale = 0.6 + Math.random() * 0.5
+          
+          catchSparkles.value.push({
+            id: `sparkle-crit-${side}-${Temporal.Now.instant().epochMilliseconds}-${i}-${Math.random()}`,
+            side,
+            tx, ty, tf, scale,
+            delay: `${Math.random() * 0.15}s`
+          })
+        }
+      },
+      onComplete: () => {
+        isCriticalCaptureActive.value[side] = false
+        catchSparkles.value = catchSparkles.value.filter(s => s.side !== side)
+      }
+    })
+    
+    return awaitAnimation(tl)
+  }
+
+  const handleCriticalCaptureEvent = (e: Event) => {
+    const detail = (e as CustomEvent).detail as { side?: string } | undefined
+    const side = detail?.side || 'enemy'
+    triggerCriticalCaptureFx(side)
+  }
+
   const initListeners = () => {
     initTweenRegistryListeners()
+    gameBus.on('CRITICAL_CAPTURE_FX', handleCriticalCaptureEvent)
   }
 
   const cleanupListeners = () => {
     cleanupTweenRegistryListeners()
+    gameBus.off('CRITICAL_CAPTURE_FX', handleCriticalCaptureEvent)
   }
 
   const resolveBallId = (pokemon: Pokemon | null | undefined): ItemId => {
@@ -450,6 +494,7 @@ const GSAP_CAPTURE_BLINK_DUR_SEC = 0.48
         seat.exit.isBlinking = false
       }
     })
+    isCriticalCaptureActive.value = { player: false, enemy: false }
   }
 
   const getPokemonAnimState = (side: string, pokemon?: Pokemon | null) => getSeatProperty(side, pokemon, 'animState', null, battleStore.player?.uid, battleStore.enemy?.uid)
@@ -464,6 +509,7 @@ const GSAP_CAPTURE_BLINK_DUR_SEC = 0.48
     isFaintInProgress,
     faintedPokemonSnapshot,
     catchSparkles,
+    isCriticalCaptureActive,
     seats,
     playerAnimState,
     enemyAnimState,
@@ -477,6 +523,7 @@ const GSAP_CAPTURE_BLINK_DUR_SEC = 0.48
     enemyIsBlinking,
     isCaptureSequenceActive,
     triggerCatchSparkles,
+    triggerCriticalCaptureFx,
     handleReleaseRequest,
     handleWithdrawRequest,
     handleCatchRequest,

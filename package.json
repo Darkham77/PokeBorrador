@@ -11,6 +11,7 @@
     "preinstall": "node --experimental-strip-types scripts/maintenance/check_environment.ts",
     "postinstall": "cd node_modules/css-checker-kit && npm run postinstall",
     "dev": "node -e \"if(process.platform === 'win32') try { require('child_process').execSync('chcp 65001') } catch (e) {}\" && vite",
+    "ui-demo": "vite --open /ui-demo/index.html",
     "validate:tools": "node --experimental-strip-types scripts/auditors/architecture/validate_build_tools.ts",
     "build": "npm run validate:tools && npm run validate:types && npm run audit && vite build",
     "preview": "vite preview",

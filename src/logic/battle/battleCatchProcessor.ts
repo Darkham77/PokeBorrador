@@ -95,13 +95,32 @@ export async function executePokeballCatchSequence(
   consumeItem(ballId)
 
   const eventCatchMult = eventStore.globalMultipliers?.catch || 1
-  const { caught, shakes } = calculateCatchRate(enemy, ballId, eventCatchMult, options.ctx || {})
+  const pokedexCount = options.ctx?.gs?.state?.pokedex?.length ?? 0
+  const catchCtx = {
+    ...(options.ctx || {}),
+    pokedexCount
+  }
+  const { caught, shakes, isCritical } = calculateCatchRate(enemy, ballId, eventCatchMult, catchCtx)
+
+  if (isCritical) {
+    gameBus.emit('PLAY_SOUND', 'criticalThrow')
+    addLog(`¡Tiro crítico! ¡La ${displayName} vibra con gran fuerza en el aire!`, 'log-catch', ballId, 'player')
+  }
 
   if (options.ctx?.animations?.handleCatchRequest) {
-    await options.ctx.animations.handleCatchRequest({ side: 'enemy', ballId })
+    await options.ctx.animations.handleCatchRequest({ side: 'enemy', ballId, isCritical })
   } else {
-    gameBus.emit('PLAY_CATCH_ENERGY', { side: 'enemy', ballId })
+    gameBus.emit('PLAY_CATCH_ENERGY', { side: 'enemy', ballId, isCritical })
     await awaitAnimation(gsap.delayedCall(1.0, () => {}))
+  }
+
+  if (isCritical) {
+    if (options.ctx?.animations?.triggerCriticalCaptureFx) {
+      await options.ctx.animations.triggerCriticalCaptureFx('enemy')
+    } else {
+      gameBus.emit('CRITICAL_CAPTURE_FX', { side: 'enemy' })
+      await awaitAnimation(gsap.delayedCall(0.8, () => {}))
+    }
   }
 
   for (let i = 0; i < shakes; i++) {

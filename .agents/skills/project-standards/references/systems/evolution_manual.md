@@ -37,7 +37,7 @@
 
 ## 3. ❤️ Friendship & Happiness Evolutions
 
-- **Threshold**: Requires a friendship level $\ge 220$ (on a scale of 0 to 255) upon leveling up.
+- **Threshold**: Requires a friendship level $\ge 160$ (Gen 9 canonical standard, scale 0 to 255; legacy Gen 2-7 was 220) upon leveling up.
 - **Species & Time-of-Day Branches**:
   - **Pichu** ➔ Pikachu
   - **Cleffa** ➔ Clefairy
@@ -87,8 +87,8 @@ Evolution triggers upon level-up if the Pokémon knows a specific move:
 ## 6. 🌿 Wild Evolution (Auto-Evo Generation)
 
 When the spawning system generates high-level wild Pokémon on routes:
-- **Stones**: $50\%$ probability of automatic evolution if species level $\ge 30$.
-- **Trade**: $50\%$ probability of automatic evolution if species level $\ge 32$.
+- **Stones**: $50\%$ probability of automatic evolution if species level $\ge 36$ (`WILD_STONE_EVO_MIN_LEVEL = 36`).
+- **Trade**: $50\%$ probability of automatic evolution if species level $\ge 36$ (`WILD_TRADE_EVO_MIN_LEVEL = 36`).
 
 ---
 

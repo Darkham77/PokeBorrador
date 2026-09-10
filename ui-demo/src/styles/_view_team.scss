@@ -1,0 +1,423 @@
+// ui-demo/src/styles/_view_team.scss
+@use 'variables' as *;
+@use 'frames' as *;
+
+// 9. MODAL DE GESTIÓN DE EQUIPO (CANÓNICO 1:1 CON POKEMONDISPLAYCARD)
+.team-modal-wrap {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  filter: Drop-Shadow(calc(var(--s, 3px) * 2) calc(var(--s, 3px) * 2) 0 var(--color-cast-shadow, Rgba(0, 0, 0, 0.85)));
+}
+
+.team-view-container {
+  width: 100%;
+  background: #121829;
+  padding: 16px 20px 20px;
+  font-family: var(--font-pixel);
+  box-sizing: border-box;
+  --frame-border: #253352;
+  box-shadow: 0 40px 100px Rgba(0, 0, 0, 0.9), inset 0 0 20px Rgba(0, 0, 0, 0.5);
+}
+
+.team-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.team-mode-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.team-close-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: Rgba(255, 255, 255, 0.05);
+  border: 1px solid Rgba(255, 255, 255, 0.15);
+  color: #94a3b8;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  &:hover { color: #ffffff; background: Rgba(255, 255, 255, 0.12); }
+}
+
+.team-mode-btn {
+  padding: 6px 12px;
+  background: var(--color-control-bg);
+  color: var(--color-pill-text);
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.35;
+  user-select: none;
+  border: none !important;
+  outline: none !important;
+
+  .mode-count {
+    color: var(--color-text-gold);
+    font-size: 7.5px;
+  }
+
+  &.active {
+    background: Rgba(59, 130, 246, 0.2);
+    color: #ffffff;
+    --frame-border: #3b82f6;
+    box-shadow: 0 0 8px Rgba(59, 130, 246, 0.4);
+  }
+}
+
+.team-status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 7.5px;
+  color: var(--color-text-muted);
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--color-divider);
+  line-height: 1.35;
+
+  .highlight-gold {
+    color: var(--color-text-gold);
+    font-weight: bold;
+  }
+}
+
+.team-grid-layout {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 520px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// TARJETA DE POKÉMON EN EQUIPO (1:1 CON MEDIA Y POKEMONDISPLAYCARD)
+.team-card-panel {
+  position: relative;
+  padding: 10px 10px 8px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  user-select: none;
+  background-color: var(--color-surface-sunken);
+  background-image:
+    radial-gradient(circle at 50% 30%, Rgba(255, 255, 255, 0.05) 0%, transparent 65%),
+    linear-gradient(180deg, Rgba(255, 255, 255, 0.03) 0%, Rgba(0, 0, 0, 0.35) 100%);
+  box-shadow:
+    inset 1px 1px 0 Rgba(255, 255, 255, 0.08),
+    inset -1px -1px 0 Rgba(0, 0, 0, 0.4);
+  --frame-border: var(--tier-color, #a855f7);
+
+  &:hover {
+    filter: Brightness(1.1);
+    box-shadow:
+      0 0 12px color-mix(in srgb, var(--tier-color, #a855f7) 40%, transparent),
+      inset 0 0 12px color-mix(in srgb, var(--tier-color, #a855f7) 20%, transparent);
+
+    .team-pokemon-sprite {
+      transform: Translatey(-3px);
+      filter: Drop-Shadow(0 6px 10px Rgba(0, 0, 0, 0.65));
+    }
+  }
+}
+
+// FILA SUPERIOR: PÍLDORA VERTICAL Y COLUMNA DERECHA
+.team-card-top-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: flex-start;
+}
+
+// Píldora Vertical Izquierda (Pixelada GBA, Cero border-radius)
+.team-card-unified-pill {
+  background: #000000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 5px;
+  --frame-border: Rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 4px Rgba(0, 0, 0, 0.5);
+
+  .team-pill-iv {
+    font-size: 7.5px;
+    font-weight: bold;
+    color: #ffd60a;
+    line-height: 1;
+  }
+
+  .team-pill-item-icon {
+    width: 16px;
+    height: 16px;
+    image-rendering: pixelated;
+    cursor: pointer;
+
+    &:hover {
+      transform: Scale(1.15);
+    }
+  }
+
+  .team-pill-star {
+    font-size: 8px;
+    line-height: 1;
+    color: #ffd60a;
+  }
+
+  .team-pill-shiny {
+    font-size: 8px;
+    line-height: 1;
+  }
+}
+
+// Columna Superior Derecha
+.team-card-top-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+
+  .team-card-tier-box {
+    border: 2px solid currentColor;
+    font-size: 8.5px;
+    font-weight: bold;
+    padding: 1px 5px;
+    background: Rgba(0, 0, 0, 0.4);
+    line-height: 1.1;
+  }
+
+  .team-card-status-icons {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+
+    .team-friendship-icon {
+      font-size: 9px;
+      line-height: 1;
+    }
+
+    .team-passive-icon {
+      font-size: 9px;
+      line-height: 1;
+    }
+  }
+}
+
+// SPRITE CENTRAL
+.team-card-sprite-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 66px;
+  margin: 1px 0 4px 0;
+
+  .team-pokemon-sprite {
+    width: 62px;
+    height: 62px;
+    image-rendering: pixelated;
+    filter: Drop-Shadow(0 3px 6px Rgba(0, 0, 0, 0.5));
+  }
+}
+
+// INFO DEL POKÉMON
+.team-card-body-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 100%;
+
+  .team-name-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    .team-poke-name {
+      font-size: 9px;
+      font-weight: bold;
+      color: var(--color-text-main);
+      line-height: 1.2;
+    }
+
+    .team-gender-badge {
+      font-size: 8px;
+      line-height: 1;
+    }
+  }
+
+  .team-types-row {
+    display: flex;
+    gap: 3px;
+    justify-content: center;
+
+    .pv-type-sm {
+      font-size: 7px;
+      padding: 1px 6px;
+    }
+  }
+
+  .team-stats-line {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    font-size: 7.5px;
+    margin-top: 2px;
+    line-height: 1.2;
+
+    .stat-badge-lvl {
+      color: #c084fc;
+      font-weight: bold;
+    }
+
+    .stat-badge-tot {
+      color: var(--color-text-gold);
+      font-weight: bold;
+    }
+  }
+
+  .team-hp-block {
+    width: 100%;
+    margin-top: 2px;
+
+    .team-hp-track {
+      width: 100%;
+      height: 4px;
+      background: #0f172a;
+      overflow: hidden;
+
+      .team-hp-fill {
+        height: 100%;
+        background: #22c55e;
+      }
+    }
+
+    .team-hp-text {
+      font-size: 6.5px;
+      color: var(--color-text-muted);
+      text-align: right;
+      margin-top: 2px;
+      line-height: 1;
+    }
+  }
+}
+
+// BOTONERA 2X2 INFERIOR CANÓNICA
+.team-card-footer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-top: 2px;
+
+  .btn-action-use-item {
+    background: Rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    --frame-border: #22c55e;
+    font-size: 6.5px;
+    padding: 3px 2px;
+    min-height: 22px;
+
+    &:hover {
+      background: Rgba(34, 197, 94, 0.3);
+      --frame-border: #4ade80;
+    }
+  }
+
+  .btn-action-unequip {
+    background: Rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    --frame-border: #ef4444;
+    font-size: 6.5px;
+    padding: 3px 2px;
+    min-height: 22px;
+
+    &:hover {
+      background: Rgba(239, 68, 68, 0.3);
+      --frame-border: #f87171;
+    }
+  }
+
+  .btn-action-details {
+    background: Rgba(168, 85, 247, 0.15);
+    color: #c084fc;
+    --frame-border: #a855f7;
+    font-size: 6.5px;
+    padding: 3px 2px;
+    min-height: 22px;
+
+    &:hover {
+      background: Rgba(168, 85, 247, 0.3);
+      --frame-border: #c084fc;
+    }
+  }
+
+  .btn-action-box {
+    background: Rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+    --frame-border: #0284c7;
+    font-size: 6.5px;
+    padding: 3px 2px;
+    min-height: 22px;
+
+    &:hover {
+      background: Rgba(56, 189, 248, 0.3);
+      --frame-border: #38bdf8;
+    }
+  }
+}
+
+// SLOT AÑADIR POKÉMON
+.team-add-slot {
+  min-height: 230px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  background: var(--color-surface-sunken);
+  --frame-border: var(--color-control-border);
+
+  &:hover {
+    --frame-border: var(--color-control-focus);
+    background: var(--color-control-bg);
+
+    .add-icon {
+      transform: Scale(1.2);
+      color: #ffd60a;
+    }
+  }
+
+  .add-icon {
+    font-size: 24px;
+    color: var(--color-text-muted);
+    font-weight: bold;
+    line-height: 1;
+  }
+
+  .add-title {
+    font-size: 8.5px;
+    font-weight: bold;
+    color: var(--color-text-main);
+  }
+
+  .add-desc {
+    font-size: 6.5px;
+    color: var(--color-text-muted);
+  }
+}

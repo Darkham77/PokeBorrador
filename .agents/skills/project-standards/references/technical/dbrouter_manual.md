@@ -59,7 +59,7 @@ When querying configuration values (like `app_version` in the `system_config` ta
 
 To synchronize internal game databases (such as `pokemonDB.ts` learnsets, stats, and types) with the official Showdown ruleset:
 - **Build Integration**: Database synchronization and validation are verified during the build and test pipelines.
-- **Showdown Dex in Memory**: The sync script `sync_db_with_showdown.ts` MUST query baseStats and types directly from `@pkmn/sim` Dex (`Dex.forGen(3)`) in memory. It must not rely on external, local, or gitignored JSON files.
+- **Showdown Dex in Memory**: The database generation script `scripts/data/generate_pokemon_db.ts` MUST query baseStats, learnsets, and types directly from `@pkmn/sim` Dex (`Dex.forGen(ACTIVE_GENERATION)`) in memory. It must not rely on external, local, or gitignored JSON files.
 - **Move Translations**: Move name translations in Spanish are resolved using the local static dictionary `MOVE_TRANSLATIONS_ES` from `src/data/battle/moves.ts` to ensure consistent localization without external file dependencies.
 
 ---

@@ -30,11 +30,9 @@ describe('O(1) Data Structure Dictionaries Integrity', () => {
       }
     });
 
-    it('should resolve items by name and ID in O(1) through requireItemId', () => {
+    it('should resolve items by ID in O(1) through requireItemId', () => {
       expect(requireItemId('potion')).toBe('potion');
-      expect(requireItemId('Poción')).toBe('potion');
       expect(requireItemId('ultraball')).toBe('ultraball');
-      expect(requireItemId('Ultra Ball')).toBe('ultraball');
     });
 
     it('should throw on invalid item identifier', () => {

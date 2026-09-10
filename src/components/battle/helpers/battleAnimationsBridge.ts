@@ -9,6 +9,7 @@ export function createBattleAnimationsBridge(
     revealWildPokemon: animations.revealWildPokemon,
     triggerWildEmergence: animations.triggerWildEmergence,
     triggerCatchSparkles: animations.triggerCatchSparkles,
+    triggerCriticalCaptureFx: animations.triggerCriticalCaptureFx,
     handleCatchRequest: animations.handleCatchRequest,
     handleReleaseRequest: animations.handleReleaseRequest,
     handleWithdrawRequest: animations.handleWithdrawRequest,

@@ -81,3 +81,28 @@ export function onBallLeave(el: Element, side: BattleSide, done: () => void) {
   const animKey = `ball-fadeout-${side}`
   gameBus.emit('REGISTER_TWEEN', { key: animKey, tween })
 }
+
+export function onCriticalBannerEnter(el: Element, done: () => void) {
+  const htmlEl = el as HTMLElement
+  const tl = gsap.timeline({ onComplete: done })
+
+  tl.fromTo(
+    htmlEl,
+    { opacity: 0, scale: 0.3, y: 10 },
+    { opacity: 1, scale: 1.1, y: -25, duration: 0.35, ease: 'back.out(2.2)' }
+  )
+  .to(htmlEl, {
+    y: -45,
+    scale: 1.0,
+    duration: 0.5,
+    ease: 'power1.out'
+  })
+  .to(htmlEl, {
+    opacity: 0,
+    y: -65,
+    scale: 0.9,
+    duration: 0.35,
+    ease: 'power2.in'
+  })
+}
+

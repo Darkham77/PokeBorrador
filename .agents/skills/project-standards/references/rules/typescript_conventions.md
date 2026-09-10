@@ -141,5 +141,7 @@ Naked tags (e.g. `// domain-ok` or `// no-magic` without `: reason`) are flagged
   - When cloning reactive state or entities, developers MUST use `cloneReactive(entity)` from `@/logic/utils/cloneUtils.ts`.
   - To unwrap proxies without creating an isolated deep clone, use `deepToRaw(entity)` from `@/logic/utils/cloneUtils.ts`.
 
+## 13. Canonical Domain IDs in Test Fixtures & Mocks
 
-
+- **Strict Domain ID Mandate**: In accordance with the *Absolute Prohibition on Runtime Auto-Heal & In-Memory Entity Translation Mandate*, unit and integration test fixtures MUST pass canonical domain IDs (e.g. `'tm39'`, `'potion'`, `'charcoal'`), NEVER localized display strings (e.g. `'MT39 Tumba Rocas'`, `'Poción'`).
+- **Fail-Fast Parity**: Application code in `src/` fails fast on non-canonical IDs. Tests must pass canonical IDs to functions like `requireItemId()`, and test localization solely by asserting against `getItemById(id).name`.

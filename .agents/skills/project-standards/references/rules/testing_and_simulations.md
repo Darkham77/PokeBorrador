@@ -209,6 +209,7 @@ Whenever ANY bug, test failure, or simulation desync occurs, the agent MUST foll
   is considered a critical quality breach and must be rejected immediately.
 - **Mandatory Tier-3 Certification**: Whenever editing combat execution, FSM turn loops, or worker clients in `src/logic/battle/`, unit tests alone are insufficient. Agents MUST execute at least one Playwright E2E combat simulation (`npm run sim:e2e:combat` or certified fuzzer replay) to prove that the real browser Web Worker initializes and executes turns without crashing.
 
+## 19. Sequential Multi-Project Vitest Execution Mandate
 
-
-
+- **Worker Thread CPU Starvation Prevention**: When executing the master test suite (`npm run test`) across multi-project workspaces (`unit` with JSDOM and `node` with SQLite/Docker), the test runner (`scripts/testing/run_tests.ts`) MUST execute projects sequentially (`--project unit` followed by `--project node`) rather than launching all projects concurrently.
+- **Root Cause & Parity Protection**: Concurrent execution of both projects creates severe thread pool contention on multi-core systems, triggering artificial timeouts in heavy database migration tests. Sequential project orchestration preserves deterministic execution in seconds without altering test timeouts or masking architectural bottlenecks.

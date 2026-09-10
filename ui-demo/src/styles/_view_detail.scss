@@ -1,0 +1,414 @@
+// ui-demo/src/styles/_view_detail.scss
+@use 'variables' as *;
+@use 'frames' as *;
+
+// 12. MODAL DE INFORMACIÓN / DETALLE POKÉMON (PIXELADO 1:1 CANÓNICO)
+.detail-modal-container {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  background: var(--color-panel-bg);
+  padding: 16px;
+  font-family: var(--font-pixel);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  box-sizing: border-box;
+}
+
+// HEADER: NÚMERO, NOMBRE, GÉNERO, TIPO Y BOTÓN CERRAR
+.detail-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--color-divider);
+  padding-bottom: 10px;
+}
+
+.detail-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  .dex-num-badge {
+    padding: 3px 6px;
+    background: #ffd60a;
+    color: #000000;
+    font-size: 8px;
+    font-weight: bold;
+    --frame-border: #b45309;
+    line-height: 1.2;
+  }
+
+  .edit-nick-icon {
+    font-size: 8px;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    &:hover { color: var(--color-text-gold); }
+  }
+
+  .pokemon-title-name {
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--color-text-main);
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+  }
+}
+
+.detail-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+// HERO SPRITE SECTION (CENTRAL CON RESPLANDOR Y BADGES)
+.detail-hero-section {
+  width: 100%;
+  min-height: 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: Radial-Gradient(circle at 50% 45%, Rgba(255, 214, 10, 0.15) 0%, Transparent 70%);
+  padding: 8px 0;
+
+  .hero-sprite-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .hero-sprite-img {
+      width: 80px;
+      height: 80px;
+      image-rendering: pixelated;
+      filter: Drop-Shadow(0 6px 12px Rgba(0, 0, 0, 0.65));
+      will-change: filter;
+      position: relative;
+      z-index: calc(var(--z-base, 1) + 2);
+    }
+
+    .hero-sparkle-1,
+    .hero-sparkle-2 {
+      position: absolute;
+      color: #ffd60a;
+      font-size: 9px;
+      animation: none;
+    }
+    .hero-sparkle-1 { top: 6px; right: -14px; }
+    .hero-sparkle-2 { bottom: 12px; left: -14px; }
+  }
+
+  .hero-bottom-badges {
+    position: absolute;
+    bottom: 4px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: Rgba(0, 0, 0, 0.4);
+    padding: 3px 8px;
+    border: 1px solid Rgba(255, 255, 255, 0.1);
+
+    .hero-badge-icon {
+      font-size: 8.5px;
+      line-height: 1;
+      cursor: pointer;
+      opacity: 0.85;
+      &:hover { opacity: 1; }
+    }
+  }
+}
+
+// PESTAÑAS DE NAVEGACIÓN DEL MODAL
+.detail-nav-tabs {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+.detail-tab-btn {
+  flex: 1;
+  padding: 8px 10px;
+  background: var(--color-control-bg);
+  --frame-border: var(--color-control-border);
+  color: var(--color-text-muted);
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-transform: uppercase;
+  user-select: none;
+
+  &:hover {
+    color: var(--color-text-main);
+    background: var(--color-surface-header);
+  }
+
+  &.active {
+    background: var(--color-accent-purple);
+    color: #ffffff;
+    --frame-border: #ffd60a;
+    box-shadow: inset 0 2px 0 Rgba(255, 255, 255, 0.35);
+    font-weight: bold;
+    text-shadow: 1px 1px 0 #000, -1px -1px 0 #000;
+  }
+}
+
+// TAB 1: RESUMEN (GRID DE INFO + BARRAS + POKÉDEX)
+.detail-tab-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.detail-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .detail-info-cell {
+    background: var(--color-control-bg);
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    text-align: center;
+
+    .cell-label {
+      font-size: 7px;
+      color: var(--color-text-muted);
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    .cell-value {
+      font-size: 8.5px;
+      font-weight: bold;
+      color: var(--color-text-main);
+      display: flex;
+      align-items: center;
+      gap: 3px;
+
+      .val-bracket {
+        font-size: 7px;
+        color: var(--color-text-gold);
+        background: Rgba(0, 0, 0, 0.3);
+        padding: 1px 3px;
+      }
+    }
+  }
+}
+
+// BARRAS DE ESTADO (HP, NIVEL, EXPERIENCIA, AMISTAD)
+.detail-bars-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--color-surface-sunken);
+  padding: 10px;
+  box-shadow: inset 1px 1px 0 Rgba(0, 0, 0, 0.6);
+
+  .detail-bar-row {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    .bar-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 7.5px;
+      line-height: 1.35;
+
+      .bar-title {
+        font-weight: bold;
+        color: var(--color-text-main);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .bar-value {
+        color: var(--color-text-gold);
+      }
+    }
+
+    .bar-track {
+      height: 7px;
+      background: #0f172a;
+      border: 1px solid var(--color-control-border);
+      position: relative;
+      overflow: hidden;
+
+      .bar-fill {
+        height: 100%;
+        &.fill-hp { background: #22c55e; }
+        &.fill-lvl { background: #38bdf8; }
+        &.fill-exp { background: #a855f7; }
+        &.fill-friend { background: Linear-Gradient(90deg, #f59e0b 0%, #ffd60a 100%); }
+      }
+    }
+  }
+}
+
+// ENTRADA DE POKÉDEX / LORE
+.detail-lore-box {
+  padding: 10px 14px;
+  background: var(--color-control-bg);
+  box-shadow: inset 1px 1px 0 Rgba(0, 0, 0, 0.4);
+
+  .lore-quote {
+    font-size: 8px;
+    font-style: italic;
+    color: var(--color-text-main);
+    line-height: 1.45;
+  }
+}
+
+// FOOTER CON ACCIÓN PRINCIPAL (BOTÓN EVOLUCIONAR)
+.detail-footer-action {
+  width: 100%;
+  margin-top: 4px;
+
+  .detail-big-btn {
+    width: 100%;
+    min-height: 36px;
+    font-size: 9px;
+  }
+}
+
+// TAB 2: STATS+ (ESTADÍSTICAS BASE, IVS, EVS)
+.detail-stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--color-surface-sunken);
+  padding: 12px;
+
+  .stat-row-item {
+    display: grid;
+    grid-template-columns: 70px 1fr 50px;
+    gap: 8px;
+    align-items: center;
+    font-size: 8px;
+
+    .stat-name {
+      color: var(--color-text-main);
+      font-weight: bold;
+    }
+
+    .stat-bar-track {
+      height: 6px;
+      background: #0f172a;
+      border: 1px solid var(--color-control-border);
+      overflow: hidden;
+
+      .stat-bar-fill {
+        height: 100%;
+        background: #38bdf8;
+      }
+    }
+
+    .stat-numbers {
+      text-align: right;
+      color: var(--color-text-gold);
+    }
+  }
+}
+
+// TAB 3: ATAQUES (4 SLOTS CON CATEGORÍA, POT, PREC, PP)
+.detail-moves-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// TAB 4: CADENA EVOLUTIVA
+.detail-evol-chain {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px;
+  background: var(--color-surface-sunken);
+  flex-wrap: wrap;
+
+  .evol-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+
+    .evol-sprite {
+      width: 52px;
+      height: 52px;
+      image-rendering: pixelated;
+    }
+
+    .evol-name {
+      font-size: 8px;
+      font-weight: bold;
+      color: var(--color-text-main);
+    }
+
+    .evol-req {
+      font-size: 7px;
+      color: var(--color-text-gold);
+    }
+  }
+
+  .evol-arrow {
+    font-size: 14px;
+    color: var(--color-text-muted);
+  }
+}
+
+// ADAPTACIÓN DE TEMAS
+:global(.theme-wingull-light) &,
+:global(body.theme-wingull-light) & {
+  .detail-hero-section {
+    background: Radial-Gradient(circle at 50% 45%, Rgba(217, 119, 6, 0.12) 0%, Transparent 70%);
+  }
+
+  .detail-bars-list,
+  .detail-stats-grid,
+  .detail-evol-chain {
+    background: #eef3db;
+  }
+
+  .detail-info-grid .detail-info-cell,
+  .detail-lore-box {
+    background: #e2eac8;
+  }
+}
+
+:global(.theme-cyber-neon) &,
+:global(body.theme-cyber-neon) & {
+  .detail-hero-section {
+    background: Radial-Gradient(circle at 50% 45%, Rgba(0, 240, 255, 0.18) 0%, Transparent 70%);
+  }
+
+  .detail-tab-btn.active {
+    background: #00f0ff;
+    color: #000000;
+    --frame-border: #ffffff;
+    box-shadow: 0 0 12px Rgba(0, 240, 255, 0.6);
+  }
+}

@@ -63,7 +63,10 @@
               class="modal-header-premium"
               :style="{ background: headerBackground }"
             >
-              <slot name="header">
+              <template v-if="$slots.header">
+                <slot name="header" />
+              </template>
+              <template v-else>
                 <div class="modal-header-left">
                   <slot name="header-icon">
                     <span
@@ -80,7 +83,7 @@
                     </h2>
                   </div>
                 </div>
-              </slot>
+              </template>
               
               <button
                 v-if="showCloseButton"

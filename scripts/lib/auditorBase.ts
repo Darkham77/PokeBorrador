@@ -49,6 +49,16 @@ export const CANONICAL_IGNORE_DIRS: ReadonlySet<string> = new Set([ // runtime-s
 
 export const SCANNABLE_EXTENSIONS: ReadonlySet<string> = new Set(['.ts', '.js', '.vue', '.cjs', '.mjs']); // runtime-set: Fast O(1) membership lookup set
 
+export const CANONICAL_SCANNABLE_ROOTS = [
+  'scripts',
+  'src',
+  'database',
+  'tests',
+  'supabase',
+  'ui-demo'
+] as const;
+export type CanonicalScannableRoot = (typeof CANONICAL_SCANNABLE_ROOTS)[number];
+
 /**
  * Validates that a path component is safe against path traversal.
  */
@@ -146,7 +156,7 @@ export interface AuditorContext {
   };
   ignorePatterns: readonly string[];
   isPathIgnored: (relPath: string) => boolean;
-  collectFiles: (roots?: string[], allowedExtensions?: ReadonlySet<string>) => string[];
+  collectFiles: (roots?: readonly string[], allowedExtensions?: ReadonlySet<string>) => string[];
   logProgress: (msg: string) => void;
   logStep: (stepNumber: number, totalSteps: number, description: string) => void;
   addFinding: (finding: AuditFinding) => void;
@@ -183,7 +193,7 @@ export function setupAuditor(config: AuditorConfig): AuditorContext {
     values: values as AuditorContext['values'],
     ignorePatterns: combinedIgnores,
     isPathIgnored: (relPath: string) => isPathIgnored(relPath, combinedIgnores),
-    collectFiles: (roots = ['scripts', 'src', 'database', 'tests', 'supabase'], allowedExtensions = SCANNABLE_EXTENSIONS) => {
+    collectFiles: (roots: readonly string[] = CANONICAL_SCANNABLE_ROOTS, allowedExtensions = SCANNABLE_EXTENSIONS) => {
       const all: string[] = []; // no-domain: Non-domain utility collection or data structure
       for (const root of roots) {
         const fullRoot = path.resolve(projectRoot, root);

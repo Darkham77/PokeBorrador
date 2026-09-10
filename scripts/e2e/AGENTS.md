@@ -59,7 +59,7 @@ QA / Automation Engineers.
 - **Dynamic Switch Slot Mapping**: In Pokémon Showdown, the "switch X" command is dynamic and relative to the active request's Pokémon list (where the active Pokémon goes to slot 1 and the bench rotates). Therefore, the replayer MUST resolve the target UID by dynamically searching within the `playerRequest.side.pokemon` array instead of using the static `p1SlotOrder` array.
 - **No Browser-Side State Drivers**: Browser-side `page.evaluate()` is diagnostic-only and `page.waitForFunction()` is forbidden. Never dynamically import stores or call gameplay helpers from the browser test context; add a typed source event and use the official visible control instead.
 - **Active Battle Store Typing**: Access the active battle state via `store.state` instead of `store.activeBattle` (which is private to the store setup scope). Check for `!store.state || store.state.over` to verify combat completion.
-- **Fallow Duplicate Code Evasion**: To prevent Fallow from flagging identical boilerplate code blocks (such as dynamic store imports and initializations inside browser sandboxes) as critical duplications, vary local variable names, import aliases, or structural spacing within each sandbox evaluation block.
+- **Duplication Resolution Standard**: To resolve Fallow duplication warnings across sandbox fixtures, extract shared setup logic into reusable helpers in `e2e_helpers.ts` instead of introducing cosmetic variations or artificial code spacing.
 - **Shared Types**: Import `WindowWithResolver` and `DebugStore` exclusively from
   `../e2e_helpers.ts`. Never redefine them locally in individual simulation files.
   If new fields are needed, extend `DebugStore` in `e2e_helpers.ts` and update

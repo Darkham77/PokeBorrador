@@ -563,6 +563,7 @@ export default defineConfig({
       '@': path.resolve(import.meta.dirname, './src'),
       ...(isVitest ? { 'virtual:pwa-register': path.resolve(import.meta.dirname, './tests/helpers/pwaRegisterMock.ts') } : {})
     },
+    dedupe: ['vue', 'pinia', 'vue-router']
   },
   worker: {
     format: 'es',

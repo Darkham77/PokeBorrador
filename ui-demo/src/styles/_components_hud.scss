@@ -1,0 +1,228 @@
+// ui-demo/src/styles/_components_hud.scss
+@use 'variables' as *;
+@use 'frames' as *;
+
+// 7. HUD COMBATE
+.combatant-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-family: var(--font-pixel);
+
+  .combatant-title {
+    font-size: 9px;
+    color: var(--color-text-main);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1.35;
+  }
+
+  .combatant-lvl {
+    font-size: 8px;
+    color: var(--color-text-gold);
+    line-height: 1.35;
+  }
+}
+
+.hp-box-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  background: var(--color-control-bg);
+
+  .hp-label {
+    font-family: var(--font-pixel);
+    font-size: 7px;
+    font-weight: bold;
+    color: #ffd60a;
+    line-height: 1.35;
+  }
+
+  .hp-track {
+    flex: 1;
+    height: 6px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hp-fill {
+    height: 100%;
+    width: 100%;
+
+    &.hp-green { background: #22c55e; }
+    &.hp-yellow { background: #eab308; width: 56%; }
+    &.hp-red { background: #ef4444; width: 20%; }
+  }
+}
+
+.hp-numbers {
+  font-family: var(--font-pixel);
+  font-size: 7.5px;
+  text-align: right;
+  color: var(--color-text-muted);
+  margin-top: 3px;
+  line-height: 1.35;
+}
+
+.exp-box-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+
+  .exp-label {
+    font-family: var(--font-pixel);
+    font-size: 6.5px;
+    color: #38bdf8;
+    line-height: 1.35;
+  }
+
+  .exp-track {
+    flex: 1;
+    height: 3px;
+    background: #1e293b;
+    position: relative;
+  }
+
+  .exp-fill {
+    height: 100%;
+    width: 65%;
+    background: #38bdf8;
+  }
+}
+
+.ball-bar {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+
+  .ball-dot {
+    width: 10px;
+    height: 10px;
+    background: #ef4444;
+    border: 1px solid #ffffff;
+
+    &.fainted {
+      background: #475569;
+      opacity: 0.5;
+    }
+  }
+}
+
+// 8. TARJETAS DE ENTRENADOR
+.trainer-card-layout {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.trainer-avatar-wrap {
+  width: 64px;
+  height: 64px;
+  background: var(--color-control-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .trainer-sprite {
+    width: 56px;
+    height: 56px;
+    image-rendering: pixelated;
+  }
+}
+
+.trainer-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-pixel);
+
+  .trainer-name {
+    font-size: 11px;
+    color: var(--color-text-gold);
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.35;
+  }
+
+  .trainer-id {
+    font-size: 8px;
+    color: var(--color-text-muted);
+    line-height: 1.35;
+  }
+
+  .trainer-money {
+    font-size: 9px;
+    color: #4ade80;
+    line-height: 1.35;
+  }
+}
+
+// 9. COMPARADOR MODERNO VS RETRO
+.compare-container {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  flex-wrap: wrap;
+
+  .compare-box {
+    flex: 1;
+    min-width: 260px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-family: var(--font-pixel);
+
+    .compare-tag {
+      font-size: 7.5px;
+      padding: 3px 6px;
+      width: fit-content;
+      font-weight: bold;
+      line-height: 1.35;
+    }
+
+    &.modern {
+      background: #1e293b;
+      border: 1px solid #475569;
+      box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.3);
+
+      .compare-tag {
+        background: #475569;
+        color: #f8fafc;
+      }
+    }
+
+    &.retro {
+      background: var(--color-surface-sunken);
+
+      .compare-tag {
+        background: var(--color-text-gold);
+        color: #000000;
+      }
+    }
+  }
+}
+
+// 10. TOOLTIP PIXELADO
+.pv-pixel-tooltip {
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-control-border);
+  padding: 6px 10px;
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  color: var(--color-text-main);
+  box-shadow: 0 4px 12px Rgba(0, 0, 0, 0.5);
+  line-height: 1.35;
+  pointer-events: none;
+  z-index: var(--z-modal);
+}
