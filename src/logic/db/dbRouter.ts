@@ -125,7 +125,7 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
       });
       return this._realClient;
     } catch (err) {
-      throw new Error(`[DBRouter] Failed to initialize Supabase client: ${(err as Error).message}`);
+      throw new Error(`[DBRouter] Failed to initialize Supabase client: ${(err as Error).message}`, { cause: err });
     }
   }
 
@@ -173,7 +173,7 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
       const offset = targetDate.epochMilliseconds - Temporal.Now.instant().epochMilliseconds;
       this.setTimeOffset(offset);
     } catch (e) {
-      throw new Error(`[DBRouter] Invalid mock time format '${dateStr}': ${(e as Error).message}`);
+      throw new Error(`[DBRouter] Invalid mock time format '${dateStr}': ${(e as Error).message}`, { cause: e });
     }
   }
 
@@ -202,7 +202,7 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
         .eq('id', userId);
       logger.success('DBRouter', 'Session ID updated in DB.');
     } catch (err) {
-      throw new Error(`[DBRouter] Failed to set session ID in DB: ${(err as Error).message}`);
+      throw new Error(`[DBRouter] Failed to set session ID in DB: ${(err as Error).message}`, { cause: err });
     }
 
     if (this.userSubscription) this.userSubscription.unsubscribe();
@@ -332,7 +332,7 @@ const DEFAULT_RECONNECT_BACKOFF_MS = 5000;
       
       throw new Error(`[DBRouter] fn_get_server_time RPC returned error: ${String(error)}`);
     } catch (e) {
-      throw new Error(`[DBRouter] getServerTime RPC error: ${(e as Error).message}`);
+      throw new Error(`[DBRouter] getServerTime RPC error: ${(e as Error).message}`, { cause: e });
     }
   }
 

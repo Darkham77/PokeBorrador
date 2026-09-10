@@ -60,13 +60,7 @@ const visibleOptions = computed<readonly PokemonSortOption[]>(() => {
 
 function handleOptionClick(opt: PokemonSortOption) {
   const isCurrentlyActive = isSortOptionActive(opt, activeKey.value)
-  let nextDirection = 'desc'
-
-  if (isCurrentlyActive) {
-    nextDirection = currentDirection.value === 'desc' ? 'asc' : 'desc'
-  } else {
-    nextDirection = 'desc'
-  }
+  const nextDirection = isCurrentlyActive && currentDirection.value === 'desc' ? 'asc' : 'desc'
 
   emit('update:modelValue', opt.id)
   emit('update:sortBy', opt.id)

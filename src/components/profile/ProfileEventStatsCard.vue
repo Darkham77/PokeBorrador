@@ -2,11 +2,11 @@
 import { formatCurrency } from '@/logic/utils/formatters'
 
 interface Props {
-  participations: number
-  medalsTotal: number
-  firstPlace: number
-  secondPlace: number
-  thirdPlace: number
+  participations?: number
+  medalsTotal?: number
+  firstPlace?: number
+  secondPlace?: number
+  thirdPlace?: number
   handleStatEnter?: (e: MouseEvent) => void
   handleStatLeave?: (e: MouseEvent) => void
 }

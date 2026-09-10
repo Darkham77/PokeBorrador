@@ -258,7 +258,7 @@ const updateVisualSwap = (side = 'enemy') => {
     try {
       dbKey = decodeURIComponent(dbKey)
     } catch (e) {
-      throw new Error(`[DebugActionPanel] Error al decodificar dbKey '${dbKey}': ${String(e)}`)
+      throw new Error(`[DebugActionPanel] Error al decodificar dbKey '${dbKey}': ${String(e)}`, { cause: e })
     }
 
     requireFeetPoints(dbKey)

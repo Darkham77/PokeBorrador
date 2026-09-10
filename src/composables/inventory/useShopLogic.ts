@@ -52,7 +52,7 @@ export function useShopLogic(options: {
     })
 
     return [...items].sort((a, b) => {
-      let comp = 0
+      let comp: number
       if (sortKey.value === 'price') {
         if (options.isBCShop) {
           const aPrice = a.bcPrice ?? a.price ?? 0

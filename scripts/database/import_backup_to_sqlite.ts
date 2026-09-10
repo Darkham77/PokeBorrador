@@ -116,7 +116,7 @@ const profiles = (backupData.data.profiles || []) as BackupProfile[];
 
 for (const profile of profiles as Array<{ id: string; username?: string; email?: string }>) {
   if (profile.id) {
-    let cleanName = '';
+    let cleanName: string;
     if (profile.username) {
       cleanName = profile.username.toLowerCase().replace(/\s+/g, '_'); // string-ok: Internal string formatting or DOM token identifier
     } else if (profile.email) {

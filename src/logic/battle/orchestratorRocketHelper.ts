@@ -30,7 +30,7 @@ function stealItemsFromEnemy(
   for (const itemId of shuffled) {
     if (stolenTotalCost >= maxLimit) break
 
-    let itemDef = null
+    let itemDef: ReturnType<typeof getItemById>;
     try {
       itemDef = getItemById(itemId)
     } catch {

@@ -60,12 +60,9 @@ export async function configureOfficialServers(): Promise<void> {
     const url = conf.SUPABASE_PUBLIC_URL || conf.SUPABASE_URL || conf.SITE_URL || conf.API_EXTERNAL_URL || conf.URL || '';
     const anonKey = conf.ANON_KEY || conf.SUPABASE_ANON_KEY || conf.KEY || '';
 
-    let isDefaultVal = false;
-    if (hasExplicitDefault) {
-      isDefaultVal = conf.IS_DEFAULT === 'true';
-    } else {
-      isDefaultVal = profile === 'cloud' || id === 'official_prod';
-    }
+    const isDefaultVal = hasExplicitDefault
+      ? conf.IS_DEFAULT === 'true'
+      : (profile === 'cloud' || id === 'official_prod');
 
     let serverObjStr = `  {\n    id: '${id}',\n    name: '${name}',\n    region: '${region}',\n    url: '${url}',\n    anonKey: '${anonKey}'`;
     if (isDefaultVal) {

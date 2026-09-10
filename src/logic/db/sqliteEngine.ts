@@ -158,7 +158,7 @@ export async function persistSQLite(): Promise<void> {
       }
     }
   } catch (e: unknown) {
-    throw new Error(`[sqliteEngine] SQLite persistence failed: ${(e as Error).message}`)
+    throw new Error(`[sqliteEngine] SQLite persistence failed: ${(e as Error).message}`, { cause: e })
   }
 }
 
@@ -181,7 +181,7 @@ export async function executeAtomicSaveTransaction(queries: { sql: string; param
     } catch (_rbErr) {
       // Ignore rollback errors if transaction was already aborted
     }
-    throw new Error(`[sqliteEngine] Atomic save transaction failed: ${(err as Error).message}`);
+    throw new Error(`[sqliteEngine] Atomic save transaction failed: ${(err as Error).message}`, { cause: err });
   }
 }
 
@@ -283,7 +283,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
           return _sqliteDb
         }
       } catch (err) {
-        throw new Error(`[sqliteEngine] Failed to fetch clean db template: ${(err as Error).message}`)
+        throw new Error(`[sqliteEngine] Failed to fetch clean db template: ${(err as Error).message}`, { cause: err })
       }
 
       logger.info('SQLite', 'No clean DB template found. Initializing clean database and running schemas/migrations...')
@@ -315,7 +315,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
                   loadingStore.start('db_import', 'Importando Base de Datos...', 'Instalando copia de seguridad manual, por favor espera', true, '💾')
                 }
               } catch (e) {
-                throw new Error(`[sqliteEngine] Failed to initialize loadingStore in manual dev import: ${String(e)}`)
+                throw new Error(`[sqliteEngine] Failed to initialize loadingStore in manual dev import: ${String(e)}`, { cause: e })
               }
 
               const arrayBuffer = await response.arrayBuffer()
@@ -334,7 +334,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
               try {
                 await devFetch('/api/dev-manual-import-cleanup', undefined, { method: 'POST' })
               } catch (e) {
-                throw new Error(`[sqliteEngine] Failed to cleanup manual import DB file: ${String(e)}`)
+                throw new Error(`[sqliteEngine] Failed to cleanup manual import DB file: ${String(e)}`, { cause: e })
               }
 
               // Set import reload flag to preserve session during reload
@@ -342,7 +342,7 @@ export async function initSQLite(options: { sqliteKey?: string, inMemory?: boole
                 sessionStorage.setItem('pokevicio_import_reload', 'true')
                 sessionStorage.setItem('pokevicio_import_original_path', window.location.pathname)
               } catch (e) {
-                throw new Error(`[sqliteEngine] Failed to access sessionStorage during import reload: ${String(e)}`)
+                throw new Error(`[sqliteEngine] Failed to access sessionStorage during import reload: ${String(e)}`, { cause: e })
               }
 
               const IMPORT_RELOAD_DELAY_MS = 1500;
@@ -396,7 +396,7 @@ async function publishCleanDatabaseTemplate(db: SQLiteDatabase): Promise<void> {
     })
     logger.success('SQLite', 'Clean DB template successfully generated and uploaded to Vite server.')
   } catch (err) {
-    throw new Error(`[sqliteEngine] Failed to upload generated clean DB template: ${String(err)}`)
+    throw new Error(`[sqliteEngine] Failed to upload generated clean DB template: ${String(err)}`, { cause: err })
   }
 }
 

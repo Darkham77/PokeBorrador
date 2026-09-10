@@ -623,7 +623,7 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
         console.log(`[E2E-REPLAY] Battle already over. Replay complete.`);
         break;
       }
-      let browserIdx = 0;
+      let browserIdx: number;
       try {
         browserIdx = Number(await this.page.evaluate(() => window.__VITE_DEBUG__?.replayHistoryIdx ?? 0));
       } catch (navError: unknown) {
@@ -647,8 +647,8 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
         break;
       }
 
-      let currentBrowserIdx = 0;
-      let stateSnapshot: { isOver: boolean; p1Uid?: string; p2Uid?: string; weather?: string; terrain?: string; p1Status?: string; p2Status?: string } = { isOver: false };
+      let currentBrowserIdx: number;
+      let stateSnapshot: { isOver: boolean; p1Uid?: string; p2Uid?: string; weather?: string; terrain?: string; p1Status?: string; p2Status?: string };
       try {
         currentBrowserIdx = Number(await this.page.evaluate(() => window.__VITE_DEBUG__?.replayHistoryIdx ?? 0));
         if (currentBrowserIdx >= batch.history.length) {

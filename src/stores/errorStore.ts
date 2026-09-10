@@ -58,7 +58,7 @@ export const useErrorStore = defineStore('error', () => {
       return
     }
 
-    let errorStack = ''
+    let errorStack: string
     if (error instanceof Error && error.stack) {
       errorStack = error.stack
     } else {

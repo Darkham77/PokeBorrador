@@ -260,7 +260,7 @@ export async function emulateClaimAsset(
 
   const userSave = (typeof userSaves[0]!.save_data === 'string' ? JSON.parse(userSaves[0]!.save_data as string) : userSaves[0]!.save_data) as OfflineSaveData;
 
-  let assetPayload: ClaimAssetPayload | null = null;
+  let assetPayload: ClaimAssetPayload | null;
   if (typeof claim.asset_data === 'string') {
     try {
       assetPayload = JSON.parse(claim.asset_data) as ClaimAssetPayload;

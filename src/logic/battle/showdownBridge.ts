@@ -199,17 +199,16 @@ export async function parseShowdownLogLine(store: BattleContext, line: string, t
     }
 
     const namePart = rawId.includes(':') ? (rawId.split(':')[1]?.trim() ?? '') : '';
-    let matchMon: Pokemon | null = null;
     if (namePart) {
-      matchMon = (team.find(mon => mon && (isMatchingUid(mon.uid, namePart) || mon.name?.toLowerCase() === namePart.toLowerCase() || mon.id === namePart)) ?? null) as Pokemon | null; // text-ok: UI text display localization string
-      if (matchMon) {
-        console.debug(`[E2E-GETPOKE-SUFFIX-MATCH] Matched rawId "${rawId}" to team UID "${matchMon.uid}" via name/UID`);
-        return matchMon;
+      const suffixMon = (team.find(mon => mon && (isMatchingUid(mon.uid, namePart) || mon.name?.toLowerCase() === namePart.toLowerCase() || mon.id === namePart)) ?? null) as Pokemon | null; // text-ok: UI text display localization string
+      if (suffixMon) {
+        console.debug(`[E2E-GETPOKE-SUFFIX-MATCH] Matched rawId "${rawId}" to team UID "${suffixMon.uid}" via name/UID`);
+        return suffixMon;
       }
     }
 
     // Mapeo unificado basado en UID
-    matchMon = findMatchingPokemon(rawId, team) ?? null;
+    const matchMon = findMatchingPokemon(rawId, team) ?? null;
 
     if (matchMon) {
       console.debug(`[E2E-GETPOKE-MATCHMON] Resolved rawId "${rawId}" to team UID "${matchMon.uid}" name "${matchMon.name}"`);

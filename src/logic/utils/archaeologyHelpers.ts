@@ -34,12 +34,9 @@ export function calculateArchaeologyWeights(pickaxeType: string | null, brushTyp
     let remaining = budget;
     for (let i = 0; i < affected.length; i++) {
       const item = affected[i]!;
-      let added = 0;
-      if (i === affected.length - 1) {
-        added = remaining;
-      } else {
-        added = Math.round(remaining * SPLIT_REMAINING_FACTOR);
-      }
+      const added = i === affected.length - 1
+        ? remaining
+        : Math.round(remaining * SPLIT_REMAINING_FACTOR);
       categoryWeights[item.key as ArchaeologyCategory] += added;
       remaining -= added;
     }

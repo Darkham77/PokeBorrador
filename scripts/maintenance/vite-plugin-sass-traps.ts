@@ -60,7 +60,7 @@ export function sassTrapsFixer() {
       if (!file.endsWith('.scss') && !file.endsWith('.vue')) return;
       
       Promise.resolve(read()).then((content: string) => {
-        let fixed = content;
+        let fixed: string;
         if (file.endsWith('.vue')) {
           const styleRegex = /<style[^>]*>([\s\S]*?)<\/style>/gi;
           fixed = content.replace(styleRegex, (match: string, styleContent: string) => {

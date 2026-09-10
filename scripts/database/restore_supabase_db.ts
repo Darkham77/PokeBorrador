@@ -413,7 +413,7 @@ const UUID_STRING_LENGTH_EXPECTED = 36;
               totalRestoredRows += mappedRows.length;
               console.log(styleText('green', `   ✔️ passive_battle_reports (mapeada de passive_battle_results): ${mappedRows.length} filas restauradas exitosamente.`));
             } catch (iErr: unknown) {
-              throw new Error(`Error al insertar en tabla adaptada "passive_battle_reports": ${(iErr as Error).message}`);
+              throw new Error(`Error al insertar en tabla adaptada "passive_battle_reports": ${(iErr as Error).message}`, { cause: iErr });
             }
           } else {
             console.log(styleText('yellow', `   ⏩ Tabla "${tableName}" no existe en el destino y no tiene mapeo. Omitiendo inserción.`));
@@ -440,7 +440,7 @@ const UUID_STRING_LENGTH_EXPECTED = 36;
           totalRestoredRows += rows.length;
           console.log(styleText('green', `   ✔️ ${tableName}: ${rows.length} filas restauradas exitosamente.`));
         } catch (iErr: unknown) {
-          throw new Error(`Error al insertar en tabla "${tableName}": ${(iErr as Error).message}`);
+          throw new Error(`Error al insertar en tabla "${tableName}": ${(iErr as Error).message}`, { cause: iErr });
         }
       }
 

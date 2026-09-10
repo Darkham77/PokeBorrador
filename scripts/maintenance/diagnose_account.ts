@@ -648,7 +648,7 @@ Opciones:
       accounts = loadAllFromSqlite(dbInput);
     }
   } else {
-    let singleAcc: LoadedAccountData | null = null;
+    let singleAcc: LoadedAccountData | null;
     if (fileInput) {
       singleAcc = loadFromBackupFile(fileInput, userInput!);
     } else if (serverInput && serverInput !== 'local') {

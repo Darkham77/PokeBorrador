@@ -71,7 +71,7 @@ export function usePokedex(gs: Ref<GameState>, currentOrder: Ref<readonly Pokemo
 
     // 3. Sort
     return filtered.sort((a, b) => {
-      let comp = 0
+      let comp: number
       if (sortBy.value === 'name') {
         // Unseen pokes at bottom when sorting by name? or by ID?
         // Usually, original Dexter keeps them in place. 

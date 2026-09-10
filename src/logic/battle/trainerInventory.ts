@@ -84,7 +84,7 @@ export function generateNPCInventory(
     // Decisión de compra priorizada:
     // 50% de chance de comprar un curativo, 30% cura de estado (si no tiene full_heal), 20% revivir (si es alto nivel)
     const roll = Math.random();
-    let selected: PurchaseCandidate | null = null;
+    let selected: PurchaseCandidate | null;
 
     if (roll < POKEBALL_BUDGET_HALF_RATIO) {
       selected = affordable.find(c => c.type === 'heal') || affordable[0] || null;

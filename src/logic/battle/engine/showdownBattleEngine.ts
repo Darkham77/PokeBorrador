@@ -344,7 +344,7 @@ export class ShowdownBattleEngine {
         seat.side.clearChoice();
       }
 
-      let ok = false;
+      let ok: boolean;
       let chooseError: Error | null = null;
       try {
         ok = battle.choose(seat.id as SideID, seat.choice);

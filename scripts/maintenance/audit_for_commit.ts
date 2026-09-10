@@ -177,7 +177,7 @@ async function getOriginFileContent(filePath: string): Promise<string | null> {
 async function runProjectEslint(): Promise<Violation[]> {
   const violations: Violation[] = [];
   try {
-    const eslintProc = spawnSync('npx', ['eslint', '--cache', '--format', 'json', '.'], { encoding: 'utf-8', maxBuffer: 50 * 1024 * 1024 });
+    const eslintProc = spawnSync('npx', ['eslint', '--config', 'eslint.config.js', '--cache', '--format', 'json', '.'], { encoding: 'utf-8', maxBuffer: 50 * 1024 * 1024 });
     const output = eslintProc.stdout ? eslintProc.stdout.trim() : '';
     if (!output) return [];
 
@@ -207,7 +207,7 @@ async function runProjectEslint(): Promise<Violation[]> {
 async function runOriginEslint(filePath: string, content: string): Promise<Violation[]> {
   const violations: Violation[] = [];
   try {
-    const eslintProc = spawnSync('npx', ['eslint', '--stdin', '--stdin-filename', filePath, '--format', 'json'], {
+    const eslintProc = spawnSync('npx', ['eslint', '--config', 'eslint.config.js', '--stdin', '--stdin-filename', filePath, '--format', 'json'], {
       input: content,
       encoding: 'utf-8',
       maxBuffer: ESLINT_STDIN_MAX_BUFFER_BYTES

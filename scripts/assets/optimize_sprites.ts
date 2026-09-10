@@ -153,12 +153,9 @@ if (!isMainThread) {
       await processVariant(f);
     }
 
-    let extraDetails = '';
-    if (frontAnalysis.attackRange !== null) {
-      extraDetails = `Idle: frames ${frontAnalysis.idleRange[0]} a ${frontAnalysis.idleRange[1]}. Ataque: frames ${frontAnalysis.attackRange[0]} a ${frontAnalysis.attackRange[1]}`;
-    } else {
-      extraDetails = `Idle: frames ${frontAnalysis.idleRange[0]} a ${frontAnalysis.idleRange[1]}. Sin ataque.`;
-    }
+    const extraDetails = frontAnalysis.attackRange !== null
+      ? `Idle: frames ${frontAnalysis.idleRange[0]} a ${frontAnalysis.idleRange[1]}. Ataque: frames ${frontAnalysis.attackRange[0]} a ${frontAnalysis.attackRange[1]}`
+      : `Idle: frames ${frontAnalysis.idleRange[0]} a ${frontAnalysis.idleRange[1]}. Sin ataque.`;
 
     parentPort?.postMessage({
       success: true,

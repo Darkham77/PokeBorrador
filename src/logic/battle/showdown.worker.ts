@@ -54,9 +54,9 @@ export function injectUidsIntoRequest(
   requestOrPlayer: unknown,
   request?: unknown
 ): ShowdownRequest | null {
-  let battle: Battle | null = null;
+  let battle: Battle | null;
   let player: SideID;
-  let req: ShowdownRequest | null = null;
+  let req: ShowdownRequest | null;
 
   if (playerOrBattle instanceof Battle) {
     battle = playerOrBattle;

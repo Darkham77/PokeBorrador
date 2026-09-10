@@ -157,7 +157,7 @@ export async function ensureSchemaIntegrity(db: SQLiteDatabase): Promise<void> {
     
     logger.info('SQLite', 'Legacy global chat columns migrated and aligned successfully.');
   } catch (err: unknown) {
-    throw new Error(`[sqliteSchemaIntegrity] Legacy chat columns migration error: ${(err as Error).message}`)
+    throw new Error(`[sqliteSchemaIntegrity] Legacy chat columns migration error: ${(err as Error).message}`, { cause: err })
   }
 
   // Auto-repair: Populate missing profiles from game_saves to restore cosmetics and profile visibility

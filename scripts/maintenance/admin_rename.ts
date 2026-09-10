@@ -46,7 +46,7 @@ async function main() {
 
   console.log(`Buscando usuario: ${targetUser}...`);
   
-  let profile: { id: string, username: string } | null = null;
+  let profile: { id: string, username: string } | null;
   
   // Buscar por ID primero, luego por nombre actual
   const { data: firstCheck, error: firstError } = await supabase

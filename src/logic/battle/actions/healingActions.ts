@@ -26,7 +26,7 @@ export const HEALING_ACTIONS: Record<string, MoveAction> = {
   'heal_weather': (src, _tgt, _srcStages, _tgtStages, addLogFn, battleCtx) => {
     if (src.hp >= src.maxHp) return;
     
-    let healPct = 0.5;
+    let healPct: number;
     const weather = battleCtx?.activeBattle.value?.weather?.type;
     const mechWeather = getMechanicalWeather(weather);
 

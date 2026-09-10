@@ -245,6 +245,6 @@ export async function waitForBattleReadyEvent(page: Page, batchIndex: number, tu
     return detail;
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
-    throw new Error(`[E2E-EVENT-TIMEOUT] Batch #${batchIndex} Turn ${turnCount}: Failed awaiting battle-ready-for-input event: ${msg}`);
+    throw new Error(`[E2E-EVENT-TIMEOUT] Batch #${batchIndex} Turn ${turnCount}: Failed awaiting battle-ready-for-input event: ${msg}`, { cause: err });
   }
 }

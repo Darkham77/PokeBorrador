@@ -128,7 +128,7 @@ function calculateTrainerOrPoliceEncounterChance(
   const isRocketMaxCrim = state.playerClass === 'rocket' && criminality >= ROCKET_MAX_CRIMINALITY
 
   const hasTrainerOverride = debug?.trainerChancePct !== undefined && debug?.trainerChancePct !== null ? true : !!debug?.trainerChance50
-  let baseTrainerChance = 0
+  let baseTrainerChance: number
   if (debug?.trainerChancePct !== undefined && debug?.trainerChancePct !== null) {
     baseTrainerChance = debug.trainerChancePct
   } else if (repelActive) {

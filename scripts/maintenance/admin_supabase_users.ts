@@ -236,7 +236,7 @@ export async function adminSupabaseUsers(): Promise<void> {
         }
       } catch (uErr: unknown) {
         if ((uErr as Error).message.includes('unique') || (uErr as Error).message.includes('violates unique constraint')) {
-          throw new Error(`El nombre de usuario "${usernameArg}" ya está en uso por otro jugador.`);
+          throw new Error(`El nombre de usuario "${usernameArg}" ya está en uso por otro jugador.`, { cause: uErr });
         }
         throw uErr;
       }

@@ -141,12 +141,7 @@ export function calculateFinalAccuracy(
   const clampedAccStage = Math.max(-6, Math.min(6, accStage))
   const clampedEvaStage = Math.max(-6, Math.min(6, evaStage))
   const netStage = Math.max(-6, Math.min(6, clampedAccStage - clampedEvaStage))
-  let multiplier = 1
-  if (netStage >= 0) {
-    multiplier = (3 + netStage) / 3
-  } else {
-    multiplier = 3 / (3 - netStage)
-  }
+  const multiplier = netStage >= 0 ? (3 + netStage) / 3 : 3 / (3 - netStage)
   acc = acc * multiplier
   return Math.max(0, Math.min(100, Math.round(acc)))
 }

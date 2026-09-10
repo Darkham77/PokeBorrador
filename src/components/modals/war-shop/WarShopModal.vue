@@ -56,7 +56,7 @@ const filteredItems = computed<Item[]>(() => {
   })
 
   return [...items].sort((a, b) => {
-    let comp = 0
+    let comp: number
     if (sortKey.value === 'price') {
       comp = (a.warPrice || 0) - (b.warPrice || 0)
     } else if (sortKey.value === 'rarity') {

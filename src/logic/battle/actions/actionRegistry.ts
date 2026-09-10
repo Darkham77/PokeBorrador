@@ -247,7 +247,7 @@ export async function dispatchMoveEffect(
       }
     }
   } catch (error) {
-    if (!move.id) throw new Error(`[ActionRegistry] Move without canonical id: ${move.name}`);
+    if (!move.id) throw new Error(`[ActionRegistry] Move without canonical id: ${move.name}`, { cause: error });
     logger.error('ActionRegistry', `Error executing ${move.id}: ${(error as Error).message}`);
     throw error;
   }

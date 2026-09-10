@@ -265,7 +265,7 @@ export async function executeTurnInWorker(
       p2Statuses = p2Data.statuses;
     }
   } catch (e) {
-    throw new Error(`[ShowdownWorkerClient] Failed to load battle state before worker turn. context=${replayContext}; cause=${e instanceof Error ? e.message : String(e)}`)
+    throw new Error(`[ShowdownWorkerClient] Failed to load battle state before worker turn. context=${replayContext}; cause=${e instanceof Error ? e.message : String(e)}`, { cause: e })
   }
 
   return new Promise((resolve, reject) => {

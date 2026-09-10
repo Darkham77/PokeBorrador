@@ -66,7 +66,7 @@ async function main(): Promise<void> {
     delete childEnv.TEST_POSTGRES_URL;
   }
 
-  let vitestExitCode = 0;
+  let vitestExitCode: number;
 
   try {
     console.log(styleText('bold', styleText('blue', '\n------------------------------------------------------------')));

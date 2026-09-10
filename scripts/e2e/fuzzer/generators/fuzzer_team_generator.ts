@@ -384,13 +384,12 @@ export function generateTestBatches(batchSize: number = 6): TestBatch[] {
         }
       }
 
-      let abilityName = 'synchronize';
       let targetSpecies: PokemonSpeciesId = 'mew';
       let targetGender: GenderName = 'N';
       let targetAbility: AbilityId = 'synchronize';
 
       if (abilityIdx < abilityPool.length) {
-        abilityName = abilityPool[abilityIdx]!;
+        const abilityName = abilityPool[abilityIdx]!;
         batchAbilities.push(toID(abilityName) as AbilityId);
         abilityIdx++;
         const legal = findLegalSpeciesAndGenderForAbility(abilityName, dexGen);

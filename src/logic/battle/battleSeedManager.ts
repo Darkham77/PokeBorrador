@@ -49,7 +49,7 @@ export function parseToNumericSeed(raw: unknown): NumericSeed {
         return arr as NumericSeed; // domain-ok: Open dynamic text or non-domain string payload
       }
     } catch (e) {
-      throw new Error(`[BattleSeedManager] Error parsing numeric seed object: ${String(e)}`);
+      throw new Error(`[BattleSeedManager] Error parsing numeric seed object: ${String(e)}`, { cause: e });
     }
   }
   

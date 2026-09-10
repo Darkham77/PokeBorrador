@@ -12,8 +12,8 @@ export function updateCastformForm(pokemon: Pokemon | null | undefined, weatherT
   if (pokemon.ability !== 'forecast') return;
 
   const family = weatherType ? getWeatherFamily(weatherType) : null;
-  let targetForm = 'normal';
-  let targetType: PokemonType = 'normal';
+  let targetForm: string;
+  let targetType: PokemonType;
 
   if (family === WEATHER_MECHANICAL.SUN) {
     targetForm = 'sunny';

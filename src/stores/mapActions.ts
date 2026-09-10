@@ -190,7 +190,7 @@ export async function executeArchaeologyRewards(locId: MapRouteId, gs: ReturnTyp
     }
 
     const rand = Math.random() * totalWeight;
-    let selectedCategory: ArchaeologyCategory = 'common';
+    let selectedCategory: ArchaeologyCategory;
     
     if (rand < categoryWeights.fossil) {
       selectedCategory = 'fossil';
@@ -202,8 +202,8 @@ export async function executeArchaeologyRewards(locId: MapRouteId, gs: ReturnTyp
       selectedCategory = 'rare';
     }
 
-    let rewardId: ItemId | null = null;
-    let rewardIcon = '';
+    let rewardId: ItemId;
+    let rewardIcon: string;
 
     if (selectedCategory === 'fossil') {
       const pool = loc?.archaeology?.pool || ['kabuto', 'omanyte'];

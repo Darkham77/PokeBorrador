@@ -1,9 +1,3 @@
-<template>
-  <div class="hud-sidebar-left">
-    <slot />
-  </div>
-</template>
-
 <script setup lang="ts">
 /**
  * HUD_SidebarLeft.vue
@@ -11,6 +5,12 @@
  * to prevent overlapping and maintain a clean layout.
  */
 </script>
+
+<template>
+  <div class="hud-sidebar-left">
+    <slot />
+  </div>
+</template>
 
 <style scoped lang="scss">
 @use "@/styles/core/tools" as *;

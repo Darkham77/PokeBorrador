@@ -493,7 +493,7 @@ export function resolveAwardCategory( // result-ok: Operation result wrapper pay
   const eventId = award.event_id || event?.id || '';
   const subComp = event ? getDefaultSubCompetitions(event).find(s => s.id === catId || catId.startsWith(s.id)) : null;
 
-  let categoryTitle = '';
+  let categoryTitle: string;
   if (subComp) {
     categoryTitle = getSubCompTitle(eventId, subComp);
   } else if (catId.startsWith('weight')) {

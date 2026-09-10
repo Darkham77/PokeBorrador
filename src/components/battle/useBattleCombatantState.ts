@@ -101,7 +101,7 @@ export function useBattleCombatantState(
     try {
       key = decodeURIComponent(key);
     } catch (e) {
-      throw new Error(`[useBattleCombatantState] Error decoding sprite URL '${key}': ${String(e)}`);
+      throw new Error(`[useBattleCombatantState] Error decoding sprite URL '${key}': ${String(e)}`, { cause: e });
     }
     
     const dbPoints = requireFeetPoints(key);

@@ -328,7 +328,7 @@ function stopPersistentViteServer(viteProcess: ChildProcess | null): void {
 function runCommandStreamed(command: string, extraEnv: Record<string, string> = {}): Promise<void> {
   return new Promise((resolve, reject) => {
     let executable = process.execPath;
-    let cmdArgs: string[] = [];
+    let cmdArgs: string[];
 
     if (command.startsWith('npx playwright ')) {
       const playwrightCli = path.resolve(process.cwd(), 'node_modules/@playwright/test/cli.js');

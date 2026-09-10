@@ -9,7 +9,7 @@ import { useUIStore } from '@/stores/ui'
 import { usePvPStore } from '@/stores/pvp'
 
 interface Props {
-  medals: RankedSeasonMedal[]
+  medals?: RankedSeasonMedal[]
 }
 
 const props = withDefaults(defineProps<Props>(), {

@@ -190,10 +190,10 @@ export async function buildTrainerEncounter(
 
   const isMaxCriminality = (gsState.playerClass === 'rocket' && (gsState.classData?.criminality ?? 0) >= 100);
 
-  let tName = 'Entrenador';
-  let tSprite: NpcSpriteId = 'youngster';
-  let tQuote = '¡Prepárate para combatir! ¡No te lo pondré fácil!';
-  let typeKey: TrainerTypeKey = 'default';
+  let tName: string;
+  let tSprite: NpcSpriteId;
+  let tQuote: string;
+  let typeKey: TrainerTypeKey;
   const enemyTeam: Pokemon[] = [];
 
   if (isMaxCriminality) {

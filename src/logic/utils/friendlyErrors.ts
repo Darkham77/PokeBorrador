@@ -6,7 +6,7 @@
 import { logger } from './logger.ts';
 
 export const getFriendlyErrorMessage = (error: unknown): string => {
-  let message = '';
+  let message: string;
   
   if (error instanceof Error) {
     message = error.message;

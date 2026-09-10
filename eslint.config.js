@@ -4,6 +4,7 @@ import globals from 'globals';
 import unusedImports from 'eslint-plugin-unused-imports';
 import tseslint from 'typescript-eslint';
 import pluginSecurity from 'eslint-plugin-security';
+import { globalIgnores } from 'eslint/config';
 
 export default tseslint.config(
   js.configs.recommended,
@@ -12,11 +13,19 @@ export default tseslint.config(
    
   pluginSecurity.configs.recommended,
   {
+    name: 'pokevicio/core-rules',
     plugins: {
       'unused-imports': unusedImports,
     },
     rules: {
+      // Reglas Vue 3 & Block Order
       'vue/multi-word-component-names': 'off',
+      'vue/block-order': ['error', { 'order': ['script', 'template', 'style'] }],
+      'vue/no-required-prop-with-default': 'error',
+      'vue/no-deprecated-model-definition': 'error',
+      'vue/no-deprecated-delete-set': 'error',
+
+      // Variables no utilizadas & TypeScript
       'no-unused-vars': 'off', // Turn off default
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-explicit-any': 'error',
@@ -47,6 +56,13 @@ export default tseslint.config(
           'caughtErrorsIgnorePattern': '^_',
         },
       ],
+
+      // ESLint 10 Core New Rules
+      'no-unassigned-vars': 'error',
+      'no-useless-assignment': 'error',
+      'preserve-caught-error': 'error',
+
+      // Calidad general & Seguridad
       'no-console': 'off',
       'no-undef': 'off', // TS ya maneja el chequeo de no-undef
       'security/detect-object-injection': 'off',
@@ -61,12 +77,13 @@ export default tseslint.config(
       globals: {
         ...globals.browser,
         ...globals.node,
-        ...globals.es2021,
+        ...globals.es2025,
       },
     },
   },
   // Desactivar warnings de seguridad en scripts de utilidad y tests
   {
+    name: 'pokevicio/security-script-exemptions',
     files: [
       'scripts/**/*.ts',
       'scripts/**/*.js',
@@ -85,21 +102,19 @@ export default tseslint.config(
       'security/detect-unsafe-regex': 'off'
     }
   },
-  {
-    ignores: [
-      'dist/**',
-      'dev-dist/**',
-      'node_modules/**',
-      'scratch/**',
-      'tmp/**',
-      '.agents/**',
-      'external/**',
-      'supabase/**',
-      'tests/**',
-      'test aventura/**',
-      'vitest.config.ts',
-      'vitest.node.config.ts',
-      'vitest.workspace.ts',
-    ],
-  },
+  globalIgnores([
+    'dist/**',
+    'dev-dist/**',
+    'node_modules/**',
+    'scratch/**',
+    'tmp/**',
+    '.agents/**',
+    'external/**',
+    'supabase/**',
+    'tests/**',
+    'test aventura/**',
+    'vitest.config.ts',
+    'vitest.node.config.ts',
+    'vitest.workspace.ts',
+  ]),
 );

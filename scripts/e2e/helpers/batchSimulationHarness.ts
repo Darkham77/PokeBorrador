@@ -334,7 +334,7 @@ export function registerCertifiedBatchTests<T extends CertifiedTestBatch>(option
             console.warn(`[E2E-WARN] Ignorando error en lote ${caseId}`);
             return;
           }
-          throw new Error(`[Fallo en Lote ${caseId}]: ${errorMsg}`);
+          throw new Error(`[Fallo en Lote ${caseId}]: ${errorMsg}`, { cause: error });
         }
       }
     });

@@ -113,9 +113,9 @@ const spawnNext = () => {
   // Anti-overlapping logic in pixels (380x380 container)
   const padding = MINIGAME_SPAWN_PADDING_PX
   const minDistance = MINIGAME_MIN_DISTANCE_PX
-  let x = 0
-  let y = 0
-  let tooClose = false
+  let x: number
+  let y: number
+  let tooClose: boolean
   let attempts = 0
 
   do {

@@ -17,7 +17,7 @@ try {
   throw new Error(`[FUZZER-CERTIFICATION] Certified cases JSON cannot be parsed. context=${JSON.stringify({
     casesPath,
     error: error instanceof Error ? error.message : String(error),
-  })}`);
+  })}`, { cause: error });
 }
 
 const document = requireCertifiedBattleCaseDocument(rawDocument, casesPath);

@@ -126,7 +126,7 @@ export const useInventoryStore = defineStore('inventory', () => {
 
     // Sort items
     result.sort((a, b) => {
-      let comp = 0
+      let comp: number
       if (currentSort.value === 'price') {
         comp = (a.price || 0) - (b.price || 0)
       } else if (currentSort.value === 'rarity') {

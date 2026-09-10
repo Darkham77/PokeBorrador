@@ -27,7 +27,7 @@ export function getPokemonFeetCoords(spriteUrl: string): { feetX: number; feetY:
   try {
     dbKey = decodeURIComponent(dbKey)
   } catch (e) {
-    throw new Error(`[shadowHelpers] Error decoding spriteUrl '${dbKey}': ${String(e)}`)
+    throw new Error(`[shadowHelpers] Error decoding spriteUrl '${dbKey}': ${String(e)}`, { cause: e })
   }
   return requireFeetPoints(requireFeetDatabasePath(dbKey))
 }

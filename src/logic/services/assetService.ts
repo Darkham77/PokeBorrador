@@ -252,7 +252,7 @@ export function getAssetUrl(type: AssetType, rawId: string | number, options: As
         return resolveAsset(`/assets/sprites/${idStr}${extension}`);
       }
       
-      let shopItem = null;
+      let shopItem: ReturnType<typeof getItemById> | null;
       try {
         shopItem = getItemById(idStr);
       } catch {

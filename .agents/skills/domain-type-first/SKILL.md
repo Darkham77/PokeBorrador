@@ -36,7 +36,7 @@ Before writing or modifying ANY TypeScript code in `src/` or `scripts/`, mentall
 | **4. O(1) Access & Memory** | Am I searching, storing, or returning a collection in an execution path? | **Search**: Pre-index in $O(1)$ (`Record<DomainId, T>`, `ReadonlySet<T>`, `Map`). NEVER `.find()`, `.filter()`, `.includes()` on arrays in hot paths.<br>**Return**: Return collection directly as `readonly T[]`. NEVER `return [...arr]`. |
 | **5. Object Duplication** | Do I need to duplicate an entity or state tree? | **Vue / Pinia Reactive**: Use `cloneReactive(obj)` from `@/logic/utils/cloneUtils`.<br>**Plain Object**: Use `structuredClone(obj)`.<br>NEVER `JSON.parse(JSON.stringify(obj))`. |
 
-### Mental Anchors: The 7 Fatal Anti-Patterns vs Canonical Patterns
+### Mental Anchors: The 9 Fatal Anti-Patterns vs Canonical Patterns
 
 ```typescript
 // 1. Function parameters: Wildcards and fallbacks
@@ -67,16 +67,26 @@ Before writing or modifying ANY TypeScript code in `src/` or `scripts/`, mentall
 // 7. Secondary property / display name fallbacks
 ❌ const id = poke.id || poke.name || '';
 ✅ const id = poke.id; // Pure canonical ID; display name is resolved via helper
+
+// 8. Dummy initializations in domain branching
+❌ let winnerSide = '' as SideID;
+✅ let winnerSide: SideID; // TS Definite Assignment Analysis (TS2454) ensures all branches assign it
+
+// 9. Error causality truncation across boundaries
+❌ catch (err) { throw new Error('Parse error: ' + String(err)); }
+✅ catch (err) { throw new Error('Parse error', { cause: err }); }
 ```
 
 ### Pre-Commit Mental Self-Audit (Run Before Finishing)
 
-Before declaring any coding task complete, mentally scan your diff for these 5 flags:
+Before declaring any coding task complete, mentally scan your diff for these 7 flags:
 1. Did I introduce any `[...spread]` return statements in getters or services?
 2. Did I use `.find()`, `.filter()`, or `.includes()` on an array inside a loop, calculation, or tick?
 3. Did I write `|| ''`, `?? ''`, or fallback to `.name` on any entity ID?
 4. Did I type any property as an inline literal union (e.g. `'a' | 'b'`) instead of importing the domain type?
 5. Did I write `as unknown as` anywhere in `src/`?
+6. Did I initialize a domain variable with a dummy empty string or cast (`'' as ...`) before branching?
+7. Did I throw a new error in a catch block without passing `{ cause: err }`?
 
 ## Absolute Priority on O(1) Data Structures & Lookup Performance (`preferO1DataStructures`)
 
@@ -210,11 +220,91 @@ Before declaring any coding task complete, mentally scan your diff for these 5 f
 ## Absolute Prohibition on `unknown` and `any` in Business Logic Signatures
 
 - **No Type Erasure in Business Logic**: It is STRICTLY FORBIDDEN to type function parameters, return types, or variables as `unknown` or `any` in gameplay, calculation, battle, store, or composable code (e.g. `handleAction(difficulty: unknown = 'easy')` is FORBIDDEN).
-- **Boundary Functions Exception**: `unknown` is strictly reserved for dedicated **boundary deserializers, type-guards, and input parsers** (e.g. `isDomainId(raw: unknown): raw is DomainId`, `parseSaveData(json: unknown)`, `safeToDomain(val: unknown)`). Business logic receiving data past the boundary must always be strongly typed.
+- **Input-Only Boundary Scope for `unknown`**: The type `unknown` is strictly reserved for dedicated **boundary deserializers, type-guards, and input parsers** (e.g. `isDomainId(raw: unknown): raw is DomainId`, `parseSaveData(json: unknown)`). Business logic receiving data past the boundary MUST ALWAYS be strongly typed with domain models or DTOs.
+- **Prohibition on Fake DTO Shortcuts**: It is STRICTLY FORBIDDEN to bypass boundary parsing by casting raw data to `Record<string, unknown>` or double-casting (`raw as unknown as ValidatedDTO`) to pretend data was validated. The boundary parser must validate every field and return a strict domain DTO.
+
+## Strict Boundary DTOs vs Type-Casting Shortcuts (Zero `unknown` in Core Business Logic)
+
+```typescript
+// ❌ ANTI-PATTERN: Business logic accepts unknown or relies on fake Record casting
+function processBattleEvent(payload: unknown) { // FORBIDDEN: unknown leaking into business logic
+  const data = payload as Record<string, unknown>; // FORBIDDEN: fake casting shortcut
+  applyDamage(data.targetId as PokemonSpeciesId, Number(data.amount));
+}
+
+// ✅ CANONICAL: Boundary parser validates raw unknown and returns a strict domain DTO
+// 1. Strict Domain DTO definition
+export interface BattleDamagePayload {
+  readonly targetId: PokemonSpeciesId;
+  readonly amount: number;
+}
+
+// 2. Boundary parser: only place where unknown is accepted
+export function parseBattleDamagePayload(raw: unknown): BattleDamagePayload {
+  if (typeof raw !== 'object' || raw === null) {
+    throw new Error('Invalid payload: expected object', { cause: raw });
+  }
+  const candidate = raw as Record<string, unknown>;
+  return {
+    targetId: requirePokemonSpeciesId(String(candidate.targetId)),
+    amount: requirePositiveNumber(Number(candidate.amount)),
+  };
+}
+
+// 3. Business logic: pure, strictly-typed domain function with zero unknown
+function processBattleEvent(payload: BattleDamagePayload): void {
+  applyDamage(payload.targetId, payload.amount);
+}
+```
 
 ## Absolute Prohibition on Double-Casting (`as unknown as DomainId`) in Production Code
 
 - **Zero Escape Hatches on Domain Boundary**: It is STRICTLY FORBIDDEN to force dynamic strings into domain types using double-casting (`x as unknown as DomainId` or `x as any as DomainId`) inside `src/`. All data entering from dynamic sources MUST pass through canonical type guards (`isDomainId(x)`) or throwing assertion helpers (`requireDomainId(x)`). Double-casting is strictly reserved for controlled error-simulation unit tests in `tests/`.
+
+## TypeScript Definite Assignment Analysis in Domain Branching (`no-useless-assignment`)
+
+- **Zero Dummy Literal Initializations**: When declaring local domain variables whose values are determined across branching paths (`if/else`, `switch`), agents **MUST NEVER** initialize them with dummy empty strings, fallback literals, or type casts (e.g. `let winnerSide = '' as SideID;`, `let species: PokemonSpeciesId = null as any;`).
+- **Compiler-Enforced Exhaustiveness (TS2454)**: Declaring `let targetId: DomainId;` without an initial dummy value leverages TypeScript's native **Definite Assignment Analysis**. If any code branch or switch statement fails to assign the variable before it is consumed, TypeScript immediately rejects the code at compile time (`TS2454: Variable is used before being assigned`).
+- **ESLint v10 Alignment**: Dummy initializations trigger ESLint v10's `no-useless-assignment` because the initial value is immediately overwritten without ever being read. Uninitialized domain declarations satisfy both ESLint and TypeScript with zero runtime overhead and 100% compile-time exhaustiveness.
+- **Example**:
+  ```typescript
+  // ❌ ANTI-PATTERN: Dummy initial value hides unhandled branches & triggers ESLint 10
+  let winnerSide = '' as SideID;
+  if (playerFainted) {
+    winnerSide = 'p2';
+  }
+  // If playerFainted is false, winnerSide silently remains '' (invalid SideID)!
+
+  // ✅ CANONICAL: Uninitialized declaration enforces exhaustive assignment at compile time
+  let winnerSide: SideID;
+  if (playerFainted) {
+    winnerSide = 'p2';
+  } else {
+    winnerSide = 'p1';
+  }
+  // Guaranteed by TS2454 to be assigned a valid SideID in 100% of execution paths
+  ```
+
+## Canonical Error Cause Preservation (`{ cause: error }`) at Domain Boundaries
+
+- **Preserve Error Causality Chains**: When catching exceptions across domain, network, worker, or persistence boundaries and translating them into typed domain errors (e.g. `DomainParseError`, `SerializationError`, `PersistenceError`), agents **MUST ALWAYS** pass the original caught error into the native `{ cause: error }` option of the `Error` constructor (ES2022+ / ES2025 native in Node.js >=26).
+- **Absolute Prohibition on Error Truncation**: Never swallow, stringify, or discard the original error object (e.g. `catch (err) { throw new Error('Failed: ' + String(err)); }` or `catch { throw new Error('Failed'); }`). Preserving `{ cause: error }` ensures V8 and modern debugging tools retain the full original stack trace, HTTP status codes, and inner exception metadata.
+- **Example**:
+  ```typescript
+  // ❌ ANTI-PATTERN: Stringifying or swallowing the cause breaks debugging & V8 stack traces
+  try {
+    return parseDomainPayload(raw);
+  } catch (err) {
+    throw new Error(`Domain parsing failed for payload: ${String(err)}`);
+  }
+
+  // ✅ CANONICAL: Native { cause: err } preserves complete causality and error context
+  try {
+    return parseDomainPayload(raw);
+  } catch (err) {
+    throw new Error('Domain parsing failed for payload', { cause: err });
+  }
+  ```
 
 ## Architectural Distinction: Catalog Domain IDs (`*Id`) vs Dynamic Instance UIDs (`*Uid`)
 

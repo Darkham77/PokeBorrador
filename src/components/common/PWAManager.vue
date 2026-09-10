@@ -1,38 +1,3 @@
-<template>
-  <div class="pwa-manager-container">
-    <!-- 1. Modal de Permisos (Sonido y Notificaciones) -->
-    <BaseModal
-      :show="showPermissionsModal"
-      title="PERMISOS REQUERIDOS"
-      variant="retro"
-      :prevent-close="true"
-      :show-close-button="false"
-    >
-      <div class="pwa-modal-content">
-        <p class="pwa-description">
-          Para una mejor experiencia, activa los sonidos y notificaciones.
-        </p>
-        <div class="permissions-list">
-          <div class="permission-item">
-            <span class="emoji p-icon">🔊</span>
-            <span class="p-text">Efectos de Sonido 8-bit</span>
-          </div>
-          <div class="permission-item">
-            <span class="emoji p-icon">🔔</span>
-            <span class="p-text">Alertas de Eventos</span>
-          </div>
-        </div>
-        <button
-          class="pv-button-retro"
-          @click.stop="handlePermissions"
-        >
-          ACEPTAR Y CONTINUAR
-        </button>
-      </div>
-    </BaseModal>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
@@ -105,6 +70,41 @@ onUnmounted(() => {
   gameBus.off('FORCE_PWA_UPDATE', handleForceUpdate)
 })
 </script>
+
+<template>
+  <div class="pwa-manager-container">
+    <!-- 1. Modal de Permisos (Sonido y Notificaciones) -->
+    <BaseModal
+      :show="showPermissionsModal"
+      title="PERMISOS REQUERIDOS"
+      variant="retro"
+      :prevent-close="true"
+      :show-close-button="false"
+    >
+      <div class="pwa-modal-content">
+        <p class="pwa-description">
+          Para una mejor experiencia, activa los sonidos y notificaciones.
+        </p>
+        <div class="permissions-list">
+          <div class="permission-item">
+            <span class="emoji p-icon">🔊</span>
+            <span class="p-text">Efectos de Sonido 8-bit</span>
+          </div>
+          <div class="permission-item">
+            <span class="emoji p-icon">🔔</span>
+            <span class="p-text">Alertas de Eventos</span>
+          </div>
+        </div>
+        <button
+          class="pv-button-retro"
+          @click.stop="handlePermissions"
+        >
+          ACEPTAR Y CONTINUAR
+        </button>
+      </div>
+    </BaseModal>
+  </div>
+</template>
 
 <style lang="scss" scoped>
 .pwa-modal-content {

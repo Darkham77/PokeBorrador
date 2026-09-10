@@ -63,8 +63,8 @@ async function runBreedingFuzzer() {
       const sB = speciesList[j]!;
       totalSimulations++;
 
-      let genderA: PokemonGender = 'm';
-      let genderB: PokemonGender = 'f';
+      let genderA: PokemonGender;
+      let genderB: PokemonGender;
 
       if (sA.id === 'ditto') {
         genderA = null;

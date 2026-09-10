@@ -771,7 +771,7 @@ export async function extractLibraryDomainTypes(
         if (ent.isDirectory()) {
           await walk(full);
         } else if (ent.name.endsWith('.d.ts')) {
-          let content = '';
+          let content: string;
           try {
             content = await fs.readFile(full, 'utf8');
           } catch {

@@ -65,8 +65,8 @@ export function useParticleEngine() {
     shape: ParticleShape = 'circle',
     offset?: { x: number; y: number }
   ) => {
-    let baseLeft = PARTICLE_CENTER_PERCENT
-    let baseTop = PARTICLE_CENTER_PERCENT
+    let baseLeft: number
+    let baseTop: number
 
     if (shape === 'circle') {
       // Distribución circular uniforme utilizando coordenadas polares
@@ -160,8 +160,8 @@ export function useParticleEngine() {
       // 4. Inyectar lógica de re-posicionamiento en el loop si el usuario lo desea
       const wrappedOnRepeat = () => {
         // 1. Re-calcular visibilidad INDIVIDUAL para evitar cortes bruscos en el grupo
-        let shouldBeVisible = true
         if (options.activeRange) {
+          let shouldBeVisible: boolean
           const [min, max] = options.activeRange
           const activeCount = elements.filter(e => e !== el && e.style.visibility === 'visible').length
           

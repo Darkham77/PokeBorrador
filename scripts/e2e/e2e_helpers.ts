@@ -172,7 +172,7 @@ export async function setupE2ESession(
 
   page.on('console', msg => {
     const text = msg.text();
-    let formatted = '';
+    let formatted: string;
     if (msg.type() === 'error') {
       formatted = `[BROWSER-ERROR] ${text}`;
     } else if (msg.type() === 'warning') {
@@ -893,8 +893,7 @@ export async function executeAutoBattle(
     return !!resolver?.().state;
   }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-  let over = false;
-  while (!over) {
+  while (true) {
     await page.waitForFunction(() => {
       const readiness = window.__VITE_DEBUG__?.getScriptedReplayReadiness?.();
       return readiness?.isReady === true;
@@ -909,7 +908,6 @@ export async function executeAutoBattle(
     });
 
     if (eventDetail.over) {
-      over = true;
       break;
     }
 
@@ -966,7 +964,6 @@ export async function executeAutoBattle(
     });
 
     if (action.terminal) {
-      over = true;
       break;
     }
 
@@ -1024,7 +1021,6 @@ export async function executeAutoBattle(
     });
 
     if (isEndingOrOver) {
-      over = true;
       break;
     }
 

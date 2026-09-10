@@ -76,7 +76,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
         try {
           parsedSave = JSON.parse(parsedSave);
         } catch (e) {
-          throw new Error(`[loadService] Error al parsear JSON save_data: ${(e as Error).message}`);
+          throw new Error(`[loadService] Error al parsear JSON save_data: ${(e as Error).message}`, { cause: e });
         }
       }
       
@@ -107,7 +107,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
       }
     }
   } catch (e) {
-    throw new Error(`[loadService] Error reading OPFS save file: ${(e as Error).message}`);
+    throw new Error(`[loadService] Error reading OPFS save file: ${(e as Error).message}`, { cause: e });
   }
 
   // Fallback to LocalStorage + Migration
@@ -144,7 +144,7 @@ export async function loadBestSave(user: AuthUser | null, db: DBRouter): Promise
           logger.warn('LOAD', `OPFS migration backup skipped: ${(opfsErr as Error).message}`);
         }
       } catch (e) {
-        throw new Error(`[loadService] Error parsing localStorage save content: ${(e as Error).message}`);
+        throw new Error(`[loadService] Error parsing localStorage save content: ${(e as Error).message}`, { cause: e });
       }
     }
   }

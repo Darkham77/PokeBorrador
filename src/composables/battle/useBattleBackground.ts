@@ -53,7 +53,7 @@ export function useBattleBackground() {
     const suffix = CYCLE_SUFFIXES[requireBattleBackgroundCycle(cycle.toLowerCase())] // text-ok: UI text display localization string
 
     let fileName = `${baseName}${suffix}`
-    let isBakedIn = false
+    let isBakedIn: boolean
 
     if (isBattleMapAssetId(fileName)) {
       // The cycle-suffixed file exists

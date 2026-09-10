@@ -391,8 +391,8 @@ export async function emulateGetFeaturedReplays(
     `, [limit]);
 
     const replays = rows.map(r => {
-      let p1 = {};
-      let p2 = {};
+      let p1: unknown;
+      let p2: unknown;
       try {
         p1 = typeof r.p1_data === 'string' ? JSON.parse(r.p1_data) : (r.p1_data || {});
       } catch {

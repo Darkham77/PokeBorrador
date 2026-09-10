@@ -38,7 +38,7 @@ export async function processNonForcedSwitchWorkerTurn(
   const isWild = !active.isTrainer && !active.isGym
 
   const { computeP2Choice } = await import('../battleTurnChoiceHelper.ts')
-  let p2Choice = ''
+  let p2Choice: string;
   if (side === 'player') {
     let eMove = decideEnemyMove(active.enemy, active.player, ctx.playerStages?.value ?? {}, isWild, ctx)
     if (active.enemy.volatileCounters?.['lockedmove'] && active.enemy.volatileCounters['lockedmove'] > 0 && active.enemy.lastMove) {

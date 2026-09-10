@@ -66,7 +66,7 @@ export const useProfileStore = defineStore('profile', () => {
         }
       }
     } catch (e) {
-      throw new Error(`[ProfileStore] Error reading localStorage save metadata: ${(e as Error).message}`)
+      throw new Error(`[ProfileStore] Error reading localStorage save metadata: ${(e as Error).message}`, { cause: e })
     }
 
     const lastRenamedAt = state.last_renamed_at || (user.user_metadata?.last_renamed_at as string | undefined) || profileData.value.last_renamed_at

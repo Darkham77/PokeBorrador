@@ -65,7 +65,7 @@ export async function discoverAuditors(options: DiscoveryOptions = {}): Promise<
   const discovered: AuditTaskDefinition[] = [];
 
   async function scanDirectory(currentDir: string) {
-    let entries: string[] = []; // no-domain: Non-domain utility collection or data structure
+    let entries: string[]; // no-domain: Non-domain utility collection or data structure
     try {
       entries = await fs.readdir(currentDir);
     } catch {

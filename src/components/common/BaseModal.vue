@@ -1,148 +1,3 @@
-<template>
-  <Teleport to="body">
-    <div
-      v-if="localShow"
-      class="base-modal-root"
-      :style="{ zIndex: computedZIndex, '--modal-zoom': disableZoom ? 1 : (uiStore.appZoom || 1) }"
-    >
-      <!-- Background Overlay -->
-      <Transition
-        appear
-        :css="false"
-        @enter="onOverlayEnter"
-        @leave="onOverlayLeave"
-      >
-        <div 
-          v-if="show" 
-          class="modal-overlay" 
-          :class="{ 
-            'transparent': overlay === 'none',
-            'no-blur': !blurOverlay || isSimplified
-          }"
-          @click.stop="handleOverlayClick" 
-        />
-      </Transition>
-      
-      <!-- Content Wrapper -->
-      <div 
-        v-if="localShow"
-        class="base-modal-teleport-wrapper" 
-        :class="[
-          { 'no-pointer-events': overlay === 'none' && !closeOnClickOutside }, 
-          `type-${type}`,
-          `position-${computedPositionMode}`
-        ]"
-      >
-        <Transition 
-          appear
-          :css="false"
-          @enter="onContentEnter"
-          @leave="onContentLeave"
-        >
-          <div 
-            v-if="show"
-            :id="id || undefined"
-            class="modal-content-premium base-modal-card"
-            :class="[
-              padding === 'raw' ? 'padding-raw' : 'padding-standard', 
-              `variant-${variant}`,
-              `corners-${computedCorners}`,
-              { 
-                'is-performance-mode': isSimplified,
-                'no-border': !showBorder,
-                'yellow-border': yellowBorder
-              },
-              customClass
-            ]"
-            :style="cardStyles"
-            @click.stop
-          >
-            <!-- Header -->
-            <header
-              v-if="!hideHeader"
-              class="modal-header-premium"
-              :style="{ background: headerBackground }"
-            >
-              <template v-if="$slots.header">
-                <slot name="header" />
-              </template>
-              <template v-else>
-                <div class="modal-header-left">
-                  <slot name="header-icon">
-                    <span
-                      v-if="emoji || icon"
-                      class="emoji modal-header-emoji"
-                    >{{ emoji || icon }}</span>
-                  </slot>
-                  <div class="modal-title-stack">
-                    <h2 
-                      class="modal-title-text"
-                      :style="{ color: titleColor }"
-                    >
-                      {{ title }}
-                    </h2>
-                  </div>
-                </div>
-              </template>
-              
-              <button
-                v-if="showCloseButton"
-                :id="closeBtnId || (id ? `${id}-close-btn` : undefined)"
-                class="modal-close-btn"
-                :class="{ 
-                  'is-solid': closeButtonVariant === 'solid',
-                  'is-yellow-solid': closeButtonVariant === 'yellow-solid' 
-                }"
-                :disabled="preventClose"
-                @click.stop="handleClose"
-              >
-                <div class="close-icon-wrapper" />
-              </button>
-            </header>
-
-
-
-            <!-- Content -->
-            <div 
-              class="modal-scrollable-content"
-              :class="[
-                padding === 'raw' ? 'padding-raw' : 'padding-standard',
-                `variant-${variant}`,
-                { 'no-scroll': noScroll }
-              ]"
-            >
-              <slot />
-            </div>
-
-            <!-- Footer -->
-            <footer
-              v-if="$slots.footer"
-              class="modal-footer-premium"
-            >
-              <slot name="footer" />
-            </footer>
-
-            <!-- Floating Close Button -->
-            <button
-              v-if="hideHeader && showCloseButton"
-              :id="id ? `${id}-close-btn` : undefined"
-              class="modal-close-btn-floating"
-              :class="{ 
-                'is-solid': closeButtonVariant === 'solid',
-                'is-yellow-solid': closeButtonVariant === 'yellow-solid' 
-              }"
-              :disabled="preventClose"
-              @click.stop="handleClose"
-            >
-              <div class="close-icon-wrapper" />
-            </button>
-          </div>
-        </Transition>
-      </div>
-    </div>
-  </Teleport>
-</template>
-
 <script setup lang="ts">
 
 import { ref, watch, computed, inject, onUnmounted, type Ref } from 'vue'
@@ -419,6 +274,151 @@ const computedCorners = computed(() => {
   return 'none'
 })
 </script>
+
+<template>
+  <Teleport to="body">
+    <div
+      v-if="localShow"
+      class="base-modal-root"
+      :style="{ zIndex: computedZIndex, '--modal-zoom': disableZoom ? 1 : (uiStore.appZoom || 1) }"
+    >
+      <!-- Background Overlay -->
+      <Transition
+        appear
+        :css="false"
+        @enter="onOverlayEnter"
+        @leave="onOverlayLeave"
+      >
+        <div 
+          v-if="show" 
+          class="modal-overlay" 
+          :class="{ 
+            'transparent': overlay === 'none',
+            'no-blur': !blurOverlay || isSimplified
+          }"
+          @click.stop="handleOverlayClick" 
+        />
+      </Transition>
+      
+      <!-- Content Wrapper -->
+      <div 
+        v-if="localShow"
+        class="base-modal-teleport-wrapper" 
+        :class="[
+          { 'no-pointer-events': overlay === 'none' && !closeOnClickOutside }, 
+          `type-${type}`,
+          `position-${computedPositionMode}`
+        ]"
+      >
+        <Transition 
+          appear
+          :css="false"
+          @enter="onContentEnter"
+          @leave="onContentLeave"
+        >
+          <div 
+            v-if="show"
+            :id="id || undefined"
+            class="modal-content-premium base-modal-card"
+            :class="[
+              padding === 'raw' ? 'padding-raw' : 'padding-standard', 
+              `variant-${variant}`,
+              `corners-${computedCorners}`,
+              { 
+                'is-performance-mode': isSimplified,
+                'no-border': !showBorder,
+                'yellow-border': yellowBorder
+              },
+              customClass
+            ]"
+            :style="cardStyles"
+            @click.stop
+          >
+            <!-- Header -->
+            <header
+              v-if="!hideHeader"
+              class="modal-header-premium"
+              :style="{ background: headerBackground }"
+            >
+              <template v-if="$slots.header">
+                <slot name="header" />
+              </template>
+              <template v-else>
+                <div class="modal-header-left">
+                  <slot name="header-icon">
+                    <span
+                      v-if="emoji || icon"
+                      class="emoji modal-header-emoji"
+                    >{{ emoji || icon }}</span>
+                  </slot>
+                  <div class="modal-title-stack">
+                    <h2 
+                      class="modal-title-text"
+                      :style="{ color: titleColor }"
+                    >
+                      {{ title }}
+                    </h2>
+                  </div>
+                </div>
+              </template>
+              
+              <button
+                v-if="showCloseButton"
+                :id="closeBtnId || (id ? `${id}-close-btn` : undefined)"
+                class="modal-close-btn"
+                :class="{ 
+                  'is-solid': closeButtonVariant === 'solid',
+                  'is-yellow-solid': closeButtonVariant === 'yellow-solid' 
+                }"
+                :disabled="preventClose"
+                @click.stop="handleClose"
+              >
+                <div class="close-icon-wrapper" />
+              </button>
+            </header>
+
+
+
+            <!-- Content -->
+            <div 
+              class="modal-scrollable-content"
+              :class="[
+                padding === 'raw' ? 'padding-raw' : 'padding-standard',
+                `variant-${variant}`,
+                { 'no-scroll': noScroll }
+              ]"
+            >
+              <slot />
+            </div>
+
+            <!-- Footer -->
+            <footer
+              v-if="$slots.footer"
+              class="modal-footer-premium"
+            >
+              <slot name="footer" />
+            </footer>
+
+            <!-- Floating Close Button -->
+            <button
+              v-if="hideHeader && showCloseButton"
+              :id="id ? `${id}-close-btn` : undefined"
+              class="modal-close-btn-floating"
+              :class="{ 
+                'is-solid': closeButtonVariant === 'solid',
+                'is-yellow-solid': closeButtonVariant === 'yellow-solid' 
+              }"
+              :disabled="preventClose"
+              @click.stop="handleClose"
+            >
+              <div class="close-icon-wrapper" />
+            </button>
+          </div>
+        </Transition>
+      </div>
+    </div>
+  </Teleport>
+</template>
 
 <style lang="scss">
 @use "../../styles/components/base-modal" as *;

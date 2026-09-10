@@ -162,7 +162,7 @@ async function runMasterAudit() {
       const isSuccess = !proc.timedOut && proc.status === 0;
       const findings: AuditFinding[] = [];
 
-      let errorMsg = '';
+      let errorMsg: string;
       if (proc.timedOut) {
         errorMsg = `Timeout excedido (${task.timeoutMs ?? 60000}ms) en la ejecución de la suite.`;
       } else {

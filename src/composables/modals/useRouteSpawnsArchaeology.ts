@@ -60,12 +60,9 @@ export function useRouteSpawnsArchaeology(props: RouteSpawnsProps) {
       let remaining = budget
       for (let i = 0; i < affected.length; i++) {
         const item = affected[i]!
-        let added = 0
-        if (i === affected.length - 1) {
-          added = remaining
-        } else {
-          added = Math.round(remaining * PERCENTAGE_HALF_SPLIT_RATIO)
-        }
+        const added = i === affected.length - 1
+          ? remaining
+          : Math.round(remaining * PERCENTAGE_HALF_SPLIT_RATIO)
         activeCategoryWeights[item.key as ArchaeologyCategory] += added
         remaining -= added
       }

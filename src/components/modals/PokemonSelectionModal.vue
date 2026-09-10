@@ -176,7 +176,7 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: PokemonSelectionS
   const box = (gameStore.state.box || []) as (Pokemon | null)[]
   const team = (gameStore.state.team || []) as (Pokemon | null)[]
   
-  let sourceList: { pokemon: Pokemon, _source: PokemonStorageLocation, index: number }[] = []
+  let sourceList: { pokemon: Pokemon, _source: PokemonStorageLocation, index: number }[]
   
   if (props.customList && props.customList.length > 0) {
     sourceList = props.customList.map((p, i) => ({ pokemon: p, _source: 'box' as const, index: i }))

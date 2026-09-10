@@ -19,9 +19,9 @@ interface Props {
   items: SpawnTableItem[];
   mode: RouteSpawnTab;
 
-  probClass: string;
-  weatherEmoji: string;
-  weatherLabel: string;
+  probClass?: string;
+  weatherEmoji?: string;
+  weatherLabel?: string;
   eventMultiplier?: number;
   getStatusTooltip?: (spawnType: string) => { title: string; desc: string };
   getCategoryTooltip?: (type: string) => { title: string; desc: string };
