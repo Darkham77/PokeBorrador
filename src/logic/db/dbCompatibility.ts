@@ -1,4 +1,4 @@
-import { DATABASE_MIGRATIONS } from './migrations_data.ts';
+import { CLIENT_DB_VERSION, LATEST_MIGRATION_ID } from './migrations_version.ts';
 import { logger } from '../utils/logger.ts';
 import type { DBRouter } from './dbRouter.ts';
 import type { DBCompatibilityResponse } from '@/types/system/database';
@@ -10,11 +10,7 @@ declare const __APP_VERSION__: string;
  * DB Compatibility Check
  * Ensures the client version is not greater than the DB version.
  */
-// Use the last migration ID as the client version (Automated)
-const lastMigration = DATABASE_MIGRATIONS.length > 0 ? DATABASE_MIGRATIONS[DATABASE_MIGRATIONS.length - 1] : null;
-export const CLIENT_DB_VERSION = lastMigration 
-  ? parseInt(lastMigration.id.split('_')[0] || '0') 
-  : 0;
+export { CLIENT_DB_VERSION, LATEST_MIGRATION_ID };
 
 export async function checkDBCompatibility(router: DBRouter): Promise<DBCompatibilityResponse> {
   let loadingStore: LoadingStore | null = null;

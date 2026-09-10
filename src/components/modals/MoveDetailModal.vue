@@ -51,14 +51,6 @@ const description = computed(() => {
   if (!props.moveId || !md.value) return ''
   return getMoveDescription(props.moveId, md.value)
 })
-
-const hexToRgba = (hex: string, alpha: number) => {
-  if (!hex || hex === '—') return `Rgba(255, 255, 255, ${alpha})`
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
-  return `Rgba(${r}, ${g}, ${b}, ${alpha})`
-}
 </script>
 
 <template>
@@ -72,8 +64,7 @@ const hexToRgba = (hex: string, alpha: number) => {
       v-if="md"
       class="move-detail-container"
       :style="{ 
-        '--move-accent': typeColor,
-        '--move-accent-alpha': hexToRgba(typeColor, 0.1)
+        '--move-accent': typeColor
       }"
     >
       <div class="type-cat-row">
@@ -204,7 +195,7 @@ const hexToRgba = (hex: string, alpha: number) => {
 }
 
 .pp-info {
-  background: var(--move-accent-alpha);
+  background: Rgb(from var(--move-accent, #ffffff) r g b / 0.1);
   padding: 18px 24px;
   border-radius: 18px;
   display: flex;
@@ -235,7 +226,7 @@ const hexToRgba = (hex: string, alpha: number) => {
     font-size: 20px; 
     font-weight: 900; 
     color: var(--move-accent);
-    text-shadow: 0 0 10px var(--move-accent-alpha);
+    text-shadow: 0 0 10px Rgb(from var(--move-accent, #ffffff) r g b / 0.1);
   }
 }
 
@@ -284,7 +275,7 @@ const hexToRgba = (hex: string, alpha: number) => {
     color: $white;
     border-color: transparent;
     transform: Translatey(-3px);
-    box-shadow: 0 10px 20px Rgba(0, 0, 0, 0.4), 0 0 15px var(--move-accent-alpha);
+    box-shadow: 0 10px 20px Rgba(0, 0, 0, 0.4), 0 0 15px Rgb(from var(--move-accent, #ffffff) r g b / 0.1);
   }
 }
 

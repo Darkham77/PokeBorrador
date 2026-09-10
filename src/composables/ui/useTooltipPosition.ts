@@ -1,6 +1,8 @@
 import { ref, type Ref } from 'vue'
 
-const MIN_TOOLTIP_MAX_HEIGHT_PX = 120;
+const MIN_TOOLTIP_MAX_HEIGHT_PX = 120
+const GAP_PX = 12
+const PADDING_PX = 15
 
 export function useTooltipPosition(
   trigger: Ref<HTMLElement | null>,
@@ -18,40 +20,38 @@ export function useTooltipPosition(
     
     const rect = trigger.value.getBoundingClientRect()
     const tipRect = tooltip.value.getBoundingClientRect()
-    const scrollY = window.scrollY
-    const scrollX = window.scrollX
-    const viewportWidth = window.innerWidth
-    const viewportHeight = window.innerHeight
+    const scrollY = typeof window !== 'undefined' ? window.scrollY : 0
+    const scrollX = typeof window !== 'undefined' ? window.scrollX : 0
+    const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1000
+    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 800
     
     let pos = position
-    const gap = 12
-    const padding = 15 // Safety margin from edges
 
     const triggerCenter = rect.left + rect.width / 2
     isRightSide.value = triggerCenter > viewportWidth / 2
 
     // --- 1. FLIPPING LOGIC (Vertical & Horizontal) ---
-    if (pos === 'top' && rect.top - tipRect.height - gap < padding) {
-      const spaceTop = rect.top - padding
-      const spaceBottom = viewportHeight - rect.bottom - padding
+    if (pos === 'top' && rect.top - tipRect.height - GAP_PX < PADDING_PX) {
+      const spaceTop = rect.top - PADDING_PX
+      const spaceBottom = viewportHeight - rect.bottom - PADDING_PX
       if (spaceBottom > spaceTop) {
         pos = 'bottom'
       }
-    } else if (pos === 'bottom' && rect.bottom + tipRect.height + gap > viewportHeight - padding) {
-      const spaceTop = rect.top - padding
-      const spaceBottom = viewportHeight - rect.bottom - padding
+    } else if (pos === 'bottom' && rect.bottom + tipRect.height + GAP_PX > viewportHeight - PADDING_PX) {
+      const spaceTop = rect.top - PADDING_PX
+      const spaceBottom = viewportHeight - rect.bottom - PADDING_PX
       if (spaceTop > spaceBottom) {
         pos = 'top'
       }
-    } else if (pos === 'left' && rect.left - tipRect.width - gap < padding) {
-      const spaceLeft = rect.left - padding
-      const spaceRight = viewportWidth - rect.right - padding
+    } else if (pos === 'left' && rect.left - tipRect.width - GAP_PX < PADDING_PX) {
+      const spaceLeft = rect.left - PADDING_PX
+      const spaceRight = viewportWidth - rect.right - PADDING_PX
       if (spaceRight > spaceLeft) {
         pos = 'right'
       }
-    } else if (pos === 'right' && rect.right + tipRect.width + gap > viewportWidth - padding) {
-      const spaceLeft = rect.left - padding
-      const spaceRight = viewportWidth - rect.right - padding
+    } else if (pos === 'right' && rect.right + tipRect.width + GAP_PX > viewportWidth - PADDING_PX) {
+      const spaceLeft = rect.left - PADDING_PX
+      const spaceRight = viewportWidth - rect.right - PADDING_PX
       if (spaceLeft > spaceRight) {
         pos = 'left'
       }
@@ -63,14 +63,14 @@ export function useTooltipPosition(
     let left = 0
     
     if (pos === 'top' || pos === 'bottom') {
-      top = pos === 'top' ? rect.top + scrollY - gap : rect.bottom + scrollY + gap
+      top = pos === 'top' ? rect.top + scrollY - GAP_PX : rect.bottom + scrollY + GAP_PX
       left = triggerCenter + scrollX
     } else if (pos === 'left') {
       top = rect.top + scrollY + rect.height / 2
-      left = rect.left + scrollX - gap
+      left = rect.left + scrollX - GAP_PX
     } else if (pos === 'right') {
       top = rect.top + scrollY + rect.height / 2
-      left = rect.right + scrollX + gap
+      left = rect.right + scrollX + GAP_PX
     }
 
     // --- 3. NUDGING & ARROW LOGIC ---
@@ -81,28 +81,28 @@ export function useTooltipPosition(
       const halfWidth = tipRect.width / 2
       
       // Horizontal Nudge
-      if (left - halfWidth < padding + scrollX) {
-        left = padding + scrollX + halfWidth
-      } else if (left + halfWidth > viewportWidth + scrollX - padding) {
-        left = viewportWidth + scrollX - padding - halfWidth
+      if (left - halfWidth < PADDING_PX + scrollX) {
+        left = PADDING_PX + scrollX + halfWidth
+      } else if (left + halfWidth > viewportWidth + scrollX - PADDING_PX) {
+        left = viewportWidth + scrollX - PADDING_PX - halfWidth
       }
       
       arrowOffset.value = { x: anchorX - left, y: 0 }
     } else {
       // Left/Right Vertical Nudge
       const halfHeight = tipRect.height / 2
-      if (top - halfHeight < padding + scrollY) {
-        top = padding + scrollY + halfHeight
-      } else if (top + halfHeight > viewportHeight + scrollY - padding) {
-        top = viewportHeight + scrollY - padding - halfHeight
+      if (top - halfHeight < PADDING_PX + scrollY) {
+        top = PADDING_PX + scrollY + halfHeight
+      } else if (top + halfHeight > viewportHeight + scrollY - PADDING_PX) {
+        top = viewportHeight + scrollY - PADDING_PX - halfHeight
       }
       arrowOffset.value = { x: 0, y: anchorY - top }
     }
 
     if (pos === 'top') {
-      maxHeight.value = Math.max(MIN_TOOLTIP_MAX_HEIGHT_PX, Math.round(rect.top - padding - gap))
+      maxHeight.value = Math.max(MIN_TOOLTIP_MAX_HEIGHT_PX, Math.round(rect.top - PADDING_PX - GAP_PX))
     } else if (pos === 'bottom') {
-      maxHeight.value = Math.max(MIN_TOOLTIP_MAX_HEIGHT_PX, Math.round(viewportHeight - rect.bottom - padding - gap))
+      maxHeight.value = Math.max(MIN_TOOLTIP_MAX_HEIGHT_PX, Math.round(viewportHeight - rect.bottom - PADDING_PX - GAP_PX))
     } else {
       maxHeight.value = null
     }

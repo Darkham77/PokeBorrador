@@ -16,7 +16,7 @@ export class ShowdownTeamResolver {
    */
   static getShowdownOrder(team: Pokemon[], request: ShowdownPlayerRequest | null | undefined): Pokemon[] {
     if (!request || !request.side || !Array.isArray(request.side.pokemon)) {
-      return [...team];
+      return team;
     }
     
     const resolved: Pokemon[] = [];

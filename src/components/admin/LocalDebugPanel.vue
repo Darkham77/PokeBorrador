@@ -1,8 +1,9 @@
 <script setup lang="ts">
 
-import { ref, computed, onBeforeUnmount, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { GAME_UI_EVENTS } from '@/types/system/gameEvents.ts'
+import { useWindowListener } from '@/composables/ui/useWindowListener'
 
 // Sub-components
 import DebugStatsTab from './debug/DebugStatsTab.vue'
@@ -32,8 +33,7 @@ const closeForBattleEntry = () => {
   isOpen.value = false
 }
 
-onMounted(() => window.addEventListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry))
-onBeforeUnmount(() => window.removeEventListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry))
+useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
 </script>
 
 <template>

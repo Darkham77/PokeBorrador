@@ -13,6 +13,7 @@
  *   3. o1-linear-membership: Array constant .includes() instead of ReadonlySet.has().
  *   4. o1-object-keys-values-scan: Object.keys() / Object.values() linear search instead of key index.
  *   5. o1-json-clone: JSON.parse(JSON.stringify(...)) anti-pattern instead of structuredClone or factory.
+ *   6. o1-redundant-spread-return: Redundant 'return [...arr]' instead of directly returning 'readonly T[]'.
  *
  * Usage:
  *   node scripts/auditors/domain_data/validate_o1_data_structures.ts
@@ -88,6 +89,7 @@ export const P_POKEMON_SPREAD_LOOKUP = /\[\s*\.\.\.[a-zA-Z0-9_.]*(?:team|box)[^,
 export const P_STATIC_ARRAY_INCLUDES = /(?:\(\s*)?\b([A-Z][A-Z0-9_]+_(?:IDS|LIST|TYPES|CATEGORIES|NAMES|KINDS|ORDER))\b(?:\s+as\s+[^)]+)?(?:\s*\))?\.(?:includes|indexOf)\s*\(/g;
 export const P_OBJECT_SCAN_LOOKUP = /\bObject\.(?:keys|values|entries)\s*\([^)]+\)\.(?:find|findLast)\s*\(/g;
 export const P_JSON_CLONE = /\bJSON\.parse\s*\(\s*JSON\.stringify\s*\(/g;
+export const P_REDUNDANT_SPREAD_RETURN = /return\s*\[\s*\.\.\.([a-zA-Z0-9_$.]+(?:\([^)]*\))?)\s*\]\s*;/g;
 
 // Escape hatch comments (strictly o1-specific, domain-ok is forbidden here)
 export const ESCAPE_HATCHES = ['// o1-ok:', '// linear-search-ok:'] as const;
@@ -174,6 +176,20 @@ export function scanFileForO1Issues(
       issues.push({
         ruleId: 'o1-json-clone',
         message: "Anti-pattern 'JSON.parse(JSON.stringify(...))' detected. Use native 'structuredClone(obj)' or an object factory function instead.",
+        line: lineNumber,
+        context: lineText.trim(),
+        isWarning: false
+      });
+    }
+
+    // 6. Redundant Spread Return Allocation Anti-Pattern
+    P_REDUNDANT_SPREAD_RETURN.lastIndex = 0;
+    let spreadMatch: RegExpExecArray | null;
+    while ((spreadMatch = P_REDUNDANT_SPREAD_RETURN.exec(lineText)) !== null) {
+      const target = spreadMatch[1];
+      issues.push({
+        ruleId: 'o1-redundant-spread-return',
+        message: `Redundant array spread 'return [...${target}]'. Return the collection directly typed as 'readonly T[]' to prevent unnecessary heap allocations and GC churn.`,
         line: lineNumber,
         context: lineText.trim(),
         isWarning: false

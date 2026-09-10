@@ -24,6 +24,60 @@ Apply this workflow whenever the task involves any of the following:
 
 If it represents a finite domain, design and use the domain type first.
 
+## Pre-Flight Mental Protocol (First-Time-Right Coding)
+
+Before writing or modifying ANY TypeScript code in `src/` or `scripts/`, mentally run through the **5 Binary Decision Gates**:
+
+| Gate | Question | Required Canonical Action |
+| :--- | :--- | :--- |
+| **1. Entity vs Instance** | Is this a finite catalog entity (`*Id`) or a live instance identifier (`*Uid`)? | **Catalog**: Use strict domain union (`PokemonSpeciesId`, `ItemId`). NEVER open `string`.<br>**Live Instance**: Use `string` (`crypto.randomUUID()`). Matches `GENUINE_UID_PATTERN`. |
+| **2. Library Domain Reuse** | Does `@pkmn/types`, `@smogon/calc`, or `src/types/` already define this? | Import canonical contract directly (`GenderName`, `SideID`, `StatusName`). NEVER redeclare `'M' \| 'F' \| 'N'` or inline property unions. |
+| **3. Boundary vs Core** | Is data entering from external I/O (API/JSON/Storage) or inside business logic? | **Boundary**: Parse with `requireDomainId(raw)` or guard with `isDomainId(raw)`. Throw loudly on invalid data.<br>**Core**: Demand pure `DomainId` parameter with call-site guarding. NEVER `DomainId \| string` or `DomainId \| undefined`. |
+| **4. O(1) Access & Memory** | Am I searching, storing, or returning a collection in an execution path? | **Search**: Pre-index in $O(1)$ (`Record<DomainId, T>`, `ReadonlySet<T>`, `Map`). NEVER `.find()`, `.filter()`, `.includes()` on arrays in hot paths.<br>**Return**: Return collection directly as `readonly T[]`. NEVER `return [...arr]`. |
+| **5. Object Duplication** | Do I need to duplicate an entity or state tree? | **Vue / Pinia Reactive**: Use `cloneReactive(obj)` from `@/logic/utils/cloneUtils`.<br>**Plain Object**: Use `structuredClone(obj)`.<br>NEVER `JSON.parse(JSON.stringify(obj))`. |
+
+### Mental Anchors: The 7 Fatal Anti-Patterns vs Canonical Patterns
+
+```typescript
+// 1. Function parameters: Wildcards and fallbacks
+❌ function useItem(id: ItemId | string, count = 1) { const target = id || 'potion'; }
+✅ function useItem(id: ItemId, count = 1) { /* Pure domain contract; validated at call-site */ }
+
+// 2. Collection getters: Heap churn via spread
+❌ getParty(): Pokemon[] { return [...this.party]; }
+✅ getParty(): readonly Pokemon[] { return this.party; }
+
+// 3. Reinventing library types in interfaces & properties
+❌ interface PokemonData { gender?: 'M' | 'F' | 'N' | number; }
+✅ import type { GenderName } from '@pkmn/types';
+   interface PokemonData { gender?: GenderName | number; }
+
+// 4. Linear search in static collections vs O(1)
+❌ const move = MOVES_LIST.find(m => m.id === moveId);
+✅ const move = MOVES_DATABASE[moveId];
+
+// 5. Deep cloning reactive stores / entities
+❌ const copy = JSON.parse(JSON.stringify(pokemon));
+✅ const copy = cloneReactive(pokemon); // Or structuredClone(plainObj) for non-reactive
+
+// 6. Double-casting in business logic
+❌ const species = raw as unknown as PokemonSpeciesId;
+✅ const species = requirePokemonSpeciesId(raw); // Loud failure at trust boundary
+
+// 7. Secondary property / display name fallbacks
+❌ const id = poke.id || poke.name || '';
+✅ const id = poke.id; // Pure canonical ID; display name is resolved via helper
+```
+
+### Pre-Commit Mental Self-Audit (Run Before Finishing)
+
+Before declaring any coding task complete, mentally scan your diff for these 5 flags:
+1. Did I introduce any `[...spread]` return statements in getters or services?
+2. Did I use `.find()`, `.filter()`, or `.includes()` on an array inside a loop, calculation, or tick?
+3. Did I write `|| ''`, `?? ''`, or fallback to `.name` on any entity ID?
+4. Did I type any property as an inline literal union (e.g. `'a' | 'b'`) instead of importing the domain type?
+5. Did I write `as unknown as` anywhere in `src/`?
+
 ## Absolute Priority on O(1) Data Structures & Lookup Performance (`preferO1DataStructures`)
 
 - **Efficiency & Lookup Speed is Priority #1**: When designing, typing, or consuming finite domain collections, constant-time $O(1)$ access structures (`Record<DomainId, T>`, `ReadonlySet<DomainId>`, `Map<DomainId, T>`) MUST ALWAYS be preferred over linear search arrays (`T[]`).
@@ -34,20 +88,19 @@ If it represents a finite domain, design and use the domain type first.
 - **Zero-Allocation Boundary Lookups**:
   - Getters MUST accept `id: string`, validate via boundary guards (`requireItemId(id)`), and retrieve in $O(1)$ without requiring caller-side type assertions (`as unknown as`).
   - Simulation checks and item usability predicates MUST avoid deep serialization cloning (`JSON.parse(JSON.stringify(...))`), utilizing shallow structured cloning (`clonePokemonForSimulation`) to eliminate Garbage Collection lag.
+- **Zero-Allocation Array Return & Readonly Reference Mandate (`noRedundantSpreadReturn` / `o1-redundant-spread-return`)**:
+  - Functions, getters, and domain accessors MUST return collections directly (typed as `readonly T[]`, `Readonly<Record<...>>`, or `ReadonlySet<T>`) instead of allocating redundant shallow clones via spread syntax (`return [...data];`, `() => [...data]`).
+  - Spreading arrays on every return introduces needless heap memory allocation, high GC churn, and micro-stutter in battle ticks and breeding calculation hot paths.
+  - If callers require an isolated mutable copy, the caller can explicitly clone via `cloneReactive()` or `structuredClone()`, but domain getters must never penalize 100% of read-only consumers with heap allocations.
+  - Automatically audited with 0 errors by `validate_o1_data_structures.ts` (`o1-redundant-spread-return`).
 
-## Absolute Prohibition on Silent Domain ID Fallbacks (`noDomainIdFallbacks`)
+## Absolute Prohibition on Silent Domain ID & Name Fallbacks (`noDomainIdFallbacks` / `noDomainNameFallbacks`)
 
 - **Domain-Type-First Principle**: Identifiers for domain entities (`ItemId`, `PokemonSpeciesId`, `AbilityId`, `PokemonMoveId`, `TrainerClassId`, etc.) MUST NEVER have silent runtime fallback defaults (e.g. `item = rawItem || ''`, `species = poke.species ?? ''`, `id: raw.id || raw.name`, `toID(x || y)`).
 - **Fail Loud & Fast Mandate**: If an ID is missing, malformed, or does not exist in the domain set, the system MUST throw an explicit, descriptive error immediately (e.g. via `requireItemId(x)`, `requirePokemonSpeciesId(x)`).
+- **Canonical ID Mandate**: Every domain entity MUST be resolved, validated, and evaluated STRICTLY via its canonical `id`. It is forbidden to fall back to secondary fields or names (`toID(m.id || m.name)`, `p.species || p.name`, `p.id || p.name`, `move.id || move.name`).
 - **UI Localization Boundary**: For presentation in UI labels/buttons, Spanish translations must be resolved via standard domain mapping helpers (e.g. `getItemName(id)`, `getAbilityName(id)`). The underlying data structures, payloads, and state properties must remain strictly typed domain IDs.
-- **Audit Engine Enforcement**: The audit rule `noDomainIdFallbacks` in `scripts/maintenance/audit_rules.ts` scans `src/` and `scripts/` during `npm run audit` and will fail if any domain ID fallback is introduced.
-
-## Absolute Prohibition on ID-to-Name & Secondary Property Fallbacks (`noDomainNameFallbacks`)
-
-- **Canonical ID Mandate**: Every domain entity (Pokemon, Move, Ability, Item) MUST be resolved, validated, and evaluated STRICTLY via its canonical `id` (`PokemonSpeciesId`, `PokemonMoveId`, `AbilityId`, `ItemId`).
-- **Forbidden Pattern**: `toID(m.id || m.name)`, `p.species || p.name`, `p.id || p.name`, `move.id || move.name`, `toID(x || y)`.
-- **Zero-Tolerance Protocol**: If a domain entity is missing its canonical `id` field, it is malformed/illegal data. It MUST NEVER be "healed" or patched by falling back to a display name or secondary field. It must fail loudly with an explicit error.
-- **Audit Engine Enforcement**: The audit rule `noDomainNameFallbacks` automatically scans `src/logic/` and `src/stores/` and blocks any commit containing fallback derivations from ID to name.
+- **Audit Rules Enforcement**: Enforced automatically by `noDomainIdFallbacks` and `noDomainNameFallbacks` in `scripts/maintenance/audit_rules.ts`.
 
 ## Absolute Prohibition on Value-Hardcoding in Constant Names (`badConstantNames`)
 
@@ -62,10 +115,14 @@ If it represents a finite domain, design and use the domain type first.
 - **Forbidden Pattern**: `var hola: true`, `type Flag = false;`, `interface Event { ready: true; }` (WRONG — types as literal boolean instead of boolean type).
 - **Canonical Pattern**: `var hola: boolean`, `type Flag = boolean;`, `interface Event { ready: boolean; }` (CORRECT — canonical boolean contract).
 
-## Absolute Prohibition on Local Reinvention of Library Domain Types (`noLibraryDomainDuplicates`)
+## Absolute Prohibition on Local Reinvention of Library Domain Types (`noLibraryDomainDuplicates` / `noRedundantLibraryDomainTypes`)
 
-- **Direct Dependency Consumption**: It is STRICTLY FORBIDDEN to redeclare or invent local domain types or string literal arrays (`['p1', 'p2', 'p3', 'p4']`, `'M' | 'F' | 'N'`, `'brn' | 'par' | ...`) when an identical domain type is already exported by an installed library (`SideID`, `GenderName` from `@pkmn/sim`, `StatusName` from `@smogon/calc`, etc.).
-- **Dynamic Auditor Indexing**: The auditor `scripts/auditors/domain_data/validate_domain_types.ts` dynamically indexes all exported union types from `node_modules/` `.d.ts` files at runtime and will fail if local code duplicates a library domain.
+- **Direct Dependency Consumption**: It is STRICTLY FORBIDDEN to redeclare or invent local domain types, string literal arrays, or inline property union types (`['p1', 'p2', 'p3', 'p4']`, `'M' | 'F' | 'N'`, `'brn' | 'par' | ...`) when an identical domain type is already exported by an installed library (`SideID`, `GenderName` from `@pkmn/types` / `@pkmn/sim`, `StatusName` from `@smogon/calc`, etc.).
+- **Comprehensive Interface & Property Scanning (`P_PROP_UNION_DECL`)**: This mandate applies universally to:
+  1. Top-level type aliases: `type Foo = 'M' | 'F' | 'N';` (FORBIDDEN — use `GenderName`).
+  2. Literal constant arrays: `const GENDERS = ['M', 'F', 'N'] as const;` (FORBIDDEN — use `GenderName`).
+  3. Interface and object properties, including mixed primitive unions: `interface Bar { gender?: 'N' | 'M' | 'F' | number; }` (FORBIDDEN — use `gender?: GenderName | number;`).
+- **Dynamic Auditor Indexing**: The auditor `scripts/auditors/domain_data/validate_domain_types.ts` dynamically indexes all exported union types from `node_modules/` `.d.ts` files at runtime and enforces zero duplicate definitions across top-level types, constants, and interface properties.
 
 ## Absolute Prohibition on Redundant 1:1 Type & Value Aliases (`noRedundantAliases`)
 

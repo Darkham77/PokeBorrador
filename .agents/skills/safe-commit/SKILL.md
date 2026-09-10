@@ -21,7 +21,7 @@ This workflow is a **strict state machine**, not a loose checklist. Each step pr
 | **No optional phases** | Phases 0–4 are mandatory. Skipping phases is STRICTLY FORBIDDEN. |
 | **Update `task.md` continuously** | Update `<appDataDir>/brain/<conversation-id>/task.md` after each step. |
 | **Unbroken Repair Loop** | You MUST NEVER exit Phase 2 until `npm run build` exits with code 0 on the final code. |
-| **Zero Gatekeeper Tampering** | Agents MUST NEVER weaken, alter, relax, or reinterpret the verification rules, thresholds, or filtering logic of `audit_for_commit.ts`, `audit_project.ts`, or any quality gatekeeper to make checks pass. All project errors and NEW warnings (including unused exports and complexity) MUST be resolved cleanly at the code source. Suppressing auditor findings or altering auditor intentions without explicit user consultation is STRICTLY FORBIDDEN. |
+| **Zero Gatekeeper Tampering & Proactive Evolution** | Agents MUST NEVER unilaterally weaken, alter, relax, or reinterpret the verification rules, thresholds, or filtering logic of `audit_for_commit.ts`, `audit_project.ts`, or any quality gatekeeper to make checks pass. All project errors and NEW warnings must be resolved cleanly at the code source. Suppressing auditor findings without explicit user consultation is STRICTLY FORBIDDEN. However, when an architectural refactor renders an auditor's target path or check obsolete or suboptimal (e.g., relocating `:root` variables from `_variables.scss` to `_base.scss`), agents MUST PROACTIVELY SUGGEST AND EXPLAIN THE AUDITOR ADAPTATION TO THE USER for explicit authorization, rather than implementing hacky, inferior source code workarounds to satisfy an outdated check. |
 | **Dynamic Modules & Domain Exports Analysis** | When resolving unused exports (Fallow), NEVER blindly strip `export` without analyzing whether the symbol is needed by dynamically loaded modules (dynamic routes, Vite glob imports, Web Workers, reflection), test suites, or public domain type contracts (`src/types/**`). If an export is an intentional domain contract or required for dynamic loading, register it under `ignoreExports` in `.fallowrc.json` with clear justification instead of breaking runtime accessibility. Only strictly file-private helpers in implementation files may have `export` removed. |
 
 > [!CAUTION]
@@ -45,7 +45,7 @@ graph TD
         C2 -->|100% Pass| C3[2.3 npm run build\n🔒 THE BUILD GATE]
         
         C3 -->|Exit code ≠ 0 / Fail| REPAIR
-        C3 -->|Exit 0 ✅| C4[2.4 Build Optimization & Compression Analysis]
+        C3 -->|Exit 0 ✅| C4[2.4 Build Optimization & Chunk Analysis\nnpm run audit:bundle]
         C4 -->|Chunk bloat / missing optimizations| REPAIR
         C4 -->|Optimized ✅| C5[2.5 npm run fallow:health]
         
@@ -155,16 +155,25 @@ In every iteration of the loop, execute these checks sequentially:
      - Fix the underlying compilation, type, or auditor errors in source code.
      - Restart from Check 2.1 and re-run until `npm run build` returns Exit Code 0.
 
-4. **Check 2.4 — Build Optimization & Data Compression Audit**:
-   - Analyze the build output and pre-compression report table (`⚡ POKÉ VICIO — PRE-COMPRESSION & ASSET SUMMARY`):
-     - **Pre-compression & Savings Verification**: Inspect Brotli Q11 and Gzip L9 sizes and savings ratios across all categories (Workers, WASM, App Shell, Vendor, Game Data, UI/Views). Verify that high compression savings are maintained without compression errors.
-     - **Chunk Size & Bloat Inspection**: Check individual chunks against size thresholds (Vite warning limit 3000 kB, PWA precache warning limit 5 MB `⚠️`). Check for unexpected chunk size inflation or accidental monolithic grouping.
-     - **Optimization Opportunities Assessment**: Evaluate whether newly added or modified code/assets require:
-       - Adjusting `manualChunks` in `vite.config.ts` (e.g. isolating large data domains, vendors, or worker modules).
-       - Code-splitting large static data into dynamic asynchronous chunks.
-       - Tree-shaking optimizations or removing unused asset references.
-     - *If optimization opportunities or chunk anomalies are found*: Implement the necessary optimizations in `vite.config.ts` or source code, record them under "Repairs applied" in `task.md`, and re-enter the loop from Check 2.1.
-     - *If optimized and clean*: Record key compression metrics (total original bytes, Brotli size, % savings) in `task.md` and proceed to Check 2.5.
+4. **Check 2.4 — Build Optimization, Chunk Budgets & Data Compression Audit**:
+   - **Automated Bundle Chunk Budget Gatekeeper**: Run `npm run audit:bundle`
+     - Evaluates production chunks in `dist/assets/` against architectural budgets:
+       - `auth-*.js` < 150 KB (ensures login shell is decoupled from heavy game stores).
+       - `sqliteEngine-*.js` < 500 KB (ensures 94+ SQL migrations are lazy-loaded via `db-migrations-data`).
+       - `game-data-system-*.js` < 1500 KB (guarantees zero `@pkmn/sim` leakage into client game data).
+     - *Strict Requirement*: MUST report exit code 0. If any chunk exceeds its budget or `@pkmn/sim` leaks into client chunks: **DO NOT PROCEED**.
+   - **Visualizer Root-Cause Diagnosis (When Chunks Exceed Budget or New Libraries Are Added)**:
+     - If `audit:bundle` fails, or if new dependencies, stores, or modules were introduced, run `npm run build:analyze` to generate `scratch/bundle_stats.html`.
+     - Inspect the visualizer breakdown and top heaviest modules output by `npm run audit:bundle`.
+     - **Mandatory 4-Pillar Remediation Playbook**:
+       1. *Dynamic Store Decoupling*: If a peripheral view/store (e.g. `auth.ts`) pulls massive subsystems (`useGameStore`, `@smogon/calc`, battle engine), convert top-level static imports to dynamic imports inside action handlers (`await import('./game.ts')`).
+       2. *Static Data / Migration Lazy-Loading*: If large SQL strings or multi-megabyte datasets are loaded upfront (e.g. `sqliteEngine.ts`), defer them via dynamic import inside execution functions (`runMigrations()`).
+       3. *Heavy Engine Leak Eradication*: Client-side UI code MUST NEVER import heavy engine symbols (e.g. `@pkmn/sim Dex` or `toID`). Always use lightweight domain equivalents (`toID` from `@/logic/utils/strings`, `POKEMON_DB` from `pokemonDB.ts`).
+       4. *`manualChunks` Rollup Governance*: If a large third-party library is pulled into app chunks, isolate it in `vite.config.ts` under `build.rollupOptions.output.manualChunks(id)`.
+     - Apply repairs, record them under "Repairs applied" in `task.md`, and re-enter the loop from Check 2.1.
+   - **Pre-compression & Savings Verification**:
+     - Inspect Brotli Q11 and Gzip L9 sizes and savings ratios in `⚡ POKÉ VICIO — PRE-COMPRESSION & ASSET SUMMARY`. Verify that high compression savings are maintained without compression errors.
+     - Record key compression metrics (total original bytes, Brotli size, % savings) in `task.md` and proceed to Check 2.5.
 
 5. **Check 2.5 — Fallow Health**: Run `npm run fallow:health`
    - Score MUST be ≥ `BASELINE_HEALTH` and ≥ 85.

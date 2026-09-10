@@ -4,7 +4,7 @@
 // BattleState dependency removed — uses snapshot + isTrapped flag
 // ============================================================
 
-import { toID } from '@pkmn/sim';
+import { toID } from '@/logic/utils/strings.ts';
 import type { PokemonMoveId } from '@/data/battle/moves';
 import type {
   HeuristicBattleSnapshot,

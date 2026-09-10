@@ -348,6 +348,14 @@ onUnmounted(() => {
   filter: var(--weather-filter, none);
 }
 
+.pv-fx-status-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: calc(v-bind('Z_LAYERS.MAP_SPAWNS') + 3);
+  container-type: size;
+}
+
 .status-particle {
   position: absolute;
   font-size: 32px !important;

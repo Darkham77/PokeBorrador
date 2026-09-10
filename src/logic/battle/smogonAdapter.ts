@@ -17,7 +17,7 @@ import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { BattleStages } from '@/types/battle/battle';
 import type { Move } from '@/types/pokemon/pokemon';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
-import { toID } from '@pkmn/sim';
+import { toID } from '@/logic/utils/strings.ts';
 import { requireAbilityId } from '@/data/battle/abilities';
 import { requireItemId } from '@/data/inventory/items';
 

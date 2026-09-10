@@ -363,7 +363,7 @@ function extractAllBlocks(content: string, tag: string): VueBlock[] {
 }
 
 async function checkZIndexConsistency(fix: boolean): Promise<string[]> {
-  const scssPath = path.resolve(process.cwd(), 'src/styles/core/_variables.scss');
+  const scssPath = path.resolve(process.cwd(), 'src/styles/core/_base.scss');
   try {
     let scssContent = await fs.readFile(scssPath, 'utf-8');
     let modified = false;
@@ -398,7 +398,7 @@ async function checkZIndexConsistency(fix: boolean): Promise<string[]> {
     }
     return errors;
   } catch (e) {
-    return [`Error leyendo _variables.scss: ${e}`];
+    return [`Error leyendo _base.scss: ${e}`];
   }
 }
 
@@ -880,17 +880,17 @@ async function main() {
   } else {
     // 1. Consistency Check (z-index)
     if (isZIndexActive) {
-      logProgress(styleText('cyan', '[1/6] 🎨 Verificando paridad de z-index (visuals.ts <-> _variables.scss)...'));
+      logProgress(styleText('cyan', '[1/6] 🎨 Verificando paridad de z-index (visuals.ts <-> _base.scss)...'));
       const syncErrors = await checkZIndexConsistency(!!values.fix);
       const syncViolations: Violation[] = [];
       if (syncErrors.length > 0) {
-        logProgress(styleText('magenta', `\n[SYNC] Desincronización detectada entre visuals.ts y _variables.scss:`));
+        logProgress(styleText('magenta', `\n[SYNC] Desincronización detectada entre visuals.ts y _base.scss:`));
         syncErrors.forEach(e => logProgress(styleText('yellow', `  -> ${e}`)));
         if (!values.fix) {
           logProgress(styleText('cyan', '  (Usa --fix para sincronizar automáticamente)'));
           for (const err of syncErrors) {
             syncViolations.push({
-              file: path.resolve(process.cwd(), 'src/styles/core/_variables.scss'),
+              file: path.resolve(process.cwd(), 'src/styles/core/_base.scss'),
               line: 1,
               message: `Desincronización de z-index: ${err}`,
               context: 'z-index',

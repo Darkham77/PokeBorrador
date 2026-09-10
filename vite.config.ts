@@ -14,6 +14,7 @@ import { lanPvPPlugin } from './scripts/maintenance/vite-plugin-lan-pvp.ts'
 
 import { VitePWA } from 'vite-plugin-pwa'
 import basicSsl from '@vitejs/plugin-basic-ssl'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 import fsPromises from 'node:fs/promises'
 import fs from 'node:fs'
@@ -552,6 +553,14 @@ export default defineConfig({
           return;
         }
       }
+    ] : []),
+    ...(process.env.ANALYZE === 'true' ? [
+      visualizer({
+        filename: 'scratch/bundle_stats.html',
+        open: false,
+        gzipSize: true,
+        brotliSize: true
+      })
     ] : [])
   ],
   define: {
@@ -666,6 +675,15 @@ export default defineConfig({
           }
           if (id.includes('node_modules/sql.js')) {
             return 'vendor-sqljs';
+          }
+          if (id.includes('node_modules/@pkmn/sim') || id.includes('node_modules/@pkmn/sets') || id.includes('pkmn_sim.js')) {
+            return 'vendor-pkmn-sim';
+          }
+          if (id.includes('node_modules/@smogon/calc')) {
+            return 'vendor-smogon-calc';
+          }
+          if (id.includes('src/logic/db/migrations_data')) {
+            return 'db-migrations-data';
           }
           if (id.includes('node_modules/valibot')) {
             return 'vendor-valibot';

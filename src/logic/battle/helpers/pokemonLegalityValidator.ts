@@ -1,5 +1,5 @@
-// src/logic/battle/helpers/pokemonLegalityValidator.ts
-import { Dex, toID, type PokemonSet } from '@pkmn/sim';
+import { Dex, type PokemonSet } from '@pkmn/sim';
+import { toID } from '@/logic/utils/strings.ts';
 import { ACTIVE_GENERATION } from '@/data/system/constants';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import type { Pokemon } from '@/types/pokemon/pokemon';

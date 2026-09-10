@@ -11,8 +11,7 @@
  */
 
 import type { MoveBaseData } from '../../types/system/database.ts';
-import { Dex, toID } from '@pkmn/sim';
-import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
+import { toID } from '@/logic/utils/strings.ts';
 import { MOVE_TRANSLATIONS_ES } from '../../data/battle/moves.ts';
 import { TYPE_EFFECTIVENESS_THRESHOLDS } from '../constants/gameplay.ts';
 
@@ -64,11 +63,6 @@ export function getMoveDescriptionPure(_name: string, md: MoveBaseData | null): 
     const cleanId = toID(md.id);
     const translated = ((MOVE_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string }>)[cleanId] || {}); // open-record: Generic key-value data dictionary container
     if (translated.desc) return translated.desc;
-
-    const move = Dex.forGen(ACTIVE_GENERATION).moves.get(cleanId);
-    if (move && move.exists) {
-      return move.desc || move.shortDesc || 'Causa daño al oponente sin efectos secundarios adicionales.';
-    }
   } catch {
     // Graceful fallback
   }

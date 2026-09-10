@@ -5,8 +5,8 @@ import type { NpcArchetype } from '../../logic/utils/npcSpriteRouter.ts';
 import type { NpcSpriteId } from '../pokemon/npcSpriteCatalog.ts';
 import type { PokemonSpeciesId } from '../pokemon/pokedex.ts';
 import type { PokemonType } from '../battle/types.ts';
-import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS, ENABLED_POKEMON_IDS_SET } from '../system/constants.ts';
-import { Dex } from '@pkmn/sim';
+import { ENABLED_POKEMON_IDS, ENABLED_POKEMON_IDS_SET } from '../system/constants.ts';
+import { POKEMON_DB, isPokemonDbSpeciesId } from '../pokemon/pokemonDB.ts';
 
 export const TRAINER_TYPE_KEYS = [
   'caza_bichos',
@@ -205,7 +205,6 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
  * based on elemental types, match criteria, and extra thematic pools filtered by enabled species.
  */
 function computeTrainerTypes(): Record<TrainerTypeKey, TrainerTypeDefinition> {
-  const dex = Dex.forGen(ACTIVE_GENERATION);
   const result: Partial<Record<TrainerTypeKey, TrainerTypeDefinition>> = {};
 
   const enabledList: readonly PokemonSpeciesId[] = (typeof ENABLED_POKEMON_IDS !== 'undefined' && Array.isArray(ENABLED_POKEMON_IDS))
@@ -226,8 +225,8 @@ function computeTrainerTypes(): Record<TrainerTypeKey, TrainerTypeDefinition> {
     }
 
     const matched = new Set<PokemonSpeciesId>();
-    const allowedTypes = new Set<string>(def.types ? def.types.map(t => t.toLowerCase()) : []); // runtime-set: Fast O(1) membership lookup set
-    const excluded = new Set<string>(def.excludedSpecies ? def.excludedSpecies.map(s => s.toLowerCase()) : []); // runtime-set: Fast O(1) membership lookup set
+    const allowedTypes = new Set<PokemonType>(def.types ? def.types : []); // runtime-set: Fast O(1) membership lookup set
+    const excluded = new Set<PokemonSpeciesId>(def.excludedSpecies ? def.excludedSpecies : []); // runtime-set: Fast O(1) membership lookup set
     const mode = def.matchMode ?? 'any_type';
 
     if (allowedTypes.size > 0) {
@@ -235,10 +234,11 @@ function computeTrainerTypes(): Record<TrainerTypeKey, TrainerTypeDefinition> {
         if (excluded.has(speciesId)) continue;
         if (EXCLUDED_LEGENDARY_IDS_SET.has(speciesId)) continue;
 
-        const spec = dex.species.get(speciesId);
-        if (!spec.exists) continue;
+        if (!isPokemonDbSpeciesId(speciesId)) continue;
+        const baseData = POKEMON_DB[speciesId];
+        if (!baseData) continue;
 
-        const specTypes = spec.types.map(t => t.toLowerCase());
+        const specTypes: readonly PokemonType[] = baseData.type2 ? [baseData.type, baseData.type2] : [baseData.type];
 
         if (mode === 'pure_type') {
           if (specTypes.length === 1 && allowedTypes.has(specTypes[0]!)) {

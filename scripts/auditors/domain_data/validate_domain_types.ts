@@ -813,7 +813,8 @@ export function detectLibraryDomainTypeDuplicates(
   if (libraryTypes.size === 0) return findings;
 
   const P_LITERAL_ARRAY_DECL = /\b(?:(?:export\s+)?const|let|var)\s+([A-Z_a-z]\w*)\s*(?::\s*[^=]+)?=\s*\[\s*['"`][\s\S]*?\](?:\s+as\s+const)?/g;
-  const P_TYPE_UNION_DECL = /\b(?:export\s+)?type\s+([A-Za-z0-9_]+)\s*=\s*\(?((?:['"`][a-zA-Z0-9_-]+['"`]\s*\|\s*)+['"`][a-zA-Z0-9_-]+['"`])\)?/g;
+  const P_TYPE_UNION_DECL = /\b(?:export\s+)?type\s+([A-Za-z0-9_]+)\s*=\s*([^\n;]+(?:['"`][a-zA-Z0-9_-]+['"`]\s*\|\s*)+['"`][a-zA-Z0-9_-]+['"`][^\n;]*)/g;
+  const P_PROP_UNION_DECL = /\b([A-Za-z0-9_]+)\??:\s*([^\n;{]+(?:['"`][a-zA-Z0-9_-]+['"`]\s*\|\s*)+['"`][a-zA-Z0-9_-]+['"`][^\n;]*)/g;
 
   for (const { file, content } of files) {
     const lines = content.split('\n');
@@ -845,9 +846,9 @@ export function detectLibraryDomainTypeDuplicates(
     P_TYPE_UNION_DECL.lastIndex = 0;
     while ((match = P_TYPE_UNION_DECL.exec(content)) !== null) {
       const { lineNum, col, line } = getMatchCoordinates(content, match.index, lines);
-      if (isCommentLine(line) || isTestFile(file) || hasEscapeHatch(line)) continue;
+      if (isCommentLine(line) || isTestFile(file) || hasEscapeHatch(line) || /\bkeyof\b/.test(line)) continue;
 
-      const sigKey = extractSortedLiteralsSignature(match[0]);
+      const sigKey = extractSortedLiteralsSignature(match[2] ?? match[0]);
       if (!sigKey) continue;
 
       const libInfo = libraryTypes.get(sigKey);
@@ -857,6 +858,28 @@ export function detectLibraryDomainTypeDuplicates(
           line: lineNum,
           col,
           pattern: `Duplicate of library domain type: type '${match[1]}' duplicates '${libInfo.typeName}' from '${libInfo.pkgName}' — import and alias '${libInfo.typeName}' directly instead of re-declaring its union`,
+          snippet: match[0].slice(0, 100).replace(/\n/g, '↵'),
+          severity: 'ERROR',
+        });
+      }
+    }
+
+    // 3. Property declarations in interfaces/types containing literal unions
+    P_PROP_UNION_DECL.lastIndex = 0;
+    while ((match = P_PROP_UNION_DECL.exec(content)) !== null) {
+      const { lineNum, col, line } = getMatchCoordinates(content, match.index, lines);
+      if (isCommentLine(line) || isTestFile(file) || hasEscapeHatch(line)) continue;
+
+      const sigKey = extractSortedLiteralsSignature(match[2] ?? '');
+      if (!sigKey) continue;
+
+      const libInfo = libraryTypes.get(sigKey);
+      if (libInfo) {
+        findings.push({
+          file,
+          line: lineNum,
+          col,
+          pattern: `Duplicate of library domain type: property '${match[1]}' duplicates '${libInfo.typeName}' from '${libInfo.pkgName}' — import and use '${libInfo.typeName}' directly instead of re-declaring its union literals`,
           snippet: match[0].slice(0, 100).replace(/\n/g, '↵'),
           severity: 'ERROR',
         });

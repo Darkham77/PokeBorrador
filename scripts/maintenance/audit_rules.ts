@@ -49,7 +49,7 @@ export function matchesRule(descriptor: RuleDescriptor | AuditRule, selectedRule
 
 export const Z_INDEX_CONSISTENCY_DESCRIPTOR: RuleDescriptor = {
   id: 'z-index-parity',
-  name: 'Z-Index Parity (visuals.ts <-> _variables.scss)',
+  name: 'Z-Index Parity (visuals.ts <-> _base.scss)',
   category: 'Z-Index fuera de estándar',
   aliases: ['z-index', 'zindex', 'visuals', 'parity', 'z-index-parity']
 };

@@ -304,6 +304,8 @@
  * Standard Shop Item Card Base
  */
 @mixin shop-item-card($accent-color: var(--yellow)) {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 160px;
   @include shop-card-hover($accent-color);
   background: Rgba(255, 255, 255, 0.02);
   border: 1px solid Rgba(255, 255, 255, 0.06);

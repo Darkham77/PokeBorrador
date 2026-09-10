@@ -203,6 +203,25 @@ function packFeetCoordinates(
     const val = pokemonFeetDatabase[key]!;
     if (key.startsWith('/assets/sprites/pokemon/') && key.endsWith('.webp')) {
       const subKey = key.slice('/assets/sprites/pokemon/'.length, -'.webp'.length);
+
+      // Check if this is a shiny sprite identical to its base counterpart
+      const baseKey = key
+        .replace('/Back shiny/', '/Back/')
+        .replace('/Front shiny/', '/Front/')
+        .replace('/Icons shiny/', '/Icons/')
+        .replace('/Back_shiny/', '/Back/')
+        .replace('/Front_shiny/', '/Front/')
+        .replace('/Icons_shiny/', '/Icons/')
+        .replace('/shiny/', '/');
+
+      if (baseKey !== key && pokemonFeetDatabase[baseKey]) {
+        const baseVal = pokemonFeetDatabase[baseKey];
+        if (baseVal.feetY === val.feetY && baseVal.feetX === val.feetX) {
+          // Omit 100% identical shiny entry: runtime falls back to baseKey
+          continue;
+        }
+      }
+
       packed.p[subKey] = [val.feetY, val.feetX];
     } else if (key.startsWith('/assets/sprites/npc/') && key.endsWith('.webp')) {
       const subKey = key.slice('/assets/sprites/npc/'.length, -'.webp'.length);
@@ -390,7 +409,8 @@ function resolveFeetPath(raw: string): FeetDatabasePath {
     .replace('/Icons shiny/', '/Icons/')
     .replace('/Back_shiny/', '/Back/')
     .replace('/Front_shiny/', '/Front/')
-    .replace('/Icons_shiny/', '/Icons/');
+    .replace('/Icons_shiny/', '/Icons/')
+    .replace('/shiny/', '/');
 
   if (hasFeetDatabasePath(baseSpritePath)) return baseSpritePath;
 

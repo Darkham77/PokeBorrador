@@ -5,7 +5,9 @@ import type { PokemonMoveId, PokemonStatus, MoveEffect, MoveEffectBoosts, Showdo
 import type { PlayerClassId } from '@/data/player/playerClasses';
 import type { FactionId, GenderId } from '@/types/system/game';
 export type { SessionMode } from '../auth/auth.ts';
+import type { AbilityId } from '@/data/battle/abilities';
 import type { MoveCategory } from '@/data/battle/moves';
+import type { GenderName } from '@pkmn/types';
 
 export const SQL_PROXY_ACTIONS = ['select', 'upsert', 'update', 'delete', 'insert'] as const;
 export type SqlProxyAction = (typeof SQL_PROXY_ACTIONS)[number];
@@ -32,8 +34,14 @@ export interface PokemonBaseData {
   spe: number;
   catchRate: number;
   learnset: LearnsetMove[];
+  abilities?: AbilityId[];
+  gender?: GenderName | number;
+  height?: number | null;
+  weight?: number | null;
+  compatMoves?: PokemonMoveId[];
   isFloating?: boolean;
 }
+
 
 export interface PokemonData extends PokemonBaseData {
   id: PokemonSpeciesId;

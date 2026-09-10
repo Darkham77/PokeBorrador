@@ -10,12 +10,11 @@ import { ACTIVE_GENERATION } from '@/data/system/constants';
 import { ABILITY_TRANSLATIONS_ES, type AbilityId } from '@/data/battle/abilities';
 import type { Pokemon, PokemonGender } from '@/types/pokemon/pokemon';
 import type { NatureId } from '@/data/battle/natures';
-import { isGenderlessSpeciesId } from '@/logic/pokemon/pokemonGender';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { PokemonType } from '@/data/battle/types';
 import type { ItemId } from '@/data/inventory/items';
 import type { WeatherId } from '@/logic/weather/weatherRegistry';
-import { Dex } from '@pkmn/sim';
+import { isSingleGenderSpeciesId } from './pokemonGender.ts';
 
 // --- CONSTANTS ---
 const SYNCHRONIZE_CHANCE_GEN8_PLUS = 1.0;
@@ -143,9 +142,7 @@ export function resolveCuteCharmGender(
   if (leader.gender !== 'm' && leader.gender !== 'f') return null;
   if (generation >= 8 && leader.hp <= 0) return null;
 
-  if (isGenderlessSpeciesId(targetSpeciesId)) return null;
-  const spec = Dex.species.get(targetSpeciesId);
-  if (spec.gender === 'N' || spec.gender === 'M' || spec.gender === 'F') return null;
+  if (isSingleGenderSpeciesId(targetSpeciesId)) return null;
 
   if (randomFn() < CUTE_CHARM_OPPOSITE_GENDER_CHANCE) {
     return leader.gender === 'm' ? 'f' : 'm';

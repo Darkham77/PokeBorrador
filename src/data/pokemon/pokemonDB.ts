@@ -8,7 +8,9 @@
 import type { PokemonBaseData, LearnsetMove } from '../../types/system/database.ts';
 import type { PokemonType } from '../battle/types.ts';
 import { SPECIES_METADATA } from './speciesMetadata.ts';
-import { MOVE_TRANSLATIONS_ES, requirePokemonMoveId } from '../battle/moves.ts';
+import { MOVE_TRANSLATIONS_ES, requirePokemonMoveId, type PokemonMoveId } from '../battle/moves.ts';
+import type { AbilityId } from '../battle/abilities.ts';
+import type { GenderName } from '@pkmn/types';
 import pokemonDbJson from './pokemonDB.json' with { type: 'json' };
 
 export type PokemonDbSpeciesId = keyof typeof SPECIES_METADATA;
@@ -24,10 +26,15 @@ interface CompactDbEntry {
   spd: number;
   spe: number;
   catchRate: number;
-  learnset: [number, string, number][];
+  abilities?: AbilityId[];
+  gender?: GenderName | number;
+  height?: number;
+  weight?: number;
+  learnset: [number, string, number][]; // domain-ok: Open dynamic text or non-domain string payload
+  compatMoves?: PokemonMoveId[];
 }
 
-const rawDb = pokemonDbJson as Record<PokemonDbSpeciesId, CompactDbEntry>; // open-record: Generic key-value data dictionary container
+const rawDb = (pokemonDbJson as Record<string, unknown>) as Record<PokemonDbSpeciesId, CompactDbEntry>; // open-record: Generic key-value data dictionary container
 const cache = new Map<PokemonDbSpeciesId, PokemonBaseData>();
 
 function inflatePokemon(speciesId: PokemonDbSpeciesId): PokemonBaseData | undefined {
@@ -38,13 +45,13 @@ function inflatePokemon(speciesId: PokemonDbSpeciesId): PokemonBaseData | undefi
   if (!raw) return undefined;
 
   const learnset: LearnsetMove[] = raw.learnset.map(([lv, rawMoveId, pp]) => {
-    const moveId = requirePokemonMoveId(rawMoveId);
+    const moveId = requirePokemonMoveId(String(rawMoveId));
     const trans = MOVE_TRANSLATIONS_ES[moveId];
     return {
-      lv,
+      lv: Number(lv),
       id: moveId,
       name: trans ? trans.name : moveId,
-      pp
+      pp: Number(pp)
     };
   });
 
@@ -59,8 +66,14 @@ function inflatePokemon(speciesId: PokemonDbSpeciesId): PokemonBaseData | undefi
     spd: raw.spd,
     spe: raw.spe,
     catchRate: raw.catchRate,
-    learnset
+    abilities: raw.abilities,
+    gender: raw.gender,
+    height: raw.height,
+    weight: raw.weight,
+    learnset,
+    compatMoves: raw.compatMoves
   };
+
 
   cache.set(speciesId, entry);
   return entry;

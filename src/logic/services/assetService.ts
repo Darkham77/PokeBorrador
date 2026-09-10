@@ -8,7 +8,6 @@ import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import type { GymId } from '@/data/world/gyms';
 import type { RankedTierId } from '@/data/system/rankedData';
-import { Dex } from '@pkmn/sim';
 
 /**
  * POKEAPI_BASE: Now local paths for downloaded sprites.
@@ -100,11 +99,7 @@ export function getAssetUrl(type: AssetType, rawId: string | number, options: As
       const stringId = String(id).toLowerCase(); // text-ok: UI text display localization string
       if (typeof id === 'string' && id.toLowerCase().startsWith('egg')) return resolveAsset(`/assets/sprites/egg${extension}`); // text-ok: UI text display localization string
 
-      let num = (POKEMON_SPRITE_IDS as Record<string, number | string>)[stringId]; // open-record: Generic key-value data dictionary container
-      if (num === undefined) {
-        const species = Dex.species.get(stringId);
-        num = (species && species.exists) ? species.num : id;
-      }
+      const num = (POKEMON_SPRITE_IDS as Record<string, number | string>)[stringId] ?? id; // open-record: Generic key-value data dictionary container
       
       if (options.isAnimated || options.animated) {
         const sideDir = isBack ? 'Back' : 'Front';

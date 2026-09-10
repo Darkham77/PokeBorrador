@@ -5,7 +5,6 @@ import { supabase } from '@/logic/db/supabase.ts'
 import { syncServerTime } from '@/logic/auth/timeSync.ts'
 import { useLoadingStore } from '@/stores/loading.ts'
 import { useModalStore } from '@/stores/modals.ts'
-import { useGameStore } from './game.ts'
 import { safeStorage } from '@/logic/utils/storage.ts'
 import { SESSION_ID } from '@/logic/auth/sessionId.ts'
 import type { AuthUser, SessionMode } from '@/types/auth/auth.ts'
@@ -378,6 +377,7 @@ export const useAuthStore = defineStore('auth', () => {
     // Safe preventative save if game is active and not explicitly prevented
     if (!preventSave) {
       try {
+        const { useGameStore } = await import('./game.ts')
         const gameStore = useGameStore()
         if (gameStore.isReady && gameStore.save) {
           logger.info('AuthStore', 'Guardando partida de forma segura antes de cerrar sesión...')

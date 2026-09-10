@@ -142,6 +142,8 @@ const tierColor = computed(() => {
 @use "@/styles/core/_mixins" as *;
 
 .selectable-item-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 68px;
   background: Rgba(255, 255, 255, 0.03);
   border: 1px solid Rgba(255, 255, 255, 0.05);
   border-radius: 16px;

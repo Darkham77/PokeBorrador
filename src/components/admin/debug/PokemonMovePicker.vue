@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Dex } from '@pkmn/sim'
-import { ACTIVE_GENERATION } from '@/data/system/constants'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
-import { type PokemonMoveId, isPokemonMoveId, requirePokemonMoveId } from '@/data/battle/moves'
+import { type PokemonMoveId, isPokemonMoveId, requirePokemonMoveId, MOVE_TRANSLATIONS_ES } from '@/data/battle/moves'
 
 interface Props {
   modelValue: (PokemonMoveId | null)[]
@@ -21,14 +19,15 @@ const moveSearch = ref('')
 const activeMoveSlot = ref<number | null>(null)
 
 // Pre-map all moves with their Spanish translation for fast search (search bar only)
-const allMovesList = Dex.forGen(ACTIVE_GENERATION).moves.all().map(m => {
-  const id = requirePokemonMoveId(m.id)
+const allMovesList = Object.keys(MOVE_TRANSLATIONS_ES).map(rawId => {
+  const id = requirePokemonMoveId(rawId)
   const moveData = pokemonDataProvider.getMoveData(id)
   return {
     id,
     nameEs: moveData.name
   }
 })
+
 
 const filteredMoves = computed<PokemonMoveId[]>(() => {
   const s = moveSearch.value.toLowerCase().trim()

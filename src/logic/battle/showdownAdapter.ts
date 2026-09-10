@@ -1,4 +1,5 @@
-import { Dex, Battle, toID } from '@pkmn/sim';
+import { Dex, Battle } from '@pkmn/sim';
+import { toID } from '@/logic/utils/strings.ts';
 import type { PokemonSet, ID, StatsTable } from '@pkmn/sim';
 import type { Pokemon as GamePokemon } from '../../types/pokemon/pokemon.ts';
 import { POKEMON_SPRITE_IDS } from '../../data/pokemon/spriteMapping.ts';

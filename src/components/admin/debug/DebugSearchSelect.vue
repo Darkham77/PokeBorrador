@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { onClickOutside } from '@vueuse/core'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 interface Option {
@@ -47,18 +48,8 @@ function handleSelect(option: Option) {
   emit('select', option)
 }
 
-function handleClickOutside(e: MouseEvent) {
-  if (selectRef.value && !selectRef.value.contains(e.target as Node)) {
-    showDropdown.value = false
-  }
-}
-
-onMounted(() => {
-  window.addEventListener('mousedown', handleClickOutside)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('mousedown', handleClickOutside)
+onClickOutside(selectRef, () => {
+  showDropdown.value = false
 })
 </script>
 

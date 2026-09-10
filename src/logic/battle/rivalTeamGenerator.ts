@@ -1,5 +1,6 @@
 import { TeamGenerators } from '@pkmn/randoms';
-import { Dex, toID, type PokemonSet } from '@pkmn/sim';
+import { Dex, type PokemonSet } from '@pkmn/sim';
+import { toID } from '@/logic/utils/strings.ts';
 import { ACTIVE_GENERATION, ENABLED_POKEMON_IDS_SET, MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { getMovesAtLevel } from '@/logic/pokemon/pokemonUtils';
 import { requirePokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';

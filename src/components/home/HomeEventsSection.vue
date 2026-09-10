@@ -11,6 +11,7 @@ import PVTooltip from '@/components/common/PVTooltip.vue'
 import { getUpcomingEventOccurrences, type Event as GameEvent, type UpcomingEventOccurrence } from '@/logic/events/eventEngine'
 import { getServerInstant } from '@/logic/utils/timeUtils'
 import { useHomeWidgetsCollapse } from '@/composables/home/useHomeWidgetsCollapse'
+import { useWindowListener } from '@/composables/ui/useWindowListener'
 import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue'
 import HomeWidgetRefreshBtn from './HomeWidgetRefreshBtn.vue'
 
@@ -63,6 +64,8 @@ const updateLayout = () => {
   }
 }
 
+useWindowListener('resize', updateLayout)
+
 onMounted(() => {
   updateLayout()
   if (typeof ResizeObserver !== 'undefined' && containerRef.value) {
@@ -75,18 +78,12 @@ onMounted(() => {
     })
     resizeObserver.observe(containerRef.value)
   }
-  if (typeof window !== 'undefined') {
-    window.addEventListener('resize', updateLayout)
-  }
 })
 
 onUnmounted(() => {
   if (resizeObserver) {
     resizeObserver.disconnect()
     resizeObserver = null
-  }
-  if (typeof window !== 'undefined') {
-    window.removeEventListener('resize', updateLayout)
   }
 })
 

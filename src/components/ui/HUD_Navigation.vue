@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from "vue";
+import { ref } from "vue";
+import { onClickOutside } from "@vueuse/core";
 import { useNavigationState } from "@/composables/navigation/useNavigationState";
 import HUD_NavPokemonGroup from "./navigation/HUD_NavPokemonGroup.vue";
 import HUD_NavMarketGroup from "./navigation/HUD_NavMarketGroup.vue";
@@ -30,26 +31,18 @@ const {
   handleTabChange
 } = useNavigationState();
 
-const handleClickOutside = (event: MouseEvent) => {
-  const target = event.target as Element | null;
-  if (!target) return;
-  if (target.closest(".hud-nav") || target.closest(".hud-submenu") || target.closest(".hud-group")) {
-    return;
-  }
+const navRef = ref<HTMLElement | null>(null);
+
+onClickOutside(navRef, () => {
   uiStore.openHudGroup = null;
-};
-
-onMounted(() => {
-  window.addEventListener("click", handleClickOutside);
-});
-
-onUnmounted(() => {
-  window.removeEventListener("click", handleClickOutside);
+}, {
+  ignore: ['.hud-submenu', '.hud-group']
 });
 </script>
 
 <template>
   <div
+    ref="navRef"
     class="hud-nav"
     :class="[`pos-${position}`]"
   >

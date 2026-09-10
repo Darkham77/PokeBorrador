@@ -4,7 +4,7 @@
 // Zero runtime dependency on external/ reference folder.
 // ============================================================
 
-import { toID } from '@pkmn/sim';
+import { toID } from '@/logic/utils/strings.ts';
 import type { RandomBattleSetEntry } from './types.ts';
 
 interface RawEntry {

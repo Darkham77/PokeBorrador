@@ -3,8 +3,8 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { calculateTotalBaseStats } from '@/logic/pokemon/statsMath'
 import { getMechanicalWeather, WEATHER_UI_METADATA, WEATHER_VISUAL_METADATA } from '@/logic/weather/weatherRegistry'
 import { getWeatherMultiplier } from '@/logic/weather/weatherUtils'
-import { Dex } from '@pkmn/sim'
-import { ACTIVE_GENERATION, isEnabledPokemonId } from '@/data/system/constants'
+import { ABILITY_TRANSLATIONS_ES } from '@/data/battle/abilities'
+import { isEnabledPokemonId } from '@/data/system/constants'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { PokemonType } from '@/data/battle/types'
 import type { ItemId } from '@/data/inventory/items'
@@ -87,11 +87,12 @@ export function getSelectableNatures() {
 }
 
 export function getSelectableAbilities() {
-  // Obtener todas las habilidades válidas de Gen 3
-  return Dex.forGen(ACTIVE_GENERATION).abilities.all()
-    .filter(a => a.exists)
-    .map(a => ({ id: a.id, name: a.name }))
+  return Object.entries(ABILITY_TRANSLATIONS_ES).map(([id, data]) => ({
+    id,
+    name: data.name
+  }))
 }
+
 
 interface VisibilityResult {
   isSeen: boolean

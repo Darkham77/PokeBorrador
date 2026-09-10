@@ -32,7 +32,7 @@
         height: 2px;
         background: var(--type-color);
         opacity: 0.3;
-        box-shadow: 0 0 10px Rgba(var(--type-color-rgb), 0.2);
+        box-shadow: 0 0 10px Rgb(from var(--type-color, #ffffff) r g b / 0.2);
       }
       
       & .ps-card-label, & .upd-info-label { 
@@ -131,13 +131,13 @@
       line-height: 1.8; 
       color: Rgba(255, 255, 255, 0.6); 
       font-style: italic;
-      background: Linear-Gradient(90deg, Rgba(var(--type-color-rgb), 0.05) 0%, Rgba(255, 255, 255, 0.01) 100%);
+      background: Linear-Gradient(90deg, Rgb(from var(--type-color, #ffffff) r g b / 0.05) 0%, Rgba(255, 255, 255, 0.01) 100%);
       padding: 24px;
       border-radius: 12px;
       border-left: 3px solid var(--type-color, var(--yellow));
       position: relative;
       @include shell-premium(Rgba(255, 255, 255, 0.02));
-      box-shadow: inset 10px 0 30px Rgba(var(--type-color-rgb), 0.03);
+      box-shadow: inset 10px 0 30px Rgb(from var(--type-color, #ffffff) r g b / 0.03);
 
       &::before {
         content: '"';
@@ -161,14 +161,14 @@
     margin-bottom: 30px;
     
     & .p-id {
-      background: Linear-Gradient(to bottom, var(--type-color) 0%, Rgba(var(--type-color-rgb), 0.8) 100%);
+      background: Linear-Gradient(to bottom, var(--type-color) 0%, Rgb(from var(--type-color, #ffffff) r g b / 0.8) 100%);
       color: var(--black);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
       font-size: 11px;
       padding: 6px 12px;
       border-radius: 6px;
       font-weight: 900;
-      box-shadow: 0 4px 15px Rgba(var(--type-color-rgb), 0.3);
+      box-shadow: 0 4px 15px Rgb(from var(--type-color, #ffffff) r g b / 0.3);
     }
     
     & .p-name {
@@ -220,8 +220,8 @@
         height: 100%; 
         border-radius: 4px; 
         
-        background: Linear-Gradient(90deg, var(--type-color) 0%, Rgba(var(--type-color-rgb), 0.7) 100%);
-        box-shadow: 0 0 15px Rgba(var(--type-color-rgb), 0.3);
+        background: Linear-Gradient(90deg, var(--type-color) 0%, Rgb(from var(--type-color, #ffffff) r g b / 0.7) 100%);
+        box-shadow: 0 0 15px Rgb(from var(--type-color, #ffffff) r g b / 0.3);
         position: relative;
 
         &::after {

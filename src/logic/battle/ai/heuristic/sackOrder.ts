@@ -3,7 +3,7 @@
 // Adapted from external/pokemon-showdown-ai/src/strategy/sack-order.ts
 // ============================================================
 
-import { toID } from '@pkmn/sim';
+import { toID } from '@/logic/utils/strings.ts';
 import type { HeuristicBattleSnapshot, SackOrderEntry, WinCondition, ThreatAssessment } from './types.ts';
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 

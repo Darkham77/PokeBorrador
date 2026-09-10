@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed } from 'vue'
+import { onClickOutside } from '@vueuse/core'
 import { useGameStore } from '@/stores/game'
 import { useBattleStore } from '@/stores/battle/battle'
 import { getItemById, isItemId, type ItemId } from '@/data/inventory/items'
@@ -136,19 +137,12 @@ const selectBall = (ballId: ItemId) => {
 
 
 
-const handleClickOutside = (e: MouseEvent) => {
-  const target = e.target as HTMLElement
-  if (isBallMenuOpen.value && !target.closest('.catch-btn-wrapper')) {
+const containerRef = ref<HTMLElement | null>(null)
+
+onClickOutside(containerRef, () => {
+  if (isBallMenuOpen.value) {
     closeMenu()
   }
-}
-
-onMounted(() => {
-  window.addEventListener('click', handleClickOutside)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('click', handleClickOutside)
 })
 
 defineExpose({
@@ -158,6 +152,7 @@ defineExpose({
 
 <template>
   <div
+    ref="containerRef"
     class="catch-btn-wrapper"
     :class="{ 'menu-open': isBallMenuOpen }"
   >

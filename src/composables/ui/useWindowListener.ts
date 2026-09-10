@@ -1,38 +1,26 @@
-import { onMounted, onUnmounted } from 'vue'
+import { useEventListener, type GeneralEventListener } from '@vueuse/core'
 
 /**
  * useWindowListener
  * Specialized composable to manage global listeners with strict lifecycle cleanup.
- * Prevents hybrid pattern leaks and centralizes window interactions.
+ * Powered by @vueuse/core useEventListener with automatic scope disposal.
  */
-export function useWindowListener(
+export function useWindowListener<E extends Event = Event>(
   event: string, 
-  callback: EventListenerOrEventListenerObject, 
+  callback: GeneralEventListener<E>, 
   options: boolean | AddEventListenerOptions = {}
 ) {
-  onMounted(() => {
-    window.addEventListener(event, callback, options)
-  })
-
-  onUnmounted(() => {
-    window.removeEventListener(event, callback, options)
-  })
+  return useEventListener(typeof window !== 'undefined' ? window : null, event, callback as GeneralEventListener<Event>, options)
 }
 
 /**
  * useDocumentListener
  * Same but for document.
  */
-export function useDocumentListener(
+export function useDocumentListener<E extends Event = Event>(
   event: string, 
-  callback: EventListenerOrEventListenerObject, 
+  callback: GeneralEventListener<E>, 
   options: boolean | AddEventListenerOptions = {}
 ) {
-  onMounted(() => {
-    document.addEventListener(event, callback, options)
-  })
-
-  onUnmounted(() => {
-    document.removeEventListener(event, callback, options)
-  })
+  return useEventListener(typeof document !== 'undefined' ? document : null, event, callback as GeneralEventListener<Event>, options)
 }

@@ -32,7 +32,7 @@
     pointer-events: auto;
     
     & .p-id {
-      background: Linear-Gradient(to bottom, var(--type-color) 0%, Rgba(var(--type-color-rgb), 0.8) 100%);
+      background: Linear-Gradient(to bottom, var(--type-color) 0%, Rgb(from var(--type-color) r g b / 0.8) 100%);
       color: var(--white);
       text-shadow: 1px 1px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
@@ -40,7 +40,7 @@
       padding: 6px 12px;
       border-radius: 6px;
       font-weight: 900;
-      box-shadow: 0 4px 15px Rgba(var(--type-color-rgb), 0.3);
+      box-shadow: 0 4px 15px Rgb(from var(--type-color) r g b / 0.3);
     }
     
     & .p-name {
@@ -140,11 +140,11 @@
     
     &.active {
       opacity: 1;
-      background: Radial-Gradient(circle at bottom, Rgba(var(--type-color-rgb), 0.1) 0%, transparent 70%);
+      background: Radial-Gradient(circle at bottom, Rgb(from var(--type-color) r g b / 0.1) 0%, transparent 70%);
       
       &::after {
         background: var(--type-color);
-        box-shadow: 0 0 15px Rgba(var(--type-color-rgb), 0.5);
+        box-shadow: 0 0 15px Rgb(from var(--type-color) r g b / 0.5);
       }
     }
 
@@ -197,7 +197,7 @@
         color: var(--type-color);
         letter-spacing: 1px;
         opacity: 0.8;
-        text-shadow: 0 0 10px Rgba(var(--type-color-rgb), 0.3);
+        text-shadow: 0 0 10px Rgb(from var(--type-color) r g b / 0.3);
       }
     }
   }
@@ -243,7 +243,7 @@
       transform: Translate3d(-50%, -50%, 0);
       width: 280px;
       height: 280px;
-      background: Radial-Gradient(circle, Rgba(var(--type-color-rgb), 0.35) 0%, transparent 70%);
+      background: Radial-Gradient(circle, Rgb(from var(--type-color) r g b / 0.35) 0%, transparent 70%);
       border-radius: 50%;
       z-index: calc(var(--z-base) - 1);
       pointer-events: none;

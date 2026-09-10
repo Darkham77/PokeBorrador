@@ -67,7 +67,8 @@ function resolveFeetPath(raw: string): FeetDatabasePath {
     .replace('/Icons shiny/', '/Icons/')
     .replace('/Back_shiny/', '/Back/')
     .replace('/Front_shiny/', '/Front/')
-    .replace('/Icons_shiny/', '/Icons/');
+    .replace('/Icons_shiny/', '/Icons/')
+    .replace('/shiny/', '/');
 
   if (hasFeetDatabasePath(baseSpritePath)) return baseSpritePath;
 

@@ -7,6 +7,7 @@ const DAMAGE_ROLL_MIN_INT = 85;
 const DAMAGE_ROLL_RANGE_INT = 16;
 import type { DayPhase } from '@/logic/utils/timeUtils';
 import type { PokemonMoveId } from '@/data/battle/moves';
+import { ACTIVE_GENERATION } from '@/data/system/constants';
 import type {
   PurePokemon,
   PureMove,
@@ -15,8 +16,6 @@ import type {
   PureDamageOptions,
   PureDamageResult
 } from './battleMathTypes.ts';
-import { ACTIVE_GENERATION } from '../../data/system/constants.ts';
-import { Dex } from '@pkmn/sim';
 export * from './battleMathTypes.ts';
 
 export const STAGE_MULTIPLIERS_STAT: Record<string, number> = {
@@ -33,11 +32,8 @@ const WEATHER_KEYS = { SUN: 'sun', RAIN: 'rain', SANDSTORM: 'sandstorm', SNOW: '
 const DELTA_STREAM_WEAKNESS_SET: ReadonlySet<string> = new Set(['electric', 'ice', 'rock']); // runtime-set: Fast O(1) membership lookup set
 
 
-const dexGen = Dex.forGen(ACTIVE_GENERATION);
-
 import { getMechanicalWeather } from '../weather/weatherRegistry.ts';
-import { isPokemonType } from '../../data/battle/types.ts';
-
+import { isPokemonType, TYPE_CHART } from '../../data/battle/types.ts';
 
 function getTypeEff(moveType: string | undefined, defType: string | undefined, scrapy = false): number {
   if (!moveType || !defType) return 1;
@@ -49,18 +45,12 @@ function getTypeEff(moveType: string | undefined, defType: string | undefined, s
     return 1;
   }
 
-  const typeData = dexGen.types.get(dType);
-  if (!typeData) return 1;
-
-  const attackKey = mType.charAt(0).toUpperCase() + mType.slice(1);
-  const damageTaken = typeData.damageTaken[attackKey];
-  if (damageTaken === undefined) return 1;
-
-  if (damageTaken === 1) return 2; // Super effective
-  if (damageTaken === 2) return 0.5; // Not very effective
-  if (damageTaken === 3) return 0; // Immune
-  return 1; // Neutral
+  const row = TYPE_CHART[mType];
+  if (!row) return 1;
+  const mult = row[dType];
+  return mult !== undefined ? mult : 1;
 }
+
 
 function getCombinedEff(moveType: string, defender: PurePokemon, attacker: PurePokemon | null = null, _weather: string | null = null): number {
   const scrapy = attacker?.ability === 'scrappy';

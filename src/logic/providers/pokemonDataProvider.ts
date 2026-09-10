@@ -1,20 +1,20 @@
 // [PureVue-Ignore-Length]
 import { shallowRef } from 'vue';
 import { POKEMON_DB } from '@/data/pokemon/pokemonDB';
-import { ABILITY_TRANSLATIONS_ES, ABILITIES_BY_SPANISH_NAME } from '@/data/battle/abilities';
+import { ABILITY_TRANSLATIONS_ES, ABILITIES_BY_SPANISH_NAME, type AbilityId } from '@/data/battle/abilities';
 import { GYMS } from '@/data/world/gyms';
 import { FIRE_RED_MAPS } from '@/data/world/maps';
-import { NATURE_DATA } from '@/data/battle/natures';
+import { NATURE_DATA, isNatureId, toNatureId } from '@/data/battle/natures';
 import { SPECIES_METADATA } from '@/data/pokemon/speciesMetadata';
 import { POKEMON_AESTHETICS, POKEMON_SPRITE_IDS, requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import { Dex, toID } from '@pkmn/sim';
-import { ACTIVE_GENERATION, isEnabledPokemonId } from '@/data/system/constants';
+import { toID } from '@/logic/utils/strings.ts';
+import { isEnabledPokemonId } from '@/data/system/constants';
 import { MOVE_TRANSLATIONS_ES, requirePokemonMoveId } from '@/data/battle/moves';
-import { toPokemonType } from '@/data/battle/types';
+import { getStaticMoveData, hasMoveData } from '@/data/battle/movesData';
+import { isPokemonType } from '@/data/battle/types';
 
 import { getSpriteUrl, getBackSpriteUrl } from '@/logic/services/assetService';
 import { getEvYieldForSpecies, type EvYield } from '@/data/pokemon/evYields';
-import { SHOWDOWN_BOOST_STAT_KEYS, requirePokemonStatus, type MoveEffectBoosts, type ShowdownHitEffect, type ShowdownSecondaryEffect } from '@/types/pokemon/pokemon';
 import type { 
     PokemonBaseData, 
     MoveBaseData, 
@@ -23,45 +23,6 @@ import type {
     PokemonData,
     NatureBaseData
 } from '@/types/system/database';
-import { isStatId } from '@/logic/pokemon/statsMath';
-
-interface RawShowdownHitEffect {
-    boosts?: Partial<Record<string, number>>;
-    chance?: number;
-    status?: string;
-    volatileStatus?: string;
-}
-
-interface RawShowdownSecondaryEffect extends RawShowdownHitEffect {
-    self?: RawShowdownHitEffect;
-}
-
-function toMoveEffectBoosts(boosts: Partial<Record<string, number>> | undefined): MoveEffectBoosts | undefined {
-    if (!boosts) return undefined;
-    const result: MoveEffectBoosts = {};
-    for (const stat of SHOWDOWN_BOOST_STAT_KEYS) {
-        const value = boosts[stat];
-        if (value !== undefined) result[stat] = value;
-    }
-    return Object.keys(result).length > 0 ? result : undefined;
-}
-
-function toShowdownHitEffect(effect: RawShowdownHitEffect | undefined): ShowdownHitEffect | undefined {
-    if (!effect) return undefined;
-    return {
-        boosts: toMoveEffectBoosts(effect.boosts),
-        status: effect.status ? requirePokemonStatus(effect.status) : undefined,
-        volatileStatus: effect.volatileStatus,
-    };
-}
-
-function toShowdownSecondaryEffect(effect: RawShowdownSecondaryEffect | undefined): ShowdownSecondaryEffect | undefined {
-    if (!effect) return undefined;
-    return {
-        ...toShowdownHitEffect(effect),
-        self: toShowdownHitEffect(effect.self),
-    };
-}
 
 /**
  * PokemonDataProvider
@@ -81,11 +42,6 @@ const SPRITE_ID_TO_NAME: Record<number, string> = Object.fromEntries(
   Object.entries(POKEMON_SPRITE_IDS).map(([name, num]) => [num, name])
 );
 
-function requireMoveCategory(category: string): MoveBaseData['cat'] {
-    const normalized = category.toLowerCase(); // text-ok: UI text display localization string
-    if (normalized === 'physical' || normalized === 'special' || normalized === 'status') return normalized;
-    throw new Error(`[pokemonDataProvider] Invalid move category from Showdown: ${category}`);
-}
 
 /**
  * Realiza una copia profunda de un objeto para evitar mutaciones accidentales.
@@ -126,33 +82,9 @@ export const pokemonDataProvider = {
         // Merge metadata if available
         const metadata = _speciesMetadata.value[normalizedId];
         const aesthetics = _pokemonAesthetics.value[normalizedId];
-        const species = Dex.forGen(ACTIVE_GENERATION).species.get(normalizedId);
-
-        let height = species?.exists ? species.heightm : null;
-        let weight = species?.exists ? species.weightkg : null;
-
-        if (species?.exists && (!weight || weight <= 0) && species.baseSpecies) {
-            const baseSpec = Dex.forGen(ACTIVE_GENERATION).species.get(species.baseSpecies);
-            if (baseSpec?.exists && baseSpec.weightkg > 0) {
-                weight = baseSpec.weightkg;
-            }
-        }
-
-        if (species?.exists && (!height || height <= 0) && species.baseSpecies) {
-            const baseSpec = Dex.forGen(ACTIVE_GENERATION).species.get(species.baseSpecies);
-            if (baseSpec?.exists && baseSpec.heightm > 0) {
-                height = baseSpec.heightm;
-            }
-        }
-
-        if (weight !== null && weight <= 0) {
-            weight = 0.1;
-        }
-        if (height !== null && height <= 0) {
-            height = 0.1;
-        }
-
         const data = deepClone(dbData);
+        const height = data.height ?? 0.1;
+        const weight = data.weight ?? 0.1;
 
         // Añadimos el id al objeto retornado para conveniencia
         const extendedData = {
@@ -165,6 +97,7 @@ export const pokemonDataProvider = {
             isFloating: aesthetics?.floating,
             type2: data.type2 || undefined
         };
+
 
         return extendedData;
     },
@@ -188,49 +121,38 @@ export const pokemonDataProvider = {
     getAbilityData(name: string) {
         if (!name) throw new Error("Nombre/ID de habilidad no proporcionado");
         let cleanId = toID(name);
-        let ability = Dex.abilities.get(cleanId);
+        let translated = (ABILITY_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string; icon?: string }>)[cleanId]; // open-record: Generic key-value data dictionary container
 
-        if (!ability || !ability.exists) {
+        if (!translated) {
             // Intenta buscar por nombre en español en las traducciones estáticas
             const nameLower = name.trim().toLowerCase(); // text-ok: UI text display localization string
             const spanishId = ABILITIES_BY_SPANISH_NAME[nameLower];
             if (spanishId) {
                 cleanId = toID(spanishId);
-                ability = Dex.abilities.get(cleanId);
+                translated = (ABILITY_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string; icon?: string }>)[cleanId]; // open-record: Generic key-value data dictionary container
             }
         }
 
-        if (!ability || !ability.exists) {
+        if (!translated || !translated.name || !translated.desc) {
             throw new Error(`Habilidad no encontrada: ${name}`);
         }
 
-        // Buscar traducción en las traducciones estáticas
-        const translated = (ABILITY_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string; icon?: string }>)[cleanId]; // open-record: Generic key-value data dictionary container
-        if (!translated || !translated.name || !translated.desc) {
-            throw new Error(`[pokemonDataProvider] Traducción al español faltante para la habilidad: ${cleanId}`);
-        }
-        const espName = translated.name;
-        const espDesc = translated.desc;
-        const espIcon = translated.icon || '✨';
-
         return {
-            id: ability.id,
-            name: espName,
-            desc: espDesc,
-            icon: espIcon
+            id: cleanId,
+            name: translated.name,
+            desc: translated.desc,
+            icon: translated.icon || '✨'
         };
     },
 
     /**
      * Obtiene la lista de habilidades posibles para una especie.
      */
-    getSpeciesAbilities(speciesId: PokemonSpeciesId): string[] {
+    getSpeciesAbilities(speciesId: PokemonSpeciesId): readonly AbilityId[] {
         if (!speciesId) return [];
-        const species = Dex.forGen(ACTIVE_GENERATION).species.get(speciesId);
-        if (!species || !species.exists) return [];
-        
-        // Retornar lista de habilidades válidas en Gen 9 de pkms
-        return Object.values(species.abilities).map(a => toID(a));
+        const data = POKEMON_DB[speciesId];
+        if (!data || !data.abilities) return [];
+        return data.abilities;
     },
 
     /**
@@ -249,13 +171,6 @@ export const pokemonDataProvider = {
         if (!id) throw new Error("ID de movimiento no proporcionado");
         const cleanId = toID(id);
         
-        const PERFECT_ACCURACY_FLAG = 1000;
-        const DRAGON_RAGE_FIXED_DMG = 40;
-
-        let move = Dex.forGen(ACTIVE_GENERATION).moves.get(cleanId);
-        if (!move || !move.exists) {
-            move = Dex.moves.get(cleanId);
-        }
         if (cleanId === 'recharge') {
             const moveId = requirePokemonMoveId('recharge');
             const translated = MOVE_TRANSLATIONS_ES[moveId];
@@ -263,72 +178,36 @@ export const pokemonDataProvider = {
                 id: moveId,
                 name: translated.name || 'Recargando', // spanish-ok: UI Spanish text localization label
                 power: 0,
-                acc: PERFECT_ACCURACY_FLAG,
+                acc: 1000,
                 type: 'normal',
                 cat: 'status',
                 pp: 0,
                 priority: 0
             };
         }
-        if (!move || !move.exists) {
-            throw new Error(`Movimiento no encontrado por ID: ${id}`);
+
+        if (hasMoveData(cleanId)) {
+            const staticMove = getStaticMoveData(cleanId);
+            if (staticMove) return staticMove;
         }
 
-        const moveId = requirePokemonMoveId(move.id);
-        const translated = MOVE_TRANSLATIONS_ES[moveId];
-        const espName = translated.name ?? move.name; // text-ok: UI text display localization string
-
-        const moveData: MoveBaseData = {
-            id: moveId,
-            name: espName,
-            power: move.basePower,
-            acc: move.accuracy === true ? PERFECT_ACCURACY_FLAG : move.accuracy,
-            type: toPokemonType(move.type.toLowerCase()), // text-ok: UI text display localization string
-            cat: requireMoveCategory(move.category),
-            pp: move.pp,
-            priority: move.priority || 0,
-            boosts: toMoveEffectBoosts(move.boosts),
-            secondary: toShowdownSecondaryEffect(move.secondary),
-            secondaries: move.secondaries?.map(toShowdownSecondaryEffect).filter((effect): effect is ShowdownSecondaryEffect => effect !== undefined),
-            self: toShowdownHitEffect(move.self),
-            status: move.status ? requirePokemonStatus(move.status) : undefined,
-            volatileStatus: move.volatileStatus,
-            sideCondition: move.sideCondition,
-            weather: move.weather
-        };
-
-        if (move.selfdestruct === 'always') moveData.selfKO = true;
-        if (move.recoil) {
-            moveData.recoil = move.recoil[0] === 1 && move.recoil[1] === 4 ? 4 : 3;
-        }
-        if (move.drain) moveData.drain = true;
-        if (move.multihit) {
-            if (Array.isArray(move.multihit)) {
-                const [minHits, maxHits] = move.multihit;
-                if (minHits === undefined || maxHits === undefined) {
-                    throw new Error(`[pokemonDataProvider] Invalid multihit range for move: ${moveId}`);
+        if (cleanId.startsWith('hiddenpower') && cleanId.length > 'hiddenpower'.length) {
+            const subType = cleanId.slice('hiddenpower'.length);
+            if (isPokemonType(subType) && hasMoveData('hiddenpower')) {
+                const baseMove = getStaticMoveData('hiddenpower');
+                if (baseMove) {
+                    return {
+                        ...baseMove,
+                        id: requirePokemonMoveId('hiddenpower'),
+                        type: subType
+                    };
                 }
-                moveData.hits = [minHits, maxHits];
-            } else {
-                moveData.hits = move.multihit;
             }
         }
-        if (move.ohko) moveData.ohko = true;
-        if (move.damage === 'level') {
-            moveData.levelDmg = true;
-        } else if (typeof move.damage === 'number') {
-            moveData.fixedDmg = move.damage;
-        }
-        if (cleanId === 'super_fang') moveData.halfHP = true;
-        if (cleanId === 'endeavor') moveData.endeavor = true;
-        if (cleanId === 'counter') moveData.counter = true;
-        if (cleanId === 'dragon_rage') moveData.fixedDmg = DRAGON_RAGE_FIXED_DMG;
-        if (move.flags && move.flags.sound) moveData.sound = true;
 
-        return moveData;
+        throw new Error(`Movimiento no encontrado por ID: ${id}`);
     },
 
-    /**
     /**
      * Obtiene la lista de todos los gimnasios.
      */
@@ -349,20 +228,16 @@ export const pokemonDataProvider = {
     getNatureData(name: string): NatureBaseData | null {
         if (!name) return null;
         const cleanId = toID(name);
-        const staticData = (NATURE_DATA as Record<string, { name: string; up: string | null; down: string | null; desc: string }>)[cleanId]; // open-record: Generic key-value data dictionary container
-        if (!staticData) return null;
+        if (!isNatureId(cleanId)) return null;
+        const natureId = toNatureId(cleanId);
+        const staticData = NATURE_DATA[natureId];
 
-        const sdNature = Dex.natures.get(cleanId);
-        const upStat = sdNature?.plus || staticData.up;
-        const downStat = sdNature?.minus || staticData.down;
-        
-        const natureData: NatureBaseData = {
+        return {
             name: staticData.name,
-            up: upStat && isStatId(upStat) ? upStat : null,
-            down: downStat && isStatId(downStat) ? downStat : null,
+            up: staticData.plus,
+            down: staticData.minus,
             desc: staticData.desc
-        }
-        return natureData;
+        };
     },
 
     /**

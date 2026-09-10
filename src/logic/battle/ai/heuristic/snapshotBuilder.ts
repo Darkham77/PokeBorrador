@@ -4,7 +4,8 @@
 // Zero-Fallback: throws if critical state is unavailable
 // ============================================================
 
-import { toID } from '@pkmn/sim';
+import { toID } from '@/logic/utils/strings.ts';
+import type { SideID } from '@pkmn/sim';
 import type { BattleContext } from '@/types/battle/battleContext';
 import { BATTLE_CONDITION_KEYS, type BattleState, type BattleStages, type BattleTimedCondition } from '@/types/battle/battle';
 import type { Pokemon, Move } from '@/types/pokemon/pokemon';
@@ -43,7 +44,6 @@ export function buildSnapshot(store: BattleContext): HeuristicBattleSnapshot {
 // Side builder
 // ──────────────────────────────────────────
 
-import type { SideID } from '@pkmn/sim';
 
 function buildSide(
   id: SideID,

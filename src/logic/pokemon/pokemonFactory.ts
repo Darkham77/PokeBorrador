@@ -1,6 +1,5 @@
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
-import { NATURES, toNatureId } from '@/data/battle/natures';
-
+import { NATURES, isNatureId, toNatureId, type NatureId } from '@/data/battle/natures';
 import { GAME_RATIOS, MAX_POKEMON_LEVEL } from '@/data/system/constants';
 import { DEFAULT_FALLBACK_BASE_STAT, DEFAULT_FRIENDSHIP_VALUE } from '@/logic/constants/gameplay';
 import { getMovesAtLevel, initializePokemonVigor } from '@/logic/pokemon/pokemonUtils';
@@ -13,8 +12,7 @@ import { generateIvPure } from './generationMath.ts';
 import { createDefaultEvs } from './evMath.ts';
 import { getItemById, type ItemId } from '@/data/inventory/items';
 import type { MapRouteId } from '@/data/world/map-assets';
-import type { NatureId } from '@/data/battle/natures';
-import { Dex, toID } from '@pkmn/sim';
+import { toID } from '@/logic/utils/strings.ts';
 import { requireAbilityId, type AbilityId } from '@/data/battle/abilities';
 import { assignGender, ensurePokemonGender, isGenderlessSpeciesId } from './pokemonGender.ts';
 import { canLearnMove } from './pokemonLearnset.ts';
@@ -113,18 +111,13 @@ export function validatePokemon(p: Pokemon, bypassWhitelist = false): void {
     throw new Error(`[pokemonFactory] El Pokémon "${p.id}" (UID: ${p.uid}) no existe en la base de datos de especies.`);
   }
 
-  // 1. Validar Habilidad usando pkms Dex
+  // 1. Validar Habilidad
   if (p.ability) {
     const normAbility = requireAbilityId(toID(p.ability));
-    const abilityData = Dex.abilities.get(normAbility);
-    if (bypass && abilityData.exists) {
+    if (bypass) {
       p.ability = normAbility;
     } else {
-      const speciesData = Dex.species.get(p.id);
-      const validAbilities: AbilityId[] = speciesData.exists 
-        ? Object.values(speciesData.abilities).map(a => requireAbilityId(toID(a))) 
-        : ['overgrow'];
-      
+      const validAbilities: AbilityId[] = pokemonDataProvider.getSpeciesAbilities(p.id).map(a => requireAbilityId(toID(a)));
       if (validAbilities.includes(normAbility)) {
         p.ability = normAbility;
       } else {
@@ -203,8 +196,7 @@ export function validatePokemon(p: Pokemon, bypassWhitelist = false): void {
 
   // 3. Validar consistencia básica
   ensurePokemonGender(p);
-  const spec = Dex.species.get(toID(p.id));
-  const isGenderless = spec?.gender === 'N' || isGenderlessSpeciesId(p.id);
+  const isGenderless = isGenderlessSpeciesId(p.id);
   if (!p.gender && !isGenderless) {
     throw new Error(`[pokemonFactory] Pokémon ${p.id} (UID: ${p.uid}) no tiene género definido.`);
   }
@@ -215,11 +207,10 @@ export function validatePokemon(p: Pokemon, bypassWhitelist = false): void {
     throw new Error(`[pokemonFactory] El HP de ${p.id} (UID: ${p.uid}) supera su HP máximo (${p.hp}/${p.maxHp}).`);
   }
 
-  // Validar naturaleza usando pkms
+  // Validar naturaleza
   if (p.nature) {
     const normNature = toID(p.nature);
-    const natureData = Dex.natures.get(normNature);
-    if (natureData && natureData.exists) {
+    if (isNatureId(normNature)) {
       p.nature = toNatureId(normNature);
     } else {
       throw new Error(`[pokemonFactory] Naturaleza inválida o inexistente "${p.nature}" para ${p.id} (UID: ${p.uid}).`);

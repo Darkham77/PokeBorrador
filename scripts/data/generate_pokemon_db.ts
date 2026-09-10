@@ -16,6 +16,7 @@ import { ACTIVE_GENERATION } from '../../src/data/system/constants.ts';
 import { SPECIES_METADATA } from '../../src/data/pokemon/speciesMetadata.ts';
 import { requirePokemonMoveId } from '../../src/data/battle/moves.ts';
 import type { PokemonType } from '../../src/data/battle/types.ts';
+import type { GenderName } from '@pkmn/types';
 
 export interface CompactPokemonData {
   name: string; // domain-ok: Open dynamic text or non-domain string payload
@@ -28,8 +29,14 @@ export interface CompactPokemonData {
   spd: number;
   spe: number;
   catchRate: number;
+  abilities?: string[]; // domain-ok: Open dynamic text or non-domain string payload
+  gender?: GenderName | number;
+  height?: number;
+  weight?: number;
   learnset: [number, string, number][];
+  compatMoves?: string[]; // domain-ok: Open dynamic text or non-domain string payload
 }
+
 
 const MAX_DEX_NUMS: Record<number, number> = {
   1: 151,
@@ -70,18 +77,42 @@ export async function generatePokemonDatabase(): Promise<void> {
     const type2 = species.types[1] ? (species.types[1].toLowerCase() as PokemonType) : undefined;
 
     const movesMap = new Map<string, number>();
+    const compatMovesSet = new Set<string>();
     let currentId: string | undefined = speciesId;
 
     while (currentId) {
       const learnsetData = await Dex.forGen(ACTIVE_GENERATION).learnsets.get(currentId);
       if (learnsetData && learnsetData.learnset) {
         for (const [moveId, methods] of Object.entries(learnsetData.learnset)) {
+          let minLevel = Infinity;
+          let hasCompat = false;
+          let hasLevelUp = false;
           for (const method of methods) {
             const match = method.match(/^[1-9]L(\d+)$/);
             if (match && match[1]) {
               const level = parseInt(match[1], 10);
-              if (!movesMap.has(moveId) || movesMap.get(moveId)! > level) {
-                movesMap.set(moveId, level);
+              hasLevelUp = true;
+              if (level < minLevel) {
+                minLevel = level;
+              }
+            } else if (/^\d*[METSVD]/.test(method)) {
+              hasCompat = true;
+            }
+          }
+
+          const moveData = Dex.forGen(ACTIVE_GENERATION).moves.get(moveId) || Dex.moves.get(moveId);
+          if (moveData && moveData.exists) {
+            const canonicalMoveId = requirePokemonMoveId(moveId);
+            if (moveData.isNonstandard === 'Past') {
+              compatMovesSet.add(canonicalMoveId);
+            } else {
+              if (hasLevelUp && minLevel !== Infinity) {
+                if (!movesMap.has(moveId) || movesMap.get(moveId)! > minLevel) {
+                  movesMap.set(moveId, minLevel);
+                }
+              }
+              if (hasCompat) {
+                compatMovesSet.add(canonicalMoveId);
               }
             }
           }
@@ -100,19 +131,24 @@ export async function generatePokemonDatabase(): Promise<void> {
 
     const learnset: [number, string, number][] = [];
     for (const [moveId, level] of movesMap.entries()) {
-      const moveData = Dex.forGen(ACTIVE_GENERATION).moves.get(moveId);
-      if (moveData.exists && moveData.isNonstandard !== 'Past') {
-        learnset.push([level, requirePokemonMoveId(moveId), moveData.pp]);
+      const canonicalMoveId = requirePokemonMoveId(moveId);
+      const moveData = Dex.forGen(ACTIVE_GENERATION).moves.get(moveId) || Dex.moves.get(moveId);
+      if (moveData && moveData.exists) {
+        learnset.push([level, canonicalMoveId, moveData.pp || 35]);
       }
     }
     if (learnset.length === 0) {
       const defaultMoveId = speciesId === 'unown' ? 'hiddenpower' : 'tackle';
-      const moveData = Dex.forGen(ACTIVE_GENERATION).moves.get(defaultMoveId);
-      learnset.push([1, requirePokemonMoveId(defaultMoveId), moveData.exists ? moveData.pp : 35]);
+      const moveData = Dex.forGen(ACTIVE_GENERATION).moves.get(defaultMoveId) || Dex.moves.get(defaultMoveId);
+      learnset.push([1, requirePokemonMoveId(defaultMoveId), moveData?.exists ? moveData.pp : 35]);
     }
     learnset.sort((a, b) => a[0] - b[0]);
 
     const metadata = SPECIES_METADATA[speciesId];
+    const abilities = Object.values(species.abilities).map(a => toID(a));
+    const gender = species.gender || (species.genderRatio ? species.genderRatio.M : 0.5);
+    const height = (species.heightm && species.heightm > 0) ? species.heightm : 0.1;
+    const weight = (species.weightkg && species.weightkg > 0) ? species.weightkg : 0.1;
 
     db[speciesId] = {
       name: species.name,
@@ -125,8 +161,14 @@ export async function generatePokemonDatabase(): Promise<void> {
       spd: species.baseStats.spd,
       spe: species.baseStats.spe,
       catchRate: metadata.catchRate,
-      learnset
+      abilities,
+      gender,
+      height,
+      weight,
+      learnset,
+      compatMoves: Array.from(compatMovesSet)
     };
+
   }
 
   const relPath = path.relative(process.cwd(), OUTPUT_FILE).replace(/\\/g, '/');

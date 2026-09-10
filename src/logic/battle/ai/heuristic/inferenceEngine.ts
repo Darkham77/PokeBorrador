@@ -3,7 +3,7 @@
 // Adapted from external/pokemon-showdown-ai/src/inference/engine.ts
 // ============================================================
 
-import { toID } from '@pkmn/sim';
+import { toID } from '@/logic/utils/strings.ts';
 import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';
 import { isAbilityId } from '@/data/battle/abilities';
 import { isItemId } from '@/data/inventory/items';

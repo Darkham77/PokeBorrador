@@ -3,8 +3,8 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import { getSpeciesHistory } from '@/logic/pokemon/evolutionEngine';
 export { getPokemonTier } from '@/logic/pokemon/tierEngine';
 import type { Pokemon, Move, PokemonIVs, ObtainedMethod } from '@/types/pokemon/pokemon';
-import { Dex, toID } from '@pkmn/sim';
-import { ACTIVE_GENERATION, isEnabledPokemonId } from '@/data/system/constants';
+import { toID } from '@/logic/utils/strings.ts';
+import { isEnabledPokemonId } from '@/data/system/constants';
 import { MOVE_TRANSLATIONS_ES, type MoveCategory } from '@/data/battle/moves';
 import { calculateTotalBaseStats, calculateTotalIVs, calculateRocketSellPriceRaw } from '@/logic/pokemon/statsMath';
 import { calculateEvBonusIvs } from '@/logic/pokemon/evMath';
@@ -241,17 +241,8 @@ export function getMoveDescription(id: string, mdProvided?: MoveBaseData | null)
 
   const cleanId = toID(md.id);
   if (cleanId) {
-    try {
-      const translated = ((MOVE_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string }>)[cleanId] || {}); // open-record: Generic key-value data dictionary container
-      if (translated.desc) return translated.desc;
-
-      const move = Dex.forGen(ACTIVE_GENERATION).moves.get(cleanId);
-      if (move && move.exists) {
-        return move.desc || move.shortDesc || "Causa daño al oponente sin efectos secundarios adicionales.";
-      }
-    } catch {
-      // Graceful fallback
-    }
+    const translated = ((MOVE_TRANSLATIONS_ES as Record<string, { name?: string; desc?: string }>)[cleanId] || {}); // open-record: Generic key-value data dictionary container
+    if (translated.desc) return translated.desc;
   }
 
   if (md.cat === 'status') return "Un movimiento que causa un efecto de estado o alteración.";

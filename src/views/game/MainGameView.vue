@@ -38,6 +38,8 @@ const BagView = defineResilientAsyncComponent(() => import('@/views/inventory/Ba
 const GlobalChat = defineResilientAsyncComponent(() => import('@/components/social/GlobalChat.vue'))
 const DirectChatWindow = defineResilientAsyncComponent(() => import('@/components/social/DirectChatWindow.vue'))
 import { useChatStore } from '@/stores/social/chat'
+import { useAuthStore } from '@/stores/auth'
+import { isLocalEnvironment } from '@/logic/utils/env'
 import { preloadSaveWorker } from '@/logic/workers/saveWorkerClient'
 
 const gameStore = useGameStore()
@@ -46,6 +48,9 @@ const battleStore = useBattleStore()
 const chatStore = useChatStore()
 const livePvP = useLivePvPStore()
 const breedingStore = useBreedingStore()
+const authStore = useAuthStore()
+
+const isDebugActive = computed(() => isLocalEnvironment() || authStore.sessionMode === 'offline' || authStore.user?.role === 'admin')
 
 // --- Refs for Layout ---
 const hudRef = ref<HTMLElement | null>(null)
@@ -226,7 +231,7 @@ watch(() => gs.value.starterChosen, (val) => {
         class="hud-sidebar-tools"
       >
         <GlobalChat />
-        <LocalDebugPanel />
+        <LocalDebugPanel v-if="isDebugActive" />
       </HUD_SidebarLeft>
 
       <!-- HUD INFERIOR (NAVIGATION MOBILE) -->

@@ -341,13 +341,56 @@ const DEBUG_CENTER_OFFSET_PERCENT = 50
 .pv-fx-wrapper {
   width: fit-content; height: fit-content; position: relative;
   display: flex; align-items: center; justify-content: center;
+
+  &.is-simplified {
+    :deep(img), :deep(.sprite-layer), :deep(.pokemon-sprite) {
+      will-change: filter, transform, opacity;
+      filter: none !important;
+      animation: none !important;
+      transform: none !important;
+    }
+  }
+
+  &.is-cursed :deep(img) {
+    filter: Drop-Shadow(0 0 15px Rgba(75, 0, 130, 0.8)) Brightness(0.6) contrast(1.2) Saturate(0.5);
+  }
+
+  &.is-confused :deep(img) {
+    will-change: transform, filter, opacity;
+    filter: Hue-Rotate(180deg) Saturate(0.5);
+  }
+
+  &.is-focus-energy :deep(img) {
+    will-change: transform, filter, opacity;
+    filter: Drop-Shadow(0 0 10px Rgba(255, 0, 0, 0.7)) Brightness(1.1);
+  }
+
+  &.is-ingrain :deep(img) {
+    will-change: transform, filter, opacity;
+    filter: Drop-Shadow(0 4px 10px Rgba(34, 139, 134, 0.8));
+  }
 }
 .pv-fx-sprite-layer {
   position: relative; display: flex; align-items: center; justify-content: center;
   width: 100%; height: 100%;
   z-index: calc(v-bind('Z_LAYERS.MAP_SPAWNS') + 2);
   will-change: transform;
+
+  &.is-guardian {
+    @include aura-guardian;
+
+    &.is-vibrant {
+      will-change: transform, filter, opacity;
+    }
+  }
+
+  &.is-freeze {
+    filter: Drop-Shadow(0 0 12px Rgba(0, 255, 255, 0.8)) 
+            Drop-Shadow(0 0 6px Rgba(255, 255, 255, 0.9)) 
+            Brightness(1.1);
+  }
 }
+
 .debug-guide {
   position: absolute; top: 50%; left: 50%; transform: Translate(-50%, -50%);
   border: 1px dashed; border-radius: 50%; pointer-events: none; z-index: calc(v-bind('Z_LAYERS.OVERLAY') - 1);

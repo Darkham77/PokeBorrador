@@ -9,7 +9,7 @@ const WIN_COND_SETUP_WEIGHT = 0.15
 const WIN_COND_PRIORITY_WEIGHT = 0.10
 const WIN_COND_HP_WEIGHT = 0.15
 
-import { toID } from '@pkmn/sim';
+import { toID } from '@/logic/utils/strings.ts';
 import type { HeuristicBattleSnapshot, WinCondition } from './types.ts';
 import type { HeuristicDamageCalculator } from './damageCalculator.ts';
 import type { InferenceEngine } from './inferenceEngine.ts';

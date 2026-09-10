@@ -26,7 +26,6 @@ import type { PokemonTagId } from '@/logic/constants/tags'
 
 
 const NATIONAL_ID_PADDING_LENGTH = 3;
-const HEX_RGB_SUBSTRING_OFFSET = 2;
 
 interface Props {
   show?: boolean
@@ -120,17 +119,6 @@ const handleEvolve = () => {
   uiStore.toggleInventory(finalContext.value as PokemonStorageLocation, finalIndex.value)
 }
 
-const HEX_RGB_HEX_START_INDEX = 1
-const DEFAULT_WHITE_RGB_FALLBACK = '255, 255, 255'
-
-const hexToRgb = (hex: string) => {
-  if (!hex) return DEFAULT_WHITE_RGB_FALLBACK
-  const r = parseInt(hex.slice(HEX_RGB_HEX_START_INDEX, HEX_RGB_HEX_START_INDEX + HEX_RGB_SUBSTRING_OFFSET), 16)
-  const g = parseInt(hex.slice(HEX_RGB_HEX_START_INDEX + HEX_RGB_SUBSTRING_OFFSET, HEX_RGB_HEX_START_INDEX + HEX_RGB_SUBSTRING_OFFSET * 2), 16)
-  const b = parseInt(hex.slice(HEX_RGB_HEX_START_INDEX + HEX_RGB_SUBSTRING_OFFSET * 2, HEX_RGB_HEX_START_INDEX + HEX_RGB_SUBSTRING_OFFSET * 3), 16)
-  return `${r}, ${g}, ${b}`
-}
-
 const handleToggleTag = (tagOrId: PokemonTagId | { id?: PokemonTagId, dbId?: PokemonTagId }) => {
   const tagId = typeof tagOrId === 'string' ? tagOrId : (tagOrId.id || tagOrId.dbId)
   if (tagId && isInstance.value && finalIndex.value > -1) {
@@ -181,8 +169,7 @@ const handleReorderMoves = (from: number, to: number) => {
       class="upd-core-container"
       :class="{ 'instance-mode': isInstance }"
       :style="{ 
-        '--type-color': primaryTypeColor,
-        '--type-color-rgb': hexToRgb(primaryTypeColor)
+        '--type-color': primaryTypeColor
       }"
     >
       <!-- Custom Content Header -->

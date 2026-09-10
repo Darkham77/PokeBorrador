@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=26.8.1",
+    "node": ">=26.8.2",
     "npm": ">=12.0.0"
   },
   "scripts": {
@@ -14,6 +14,7 @@
     "ui-demo": "vite --open /ui-demo/index.html",
     "validate:tools": "node --experimental-strip-types scripts/auditors/architecture/validate_build_tools.ts",
     "build": "npm run validate:tools && npm run validate:types && npm run audit && vite build",
+    "build:analyze": "node -e \"process.env.ANALYZE='true'; require('child_process').execSync('npm run build', { stdio: 'inherit', env: process.env })\"",
     "preview": "vite preview",
     "admin:rename": "node --env-file=.env --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-env scripts/maintenance/admin_rename.ts",
     "database:repair-account": "node --permission --import tsx --allow-worker --allow-fs-read=* --allow-fs-write=* --allow-net scripts/maintenance/repair_account_legality.ts",
@@ -82,6 +83,8 @@
     "database:diagnose-accounts": "node --permission --import tsx --allow-worker --allow-fs-read=* --allow-fs-write=* --allow-net scripts/maintenance/diagnose_account.ts all",
     "supabase:manage": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-child-process supabase/setup_supabase.ts",
     "database:generate-migrations": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/database/generate_migrations.ts",
+    "database:generate-pokemon": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/data/generate_pokemon_db.ts",
+    "database:generate-moves": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/data/generate_moves_db.ts",
     "assets:download": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-net=raw.githubusercontent.com,play.pokemonshowdown.com,img.pokemondb.net,www.serebii.net scripts/assets/download_assets.ts",
     "assets:download:items": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. --allow-net=raw.githubusercontent.com,play.pokemonshowdown.com,img.pokemondb.net,www.serebii.net scripts/assets/download_assets.ts items",
     "assets:download:medals": "node --permission --experimental-strip-types --allow-addons --allow-fs-read=. --allow-fs-write=. --allow-net=archives.bulbagarden.net scripts/assets/download_ranked_medals.ts",
@@ -157,13 +160,14 @@
     "validate:emojis": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/architecture/validate_emoji_typography.ts",
     "validate:audit-headers": "node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/architecture/validate_audit_headers.ts",
     "validate:native-paths": "node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/architecture/validate_native_paths.ts",
+    "audit:bundle": "node --permission --experimental-strip-types --allow-fs-read=. scripts/maintenance/audit_bundle_chunks.ts",
     "sync:test": "node --experimental-strip-types scripts/maintenance/sync_to_test.ts"
   },
   "dependencies": {
     "@pkmn/randoms": "^0.10.11",
     "@smogon/calc": "^0.10.0",
     "@supabase/supabase-js": "^2.103.0",
-    "@types/gsap": "^1.20.2",
+    "@vueuse/core": "^14.4.0",
     "gsap": "^3.15.0",
     "pinia": "^2.3.1",
     "valibot": "^1.4.1",
@@ -193,6 +197,7 @@
     "jsdom": "^26.0.0",
     "markdownlint-cli": "^0.49.0",
     "postgres": "^3.4.9",
+    "rollup-plugin-visualizer": "^7.1.1",
     "sass": "^1.99.0",
     "sharp": "^0.34.5",
     "sql.js": "^1.14.1",

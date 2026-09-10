@@ -4,7 +4,8 @@
 // ============================================================
 
 import { Generations, Pokemon, Move, Field, calculate, type Result, type GenerationNum } from '@smogon/calc';
-import { toID, type SideID } from '@pkmn/sim';
+import type { SideID } from '@pkmn/sim';
+import { toID } from '@/logic/utils/strings.ts';
 import { requireItemId } from '../../../../data/inventory/items.ts';
 import { requireAbilityId } from '../../../../data/battle/abilities.ts';
 import { isPokemonMoveId, type PokemonMoveId } from '@/data/battle/moves';

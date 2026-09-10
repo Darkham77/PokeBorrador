@@ -79,7 +79,7 @@
     
     &.active {
       color: var(--yellow);
-      background: radial-gradient(circle at bottom, Rgba(var(--type-color-rgb), 0.15) 0%, transparent 70%);
+      background: Radial-Gradient(circle at bottom, Rgb(from var(--type-color, #ffd60a) r g b / 0.15) 0%, transparent 70%);
       transform: Translatey(-2px);
       
       &::after {

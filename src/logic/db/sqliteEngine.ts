@@ -20,7 +20,6 @@ const sqlWasmUrl = getSqlWasmUrl()
 import { getFromIDB, setToIDB } from './idbHelper.ts'
 import { saveToOPFS, loadFromOPFS } from './opfsHelper.ts'
 import { TABLES_SCHEMA } from './schema.ts'
-import { DATABASE_MIGRATIONS } from './migrations_data.ts'
 import { logger } from '../utils/logger.ts'
 import { ensureSchemaIntegrity } from './sqliteSchemaIntegrity.ts'
 
@@ -409,6 +408,7 @@ async function runMigrations(): Promise<boolean> {
   const applied = appliedRes[0]?.values.map((v: unknown[]) => v[0] as string) || []
 
   const loadingStore = await getLoadingStore()
+  const { DATABASE_MIGRATIONS } = await import('./migrations_data.ts')
   
   let hasAppliedMigrations = false
   for (const m of DATABASE_MIGRATIONS as { id: string, sql: string, sqlite_sql?: string }[]) {
