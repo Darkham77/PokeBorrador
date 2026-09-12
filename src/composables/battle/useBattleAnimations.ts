@@ -38,6 +38,7 @@ export function useBattleAnimations(
     handleCatchRequest,
     handleShakeRequest,
     handleBlinkRequest,
+    handleFlinchRequest,
     handleHealRequest,
     handleFaintAnim,
     playCatchCelebration,
@@ -289,6 +290,7 @@ export function useBattleAnimations(
     
     addBusListener('PLAY_DAMAGE', ((e: Event) => handleShakeRequest((e as CustomEvent).detail as Parameters<typeof handleShakeRequest>[0])) as EventListener)
     addBusListener('PLAY_BLINK', ((e: Event) => handleBlinkRequest((e as CustomEvent).detail as Parameters<typeof handleBlinkRequest>[0])) as EventListener)
+    addBusListener('PLAY_FLINCH', ((e: Event) => handleFlinchRequest((e as CustomEvent).detail as Parameters<typeof handleFlinchRequest>[0])) as EventListener)
     addBusListener('PLAY_HEAL', ((e: Event) => handleHealRequest((e as CustomEvent).detail as Parameters<typeof handleHealRequest>[0])) as EventListener)
     
     addBusListener('CATCH_SHAKE', ((e: Event) => {
@@ -397,6 +399,8 @@ export function useBattleAnimations(
     getPokemonIsHealing,
     handleHealRequest,
     handleBlinkRequest,
+    handleFlinchRequest,
+    triggerFlinchAnim: handleFlinchRequest,
     awaitTween
   }
 }

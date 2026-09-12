@@ -125,6 +125,23 @@ function getEloDeltaText(rep: PassiveBattleReport): string {
   return rep.result === 'victory' ? `+${DEFAULT_VICTORY_ELO_DELTA} ELO` : `${DEFAULT_DEFEAT_ELO_DELTA} ELO`;
 }
 
+function getOpponentFactionLabel(rep: PassiveBattleReport): string {
+  const faction = rep.opponent_profile?.faction || (typeof rep.report_data?.faction === 'string' ? rep.report_data.faction : undefined);
+  if (!faction) return 'SIN BANDO';
+  const clean = faction.trim().toLowerCase();
+  if (clean === 'union') return 'UNIÓN';
+  if (clean === 'poder') return 'PODER';
+  return 'SIN BANDO';
+}
+
+function getOpponentFactionClass(rep: PassiveBattleReport): string {
+  const faction = rep.opponent_profile?.faction || (typeof rep.report_data?.faction === 'string' ? rep.report_data.faction : undefined);
+  if (!faction) return '';
+  const clean = faction.trim().toLowerCase();
+  if (clean === 'union' || clean === 'poder') return clean;
+  return '';
+}
+
 function openTeamManagement() {
   uiStore.toggleTeamManagement('pvp6');
 }
@@ -254,7 +271,10 @@ function openTeamManagement() {
           <div class="rep-details">
             <div class="trainer-header-row">
               <span class="rep-opponent text-outline">{{ rep.opponent_profile?.username || rep.report_data?.opponent || 'Rival' }}</span>
-              <span class="rep-class-badge">{{ rep.opponent_profile?.playerClass || rep.report_data?.playerClass || 'Entrenador' }}</span>
+              <span
+                class="rep-faction-badge"
+                :class="getOpponentFactionClass(rep)"
+              >{{ getOpponentFactionLabel(rep) }}</span>
             </div>
             <div class="rep-meta-row">
               <span

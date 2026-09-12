@@ -422,3 +422,18 @@ export const MILLISECONDS_PER_HOUR = 1000 * SECONDS_PER_MINUTE * MINUTES_PER_HOU
 /** Regular expression to detect battle replay codes (e.g. BTL-XXXX-XXXX) in chat and text. */
 export const BATTLE_CODE_REGEX = /BTL-[A-Z0-9]{4}-[A-Z0-9]{3,4}/i;
 
+/** Bug Catcher bonus catch multiplier per Bug Pokémon (+5%). */
+export const BUG_SYNERGY_BONUS_PER_BUG = 0.05;
+
+/** Bug Catcher maximum active Bug Pokémon count for synergy (6). */
+export const BUG_SYNERGY_MAX_COUNT = 6;
+
+/** Bug Catcher maximum catch rate synergy bonus (+30%). */
+export const BUG_SYNERGY_MAX_BONUS = 0.30;
+
+/** Trainer class high-IV threshold for catch rate calculation (120). */
+export const TRAINER_HIGH_IV_THRESHOLD = 120;
+
+/** Trainer class catch rate penalty rate (10%). */
+export const TRAINER_IV_PENALTY_RATE = 0.10;
+

@@ -40,11 +40,11 @@ export class EventSubcompetitionFiltersSimulation extends BaseEventSimulation {
       const gameStore = useGameStore();
       const currentSimTime = getServerTime();
 
-      const TEST_LEVEL_HORSEA = 28; // no-magic: Test seed level
-      const TEST_LEVEL_SHELLDER = 25; // no-magic: Test seed level
-      const TEST_LEVEL_OLD_SHELLDER = 20; // no-magic: Test seed level
-      const TEST_LEVEL_PIKACHU = 30; // no-magic: Test seed level
-      const ANCIENT_OBTAINED_TIMESTAMP = 1000; // no-magic: Timestamp far in the past
+      const TEST_LEVEL_HORSEA = 28;
+      const TEST_LEVEL_SHELLDER = 25;
+      const TEST_LEVEL_OLD_SHELLDER = 20;
+      const TEST_LEVEL_PIKACHU = 30;
+      const ANCIENT_OBTAINED_TIMESTAMP = 1000;
 
       // 1. Eligible Horsea
       const horsea = pokemonDebugService.generate({

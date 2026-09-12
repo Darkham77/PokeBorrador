@@ -75,7 +75,7 @@ export function renderAuditTaskRow(res: StandardAuditResult): string {
   return `  ${badge} │ ${styleText('bold', nameStr)} │ ${styleText('dim', durationStr)} │ ${metricStr} │ ${errStr} │ ${warnStr}`;
 }
 
-const DEFAULT_MAX_FINDINGS_PREVIEW = 30; // no-magic: Explicit mathematical constant or threshold value
+const DEFAULT_MAX_FINDINGS_PREVIEW = 30;
 
 export function renderFindingsDetail(findings: AuditFinding[], maxLimit: number = DEFAULT_MAX_FINDINGS_PREVIEW): string {
   if (!Array.isArray(findings) || findings.length === 0) return '';

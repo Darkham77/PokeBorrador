@@ -28,7 +28,7 @@ export function registerRewardCombatant(active: BattleState | null) {
  */
 export async function calculateBattleRewards(ctx: BattleContext) {
   const active = ctx.activeBattle.value;
-  if (!active) return;
+  if (!active || active.isPvP) return;
 
   const combatants = active._rewardCombatants && active._rewardCombatants.length > 0 
     ? active._rewardCombatants 

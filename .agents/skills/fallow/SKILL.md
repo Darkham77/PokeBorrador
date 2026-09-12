@@ -209,7 +209,6 @@ Fallow is integrated directly into the workspace's NPM auditing scripts:
   - `// fallow-ignore-next-line <rule>` (e.g. `// fallow-ignore-next-line cwe-918` for audited internal endpoints)
   - `// domain-ok` (open string constants that represent dynamic user text)
   - `// singleton-ok` (module-level singletons for cache or engine handles)
-  - `// no-magic` (string templates with embedded fractions or CSS shake keyframes)
 - **Fix Root Cause First**: Magic numbers must be declared as named domain constants, URLs must be literal strings or allowlisted switches, and complex functions must be modularized rather than suppressed.
 
 ---

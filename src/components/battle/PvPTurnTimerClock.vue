@@ -83,8 +83,8 @@ onUnmounted(() => {
         <svg
           class="timer-ring-svg"
           viewBox="0 0 48 48"
-          width="44"
-          height="44"
+          width="40"
+          height="40"
         >
           <circle
             class="ring-bg"
@@ -103,20 +103,20 @@ onUnmounted(() => {
         </svg>
         <span
           id="pvp-timer-number"
-          class="timer-number"
+          class="timer-number text-outline"
         >{{ displaySeconds }}s</span>
       </div>
 
       <div class="timer-labels">
         <span
           v-if="isReconnecting"
-          class="reconnect-label"
+          class="reconnect-label text-outline"
         >
           RECONECTANDO...
         </span>
         <span
           v-else
-          class="timer-subtext"
+          class="timer-subtext text-outline"
         >
           TURNO PVP
         </span>
@@ -124,7 +124,7 @@ onUnmounted(() => {
         <span
           v-if="afkStrikes > 0 && !isReconnecting"
           id="pvp-afk-strikes"
-          class="strike-badge"
+          class="strike-badge text-outline"
         >
           <span class="emoji">⚠️</span> STRIKE {{ afkStrikes }}/2
         </span>
@@ -134,7 +134,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
-@use "@/styles/core/_mixins" as *;
 @use "@/styles/core/tools" as *;
 
 .pvp-turn-timer-clock {
@@ -142,17 +141,23 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   margin: 0 auto 6px auto;
-  padding: 4px 14px;
-  background: Rgba(12, 16, 28, 0.92);
-  border: 2px solid Rgba(56, 189, 248, 0.4);
-  border-radius: 8px;
-  box-shadow: 0 2px 10px Rgba(0, 0, 0, 0.5), inset 0 1px 0 Rgba(255, 255, 255, 0.1);
+  padding: 5px 14px;
+  background: Rgba(15, 23, 42, 0.85);
+  border: 1px solid Rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  box-shadow: 
+    0 10px 30px Rgba(0, 0, 0, 0.5), 
+    inset 0 0 10px Rgba(255, 255, 255, 0.05);
+  backdrop-filter: Blur(8px);
   will-change: transform;
   user-select: none;
 
   &.is-urgent {
-    border-color: #ef4444;
-    box-shadow: 0 0 14px Rgba(239, 68, 68, 0.6), inset 0 1px 0 Rgba(255, 255, 255, 0.2);
+    border-color: Rgba(239, 68, 68, 0.7);
+    box-shadow: 
+      0 10px 30px Rgba(0, 0, 0, 0.5), 
+      inset 0 0 10px Rgba(239, 68, 68, 0.2), 
+      0 0 16px Rgba(239, 68, 68, 0.4);
 
     .ring-progress {
       stroke: #ef4444;
@@ -160,13 +165,15 @@ onUnmounted(() => {
 
     .timer-number {
       color: #f87171;
-      text-shadow: 0 0 8px Rgba(239, 68, 68, 0.8);
     }
   }
 
   &.is-reconnecting {
-    border-color: #f59e0b;
-    box-shadow: 0 0 12px Rgba(245, 158, 11, 0.5);
+    border-color: Rgba(245, 158, 11, 0.7);
+    box-shadow: 
+      0 10px 30px Rgba(0, 0, 0, 0.5), 
+      inset 0 0 10px Rgba(245, 158, 11, 0.2), 
+      0 0 14px Rgba(245, 158, 11, 0.4);
 
     .ring-progress {
       stroke: #f59e0b;
@@ -186,8 +193,8 @@ onUnmounted(() => {
 
 .timer-svg-wrap {
   position: relative;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -201,23 +208,24 @@ onUnmounted(() => {
 .ring-bg {
   fill: none;
   stroke: Rgba(255, 255, 255, 0.12);
-  stroke-width: 4;
+  stroke-width: 3.5;
 }
 
 .ring-progress {
   fill: none;
   stroke: #38bdf8;
-  stroke-width: 4;
+  stroke-width: 3.5;
   stroke-linecap: round;
 }
 
 .timer-number {
   position: absolute;
-  font-family: var(--font-pixel, monospace);
-  font-size: 13px;
-  font-weight: bold;
+  @include pixelated;
+  font-size: 11px;
+  font-weight: 700;
   color: #e0f2fe;
   letter-spacing: -0.5px;
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 }
 
 .timer-labels {
@@ -228,29 +236,34 @@ onUnmounted(() => {
 }
 
 .timer-subtext {
-  font-family: var(--font-pixel, monospace);
-  font-size: 11px;
-  color: #94a3b8;
+  @include pixelated;
+  font-size: 9px;
+  color: var(--gray, #94a3b8);
   letter-spacing: 0.5px;
   text-transform: uppercase;
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 }
 
 .reconnect-label {
-  font-family: var(--font-pixel, monospace);
-  font-size: 11px;
+  @include pixelated;
+  font-size: 9px;
   color: #fbbf24;
-  font-weight: bold;
+  font-weight: 700;
   letter-spacing: 0.5px;
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 }
 
 .strike-badge {
-  display: inline-block;
-  font-family: var(--font-pixel, monospace);
-  font-size: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  @include pixelated;
+  font-size: 8px;
   color: #fef08a;
-  background: Rgba(180, 83, 9, 0.4);
-  padding: 1px 6px;
-  border-radius: 4px;
-  border: 1px solid Rgba(245, 158, 11, 0.5);
+  background: Rgba(245, 158, 11, 0.18);
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid Rgba(245, 158, 11, 0.45);
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
 }
 </style>

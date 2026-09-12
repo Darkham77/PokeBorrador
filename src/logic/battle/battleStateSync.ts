@@ -34,10 +34,12 @@ export function syncTeamHP(ctx: BattleContext) {
   
   console.debug(`[SYNC-TEAM-HP] Running syncTeamHP. playerRequest: ${!!active.playerRequest}, enemyRequest: ${!!active.enemyRequest}`)
   
-  if (active.playerRequest?.side?.pokemon && ctx.gs.state.team) {
+  if (active.playerRequest?.side?.pokemon) {
     active.playerRequest.side.pokemon.forEach((reqPoke: Required<ShowdownPlayerRequest>['side']['pokemon'][number]) => {
       if (reqPoke && reqPoke.uid) {
-        const teamPoke = ctx.gs.state.team.find((p: Pokemon) => p && isMatchingUid(p.uid, reqPoke.uid))
+        const teamPoke = !active.isPvP && ctx.gs.state.team
+          ? ctx.gs.state.team.find((p: Pokemon) => p && isMatchingUid(p.uid, reqPoke.uid))
+          : undefined
         const battlePoke = active.playerTeam?.find((p: Pokemon) => p && isMatchingUid(p.uid, reqPoke.uid))
 
         const { hp, status } = parseCondition(reqPoke.condition || '')
@@ -79,7 +81,7 @@ export function syncTeamHP(ctx: BattleContext) {
     });
   }
 
-  if (active.player && ctx.gs.state.team) {
+  if (!active.isPvP && active.player && ctx.gs.state.team) {
     const teamPoke = ctx.gs.state.team.find((p: Pokemon) => p && isMatchingUid(p.uid, active.player?.uid))
     if (teamPoke) {
       active.player.hp = teamPoke.hp
@@ -99,7 +101,7 @@ export function syncTeamHP(ctx: BattleContext) {
     }
   }
 
-  if (Array.isArray(active.playerTeam) && Array.isArray(ctx.gs.state.team)) {
+  if (!active.isPvP && Array.isArray(active.playerTeam) && Array.isArray(ctx.gs.state.team)) {
     active.playerTeam.forEach((battlePoke: Pokemon) => {
       if (!battlePoke || !battlePoke.uid) return
       const teamPoke = ctx.gs.state.team.find((p: Pokemon) => p && isMatchingUid(p.uid, battlePoke.uid))

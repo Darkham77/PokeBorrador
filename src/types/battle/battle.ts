@@ -5,6 +5,7 @@ import type { Inventory } from '@/types/inventory/items';
 import type { ItemId } from '@/data/inventory/items';
 import type { GymId } from '@/data/world/gyms';
 import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
+import type { PlayerClassId, GenderId } from '@/types/system/game';
 import type { MapRouteId } from '@/data/world/map-assets';
 import type { MoveCategory } from '@/data/battle/moves';
 import type { DayPhase } from '@/logic/utils/timeUtils';
@@ -154,13 +155,15 @@ export interface BattleState {
   isCrystalCave?: boolean;
   isTrainer: boolean;
   trainerName?: string; // domain-ok: Open dynamic text or non-domain string payload
-  trainerSprite?: NpcSpriteId;
+  trainerSprite?: NpcSpriteId | PlayerClassId;
+  trainerGender?: GenderId;
   trainerArchetype?: NpcArchetype;
   isGym?: boolean;
   isRematch?: boolean;
   gymId?: GymId;
   fixedCycle?: DayPhase;
   fixedWeather?: WeatherId;
+  returnTab?: string; // domain-ok: UI navigation tab identifier
   weather: BattleWeather;
   turnCount: number;
   over: boolean;

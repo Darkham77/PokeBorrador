@@ -7,6 +7,7 @@ import { ShowdownPerspectiveAdapter } from '@/logic/battle/helpers/showdownPersp
 import { determineLegalAutoPick } from '@/logic/pvp/pvpReconnectHelper';
 import type { useBattleStore } from '@/stores/battle/battle.ts';
 import type { useUIStore } from '@/stores/ui.ts';
+import { BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine.ts';
 
 export interface TurnExecutionBattleStateLike {
   isHost: boolean;
@@ -50,6 +51,7 @@ export async function executeResolveTurn(ctx: {
       (turnRes) => {
         if (ctx.battleState.ch) {
           const turnCount = (ctx.battleStore.state?.turnCount || 0) + 1;
+          const resolvedWinnerSide = turnRes.winnerSide || (turnRes.winner === 'p1' || turnRes.winner === 'Player' ? 'p1' : (turnRes.winner ? 'p2' : null));
           ctx.battleState.ch.send({
             type: 'broadcast',
             event: 'pvp_turn_stream',
@@ -58,7 +60,7 @@ export async function executeResolveTurn(ctx: {
               turnNumber: turnCount,
               turn: turnCount,
               over: turnRes.isOver,
-              winnerSide: turnRes.winner as 'p1' | 'p2' | null,
+              winnerSide: resolvedWinnerSide,
               request: turnRes.p2Request
             }
           });
@@ -67,7 +69,12 @@ export async function executeResolveTurn(ctx: {
     );
 
     if (result.isOver) {
-      const won = result.winner === 'p1';
+      const isPlayerWinner = ctx.battleStore.state?.winnerResult === 'player'
+        || result.winnerSide === 'p1'
+        || result.winner === 'p1'
+        || result.winner === 'Player'
+        || (ctx.battleStore.state?.playerNames && ctx.battleStore.state.playerNames[result.winner || ''] === 'player');
+      const won = Boolean(isPlayerWinner);
       await ctx.endBattle(won, won ? '¡Victoria en PvP!' : 'Derrota en PvP.');
     } else if (ctx.battleState.config?.isAsynchronous) {
       ctx.battleState.myPick = null;
@@ -81,16 +88,16 @@ export async function executeResolveTurn(ctx: {
         ctx.battleState.enemyPick = computePassiveEnemyChoice(result.p2Request);
         ctx.battleState.phase = 'faint_switch';
         ctx.uiStore.isBattleSwitchForced = true;
+        ctx.timerManager.startTurnTimer();
       } else if (p1NeedsSwitch) {
         ctx.battleState.enemyPick = null;
         ctx.battleState.phase = 'faint_switch';
         ctx.uiStore.isBattleSwitchForced = true;
-      } else if (p2NeedsSwitch) {
-        ctx.battleState.myPick = null;
-        ctx.battleState.enemyPick = computePassiveEnemyChoice(result.p2Request);
-        await ctx.resolveTurnRecursion();
+        ctx.timerManager.startTurnTimer();
       } else {
+        // In passive PvP, enemy replacement switches are already executed during post-turn faints handling
         ctx.battleState.phase = 'choosing';
+        await ctx.battleStore.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT);
         ctx.timerManager.startTurnTimer();
       }
     } else {
@@ -99,10 +106,12 @@ export async function executeResolveTurn(ctx: {
       if (result.p1Request?.forceSwitch?.[0]) {
         ctx.battleState.phase = 'faint_switch';
         ctx.uiStore.isBattleSwitchForced = true;
+        ctx.timerManager.startTurnTimer();
       } else if (result.p2Request?.forceSwitch?.[0]) {
         ctx.battleState.phase = 'waiting';
       } else {
         ctx.battleState.phase = 'choosing';
+        await ctx.battleStore.fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.WAIT_INPUT);
         ctx.timerManager.startTurnTimer();
       }
     }
@@ -161,6 +170,7 @@ export async function executeHandleTurnStream(
     if (guestNeedsSwitch) {
       ctx.battleState.phase = 'faint_switch';
       ctx.uiStore.isBattleSwitchForced = true;
+      ctx.timerManager.startTurnTimer();
     } else if (enemyFainted) {
       ctx.battleState.phase = 'waiting';
     } else {
@@ -204,12 +214,15 @@ export async function executeCommitPick(
     afkStrikes: { value: number };
     battleStore: ReturnType<typeof useBattleStore>;
     resolveTurn: () => Promise<void>;
-  }
+  },
+  isManual = true
 ): Promise<void> {
   if (ctx.battleState.phase !== 'choosing' && ctx.battleState.phase !== 'faint_switch') return;
   ctx.timerManager.stopTurnTimer();
-  ctx.timerManager.resetStrikes();
-  ctx.afkStrikes.value = 0;
+  if (isManual) {
+    ctx.timerManager.resetStrikes();
+    ctx.afkStrikes.value = 0;
+  }
 
   ctx.battleState.myPick = pick;
   ctx.battleState.phase = 'waiting';
@@ -249,7 +262,7 @@ export interface HandleTurnTimeoutContext {
   forfeit: () => void;
   battleStore: ReturnType<typeof useBattleStore>;
   battleState: { myTeam: Pokemon[] };
-  commitPick: (pick: PvPAction) => void;
+  commitPick: (pick: PvPAction, isManual?: boolean) => void;
 }
 
 export function executeHandleTurnTimeout(
@@ -263,7 +276,7 @@ export function executeHandleTurnTimeout(
     ctx.uiStore.notify('Tiempo de turno agotado (Strike 1/2). Ejecutando acción automática.', '⏱️');
     const req = ctx.battleStore.state?.playerRequest;
     const autoPick = determineLegalAutoPick(req, ctx.battleState.myTeam);
-    ctx.commitPick(autoPick);
+    ctx.commitPick(autoPick, false);
   }
 }
 
@@ -276,6 +289,7 @@ export function executeCheckPostTurn(ctx: CheckPostTurnContext): void {
     } else {
       ctx.battleState.phase = 'faint_switch';
       ctx.uiStore.isBattleSwitchForced = true;
+      ctx.timerManager.startTurnTimer();
     }
   } else if (enHp <= 0) {
     if (!ctx.battleState.enemyHp.some(h => h > 0)) {

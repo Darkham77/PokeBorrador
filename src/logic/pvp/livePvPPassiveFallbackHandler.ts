@@ -9,6 +9,9 @@ import type { PvpChallengeConfig, PvPBattleState } from '@/types/battle/pvp';
 import type { PvPTimerManager } from '@/logic/pvp/pvpTimerHelper.ts';
 import { DEFAULT_INITIAL_ELO } from '@/logic/constants/gameplay.ts';
 import type { DBRouter } from '@/logic/db/dbRouter.ts';
+import type { PlayerClassId } from '@/data/player/playerClasses';
+import type { GenderId } from '@/types/system/game';
+import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases';
 
 const MAX_POKEMON_3V3 = 3 as const;
 
@@ -17,6 +20,8 @@ export interface PassiveFallbackParams {
   opponentName: string;
   opponentElo: number;
   enemyTeam: Pokemon[];
+  opponentClass?: PlayerClassId;
+  opponentGender?: GenderId;
 }
 
 export interface PassiveFallbackContext {
@@ -24,8 +29,9 @@ export interface PassiveFallbackContext {
   notify: (msg: string, icon?: string) => void;
   timerManager: PvPTimerManager;
   afkStrikes: { value: number };
-  myTeamConfirmed: { value: boolean };
-  enemyTeamConfirmed: { value: boolean };
+  battleStore: {
+    startBattle: (enemyPoke: Pokemon, options?: Record<string, unknown>) => Promise<unknown>;
+  };
   currentSeasonRules?: { maxPokemon?: number } | null;
   battleState: PvPBattleState & {
     active: boolean;
@@ -76,13 +82,37 @@ export function executeStartPassiveBattle(
   ctx.battleState.enemyTeam = params.enemyTeam;
   ctx.battleState.enemyHp = params.enemyTeam.map((p: Pokemon) => p.hp);
   ctx.battleState.enemyActiveIdx = 0;
-  ctx.battleState.phase = 'team_preview';
+  ctx.battleState.phase = 'choosing';
   ctx.battleState.logs = [`¡Comienza el combate clasificatorio contra la defensa pasiva de ${params.opponentName}!`] satisfies string[];
   ctx.battleState.myPick = null;
   ctx.battleState.enemyPick = null;
   ctx.battleState.ch = null;
-  ctx.myTeamConfirmed.value = false;
-  ctx.enemyTeamConfirmed.value = true;
+
+  const enemyLeader = params.enemyTeam[0];
+  if (enemyLeader && ctx.battleStore) {
+    void ctx.battleStore.startBattle(enemyLeader, {
+      isPvP: true,
+      isRanked: true,
+      isAsynchronous: true,
+      pvpMatchId: ctx.battleState.inviteId || undefined,
+      pvpIsHost: true,
+      pvpOpponentId: params.opponentId,
+      pvpOpponentName: params.opponentName,
+      enemyTeam: params.enemyTeam,
+      playerTeam: myTeam,
+      isTrainer: true,
+      trainerName: params.opponentName,
+      trainerSprite: params.opponentClass || 'entrenador',
+      trainerGender: params.opponentGender || 'h',
+      trainerArchetype: params.opponentClass === 'rocket' ? 'rocket' : 'default',
+      trainerQuote: getRandomQuoteForTrainer('rival'),
+      locationId: 'gym'
+    }).then(() => {
+      if (ctx.battleState.active) {
+        ctx.timerManager.startTurnTimer();
+      }
+    });
+  }
 }
 
 export interface FallbackRunnerContext {
@@ -130,7 +160,9 @@ export async function executeFallbackToPassiveBattle(ctx: FallbackRunnerContext)
       opponentId: fallbackResult.opponentId,
       opponentName: fallbackResult.opponentName,
       opponentElo: fallbackResult.opponentElo,
-      enemyTeam: fallbackResult.enemyTeam
+      enemyTeam: fallbackResult.enemyTeam,
+      opponentClass: fallbackResult.opponentClass,
+      opponentGender: fallbackResult.opponentGender
     });
   } catch (err) {
     console.error('[_fallbackToPassiveBattle Error]', err);

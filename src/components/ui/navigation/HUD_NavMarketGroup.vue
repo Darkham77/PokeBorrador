@@ -33,7 +33,7 @@ const {
     <PVHUDButton
       id="nav-market-btn"
       custom-class="group-btn"
-      :active="uiStore.openHudGroup === 'MARKET' || modalStore.isOpen('GlobalMarket') || modalStore.isOpen('Shop') || modalStore.isOpen('BCShop') || modalStore.isOpen('WarShop') || modalStore.isOpen('ReputationShop')"
+      :active="uiStore.openHudGroup === 'MARKET' || modalStore.isOpen('GlobalMarket') || modalStore.isOpen('Shop') || modalStore.isOpen('BCShop') || modalStore.isOpen('WarShop') || modalStore.isOpen('ReputationShop') || modalStore.isOpen('BlackMarket')"
       :badge-value="gtsStore.unclaimedGtsCount"
       @click.stop="toggleGroupMenu('MARKET')"
     >
@@ -95,6 +95,16 @@ const {
         >
           <span class="emoji">★</span>
           <span class="nav-item-label">REPUTACIÓN</span>
+        </button>
+        <button
+          v-if="gameStore.state.playerClass === 'rocket' && (gameStore.state.classLevel || 1) >= 10"
+          id="nav-market-black-market-btn"
+          class="hud-nav-btn black-market-nav-btn"
+          :class="{ active: modalStore.isOpen('BlackMarket') }"
+          @click.stop="handleTabChange('black-market'); uiStore.openHudGroup = null"
+        >
+          <span class="emoji">🚀</span>
+          <span class="nav-item-label">MERCADO NEGRO</span>
         </button>
         <button
           id="nav-market-war-btn"

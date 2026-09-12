@@ -8,6 +8,7 @@ export interface CanonicalTurnResult {
   logs: string[];
   isOver: boolean;
   winner: string | null;
+  winnerSide?: 'p1' | 'p2' | null;
   p1Request?: ShowdownPlayerRequest;
   p2Request?: ShowdownPlayerRequest;
 }

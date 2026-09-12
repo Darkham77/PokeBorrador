@@ -1,5 +1,5 @@
 import type { Ref } from 'vue';
-import type { GameState } from '@/types/system/game';
+import type { GameState, GenderId } from '@/types/system/game';
 import type { Pokemon, PokemonSelectionSource, PokemonCompetitionRank } from '@/types/pokemon/pokemon';
 import type { BattleState, BattleStages, BattleLog, BattleSource, BattleSide, BattleDifficulty, BattleMinigame } from '@/types/battle/battle';
 import type { BattleStateName, BattleSubStateName } from '@/logic/battle/battleStateMachine';
@@ -62,7 +62,8 @@ export interface BattleOptions {
   isDebug?: boolean;
   difficulty?: BattleDifficulty;
   rewardTM?: ItemId;
-  trainerSprite?: NpcSpriteId;
+  trainerSprite?: NpcSpriteId | PlayerClassId;
+  trainerGender?: GenderId;
   trainerArchetype?: NpcArchetype;
   isRival?: boolean;
   persistenceMode?: 'local' | 'remote';
@@ -77,6 +78,10 @@ export interface BattleOptions {
   pvpOpponentId?: string; // domain-ok: Open dynamic text or non-domain string payload
   pvpOpponentName?: string; // domain-ok: Open dynamic text or non-domain string payload
   playerTeam?: Pokemon[];
+  returnTab?: string; // domain-ok: UI navigation tab identifier
+  over?: boolean;
+  turn?: BattleSide | null;
+  battleOptions?: Record<string, unknown>; // open-record: Generic key-value data dictionary container
 }
 
 export interface GameStore {
@@ -338,6 +343,9 @@ export interface PlayerClassStore {
   classLevel: number;
   getModifier: (type: string, context?: Record<string, unknown>) => number; // open-record: Generic key-value data dictionary container
   addCriminality: (amount: number) => void;
+  addXP?: (amount: number) => void;
+  onCaptureFail?: () => void;
+  onCaptureSuccess?: () => void;
 }
 
 export interface AudioStore {

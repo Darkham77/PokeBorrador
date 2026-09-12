@@ -125,7 +125,10 @@ export function handleRepellentEncounter(
   }
   
   const weather = options.weather || 'clear';
-  const { pool, rates: rawRates } = getEncounterPool(loc, cycle, weather, activeEvents);
+  const { pool, rates: rawRates } = getEncounterPool(loc, cycle, weather, activeEvents, {
+    articunoTicketSecs: state.articunoTicketSecs,
+    mewtwoTicketSecs: state.mewtwoTicketSecs
+  });
   const rates = rawRates.map(r => r === -1 ? VISITOR_WEIGHT_REPLACEMENT_VALUE : r); 
   clampLegendaryRates(pool, rates); 
 

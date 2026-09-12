@@ -7,6 +7,7 @@ import { useUIStore } from '@/stores/ui'
 import { useMapStore } from '@/stores/map'
 import { useAudioStore } from '@/stores/audio'
 import { getWeatherAnimSeed } from '@/logic/weather/weatherMath.ts'
+import { isMapRouteId } from '@/data/world/map-assets'
 import { requireWeatherSeasonId } from '@/data/world/weather-tables'
 import { useCombatCamera } from '@/composables/battle/useCombatCamera'
 import { getCombatantPosition, WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
@@ -51,7 +52,13 @@ const mapStore = useMapStore()
 const uiStore = useUIStore()
 const audioStore = useAudioStore()
 const currentWeatherSeason = computed(() => requireWeatherSeasonId(mapStore.currentSeason.id))
-const atmosphereSeed = computed(() => getWeatherAnimSeed(mapStore.currentMap))
+const atmosphereSeed = computed(() => {
+  const locId = battleStore.state?.locationId
+  if (locId && isMapRouteId(locId)) {
+    return getWeatherAnimSeed(locId)
+  }
+  return getWeatherAnimSeed(mapStore.currentMap)
+})
 
 // Forzar Alta Fidelidad en el Combate
 provide('forceHighFidelity', true)
@@ -300,7 +307,7 @@ watch(() => battleStore.isBattleActive, (active) => {
         <!-- Entorno (Solo fondo) -->
         <BattleEnvironment
           :location-id="battle?.locationId"
-          :current-cycle="mapStore.currentCycle"
+          :current-cycle="effectiveCycle"
         />
 
         <div class="battle-sprites">
@@ -337,6 +344,7 @@ watch(() => battleStore.isBattleActive, (active) => {
             :is-trainer-or-gym="!!(battle?.isTrainer || battle?.isGym)"
             :is-pv-p="!!battle?.isPvP"
             :trainer-sprite="battle?.trainerSprite"
+            :trainer-gender="battle?.trainerGender"
             :trainer-name="battle?.trainerName"
             :player-back-sprite-url="playerBackSpriteUrl"
           />
@@ -430,6 +438,7 @@ watch(() => battleStore.isBattleActive, (active) => {
           :cycle="effectiveCycle"
           :season="currentWeatherSeason"
           :is-performance-mode="uiStore.isPerformanceMode"
+          :is-low-power="uiStore.isLowPowerActive"
           :z-index="'calc(var(--z-base) + 20)'"
           :anim-seed="atmosphereSeed"
           :is-visible="isAtmosphereLayerVisible"
@@ -472,7 +481,7 @@ watch(() => battleStore.isBattleActive, (active) => {
       v-if="battleStore.uiConfig.showTurnTimer || battleStore.uiConfig.showSpectatorBadge || battleStore.uiConfig.showReplayControls"
       class="battle-arena-floating-controls"
     >
-      <PvPTurnTimerClock v-if="battleStore.uiConfig.showTurnTimer" />
+      <PvPTurnTimerClock v-if="battleStore.uiConfig.showTurnTimer && !battleStore.isIntroAnimating" />
       <BattleSpectatorOverlay v-if="battleStore.uiConfig.showSpectatorBadge" />
       <BattleReplayControls v-if="battleStore.uiConfig.showReplayControls" />
     </div>

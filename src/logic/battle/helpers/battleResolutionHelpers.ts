@@ -119,7 +119,8 @@ export async function handleEnemyForceSwitchExecution(
         active.enemyTeam,
         activePlayer,
         activeUidToExclude ?? '',
-        ctx
+        ctx,
+        'faint_replacement'
       );
       if (bestIdx !== -1) {
         nextEnemy = active.enemyTeam[bestIdx] || null;

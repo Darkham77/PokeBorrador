@@ -101,17 +101,19 @@ const execShowBattleSwitch = () => {
     title: '⚡ CAMBIAR POKÉMON',
     isBattleSwitch: true,
     battleMode: battleStore.isPvP ? 'pvp' : 'wild',
+    customList: ((battleStore.isPvP && battleStore.state?.playerTeam) ? battleStore.state.playerTeam : (gameStore.state.team || [])).filter(Boolean) as Pokemon[],
     includeTeam: true,
     preventClose: isForced, 
     activePokemonUid: player.value?.uid,
     onConfirm: (pokes: Pokemon[]) => {
       if (pokes.length > 0 && pokes[0]) {
-        const index = team.findIndex(p => p && p.uid === pokes[0]?.uid);
+        const selectedUid = pokes[0].uid;
+        const index = team.findIndex(p => p && p.uid === selectedUid);
         if (index !== -1) {
           if (livePvP.battleState.active) {
-            livePvP._commitPick({ type: 'switch', switchIndex: index });
+            livePvP._commitPick({ type: 'switch', switchIndex: index, choiceString: `switch ${index + 1}` });
           } else {
-            battleStore.executeSwitch(index, isForced);
+            battleStore.executeSwitch(selectedUid || index, isForced);
           }
         }
       }
@@ -250,6 +252,20 @@ const encounterBtnText = computed(() => {
   return '¡COMBATIR!';
 });
 
+const exitButtonConfig = computed(() => {
+  const returnTab = battleStore.state?.returnTab;
+  if (returnTab === 'arena' || battleStore.isPvP) {
+    return { type: 'arena', text: 'VOLVER A LA ARENA', emoji: '⚔️' };
+  }
+  if (returnTab === 'home') {
+    return { type: 'home', text: 'VOLVER A CASA', emoji: '🏠' };
+  }
+  if (returnTab === 'gyms' || battleStore.state?.isGym) {
+    return { type: 'gyms', text: 'VOLVER A GIMNASIOS', emoji: '🏆' };
+  }
+  return { type: 'map', text: 'VOLVER AL MAPA', emoji: '🗺️' };
+});
+
 const GSAP_ARENA_CONTROLS_INITIAL_Y_OFFSET_PX = 30;
 const GSAP_ARENA_CONTROLS_INITIAL_SCALE = 0.95;
 
@@ -318,6 +334,11 @@ const onEnter = (el: Element, done: () => void) => {
         >
           <BattleQuickBag />
         </aside>
+        <div
+          v-else
+          class="quick-shortcut-zone zone-spacer"
+          aria-hidden="true"
+        />
       </div>
     </Transition>
 
@@ -343,14 +364,8 @@ const onEnter = (el: Element, done: () => void) => {
           class="continue-btn-final map-btn"
           @click.stop="battleStore.completeBattleFlow('map')"
         >
-          <template v-if="battleStore.state?.isGym">
-            <span class="emoji">🏆</span>
-            <span class="btn-text">VOLVER A GIMNASIOS</span>
-          </template>
-          <template v-else>
-            <span class="emoji">🗺️</span>
-            <span class="btn-text">VOLVER AL MAPA</span>
-          </template>
+          <span class="emoji">{{ exitButtonConfig.emoji }}</span>
+          <span class="btn-text">{{ exitButtonConfig.text }}</span>
         </button>
       </div>
     </div>
@@ -389,7 +404,7 @@ const onEnter = (el: Element, done: () => void) => {
 .battle-controls-layout {
   display: flex;
   align-items: stretch; // Estirar para coincidir con la altura del centro
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 5px; // Gap mínimo entre zonas
   
   width: 100%;
@@ -445,6 +460,12 @@ const onEnter = (el: Element, done: () => void) => {
   &.zone-bag { 
     flex: 1 1 90px; // Crece para rellenar el espacio vacío que zone-team no ocupa
     min-width: 90px;
+  }
+  &.zone-spacer {
+    flex: 1 1 0;
+    min-width: 0;
+    border: none;
+    pointer-events: none;
   }
 }
 

@@ -43,7 +43,7 @@ describe('NPC & Rival Team Generation - Enabled Species Enforcement', () => {
 
   it('buildTrainerEncounter produces strictly enabled Pokémon across route locations', async () => {
     const gsState = {
-      playerClass: 'trainer',
+      playerClass: 'entrenador' as const,
       classData: {},
       trainerChance: 5
     };

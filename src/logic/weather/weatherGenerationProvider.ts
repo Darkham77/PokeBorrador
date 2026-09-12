@@ -104,12 +104,12 @@ export function getWeatherCombatDescription(visualWeather: string | null | undef
   }
   if (lower === 'sandstorm') {
     if (gen >= 4) {
-      return '▲ Potencia Especial Roca (x1.5)\n▼ Debilita a no Roca/Tierra/Acero (1/16 HP por turno)'; // no-magic: Explicit mathematical constant or threshold value
+      return '▲ Potencia Especial Roca (x1.5)\n▼ Debilita a no Roca/Tierra/Acero (1/16 HP por turno)';
     }
-    return '▼ Debilita a no Roca/Tierra/Acero (1/16 HP por turno)'; // no-magic: Explicit mathematical constant or threshold value
+    return '▼ Debilita a no Roca/Tierra/Acero (1/16 HP por turno)';
   }
   if (lower === 'hail') {
-    return '▼ Debilita a no Hielo (1/16 HP por turno)\n• Efecto: Ventisca 100% precisión'; // no-magic: Explicit mathematical constant or threshold value
+    return '▼ Debilita a no Hielo (1/16 HP por turno)\n• Efecto: Ventisca 100% precisión';
   }
   if (lower === 'snow') {
     return '▲ Potencia Defensa Hielo (x1.5)\n• Efecto: Ventisca 100% precisión';

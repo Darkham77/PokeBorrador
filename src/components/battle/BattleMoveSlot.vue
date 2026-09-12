@@ -9,7 +9,7 @@ import BattleMoveDetails from '@/components/battle/BattleMoveDetails.vue'
 import { useMoveSlotData } from '@/composables/battle/useMoveSlotData'
 import { toPokemonType } from '@/data/battle/types'
 import { PDEX_TYPE_COLORS as TYPE_COLORS } from '@/logic/constants/pokedexConstants'
-import { Z_LAYERS } from '@/logic/constants/visuals'
+import { Z_LAYERS, SCALE_DEFAULT_BASE_FACTOR } from '@/logic/constants/visuals'
 import type { Pokemon, Move } from '@/types/pokemon/pokemon'
 
 interface Props {
@@ -40,11 +40,12 @@ const HEX_BYTE_SLICE_TWO = 2;
 const HEX_BYTE_SLICE_FOUR = 4;
 const HEX_BYTE_SLICE_SIX = 6;
 const HOVER_SCALED_MULT = 1.08;
-import { SCALE_DEFAULT_BASE_FACTOR } from '@/logic/constants/visuals';
 const HOVER_ANIM_DURATION_SEC = 0.3;
-// Relative z-index within the moves grid local stacking context
-const HOVER_Z_INDEX_ELEVATED = Z_LAYERS.BASE + 10; // no-magic: Explicit mathematical constant or threshold value
-const HOVER_Z_INDEX_NORMAL = Z_LAYERS.BASE + 1;   // no-magic: Explicit mathematical constant or threshold value
+// Relative layer offset within the moves grid local stacking context
+const HOVER_OFFSET_ELEVATED = 10;
+const HOVER_OFFSET_NORMAL = 1;
+const HOVER_LAYER_ELEVATED = Z_LAYERS.BASE + HOVER_OFFSET_ELEVATED;
+const HOVER_LAYER_NORMAL = Z_LAYERS.BASE + HOVER_OFFSET_NORMAL;
 
 const emit = defineEmits<{
   (e: 'use-move', index: number): void
@@ -236,7 +237,7 @@ const onHover = (isEntering: boolean) => {
     gsap.to(el, { 
       scale: isSmallScreen ? SCALE_DEFAULT_BASE_FACTOR : HOVER_SCALED_MULT, 
       filter: 'Brightness(1.1)',
-      zIndex: HOVER_Z_INDEX_ELEVATED,
+      zIndex: HOVER_LAYER_ELEVATED,
       duration: HOVER_ANIM_DURATION_SEC, 
       ease: 'power2.out' 
     })
@@ -244,7 +245,7 @@ const onHover = (isEntering: boolean) => {
     gsap.to(el, { 
       scale: SCALE_DEFAULT_BASE_FACTOR, 
       filter: 'Brightness(1)',
-      zIndex: HOVER_Z_INDEX_NORMAL,
+      zIndex: HOVER_LAYER_NORMAL,
       duration: HOVER_ANIM_DURATION_SEC, 
       ease: 'power2.out',
       onComplete: () => {

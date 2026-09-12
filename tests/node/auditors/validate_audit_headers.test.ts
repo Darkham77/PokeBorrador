@@ -24,7 +24,7 @@ export function calculate(a: number, b: number): number {
       const codeWithInlineEscapes = [
         'const name = getRawName(); // ' + 'domain-ok: Open dynamic text or non-domain string payload',
         'let globalCache: Cache | null = null; // ' + 'singleton-ok: Global persistent singleton instance',
-        'const shake = { x: -4 }; // ' + 'no-magic: Visual shake offset displacement'
+        'const mySet = new Set(); // ' + 'runtime-set: Fast O(1) membership lookup set'
       ].join('\n');
       const violations = scanFileForIllegalHeaders('src/logic/helpers.ts', codeWithInlineEscapes);
       expect(violations).toEqual([]);

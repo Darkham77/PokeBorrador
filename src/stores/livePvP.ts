@@ -17,7 +17,6 @@ import { DEFAULT_INITIAL_ELO } from '@/logic/constants/gameplay.ts'
 import {
   PVP_TURN_TIMEOUT_SEC,
   PVP_RECONNECT_WINDOW_SEC,
-  MATCHMAKING_TIMEOUT_SEC,
   type BattleInvite,
   type BattleReplayRecord,
   type PvpChallengeConfig,
@@ -30,6 +29,7 @@ import {
   cancelRoomAction,
   joinRoomAction
 } from '@/logic/pvp/pvpRoomActionsHelper'
+import { getMatchmakingTimeoutSec } from '@/logic/pvp/livePvPMatchmakingHandler.ts'
 import {
   executeForfeit,
   executeEndBattle
@@ -74,7 +74,8 @@ import {
   executeHandleOpponentTeamOrder,
   executeSetupBattleChannel,
   createInitialLivePvPBattleState,
-  type LiveBattleState
+  type LiveBattleState,
+  type OpponentTeamBroadcastPayload
 } from '@/logic/pvp/livePvPBattleSetupHandler.ts'
 
 export const useLivePvPStore = defineStore('livePvP', () => {
@@ -86,7 +87,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
 
   const activeInvite = ref<BattleInvite | null>(null)
   const isSearching = ref(false)
-  const searchSecondsRemaining = ref<number>(MATCHMAKING_TIMEOUT_SEC)
+  const searchSecondsRemaining = ref<number>(getMatchmakingTimeoutSec())
   const searchPhase = ref<'human' | 'passive_fallback' | 'matched'>('human')
   let searchCountdownTween: DelayedCall | null = null
   const activeReplay = ref<BattleReplayRecord | null>(null)
@@ -151,7 +152,8 @@ export const useLivePvPStore = defineStore('livePvP', () => {
   async function _pollMatchmaking() {
     await executePollMatchmaking({
       db: gameStore.db,
-      userId: authStore.user?.id,
+      userId: authStore.currentUserId,
+      myElo: gameStore.state.eloRating || DEFAULT_INITIAL_ELO,
       isSearching,
       searchPhase,
       killSearchCountdown: () => { if (searchCountdownTween) searchCountdownTween.kill() },
@@ -163,7 +165,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     if (invitePoller) invitePoller.kill()
     invitePoller = executeInitInvitePoller({
       db: gameStore.db,
-      userId: authStore.user?.id,
+      userId: authStore.currentUserId,
       isSearching,
       searchPhase,
       activeInvite,
@@ -188,7 +190,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     if (matchmakingPoller) matchmakingPoller.kill()
     matchmakingPoller = await executeStartSearch({
       db: gameStore.db,
-      userId: authStore.user?.id,
+      userId: authStore.currentUserId,
       myElo: gameStore.state.eloRating || DEFAULT_INITIAL_ELO,
       currentSeasonRules: pvpStore.currentSeasonRules,
       resolvePvpTeam,
@@ -202,10 +204,10 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     })
   }
 
-  async function cancelSearch() {
-    await executeCancelSearch({
+  function cancelSearch() {
+    executeCancelSearch({
       db: gameStore.db,
-      userId: authStore.user?.id,
+      userId: authStore.currentUserId,
       isSearching,
       searchPhase,
       searchSecondsRemaining,
@@ -218,7 +220,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     if (!gameStore.db) return
     const pvpStore = usePvPStore()
     await executeFallbackToPassiveBattle({
-      userId: authStore.user?.id,
+      userId: authStore.currentUserId,
       db: gameStore.db,
       isSearching,
       searchPhase,
@@ -242,8 +244,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
       notify: (msg, icon) => uiStore.notify(msg, icon),
       timerManager,
       afkStrikes,
-      myTeamConfirmed,
-      enemyTeamConfirmed,
+      battleStore: useBattleStore(),
       currentSeasonRules: pvpStore.currentSeasonRules,
       battleState
     })
@@ -252,7 +253,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
   async function sendInvite(opponentId: string, opponentName: string, config?: PvpChallengeConfig) {
     await executeSendInvite({
       db: gameStore.db,
-      userId: authStore.user?.id,
+      userId: authStore.currentUserId,
       opponentId,
       opponentName,
       config,
@@ -280,14 +281,14 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     })
   }
 
-  async function _commitPick(pick: PvPAction) {
+  async function _commitPick(pick: PvPAction, isManual = true) {
     await executeCommitPick(pick, {
       battleState,
       timerManager,
       afkStrikes,
       battleStore: useBattleStore(),
       resolveTurn
-    })
+    }, isManual)
   }
 
   function _checkReadyToResolve() {
@@ -355,6 +356,8 @@ export const useLivePvPStore = defineStore('livePvP', () => {
       db: gameStore.db,
       battleState,
       trainerName: gameStore.state.trainer,
+      playerClass: gameStore.state.playerClass,
+      gender: gameStore.state.gender,
       handlers: {
         onOpponentTeam: handleOpponentTeam,
         onOpponentTeamOrder: handleOpponentTeamOrder,
@@ -368,8 +371,11 @@ export const useLivePvPStore = defineStore('livePvP', () => {
     })
   }
 
-  function handleOpponentTeam({ payload }: { payload: { team: Pokemon[]; trainerName?: string } }) {
-    executeHandleOpponentTeam(payload, battleState)
+  function handleOpponentTeam({ payload }: { payload: OpponentTeamBroadcastPayload }) {
+    executeHandleOpponentTeam(payload, battleState, {
+      timerManager,
+      battleStore: useBattleStore()
+    })
   }
 
   function confirmTeamPreview(orderedPicks: Pokemon[]) {
@@ -413,7 +419,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
 
   async function createRoom(config?: PvpChallengeConfig): Promise<PvpRoomCode | null> {
     return createRoomAction(config, {
-      userId: authStore.user?.id,
+      userId: authStore.currentUserId,
       db: gameStore.db,
       notify: (msg, icon) => uiStore.notify(msg, icon),
       activeRoomCode,
@@ -429,7 +435,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
 
   async function joinRoom(code: PvpRoomCode): Promise<boolean> {
     return joinRoomAction(code, {
-      userId: authStore.user?.id,
+      userId: authStore.currentUserId,
       db: gameStore.db,
       notify: (msg, icon) => uiStore.notify(msg, icon),
       startBattle
@@ -441,7 +447,7 @@ export const useLivePvPStore = defineStore('livePvP', () => {
       battleState,
       isSpectator,
       setupBattleChannel,
-      userId: authStore.user?.id,
+      userId: authStore.currentUserId,
       hasDb: Boolean(gameStore.db)
     })
   }

@@ -7,11 +7,12 @@ import { calculateMoneyGain } from '../battleRewards.ts';
 import { BUFF_DURATION_30_MIN_SEC } from '@/logic/constants/items';
 
 const RIVAL_DROP_PROB_MAX_PERCENT = 100;
-const RIVAL_DROP_PROB_MASTERBALL = 20;
-const RIVAL_DROP_PROB_SHINY_TICKET = 40;
-const RIVAL_DROP_PROB_SAFARI_TICKET = 60;
-const RIVAL_DROP_PROB_CERULEAN_TICKET = 80;
-const RIVAL_DROP_PROB_ARTICUNO_TICKET = 95;
+const RIVAL_DROP_PROB_MASTERBALL = 10;
+const RIVAL_DROP_PROB_SHINY_TICKET = 25;
+const RIVAL_DROP_PROB_SAFARI_TICKET = 40;
+const RIVAL_DROP_PROB_CERULEAN_TICKET = 55;
+const RIVAL_DROP_PROB_ARTICUNO_TICKET = 70;
+const RIVAL_DROP_PROB_MEWTWO_TICKET = 85;
 
 const ROCKET_EXTORTION_WINDOW_MS = 24 * 3600 * 1000;
 const ROCKET_EXTORTION_BONUS_PCT_TEXT = '50%';
@@ -23,7 +24,7 @@ const TRAINER_EXP_FACTOR_PER_LEVEL = 2;
 const SECONDS_TO_MS_MULTIPLIER = 1000;
 
 export function handleRivalSpecialDrops(ctx: BattleContext, active: BattleState) {
-  if (!active.isRival) return;
+  if (!active.isRival && active.trainerArchetype !== 'rival') return;
 
   const randRec = Math.random() * RIVAL_DROP_PROB_MAX_PERCENT;
   let rewardedItemKey: ItemId;
@@ -37,8 +38,10 @@ export function handleRivalSpecialDrops(ctx: BattleContext, active: BattleState)
     rewardedItemKey = 'ticketcerulean';
   } else if (randRec < RIVAL_DROP_PROB_ARTICUNO_TICKET) {
     rewardedItemKey = 'ticketarticuno';
-  } else {
+  } else if (randRec < RIVAL_DROP_PROB_MEWTWO_TICKET) {
     rewardedItemKey = 'ticketmewtwo';
+  } else {
+    rewardedItemKey = 'ivscanner';
   }
 
   const itemObj = getItemById(rewardedItemKey);

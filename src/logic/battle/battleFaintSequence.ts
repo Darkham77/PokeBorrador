@@ -82,7 +82,7 @@ async function resolveNextEnemyReplacement(
 
   const activePlayer = active.player || active.enemyTeam[0]
   if (activePlayer) {
-    const bestIdx = findBestSwitchIndex(active.enemyTeam, activePlayer, currentFaintedUid, ctx)
+    const bestIdx = findBestSwitchIndex(active.enemyTeam, activePlayer, currentFaintedUid, ctx, 'faint_replacement')
     if (bestIdx !== -1) return active.enemyTeam[bestIdx] || null
   }
   return active.enemyTeam.find((p: Pokemon) => p.hp > 0) || null

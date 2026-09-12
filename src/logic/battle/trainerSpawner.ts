@@ -5,6 +5,7 @@ import type { MapRouteId } from '@/data/world/map-assets';
 import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter';
 import { requireNpcSpriteId, type NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog';
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
+import type { PlayerClassId, PlayerClassState } from '@/types/system/game';
 
 import { buildTrainerTeam } from './trainerFactory.ts';
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
@@ -170,8 +171,8 @@ export async function buildRivalEncounter(playerTeam: Pokemon[]): Promise<RivalE
  */
 export async function buildTrainerEncounter(
   gsState: {
-    playerClass?: string | null;
-    classData?: { criminality?: number; [key: string]: unknown };
+    playerClass?: PlayerClassId | null;
+    classData?: Partial<PlayerClassState>;
     trainerChance?: number;
   },
   locId: MapRouteId

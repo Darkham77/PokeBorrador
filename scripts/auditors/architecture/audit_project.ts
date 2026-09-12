@@ -238,7 +238,7 @@ async function auditFile(
         violations.push({
           file: filePath,
           line: 1,
-          message: `Mantenibilidad (500/1000 Rule): El archivo tiene ${slocCount} líneas reales de código (SLOC). Supera las ${SLOC_WARNING_THRESHOLD} líneas. Se recomienda fuertemente modularizar y extraer lógica a Composables (SRP).`, // no-magic: Explicit mathematical constant or threshold value
+          message: `Mantenibilidad (500/1000 Rule): El archivo tiene ${slocCount} líneas reales de código (SLOC). Supera las ${SLOC_WARNING_THRESHOLD} líneas. Se recomienda fuertemente modularizar y extraer lógica a Composables (SRP).`,
           context: `SLOC: ${slocCount}`,
           severity: 'warning',
           fixable: false
@@ -780,10 +780,10 @@ export function getViolationCategory(v: Violation): string {
   return 'Otros';
 }
 
-const MAX_CONTEXT_SNIPPET_LENGTH = 50; // no-magic: Explicit mathematical constant or threshold value
-const DEFAULT_TOP_LIMIT = 15; // no-magic: Explicit mathematical constant or threshold value
-const MAX_FILES_TO_SHOW_IN_TERMINAL = 25; // no-magic: Explicit mathematical constant or threshold value
-const MAX_VIOLATIONS_PER_FILE_IN_TERMINAL = 10; // no-magic: Explicit mathematical constant or threshold value
+const MAX_CONTEXT_SNIPPET_LENGTH = 50;
+const DEFAULT_TOP_LIMIT = 15;
+const MAX_FILES_TO_SHOW_IN_TERMINAL = 25;
+const MAX_VIOLATIONS_PER_FILE_IN_TERMINAL = 10;
 function sanitizeContext(ctx: string): string {
   if (!ctx) return '';
   return ctx.replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim().slice(0, MAX_CONTEXT_SNIPPET_LENGTH);
@@ -980,7 +980,7 @@ async function main() {
         if (isFallowDupesActive) {
           logProgress(styleText('cyan', '   ├─ [1/4] Fallow: Análisis de duplicación de código...'));
           all = all.concat(runFallow('dupes'));
-          all = all.concat(runFallow('dupes', ['--min-occurrences', '3', '--min-lines', '10', '--min-tokens', '60'])); // no-magic: Explicit mathematical constant or threshold value
+          all = all.concat(runFallow('dupes', ['--min-occurrences', '3', '--min-lines', '10', '--min-tokens', '60']));
         }
         if (isFallowSecurityActive) {
           logProgress(styleText('cyan', '   ├─ [2/4] Fallow: Análisis de seguridad (CWE)...'));

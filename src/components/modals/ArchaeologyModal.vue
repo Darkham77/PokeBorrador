@@ -110,12 +110,12 @@ function handleTileClick(tile: Tile) {
   }
 
   const GRID_SHAKE_OFFSET_PX = 3
-
   const GRID_SHAKE_STEP_SEC = 0.05
+  const GRID_SHAKE_REPEAT_COUNT = 5
   // Click Animation: Shake Grid slightly
   gsap.fromTo('.archaeology-grid', 
-    { x: -GRID_SHAKE_OFFSET_PX }, // magic-ok: Explicit mathematical constant or ratio
-    { x: GRID_SHAKE_OFFSET_PX, duration: GRID_SHAKE_STEP_SEC, repeat: 5, yoyo: true, ease: 'none', onComplete: () => { gsap.set('.archaeology-grid', { x: 0 }) } }
+    { x: -GRID_SHAKE_OFFSET_PX },
+    { x: GRID_SHAKE_OFFSET_PX, duration: GRID_SHAKE_STEP_SEC, repeat: GRID_SHAKE_REPEAT_COUNT, yoyo: true, ease: 'none', onComplete: () => { gsap.set('.archaeology-grid', { x: 0 }) } }
   )
 
   // Dig Animation on tile

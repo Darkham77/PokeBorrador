@@ -79,6 +79,7 @@ export interface BattleContext {
     triggerPokemonCall: () => Promise<void>;
     handleHealRequest?: (detail: string | { side?: string }) => Promise<void>;
     handleBlinkRequest?: (detail: string | { side?: string }) => Promise<void>;
+    triggerFlinchAnim?: (side: string) => Promise<void>;
     awaitTween?: (key: string) => Promise<void>;
     resetAll?: () => void;
   };

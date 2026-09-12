@@ -32,14 +32,14 @@ class EventSlotManagementSimulation extends BaseEventSimulation {
       const gameStore = useGameStore();
       const currentSimTime = getServerTime();
 
-      const TEST_LEVEL_SHELLDER = 25; // no-magic: Test seed level
-      const TEST_LEVEL_HORSEA = 28; // no-magic: Test seed level
-      const SHELLDER_WEIGHT = 12.0; // no-magic: Test seed weight
-      const SHELLDER_HEIGHT = 0.3; // no-magic: Test seed height
-      const HORSEA_WEIGHT = 18.5; // no-magic: Test seed weight
-      const HORSEA_HEIGHT = 0.6; // no-magic: Test seed height
-      const SHELLDER_IV = 20; // no-magic: Test seed IVs
-      const HORSEA_IV = 31; // no-magic: Test seed IVs
+      const TEST_LEVEL_SHELLDER = 25;
+      const TEST_LEVEL_HORSEA = 28;
+      const SHELLDER_WEIGHT = 12.0;
+      const SHELLDER_HEIGHT = 0.3;
+      const HORSEA_WEIGHT = 18.5;
+      const HORSEA_HEIGHT = 0.6;
+      const SHELLDER_IV = 20;
+      const HORSEA_IV = 31;
 
       const shellder = pokemonDebugService.generate({
         id: requirePokemonSpeciesId('shellder'),

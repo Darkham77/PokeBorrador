@@ -7,6 +7,7 @@ This directory contains database migration integrity, SQL dialect translation, a
 ## Directory Structure & Files
 
 - [_testDbHelper.ts](./_testDbHelper.ts): Shared test database setup and base schema initialization for persistence validators.
+- [validate_save_persistence_parity.ts](./validate_save_persistence_parity.ts): Enforces 100% field parity across GameState, saveDataSchema, saveSerializer.ts, and createInitialGameState(), preventing any state omission bugs.
 - [validate_sql_migrations.ts](./validate_sql_migrations.ts): Tests in-memory execution of all PostgreSQL-translated SQL migrations in SQLite and validates migration timestamp monotonicity.
 
 ## Local Governance & Rules

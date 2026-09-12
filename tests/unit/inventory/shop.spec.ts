@@ -7,6 +7,7 @@ import { useGameStore } from '@/stores/game'
 import { useShopStore } from '@/stores/inventory/shop'
 import { useUIStore } from '@/stores/ui'
 import { requireItemId } from '@/data/inventory/items'
+import { getGMT3Date } from '@/logic/utils/timeUtils'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 describe('Shop & Healing Logic', () => {
@@ -145,7 +146,7 @@ describe('Shop & Healing Logic', () => {
       const items = shopStore.getBlackMarketItems()
       
       expect(items.length).toBe(3)
-      expect(gameStore.state.classData.blackMarketDaily.date).toBe(Temporal.Now.instant().toString().split('T')[0])
+      expect(gameStore.state.classData.blackMarketDaily.date).toBe(getGMT3Date().toPlainDate().toString())
     })
 
     it('allows purchasing with money (₽) and applies discount', () => {

@@ -35,7 +35,7 @@ import {
   ATTACK_DEFAULT_NY_ENEMY,
 } from '@/logic/constants/animations';
 
-const FAINT_BLINK_STEPS: readonly { t: number; op: number }[] = [ // no-magic: Explicit mathematical constant or threshold value
+const FAINT_BLINK_STEPS: readonly { t: number; op: number }[] = [
   { t: 0.05, op: 0 }, { t: 0.13, op: 1 },
   { t: 0.21, op: 0 }, { t: 0.29, op: 1 },
   { t: 0.37, op: 0 }, { t: 0.45, op: 1 },

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
+import { useResizeObserver } from '@vueuse/core'
 import { gsap } from 'gsap'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import type { Event as GameEvent, EventConfig, WeeklyRotationEntry } from '@/logic/events/eventEngine'
@@ -42,7 +43,6 @@ const eventStore = useEventStore()
 // ── Responsive Layout & Event Slots ───────────────────────────────────────────
 const containerRef = ref<HTMLElement | null>(null)
 const containerWidth = ref(1200)
-let resizeObserver: ResizeObserver | null = null
 
 const isStacked = computed(() => containerWidth.value < STACKED_BREAKPOINT_PX)
 const activeEvents = computed(() => eventStore.activeEvents)
@@ -197,17 +197,17 @@ function handleEventClick(event: GameEvent): void {
   emit('openEvent', event)
 }
 
+useResizeObserver(containerRef, (entries) => {
+  for (const entry of entries) {
+    if (entry.contentRect.width > 0) {
+      containerWidth.value = entry.contentRect.width
+    }
+  }
+})
+
 onMounted(() => {
   if (containerRef.value) {
     containerWidth.value = containerRef.value.clientWidth || 1200
-    resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.contentRect.width > 0) {
-          containerWidth.value = entry.contentRect.width
-        }
-      }
-    })
-    resizeObserver.observe(containerRef.value)
   }
 
   gsapCtx = gsap.context(() => {}, containerRef.value || undefined)
@@ -215,10 +215,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   stopCarousel()
-  if (resizeObserver) {
-    resizeObserver.disconnect()
-    resizeObserver = null
-  }
   if (gsapCtx) {
     gsapCtx.revert()
   }

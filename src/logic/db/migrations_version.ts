@@ -6,5 +6,5 @@
  * Decouples client version checks from the heavy migrations SQL data chunk.
  */
 
-export const CLIENT_DB_VERSION = 20260909010000;
-export const LATEST_MIGRATION_ID = '20260909010000_migrate_all_pokemon_abilities_moves_items';
+export const CLIENT_DB_VERSION = 20260911020000;
+export const LATEST_MIGRATION_ID = '20260911020000_deactivate_corrupted_passive_teams';

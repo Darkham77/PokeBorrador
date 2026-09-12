@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useClipboard } from '@vueuse/core';
 import { usePvPStore } from '@/stores/pvp';
 import { useLivePvPStore } from '@/stores/livePvP';
 import { useUIStore } from '@/stores/ui';
@@ -11,11 +12,12 @@ const pvpStore = usePvPStore();
 const livePvPStore = useLivePvPStore();
 const uiStore = useUIStore();
 const gameStore = useGameStore();
+const { copy } = useClipboard();
 
 const history = computed(() => pvpStore.personalMatchHistory);
 
-function copyBattleCode(code: string) {
-  navigator.clipboard.writeText(code);
+async function copyBattleCode(code: string) {
+  await copy(code);
   uiStore.notify(`Código ${code} copiado al portapapeles.`, '📋');
 }
 

@@ -422,6 +422,35 @@ onUnmounted(() => {
     }
   }
 
+  .top-right-column {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    z-index: calc(var(--z-low) + 5);
+    pointer-events: auto;
+
+    .tier-badge {
+      position: static !important;
+    }
+
+    .card-status-indicators {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      margin-top: 2px;
+    }
+  }
+
+  :deep(.unified-badge-pill) {
+    z-index: calc(var(--z-low) + 5);
+    pointer-events: auto;
+  }
+
   .box-sprite-wrapper {
     width: 100%;
     flex: 1 1 auto;
@@ -431,6 +460,7 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     overflow: visible;
+    pointer-events: none;
 
     :deep(.pv-fx-wrapper),
     :deep(.pv-fx-sprite-layer) {
@@ -438,6 +468,7 @@ onUnmounted(() => {
       display: flex;
       align-items: center;
       justify-content: center;
+      pointer-events: none;
     }
 
     :deep(.box-card-sprite) {
@@ -448,6 +479,7 @@ onUnmounted(() => {
       max-width: none !important;
       max-height: none !important;
       object-fit: contain;
+      pointer-events: none;
     }
   }
 

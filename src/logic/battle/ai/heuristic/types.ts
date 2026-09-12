@@ -209,6 +209,8 @@ export interface AIConfig {
   errorRate: number;
   /** 0.0 = never switches, 1.0 = very aggressive switching */
   switchAggressiveness: number;
+  /** Minimum active turns on field before voluntary switch is allowed */
+  switchCooldownTurns: number;
   /** Run full strategic evaluation (win conditions, threats, position) */
   useStrategicEval: boolean;
   /** Run inference engine (probabilistic set tracking) */
@@ -216,31 +218,73 @@ export interface AIConfig {
 }
 
 const AI_PRESET_ERROR_RATE_WILD = 0.50;
-const AI_PRESET_ERROR_RATE_NPC = 0.05;
+const AI_PRESET_ERROR_RATE_NOVICE = 0.25;
+const AI_PRESET_ERROR_RATE_INTERMEDIATE = 0.12;
+const AI_PRESET_ERROR_RATE_TACTICAL = 0.04;
+const AI_PRESET_ERROR_RATE_ELITE = 0.02;
+const AI_PRESET_ERROR_RATE_PERFECT = 0.00;
+
+const AI_DEFAULT_SWITCH_COOLDOWN_TURNS = 2;
+const AI_RIVAL_SWITCH_COOLDOWN_TURNS = 1;
 
 export const AI_CONFIG_PRESETS = {
   wild: {
     errorRate: AI_PRESET_ERROR_RATE_WILD,
     switchAggressiveness: 0.0,
+    switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
     useStrategicEval: false,
     useInference: false,
   },
-  npc: {
-    errorRate: AI_PRESET_ERROR_RATE_NPC,
-    switchAggressiveness: 0.4,
+  novice: {
+    errorRate: AI_PRESET_ERROR_RATE_NOVICE,
+    switchAggressiveness: 0.0,
+    switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
+    useStrategicEval: false,
+    useInference: false,
+  },
+  intermediate: {
+    errorRate: AI_PRESET_ERROR_RATE_INTERMEDIATE,
+    switchAggressiveness: 0.15,
+    switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
+    useStrategicEval: true,
+    useInference: true,
+  },
+  tactical: {
+    errorRate: AI_PRESET_ERROR_RATE_TACTICAL,
+    switchAggressiveness: 0.35,
+    switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
+    useStrategicEval: true,
+    useInference: true,
+  },
+  elite: {
+    errorRate: AI_PRESET_ERROR_RATE_ELITE,
+    switchAggressiveness: 0.50,
+    switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
     useStrategicEval: true,
     useInference: true,
   },
   gym: {
-    errorRate: 0.00,
-    switchAggressiveness: 0.7,
+    errorRate: AI_PRESET_ERROR_RATE_PERFECT,
+    switchAggressiveness: 0.65,
+    switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
     useStrategicEval: true,
     useInference: true,
   },
   rival: {
-    errorRate: 0.00,
-    switchAggressiveness: 0.9,
+    errorRate: AI_PRESET_ERROR_RATE_PERFECT,
+    switchAggressiveness: 0.85,
+    switchCooldownTurns: AI_RIVAL_SWITCH_COOLDOWN_TURNS,
+    useStrategicEval: true,
+    useInference: true,
+  },
+  npc: {
+    errorRate: AI_PRESET_ERROR_RATE_TACTICAL,
+    switchAggressiveness: 0.35,
+    switchCooldownTurns: AI_DEFAULT_SWITCH_COOLDOWN_TURNS,
     useStrategicEval: true,
     useInference: true,
   },
 } as const satisfies Record<string, AIConfig>;
+
+export type AIPresetKey = keyof typeof AI_CONFIG_PRESETS;
+

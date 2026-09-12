@@ -22,11 +22,13 @@ const emit = defineEmits<{
 
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/game'
+import { useLivePvPStore } from '@/stores/livePvP'
 
 import type { Pokemon } from '@/types/pokemon/pokemon'
 
 const battleStore = useBattleStore()
 const gameStore = useGameStore()
+const livePvP = useLivePvPStore()
 
 const isLocked = computed(() => {
   return isPokemonLocked(battleStore.player)
@@ -36,6 +38,13 @@ const hasAvailableBenchPokemon = computed(() => {
   const team = ((battleStore.isPvP ? battleStore.state?.playerTeam : gameStore.state?.team) || []) as (Pokemon | null)[]
   const activeUid = battleStore.player?.uid
   return team.some((p) => p && p.hp > 0 && p.uid !== activeUid)
+})
+
+const isInputReady = computed(() => {
+  if (battleStore.isPvP) {
+    return livePvP.battleState.phase === 'choosing' || battleStore.currentSubState === 'WAIT_INPUT'
+  }
+  return battleStore.currentSubState === 'WAIT_INPUT'
 })
 
 // Eliminamos onHoverBtn manual para usar los estados nativos del mixin btn-vicio
@@ -51,7 +60,7 @@ const hasAvailableBenchPokemon = computed(() => {
       <button
         id="battle-switch-btn"
         class="action-btn switch-btn"
-        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || !!(battleStore.player?.volatileCounters?.['partiallytrapped']) || !!(battleStore.player?.trapped) || isLocked || !hasAvailableBenchPokemon || battleStore.currentFsmState === 'REORDER_TEAM' || battleStore.currentSubState !== 'WAIT_INPUT'"
+        :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || !!(battleStore.player?.volatileCounters?.['partiallytrapped']) || !!(battleStore.player?.trapped) || isLocked || !hasAvailableBenchPokemon || battleStore.currentFsmState === 'REORDER_TEAM' || !isInputReady"
         @click.stop="emit('switch')"
       >
         <span class="emoji">🔄</span> <span class="text">CAMBIAR</span>

@@ -131,6 +131,54 @@
   }
 }
 
+/* ── BLACK MARKET PREMIUM STYLES ────────────────────────────────────────────── */
+
+.bm-modal-header {
+  @include shop-header;
+
+  .bm-title-group {
+    @include shop-header-title(#ef4444);
+
+    .rocket-badge {
+      background: Rgba(239, 68, 68, 0.15);
+      border: 1px solid Rgba(239, 68, 68, 0.4);
+      color: #f87171;
+      font-size: 7px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-shadow: 0 0 5px Rgba(239, 68, 68, 0.5);
+      font-weight: bold;
+      letter-spacing: 0;
+      @include pixelated;
+    }
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 24px;
+
+    @media (max-width: 768px) {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .stat-node {
+      @include shop-header-stat(#ef4444);
+
+      &.money .value {
+        @extend .colored;
+        color: var(--green, #4ade80);
+        text-shadow: 0 0 15px Rgba(74, 222, 128, 0.25);
+      }
+      &.level .value {
+        @extend .colored;
+        color: var(--yellow);
+        text-shadow: 0 0 15px Rgba(250, 204, 21, 0.2);
+      }
+    }
+  }
+}
+
 .rep-shop-modal-container {
   @include shop-shell;
 

@@ -219,6 +219,24 @@
         margin: 4px auto 0 !important;
       }
     }
+
+    .top-right-column {
+      z-index: calc(var(--z-low) + 10) !important;
+      pointer-events: auto !important;
+
+      * {
+        pointer-events: auto !important;
+      }
+    }
+
+    .unified-badge-pill {
+      z-index: calc(var(--z-low) + 10) !important;
+      pointer-events: auto !important;
+
+      * {
+        pointer-events: auto !important;
+      }
+    }
   }
 }
 
@@ -296,7 +314,7 @@
           @include pixelated;
         }
 
-        .rep-class-badge {
+        .rep-faction-badge {
           font-size: 6px;
           background: Rgba(255, 255, 255, 0.08);
           border: 1px solid Rgba(255, 255, 255, 0.15);
@@ -304,6 +322,18 @@
           padding: 1px 4px;
           color: Rgba(203, 213, 225, 0.8);
           @include pixelated;
+
+          &.union {
+            border-color: Rgba(59, 130, 246, 0.5);
+            color: #60a5fa;
+            background: Rgba(59, 130, 246, 0.12);
+          }
+
+          &.poder {
+            border-color: Rgba(239, 68, 68, 0.5);
+            color: #f87171;
+            background: Rgba(239, 68, 68, 0.12);
+          }
         }
       }
 

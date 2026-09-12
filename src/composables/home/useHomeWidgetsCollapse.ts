@@ -13,6 +13,7 @@ export const HOME_WIDGET_IDS = [
   'class',
   'breeding',
   'economy',
+  'black_market',
   'buffs',
   'faction',
   'notifications'
@@ -40,6 +41,7 @@ const DEFAULT_COLLAPSED_STATE: Record<HomeWidgetId, boolean> = {
   class: false,
   breeding: false,
   economy: false,
+  black_market: false,
   buffs: false,
   faction: false,
   notifications: false

@@ -49,6 +49,13 @@ export function calculateCriticalCaptureThreshold(a: number, pokedexCount: numbe
   return Math.floor((Math.min(CATCH_MATH_255_MAX, a) * p) / 6)
 }
 
+import {
+  BUG_SYNERGY_BONUS_PER_BUG,
+  BUG_SYNERGY_MAX_BONUS,
+  TRAINER_HIGH_IV_THRESHOLD,
+  TRAINER_IV_PENALTY_RATE
+} from '@/logic/constants/gameplay.ts';
+
 export function calculateCatchRatePure(
   pokemon: PurePokemon,
   rawBallType: ItemId = 'pokeball',
@@ -57,8 +64,23 @@ export function calculateCatchRatePure(
 ): CatchRateResult {
   const behavior = BALL_BEHAVIORS[rawBallType] ?? { mult: 1.0 }
 
+  let classMultiplier = 1.0;
+  let bugSynergyBonus = 0;
+  let trainerIvPenaltyApplied = false;
+
+  if (ctx.playerClass === 'cazabichos' && ctx.activeTeam) {
+    const bugCount = ctx.activeTeam.filter(p => p.type1 === 'bug' || p.type2 === 'bug').length;
+    if (bugCount > 0) {
+      bugSynergyBonus = Math.min(BUG_SYNERGY_MAX_BONUS, bugCount * BUG_SYNERGY_BONUS_PER_BUG);
+      classMultiplier += bugSynergyBonus;
+    }
+  } else if (ctx.playerClass === 'entrenador' && (ctx.ivTotal ?? 0) > TRAINER_HIGH_IV_THRESHOLD) {
+    trainerIvPenaltyApplied = true;
+    classMultiplier = Math.max(0.1, classMultiplier - TRAINER_IV_PENALTY_RATE);
+  }
+
   if (behavior.guaranteed) {
-    return { caught: true, shakes: 3, isCritical: false, statusMultiplierApplied: false }
+    return { caught: true, shakes: 3, isCritical: false, statusMultiplierApplied: false, bugSynergyBonus, trainerIvPenaltyApplied }
   }
 
   let ballMult = 1.0
@@ -76,14 +98,14 @@ export function calculateCatchRatePure(
 
   const eventBonus = eventCatchMult - 1
   const ballbonus = Math.max(0.1, ballMult + eventBonus)
-  const totalMult = ballbonus
+  const totalMult = ballbonus * classMultiplier
 
   const rawRate = Math.floor(catchRate * totalMult * hpFactor * statusMult)
   const statusApplied = statusMult > 1.0
 
   // 06_captura.md: If a >= 255, captured automatically without checking shakes
   if (rawRate >= CATCH_MATH_255_MAX) {
-    return { caught: true, shakes: 3, isCritical: false, statusMultiplierApplied: statusApplied }
+    return { caught: true, shakes: 3, isCritical: false, statusMultiplierApplied: statusApplied, bugSynergyBonus, trainerIvPenaltyApplied }
   }
 
   const finalRate = Math.max(1, rawRate)
@@ -101,7 +123,9 @@ export function calculateCatchRatePure(
       caught: criticalSuccess,
       shakes: criticalSuccess ? 1 : 0,
       isCritical: true,
-      statusMultiplierApplied: statusApplied
+      statusMultiplierApplied: statusApplied,
+      bugSynergyBonus,
+      trainerIvPenaltyApplied
     }
   }
 
@@ -116,7 +140,9 @@ export function calculateCatchRatePure(
     caught: shakes === 4,
     shakes: Math.min(3, shakes),
     isCritical: false,
-    statusMultiplierApplied: statusApplied
+    statusMultiplierApplied: statusApplied,
+    bugSynergyBonus,
+    trainerIvPenaltyApplied
   }
 }
 

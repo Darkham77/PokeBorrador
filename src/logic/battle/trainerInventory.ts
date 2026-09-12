@@ -130,7 +130,7 @@ export function generateNPCInventory(
 }
 
 
-export const NPC_BUDGET_CONFIG = { // no-magic: Explicit mathematical constant or threshold value
+export const NPC_BUDGET_CONFIG = {
   GYM_LEVEL_MULT: 100,
   GYM_BASE_BONUS: 1000,
   SPECIAL_LEVEL_MULT: 60,

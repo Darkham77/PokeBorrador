@@ -74,7 +74,7 @@ export async function computeP2Choice(
   const wantSwitch = !isWild && !isP2Trapped && shouldEnemySwitch(e, p, enemyTeam, store)
 
   if (wantSwitch) {
-    const bestIdx = findBestSwitchIndex(enemyTeam || [], p, e.uid, store)
+    const bestIdx = findBestSwitchIndex(enemyTeam || [], p, e.uid, store, 'counter')
     if (bestIdx !== -1) {
       const { ShowdownTeamResolver } = await import('./showdownTeamResolver.ts')
       const targetMon = enemyTeam?.[bestIdx]

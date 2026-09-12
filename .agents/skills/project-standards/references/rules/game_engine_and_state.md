@@ -23,6 +23,7 @@
 - **Competitive Trainer Team Generation SSoT**: All NPC, police, and rival encounter teams MUST be generated through `TrainerTeamGenerator` or `RivalTeamGenerator` (`src/logic/battle/rivalTeamGenerator.ts`). The generator configures `@pkmn/randoms` using `gen${ACTIVE_GENERATION}randombattle@@@Adjust Level = ${level}, Max Team Size = ${teamSize}` restricted strictly to `allowedSpecies`. For Dexit species, movesets cascade downwards across previous generations; for unevolved (NFE) species, legal moves are synthesized from `getMovesAtLevel`. Rival teams enforce guaranteed Ace placement in slot 0 and difficulty scaling of player average level + 5 (clamped to `MAX_POKEMON_LEVEL`).
 - **Final-Turn Double Faint Victory Guard**: When a simultaneous KO occurs on the final turn of combat (e.g. Explosion, recoil, or Destiny Bond), `processPlayerFaintSequence` MUST verify whether all opponent Pokémon are fainted (`active.over || !enemyHasHealthy`). If the opponent has no healthy Pokémon left, combat MUST terminate immediately with victory (`terminateBattle(ctx, true)`) and automatically swap to the next healthy bench Pokémon via `animatePlayerAutoSwap` rather than forcing the player into `SWITCH_MENU`.
 - **Battle Mechanics & Engine Protocol SSoT**: All battle mechanics, worker synchronization protocols, choice loop resolution, recharge handling, and FSM transition matrices are documented strictly and exclusively in the [Battle Mechanics Manual](../battle/battle_mechanics_manual.md).
+- **Opponent AI Difficulty Tiers & Anti-Switch-Loop Mandate**: Opponent AI decision-making is strictly governed by `AIConfig` presets derived from `trainerArchetype` across 5 lore-compliant tiers (`novice`, `intermediate`, `tactical`, `elite`, `apex` [gym and rival]). The Rival is unconditionally the apex tier (0% error rate, 85% switch aggressiveness, 1-turn cooldown). Asynchronous PvP passive defense battles strictly inherit the apex Rival AI. To prevent infinite sacrificial switch loops, mid-battle switches are strictly gated by `hasViableSwitchCounter` (< 45% incoming damage, >= 35% damage potential or speed advantage) and anti-ping-pong switch cooldowns. Full AI specifications are documented in the [Battle AI & Heuristic Standards](../battle/battle_ai_standards.md).
 
 ## 2. Zero-Timer & GSAP Clock Mandate
 
@@ -76,12 +77,12 @@
 
 ## 10. Map & Gym Atmosphere Configuration, Cycle Resolution & Climate Isolation
 
-- **Atmosphere & Lighting Resolution Hierarchy**: Combat lighting (`effectiveCycle`) and climate (`computedWeather`) are evaluated under a strict precedence order:
+- **Atmosphere & Lighting Resolution Hierarchy**: Combat lighting (`effectiveCycle`) and climate (`computedWeather`) are evaluated under a strict precedence order managed via `battleTeamCoordinator.ts`:
   1. **Explicit Battle & Gym Config**: If `fixedCycle` (e.g. permanent night for a Ghost Gym) or `fixedWeather` is configured in `BattleOptions` or `Gym` (`GYMS`), it takes absolute priority.
   2. **Explicit Map Location Config**: If `MapLocation` specifies `supportedCycles` or `weatherEnabled: false`, it applies directly.
-  3. **Default Single-Sprite & Gym Isolation**: If no explicit cycle is configured, single-sprite arenas (`gym`, `pvp`, `power_plant`) enforce constant daylight/neutral lighting (`effectiveCycle = 'day'`) and block natural outdoor weather (`computedWeather = 'clear'`).
-  4. **Dynamic Multi-Sprite Resolution**: Locations with multi-cycle sprites (`_amanecer`, `_dia`, `_atardecer`, `_noche`) reactively adapt to the current time of day according to their available cycle sprites.
-- **In-Combat Weather Exclusivity**: Weather inside gyms and weather-sealed arenas is enabled whenever an in-battle move (*Rain Dance*, *Sunny Day*, *Hail*, *Sandstorm*) or ability (*Drizzle*, *Drought*, *Snow Warning*, *Sand Stream*) actively casts it (`battle.weather.type !== 'none' && battle.weather.type !== 'clear'`). Upon expiration, the arena cleanly reverts to its configured base atmosphere.
+  3. **Default Single-Sprite, Cave & Indoor Isolation**: If no explicit cycle is configured, Gyms, PvP arenas, and Indoor locations enforce constant daylight (`effectiveCycle = 'day'`), while Caves enforce nighttime (`effectiveCycle = 'night'`). Natural outdoor weather is blocked unconditionally (`computedWeather = 'clear'`) in all Gyms, Caves, Crystal Caves, and Indoors (`isNaturalWeatherAllowedInLocation = false`).
+  4. **Dynamic Multi-Sprite Resolution**: Outdoor locations with multi-cycle sprites reactively adapt to the current time of day according to their available cycle sprites.
+- **In-Combat Weather Exclusivity**: Weather inside gyms, caves, and weather-sealed arenas is enabled whenever an in-battle move (*Rain Dance*, *Sunny Day*, *Hail*, *Sandstorm*) or ability (*Drizzle*, *Drought*, *Snow Warning*, *Sand Stream*) actively casts it (`battle.weather.type !== 'none' && battle.weather.type !== 'clear'`). Upon expiration, the arena cleanly reverts to its configured base atmosphere.
 
 ## 11. Unified Out-of-Battle Rule Coordinator & Field Passives Mandate
 
@@ -130,3 +131,11 @@ Pokémon participating in active missions (`onMission: true`), competition event
 - **Mandatory Instance Invariant**: Every Pokémon instance across all stages of gameplay—including wild captures, starter selection, breeding hatches, event awards, GTS market claims, trade exchanges, and debug test fixtures—MUST possess a valid numeric timestamp `obtainedAt: number` (epoch milliseconds) and a canonical `obtainedMethod: ObtainedMethod` (`'wild' | 'trade' | 'egg' | 'starter' | 'gift' | 'fishing' | 'archaeology' | 'gift_starter' | 'reward' | 'event'`).
 - **Ingestion Validation & SQL Migration Integrity**: Ingest boundaries creating new Pokémon (`claimAsset`, `emulateClaimAsset`, egg hatching, wild capture) MUST always supply a valid `obtainedAt` timestamp (`Temporal.Now.instant().epochMilliseconds`) and valid `obtainedMethod`. For legacy persisted saves, missing capture fields MUST be backfilled exclusively through static SQL migrations in `database/migrations/`, NEVER synthesized or patched via ad-hoc runtime fallbacks in application memory.
 - **Debug Fixture Parity**: Debug simulators and mock generators MUST never instantiate incomplete Pokémon object literals lacking capture metadata.
+
+## 19. Atomic Turn-End State Synchronization & Visual Multi-Hit Parity
+
+- **Zero Mid-Stream Worker Sync**: Web Worker and simulator bridges MUST synchronize team HP and status to Vue/Pinia reactive stores exclusively at the conclusion of canonical turns (`canonicalTurnRunner.ts`). Asynchronous worker message callbacks MUST NOT mutate client combatant state while multi-hit or sequential attack animations are actively resolving.
+
+## 20. Competitive Combatant Sanitization & Seat Sprite FX Reset
+
+- **Sanitization on Registration & Swap**: Registered competitive teams and bench members MUST be 100% cleansed of all non-innate volatiles, cursed states, residual faint damage, and guardian auras prior to battle serialization and registration. Visual sprite components (`PVSpriteFX.vue`) MUST watch `pokeId` to tear down, reset, and purge active GSAP tweens and CSS filters on seat swap.

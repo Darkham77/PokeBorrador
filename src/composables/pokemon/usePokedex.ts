@@ -1,4 +1,5 @@
 import { ref, computed, type Ref } from 'vue'
+import { refDebounced } from '@vueuse/core'
 import { useUIStore } from '@/stores/ui'
 import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider'
 import { POKEMON_SPRITE_IDS } from '@/data/pokemon/spriteMapping'
@@ -13,6 +14,7 @@ function toPokemonSpeciesIds(values: readonly string[]): PokemonSpeciesId[] {
 export function usePokedex(gs: Ref<GameState>, currentOrder: Ref<readonly PokemonSpeciesId[]>, _currentGen: Ref<number>) {
   const uiStore = useUIStore()
   const searchQuery = ref('')
+  const debouncedSearchQuery = refDebounced(searchQuery, 150)
   const sortBy = ref('number') // 'number' | 'name'
   const sortOrder = ref<'asc' | 'desc'>('asc')
 
@@ -62,8 +64,8 @@ export function usePokedex(gs: Ref<GameState>, currentOrder: Ref<readonly Pokemo
 
     // 2. Filter
     const filtered = list.filter(p => {
-      if (!searchQuery.value) return true
-      const query = searchQuery.value.toLowerCase() // text-ok: UI text display localization string
+      if (!debouncedSearchQuery.value) return true
+      const query = debouncedSearchQuery.value.toLowerCase() // text-ok: UI text display localization string
       // If unseen, we can only search by #number
       if (!p.isSeen) return p.dexNum.includes(query)
       return p.name.toLowerCase().includes(query) || p.dexNum.includes(query) // text-ok: UI text display localization string

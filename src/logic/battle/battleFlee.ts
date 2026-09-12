@@ -32,6 +32,7 @@ export async function executeFlee(ctx: BattleContext) {
       const isPreCombat = ctx.fsm.currentState.value !== ctx.BATTLE_STATES.ACTIVE_BATTLE
       if (isPreCombat) {
         ctx.addLog('¡Escapaste sin problemas!', 'log-info', 'player')
+        ctx.classStore?.onCaptureFail?.()
         
         await ctx.fsm.transition(ctx.fsm.currentState.value, ctx.BATTLE_SUBSTATES.ESCAPE_PROCESS)
         ctx.activeBattle.value.playerFled = true
@@ -140,6 +141,7 @@ export async function executeFlee(ctx: BattleContext) {
         
         if (ctx.activeBattle.value?.over) {
           if (ctx.activeBattle.value.fled) {
+            ctx.classStore?.onCaptureFail?.()
             await ctx.fsm.transition(ctx.BATTLE_STATES.ACTIVE_BATTLE, ctx.BATTLE_SUBSTATES.PLAY_ESCAPE_ANIM)
             if (ctx.animations?.awaitTween) {
               await ctx.animations.awaitTween('escape-enemy')

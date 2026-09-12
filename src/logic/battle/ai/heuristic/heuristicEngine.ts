@@ -29,7 +29,7 @@ import {
 export const SHOWDOWN_CHOICE_INDEX_OFFSET = 1;
 
 /** Confidence score weights for heuristic AI decision layers. */
-export const HEURISTIC_CONFIDENCE_SCORES = { // no-magic: Explicit mathematical constant or threshold value
+export const HEURISTIC_CONFIDENCE_SCORES = {
   HIGH_PRIORITY_KO: 0.93,
   GUARANTEED_OHKO: 0.95,
   RESCUE_PRIORITY_KO: 0.88,
@@ -48,7 +48,7 @@ const HEURISTIC_EVAL_DEFAULT_REPEATS = 0;
 const HEURISTIC_EVAL_MAX_PRESERVATION_SCORE = 1;
 
 /** Decision threshold values for heuristic AI evaluations. */
-export const HEURISTIC_THRESHOLDS = { // no-magic: Explicit mathematical constant or threshold value
+export const HEURISTIC_THRESHOLDS = {
   WIN_CONDITION_SCORE: 0.5,
   HAZARD_REMOVAL_MIN_HP: 40,
   HAZARD_SET_MIN_HP: 60,
@@ -81,7 +81,10 @@ export const HEURISTIC_THRESHOLDS = { // no-magic: Explicit mathematical constan
   DEFAULT_PRESERVATION_SCORE_HALFWAY: 0.5,
   DEFAULT_FALLBACK_INDEX: 0,
   DEFAULT_HEALTH_PERCENT: 100,
-  FULL_PERCENT: 100
+  FULL_PERCENT: 100,
+  SAFE_SWITCH_MAX_OPP_DAMAGE: 45,
+  SAFE_SWITCH_MIN_MY_DAMAGE: 35,
+  SAFE_SWITCH_OUTSPEED_MIN_DAMAGE: 25,
 } as const;
 
 /** Full 9-layer heuristic decision. Returns null if no layer fires confidently. */
@@ -130,8 +133,10 @@ export function heuristicDecision(
 }
 
 // ────────────────────────────────────────
-// Switch scorer (used by layers 5, 9)
+// Switch scorer (used by layers 5, 9, and forced/faint replacements)
 // ────────────────────────────────────────
+
+export type SwitchEvaluationMode = 'counter' | 'faint_replacement';
 
 export function pickBestSwitch(
   snapshot: HeuristicBattleSnapshot,
@@ -140,6 +145,7 @@ export function pickBestSwitch(
   calc: HeuristicDamageCalculator,
   inference: InferenceEngine,
   oppActive: HeuristicPokemonState,
+  mode: SwitchEvaluationMode = 'counter',
 ): HeuristicDecision | null {
   if (options.length === HEURISTIC_EVAL_DEFAULT_MOVE_INDEX) return null;
 
@@ -161,7 +167,16 @@ export function pickBestSwitch(
     score += (bestMyDmg / HEURISTIC_THRESHOLDS.PERCENTAGE_BASE_SCALE) * HEURISTIC_THRESHOLDS.SWITCH_WEIGHT_OFFENSE;
 
     const sackEntry = strategic.sackOrder.find(s => s.pokemon === pokemon.name);
-    score += (HEURISTIC_EVAL_MAX_PRESERVATION_SCORE - (sackEntry?.preservationScore ?? HEURISTIC_THRESHOLDS.DEFAULT_PRESERVATION_SCORE_HALFWAY)) * HEURISTIC_THRESHOLDS.SWITCH_WEIGHT_PRESERVATION;
+    const preservation = sackEntry?.preservationScore ?? HEURISTIC_THRESHOLDS.DEFAULT_PRESERVATION_SCORE_HALFWAY;
+
+    if (mode === 'counter') {
+      // In voluntary counter mode: preserve valuable Pokémon, never prefer sacking pawns
+      score += preservation * HEURISTIC_THRESHOLDS.SWITCH_WEIGHT_PRESERVATION;
+    } else {
+      // In faint replacement mode: standard replacement evaluation
+      score += (HEURISTIC_EVAL_MAX_PRESERVATION_SCORE - preservation) * HEURISTIC_THRESHOLDS.SWITCH_WEIGHT_PRESERVATION;
+    }
+
     score += (pokemon.hpPercent / HEURISTIC_THRESHOLDS.PERCENTAGE_BASE_SCALE) * HEURISTIC_THRESHOLDS.SWITCH_WEIGHT_HP;
 
     return { pokemon, score };
@@ -177,8 +192,51 @@ export function pickBestSwitch(
     switchTeamIndex: switchTeamIndex >= HEURISTIC_EVAL_DEFAULT_MOVE_INDEX ? switchTeamIndex : HEURISTIC_THRESHOLDS.DEFAULT_FALLBACK_INDEX,
     source: 'heuristic',
     confidence: HEURISTIC_CONFIDENCE_SCORES.BEST_SWITCH,
-    reasoning: `Best switch-in: ${best.pokemon.name} (score ${best.score.toFixed(2)})`, // no-magic: Explicit mathematical constant or threshold value
+    reasoning: `Best switch-in (${mode}): ${best.pokemon.name} (score ${best.score.toFixed(2)})`,
   };
+}
+
+/**
+ * Evaluates whether any bench Pokémon meets the minimum criteria to be a safe/favorable counter.
+ * A safe switch-in must take < 45% damage from the opponent's best attack and be able to fight back.
+ */
+export function hasViableSwitchCounter(
+  snapshot: HeuristicBattleSnapshot,
+  options: HeuristicPokemonState[],
+  calc: HeuristicDamageCalculator,
+  inference: InferenceEngine,
+  oppActive: HeuristicPokemonState,
+): boolean {
+  if (options.length === HEURISTIC_EVAL_DEFAULT_MOVE_INDEX) return false;
+
+  const oppSide = snapshot.myPlayer === 'p1' ? 'p2' as const : 'p1' as const;
+  const oppMoves = [...oppActive.knownMoves];
+  for (const { move } of inference.getLikelyUnrevealed(oppActive.species, HEURISTIC_THRESHOLDS.UNREVEALED_MOVE_PROBABILITY)) {
+    oppMoves.push(move);
+  }
+
+  return options.some(pokemon => {
+    let worstDmg = HEURISTIC_EVAL_DEFAULT_WIN_SCORE;
+    for (const mv of oppMoves) {
+      try {
+        worstDmg = Math.max(worstDmg, calc.calcDamage(oppActive, pokemon, mv, snapshot.field).maxPercent);
+      } catch { /* skip */ }
+    }
+    if (worstDmg >= HEURISTIC_THRESHOLDS.SAFE_SWITCH_MAX_OPP_DAMAGE) return false;
+
+    let bestMyDmg = HEURISTIC_EVAL_DEFAULT_WIN_SCORE;
+    for (const mv of pokemon.moves) {
+      try {
+        bestMyDmg = Math.max(bestMyDmg, calc.calcDamage(pokemon, oppActive, mv.id, snapshot.field).maxPercent);
+      } catch { /* skip */ }
+    }
+
+    const mySpeed = calc.getEffectiveSpeed(pokemon, snapshot.field, snapshot.myPlayer);
+    const oppSpeed = calc.getEffectiveSpeed(oppActive, snapshot.field, oppSide);
+    const iOutspeed = mySpeed > oppSpeed;
+
+    return bestMyDmg >= HEURISTIC_THRESHOLDS.SAFE_SWITCH_MIN_MY_DAMAGE || (iOutspeed && bestMyDmg >= HEURISTIC_THRESHOLDS.SAFE_SWITCH_OUTSPEED_MIN_DAMAGE);
+  });
 }
 
 // ────────────────────────────────────────

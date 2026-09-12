@@ -39,7 +39,7 @@ export const ASSET_TYPES = {
 } as const;
 
 import type { DayPhase } from '../utils/timeUtils.ts';
-import type { TrainerAssetView } from '@/types/system/game';
+import type { TrainerAssetView, GenderId } from '@/types/system/game';
 
 export type AssetType = typeof ASSET_TYPES[keyof typeof ASSET_TYPES];
 
@@ -52,7 +52,7 @@ export interface AssetOptions {
   animated?: boolean;
   cycle?: DayPhase;
   trainerSuffix?: TrainerAssetView;
-  gender?: 'h' | 'm';
+  gender?: GenderId;
   isLowPower?: boolean;
   [key: string]: unknown;
 }

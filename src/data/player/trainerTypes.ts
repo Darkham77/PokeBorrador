@@ -37,6 +37,8 @@ export function isTrainerTypeKey(raw: string): raw is TrainerTypeKey {
   return TRAINER_TYPE_KEYS_SET.has(raw);
 }
 
+import type { AIPresetKey } from '../../logic/battle/ai/heuristic/types.ts';
+
 export const TRAINER_TYPE_MATCH_MODES = ['any_type', 'pure_type', 'primary_type'] as const;
 export type TrainerTypeMatchMode = (typeof TRAINER_TYPE_MATCH_MODES)[number];
 
@@ -44,6 +46,7 @@ export interface TrainerTypeDefinition {
   readonly name: string; // domain-ok: Open dynamic text or non-domain string payload
   readonly sprite: NpcSpriteId;
   readonly archetype: NpcArchetype;
+  readonly aiPreset: AIPresetKey;
   readonly types?: readonly PokemonType[];
   readonly matchMode?: TrainerTypeMatchMode;
   readonly extraPool?: readonly PokemonSpeciesId[];
@@ -55,6 +58,7 @@ export interface TrainerTypeRawConfig {
   readonly name: string; // domain-ok: Open dynamic text or non-domain string payload
   readonly sprite: NpcSpriteId;
   readonly archetype: NpcArchetype;
+  readonly aiPreset: AIPresetKey;
   readonly types?: readonly PokemonType[];
   readonly matchMode?: TrainerTypeMatchMode;
   readonly extraPool?: readonly PokemonSpeciesId[];
@@ -73,6 +77,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     name: 'Caza Bichos',
     sprite: 'bugcatcher',
     archetype: 'caza_bichos' as NpcArchetype,
+    aiPreset: 'novice',
     types: ['bug'],
     matchMode: 'any_type'
   },
@@ -80,6 +85,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     name: 'Ornitólogo',
     sprite: 'birdkeeper',
     archetype: 'ornitologo' as NpcArchetype,
+    aiPreset: 'intermediate',
     types: ['flying'],
     matchMode: 'any_type'
   },
@@ -87,6 +93,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     name: 'Científico',
     sprite: 'scientist',
     archetype: 'cientifico' as NpcArchetype,
+    aiPreset: 'tactical',
     types: ['electric', 'poison', 'steel'],
     extraPool: ['porygon', 'ditto', 'voltorb', 'electrode']
   },
@@ -94,6 +101,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     name: 'Luchador',
     sprite: 'blackbelt',
     archetype: 'luchador' as NpcArchetype,
+    aiPreset: 'tactical',
     types: ['fighting'],
     matchMode: 'any_type'
   },
@@ -101,6 +109,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     name: 'Pescador',
     sprite: 'fisherman',
     archetype: 'pescador' as NpcArchetype,
+    aiPreset: 'novice',
     types: ['water'],
     matchMode: 'any_type'
   },
@@ -108,6 +117,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     name: 'Nadador',
     sprite: 'swimmer',
     archetype: 'nadador' as NpcArchetype,
+    aiPreset: 'intermediate',
     types: ['water'],
     matchMode: 'any_type'
   },
@@ -115,6 +125,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     name: 'Domador',
     sprite: 'tamer-gen3',
     archetype: 'domador' as NpcArchetype,
+    aiPreset: 'tactical',
     types: ['fire', 'dragon'],
     extraPool: ['tauros', 'kangaskhan', 'dodrio', 'persian', 'primeape', 'growlithe', 'arcanine', 'ponyta', 'rapidash']
   },
@@ -122,6 +133,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     name: 'Médium',
     sprite: 'psychic',
     archetype: 'medium' as NpcArchetype,
+    aiPreset: 'tactical',
     types: ['psychic', 'ghost'],
     matchMode: 'any_type'
   },
@@ -129,6 +141,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     name: 'Motorista',
     sprite: 'biker',
     archetype: 'motorista' as NpcArchetype,
+    aiPreset: 'intermediate',
     types: ['poison', 'fire'],
     extraPool: ['electabuzz', 'magmar', 'koffing', 'weezing', 'grimer', 'muk', 'ekans', 'arbok']
   },
@@ -136,6 +149,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     name: 'Montañero',
     sprite: 'hiker',
     archetype: 'montanero' as NpcArchetype,
+    aiPreset: 'intermediate',
     types: ['rock', 'ground'],
     matchMode: 'any_type'
   },
@@ -143,6 +157,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     name: 'Recluta Rocket',
     sprite: 'rocketgrunt',
     archetype: 'rocket' as NpcArchetype,
+    aiPreset: 'elite',
     types: ['poison', 'dark'],
     extraPool: ['rattata', 'raticate', 'meowth', 'persian', 'drowzee', 'hypno', 'machop', 'machoke', 'zubat', 'golbat', 'koffing', 'weezing', 'grimer', 'muk', 'ekans', 'arbok']
   },
@@ -150,6 +165,7 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     name: 'Criador Pokémon',
     sprite: 'pokemonbreeder',
     archetype: 'criador' as NpcArchetype,
+    aiPreset: 'intermediate',
     types: ['normal', 'fairy', 'grass'],
     extraPool: ['pichu', 'cleffa', 'igglybuff', 'togepi', 'tyrogue', 'smoochum', 'elekid', 'magby', 'eevee', 'chansey', 'oddish', 'bellsprout', 'growlithe', 'poliwag', 'caterpie', 'weedle']
   },
@@ -157,12 +173,14 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     name: 'Aristócrata',
     sprite: 'gentleman',
     archetype: 'aristocrata' as NpcArchetype,
+    aiPreset: 'elite',
     extraPool: ['meowth', 'persian', 'growlithe', 'arcanine', 'eevee', 'vaporeon', 'jolteon', 'flareon', 'clefairy', 'clefable', 'ninetales', 'rapidash', 'dragonair', 'lapras', 'chansey']
   },
   'ranger': {
     name: 'Ranger Pokémon',
     sprite: 'pokemonranger',
     archetype: 'ranger' as NpcArchetype,
+    aiPreset: 'tactical',
     types: ['grass', 'ground', 'bug'],
     matchMode: 'any_type'
   },
@@ -170,18 +188,21 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     name: 'Pokéfan',
     sprite: 'pokefan',
     archetype: 'pokefan' as NpcArchetype,
+    aiPreset: 'novice',
     extraPool: ['pikachu', 'raichu', 'jigglypuff', 'wigglytuff', 'clefairy', 'clefable', 'meowth', 'eevee', 'psyduck', 'togepi', 'pichu', 'snorlax']
   },
   'policeman': {
     name: 'Oficial de Policía',
     sprite: 'policeman',
     archetype: 'policeman' as NpcArchetype,
+    aiPreset: 'elite',
     extraPool: ['growlithe', 'arcanine', 'machop', 'machoke', 'machamp', 'magnemite', 'magneton', 'pidgeot']
   },
   'artista': {
     name: 'Artista',
     sprite: 'artist',
     archetype: 'artista' as NpcArchetype,
+    aiPreset: 'intermediate',
     types: ['grass', 'fairy'],
     extraPool: ['bellsprout', 'weepinbell', 'victreebel', 'oddish', 'gloom', 'vileplume', 'tangela', 'vulpix', 'ninetales', 'clefairy', 'jigglypuff', 'ditto']
   },
@@ -189,12 +210,14 @@ const RAW_TRAINER_CONFIGS: Record<TrainerTypeKey, TrainerTypeRawConfig> = {
     name: 'Entrenador Élite',
     sprite: 'youngster-masters',
     archetype: 'rival' as NpcArchetype,
+    aiPreset: 'rival',
     pool: ['dragonite', 'charizard', 'alakazam', 'machamp', 'gengar', 'lapras']
   },
   'default': {
     name: 'Joven',
     sprite: 'youngster',
     archetype: 'default' as NpcArchetype,
+    aiPreset: 'novice',
     types: ['normal', 'flying', 'bug'],
     extraPool: ['rattata', 'pidgey', 'spearow', 'ekans', 'sandshrew', 'zubat']
   }
@@ -293,3 +316,14 @@ export function requireNpcArchetype(raw: string): NpcArchetype {
 export function getArchetypePool(archetype: TrainerTypeKey): readonly PokemonSpeciesId[] {
   return TRAINER_TYPES[archetype]?.pool ?? TRAINER_TYPES['default'].pool;
 }
+
+/**
+ * Returns the configured AI preset for a trainer archetype.
+ */
+export function getTrainerAIPreset(raw: string): AIPresetKey {
+  if (isTrainerTypeKey(raw)) {
+    return TRAINER_TYPES[raw].aiPreset;
+  }
+  return 'intermediate';
+}
+

@@ -8,7 +8,7 @@ import type { MapRouteId } from '@/data/world/map-assets';
 import type { GymId } from '@/data/world/gyms';
 import type { WeatherId } from '@/logic/weather/weatherRegistry';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
-import type { FactionId, PlayerClassId } from '@/types/system/game';
+import type { FactionId, PlayerClassId, PlayerClassState } from '@/types/system/game';
 import type { ItemId } from '@/data/inventory/items';
 
 export const ENCOUNTER_TYPES = ['wild', 'trainer', 'fishing', 'guardian', 'defender', 'archaeology', 'rival'] as const;
@@ -106,15 +106,17 @@ export interface EncounterState {
   brushType?: 'standard' | 'good' | 'super' | null;
   incenseSecs?: number;
   incenseType?: ItemId | null;
+  articunoTicketSecs?: number;
+  mewtwoTicketSecs?: number;
+  ceruleanTicketSecs?: number;
+  safariTicketSecs?: number;
+  shinyBoostSecs?: number;
+  ivScannerSecs?: number;
   team?: Pokemon[];
   trainerChance?: number;
   eloRating?: number;
   playerClass?: PlayerClassId | null;
   classLevel?: number;
-  classData?: {
-    criminality?: number;
-    blackMarketSales?: number;
-    [key: string]: unknown; // open-record: Generic key-value data dictionary container
-  };
+  classData?: Partial<PlayerClassState>;
   gymProgress?: Partial<Record<GymId, { easy: boolean; normal: boolean; hard: boolean; attempts: number }>>;
 }

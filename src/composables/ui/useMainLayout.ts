@@ -1,4 +1,5 @@
-import { ref, onMounted, onUnmounted, type Ref, type ComponentPublicInstance } from 'vue'
+import { ref, computed, onMounted, type Ref, type ComponentPublicInstance } from 'vue'
+import { useResizeObserver } from '@vueuse/core'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
 import { useWindowListener, useDocumentListener } from '@/composables/ui/useWindowListener'
@@ -63,29 +64,18 @@ export function useMainLayout(
     })
   }
 
+  const bottomElement = computed(() => {
+    const val = hudBottomRef.value
+    return (val && '$el' in val) ? (val.$el as HTMLElement) : (val as HTMLElement | null)
+  })
+
   // ResizeObserver to detect layout shifts and dynamically recalculate heights
-  let resizeObserver: ResizeObserver | null = null
+  useResizeObserver([innerHudRef, hudRef, bottomElement], () => {
+    updateHudHeight()
+  })
 
   onMounted(() => {
     updateHudHeight()
-    
-    if (typeof ResizeObserver !== 'undefined') {
-      resizeObserver = new ResizeObserver(() => {
-        updateHudHeight()
-      })
-      if (innerHudRef.value) resizeObserver.observe(innerHudRef.value)
-      if (hudRef.value) resizeObserver.observe(hudRef.value)
-      
-      const bottomValue = hudBottomRef.value
-      const bottomEl = (bottomValue && '$el' in bottomValue) ? (bottomValue.$el as HTMLElement) : (bottomValue as HTMLElement | null)
-      if (bottomEl) resizeObserver.observe(bottomEl)
-    }
-  })
-
-  onUnmounted(() => {
-    if (resizeObserver) {
-      resizeObserver.disconnect()
-    }
   })
 
   // Lifecycle listeners

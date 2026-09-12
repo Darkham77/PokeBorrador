@@ -186,6 +186,7 @@ declare global {
     defenderChancePct?: number | null;
     fishingChancePct?: number | null;
     archaeologyChancePct?: number | null;
+    fastRankedDelay?: boolean;
     testResetShowdownWorker?: () => void;
     useBattleStore?: () => { state: Record<string, unknown> | null; isBattleActive: boolean; fsm?: { currentState: string }; startBattle: (mon: unknown, opts?: unknown) => Promise<void> } & Record<string, unknown>; // open-record: Generic key-value data dictionary container
     useGameStore?: () => { state: { team: unknown[]; starterChosen: boolean; money?: number } } & Record<string, unknown>; // open-record: Generic key-value data dictionary container
@@ -235,6 +236,8 @@ declare global {
     __GET_DB_TIME_OFFSET__?: () => number;
     gsap?: typeof import('gsap').gsap;
   }
+
+  var __VITE_DEBUG__: ViteDebugApi | undefined;
 }
 
 export {};

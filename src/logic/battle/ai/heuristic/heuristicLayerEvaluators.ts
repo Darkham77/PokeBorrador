@@ -57,7 +57,7 @@ export function evaluatePriorityKOLayer(
     moveIndex: moveIdx + SHOWDOWN_CHOICE_INDEX_OFFSET,
     source: 'heuristic',
     confidence: HEURISTIC_CONFIDENCE_SCORES.HIGH_PRIORITY_KO,
-    reasoning: `Priority KO on ${oppActive.name} at ${oppActive.hpPercent.toFixed(0)}%`, // no-magic: Explicit mathematical constant or threshold value
+    reasoning: `Priority KO on ${oppActive.name} at ${oppActive.hpPercent.toFixed(0)}%`,
   };
 }
 
@@ -97,7 +97,7 @@ export function evaluateGuaranteedKOLayer(
     moveIndex: moveIdx + SHOWDOWN_CHOICE_INDEX_OFFSET,
     source: 'heuristic',
     confidence: HEURISTIC_CONFIDENCE_SCORES.GUARANTEED_OHKO,
-    reasoning: `Guaranteed OHKO with ${guaranteedKO.move} (${guaranteedKO.minPercent.toFixed(0)}-${guaranteedKO.maxPercent.toFixed(0)}%)`, // no-magic: Explicit mathematical constant or threshold value
+    reasoning: `Guaranteed OHKO with ${guaranteedKO.move} (${guaranteedKO.minPercent.toFixed(0)}-${guaranteedKO.maxPercent.toFixed(0)}%)`,
   };
 }
 
@@ -274,7 +274,7 @@ export function evaluateAttackAndSwitchLayers(
             moveIndex: moveIdx + SHOWDOWN_CHOICE_INDEX_OFFSET,
             source: 'heuristic',
             confidence: HEURISTIC_CONFIDENCE_SCORES.BEST_ATTACK,
-            reasoning: `Best damage: ${bestMove.move} (${bestMove.minPercent.toFixed(0)}-${bestMove.maxPercent.toFixed(0)}%)`, // no-magic: Explicit mathematical constant or threshold value
+            reasoning: `Best damage: ${bestMove.move} (${bestMove.minPercent.toFixed(0)}-${bestMove.maxPercent.toFixed(0)}%)`,
           };
         }
       }

@@ -35,8 +35,9 @@ Before writing or modifying ANY TypeScript code in `src/` or `scripts/`, mentall
 | **3. Boundary vs Core** | Is data entering from external I/O (API/JSON/Storage) or inside business logic? | **Boundary**: Parse with `requireDomainId(raw)` or guard with `isDomainId(raw)`. Throw loudly on invalid data.<br>**Core**: Demand pure `DomainId` parameter with call-site guarding. NEVER `DomainId \| string` or `DomainId \| undefined`. |
 | **4. O(1) Access & Memory** | Am I searching, storing, or returning a collection in an execution path? | **Search**: Pre-index in $O(1)$ (`Record<DomainId, T>`, `ReadonlySet<T>`, `Map`). NEVER `.find()`, `.filter()`, `.includes()` on arrays in hot paths.<br>**Return**: Return collection directly as `readonly T[]`. NEVER `return [...arr]`. |
 | **5. Object Duplication** | Do I need to duplicate an entity or state tree? | **Vue / Pinia Reactive**: Use `cloneReactive(obj)` from `@/logic/utils/cloneUtils`.<br>**Plain Object**: Use `structuredClone(obj)`.<br>NEVER `JSON.parse(JSON.stringify(obj))`. |
+| **6. Entity Persistence** | Am I serializing, snapshotting, or persisting a core entity (`Pokemon`, `PokemonEgg`) to DB/storage? | **Canonical Persistence**: Reuse `serializePokemonTeam` / `deserializePokemonTeam` from `saveSerializer.ts`. NEVER invent ad-hoc subset types (`*SnapshotEntry`, `*PartialData`) or strip properties. |
 
-### Mental Anchors: The 9 Fatal Anti-Patterns vs Canonical Patterns
+### Mental Anchors: The 10 Fatal Anti-Patterns vs Canonical Patterns
 
 ```typescript
 // 1. Function parameters: Wildcards and fallbacks
@@ -75,11 +76,16 @@ Before writing or modifying ANY TypeScript code in `src/` or `scripts/`, mentall
 // 9. Error causality truncation across boundaries
 ❌ catch (err) { throw new Error('Parse error: ' + String(err)); }
 ✅ catch (err) { throw new Error('Parse error', { cause: err }); }
+
+// 10. Ad-hoc partial entity schemas / serialization
+❌ interface PassiveTeamSnapshotEntry { id: string; name: string; moves: { name: string; pp: number }[]; }
+✅ import { serializePokemonTeam, deserializePokemonTeam } from '@/logic/auth/saveSerializer';
+   const snapshot = JSON.stringify(serializePokemonTeam(team)); // 1:1 roundtrip fidelity
 ```
 
 ### Pre-Commit Mental Self-Audit (Run Before Finishing)
 
-Before declaring any coding task complete, mentally scan your diff for these 7 flags:
+Before declaring any coding task complete, mentally scan your diff for these 8 flags:
 1. Did I introduce any `[...spread]` return statements in getters or services?
 2. Did I use `.find()`, `.filter()`, or `.includes()` on an array inside a loop, calculation, or tick?
 3. Did I write `|| ''`, `?? ''`, or fallback to `.name` on any entity ID?
@@ -87,6 +93,7 @@ Before declaring any coding task complete, mentally scan your diff for these 7 f
 5. Did I write `as unknown as` anywhere in `src/`?
 6. Did I initialize a domain variable with a dummy empty string or cast (`'' as ...`) before branching?
 7. Did I throw a new error in a catch block without passing `{ cause: err }`?
+8. Did I create an ad-hoc subset interface (`*SnapshotEntry`, `*PartialData`) or custom partial serializer instead of reusing canonical 1:1 entity serialization from `saveSerializer.ts`?
 
 ## Absolute Priority on O(1) Data Structures & Lookup Performance (`preferO1DataStructures`)
 
@@ -167,10 +174,9 @@ Before declaring any coding task complete, mentally scan your diff for these 7 f
 
 ## Mandatory Technical Justification on 100% of Escape Hatches
 
-- **Zero Naked Ignores Policy**: It is STRICTLY FORBIDDEN to use naked, generic, or unexplained escape hatch comments (e.g. `// domain-ok`, `// no-magic`, `// string-ok`, `// open-record`, `// any-ok`, `// uuid-ok`, `// infra-id-ok`).
+- **Zero Naked Ignores Policy**: It is STRICTLY FORBIDDEN to use naked, generic, or unexplained escape hatch comments (e.g. `// domain-ok`, `// string-ok`, `// open-record`, `// any-ok`, `// uuid-ok`, `// infra-id-ok`).
 - **Mandatory Rationale Format**: Every suppression directive across the entire codebase MUST include a colon followed by a detailed, explicit technical justification:
   - `// domain-ok: UI Spanish text localization label`
-  - `// no-magic: Formula coefficient for linear stat interpolation`
   - `// uuid-ok: Database user UUID winner identifier`
   - `// open-record: Generic key-value data dictionary container`
 - **Auditor Enforcement**: The rule `unjustified-escape-hatch` in `validate_audit_headers.ts` checks 100% of files and fails if any comment omits the technical explanation.

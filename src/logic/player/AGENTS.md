@@ -11,6 +11,8 @@ Frontend Developers / Systems Engineers.
 - Follow standard repository modularity guidelines.
 - `identityCooldown.ts`: Shared logic and constants (`RENAME_COOLDOWN_DAYS = 30`) enforcing the unified identity cooldown across player profile, name changes, and gender selection in class management. All trainer identity changes must check `canChangeIdentity()` and atomically write `last_renamed_at` across `GameState`, `ProfileStore`, and local storage.
 - `classMath.ts`: Pure mathematical formulas for player classes (Team Rocket, Bug Catcher, Trainer, Breeder). Police scaling functions (`calculatePoliceBonusLevel`, `calculatePoliceEffectiveLevel`, `calculatePoliceTeamSize`, `calculatePoliceBail`, `calculatePoliceEncounterChance`) MUST strictly clamp effective levels to `MAX_POKEMON_LEVEL` (100) to prevent engine crashes, legality failures in `@pkmn/sim`, and corrupt saves.
+- `classDeploymentEngine.ts`: SSoT deployment engine governing idle expeditions for all 4 classes (`rocket`, `cazabichos`, `entrenador`, `criador`). Handles deployment costs, projected valuations, bug expedition Pokémon generation with IV floors and shiny chance scalers, trainer level-up and battle coins, and breeder genetic IV enhancements with vigor consumption and hatch step reduction.
+- `classMissionsData.ts`: SSoT metadata catalog providing dialogue, activation requirements, reward formulas, and rules text for idle class deployments across all durations (6h, 12h, 24h). All item rewards must specify precise, clean labels (`DetailedMissionReward`) without ambiguous category slashes, and Rocket missions must explicitly state the permanent nature of sacrifices.
 
 ## Work Guidance
 

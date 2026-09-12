@@ -89,8 +89,9 @@ The temporary working directory is `<appDataDir>/brain/<conversation-id>/scratch
 This phase audits test coverage for modified logic and captures a zero-commit safety backup in the workspace. If subsequent audit auto-fixes or repairs corrupt logic, the patch file in `scratch/backups/` allows instantaneous recovery without polluting git history with premature, unverified commits.
 
 **Step 1.1** — Inspect changes (`git status` & `git diff`)
-- Run `git status` to identify modified, untracked, and deleted files.
-- Inspect `git diff` and review all conversation session artifacts in `<appDataDir>/brain/<conversation-id>/` (`implementation_plan.md`, `walkthrough.md`, scratch notes) to build a clear mental model of the feature/bugfix.
+- Run `git status` to identify 100% of modified, untracked, and deleted files across the entire repository.
+- **MANDATORY WORKING TREE AUDIT**: Categorize all modified files by subsystem (e.g. battle, pvp, stores, migrations, player classes, UI, tests, scripts). Because Phase 4 executes `git add .`, the commit message MUST reflect every modified subsystem in the working tree, NEVER just the prompt or immediate chat topic.
+- Inspect `git diff HEAD` and review all conversation session artifacts in `<appDataDir>/brain/<conversation-id>/` (`implementation_plan.md`, `walkthrough.md`, scratch notes) to build a clear mental model of all changes across the working tree.
 
 **Step 1.2** — Test Gap Analysis
 - For each modified file containing non-trivial logic (`src/logic/`, `src/stores/`, `src/composables/`, `src/utils/`):
@@ -111,7 +112,7 @@ This phase audits test coverage for modified logic and captures a zero-commit sa
     ```bash
     git diff HEAD -- '*.ts' '*.vue' '*.js' '*.scss' '*.css' 'database/**/*.sql' ':!*.json' ':!*.min.js' ':!*.wasm' > scratch/backups/pre_audit_backup.patch
     ```
-- Pre-draft the target commit message using the Elegant Protocol (see [commit-standards.md](./references/commit-standards.md)) and record it in `task.md` under "Target Commit Message" for use in Phase 4.
+- Pre-draft the target commit message using the Elegant Protocol (see [commit-standards.md](./references/commit-standards.md)) covering all modified subsystems from `git status` / `git diff HEAD` and record it in `task.md` under "Target Commit Message" for use in Phase 4.
 
 **✓ Completion gate**: Mark Phase 1 `[x]` in `task.md`. Show snippet. Proceed to Phase 2.
 
@@ -223,9 +224,10 @@ This phase begins **only after** the user explicitly responds to Phase 3.
 - Persist approved lessons into their respective `AGENTS.md` files.
 
 **Step 4.2** — Single Atomic Certified Commit
-- Run `git status` to verify modified files (including feature code, tests, audit fixes, and updated DOX).
+- Run `git status` to verify 100% of modified and untracked files across the entire working tree (including feature code, tests, audit fixes, and updated DOX).
 - Synthesize the final commit message using the Elegant Protocol (see [commit-standards.md](./references/commit-standards.md)):
   - Retrieve the pre-drafted message from `task.md` (Step 1.4).
+  - Verify that EVERY modified subsystem from `git status` is represented with clear, technical bullets.
   - Supplement it with bullets for unit tests added (Phase 1), audit fixes / optimizations applied (Phase 2), and lessons / DOX updated (Phase 3).
 - Execute `git add .` (MANDATORY `.` — selective staging is strictly forbidden).
 - Execute `git commit -m "<message>"`.

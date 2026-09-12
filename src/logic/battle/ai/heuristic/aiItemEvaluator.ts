@@ -58,8 +58,8 @@ export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promis
     }
   }
 
-  // 2. Status check
-  if (e.status) {
+  // 2. Status check (Only active live Pokemon)
+  if (e.hp > 0 && e.status) {
     type StatusItem = [ItemId, string, string]
     const statusItems: StatusItem[] = [
       ['fullrestore', 'Restaurar Todo', 'curó sus problemas de estado'], // spanish-ok: UI Spanish text localization label
@@ -86,6 +86,13 @@ export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promis
       if (itemId === 'fullrestore') e.hp = e.maxHp
       e.status = ''
       if (--enemyInventory[itemId]! <= 0) delete enemyInventory[itemId]
+
+      const teamMon = (battleState.enemyTeam ?? []).find(p => p && p.uid === e.uid)
+      if (teamMon) {
+        teamMon.hp = e.hp
+        teamMon.status = e.status
+      }
+
       ctx.addLog(`¡${npcName} usó ${itemName} en ${e.name}!`, 'log-enemy', 'enemy_trainer')
       ctx.addLog(`¡${e.name} ${curedMsg}!`, 'log-info', e, 'enemy')
       await triggerFXAndSound()
@@ -93,8 +100,8 @@ export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promis
     }
   }
 
-  // 3. HP check
-  if (e.hp < e.maxHp * AI_HEAL_TRIGGER_HP_RATIO) {
+  // 3. HP check (Only active live Pokemon)
+  if (e.hp > 0 && e.hp < e.maxHp * AI_HEAL_TRIGGER_HP_RATIO) {
     type HealItem = [ItemId, string, number | 'full']
     const healItems: HealItem[] = [
       ['fullrestore', 'Restaurar Todo', 'full'], // spanish-ok: UI Spanish text localization label
@@ -109,6 +116,13 @@ export async function evaluateAndUseItem(ctx: BattleContext, e: Pokemon): Promis
       e.hp = amount === 'full' ? e.maxHp : Math.min(e.maxHp, e.hp + amount)
       if (itemId === 'fullrestore') e.status = ''
       if (--enemyInventory[itemId]! <= 0) delete enemyInventory[itemId]
+
+      const teamMon = (battleState.enemyTeam ?? []).find(p => p && p.uid === e.uid)
+      if (teamMon) {
+        teamMon.hp = e.hp
+        teamMon.status = e.status
+      }
+
       ctx.addLog(`¡${npcName} usó ${itemName} en ${e.name}!`, 'log-enemy', 'enemy_trainer')
       ctx.addLog(`¡${e.name} recuperó salud!`, 'log-info', e, 'enemy')
       if (e.hp - prev > 0) {

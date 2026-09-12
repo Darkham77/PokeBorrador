@@ -18,7 +18,7 @@ const RADIX_DECIMAL = 10;
 function parseCommandLineArgs() {
   const { values } = parseArgs({
     options: {
-      top: { type: 'string', default: '20' }, // no-magic: Explicit mathematical constant or threshold value
+      top: { type: 'string', default: '20' },
       layer: { type: 'string' },
       json: { type: 'boolean', default: false }
     },

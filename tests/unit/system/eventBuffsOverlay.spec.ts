@@ -7,6 +7,7 @@ import { useBuffsStore } from '@/stores/battle/buffs'
 import { useEventStore } from '@/stores/events'
 import { useModalStore } from '@/stores/modals'
 import { useUIStore } from '@/stores/ui'
+import { useGameStore } from '@/stores/game'
 import type { Event as GameEvent } from '@/logic/events/eventEngine'
 
 describe('BuffsOverlay.vue & useBuffsStore - Global Event Countdown Badges', () => {
@@ -32,7 +33,8 @@ describe('BuffsOverlay.vue & useBuffsStore - Global Event Countdown Badges', () 
 
   const globalStubs = {
     PVTooltip: {
-      template: '<div class="pv-tooltip-stub"><slot /></div>'
+      template: '<div class="pv-tooltip-stub" :data-title="title" :data-description="description"><slot /></div>',
+      props: ['title', 'description']
     }
   }
 
@@ -116,7 +118,7 @@ describe('BuffsOverlay.vue & useBuffsStore - Global Event Countdown Badges', () 
     expect(wrapper.text()).toContain('🎣')
   })
 
-  it('is visible when activeTab is "map" or "home" and hidden in other tabs (e.g. "box", "pokedex", "bag", "gyms")', async () => {
+  it('is visible when activeTab is "map", "home" or "gyms" and hidden in other tabs (e.g. "box", "pokedex", "bag")', async () => {
     const uiStore = useUIStore(pinia)
     const eventStore = useEventStore(pinia)
     eventStore.activeEvents = [mockMiningEvent]
@@ -132,6 +134,10 @@ describe('BuffsOverlay.vue & useBuffsStore - Global Event Countdown Badges', () 
     await wrapper.vm.$nextTick()
     expect(wrapper.find('.buffs-overlay').exists()).toBe(true)
 
+    uiStore.activeTab = 'gyms'
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('.buffs-overlay').exists()).toBe(true)
+
     uiStore.activeTab = 'box'
     await wrapper.vm.$nextTick()
     expect(wrapper.find('.buffs-overlay').exists()).toBe(false)
@@ -144,12 +150,57 @@ describe('BuffsOverlay.vue & useBuffsStore - Global Event Countdown Badges', () 
     await wrapper.vm.$nextTick()
     expect(wrapper.find('.buffs-overlay').exists()).toBe(false)
 
-    uiStore.activeTab = 'gyms'
-    await wrapper.vm.$nextTick()
-    expect(wrapper.find('.buffs-overlay').exists()).toBe(false)
-
     uiStore.activeTab = 'home'
     await wrapper.vm.$nextTick()
     expect(wrapper.find('.buffs-overlay').exists()).toBe(true)
+  })
+
+  it('renders classMissionBadge when activeMission is present in playerClassStore', async () => {
+    const uiStore = useUIStore(pinia)
+    const gameStore = useGameStore(pinia)
+    uiStore.activeTab = 'gyms'
+
+    const now = Temporal.Now.instant().epochMilliseconds
+    gameStore.state.playerClass = 'rocket'
+    gameStore.state.classData.activeMission = {
+      id: 'mission_6h',
+      startedAt: now,
+      endsAt: now + 6 * 3600 * 1000
+    }
+
+    const wrapper = mount(BuffsOverlay, {
+      global: { plugins: [pinia], stubs: globalStubs }
+    })
+
+    const badge = wrapper.find('#buff-badge-class-mission')
+    expect(badge.exists()).toBe(true)
+    expect(wrapper.text()).toContain('🚀')
+
+    // Tooltip should describe basic rules of the deployment, NEVER repeat remaining time
+    const tooltipStub = wrapper.find('.pv-tooltip-stub')
+    expect(tooltipStub.attributes('data-title')).toContain('Equipo Rocket')
+    expect(tooltipStub.attributes('data-description')).toContain('Requiere 1 Pokémon tipo VENENO')
+    expect(tooltipStub.attributes('data-description')).not.toContain('restantes')
+  })
+
+  it('shows completion prompt in tooltip when activeMission is finished', async () => {
+    const uiStore = useUIStore(pinia)
+    const gameStore = useGameStore(pinia)
+    uiStore.activeTab = 'gyms'
+
+    const now = Temporal.Now.instant().epochMilliseconds
+    gameStore.state.playerClass = 'rocket'
+    gameStore.state.classData.activeMission = {
+      id: 'mission_6h',
+      startedAt: now - 7 * 3600 * 1000,
+      endsAt: now - 1 * 3600 * 1000
+    }
+
+    const wrapper = mount(BuffsOverlay, {
+      global: { plugins: [pinia], stubs: globalStubs }
+    })
+
+    const tooltipStub = wrapper.find('.pv-tooltip-stub')
+    expect(tooltipStub.attributes('data-description')).toBe('¡Operación finalizada! Haz clic para cobrar el botín.')
   })
 })

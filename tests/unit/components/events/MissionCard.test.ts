@@ -118,4 +118,114 @@ describe('MissionCard.vue', () => {
     expect(wrapper.find('.requirement-banner.is-unmet').text()).toContain('Requiere Nivel de Entrenador 15');
     expect(wrapper.find('button.btn-deliver').attributes('disabled')).toBeDefined();
   });
+
+  it('renders deployment requirements and reward conditions distinctly', () => {
+    const wrapper = mount(MissionCard, {
+      props: {
+        avatar: '🚀',
+        title: '6H · REQUISITO: NV. 1',
+        dialogue: 'Extorsión local.',
+        activationReq: 'Requiere 1 Pokémon tipo VENENO en Equipo o Caja.',
+        rewardConditions: 'Dinero calculado por Nivel (60%) e IVs (40%). 1 Pepita y 50 EXP al finalizar.',
+        btnText: 'DESPLEGAR',
+        btnDisabled: false,
+        isCompleted: false
+      }
+    });
+
+    expect(wrapper.find('.deploy-badge').text()).toBe('REQUISITO DE DESPLIEGUE');
+    expect(wrapper.text()).toContain('Requiere 1 Pokémon tipo VENENO en Equipo o Caja.');
+    expect(wrapper.find('.reward-badge').text()).toBe('CÓMO SE GANAN LAS RECOMPENSAS');
+    expect(wrapper.text()).toContain('Dinero calculado por Nivel (60%) e IVs (40%). 1 Pepita y 50 EXP al finalizar.');
+  });
+
+  it('renders active operation box with assigned pokemon, guaranteed loot, and single timer without duplicate banners', () => {
+    const wrapper = mount(MissionCard, {
+      props: {
+        avatar: '🚀',
+        title: '6H · REQUISITO: NV. 1',
+        dialogue: 'Extorsión local.',
+        btnText: 'EN CURSO',
+        btnDisabled: true,
+        isCompleted: false,
+        isAvailable: true,
+        isActiveMission: true,
+        availableRequirement: 'Listo para desplegar',
+        activePokemonInfo: 'Koffing (Nv. 20, 45 IVs)',
+        activeGuaranteedReward: '₽24.500 + 1 Pepita de Oro',
+        remainingTimeText: '05:42:10',
+        progressPercent: 45
+      }
+    });
+
+    expect(wrapper.find('.active-operation-box').exists()).toBe(true);
+    expect(wrapper.text()).toContain('OPERACIÓN EN CURSO');
+    expect(wrapper.text()).toContain('05:42:10');
+    expect(wrapper.text()).toContain('Koffing (Nv. 20, 45 IVs)');
+    expect(wrapper.text()).toContain('₽24.500 + 1 Pepita de Oro');
+    // Ensure available requirement banner is NOT displayed when active
+    expect(wrapper.find('.requirement-banner.is-available-req').exists()).toBe(false);
+
+    // Assert in-card deployment progress bar exists with correct width
+    const progressFill = wrapper.find('.operation-progress-fill');
+    expect(progressFill.exists()).toBe(true);
+    expect(progressFill.attributes('style')).toContain('width: 45%');
+  });
+
+  it('does NOT render progress bar when no operation is active', () => {
+    const wrapper = mount(MissionCard, {
+      props: {
+        avatar: '🚀',
+        title: '6H · REQUISITO: NV. 1',
+        dialogue: 'Extorsión local.',
+        btnText: 'DESPLEGAR',
+        btnDisabled: false,
+        isCompleted: false,
+        isAvailable: true,
+        isActiveMission: false,
+        progressPercent: 0
+      }
+    });
+
+    expect(wrapper.find('.active-operation-box').exists()).toBe(false);
+    expect(wrapper.find('.operation-progress-track').exists()).toBe(false);
+  });
+
+  it('suppresses duplicate guaranteed loot in operation box when detailed rewardsList is provided', () => {
+    const rewardsList: DetailedMissionReward[] = [
+      {
+        icon: '₽',
+        label: 'Dinero Base',
+        val: '₽21.295 (Fijado)',
+        tooltipTitle: 'Pago en Poké-Pesos (₽)',
+        tooltipDesc: 'Dinero transferido.'
+      }
+    ];
+
+    const wrapper = mount(MissionCard, {
+      props: {
+        avatar: '🚀',
+        title: '6H · REQUISITO: NV. 1',
+        dialogue: 'Extorsión local.',
+        btnText: 'EN CURSO',
+        btnDisabled: true,
+        isCompleted: false,
+        isAvailable: true,
+        isActiveMission: true,
+        activePokemonInfo: 'Koffing (Nv. 20, 45 IVs)',
+        activeGuaranteedReward: '₽21.295 + 1 Pepita de Oro',
+        rewardsList,
+        remainingTimeText: '05:42:10',
+        progressPercent: 45
+      }
+    });
+
+    expect(wrapper.find('.active-operation-box').exists()).toBe(true);
+    expect(wrapper.text()).toContain('Koffing (Nv. 20, 45 IVs)');
+    // Duplicate "BOTÍN FIJADO:" text must NOT be present when rewardsList is provided
+    expect(wrapper.text()).not.toContain('BOTÍN FIJADO:');
+    // But detailed rewards list is shown
+    expect(wrapper.text()).toContain('RECOMPENSAS DETALLADAS');
+    expect(wrapper.text()).toContain('₽21.295 (Fijado)');
+  });
 });

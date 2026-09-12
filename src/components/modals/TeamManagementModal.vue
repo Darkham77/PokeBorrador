@@ -10,7 +10,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import UnifiedTeamSlot from '@/components/team/UnifiedTeamSlot.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import { MAX_PVP_SLOTS, MAX_PVP6_SLOTS, type TeamManagementTab } from '@/types/battle/pvp'
+import { MAX_PVP_SLOTS, MAX_PVP6_SLOTS, type TeamManagementTab, type PvpTeamTab } from '@/types/battle/pvp'
 import { usePvPStore } from '@/stores/pvp'
 import { getSeasonalThemeForMonth } from '@/data/system/rankedData'
 import { GAME_TIMEZONE } from '@/logic/utils/timeUtils'
@@ -145,7 +145,7 @@ const pvp6Evaluations = computed(() => {
   return map
 })
 
-function runAutoFillTeam(tab: 'pvp' | 'pvp6') {
+function runAutoFillTeam(tab: PvpTeamTab) {
   const allPokes = [
     ...((gameStore.state.team || []) as (Pokemon | null)[]),
     ...((gameStore.state.box || []) as (Pokemon | null)[])
@@ -159,11 +159,7 @@ function runAutoFillTeam(tab: 'pvp' | 'pvp6') {
     return
   }
 
-  if (tab === 'pvp') {
-    gameStore.state.pvpTeam = autoTeam.map(p => p.uid)
-  } else {
-    gameStore.state.pvpTeam6 = autoTeam.map(p => p.uid)
-  }
+  gameStore.setRankedTeam(tab, autoTeam.map(p => p.uid))
 
   gsap.fromTo('.slots-grid .team-slot',
     { scale: 0.9, opacity: 0.6 },

@@ -27,6 +27,9 @@ import { checkAndAutoRecharge, consumeInventoryItem } from './battleRechargeHelp
 import { findMatchingPokemon } from '@/logic/battle/showdownUidMapper.ts'
 import { createBattleLoggerHelper } from './battleLogHelper.ts'
 import { requireWeatherId } from '@/logic/weather/weatherRegistry.ts'
+import { isNaturalWeatherAllowedInLocation } from '@/logic/battle/battleTeamCoordinator.ts'
+import { isMapRouteId } from '@/data/world/map-assets'
+import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
 import type { ItemId } from '@/data/inventory/items'
 import { GAME_UI_EVENTS, type BattleEnteringDetail } from '@/types/system/gameEvents.ts'
 
@@ -147,6 +150,13 @@ export const useBattleStore = defineStore('battle', () => {
   
   watch(() => mapStore.currentWeather, (newWeather) => {
     if (activeBattle.value && activeBattle.value.weather && activeBattle.value.weather.turns === -1) {
+      const locId = activeBattle.value.locationId || mapStore.currentMap
+      const mapConfig = isMapRouteId(locId) ? MAPS_BY_ROUTE_ID[locId] : null
+      if (!isNaturalWeatherAllowedInLocation(locId, mapConfig, null, activeBattle.value)) {
+        activeBattle.value.weather.type = requireWeatherId('clear')
+        activeBattle.value.weather.visual = 'clear'
+        return
+      }
       // Sincronizar el tipo con el clima oficial según la generación, y el visual con el del mapa
       activeBattle.value.weather.type = requireWeatherId(newWeather || 'clear')
       activeBattle.value.weather.visual = newWeather || 'clear'
@@ -406,7 +416,7 @@ export const useBattleStore = defineStore('battle', () => {
   const syncTeamHP = () => {
     const team = gs.state.team;
     const active = activeBattle.value;
-    if (!active || !team) return;
+    if (!active || !team || active.isPvP) return;
 
     if (active.player?.uid) {
       const activeMatch = findMatchingPokemon(active.player.uid, team);
@@ -425,16 +435,21 @@ export const useBattleStore = defineStore('battle', () => {
       }
     }
   }
-  const _executeSwitch = async (teamIndex: number, isForced = false) => {
+  const _executeSwitch = async (targetIdentifier: number | string, isForced = false) => {
     if (isProcessing.value && !isForced) return
     
     if (isPvP.value) {
       const { useLivePvPStore } = await import('@/stores/livePvP')
       const livePvP = useLivePvPStore()
+      const pvpTeamList = (activeBattle.value?.playerTeam && activeBattle.value.playerTeam.length > 0) ? activeBattle.value.playerTeam : (gs.state.team || [])
+      const switchIndex = typeof targetIdentifier === 'number'
+        ? targetIdentifier
+        : pvpTeamList.findIndex((p: Pokemon | null) => p && p.uid === targetIdentifier)
+      const validIndex = switchIndex !== -1 ? switchIndex : 0
       livePvP._commitPick({
         type: 'switch',
-        switchIndex: teamIndex,
-        choiceString: `switch ${teamIndex + 1}`
+        switchIndex: validIndex,
+        choiceString: `switch ${validIndex + 1}`
       })
       return
     }
@@ -449,7 +464,7 @@ export const useBattleStore = defineStore('battle', () => {
 
     isProcessing.value = true
     try {
-      await switchAction(getContext(), teamIndex, isForced)
+      await switchAction(getContext(), targetIdentifier, isForced)
     } catch (error) {
       logger.error('BattleStore', `Error switching pokemon: ${(error as Error).message}`, error)
       addLog('¡Ocurrió un error al cambiar de Pokémon!', 'log-error', 'player')

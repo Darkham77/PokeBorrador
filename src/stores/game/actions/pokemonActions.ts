@@ -13,6 +13,7 @@ import { getActivePinia } from 'pinia'
 import type { Event as GameEvent } from '@/logic/events/eventEngine'
 import type { CompetitionEntry } from '@/types/system/stores'
 import { isPokemonBusy, type PokemonTagId } from '@/logic/constants/tags'
+import { usePlayerClassStore } from '@/stores/player/playerClass'
 
 
 export function usePokemonActions(
@@ -77,6 +78,10 @@ export function usePokemonActions(
     if (options.notify) {
       const location = target === 'team' ? 'tu equipo' : 'la Caja PC'
       useUIStore().notify(`¡${pokemon.name} se unió a ${location}!`, '✨')
+    }
+
+    if (pokemon.obtainedMethod === 'wild') {
+      usePlayerClassStore().onCaptureSuccess()
     }
 
     scheduleSave()

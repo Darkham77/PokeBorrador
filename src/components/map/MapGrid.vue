@@ -84,6 +84,7 @@ const getMapData = (loc: MapLocation): SpawnPoolData => {
 
 const isMapLocked = (loc: MapLocation) => {
   if (loc.id === 'safari_zone') return props.safariTicketSecs <= 0
+  if (loc.id === 'cerulean_cave' && (props.ceruleanTicketSecs || 0) > 0) return false
   return (props.badgeCount || 0) < (loc.badges || 0)
 }
 

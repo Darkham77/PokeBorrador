@@ -349,6 +349,30 @@ const GSAP_CAPTURE_BLINK_DUR_SEC = 0.48
     return Promise.resolve()
   }
 
+  const handleFlinchRequest = (detail: string | { side?: string }): Promise<void> => {
+    const side = typeof detail === 'string' ? detail : (detail?.side || 'player')
+    const seat = getSeat(side)
+    if (seat) {
+      seat.entry.isShaking = true
+      seat.entry.isBlinking = true
+      seat.exit.isShaking = true
+      seat.exit.isBlinking = true
+      const tl = createTimeline()
+      tl.add(() => {
+        gameBus.emit('PLAY_SOUND', 'statusDamage')
+      })
+      tl.to({}, { duration: 0.35 })
+      tl.add(() => {
+        seat.entry.isShaking = false
+        seat.entry.isBlinking = false
+        seat.exit.isShaking = false
+        seat.exit.isBlinking = false
+      })
+      return awaitAnimation(tl)
+    }
+    return Promise.resolve()
+  }
+
   const handleHealRequest = async (detail: string | { side?: string }) => {
     const side = typeof detail === 'string' ? detail : (detail?.side || 'player')
     const seat = getSeat(side)
@@ -529,6 +553,7 @@ const GSAP_CAPTURE_BLINK_DUR_SEC = 0.48
     handleCatchRequest,
     handleShakeRequest,
     handleBlinkRequest,
+    handleFlinchRequest,
     handleHealRequest,
     handleFaintAnim,
     playCatchCelebration,

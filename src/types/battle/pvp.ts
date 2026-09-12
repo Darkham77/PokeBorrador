@@ -13,7 +13,7 @@ import {
   type RankedTierId
 } from '@/data/system/rankedData.ts';
 
-export const PVP_BATTLE_PHASES = ['sync', 'team_preview', 'choosing', 'resolving', 'animating', 'faint_switch', 'over', 'waiting'] as const;
+export const PVP_BATTLE_PHASES = ['sync', 'choosing', 'resolving', 'animating', 'faint_switch', 'over', 'waiting'] as const;
 export type PvPBattlePhase = (typeof PVP_BATTLE_PHASES)[number];
 
 export interface PvPAction {
@@ -44,11 +44,14 @@ export const PVP_TURN_TIMEOUT_SEC = 45 as const;
 export const PVP_AFK_MAX_STRIKES = 2 as const;
 export const PVP_RECONNECT_WINDOW_SEC = 60 as const;
 export const MATCHMAKING_TIMEOUT_SEC = 60 as const;
+export const FAST_MATCHMAKING_TIMEOUT_SEC = 5 as const;
 export const MAX_PVP_SLOTS = 3 as const;
 export const MAX_PVP6_SLOTS = 6 as const;
 
 export const TEAM_MANAGEMENT_TABS = ['adventure', 'pvp', 'pvp6', 'war'] as const;
 export type TeamManagementTab = (typeof TEAM_MANAGEMENT_TABS)[number];
+export const PVP_TEAM_TABS = ['pvp', 'pvp6'] as const;
+export type PvpTeamTab = (typeof PVP_TEAM_TABS)[number];
 export { PVP_INVITE_EXPIRY_MS } from '@/logic/constants/gameplay';
 
 export const PVP_MATCH_FORMATS = ['3v3', '6v6'] as const;

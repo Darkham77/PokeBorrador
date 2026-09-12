@@ -49,6 +49,7 @@ const battleStore = useBattleStore()
 const uiStore = useUIStore()
 
 const props = defineProps({
+  pokeId: { type: [String, Number], default: null },
   isShiny: { type: Boolean, default: false },
   isGuardian: { type: Boolean, default: false },
   status: { type: String, default: null }, 
@@ -235,7 +236,7 @@ const GSAP_PARALYZE_X_OFFSET_PX = 3
   }
 }
 
-watch([() => props.status, () => props.isConfused, () => props.isTaunted, () => props.isSubstitute, () => props.isFlinched, () => props.isDisabled, () => props.isEncored, () => props.isCursed, () => props.isGuardian, isSimplified], () => {
+watch([() => props.pokeId, () => props.status, () => props.isConfused, () => props.isTaunted, () => props.isSubstitute, () => props.isFlinched, () => props.isDisabled, () => props.isEncored, () => props.isCursed, () => props.isGuardian, isSimplified], () => {
   nextTick(() => refreshPersistentFX())
 }, { immediate: true })
 

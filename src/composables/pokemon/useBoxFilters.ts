@@ -1,4 +1,5 @@
-import { ref, computed, watch, type Ref } from 'vue'
+import { ref, computed, type Ref } from 'vue'
+import { useStorage, refDebounced } from '@vueuse/core'
 import type { Pokemon } from '@/types/pokemon/pokemon'
 import { FRIENDSHIP_SEAL_TIERS } from '@/types/pokemon/friendship'
 import { getPokedexOrderIndex, requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
@@ -45,22 +46,14 @@ interface FilterState {
   friendshipMaxOnly: boolean
 }
 
-export function useBoxFilters(box: Ref<(Pokemon | null)[]>) {
-  const savedSortMode = typeof localStorage !== 'undefined' ? localStorage.getItem('box_sort_mode') : null
-  const savedSortDirection = typeof localStorage !== 'undefined' ? localStorage.getItem('box_sort_direction') : null
-
-  const sortMode = ref(savedSortMode || 'recent')
-  const sortDirection = ref(savedSortDirection || 'desc')
+export function useBoxFilters(box: Ref<(Pokemon | null)[]>, options?: { debounceMs?: number }) {
+  const sortMode = useStorage('box_sort_mode', 'recent')
+  const sortDirection = useStorage('box_sort_direction', 'desc')
   const isFiltersOpen = ref(false)
 
-  if (typeof localStorage !== 'undefined') {
-    watch(sortMode, (newVal) => {
-      localStorage.setItem('box_sort_mode', newVal)
-    })
-    watch(sortDirection, (newVal) => {
-      localStorage.setItem('box_sort_direction', newVal)
-    })
-  }
+  const isTestEnv = typeof process !== 'undefined' && (!!process.env.VITEST || process.env.NODE_ENV === 'test')
+  const defaultDebounce = isTestEnv ? 0 : 150
+  const debounceDuration = options?.debounceMs ?? defaultDebounce
   
 const MAX_TOTAL_IVS = 186
 const MAX_BST_FILTER = 1000
@@ -102,6 +95,10 @@ const MAX_POKEMON_FRIENDSHIP_CONST = 255
     friendshipMaxOnly: false,
   })
 
+  const debouncedSearch = debounceDuration > 0
+    ? refDebounced(computed(() => filters.value.search), debounceDuration)
+    : computed(() => filters.value.search)
+
   const hasActiveFilters = computed(() => {
     const f = filters.value
     return f.tier !== 'all' || f.type !== 'all' || f.levelMin > 1 || f.levelMax < MAX_POKEMON_LEVEL_CONST ||
@@ -118,10 +115,14 @@ const MAX_POKEMON_FRIENDSHIP_CONST = 255
     
     let list = box.value.map((p: Pokemon | null, i: number) => ({ p, index: i }))
 
+    const effectiveFilters = debouncedSearch.value === filters.value.search
+      ? filters.value
+      : { ...filters.value, search: debouncedSearch.value }
+
     // Apply Filters
     list = list.filter(({ p }: { p: Pokemon | null }) => {
       if (!p) return false // Skip empty slots
-      return matchesAllBoxFilters(p, filters.value)
+      return matchesAllBoxFilters(p, effectiveFilters)
     })
 
     // Apply Sorting

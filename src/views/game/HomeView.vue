@@ -11,15 +11,18 @@ import HomeFactionWar from '@/components/home/HomeFactionWar.vue'
 import HomeClassMissionsWidget from '@/components/home/HomeClassMissionsWidget.vue'
 import HomeActiveBuffsWidget from '@/components/home/HomeActiveBuffsWidget.vue'
 import HomeEconomyWidget from '@/components/home/HomeEconomyWidget.vue'
+import HomeBlackMarketWidget from '@/components/home/HomeBlackMarketWidget.vue'
 import HomeRankedWidget from '@/components/home/HomeRankedWidget.vue'
 import HomePassiveDefenseWidget from '@/components/home/HomePassiveDefenseWidget.vue'
 import { useBreedingStore } from '@/stores/breeding'
 import { useLoadingStore } from '@/stores/loading'
+import { useGameStore } from '@/stores/game'
 import { useUnifiedRewards } from '@/composables/rewards/useUnifiedRewards'
 import HomeCollapsibleWidget from '@/components/home/HomeCollapsibleWidget.vue'
 import HomeWidgetMinimizeBtn from '@/components/home/HomeWidgetMinimizeBtn.vue'
 import HomeWidgetRefreshBtn from '@/components/home/HomeWidgetRefreshBtn.vue'
 
+const gameStore = useGameStore()
 const breedingStore = useBreedingStore()
 const loadingStore = useLoadingStore()
 const { unifiedRewards } = useUnifiedRewards()
@@ -147,7 +150,12 @@ onUnmounted(() => {
                   </h2>
                 </div>
                 <div class="header-actions">
-                  <span class="refresh-count-badge">Refrescos: {{ breedingStore.missionRefreshes }}/3</span>
+                  <span
+                    class="refresh-count-badge"
+                    title="Refrescos disponibles"
+                  >
+                    <span class="refresh-label">Refrescos: </span>{{ breedingStore.missionRefreshes }}/3
+                  </span>
                   <HomeWidgetRefreshBtn
                     id="home-missions-refresh-btn"
                     :disabled="breedingStore.missionRefreshes <= 0"
@@ -212,6 +220,19 @@ onUnmounted(() => {
             icon="🏪"
           >
             <HomeEconomyWidget />
+          </HomeCollapsibleWidget>
+        </div>
+        <div
+          v-if="gameStore.state.playerClass === 'rocket' && (gameStore.state.classLevel || 1) >= 10"
+          id="widget-black-market-section"
+          class="home-widget-block widget-black-market"
+        >
+          <HomeCollapsibleWidget
+            widget-id="black_market"
+            title="MERCADO NEGRO"
+            icon="🚀"
+          >
+            <HomeBlackMarketWidget />
           </HomeCollapsibleWidget>
         </div>
         <div
@@ -331,8 +352,7 @@ onUnmounted(() => {
 }
 
 .widget-coliseum-dual {
-  container-type: inline-size;
-  container-name: dual-slot;
+  width: 100%;
 
   .dual-widgets-grid {
     display: grid;
@@ -340,11 +360,7 @@ onUnmounted(() => {
     gap: 16px;
     align-items: stretch;
 
-    @container dual-slot (max-width: 820px) {
-      grid-template-columns: 1fr;
-    }
-
-    @media (max-width: 900px) {
+    @media (max-width: 1100px) {
       grid-template-columns: 1fr;
     }
   }
@@ -365,15 +381,18 @@ onUnmounted(() => {
   margin-bottom: 12px;
   padding-bottom: 8px;
   border-bottom: 1px solid Rgba(255, 255, 255, 0.06);
+  min-width: 0;
 
   .title-wrap {
     display: flex;
     align-items: center;
     gap: 8px;
+    min-width: 0;
   }
 
   .card-icon {
     font-size: 18px;
+    flex-shrink: 0;
   }
 
   .card-title {
@@ -382,6 +401,7 @@ onUnmounted(() => {
     color: var(--yellow, #facc15);
     margin: 0;
     letter-spacing: 1px;
+    word-break: break-word;
   }
 
   .header-actions {
@@ -397,6 +417,12 @@ onUnmounted(() => {
       padding: 3px 8px;
       margin-right: 2px;
       white-space: nowrap;
+
+      .refresh-label {
+        @media (max-width: 640px) {
+          display: none;
+        }
+      }
     }
   }
 }

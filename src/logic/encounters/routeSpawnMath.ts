@@ -32,11 +32,20 @@ function requireWeatherFamilyId(weather: WeatherId): WeatherId {
   return requireWeatherId(family);
 }
 
+export interface EncounterTicketOptions {
+  articunoTicketSecs?: number;
+  mewtwoTicketSecs?: number;
+}
+
+export const ARTICUNO_TICKET_SPAWN_WEIGHT = 1;
+export const MEWTWO_TICKET_SPAWN_WEIGHT = 0.1;
+
 export function getEncounterPool(
   loc: MapLocation,
   cycle: DayPhase,
   weather: WeatherId,
-  activeEvents: GameEvent[] = []
+  activeEvents: GameEvent[] = [],
+  tickets?: EncounterTicketOptions
 ): { pool: PokemonSpeciesId[]; rates: number[] } {
   const pool: PokemonSpeciesId[] = [];
   const rates: number[] = [];
@@ -118,6 +127,21 @@ export function getEncounterPool(
     });
   }
 
+  // 3. Inyección por Tickets de Legendarios (Consumibles)
+  if (tickets?.articunoTicketSecs && tickets.articunoTicketSecs > 0 && loc.id === 'seafoam_islands') {
+    if (!pool.includes('articuno')) {
+      pool.push('articuno');
+      rates.push(ARTICUNO_TICKET_SPAWN_WEIGHT);
+    }
+  }
+
+  if (tickets?.mewtwoTicketSecs && tickets.mewtwoTicketSecs > 0 && loc.id === 'cerulean_cave') {
+    if (!pool.includes('mewtwo')) {
+      pool.push('mewtwo');
+      rates.push(MEWTWO_TICKET_SPAWN_WEIGHT);
+    }
+  }
+
   return { pool, rates };
 }
 
@@ -157,9 +181,10 @@ export function getFinalGroundRates(
   loc: MapLocation,
   cycle: DayPhase,
   weather: WeatherId,
-  activeEvents: GameEvent[]
+  activeEvents: GameEvent[],
+  tickets?: EncounterTicketOptions
 ): { pool: PokemonSpeciesId[]; rates: number[] } {
-  const { pool, rates } = getEncounterPool(loc, cycle, weather, activeEvents);
+  const { pool, rates } = getEncounterPool(loc, cycle, weather, activeEvents, tickets);
 
   if (weather !== 'clear') {
     let wConfig = loc.weather?.[weather];

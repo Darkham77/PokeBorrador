@@ -114,6 +114,7 @@ describe('Passive Defense Eligibility & Matchmaking', () => {
       spd: 50,
       spe: 50,
       type,
+      ability: 'static',
       moves: [{ name: 'Thunderbolt', maxPP: 15 }],
       isIllegal: false,
       isShiny: false

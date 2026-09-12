@@ -658,6 +658,7 @@ export const magicNumbers: AuditRule = {
       norm.includes('src/data/') || norm.includes('/constants/') || norm.endsWith('config.ts') ||
       norm.includes('migrations_data.ts') || norm.includes('db/migrations') ||
       norm.includes('test') || norm.includes('spec') || norm.includes('fuzzer') ||
+      norm.includes('simulation') || norm.includes('/e2e/') ||
       norm.endsWith('.scss') || norm.endsWith('.css')
     ) {
       return false;

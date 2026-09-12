@@ -87,6 +87,10 @@ Frontend Developers / Systems Engineers.
   - Renders the captured Pokémon's animated sprite via canonical `requirePokemonSpeciesId`, shiny sparkle badge if applicable, qualifying category icon and name, previous record vs new record with delta gain pill (`+XX`), and interactive category switcher when qualifying for multiple categories.
   - Actions: `#btn-enroll-confirm` (commits entry, marks `pokemon.onEvent = true`, frees previous category participant, and displays success toast) and `#btn-enroll-dismiss` (dismisses modal and proceeds to map exploration without modifying competition entries).
   - Must strictly adhere to: (1) Dart Sass uppercase `Rgba(`, (2) zero manual CSS `transition:` (GSAP exclusive), (3) emoji encapsulation inside `<span class="emoji">`, and (4) strict domain IDs.
+- **Compact Fixed-Content Modals & `disable-auto-grow` Mandate (`BlackMarketModal.vue`)**:
+  - In `BaseModal.vue`, declaring `:max-width >= 800px` without `disable-auto-grow` triggers large-modal rules (`isLargeModal`), which automatically forces `height: 80dvh` (~860px) and expands width to `1100px` on desktop viewports (screen height >= 900px).
+  - Modals designed for a fixed, small set of items (such as `BlackMarketModal.vue` with exactly 3 daily items, short forms, or small grids) MUST declare `disable-auto-grow` on `<BaseModal>`. This guarantees `height` defaults to `'auto'`, wrapping snugly around the content (header, banner, and cards) and preventing hundreds of pixels of blank, dead navy card background at the bottom.
+  - The inner modal scrollable body must use `flex: 1` so that in mobile fullscreen mode (`type="fullscreen"`) the modal background gradient covers the entire screen seamlessly without color leakage.
 
 ## Work Guidance
 

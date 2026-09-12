@@ -4,6 +4,7 @@ import { ref, computed } from 'vue';
 import { useGameStore } from '@/stores/game.ts';
 import { useUIStore } from '@/stores/ui.ts';
 import { useAuthStore } from '@/stores/auth.ts';
+import { useEventStore } from '@/stores/events.ts';
 import gsap from 'gsap';
 import { 
   checkCompatibility, 
@@ -20,9 +21,9 @@ import { NATURES, isNatureId } from '@/data/battle/natures';
 import { checkPokemonLegality } from '@/logic/pokemon/pokemonLegality';
 import type { BreedingActivitySource } from '@/types/breeding/breeding';
 import { usePlayerClassStore } from '@/stores/player/playerClass.ts';
-import { useEventStore } from '@/stores/events.ts';
 import { useDaycareMissionsStore } from '@/stores/daycareMissions.ts';
 import { getHatchSpeedMultiplier } from '@/logic/pokemon/pokemonFieldAbilities';
+import { HATCH_STEP_REDUCTION_CRIADOR } from '@/logic/player/classDeploymentEngine';
 import {
   isBabyPokemonSpeciesId,
   isFossilPokemonSpeciesId,
@@ -446,7 +447,8 @@ export const useBreedingStore = defineStore('breeding', () => {
     if (baseReduction === 0) return;
 
     const hatchMult = getHatchSpeedMultiplier(gameStore.state.team);
-    const reduction = baseReduction * hatchMult;
+    const criadorBonus = gameStore.state.playerClass === 'criador' ? (1 / (1 - HATCH_STEP_REDUCTION_CRIADOR)) : 1;
+    const reduction = baseReduction * hatchMult * criadorBonus;
 
     const eggs = gameStore.state.eggs || [];
     if (eggs.length === 0) return;

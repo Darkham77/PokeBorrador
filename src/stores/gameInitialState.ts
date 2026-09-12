@@ -4,6 +4,7 @@ import type { GameState } from '@/types/system/game';
 export function createInitialGameState(): GameState {
   return {
     trainer: '',
+    last_renamed_at: undefined,
     gender: 'h',
     badges: 0,
     balls: INITIAL_BALLS_COUNT,
@@ -32,6 +33,7 @@ export function createInitialGameState(): GameState {
     starterChosen: false,
     lastPokemonCenterHeal: 0,
     lastRankedSeason: null,
+    rankedMedals: [],
     nick_style: null,
     avatar_style: null,
     stats: {},
@@ -75,9 +77,13 @@ export function createInitialGameState(): GameState {
       blackMarketSales: 0,
       criminality: 0,
       blackMarketDaily: { date: '', items: [], purchased: [] },
+      activeMission: null,
       extortedRouteId: null,
       extortedRouteTimestamp: null,
-      lastEggScanDate: null
+      lastEggScanDate: null,
+      officialRouteId: null,
+      officialRouteTimestamp: null,
+      kitCaptures: 0
     },
     faction: null,
     warCoins: 0,

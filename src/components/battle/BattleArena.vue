@@ -1,6 +1,8 @@
 <script setup lang="ts">
 
 import { ref, computed, watch, defineAsyncComponent, type Component, onMounted, onUnmounted, nextTick, reactive } from 'vue'
+import { useWakeLock } from '@vueuse/core'
+import { logger } from '@/logic/utils/logger'
 
 const PILL_GLOW_DURATION_SEC = 1.5;
 const PILL_DRIFT_X_PX = 3;
@@ -302,13 +304,37 @@ const initBattlePillAnimation = () => {
   }, el)
 }
 
+const { isSupported: isWakeLockSupported, request: requestWakeLock, release: releaseWakeLock } = useWakeLock()
+
+async function enableScreenWakeLock(): Promise<void> {
+  if (!isWakeLockSupported.value) return
+  try {
+    await requestWakeLock('screen')
+  } catch (err) {
+    logger.warn('BattleArena', `No se pudo adquirir Screen WakeLock: ${String(err)}`)
+  }
+}
+
+async function disableScreenWakeLock(): Promise<void> {
+  if (!isWakeLockSupported.value) return
+  try {
+    await releaseWakeLock()
+  } catch (err) {
+    logger.warn('BattleArena', `Error al liberar Screen WakeLock: ${String(err)}`)
+  }
+}
+
 onMounted(() => {
+  if (battleStore.isBattleActive) {
+    void enableScreenWakeLock()
+  }
   nextTick(() => {
     initBattlePillAnimation()
   })
 })
 
 onUnmounted(() => {
+  void disableScreenWakeLock()
   if (pillContext) {
     pillContext.revert()
     pillContext = null
@@ -330,10 +356,15 @@ watch(
   { flush: 'post' }
 )
 
-// Body Class Management
+// Body Class & Screen WakeLock Management
 watch(() => battleStore.isBattleActive, (active) => {
-  if (active) document.body.classList.add('in-battle') // [PureVue-Ignore]
-  else document.body.classList.remove('in-battle') // [PureVue-Ignore]
+  if (active) {
+    void enableScreenWakeLock()
+    document.body.classList.add('in-battle') // [PureVue-Ignore]
+  } else {
+    void disableScreenWakeLock()
+    document.body.classList.remove('in-battle') // [PureVue-Ignore]
+  }
 }, { immediate: true })
 
 const handleClose = () => {

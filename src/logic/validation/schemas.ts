@@ -36,6 +36,8 @@ import {
   networkActionSchema
 } from './subschemas/authSchemas.ts';
 
+import type { PersistedGameState } from '@/types/system/game.ts';
+
 // Re-export all subschemas and DTO types
 export * from './subschemas/authSchemas.ts';
 export * from './subschemas/pokemonSchemas.ts';
@@ -45,6 +47,40 @@ export * from './subschemas/socialSchemas.ts';
 // ==========================================
 // SAVE DATA SCHEMAS
 // ==========================================
+
+export const activeMissionSchema = object({
+  id: union([literal('mission_6h'), literal('mission_12h'), literal('mission_24h')]),
+  startedAt: number(),
+  endsAt: number(),
+  targetPokemonUid: optional(string()),
+  targetPokemonIdx: optional(number()),
+  targetPokemonSpecies: optional(string()),
+  targetZone: optional(string()),
+  streak: optional(number()),
+  projectedReward: optional(number()),
+  rewards: optional(record(string(), number()))
+});
+
+export const rankedTierIdSchema = union([
+  literal('madera'),
+  literal('bronce'),
+  literal('plata'),
+  literal('oro'),
+  literal('platino'),
+  literal('diamante'),
+  literal('maestro')
+]);
+
+export const rankedSeasonMedalSchema = object({
+  id: string(),
+  seasonName: string(),
+  tournamentName: optional(string()),
+  themeId: optional(string()),
+  tier: rankedTierIdSchema,
+  rank: optional(number()),
+  finalElo: number(),
+  awardedAt: string()
+});
 
 export const personalPvPMatchSummarySchema = object({
   id: string(),
@@ -89,6 +125,7 @@ export const saveDataSchema = object({
   lastGymAttempts: optional(record(string(), union([number(), string()]))),
   starterChosen: boolean(),
   lastRankedSeason: optional(nullable(string())),
+  rankedMedals: optional(array(rankedSeasonMedalSchema)),
   nick_style: optional(nullable(string())),
   avatar_style: optional(nullable(string())),
   stats: optional(record(string(), unknown())),
@@ -141,6 +178,7 @@ export const saveDataSchema = object({
       items: array(string()),
       purchased: array(string())
     })),
+    activeMission: optional(nullable(activeMissionSchema)),
     extortedRouteId: optional(nullable(string())),
     extortedRouteTimestamp: optional(nullable(string())),
     lastEggScanDate: optional(nullable(string())),
@@ -218,3 +256,11 @@ export function validateSaveData(data: unknown) {
 
 export type SaveDataDto = InferOutput<typeof saveDataSchema>;
 export type SaveDataInputDto = InferInput<typeof saveDataSchema>;
+
+// Compile-time persistence assertion: SaveDataDto must cover 100% of PersistedGameState keys
+type AssertSaveSchemaParity<TActual, TExpected> =
+  [keyof TExpected] extends [keyof TActual]
+    ? true
+    : { missingInSchema: Exclude<keyof TExpected, keyof TActual> };
+
+export type _VerifySaveDataSchemaParity = AssertSaveSchemaParity<SaveDataDto, PersistedGameState>;

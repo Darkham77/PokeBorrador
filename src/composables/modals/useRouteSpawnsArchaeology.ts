@@ -221,7 +221,7 @@ export function useRouteSpawnsArchaeology(props: RouteSpawnsProps) {
         const toolName = names[pickaxeType] || 'Pico de excavación'
         const budget = pickaxeType === 'good' ? TOOL_BUDGET_GOOD : (pickaxeType === 'super' ? TOOL_BUDGET_SUPER : 0)
         if (budget > 0) {
-          lines.push(`• ${toolName} activo: agrega +${budget} pts en total (+50% a Raros, +25% a Comunes, +25% a Piedras).`) // no-magic: Explicit mathematical constant or threshold value
+          lines.push(`• ${toolName} activo: agrega +${budget} pts en total (+50% a Raros, +25% a Comunes, +25% a Piedras).`)
         } else {
           lines.push(`• ${toolName} activo.`)
         }

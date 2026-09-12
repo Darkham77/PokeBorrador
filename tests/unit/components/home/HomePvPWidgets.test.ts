@@ -252,7 +252,7 @@ describe('Home PvP Widgets Suite', () => {
       });
 
       expect(wrapper.text()).toContain('RedChampion');
-      expect(wrapper.text()).toContain('Líder de Gimnasio');
+      expect(wrapper.text()).toContain('SIN BANDO');
       expect(wrapper.text()).toContain('DERROTA');
 
       const avatarStub = wrapper.find('.stub-avatar');

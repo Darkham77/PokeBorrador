@@ -83,6 +83,8 @@ export interface CatchRateResult {
   shakes: number;
   isCritical: boolean;
   statusMultiplierApplied: boolean;
+  bugSynergyBonus?: number;
+  trainerIvPenaltyApplied?: boolean;
 }
 
 export interface PureCatchOptions {

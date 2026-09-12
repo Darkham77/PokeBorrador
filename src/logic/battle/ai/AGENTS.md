@@ -15,17 +15,26 @@ Battle Engine Developers.
 - `HeuristicAI` runs the 9-layer heuristic engine with `@smogon/calc` for accurate
   damage percentages. One instance per battle — holds `InferenceEngine` state.
 - Difficulty is fully parametrized via `AIConfig` presets resolved from `BattleState`
-  context (`wild`, `npc`, `gym`, `rival`). `rival` = champion tier = 0% error rate.
+  context and `trainerArchetype` (`wild`, `novice`, `intermediate`, `tactical`, `elite`, `gym`, `rival`).
+  `rival` = champion/apex tier = 0% error rate, 85% switch aggressiveness, 1-turn switch cooldown.
+- Asynchronous PvP passive defense battles (`isPvP && (isAsynchronous || isRanked)`) strictly use the `rival` apex preset.
+- Anti-ping-pong switch cooldown prevents switch loops. Gated dynamically: 1 turn for `rival` and `gym`, 2 turns for other tiers.
+- Mid-combat tactical switches are strictly gated behind `hasViableSwitchCounter()` ensuring the candidate takes `< 45%` max damage and deals `>= 35%` damage (or outspeeds with `>= 25%`).
+- `pickBestSwitch` supports explicit modes: `'counter'` (preserves high-value Pokémon without sacrificial pawn bias) and `'faint_replacement'` (faint resolution).
 - `ScriptedAI` is E2E replay only — zero game logic.
+- **Strict Prohibition on Healing Fainted Pokémon (`aiItemEvaluator.ts`)**: Opponent AI item evaluation MUST strictly verify `e.hp > 0 && !e.fainted` before considering healing items (potions) or status cures. A fainted Pokémon (`hp <= 0`) must never satisfy healing thresholds (`hp < 0.25 * maxHp`), preventing potions from being used on dead combatants. When items are consumed, updated `hp` and `status` must immediately synchronize with `battleState.enemyTeam`.
 
 ## Difficulty Tiers
 
-| Preset | errorRate | switchAggressiveness | useInference | useStrategicEval |
-| --- | --- | --- | --- | --- |
-| `wild` | 50% | 0% | false | false |
-| `npc` | **5%** | 40% | true | true |
-| `gym` | **0%** | 70% | true | true |
-| `rival` (= champion) | **0%** | 90% | true | true |
+| Preset | errorRate | switchAggressiveness | switchCooldownTurns | useInference | useStrategicEval |
+| --- | --- | --- | --- | --- | --- |
+| `wild` | 50% | 0% | 2 | false | false |
+| `novice` | 20% | 15% | 2 | false | false |
+| `intermediate` | 10% | 30% | 2 | true | true |
+| `tactical` | 5% | 55% | 2 | true | true |
+| `elite` | 2% | 75% | 2 | true | true |
+| `gym` | 0% | 70% | 1 | true | true |
+| `rival` (apex / PvP passive) | 0% | 85% | 1 | true | true |
 
 ## Module Map
 

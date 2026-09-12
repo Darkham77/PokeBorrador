@@ -43,6 +43,7 @@ describe('useHomeWidgetsCollapse', () => {
     expect(isCollapsed('missions')).toBe(false)
     expect(isCollapsed('class')).toBe(false)
     expect(isCollapsed('economy')).toBe(false)
+    expect(isCollapsed('black_market')).toBe(false)
     expect(isCollapsed('buffs')).toBe(false)
   })
 

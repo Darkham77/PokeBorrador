@@ -81,6 +81,7 @@ async function executePlayerRocketSteal(
     }
 
     ctx.classStore.addCriminality(CRIMINALITY_GAINED_ON_STEAL)
+    ctx.classStore.addXP?.(15)
     const itemsText = stolenItemsList.map(item => `${item.name} x${item.qty}`).join(', ')
     ctx.addLog(`¡Robo Rápido exitoso! Le robaste ${itemsText} a tu oponente.`, 'log-success', 'player')
     ctx.uiStore.notify(`¡Robaste ${itemsText}! (+${CRIMINALITY_GAINED_ON_STEAL} criminalidad)`, '🏴‍☠️')

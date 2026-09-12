@@ -70,7 +70,8 @@ export const useGameStore = defineStore('game', () => {
     removePvp6Slot,
     autoFillWarTeam,
     swapWarSlot,
-    reorderWarTeam
+    reorderWarTeam,
+    setRankedTeam
   } = useTeamActions(state, scheduleSave)
 
   // 3. Pokemon Actions
@@ -388,6 +389,7 @@ export const useGameStore = defineStore('game', () => {
     swapPvp6Slot,
     removePvpSlot,
     removePvp6Slot,
+    setRankedTeam,
     swapWarSlot,
     togglePokeTag,
     executeHatch,

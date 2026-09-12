@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { useClipboard } from '@vueuse/core'
 import { gsap } from 'gsap'
 import type { ITacticalReplayEngine } from '@/logic/battle/replay/tacticalReplayEngine.ts'
 
@@ -13,8 +14,14 @@ const emit = defineEmits<{
 }>()
 
 const replayerBarRef = ref<HTMLElement | null>(null)
-const copyFeedback = ref(false)
+const { copy, copied } = useClipboard({ copiedDuring: 2000 })
 let autoPlayTween: gsap.core.Tween | null = null
+
+watch(copied, (isCopied) => {
+  if (isCopied) {
+    gsap.fromTo('.copy-indicator', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.2 })
+  }
+})
 
 const currentTurn = ref(props.engine.getCurrentTurn())
 const totalTurns = computed(() => props.engine.getTotalTurns())
@@ -50,43 +57,29 @@ function handleRestart() {
 }
 
 function startAutoPlay() {
-  props.engine.play()
   isPlaying.value = true
-  scheduleNextStep()
+  props.engine.play()
+  
+  autoPlayTween = gsap.to({}, {
+    duration: 1.8,
+    repeat: -1,
+    onRepeat: () => {
+      const advanced = props.engine.nextTurn()
+      updateState()
+      if (!advanced) {
+        stopAutoPlay()
+      }
+    }
+  })
 }
 
 function stopAutoPlay() {
+  isPlaying.value = false
+  props.engine.pause()
   if (autoPlayTween) {
     autoPlayTween.kill()
     autoPlayTween = null
   }
-  props.engine.pause()
-  isPlaying.value = false
-}
-
-function scheduleNextStep() {
-  if (!props.engine.isPlaying() || props.engine.isOver()) {
-    stopAutoPlay()
-    return
-  }
-
-  // GSAP-based zero-timer turn pacing
-  const dummy = { t: 0 }
-  autoPlayTween = gsap.to(dummy, {
-    t: 1,
-    duration: 1.8,
-    onComplete: () => {
-      if (props.engine.isPlaying()) {
-        const adv = props.engine.nextTurn()
-        updateState()
-        if (adv && !props.engine.isOver()) {
-          scheduleNextStep()
-        } else {
-          stopAutoPlay()
-        }
-      }
-    }
-  })
 }
 
 function togglePlayPause() {
@@ -102,21 +95,7 @@ function togglePlayPause() {
 }
 
 async function copyCode() {
-  try {
-    if (navigator.clipboard) {
-      await navigator.clipboard.writeText(battleCode.value)
-    }
-    copyFeedback.value = true
-    gsap.fromTo('.copy-indicator', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.2 })
-    
-    // Auto clear feedback via GSAP
-    gsap.delayedCall(2.0, () => {
-      copyFeedback.value = false
-    })
-  } catch {
-    // Fallback if clipboard permission denied
-    copyFeedback.value = false
-  }
+  await copy(battleCode.value)
 }
 
 function handleClose() {
@@ -208,7 +187,7 @@ onUnmounted(() => {
         <span class="code-lbl">{{ battleCode }}</span>
         <span class="copy-icon emoji">📋</span>
         <span
-          v-if="copyFeedback"
+          v-if="copied"
           class="copy-indicator"
         >¡COPIADO!</span>
       </button>
@@ -231,7 +210,7 @@ onUnmounted(() => {
   position: absolute;
   bottom: 12px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: Translatex(-50%);
   z-index: var(--z-hud);
   display: flex;
   align-items: center;

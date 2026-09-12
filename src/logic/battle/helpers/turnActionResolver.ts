@@ -15,7 +15,7 @@ function resolveEnemySwitchUid(store: BattleContext, p: Pokemon, e: Pokemon, isW
   const enemyTeam = store.activeBattle.value.enemyTeam;
   if (!shouldEnemySwitch(e, p, enemyTeam, store)) return '';
 
-  const bestIdx = findBestSwitchIndex(enemyTeam || [], p, e.uid, store);
+  const bestIdx = findBestSwitchIndex(enemyTeam || [], p, e.uid, store, 'counter');
   if (!enemyTeam || bestIdx === -1) return '';
   return enemyTeam[bestIdx]?.uid || '';
 }

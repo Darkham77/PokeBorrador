@@ -1,4 +1,5 @@
 import { ref, onMounted, onUnmounted, computed, watch, type CSSProperties, type Ref } from 'vue'
+import { useResizeObserver } from '@vueuse/core'
 import { gameBus } from '@/logic/events/gameBus'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
 import { useBattleStore } from '@/stores/battle/battle'
@@ -83,25 +84,22 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
     ty.value = (ch / 2) - (WORLD_CONSTANTS.TARGET_Y * currentScale)
   }
 
-  let resizeObserver: ResizeObserver | null = null
   let onToggleGuides: () => void
   let onToggleZoom: () => void
 
-  onMounted(() => {
-    resizeObserver = new ResizeObserver((entries) => {
-      requestAnimationFrame(() => {
-        if (!resizeObserver) return // Safety check if unmounted
-        for (const entry of entries) {
-          const { width, height } = entry.contentRect
-          vpWidth.value = width
-          vpHeight.value = height
-          updateCamera(width, height)
-        }
-      })
+  useResizeObserver(viewportRef, (entries) => {
+    requestAnimationFrame(() => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect
+        vpWidth.value = width
+        vpHeight.value = height
+        updateCamera(width, height)
+      }
     })
+  })
 
+  onMounted(() => {
     if (viewportRef.value) {
-      resizeObserver.observe(viewportRef.value)
       // Evitamos getBoundingClientRect() para prevenir Forced Reflows.
       // Usamos clientWidth/clientHeight como inicialización estática no-bloqueante.
       const w = viewportRef.value.clientWidth || 1000
@@ -125,7 +123,6 @@ export function useCombatCamera(viewportRef: Ref<HTMLElement | null>) {
   })
 
   onUnmounted(() => {
-    if (resizeObserver) resizeObserver.disconnect()
     if (onToggleGuides) gameBus.off('TOGGLE_CAMERA_GUIDES', onToggleGuides)
     if (onToggleZoom) gameBus.off('TOGGLE_DEBUG_ZOOM', onToggleZoom)
   })

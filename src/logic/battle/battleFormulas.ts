@@ -41,6 +41,9 @@ export interface CatchOptions {
   isCave?: boolean;
   pokedexCount?: number;
   forceCritical?: boolean;
+  playerClass?: string | null;
+  activeTeam?: { type1: string; type2?: string | null }[];
+  ivTotal?: number;
 }
 
 export interface EscapeOptions {
@@ -206,7 +209,10 @@ export function calculateCatchRate(pokemon: Pokemon, rawBallType: ItemId = 'poke
       cycle: ctx.cycle || getDayCycle(),
       isCave: ctx.isCave,
       pokedexCount: ctx.pokedexCount,
-      forceCritical: ctx.forceCritical
+      forceCritical: ctx.forceCritical,
+      playerClass: ctx.playerClass,
+      activeTeam: ctx.activeTeam,
+      ivTotal: ctx.ivTotal
     }
   );
 }

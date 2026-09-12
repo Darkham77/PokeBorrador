@@ -146,7 +146,7 @@ export function useRouteSpawnsFishing(props: RouteSpawnsProps) {
     const weather = props.weather || 'clear'
     const isRainy = (['rain', 'heavy_rain', 'storm', 'thunderstorm'] as const).includes((weather as string).toLowerCase() as never) // text-ok: UI text display localization string
     if (isRainy) {
-      lines.push(`• Clima (Lluvia): x1.20 a la tasa de pesca general`) // no-magic: Explicit mathematical constant or threshold value
+      lines.push(`• Clima (Lluvia): x1.20 a la tasa de pesca general`)
     }
     lines.push(...getSpawnCommonTooltipLines(poke, props.weather))
     const eventFishingBonus = eventStore.globalMultipliers?.fishing || 1

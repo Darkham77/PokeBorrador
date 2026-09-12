@@ -3,13 +3,8 @@ import { computed, watch } from 'vue'
 import { useGameStore } from '@/stores/game.ts'
 import { useUIStore } from '@/stores/ui.ts'
 import { 
-  PLAYER_CLASSES, 
-  CLASS_MISSIONS_BY_ID, 
-  requirePlayerClassId, 
-  isMissionId,
-  type PlayerClassId,
-  type MissionId,
-  type PlayerClassDefinition
+  PLAYER_CLASSES, CLASS_MISSIONS_BY_ID, requirePlayerClassId, isMissionId,
+  type PlayerClassId, type MissionId, type PlayerClassDefinition
 } from '@/data/player/playerClasses'
 import { supabase } from '@/logic/db/supabase'
 import { useInventoryStore } from '@/stores/inventory/inventory'
@@ -21,52 +16,17 @@ import { requireFactionId, type FactionId } from '@/types/system/game'
 import { ONE_HOUR_MS } from '@/logic/constants/items.ts'
 import { FACTION_CHANGE_COST } from '@/logic/war/warEngine.ts'
 import { MAX_SINGLE_STAT_IV, MAX_POKEMON_VIGOR } from '@/logic/constants/gameplay.ts'
-import { POKEMON_STAT_KEYS } from '@/types/pokemon/pokemon.ts'
-
+import {
+  getDeploymentCost,
+  resolveDeploymentRewards,
+  calculateCazabichosStreak,
+  getInitialProjectedRewards
+} from '@/logic/player/classDeploymentEngine'
 
 import { AVATAR_STYLES_BY_ID, isAvatarStyleId } from '@/data/player/cosmeticsData'
-import type { MapRouteId } from '@/data/world/map-assets'
-import type { NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
+import type { ActiveMission, PlayerClassState } from '@/types/system/game.ts'
 
-interface ActiveMission {
-  id: string
-  startedAt: number
-  endsAt: number
-  targetPokemonIdx?: number
-  projectedReward?: number
-  [key: string]: unknown
-}
-
-export interface ClassDefinition {
-  id: PlayerClassId
-  name: string
-  icon: string
-  color: string
-  colorDark: string
-  description: string
-  bonuses?: readonly string[]
-  bonusLevels?: readonly number[]
-  penalties?: readonly string[]
-  technicalBonuses?: readonly string[]
-  technicalPenalties?: readonly string[]
-  showdownSpriteId?: NpcSpriteId
-  avatarSpriteId?: NpcSpriteId
-}
-
-interface ClassData {
-  captureStreak?: number
-  longestStreak?: number
-  reputation?: number
-  blackMarketSales?: number
-  criminality?: number
-  activeMission?: ActiveMission | null
-  blackMarketDaily?: { date: string, items: unknown[], purchased: unknown[] }
-  extortedRouteId?: MapRouteId | null
-  extortedRouteTimestamp?: string | null
-  lastEggScanDate?: string | null
-  officialRouteId?: MapRouteId | null
-  kitCaptures?: number
-}
+const CAZABICHOS_CAPTURE_CLASS_XP = 10;
 
 
 
@@ -81,14 +41,14 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   const classLevel = computed(() => gameStore.state.classLevel || 1)
   const classXP = computed(() => gameStore.state.classXP || 0)
   const classXPNeeded = computed(() => getXPNeededForClassLevel(classLevel.value))
-  const classData = computed<ClassData>(() => (gameStore.state.classData as ClassData) || {}) // domain-ok: Open dynamic text or non-domain string payload
+  const classData = computed<PlayerClassState>(() => gameStore.state.classData)
   
   const currentClassDef = computed<PlayerClassDefinition | null>(() => {
     if (!playerClass.value) return null
     return (PLAYER_CLASSES[playerClass.value as keyof typeof PLAYER_CLASSES] as PlayerClassDefinition) || null // domain-ok: Open dynamic text or non-domain string payload
   })
 
-  const activeMission = computed(() => classData.value.activeMission || null)
+  const activeMission = computed<ActiveMission | null>(() => classData.value.activeMission || null)
   const isMissionDone = computed(() => {
     if (!activeMission.value) return false
     return Temporal.Now.instant().epochMilliseconds >= activeMission.value.endsAt
@@ -243,7 +203,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
    */
   function addCriminality(amount: number) {
     if (playerClass.value !== 'rocket' || amount <= 0) return
-    const currentData = gameStore.state.classData as ClassData
+    const currentData = gameStore.state.classData
     const prev = currentData.criminality || 0
     currentData.criminality = prev + amount
     
@@ -253,12 +213,30 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   }
 
   /**
-   * Inicia una misión idle con validación de tiempo del servidor.
+   * Inicia una misión idle con validación de tiempo del servidor y descuento de costos.
    */
   async function startMission(missionId: MissionId, extraData: Record<string, unknown> = {}) {
     if (!isMissionId(missionId)) return
     const m = CLASS_MISSIONS_BY_ID[missionId]
     if (!m) return
+    const cls = playerClass.value
+    if (!cls) return
+
+    // Validar costos de despliegue
+    const cost = getDeploymentCost(cls, missionId)
+    if (cost.type === 'money') {
+      if ((gameStore.state.money || 0) < cost.amount) {
+        uiStore.notify(`Necesitas ₽${cost.amount.toLocaleString()} para esta misión.`, '💸')
+        return
+      }
+      gameStore.state.money -= cost.amount
+    } else if (cost.type === 'battleCoins') {
+      if ((gameStore.state.battleCoins || 0) < cost.amount) {
+        uiStore.notify(`Necesitas ${cost.amount} Battle Coins para esta misión.`, '💸')
+        return
+      }
+      gameStore.state.battleCoins -= cost.amount
+    }
 
     // Marcar pokemon como ocupado
     const targetUid = extraData.targetPokemonUid as string | undefined
@@ -294,10 +272,14 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
       // Re-resolve index in box for compatibility
       extraData.targetPokemonIdx = gameStore.state.box.findIndex((bp: Pokemon | null) => bp && bp.uid === p.uid)
       p.onMission = true
+
     }
 
+    const initialRewards = getInitialProjectedRewards(cls, missionId, p)
+    Object.assign(extraData, initialRewards)
+
     const now = await db.getServerTime()
-    const currentData = gameStore.state.classData as ClassData // domain-ok: Open dynamic text or non-domain string payload
+    const currentData = gameStore.state.classData
 
     currentData.activeMission = {
       id: missionId,
@@ -311,7 +293,7 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
   }
 
   /**
-   * Finaliza y cobra una misión. (Implementación de Phase 21).
+   * Finaliza y cobra una misión.
    */
   async function collectMission(options: { autoSave?: boolean; silent?: boolean } = {}) {
     const autoSave = options.autoSave ?? true
@@ -323,10 +305,11 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     const now = await db.getServerTime()
     if ((now as number) < mission.endsAt) {
       if (!silent) uiStore.notify('La misión aún no ha terminado.', '⏳')
-      return;
+      return
     }
 
     const cls = playerClass.value
+    if (!cls) return
     let msg = 'Misión completada. '
 
     // Buscar Pokémon por UID o índice
@@ -339,69 +322,116 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     } else if (targetIdx !== undefined) {
       p = gameStore.state.box[targetIdx] || null
     }
-    
-    if (cls === 'rocket') {
-      // Recompensa en dinero (el Pokémon ya no está)
-      const reward = mission.projectedReward || 0
-      gameStore.state.battleCoins = (gameStore.state.battleCoins || 0) + reward
-      msg += `¡Recibiste ₽${reward.toLocaleString()}! 🚀`
-      
-      // Eliminar el Pokémon de la caja (sacrificio)
-      if (p) {
-        if (p.heldItem) {
-          const invStore = useInventoryStore()
-          invStore.addItem(p.heldItem, 1)
-        }
-        p.onMission = false
-        gameStore.removePokemon(p.uid)
+
+    const badgeCount = Array.isArray(gameStore.state.badges) 
+      ? gameStore.state.badges.length 
+      : Number(gameStore.state.badges || 0)
+
+    if (!isMissionId(mission.id)) return
+
+    const res = resolveDeploymentRewards(cls, mission.id, p, {
+      projectedReward: mission.projectedReward,
+      badgeCount
+    })
+
+    const invStore = useInventoryStore()
+
+    if (res.money > 0) {
+      gameStore.state.money = (gameStore.state.money || 0) + res.money
+      msg += `+₽${res.money.toLocaleString()} `
+    }
+    if (res.battleCoins > 0) {
+      gameStore.state.battleCoins = (gameStore.state.battleCoins || 0) + res.battleCoins
+      msg += `+${res.battleCoins} BC `
+    }
+    for (const item of res.items) {
+      invStore.addItem(item.id, item.qty)
+    }
+    if (res.classXP > 0) {
+      addXP(res.classXP)
+    }
+    if (res.criminality > 0) {
+      addCriminality(res.criminality)
+    }
+
+    if (res.shouldSacrifice && p) {
+      if (p.heldItem) {
+        invStore.addItem(p.heldItem, 1)
       }
-    } else if (cls === 'cazabichos') {
-      // Aquí iría la lógica de generar encuentros salvajes bicho o recompensas de IVs
-      msg += '¡Nuevos Pokémon Bicho avistados!'
-    } else if (cls === 'entrenador') {
-      // Recompensa en EXP para el Pokémon enviado
-      if (p) {
-        p.onMission = false;
-        if (p.level >= MAX_POKEMON_LEVEL) {
-          p.exp = 0;
-          p.expNeeded = 0;
-          msg += `¡${p.name} ya está en su nivel máximo! 🏅`
-        } else {
-          const TRAINER_EXP_BLOCK_MS = 6 * ONE_HOUR_MS
-          const blocks = (mission.endsAt - mission.startedAt) / TRAINER_EXP_BLOCK_MS // bloques de 6h
-          const expGain = (25000 + (p.level || 1) * 1000) * blocks;
-          p.exp = (p.exp || 0) + expGain;
-          msg += `¡${p.name} ganó ${expGain.toLocaleString()} EXP! 🏅`
+      p.onMission = false
+      gameStore.removePokemon(p.uid)
+      gameStore.state.classData.blackMarketSales = (gameStore.state.classData.blackMarketSales || 0) + 1
+    } else if (res.generatedPokemon.length > 0) {
+      for (const gp of res.generatedPokemon) {
+        gameStore.state.box.push(gp)
+      }
+      msg += `+${res.generatedPokemon.length} Pokémon Bicho `
+    } else if (p) {
+      p.onMission = false
+      if ((res.expGained > 0 || res.bonusLevels > 0) && p.level < MAX_POKEMON_LEVEL) {
+        if (res.expGained > 0) {
+          p.exp = (p.exp || 0) + res.expGained
           gameStore.checkLevelUp(p)
         }
-      }
-    } else if (cls === 'criador') {
-      // Recompensa en IVs aleatorios a cambio de Vigor
-      if (p) {
-        const stat = POKEMON_STAT_KEYS[Math.floor(Math.random() * POKEMON_STAT_KEYS.length)];
-        if (stat) {
-          const gain = Math.floor(Math.random() * 3) + 1;
-          if (!p.ivs) p.ivs = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
-          const curVal = p.ivs[stat] || 0;
-          p.ivs[stat] = Math.min(MAX_SINGLE_STAT_IV, curVal + gain);
-          p.vigor = Math.max(0, (p.vigor || MAX_POKEMON_VIGOR) - 5);
-          p.onMission = false;
-          msg += `¡${p.name} mejoró su ${String(stat).toUpperCase()} (+${gain})! 🧬`
+        for (let i = 0; i < res.bonusLevels; i++) {
+          if (p.level < MAX_POKEMON_LEVEL) {
+            p.exp = p.expNeeded
+            gameStore.checkLevelUp(p)
+          }
         }
+        msg += `¡${p.name} ganó EXP! `
+      }
+      if (res.ivIncrements.length > 0) {
+        p.ivs = p.ivs || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }
+        for (const stat of res.ivIncrements) {
+          p.ivs[stat] = Math.min(MAX_SINGLE_STAT_IV, (p.ivs[stat] || 0) + 1)
+        }
+        p.vigor = Math.max(0, (p.vigor ?? MAX_POKEMON_VIGOR) - res.vigorConsumed)
+        msg += `¡${p.name} mejoró su genética! `
       }
     } else {
-      // Liberar al Pokémon que estaba en misión
-      if (p) p.onMission = false
       msg += 'Tus Pokémon han regresado con éxito.'
     }
 
-    const currentData = gameStore.state.classData as ClassData
+    const currentData = gameStore.state.classData
     currentData.activeMission = null
     if (!silent) {
-      uiStore.notify(msg, '🎁')
+      uiStore.notify(msg.trim(), '🎁')
     }
     if (autoSave) {
       await gameStore.save()
+    }
+  }
+
+  function onCaptureSuccess() {
+    if (playerClass.value !== 'cazabichos') return
+    const currentData = gameStore.state.classData
+    const res = calculateCazabichosStreak(
+      currentData.captureStreak || 0,
+      true,
+      currentData.kitCaptures || 0,
+      classLevel.value
+    )
+    currentData.captureStreak = res.streak
+    if (res.streak > (currentData.longestStreak || 0)) {
+      currentData.longestStreak = res.streak
+    }
+    currentData.kitCaptures = res.kitCaptures
+    if (res.awardedPokeballs > 0) {
+      const invStore = useInventoryStore()
+      invStore.addItem('pokeball', res.awardedPokeballs)
+      uiStore.notify('¡Kit de Campo! Recibiste 1 Poké Ball 🎒', '🎒')
+    }
+    addXP(CAZABICHOS_CAPTURE_CLASS_XP)
+    uiStore.notify(`¡Racha de Capturas x${res.streak}!`, '⚡')
+  }
+
+  function onCaptureFail() {
+    if (playerClass.value !== 'cazabichos') return
+    const currentData = gameStore.state.classData
+    if ((currentData.captureStreak || 0) > 0) {
+      currentData.captureStreak = 0
+      uiStore.notify('Racha de capturas perdida.', '💔')
     }
   }
 
@@ -420,6 +450,8 @@ export const usePlayerClassStore = defineStore('playerClass', () => {
     addCriminality,
     startMission,
     collectMission,
+    onCaptureSuccess,
+    onCaptureFail,
     setFaction,
     syncTheme
   }

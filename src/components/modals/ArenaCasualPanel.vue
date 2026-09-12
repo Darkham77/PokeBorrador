@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useClipboard } from '@vueuse/core';
 import { useLivePvPStore } from '@/stores/livePvP';
 import { useUIStore } from '@/stores/ui';
 import { formatRoomCode, isValidRoomCode } from '@/logic/pvp/pvpRoomCodeHelper';
@@ -7,6 +8,7 @@ import type { PvpMatchFormat, PvpLevelRule, PvpRoomCode } from '@/types/battle/p
 
 const livePvP = useLivePvPStore();
 const ui = useUIStore();
+const { copy } = useClipboard();
 
 const selectedFormat = ref<PvpMatchFormat>('3v3');
 const selectedLevelRule = ref<PvpLevelRule>('flat50');
@@ -54,9 +56,9 @@ async function handleJoinRoom() {
   }
 }
 
-function copyRoomCode() {
+async function copyRoomCode() {
   if (livePvP.activeRoomCode) {
-    navigator.clipboard.writeText(livePvP.activeRoomCode);
+    await copy(livePvP.activeRoomCode);
     ui.notify('¡Código copiado al portapapeles!', '📋');
   }
 }

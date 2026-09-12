@@ -1,18 +1,41 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { gsap } from 'gsap'
 import { useBuffsStore, type ActiveBuffItem } from '@/stores/battle/buffs'
 import { useModalStore } from '@/stores/modals'
 import { useUIStore } from '@/stores/ui'
+import { usePlayerClassStore } from '@/stores/player/playerClass'
+import { CLASS_MISSIONS_BY_ID, isMissionId } from '@/data/player/playerClasses'
+import { getClassMissionDetails } from '@/logic/player/classMissionsData'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 const buffsStore = useBuffsStore()
 const modalStore = useModalStore()
 const uiStore = useUIStore()
+const classStore = usePlayerClassStore()
 
-const isVisible = computed(() => uiStore.activeTab === 'map' || uiStore.activeTab === 'home')
+const isVisible = computed(() => 
+  uiStore.activeTab === 'map' || 
+  uiStore.activeTab === 'home' || 
+  uiStore.activeTab === 'gyms'
+)
+
+const now = ref(Temporal.Now.instant().epochMilliseconds)
+let classMissionTicker: gsap.core.Tween | null = null
 
 onMounted(() => {
   buffsStore.initTick()
+  const tickNow = () => {
+    now.value = Temporal.Now.instant().epochMilliseconds
+    classMissionTicker = gsap.delayedCall(1, tickNow)
+  }
+  classMissionTicker = gsap.delayedCall(1, tickNow)
+})
+
+onUnmounted(() => {
+  if (classMissionTicker) {
+    classMissionTicker.kill()
+  }
 })
 
 const formatTime = (secs: number) => {
@@ -27,6 +50,30 @@ const formatTime = (secs: number) => {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
+const classMissionBadge = computed(() => {
+  const m = classStore.activeMission
+  if (!m || !isMissionId(m.id)) return null
+  const def = CLASS_MISSIONS_BY_ID[m.id]
+  const clsDef = classStore.currentClassDef
+  const remainingSecs = Math.max(0, Math.floor((m.endsAt - now.value) / 1000))
+  const isDone = remainingSecs <= 0
+
+  const playerClass = classStore.playerClass || 'rocket'
+  const details = getClassMissionDetails(playerClass, m.id)
+
+  return {
+    icon: clsDef?.icon || '📋',
+    name: def?.name || 'Misión de Clase',
+    color: clsDef?.color || 'var(--yellow, #ffd93d)',
+    title: `${clsDef?.icon || ''} ${clsDef?.name || 'Clase'} · ${def?.name || 'Operación'}`,
+    desc: isDone 
+      ? '¡Operación finalizada! Haz clic para cobrar el botín.' 
+      : details.rulesText,
+    timeText: isDone ? '¡LISTO!' : formatTime(remainingSecs),
+    isDone
+  }
+})
+
 const handleImgError = (e: Event) => {
   (e.target as HTMLImageElement).style.display = 'none'
 }
@@ -35,6 +82,10 @@ const handleBadgeClick = (buff: ActiveBuffItem) => {
   if (buff.isEvent && buff.event) {
     modalStore.open('EventDetail', { event: buff.event })
   }
+}
+
+const handleClassMissionClick = () => {
+  modalStore.open('EventMissions')
 }
 </script>
 
@@ -48,6 +99,34 @@ const handleBadgeClick = (buff: ActiveBuffItem) => {
       tag="div"
       class="buffs-list"
     >
+      <!-- Class Mission Deployment Badge -->
+      <PVTooltip
+        v-if="classMissionBadge"
+        :key="'class-mission-badge'"
+        :title="classMissionBadge.title"
+        :description="classMissionBadge.desc"
+      >
+        <div
+          id="buff-badge-class-mission"
+          class="buff-badge is-class-mission-badge"
+          :style="{ borderColor: classMissionBadge.color }"
+          @click.stop="handleClassMissionClick"
+        >
+          <div class="buff-icon-slot">
+            <span class="buff-emoji">{{ classMissionBadge.icon }}</span>
+          </div>
+          <div class="buff-info">
+            <span
+              class="buff-time"
+              :class="{ 'is-done-text': classMissionBadge.isDone }"
+              :style="{ color: classMissionBadge.isDone ? 'var(--green, #22c55e)' : classMissionBadge.color }"
+            >
+              {{ classMissionBadge.timeText }}
+            </span>
+          </div>
+        </div>
+      </PVTooltip>
+
       <PVTooltip 
         v-for="buff in buffsStore.activeBuffs" 
         :key="buff.id" 
@@ -129,6 +208,20 @@ const handleBadgeClick = (buff: ActiveBuffItem) => {
       border-color: #ffe066;
       box-shadow: 0 0 8px Rgba(255, 217, 61, 0.5);
       transform: Translatex(4px);
+    }
+  }
+
+  &.is-class-mission-badge {
+    cursor: pointer;
+
+    &:hover {
+      box-shadow: 0 0 10px Rgba(255, 255, 255, 0.4);
+      transform: Translatex(4px);
+    }
+
+    .is-done-text {
+      color: var(--green, #22c55e);
+      font-weight: 800;
     }
   }
 }

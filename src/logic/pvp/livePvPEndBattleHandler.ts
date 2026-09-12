@@ -103,7 +103,7 @@ export async function executeEndBattle(
 
   if (ctx.gameStore.state) {
     ctx.gameStore.state.activeBattle = null;
-    ctx.gameStore.save(false);
+    await ctx.gameStore.save(false);
   }
 
   clearActivePvPSession();

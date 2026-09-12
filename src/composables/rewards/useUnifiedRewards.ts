@@ -152,7 +152,7 @@ export function useUnifiedRewards() {
       items.push({
         id: `class-mission-${m.id}`,
         source: 'class_mission',
-        title: `Botín: ${missionDef?.name || m.title || m.name || 'Misión de Clase'}`,
+        title: `Botín: ${missionDef?.name || 'Misión de Clase'}`,
         subtitle: 'Operación Finalizada',
         categoryBadge: { icon: '⚡', name: 'Misión de Clase' },
         isClaimable: true,

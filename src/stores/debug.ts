@@ -77,6 +77,7 @@ export const useDebugStore = defineStore('debug', () => {
   const forceRival = ref(false)
   const forceGuardian80 = ref(false)
   const forceShiny100 = ref(false)
+  const fastRankedDelay = ref(false)
 
   // Configurable Spawn & Minigames Rates (null = default game calculation)
   const forceEncounterType = ref<'none' | 'wild' | 'trainer' | 'rival' | 'fishing' | 'archaeology'>('none')
@@ -123,41 +124,45 @@ export const useDebugStore = defineStore('debug', () => {
   }
 
   function updateGlobalProxy() {
-    if (typeof window === 'undefined') return
+    const globalTarget = typeof window !== 'undefined'
+      ? window
+      : (typeof globalThis !== 'undefined' ? globalThis : undefined)
+    if (!globalTarget) return
     if (!canAccess.value) {
-      delete window.__VITE_DEBUG__
+      delete globalTarget.__VITE_DEBUG__
       return
     }
     // Preserve existing sub-objects (e.g. .battle from setupBattleDebug).
     // Only add/update the flat tool commands without wiping the whole object.
-    if (!window.__VITE_DEBUG__) window.__VITE_DEBUG__ = {}
+    if (!globalTarget.__VITE_DEBUG__) globalTarget.__VITE_DEBUG__ = {}
 
     // Bind reactive state directly to the window object so static logic can access them
-    if (window.__VITE_DEBUG__) {
-      Reflect.set(window.__VITE_DEBUG__, 'trainerChance50', trainerChance50.value || trainerChancePct.value === 50)
-      Reflect.set(window.__VITE_DEBUG__, 'forceRival', forceRival.value || rivalChancePct.value === 100)
-      Reflect.set(window.__VITE_DEBUG__, 'forceGuardian80', forceGuardian80.value || guardianChancePct.value === 80)
-      Reflect.set(window.__VITE_DEBUG__, 'forceShiny100', forceShiny100.value || shinyRateOverride.value === 1)
-      Reflect.set(window.__VITE_DEBUG__, 'shinyRateOverride', shinyRateOverride.value)
-      Reflect.set(window.__VITE_DEBUG__, 'trainerChancePct', trainerChancePct.value)
-      Reflect.set(window.__VITE_DEBUG__, 'rivalChancePct', rivalChancePct.value)
-      Reflect.set(window.__VITE_DEBUG__, 'guardianChancePct', guardianChancePct.value)
-      Reflect.set(window.__VITE_DEBUG__, 'defenderChancePct', defenderChancePct.value)
-      Reflect.set(window.__VITE_DEBUG__, 'fishingChancePct', fishingChancePct.value)
-      Reflect.set(window.__VITE_DEBUG__, 'archaeologyChancePct', archaeologyChancePct.value)
-      Reflect.set(window.__VITE_DEBUG__, 'forceEncounterType', forceEncounterType.value === 'none' ? undefined : forceEncounterType.value)
-      Reflect.set(window.__VITE_DEBUG__, 'multipliers', debugMultipliers.value)
+    if (globalTarget.__VITE_DEBUG__) {
+      Reflect.set(globalTarget.__VITE_DEBUG__, 'trainerChance50', trainerChance50.value || trainerChancePct.value === 50)
+      Reflect.set(globalTarget.__VITE_DEBUG__, 'forceRival', forceRival.value || rivalChancePct.value === 100)
+      Reflect.set(globalTarget.__VITE_DEBUG__, 'forceGuardian80', forceGuardian80.value || guardianChancePct.value === 80)
+      Reflect.set(globalTarget.__VITE_DEBUG__, 'forceShiny100', forceShiny100.value || shinyRateOverride.value === 1)
+      Reflect.set(globalTarget.__VITE_DEBUG__, 'shinyRateOverride', shinyRateOverride.value)
+      Reflect.set(globalTarget.__VITE_DEBUG__, 'trainerChancePct', trainerChancePct.value)
+      Reflect.set(globalTarget.__VITE_DEBUG__, 'rivalChancePct', rivalChancePct.value)
+      Reflect.set(globalTarget.__VITE_DEBUG__, 'guardianChancePct', guardianChancePct.value)
+      Reflect.set(globalTarget.__VITE_DEBUG__, 'defenderChancePct', defenderChancePct.value)
+      Reflect.set(globalTarget.__VITE_DEBUG__, 'fishingChancePct', fishingChancePct.value)
+      Reflect.set(globalTarget.__VITE_DEBUG__, 'archaeologyChancePct', archaeologyChancePct.value)
+      Reflect.set(globalTarget.__VITE_DEBUG__, 'forceEncounterType', forceEncounterType.value === 'none' ? undefined : forceEncounterType.value)
+      Reflect.set(globalTarget.__VITE_DEBUG__, 'fastRankedDelay', fastRankedDelay.value)
+      Reflect.set(globalTarget.__VITE_DEBUG__, 'multipliers', debugMultipliers.value)
     }
 
     // Exponer stores y utilidades de depuración requeridas por las simulaciones E2E
-    Reflect.set(window.__VITE_DEBUG__, 'useBattleStore', useBattleStore)
-    Reflect.set(window.__VITE_DEBUG__, 'useGameStore', useGameStore)
-    Reflect.set(window.__VITE_DEBUG__, 'useMapStore', useMapStore)
-    Reflect.set(window.__VITE_DEBUG__, 'testResetShowdownWorker', testResetShowdownWorker)
-    Reflect.set(window.__VITE_DEBUG__, 'pokemonDebugService', pokemonDebugService)
+    Reflect.set(globalTarget.__VITE_DEBUG__, 'useBattleStore', useBattleStore)
+    Reflect.set(globalTarget.__VITE_DEBUG__, 'useGameStore', useGameStore)
+    Reflect.set(globalTarget.__VITE_DEBUG__, 'useMapStore', useMapStore)
+    Reflect.set(globalTarget.__VITE_DEBUG__, 'testResetShowdownWorker', testResetShowdownWorker)
+    Reflect.set(globalTarget.__VITE_DEBUG__, 'pokemonDebugService', pokemonDebugService)
 
     tools.value.forEach(tool => {
-      window.__VITE_DEBUG__![tool.command] = (...args: unknown[]) => {
+      globalTarget.__VITE_DEBUG__![tool.command] = (...args: unknown[]) => {
         if (securityCheck()) {
           const fn = tool.action as (...a: unknown[]) => unknown
           return fn(...args)
@@ -188,6 +193,7 @@ export const useDebugStore = defineStore('debug', () => {
     forceRival,
     forceGuardian80,
     forceShiny100,
+    fastRankedDelay,
     forceEncounterType,
     shinyRateOverride,
     trainerChancePct,
@@ -198,7 +204,7 @@ export const useDebugStore = defineStore('debug', () => {
     archaeologyChancePct
   ], () => {
     updateGlobalProxy()
-  }, { deep: true })
+  }, { deep: true, flush: 'sync' })
 
   watch(canAccess, () => updateGlobalProxy())
 
@@ -216,6 +222,7 @@ export const useDebugStore = defineStore('debug', () => {
     forceRival,
     forceGuardian80,
     forceShiny100,
+    fastRankedDelay,
     forceEncounterType,
     shinyRateOverride,
     trainerChancePct,

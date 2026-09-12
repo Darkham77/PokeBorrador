@@ -178,7 +178,7 @@ export async function executeTurnInWorker(
   p1Skip?: boolean,
   p2Skip?: boolean,
   p1UsedBattleItem?: boolean
-): Promise<{ logs: string[]; isOver: boolean; winner: string | null; p1ForceSwitch?: boolean; p2ForceSwitch?: boolean; p1Request?: ShowdownPlayerRequest; p2Request?: ShowdownPlayerRequest }> {
+): Promise<{ logs: string[]; isOver: boolean; winner: string | null; winnerSide?: 'p1' | 'p2' | null; p1ForceSwitch?: boolean; p2ForceSwitch?: boolean; p1Request?: ShowdownPlayerRequest; p2Request?: ShowdownPlayerRequest }> {
   const worker = getShowdownWorker();
   if (!worker) {
     throw new Error('showdownWorker is null')
@@ -350,7 +350,6 @@ export async function executeTurnInWorker(
               lastSyncTeamStates[seatId] = seatState;
             }
           });
-          await syncTeamsFromLastWorkerState();
         } catch (error: unknown) {
           reject(new Error(`[ShowdownWorkerClient] Worker turn succeeded but client synchronization failed. context=${replayContext}; cause=${error instanceof Error ? error.message : String(error)}`))
           return

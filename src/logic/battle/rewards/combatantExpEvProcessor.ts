@@ -24,7 +24,7 @@ export async function processCombatantExpAndEvs(
   params: ExpEvDistributorParams
 ) {
   const active = ctx.activeBattle.value;
-  if (!active) return;
+  if (!active || active.isPvP) return;
 
   const { combatants, participantsSet, classMult, totalExpMult, totalExpMultWithoutEvent, eventExpMultiplier } = params;
   const expGainedMap = new Map<string, number>();

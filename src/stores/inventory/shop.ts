@@ -9,8 +9,25 @@ import { getItemById, SHOP_ITEMS, BC_SHOP_ITEMS, type ItemId } from '@/data/inve
 import { PLAYER_CLASSES } from '@/data/player/playerClasses'
 import { calculateTotalHealCost } from '@/logic/economy/economyFormulas'
 import { MAX_ITEM_PURCHASE_QTY, ROCKET_SHOP_PRICE_PENALTY_MULTIPLIER, GREAT_BALL_INVENTORY_COUNT_MULT, ULTRA_BALL_INVENTORY_COUNT_MULT, DEFAULT_MOVE_PP } from '@/logic/constants/gameplay.ts'
+import { hashString, mulberry32 } from '@/logic/utils/math'
+import { getGMT3Date } from '@/logic/utils/timeUtils'
 
 import { clearVolatileStatus } from '@/logic/battle/battleStatus'
+
+export function getDeterministicDailyBlackMarketItemIds(dateStr: string): ItemId[] {
+  const seed = hashString(`rocket_black_market_${dateStr}`)
+  const prng = mulberry32(seed)
+  prng(); prng(); prng()
+
+  const items = [...BC_SHOP_ITEMS]
+  for (let i = items.length - 1; i > 0; i--) {
+    const j = Math.floor(prng() * (i + 1))
+    const temp = items[i]
+    items[i] = items[j]!
+    items[j] = temp!
+  }
+  return items.slice(0, 3).map(i => i.id)
+}
 
 export const useShopStore = defineStore('shop', () => {
   const gameStore = useGameStore()
@@ -182,6 +199,7 @@ export const useShopStore = defineStore('shop', () => {
     return true
   }
 
+
   // ── BLACK MARKET (TEAM ROCKET) ─────────────────────────────────────────────
 
   function getBlackMarketItems() {
@@ -201,19 +219,16 @@ export const useShopStore = defineStore('shop', () => {
       gameStore.state.classData.blackMarketDaily = { date: '', items: [], purchased: [] }
     }
 
-    const today = Temporal.Now.instant().toString().split('T')[0] || ''
+    const today = getGMT3Date().toPlainDate().toString()
     const daily = gameStore.state.classData.blackMarketDaily
 
     if (daily.date !== today) {
-      const possibleItems = BC_SHOP_ITEMS
-      const shuffled = [...possibleItems].sort(() => 0.5 - Math.random())
-      const bmd = gameStore.state.classData?.blackMarketDaily
-      if (bmd) {
-        bmd.items = shuffled.slice(0, 3).map(i => i.id)
-        bmd.date = today
-        bmd.purchased = []
-      }
+      daily.items = getDeterministicDailyBlackMarketItemIds(today)
+      daily.date = today
+      daily.purchased = []
       gameStore.scheduleSave()
+    } else if (!daily.items || daily.items.length === 0) {
+      daily.items = getDeterministicDailyBlackMarketItemIds(today)
     }
     
     return daily.items.map((id: string) => getItemById(id)).filter(Boolean)

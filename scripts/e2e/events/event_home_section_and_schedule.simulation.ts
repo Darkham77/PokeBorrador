@@ -33,13 +33,13 @@ export class EventHomeSectionSimulation extends BaseEventSimulation {
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
 
       const gameStore = useGameStore();
-      gameStore.state.money = 1000; // no-magic: Test seed balance
-      gameStore.state.battleCoins = 10; // no-magic: Test seed balance
+      gameStore.state.money = 1000;
+      gameStore.state.battleCoins = 10;
       gameStore.state.starterChosen = true;
 
       const pikachu = pokemonDebugService.generate({
         id: requirePokemonSpeciesId('pikachu'),
-        level: 15 // no-magic: Test seed level
+        level: 15
       });
       pikachu.uid = 'sim-home-pikachu';
 

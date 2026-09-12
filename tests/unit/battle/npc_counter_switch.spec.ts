@@ -106,7 +106,7 @@ describe('NPC Counter Switching & Showdown Sync', () => {
     await processFaint(mockCtx, 'enemy')
 
     // 1. Should have run the AI picker to choose the best switch index
-    expect(mockFindBestSwitchIndex).toHaveBeenCalledWith(enemyTeam, player, faintedEnemy.uid, expect.anything())
+    expect(mockFindBestSwitchIndex).toHaveBeenCalledWith(enemyTeam, player, faintedEnemy.uid, expect.anything(), 'faint_replacement')
 
     // 2. Should have selected index 1 (Alakazam) as the next enemy
     expect(activeBattle.value.enemy?.uid).toBe(nextEnemy2.uid)

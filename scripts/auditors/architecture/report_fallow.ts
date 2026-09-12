@@ -10,7 +10,7 @@ function parseCommandLineArgs() {
   const { values, positionals } = parseArgs({
     options: {
       category: { type: 'string' },
-      top: { type: 'string', default: '20' }, // no-magic: Explicit mathematical constant or threshold value
+      top: { type: 'string', default: '20' },
       json: { type: 'boolean', default: false }
     },
     strict: false,
@@ -25,7 +25,7 @@ function parseCommandLineArgs() {
     if (pos.startsWith('category=')) {
       category = pos.split('=')[1]?.toLowerCase() || ''; // domain-ok: Open dynamic text or non-domain string payload
     } else if (pos.startsWith('top=')) {
-      top = parseInt(pos.split('=')[1] || '20', RADIX_DECIMAL); // no-magic: Explicit mathematical constant or threshold value
+      top = parseInt(pos.split('=')[1] || '20', RADIX_DECIMAL);
     } else if (pos === 'json') {
       jsonOutput = true;
     } else if (!category) {

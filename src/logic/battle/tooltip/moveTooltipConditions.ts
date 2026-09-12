@@ -18,7 +18,7 @@ const TOOLTIP_STAGE_STAT_NAMES = {
   all: 'Todos los Stats',
 } as const satisfies Record<TooltipStageStatId, TooltipStageStatName>;
 
-const TOOLTIP_CONDITION_DETAILS = { // no-magic: Explicit mathematical constant or threshold value
+const TOOLTIP_CONDITION_DETAILS = {
   psn: {
     label: 'Envenenamiento',
     effect: 'Estado Alterado (PSN)',

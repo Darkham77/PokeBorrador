@@ -12,6 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import postgres from 'postgres';
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
+import { CLIENT_DB_VERSION } from '../../../src/logic/db/migrations_version.ts';
 import { splitSQLStatements } from '../../../src/logic/db/sqlTranslator.ts';
 import { requireAbilityId } from '../../../src/data/battle/abilities.ts';
 import { toNatureId } from '../../../src/data/battle/natures.ts';
@@ -290,7 +291,7 @@ describe('Exhaustive Multi-Engine & Multi-Table Data Migration Suite (2026090901
 
     // 7. SYSTEM_CONFIG DB_VERSION
     const configRow = db.prepare('SELECT value FROM system_config WHERE key = ?').get('db_version') as { value: string };
-    expect(configRow.value).toBe('20260909010000');
+    expect(configRow.value).toBe(CLIENT_DB_VERSION.toString());
   });
 
   it('should execute all pending migrations sequentially and validate all accounts and commerce tables in PostgreSQL', async () => {
@@ -479,7 +480,7 @@ describe('Exhaustive Multi-Engine & Multi-Table Data Migration Suite (2026090901
       expect(configs.length).toBe(1);
       const firstConfig = configs[0];
       const valStr = typeof firstConfig?.value === 'string' ? firstConfig.value : JSON.stringify(firstConfig?.value);
-      expect(valStr).toContain('20260909010000');
+      expect(valStr).toContain(CLIENT_DB_VERSION.toString());
     } finally {
       await sql.unsafe(`DROP SCHEMA IF EXISTS ${schema} CASCADE`);
       await sql.end();

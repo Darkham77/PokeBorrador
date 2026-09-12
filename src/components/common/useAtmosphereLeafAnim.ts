@@ -1,5 +1,13 @@
 const LEAF_ANIM_FULL_ROTATION_DEG = 360;
 const LEAF_ANIM_SPIN_ROTATION_DEG = 1080;
+const COMBAT_LEAF_SPAWN_X_TOP_BASE = 1400;
+const COMBAT_LEAF_SPAWN_X_TOP_RANGE = 750;
+const COMBAT_LEAF_SPAWN_Y_TOP = 850;
+const COMBAT_LEAF_SPAWN_X_SIDE = 2150;
+const COMBAT_LEAF_SPAWN_Y_SIDE_BASE = 950;
+const COMBAT_LEAF_SPAWN_Y_SIDE_RANGE = 650;
+const COMBAT_LEAF_TRAVEL_X = -1600;
+const COMBAT_LEAF_TRAVEL_Y = 500;
 
 import { gsap } from 'gsap'
 import { nextTick, type Ref } from 'vue'
@@ -41,13 +49,22 @@ export function useAtmosphereLeafAnim(
           const s2 = Math.random()
 
           const fromTop = s1 > 0.5
-          const startX = fromTop ? (80 + s2 * 40) : 115
-          const startY = fromTop ? -20 : (s2 * 60)
+          const isVirtual = Boolean(containerRef.value?.closest('.map-virtual-world'))
+
+          const startX = isVirtual
+            ? (fromTop ? (COMBAT_LEAF_SPAWN_X_TOP_BASE + s2 * COMBAT_LEAF_SPAWN_X_TOP_RANGE) : COMBAT_LEAF_SPAWN_X_SIDE)
+            : (fromTop ? (80 + s2 * 40) : 115)
+          const startY = isVirtual
+            ? (fromTop ? COMBAT_LEAF_SPAWN_Y_TOP : (COMBAT_LEAF_SPAWN_Y_SIDE_BASE + s2 * COMBAT_LEAF_SPAWN_Y_SIDE_RANGE))
+            : (fromTop ? -20 : (s2 * 60))
+
+          const travelX = isVirtual ? COMBAT_LEAF_TRAVEL_X : '-350cqw'
+          const travelY = isVirtual ? COMBAT_LEAF_TRAVEL_Y : '80cqh'
 
           ctxVal.add(() => {
             gsap.set(el, {
-              left: `${startX}%`,
-              top: `${startY}%`,
+              left: isVirtual ? `${startX}px` : `${startX}%`,
+              top: isVirtual ? `${startY}px` : `${startY}%`,
               x: 0,
               y: 0,
               opacity: 0.9,
@@ -62,8 +79,8 @@ export function useAtmosphereLeafAnim(
             const speedVariation = (isCommonWind ? 4.0 : (isStrongWind ? 1.0 : 2.0)) * seedMod
 
             gsap.to(el, {
-              x: '-350cqw',
-              y: '80cqh',
+              x: travelX,
+              y: travelY,
               rotation: `+=${LEAF_ANIM_SPIN_ROTATION_DEG}`,
               duration: baseDuration + (Math.random() * speedVariation),
               ease: 'none',

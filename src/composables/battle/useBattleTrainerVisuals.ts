@@ -3,6 +3,7 @@ import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { useGameStore } from '@/stores/game'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { GYMS_BY_ID, isGymId } from '@/data/world/gyms'
+import { getRandomQuoteForTrainer } from '@/data/player/trainerPhrases'
 import type { BattleState } from '@/types/battle/battle'
 
 export function useBattleTrainerVisuals(
@@ -25,6 +26,9 @@ export function useBattleTrainerVisuals(
       if (gym) return gym.quote
     }
     if (battle.value.quote) return battle.value.quote
+    if (battle.value.isPvP || battle.value.isRival || battle.value.trainerArchetype === 'rival') {
+      return getRandomQuoteForTrainer('rival')
+    }
     return '¡Prepárate para combatir! ¡No te lo pondré fácil!'
   })
 

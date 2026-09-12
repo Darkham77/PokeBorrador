@@ -62,6 +62,19 @@ When applying SQL migrations that update user save progress or profiles in Supab
 - **ID Rotation**: You MUST always update and rotate the `last_save_id` of all affected players in `game_saves` to a new random UUID (e.g. `UPDATE public.game_saves SET last_save_id = gen_random_uuid();`).
 - **Why**: This forces players currently online to fail their next auto-save attempt with `OUT_OF_SYNC`. The client-side engine will capture this error, fetch the fresh migrated state from the database, and reload/hydrate the memory without losing player progress. This prevents active client tabs from silently overwriting server-side migrations.
 
+### 8. Save State Parity & Automated Persistence Audit Mandate
+
+When adding, renaming, or refactoring properties in `GameState` that represent durable user progress:
+
+- **100% 4-Way Property Parity**: Every persisted property MUST be declared and synchronized across:
+  1. Canonical Domain Contract: `PersistedGameState` in `src/types/system/game.ts`.
+  2. Valibot Ingestion Schema: `saveDataSchema` in `src/logic/validation/schemas.ts`.
+  3. Serialization Mapper: `serializeState()` in `src/logic/auth/saveSerializer.ts`.
+  4. Initial State Factory: `createInitialGameState()` in `src/stores/gameInitialState.ts`.
+- **Zero Silent Dropping**: Because Valibot `v.object()` strips undeclared keys during `validateAndSanitize()`, any property omitted from `saveDataSchema` is discarded on save, causing silent progress erasure upon page reload (F5).
+- **Compile-Time Parity Enforcement**: The compile-time assertion `AssertSaveSchemaParity<SaveDataDto, PersistedGameState>` in `schemas.ts` breaks `vue-tsc` immediately if a property is added to `PersistedGameState` but omitted from `saveDataSchema`.
+- **Automated Pre-Commit Auditor**: All 86+ save fields are audited continuously by `validate_save_persistence_parity.ts` (`npm run validate:persistence`), preventing commits or deployments with missing persistence paths.
+
 ---
 
 ## 🏗️ Data Architecture (DBRouter)

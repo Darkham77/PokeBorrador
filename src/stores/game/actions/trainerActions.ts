@@ -66,17 +66,30 @@ export function useTrainerActions(state: GameState, scheduleSave: () => Promise<
       return
     }
 
-    while (pokemon.expNeeded > 0 && pokemon.exp >= pokemon.expNeeded && pokemon.level < MAX_POKEMON_LEVEL) {
+    while (pokemon.level < MAX_POKEMON_LEVEL && pokemon.expNeeded > 0 && pokemon.exp >= pokemon.expNeeded) {
       pokemon.exp -= pokemon.expNeeded
+      const surplusExp = pokemon.exp
+
+      // Temporarily set exp to 0 so validatePokemon in recalcPokemonStats doesn't trip on surplus from future levels
+      pokemon.exp = 0
       const pendingMoves = levelUpPokemon(pokemon)
-      
-      if (pendingMoves === null) break // Blocked by Everstone
+      pokemon.exp = surplusExp
+
+      if (pendingMoves === null) {
+        // Blocked by Everstone
+        break
+      }
 
       uiStore.notify(`¡${pokemon.name} subió al nivel ${pokemon.level}!`, '📈')
-      
-      if (pendingMoves && pendingMoves.length > 0) {
+
+      if (pendingMoves.length > 0) {
         pendingMoves.forEach(m => learnQueue.push({ pokemon, move: m }))
       }
+    }
+
+    if (pokemon.level >= MAX_POKEMON_LEVEL) {
+      pokemon.exp = 0
+      pokemon.expNeeded = 0
     }
 
     if (learnQueue.length > 0) {

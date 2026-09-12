@@ -1,10 +1,10 @@
 import type { BattleContext } from '@/types/battle/battleContext'
 import { ShowdownTeamResolver } from '../showdownTeamResolver.ts'
 import { isRevivingForceSwitchRequest } from '../helpers/requestHelper.ts'
-
+import { getActiveCombatTeam } from '../battleTeamCoordinator.ts'
 import { checkLockedVolatiles, resetPlayerStages } from './switchActionHelpers.ts'
 
-export async function executeSwitch(ctx: BattleContext, teamIndex: number, isForced = false) {
+export async function executeSwitch(ctx: BattleContext, targetIdentifier: number | string, isForced = false) {
   const active = ctx.activeBattle.value
   if (!active) return
   if (active.isExecutingSwitch) {
@@ -18,7 +18,7 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
 
   active.isExecutingSwitch = true
   try {
-    await runSwitchSequence(ctx, teamIndex, isForced)
+    await runSwitchSequence(ctx, targetIdentifier, isForced)
   } finally {
     if (ctx.activeBattle.value) {
       ctx.activeBattle.value.isExecutingSwitch = false
@@ -26,8 +26,8 @@ export async function executeSwitch(ctx: BattleContext, teamIndex: number, isFor
   }
 }
 
-async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced = false) {
-  const { gs, activeBattle, fsm, BATTLE_STATES, BATTLE_SUBSTATES, addLog, playerStages, persistBattle } = ctx
+async function runSwitchSequence(ctx: BattleContext, targetIdentifier: number | string, isForced = false) {
+  const { activeBattle, fsm, BATTLE_STATES, BATTLE_SUBSTATES, addLog, playerStages, persistBattle } = ctx
 
   const oldPoke = activeBattle.value?.player
   const req = activeBattle.value?.playerRequest
@@ -58,7 +58,16 @@ async function runSwitchSequence(ctx: BattleContext, teamIndex: number, isForced
   await fsm.transition(BATTLE_STATES.REORDER_TEAM)
   await fsm.transition(BATTLE_STATES.REORDER_TEAM, BATTLE_SUBSTATES.FIND_HEALTHY)
   
-  const targetMon = gs.state.team[teamIndex]
+  const combatTeam = getActiveCombatTeam(ctx)
+  const resolvedTarget = typeof targetIdentifier === 'string'
+    ? combatTeam.find(p => p && p.uid === targetIdentifier)
+    : combatTeam[targetIdentifier]
+  const resolvedIndex = typeof targetIdentifier === 'number'
+    ? targetIdentifier
+    : combatTeam.findIndex(p => p && p.uid === targetIdentifier)
+
+  const targetMon = resolvedTarget
+  const teamIndex = resolvedIndex !== -1 ? resolvedIndex : 0
   const newPoke = targetMon
   if (!newPoke || (newPoke.hp <= 0 && !isRevivingTarget)) {
     console.warn(`[switchAction] Cannot switch to fainted or missing Pokémon: ${newPoke?.name ?? 'unknown'}`);

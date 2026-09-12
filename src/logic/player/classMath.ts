@@ -4,7 +4,15 @@
  * sin efectos colaterales de base de datos o almacenamiento de estado.
  */
 
-import { MINIMUM_POKEMON_LEVEL, DECIMAL_PLACES_PRECISION_TWO, CLASS_XP_THRESHOLD_RANKS, CRIMINALITY_DENOMINATOR_FACTOR } from '../constants/gameplay.ts';
+import {
+  MINIMUM_POKEMON_LEVEL,
+  DECIMAL_PLACES_PRECISION_TWO,
+  CLASS_XP_THRESHOLD_RANKS,
+  CRIMINALITY_DENOMINATOR_FACTOR,
+  BUG_SYNERGY_BONUS_PER_BUG,
+  BUG_SYNERGY_MAX_COUNT,
+  TRAINER_HIGH_IV_THRESHOLD
+} from '../constants/gameplay.ts';
 import { MAX_POKEMON_LEVEL } from '../../data/system/constants.ts';
 
 /** Bonus level calculation step for excess criminality (1 level per 10%). */
@@ -36,15 +44,6 @@ const ROCKET_QUICK_STEAL_MAX_CAP = 0.30;
 
 /** Bug Catcher catch rate synergy base multiplier. */
 const BUG_SYNERGY_BASE_BONUS = 1.0;
-
-/** Bug Catcher maximum active Bug Pokémon count for synergy. */
-const BUG_SYNERGY_MAX_COUNT = 6;
-
-/** Bug Catcher bonus catch multiplier per Bug Pokémon (+5%). */
-const BUG_SYNERGY_BONUS_PER_BUG = 0.05;
-
-/** Trainer class high-IV threshold for catch rate calculation. */
-const TRAINER_HIGH_IV_THRESHOLD = 120;
 
 /** Trainer class catch rate penalty multiplier for high-IV targets (90%). */
 const TRAINER_CATCH_PENALTY_MULTIPLIER = 0.9;

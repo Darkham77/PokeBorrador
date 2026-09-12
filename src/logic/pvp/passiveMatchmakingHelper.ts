@@ -5,6 +5,9 @@ import type { ShowdownPlayerRequest } from '@/types/battle/battle.ts';
 import type { PvPAction } from '@/types/battle/pvp.ts';
 import type { DBRouter } from '@/logic/db/dbRouter.ts';
 import { evaluatePokemonForSeason } from '@/logic/pvp/seasonTeamFilter.ts';
+import { deserializePokemonTeam } from '@/logic/auth/saveSerializer.ts';
+import type { PlayerClassId } from '@/data/player/playerClasses';
+import type { GenderId } from '@/types/system/game';
 
 export interface PassiveTeamCandidate {
   user_id: string;
@@ -79,40 +82,10 @@ export function selectPassiveOpponent(
 
 /**
  * Parses and deserializes a team snapshot from the passive_teams database table,
- * ensuring all combatants are fully restored (100% HP, empty status) for combat.
+ * reusing the canonical 1:1 save deserialization format.
  */
 export function parsePassiveTeamSnapshot(rawTeamData: unknown): Pokemon[] {
-  if (!rawTeamData) return [];
-
-  let parsedArray: unknown[] = [];
-  if (typeof rawTeamData === 'string') {
-    try {
-      const parsed = JSON.parse(rawTeamData);
-      if (Array.isArray(parsed)) {
-        parsedArray = parsed;
-      }
-    } catch (err) {
-      logger.warn('PassiveMatchmaking', `Failed to parse raw passive team JSON: ${(err as Error).message}`);
-      return [];
-    }
-  } else if (Array.isArray(rawTeamData)) {
-    parsedArray = rawTeamData;
-  }
-
-  return parsedArray
-    .filter((entry): entry is Pokemon => typeof entry === 'object' && entry !== null)
-    .map((rawMon) => {
-      const maxHp = Number(rawMon.maxHp ?? rawMon.hp ?? 100);
-      const pokemon: Pokemon = {
-        ...rawMon,
-        hp: maxHp,
-        maxHp,
-        status: '', // Showdown invariant: healthy status is empty string
-        sleepTurns: 0,
-        uid: rawMon.uid || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `mon_${Math.random()}`)
-      };
-      return pokemon;
-    });
+  return deserializePokemonTeam(rawTeamData);
 }
 
 export interface PassiveFallbackResult {
@@ -120,6 +93,8 @@ export interface PassiveFallbackResult {
   opponentName: string;
   opponentElo: number;
   enemyTeam: Pokemon[];
+  opponentClass?: PlayerClassId;
+  opponentGender?: GenderId;
 }
 
 /**
@@ -142,12 +117,21 @@ export async function executePassiveMatchmakingFallback(params: {
       .eq('is_active', true);
     const candidates = (res?.data || []) as PassiveTeamCandidate[];
 
-    // Filter candidates by current active season rules and prune stale teams
+    // Filter candidates by current active season rules, validity, and prune stale/corrupted teams
     const validCandidates: PassiveTeamCandidate[] = [];
     for (const candidate of candidates) {
       if (!candidate || !candidate.team_data) continue;
       const team = parsePassiveTeamSnapshot(candidate.team_data);
       if (team.length === 0) continue;
+
+      // Validate that every combatant has required battle properties (species id, ability, valid moves)
+      const hasCorruptPokemon = team.some(p => !p.id || !p.ability || !Array.isArray(p.moves) || p.moves.length === 0);
+      if (hasCorruptPokemon) {
+        if (candidate.user_id) {
+          void db.from('passive_teams').update({ is_active: false }).eq('user_id', candidate.user_id);
+        }
+        continue;
+      }
 
       if (seasonRules) {
         const hasIneligible = team.some(p => !evaluatePokemonForSeason(p, seasonRules).eligible);
@@ -163,7 +147,7 @@ export async function executePassiveMatchmakingFallback(params: {
 
     const selected = selectPassiveOpponent(validCandidates, myElo, userUid);
     if (!selected) {
-      notify('No se encontraron defensas pasivas disponibles en este rango.', 'ℹ️');
+      notify('No hay jugadores disponibles en la arena ranked en este momento. Por favor, intenta más tarde.', '🛡️');
       return null;
     }
 
@@ -174,11 +158,27 @@ export async function executePassiveMatchmakingFallback(params: {
     }
 
     let defenderName = 'Entrenador Pasivo';
+    let defenderClass: PlayerClassId | undefined;
+    let defenderGender: GenderId | undefined;
     try {
-      const profileRes = await db.from('profiles').select('username').eq('id', selected.user_id).maybeSingle();
-      const profile = profileRes?.data as { username?: string } | null;
+      const profileRes = await db
+        .from('profiles')
+        .select('username, player_class, gender')
+        .eq('id', selected.user_id)
+        .maybeSingle();
+      const profile = profileRes?.data as {
+        username?: string;
+        player_class?: PlayerClassId;
+        gender?: GenderId;
+      } | null;
       if (profile?.username) {
         defenderName = profile.username;
+      }
+      if (profile?.player_class) {
+        defenderClass = profile.player_class;
+      }
+      if (profile?.gender) {
+        defenderGender = profile.gender;
       }
     } catch {
       // Keep default
@@ -189,7 +189,9 @@ export async function executePassiveMatchmakingFallback(params: {
       opponentId: selected.user_id,
       opponentName: defenderName,
       opponentElo,
-      enemyTeam
+      enemyTeam,
+      opponentClass: defenderClass,
+      opponentGender: defenderGender
     };
   } catch (err) {
     logger.error('PassiveMatchmaking', `Error in executePassiveMatchmakingFallback: ${(err as Error).message}`);

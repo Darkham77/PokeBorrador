@@ -340,6 +340,11 @@ export function useNavigationState() {
       return;
     }
 
+    if (tab === "black-market") {
+      modalStore.open("BlackMarket");
+      return;
+    }
+
     if (tab === "war-shop") {
       modalStore.open("WarShop");
       return;

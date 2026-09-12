@@ -4,7 +4,7 @@ import type { BattleState } from '@/types/battle/battle';
 import type { Inventory } from '@/types/inventory/items';
 import type { GymId } from '@/data/world/gyms';
 import type { MapRouteId } from '@/data/world/map-assets';
-import type { PlayerClassId } from '@/data/player/playerClasses';
+import type { PlayerClassId, MissionId } from '@/data/player/playerClasses';
 import type { ItemId } from '@/data/inventory/items';
 import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import type { RankedSeasonMedal, PersonalPvPMatchSummary } from '@/types/battle/pvp';
@@ -194,21 +194,7 @@ export interface GameState {
   playerClass: PlayerClassId | null;
   classLevel: number;
   classXP: number;
-  classData: {
-    captureStreak: number;
-    longestStreak: number;
-    reputation: number;
-    blackMarketSales: number;
-    criminality: number;
-    blackMarketDaily: { date: string; items: ItemId[]; purchased: ItemId[] };
-    activeMission?: unknown;
-    extortedRouteId?: MapRouteId | null;
-    extortedRouteTimestamp?: string | null; // domain-ok: Open dynamic text or non-domain string payload
-    lastEggScanDate?: string | null; // domain-ok: Open dynamic text or non-domain string payload
-    officialRouteId?: MapRouteId | null;
-    officialRouteTimestamp?: string | null; // domain-ok: Open dynamic text or non-domain string payload
-    kitCaptures?: number;
-  };
+  classData: PlayerClassState;
   faction: FactionId | null;
   warCoins: number;
   warCoinsSpent: number;
@@ -230,3 +216,42 @@ export interface GameState {
   isOverlayLoading?: boolean;
   overlayMessage?: string; // domain-ok: Open dynamic text or non-domain string payload
 }
+
+export interface ActiveMission {
+  readonly id: MissionId;
+  readonly startedAt: number;
+  readonly endsAt: number;
+  readonly targetPokemonUid?: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly targetPokemonIdx?: number;
+  readonly targetPokemonSpecies?: PokemonSpeciesId;
+  readonly targetZone?: string; // domain-ok: Open dynamic text or non-domain string payload
+  readonly streak?: number;
+  readonly projectedReward?: number;
+  readonly rewards?: Partial<Record<ItemId | 'money' | 'battleCoins', number>>; // domain-ok: Open dynamic text or non-domain string payload
+}
+
+export interface PlayerClassState {
+  captureStreak: number;
+  longestStreak: number;
+  reputation: number;
+  blackMarketSales: number;
+  criminality: number;
+  blackMarketDaily: { date: string; items: ItemId[]; purchased: ItemId[] };
+  activeMission?: ActiveMission | null;
+  extortedRouteId?: MapRouteId | null;
+  extortedRouteTimestamp?: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  lastEggScanDate?: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  officialRouteId?: MapRouteId | null;
+  officialRouteTimestamp?: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  kitCaptures?: number;
+}
+
+/**
+ * Ephemeral runtime properties on GameState that are NOT intended to be persisted in save_data.
+ */
+export type EphemeralGameStateKeys = 'battle' | 'isOverlayLoading' | 'overlayMessage';
+
+/**
+ * Authoritative set of persisted keys in GameState.
+ */
+export type PersistedGameState = Omit<GameState, EphemeralGameStateKeys>;

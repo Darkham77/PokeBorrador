@@ -62,8 +62,8 @@ const FALLOW_IGNORE_FILE_REGEX = /^\s*\/\/\s*fallow-ignore-file\b/i;
 const TS_SUPPRESSION_REGEX = /^\s*\/\/\s*@ts-(nocheck|ignore|expect-error)\b/i;
 const ESLINT_DISABLE_BLOCK_REGEX = /^\s*\/\*\s*eslint-disable\b(?!\s*-(next-line|line)\b)/i;
 const ESLINT_DISABLE_TEMPLATE_REGEX = /^\s*<!--\s*eslint-disable\b(?!\s*-(next-line|line)\b)/i;
-const STANDALONE_ESCAPE_HATCHES_REGEX = /^\s*\/\/\s*(domain-ok|singleton-ok|no-magic|magic-ok|number-ok|string-ok|any-ok|boolean-ok|type-ok|value-ok|const-ok|o1-ok|linear-search-ok|map-ok|promise-ok|import-ok|result-ok|brand-ok|no-domain|text-ok)\b\s*$/i;
-const UNJUSTIFIED_ESCAPE_HATCH_REGEX = /\/\/\s*(domain-ok|singleton-ok|no-magic|magic-ok|number-ok|string-ok|any-ok|boolean-ok|type-ok|value-ok|const-ok|o1-ok|linear-search-ok|map-ok|promise-ok|import-ok|result-ok|brand-ok|no-domain|text-ok|uuid-ok|infra-id-ok|spanish-ok|open-record|runtime-set|runtime-map|lib-duplicate-ok|fallback-ok)\b(?!\s*:\s*\S+)/i;
+const STANDALONE_ESCAPE_HATCHES_REGEX = /^\s*\/\/\s*(domain-ok|singleton-ok|string-ok|any-ok|boolean-ok|type-ok|value-ok|const-ok|o1-ok|linear-search-ok|map-ok|promise-ok|import-ok|result-ok|brand-ok|no-domain|text-ok)\b\s*$/i;
+const UNJUSTIFIED_ESCAPE_HATCH_REGEX = /\/\/\s*(domain-ok|singleton-ok|string-ok|any-ok|boolean-ok|type-ok|value-ok|const-ok|o1-ok|linear-search-ok|map-ok|promise-ok|import-ok|result-ok|brand-ok|no-domain|text-ok|uuid-ok|infra-id-ok|spanish-ok|open-record|runtime-set|runtime-map|lib-duplicate-ok|fallback-ok)\b(?!\s*:\s*\S+)/i;
 
 /**
  * Validates that a path component is safe against path traversal.
@@ -162,7 +162,6 @@ export function scanFileForIllegalHeaders(filePath: string, content: string): He
    📚 FORMATO CANÓNICO REQUERIDO: '// ${unjustifiedMatch[1]}: <motivo técnico detallado>'
    💡 EJEMPLOS VÁLIDOS SEGÚN EL CASO:
       - // domain-ok: Texto dinámico de UI, mensajes de chat o cadenas narrativas
-      - // no-magic: Coeficiente matemático de fórmula física o easing visual
       - // uuid-ok: UUID de base de datos o identificador único de sesión
       - // infra-id-ok: Identificador DOM o socket de red externo
       - // open-record: Contenedor JSON dinámico de clave-valor genérico

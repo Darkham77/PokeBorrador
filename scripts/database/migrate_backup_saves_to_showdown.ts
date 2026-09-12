@@ -38,7 +38,7 @@ interface BackupPayload {
   };
 }
 
-const SPECIES_TO_SHOWDOWN: Record<string, string> = { // no-magic: Explicit mathematical constant or threshold value
+const SPECIES_TO_SHOWDOWN: Record<string, string> = {
   "1": "bulbasaur", "2": "ivysaur", "3": "venusaur", "4": "charmander", "5": "charmeleon", "6": "charizard",
   "7": "squirtle", "8": "wartortle", "9": "blastoise", "10": "caterpie", "11": "metapod", "12": "butterfree",
   "13": "weedle", "14": "kakuna", "15": "beedrill", "16": "pidgey", "17": "pidgeotto", "18": "pidgeot",

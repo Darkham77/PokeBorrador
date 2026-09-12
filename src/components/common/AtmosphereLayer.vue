@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted, nextTick, onMounted } from 'vue'
+import { useResizeObserver } from '@vueuse/core'
 import { gsap } from 'gsap'
 import type { WeatherId } from '@/logic/weather/weatherRegistry'
 import type { WeatherSeasonId } from '@/data/world/weather-tables'
@@ -17,6 +18,8 @@ interface AtmosphereLayerProps {
   isLowPower?: boolean
 }
 
+import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
+
 // Cache for weather noise textures
 let cachedNoise1Img: HTMLImageElement | null = null
 let cachedNoise2Img: HTMLImageElement | null = null
@@ -26,21 +29,22 @@ const preloadImages = (): Promise<[HTMLImageElement, HTMLImageElement]> => {
     return Promise.resolve([cachedNoise1Img, cachedNoise2Img])
   }
   
-  const base = import.meta.env.BASE_URL || '/'
-  
-  const loadImageElement = (url: string): Promise<HTMLImageElement> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image()
-      img.crossOrigin = 'anonymous'
-      img.onload = () => resolve(img)
-      img.onerror = (err) => reject(err)
-      img.src = url
-    })
-  }
+  const noise1Url = getAssetUrl(ASSET_TYPES.FX, 'pattern-noise-1')
+  const noise2Url = getAssetUrl(ASSET_TYPES.FX, 'pattern-noise-2')
 
   return Promise.all([
-    loadImageElement(`${base}assets/fx/pattern-noise-1.webp`),
-    loadImageElement(`${base}assets/fx/pattern-noise-2.webp`)
+    new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image()
+      img.src = noise1Url
+      img.onload = () => resolve(img)
+      img.onerror = () => reject(new Error(`Failed to load weather texture at ${noise1Url}`))
+    }),
+    new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image()
+      img.src = noise2Url
+      img.onload = () => resolve(img)
+      img.onerror = () => reject(new Error(`Failed to load weather texture at ${noise2Url}`))
+    })
   ]).then(([img1, img2]) => {
     cachedNoise1Img = img1
     cachedNoise2Img = img2
@@ -52,7 +56,7 @@ const containerRef = ref<HTMLElement | null>(null)
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 let atmosphereContext: gsap.Context | null = null
 let worker: Worker | null = null
-let resizeObserver: ResizeObserver | null = null
+let stopResizeObserver: (() => void) | null = null
 
 import { Z_LAYERS } from '@/logic/constants/visuals'
 
@@ -177,29 +181,33 @@ const initWorker = async () => {
 
   updateWorkerParams()
 
-  if (containerRef.value) {
-    resizeObserver = new ResizeObserver((entries) => {
-      if (!entries || entries.length === 0 || !worker) return
-      const entry = entries[0]
-      if (!entry) return
-      const { width, height } = entry.contentRect
-      worker.postMessage({
-        type: 'RESIZE',
-        payload: { width: width + 200, height: height + 200 }
-      })
-    })
-    resizeObserver.observe(containerRef.value)
+  if (stopResizeObserver) {
+    stopResizeObserver()
+    stopResizeObserver = null
   }
+  const { stop } = useResizeObserver(containerRef, (entries) => {
+    if (!entries || entries.length === 0 || !worker) return
+    const entry = entries[0]
+    if (!entry) return
+    const { width, height } = entry.contentRect
+    worker.postMessage({
+      type: 'RESIZE',
+      payload: { width: width + 200, height: height + 200 }
+    })
+  })
+  stopResizeObserver = stop
 }
 
 const updateWorkerParams = () => {
   if (!worker) return
+  const isVirtual = Boolean(containerRef.value?.closest('.map-virtual-world'))
   worker.postMessage({
     type: 'UPDATE_PARAMS',
     payload: {
       weather: props.weather,
       isLowPower: props.isLowPower,
-      animSeed: props.animSeed
+      animSeed: props.animSeed,
+      speedMultiplier: isVirtual ? 2.5 : 1.0
     }
   })
   worker.postMessage({ type: 'RESUME' })
@@ -216,9 +224,9 @@ const destroyWorker = () => {
     worker.terminate()
     worker = null
   }
-  if (resizeObserver) {
-    resizeObserver.disconnect()
-    resizeObserver = null
+  if (stopResizeObserver) {
+    stopResizeObserver()
+    stopResizeObserver = null
   }
 }
 

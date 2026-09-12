@@ -117,6 +117,15 @@ export function useHomeWidgetBadges() {
     return list.length > 0 ? list.length : undefined
   })
 
+  // 13. Black Market daily available items count
+  const blackMarketBadge = computed<WidgetBadgeValue>(() => {
+    if (gameStore.state.playerClass !== 'rocket') return undefined
+    const items = gameStore.state.classData?.blackMarketDaily?.items || []
+    const purchased = gameStore.state.classData?.blackMarketDaily?.purchased || []
+    const available = items.filter(id => !purchased.includes(id)).length
+    return available > 0 ? available : undefined
+  })
+
   const defaultBadges: Record<HomeWidgetId, ComputedRef<WidgetBadgeValue>> = {
     pending_rewards: pendingRewardsBadge,
     buffs: buffsBadge,
@@ -126,6 +135,7 @@ export function useHomeWidgetBadges() {
     events_history: computed<WidgetBadgeValue>(() => undefined),
     missions: missionsBadge,
     economy: economyBadge,
+    black_market: blackMarketBadge,
     faction: factionBadge,
     gyms: gymsBadge,
     ranked: rankedBadge,
@@ -153,6 +163,7 @@ export function useHomeWidgetBadges() {
     eventsBadge,
     missionsBadge,
     economyBadge,
+    blackMarketBadge,
     factionBadge,
     gymsBadge,
     rankedBadge,

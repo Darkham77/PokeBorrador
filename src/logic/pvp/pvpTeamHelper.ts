@@ -4,25 +4,8 @@ import type { SeasonalThemeConfig } from '@/data/system/rankedData.ts';
 import type { PokemonType } from '@/data/battle/types';
 import { isPokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { calculatePokemonStrengthScore } from '@/logic/pokemon/pokemonUtils';
-import { DEFAULT_MOVE_PP } from '@/logic/constants/gameplay.ts';
+import { serializePokemonTeam } from '@/logic/auth/saveSerializer.ts';
 import { Dex } from '@pkmn/sim';
-
-export interface PassiveTeamSnapshotEntry {
-  id: string;
-  name: string;
-  level: number;
-  type: string;
-  hp: number;
-  maxHp: number;
-  atk: number;
-  def: number;
-  spa: number;
-  spd: number;
-  spe: number;
-  moves: Array<{ name: string; pp: number }>;
-  heldItem?: string | null;
-  isShiny?: boolean;
-}
 
 /**
  * Resolves the 6 defending Pokémon for passive defense from saved team data.
@@ -57,26 +40,11 @@ export function resolveDefendingTeam(saveData: {
 }
 
 /**
- * Serializes a team into a standardized JSON snapshot string for the passive_teams database table.
+ * Serializes a team into a standardized JSON snapshot string for the passive_teams database table,
+ * reusing the canonical 1:1 save serialization format.
  */
 export function createPassiveTeamSnapshot(team: Pokemon[]): string {
-  const snapshot: PassiveTeamSnapshotEntry[] = team.map((p) => ({
-    id: p.id,
-    name: p.name,
-    level: p.level,
-    type: p.type,
-    hp: p.hp,
-    maxHp: p.maxHp,
-    atk: p.atk,
-    def: p.def,
-    spa: p.spa,
-    spd: p.spd,
-    spe: p.spe,
-    moves: (p.moves || []).filter(Boolean).map((m) => ({ name: m!.name, pp: m!.maxPP || DEFAULT_MOVE_PP })),
-    heldItem: p.heldItem || null,
-    isShiny: Boolean(p.isShiny)
-  }));
-  return JSON.stringify(snapshot);
+  return JSON.stringify(serializePokemonTeam(team));
 }
 
 

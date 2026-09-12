@@ -143,7 +143,7 @@ export function translatePostgresToSqlite(sql: string): string {
     .replace(/::[a-z0-9]+/gi, '')
     // 2. Functions
     .replace(/\bNOW\(\)/gi, "strftime('%Y-%m-%dT%H:%M:%SZ', 'now')")
-    .replace(/\bgen_random_uuid\(\)/gi, "hex(randomblob(16))") // no-magic: Explicit mathematical constant or threshold value
+    .replace(/\bgen_random_uuid\(\)/gi, "hex(randomblob(16))")
     .replace(/\bEXTRACT\(epoch\s+FROM\s+([^)]+)\)/gi, "unixepoch($1)")
     .replace(/\bARRAY_AGG\b/gi, "json_group_array")
     .replace(/\bstring_agg\b/gi, "group_concat")

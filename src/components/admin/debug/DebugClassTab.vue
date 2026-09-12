@@ -1,18 +1,23 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
+import { useDebugStore } from '@/stores/debug'
 
 interface ViteDebugBridge extends Record<string, unknown> { // open-record: Generic key-value data dictionary container
   setClassLevel: (val: number) => void;
   setReputation: (val: number) => void;
   setPlayerClass: (cls: string) => void;
   clearClassCooldowns: () => void;
+  toggleFastRankedDelay?: () => boolean;
 }
 
 const game = useGameStore()
+const debugStore = useDebugStore()
 
 const debugClassLevel = ref(game.state.classLevel || 1)
 const debugReputation = ref(game.state.classData?.reputation || 0)
+
+const isFastRanked = computed(() => debugStore.fastRankedDelay)
 
 const getDebugBridge = () => window.__VITE_DEBUG__ as ViteDebugBridge
 
@@ -23,6 +28,9 @@ function setPlayerClass(c: string) {
 }
 function clearClassCooldowns() {
   getDebugBridge().clearClassCooldowns()
+}
+function toggleFastRanked() {
+  debugStore.fastRankedDelay = !debugStore.fastRankedDelay
 }
 </script>
 
@@ -95,6 +103,22 @@ function clearClassCooldowns() {
         <PVTooltip title="Establece tu reputación (clase Entrenador).">
           <button @click.stop="setReputation">
             FIJAR
+          </button>
+        </PVTooltip>
+      </div>
+    </div>
+
+    <div class="debug-card">
+      <label>Demora Entrada a Ranked</label>
+      <div class="button-row">
+        <PVTooltip title="Alterna la demora para entrar a Ranked entre 5s (rápido para pruebas) y 60s (normal).">
+          <button
+            class="small-btn"
+            :class="{ active: isFastRanked }"
+            @click.stop="toggleFastRanked"
+          >
+            <span class="emoji">⏱️</span>
+            {{ isFastRanked ? 'ESPERA RANKED: 5s (ACTIVO)' : 'ESPERA RANKED: 60s (NORMAL)' }}
           </button>
         </PVTooltip>
       </div>

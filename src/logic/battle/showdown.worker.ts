@@ -369,6 +369,9 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
         }
         const isOver = battle.ended;
         const winner = battle.winner;
+        const winnerSide = battle.winner
+          ? (battle.winner === battle.p1.name ? 'p1' : (battle.winner === battle.p2.name ? 'p2' : null))
+          : null;
         const p1ForceSwitch = !!(battle.p1.activeRequest?.forceSwitch?.[0]);
         const p2ForceSwitch = !!(battle.p2.activeRequest?.forceSwitch?.[0]);
 
@@ -378,6 +381,7 @@ self.onmessage = (event: MessageEvent<WorkerEventData>) => {
             logs: turnLogs,
             isOver,
             winner,
+            winnerSide,
             p1ForceSwitch,
             p2ForceSwitch,
             p1Request: injectUidsIntoRequest('p1', battle.p1.activeRequest),

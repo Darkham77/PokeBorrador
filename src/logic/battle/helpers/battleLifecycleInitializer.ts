@@ -76,7 +76,9 @@ export async function initBattleSequence(
 
   await fsm.transition(BATTLE_STATES.REORDER_TEAM, null)
   
-  window.dispatchEvent(new Event('resize'))
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('resize'))
+  }
   
   ctx.attackerSide.value = null
   ctx.activeMove.value = null

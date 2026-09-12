@@ -103,9 +103,9 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
       assert.strictEqual(preset.useInference, false);
     });
 
-    it('npc: errorRate = 0.05', () => {
+    it('npc: errorRate = 0.04', () => {
       const preset = AI_CONFIG_PRESETS.npc;
-      assert.strictEqual(preset.errorRate, 0.05);
+      assert.strictEqual(preset.errorRate, 0.04);
       assert.ok(preset.switchAggressiveness > 0);
     });
 
@@ -117,7 +117,7 @@ describe('HeuristicAI Fuzzer — Scenario Coverage', () => {
     it('rival (= champion): errorRate = 0.00, máxima agresividad de switch', () => {
       const preset = AI_CONFIG_PRESETS.rival;
       assert.strictEqual(preset.errorRate, 0.00);
-      assert.strictEqual(preset.switchAggressiveness, 0.9);
+      assert.strictEqual(preset.switchAggressiveness, 0.85);
     });
 
     it('rival y gym son los únicos presets con 0% error', () => {

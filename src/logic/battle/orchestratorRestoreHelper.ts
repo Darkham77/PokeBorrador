@@ -38,24 +38,79 @@ export async function restoreBattleState(ctx: BattleContext, battleData: unknown
     ? candidatePoke
     : sourceTeam.find((p: Pokemon) => p && p.hp > 0 && !p.onMission && !p.onDefense)
 
-  // 2. Identify active enemy Pokemon
-  const enemyTeamIndex = typeof d.enemyTeamIndex === 'number' && d.enemyTeamIndex >= 0 && (d.enemyTeam ? d.enemyTeamIndex < d.enemyTeam.length : true)
-    ? d.enemyTeamIndex
-    : (d.enemyTeam && d.enemyTeam.findIndex((p: Pokemon) => p && p.hp > 0) !== -1 ? d.enemyTeam.findIndex((p: Pokemon) => p && p.hp > 0) : 0)
-  
-  // 3. Minigames (Fishing / Archaeology) are never restored to prevent reset cheating — return directly to search loop
+  // 2. Minigames (Fishing / Archaeology) are never restored to prevent reset cheating — return directly to search loop
   if (isBattleMinigame(d)) {
     await resumeSearchMode(ctx, d)
     return
   }
 
-  // 4. If an active battle with combatants was in progress, restore it faithfully
-  const enemyPoke = d.enemy || d._initialEnemy || (d.enemyTeam && (d.enemyTeam[enemyTeamIndex] || d.enemyTeam[0])) || null
+  // 3. Search phase (bush mode) — resume searching without launching active combat
   const isSearchPhase = Boolean(
     (d as { inSearchPhase?: boolean }).inSearchPhase === true ||
     (d as { fsmState?: string }).fsmState === 'SEARCH_PHASE' ||
     (d.wasSearching && !d.isTrainer && !d.isGym && !d.isPvP && (!d.turnCount || d.turnCount === 0) && !d.battleHistory?.length)
   );
+  if (isSearchPhase) {
+    await resumeSearchMode(ctx, d)
+    return
+  }
+
+  if (!playerPoke) {
+    ctx.activeBattle.value = null
+    ctx.gs.state.activeBattle = null
+    await ctx.fsm.transition(BATTLE_STATES.EXIT_BATTLE)
+    await ctx.gs.save?.(false)
+    return
+  }
+
+  // 4. Identify active enemy Pokemon & check if enemy team is completely fainted
+  let enemyTeamIndex = 0
+  let enemyPoke: Pokemon | null = null
+
+  if (d.enemyTeam && Array.isArray(d.enemyTeam) && d.enemyTeam.length > 0) {
+    const hasAliveEnemy = d.enemyTeam.some((p: Pokemon) => p && p.hp > 0 && !p.fainted)
+    if (!hasAliveEnemy) {
+      ctx.activeBattle.value = null
+      ctx.gs.state.activeBattle = null
+      await ctx.fsm.transition(BATTLE_STATES.EXIT_BATTLE)
+      await ctx.gs.save?.(false)
+      return
+    }
+
+    const desiredEnemyIndex = typeof d.enemyTeamIndex === 'number' && d.enemyTeamIndex >= 0 && d.enemyTeamIndex < d.enemyTeam.length
+      ? d.enemyTeamIndex
+      : -1
+    const candidateEnemy = desiredEnemyIndex !== -1 ? d.enemyTeam[desiredEnemyIndex] : null
+    if (candidateEnemy && candidateEnemy.hp > 0 && !candidateEnemy.fainted) {
+      enemyTeamIndex = desiredEnemyIndex
+      enemyPoke = candidateEnemy
+    } else {
+      const aliveIdx = d.enemyTeam.findIndex((p: Pokemon) => p && p.hp > 0 && !p.fainted)
+      enemyTeamIndex = aliveIdx !== -1 ? aliveIdx : 0
+      enemyPoke = d.enemyTeam[enemyTeamIndex] || null
+    }
+  } else {
+    // Single / Wild enemy
+    const candidateEnemy = d.enemy || d._initialEnemy || null
+    if (candidateEnemy && candidateEnemy.hp > 0 && !candidateEnemy.fainted) {
+      enemyPoke = candidateEnemy
+      enemyTeamIndex = 0
+    }
+  }
+
+  if (!enemyPoke || enemyPoke.hp <= 0 || enemyPoke.fainted) {
+    if (d.wasSearching) {
+      await resumeSearchMode(ctx, d)
+      return
+    }
+    ctx.activeBattle.value = null
+    ctx.gs.state.activeBattle = null
+    await ctx.fsm.transition(BATTLE_STATES.EXIT_BATTLE)
+    await ctx.gs.save?.(false)
+    return
+  }
+
+  // 5. If an active battle with combatants was in progress, restore it faithfully
   const isActualCombatInProgress = Boolean(
     !isSearchPhase &&
     ((d.turnCount && d.turnCount > 0) || d.isTrainer || d.isGym || d.isPvP || (!d.wasSearching && enemyPoke))
@@ -83,7 +138,7 @@ export async function restoreBattleState(ctx: BattleContext, battleData: unknown
     d.playerSideConditions = d.playerSideConditions || {}
     d.enemySideConditions = d.enemySideConditions || {}
     d.pendingSlotEffects = Array.isArray(d.pendingSlotEffects) ? d.pendingSlotEffects : []
-    d.enemyInventory = d.enemyInventory || {}
+    d.enemyInventory = d.enemyInventory ? { ...d.enemyInventory } : {}
     d.stolenResources = d.stolenResources || { money: 0, items: {} }
     d.wasSearching = Boolean(d.wasSearching)
     d.isRival = Boolean(d.isRival || d.trainerArchetype === 'rival')

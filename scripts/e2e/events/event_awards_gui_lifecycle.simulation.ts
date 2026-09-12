@@ -44,8 +44,8 @@ export class EventAwardsGuiLifecycleSimulation extends BaseEventSimulation {
       const currentSimTime = getServerTime();
 
       // Initial wallet and inventory state
-      gameStore.state.money = 1000; // no-magic: Test seed baseline balance
-      gameStore.state.battleCoins = 10; // no-magic: Test seed baseline balance
+      gameStore.state.money = 1000;
+      gameStore.state.battleCoins = 10;
       gameStore.state.inventory = { goldbottlecap: 0, rarecandy: 0 };
       gameStore.state.starterChosen = true;
       gameStore.state.rankedRewardsClaimed = ['bronce_1000'];
@@ -55,27 +55,27 @@ export class EventAwardsGuiLifecycleSimulation extends BaseEventSimulation {
       // Shellder: Heavy weight contestant for 'weight' category
       const shellder = pokemonDebugService.generate({
         id: requirePokemonSpeciesId('shellder'),
-        level: 25 // no-magic: Test seed level
+        level: 25
       });
       shellder.uid = 'sim-award-shellder';
       shellder.name = 'Shellder';
       shellder.nickname = 'Titan Shell';
-      shellder.weight = 35.0; // no-magic: Test seed weight
-      shellder.height = 0.5; // no-magic: Test seed height
-      shellder.ivs = { hp: 20, atk: 20, def: 20, spa: 20, spd: 20, spe: 20 }; // no-magic: Test seed IVs
+      shellder.weight = 35.0;
+      shellder.height = 0.5;
+      shellder.ivs = { hp: 20, atk: 20, def: 20, spa: 20, spd: 20, spe: 20 };
       shellder.obtainedAt = currentSimTime;
 
       // Horsea: Perfect 186 IVs contestant for 'ivs' category
       const horsea = pokemonDebugService.generate({
         id: requirePokemonSpeciesId('horsea'),
-        level: 28 // no-magic: Test seed level
+        level: 28
       });
       horsea.uid = 'sim-award-horsea';
       horsea.name = 'Horsea';
       horsea.nickname = 'Gene Sea';
-      horsea.weight = 18.0; // no-magic: Test seed weight
-      horsea.height = 0.6; // no-magic: Test seed height
-      horsea.ivs = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }; // no-magic: Test seed IVs
+      horsea.weight = 18.0;
+      horsea.height = 0.6;
+      horsea.ivs = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 };
       horsea.obtainedAt = currentSimTime;
 
       gameStore.state.team = [horsea, shellder];

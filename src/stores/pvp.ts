@@ -127,6 +127,13 @@ export const usePvPStore = defineStore('pvp', () => {
     }
   }, { immediate: true })
 
+  // Sync passive defense active state with game state
+  watch(() => gameStore.state.passiveTeamActive, (active) => {
+    if (active !== undefined) {
+      passiveTeamActive.value = Boolean(active)
+    }
+  }, { immediate: true })
+
   const eloTier = computed(() => getEloTier(elo.value))
 
   async function loadPvPData() {
@@ -194,7 +201,8 @@ export const usePvPStore = defineStore('pvp', () => {
       .eq('user_id', authStore.user.id)
       .maybeSingle() as { data: { is_active: boolean } | null }
     
-    passiveTeamActive.value = passive?.is_active || false
+    passiveTeamActive.value = Boolean(passive?.is_active)
+    gameStore.state.passiveTeamActive = passiveTeamActive.value
 
     // Validate defending team eligibility against active season rules
     const defendingTeam = resolveDefendingTeam(gameStore.state)
@@ -423,6 +431,8 @@ export const usePvPStore = defineStore('pvp', () => {
       logger.error('PVP', 'Error al desactivar defensa pasiva en BD:', err)
     }
     passiveTeamActive.value = false
+    gameStore.state.passiveTeamActive = false
+    gameStore.scheduleSave()
     if (reason) {
       uiStore.notify(reason, '⚠️')
     }
@@ -487,6 +497,8 @@ export const usePvPStore = defineStore('pvp', () => {
 
       if (!error) {
         passiveTeamActive.value = true
+        gameStore.state.passiveTeamActive = true
+        gameStore.scheduleSave()
         uiStore.notify('Equipo de Defensa Pasiva activado.', '🛡️')
       }
     } else {

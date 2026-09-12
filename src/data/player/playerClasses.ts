@@ -178,8 +178,8 @@ export const PLAYER_CLASSES = {
 
 export type PlayerClassId = keyof typeof PLAYER_CLASSES;
 
-export function isPlayerClassId(value: string): value is PlayerClassId {
-  return value in PLAYER_CLASSES;
+export function isPlayerClassId(value: unknown): value is PlayerClassId {
+  return typeof value === 'string' && value in PLAYER_CLASSES;
 }
 
 export function requirePlayerClassId(value: string): PlayerClassId {

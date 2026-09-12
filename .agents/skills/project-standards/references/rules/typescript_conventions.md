@@ -12,8 +12,8 @@
 ## 1. Zero-Ignore & Zero-Any Policies
 
 - **Zero-Ignore Policy**: The use of `@ts-ignore`, `@ts-nocheck`, or any variant that bypasses TypeScript compiler checks is STRICTLY FORBIDDEN.
-- **Mandatory Technical Justifications on 100% of Escape Hatches (`unjustified-escape-hatch`)**: Any localized escape hatch (such as `// domain-ok`, `// no-magic`, `// singleton-ok`, `// uuid-ok`, `// infra-id-ok`, `// open-record`, `// runtime-set`) MUST include a colon followed by an explicit technical rationale (`// <hatch-name>: <detailed rationale>`). Naked, generic, or unexplained ignore directives trigger immediate critical failures in `npm run validate:audit-headers`.
-- **Absolute Prohibition on File-Level Audit Ignores (`noFileLevelAuditIgnores`)**: It is STRICTLY FORBIDDEN to bypass, hide, or suppress auditor rules, security scanners, or compiler errors by placing file-wide ignore directives (such as `// fallow-ignore-file <rule>`, `/* eslint-disable */`, or `@ts-nocheck`) across an entire file. Enforced automatically by `npm run validate:audit-headers`. Only localized, line-by-line Fallow annotations (`// fallow-ignore-next-line <rule>`, `// singleton-ok: <reason>`, `// domain-ok: <reason>`, `// no-magic: <reason>`) are permitted in strictly justified edge cases.
+- **Mandatory Technical Justifications on 100% of Escape Hatches (`unjustified-escape-hatch`)**: Any localized escape hatch (such as `// domain-ok`, `// singleton-ok`, `// uuid-ok`, `// infra-id-ok`, `// open-record`, `// runtime-set`) MUST include a colon followed by an explicit technical rationale (`// <hatch-name>: <detailed rationale>`). Naked, generic, or unexplained ignore directives trigger immediate critical failures in `npm run validate:audit-headers`.
+- **Absolute Prohibition on File-Level Audit Ignores (`noFileLevelAuditIgnores`)**: It is STRICTLY FORBIDDEN to bypass, hide, or suppress auditor rules, security scanners, or compiler errors by placing file-wide ignore directives (such as `// fallow-ignore-file <rule>`, `/* eslint-disable */`, or `@ts-nocheck`) across an entire file. Enforced automatically by `npm run validate:audit-headers`. Only localized, line-by-line Fallow annotations (`// fallow-ignore-next-line <rule>`, `// singleton-ok: <reason>`, `// domain-ok: <reason>`) are permitted in strictly justified edge cases.
 - **Prohibition on Blanket Directory Ignores (`noBlanketDirectoryIgnores`)**: It is STRICTLY FORBIDDEN to suppress auditor warnings by adding whole directory wildcards (such as `scripts/**`, `tests/**`, or bulk folder lists) to `.fallowrc.json` `ignorePatterns`. Doing so blindfolds the static analysis engine from detecting dead code, duplicate blocks, cognitive complexity, and import graph breaks. All issues MUST be resolved cleanly at the code level.
 - **Zero-Any Policy**: The use of `any` is STRICTLY FORBIDDEN. This integrity is absolute: no `any` is allowed anywhere, including Web Workers (`showdown.worker.ts`), orchestrators, and E2E simulation files. All payloads, window objects, and intermediate states must have dedicated interfaces or be imported from their respective packages (such as `@pkmn/sim`).
 - **No Type Assertions (`as ...`) Bypasses**: Using type assertions (`as Type`, `as PokemonStatus`, `as Move`, `as unknown as T`) to bypass compiler checks, evade strict schema validation, or force invalid objects into interfaces is STRICTLY PROHIBITED. Creating helper functions, getters, or composables solely to wrap and hide double casts (e.g., `const toPokemon = (d: unknown) => d as unknown as Pokemon // domain-ok`) is considered a severe anti-pattern — types MUST be properly declared using Discriminated Unions or explicit interfaces instead. All data boundaries (Web Workers, DB Router, Showdown Bridge) MUST use explicit boundary adapter functions instead of type casts.
@@ -33,16 +33,8 @@
   4. `export function isMyDomain(val: string): val is MyDomain { return MY_DOMAIN_SET.has(val); }`
 - **Absolute Prohibition on O(1) Escape Hatch Bypasses**: Using `// domain-ok`, `// string-ok`, or any other escape hatch to bypass linear array lookups in `validate_o1_data_structures.ts` is strictly prohibited. All execution hot paths MUST use $O(1)$ typed sets, maps, or dictionary records.
 - **Strict Overload Signatures on Multi-Domain Resolvers & Routers**: Any centralized dispatcher, router, or resolver accepting a category discriminator (e.g. `getAssetUrl(type, rawId)`) MUST declare strict TypeScript function overloads linking each category to its canonical domain union (`ItemId`, `PokemonSpeciesId`, `MapRouteId`, `GymId`, etc.). Generic `(type: string, id: string | number)` declarations without domain overloads are strictly prohibited to prevent typos from bypassing compile-time checks.
-- **Semantic Constant Naming & Value-Hardcoding Prohibition (`badConstantNames`)**: Constants declared to eliminate magic numbers MUST be named after their domain purpose or semantic role (e.g. `ARCHAEOLOGY_CAVE_BASE_WEIGHT`, `DEFAULT_DEBUG_FRIENDSHIP`). Including current numeric values in constant identifiers (e.g. `ARCHAEOLOGY_CAVE_BASE_WEIGHT_10`, `FRIENDSHIP_70`) is strictly prohibited as an anti-pattern. String literals containing formatting, fractions, or regex helpers (e.g. `"random(-10, 10)"`, `"1/16 HP"`) MUST be marked with `// no-magic` at line end.
-
-  > ⚠️ **Anti-Cheat Rule**: `// magic-ok`, `// no-magic`, and `// number-ok` are escape hatches for **genuinely un-nameable** values only. Using them to suppress domain thresholds (probability cutoffs, costs, timings, stat floors) instead of declaring proper constants is **strictly forbidden** and considered cheating the auditor.
-
-  **✅ ALLOWED (Genuinely Un-nameable Values):**
-  - GSAP string helpers with embedded math: `"random(-10, 10)"`
-  - Template strings embedding percentages/text: `"1/16 HP por turno"`
-  - Rendering math formula coefficients: `(0.7 + seed * 0.8) * factor // magic-ok`
-  - Nearest-match search sentinels: `let minDiff = 11 // magic-ok`
-  - One-off shake keyframes in GSAP chains: `{ x: -4 }, { x: 4 } // magic-ok`
+- **Semantic Constant Naming & Value-Hardcoding Prohibition (`badConstantNames`)**: Constants declared to eliminate magic numbers MUST be named after their domain purpose or semantic role (e.g. `ARCHAEOLOGY_CAVE_BASE_WEIGHT`, `DEFAULT_DEBUG_FRIENDSHIP`). Including current numeric values in constant identifiers (e.g. `ARCHAEOLOGY_CAVE_BASE_WEIGHT_10`, `FRIENDSHIP_70`) is strictly prohibited as an anti-pattern. String literals containing formatting, fractions, or animation syntax (e.g. `"random(-10, 10)"`, `"1/16 HP"`) are string literals and do not require any suppression comments.
+- **Permanent Eradication of Magic Number Ignores (`// no-magic`, `// magic-ok`, `// number-ok`)**: Using inline suppression comments (`// no-magic`, `// magic-ok`, `// number-ok`) is STRICTLY FORBIDDEN across the entire repository. The bypass escape hatch `// no-magic` has been permanently deleted from the codebase and all auditor tools. All numbers, numeric thresholds, offsets, and formula coefficients MUST be declared as descriptive named constants (`readonly` / `as const`) adhering strictly to the Named Constants Mandate.
 
   **❌ FORBIDDEN (Domain Values That MUST Be Declared As Constants):**
   - Game probability thresholds: `if (randRoll < 10) diff = 'easy'` ➔ `const DIFF_EASY_THRESHOLD = 10`
@@ -126,12 +118,11 @@
 
 When an escape hatch or localized ignore annotation is strictly necessary, it MUST include a colon (`:`) followed by a clear, technical rationale explaining why the exemption is legitimate:
 - `// domain-ok: Open dynamic UI text string payload`
-- `// no-magic: Visual spring animation damping coefficient`
 - `// runtime-set: Fast O(1) membership lookup set`
 - `// singleton-ok: Global persistent database router instance`
 - `// spanish-ok: UI Spanish text localization label`
 
-Naked tags (e.g. `// domain-ok` or `// no-magic` without `: reason`) are flagged as critical errors by `validate_audit_headers.ts`. Under no circumstances may escape hatches be used to suppress type errors on domain entities.
+Naked tags (e.g. `// domain-ok` without `: reason`) are flagged as critical errors by `validate_audit_headers.ts`. Under no circumstances may escape hatches be used to suppress type errors on domain entities or numbers.
 
 ## 12. Deep Cloning, Vue Reactivity & High-Performance Object Duplication
 

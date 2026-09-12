@@ -92,22 +92,26 @@ describe('Player Class Logic (V3)', () => {
     const gameStore = useGameStore()
 
     gameStore.state.playerClass = 'rocket'
+    gameStore.state.money = 0
     gameStore.state.box = [
-      { id: 'pidgey', name: 'Pidgey', level: 10, heldItem: 'Piedra Fuego', onMission: true } as unknown as Pokemon
+      { id: 'pidgey', uid: 'pidgey_1', name: 'Pidgey', level: 10, heldItem: 'firestone', onMission: true } as unknown as Pokemon
     ]
     
     gameStore.state.classData.activeMission = {
-      id: 'rocket_patrol',
+      id: 'mission_6h',
+      startedAt: Temporal.Now.instant().epochMilliseconds - 10000,
       endsAt: Temporal.Now.instant().epochMilliseconds - 1000,
       targetPokemonIdx: 0,
+      targetPokemonUid: 'pidgey_1',
       projectedReward: 500
     }
 
     await classStore.collectMission()
 
     expect(gameStore.state.box.length).toBe(0)
-    expect(gameStore.state.battleCoins).toBe(500)
-    expect(inventoryMock.addItem).toHaveBeenCalledWith('Piedra Fuego', 1)
+    expect(gameStore.state.money).toBe(500)
+    expect(gameStore.state.classData.blackMarketSales).toBe(1)
+    expect(inventoryMock.addItem).toHaveBeenCalledWith('firestone', 1)
   })
 
   it('debe calcular modificadores correctamente (PvP Balance)', () => {

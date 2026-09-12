@@ -3,6 +3,7 @@
 import { ref, computed, watch } from 'vue'
 import { useUIStore } from '@/stores/ui'
 import { useGameStore } from '@/stores/game'
+import { useBattleStore } from '@/stores/battle/battle'
 
 import { useModalStore } from '@/stores/modals'
 import { safeStorage } from '@/logic/utils/storage'
@@ -27,6 +28,7 @@ import { filterAndSortPokemon, getPokemonTotalPower } from '@/logic/pokemon/poke
 
 const uiStore = useUIStore()
 const gameStore = useGameStore()
+const battleStore = useBattleStore()
 
 interface Props {
   title?: string
@@ -179,7 +181,14 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: PokemonSelectionS
   let sourceList: { pokemon: Pokemon, _source: PokemonStorageLocation, index: number }[]
   
   if (props.customList && props.customList.length > 0) {
-    sourceList = props.customList.map((p, i) => ({ pokemon: p, _source: 'box' as const, index: i }))
+    sourceList = props.customList.map((p, i) => ({ pokemon: p, _source: 'team' as const, index: i }))
+  } else if (props.isBattleSwitch) {
+    const battleTeam = (battleStore.isPvP && battleStore.state?.playerTeam)
+      ? battleStore.state.playerTeam
+      : team
+    sourceList = battleTeam
+      .filter((p): p is Pokemon => p !== null)
+      .map((p, i) => ({ pokemon: p, _source: 'team' as const, index: i }))
   } else if (props.battleMode === 'pvp') {
     const pvpUids = (gameStore.state.pvpTeam || []) as string[] // no-domain: Non-domain utility collection or data structure
     sourceList = pvpUids
@@ -206,7 +215,7 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: PokemonSelectionS
         }
       })
       .filter((item): item is { pokemon: Pokemon, _source: PokemonStorageLocation, index: number } => item !== null)
-  } else if (props.battleMode === 'wild' || props.isBattleSwitch) {
+  } else if (props.battleMode === 'wild') {
     sourceList = team
       .filter((p): p is Pokemon => p !== null)
       .map((p, i) => ({ pokemon: p, _source: 'team' as const, index: i }))
@@ -224,10 +233,12 @@ const availablePokemon = computed<{ pokemon: Pokemon, _source: PokemonSelectionS
   }
 
   // Filter out busy/invalid status
-  const validSourceList = sourceList.filter(item => {
-    const p = item.pokemon
-    return p && !p.onMission && !p.inDaycare && !p.onDefense
-  })
+  const validSourceList = props.isBattleSwitch
+    ? sourceList.filter(item => Boolean(item.pokemon))
+    : sourceList.filter(item => {
+        const p = item.pokemon
+        return p && !p.onMission && !p.inDaycare && !p.onDefense
+      })
 
   let result = filterAndSortPokemon(validSourceList, {
     searchQuery: searchQuery.value,

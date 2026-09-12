@@ -15,6 +15,8 @@ const props = withDefaults(defineProps<{
   title: string
   dialogue: string
   rulesText?: string
+  activationReq?: string
+  rewardConditions?: string
   unmetRequirement?: string
   availableRequirement?: string
   isAvailable?: boolean
@@ -29,10 +31,17 @@ const props = withDefaults(defineProps<{
   btnDisabled: boolean
   isCompleted: boolean
   completedBadgeText?: string
+  isActiveMission?: boolean
+  activePokemonInfo?: string
+  activeGuaranteedReward?: string
+  progressPercent?: number
+  remainingTimeText?: string
 }>(), {
   id: '',
   isAvatarUrl: false,
   rulesText: '',
+  activationReq: '',
+  rewardConditions: '',
   unmetRequirement: '',
   availableRequirement: '',
   isAvailable: false,
@@ -43,7 +52,12 @@ const props = withDefaults(defineProps<{
   rewardTooltipTitle: '',
   rewardTooltipDescription: '',
   rewardsList: () => [],
-  completedBadgeText: ''
+  completedBadgeText: '',
+  isActiveMission: false,
+  activePokemonInfo: '',
+  activeGuaranteedReward: '',
+  progressPercent: 0,
+  remainingTimeText: ''
 })
 
 defineEmits<{
@@ -228,20 +242,45 @@ const handleImgError = (e: Event) => {
       </div>
     </div>
 
-    <!-- Full-width Rules & Requirements Box -->
+    <!-- Deployment Requirement & Reward Conditions Box -->
     <div
-      v-if="rulesText"
+      v-if="activationReq || rewardConditions || rulesText"
       class="rules-box"
     >
-      <span class="rules-badge">REGLAS / REQUISITOS</span>
-      <p class="rules-desc">
-        {{ rulesText }}
-      </p>
+      <div
+        v-if="activationReq"
+        class="rules-section-block"
+      >
+        <span class="rules-badge deploy-badge">REQUISITO DE DESPLIEGUE</span>
+        <p class="rules-desc">
+          {{ activationReq }}
+        </p>
+      </div>
+
+      <div
+        v-if="rewardConditions"
+        class="rules-section-block"
+      >
+        <span class="rules-badge reward-badge">CÓMO SE GANAN LAS RECOMPENSAS</span>
+        <p class="rules-desc">
+          {{ rewardConditions }}
+        </p>
+      </div>
+
+      <div
+        v-else-if="rulesText"
+        class="rules-section-block"
+      >
+        <span class="rules-badge">REGLAS / REQUISITOS</span>
+        <p class="rules-desc">
+          {{ rulesText }}
+        </p>
+      </div>
     </div>
 
     <!-- Unmet requirement banner -->
     <div
-      v-if="unmetRequirement && !isCompleted"
+      v-if="unmetRequirement && !isCompleted && !isActiveMission"
       class="requirement-banner is-unmet"
     >
       <span class="emoji req-icon">⚠️</span>
@@ -250,11 +289,51 @@ const handleImgError = (e: Event) => {
 
     <!-- Available requirement banner -->
     <div
-      v-else-if="availableRequirement && isAvailable && !isCompleted"
+      v-else-if="availableRequirement && isAvailable && !isCompleted && !isActiveMission"
       class="requirement-banner is-available-req"
     >
       <span class="emoji req-icon">✨</span>
       <span class="req-text">{{ availableRequirement }}</span>
+    </div>
+
+    <!-- Active Operation Summary & Single Countdown Box -->
+    <div
+      v-if="isActiveMission"
+      class="active-operation-box mission-active-progress"
+      :class="{ 'is-done': isCompleted }"
+    >
+      <div class="operation-header-row">
+        <span class="operation-status-title">
+          {{ isCompleted ? '¡OPERACIÓN COMPLETADA!' : 'OPERACIÓN EN CURSO' }}
+        </span>
+        <span class="operation-timer-text">
+          {{ remainingTimeText }}
+        </span>
+      </div>
+
+      <!-- In-card active deployment progress bar -->
+      <div class="operation-progress-track">
+        <div
+          class="operation-progress-fill"
+          :style="{ width: Math.min(100, Math.max(0, progressPercent || 0)) + '%' }"
+        />
+      </div>
+
+      <div
+        v-if="activePokemonInfo"
+        class="operation-detail-row"
+      >
+        <span class="detail-label">ASIGNADO:</span>
+        <span class="detail-val">{{ activePokemonInfo }}</span>
+      </div>
+
+      <div
+        v-if="activeGuaranteedReward && (!rewardsList || rewardsList.length === 0)"
+        class="operation-detail-row"
+      >
+        <span class="detail-label">BOTÍN FIJADO:</span>
+        <span class="detail-val is-reward">{{ activeGuaranteedReward }}</span>
+      </div>
     </div>
 
     <div class="reward-section">

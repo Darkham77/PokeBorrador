@@ -1,7 +1,7 @@
 import { useUIStore } from '@/stores/ui'
 import type { GameState } from '@/types/system/game'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import { MAX_PVP_SLOTS, MAX_PVP6_SLOTS } from '@/types/battle/pvp'
+import { MAX_PVP_SLOTS, MAX_PVP6_SLOTS, type PvpTeamTab } from '@/types/battle/pvp'
 
 import { ensurePvpTeamsFilled } from '@/logic/pvp/pvpTeamHelper.ts'
 
@@ -186,6 +186,15 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
     scheduleSave()
   }
 
+  function setRankedTeam(tab: PvpTeamTab, uids: string[]) {
+    if (tab === 'pvp') {
+      state.pvpTeam = uids.slice(0, MAX_PVP_SLOTS)
+    } else {
+      state.pvpTeam6 = uids.slice(0, MAX_PVP6_SLOTS)
+    }
+    scheduleSave()
+  }
+
   return {
     autoFillPvpTeam,
     swapPvpSlot,
@@ -199,6 +208,7 @@ export function useTeamActions(state: GameState, scheduleSave: () => Promise<voi
     unequipFromBox,
     autoFillWarTeam,
     swapWarSlot,
-    reorderWarTeam
+    reorderWarTeam,
+    setRankedTeam
   }
 }

@@ -26,13 +26,14 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
   const isGym = ctx.activeBattle.value?.isGym ?? false
 
   if (option === 'map') {
+    const returnTab = ctx.activeBattle.value?.returnTab
     ctx.isProcessing.value = true
     await fsm.transition(BATTLE_STATES.EXIT_BATTLE)
     ctx.activeBattle.value = null
     ctx.gs.state.activeBattle = null
     ctx.isProcessing.value = false
     ctx.clearLogs()
-    uiStore.activeTab = isGym ? 'gyms' : 'map'
+    uiStore.activeTab = returnTab || (isGym ? 'gyms' : 'map')
     emitBattleFlowCompleted('map')
     await ctx.gs.save?.(false)
     return

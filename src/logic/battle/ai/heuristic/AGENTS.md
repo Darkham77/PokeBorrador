@@ -42,6 +42,8 @@ HeuristicAI (heuristicAI.ts)
 - All array accesses on `winConditions[n]` use optional chaining (`?.`) due to `noUncheckedIndexedAccess`.
 - Cache key for damage calc includes item + status + boosts to maximize hit rate.
 - `snapshotBuilder.ts` throws explicitly if `playerRequest`/`enemyRequest` are null (Zero-Fallback Mandate).
+- `hasViableSwitchCounter()` gates mid-combat tactical switches so the AI never switches out if all bench options are worse than staying and fighting.
+- `pickBestSwitch(candidates, opponent, calc, mode)` supports `'counter'` (prioritizes preservation of high-value Pokémon) vs `'faint_replacement'` (faint resolution).
 
 ## Module Map
 

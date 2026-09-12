@@ -16,6 +16,7 @@ import {
   TRAINER_RETREAT_Y_OFFSET_PX
 } from '@/logic/constants/animations'
 import { getTrainerIdleConfig } from './helpers/trainerIdleAnims.ts'
+import type { GenderId } from '@/types/system/game'
 
 const props = defineProps<{
   isTrainerVisible: boolean
@@ -29,6 +30,7 @@ const props = defineProps<{
   isTrainerOrGym: boolean
   isPvP: boolean
   trainerSprite?: string
+  trainerGender?: GenderId
   trainerName?: string
   playerBackSpriteUrl: string
 }>()
@@ -37,6 +39,10 @@ const resolvedEnemyTrainerSprite = computed(() => {
   if (props.trainerSprite) return props.trainerSprite
   if (props.isPvP) return 'entrenador'
   return props.trainerName || 'entrenador'
+})
+
+const enemyTrainerSpriteUrl = computed(() => {
+  return getAssetUrl(ASSET_TYPES.TRAINER, resolvedEnemyTrainerSprite.value, { gender: props.trainerGender })
 })
 
 const trainerRef = ref<InstanceType<typeof VirtualEntity> | null>(null)
@@ -180,16 +186,16 @@ defineExpose({
           :style="{ filter: 'var(--atmosphere-filter)' }"
         >
           <img 
-            :src="getAssetUrl(ASSET_TYPES.TRAINER, resolvedEnemyTrainerSprite)" 
+            :src="enemyTrainerSpriteUrl" 
             class="trainer-image"
-            @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador')"
+            @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador', { gender: props.trainerGender })"
           >
         </div>
       </div>
     </div>
     <div 
       class="trainer-shadow"
-      :style="getTrainerShadowStyle(getAssetUrl(ASSET_TYPES.TRAINER, resolvedEnemyTrainerSprite), baseEntitySizeEnemy * (objectScale || 2))"
+      :style="getTrainerShadowStyle(enemyTrainerSpriteUrl, baseEntitySizeEnemy * (objectScale || 2))"
     />
     <div
       v-if="showGuides"
@@ -219,16 +225,16 @@ defineExpose({
           :style="{ filter: 'var(--atmosphere-filter)' }"
         >
           <img 
-            :src="getAssetUrl(ASSET_TYPES.TRAINER, resolvedEnemyTrainerSprite)" 
+            :src="enemyTrainerSpriteUrl" 
             class="trainer-image"
-            @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador')"
+            @error="(e: Event) => (e.target as HTMLImageElement).src = getAssetUrl(ASSET_TYPES.TRAINER, 'entrenador', { gender: props.trainerGender })"
           >
         </div>
       </div>
     </div>
     <div 
       class="trainer-shadow"
-      :style="getTrainerShadowStyle(getAssetUrl(ASSET_TYPES.TRAINER, resolvedEnemyTrainerSprite), baseEntitySizeEnemy * (objectScale || 2))"
+      :style="getTrainerShadowStyle(enemyTrainerSpriteUrl, baseEntitySizeEnemy * (objectScale || 2))"
     />
     <div
       v-if="showGuides"

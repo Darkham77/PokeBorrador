@@ -23,7 +23,7 @@ function isItemUsedDuringFlinch(target: Pokemon | null | undefined, p: Pokemon |
 }
 
 function handleCantToken(ctx: SBCtx): boolean {
-  const { store, parts, p, getPoke } = ctx;
+  const { store, parts, p, getPoke, getSide } = ctx;
   const target = getPoke(parts[2] || '');
   const reason = parts[3] || '';
   
@@ -35,8 +35,16 @@ function handleCantToken(ctx: SBCtx): boolean {
     if (target.volatileCounters) {
       delete target.volatileCounters['twoturnmove'];
     }
-    const style = target === p ? 'log-player' : 'log-enemy';
     const cleanReason = reason.toLowerCase(); // text-ok: UI text display localization string
+    if (cleanReason === 'flinch') {
+      if (!target.volatileCounters) target.volatileCounters = {};
+      target.volatileCounters['flinch'] = 1;
+      const side = getSide(parts[2] || '');
+      if (side && store.animations?.triggerFlinchAnim) {
+        void store.animations.triggerFlinchAnim(side);
+      }
+    }
+    const style = target === p ? 'log-player' : 'log-enemy';
     const hint = CANT_MESSAGES[cleanReason] ?? (cleanReason.includes('truant') ? 'está haraganeando (Truant)' : 'no puede moverse');
     store.addLog(`¡${target.name} ${hint}!`, style, target);
   }
@@ -166,6 +174,7 @@ function handleSwapToken(ctx: SBCtx): boolean {
 
 const ITEM_ABILITY_HANDLERS: Readonly<Record<string, (ctx: SBCtx) => boolean>> = {
   'cant': handleCantToken,
+  '-cant': handleCantToken,
   '-activate': (ctx) => handleActivateToken(ctx.getPoke(ctx.parts[2] || ''), ctx.parts[3] || ctx.parts[2] || '', ctx.store),
   '-ability': handleAbilityToken,
   '-endability': handleEndAbilityToken,

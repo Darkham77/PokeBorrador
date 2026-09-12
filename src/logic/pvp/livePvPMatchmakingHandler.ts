@@ -5,12 +5,24 @@ import {
   DEFAULT_INITIAL_ELO,
   ONLINE_PRESENCE_WINDOW_MS
 } from '@/logic/constants/gameplay.ts';
+import { isAllowedRankGap } from '@/logic/pvp/rankedEngine.ts';
 import {
   PVP_INVITE_EXPIRY_MS,
   MATCHMAKING_TIMEOUT_SEC,
+  FAST_MATCHMAKING_TIMEOUT_SEC,
   type BattleInvite,
   type PvpChallengeConfig
 } from '@/types/battle/pvp';
+
+export function getMatchmakingTimeoutSec(): number {
+  const debugObj = typeof window !== 'undefined'
+    ? window.__VITE_DEBUG__
+    : (typeof globalThis !== 'undefined' ? globalThis.__VITE_DEBUG__ : undefined);
+  if (debugObj?.fastRankedDelay) {
+    return FAST_MATCHMAKING_TIMEOUT_SEC;
+  }
+  return MATCHMAKING_TIMEOUT_SEC;
+}
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { DBRouter } from '@/logic/db/dbRouter.ts';
 
@@ -20,6 +32,9 @@ export interface RankedQueueEntry {
   status?: string;
   created_at: string;
 }
+
+const RANKED_QUEUE_FETCH_LIMIT = 10 as const;
+const RANKED_TIER_GAP_TOLERANCE = 1 as const;
 
 export async function checkUserOnline(db: DBRouter | null, userId: string): Promise<boolean> {
   if (!db) return false;
@@ -45,6 +60,7 @@ export async function checkUserOnline(db: DBRouter | null, userId: string): Prom
 export async function executePollMatchmaking(ctx: {
   db: DBRouter | null;
   userId?: string;
+  myElo?: number;
   isSearching: Ref<boolean>;
   searchPhase: Ref<'human' | 'passive_fallback' | 'matched'>;
   killSearchCountdown: () => void;
@@ -56,11 +72,15 @@ export async function executePollMatchmaking(ctx: {
     .select('*')
     .neq('user_id', ctx.userId)
     .order('created_at', { ascending: true })
-    .limit(1);
+    .limit(RANKED_QUEUE_FETCH_LIMIT);
 
   const data = res.data as RankedQueueEntry[] | null;
   if (data && data.length > 0 && ctx.userId && ctx.db) {
-    const match = data[0];
+    const match = typeof ctx.myElo === 'number'
+      ? data
+          .filter((entry) => isAllowedRankGap(ctx.myElo!, entry.elo, RANKED_TIER_GAP_TOLERANCE))
+          .sort((a, b) => Math.abs(a.elo - ctx.myElo!) - Math.abs(b.elo - ctx.myElo!))[0]
+      : data[0];
     if (!match) return;
     const invRes = await ctx.db.from('battle_invites').insert({
       challenger_id: ctx.userId,
@@ -162,7 +182,7 @@ export async function executeStartSearch(ctx: {
   }
 
   ctx.isSearching.value = true;
-  ctx.searchSecondsRemaining.value = MATCHMAKING_TIMEOUT_SEC;
+  ctx.searchSecondsRemaining.value = getMatchmakingTimeoutSec();
   ctx.searchPhase.value = 'human';
 
   await ctx.db.from('ranked_queue').upsert({
@@ -199,7 +219,7 @@ export async function executeCancelSearch(ctx: {
   if (!ctx.userId || !ctx.db) return;
   ctx.isSearching.value = false;
   ctx.searchPhase.value = 'human';
-  ctx.searchSecondsRemaining.value = MATCHMAKING_TIMEOUT_SEC;
+  ctx.searchSecondsRemaining.value = getMatchmakingTimeoutSec();
   ctx.killSearchCountdown();
   ctx.killMatchmakingPoller();
   await ctx.db.from('ranked_queue').delete().eq('user_id', ctx.userId);

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { useStorage } from '@vueuse/core'
 import { useAuthStore } from '@/stores/auth'
 import { useAudioStore } from '@/stores/audio'
 import { useLoadingStore } from '@/stores/loading'
@@ -14,14 +15,14 @@ const loadingStore = useLoadingStore()
 const { handleUpdate } = usePWA()
 
 const showPermissionsModal = ref(false)
+const hasAcceptedPermissions = useStorage('pwa_permissions_accepted', false)
 
 // Gestión de Permisos
 const checkPermissions = () => {
-  const hasAcceptedBefore = localStorage.getItem('pwa_permissions_accepted')
   const notificationNeeded = 'Notification' in window && Notification.permission === 'default'
   
   // Si ya aceptó antes y no hay cambios en notificaciones, intentamos activar audio sin modal
-  if (hasAcceptedBefore && !notificationNeeded) {
+  if (hasAcceptedPermissions.value && !notificationNeeded) {
     audioStore.init()
     return
   }
@@ -43,7 +44,7 @@ watch(
 
 const handlePermissions = async () => {
   // Guardar que el usuario ya aceptó
-  localStorage.setItem('pwa_permissions_accepted', 'true')
+  hasAcceptedPermissions.value = true
 
   // 1. Activar Audio (requiere interacción)
   audioStore.init()

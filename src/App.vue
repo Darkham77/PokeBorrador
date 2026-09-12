@@ -191,9 +191,15 @@ const initGameSession = async () => {
         gameStore.state.activeBattle = null
         uiStore.notify('Combate cancelado: se detectaron Pokémon ilegales en tu equipo. Repáralos en el menú de depuración.', '⚠️')
         router.replace('/game/map')
-      } else if (gameStore.state.activeBattle && !gameStore.state.activeBattle.over) {
-        logger.info('App', 'Detectado combate persistente. Restaurando estado...')
-        await battleStore.restoreBattle(gameStore.state.activeBattle)
+      } else if (gameStore.state.activeBattle) {
+        if (gameStore.state.activeBattle.over) {
+          logger.info('App', 'Detectado combate persistente finalizado. Limpiando estado...')
+          gameStore.state.activeBattle = null
+          await gameStore.save(false)
+        } else {
+          logger.info('App', 'Detectado combate persistente. Restaurando estado...')
+          await battleStore.restoreBattle(gameStore.state.activeBattle)
+        }
       }
 
       // Check active PvP session in sessionStorage for seamless F5 reconnection

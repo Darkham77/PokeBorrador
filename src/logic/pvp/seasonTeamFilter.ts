@@ -1,13 +1,12 @@
 import type { Pokemon } from '@/types/pokemon/pokemon';
 import type { SeasonalThemeConfig } from '@/data/system/rankedData';
 import type { PokemonType } from '@/data/battle/types';
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
+import { requirePokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex';
 import { calculatePokemonStrengthScore } from '@/logic/pokemon/pokemonUtils';
 import { Dex } from '@pkmn/sim';
 
 export { calculatePokemonStrengthScore } from '@/logic/pokemon/pokemonUtils';
 
-const DEFAULT_LEVEL_FALLBACK = 1 as const;
 const DEFAULT_TEAM_COUNT = 6 as const;
 
 export interface PokemonSeasonEvaluation {
@@ -33,7 +32,7 @@ export function evaluatePokemonForSeason(
     return { eligible: false, reason: 'Pokémon marcado como ilegal' };
   }
 
-  const speciesId = pokemon.species;
+  const speciesId = requirePokemonSpeciesId(pokemon.id);
   const spec = Dex.species.get(speciesId);
 
   // 1. Check banned species
@@ -47,7 +46,7 @@ export function evaluatePokemonForSeason(
     ? (('levelCap' in rules && typeof rules.levelCap === 'number') ? rules.levelCap : 5)
     : (('levelCap' in rules && typeof rules.levelCap === 'number' && rules.levelCap > 0) ? rules.levelCap : undefined);
 
-  if (effectiveLevelCap !== undefined && (pokemon.level || DEFAULT_LEVEL_FALLBACK) > effectiveLevelCap) {
+  if (effectiveLevelCap !== undefined && pokemon.level > effectiveLevelCap) {
     return {
       eligible: false,
       reason: rules.isLittleCup
@@ -68,7 +67,7 @@ export function evaluatePokemonForSeason(
   // 4. Allowed generations check
   const allowedGens = (rules.allowedGenerations || []) as readonly number[];
   if (allowedGens.length > 0) {
-    const monGen = spec.gen || 1;
+    const monGen = spec.gen;
     if (!allowedGens.includes(monGen)) {
       return {
         eligible: false,
@@ -125,7 +124,7 @@ export function buildAutoRankedTeam(
   const seen = new Set<string>();
   const uniqueEligible: Pokemon[] = [];
   for (const p of eligible) {
-    const key = p.uid || p.id || Math.random().toString();
+    const key = p.uid;
     if (!seen.has(key)) {
       seen.add(key);
       uniqueEligible.push(p);

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 import { ref, computed } from 'vue'
-import gsap from 'gsap'
+import { useClipboard } from '@vueuse/core'
 import { useGsapTransition } from '@/composables/ui/useGsapTransition'
 import { useErrorStore } from '@/stores/errorStore'
 import { useGameStore } from '@/stores/game'
@@ -14,7 +14,7 @@ const gameStore = useGameStore()
 const uiStore = useUIStore()
 const authStore = useAuthStore()
 const userAction = ref('')
-const copied = ref(false)
+const { copy, copied } = useClipboard({ copiedDuring: 2000 })
 
 const accumulatedDetails = computed(() => {
   return errorStore.errors.map((err, index) => {
@@ -40,11 +40,7 @@ const copyError = async () => {
   ].join('\n')
 
   try {
-    await navigator.clipboard.writeText(report)
-    copied.value = true
-    gsap.delayedCall(2, () => {
-      copied.value = false
-    })
+    await copy(report)
   } catch (err) {
     logger.error('ErrorOverlay', 'Failed to copy error report', err)
   }

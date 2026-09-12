@@ -9,6 +9,7 @@ interface AtmosphereParams {
   weather: string;
   isLowPower: boolean;
   animSeed: number;
+  speedMultiplier?: number;
 }
 
 import {
@@ -82,6 +83,7 @@ let params: AtmosphereParams = { // singleton-ok: Singleton instance state conta
   weather: 'clear',
   isLowPower: false,
   animSeed: 0.5,
+  speedMultiplier: 1
 };
 
 const patterns: Record<string, CanvasPattern> = {};
@@ -100,8 +102,8 @@ interface AtmosphereDrift {
   driftY2: number;
 }
 
-function calculateAtmosphereDrift(w: string, animSeed: number): AtmosphereDrift {
-  const speedVar = ATMOSPHERE_SPEED_VAR_BASE + (animSeed * ATMOSPHERE_SPEED_VAR_SCALE);
+function calculateAtmosphereDrift(w: string, animSeed: number, speedMultiplier = 1): AtmosphereDrift {
+  const speedVar = (ATMOSPHERE_SPEED_VAR_BASE + (animSeed * ATMOSPHERE_SPEED_VAR_SCALE)) * speedMultiplier;
   if (w === 'fog' || w === 'mist') {
     const fogFastDen = ATMOSPHERE_DRIFT.FOG_MIST_DIVISOR * (ATMOSPHERE_DRIFT.SEED_FAST_BASE + animSeed * ATMOSPHERE_DRIFT.SEED_FAST_MULT);
     const fogSlowDen = ATMOSPHERE_DRIFT.FOG_MIST_DIVISOR * (ATMOSPHERE_DRIFT.SEED_SLOW_BASE + animSeed * ATMOSPHERE_DRIFT.SEED_SLOW_MULT);
@@ -130,9 +132,9 @@ function calculateAtmosphereDrift(w: string, animSeed: number): AtmosphereDrift 
   }
   if (w === 'sandstorm' || w === 'strong_winds') {
     const factor = w === 'strong_winds' ? ATMOSPHERE_DRIFT.SAND_FACTOR_STRONG : ATMOSPHERE_DRIFT.SAND_FACTOR_NORMAL;
-    const dur1 = (ATMOSPHERE_DRIFT.SAND_SEED_BASE + animSeed * ATMOSPHERE_DRIFT.SAND_SEED_MULT) * factor;
+    const dur1 = ((ATMOSPHERE_DRIFT.SAND_SEED_BASE + animSeed * ATMOSPHERE_DRIFT.SAND_SEED_MULT) * factor) / speedMultiplier;
     const seed2 = (animSeed * ATMOSPHERE_DRIFT.GOLDEN_RATIO) % 1;
-    const dur2 = dur1 * (ATMOSPHERE_DRIFT.SAND_DUR2_BASE + seed2 * ATMOSPHERE_DRIFT.SAND_DUR2_MULT);
+    const dur2 = (dur1 * (ATMOSPHERE_DRIFT.SAND_DUR2_BASE + seed2 * ATMOSPHERE_DRIFT.SAND_DUR2_MULT));
     return {
       driftX1: -TEXTURE_TILE_SIZE_LARGE / dur1,
       driftY1: 0,
@@ -188,7 +190,8 @@ function render(time: number) {
     return;
   }
 
-  const { driftX1, driftY1, driftX2, driftY2 } = calculateAtmosphereDrift(w, params.animSeed);
+  const speedMult = params.speedMultiplier || 1;
+  const { driftX1, driftY1, driftX2, driftY2 } = calculateAtmosphereDrift(w, params.animSeed, speedMult);
 
   // Opacity & Pulsing logic
   const isStrong = w === 'strong_winds';

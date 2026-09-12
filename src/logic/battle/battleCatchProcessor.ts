@@ -96,11 +96,27 @@ export async function executePokeballCatchSequence(
 
   const eventCatchMult = eventStore.globalMultipliers?.catch || 1
   const pokedexCount = options.ctx?.gs?.state?.pokedex?.length ?? 0
+  const activeTeam = (options.ctx?.gs?.state?.team || []).filter(Boolean).map(p => ({ type1: p!.type, type2: p!.type2 }))
+  const ivTotal = enemy.ivs ? (enemy.ivs.hp + enemy.ivs.atk + enemy.ivs.def + enemy.ivs.spa + enemy.ivs.spd + enemy.ivs.spe) : 0
+  const playerClass = options.ctx?.classStore?.playerClass ?? options.ctx?.gs?.state?.playerClass
+
   const catchCtx = {
     ...(options.ctx || {}),
-    pokedexCount
+    pokedexCount,
+    playerClass,
+    activeTeam,
+    ivTotal
   }
-  const { caught, shakes, isCritical } = calculateCatchRate(enemy, ballId, eventCatchMult, catchCtx)
+  const { caught, shakes, isCritical, bugSynergyBonus, trainerIvPenaltyApplied } = calculateCatchRate(enemy, ballId, eventCatchMult, catchCtx)
+
+  if (bugSynergyBonus && bugSynergyBonus > 0) {
+    const pct = Math.round(bugSynergyBonus * 100)
+    addLog(`¡Sinergia Cazabichos activada! (+${pct}% de captura)`, 'log-buff', ballId, 'player')
+  }
+
+  if (trainerIvPenaltyApplied) {
+    addLog('¡El Pokémon salvaje tiene IVs excepcionales (>120)! Penalización de Entrenador (-10%).', 'log-warning', ballId, 'player')
+  }
 
   if (isCritical) {
     gameBus.emit('PLAY_SOUND', 'criticalThrow')
@@ -167,6 +183,7 @@ export async function executePokeballCatchSequence(
   if (options.fsm) {
     await options.fsm.transition('ACTIVE_BATTLE', 'CATCH_BREAK')
   }
+  options.ctx?.classStore?.onCaptureFail?.()
   gameBus.emit('CATCH_BREAK', { side: 'enemy' })
   addLog(`¡Oh, no! ¡El Pokémon se ha escapado!`, 'log-info', enemy)
 

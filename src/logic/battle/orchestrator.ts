@@ -8,20 +8,18 @@ import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
 import { logger } from '../utils/logger.ts'
 import type { BattleContext } from '@/types/battle/battleContext'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { BattleSide, BattleMinigame } from '@/types/battle/battle'
 import { mapVisualToOfficialWeather } from '../weather/weatherGenerationProvider.ts'
 import { requireWeatherId } from '../weather/weatherRegistry.ts'
 import { ACTIVE_GENERATION } from '../../data/system/constants.ts'
 import { generateNPCInventory } from './trainerInventory.ts'
-import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
-import { requireGymId, type GymId } from '@/data/world/gyms'
+import { requireMapRouteId } from '@/data/world/map-assets'
+import { requireGymId } from '@/data/world/gyms'
 import { requireNpcArchetype } from '@/logic/utils/npcSpriteRouter'
-import type { NpcArchetype } from '@/logic/utils/npcSpriteRouter'
-import { requireNpcSpriteId, type NpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
+import { requireItemId } from '@/data/inventory/items'
+import { isPlayerClassId } from '@/data/player/playerClasses'
+import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
+import { isGenderId } from '@/types/system/game'
 import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
-import { requireItemId, type ItemId } from '@/data/inventory/items'
-import type { DayPhase } from '@/logic/utils/timeUtils'
-import type { WeatherId } from '@/logic/weather/weatherRegistry'
 import {
   showdownWorker,
   setShowdownWorker,
@@ -44,38 +42,8 @@ export {
   initBattleSequence
 };
 
-export interface BattleOptions {
-  isGym?: boolean;
-  isRematch?: boolean;
-  gymId?: GymId;
-  locationId?: MapRouteId;
-  isTrainer?: boolean;
-  enemyTeam?: Pokemon[];
-  trainerName?: string;
-  battleOptions?: Record<string, unknown>;
-  minigame?: BattleMinigame | null;
-  wasSearching?: boolean;
-  isDebug?: boolean;
-  over?: boolean;
-  turn?: BattleSide | null;
-  trainerSprite?: NpcSpriteId;
-  trainerArchetype?: NpcArchetype;
-  isRival?: boolean;
-  difficulty?: string;
-  rewardTM?: ItemId;
-  cannotEscape?: boolean;
-  persistenceMode?: string;
-  trainerQuote?: string;
-  fixedCycle?: DayPhase;
-  fixedWeather?: WeatherId;
-  isPvP?: boolean;
-  isRanked?: boolean;
-  pvpMatchId?: string; // domain-ok: Open dynamic text or non-domain string payload
-  pvpIsHost?: boolean;
-  pvpOpponentId?: string; // domain-ok: Open dynamic text or non-domain string payload
-  pvpOpponentName?: string; // domain-ok: Open dynamic text or non-domain string payload
-  playerTeam?: Pokemon[];
-}
+import type { BattleOptions } from '@/types/system/stores.ts';
+export type { BattleOptions };
 
 /**
  * Orchestrates the start of a battle.
@@ -172,9 +140,34 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
   validatePokemon(playerPoke, isDebugOrReplay)
   finalEnemyTeam.forEach((p: Pokemon) => p && validatePokemon(p, isDebugOrReplay))
 
-  // LIMPIEZA DE ESTADOS VOLÁTILES
-  ctx.clearVolatileStatus(playerPoke)
-  ctx.clearVolatileStatus(startingEnemyPoke)
+  // LIMPIEZA DE ESTADOS VOLÁTILES PARA EL 100% DE AMBOS EQUIPOS
+  effectivePlayerTeam.forEach((p: Pokemon) => {
+    if (p) {
+      ctx.clearVolatileStatus(p);
+      if (isPvP) {
+        p.hp = p.maxHp;
+        p.fainted = false;
+        p.status = '';
+        p.statusTurns = 0;
+        p.sleepTurns = 0;
+        p.isGuardian = false;
+      }
+    }
+  });
+
+  finalEnemyTeam.forEach((p: Pokemon) => {
+    if (p) {
+      ctx.clearVolatileStatus(p);
+      if (isPvP) {
+        p.hp = p.maxHp;
+        p.fainted = false;
+        p.status = '';
+        p.statusTurns = 0;
+        p.sleepTurns = 0;
+        p.isGuardian = false;
+      }
+    }
+  });
 
   // Initial context values
   let rarity = DEFAULT_RARITY_WEIGHT_BASE
@@ -192,6 +185,7 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
 
   ctx.activeBattle.value = {
     ...battleOptions,
+    returnTab: options.returnTab || ctx.uiStore?.activeTab || (isGym ? 'gyms' : (isPvP ? 'arena' : 'map')),
     enemy: null, 
     player: null, 
     _initialEnemy: structuredClone(toRaw(startingEnemyPoke)),
@@ -207,7 +201,10 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     enemyInventory,
     enemyMoney,
     enemyMaxLevel: maxEnemyLv,
-    trainerSprite: resolvedTrainerSprite ? requireNpcSpriteId(resolvedTrainerSprite) : undefined,
+    trainerSprite: resolvedTrainerSprite 
+      ? (isPlayerClassId(resolvedTrainerSprite) ? resolvedTrainerSprite : requireNpcSpriteId(resolvedTrainerSprite)) 
+      : undefined,
+    trainerGender: options.trainerGender || (isGenderId(battleOptions.trainerGender) ? battleOptions.trainerGender : undefined),
     trainerArchetype: resolvedTrainerArchetype,
     isRival: isRival || battleOptions.isRival === true,
     playerTeam: effectivePlayerTeam,

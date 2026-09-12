@@ -1,4 +1,4 @@
-import type { DebugSystem } from '@/stores/debug'
+import { useDebugStore, type DebugSystem } from '@/stores/debug'
 import { GYM_IDS, isGymId, requireGymId, type GymId } from '@/data/world/gyms'
 
 import { useGameStore } from '@/stores/game'
@@ -13,6 +13,20 @@ import type { BattleDifficulty } from '@/types/battle/battle'
 export function registerStatsTools(debug: DebugSystem) {
   const game = useGameStore()
   const ui = useUIStore()
+
+  debug.register({
+    id: 'stats-toggle-fast-ranked',
+    label: 'TOGGLE FAST RANKED DELAY',
+    command: 'toggleFastRankedDelay',
+    category: 'stats',
+    action: () => {
+      const debugStore = useDebugStore()
+      debugStore.fastRankedDelay = !debugStore.fastRankedDelay
+      ui.notify(`Debug: Demora Ranked ${debugStore.fastRankedDelay ? '5s' : '60s'}`, '⏱️')
+      return debugStore.fastRankedDelay
+    },
+    description: 'Alterna la demora para entrar a Ranked entre 5s y 60s.'
+  })
 
   debug.register({
     id: 'stats-set-money',

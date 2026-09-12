@@ -24,6 +24,7 @@ export function createBattleAnimationsBridge(
     triggerPokemonCall: animations.triggerPokemonCall,
     handleHealRequest: animations.handleHealRequest,
     handleBlinkRequest: animations.handleBlinkRequest,
+    triggerFlinchAnim: animations.triggerFlinchAnim,
     awaitTween: animations.awaitTween,
     resetAll: animations.resetAll
   }

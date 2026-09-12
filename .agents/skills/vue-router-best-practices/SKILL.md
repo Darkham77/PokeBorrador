@@ -9,20 +9,15 @@ author: github.com/vuejs-ai
 Vue Router best practices, common gotchas, and navigation patterns.
 
 ### Navigation Guards
-
-- Navigating between same route with different params → See [router-beforeenter-no-param-trigger](references/router-beforeenter-no-param-trigger.md)
-- Accessing component instance in beforeRouteEnter guard → See [router-beforerouteenter-no-this](references/router-beforerouteenter-no-this.md)
-- Navigation guard making API calls without awaiting → See [router-guard-async-await-pattern](references/router-guard-async-await-pattern.md)
-- Users trapped in infinite redirect loops → See [router-navigation-guard-infinite-loop](references/router-navigation-guard-infinite-loop.md)
-- Navigation guard using deprecated next() function → See [router-navigation-guard-next-deprecated](references/router-navigation-guard-next-deprecated.md)
-- Navigation guards executing session resets with page reloads → Return `true` (or allow the target path to resolve) instead of returning `false` to ensure the browser's URL successfully transitions to the target route before the reload completes, preventing route navigation cancellation.
+- Navigating between same route with different params → See [router-beforeenter-no-param-trigger](reference/router-beforeenter-no-param-trigger.md)
+- Accessing component instance in beforeRouteEnter guard → See [router-beforerouteenter-no-this](reference/router-beforerouteenter-no-this.md)
+- Navigation guard making API calls without awaiting → See [router-guard-async-await-pattern](reference/router-guard-async-await-pattern.md)
+- Users trapped in infinite redirect loops → See [router-navigation-guard-infinite-loop](reference/router-navigation-guard-infinite-loop.md)
+- Navigation guard using deprecated next() function → See [router-navigation-guard-next-deprecated](reference/router-navigation-guard-next-deprecated.md)
 
 ### Route Lifecycle
+- Stale data when navigating between same route → See [router-param-change-no-lifecycle](reference/router-param-change-no-lifecycle.md)
+- Event listeners persisting after component unmounts → See [router-simple-routing-cleanup](reference/router-simple-routing-cleanup.md)
 
-- Stale data when navigating between same route → See [router-param-change-no-lifecycle](references/router-param-change-no-lifecycle.md)
-- Event listeners persisting after component unmounts → See [router-simple-routing-cleanup](references/router-simple-routing-cleanup.md)
-
-### Navigation Interaction Patterns
-
-- **Intercepting for Modals**: When a navigation element (like a HUD icon) is intended to only open a modal without changing the active route, the click handler **MUST** return early or use event modifiers to prevent the router state from changing.
-- **State-Driven Routing**: Avoid manual `router.push` calls when the UI state (e.g., active tab) is already managed by a reactive store. Sync the store with the route instead.
+### Setup
+- Building production single-page application → See [router-use-vue-router-for-production](reference/router-use-vue-router-for-production.md)

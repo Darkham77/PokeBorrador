@@ -20,8 +20,10 @@ export const shouldEnemySwitch = (enemy: Pokemon, player: Pokemon, enemyTeam: Po
   return getCombatAI().shouldSwitch(enemy, player, enemyTeam, store)
 }
 
-export const findBestSwitchIndex = (enemyTeam: Pokemon[], player: Pokemon, currentEnemyUid: string, store?: BattleContext): number => {
-  return getCombatAI().findBestSwitchIndex(enemyTeam, player, currentEnemyUid, store)
+import type { SwitchEvaluationMode } from './heuristic/heuristicEngine.ts'
+
+export const findBestSwitchIndex = (enemyTeam: Pokemon[], player: Pokemon, currentEnemyUid: string, store?: BattleContext, mode?: SwitchEvaluationMode): number => {
+  return getCombatAI().findBestSwitchIndex(enemyTeam, player, currentEnemyUid, store, mode)
 }
 
 export const evaluateAndUseNPCItem = (ctx: BattleContext, e: Pokemon): Promise<boolean> => {

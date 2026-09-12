@@ -45,8 +45,8 @@ export class SaturdayGlobalContestSimulation extends BaseEventSimulation {
       const currentSimTime = getServerTime();
 
       // Initial wallet and inventory state
-      gameStore.state.money = 5000; // no-magic: Test seed balance
-      gameStore.state.battleCoins = 50; // no-magic: Test seed balance
+      gameStore.state.money = 5000;
+      gameStore.state.battleCoins = 50;
       gameStore.state.inventory = { goldbottlecap: 0, rarecandy: 0 };
       gameStore.state.starterChosen = true;
       gameStore.state.rankedRewardsClaimed = ['bronce_1000'];
@@ -56,28 +56,28 @@ export class SaturdayGlobalContestSimulation extends BaseEventSimulation {
       // Heavyweight Snorlax for 'weight' category
       const snorlax = pokemonDebugService.generate({
         id: requirePokemonSpeciesId('snorlax'),
-        level: 50 // no-magic: Test seed level
+        level: 50
       });
       snorlax.uid = 'sim-sat-snorlax';
       snorlax.name = 'Snorlax';
       snorlax.nickname = 'Colossus';
-      snorlax.weight = 460.0; // no-magic: Test seed weight
-      snorlax.height = 2.1; // no-magic: Test seed height
-      snorlax.ivs = { hp: 25, atk: 25, def: 25, spa: 25, spd: 25, spe: 25 }; // no-magic: Test seed IVs
+      snorlax.weight = 460.0;
+      snorlax.height = 2.1;
+      snorlax.ivs = { hp: 25, atk: 25, def: 25, spa: 25, spd: 25, spe: 25 };
       snorlax.obtainedAt = currentSimTime;
 
       // Perfect Shiny Dragonite for 'ivs' category (186 IVs + Shiny priority)
       const dragonite = pokemonDebugService.generate({
         id: requirePokemonSpeciesId('dragonite'),
-        level: 55 // no-magic: Test seed level
+        level: 55
       });
       dragonite.uid = 'sim-sat-dragonite';
       dragonite.name = 'Dragonite';
       dragonite.nickname = 'Golden Dragon';
       dragonite.isShiny = true;
-      dragonite.weight = 210.0; // no-magic: Test seed weight
-      dragonite.height = 2.2; // no-magic: Test seed height
-      dragonite.ivs = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }; // no-magic: Test seed IVs
+      dragonite.weight = 210.0;
+      dragonite.height = 2.2;
+      dragonite.ivs = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 };
       dragonite.obtainedAt = currentSimTime;
 
       gameStore.state.team = [dragonite, snorlax];

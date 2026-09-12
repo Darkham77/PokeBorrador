@@ -19,6 +19,8 @@ export interface DetailedMissionReward {
 
 export interface ClassMissionDetails {
   readonly dialogue: string;
+  readonly activationReq: string;
+  readonly rewardConditions: string;
   readonly rulesText: string;
   readonly rewards: readonly DetailedMissionReward[];
 }
@@ -27,27 +29,29 @@ export const CLASS_MISSIONS_METADATA: Readonly<Record<string, Readonly<Record<Mi
   rocket: {
     mission_6h: {
       dialogue: 'Extorsión local a comerciantes y patrullaje de territorio bajo control Rocket.',
-      rulesText: 'Requiere sacrificar 1 Pokémon tipo VENENO de tu Equipo o Caja. El Pokémon es vendido en el mercado negro (sus objetos equipados se devuelven automáticamente a tu mochila).',
+      activationReq: 'Requiere entregar 1 Pokémon de tipo VENENO de tu Equipo o Caja. Es una entrega definitiva en el mercado negro: el Pokémon no regresa (sus objetos equipados vuelven automáticamente a tu mochila).',
+      rewardConditions: 'Dinero: Se calcula mediante fórmula fija basada un 60% en el Nivel y un 40% en los IVs totales del espécimen entregado (hasta ₽35.000). Botín: Entrega 1 Pepita de Oro y 50 EXP Rocket al culminar las 6 horas de operación.',
+      rulesText: 'Requiere 1 Pokémon tipo VENENO (entrega permanente, no regresa). El dinero escala por Nivel (60%) e IVs (40%). Al finalizar las 6h, cobras hasta ₽35.000, 1 Pepita de Oro y 50 EXP Rocket.',
       rewards: [
         {
           icon: '₽',
           label: 'Dinero Base',
           val: '₽15.000 - ₽35.000',
-          tooltipTitle: 'Pago en Poké-Pesos (₽)',
+          tooltipTitle: 'Pago en Pokécuartos (₽)',
           tooltipDesc: 'Dinero en efectivo directo transferido a tu cuenta según el nivel y rareza del Pokémon entregado.'
         },
         {
           id: 'nugget',
           isItem: true,
           label: 'Botín Ilícito',
-          val: 'Pepitas de Oro',
+          val: '1x Pepita de Oro',
           tooltipTitle: 'Pepita (Nugget)',
           tooltipDesc: 'Pepita de oro puro sustraída durante la extorsión. Se vende por un alto valor en cualquier tienda.'
         },
         {
           icon: '🚀',
           label: 'Rango Rocket',
-          val: '+50 a +150 EXP',
+          val: '+50 EXP',
           tooltipTitle: 'Reputación de Sindicato',
           tooltipDesc: 'Puntos de experiencia de clase para ascender en la jerarquía del Equipo Rocket.'
         }
@@ -55,7 +59,9 @@ export const CLASS_MISSIONS_METADATA: Readonly<Record<string, Readonly<Record<Mi
     },
     mission_12h: {
       dialogue: 'Exportación de especímenes incautados al mercado negro para obtener altos dividendos.',
-      rulesText: 'Tráfico internacional de especímenes. Requiere enviar 1 Pokémon tipo VENENO para compradores de élite en el mercado negro. Los objetos equipados regresan a tu inventario.',
+      activationReq: 'Requiere entregar 1 Pokémon de tipo VENENO para compradores de élite del mercado negro. Es una entrega definitiva: el Pokémon no regresa (sus objetos equipados vuelven automáticamente a tu mochila).',
+      rewardConditions: 'Dinero: Escala de ₽40.000 a ₽90.000 según Nivel (60%) e IVs (40%) del espécimen entregado. Botín: Entrega 1 Maxi Pepita de gran valor y 250 EXP Rocket al terminar las 12 horas.',
+      rulesText: 'Requiere 1 Pokémon tipo VENENO (entrega permanente, no regresa). El dividendo escala por Nivel (60%) e IVs (40%). Al completar las 12h, recibes hasta ₽90.000, 1 Maxi Pepita y 250 EXP Rocket.',
       rewards: [
         {
           icon: '₽',
@@ -68,7 +74,7 @@ export const CLASS_MISSIONS_METADATA: Readonly<Record<string, Readonly<Record<Mi
           id: 'bignugget',
           isItem: true,
           label: 'Maxi Pepita',
-          val: 'Maxi Pepitas / Tesoros',
+          val: '1x Maxi Pepita',
           tooltipTitle: 'Maxi Pepita (Big Nugget)',
           tooltipDesc: 'Enorme pepita de oro de gran pureza con extraordinario valor comercial.'
         },
@@ -83,7 +89,9 @@ export const CLASS_MISSIONS_METADATA: Readonly<Record<string, Readonly<Record<Mi
     },
     mission_24h: {
       dialogue: 'Infiltración en las instalaciones de Silph Co. para sustraer prototipos de tecnología secreta.',
-      rulesText: 'Operación clandestina de máximo riesgo. Requiere 1 Pokémon tipo VENENO como distracción definitiva. Otorga prototipos tecnológicos de grado militar y sumas millonarias.',
+      activationReq: 'Requiere entregar 1 Pokémon de tipo VENENO como distracción definitiva para infiltrar Silph Co. Es una entrega permanente: el Pokémon no regresa (sus objetos equipados vuelven automáticamente a tu mochila).',
+      rewardConditions: 'Dinero: Fortuna de ₽100.000 a ₽250.000 calculada por Nivel (60%) e IVs (40%). Botín: Prototipo exclusivo de Master Ball garantizado y 600 EXP Rocket al finalizar las 24 horas.',
+      rulesText: 'Requiere 1 Pokémon tipo VENENO (entrega permanente, no regresa). Otorga una fortuna calculada por Nivel e IVs (hasta ₽250.000). Al culminar las 24h, cobras el dinero, 1 Master Ball y 600 EXP Rocket.',
       rewards: [
         {
           icon: '₽',
@@ -96,7 +104,7 @@ export const CLASS_MISSIONS_METADATA: Readonly<Record<string, Readonly<Record<Mi
           id: 'masterball',
           isItem: true,
           label: 'Prototipo Secreto',
-          val: 'Master Ball / Cápsulas',
+          val: '1x Master Ball',
           tooltipTitle: 'Master Ball (Prototipo Silph)',
           tooltipDesc: 'La Poké Ball definitiva que captura cualquier Pokémon salvaje sin fallar.'
         },
@@ -113,14 +121,16 @@ export const CLASS_MISSIONS_METADATA: Readonly<Record<string, Readonly<Record<Mi
   cazabichos: {
     mission_6h: {
       dialogue: 'Recolecta néctar y feromonas en el bosque para atraer especímenes comunes.',
-      rulesText: 'Expedición ecológica sin sacrificar Pokémon. Cuesta ₽5.000 de suministros de campo. Atrae Pokémon Bicho salvajes con genética asegurada.',
+      activationReq: 'Costo de expedición: ₽5.000 Pokécuartos en suministros de campo. No requiere entregar ni sacrificar Pokémon.',
+      rewardConditions: 'Captura de Bicho: Tus exploradores buscan en rutas según tus medallas de gimnasio. Al finalizar las 6h, depositan 3 Pokémon Bicho en tu Caja con piso garantizado de IVs ≥ 5 en cada estadística y probabilidad Shiny x2. Entrega 3 Malla Balls y 50 EXP.',
+      rulesText: 'Cuesta ₽5.000. Al finalizar las 6 horas, recibes 3 Pokémon Bicho en tu Caja (IVs mínimos garantizados ≥ 5, probabilidad Shiny x2), 3 Malla Balls y 50 EXP Cazabichos.',
       rewards: [
         {
           icon: '🐛',
           label: 'Especies Bicho',
-          val: 'Caterpie, Weedle, Paras',
-          tooltipTitle: 'Avistamiento de Bicho',
-          tooltipDesc: 'Garantiza el descubrimiento de ejemplares tipo Bicho con un suelo mínimo de IVs asegurado.'
+          val: '3 Pokémon en Caja',
+          tooltipTitle: 'Captura Automática',
+          tooltipDesc: 'Garantiza el descubrimiento de 3 ejemplares tipo Bicho con un suelo mínimo de IVs asegurado.'
         },
         {
           id: 'netball',
@@ -141,12 +151,14 @@ export const CLASS_MISSIONS_METADATA: Readonly<Record<string, Readonly<Record<Mi
     },
     mission_12h: {
       dialogue: 'Captura especímenes raros y cataloga la población de coleópteros de la zona.',
-      rulesText: 'Rastreo profundo en reservas naturales. Cuesta ₽10.000 de suministros. Otorga un multiplicador de x4 a la probabilidad de variantes Shiny.',
+      activationReq: 'Costo de expedición: ₽10.000 Pokécuartos en suministros. No requiere entregar ni sacrificar Pokémon.',
+      rewardConditions: 'Coleópteros Raros: 3 Pokémon Bicho capturados en tu Caja con piso de IVs ≥ 10 en cada estadística y probabilidad Shiny x4. Otorga 1 Polvo Plateado (potencia ataques Bicho) y 250 EXP al completar las 12 horas.',
+      rulesText: 'Cuesta ₽10.000. Al finalizar las 12h, recibes 3 Pokémon Bicho (IVs mínimos ≥ 10, Shiny x4), 1 Polvo Plateado y 250 EXP Cazabichos.',
       rewards: [
         {
           icon: '✨',
           label: 'Bicho Raro (x4 Shiny)',
-          val: 'Scyther / Pinsir',
+          val: '3 Pokémon en Caja',
           tooltipTitle: 'Coleópteros Raros',
           tooltipDesc: 'Alta probabilidad de encontrar ejemplares raros con x4 de probabilidad Shiny y 10 IVs garantizados.'
         },
@@ -154,7 +166,7 @@ export const CLASS_MISSIONS_METADATA: Readonly<Record<string, Readonly<Record<Mi
           id: 'silverpowder',
           isItem: true,
           label: 'Polvo Plateado',
-          val: 'Silver Powder / Gemas',
+          val: '1x Polvo Plateado',
           tooltipTitle: 'Polvo Plateado (Silver Powder)',
           tooltipDesc: 'Objeto potenciador que aumenta la potencia de todos los ataques de tipo Bicho.'
         },
@@ -169,20 +181,22 @@ export const CLASS_MISSIONS_METADATA: Readonly<Record<string, Readonly<Record<Mi
     },
     mission_24h: {
       dialogue: 'Expedición profunda en busca de especímenes exóticos con IVs genéticos excepcionales.',
-      rulesText: 'Safari de expedición maestra. Cuesta ₽20.000 de suministros. Activa la Red Maestra (20% de probabilidad de capturar un segundo ejemplar idéntico de regalo).',
+      activationReq: 'Costo de expedición: ₽20.000 Pokécuartos en suministros avanzados. No requiere entregar ni sacrificar Pokémon.',
+      rewardConditions: 'Especies Élite: 3 Pokémon Bicho superiores en tu Caja con piso de IVs ≥ 15 en cada estadística y probabilidad Shiny x8. Otorga 1 Banda Focus (Focus Sash) competitiva y 600 EXP al culminar las 24 horas.',
+      rulesText: 'Cuesta ₽20.000. Al culminar las 24h, recibes 3 Pokémon Bicho superiores (IVs mínimos ≥ 15, Shiny x8), 1 Banda Focus y 600 EXP Cazabichos.',
       rewards: [
         {
           icon: '👑',
-          label: 'Bicho Exótico (2x1)',
-          val: 'Heracross / Scizor',
+          label: 'Bicho Exótico (x8 Shiny)',
+          val: '3 Pokémon en Caja',
           tooltipTitle: 'Ejemplar Alfa Bicho',
-          tooltipDesc: 'Pokémon con genética superior (mínimo 15 IVs en cada estadística) y oportunidad de 2x1.'
+          tooltipDesc: 'Pokémon con genética superior (mínimo 15 IVs en cada estadística) y probabilidad Shiny x8.'
         },
         {
           id: 'focussash',
           isItem: true,
           label: 'Banda Focus',
-          val: 'Banda Focus / Equipo',
+          val: '1x Banda Focus',
           tooltipTitle: 'Banda Focus (Focus Sash)',
           tooltipDesc: 'Objeto competitivo que permite resistir cualquier golpe fulminante con 1 PS.'
         },
@@ -199,7 +213,9 @@ export const CLASS_MISSIONS_METADATA: Readonly<Record<string, Readonly<Record<Mi
   entrenador: {
     mission_6h: {
       dialogue: 'Rutina de calentamiento y combates rápidos en el gimnasio local para afilar reflejos.',
-      rulesText: 'Envía 1 Pokémon de tu equipo o caja al gimnasio de entrenamiento. El Pokémon regresa intacto a tu caja con experiencia masiva y Battle Coins.',
+      activationReq: 'Costo de sparring: ₽5.000 Pokécuartos y asignar 1 Pokémon de tu equipo o caja.',
+      rewardConditions: 'EXP de Combate: El Pokémon entrena y gana 25.000 + (Nivel x 1.000) de EXP. Al completar las 6h, tu Pokémon regresa con su experiencia ganada (subiendo de nivel si corresponde) y recibes 50 Battle Coins y 50 EXP de Liga.',
+      rulesText: 'Cuesta ₽5.000. El Pokémon asignado combate 6h y gana 25.000 + (Nivel x 1.000) EXP. Al finalizar, regresa con su experiencia ganada, 50 Battle Coins y 50 EXP Entrenador.',
       rewards: [
         {
           icon: '📈',
@@ -226,7 +242,9 @@ export const CLASS_MISSIONS_METADATA: Readonly<Record<string, Readonly<Record<Mi
     },
     mission_12h: {
       dialogue: 'Sesión intensa en gimnasio de alto rendimiento para potenciar la experiencia de combate.',
-      rulesText: 'Entrenamiento táctico intensivo con líderes y sparrings oficiales. Otorga doble bloque de experiencia y objetos de entrenamiento acelerado.',
+      activationReq: 'Costo de sparring: ₽10.000 Pokécuartos y asignar 1 Pokémon de tu equipo o caja.',
+      rewardConditions: 'EXP Avanzada: El Pokémon asignado gana doble bloque de experiencia: 2x [25.000 + (Nivel x 1.000)] EXP. Al finalizar las 12h, recibes 1 Caramelo Raro, 150 Battle Coins y 250 EXP de Liga.',
+      rulesText: 'Cuesta ₽10.000. El Pokémon asignado gana el doble de EXP. Al finalizar las 12h, regresa con su nivel actualizado, 1 Caramelo Raro, 150 Battle Coins y 250 EXP Entrenador.',
       rewards: [
         {
           icon: '📈',
@@ -254,7 +272,9 @@ export const CLASS_MISSIONS_METADATA: Readonly<Record<string, Readonly<Record<Mi
     },
     mission_24h: {
       dialogue: 'Maratón de duelos contra líderes veteranos y optimización táctica del equipo a nivel profesional.',
-      rulesText: 'Campamento de élite de 4 bloques. Tu Pokémon combate contra campeones de Liga. Garantiza una ganancia descomunal de experiencia y objetos de torneo.',
+      activationReq: 'Costo de sparring: ₽20.000 Pokécuartos y asignar 1 Pokémon de tu equipo o caja.',
+      rewardConditions: 'EXP Máxima + Nivel Extra: El Pokémon asignado gana 4x bloques de EXP y sube +1 Nivel completo adicional garantizado. Al finalizar las 24h, recibes 3 Caramelos Raros, 400 Battle Coins y 600 EXP de Liga.',
+      rulesText: 'Cuesta ₽20.000. El Pokémon asignado gana 4x bloques de EXP y sube +1 Nivel garantizado. Al culminar las 24h, recibes 3 Caramelos Raros, 400 Battle Coins y 600 EXP Entrenador.',
       rewards: [
         {
           icon: '⚡',
@@ -284,12 +304,14 @@ export const CLASS_MISSIONS_METADATA: Readonly<Record<string, Readonly<Record<Mi
   criador: {
     mission_6h: {
       dialogue: 'Monitoreo y análisis nutricional de huevos en la incubadora de la guardería.',
-      rulesText: 'Envía 1 Pokémon a la incubadora genética. Consume 5 puntos de Vigor del Pokémon para mejorar permanentemente sus estadísticas base (IVs).',
+      activationReq: 'Costo genético: 300 Battle Coins y asignar 1 Pokémon con vigor disponible.',
+      rewardConditions: 'Optimización de ADN: Consume 5 de Vigor del Pokémon asignado y aumenta permanentemente +1 punto de IV en una estadística que no sea 31. Al finalizar las 6h, recibes 1 Piedraeterna y 50 EXP de Criador.',
+      rulesText: 'Cuesta 300 BC. Consume 5 de Vigor del Pokémon y aumenta permanentemente +1 IV en una estadística menor a 31. Al culminar las 6h, cobras 1 Piedraeterna y 50 EXP Criador.',
       rewards: [
         {
           icon: '🧬',
           label: 'Mejora Genética',
-          val: '+1 a +3 IVs (Stat Azar)',
+          val: '+1 IV (Stat < 31)',
           tooltipTitle: 'Mutación Genética Positiva',
           tooltipDesc: 'Aumenta permanentemente los IVs de HP, Ataque, Defensa, SpA, SpD o Velocidad.'
         },
@@ -312,12 +334,14 @@ export const CLASS_MISSIONS_METADATA: Readonly<Record<string, Readonly<Record<Mi
     },
     mission_12h: {
       dialogue: 'Entrenamiento genético intensivo y selección de rasgos para mejorar estadísticas base.',
-      rulesText: 'Terapia celular de 2 bloques en la guardería. Consume 10 puntos de Vigor del Pokémon para optimizar simultáneamente 2 estadísticas genéticas.',
+      activationReq: 'Costo genético: 600 Battle Coins y asignar 1 Pokémon con vigor disponible.',
+      rewardConditions: 'Optimización Dual: Consume 10 de Vigor del Pokémon y aumenta permanentemente +2 puntos de IV en estadísticas menores a 31. Al finalizar las 12h, recibes 1 Lazo Destino de crianza y 250 EXP de Criador.',
+      rulesText: 'Cuesta 600 BC. Consume 10 de Vigor del Pokémon y aumenta permanentemente +2 IVs en estadísticas menores a 31. Al culminar las 12h, cobras 1 Lazo Destino y 250 EXP Criador.',
       rewards: [
         {
           icon: '🧬',
           label: 'Mejora Dual',
-          val: '+2 a +4 IVs (2 Stats)',
+          val: '+2 IVs (Stats < 31)',
           tooltipTitle: 'Optimización Genética Dual',
           tooltipDesc: 'Mejora simultáneamente dos estadísticas de IVs hasta el límite máximo de 31.'
         },
@@ -340,14 +364,16 @@ export const CLASS_MISSIONS_METADATA: Readonly<Record<string, Readonly<Record<Mi
     },
     mission_24h: {
       dialogue: 'Optimización molecular avanzada de la cadena de ADN para transferir herencias genéticas perfectas.',
-      rulesText: 'Reestructuración de ADN de 4 bloques. Consume 15 puntos de Vigor (10% de chance de ahorrar el vigor). Posibilidad de maximizar una estadística a 31 IVs perfecto.',
+      activationReq: 'Costo genético: 1.000 Battle Coins y asignar 1 Pokémon con vigor disponible.',
+      rewardConditions: 'Reestructuración Máxima: Consume 15 de Vigor (10% de probabilidad de no gastar vigor) y aumenta permanentemente +4 puntos de IV en estadísticas menores a 31. Al finalizar las 24h, recibes 1 Chapa Dorada y 600 EXP de Criador.',
+      rulesText: 'Cuesta 1.000 BC. Consume 15 de Vigor (10% chance de ahorro) y aumenta permanentemente +4 IVs en estadísticas menores a 31. Al culminar las 24h, cobras 1 Chapa Dorada y 600 EXP Criador.',
       rewards: [
         {
           icon: '👑',
           label: 'Genética Perfecta',
-          val: '+3 a +5 IVs (Chance 31)',
+          val: '+4 IVs (Stats < 31)',
           tooltipTitle: 'Perfección Genética',
-          tooltipDesc: 'Gran salto en estadísticas genéticas con oportunidad de alcanzar 31 IVs máximos.'
+          tooltipDesc: 'Gran salto en estadísticas genéticas aumentando 4 puntos de IV en stats que no hayan alcanzado 31.'
         },
         {
           id: 'goldbottlecap',
@@ -371,6 +397,8 @@ export const CLASS_MISSIONS_METADATA: Readonly<Record<string, Readonly<Record<Mi
 
 const DEFAULT_MISSION_DETAILS: ClassMissionDetails = {
   dialogue: 'Realiza tareas especiales de clase.',
+  activationReq: 'Despliega a tus Pokémon en misiones especiales según los requisitos de tu clase.',
+  rewardConditions: 'Otorga beneficios exclusivos al completar el tiempo de despliegue.',
   rulesText: 'Despliega a tus Pokémon en misiones especiales según los requisitos de tu clase.',
   rewards: [
     {

@@ -151,6 +151,9 @@ export async function simulatePastEventAndMissionsReward(
 
   // 2. Inject finished Class Mission
   const nowMs = Temporal.Now.instant().epochMilliseconds
+  if (!gameStore.state.playerClass) {
+    gameStore.state.playerClass = 'entrenador'
+  }
   gameStore.state.classData = {
     ...gameStore.state.classData,
     activeMission: {

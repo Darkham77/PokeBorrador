@@ -317,4 +317,40 @@ export function parseInstantSafe(val: unknown): Temporal.Instant | null {
   }
 }
 
+export type WallClockTimerId = ReturnType<typeof setInterval>;
+
+/**
+ * Creates a low-level wall-clock system interval immune to UI animation pausing.
+ * Reserved strictly for background infrastructure (e.g. PvP timeout clocks).
+ */
+export function createWallClockInterval(callback: () => void, intervalMs: number): WallClockTimerId {
+  return setInterval(callback, intervalMs);
+}
+
+/**
+ * Clears a wall-clock system interval.
+ */
+export function clearWallClockInterval(timerId: WallClockTimerId | null): void {
+  if (timerId !== null) {
+    clearInterval(timerId);
+  }
+}
+
+/**
+ * Formats a remaining duration in milliseconds as a readable countdown string (e.g. '02h 15m 30s' or '05m 12s').
+ */
+export function formatRemainingDuration(remainingMs: number): string {
+  if (remainingMs <= 0) return '00:00:00';
+  const totalSeconds = Math.floor(remainingMs / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) {
+    return `${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+  }
+  return `${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+}
+
+
+
 

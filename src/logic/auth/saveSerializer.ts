@@ -9,9 +9,10 @@ import type { Pokemon, PokemonEgg, PokemonGender } from '@/types/pokemon/pokemon
 import type { GameState } from '@/types/system/game';
 import type { SaveDataDto } from '@/logic/validation/schemas';
 import type { GenderName } from '@pkmn/sim';
+import { cloneReactive } from '@/logic/utils/cloneUtils.ts';
 import { serializeActiveBattle, type ActiveBattleSerialized } from './battleSerializerHelper.ts';
 
-type PersistedPokemon = Omit<Pokemon, 'gender'> & { gender: GenderName };
+export type PersistedPokemon = Omit<Pokemon, 'gender'> & { gender: GenderName };
 type PersistedPokemonEgg = Omit<PokemonEgg, 'gender'> & { gender: GenderName };
 
 function toPersistedPokemonGender(gender: PokemonGender | undefined): GenderName {
@@ -20,11 +21,94 @@ function toPersistedPokemonGender(gender: PokemonGender | undefined): GenderName
   return 'N';
 }
 
-function withPersistedPokemonGender(pokemon: Pokemon): PersistedPokemon {
+export function withPersistedPokemonGender(pokemon: Pokemon): PersistedPokemon {
   return {
     ...pokemon,
     gender: toPersistedPokemonGender(pokemon.gender),
   };
+}
+
+/**
+ * Serializes a team of Pokemon 1:1 into persistent format,
+ * identical to how teams are serialized in game_saves.
+ * Restores full HP, empty status, and cleans volatile in-combat fields.
+ */
+export function serializePokemonTeam(team: (Pokemon | null)[]): PersistedPokemon[] {
+  const cloned = cloneReactive(team);
+  const result: PersistedPokemon[] = [];
+  for (const mon of cloned) {
+    if (!mon) continue;
+    const maxHp = Number(mon.maxHp ?? mon.hp ?? 100);
+    const sanitized: Pokemon = {
+      ...mon,
+      hp: maxHp,
+      maxHp,
+      status: '',
+      statusTurns: 0,
+      sleepTurns: 0,
+      fainted: false,
+      cursed: false,
+      confused: 0,
+      flinched: false,
+      substitute: 0,
+      seeded: false,
+      attracted: false,
+      isGuardian: false,
+      volatileCounters: {}
+    };
+    result.push(withPersistedPokemonGender(sanitized));
+  }
+  return result;
+}
+
+/**
+ * Deserializes a persistent Pokemon team (from string or array) 1:1 into canonical runtime Pokemon[],
+ * normalizing genders and ensuring healthy combat readiness.
+ */
+export function deserializePokemonTeam(rawTeam: unknown): Pokemon[] {
+  if (!rawTeam) return [];
+
+  let parsed: unknown[] = [];
+  if (typeof rawTeam === 'string') {
+    try {
+      const decoded = JSON.parse(rawTeam);
+      if (Array.isArray(decoded)) {
+        parsed = decoded;
+      }
+    } catch {
+      return [];
+    }
+  } else if (Array.isArray(rawTeam)) {
+    parsed = rawTeam;
+  }
+
+  const result: Pokemon[] = [];
+  for (const item of parsed) {
+    if (!item || typeof item !== 'object') continue;
+    const rawMon = item as Pokemon;
+    normalizeRuntimePokemonGender(rawMon);
+    const maxHp = Number(rawMon.maxHp ?? rawMon.hp ?? 100);
+    const mon: Pokemon = {
+      ...rawMon,
+      hp: maxHp,
+      maxHp,
+      status: '',
+      statusTurns: 0,
+      sleepTurns: 0,
+      fainted: false,
+      cursed: false,
+      confused: 0,
+      flinched: false,
+      substitute: 0,
+      seeded: false,
+      attracted: false,
+      isGuardian: false,
+      volatileCounters: {},
+      uid: rawMon.uid || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `mon_${Math.random()}`)
+    };
+    result.push(mon);
+  }
+  return result;
 }
 
 function withPersistedEggGender(egg: PokemonEgg): PersistedPokemonEgg {
@@ -97,8 +181,9 @@ export function serializeState(state: GameState | SaveDataDto): SaveDataDto {
     gymProgress: state.gymProgress || {},
     lastGymWins: state.lastGymWins || {},
     lastGymAttempts: state.lastGymAttempts || {},
-    starterChosen: state.starterChosen || false,
+    starterChosen: Boolean(state.starterChosen),
     lastRankedSeason: state.lastRankedSeason || null,
+    rankedMedals: (state.rankedMedals || []) as SaveDataDto['rankedMedals'],
     nick_style: state.nick_style || null,
     avatar_style: state.avatar_style || null,
     stats: state.stats || {},
@@ -108,7 +193,7 @@ export function serializeState(state: GameState | SaveDataDto): SaveDataDto {
     rankedMaxElo: state.rankedMaxElo,
     rankedRewardsClaimed: state.rankedRewardsClaimed || [],
     passiveTeamUids: state.passiveTeamUids || [],
-    passiveTeamActive: state.passiveTeamActive,
+    passiveTeamActive: Boolean(state.passiveTeamActive),
     daycare_missions: (state.daycare_missions || []) as SaveDataDto['daycare_missions'],
     daycare_mission_refreshes: state.daycare_mission_refreshes,
     safariTicketSecs: state.safariTicketSecs || 0,
@@ -135,17 +220,50 @@ export function serializeState(state: GameState | SaveDataDto): SaveDataDto {
     playerClass: state.playerClass || null,
     classLevel: state.classLevel || 1,
     classXP: state.classXP || 0,
-    classData: (state.classData || {
+    classData: state.classData ? {
+      captureStreak: state.classData.captureStreak || 0,
+      longestStreak: state.classData.longestStreak || 0,
+      reputation: state.classData.reputation || 0,
+      blackMarketSales: state.classData.blackMarketSales || 0,
+      criminality: state.classData.criminality || 0,
+      blackMarketDaily: state.classData.blackMarketDaily ? {
+        date: state.classData.blackMarketDaily.date || '',
+        items: state.classData.blackMarketDaily.items || [],
+        purchased: state.classData.blackMarketDaily.purchased || []
+      } : { date: '', items: [], purchased: [] },
+      activeMission: state.classData.activeMission ? {
+        id: state.classData.activeMission.id,
+        startedAt: Number(state.classData.activeMission.startedAt),
+        endsAt: Number(state.classData.activeMission.endsAt),
+        ...(state.classData.activeMission.targetPokemonUid ? { targetPokemonUid: state.classData.activeMission.targetPokemonUid } : {}),
+        ...(typeof state.classData.activeMission.targetPokemonIdx === 'number' ? { targetPokemonIdx: state.classData.activeMission.targetPokemonIdx } : {}),
+        ...(state.classData.activeMission.targetPokemonSpecies ? { targetPokemonSpecies: state.classData.activeMission.targetPokemonSpecies } : {}),
+        ...(state.classData.activeMission.targetZone ? { targetZone: state.classData.activeMission.targetZone } : {}),
+        ...(typeof state.classData.activeMission.streak === 'number' ? { streak: state.classData.activeMission.streak } : {}),
+        ...(typeof state.classData.activeMission.projectedReward === 'number' ? { projectedReward: state.classData.activeMission.projectedReward } : {}),
+        ...(state.classData.activeMission.rewards ? { rewards: state.classData.activeMission.rewards } : {})
+      } : null,
+      extortedRouteId: state.classData.extortedRouteId || null,
+      extortedRouteTimestamp: state.classData.extortedRouteTimestamp || null,
+      lastEggScanDate: state.classData.lastEggScanDate || null,
+      officialRouteId: state.classData.officialRouteId || null,
+      officialRouteTimestamp: state.classData.officialRouteTimestamp || null,
+      kitCaptures: state.classData.kitCaptures || 0
+    } : {
       captureStreak: 0,
       longestStreak: 0,
       reputation: 0,
       blackMarketSales: 0,
       criminality: 0,
       blackMarketDaily: { date: '', items: [], purchased: [] },
+      activeMission: null,
       extortedRouteId: null,
+      extortedRouteTimestamp: null,
+      lastEggScanDate: null,
       officialRouteId: null,
+      officialRouteTimestamp: null,
       kitCaptures: 0
-    }) as SaveDataDto['classData'],
+    },
     faction: state.faction || null,
     warCoins: state.warCoins || 0,
     warCoinsSpent: state.warCoinsSpent || 0,

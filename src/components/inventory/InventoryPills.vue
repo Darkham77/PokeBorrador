@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, nextTick, watch, onUnmounted } from 'vue'
+import { computed, ref, onMounted, nextTick, watch } from 'vue'
+import { useResizeObserver } from '@vueuse/core'
 import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
 import PVTooltip from '@/components/common/PVTooltip.vue'
@@ -12,6 +13,7 @@ const money = computed(() => _gameStore.state.money)
 const battleCoins = computed(() => _gameStore.state.battleCoins || 0)
 const warCoins = computed(() => _gameStore.state.warCoins || 0)
 
+const containerRef = ref<HTMLElement | null>(null)
 const moneyRef = ref<HTMLElement | null>(null)
 const bcRef = ref<HTMLElement | null>(null)
 const warRef = ref<HTMLElement | null>(null)
@@ -47,13 +49,15 @@ const fitText = async (el: HTMLElement | null, baseSize: number) => {
 }
 
 const fitAllPills = () => {
-  fitText(moneyRef.value, DEFAULT_PILL_FONT_SIZE_PX)
-  fitText(bcRef.value, DEFAULT_PILL_FONT_SIZE_PX)
-  fitText(warRef.value, DEFAULT_PILL_FONT_SIZE_PX)
+  void fitText(moneyRef.value, DEFAULT_PILL_FONT_SIZE_PX)
+  void fitText(bcRef.value, DEFAULT_PILL_FONT_SIZE_PX)
+  void fitText(warRef.value, DEFAULT_PILL_FONT_SIZE_PX)
 }
 
 // Observador para cambios de tamaño (mobile resize / orientation)
-let resizeObserver: ResizeObserver | null = null
+useResizeObserver(containerRef, () => {
+  fitAllPills()
+})
 
 // Observadores para disparar el ajuste cuando cambien los datos
 watch([money, battleCoins, warCoins], () => {
@@ -76,25 +80,14 @@ onMounted(async () => {
       fitAllPills()
     })
   }
-
-  // Configurar observer en el contenedor HUD
-  if (moneyRef.value?.closest('.hud-items')) {
-    resizeObserver = new ResizeObserver(() => {
-      fitAllPills()
-    })
-    resizeObserver.observe(moneyRef.value.closest('.hud-items')!)
-  }
-})
-
-onUnmounted(() => {
-  if (resizeObserver) {
-    resizeObserver.disconnect()
-  }
 })
 </script>
 
 <template>
-  <div class="hud-items">
+  <div
+    ref="containerRef"
+    class="hud-items"
+  >
     <!-- DINERO -->
     <PVTooltip
       title="POKÉ-PESOS (₱)"

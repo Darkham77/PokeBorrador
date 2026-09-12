@@ -14,17 +14,34 @@ import { HeuristicDamageCalculator } from './heuristic/damageCalculator.ts';
 import { InferenceEngine } from './heuristic/inferenceEngine.ts';
 import { buildSnapshot } from './heuristic/snapshotBuilder.ts';
 import { evaluateStrategicState } from './heuristic/strategyEvaluator.ts';
-import { heuristicDecision, pickBestSwitch } from './heuristic/heuristicEngine.ts';
+import { heuristicDecision, pickBestSwitch, hasViableSwitchCounter, type SwitchEvaluationMode } from './heuristic/heuristicEngine.ts';
 import { useBattleStore } from '@/stores/battle/battle';
+import { getTrainerAIPreset } from '@/data/player/trainerTypes.ts';
 
 const LOW_OFFENSIVE_DAMAGE_THRESHOLD_PERCENT = 30;
+const BASE_SWITCH_THRESHOLD_PERCENT = 50;
+const SWITCH_AGGRESSIVENESS_SCALE = 25;
 
-function resolveConfig(battle: { isWild?: boolean; isGym?: boolean; isRival?: boolean; trainerArchetype?: string } | null): AIConfig {
-  if (!battle) return AI_CONFIG_PRESETS.npc;
+function resolveConfig(battle: {
+  isWild?: boolean;
+  isGym?: boolean;
+  isRival?: boolean;
+  trainerArchetype?: string;
+  isPvP?: boolean;
+  isAsynchronous?: boolean;
+  isRanked?: boolean;
+} | null): AIConfig {
+  if (!battle) return AI_CONFIG_PRESETS.intermediate;
   if (battle.isWild) return AI_CONFIG_PRESETS.wild;
-  if (battle.isRival || battle.trainerArchetype === 'rival') return AI_CONFIG_PRESETS.rival;
+  if (battle.isRival || battle.trainerArchetype === 'rival' || (battle.isPvP && (battle.isAsynchronous || battle.isRanked))) {
+    return AI_CONFIG_PRESETS.rival;
+  }
   if (battle.isGym) return AI_CONFIG_PRESETS.gym;
-  return AI_CONFIG_PRESETS.npc;
+  if (battle.trainerArchetype) {
+    const presetKey = getTrainerAIPreset(battle.trainerArchetype);
+    return AI_CONFIG_PRESETS[presetKey] ?? AI_CONFIG_PRESETS.intermediate;
+  }
+  return AI_CONFIG_PRESETS.intermediate;
 }
 
 /** Picks the highest base-power valid move, respecting disabledMove and pp. Used when no snapshot is available. */
@@ -59,6 +76,17 @@ import type { GenerationNum } from '@smogon/calc';
 export class HeuristicAI implements CombatAI {
   private readonly calc = new HeuristicDamageCalculator(ACTIVE_GENERATION as GenerationNum);
   private readonly inference = new InferenceEngine();
+  private readonly activeTurnsByUid = new Map<string, number>();
+  private readonly entryTurnByUid = new Map<string, number>();
+
+  notifyTurnAdvanced(activeUid: string): void {
+    this.activeTurnsByUid.set(activeUid, (this.activeTurnsByUid.get(activeUid) ?? 0) + 1);
+  }
+
+  getConfig(store?: BattleContext): AIConfig {
+    const battle = store?.activeBattle?.value ?? null;
+    return resolveConfig(battle);
+  }
 
   // ──────────────────────────────────────────
   // CombatAI interface
@@ -137,8 +165,25 @@ export class HeuristicAI implements CombatAI {
     const battle = store?.activeBattle?.value ?? null;
     const config = resolveConfig(battle);
 
-    // Wilds don't switch
+    // Wilds and novice trainers don't switch mid-turn
     if (config.switchAggressiveness === 0.0) return false;
+
+    // Check anti-ping-pong cooldown: a newly entered Pokémon cannot switch immediately
+    const currentUid = _enemy.uid;
+    let activeTurns = this.activeTurnsByUid.get(currentUid);
+    if (activeTurns === undefined) {
+      const battleTurn = store?.activeBattle?.value?.turnCount;
+      if (typeof battleTurn === 'number') {
+        if (!this.entryTurnByUid.has(currentUid)) {
+          this.entryTurnByUid.set(currentUid, battleTurn);
+        }
+        activeTurns = battleTurn - (this.entryTurnByUid.get(currentUid) ?? battleTurn);
+      } else {
+        activeTurns = 0;
+      }
+    }
+
+    if (activeTurns < config.switchCooldownTurns) return false;
 
     let snapshot;
     try {
@@ -149,17 +194,31 @@ export class HeuristicAI implements CombatAI {
 
     if (!snapshot) return false;
 
+    const switchOptions = snapshot.mySide.pokemon.filter((p) => !p.active && p.hp > 0);
+    const oppActive = snapshot.opponentSide.activePokemon;
+
+    // Crucial anti-loop gate: NEVER switch if no bench Pokémon is a viable safe counter!
+    if (!oppActive || !hasViableSwitchCounter(snapshot, switchOptions, this.calc, this.inference, oppActive)) {
+      return false;
+    }
+
     const activeMoves = snapshot.mySide.activePokemon?.moves.map((m) => ({ id: m.id, pp: 1, disabled: false })) ?? [];
     const matchup = this.calc.calcMatchup(snapshot, activeMoves);
     const bestOppDmg = matchup.oppAttacking[0]?.maxPercent ?? 0;
     const bestMyDmg = matchup.myAttacking[0]?.maxPercent ?? 0;
 
     // Scale switch threshold by aggressiveness
-    const switchThreshold = 50 - config.switchAggressiveness * 25; // 0.4 → 40, 0.7 → 32.5, 0.9 → 27.5
+    const switchThreshold = BASE_SWITCH_THRESHOLD_PERCENT - config.switchAggressiveness * SWITCH_AGGRESSIVENESS_SCALE;
     return bestOppDmg > switchThreshold && bestMyDmg < LOW_OFFENSIVE_DAMAGE_THRESHOLD_PERCENT && Math.random() < config.switchAggressiveness;
   }
 
-  findBestSwitchIndex(enemyTeam: Pokemon[], _player: Pokemon, currentEnemyUid: string, store?: BattleContext): number {
+  findBestSwitchIndex(
+    enemyTeam: Pokemon[],
+    _player: Pokemon,
+    currentEnemyUid: string,
+    store?: BattleContext,
+    mode: SwitchEvaluationMode = 'counter'
+  ): number {
     let snapshot;
     try {
       snapshot = store ? buildSnapshot(store) : null;
@@ -174,7 +233,7 @@ export class HeuristicAI implements CombatAI {
 
     const candidates = snapshot.mySide.pokemon.filter((p) => !p.active && p.hp > 0);
     const strategic = evaluateStrategicState(snapshot, this.calc, this.inference);
-    const decision = pickBestSwitch(snapshot, candidates, strategic, this.calc, this.inference, oppActive);
+    const decision = pickBestSwitch(snapshot, candidates, strategic, this.calc, this.inference, oppActive, mode);
 
     if (decision?.type === 'switch' && decision.switchTeamIndex !== undefined) {
       // Map heuristic team index back to the project's enemyTeam array

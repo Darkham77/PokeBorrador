@@ -378,10 +378,12 @@ export const useAuthStore = defineStore('auth', () => {
     if (!preventSave) {
       try {
         const { useGameStore } = await import('./game.ts')
+        const { saveCoordinator } = await import('@/logic/auth/saveCoordinator.ts')
         const gameStore = useGameStore()
         if (gameStore.isReady && gameStore.save) {
           logger.info('AuthStore', 'Guardando partida de forma segura antes de cerrar sesión...')
-          await gameStore.save(false)
+          await saveCoordinator.flushPendingSave()
+          await gameStore.save(false, true, true)
         }
       } catch (e) {
         logger.warn('AuthStore', `Error al guardar antes de cerrar sesión: ${(e as Error).message}`)

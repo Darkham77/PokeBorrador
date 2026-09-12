@@ -43,6 +43,12 @@ import type { MapRouteId } from '@/data/world/map-assets';
 import type { PlayerClassId } from '@/data/player/playerClasses';
 import type { FactionId } from '@/types/system/game';
 
+const MAX_CAZABICHOS_IV_FLOOR = 20;
+const CAZABICHOS_IV_FLOOR_PER_STREAK = 5;
+const CAZABICHOS_STREAK_SHINY_STEP = 0.75;
+const DOMINANCE_IV_FLOOR = 15;
+const DOMINANCE_SHINY_MULT = 1.3;
+
 // --- ENCOUNTER CONTEXT & MODIFIERS ---
 
 export interface FieldEncounterContext {
@@ -120,20 +126,25 @@ export function resolveFieldEncounterModifiers(ctx: FieldEncounterContext): Reso
   // 7. IV Floor (Cazabichos class + Dominance)
   let ivFloor = 0;
   if (ctx.playerClass === 'cazabichos') {
-    ivFloor = Math.max(ivFloor, ctx.classData?.captureStreak || 0);
+    const streak = ctx.classData?.captureStreak || 0;
+    ivFloor = Math.max(ivFloor, Math.min(MAX_CAZABICHOS_IV_FLOOR, streak * CAZABICHOS_IV_FLOOR_PER_STREAK));
   }
   const isDominant = ctx.faction && ctx.dominanceData && ctx.dominanceData[ctx.mapId]?.winner === ctx.faction;
   if (isDominant) {
-    ivFloor = Math.max(ivFloor, 15);
+    ivFloor = Math.max(ivFloor, DOMINANCE_IV_FLOOR);
   }
 
-  // 8. Shiny Multiplier (Events + Dominance + Options)
+  // 8. Shiny Multiplier (Events + Dominance + Options + Cazabichos Streak)
   let totalShinyBonus = ctx.options?.shinyMultiplier ?? 1;
   const activeEvents = ctx.activeEvents || [];
   const globalMults = getGlobalMultipliers(activeEvents);
   totalShinyBonus *= (globalMults.shiny || 1);
+  if (ctx.playerClass === 'cazabichos') {
+    const streak = Math.max(0, Math.min(4, ctx.classData?.captureStreak || 0));
+    totalShinyBonus *= (1.0 + CAZABICHOS_STREAK_SHINY_STEP * streak);
+  }
   if (isDominant) {
-    totalShinyBonus *= 1.3;
+    totalShinyBonus *= DOMINANCE_SHINY_MULT;
   }
 
   return {

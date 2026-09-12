@@ -47,7 +47,8 @@ Each Seat has an associated **Team Slot** that contains the party data for that 
 
 When executing turns and team swaps in battles coordinated by the Showdown worker/engine, the following rules MUST be strictly maintained:
 
-*   **Voluntary Switch (Mid-Battle)**: When the player switches active combatants voluntarily via UI menu, the FSM compiles a normal combat turn. Send the choice to the worker (`switch <index + 1>`) together with the NPC enemy action choice (`p2Choice`).
+*   **Voluntary Switch (Mid-Battle)**: When the player switches active combatants voluntarily via UI menu, the FSM compiles a normal combat turn. Send the choice to the worker (`switch <index + 1>`) together with the NPC enemy action choice (`p2Choice`). In format-constrained battles (e.g. 3v3 PvP), mid-battle switches and bench indices MUST be resolved strictly against `getActiveCombatTeam(ctx)` via `battleTeamCoordinator.ts` rather than `gameStore.state.team` to avoid party slot desync.
+*   **Atomic Turn-End State Synchronization**: Background worker message receivers (`showdownWorkerClient.ts`) MUST NEVER trigger mid-turn state synchronization (`syncTeamsFromLastWorkerState()`). Doing so mid-stream during multi-hit move animations (e.g. Bone Rush) prematurely overwrites combatant HP with intermediate worker state, causing jarring HP heal-and-damage visual loops. State synchronization MUST execute strictly once at the end of the canonical turn in `canonicalTurnRunner.ts`.
 *   **Forced Switch (Faint Replacement)**: When the active combatant faints and the player is forced to send out a replacement, the worker is expecting ONLY the replacement choice. Send the selection command to the worker (`switch <index + 1>`) without enclosing any `p2Choice`. Failing to omit the opponent's choice on forced switches will cause the Showdown simulator to freeze waiting for non-existent actions.
 *   **Choice Loop Mid-Turn State Transitions (`ShowdownBattleEngine`)**: When resolving multi-seat choices, `ShowdownBattleEngine` captures `startTurn = battle.turn` and `startReqState = battle.requestState`. If an action submitted for the first seat immediately resolves the turn or triggers a forced switch, subsequent seat submissions in that same loop are halted to prevent feeding outdated commands to Showdown's state machine.
 *   **Mandatory Recharge Clamping**: During turns following `Blast Burn`, `Hyper Beam`, or `Giga Impact`, Showdown emits an active request with `moves: [{ id: 'recharge', move: 'Recharge' }]`. Move choices submitted during this state are clamped to `move 1` (`Recharge`) exclusively, preserving normal move selections in standard turns.
@@ -81,7 +82,7 @@ Poké Vicio enforces a strict Zero Duplication policy across all 8 combat modes 
 
 2. **Session Hierarchy (`src/logic/battle/session/`)**:
    - `BaseBattleSession`: Abstract root holding `BattleContext`, mode identifier, and reactive `BattleUiConfig`.
-   - `PvEBattleSession`: Implements AI opponent decision routines and adventure rewards.
+   - `PvEBattleSession`: Implements AI opponent decision routines and adventure rewards. Difficulty is governed by 5-tier archetype presets (Rival as Apex tier), anti-switch-loop viable counter checks, and cooldowns. See [Battle AI & Heuristic Standards](./battle_ai_standards.md).
    - `GymBattleSession`: Inherits from `PvEBattleSession`, injects leader dialogue and commits gym badges to persistence.
    - `PvPBattleSession`: Coordinates Realtime network commit picks, turn clocks, and ELO calculations.
    - `SpectatorBattleSession`: Listens passively to live combat streams with user controls locked.
@@ -95,7 +96,7 @@ Poké Vicio enforces a strict Zero Duplication policy across all 8 combat modes 
 ### 7. PvP Network Lifecycle: 2-Strike AFK Resolution & F5 Reconnection Protocol
 
 #### 2-Strike AFK Turn Resolution
-During live PvP matches (`isPvP: true`), each player has a 45-second turn countdown governed by `PvPTimerManager`.
+During live PvP matches (`isPvP: true`), each player has a 45-second turn countdown governed by `PvPTimerManager`. The timer is immune to browser tab minimization and OS background throttling by anchoring duration to `Temporal.Now.instant().epochMilliseconds`, listening to `visibilitychange` / `focus`, and ticking via `createWallClockInterval`.
 - **Manual Move Selection**: Committing a valid move or switch clears AFK strikes back to 0.
 - **Strike 1 (Turn Timeout)**: The player is notified with a ⏱️ warning. `determineLegalAutoPick()` inspects the player's active Showdown request. If a switch is forced, it auto-picks the first healthy bench Pokémon (`switch N`). If moves are active, it picks the first non-disabled move with available PP (`move N`). This prevents Showdown engine crashes and keeps the battle moving.
 - **Strike 2 (Double Turn Timeout)**: The player is assessed a second strike. Combat immediately ends in automatic forfeit. `livePvP._forfeit()` broadcasts `pvp_forfeit` over the Realtime channel, updates ELO, clears session storage, and invokes `battleStore.endBattle(false, false)` to cleanly transition FSM to `REWARDS_PHASE` -> `EMPTY_WAIT` with the `#exit-battle-btn` overlay displayed.
@@ -154,6 +155,7 @@ To prevent desynchronization between the Map's visual weather and the Combat Eng
   - **Dev Feedback**: Triggers a `[WeatherIntegrity]` warning in the console.
 - **Mandatory Registry**: Any new weather added to `weather-tables.ts` MUST be added to `WEATHER_REGISTRY` in `weatherRegistry.ts`.
 - **Map Persistence**: Battles inherit the current route's weather. If the weather is "permanent" (turns: -1), it remains active for the entire battle duration unless manually overridden.
+- **Arena Atmospheric & Lighting Isolation (`battleTeamCoordinator.ts`)**: Natural outdoor route weather is strictly disabled in Gyms, Caves, Crystal Caves, and Indoor locations. Furthermore, lighting cycles in Gyms and Indoor locations are locked to `'day'`, while single-sprite Caves are locked to `'night'`. Only move-induced or ability-induced weather can override the sealed indoor climate.
 - **Move Override**: Weather induced by moves (e.g., Rain Dance, Hail) lasts **5 turns** and takes absolute priority over the map weather.
 - **Restoration**: Once a temporary weather effect expires, the system MUST restore the original map/route weather instead of clearing to "Clear".
 - **Visual Mapping**: The `BattleArenaView` must prioritize `battleStore.state.weather`. Mappings: `sun` -> `heatwave`, `hail` -> `blizzard`.
@@ -1598,11 +1600,11 @@ For a complete step-by-step reproduction guide and verification matrix covering 
 To guarantee competitive integrity and prevent griefing or stalled battles, all live PvP matches follow a strict 45-second turn timer, a 2-strike AFK forfeit protocol, and a 60-second in-combat F5 reconnection window.
 
 ### 1. 45s Turn Timer & 2-Strike Protocol
-1. **Turn Clock**: Managed by `PvPTimerManager` (`src/logic/pvp/pvpTimerHelper.ts`). Ticks down from 45 seconds during player input states (`choosing`, `faint_switch`).
+1. **Turn Clock & Presentation Isolation**: Managed by `PvPTimerManager` (`src/logic/pvp/pvpTimerHelper.ts`). Ticks down from 45 seconds during interactive player input states (`choosing`, `faint_switch`). The clock MUST NOT count down during trainer entrance or dialogue animations; it starts strictly upon completion of the intro sequence when the battle FSM transitions to `ACTIVE_BATTLE` (`WAIT_INPUT`).
 2. **Strike 1 (Warning & Auto-Pick)**: If the 45s window expires:
    - Increments player AFK strikes (`afkStrikes = 1`).
    - Displays a warning badge/toast: `"Tiempo de turno agotado (Strike 1/2). Ejecutando acción automática."`
-   - Executes `determineLegalAutoPick(request, team)`: selects the first legal move with PP > 0, or the first valid living benched replacement if forced to switch. This prevents the Showdown engine worker from stalling or throwing desync errors.
+   - Executes `determineLegalAutoPick(request, team)` with `isManual = false`: selects the first legal move with PP > 0, or the first valid living benched replacement if forced to switch. Committing an auto-pick MUST NOT reset accumulated strikes; strikes are strictly reset only upon explicit manual player actions.
 3. **Strike 2 (Automatic Forfeit)**: If 45s expire a second time:
    - Emits a broadcast `pvp_forfeit` payload to the opponent.
    - Updates ELO ratings (treating the AFK player as defeated).
