@@ -1,1 +1,0 @@
-import{tn as e}from"./game-Z_vdUU-I.js";export{e as computeP2Choice};

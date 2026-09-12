@@ -17,231 +17,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="preload" href="/PokeBorrador/fonts/pokemon-firered-leafgreen-font.ttf" as="font" type="font/ttf" crossorigin />
     
-    <style>
-      @font-face {
-        font-family: 'Pokemon FireRed LeafGreen';
-        src: url('/PokeBorrador/fonts/pokemon-firered-leafgreen-font.ttf') format('truetype');
-        font-weight: normal;
-        font-style: normal;
-        font-display: swap;
-        size-adjust: 128%;
-      }
-      /* Eliminate FOUC (Flash of Unstyled Content) */
-      html, body {
-        background-color: #07080e !important;
-        background: #07080e !important;
-        color: #fff;
-        margin: 0;
-        padding: 0;
-        width: 100dvw;
-        height: 100dvh;
-        overflow: hidden;
-        overscroll-behavior: none;
-        overscroll-behavior-x: none;
-        overscroll-behavior-y: none;
-      }
-      #app { 
-        background: #07080e; 
-        width: 100dvw;
-        height: 100dvh; 
-        overflow: hidden;
-        overscroll-behavior: none;
-        overscroll-behavior-x: none;
-        overscroll-behavior-y: none;
-      }
-
-      /* Estilos para el fallback de conexión offline */
-      #offline-wrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        height: 100%;
-        background: #07080e;
-        font-family: 'Pokemon FireRed LeafGreen', 'VT323', monospace;
-        padding: 20px;
-        box-sizing: border-box;
-      }
-      
-      .offline-card {
-        background: rgba(15, 18, 32, 0.95);
-        border: 2px solid rgba(255, 255, 255, 0.15);
-        border-radius: 24px;
-        width: 100%;
-        max-width: 440px;
-        padding: 40px;
-        text-align: center;
-        box-shadow: 0 0 50px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.02);
-        box-sizing: border-box;
-        transition: border-color 0.5s ease, box-shadow 0.5s ease;
-      }
-      
-      .offline-card.error-state {
-        border-color: rgba(255, 69, 58, 0.4);
-        box-shadow: 0 0 60px rgba(255, 69, 58, 0.15), inset 0 0 20px rgba(255, 69, 58, 0.05);
-        animation: cardPulse 3s infinite ease-in-out;
-      }
-      
-      @keyframes cardPulse {
-        0%, 100% { border-color: rgba(255, 69, 58, 0.4); box-shadow: 0 0 50px rgba(255, 69, 58, 0.15); }
-        50% { border-color: rgba(255, 69, 58, 0.8); box-shadow: 0 0 70px rgba(255, 69, 58, 0.35); }
-      }
-      
-      .icon-header {
-        margin-bottom: 24px;
-      }
-      
-      .wifi-icon {
-        display: inline-block;
-        font-size: 56px;
-        filter: drop-shadow(0 0 15px rgba(255, 214, 10, 0.3));
-        transition: filter 0.5s ease;
-      }
-      
-      .offline-card.error-state .wifi-icon {
-        filter: drop-shadow(0 0 15px rgba(255, 69, 58, 0.6));
-      }
-      
-      .pulse {
-        animation: pulseIcon 2s infinite ease-in-out;
-      }
-      
-      @keyframes pulseIcon {
-        0%, 100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.08); opacity: 0.8; }
-      }
-      
-      .press-start {
-        font-family: 'Pokemon FireRed LeafGreen', 'VT323', monospace;
-        letter-spacing: 1px;
-        image-rendering: pixelated;
-      }
-      
-      .offline-title {
-        font-size: 16px;
-        color: #ffd60a;
-        margin: 0 0 20px 0;
-        transition: color 0.5s ease;
-      }
-      
-      .offline-card.error-state .offline-title {
-        color: #ff453a;
-      }
-      
-      .msg {
-        color: rgba(255, 255, 255, 0.7);
-        font-family: 'Pokemon FireRed LeafGreen', 'VT323', monospace;
-        font-size: 10px;
-        line-height: 1.6;
-        margin: 0 0 24px 0;
-      }
-      
-      .spinner-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 16px;
-      }
-      
-      .spinner {
-        width: 36px;
-        height: 36px;
-        border: 3.5px solid rgba(255, 255, 255, 0.05);
-        border-top: 3.5px solid #ffd60a;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-      
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-      
-      .status-text {
-        font-size: 9px;
-        color: #ffd60a;
-      }
-      
-      .error-details {
-        margin: 10px 0 24px 0;
-        font-size: 11px;
-        color: rgba(255, 255, 255, 0.4);
-      }
-      
-      .error-details code {
-        background: rgba(0, 0, 0, 0.3);
-        padding: 4px 8px;
-        border-radius: 6px;
-        color: #ff453a;
-        font-family: monospace;
-      }
-      
-      .actions-group {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        width: 100%;
-        margin-top: 12px;
-      }
-
-      .retry-btn-modern {
-        background: #ff453a;
-        color: #ffffff;
-        border: 2px solid #ffffff;
-        padding: 14px 28px;
-        font-size: 10px;
-        font-weight: bold;
-        border-radius: 8px;
-        cursor: pointer;
-        box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 69, 58, 0.3);
-        transition: all 0.2s ease;
-        outline: none;
-        width: 100%;
-        box-sizing: border-box;
-      }
-      
-      .retry-btn-modern:hover {
-        transform: translateY(-2px);
-        background: #ffffff;
-        color: #ff453a;
-        box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2), 0 0 20px rgba(255, 255, 255, 0.4);
-      }
-      
-      .retry-btn-modern:active {
-        transform: translateY(1px);
-        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
-      }
-
-      .login-btn-modern {
-        background: rgba(255, 255, 255, 0.08);
-        color: #ffd60a;
-        border: 2px solid rgba(255, 214, 10, 0.4);
-        padding: 12px 24px;
-        font-size: 9px;
-        font-weight: bold;
-        border-radius: 8px;
-        cursor: pointer;
-        box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
-        transition: all 0.2s ease;
-        outline: none;
-        width: 100%;
-        box-sizing: border-box;
-      }
-
-      .login-btn-modern:hover {
-        transform: translateY(-2px);
-        background: rgba(255, 214, 10, 0.2);
-        border-color: #ffd60a;
-        color: #ffffff;
-        box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2), 0 0 15px rgba(255, 214, 10, 0.3);
-      }
-
-      .login-btn-modern:active {
-        transform: translateY(1px);
-        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
-      }
-    </style>
+    <style>@font-face{font-family:Pokemon FireRed LeafGreen;src:url(/PokeBorrador/fonts/pokemon-firered-leafgreen-font.ttf)format("truetype");font-weight:400;font-style:normal;font-display:swap;size-adjust:128%}html,body{color:#fff;overscroll-behavior:none;overscroll-behavior-x:none;overscroll-behavior-y:none;width:100dvw;height:100dvh;margin:0;padding:0;overflow:hidden;background:#07080e!important}#app{overscroll-behavior:none;overscroll-behavior-x:none;overscroll-behavior-y:none;background:#07080e;width:100dvw;height:100dvh;overflow:hidden}#offline-wrapper{box-sizing:border-box;background:#07080e;flex-direction:column;justify-content:center;align-items:center;width:100%;height:100%;padding:20px;font-family:Pokemon FireRed LeafGreen,VT323,monospace;display:flex}.offline-card{text-align:center;box-sizing:border-box;background:#0f1220f2;border:2px solid #ffffff26;border-radius:24px;width:100%;max-width:440px;padding:40px;transition:border-color .5s,box-shadow .5s;box-shadow:0 0 50px #00000080,inset 0 0 20px #ffffff05}.offline-card.error-state{border-color:#ff453a66;animation:3s ease-in-out infinite cardPulse;box-shadow:0 0 60px #ff453a26,inset 0 0 20px #ff453a0d}@keyframes cardPulse{0%,to{border-color:#ff453a66;box-shadow:0 0 50px #ff453a26}50%{border-color:#ff453acc;box-shadow:0 0 70px #ff453a59}}.icon-header{margin-bottom:24px}.wifi-icon{filter:drop-shadow(0 0 15px #ffd60a4d);font-size:56px;transition:filter .5s;display:inline-block}.offline-card.error-state .wifi-icon{filter:drop-shadow(0 0 15px #ff453a99)}.pulse{animation:2s ease-in-out infinite pulseIcon}@keyframes pulseIcon{0%,to{opacity:1;transform:scale(1)}50%{opacity:.8;transform:scale(1.08)}}.press-start{letter-spacing:1px;image-rendering:pixelated;font-family:Pokemon FireRed LeafGreen,VT323,monospace}.offline-title{color:#ffd60a;margin:0 0 20px;font-size:16px;transition:color .5s}.offline-card.error-state .offline-title{color:#ff453a}.msg{color:#ffffffb3;margin:0 0 24px;font-family:Pokemon FireRed LeafGreen,VT323,monospace;font-size:10px;line-height:1.6}.spinner-container{flex-direction:column;align-items:center;gap:16px;display:flex}.spinner{border:3.5px solid #ffffff0d;border-top-color:#ffd60a;border-radius:50%;width:36px;height:36px;animation:1s linear infinite spin}@keyframes spin{0%{transform:rotate(0)}to{transform:rotate(360deg)}}.status-text{color:#ffd60a;font-size:9px}.error-details{color:#fff6;margin:10px 0 24px;font-size:11px}.error-details code{color:#ff453a;background:#0000004d;border-radius:6px;padding:4px 8px;font-family:monospace}.actions-group{flex-direction:column;gap:10px;width:100%;margin-top:12px;display:flex}.retry-btn-modern{color:#fff;cursor:pointer;box-sizing:border-box;background:#ff453a;border:2px solid #fff;border-radius:8px;outline:none;width:100%;padding:14px 28px;font-size:10px;font-weight:700;transition:all .2s;box-shadow:0 4px #0000004d,0 0 15px #ff453a4d}.retry-btn-modern:hover{color:#ff453a;background:#fff;transform:translateY(-2px);box-shadow:0 6px #0003,0 0 20px #fff6}.retry-btn-modern:active{transform:translateY(1px);box-shadow:0 2px #0006}.login-btn-modern{color:#ffd60a;cursor:pointer;box-sizing:border-box;background:#ffffff14;border:2px solid #ffd60a66;border-radius:8px;outline:none;width:100%;padding:12px 24px;font-size:9px;font-weight:700;transition:all .2s;box-shadow:0 4px #0000004d}.login-btn-modern:hover{color:#fff;background:#ffd60a33;border-color:#ffd60a;transform:translateY(-2px);box-shadow:0 6px #0003,0 0 15px #ffd60a4d}.login-btn-modern:active{transform:translateY(1px);box-shadow:0 2px #0006}</style>
     
     <script>
       // Función para mostrar pantalla de error si falla la carga o no hay internet
@@ -337,84 +113,88 @@
     </script>
 
     <!-- VUE ENTRY POINT -->
-    <script type="module" crossorigin src="/PokeBorrador/assets/index-BtTNmp-I.js"></script>
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/vendor-vue-lQSSelV5.js">
+    <script type="module" crossorigin src="/PokeBorrador/assets/index-DMz77f43.js"></script>
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/vendor-vue-DDTHN2Mu.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/vendor-gsap-DbQd7P_a.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/gsapHelpers-DxreeFfW.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/game-data-battle-MLkUkpOe.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/game-data-pokemon-CKwwqvEZ.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/game-data-system-Cce4mXrA.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/gameplay-B4S72d7c.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/modals-BOAF7-aF.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/game-data-system-DIm42DHi.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/gameplay-BUyP6r5S.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/modals-DwdERx7I.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/rolldown-runtime-Dd_uD5pT.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/vendor-sqljs-B17J1N3i.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/sqliteEngine-CX7vsjV8.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/sqliteEngine-Dx7qEZ90.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/vendor-supabase-BLcEw6t9.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/storage-DLO-NAVb.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/game-data-world-Bs7yzhVi.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/storage-JI6ZNyiO.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/game-data-world-CAUBmK5E.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/game-data-items-BcevJzkb.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pokemon-CXoxN4MX.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/evMath-BvDRygTC.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/assetService-COnYRDSV.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pokemonDataProvider-D_qUTTlo.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pokemonUtils-DzEX3xBl.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pokemonLearnset-D5FdxzlF.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pokemonFactory-DosFD5vW.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pokemonLegality-ChTqoDUb.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/evMath-Ba3_-LUy.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/assetService-Bn04vmVV.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pokemonDataProvider-DuCxhKEt.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pokemonUtils-StWqPghn.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pokemonLearnset-D2Vl0krq.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pokemonFactory-CYqjntmW.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pokemonLegality-DTJDKQ8J.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/friendshipLogic-BfxN3bzX.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/supabase-pd-chCuO.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/loading-B-R6MOvO.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/timeSync-CUFnT4R5.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/cloneUtils-CkT-sU44.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/supabase-0-1fymdj.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/loading-qeSZIvR9.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/timeSync-CP8ehpya.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/sessionId-Dmjj5VID.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/auth-Cw6uXLSt.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/auth-D2xgWJul.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/vendor-valibot-DFSfmk7F.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/saveService-CLjkJ3eG.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/saveSerializer-DQ513jKx.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/saveCoordinator-Cd2GQmTd.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/saveService-BXLpqJUP.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/gameBus-MkMjJyAU.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/errorStore-KJbAP6yq.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/evolutionLogic-CqSLa6yE.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/errorStore-BC9DqYQN.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/evolutionLogic-DOq2F4AR.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/game-data-feet-CNvjxMsa.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/audio-Py52_3Ik.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/classMath-BCU_oL3R.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/battleStateMachine-epxYZWOa.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/audio-DfYBjK__.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/classMath-C3n22PaK.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/battleStateMachine-Bhu_w4J3.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/battleStatus-BFmlRQND.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/npcSpriteRouter-CVCvVU-i.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/showdownTeamResolver-vQqF0OYe.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/vendor-pkmn-sim-BzlPsl5H.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/battleRewards-CphrowW1.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/breedingEngine-D0_V0F3r.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/eggFactory-CvkOdRfR.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/battleRewards-yWsVscFK.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/breedingEngine-phSPVT3S.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/eggFactory-DcRKJ6LZ.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/vendor-smogon-calc-BZ8Z71Gr.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/requestHelper-K3rdqoa0.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/showdownBattleRunner-CfGBKf4a.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/trainerFactory-98MGSJA-.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/sessionHub-D2Yk5JKU.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/update-BoMPWlqq.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pvp-DGkUFdwC.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/game-Z_vdUU-I.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/useGsapTransition-DC3aTi-z.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/trainerFactory-CyeMiywM.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/sessionHub-CCt1qsgQ.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/update-B2F26PsD.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pvp-uGo4I5cA.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/game-DX8WCRyW.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/dist-BGjQzYJ1.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/dist-C5YCrqjU.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/useGsapTransition-BZ7x-9KR.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/_plugin-vue_export-helper-BDNMzG2s.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/rankedEngine-BjCsXZq8.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/seasonTeamFilter-BzhhM_WA.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pvp-COLhir3h.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pvpReconnectHelper-DNynZfBV.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/livePvP--MB38DpO.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/social-DyiegNzq.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/rankedEngine-CP2dueqe.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/seasonTeamFilter-Ce9Wx6DT.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pvp-CfWuxTMa.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/pvpReconnectHelper-DFYJaYtf.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/livePvP-nDUxmFAt.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/social-CBosEN-G.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/visuals-DuVvV6Ef.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/TrainerAvatar-a_aDoIZ3.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/useBodyClass-C4K7iaGm.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/BaseModal-BRG4BqOJ.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/PVLoadingOverlay-CQpCLRzz.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/dist-BnR86iTn.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/useWindowListener-Wmg6P0nf.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/PVGenderBadge-DYPVVXlC.js">
-    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/PVTooltip-CwuGSa-7.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/TrainerAvatar-Dqt_R1ty.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/useBodyClass-CDxA8qVW.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/BaseModal-CIe7a24x.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/PVLoadingOverlay-BP-zl2aW.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/useWindowListener-CG2Oriy2.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/PVGenderBadge-BUBVWd-a.js">
+    <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/PVTooltip-VY1tK-E1.js">
     <link rel="modulepreload" crossorigin href="/PokeBorrador/assets/gsapHover-LRUsfs06.js">
     <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/TrainerAvatar-Cb16HuRX.css">
     <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/BaseModal-Dlb_-hBs.css">
     <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/PVLoadingOverlay-DEBVtKhJ.css">
     <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/PVGenderBadge-BfQrMDeZ.css">
     <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/PVTooltip-ChrtupPk.css">
-    <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/index-C4Io37Y1.css">
+    <link rel="stylesheet" crossorigin href="/PokeBorrador/assets/index-CCewI9Wx.css">
   <link rel="manifest" href="/PokeBorrador/manifest.webmanifest"></head>
   <body>
     <div id="app">

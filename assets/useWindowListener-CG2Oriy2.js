@@ -1,0 +1,1 @@
+import{r as e}from"./dist-C5YCrqjU.js";function t(t,n,r={}){return e(typeof window<`u`?window:null,t,n,r)}function n(t,n,r={}){return e(typeof document<`u`?document:null,t,n,r)}export{t as n,n as t};

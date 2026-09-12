@@ -1,1 +1,0 @@
-import{t as e}from"./supabase-pd-chCuO.js";export{e as default,e as supabase};

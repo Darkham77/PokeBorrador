@@ -1,0 +1,1 @@
+import"./game-data-system-DIm42DHi.js";import"./gameplay-BUyP6r5S.js";function e(e){return typeof e==`string`&&/^BTL-[A-Z0-9]{4}-[A-Z0-9]{3,4}$/.test(e)}function t(t){if(e(t))return t;throw Error(`[PVP] Invalid battle code format: ${String(t)}`)}function n(e,t){return[t,...(e||[]).filter(e=>e.battleCode!==t.battleCode&&e.id!==t.id)].slice(0,20)}export{e as n,t as r,n as t};
