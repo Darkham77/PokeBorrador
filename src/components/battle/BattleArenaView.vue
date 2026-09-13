@@ -44,7 +44,12 @@ import BattleSpectatorOverlay from './BattleSpectatorOverlay.vue'
 import BattleReplayControls from './BattleReplayControls.vue'
 import { playTrainerAnimation } from './helpers/trainerEntranceAnims.ts'
 
-const { BASE_ENTITY_SIZE_PLAYER, BASE_ENTITY_SIZE_ENEMY, OBJECT_SCALE } = WORLD_CONSTANTS
+const {
+  BASE_ENTITY_SIZE_PLAYER,
+  BASE_STANDING_TRAINER_SIZE_PLAYER,
+  BASE_ENTITY_SIZE_ENEMY,
+  OBJECT_SCALE
+} = WORLD_CONSTANTS
 
 const battleStore = useBattleStore()
 const { isSearching } = storeToRefs(battleStore)
@@ -339,7 +344,7 @@ watch(() => battleStore.isBattleActive, (active) => {
             :show-guides="showGuides"
             :p2-pos="p2Pos"
             :base-entity-size-enemy="BASE_ENTITY_SIZE_ENEMY"
-            :base-entity-size-player="BASE_ENTITY_SIZE_PLAYER"
+            :base-entity-size-player="BASE_STANDING_TRAINER_SIZE_PLAYER"
             :object-scale="OBJECT_SCALE"
             :is-trainer-or-gym="!!(battle?.isTrainer || battle?.isGym)"
             :is-pv-p="!!battle?.isPvP"
@@ -366,7 +371,7 @@ watch(() => battleStore.isBattleActive, (active) => {
             :is-shaking="getPokemonIsShaking('enemy', p)"
             :is-blinking="getPokemonIsBlinking('enemy', p)"
             :is-healing="getPokemonIsHealing('enemy', p)"
-            :is-silhouette="activeEnemyIsSilhouette && (!activeEnemyData || p.uid === activeEnemyData?.uid)"
+            :is-silhouette="activeEnemyIsSilhouette"
             :is-attacking="battleStore.attackerSide === 'enemy' && p.uid === enemy?.uid"
             :active-move="battleStore.activeMove ? { side: battleStore.activeMove.side || 'enemy', cat: battleStore.activeMove.cat || 'physical', name: battleStore.activeMove.name, selfKO: battleStore.activeMove.selfKO, recoil: battleStore.activeMove.recoil } : null"
             :show-guides="showGuides"
@@ -374,12 +379,12 @@ watch(() => battleStore.isBattleActive, (active) => {
             :is-critical-capture="!!isCriticalCaptureActive.enemy"
             :sparkles="catchSparkles.filter(s => s.side === 'enemy')"
             :is-fainting="isFaintInProgress && faintedPokemonSnapshot?.side === 'enemy' && !(battle?.isTrainer || battle?.isGym) && faintedPokemonSnapshot?.uid === p.uid"
-            :is-emerging="enemyIsJumping && (!activeEnemyData || p.uid === activeEnemyData?.uid)"
+            :is-emerging="enemyIsJumping"
             :suppress-fx="isSearching || isIntroInProgress"
             :stages="battleStore.enemyStages"
-            :hidden="isEnemyTechnicalHidden || (activeEnemyData?.uid ? p.uid !== activeEnemyData.uid : false)"
+            :hidden="isEnemyTechnicalHidden || !activeEnemyData || (activeEnemyData?.uid ? p.uid !== activeEnemyData.uid : false)"
             :has-seat="true"
-            :style="{ opacity: activeEnemyIsSilhouette && (!activeEnemyData || p.uid === activeEnemyData?.uid) ? silhouetteOpacity : 1 }"
+            :style="{ opacity: activeEnemyIsSilhouette ? silhouetteOpacity : 1 }"
           />
 
           <!-- Arbustos Adelante -->

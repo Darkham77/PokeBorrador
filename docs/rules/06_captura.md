@@ -61,10 +61,7 @@ Donde **P** es el multiplicador según las especies capturadas en la Pokédex (e
 | **150 a 199** | 2.0 |
 | **200 o más** | 2.5 |
 
-- **Tirada Crítica**: Se genera un número aleatorio entre 0 y 255. Si es **menor que CC**, la captura se convierte en crítica.
-- **Resolución de Sacudida Única**: En una captura crítica, se realiza únicamente **1 comprobación** contra **b**:
-  - Si tiene éxito: el Pokémon se captura de inmediato tras **1 sacudida** visual y el festejo de estrellas.
-  - Si falla: el Pokémon rompe la Pokéball inmediatamente (0 sacudidas).
+- **Resolución de Sacudida Única (Éxito 100% Garantizado)**: En una captura crítica (Gen moderna: Leyendas Arceus / Escarlata & Púrpura), la Pokéball realiza exactamente **1 sacudida** (wobble) al tocar el suelo y sella la captura con 100% de éxito garantizado (sin escapes ni segundas sacudidas).
 - **FX & Audio**: Se reproduce un silbido 8-bit ascendente en el aire y un cartel flotante retro arcade `"¡CAPTURA CRÍTICA!"` con destellos dorados.
 
 ---

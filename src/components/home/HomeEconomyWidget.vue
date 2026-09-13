@@ -28,7 +28,7 @@ const openGTS = () => {
 const getListingSprite = (listing: MarketListing): string => {
   if (listing.listing_type === 'pokemon') {
     const poke = listing.data as Pokemon
-    const speciesId = poke.species
+    const speciesId = poke.id
     if (!speciesId) return ''
     return getAssetUrl(ASSET_TYPES.POKEMON, speciesId, { isShiny: poke.isShiny })
   }

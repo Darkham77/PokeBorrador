@@ -50,6 +50,11 @@ export type { BattleOptions };
  * @param {BattleContext} ctx - The battle store context (refs, state, etc)
  */
 export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon, options: BattleOptions = {}) {
+  // ATOMIC ENTRY GUARD: Immediately put FSM into CONTEXT_SETUP before any imports or setup
+  if (ctx.fsm.currentState.value !== ctx.BATTLE_STATES.CONTEXT_SETUP) {
+    await ctx.fsm.transition(ctx.BATTLE_STATES.CONTEXT_SETUP, ctx.BATTLE_SUBSTATES.RECEIVE_CONFIG)
+  }
+
   const rawLoc = options.locationId || ctx.gs.state.map?.currentMap;
   if (!rawLoc) {
     throw new Error('[Battle] locationId or gameStore.state.map.currentMap is required to start a battle');

@@ -4,6 +4,8 @@ import path from 'node:path';
 import { sanitizePath } from '../../lib/safePath.ts';
 import {
   MAX_PER_ACTION_TIMEOUT_MS,
+  MAX_UI_SETTLE_TIMEOUT_MS,
+  E2E_FALLBACK_TIMEOUT_MS,
   MS_TO_SECONDS_DIVISOR,
 } from '../simulation_config.ts';
 
@@ -58,14 +60,15 @@ export function logE2EDebug(page: Page | undefined, msg: string): void {
 
 export async function clickResilient(locator: Locator, options: { timeout?: number } = {}): Promise<void> {
   const timeout = options.timeout ?? MAX_PER_ACTION_TIMEOUT_MS;
-  const fastTimeout = Math.min(timeout, 500);
+  const initialTimeout = Math.min(timeout, MAX_UI_SETTLE_TIMEOUT_MS);
+  const fallbackTimeout = Math.min(timeout, E2E_FALLBACK_TIMEOUT_MS);
   try {
-    await locator.click({ timeout: fastTimeout });
+    await locator.click({ timeout: initialTimeout });
   } catch (_err) {
     try {
-      await locator.click({ force: true, timeout: fastTimeout });
+      await locator.click({ force: true, timeout: fallbackTimeout });
     } catch {
-      await locator.evaluate((el: HTMLElement) => el.click());
+      await locator.evaluate((el: HTMLElement) => el.click(), undefined, { timeout: fallbackTimeout });
     }
   }
 }

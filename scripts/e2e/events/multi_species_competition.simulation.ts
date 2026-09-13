@@ -1,5 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { BaseEventSimulation } from './base_event_simulation.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
+
 
 class MultiSpeciesEventSimulation extends BaseEventSimulation {
   constructor(page: Page, username: string) {
@@ -51,6 +53,8 @@ class MultiSpeciesEventSimulation extends BaseEventSimulation {
       gameStore.state.team = [shellder, horsea];
       gameStore.state.box = [];
 
+      await gameStore.saveGame();
+
       const isOffline = localStorage.getItem('pokevicio_session_mode') === 'offline';
       if (isOffline) {
         const { persistSQLite } = await import('../../../src/logic/db/sqliteEngine.ts');
@@ -72,26 +76,41 @@ test.describe('Multi-Species Event Competition E2E Simulation', () => {
 
       // Target the specific Torneo de Pesca competition card via canonical #id
       const eventCard = page.locator('#event-card-torneo_pesca');
-      await expect(eventCard).toBeVisible({ timeout: 5000 });
+      await expect(eventCard).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-      // 1. Verify category chips in the active competition card
-      const chips = eventCard.locator('[id^="comp-slot-chip-torneo_pesca-"]');
-      await expect(chips.first()).toBeVisible({ timeout: 5000 });
-      const chipCount = await chips.count();
-      expect(chipCount).toBeGreaterThanOrEqual(3);
+      // 1. Verify species tabs and global IVs slot
+      const speciesTabs = eventCard.locator('.species-tab-btn');
+      await expect(speciesTabs.first()).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      const tabCount = await speciesTabs.count();
+      expect(tabCount).toBeGreaterThanOrEqual(2);
 
-      // 2. Inscribe in the IVs category via canonical #id
+      // In the default global tab, the IVs category chip is visible
       const ivChip = page.locator('#comp-slot-chip-torneo_pesca-ivs');
-      await expect(ivChip).toBeVisible({ timeout: 5000 });
+      await expect(ivChip).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+
+      // 2. Switch to a species tab (Shellder) and verify intra-species slots
+      const shellderTab = page.locator('#event-species-tab-torneo_pesca-shellder');
+      await expect(shellderTab).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      await shellderTab.click();
+
+      const shellderWeightChip = page.locator('#comp-slot-chip-torneo_pesca-weight_shellder');
+      await expect(shellderWeightChip).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+
+      // 3. Switch back to global tab to inscribe in IVs category
+      const globalTab = page.locator('#event-species-tab-torneo_pesca-global');
+      await expect(globalTab).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      await globalTab.click();
+
+      await expect(ivChip).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
       await ivChip.click();
 
       // Pokemon selection modal opens
       const selectionModal = page.locator('.selection-container, #pokemon-selection-confirm-btn');
-      await expect(selectionModal.first()).toBeVisible({ timeout: 5000 });
+      await expect(selectionModal.first()).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // Select Horsea from list and confirm
       const horseaItem = page.locator('.list-item, [id^="pokemon-select-"]').filter({ hasText: 'HORSEA' }).first();
-      await expect(horseaItem).toBeVisible({ timeout: 5000 });
+      await expect(horseaItem).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
       await horseaItem.click();
 
       const confirmBtn = page.locator('#pokemon-selection-confirm-btn');
@@ -100,7 +119,7 @@ test.describe('Multi-Species Event Competition E2E Simulation', () => {
       }
 
       // Verify chip shows enrolled status (check mark)
-      await expect(ivChip).toContainText('✓', { timeout: 5000 });
+      await expect(ivChip).toContainText('✓', { timeout: MAX_PER_ACTION_TIMEOUT_MS });
     } finally {
       await sim.resetMockGameTime();
       await sim.finish('Multi-Species Event Competition E2E Simulation');

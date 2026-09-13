@@ -9,6 +9,7 @@ import type { EventStore, BattleStore } from '@/types/system/stores'
 import type { LogFn } from '@/types/battle/battle'
 import type { BattleContext } from '@/types/battle/battleContext'
 import { getItemName, requireItemId, type ItemId } from '@/data/inventory/items'
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { initializePokemonVigor } from '@/logic/pokemon/pokemonUtils'
 import { getServerInstant } from '@/logic/utils/timeUtils'
 
@@ -50,7 +51,55 @@ export function cleanCapturedPokemonForStorage(
   capturedPoke.trapped = false
   capturedPoke.perishSongCount = 0
   capturedPoke.focusEnergy = false
-  capturedPoke.isTransformed = false
+
+  // Revert in-battle transformation before permanent storage and factory validation
+  const originalId = capturedPoke._originalId || enemy._originalId;
+  if (capturedPoke.isTransformed || enemy.isTransformed || originalId || capturedPoke.id === 'ditto' || enemy.id === 'ditto') {
+    if (capturedPoke._originalMoves && capturedPoke._originalMoves.length > 0) {
+      capturedPoke.moves = [...capturedPoke._originalMoves];
+      capturedPoke._originalMoves = undefined;
+    }
+    if (originalId) {
+      capturedPoke.id = originalId;
+      capturedPoke._originalId = undefined;
+    }
+    if (capturedPoke._originalName) {
+      if (!capturedPoke.nickname) {
+        capturedPoke.name = capturedPoke._originalName;
+      }
+      capturedPoke._originalName = undefined;
+    }
+    if (capturedPoke._originalType) {
+      capturedPoke.type = capturedPoke._originalType;
+      capturedPoke._originalType = undefined;
+    }
+    if (capturedPoke._originalType2 !== undefined) {
+      capturedPoke.type2 = capturedPoke._originalType2;
+      capturedPoke._originalType2 = undefined;
+    }
+    if (capturedPoke.id === 'ditto') {
+      capturedPoke.id = requirePokemonSpeciesId('ditto');
+      if (!capturedPoke.nickname) {
+        capturedPoke.name = 'Ditto';
+      }
+      capturedPoke.type = 'normal';
+      capturedPoke.type2 = undefined;
+      capturedPoke.moves = [{
+        id: 'transform',
+        name: 'Transformación',
+        type: 'normal',
+        cat: 'status',
+        power: 0,
+        acc: 1000,
+        pp: 10,
+        maxPP: 10
+      }];
+    }
+    capturedPoke.isTransformed = false;
+  } else {
+    capturedPoke.isTransformed = false;
+  }
+
   capturedPoke.caught = true
   capturedPoke.obtainedAt = capturedPoke.obtainedAt || getServerInstant().epochMilliseconds
   capturedPoke.obtainedMethod = capturedPoke.obtainedMethod || 'wild'

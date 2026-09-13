@@ -117,11 +117,10 @@ export function calculateCatchRatePure(
   const isCritical = !!ctx.forceCritical || (ccThreshold > 0 && Math.random() * CATCH_MATH_256_MAX < ccThreshold)
 
   if (isCritical) {
-    // Critical capture only performs 1 shake check against b
-    const criticalSuccess = Math.random() * CATCH_MATH_65535_MAX < b
+    // Canonical Modern Critical Capture: Exactly 1 visual wobble and 100% guaranteed catch
     return {
-      caught: criticalSuccess,
-      shakes: criticalSuccess ? 1 : 0,
+      caught: true,
+      shakes: 1,
       isCritical: true,
       statusMultiplierApplied: statusApplied,
       bugSynergyBonus,

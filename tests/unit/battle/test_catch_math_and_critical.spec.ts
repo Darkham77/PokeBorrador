@@ -82,8 +82,7 @@ describe('Battle Catch Mechanics & Formulas (06_captura.md)', () => {
       vi.restoreAllMocks()
     })
 
-    it('succeeds with exactly 1 shake when critical roll passes b check', () => {
-      // Mock random: first roll < b (successful 1 shake)
+    it('succeeds with exactly 1 shake and 100% guaranteed catch when critical roll passes', () => {
       vi.spyOn(Math, 'random').mockReturnValue(0.01)
 
       const result = calculateCatchRatePure(basePokemon, 'pokeball', 1, {
@@ -96,8 +95,8 @@ describe('Battle Catch Mechanics & Formulas (06_captura.md)', () => {
       expect(result.shakes).toBe(1)
     })
 
-    it('fails with exactly 0 shakes when critical roll fails b check', () => {
-      // Mock random: roll fails b check
+    it('guarantees capture with exactly 1 shake even when random roll is high (no 0-shake breakout)', () => {
+      // High random roll must NOT break out of a critical capture
       vi.spyOn(Math, 'random').mockReturnValue(0.9999)
 
       const result = calculateCatchRatePure(basePokemon, 'pokeball', 1, {
@@ -106,8 +105,8 @@ describe('Battle Catch Mechanics & Formulas (06_captura.md)', () => {
       })
 
       expect(result.isCritical).toBe(true)
-      expect(result.caught).toBe(false)
-      expect(result.shakes).toBe(0)
+      expect(result.caught).toBe(true)
+      expect(result.shakes).toBe(1)
     })
   })
 

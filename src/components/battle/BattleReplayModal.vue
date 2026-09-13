@@ -106,7 +106,7 @@ function handleClose() {
         <div class="combatant-pod enemy-pod">
           <div class="pod-header">
             <span class="pod-species">
-              {{ p2State.activePokemon?.name || p2State.activePokemon?.species || '???' }}
+              {{ p2State.activePokemon?.name || p2State.activePokemon?.id || '???' }}
             </span>
             <span class="pod-lvl">LV. {{ p2State.activePokemon?.level || 50 }}</span>
           </div>
@@ -176,7 +176,7 @@ function handleClose() {
 
           <div class="pod-header">
             <span class="pod-species">
-              {{ p1State.activePokemon?.name || p1State.activePokemon?.species || '???' }}
+              {{ p1State.activePokemon?.name || p1State.activePokemon?.id || '???' }}
             </span>
             <span class="pod-lvl">LV. {{ p1State.activePokemon?.level || 50 }}</span>
           </div>

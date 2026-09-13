@@ -1335,9 +1335,28 @@ export const ARCHETYPE_SPRITES = {
 } as const;
 
 export type NpcSpriteId = (typeof ARCHETYPE_SPRITES)[keyof typeof ARCHETYPE_SPRITES][number];
+export type NpcArchetypeId = keyof typeof ARCHETYPE_SPRITES;
+
+export function isNpcArchetypeId(value: string): value is NpcArchetypeId {
+  return Object.hasOwn(ARCHETYPE_SPRITES, value);
+}
+
+export function requireNpcArchetypeId(value: string): NpcArchetypeId {
+  if (isNpcArchetypeId(value)) return value;
+  throw new Error(`[npcSpriteCatalog] Invalid NPC Archetype ID: ${value}`);
+}
 
 export const VALID_NPC_SPRITES = Object.values(ARCHETYPE_SPRITES).flat();
 export const VALID_NPC_SPRITES_SET: ReadonlySet<string> = new Set<string>(VALID_NPC_SPRITES);
+
+export const NPC_SPRITE_TO_ARCHETYPE_MAP: Readonly<Record<NpcSpriteId, NpcArchetypeId>> = Object.freeze(
+  Object.fromEntries(
+    Object.entries(ARCHETYPE_SPRITES).flatMap(([archetype, sprites]) => {
+      const archId = requireNpcArchetypeId(archetype);
+      return sprites.map(sprite => [sprite, archId]);
+    })
+  ) as Record<NpcSpriteId, NpcArchetypeId>
+);
 
 export function isNpcSpriteId(value: string): value is NpcSpriteId {
   return VALID_NPC_SPRITES_SET.has(value);
@@ -1347,3 +1366,4 @@ export function requireNpcSpriteId(value: string): NpcSpriteId {
   if (isNpcSpriteId(value)) return value;
   throw new Error(`[npcSpriteCatalog] Invalid NPC Sprite ID: ${value}`);
 }
+

@@ -29,7 +29,6 @@ function createDemoPokemon(config: {
   return {
     uid: config.uid,
     id: config.id,
-    species: config.id,
     name: config.name,
     level: config.level,
     exp: 125000,

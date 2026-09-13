@@ -1,5 +1,5 @@
 import type { SideID } from '@pkmn/sim';
-import type { ShowdownPlayerRequest } from '@/types/battle/battle';
+import type { BattleSide, ShowdownPlayerRequest } from '@/types/battle/battle';
 
 /**
  * ShowdownPerspectiveAdapter
@@ -70,14 +70,14 @@ export class ShowdownPerspectiveAdapter {
   /**
    * Maps a Showdown seat (p1..p4) to local perspective ('player' | 'enemy') given the local client's seat.
    */
-  static mapSeatToLocalSide(seat: SideID, mySeat: SideID): 'player' | 'enemy' {
+  static mapSeatToLocalSide(seat: SideID, mySeat: SideID): BattleSide {
     return seat === mySeat ? 'player' : 'enemy';
   }
 
   /**
    * Maps a local perspective ('player' | 'enemy') to Showdown seat given the local client's seat.
    */
-  static mapLocalSideToSeat(side: 'player' | 'enemy', mySeat: SideID): SideID {
+  static mapLocalSideToSeat(side: BattleSide, mySeat: SideID): SideID {
     if (side === 'player') return mySeat;
     return this.invertSide(mySeat);
   }

@@ -9,6 +9,8 @@ import { useGameStore } from '@/stores/game';
 import { useUIStore } from '@/stores/ui';
 import { useAuthStore } from '@/stores/auth';
 import type { Pokemon } from '@/types/pokemon/pokemon';
+import { makePokemon } from '@/logic/pokemon/pokemonFactory';
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 describe('Ranked Format and Team Selection Protocol', () => {
   let pinia: ReturnType<typeof createPinia>;
@@ -18,6 +20,12 @@ describe('Ranked Format and Team Selection Protocol', () => {
     setActivePinia(pinia);
     vi.clearAllMocks();
   });
+
+  const createPoke = (species: string, uid: string): Pokemon => {
+    const p = makePokemon(requirePokemonSpeciesId(species), 50, { bypassWhitelist: true })!;
+    p.uid = uid;
+    return p;
+  };
 
   it('selects 3v3 team when season rules specify maxPokemon <= 3', async () => {
     const pvpStore = usePvPStore();
@@ -34,18 +42,7 @@ describe('Ranked Format and Team Selection Protocol', () => {
       seasonEndDate: '2026-12-31T23:59:59'
     };
 
-    const poke = (species: string, uid: string): Pokemon => ({
-      id: species,
-      species,
-      uid,
-      name: species,
-      level: 50,
-      hp: 100,
-      maxHp: 100,
-      type: 'normal'
-    } as Pokemon);
-
-    const team3 = [poke('gengar', 'u-1'), poke('dragonite', 'u-2'), poke('nidorino', 'u-3')];
+    const team3 = [createPoke('gengar', 'u-1'), createPoke('dragonite', 'u-2'), createPoke('nidorino', 'u-3')];
     gameStore.state.team = team3;
     gameStore.state.pvpTeam = ['u-1', 'u-2', 'u-3'];
     gameStore.state.starterChosen = true;
@@ -83,24 +80,13 @@ describe('Ranked Format and Team Selection Protocol', () => {
       seasonEndDate: '2026-12-31T23:59:59'
     };
 
-    const poke = (species: string, uid: string): Pokemon => ({
-      id: species,
-      species,
-      uid,
-      name: species,
-      level: 50,
-      hp: 100,
-      maxHp: 100,
-      type: 'normal'
-    } as Pokemon);
-
     const team6 = [
-      poke('snorlax', 'u-1'),
-      poke('lapras', 'u-2'),
-      poke('charizard', 'u-3'),
-      poke('blastoise', 'u-4'),
-      poke('venusaur', 'u-5'),
-      poke('pikachu', 'u-6')
+      createPoke('snorlax', 'u-1'),
+      createPoke('lapras', 'u-2'),
+      createPoke('charizard', 'u-3'),
+      createPoke('blastoise', 'u-4'),
+      createPoke('venusaur', 'u-5'),
+      createPoke('pikachu', 'u-6')
     ];
     gameStore.state.team = team6;
     gameStore.state.pvpTeam6 = ['u-1', 'u-2', 'u-3', 'u-4', 'u-5', 'u-6'];

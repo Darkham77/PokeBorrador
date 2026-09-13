@@ -69,12 +69,21 @@ QA / Automation Engineers.
 ## Verification
 
 - Run `npm run sim:e2e` to execute all modular Playwright simulations.
-- Run `npm run sim:e2e:combat` to run battle-related simulations.
+- Run `npm run sim:e2e:battle` to run all battle simulations.
+- Run `npm run sim:e2e:combat` to run battle-related simulations (FSM, scenarios, locked moves).
+- Run `npm run sim:e2e:capture` to run wild encounter and capture lifecycle simulations.
+- Run `npm run sim:e2e:pvp` to run all PvP competitive and ranked matchmaking simulations.
+- Run `npm run sim:e2e:ai` to run heuristic AI battle simulations.
+- Run `npm run sim:e2e:search` to run exploration search loop simulations.
+- Run `npm run sim:e2e:abilities` to run field abilities simulations.
+- Run `npm run sim:e2e:items` to run item families and time buff simulations.
+- Run `npm run sim:e2e:events` to run event scenarios, contests, and rewards simulations.
 - Run `npm run sim:e2e:gts` to run GTS transactions simulations.
 - Run `npm run sim:e2e:save` to run save-related simulations.
 - Run `npm run sim:e2e:breeding` to run breeding-related simulations.
 - Run `npm run sim:e2e:missions` to run missions-related simulations.
 - Run `npm run sim:e2e:gyms` to run gym progression simulations.
+- Run `npm run sim:e2e:pokemon` to run Pokémon friendship and UI simulations.
 - Run `npm run sim:e2e:system` to run system-level update and version lock simulations.
 
 ## Child DOX Index

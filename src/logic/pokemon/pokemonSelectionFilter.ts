@@ -37,7 +37,7 @@ export function filterAndSortPokemon(
     if (criteria.allowedIds && !criteria.allowedIds.includes(p.uid)) return false
     
     if (criteria.allowedSpecies && criteria.allowedSpecies.length > 0) {
-      if (!criteria.allowedSpecies.includes(p.id) && !criteria.allowedSpecies.includes(p.species)) return false
+      if (!criteria.allowedSpecies.includes(p.id)) return false
     }
     
     if (criteria.searchQuery) {

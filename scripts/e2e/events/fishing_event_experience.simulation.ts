@@ -5,7 +5,8 @@ import {
   awaitBattleReadyForInput,
   armBattleFlowCompletion,
   awaitBattleFlowCompletion,
-  waitForStoreReady
+  waitForStoreReady,
+  MAX_PER_ACTION_TIMEOUT_MS
 } from '../e2e_helpers.ts';
 
 interface WindowWithCapturedLogs extends Window {
@@ -182,7 +183,7 @@ test.describe('Fishing & EXP Event Special Scenarios Simulation', () => {
     // 5. Ejecutar ataque y finalizar combate interactuando por ID
     await armBattleFlowCompletion(page);
     const moveBtn = page.locator('#move-btn-0');
-    await moveBtn.waitFor({ state: 'visible', timeout: 5000 });
+    await moveBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await moveBtn.click();
     await awaitBattleFlowCompletion(page);
 

@@ -33,7 +33,6 @@ function createMockPokemon(uid: string, id: PokemonSpeciesId, name: string, hp =
   return {
     uid,
     id,
-    species: id,
     name,
     level: 25,
     hp,

@@ -31,14 +31,19 @@ export function useAtmosphereSnowAnim(
         const drift1X = isBlizzard ? -512 : 0
         const dur1 = (isBlizzard ? 3.0 : 18.0) / speedVar
 
-        gsap.set(layer1Ref.value, { backgroundPosition: `${s1X}px ${s1Y}px` })
+        gsap.set(layer1Ref.value, { x: s1X, y: s1Y })
 
         weatherTimeline.to(layer1Ref.value,
           {
-            backgroundPosition: `${drift1X >= 0 ? '+=' : '-='}${Math.abs(drift1X)}px +=1024px`,
+            x: s1X + drift1X,
+            y: s1Y + 1024,
             duration: dur1,
             repeat: -1,
-            ease: 'none'
+            ease: 'none',
+            modifiers: {
+              x: gsap.utils.unitize(x => parseFloat(x) % 1024),
+              y: gsap.utils.unitize(y => parseFloat(y) % 1024)
+            }
           },
           0
         )
@@ -49,14 +54,19 @@ export function useAtmosphereSnowAnim(
           const drift2X = isBlizzard ? 768 : 0
           const dur2 = (isBlizzard ? 9.0 : 54.0) / speedVar
 
-          gsap.set(layer2Ref.value, { backgroundPosition: `${s2X}px ${s2Y}px` })
+          gsap.set(layer2Ref.value, { x: s2X, y: s2Y })
 
           weatherTimeline.to(layer2Ref.value,
             {
-              backgroundPosition: `${drift2X >= 0 ? '+=' : '-='}${Math.abs(drift2X)}px +=1536px`,
+              x: s2X + drift2X,
+              y: s2Y + 1536,
               duration: dur2,
               repeat: -1,
-              ease: 'none'
+              ease: 'none',
+              modifiers: {
+                x: gsap.utils.unitize(x => parseFloat(x) % 1536),
+                y: gsap.utils.unitize(y => parseFloat(y) % 1536)
+              }
             },
             0
           )

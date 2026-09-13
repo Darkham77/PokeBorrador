@@ -9,6 +9,7 @@ Frontend Architecture Team.
 ## Local Contracts
 
 - Ensure navigation guards do not deadlock loading gates.
+- **Conditional DEV-Only Routes**: Routes registered strictly for local debugging or asset calibration (e.g. `/dev/*`) must be guarded by `import.meta.env.DEV` so they are never exposed or navigable in production environments.
 
 ## Work Guidance
 

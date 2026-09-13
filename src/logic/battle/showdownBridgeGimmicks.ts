@@ -4,19 +4,24 @@ import { toID } from '@/logic/utils/strings.ts';
 import { pokemonDataProvider } from '../providers/pokemonDataProvider.ts';
 import { requireAbilityId } from '../../data/battle/abilities.ts';
 import { requirePokemonSpeciesId } from '../../data/pokemon/pokedex.ts';
+import type { BattleSide } from '@/types/battle/battle.ts';
+import { gameBus } from '@/logic/events/gameBus.ts';
 
 function applyTransformToUser(user: Pokemon, targetPoke: Pokemon): void {
   if (!user.isTransformed) {
     user._originalMoves = Array.isArray(user.moves) ? [...user.moves] : [];
-    user._originalSpecies = user.species;
+    user._originalId = user.id;
+    user._originalName = user.name;
     user._originalType = user.type;
     user._originalType2 = user.type2;
   }
   user.isTransformed = true;
-  if (!targetPoke.species) {
-    throw new Error(`[showdownBridgeMisc] Transform target has no species defined: ${targetPoke.name}`);
+  const resolvedTargetId = targetPoke.id;
+  if (!resolvedTargetId) {
+    throw new Error(`[showdownBridgeMisc] Transform target has no id defined: ${targetPoke.name}`);
   }
-  user.species = targetPoke.species;
+  user.id = resolvedTargetId;
+  user.name = targetPoke.name;
   user.type = targetPoke.type;
   user.type2 = targetPoke.type2;
 
@@ -39,20 +44,23 @@ function handleTransformToken(
   user: Pokemon | null | undefined,
   targetPoke: Pokemon | null | undefined,
   rawTargetName: string,
-  store: SBCtx['store']
+  store: SBCtx['store'],
+  side: BattleSide = 'enemy'
 ): boolean {
   if (user && targetPoke) {
     applyTransformToUser(user, targetPoke);
     store.addLog(`¡${user.name} se transformó en ${targetPoke.name}!`, 'log-info', user);
+    gameBus.emit('PLAY_TRANSFORM', { side, user, target: targetPoke });
   } else if (user && rawTargetName) {
     store.addLog(`¡${user.name} se transformó en ${rawTargetName}!`, 'log-info', user);
+    gameBus.emit('PLAY_TRANSFORM', { side, user, targetName: rawTargetName });
   }
   return true;
 }
 
 function applySpeciesDetailsToTarget(target: Pokemon, newSpecies: string, rawDetails: string): void {
   const speciesId = requirePokemonSpeciesId(toID(newSpecies));
-  target.species = speciesId;
+  target.id = speciesId;
   target.details = rawDetails;
   const data = pokemonDataProvider.getPokemonData(speciesId);
   if (!data) return;
@@ -100,7 +108,8 @@ function handleMega(ctx: SBCtx): boolean {
   const megaSpecies = ctx.parts[3] || '';
   if (target) {
     if (megaSpecies && megaSpecies !== 'Mega Stone') {
-      target.species = requirePokemonSpeciesId(toID(megaSpecies));
+      const resolvedId = requirePokemonSpeciesId(toID(megaSpecies));
+      target.id = resolvedId;
     }
     ctx.store.addLog(`¡${target.name} megaevolucionó${megaSpecies ? ` en ${megaSpecies}` : ''}!`, 'log-info', '✨');
   }
@@ -137,7 +146,8 @@ function handleFormeChange(ctx: SBCtx): boolean {
   const rawSpecies = ctx.parts[3] || '';
   if (target && rawSpecies) {
     const cleanSpecies = rawSpecies.split(',')[0]?.trim() || rawSpecies;
-    target.species = requirePokemonSpeciesId(toID(cleanSpecies));
+    const resolvedId = requirePokemonSpeciesId(toID(cleanSpecies));
+    target.id = resolvedId;
     target.details = rawSpecies;
     ctx.store.addLog(`¡${target.name} cambió de forma a ${cleanSpecies}!`, 'log-info', target);
   }
@@ -152,7 +162,13 @@ const GIMMICK_HANDLERS: Readonly<Record<string, (ctx: SBCtx) => boolean>> = {
   '-zbroken': handleZBroken,
   '-burst': handleBurst,
   '-formechange': handleFormeChange,
-  '-transform': (ctx) => handleTransformToken(ctx.getPoke(ctx.parts[2] || ''), ctx.getPoke(ctx.parts[3] || ''), ctx.parts[3] || '', ctx.store),
+  '-transform': (ctx) => handleTransformToken(
+    ctx.getPoke(ctx.parts[2] || ''),
+    ctx.getPoke(ctx.parts[3] || ''),
+    ctx.parts[3] || '',
+    ctx.store,
+    ctx.getSide(ctx.parts[2] || '') || 'enemy'
+  ),
   'detailschange': (ctx) => handleDetailsChangeToken(ctx.type, ctx.getPoke(ctx.parts[2] || ''), ctx.parts[3] || ctx.parts[2] || '', ctx.store),
   'replace': (ctx) => handleDetailsChangeToken(ctx.type, ctx.getPoke(ctx.parts[2] || ''), ctx.parts[3] || ctx.parts[2] || '', ctx.store)
 };

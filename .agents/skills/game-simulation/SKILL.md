@@ -34,9 +34,10 @@ the source of truth. `src/` must conform to them, never the reverse.
    - Only after all Node tests pass 100% GREEN is the agent authorized to proceed to browser-level Playwright execution (Step 6).
 
 2. **⛔ HARD GATE 2: STRICT PROHIBITION ON MASTER SUITE (`npm run sim:e2e`) DURING DEBUGGING**:
-   - It is **STRICTLY PROHIBITED** to execute `npm run sim:e2e` or master suites while diagnosing, fixing, or testing a failing batch or test file.
-   - The agent MUST isolate and execute ONLY the single failing simulation family (e.g. `npm run sim:e2e:combat`, `npm run sim:e2e:gyms`).
-   - `npm run sim:e2e` is strictly reserved for **Step 7 (Final Regression Pass)**, executed ONLY after the specific affected simulation file has completed with 100% PASS across all its cases.
+   - `npm run sim:e2e` (or `npm run sim:e2e clean=true`) is the canonical command to execute the complete sequence across all discovered suites.
+   - When ANY simulation fails, the orchestrator halts immediately. During diagnosis, RED reproduction test creation in Vitest, fixing in `src/`, and re-verifying that failing suite, it is **STRICTLY PROHIBITED** to execute the full master suite `npm run sim:e2e`.
+   - The agent MUST isolate and execute ONLY the affected suite using `npm run sim:e2e filter=<suite_name>` (or the corresponding domain family).
+   - Master suite execution (`npm run sim:e2e`) is resumed ONLY after the affected suite has completed its repair cycle and passed its Step 6B clean zero pass in dual mode (`npm run sim:e2e filter=<suite> clean=true`).
 
 3. **⛔ HARD GATE 3: `TEST_BATCH` IS BROWSER VERIFICATION (STEP 6), NEVER A UNIT TEST SUBSTITUTE**:
    - Running `$env:TEST_BATCH="21"; npm run sim:e2e:combat` is an optional browser-level verification tool belonging exclusively to **Step 6**.
@@ -55,11 +56,11 @@ the source of truth. `src/` must conform to them, never the reverse.
      5. Run the full Node regression suite (`npm run test:node`) to verify 0 regressions.
      6. Fast-forward resume in Playwright from the checkpoint to reach the end of the suite. The checkpoint manager MUST preserve and merge `failedBatchIndex` and `failedCaseId`, automatically resuming from the exact failing batch and skipping all previously passed batches within the suite.
    - **STRICT SERIAL DATABASE DRIVER EXECUTION**: Database drivers (SQLite and PostgreSQL) MUST execute strictly in series (`[1/2 SQLite]` followed by `[2/2 PostgreSQL]`), never concurrently. Concurrency is strictly reserved for the concurrent Playwright browser workers within each active suite.
-   - **MANDATORY UNCONDITIONALLY DUAL CLEAN ZERO PASS (PASO 6B)**: Once the suite reaches the end via checkpoint resumption, the runner **MUST AUTOMATICALLY EXECUTE THAT SUITE FROM ZERO IN DUAL MODE**:
+   - **MANDATORY UNCONDITIONALLY DUAL CLEAN ZERO PASS (STEP 6B)**: Once the suite reaches the end via checkpoint resumption, the runner **MUST AUTOMATICALLY EXECUTE THAT SUITE FROM ZERO IN DUAL MODE**:
      1. `[6B 1/2 SQLite]`: Full clean pass from Case #1 on SQLite.
      2. `[6B 2/2 PostgreSQL]`: Full clean pass from Case #1 on PostgreSQL.
      Under no circumstances is a single-driver clean pass acceptable. Both engines MUST pass 100% from case 1.
-    - **AUTOMATIC MASTER PROGRESS ADVANCEMENT & DUAL-STAGE CHECKPOINT ISOLATION**: Upon successful dual clean pass completion, the checkpoint manager automatically advances the global master cursor (`recordMasterSuiteProgress`) to the next suite in the 44-suite catalog (`master.suiteName`), while retaining `doc.passedSuites`. Clearing a suite's failure record (`clearSuiteCheckpoint`) MUST NEVER mutate or nullify `doc.master`, ensuring resilient resumption after unexpected halts.
+    - **AUTOMATIC MASTER PROGRESS ADVANCEMENT & DUAL-STAGE CHECKPOINT ISOLATION**: Upon successful dual clean pass completion, the checkpoint manager automatically advances the global master cursor (`recordMasterSuiteProgress`) to the next suite in the dynamic suite catalog (`master.suiteName`), while retaining `doc.passedSuites`. Clearing a suite's failure record (`clearSuiteCheckpoint`) MUST NEVER mutate or nullify `doc.master`, ensuring resilient resumption after unexpected halts.
    - If the clean run from zero detects ANY regression in either engine, the agent **MUST RE-ENTER THE REPAIR CYCLE IMMEDIATELY**.
    - It is **STRICTLY PROHIBITED** to advance to the next simulation suite or declare the suite certified until the dual clean zero pass returns 100% PASS from case 1 in both engines.
 
@@ -206,23 +207,23 @@ the source of truth. `src/` must conform to them, never the reverse.
       - **Periodic Stored Procedure Reset**: Simulation suites sharing a PostgreSQL container must reset `last_awarded_at = NULL` and purge prior event data in `seedEventConfig` to avoid triggering temporal anti-farming lockouts (e.g. `< 10 minutes` rule in `fn_award_event_automated`).
     - **Mandatory Dual-Driver Suite-by-Suite Certification Mandate (Atomic SQLite ➡️ PostgreSQL Rotation)**:
       - When running the sequential simulation device (`npm run sim:e2e`), the runner defaults to `driver=dual`.
-      - For each of the 38 simulation suites, the runner executes:
+      - For each discovered simulation suite (dynamically scanned and cataloged via `npm run sim:e2e:table`), the runner executes:
         1. **Stage 1 (SQLite)**: Verifies fast in-memory execution and UI behavior.
         2. **Stage 2 (PostgreSQL)**: Verifies the exact same suite against the ephemeral Supabase Docker stack (PostgreSQL + PostgREST + Gateway).
       - **Strict Stop-on-Failure**: If a suite fails in either engine, execution **HALTS IMMEDIATELY**. The agent must NOT proceed to subsequent suites until the failure is diagnosed, isolated via a RED reproduction Vitest test, fixed in `src/`, verified GREEN, and passed in both drivers.
       - **Single-Driver Flags**: Developers may pass `npm run sim:e2e driver=sqlite` or `npm run sim:e2e driver=postgres` for isolated driver passes, but full certification strictly requires the dual suite-by-suite pass.
     - **Standard CLI Invocation Commands & Orchestrator Parameters**:
       - **Official CLI Parameters**:
-        - `filter=<suite_name>`: Filters execution to a single suite (or pattern) while displaying global canonical progress (e.g. `[ 61%] (23/38)`).
-        - `from=<n|name>`: Resumes the sequential pass from a specific suite index (e.g. `from=24`) or file basename (e.g. `from=save_shield_restrictions`), executing through Suite 38 without re-running prior certified suites.
+        - `filter=<suite_name>`: Filters execution to a single suite (or pattern) while displaying global canonical progress (e.g. `[ 61%] (35/58)`).
+        - `from=<n|name>`: Resumes the sequential pass from a specific suite index (e.g. `from=24`) or file basename (e.g. `from=save_shield_restrictions`), executing through the end of the catalog without re-running prior certified suites.
         - `clean=true` / `reset=true`:
           - When combined with `filter=<suite>`: Scopes checkpoint cleanup exclusively to that individual suite, preserving the global master cursor intact.
           - When used globally (without filter): Clears all checkpoints to force execution from Suite 1.
         - `driver=dual` (default) | `driver=sqlite` | `driver=postgres`: Database engine selector.
       - **POSIX / Linux / macOS (Terminal)**:
         ```bash
-        # Full Dual-Driver Suite-by-Suite Certification (Default):
-        npm run sim:e2e
+        # Full Dual-Driver Suite-by-Suite Certification from Scratch:
+        npm run sim:e2e clean=true
 
         # Targeted Suite Execution (resumes from checkpoint if present):
         npm run sim:e2e filter=search_loop_sequential
@@ -234,18 +235,14 @@ the source of truth. `src/` must conform to them, never the reverse.
         npm run sim:e2e from=24
         npm run sim:e2e from=save_shield_restrictions
 
-        # Explicit Driver Execution:
-        npm run sim:e2e driver=sqlite
-        npm run sim:e2e driver=postgres
-
-        # Direct Single Playwright Suite Invocation:
-        SIM_DB_DRIVER=postgres npx playwright test scripts/e2e/events/magikarp_contest_multiusers.simulation.ts --workers=1
-        npx playwright test scripts/e2e/events/magikarp_contest_multiusers.simulation.ts --workers=1
+        # Explicit Driver Execution (debugging only):
+        npm run sim:e2e filter=search_loop_sequential driver=sqlite
+        npm run sim:e2e filter=search_loop_sequential driver=postgres
         ```
       - **Windows (PowerShell)**:
         ```powershell
-        # Full Dual-Driver Suite-by-Suite Certification (Default):
-        npm run sim:e2e
+        # Full Dual-Driver Suite-by-Suite Certification from Scratch:
+        npm run sim:e2e clean=true
 
         # Targeted Suite Execution:
         npm run sim:e2e filter=search_loop_sequential
@@ -256,13 +253,9 @@ the source of truth. `src/` must conform to them, never the reverse.
         # Resume Master Pass from a Specific Suite:
         npm run sim:e2e from=24
 
-        # Explicit Driver Execution:
-        npm run sim:e2e driver=sqlite
-        npm run sim:e2e driver=postgres
-
-        # Direct Single Playwright Suite Invocation:
-        $env:SIM_DB_DRIVER="postgres"; npx playwright test scripts/e2e/events/magikarp_contest_multiusers.simulation.ts --workers=1
-        Remove-Item Env:\SIM_DB_DRIVER -ErrorAction SilentlyContinue; npx playwright test scripts/e2e/events/magikarp_contest_multiusers.simulation.ts --workers=1
+        # Explicit Driver Execution (debugging only):
+        npm run sim:e2e filter=search_loop_sequential driver=sqlite
+        npm run sim:e2e filter=search_loop_sequential driver=postgres
         ```
 
 13. **Mandatory Inheritance & Modularization Mandate (Base Class or Shared Module Over Ad-Hoc Patching)**:
@@ -272,8 +265,8 @@ the source of truth. `src/` must conform to them, never the reverse.
     - **Inheritance vs. Modularization Selection**:
       - **Por Herencia (`BaseE2ESimulation` / `BaseBattleSimulation`)**: When the capability belongs directly to the simulation instance lifecycle, state setup/teardown (`setup()`, `finish()`, `saveGameAndAwaitExport()`, `reloadAndSync()`), multi-driver fixture management (`loadDatabaseFixture()`), or instance assertion helpers (`this.expectToast()`).
       - **Por Modularización (`scripts/e2e/e2e_helpers.ts`, `simulation_config.ts`)**: When the capability is a standalone, functional DOM helper, cross-context assertion, store resolver, locator builder, or pure calculation that any script or helper can compose independently without requiring class inheritance.
-    - **Universal Propagation to All 38+ Suites**:
-      - By implementing the fix in the base class or in a shared module, **ALL** 38+ existing simulation suites inherit or import the fix automatically without code duplication, fragile per-file overrides, or divergent behavior.
+    - **Universal Propagation to All Dynamic Suites (58+ Suites)**:
+      - By implementing the fix in the base class or in a shared module, **ALL** 58+ existing simulation suites inherit or import the fix automatically without code duplication, fragile per-file overrides, or divergent behavior.
     - **Standard Inherited / Modular Capabilities**:
       1. **Pre-Test State Reset (`setup()`)**: Automatic deletion of ephemeral SQLite database files, cleanup of prior PostgreSQL test user entries, viewport initialization, and pre-loading `window.__E2E__ = true` init scripts so cold Vite compiles never trigger timeout fallbacks.
       2. **Robust Semantic Assertions (`expectToast(text, timeout)`)**: Centralized text-filtered notification locator assertions, strictly forbidding fragile positional `.first()` indexing when multiple toast notifications are stacked.
@@ -326,8 +319,8 @@ Every AI agent MUST follow this exact sequential order when running simulations,
    - Under no circumstances may an agent proceed to the next suite or declare this suite certified without this dual clean pass passing 100% from case 1 in both engines.
 
 9. **Step 7: Full E2E Master Regression Pass**:
-   - Re-run or resume the master E2E suite (`npm run sim:e2e`). Because the master checkpoint cursor is continuously maintained and advanced upon every suite pass and Step 6B completion, running `npm run sim:e2e` automatically continues from the exact next uncertified suite through Suite 38.
-   - All 38 suites must complete with 100% DUAL PASS (SQLite + PostgreSQL).
+   - Re-run or resume the master E2E suite (`npm run sim:e2e`). Because the master checkpoint cursor is continuously maintained and advanced upon every suite pass and Step 6B completion, running `npm run sim:e2e` automatically continues from the exact next uncertified suite through the end of the catalog.
+   - All suites (currently 58 suites dynamically discovered via `npm run sim:e2e:table`) must complete with 100% DUAL PASS (SQLite + PostgreSQL).
 
 ### 📊 Simulation & Debugging Lifecycle Flowchart
 
@@ -410,7 +403,6 @@ Resumed at: <step name> (only when resuming)
 
 ## Dynamic Simulation Table (Generated via `npm run sim:e2e:table`)
 <!-- Embed output of `npm run sim:e2e:table` and update statuses dynamically -->
-```
 
 ## Active Fix — <simulation name>
 Root cause: ...
@@ -419,9 +411,9 @@ Attempts: N
 Status: FIXING | PENDING_RERUN | PASS
 
 ## Applied Code Fixes & Structural Refactors (Commit Ledger)
+<!-- ATTENTION: THIS TABLE MUST START 100% EMPTY. ROWS ARE ONLY ADDED WHEN A SIMULATION IN THIS RUN FAILS AND IS REPAIRED -->
 | ID | Area / Component | Root Cause / Issue | Fix Applied | Files Touched |
 |---|---|---|---|---|
-| FIX-01 | ... | ... | ... | ... |
 
 ## Pending Simulations (not yet started)
 <!-- simulations still in queue after the last failure -->
@@ -445,10 +437,24 @@ Status: FIXING | PENDING_RERUN | PASS
 3. **Mark resumption point.** On any interruption (user message, context limit, error), ensure the progress artifact reflects exactly where execution stopped and what is next, so a fresh agent can pick up without duplicating work.
 4. **Resuming a run (Physical File Synchronization First).** Whenever starting, resuming, or continuing a simulation workflow, the agent MUST first look for the latest mirrored physical file `scripts/e2e/results/simulation_progress_log_<YYYYMMDD>.md` in the repository (sorting by date to find the most recent one). Even if an internal `simulation_progress.md` exists in the brain, the agent MUST prioritize the physical mirrored file's content to restore the execution state, simulation queue, and pending tasks. This prevents desynchronization when changing branches, repositories, or active agents. The agent MUST recreate/synchronize the brain's internal `simulation_progress.md` artifact from this physical repository file before executing any simulation command, ensuring both representations are in perfect parity.
 5. **Final state.** When the run is complete, mark `Status: COMPLETE` and merge the artifact summary into the final `scripts/e2e/results/simulation_report_<timestamp>.md`.
-6. **Strict Truthfulness in Test Results (No Premature PASS).** It is strictly forbidden to mark a test suite (e.g. `sim:e2e:combat`) as `PASS` in the simulation queue or progress log if any of its cases were skipped, filtered out, untested, or if the entire suite was not run to completion. A suite is only `PASS` when all of its cases/batches are executed and pass successfully with zero failures. If only specific cases were verified, keep the status as `IN_PROGRESS` or `PARTIAL_PASS` and document exactly which cases remain.
+6. **Strict Truthfulness in Test Results (No Premature PASS).** It is strictly forbidden to mark a test suite (e.g. `sim:e2e:combat`) as `PASS` in the simulation queue or progress log if any of its cases were skipped, filtered out, untested, or if the entire suite was not run to completion. A suite is only `PASS` when all of its cases/batches are executed and pass successfully with zero failures in both SQLite and PostgreSQL. If only specific cases were verified, keep the status as `IN_PROGRESS` or `PARTIAL_PASS` and document exactly which cases remain.
 7. **No Searching for Outdated / Pre-Regeneration Case IDs.** Whenever `npm run sim:fuzzer` finishes or is regenerated, all case IDs and hashes are updated in `fuzzer_certified_cases.json`. It is STRICTLY FORBIDDEN to search for, trace, or run Playwright tests against stale case IDs from previous runs (e.g., `case-a6f13ae7994b`). Always read the newly generated `fuzzer_certified_cases.json` to obtain current case IDs before running isolated traces.
-8. **MANDATORY APPLIED CODE FIXES TABLE & ABSOLUTE PROHIBITION ON PREMATURE SUITE STATEMENTS:** The progress artifact MUST maintain a dedicated `Applied Code Fixes & Structural Refactors (Commit Ledger)` table detailing every code fix, root cause, fix applied, and list of files touched. This table is an essential ledger for crafting clean commit messages. Simultaneously, artifacts MUST NEVER declare a test suite as `PASS` based on assumptions, partial runs, or prior execution states. Suite statuses MUST remain `IN_PROGRESS` or `PENDING RUN` until the suite completes with exit code 0 and empirical proof.
-9. **CONTINUOUS LEDGER PRESERVATION LAW:** It is **STRICTLY FORBIDDEN** to delete, reset, clear, or truncate entries from the `Applied Code Fixes & Structural Refactors (Commit Ledger)` table in `simulation_progress.md` before an official `git commit` is made. All applied fixes since the last commit MUST be preserved continuously in the table. When many fixes accumulate, contiguous past fixes MAY be grouped into thematic range rows (e.g. `FIX-01..FIX-40` | `Grouped legacy fixes: battle FSM sync, worker safety, medicine actions...` | `Description...` | `Files touched...`), provided NO range or ID number is omitted or deleted.
+8. **MANDATORY COMMIT LEDGER EXCLUSIVELY FOR ACTIVE SIMULATION FAILURES & ZERO-POLLUTION MANDATE:**
+   - `simulation_progress.md` and its mirrored physical file `scripts/e2e/results/simulation_progress_log_YYYYMMDD.md` are strictly a runtime execution log for the **ACTIVE SIMULATION RUN**.
+   - The `Applied Code Fixes & Structural Refactors (Commit Ledger)` table is **EXCLUSIVELY AND RESTRICTIVELY RESERVED FOR BUGS UNCOVERED BY SIMULATION FAILURES DURING THIS ACTIVE RUN** and resolved through the canonical 7-step cycle.
+   - **ABSOLUTE PROHIBITION ON MANUAL / HISTORICAL / FEATURE POLLUTION**: It is **STRICTLY FORBIDDEN** to copy, paste, backfill, pre-populate, import, or invent entries in the Commit Ledger for prior tasks, manual feature implementations, past refactors, or historical bugs that were NOT caught by an active simulation in this run.
+   - When initiating a simulation pass, the Commit Ledger **MUST BE 100% EMPTY** (0 rows).
+   - A row is added to the Commit Ledger **IF AND ONLY IF**:
+     1. An active simulation in the pipeline fails.
+     2. An isolated Vitest RED reproduction test is written in `tests/node/`.
+     3. The root cause is fixed in `src/` (or base harness).
+     4. The Vitest reproduction test turns GREEN.
+     5. The full Node unit regression passes (`npm run test:node`).
+     6. The affected simulation suite passes its Step 6B clean zero pass in dual mode (`driver=dual`).
+   - Any agent that pre-populates or contaminates the Commit Ledger with non-simulation work before simulations execute is in direct violation of this mandate.
+   - Simultaneously, artifacts MUST NEVER declare a test suite as `PASS` based on assumptions, partial runs, or single-driver execution. Suite statuses MUST remain `⏳ Pendiente` or `IN_PROGRESS` until the suite completes with exit code 0 in both SQLite and PostgreSQL.
+9. **INTRA-RUN LEDGER PRESERVATION LAW:**
+   - Once a bug is legitimately caught by a simulation during the run and repaired via the 7-step cycle, that entry in the Commit Ledger MUST be preserved continuously throughout the rest of the simulation run so subsequent suite executions do not overwrite it. It is strictly preserved until the entire master simulation pass completes and the official git commit is made.
 10. **MANDATORY DISK FUZZER CASE SYNCHRONIZATION BEFORE CODE DIAGNOSIS**: Whenever a Playwright E2E simulation or replayer throws a desync, unexpected turn overflow, or step mismatch, the agent MUST FIRST verify if `scripts/e2e/results/fuzzer_certified_cases.json` is 100% up to date with the latest fuzzer logic by executing `npm run sim:fuzzer` BEFORE forming any diagnostic hypothesis or making edits to `src/` or simulation wrappers. Attempting to debug or patch runtime synchronization logic against stale or un-regenerated certified case artifacts on disk is STRICTLY FORBIDDEN.
 
 ## Event-Driven Core Simulation Mandate
@@ -467,59 +473,69 @@ The simulation infrastructure (Playwright, replayers, and deciders) must operate
 
 ---
 
-## Test System Architecture
+## Test System Architecture & Taxonomy of Simulators
 
-The project has **three testing layers**, each with a distinct role:
+The project features **four execution layers**, each with an explicit role:
 
 ```
 scripts/e2e/fuzzer/                   <- Layer 0: FUZZER (pure logic, @pkmn/sim)
     core/
-        fuzzer_engine.ts              <- Main engine
-        fuzzer_agent.ts               <- Decides moves for p1/p2
+        fuzzer_engine.ts              <- Main fuzzer engine
+        fuzzer_agent.ts               <- Heuristic decision agent for p1/p2
         fuzzer_mock_battle_store.ts   <- Headless Pinia battle store mock
         fuzzer_runner.ts              <- Native fuzzer runner (decoupled from Vitest)
     generators/
-        fuzzer_team_generator.ts      <- Builds test batches
+        fuzzer_team_generator.ts      <- Builds test batches and teams
         fuzzer_item_generator.ts      <- Builds item test batches
     scenarios/
-        fuzzer_ability_scenarios.ts   <- Scripted scenarios for specific abilities
+        fuzzer_ability_scenarios.ts   <- Scripted scenarios for complex abilities
         fuzzer_excluded_abilities.ts  <- List of excluded abilities
     runners/
-        run_moves_fuzzer.ts           <- Native runner for moves
-        run_abilities_fuzzer.ts       <- Native runner for abilities
-        run_items_fuzzer.ts           <- Native runner for items
-        fuzzer_case_replayer.ts       <- Replay specific cases step-by-step
-        ensure_fuzzer_cases.ts        <- Ensures certified cases exist
+        run_all_fuzzers.ts            <- Master fuzzer runner (npm run sim:fuzzer)
+        run_moves_fuzzer.ts           <- Moves fuzzer (npm run sim:fuzzer:moves)
+        run_abilities_fuzzer.ts       <- Abilities fuzzer (npm run sim:fuzzer:abilities)
+        run_items_fuzzer.ts           <- Held items fuzzer (npm run sim:fuzzer:items)
+        run_scenarios_fuzzer.ts       <- Edge-case scenarios fuzzer (npm run sim:fuzzer:scenarios)
+        run_breeding_fuzzer.ts        <- Breeding fuzzer (npm run sim:fuzzer:breeding)
+        run_missions_fuzzer.ts        <- Daycare missions fuzzer (npm run sim:fuzzer:missions)
+        run_gyms_fuzzer.ts            <- Gym progression fuzzer (npm run sim:fuzzer:gyms)
+        run_gts_fuzzer.ts             <- GTS market fuzzer (npm run sim:fuzzer:gts)
+        run_ai_fuzzer.ts              <- Heuristic AI fuzzer (npm run sim:fuzzer:ai)
+        fuzzer_case_replayer.ts       <- Headless trace replayer (npm run sim:fuzzer:trace)
+        ensure_fuzzer_cases.ts        <- Guard: ensures fuzzer_certified_cases.json exists
+    tools/
+        validate_certified_cases.ts   <- Certification validator (npm run sim:fuzzer:validate)
 
-tests/node/                           <- Layer 1: UNIT (pure Node.js, no browser)
-    battle/         battleMath, showdownAdapter, pp logic, weather abilities...
+tests/node/                           <- Layer 1: UNIT (pure Node.js, fast in-memory, no browser)
+    battle/         battleMath, showdownAdapter, pp logic, weather abilities, reproduction tests...
     inventory/      item math, npc budgets...
     pokemon/        stats, generation, migrations...
     system/         economy, GTS, DB translation, backup validation...
     world/          spawn integrity, weather, maps...
 
-tests/integration/battle/             <- Layer 2: INTEGRATION (Vitest + @pkmn/sim)
+tests/integration/battle/             <- Layer 2: INTEGRATION (Vitest + @pkmn/sim engine parity)
     showdown_integration.spec.ts
     showdown_item_sync.spec.ts
     showdown_bridge_bugs.spec.ts
 
-scripts/e2e/                          <- Layer 3: Simulations (Playwright, real browser)
-    e2e_helpers.ts                    <- Shared: login, battle input, FSM polling
-    fuzzer/runners/ensure_fuzzer_cases.ts <- Guard: ensures fuzzer_certified_cases.json exists
-    battle/
-        battle_fsm_sync.sim.ts        <- Full multi-turn battle (consumes fuzzer output)
-        battle_held_items.sim.ts      <- Item effects in combat (consumes fuzzer output)
-        battle_weather_effects.sim.ts <- Weather / ability interactions
-    gyms/
-        gym_progression.sim.ts        <- Gym challenge -> badge
-    gts/
-        gts_transactions.sim.ts       <- Publish/buy trade cycle (dual-page)
-    breeding/
-        breeding_lifecycle.sim.ts     <- Deposit -> hatch cycle
-    missions/
-        daycare_missions.sim.ts       <- Mission completion flow
-    save/
-        save_shield_restrictions.sim.ts
+scripts/e2e/                          <- Layer 3: Playwright E2E Simulations (Real Browser, Dual Driver)
+    run_sequential_simulations.ts     <- Master sequential orchestrator (npm run sim:e2e)
+    e2e_helpers.ts                    <- Shared DOM/FSM event synchronizers
+    helpers/
+        e2eCheckpointManager.ts       <- Multi-driver checkpoint persistence
+        postgres_test_container.ts    <- Ephemeral PostgreSQL Docker harness
+    abilities/                        <- *.simulation.ts (field abilities, rewards...)
+    battle/                           <- *.simulation.ts (battle FSM sync, held items, wild capture, PvP...)
+    breeding/                         <- *.simulation.ts (egg daycare, hatching...)
+    events/                           <- *.simulation.ts (tournaments, contests, rankings...)
+    gts/                              <- *.simulation.ts (P2P trading, listings...)
+    gyms/                             <- *.simulation.ts (gym leaders, badge unlocks...)
+    items/                            <- *.simulation.ts (bag inventory, item effects...)
+    missions/                         <- *.simulation.ts (daily tasks, daycare missions...)
+    pokemon/                          <- *.simulation.ts (PC boxes, evolution, summary...)
+    save/                             <- *.simulation.ts (SaveCoordinator, cloud sync...)
+    system/                           <- *.simulation.ts (options, audio, auth...)
+    (Dynamic catalog: 58 suites discovered automatically via npm run sim:e2e:table)
 ```
 
 ### Fuzzer -> E2E Dependency Chain
@@ -583,7 +599,7 @@ High-volume simulation suites (`battle_held_items` and `battle_fsm_sync`) avoid 
 6. **E2E Promises**: Window event promises deleted to prevent cross-test resolution.
 7. **Persistence**: Database save rows deleted for the worker user.
 
-*Selective Scope Mandate*: Page pooling is strictly prohibited for cold-boot suites (`loading_gate_and_reload`, `save_shield_restrictions`), multi-user/multi-tab workflows (`gts_transactions`, `magikarp_contest_multiusers`), or short domain suites (1-6 tests). Isolated processes are essential to prevent WebGL/RAM memory bloat across the 44 sequential suites and to ensure genuine cold-start test fidelity.
+*Selective Scope Mandate*: Page pooling is strictly prohibited for cold-boot suites (`loading_gate_and_reload`, `save_shield_restrictions`), multi-user/multi-tab workflows (`gts_transactions`, `magikarp_contest_multiusers`), or short domain suites (1-6 tests). Isolated processes are essential to prevent WebGL/RAM memory bloat across all dynamic sequential suites (58+ suites) and to ensure genuine cold-start test fidelity.
 
 *Fail-Fast Guarantee*: If any batch fails, the context is destroyed immediately, preserving failure logs and aborting the suite (`maxFailures: 1`).
 
@@ -591,22 +607,53 @@ High-volume simulation suites (`battle_held_items` and `battle_fsm_sync`) avoid 
 
 ## npm Scripts Reference
 
+### Layer 0: Fuzzers & Headless Replayers
+| Script | What it runs |
+|---|---|
+| `sim:fuzzer` | Master fuzzer runner (executes all domain fuzzers, regenerates certified cases) |
+| `sim:fuzzer:moves` | Moves coverage fuzzer |
+| `sim:fuzzer:abilities` | Abilities coverage fuzzer |
+| `sim:fuzzer:items` | Held items coverage fuzzer |
+| `sim:fuzzer:scenarios` | Complex ability scenarios fuzzer |
+| `sim:fuzzer:breeding` | Daycare egg breeding fuzzer |
+| `sim:fuzzer:missions` | Daily mission progression fuzzer |
+| `sim:fuzzer:gyms` | Gym leader progression fuzzer |
+| `sim:fuzzer:gts` | Global Trade System transactions fuzzer |
+| `sim:fuzzer:ai` | Heuristic battle AI decision fuzzer |
+| `sim:fuzzer:trace` | Fast headless case replayer in pure Node (`TEST_CASE_ID=<id> npm run sim:fuzzer:trace`) |
+| `sim:fuzzer:validate` | Validates all terminal cases in `fuzzer_certified_cases.json` |
+
+### Layer 1 & 2: Unit & Parity Tests
 | Script | What it runs |
 |---|---|
 | `test:node` | All `tests/node/**/*.test.ts` via native `node:test` |
-| `test` | All unit + integration via Vitest |
-| `sim:fuzzer` | Coverage fuzzer + item fuzzer (generates fuzzer_certified_cases.json) |
-| `sim:e2e` | Dynamic sequential file-by-file execution of all `*.simulation.ts` under `scripts/e2e/` (halts on 1st error) |
-| `sim:e2e:combat` | ensure_fuzzer_cases + battle simulations |
-| `sim:e2e:combat:report` | Same, output redirected to `scripts/e2e/results/e2e_simulation_failures.json` |
-| `sim:e2e:ai` | Only `scripts/e2e/battle/heuristic_ai.simulation.ts` |
-| `sim:e2e:gyms` | Only `scripts/e2e/gyms/` |
-| `sim:e2e:gts` | Only `scripts/e2e/gts/` |
-| `sim:e2e:breeding` | Only `scripts/e2e/breeding/` |
-| `sim:e2e:missions` | Only `scripts/e2e/missions/` |
-| `sim:e2e:save` | Only `scripts/e2e/save/` |
-| `sim:combat:all` | Fuzzers + all Playwright scenario simulations |
-| `sim:combat:all:report` | All of the above -> `scripts/e2e/results/playwright_report.txt` |
+| `test` | All unit + integration via Vitest (`tests/unit/`, `tests/integration/`) |
+
+### Layer 3: Playwright E2E Simulations
+| Script | What it runs |
+|---|---|
+| `sim:e2e` | Dynamic sequential file-by-file execution of all `*.simulation.ts` under `scripts/e2e/` (dual driver SQLite + Postgres, halts on 1st error) |
+| `sim:e2e:table` | Dynamic suite scanner & complexity-sorted table generator |
+| `sim:e2e:list` | List all discovered suites and case counts |
+| `sim:e2e:combat` | Combat core simulation (`battle_fsm_sync`, `battle_manual_scenarios`, `battle_locked_moves`) |
+| `sim:e2e:combat:report` | Combat core simulation with output redirected to log |
+| `sim:e2e:capture` | Wild encounters and capture mechanics simulation |
+| `sim:e2e:capture:report` | Wild capture simulation with log redirection |
+| `sim:e2e:pvp` | PvP combat simulation suites |
+| `sim:e2e:pvp:report` | PvP simulation with log redirection |
+| `sim:e2e:ai` | Heuristic battle AI simulation (`heuristic_ai.simulation.ts`) |
+| `sim:e2e:search` | Wild encounter search loop sequential simulation |
+| `sim:e2e:search:report` | Search loop simulation with log redirection |
+| `sim:e2e:abilities` | Field and combat abilities simulation suites (`scripts/e2e/abilities/`) |
+| `sim:e2e:items` | Bag and inventory items simulation suites (`scripts/e2e/items/`) |
+| `sim:e2e:gts` | GTS trade listings and transaction simulation suites (`scripts/e2e/gts/`) |
+| `sim:e2e:save` | Persistence, SaveCoordinator and save shield simulation suites (`scripts/e2e/save/`) |
+| `sim:e2e:breeding` | Daycare deposit and egg hatching simulation suites (`scripts/e2e/breeding/`) |
+| `sim:e2e:missions` | Daycare mission lifecycle simulation suites (`scripts/e2e/missions/`) |
+| `sim:e2e:gyms` | Gym progression and badge unlock simulation suites (`scripts/e2e/gyms/`) |
+| `sim:e2e:events` | Contests, tournaments and reward claims simulation suites (`scripts/e2e/events/`) |
+| `sim:e2e:pokemon` | Box management, summary and evolution simulation suites (`scripts/e2e/pokemon/`) |
+| `sim:e2e:system` | System options, audio and authentication simulation suites (`scripts/e2e/system/`) |
 
 ### Filtering Individual Test Cases
 
@@ -669,99 +716,63 @@ This command installs the required browsers along with all system dependencies (
 
 ---
 
-## Simulation Execution Workflow
+## Simulation Execution Workflow & Canonical Lifecycle
 
-> [!IMPORTANT]
-> **Strict Sequential Execution Mandate:** NEVER run multiple simulation commands or test suites concurrently or in parallel. Each simulation command already utilizes multicore resources internally. Running two or more simulation commands at the same time will saturate the CPU and generate execution errors. Always wait for one simulation run to completely finish before starting another.
+The workflow operates under an automated sequential orchestration model:
 
-> [!IMPORTANT]
-> **Mandatory State Synchronization:** Before running any scope determination or executing commands, the agent MUST inspect the repository's `scripts/e2e/results/` folder for the most recent `simulation_progress_log_<YYYYMMDD>.md` file. The agent MUST parse this physical file, recreate the internal `simulation_progress.md` artifact in the brain, and resume exactly from the last pending or in-progress simulation queue item. This synchronization is critical to preserve the simulation state across agent swaps or active branches.
+### Phase 0: Pre-Flight Environment Sanity & Artifact Initialization
+Before executing any simulation command:
+1. **Free Port 5174**:
+   `npx kill-port 5174`
+2. **Purge Ephemeral Artifacts**:
+   Ensure temporary databases and logs are deleted:
+   `Remove-Item -Recurse -Force database/temp/simulations, scratch/test-results, scratch/playwright_*.log -ErrorAction SilentlyContinue`
+3. **Fuzzer Regeneration vs Validation (MANDATE FOR CLEAN RUNS)**:
+   - **WHEN REQUESTED TO RUN "FROM SCRATCH" (CLEAN RUN) OR UPON `src/` CHANGES**: It is **STRICTLY MANDATORY TO REGENERATE ALL FUZZERS**:
+     ```bash
+     npm run sim:fuzzer
+     npm run sim:fuzzer:validate
+     ```
+     `npm run sim:fuzzer` cleans and re-simulates all deterministic battles from scratch using `@pkmn/sim` and outputs the fresh `scripts/e2e/results/fuzzer_certified_cases.json`. Never skip this step by validating stale cases during a clean run.
+   - **ONLY WHEN RESUMING AN IN-FLIGHT RUN WITHOUT CODE CHANGES**: Execute solely `npm run sim:fuzzer:validate` for a quick integrity verification before resuming Playwright from the checkpoint.
+4. **Generate Dynamic Simulation Table**:
+   `npm run sim:e2e:table` (generates the complexity-sorted catalog of all 58 suites).
+5. **Initialize Clean Progress Log**:
+   Create `simulation_progress.md` in the brain and mirror to `scripts/e2e/results/simulation_progress_log_<YYYYMMDD>.md`.
+   **MANDATORY**: The `Commit Ledger` MUST start 100% EMPTY (0 rows). It is strictly forbidden to pre-populate it with past manual bug fixes or features!
 
-> [!IMPORTANT]
-> **Combat Simulation Execution Order Mandate (Save Combat for Last):** Because `sim:e2e:combat` is the longest, heaviest, and most time-consuming simulation suite, all non-combat domain suites (`gyms`, `gts`, `breeding`, `missions`, `save`, `ai`) MUST ALWAYS be executed first in the queue. `sim:e2e:combat` MUST be saved for the very end of the domain run right before the final cross-domain regression pass.
+### Phase 1: Launch Sequential Execution
+- **Full Clean Run from Suite 1**:
+  `npm run sim:e2e clean=true`
+- **Resuming an Interrupted Run**:
+  `npm run sim:e2e` (automatically resumes from the last uncompleted suite checkpoint).
 
-### Step 1 — Determine scope
+### Phase 2: Active Closed-Loop Repair Cycle (When ANY Suite Fails)
+When the sequential orchestrator detects a failure, it halts immediately at that suite. The agent MUST NOT re-run `npm run sim:e2e` during debugging! Follow the 7-step cycle:
+1. **Step 1: Isolate Failing Case**:
+   Identify the exact suite name, batch index, and case ID from the failure log.
+2. **Step 2: Write Static Reproduction Unit Test in RED**:
+   Extract the failing case parameters into an isolated, static test in `tests/node/` (e.g. `tests/node/battle/reproduce_case_xxx.test.ts`). Run `npm run test` and confirm it fails deterministically in **RED**.
+3. **Step 3: Fix Root Cause in `src/` (or Base Harness)**:
+   Diagnose Showdown source code (`external/pokemon-showdown-code/`) and resolve the bug at the source without fallbacks (`||`, `??`).
+4. **Step 4: Verify Reproduction Test Turns GREEN**:
+   Run the reproduction test and confirm it passes in **GREEN**.
+5. **Step 5: Full Node Unit Regression Check**:
+   `npm run test:node` (must report 100% GREEN, 0 regressions across all 126+ test files).
+6. **Step 6A: Fast-Forward Resume to End of Suite**:
+   Run ONLY the failing suite: `npm run sim:e2e filter=<suite_name>` (the checkpoint manager resumes from the failing batch and completes the remaining batches).
+7. **Step 6B: Mandatory Dual Clean Zero Intra-Suite Regression Pass (`clean=true`)**:
+   `npm run sim:e2e filter=<suite_name> clean=true`
+   Both `[1/2 SQLite]` and `[2/2 PostgreSQL]` must pass 100% from Case 1.
+8. **Step 6C: Record Fix in Commit Ledger**:
+   ONLY NOW, after the suite passes Step 6B, record the bug in the Commit Ledger of `simulation_progress.md` and mirror it.
+9. **Step 7: Master Resumption**:
+   Execute `npm run sim:e2e` to advance to the next suite in the dynamic catalog until all suites are 100% DUAL PASS.
 
-| User intent | Command |
-|---|---|
-| Full game validation | `npm run sim:e2e` |
-| Combat only | `npm run sim:e2e:combat` |
-| Specific domain | `npm run sim:e2e:gyms`, `npm run sim:e2e:breeding`, etc. |
-| Single failing simulation | `$env:TEST_CASE_ID="case-xxx"; npm run sim:e2e:combat` |
-
-**Fuzzer rule:** The fuzzer (`sim:fuzzer`) ALWAYS performs a clean wipe of all previously generated fuzzer artifacts (`fuzzer_*.json`, `fuzzer_*.txt`, `fuzzer_certified_cases.json`) in `scripts/e2e/results/` before starting, ensuring execution starts 100% clean from scratch by default. `ensure_fuzzer_cases.ts` handles this clean wipe and triggers `npm run sim:fuzzer`.
-
-**Mandatory Temporary Files Cleanup Mandate:** Before launching a full simulation run from scratch, the agent MUST explicitly execute a clean wipe of all temporary database and test artifact files (`rm -rf database/temp/simulations/ scratch/test-results/ scratch/playwright_*.log`). This guarantees zero state corruption from stale databases or interrupted server reloads.
-
-**Important Fuzzer Regeneration Rule:** Whenever the fuzzer runs and regenerates certified cases, all `TEST_CASE`, `TEST_CASE_ID`, and `TEST_START_FROM_CASE_ID` filters/environment variables are automatically invalidated and deleted inside `ensure_fuzzer_cases.ts`. This forces a complete E2E simulation run over all newly generated cases to identify any new regressions or bugs.
-
-### Step 2 — Execute and capture output
-
-Always redirect output to `scripts/e2e/results/` so results are preserved for analysis:
-
-```bash
-npm run sim:e2e:combat:report     # -> scripts/e2e/results/e2e_simulation_failures.json
-npm run sim:combat:all:report     # -> scripts/e2e/results/playwright_report.txt
-```
-
-### Step 3 — On failure: the fix loop
-
-```
-DETECT failure or 1:1 parity bug between fuzzer and simulation
-  |
-INVOKE AUDIT SKILL: When debugging Showdown event desynchronizations, fuzzer vs simulation state
-                    mismatches, or 1:1 logic bugs, ALWAYS load and follow the `@/audit-simulations`
-                    skill (`.agents/skills/audit-simulations/SKILL.md`) to perform source code
-                    comparison against `external/pokemon-showdown-code/` and run the two-stage test gate.
-  |
-ANALYZE: read the test carefully. Understand what game behavior it asserts.
-  |
-STUDY SHOWDOWN: Consult first the local Showdown source code in external/pokemon-showdown-code/
-                to understand the exact logic, algorithms, state transitions, condition strings,
-                and flow Showdown uses for this scenario. The local directory external/pokemon-showdown-code/
-                is the MANDATORY SINGLE SOURCE OF TRUTH for Showdown behavior. Developers and AI agents
-                MUST inspect it before implementing or repairing any combat logic, choice formatting,
-                or state parsing. NEVER invent ad-hoc string sanitizers, custom condition rules, or assumptions.
-  |
-DIAGNOSE: locate the divergence in src/ (never in the test).
-  |
-REPRODUCE WITH UNIT TEST: Extract the failing case/context from the failed simulation
-                          and write a minimal, reproducing unit test under tests/unit/
-                          or tests/node/. Verify that the test fails as expected.
-  |
-CLASSIFY complexity:
-  - Simple bug (wrong value, missing case, off-by-one) -> proceed to fix
-  - Structural (requires design change) -> STOP, explain to user, propose plan
-  |
-FIX src/ to match what @pkmn/sim declares as correct.
-  |
-VALIDATE VIA UNIT TESTS: Run the new unit test (and all related unit/node tests)
-                         to verify the fix works at the logic level before running
-                         heavy browser simulations.
-  |
-RE-RUN only simulation X (use TEST_CASE filter or domain script).
-  |
-  +-- PASS -> continue with remaining simulations from where execution stopped
-  +-- FAIL -> repeat fix loop (no retry limit for simple bugs)
-```
-
-> [!CAUTION]
-> **MANDATORY: Verify the Fix in Isolation BEFORE Advancing or Re-Running the Full Suite.**
-> After applying a fix to a failing simulation (e.g. `sim:e2e:gts`), you MUST re-run ONLY that specific domain simulation (`npm run sim:e2e:gts`) to confirm it passes in isolation. **It is STRICTLY FORBIDDEN to skip straight to `npm run sim:e2e` or the next domain suite without first confirming the fixed simulation passes on its own.** Re-running the full suite before individual validation is a waste of resources and masks whether the fix actually worked. The single-domain re-run is cheap; the full suite takes 25+ minutes. Always validate cheap first.
-
-> [!WARNING]
-> **THE COLLECTIVE SUCCESS RULE (ONE TEST PASSING DOES NOT MAKE A SUITE):**
-> Just because a single simulation run or a specific test case passes successfully after applying a fix **DOES NOT mean the issue is resolved or that other tests will pass**. A local fix can easily destabilize other combat sequences or active states. Never mark a task as completed or report success based on a single case passing. You must continue running the entire simulation queue and the full combat E2E suite consecutively until **all tests in the suite pass together with zero failures**.
-
-**Fuzzer Regeneration during Fix Loop (CRITICAL):** If at any point during the fix loop the fuzzer is run again (regenerating `fuzzer_certified_cases.json`), the specific `TEST_CASE` / `TEST_CASE_ID` you were debugging is **completely invalidated** (it no longer exists in the newly generated file). You **MUST NOT** attempt to re-run or filter by that old case ID. Instead, you must immediately run a full simulation (`npm run sim:e2e:combat`) to discover the new case mappings and verify the fix against the new suite.
-
-**MANDATORY: Unit-Test First & Pre-Simulation Validation Rules**
-1. **Never skip reproducing tests:** Whenever a simulation fails or a bug is reported, you MUST first create or update a unit test (or lightweight Node test) that successfully reproduces the failure BEFORE applying any fix to `src/`.
-2. **Never run E2E simulations on untested code changes:** Any code edits in `src/` must first be validated by executing and passing the unit/integration tests (`npm run test` or specific file path test) BEFORE proposing or running any browser-based E2E Playwright simulations. This saves time and computational resources.
-
-### Step 3.5 — Mandatory Final Full E2E Regression Pass (`npm run sim:e2e`)
-
-After all individual simulation targets (`sim:e2e:combat`, `sim:e2e:ai`, `sim:e2e:gyms`, `sim:e2e:gts`, `sim:e2e:breeding`, `sim:e2e:missions`, `sim:e2e:save`) pass, you **MUST** run the full E2E suite (`npm run sim:e2e` or `npm run sim:combat:all`) once more across the entire repository to guarantee zero cross-domain regressions before declaring the run `COMPLETE`.
+### Phase 3: Final Certification & Report
+Once all suites in the catalog complete with 100% DUAL PASS:
+1. Mark `Overall: COMPLETE` in `simulation_progress.md`.
+2. Generate final report at `scripts/e2e/results/simulation_report_<timestamp>.md`.
 
 ### Step 4 — Final report
 

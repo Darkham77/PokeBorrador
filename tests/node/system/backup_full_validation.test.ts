@@ -318,8 +318,8 @@ describe('Dynamic Multi-Table Real Backup Validation & Dex Compatibility Test', 
 
         if (parsedAsset && parsedAsset.type === 'pokemon' && parsedAsset.data && typeof parsedAsset.data === 'object') {
           const poke = parsedAsset.data as Pokemon;
-          if (poke.species && !Dex.species.get(poke.species).exists) {
-            escrowErrors.push(`[claim_queue ID: ${claimId}] Invalid species '${poke.species}'`);
+          if (poke.id && !Dex.species.get(poke.id).exists) {
+            escrowErrors.push(`[claim_queue ID: ${claimId}] Invalid species '${poke.id}'`);
           }
           if (poke.nature && !isNatureId(poke.nature)) {
             escrowErrors.push(`[claim_queue ID: ${claimId}] Invalid nature '${poke.nature}'`);
@@ -327,8 +327,8 @@ describe('Dynamic Multi-Table Real Backup Validation & Dex Compatibility Test', 
           if (poke.status === null) {
             escrowErrors.push(`[claim_queue ID: ${claimId}] status must not be null`);
           }
-          if (!poke.species) {
-            escrowErrors.push(`[claim_queue ID: ${claimId}] species must be defined`);
+          if (!poke.id) {
+            escrowErrors.push(`[claim_queue ID: ${claimId}] id must be defined`);
           }
         }
       }
@@ -352,8 +352,8 @@ describe('Dynamic Multi-Table Real Backup Validation & Dex Compatibility Test', 
         }
 
         if (poke) {
-          if (poke.species && !Dex.species.get(poke.species).exists) {
-            escrowErrors.push(`[market_listings ID: ${listingId}] Invalid species '${poke.species}'`);
+          if (poke.id && !Dex.species.get(poke.id).exists) {
+            escrowErrors.push(`[market_listings ID: ${listingId}] Invalid species '${poke.id}'`);
           }
           if (poke.nature && !isNatureId(poke.nature)) {
             escrowErrors.push(`[market_listings ID: ${listingId}] Invalid nature '${poke.nature}'`);
@@ -361,8 +361,8 @@ describe('Dynamic Multi-Table Real Backup Validation & Dex Compatibility Test', 
           if (poke.status === null) {
             escrowErrors.push(`[market_listings ID: ${listingId}] status must not be null`);
           }
-          if (!poke.species) {
-            escrowErrors.push(`[market_listings ID: ${listingId}] species must be defined`);
+          if (!poke.id) {
+            escrowErrors.push(`[market_listings ID: ${listingId}] id must be defined`);
           }
         }
       }
@@ -382,8 +382,8 @@ describe('Dynamic Multi-Table Real Backup Validation & Dex Compatibility Test', 
             poke = rawMon as Pokemon;
           }
           if (poke && poke.id) {
-            if (poke.species && !Dex.species.get(poke.species).exists) {
-              escrowErrors.push(`[trade_offers ID: ${tradeId} ${label}] Invalid species '${poke.species}'`);
+            if (poke.id && !Dex.species.get(poke.id).exists) {
+              escrowErrors.push(`[trade_offers ID: ${tradeId} ${label}] Invalid species '${poke.id}'`);
             }
             if (poke.nature && !isNatureId(poke.nature)) {
               escrowErrors.push(`[trade_offers ID: ${tradeId} ${label}] Invalid nature '${poke.nature}'`);
@@ -391,8 +391,8 @@ describe('Dynamic Multi-Table Real Backup Validation & Dex Compatibility Test', 
             if (poke.status === null) {
               escrowErrors.push(`[trade_offers ID: ${tradeId} ${label}] status must not be null`);
             }
-            if (!poke.species) {
-              escrowErrors.push(`[trade_offers ID: ${tradeId} ${label}] species must be defined`);
+            if (!poke.id) {
+              escrowErrors.push(`[trade_offers ID: ${tradeId} ${label}] id must be defined`);
             }
           }
         };

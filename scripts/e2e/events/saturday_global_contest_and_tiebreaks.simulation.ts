@@ -20,6 +20,8 @@
 
 import { test, expect, type Page } from '@playwright/test';
 import { BaseEventSimulation } from './base_event_simulation.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
+
 
 const EXPECTED_CLAIMED_MONEY = 55000;
 const EXPECTED_CLAIMED_BC = 350;
@@ -83,6 +85,8 @@ export class SaturdayGlobalContestSimulation extends BaseEventSimulation {
       gameStore.state.team = [dragonite, snorlax];
       gameStore.state.box = [];
 
+      await gameStore.saveGame();
+
       const isOffline = localStorage.getItem('pokevicio_session_mode') === 'offline';
       if (isOffline) {
         const { persistSQLite } = await import('../../../src/logic/db/sqliteEngine.ts');
@@ -113,12 +117,12 @@ test.describe('Saturday Global Open Contest & Tiebreaks E2E Simulation', () => {
 
       // 5. Verify Saturday event card and global category chips are visible
       const eventCard = page.locator('#event-card-gran_concurso_sabado');
-      await expect(eventCard).toBeVisible({ timeout: 5000 });
+      await expect(eventCard).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       const ivsChip = page.locator('#comp-slot-chip-gran_concurso_sabado-ivs');
       const weightChip = page.locator('#comp-slot-chip-gran_concurso_sabado-weight');
-      await expect(ivsChip).toBeVisible({ timeout: 5000 });
-      await expect(weightChip).toBeVisible({ timeout: 5000 });
+      await expect(ivsChip).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      await expect(weightChip).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // 6. Enroll contestants: Dragonite into 'ivs' and Snorlax into 'weight'
       await sim.enrollPokemonById('gran_concurso_sabado', 'ivs', 'sim-sat-dragonite');

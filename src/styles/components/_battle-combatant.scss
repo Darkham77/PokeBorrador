@@ -20,6 +20,18 @@
   justify-content: center;
   overflow: visible;
 
+  .combat-shadow-wrapper {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: calc(var(--z-base) + 1);
+  }
+
+  .sprite-rotation-layer {
+    position: relative;
+    z-index: calc(var(--z-base) + 2);
+  }
+
   .sprite-animator, 
   .sprite-rotation-layer, 
   .sprite-idle-wrapper {

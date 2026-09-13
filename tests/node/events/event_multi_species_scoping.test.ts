@@ -40,7 +40,6 @@ function mockPokemon(uid: string, speciesId: string, overrides: Partial<Pokemon>
   return {
     uid,
     id: speciesId as Pokemon['id'],
-    species: speciesId as Pokemon['species'],
     name: speciesId.toUpperCase(),
     level: 25,
     gender: 'm',

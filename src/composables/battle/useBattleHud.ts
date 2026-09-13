@@ -44,6 +44,13 @@ function checkEnemyTechnicalHidden(subState: string | null | undefined, state: s
     if (subState && TECHNICAL_FSM_SUBSTATES_SET.has(subState)) return true;
   }
 
+  // En combates contra entrenador o gimnasio, el Pokémon enemigo NUNCA debe ser visible
+  // durante las fases de búsqueda o antes de POKEMON_CALL en FIRST_INTRO
+  if (isTrainer) {
+    if (state === 'CONTEXT_SETUP' || state === 'INITIALIZING' || state === 'SEARCH_PHASE') return true;
+    if (state === 'FIRST_INTRO' && subState !== 'POKEMON_CALL') return true;
+  }
+
   return isTrainer && !!subState && TRAINER_VISIBLE_FSM_SUBSTATES_SET.has(subState);
 }
 
@@ -88,6 +95,18 @@ export function useBattleHud(
     const s = toValue(battleStore.state);
     if (s?.minigame === 'archaeology') return true;
 
+    const fsmState = toValue(battleStore.fsm?.currentState);
+    const fsmSub = toValue(battleStore.fsm?.currentSubState);
+
+    // CANONICAL MANDATE: Seat 2 HUD is unconditionally suppressed during setup and initialization
+    if (fsmState === 'CONTEXT_SETUP' || fsmState === 'INITIALIZING') return true;
+
+    const isTrainer = Boolean(s?.isTrainer || s?.isGym || s?.isPvP || s?.isRival || s?.trainerName);
+    if (isTrainer) {
+      if (fsmState === 'SEARCH_PHASE') return true;
+      if (fsmState === 'FIRST_INTRO' && fsmSub !== 'POKEMON_CALL') return true;
+    }
+
     const seat = seats.value.seat2;
     const isCapturing = isSeatCapturing(seat);
     const isFainted = (s?.enemy && s.enemy.hp <= 0) || 
@@ -95,19 +114,14 @@ export function useBattleHud(
 
     if (isCapturing || isFainted) return true;
 
-    const isTrainer = s?.isTrainer || s?.isGym || s?.isPvP;
-    const fsmState = toValue(battleStore.fsm?.currentState);
-    const fsmSub = toValue(battleStore.fsm?.currentSubState);
-    if (isTrainer) {
-      if (fsmState === 'SEARCH_PHASE' || fsmState === 'INITIALIZING') return true;
-      if (fsmState === 'FIRST_INTRO' && fsmSub !== 'POKEMON_CALL') return true;
-    }
-
     return !s?.enemy;
   });
 
   const isPlayerHudSuppressed = computed(() => {
     const s = toValue(battleStore.state);
+    const fsmState = toValue(battleStore.fsm?.currentState);
+    if (fsmState === 'CONTEXT_SETUP') return true;
+
     const seat = seats.value.seat1;
     const isCapturing = isSeatCapturing(seat);
     const isFainted = (s?.player && s.player.hp <= 0) || 
@@ -119,13 +133,21 @@ export function useBattleHud(
 
   const activeEnemyHudData = computed(() => {
     const state = toValue(battleStore.fsm?.currentState);
-    if (state === 'REWARDS_PHASE' || state === 'LEVEL_UP_MODAL') return null;
+    if (state === 'CONTEXT_SETUP' || state === 'INITIALIZING' || state === 'REWARDS_PHASE' || state === 'LEVEL_UP_MODAL') return null;
+
+    const b = toValue(battleStore.state);
+    const isTrainer = Boolean(b?.isTrainer || b?.isGym || b?.isPvP || b?.isRival || b?.trainerName);
+    const subState = toValue(battleStore.fsm?.currentSubState);
+    if (isTrainer) {
+      if (state === 'SEARCH_PHASE') return null;
+      if (state === 'FIRST_INTRO' && subState !== 'POKEMON_CALL') return null;
+    }
 
     const enemySeat = seats.value.seat2;
     if (isSeatCapturing(enemySeat) && caughtPokemonSnapshot.value) return caughtPokemonSnapshot.value;
     if (isFaintInProgress.value && faintedPokemonSnapshot.value?.side === 'enemy') return faintedPokemonSnapshot.value;
     
-    return toValue(enemyRef) || toValue(battleStore.state)?._initialEnemy;
+    return toValue(enemyRef) || null;
   });
 
   const activePlayerHudData = computed(() => {
@@ -155,14 +177,17 @@ export function useBattleHud(
     const s = toValue(battleStore.fsm?.currentState);
     const sub = toValue(battleStore.fsm?.currentSubState);
 
+    if (s === 'CONTEXT_SETUP' || s === 'INITIALIZING') return null;
     if (s === 'REWARDS_PHASE' && sub === 'EMPTY_WAIT') return null;
-    
-    const realEnemy = activeEnemyHudData.value;
-    if (!realEnemy && (s === 'FIRST_INTRO' || s === 'SEARCH_PHASE' || s === 'INITIALIZING')) {
-      return toValue(battleStore.state)?._initialEnemy || null;
-    }
 
-    return realEnemy;
+    const b = toValue(battleStore.state);
+    const isTrainer = Boolean(b?.isTrainer || b?.isGym || b?.isPvP || b?.isRival || b?.trainerName);
+    if (isTrainer) {
+      if (s === 'SEARCH_PHASE') return null;
+      if (s === 'FIRST_INTRO' && sub !== 'POKEMON_CALL') return null;
+    }
+    
+    return activeEnemyHudData.value;
   });
 
   const activeEnemyIsSilhouette = computed(() => {
@@ -232,6 +257,10 @@ export function useBattleHud(
   });
 
   const shouldShowEncounterLayers = computed(() => {
+    if (!activeEnemyData.value) {
+      return false;
+    }
+
     const state = toValue(battleStore.fsm?.currentState);
     if (state && ENCOUNTER_EXCLUDE_STATES_SET.has(state)) {
       return false;

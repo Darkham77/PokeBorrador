@@ -21,13 +21,20 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 
 import { useDebugStore } from '@/stores/debug'
+import { useRouter } from 'vue-router'
 
 const auth = useAuthStore()
 const debugStore = useDebugStore()
+const router = useRouter()
 const canAccess = computed(() => debugStore.canAccess)
 
 const isOpen = ref(false)
 const selectedCategory = ref('stats')
+
+const openShadowEditor = () => {
+  isOpen.value = false
+  router.push('/dev/shadow-editor')
+}
 
 const closeForBattleEntry = () => {
   isOpen.value = false
@@ -87,6 +94,14 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
           >
             ADMIN ONLINE
           </span>
+          <button
+            id="debug-shadow-editor-btn"
+            class="badge shadow-btn"
+            title="Abrir editor visual de sombras"
+            @click.stop="openShadowEditor"
+          >
+            <span class="emoji">🎨</span> SOMBRAS
+          </button>
         </div>
 
         <nav
@@ -207,6 +222,17 @@ useWindowListener(GAME_UI_EVENTS.BATTLE_ENTERING, closeForBattleEntry)
 
   &.offline { background: Rgba(52, 211, 153, 0.1); color: $green; border: 1px solid Rgba(52, 211, 153, 0.2); }
   &.admin { background: Rgba(248, 113, 113, 0.1); color: $red; border: 1px solid Rgba(248, 113, 113, 0.2); }
+  &.shadow-btn {
+    background: Rgba(168, 85, 247, 0.15);
+    color: var(--purple, #c084fc);
+    border: 1px solid Rgba(168, 85, 247, 0.3);
+    cursor: pointer;
+    margin-left: auto;
+    &:hover {
+      background: Rgba(168, 85, 247, 0.25);
+      border-color: Rgba(168, 85, 247, 0.5);
+    }
+  }
 }
 
 .debug-nav {

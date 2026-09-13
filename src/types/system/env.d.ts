@@ -86,6 +86,7 @@ declare global {
     maxHp?: number;
     status?: string; // domain-ok: Open dynamic text or non-domain string payload
     nickname?: string; // domain-ok: Open dynamic text or non-domain string payload
+    isTransformed?: boolean;
     moves?: Array<{ id: string; pp?: number; maxpp?: number } | null>;
     volatileCounters?: Record<string, unknown> | null; // open-record: Generic key-value data dictionary container
   }

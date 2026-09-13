@@ -8,7 +8,8 @@
  */
 
 import { BUSH_FAMILIES, type BushFamily } from './bushCatalog.ts';
-export type BushLayerDepth = 'front' | 'back';
+export const BUSH_LAYER_DEPTHS = ['front', 'back'] as const; // domain-ok: Independent layer depth for environmental rendering
+export type BushLayerDepth = (typeof BUSH_LAYER_DEPTHS)[number];
 import { MAPS_BY_ROUTE_ID } from '../../data/world/maps.ts';
 import { isMapRouteId, type MapRouteId } from '@/data/world/map-assets';
 import { mulberry32 } from '../utils/math.ts';

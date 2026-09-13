@@ -82,6 +82,19 @@ const isAdventureTestPage = computed(() => {
   return window.location?.pathname === '/test-aventura' || path === '/test-aventura'
 })
 
+const isDevShadowEditorPage = computed(() => {
+  if (typeof window === 'undefined') return false
+  const path = router?.currentRoute?.value?.path || route.path
+  return window.location?.pathname.startsWith('/dev/shadow-editor') || path.startsWith('/dev/shadow-editor')
+})
+
+const isStandaloneDevPage = computed(() => {
+  if (typeof window === 'undefined') return false
+  const path = router?.currentRoute?.value?.path || route.path || ''
+  const winPath = window.location?.pathname || ''
+  return isAdventureTestPage.value || isDevShadowEditorPage.value || winPath.startsWith('/dev/') || path.startsWith('/dev/') || winPath.startsWith('/test-') || path.startsWith('/test-')
+})
+
 const loadingInfo = computed(() => {
   // 1. Centralized Loading Store (Highest Priority)
   if (loadingStore.isActive) {
@@ -102,7 +115,7 @@ const loadingInfo = computed(() => {
   
   // 3. Game Data & Engine Boot (ULTRA-STICKY GATE)
   // No soltamos la pantalla negra hasta que TODO el motor esté listo
-  if (authStore.user && !isLoginPage.value && !isAdventureTestPage.value && (!gameStore.isDataLoaded || !gameStore.isEngineReady)) {
+  if (authStore.user && !isLoginPage.value && !isStandaloneDevPage.value && (!gameStore.isDataLoaded || !gameStore.isEngineReady)) {
     const msg = !gameStore.isDataLoaded ? 'Cargando datos...' : 'Iniciando motor...'
     
     return { 
@@ -134,7 +147,7 @@ const isReadyToSeeGame = computed(() => {
 
 const showLoadingOverlay = computed(() => {
   if (updateStore.modalType === 'db_outdated' || updateStore.modalType === 'server_outdated') return false
-  if (isAdventureTestPage.value) return false
+  if (isStandaloneDevPage.value) return false
   // Show global blocking overlay for updates only if the user is currently logged in/playing.
   // If they are logged out (on the login page), we don't cover the screen with the global loading overlay,
   // allowing the login view to render and present the update option inline.
@@ -152,8 +165,8 @@ const showLoadingOverlay = computed(() => {
 })
 
 const initGameSession = async () => {
-  if (isSessionInitializing.value) return
-  if (authStore.user && !isLoginPage.value && !isAdventureTestPage.value && !gameStore.isReady) {
+  if (isSessionInitializing.value || isStandaloneDevPage.value) return
+  if (authStore.user && !isLoginPage.value && !gameStore.isReady) {
     isSessionInitializing.value = true
     try {
       const comp = await checkDBCompatibility(gameStore.db as DBRouter) // domain-ok: Open dynamic text or non-domain string payload
@@ -269,14 +282,16 @@ onMounted(async () => {
   await checkPwaVersion()
 
   // 2. Recuperar sesión (Autologin)
-  if (isLoginPage.value || isAdventureTestPage.value) {
+  if (isLoginPage.value || isStandaloneDevPage.value) {
     loadingStore.clearAll() // Limpiar TODO si es login o sandbox
     loadingStore.markAppMounted() // Abrir puerta inmediatamente
   }
   await authStore.checkSession()
 
   // 3. Check DB Compatibility & Load Game
-  await initGameSession()
+  if (!isStandaloneDevPage.value) {
+    await initGameSession()
+  }
   
   // 4. Restore & Sync Zoom Level
   uiStore.setZoom(uiStore.appZoom)
@@ -298,9 +313,11 @@ onMounted(async () => {
 
 // Sincronizar estado de la partida reactivamente al cambiar de ruta o usuario
 watch(
-  () => [authStore.user, isLoginPage.value, isAdventureTestPage.value],
+  () => [authStore.user, isLoginPage.value, isStandaloneDevPage.value],
   async () => {
-    await initGameSession()
+    if (!isStandaloneDevPage.value) {
+      await initGameSession()
+    }
   }
 )
 
@@ -317,6 +334,7 @@ watch(() => authStore.user, (newUser) => {
 
 // Intercept low-level events to prevent them from reaching background interactions when modals are open
 const blockEvents = (e: Event) => {
+  if (isStandaloneDevPage.value) return
   const target = e.target as HTMLElement | null
   if (!target || typeof target.closest !== 'function') return
 
@@ -388,7 +406,7 @@ const onLoadingLeave = (el: Element, done: () => void) => {
   <div id="vue-app">
     <!-- RESTORE LEGACY BACKGROUND (Only visible when game is fully ready and NOT loading) -->
     <div 
-      v-show="isReadyToSeeGame || isLoginPage || isAdventureTestPage"
+      v-show="isReadyToSeeGame || isLoginPage || isStandaloneDevPage"
       class="global-background-stars" 
     />
 
@@ -426,7 +444,7 @@ const onLoadingLeave = (el: Element, done: () => void) => {
       </Transition>
     </Teleport>
 
-    <template v-if="isLoginPage || isAdventureTestPage">
+    <template v-if="isLoginPage || isStandaloneDevPage">
       <router-view />
     </template>
     
@@ -480,11 +498,11 @@ const onLoadingLeave = (el: Element, done: () => void) => {
 
     <!-- Error Global UI -->
     <ErrorOverlay />
-    <ModalHost />
+    <ModalHost v-if="!isStandaloneDevPage" />
     <ToastNotification />
-    <ConnectionWarning />
-    <BattleArena />
-    <PWAManager />
+    <ConnectionWarning v-if="!isStandaloneDevPage" />
+    <BattleArena v-if="!isStandaloneDevPage" />
+    <PWAManager v-if="!isStandaloneDevPage" />
     
     <!-- Optimized SVG Filters for Pixel Art -->
     <SVGFilters />

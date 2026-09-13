@@ -96,6 +96,7 @@ function applyAnimation(el: HTMLElement, styleClass: unknown) {
       break;
 
     case 'admin':
+      // shimmer-ok: Text gradient clip requires backgroundPosition animation
       anim = gsap.fromTo(el,
         { backgroundPosition: '0% center' },
         { backgroundPosition: '200% center', duration: 3, repeat: -1, ease: 'none' }

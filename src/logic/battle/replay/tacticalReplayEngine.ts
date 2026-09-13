@@ -11,9 +11,9 @@ import type {
   ReplayCombatantSummary,
   ReplayCombatantPokemonSummary
 } from '@/types/battle/pvp.ts';
-import { isPokemonSpeciesId, type PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService.ts';
 import type { SideID } from '@pkmn/sim';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex.ts';
 
 export interface FogOfWarPokemonState extends ReplayCombatantPokemonSummary {
   isFainted: boolean;
@@ -149,17 +149,13 @@ export class TacticalReplayEngine implements ITacticalReplayEngine {
 
     // Map initial unrevealed list
     const pokemonStates: FogOfWarPokemonState[] = summary.team.map((poke, index) => {
-      const rawSpecies = poke.species || (poke as { speciesId?: PokemonSpeciesId }).speciesId;
-      const validSpecies: PokemonSpeciesId = (typeof rawSpecies === 'string' && isPokemonSpeciesId(rawSpecies))
-        ? rawSpecies
-        : 'pikachu';
-      const name = poke.name || (typeof rawSpecies === 'string' ? rawSpecies : String(validSpecies));
-      const sprite = poke.sprite || getAssetUrl(ASSET_TYPES.POKEMON, validSpecies);
+      const legacyPoke = poke as { id?: PokemonSpeciesId; speciesId?: PokemonSpeciesId };
+      const resolvedId = legacyPoke.id ?? legacyPoke.speciesId;
       return {
-        species: validSpecies,
-        name,
-        level: poke.level || 50,
-        sprite,
+        id: (resolvedId ?? poke.id),
+        name: poke.name || resolvedId || '',
+        level: poke.level,
+        sprite: poke.sprite || (resolvedId ? getAssetUrl(ASSET_TYPES.POKEMON, resolvedId) : ''),
         revealedMoves: poke.revealedMoves ? [...poke.revealedMoves] : [],
         revealedItem: poke.revealedItem,
         revealedAbility: poke.revealedAbility,
@@ -171,7 +167,7 @@ export class TacticalReplayEngine implements ITacticalReplayEngine {
     const pokeByName = new Map<string, FogOfWarPokemonState>();
     for (const p of pokemonStates) {
       if (p.name) pokeByName.set(p.name.toLowerCase(), p);
-      if (p.species) pokeByName.set(String(p.species).toLowerCase(), p);
+      if (p.id) pokeByName.set(String(p.id).toLowerCase(), p);
     }
 
     const processedLogs = this.getAllLogsUpToCurrentTurn();
@@ -230,7 +226,7 @@ export class TacticalReplayEngine implements ITacticalReplayEngine {
         for (const p of pokemonStates) {
           p.isActive = Boolean(
             (p.name && p.name.toLowerCase() === switchedInName) ||
-            (p.species && String(p.species).toLowerCase() === switchedInName)
+            (p.id && String(p.id).toLowerCase() === switchedInName)
           );
         }
       }

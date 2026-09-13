@@ -583,3 +583,12 @@ To prevent visual effects and particles from darkening during nighttime cycles w
    filter: var(--weather-filter, none);
    ```
    This completely isolates visual FX from time-of-day darkening while preserving dynamic responsiveness to environmental weather (rain, sandstorm, snow, harsh sunlight).
+
+---
+
+## 50. Combat Spritesheet Stepping vs GSAP Orchestration
+
+1. **Spritesheet Stepping Rate**: Frame stepping in combatant spritesheet loops (`useBattleCombatantSpriteLoop.ts`) is governed by canonical constants: `POKEMON_SPRITE_IDLE_FPS = 10.4` (8 * 1.30) and `POKEMON_SPRITE_VARIATION_FPS = 13` (10 * 1.30), reflecting a 30% speedup over default rates.
+2. **Decoupling from Organic Tweens**: Stepping speed adjustments apply strictly to spritesheet frame translation (`currentStep * frameWidth`). They must never alter GSAP breathing timelines, shadow pulses, floating offsets, or combat action tweens.
+3. **Design Tool Speed Parity**: All sprite preview canvases, dev tools, and inspection cards (such as `ShadowEditorCard.vue`) MUST synchronize with `POKEMON_SPRITE_IDLE_FPS` to preserve 1:1 animation timing with the active game.
+

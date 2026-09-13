@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 
 const DEFAULT_COMBAT_SHADOW_ENTITY_SIZE_PX = 300
 const DEFAULT_COMBAT_SHADOW_WIDTH_PCT = '70%'
@@ -22,10 +22,16 @@ interface CombatShadow {
   spriteUrl: string;
   visible: boolean;
   force?: boolean;
+  shadowScale?: number;
 }
 
 export const useCombatShadowStore = defineStore('combatShadows', () => {
   const activeShadows = reactive(new Map<string, CombatShadow>())
+  const isSolidShadows = ref(false)
+
+  function toggleSolidShadows() {
+    isSolidShadows.value = !isSolidShadows.value
+  }
 
   function getCleanDatabaseKey(url: string): string {
     if (!url) return ''
@@ -65,11 +71,11 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
     const dbKey = getCleanDatabaseKey(options.spriteUrl || '')
     const cachedPoints = options.spriteUrl ? requireFeetPoints(dbKey) : null
     
-    let feetY = options.feetY || (cachedPoints?.feetY ?? (existing?.feetY ?? 0.9))
+    let feetY = options.feetY !== undefined ? options.feetY : (cachedPoints?.feetY ?? (existing?.feetY ?? 0.9))
     // Si es volador, ignoramos el valor detectado y forzamos el suelo
     if (options.isFlying) feetY = 0.9
     
-    const feetX = options.feetX || (cachedPoints?.feetX ?? (existing?.feetX ?? 0.5))
+    const feetX = options.feetX !== undefined ? options.feetX : (cachedPoints?.feetX ?? (existing?.feetX ?? 0.5))
     const visible = options.visible !== undefined ? options.visible : true
 
     // Guardamos/actualizamos la sombra inmediatamente para que sea visible
@@ -81,6 +87,7 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
       entitySize: options.entitySize ?? (existing?.entitySize ?? DEFAULT_COMBAT_SHADOW_ENTITY_SIZE_PX),
       width: options.width || (existing?.width ?? DEFAULT_COMBAT_SHADOW_WIDTH_PCT),
       isFlying: options.isFlying || false,
+      shadowScale: options.shadowScale ?? (existing?.shadowScale ?? cachedPoints?.shadowScale ?? 1.0),
       feetY,
       feetX,
       spriteUrl: options.spriteUrl || existing?.spriteUrl || '',
@@ -108,6 +115,8 @@ export const useCombatShadowStore = defineStore('combatShadows', () => {
 
   return {
     activeShadows,
+    isSolidShadows,
+    toggleSolidShadows,
     detectFeetPoints,
     requestShadow,
     hideShadow,

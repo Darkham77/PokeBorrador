@@ -27,7 +27,6 @@ async function runMissionsFuzzer() {
     return {
       uid: `mock-${speciesName}-${Math.random().toString(36).substring(2, 7)}`,
       id: sId,
-      species: sId,
       name: speciesName,
       level,
       gender: 'm',

@@ -33,7 +33,6 @@ async function runGTSFuzzer() {
     return {
       uid: `mock-${speciesName}-${Math.random().toString(36).substring(2, 7)}`,
       id: sId,
-      species: sId,
       name: speciesName,
       level: 30,
       gender: 'm',

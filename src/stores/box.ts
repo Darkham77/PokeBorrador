@@ -186,7 +186,7 @@ export const useBoxStore = defineStore('box', () => {
     const boxPoke = gameStore.state.box[boxIndex]
     if (!boxPoke) return { success: false, msg: 'Pokémon no encontrado.' }
     if (boxPoke.isIllegal) return { success: false, msg: 'No puedes añadir un Pokémon ilegal al equipo.' }
-    if (boxPoke.id && boxPoke.species && boxPoke.moves) {
+    if (boxPoke.id && boxPoke.moves) {
       const legality = checkPokemonLegality(boxPoke)
       if (!legality.isLegal) {
         boxPoke.isIllegal = true
@@ -213,7 +213,7 @@ export const useBoxStore = defineStore('box', () => {
     const teamPoke = gameStore.state.team[teamIndex]
     if (!boxPoke || !teamPoke) return { success: false, msg: 'Pokémon no encontrado.' }
     if (boxPoke.isIllegal) return { success: false, msg: 'No puedes añadir un Pokémon ilegal al equipo.' }
-    if (boxPoke.id && boxPoke.species && boxPoke.moves) {
+    if (boxPoke.id && boxPoke.moves) {
       const legality = checkPokemonLegality(boxPoke)
       if (!legality.isLegal) {
         boxPoke.isIllegal = true

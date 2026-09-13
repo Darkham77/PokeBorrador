@@ -102,7 +102,7 @@ test.describe('Rewards Claim All & Legacy Archive E2E Simulation', () => {
         const { useGameStore } = await import('../../../src/stores/game.ts');
         const state = useGameStore().state;
         const allPokemon = [...(state.team || []), ...(state.box || [])];
-        const eevee = allPokemon.find(p => p && (p.species === 'eevee' || p.id === 'eevee' || p.name === 'Eevee'));
+        const eevee = allPokemon.find(p => p && p.id === 'eevee');
         return eevee ? { hasEevee: true, obtainedAt: eevee.obtainedAt, obtainedMethod: eevee.obtainedMethod } : { hasEevee: false };
       });
       expect(eeveeData.hasEevee).toBe(true);

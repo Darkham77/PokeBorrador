@@ -31,7 +31,6 @@ async function runBreedingFuzzer() {
     return {
       uid: `mock-${speciesName}-${customId}`,
       id: speciesId,
-      species: speciesId,
       name: speciesName,
       level: 50,
       gender,

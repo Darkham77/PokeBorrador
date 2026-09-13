@@ -2,6 +2,8 @@
 import { describe, it, expect } from 'vitest'
 import { filterAndSortPokemon, type PokemonFilterCriteria } from '@/logic/pokemon/pokemonSelectionFilter'
 import type { Pokemon } from '@/types/pokemon/pokemon'
+import { makePokemon } from '@/logic/pokemon/pokemonFactory'
+import { requirePokemonSpeciesId } from '@/data/pokemon/pokedex'
 
 describe('pokemonSelectionFilter - allowedSpecies', () => {
   const baseCriteria: PokemonFilterCriteria = {
@@ -11,11 +13,18 @@ describe('pokemonSelectionFilter - allowedSpecies', () => {
     activeTags: []
   }
 
+  const createMockPoke = (species: string, uid: string, level: number, nickname?: string): Pokemon => {
+    const p = makePokemon(requirePokemonSpeciesId(species), level, { bypassWhitelist: true })!;
+    p.uid = uid;
+    if (nickname) p.nickname = nickname;
+    return p;
+  };
+
   const pokes = [
-    { pokemon: { uid: 'u1', id: 'pikachu', species: 'pikachu', name: 'Pikachu', level: 10 } as Pokemon, _source: 'team' as const, index: 0 },
-    { pokemon: { uid: 'u2', id: 'magikarp', species: 'magikarp', name: 'Magikarp', nickname: 'Chispa', level: 39 } as Pokemon, _source: 'team' as const, index: 1 },
-    { pokemon: { uid: 'u3', id: 'gyarados', species: 'gyarados', name: 'Gyarados', level: 45 } as Pokemon, _source: 'box' as const, index: 0 },
-    { pokemon: { uid: 'u4', id: 'pidgey', species: 'pidgey', name: 'Pidgey', level: 5 } as Pokemon, _source: 'box' as const, index: 1 }
+    { pokemon: createMockPoke('pikachu', 'u1', 10), _source: 'team' as const, index: 0 },
+    { pokemon: createMockPoke('magikarp', 'u2', 39, 'Chispa'), _source: 'team' as const, index: 1 },
+    { pokemon: createMockPoke('gyarados', 'u3', 45), _source: 'box' as const, index: 0 },
+    { pokemon: createMockPoke('pidgey', 'u4', 5), _source: 'box' as const, index: 1 }
   ]
 
   it('filters strictly to the allowed species', () => {

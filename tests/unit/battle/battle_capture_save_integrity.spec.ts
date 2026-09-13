@@ -69,7 +69,7 @@ describe('Battle Capture Save Integrity (Unit)', () => {
     expect(res.pokemon).toBeDefined();
 
     const captured = res.pokemon as Pokemon;
-    expect(captured.species).toBe('rattata');
+    expect(captured.id).toBe('rattata');
     expect(captured.caught).toBe(true);
 
     // Validate that volatile combat properties were cleaned

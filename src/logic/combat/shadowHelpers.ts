@@ -1,24 +1,45 @@
 import { gsap } from 'gsap'
-import { requireFeetDatabasePath, requireFeetPoints } from '@/data/pokemon/pokemonFeetDatabase'
+import { requireFeetDatabasePath, requireFeetPoints, type FeetPoints } from '@/data/pokemon/pokemonFeetDatabase'
 
-const DEFAULT_SHADOW_WIDTH = 10;
-const DEFAULT_SHADOW_HEIGHT = 7;
+import { GLOBAL_SHADOW_CONFIG } from '@/data/pokemon/pokemonFeetDatabase'
 
-export function generatePixelShadow(w = DEFAULT_SHADOW_WIDTH, h = DEFAULT_SHADOW_HEIGHT): string {
+const DEFAULT_SHADOW_WIDTH = GLOBAL_SHADOW_CONFIG.pixelation;
+const DEFAULT_SHADOW_HEIGHT = Math.max(2, Math.round(GLOBAL_SHADOW_CONFIG.pixelation * GLOBAL_SHADOW_CONFIG.heightRatio));
+const DEFAULT_SHADOW_FILL_STYLE = 'rgba(0, 0, 0, 0.40)' as const;
+const SOLID_SHADOW_FILL_STYLE = 'rgba(0, 0, 0, 1.0)' as const;
+
+const shadowUrlCache = new Map<string, string>();
+
+export function generatePixelShadow(
+  w = DEFAULT_SHADOW_WIDTH,
+  h = DEFAULT_SHADOW_HEIGHT,
+  isSolid = false
+): string {
   if (typeof document === 'undefined') return ''
+  const cacheKey = `${w}x${h}_${isSolid ? 'solid' : 'default'}`
+  const cached = shadowUrlCache.get(cacheKey)
+  if (cached) return cached
+
   const canvas = document.createElement('canvas')
   canvas.width = w
   canvas.height = h
   const ctx = canvas.getContext('2d')
   if (!ctx) return ''
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.35)'
-  ctx.beginPath()
-  ctx.ellipse(w / 2, h / 2, w / 2, h / 2, 0, 0, Math.PI * 2)
+  ctx.fillStyle = isSolid ? SOLID_SHADOW_FILL_STYLE : DEFAULT_SHADOW_FILL_STYLE
+  if (typeof ctx.ellipse === 'function') {
+    ctx.ellipse(w / 2, h / 2, w / 2, h / 2, 0, 0, Math.PI * 2)
+  }
   ctx.fill()
-  return canvas.toDataURL('image/png')
+  try {
+    const url = canvas.toDataURL('image/png')
+    shadowUrlCache.set(cacheKey, url)
+    return url
+  } catch {
+    return ''
+  }
 }
 
-export function getPokemonFeetCoords(spriteUrl: string): { feetX: number; feetY: number } {
+export function getPokemonFeetCoords(spriteUrl: string): FeetPoints {
   let dbKey = spriteUrl || ''
   const base = import.meta.env.BASE_URL || '/'
   if (base !== '/' && dbKey.startsWith(base)) {

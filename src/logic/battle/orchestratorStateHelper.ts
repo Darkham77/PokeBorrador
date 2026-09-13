@@ -31,6 +31,9 @@ export async function resetActiveBattleState(ctx: BattleContext, initialPlayer: 
     ctx.activeBattle.value.fieldConditions = {}
     ctx.activeBattle.value.playerRequest = undefined
     ctx.activeBattle.value.enemyRequest = undefined
+    if (!ctx.activeBattle.value.isTrainer && !ctx.activeBattle.value.isGym && !ctx.activeBattle.value.isPvP) {
+      ctx.activeBattle.value.enemyTeam = undefined
+    }
   }
 
   ctx.playerStages.value = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, accuracy: 0, evasion: 0, reflect: 0, lightScreen: 0, safeguard: 0, mist: 0, spikes: 0 }

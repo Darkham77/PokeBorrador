@@ -20,7 +20,6 @@ describe('Multi-Category Sub-Competitions Engine', () => {
   const createMockPokemon = (overrides: Partial<Pokemon> = {}): Pokemon => ({
     uid: 'mock-poke-1',
     id: requirePokemonSpeciesId('magikarp'),
-    species: requirePokemonSpeciesId('magikarp'),
     name: 'Magikarp',
     level: 20,
     exp: 0,

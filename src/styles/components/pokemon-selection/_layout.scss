@@ -176,6 +176,8 @@ body .selection-container {
       }
 
       button {
+        display: inline-flex;
+        align-items: center;
         height: 22px;
         min-width: 22px;
         padding: 0 4px;
@@ -183,7 +185,6 @@ body .selection-container {
 
         .emoji {
           font-size: 10px;
-          transform: none;
         }
 
         .ps-tag-label {
@@ -204,6 +205,8 @@ body .selection-container {
       }
 
       button {
+        display: inline-flex;
+        align-items: center;
         height: 22px;
         min-width: 22px;
         padding: 0 4px;
@@ -211,7 +214,6 @@ body .selection-container {
 
         .emoji {
           font-size: 10px;
-          transform: none;
         }
 
         .ps-tag-label {
@@ -248,7 +250,6 @@ body .selection-container {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        transform: Translatey(-1px);
       }
       
       .ps-tag-label {

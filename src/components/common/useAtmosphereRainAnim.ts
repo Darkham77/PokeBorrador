@@ -73,14 +73,19 @@ export function useAtmosphereRainAnim(
       const s1X = (seed1 * SEED_X_FACTOR1) % BG_DRIFT_PX
       const s1Y = (seed1 * SEED_Y_FACTOR1) % BG_DRIFT_PX
 
-      gsap.set(layer1Ref.value, { backgroundPosition: `${s1X}px ${s1Y}px` })
+      gsap.set(layer1Ref.value, { x: s1X, y: s1Y })
 
       weatherTimeline.to(layer1Ref.value,
         {
-          backgroundPosition: `+=${driftX}px +=256px`,
+          x: s1X + driftX,
+          y: s1Y + BG_DRIFT_PX,
           duration: variantSpeed1,
           repeat: -1,
-          ease: 'none'
+          ease: 'none',
+          modifiers: {
+            x: gsap.utils.unitize(x => parseFloat(x) % BG_DRIFT_PX),
+            y: gsap.utils.unitize(y => parseFloat(y) % BG_DRIFT_PX)
+          }
         },
         0
       ).progress(seed1)
@@ -91,14 +96,19 @@ export function useAtmosphereRainAnim(
       const s2X = (seed2 * SEED_X_FACTOR2) % BG_DRIFT_PX
       const s2Y = (seed2 * SEED_Y_FACTOR2) % BG_DRIFT_PX
 
-      gsap.set(layer2Ref.value, { backgroundPosition: `${s2X}px ${s2Y}px` })
+      gsap.set(layer2Ref.value, { x: s2X, y: s2Y })
 
       weatherTimeline.to(layer2Ref.value,
         {
-          backgroundPosition: `+=${driftX}px +=256px`,
+          x: s2X + driftX,
+          y: s2Y + BG_DRIFT_PX,
           duration: variantSpeed2 * (isHeavy ? 1.5 : 1),
           repeat: -1,
-          ease: 'none'
+          ease: 'none',
+          modifiers: {
+            x: gsap.utils.unitize(x => parseFloat(x) % BG_DRIFT_PX),
+            y: gsap.utils.unitize(y => parseFloat(y) % BG_DRIFT_PX)
+          }
         },
         0
       ).progress(seed2)

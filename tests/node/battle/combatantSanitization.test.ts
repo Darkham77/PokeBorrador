@@ -6,7 +6,6 @@ describe('Combatant Sanitization - Unit Tests', () => {
   const dirtyPokemon: Pokemon = {
     uid: 'dirty-charizard-1',
     id: 'charizard',
-    species: 'charizard',
     name: 'Charizard',
     level: 50,
     hp: 128,

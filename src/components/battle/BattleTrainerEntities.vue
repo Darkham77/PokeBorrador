@@ -4,13 +4,9 @@ import { gsap } from 'gsap'
 import VirtualEntity from './VirtualEntity.vue'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
 import { WORLD_CONSTANTS } from '@/logic/combat/spatialCoordinator'
-import { getPokemonFeetCoords, generatePixelShadow } from '@/logic/combat/shadowHelpers'
-import {
-  TRAINER_SHADOW_RADIUS_X,
-  TRAINER_SHADOW_RADIUS_Y,
-  TRAINER_SHADOW_WIDTH_RATIO,
-  TRAINER_SHADOW_HEIGHT_RATIO
-} from '@/logic/constants/visuals'
+import { getPokemonFeetCoords } from '@/logic/combat/shadowHelpers'
+import CombatShadow from './CombatShadow.vue'
+import { useCombatShadowStore } from '@/stores/battle/combatShadows'
 import {
   TRAINER_RETREAT_X_OFFSET_PX,
   TRAINER_RETREAT_Y_OFFSET_PX
@@ -45,6 +41,76 @@ const enemyTrainerSpriteUrl = computed(() => {
   return getAssetUrl(ASSET_TYPES.TRAINER, resolvedEnemyTrainerSprite.value, { gender: props.trainerGender })
 })
 
+const shadowStore = useCombatShadowStore()
+const enemyTrainerShadowKey = computed(() => `trainer_enemy_${resolvedEnemyTrainerSprite.value}`)
+const playerTrainerShadowKey = computed(() => `trainer_player_${props.playerBackSpriteUrl}`)
+
+const enemyFeetCoords = computed(() => {
+  if (!enemyTrainerSpriteUrl.value) return null
+  try {
+    return getPokemonFeetCoords(enemyTrainerSpriteUrl.value)
+  } catch {
+    return null
+  }
+})
+
+const playerFeetCoords = computed(() => {
+  if (!props.playerBackSpriteUrl) return null
+  try {
+    return getPokemonFeetCoords(props.playerBackSpriteUrl)
+  } catch {
+    return null
+  }
+})
+
+const TRAINER_GROUND_Y = '100%' as const
+const TRAINER_SHADOW_FEET_Y = 1.0
+
+const enemyTrainerSize = computed(() => props.baseEntitySizeEnemy * (props.objectScale || 2))
+const playerTrainerSize = computed(() => props.baseEntitySizePlayer * (props.objectScale || 2))
+
+watch(
+  [enemyTrainerShadowKey, enemyTrainerSpriteUrl, enemyTrainerSize, enemyFeetCoords],
+  () => {
+    if (enemyTrainerSpriteUrl.value) {
+      const coords = enemyFeetCoords.value
+      shadowStore.requestShadow(enemyTrainerShadowKey.value, {
+        side: 'enemy',
+        feetX: 0.5,
+        feetY: TRAINER_SHADOW_FEET_Y,
+        entitySize: enemyTrainerSize.value,
+        width: '70%',
+        isFlying: coords?.isFlying ?? false,
+        shadowScale: coords?.shadowScale ?? 1.0,
+        spriteUrl: enemyTrainerSpriteUrl.value,
+        visible: true
+      })
+    }
+  },
+  { immediate: true }
+)
+
+watch(
+  [playerTrainerShadowKey, () => props.playerBackSpriteUrl, playerTrainerSize, playerFeetCoords],
+  () => {
+    if (props.playerBackSpriteUrl) {
+      const coords = playerFeetCoords.value
+      shadowStore.requestShadow(playerTrainerShadowKey.value, {
+        side: 'player',
+        feetX: 0.5,
+        feetY: TRAINER_SHADOW_FEET_Y,
+        entitySize: playerTrainerSize.value,
+        width: '70%',
+        isFlying: coords?.isFlying ?? false,
+        shadowScale: coords?.shadowScale ?? 1.0,
+        spriteUrl: props.playerBackSpriteUrl,
+        visible: true
+      })
+    }
+  },
+  { immediate: true }
+)
+
 const trainerRef = ref<InstanceType<typeof VirtualEntity> | null>(null)
 const standingTrainerRef = ref<InstanceType<typeof VirtualEntity> | null>(null)
 
@@ -58,8 +124,22 @@ let playerIdleTween: gsap.core.Tween | null = null
 
 const PLAYER_TRAINER_ASPECT_WIDTH_PX = 65
 const PLAYER_TRAINER_ASPECT_HEIGHT_PX = 165
+const STANDING_PLAYER_Y_OFFSET_PX = 55
 
-const trainerShadowUrl = ref('')
+const standingPlayerWidth = computed(() =>
+  Math.round(props.baseEntitySizePlayer * PLAYER_TRAINER_ASPECT_WIDTH_PX / PLAYER_TRAINER_ASPECT_HEIGHT_PX)
+)
+
+const standingPlayerX = computed(() =>
+  WORLD_CONSTANTS.SAFE_ZONE_X - standingPlayerWidth.value * (props.objectScale || 2)
+)
+
+// Anchored relative to P1 ANCHOR with custom vertical ground nudge to align feet with the battlefield ground line.
+// Height: baseEntitySizePlayer * objectScale = 225 * 2 = 450px.
+// Base Top: 1233 + 55 = 1288, Bottom: 1288 + 450 = 1738.
+const standingPlayerY = computed(() =>
+  WORLD_CONSTANTS.SAFE_ZONE_Y + WORLD_CONSTANTS.SAFE_ZONE_HEIGHT - WORLD_CONSTANTS.ENTITY_SIZE_PLAYER + STANDING_PLAYER_Y_OFFSET_PX
+)
 
 const initIntroEnemyIdleAnim = () => {
   if (introEnemyIdleTween) {
@@ -107,13 +187,18 @@ watch(playerTrainerIdleRef, (el) => {
 })
 
 onMounted(() => {
-  trainerShadowUrl.value = generatePixelShadow(TRAINER_SHADOW_RADIUS_X, TRAINER_SHADOW_RADIUS_Y)
   initPlayerIdleAnim()
   if (props.isTrainerVisible) initIntroEnemyIdleAnim()
   if (props.showStandingTrainers) initStandingEnemyIdleAnim()
 })
 
 onUnmounted(() => {
+  if (enemyTrainerShadowKey.value) {
+    shadowStore.hideShadow(enemyTrainerShadowKey.value)
+  }
+  if (playerTrainerShadowKey.value) {
+    shadowStore.hideShadow(playerTrainerShadowKey.value)
+  }
   if (introEnemyIdleTween) {
     introEnemyIdleTween.kill()
     introEnemyIdleTween = null
@@ -127,28 +212,6 @@ onUnmounted(() => {
     playerIdleTween = null
   }
 })
-
-const getTrainerShadowStyle = (spriteUrl: string, entitySize: number) => {
-  const cached = getPokemonFeetCoords(spriteUrl)
-  
-  const widthPx = TRAINER_SHADOW_WIDTH_RATIO * entitySize
-  const heightPx = entitySize * TRAINER_SHADOW_HEIGHT_RATIO
-  const offsetX = (cached.feetX - 0.5) * entitySize
-
-  return {
-    position: 'absolute' as const,
-    backgroundImage: `url(${trainerShadowUrl.value})`,
-    backgroundSize: '100% 100%',
-    backgroundRepeat: 'no-repeat',
-    left: `calc(50% + ${offsetX}px)`,
-    top: `${cached.feetY * 100}%`,
-    width: `${widthPx}px`,
-    height: `${heightPx}px`,
-    transform: 'translate(-50%, -75%)',
-    zIndex: 'calc(var(--z-base) - 1)',
-    pointerEvents: 'none' as const
-  }
-}
 
 const getTrainerElement = (): HTMLElement | null => {
   const el = props.showStandingTrainers ? standingTrainerRef.value : trainerRef.value
@@ -176,7 +239,17 @@ defineExpose({
     :h="baseEntitySizeEnemy"
     class="trainer-entity"
   >
-    <div class="trainer-sprite-wrapper">
+    <div
+      class="trainer-sprite-wrapper"
+      :style="{
+        width: `${enemyTrainerSize}px`,
+        height: `${enemyTrainerSize}px`,
+        position: 'absolute',
+        left: '50%',
+        top: TRAINER_GROUND_Y,
+        transform: `translate(calc(-${(enemyFeetCoords?.feetX ?? 0.5) * 100}%), calc(-${(enemyFeetCoords?.feetY ?? 0.95) * 100}%)) ${enemyFeetCoords?.isFlying ? 'translateY(-24px)' : ''}`
+      }"
+    >
       <div
         ref="introEnemyTrainerIdleRef"
         class="trainer-idle-wrapper"
@@ -193,9 +266,13 @@ defineExpose({
         </div>
       </div>
     </div>
-    <div 
-      class="trainer-shadow"
-      :style="getTrainerShadowStyle(enemyTrainerSpriteUrl, baseEntitySizeEnemy * (objectScale || 2))"
+    <CombatShadow
+      :shadow-id="enemyTrainerShadowKey"
+      :sprite-size="enemyTrainerSize"
+      :shadow-scale="enemyFeetCoords?.shadowScale"
+      :style="{
+        '--shadow-y': TRAINER_GROUND_Y
+      }"
     />
     <div
       v-if="showGuides"
@@ -215,7 +292,17 @@ defineExpose({
     :h="baseEntitySizeEnemy"
     class="standing-trainer enemy-trainer"
   >
-    <div class="trainer-sprite-wrapper">
+    <div
+      class="trainer-sprite-wrapper"
+      :style="{
+        width: `${enemyTrainerSize}px`,
+        height: `${enemyTrainerSize}px`,
+        position: 'absolute',
+        left: '50%',
+        top: TRAINER_GROUND_Y,
+        transform: `translate(calc(-${(enemyFeetCoords?.feetX ?? 0.5) * 100}%), calc(-${(enemyFeetCoords?.feetY ?? 0.95) * 100}%)) ${enemyFeetCoords?.isFlying ? 'translateY(-24px)' : ''}`
+      }"
+    >
       <div
         ref="standingEnemyTrainerIdleRef"
         class="trainer-idle-wrapper"
@@ -232,9 +319,13 @@ defineExpose({
         </div>
       </div>
     </div>
-    <div 
-      class="trainer-shadow"
-      :style="getTrainerShadowStyle(enemyTrainerSpriteUrl, baseEntitySizeEnemy * (objectScale || 2))"
+    <CombatShadow
+      :shadow-id="enemyTrainerShadowKey"
+      :sprite-size="enemyTrainerSize"
+      :shadow-scale="enemyFeetCoords?.shadowScale"
+      :style="{
+        '--shadow-y': TRAINER_GROUND_Y
+      }"
     />
     <div
       v-if="showGuides"
@@ -246,13 +337,23 @@ defineExpose({
 
   <!-- Standing Player Trainer (_back) -->
   <VirtualEntity
-    :x="WORLD_CONSTANTS.SAFE_ZONE_X - Math.round(baseEntitySizePlayer * PLAYER_TRAINER_ASPECT_WIDTH_PX / PLAYER_TRAINER_ASPECT_HEIGHT_PX) * objectScale"
-    :y="WORLD_CONSTANTS.SAFE_ZONE_Y + WORLD_CONSTANTS.SAFE_ZONE_HEIGHT - baseEntitySizePlayer * objectScale"
-    :w="Math.round(baseEntitySizePlayer * PLAYER_TRAINER_ASPECT_WIDTH_PX / PLAYER_TRAINER_ASPECT_HEIGHT_PX)"
+    :x="standingPlayerX"
+    :y="standingPlayerY"
+    :w="standingPlayerWidth"
     :h="baseEntitySizePlayer"
     class="standing-trainer player-trainer"
   >
-    <div class="trainer-sprite-wrapper">
+    <div
+      class="trainer-sprite-wrapper"
+      :style="{
+        width: `${playerTrainerSize}px`,
+        height: `${playerTrainerSize}px`,
+        position: 'absolute',
+        left: '50%',
+        top: TRAINER_GROUND_Y,
+        transform: `translate(calc(-${(playerFeetCoords?.feetX ?? 0.5) * 100}%), calc(-${(playerFeetCoords?.feetY ?? 0.95) * 100}%)) ${playerFeetCoords?.isFlying ? 'translateY(-24px)' : ''}`
+      }"
+    >
       <div
         ref="playerTrainerIdleRef"
         class="trainer-idle-wrapper"
@@ -270,15 +371,19 @@ defineExpose({
         </div>
       </div>
     </div>
-    <div 
-      class="trainer-custom-shadow"
-      :style="getTrainerShadowStyle(playerBackSpriteUrl, Math.round(baseEntitySizePlayer * PLAYER_TRAINER_ASPECT_WIDTH_PX / PLAYER_TRAINER_ASPECT_HEIGHT_PX) * objectScale * 2.5)"
+    <CombatShadow
+      :shadow-id="playerTrainerShadowKey"
+      :sprite-size="playerTrainerSize"
+      :shadow-scale="playerFeetCoords?.shadowScale"
+      :style="{
+        '--shadow-y': TRAINER_GROUND_Y
+      }"
     />
     <div
       v-if="showGuides"
       class="debug-trainer-guide"
     >
-      <span>{{ Math.round(baseEntitySizePlayer * PLAYER_TRAINER_ASPECT_WIDTH_PX / PLAYER_TRAINER_ASPECT_HEIGHT_PX) * objectScale }}x{{ baseEntitySizePlayer * objectScale }}</span>
+      <span>{{ Math.round(standingPlayerWidth * (objectScale || 2)) }}x{{ Math.round(baseEntitySizePlayer * (objectScale || 2)) }}</span>
     </div>
   </VirtualEntity>
 </template>

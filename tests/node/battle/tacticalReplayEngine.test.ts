@@ -15,14 +15,14 @@ describe('Tactical Replay Engine & Fog of War', () => {
       elo: 3450,
       team: [
         {
-          species: 'pikachu',
+          id: 'pikachu',
           name: 'Pikachu',
           level: 50,
           sprite: '/assets/sprites/pikachu.png',
           revealedMoves: []
         },
         {
-          species: 'charizard',
+          id: 'charizard',
           name: 'Charizard',
           level: 50,
           sprite: '/assets/sprites/charizard.png',
@@ -37,7 +37,7 @@ describe('Tactical Replay Engine & Fog of War', () => {
       elo: 3050,
       team: [
         {
-          species: 'blastoise',
+          id: 'blastoise',
           name: 'Blastoise',
           level: 50,
           sprite: '/assets/sprites/blastoise.png',

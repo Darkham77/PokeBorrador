@@ -29,9 +29,13 @@ QA / Automation Engineers.
 - **Replay Headless (Recomendado/Rápido):** Si necesitas verificar paridad de HP, FSM, estados de combate o depurar errores de lógica de combate fuzzer, **NUNCA** utilices Playwright. Usa el replayer headless en Node.js que ejecuta Showdown directamente y corre en 1-2 segundos:
   - Ejecutar un caso: `$env:TEST_CASE_ID="case-47212c07bc5d"; npm run sim:fuzzer:trace`
   - Ejecutar varios casos: `$env:TEST_CASE_ID="case-47212c07bc5d,case-006487488a68"; npm run sim:fuzzer:trace`
-- **Simulaciones E2E (Navegador):** Usa Playwright (`npm run sim:e2e:combat`) únicamente para regresiones finales de flujo o para verificar animaciones GSAP y UI:
-  - Filtrar por lote del fuzzer: `$env:TEST_BATCH="21"; npm run sim:e2e:combat`
-  - Filtrar por rango o lista de lotes: `$env:TEST_BATCH="1,3,5"; npm run sim:e2e:combat` (formatos soportados: `"3"`, `"1-5"`, o `"1,3,5"`)
+- **Simulaciones E2E (Navegador):** Usa Playwright para regresiones de flujo o verificar animaciones GSAP y UI:
+  - Todas las simulaciones de batalla: `npm run sim:e2e:battle`
+  - Combate FSM y escenarios tácticos: `npm run sim:e2e:combat` (Filtrar por lote: `$env:TEST_BATCH="21"; npm run sim:e2e:combat`)
+  - Captura y ciclo de vida de encuentros salvajes: `npm run sim:e2e:capture`
+  - Modos PvP y matchmaking competitivo: `npm run sim:e2e:pvp`
+  - Ciclo de exploración y búsqueda secuencial: `npm run sim:e2e:search`
+  - Combate contra IA heurística: `npm run sim:e2e:ai`
 
 ## Child DOX Index
 

@@ -18,7 +18,7 @@ QA / Simulation Engineers.
 
 ## Verification
 
-- Run via Playwright test runner.
+- Run `npm run sim:e2e:abilities` to execute out-of-battle abilities simulations.
 
 ## Child DOX Index
 

@@ -29,6 +29,7 @@ Core Frontend.
 
 - [adventure/](./adventure/AGENTS.md): Domain module documentation for adventure.
 - [auth/](./auth/AGENTS.md): Domain module documentation for auth.
+- [dev/](./dev/AGENTS.md): Internal developer tooling and editor views (DEV-only).
 - [game/](./game/AGENTS.md): Domain module documentation for game.
 - [inventory/](./inventory/AGENTS.md): Domain module documentation for inventory.
 - [pokemon/](./pokemon/AGENTS.md): Domain module documentation for pokemon.

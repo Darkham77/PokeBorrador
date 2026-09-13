@@ -91,7 +91,7 @@ describe('Audit Parity - BUG-047: canZMove request data type', () => {
 // --- From test_bug048_mega_stats_update.spec.ts ---
 describe('Audit Parity - BUG-048 & BUG-049: Mega & Primal stats update', () => {
   it('should update species name on mega evolution', () => {
-    const target = { name: 'Lucario', species: 'Lucario' };
+    const target = { id: 'lucario', name: 'Lucario' };
     const ctx = {
       store: { activeBattle: { value: {} }, addLog: () => {} },
       type: '-mega',
@@ -101,7 +101,7 @@ describe('Audit Parity - BUG-048 & BUG-049: Mega & Primal stats update', () => {
       getSide: () => 'player'
     };
     handleMiscEvents(ctx as any);
-    expect(target.species).toBe('lucariomega');
+    expect(target.id).toBe('lucariomega');
   });
 });
 
@@ -109,10 +109,10 @@ describe('Audit Parity - BUG-048 & BUG-049: Mega & Primal stats update', () => {
 describe('Audit Parity - BUG-050: -formechange HP ratio preservation', () => {
   it('should maintain current HP percentage ratio when maxHp changes on formechange', () => {
     const target = {
+      id: 'wishiwashischool',
       name: 'Wishiwashi',
       hp: 10,
-      maxHp: 200,
-      species: 'Wishiwashi-School'
+      maxHp: 200
     };
     const ctx = {
       store: { activeBattle: { value: {} }, addLog: () => {} },
@@ -124,7 +124,7 @@ describe('Audit Parity - BUG-050: -formechange HP ratio preservation', () => {
     };
 
     handleMiscEvents(ctx as any);
-    expect(target.species).toBe('wishiwashi');
+    expect(target.id).toBe('wishiwashi');
   });
 });
 

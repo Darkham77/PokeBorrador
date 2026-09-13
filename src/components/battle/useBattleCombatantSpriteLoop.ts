@@ -7,6 +7,10 @@
 import { ref, type Ref, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 import type { BattleCombatantProps } from '@/types/battle/battle'
+import {
+  POKEMON_SPRITE_IDLE_FPS,
+  POKEMON_SPRITE_VARIATION_FPS
+} from '@/logic/constants/animations'
 
 export interface AnimatedSpriteFramesInfo {
   frames: number
@@ -83,7 +87,7 @@ export function useBattleCombatantSpriteLoop(params: UseBattleCombatantSpriteLoo
         gsap.set(imgEl, { x: 0, xPercent: 0 })
 
         const endXPercent = -((totalFrames - 1) / totalFrames) * 100
-        const fps = currentMode.value === 'idle' ? 8 : 10
+        const fps = currentMode.value === 'idle' ? POKEMON_SPRITE_IDLE_FPS : POKEMON_SPRITE_VARIATION_FPS
         const duration = totalFrames / fps
         const repeatCount = currentMode.value === 'idle' ? (idleCyclesTarget.value - 1) : 0
 

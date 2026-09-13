@@ -12,7 +12,6 @@ describe('Global Event Capture Date Restrictions (eventEngine)', () => {
   const sampleMagikarp = (obtainedAt?: number): Pokemon => ({
     uid: 'karp-uid-1',
     id: requirePokemonSpeciesId('magikarp'),
-    species: requirePokemonSpeciesId('magikarp'),
     name: 'Magikarp',
     level: 15,
     exp: 0,
@@ -152,7 +151,6 @@ describe('Global Event Capture Date Restrictions (eventEngine)', () => {
       const pikachu: Pokemon = {
         ...sampleMagikarp(Temporal.Now.instant().epochMilliseconds),
         id: requirePokemonSpeciesId('pikachu'),
-        species: requirePokemonSpeciesId('pikachu'),
         name: 'Pikachu'
       }
       const res = isPokemonEligibleForEvent(constrainedEvent, pikachu)

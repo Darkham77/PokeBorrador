@@ -288,14 +288,22 @@ npm run sim:e2e:table
 npm run sim:e2e:list
 
 # Simulaciones por módulo específico:
+npm run sim:e2e:battle         # Todas las simulaciones de combate
 npm run sim:e2e:combat         # Flujo de combate FSM y escenarios tácticos
+npm run sim:e2e:capture        # Mecánicas de captura, probabilidades, reaparición y Ditto
+npm run sim:e2e:pvp            # PvP competitivo, matchmaking, AFK, reconexión F5 y espectador
 npm run sim:e2e:ai             # Combate contra IA heurística
 npm run sim:e2e:search         # Ciclo de exploración de mapas y encuentros salvajes
+npm run sim:e2e:abilities      # Habilidades de campo pasivas fuera de combate
+npm run sim:e2e:items          # Familias de ítems, uso y expiración temporal de buffs
+npm run sim:e2e:events         # Concursos de pesca, torneos semanales y sub-competiciones
 npm run sim:e2e:gts            # Intercambios y mercado global (GTS)
 npm run sim:e2e:save           # Guardado seguro, persistencia y recarga activa
 npm run sim:e2e:breeding       # Ciclo de crianza e incubación de huevos
-npm run sim:e2e:missions       # Asignación y recolección de misiones
+npm run sim:e2e:missions       # Asignación y recolección de misiones y despliegue de clases
 npm run sim:e2e:gyms           # Desafío y combate en gimnasios
+npm run sim:e2e:pokemon        # Amistad, almacenamiento y UI de Pokémon
+npm run sim:e2e:system         # Actualizaciones de versión, locks y ciclo de vida
 ```
 
 ---

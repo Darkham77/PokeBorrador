@@ -44,7 +44,10 @@ export async function initWorkerForBattle(
   const rawPlayerTeam = [...effectiveTeam]
   const p1Data = prepareSeatPayload(rawPlayerTeam, initialPlayer, debugSeed, 'Player')
 
-  const rawEnemyTeam = [...(battleState?.enemyTeam || (initialEnemy ? [initialEnemy] : []))]
+  const isWild = Boolean(battleState && !battleState.isTrainer && !battleState.isGym && !battleState.isPvP)
+  const rawEnemyTeam = isWild
+    ? (initialEnemy ? [initialEnemy] : [])
+    : [...(battleState?.enemyTeam || (initialEnemy ? [initialEnemy] : []))]
   const p2Data = prepareSeatPayload(rawEnemyTeam, initialEnemy, debugSeed, battleState?.trainerName || 'Enemy')
 
   const initialWeatherOfficial = battleState?.weather?.type || 'none'
@@ -95,12 +98,24 @@ export async function initWorkerForBattle(
         logger.info('ShowdownWorker', 'Batalla inicializada con éxito en el worker.')
         console.debug('[E2E-ORCHESTRATOR-INIT-DEBUG] responsePayload keys:', Object.keys(responsePayload || {}))
         if (responsePayload) {
-          console.debug('[E2E-ORCHESTRATOR-INIT-DEBUG] debugLogs type:', typeof responsePayload.debugLogs, 'isArray:', Array.isArray(responsePayload.debugLogs))
-          if (responsePayload.debugLogs) {
-            console.debug('[E2E-ORCHESTRATOR-INIT-DEBUG] debugLogs length:', responsePayload.debugLogs.length)
-            responsePayload.debugLogs.forEach((l: string) => {
-              console.debug(`[E2E-WORKER-BUFFERED] ${l}`)
-            })
+          const rawLogs = (responsePayload as { logs?: string[]; debugLogs?: string[] }).logs || responsePayload.debugLogs;
+          if (rawLogs && rawLogs.length > 0) {
+            console.debug('[E2E-ORCHESTRATOR-INIT-DEBUG] initLogs length:', rawLogs.length);
+            rawLogs.forEach((l: string) => {
+              console.debug(`[E2E-WORKER-BUFFERED] ${l}`);
+            });
+            const { parseShowdownLogLine, filterShowdownLogs } = await import('./showdownBridge.ts');
+            const filteredLogs = filterShowdownLogs(rawLogs);
+            for (const logLine of filteredLogs) {
+              if (
+                logLine.startsWith('|-ability|') ||
+                logLine.startsWith('|-transform|') ||
+                logLine.startsWith('|-start|') ||
+                logLine.startsWith('|-weather|')
+              ) {
+                await parseShowdownLogLine(ctx, logLine);
+              }
+            }
           }
         }
         if (ctx.activeBattle.value && responsePayload) {

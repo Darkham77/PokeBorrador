@@ -29,6 +29,7 @@ export const GSAP_SLOW_DURATION_SEC = 0.5;
 
 export const COMBATANT_EMERGE_SPARKLE_FADE_DURATION_SEC = 0.6;
 export const HATCH_PARTICLE_MAX_SPREAD_PX = 80;
+export const DEFAULT_FRAME_SIZE_PX = 96;
 
 /** Notification toast display auto-dismiss delay in seconds (4.0s). */
 export const NOTIFICATION_DISMISS_DELAY_SEC = 4.0;
@@ -603,4 +604,10 @@ export const TIER_ICON_FLOAT_DURATION_SEC = 2;
 
 /** Hover animation duration for defense toggle button in seconds. */
 export const DEFENSE_TOGGLE_BTN_HOVER_DURATION_SEC = 0.25;
+
+/** Pokémon combatant spritesheet loop idle animation speed (FPS), accelerated by 30% from base 8 FPS. */
+export const POKEMON_SPRITE_IDLE_FPS = 10.4;
+
+/** Pokémon combatant spritesheet loop variation animation speed (FPS), accelerated by 30% from base 10 FPS. */
+export const POKEMON_SPRITE_VARIATION_FPS = 13;
 

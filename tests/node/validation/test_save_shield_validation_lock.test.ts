@@ -19,7 +19,6 @@ describe('Save Shield Validation Lock & Auto-Unlock', () => {
       {
         uid: 'poke-valid-1',
         id: 'pikachu',
-        species: 'pikachu',
         name: 'Pikachu',
         level: 25,
         exp: 1000,

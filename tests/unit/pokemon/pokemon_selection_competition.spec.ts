@@ -11,7 +11,6 @@ import type { ResolvedSubCompetition } from '@/logic/events/eventEngine'
 const createMockPokemon = (overrides: Partial<Pokemon> = {}): Pokemon => ({
   uid: 'poke-test-1',
   id: requirePokemonSpeciesId('magikarp'),
-  species: requirePokemonSpeciesId('magikarp'),
   name: 'Magikarp',
   level: 25,
   exp: 0,

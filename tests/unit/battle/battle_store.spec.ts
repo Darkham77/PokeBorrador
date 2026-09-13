@@ -210,8 +210,8 @@ describe('Battle Store - Weather Reset', () => {
     } as unknown as import('@/types/battle/battleContext').BattleContext
 
     await initBattleSequence(ctx, {
-      initialPlayer: { uid: 'p1', name: 'Bulbasaur', ability: 'overgrow', nature: 'hardy', moves: [{ id: 'tackle' }] } as unknown as import('@/types/pokemon/pokemon').Pokemon,
-      initialEnemy: { uid: 'e1', name: 'Pikachu', ability: 'static', nature: 'hardy', moves: [{ id: 'tackle' }] } as unknown as import('@/types/pokemon/pokemon').Pokemon
+      initialPlayer: { id: 'bulbasaur', uid: 'p1', name: 'Bulbasaur', ability: 'overgrow', nature: 'hardy', moves: [{ id: 'tackle' }] } as unknown as import('@/types/pokemon/pokemon').Pokemon,
+      initialEnemy: { id: 'pikachu', uid: 'e1', name: 'Pikachu', ability: 'static', nature: 'hardy', moves: [{ id: 'tackle' }] } as unknown as import('@/types/pokemon/pokemon').Pokemon
     })
 
     // Should reset turns to -1 (natural weather)

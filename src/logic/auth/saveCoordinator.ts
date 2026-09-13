@@ -151,6 +151,17 @@ export class SaveCoordinator {
   }
 
   /**
+   * Cancels any pending debounced local save without executing it.
+   */
+  public cancelPendingLocalSave(): void {
+    if (this.timer) {
+      clearTimeout(this.timer);
+      this.timer = null;
+    }
+    this.pendingSaveFn = null;
+  }
+
+  /**
    * Flushes only the pending debounced local save.
    */
   private async flushPendingLocalSave(): Promise<void> {

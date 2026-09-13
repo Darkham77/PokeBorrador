@@ -6,10 +6,12 @@
  */
 
 import fs from 'node:fs/promises';
+import fsSync from 'node:fs';
 import path from 'node:path';
 import { styleText } from 'node:util';
 import { Dex, toID } from '@pkmn/sim';
 import { safeResolve, safeJoin, safeWriteFile, safeReadFile } from '../../lib/safePath.ts';
+import type { SpriteShadowOverride, SpriteShadowOverridesMap, PackedFeetTuple, GlobalShadowConfig } from '../../../src/types/pokemon/spriteShadows.ts';
 
 export interface AnimatedSpriteData {
   readonly frames: number;
@@ -178,21 +180,72 @@ export function getAvailableCyclesForMap(mapId: MapRouteId): DayPhase[] {
 }
 
 export interface PackedFeetData {
-  p: Record<string, [number, number]>;
-  n: Record<string, [number, number]>;
-  t: Record<string, [number, number]>;
+  p: Record<string, PackedFeetTuple>;
+  n: Record<string, PackedFeetTuple>;
+  t: Record<string, PackedFeetTuple>;
   c: Record<string, string>;
+  shadow?: GlobalShadowConfig;
 }
 
-function packFeetCoordinates(
+export function packFeetCoordinates(
   pokemonFeetDatabase: Record<string, { feetY: number; feetX: number }>,
-  packed: PackedFeetData
+  packed: PackedFeetData,
+  overrides?: Record<string, SpriteShadowOverride>
 ): void {
+  let overridesMap = overrides;
+  if (!overridesMap) {
+    try {
+      const overridesPath = safeResolve(process.cwd(), 'src/data/pokemon/spriteShadowOverrides.json');
+      if (fsSync.existsSync(overridesPath)) {
+        overridesMap = JSON.parse(fsSync.readFileSync(overridesPath, 'utf8'));
+      }
+    } catch {
+      overridesMap = {};
+    }
+  }
+
+  // domain-ok: Helper lookup returning undefined when override is absent
+  function getOverrideForSprite(
+    keyPath: string
+  ): SpriteShadowOverride | undefined {
+    if (!overridesMap) return undefined;
+    if (overridesMap[keyPath]) return overridesMap[keyPath];
+
+    const baseKeyPath = keyPath
+      .replace('/Back shiny/', '/Back/')
+      .replace('/Front shiny/', '/Front/')
+      .replace('/Icons shiny/', '/Icons/')
+      .replace('/Back_shiny/', '/Back/')
+      .replace('/Front_shiny/', '/Front/')
+      .replace('/Icons_shiny/', '/Icons/')
+      .replace('/shiny/', '/');
+
+    if (overridesMap[baseKeyPath]) return overridesMap[baseKeyPath];
+
+    const isVariationPath = keyPath.includes('v') && (keyPath.includes('/animated/Front') || keyPath.includes('/animated/Back'));
+    if (isVariationPath) {
+      const idleKey = keyPath.replace(/v(?=[^/]*\.webp$)/, 'i');
+      if (overridesMap[idleKey]) return overridesMap[idleKey];
+      const idleBaseKey = baseKeyPath.replace(/v(?=[^/]*\.webp$)/, 'i');
+      if (overridesMap[idleBaseKey]) return overridesMap[idleBaseKey];
+    }
+
+    return undefined;
+  }
+
   for (const key of Object.keys(pokemonFeetDatabase)) {
     const isVariation = key.includes('v') && (key.includes('/animated/Front') || key.includes('/animated/Back'));
     if (isVariation) {
-      const idleKey = key.replace(/v/, 'i');
-      const idleVal = pokemonFeetDatabase[idleKey];
+      const idleKey = key.replace(/v(?=[^/]*\.webp$)/, 'i');
+      const idleBaseKey = idleKey
+        .replace('/Back shiny/', '/Back/')
+        .replace('/Front shiny/', '/Front/')
+        .replace('/Icons shiny/', '/Icons/')
+        .replace('/Back_shiny/', '/Back/')
+        .replace('/Front_shiny/', '/Front/')
+        .replace('/Icons_shiny/', '/Icons/')
+        .replace('/shiny/', '/');
+      const idleVal = pokemonFeetDatabase[idleKey] ?? pokemonFeetDatabase[idleBaseKey];
       if (idleVal) {
         pokemonFeetDatabase[key] = idleVal;
       }
@@ -201,34 +254,74 @@ function packFeetCoordinates(
 
   for (const key of Object.keys(pokemonFeetDatabase).sort()) {
     const val = pokemonFeetDatabase[key]!;
+
+    const baseKey = key
+      .replace('/Back shiny/', '/Back/')
+      .replace('/Front shiny/', '/Front/')
+      .replace('/Icons shiny/', '/Icons/')
+      .replace('/Back_shiny/', '/Back/')
+      .replace('/Front_shiny/', '/Front/')
+      .replace('/Icons_shiny/', '/Icons/')
+      .replace('/shiny/', '/');
+
+    const override = getOverrideForSprite(key);
+    const feetY = override ? override.feetY : val.feetY;
+    const feetX = override ? override.feetX : val.feetX;
+    const isFlying = override ? override.isFlying === true : false;
+    const shadowScale = override?.shadowScale !== undefined ? override.shadowScale : undefined;
+    const tuple: PackedFeetTuple = (shadowScale !== undefined && shadowScale !== 1)
+      ? [feetY, feetX, isFlying ? 1 : 0, shadowScale]
+      : (isFlying ? [feetY, feetX, 1] : [feetY, feetX]);
+
     if (key.startsWith('/assets/sprites/pokemon/') && key.endsWith('.webp')) {
       const subKey = key.slice('/assets/sprites/pokemon/'.length, -'.webp'.length);
 
       // Check if this is a shiny sprite identical to its base counterpart
-      const baseKey = key
-        .replace('/Back shiny/', '/Back/')
-        .replace('/Front shiny/', '/Front/')
-        .replace('/Icons shiny/', '/Icons/')
-        .replace('/Back_shiny/', '/Back/')
-        .replace('/Front_shiny/', '/Front/')
-        .replace('/Icons_shiny/', '/Icons/')
-        .replace('/shiny/', '/');
+      const baseOverride = getOverrideForSprite(baseKey);
+      const baseVal = pokemonFeetDatabase[baseKey];
+      if (baseKey !== key && (baseVal || baseOverride)) {
+        const resolvedBaseVal = baseVal ?? { feetY: baseOverride!.feetY, feetX: baseOverride!.feetX };
+        const baseY = baseOverride ? baseOverride.feetY : resolvedBaseVal.feetY;
+        const baseX = baseOverride ? baseOverride.feetX : resolvedBaseVal.feetX;
+        const baseFlying = baseOverride ? baseOverride.isFlying === true : false;
+        const baseScale = baseOverride?.shadowScale;
 
-      if (baseKey !== key && pokemonFeetDatabase[baseKey]) {
-        const baseVal = pokemonFeetDatabase[baseKey];
-        if (baseVal.feetY === val.feetY && baseVal.feetX === val.feetX) {
+        if (baseY === feetY && baseX === feetX && baseFlying === isFlying && baseScale === shadowScale) {
           // Omit 100% identical shiny entry: runtime falls back to baseKey
           continue;
         }
       }
 
-      packed.p[subKey] = [val.feetY, val.feetX];
+      packed.p[subKey] = tuple;
     } else if (key.startsWith('/assets/sprites/npc/') && key.endsWith('.webp')) {
       const subKey = key.slice('/assets/sprites/npc/'.length, -'.webp'.length);
-      packed.n[subKey] = [val.feetY, val.feetX];
+      packed.n[subKey] = tuple;
     } else if (key.startsWith('/assets/sprites/trainers/') && key.endsWith('.webp')) {
       const subKey = key.slice('/assets/sprites/trainers/'.length, -'.webp'.length);
-      packed.t[subKey] = [val.feetY, val.feetX];
+      packed.t[subKey] = tuple;
+    }
+  }
+
+  // Pack any overrides for keys not present in pokemonFeetDatabase
+  if (overridesMap) {
+    for (const key of Object.keys(overridesMap).sort()) {
+      if (pokemonFeetDatabase[key]) continue;
+      const override = overridesMap[key];
+      if (!override) continue;
+      const shadowScale = override.shadowScale !== undefined ? override.shadowScale : undefined;
+      const tuple: PackedFeetTuple = (shadowScale !== undefined && shadowScale !== 1)
+        ? [override.feetY, override.feetX, override.isFlying ? 1 : 0, shadowScale]
+        : (override.isFlying ? [override.feetY, override.feetX, 1] : [override.feetY, override.feetX]);
+      if (key.startsWith('/assets/sprites/pokemon/') && key.endsWith('.webp')) {
+        const subKey = key.slice('/assets/sprites/pokemon/'.length, -'.webp'.length);
+        packed.p[subKey] = tuple;
+      } else if (key.startsWith('/assets/sprites/npc/') && key.endsWith('.webp')) {
+        const subKey = key.slice('/assets/sprites/npc/'.length, -'.webp'.length);
+        packed.n[subKey] = tuple;
+      } else if (key.startsWith('/assets/sprites/trainers/') && key.endsWith('.webp')) {
+        const subKey = key.slice('/assets/sprites/trainers/'.length, -'.webp'.length);
+        packed.t[subKey] = tuple;
+      }
     }
   }
 }
@@ -273,6 +366,130 @@ function resolveSpeciesCryFallback(
   }
 
   return false;
+}
+
+function getPokemonFeetDatabaseFileContent(): string {
+  return `/**
+ * src/data/pokemonFeetDatabase.ts
+ * 
+ * ARCHIVO INMUTABLE Y AUTOGENERADO POR scripts/convert_assets.ts - NO MODIFICAR MANUALMENTE
+ * 
+ * Contiene las coordenadas de anclaje de pies (feetX y feetY) precalculadas para cada sprite,
+ * así como el catálogo de mapeos de gritos (cries) de Pokémon.
+ */
+import { FEET_COORDINATES_DATA } from './feetCoordinatesData.ts';
+import type { GlobalShadowConfig } from '@/types/pokemon/spriteShadows';
+
+const packedData = FEET_COORDINATES_DATA;
+
+export interface FeetPoints {
+  readonly feetY: number;
+  readonly feetX: number;
+  readonly isFlying?: boolean;
+  readonly shadowScale?: number;
+}
+
+const PACKED_DATA = packedData;
+
+const DEFAULT_GLOBAL_SHADOW_WIDTH_RATIO = 1.0;
+const DEFAULT_GLOBAL_SHADOW_HEIGHT_RATIO = 0.28;
+const DEFAULT_GLOBAL_SHADOW_PIXELATION = 14;
+
+export const GLOBAL_SHADOW_CONFIG: GlobalShadowConfig = {
+  widthRatio: PACKED_DATA.shadow?.widthRatio ?? DEFAULT_GLOBAL_SHADOW_WIDTH_RATIO,
+  heightRatio: PACKED_DATA.shadow?.heightRatio ?? DEFAULT_GLOBAL_SHADOW_HEIGHT_RATIO,
+  pixelation: PACKED_DATA.shadow?.pixelation ?? DEFAULT_GLOBAL_SHADOW_PIXELATION
+} as const;
+
+const _FEET_SPRITE_GROUP_KEYS = ['p', 'n', 't'] as const;
+type FeetSpriteGroupKey = (typeof _FEET_SPRITE_GROUP_KEYS)[number];
+type FeetSpritePrefix = '/assets/sprites/pokemon/' | '/assets/sprites/npc/' | '/assets/sprites/trainers/';
+export type FeetDatabasePath = \`\${FeetSpritePrefix}\${string}.webp\`;
+
+const POKEMON_FEET_DATABASE: Partial<Record<FeetDatabasePath, FeetPoints>> = {};
+
+function requireFeetMetric(values: readonly number[], path: FeetDatabasePath, index: number): number {
+  const value = values[index];
+  if (value !== undefined) return value;
+  throw new Error(\`[pokemonFeetDatabase] Invalid feet tuple for path: \${path}\`);
+}
+
+for (const [key, prefix] of [
+  ['p', '/assets/sprites/pokemon/'],
+  ['n', '/assets/sprites/npc/'],
+  ['t', '/assets/sprites/trainers/']
+] as const satisfies readonly (readonly [FeetSpriteGroupKey, FeetSpritePrefix])[]) {
+  const group = (PACKED_DATA as Record<string, Record<string, readonly number[]>>)[key] ?? {}; // open-record: Generic key-value data dictionary container
+  for (const [subKey, tuple] of Object.entries(group)) {
+    const dbPath: FeetDatabasePath = \`\${prefix}\${subKey}.webp\`;
+    const y = requireFeetMetric(tuple as readonly number[], dbPath, 0);
+    const x = requireFeetMetric(tuple as readonly number[], dbPath, 1);
+    const isFlying = (tuple as readonly number[])[2] === 1;
+    const shadowScale = (tuple as readonly number[])[3];
+    POKEMON_FEET_DATABASE[dbPath] = {
+      feetY: y,
+      feetX: x,
+      ...(isFlying ? { isFlying: true } : {}),
+      ...(shadowScale !== undefined ? { shadowScale } : {})
+    };
+  }
+}
+
+function hasFeetDatabasePath(value: string): value is FeetDatabasePath {
+  return Object.hasOwn(POKEMON_FEET_DATABASE, value);
+}
+
+function resolveFeetPath(raw: string): FeetDatabasePath {
+  if (!raw) {
+    throw new Error('[pokemonFeetDatabase] Path cannot be empty');
+  }
+
+  let cleaned = decodeURIComponent(raw).trim();
+  if (!cleaned.startsWith('/') && cleaned.startsWith('assets/')) {
+    cleaned = \`/\${cleaned}\`;
+  }
+  if (!cleaned.endsWith('.webp')) {
+    cleaned = cleaned.replace(/\\.(png|jpg|jpeg|gif)$/i, '') + '.webp';
+  }
+
+  if (hasFeetDatabasePath(cleaned)) return cleaned;
+
+  // Shiny variants share identical physical geometry with the base sprite
+  const baseSpritePath = cleaned
+    .replace('/Back shiny/', '/Back/')
+    .replace('/Front shiny/', '/Front/')
+    .replace('/Icons shiny/', '/Icons/')
+    .replace('/Back_shiny/', '/Back/')
+    .replace('/Front_shiny/', '/Front/')
+    .replace('/Icons_shiny/', '/Icons/')
+    .replace('/shiny/', '/');
+
+  if (hasFeetDatabasePath(baseSpritePath)) return baseSpritePath;
+
+  // Animated sprites default to idle 'i' frame if no frame suffix was provided (e.g. 26.webp -> 26i.webp)
+  const idleAnimatedPath = baseSpritePath.replace(/\\/animated\\/(Front|Back)\\/(\\d+)\\.webp$/i, '/animated/$1/$2i.webp');
+  if (hasFeetDatabasePath(idleAnimatedPath)) return idleAnimatedPath;
+
+  throw new Error(\`[pokemonFeetDatabase] Unknown feet database path: \${raw}\`);
+}
+
+export function requireFeetDatabasePath(value: string): FeetDatabasePath {
+  return resolveFeetPath(value);
+}
+
+export function requireFeetPoints(value: string): FeetPoints {
+  const resolvedPath = resolveFeetPath(value);
+  const points = POKEMON_FEET_DATABASE[resolvedPath];
+  if (points) return points;
+  throw new Error(\`[pokemonFeetDatabase] Missing feet points for path: \${resolvedPath}\`);
+}
+
+export {
+  POKEMON_CRIES_DATABASE,
+  isPokemonCryId,
+  getPokemonCryFilename
+} from './pokemonCriesDatabase.ts';
+`;
 }
 
 export async function generateFeetAndCriesDatabase(
@@ -340,104 +557,113 @@ export async function generateFeetAndCriesDatabase(
   const criesJsonPath = safeJoin(targetDir, 'pokemonCriesDatabase.json');
   await safeWriteFile(criesJsonPath, JSON.stringify(packed.c, null, 2));
 
-  const databaseContent = `/**
- * src/data/pokemonFeetDatabase.ts
- * 
- * ARCHIVO INMUTABLE Y AUTOGENERADO POR scripts/convert_assets.ts - NO MODIFICAR MANUALMENTE
- * 
- * Contiene las coordenadas de anclaje de pies (feetX y feetY) precalculadas para cada sprite,
- * así como el catálogo de mapeos de gritos (cries) de Pokémon.
- */
-import { FEET_COORDINATES_DATA } from './feetCoordinatesData.ts';
-
-const packedData = FEET_COORDINATES_DATA;
-
-export interface FeetPoints {
-  readonly feetY: number;
-  readonly feetX: number;
-}
-
-const PACKED_DATA = packedData;
-
-const _FEET_SPRITE_GROUP_KEYS = ['p', 'n', 't'] as const;
-type FeetSpriteGroupKey = (typeof _FEET_SPRITE_GROUP_KEYS)[number];
-type FeetSpritePrefix = '/assets/sprites/pokemon/' | '/assets/sprites/npc/' | '/assets/sprites/trainers/';
-export type FeetDatabasePath = \`\${FeetSpritePrefix}\${string}.webp\`;
-
-const POKEMON_FEET_DATABASE: Partial<Record<FeetDatabasePath, FeetPoints>> = {};
-
-function requireFeetMetric(values: readonly number[], path: FeetDatabasePath, index: number): number {
-  const value = values[index];
-  if (value !== undefined) return value;
-  throw new Error(\`[pokemonFeetDatabase] Invalid feet tuple for path: \${path}\`);
-}
-
-for (const [key, prefix] of [
-  ['p', '/assets/sprites/pokemon/'],
-  ['n', '/assets/sprites/npc/'],
-  ['t', '/assets/sprites/trainers/']
-] as const satisfies readonly (readonly [FeetSpriteGroupKey, FeetSpritePrefix])[]) {
-  const group = (PACKED_DATA as Record<string, Record<string, readonly number[]>>)[key] ?? {}; // open-record: Generic key-value data dictionary container
-  for (const [subKey, tuple] of Object.entries(group)) {
-    const dbPath: FeetDatabasePath = \`\${prefix}\${subKey}.webp\`;
-    const y = requireFeetMetric(tuple as readonly number[], dbPath, 0);
-    const x = requireFeetMetric(tuple as readonly number[], dbPath, 1);
-    POKEMON_FEET_DATABASE[dbPath] = { feetY: y, feetX: x };
-  }
-}
-
-function hasFeetDatabasePath(value: string): value is FeetDatabasePath {
-  return Object.hasOwn(POKEMON_FEET_DATABASE, value);
-}
-
-function resolveFeetPath(raw: string): FeetDatabasePath {
-  if (!raw) {
-    throw new Error('[pokemonFeetDatabase] Path cannot be empty');
-  }
-
-  let cleaned = decodeURIComponent(raw).trim();
-  if (!cleaned.endsWith('.webp')) {
-    cleaned = cleaned.replace(/\\.(png|jpg|jpeg|gif)$/i, '') + '.webp';
-  }
-
-  if (hasFeetDatabasePath(cleaned)) return cleaned;
-
-  // Shiny variants share identical physical geometry with the base sprite
-  const baseSpritePath = cleaned
-    .replace('/Back shiny/', '/Back/')
-    .replace('/Front shiny/', '/Front/')
-    .replace('/Icons shiny/', '/Icons/')
-    .replace('/Back_shiny/', '/Back/')
-    .replace('/Front_shiny/', '/Front/')
-    .replace('/Icons_shiny/', '/Icons/')
-    .replace('/shiny/', '/');
-
-  if (hasFeetDatabasePath(baseSpritePath)) return baseSpritePath;
-
-  throw new Error(\`[pokemonFeetDatabase] Unknown feet database path: \${raw}\`);
-}
-
-export function requireFeetDatabasePath(value: string): FeetDatabasePath {
-  return resolveFeetPath(value);
-}
-
-export function requireFeetPoints(value: string): FeetPoints {
-  const resolvedPath = resolveFeetPath(value);
-  const points = POKEMON_FEET_DATABASE[resolvedPath];
-  if (points) return points;
-  throw new Error(\`[pokemonFeetDatabase] Missing feet points for path: \${resolvedPath}\`);
-}
-
-export {
-  POKEMON_CRIES_DATABASE,
-  isPokemonCryId,
-  getPokemonCryFilename
-} from './pokemonCriesDatabase.ts';
-`;
+  const databaseContent = getPokemonFeetDatabaseFileContent();
 
   await safeWriteFile(databasePath, databaseContent);
   console.log(styleText('green', `   [OK] Base de datos de anclaje y gritos integrada generada con éxito.`));
   return packed;
+}
+
+const PROGRESS_FEET_INIT_PCT = 10 as const;
+const PROGRESS_FEET_LOAD_OVERRIDES_PCT = 25 as const;
+const PROGRESS_FEET_MAP_SPRITES_PCT = 40 as const;
+const PROGRESS_FEET_PACK_DATA_PCT = 65 as const;
+const PROGRESS_FEET_WRITE_FILES_PCT = 85 as const;
+const PROGRESS_FEET_COMPLETE_PCT = 100 as const;
+
+export async function regenerateFeetDatabase(
+  onProgress?: (progress: number, message: string) => void
+): Promise<PackedFeetData> {
+  onProgress?.(PROGRESS_FEET_INIT_PCT, 'Leyendo catálogos y base de datos estática...');
+  const jsonPath = safeResolve(process.cwd(), 'src/data/pokemon/pokemonFeetDatabase.json');
+  const databasePath = safeResolve(process.cwd(), 'src/data/pokemon/pokemonFeetDatabase.ts');
+  const overridesPath = safeResolve(process.cwd(), 'src/data/pokemon/spriteShadowOverrides.json');
+
+  const rawJson = await fs.readFile(jsonPath, 'utf8');
+  const existingPacked: PackedFeetData = JSON.parse(rawJson);
+
+  onProgress?.(PROGRESS_FEET_LOAD_OVERRIDES_PCT, 'Cargando overrides manuales de sombras...');
+  let overrides: Record<string, SpriteShadowOverride> = {};
+  let globalShadowConfig: GlobalShadowConfig | undefined;
+  try {
+    const rawOverrides = await fs.readFile(overridesPath, 'utf8');
+    const parsed = JSON.parse(rawOverrides);
+    if (parsed && typeof parsed === 'object') {
+      if ('globalShadowConfig' in parsed) {
+        globalShadowConfig = parsed.globalShadowConfig as GlobalShadowConfig;
+        overrides = (parsed.overrides ?? {}) as SpriteShadowOverridesMap;
+      } else {
+        overrides = parsed as SpriteShadowOverridesMap;
+      }
+    }
+  } catch {
+    // No overrides
+  }
+
+  onProgress?.(PROGRESS_FEET_MAP_SPRITES_PCT, 'Mapeando entidades y coordenadas de sprites...');
+  const flatDb: Record<string, { feetY: number; feetX: number }> = {};
+  for (const [subKey, tuple] of Object.entries(existingPacked.p || {})) {
+    flatDb[`/assets/sprites/pokemon/${subKey}.webp`] = { feetY: tuple[0]!, feetX: tuple[1]! };
+  }
+  for (const [subKey, tuple] of Object.entries(existingPacked.n || {})) {
+    flatDb[`/assets/sprites/npc/${subKey}.webp`] = { feetY: tuple[0]!, feetX: tuple[1]! };
+  }
+  for (const [subKey, tuple] of Object.entries(existingPacked.t || {})) {
+    flatDb[`/assets/sprites/trainers/${subKey}.webp`] = { feetY: tuple[0]!, feetX: tuple[1]! };
+  }
+
+  const trainersDir = safeResolve(process.cwd(), 'public/assets/sprites/trainers');
+  try {
+    const trainerFiles = await fs.readdir(trainersDir);
+    for (const f of trainerFiles) {
+      if (f.endsWith('.webp')) {
+        const fullPath = `/assets/sprites/trainers/${f}`;
+        if (!flatDb[fullPath]) {
+          flatDb[fullPath] = { feetY: 0.95, feetX: 0.5 };
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Error reading trainersDir:', err);
+  }
+
+  const npcDir = safeResolve(process.cwd(), 'public/assets/sprites/npc');
+  try {
+    const npcFiles = await fs.readdir(npcDir);
+    for (const f of npcFiles) {
+      if (f.endsWith('.webp')) {
+        const fullPath = `/assets/sprites/npc/${f}`;
+        if (!flatDb[fullPath]) {
+          flatDb[fullPath] = { feetY: 0.95, feetX: 0.5 };
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Error reading npcDir:', err);
+  }
+
+  const newPacked: PackedFeetData = {
+    p: {},
+    n: {},
+    t: {},
+    c: existingPacked.c || {},
+    shadow: globalShadowConfig || existingPacked.shadow || {
+      widthRatio: 1.0,
+      heightRatio: 0.28,
+      pixelation: 14
+    }
+  };
+
+  onProgress?.(PROGRESS_FEET_PACK_DATA_PCT, 'Empaquetando coordenadas y aplicando overrides...');
+  packFeetCoordinates(flatDb, newPacked, overrides);
+
+  onProgress?.(PROGRESS_FEET_WRITE_FILES_PCT, 'Escribiendo pokemonFeetDatabase.json y wrappers TS...');
+  await safeWriteFile(jsonPath, JSON.stringify(newPacked, null, 2));
+  await safeWriteFile(databasePath, getPokemonFeetDatabaseFileContent());
+
+  onProgress?.(PROGRESS_FEET_COMPLETE_PCT, 'Recompilación de base de datos finalizada con éxito');
+  console.log(styleText('green', `   [OK] Base de datos de sombras y pies regenerada con éxito.`));
+  return newPacked;
 }
 
 function classifyNpcSprite(

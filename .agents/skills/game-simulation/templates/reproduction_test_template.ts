@@ -16,7 +16,7 @@ describe('Reproduction Test for <CASE_ID>', () => {
     const match = JSON.parse(raw);
 
     // 2. Initialize official Showdown Battle with the exact seed and teams
-    const battle = new Battle({ formatid: 'gen9customgame' as any, seed: match.seed });
+    const battle = new Battle({ formatid: 'gen9customgame', seed: match.seed });
     battle.setPlayer('p1', { name: 'Player', team: match.playerTeam });
     battle.setPlayer('p2', { name: 'NPC-Enemy', team: match.enemyTeam });
 

@@ -15,6 +15,7 @@ General system maintenance scripts, import fixes, server configurations, and dev
   - `repair_account_legality.ts` (`npm run database:repair-account [server=<profile>] [user=<id_or_email>] [all] [fix]`)
   - `diagnose_account.ts` (`npm run database:diagnose-account [server=<profile>] [file=<backup_json>] [db=<sqlite_path>] user=<id_or_email_or_name> [save-json=<path>]` / `npm run database:diagnose-accounts [server=<profile>] [file=<backup_json>] [db=<sqlite_path>]`)
 - **Static Asset Pre-Compression & Reporting (`vite-plugin-precompress.ts`)**: The build precompression plugin generates `.br` (Brotli Q11) and `.gz` (Gzip L9) assets natively in `dist/` using asynchronous multithreaded `libuv` compression with a concurrent worker pool (`CONCURRENCY_LIMIT = 8`). Upon bundle completion (`closeBundle`), it outputs a consolidated Unicode Box-Drawing summary table reporting individual and total sizes across categories (Workers, WASM, App Shell, etc.), with automatic warning badges (`⚠️`) for assets approaching the 8 MB PWA Workbox limit.
+- **Dev Shadow Editor API Resilience (`vite-plugin-dev-shadow-editor.ts`)**: The dev shadow editor endpoints (`dev-load-shadow-overrides`, `dev-save-shadow-overrides`) MUST enforce strict unwrapping of candidate override records and strip non-override metadata (`globalShadowConfig`, `overrides`) before writing to disk, guaranteeing flat dictionary structures.
 
 ## Child DOX Index
 

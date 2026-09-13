@@ -77,7 +77,7 @@ describe('Battle Capture and Save Restoration Full Cycle (Integration)', () => {
     const serialized = serializeState(gameStore.state);
     expect(serialized.activeBattle).toBeDefined();
     expect(serialized.activeBattle?.enemyTeam).toBeDefined();
-    expect(serialized.activeBattle?.enemyTeam?.[0]?.species).toBe('rattata');
+    expect(serialized.activeBattle?.enemyTeam?.[0]?.id).toBe('rattata');
 
     // 4. Reset in-memory battle and simulate page refresh / state restoration
     const activeBattleRef = ref(null);
@@ -104,7 +104,7 @@ describe('Battle Capture and Save Restoration Full Cycle (Integration)', () => {
     expect(activeBattleRef.value).not.toBeNull();
     const restoredBattle = activeBattleRef.value as unknown as { enemy: Pokemon; _initialEnemy: Pokemon };
     expect(restoredBattle.enemy).toBeDefined();
-    expect(restoredBattle.enemy.species).toBe('rattata');
+    expect(restoredBattle.enemy.id).toBe('rattata');
     expect(restoredBattle._initialEnemy).toBeDefined();
 
     // 5. Player throws a Pokeball and captures the restored enemy
@@ -123,14 +123,14 @@ describe('Battle Capture and Save Restoration Full Cycle (Integration)', () => {
     expect(captureResult.pokemon).toBeDefined();
 
     const capturedPokemon = captureResult.pokemon as Pokemon;
-    expect(capturedPokemon.species).toBe('rattata');
+    expect(capturedPokemon.id).toBe('rattata');
     expect(() => validatePokemon(capturedPokemon)).not.toThrow();
 
     // 6. Add captured Pokemon to gameStore (routes to box because team has 6 Pokemon)
     const addResult = gameStore.addPokemon(capturedPokemon, { notify: false });
     expect(addResult.target).toBe('box');
     expect(gameStore.state.box.length).toBe(1);
-    expect(gameStore.state.box[0]?.species).toBe('rattata');
+    expect(gameStore.state.box[0]?.id).toBe('rattata');
 
     // 7. Sanitize and validate entire save state payload
     const saveValidation = validateAndSanitize(gameStore.state);

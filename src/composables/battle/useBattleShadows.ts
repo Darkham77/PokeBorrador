@@ -64,7 +64,7 @@ function checkAnimated(pokemonId: PokemonSpeciesId, gender?: string | null): boo
   return !!computeAnimatedKey(pokemonId, false, gender) || !!computeAnimatedKey(pokemonId, true, gender)
 }
 
-interface SpriteResolutionTarget {
+export interface SpriteResolutionTarget {
   id: PokemonSpeciesId
   form?: string
   gender?: string | null
@@ -157,7 +157,7 @@ export function isFlying(pokemon: Pokemon | null | undefined): boolean {
   return types.includes('flying')
 }
 
-function getShadowWidth(pokemon: SpriteResolutionTarget, isBack: boolean): string {
+export function getShadowWidth(pokemon: SpriteResolutionTarget, isBack: boolean): string {
   const spriteId = getEffectiveSpriteId(pokemon)
   const animKey = computeAnimatedKey(spriteId, isBack, pokemon.gender) || computeAnimatedKey(spriteId, !isBack, pokemon.gender)
   const meta = animKey ? requireAnimatedSpriteData(animKey) : null
@@ -219,13 +219,16 @@ export function useBattleShadows() {
     }
 
     if (shadowId) {
+      const spriteUrl = data ? getFinalSpriteUrl(data, !!data.isShiny, false) : ''
+      const feetCoords = spriteUrl ? getPokemonFeetCoords(spriteUrl) : null
       await shadowStore.requestShadow(shadowId, {
         side: 'enemy',
         entityX: pos.x,
         entityY: pos.y,
         entitySize: ENTITY_SIZE_ENEMY,
-        isFlying: isFlying(data),
-        spriteUrl: data ? getFinalSpriteUrl(data, !!data.isShiny, false) : '',
+        isFlying: feetCoords?.isFlying ?? isFlying(data),
+        shadowScale: feetCoords?.shadowScale ?? 1.0,
+        spriteUrl,
         width: data ? getShadowWidth(data, false) : '100%',
         visible: true
       })
@@ -258,13 +261,16 @@ export function useBattleShadows() {
     }
 
     if (shadowId) {
+      const spriteUrl = pokemon ? getFinalSpriteUrl(pokemon, !!pokemon.isShiny, true) : ''
+      const feetCoords = spriteUrl ? getPokemonFeetCoords(spriteUrl) : null
       await shadowStore.requestShadow(shadowId, {
         side: 'player',
         entityX: pos.x,
         entityY: pos.y,
         entitySize: ENTITY_SIZE_PLAYER,
-        isFlying: isFlying(pokemon),
-        spriteUrl: pokemon ? getFinalSpriteUrl(pokemon, !!pokemon.isShiny, true) : '',
+        isFlying: feetCoords?.isFlying ?? isFlying(pokemon),
+        shadowScale: feetCoords?.shadowScale ?? 1.0,
+        spriteUrl,
         width: getShadowWidth(pokemon, true),
         visible: true
       })
@@ -308,13 +314,15 @@ export function useBattleShadows() {
       const shadowId = getStableShadowId(p1Data, 'player')
       currentPlayerShadowKey.value = shadowId
       const url = getFinalSpriteUrl(p1Data, !!p1Data.isShiny, true)
+      const feetCoords = url ? getPokemonFeetCoords(url) : null
       if (shadowId) {
         tasks.push(shadowStore.requestShadow(shadowId, {
           side: 'player',
           entityX: p1Position.x,
           entityY: p1Position.y,
           entitySize: ENTITY_SIZE_PLAYER,
-          isFlying: isFlying(p1Data),
+          isFlying: feetCoords?.isFlying ?? isFlying(p1Data),
+          shadowScale: feetCoords?.shadowScale ?? 1.0,
           spriteUrl: url,
           width: getShadowWidth(p1Data, true),
           visible: true
@@ -326,13 +334,15 @@ export function useBattleShadows() {
       const shadowId = getStableShadowId(p2Data, 'enemy')
       currentEnemyShadowKey.value = shadowId
       const url = getFinalSpriteUrl(p2Data, !!p2Data.isShiny, false)
+      const feetCoords = url ? getPokemonFeetCoords(url) : null
       if (shadowId) {
         tasks.push(shadowStore.requestShadow(shadowId, {
           side: 'enemy',
           entityX: p2Position.x,
           entityY: p2Position.y,
           entitySize: ENTITY_SIZE_ENEMY,
-          isFlying: isFlying(p2Data),
+          isFlying: feetCoords?.isFlying ?? isFlying(p2Data),
+          shadowScale: feetCoords?.shadowScale ?? 1.0,
           spriteUrl: url,
           width: getShadowWidth(p2Data, false),
           visible: true

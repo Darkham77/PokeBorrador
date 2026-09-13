@@ -39,8 +39,11 @@ export async function initBattleSequence(
 
   await resetActiveBattleState(ctx, initialPlayer, isGym)
   if (ctx.activeBattle.value) {
-    ctx.activeBattle.value.enemy = initialEnemy
+    ctx.activeBattle.value.enemy = (!isTrainer && !isGym) ? initialEnemy : null
     ctx.activeBattle.value.wasSearching = wasSearching
+    if (!isTrainer && !isGym && !ctx.activeBattle.value.isPvP) {
+      ctx.activeBattle.value.enemyTeam = [initialEnemy]
+    }
   }
   if (!wasSearching && ctx.animations?.resetAll) {
     ctx.animations.resetAll()

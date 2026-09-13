@@ -1,7 +1,7 @@
 import { type Page, expect } from '@playwright/test';
 import { BaseE2ESimulation, type SimulationOptions } from '../base_simulation.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 
-const E2E_ACTION_TIMEOUT_MS = 5000;
 
 /**
  * scripts/e2e/events/base_event_simulation.ts
@@ -140,7 +140,7 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
   public async openWorldEventsViaHud(): Promise<void> {
     await this.navigateToHome();
     const eventsSection = this.page.locator('#home-events-section, .home-events-section').first();
-    await eventsSection.waitFor({ state: 'visible', timeout: 5000 });
+    await eventsSection.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
   }
 
   /**
@@ -148,10 +148,10 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
    */
   public async navigateToHome(): Promise<void> {
     const homeBtn = this.page.locator('#nav-home-btn').filter({ visible: true }).first();
-    await expect(homeBtn).toBeVisible({ timeout: 5000 });
+    await expect(homeBtn).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await homeBtn.click();
     const homeView = this.page.locator('#home-view-container');
-    await expect(homeView).toBeVisible({ timeout: 5000 });
+    await expect(homeView).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
   }
 
   /**
@@ -204,16 +204,24 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
     pokemonUid: string
   ): Promise<void> {
     const chip = this.page.locator(`#comp-slot-chip-${eventId}-${categoryId}`);
-    await chip.waitFor({ state: 'visible', timeout: 5000 });
+    if (!(await chip.isVisible())) {
+      const parts = categoryId.split('_');
+      const targetTabId = parts.length > 1 ? parts.slice(1).join('_') : 'global';
+      const tab = this.page.locator(`#event-species-tab-${eventId}-${targetTabId}`);
+      if (await tab.isVisible()) {
+        await tab.click();
+      }
+    }
+    await chip.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await chip.click();
 
     const pokeSelect = this.page.locator(`#pokemon-select-${pokemonUid}`);
-    await pokeSelect.waitFor({ state: 'visible', timeout: 5000 });
+    await pokeSelect.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await pokeSelect.click();
 
     // In autoConfirm mode (single-select competition slot), clicking confirms immediately.
-    // Verify selection modal unmounts completely within the 5s timeout limit.
-    await expect(this.page.locator('.selection-container')).toHaveCount(0, { timeout: 5000 });
+    // Verify selection modal unmounts completely within the timeout limit.
+    await expect(this.page.locator('.selection-container')).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     await this.page.evaluate(async () => {
       const isOffline = localStorage.getItem('pokevicio_session_mode') === 'offline';
@@ -234,14 +242,14 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
     pokemonUid: string
   ): Promise<void> {
     const card = this.page.locator('.event-card').filter({ hasText: cardTitle }).first();
-    await card.waitFor({ state: 'visible', timeout: E2E_ACTION_TIMEOUT_MS });
+    await card.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     const chip = card.locator('.comp-slot-chip').filter({ hasText: categoryText }).first();
-    await chip.waitFor({ state: 'visible', timeout: E2E_ACTION_TIMEOUT_MS });
+    await chip.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await chip.click();
 
     const pokeSelect = this.page.locator(`#pokemon-select-${pokemonUid}`);
-    await pokeSelect.waitFor({ state: 'visible', timeout: E2E_ACTION_TIMEOUT_MS });
+    await pokeSelect.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await pokeSelect.click();
 
     const confirmBtn = this.page.locator('#pokemon-selection-confirm-btn');
@@ -252,7 +260,7 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
     await this.page.waitForFunction(async () => {
       const { useModalStore } = await import('../../../src/stores/modals.ts');
       return !useModalStore().isOpen('PokemonSelection');
-    }, null, { timeout: E2E_ACTION_TIMEOUT_MS });
+    }, null, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     await this.page.evaluate(async () => {
       const isOffline = localStorage.getItem('pokevicio_session_mode') === 'offline';
@@ -269,7 +277,7 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
   public async expectSlotEnrolled(cardTitle: string, categoryText: string): Promise<void> {
     const card = this.page.locator('.event-card').filter({ hasText: cardTitle }).first();
     const chip = card.locator('.comp-slot-chip').filter({ hasText: categoryText }).first();
-    await expect(chip).toContainText('✓', { timeout: E2E_ACTION_TIMEOUT_MS });
+    await expect(chip).toContainText('✓', { timeout: MAX_PER_ACTION_TIMEOUT_MS });
   }
 
   /**
@@ -277,7 +285,7 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
    */
   public async claimFirstPendingAward(): Promise<void> {
     const firstClaimBtn = this.page.locator('[id^="claim-pending-award-btn-"], [id^="claim-pending-reward-btn-"]').first();
-    await expect(firstClaimBtn).toBeVisible({ timeout: E2E_ACTION_TIMEOUT_MS });
+    await expect(firstClaimBtn).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await firstClaimBtn.click();
   }
 
@@ -286,11 +294,11 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
    */
   public async discardFirstPendingAward(): Promise<void> {
     const discardBtn = this.page.locator('[id^="discard-pending-award-btn-"], [id^="discard-pending-reward-btn-"]').first();
-    await expect(discardBtn).toBeVisible({ timeout: E2E_ACTION_TIMEOUT_MS });
+    await expect(discardBtn).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await discardBtn.click();
 
     const confirmModalBtn = this.page.locator('#confirm-modal-btn');
-    await expect(confirmModalBtn).toBeVisible({ timeout: E2E_ACTION_TIMEOUT_MS });
+    await expect(confirmModalBtn).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await confirmModalBtn.click();
   }
 
@@ -333,10 +341,10 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
     await this.openWorldEventsViaHud();
 
     const awardItems = this.page.locator('.event-pending-awards-banner .award-item');
-    await expect(awardItems).toHaveCount(2, { timeout: E2E_ACTION_TIMEOUT_MS });
+    await expect(awardItems).toHaveCount(2, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     await this.claimFirstPendingAward();
-    await expect(awardItems).toHaveCount(1, { timeout: E2E_ACTION_TIMEOUT_MS });
+    await expect(awardItems).toHaveCount(1, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     const stateAfterClaim = await this.getPlayerPrizeState();
     expect(stateAfterClaim.money).toBe(expectedPrize.money);
@@ -345,7 +353,7 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
     expect(stateAfterClaim.rareCandyCount).toBe(expectedPrize.rareCandyCount);
 
     await this.discardFirstPendingAward();
-    await expect(awardItems).toHaveCount(0, { timeout: E2E_ACTION_TIMEOUT_MS });
+    await expect(awardItems).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
   }
 
   /**
@@ -353,9 +361,9 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
    */
   public async claimPendingAward(awardId: string): Promise<void> {
     const claimBtn = this.page.locator(`#claim-pending-award-btn-${awardId}, #claim-pending-reward-btn-event-${awardId}`);
-    await claimBtn.waitFor({ state: 'visible', timeout: E2E_ACTION_TIMEOUT_MS });
+    await claimBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await claimBtn.click();
-    await expect(claimBtn).toHaveCount(0, { timeout: E2E_ACTION_TIMEOUT_MS });
+    await expect(claimBtn).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
   }
 
   /**
@@ -363,16 +371,16 @@ export abstract class BaseEventSimulation extends BaseE2ESimulation {
    */
   public async discardPendingAward(awardId: string): Promise<void> {
     const discardBtn = this.page.locator(`#discard-pending-award-btn-${awardId}, #discard-pending-reward-btn-event-${awardId}`);
-    await discardBtn.waitFor({ state: 'visible', timeout: E2E_ACTION_TIMEOUT_MS });
+    await discardBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await discardBtn.click();
 
     const confirmModal = this.page.locator('.modal-overlay').filter({ hasText: '¿DESCARTAR RECOMPENSA?' });
-    await confirmModal.waitFor({ state: 'visible', timeout: E2E_ACTION_TIMEOUT_MS });
+    await confirmModal.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
     const confirmBtn = confirmModal.locator('.confirm-btn, .btn-confirm, button:has-text("DESCARTAR")').first();
-    await confirmBtn.waitFor({ state: 'visible', timeout: E2E_ACTION_TIMEOUT_MS });
+    await confirmBtn.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
     await confirmBtn.click();
 
-    await expect(discardBtn).toHaveCount(0, { timeout: E2E_ACTION_TIMEOUT_MS });
+    await expect(discardBtn).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
   }
 }

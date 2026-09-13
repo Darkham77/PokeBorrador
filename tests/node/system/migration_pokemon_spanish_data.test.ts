@@ -141,7 +141,7 @@ describe('Exhaustive Multi-Engine & Multi-Table Data Migration Suite (2026090901
           expect(() => toNatureId(p.nature)).not.toThrow();
           totalPokemonValidated++;
 
-          if (p.species === 'rattata' && p.level === 3) {
+          if (p.id === 'rattata' && p.level === 3) {
             expect(p.ability).toBe('runaway');
             expect(p.isIllegal).toBe(false);
           }

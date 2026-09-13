@@ -500,9 +500,9 @@ export function runBatteryOfDiagnostics(saveData: GameState): DiagnosticFinding[
     for (let wIdx = 0; wIdx < warehouse.length; wIdx++) {
       const entry = warehouse[wIdx];
       if (!entry || typeof entry !== 'object') continue;
-      const rawSpecies = String(entry.species || entry.id || '');
+      const rawSpecies = String(entry.id || '');
       const cleanSpecies = rawSpecies.startsWith('egg_') ? rawSpecies.replace(/^egg_\d+_[a-z0-9]+_?/, '') : rawSpecies;
-      const targetSpecies = entry.species ? String(entry.species) : cleanSpecies;
+      const targetSpecies = cleanSpecies;
       if (targetSpecies && !isEnabledPokemonId(targetSpecies)) {
         findings.push({
           severity: 'error',

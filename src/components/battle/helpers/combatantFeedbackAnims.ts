@@ -254,3 +254,50 @@ export function executeReleasingTween(
     }
   });
 }
+
+const TRANSFORM_SQUISH_SCALEX = 1.4;
+const TRANSFORM_SQUISH_SCALEY = 0.25;
+const TRANSFORM_POP_SCALEX = 1.1;
+const TRANSFORM_POP_SCALEY = 1.15;
+const TRANSFORM_SQUISH_DURATION_SEC = 0.25;
+const TRANSFORM_POP_DURATION_SEC = 0.3;
+const TRANSFORM_SETTLE_DURATION_SEC = 0.2;
+
+export function animateCombatantTransform(
+  spriteEl: HTMLElement,
+  onMorph?: () => void
+): gsap.core.Timeline {
+  gsap.set(spriteEl, { transition: 'none' });
+  const tl = gsap.timeline();
+
+  tl.to(spriteEl, {
+    scaleX: TRANSFORM_SQUISH_SCALEX,
+    scaleY: TRANSFORM_SQUISH_SCALEY,
+    filter: 'brightness(2.5) contrast(1.4) drop-shadow(0 0 16px #c084fc)',
+    duration: TRANSFORM_SQUISH_DURATION_SEC,
+    ease: 'power2.in'
+  })
+  .add(() => {
+    if (onMorph) onMorph();
+  })
+  .to(spriteEl, {
+    scaleX: TRANSFORM_POP_SCALEX,
+    scaleY: TRANSFORM_POP_SCALEY,
+    filter: 'brightness(1.5) drop-shadow(0 0 8px #e9d5ff)',
+    duration: TRANSFORM_POP_DURATION_SEC,
+    ease: 'back.out(2)'
+  })
+  .to(spriteEl, {
+    scaleX: SCALE_FULL,
+    scaleY: SCALE_FULL,
+    filter: 'brightness(1)',
+    duration: TRANSFORM_SETTLE_DURATION_SEC,
+    ease: 'power1.out',
+    onComplete: () => {
+      gsap.set(spriteEl, { clearProps: 'transform,scale,scaleX,scaleY,filter,transition' });
+    }
+  });
+
+  return tl;
+}
+

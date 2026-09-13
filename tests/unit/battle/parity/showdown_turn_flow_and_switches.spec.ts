@@ -4,6 +4,7 @@ import { handleMiscEvents } from '@/logic/battle/showdownBridgeMisc';
 import { handleFieldEvents } from '@/logic/battle/showdownBridgeField';
 import { calculateCatchRatePure } from '@/logic/battle/battleCatchMath';
 import type { ItemId } from '@/data/inventory/items';
+import type { PokemonSpeciesId } from '@/data/pokemon/pokedex';
 
 // --- From test_bug025_player_name_mapping.spec.ts ---
 describe('Audit Parity - BUG-025: player token name→side mapping inverted lookup', () => {
@@ -286,8 +287,8 @@ describe('Audit Parity - BUG-038: -transform must copy PP as Math.min(5, move.ma
     const originalMoves = [
       { id: 'hydropump', name: 'Hydro Pump', pp: 8, maxPP: 8 }, // 0 PP-Ups = 5 PP; 3 PP-Ups = 8 PP
     ];
-    const user = { name: 'Ditto', species: 'ditto', isTransformed: false, moves: null };
-    const targetPoke = { name: 'Blastoise', species: 'blastoise', moves: originalMoves };
+    const user = { id: 'ditto' as PokemonSpeciesId, name: 'Ditto', isTransformed: false, moves: null };
+    const targetPoke = { id: 'blastoise' as PokemonSpeciesId, name: 'Blastoise', moves: originalMoves };
 
     const ctx = {
       store: { activeBattle: { value: {} }, addLog: () => {} },

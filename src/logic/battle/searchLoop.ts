@@ -102,12 +102,9 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     ctx.activeBattle.value.trainerSprite = undefined
     ctx.activeBattle.value.trainerArchetype = undefined
     ctx.activeBattle.value.isRival = false
-    ctx.activeBattle.value.cannotEscape = false
-    
+    // FASE: INITIALIZING (synchronous before nextTick to prevent stale frame leak)
+    await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.CHECK_CONTEXT)
     await nextTick()
-    
-    // FASE: INITIALIZING
-    await fsm.transition(BATTLE_STATES.INITIALIZING)
     
     if (!ctx.activeBattle.value?.locationId) {
       throw new Error('[Battle] Active battle locationId is missing for search encounter');
@@ -176,9 +173,16 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
 
     if (generatedPoke) {
       ctx.activeBattle.value._initialEnemy = generatedPoke
-      ctx.activeBattle.value.enemy = generatedPoke
-      if (!ctx.activeBattle.value.enemyTeam || ctx.activeBattle.value.enemyTeam.length === 0) {
+      if (!ctx.activeBattle.value.isTrainer && !ctx.activeBattle.value.isGym && !ctx.activeBattle.value.isPvP) {
+        ctx.activeBattle.value.enemy = generatedPoke
         ctx.activeBattle.value.enemyTeam = [generatedPoke]
+      } else {
+        // En combates contra entrenador o gimnasio, el asiento del enemigo (Seat 2)
+        // permanece estrictamente VACÍO hasta el lanzamiento de Poké Ball (POKEMON_CALL).
+        ctx.activeBattle.value.enemy = null
+        if (!ctx.activeBattle.value.enemyTeam || ctx.activeBattle.value.enemyTeam.length === 0) {
+          ctx.activeBattle.value.enemyTeam = [generatedPoke]
+        }
       }
     }
 
@@ -248,7 +252,7 @@ export async function triggerNextEncounter(ctx: BattleContext) {
   
   ctx.isProcessing.value = false
   const locId = ctx.activeBattle.value?.locationId
-  const enemyPoke = ctx.activeBattle.value?.enemy
+  const enemyPoke = ctx.activeBattle.value?.enemy || ctx.activeBattle.value?._initialEnemy || ctx.activeBattle.value?.enemyTeam?.[0]
   if (!enemyPoke || !locId) {
     logger.warn('Battle', 'triggerNextEncounter: sin enemy o locationId.')
     return

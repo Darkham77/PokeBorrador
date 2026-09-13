@@ -23,7 +23,6 @@ function createMockPokemon(uid: string, name: string, overrides: Partial<Pokemon
   return {
     uid,
     id: speciesId,
-    species: speciesId,
     name,
     level: 50,
     hp: 100,

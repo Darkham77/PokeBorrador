@@ -341,7 +341,7 @@ export function repairAccountsInSqlite(options: RepairAccountOptions): RepairSum
         if (parsed && parsed.type === 'pokemon' && parsed.data && typeof parsed.data === 'object') {
           const poke = parsed.data as Pokemon;
           const initialCheck = checkPokemonLegality(poke);
-          if (!initialCheck.isLegal || poke.isIllegal || !poke.species || poke.status === null || poke.maxVigor === undefined) {
+          if (!initialCheck.isLegal || poke.isIllegal || !poke.id || poke.status === null || poke.maxVigor === undefined) {
             const report = repairPokemonLegality(poke);
             if (report.repaired) {
               db.prepare("UPDATE claim_queue SET asset_data = ? WHERE id = ?").run(JSON.stringify(parsed), claimRow.id);
@@ -367,7 +367,7 @@ export function repairAccountsInSqlite(options: RepairAccountOptions): RepairSum
         const poke = (typeof mRow.data === 'string' ? JSON.parse(mRow.data) : mRow.data) as Pokemon;
         if (poke && typeof poke === 'object') {
           const initialCheck = checkPokemonLegality(poke);
-          if (!initialCheck.isLegal || poke.isIllegal || !poke.species || poke.status === null || poke.maxVigor === undefined) {
+          if (!initialCheck.isLegal || poke.isIllegal || !poke.id || poke.status === null || poke.maxVigor === undefined) {
             const report = repairPokemonLegality(poke);
             if (report.repaired) {
               db.prepare("UPDATE market_listings SET data = ? WHERE id = ?").run(JSON.stringify(poke), mRow.id);

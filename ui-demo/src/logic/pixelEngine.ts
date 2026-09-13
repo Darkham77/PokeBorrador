@@ -39,8 +39,10 @@ export const RADIUS_XXL = 16;
 
 export const DEFAULT_FRAME_BORDER_WIDTH = 1;
 
-let currentScale = 3; // singleton-ok: Module-level state
-let currentModel: CornerModelId = 'bresenham'; // singleton-ok: Module-level state
+const pixelState = {
+  scale: 3,
+  model: 'bresenham' as CornerModelId
+};
 
 function generatePoints(radius: number, pixelSize: number, offset = 0): RawCoord[] {
   const coords: RawCoord[] = [];
@@ -173,11 +175,11 @@ function applyPolygonVars(prefix: string, polygons: PolygonPaths): void {
   document.documentElement.style.setProperty(`--clip-${prefix}`, `polygon(${polygons.outerPath})`);
 }
 
-export function updatePixelScale(pixelSize: number, model: CornerModelId = currentModel): void {
+export function updatePixelScale(pixelSize: number, model: CornerModelId = pixelState.model): void {
   if (typeof document === 'undefined') return;
 
-  currentScale = pixelSize;
-  currentModel = model;
+  pixelState.scale = pixelSize;
+  pixelState.model = model;
 
   document.documentElement.style.setProperty('--s', `${pixelSize}px`);
 
@@ -236,5 +238,5 @@ export function updatePixelScale(pixelSize: number, model: CornerModelId = curre
 }
 
 export function setCornerModel(model: CornerModelId): void {
-  updatePixelScale(currentScale, model);
+  updatePixelScale(pixelState.scale, model);
 }

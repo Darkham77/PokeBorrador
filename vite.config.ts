@@ -11,6 +11,7 @@ import { generatePokemonDatabase } from './scripts/data/generate_pokemon_db.ts'
 import { sassTrapsFixer } from './scripts/maintenance/vite-plugin-sass-traps.ts'
 import { staticPrecompressPlugin } from './scripts/maintenance/vite-plugin-precompress.ts'
 import { lanPvPPlugin } from './scripts/maintenance/vite-plugin-lan-pvp.ts'
+import { devShadowEditorPlugin } from './scripts/maintenance/vite-plugin-dev-shadow-editor.ts'
 
 import { VitePWA } from 'vite-plugin-pwa'
 import basicSsl from '@vitejs/plugin-basic-ssl'
@@ -430,6 +431,7 @@ export default defineConfig({
       pokemonDbGeneratorPlugin(),
       migrationsPlugin(),
       devDbImportPlugin(),
+      devShadowEditorPlugin(),
       sassTrapsFixer(),
       versionPlugin(),
       VitePWA({
@@ -618,7 +620,16 @@ export default defineConfig({
     allowedHosts: true,
     host : true,
     watch: {
-      ignored: ['**/_raw-assets/**', '**/sprite_test/**', '**/database/temp/**', '**/database/backups/**', '**/scratch/**']
+      ignored: [
+        '**/_raw-assets/**',
+        '**/sprite_test/**',
+        '**/database/temp/**',
+        '**/database/backups/**',
+        '**/scratch/**',
+        '**/src/data/pokemon/spriteShadowOverrides.json',
+        '**/src/data/pokemon/pokemonFeetDatabase.json',
+        '**/src/data/pokemon/pokemonFeetDatabase.ts'
+      ]
     },
     /* hmr: {
       clientPort: 443,

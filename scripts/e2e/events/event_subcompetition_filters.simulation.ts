@@ -17,6 +17,8 @@
 
 import { test, expect, type Page } from '@playwright/test';
 import { BaseEventSimulation } from './base_event_simulation.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
+
 
 export class EventSubcompetitionFiltersSimulation extends BaseEventSimulation {
   constructor(page: Page, username: string = 'FilterPro') {
@@ -86,6 +88,8 @@ export class EventSubcompetitionFiltersSimulation extends BaseEventSimulation {
       gameStore.state.team = [horsea, shellder, oldShellder, pikachu];
       gameStore.state.box = [];
 
+      await gameStore.saveGame();
+
       const isOffline = localStorage.getItem('pokevicio_session_mode') === 'offline';
       if (isOffline) {
         const { persistSQLite } = await import('../../../src/logic/db/sqliteEngine.ts');
@@ -116,18 +120,18 @@ test.describe('World Events Sub-Competition Filters E2E Simulation', () => {
       // 5. Test Global Category Filters ('ivs'):
       // Click global IVs chip
       const ivsChip = page.locator('#comp-slot-chip-torneo_pesca-ivs');
-      await expect(ivsChip).toBeVisible({ timeout: 5000 });
+      await expect(ivsChip).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
       await ivsChip.click();
 
       // Modal opens
       const modal = page.locator('.selection-container');
-      await expect(modal).toBeVisible({ timeout: 5000 });
+      await expect(modal).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // Eligible tournament Pokémon (Horsea, Shellder) must be present
       const horseaCard = page.locator('#pokemon-select-sim-flt-horsea');
       const shellderCard = page.locator('#pokemon-select-sim-flt-shellder');
-      await expect(horseaCard).toBeVisible({ timeout: 5000 });
-      await expect(shellderCard).toBeVisible({ timeout: 5000 });
+      await expect(horseaCard).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      await expect(shellderCard).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // Ineligible Pokémon must NOT be listed in the modal
       const oldShellderCard = page.locator('#pokemon-select-sim-flt-oldshellder');
@@ -137,19 +141,25 @@ test.describe('World Events Sub-Competition Filters E2E Simulation', () => {
 
       // Select Horsea into global IVs slot
       await horseaCard.click();
-      await expect(modal).toHaveCount(0, { timeout: 5000 });
-      await expect(ivsChip).toHaveClass(/enrolled/, { timeout: 5000 });
+      await expect(modal).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      await expect(ivsChip).toHaveClass(/enrolled/, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // 6. Test Species-Scoped Category Filters ('weight_shellder'):
       // Click Shellder weight chip
       const shellderWeightChip = page.locator('#comp-slot-chip-torneo_pesca-weight_shellder');
-      await expect(shellderWeightChip).toBeVisible({ timeout: 5000 });
+      if (!(await shellderWeightChip.isVisible())) {
+        const shellderTab = page.locator('#event-species-tab-torneo_pesca-shellder');
+        if (await shellderTab.isVisible()) {
+          await shellderTab.click();
+        }
+      }
+      await expect(shellderWeightChip).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
       await shellderWeightChip.click();
 
-      await expect(modal).toBeVisible({ timeout: 5000 });
+      await expect(modal).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // Shellder MUST be present (matches target species & timeframe)
-      await expect(shellderCard).toBeVisible({ timeout: 5000 });
+      await expect(shellderCard).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // Horsea MUST NOT be present (wrong species for weight_shellder)
       await expect(horseaCard).toHaveCount(0);
@@ -159,25 +169,31 @@ test.describe('World Events Sub-Competition Filters E2E Simulation', () => {
 
       // Select Shellder into weight_shellder slot
       await shellderCard.click();
-      await expect(modal).toHaveCount(0, { timeout: 5000 });
-      await expect(shellderWeightChip).toHaveClass(/enrolled/, { timeout: 5000 });
+      await expect(modal).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      await expect(shellderWeightChip).toHaveClass(/enrolled/, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // 7. Test Mutual Exclusion / Non-Duplication:
       // Clicking the already-enrolled ivs chip should open the slot action modal, NOT re-enroll
+      if (!(await ivsChip.isVisible())) {
+        const globalTab = page.locator('#event-species-tab-torneo_pesca-global');
+        if (await globalTab.isVisible()) {
+          await globalTab.click();
+        }
+      }
       await ivsChip.click();
       const changeBtn = page.locator('#event-slot-change-btn');
-      await expect(changeBtn).toBeVisible({ timeout: 5000 });
+      await expect(changeBtn).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // Click change participant: Shellder should NOT be available because it is enrolled in weight_shellder
       await changeBtn.click();
-      await expect(modal).toBeVisible({ timeout: 5000 });
+      await expect(modal).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
       await expect(shellderCard).toHaveCount(0);
 
       // Close modal cleanly using canonical ID
       const closeBtn = page.locator('#pokemon-selection-modal-close-btn');
-      await expect(closeBtn).toBeVisible({ timeout: 5000 });
+      await expect(closeBtn).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
       await closeBtn.click();
-      await expect(modal).toHaveCount(0, { timeout: 5000 });
+      await expect(modal).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       sim.finish('World Events Sub-Competition Filters E2E Simulation', 'passed');
     } catch (err) {

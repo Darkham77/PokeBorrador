@@ -9,7 +9,6 @@ describe('Showdown Protocol Coverage (-cant & flinch) - Unit Tests', () => {
     const alakazam: Pokemon = {
       uid: 'alakazam-uid-1',
       id: 'alakazam',
-      species: 'alakazam',
       name: 'Alakazam',
       level: 50,
       hp: 120,
@@ -79,7 +78,6 @@ describe('Showdown Protocol Coverage (-cant & flinch) - Unit Tests', () => {
     const alakazam: Pokemon = {
       uid: 'alakazam-uid-1',
       id: 'alakazam',
-      species: 'alakazam',
       name: 'Alakazam',
       level: 50,
       hp: 120,

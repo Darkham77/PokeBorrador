@@ -21,6 +21,7 @@ describe('BattleReplayModal mounting & DOM elements', () => {
       elo: 2450,
       team: [
         {
+          id: 'pikachu',
           speciesId: 'pikachu',
           level: 50,
           revealedMoves: ['thunderbolt'],
@@ -35,6 +36,7 @@ describe('BattleReplayModal mounting & DOM elements', () => {
       elo: 2380,
       team: [
         {
+          id: 'eevee',
           speciesId: 'eevee',
           level: 50,
           revealedMoves: ['quickattack']

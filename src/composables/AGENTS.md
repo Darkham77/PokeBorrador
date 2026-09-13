@@ -32,4 +32,5 @@ Frontend Developers.
 - [pvp/](./pvp/AGENTS.md): Domain module documentation for pvp.
 - [rewards/](./rewards/AGENTS.md): Domain module documentation for rewards.
 - [system/](./system/AGENTS.md): Domain module documentation for system.
+- [team/](./team/AGENTS.md): Domain module documentation for team.
 - [ui/](./ui/AGENTS.md): Domain module documentation for ui.

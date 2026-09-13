@@ -51,7 +51,7 @@ export async function processSearchPhaseSequence(
   ctx.isProcessing.value = false
 
   if (ctx.activeBattle.value) {
-    ctx.activeBattle.value.enemy = finalEnemyPoke
+    ctx.activeBattle.value.enemy = (!isTrainer && !isGym) ? finalEnemyPoke : null
     ctx.activeBattle.value.minigame = minigame
     if (ctx.persistBattle) ctx.persistBattle()
   }

@@ -80,7 +80,6 @@ describe('Home PvP Widgets Suite', () => {
 
       const mockPokemon: Partial<Pokemon> = {
         id: 'pikachu',
-        species: 'pikachu',
         name: 'Pikachu',
         level: 50,
         hp: 100,
@@ -177,7 +176,6 @@ describe('Home PvP Widgets Suite', () => {
       const mockPokemon: Partial<Pokemon> = {
         id: 'pikachu',
         uid: 'pika-1',
-        species: 'pikachu',
         name: 'Pikachu',
         level: 50,
         hp: 100,
@@ -360,7 +358,6 @@ describe('Home PvP Widgets Suite', () => {
 
       const mockPokemon: Partial<Pokemon> = {
         id: 'pikachu',
-        species: 'pikachu',
         name: 'Pikachu',
         level: 50,
         hp: 100,

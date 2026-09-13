@@ -46,7 +46,6 @@ describe('PokemonSortBar & Pokemon Sort Constants', () => {
     const mockP1: Pokemon = {
       uid: 'p1',
       id: 'bulbasaur',
-      species: 'bulbasaur',
       name: 'Bulbasaur',
       level: 15,
       exp: 0,
@@ -74,7 +73,6 @@ describe('PokemonSortBar & Pokemon Sort Constants', () => {
     const mockP2: Pokemon = {
       uid: 'p2',
       id: 'pikachu',
-      species: 'pikachu',
       name: 'Pikachu',
       level: 25,
       exp: 0,

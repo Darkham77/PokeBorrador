@@ -6,7 +6,7 @@
       "name": "Mew",
       "species": "Mew",
       "level": 100,
-      "ability": "Color Change",
+      "ability": "Synchronize",
       "item": "",
       "moves": ["aquaring", "aquastep", "aquatail", "armorcannon"],
       "nature": "Hardy",

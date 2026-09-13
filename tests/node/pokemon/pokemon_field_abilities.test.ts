@@ -24,7 +24,6 @@ function createMockPokemon(partial: Partial<Pokemon> = {}): Pokemon {
   return {
     uid: 'mock-uid-1',
     id: requirePokemonSpeciesId('abra'),
-    species: requirePokemonSpeciesId('abra'),
     name: 'Abra',
     type: 'psychic',
     level: 25,

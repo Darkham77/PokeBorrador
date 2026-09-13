@@ -145,10 +145,10 @@ export function clearVolatileStatus(poke: Pokemon) {
     poke.moves = poke._originalMoves;
     poke._originalMoves = undefined;
   }
-  if (poke._originalSpecies) {
-    poke.species = poke._originalSpecies;
-    poke.name = poke._originalSpecies;
-    poke._originalSpecies = undefined;
+  if (poke._originalId) {
+    poke.id = poke._originalId;
+    poke.name = poke._originalId;
+    poke._originalId = undefined;
   }
   if (poke._originalType) {
     poke.type = poke._originalType;

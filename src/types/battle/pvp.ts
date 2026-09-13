@@ -212,7 +212,7 @@ export function requireBattleCode(value: unknown): BattleCode {
 }
 
 export interface ReplayCombatantPokemonSummary {
-  species: PokemonSpeciesId;
+  id: PokemonSpeciesId;
   name: string; // domain-ok: Open dynamic text or non-domain string payload
   level: number;
   sprite: string; // domain-ok: Asset path URI string
@@ -278,14 +278,60 @@ export function appendPersonalMatchHistory(
   return [newMatch, ...filtered].slice(0, MAX_PERSONAL_MATCH_HISTORY);
 }
 
+export interface PassiveBattleReportData {
+  opponent?: string; // domain-ok: Open dynamic text or non-domain string payload
+  turns?: number;
+  endedAt?: string; // domain-ok: ISO date string
+  deltaElo?: number;
+  faction?: string; // domain-ok: Open dynamic text or non-domain string payload
+  playerClass?: string; // domain-ok: Open dynamic text or non-domain string payload
+}
+
+export interface PassiveOpponentProfile {
+  id?: string; // domain-ok: Open dynamic text or non-domain string payload
+  username?: string; // domain-ok: Open dynamic text or non-domain string payload
+  playerClass?: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  level?: number | null;
+  trainer_level?: number | null;
+  avatar?: string | null; // domain-ok: Asset path URI string
+  avatarFrame?: string | null; // domain-ok: Asset path URI string
+  avatarDecor?: string | null; // domain-ok: Asset path URI string
+  avatar_style?: string | null; // domain-ok: Asset path URI string
+  avatarStyle?: string | null; // domain-ok: Asset path URI string
+  nick_style?: string | null; // domain-ok: Asset path URI string
+  faction?: string | null; // domain-ok: Open dynamic text or non-domain string payload
+  elo_rating?: number | null;
+  gender?: string | null; // domain-ok: Gender identifier string
+}
+
 export interface PassiveBattleReport {
   id: string; // domain-ok: Open dynamic text or non-domain string payload
   user_id: string; // domain-ok: Open dynamic text or non-domain string payload
   opponent_id: string; // domain-ok: Open dynamic text or non-domain string payload
-  opponent_name?: string; // domain-ok: Open dynamic text or non-domain string payload
   result: PassiveBattleResult;
-  delta_elo: number;
-  created_at: string; // domain-ok: Open dynamic text or non-domain string payload
+  report_data: PassiveBattleReportData;
+  opponent_profile?: PassiveOpponentProfile | null;
+  created_at: string; // domain-ok: ISO date string
+}
+
+export interface PvPStats {
+  wins: number;
+  losses: number;
+  draws: number;
+}
+
+export interface SeasonRules {
+  name: string; // domain-ok: Open dynamic text or non-domain string payload
+  startDate?: string; // domain-ok: ISO date string
+  endDate?: string; // domain-ok: ISO date string
+  seasonStartDate?: string; // domain-ok: ISO date string
+  seasonEndDate?: string; // domain-ok: ISO date string
+  bannedPokemonIds?: PokemonSpeciesId[];
+  levelCap: number;
+  allowedTypes?: string[]; // domain-ok: Pokemon type identifier strings
+  maxPokemon: number;
+  themeName?: string; // domain-ok: Open dynamic text or non-domain string payload
+  isLittleCup?: boolean;
 }
 
 export interface RankedSeasonMedal {

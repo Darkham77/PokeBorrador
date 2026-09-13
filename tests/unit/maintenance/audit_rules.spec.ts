@@ -6,7 +6,8 @@ import {
   forbiddenFallbacks,
   sassTraps,
   normalizeFilePath,
-  noDomainIdFallbacks
+  noDomainIdFallbacks,
+  noLayoutAnimationInGsap
 } from '@/../scripts/maintenance/audit_rules.ts'
 
 describe('audit_rules.ts - Zero-Timer & Anti-Pattern Rules', () => {
@@ -242,6 +243,78 @@ describe('audit_rules.ts - Zero-Timer & Anti-Pattern Rules', () => {
     it('does not flag clean domain code without fallbacks', () => {
       const match = matchRule(noDomainIdFallbacks, cleanCode)
       expect(match).toBeNull()
+    })
+  })
+
+  describe('noLayoutAnimationInGsap (GPU Optimization & Reflow Prevention)', () => {
+    it('flags backgroundPosition animation in gsap.to within src/ files', () => {
+      const code = `gsap.to(el, { backgroundPosition: '100% 0', duration: 1 })`
+      const match = matchRule(noLayoutAnimationInGsap, code)
+      expect(match).not.toBeNull()
+      if (match && noLayoutAnimationInGsap.check) {
+        const isViolation = noLayoutAnimationInGsap.check(
+          code,
+          match,
+          'src/components/common/AtmosphereLayer.vue'
+        )
+        expect(isViolation).toBe(true)
+      }
+    })
+
+    it('flags backgroundPositionY animation in timeline.to within src/ files', () => {
+      const code = `timeline.to(layer, { backgroundPositionY: '500px', duration: 2 })`
+      const match = matchRule(noLayoutAnimationInGsap, code)
+      expect(match).not.toBeNull()
+      if (match && noLayoutAnimationInGsap.check) {
+        const isViolation = noLayoutAnimationInGsap.check(
+          code,
+          match,
+          'src/components/battle/WeatherEffect.vue'
+        )
+        expect(isViolation).toBe(true)
+      }
+    })
+
+    it('does not flag hardware accelerated transform properties (x, y, scale)', () => {
+      const code = `gsap.to(el, { x: 100, y: 50, scale: 1.2, duration: 0.5 })`
+      const match = matchRule(noLayoutAnimationInGsap, code)
+      expect(match).not.toBeNull()
+      if (match && noLayoutAnimationInGsap.check) {
+        const isViolation = noLayoutAnimationInGsap.check(
+          code,
+          match,
+          'src/components/common/AtmosphereLayer.vue'
+        )
+        expect(isViolation).toBe(false)
+      }
+    })
+
+    it('respects justified ignore comment // layout-ok:', () => {
+      const code = `// layout-ok: Text shimmer gradient clip requires backgroundPosition\ngsap.to(el, { backgroundPosition: '200% 0', duration: 1.5 })`
+      const match = matchRule(noLayoutAnimationInGsap, code)
+      expect(match).not.toBeNull()
+      if (match && noLayoutAnimationInGsap.check) {
+        const isViolation = noLayoutAnimationInGsap.check(
+          code,
+          match,
+          'src/components/common/ShimmerText.vue'
+        )
+        expect(isViolation).toBe(false)
+      }
+    })
+
+    it('ignores test files and files outside src/', () => {
+      const code = `gsap.to(el, { backgroundPosition: '100% 0' })`
+      const match = matchRule(noLayoutAnimationInGsap, code)
+      expect(match).not.toBeNull()
+      if (match && noLayoutAnimationInGsap.check) {
+        const isTestViolation = noLayoutAnimationInGsap.check(
+          code,
+          match,
+          'tests/unit/anim.spec.ts'
+        )
+        expect(isTestViolation).toBe(false)
+      }
     })
   })
 })

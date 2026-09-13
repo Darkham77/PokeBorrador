@@ -19,6 +19,8 @@
 
 import { test, expect, type Page } from '@playwright/test';
 import { BaseEventSimulation } from './base_event_simulation.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
+
 
 export class MagikarpContestMultiuserSimulation extends BaseEventSimulation {
   constructor(page: Page, username: string = 'ContestChampion') {
@@ -69,6 +71,8 @@ export class MagikarpContestMultiuserSimulation extends BaseEventSimulation {
 
       gameStore.state.team = [validMagikarp, oldMagikarp];
       gameStore.state.box = [];
+
+      await gameStore.saveGame();
 
       const isOffline = localStorage.getItem('pokevicio_session_mode') === 'offline';
       if (isOffline) {
@@ -198,23 +202,23 @@ test.describe('Magikarp Tournament Multi-User Podium & GUI Awarding E2E Simulati
 
       // 5. Locate torneo_pesca card and click global IVs category chip
       const ivsChip = page.locator('#comp-slot-chip-torneo_pesca-ivs');
-      await expect(ivsChip).toBeVisible({ timeout: 5000 });
+      await expect(ivsChip).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
       await ivsChip.click();
 
       // 6. Verify selection modal excludes outdated Magikarp and presents valid Magikarp
       const modal = page.locator('.selection-container');
-      await expect(modal).toBeVisible({ timeout: 5000 });
+      await expect(modal).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       const validKarpCard = page.locator('#pokemon-select-' + p1Setup.validMonUid);
       const oldKarpCard = page.locator('#pokemon-select-' + p1Setup.outdatedMonUid);
 
-      await expect(validKarpCard).toBeVisible({ timeout: 5000 });
+      await expect(validKarpCard).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
       await expect(oldKarpCard).toHaveCount(0);
 
       // Select valid 180 IVs Magikarp
       await validKarpCard.click();
-      await expect(modal).toHaveCount(0, { timeout: 5000 });
-      await expect(ivsChip).toHaveClass(/enrolled/, { timeout: 5000 });
+      await expect(modal).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      await expect(ivsChip).toHaveClass(/enrolled/, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // Close modal before server awarding
       await sim.closeWorldEventsModal();
@@ -233,7 +237,7 @@ test.describe('Magikarp Tournament Multi-User Podium & GUI Awarding E2E Simulati
 
       // Banner shows 1st place award for P1
       const awardItems = page.locator('.event-pending-awards-banner .award-item');
-      await expect(awardItems).toHaveCount(1, { timeout: 5000 });
+      await expect(awardItems).toHaveCount(1, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // 11. Verify competition results in store / database
       const winners = await page.evaluate(async () => {
@@ -267,11 +271,11 @@ test.describe('Magikarp Tournament Multi-User Podium & GUI Awarding E2E Simulati
 
       // 12. Claim 1st place award in GUI
       const claimBtn = page.locator('[id^="claim-pending-award-btn-"], [id^="claim-pending-reward-btn-"]').first();
-      await expect(claimBtn).toBeVisible({ timeout: 5000 });
+      await expect(claimBtn).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
       await claimBtn.click();
 
       // Banner is now empty
-      await expect(awardItems).toHaveCount(0, { timeout: 5000 });
+      await expect(awardItems).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // 13. Verify resource accreditation and onEvent release
       const p1Status = await page.evaluate(async (uid: string) => {

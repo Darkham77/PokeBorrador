@@ -393,6 +393,11 @@ export async function loginTestUser(
       return debug?.useGameStore?.()?.state?.starterChosen === true &&
              !debug?.useLoadingStore?.()?.isLoading('choose_starter');
     }, undefined, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+
+    await page.evaluate(async () => {
+      const { saveCoordinator } = await import('../../src/logic/auth/saveCoordinator.ts');
+      await saveCoordinator.flushPendingSave();
+    });
   } else {
     await page.evaluate(() => {
       delete (window as WindowWithResolver).__E2E_STARTER_SELECT_READY__;

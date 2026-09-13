@@ -23,12 +23,12 @@ const serializedData = ref<Record<string, unknown>>({
   nota: 'Cambia cualquier input o pulsa submit para serializar los datos en vivo.'
 })
 
-let nextLogId = 2 // singleton-ok: Module-level log ID incrementer
+const logState = { nextId: 2 }
 
 export function logToInspector(message: string): void {
   const time = getCurrentTimeString()
   logs.value.unshift({
-    id: nextLogId++,
+    id: logState.nextId++,
     time,
     message
   })

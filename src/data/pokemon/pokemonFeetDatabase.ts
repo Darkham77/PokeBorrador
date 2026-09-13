@@ -7,15 +7,28 @@
  * así como el catálogo de mapeos de gritos (cries) de Pokémon.
  */
 import { FEET_COORDINATES_DATA } from './feetCoordinatesData.ts';
+import type { GlobalShadowConfig } from '@/types/pokemon/spriteShadows';
 
 const packedData = FEET_COORDINATES_DATA;
 
 export interface FeetPoints {
   readonly feetY: number;
   readonly feetX: number;
+  readonly isFlying?: boolean;
+  readonly shadowScale?: number;
 }
 
 const PACKED_DATA = packedData;
+
+const DEFAULT_GLOBAL_SHADOW_WIDTH_RATIO = 1.0;
+const DEFAULT_GLOBAL_SHADOW_HEIGHT_RATIO = 0.28;
+const DEFAULT_GLOBAL_SHADOW_PIXELATION = 14;
+
+export const GLOBAL_SHADOW_CONFIG: GlobalShadowConfig = {
+  widthRatio: PACKED_DATA.shadow?.widthRatio ?? DEFAULT_GLOBAL_SHADOW_WIDTH_RATIO,
+  heightRatio: PACKED_DATA.shadow?.heightRatio ?? DEFAULT_GLOBAL_SHADOW_HEIGHT_RATIO,
+  pixelation: PACKED_DATA.shadow?.pixelation ?? DEFAULT_GLOBAL_SHADOW_PIXELATION
+} as const;
 
 const _FEET_SPRITE_GROUP_KEYS = ['p', 'n', 't'] as const;
 type FeetSpriteGroupKey = (typeof _FEET_SPRITE_GROUP_KEYS)[number];
@@ -40,7 +53,14 @@ for (const [key, prefix] of [
     const dbPath: FeetDatabasePath = `${prefix}${subKey}.webp`;
     const y = requireFeetMetric(tuple as readonly number[], dbPath, 0);
     const x = requireFeetMetric(tuple as readonly number[], dbPath, 1);
-    POKEMON_FEET_DATABASE[dbPath] = { feetY: y, feetX: x };
+    const isFlying = (tuple as readonly number[])[2] === 1;
+    const shadowScale = (tuple as readonly number[])[3];
+    POKEMON_FEET_DATABASE[dbPath] = {
+      feetY: y,
+      feetX: x,
+      ...(isFlying ? { isFlying: true } : {}),
+      ...(shadowScale !== undefined ? { shadowScale } : {})
+    };
   }
 }
 
@@ -54,6 +74,9 @@ function resolveFeetPath(raw: string): FeetDatabasePath {
   }
 
   let cleaned = decodeURIComponent(raw).trim();
+  if (!cleaned.startsWith('/') && cleaned.startsWith('assets/')) {
+    cleaned = `/${cleaned}`;
+  }
   if (!cleaned.endsWith('.webp')) {
     cleaned = cleaned.replace(/\.(png|jpg|jpeg|gif)$/i, '') + '.webp';
   }
@@ -71,6 +94,10 @@ function resolveFeetPath(raw: string): FeetDatabasePath {
     .replace('/shiny/', '/');
 
   if (hasFeetDatabasePath(baseSpritePath)) return baseSpritePath;
+
+  // Animated sprites default to idle 'i' frame if no frame suffix was provided (e.g. 26.webp -> 26i.webp)
+  const idleAnimatedPath = baseSpritePath.replace(/\/animated\/(Front|Back)\/(\d+)\.webp$/i, '/animated/$1/$2i.webp');
+  if (hasFeetDatabasePath(idleAnimatedPath)) return idleAnimatedPath;
 
   throw new Error(`[pokemonFeetDatabase] Unknown feet database path: ${raw}`);
 }

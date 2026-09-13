@@ -119,11 +119,14 @@ if (typeof HTMLCanvasElement !== 'undefined') {
         scale: vi.fn(),
         rotate: vi.fn(),
         arc: vi.fn(),
+        ellipse: vi.fn(),
         fill: vi.fn(),
       }
     }
     return null
   }) as unknown as typeof HTMLCanvasElement.prototype.getContext
+
+  HTMLCanvasElement.prototype.toDataURL = vi.fn().mockReturnValue('data:image/png;base64,mock')
 }
 
 // Mock Location.reload for JSDOM navigation
@@ -238,6 +241,7 @@ vi.mock('gsap', () => {
       toArray: (val: unknown) => Array.isArray(val) ? val : [val],
       random: (min: number, max: number) => Math.random() * (max - min) + min,
       interpolate: (a: number, b: number, p: number) => a + (b - a) * p,
+      unitize: (fn: (val: string) => number | string, unit = 'px') => (v: string) => `${fn(v)}${unit}`,
     }
   };
   return { gsap: gsapMock, default: gsapMock };

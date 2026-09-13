@@ -217,7 +217,7 @@ function parseSaleData(data: unknown): Record<string, unknown> {
 function getSoldItemName(sale: MarketHistoryRow): string {
   const data = parseSaleData(sale.data)
   if (sale.listing_type === 'pokemon') {
-    const pokeName = (data.name as string) || (data.species as string) || 'Pokémon'
+    const pokeName = (data.name as string) || (data.id as string) || 'Pokémon'
     const isShiny = Boolean(data.shiny || data.isShiny)
     const level = data.level ? ` (Nv. ${data.level})` : ''
     return `${pokeName}${level}${isShiny ? ' ✨' : ''}`
@@ -235,7 +235,7 @@ function getSaleVisual(sale: MarketHistoryRow): {
 } {
   const data = parseSaleData(sale.data)
   if (sale.listing_type === 'pokemon') {
-    const species = (data.id as string) || (data.species as string) || (data.name as string) || 'pikachu'
+    const species = (data.id as string) || (data.name as string) || 'pikachu'
     const isShiny = Boolean(data.shiny || data.isShiny)
     return {
       type: 'pokemon',

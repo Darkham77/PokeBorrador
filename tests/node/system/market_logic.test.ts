@@ -17,7 +17,6 @@ const mockPokemon: Pokemon = {
   uid: 'test-uid-pikachu',
   id: 'pikachu',
   name: 'Pikachu',
-  species: 'pikachu',
   level: 10,
   exp: 0,
   expNeeded: 100,

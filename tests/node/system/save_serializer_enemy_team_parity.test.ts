@@ -54,14 +54,12 @@ describe('Save Serializer Enemy Team SSoT Parity', () => {
     const serializedEnemy1 = serialized.activeBattle.enemyTeam[0];
     assert.ok(serializedEnemy1, 'first enemy must exist');
     assert.strictEqual(serializedEnemy1.id, 'rattata');
-    assert.strictEqual(serializedEnemy1.species, 'rattata', 'Enemy 1 MUST retain species: "rattata"');
     assert.strictEqual(serializedEnemy1.level, 3);
     assert.ok(Array.isArray(serializedEnemy1.tags), 'tags must be an array');
 
     const serializedEnemy2 = serialized.activeBattle.enemyTeam[1];
     assert.ok(serializedEnemy2, 'second enemy must exist');
     assert.strictEqual(serializedEnemy2.id, 'pidgey');
-    assert.strictEqual(serializedEnemy2.species, 'pidgey', 'Enemy 2 MUST retain species: "pidgey"');
 
     // Run through strict Valibot save schema validator
     const res = validateSaveData(serialized);

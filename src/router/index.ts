@@ -52,7 +52,14 @@ const router = createRouter({
       path: '/test-aventura',
       name: 'test-aventura',
       component: resilientRouteComponent(() => import('@/views/adventure/AdventureTestView.vue'))
-    }
+    },
+    ...(import.meta.env.DEV ? [
+      {
+        path: '/dev/shadow-editor',
+        name: 'dev-shadow-editor',
+        component: resilientRouteComponent(() => import('@/views/dev/DevShadowEditorView.vue'))
+      }
+    ] : [])
   ],
 })
 

@@ -228,7 +228,8 @@ const handleBallLeave = (el: Element, done: () => void) => {
           v-if="shadowKey" 
           :shadow-id="shadowKey" 
           :sprite-size="displaySize * 2"
-          :style="{ '--shadow-y': localGroundY }"
+          :shadow-scale="feetPoints.shadowScale"
+          :style="{ '--shadow-y': localGroundY, '--shadow-z-index': '1' }"
         />
       </div>
 
@@ -275,8 +276,8 @@ const handleBallLeave = (el: Element, done: () => void) => {
               height: (displaySize * 2) + 'px',
               position: 'absolute',
               left: '50%',
-              transform: 'translateX(-50%)',
-              top: `calc(${localGroundY} - ${feetPoints.feetY * displaySize * 2}px)`
+              top: localGroundY,
+              transform: `translate(calc(-${feetPoints.feetX * 100}%), calc(-${feetPoints.feetY * 100}%))`
             }"
             :is-battle="true"
           >

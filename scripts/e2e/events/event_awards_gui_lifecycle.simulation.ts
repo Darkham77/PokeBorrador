@@ -19,6 +19,8 @@
 
 import { test, expect, type Page } from '@playwright/test';
 import { BaseEventSimulation } from './base_event_simulation.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
+
 
 const EXPECTED_CLAIMED_MONEY = 26000;
 const EXPECTED_CLAIMED_BC = 160;
@@ -38,10 +40,12 @@ export class EventAwardsGuiLifecycleSimulation extends BaseEventSimulation {
       const { useGameStore } = await import('../../../src/stores/game.ts');
       const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
       const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
-      const { getServerTime } = await import('../../../src/logic/utils/timeUtils.ts');
+      const { GAME_TIMEZONE } = await import('../../../src/logic/utils/timeUtils.ts');
 
       const gameStore = useGameStore();
-      const currentSimTime = getServerTime();
+      const currentSimTime = Number(
+        Temporal.PlainDateTime.from('2026-08-11T19:00:00').toZonedDateTime(GAME_TIMEZONE).toInstant().epochMilliseconds
+      );
 
       // Initial wallet and inventory state
       gameStore.state.money = 1000;
@@ -81,6 +85,8 @@ export class EventAwardsGuiLifecycleSimulation extends BaseEventSimulation {
       gameStore.state.team = [horsea, shellder];
       gameStore.state.box = [];
 
+      await gameStore.saveGame();
+
       const isOffline = localStorage.getItem('pokevicio_session_mode') === 'offline';
       if (isOffline) {
         const { persistSQLite } = await import('../../../src/logic/db/sqliteEngine.ts');
@@ -107,7 +113,15 @@ test.describe('World Events Awards GUI Lifecycle E2E Simulation', () => {
 
       // 4. Open World Events modal and enroll Horsea into 'ivs' category
       await sim.openWorldEventsViaHud();
+
+      const eventCard = page.locator('#event-card-torneo_pesca');
+      await expect(eventCard).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+
+      const ivChip = page.locator('#comp-slot-chip-torneo_pesca-ivs');
+      await expect(ivChip).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+
       await sim.enrollPokemonById('torneo_pesca', 'ivs', 'sim-award-horsea');
+      await expect(ivChip).toContainText('✓', { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // 5. Enroll Shellder into 'weight_shellder' category
       await sim.enrollPokemonById('torneo_pesca', 'weight_shellder', 'sim-award-shellder');

@@ -96,6 +96,16 @@ export class HeuristicAI implements CombatAI {
     const battle = store?.activeBattle?.value ?? null;
     const config = resolveConfig(battle ? { ...battle, isWild } : { isWild });
 
+    // Canonical Wild Ditto Behavior: On Turn 1 (before transforming), wild Ditto MUST unconditionally
+    // use "transform", overriding any heuristics, damage calculations, or AI error rates.
+    const isWildBattle = isWild || Boolean(battle && !battle.isTrainer && !battle.isGym && !battle.isPvP);
+    if (isWildBattle && !enemy.isTransformed && enemy.id === 'ditto') {
+      const transformMove = enemy.moves.find(m => m && m.id === 'transform' && m.pp > 0 && !(enemy.disabledMove && m.id === enemy.disabledMove.id));
+      if (transformMove) {
+        return transformMove;
+      }
+    }
+
     // Wild Pokémon: apply errorRate=50% directly (full random vs heuristic)
     const useRandom = Math.random() < config.errorRate;
     const validMoves = getValidMovesFromRequest(enemy, store);

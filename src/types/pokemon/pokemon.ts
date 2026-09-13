@@ -158,7 +158,6 @@ export interface Pokemon {
   uid: string; // domain-ok: Open dynamic text or non-domain string payload
   id: PokemonSpeciesId;
   name: string; // domain-ok: Open dynamic text or non-domain string payload
-  species: PokemonSpeciesId;
   details?: string; // domain-ok: Open dynamic text or non-domain string payload
   nickname?: string | null; // domain-ok: Open dynamic text or non-domain string payload
   level: number;
@@ -192,7 +191,8 @@ export interface Pokemon {
   endure?: boolean;
   isTransformed?: boolean;
   _originalMoves?: (Move | null)[];
-  _originalSpecies?: PokemonSpeciesId;
+  _originalId?: PokemonSpeciesId;
+  _originalName?: string; // domain-ok: Open dynamic text or non-domain string payload
   _originalType?: PokemonType;
   _originalType2?: PokemonType | null;
   rageActive?: boolean;

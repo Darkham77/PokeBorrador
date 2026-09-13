@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { BaseEventSimulation } from './base_event_simulation.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 
-const E2E_ACTION_TIMEOUT_MS = 5000;
 
 /**
  * scripts/e2e/events/event_slot_management.simulation.ts
@@ -69,6 +69,8 @@ class EventSlotManagementSimulation extends BaseEventSimulation {
       gameStore.state.team = [shellder, horsea];
       gameStore.state.box = [];
 
+      await gameStore.saveGame();
+
       const isOffline = localStorage.getItem('pokevicio_session_mode') === 'offline';
       if (isOffline) {
         const { persistSQLite } = await import('../../../src/logic/db/sqliteEngine.ts');
@@ -89,14 +91,14 @@ test.describe('World Events Slot Management E2E Simulation', () => {
       await sim.openWorldEventsViaHud();
 
       const eventCard = page.locator('#event-card-torneo_pesca');
-      await expect(eventCard).toBeVisible({ timeout: E2E_ACTION_TIMEOUT_MS });
+      await expect(eventCard).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       const ivChip = page.locator('#comp-slot-chip-torneo_pesca-ivs');
-      await expect(ivChip).toBeVisible({ timeout: E2E_ACTION_TIMEOUT_MS });
+      await expect(ivChip).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // 2. Initial enrollment with Shellder (120 IVs)
       await sim.enrollPokemonById('torneo_pesca', 'ivs', 'sim-slot-shellder');
-      await expect(ivChip).toContainText('✓', { timeout: E2E_ACTION_TIMEOUT_MS });
+      await expect(ivChip).toContainText('✓', { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // 3. Click occupied slot to open EventSlotActionModal and assert initial score (120 IVs)
       await ivChip.click();
@@ -104,33 +106,33 @@ test.describe('World Events Slot Management E2E Simulation', () => {
       const changeBtn = page.locator('#event-slot-change-btn');
       const withdrawBtn = page.locator('#event-slot-withdraw-btn');
       const registeredValueRow = page.locator('.registered-value-row');
-      await expect(changeBtn).toBeVisible({ timeout: E2E_ACTION_TIMEOUT_MS });
-      await expect(withdrawBtn).toBeVisible({ timeout: E2E_ACTION_TIMEOUT_MS });
-      await expect(registeredValueRow).toContainText('120', { timeout: E2E_ACTION_TIMEOUT_MS });
+      await expect(changeBtn).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      await expect(withdrawBtn).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      await expect(registeredValueRow).toContainText('120', { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // 4. Test Change: Replace Shellder with Horsea (186 IVs)
       await changeBtn.click();
 
       const horseaItem = page.locator('#pokemon-select-sim-slot-horsea');
-      await horseaItem.waitFor({ state: 'visible', timeout: E2E_ACTION_TIMEOUT_MS });
+      await horseaItem.waitFor({ state: 'visible', timeout: MAX_PER_ACTION_TIMEOUT_MS });
       await horseaItem.click();
 
       // In autoConfirm mode, clicking confirms immediately.
       // Verify selection modal unmounts completely within the 5s timeout limit.
-      await expect(page.locator('.selection-container')).toHaveCount(0, { timeout: E2E_ACTION_TIMEOUT_MS });
+      await expect(page.locator('.selection-container')).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
-      await expect(ivChip).toContainText('✓', { timeout: E2E_ACTION_TIMEOUT_MS });
+      await expect(ivChip).toContainText('✓', { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // Open EventSlotActionModal again and assert updated score of 186
       await ivChip.click();
-      await expect(registeredValueRow).toContainText('186', { timeout: E2E_ACTION_TIMEOUT_MS });
+      await expect(registeredValueRow).toContainText('186', { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // 5. Test Withdrawal: Click withdraw
       await withdrawBtn.click();
 
       // Verify chip returns to unenrolled status ('+')
-      await expect(ivChip).toContainText('+', { timeout: E2E_ACTION_TIMEOUT_MS });
-      await expect(ivChip).not.toContainText('✓', { timeout: E2E_ACTION_TIMEOUT_MS });
+      await expect(ivChip).toContainText('+', { timeout: MAX_PER_ACTION_TIMEOUT_MS });
+      await expect(ivChip).not.toContainText('✓', { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // Verify onEvent was released back to false
       const onEventState = await page.evaluate(async () => {

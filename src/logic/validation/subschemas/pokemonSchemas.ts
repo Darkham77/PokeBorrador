@@ -114,7 +114,6 @@ export type FriendshipSealTierDto = InferOutput<typeof friendshipSealTierSchema>
 export const pokemonSchema = object({
   uid: string(),
   id: string(),
-  species: string(),
   name: string(),
   nickname: optional(nullable(string())),
   level: pipe(number(), minValue(1), maxValue(100)),

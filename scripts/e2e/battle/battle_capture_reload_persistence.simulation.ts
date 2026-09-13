@@ -117,7 +117,6 @@ test.describe('Persistencia y Captura tras Recarga de Página (F5)', () => {
       const captured = box.find((p) => p?.id === 'rattata');
       return captured ? {
         id: captured.id,
-        species: captured.species,
         name: captured.name,
         level: captured.level,
         hasUid: Boolean(captured.uid),
@@ -126,7 +125,6 @@ test.describe('Persistencia y Captura tras Recarga de Página (F5)', () => {
 
     expect(boxData).not.toBeNull();
     expect(boxData!.id).toBe('rattata');
-    expect(boxData!.species).toBe('rattata');
     expect(boxData!.level).toBe(3);
     expect(boxData!.hasUid).toBe(true);
   });

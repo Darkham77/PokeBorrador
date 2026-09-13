@@ -29,7 +29,6 @@ const BASE_POKEMON: Pokemon = {
   uid: 'test-uid',
   id: 'bulbasaur',
   name: '',
-  species: 'bulbasaur',
   level: 1,
   exp: 0,
   expNeeded: 100,

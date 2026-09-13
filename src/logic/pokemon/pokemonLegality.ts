@@ -120,11 +120,6 @@ export function repairPokemonLegality(p: Pokemon): PokemonRepairReport {
   const speciesData = pokemonDataProvider.getPokemonData(p.id, true)
   if (!speciesData) return { repaired: false, changes }
 
-  // 1. Repair Species Name (sync if not a custom nickname)
-  if (!p.species) {
-    p.species = p.id
-    changes.push(`Campo species asignado a "${p.id}"`)
-  }
   if (p.status === null || p.status === undefined) {
     p.status = ''
     changes.push('Estado alterado normalizado a ""')

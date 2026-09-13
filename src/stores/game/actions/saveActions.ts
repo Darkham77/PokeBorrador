@@ -165,6 +165,10 @@ export function useSaveActions(
       return { success: true }
     }
 
+    if (immediate) {
+      saveCoordinator.cancelPendingLocalSave()
+    }
+
     const modalStore = useModalStore()
     const saveCheck = canSaveState(state, (name) => modalStore.isOpen(name))
     if (!saveCheck.allowed) {

@@ -114,7 +114,7 @@ let widthTween: gsap.core.Tween | null = null
 
 const initXpBarAnimation = () => {
   if (xpBarRef.value) {
-    // Animate the stripes infinitely using GSAP
+    // layout-ok: ProgressBar stripes pattern animation
     stripesTween = gsap.to(xpBarRef.value, {
       backgroundPositionX: '20px',
       duration: XP_STRIPE_SCROLL_DURATION_SEC,

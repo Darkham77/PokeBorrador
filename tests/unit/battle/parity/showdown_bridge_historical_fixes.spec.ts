@@ -267,7 +267,7 @@ describe('Showdown Round 11 Audit Fixes', () => {
 
       await parseShowdownLogLine(mockCtx, '|-transform|p1a: Ditto|p2a: Dragonite|[uids]p1a:Ditto=p-ditto,p2a:Dragonite=e-dragonite');
 
-      expect(ditto.species).toBe('Dragonite');
+      expect(ditto.id).toBe('dragonite');
       expect(ditto.type).toBe('dragon');
       expect(ditto.type2).toBe('flying');
       expect(ditto.moves?.length).toBe(2);

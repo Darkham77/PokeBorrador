@@ -9,6 +9,10 @@ export function useBattleCombatants(
 ) {
   const playerCombatants = computed(() => {
     const list: Pokemon[] = []
+    const fsmState = unref(battleStore.currentFsmState)
+    if (fsmState === 'CONTEXT_SETUP') {
+      return list
+    }
     const exiting = unref(battleStore.exitingPlayer)
     if (exiting && exiting.uid) {
       list.push(exiting)
@@ -22,17 +26,27 @@ export function useBattleCombatants(
 
   const enemyCombatants = computed(() => {
     const list: Pokemon[] = []
-    const isTrainerOrGym = Boolean(battleStore.state?.isTrainer)
+    const b = battleStore.state
+    const isTrainerOrGym = Boolean(b?.isTrainer || b?.isGym || b?.isRival || b?.trainerName)
     const fsmState = unref(battleStore.currentFsmState)
     const fsmSubState = unref(battleStore.currentSubState) ?? (battleStore.fsm ? unref(battleStore.fsm.currentSubState) : null)
-    const isPreCombatTrainer = isTrainerOrGym && (
-      fsmState === 'SEARCH_PHASE' || 
-      fsmState === 'INITIALIZING' ||
-      (fsmState === 'FIRST_INTRO' && fsmSubState !== 'POKEMON_CALL')
-    )
-      
-    if (isPreCombatTrainer) {
+
+    // CANONICAL RULE: In ALL encounters, Seat 2 (Enemy) is strictly EMPTY
+    // during CONTEXT_SETUP and INITIALIZING (pre-PRELOAD_COORDS).
+    // In trainer/gym/rival encounters, Seat 2 is strictly EMPTY
+    // during CONTEXT_SETUP, INITIALIZING, SEARCH_PHASE, and FIRST_INTRO (pre-POKEMON_CALL).
+    if (fsmState === 'CONTEXT_SETUP' || fsmState === 'INITIALIZING') {
       return list
+    }
+
+    if (isTrainerOrGym) {
+      const isPreCallTrainer = (
+        fsmState === 'SEARCH_PHASE' ||
+        (fsmState === 'FIRST_INTRO' && fsmSubState !== 'POKEMON_CALL')
+      )
+      if (isPreCallTrainer) {
+        return list
+      }
     }
 
     const isBattleOver = Boolean(battleStore.state?.over)

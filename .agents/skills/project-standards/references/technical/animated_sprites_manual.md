@@ -105,3 +105,11 @@ export interface AnimatedSpriteData {
   readonly bodyRadius: number;
 }
 ```
+
+---
+
+## 5. In-Combat Playback Speed & Manual Overrides
+
+- **Combat Frame Rate (+30% Speedup)**: Pokémon idle and variation spritesheet loops in battle execute at `POKEMON_SPRITE_IDLE_FPS = 10.4` (8 * 1.30) and `POKEMON_SPRITE_VARIATION_FPS = 13` (10 * 1.30) declared in `src/logic/constants/animations.ts`. Design tools (e.g. `ShadowEditorCard.vue`) MUST synchronize with `POKEMON_SPRITE_IDLE_FPS`.
+- **Manual Overrides Calibration**: Manual shadow and feet calibrations are persisted in `src/data/pokemon/spriteShadowOverrides.json` as a flat dictionary. Executing `npm run database:recompile-feet` recompiles these overrides into `pokemonFeetDatabase.json` and static TypeScript accessors.
+

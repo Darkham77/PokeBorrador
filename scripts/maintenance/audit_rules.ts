@@ -993,8 +993,51 @@ export const noInlineLiteralUnions: AuditRule = {
   fixable: false
 };
 
+export const noLayoutAnimationInGsap: AuditRule = {
+  id: 'noLayoutAnimationInGsap',
+  name: 'No Layout Animation In GSAP',
+  category: 'Rendimiento GPU (GSAP)',
+  aliases: ['gsap-layout', 'nolayoutanimationingsap', 'layout-animation', 'perf-gsap'],
+  regex: /\b(?:gsap|timeline|weatherTimeline|tl)\s*\.\s*(?:to|from|fromTo)\s*\(/g,
+  message: (match: string) => `[TUTORIAL GPU OPTIMIZATION] Se detectó animación de propiedades CSS de layout/repintado CPU en llamada a GSAP: '${match}'.
+   📚 REGLA: En Poké Vicio (gpu_optimization_manual.md) está PROHIBIDO animar propiedades de layout o backgroundPosition ('backgroundPosition', 'backgroundPositionX', 'backgroundPositionY') en GSAP porque colapsan el fill-rate forzando reflows y repintados continuos a 60 FPS.
+   💡 SOLUCIÓN: Usa propiedades aceleradas por GPU ('x', 'y', 'scale', 'scaleX', 'scaleY', 'rotation', 'opacity', 'transform'). Para fondos continuos, usa translate3d modular con 'gsap.utils.unitize'.`,
+  severity: 'error',
+  check: (content: string, match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return false;
+    const norm = normalizeFilePath(filePath);
+    if (!norm.includes('src/') || norm.includes('ui-demo/')) return false;
+    if (norm.includes('.test.') || norm.includes('.spec.') || norm.includes('tests/')) return false;
+
+    // Look ahead within the GSAP call (up to 400 chars) for tween config object
+    const startIdx = match.index ?? 0;
+    const chunk = content.slice(startIdx, startIdx + 400);
+    const layoutPropRegex = /\b(backgroundPosition|backgroundPositionX|backgroundPositionY)\s*:/;
+    const found = layoutPropRegex.exec(chunk);
+    if (!found) return false;
+
+    // Verify it's within the GSAP call parentheses
+    const closeParen = chunk.indexOf(')');
+    if (closeParen !== -1 && found.index > closeParen) {
+      return false;
+    }
+
+    // Check for justified ignore comment on the current or preceding line
+    const beforeChunk = content.slice(Math.max(0, startIdx - 200), startIdx);
+    const lineEnd = content.indexOf('\n', startIdx);
+    const currentLine = content.slice(startIdx, lineEnd === -1 ? undefined : lineEnd);
+    const nearby = beforeChunk + '\n' + currentLine;
+    if (/\/\/\s*(?:layout-ok|shimmer-ok|gpu-ok):\s*\S+/i.test(nearby)) {
+      return false;
+    }
+
+    return true;
+  },
+  fixable: false
+};
+
 export const auditRulesConfig = {
-  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, zIndexConstantDeclaration, manualAnimations, manualTimersFrontend, zeroTimerBattleLogic, noPlaywrightWaitForTimeout, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, strictDomainParamTypes, noInlineTypeImports, noInlineLiteralUnions, magicNumbers, badConstantNames, noAliasConstants, noLiteralSuffixInConstantName, noLiteralBooleanType, noInlineAnonymousObjectType, noFloatingPromises, noLeakedGlobalState, missingInteractiveId, sassTraps
+  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, zIndexConstantDeclaration, manualAnimations, manualTimersFrontend, zeroTimerBattleLogic, noPlaywrightWaitForTimeout, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, strictDomainParamTypes, noInlineTypeImports, noInlineLiteralUnions, magicNumbers, badConstantNames, noAliasConstants, noLiteralSuffixInConstantName, noLiteralBooleanType, noInlineAnonymousObjectType, noFloatingPromises, noLeakedGlobalState, missingInteractiveId, sassTraps, noLayoutAnimationInGsap
 };
 
 // Ensure every rule in auditRulesConfig has its descriptor fields populated dynamically

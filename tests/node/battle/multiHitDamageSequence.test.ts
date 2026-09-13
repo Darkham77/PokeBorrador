@@ -8,7 +8,6 @@ describe('Multi-Hit Damage Sequence - Unit Tests', () => {
     const marowak: Pokemon = {
       uid: 'marowak-p1-uid',
       id: 'marowak',
-      species: 'marowak',
       name: 'Marowak',
       level: 50,
       hp: 133,
@@ -42,7 +41,6 @@ describe('Multi-Hit Damage Sequence - Unit Tests', () => {
     const golem: Pokemon = {
       uid: 'golem-p2-uid',
       id: 'golem',
-      species: 'golem',
       name: 'Golem',
       level: 50,
       hp: 155,

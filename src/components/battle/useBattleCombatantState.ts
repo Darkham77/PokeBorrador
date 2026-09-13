@@ -19,6 +19,8 @@ import {
 import {
   useCombatantVisualSprite
 } from './useCombatantVisualSprite.ts';
+import { animateCombatantTransform } from './helpers/combatantFeedbackAnims.ts';
+import { logger } from '@/logic/utils/logger';
 
 const DEFAULT_FEET_X_RATIO = 0.5;
 const DEFAULT_FEET_Y_RATIO = 0.9;
@@ -81,34 +83,50 @@ export function useBattleCombatantState(
   } = useCombatantVisualSprite(props);
 
   const feetPoints = computed(() => {
-    if (isFloating.value) {
-      return { feetX: DEFAULT_FEET_X_RATIO, feetY: DEFAULT_FEET_Y_RATIO };
+    const url = imageUrl.value;
+    if (url) {
+      let key = url;
+      const base = import.meta.env.BASE_URL || '/';
+      if (base !== '/' && url.startsWith(base)) {
+        key = url.slice(base.length - 1);
+      }
+      try {
+        key = decodeURIComponent(key);
+      } catch (e) {
+        throw new Error(`[useBattleCombatantState] Error decoding sprite URL '${key}': ${String(e)}`, { cause: e });
+      }
+
+      try {
+        const dbPoints = requireFeetPoints(key);
+        return {
+          feetX: dbPoints.feetX,
+          feetY: dbPoints.feetY,
+          isFlying: dbPoints.isFlying,
+          shadowScale: dbPoints.shadowScale ?? 1.0
+        };
+      } catch (err) {
+        logger.warn('CombatantState', `requireFeetPoints not found for '${key}', falling back:`, (err as Error).message);
+        // Fall back to animatedMeta if not in static DB
+      }
     }
+
     if (isAnimated.value && animatedMeta.value) {
       return {
         feetX: animatedMeta.value.feetX ?? DEFAULT_FEET_X_RATIO,
-        feetY: animatedMeta.value.feetY ?? DEFAULT_FEET_Y_RATIO
+        feetY: animatedMeta.value.feetY ?? DEFAULT_FEET_Y_RATIO,
+        isFlying: undefined,
+        shadowScale: 1.0
       };
     }
-    const url = imageUrl.value;
-    if (!url) return { feetX: DEFAULT_FEET_X_RATIO, feetY: DEFAULT_FEET_Y_RATIO };
-    
-    let key = url;
-    const base = import.meta.env.BASE_URL || '/';
-    if (base !== '/' && url.startsWith(base)) {
-      key = url.slice(base.length - 1);
+
+    return { feetX: DEFAULT_FEET_X_RATIO, feetY: DEFAULT_FEET_Y_RATIO, isFlying: undefined, shadowScale: 1.0 };
+  });
+
+  const resolvedIsFloating = computed(() => {
+    if (feetPoints.value.isFlying !== undefined) {
+      return feetPoints.value.isFlying;
     }
-    try {
-      key = decodeURIComponent(key);
-    } catch (e) {
-      throw new Error(`[useBattleCombatantState] Error decoding sprite URL '${key}': ${String(e)}`, { cause: e });
-    }
-    
-    const dbPoints = requireFeetPoints(key);
-    return {
-      feetX: dbPoints.feetX,
-      feetY: dbPoints.feetY
-    };
+    return isFloating.value;
   });
 
   const getAttackAnimClass = computed(() => {
@@ -172,12 +190,7 @@ const DEFAULT_GROUND_LINE_FALLBACK_PERCENT = '75%';
   const debugShowPokeRadius = computed(() => battleStore.debugShowPokeRadius);
 
   const stickyCoords = computed(() => {
-    const scale = (WORLD_CONSTANTS as { OBJECT_SCALE: number }).OBJECT_SCALE || 2;
-    const entitySize = props.baseSize * scale;
-    const offsetX = (feetPoints.value.feetX - DEFAULT_FEET_X_RATIO) * entitySize;
-    const left = `calc(50% + ${offsetX}px)`;
-    const top = localGroundY.value;
-    return { top, left };
+    return { top: localGroundY.value, left: '50%' };
   });
 
   const isBallVisible = computed(() => {
@@ -199,11 +212,8 @@ const DEFAULT_GROUND_LINE_FALLBACK_PERCENT = '75%';
       : WORLD_CONSTANTS.POKEBALL_SIZE_ENEMY;
   });
 
-
   const getSpriteFeetOrigin = () => {
-    const feetX = feetPoints.value.feetX;
-    const feetXPct = Math.round(feetX * 100);
-    return `${feetXPct}% ${localGroundY.value}`;
+    return `50% ${localGroundY.value}`;
   };
 
 const BALL_TARGET_Y_OFFSET_RATIO = 0.35;
@@ -387,18 +397,27 @@ const GSAP_FLEE_SCALE_TARGET = 0.7;
     }
   };
 
+  const handleTransformEvent = (e: Event) => {
+    const data = (e as CustomEvent).detail as { side?: string } | undefined;
+    if (data && data.side === props.side && spriteRef.value) {
+      animateCombatantTransform(spriteRef.value);
+    }
+  };
+
   onMounted(() => {
     gameBus.on('TRIGGER_COMBATANT_ESCAPE', handleEscapeEvent);
+    gameBus.on('PLAY_TRANSFORM', handleTransformEvent);
   });
 
   onUnmounted(() => {
     gameBus.off('TRIGGER_COMBATANT_ESCAPE', handleEscapeEvent);
+    gameBus.off('PLAY_TRANSFORM', handleTransformEvent);
   });
 
   return {
     naturalSize,
     cacheKey,
-    isFloating,
+    isFloating: resolvedIsFloating,
     isPlayer,
     isEnemy,
     imageUrl,

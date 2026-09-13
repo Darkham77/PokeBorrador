@@ -135,7 +135,6 @@ export function createLocalPoke(set: PokemonSet): Pokemon {
   const poke: Pokemon = {
     uid: (Reflect.get(set, 'uid') as string | undefined) || `uid-${toID(set.species)}`,
     id: toID(set.species) as PokemonSpeciesId,
-    species: toID(set.species) as PokemonSpeciesId,
     name: set.name, // no-domain: Non-domain utility collection or data structure
     level: set.level,
     isShiny: false,

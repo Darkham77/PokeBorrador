@@ -356,7 +356,7 @@ describe('rewardsDebugSimulation logic', () => {
     expect(unifiedRewards.value[0]?.id).toBe(archivedReward?.id)
 
     // 3. Verify the Pokémon from GTS was transferred into the player's team or box with valid capture timestamp
-    const simulatedEevee = [...gameStore.state.team, ...(gameStore.state.box || [])].find(p => p?.species === 'eevee')
+    const simulatedEevee = [...gameStore.state.team, ...(gameStore.state.box || [])].find(p => p?.id === 'eevee')
     expect(simulatedEevee).toBeDefined()
     expect(simulatedEevee?.obtainedAt).toBeGreaterThan(0)
     expect(simulatedEevee?.obtainedMethod).toBe('reward')

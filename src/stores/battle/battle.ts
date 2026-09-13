@@ -254,6 +254,23 @@ export const useBattleStore = defineStore('battle', () => {
 
   const startBattle = async (enemyPoke: Pokemon, options?: BattleOptions) => {
     logger.info('BattleStore', `startBattle called for ${enemyPoke.name}`, options)
+    
+    // ATOMIC SYNCHRONOUS PRE-CLEANUP: Transition FSM to CONTEXT_SETUP and vacate all seats immediately!
+    fsm.transition(BATTLE_STATES.CONTEXT_SETUP, BATTLE_SUBSTATES.RECEIVE_CONFIG)
+
+    if (activeBattle.value) {
+      activeBattle.value.enemy = null
+      activeBattle.value._initialEnemy = null
+      activeBattle.value.player = null
+      activeBattle.value.enemyTeam = []
+    }
+    exitingEnemy.value = null
+    exitingPlayer.value = null
+
+    if (animations.value?.resetAll) {
+      animations.value.resetAll()
+    }
+
     uiStore.closeAll()
     if (typeof window !== 'undefined') {
       const detail: BattleEnteringDetail = { source: 'battle-store' }

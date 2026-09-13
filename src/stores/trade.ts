@@ -146,7 +146,7 @@ export const useTradeStore = defineStore('trade', () => {
         return false
       }
       const isIllegal = tradeOfferPoke.value.isIllegal || (
-        tradeOfferPoke.value.id && tradeOfferPoke.value.species && tradeOfferPoke.value.moves
+        tradeOfferPoke.value.id && tradeOfferPoke.value.moves
           ? !checkPokemonLegality(tradeOfferPoke.value).isLegal
           : false
       )

@@ -19,7 +19,6 @@ import {
 export { RANKED_REWARD_MILESTONES }
 import { getEloTier } from '@/logic/pvp/rankedEngine'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import type { PokemonSpeciesId } from '@/data/pokemon/pokedex'
 import { GAME_TIMEZONE, parseZonedTime } from '@/logic/utils/timeUtils'
 import { DEFAULT_INITIAL_ELO, SEASON_DURATION_MONTHS } from '@/logic/constants/gameplay.ts'
 import { calculateEloDelta, applyEloDelta } from '@/logic/pvp/eloRatingMath.ts'
@@ -35,61 +34,25 @@ export const RANKED_REWARD_TIER_MARKS = [
   { name: 'Maestro', elo: 3400, color: '#FFD700' }
 ]
 
-interface PvPStats {
-  wins: number
-  losses: number
-  draws: number
+import type {
+  PassiveBattleResult,
+  PersonalPvPMatchSummary,
+  PassiveBattleReport,
+  PassiveBattleReportData,
+  PassiveOpponentProfile,
+  PvPStats,
+  SeasonRules
+} from '@/types/battle/pvp'
+export type {
+  PassiveBattleResult,
+  PassiveBattleReport,
+  PassiveBattleReportData,
+  PassiveOpponentProfile,
+  PvPStats,
+  SeasonRules
 }
-
-export interface SeasonRules {
-  name: string
-  startDate?: string
-  endDate?: string
-  seasonStartDate?: string
-  seasonEndDate?: string
-  bannedPokemonIds?: PokemonSpeciesId[]
-  levelCap: number
-  allowedTypes?: string[]
-  maxPokemon: number
-  [key: string]: unknown
-}
-
-import type { PassiveBattleResult, PersonalPvPMatchSummary } from '@/types/battle/pvp'
 import { fetchOnlineMatchHistory, recordLocalMatch, mergeMatchHistories } from '@/logic/pvp/pvpMatchHistoryHelper'
-
-export interface PassiveBattleReportData {
-  opponent?: string
-  turns?: number
-  endedAt?: string
-  [key: string]: unknown
-}
-
-export interface PassiveOpponentProfile {
-  id?: string
-  username?: string
-  playerClass?: string | null
-  level?: number | null
-  trainer_level?: number | null
-  avatar?: string | null
-  avatarFrame?: string | null
-  avatarDecor?: string | null
-  avatar_style?: string | null
-  avatarStyle?: string | null
-  nick_style?: string | null
-  faction?: string | null
-  elo_rating?: number | null
-  gender?: string | null
-}
-
-export interface PassiveBattleReport {
-  id: number | string
-  user_id: string
-  opponent_id: string
-  result: PassiveBattleResult
-  report_data: PassiveBattleReportData
-  opponent_profile?: PassiveOpponentProfile | null
-  created_at: string
-}
+import { fetchAndFormatDefenseReports } from '@/logic/pvp/pvpDefenseReportsHelper'
 
 /**
  * usePvPStore - Gestor de Arena Clasificatoria y Defensa Pasiva.
@@ -270,7 +233,7 @@ export const usePvPStore = defineStore('pvp', () => {
               id: `local_poke_${Temporal.Now.instant().epochMilliseconds}`,
               prize: {
                 type: 'pokemon',
-                species: resolution.rewardPokemon.species,
+                species: resolution.rewardPokemon.id,
                 shiny: resolution.rewardPokemon.isShiny,
                 level: resolution.rewardPokemon.level
               }
@@ -303,96 +266,11 @@ export const usePvPStore = defineStore('pvp', () => {
 
   async function fetchDefenseReports() {
     if (!gameStore.db || !authStore.user) return
-    try {
-      const { data: reports } = await gameStore.db
-        .from('passive_battle_reports')
-        .select('*')
-        .eq('user_id', authStore.user.id)
-        .order('created_at', { ascending: false })
-        .limit(10) as { data: Array<{ id: number | string, user_id: string, opponent_id: string, result: PassiveBattleResult, report_data: unknown, created_at: string }> | null }
-
-      if (reports && reports.length > 0) {
-        const opponentIds = [...new Set(reports.map(r => r.opponent_id).filter(id => id && id !== 'local_user'))]
-        const profileMap = new Map<string, PassiveOpponentProfile>()
-        if (opponentIds.length > 0) {
-          try {
-            const { data: profiles } = await gameStore.db
-              .from('profiles')
-              .select('id, username, player_class, trainer_level, avatar_style, nick_style, faction, elo_rating')
-              .in('id', opponentIds) as { data: Array<{
-                id: string
-                username?: string
-                player_class?: string
-                trainer_level?: number
-                avatar_style?: string
-                nick_style?: string
-                faction?: string
-                elo_rating?: number
-              }> | null }
-            if (profiles) {
-              for (const p of profiles) {
-                profileMap.set(String(p.id), {
-                  id: p.id,
-                  username: p.username,
-                  playerClass: p.player_class || 'Entrenador',
-                  level: p.trainer_level || 1,
-                  trainer_level: p.trainer_level || 1,
-                  avatar_style: p.avatar_style,
-                  avatarStyle: p.avatar_style,
-                  nick_style: p.nick_style,
-                  faction: p.faction,
-                  elo_rating: p.elo_rating
-                })
-              }
-            }
-          } catch {
-            // Non-fatal profile enrichment
-          }
-        }
-
-        defenseReports.value = reports.map(r => {
-          let parsedData: PassiveBattleReportData = {}
-          if (typeof r.report_data === 'string') {
-            try {
-              parsedData = JSON.parse(r.report_data)
-            } catch {
-              parsedData = {}
-            }
-          } else if (typeof r.report_data === 'object' && r.report_data !== null) {
-            parsedData = r.report_data as PassiveBattleReportData
-          }
-          const oppProfile = r.opponent_id ? (profileMap.get(r.opponent_id) || null) : null
-          return {
-            id: r.id,
-            user_id: r.user_id,
-            opponent_id: r.opponent_id,
-            result: r.result,
-            report_data: parsedData,
-            opponent_profile: oppProfile,
-            created_at: r.created_at
-          }
-        })
-
-        // Check for unnotified reports
-        const storageKey = `pvp_last_seen_defense_report_${authStore.user.id}`
-        const lastSeenReportId = typeof localStorage !== 'undefined' ? Number(localStorage.getItem(storageKey) || 0) : 0
-        const newReports = defenseReports.value.filter(r => Number(r.id) > lastSeenReportId)
-        if (newReports.length > 0) {
-          const wins = newReports.filter(r => r.result === 'victory').length
-          const losses = newReports.filter(r => r.result === 'defeat').length
-          uiStore.notify(
-            `Defensa Pasiva: ${newReports.length} combate${newReports.length > 1 ? 's' : ''} en tu ausencia (${wins}V / ${losses}D).`,
-            '🛡️'
-          )
-          const highestId = Math.max(...newReports.map(r => Number(r.id) || 0))
-          if (typeof localStorage !== 'undefined' && highestId > 0) {
-            localStorage.setItem(storageKey, String(highestId))
-          }
-        }
-      }
-    } catch (err) {
-      logger.error('PVP', 'Error al consultar reportes de defensa:', err)
-    }
+    defenseReports.value = await fetchAndFormatDefenseReports(
+      gameStore.db,
+      authStore.user.id,
+      (msg, icon) => uiStore.notify(msg, icon)
+    )
   }
 
   const DEFENSE_SNAPSHOT_DEBOUNCE_MS = 1500;

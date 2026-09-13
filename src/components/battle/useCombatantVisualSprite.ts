@@ -17,11 +17,11 @@ import { pokemonDataProvider } from '@/logic/providers/pokemonDataProvider';
 import type { BattleCombatantProps } from '@/types/battle/battle';
 import {
   COMBATANT_DISPLAY_SIZE_ENEMY_MULT,
-  COMBATANT_DISPLAY_SIZE_PLAYER_MULT
+  COMBATANT_DISPLAY_SIZE_PLAYER_MULT,
+  DEFAULT_FRAME_SIZE_PX
 } from '@/logic/constants/animations';
 import { toPokemonType, type PokemonType } from '@/data/battle/types';
 
-const DEFAULT_FRAME_SIZE_PX = 96;
 const COMBATANT_SCALE_FACTOR_BASE = 1.0;
 const SINGLE_FRAME_FALLBACK = 1;
 const PATH_SLICE_OFFSET = 1;
@@ -163,21 +163,28 @@ export function useCombatantVisualSprite(props: BattleCombatantProps) {
   const imageUrl = computed(() => {
     if (!props.pokemon) return '';
     const spriteId = props.pokemon.form && props.pokemon.form !== 'normal' ? `${props.pokemon.id}-${props.pokemon.form}` : props.pokemon.id;
-    return getAssetUrl(ASSET_TYPES.POKEMON, spriteId, {
+    const base = getAssetUrl(ASSET_TYPES.POKEMON, spriteId, {
       isShiny: Boolean(props.pokemon.isShiny),
       isBack: isPlayer.value,
       isAnimated: isAnimated.value,
     });
+    if (isAnimated.value && idleKey.value) {
+      const filename = idleKey.value.replace(/_back$/, '');
+      return base.replace(/\/([^/]+)\.webp$/i, `/${filename}.webp`);
+    }
+    return base;
   });
 
   const variationUrl = computed(() => {
     if (!variationKey.value || !props.pokemon) return '';
     const spriteId = props.pokemon.form && props.pokemon.form !== 'normal' ? `${props.pokemon.id}-${props.pokemon.form}` : props.pokemon.id;
-    return getAssetUrl(ASSET_TYPES.POKEMON, spriteId, {
+    const base = getAssetUrl(ASSET_TYPES.POKEMON, spriteId, {
       isShiny: Boolean(props.pokemon.isShiny),
       isBack: isPlayer.value,
       isAnimated: true,
     });
+    const filename = variationKey.value.replace(/_back$/, '');
+    return base.replace(/\/([^/]+)\.webp$/i, `/${filename}.webp`);
   });
 
   const baseSvgPath = computed(() => {

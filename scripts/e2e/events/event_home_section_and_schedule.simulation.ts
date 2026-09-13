@@ -18,8 +18,8 @@
 
 import { test, expect, type Page } from '@playwright/test';
 import { BaseEventSimulation } from './base_event_simulation.ts';
+import { MAX_PER_ACTION_TIMEOUT_MS } from '../simulation_config.ts';
 
-const E2E_ACTION_TIMEOUT_MS = 5000;
 
 export class EventHomeSectionSimulation extends BaseEventSimulation {
   constructor(page: Page, username: string = 'HomeObserver') {
@@ -45,6 +45,8 @@ export class EventHomeSectionSimulation extends BaseEventSimulation {
 
       gameStore.state.team = [pikachu];
       gameStore.state.box = [];
+
+      await gameStore.saveGame();
 
       const isOffline = localStorage.getItem('pokevicio_session_mode') === 'offline';
       if (isOffline) {
@@ -75,30 +77,30 @@ test.describe('World Events Home Dashboard & Schedule E2E Simulation', () => {
 
       // 5. Verify Home view and #home-events-section are visible on dashboard
       const homeSection = page.locator('#home-events-section');
-      await expect(homeSection).toBeVisible({ timeout: E2E_ACTION_TIMEOUT_MS });
+      await expect(homeSection).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // 5. Verify active event card is rendered inside home widget
       const activeCard = homeSection.locator('#event-card-torneo_pesca');
-      await expect(activeCard).toBeVisible({ timeout: E2E_ACTION_TIMEOUT_MS });
+      await expect(activeCard).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // 6. Test Weekly 7-Day Schedule Accordion Toggle:
       const scheduleToggle = page.locator('#home-events-schedule-toggle-btn');
-      await expect(scheduleToggle).toBeVisible({ timeout: E2E_ACTION_TIMEOUT_MS });
+      await expect(scheduleToggle).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // Open schedule
       await scheduleToggle.click();
       const upcomingBlock = page.locator('#upcoming-events-schedule-section');
-      await expect(upcomingBlock).toBeVisible({ timeout: E2E_ACTION_TIMEOUT_MS });
+      await expect(upcomingBlock).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // Close schedule
       await scheduleToggle.click();
-      await expect(upcomingBlock).toHaveCount(0, { timeout: E2E_ACTION_TIMEOUT_MS });
+      await expect(upcomingBlock).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // 7. Test Dashboard Refresh Button
       const refreshBtn = page.locator('#home-events-refresh-btn');
-      await expect(refreshBtn).toBeVisible({ timeout: E2E_ACTION_TIMEOUT_MS });
+      await expect(refreshBtn).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
       await refreshBtn.click();
-      await expect(activeCard).toBeVisible({ timeout: E2E_ACTION_TIMEOUT_MS });
+      await expect(activeCard).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // 8. Dynamic Time Advancement: Travel to Wednesday 01:00 (event concluded)
       await sim.setMockGameTime('2026-08-12T01:00:00');
@@ -107,20 +109,20 @@ test.describe('World Events Home Dashboard & Schedule E2E Simulation', () => {
       await refreshBtn.click();
 
       // Verify torneo_pesca is no longer active in current row
-      await expect(activeCard).toHaveCount(0, { timeout: E2E_ACTION_TIMEOUT_MS });
+      await expect(activeCard).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // 9. Test Past Concluded Events Archive Accordion Toggle:
       const historyToggle = page.locator('#home-events-history-toggle-btn');
-      await expect(historyToggle).toBeVisible({ timeout: E2E_ACTION_TIMEOUT_MS });
+      await expect(historyToggle).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // Open past events
       await historyToggle.click();
       const pastEventsContainer = page.locator('#past-events-history-section');
-      await expect(pastEventsContainer).toBeVisible({ timeout: E2E_ACTION_TIMEOUT_MS });
+      await expect(pastEventsContainer).toBeVisible({ timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       // Close past events
       await historyToggle.click();
-      await expect(pastEventsContainer).toHaveCount(0, { timeout: E2E_ACTION_TIMEOUT_MS });
+      await expect(pastEventsContainer).toHaveCount(0, { timeout: MAX_PER_ACTION_TIMEOUT_MS });
 
       sim.finish('World Events Home Dashboard & Schedule E2E Simulation', 'passed');
     } catch (err) {

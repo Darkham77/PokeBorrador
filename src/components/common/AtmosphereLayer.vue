@@ -35,12 +35,14 @@ const preloadImages = (): Promise<[HTMLImageElement, HTMLImageElement]> => {
   return Promise.all([
     new Promise<HTMLImageElement>((resolve, reject) => {
       const img = new Image()
+      img.crossOrigin = 'anonymous'
       img.src = noise1Url
       img.onload = () => resolve(img)
       img.onerror = () => reject(new Error(`Failed to load weather texture at ${noise1Url}`))
     }),
     new Promise<HTMLImageElement>((resolve, reject) => {
       const img = new Image()
+      img.crossOrigin = 'anonymous'
       img.src = noise2Url
       img.onload = () => resolve(img)
       img.onerror = () => reject(new Error(`Failed to load weather texture at ${noise2Url}`))
@@ -97,18 +99,18 @@ const applyParallaxLayer = (
 ) => {
   if (!layer || !weatherTimeline) return
   gsap.killTweensOf(layer)
-  gsap.set(layer, { backgroundPosition: `${startX}px ${startY}px` })
-  
-  const opX = moveX >= 0 ? '+=' : '-='
-  const opY = moveY >= 0 ? '+=' : '-='
-  const valX = Math.abs(moveX) || 0.01
-  const valY = Math.abs(moveY) || 0.01
+  gsap.set(layer, { x: startX, y: startY })
   
   weatherTimeline.to(layer, {
-    backgroundPosition: `${opX}${valX}px ${opY}${valY}px`,
+    x: startX + moveX,
+    y: startY + moveY,
     duration,
     repeat: -1,
-    ease: 'none'
+    ease: 'none',
+    modifiers: {
+      x: gsap.utils.unitize(x => parseFloat(x) % 1024),
+      y: gsap.utils.unitize(y => parseFloat(y) % 1024)
+    }
   }, 0)
 }
 
@@ -171,9 +173,12 @@ const initWorker = async () => {
     [offscreen, bitmap1, bitmap2]
   )
 
+  const ATMOSPHERE_CANVAS_OVERDRAW_PX = 200
+  const ATMOSPHERE_RESIZE_THRESHOLD_PX = 20
+
   // Send initial dimensions immediately
-  const initialWidth = (containerRef.value?.clientWidth || 800) + 200
-  const initialHeight = (containerRef.value?.clientHeight || 600) + 200
+  const initialWidth = (containerRef.value?.clientWidth || 800) + ATMOSPHERE_CANVAS_OVERDRAW_PX
+  const initialHeight = (containerRef.value?.clientHeight || 600) + ATMOSPHERE_CANVAS_OVERDRAW_PX
   worker.postMessage({
     type: 'RESIZE',
     payload: { width: initialWidth, height: initialHeight }
@@ -185,15 +190,23 @@ const initWorker = async () => {
     stopResizeObserver()
     stopResizeObserver = null
   }
+  let lastSentW = initialWidth
+  let lastSentH = initialHeight
   const { stop } = useResizeObserver(containerRef, (entries) => {
     if (!entries || entries.length === 0 || !worker) return
     const entry = entries[0]
     if (!entry) return
     const { width, height } = entry.contentRect
-    worker.postMessage({
-      type: 'RESIZE',
-      payload: { width: width + 200, height: height + 200 }
-    })
+    const targetW = width + ATMOSPHERE_CANVAS_OVERDRAW_PX
+    const targetH = height + ATMOSPHERE_CANVAS_OVERDRAW_PX
+    if (Math.abs(targetW - lastSentW) > ATMOSPHERE_RESIZE_THRESHOLD_PX || Math.abs(targetH - lastSentH) > ATMOSPHERE_RESIZE_THRESHOLD_PX) {
+      lastSentW = targetW
+      lastSentH = targetH
+      worker.postMessage({
+        type: 'RESIZE',
+        payload: { width: targetW, height: targetH }
+      })
+    }
   })
   stopResizeObserver = stop
 }
