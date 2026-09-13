@@ -1,0 +1,1 @@
+import{t as e}from"./timeSync-BO_r7k7J.js";export{e as syncServerTime};

@@ -1,0 +1,1 @@
+import{t as e}from"./FishingModal-CBJvhoTs.js";export{e as default};

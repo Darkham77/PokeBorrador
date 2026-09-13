@@ -1,1 +1,0 @@
-import{t as e}from"./supabase-0-1fymdj.js";export{e as default,e as supabase};

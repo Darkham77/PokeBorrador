@@ -1,0 +1,1 @@
+import{t as e}from"./supabase-Dc4uUvit.js";export{e as default,e as supabase};
