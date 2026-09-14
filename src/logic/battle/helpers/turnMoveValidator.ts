@@ -12,8 +12,16 @@ export interface MoveResolutionResult {
 export function resolvePlayerForcedMoveIndex(
   p: Pokemon,
   requestedMoveIndex: number,
-  playerRequestMoves?: Array<{ id?: string; move?: string }>
+  playerRequestMoves?: Array<{ id?: string; move?: string; disabled?: boolean | 'pp' }>
 ): { finalMoveIndex: number; isRecharge: boolean } {
+  const nonDisabledReqMoves = playerRequestMoves ? playerRequestMoves.filter(m => !m.disabled) : undefined
+  if (nonDisabledReqMoves && nonDisabledReqMoves.length > 1) {
+    if (p.volatileCounters?.['lockedmove']) {
+      delete p.volatileCounters['lockedmove']
+    }
+    return { finalMoveIndex: requestedMoveIndex, isRecharge: false }
+  }
+
   let moveIndex = requestedMoveIndex
 
   if (p.volatileCounters?.['lockedmove'] && p.volatileCounters['lockedmove'] > 0 && p.lastMove) {

@@ -59,7 +59,8 @@ describe('Daycare Missions Integrity & Self-Repair', () => {
 
     gameStore.state.daycare_missions = [corruptedMission];
 
-    // Accessing dailyMissions should trigger auto-repair
+    // Calling checkDailyReset should trigger auto-repair and emit warning
+    missionsStore.checkDailyReset();
     const missions = missionsStore.dailyMissions;
 
     expect(loggerSpy).toHaveBeenCalledWith(
@@ -95,7 +96,8 @@ describe('Daycare Missions Integrity & Self-Repair', () => {
 
     gameStore.state.daycare_missions = [missionWithLegacyItem];
 
-    // Accessing dailyMissions should detect the invalid reward id, warn, and regenerate
+    // Calling checkDailyReset should detect the invalid reward id, warn, and regenerate
+    missionsStore.checkDailyReset();
     const missions = missionsStore.dailyMissions;
 
     expect(warnSpy).toHaveBeenCalledWith(

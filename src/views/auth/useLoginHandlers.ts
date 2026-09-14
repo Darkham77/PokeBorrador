@@ -11,6 +11,8 @@ import { OFFICIAL_SERVERS } from '@/data/system/official_servers';
 import type { useAuthStore } from '@/stores/auth';
 import { logger } from '@/logic/utils/logger';
 
+const SERVER_HEALTH_TIMEOUT_MS = 3000;
+
 export interface UseLoginHandlersParams {
   authStore: ReturnType<typeof useAuthStore>;
   router: Router;
@@ -148,16 +150,11 @@ export function useLoginHandlers(params: UseLoginHandlersParams) {
 
     serverStatus.value = 'checking';
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 3000);
-
       // fallow-ignore-next-line security-sink
       const response = await fetch(`${server.url}/rest/v1/`, {
-        signal: controller.signal,
+        signal: AbortSignal.timeout(SERVER_HEALTH_TIMEOUT_MS),
         headers: { 'apikey': server.anonKey },
       });
-
-      clearTimeout(timeout);
 
       serverStatus.value = response.status < 500 ? 'online' : 'offline';
       serverStatusDetail.value = response.status < 500 ? 'Operativo ✅' : 'Error de Servidor 💥';

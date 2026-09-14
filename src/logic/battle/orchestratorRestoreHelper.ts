@@ -122,6 +122,9 @@ export async function restoreBattleState(ctx: BattleContext, battleData: unknown
     if (!d._initialEnemy) {
       d._initialEnemy = cloneReactive(enemyPoke)
     }
+    if (!d._initialEnemies && enemyPoke?.uid) {
+      d._initialEnemies = { [enemyPoke.uid]: cloneReactive(enemyPoke) }
+    }
     d.playerTeam = sourceTeam
     const matchedIndex = sourceTeam.findIndex((p: Pokemon) => p && isMatchingUid(p.uid, playerPoke.uid))
     d.playerTeamIndex = matchedIndex !== -1 ? matchedIndex : (desiredIndex !== -1 ? desiredIndex : 0)
@@ -130,7 +133,8 @@ export async function restoreBattleState(ctx: BattleContext, battleData: unknown
     d.turnCount = typeof d.turnCount === 'number' ? d.turnCount : 1
     d.over = false
     d.escapeAttempts = typeof d.escapeAttempts === 'number' ? d.escapeAttempts : 0
-    d.cannotEscape = Boolean(d.cannotEscape)
+    const isSpecialLock = Boolean(d.isTrainer || d.isGym || d.isPvP || d.isGuardian)
+    d.cannotEscape = isSpecialLock ? Boolean(d.cannotEscape) : false
     d.weather = d.weather || { type: 'clear', visual: 'clear', turns: -1 }
     d.initialMapWeather = d.initialMapWeather || null
     d.terrain = d.terrain || null
@@ -198,6 +202,7 @@ async function resumeSearchMode(ctx: BattleContext, d: Partial<BattleState>): Pr
     fled: false,
     isTrainer: false,
     isGym: false,
+    cannotEscape: false,
     minigame: null,
     isCave: Boolean(d.isCave),
     isIndoors: Boolean(d.isIndoors),

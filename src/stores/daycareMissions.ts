@@ -34,25 +34,8 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
   const uiStore = useUIStore();
 
   const dailyMissions = computed<DaycareMission[]>({
-    get: () => {
-      const missions = gameStore.state.daycare_missions || [];
-      const hasCorrupted = missions.some(m => !isValidDaycareMission(m));
-      if (hasCorrupted) {
-        logger.warn('daycareMissions', 'Corrupted daycare mission detected (missing trainerSprite or required fields). Regenerating fresh missions.');
-        const today = Temporal.Now.plainDateISO().toString();
-        const level = gameStore.state.trainerLevel || 1;
-        const m1 = generateMission(level, today) as DaycareMission;
-        let m2 = generateMission(level, today) as DaycareMission;
-        while (m2.targetId === m1.targetId) {
-          m2 = generateMission(level, today) as DaycareMission;
-        }
-        gameStore.state.daycare_missions = [m1, m2];
-        gameStore.scheduleSave();
-        return [m1, m2] as DaycareMission[];
-      }
-      return missions;
-    },
-    set: (val) => { gameStore.state.daycare_missions = val }
+    get: () => gameStore.state.daycare_missions || [],
+    set: (val) => { gameStore.state.daycare_missions = val; }
   });
 
   const missionRefreshes = computed<number>({

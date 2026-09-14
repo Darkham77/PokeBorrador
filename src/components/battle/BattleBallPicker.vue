@@ -208,7 +208,7 @@ defineExpose({
       v-gsap-hover="{ scale: 1.12, rotation: 5, y: 0 }"
       class="btn-catch-ball"
       :class="{ 'is-active': isBallMenuOpen }"
-      :disabled="battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || battleStore.state?.isTrainer"
+      :disabled="props.disabled || battleStore.isProcessing || props.isFinishing || battleStore.isIntroAnimating || (battleStore.uiConfig ? !battleStore.uiConfig.allowCatch : false)"
       @click.stop="toggleBallMenu"
     >
       <span class="sr-only">CAPTURAR</span>

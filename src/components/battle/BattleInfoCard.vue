@@ -129,8 +129,11 @@ const getBreakdown = (key: string) => {
 }
 
 const showTeamBalls = computed(() => {
-  // En la presentación del entrenador (FIRST_INTRO) se muestra la fila de Pokéballs disponibles.
-  return battleStore.state?.isTrainer || battleStore.state?.isGym || battleStore.state?.isPvP
+  // En combates contra entrenador, gimnasio o PvP se muestra la fila de Pokéballs disponibles.
+  if (battleStore.uiConfig) {
+    return !battleStore.uiConfig.isWild
+  }
+  return !!(battleStore.state?.isTrainer || battleStore.state?.isGym || battleStore.state?.isPvP)
 })
 
 const MAX_TEAM_CAPACITY = 6
@@ -253,7 +256,7 @@ const teamBallsStatus = computed(() => {
         :is-iv-scanner-active="isIvScannerActive"
         :is-player="isPlayer"
         :is-scrambled="isScrambled"
-        :is-trainer-or-gym-or-pv-p="!!(battleStore.state?.isTrainer || battleStore.state?.isGym || battleStore.state?.isPvP)"
+        :is-trainer-or-gym-or-pv-p="battleStore.uiConfig ? !battleStore.uiConfig.isWild : !!(battleStore.state?.isTrainer || battleStore.state?.isGym || battleStore.state?.isPvP)"
         :iv-total="ivTotal"
         :pokemon-tier-info="pokemonTierInfo"
         :p="p"

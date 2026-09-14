@@ -38,9 +38,8 @@ const battleItems = computed<BattleItem[]>(() => {
     const itemData = getItemById(name)
     if (!itemData) return
     
-    const isTrainer = battleStore.state?.isTrainer
     if (itemData.nonCombat) return
-    if (itemData.cat === 'potions' || (itemData.cat === 'pokeballs' && !isTrainer)) {
+    if (itemData.cat === 'potions' || (itemData.cat === 'pokeballs' && (battleStore.uiConfig ? battleStore.uiConfig.allowCatch : true))) {
       items.push({ 
         ...itemData, 
         id: requireItemId(itemData.id),

@@ -21,13 +21,11 @@ const emit = defineEmits<{
 }>()
 
 import { computed } from 'vue'
-import { useGameStore } from '@/stores/game'
 import { useLivePvPStore } from '@/stores/livePvP'
 
-import type { Pokemon } from '@/types/pokemon/pokemon'
+import { getHealthyBenchCombatants } from '@/logic/battle/battleTeamCoordinator.ts'
 
 const battleStore = useBattleStore()
-const gameStore = useGameStore()
 const livePvP = useLivePvPStore()
 
 const isLocked = computed(() => {
@@ -35,9 +33,7 @@ const isLocked = computed(() => {
 })
 
 const hasAvailableBenchPokemon = computed(() => {
-  const team = ((battleStore.isPvP ? battleStore.state?.playerTeam : gameStore.state?.team) || []) as (Pokemon | null)[]
-  const activeUid = battleStore.player?.uid
-  return team.some((p) => p && p.hp > 0 && p.uid !== activeUid)
+  return getHealthyBenchCombatants(battleStore.getContext()).length > 0
 })
 
 const isInputReady = computed(() => {

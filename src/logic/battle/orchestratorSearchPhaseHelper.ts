@@ -23,6 +23,13 @@ export async function processSearchPhaseSequence(
     return true
   }
 
+  if (ctx.activeBattle.value) {
+    ctx.activeBattle.value.enemy = (!isTrainer && !isGym) ? finalEnemyPoke : null
+    if (!isTrainer && !isGym) {
+      ctx.activeBattle.value.enemyTeam = [finalEnemyPoke]
+    }
+  }
+
   await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.PREPARATION)
   await fsm.transition(BATTLE_STATES.SEARCH_PHASE, BATTLE_SUBSTATES.AUTO_BATTLE_CHECK)
   

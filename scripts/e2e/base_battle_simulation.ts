@@ -1149,6 +1149,9 @@ export abstract class BaseBattleSimulation extends BaseE2ESimulation {
       const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
       const store = useBattleStore();
       if (store.isBattleActive) {
+        if (store.state) {
+          store.state.playerFled = true;
+        }
         await store.endBattle(false, true);
         await store.completeBattleFlow('map');
       }

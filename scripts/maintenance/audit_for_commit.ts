@@ -95,11 +95,18 @@ export function filterNewWarnings(
       continue;
     }
 
-    // Regla de mantenibilidad 500/1000: si el archivo en origin/main ya superaba 500 líneas, es advertencia heredada
+    // Regla de mantenibilidad 500/1000: si el archivo en origin/main ya superaba 500 líneas, es advertencia heredada.
+    // Si el archivo supera 500 líneas habiendo estado por debajo (o siendo nuevo), se eleva a error bloqueante.
     if (violation.message.includes('Mantenibilidad (500/1000 Rule)') || 
+        violation.message.includes('Mantenibilidad (Fallow 500/1000 Rule)') ||
         violation.message.includes('Largo de archivo (>300/500 líneas)')) {
       const originLines = originContent ? originContent.split('\n').length : 0;
-      const copy = { ...violation, isNew: originLines <= 500 };
+      const isNewViolation = originLines <= 500;
+      const copy = { 
+        ...violation, 
+        isNew: isNewViolation,
+        severity: (isNewViolation ? 'error' : 'warning') as AuditSeverity
+      };
       result.push(copy);
       continue;
     }

@@ -75,4 +75,20 @@ defineProps<{
 
 <style scoped lang="scss">
 @use "@/styles/components/_move-tooltip-shared.scss" as *;
+
+.calc-section-title {
+  @include calc-section-title-mixin;
+}
+
+.extra-effect-section {
+  @include extra-effect-section-mixin;
+}
+
+.formula-breakdown-box {
+  @include formula-breakdown-box-mixin;
+}
+
+.smogon-desc-text {
+  font-size: $tooltip-smogon-desc-size !important;
+}
 </style>

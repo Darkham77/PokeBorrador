@@ -10,64 +10,66 @@ defineProps<{
   <!-- Tactical Modifiers Section (Assault Vest, Eviolite, Leech Seed, Foresight, Tera) -->
   <div
     v-if="activeDetails.tacticalInfo && (activeDetails.tacticalInfo.hasAssaultVest || activeDetails.tacticalInfo.hasEviolite || activeDetails.tacticalInfo.isLeechSeedActive || activeDetails.tacticalInfo.isForesightActive || activeDetails.tacticalInfo.attackerTera || activeDetails.tacticalInfo.defenderTera)"
-    class="extra-effect-section tactical-section"
+    class="move-tooltip-tactical-wrapper"
   >
     <div class="calc-section-title">
       MODIFICADORES TÁCTICOS
     </div>
 
-    <!-- Assault Vest -->
-    <div
-      v-if="activeDetails.tacticalInfo.hasAssaultVest"
-      class="field-condition-row"
-    >
-      <span class="emoji">🛡️</span>
-      <span class="field-condition-text penalized">Chaleco Asalto Rival: Activo (<span class="emoji">↓</span> daño especial)</span>
-    </div>
+    <div class="extra-effect-section tactical-section">
+      <!-- Assault Vest -->
+      <div
+        v-if="activeDetails.tacticalInfo.hasAssaultVest"
+        class="field-condition-row"
+      >
+        <span class="emoji">🛡️</span>
+        <span class="field-condition-text penalized">Chaleco Asalto Rival: Activo (<span class="emoji">↓</span> daño especial)</span>
+      </div>
 
-    <!-- Eviolite -->
-    <div
-      v-if="activeDetails.tacticalInfo.hasEviolite"
-      class="field-condition-row"
-    >
-      <span class="emoji">💎</span>
-      <span class="field-condition-text penalized">Mineral Evolutivo Rival: Activo (<span class="emoji">↑</span> defensas)</span>
-    </div>
+      <!-- Eviolite -->
+      <div
+        v-if="activeDetails.tacticalInfo.hasEviolite"
+        class="field-condition-row"
+      >
+        <span class="emoji">💎</span>
+        <span class="field-condition-text penalized">Mineral Evolutivo Rival: Activo (<span class="emoji">↑</span> defensas)</span>
+      </div>
 
-    <!-- Leech Seed -->
-    <div
-      v-if="activeDetails.tacticalInfo.isLeechSeedActive"
-      class="field-condition-row"
-    >
-      <span class="emoji">🌱</span>
-      <span class="field-condition-text boosted">Drenadoras Activas (Drenaje pasivo)</span>
-    </div>
+      <!-- Leech Seed -->
+      <div
+        v-if="activeDetails.tacticalInfo.isLeechSeedActive"
+        class="field-condition-row"
+      >
+        <span class="emoji">🌱</span>
+        <span class="field-condition-text boosted">Drenadoras Activas (Drenaje pasivo)</span>
+      </div>
 
-    <!-- Foresight -->
-    <div
-      v-if="activeDetails.tacticalInfo.isForesightActive"
-      class="field-condition-row"
-    >
-      <span class="emoji">👁️</span>
-      <span class="field-condition-text boosted">Gran Ojo / Profecía Activo (Ignora inmunidad Fantasma)</span>
-    </div>
+      <!-- Foresight -->
+      <div
+        v-if="activeDetails.tacticalInfo.isForesightActive"
+        class="field-condition-row"
+      >
+        <span class="emoji">👁️</span>
+        <span class="field-condition-text boosted">Gran Ojo / Profecía Activo (Ignora inmunidad Fantasma)</span>
+      </div>
 
-    <!-- Attacker Tera -->
-    <div
-      v-if="activeDetails.tacticalInfo.attackerTera"
-      class="field-condition-row"
-    >
-      <span class="emoji">🌟</span>
-      <span class="field-condition-text boosted">Tu Tipo Tera: {{ activeDetails.tacticalInfo.attackerTera }}</span>
-    </div>
+      <!-- Attacker Tera -->
+      <div
+        v-if="activeDetails.tacticalInfo.attackerTera"
+        class="field-condition-row"
+      >
+        <span class="emoji">🌟</span>
+        <span class="field-condition-text boosted">Tu Tipo Tera: {{ activeDetails.tacticalInfo.attackerTera }}</span>
+      </div>
 
-    <!-- Defender Tera -->
-    <div
-      v-if="activeDetails.tacticalInfo.defenderTera"
-      class="field-condition-row"
-    >
-      <span class="emoji">🌟</span>
-      <span class="field-condition-text penalized">Tipo Tera Rival: {{ activeDetails.tacticalInfo.defenderTera }}</span>
+      <!-- Defender Tera -->
+      <div
+        v-if="activeDetails.tacticalInfo.defenderTera"
+        class="field-condition-row"
+      >
+        <span class="emoji">🌟</span>
+        <span class="field-condition-text penalized">Tipo Tera Rival: {{ activeDetails.tacticalInfo.defenderTera }}</span>
+      </div>
     </div>
   </div>
 </template>
@@ -75,6 +77,12 @@ defineProps<{
 <style scoped lang="scss">
 @use "@/styles/core/tools" as *;
 @use "@/styles/components/_move-tooltip-shared.scss" as *;
+
+.move-tooltip-tactical-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 
 .calc-section-title {
   @include calc-section-title-mixin;

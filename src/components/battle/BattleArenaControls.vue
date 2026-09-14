@@ -13,8 +13,9 @@ import BattleActionButtons from './BattleActionButtons.vue'
 import BattleQuickTeam from './BattleQuickTeam.vue'
 import BattleQuickBag from './BattleQuickBag.vue'
 import StruggleOverlay from './StruggleOverlay.vue'
+import BattleFinishOverlay from './BattleFinishOverlay.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
-import { getActiveMinigame } from '@/logic/battle/battleMinigames'
+import { getActiveCombatTeam, getHealthyBenchCombatants } from '@/logic/battle/battleTeamCoordinator.ts'
 
 // Debug tools are now handled by BattleArena sidebar
 
@@ -36,19 +37,32 @@ function resolveForcedMoveIndex(
   subState: string | null | undefined,
   isProcessing: boolean,
   p: Pokemon | null | undefined,
-  reqMoves?: { id?: string; move?: string }[]
+  reqMoves?: { id?: string; move?: string; disabled?: boolean | 'pp' }[]
 ): number | null {
   if (String(subState) !== 'WAIT_INPUT' || isProcessing || !p) return null;
 
-  const hasLockedMove = (p.volatileCounters?.['lockedmove'] ?? 0) > 0;
-  const hasTwoTurn = (p.volatileCounters?.['twoturnmove'] ?? 0) > 0;
-  const hasRecharge = (p.volatileCounters?.['mustrecharge'] ?? 0) > 0 || (reqMoves && reqMoves.length === 1 && (reqMoves[0]?.id === 'recharge' || reqMoves[0]?.move === 'Recharge'));
-  const hasThrash = (p.thrashTurns ?? 0) > 0;
+  const nonDisabledReqMoves = reqMoves ? reqMoves.filter(m => !m.disabled) : undefined;
+  if (nonDisabledReqMoves && nonDisabledReqMoves.length > 1) {
+    if (p.volatileCounters?.['lockedmove']) {
+      delete p.volatileCounters['lockedmove'];
+    }
+    return null;
+  }
 
+  const hasRecharge = (p.volatileCounters?.['mustrecharge'] ?? 0) > 0 || (reqMoves && reqMoves.length === 1 && (reqMoves[0]?.id === 'recharge' || reqMoves[0]?.move === 'Recharge'));
   if (hasRecharge) return 0;
 
+  if (reqMoves && reqMoves.length === 1 && reqMoves[0]?.id) {
+    const forcedIdx = p.moves.findIndex(m => m?.id === reqMoves[0]?.id);
+    if (forcedIdx !== -1) return forcedIdx;
+  }
+
+  const hasLockedMove = (p.volatileCounters?.['lockedmove'] ?? 0) > 0;
+  const hasTwoTurn = (p.volatileCounters?.['twoturnmove'] ?? 0) > 0;
+  const hasThrash = (p.thrashTurns ?? 0) > 0;
+
   if (hasLockedMove || hasTwoTurn || hasThrash) {
-    const targetId = p.lastMove?.id || (reqMoves && reqMoves.length === 1 ? reqMoves[0]?.id : undefined);
+    const targetId = (reqMoves && reqMoves.length === 1 ? reqMoves[0]?.id : undefined) || p.lastMove?.id;
     if (targetId) {
       const forcedIdx = p.moves.findIndex(m => m?.id === targetId);
       if (forcedIdx !== -1) return forcedIdx;
@@ -88,9 +102,8 @@ const execShowBattleSwitch = () => {
   const isForced = uiStore.isBattleSwitchForced;
   uiStore.isBattleSwitchForced = false;
 
-  const team = ((battleStore.isPvP ? battleStore.state?.playerTeam : gameStore.state.team) || []) as (Pokemon | null)[];
-  const activeUid = player.value?.uid;
-  const hasBenchPokemon = team.some(p => p && p.hp > 0 && p.uid !== activeUid);
+  const team = getActiveCombatTeam(battleStore.getContext());
+  const hasBenchPokemon = getHealthyBenchCombatants(battleStore.getContext()).length > 0;
 
   if (!hasBenchPokemon) {
     uiStore.notify('No hay Pokémon disponibles para cambiar', '⚠️');
@@ -101,7 +114,7 @@ const execShowBattleSwitch = () => {
     title: '⚡ CAMBIAR POKÉMON',
     isBattleSwitch: true,
     battleMode: battleStore.isPvP ? 'pvp' : 'wild',
-    customList: ((battleStore.isPvP && battleStore.state?.playerTeam) ? battleStore.state.playerTeam : (gameStore.state.team || [])).filter(Boolean) as Pokemon[],
+    customList: team,
     includeTeam: true,
     preventClose: isForced, 
     activePokemonUid: player.value?.uid,
@@ -237,35 +250,6 @@ watch(() => [
   }
 });
 
-// Dynamic button text/emoji for fishing & archaeology encounters
-const encounterBtnEmoji = computed(() => {
-  const mg = getActiveMinigame(battleStore.state);
-  if (mg === 'fishing') return '🎣';
-  if (mg === 'archaeology') return '⛏️';
-  return '⚔️';
-});
-
-const encounterBtnText = computed(() => {
-  const mg = getActiveMinigame(battleStore.state);
-  if (mg === 'fishing') return '¡PESCAR!';
-  if (mg === 'archaeology') return '¡EXCAVAR!';
-  return '¡COMBATIR!';
-});
-
-const exitButtonConfig = computed(() => {
-  const returnTab = battleStore.state?.returnTab;
-  if (returnTab === 'arena' || battleStore.isPvP) {
-    return { type: 'arena', text: 'VOLVER A LA ARENA', emoji: '⚔️' };
-  }
-  if (returnTab === 'home') {
-    return { type: 'home', text: 'VOLVER A CASA', emoji: '🏠' };
-  }
-  if (returnTab === 'gyms' || battleStore.state?.isGym) {
-    return { type: 'gyms', text: 'VOLVER A GIMNASIOS', emoji: '🏆' };
-  }
-  return { type: 'map', text: 'VOLVER AL MAPA', emoji: '🗺️' };
-});
-
 const GSAP_ARENA_CONTROLS_INITIAL_Y_OFFSET_PX = 30;
 const GSAP_ARENA_CONTROLS_INITIAL_SCALE = 0.95;
 
@@ -343,32 +327,10 @@ const onEnter = (el: Element, done: () => void) => {
     </Transition>
 
     <!-- Overlay de Finalización / Búsqueda (Cubre TODO el move-panel) -->
-    <div
+    <BattleFinishOverlay
       v-if="isFinishOverlayVisible"
-      class="battle-finish-overlay"
-      :class="{ 'is-search-mode': battleStore.isSearching }"
-    >
-      <div class="finish-actions-group">
-        <button
-          v-if="battleStore.isSearching && (battleStore.state?.wasSearching !== false)"
-          id="start-encounter-btn"
-          class="continue-btn-final fight-btn"
-          @click.stop="battleStore.startEncounter()"
-        >
-          <span class="emoji">{{ encounterBtnEmoji }}</span>
-          <span class="btn-text">{{ encounterBtnText }}</span>
-        </button>
-        <button
-          v-if="(battleStore.isReadyToExit || isRewardsWait) || (battleStore.isSearching && battleStore.state?.wasSearching !== false && !battleStore.state?.isTrainer && !battleStore.state?.isGym && !battleStore.state?.cannotEscape)"
-          id="exit-battle-btn"
-          class="continue-btn-final map-btn"
-          @click.stop="battleStore.completeBattleFlow('map')"
-        >
-          <span class="emoji">{{ exitButtonConfig.emoji }}</span>
-          <span class="btn-text">{{ exitButtonConfig.text }}</span>
-        </button>
-      </div>
-    </div>
+      :is-rewards-wait="isRewardsWait"
+    />
   </div>
 </template>
 
@@ -484,72 +446,6 @@ const onEnter = (el: Element, done: () => void) => {
 :deep(.moves-grid-vicio) {
   margin: 0 !important;
   padding: 0 !important;
-}
-
-.battle-finish-overlay {
-  position: absolute;
-  inset: 0;
-  background: Rgba(0,0,0,0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-overlay);
-  pointer-events: all;
-  cursor: pointer;
-  -webkit-will-change: transform, opacity;
-  will-change: transform, opacity;
-  @include gpu-layer;
-
-  &.is-search-mode {
-    align-items: flex-end;
-    padding-bottom: 20px;
-  }
-}
-
-.continue-btn-final {
-  @include btn-vicio('info', 'md', true);
-  max-width: 300px;
-  display: flex;
-  align-items: center;
-  z-index: calc(var(--z-overlay) + 1);
-  pointer-events: all;
-  cursor: pointer;
-  justify-content: flex-start;
-  padding-left: 48px;
-  gap: 16px;
-  text-align: left;
-  
-  &.map-btn {
-    @include btn-vicio('success', 'md', true);
-  }
-
-  .btn-emoji {
-    width: 32px;
-    font-size: 28px; 
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    will-change: transform, filter, opacity;
-    filter: Drop-Shadow(0 2px 4px Rgba(0,0,0,0.3));
-    position: relative;
-    top: -1px;
-    flex-shrink: 0;
-  }
-
-  .btn-text {
-    display: inline-flex;
-    align-items: center;
-  }
-}
-
-.finish-actions-group {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: center;
-  width: 100%;
-  padding: 20px;
 }
 
 // Wrapper del grid de movimientos: mantiene el layout intacto

@@ -126,6 +126,10 @@ export const useMapStore = defineStore('map', () => {
   const setGlobalCycle = (c: DayPhase | null) => { forcedCycle.value = c }
 
   const navigate = async (locId: MapRouteId) => {
+    const targetWeather = globalWeather.value
+      ? globalWeather.value
+      : getRouteWeather(locId, requireWeatherSeasonId(currentSeason.value.id), currentEpochHour.value, currentCycle.value)
+
     const { executeNavigation } = await import('./mapActions')
     await executeNavigation(
       locId,
@@ -134,7 +138,7 @@ export const useMapStore = defineStore('map', () => {
         currentEpochHour: currentEpochHour.value,
         lastNavigateTime: lastNavigateTime.value,
         lastTrainerChanceIncrementAt: lastTrainerChanceIncrementAt.value,
-        currentWeather: currentWeather.value,
+        currentWeather: targetWeather,
         currentCycle: currentCycle.value,
         activeEvents: activeEvents.value,
         mapWinners: mapWinners.value

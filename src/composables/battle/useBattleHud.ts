@@ -33,14 +33,14 @@ function checkScrambleState(subState: string | null | undefined, state: string |
 const TECHNICAL_FSM_SUBSTATES_SET: ReadonlySet<string> = new Set<string>([ // runtime-set: Fast O(1) membership lookup set
   'RECEIVE_CONFIG', 'APPLY_ITEM_MODIFIERS', 'WEIGHT_CALCULATION', 'INJECT_FILTERS', 'READY_FOR_GEN',
   'VACATE_ALL_SEATS', 'CHECK_CONTEXT', 'ASYNC_THREAD', 'GEN_TEAMS', 'MARK_EVENT', 'PRELOAD_FINAL_COORDS',
-  'SET_SEARCH_FLAG', 'PRELOAD_COORDS', 'PREPARATION', 'AUTO_BATTLE_CHECK', 'UPDATE_BUTTON'
+  'SET_SEARCH_FLAG', 'PRELOAD_COORDS'
 ]);
 const TRAINER_VISIBLE_FSM_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['ENCOUNTER_TYPE_CHECK', 'TRAINER_ENTRY', 'T_VISUAL', 'SHOW_DIALOGS', 'TRAINER_ENCOUNTER', 'RETREAT_AND_FADEOUT', 'T_RETREAT']); // runtime-set: Fast O(1) membership lookup set
 
 function checkEnemyTechnicalHidden(subState: string | null | undefined, state: string | null | undefined, isTrainer: boolean): boolean {
   if (subState === 'GEN_TEAMS' || subState === 'MINIGAME_CHECK') return true;
   
-  if (state === 'CONTEXT_SETUP' || state === 'INITIALIZING' || state === 'SEARCH_PHASE') {
+  if (state === 'CONTEXT_SETUP' || state === 'INITIALIZING') {
     if (subState && TECHNICAL_FSM_SUBSTATES_SET.has(subState)) return true;
   }
 
@@ -73,7 +73,10 @@ const PLAYER_TECH_HIDDEN_SET: ReadonlySet<string> = new Set<string>(['TRAINER_EN
 
 const ENCOUNTER_EXCLUDE_STATES_SET: ReadonlySet<string> = new Set<string>(['ACTIVE_BATTLE', 'REORDER_TEAM', 'REWARDS_PHASE', 'LEVEL_UP_MODAL', 'EXIT_BATTLE']); // runtime-set: Fast O(1) membership lookup set
 const ENCOUNTER_ANIM_STATES_SET: ReadonlySet<string> = new Set<string>(['catching', 'trapped', 'releasing']); // runtime-set: Fast O(1) membership lookup set
-const ENCOUNTER_ACTIVE_SUBSTATES_SET: ReadonlySet<string> = new Set<string>(['PARALLEL_ENTRY', 'PARALLEL_JUMP', 'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'COMBAT_OR_FLEE', 'WILD_ENTRY', 'BUSH_FADE', 'REVEAL_COLORS']); // runtime-set: Fast O(1) membership lookup set
+const ENCOUNTER_ACTIVE_SUBSTATES_SET: ReadonlySet<string> = new Set<string>([ // runtime-set: Fast O(1) membership lookup set
+  'PARALLEL_ENTRY', 'PARALLEL_JUMP', 'ENTRY_ANIM', 'ENCOUNTER_ANIM', 'COMBAT_OR_FLEE', 'WILD_ENTRY', 'BUSH_FADE', 'REVEAL_COLORS',
+  'PREPARATION', 'AUTO_BATTLE_CHECK', 'UPDATE_BUTTON', 'PARALLEL_PREP', 'BUSH_VISIBLE', 'SILHOUETTE_MODE'
+]);
 
 /**
  * Composable para gestionar la visibilidad y estados del HUD en combate.
@@ -101,7 +104,7 @@ export function useBattleHud(
     // CANONICAL MANDATE: Seat 2 HUD is unconditionally suppressed during setup and initialization
     if (fsmState === 'CONTEXT_SETUP' || fsmState === 'INITIALIZING') return true;
 
-    const isTrainer = Boolean(s?.isTrainer || s?.isGym || s?.isPvP || s?.isRival || s?.trainerName);
+    const isTrainer = Boolean(s?.isTrainer || s?.isGym || s?.isPvP || s?.isRival);
     if (isTrainer) {
       if (fsmState === 'SEARCH_PHASE') return true;
       if (fsmState === 'FIRST_INTRO' && fsmSub !== 'POKEMON_CALL') return true;
@@ -136,7 +139,7 @@ export function useBattleHud(
     if (state === 'CONTEXT_SETUP' || state === 'INITIALIZING' || state === 'REWARDS_PHASE' || state === 'LEVEL_UP_MODAL') return null;
 
     const b = toValue(battleStore.state);
-    const isTrainer = Boolean(b?.isTrainer || b?.isGym || b?.isPvP || b?.isRival || b?.trainerName);
+    const isTrainer = Boolean(b?.isTrainer || b?.isGym || b?.isPvP || b?.isRival);
     const subState = toValue(battleStore.fsm?.currentSubState);
     if (isTrainer) {
       if (state === 'SEARCH_PHASE') return null;
@@ -181,7 +184,7 @@ export function useBattleHud(
     if (s === 'REWARDS_PHASE' && sub === 'EMPTY_WAIT') return null;
 
     const b = toValue(battleStore.state);
-    const isTrainer = Boolean(b?.isTrainer || b?.isGym || b?.isPvP || b?.isRival || b?.trainerName);
+    const isTrainer = Boolean(b?.isTrainer || b?.isGym || b?.isPvP || b?.isRival);
     if (isTrainer) {
       if (s === 'SEARCH_PHASE') return null;
       if (s === 'FIRST_INTRO' && sub !== 'POKEMON_CALL') return null;

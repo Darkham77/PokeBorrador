@@ -346,8 +346,8 @@ watch(() => battleStore.isBattleActive, (active) => {
             :base-entity-size-enemy="BASE_ENTITY_SIZE_ENEMY"
             :base-entity-size-player="BASE_STANDING_TRAINER_SIZE_PLAYER"
             :object-scale="OBJECT_SCALE"
-            :is-trainer-or-gym="!!(battle?.isTrainer || battle?.isGym)"
-            :is-pv-p="!!battle?.isPvP"
+            :is-trainer-or-gym="battleStore.uiConfig.isNpc"
+            :is-pv-p="battleStore.uiConfig.isPvP"
             :trainer-sprite="battle?.trainerSprite"
             :trainer-gender="battle?.trainerGender"
             :trainer-name="battle?.trainerName"
@@ -378,7 +378,7 @@ watch(() => battleStore.isBattleActive, (active) => {
             :is-capture-success="getPokemonCaptureActive('enemy', p)"
             :is-critical-capture="!!isCriticalCaptureActive.enemy"
             :sparkles="catchSparkles.filter(s => s.side === 'enemy')"
-            :is-fainting="isFaintInProgress && faintedPokemonSnapshot?.side === 'enemy' && !(battle?.isTrainer || battle?.isGym) && faintedPokemonSnapshot?.uid === p.uid"
+            :is-fainting="isFaintInProgress && faintedPokemonSnapshot?.side === 'enemy' && battleStore.uiConfig.isWild && faintedPokemonSnapshot?.uid === p.uid"
             :is-emerging="enemyIsJumping"
             :suppress-fx="isSearching || isIntroInProgress"
             :stages="battleStore.enemyStages"
@@ -453,7 +453,7 @@ watch(() => battleStore.isBattleActive, (active) => {
         <BattleTrainerSpeechBubble
           :position="p1Pos"
           :base-size="BASE_ENTITY_SIZE_PLAYER"
-          :visible="!!((battle?.isTrainer || battle?.isGym) && (
+          :visible="!!(battleStore.uiConfig.isNpc && (
             (battleStore.currentFsmState === 'FIRST_INTRO' && (
               battleStore.currentSubState === 'SHOW_DIALOGS'
             )) ||

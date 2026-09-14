@@ -54,6 +54,7 @@ export function cleanCapturedPokemonForStorage(
 
   // Revert in-battle transformation before permanent storage and factory validation
   const originalId = capturedPoke._originalId || enemy._originalId;
+  const originalAbility = capturedPoke._originalAbility || enemy._originalAbility;
   if (capturedPoke.isTransformed || enemy.isTransformed || originalId || capturedPoke.id === 'ditto' || enemy.id === 'ditto') {
     if (capturedPoke._originalMoves && capturedPoke._originalMoves.length > 0) {
       capturedPoke.moves = [...capturedPoke._originalMoves];
@@ -62,6 +63,10 @@ export function cleanCapturedPokemonForStorage(
     if (originalId) {
       capturedPoke.id = originalId;
       capturedPoke._originalId = undefined;
+    }
+    if (originalAbility) {
+      capturedPoke.ability = originalAbility;
+      capturedPoke._originalAbility = undefined;
     }
     if (capturedPoke._originalName) {
       if (!capturedPoke.nickname) {
@@ -84,6 +89,9 @@ export function cleanCapturedPokemonForStorage(
       }
       capturedPoke.type = 'normal';
       capturedPoke.type2 = undefined;
+      if (capturedPoke.ability !== 'limber' && capturedPoke.ability !== 'imposter') {
+        capturedPoke.ability = (originalAbility === 'imposter' ? 'imposter' : 'limber');
+      }
       capturedPoke.moves = [{
         id: 'transform',
         name: 'Transformación',
@@ -220,7 +228,7 @@ export async function executePokeballCatchSequence(
     }
     addLog(`¡Ya está! ¡${enemy.name} atrapado!`, 'log-catch', enemy)
 
-    const initialEnemy = options.ctx?.activeBattle.value?._initialEnemy
+    const initialEnemy = (enemy.uid && options.ctx?.activeBattle.value?._initialEnemies?.[enemy.uid]) || options.ctx?.activeBattle.value?._initialEnemy
     const capturedPoke = cleanCapturedPokemonForStorage(enemy, initialEnemy, ballId)
 
     if (options.fsm) {

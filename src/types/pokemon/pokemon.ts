@@ -195,6 +195,7 @@ export interface Pokemon {
   _originalName?: string; // domain-ok: Open dynamic text or non-domain string payload
   _originalType?: PokemonType;
   _originalType2?: PokemonType | null;
+  _originalAbility?: AbilityId;
   rageActive?: boolean;
   snatching?: boolean;
   tormentActive?: boolean;

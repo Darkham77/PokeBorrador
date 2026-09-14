@@ -45,10 +45,11 @@ export function initTestDatabaseSchema(db: DatabaseSync): void {
   db.exec(`CREATE TABLE IF NOT EXISTS war_dominance (week_id TEXT, map_id TEXT, winner_faction TEXT, union_points INTEGER, poder_points INTEGER, resolved_at TEXT, PRIMARY KEY (week_id, map_id))`);
   db.exec(`CREATE TABLE IF NOT EXISTS events_config (id TEXT PRIMARY KEY, name TEXT, icon TEXT, type TEXT, active INTEGER, manual INTEGER, schedule TEXT, config TEXT, description TEXT, last_awarded_at TEXT, updated_at TEXT)`);
   db.exec(`CREATE TABLE IF NOT EXISTS competition_entries (id TEXT PRIMARY KEY, event_id TEXT, category_id TEXT DEFAULT 'ivs', player_id TEXT, player_name TEXT, player_email TEXT, pokemon_uid TEXT, data TEXT, submitted_at TEXT, UNIQUE(event_id, category_id, player_id))`);
-  db.exec(`CREATE TABLE IF NOT EXISTS awards (id TEXT PRIMARY KEY, event_id TEXT, winner_id TEXT, winner_name TEXT, winner_email TEXT, prize TEXT, awarded_at TEXT, received_at TEXT)`);
+  db.exec(`CREATE TABLE IF NOT EXISTS awards (id TEXT PRIMARY KEY, event_id TEXT, winner_id TEXT, winner_name TEXT, winner_email TEXT, prize TEXT, awarded_at TEXT, claimed INTEGER DEFAULT 0, claimed_at TEXT, received_at TEXT)`);
   db.exec(`CREATE TABLE IF NOT EXISTS competition_results (id TEXT PRIMARY KEY, event_id TEXT, winners TEXT, ended_at TEXT)`);
   db.exec(`CREATE TABLE IF NOT EXISTS market_listings (id TEXT PRIMARY KEY, seller_id TEXT, seller_name TEXT, listing_type TEXT, data TEXT, price INTEGER, status TEXT, buyer_id TEXT, created_at TEXT, updated_at TEXT)`);
-  db.exec(`CREATE TABLE IF NOT EXISTS battle_invites (id TEXT PRIMARY KEY, sender_id TEXT, opponent_id TEXT, status TEXT, created_at TEXT)`);
+  db.exec(`CREATE TABLE IF NOT EXISTS battle_invites (id TEXT PRIMARY KEY, sender_id TEXT, opponent_id TEXT, status TEXT, config TEXT, created_at TEXT)`);
+  db.exec(`CREATE TABLE IF NOT EXISTS ranked_rules_config (id TEXT PRIMARY KEY, season_name TEXT, config TEXT, last_awarded_at TEXT, updated_at TEXT)`);
   db.exec(`CREATE TABLE IF NOT EXISTS ranked_queue (user_id TEXT PRIMARY KEY, elo INTEGER, status TEXT, created_at TEXT)`);
   db.exec(`CREATE TABLE IF NOT EXISTS passive_battle_reports (id TEXT PRIMARY KEY, user_id TEXT, opponent_id TEXT, result TEXT, report_data TEXT, created_at TEXT)`);
   db.exec(`CREATE TABLE IF NOT EXISTS daycare_slots (id TEXT PRIMARY KEY, player_id TEXT, pokemon_id TEXT, slot_index INTEGER, deposited_at TEXT, created_at TEXT)`);

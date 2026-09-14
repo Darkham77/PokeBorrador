@@ -578,15 +578,52 @@ After `INITIALIZING`, the `wasSearching` flag determines which visual entry path
 > [!CAUTION]
 > **Never pass `wasSearching: false` for Gym or Trainer battles.** Doing so skips `SEARCH_PHASE` entirely, which means the `¡COMBATIR!` / `¡DESAFIAR!` button never appears and the battle starts without user confirmation.
 
-### 2.1 NPC Trainer & Gym Presentation Lifecycle (4-Phase Visual Flow)
+### 2.1 Encounter Visual Lifecycles & Canonical Seat Allocation (The Golden Rule of Seats)
+
+To guarantee flawless visual immersion, eradicate phantom sprite flashes, and preserve 1:1 F5 and replay parity, combatant seat allocation strictly adheres to the **Golden Rule of Seats**:
+
+- **Default State (Strictly Empty)**: During `CONTEXT_SETUP` and `INITIALIZING`, all combatant seats (Seat 1 - Player and Seat 2 - Enemy) are strictly `null` (empty array `[]`). No residual sprites, stale models, or unmasked flashes may appear for even a single frame.
+- **Wild Encounter Flow (Bushes & Silhouette Lifecycle)**:
+  - At the beginning of `SEARCH_PHASE` (`PREPARATION`), Seat 2 (Enemy) is assigned the generated wild Pokémon. This allows `CombatGrass` (bushes), the silhouette shader, and the species shadow to render seamlessly behind the grass layers.
+  - In `ENTRY_ANIM` / `WILD_ENTRY`, the wild Pokémon executes its emergence jump (`enemyIsJumping`), transitions in front of the bush layer, and reveals its natural colors (`REVEAL_COLORS`).
+  - When the player presses `¡COMBATIR!`, Seat 1 (Player) is occupied immediately before `POKEMON_CALL` with `scale(0)` damping (`animState = 'releasing'`), enabling GSAP to orchestrate the Pokéball throw and release animation without unmasked 1-frame sprite flashes.
+- **NPC Trainer & Gym Flow (Empty Seat & Trainer Center-Stage)**:
+  - Throughout `SEARCH_PHASE` (`TRAINER_ENTRY`, `SHOW_DIALOGS`, `COMBAT_OR_FLEE`), Seat 2 remains strictly **EMPTY** (`null` / `[]`). The trainer sprite occupies center stage (`0, 0`) for speech bubbles and pre-battle presentation.
+  - Upon clicking `¡COMBATIR!` / entering `FIRST_INTRO`, the trainer retreats to the background (`RETREAT_AND_FADEOUT`).
+  - In `POKEMON_CALL`, Seat 2 and Seat 1 are occupied right before the Pokéball throw animation with initial scale damping (`scale(0)`), ensuring GSAP drives the sendout cleanly.
+- **Seat Vacating (Strictly Post-Animation)**:
+  - Combatant seats are vacated (`null` / removed from combatant list) **ONLY AFTER** faint, capture, or retreat animations have finished 100%. Clearing seats prematurely while animations are executing causes jarring sprite pops and desynchronization.
+
+#### A. Wild Encounter Presentation Lifecycle (Bushes, Silhouette & Emergence)
+
+```mermaid
+stateDiagram-v2
+    state SEARCH_PHASE {
+        [*] --> PREPARATION : "Render CombatGrass & Shadow"
+        PREPARATION --> ENTRY_ANIM : "Wild Pokemon jump (enemyIsJumping)"
+        ENTRY_ANIM --> COMBAT_OR_FLEE : "Wait for Player Decision (¡COMBATIR! / Huir)"
+    }
+
+    COMBAT_OR_FLEE --> FIRST_INTRO : "Player clicks '¡COMBATIR!'"
+    COMBAT_OR_FLEE --> EXIT_BATTLE : "Player clicks 'Huir'"
+
+    state FIRST_INTRO {
+        [*] --> POKEMON_CALL : "Player throws Poké Ball"
+        POKEMON_CALL --> [*] : "Both combatants active"
+    }
+
+    FIRST_INTRO --> ACTIVE_BATTLE : "Combat Starts"
+```
+
+#### B. NPC Trainer & Gym Presentation Lifecycle (4-Phase Visual Flow)
 
 All NPC Trainer, Gym Leader, and Rival encounters adhere to a strict 4-phase state machine ensuring smooth transitions, zero teleports, and consistent F5 persistence:
 
 ```mermaid
 stateDiagram-v2
     state SEARCH_PHASE {
-        [*] --> TRAINER_ENTRY : "Slide from x: 150% to Center Stage (0, 0)"
-        TRAINER_ENTRY --> SHOW_DIALOGS : "Display Speech Bubble at Center"
+        [*] --> TRAINER_ENTRY : "Slide from x: 150% to Center Stage (0, 0) | Seat 2 is EMPTY"
+        TRAINER_ENTRY --> SHOW_DIALOGS : "Display Speech Bubble at Center | Seat 2 is EMPTY"
         SHOW_DIALOGS --> COMBAT_OR_FLEE : "Wait for Player Decision (or 3s GSAP timer in autoBattle)"
     }
 
@@ -595,7 +632,7 @@ stateDiagram-v2
 
     state FIRST_INTRO {
         [*] --> RETREAT_AND_FADEOUT : "GSAP to (300, -10) Scale: 0.8"
-        RETREAT_AND_FADEOUT --> POKEMON_CALL : "Pokéball Throw & Release Anim"
+        RETREAT_AND_FADEOUT --> POKEMON_CALL : "Pokéball Throw & Release Anim | Occupy Seat 2 before throw"
         POKEMON_CALL --> [*] : "Enemy Pokemon Ready"
     }
 

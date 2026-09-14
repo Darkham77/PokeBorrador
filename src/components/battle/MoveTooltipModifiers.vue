@@ -7,7 +7,7 @@ defineProps<{
 </script>
 
 <template>
-  <div>
+  <div class="move-tooltip-modifiers-wrapper">
     <!-- Active Modifiers Section -->
     <div 
       v-if="!activeDetails.isStatus && (activeDetails.power.list.length > 0 || activeDetails.accuracy.list.length > 0)" 
@@ -75,4 +75,23 @@ defineProps<{
 
 <style scoped lang="scss">
 @use "@/styles/components/_move-tooltip-shared.scss" as *;
+
+.move-tooltip-modifiers-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.calc-section-title {
+  @include calc-section-title-mixin;
+}
+
+.modifiers-section {
+  @include modifiers-section-mixin;
+}
+
+.formula-breakdown-box {
+  @include formula-breakdown-box-mixin;
+}
 </style>
+

@@ -111,7 +111,7 @@
 
   &.enemy-trainer {
     z-index: calc(var(--z-map-spawns) + 1) !important;
-    transform: Scale(0.8);
+    transform: Scale(0.75);
     transform-origin: bottom center;
   }
 

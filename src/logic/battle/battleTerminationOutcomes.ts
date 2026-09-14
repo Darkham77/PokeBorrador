@@ -65,6 +65,7 @@ export async function handleBattleFleeFlow(
   const fsm = ctx.fsm
 
   active._initialEnemy = null
+  active._initialEnemies = {}
   ctx.clearLogs?.()
   if (fsm.currentState.value !== BATTLE_STATES.EXIT_BATTLE) {
     await fsm.transition(BATTLE_STATES.REWARDS_PHASE, BATTLE_SUBSTATES.WAIT_LOG_QUEUE_ONLY)

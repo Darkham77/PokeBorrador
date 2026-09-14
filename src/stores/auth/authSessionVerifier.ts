@@ -5,9 +5,12 @@ import { requireUserRole } from '@/types/auth/auth.ts'
 import type { Session } from '@supabase/supabase-js'
 import type { AuthUser } from '@/types/auth/auth'
 import gsap from 'gsap'
+import { gsapSleep } from '@/logic/utils/gsapHelpers.ts'
 
 const HTTP_STATUS_UNAUTHORIZED = 401
 const AUTH_RETRY_DELAY_MS = 1500
+const AUTH_FETCH_TIMEOUT_SEC = 10
+const AUTH_UPDATE_TIMEOUT_SEC = 10
 
 export interface VerifiedProfileData {
   dbVersion: number
@@ -32,7 +35,7 @@ export async function fetchOnlineSessionWithRetry(maxAttempts = 2): Promise<Sess
       logger.warn('Auth', `Intento ${attempt}/${maxAttempts} de getSession falló o dio timeout: ${(e as Error).message}`)
       if (attempt < maxAttempts) {
         attempt++
-        await new Promise(resolve => setTimeout(resolve, AUTH_RETRY_DELAY_MS))
+        await gsapSleep(AUTH_RETRY_DELAY_MS)
       } else {
         throw e
       }
@@ -46,7 +49,7 @@ export async function recordSessionIdInProfile(userId: string, currentSessionId:
     const updatePromise = supabase.from('profiles').update({ current_session_id: currentSessionId }).eq('id', userId)
     const updateRes = await Promise.race([
       updatePromise,
-      new Promise((_, reject) => gsap.delayedCall(10, () => reject(new Error('UPDATE_TIMEOUT'))))
+      new Promise((_, reject) => gsap.delayedCall(AUTH_UPDATE_TIMEOUT_SEC, () => reject(new Error('UPDATE_TIMEOUT'))))
     ]) as { error?: { message?: string; status?: number; code?: string } | null }
 
     const updateError = updateRes?.error
@@ -82,7 +85,7 @@ export async function fetchProfileMetadata(userId: string): Promise<VerifiedProf
     const profilePromise = supabase.from('profiles').select('db_version, is_banned, ban_reason, gender, role').eq('id', userId).single()
     const profileRes = await Promise.race([
       profilePromise,
-      new Promise((_, reject) => setTimeout(() => reject(new Error('FETCH_TIMEOUT')), 10000))
+      new Promise((_, reject) => gsap.delayedCall(AUTH_FETCH_TIMEOUT_SEC, () => reject(new Error('FETCH_TIMEOUT'))))
     ]) as {
       data: { db_version: number; is_banned: boolean; ban_reason: string | null; gender: GenderId; role?: string } | null
       error?: { message?: string; status?: number; code?: string } | null

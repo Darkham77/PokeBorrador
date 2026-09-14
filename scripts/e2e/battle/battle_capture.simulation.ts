@@ -253,6 +253,84 @@ test.describe('Battle Capture and Wild Encounter State Persistence (Tier 3)', ()
     await awaitBattleFlowCompletion(page);
   });
 
+  test('debería capturar a un Ditto salvaje transformado contra rival con habilidad Pressure sin error de habilidad ilegal', async ({ page }) => {
+    const sim = new CaptureSimWrapper(page, 'TestPlayerDittoPressure');
+    await sim.setup();
+    // Jugador con Zapdos nivel 50 (habilidad 'pressure'), movimientos: ['roost', 'thunderbolt']
+    // Ditto salvaje nivel 20 (habilidad 'limber'), movimientos: ['transform']
+    await page.evaluate(async () => {
+      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const { useInventoryStore } = await import('../../../src/stores/inventory/inventory.ts');
+      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+      const { requireItemId } = await import('../../../src/data/inventory/items.ts');
+      const { requireAbilityId } = await import('../../../src/data/battle/abilities.ts');
+
+      const invStore = useInventoryStore();
+      await invStore.addItem(requireItemId('masterball'), 5);
+
+      const gameStore = useGameStore();
+      const playerPoke = pokemonDebugService.generate({
+        id: requirePokemonSpeciesId('zapdos'),
+        level: 50,
+        ability: requireAbilityId('pressure'),
+        moves: ['roost', 'thunderbolt']
+      });
+      gameStore.state.team = [playerPoke];
+
+      const wildDitto = pokemonDebugService.generate({
+        id: requirePokemonSpeciesId('ditto'),
+        level: 20,
+        ability: requireAbilityId('limber'),
+        moves: ['transform']
+      });
+
+      const battleStore = useBattleStore();
+      await battleStore.startBattle(wildDitto, {
+        isTrainer: false,
+        locationId: 'route1'
+      });
+    });
+    await awaitBattleReadyForInput(page);
+
+    // Turno 1: Jugador usa Respiro (#move-btn-0) para no debilitar a Ditto. Ditto usará Transformación.
+    await armBattleReadyForInput(page);
+    await clickResilient(page.locator('#move-btn-0').first());
+    await awaitBattleReadyForInput(page);
+
+    // Verificar que Ditto se transformó en Zapdos y tiene habilidad Pressure en la batalla activa
+    const postT1State = await page.evaluate(() => {
+      const bStore = (window as WindowWithResolver).__VITE_DEBUG_STORE_RESOLVER__?.();
+      return {
+        isTransformed: bStore?.state?.enemy?.isTransformed,
+        id: bStore?.state?.enemy?.id,
+        ability: bStore?.state?.enemy?.ability
+      };
+    });
+    expect(postT1State.isTransformed).toBe(true);
+    expect(postT1State.id).toBe('zapdos');
+    expect(postT1State.ability).toBe('pressure');
+
+    // Capturar a Ditto transformado con Master Ball
+    await sim.throwMasterBall();
+
+    // Validar en el equipo del jugador que el Pokémon capturado es un Ditto legal, sin crash ni habilidad Pressure
+    const dittoInTeam = await page.evaluate(() => {
+      const store = (window as WindowWithResolver).__VITE_DEBUG__?.getGameStore?.();
+      const p = (store?.state?.team as Array<{ id?: string; ability?: string; isTransformed?: boolean; moves?: { id: string }[] } | null> | undefined)
+        ?.find((mon: { id?: string } | null) => mon?.id === 'ditto');
+      return p ? { id: p.id, ability: p.ability, isTransformed: p.isTransformed, moves: p.moves } : null;
+    });
+
+    expect(dittoInTeam).not.toBeNull();
+    expect(dittoInTeam!.id).toBe('ditto');
+    expect(dittoInTeam!.isTransformed).toBeFalsy();
+    expect(['limber', 'imposter']).toContain(dittoInTeam!.ability);
+    expect(dittoInTeam!.ability).not.toBe('pressure');
+    expect(dittoInTeam!.moves?.[0]?.id).toBe('transform');
+  });
+
   test('debería jugar una secuencia de 3 combates seguidos capturando y usando los Pokémon capturados con sus movimientos reales', async ({ page }) => {
     const sim = new CaptureSimWrapper(page, 'TestMultiBattle');
     await sim.setup();

@@ -9,7 +9,8 @@ import CombatShadow from './CombatShadow.vue'
 import { useCombatShadowStore } from '@/stores/battle/combatShadows'
 import {
   TRAINER_RETREAT_X_OFFSET_PX,
-  TRAINER_RETREAT_Y_OFFSET_PX
+  TRAINER_RETREAT_Y_OFFSET_PX,
+  TRAINER_RETREAT_SCALE
 } from '@/logic/constants/animations'
 import { getTrainerIdleConfig } from './helpers/trainerIdleAnims.ts'
 import type { GenderId } from '@/types/system/game'
@@ -283,6 +284,7 @@ defineExpose({
   </VirtualEntity>
 
   <!-- Standing Enemy Trainer (During active combat) -->
+  <!-- ui-branching-ok: visual entity rendering for trainers/gyms/pvp standing sprite in field -->
   <VirtualEntity
     v-if="showStandingTrainers && (isTrainerOrGym || isPvP)"
     ref="standingTrainerRef"
@@ -331,7 +333,7 @@ defineExpose({
       v-if="showGuides"
       class="debug-trainer-guide"
     >
-      <span>{{ Math.round(baseEntitySizeEnemy * (objectScale || 2)) }}x{{ Math.round(baseEntitySizeEnemy * (objectScale || 2)) }}</span>
+      <span>{{ Math.round(baseEntitySizeEnemy * (objectScale || 2) * TRAINER_RETREAT_SCALE) }}x{{ Math.round(baseEntitySizeEnemy * (objectScale || 2) * TRAINER_RETREAT_SCALE) }}</span>
     </div>
   </VirtualEntity>
 

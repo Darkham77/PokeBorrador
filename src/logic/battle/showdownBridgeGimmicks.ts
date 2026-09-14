@@ -14,6 +14,7 @@ function applyTransformToUser(user: Pokemon, targetPoke: Pokemon): void {
     user._originalName = user.name;
     user._originalType = user.type;
     user._originalType2 = user.type2;
+    user._originalAbility = user.ability;
   }
   user.isTransformed = true;
   const resolvedTargetId = targetPoke.id;

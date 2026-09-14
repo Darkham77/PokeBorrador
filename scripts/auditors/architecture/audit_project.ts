@@ -49,8 +49,7 @@ async function getFilesToAudit(dir: string): Promise<string[]> {
 async function auditFile(
   filePath: string, 
   fix: boolean, 
-  activeConfigRules?: ReadonlySet<AuditRule>, 
-  checkSloc = true
+  activeConfigRules?: ReadonlySet<AuditRule>
 ): Promise<Violation[]> {
   const violations: Violation[] = [];
   let content = await fs.readFile(filePath, 'utf-8');
@@ -173,79 +172,7 @@ async function auditFile(
     }
   }
 
-  // MODULARITY AUDIT: 300/500/1000 Rule
-  const isDatabaseOrMetadata = filePath.endsWith('.md') ||
-                               relPosixPath.startsWith('src/data/') || 
-                               relPosixPath.startsWith('scripts/') ||
-                               relPosixPath.startsWith('supabase/') ||
-                               filePath.endsWith('DB.ts') || 
-                               filePath.endsWith('Metadata.ts') ||
-                               /^(vite|vitest|playwright|eslint)\.config\./i.test(path.basename(filePath)) ||
-                               path.basename(filePath).startsWith('vitest.');
-
-  if (checkSloc && !isDatabaseOrMetadata) {
-    // Calcular SLOC real excluyendo comentarios y líneas vacías
-    let slocCount = 0;
-    let inBlockComment = false;
-    let inHtmlComment = false;
-    for (const line of content.split('\n')) {
-      const trimmed = line.trim();
-      if (trimmed === '') continue;
-      if (inBlockComment) {
-        if (trimmed.includes('*/')) inBlockComment = false;
-        continue;
-      }
-      if (inHtmlComment) {
-        if (trimmed.includes('-->')) inHtmlComment = false;
-        continue;
-      }
-      if (trimmed.startsWith('//')) continue;
-      if (trimmed.startsWith('/*')) {
-        if (!trimmed.includes('*/')) inBlockComment = true;
-        continue;
-      }
-      if (trimmed.startsWith('<!--')) {
-        if (!trimmed.includes('-->')) inHtmlComment = true;
-        continue;
-      }
-      slocCount++;
-    }
-
-    const hasLengthIgnore = config.fileLength.ignorePattern?.test(content);
-    const isVueFile = filePath.endsWith('.vue');
-    
-    // [PureVue-Ignore-Length] is ONLY allowed for database/data files. UI files (.vue) or standard logic files cannot use it.
-    const isConfigFile = config.fileLength.exemptConfigFiles?.test(path.basename(filePath)) || path.basename(filePath).startsWith('vitest.');
-    const isAllowedIgnore = (hasLengthIgnore || isConfigFile) && !isVueFile && (
-      isConfigFile ||
-      filePath.toLowerCase().includes('data') ||
-      filePath.toLowerCase().includes('database') ||
-      filePath.toLowerCase().includes('catalog') ||
-      /export\s+const\s+[A-Z_]+\s*[:=]\s*(?:\[|\{)/.test(content)
-    );
-
-    if (!isConfigFile) {
-      if (slocCount > SLOC_ERROR_THRESHOLD) {
-        violations.push({
-          file: filePath,
-          line: 1,
-          message: `Mantenibilidad CRÍTICA: El archivo supera las ${SLOC_ERROR_THRESHOLD} líneas reales de código (SLOC: ${slocCount}). A pesar de cualquier tag de ignore, superar las ${SLOC_ERROR_THRESHOLD} líneas es un ERROR que requiere modularización obligatoria.`,
-          context: `SLOC: ${slocCount}`,
-          severity: 'error',
-          fixable: false
-        });
-      } else if (slocCount > SLOC_WARNING_THRESHOLD && !isAllowedIgnore) {
-        violations.push({
-          file: filePath,
-          line: 1,
-          message: `Mantenibilidad (500/1000 Rule): El archivo tiene ${slocCount} líneas reales de código (SLOC). Supera las ${SLOC_WARNING_THRESHOLD} líneas. Se recomienda fuertemente modularizar y extraer lógica a Composables (SRP).`,
-          context: `SLOC: ${slocCount}`,
-          severity: 'warning',
-          fixable: false
-        });
-      }
-    }
-  }
+  // MODULARITY AUDIT: 500/1000 Rule is handled exclusively by Fallow health (Single Source of Truth)
 
   if (fix && modified) {
     await fs.writeFile(filePath, content, 'utf-8');
@@ -488,12 +415,20 @@ interface FallowDeadCode {
 interface FallowComplexity {
   findings?: FallowFinding[];
 }
+export interface FallowFileScore {
+  path: string;
+  lines: number;
+  total_cyclomatic?: number;
+  total_cognitive?: number;
+  maintainability_index?: number;
+}
 export interface FallowAuditData {
   clone_groups?: FallowCloneGroup[];
   security_findings?: FallowFinding[];
   dead_code?: FallowDeadCode;
   complexity?: FallowComplexity;
   findings?: FallowFinding[];
+  file_scores?: FallowFileScore[];
   unused_dependencies?: FallowUnusedDep[];
   unused_dev_dependencies?: FallowUnusedDep[];
   unused_exports?: FallowUnusedExport[];
@@ -575,7 +510,8 @@ function addComplexityFinding(f: FallowFinding, violations: Violation[]): void {
     message: `Sugerencia de complejidad (Fallow): Función '${f.function_name || ''}' alta complejidad (cognitiva: ${f.cognitive || 0}, ciclomática: ${f.cyclomatic || 0})`,
     context: f.function_name || '',
     severity: 'warning',
-    fixable: false
+    fixable: false,
+    ruleId: 'fallow:health'
   });
 }
 
@@ -742,6 +678,51 @@ export function mapFallowJson(command: string, data: FallowAuditData): Violation
     for (const f of findings) {
       addComplexityFinding(f, violations);
     }
+    const fileScores = data.file_scores || [];
+    for (const score of fileScores) {
+      const relPosixPath = (score.path || '').replace(/\\/g, '/');
+      const baseName = path.basename(relPosixPath);
+      const isExempt =
+        relPosixPath.endsWith('.md') ||
+        relPosixPath.startsWith('src/data/') ||
+        relPosixPath.startsWith('scripts/') ||
+        relPosixPath.startsWith('database/') ||
+        relPosixPath.startsWith('supabase/') ||
+        relPosixPath.startsWith('tests/') ||
+        relPosixPath.startsWith('external/') ||
+        relPosixPath.startsWith('scratch/') ||
+        relPosixPath.endsWith('DB.ts') ||
+        relPosixPath.endsWith('Metadata.ts') ||
+        /^(vite|vitest|playwright|eslint)\.config\./i.test(baseName) ||
+        baseName.startsWith('vitest.');
+
+      if (isExempt) continue;
+
+      const slocCount = score.lines;
+      const fullPath = path.resolve(process.cwd(), relPosixPath);
+
+      if (slocCount > SLOC_ERROR_THRESHOLD) {
+        violations.push({
+          file: fullPath,
+          line: 1,
+          message: `Mantenibilidad CRÍTICA (Fallow SLOC): El archivo supera las ${SLOC_ERROR_THRESHOLD} líneas reales de código (SLOC: ${slocCount}). A pesar de cualquier tag de ignore, superar las ${SLOC_ERROR_THRESHOLD} líneas es un ERROR que requiere modularización obligatoria.`,
+          context: `SLOC: ${slocCount}`,
+          severity: 'error',
+          fixable: false,
+          ruleId: 'fileLength'
+        });
+      } else if (slocCount > SLOC_WARNING_THRESHOLD) {
+        violations.push({
+          file: fullPath,
+          line: 1,
+          message: `Mantenibilidad (Fallow 500/1000 Rule): El archivo tiene ${slocCount} líneas reales de código (SLOC). Supera las ${SLOC_WARNING_THRESHOLD} líneas. Se recomienda fuertemente modularizar y extraer lógica a Composables (SRP).`,
+          context: `SLOC: ${slocCount}`,
+          severity: 'warning',
+          fixable: false,
+          ruleId: 'fileLength'
+        });
+      }
+    }
   }
   return violations;
 }
@@ -759,6 +740,7 @@ export function getViolationCategory(v: Violation): string {
   if (msg.includes('Zero-Ignore')) return 'TypeScript Ignore';
   if (msg.includes('setTimeout manual')) return 'setTimeout manual en script';
   if (msg.includes('timer de ANIMACIÓN')) return 'setTimeout/setInterval en UI';
+  if (msg.includes('tiempo de espera de temporizador') || msg.includes('Named Timer Constants')) return 'Temporizadores sin constante nombrada';
   if (msg.includes('sin \'using\'')) return 'Falta explicit resource (\'using\')';
   if (msg.includes('Animación manual')) return 'Animación/Transición manual (GSAP)';
   if (msg.includes('Z-Index') || msg.includes('z-index')) return 'Z-Index fuera de estándar';
@@ -836,10 +818,10 @@ async function main() {
     }
   }
 
-  // Determine active config rules for AST/regex file checking dynamically
+  // Determine active config rules for AST/regex file checking dynamically (fileLength is handled by Fallow health)
   const activeConfigRules = new Set<AuditRule>();
   for (const rule of Object.values(config) as AuditRule[]) {
-    if (matchesRule(rule, selectedRules)) {
+    if (rule !== config.fileLength && matchesRule(rule, selectedRules)) {
       activeConfigRules.add(rule);
     }
   }
@@ -847,9 +829,10 @@ async function main() {
   // Query descriptors dynamically from their source modules
   const isZIndexActive = matchesRule(Z_INDEX_CONSISTENCY_DESCRIPTOR, selectedRules);
   const isDoxActive = matchesRule(DOX_ANALYZER_DESCRIPTOR, selectedRules);
-  const isFallowDupesActive = matchesRule(FALLOW_SUITE_DESCRIPTORS.dupes, selectedRules);
-  const isFallowSecurityActive = matchesRule(FALLOW_SUITE_DESCRIPTORS.security, selectedRules);
-  const isFallowDeadCodeActive = matchesRule(FALLOW_SUITE_DESCRIPTORS['dead-code'], selectedRules);
+  const hasExplicitRules = selectedRules.size > 0;
+  const isFallowDupesActive = hasExplicitRules && matchesRule(FALLOW_SUITE_DESCRIPTORS.dupes, selectedRules);
+  const isFallowSecurityActive = hasExplicitRules && matchesRule(FALLOW_SUITE_DESCRIPTORS.security, selectedRules);
+  const isFallowDeadCodeActive = hasExplicitRules && matchesRule(FALLOW_SUITE_DESCRIPTORS['dead-code'], selectedRules);
   const isFallowHealthActive = matchesRule(FALLOW_SUITE_DESCRIPTORS.health, selectedRules);
   const isCssCheckerActive = values['css-only'] || matchesRule(CSS_ANALYZER_DESCRIPTOR, selectedRules);
   const isConstantDetectorActive = matchesRule(CONSTANT_ANALYZER_DESCRIPTOR, selectedRules);
@@ -910,8 +893,8 @@ async function main() {
       all = [...all, ...doxErrors];
     }
 
-    // 3. Scan files only if there are active AST/regex rules or SLOC checks
-    const shouldScanFiles = activeConfigRules.size > 0 || isSlocActive;
+    // 3. Scan files only if there are active AST/regex rules
+    const shouldScanFiles = activeConfigRules.size > 0;
     const changedSince = values['changed-since'] as string | undefined;
 
     if (shouldScanFiles) {
@@ -930,7 +913,7 @@ async function main() {
         if (processed % 200 === 0 || processed === total) {
           logProgress(styleText('cyan', `   ⏳ Progreso AST: ${processed}/${total} archivos (${Math.round((processed / total) * 100)}%)`));
         }
-        all = all.concat(await auditFile(f, !!values.fix, activeConfigRules, isSlocActive));
+        all = all.concat(await auditFile(f, !!values.fix, activeConfigRules));
       }
     }
 
@@ -966,15 +949,17 @@ async function main() {
       }
     }
 
-    // 5. Integración de Fallow (solo si no está acotado por --path)
-    const anyFallowActive = (isFallowDupesActive || isFallowSecurityActive || isFallowDeadCodeActive || isFallowHealthActive) && !values.path;
+    // 5. Integración de Fallow (solo si no está acotado por un subdirectorio específico con --path)
+    const isPathScoped = !!(values.path && values.path !== '.');
+    const anyFallowActive = (isFallowDupesActive || isFallowSecurityActive || isFallowDeadCodeActive || isFallowHealthActive || isSlocActive) && !isPathScoped;
     if (anyFallowActive) {
       logProgress(styleText('cyan', '[4/6] 🛡️ Ejecutando suite de inteligencia Fallow (dupes, security, dead-code, health)...'));
       if (changedSince) {
-        if (isFallowDeadCodeActive || isFallowSecurityActive) {
-          logProgress(styleText('cyan', '   -> Fallow audit & security (archivos modificados)...'));
+        if (isFallowDeadCodeActive || isFallowSecurityActive || isFallowHealthActive || isSlocActive) {
+          logProgress(styleText('cyan', '   -> Fallow audit, security & health (archivos modificados)...'));
           if (isFallowDeadCodeActive) all = all.concat(runFallow('audit', ['--changed-since', changedSince]));
           if (isFallowSecurityActive) all = all.concat(runFallow('security', ['--changed-since', changedSince]));
+          if (isFallowHealthActive || isSlocActive) all = all.concat(runFallow('health', ['--changed-since', changedSince]));
         }
       } else {
         if (isFallowDupesActive) {
@@ -990,8 +975,8 @@ async function main() {
           logProgress(styleText('cyan', '   ├─ [3/4] Fallow: Análisis de código muerto...'));
           all = all.concat(runFallow('dead-code'));
         }
-        if (isFallowHealthActive) {
-          logProgress(styleText('cyan', '   └─ [4/4] Fallow: Cálculo de métricas de salud...'));
+        if (isFallowHealthActive || isSlocActive) {
+          logProgress(styleText('cyan', '   └─ [4/4] Fallow: Cálculo de métricas de salud y SLOC...'));
           all = all.concat(runFallow('health'));
         }
       }

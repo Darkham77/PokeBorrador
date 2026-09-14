@@ -183,6 +183,7 @@ export interface BattleState {
   playerTeam?: Pokemon[];
   enemyTeam?: Pokemon[];
   _initialEnemy?: Pokemon | null;
+  _initialEnemies?: Partial<Record<BattleParticipantUid, Pokemon>>;
   _rewardCombatants?: Pokemon[];
   minigame?: BattleMinigame | null;
   isExecutingSwitch?: boolean;
@@ -224,6 +225,7 @@ export interface BattleState {
   quote?: string; // domain-ok: Open dynamic text or non-domain string payload
   wasSearching?: boolean;
   cannotEscape?: boolean;
+  isGuardian?: boolean;
   stolenResources?: {
     money: number;
     items: Inventory;

@@ -195,7 +195,21 @@ the source of truth. `src/` must conform to them, never the reverse.
     const species = target.species;
     ```
 
-12. **Dual Database Architecture & Execution Mandate (SQLite vs PostgreSQL Docker)**:
+12. **Showdown Request as Single Source of Truth for Available & Locked Moves Mandate**:
+    - During battle, the active player's legal moves MUST be derived strictly and exclusively from Showdown's `|request|` payload (`side.pokemon[0].moves`).
+    - When a continuous locked move is executing (e.g. Outrage / Enfado, Thrash / Golpe, Petal Dance / Danza Pétalo), Showdown restricts the request to only the locked move (or disables all other move slots).
+    - `battleStore.availableMoves` MUST prioritize and match the active Showdown request. Deriving available moves from the static base Pokemon moveset causes the UI to offer illegal moves, leading to infinite decision loops, turn deadlock, or engine desync.
+
+13. **Explicit Transient State Reset in Search Loop & Wild Encounters Mandate**:
+    - When entering or resetting the search loop / wild encounter flow (`enterSearchPhase`, `startWildBattle`), all transient combat and field flags (`cannotEscape`, `isProcessing`, `weather`, `terrain`, `introPending`, `turnActionPending`) MUST be explicitly reset in the store.
+    - Stale residual state from prior battles or map transitions must NEVER leak into new encounters.
+
+14. **Universal Rule of Fleeing (Single Source of Truth: `uiConfig.allowFlee`)**:
+    - Fleeing is strictly permitted against wild Pokémon (`isWild === true` -> `uiConfig.allowFlee = true`).
+    - Fleeing is strictly prohibited against any NPC, Trainer, Gym Leader, or PvP opponent (`uiConfig.allowFlee = false`).
+    - The battle action UI (`BattleArenaControls`, `BattleActionButtons`) MUST bind button disabled/visible state exclusively to `uiConfig.allowFlee`. Checking low-level `cannotEscape` directly in templates or duplicating flee rules across components is strictly forbidden and audited by `validate_battle_ui_branching.ts`.
+
+15. **Dual Database Architecture & Execution Mandate (SQLite vs PostgreSQL Docker)**:
     - **Dual Driver Model**:
       - `sqlite` (Default): High-speed in-memory WASM database, ideal for fast day-to-day developer iteration, UI synchronization, combat simulations, and rapid CI verification without external runtime dependencies.
       - `postgres` (Docker Integration): Connects against the ephemeral Docker container (`pokevicio-test-postgres` on port 54329), executing 100% real PL/pgSQL stored procedures (`fn_award_event_automated`, `save_game_trusted`, `claim_asset_v2`), foreign key constraints, and RLS policies.
@@ -275,6 +289,13 @@ the source of truth. `src/` must conform to them, never the reverse.
       5. **Encapsulated Modal Operations (`openModal(name)` / `closeModal(name)`)**: Standardized modal opening and closing via ModalStore.
     - **Subclass Refactoring Mandate**:
       - When an inherited or modular method is introduced or hardened, all existing and future simulations MUST consume the inherited/modular method (`await this.expectToast(...)`, `await this.loadDatabaseFixture(...)`, `await this.setup()`) instead of maintaining local custom implementations.
+
+14. **Mandatory Proactive Docker Auto-Start Mandate (Never Fail on Inactive Daemon, Always Auto-Start)**:
+    - Whenever running simulations, test suites, or Playwright executions requiring the PostgreSQL engine (`driver=postgres` or `driver=dual`), the test harness and agent **MUST NEVER** fail, abort, or stop to prompt the user to manually start Docker if the daemon is stopped.
+    - The agent and test infrastructure **MUST PROACTIVELY START DOCKER AUTOMATICALLY**:
+      - **Windows**: Launch Docker Desktop executable via `Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"` or start the service `Start-Service com.docker.service`.
+      - **Linux / macOS**: Start docker daemon via `systemctl --user start docker` / `sudo systemctl start docker` / `open -a Docker`.
+    - The runner/agent MUST poll until the Docker daemon responds (`docker info`) and the ephemeral PostgreSQL test container is ready before proceeding with PostgreSQL simulation passes.
 
 ## 🔄 Canonical Simulation & Debugging Lifecycle Order (Immutable Step-by-Step Flow)
 

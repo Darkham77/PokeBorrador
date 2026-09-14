@@ -61,4 +61,61 @@ test.describe('Battle Wild Encounter Jump & Shiny Intro Simulations', () => {
 
     await sim.forceFleeDebugger();
   });
+
+  test('should render bushes and wild silhouette during SEARCH_PHASE and jump in ENTRY_ANIM', async ({ page }) => {
+    const sim = new WildEncounterJumpSimWrapper(page, 'WildSearchPhaseTest');
+    await sim.setup();
+    await sim.disableAutoMode();
+
+    // Trigger wild search encounter with wasSearching: true and healthy player team
+    await page.evaluate(async () => {
+      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+      const { useGameStore } = await import('../../../src/stores/game.ts');
+      const { pokemonDebugService } = await import('../../../src/logic/debug/pokemonDebugService.ts');
+      const { requirePokemonSpeciesId } = await import('../../../src/data/pokemon/pokedex.ts');
+
+      const gameStore = useGameStore();
+      const playerPoke = pokemonDebugService.generate({
+        id: requirePokemonSpeciesId('pikachu'),
+        level: 15
+      });
+      gameStore.state.team = [playerPoke];
+
+      const wildPoke = pokemonDebugService.generate({
+        id: requirePokemonSpeciesId('pidgey'),
+        level: 5
+      });
+      const store = useBattleStore();
+      try {
+        await store.startBattle(wildPoke, {
+          isTrainer: false,
+          locationId: 'route1',
+          wasSearching: true
+        });
+      } catch (err) {
+        console.error('[WildSearchPhaseTest ERROR in startBattle]:', err);
+        throw err;
+      }
+    });
+
+    const enemyCombatant = page.locator('#combatant-enemy');
+    await expect(enemyCombatant).toBeAttached();
+
+    const backBush = page.locator('.back-bush-entity');
+    await expect(backBush).toBeAttached();
+
+    // Confirm encounter to enter battle
+    await page.evaluate(async () => {
+      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
+      const store = useBattleStore();
+      if (store.state && store.currentFsmState === 'SEARCH_PHASE') {
+        await store.startEncounter();
+      }
+    });
+
+    await awaitBattleReadyForInput(page);
+    await expect(enemyCombatant).toBeVisible();
+
+    await sim.forceFleeDebugger();
+  });
 });

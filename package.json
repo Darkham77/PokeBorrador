@@ -171,6 +171,13 @@
     "validate:emojis": "node --permission --experimental-strip-types --allow-fs-read=. --allow-fs-write=. scripts/auditors/architecture/validate_emoji_typography.ts",
     "validate:audit-headers": "node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/architecture/validate_audit_headers.ts",
     "validate:native-paths": "node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/architecture/validate_native_paths.ts",
+    "validate:reactive-purity": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* scripts/auditors/architecture/validate_reactive_purity.ts",
+    "validate:battle-ui": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* scripts/auditors/architecture/validate_battle_ui_branching.ts",
+    "validate:bundle": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* scripts/auditors/architecture/validate_bundle_budget.ts",
+    "validate:reactive-leaks": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* scripts/auditors/architecture/validate_reactive_leaks.ts",
+    "validate:dead-css": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* scripts/auditors/architecture/validate_dead_css.ts",
+    "validate:showdown-parity": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* scripts/auditors/fsm/validate_showdown_parity.ts",
+    "validate:schema-parity": "node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* scripts/auditors/persistence/validate_schema_parity.ts",
     "audit:bundle": "node --permission --experimental-strip-types --allow-fs-read=. scripts/maintenance/audit_bundle_chunks.ts",
     "sync:test": "node --experimental-strip-types scripts/maintenance/sync_to_test.ts"
   },

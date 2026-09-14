@@ -13,6 +13,10 @@ export type BattleMode = (typeof BATTLE_MODES)[number];
 
 export interface BattleUiConfig {
   readonly mode: BattleMode;
+  readonly isWild: boolean;
+  readonly isNpc: boolean;
+  readonly isPvP: boolean;
+  readonly showEnvironmentPill: boolean;
   readonly showTurnTimer: boolean;
   readonly allowBag: boolean;
   readonly allowCatch: boolean;
@@ -34,10 +38,16 @@ export function createBattleUiConfig(
   const isSpectator = mode === 'pvp_spectator';
   const isReplay = mode === 'replay';
   const isGym = mode === 'gym';
+  const isTrainer = mode === 'trainer';
   const isWild = mode === 'wild';
+  const isNpc = isTrainer || isGym;
 
   const baseConfig: BattleUiConfig = {
     mode,
+    isWild,
+    isNpc,
+    isPvP,
+    showEnvironmentPill: !isGym,
     showTurnTimer: isPvP || isSpectator,
     allowBag: !isPvP && !isSpectator && !isReplay,
     allowCatch: isWild,

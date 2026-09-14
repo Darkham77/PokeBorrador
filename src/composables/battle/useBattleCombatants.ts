@@ -27,7 +27,7 @@ export function useBattleCombatants(
   const enemyCombatants = computed(() => {
     const list: Pokemon[] = []
     const b = battleStore.state
-    const isTrainerOrGym = Boolean(b?.isTrainer || b?.isGym || b?.isRival || b?.trainerName)
+    const isTrainerOrGym = Boolean(b?.isTrainer || b?.isGym || b?.isRival || b?.isPvP)
     const fsmState = unref(battleStore.currentFsmState)
     const fsmSubState = unref(battleStore.currentSubState) ?? (battleStore.fsm ? unref(battleStore.fsm.currentSubState) : null)
 

@@ -13,14 +13,14 @@ import { useModalStore } from '@/stores/modals.ts'
 import { useErrorStore } from '@/stores/errorStore.ts'
 import { createBattleStateMachine, BATTLE_STATES, BATTLE_SUBSTATES } from '@/logic/battle/battleStateMachine.ts'
 import { clearVolatileStatus } from '@/logic/battle/battleStatus.ts'
-import { startBattleSequence, initBattleSequence, restoreBattleState, isPlayerTrappedInWorker } from '@/logic/battle/orchestrator.ts'
+import { startBattleSequence, initBattleSequence, restoreBattleState } from '@/logic/battle/orchestrator.ts'
 import { processFaint, terminateBattle, syncAndPersist } from '@/logic/battle/resolution.ts'
 import { handleBattleFlowCompletion, triggerNextEncounter, startEncounter } from '@/logic/battle/searchLoop.ts'
 import { executeTurn, runEnemyAction } from '@/logic/battle/battleTurn.ts'
 import { applyEndTurnEffects as executeEndTurnEffects } from '@/logic/battle/battleFlow.ts'
 import { executeFlee } from '@/logic/battle/battleFlee.ts'
 import { setupBattleDebug } from '@/logic/battle/battleDebug.ts'
-import { executeSwitch as switchAction } from '@/logic/battle/actions/switchAction.ts'
+import { executeBattleSwitch } from './battleSwitchHelper.ts'
 import type { BattleSide } from '@/types/battle/battle'
 import { setupBattleEventWatchers } from './battleEventWatchers.ts'
 import { checkAndAutoRecharge, consumeInventoryItem } from './battleRechargeHelper.ts'
@@ -196,10 +196,11 @@ export const useBattleStore = defineStore('battle', () => {
     } else if (b.isTrainer) {
       mode = 'trainer'
     }
+    const isWild = !b.isTrainer && !b.isGym && !b.isPvP && !b.isGuardian
     return createBattleUiConfig(mode, {
-      allowCatch: !b.isTrainer && !b.isGym && !b.isPvP && !b.cannotEscape,
-      allowFlee: !b.isTrainer && !b.isGym && !b.isPvP && !b.cannotEscape,
-      enableContinuousSearch: !b.isTrainer && !b.isGym && !b.isPvP && b.wasSearching !== false
+      allowCatch: isWild,
+      allowFlee: isWild,
+      enableContinuousSearch: isWild && b.wasSearching !== false
     })
   })
 
@@ -453,42 +454,7 @@ export const useBattleStore = defineStore('battle', () => {
     }
   }
   const _executeSwitch = async (targetIdentifier: number | string, isForced = false) => {
-    if (isProcessing.value && !isForced) return
-    
-    if (isPvP.value) {
-      const { useLivePvPStore } = await import('@/stores/livePvP')
-      const livePvP = useLivePvPStore()
-      const pvpTeamList = (activeBattle.value?.playerTeam && activeBattle.value.playerTeam.length > 0) ? activeBattle.value.playerTeam : (gs.state.team || [])
-      const switchIndex = typeof targetIdentifier === 'number'
-        ? targetIdentifier
-        : pvpTeamList.findIndex((p: Pokemon | null) => p && p.uid === targetIdentifier)
-      const validIndex = switchIndex !== -1 ? switchIndex : 0
-      livePvP._commitPick({
-        type: 'switch',
-        switchIndex: validIndex,
-        choiceString: `switch ${validIndex + 1}`
-      })
-      return
-    }
-
-    if (!isForced) {
-      const isTrapped = await isPlayerTrappedInWorker()
-      if (isTrapped) {
-        uiStore.notify('¡No puedes cambiar de Pokémon ahora! (Atrapado)', '🚫')
-        return
-      }
-    }
-
-    isProcessing.value = true
-    try {
-      await switchAction(getContext(), targetIdentifier, isForced)
-    } catch (error) {
-      logger.error('BattleStore', `Error switching pokemon: ${(error as Error).message}`, error)
-      addLog('¡Ocurrió un error al cambiar de Pokémon!', 'log-error', 'player')
-      useErrorStore().setError(error, { type: 'Battle Switch Error', source: 'battleStore.executeSwitch' })
-    } finally {
-      isProcessing.value = false
-    }
+    await executeBattleSwitch(getContext(), targetIdentifier, isForced)
   }
 
   const consumeItem = (itemId: ItemId) => consumeInventoryItem(gs, itemId)

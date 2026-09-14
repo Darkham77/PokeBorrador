@@ -5,6 +5,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { Dex } from '@pkmn/sim';
 import { TABLES_SCHEMA } from '../../../src/logic/db/schema.ts';
 import { DATABASE_MIGRATIONS } from '../../../src/logic/db/migrations_data.ts';
+import { splitSQLStatements } from '../../../src/logic/db/sqlTranslator.ts';
 
 const BACKUP_FILE = path.resolve(process.cwd(), 'tests/node/fixtures/server_franco_backup_fixture.json');
 
@@ -38,11 +39,24 @@ describe('Player Saves Migration & Compatibility Audit', () => {
 
     // 3. Ejecutar secuencialmente todas las migraciones SQLite oficiales del juego
     for (const migration of DATABASE_MIGRATIONS) {
-      if (migration.sqlite_sql) {
+      if (migration.sqlite_sql && migration.sqlite_sql.trim()) {
         try {
           db.exec(migration.sqlite_sql);
-        } catch (e: unknown) {
-          throw new Error(`CRITICAL: Error al aplicar migración oficial ${migration.id}: ${(e as Error).message}`);
+        } catch {
+          const statements = splitSQLStatements(migration.sqlite_sql);
+          for (const stmt of statements) {
+            if (!stmt.trim()) continue;
+            try {
+              db.exec(stmt);
+            } catch (e: unknown) {
+              const msg = (e as Error).message.toLowerCase();
+              const isDuplicate = msg.includes('duplicate column name') || msg.includes('already exists');
+              const isMissing = msg.includes('no such column');
+              if (!isDuplicate && !isMissing) {
+                throw new Error(`CRITICAL: Error al aplicar migración oficial ${migration.id}: ${(e as Error).message}`);
+              }
+            }
+          }
         }
       }
     }

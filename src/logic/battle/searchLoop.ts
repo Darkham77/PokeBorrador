@@ -10,6 +10,7 @@ import { requireNpcSpriteId } from '@/data/pokemon/npcSpriteCatalog'
 import { emitBattleFlowCompleted } from '@/logic/events/battleUiEvents'
 import { isBattleMinigame, setBattleMinigame, resetBattleMinigameFlags } from './battleMinigames.ts'
 import type { BattleMinigame } from '@/types/battle/battle.ts'
+import { cloneReactive } from '@/logic/utils/cloneUtils.ts'
 
 /**
  * Handles the completion of a battle flow (either going to map or search loop).
@@ -75,6 +76,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     // 1. Limpiar el enemigo anterior y restaurar estados de animación
     ctx.activeBattle.value.enemy = null
     ctx.activeBattle.value._initialEnemy = null
+    ctx.activeBattle.value._initialEnemies = {}
     if (ctx.exitingEnemy) ctx.exitingEnemy.value = null
     if (ctx.exitingPlayer) ctx.exitingPlayer.value = null
     
@@ -102,6 +104,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     ctx.activeBattle.value.trainerSprite = undefined
     ctx.activeBattle.value.trainerArchetype = undefined
     ctx.activeBattle.value.isRival = false
+    ctx.activeBattle.value.cannotEscape = false
     // FASE: INITIALIZING (synchronous before nextTick to prevent stale frame leak)
     await fsm.transition(BATTLE_STATES.INITIALIZING, BATTLE_SUBSTATES.CHECK_CONTEXT)
     await nextTick()
@@ -129,6 +132,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
           ctx.activeBattle.value.trainerArchetype = archetype
           ctx.activeBattle.value.quote = quote
           ctx.activeBattle.value.isRival = false
+          ctx.activeBattle.value.cannotEscape = true
         }
       } else if (encounter.type === 'rival') {
         const { name, sprite, enemyTeam, quote } = await buildRivalEncounter(ctx.gs.state.team)
@@ -142,6 +146,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
           ctx.activeBattle.value.trainerArchetype = 'rival'
           ctx.activeBattle.value.quote = quote
           ctx.activeBattle.value.isRival = true
+          ctx.activeBattle.value.cannotEscape = true
         }
       } else {
         // Limpiar parámetros de entrenador y gimnasio
@@ -154,6 +159,7 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
         ctx.activeBattle.value.gymId = undefined
         ctx.activeBattle.value.difficulty = undefined
         ctx.activeBattle.value.rewardTM = undefined
+        ctx.activeBattle.value.cannotEscape = false
 
         if (encounter.pokemon) {
           generatedPoke = encounter.pokemon
@@ -172,7 +178,8 @@ export async function handleBattleFlowCompletion(ctx: BattleContext, option = 'm
     }
 
     if (generatedPoke) {
-      ctx.activeBattle.value._initialEnemy = generatedPoke
+      ctx.activeBattle.value._initialEnemy = cloneReactive(generatedPoke)
+      ctx.activeBattle.value._initialEnemies = generatedPoke?.uid ? { [generatedPoke.uid]: cloneReactive(generatedPoke) } : {}
       if (!ctx.activeBattle.value.isTrainer && !ctx.activeBattle.value.isGym && !ctx.activeBattle.value.isPvP) {
         ctx.activeBattle.value.enemy = generatedPoke
         ctx.activeBattle.value.enemyTeam = [generatedPoke]

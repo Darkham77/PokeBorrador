@@ -37,8 +37,8 @@ export function matchesRule(descriptor: RuleDescriptor | AuditRule, selectedRule
     ...(descriptor.id ? [descriptor.id.toLowerCase()] : []), // string-ok: Internal string formatting or DOM token identifier
     ...(descriptor.name ? [descriptor.name.toLowerCase()] : []), // string-ok: Internal string formatting or DOM token identifier
     ...(descriptor.category ? [descriptor.category.toLowerCase()] : []), // string-ok: Internal string formatting or DOM token identifier
-    ...(descriptor.aliases ? descriptor.aliases.map(a => a.toLowerCase()) : []) // string-ok: Internal string formatting or DOM token identifier
-  ];
+    ...(descriptor.aliases ? descriptor.aliases.filter(Boolean).map(a => a.toLowerCase()) : []) // string-ok: Internal string formatting or DOM token identifier
+  ].filter(t => t.length > 0);
   for (const selected of selectedRules) {
     if (tokens.some(t => t === selected || t.includes(selected) || selected.includes(t))) {
       return true;
@@ -1036,8 +1036,38 @@ export const noLayoutAnimationInGsap: AuditRule = {
   fixable: false
 };
 
+export const namedTimerConstants: AuditRule = {
+  id: 'namedTimerConstants',
+  name: 'Named GSAP Delay Constants',
+  category: 'Retardos GSAP sin constante nombrada',
+  aliases: ['timer-constants', 'named-timer-constants', 'timer_constants', 'delayedcall-magic', 'gsap-delay-constants'],
+  regex: /\b(?:gsap\.)?delayedCall\s*\(\s*([0-9]+(?:\.[0-9]+)?)\s*,|\bgsapSleep\s*\(\s*([0-9]+(?:\.[0-9]+)?)\s*\)/g,
+  message: (match: string) => `Número mágico detectado en retardo de animación GSAP: '${match.trim()}'. Define y usa una constante semántica con sufijo '_SEC' (segundos), ej. 'ANIMATION_DELAY_SEC'. Recuerda que en src/ los timers nativos (setTimeout/setInterval) están TERMINANTEMENTE PROHIBIDOS (regla manualTimersFrontend) y debe usarse ÚNICAMENTE GSAP.`,
+  severity: 'warning',
+  check: (content: string, match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return false;
+    const norm = normalizeFilePath(filePath);
+    if (!norm.includes('src/') && !norm.includes('scripts/')) return false;
+    if (norm.includes('.spec.') || norm.includes('.test.') || norm.includes('node_modules') || norm.includes('external')) return false;
+
+    // Permitir 0 (deferral / microtask idiomático)
+    const valStr = match[1] || match[2];
+    if (!valStr || parseFloat(valStr) === 0) return false;
+
+    // Check for suppression on the line
+    const matchIndex = match.index ?? 0;
+    const lineStart = content.lastIndexOf('\n', matchIndex) + 1;
+    const lineEnd = content.indexOf('\n', matchIndex);
+    const line = content.slice(lineStart, lineEnd === -1 ? undefined : lineEnd);
+    if (/\/\/\s*(?:timer-ok|delay-ok|magic-ok|no-magic):\s*\S+/i.test(line)) return false;
+
+    return true;
+  },
+  fixable: false
+};
+
 export const auditRulesConfig = {
-  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, zIndexConstantDeclaration, manualAnimations, manualTimersFrontend, zeroTimerBattleLogic, noPlaywrightWaitForTimeout, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, strictDomainParamTypes, noInlineTypeImports, noInlineLiteralUnions, magicNumbers, badConstantNames, noAliasConstants, noLiteralSuffixInConstantName, noLiteralBooleanType, noInlineAnonymousObjectType, noFloatingPromises, noLeakedGlobalState, missingInteractiveId, sassTraps, noLayoutAnimationInGsap
+  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, zIndexConstantDeclaration, manualAnimations, manualTimersFrontend, zeroTimerBattleLogic, noPlaywrightWaitForTimeout, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, strictDomainParamTypes, noInlineTypeImports, noInlineLiteralUnions, magicNumbers, badConstantNames, noAliasConstants, noLiteralSuffixInConstantName, noLiteralBooleanType, noInlineAnonymousObjectType, noFloatingPromises, noLeakedGlobalState, missingInteractiveId, sassTraps, noLayoutAnimationInGsap, namedTimerConstants
 };
 
 // Ensure every rule in auditRulesConfig has its descriptor fields populated dynamically

@@ -133,7 +133,16 @@ Key flags:
 > 2. Follow Fallow's specific recommendations to reduce cognitive and cyclomatic complexity, break up large modules, and eliminate dead code or duplication.
 > 3. Re-run `node ./node_modules/fallow/bin/fallow health --score` iteratively until the score is strictly 85 or higher.
 
-### 6. Automatic Fixes
+### 6. SLOC Single Source of Truth & Eradication of Homemade Counting
+
+> [!CRITICAL]
+> **Fallow as the Exclusive SLOC Engine (Zero Homemade Line Counting)**:
+> 1. All SLOC metrics, file length calculations, and 500/1000-line modularity enforcement across the project MUST originate strictly from Fallow (`node ./node_modules/fallow/bin/fallow health` -> `data.file_scores`).
+> 2. Homemade regexes, ad-hoc string splits (`code.split('\n')`), or manual comment-stripping routines in project auditors or scripts are **STRICTLY PROHIBITED and have been permanently eliminated**.
+> 3. Fallow natively calculates accurate Source Lines of Code (SLOC) by parsing real ASTs, properly excluding comments, blank lines, and whitespace across TypeScript, JavaScript, and Vue SFC (`<template>`, `<script>`, `<style>`).
+> 4. Pre-commit audit (`audit_for_commit.ts`) evaluates `data.file_scores` and flags any file exceeding 500 SLOC (having been previously compliant) as a blocking hard error (`severity: 'error'`).
+
+### 7. Automatic Fixes
 
 Fallow supports safe automatic cleanup of unused exports or dead code:
 
@@ -152,7 +161,7 @@ Preview or dry-run cleanup:
 node ./node_modules/fallow/bin/fallow fix --dry-run
 ```
 
-### 7. Explanation of Rules
+### 8. Explanation of Rules
 
 Explain the logic behind any specific finding without running a full analysis:
 

@@ -158,6 +158,10 @@ export function clearVolatileStatus(poke: Pokemon) {
     poke.type2 = poke._originalType2;
     poke._originalType2 = undefined;
   }
+  if (poke._originalAbility) {
+    poke.ability = poke._originalAbility;
+    poke._originalAbility = undefined;
+  }
 
   // Restore Ditto original stats/moves if it was transformed
   if (poke.originalDitto) {

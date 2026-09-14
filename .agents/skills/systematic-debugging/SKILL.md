@@ -37,6 +37,10 @@ description: >
      - Both engines MUST reproduce the bug in **RED**, and both must turn **GREEN** once fixed.
      - Tier 3 (Playwright E2E Simulation) MUST be verified in dual mode (`driver=dual` or dual clean zero pass), certifying both `[1/2 SQLite]` and `[2/2 PostgreSQL]`.
      - **1:1 Behavioral Parity**: Migrations, table schemas, constraints, query responses, error triggers, and data transformations MUST behave 100% identically across both database engines. If one engine behaves differently (e.g., succeeds while the other fails, silently returns empty arrays, or throws dialect/type errors), that divergence is an empirical bug that must be resolved.
+6. **⛔ GATE 6: ABSOLUTE PROHIBITION ON MODIFYING HISTORICAL / PUSHED MIGRATIONS**:
+   - When debugging database, migration, or schema failures, agents MUST NEVER modify historical migration files in `database/migrations/` that were committed in prior commits or pushed to `main`.
+   - Historical migrations have already executed in production and existing player databases; modifying them will NEVER re-run on existing databases and causes silent schema drift.
+   - Any database bug, schema addition, missing column, constraint fix, or data repair MUST ALWAYS be resolved by creating a NEW forward-only timestamped migration (`YYYYMMDDHHmmss_<name>.sql` and `.sqlite.sql`), NEVER by editing past migrations.
 
 ---
 

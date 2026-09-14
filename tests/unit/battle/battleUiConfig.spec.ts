@@ -21,6 +21,10 @@ describe('BattleUiConfig', () => {
   it('generates correct UI config for wild battles', () => {
     const config = createBattleUiConfig('wild')
     expect(config.mode).toBe('wild')
+    expect(config.isWild).toBe(true)
+    expect(config.isNpc).toBe(false)
+    expect(config.isPvP).toBe(false)
+    expect(config.showEnvironmentPill).toBe(true)
     expect(config.showTurnTimer).toBe(false)
     expect(config.allowBag).toBe(true)
     expect(config.allowCatch).toBe(true)
@@ -37,6 +41,10 @@ describe('BattleUiConfig', () => {
   it('generates correct UI config for trainer battles', () => {
     const config = createBattleUiConfig('trainer')
     expect(config.mode).toBe('trainer')
+    expect(config.isWild).toBe(false)
+    expect(config.isNpc).toBe(true)
+    expect(config.isPvP).toBe(false)
+    expect(config.showEnvironmentPill).toBe(true)
     expect(config.showTurnTimer).toBe(false)
     expect(config.allowBag).toBe(true)
     expect(config.allowCatch).toBe(false)
@@ -49,6 +57,10 @@ describe('BattleUiConfig', () => {
   it('generates correct UI config for gym battles', () => {
     const config = createBattleUiConfig('gym')
     expect(config.mode).toBe('gym')
+    expect(config.isWild).toBe(false)
+    expect(config.isNpc).toBe(true)
+    expect(config.isPvP).toBe(false)
+    expect(config.showEnvironmentPill).toBe(false)
     expect(config.showTurnTimer).toBe(false)
     expect(config.allowBag).toBe(true)
     expect(config.allowCatch).toBe(false)

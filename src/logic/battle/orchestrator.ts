@@ -1,7 +1,6 @@
 const INITIAL_RATE_CUMULATIVE_SUM = 0;
 
 import { PERCENTAGE_SCALE_FACTOR } from '@/logic/constants/encounters'
-import { toRaw } from 'vue'
 import { cloneReactive } from '@/logic/utils/cloneUtils.ts'
 import { getMapBiomeAndTags } from './biomeHelper.ts'
 import { MAPS_BY_ROUTE_ID } from '@/data/world/maps'
@@ -193,7 +192,10 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     returnTab: options.returnTab || ctx.uiStore?.activeTab || (isGym ? 'gyms' : (isPvP ? 'arena' : 'map')),
     enemy: null, 
     player: null, 
-    _initialEnemy: structuredClone(toRaw(startingEnemyPoke)),
+    _initialEnemy: cloneReactive(startingEnemyPoke),
+    _initialEnemies: finalEnemyTeam?.length
+      ? Object.fromEntries(finalEnemyTeam.filter(Boolean).map(p => [p.uid, cloneReactive(p)]))
+      : (startingEnemyPoke?.uid ? { [startingEnemyPoke.uid]: cloneReactive(startingEnemyPoke) } : {}),
     _rewardCombatants: [],
     isGym, gymId: resolvedGymId, isTrainer, enemyTeam: finalEnemyTeam, difficulty: resolvedDifficulty, rewardTM: resolvedRewardTM,
     isPvP,
@@ -213,7 +215,8 @@ export async function startBattleSequence(ctx: BattleContext, enemyPoke: Pokemon
     trainerArchetype: resolvedTrainerArchetype,
     isRival: isRival || battleOptions.isRival === true,
     playerTeam: effectivePlayerTeam,
-    trainerName, locationId: resolvedLocationId,
+    trainerName: (isTrainer || isGym || isPvP || isRival) ? trainerName : undefined,
+    locationId: resolvedLocationId,
     quote: trainerQuote || (battleOptions.quote as string) || undefined,
     isCave: locationMap?.isCave || false,
     isIndoors: locationMap?.isIndoors || false,

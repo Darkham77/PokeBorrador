@@ -148,6 +148,7 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
   active.enemy = null
   if (!isTr || !active.enemyTeam || !active.enemyTeam.some(p => p.hp > 0)) {
     active._initialEnemy = null
+    active._initialEnemies = {}
   }
 
   await fsm.transition(BATTLE_STATES.ACTIVE_BATTLE, BATTLE_SUBSTATES.CHECK_REMAINING)
@@ -225,6 +226,7 @@ export async function processEnemyFaintSequence(ctx: BattleContext, pokemon: Pok
   registerRewardCombatant(active)
   active.enemy = null
   active._initialEnemy = null
+  active._initialEnemies = {}
   ctx.faintedSides.value.add('enemy')
   await actions.terminateBattle(ctx, true)
 }

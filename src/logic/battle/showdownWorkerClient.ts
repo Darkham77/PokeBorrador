@@ -132,6 +132,8 @@ export async function syncTeamsFromLastWorkerState(): Promise<void> {
   }
 }
 
+const SIMULATOR_STATE_TIMEOUT_MS = 5000;
+
 export async function getSimulatorState(): Promise<{ p1: unknown[]; p2: unknown[] }> {
   const worker = getShowdownWorker();
   if (!worker) throw new Error('showdownWorker is null');
@@ -140,7 +142,7 @@ export async function getSimulatorState(): Promise<{ p1: unknown[]; p2: unknown[
     const timer = setTimeout(() => {
       worker.removeEventListener('message', handler);
       reject(new Error('[ShowdownWorkerClient] Timeout waiting for GET_SIMULATOR_STATE_RESPONSE'));
-    }, 5000);
+    }, SIMULATOR_STATE_TIMEOUT_MS);
 
     const handler = (event: MessageEvent) => {
       const data = event.data as { type: string; payload: { p1: unknown[]; p2: unknown[] } };

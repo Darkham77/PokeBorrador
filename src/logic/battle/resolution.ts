@@ -126,12 +126,14 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
       registerRewardCombatant(active)
       active.enemy = null
       active._initialEnemy = null
+      active._initialEnemies = {}
     }
   } else {
     if (active) {
       registerRewardCombatant(active)
       active.enemy = null
       active._initialEnemy = null
+      active._initialEnemies = {}
     }
   }
 
@@ -164,6 +166,7 @@ export async function terminateBattle(ctx: BattleContext, winParam: boolean, fle
 
   if (active) {
     active._initialEnemy = null
+    active._initialEnemies = {}
     if (!active.isCapture) {
       active.enemy = null
     }

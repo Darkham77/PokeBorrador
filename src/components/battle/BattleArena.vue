@@ -387,8 +387,8 @@ const handleClose = () => {
     variant="modern"
     overlay="dark"
     close-button-variant="yellow-solid"
-    :prevent-close="battleStore.isProcessing || (!!battleStore.state?.cannotEscape && !battleStore.isFinishing) || (!battleStore.isFinishing && isPokemonLocked(battleStore.state?.player))"
-    :show-close-button="(!battleStore.state?.isTrainer && !battleStore.state?.isGym) || battleStore.isFinishing"
+    :prevent-close="battleStore.isProcessing || (!(battleStore.uiConfig ? battleStore.uiConfig.allowFlee : !battleStore.state?.isTrainer && !battleStore.state?.isGym && !battleStore.state?.isPvP) && !battleStore.isFinishing) || (!battleStore.isFinishing && isPokemonLocked(battleStore.state?.player))"
+    :show-close-button="(battleStore.uiConfig ? battleStore.uiConfig.allowFlee : !battleStore.state?.isTrainer && !battleStore.state?.isGym && !battleStore.state?.isPvP) || battleStore.isFinishing"
     :close-on-click-outside="false"
     :hide-header="true"
     padding="raw"
@@ -398,7 +398,7 @@ const handleClose = () => {
     @close="handleClose"
   >
     <div
-      v-if="!battle?.isGym"
+      v-if="battleStore.uiConfig ? battleStore.uiConfig.showEnvironmentPill : !battleStore.state?.isPvP"
       class="battle-header-actions"
     >
       <!-- Showdown Canonical Animation Registration Tokens: frz drag brn psn tox slp par confusion flinch attract taunt substitute raindance sunnyday sandstorm hail snow electricterrain grassyterrain mistyterrain psychicterrain trickroom gravity stealthrock spikes toxicspikes mega primal terastallize dynamax -->
