@@ -4,9 +4,8 @@
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
-import { setupValidation } from '../../lib/validationBase.ts';
+import { BaseAuditor } from '../../lib/auditorBase.ts';
 
 enableCompileCache();
 
@@ -14,7 +13,7 @@ const DIAGRAM_SRC_ROOT = path.resolve(process.cwd(), 'src');
 const DIAGRAM_MANUAL_PATH = path.resolve(process.cwd(), '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
 const DIAGRAM_FSM_PATH = path.join(DIAGRAM_SRC_ROOT, 'logic/battle/battleStateMachine.ts');
 
-function parseMermaid(manualCode: string) {
+export function parseMermaid(manualCode: string) {
   const states = new Set<string>();
   const transitions: { from: string; to: string }[] = []; 
 
@@ -49,7 +48,7 @@ function parseMermaid(manualCode: string) {
   return { states, transitions };
 }
 
-function parseJsFsm(fsmCode: string) {
+export function parseJsFsm(fsmCode: string) {
   const allKeys = new Set<string>();
   const objRx = /export const (BATTLE_(?:SUB)?STATES)\s*=\s*\{([\s\S]*?)\}\s*(as const)?\s*;/g;
   let m: RegExpExecArray | null;
@@ -75,80 +74,115 @@ function parseJsFsm(fsmCode: string) {
   return { allKeys, jsTransitions };
 }
 
-async function main() {
-  const validator = setupValidation({
-    title: 'FSM DIAGRAMS VALIDATOR',
-    requiredFiles: [DIAGRAM_MANUAL_PATH, DIAGRAM_FSM_PATH]
-  });
+export type FsmDiagramRuleId =
+  | 'fsm-state-missing-in-js'
+  | 'fsm-undocumented-js-state'
+  | 'fsm-transition-missing-in-js';
 
-  await validator.checkFiles();
+export const FSM_DIAGRAM_RULES: readonly FsmDiagramRuleId[] = [
+  'fsm-state-missing-in-js',
+  'fsm-undocumented-js-state',
+  'fsm-transition-missing-in-js'
+] as const;
 
-  const manualCode = await fs.readFile(DIAGRAM_MANUAL_PATH, 'utf-8');
-  const fsmCode = await fs.readFile(DIAGRAM_FSM_PATH, 'utf-8');
+export class FsmDiagramAuditor extends BaseAuditor<FsmDiagramRuleId> {
+  constructor() {
+    super({
+      id: 'validate_fsm_diagrams',
+      name: 'FSM Diagrams Validator',
+      description: 'Estados o transiciones de FSM discrepantes con Mermaid',
+      family: 'fsm',
+      ruleIds: FSM_DIAGRAM_RULES,
+      ruleDescriptions: {
+        'fsm-state-missing-in-js': 'Estado de Mermaid no definido en TypeScript',
+        'fsm-undocumented-js-state': 'Estado en TypeScript no documentado en Mermaid',
+        'fsm-transition-missing-in-js': 'Transición de Mermaid ausente en TypeScript'
+      },
+      requiredFiles: [DIAGRAM_MANUAL_PATH, DIAGRAM_FSM_PATH]
+    });
+  }
 
-  const { states: mermaidStates, transitions: mermaidTransitions } = parseMermaid(manualCode);
-  const { allKeys: jsKeys, jsTransitions } = parseJsFsm(fsmCode);
+  public override async runAudit(): Promise<void> {
+    const manualCode = await fs.readFile(DIAGRAM_MANUAL_PATH, 'utf-8');
+    const fsmCode = await fs.readFile(DIAGRAM_FSM_PATH, 'utf-8');
+    this.filesScannedCount = 2;
 
-  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
-  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
+    const { states: mermaidStates, transitions: mermaidTransitions } = parseMermaid(manualCode);
+    const { allKeys: jsKeys, jsTransitions } = parseJsFsm(fsmCode);
 
-  validator.logStep(1, 2, `Comparando ${mermaidStates.size} estados Mermaid del manual contra constantes JS...`);
-  // [CHECK 1] Nodos Mermaid -> Constantes JS
-  const missing = Array.from(mermaidStates).filter(s => !jsKeys.has(s));
-  missing.forEach(s => {
-    errors.push(`Faltante en JS: ${s}`);
-  });
-
-  validator.logStep(2, 2, `Auditando ${mermaidTransitions.length} transiciones Mermaid contra validTransitions en JS...`);
-
-  // [CHECK 3] Constantes JS -> Nodos Mermaid (Búsqueda de Código Basura)
-  const IGNORED_JS_STATES = new Set([ // runtime-set: Fast O(1) membership lookup set
-    'FIRST_INTRO',
-    'EXEC_TURN',
-    'ANIM_SYNC',
-    'WAIT_LOG_QUEUE',
-    'PRELOAD_COORDS',
-    'PRELOAD_FINAL_COORDS',
-    'PARALLEL_PREP',
-    'PARALLEL_ENTRY',
-    'VACATE_ALL_SEATS',
-    'WAIT_TIMER',
-    'ESCAPE_PROCESS',
-    'BUILD_QUEUE',
-    'POP_ACTION'
-  ]);
-
-  const undocumented = Array.from(jsKeys).filter(s => !mermaidStates.has(s) && !IGNORED_JS_STATES.has(s));
-  undocumented.forEach(s => {
-    errors.push(`Código basura / Indocumentado en JS: ${s} (No existe en los diagramas Mermaid del manual)`);
-  });
-
-  // [CHECK 2] Transiciones Top-Level
-  const topLevelRx = /export const BATTLE_STATES\s*=\s*\{([\s\S]*?)\}/;
-  const tlm = fsmCode.match(topLevelRx);
-  const topLevelJs = new Set(tlm?.[1] ? Array.from(tlm[1].matchAll(/([A-Z][A-Z0-9_]+)\s*:/g)).map(x => x[1]!) : []);
-
-  const topTransitions = mermaidTransitions.filter(t => topLevelJs.has(t.from) && topLevelJs.has(t.to));
-  topTransitions.forEach(mt => {
-    const exists = jsTransitions.some(jt => jt.from === mt.from && jt.to === mt.to);
-    if (!exists) {
-      errors.push(`Transición ${mt.from} -> ${mt.to} falta en validTransitions.`);
+    this.context.logStep(1, 2, `Comparando ${mermaidStates.size} estados Mermaid del manual contra constantes JS...`);
+    // [CHECK 1] Nodos Mermaid -> Constantes JS
+    const missing = Array.from(mermaidStates).filter(s => !jsKeys.has(s));
+    for (const s of missing) {
+      this.addViolation({
+        ruleId: 'fsm-state-missing-in-js',
+        severity: 'error',
+        file: 'src/logic/battle/battleStateMachine.ts',
+        line: 1,
+        message: `Faltante en JS: ${s}`,
+        context: s
+      });
     }
-  });
 
-  await validator.finish(
-    {
-      'Mermaid states': mermaidStates.size,
-      'Mermaid transitions': mermaidTransitions.length,
-      'JS Keys': jsKeys.size,
-      'JS Transitions': jsTransitions.length
-    },
-    errors,
-    warnings
-  );
+    this.context.logStep(2, 2, `Auditando ${mermaidTransitions.length} transiciones Mermaid contra validTransitions en JS...`);
+
+    // [CHECK 3] Constantes JS -> Nodos Mermaid (Búsqueda de Código Basura)
+    const IGNORED_JS_STATES = new Set([
+      'FIRST_INTRO',
+      'EXEC_TURN',
+      'ANIM_SYNC',
+      'WAIT_LOG_QUEUE',
+      'PRELOAD_COORDS',
+      'PRELOAD_FINAL_COORDS',
+      'PARALLEL_PREP',
+      'PARALLEL_ENTRY',
+      'VACATE_ALL_SEATS',
+      'WAIT_TIMER',
+      'ESCAPE_PROCESS',
+      'BUILD_QUEUE',
+      'POP_ACTION'
+    ]);
+
+    const undocumented = Array.from(jsKeys).filter(s => !mermaidStates.has(s) && !IGNORED_JS_STATES.has(s));
+    for (const s of undocumented) {
+      this.addViolation({
+        ruleId: 'fsm-undocumented-js-state',
+        severity: 'error',
+        file: 'src/logic/battle/battleStateMachine.ts',
+        line: 1,
+        message: `Código basura / Indocumentado en JS: ${s} (No existe en los diagramas Mermaid del manual)`,
+        context: s
+      });
+    }
+
+    // [CHECK 2] Transiciones Top-Level
+    const topLevelRx = /export const BATTLE_STATES\s*=\s*\{([\s\S]*?)\}/;
+    const tlm = fsmCode.match(topLevelRx);
+    const topLevelJs = new Set(tlm?.[1] ? Array.from(tlm[1].matchAll(/([A-Z][A-Z0-9_]+)\s*:/g)).map(x => x[1]!) : []);
+
+    const topTransitions = mermaidTransitions.filter(t => topLevelJs.has(t.from) && topLevelJs.has(t.to));
+    for (const mt of topTransitions) {
+      const exists = jsTransitions.some(jt => jt.from === mt.from && jt.to === mt.to);
+      if (!exists) {
+        this.addViolation({
+          ruleId: 'fsm-transition-missing-in-js',
+          severity: 'error',
+          file: 'src/logic/battle/battleStateMachine.ts',
+          line: 1,
+          message: `Transición ${mt.from} -> ${mt.to} falta en validTransitions.`,
+          context: `${mt.from} -> ${mt.to}`
+        });
+      }
+    }
+
+    this.context.setMetric('Mermaid states', mermaidStates.size);
+    this.context.setMetric('Mermaid transitions', mermaidTransitions.length);
+    this.context.setMetric('JS Keys', jsKeys.size);
+    this.context.setMetric('JS Transitions', jsTransitions.length);
+  }
 }
 
-main().catch(err => {
-  console.error(styleText('red', `\n💥 Error fatal: ${(err as Error).message}`));
-  process.exit(1);
-});
+// ─── CLI Entrypoint ─────────────────────────────────────────────────────────
+if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+  await BaseAuditor.runCli(new FsmDiagramAuditor());
+}

@@ -4,27 +4,23 @@
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
-import { setupValidation } from '../../lib/validationBase.ts';
+import { BaseAuditor } from '../../lib/auditorBase.ts';
+import { collectFsmFiles } from './_fsmParityParser.ts';
 
 enableCompileCache();
 
 const PARITY_SRC_ROOT = path.resolve(process.cwd(), 'src');
 const PARITY_MANUAL_PATH = path.resolve(process.cwd(), '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md');
-const MAX_SEQUENCE_PREVIEW_LIMIT = 10;
 
-interface TransitionStep {
+export interface TransitionStep {
   from: string;
   to: string;
   isLoop: boolean;
 }
 
-// ─── Utilidades de Descubrimiento ───────────────────────────────────────────
-import { walkSourceFiles as walk } from './_fsmParityParser.ts';
-
-async function getExecutionSequence(): Promise<string[]> {
-  const allFiles = await walk(PARITY_SRC_ROOT);
+export async function getExecutionSequence(): Promise<string[]> {
+  const allFiles = collectFsmFiles(PARITY_SRC_ROOT);
   const sequence: { file: string, state: string, index: number }[] = [];
 
   for (const file of allFiles) {
@@ -45,7 +41,7 @@ async function getExecutionSequence(): Promise<string[]> {
   return sequence.map(s => s.state);
 }
 
-function parseMermaidSequences(content: string) {
+export function parseMermaidSequences(content: string) {
   const sequences: TransitionStep[][] = [];
   const blockRx = /```mermaid\n([\s\S]*?)```/g;
   let m: RegExpExecArray | null;
@@ -71,60 +67,73 @@ function parseMermaidSequences(content: string) {
   return sequences;
 }
 
-async function main() {
-  const validator = setupValidation({
-    title: 'FSM FLOW PARITY VALIDATOR',
-    requiredFiles: [PARITY_MANUAL_PATH]
-  });
+export type FsmFlowParityRuleId = 'fsm-flow-sequence-missing';
 
-  await validator.checkFiles();
+export const FSM_FLOW_PARITY_RULES: readonly FsmFlowParityRuleId[] = [
+  'fsm-flow-sequence-missing'
+] as const;
 
-  const manual = await fs.readFile(PARITY_MANUAL_PATH, 'utf-8');
-  const executionSequence = await getExecutionSequence();
-  const mermaidSeqs = parseMermaidSequences(manual);
-
-  console.log(styleText('cyan', `\nSecuencia detectada en el código (${executionSequence.length} pasos):`));
-  console.log(executionSequence.slice(0, MAX_SEQUENCE_PREVIEW_LIMIT).join(' -> ') + (executionSequence.length > MAX_SEQUENCE_PREVIEW_LIMIT ? ' ...' : ''));
-
-  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
-  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
-  const okTransitions: string[] = []; // no-domain: Non-domain utility collection or data structure
-  const loopTransitions: string[] = []; // no-domain: Non-domain utility collection or data structure
-
-  mermaidSeqs.forEach((seq, idx) => {
-    seq.forEach((step: TransitionStep) => {
-      const allFromIndices = executionSequence.map((s, i) => s === step.from ? i : -1).filter(i => i !== -1);
-      const allToIndices = executionSequence.map((s, i) => s === step.to ? i : -1).filter(i => i !== -1);
-
-      if (allFromIndices.length === 0 || allToIndices.length === 0) return;
-
-      const hasValidSequence = allFromIndices.some(fIdx => allToIndices.some(tIdx => tIdx > fIdx));
-
-      if (!hasValidSequence && !step.isLoop) {
-        errors.push(`Secuencia Mermaid #${idx + 1}: ${step.from} -> ${step.to} no encontrada en el código.`);
-      } else if (step.isLoop) {
-        loopTransitions.push(`Secuencia Mermaid #${idx + 1}: ${step.from} -> ${step.to} (Loop circular)`);
-      } else {
-        okTransitions.push(`Secuencia Mermaid #${idx + 1}: ${step.from} -> ${step.to}`);
-      }
+export class FsmFlowParityAuditor extends BaseAuditor<FsmFlowParityRuleId> {
+  constructor() {
+    super({
+      id: 'validate_fsm_flow_parity',
+      name: 'FSM Flow Parity Validator',
+      description: 'Secuencia de combate discrepante con el manual',
+      family: 'fsm',
+      ruleIds: FSM_FLOW_PARITY_RULES,
+      ruleDescriptions: {
+        'fsm-flow-sequence-missing': 'Secuencia de eventos FSM ausente en código'
+      },
+      requiredFiles: [PARITY_MANUAL_PATH]
     });
-  });
+  }
 
-  console.log(`\n════════════════════════════════════`);
-  console.log(`    FSM FLOW PARITY REPORT`);
-  await validator.finish(
-    {
-      'Pasos detectados en código': executionSequence.length,
-      'Secuencias Mermaid evaluadas': mermaidSeqs.length,
-      'Transiciones correctas': okTransitions.length,
-      'Transiciones loop/circular': loopTransitions.length
-    },
-    errors,
-    warnings
-  );
+  public override async runAudit(): Promise<void> {
+    this.context.logStep(1, 2, 'Extracting dynamic execution sequence from source code...');
+    const manual = await fs.readFile(PARITY_MANUAL_PATH, 'utf-8');
+    const executionSequence = await getExecutionSequence();
+    const mermaidSeqs = parseMermaidSequences(manual);
+    this.filesScannedCount = executionSequence.length;
+
+    this.context.logStep(2, 2, `Evaluating ${mermaidSeqs.length} Mermaid sequences against runtime flow...`);
+
+    let okTransitionsCount = 0;
+    let loopTransitionsCount = 0;
+
+    mermaidSeqs.forEach((seq, idx) => {
+      seq.forEach((step: TransitionStep) => {
+        const allFromIndices = executionSequence.map((s, i) => s === step.from ? i : -1).filter(i => i !== -1);
+        const allToIndices = executionSequence.map((s, i) => s === step.to ? i : -1).filter(i => i !== -1);
+
+        if (allFromIndices.length === 0 || allToIndices.length === 0) return;
+
+        const hasValidSequence = allFromIndices.some(fIdx => allToIndices.some(tIdx => tIdx > fIdx));
+
+        if (!hasValidSequence && !step.isLoop) {
+          this.addViolation({
+            ruleId: 'fsm-flow-sequence-missing',
+            severity: 'error',
+            file: '.agents/skills/project-standards/references/battle/battle_mechanics_manual.md',
+            line: 1,
+            message: `Secuencia Mermaid #${idx + 1}: ${step.from} -> ${step.to} no encontrada en el orden de ejecución del código.`,
+            context: `${step.from} -> ${step.to}`
+          });
+        } else if (step.isLoop) {
+          loopTransitionsCount++;
+        } else {
+          okTransitionsCount++;
+        }
+      });
+    });
+
+    this.context.setMetric('Code steps detected', executionSequence.length);
+    this.context.setMetric('Mermaid seqs evaluated', mermaidSeqs.length);
+    this.context.setMetric('Valid transitions', okTransitionsCount);
+    this.context.setMetric('Circular loops', loopTransitionsCount);
+  }
 }
 
-main().catch(err => {
-  console.error(styleText('red', `\n💥 Error fatal: ${(err as Error).message}`));
-  process.exit(1);
-});
+// ─── CLI Entrypoint ─────────────────────────────────────────────────────────
+if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+  await BaseAuditor.runCli(new FsmFlowParityAuditor());
+}

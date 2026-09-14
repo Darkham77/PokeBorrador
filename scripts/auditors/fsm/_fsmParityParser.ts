@@ -1,17 +1,7 @@
-import fs from 'node:fs/promises'
-import path from 'node:path'
+import { collectRepositoryFiles } from '../../lib/auditorBase.ts';
 
-export async function walkSourceFiles(dir: string): Promise<string[]> {
-  try {
-    const entries = await fs.readdir(dir, { withFileTypes: true })
-    const files = await Promise.all(
-      entries.map(res => {
-        const resPath = path.resolve(dir, res.name)
-        return res.isDirectory() ? walkSourceFiles(resPath) : ['.ts', '.vue'].includes(path.extname(res.name)) ? [resPath] : []
-      })
-    )
-    return files.flat()
-  } catch {
-    return []
-  }
+const FSM_SCANNABLE_EXTS = new Set(['.ts', '.vue']);
+
+export function collectFsmFiles(dir: string): string[] {
+  return collectRepositoryFiles(dir, process.cwd(), [], FSM_SCANNABLE_EXTS);
 }

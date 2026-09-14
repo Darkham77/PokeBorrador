@@ -78,6 +78,9 @@ export interface AuditFinding {
   file?: string;
   line?: number;
   ruleId?: string;
+  ruleDescription?: string;
+  suiteId?: string;
+  suiteName?: string;
   context?: string;
 }
 
@@ -87,6 +90,7 @@ export type AuditExecutionStatus = (typeof AUDIT_STATUSES)[number];
 export interface StandardAuditResult {
   id: string;
   name: string;
+  description: string;
   family: AuditFamily;
   status: AuditExecutionStatus;
   durationMs: number;
@@ -103,6 +107,7 @@ export interface StandardAuditResult {
 export interface AuditTaskDefinition {
   id: string;
   name: string;
+  description?: string;
   family: AuditFamily;
   scriptPath: string;
   command: string;

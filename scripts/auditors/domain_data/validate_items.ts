@@ -1,33 +1,24 @@
 /**
- * scripts/validate_items.ts
+ * scripts/auditors/domain_data/validate_items.ts
  * 
  * ITEM VALIDATOR SCRIPT (Node.js 26+)
  * Validates integrity of SHOP_ITEMS and HEALING_ITEMS across:
- *   - src/data/items.js            -> SHOP_ITEMS[]
- *   - src/logic/items/itemEffects.js -> HEALING_ITEMS{}
- *
- * Usage: npm run validate:items
+ *   - src/data/inventory/items.json  -> SHOP_ITEMS[]
+ *   - src/logic/items/itemEffects.ts -> HEALING_ITEMS{}
  */
 
 import fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
-import { setupValidation } from '../../lib/validationBase.ts';
+import { BaseAuditor } from '../../lib/auditorBase.ts';
 
 enableCompileCache();
 
-// Runtime permission check
-if (process.permission && !process.permission.has('fs.read', process.cwd())) {
-  console.error(styleText('red', '\n❌ Error: Este script requiere permisos de lectura. Ejecútalo con --permission --allow-fs-read=.\n'));
-  process.exit(1);
-}
-
-const SHOP_FILE   = path.resolve(process.cwd(), 'src/data/inventory/items.ts');
+const SHOP_FILE   = path.resolve(process.cwd(), 'src/data/inventory/items.json');
 const BATTLE_FILE = path.resolve(process.cwd(), 'src/logic/items/itemEffects.ts');
 
-interface ShopItem {
+export interface ShopItem {
   id: string;
   _line: number;
   name?: string | null;
@@ -41,182 +32,271 @@ interface ShopItem {
   [key: string]: unknown;
 }
 
-async function main() {
-  const validator = setupValidation({
-    title: 'ITEM INTEGRITY VALIDATOR',
-    requiredFiles: [SHOP_FILE, BATTLE_FILE]
-  });
+export type ItemRuleId =
+  | 'item-missing-field'
+  | 'item-sprite-not-found'
+  | 'item-unknown-category'
+  | 'item-missing-healing-effect'
+  | 'item-invalid-healing-effect'
+  | 'item-missing-held-type'
+  | 'item-english-desc-leak'
+  | 'item-english-name-leak'
+  | 'item-phantom-healing'
+  | 'item-sprite-collision';
 
-  await validator.checkFiles();
+export const ITEM_RULES: readonly ItemRuleId[] = [
+  'item-missing-field',
+  'item-sprite-not-found',
+  'item-unknown-category',
+  'item-missing-healing-effect',
+  'item-invalid-healing-effect',
+  'item-missing-held-type',
+  'item-english-desc-leak',
+  'item-english-name-leak',
+  'item-phantom-healing',
+  'item-sprite-collision'
+] as const;
 
-  const battleContent = await fs.readFile(BATTLE_FILE, 'utf8');
-
-
-  validator.logStep(1, 2, 'Cargando y parseando SHOP_ITEMS y catálogo de ítems...');
-  // ─── 1. Load SHOP_ITEMS directly from the JSON source ────────────────────────
-  // items.ts re-exports from items.json — parsing the .ts as text yields 0 entries.
-  const JSON_FILE = path.resolve(process.cwd(), 'src/data/inventory/items.json');
-  if (!existsSync(JSON_FILE)) {
-    console.error(styleText('red', `\n❌ Error: items.json not found at ${JSON_FILE}\n`));
-    process.exit(1);
+export class ItemAuditor extends BaseAuditor<ItemRuleId> {
+  constructor() {
+    super({
+      id: 'validate_items',
+      name: 'Item Integrity Validator',
+      description: 'Ítems faltantes, sin categoría o con efectos inválidos',
+      family: 'domain_data',
+      ruleIds: ITEM_RULES,
+      ruleDescriptions: {
+        'item-missing-field': 'Campo faltante en ítem del catálogo',
+        'item-sprite-not-found': 'Sprite de ítem no encontrado en assets',
+        'item-unknown-category': 'Categoría desconocida en catálogo de ítems',
+        'item-missing-healing-effect': 'Efecto curativo faltante en ítem medicinal',
+        'item-invalid-healing-effect': 'Efecto curativo inválido en ítem medicinal',
+        'item-missing-held-type': 'Tipo de ítem equipado faltante',
+        'item-english-desc-leak': 'Descripción en inglés filtrada en ítem',
+        'item-english-name-leak': 'Nombre en inglés filtrado en ítem',
+        'item-phantom-healing': 'Efecto curativo fantasma sin item curativo',
+        'item-sprite-collision': 'Colisión de sprites en catálogo de ítems'
+      },
+      requiredFiles: [SHOP_FILE, BATTLE_FILE]
+    });
   }
-  const jsonRaw = await fs.readFile(JSON_FILE, 'utf8');
-  const jsonData = JSON.parse(jsonRaw) as { SHOP_ITEMS?: unknown[] };
-  const rawShopItems = (jsonData.SHOP_ITEMS ?? []) as Record<string, unknown>[]; // open-record: Generic key-value data dictionary container
-  const shopItems: ShopItem[] = rawShopItems
-    .filter(item => typeof item === 'object' && item !== null && typeof item['id'] === 'string')
-    .map((item, idx) => ({ ...item, id: item['id'] as string, _line: idx + 1 }));
 
-  validator.logStep(2, 2, `Validando ${shopItems.length} SHOP_ITEMS, categorías, sprites y paridad con HEALING_ITEMS...`);
-  // ─── 2. Extract HEALING_ITEMS keys ───────────────────────────────────────────
-  const healingItems = new Set<string>();
-  const healingRegex = /^\s+'([^']+)':\s*\(?[\s\S]*?\)?\s*=>/gm;
-  let m;
-  while ((m = healingRegex.exec(battleContent)) !== null) {
-    healingItems.add(m[1]!);
-  }
+  public override async runAudit(): Promise<void> {
+    this.context.logStep(1, 2, 'Loading and parsing SHOP_ITEMS and HEALING_ITEMS...');
+    const battleContent = await fs.readFile(BATTLE_FILE, 'utf8');
+    const jsonRaw = await fs.readFile(SHOP_FILE, 'utf8');
+    const jsonData = JSON.parse(jsonRaw) as { SHOP_ITEMS?: unknown[] };
+    const rawShopItems = (jsonData.SHOP_ITEMS ?? []) as Record<string, unknown>[];
+    const shopItems: ShopItem[] = rawShopItems
+      .filter(item => typeof item === 'object' && item !== null && typeof item['id'] === 'string')
+      .map((item, idx) => ({ ...item, id: item['id'] as string, _line: idx + 1 }));
 
-  // ─── Run validations ──────────────────────────────────────────────────────────
-  const errors: string[]   = []; // no-domain: Non-domain utility collection or data structure
-  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
+    this.filesScannedCount = shopItems.length;
 
-  const MUST_BE_USABLE     = ['pociones', 'potions', 'utility', 'booster', 'stones', 'stone']; // no-domain: Non-domain utility collection or data structure
-  const MUST_NOT_BE_USABLE = ['held', 'combat_held', 'pokeballs', 'breeding', 'breeding_held', 'raw_material', 'refined_material', 'component', 'machinery', 'tms']; // no-domain: Non-domain utility collection or data structure
-  const REQUIRED_FIELDS    = ['id', 'name', 'cat', 'sprite', 'icon', 'desc', 'price']; // no-domain: Non-domain utility collection or data structure
-  const VALID_CATS         = [ // no-domain: Non-domain utility collection or data structure
-    'pociones', 'potions', 'utility', 'tools', 'booster', 'especial', 'held', 'combat_held', 'pokeballs', 'stones', 'stone', 'breeding', 'breeding_held',
-    'healing', 'tm', 'special', 'raw_material', 'refined_material', 'component', 'machinery', 'tms', 'otros'
-  ];
+    const healingItems = new Set<string>();
+    const healingRegex = /^\s+'([^']+)':\s*\(?[\s\S]*?\)?\s*=>/gm;
+    let m;
+    while ((m = healingRegex.exec(battleContent)) !== null) {
+      healingItems.add(m[1]!);
+    }
 
-  shopItems.forEach(item => {
-    const tag = `[${item.name || item.id} (line ~${item._line})]`;
+    this.context.logStep(2, 2, `Validating ${shopItems.length} items for fields, categories, sprites, and parity...`);
 
-    REQUIRED_FIELDS.forEach(f => {
-      const val = item[f];
-      if (val == null || val === '') {
-        errors.push(`${tag} Missing required field: '${f}'`);
+    const MUST_BE_USABLE     = ['pociones', 'potions', 'utility', 'booster', 'stones', 'stone'];
+    const MUST_NOT_BE_USABLE = ['held', 'combat_held', 'pokeballs', 'breeding', 'breeding_held', 'raw_material', 'refined_material', 'component', 'machinery', 'tms'];
+    const REQUIRED_FIELDS    = ['id', 'name', 'cat', 'sprite', 'icon', 'desc', 'price'];
+    const VALID_CATS         = [
+      'pociones', 'potions', 'utility', 'tools', 'booster', 'especial', 'held', 'combat_held', 'pokeballs', 'stones', 'stone', 'breeding', 'breeding_held',
+      'healing', 'tm', 'special', 'raw_material', 'refined_material', 'component', 'machinery', 'tms', 'otros'
+    ];
+
+    shopItems.forEach(item => {
+      const tag = `[${item.name || item.id} (line ~${item._line})]`;
+
+      REQUIRED_FIELDS.forEach(f => {
+        const val = item[f];
+        if (val == null || val === '') {
+          this.addViolation({
+            ruleId: 'item-missing-field',
+            severity: 'error',
+            file: 'src/data/inventory/items.json',
+            line: item._line,
+            message: `${tag} Missing required field: '${f}'`,
+            context: `${item.id}.${f}`
+          });
+        }
+      });
+
+      if (item.sprite) {
+        const physicalPath = path.resolve(process.cwd(), 'public/assets/sprites', `${item.sprite}.webp`);
+        if (!existsSync(physicalPath)) {
+          this.addViolation({
+            ruleId: 'item-sprite-not-found',
+            severity: 'error',
+            file: 'src/data/inventory/items.json',
+            line: item._line,
+            message: `${tag} Sprite file does not exist: '${physicalPath}'`,
+            context: item.sprite
+          });
+        }
+      }
+
+      if (item.cat && !VALID_CATS.includes(item.cat)) {
+        this.addViolation({
+          ruleId: 'item-unknown-category',
+          severity: 'error',
+          file: 'src/data/inventory/items.json',
+          line: item._line,
+          message: `${tag} Unknown category: '${item.cat}'`,
+          context: item.cat
+        });
+      }
+
+      if (item.cat && MUST_BE_USABLE.includes(item.cat) && item.id && !healingItems.has(item.id)) {
+        if (!item.name?.startsWith('MT')) {
+          this.addViolation({
+            ruleId: 'item-missing-healing-effect',
+            severity: 'error',
+            file: 'src/data/inventory/items.json',
+            line: item._line,
+            message: `${tag} cat='${item.cat}' but '${item.id}' has no entry in HEALING_ITEMS.`,
+            context: item.id
+          });
+        }
+      }
+
+      if (item.cat && MUST_NOT_BE_USABLE.includes(item.cat) && item.id && healingItems.has(item.id)) {
+        const ALLOWED_USABLE_HELD = ['vigorrestorer', 'pomegberry', 'kelpsyberry', 'qualotberry', 'hondewberry', 'grepaberry', 'tamatoberry'];
+        if (!ALLOWED_USABLE_HELD.includes(item.id)) {
+          this.addViolation({
+            ruleId: 'item-invalid-healing-effect',
+            severity: 'error',
+            file: 'src/data/inventory/items.json',
+            line: item._line,
+            message: `${tag} cat='${item.cat}' should NOT be in HEALING_ITEMS.`,
+            context: item.id
+          });
+        }
+      }
+
+      if ((item.cat === 'held' || item.cat === 'combat_held') && item.type !== 'held') {
+        this.addViolation({
+          ruleId: 'item-missing-held-type',
+          severity: 'error',
+          file: 'src/data/inventory/items.json',
+          line: item._line,
+          message: `${tag} cat='${item.cat}' but missing 'type: held'.`,
+          context: item.id
+        });
+      }
+
+      if (item.desc) {
+        const FORBIDDEN_DESC_PATTERNS = [
+          /\bholder('s)?\b/i,
+          /\braises?\b/i,
+          /\blowers?\b/i,
+          /\bboosts?\b/i,
+          /\bincreases?\b/i,
+          /\bsingle use\b/i,
+          /\battacks?\b/i,
+          /\bcannot\b/i,
+          /\bheals?\b/i,
+          /\bprevents?\b/i,
+          /\bused for\b/i,
+          /\bevolves?\b/i,
+          /\bif held by\b/i,
+          /\bgains?\b/i,
+          /\baccuracy\b/i,
+          /\bhalves\b/i,
+          /\bphysical attacks?\b/i,
+          /\bspecial attacks?\b/i,
+          /\bmoves last\b/i,
+          /\bjudgment is\b/i,
+          /\bwhen held\b/i,
+          /\bis (calculated|raised|lowered)\b/i,
+          /\bno competitive use\b/i,
+          /\bchanges its forme\b/i,
+        ];
+        for (const pattern of FORBIDDEN_DESC_PATTERNS) {
+          if (pattern.test(item.desc)) {
+            this.addViolation({
+              ruleId: 'item-english-desc-leak',
+              severity: 'error',
+              file: 'src/data/inventory/items.json',
+              line: item._line,
+              message: `${tag} LEAK DETECTADO en 'desc' (patrón en inglés: ${pattern}): "${item.desc}"`,
+              context: item.desc
+            });
+            break;
+          }
+        }
+      }
+
+      if (item.name) {
+        const FORBIDDEN_NAME_PATTERNS = [
+          /\b(Berry|Sweet|Plate|Orb|Specs|Vest|Herb|Policy|Drive|Memory|Mirror|Feather|Cap|Incense|Belt|Glasses)\b/i
+        ];
+        for (const pattern of FORBIDDEN_NAME_PATTERNS) {
+          if (pattern.test(item.name)) {
+            this.addViolation({
+              ruleId: 'item-english-name-leak',
+              severity: 'error',
+              file: 'src/data/inventory/items.json',
+              line: item._line,
+              message: `${tag} LEAK DETECTADO en 'name' (nombre en inglés: ${pattern}): "${item.name}"`,
+              context: item.name
+            });
+            break;
+          }
+        }
       }
     });
-    
-    if (item.sprite) {
-      const physicalPath = path.resolve(process.cwd(), 'public/assets/sprites', `${item.sprite}.webp`);
-      if (!existsSync(physicalPath)) {
-        errors.push(`${tag} Sprite file does not exist: '${physicalPath}'`);
+
+    const shopItemIds = new Set(shopItems.map(i => i.id));
+
+    healingItems.forEach(id => {
+      if (id.startsWith('MT')) return;
+      if (!shopItemIds.has(id)) {
+        this.addViolation({
+          ruleId: 'item-phantom-healing',
+          severity: 'warning',
+          file: 'src/logic/items/itemEffects.ts',
+          line: 1,
+          message: `[PHANTOM] '${id}' is in HEALING_ITEMS but has NO entry in SHOP_ITEMS.`,
+          context: id
+        });
+      }
+    });
+
+    const spriteToItems = new Map<string, string[]>();
+    shopItems.forEach(item => {
+      const sprite = item.sprite?.trim();
+      if (!sprite) return;
+      if (!spriteToItems.has(sprite)) {
+        spriteToItems.set(sprite, []);
+      }
+      spriteToItems.get(sprite)!.push(item.id);
+    });
+
+    for (const [sprite, ids] of spriteToItems.entries()) {
+      if (ids.length > 1) {
+        this.addViolation({
+          ruleId: 'item-sprite-collision',
+          severity: 'warning',
+          file: 'src/data/inventory/items.json',
+          line: 1,
+          message: `Sprite '${sprite}' is reused by ${ids.length} items (${ids.join(', ')}).`,
+          context: sprite
+        });
       }
     }
 
-    if (item.cat && !VALID_CATS.includes(item.cat)) {
-      errors.push(`${tag} Unknown category: '${item.cat}'`);
-    }
-
-    if (item.cat && MUST_BE_USABLE.includes(item.cat) && item.id && !healingItems.has(item.id)) {
-      if (!item.name?.startsWith('MT')) {
-        errors.push(`${tag} cat='${item.cat}' but '${item.id}' has no entry in HEALING_ITEMS.`);
-      }
-    }
-
-    if (item.cat && MUST_NOT_BE_USABLE.includes(item.cat) && item.id && healingItems.has(item.id)) {
-      // 'Restaurador de Vigor' (vigorrestorer) is a breeding item that is explicitly usable to restore vigor
-      // EV-reducing berries are held items that are explicitly usable from bag to reduce EVs and raise friendship
-      const ALLOWED_USABLE_HELD = ['vigorrestorer', 'pomegberry', 'kelpsyberry', 'qualotberry', 'hondewberry', 'grepaberry', 'tamatoberry']; // no-domain: Non-domain utility collection or data structure
-      if (!ALLOWED_USABLE_HELD.includes(item.id)) {
-        errors.push(`${tag} cat='${item.cat}' should NOT be in HEALING_ITEMS.`);
-      }
-    }
-
-    if ((item.cat === 'held' || item.cat === 'combat_held') && item.type !== 'held') {
-      errors.push(`${tag} cat='${item.cat}' but missing 'type: held'.`);
-    }
-
-    // ─── 2.1 Spanish Localization Audit ─────────────────────────────────────────
-    if (item.desc) {
-      const FORBIDDEN_DESC_PATTERNS = [ // no-domain: Non-domain utility collection or data structure
-        /\bholder('s)?\b/i,
-        /\braises?\b/i,
-        /\blowers?\b/i,
-        /\bboosts?\b/i,
-        /\bincreases?\b/i,
-        /\bsingle use\b/i,
-        /\battacks?\b/i,
-        /\bcannot\b/i,
-        /\bheals?\b/i,
-        /\bprevents?\b/i,
-        /\bused for\b/i,
-        /\bevolves?\b/i,
-        /\bif held by\b/i,
-        /\bgains?\b/i,
-        /\baccuracy\b/i,
-        /\bhalves\b/i,
-        /\bphysical attacks?\b/i,
-        /\bspecial attacks?\b/i,
-        /\bmoves last\b/i,
-        /\bjudgment is\b/i,
-        /\bwhen held\b/i,
-        /\bis (calculated|raised|lowered)\b/i,
-        /\bno competitive use\b/i,
-        /\bchanges its forme\b/i,
-      ];
-      for (const pattern of FORBIDDEN_DESC_PATTERNS) {
-        if (pattern.test(item.desc)) {
-          errors.push(`${tag} LEAK DETECTADO en 'desc' (patrón en inglés: ${pattern}): "${item.desc}"`);
-          break;
-        }
-      }
-    }
-
-    if (item.name) {
-      const FORBIDDEN_NAME_PATTERNS = [ // no-domain: Non-domain utility collection or data structure
-        /\b(Berry|Sweet|Plate|Orb|Specs|Vest|Herb|Policy|Drive|Memory|Mirror|Feather|Cap|Incense|Belt|Glasses)\b/i
-      ];
-      for (const pattern of FORBIDDEN_NAME_PATTERNS) {
-        if (pattern.test(item.name)) {
-          errors.push(`${tag} LEAK DETECTADO en 'name' (nombre en inglés: ${pattern}): "${item.name}"`);
-          break;
-        }
-      }
-    }
-
-    // TMs are handled dynamically in getDynamicItemEffect, so they don't need to be in the main object
-    if (item.name?.startsWith('MT')) return;
-  });
-  
-  const shopItemIds = new Set(shopItems.map(i => i.id));
-
-  healingItems.forEach(id => {
-    if (id.startsWith('MT')) return;
-    if (!shopItemIds.has(id)) {
-      warnings.push(`[PHANTOM] '${id}' is in HEALING_ITEMS but has NO entry in SHOP_ITEMS.`);
-    }
-  });
-
-  // ─── 3. Detect Sprite Collisions (Shared duplicate sprites) ──────────────────
-  const spriteToItems = new Map<string, string[]>();
-  shopItems.forEach(item => {
-    const sprite = item.sprite?.trim();
-    if (!sprite) return;
-    if (!spriteToItems.has(sprite)) {
-      spriteToItems.set(sprite, []);
-    }
-    spriteToItems.get(sprite)!.push(item.id);
-  });
-
-  for (const [sprite, ids] of spriteToItems.entries()) {
-    if (ids.length > 1) {
-      warnings.push(`[SPRITE_COLLISION] Sprite '${sprite}' is reused by ${ids.length} items (${ids.join(', ')}).`);
-    }
+    this.context.setMetric('SHOP_ITEMS scanned', shopItems.length);
+    this.context.setMetric('HEALING_ITEMS scanned', healingItems.size);
   }
-
-  await validator.finish(
-    {
-      'SHOP_ITEMS scanned': shopItems.length,
-      'HEALING_ITEMS scanned': healingItems.size
-    },
-    errors,
-    warnings
-  );
 }
 
-main().catch(err => {
-  console.error(styleText('red', `\n💥 Fatal error: ${(err as Error).message}`));
-  process.exit(1);
-});
+// ─── CLI Entrypoint ─────────────────────────────────────────────────────────
+if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+  await BaseAuditor.runCli(new ItemAuditor());
+}

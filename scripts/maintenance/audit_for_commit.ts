@@ -37,6 +37,9 @@ export interface Violation {
   context: string;
   severity: AuditSeverity;
   ruleId?: string;
+  ruleDescription?: string;
+  suiteId?: string;
+  suiteName?: string;
   isNew?: boolean;
 }
 
@@ -56,7 +59,8 @@ interface EslintFileResult {
 // Extensiones a auditar
 const AUDIT_EXTENSIONS = ['.vue', '.ts', '.js', '.scss', '.css'] as const;
 
-export function isSubAuditorRule(ruleId?: string): boolean {
+export function isSubAuditorRule(ruleId?: string, suiteId?: string): boolean {
+  if (suiteId) return true;
   if (!ruleId) return false;
   return ruleId === 'project-audit' ||
          ruleId === 'audit_project' ||
@@ -112,7 +116,7 @@ export function filterNewWarnings(
     }
 
     // Si es una regla de sub-auditor o auditoría de proyecto, comparar contexto en código fuente
-    if (isSubAuditorRule(violation.ruleId)) {
+    if (isSubAuditorRule(violation.ruleId, violation.suiteId)) {
       const existedInOriginCode = violation.context ? originContent.includes(violation.context) : true;
       const copy = { ...violation, isNew: !existedInOriginCode };
       result.push(copy);
@@ -345,7 +349,10 @@ async function main() {
           message: finding.message,
           context: finding.context || task.name,
           severity: finding.severity,
-          ruleId: finding.ruleId || task.id
+          ruleId: finding.ruleId || task.id,
+          ruleDescription: finding.ruleDescription,
+          suiteId: task.id,
+          suiteName: task.name
         });
       }
     } catch {
@@ -356,7 +363,9 @@ async function main() {
           message: `Timeout excedido (${task.timeoutMs ?? 60000}ms) en ejecución de la suite.`,
           context: task.name,
           severity: 'error',
-          ruleId: task.id
+          ruleId: task.id,
+          suiteId: task.id,
+          suiteName: task.name
         });
       }
     }
@@ -440,7 +449,9 @@ async function main() {
   if (projectErrors.length > 0) {
     console.log(styleText('bold', styleText('red', `\n❌ ERRORES DETECTADOS EN EL PROYECTO (${projectErrors.length}):`)));
     projectErrors.forEach(v => {
-      console.log(`  - ${styleText('bold', v.file)}:${v.line} -> ${v.message} ("${v.context}")`);
+      const ruleLabel = v.ruleDescription || v.ruleId || 'error';
+      const suitePrefix = v.suiteId ? `[${v.suiteId}] ` : '';
+      console.log(`  - ${styleText('bold', v.file)}:${v.line} ${styleText('dim', `${suitePrefix}${ruleLabel}`)} -> ${v.message}`);
     });
   } else {
     console.log(styleText('green', '  ✔ Cero errores detectados en todo el proyecto (ESLint, TypeScript, Dominio, FSM, SQL).'));
@@ -449,7 +460,9 @@ async function main() {
   if (newWarnings.length > 0) {
     console.log(styleText('bold', styleText('yellow', `\n⚠️ NUEVAS ADVERTENCIAS EN ARCHIVOS MODIFICADOS (${newWarnings.length}):`)));
     newWarnings.forEach(v => {
-      console.log(`  - ${styleText('bold', v.file)}:${v.line} [${v.ruleId}] -> ${v.message}`);
+      const ruleLabel = v.ruleDescription || v.ruleId || 'warning';
+      const suitePrefix = v.suiteId ? `[${v.suiteId}] ` : '';
+      console.log(`  - ${styleText('bold', v.file)}:${v.line} ${styleText('dim', `${suitePrefix}${ruleLabel}`)} -> ${v.message}`);
     });
   } else {
     console.log(styleText('green', '  ✔ Cero advertencias nuevas en los archivos modificados.'));

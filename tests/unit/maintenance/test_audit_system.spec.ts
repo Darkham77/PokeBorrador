@@ -115,6 +115,7 @@ describe('Unified Theme Presentation Engine', () => {
     const dummyResult: StandardAuditResult = {
       id: 'validate_items',
       name: 'Item Database Integrity',
+      description: 'Valida la integridad de la base de datos de ítems',
       family: 'domain_data',
       status: 'passed',
       durationMs: 42,
@@ -171,6 +172,7 @@ describe('Unified Theme Presentation Engine', () => {
       {
         id: 'validate_items',
         name: 'Item Database Integrity',
+        description: 'Valida la integridad de la base de datos de ítems',
         family: 'domain_data',
         status: 'passed',
         durationMs: 15,
@@ -337,6 +339,7 @@ describe('Integrity & False-Positive Prevention Tests for Sub-Auditors', () => {
       const testAuditor = setupAuditor({
         id: 'test_sample_auditor',
         name: 'Sample Unit Test Auditor',
+        description: 'Auditor de prueba unitaria para persistencia JSON',
         family: 'architecture'
       });
 

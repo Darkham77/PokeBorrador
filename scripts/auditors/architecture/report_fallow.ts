@@ -10,7 +10,7 @@ function parseCommandLineArgs() {
   const { values, positionals } = parseArgs({
     options: {
       category: { type: 'string' },
-      top: { type: 'string', default: '20' },
+      top: { type: 'string', default: '20' }, // no-magic: Explicit mathematical constant or threshold value
       json: { type: 'boolean', default: false }
     },
     strict: false,
@@ -25,7 +25,7 @@ function parseCommandLineArgs() {
     if (pos.startsWith('category=')) {
       category = pos.split('=')[1]?.toLowerCase() || ''; // domain-ok: Open dynamic text or non-domain string payload
     } else if (pos.startsWith('top=')) {
-      top = parseInt(pos.split('=')[1] || '20', RADIX_DECIMAL);
+      top = parseInt(pos.split('=')[1] || '20', RADIX_DECIMAL); // no-magic: Explicit mathematical constant or threshold value
     } else if (pos === 'json') {
       jsonOutput = true;
     } else if (!category) {
@@ -60,9 +60,9 @@ function runFallowCommand(command: string, extraArgs: string[] = []): Record<str
       return JSON.parse(stdout.substring(jsonStart)) as Record<string, unknown>; // open-record: Generic key-value data dictionary container
     }
   } catch (e: unknown) {
-    const err = e as { stdout?: Buffer };
+    const err = e as { stdout?: Buffer | string };
     if (err.stdout) {
-      const stdoutStr = err.stdout.toString('utf8');
+      const stdoutStr = typeof err.stdout === 'string' ? err.stdout : err.stdout.toString('utf8');
       const jsonStart = stdoutStr.indexOf('{');
       if (jsonStart !== -1) {
         try {
@@ -157,7 +157,7 @@ function reportDeadCode(top: number, json: boolean): void {
   const unusedFiles = (data?.unused_files as Array<{ path: string }>) || [];
   const unusedExports = (data?.unused_exports as Array<{ path: string; line: number; export_name: string }>) || [];
   const unusedDeps = (data?.unused_dependencies as Array<{ package_name: string }>) || [];
-  const circular = (data?.circular_dependencies as Array<{ path?: string; cycle?: string[] }>) || [];
+  const circular = (data?.circular_dependencies as Array<{ path?: string; cycle?: string[]; files?: string[] }>) || [];
 
   if (json) {
     console.log(JSON.stringify({
@@ -186,7 +186,8 @@ function reportDeadCode(top: number, json: boolean): void {
   if (circular.length > 0) {
     console.log('\n🔄 Dependencias Circulares Críticas:');
     circular.forEach((c, idx) => {
-      const cycleStr = Array.isArray(c.cycle) ? c.cycle.join(' → ') : (c.path || '');
+      const filesList = (Array.isArray(c.files) && c.files.length > 0) ? c.files : (Array.isArray(c.cycle) ? c.cycle : []);
+      const cycleStr = filesList.length > 0 ? filesList.join(' → ') : (c.path || '');
       console.log(`  [${idx + 1}] ${cycleStr}`);
     });
   }

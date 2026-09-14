@@ -16,6 +16,7 @@ import { enableCompileCache } from 'node:module';
 import {
   type AuditFamily,
   type AuditFinding,
+  type FindingSeverity,
   type StandardAuditResult
 } from './auditContract.ts';
 import {
@@ -144,6 +145,7 @@ export function collectRepositoryFiles(
 export interface AuditorConfig {
   id: string;
   name: string;
+  description: string;
   family: AuditFamily;
   requiredFiles?: string[];
   extraIgnorePatterns?: string[];
@@ -160,8 +162,8 @@ export interface AuditorContext {
   logProgress: (msg: string) => void;
   logStep: (stepNumber: number, totalSteps: number, description: string) => void;
   addFinding: (finding: AuditFinding) => void;
-  addError: (message: string, file?: string, line?: number, context?: string, ruleId?: string) => void;
-  addWarning: (message: string, file?: string, line?: number, context?: string, ruleId?: string) => void;
+  addError: (message: string, file?: string, line?: number, context?: string, ruleId?: string, ruleDescription?: string, suiteId?: string, suiteName?: string) => void;
+  addWarning: (message: string, file?: string, line?: number, context?: string, ruleId?: string, ruleDescription?: string, suiteId?: string, suiteName?: string) => void;
   setMetric: (key: string, value: number | string) => void;
   checkFiles: () => Promise<void>;
   finish: (finalMetrics?: Record<string, number | string>, legacyErrors?: string[], legacyWarnings?: string[]) => Promise<StandardAuditResult>;
@@ -208,12 +210,12 @@ export function setupAuditor(config: AuditorConfig): AuditorContext {
       console.log(`🔍 [${stepNumber}/${totalSteps}] ${description}`);
     },
     addFinding: (f: AuditFinding) => findings.push(f),
-    addError: (message: string, file?: string, line?: number, context?: string, ruleId?: string) => {
-      findings.push({ severity: 'error', message, file, line, context, ruleId });
+    addError: (message: string, file?: string, line?: number, context?: string, ruleId?: string, ruleDescription?: string, suiteId?: string, suiteName?: string) => {
+      findings.push({ severity: 'error', message, file, line, context, ruleId, ruleDescription, suiteId, suiteName });
     },
-    addWarning: (message: string, file?: string, line?: number, context?: string, ruleId?: string) => {
+    addWarning: (message: string, file?: string, line?: number, context?: string, ruleId?: string, ruleDescription?: string, suiteId?: string, suiteName?: string) => {
       if (!values['errors-only']) {
-        findings.push({ severity: 'warning', message, file, line, context, ruleId });
+        findings.push({ severity: 'warning', message, file, line, context, ruleId, ruleDescription, suiteId, suiteName });
       }
     },
     setMetric: (key: string, value: number | string) => {
@@ -255,6 +257,7 @@ export function setupAuditor(config: AuditorConfig): AuditorContext {
       const result: StandardAuditResult = {
         id: config.id,
         name: config.name,
+        description: config.description,
         family: config.family,
         status: errorsCount === 0 ? 'passed' : 'failed',
         durationMs,
@@ -308,3 +311,219 @@ export function setupAuditor(config: AuditorConfig): AuditorContext {
     }
   };
 }
+
+export const MAX_AUDITOR_DESCRIPTION_LENGTH = 60;
+
+export interface AuditorOptions<TRuleId extends string = string> {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly family: AuditFamily;
+  readonly ruleIds?: readonly TRuleId[];
+  readonly ruleDescriptions?: Readonly<Partial<Record<TRuleId, string>>>;
+  readonly roots?: readonly string[];
+  readonly allowedExtensions?: ReadonlySet<string>;
+  readonly extraIgnorePatterns?: readonly string[];
+  readonly requiredFiles?: readonly string[];
+}
+
+export interface ViolationInput<TRuleId extends string = string> {
+  readonly ruleId: TRuleId;
+  readonly ruleDescription?: string;
+  readonly severity: FindingSeverity;
+  readonly file: string;
+  readonly line: number;
+  readonly message: string;
+  readonly context: string;
+}
+
+/**
+ * Base Object-Oriented Auditor class.
+ * Centralizes violation tracking, rule counting, metrics reporting, and unified CLI execution.
+ */
+export abstract class BaseAuditor<TRuleId extends string = string> {
+  public readonly id: string;
+  public readonly name: string;
+  public readonly description: string;
+  public readonly family: AuditFamily;
+  public readonly ruleIds: readonly TRuleId[];
+  public readonly ruleDescriptions?: Readonly<Partial<Record<TRuleId, string>>>;
+  public readonly roots: readonly string[];
+  public readonly allowedExtensions: ReadonlySet<string>;
+  public readonly extraIgnorePatterns: readonly string[];
+  public readonly requiredFiles: readonly string[];
+
+  protected readonly projectRoot: string;
+  protected readonly context: AuditorContext;
+  protected readonly countsByRule: Map<TRuleId, number> = new Map();
+  protected filesScannedCount = 0;
+
+  constructor(options: AuditorOptions<TRuleId>) {
+    if (!options.id || options.id.trim().length === 0) {
+      throw new Error('Auditor must define an id');
+    }
+    if (!options.name || options.name.trim().length === 0) {
+      throw new Error(`Auditor [${options.id}] must define a name`);
+    }
+    if (!options.description || options.description.trim().length === 0) {
+      throw new Error(`Auditor [${options.id}] must define a human-friendly description`);
+    }
+    if (options.description.length > MAX_AUDITOR_DESCRIPTION_LENGTH || options.description.includes('\n')) {
+      throw new Error(
+        `Auditor [${options.id}] description exceeds ${MAX_AUDITOR_DESCRIPTION_LENGTH} characters or contains newlines.`
+      );
+    }
+
+    if (options.ruleDescriptions) {
+      for (const [ruleId, desc] of Object.entries(options.ruleDescriptions)) {
+        const descText = typeof desc === 'string' ? desc : '';
+        if (descText && (descText.length > MAX_AUDITOR_DESCRIPTION_LENGTH || descText.includes('\n'))) {
+          throw new Error(
+            `Auditor [${options.id}] rule description for '${ruleId}' exceeds ${MAX_AUDITOR_DESCRIPTION_LENGTH} characters or contains newlines.`
+          );
+        }
+      }
+    }
+
+    this.id = options.id;
+    this.name = options.name;
+    this.description = options.description;
+    this.family = options.family;
+    this.ruleIds = options.ruleIds ?? [];
+    this.ruleDescriptions = options.ruleDescriptions;
+    this.roots = options.roots ?? CANONICAL_SCANNABLE_ROOTS;
+    this.allowedExtensions = options.allowedExtensions ?? SCANNABLE_EXTENSIONS;
+    this.extraIgnorePatterns = options.extraIgnorePatterns ?? [];
+    this.requiredFiles = options.requiredFiles ?? [];
+    this.projectRoot = process.cwd();
+
+    for (const ruleId of this.ruleIds) {
+      this.countsByRule.set(ruleId, 0);
+    }
+
+    this.context = setupAuditor({
+      id: this.id,
+      name: this.name,
+      description: this.description,
+      family: this.family,
+      requiredFiles: [...this.requiredFiles],
+      extraIgnorePatterns: [...this.extraIgnorePatterns]
+    });
+  }
+
+  public getCountsByRule(): ReadonlyMap<TRuleId, number> {
+    return this.countsByRule;
+  }
+
+  public getRuleLabel(ruleId: string): string {
+    return this.ruleDescriptions?.[ruleId as TRuleId] || ruleId;
+  }
+
+  public getFilesScanned(): number {
+    return this.filesScannedCount;
+  }
+
+  public addViolation(v: ViolationInput<TRuleId>): void {
+    const current = this.countsByRule.get(v.ruleId) ?? 0;
+    this.countsByRule.set(v.ruleId, current + 1);
+
+    const ruleDesc = v.ruleDescription ?? this.ruleDescriptions?.[v.ruleId] ?? '';
+
+    if (v.severity === 'error') {
+      this.context.addError(v.message, v.file, v.line, v.context, v.ruleId, ruleDesc, this.id, this.name);
+    } else {
+      this.context.addWarning(v.message, v.file, v.line, v.context, v.ruleId, ruleDesc, this.id, this.name);
+    }
+  }
+
+  public isLineIgnored(line: string, customTokens: readonly string[] = []): boolean {
+    const baseTokens = ['domain-ok', 'string-ok', 'test-ok', 'fallow-ignore-next-line', ...customTokens];
+    const pattern = new RegExp(`(?:--|\\/\\/|<!--)\\s*(?:${baseTokens.join('|')})\\b`, 'i');
+    return pattern.test(line);
+  }
+
+  protected hasEscapeHatch(line: string, hatches: readonly string[]): boolean {
+    return hatches.some(h => line.includes(`// ${h}`) || line.includes(`/* ${h}`) || line.includes(`<!-- ${h}`));
+  }
+
+  protected getLineNumber(content: string, charIndex: number): number {
+    return content.slice(0, charIndex).split('\n').length;
+  }
+
+  protected getLineAt(content: string, lineIndex: number): string {
+    const lines = content.split('\n');
+    return lines[lineIndex - 1] ?? '';
+  }
+
+  protected scanRegexMatches(
+    content: string,
+    regex: RegExp,
+    relPath: string,
+    ruleId: TRuleId,
+    escapeHatches: readonly string[],
+    message: string,
+    filter?: (lineContent: string, match: RegExpExecArray) => boolean,
+    sourceForLines: string = content,
+    charOffset: number = 0
+  ): void {
+    let match: RegExpExecArray | null;
+    const re = new RegExp(regex.source, regex.flags);
+    while ((match = re.exec(content)) !== null) {
+      const line = this.getLineNumber(sourceForLines, charOffset + match.index);
+      const lineContent = this.getLineAt(sourceForLines, line);
+      if (filter && !filter(lineContent, match)) continue;
+      if (this.hasEscapeHatch(lineContent, escapeHatches)) continue;
+      this.addViolation({
+        ruleId,
+        severity: 'error',
+        file: relPath,
+        line,
+        message,
+        context: lineContent.trim()
+      });
+    }
+  }
+
+  public abstract runAudit(): Promise<void> | void;
+
+  public async execute(): Promise<StandardAuditResult> {
+    await this.context.checkFiles();
+    await this.runAudit();
+
+    this.context.setMetric('Files Scanned', this.filesScannedCount);
+    for (const [ruleId, count] of this.countsByRule.entries()) {
+      this.context.setMetric(`Rule: ${ruleId}`, count);
+    }
+
+    return await this.context.finish({
+      'Files Scanned': this.filesScannedCount
+    });
+  }
+
+  public static async runCli(auditor: BaseAuditor<string>): Promise<void> {
+    await auditor.execute();
+  }
+}
+
+/**
+ * Specialized File-Scanning Auditor.
+ * Automates recursive file discovery, ignore filtering, reading, and line-by-line scanning dispatch.
+ */
+export abstract class FileScanAuditor<TRuleId extends string = string> extends BaseAuditor<TRuleId> {
+  protected abstract scanFile(relPath: string, content: string): void | Promise<void>;
+
+  public override async runAudit(): Promise<void> {
+    const files = this.context.collectFiles(this.roots, this.allowedExtensions);
+    for (const file of files) {
+      const relPath = path.relative(this.projectRoot, file).split(path.sep).join(path.posix.sep);
+      try {
+        const content = nodeFs.readFileSync(file, 'utf-8');
+        this.filesScannedCount++;
+        await this.scanFile(relPath, content);
+      } catch {
+        // Ignore read errors on inaccessible files
+      }
+    }
+  }
+}
+

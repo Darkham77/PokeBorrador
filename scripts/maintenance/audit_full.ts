@@ -22,8 +22,6 @@ import {
 } from '../lib/auditContract.ts';
 import {
   renderBanner,
-  renderFamilyHeader,
-  renderAuditTaskRow,
   renderConsolidatedFooter,
   renderMarkdownReport
 } from '../lib/unifiedTheme.ts';
@@ -35,7 +33,7 @@ enableCompileCache();
 async function runMasterAudit() {
   const startTime = performance.now();
   const args = process.argv.slice(2);
-  const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : (['errors-only', 'fix'].includes(a) ? `--${a}` : a));
+  const normalized = args.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : (['errors-only', 'fix', 'all'].includes(a) ? `--${a}` : a));
 
   const { values, positionals } = parseArgs({
     args: normalized,
@@ -45,6 +43,7 @@ async function runMasterAudit() {
       output: { type: 'string', short: 'o' },
       'changed-since': { type: 'string' },
       'errors-only': { type: 'boolean' },
+      all: { type: 'boolean', short: 'a' },
       top: { type: 'string', short: 't' },
       rule: { type: 'string', short: 'r', multiple: true },
       rules: { type: 'string', multiple: true }
@@ -190,6 +189,7 @@ async function runMasterAudit() {
       parsedResult = {
         id: task.id,
         name: task.name,
+        description: task.description || task.name,
         family: task.family,
         status: isSuccess ? 'passed' : 'failed',
         durationMs: taskDuration,
@@ -203,17 +203,18 @@ async function runMasterAudit() {
       };
     }
 
-    if (!parsedResult.summary) {
-      const errCount = parsedResult.findings?.filter(f => f.severity === 'error').length ?? (parsedResult.status === 'failed' ? 1 : 0);
-      const warnCount = parsedResult.findings?.filter(f => f.severity === 'warning').length ?? 0;
-      parsedResult.summary = {
+    const currentResult: StandardAuditResult = parsedResult;
+    if (!currentResult.summary) {
+      const errCount = currentResult.findings?.filter(f => f.severity === 'error').length ?? (currentResult.status === 'failed' ? 1 : 0);
+      const warnCount = currentResult.findings?.filter(f => f.severity === 'warning').length ?? 0;
+      currentResult.summary = {
         errors: errCount,
         warnings: warnCount,
         info: 0
       };
     }
 
-    results.push(parsedResult);
+    results.push(currentResult);
   }
 
   const totalDuration = Math.round(performance.now() - startTime);
@@ -232,29 +233,75 @@ async function runMasterAudit() {
     byFamily.get(r.family)!.push(r);
   }
 
-  console.log('\n' + styleText('bold', '📊 RESULTADOS CONSOLIDADOS POR FAMILIA:'));
+  // 2. Breakdown by Type of Error / Warning
+  const categoryCounts = new Map<string, { errors: number; warnings: number; findings: AuditFinding[] }>();
 
-  for (const familyKey of AUDIT_FAMILIES) {
-    const familyTasks = byFamily.get(familyKey) || [];
-    if (familyTasks.length === 0) continue;
+  for (const suite of results) {
+    for (const finding of (suite.findings || [])) {
+      const catKey = finding.ruleDescription || suite.description || finding.ruleId || suite.name;
+      if (!categoryCounts.has(catKey)) {
+        categoryCounts.set(catKey, { errors: 0, warnings: 0, findings: [] });
+      }
+      const entry = categoryCounts.get(catKey)!;
+      if (finding.severity === 'error') {
+        entry.errors++;
+      } else {
+        entry.warnings++;
+      }
+      entry.findings.push(finding);
+    }
+  }
 
-    const meta = FAMILY_METADATA[familyKey]!;
-    console.log(renderFamilyHeader(meta));
+  const sortedCategories = Array.from(categoryCounts.entries()).sort((a, b) => {
+    const totalB = b[1].errors * 1000 + b[1].warnings;
+    const totalA = a[1].errors * 1000 + a[1].warnings;
+    return totalB - totalA;
+  });
 
-    for (const taskResult of familyTasks) {
-      console.log(renderAuditTaskRow(taskResult));
+  if (sortedCategories.length === 0) {
+    console.log('\n' + styleText(['bold', 'green'], `✨ 100% de las suites aprobadas (${results.length}/${results.length}) sin errores ni advertencias.`));
+  } else {
+    console.log('\n' + styleText('bold', '📊 DESGLOSE POR TIPO DE ERROR Y ADVERTENCIA:'));
+    console.log('┌───────────────────────────────────────────────────────────────────┬────────┬──────────┐');
+    console.log('│ TIPO DE INCIDENCIA / REGLA                                        │ ERRORES│ WARNINGS │');
+    console.log('├───────────────────────────────────────────────────────────────────┼────────┼──────────┤');
+
+    for (const [catName, data] of sortedCategories) {
+      const truncatedCat = catName.length > 65 ? catName.substring(0, 62) + '...' : catName.padEnd(65);
+      const errStr = data.errors > 0 ? styleText('red', String(data.errors).padStart(6)) : styleText('dim', '     0');
+      const warnStr = data.warnings > 0 ? styleText('yellow', String(data.warnings).padStart(8)) : styleText('dim', '       0');
+      console.log(`│ ${truncatedCat} │ ${errStr} │ ${warnStr} │`);
+    }
+    console.log('└───────────────────────────────────────────────────────────────────┴────────┴──────────┘');
+
+    const allErrors: AuditFinding[] = [];
+    for (const suite of results) {
+      for (const finding of (suite.findings || [])) {
+        if (finding.severity === 'error') {
+          allErrors.push(finding);
+        }
+      }
+    }
+
+    if (allErrors.length > 0) {
+      const sampleErrors = allErrors.slice(-5);
+      console.log(`\n❌ Muestra de errores detectados (últimos ${sampleErrors.length} de ${allErrors.length}):\n`);
+      sampleErrors.forEach((f, idx) => {
+        const fileLoc = f.file ? `${path.relative(process.cwd(), f.file)}${f.line !== undefined ? `:${f.line}` : ''}` : 'General';
+        const ruleTag = f.ruleDescription ? `[${f.ruleDescription}] ` : (f.ruleId ? `[${f.ruleId}] ` : '');
+        console.log(`  ${idx + 1}. ${fileLoc}: ${ruleTag}${f.message}`);
+      });
+      console.log('');
     }
   }
 
   // 3. Consolidated Footer
-  const allErrorFindings = results.flatMap(r => r.findings || []).filter(f => f.severity === 'error');
   console.log(renderConsolidatedFooter(
     results.length,
     suitesPassed,
     totalErrors,
     totalWarnings,
-    totalDuration,
-    allErrorFindings
+    totalDuration
   ));
 
   // 4. Always save complete machine-readable report to scratch/audits/

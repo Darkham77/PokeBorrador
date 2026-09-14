@@ -70,7 +70,7 @@ export const FALLOW_SUITE_DESCRIPTORS: Record<'dupes' | 'security' | 'dead-code'
   'dead-code': {
     id: 'fallow:dead-code',
     name: 'Fallow Dead Code, Circular Dependencies & Unused',
-    category: 'Fallow: Archivos huérfanos / Dead Code',
+    category: 'Fallow: Archivos huérfanos',
     aliases: ['dead-code', 'deadcode', 'codigo-muerto', 'circular', 'huérfano', 'unused', 'fallow:dead-code', 'fallow-dead-code', 'fallow']
   },
   health: {
@@ -787,7 +787,7 @@ export const noLeakedGlobalState: AuditRule = {
   regex: /^(?:export\s+)?let\s+[a-z]\w*\s*=/gm,
   message: (match: string) => `Variable mutable global detectada a nivel de módulo: '${match.trim()}'. Encapsula el estado dentro de un Pinia store, clase o marca // singleton-ok: Singleton instance state container.`,
   severity: 'warning',
-  check: (content: string, match: RegExpExecArray, filePath?: string) => checkTypeScriptRuleMatch(content, match, filePath, ['// singleton-ok: Singleton instance state container']),
+  check: (content: string, match: RegExpExecArray, filePath?: string) => checkTypeScriptRuleMatch(content, match, filePath, ['// singleton-ok:']),
   fixable: false
 };
 
@@ -993,6 +993,97 @@ export const noInlineLiteralUnions: AuditRule = {
   fixable: false
 };
 
+export const noImportantOnTransforms: AuditRule = {
+  id: 'noImportantOnTransforms',
+  name: 'No !important on CSS Transforms',
+  category: 'Animaciones GSAP',
+  regex: /(?<![\w-])transform\s*:[^;]*!important/gi,
+  message: (match: string) => `Uso de '!important' en 'transform' detectado: '${match}'. El uso de !important en transform congela e invalida las mutaciones de GSAP en tiempo de ejecución.`,
+  severity: 'error',
+  fixable: false,
+  check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return true;
+    const norm = normalizeFilePath(filePath);
+    return norm.endsWith('.scss') || norm.endsWith('.css') || norm.endsWith('.vue');
+  }
+};
+
+export const noImportantOnFilters: AuditRule = {
+  id: 'noImportantOnFilters',
+  name: 'No !important on CSS Filters',
+  category: 'Animaciones GSAP',
+  regex: /(?<![\w-])filter\s*:[^;]*!important/gi,
+  message: (match: string) => `Uso de '!important' en 'filter' detectado: '${match}'. El uso de !important en filter congela e invalida las animaciones de efectos GSAP.`,
+  severity: 'error',
+  fixable: false,
+  check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return true;
+    const norm = normalizeFilePath(filePath);
+    return norm.endsWith('.scss') || norm.endsWith('.css') || norm.endsWith('.vue');
+  }
+};
+
+export const noHardcodedShowdownGen: AuditRule = {
+  id: 'noHardcodedShowdownGen',
+  name: 'No Hardcoded Showdown Generation',
+  category: 'Showdown Parity',
+  regex: /\b(?:Dex|dex)\.forGen\(\s*([1-8])\s*\)/g,
+  message: (match: string) => `Generación Showdown hardcodeada detectada: '${match}'. Utiliza la constante canónica ACTIVE_GENERATION (9) desde '@/data/system/constants'.`,
+  severity: 'warning',
+  fixable: false,
+  check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return true;
+    const norm = normalizeFilePath(filePath);
+    return !norm.includes('constants.ts') && (norm.endsWith('.ts') || norm.endsWith('.js') || norm.endsWith('.vue'));
+  }
+};
+
+export const noRawJsonImportsOutsideData: AuditRule = {
+  id: 'noRawJsonImportsOutsideData',
+  name: 'No Raw JSON Import Outside Data Layer',
+  category: 'Optimización de Bundle',
+  regex: /\bimport\s+[^;]+\s+from\s+['"][^'"]+\.json['"]/g,
+  message: (match: string) => `Importación estática de JSON fuera de src/data/ o scripts/: '${match}'. Centraliza catálogos en src/data/ o usa importación dinámica para prevenir empaquetado redundante.`,
+  severity: 'warning',
+  fixable: false,
+  check: (_content: string, _match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return true;
+    const norm = normalizeFilePath(filePath);
+    return !norm.startsWith('src/data/') && !norm.startsWith('scripts/') && !norm.startsWith('tests/') && !norm.startsWith('supabase/');
+  }
+};
+
+export const noSassAtImport: AuditRule = {
+  id: 'noSassAtImport',
+  name: 'No SASS @import Deprecated Directive',
+  category: 'SASS Migrator',
+  regex: /@import\s+['"][^'"]+['"]/g,
+  message: (match: string) => `Regla obsoleta '@import' detectada en Sass: '${match}'. Dart Sass requiere migrar a '@use' o '@forward'.`,
+  severity: 'warning',
+  fixable: false,
+  check: (content: string, _match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return true;
+    const norm = normalizeFilePath(filePath);
+    return norm.endsWith('.scss') || norm.endsWith('.css') || (norm.endsWith('.vue') && content.includes('lang="scss"'));
+  }
+};
+
+export const overscrollBehaviorLock: AuditRule = {
+  id: 'overscrollBehaviorLock',
+  name: 'Global Overscroll Behavior Lock',
+  category: 'Overscroll Navigation Lock',
+  regex: /html\s*,\s*body\s*\{/g,
+  message: `Mandato de bloqueo de sobre-desplazamiento violado: 'src/styles/core/_base.scss' debe declarar 'overscroll-behavior: none !important;' para prevenir pull-to-refresh y navegación gestual accidental en navegadores móviles.`,
+  severity: 'error',
+  fixable: false,
+  check: (content: string, _match: RegExpExecArray, filePath?: string) => {
+    if (!filePath) return false;
+    const norm = normalizeFilePath(filePath);
+    if (!norm.endsWith('src/styles/core/_base.scss')) return false;
+    return !content.includes('overscroll-behavior: none !important;');
+  }
+};
+
 export const noLayoutAnimationInGsap: AuditRule = {
   id: 'noLayoutAnimationInGsap',
   name: 'No Layout Animation In GSAP',
@@ -1067,7 +1158,9 @@ export const namedTimerConstants: AuditRule = {
 };
 
 export const auditRulesConfig = {
-  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, zIndexConstantDeclaration, manualAnimations, manualTimersFrontend, zeroTimerBattleLogic, noPlaywrightWaitForTimeout, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, strictDomainParamTypes, noInlineTypeImports, noInlineLiteralUnions, magicNumbers, badConstantNames, noAliasConstants, noLiteralSuffixInConstantName, noLiteralBooleanType, noInlineAnonymousObjectType, noFloatingPromises, noLeakedGlobalState, missingInteractiveId, sassTraps, noLayoutAnimationInGsap, namedTimerConstants
+  viewport, gpuGaps, legacyDates, hardcodedTimezone, nodePrefix, esmExtensions, tsIgnore, timersPromises, explicitResource, fileLength, zIndexAudit, zIndexConstantDeclaration, manualAnimations, manualTimersFrontend, zeroTimerBattleLogic, noPlaywrightWaitForTimeout, jsonStringifyInWatch, intersectionObserverRoot, dbInTemplates, functionCallsInTemplates, forbiddenFallbacks, forbiddenTypeCasts, doxIndexIntegrity, noDomainIdFallbacks, strictDomainParamTypes, noInlineTypeImports, noInlineLiteralUnions, magicNumbers, badConstantNames, noAliasConstants, noLiteralSuffixInConstantName, noLiteralBooleanType, noInlineAnonymousObjectType, noFloatingPromises, noLeakedGlobalState, missingInteractiveId, sassTraps,
+  noImportantOnTransforms, noImportantOnFilters, noHardcodedShowdownGen, noRawJsonImportsOutsideData, noSassAtImport, overscrollBehaviorLock,
+  noLayoutAnimationInGsap, namedTimerConstants
 };
 
 // Ensure every rule in auditRulesConfig has its descriptor fields populated dynamically

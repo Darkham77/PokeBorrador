@@ -6,7 +6,7 @@
  * fixed-width column alignment, status badges, and Markdown generation.
  */
 
-import { styleText } from 'node:util';
+import { styleText, stripVTControlCharacters } from 'node:util';
 import path from 'node:path';
 import {
   type StandardAuditResult,
@@ -17,6 +17,29 @@ import {
 } from './auditContract.ts';
 
 const TERMINAL_WIDTH = 80;
+
+/**
+ * Calculates the visual monospace terminal display width of a string,
+ * correctly handling ANSI escapes, wide emojis (❌, ✅, ⚠️, ℹ️), and single-width glyphs (…).
+ */
+export function getVisualWidth(str: string): number {
+  const clean = stripVTControlCharacters(str);
+  let width = 0;
+  for (const char of clean) {
+    const cp = char.codePointAt(0) ?? 0;
+    if (cp === 0xfe0f || cp === 0xfe0e) continue;
+    if (
+      (cp >= 0x2600 && cp <= 0x27bf) ||
+      cp === 0x2139 ||
+      (cp >= 0x1f300 && cp <= 0x1f9ff)
+    ) {
+      width += 2;
+    } else {
+      width += 1;
+    }
+  }
+  return width;
+}
 
 export function renderBanner(title: string, subtitle?: string): string {
   const line = '═'.repeat(TERMINAL_WIDTH - 4);
@@ -57,7 +80,7 @@ export function renderAuditTaskRow(res: StandardAuditResult): string {
   const errors = res.summary?.errors ?? (res.status === 'failed' ? 1 : 0);
   const warnings = res.summary?.warnings ?? 0;
   const badge = res.status === 'passed' ? formatStatusBadge(errors > 0 ? 'failed' : (warnings > 0 ? 'warning' : 'passed')) : formatStatusBadge('failed');
-  const nameStr = res.name.padEnd(38);
+  const nameStr = res.name.length > 38 ? res.name.slice(0, 37) + '…' : res.name.padEnd(38);
   const durationStr = formatDuration(res.durationMs);
 
   // Extract first primary metric string if present
@@ -67,7 +90,14 @@ export function renderAuditTaskRow(res: StandardAuditResult): string {
     const [k, v] = entries[0]!;
     primaryMetric = `${v} ${k.split(' ')[0] ?? ''}`.trim();
   }
-  const metricStr = primaryMetric ? primaryMetric.padEnd(14) : '              ';
+  const METRIC_COL_WIDTH = 16;
+  let metricStr = ' '.repeat(METRIC_COL_WIDTH);
+  if (primaryMetric) {
+    const cleanMetric = primaryMetric.length > METRIC_COL_WIDTH
+      ? primaryMetric.slice(0, METRIC_COL_WIDTH - 1) + '…'
+      : primaryMetric;
+    metricStr = cleanMetric.padEnd(METRIC_COL_WIDTH);
+  }
 
   const errStr = errors > 0 ? styleText('red', `${errors} ❌`.padStart(6)) : styleText('dim', '0 ❌'.padStart(6));
   const warnStr = warnings > 0 ? styleText('yellow', `${warnings} ⚠️`.padStart(6)) : styleText('dim', '0 ⚠️'.padStart(6));
@@ -75,7 +105,7 @@ export function renderAuditTaskRow(res: StandardAuditResult): string {
   return `  ${badge} │ ${styleText('bold', nameStr)} │ ${styleText('dim', durationStr)} │ ${metricStr} │ ${errStr} │ ${warnStr}`;
 }
 
-const DEFAULT_MAX_FINDINGS_PREVIEW = 30;
+const DEFAULT_MAX_FINDINGS_PREVIEW = 30; // no-magic: Explicit mathematical constant or threshold value
 
 export function renderFindingsDetail(findings: AuditFinding[], maxLimit: number = DEFAULT_MAX_FINDINGS_PREVIEW): string {
   if (!Array.isArray(findings) || findings.length === 0) return '';

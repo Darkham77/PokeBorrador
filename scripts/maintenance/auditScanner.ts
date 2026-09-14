@@ -37,14 +37,13 @@ const DEFAULT_PERMISSIONS = [
   '--permission',
   '--experimental-strip-types',
   '--allow-fs-read=*',
-  '--allow-fs-write=*'
+  '--allow-fs-write=*',
+  '--allow-child-process',
+  '--allow-addons'
 ] as const;
 
 function getPermissionsForTask(filename: string): string[] {
   const perms: string[] = [...DEFAULT_PERMISSIONS]; // no-domain: Non-domain utility collection or data structure
-  if (filename.includes('audit_project') || filename.includes('validate_fsm_all') || filename.includes('validate_build_tools')) {
-    perms.push('--allow-child-process');
-  }
   if (filename.includes('audit_project') || filename.includes('convert_assets')) {
     perms.push('--allow-worker');
   }
@@ -53,6 +52,9 @@ function getPermissionsForTask(filename: string): string[] {
 
 /** Convert snake_case or kebab-case filename to Title Case */
 function formatTaskTitle(filename: string): string {
+  if (filename === 'audit_project' || filename === 'audit_project.ts') {
+    return 'Project Architecture & Style Rules';
+  }
   const base = filename.replace(/\.ts$/, '').replace(/^(validate_|audit_)/, '');
   return base
     .split(/[_-]/)

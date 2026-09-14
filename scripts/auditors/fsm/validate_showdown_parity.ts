@@ -13,7 +13,7 @@
  *   // showdown-ok: <justification> disables violation on that line.
  *
  * Usage:
- *   node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* scripts/auditors/fsm/validate_showdown_parity.ts
+ *   node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/fsm/validate_showdown_parity.ts
  *   npm run validate:showdown-parity
  */
 
@@ -21,29 +21,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import ts from 'typescript';
-import { setupValidation } from '../../lib/validationBase.ts';
-import type { FindingSeverity } from '../../lib/auditContract.ts';
+import { BaseAuditor } from '../../lib/auditorBase.ts';
 
 enableCompileCache();
 
-export interface ShowdownParityViolation {
-  readonly token: string;
-  readonly category: string;
-  readonly message: string;
-  readonly severity: FindingSeverity;
-}
+export type ShowdownParityRuleId = 'missing-protocol-token';
 
-export interface ShowdownParityAuditResult {
-  readonly tokensAudited: number;
-  readonly handledTokensCount: number;
-  readonly bridgeFilesScanned: number;
-  readonly violations: readonly ShowdownParityViolation[];
-  readonly passed: boolean;
-}
+export const SHOWDOWN_PARITY_RULES: readonly ShowdownParityRuleId[] = [
+  'missing-protocol-token'
+] as const;
 
-/**
- * The canonical Pokémon Showdown Protocol tokens required for complete battle simulation fidelity.
- */
 export const CANONICAL_SHOWDOWN_PROTOCOL_TOKENS = {
   CORE_ACTIONS: [
     'move',
@@ -154,31 +141,45 @@ export const CANONICAL_SHOWDOWN_PROTOCOL_TOKENS = {
   ]
 } as const;
 
-export function auditShowdownParity(): ShowdownParityAuditResult {
-  const violations: ShowdownParityViolation[] = [];
-  const handledTokens = new Set<string>(); // runtime-set: Fast O(1) membership lookup set
+export class ShowdownParityAuditor extends BaseAuditor<ShowdownParityRuleId> {
+  constructor() {
+    super({
+      id: 'validate_showdown_parity',
+      name: 'Pokemon Showdown Protocol Parity Auditor',
+      description: 'Verifica paridad del protocolo Pokémon Showdown',
+      family: 'fsm',
+      ruleIds: SHOWDOWN_PARITY_RULES,
+      ruleDescriptions: {
+        'missing-protocol-token': 'Token de protocolo Showdown sin manejador ni dispatcher'
+      }
+    });
+  }
 
-  const battleDir = path.resolve(process.cwd(), 'src/logic/battle');
-  let bridgeFilesScanned = 0;
+  public override async runAudit(): Promise<void> {
+    const battleFiles = await this.context.collectFiles(['src/logic/battle'], new Set(['.ts']));
+    const bridgeFiles = battleFiles.filter(f => {
+      const base = path.basename(f);
+      return base.startsWith('showdownBridge') && base.endsWith('.ts');
+    });
 
-  if (fs.existsSync(battleDir)) {
-    const entries = fs.readdirSync(battleDir);
-    const bridgeFiles = entries.filter(name => name.startsWith('showdownBridge') && name.endsWith('.ts'));
+    const handledTokens = new Set<string>();
 
-    for (const fileName of bridgeFiles) {
-      bridgeFilesScanned++;
-      const fullPath = path.join(battleDir, fileName);
+    this.context.logStep(1, 2, `Parsing handlers in ${bridgeFiles.length} showdownBridge files...`);
+
+    for (const relPath of bridgeFiles) {
+      this.filesScannedCount++;
+      const fullPath = path.resolve(this.projectRoot, relPath);
       const code = fs.readFileSync(fullPath, 'utf-8');
 
       const sourceFile = ts.createSourceFile(
-        fileName,
+        path.basename(relPath),
         code,
         ts.ScriptTarget.Latest,
         true
       );
 
-      function visit(node: ts.Node) {
-        // 1. Match Object Literal Keys (e.g. CORE_EVENT_DISPATCHER, STAGE_HANDLERS, GIMMICK_HANDLERS)
+      const visit = (node: ts.Node) => {
+        // 1. Match Object Literal Keys (CORE_EVENT_DISPATCHER, etc.)
         if (ts.isPropertyAssignment(node)) {
           let keyText = '';
           if (ts.isStringLiteral(node.name) || ts.isIdentifier(node.name)) {
@@ -189,7 +190,7 @@ export function auditShowdownParity(): ShowdownParityAuditResult {
           }
         }
 
-        // 2. Match Array Literal elements (e.g. IGNORED_PROTOCOL_EVENTS)
+        // 2. Match Array Literal elements (IGNORED_PROTOCOL_EVENTS)
         if (ts.isArrayLiteralExpression(node)) {
           for (const elem of node.elements) {
             if (ts.isStringLiteral(elem)) {
@@ -198,12 +199,12 @@ export function auditShowdownParity(): ShowdownParityAuditResult {
           }
         }
 
-        // 3. Match switch case clauses (e.g. case '-weather':)
+        // 3. Match switch case clauses (case '-weather':)
         if (ts.isCaseClause(node) && ts.isStringLiteral(node.expression)) {
           handledTokens.add(node.expression.text);
         }
 
-        // 4. Match binary equality checks (e.g. type === 'switch' || type === 'drag')
+        // 4. Match binary equality checks (type === 'switch')
         if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken) {
           if (ts.isStringLiteral(node.right)) {
             handledTokens.add(node.right.text);
@@ -213,71 +214,40 @@ export function auditShowdownParity(): ShowdownParityAuditResult {
         }
 
         ts.forEachChild(node, visit);
-      }
+      };
 
       visit(sourceFile);
     }
-  }
 
-  // Also check filterShowdownLogs for filtered tokens like 'split'
-  handledTokens.add('split');
+    // Filtered tokens like 'split'
+    handledTokens.add('split');
 
-  let totalTokensAudited = 0;
+    this.context.logStep(2, 2, 'Checking canonical protocol token coverage...');
 
-  for (const [category, tokens] of Object.entries(CANONICAL_SHOWDOWN_PROTOCOL_TOKENS)) {
-    for (const token of tokens) {
-      totalTokensAudited++;
-      if (!handledTokens.has(token)) {
-        violations.push({
-          token,
-          category,
-          severity: 'error',
-          message: `El token de protocolo Showdown '${token}' (${category}) carece de manejador, dispatcher o mapeo en src/logic/battle/showdownBridge*.ts.`
-        });
+    let totalTokensAudited = 0;
+    for (const [category, tokens] of Object.entries(CANONICAL_SHOWDOWN_PROTOCOL_TOKENS)) {
+      for (const token of tokens) {
+        totalTokensAudited++;
+        if (!handledTokens.has(token)) {
+          this.addViolation({
+            ruleId: 'missing-protocol-token',
+            severity: 'error',
+            file: bridgeFiles[0] || 'src/logic/battle/showdownBridge.ts',
+            line: 1,
+            message: `El token de protocolo Showdown '${token}' (${category}) carece de manejador, dispatcher o mapeo en src/logic/battle/showdownBridge*.ts.`,
+            context: token
+          });
+        }
       }
     }
-  }
 
-  const hasErrors = violations.some(v => v.severity === 'error');
-  return {
-    tokensAudited: totalTokensAudited,
-    handledTokensCount: handledTokens.size,
-    bridgeFilesScanned,
-    violations,
-    passed: !hasErrors
-  };
+    this.context.setMetric('Bridge Files Scanned', this.filesScannedCount);
+    this.context.setMetric('Tokens Audited', totalTokensAudited);
+    this.context.setMetric('Tokens Registered', handledTokens.size);
+  }
 }
 
-// ─── CLI Entrypoint ─────────────────────────────────────────────────────────
+// Canonical CLI Entrypoint
 if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
-  const validator = setupValidation({
-    title: 'POKEMON SHOWDOWN PROTOCOL PARITY AUDITOR',
-    family: 'fsm',
-    id: 'validate_showdown_parity'
-  });
-
-  const result = auditShowdownParity();
-
-  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
-  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
-
-  for (const v of result.violations) {
-    const msg = `[SHOWDOWN_PROTOCOL_MISSING] ${v.category} → ${v.message}`;
-    if (v.severity === 'error') {
-      errors.push(msg);
-    } else {
-      warnings.push(msg);
-    }
-  }
-
-  await validator.finish(
-    {
-      'Bridge files scanned': result.bridgeFilesScanned,
-      'Protocol tokens audited': result.tokensAudited,
-      'Registered tokens detected': result.handledTokensCount,
-      'Missing protocol tokens': result.violations.length
-    },
-    errors,
-    warnings
-  );
+  await BaseAuditor.runCli(new ShowdownParityAuditor());
 }

@@ -25,35 +25,15 @@
 import fs from 'node:fs/promises';
 import { enableCompileCache } from 'node:module';
 import path from 'node:path';
-import { parseArgs, styleText } from 'node:util';
+import { BaseAuditor } from '../../lib/auditorBase.ts';
 
 enableCompileCache();
-
-const startTime = performance.now();
-
-const rawArgs = process.argv.slice(2);
-const normalized = rawArgs.map(a => a.includes('=') && !a.startsWith('-') ? `--${a}` : (['json', 'summary'].includes(a) ? `--${a}` : a));
-
-// ─── CLI Args ────────────────────────────────────────────────────────────────
-const { values: args } = parseArgs({
-  args: normalized,
-  options: {
-    json: { type: 'boolean', short: 'j' },
-    summary: { type: 'boolean', short: 's', default: false },
-    output: { type: 'string' },
-  },
-  strict: false,
-});
-
-const isJsonMode = Boolean(args.json || process.env.AUDIT_ORCHESTRATED === 'true');
-const summaryOnly = Boolean(args.summary);
-const outputFile = typeof args.output === 'string' ? args.output : undefined;
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 const ROOT = path.resolve(import.meta.dirname, '../../..');
 const SCAN_ROOTS = [path.join(ROOT, 'src'), path.join(ROOT, 'scripts')];
 const EXTENSIONS = ['.ts', '.vue'] as const;
-const SKIP_DIRS = ['node_modules', '.git', 'dist', 'coverage', 'external', '.agents'] as const;
+const SKIP_DIRS = ['node_modules', '.git', 'dist', 'coverage', 'external', '.agents', 'auditors', 'lib'] as const;
 const TEST_PATH_MARKERS = ['tests/', '.test.', '.spec.', 'scripts/e2e/'] as const;
 const ESCAPE_HATCHES = ['domain-ok', 'string-ok', 'open-record', 'runtime-set', 'runtime-map', 'no-domain', 'lib-duplicate-ok', 'result-ok'] as const;
 
@@ -648,18 +628,6 @@ async function auditFile(filePath: string): Promise<Finding[]> {
   return findings;
 }
 
-// ─── Report ───────────────────────────────────────────────────────────────────
-function formatFinding(finding: Finding, color = true): string {
-  const sev = color
-    ? (finding.severity === 'ERROR' ? styleText('red', 'ERROR') : styleText('yellow', 'WARN'))
-    : finding.severity;
-  const loc = color
-    ? styleText('cyan', `${finding.file}:${finding.line}:${finding.col}`)
-    : `${finding.file}:${finding.line}:${finding.col}`;
-  const pattern = color ? styleText('dim', finding.pattern) : finding.pattern;
-  return `  ${sev}  ${loc}\n         ${pattern}\n         ${finding.snippet}`;
-}
-
 function getMatchCoordinates(content: string, matchIndex: number, lines: string[]): { lineNum: number; col: number; line: string } {
   const before = content.slice(0, matchIndex);
   const lineNum = (before.match(/\n/g) ?? []).length + 1;
@@ -816,75 +784,77 @@ export function detectLibraryDomainTypeDuplicates(
   const P_TYPE_UNION_DECL = /\b(?:export\s+)?type\s+([A-Za-z0-9_]+)\s*=\s*([^\n;]+(?:['"`][a-zA-Z0-9_-]+['"`]\s*\|\s*)+['"`][a-zA-Z0-9_-]+['"`][^\n;]*)/g;
   const P_PROP_UNION_DECL = /\b([A-Za-z0-9_]+)\??:\s*([^\n;{]+(?:['"`][a-zA-Z0-9_-]+['"`]\s*\|\s*)+['"`][a-zA-Z0-9_-]+['"`][^\n;]*)/g;
 
+  const reportIfLibraryDuplicate = (
+    sigKey: string | null,
+    file: string,
+    lineNum: number,
+    col: number,
+    snippet: string,
+    messageBuilder: (libInfo: LibraryDomainTypeInfo) => string
+  ) => {
+    if (!sigKey) return;
+    const libInfo = libraryTypes.get(sigKey);
+    if (libInfo) {
+      findings.push({
+        file,
+        line: lineNum,
+        col,
+        pattern: messageBuilder(libInfo),
+        snippet: snippet.slice(0, 100).replace(/\n/g, '↵'),
+        severity: 'ERROR'
+      });
+    }
+  };
+
   for (const { file, content } of files) {
     const lines = content.split('\n');
 
-    // 1. Array declarations with string literals
-    P_LITERAL_ARRAY_DECL.lastIndex = 0;
-    let match: RegExpExecArray | null;
-    while ((match = P_LITERAL_ARRAY_DECL.exec(content)) !== null) {
-      const { lineNum, col, line } = getMatchCoordinates(content, match.index, lines);
-      if (isCommentLine(line) || isTestFile(file) || hasEscapeHatch(line)) continue;
+    const scanDeclarations = (
+      regex: RegExp,
+      getSignatureTarget: (m: RegExpExecArray) => string,
+      msgBuilder: (name: string, lib: LibraryDomainTypeInfo) => string,
+      extraFilter?: (line: string) => boolean
+    ) => {
+      regex.lastIndex = 0;
+      let match: RegExpExecArray | null;
+      while ((match = regex.exec(content)) !== null) {
+        const { lineNum, col, line } = getMatchCoordinates(content, match.index, lines);
+        if (isCommentLine(line) || isTestFile(file) || hasEscapeHatch(line)) continue;
+        if (extraFilter && !extraFilter(line)) continue;
 
-      const sigKey = extractSortedLiteralsSignature(match[0]);
-      if (!sigKey) continue;
-
-      const libInfo = libraryTypes.get(sigKey);
-      if (libInfo) {
-        findings.push({
+        const sigKey = extractSortedLiteralsSignature(getSignatureTarget(match));
+        reportIfLibraryDuplicate(
+          sigKey,
           file,
-          line: lineNum,
+          lineNum,
           col,
-          pattern: `Duplicate of library domain type: '${match[1]}' duplicates '${libInfo.typeName}' from '${libInfo.pkgName}' — import and use '${libInfo.typeName}' directly instead of reinventing it locally`,
-          snippet: match[0].slice(0, 100).replace(/\n/g, '↵'),
-          severity: 'ERROR'
-        });
+          match[0],
+          (lib) => msgBuilder(match![1] ?? '', lib)
+        );
       }
-    }
+    };
+
+    // 1. Array declarations with string literals
+    scanDeclarations(
+      P_LITERAL_ARRAY_DECL,
+      (m) => m[0],
+      (name, lib) => `Duplicate of library domain type: '${name}' duplicates '${lib.typeName}' from '${lib.pkgName}' — import and use '${lib.typeName}' directly instead of reinventing it locally`
+    );
 
     // 2. Type union declarations
-    P_TYPE_UNION_DECL.lastIndex = 0;
-    while ((match = P_TYPE_UNION_DECL.exec(content)) !== null) {
-      const { lineNum, col, line } = getMatchCoordinates(content, match.index, lines);
-      if (isCommentLine(line) || isTestFile(file) || hasEscapeHatch(line) || /\bkeyof\b/.test(line)) continue;
-
-      const sigKey = extractSortedLiteralsSignature(match[2] ?? match[0]);
-      if (!sigKey) continue;
-
-      const libInfo = libraryTypes.get(sigKey);
-      if (libInfo) {
-        findings.push({
-          file,
-          line: lineNum,
-          col,
-          pattern: `Duplicate of library domain type: type '${match[1]}' duplicates '${libInfo.typeName}' from '${libInfo.pkgName}' — import and alias '${libInfo.typeName}' directly instead of re-declaring its union`,
-          snippet: match[0].slice(0, 100).replace(/\n/g, '↵'),
-          severity: 'ERROR',
-        });
-      }
-    }
+    scanDeclarations(
+      P_TYPE_UNION_DECL,
+      (m) => m[2] ?? m[0],
+      (name, lib) => `Duplicate of library domain type: type '${name}' duplicates '${lib.typeName}' from '${lib.pkgName}' — import and alias '${lib.typeName}' directly instead of re-declaring its union`,
+      (line) => !/\bkeyof\b/.test(line)
+    );
 
     // 3. Property declarations in interfaces/types containing literal unions
-    P_PROP_UNION_DECL.lastIndex = 0;
-    while ((match = P_PROP_UNION_DECL.exec(content)) !== null) {
-      const { lineNum, col, line } = getMatchCoordinates(content, match.index, lines);
-      if (isCommentLine(line) || isTestFile(file) || hasEscapeHatch(line)) continue;
-
-      const sigKey = extractSortedLiteralsSignature(match[2] ?? '');
-      if (!sigKey) continue;
-
-      const libInfo = libraryTypes.get(sigKey);
-      if (libInfo) {
-        findings.push({
-          file,
-          line: lineNum,
-          col,
-          pattern: `Duplicate of library domain type: property '${match[1]}' duplicates '${libInfo.typeName}' from '${libInfo.pkgName}' — import and use '${libInfo.typeName}' directly instead of re-declaring its union literals`,
-          snippet: match[0].slice(0, 100).replace(/\n/g, '↵'),
-          severity: 'ERROR',
-        });
-      }
-    }
+    scanDeclarations(
+      P_PROP_UNION_DECL,
+      (m) => m[2] ?? '',
+      (name, lib) => `Duplicate of library domain type: property '${name}' duplicates '${lib.typeName}' from '${lib.pkgName}' — import and use '${lib.typeName}' directly instead of re-declaring its union literals`
+    );
   }
 
   return findings;
@@ -1015,6 +985,42 @@ export function detectProjectDomainDuplicatesAndSubsets(
   const P_ANY_LITERAL_ARRAY = /\b(?:(?:export\s+)?const|let|var)\s+([A-Za-z0-9_$]+)\s*(?::\s*[^=]+)?=\s*\[\s*['"`][\s\S]*?\](?:\s+as\s+const)?/g;
   const P_ANY_TYPE_UNION = /\b(?:export\s+)?type\s+([A-Za-z0-9_]+)\s*=\s*\(?((?:['"`][a-zA-Z0-9_-]+['"`]\s*\|\s*)+['"`][a-zA-Z0-9_-]+['"`])\)?/g;
 
+  interface CanonicalDomainIndex {
+    bySignature: Map<string, CanonicalDomainInfo>;
+    list: CanonicalDomainInfo[];
+  }
+
+  interface DomainMatchInfo {
+    ctx: { file: string; name: string; literals: string[]; lineNum: number; col: number; snippet: string };
+    canonicalExact: CanonicalDomainInfo | null;
+  }
+
+  function parseDomainMatch(
+    m: RegExpExecArray,
+    rawContent: string,
+    rawLines: string[],
+    domainIndex: CanonicalDomainIndex,
+    targetFile: string
+  ): DomainMatchInfo | null {
+    const { lineNum, col, line } = getMatchCoordinates(rawContent, m.index, rawLines);
+    if (isCommentLine(line) || hasEscapeHatch(line)) return null;
+
+    const name = m[1]!;
+    const literals = extractSortedLiterals(m[0]);
+    if (!literals || literals.length < 2) return null;
+
+    const signature = literals.join('|');
+    const canonicalExact = domainIndex.bySignature.get(signature) ?? null;
+    if (canonicalExact && canonicalExact.file === targetFile && canonicalExact.name === name) {
+      return null;
+    }
+
+    return {
+      ctx: { file: targetFile, name, literals, lineNum, col, snippet: m[0].slice(0, 100).replace(/\n/g, '↵') },
+      canonicalExact
+    };
+  }
+
   for (const { file, content } of files) {
     if (isTestFile(file) || file.endsWith('.d.ts') || !file.startsWith('src/')) continue;
     const lines = content.split('\n');
@@ -1023,28 +1029,19 @@ export function detectProjectDomainDuplicatesAndSubsets(
     P_ANY_LITERAL_ARRAY.lastIndex = 0;
     let match: RegExpExecArray | null;
     while ((match = P_ANY_LITERAL_ARRAY.exec(content)) !== null) {
-      const { lineNum, col, line } = getMatchCoordinates(content, match.index, lines);
-      if (isCommentLine(line) || hasEscapeHatch(line)) continue;
+      const parsed = parseDomainMatch(match, content, lines, domains, file);
+      if (!parsed) continue;
 
-      const name = match[1]!;
-      const literals = extractSortedLiterals(match[0]);
-      if (!literals || literals.length < 2) continue;
-
-      const signature = literals.join('|');
-
-      const canonicalExact = domains.bySignature.get(signature);
-      if (canonicalExact && canonicalExact.file === file && canonicalExact.name === name) {
-        continue;
-      }
+      const { ctx, canonicalExact } = parsed;
 
       // Check 1: EXACT DUPLICATE (A = D)
       if (canonicalExact) {
         findings.push({
           file,
-          line: lineNum,
-          col,
-          pattern: `Duplicate domain collection: '${name}' duplicates canonical domain '${canonicalExact.name}' from '${canonicalExact.file}:${canonicalExact.line}' — import and use '${canonicalExact.name}' directly instead of re-declaring domain literals`,
-          snippet: match[0].slice(0, 100).replace(/\n/g, '↵'),
+          line: ctx.lineNum,
+          col: ctx.col,
+          pattern: `Duplicate domain collection: '${ctx.name}' duplicates canonical domain '${canonicalExact.name}' from '${canonicalExact.file}:${canonicalExact.line}' — import and use '${canonicalExact.name}' directly instead of re-declaring domain literals`,
+          snippet: ctx.snippet,
           severity: 'ERROR',
         });
         continue;
@@ -1054,12 +1051,12 @@ export function detectProjectDomainDuplicatesAndSubsets(
       let bestParent: CanonicalDomainInfo | null = null;
       for (const cand of domains.list) {
         if (cand.file === file) continue;
-        if (cand.literals.length <= literals.length) continue;
+        if (cand.literals.length <= ctx.literals.length) continue;
 
-        const isSubset = literals.every(l => cand.elements.has(l));
+        const isSubset = ctx.literals.every(l => cand.elements.has(l));
         if (isSubset) {
           const candLen = cand.literals.length;
-          const litLen = literals.length;
+          const litLen = ctx.literals.length;
           const ratio = litLen / candLen;
           const diff = candLen - litLen;
 
@@ -1078,10 +1075,10 @@ export function detectProjectDomainDuplicatesAndSubsets(
       if (bestParent) {
         findings.push({
           file,
-          line: lineNum,
-          col,
-          pattern: `Sub-collection of canonical domain: '${name}' (${literals.length} elements) is a sub-collection of canonical domain '${bestParent.name}' (${bestParent.literals.length} elements) from '${bestParent.file}:${bestParent.line}' — do not re-declare domain literals manually; derive from '${bestParent.name}' via filtering or canonical domain types`,
-          snippet: match[0].slice(0, 100).replace(/\n/g, '↵'),
+          line: ctx.lineNum,
+          col: ctx.col,
+          pattern: `Sub-collection of canonical domain: '${ctx.name}' (${ctx.literals.length} elements) is a sub-collection of canonical domain '${bestParent.name}' (${bestParent.literals.length} elements) from '${bestParent.file}:${bestParent.line}' — do not re-declare domain literals manually; derive from '${bestParent.name}' via filtering or canonical domain types`,
+          snippet: ctx.snippet,
           severity: 'ERROR',
         });
       }
@@ -1090,203 +1087,99 @@ export function detectProjectDomainDuplicatesAndSubsets(
     // 2. Check type unions
     P_ANY_TYPE_UNION.lastIndex = 0;
     while ((match = P_ANY_TYPE_UNION.exec(content)) !== null) {
-      const { lineNum, col, line } = getMatchCoordinates(content, match.index, lines);
-      if (isCommentLine(line) || hasEscapeHatch(line)) continue;
+      const parsed = parseDomainMatch(match, content, lines, domains, file);
+      if (!parsed || !parsed.canonicalExact) continue;
 
-      const name = match[1]!;
-      const literals = extractSortedLiterals(match[0]);
-      if (!literals || literals.length < 2) continue;
-
-      const signature = literals.join('|');
-      const canonicalExact = domains.bySignature.get(signature);
-      if (canonicalExact && canonicalExact.file === file && canonicalExact.name === name) {
-        continue;
-      }
-
-      if (canonicalExact) {
-        findings.push({
-          file,
-          line: lineNum,
-          col,
-          pattern: `Duplicate domain type union: type '${name}' duplicates canonical domain '${canonicalExact.name}' from '${canonicalExact.file}:${canonicalExact.line}' — import and alias '${canonicalExact.name}' directly instead of re-declaring its union`,
-          snippet: match[0].slice(0, 100).replace(/\n/g, '↵'),
-          severity: 'ERROR',
-        });
-      }
+      const { ctx, canonicalExact } = parsed;
+      findings.push({
+        file,
+        line: ctx.lineNum,
+        col: ctx.col,
+        pattern: `Duplicate domain type union: type '${ctx.name}' duplicates canonical domain '${canonicalExact.name}' from '${canonicalExact.file}:${canonicalExact.line}' — import and alias '${canonicalExact.name}' directly instead of re-declaring its union`,
+        snippet: ctx.snippet,
+        severity: 'ERROR',
+      });
     }
   }
 
   return findings;
 }
 
-export async function runCliAudit(): Promise<void> {
-  const allFindings: Finding[] = [];
-  const scannedFiles: Array<{ file: string; content: string }> = [];
+export type DomainTypesRuleId = 'domain-type-violation';
 
-  const libraryTypes = await extractLibraryDomainTypes(ROOT);
+export const DOMAIN_TYPES_RULES: readonly DomainTypesRuleId[] = [
+  'domain-type-violation'
+] as const;
 
-  for (const scanRoot of SCAN_ROOTS) {
-    for await (const filePath of walkFiles(scanRoot)) {
-      const rel = toRepoPath(filePath);
-      allFindings.push(...await auditFile(filePath));
-
-      const content = await fs.readFile(filePath, 'utf8');
-      scannedFiles.push({ file: rel, content });
-    }
-  }
-
-  const repeatedUnions = detectRepeatedStringUnions(scannedFiles);
-  for (const [signatureKey, occurrences] of repeatedUnions) {
-    for (const occurrence of occurrences) {
-      occurrence.pattern = `Repeated ad-hoc string literal union '${signatureKey}' (${occurrences.length} occurrences) — MUST refactor to canonical domain type alias`;
-      allFindings.push(occurrence);
-    }
-  }
-
-  const libDuplicates = detectLibraryDomainTypeDuplicates(scannedFiles, libraryTypes);
-  allFindings.push(...libDuplicates);
-
-  const { bySignature: canonicalBySig, list: canonicalList, collisions: contractCollisions } = extractProjectCanonicalDomains(scannedFiles);
-  allFindings.push(...contractCollisions);
-
-  const projectDuplicates = detectProjectDomainDuplicatesAndSubsets(scannedFiles, { bySignature: canonicalBySig, list: canonicalList });
-  allFindings.push(...projectDuplicates);
-
-  const visibleFindings = allFindings;
-  const errors = allFindings.filter(finding => finding.severity === 'ERROR');
-  const warnings = allFindings.filter(finding => finding.severity === 'WARN');
-
-  const byFile = new Map<string, Finding[]>();
-  for (const finding of visibleFindings) {
-    const existing = byFile.get(finding.file);
-    if (existing) existing.push(finding);
-    else byFile.set(finding.file, [finding]);
-  }
-
-  if (isJsonMode) {
-    const standardResult = {
+export class DomainTypesAuditor extends BaseAuditor<DomainTypesRuleId> {
+  constructor() {
+    super({
       id: 'validate_domain_types',
       name: 'Domain Types Integrity Audit',
+      description: 'Uso de strings crudos en vez de tipos de dominio',
       family: 'domain_data',
-      status: errors.length === 0 ? 'passed' : 'failed',
-      durationMs: Math.round(performance.now() - startTime),
-      metrics: {
-        'Archivos con avisos': byFile.size,
-        'Incidencias totales': allFindings.length
-      },
-      findings: allFindings.map(f => ({
-        severity: f.severity === 'ERROR' ? 'error' as const : 'warning' as const,
-        message: f.pattern,
-        file: f.file,
-        line: f.line,
-        ruleId: f.pattern,
-        context: f.snippet
-      })),
-      summary: {
-        errors: errors.length,
-        warnings: warnings.length,
-        info: 0,
-        totalFilesScanned: scannedFiles.length
+      ruleIds: DOMAIN_TYPES_RULES,
+      ruleDescriptions: {
+        'domain-type-violation': 'Uso de string crudo en vez de tipo de dominio'
       }
-    };
-    console.log(JSON.stringify(standardResult, null, 2));
-    if (errors.length > 0) process.exit(1);
-    return;
+    });
   }
 
-  // ─── Output ───────────────────────────────────────────────────────────────────
-  const lines: string[] = [];
-  const scannedRoots = SCAN_ROOTS.map(root => path.relative(ROOT, root).split(path.sep).join(path.posix.sep)).join(', ');
+  public override async runAudit(): Promise<void> {
+    this.context.logStep(1, 2, 'Extracting library domain types and scanning files...');
+    const allFindings: Finding[] = [];
+    const scannedFiles: Array<{ file: string; content: string }> = [];
 
-  lines.push('');
-  lines.push(styleText('bold', '━━━ DOMAIN TYPE AUDIT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
-  lines.push(`  Scanned: ${styleText('cyan', scannedRoots)}`);
-  lines.push('');
+    const libraryTypes = await extractLibraryDomainTypes(ROOT);
 
-  if (!summaryOnly) {
-    for (const [file, findings] of byFile) {
-      lines.push(styleText('bold', `  📄 ${file}`));
-      for (const finding of findings) {
-        lines.push(formatFinding(finding));
+    for (const scanRoot of SCAN_ROOTS) {
+      for await (const filePath of walkFiles(scanRoot)) {
+        const rel = toRepoPath(filePath);
+        allFindings.push(...await auditFile(filePath));
+
+        const content = await fs.readFile(filePath, 'utf8');
+        scannedFiles.push({ file: rel, content });
       }
-      lines.push('');
     }
-  }
 
-  lines.push('━━━ SUMMARY ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  lines.push(`  Files with visible issues : ${styleText('cyan', String(byFile.size))}`);
-  lines.push(`  Total findings            : ${styleText('cyan', String(allFindings.length))}`);
-  lines.push(`  Visible findings          : ${styleText('cyan', String(visibleFindings.length))}`);
-  lines.push(`  ${styleText('red', 'ERRORS')}                    : ${errors.length}`);
-  lines.push(`  ${styleText('yellow', 'WARNINGS')}                  : ${warnings.length}`);
-  lines.push('');
+    this.filesScannedCount = scannedFiles.length;
+    this.context.logStep(2, 2, `Analyzing domain unions and contracts in ${scannedFiles.length} files...`);
 
-  const byPattern = new Map<string, number>();
-  for (const finding of allFindings) {
-    byPattern.set(finding.pattern, (byPattern.get(finding.pattern) ?? 0) + 1);
-  }
-  lines.push('  Pattern breakdown:');
-  for (const [pattern, count] of [...byPattern.entries()].sort((a, b) => b[1] - a[1])) {
-    lines.push(`    ${styleText('dim', String(count).padStart(4))}  ${pattern}`);
-  }
-  lines.push('');
-
-  if (errors.length === 0) {
-    lines.push(styleText('green', '  ✅ No ERROR-level domain type violations found.'));
-  } else {
-    lines.push(styleText('red', `  ❌ ${errors.length} ERROR(s) must be fixed before commit.`));
-  }
-  lines.push('');
-  lines.push('  💡 Escape hatches (for intentional exceptions — use sparingly):');
-  lines.push('    // domain-ok: Open dynamic text or non-domain string payload    → field genuinely accepts any string (open text)');
-  lines.push('    // string-ok: Internal string formatting or DOM token identifier    → type alias to string is intentional');
-  lines.push('    // open-record: Generic key-value data dictionary container  → Record<string, ...> key is intentionally open');
-  lines.push('    // runtime-set: Fast O(1) membership lookup set  → Set used for runtime lookup (not domain typing)');
-  lines.push('    // runtime-map: Fast O(1) keyed lookup dictionary  → Map used for runtime lookup (not domain typing)');
-  lines.push('    // no-domain: Non-domain utility collection or data structure    → string array is dynamic data, not a finite domain');
-  lines.push('');
-
-  const report = lines.join('\n');
-  console.log(report);
-
-  const scratchDomainDir = path.resolve(ROOT, 'scratch/audits/domain_data');
-  await fs.mkdir(scratchDomainDir, { recursive: true });
-  const resultJson = {
-    id: 'validate_domain_types',
-    name: 'DOMAIN TYPE AUDIT',
-    family: 'domain_data',
-    status: errors.length === 0 ? 'passed' : 'failed',
-    durationMs: Math.round(performance.now() - startTime),
-    metrics: {
-      'Files with issues': byFile.size,
-      'Total findings': allFindings.length,
-      'Visible findings': visibleFindings.length
-    },
-    findings: visibleFindings.map(f => ({
-      severity: f.severity === 'ERROR' ? ('error' as const) : ('warning' as const),
-      message: f.pattern,
-      file: f.file,
-      line: f.line,
-      context: f.snippet
-    })),
-    summary: {
-      errors: errors.length,
-      warnings: warnings.length,
-      info: 0
+    const repeatedUnions = detectRepeatedStringUnions(scannedFiles);
+    for (const [signatureKey, occurrences] of repeatedUnions) {
+      for (const occurrence of occurrences) {
+        occurrence.pattern = `Repeated ad-hoc string literal union '${signatureKey}' (${occurrences.length} occurrences) — MUST refactor to canonical domain type alias`;
+        allFindings.push(occurrence);
+      }
     }
-  };
-  await fs.writeFile(path.join(scratchDomainDir, 'validate_domain_types.json'), JSON.stringify(resultJson, null, 2), 'utf8');
 
-  if (outputFile) {
-    // eslint-disable-next-line no-control-regex
-    const plain = report.replace(/\x1B\[[0-9;]*m/g, '');
-    await fs.writeFile(path.resolve(ROOT, outputFile), plain, 'utf8');
-    console.log(styleText('dim', `  Report saved to: ${outputFile}`));
+    const libDuplicates = detectLibraryDomainTypeDuplicates(scannedFiles, libraryTypes);
+    allFindings.push(...libDuplicates);
+
+    const { bySignature: canonicalBySig, list: canonicalList, collisions: contractCollisions } = extractProjectCanonicalDomains(scannedFiles);
+    allFindings.push(...contractCollisions);
+
+    const projectDuplicates = detectProjectDomainDuplicatesAndSubsets(scannedFiles, { bySignature: canonicalBySig, list: canonicalList });
+    allFindings.push(...projectDuplicates);
+
+    for (const finding of allFindings) {
+      this.addViolation({
+        ruleId: 'domain-type-violation',
+        severity: finding.severity === 'ERROR' ? 'error' : 'warning',
+        file: finding.file,
+        line: finding.line,
+        message: finding.pattern,
+        context: finding.snippet
+      });
+    }
+
+    this.context.setMetric('Scanned files', scannedFiles.length);
+    this.context.setMetric('Domain issues', allFindings.length);
   }
-
-  if (errors.length > 0) process.exit(1);
 }
 
-if (process.env.NODE_ENV !== 'test') {
-  void runCliAudit();
+// ─── CLI Entrypoint ─────────────────────────────────────────────────────────
+if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+  await BaseAuditor.runCli(new DomainTypesAuditor());
 }
+

@@ -1,7 +1,7 @@
 /**
  * scripts/auditors/persistence/validate_save_persistence_parity.ts
  * 
- * SAVE DATA PERSISTENCE PARITY AUDITOR (Node.js 26+)
+ * SAVE DATA PERSISTENCE PARITY AUDITOR (Node.js 26+ Native)
  * Enforces 100% bidirectional parity between:
  *   1. GameState runtime interface (src/types/system/game.ts)
  *   2. saveDataSchema Valibot schema (src/logic/validation/schemas.ts)
@@ -17,17 +17,35 @@
  *   - Any loose unknown or unjustified optional(nullable(...)) soup in schemas is a DOMAIN VIOLATION.
  *
  * Usage:
- *   node scripts/auditors/persistence/validate_save_persistence_parity.ts
- *   npm run validate:persistence
- *   npm run audit
+ *   node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/persistence/validate_save_persistence_parity.ts
+ *   npm run validate:save-persistence
  */
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { setupValidation } from '../../lib/validationBase.ts';
+import { BaseAuditor } from '../../lib/auditorBase.ts';
 
 enableCompileCache();
+
+export type SavePersistenceParityRuleId =
+  | 'persistence-schema-missing-field'
+  | 'persistence-serializer-missing-field'
+  | 'persistence-initial-state-missing-field'
+  | 'persistence-class-data-missing-field'
+  | 'persistence-active-mission-missing-field'
+  | 'persistence-domain-type-violation'
+  | 'persistence-redundant-nullability';
+
+export const SAVE_PERSISTENCE_PARITY_RULES: readonly SavePersistenceParityRuleId[] = [
+  'persistence-schema-missing-field',
+  'persistence-serializer-missing-field',
+  'persistence-initial-state-missing-field',
+  'persistence-class-data-missing-field',
+  'persistence-active-mission-missing-field',
+  'persistence-domain-type-violation',
+  'persistence-redundant-nullability'
+] as const;
 
 const ROOT = process.cwd();
 const GAME_TYPES_PATH = path.resolve(ROOT, 'src/types/system/game.ts');
@@ -35,9 +53,6 @@ const SCHEMAS_PATH = path.resolve(ROOT, 'src/logic/validation/schemas.ts');
 const SERIALIZER_PATH = path.resolve(ROOT, 'src/logic/auth/saveSerializer.ts');
 const INITIAL_STATE_PATH = path.resolve(ROOT, 'src/stores/gameInitialState.ts');
 
-/**
- * Extracts top-level property keys from an interface definition block in TypeScript code.
- */
 function extractInterfaceKeys(content: string, interfaceName: string): Set<string> {
   const keys = new Set<string>();
   const regex = new RegExp(`export\\s+interface\\s+${interfaceName}\\s*(?:extends[^{]+)?\\{([\\s\\S]*?)\\n\\}`, 'm');
@@ -68,9 +83,6 @@ function extractInterfaceKeys(content: string, interfaceName: string): Set<strin
   return keys;
 }
 
-/**
- * Extracts ephemeral runtime keys declared on EphemeralGameStateKeys.
- */
 function extractEphemeralKeys(content: string): Set<string> {
   const keys = new Set<string>();
   const match = content.match(/export\s+type\s+EphemeralGameStateKeys\s*=\s*([^;]+);/);
@@ -83,9 +95,6 @@ function extractEphemeralKeys(content: string): Set<string> {
   return keys;
 }
 
-/**
- * Extracts top-level entry keys from a Valibot object schema definition.
- */
 function extractSchemaKeys(content: string, schemaVarName: string): Set<string> {
   const keys = new Set<string>();
   const regex = new RegExp(`export\\s+const\\s+${schemaVarName}\\s*=\\s*object\\s*\\(\\{([\\s\\S]*?)\\n\\}\\);`, 'm');
@@ -120,106 +129,84 @@ function extractSchemaKeys(content: string, schemaVarName: string): Set<string> 
   return keys;
 }
 
-/**
- * Extracts top-level returned object properties from serializeState() in saveSerializer.ts.
- */
 function extractSerializerKeys(content: string): Set<string> {
   const keys = new Set<string>();
-  const funcMatch = content.match(/export\s+function\s+serializeState[\s\S]*?return\s*\{([\s\S]*?)\n\s*\};/m);
-  if (!funcMatch || !funcMatch[1]) return keys;
+  const funcRegex = /function\s+serialize[a-zA-Z0-9_]*[\s\S]*?return\s*\{([\s\S]*?)\n\s*\};/g;
+  let match: RegExpExecArray | null;
 
-  const body = funcMatch[1];
-  const lines = body.split('\n');
-  let braceDepth = 0;
+  while ((match = funcRegex.exec(content)) !== null) {
+    const body = match[1];
+    if (!body) continue;
+    const lines = body.split('\n');
+    let parenDepth = 0;
+    let braceDepth = 0;
+    let bracketDepth = 0;
 
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*')) continue;
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*')) continue;
 
-    if (braceDepth === 0) {
-      const propMatch = trimmed.match(/^([a-zA-Z0-9_]+)\s*:/);
-      if (propMatch && propMatch[1]) {
-        keys.add(propMatch[1]);
-      }
-    }
-
-    const openBraces = (line.match(/\{/g) || []).length;
-    const closeBraces = (line.match(/\}/g) || []).length;
-    braceDepth += openBraces - closeBraces;
-  }
-
-  return keys;
-}
-
-/**
- * Extracts top-level returned object properties from createInitialGameState() in gameInitialState.ts.
- */
-function extractInitialStateKeys(content: string): Set<string> {
-  const keys = new Set<string>();
-  const funcMatch = content.match(/export\s+function\s+createInitialGameState[\s\S]*?return\s*\{([\s\S]*?)\n\s*\};/m);
-  if (!funcMatch || !funcMatch[1]) return keys;
-
-  const body = funcMatch[1];
-  const lines = body.split('\n');
-  let braceDepth = 0;
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*')) continue;
-
-    if (braceDepth === 0) {
-      const propMatch = trimmed.match(/^([a-zA-Z0-9_]+)\s*:/);
-      if (propMatch && propMatch[1]) {
-        keys.add(propMatch[1]);
-      }
-    }
-
-    const openBraces = (line.match(/\{/g) || []).length;
-    const closeBraces = (line.match(/\}/g) || []).length;
-    braceDepth += openBraces - closeBraces;
-  }
-
-  return keys;
-}
-
-/**
- * Extracts top-level property keys from an object block using brace depth tracking.
- */
-function extractBlockKeys(source: string, startRegex: RegExp): Set<string> {
-  const keys = new Set<string>();
-  const match = source.match(startRegex);
-  if (!match || match.index === undefined) return keys;
-
-  const startIndex = match.index + match[0].length;
-  let braceDepth = 1;
-  let lineStart = startIndex;
-  let lineStartedAtDepth1 = true;
-
-  for (let i = startIndex; i < source.length; i++) {
-    const char = source[i];
-    if (char === '{') {
-      braceDepth++;
-    } else if (char === '}') {
-      braceDepth--;
-      if (braceDepth === 0) break;
-    } else if (char === '\n') {
-      if (lineStartedAtDepth1) {
-        const line = source.slice(lineStart, i).trim();
-        const propMatch = line.match(/^([a-zA-Z0-9_]+)\s*:/);
+      if (parenDepth === 0 && braceDepth === 0 && bracketDepth === 0) {
+        const propMatch = trimmed.match(/^([a-zA-Z0-9_]+)\s*:/);
         if (propMatch && propMatch[1]) {
           keys.add(propMatch[1]);
         }
       }
-      lineStart = i + 1;
-      lineStartedAtDepth1 = (braceDepth === 1);
+
+      const openParens = (line.match(/\(/g) || []).length;
+      const closeParens = (line.match(/\)/g) || []).length;
+      const openBraces = (line.match(/\{/g) || []).length;
+      const closeBraces = (line.match(/\}/g) || []).length;
+      const openBrackets = (line.match(/\[/g) || []).length;
+      const closeBrackets = (line.match(/\]/g) || []).length;
+
+      parenDepth += openParens - closeParens;
+      braceDepth += openBraces - closeBraces;
+      bracketDepth += openBrackets - closeBrackets;
     }
   }
+
   return keys;
 }
 
-/**
- * Extracts nested object keys inside classData across all 4 files.
- */
+function extractInitialStateKeys(content: string): Set<string> {
+  const keys = new Set<string>();
+  const match = content.match(/(?:const\s+INITIAL_STATE(?::\s*GameState)?\s*=|export\s+function\s+createInitialGameState\(\)[^{]*)\s*(?:=>)?\s*\{([\s\S]*?)\n\};/m) ||
+                content.match(/return\s*\{([\s\S]*?)\n\s*\};/m);
+  if (!match || !match[1]) return keys;
+
+  const body = match[1];
+  const lines = body.split('\n');
+  let parenDepth = 0;
+  let braceDepth = 0;
+  let bracketDepth = 0;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*')) continue;
+
+    if (parenDepth === 0 && braceDepth === 0 && bracketDepth === 0) {
+      const propMatch = trimmed.match(/^([a-zA-Z0-9_]+)\s*:/);
+      if (propMatch && propMatch[1]) {
+        keys.add(propMatch[1]);
+      }
+    }
+
+    const openParens = (line.match(/\(/g) || []).length;
+    const closeParens = (line.match(/\)/g) || []).length;
+    const openBraces = (line.match(/\{/g) || []).length;
+    const closeBraces = (line.match(/\}/g) || []).length;
+    const openBrackets = (line.match(/\[/g) || []).length;
+    const closeBrackets = (line.match(/\]/g) || []).length;
+
+    parenDepth += openParens - closeParens;
+    braceDepth += openBraces - closeBraces;
+    bracketDepth += openBrackets - closeBrackets;
+  }
+
+  return keys;
+}
+
 function extractNestedClassDataKeys(
   gameTypes: string,
   schemas: string,
@@ -232,16 +219,29 @@ function extractNestedClassDataKeys(
   initialStateKeys: Set<string>;
 } {
   const typeKeys = extractInterfaceKeys(gameTypes, 'PlayerClassState');
-  const schemaKeys = extractBlockKeys(schemas, /classData:\s*object\s*\(\{/m);
-  const serializerKeys = extractBlockKeys(serializer, /classData:\s*state\.classData\s*\?\s*\{/m);
-  const initialStateKeys = extractBlockKeys(initialState, /classData:\s*\{/m);
+  const schemaKeys = extractSchemaKeys(schemas, 'classDataSchema');
+
+  const serializerKeys = new Set<string>();
+  const serMatch = serializer.match(/classData:\s*\{([\s\S]*?)\n\s*\},/m);
+  if (serMatch && serMatch[1]) {
+    for (const line of serMatch[1].split('\n')) {
+      const m = line.trim().match(/^([a-zA-Z0-9_]+)\s*:/);
+      if (m && m[1]) serializerKeys.add(m[1]);
+    }
+  }
+
+  const initialStateKeys = new Set<string>();
+  const initMatch = initialState.match(/classData:\s*\{([\s\S]*?)\n\s*\},/m);
+  if (initMatch && initMatch[1]) {
+    for (const line of initMatch[1].split('\n')) {
+      const m = line.trim().match(/^([a-zA-Z0-9_]+)\s*:/);
+      if (m && m[1]) initialStateKeys.add(m[1]);
+    }
+  }
 
   return { typeKeys, schemaKeys, serializerKeys, initialStateKeys };
 }
 
-/**
- * Extracts nested activeMission keys across types, schemas, and serializer.
- */
 function extractNestedActiveMissionKeys(
   gameTypes: string,
   schemas: string,
@@ -267,171 +267,221 @@ function extractNestedActiveMissionKeys(
   return { typeKeys, schemaKeys, serializerKeys };
 }
 
-async function runAuditor() {
-  const auditor = setupValidation({
-    title: 'SAVE DATA PERSISTENCE PARITY AUDITOR',
-    family: 'persistence',
-    id: 'validate_save_persistence_parity',
-    requiredFiles: [GAME_TYPES_PATH, SCHEMAS_PATH, SERIALIZER_PATH, INITIAL_STATE_PATH]
-  });
-
-  await auditor.checkFiles();
-
-  const errors: string[] = [];
-  const warnings: string[] = [];
-
-  auditor.logStep(1, 4, 'Leyendo contratos fuente de tipos, esquemas y serializadores...');
-  const [gameTypesContent, schemasContent, serializerContent, initialStateContent] = await Promise.all([
-    fs.readFile(GAME_TYPES_PATH, 'utf-8'),
-    fs.readFile(SCHEMAS_PATH, 'utf-8'),
-    fs.readFile(SERIALIZER_PATH, 'utf-8'),
-    fs.readFile(INITIAL_STATE_PATH, 'utf-8')
-  ]);
-
-  auditor.logStep(2, 4, 'Analizando paridad de propiedades de primer nivel (GameState vs SaveData)...');
-  const gameStateKeys = extractInterfaceKeys(gameTypesContent, 'GameState');
-  const ephemeralKeys = extractEphemeralKeys(gameTypesContent);
-  const schemaKeys = extractSchemaKeys(schemasContent, 'saveDataSchema');
-  const serializerKeys = extractSerializerKeys(serializerContent);
-  const initialStateKeys = extractInitialStateKeys(initialStateContent);
-
-  // Expected persisted keys = GameState keys minus ephemeral keys
-  const expectedPersistedKeys = new Set<string>();
-  for (const k of gameStateKeys) {
-    if (!ephemeralKeys.has(k)) {
-      expectedPersistedKeys.add(k);
-    }
+export class SavePersistenceParityAuditor extends BaseAuditor<SavePersistenceParityRuleId> {
+  constructor() {
+    super({
+      id: 'validate_save_persistence_parity',
+      name: 'Save Data Persistence Parity Auditor',
+      description: 'Verifica paridad de persistencia y serialización',
+      family: 'persistence',
+      ruleIds: SAVE_PERSISTENCE_PARITY_RULES,
+      ruleDescriptions: {
+        'persistence-schema-missing-field': 'Campo de GameState falta en saveDataSchema de Valibot',
+        'persistence-serializer-missing-field': 'Campo de GameState no se serializa en saveSerializer',
+        'persistence-initial-state-missing-field': 'Campo de GameState falta en createInitialGameState',
+        'persistence-class-data-missing-field': 'Propiedad de PlayerClassState desincronizada',
+        'persistence-active-mission-missing-field': 'Propiedad de ActiveMission desincronizada',
+        'persistence-domain-type-violation': 'Uso de unknown() en esquema de persistencia',
+        'persistence-redundant-nullability': 'Uso redundante de optional(nullable(...))'
+      },
+      requiredFiles: [GAME_TYPES_PATH, SCHEMAS_PATH, SERIALIZER_PATH, INITIAL_STATE_PATH]
+    });
   }
 
-  // 1. Check GameState vs saveDataSchema (Critical: Valibot strips undeclared keys)
-  for (const key of expectedPersistedKeys) {
-    if (!schemaKeys.has(key)) {
-      errors.push(
-        `[PERSISTENCE_PARITY_SCHEMA] Campo '${key}' declarado en GameState falta en saveDataSchema (src/logic/validation/schemas.ts). Valibot lo descartará silenciosamente al guardar o sanitizar.`
-      );
-    }
-  }
+  public override async runAudit(): Promise<void> {
+    this.filesScannedCount = 4;
+    this.context.logStep(1, 4, 'Leyendo contratos fuente de tipos, esquemas y serializadores...');
+    const [gameTypesContent, schemasContent, serializerContent, initialStateContent] = await Promise.all([
+      fs.readFile(GAME_TYPES_PATH, 'utf-8'),
+      fs.readFile(SCHEMAS_PATH, 'utf-8'),
+      fs.readFile(SERIALIZER_PATH, 'utf-8'),
+      fs.readFile(INITIAL_STATE_PATH, 'utf-8')
+    ]);
 
-  // 2. Check GameState vs serializeState (Critical: Unmapped fields are not written)
-  for (const key of expectedPersistedKeys) {
-    if (!serializerKeys.has(key)) {
-      errors.push(
-        `[PERSISTENCE_PARITY_SERIALIZER] Campo '${key}' declarado en GameState no se serializa en serializeState() (src/logic/auth/saveSerializer.ts). El dato se perderá en disco y base de datos.`
-      );
-    }
-  }
+    this.context.logStep(2, 4, 'Analizando paridad de propiedades de primer nivel (GameState vs SaveData)...');
+    const gameStateKeys = extractInterfaceKeys(gameTypesContent, 'GameState');
+    const ephemeralKeys = extractEphemeralKeys(gameTypesContent);
+    const schemaKeys = extractSchemaKeys(schemasContent, 'saveDataSchema');
+    const serializerKeys = extractSerializerKeys(serializerContent);
+    const initialStateKeys = extractInitialStateKeys(initialStateContent);
 
-  // 3. Check GameState vs createInitialGameState (Critical: Missing fields are undefined on new save)
-  for (const key of expectedPersistedKeys) {
-    if (!initialStateKeys.has(key)) {
-      errors.push(
-        `[PERSISTENCE_PARITY_INITIAL_STATE] Campo '${key}' declarado en GameState no está inicializado en createInitialGameState() (src/stores/gameInitialState.ts). Cuentas nuevas nacerán con estado corrupto o undefined.`
-      );
-    }
-  }
-
-  auditor.logStep(3, 4, 'Analizando paridad en estructuras anidadas (PlayerClassState & ActiveMission)...');
-
-  // 4. Nested PlayerClassState parity
-  const classDataParity = extractNestedClassDataKeys(
-    gameTypesContent,
-    schemasContent,
-    serializerContent,
-    initialStateContent
-  );
-
-  for (const key of classDataParity.typeKeys) {
-    if (!classDataParity.schemaKeys.has(key)) {
-      errors.push(
-        `[PERSISTENCE_PARITY_CLASS_DATA] Propiedad '${key}' de PlayerClassState falta en classDataSchema (schemas.ts).`
-      );
-    }
-    if (!classDataParity.serializerKeys.has(key)) {
-      errors.push(
-        `[PERSISTENCE_PARITY_CLASS_DATA] Propiedad '${key}' de PlayerClassState no se serializa en serializeState.classData (saveSerializer.ts).`
-      );
-    }
-    if (!classDataParity.initialStateKeys.has(key)) {
-      errors.push(
-        `[PERSISTENCE_PARITY_CLASS_DATA] Propiedad '${key}' de PlayerClassState no está inicializada en INITIAL_STATE.classData (gameInitialState.ts).`
-      );
-    }
-  }
-
-  // 5. Nested ActiveMission parity
-  const activeMissionParity = extractNestedActiveMissionKeys(
-    gameTypesContent,
-    schemasContent,
-    serializerContent
-  );
-
-  for (const key of activeMissionParity.typeKeys) {
-    if (!activeMissionParity.schemaKeys.has(key)) {
-      errors.push(
-        `[PERSISTENCE_PARITY_ACTIVE_MISSION] Propiedad '${key}' de ActiveMission falta en activeMissionSchema (schemas.ts).`
-      );
-    }
-    if (!activeMissionParity.serializerKeys.has(key)) {
-      errors.push(
-        `[PERSISTENCE_PARITY_ACTIVE_MISSION] Propiedad '${key}' de ActiveMission no se serializa explícitamente en serializeState.classData.activeMission (saveSerializer.ts).`
-      );
-    }
-  }
-
-  auditor.logStep(4, 4, 'Verificando cumplimiento de Domain-Type-First en contratos de persistencia...');
-
-  // 6. Anti-pattern audit: Check for unknown in saveDataSchema
-  const unknownMatch = schemasContent.match(/([a-zA-Z0-9_]+)\s*:\s*(?:optional\s*\(\s*)?unknown\s*\(\s*\)/g);
-  if (unknownMatch) {
-    for (const match of unknownMatch) {
-      const fieldName = match.split(':')[0]?.trim();
-      if (fieldName && fieldName !== 'chats') {
-        warnings.push(
-          `[PERSISTENCE_DOMAIN_TYPE] Campo '${fieldName}' usa unknown() en schemas.ts. Debe tiparse estrictamente con un esquema de dominio.`
-        );
+    const expectedPersistedKeys = new Set<string>();
+    for (const k of gameStateKeys) {
+      if (!ephemeralKeys.has(k)) {
+        expectedPersistedKeys.add(k);
       }
     }
-  }
 
-  // 7. Anti-pattern audit: Check for redundant optional(nullable(...))
-  const optNullMatch = schemasContent.match(/([a-zA-Z0-9_]+)\s*:\s*optional\s*\(\s*nullable\s*\(/g);
-  if (optNullMatch) {
-    for (const match of optNullMatch) {
-      const fieldName = match.split(':')[0]?.trim();
-      const ALLOWED_NULLABLE_FIELDS = [
+    // 1. Check GameState vs saveDataSchema
+    for (const key of expectedPersistedKeys) {
+      if (!schemaKeys.has(key)) {
+        this.addViolation({
+          ruleId: 'persistence-schema-missing-field',
+          severity: 'error',
+          file: 'src/logic/validation/schemas.ts',
+          line: 1,
+          message: `Campo '${key}' declarado en GameState falta en saveDataSchema. Valibot lo descartará silenciosamente al guardar o sanitizar.`,
+          context: key
+        });
+      }
+    }
+
+    // 2. Check GameState vs serializeState
+    for (const key of expectedPersistedKeys) {
+      if (!serializerKeys.has(key)) {
+        this.addViolation({
+          ruleId: 'persistence-serializer-missing-field',
+          severity: 'error',
+          file: 'src/logic/auth/saveSerializer.ts',
+          line: 1,
+          message: `Campo '${key}' declarado en GameState no se serializa en serializeState(). El dato se perderá en persistencia.`,
+          context: key
+        });
+      }
+    }
+
+    // 3. Check GameState vs createInitialGameState
+    for (const key of expectedPersistedKeys) {
+      if (!initialStateKeys.has(key)) {
+        this.addViolation({
+          ruleId: 'persistence-initial-state-missing-field',
+          severity: 'error',
+          file: 'src/stores/gameInitialState.ts',
+          line: 1,
+          message: `Campo '${key}' declarado en GameState no está inicializado en createInitialGameState().`,
+          context: key
+        });
+      }
+    }
+
+    this.context.logStep(3, 4, 'Analizando paridad en estructuras anidadas (PlayerClassState & ActiveMission)...');
+
+    // 4. Nested PlayerClassState parity
+    const classDataParity = extractNestedClassDataKeys(
+      gameTypesContent,
+      schemasContent,
+      serializerContent,
+      initialStateContent
+    );
+
+    for (const key of classDataParity.typeKeys) {
+      if (!classDataParity.schemaKeys.has(key)) {
+        this.addViolation({
+          ruleId: 'persistence-class-data-missing-field',
+          severity: 'error',
+          file: 'src/logic/validation/schemas.ts',
+          line: 1,
+          message: `Propiedad '${key}' de PlayerClassState falta en classDataSchema (schemas.ts).`,
+          context: key
+        });
+      }
+      if (!classDataParity.serializerKeys.has(key)) {
+        this.addViolation({
+          ruleId: 'persistence-class-data-missing-field',
+          severity: 'error',
+          file: 'src/logic/auth/saveSerializer.ts',
+          line: 1,
+          message: `Propiedad '${key}' de PlayerClassState no se serializa en serializeState.classData.`,
+          context: key
+        });
+      }
+      if (!classDataParity.initialStateKeys.has(key)) {
+        this.addViolation({
+          ruleId: 'persistence-class-data-missing-field',
+          severity: 'error',
+          file: 'src/stores/gameInitialState.ts',
+          line: 1,
+          message: `Propiedad '${key}' de PlayerClassState no está inicializada en INITIAL_STATE.classData.`,
+          context: key
+        });
+      }
+    }
+
+    // 5. Nested ActiveMission parity
+    const activeMissionParity = extractNestedActiveMissionKeys(
+      gameTypesContent,
+      schemasContent,
+      serializerContent
+    );
+
+    for (const key of activeMissionParity.typeKeys) {
+      if (!activeMissionParity.schemaKeys.has(key)) {
+        this.addViolation({
+          ruleId: 'persistence-active-mission-missing-field',
+          severity: 'error',
+          file: 'src/logic/validation/schemas.ts',
+          line: 1,
+          message: `Propiedad '${key}' de ActiveMission falta en activeMissionSchema (schemas.ts).`,
+          context: key
+        });
+      }
+      if (!activeMissionParity.serializerKeys.has(key)) {
+        this.addViolation({
+          ruleId: 'persistence-active-mission-missing-field',
+          severity: 'error',
+          file: 'src/logic/auth/saveSerializer.ts',
+          line: 1,
+          message: `Propiedad '${key}' de ActiveMission no se serializa en serializeState.classData.activeMission.`,
+          context: key
+        });
+      }
+    }
+
+    this.context.logStep(4, 4, 'Verificando tipado estricto en esquemas de persistencia...');
+
+    // 6. Anti-pattern audit: Check for unknown in saveDataSchema
+    const unknownMatch = schemasContent.match(/([a-zA-Z0-9_]+)\s*:\s*(?:optional\s*\(\s*)?unknown\s*\(\s*\)/g);
+    if (unknownMatch) {
+      for (const match of unknownMatch) {
+        const fieldName = match.split(':')[0]?.trim();
+        if (fieldName && fieldName !== 'chats') {
+          this.addViolation({
+            ruleId: 'persistence-domain-type-violation',
+            severity: 'warning',
+            file: 'src/logic/validation/schemas.ts',
+            line: 1,
+            message: `Campo '${fieldName}' usa unknown() en schemas.ts. Debe tiparse estrictamente con un esquema de dominio.`,
+            context: fieldName
+          });
+        }
+      }
+    }
+
+    // 7. Anti-pattern audit: Check for redundant optional(nullable(...))
+    const optNullMatch = schemasContent.match(/([a-zA-Z0-9_]+)\s*:\s*optional\s*\(\s*nullable\s*\(/g);
+    if (optNullMatch) {
+      const ALLOWED_NULLABLE_FIELDS = new Set([
         'activeBattle', 'activeMission', 'playerClass', 'faction',
         'fishingRodType', 'pickaxeType', 'brushType', 'incenseType',
         'lastRankedSeason', 'nick_style', 'avatar_style',
         'extortedRouteId', 'extortedRouteTimestamp', 'lastEggScanDate',
         'officialRouteId', 'officialRouteTimestamp', 'lastResolvedWeek',
         'last_renamed_at'
-      ] as const;
-      const allowedNullableFields: ReadonlySet<string> = new Set(ALLOWED_NULLABLE_FIELDS); // runtime-set: Fast O(1) membership lookup set
-      if (fieldName && !allowedNullableFields.has(fieldName)) {
-        warnings.push(
-          `[PERSISTENCE_PERMISSIVE_SCHEMA] Campo '${fieldName}' usa optional(nullable(...)) redundante en schemas.ts. Usar optional(T) o nullable(T) según el contrato.`
-        );
+      ]);
+
+      for (const match of optNullMatch) {
+        const fieldName = match.split(':')[0]?.trim();
+        if (fieldName && !ALLOWED_NULLABLE_FIELDS.has(fieldName)) {
+          this.addViolation({
+            ruleId: 'persistence-redundant-nullability',
+            severity: 'warning',
+            file: 'src/logic/validation/schemas.ts',
+            line: 1,
+            message: `Campo '${fieldName}' usa optional(nullable(...)) redundante en schemas.ts. Usar optional(T) o nullable(T).`,
+            context: fieldName
+          });
+        }
       }
     }
+
+    this.context.setMetric('Campos GameState', gameStateKeys.size);
+    this.context.setMetric('Persistibles', expectedPersistedKeys.size);
+    this.context.setMetric('saveDataSchema', schemaKeys.size);
+    this.context.setMetric('serializeState', serializerKeys.size);
   }
-
-  const metrics: Record<string, number | string> = {
-    'Campos GameState': gameStateKeys.size,
-    'Campos Efímeros Excluidos': ephemeralKeys.size,
-    'Campos Persistibles Requeridos': expectedPersistedKeys.size,
-    'Campos en saveDataSchema': schemaKeys.size,
-    'Campos en serializeState': serializerKeys.size,
-    'Campos en gameInitialState': initialStateKeys.size,
-    'Campos PlayerClassState': classDataParity.typeKeys.size,
-    'Campos ActiveMission': activeMissionParity.typeKeys.size,
-    'Errores de Paridad': errors.length,
-    'Advertencias': warnings.length
-  };
-
-  await auditor.finish(metrics, errors, warnings);
 }
 
-runAuditor().catch(err => {
-  console.error('Fatal error running persistence parity auditor:', err);
-  process.exit(1);
-});
+// Canonical CLI Entrypoint
+if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+  await BaseAuditor.runCli(new SavePersistenceParityAuditor());
+}

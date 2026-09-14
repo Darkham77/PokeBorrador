@@ -1,45 +1,40 @@
 /**
  * scripts/auditors/architecture/validate_bundle_budget.ts
  *
- * PRODUCTION BUNDLE BUDGET & CLIENT LEAK AUDITOR (Node.js 26+ Native)
+ * BUNDLE BUDGET & CLIENT LEAK AUDITOR (Node.js 26+ Native)
  *
- * Enforces production bundle boundaries across the application:
- *   1. Anti-Leak AST Scan: Ensures heavy backend/engine dependencies (@pkmn/sim, postgres, node:sqlite,
- *      test harnesses) and test scripts are NEVER imported as runtime VALUES in client bundles.
- *      (Type-only imports like 'import type { ... }' are cleanly stripped by TS/Vite and permitted).
- *   2. Code-Splitting Audit: Ensures heavy application routes use dynamic imports (() => import(...)).
- *   3. Chunk Size Budgeting: If dist/assets exists, audits client JS bundle sizes against budget limits.
+ * Enforces bundle boundaries and import discipline across production code:
+ *   1. Prohibits importing from /tests/ or /scripts/ inside src/ (bundle-runtime-leak).
+ *   2. Prohibits importing heavy modules (@pkmn/sim, postgres, node:sqlite, vitest, @playwright/test)
+ *      as runtime values in UI layers (src/components, src/views, src/stores).
+ *   3. Enforces client chunk budgets in dist/assets when compiled assets exist.
  *
  * Escape Hatch:
- *   // bundle-leak-ok: <justification> disables violation on that line.
+ *   // bundle-leak-ok: <justification> disables import check on that line.
  *
  * Usage:
- *   node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* scripts/auditors/architecture/validate_bundle_budget.ts
- *   npm run validate:bundle
+ *   node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/architecture/validate_bundle_budget.ts
+ *   npm run validate:bundle-budget
  */
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import ts from 'typescript';
-import { setupValidation } from '../../lib/validationBase.ts';
-import type { FindingSeverity } from '../../lib/auditContract.ts';
+import { BaseAuditor } from '../../lib/auditorBase.ts';
 
 enableCompileCache();
 
-export interface BundleViolation {
-  readonly file: string;
-  readonly line: number;
-  readonly severity: FindingSeverity;
-  readonly message: string;
-}
+export type BundleBudgetRuleId =
+  | 'bundle-runtime-leak'
+  | 'bundle-heavy-import'
+  | 'bundle-chunk-size';
 
-export interface BundleAuditResult {
-  readonly filesScanned: number;
-  readonly violations: readonly BundleViolation[];
-  readonly chunksAudited: number;
-  readonly passed: boolean;
-}
+export const BUNDLE_BUDGET_RULES: readonly BundleBudgetRuleId[] = [
+  'bundle-runtime-leak',
+  'bundle-heavy-import',
+  'bundle-chunk-size'
+] as const;
 
 const FORBIDDEN_VALUE_IMPORTS_UI = [
   { module: '@pkmn/sim', reason: 'El motor Pokémon Showdown pesa +15MB y no debe importarse como valor de runtime en UI/Componentes (usa Web Workers o imports de sólo tipo).' },
@@ -50,7 +45,6 @@ const FORBIDDEN_VALUE_IMPORTS_UI = [
 ] as const;
 
 const FORBIDDEN_PATH_SEGMENTS = ['/tests/', '/scripts/'] as const;
-
 const UI_DIRS = ['src/components', 'src/views', 'src/stores'] as const;
 
 const EXEMPT_CHUNK_PREFIXES = [
@@ -62,184 +56,167 @@ const EXEMPT_CHUNK_PREFIXES = [
   'vendor-randoms'
 ] as const;
 
-const MAX_CLIENT_CHUNK_WARN_BYTES = 500 * 1024; // 500 KB uncompressed for app chunks
-const MAX_CLIENT_CHUNK_ERROR_BYTES = 1500 * 1024; // 1.5 MB uncompressed for app chunks
+const MAX_CLIENT_CHUNK_WARN_BYTES = 500 * 1024; // 500 KB uncompressed
+const MAX_CLIENT_CHUNK_ERROR_BYTES = 1500 * 1024; // 1.5 MB uncompressed
 
-export function auditBundleBudget(): BundleAuditResult {
-  const violations: BundleViolation[] = [];
-  let filesScanned = 0;
-  let chunksAudited = 0;
+export class BundleBudgetAuditor extends BaseAuditor<BundleBudgetRuleId> {
+  constructor() {
+    super({
+      id: 'validate_bundle_budget',
+      name: 'Bundle Budget & Client Leak Auditor',
+      description: 'Audita límites de tamaño de bundles y fugas de imports',
+      family: 'architecture',
+      ruleIds: BUNDLE_BUDGET_RULES,
+      ruleDescriptions: {
+        'bundle-runtime-leak': 'Fuga de código de tests o scripts en código de producción',
+        'bundle-heavy-import': 'Import de librería pesada prohibida en capas de UI',
+        'bundle-chunk-size': 'Chunk compilado excede presupuesto de tamaño de cliente'
+      }
+    });
+  }
 
-  const srcDir = path.resolve(process.cwd(), 'src');
+  public override async runAudit(): Promise<void> {
+    const allFiles = await this.context.collectFiles(['src'], new Set(['.ts', '.vue', '.js']));
+    const candidateFiles = allFiles.filter(f => {
+      const base = path.basename(f);
+      return !base.includes('.spec.') && !base.includes('.test.') && !base.includes('.simulation.') && !base.endsWith('.d.ts');
+    });
 
-  function scanDir(dir: string) {
-    if (!fs.existsSync(dir)) return;
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    this.context.logStep(1, 2, `Auditing imports across ${candidateFiles.length} source files...`);
 
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-      const norm = fullPath.replace(/\\/g, '/');
+    for (const relPath of candidateFiles) {
+      this.filesScannedCount++;
+      const fullPath = path.resolve(this.projectRoot, relPath);
+      const content = fs.readFileSync(fullPath, 'utf8');
+      const norm = relPath.replace(/\\/g, '/');
 
-      if (entry.isDirectory()) {
-        if (entry.name !== 'node_modules' && !entry.name.startsWith('.')) {
-          scanDir(fullPath);
+      let scriptContent = content;
+      let lineOffset = 0;
+      if (relPath.endsWith('.vue')) {
+        const match = /<script\b[^>]*>([\s\S]*?)<\/script>/i.exec(content);
+        if (match) {
+          scriptContent = match[1] || '';
+          lineOffset = content.substring(0, match.index).split('\n').length - 1;
+        } else {
+          scriptContent = '';
         }
-      } else if (entry.isFile() && (entry.name.endsWith('.ts') || entry.name.endsWith('.vue') || entry.name.endsWith('.js'))) {
-        if (entry.name.includes('.spec.') || entry.name.includes('.test.') || entry.name.includes('.simulation.') || entry.name.endsWith('.d.ts')) {
-          continue;
-        }
+      }
 
-        filesScanned++;
-        const content = fs.readFileSync(fullPath, 'utf8');
-        let scriptContent = content;
+      if (!scriptContent) continue;
 
-        if (entry.name.endsWith('.vue')) {
-          const match = /<script\b[^>]*>([\s\S]*?)<\/script>/i.exec(content);
-          scriptContent = match ? match[1] || '' : '';
-        }
+      const sourceFile = ts.createSourceFile(
+        fullPath,
+        scriptContent,
+        ts.ScriptTarget.Latest,
+        true,
+        ts.ScriptKind.TS
+      );
 
-        if (!scriptContent) continue;
+      const isUiLayer = UI_DIRS.some(d => norm.startsWith(d));
+      const fullLines = content.split('\n');
 
-        const sourceFile = ts.createSourceFile(
-          fullPath,
-          scriptContent,
-          ts.ScriptTarget.Latest,
-          true,
-          entry.name.endsWith('.vue') ? ts.ScriptKind.TS : ts.ScriptKind.TS
-        );
+      ts.forEachChild(sourceFile, (node) => {
+        if (ts.isImportDeclaration(node)) {
+          const moduleSpecifier = node.moduleSpecifier;
+          if (!ts.isStringLiteral(moduleSpecifier)) return;
+          const importPath = moduleSpecifier.text;
 
-        const isUiLayer = UI_DIRS.some(d => norm.includes(d));
-
-        ts.forEachChild(sourceFile, (node) => {
-          if (ts.isImportDeclaration(node)) {
-            const moduleSpecifier = node.moduleSpecifier;
-            if (!ts.isStringLiteral(moduleSpecifier)) return;
-            const importPath = moduleSpecifier.text;
-
-            const importClause = node.importClause;
-            let isTypeOnly = false;
-            if (importClause) {
-              if (importClause.isTypeOnly) {
-                isTypeOnly = true;
-              } else if (importClause.namedBindings && ts.isNamedImports(importClause.namedBindings)) {
-                isTypeOnly = importClause.namedBindings.elements.every(elem => elem.isTypeOnly);
-              }
+          const importClause = node.importClause;
+          let isTypeOnly = false;
+          if (importClause) {
+            if (importClause.isTypeOnly) {
+              isTypeOnly = true;
+            } else if (importClause.namedBindings && ts.isNamedImports(importClause.namedBindings)) {
+              isTypeOnly = importClause.namedBindings.elements.every(elem => elem.isTypeOnly);
             }
+          }
 
-            // Los imports de sólo tipo se compilan a nada y nunca llegan al bundle de runtime
-            if (isTypeOnly) return;
+          if (isTypeOnly) return;
 
-            const lineAndChar = sourceFile.getLineAndCharacterOfPosition(node.getStart());
-            const lineNum = lineAndChar.line + 1;
+          const lineAndChar = sourceFile.getLineAndCharacterOfPosition(node.getStart());
+          const lineNum = lineAndChar.line + lineOffset + 1;
+          const lineText = fullLines[lineNum - 1] || '';
+          if (lineText.includes('// bundle-leak-ok:')) return;
 
-            const fullLines = content.split('\n');
-            const lineText = fullLines[lineNum - 1] || '';
-            if (lineText.includes('// bundle-leak-ok:')) return;
+          // 1. Runtime code leak from tests or scripts
+          for (const seg of FORBIDDEN_PATH_SEGMENTS) {
+            if (importPath.includes(seg) || importPath.startsWith(`..${seg}`)) {
+              this.addViolation({
+                ruleId: 'bundle-runtime-leak',
+                severity: 'error',
+                file: relPath,
+                line: lineNum,
+                message: `Fuga de código en tiempo de ejecución: '${importPath}'. No se permite importar valores desde '${seg}' en código de producción.`,
+                context: importPath
+              });
+            }
+          }
 
-            // 1. Fuga de código de tests/scripts como valor de runtime
-            for (const seg of FORBIDDEN_PATH_SEGMENTS) {
-              if (importPath.includes(seg) || importPath.startsWith(`..${seg}`)) {
-                violations.push({
-                  file: fullPath,
-                  line: lineNum,
+          // 2. Heavy dependency leak in UI layers
+          if (isUiLayer) {
+            for (const forbidden of FORBIDDEN_VALUE_IMPORTS_UI) {
+              if (importPath === forbidden.module || importPath.startsWith(`${forbidden.module}/`)) {
+                this.addViolation({
+                  ruleId: 'bundle-heavy-import',
                   severity: 'error',
-                  message: `Fuga de código en tiempo de ejecución: '${importPath}'. No se permite importar valores desde '${seg}' en código de producción.`
+                  file: relPath,
+                  line: lineNum,
+                  message: `Import de valor en tiempo de ejecución prohibido en UI: '${importPath}'. ${forbidden.reason}`,
+                  context: importPath
                 });
               }
             }
-
-            // 2. Fuga de dependencias pesadas en capas de UI
-            if (isUiLayer) {
-              for (const forbidden of FORBIDDEN_VALUE_IMPORTS_UI) {
-                if (importPath === forbidden.module || importPath.startsWith(`${forbidden.module}/`)) {
-                  violations.push({
-                    file: fullPath,
-                    line: lineNum,
-                    severity: 'error',
-                    message: `Import de valor en tiempo de ejecución prohibido en UI: '${importPath}'. ${forbidden.reason}`
-                  });
-                }
-              }
-            }
           }
-        });
+        }
+      });
+    }
+
+    // 3. Audit dist/assets compiled chunks if dist/assets exists
+    const distAssetsDir = path.resolve(this.projectRoot, 'dist/assets');
+    let chunksAudited = 0;
+    if (fs.existsSync(distAssetsDir)) {
+      this.context.logStep(2, 2, 'Checking compiled chunk sizes in dist/assets...');
+      const assets = fs.readdirSync(distAssetsDir);
+      for (const asset of assets) {
+        if (asset.endsWith('.js')) {
+          chunksAudited++;
+          if (EXEMPT_CHUNK_PREFIXES.some(prefix => asset.startsWith(prefix))) {
+            continue;
+          }
+
+          const assetPath = path.join(distAssetsDir, asset);
+          const stats = fs.statSync(assetPath);
+          const relAssetPath = path.relative(this.projectRoot, assetPath).replace(/\\/g, '/');
+
+          if (stats.size > MAX_CLIENT_CHUNK_ERROR_BYTES) {
+            this.addViolation({
+              ruleId: 'bundle-chunk-size',
+              severity: 'error',
+              file: relAssetPath,
+              line: 1,
+              message: `El chunk de cliente '${asset}' (${(stats.size / 1024).toFixed(1)} KB) supera el límite crítico de ${(MAX_CLIENT_CHUNK_ERROR_BYTES / 1024).toFixed(0)} KB.`,
+              context: asset
+            });
+          } else if (stats.size > MAX_CLIENT_CHUNK_WARN_BYTES) {
+            this.addViolation({
+              ruleId: 'bundle-chunk-size',
+              severity: 'warning',
+              file: relAssetPath,
+              line: 1,
+              message: `El chunk de cliente '${asset}' (${(stats.size / 1024).toFixed(1)} KB) excede el presupuesto sugerido de ${(MAX_CLIENT_CHUNK_WARN_BYTES / 1024).toFixed(0)} KB.`,
+              context: asset
+            });
+          }
+        }
       }
     }
+
+    this.context.setMetric('Files Audited', this.filesScannedCount);
+    this.context.setMetric('Compiled Chunks', chunksAudited);
   }
-
-  scanDir(srcDir);
-
-  // 3. Auditar dist/assets si existe compilación
-  const distAssetsDir = path.resolve(process.cwd(), 'dist/assets');
-  if (fs.existsSync(distAssetsDir)) {
-    const assets = fs.readdirSync(distAssetsDir);
-    for (const asset of assets) {
-      if (asset.endsWith('.js')) {
-        chunksAudited++;
-        if (EXEMPT_CHUNK_PREFIXES.some(prefix => asset.startsWith(prefix))) {
-          continue; // Chunks aislados de base de datos o simulación pre-configurados
-        }
-
-        const assetPath = path.join(distAssetsDir, asset);
-        const stats = fs.statSync(assetPath);
-        if (stats.size > MAX_CLIENT_CHUNK_ERROR_BYTES) {
-          violations.push({
-            file: assetPath,
-            line: 1,
-            severity: 'error',
-            message: `El chunk de cliente '${asset}' (${(stats.size / 1024).toFixed(1)} KB) supera el límite crítico de ${(MAX_CLIENT_CHUNK_ERROR_BYTES / 1024).toFixed(0)} KB.`
-          });
-        } else if (stats.size > MAX_CLIENT_CHUNK_WARN_BYTES) {
-          violations.push({
-            file: assetPath,
-            line: 1,
-            severity: 'warning',
-            message: `El chunk de cliente '${asset}' (${(stats.size / 1024).toFixed(1)} KB) excede el presupuesto sugerido de ${(MAX_CLIENT_CHUNK_WARN_BYTES / 1024).toFixed(0)} KB.`
-          });
-        }
-      }
-    }
-  }
-
-  const hasErrors = violations.some(v => v.severity === 'error');
-  return {
-    filesScanned,
-    violations,
-    chunksAudited,
-    passed: !hasErrors
-  };
 }
 
-// ─── CLI Entrypoint ─────────────────────────────────────────────────────────
+// Canonical CLI Entrypoint
 if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
-  const validator = setupValidation({
-    title: 'BUNDLE BUDGET & CLIENT LEAK AUDITOR',
-    family: 'architecture',
-    id: 'validate_bundle_budget'
-  });
-
-  const result = auditBundleBudget();
-
-  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
-  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
-
-  for (const v of result.violations) {
-    const relFile = path.relative(process.cwd(), v.file).replace(/\\/g, '/');
-    const msg = `[BUNDLE_BUDGET] ${relFile}:${v.line} → ${v.message}`;
-    if (v.severity === 'error') {
-      errors.push(msg);
-    } else {
-      warnings.push(msg);
-    }
-  }
-
-  await validator.finish(
-    {
-      'Files scanned': result.filesScanned,
-      'Compiled chunks audited': result.chunksAudited,
-      'Budget & leak violations': result.violations.length
-    },
-    errors,
-    warnings
-  );
+  await BaseAuditor.runCli(new BundleBudgetAuditor());
 }

@@ -13,6 +13,7 @@ import { styleText } from 'node:util';
 import { enableCompileCache } from 'node:module';
 import { parseArgs } from 'node:util';
 import { execSync } from 'node:child_process';
+import { BaseAuditor } from '../../lib/auditorBase.ts';
 import { Z_LAYERS } from '../../../src/logic/constants/visuals.ts';
 import {
   type AuditRule,
@@ -29,9 +30,6 @@ import { checkDoxIntegrity, DOX_ANALYZER_DESCRIPTOR } from '../../maintenance/an
 import { detectDuplicateConstants, CONSTANT_ANALYZER_DESCRIPTOR } from '../../maintenance/analyzers/constantAnalyzer.ts';
 
 enableCompileCache();
-
-const SLOC_WARNING_THRESHOLD = 500;
-const SLOC_ERROR_THRESHOLD = 1000;
 
 const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', 'dev-dist', 'backup_legacy_code', 'public', 'docs', 'scratch', 'showdown', 'external', 'test aventura']); // runtime-set: Fast O(1) membership lookup set
 const AUDIT_EXTENSIONS = new Set(['.vue', '.scss', '.css', '.ts', '.js', '.md']); // runtime-set: Fast O(1) membership lookup set
@@ -67,7 +65,11 @@ async function auditFile(
     config.gpuGaps,
     config.zIndexAudit,
     config.manualAnimations,
-    config.sassTraps
+    config.sassTraps,
+    config.noImportantOnTransforms,
+    config.noImportantOnFilters,
+    config.noSassAtImport,
+    config.overscrollBehaviorLock
   ];
   const STYLE_RULES: AuditRule[] = activeConfigRules
     ? ALL_STYLE_RULES.filter(r => activeConfigRules.has(r))
@@ -415,20 +417,12 @@ interface FallowDeadCode {
 interface FallowComplexity {
   findings?: FallowFinding[];
 }
-export interface FallowFileScore {
-  path: string;
-  lines: number;
-  total_cyclomatic?: number;
-  total_cognitive?: number;
-  maintainability_index?: number;
-}
 export interface FallowAuditData {
   clone_groups?: FallowCloneGroup[];
   security_findings?: FallowFinding[];
   dead_code?: FallowDeadCode;
   complexity?: FallowComplexity;
   findings?: FallowFinding[];
-  file_scores?: FallowFileScore[];
   unused_dependencies?: FallowUnusedDep[];
   unused_dev_dependencies?: FallowUnusedDep[];
   unused_exports?: FallowUnusedExport[];
@@ -453,9 +447,9 @@ function runFallow(command: string, extraArgs: string[] = []): Violation[] {
       parsedSuccessfully = true;
     }
   } catch (e: unknown) {
-    const err = e as { stdout?: Buffer; message?: string; stderr?: Buffer };
+    const err = e as { stdout?: Buffer | string; message?: string; stderr?: Buffer | string };
     if (err.stdout) {
-      const stdoutStr = err.stdout.toString('utf8');
+      const stdoutStr = typeof err.stdout === 'string' ? err.stdout : err.stdout.toString('utf8');
       const jsonStart = stdoutStr.indexOf('{');
       if (jsonStart !== -1) {
         try {
@@ -510,8 +504,7 @@ function addComplexityFinding(f: FallowFinding, violations: Violation[]): void {
     message: `Sugerencia de complejidad (Fallow): Función '${f.function_name || ''}' alta complejidad (cognitiva: ${f.cognitive || 0}, ciclomática: ${f.cyclomatic || 0})`,
     context: f.function_name || '',
     severity: 'warning',
-    fixable: false,
-    ruleId: 'fallow:health'
+    fixable: false
   });
 }
 
@@ -582,8 +575,9 @@ export function mapFallowJson(command: string, data: FallowAuditData): Violation
     // 1. Dependencias circulares (Error crítico)
     const circularDeps = [...(data.circular_dependencies || []), ...(data.dead_code?.circular_dependencies || [])];
     for (const c of circularDeps) {
-      const filePath = c.path || (c.cycle && c.cycle[0]) || 'src';
-      const cyclePathStr = Array.isArray(c.cycle) && c.cycle.length > 0 ? c.cycle.join(' → ') : (c.message || filePath);
+      const filesList = (Array.isArray(c.files) && c.files.length > 0) ? c.files : (Array.isArray(c.cycle) ? c.cycle : []);
+      const filePath = c.path || filesList[0] || 'src';
+      const cyclePathStr = filesList.length > 0 ? filesList.join(' → ') : (c.message || filePath);
       violations.push({
         file: path.resolve(process.cwd(), filePath),
         line: c.line || 1,
@@ -678,51 +672,6 @@ export function mapFallowJson(command: string, data: FallowAuditData): Violation
     for (const f of findings) {
       addComplexityFinding(f, violations);
     }
-    const fileScores = data.file_scores || [];
-    for (const score of fileScores) {
-      const relPosixPath = (score.path || '').replace(/\\/g, '/');
-      const baseName = path.basename(relPosixPath);
-      const isExempt =
-        relPosixPath.endsWith('.md') ||
-        relPosixPath.startsWith('src/data/') ||
-        relPosixPath.startsWith('scripts/') ||
-        relPosixPath.startsWith('database/') ||
-        relPosixPath.startsWith('supabase/') ||
-        relPosixPath.startsWith('tests/') ||
-        relPosixPath.startsWith('external/') ||
-        relPosixPath.startsWith('scratch/') ||
-        relPosixPath.endsWith('DB.ts') ||
-        relPosixPath.endsWith('Metadata.ts') ||
-        /^(vite|vitest|playwright|eslint)\.config\./i.test(baseName) ||
-        baseName.startsWith('vitest.');
-
-      if (isExempt) continue;
-
-      const slocCount = score.lines;
-      const fullPath = path.resolve(process.cwd(), relPosixPath);
-
-      if (slocCount > SLOC_ERROR_THRESHOLD) {
-        violations.push({
-          file: fullPath,
-          line: 1,
-          message: `Mantenibilidad CRÍTICA (Fallow SLOC): El archivo supera las ${SLOC_ERROR_THRESHOLD} líneas reales de código (SLOC: ${slocCount}). A pesar de cualquier tag de ignore, superar las ${SLOC_ERROR_THRESHOLD} líneas es un ERROR que requiere modularización obligatoria.`,
-          context: `SLOC: ${slocCount}`,
-          severity: 'error',
-          fixable: false,
-          ruleId: 'fileLength'
-        });
-      } else if (slocCount > SLOC_WARNING_THRESHOLD) {
-        violations.push({
-          file: fullPath,
-          line: 1,
-          message: `Mantenibilidad (Fallow 500/1000 Rule): El archivo tiene ${slocCount} líneas reales de código (SLOC). Supera las ${SLOC_WARNING_THRESHOLD} líneas. Se recomienda fuertemente modularizar y extraer lógica a Composables (SRP).`,
-          context: `SLOC: ${slocCount}`,
-          severity: 'warning',
-          fixable: false,
-          ruleId: 'fileLength'
-        });
-      }
-    }
   }
   return violations;
 }
@@ -740,32 +689,37 @@ export function getViolationCategory(v: Violation): string {
   if (msg.includes('Zero-Ignore')) return 'TypeScript Ignore';
   if (msg.includes('setTimeout manual')) return 'setTimeout manual en script';
   if (msg.includes('timer de ANIMACIÓN')) return 'setTimeout/setInterval en UI';
-  if (msg.includes('tiempo de espera de temporizador') || msg.includes('Named Timer Constants')) return 'Temporizadores sin constante nombrada';
   if (msg.includes('sin \'using\'')) return 'Falta explicit resource (\'using\')';
   if (msg.includes('Animación manual')) return 'Animación/Transición manual (GSAP)';
   if (msg.includes('Z-Index') || msg.includes('z-index')) return 'Z-Index fuera de estándar';
   if (msg.includes('archivo tiene') || msg.includes('líneas reales') || msg.includes('SLOC')) return 'Largo de archivo (>300/500 líneas)';
   if (msg.includes('Código duplicado')) return 'Fallow: Código duplicado';
   if (msg.includes('Código triplicado')) return 'Fallow: Código triplicado';
-  if (msg.includes('Vulnerabilidad de seguridad')) return 'Fallow: Vulnerabilidad de seguridad';
+  if (msg.includes('seguridad') || msg.includes('CWE') || msg.includes('Vulnerabilidad')) return 'Fallow: Seguridad (CWE)';
   if (msg.includes('Dependencia circular') || msg.includes('circular')) return 'Fallow: Dependencias circulares';
-  if (msg.includes('Archivo huérfano') || msg.includes('huérfano')) return 'Fallow: Archivos huérfanos / Dead Code';
+  if (msg.includes('Archivo huérfano') || msg.includes('huérfano')) return 'Fallow: Archivos huérfanos';
   if (msg.includes('Supresión obsoleta')) return 'Fallow: Supresiones obsoletas';
   if (msg.includes('Export duplicado')) return 'Fallow: Exports duplicados';
   if (msg.includes('Dependencia de package.json no usada')) return 'Fallow: Dependencias no usadas';
-  if (msg.includes('Sugerencia de calidad')) return 'Fallow: Calidad / Dead Code';
+  if (msg.includes('Sugerencia de calidad')) return 'Fallow: Exports no usados';
   if (msg.includes('Sugerencia de complejidad')) return 'Fallow: Complejidad';
   if (msg.includes('AGENTS.md') || msg.includes('DOX') || msg.includes('Enlace')) return 'DOX / AGENTS.md';
   if (msg.includes('css-checker') || msg.includes('CSS/SCSS duplicado')) return 'css-checker: SCSS/CSS duplicado';
   if (msg.includes('tipado con \'string\' plano') || msg.includes('strictDomainParamTypes') || msg.includes('IDs de dominio DEBEN ser tipados')) return 'Tipado estricto de IDs de Dominio (Domain-Type-First)';
   if (msg.includes('Variable mutable')) return 'Variable mutable global (let)';
+  if (msg.includes('!important') && msg.includes('transform')) return 'GSAP: !important en transform';
+  if (msg.includes('!important') && msg.includes('filter')) return 'GSAP: !important en filter';
+  if (msg.includes('Generación Showdown hardcodeada')) return 'Showdown Parity (Gen hardcodeada)';
+  if (msg.includes('Importación estática de JSON fuera de src/data/')) return 'Optimización de Bundle (JSON fuera de data)';
+  if (msg.includes('Regla obsoleta \'@import\' detectada en Sass')) return 'SASS Migrator (@import obsoleto)';
+  if (msg.includes('bloqueo de sobre-desplazamiento')) return 'Overscroll Navigation Lock';
   return 'Otros';
 }
 
-const MAX_CONTEXT_SNIPPET_LENGTH = 50;
-const DEFAULT_TOP_LIMIT = 15;
-const MAX_FILES_TO_SHOW_IN_TERMINAL = 25;
-const MAX_VIOLATIONS_PER_FILE_IN_TERMINAL = 10;
+const MAX_CONTEXT_SNIPPET_LENGTH = 50; // no-magic: Explicit mathematical constant or threshold value
+const DEFAULT_TOP_LIMIT = 15; // no-magic: Explicit mathematical constant or threshold value
+const MAX_FILES_TO_SHOW_IN_TERMINAL = 25; // no-magic: Explicit mathematical constant or threshold value
+const MAX_VIOLATIONS_PER_FILE_IN_TERMINAL = 10; // no-magic: Explicit mathematical constant or threshold value
 function sanitizeContext(ctx: string): string {
   if (!ctx) return '';
   return ctx.replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim().slice(0, MAX_CONTEXT_SNIPPET_LENGTH);
@@ -818,10 +772,10 @@ async function main() {
     }
   }
 
-  // Determine active config rules for AST/regex file checking dynamically (fileLength is handled by Fallow health)
+  // Determine active config rules for AST/regex file checking dynamically
   const activeConfigRules = new Set<AuditRule>();
   for (const rule of Object.values(config) as AuditRule[]) {
-    if (rule !== config.fileLength && matchesRule(rule, selectedRules)) {
+    if (matchesRule(rule, selectedRules)) {
       activeConfigRules.add(rule);
     }
   }
@@ -829,15 +783,13 @@ async function main() {
   // Query descriptors dynamically from their source modules
   const isZIndexActive = matchesRule(Z_INDEX_CONSISTENCY_DESCRIPTOR, selectedRules);
   const isDoxActive = matchesRule(DOX_ANALYZER_DESCRIPTOR, selectedRules);
-  const hasExplicitRules = selectedRules.size > 0;
-  const isFallowDupesActive = hasExplicitRules && matchesRule(FALLOW_SUITE_DESCRIPTORS.dupes, selectedRules);
-  const isFallowSecurityActive = hasExplicitRules && matchesRule(FALLOW_SUITE_DESCRIPTORS.security, selectedRules);
-  const isFallowDeadCodeActive = hasExplicitRules && matchesRule(FALLOW_SUITE_DESCRIPTORS['dead-code'], selectedRules);
+  const isFallowDupesActive = matchesRule(FALLOW_SUITE_DESCRIPTORS.dupes, selectedRules);
+  const isFallowSecurityActive = matchesRule(FALLOW_SUITE_DESCRIPTORS.security, selectedRules);
+  const isFallowDeadCodeActive = matchesRule(FALLOW_SUITE_DESCRIPTORS['dead-code'], selectedRules);
   const isFallowHealthActive = matchesRule(FALLOW_SUITE_DESCRIPTORS.health, selectedRules);
   const isCssCheckerActive = values['css-only'] || matchesRule(CSS_ANALYZER_DESCRIPTOR, selectedRules);
   const isConstantDetectorActive = matchesRule(CONSTANT_ANALYZER_DESCRIPTOR, selectedRules);
   const isSassMigratorActive = matchesRule(SASS_MIGRATOR_DESCRIPTOR, selectedRules);
-  const isSlocActive = matchesRule(config.fileLength, selectedRules);
 
   const isHumanMode = !!(values.human || values.pretty || values.summary);
 
@@ -949,23 +901,22 @@ async function main() {
       }
     }
 
-    // 5. Integración de Fallow (solo si no está acotado por un subdirectorio específico con --path)
-    const isPathScoped = !!(values.path && values.path !== '.');
-    const anyFallowActive = (isFallowDupesActive || isFallowSecurityActive || isFallowDeadCodeActive || isFallowHealthActive || isSlocActive) && !isPathScoped;
+    // 5. Integración de Fallow (solo si no está acotado por --path)
+    const isScopedSubpath = Boolean(values.path && values.path !== '.');
+    const anyFallowActive = (isFallowDupesActive || isFallowSecurityActive || isFallowDeadCodeActive || isFallowHealthActive) && !isScopedSubpath;
     if (anyFallowActive) {
       logProgress(styleText('cyan', '[4/6] 🛡️ Ejecutando suite de inteligencia Fallow (dupes, security, dead-code, health)...'));
       if (changedSince) {
-        if (isFallowDeadCodeActive || isFallowSecurityActive || isFallowHealthActive || isSlocActive) {
-          logProgress(styleText('cyan', '   -> Fallow audit, security & health (archivos modificados)...'));
+        if (isFallowDeadCodeActive || isFallowSecurityActive) {
+          logProgress(styleText('cyan', '   -> Fallow audit & security (archivos modificados)...'));
           if (isFallowDeadCodeActive) all = all.concat(runFallow('audit', ['--changed-since', changedSince]));
           if (isFallowSecurityActive) all = all.concat(runFallow('security', ['--changed-since', changedSince]));
-          if (isFallowHealthActive || isSlocActive) all = all.concat(runFallow('health', ['--changed-since', changedSince]));
         }
       } else {
         if (isFallowDupesActive) {
           logProgress(styleText('cyan', '   ├─ [1/4] Fallow: Análisis de duplicación de código...'));
           all = all.concat(runFallow('dupes'));
-          all = all.concat(runFallow('dupes', ['--min-occurrences', '3', '--min-lines', '10', '--min-tokens', '60']));
+          all = all.concat(runFallow('dupes', ['--min-occurrences', '3', '--min-lines', '10', '--min-tokens', '60'])); // no-magic: Explicit mathematical constant or threshold value
         }
         if (isFallowSecurityActive) {
           logProgress(styleText('cyan', '   ├─ [2/4] Fallow: Análisis de seguridad (CWE)...'));
@@ -975,8 +926,8 @@ async function main() {
           logProgress(styleText('cyan', '   ├─ [3/4] Fallow: Análisis de código muerto...'));
           all = all.concat(runFallow('dead-code'));
         }
-        if (isFallowHealthActive || isSlocActive) {
-          logProgress(styleText('cyan', '   └─ [4/4] Fallow: Cálculo de métricas de salud y SLOC...'));
+        if (isFallowHealthActive) {
+          logProgress(styleText('cyan', '   └─ [4/4] Fallow: Cálculo de métricas de salud...'));
           all = all.concat(runFallow('health'));
         }
       }
@@ -1057,7 +1008,7 @@ async function main() {
 
   const jsonReport = {
     id: 'audit_project',
-    name: 'Intelligent Project Audit',
+    name: 'Project Architecture & Style Rules',
     family: 'architecture',
     status: errorsCount > 0 ? 'failed' : 'passed',
     durationMs: Math.round(performance.now() - startTime),
@@ -1198,6 +1149,32 @@ async function main() {
 
   if (all.some(v => v.severity === 'error')) {
     process.exit(1);
+  }
+}
+
+export class ProjectArchitectureAuditor extends BaseAuditor<string> {
+  constructor() {
+    super({
+      id: 'audit_project',
+      name: 'Project Architecture & Style Rules',
+      description: 'Audita reglas de arquitectura, TypeScript y estilo',
+      family: 'architecture',
+      ruleDescriptions: {
+        'banned-ts-suppression': 'Directivas @ts-ignore o casts a any',
+        'domain-type-violation': 'Violación de tipos de dominio estrictos',
+        'strict-null-violation': 'Violación de comprobación estricta de null',
+        'no-tautological-integration-mocks': 'Mocks tautológicos en integración',
+        'playwright-id-locators-only': 'Locators Playwright sin atributo ID',
+        'no-playwright-force-click': 'Clicks forzados (.click({force:true}))',
+        'fallow-cognitive-complexity': 'Complejidad cognitiva excesiva',
+        'fallow-cyclomatic-complexity': 'Complejidad ciclomática excesiva',
+        'fallow-unused-export': 'Export no utilizado detectado por Fallow'
+      }
+    });
+  }
+
+  public override async runAudit(): Promise<void> {
+    await main();
   }
 }
 

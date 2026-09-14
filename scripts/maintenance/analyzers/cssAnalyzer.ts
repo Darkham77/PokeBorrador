@@ -154,6 +154,8 @@ export async function runCssChecker(
 
     if (count === 0) return violations;
 
+    process.stderr.write(`     │  🎨 [css-checker] Analizados ${count} archivos de estilo (SCSS/CSS/Vue)\n`);
+
     for (const [key, code] of Object.entries(bundles)) {
       if (code.trim()) {
         await fs.writeFile(path.join(tmpDir, `${key}.css`), code, 'utf-8');

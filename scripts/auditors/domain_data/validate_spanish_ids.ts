@@ -8,13 +8,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { setupValidation } from '../../lib/validationBase.ts';
+import { BaseAuditor, FileScanAuditor } from '../../lib/auditorBase.ts';
 
 enableCompileCache();
 
 // Load translation names
-const abilitiesJson = JSON.parse(fs.readFileSync('src/data/battle/abilities.json', 'utf-8')) as Record<string, { name?: string }>; // open-record: Generic key-value data dictionary container
-const movesJson = JSON.parse(fs.readFileSync('src/data/battle/moves.json', 'utf-8')) as Record<string, { name?: string }>; // open-record: Generic key-value data dictionary container
+const abilitiesJson = JSON.parse(fs.readFileSync('src/data/battle/abilities.json', 'utf-8')) as Record<string, { name?: string }>;
+const movesJson = JSON.parse(fs.readFileSync('src/data/battle/moves.json', 'utf-8')) as Record<string, { name?: string }>;
 const itemsJson = JSON.parse(fs.readFileSync('src/data/inventory/items.json', 'utf-8')) as { SHOP_ITEMS?: Array<{ name?: string }> };
 
 const spanishNames = new Set<string>();
@@ -31,7 +31,7 @@ if (itemsJson.SHOP_ITEMS) {
   itemsJson.SHOP_ITEMS.forEach((i) => addName(i.name));
 }
 
-const natureNames = [ // no-domain: Non-domain utility collection or data structure
+const natureNames = [
   'Firme', 'Tímido', 'Osado', 'Audaz', 'Sereno', 'Cauto', 'Dócil', 'Amable', 
   'Fuerte', 'Activa', 'Agitada', 'Alegre', 'Floja', 'Huraña', 'Afable', 
   'Modesta', 'Ingenua', 'Pícara', 'Mansa', 'Rara', 'Alocada', 'Plácida', 
@@ -39,101 +39,81 @@ const natureNames = [ // no-domain: Non-domain utility collection or data struct
 ];
 natureNames.forEach(addName);
 
-// Recursively find files in src/
-const scanDir = (dir: string, fileList: string[] = []) => {
-  if (!fs.existsSync(dir)) return fileList;
-  const files = fs.readdirSync(dir);
-  for (const file of files) {
-    const filePath = path.join(dir, file);
-    const stat = fs.statSync(filePath);
-    if (stat.isDirectory()) {
-      if (file !== 'data' && file !== 'node_modules' && file !== '.git' && file !== 'dist') {
-        scanDir(filePath, fileList);
-      }
-    } else if (file.endsWith('.ts') || file.endsWith('.vue')) {
-      fileList.push(filePath);
-    }
+export type SpanishIdRuleId = 'spanish-logic-id';
+
+export const SPANISH_ID_RULES: readonly SpanishIdRuleId[] = [
+  'spanish-logic-id'
+] as const;
+
+export class SpanishIdAuditor extends FileScanAuditor<SpanishIdRuleId> {
+  private readonly criticalPatterns: readonly RegExp[];
+
+  constructor(roots: readonly string[] = [
+    'src/logic',
+    'src/stores',
+    'src/composables',
+    'src/components',
+    'src/views',
+    'database'
+  ]) {
+    super({
+      id: 'validate_spanish_ids',
+      name: 'Spanish Logic Strings & Leaks Auditor',
+      description: 'Garantiza IDs en inglés y traducciones en español',
+      family: 'domain_data',
+      ruleIds: SPANISH_ID_RULES,
+      ruleDescriptions: {
+        'spanish-logic-id': 'ID en español en vez del identificador inglés'
+      },
+      roots,
+      allowedExtensions: new Set(['.ts', '.vue'])
+    });
+
+    this.criticalPatterns = [
+      // Nature assignments: nature: 'Serio' / 'Firme'
+      /\bnature\s*:\s*['"]([A-Za-zñÑáéíóúÁÉÍÓÚ]+)['"]/g,
+      // Direct domain helper calls with Spanish literal: getMoveData('Mordisco')
+      /\b(?:getMoveData|getItemById|toNatureId|requirePokemonSpeciesId|requirePokemonMoveId|requireItemId)\s*\(\s*['"]([^'"`]+)['"]\s*\)/g,
+      // Inventory lookups by Spanish name or legacy keys: inventory['Poción'] or inventory['move_relearner']
+      /\binventory\s*\[\s*['"]([^'"`]+)['"]\s*\]/g,
+      // Logic comparisons: === 'Serio' or == 'Poción'
+      /[!=]==?\s*['"]([A-Za-zñÑáéíóúÁÉÍÓÚ\s]+)['"]/g
+    ];
   }
-  return fileList;
-};
 
-async function main() {
-  const validator = setupValidation({
-    title: 'SPANISH LOGIC STRINGS & LEAKS AUDITOR'
-  });
-
-  await validator.checkFiles();
-
-  const filesToScan = [
-    ...scanDir('src/logic'),
-    ...scanDir('src/stores'),
-    ...scanDir('src/composables'),
-    ...scanDir('src/components'),
-    ...scanDir('src/views'),
-    ...scanDir('database')
-  ];
-
-  validator.logStep(1, 1, `Escaneando ${spanishNames.size} nombres/identificadores en español en ${filesToScan.length} archivos...`);
-
-  const CRITICAL_LOGIC_PATTERNS = [
-    // Nature assignments: nature: 'Serio' / 'Firme'
-    /\bnature\s*:\s*['"]([A-Za-zñÑáéíóúÁÉÍÓÚ]+)['"]/g,
-    // Direct domain helper calls with Spanish literal: getMoveData('Mordisco')
-    /\b(?:getMoveData|getItemById|toNatureId|requirePokemonSpeciesId|requirePokemonMoveId|requireItemId)\s*\(\s*['"]([^'"`]+)['"]\s*\)/g,
-    // Inventory lookups by Spanish name or legacy keys: inventory['Poción'] or inventory['move_relearner']
-    /\binventory\s*\[\s*['"]([^'"`]+)['"]\s*\]/g,
-    // Logic comparisons: === 'Serio' or == 'Poción'
-    /[!=]==?\s*['"]([A-Za-zñÑáéíóúÁÉÍÓÚ\s]+)['"]/g
-  ];
-
-  let matchesCount = 0;
-  const warnings: string[] = [];
-
-  for (const file of filesToScan) {
-    const content = fs.readFileSync(file, 'utf-8');
+  protected override scanFile(relPath: string, content: string): void {
     const lines = content.split('\n');
-    
+
     for (let index = 0; index < lines.length; index++) {
       const lineText = lines[index]!;
-      if (lineText.includes('// spanish-ok: UI Spanish text localization label') || lineText.includes('// text-ok: UI text display localization string')) continue;
+      if (this.isLineIgnored(lineText, ['spanish-ok', 'text-ok'])) continue;
 
-      // Check critical logic patterns
-      for (const pattern of CRITICAL_LOGIC_PATTERNS) {
+      for (const pattern of this.criticalPatterns) {
         pattern.lastIndex = 0;
         let match: RegExpExecArray | null;
         while ((match = pattern.exec(lineText)) !== null) {
           const word = match[1]?.trim().toLowerCase();
           if (word && (spanishNames.has(word) || word === 'move_relearner')) {
-            // Exceptions for valid Spanish test assertions, translations definitions or UI confirm texts
             if (lineText.includes('toThrow') || lineText.includes('expect(') || lineText.includes('name:') || lineText.includes('MOVE_TRANSLATIONS_ES') || lineText.includes('ABILITY_TRANSLATIONS_ES')) {
               continue;
             }
-            matchesCount++;
-            validator.addWarning(
-              `Uso de nombre en español en contexto de lógica: '${match[1]}'`,
-              file.replace(/\\/g, '/'),
-              index + 1,
-              lineText.trim(),
-              'spanish-logic-id'
-            );
+
+            this.addViolation({
+              ruleId: 'spanish-logic-id',
+              severity: 'warning',
+              file: relPath,
+              line: index + 1,
+              message: `Uso de nombre en español en contexto de lógica: '${match[1]}'`,
+              context: lineText.trim()
+            });
           }
         }
       }
     }
   }
-
-  await validator.finish(
-    {
-      'Nombres en español auditados': spanishNames.size,
-      'Archivos escaneados': filesToScan.length,
-      'Coincidencias en lógica': matchesCount
-    },
-    [],
-    warnings
-  );
 }
 
-main().catch(err => {
-  console.error(`💥 Error fatal: ${(err as Error).message}`);
-  process.exit(1);
-});
+// ─── CLI Entrypoint ─────────────────────────────────────────────────────────
+if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+  await BaseAuditor.runCli(new SpanishIdAuditor());
+}

@@ -195,31 +195,56 @@ export function auditMarkdownLinks(options: MarkdownLinkAuditOptions = {}): Mark
   };
 }
 
-import { setupValidation } from '../../lib/validationBase.ts';
+import { BaseAuditor } from '../../lib/auditorBase.ts';
+
+export type MarkdownLinkRuleId = 'markdown-broken-relative-link';
+
+export const MARKDOWN_LINK_RULES: readonly MarkdownLinkRuleId[] = [
+  'markdown-broken-relative-link'
+] as const;
+
+export class MarkdownLinkAuditor extends BaseAuditor<MarkdownLinkRuleId> {
+  private readonly scanRoots: readonly string[];
+
+  constructor(scanRoots: readonly string[] = DEFAULT_SCAN_DIRECTORIES) {
+    super({
+      id: 'validate_markdown_links',
+      name: 'Markdown & DOX Relative Links Auditor',
+      description: 'Enlaces relativos rotos en documentación markdown',
+      family: 'documentation',
+      ruleIds: MARKDOWN_LINK_RULES,
+      ruleDescriptions: {
+        'markdown-broken-relative-link': 'Enlace relativo roto en archivo markdown'
+      }
+    });
+    this.scanRoots = scanRoots;
+  }
+
+  public override async runAudit(): Promise<void> {
+    this.context.logStep(1, 2, 'Collecting markdown files...');
+    const result = auditMarkdownLinks({ scanPaths: this.scanRoots, rootDir: process.cwd() });
+    this.filesScannedCount = result.filesScanned;
+
+    this.context.logStep(2, 2, 'Verifying relative links...');
+    for (const v of result.violations) {
+      this.addViolation({
+        ruleId: 'markdown-broken-relative-link',
+        severity: 'error',
+        file: v.sourceFile,
+        line: 1,
+        message: `Broken relative link "${v.linkText}" -> target "${v.resolvedPath}" does not exist on disk`,
+        context: v.rawUrl
+      });
+    }
+
+    this.context.setMetric('Markdown files scanned', result.filesScanned);
+    this.context.setMetric('Relative links verified', result.linksChecked);
+    this.context.setMetric('Broken link violations', result.violations.length);
+  }
+}
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
 if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
-  const validator = setupValidation({
-    title: 'MARKDOWN RELATIVE LINKS & DOX AUDITOR',
-    family: 'documentation'
-  });
-
-  const result = auditMarkdownLinks();
-
-  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
-  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
-
-  for (const v of result.violations) {
-    errors.push(`[${v.sourceFile}] Link "${v.linkText}" -> ${v.error} (${v.resolvedPath})`);
-  }
-
-  await validator.finish(
-    {
-      'Markdown files scanned': result.filesScanned,
-      'Relative links verified': result.linksChecked,
-      'Broken link violations': result.violations.length
-    },
-    errors,
-    warnings
-  );
+  await BaseAuditor.runCli(new MarkdownLinkAuditor());
 }
+

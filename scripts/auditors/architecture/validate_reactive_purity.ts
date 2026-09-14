@@ -3,50 +3,32 @@
  *
  * REACTIVE COMPUTED PURITY AUDITOR (Node.js 26+ Native)
  *
- * Enforces pure getters in Vue 3 / Pinia computed properties across src/stores/ and src/composables/:
- *   1. Prohibits state mutation (.value =, state.x =, this.x =) inside computed callbacks.
- *   2. Prohibits persistence or side-effect calls (.scheduleSave(), .save(), .persist(), etc.) inside computed.
+ * Enforces pure, side-effect-free computed getters across stores and composables:
+ *   1. Computed getters must NEVER mutate state (.value =, state.x =, this.x =, store.x =).
+ *   2. Computed getters must NEVER trigger persistence side-effects (.save(), scheduleSave(), etc.).
  *
  * Escape Hatch:
- *   // purity-ok: <justification> disables the violation on the specific line.
+ *   // purity-ok: <justification> disables check on that line or block.
  *
  * Usage:
- *   node --permission --experimental-strip-types --allow-fs-read=* --allow-fs-write=* scripts/auditors/architecture/validate_reactive_purity.ts
+ *   node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/architecture/validate_reactive_purity.ts
  *   npm run validate:reactive-purity
  */
 
-import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
 import ts from 'typescript';
-import { setupValidation } from '../../lib/validationBase.ts';
+import { BaseAuditor, FileScanAuditor } from '../../lib/auditorBase.ts';
 
 enableCompileCache();
 
-export interface ReactivePurityViolation {
-  readonly file: string;
-  readonly line: number;
-  readonly column: number;
-  readonly message: string;
-  readonly context: string;
-}
+export type ReactivePurityRuleId =
+  | 'computed-state-mutation'
+  | 'computed-side-effect';
 
-export interface ReactivePurityResult {
-  readonly filesScanned: number;
-  readonly computedsAudited: number;
-  readonly violations: readonly ReactivePurityViolation[];
-  readonly passed: boolean;
-}
-
-const TARGET_DIRECTORIES = ['src/stores', 'src/composables'] as const;
-const IGNORE_PATTERNS = [
-  '.spec.',
-  '.test.',
-  '.simulation.',
-  'node_modules',
-  'external',
-  'dist',
-  'scratch'
+export const REACTIVE_PURITY_RULES: readonly ReactivePurityRuleId[] = [
+  'computed-state-mutation',
+  'computed-side-effect'
 ] as const;
 
 const IMPURE_CALL_PATTERNS = [
@@ -59,68 +41,35 @@ const IMPURE_CALL_PATTERNS = [
   'window.location'
 ] as const;
 
-function isTargetFile(filePath: string): boolean {
-  const norm = filePath.replace(/\\/g, '/');
-  if (IGNORE_PATTERNS.some(pat => norm.includes(pat))) return false;
-  return norm.endsWith('.ts') || norm.endsWith('.vue');
-}
-
-function extractScriptContent(content: string, filePath: string): { scriptContent: string; offsetLine: number } {
-  if (!filePath.endsWith('.vue')) {
-    return { scriptContent: content, offsetLine: 0 };
-  }
-  const scriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/i;
-  const match = scriptRegex.exec(content);
-  if (!match) {
-    return { scriptContent: '', offsetLine: 0 };
-  }
-  const linesBefore = content.substring(0, match.index).split('\n').length - 1;
-  return { scriptContent: match[1] || '', offsetLine: linesBefore };
-}
-
-function hasPuritySuppression(content: string, lineIndex: number): boolean {
-  const lines = content.split('\n');
-  const targetLine = lines[lineIndex] || '';
-  const prevLine = lineIndex > 0 ? (lines[lineIndex - 1] || '') : '';
-  const suppressionRegex = /\/\/\s*purity-ok:\s*\S+/i;
-  return suppressionRegex.test(targetLine) || suppressionRegex.test(prevLine);
-}
-
-export function auditReactivePurity(): ReactivePurityResult {
-  const violations: ReactivePurityViolation[] = [];
-  let filesScanned = 0;
-  let computedsAudited = 0;
-
-  function scanDir(dirPath: string) {
-    if (!fs.existsSync(dirPath)) return;
-    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
-    for (const entry of entries) {
-      const fullPath = path.join(dirPath, entry.name);
-      if (entry.isDirectory()) {
-        if (!entry.name.startsWith('.') && entry.name !== 'node_modules') {
-          scanDir(fullPath);
-        }
-      } else if (entry.isFile() && isTargetFile(fullPath)) {
-        auditSingleFile(fullPath);
-      }
-    }
+export class ReactivePurityAuditor extends FileScanAuditor<ReactivePurityRuleId> {
+  constructor(roots: readonly string[] = ['src/stores', 'src/composables']) {
+    super({
+      id: 'validate_reactive_purity',
+      name: 'Reactive Computed Purity Auditor',
+      description: 'Verifica pureza reactiva y ausencia de efectos en computeds',
+      family: 'architecture',
+      ruleIds: REACTIVE_PURITY_RULES,
+      ruleDescriptions: {
+        'computed-state-mutation': 'Mutación de estado reactivo prohibida dentro de computed',
+        'computed-side-effect': 'Efecto secundario impuro prohibido dentro de computed'
+      },
+      roots,
+      allowedExtensions: new Set(['.ts', '.vue'])
+    });
   }
 
-  function auditSingleFile(filePath: string) {
-    const rawContent = fs.readFileSync(filePath, 'utf-8');
-    if (!rawContent.includes('computed')) return;
+  protected override scanFile(relPath: string, content: string): void {
+    if (!content.includes('computed')) return;
 
-    filesScanned++;
-    const { scriptContent, offsetLine } = extractScriptContent(rawContent, filePath);
+    const { scriptContent, offsetLine } = this.extractScript(content, relPath);
     if (!scriptContent) return;
 
-    const sf = ts.createSourceFile(filePath, scriptContent, ts.ScriptTarget.Latest, true);
+    const sf = ts.createSourceFile(path.basename(relPath), scriptContent, ts.ScriptTarget.Latest, true);
 
-    function visit(node: ts.Node) {
+    const visit = (node: ts.Node) => {
       if (ts.isCallExpression(node)) {
         const calleeText = node.expression.getText(sf);
         if (calleeText === 'computed' && node.arguments.length > 0) {
-          computedsAudited++;
           const firstArg = node.arguments[0];
           if (!firstArg) return;
 
@@ -138,113 +87,102 @@ export function auditReactivePurity(): ReactivePurityResult {
           }
 
           if (getterBody) {
-            inspectGetterBody(getterBody, sf, filePath, rawContent, offsetLine);
+            this.inspectGetterBody(getterBody, sf, relPath, content, offsetLine);
           }
         }
       }
       ts.forEachChild(node, visit);
-    }
+    };
 
-    function inspectGetterBody(
-      bodyNode: ts.Node,
-      sourceFile: ts.SourceFile,
-      currentFile: string,
-      fullRawContent: string,
-      lineOffset: number
-    ) {
-      function walk(child: ts.Node) {
-        // Check for state mutations (=, +=, -=, etc.)
-        if (ts.isBinaryExpression(child)) {
-          const op = child.operatorToken.kind;
-          const isAssignment = op >= ts.SyntaxKind.FirstAssignment && op <= ts.SyntaxKind.LastAssignment;
-          if (isAssignment) {
-            const leftText = child.left.getText(sourceFile);
-            const isReactiveMutation =
-              leftText.includes('.value') ||
-              leftText.startsWith('state.') ||
-              leftText.startsWith('this.') ||
-              leftText.includes('Store.');
+    visit(sf);
+  }
 
-            if (isReactiveMutation) {
-              const { line, character } = sourceFile.getLineAndCharacterOfPosition(child.getStart(sourceFile));
-              const realLine = line + lineOffset + 1;
-              if (!hasPuritySuppression(fullRawContent, realLine - 1)) {
-                violations.push({
-                  file: path.resolve(process.cwd(), currentFile),
-                  line: realLine,
-                  column: character + 1,
-                  message: `Mutación impura dentro de 'computed()': '${child.getText(sourceFile)}'. Los computed deben ser funciones puras sin efectos secundarios sobre el estado reactivo. Usa watchers o actions para mutaciones.`,
-                  context: child.getText(sourceFile)
-                });
-              }
-            }
-          }
-        }
+  private inspectGetterBody(
+    bodyNode: ts.Node,
+    sourceFile: ts.SourceFile,
+    relPath: string,
+    fullContent: string,
+    lineOffset: number
+  ): void {
+    const walk = (child: ts.Node) => {
+      // Check for state mutations (=, +=, -=, etc.)
+      if (ts.isBinaryExpression(child)) {
+        const op = child.operatorToken.kind;
+        const isAssignment = op >= ts.SyntaxKind.FirstAssignment && op <= ts.SyntaxKind.LastAssignment;
+        if (isAssignment) {
+          const leftText = child.left.getText(sourceFile);
+          const isReactiveMutation =
+            leftText.includes('.value') ||
+            leftText.startsWith('state.') ||
+            leftText.startsWith('this.') ||
+            leftText.includes('Store.');
 
-        // Check for impure side-effect calls (.scheduleSave(), etc.)
-        if (ts.isCallExpression(child)) {
-          const callText = child.expression.getText(sourceFile);
-          const isImpureCall = IMPURE_CALL_PATTERNS.some(pat => callText.includes(pat));
-          if (isImpureCall) {
-            const { line, character } = sourceFile.getLineAndCharacterOfPosition(child.getStart(sourceFile));
+          if (isReactiveMutation) {
+            const { line } = sourceFile.getLineAndCharacterOfPosition(child.getStart(sourceFile));
             const realLine = line + lineOffset + 1;
-            if (!hasPuritySuppression(fullRawContent, realLine - 1)) {
-              violations.push({
-                file: path.resolve(process.cwd(), currentFile),
+            if (!this.hasPuritySuppression(fullContent, realLine - 1)) {
+              this.addViolation({
+                ruleId: 'computed-state-mutation',
+                severity: 'error',
+                file: relPath,
                 line: realLine,
-                column: character + 1,
-                message: `Llamada con efectos secundarios dentro de 'computed()': '${child.getText(sourceFile)}'. Queda estrictamente prohibido disparar persistencia o deslogueos dentro de un getter reactivo.`,
+                message: `Mutación impura dentro de 'computed()': '${child.getText(sourceFile)}'. Los computed deben ser funciones puras.`,
                 context: child.getText(sourceFile)
               });
             }
           }
         }
-
-        ts.forEachChild(child, walk);
       }
 
-      ts.forEachChild(bodyNode, walk);
+      // Check for impure side-effect calls (.scheduleSave(), etc.)
+      if (ts.isCallExpression(child)) {
+        const callText = child.expression.getText(sourceFile);
+        const isImpureCall = IMPURE_CALL_PATTERNS.some(pat => callText.includes(pat));
+        if (isImpureCall) {
+          const { line } = sourceFile.getLineAndCharacterOfPosition(child.getStart(sourceFile));
+          const realLine = line + lineOffset + 1;
+          if (!this.hasPuritySuppression(fullContent, realLine - 1)) {
+            this.addViolation({
+              ruleId: 'computed-side-effect',
+              severity: 'error',
+              file: relPath,
+              line: realLine,
+              message: `Llamada con efectos secundarios dentro de 'computed()': '${child.getText(sourceFile)}'. Queda prohibido disparar persistencia en getters.`,
+              context: child.getText(sourceFile)
+            });
+          }
+        }
+      }
+
+      ts.forEachChild(child, walk);
+    };
+
+    ts.forEachChild(bodyNode, walk);
+  }
+
+  private hasPuritySuppression(content: string, lineIndex: number): boolean {
+    const lines = content.split('\n');
+    const targetLine = lines[lineIndex] || '';
+    const prevLine = lineIndex > 0 ? (lines[lineIndex - 1] || '') : '';
+    const suppressionRegex = /\/\/\s*purity-ok:\s*\S+/i;
+    return suppressionRegex.test(targetLine) || suppressionRegex.test(prevLine);
+  }
+
+  private extractScript(content: string, filePath: string): { scriptContent: string; offsetLine: number } {
+    if (!filePath.endsWith('.vue')) {
+      return { scriptContent: content, offsetLine: 0 };
     }
-
-    visit(sf);
+    const scriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/i;
+    const match = scriptRegex.exec(content);
+    if (!match) {
+      return { scriptContent: '', offsetLine: 0 };
+    }
+    const linesBefore = content.substring(0, match.index).split('\n').length - 1;
+    return { scriptContent: match[1] || '', offsetLine: linesBefore };
   }
-
-  for (const dir of TARGET_DIRECTORIES) {
-    scanDir(path.resolve(process.cwd(), dir));
-  }
-
-  return {
-    filesScanned,
-    computedsAudited,
-    violations,
-    passed: violations.length === 0
-  };
 }
 
-// ─── CLI Entrypoint ─────────────────────────────────────────────────────────
+// Canonical CLI Entrypoint
 if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
-  const validator = setupValidation({
-    title: 'REACTIVE COMPUTED PURITY AUDITOR',
-    family: 'architecture',
-    id: 'validate_reactive_purity'
-  });
-
-  const result = auditReactivePurity();
-
-  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
-  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
-
-  for (const v of result.violations) {
-    errors.push(`[REACTIVE_IMPURITY] ${v.file}:${v.line}:${v.column} → ${v.message}`);
-  }
-
-  await validator.finish(
-    {
-      'Files scanned': result.filesScanned,
-      'Computed getters audited': result.computedsAudited,
-      'Impure computed violations': result.violations.length
-    },
-    errors,
-    warnings
-  );
+  await BaseAuditor.runCli(new ReactivePurityAuditor());
 }

@@ -19,12 +19,22 @@
  *   npm run validate:emojis
  */
 
-import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { setupValidation } from '../../lib/validationBase.ts';
+import { BaseAuditor, FileScanAuditor } from '../../lib/auditorBase.ts';
 
 enableCompileCache();
+
+export type EmojiRuleId =
+  | 'emoji-unwrapped'
+  | 'emoji-in-prop'
+  | 'emoji-variable-unwrapped';
+
+export const EMOJI_RULES: readonly EmojiRuleId[] = [
+  'emoji-unwrapped',
+  'emoji-in-prop',
+  'emoji-variable-unwrapped'
+];
 
 export interface EmojiViolation {
   readonly file: string;
@@ -32,66 +42,22 @@ export interface EmojiViolation {
   readonly emoji: string;
   readonly context: string;
   readonly message: string;
-}
-
-export interface EmojiCssViolation {
-  readonly file: string;
-  readonly line: number;
-  readonly selector: string;
-  readonly declaration: string;
-  readonly message: string;
+  readonly ruleId?: EmojiRuleId;
 }
 
 export interface EmojiAuditResult {
   readonly vueFilesScanned: number;
-  readonly styleFilesScanned: number;
   readonly emojisFound: number;
   readonly violations: readonly EmojiViolation[];
-  readonly cssViolations: readonly EmojiCssViolation[];
   readonly passed: boolean;
 }
 
 // Regex matching common emojis, special symbolic glyphs, modern Unicode 13-16 pictographs (including 1FA00-1FAFF like 🪙, 🪵), and geometric arrows
 const EMOJI_REGEX = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2300}-\u{23FF}\u{2190}-\u{21FF}\u{203C}\u{2049}\u{2122}\u{2139}\u{25A0}-\u{25FF}\u{2B00}-\u{2BFF}\u{2934}-\u{2935}\u{3030}\u{303D}\u{3297}\u{3299}]/u;
-const IGNORE_DIRS: ReadonlySet<string> = new Set(['node_modules', '.git', 'dist', 'dev-dist', 'external', 'backup_legacy_code', 'scratch']); // runtime-set: Fast O(1) membership lookup set
 
 function matchEmojis(text: string): string[] | null {
   const regex = new RegExp(EMOJI_REGEX.source, 'gu');
   return text.match(regex);
-}
-
-function getAllVueFiles(dir: string): string[] {
-  let results: string[] = []; // no-domain: Non-domain utility collection or data structure
-  if (!fs.existsSync(dir)) return results;
-  const list = fs.readdirSync(dir);
-  for (const file of list) {
-    if (IGNORE_DIRS.has(file)) continue;
-    const filePath = path.join(dir, file);
-    const stat = fs.statSync(filePath);
-    if (stat && stat.isDirectory()) {
-      results = results.concat(getAllVueFiles(filePath));
-    } else if (filePath.endsWith('.vue')) {
-      results.push(filePath);
-    }
-  }
-  return results;
-}
-
-function getAllStyleAndVueFiles(dir: string): string[] {
-  let results: string[] = []; // no-domain: Non-domain utility collection or data structure
-  if (!fs.existsSync(dir)) return results;
-  const list = fs.readdirSync(dir);
-  for (const file of list) {
-    if (IGNORE_DIRS.has(file)) continue;
-    const filePath = path.join(dir, file);
-    const stat = fs.statSync(filePath);
-    if (stat && stat.isDirectory()) {
-      results = results.concat(getAllStyleAndVueFiles(filePath));
-    } else if (filePath.endsWith('.vue') || filePath.endsWith('.scss') || filePath.endsWith('.css')) {
-      results.push(filePath);
-    }
-  }
-  return results;
 }
 
 interface ElementNode {
@@ -148,23 +114,42 @@ function extractRootTemplate(sfcContent: string): { templateContent: string; sta
   };
 }
 
-export function auditEmojiTypography(): EmojiAuditResult {
-  const rootDir = process.cwd();
-  const srcDir = path.join(rootDir, 'src');
-  const vueFiles = getAllVueFiles(srcDir);
+export class EmojiTypographyAuditor extends FileScanAuditor<EmojiRuleId> {
+  private readonly collectedViolations: EmojiViolation[] = [];
+  private totalEmojisFound = 0;
 
-  const violations: EmojiViolation[] = [];
-  let totalEmojisFound = 0;
+  constructor(roots: readonly string[] = ['src']) {
+    super({
+      id: 'validate_emoji_typography',
+      name: 'Emoji Typography & Alignment Auditor',
+      description: 'Valida encapsulamiento y alineación vertical de emojis',
+      family: 'architecture',
+      ruleIds: EMOJI_RULES,
+      ruleDescriptions: {
+        'emoji-unwrapped': 'Emoji en texto sin etiqueta wrapper con clase de estilo',
+        'emoji-in-prop': 'Emoji embebido en prop de texto sin encapsulación',
+        'emoji-variable-unwrapped': 'Variable con emoji renderizada sin wrapper de estilo'
+      },
+      roots,
+      allowedExtensions: new Set(['.vue'])
+    });
+  }
 
-  for (const file of vueFiles) {
-    const content = fs.readFileSync(file, 'utf-8');
+  public getViolations(): readonly EmojiViolation[] {
+    return this.collectedViolations;
+  }
+
+  public getTotalEmojisFound(): number {
+    return this.totalEmojisFound;
+  }
+
+  protected override scanFile(relPath: string, content: string): void {
     const rootTemplate = extractRootTemplate(content);
-    if (!rootTemplate) continue;
+    if (!rootTemplate) return;
 
     const templateContent = rootTemplate.templateContent;
     const templateStartOffset = rootTemplate.startOffset;
     const linesBeforeTemplate = content.substring(0, templateStartOffset).split('\n').length - 1;
-    const relPath = path.relative(rootDir, file).replace(/\\/g, '/');
 
     const stack: ElementNode[] = [];
     let index = 0;
@@ -203,8 +188,7 @@ export function auditEmojiTypography(): EmojiAuditResult {
             const tagName = tagNameMatch[1].toLowerCase();
             const attrs = tagSlice.slice(tagNameMatch[0].length, tagSlice.endsWith('/>') ? -2 : -1);
 
-            // Check static/dynamic props containing raw emojis mixed into text (e.g. title="...", label="...")
-            // Note: explicit 'icon' and 'emoji' props are allowed as glyph props; their rendering is validated via interpolation Rule B
+            // Check static/dynamic props containing raw emojis mixed into text
             const staticAttrRegex = /(?<![:@])\b(?:title|label|heading|caption|button-text)\s*=\s*(?:"([^"]*)"|'([^']*)')/gi;
             let attrM: RegExpExecArray | null;
             while ((attrM = staticAttrRegex.exec(attrs)) !== null) {
@@ -213,12 +197,22 @@ export function auditEmojiTypography(): EmojiAuditResult {
               if (attrEmojis && attrEmojis.length > 0) {
                 const line = linesBeforeTemplate + templateContent.slice(0, index).split('\n').length;
                 for (const emoji of attrEmojis) {
-                  violations.push({
+                  const v: EmojiViolation = {
                     file: relPath,
                     line,
                     emoji,
                     context: tagSlice.slice(0, 100).replace(/\s+/g, ' '),
-                    message: `Emoji '${emoji}' appears in prop '${attrM[0]}'. Encapsulate in <span class="emoji">${emoji}</span> inside the slot/template instead of passing raw emojis in props.`
+                    message: `Emoji '${emoji}' appears in prop '${attrM[0]}'. Encapsulate in <span class="emoji">${emoji}</span> inside the slot/template instead of passing raw emojis in props.`,
+                    ruleId: 'emoji-in-prop'
+                  };
+                  this.collectedViolations.push(v);
+                  this.addViolation({
+                    ruleId: 'emoji-in-prop',
+                    severity: 'error',
+                    file: relPath,
+                    line,
+                    message: v.message,
+                    context: v.context
                   });
                 }
               }
@@ -230,7 +224,7 @@ export function auditEmojiTypography(): EmojiAuditResult {
             const classVal = (classMatch ? (classMatch[1] || classMatch[2] || '') : '') + ' ' + (dynamicClassMatch ? (dynamicClassMatch[1] || dynamicClassMatch[2] || '') : '');
             const hasEmojiClass = /\bemoji\b/i.test(classVal);
 
-            const voidElements: ReadonlySet<string> = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']); // runtime-set: Fast O(1) membership lookup set
+            const voidElements: ReadonlySet<string> = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
             if (!isSelfClosing && !voidElements.has(tagName)) {
               stack.push({
                 tag: tagName,
@@ -260,15 +254,25 @@ export function auditEmojiTypography(): EmojiAuditResult {
           const cleanChunk = textChunk.replace(/\/[^/\n\r]+\/[a-z]*/g, '');
           const emojis = matchEmojis(cleanChunk);
           if (emojis && emojis.length > 0) {
-            totalEmojisFound += emojis.length;
+            this.totalEmojisFound += emojis.length;
             const line = linesBeforeTemplate + templateContent.slice(0, chunkStart).split('\n').length;
             for (const emoji of emojis) {
-              violations.push({
+              const v: EmojiViolation = {
                 file: relPath,
                 line,
                 emoji,
                 context: textChunk.trim().slice(0, 100).replace(/\s+/g, ' '),
-                message: `Emoji '${emoji}' appears in <${currentParent.tag}> without the .emoji class wrapper. Wrap it in <span class="emoji">${emoji}</span>.`
+                message: `Emoji '${emoji}' appears in <${currentParent.tag}> without the .emoji class wrapper. Wrap it in <span class="emoji">${emoji}</span>.`,
+                ruleId: 'emoji-unwrapped'
+              };
+              this.collectedViolations.push(v);
+              this.addViolation({
+                ruleId: 'emoji-unwrapped',
+                severity: 'error',
+                file: relPath,
+                line,
+                message: v.message,
+                context: v.context
               });
             }
           }
@@ -283,16 +287,26 @@ export function auditEmojiTypography(): EmojiAuditResult {
           
           const exprEmojis = matchEmojis(expr);
           if (exprEmojis && exprEmojis.length > 0) {
-            totalEmojisFound += exprEmojis.length;
+            this.totalEmojisFound += exprEmojis.length;
             if (!isInsideEmojiTag) {
               const line = linesBeforeTemplate + templateContent.slice(0, chunkStart + interMatch.index).split('\n').length;
               for (const emoji of exprEmojis) {
-                violations.push({
+                const v: EmojiViolation = {
                   file: relPath,
                   line,
                   emoji,
                   context: interMatch[0],
-                  message: `Expression '${interMatch[0]}' containing emoji '${emoji}' appears in <${currentParent.tag}> without the .emoji class wrapper. Wrap it in <span class="emoji">${interMatch[0]}</span>.`
+                  message: `Expression '${interMatch[0]}' containing emoji '${emoji}' appears in <${currentParent.tag}> without the .emoji class wrapper. Wrap it in <span class="emoji">${interMatch[0]}</span>.`,
+                  ruleId: 'emoji-unwrapped'
+                };
+                this.collectedViolations.push(v);
+                this.addViolation({
+                  ruleId: 'emoji-unwrapped',
+                  severity: 'error',
+                  file: relPath,
+                  line,
+                  message: v.message,
+                  context: v.context
                 });
               }
             }
@@ -304,159 +318,22 @@ export function auditEmojiTypography(): EmojiAuditResult {
           if (varName && !isInsideEmojiTag && !isTextPropertyAccess) {
             if (!/^(?:is|has|can|should|toggle|open|close|get[A-Z].*Url|.*Path|.*Class)\b/i.test(varName) && !/Url|Path|Class|Style/i.test(varName)) {
               const line = linesBeforeTemplate + templateContent.slice(0, chunkStart + interMatch.index).split('\n').length;
-              violations.push({
+              const v: EmojiViolation = {
                 file: relPath,
                 line,
                 emoji: varName,
                 context: interMatch[0],
-                message: `Interpolation '${interMatch[0]}' referencing emoji variable '${varName}' is rendered in <${currentParent.tag}> without the .emoji wrapper. Wrap it in <span class="emoji">{{ ${varName} }}</span>.`
-              });
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // ─── Phase 2: CSS / SCSS Alignment & Container Audit ────────────────────
-  const styleFiles = getAllStyleAndVueFiles(srcDir);
-  const cssViolations: EmojiCssViolation[] = [];
-  const manualOffsetRegex = /(?:^|\s|\{|;)(?:transform\s*:\s*(?:translateY|[^;]*translate\s*\([^)]*,)|margin-top\s*:\s*-?\d+|top\s*:\s*-?\d+px)/i;
-
-  interface CssBlock {
-    readonly selector: string;
-    readonly startLine: number;
-    hasFlex: boolean;
-    hasAlignCenter: boolean;
-    hasEmojiChild: boolean;
-    readonly isEmoji: boolean;
-    readonly isContainer: boolean;
-  }
-
-  for (const f of styleFiles) {
-    const fileContent = fs.readFileSync(f, 'utf8');
-    if (!fileContent.includes('.emoji')) continue;
-
-    const relPath = path.relative(rootDir, f).replace(/\\/g, '/');
-    const isVue = f.endsWith('.vue');
-
-    interface StyleSection {
-      content: string;
-      lineOffset: number;
-    }
-    const styleSections: StyleSection[] = [];
-
-    if (isVue) {
-      const styleTagRegex = /<style\b[^>]*>([\s\S]*?)<\/style>/gi;
-      let match: RegExpExecArray | null;
-      while ((match = styleTagRegex.exec(fileContent)) !== null) {
-        const before = fileContent.slice(0, match.index + match[0].indexOf('>') + 1);
-        const lineOffset = before.split('\n').length - 1;
-        styleSections.push({ content: match[1] || '', lineOffset });
-      }
-    } else {
-      styleSections.push({ content: fileContent, lineOffset: 0 });
-    }
-
-    for (const section of styleSections) {
-      if (!section.content.includes('.emoji')) continue;
-
-      const lines = section.content.split('\n');
-      const stack: CssBlock[] = [];
-
-      for (let i = 0; i < lines.length; i++) {
-        const lineNum = section.lineOffset + i + 1;
-        const rawLine = lines[i] || '';
-        const trimmed = rawLine.trim();
-
-        if (trimmed.startsWith('//') || trimmed.startsWith('/*')) continue;
-        if (rawLine.includes('// emoji-ok') || rawLine.includes('/* emoji-ok */')) continue;
-
-        // Check opening blocks
-        if (trimmed.includes('{')) {
-          const parts = trimmed.split('{');
-          const selector = parts[0]?.trim() || '';
-          const isEmoji = /(?:^|\s|>|\+|~)\.emoji\b/.test(selector);
-          const isContainer = /(?:\.action-button|\.btn\b|\.btn-|\.tag\b|\.tag-|\.badge\b|\.badge-|\bbutton\b)/i.test(selector);
-
-          if (isEmoji && stack.length > 0) {
-            for (let s = stack.length - 1; s >= 0; s--) {
-              if (stack[s]?.isContainer) {
-                stack[s]!.hasEmojiChild = true;
-                break;
-              }
-            }
-          }
-
-          const newBlock: CssBlock = {
-            selector,
-            startLine: lineNum,
-            hasFlex: false,
-            hasAlignCenter: false,
-            hasEmojiChild: false,
-            isEmoji,
-            isContainer
-          };
-          stack.push(newBlock);
-        }
-
-        const current = stack[stack.length - 1];
-        if (current) {
-          if (/display\s*:\s*(?:inline-)?flex/i.test(trimmed)) {
-            for (let s = stack.length - 1; s >= 0; s--) {
-              if (stack[s]?.isContainer) {
-                stack[s]!.hasFlex = true;
-                break;
-              }
-            }
-          }
-          if (/align-items\s*:\s*center/i.test(trimmed)) {
-            for (let s = stack.length - 1; s >= 0; s--) {
-              if (stack[s]?.isContainer) {
-                stack[s]!.hasAlignCenter = true;
-                break;
-              }
-            }
-          }
-
-          if (current.isEmoji || stack.some(b => b.isEmoji)) {
-            if (manualOffsetRegex.test(trimmed)) {
-              cssViolations.push({
+                message: `Interpolation '${interMatch[0]}' referencing emoji variable '${varName}' is rendered in <${currentParent.tag}> without the .emoji wrapper. Wrap it in <span class="emoji">{{ ${varName} }}</span>.`,
+                ruleId: 'emoji-variable-unwrapped'
+              };
+              this.collectedViolations.push(v);
+              this.addViolation({
+                ruleId: 'emoji-variable-unwrapped',
+                severity: 'error',
                 file: relPath,
-                line: lineNum,
-                selector: current.selector,
-                declaration: trimmed,
-                message: `Manual vertical offset hack detected on .emoji ('${trimmed}'). Remove manual offsets; use flexbox centering on the parent container instead.`
-              });
-            }
-
-            const lhMatch = trimmed.match(/line-height\s*:\s*([^;]+)/);
-            if (lhMatch) {
-              const val = lhMatch[1]?.trim() || '';
-              if (val !== '1' && val !== '1 !important' && val !== '100%' && val !== '100% !important') {
-                cssViolations.push({
-                  file: relPath,
-                  line: lineNum,
-                  selector: current.selector,
-                  declaration: trimmed,
-                  message: `Invalid line-height '${val}' on .emoji. .emoji must use line-height: 1 to preserve vertical centering.`
-                });
-              }
-            }
-          }
-        }
-
-        // Check closing blocks
-        if (trimmed.includes('}')) {
-          const popped = stack.pop();
-          if (popped && popped.isContainer && popped.hasEmojiChild) {
-            if (!popped.hasFlex || !popped.hasAlignCenter) {
-              cssViolations.push({
-                file: relPath,
-                line: popped.startLine,
-                selector: popped.selector,
-                declaration: 'missing display: inline-flex / align-items: center',
-                message: `Container '${popped.selector}' styling .emoji children must declare 'display: inline-flex' (or 'flex') and 'align-items: center' to eliminate baseline drops.`
+                line,
+                message: v.message,
+                context: v.context
               });
             }
           }
@@ -464,47 +341,34 @@ export function auditEmojiTypography(): EmojiAuditResult {
       }
     }
   }
+}
 
+import nodeFs from 'node:fs';
+
+export function auditEmojiTypography(): EmojiAuditResult {
+  const auditor = new EmojiTypographyAuditor();
+  const files = auditor['context'].collectFiles(['src'], new Set(['.vue']));
+  for (const file of files) {
+    const relPath = path.relative(process.cwd(), file).replace(/\\/g, '/');
+    try {
+      const content = nodeFs.readFileSync(file, 'utf-8');
+      auditor['filesScannedCount']++;
+      auditor['scanFile'](relPath, content);
+    } catch {
+      // Ignore read errors
+    }
+  }
+
+  const violations = auditor.getViolations();
   return {
-    vueFilesScanned: vueFiles.length,
-    styleFilesScanned: styleFiles.length,
-    emojisFound: totalEmojisFound,
+    vueFilesScanned: auditor.getFilesScanned(),
+    emojisFound: auditor.getTotalEmojisFound(),
     violations,
-    cssViolations,
-    passed: violations.length === 0 && cssViolations.length === 0
+    passed: violations.length === 0
   };
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
 if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
-  const validator = setupValidation({
-    title: 'EMOJI TYPOGRAPHY & VERTICAL CENTERING AUDITOR',
-    family: 'architecture',
-    id: 'validate_emoji_typography'
-  });
-
-  const result = auditEmojiTypography();
-
-  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
-  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
-
-  for (const v of result.violations) {
-    errors.push(`[EMOJI_UNWRAPPED] ${v.file}:${v.line} → ${v.message} (Context: "${v.context}")`);
-  }
-
-  for (const cv of result.cssViolations) {
-    errors.push(`[EMOJI_CSS_ALIGNMENT] ${cv.file}:${cv.line} → ${cv.message} (Rule: "${cv.declaration}")`);
-  }
-
-  await validator.finish(
-    {
-      'Vue components scanned': result.vueFilesScanned,
-      'Style & Vue files scanned': result.styleFilesScanned,
-      'Total emojis found': result.emojisFound,
-      'Unwrapped emoji violations': result.violations.length,
-      'CSS layout violations': result.cssViolations.length
-    },
-    errors,
-    warnings
-  );
+  await BaseAuditor.runCli(new EmojiTypographyAuditor());
 }

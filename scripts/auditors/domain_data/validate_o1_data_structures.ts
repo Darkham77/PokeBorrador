@@ -7,23 +7,16 @@
  *
  * Rules:
  *   1. o1-catalog-lookup: Linear scan (.find, .filter, .some, .findLast) on static catalogs
- *      (SHOP_ITEMS, FIRE_RED_MAPS, NICK_STYLES, AVATAR_STYLES, CLASS_MISSIONS,
- *       RANKED_REWARD_MILESTONES, GAME_TMS, GYMS).
  *   2. o1-pokemon-lookup: [...team, ...box].find() or .filter() instead of gameStore.getPokemonByUid().
  *   3. o1-linear-membership: Array constant .includes() instead of ReadonlySet.has().
- *   4. o1-object-keys-values-scan: Object.keys() / Object.values() linear search instead of key index.
+ *   4. o1-object-scan: Object.keys() / Object.values() linear search instead of key index.
  *   5. o1-json-clone: JSON.parse(JSON.stringify(...)) anti-pattern instead of structuredClone or factory.
  *   6. o1-redundant-spread-return: Redundant 'return [...arr]' instead of directly returning 'readonly T[]'.
- *
- * Usage:
- *   node scripts/auditors/domain_data/validate_o1_data_structures.ts
- *   npm run validate:o1
  */
 
-import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { setupValidation } from '../../lib/validationBase.ts';
+import { BaseAuditor, FileScanAuditor } from '../../lib/auditorBase.ts';
 
 enableCompileCache();
 
@@ -98,11 +91,28 @@ export function shouldIgnoreLine(line: string): boolean {
   return ESCAPE_HATCHES.some(hatch => line.includes(hatch));
 }
 
+export type O1RuleId =
+  | 'o1-catalog-lookup'
+  | 'o1-pokemon-lookup'
+  | 'o1-linear-membership'
+  | 'o1-object-scan'
+  | 'o1-json-clone'
+  | 'o1-redundant-spread-return';
+
+export const O1_RULES: readonly O1RuleId[] = [
+  'o1-catalog-lookup',
+  'o1-pokemon-lookup',
+  'o1-linear-membership',
+  'o1-object-scan',
+  'o1-json-clone',
+  'o1-redundant-spread-return'
+] as const;
+
 export function scanFileForO1Issues(
   filePath: string,
   content: string
-): Array<{ ruleId: string; message: string; line: number; context: string; isWarning: boolean }> {
-  const issues: Array<{ ruleId: string; message: string; line: number; context: string; isWarning: boolean }> = [];
+): Array<{ ruleId: O1RuleId; message: string; line: number; context: string; isWarning: boolean }> {
+  const issues: Array<{ ruleId: O1RuleId; message: string; line: number; context: string; isWarning: boolean }> = [];
   const lines = content.split('\n');
   const normalizedPath = filePath.replace(/\\/g, '/');
 
@@ -200,91 +210,47 @@ export function scanFileForO1Issues(
   return issues;
 }
 
-// ─── Directory Scanner ────────────────────────────────────────────────────────
-
-const scanDir = (dir: string, fileList: string[] = []): string[] => {
-  if (!fs.existsSync(dir)) return fileList;
-  const files = fs.readdirSync(dir);
-  for (const file of files) {
-    const filePath = path.join(dir, file);
-    const stat = fs.statSync(filePath);
-    if (stat.isDirectory()) {
-      if (
-        file !== 'node_modules' && 
-        file !== '.git' && 
-        file !== 'dist' && 
-        file !== 'coverage' && 
-        file !== 'external' && 
-        file !== '.agents'
-      ) {
-        scanDir(filePath, fileList);
-      }
-    } else if (file.endsWith('.ts') || file.endsWith('.vue')) {
-      // Exclude tests and specs from strict production enforcement
-      if (!filePath.includes('.spec.') && !filePath.includes('.test.') && !filePath.includes('tests/')) {
-        fileList.push(filePath);
-      }
-    }
+export class O1DataStructuresAuditor extends FileScanAuditor<O1RuleId> {
+  constructor(roots: readonly string[] = ['src']) {
+    super({
+      id: 'validate_o1_data_structures',
+      name: 'O(1) Data Structure & Performance Auditor',
+      description: 'Búsqueda lineal O(N) o clonado con JSON.parse',
+      family: 'domain_data',
+      ruleIds: O1_RULES,
+      ruleDescriptions: {
+        'o1-catalog-lookup': 'Búsqueda lineal en catálogo estático',
+        'o1-pokemon-lookup': 'Búsqueda lineal en equipo o caja Pokémon',
+        'o1-linear-membership': 'Búsqueda .includes() en array estático',
+        'o1-object-scan': 'Escaneo lineal sobre Object.keys/values',
+        'o1-json-clone': 'Clonado con JSON.parse(JSON.stringify)',
+        'o1-redundant-spread-return': 'Retorno redundante con spread [...arr]'
+      },
+      roots,
+      allowedExtensions: new Set(['.ts', '.vue'])
+    });
   }
-  return fileList;
-};
 
-// ─── Main Runner ──────────────────────────────────────────────────────────────
-async function main() {
-  const validator = setupValidation({
-    title: 'O(1) DATA STRUCTURE & PERFORMANCE AUDITOR',
-    family: 'domain_data',
-    id: 'validate_o1_data_structures'
-  });
+  protected override scanFile(relPath: string, content: string): void {
+    if (relPath.includes('.spec.') || relPath.includes('.test.') || relPath.startsWith('tests/')) {
+      return;
+    }
 
-  await validator.checkFiles();
-
-  const filesToScan = scanDir('src');
-  validator.logStep(1, 1, `Escaneando patrones de búsqueda lineal O(N) en ${filesToScan.length} archivos...`);
-  let errorCount = 0;
-  let warningCount = 0;
-
-  for (const file of filesToScan) {
-    const content = fs.readFileSync(file, 'utf-8');
-    const issues = scanFileForO1Issues(file, content);
-
+    const issues = scanFileForO1Issues(relPath, content);
     for (const issue of issues) {
-      if (issue.isWarning) {
-        warningCount++;
-        validator.addWarning(
-          issue.message,
-          file.replace(/\\/g, '/'),
-          issue.line,
-          issue.context,
-          issue.ruleId
-        );
-      } else {
-        errorCount++;
-        validator.addError(
-          issue.message,
-          file.replace(/\\/g, '/'),
-          issue.line,
-          issue.context,
-          issue.ruleId
-        );
-      }
+      this.addViolation({
+        ruleId: issue.ruleId,
+        severity: issue.isWarning ? 'warning' : 'error',
+        file: relPath,
+        line: issue.line,
+        message: issue.message,
+        context: issue.context
+      });
     }
   }
-
-  await validator.finish(
-    {
-      'Archivos escaneados': filesToScan.length,
-      'Errores O(1)': errorCount,
-      'Advertencias O(1)': warningCount
-    },
-    [],
-    []
-  );
 }
 
+// ─── CLI Entrypoint ─────────────────────────────────────────────────────────
 if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
-  main().catch(err => {
-    console.error(`💥 Fatal error: ${(err as Error).message}`);
-    process.exit(1);
-  });
+  await BaseAuditor.runCli(new O1DataStructuresAuditor());
 }

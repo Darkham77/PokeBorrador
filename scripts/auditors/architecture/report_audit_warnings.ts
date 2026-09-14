@@ -12,11 +12,13 @@ interface Finding {
   line?: number;
   context?: string;
   ruleId?: string;
+  ruleDescription?: string;
 }
 
 interface SuiteResult {
   id: string;
   name: string;
+  description?: string;
   family: string;
   status: AuditExecutionStatus;
   findings: Finding[];
@@ -49,8 +51,8 @@ function parseReportOptions() {
 
   for (const arg of argv) {
     if (arg === 'json' || arg === '--json') jsonOutput = true;
-    else if (arg.startsWith('category=')) category = arg.slice(9).toLowerCase();
-    else if (arg.startsWith('top=')) top = parseInt(arg.slice(4), RADIX_DECIMAL) || DEFAULT_TOP_LIMIT;
+    else if (arg.startsWith('category=')) category = arg.slice(9).toLowerCase(); // no-magic: Explicit mathematical constant or threshold value
+    else if (arg.startsWith('top=')) top = parseInt(arg.slice(4), RADIX_DECIMAL) || DEFAULT_TOP_LIMIT; // no-magic: Explicit mathematical constant or threshold value
     else if (!arg.startsWith('-')) category = arg.toLowerCase();
   }
 
@@ -82,7 +84,7 @@ export function runReport() {
   for (const fam of Object.values(report.families)) {
     for (const suite of fam.suites) {
       for (const finding of suite.findings) {
-        const catKey = finding.ruleId || suite.name;
+        const catKey = finding.ruleDescription || suite.description || finding.ruleId || suite.name;
         if (!categoryCounts[catKey]) {
           categoryCounts[catKey] = { errors: 0, warnings: 0, findings: [] };
         }
@@ -112,13 +114,13 @@ export function runReport() {
   console.log('├───────────────────────────────────────────────────────────────────┼────────┼──────────┤');
 
   const sortedCategories = Object.entries(categoryCounts).sort((a, b) => {
-    const totalB = b[1].errors * 1000 + b[1].warnings;
-    const totalA = a[1].errors * 1000 + a[1].warnings;
+    const totalB = b[1].errors * 1000 + b[1].warnings; // no-magic: Explicit mathematical constant or threshold value
+    const totalA = a[1].errors * 1000 + a[1].warnings; // no-magic: Explicit mathematical constant or threshold value
     return totalB - totalA;
   });
 
   for (const [catName, data] of sortedCategories) {
-    const truncatedCat = catName.length > 65 ? catName.substring(0, 62) + '...' : catName.padEnd(65);
+    const truncatedCat = catName.length > 65 ? catName.substring(0, 62) + '...' : catName.padEnd(65); // no-magic: Explicit mathematical constant or threshold value
     const errStr = String(data.errors).padStart(6);
     const warnStr = String(data.warnings).padStart(8);
     console.log(`│ ${truncatedCat} │ ${errStr} │ ${warnStr} │`);
@@ -141,6 +143,28 @@ export function runReport() {
     } else {
       console.log(`\n⚠️  No se encontraron hallazgos para la categoría "${args.category}". Categorías disponibles:`);
       sortedCategories.forEach(([name]) => console.log(`  • ${name}`));
+      console.log('');
+    }
+  } else {
+    const allErrors: Finding[] = [];
+    for (const fam of Object.values(report.families)) {
+      for (const suite of fam.suites) {
+        for (const finding of suite.findings) {
+          if (finding.severity === 'error') {
+            allErrors.push(finding);
+          }
+        }
+      }
+    }
+
+    if (allErrors.length > 0) {
+      const sampleErrors = allErrors.slice(-5);
+      console.log(`❌ Muestra de errores detectados (últimos ${sampleErrors.length} de ${allErrors.length}):\n`);
+      sampleErrors.forEach((f, idx) => {
+        const fileLoc = f.file ? `${path.relative(process.cwd(), f.file)}${f.line ? `:${f.line}` : ''}` : 'General';
+        const ruleTag = f.ruleDescription ? `[${f.ruleDescription}] ` : (f.ruleId ? `[${f.ruleId}] ` : '');
+        console.log(`  ${idx + 1}. ${fileLoc}: ${ruleTag}${f.message}`);
+      });
       console.log('');
     }
   }

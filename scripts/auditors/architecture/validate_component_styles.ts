@@ -21,9 +21,20 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { setupValidation } from '../../lib/validationBase.ts';
+import { BaseAuditor } from '../../lib/auditorBase.ts';
 
 enableCompileCache();
+
+export type ComponentStyleRuleId =
+  | 'broken-style-link'
+  | 'missing-style-tag'
+  | 'orphaned-scss';
+
+export const COMPONENT_STYLE_RULES: readonly ComponentStyleRuleId[] = [
+  'broken-style-link',
+  'missing-style-tag',
+  'orphaned-scss'
+];
 
 export interface ComponentStyleViolation {
   readonly file: string;
@@ -44,22 +55,6 @@ const GLOBAL_UTILITY_CLASSES = new Set([ // runtime-set: Fast O(1) membership lo
   'w-full', 'h-full', 'truncate', 'pointer-events-none', 'pointer-events-auto', 'select-none',
   'custom-scrollbar', 'empty-state', 'scrollable-content', 'modal-footer', 'm-type-tag'
 ]);
-
-function getAllFiles(dir: string, ext: string): string[] {
-  let results: string[] = []; // no-domain: Non-domain utility collection or data structure
-  if (!fs.existsSync(dir)) return results;
-  const list = fs.readdirSync(dir);
-  for (const file of list) {
-    const filePath = path.join(dir, file);
-    const stat = fs.statSync(filePath);
-    if (stat && stat.isDirectory()) {
-      results = results.concat(getAllFiles(filePath, ext));
-    } else if (filePath.endsWith(ext)) {
-      results.push(filePath);
-    }
-  }
-  return results;
-}
 
 /**
  * Standard SASS candidate resolution
@@ -96,156 +91,202 @@ function resolveSassPath(importPath: string, fromFile: string, srcDir: string): 
   return null;
 }
 
-export function auditComponentStyles(rootDir: string = process.cwd()): ComponentStyleAuditResult {
-  const srcDir = path.join(rootDir, 'src');
-  const vueFiles = getAllFiles(srcDir, '.vue');
-  const scssFiles = getAllFiles(srcDir, '.scss');
+export class ComponentStylesAuditor extends BaseAuditor<ComponentStyleRuleId> {
+  private readonly collectedViolations: ComponentStyleViolation[] = [];
+  private vueCount = 0;
+  private scssCount = 0;
 
-  const violations: ComponentStyleViolation[] = [];
-  const importedScssFiles = new Set<string>();
-
-  function trackScssFile(filePath: string) {
-    const normalized = path.normalize(filePath);
-    if (importedScssFiles.has(normalized)) return;
-    importedScssFiles.add(normalized);
-
-    if (fs.existsSync(normalized)) {
-      const content = fs.readFileSync(normalized, 'utf-8');
-      const matches = content.matchAll(/@(?:use|import|forward)\s+["']([^"']+)["']/g);
-      for (const m of matches) {
-        const importTarget = m[1]!;
-        const resolved = resolveSassPath(importTarget, normalized, srcDir);
-        if (resolved) {
-          trackScssFile(resolved);
-        }
-      }
-    }
+  constructor() {
+    super({
+      id: 'validate_component_styles',
+      name: 'Vue Component Style Linkage & SCSS Auditor',
+      description: 'Valida enlaces de estilos de componentes y huérfanos SCSS',
+      family: 'architecture',
+      ruleIds: COMPONENT_STYLE_RULES,
+      ruleDescriptions: {
+        'broken-style-link': 'Enlace de estilo roto o archivo inexistente',
+        'missing-style-tag': 'Componente con clases sin bloque de estilos',
+        'orphaned-scss': 'Archivo SCSS huérfano sin importar ni enlazar'
+      },
+      roots: ['src']
+    });
   }
 
-  // 1. Seed root SCSS graph (src/styles/_index.scss, main styles)
-  const rootScss = path.join(srcDir, 'styles', '_index.scss');
-  if (fs.existsSync(rootScss)) {
-    trackScssFile(rootScss);
+  public getViolations(): readonly ComponentStyleViolation[] {
+    return this.collectedViolations;
   }
 
-  // 2. Audit Vue components
-  for (const file of vueFiles) {
-    const content = fs.readFileSync(file, 'utf-8');
-    const relPath = path.relative(rootDir, file).replace(/\\/g, '/');
+  public getVueCount(): number {
+    return this.vueCount;
+  }
 
-    const hasStyleTag = /<style[\s>]/i.test(content);
-    const styleSrcMatch = content.match(/<style[^>]*src=["']([^"']+)["']/i);
+  public getScssCount(): number {
+    return this.scssCount;
+  }
 
-    // Track all SCSS imports in Vue component
-    const scssMatches = content.matchAll(/@(?:use|import|forward)\s+["']([^"']+)["']|src=["']([^"']+\.scss)["']/g);
-    for (const m of scssMatches) {
-      const importTarget = m[1] || m[2];
-      if (importTarget) {
-        const resolved = resolveSassPath(importTarget, file, srcDir);
-        if (resolved) {
-          trackScssFile(resolved);
+  public override runAudit(): void {
+    const srcDir = path.join(this.projectRoot, 'src');
+    const vueFiles = this.context.collectFiles(['src'], new Set(['.vue']));
+    const scssFiles = this.context.collectFiles(['src'], new Set(['.scss']));
+
+    this.vueCount = vueFiles.length;
+    this.scssCount = scssFiles.length;
+    this.filesScannedCount = vueFiles.length + scssFiles.length;
+
+    const importedScssFiles = new Set<string>();
+
+    const trackScssFile = (filePath: string) => {
+      const normalized = path.normalize(filePath);
+      if (importedScssFiles.has(normalized)) return;
+      importedScssFiles.add(normalized);
+
+      if (fs.existsSync(normalized)) {
+        const content = fs.readFileSync(normalized, 'utf-8');
+        const matches = content.matchAll(/@(?:use|import|forward)\s+["']([^"']+)["']/g);
+        for (const m of matches) {
+          const importTarget = m[1]!;
+          const resolved = resolveSassPath(importTarget, normalized, srcDir);
+          if (resolved) {
+            trackScssFile(resolved);
+          }
         }
       }
+    };
+
+    // 1. Seed root SCSS graph (src/styles/_index.scss, main styles)
+    const rootScss = path.join(srcDir, 'styles', '_index.scss');
+    if (fs.existsSync(rootScss)) {
+      trackScssFile(rootScss);
     }
 
-    // Check broken style links in <style src="...">
-    if (styleSrcMatch) {
-      const srcPath = styleSrcMatch[1]!;
-      const resolved = resolveSassPath(srcPath, file, srcDir);
+    // 2. Audit Vue components
+    for (const file of vueFiles) {
+      const content = fs.readFileSync(file, 'utf-8');
+      const relPath = path.relative(this.projectRoot, file).replace(/\\/g, '/');
 
-      if (!resolved) {
-        violations.push({
-          file: relPath,
-          type: 'broken_style_link',
-          message: `Style src points to non-existent file: ${srcPath}`
-        });
-      } else {
-        trackScssFile(resolved);
-      }
-    }
+      const hasStyleTag = /<style[\s>]/i.test(content);
+      const styleSrcMatch = content.match(/<style[^>]*src=["']([^"']+)["']/i);
 
-    // Check missing style tag on component defining custom template classes
-    if (!hasStyleTag && !content.includes('// style-inherited')) {
-      const classMatches = content.matchAll(/class=["']([^"']+)["']/g);
-      const customClasses: string[] = []; // no-domain: Non-domain utility collection or data structure
-
-      for (const m of classMatches) {
-        const clsList = m[1]!.split(/\s+/).filter(Boolean);
-        for (const c of clsList) {
-          if (
-            !c.startsWith('var(') &&
-            !c.includes('{') &&
-            !c.includes('}') &&
-            !c.startsWith(':') &&
-            !c.includes('[') &&
-            !c.includes(']') &&
-            !c.includes('(') &&
-            !c.includes(')') &&
-            !GLOBAL_UTILITY_CLASSES.has(c)
-          ) {
-            customClasses.push(c);
+      // Track all SCSS imports in Vue component
+      const scssMatches = content.matchAll(/@(?:use|import|forward)\s+["']([^"']+)["']|src=["']([^"']+\.scss)["']/g);
+      for (const m of scssMatches) {
+        const importTarget = m[1] || m[2];
+        if (importTarget) {
+          const resolved = resolveSassPath(importTarget, file, srcDir);
+          if (resolved) {
+            trackScssFile(resolved);
           }
         }
       }
 
-      if (customClasses.length > 0) {
-        violations.push({
+      // Check broken style links in <style src="...">
+      if (styleSrcMatch) {
+        const srcPath = styleSrcMatch[1]!;
+        const resolved = resolveSassPath(srcPath, file, srcDir);
+
+        if (!resolved) {
+          const v: ComponentStyleViolation = {
+            file: relPath,
+            type: 'broken_style_link',
+            message: `Style src points to non-existent file: ${srcPath}`
+          };
+          this.collectedViolations.push(v);
+          this.addViolation({
+            ruleId: 'broken-style-link',
+            severity: 'error',
+            file: relPath,
+            line: 1,
+            message: v.message,
+            context: styleSrcMatch[0]
+          });
+        } else {
+          trackScssFile(resolved);
+        }
+      }
+
+      // Check missing style tag on component defining custom template classes
+      if (!hasStyleTag && !content.includes('// style-inherited')) {
+        const classMatches = content.matchAll(/class=["']([^"']+)["']/g);
+        const customClasses: string[] = []; // no-domain: Non-domain utility collection or data structure
+
+        for (const m of classMatches) {
+          const clsList = m[1]!.split(/\s+/).filter(Boolean);
+          for (const c of clsList) {
+            if (
+              !c.startsWith('var(') &&
+              !c.includes('{') &&
+              !c.includes('}') &&
+              !c.startsWith(':') &&
+              !c.includes('[') &&
+              !c.includes(']') &&
+              !c.includes('(') &&
+              !c.includes(')') &&
+              !GLOBAL_UTILITY_CLASSES.has(c)
+            ) {
+              customClasses.push(c);
+            }
+          }
+        }
+
+        if (customClasses.length > 0) {
+          const v: ComponentStyleViolation = {
+            file: relPath,
+            type: 'missing_style_tag',
+            message: `Defines ${customClasses.length} custom template classes (${customClasses.slice(0, 3).join(', ')}...) without an associated <style> block or // style-inherited marker`
+          };
+          this.collectedViolations.push(v);
+          this.addViolation({
+            ruleId: 'missing-style-tag',
+            severity: 'error',
+            file: relPath,
+            line: 1,
+            message: v.message,
+            context: customClasses.slice(0, 3).join(', ')
+          });
+        }
+      }
+    }
+
+    // 3. Detect orphaned SCSS files in src/styles/components/
+    const componentScssDir = path.join(srcDir, 'styles', 'components');
+    const componentScssFiles = scssFiles.filter(f => f.startsWith(componentScssDir));
+
+    for (const file of componentScssFiles) {
+      const normalized = path.normalize(file);
+
+      if (!importedScssFiles.has(normalized)) {
+        const relPath = path.relative(this.projectRoot, file).replace(/\\/g, '/');
+        const v: ComponentStyleViolation = {
           file: relPath,
-          type: 'missing_style_tag',
-          message: `Defines ${customClasses.length} custom template classes (${customClasses.slice(0, 3).join(', ')}...) without an associated <style> block or // style-inherited marker`
+          type: 'orphaned_scss',
+          message: `SCSS component stylesheet is never imported by any Vue component or SCSS root`
+        };
+        this.collectedViolations.push(v);
+        this.addViolation({
+          ruleId: 'orphaned-scss',
+          severity: 'error',
+          file: relPath,
+          line: 1,
+          message: v.message,
+          context: relPath
         });
       }
     }
   }
+}
 
-  // 3. Detect orphaned SCSS files in src/styles/components/
-  const componentScssDir = path.join(srcDir, 'styles', 'components');
-  const componentScssFiles = getAllFiles(componentScssDir, '.scss');
-
-  for (const file of componentScssFiles) {
-    const normalized = path.normalize(file);
-
-    if (!importedScssFiles.has(normalized)) {
-      const relPath = path.relative(rootDir, file).replace(/\\/g, '/');
-      violations.push({
-        file: relPath,
-        type: 'orphaned_scss',
-        message: `SCSS component stylesheet is never imported by any Vue component or SCSS root`
-      });
-    }
-  }
-
+export function auditComponentStyles(_rootDir: string = process.cwd()): ComponentStyleAuditResult {
+  const auditor = new ComponentStylesAuditor();
+  auditor.runAudit();
   return {
-    vueComponentsScanned: vueFiles.length,
-    scssFilesScanned: scssFiles.length,
-    violations,
-    passed: violations.length === 0
+    vueComponentsScanned: auditor.getVueCount(),
+    scssFilesScanned: auditor.getScssCount(),
+    violations: auditor.getViolations(),
+    passed: auditor.getViolations().length === 0
   };
 }
 
 // ─── CLI Entrypoint ─────────────────────────────────────────────────────────
 if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
-  const validator = setupValidation({
-    title: 'VUE COMPONENT STYLE LINKAGE & SCSS ORPHAN AUDITOR',
-    family: 'architecture'
-  });
-
-  const result = auditComponentStyles();
-
-  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
-  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
-
-  for (const v of result.violations) {
-    errors.push(`[${v.type.toUpperCase()}] ${v.file}: ${v.message}`);
-  }
-
-  await validator.finish(
-    {
-      'Vue components scanned': result.vueComponentsScanned,
-      'SCSS stylesheets verified': result.scssFilesScanned,
-      'Style linkage violations': result.violations.length
-    },
-    errors,
-    warnings
-  );
+  await BaseAuditor.runCli(new ComponentStylesAuditor());
 }

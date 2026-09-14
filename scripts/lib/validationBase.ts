@@ -14,6 +14,7 @@ enableCompileCache();
 
 export interface ValidationConfig {
   title: string;
+  description?: string;
   requiredFiles?: string[];
   family?: AuditFamily;
   id?: string;
@@ -51,6 +52,7 @@ export function setupValidation(config: ValidationConfig): ValidationContext {
   const auditor = setupAuditor({
     id: derivedId,
     name: config.title,
+    description: config.description || config.title,
     family,
     requiredFiles: config.requiredFiles
   });

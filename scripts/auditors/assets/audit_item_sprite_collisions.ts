@@ -5,16 +5,16 @@
  *  - Missing/non-existent physical sprite files on disk (reported as ERRORS)
  *  - Duplicate/colliding sprite paths shared by multiple items (reported as WARNINGS)
  *  - Raw assets availability in `_raw-assets/` ready for assignment/conversion (INFO)
- *
- * Usage:
- *   node --permission --experimental-strip-types --allow-fs-read=* scripts/auditors/assets/audit_item_sprite_collisions.ts
  */
 
 import { readFileSync, existsSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { setupValidation } from '../../lib/validationBase.ts';
+import path, { resolve } from 'node:path';
+import { enableCompileCache } from 'node:module';
+import { BaseAuditor } from '../../lib/auditorBase.ts';
 
-interface ShopItem {
+enableCompileCache();
+
+export interface ShopItem {
   id: string;
   name?: string;
   cat?: string;
@@ -23,7 +23,7 @@ interface ShopItem {
   [key: string]: unknown;
 }
 
-interface SpriteCollisionGroup {
+export interface SpriteCollisionGroup {
   sprite: string;
   count: number;
   items: Array<{ id: string; name: string; cat: string; hasRawAsset: boolean; rawAssetPath?: string }>;
@@ -31,7 +31,7 @@ interface SpriteCollisionGroup {
 
 export type MissingSpriteReason = 'missing_property' | 'file_not_found';
 
-interface MissingSpriteError {
+export interface MissingSpriteError {
   id: string;
   name: string;
   sprite?: string;
@@ -39,7 +39,7 @@ interface MissingSpriteError {
   reason: MissingSpriteReason;
 }
 
-function checkRawAssetExistence(itemId: string): { exists: boolean; path?: string } {
+export function checkRawAssetExistence(itemId: string): { exists: boolean; path?: string } {
   const possiblePaths = [
     resolve(process.cwd(), '_raw-assets/public/assets/sprites/items', `${itemId}.png`),
     resolve(process.cwd(), '_raw-assets/public/assets/sprites/items', `${itemId}.webp`),
@@ -122,52 +122,87 @@ export function findMissingSprites(items: ShopItem[]): MissingSpriteError[] {
   return missing;
 }
 
-async function main() {
-  const itemsJsonPath = resolve(process.cwd(), 'src/data/inventory/items.json');
-  const validator = setupValidation({
-    title: 'ITEM SPRITE COLLISIONS AUDITOR',
-    family: 'assets',
-    requiredFiles: [itemsJsonPath]
-  });
+export type ItemSpriteCollisionRuleId =
+  | 'item-missing-sprite'
+  | 'item-sprite-collision';
 
-  await validator.checkFiles();
+export const ITEM_SPRITE_COLLISION_RULES: readonly ItemSpriteCollisionRuleId[] = [
+  'item-missing-sprite',
+  'item-sprite-collision'
+] as const;
 
-  const raw = readFileSync(itemsJsonPath, 'utf-8');
-  const parsed = JSON.parse(raw) as { SHOP_ITEMS?: ShopItem[] };
-  const shopItems = parsed.SHOP_ITEMS || [];
+export class ItemSpriteCollisionAuditor extends BaseAuditor<ItemSpriteCollisionRuleId> {
+  private readonly itemsJsonPath: string;
 
-  const missingSprites = findMissingSprites(shopItems);
-  const collisions = findSpriteCollisions(shopItems);
+  constructor() {
+    const itemsPath = resolve(process.cwd(), 'src/data/inventory/items.json');
+    super({
+      id: 'audit_item_sprite_collisions',
+      name: 'Item Sprite Collisions Auditor',
+      description: 'Colisiones de sprites o archivos faltantes en ítems',
+      family: 'assets',
+      ruleIds: ITEM_SPRITE_COLLISION_RULES,
+      ruleDescriptions: {
+        'item-missing-sprite': 'Sprite de ítem no encontrado en assets',
+        'item-sprite-collision': 'Colisión o solapamiento en sprite de ítem'
+      },
+      requiredFiles: [itemsPath]
+    });
+    this.itemsJsonPath = itemsPath;
+  }
 
-  const errors: string[] = []; // no-domain: Non-domain utility collection or data structure
-  const warnings: string[] = []; // no-domain: Non-domain utility collection or data structure
+  public override async runAudit(): Promise<void> {
+    this.context.logStep(1, 2, 'Reading inventory item catalog...');
+    const raw = readFileSync(this.itemsJsonPath, 'utf-8');
+    const parsed = JSON.parse(raw) as { SHOP_ITEMS?: ShopItem[] };
+    const shopItems = parsed.SHOP_ITEMS || [];
+    this.filesScannedCount = shopItems.length;
 
-  for (const err of missingSprites) {
-    if (err.reason === 'missing_property') {
-      errors.push(`[MISSING_SPRITE] ${err.name} (${err.id}) - No tiene la propiedad 'sprite' definida.`);
-    } else {
-      errors.push(`[FILE_NOT_FOUND] ${err.name} (${err.id}) - Archivo no existe: '${err.expectedPath}'`);
+    this.context.logStep(2, 2, `Auditing ${shopItems.length} items for missing sprites and collisions...`);
+    const missingSprites = findMissingSprites(shopItems);
+    const collisions = findSpriteCollisions(shopItems);
+
+    for (const err of missingSprites) {
+      if (err.reason === 'missing_property') {
+        this.addViolation({
+          ruleId: 'item-missing-sprite',
+          severity: 'error',
+          file: 'src/data/inventory/items.json',
+          line: 1,
+          message: `${err.name} (${err.id}) - Missing 'sprite' property.`,
+          context: err.id
+        });
+      } else {
+        this.addViolation({
+          ruleId: 'item-missing-sprite',
+          severity: 'error',
+          file: 'src/data/inventory/items.json',
+          line: 1,
+          message: `${err.name} (${err.id}) - Physical sprite file not found: '${err.expectedPath}'`,
+          context: err.sprite || 'unknown'
+        });
+      }
     }
-  }
 
-  for (const group of collisions) {
-    const itemNames = group.items.map(i => i.id).join(', ');
-    warnings.push(`[SPRITE_COLLISION] Sprite '${group.sprite}' es reutilizado por ${group.count} ítems (${itemNames}).`);
-  }
+    for (const group of collisions) {
+      const itemNames = group.items.map(i => i.id).join(', ');
+      this.addViolation({
+        ruleId: 'item-sprite-collision',
+        severity: 'warning',
+        file: 'src/data/inventory/items.json',
+        line: 1,
+        message: `Sprite '${group.sprite}' reused by ${group.count} items (${itemNames}).`,
+        context: group.sprite
+      });
+    }
 
-  await validator.finish(
-    {
-      'Ítems auditados': shopItems.length,
-      'Colisiones de sprite': collisions.length
-    },
-    errors,
-    warnings
-  );
+    this.context.setMetric('Items audited', shopItems.length);
+    this.context.setMetric('Sprite collisions', collisions.length);
+    this.context.setMetric('Missing sprites', missingSprites.length);
+  }
 }
 
-if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('audit_item_sprite_collisions.ts')) {
-  main().catch(err => {
-    console.error(`💥 Error fatal: ${(err as Error).message}`);
-    process.exit(1);
-  });
+// ─── CLI Entrypoint ─────────────────────────────────────────────────────────
+if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+  await BaseAuditor.runCli(new ItemSpriteCollisionAuditor());
 }

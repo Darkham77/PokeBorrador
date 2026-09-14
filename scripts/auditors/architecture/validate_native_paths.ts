@@ -27,13 +27,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { enableCompileCache } from 'node:module';
-import { setupValidation } from '../../lib/validationBase.ts';
 import type { FindingSeverity } from '../../lib/auditContract.ts';
 import {
   CANONICAL_IGNORE_DIRS,
   isPathIgnored,
   loadFallowIgnorePatterns,
-  collectRepositoryFiles
+  collectRepositoryFiles,
+  FileScanAuditor,
+  BaseAuditor
 } from '../../lib/auditorBase.ts';
 
 enableCompileCache();
@@ -406,41 +407,38 @@ export function auditNativePaths(targetDir = process.cwd()): NativePathAuditResu
   };
 }
 
-// ─── CLI Entrypoint ─────────────────────────────────────────────────────────
-if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
-  const context = setupValidation({
-    title: 'Security & Native Path Integrity Validator',
-    id: 'validate_native_paths',
-    family: 'architecture'
-  });
-
-  context.logProgress('Scanning repository for path concatenation, unsanitized sinks, SSRF fetch, and cross-platform path issues...');
-
-  const result = auditNativePaths(process.cwd());
-
-  for (const v of result.violations) {
-    if (v.severity === 'error') {
-      context.addError(v.message, v.file, v.line, v.context, v.ruleId);
-    } else {
-      context.addWarning(v.message, v.file, v.line, v.context, v.ruleId);
-    }
+export class NativePathsAuditor extends FileScanAuditor<NativePathRuleId> {
+  constructor() {
+    super({
+      id: 'validate_native_paths',
+      name: 'Security & Native Path Integrity Validator',
+      description: 'Garantiza uso de path.posix y evita CWE-22 traversal',
+      family: 'architecture',
+      ruleIds: [
+        'unsafe-path-concat',
+        'unsanitized-env-argv-path',
+        'untrusted-url-fetch',
+        'hardcoded-slash-path'
+      ],
+      ruleDescriptions: {
+        'unsafe-path-concat': 'Concatenación insegura de rutas de archivos',
+        'unsanitized-env-argv-path': 'Ruta desde argv/env sin sanitizar (CWE-22)',
+        'untrusted-url-fetch': 'Llamada fetch/HTTP con URL no sanitizada',
+        'hardcoded-slash-path': 'Ruta de archivo con separador hardcodeado'
+      },
+      roots: ['scripts', 'src', 'database', 'tests', 'supabase']
+    });
   }
 
-  context.setMetric('Files Scanned', result.filesScanned);
-  context.setMetric('Unsafe Path Concat', result.countsByRule['unsafe-path-concat'] || 0);
-  context.setMetric('Unsanitized Env/Argv', result.countsByRule['unsanitized-env-argv-path'] || 0);
-  context.setMetric('Untrusted URL Fetch', result.countsByRule['untrusted-url-fetch'] || 0);
-  context.setMetric('Hardcoded Slash/Paths', result.countsByRule['hardcoded-slash-path'] || 0);
+  protected override scanFile(relPath: string, content: string): void {
+    const fileViolations = scanFileForNativePathViolations(relPath, content);
+    for (const v of fileViolations) {
+      this.addViolation(v);
+    }
+  }
+}
 
-  const errors = result.violations.filter(v => v.severity === 'error').map(v => `${v.file}:${v.line} [${v.ruleId}] ${v.message}`);
-  const warnings = result.violations.filter(v => v.severity === 'warning').map(v => `${v.file}:${v.line} [${v.ruleId}] ${v.message}`);
-
-  await context.finish(
-    {
-      'Files Scanned': result.filesScanned,
-      'Total Violations': result.violations.length
-    },
-    errors,
-    warnings
-  );
+// ─── CLI Entrypoint ─────────────────────────────────────────────────────────
+if (process.argv[1] && import.meta.filename && path.basename(process.argv[1]) === path.basename(import.meta.filename)) {
+  await BaseAuditor.runCli(new NativePathsAuditor());
 }
