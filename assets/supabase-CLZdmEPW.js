@@ -1,0 +1,1 @@
+import{t as e}from"./supabase-D8t2_d2m.js";export{e as default,e as supabase};

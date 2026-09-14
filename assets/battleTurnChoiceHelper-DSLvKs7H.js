@@ -1,0 +1,1 @@
+import{on as e}from"./game-PHUmBQaq.js";export{e as computeP2Choice};
