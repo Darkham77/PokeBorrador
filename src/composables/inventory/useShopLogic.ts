@@ -51,7 +51,7 @@ export function useShopLogic(options: {
       return true
     })
 
-    return [...items].sort((a, b) => {
+    return items.toSorted((a, b) => {
       let comp: number
       if (sortKey.value === 'price') {
         if (options.isBCShop) {

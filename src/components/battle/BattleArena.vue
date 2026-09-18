@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, computed, watch, defineAsyncComponent, type Component, onMounted, onUnmounted, nextTick, reactive } from 'vue'
+import { ref, computed, watch, defineAsyncComponent, type Component, onMounted, onUnmounted, nextTick, reactive, onWatcherCleanup } from 'vue'
 import { useWakeLock } from '@vueuse/core'
 import { logger } from '@/logic/utils/logger'
 
@@ -391,9 +391,10 @@ watch(() => battleStore.isBattleActive, (active) => {
   if (active) {
     void enableScreenWakeLock()
     document.body.classList.add('in-battle') // [PureVue-Ignore]
-  } else {
-    void disableScreenWakeLock()
-    document.body.classList.remove('in-battle') // [PureVue-Ignore]
+    onWatcherCleanup(() => {
+      void disableScreenWakeLock()
+      document.body.classList.remove('in-battle') // [PureVue-Ignore]
+    })
   }
 }, { immediate: true })
 

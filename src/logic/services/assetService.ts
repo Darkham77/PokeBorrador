@@ -238,6 +238,17 @@ const ASSET_RESOLVERS: Record<string, AssetResolverFn> = {
   [ASSET_TYPES.BADGE]: (id, _, ext) => resolveAsset(`/assets/sprites/badges/${id}${ext}`)
 }
 
+const assetUrlCache = new Map<string, string>();
+
+function buildAssetCacheKey(type: AssetType, rawId: string | number, options: AssetOptions): string {
+  const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '';
+  return `${baseUrl}:${type}:${rawId}:${options.isShiny || options.shiny ? 1 : 0}:${options.isBack || options.back ? 1 : 0}:${options.isLowPower ? 1 : 0}:${options.isAnimated || options.animated ? 1 : 0}:${options.cycle || ''}:${options.trainerSuffix || ''}:${options.gender || ''}`;
+}
+
+export function clearAssetCache(): void {
+  assetUrlCache.clear();
+}
+
 export function getAssetUrl(type: typeof ASSET_TYPES.ITEM, rawId: ItemId, options?: AssetOptions): string;
 export function getAssetUrl(type: typeof ASSET_TYPES.POKEMON, rawId: PokemonSpeciesId | number, options?: AssetOptions): string;
 export function getAssetUrl(type: typeof ASSET_TYPES.MAP, rawId: MapRouteId, options?: AssetOptions): string;
@@ -249,27 +260,32 @@ export function getAssetUrl(type: AssetType, rawId: string | number, options: As
   if (!rawId) {
     throw new Error(`[assetService] Cannot resolve asset URL for type '${type}': rawId is required and cannot be empty.`);
   }
-  const isShiny = options.isShiny ?? options.shiny ?? false;
-  const isBack = options.isBack ?? options.back ?? false;
 
-  // If it's already a full URL or local test path, return it
+  // If it's already a full URL or local test path, return it directly
   if (typeof rawId === 'string' && (rawId.startsWith('http') || rawId.startsWith('data:') || rawId.startsWith('/test aventura/'))) {
     return rawId;
   }
 
-  // Clean ID: strip extensions if present (e.g., 'item.png' -> 'item')
-  const id = typeof rawId === 'string' 
-    ? rawId.replace(/\.(png|webp|jpg|jpeg|gif|bmp|json)$/i, '') 
-    : rawId;
+  const cacheKey = buildAssetCacheKey(type, rawId, options);
 
-  const extension = (typeof rawId === 'string' && rawId.endsWith('.json')) ? '.json' : '.webp';
+  return assetUrlCache.getOrInsertComputed(cacheKey, () => {
+    const isShiny = options.isShiny ?? options.shiny ?? false;
+    const isBack = options.isBack ?? options.back ?? false;
 
-  const resolver = ASSET_RESOLVERS[type];
-  if (resolver) {
-    return resolver(id, options, extension, isShiny, isBack);
-  }
+    // Clean ID: strip extensions if present (e.g., 'item.png' -> 'item')
+    const id = typeof rawId === 'string' 
+      ? rawId.replace(/\.(png|webp|jpg|jpeg|gif|bmp|json)$/i, '') 
+      : rawId;
 
-  return String(id);
+    const extension = (typeof rawId === 'string' && rawId.endsWith('.json')) ? '.json' : '.webp';
+
+    const resolver = ASSET_RESOLVERS[type];
+    if (resolver) {
+      return resolver(id, options, extension, isShiny, isBack);
+    }
+
+    return String(id);
+  });
 }
 
 export function useAssets() {

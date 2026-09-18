@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, useId } from 'vue'
 import { useGTSStore } from '@/stores/gts'
 import type { MarketFilters } from '@/logic/economy/market'
 import MarketPokemonFiltersGroup from './MarketPokemonFiltersGroup.vue'
@@ -11,6 +11,7 @@ interface Props {
 defineProps<Props>()
 
 const gtsStore = useGTSStore()
+const priceGroupId = useId()
 
 const isExpanded = ref(false)
 
@@ -111,8 +112,14 @@ const resetFilters = () => {
       class="filter-body"
     >
       <!-- Price Range -->
-      <div class="filter-group">
-        <div class="group-header">
+      <div
+        class="filter-group"
+        :aria-labelledby="priceGroupId"
+      >
+        <div
+          :id="priceGroupId"
+          class="group-header"
+        >
           <span class="price-title"><span>Precio</span> <span class="emoji">💰</span></span>
           <span class="range-val">₽{{ filters.priceMin.toLocaleString() }} - ₽{{ filters.priceMax === 1000000 ? 'Máx' : filters.priceMax.toLocaleString() }}</span>
         </div>

@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { parseArgs } from 'node:util';
+import { parseArgs, styleText } from 'node:util';
+import { renderBanner, renderBoxTable, type TableColumn } from '../../lib/unifiedTheme.ts';
 
 interface ComplexityFinding {
   file: string;
@@ -91,51 +92,68 @@ function renderBoxReport(findings: ComplexityFinding[], topLimit: number, layerF
     ? findings.filter(f => f.layer.toLowerCase() === layerFilter.toLowerCase())
     : findings;
 
-  console.log('\n╔═══════════════════════════════════════════════════════════════════════════════════════════╗');
-  console.log('║               REPORTE OFICIAL DE COMPLEJIDAD CICLOMÁTICA Y COGNITIVA (FALLOW)             ║');
-  console.log('╚═══════════════════════════════════════════════════════════════════════════════════════════╝');
-  console.log(`\n📊 Total de funciones complejas en src/: ${findings.length}`);
+  console.log('\n' + renderBanner('COMPLEJIDAD CICLOMÁTICA Y COGNITIVA (FALLOW)', `Funciones analizadas en src/: ${findings.length}`));
 
   const distribution: Record<string, number> = {};
   for (const f of findings) {
     distribution[f.layer] = (distribution[f.layer] || 0) + 1;
   }
 
-  console.log('\n📁 DISTRIBUCIÓN POR CAPA (src/*):');
-  console.log('─────────────────────────────────────────────────────────────────────────────');
-  for (const [layer, count] of Object.entries(distribution).sort((a, b) => b[1] - a[1])) {
-    const pct = ((count / findings.length) * 100).toFixed(1);
-    console.log(`  • src/${layer.padEnd(15)} : ${String(count).padStart(4)} funciones (${pct}%)`);
+  console.log('\n📁 DISTRIBUCIÓN POR CAPA (src/*):\n');
+
+  interface LayerDistRow {
+    layer: string;
+    count: string;
+    percentage: string;
   }
 
-  const fileCount: Record<string, number> = {};
-  for (const f of filtered) {
-    fileCount[f.file] = (fileCount[f.file] || 0) + 1;
-  }
-  const topFiles = Object.entries(fileCount)
+  const layerCols: readonly TableColumn<LayerDistRow>[] = [
+    { header: 'CAPA DE ARQUITECTURA', width: 45, align: 'left', key: 'layer' },
+    { header: 'FUNCIONES', width: 11, align: 'right', key: 'count' },
+    { header: '% TOTAL', width: 10, align: 'right', key: 'percentage' }
+  ];
+
+  const layerRows: LayerDistRow[] = Object.entries(distribution)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 15);
+    .map(([layer, count]) => {
+      const pct = ((count / findings.length) * 100).toFixed(1) + '%';
+      return {
+        layer: `src/${layer}`,
+        count: String(count),
+        percentage: pct
+      };
+    });
 
-  console.log(`\n📄 TOP 15 ARCHIVOS CON MÁS FUNCIONES COMPLEJAS ${layerFilter ? `(Filtro: src/${layerFilter})` : ''}:`);
-  console.log('─────────────────────────────────────────────────────────────────────────────');
-  topFiles.forEach(([file, count], idx) => {
-    const rank = String(idx + 1).padStart(2);
-    console.log(`  ${rank}. ${String(count).padStart(3)} funciones  ${file}`);
-  });
+  console.log(renderBoxTable(layerCols, layerRows));
 
-  console.log(`\n🔥 TOP ${Math.min(topLimit, filtered.length)} HOTSPOTS CON MAYOR COMPLEJIDAD ${layerFilter ? `(Filtro: src/${layerFilter})` : ''}:`);
-  console.log('─────────────────────────────────────────────────────────────────────────────');
-  console.log('  #   COGNITIVA   CICLOMÁTICA   TOTAL   ARCHIVO:LÍNEA');
-  console.log('─────────────────────────────────────────────────────────────────────────────');
+  console.log(`\n🔥 TOP ${Math.min(topLimit, filtered.length)} HOTSPOTS DE COMPLEJIDAD ${layerFilter ? `(Filtro: src/${layerFilter})` : ''}:\n`);
 
-  filtered.slice(0, topLimit).forEach((f, idx) => {
-    const rank = String(idx + 1).padStart(3);
-    const cogStr = String(f.cog).padStart(9);
-    const cycStr = String(f.cyc).padStart(11);
-    const totalStr = String(f.total).padStart(6);
-    console.log(` ${rank}  ${cogStr}   ${cycStr}   ${totalStr}   ${f.file}:${f.line}`);
-  });
-  console.log('─────────────────────────────────────────────────────────────────────────────\n');
+  interface HotspotRow {
+    index: string;
+    cog: string;
+    cyc: string;
+    total: string;
+    fileLoc: string;
+  }
+
+  const hotspotCols: readonly TableColumn<HotspotRow>[] = [
+    { header: '#', width: 3, align: 'center', key: 'index' },
+    { header: 'COGNITIVA', width: 9, align: 'right', key: 'cog' },
+    { header: 'CICLOMÁTICA', width: 11, align: 'right', key: 'cyc' },
+    { header: 'TOTAL', width: 6, align: 'right', key: 'total' },
+    { header: 'ARCHIVO:LÍNEA', width: 32, align: 'left', key: 'fileLoc' }
+  ];
+
+  const hotspotRows: HotspotRow[] = filtered.slice(0, topLimit).map((f, idx) => ({
+    index: String(idx + 1),
+    cog: styleText('yellow', String(f.cog)),
+    cyc: styleText('yellow', String(f.cyc)),
+    total: styleText(f.total > 25 ? 'red' : 'yellow', String(f.total)),
+    fileLoc: `${f.file}:${f.line}`
+  }));
+
+  console.log(renderBoxTable(hotspotCols, hotspotRows));
+  console.log('');
 }
 
 function main(): void {

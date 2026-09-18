@@ -240,56 +240,57 @@ export function createBattleStateMachine() {
     [BATTLE_STATES.EXIT_BATTLE]: new Set([BATTLE_STATES.CONTEXT_SETUP, BATTLE_STATES.INITIALIZING, BATTLE_STATES.ACTIVE_BATTLE, BATTLE_STATES.SEARCH_PHASE])
   };
 
-  let pendingResolve: (() => void) | null = null;
+  let pendingResolvers: PromiseWithResolvers<void> | null = null;
 
   /**
    * Translates to a specific state or substate.
    * If a delay is provided, returns a Promise that resolves when the transition happens.
    */
   const transition = (newState: BattleStateName | BattleSubStateName, newSubState: BattleSubStateName | null = null, delayMs: number = 0): Promise<void> => {
-    return new Promise<void>((resolve) => {
-      if (transitionCall) {
-        transitionCall.kill();
-        transitionCall = null;
-        if (pendingResolve) {
-          pendingResolve();
-          pendingResolve = null;
+    if (transitionCall) {
+      transitionCall.kill();
+      transitionCall = null;
+      if (pendingResolvers) {
+        pendingResolvers.resolve();
+        pendingResolvers = null;
+      }
+    }
+
+    const resolvers = Promise.withResolvers<void>();
+    pendingResolvers = resolvers;
+
+    const executeTransition = () => {
+      pendingResolvers = null;
+      // Validation check (can be expanded for strict enforcement)
+      if (newState && isBattleStateName(newState)) {
+        const isSameState = currentState.value === newState;
+        const allowedTransitions = validTransitions[currentState.value];
+        if (!isSameState && allowedTransitions && !allowedTransitions.has(newState) && newState !== BATTLE_STATES.EXIT_BATTLE) {
+          logger.warn('FSM', `Unexpected transition: ${currentState.value} -> ${newState}`);
         }
+        currentState.value = newState;
+      } else if (newState && isBattleSubStateName(newState)) {
+        // Si recibimos un sub-estado como primer argumento, mantenemos el estado actual 
+        newSubState = newState;
       }
 
-      pendingResolve = resolve;
-
-      const executeTransition = () => {
-        pendingResolve = null;
-        // Validation check (can be expanded for strict enforcement)
-        if (newState && isBattleStateName(newState)) {
-          const isSameState = currentState.value === newState;
-          const allowedTransitions = validTransitions[currentState.value];
-          if (!isSameState && allowedTransitions && !allowedTransitions.has(newState) && newState !== BATTLE_STATES.EXIT_BATTLE) {
-            logger.warn('FSM', `Unexpected transition: ${currentState.value} -> ${newState}`);
-          }
-          currentState.value = newState;
-        } else if (newState && isBattleSubStateName(newState)) {
-          // Si recibimos un sub-estado como primer argumento, mantenemos el estado actual 
-          newSubState = newState;
-        }
-
-        if (newSubState) {
-          currentSubState.value = newSubState;
-        } else if (newState && currentState.value !== BATTLE_STATES.ACTIVE_BATTLE) {
-          currentSubState.value = null; // Solo limpiamos substate si estamos cambiando de fase principal
-        }
-
-        logger.debug('Battle FSM', `Transitioned to ${currentState.value}${currentSubState.value ? ' (' + currentSubState.value + ')' : ''}`);
-        resolve(undefined);
-      };
-
-      if (delayMs > 0) {
-        transitionCall = gsap.delayedCall(delayMs / MS_PER_SECOND, executeTransition);
-      } else {
-        executeTransition();
+      if (newSubState) {
+        currentSubState.value = newSubState;
+      } else if (newState && currentState.value !== BATTLE_STATES.ACTIVE_BATTLE) {
+        currentSubState.value = null; // Solo limpiamos substate si estamos cambiando de fase principal
       }
-    });
+
+      logger.debug('Battle FSM', `Transitioned to ${currentState.value}${currentSubState.value ? ' (' + currentSubState.value + ')' : ''}`);
+      resolvers.resolve();
+    };
+
+    if (delayMs > 0) {
+      transitionCall = gsap.delayedCall(delayMs / MS_PER_SECOND, executeTransition);
+    } else {
+      executeTransition();
+    }
+
+    return resolvers.promise;
   };
 
   const isState = (state: string) => currentState.value === state;

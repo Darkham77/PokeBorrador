@@ -15,8 +15,7 @@ const gameStore = useGameStore()
 // Local state for difficulties to keep them reactive per card
 const cardDifficulties = reactive<Partial<Record<GymId, BattleDifficulty>>>({})
 
-onMounted(async () => {
-  await gymsStore.loadGymProgress()
+onMounted(() => {
   gymsStore.gyms.forEach((gym: Gym) => {
     cardDifficulties[gym.id] = 'easy'
   })

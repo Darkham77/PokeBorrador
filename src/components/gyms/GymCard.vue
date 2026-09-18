@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, useTemplateRef } from 'vue'
 import { gsap } from 'gsap'
 import { useGymsStore } from '@/stores/gyms'
 import { getAssetUrl, ASSET_TYPES } from '@/logic/services/assetService'
@@ -35,7 +35,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const gymsStore = useGymsStore()
 const selectedDifficulty = defineModel<BattleDifficulty>('difficulty', { default: 'easy' })
-const cardRef = ref<HTMLElement | null>(null)
+const cardRef = useTemplateRef<HTMLElement>('cardRef')
 
 const GYM_CARD_MOUNT_OFFSET_Y = 20;
 const GYM_CARD_HOVER_SCALE = 1.02;

@@ -295,6 +295,19 @@ export abstract class BaseE2ESimulation {
   }
 
   /**
+   * Persists active battle to gameStore state and triggers an immediate, remote-forced save.
+   * Ensures that reload/F5 operations restore active combat state across both SQLite and PostgreSQL.
+   */
+  public async persistBattleAndSave(): Promise<void> {
+    await this.page.evaluate(async () => {
+      const { useGameStore } = await import('../../src/stores/game.ts');
+      const { useBattleStore } = await import('../../src/stores/battle/battle.ts');
+      useBattleStore().persistBattle();
+      await useGameStore().saveGame(false, true, true);
+    });
+  }
+
+  /**
    * Recarga la página y espera a que los stores vuelvan a estar sincronizados y listos
    */
   public async reloadAndSync(timeoutMs?: number): Promise<void> {

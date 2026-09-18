@@ -58,6 +58,9 @@ export function restorePP(p: Pokemon, amount: number): ItemEffectResult {
     const max = m.maxPP || 35; // Fallback
     if (m.pp < max) {
       m.pp = Math.min(max, (m.pp || 0) + amount);
+      if (m.pp > 0) {
+        m.disabled = false;
+      }
       changed = true;
     }
   });

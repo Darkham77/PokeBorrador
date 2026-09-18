@@ -43,7 +43,6 @@ export class ScriptedAI implements CombatAI {
     return false
   }
 
-  // fallow-ignore-next-line unused-class-member
   findBestSwitchIndex(enemyTeam: Pokemon[], _player: Pokemon, _currentEnemyUid: string, store?: BattleContext, _mode?: unknown): number {
     const state = this.getDebugChoices()
     if (!state) return -1

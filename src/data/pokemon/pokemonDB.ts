@@ -38,45 +38,40 @@ const rawDb = (pokemonDbJson as Record<string, unknown>) as Record<PokemonDbSpec
 const cache = new Map<PokemonDbSpeciesId, PokemonBaseData>();
 
 function inflatePokemon(speciesId: PokemonDbSpeciesId): PokemonBaseData | undefined {
-  const cached = cache.get(speciesId);
-  if (cached) return cached;
-
   const raw = rawDb[speciesId];
   if (!raw) return undefined;
 
-  const learnset: LearnsetMove[] = raw.learnset.map(([lv, rawMoveId, pp]) => {
-    const moveId = requirePokemonMoveId(String(rawMoveId));
-    const trans = MOVE_TRANSLATIONS_ES[moveId];
+  return cache.getOrInsertComputed(speciesId, () => {
+    const learnset: LearnsetMove[] = raw.learnset.map(([lv, rawMoveId, pp]) => {
+      const moveId = requirePokemonMoveId(String(rawMoveId));
+      const trans = MOVE_TRANSLATIONS_ES[moveId];
+      return {
+        lv: Number(lv),
+        id: moveId,
+        name: trans ? trans.name : moveId,
+        pp: Number(pp)
+      };
+    });
+
     return {
-      lv: Number(lv),
-      id: moveId,
-      name: trans ? trans.name : moveId,
-      pp: Number(pp)
+      name: raw.name,
+      type: raw.type,
+      type2: raw.type2,
+      hp: raw.hp,
+      atk: raw.atk,
+      def: raw.def,
+      spa: raw.spa,
+      spd: raw.spd,
+      spe: raw.spe,
+      catchRate: raw.catchRate,
+      abilities: raw.abilities,
+      gender: raw.gender,
+      height: raw.height,
+      weight: raw.weight,
+      learnset,
+      compatMoves: raw.compatMoves
     };
   });
-
-  const entry: PokemonBaseData = {
-    name: raw.name,
-    type: raw.type,
-    type2: raw.type2,
-    hp: raw.hp,
-    atk: raw.atk,
-    def: raw.def,
-    spa: raw.spa,
-    spd: raw.spd,
-    spe: raw.spe,
-    catchRate: raw.catchRate,
-    abilities: raw.abilities,
-    gender: raw.gender,
-    height: raw.height,
-    weight: raw.weight,
-    learnset,
-    compatMoves: raw.compatMoves
-  };
-
-
-  cache.set(speciesId, entry);
-  return entry;
 }
 
 const targetDb: Partial<Record<PokemonDbSpeciesId, PokemonBaseData>> = {}; // open-record: Generic key-value data dictionary container

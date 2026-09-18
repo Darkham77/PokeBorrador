@@ -124,7 +124,7 @@ export function getRandomLegalMoves(
 
   const maxAllowed = getMaxAllowedMoves(speciesId, level);
   const targetCount = Math.min(maxSlots, maxAllowed);
-  const shuffled = [...legalMoves].sort(() => 0.5 - Math.random());
+  const shuffled = legalMoves.toSorted(() => 0.5 - Math.random());
   const selectedCount = Math.min(targetCount, shuffled.length);
   const result: (PokemonMoveId | null)[] = [];
 

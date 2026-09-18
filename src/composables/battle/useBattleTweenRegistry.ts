@@ -103,24 +103,24 @@ export function useBattleTweenRegistry() {
 
     // Slow path: event-driven wait with GSAP fallback safety
     console.debug(`[TweenRegistry] Awaiting component tween registration. context=${JSON.stringify({ animKey, activeKeys: [...activeTweens.keys()], pendingKeys: [...pendingTweenResolvers.keys()] })}`)
-    await new Promise<void>((resolve, reject) => {
-      const TWEEN_REGISTRATION_TIMEOUT_SEC = 0.5
-      const fallbackTimer = gsap.delayedCall(TWEEN_REGISTRATION_TIMEOUT_SEC, () => {
-        pendingTweenResolvers.delete(animKey)
-        resolve()
-      })
-
-      pendingTweenResolvers.set(animKey, {
-        resolve: () => {
-          fallbackTimer.kill()
-          resolve()
-        },
-        reject: (err) => {
-          fallbackTimer.kill()
-          reject(err)
-        }
-      })
+    const resolvers = Promise.withResolvers<void>()
+    const TWEEN_REGISTRATION_TIMEOUT_SEC = 0.5
+    const fallbackTimer = gsap.delayedCall(TWEEN_REGISTRATION_TIMEOUT_SEC, () => {
+      pendingTweenResolvers.delete(animKey)
+      resolvers.resolve()
     })
+
+    pendingTweenResolvers.set(animKey, {
+      resolve: () => {
+        fallbackTimer.kill()
+        resolvers.resolve()
+      },
+      reject: (err) => {
+        fallbackTimer.kill()
+        resolvers.reject(err)
+      }
+    })
+    await resolvers.promise
 
     // Now await the actual GSAP tween (native GSAP coordination)
     const tween = activeTweens.get(animKey)

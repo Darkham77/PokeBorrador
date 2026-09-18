@@ -62,7 +62,7 @@ function getTimestamp(n: NotificationItem): number {
       class="history-container-legacy custom-scrollbar"
     >
       <div
-        v-for="n in filteredHistory.slice().reverse()"
+        v-for="n in filteredHistory.toReversed()"
         :key="n.id"
         class="notification-entry-legacy"
       >

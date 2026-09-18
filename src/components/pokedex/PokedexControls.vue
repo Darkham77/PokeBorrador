@@ -8,7 +8,7 @@ interface Props {
   searchQuery: string
 }
 
-const props = defineProps<Props>()
+const { currentGen, sortBy, sortOrder, searchQuery } = defineProps<Props>()
 
 const emit = defineEmits<{
   (e: 'update:currentGen', gen: number): void
@@ -18,8 +18,8 @@ const emit = defineEmits<{
 }>()
 
 const handleSortClick = (key: string) => {
-  if (props.sortBy === key) {
-    emit('update:sortOrder', props.sortOrder === 'asc' ? 'desc' : 'asc')
+  if (sortBy === key) {
+    emit('update:sortOrder', sortOrder === 'asc' ? 'desc' : 'asc')
   } else {
     emit('update:sortBy', key)
     emit('update:sortOrder', 'asc')

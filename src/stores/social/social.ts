@@ -128,73 +128,86 @@ export const useSocialStore = defineStore('social', () => {
 
 
 
+  let inFlightPromise: Promise<void> | null = null
+  const isLoaded = ref(false)
+
   /**
    * Carga datos sociales (amigos y solicitudes) usando DBRouter.
    */
-  async function loadSocialData() {
-    if (!authStore.user) {
-      friends.value = []
-      pendingRequests.value = []
-      return
-    }
+  async function loadSocialData(force = false): Promise<void> {
+    if (isLoaded.value && !force) return
+    if (inFlightPromise) return inFlightPromise
 
-    const db = gameStore.db
-    if (!db) { return }
-    
-    try {
-      // 1. Obtener amistades confirmadas
-      const { data: friendships, error: fErr } = await db
-        .from('friendships')
-        .select('*')
-        .or(`requester_id.eq.${authStore.user.id},addressee_id.eq.${authStore.user.id}`)
-        .eq('status', 'accepted') as { data: FriendshipRow[] | null; error: unknown }
-
-      if (fErr) throw fErr
-      
-      if (friendships && friendships.length > 0) {
-        const friendIds = friendships.map((f: FriendshipRow) => 
-          f.requester_id === authStore.user?.id ? f.addressee_id : f.requester_id
-        )
-
-        const [profRes, saveRes] = await Promise.all([
-          db.from('profiles').select('*').in('id', friendIds),
-          db.from('game_saves').select('user_id,save_data,updated_at').in('user_id', friendIds)
-        ]) as [
-          { data: ProfileRow[] | null; error: unknown },
-          { data: GameSaveRow[] | null; error: unknown }
-        ]
-
-        friends.value = parseFriendsList(friendIds, profRes.data || [], saveRes.data || [])
-      } else {
+    inFlightPromise = (async () => {
+      if (!authStore.user) {
         friends.value = []
-      }
-
-      // 2. Solicitudes pendientes
-      const { data: pending } = await db
-        .from('friendships')
-        .select('*')
-        .eq('addressee_id', authStore.user?.id)
-        .eq('status', 'pending') as { data: PendingRequest[] | null; error: unknown }
-
-      if (pending && pending.length > 0) {
-        const requesterIds = pending.map((r: PendingRequest) => r.requester_id)
-        const [profRes, saveRes] = await Promise.all([
-          db.from('profiles').select('*').in('id', requesterIds),
-          db.from('game_saves').select('user_id,save_data').in('user_id', requesterIds)
-        ]) as [
-          { data: ProfileRow[] | null; error: unknown },
-          { data: GameSaveRow[] | null; error: unknown }
-        ]
-
-        pendingRequests.value = parsePendingRequests(pending, profRes.data || [], saveRes.data || [])
-      } else {
         pendingRequests.value = []
+        return
       }
+
+      const db = gameStore.db
+      if (!db) { return }
       
-      await refreshNotificationCount()
-    } catch (err) {
-      logger.error('Social', `Error loading data: ${(err as Error).message}`)
-    }
+      try {
+        // 1. Obtener amistades confirmadas
+        const { data: friendships, error: fErr } = await db
+          .from('friendships')
+          .select('*')
+          .or(`requester_id.eq.${authStore.user.id},addressee_id.eq.${authStore.user.id}`)
+          .eq('status', 'accepted') as { data: FriendshipRow[] | null; error: unknown }
+
+        if (fErr) throw fErr
+        
+        if (friendships && friendships.length > 0) {
+          const friendIds = friendships.map((f: FriendshipRow) => 
+            f.requester_id === authStore.user?.id ? f.addressee_id : f.requester_id
+          )
+
+          const [profRes, saveRes] = await Promise.all([
+            db.from('profiles').select('*').in('id', friendIds),
+            db.from('game_saves').select('user_id,save_data,updated_at').in('user_id', friendIds)
+          ]) as [
+            { data: ProfileRow[] | null; error: unknown },
+            { data: GameSaveRow[] | null; error: unknown }
+          ]
+
+          friends.value = parseFriendsList(friendIds, profRes.data || [], saveRes.data || [])
+        } else {
+          friends.value = []
+        }
+
+        // 2. Solicitudes pendientes
+        const { data: pending } = await db
+          .from('friendships')
+          .select('*')
+          .eq('addressee_id', authStore.user?.id)
+          .eq('status', 'pending') as { data: PendingRequest[] | null; error: unknown }
+
+        if (pending && pending.length > 0) {
+          const requesterIds = pending.map((r: PendingRequest) => r.requester_id)
+          const [profRes, saveRes] = await Promise.all([
+            db.from('profiles').select('*').in('id', requesterIds),
+            db.from('game_saves').select('user_id,save_data').in('user_id', requesterIds)
+          ]) as [
+            { data: ProfileRow[] | null; error: unknown },
+            { data: GameSaveRow[] | null; error: unknown }
+          ]
+
+          pendingRequests.value = parsePendingRequests(pending, profRes.data || [], saveRes.data || [])
+        } else {
+          pendingRequests.value = []
+        }
+        
+        await refreshNotificationCount()
+        isLoaded.value = true
+      } catch (err) {
+        logger.error('Social', `Error loading data: ${(err as Error).message}`)
+      } finally {
+        inFlightPromise = null
+      }
+    })()
+
+    return inFlightPromise
   }
 
   async function searchPlayers(query: string, filters?: { playerClass?: string; faction?: string }) {

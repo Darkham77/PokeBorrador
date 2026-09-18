@@ -451,6 +451,34 @@ interface FallowUnlistedDependency {
     col?: number;
   }>;
 }
+interface FallowBoundaryViolation {
+  from_path: string;
+  to_path: string;
+  from_zone: string;
+  to_zone: string;
+  import_specifier?: string;
+  line: number;
+  col?: number;
+}
+interface FallowUnusedComponentProp {
+  path: string;
+  component_name: string;
+  prop_name: string;
+  line: number;
+  col?: number;
+}
+interface FallowUnrenderedComponent {
+  path: string;
+  component_name: string;
+  line: number;
+  col?: number;
+}
+interface FallowUnprovidedInject {
+  path: string;
+  inject_key: string;
+  line: number;
+  col?: number;
+}
 interface FallowDeadCode {
   unused_dependencies?: FallowUnusedDep[];
   unused_dev_dependencies?: FallowUnusedDep[];
@@ -464,6 +492,10 @@ interface FallowDeadCode {
   unused_types?: FallowUnusedType[];
   unused_component_emits?: FallowUnusedComponentEmit[];
   unlisted_dependencies?: FallowUnlistedDependency[];
+  boundary_violations?: FallowBoundaryViolation[];
+  unused_component_props?: FallowUnusedComponentProp[];
+  unrendered_components?: FallowUnrenderedComponent[];
+  unprovided_injects?: FallowUnprovidedInject[];
 }
 interface FallowComplexity {
   findings?: FallowFinding[];
@@ -486,6 +518,10 @@ export interface FallowAuditData {
   unused_types?: FallowUnusedType[];
   unused_component_emits?: FallowUnusedComponentEmit[];
   unlisted_dependencies?: FallowUnlistedDependency[];
+  boundary_violations?: FallowBoundaryViolation[];
+  unused_component_props?: FallowUnusedComponentProp[];
+  unrendered_components?: FallowUnrenderedComponent[];
+  unprovided_injects?: FallowUnprovidedInject[];
 }
 
 function runFallow(command: string, extraArgs: string[] = []): Violation[] {
@@ -723,7 +759,7 @@ export function mapFallowJson(command: string, data: FallowAuditData): Violation
       violations.push({
         file: path.resolve(process.cwd(), x.path),
         line: x.line || 1,
-        message: `Sugerencia de calidad (Fallow): Export no usado: '${x.export_name}'`,
+        message: `Export no usado: '${x.export_name}'`,
         context: x.export_name,
         severity: 'error',
         fixable: false
@@ -739,7 +775,7 @@ export function mapFallowJson(command: string, data: FallowAuditData): Violation
       violations.push({
         file: path.resolve(process.cwd(), sm.path),
         line: sm.line || 1,
-        message: `Sugerencia de calidad (Fallow): Miembro de store no usado: '${sm.parent_name}.${sm.member_name}'`,
+        message: `Miembro de store no usado: '${sm.parent_name}.${sm.member_name}'`,
         context: sm.member_name,
         severity: 'error',
         fixable: false
@@ -755,7 +791,7 @@ export function mapFallowJson(command: string, data: FallowAuditData): Violation
       violations.push({
         file: path.resolve(process.cwd(), cm.path),
         line: cm.line || 1,
-        message: `Sugerencia de calidad (Fallow): Miembro de clase no usado: '${cm.parent_name}.${cm.member_name}'`,
+        message: `Miembro de clase no usado: '${cm.parent_name}.${cm.member_name}'`,
         context: cm.member_name,
         severity: 'error',
         fixable: false
@@ -771,7 +807,7 @@ export function mapFallowJson(command: string, data: FallowAuditData): Violation
       violations.push({
         file: path.resolve(process.cwd(), ut.path),
         line: ut.line || 1,
-        message: `Sugerencia de calidad (Fallow): Tipo exportado no usado: '${ut.export_name}'`,
+        message: `Tipo exportado no usado: '${ut.export_name}'`,
         context: ut.export_name,
         severity: 'error',
         fixable: false
@@ -787,7 +823,7 @@ export function mapFallowJson(command: string, data: FallowAuditData): Violation
       violations.push({
         file: path.resolve(process.cwd(), ue.path),
         line: ue.line || 1,
-        message: `Sugerencia de calidad (Fallow): Evento emit de componente no usado: '${ue.component_name}.${ue.emit_name}'`,
+        message: `Evento emit de componente no usado: '${ue.component_name}.${ue.emit_name}'`,
         context: ue.emit_name,
         severity: 'error',
         fixable: false
@@ -804,14 +840,78 @@ export function mapFallowJson(command: string, data: FallowAuditData): Violation
       violations.push({
         file: path.resolve(process.cwd(), targetLoc?.path || 'package.json'),
         line: targetLoc?.line || 1,
-        message: `Sugerencia de calidad (Fallow): Dependencia no listada en package.json: '${ud.package_name}'`,
+        message: `Dependencia no listada en package.json: '${ud.package_name}'`,
         context: ud.package_name,
         severity: 'error',
         fixable: false
       });
     }
 
-    // 12. Complejidad en auditoría
+    // 12. Violaciones de límites arquitectónicos (Error crítico)
+    const boundaryViolations = [
+      ...(data.boundary_violations || []),
+      ...(data.dead_code?.boundary_violations || [])
+    ];
+    for (const b of boundaryViolations) {
+      violations.push({
+        file: path.resolve(process.cwd(), b.from_path),
+        line: b.line || 1,
+        message: `Violación de límite arquitectónico (Fallow): '${b.from_zone}' no puede importar de '${b.to_zone}' (import: '${b.import_specifier || b.to_path}')`,
+        context: b.from_path,
+        severity: 'error',
+        fixable: false
+      });
+    }
+
+    // 13. Props de componentes no usados (Warning)
+    const unusedProps = [
+      ...(data.unused_component_props || []),
+      ...(data.dead_code?.unused_component_props || [])
+    ];
+    for (const up of unusedProps) {
+      violations.push({
+        file: path.resolve(process.cwd(), up.path),
+        line: up.line || 1,
+        message: `Prop de componente no usado: '${up.component_name}.${up.prop_name}'`,
+        context: up.prop_name,
+        severity: 'warning',
+        fixable: false
+      });
+    }
+
+    // 14. Componentes no renderizados (Warning)
+    const unrenderedComponents = [
+      ...(data.unrendered_components || []),
+      ...(data.dead_code?.unrendered_components || [])
+    ];
+    for (const uc of unrenderedComponents) {
+      violations.push({
+        file: path.resolve(process.cwd(), uc.path),
+        line: uc.line || 1,
+        message: `Componente no renderizado: '${uc.component_name}'`,
+        context: uc.component_name,
+        severity: 'warning',
+        fixable: false
+      });
+    }
+
+    // 15. Inyecciones no provistas (Warning)
+    const unprovidedInjects = [
+      ...(data.unprovided_injects || []),
+      ...(data.dead_code?.unprovided_injects || [])
+    ];
+    for (const ui of unprovidedInjects) {
+      violations.push({
+        file: path.resolve(process.cwd(), ui.path),
+        line: ui.line || 1,
+        message: `Clave inyectada no provista: '${ui.inject_key}'`,
+        context: ui.inject_key,
+        severity: 'warning',
+        fixable: false
+      });
+    }
+
+    // 16. Complejidad en auditoría
     if (data.complexity && data.complexity.findings) {
       for (const f of data.complexity.findings) {
         addComplexityFinding(f, violations);
@@ -855,7 +955,11 @@ export function getViolationCategory(v: Violation): string {
   if (msg.includes('Tipo exportado no usado')) return 'Fallow: Tipos exportados no usados';
   if (msg.includes('Evento emit de componente no usado')) return 'Fallow: Emits no usados';
   if (msg.includes('Dependencia no listada')) return 'Fallow: Dependencias no listadas';
-  if (msg.includes('Sugerencia de calidad')) return 'Fallow: Exports no usados';
+  if (msg.includes('Violación de límite arquitectónico') || msg.includes('boundary')) return 'Fallow: Límites arquitectónicos';
+  if (msg.includes('Prop de componente no usado')) return 'Fallow: Props de componente no usados';
+  if (msg.includes('Componente no renderizado')) return 'Fallow: Componentes no renderizados';
+  if (msg.includes('Clave inyectada no provista')) return 'Fallow: Inyecciones no provistas';
+  if (msg.includes('Export no usado') || msg.includes('Sugerencia de calidad')) return 'Fallow: Exports no usados';
   if (msg.includes('Sugerencia de complejidad')) return 'Fallow: Complejidad';
   if (msg.includes('AGENTS.md') || msg.includes('DOX') || msg.includes('Enlace')) return 'DOX / AGENTS.md';
   if (msg.includes('css-checker') || msg.includes('CSS/SCSS duplicado')) return 'css-checker: SCSS/CSS duplicado';

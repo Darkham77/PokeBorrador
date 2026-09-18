@@ -41,6 +41,79 @@ export function getVisualWidth(str: string): number {
   return width;
 }
 
+export function padVisual(str: string, targetWidth: number, align: 'left' | 'right' | 'center' = 'left'): string {
+  const currentWidth = getVisualWidth(str);
+  const diff = targetWidth - currentWidth;
+  if (diff <= 0) return str;
+  if (align === 'right') {
+    return ' '.repeat(diff) + str;
+  }
+  if (align === 'center') {
+    const leftPad = Math.floor(diff / 2);
+    const rightPad = diff - leftPad;
+    return ' '.repeat(leftPad) + str + ' '.repeat(rightPad);
+  }
+  return str + ' '.repeat(diff);
+}
+
+export function truncateVisual(str: string, maxWidth: number): string {
+  if (getVisualWidth(str) <= maxWidth) return str;
+  let result = '';
+  const ellipsis = '…';
+  const target = maxWidth - 1;
+  for (const char of str) {
+    if (getVisualWidth(result + char) > target) break;
+    result += char;
+  }
+  return result + ellipsis;
+}
+
+export interface TableColumn<T = Record<string, unknown>> {
+  header: string;
+  width: number;
+  align?: 'left' | 'right' | 'center';
+  key?: string;
+  render?: (row: T) => string;
+}
+
+export function renderBoxTable<T = Record<string, unknown>>(
+  columns: readonly TableColumn<T>[],
+  rows: readonly T[],
+  options?: { emptyMessage?: string }
+): string {
+  const lines: string[] = [];
+
+  // Top border: ┌───┬───┐
+  lines.push('┌' + columns.map(c => '─'.repeat(c.width + 2)).join('┬') + '┐');
+
+  // Header row: │ COL 1 │ COL 2 │
+  const headerRow = '│ ' + columns.map(c => padVisual(styleText('bold', c.header), c.width, c.align || 'left')).join(' │ ') + ' │';
+  lines.push(headerRow);
+
+  // Header divider: ├───┼───┤
+  lines.push('├' + columns.map(c => '─'.repeat(c.width + 2)).join('┼') + '┤');
+
+  if (rows.length === 0) {
+    const totalInnerWidth = columns.reduce((acc, c) => acc + c.width + 2, 0) + (columns.length - 1);
+    const emptyMsg = options?.emptyMessage || 'No se encontraron registros.';
+    lines.push('│ ' + padVisual(styleText('dim', emptyMsg), totalInnerWidth - 2, 'center') + ' │');
+  } else {
+    for (const row of rows) {
+      const rowCells = columns.map(c => {
+        const rawVal = c.render ? c.render(row) : String((row as Record<string, unknown>)[c.key ?? ''] ?? '');
+        const truncated = truncateVisual(rawVal, c.width);
+        return padVisual(truncated, c.width, c.align || 'left');
+      });
+      lines.push('│ ' + rowCells.join(' │ ') + ' │');
+    }
+  }
+
+  // Bottom border: └───┴───┘
+  lines.push('└' + columns.map(c => '─'.repeat(c.width + 2)).join('┴') + '┘');
+
+  return lines.join('\n');
+}
+
 export function renderBanner(title: string, subtitle?: string): string {
   const line = '═'.repeat(TERMINAL_WIDTH - 4);
   const lines: string[] = [];

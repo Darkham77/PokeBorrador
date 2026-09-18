@@ -53,7 +53,7 @@ export function sortWarShopItems(
   coins: number,
   trainerLevel: number
 ): Item[] {
-  return [...items].sort((a, b) => {
+  return items.toSorted((a, b) => {
     const comp = sortKey === 'price'
       ? compareWarShopByPrice(a, b)
       : sortKey === 'rarity'

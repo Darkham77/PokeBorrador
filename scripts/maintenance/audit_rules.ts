@@ -128,10 +128,8 @@ const Z_LAYERS_DIFF_SENTINEL = Z_SORTED_ENTRIES.length + 1;
  * Produces a normalized relative POSIX path from the project root for deterministic rule evaluation.
  */
 export function normalizeFilePath(filePath: string): string {
-  const posixConverted = filePath.replace(/\\/g, '/');
-  const cwdPosix = process.cwd().replace(/\\/g, '/');
-  const rel = path.posix.isAbsolute(posixConverted) ? path.posix.relative(cwdPosix, posixConverted) : posixConverted;
-  return rel.toLowerCase(); // string-ok: Internal string formatting or DOM token identifier
+  const rel = path.isAbsolute(filePath) ? path.relative(process.cwd(), filePath) : filePath;
+  return rel.split(path.sep).join(path.posix.sep).toLowerCase(); // string-ok: Internal string formatting or DOM token identifier
 }
 
 export const viewport: AuditRule = { // string-ok: Internal string formatting or DOM token identifier

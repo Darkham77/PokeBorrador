@@ -25,7 +25,9 @@ import {
 import {
   renderBanner,
   renderConsolidatedFooter,
-  renderMarkdownReport
+  renderMarkdownReport,
+  renderBoxTable,
+  type TableColumn
 } from '../lib/unifiedTheme.ts';
 import { discoverAuditors, type AuditPresetName } from './auditScanner.ts';
 import { executeAuditorStreaming, isNodeInternalWarning } from '../lib/streamingRunner.ts';
@@ -181,12 +183,6 @@ async function runMasterAudit() {
 
         for (const line of subLines) {
           console.log(`     ${styleText('dim', '│')}  ${styleText('dim', line)}`);
-        }
-
-        if (!isSuccess && result.findings && result.findings.length > 0) {
-          for (const finding of result.findings.slice(0, 3)) {
-            console.log(`     ${styleText('red', '│  ✖')} ${styleText('red', finding.message)}`);
-          }
         }
       } finally {
         releaseLock();
@@ -351,18 +347,27 @@ async function runMasterAudit() {
   if (sortedCategories.length === 0) {
     console.log('\n' + styleText(['bold', 'green'], `✨ 100% de las suites aprobadas (${results.length}/${results.length}) sin errores ni advertencias.`));
   } else {
-    console.log('\n' + styleText('bold', '📊 DESGLOSE POR TIPO DE ERROR Y ADVERTENCIA:'));
-    console.log('┌───────────────────────────────────────────────────────────────────┬────────┬──────────┐');
-    console.log('│ TIPO DE INCIDENCIA / REGLA                                        │ ERRORES│ WARNINGS │');
-    console.log('├───────────────────────────────────────────────────────────────────┼────────┼──────────┤');
+    console.log('\n' + styleText('bold', '📊 DESGLOSE POR TIPO DE ERROR Y ADVERTENCIA:\n'));
 
-    for (const [catName, data] of sortedCategories) {
-      const truncatedCat = catName.length > 65 ? catName.substring(0, 62) + '...' : catName.padEnd(65);
-      const errStr = data.errors > 0 ? styleText('red', String(data.errors).padStart(6)) : styleText('dim', '     0');
-      const warnStr = data.warnings > 0 ? styleText('yellow', String(data.warnings).padStart(8)) : styleText('dim', '       0');
-      console.log(`│ ${truncatedCat} │ ${errStr} │ ${warnStr} │`);
+    interface BreakdownRow {
+      category: string;
+      errors: string;
+      warnings: string;
     }
-    console.log('└───────────────────────────────────────────────────────────────────┴────────┴──────────┘');
+
+    const breakdownCols: readonly TableColumn<BreakdownRow>[] = [
+      { header: 'TIPO DE INCIDENCIA / REGLA', width: 52, align: 'left', key: 'category' },
+      { header: 'ERRORES', width: 9, align: 'right', key: 'errors' },
+      { header: 'WARNINGS', width: 9, align: 'right', key: 'warnings' }
+    ];
+
+    const breakdownRows: BreakdownRow[] = sortedCategories.map(([catName, data]) => ({
+      category: catName,
+      errors: data.errors > 0 ? styleText('red', String(data.errors)) : styleText('dim', '0'),
+      warnings: data.warnings > 0 ? styleText('yellow', String(data.warnings)) : styleText('dim', '0')
+    }));
+
+    console.log(renderBoxTable(breakdownCols, breakdownRows));
 
     const allErrors: AuditFinding[] = [];
     for (const suite of results) {
@@ -378,8 +383,12 @@ async function runMasterAudit() {
       console.log(`\n❌ Muestra de errores detectados (últimos ${sampleErrors.length} de ${allErrors.length}):\n`);
       sampleErrors.forEach((f, idx) => {
         const fileLoc = f.file ? `${path.relative(process.cwd(), f.file)}${f.line !== undefined ? `:${f.line}` : ''}` : 'General';
-        const ruleTag = f.ruleDescription ? `[${f.ruleDescription}] ` : (f.ruleId ? `[${f.ruleId}] ` : '');
-        console.log(`  ${idx + 1}. ${fileLoc}: ${ruleTag}${f.message}`);
+        const cleanMsg = f.message.replace(/^Sugerencia de calidad \(Fallow\):\s*/i, '');
+        const normalizedRuleDesc = (f.ruleDescription || '').replace(/^Fallow:\s*/i, '').trim().toLowerCase();
+        const ruleTag = f.ruleDescription && !cleanMsg.toLowerCase().includes(normalizedRuleDesc)
+          ? `[${f.ruleDescription}] `
+          : (f.ruleDescription?.startsWith('Fallow:') ? '[Fallow] ' : (f.ruleId ? `[${f.ruleId}] ` : ''));
+        console.log(`  ${idx + 1}. ${fileLoc}: ${ruleTag}${cleanMsg}`);
       });
       console.log('');
     }

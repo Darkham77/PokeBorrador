@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 /**
  * Utility script to help audit event listener keys and stream handlers in src/
- * against Showdown event outputs.
+ * against Showdown event outputs in external/pokemon-showdown-code/.
  */
 export function auditShowdownEvents(showdownSimPath: string): string[] {
   const eventsFound: string[] = [];

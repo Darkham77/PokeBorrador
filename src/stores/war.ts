@@ -14,7 +14,8 @@ import {
 import { getGuardianData } from '@/logic/war/guardianEngine'
 
 import type { DominanceInfo } from '@/types/system/stores'
-import { requireFactionId, requireISODateKey, FACTION_IDS, type FactionId } from '@/types/system/game'
+import { requireFactionId, requireISODateKey, FACTION_IDS, type FactionId, type ISODateKey } from '@/types/system/game'
+import { getGMT3Date } from '@/logic/utils/timeUtils'
 import { requireMapRouteId, type MapRouteId } from '@/data/world/map-assets'
 import {
   calculateWarCoinsAwarded,
@@ -35,6 +36,10 @@ import {
 
 export const WAR_WINNER_FACTIONS = [...FACTION_IDS, 'tie'] as const
 export type WarWinnerFaction = (typeof WAR_WINNER_FACTIONS)[number]
+
+function getTodayISODateKey(): ISODateKey {
+  return requireISODateKey(getGMT3Date().toPlainDate().toString())
+}
 
 export const useWarStore = defineStore('war', () => {
   const gameStore = useGameStore()
@@ -75,7 +80,7 @@ export const useWarStore = defineStore('war', () => {
 
         // 2. Load Individual Weekly Progress
         if (authStore.user && gameStore.db) {
-          const today = requireISODateKey(Temporal.Now.plainDateISO().toString())
+          const today = getTodayISODateKey()
           const progress = await fetchUserWeeklyProgress(
             gameStore.db,
             authStore.user.id,
@@ -109,7 +114,7 @@ export const useWarStore = defineStore('war', () => {
     const pts = resolveRewardPoints(eventType, success, customPoints)
     if (pts <= 0) return 0
 
-    const today = requireISODateKey(Temporal.Now.plainDateISO().toString())
+    const today = getTodayISODateKey()
     if (!gameStore.state.warDailyCap) gameStore.state.warDailyCap = {}
     
     const allowedPts = calculateAllowedMapPoints(gameStore.state.warDailyCap, today, routeId, pts)
@@ -138,7 +143,7 @@ export const useWarStore = defineStore('war', () => {
    * Cap: 50 coins per day (Legacy Parity).
    */
   function handleWarCoins(pts: number) {
-    const today = requireISODateKey(Temporal.Now.plainDateISO().toString())
+    const today = getTodayISODateKey()
     if (!gameStore.state.warDailyCoins) gameStore.state.warDailyCoins = {}
     
     const dailyCoins = gameStore.state.warDailyCoins as Record<string, number> // open-record: Generic key-value data dictionary container
@@ -204,7 +209,7 @@ export const useWarStore = defineStore('war', () => {
    */
   async function claimGuardian(mapId: MapRouteId, isDefeat = false) {
     const routeId = requireMapRouteId(mapId)
-    const today = requireISODateKey(Temporal.Now.plainDateISO().toString())
+    const today = getTodayISODateKey()
     
     registerGuardianLockout(gameStore.state, dailyGuardianCaptures.value, routeId, today)
     await gameStore.save()

@@ -111,7 +111,7 @@ export function deserializePokemonTeam(rawTeam: unknown): Pokemon[] {
   const parsed = parseRawTeamArray(rawTeam);
   const result: Pokemon[] = [];
   for (const item of parsed) {
-    if (item && typeof item === 'object') {
+    if (item && typeof item === 'object' && 'id' in item && 'name' in item && 'level' in item) {
       result.push(sanitizeDeserializedPokemon(item as Pokemon));
     }
   }

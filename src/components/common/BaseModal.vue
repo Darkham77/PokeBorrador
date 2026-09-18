@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, watch, computed, inject, onUnmounted, useSlots, type Ref } from 'vue'
+import { ref, watch, computed, inject, onUnmounted, useSlots, useId, type Ref } from 'vue'
 import { gsap } from 'gsap'
 import { useBodyClass } from '@/composables/ui/useBodyClass'
 import { useUIStore } from '@/stores/ui'
@@ -99,7 +99,7 @@ const handleOverlayClick = () => {
 }
 
 // Stacking Logic
-const modalInstanceId = `modal-${Math.random().toString(36).substr(2, 9)}`
+const modalInstanceId = `modal-${useId()}`
 const localShow = ref(props.show)
 
 const computedZIndex = computed(() => {

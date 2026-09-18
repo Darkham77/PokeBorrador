@@ -128,6 +128,7 @@ For topic-specific mandates, consult the specialized rule modules under [.agents
 - [src/composables/AGENTS.md](./src/composables/AGENTS.md): Reusable composition state logic and lifecycle helpers.
 - [src/data/AGENTS.md](./src/data/AGENTS.md): Static game databases, data configurations, and asset catalogs.
 - [src/directives/AGENTS.md](./src/directives/AGENTS.md): Custom Vue directives.
+- [src/loaders/AGENTS.md](./src/loaders/AGENTS.md): Declarative Vue Router data loaders and route preloading functions.
 - [src/logic/AGENTS.md](./src/logic/AGENTS.md): Core battle engine mechanics, math formulas, translations, and DBRouter boundaries.
 - [src/router/AGENTS.md](./src/router/AGENTS.md): Application router and navigation guards.
 - [src/stores/AGENTS.md](./src/stores/AGENTS.md): Pinia state management, state validation, and serialization prevention rules.

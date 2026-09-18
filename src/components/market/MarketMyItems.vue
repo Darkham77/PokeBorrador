@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useGTSStore } from '@/stores/gts'
 import { useGameStore } from '@/stores/game'
 import { useAudioStore } from '@/stores/audio'
@@ -15,10 +16,12 @@ const gameStore = useGameStore()
 const audioStore = useAudioStore()
 const uiStore = useUIStore()
 
-const activeListings = computed(() => gtsStore.activeMyListings)
-const history = computed(() => gtsStore.salesHistory)
-const allPendingGtsClaims = computed(() => gtsStore.allPendingGtsClaims)
-const unclaimedCount = computed(() => gtsStore.unclaimedGtsCount)
+const {
+  activeMyListings: activeListings,
+  salesHistory: history,
+  allPendingGtsClaims,
+  unclaimedGtsCount: unclaimedCount,
+} = storeToRefs(gtsStore)
 
 const isClaimingId = ref<string | number | null>(null)
 const isClaimingAll = ref(false)

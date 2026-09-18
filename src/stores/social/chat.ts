@@ -60,7 +60,7 @@ export const useChatStore = defineStore('chat', () => {
       .limit(CHAT_MAX_MESSAGES_HISTORY) as { data: ChatMessage[] | null, error: unknown }
 
     if (!error && data) {
-      globalMessages.value = [...data].reverse()
+      globalMessages.value = data.toReversed()
       await fetchMissingCosmetics()
     }
   }
@@ -113,7 +113,7 @@ export const useChatStore = defineStore('chat', () => {
               ...row,
               id: globalMessages.value[idx].id
             }
-            globalMessages.value.splice(idx, 1, updatedRow)
+            globalMessages.value = globalMessages.value.with(idx, updatedRow)
           }
           return
         }

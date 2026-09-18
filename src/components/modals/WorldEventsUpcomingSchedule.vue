@@ -33,18 +33,17 @@ const upcomingDayGroups = computed<UpcomingDayGroup[]>(() => {
     const zdt = occ.startInstant.toZonedDateTimeISO(GAME_TIMEZONE)
     const dateKey = `${zdt.year}-${String(zdt.month).padStart(2, '0')}-${String(zdt.day).padStart(2, '0')}`
     
-    let group = map.get(dateKey)
-    if (!group) {
-      group = {
+    const group = map.getOrInsertComputed(dateKey, () => {
+      const newGroup: UpcomingDayGroup = {
         dateKey,
         dateLabel: occ.dateLabel,
         dayName: occ.dayName,
         isToday: occ.dateLabel === 'Hoy',
         occurrences: []
       }
-      map.set(dateKey, group)
-      groups.push(group)
-    }
+      groups.push(newGroup)
+      return newGroup
+    })
     group.occurrences.push(occ)
   }
 

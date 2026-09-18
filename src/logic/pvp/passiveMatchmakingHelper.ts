@@ -68,7 +68,7 @@ export function selectPassiveOpponent(
   }
 
   // Sort by closest distance to myElo
-  const sorted = [...eligible].sort((a, b) => {
+  const sorted = eligible.toSorted((a, b) => {
     const distA = Math.abs(a.elo_rating - myElo);
     const distB = Math.abs(b.elo_rating - myElo);
     return distA - distB;

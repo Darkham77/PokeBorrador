@@ -1,13 +1,13 @@
 ---
 name: auditor-framework
-description: MANDATORY engine and architectural governance for creating, refactoring, maintaining, and administering all static, AST, database, FSM, and asset auditors in the Poké Vicio project. YOU MUST trigger this skill whenever creating a new auditor, modifying existing sub-auditors, adding static validation checks, administering audit suites, handling auditor formats and reporting styles, refactoring auditor file walkers, or working with `scripts/auditors/`, `audit_full.ts`, `auditScanner.ts`, `BaseAuditor`, `FileScanAuditor`, or `StandardAuditResult` in BOTH Spanish and English (e.g., "crear auditor", "nuevo auditor", "mantener auditor", "sub-auditor", "subauditor", "modificar auditor", "formato de salida del auditor", "auditor estatico", "estandar del auditor", "BaseAuditor", "FileScanAuditor", "create auditor", "new auditor", "maintain auditor", "auditor architecture", "auditor standard", "audit scanner", "auto-discovery", "standard audit result"). Enforces OOP inheritance, dynamic auto-discovery without hardcoded lists, Box-Drawing terminal output + structured JSON in `scratch/audits/`, zero ad-hoc file walkers, zero console redefinitions, and zero code duplication.
+description: MANDATORY governance and architectural engine for creating, refactoring, maintaining, and administering ALL static analysis tools, sub-auditors, AST rules, and CLI reporting scripts in Poké Vicio. YOU MUST ALWAYS TRIGGER THIS SKILL whenever the user mentions auditors, audit suites, audit reports, audit tables, Fallow analyzers, report formatting, or modifies ANY file in `scripts/auditors/`, `scripts/maintenance/`, `scripts/lib/auditorBase.ts`, or `scripts/lib/unifiedTheme.ts`, even if they just mention 'auditor', 'auditores', 'auditoría', 'audit', 'fallow', 'reporte', 'tabla', 'resultados en la tabla', 'superclase', 'BaseAuditor', 'report_fallow', 'report_complexity', 'report_audit_findings', or audit scripts ('npm run audit', 'npm run audit:fallow:*', 'npm run audit:lint'). Enforces strict OOP inheritance (BaseAuditor, FileScanAuditor), standardized Box-Drawing table rendering via unifiedTheme (80-col limit, zero wrapping, getVisualWidth emoji alignment), dynamic auto-discovery, zero code duplication, and zero ad-hoc console loggers.
 ---
 
 # Auditor Framework: Governance, Architecture & Maintenance
 
-This skill defines the immutable standard and architectural contract for creating, administering, refactoring, and maintaining all sub-auditors across the Poké Vicio repository.
+This skill defines the immutable standard and architectural contract for creating, administering, refactoring, and maintaining all sub-auditors and reporting scripts across the Poké Vicio repository.
 
-Every sub-auditor in the project is part of a unified static analysis and verification system orchestrated by `npm run audit`.
+Every sub-auditor and reporter in the project is part of a unified static analysis and verification system orchestrated by `npm run audit`.
 
 ---
 
@@ -16,30 +16,34 @@ Every sub-auditor in the project is part of a unified static analysis and verifi
 1. **Strict OOP Inheritance Mandate**:
    - Every sub-auditor MUST extend either `BaseAuditor<TRuleId>` or `FileScanAuditor<TRuleId>` from [`scripts/lib/auditorBase.ts`](../../scripts/lib/auditorBase.ts).
    - Creating standalone procedural scripts, custom CLI loggers, or ad-hoc result printers is **STRICTLY FORBIDDEN**.
-2. **Dynamic Auto-Discovery Mandate (Zero Hardcoded Lists)**:
+2. **Unified Box-Drawing Table & Terminal Width Mandate (Max 80 Cols, Zero Wrapping)**:
+   - ALL terminal tables, whether rendered by sub-auditors (`BaseAuditor`), orchestrators (`audit_full.ts`), or interactive reporters (`report_fallow.ts`, `report_complexity.ts`, `report_audit_findings.ts`), MUST use the shared Box-Drawing utilities from [`scripts/lib/unifiedTheme.ts`](../../scripts/lib/unifiedTheme.ts) (`renderBanner`, `renderBoxTable`, `formatStatusBadge`, `getVisualWidth`).
+   - Hardcoding custom ASCII banners (`╔════...` exceeding 80 columns) or ad-hoc bulleted lists (`•`) is **STRICTLY FORBIDDEN**.
+   - Tables must fit within the standard 80-column terminal width (`TERMINAL_WIDTH = 80`) and use `getVisualWidth()` for padding so emojis (`✅`, `❌`, `⚠️`) do NOT throw column borders out of alignment.
+3. **Dynamic Auto-Discovery Mandate (Zero Hardcoded Lists)**:
    - The master orchestrator (`npm run audit` / [`scripts/maintenance/audit_full.ts`](../../scripts/maintenance/audit_full.ts)) and safe-commit diff gatekeeper ([`scripts/maintenance/audit_for_commit.ts`](../../scripts/maintenance/audit_for_commit.ts)) discover all suites dynamically via [`scripts/maintenance/auditScanner.ts`](../../scripts/maintenance/auditScanner.ts).
    - **Never hardcode an array of auditors or task IDs**. Any `.ts` file placed in `scripts/auditors/<family>/` is automatically discovered, categorized, timed, and executed.
-3. **Prohibition of Ad-Hoc File Walkers**:
+4. **Prohibition of Ad-Hoc File Walkers**:
    - Sub-auditors MUST NEVER implement custom recursive directory traversals (`fs.readdir` loops, `getAllFiles`, `getAllVueFiles`, `getFilesRecursively`, `walkSourceFiles`).
    - File discovery MUST use the centralized, cached, and ignore-aware scanner: `this.context.collectFiles(roots, extensions)` or `collectRepositoryFiles()`.
-4. **Unified Dual Output Standard (`StandardAuditResult`)**:
+5. **Unified Dual Output Standard (`StandardAuditResult`)**:
    - **Console (stdout)**: Emits formatted progress lines (`🔍 [X/N]`) followed by clean visual Box-Drawing tables (`[ ✅ PASS ]`, `[ ❌ FAIL ]`, `[ ⚠️ WARN ]`), runtimes in ms, and domain metrics via [`scripts/lib/unifiedTheme.ts`](../../scripts/lib/unifiedTheme.ts).
    - **Scratch Disk (`scratch/audits/`)**: ALWAYS saves 100% complete structured JSON conforming to `StandardAuditResult` to `scratch/audits/<family>/<id>.json` (and `scratch/audits/latest_audit.json` for global runs).
-5. **Zero Double-Reporting Anti-Pattern**:
+6. **Zero Double-Reporting Anti-Pattern**:
    - NEVER pass string arrays (`errors`, `warnings`) to `context.finish(...)` if violations were already registered with `this.addViolation(...)` or `context.addError()`. Doing so causes duplicate violation listings in the terminal summary table.
-6. **Zero Runtime Data Auto-Heal in Tooling**:
+7. **Zero Runtime Data Auto-Heal in Tooling**:
    - Auditors verify structural and data integrity. They must never silently patch, mock, or auto-heal corrupt data or invalid structures. Failures must be detected loudly with clear, actionable context.
-7. **Mandatory Identity & Human-Friendly Description Mandate (Max 60 chars, 1 line)**:
+8. **Mandatory Identity & Human-Friendly Description Mandate (Max 60 chars, 1 line)**:
    - Every sub-auditor MUST declare via inheritance:
      - `id: string`: Unique canonical auditor ID (e.g. `validate_my_feature`).
      - `name: string`: Formal suite name (e.g. `My Feature Validator`).
      - `description: string`: Human-friendly Spanish explanation (strictly max 60 characters, single line, no `\n`) of what the suite verifies.
      - `ruleDescriptions: Record<TRuleId, string>`: Human-friendly Spanish explanation (strictly max 60 characters, single line, no `\n`) for each rule ID.
    - Raw unexplained slugs without human context in console output are strictly forbidden.
-8. **Absolute Prohibition of Homebrew SLOC Counters Mandate**:
+9. **Absolute Prohibition of Homebrew SLOC Counters Mandate**:
    - Sub-auditors must NEVER implement manual line-counting loops, regex line filters, or ad-hoc SLOC checkers (`checkSloc`, line counting loops).
    - Fallow is the Single Source of Truth (SSoT) for all AST metrics, cognitive and cyclomatic complexity, function unit size, maintainability, dead code, and duplication detection across the codebase.
-9. **Human-Friendly Descriptions & Category Breakdown Mandate (Zero Code Slugs & Zero Family Grouping)**:
+10. **Human-Friendly Descriptions & Category Breakdown Mandate (Zero Code Slugs & Zero Family Grouping)**:
    - The master audit orchestrator (`npm run audit`) and warnings reporter (`npm run audit:warnings`) MUST render results desglosados strictly by category/rule in an official Box-Drawing table.
    - The table MUST display **100% human-friendly Spanish descriptions** (`finding.ruleDescription` or `suite.description`) defined via inheritance in `BaseAuditor` (`ruleDescriptions: Record<TRuleId, string>`). Displaying raw code slugs, identifiers, or technical keys (e.g. displaying `sprite-missing-asset` instead of `'Sprite no encontrado en assets de Pokémon'`) is **STRICTLY FORBIDDEN**.
    - Following the table, they MUST output ONLY an illustrative sample of the last 5 errors (`❌ Muestra de errores detectados (últimos 5 de N)`).

@@ -104,7 +104,7 @@ export interface RivalEncounter {
   enemyTeam: Pokemon[];
 }
 
-export async function buildRivalEncounter(playerTeam: Pokemon[]): Promise<RivalEncounter> {
+export async function buildRivalEncounter(playerTeam: Pokemon[] = []): Promise<RivalEncounter> {
   const { makePokemon } = await import('@/logic/pokemon/pokemonFactory');
   const { getSpritesForArchetype } = await import('@/logic/utils/npcSpriteRouter');
   const { toID } = await import('@/logic/utils/strings');
@@ -122,13 +122,14 @@ export async function buildRivalEncounter(playerTeam: Pokemon[]): Promise<RivalE
   const tQuote = getRandomQuoteForTrainer('rival');
 
   // Nivel del rival: Promedio del equipo del jugador + 5 (tope en MAX_POKEMON_LEVEL)
-  const avgLevel = playerTeam.length > 0
-    ? playerTeam.reduce((acc, p) => acc + (p.level || 5), 0) / playerTeam.length
+  const safeTeam = playerTeam || [];
+  const avgLevel = safeTeam.length > 0
+    ? safeTeam.reduce((acc, p) => acc + (p.level || 5), 0) / safeTeam.length
     : 5;
   const rivalLevel = Math.min(MAX_POKEMON_LEVEL, Math.floor(avgLevel) + 5);
 
   // Tamaño del equipo: mínimo 3 o igual al tamaño del equipo del jugador si tiene más de 3
-  const targetTeamSize = Math.max(3, playerTeam.length);
+  const targetTeamSize = Math.max(3, safeTeam.length);
 
   // 1. Pick ace from the rival archetype pool (SSoT: TRAINER_TYPES)
   const rivalPool = getArchetypePool('rival');

@@ -65,7 +65,7 @@ function purchaseConsumables(
 ): number {
   let currentSpent = 0;
   let itemCount = 0;
-  const sortedCandidates = [...candidates].sort((a, b) => b.price - a.price);
+  const sortedCandidates = candidates.toSorted((a, b) => b.price - a.price);
 
   while (itemCount < maxItems) {
     const affordable = sortedCandidates.filter(c => (recoveryBudget - currentSpent) >= c.price);

@@ -44,7 +44,7 @@ export const BANNED_ENTRY_GLOBS = [
 ] as const;
 
 export function escapeRegExp(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return RegExp.escape(str);
 }
 
 /**

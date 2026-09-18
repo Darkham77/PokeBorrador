@@ -211,11 +211,10 @@ export function autoFillLegalTeamForTheme(
 
   if (validCandidates.length === 0) return [];
 
-  const sorted = [...validCandidates].sort((a, b) => calculatePokemonStrengthScore(b) - calculatePokemonStrengthScore(a));
+  const sorted = validCandidates.toSorted((a, b) => calculatePokemonStrengthScore(b) - calculatePokemonStrengthScore(a));
   if (theme.requiresMonotype) {
     return findBestMonotypeTeam(sorted, targetCount);
   }
 
   return sorted.slice(0, targetCount);
 }
-

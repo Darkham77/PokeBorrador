@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { parseArgs } from 'node:util';
+import { parseArgs, styleText } from 'node:util';
 import { execSync } from 'node:child_process';
+import { renderBanner, renderBoxTable, type TableColumn } from '../../lib/unifiedTheme.ts';
 
 const DEFAULT_TOP_LIMIT = 20;
 const RADIX_DECIMAL = 10;
@@ -31,7 +32,7 @@ function parseCommandLineArgs() {
       jsonOutput = true;
     } else if (!category) {
       const cleanPos = pos.toLowerCase(); // domain-ok: Open dynamic text or non-domain string payload
-      if (['dupes', 'duplicates', 'security', 'cwe', 'dead-code', 'deadcode', 'unused', 'complexity', 'circular', 'exports', 'orphans', 'all'].includes(cleanPos)) {
+      if (['dupes', 'duplicates', 'security', 'cwe', 'dead-code', 'deadcode', 'unused', 'complexity', 'circular', 'exports', 'orphans', 'boundaries', 'architecture', 'boundary', 'all'].includes(cleanPos)) {
         category = cleanPos;
       }
     }
@@ -86,32 +87,45 @@ function reportDupes(top: number, json: boolean): void {
     return;
   }
 
-  console.log('\n╔═══════════════════════════════════════════════════════════════════════════════════════════╗');
-  console.log('║             REPORTE OFICIAL DE DUPLICACIÓN Y TRIPLICACIÓN DE CÓDIGO (FALLOW)             ║');
-  console.log('╚═══════════════════════════════════════════════════════════════════════════════════════════╝');
-  console.log(`\n📊 Total de grupos con código clonado: ${groups.length}`);
+  console.log('\n' + renderBanner('DUPLICACIÓN Y TRIPLICACIÓN DE CÓDIGO (FALLOW)', `Grupos detectados: ${groups.length}`));
 
   if (groups.length === 0) {
-    console.log('\n  ✅ ¡Excelente! No se encontraron bloques de código duplicado ni triplicado.\n');
+    console.log('\n  ' + styleText(['bold', 'green'], '✨ ¡Excelente! No se encontraron bloques de código duplicado ni triplicado.\n'));
     return;
   }
 
-  console.log(`\n🔥 TOP ${Math.min(top, groups.length)} GRUPOS DUPLICADOS:`);
-  console.log('─────────────────────────────────────────────────────────────────────────────');
+  console.log(`\n🔥 TOP ${Math.min(top, groups.length)} GRUPOS DUPLICADOS:\n`);
 
-  groups.slice(0, top).forEach((g, idx) => {
+  interface DupeRow {
+    index: string;
+    type: string;
+    tokens: string;
+    locations: string;
+  }
+
+  const dupeCols: readonly TableColumn<DupeRow>[] = [
+    { header: '#', width: 3, align: 'center', key: 'index' },
+    { header: 'TIPO', width: 14, align: 'center', key: 'type' },
+    { header: 'TOKENS', width: 8, align: 'right', key: 'tokens' },
+    { header: 'UBICACIONES DE CÓDIGO CLONADO', width: 41, align: 'left', key: 'locations' }
+  ];
+
+  const dupeRows: DupeRow[] = groups.slice(0, top).map((g, idx) => {
     const tokens = g.duplicated_tokens || 0;
     const instances = g.instances || [];
     const isTriplicate = instances.length >= 3;
-    const typeLabel = isTriplicate ? 'TRIPLICADO ⚠️' : 'DUPLICADO';
-    console.log(`\n  [${idx + 1}] ${typeLabel} (${tokens} tokens idénticos across ${instances.length} ubicaciones):`);
-    instances.forEach(inst => {
-      const p = inst.path || inst.file || '';
-      const line = inst.start_line || inst.line || 0;
-      console.log(`     • ${p}:${line}`);
-    });
+    const typeLabel = isTriplicate ? styleText('yellow', 'TRIPLICADO ⚠️') : styleText('cyan', 'DUPLICADO');
+    const locs = instances.map(i => `${path.basename(i.path || i.file || '')}:${i.start_line || i.line || 0}`).join(', ');
+    return {
+      index: String(idx + 1),
+      type: typeLabel,
+      tokens: String(tokens),
+      locations: locs
+    };
   });
-  console.log('─────────────────────────────────────────────────────────────────────────────\n');
+
+  console.log(renderBoxTable(dupeCols, dupeRows));
+  console.log('');
 }
 
 function reportSecurity(top: number, json: boolean): void {
@@ -128,29 +142,38 @@ function reportSecurity(top: number, json: boolean): void {
     return;
   }
 
-  console.log('\n╔═══════════════════════════════════════════════════════════════════════════════════════════╗');
-  console.log('║                   REPORTE OFICIAL DE SEGURIDAD Y VULNERABILIDADES CWE                     ║');
-  console.log('╚═══════════════════════════════════════════════════════════════════════════════════════════╝');
-  console.log(`\n📊 Total de hallazgos de seguridad en producción (src/): ${findings.length}`);
+  console.log('\n' + renderBanner('SEGURIDAD Y VULNERABILIDADES CWE (FALLOW)', `Hallazgos en src/: ${findings.length}`));
 
   if (findings.length === 0) {
-    console.log('\n  ✅ ¡Excelente! 0 vulnerabilidades de seguridad CWE detectadas en src/.\n');
+    console.log('\n  ' + styleText(['bold', 'green'], '✨ ¡Excelente! 0 vulnerabilidades de seguridad CWE detectadas en src/.\n'));
     return;
   }
 
-  console.log(`\n🔥 TOP ${Math.min(top, findings.length)} HALLAZGOS CWE:`);
-  console.log('─────────────────────────────────────────────────────────────────────────────');
-  console.log('  #   CWE       UBICACIÓN                 DESCRIPCIÓN');
-  console.log('─────────────────────────────────────────────────────────────────────────────');
+  console.log(`\n🔥 TOP ${Math.min(top, findings.length)} HALLAZGOS CWE:\n`);
 
-  findings.slice(0, top).forEach((f, idx) => {
-    const rank = String(idx + 1).padStart(3);
-    const cweStr = `CWE-${f.cwe || '?'}`.padEnd(8);
-    const loc = `${f.path}:${f.line}`.padEnd(25);
-    const ev = (f.evidence || f.kind || '').slice(0, 45);
-    console.log(` ${rank}  ${cweStr}  ${loc}  ${ev}`);
-  });
-  console.log('─────────────────────────────────────────────────────────────────────────────\n');
+  interface SecurityRow {
+    index: string;
+    cwe: string;
+    location: string;
+    description: string;
+  }
+
+  const secCols: readonly TableColumn<SecurityRow>[] = [
+    { header: '#', width: 3, align: 'center', key: 'index' },
+    { header: 'CWE', width: 9, align: 'center', key: 'cwe' },
+    { header: 'UBICACIÓN', width: 25, align: 'left', key: 'location' },
+    { header: 'DESCRIPCIÓN', width: 29, align: 'left', key: 'description' }
+  ];
+
+  const secRows: SecurityRow[] = findings.slice(0, top).map((f, idx) => ({
+    index: String(idx + 1),
+    cwe: styleText('red', `CWE-${f.cwe || '?'}`),
+    location: `${f.path}:${f.line}`,
+    description: f.evidence || f.kind || ''
+  }));
+
+  console.log(renderBoxTable(secCols, secRows));
+  console.log('');
 }
 
 function reportDeadCode(top: number, json: boolean): void {
@@ -165,10 +188,15 @@ function reportDeadCode(top: number, json: boolean): void {
   const unusedEmits = (data?.unused_component_emits as Array<{ path: string; component_name: string; emit_name: string; line: number }>) || [];
   const unlistedDeps = (data?.unlisted_dependencies as Array<{ package_name: string; imported_from?: Array<{ path: string; line: number }> }>) || [];
   const duplicateExports = (data?.duplicate_exports as Array<{ export_name: string; locations?: Array<{ path: string; line: number }> }>) || [];
+  const boundaryViolations = (data?.boundary_violations as Array<{ from_path?: string; to_path?: string; from_zone?: string; to_zone?: string; import_specifier?: string; line?: number }>) || [];
+  const unusedProps = (data?.unused_component_props as Array<{ path: string; component_name: string; prop_name: string; line: number }>) || [];
+  const unrenderedComponents = (data?.unrendered_components as Array<{ path: string; component_name: string; line: number }>) || [];
+  const unprovidedInjects = (data?.unprovided_injects as Array<{ path: string; inject_key: string; line: number }>) || [];
 
   const totalGranular = unusedFiles.length + unusedExports.length + unusedDeps.length + circular.length +
     unusedStoreMembers.length + unusedClassMembers.length + unusedTypes.length +
-    unusedEmits.length + unlistedDeps.length + duplicateExports.length;
+    unusedEmits.length + unlistedDeps.length + duplicateExports.length +
+    boundaryViolations.length + unusedProps.length + unrenderedComponents.length + unprovidedInjects.length;
 
   if (json) {
     console.log(JSON.stringify({
@@ -183,6 +211,10 @@ function reportDeadCode(top: number, json: boolean): void {
       unusedEmitsCount: unusedEmits.length,
       unlistedDepsCount: unlistedDeps.length,
       duplicateExportsCount: duplicateExports.length,
+      boundaryViolationsCount: boundaryViolations.length,
+      unusedPropsCount: unusedProps.length,
+      unrenderedComponentsCount: unrenderedComponents.length,
+      unprovidedInjectsCount: unprovidedInjects.length,
       unusedFiles: unusedFiles.slice(0, top),
       unusedExports: unusedExports.slice(0, top),
       unusedStoreMembers: unusedStoreMembers.slice(0, top),
@@ -191,27 +223,56 @@ function reportDeadCode(top: number, json: boolean): void {
       unusedEmits: unusedEmits.slice(0, top),
       unlistedDeps: unlistedDeps.slice(0, top),
       duplicateExports: duplicateExports.slice(0, top),
+      boundaryViolations,
+      unusedProps: unusedProps.slice(0, top),
+      unrenderedComponents: unrenderedComponents.slice(0, top),
+      unprovidedInjects: unprovidedInjects.slice(0, top),
       unusedDeps,
       circular
     }, null, 2));
     return;
   }
 
-  console.log('\n╔═══════════════════════════════════════════════════════════════════════════════════════════╗');
-  console.log('║               REPORTE OFICIAL DE CÓDIGO MUERTO Y DEPENDENCIAS (FALLOW)                   ║');
-  console.log('╚═══════════════════════════════════════════════════════════════════════════════════════════╝');
+  console.log('\n' + renderBanner('CÓDIGO MUERTO Y DEPENDENCIAS (FALLOW)', `Total de incidencias: ${totalGranular}`));
 
-  console.log(`\n📊 Resumen Consolidado de Dead Code (${totalGranular} problemas detectados):`);
-  console.log(`  • Dependencias circulares      : ${circular.length.toString().padStart(3)} ${circular.length === 0 ? '✅' : '❌'}`);
-  console.log(`  • Archivos huérfanos           : ${unusedFiles.length.toString().padStart(3)} ${unusedFiles.length === 0 ? '✅' : '❌'}`);
-  console.log(`  • Dependencias no usadas       : ${unusedDeps.length.toString().padStart(3)} ${unusedDeps.length === 0 ? '✅' : '⚠️'}`);
-  console.log(`  • Exports de valor no usados   : ${unusedExports.length.toString().padStart(3)} ${unusedExports.length === 0 ? '✅' : '⚠️'}`);
-  console.log(`  • Miembros de Store no usados  : ${unusedStoreMembers.length.toString().padStart(3)} ${unusedStoreMembers.length === 0 ? '✅' : '⚠️'}`);
-  console.log(`  • Miembros de Clase no usados  : ${unusedClassMembers.length.toString().padStart(3)} ${unusedClassMembers.length === 0 ? '✅' : '⚠️'}`);
-  console.log(`  • Tipos exportados no usados   : ${unusedTypes.length.toString().padStart(3)} ${unusedTypes.length === 0 ? '✅' : '⚠️'}`);
-  console.log(`  • Dependencias no listadas     : ${unlistedDeps.length.toString().padStart(3)} ${unlistedDeps.length === 0 ? '✅' : '⚠️'}`);
-  console.log(`  • Exports duplicados           : ${duplicateExports.length.toString().padStart(3)} ${duplicateExports.length === 0 ? '✅' : '⚠️'}`);
-  console.log(`  • Emits de componentes (Vue)   : ${unusedEmits.length.toString().padStart(3)} ${unusedEmits.length === 0 ? '✅' : '⚠️'}`);
+  interface DeadCodeSummaryRow {
+    category: string;
+    count: string;
+    status: string;
+  }
+
+  const deadCodeCols: readonly TableColumn<DeadCodeSummaryRow>[] = [
+    { header: 'CATEGORÍA / TIPO DE HALLAZGO', width: 49, align: 'left', key: 'category' },
+    { header: 'INCIDENCIAS', width: 13, align: 'right', key: 'count' },
+    { header: 'ESTADO', width: 8, align: 'center', key: 'status' }
+  ];
+
+  const deadCodeRows: DeadCodeSummaryRow[] = [
+    { category: 'Dependencias circulares', count: String(circular.length), status: circular.length === 0 ? '✅' : '❌' },
+    { category: 'Límites arquitectónicos', count: String(boundaryViolations.length), status: boundaryViolations.length === 0 ? '✅' : '❌' },
+    { category: 'Archivos huérfanos', count: String(unusedFiles.length), status: unusedFiles.length === 0 ? '✅' : '❌' },
+    { category: 'Dependencias no usadas', count: String(unusedDeps.length), status: unusedDeps.length === 0 ? '✅' : '⚠️' },
+    { category: 'Exports de valor no usados', count: String(unusedExports.length), status: unusedExports.length === 0 ? '✅' : '⚠️' },
+    { category: 'Miembros de Store no usados', count: String(unusedStoreMembers.length), status: unusedStoreMembers.length === 0 ? '✅' : '⚠️' },
+    { category: 'Miembros de Clase no usados', count: String(unusedClassMembers.length), status: unusedClassMembers.length === 0 ? '✅' : '⚠️' },
+    { category: 'Tipos exportados no usados', count: String(unusedTypes.length), status: unusedTypes.length === 0 ? '✅' : '⚠️' },
+    { category: 'Dependencias no listadas', count: String(unlistedDeps.length), status: unlistedDeps.length === 0 ? '✅' : '⚠️' },
+    { category: 'Exports duplicados', count: String(duplicateExports.length), status: duplicateExports.length === 0 ? '✅' : '⚠️' },
+    { category: 'Emits de componentes (Vue)', count: String(unusedEmits.length), status: unusedEmits.length === 0 ? '✅' : '⚠️' },
+    { category: 'Props no usados (Vue SFC)', count: String(unusedProps.length), status: unusedProps.length === 0 ? '✅' : '⚠️' },
+    { category: 'Componentes no renderizados', count: String(unrenderedComponents.length), status: unrenderedComponents.length === 0 ? '✅' : '⚠️' },
+    { category: 'Inyecciones no provistas', count: String(unprovidedInjects.length), status: unprovidedInjects.length === 0 ? '✅' : '⚠️' }
+  ];
+
+  console.log('\n' + renderBoxTable(deadCodeCols, deadCodeRows));
+
+  if (boundaryViolations.length > 0) {
+    console.log('\n🚨 Violaciones de Límites Arquitectónicos:');
+    boundaryViolations.forEach((b, idx) => {
+      console.log(`  [${idx + 1}] '${b.from_zone}' -> '${b.to_zone}' en ${b.from_path}:${b.line}`);
+      console.log(`       Import: ${b.import_specifier || b.to_path}`);
+    });
+  }
 
   if (circular.length > 0) {
     console.log('\n🔄 Dependencias Circulares Críticas:');
@@ -274,7 +335,7 @@ function reportDeadCode(top: number, json: boolean): void {
     console.log(`\n📤 Top Exports de Valor No Usados (${Math.min(top, unusedExports.length)} de ${unusedExports.length}):`);
     unusedExports.slice(0, top).forEach((x, idx) => console.log(`  [${idx + 1}] ${x.path}:${x.line} -> export '${x.export_name}'`));
   }
-  console.log('\n─────────────────────────────────────────────────────────────────────────────\n');
+  console.log('');
 }
 
 function reportCircular(json: boolean): void {
@@ -286,24 +347,20 @@ function reportCircular(json: boolean): void {
     return;
   }
 
-  console.log('\n╔═══════════════════════════════════════════════════════════════════════════════════════════╗');
-  console.log('║               REPORTE OFICIAL DE DEPENDENCIAS CIRCULARES (FALLOW)                         ║');
-  console.log('╚═══════════════════════════════════════════════════════════════════════════════════════════╝');
-  console.log(`\n📊 Dependencias Circulares Totales: ${circular.length} ${circular.length === 0 ? '✅' : '❌'}`);
+  console.log('\n' + renderBanner('DEPENDENCIAS CIRCULARES (FALLOW)', `Ciclos detectados: ${circular.length}`));
 
   if (circular.length === 0) {
-    console.log('\n  ✅ ¡Excelente! No se detectaron dependencias circulares en el proyecto.\n');
+    console.log('\n  ' + styleText(['bold', 'green'], '✨ ¡Excelente! No se detectaron dependencias circulares en el proyecto.\n'));
     return;
   }
 
-  console.log('\n🔄 Ciclos Detectados:');
-  console.log('─────────────────────────────────────────────────────────────────────────────');
+  console.log('\n🔄 Ciclos Detectados:\n');
   circular.forEach((c, idx) => {
     const filesList = (Array.isArray(c.files) && c.files.length > 0) ? c.files : (Array.isArray(c.cycle) ? c.cycle : []);
     const cycleStr = filesList.length > 0 ? filesList.join(' → ') : (c.path || '');
     console.log(`  [${idx + 1}] ${cycleStr}`);
   });
-  console.log('─────────────────────────────────────────────────────────────────────────────\n');
+  console.log('');
 }
 
 function reportExports(top: number, json: boolean): void {
@@ -315,23 +372,76 @@ function reportExports(top: number, json: boolean): void {
     return;
   }
 
-  console.log('\n╔═══════════════════════════════════════════════════════════════════════════════════════════╗');
-  console.log('║               REPORTE OFICIAL DE EXPORTS NO USADOS (FALLOW)                               ║');
-  console.log('╚═══════════════════════════════════════════════════════════════════════════════════════════╝');
-  console.log(`\n📊 Total de Exports no Usados: ${unusedExports.length} ${unusedExports.length === 0 ? '✅' : '⚠️'}`);
+  console.log('\n' + renderBanner('EXPORTS NO USADOS (FALLOW)', `Total sin uso: ${unusedExports.length}`));
 
   if (unusedExports.length === 0) {
-    console.log('\n  ✅ ¡Excelente! 0 exports sin uso detectados.\n');
+    console.log('\n  ' + styleText(['bold', 'green'], '✨ ¡Excelente! 0 exports sin uso detectados.\n'));
     return;
   }
 
   const showCount = Math.min(top, unusedExports.length);
-  console.log(`\n📤 Top Exports No Usados (${showCount} de ${unusedExports.length}):`);
-  console.log('─────────────────────────────────────────────────────────────────────────────');
-  unusedExports.slice(0, top).forEach((x, idx) => {
-    console.log(`  [${idx + 1}] ${x.path}:${x.line} -> export '${x.export_name}'`);
-  });
-  console.log('─────────────────────────────────────────────────────────────────────────────\n');
+  console.log(`\n📤 Top Exports No Usados (${showCount} de ${unusedExports.length}):\n`);
+
+  interface ExportRow {
+    index: string;
+    exportName: string;
+    location: string;
+  }
+
+  const expCols: readonly TableColumn<ExportRow>[] = [
+    { header: '#', width: 3, align: 'center', key: 'index' },
+    { header: 'EXPORTACIÓN SIN USO', width: 28, align: 'left', key: 'exportName' },
+    { header: 'UBICACIÓN EN CÓDIGO', width: 39, align: 'left', key: 'location' }
+  ];
+
+  const expRows: ExportRow[] = unusedExports.slice(0, top).map((x, idx) => ({
+    index: String(idx + 1),
+    exportName: x.export_name,
+    location: `${x.path}:${x.line}`
+  }));
+
+  console.log(renderBoxTable(expCols, expRows));
+  console.log('');
+}
+
+function reportBoundaries(json: boolean): void {
+  const data = runFallowCommand('dead-code');
+  const boundaries = (data?.boundary_violations as Array<{ from_path?: string; to_path?: string; from_zone?: string; to_zone?: string; import_specifier?: string; line?: number }>) || [];
+
+  if (json) {
+    console.log(JSON.stringify({ totalBoundaries: boundaries.length, violations: boundaries }, null, 2));
+    return;
+  }
+
+  console.log('\n' + renderBanner('LÍMITES ARQUITECTÓNICOS (FALLOW)', `Violaciones detectadas: ${boundaries.length}`));
+
+  if (boundaries.length === 0) {
+    console.log('\n  ' + styleText(['bold', 'green'], '✨ ¡Excelente! 0 violaciones de límites arquitectónicos. La arquitectura está 100% aislada.\n'));
+    return;
+  }
+
+  console.log('\n🚨 VIOLACIONES DETECTADAS:\n');
+
+  interface BoundaryRow {
+    index: string;
+    transition: string;
+    location: string;
+  }
+
+  const bndCols: readonly TableColumn<BoundaryRow>[] = [
+    { header: '#', width: 3, align: 'center', key: 'index' },
+    { header: 'TRANSICIÓN ENTRE CAPAS', width: 28, align: 'left', key: 'transition' },
+    { header: 'UBICACIÓN EN CÓDIGO', width: 39, align: 'left', key: 'location' }
+  ];
+
+  const bndRows: BoundaryRow[] = boundaries.map((b, idx) => ({
+    index: String(idx + 1),
+    transition: `${b.from_zone} → ${b.to_zone}`,
+    location: `${b.from_path}:${b.line}`
+  }));
+
+  console.log(renderBoxTable(bndCols, bndRows));
+  console.log('');
 }
 
 function reportAllSummary(json: boolean): void {
@@ -354,21 +464,35 @@ function reportAllSummary(json: boolean): void {
     return;
   }
 
-  console.log('\n╔═══════════════════════════════════════════════════════════════════════════════════════════╗');
-  console.log('║                   DASHBOARD OFICIAL DE INTELIGENCIA DE CÓDIGO (FALLOW)                    ║');
-  console.log('╚═══════════════════════════════════════════════════════════════════════════════════════════╝');
-  console.log(`\n📊 Estado General del Proyecto:`);
-  console.log(`  • Total de advertencias de calidad : ${totalFindings}`);
-  console.log(`  • Funciones con alta complejidad   : ${complexityCount}`);
+  console.log('\n' + renderBanner('DASHBOARD DE INTELIGENCIA DE CÓDIGO (FALLOW)', 'Métricas de arquitectura y calidad'));
+
+  interface SummaryRow {
+    metric: string;
+    value: string;
+  }
+
+  const sumCols: readonly TableColumn<SummaryRow>[] = [
+    { header: 'MÉTRICA / INDICADOR DE PROYECTO', width: 56, align: 'left', key: 'metric' },
+    { header: 'VALOR', width: 14, align: 'right', key: 'value' }
+  ];
+
+  const sumRows: SummaryRow[] = [
+    { metric: 'Total de advertencias de calidad', value: String(totalFindings) },
+    { metric: 'Funciones con alta complejidad (cognitiva/ciclomática)', value: String(complexityCount) }
+  ];
+
+  console.log('\n' + renderBoxTable(sumCols, sumRows));
+
   console.log('\n🛠️ COMANDOS DISPONIBLES EN NPM:');
   console.log('─────────────────────────────────────────────────────────────────────────────');
-  console.log('  • npm run audit:complexity         → Reporte completo de complejidad ciclomática/cognitiva');
-  console.log('  • npm run audit:fallow:dupes       → Detección de bloques de código duplicados/triplicados');
+  console.log('  • npm run audit:complexity         → Reporte de complejidad ciclomática/cognitiva');
+  console.log('  • npm run audit:fallow:dupes       → Detección de bloques de código clonados');
   console.log('  • npm run audit:fallow:circular    → Detección de dependencias circulares');
   console.log('  • npm run audit:fallow:exports     → Detección de exports no usados');
-  console.log('  • npm run audit:fallow:security    → Auditoría de vulnerabilidades y seguridad CWE');
-  console.log('  • npm run audit:fallow:dead-code   → Detección de archivos huérfanos y exports sin uso');
-  console.log('  • npm run audit                    → Suite de auditoría unificada del proyecto (20 suites)');
+  console.log('  • npm run audit:fallow:security    → Auditoría de seguridad y CWE');
+  console.log('  • npm run audit:fallow:dead-code   → Detección de código muerto y dependencias');
+  console.log('  • npm run audit:fallow:boundaries  → Auditoría de límites arquitectónicos');
+  console.log('  • npm run audit                    → Suite de auditoría unificada');
   console.log('─────────────────────────────────────────────────────────────────────────────\n');
 }
 
@@ -401,6 +525,11 @@ function main(): void {
     case 'deadcode':
     case 'unused':
       reportDeadCode(top, jsonOutput);
+      break;
+    case 'boundaries':
+    case 'architecture':
+    case 'boundary':
+      reportBoundaries(jsonOutput);
       break;
     case 'complexity':
       executeComplexityReport(jsonOutput);

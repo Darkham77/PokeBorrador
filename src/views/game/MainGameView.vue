@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
+import { computed, onMounted, onUnmounted, watch, nextTick, useTemplateRef } from 'vue'
 import { gsap } from 'gsap'
 import { useBodyClass } from '@/composables/ui/useBodyClass'
 import { useGameStore } from '@/stores/game'
@@ -45,9 +45,9 @@ const authStore = useAuthStore()
 const isDebugActive = computed(() => isLocalEnvironment() || authStore.sessionMode === 'offline' || authStore.user?.role === 'admin')
 
 // --- Refs for Layout ---
-const hudRef = ref<HTMLElement | null>(null)
-const hudBottomRef = ref<HTMLElement | null>(null)
-const innerHudRef = ref<HTMLElement | null>(null)
+const hudRef = useTemplateRef<HTMLElement>('hudRef')
+const hudBottomRef = useTemplateRef<HTMLElement>('hudBottomRef')
+const innerHudRef = useTemplateRef<HTMLElement>('innerHudRef')
 
 // --- Composable Layout ---
 const {

@@ -19,13 +19,13 @@ export interface Modal {
 export const useModalStore = defineStore('modals', () => {
   const stack = ref<Modal[]>([])
 
-  const open = (name: string, props: Record<string, unknown> = {}, customComponent?: Component) => {
+  const open = (name: string, props: Record<string, unknown> = {}, customComponent?: Component): string | null => {
     if ((name === 'Confirm' || name === 'Prompt') && isOpen(name)) {
       logger.warn('ModalStore', `Modal "${name}" is already open. Ignoring duplicate request.`)
       return null
     }
 
-    const id = Math.random().toString(36).substring(7)
+    const id: string = crypto.randomUUID()
     const modal: Modal = {
       id,
       name,

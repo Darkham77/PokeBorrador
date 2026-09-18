@@ -25,7 +25,7 @@ function stealItemsFromEnemy(
 
   let stolenTotalCost = 0
   const stolenItemsList: StolenItemEntry[] = []
-  const shuffled = [...availableItems].sort(() => Math.random() - HALF_FACTOR)
+  const shuffled = availableItems.toSorted(() => Math.random() - HALF_FACTOR)
 
   for (const itemId of shuffled) {
     if (stolenTotalCost >= maxLimit) break
@@ -107,7 +107,7 @@ function stealPotionsAndBallsFromPlayer(
   if (availableItems.length === 0) return stolenItems
 
   let stolenTotalCost = 0
-  for (const itemId of [...availableItems].sort(() => Math.random() - HALF_FACTOR)) {
+  for (const itemId of availableItems.toSorted(() => Math.random() - HALF_FACTOR)) {
     if (stolenTotalCost >= itemsLimit) break
     const itemDef = getItemById(itemId)
     const itemPrice = itemDef?.price || DEFAULT_ITEM_PRICE_FALLBACK

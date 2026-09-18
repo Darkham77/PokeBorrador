@@ -105,9 +105,10 @@ export class HeuristicDamageCalculator {
       try { oppAttacking.push(this.calcDamage(opp, my, mv, snapshot.field)); } catch { /* catch-ok: Hypothetical move exploration probe skip */ }
     }
 
-    myAttacking.sort((a, b) => b.maxPercent - a.maxPercent);
-    oppAttacking.sort((a, b) => b.maxPercent - a.maxPercent);
-    return { myAttacking, oppAttacking };
+    return {
+      myAttacking: myAttacking.toSorted((a, b) => b.maxPercent - a.maxPercent),
+      oppAttacking: oppAttacking.toSorted((a, b) => b.maxPercent - a.maxPercent)
+    };
   }
 
   getEffectiveSpeed(pokemon: HeuristicPokemonState, field: HeuristicFieldState, side: SideID): number {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { computed, watch, toValue, onUnmounted } from 'vue'
+import { computed, watch, toValue, onWatcherCleanup } from 'vue'
 import { gsap } from 'gsap'
 import { AUTO_BATTLE_NPC_DIALOG_DELAY_SEC } from '@/data/system/constants.ts'
 import { useBattleStore } from '@/stores/battle/battle'
@@ -140,8 +140,6 @@ watch(() => battleStore.currentSubState, (subState) => {
   }
 }, { immediate: true });
 
-let autoBattleDelayedCall: gsap.core.Tween | null = null;
-
 // Auto-combatir: Inicia el encuentro automáticamente si está activado
 watch(() => [
   battleStore.isSearching,
@@ -152,11 +150,6 @@ watch(() => [
   battle.value?.isTrainer,
   battle.value?.isGym
 ] as const, ([isSearching, subState, isIntroAnimating, isProcessing, autoBattle, isTrainer, isGym]) => {
-  if (autoBattleDelayedCall) {
-    autoBattleDelayedCall.kill();
-    autoBattleDelayedCall = null;
-  }
-
   if (
     autoBattle &&
     isSearching &&
@@ -168,8 +161,7 @@ watch(() => [
     const delay = isNpcEncounter ? AUTO_BATTLE_NPC_DIALOG_DELAY_SEC : 0;
 
     if (delay > 0) {
-      autoBattleDelayedCall = gsap.delayedCall(delay, () => {
-        autoBattleDelayedCall = null;
+      const autoBattleDelayedCall = gsap.delayedCall(delay, () => {
         if (
           uiStore.autoBattle &&
           battleStore.isSearching &&
@@ -180,18 +172,14 @@ watch(() => [
           battleStore.startEncounter();
         }
       });
+      onWatcherCleanup(() => {
+        autoBattleDelayedCall.kill();
+      });
     } else {
       battleStore.startEncounter();
     }
   }
 }, { immediate: true });
-
-onUnmounted(() => {
-  if (autoBattleDelayedCall) {
-    autoBattleDelayedCall.kill();
-    autoBattleDelayedCall = null;
-  }
-});
 
 // Auto-ejecución de turnos forzados y bloqueados
 watch(() => [

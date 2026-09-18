@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, nextTick, watch } from 'vue'
+import { computed, onMounted, nextTick, watch, useTemplateRef } from 'vue'
 import { useResizeObserver } from '@vueuse/core'
 import { useGameStore } from '@/stores/game'
 import { useModalStore } from '@/stores/modals'
@@ -13,10 +13,10 @@ const money = computed(() => _gameStore.state.money)
 const battleCoins = computed(() => _gameStore.state.battleCoins || 0)
 const warCoins = computed(() => _gameStore.state.warCoins || 0)
 
-const containerRef = ref<HTMLElement | null>(null)
-const moneyRef = ref<HTMLElement | null>(null)
-const bcRef = ref<HTMLElement | null>(null)
-const warRef = ref<HTMLElement | null>(null)
+const containerRef = useTemplateRef<HTMLElement>('containerRef')
+const moneyRef = useTemplateRef<HTMLElement>('moneyRef')
+const bcRef = useTemplateRef<HTMLElement>('bcRef')
+const warRef = useTemplateRef<HTMLElement>('warRef')
 
 const PILL_PADDING_SAFETY_PX = 8
 const MIN_FONT_SIZE_PX = 4

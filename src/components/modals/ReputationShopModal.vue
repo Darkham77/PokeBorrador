@@ -134,7 +134,7 @@ const filteredItems = computed<(ReputationShopItem & { name: string; desc: strin
     sprite: resolveItemSprite(item),
   }))
 
-  return [...items].sort((a, b) => {
+  return items.toSorted((a, b) => {
     let comp: number
     if (sortKey.value === 'price') {
       comp = (a.repCost || 0) - (b.repCost || 0)

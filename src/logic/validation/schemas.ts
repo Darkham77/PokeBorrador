@@ -19,6 +19,7 @@ import {
   literal,
   boolean,
   unknown,
+  picklist,
   type InferOutput,
   type InferInput
 } from 'valibot';
@@ -49,7 +50,7 @@ export * from './subschemas/socialSchemas.ts';
 // ==========================================
 
 export const activeMissionSchema = object({
-  id: union([literal('mission_6h'), literal('mission_12h'), literal('mission_24h')]),
+  id: picklist(['mission_6h', 'mission_12h', 'mission_24h']),
   startedAt: number(),
   endsAt: number(),
   targetPokemonUid: optional(string()),
@@ -58,17 +59,18 @@ export const activeMissionSchema = object({
   targetZone: optional(string()),
   streak: optional(number()),
   projectedReward: optional(number()),
-  rewards: optional(record(string(), number()))
+  rewards: optional(record(string(), number())),
+  status: optional(string())
 });
 
-export const rankedTierIdSchema = union([
-  literal('madera'),
-  literal('bronce'),
-  literal('plata'),
-  literal('oro'),
-  literal('platino'),
-  literal('diamante'),
-  literal('maestro')
+export const rankedTierIdSchema = picklist([
+  'madera',
+  'bronce',
+  'plata',
+  'oro',
+  'platino',
+  'diamante',
+  'maestro'
 ]);
 
 export const rankedSeasonMedalSchema = object({
@@ -88,9 +90,9 @@ export const personalPvPMatchSummarySchema = object({
   opponentId: string(),
   opponentName: string(),
   opponentAvatar: optional(string()),
-  format: union([literal('3v3'), literal('6v6')]),
+  format: picklist(['3v3', '6v6']),
   isRanked: boolean(),
-  result: union([literal('victory'), literal('defeat'), literal('draw')]),
+  result: picklist(['victory', 'defeat', 'draw']),
   deltaElo: optional(number()),
   turnsCount: number(),
   timestamp: string()

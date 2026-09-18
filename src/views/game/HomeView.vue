@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { useTemplateRef, onMounted, onUnmounted, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import HomePendingRewardsWidget from '@/components/home/HomePendingRewardsWidget.vue'
 import HomeEventsSection from '@/components/home/HomeEventsSection.vue'
@@ -27,7 +27,7 @@ const breedingStore = useBreedingStore()
 const loadingStore = useLoadingStore()
 const { unifiedRewards } = useUnifiedRewards()
 
-const homeContainerRef = ref<HTMLElement | null>(null)
+const homeContainerRef = useTemplateRef<HTMLElement>('homeContainerRef')
 let gsapCtx: gsap.Context | null = null
 
 onMounted(() => {

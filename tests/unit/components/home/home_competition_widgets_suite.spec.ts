@@ -165,16 +165,22 @@ describe('Home Competition Widgets Suite (Events & PvP)', () => {
       const swipeContainer = wrapper.find('.active-events-wrapper')
       expect(swipeContainer.exists()).toBe(true)
 
-      await swipeContainer.trigger('pointerdown', { clientX: 300, clientY: 100, pointerId: 1, button: 0 })
-      await swipeContainer.trigger('pointermove', { clientX: 200, clientY: 100, pointerId: 1 })
-      await swipeContainer.trigger('pointerup', { clientX: 200, clientY: 100, pointerId: 1 })
+      const dispatchPointer = (type: string, dict: PointerEventInit) => {
+        swipeContainer.element.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, ...dict }))
+      }
+
+      dispatchPointer('pointerdown', { clientX: 300, clientY: 100, pointerId: 1, button: 0 })
+      dispatchPointer('pointermove', { clientX: 200, clientY: 100, pointerId: 1 })
+      dispatchPointer('pointerup', { clientX: 200, clientY: 100, pointerId: 1 })
+      await wrapper.vm.$nextTick()
 
       const dots = wrapper.findAll('.carousel-dot')
       expect(dots[1]?.classes()).toContain('active')
 
-      await swipeContainer.trigger('pointerdown', { clientX: 200, clientY: 100, pointerId: 1, button: 0 })
-      await swipeContainer.trigger('pointermove', { clientX: 300, clientY: 100, pointerId: 1 })
-      await swipeContainer.trigger('pointerup', { clientX: 300, clientY: 100, pointerId: 1 })
+      dispatchPointer('pointerdown', { clientX: 200, clientY: 100, pointerId: 1, button: 0 })
+      dispatchPointer('pointermove', { clientX: 300, clientY: 100, pointerId: 1 })
+      dispatchPointer('pointerup', { clientX: 300, clientY: 100, pointerId: 1 })
+      await wrapper.vm.$nextTick()
 
       expect(dots[0]?.classes()).toContain('active')
     })

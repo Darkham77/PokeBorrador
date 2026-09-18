@@ -114,7 +114,7 @@ export async function emulateSendTradeOffer(
     [JSON.stringify(senderSave), newTradeSaveId, userId]
   );
 
-  const generatedId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11) + Temporal.Now.instant().epochMilliseconds.toString(36);
+  const generatedId = crypto.randomUUID();
 
   sqliteDb.run(
     "INSERT INTO trade_offers (id, sender_id, receiver_id, offer_pokemon, offer_items, offer_money, request_pokemon, request_items, request_money, message, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')",

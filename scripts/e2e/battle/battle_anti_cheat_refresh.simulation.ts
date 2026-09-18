@@ -259,12 +259,7 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
     expect(preReloadState.enemyId).toBeTruthy();
 
     // Save game before reload
-    await page.evaluate(async () => {
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      useBattleStore().persistBattle();
-      await useGameStore().saveGame();
-    });
+    await sim.persistBattleAndSave();
 
     // 4. Cheat attempt: Player refreshes (F5) during active battle
     console.debug('[E2E-TEST] --- Intentando F5 para reiniciar/cambiar combate salvaje ---');
@@ -369,12 +364,7 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
     expect(preReloadState.enemyUid).toBeTruthy();
 
     // Save game before reload
-    await page.evaluate(async () => {
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      useBattleStore().persistBattle();
-      await useGameStore().saveGame();
-    });
+    await sim.persistBattleAndSave();
 
     // 4. Cheat attempt: Player refreshes (F5) during trainer battle
     console.debug('[E2E-TEST] --- Intentando F5 para evadir o reiniciar combate con entrenador ---');
@@ -445,12 +435,7 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
     expect(minigameActive).toBe('fishing');
 
     // Save game before reload
-    await page.evaluate(async () => {
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      useBattleStore().persistBattle();
-      await useGameStore().saveGame();
-    });
+    await sim.persistBattleAndSave();
 
     // 4. Cheat attempt: Player refreshes (F5) during fishing minigame to retry or exploit
     console.debug('[E2E-TEST] --- Intentando F5 durante minijuego de pesca ---');
@@ -516,12 +501,7 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
     expect(minigameActive).toBe('archaeology');
 
     // Save game before reload
-    await page.evaluate(async () => {
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      useBattleStore().persistBattle();
-      await useGameStore().saveGame();
-    });
+    await sim.persistBattleAndSave();
 
     // 4. Cheat attempt: Player refreshes (F5) during archaeology minigame
     console.debug('[E2E-TEST] --- Intentando F5 durante minijuego de arqueología ---');
@@ -618,12 +598,7 @@ test.describe('Battle Anti-Cheat Page Refresh (F5) Simulation', () => {
     expect(preReloadState.enemyUid).toBeTruthy();
 
     // Save game before reload
-    await page.evaluate(async () => {
-      const { useGameStore } = await import('../../../src/stores/game.ts');
-      const { useBattleStore } = await import('../../../src/stores/battle/battle.ts');
-      useBattleStore().persistBattle();
-      await useGameStore().saveGame();
-    });
+    await sim.persistBattleAndSave();
 
     // 4. Cheat attempt: Player refreshes (F5) during rival battle
     console.debug('[E2E-TEST] --- Intentando F5 para evadir o reiniciar combate con Rival ---');

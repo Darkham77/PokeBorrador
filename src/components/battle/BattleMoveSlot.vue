@@ -1,6 +1,6 @@
 <!-- [PureVue-Ignore-Length] -->
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
+import { computed, onMounted, watch, onUnmounted, useTemplateRef } from 'vue'
 import { gsap } from 'gsap'
 import PokemonTypeTag from '@/components/shared/PokemonTypeTag.vue'
 import BattleMoveInfoZone from '@/components/battle/BattleMoveInfoZone.vue'
@@ -52,7 +52,7 @@ const emit = defineEmits<{
 }>()
 
 const battleStore = useBattleStore()
-const rootEl = ref<HTMLElement | null>(null)
+const rootEl = useTemplateRef<HTMLElement>('rootEl')
 let glowTween: gsap.core.Tween | null = null
 
 const { moveData, finalPower, finalAccuracy, moveModifier, effectivenessMultiplier } = useMoveSlotData(

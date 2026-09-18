@@ -3,17 +3,20 @@
  * Connects to the Vite dev server's WebSocket relay on `/api/dev-lan-relay`
  * to forward realtime channel broadcasts across devices on the same local network.
  */
+import * as v from 'valibot';
 import { logger } from '../utils/logger.ts';
 
 export const LAN_RELAY_ACTIONS = ['subscribe', 'unsubscribe', 'broadcast'] as const;
 export type LanRelayAction = (typeof LAN_RELAY_ACTIONS)[number];
 
-interface LanRelayMessage {
-  action: LanRelayAction;
-  channel: string; // domain-ok: Arbitrary realtime channel name
-  senderId?: string; // infra-id-ok: Ephemeral WebSocket client instance identifier
-  data?: unknown;
-}
+export const lanRelayMessageSchema = v.object({
+  action: v.picklist(LAN_RELAY_ACTIONS),
+  channel: v.string(), // domain-ok: Arbitrary realtime channel name
+  senderId: v.optional(v.string()), // infra-id-ok: Ephemeral WebSocket client instance identifier
+  data: v.optional(v.unknown())
+});
+
+type LanRelayMessage = v.InferOutput<typeof lanRelayMessageSchema>;
 
 type ChannelListener = (payload: unknown) => void;
 
@@ -60,7 +63,8 @@ class LanRelayBridge {
 
       socket.onmessage = (event: MessageEvent) => {
         try {
-          const msg = JSON.parse(String(event.data)) as LanRelayMessage;
+          const parsed = JSON.parse(String(event.data));
+          const msg = v.parse(lanRelayMessageSchema, parsed);
           if (msg.action === 'broadcast' && msg.channel && msg.senderId !== this.clientId) {
             const listeners = this.channelListeners.get(msg.channel);
             if (listeners) {

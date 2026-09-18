@@ -113,7 +113,7 @@ export const useBattleStore = defineStore('battle', () => {
   }
 
   watch(
-    () => activeBattle.value?.playerRequest,
+    () => [activeBattle.value?.playerRequest, activeBattle.value?.player],
     () => {
       syncActiveMovesFromRequest('player')
     },
@@ -479,10 +479,12 @@ export const useBattleStore = defineStore('battle', () => {
     debugShowGuides, debugShowFxRadius, debugShowPokeRadius, debugZoom,
     attackerSide, activeMove, exitingPlayer, exitingEnemy, animations,
     trainerAnimState, isSilhouetteMode, fsm, currentFsmState, currentSubState,
-    isReadyToExit, restoreBattle, addLog,
+    isReadyToExit,
+    // fallow-ignore-next-line unused-store-member
+    restoreBattle,
+    addLog,
     // fallow-ignore-next-line unused-store-member
     clearLogs, executeMove, executeStruggle,
-    // fallow-ignore-next-line unused-store-member
     persistBattle, useItemInBattle, endBattle, handleFaint, applyEndTurnEffects, syncTeamHP,
     startBattle, _startBattle: startBattle,
     // fallow-ignore-next-line unused-store-member

@@ -86,10 +86,7 @@ async function handleLevelUpReward(
   levelUpMap: Map<string, { levelsGained: number; moves: Move[] }>,
   addLog: BattleContext['addLog']
 ): Promise<void> {
-  if (!levelUpMap.has(p.uid)) {
-    levelUpMap.set(p.uid, { levelsGained: 0, moves: [] });
-  }
-  const lvlData = levelUpMap.get(p.uid)!;
+  const lvlData = levelUpMap.getOrInsertComputed(p.uid, () => ({ levelsGained: 0, moves: [] }));
   await applyLevelUpRewards(p, levelsGained, lvlData, addLog);
 }
 

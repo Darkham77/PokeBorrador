@@ -74,6 +74,7 @@ async function main(): Promise<void> {
     console.log(styleText('bold', styleText('blue', '------------------------------------------------------------\n')));
 
     if (args.length === 0) {
+      console.log(styleText('bold', styleText('cyan', '📦 [1/2] Ejecutando suite de tests unitarios y componentes (unit)...')));
       const unitProcess = spawnSync(
         'node',
         ['--no-experimental-webstorage', './node_modules/vitest/vitest.mjs', 'run', '--project', 'unit'],
@@ -85,6 +86,7 @@ async function main(): Promise<void> {
       if (unitProcess.status !== 0) {
         vitestExitCode = unitProcess.status ?? 1;
       } else {
+        console.log(styleText('bold', styleText('cyan', '\n📦 [2/2] Ejecutando suite de tests de lógica y persistencia (node)...')));
         const nodeProcess = spawnSync(
           'node',
           ['--no-experimental-webstorage', './node_modules/vitest/vitest.mjs', 'run', '--project', 'node'],

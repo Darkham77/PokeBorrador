@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { useTemplateRef } from 'vue'
 import { gsap } from 'gsap'
 import type { ItemId } from '@/data/inventory/items'
 import MissionCardRulesBox from './MissionCardRulesBox.vue'
@@ -7,7 +7,7 @@ import MissionCardActiveOperation from './MissionCardActiveOperation.vue'
 import MissionCardRewards from './MissionCardRewards.vue'
 import type { DetailedMissionReward } from '@/logic/player/classMissionsData'
 
-const cardRef = ref<HTMLElement | null>(null)
+const cardRef = useTemplateRef<HTMLElement>('cardRef')
 
 const props = withDefaults(defineProps<{
   id?: string

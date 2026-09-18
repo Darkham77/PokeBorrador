@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { computed, useTemplateRef, onMounted, onUnmounted, nextTick } from 'vue'
 import { gsap } from 'gsap'
 import { useGameStore } from '@/stores/game'
 import { formatTime } from '@/logic/utils/timeUtils'
@@ -7,7 +7,7 @@ import type { NotificationItem } from '@/types/system/game'
 import HomeWidgetMinimizeBtn from './HomeWidgetMinimizeBtn.vue'
 
 const gameStore = useGameStore()
-const feedRef = ref<HTMLElement | null>(null)
+const feedRef = useTemplateRef<HTMLElement>('feedRef')
 let gsapCtx: gsap.Context | null = null
 
 const history = computed<NotificationItem[]>(() => {
@@ -17,8 +17,7 @@ const history = computed<NotificationItem[]>(() => {
       const text = `${n.message || ''} ${n.msg || ''} ${n.title || ''}`.toLowerCase()
       return !text.includes('bienvenido')
     })
-    .slice()
-    .reverse()
+    .toReversed()
 })
 
 function getIcon(n: NotificationItem): string {

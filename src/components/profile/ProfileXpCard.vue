@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
+import { computed, useTemplateRef, onMounted, onUnmounted, watch } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { usePlayerClassStore } from '@/stores/player/playerClass'
 import { PLAYER_CLASSES, CLASS_MISSIONS } from '@/data/player/playerClasses'
@@ -105,10 +105,10 @@ const nextClassUnlocks = computed(() => {
   })
 
   // Sort by level ascending
-  return unlocks.sort((a, b) => a.level - b.level)
+  return unlocks.toSorted((a, b) => a.level - b.level)
 })
 
-const xpBarRef = ref<HTMLElement | null>(null)
+const xpBarRef = useTemplateRef<HTMLElement>('xpBarRef')
 let stripesTween: gsap.core.Tween | null = null
 let widthTween: gsap.core.Tween | null = null
 

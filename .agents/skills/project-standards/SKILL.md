@@ -24,7 +24,7 @@ This skill defines the immutable core DNA and architectural standards of Poké V
 - **Strict No-Test Mandate for Documentation**: Running test suites (`npm run test`, `test:node`, Vitest, or E2E Playwright simulations) when only editing `.md` documents, DOX indices, or `.agents/` skill files is STRICTLY FORBIDDEN. Verification for documentation tasks is strictly limited to `npm run audit:dox` and `npm run lint:md`. Running full project audits (`npm run lint` or `npm run audit`) for documentation or skill edits is strictly forbidden.
 - **Mandatory Work Plan Compliance Mandate**: Whenever creating any work plan, technical proposal, or `implementation_plan.md`, agents MUST obligatorily include and enforce strict compliance with `@/project-standards`, `@/domain-type-first`, and all project quality auditor rules (`npm run audit`, Fallow complexity/dead-code checks).
 - **Mandatory DOX Navigation**: You MUST always use the `dox-navigator` skill (or trigger the `/dox-navigator` command) to analyze the project context, search for files, components, and manuals, and update any index or documentation within the project.
-- **Objective-Driven Fuzzer Coverage & Deterministic History**: Fuzzer scenarios MUST prioritize legal actions exercising the mechanic under test. Fuzzer battle histories MUST record rich state metadata on disk (`fuzzer_certified_cases.json`) to enable deterministic 1:1 Playwright combat replays and fail fast on desync. Detailed history schema and simulator rules are governed in [Testing & Simulations](./references/rules/testing_and_simulations.md).
+- **Objective-Driven Fuzzer Coverage & Deterministic History**: Fuzzer scenarios MUST prioritize legal actions exercising the mechanic under test. Fuzzer battle histories MUST record rich state metadata on disk (`fuzzer_certified_cases.json`) to enable deterministic 1:1 Playwright combat replays and fail fast on desync. Detailed history schema, timeout rules, and simulator invariants are governed strictly in [@/game-simulation](../game-simulation/SKILL.md).
 
 ---
 
@@ -139,7 +139,8 @@ Before writing or updating any rule, manual, or architectural lesson, consult th
 | If your improvement/rule relates to... | Canonical Document (SSoT) | DO NOT duplicate in... |
 | :--- | :--- | :--- |
 | **Compiler rules, TypeScript unions, type casting, JSON wrappers, security** | [typescript_conventions.md](./references/rules/typescript_conventions.md) | `rules/game_engine_and_state.md` |
-| **E2E Playwright tests, fuzzer history, #id locators, test timeouts** | [testing_and_simulations.md](./references/rules/testing_and_simulations.md) | `qa/browser_testing_manual.md` |
+| **E2E Playwright tests, fuzzer history, #id locators, test timeouts** | [game-simulation](../game-simulation/SKILL.md) | `qa/browser_testing_manual.md` |
+| **Unit & integration test architecture, taxonomy, anti-fragmentation, zero-fake-mock** | [testing_and_simulations.md](./references/rules/testing_and_simulations.md) | `rules/game_engine_and_state.md` |
 | **DBRouter isolation, Save Shield, SQL migrations, DB permissions** | [database_and_persistence.md](./references/rules/database_and_persistence.md) | `technical/save_system_manual.md` |
 | **Git operations, scratch files, destructive rollbacks, root setup scripts** | [git_and_workflow_safety.md](./references/rules/git_and_workflow_safety.md) | `SKILL.md` |
 | **Showdown engine delegation, 4 seats, UID team sync, illegal Pokemon lifecycle** | [game_engine_and_state.md](./references/rules/game_engine_and_state.md) | `battle/battle_mechanics_manual.md` |

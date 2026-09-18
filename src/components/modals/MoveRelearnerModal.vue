@@ -70,7 +70,7 @@ const forgottenMoves = computed<RelearnMoveEntry[]>(() => {
     currentSpecies = prevSpecies
   }
   
-  return possibleMoves.sort((a, b) => (a.lv || 0) - (b.lv || 0))
+  return possibleMoves.toSorted((a, b) => (a.lv || 0) - (b.lv || 0))
 })
 
 const getMoveFullData = (mv: RelearnMoveEntry): Move => {

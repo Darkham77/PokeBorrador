@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useGameStore } from '@/stores/game'
 import { PDEX_ORDER, GEN2_PDEX_ORDER } from '@/logic/constants/pokedexConstants'
 import { usePokedex } from '@/composables/pokemon/usePokedex'
+import { usePokedexDataLoader } from '@/loaders/pokedexDataLoader'
 
 // Components
 import PokedexHeader from '@/components/pokedex/PokedexHeader.vue'
@@ -13,6 +14,7 @@ import type { PokedexItem } from '@/types/system/game'
 
 const gameStore = useGameStore()
 const uiStore = useUIStore()
+const { data: _pokedexSummary } = usePokedexDataLoader()
 const gs = computed(() => gameStore.state)
 
 const currentGen = ref(1)

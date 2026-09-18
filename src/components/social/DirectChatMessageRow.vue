@@ -7,14 +7,15 @@ import { BATTLE_CODE_REGEX } from '@/logic/constants/gameplay.ts'
 import type { ChatMessage } from '@/stores/social/chatPrivate.ts'
 import type { ProfileCacheItem } from '@/stores/social/chatCosmetics.ts'
 
-const props = withDefaults(defineProps<{
+const {
+  msg,
+  isMe = false,
+  cosmetics = null
+} = defineProps<{
   msg: ChatMessage
   isMe?: boolean
   cosmetics?: ProfileCacheItem | null
-}>(), {
-  isMe: false,
-  cosmetics: null
-})
+}>()
 
 const emit = defineEmits<{
   openProfile: [userId: string]
@@ -27,14 +28,14 @@ function extractBattleCode(message?: string): string | null {
   return match ? match[0].toUpperCase() : null
 }
 
-const playerClass = computed(() => props.cosmetics?.player_class || props.msg.player_class)
-const trainerLevel = computed(() => props.cosmetics?.trainer_level || props.msg.trainer_level)
-const avatarStyle = computed(() => props.cosmetics?.avatar_style || undefined)
-const gender = computed(() => props.cosmetics?.gender || props.msg.gender || 'h')
-const username = computed(() => props.cosmetics?.username || props.msg.senderName)
-const nickStyle = computed(() => props.cosmetics?.nick_style || 'normal')
-const formattedTime = computed(() => formatChatTimestamp(props.msg.timestamp))
-const battleCode = computed(() => extractBattleCode(props.msg.text))
+const playerClass = computed(() => cosmetics?.player_class || msg.player_class)
+const trainerLevel = computed(() => cosmetics?.trainer_level || msg.trainer_level)
+const avatarStyle = computed(() => cosmetics?.avatar_style || undefined)
+const gender = computed(() => cosmetics?.gender || msg.gender || 'h')
+const username = computed(() => cosmetics?.username || msg.senderName)
+const nickStyle = computed(() => cosmetics?.nick_style || 'normal')
+const formattedTime = computed(() => formatChatTimestamp(msg.timestamp))
+const battleCode = computed(() => extractBattleCode(msg.text))
 </script>
 
 <template>

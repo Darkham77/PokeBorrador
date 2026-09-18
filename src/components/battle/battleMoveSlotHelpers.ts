@@ -45,8 +45,6 @@ export function isBattleMoveDisabled(
 ): boolean {
   if (isProcessing) return true
   if (!move) return true
-  if (move.disabled === true) return true
-
   // 1. Prioridad Absoluta: Consultar el request de Showdown
   if (playerRequest && playerRequest.active?.[0]?.moves) {
     const reqMoves = playerRequest.active[0].moves
@@ -58,6 +56,8 @@ export function isBattleMoveDisabled(
       return true
     }
   }
+
+  if (move.disabled === true) return true
 
   // 2. Si el Pokémon está en estado bloqueado (lockedmove, twoturnmove, thrash)
   if (isPokemonLocked(playerInfo) && playerInfo?.lastMove) {

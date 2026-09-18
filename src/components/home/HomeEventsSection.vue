@@ -222,7 +222,7 @@ const pagedActiveEvents = computed(() => {
 // Upcoming occurrences (fetches up to 14 days ahead and fills all remaining empty slots on the single row, NEVER in carousel)
 const upcomingOccurrences = computed(() => {
   const occs = getUpcomingEventOccurrences(allEvents.value || [], getServerInstant(), 14)
-  return occs.sort((a, b) => Temporal.Instant.compare(a.startInstant, b.startInstant))
+  return occs.toSorted((a, b) => Temporal.Instant.compare(a.startInstant, b.startInstant))
 })
 
 const upcomingOccurrencesToFill = computed<UpcomingEventOccurrence[]>(() => {

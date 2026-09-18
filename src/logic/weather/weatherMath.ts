@@ -24,7 +24,6 @@ export type { DayPhase };
  * Cycle is 8 hours: 0-1=morning, 2-3=day, 4-5=dusk, 6-7=night.
  */
 import { ONE_HOUR_MS } from '@/logic/constants/items.ts'
-import { SECONDS_PER_HOUR } from '@/logic/constants/gameplay'
 
 const DAY_CYCLE_TOTAL_HOURS = 8;
 export const PROBABILITY_PERCENT_SCALE = 100;
@@ -34,9 +33,9 @@ const WEATHER_SESSION_SEED_RANGE = 1000;
  * Deterministically maps an epoch-millisecond timestamp to a day phase.
  * Cycle is 8 hours: 0-1=morning, 2-3=day, 4-5=dusk, 6-7=night.
  */
-export function getDayCyclePure(nowMs: number): DayPhase {
-  const instant = Temporal.Instant.fromEpochMilliseconds(nowMs);
-  const totalHours = Math.floor(Number(instant.epochNanoseconds / BigInt(1e9)) / SECONDS_PER_HOUR);
+export function getDayCyclePure(now: Temporal.Instant | number): DayPhase {
+  const instant = typeof now === 'number' ? Temporal.Instant.fromEpochMilliseconds(now) : now;
+  const totalHours = Math.floor(instant.epochMilliseconds / ONE_HOUR_MS);
   const phase = totalHours % DAY_CYCLE_TOTAL_HOURS;
 
   if (phase < 2) return 'morning';

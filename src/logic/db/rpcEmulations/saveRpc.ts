@@ -9,7 +9,7 @@ export async function emulateSaveGameTrusted(
 ): Promise<DBResponse> {
   const { p_save_data, p_expected_id } = params as { p_save_data: Record<string, unknown>, p_expected_id: string | null };
   const { userId } = context;
-  const newSaveId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11) + Temporal.Now.instant().epochMilliseconds.toString(36);
+  const newSaveId = crypto.randomUUID();
   
   // 1. Verificar concurrencia (optimistic lock)
   if (p_expected_id) {

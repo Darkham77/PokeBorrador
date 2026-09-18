@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, useTemplateRef } from 'vue'
 
 const SPRITE_SWAP_STRETCH_Y = 1.5;
 const SPRITE_SWAP_SQUEEZE_X = 0.15;
@@ -20,11 +20,11 @@ import CombatantSpriteLayer from './CombatantSpriteLayer.vue'
 import CombatantTrappedBall from './CombatantTrappedBall.vue'
 
 // Referencias DOM
-const spriteRef = ref<HTMLElement | null>(null)
-const spriteRotationRef = ref<HTMLElement | null>(null)
-const shadowWrapperRef = ref<HTMLElement | null>(null)
+const spriteRef = useTemplateRef<HTMLElement>('spriteRef')
+const spriteRotationRef = useTemplateRef<HTMLElement>('spriteRotationRef')
+const shadowWrapperRef = useTemplateRef<HTMLElement>('shadowWrapperRef')
 const pokeballImgRef = ref<HTMLImageElement | null>(null)
-const idleWrapperRef = ref<HTMLElement | null>(null)
+const idleWrapperRef = useTemplateRef<HTMLElement>('idleWrapperRef')
 
 const DEFAULT_GROUND_Y_PERCENT = '75%'
 

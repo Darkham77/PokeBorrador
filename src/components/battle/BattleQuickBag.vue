@@ -51,7 +51,7 @@ const battleItems = computed<BattleItem[]>(() => {
     }
   })
   
-  return items.sort((a, b) => {
+  return items.toSorted((a, b) => {
     const isAPotion = a.cat === 'potions'
     const isBPotion = b.cat === 'potions'
     if (isAPotion !== isBPotion) return isAPotion ? -1 : 1

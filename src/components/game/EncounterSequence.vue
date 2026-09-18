@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, useTemplateRef } from 'vue'
 import { gsap } from 'gsap'
 import BaseModal from '@/components/common/BaseModal.vue'
 import type { Pokemon } from '@/types/pokemon/pokemon'
@@ -39,10 +39,10 @@ const CARD_ENTRY_SCALE = 0.8
 const CARD_ENTRY_Y_PX = 20
 
 // Template Refs
-const rivalFlicker = ref<HTMLElement | null>(null)
-const rivalExclamation = ref<HTMLElement | null>(null)
-const fishingCard = ref<HTMLElement | null>(null)
-const fishingIcon = ref<HTMLElement | null>(null)
+const rivalFlicker = useTemplateRef<HTMLElement>('rivalFlicker')
+const rivalExclamation = useTemplateRef<HTMLElement>('rivalExclamation')
+const fishingCard = useTemplateRef<HTMLElement>('fishingCard')
+const fishingIcon = useTemplateRef<HTMLElement>('fishingIcon')
 
 watch(() => props.show, async (newVal) => {
   if (newVal) {

@@ -45,7 +45,7 @@ export const useBoxStore = defineStore('box', () => {
   }
 
   function doBoxRelease() {
-    const indices = [...boxReleaseSelected.value].sort((a, b) => b - a)
+    const indices = boxReleaseSelected.value.toSorted((a, b) => b - a)
     const releasedNames: string[] = [] // no-domain: Non-domain utility collection or data structure
     
     indices.forEach(i => {
@@ -110,7 +110,7 @@ export const useBoxStore = defineStore('box', () => {
 
   function doBoxRocketSell() {
     const value = getRocketSellValue()
-    const indices = [...boxRocketSelected.value].sort((a, b) => b - a)
+    const indices = boxRocketSelected.value.toSorted((a, b) => b - a)
     let soldCount = 0
 
     indices.forEach(i => {

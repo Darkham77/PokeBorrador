@@ -499,28 +499,28 @@ export async function executeTurnInWorker(
 export async function isPlayerTrappedInWorker(): Promise<boolean> {
   const worker = getShowdownWorker()
   if (!worker) return false
+  const { promise, resolve } = Promise.withResolvers<boolean>()
+  const handler = (event: MessageEvent) => {
+    const data = event.data as { type: string; payload: { trapped: boolean } };
+    const { type, payload } = data;
+    if (type === 'CHECK_TRAPPED_RESPONSE') {
+      if (worker.removeEventListener) {
+        worker.removeEventListener('message', handler)
+      } else {
+        worker.onmessage = null
+      }
+      resolve(!!payload.trapped)
+    }
+  }
+  if (worker.addEventListener) {
+    worker.addEventListener('message', handler)
+  } else {
+    worker.onmessage = handler
+  }
   worker.postMessage({
     type: 'CHECK_TRAPPED'
   })
-  return new Promise((resolve) => {
-    const handler = (event: MessageEvent) => {
-      const data = event.data as { type: string; payload: { trapped: boolean } };
-      const { type, payload } = data;
-      if (type === 'CHECK_TRAPPED_RESPONSE') {
-        if (worker.removeEventListener) {
-          worker.removeEventListener('message', handler)
-        } else {
-          worker.onmessage = null
-        }
-        resolve(!!payload.trapped)
-      }
-    }
-    if (worker.addEventListener) {
-      worker.addEventListener('message', handler)
-    } else {
-      worker.onmessage = handler
-    }
-  })
+  return promise
 }
 
 

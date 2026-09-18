@@ -115,7 +115,8 @@ export async function applyTrainerEncounter(ctx: BattleContext, locId: MapRouteI
 
 export async function applyRivalEncounter(ctx: BattleContext): Promise<Pokemon | null> {
   const b = ctx.activeBattle.value!;
-  const { name, sprite, enemyTeam, quote } = await buildRivalEncounter(ctx.gs.state.team);
+  const team = ctx.gs?.state?.team || [];
+  const { name, sprite, enemyTeam, quote } = await buildRivalEncounter(team);
   if (enemyTeam.length > 0 && enemyTeam[0]) {
     b.isTrainer = true;
     b.enemyTeam = enemyTeam;

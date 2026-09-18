@@ -1,5 +1,7 @@
 import { logger } from './logger.ts';
 import { DAY_PHASES, type DayPhase } from '@/types/system/time.ts';
+import { DURATION_24_HOURS_MS, ONE_HOUR_MS } from '@/logic/constants/items.ts';
+import { DAYS_PER_WEEK } from '@/logic/constants/gameplay.ts';
 export type { DayPhase };
 
 export const GAME_TIMEZONE = (
@@ -67,8 +69,7 @@ export function getDayCycle(now: Temporal.Instant | number = getServerInstant())
     ? Temporal.Instant.fromEpochMilliseconds(now) 
     : now;
 
-  const zdt = instant.toZonedDateTimeISO('UTC');
-  const totalHours = Math.floor(Number(zdt.epochNanoseconds / BigInt(1e9)) / 3600);
+  const totalHours = Math.floor(instant.epochMilliseconds / ONE_HOUR_MS);
   const phase = totalHours % 8;
   
   if (phase < 2) return 'morning';
@@ -83,14 +84,17 @@ export interface Season {
   icon: string;
 }
 
+const TOTAL_SEASONS = 4;
+const ONE_WEEK_MS = DAYS_PER_WEEK * DURATION_24_HOURS_MS;
+
 export function getSeason(now: Temporal.Instant | number = getServerInstant()): Season {
   // Compatibility: Handle numeric timestamps (ms)
   const instant = typeof now === 'number' 
     ? Temporal.Instant.fromEpochMilliseconds(now) 
     : now;
 
-  const totalWeeks = Math.floor(Number(instant.epochNanoseconds / BigInt(1e9)) / (7 * 24 * 3600));
-  const seasonIndex = totalWeeks % 4;
+  const totalWeeks = Math.floor(instant.epochMilliseconds / ONE_WEEK_MS);
+  const seasonIndex = totalWeeks % TOTAL_SEASONS;
   
   const seasons: Season[] = [
     { id: 'spring', label: 'Primavera', icon: '🌸' },
@@ -351,14 +355,20 @@ export function clearWallClockInterval(timerId: WallClockTimerId | null): void {
  */
 export function formatRemainingDuration(remainingMs: number): string {
   if (remainingMs <= 0) return '00:00:00';
-  const totalSeconds = Math.floor(remainingMs / 1000);
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  if (hours > 0) {
-    return `${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
-  }
-  return `${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+
+  const duration = Temporal.Duration.from({
+    milliseconds: Math.max(0, remainingMs)
+  }).round({
+    largestUnit: 'hour',
+    smallestUnit: 'second',
+    roundingMode: 'floor'
+  });
+
+  const hh = String(duration.hours).padStart(2, '0');
+  const mm = String(duration.minutes).padStart(2, '0');
+  const ss = String(duration.seconds).padStart(2, '0');
+
+  return duration.hours > 0 ? `${hh}h ${mm}m ${ss}s` : `${mm}m ${ss}s`;
 }
 
 

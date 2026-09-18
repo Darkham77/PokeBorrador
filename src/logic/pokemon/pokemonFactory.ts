@@ -365,7 +365,7 @@ export function makePokemon(idVal: PokemonSpeciesId | number | string, level: nu
   const gender = options.gender !== undefined ? options.gender : assignGender(id);
   const isShiny = computeCreationShiny(id, options, piniaActive);
 
-  const getUidStr = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2,9) + Temporal.Now.instant().epochMilliseconds.toString(36);
+  const getUidStr = () => crypto.randomUUID();
 
   let heldItem: ItemId | null = options.heldItem || null;
   if (!heldItem) {

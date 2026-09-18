@@ -16,11 +16,14 @@ import {
   optional,
   nullable,
   literal,
+  picklist,
+  variant,
   unknown,
   type InferOutput,
 } from 'valibot';
 
 import { pokemonSchema } from './pokemonSchemas.ts';
+import { MARKET_LISTING_STATUSES } from '@/logic/economy/market.ts';
 
 export const gtsItemDataSchema = object({
   id: union([string(), number()]),
@@ -33,7 +36,7 @@ const gtsPokemonListingSchema = object({
   seller_name: optional(string()),
   seller_id: string(),
   price: pipe(number(), minValue(1, 'El precio debe ser al menos 1')),
-  status: union([literal('active'), literal('sold'), literal('cancelled'), literal('expired')]),
+  status: picklist(MARKET_LISTING_STATUSES),
   listing_type: literal('pokemon'),
   data: pokemonSchema,
   created_at: string()
@@ -44,13 +47,13 @@ const gtsItemListingSchema = object({
   seller_name: optional(string()),
   seller_id: string(),
   price: pipe(number(), minValue(1, 'El precio debe ser al menos 1')),
-  status: union([literal('active'), literal('sold'), literal('cancelled'), literal('expired')]),
+  status: picklist(MARKET_LISTING_STATUSES),
   listing_type: literal('item'),
   data: gtsItemDataSchema,
   created_at: string()
 });
 
-export const gtsListingSchema = union([gtsPokemonListingSchema, gtsItemListingSchema]);
+export const gtsListingSchema = variant('listing_type', [gtsPokemonListingSchema, gtsItemListingSchema]);
 
 export const tradeOfferSchema = object({
   id: string(),

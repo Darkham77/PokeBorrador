@@ -14,7 +14,7 @@ export const useNotificationStore = defineStore('notifications', () => {
   const notifications = ref<UINotification[]>([])
 
   function notify(msg: string, icon: string = '🔔') {
-    const id = Temporal.Now.instant().epochMilliseconds + Math.random().toString(36).substr(2, 9)
+    const id = crypto.randomUUID()
     notifications.value.push({ id, msg, icon })
 
     // Emit to event bus for history persistence without circular dependency

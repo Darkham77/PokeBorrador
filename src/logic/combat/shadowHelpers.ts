@@ -17,26 +17,23 @@ export function generatePixelShadow(
 ): string {
   if (typeof document === 'undefined') return ''
   const cacheKey = `${w}x${h}_${isSolid ? 'solid' : 'default'}`
-  const cached = shadowUrlCache.get(cacheKey)
-  if (cached) return cached
-
-  const canvas = document.createElement('canvas')
-  canvas.width = w
-  canvas.height = h
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return ''
-  ctx.fillStyle = isSolid ? SOLID_SHADOW_FILL_STYLE : DEFAULT_SHADOW_FILL_STYLE
-  if (typeof ctx.ellipse === 'function') {
-    ctx.ellipse(w / 2, h / 2, w / 2, h / 2, 0, 0, Math.PI * 2)
-  }
-  ctx.fill()
-  try {
-    const url = canvas.toDataURL('image/png')
-    shadowUrlCache.set(cacheKey, url)
-    return url
-  } catch {
-    return ''
-  }
+  return shadowUrlCache.getOrInsertComputed(cacheKey, () => {
+    const canvas = document.createElement('canvas')
+    canvas.width = w
+    canvas.height = h
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return ''
+    ctx.fillStyle = isSolid ? SOLID_SHADOW_FILL_STYLE : DEFAULT_SHADOW_FILL_STYLE
+    if (typeof ctx.ellipse === 'function') {
+      ctx.ellipse(w / 2, h / 2, w / 2, h / 2, 0, 0, Math.PI * 2)
+    }
+    ctx.fill()
+    try {
+      return canvas.toDataURL('image/png')
+    } catch {
+      return ''
+    }
+  })
 }
 
 export function getPokemonFeetCoords(spriteUrl: string): FeetPoints {

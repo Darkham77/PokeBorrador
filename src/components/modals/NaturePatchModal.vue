@@ -17,7 +17,7 @@ const naturePokemon = computed(() => {
   const list = target.context === 'team' ? gameStore.state.team : gameStore.state.box
   return list[target.index] ?? null
 })
-const sortedNatures = [...NATURES].sort()
+const sortedNatures = NATURES.toSorted()
 
 const handleApplyNature = (nature: NatureId) => {
   if (!naturePokemon.value) return

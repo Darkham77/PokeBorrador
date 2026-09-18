@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useSocialStore } from '@/stores/social/social'
+import { useSocialDataLoader } from '@/loaders/socialDataLoader'
 import { gsap } from 'gsap'
 import { VIEW_TAB_FADE_OUT_DURATION_SEC, VIEW_TAB_FADE_IN_DURATION_SEC } from '@/logic/constants/animations.ts'
 
@@ -11,6 +12,7 @@ import SocialRequestsTab from '@/components/social/SocialRequestsTab.vue'
 import SocialRankings from '@/components/social/SocialRankings.vue'
 
 const socialStore = useSocialStore()
+const { data: _socialSummary } = useSocialDataLoader()
 
 // 'friends', 'rankings', 'search', 'requests'
 const activeTab = ref('friends') 
@@ -34,11 +36,6 @@ function selectTab(tab: string) {
     }
   })
 }
-
-onMounted(async () => {
-  await socialStore.loadSocialData()
-  await socialStore.refreshFriendsPresence()
-})
 </script>
 
 <template>

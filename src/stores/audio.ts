@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, shallowRef } from 'vue';
 import { logger } from '@/logic/utils/logger';
 import { gameBus } from '@/logic/events/gameBus';
 import * as engine from '@/logic/audio/audioEngine';
@@ -38,8 +38,8 @@ const SOUND_DISPATCH_MAP: Record<string, SoundDispatcher> = {
  * Handles 8-bit sound synthesis using Web Audio API via audioEngine logic.
  */
 export const useAudioStore = defineStore('audio', () => {
-  const context = ref<AudioContext | null>(null);
-  const masterGain = ref<GainNode | null>(null);
+  const context = shallowRef<AudioContext | null>(null);
+  const masterGain = shallowRef<GainNode | null>(null);
   const isInitialized = ref(false);
 
   /**
@@ -65,6 +65,7 @@ export const useAudioStore = defineStore('audio', () => {
   };
 
   const cryCache = new Map<string, AudioBuffer>();
+  const cryPromiseCache = new Map<string, Promise<AudioBuffer>>();
 
   const fetchCryBuffer = async (name: string, ctx: AudioContext): Promise<AudioBuffer> => {
     const safeName = encodeURIComponent(name.toLowerCase().replace(/[^a-z0-9_-]/g, ''));
@@ -97,17 +98,21 @@ export const useAudioStore = defineStore('audio', () => {
     let buffer = cryCache.get(cryToFetch);
 
     if (!buffer) {
+      const fetchPromise = cryPromiseCache.getOrInsertComputed(cryToFetch, () => fetchCryBuffer(cryToFetch, ctx));
       try {
-        buffer = await fetchCryBuffer(cryToFetch, ctx);
+        buffer = await fetchPromise;
         cryCache.set(cryToFetch, buffer);
         if (cryToFetch !== cleanName) {
           cryCache.set(cleanName, buffer);
         }
       } catch (err) {
+        cryPromiseCache.delete(cryToFetch);
         logger.error('Audio', `Failed to load cry for ${pokemonName} (resolved to ${cryToFetch}): ${String(err)}`);
         return;
       }
     }
+
+    if (!buffer) return;
 
     try {
       const source = ctx.createBufferSource();

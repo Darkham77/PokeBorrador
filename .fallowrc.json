@@ -11,6 +11,7 @@
     "external/**",
     "src/logic/render/MapRenderer.ts",
     "src/logic/render/render.worker.ts",
+    "src/logic/db/migrations_data.ts",
     "src/**/*.scss",
     "src/**/*.css"
   ],
@@ -21,8 +22,6 @@
     "tests/**/*.{ts,js}",
     "database/**/*.{ts,js}",
     "vitest.config.ts",
-    "vitest.node.config.ts",
-    "vitest.workspace.ts",
     "ui-demo/src/main.ts"
   ],
   "duplicates": {
@@ -35,16 +34,52 @@
     "@pkmn/sim",
     "eslint-formatter-codeframe",
     "css-checker-kit",
-    "@rolldown/binding-wasm32-wasi"
+    "@rolldown/binding-wasm32-wasi",
+    "ws",
+    "sql.js"
   ],
   "health": {
     "maxCyclomatic": 25,
     "maxCognitive": 20,
     "maxCrap": 500
   },
+  "boundaries": {
+    "zones": [
+      { "name": "types", "patterns": ["src/types/**"] },
+      { "name": "data", "patterns": ["src/data/**"] },
+      { "name": "modals", "patterns": ["src/logic/modals/**"] },
+      { "name": "minigameHelpers", "patterns": ["src/components/modals/fishingGameHelper.ts"] },
+      { "name": "logic", "patterns": ["src/logic/**"] },
+      { "name": "stores", "patterns": ["src/stores/**"] },
+      { "name": "composables", "patterns": ["src/composables/**"] },
+      { "name": "loaders", "patterns": ["src/loaders/**"] },
+      { "name": "components", "patterns": ["src/components/**"] },
+      { "name": "views", "patterns": ["src/views/**"] }
+    ],
+    "rules": [
+      { "from": "types", "allow": ["types", "data", "logic"], "allowTypeOnly": ["stores", "composables"] },
+      { "from": "data", "allow": ["types", "data", "logic"] },
+      { "from": "modals", "allow": ["types", "data", "logic", "stores", "components"] },
+      { "from": "minigameHelpers", "allow": ["types", "data", "logic"] },
+      { "from": "logic", "allow": ["types", "data", "logic", "stores"] },
+      { "from": "stores", "allow": ["types", "data", "logic", "stores", "modals"] },
+      { "from": "composables", "allow": ["types", "data", "logic", "stores", "composables", "minigameHelpers"] },
+      { "from": "loaders", "allow": ["types", "data", "logic", "stores", "loaders"] },
+      { "from": "components", "allow": ["types", "data", "logic", "stores", "composables", "components", "modals", "minigameHelpers"] },
+      { "from": "views", "allow": ["types", "data", "logic", "stores", "composables", "components", "views", "modals", "loaders"] }
+    ]
+  },
+  "unusedComponentProps": {
+    "ignorePattern": "^_"
+  },
   "rules": {
     "unused-dependencies": "warn",
-    "unresolved-imports": "off"
+    "unresolved-imports": "off",
+    "boundary-violation": "error",
+    "unused-component-props": "warn",
+    "unrendered-components": "warn",
+    "unprovided-injects": "warn",
+    "css-token-drift": "warn"
   },
   "ignoreExports": [
     {
@@ -429,7 +464,8 @@
     {
       "file": "src/logic/services/assetService.ts",
       "exports": [
-        "useAssets"
+        "useAssets",
+        "clearAssetCache"
       ]
     },
     {

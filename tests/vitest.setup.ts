@@ -29,6 +29,10 @@ afterEach(() => {
     clearTimeout(timer)
   }
   activeDelayedCalls.clear()
+
+  if (typeof document !== 'undefined' && document.body) {
+    document.body.innerHTML = ''
+  }
 })
 
 // Mock Temporal.Now to work with Vitest fake timers (which mock Date.now)

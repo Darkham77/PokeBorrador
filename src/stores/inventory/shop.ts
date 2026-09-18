@@ -184,7 +184,10 @@ export const useShopStore = defineStore('shop', () => {
       clearVolatileStatus(p);
       if (p.moves) {
         p.moves.forEach((m: Move | null) => {
-          if (m) m.pp = m.maxPP || DEFAULT_MOVE_PP;
+          if (m) {
+            m.pp = m.maxPP || DEFAULT_MOVE_PP;
+            m.disabled = false;
+          }
         });
       }
     });

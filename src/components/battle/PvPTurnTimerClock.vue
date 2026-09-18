@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, watch, onUnmounted } from 'vue';
+import { computed, watch, onWatcherCleanup, useTemplateRef } from 'vue';
 import { gsap } from 'gsap';
 import { useLivePvPStore } from '@/stores/livePvP';
 import { PVP_TURN_TIMEOUT_SEC } from '@/types/battle/pvp';
 
 const livePvPStore = useLivePvPStore();
-const clockRef = ref<HTMLElement | null>(null);
+const clockRef = useTemplateRef<HTMLElement>('clockRef');
 
 const RADIUS = 20;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS; // ~125.66
@@ -38,35 +38,26 @@ const isUrgent = computed(() => {
   return !isReconnecting.value && secondsRemaining.value <= URGENT_THRESHOLD_SEC && secondsRemaining.value > 0;
 });
 
-let pulseTween: gsap.core.Tween | null = null;
-
 watch(isUrgent, (urgent) => {
   if (!clockRef.value) return;
   if (urgent) {
-    pulseTween = gsap.to(clockRef.value, {
+    const pulseTween = gsap.to(clockRef.value, {
       scale: 1.08,
       duration: 0.35,
       repeat: -1,
       yoyo: true,
       ease: 'power1.inOut'
     });
-  } else {
-    if (pulseTween) {
+    onWatcherCleanup(() => {
       pulseTween.kill();
-      pulseTween = null;
-    }
-    gsap.to(clockRef.value, {
-      scale: 1,
-      duration: 0.2,
-      ease: 'power1.out'
+      if (clockRef.value) {
+        gsap.to(clockRef.value, {
+          scale: 1,
+          duration: 0.2,
+          ease: 'power1.out'
+        });
+      }
     });
-  }
-});
-
-onUnmounted(() => {
-  if (pulseTween) {
-    pulseTween.kill();
-    pulseTween = null;
   }
 });
 </script>

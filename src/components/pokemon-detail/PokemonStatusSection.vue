@@ -13,11 +13,9 @@ interface Props {
   context?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  context: 'box'
-})
+const { pokemon } = defineProps<Props>()
 
-const p = computed(() => props.pokemon)
+const p = computed(() => pokemon)
 
 const friendshipDetails = computed(() => getFriendshipTooltipDetails(p.value))
 const friendshipSeal = computed(() => friendshipDetails.value.seal)

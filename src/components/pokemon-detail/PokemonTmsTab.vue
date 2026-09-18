@@ -35,7 +35,7 @@ const tms = computed(() => {
     )
   }
 
-  return [...filtered].sort((a, b) => {
+  return filtered.toSorted((a, b) => {
     if (tmSortBy.value === 'name') return a.name.localeCompare(b.name)
     return a.id.localeCompare(b.id, undefined, { numeric: true })
   })

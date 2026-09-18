@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, useTemplateRef } from 'vue'
 import { gsap } from 'gsap'
 import PVTooltip from '@/components/common/PVTooltip.vue'
 import { getFriendshipTooltipDetails } from '@/logic/pokemon/friendshipLogic'
@@ -17,7 +17,7 @@ const props = withDefaults(defineProps<Props>(), {
   showTooltip: true,
 })
 
-const badgeRef = ref<HTMLElement | null>(null)
+const badgeRef = useTemplateRef<HTMLElement>('badgeRef')
 let pulseTween: gsap.core.Tween | null = null
 
 const details = computed(() => getFriendshipTooltipDetails({ friendship: props.friendship }))

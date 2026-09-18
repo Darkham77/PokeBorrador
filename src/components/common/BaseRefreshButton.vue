@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onUnmounted } from 'vue'
+import { useTemplateRef, watch, onWatcherCleanup } from 'vue'
 import { gsap } from 'gsap'
 
 interface Props {
@@ -13,49 +13,39 @@ interface Props {
   ariaLabel?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  id: undefined,
-  loading: false,
-  disabled: false,
-  title: 'Actualizar',
-  size: 'sm',
-  variant: 'circle',
-  label: undefined,
-  ariaLabel: undefined
-})
+const {
+  id = undefined,
+  loading = false,
+  disabled = false,
+  title = 'Actualizar',
+  size = 'sm',
+  variant = 'circle',
+  label = undefined,
+  ariaLabel = undefined
+} = defineProps<Props>()
 
 const emit = defineEmits<{
   (e: 'click', event: MouseEvent): void
 }>()
 
-const iconRef = ref<SVGElement | null>(null)
-let spinTween: gsap.core.Tween | null = null
+const iconRef = useTemplateRef<SVGElement>('iconRef')
 
-watch(() => props.loading, (isLoading) => {
+watch(() => loading, (isLoading) => {
   if (isLoading && iconRef.value) {
-    if (!spinTween) {
-      spinTween = gsap.to(iconRef.value, {
-        rotation: '+=360',
-        duration: 1,
-        repeat: -1,
-        ease: 'none'
-      })
-    }
-  } else if (spinTween) {
-    spinTween.kill()
-    spinTween = null
-    if (iconRef.value) {
-      gsap.set(iconRef.value, { rotation: 0 })
-    }
+    const spinTween = gsap.to(iconRef.value, {
+      rotation: '+=360',
+      duration: 1,
+      repeat: -1,
+      ease: 'none'
+    })
+    onWatcherCleanup(() => {
+      spinTween.kill()
+      if (iconRef.value) {
+        gsap.set(iconRef.value, { rotation: 0 })
+      }
+    })
   }
 }, { immediate: true })
-
-onUnmounted(() => {
-  if (spinTween) {
-    spinTween.kill()
-    spinTween = null
-  }
-})
 </script>
 
 <template>

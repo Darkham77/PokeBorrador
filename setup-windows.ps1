@@ -75,7 +75,7 @@ if (-not $pkgContent.engines -or $pkgContent.engines.node -ne $expectedNodeEngin
     Write-Host "[CONFIG] Sincronizando package.json ('engines.node' = '$expectedNodeEngine')..." -ForegroundColor Cyan
     $pkgRaw = Get-Content -Raw -Path $pkgPath
     $pkgUpdated = $pkgRaw -replace '("node":\s*")[^"]*(")', "`$1$expectedNodeEngine`$2"
-    [System.IO.File]::WriteAllText($pkgPath, $pkgUpdated, [System.Text.Encoding]::UTF8)
+    [System.IO.File]::WriteAllText($pkgPath, $pkgUpdated, (New-Object System.Text.UTF8Encoding $false))
 }
 
 # Sincronizar automaticamente .nvmrc

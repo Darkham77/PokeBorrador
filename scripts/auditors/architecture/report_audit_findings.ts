@@ -1,15 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { styleText } from 'node:util';
 import type { AuditExecutionStatus, FindingSeverity } from '../../lib/auditContract.ts';
+import { renderBanner, renderBoxTable, type TableColumn } from '../../lib/unifiedTheme.ts';
 
 const RADIX_DECIMAL = 10;
 const DEFAULT_TOP_LIMIT = 20;
 const DEFAULT_SAMPLE_ERROR_LIMIT = 5;
-const CATEGORY_TABLE_NAME_WIDTH = 65;
-const CATEGORY_TABLE_NAME_MAX_LEN = 62;
 const ERROR_WEIGHT_FACTOR = 1000;
-const PADDING_ERROR_COUNT = 6;
-const PADDING_WARNING_COUNT = 8;
 
 interface Finding {
   severity: FindingSeverity;
@@ -219,39 +217,40 @@ export function runReport(): void {
       return totalB - totalA;
     });
 
-    console.log('\n╔═══════════════════════════════════════════════════════════════════════════════════════════╗');
-    console.log('║               ARCHIVOS CON HALLAZGOS DE AUDITORÍA (ERRORES Y WARNINGS)                    ║');
-    console.log('╚═══════════════════════════════════════════════════════════════════════════════════════════╝');
-    console.log(`\n📊 Estado: ${report.status === 'passed' ? '✅ PASSED' : '❌ FAILED'} | Suites: ${report.summary.suitesPassed}/${report.summary.suitesTotal}`);
-    console.log(`🚨 Errores Críticos: ${report.summary.errors} | ⚠️  Advertencias Totales: ${report.summary.warnings}`);
-    console.log(`📁 Archivos Afectados: ${sortedFiles.length} (Filtro severity=${args.severity})\n`);
-
-    console.log('┌───────────────────────────────────────────────────────────────────┬────────┬──────────┐');
-    console.log('│ ARCHIVO AFECTADO                                                  │ ERRORES│ WARNINGS │');
-    console.log('├───────────────────────────────────────────────────────────────────┼────────┼──────────┤');
-
     const filesToDisplay = args.top === 'all' ? sortedFiles : sortedFiles.slice(0, args.top);
-    for (const [filePath, data] of filesToDisplay) {
-      const truncatedPath = filePath.length > CATEGORY_TABLE_NAME_WIDTH
-        ? '...' + filePath.substring(filePath.length - CATEGORY_TABLE_NAME_MAX_LEN)
-        : filePath.padEnd(CATEGORY_TABLE_NAME_WIDTH);
-      const errStr = String(data.errors).padStart(PADDING_ERROR_COUNT);
-      const warnStr = String(data.warnings).padStart(PADDING_WARNING_COUNT);
-      console.log(`│ ${truncatedPath} │ ${errStr} │ ${warnStr} │`);
+
+    console.log('\n' + renderBanner(
+      'ARCHIVOS CON HALLAZGOS DE AUDITORÍA',
+      `Estado: ${report.status === 'passed' ? 'PASSED' : 'FAILED'} | Archivos afectados: ${sortedFiles.length}`
+    ));
+
+    interface FileFindingRow {
+      file: string;
+      errors: string;
+      warnings: string;
     }
-    console.log('└───────────────────────────────────────────────────────────────────┴────────┴──────────┘\n');
+
+    const fileCols: readonly TableColumn<FileFindingRow>[] = [
+      { header: 'ARCHIVO AFECTADO', width: 52, align: 'left', key: 'file' },
+      { header: 'ERRORES', width: 9, align: 'right', key: 'errors' },
+      { header: 'WARNINGS', width: 9, align: 'right', key: 'warnings' }
+    ];
+
+    const fileRows: FileFindingRow[] = filesToDisplay.map(([filePath, data]) => ({
+      file: filePath,
+      errors: data.errors > 0 ? styleText('red', String(data.errors)) : styleText('dim', '0'),
+      warnings: data.warnings > 0 ? styleText('yellow', String(data.warnings)) : styleText('dim', '0')
+    }));
+
+    console.log('\n' + renderBoxTable(fileCols, fileRows));
+    console.log('');
     return;
   }
 
-  console.log('\n╔═══════════════════════════════════════════════════════════════════════════════════════════╗');
-  console.log('║               REPORTE CONSOLIDADO DE ADVERTENCIAS Y ERRORES DE AUDITORÍA                  ║');
-  console.log('╚═══════════════════════════════════════════════════════════════════════════════════════════╝');
-  console.log(`\n📊 Estado: ${report.status === 'passed' ? '✅ PASSED' : '❌ FAILED'} | Suites: ${report.summary.suitesPassed}/${report.summary.suitesTotal}`);
-  console.log(`🚨 Errores Críticos: ${report.summary.errors} | ⚠️  Advertencias Totales: ${report.summary.warnings}\n`);
-
-  console.log('┌───────────────────────────────────────────────────────────────────┬────────┬──────────┐');
-  console.log('│ CATEGORÍA / REGLA DE AUDITORÍA                                    │ ERRORES│ WARNINGS │');
-  console.log('├───────────────────────────────────────────────────────────────────┼────────┼──────────┤');
+  console.log('\n' + renderBanner(
+    'REPORTE CONSOLIDADO DE ADVERTENCIAS Y ERRORES',
+    `Estado: ${report.status === 'passed' ? 'PASSED' : 'FAILED'} | Suites: ${report.summary.suitesPassed}/${report.summary.suitesTotal}`
+  ));
 
   const sortedCategories = Object.entries(categoryCounts).sort((a, b) => {
     const totalB = b[1].errors * ERROR_WEIGHT_FACTOR + b[1].warnings;
@@ -259,15 +258,26 @@ export function runReport(): void {
     return totalB - totalA;
   });
 
-  for (const [catName, data] of sortedCategories) {
-    const truncatedCat = catName.length > CATEGORY_TABLE_NAME_WIDTH
-      ? catName.substring(0, CATEGORY_TABLE_NAME_MAX_LEN) + '...'
-      : catName.padEnd(CATEGORY_TABLE_NAME_WIDTH);
-    const errStr = String(data.errors).padStart(PADDING_ERROR_COUNT);
-    const warnStr = String(data.warnings).padStart(PADDING_WARNING_COUNT);
-    console.log(`│ ${truncatedCat} │ ${errStr} │ ${warnStr} │`);
+  interface CategoryRow {
+    category: string;
+    errors: string;
+    warnings: string;
   }
-  console.log('└───────────────────────────────────────────────────────────────────┴────────┴──────────┘\n');
+
+  const catCols: readonly TableColumn<CategoryRow>[] = [
+    { header: 'CATEGORÍA / REGLA DE AUDITORÍA', width: 52, align: 'left', key: 'category' },
+    { header: 'ERRORES', width: 9, align: 'right', key: 'errors' },
+    { header: 'WARNINGS', width: 9, align: 'right', key: 'warnings' }
+  ];
+
+  const catRows: CategoryRow[] = sortedCategories.map(([catName, data]) => ({
+    category: catName,
+    errors: data.errors > 0 ? styleText('red', String(data.errors)) : styleText('dim', '0'),
+    warnings: data.warnings > 0 ? styleText('yellow', String(data.warnings)) : styleText('dim', '0')
+  }));
+
+  console.log('\n' + renderBoxTable(catCols, catRows));
+  console.log('');
 
   if (args.summaryOnly) return;
 
@@ -319,8 +329,12 @@ export function runReport(): void {
       console.log(`❌ Muestra de errores detectados (últimos ${sampleErrors.length} de ${allErrors.length}):\n`);
       sampleErrors.forEach((f, idx) => {
         const fileLoc = f.file ? `${path.relative(process.cwd(), f.file)}${f.line ? `:${f.line}` : ''}` : 'General';
-        const ruleTag = f.ruleDescription ? `[${f.ruleDescription}] ` : (f.ruleId ? `[${f.ruleId}] ` : '');
-        console.log(`  ${idx + 1}. ${fileLoc}: ${ruleTag}${f.message}`);
+        const cleanMsg = f.message.replace(/^Sugerencia de calidad \(Fallow\):\s*/i, '');
+        const normalizedRuleDesc = (f.ruleDescription || '').replace(/^Fallow:\s*/i, '').trim().toLowerCase();
+        const ruleTag = f.ruleDescription && !cleanMsg.toLowerCase().includes(normalizedRuleDesc)
+          ? `[${f.ruleDescription}] `
+          : (f.ruleDescription?.startsWith('Fallow:') ? '[Fallow] ' : (f.ruleId ? `[${f.ruleId}] ` : ''));
+        console.log(`  ${idx + 1}. ${fileLoc}: ${ruleTag}${cleanMsg}`);
       });
       console.log('');
     }

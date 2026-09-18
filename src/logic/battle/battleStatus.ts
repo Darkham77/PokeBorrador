@@ -150,6 +150,13 @@ function resetBasicVolatiles(poke: Pokemon): void {
   poke.bound = 0;
   poke.identified = false;
   poke.furyCutterCount = 0;
+  if (Array.isArray(poke.moves)) {
+    poke.moves.forEach(m => {
+      if (m && m.pp > 0) {
+        m.disabled = false;
+      }
+    });
+  }
 }
 
 function restoreTransformedOriginalStats(poke: Pokemon): void {

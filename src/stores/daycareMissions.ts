@@ -6,6 +6,7 @@ import { generateMission, validateMissionPokemon, isPokemonEligibleForMission } 
 import { getItemById, isItemId } from '@/data/inventory/items';
 import { incrementRecordKey } from '@/logic/utils/mapUtils';
 import { logger } from '@/logic/utils/logger';
+import { getGMT3Date } from '@/logic/utils/timeUtils';
 import type { DaycareMission } from '@/types/breeding/breeding';
 import type { Pokemon } from '@/types/pokemon/pokemon';
 
@@ -55,7 +56,7 @@ export const useDaycareMissionsStore = defineStore('daycareMissions', () => {
   });
 
   function checkDailyReset() {
-    const today = Temporal.Now.plainDateISO().toString();
+    const today = getGMT3Date().toPlainDate().toString();
     const missions = dailyMissions.value;
     const lastDate = missions.length > 0 && missions[0] ? missions[0].date : '';
     const hasCorrupted = missions.length === 0 || missions.some(m => !isValidDaycareMission(m));

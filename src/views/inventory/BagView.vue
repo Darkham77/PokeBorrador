@@ -2,6 +2,7 @@
 import { computed, watch } from 'vue'
 import { useInventoryStore } from '@/stores/inventory/inventory'
 import { useGameStore } from '@/stores/game'
+import { useBagDataLoader } from '@/loaders/bagDataLoader'
 import { formatCurrency } from '@/logic/utils/formatters'
 import { gsap } from 'gsap'
 import BagItemCard from '@/components/inventory/BagItemCard.vue'
@@ -9,6 +10,7 @@ import { ITEM_CATEGORIES, type BagMainTab } from '@/types/inventory/items'
 
 const inventoryStore = useInventoryStore()
 const gameStore = useGameStore()
+const { data: _bagSummary } = useBagDataLoader()
 
 // Niveles superiores de categorización
 const activeMainTab = computed({

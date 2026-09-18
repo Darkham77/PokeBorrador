@@ -21,6 +21,7 @@ import { useTeamActions } from '@/stores/game/actions/teamActions.ts'
 
 import { DBRouter } from '@/logic/db/dbRouter'
 import { requireMapRouteId } from '@/data/world/map-assets'
+import { getGMT3Date } from '@/logic/utils/timeUtils'
 import { GAME_UI_EVENTS, type GameStoreReadyDetail } from '@/types/system/gameEvents.ts'
 import { gameBus } from '@/logic/events/gameBus.ts'
 import { saveCoordinator } from '@/logic/auth/saveCoordinator.ts'
@@ -239,7 +240,7 @@ export const useGameStore = defineStore('game', () => {
   }
 
   const dailyGuardianCaptures = computed(() => {
-    const today = Temporal.Now.plainDateISO().toString()
+    const today = getGMT3Date().toPlainDate().toString()
     const captures = state.guardianCaptures || {}
     return Object.entries(captures)
       .filter(([_, date]) => date === today)

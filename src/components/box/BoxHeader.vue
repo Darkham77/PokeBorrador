@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, useTemplateRef } from 'vue'
 import { gsap } from 'gsap'
 
 defineProps<{
@@ -8,7 +8,7 @@ defineProps<{
   hint?: string
 }>()
 
-const pulseDot = ref<HTMLElement | null>(null)
+const pulseDot = useTemplateRef<HTMLElement>('pulseDot')
 
 onMounted(() => {
   if (pulseDot.value) {

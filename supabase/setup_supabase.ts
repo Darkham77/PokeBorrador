@@ -136,7 +136,7 @@ function run(cmd: string[], cwd?: string, check = true) {
 
 // ── Lógica de Parseo y Mutación de .env ──────────────────────────────────────
 function setEnvVar(content: string, key: string, value: string, afterHeader?: string): string {
-  const escapedKey = key.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+  const escapedKey = RegExp.escape(key);
   const pattern = new RegExp(`^${escapedKey}\\s*=\\s*.*$`, 'm');
   const replacement = `${key}=${value}`;
   
@@ -144,7 +144,7 @@ function setEnvVar(content: string, key: string, value: string, afterHeader?: st
     return content.replace(pattern, replacement);
   } else {
     if (afterHeader) {
-      const escapedHeader = afterHeader.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const escapedHeader = RegExp.escape(afterHeader);
       const hPattern = new RegExp(`^${escapedHeader}\\s*$`, 'm');
       if (hPattern.test(content)) {
         return content.replace(hPattern, `${afterHeader}\n${replacement}`);

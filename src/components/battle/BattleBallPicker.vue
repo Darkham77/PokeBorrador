@@ -52,7 +52,7 @@ const availableBalls = computed(() => {
         desc: (item as { desc?: string }).desc || ''
       }
     })
-    .sort((a, b) => b.price - a.price)
+    .toSorted((a, b) => b.price - a.price)
 })
 
 const toggleBallMenu = () => {

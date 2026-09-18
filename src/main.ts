@@ -5,6 +5,7 @@ import { createApp } from 'vue'
 import { createPinia, type Pinia } from 'pinia'
 import App from './App.vue'
 import router from './router/index.ts'
+import { DataLoaderPlugin } from 'vue-router/experimental'
 import '@/styles/_index.scss'
 import { useErrorStore } from '@/stores/errorStore'
 
@@ -44,6 +45,7 @@ app.directive('gsap-loop', gsapLoop)
 app.directive('gsap-hover', gsapHover)
 
 app.use(pinia)
+app.use(DataLoaderPlugin, { router })
 app.use(router)
 
 app.config.errorHandler = (err, _instance, info) => {

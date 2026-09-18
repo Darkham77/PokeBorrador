@@ -114,7 +114,5 @@ export default tseslint.config(
     'tests/**',
     'test aventura/**',
     'vitest.config.ts',
-    'vitest.node.config.ts',
-    'vitest.workspace.ts',
   ]),
 );
